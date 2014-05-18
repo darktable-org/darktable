@@ -1400,7 +1400,11 @@ dt_mipmap_cache_compress(
     if(darktable.mipmap_cache->compression_type == 1) flags |= squish_colour_range_fit;
     squish_compress_image(scratchmem, buf->width, buf->height, buf->buf, squish_dxt1);
   }
+  else
 #endif
+  {
+    memcpy(buf->buf, scratchmem, (size_t)buf->width*buf->height*4*sizeof(uint8_t));
+  }
 }
 
 

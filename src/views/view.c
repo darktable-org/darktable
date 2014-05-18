@@ -857,7 +857,7 @@ dt_view_image_expose(
                 fminf(darktable.thumbnail_height, height) / (float)buf.height
               );
     }
-    else scale = fminf(width*imgwd/fmax((float)buf.width, 8.0f), height*imgwd/fmax((float)buf.height, 8.0f));
+    else scale = fminf(width*imgwd/(float)buf.width, height*imgwd/(float)buf.height);
   }
 
   // draw centered and fitted:
@@ -879,15 +879,15 @@ dt_view_image_expose(
     cairo_fill(cr);
     cairo_surface_destroy (surface);
 
-    if(buf.width > 8 && buf.height > 8)
-      cairo_rectangle(cr, 0, 0, buf.width, buf.height);
+    cairo_rectangle(cr, 0, 0, buf.width, buf.height);
   }
 
+
   // border around image
-  const float border = zoom == 1 ? 16/scale : 2/scale;
   cairo_set_source_rgb(cr, bordercol, bordercol, bordercol);
   if(buf.buf && (selected || zoom == 1))
   {
+    const float border = zoom == 1 ? 16/scale : 2/scale;
     cairo_set_line_width(cr, 1./scale);
     if(zoom == 1)
     {
@@ -919,7 +919,7 @@ dt_view_image_expose(
   }
   else if(buf.buf)
   {
-    cairo_set_line_width(cr, 1);
+    cairo_set_line_width(cr, 0.5/scale);
     cairo_stroke(cr);
   }
   cairo_restore(cr);
