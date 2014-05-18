@@ -3671,7 +3671,7 @@
 			<Color x="0" y="1">GREEN</Color>
 			<Color x="1" y="1">BLUE</Color>
 		</CFA>
-		<Crop x="0" y="0" width="3016" height="2008"/>
+		<Crop x="0" y="0" width="0" height="0"/>
 		<Sensor black="0" white="4095"/>
 	</Camera>
   <Camera make="MINOLTA" model="DYNAX 7D">
@@ -3681,7 +3681,7 @@
 			<Color x="0" y="1">GREEN</Color>
 			<Color x="1" y="1">BLUE</Color>
 		</CFA>
-		<Crop x="0" y="0" width="3016" height="2008"/>
+		<Crop x="0" y="0" width="0" height="0"/>
 		<Sensor black="0" white="4095"/>
 	</Camera>
 	<Camera make="MINOLTA" model="DIMAGE A1">
@@ -3691,7 +3691,7 @@
 			<Color x="0" y="1">GREEN</Color>
 			<Color x="1" y="1">BLUE</Color>
 		</CFA>
-		<Crop x="0" y="0" width="2568" height="1928"/>
+		<Crop x="0" y="0" width="0" height="0"/>
 		<Sensor black="0" white="3965"/>
 	</Camera>
 	<Camera make="MINOLTA" model="DIMAGE A2">
@@ -3701,7 +3701,27 @@
 			<Color x="0" y="1">GREEN</Color>
 			<Color x="1" y="1">BLUE</Color>
 		</CFA>
-		<Crop x="0" y="0" width="3272" height="2456"/>
+		<Crop x="0" y="0" width="0" height="0"/>
+		<Sensor black="0" white="3965"/>
+	</Camera>
+	<Camera make="MINOLTA" model="DIMAGE A200">
+		<CFA width="2" height="2">
+			<Color x="0" y="0">RED</Color>
+			<Color x="1" y="0">GREEN</Color>
+			<Color x="0" y="1">GREEN</Color>
+			<Color x="1" y="1">BLUE</Color>
+		</CFA>
+		<Crop x="0" y="0" width="0" height="0"/>
+		<Sensor black="0" white="3965"/>
+	</Camera>
+	<Camera make="MINOLTA" model="DIMAGE 5">
+		<CFA width="2" height="2">
+			<Color x="0" y="0">RED</Color>
+			<Color x="1" y="0">GREEN</Color>
+			<Color x="0" y="1">GREEN</Color>
+			<Color x="1" y="1">BLUE</Color>
+		</CFA>
+		<Crop x="0" y="0" width="0" height="0"/>
 		<Sensor black="0" white="3965"/>
 	</Camera>
 	<Camera make="MINOLTA" model="DIMAGE 7">
@@ -3711,7 +3731,7 @@
 			<Color x="0" y="1">GREEN</Color>
 			<Color x="1" y="1">BLUE</Color>
 		</CFA>
-		<Crop x="0" y="0" width="2568" height="1928"/>
+		<Crop x="0" y="0" width="0" height="0"/>
 		<Sensor black="0" white="3965"/>
 	</Camera>
 	<Camera make="MINOLTA" model="DIMAGE 7I">
@@ -3721,7 +3741,7 @@
 			<Color x="0" y="1">GREEN</Color>
 			<Color x="1" y="1">BLUE</Color>
 		</CFA>
-		<Crop x="0" y="0" width="2568" height="1928"/>
+		<Crop x="0" y="0" width="0" height="0"/>
 		<Sensor black="0" white="3965"/>
 	</Camera>
 	<Camera make="MINOLTA" model="DIMAGE 7HI">
@@ -3731,7 +3751,7 @@
 			<Color x="0" y="1">GREEN</Color>
 			<Color x="1" y="1">BLUE</Color>
 		</CFA>
-		<Crop x="0" y="0" width="2568" height="1928"/>
+		<Crop x="0" y="0" width="0" height="0"/>
 		<Sensor black="0" white="3965"/>
 	</Camera>
 	<Camera make="SONY" model="DSLR-A100" supported="no">
