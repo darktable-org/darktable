@@ -80,7 +80,7 @@ $ dt-curve-tool -s ~/tmp/mycamera.dat FILE-rawN.ppm FILE-jpegN.ppm
 Beware that dt-curve-tool uses 32bit counters internally to keep track of the number
 of times RGB/Lab samples have been encountered. As cameras these days have many pixels
 a photo, do not be zealous and do not run the tool on your complete catalog. In the
-case too many pixels have been sampled already, an error is  be printed on the
+case too many pixels have been sampled already, an error is printed on the
 console and dt-curve-tool refuses to process the image.
 
 It may be smart to pick 20 to 50 pics covering the whole tonal range, no need for
@@ -157,26 +157,30 @@ your in camera JPEG engine. Many more algorithms are used by your camera to
 generate the JPEG. The curves are only one of them.
 
 The tool has some known limitations:
- - it relies on the fact you don't make it overflow 32bit counters (hard to tell
-   you how many photos this represents)
  - it computes RGB basecurve on the sole G channel, though all three channels are
    analysed
  - the tool supposes the JPEG files are sRGB ones. It doesn't know or understands
-   about ICC powered profiles. Sorry
+   about ICC profiles.
  - the tool is happily confused by JPEG files that are portrait rotated, and their
-   raw is not.
+   raw is not. The helper script tries to correct that during the conversion phase
+   However that code has been tested on few samples only, it may rotate the data
+   incorrectly.
 
 --------------------------------------------------------------------------------
 Cheating script for the braves who read the READMEs up to the last bit
 --------------------------------------------------------------------------------
 
-For Canon and Nikon users, a script called dt-curve-tool-helper is provided. It
-automates:
- - the extraction of the embedded JPEG file found in the raw file,
- - the conversion of the JPEG file and raw file to PPM format,
- - their analysis by the dt-curve-tool using the default save state filename
+A script called dt-curve-tool-helper is provided. It automates most of what has
+been documented in this README:
+ - if provided a raw only, it tries to use a file named as the raw file but with
+   a .JPG or a .jpg extension. If not found it tries to extract the
+   embedded JPEG file from the raw (support for Canon and Nikon for now)
+ - it converts both the JPEG file and the raw file to PPM format,
+ - it launches the analysis by the dt-curve-tool
 
 It even reminds you about the final dt-curve-tool invocation for computing the
 curves.
+
+Use dt-curve-tool-helper -h for more information
 
 Enjoy

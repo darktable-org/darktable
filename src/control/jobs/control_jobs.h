@@ -24,6 +24,7 @@
 typedef struct dt_control_export_t
 {
   int max_width, max_height, format_index, storage_index;
+  dt_imageio_module_data_t *sdata; // needed since the gui thread resets things like overwrite once the export is dispatched, but we have to keep that information
   gboolean high_quality;
   char style[128];
 } dt_control_export_t;

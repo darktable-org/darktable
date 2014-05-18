@@ -60,6 +60,8 @@ _default_format_levels(dt_imageio_module_data_t *data)
 {
   return IMAGEIO_RGB | IMAGEIO_INT8;
 }
+/** Default implementation of gui_init function (a NOP), used when no gui is existing. this is easier than checking for that case all over the place */
+static void _default_format_gui_init(struct dt_imageio_module_format_t *self){}
 
 static int
 dt_imageio_load_module_format (dt_imageio_module_format_t *module, const char *libname, const char *plugin_name)
@@ -80,7 +82,14 @@ dt_imageio_load_module_format (dt_imageio_module_format_t *module, const char *l
   if(!g_module_symbol(module->module, "init",                         (gpointer)&(module->init)))                         goto error;
   if(!g_module_symbol(module->module, "cleanup",                      (gpointer)&(module->cleanup)))                      goto error;
   if(!g_module_symbol(module->module, "gui_reset",                    (gpointer)&(module->gui_reset)))                    goto error;
-  if(!g_module_symbol(module->module, "gui_init",                     (gpointer)&(module->gui_init)))                     goto error;
+  if(darktable.gui)
+  {
+    if(!g_module_symbol(module->module, "gui_init",                     (gpointer)&(module->gui_init)))                     goto error;
+  }
+  else
+  {
+    module->gui_init = _default_format_gui_init;
+  }
   if(!g_module_symbol(module->module, "gui_cleanup",                  (gpointer)&(module->gui_cleanup)))                  goto error;
 
   if(!g_module_symbol(module->module, "mime",                         (gpointer)&(module->mime)))                         goto error;
@@ -170,6 +179,8 @@ _default_storage_dimension(struct dt_imageio_module_storage_t *self,uint32_t *wi
 {
   return 0;
 }
+/** a NOP for when a default should do nothing */
+static void _default_storage_nop(struct dt_imageio_module_storage_t *self){}
 
 static int
 dt_imageio_load_module_storage (dt_imageio_module_storage_t *module, const char *libname, const char *plugin_name)
@@ -188,21 +199,29 @@ dt_imageio_load_module_storage (dt_imageio_module_storage_t *module, const char 
   }
   if(!g_module_symbol(module->module, "name",                   (gpointer)&(module->name)))                   goto error;
   if(!g_module_symbol(module->module, "gui_reset",              (gpointer)&(module->gui_reset)))              goto error;
-  if(!g_module_symbol(module->module, "gui_init",               (gpointer)&(module->gui_init)))               goto error;
+  if(darktable.gui)
+  {
+    if(!g_module_symbol(module->module, "gui_init",               (gpointer)&(module->gui_init)))             goto error;
+  }
+  else
+  {
+    module->gui_init = _default_storage_nop;
+  }
   if(!g_module_symbol(module->module, "gui_cleanup",            (gpointer)&(module->gui_cleanup)))            goto error;
   if(!g_module_symbol(module->module, "init",                   (gpointer)&(module->init)))                   goto error;
 
   if(!g_module_symbol(module->module, "store",                  (gpointer)&(module->store)))                  goto error;
-  if(!g_module_symbol(module->module, "params_size",             (gpointer)&(module->params_size)))             goto error;
+  if(!g_module_symbol(module->module, "params_size",             (gpointer)&(module->params_size)))           goto error;
   if(!g_module_symbol(module->module, "get_params",             (gpointer)&(module->get_params)))             goto error;
   if(!g_module_symbol(module->module, "free_params",            (gpointer)&(module->free_params)))            goto error;
-  if(!g_module_symbol(module->module, "initialize_store",         (gpointer)&(module->initialize_store)))         module->initialize_store = NULL;
+  if(!g_module_symbol(module->module, "initialize_store",         (gpointer)&(module->initialize_store)))     module->initialize_store = NULL;
   if(!g_module_symbol(module->module, "finalize_store",         (gpointer)&(module->finalize_store)))         module->finalize_store = NULL;
   if(!g_module_symbol(module->module, "set_params",             (gpointer)&(module->set_params)))             goto error;
 
   if(!g_module_symbol(module->module, "supported",              (gpointer)&(module->supported)))              module->supported = _default_supported;
-  if(!g_module_symbol(module->module, "dimension",              (gpointer)&(module->dimension)))            	module->dimension = _default_storage_dimension;
+  if(!g_module_symbol(module->module, "dimension",              (gpointer)&(module->dimension)))              module->dimension = _default_storage_dimension;
   if(!g_module_symbol(module->module, "recommended_dimension",  (gpointer)&(module->recommended_dimension)))  module->recommended_dimension = _default_storage_dimension;
+  if(!g_module_symbol(module->module, "export_dispatched",      (gpointer)&(module->export_dispatched)))      module->export_dispatched = _default_storage_nop;
 #ifdef USE_LUA
   {
     char pseudo_type_name[1024];

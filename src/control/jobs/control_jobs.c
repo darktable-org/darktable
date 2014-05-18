@@ -1132,6 +1132,7 @@ static int32_t dt_control_export_job_run(dt_job_t *job)
   g_assert(mformat);
   dt_imageio_module_storage_t *mstorage = dt_imageio_get_storage_by_index(settings->storage_index);
   g_assert(mstorage);
+  dt_imageio_module_data_t *sdata = settings->sdata;
 
   // Get max dimensions...
   uint32_t w,h,fw,fh,sw,sh;
@@ -1145,14 +1146,6 @@ static int32_t dt_control_export_job_run(dt_job_t *job)
   if( sh==0 || fh==0) h=sh>fh?sh:fh;
   else h=sh<fh?sh:fh;
 
-  // get shared storage param struct (global sequence counter, one picasa connection etc)
-  dt_imageio_module_data_t *sdata = mstorage->get_params(mstorage);
-  if(sdata == NULL)
-  {
-    dt_control_log(_("failed to get parameters from storage module `%s', aborting export.."), mstorage->name(mstorage));
-    g_free(t1->data);
-    return 1;
-  }
   if(mstorage->initialize_store) {
     /* get temporary format params */
     dt_imageio_module_data_t *fdata = mformat->get_params(mformat);
@@ -1267,7 +1260,7 @@ static int32_t dt_control_export_job_run(dt_job_t *job)
 }
 
 
-void dt_control_export(GList *imgid_list,int max_width, int max_height, int format_index, int storage_index, gboolean high_quality,char *style)
+void dt_control_export(GList *imgid_list, int max_width, int max_height, int format_index, int storage_index, gboolean high_quality,char *style)
 {
   dt_job_t job;
   dt_control_job_init(&job, "export");
@@ -1279,11 +1272,25 @@ void dt_control_export(GList *imgid_list,int max_width, int max_height, int form
   data->max_height = max_height;
   data->format_index = format_index;
   data->storage_index = storage_index;
+  dt_imageio_module_storage_t *mstorage = dt_imageio_get_storage_by_index(storage_index);
+  g_assert(mstorage);
+  // get shared storage param struct (global sequence counter, one picasa connection etc)
+  dt_imageio_module_data_t *sdata = mstorage->get_params(mstorage);
+  if(sdata == NULL)
+  {
+    dt_control_log(_("failed to get parameters from storage module `%s', aborting export.."), mstorage->name(mstorage));
+    free(data);
+    return;
+  }
+  data->sdata = sdata;
   data->high_quality = high_quality;
   g_strlcpy(data->style,style,sizeof(data->style));
   t->data = data;
   dt_control_signal_raise(darktable.signals,DT_SIGNAL_IMAGE_EXPORT_MULTIPLE,t);
   dt_control_add_job(darktable.control, &job);
+
+  // tell the storage that we got its params for an export so it can reset itself to a safe state
+  mstorage->export_dispatched(mstorage);
 }
 
 #if GLIB_CHECK_VERSION (2, 26, 0)

@@ -232,7 +232,7 @@ int main(int argc, char *arg[])
   }
 
   // and now for the really ugly hacks. don't tell your children about this one or they won't sleep at night any longer ...
-  g_strlcpy((char*)sdata, output_filename, PATH_MAX);
+  g_strlcpy((char*)sdata, output_filename, 1024);
   // all is good now, the last line didn't happen.
 
   format = dt_imageio_get_format_by_name(ext);
@@ -274,7 +274,7 @@ int main(int argc, char *arg[])
   }
   //TODO: add a callback to set the bpp without going through the config
 
-  storage->store(storage,sdata, id, format, fdata, 1, 1, high_quality);
+  storage->store(storage, sdata, id, format, fdata, 1, 1, high_quality);
 
   // cleanup time
   if(storage->finalize_store) storage->finalize_store(storage, sdata);

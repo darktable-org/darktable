@@ -986,11 +986,16 @@ dt_colorspaces_get_makermodel(char *makermodel, size_t makermodel_len, const cha
   if(match)
   {
     snprintf(makermodel, makermodel_len, "%s", model);
-  }
-  else if (!strcmp(maker, "KONICA MINOLTA")) {
+  } else if (!strcmp(maker, "KONICA MINOLTA") &&
+             (!strncmp(model, "MAXXUM",6) || 
+              !strncmp(model, "DYNAX", 5) || 
+              !strncmp(model, "ALPHA", 5))) {
     // Use the dcraw name name for the Konica Minolta 5D/7D (without Konica)
     int numoffset = !strncmp(model, "MAXXUM", 6) ? 7 : 6;
     snprintf(makermodel, makermodel_len, "MINOLTA DYNAX %s", model+numoffset);
+  } else if (!strncmp(maker, "Konica Minolta", 14) || !strncmp(maker, "KONICA MINOLTA", 14)) {
+    // Identify Konica Minolta cameras as just Minolta internally
+    snprintf(makermodel, makermodel_len, "Minolta %s", model);
   } else {
     // else need to append first word of the maker:
     c = maker;

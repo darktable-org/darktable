@@ -108,5 +108,14 @@ echo -e "\t\t<Crop x=\"0\" y=\"0\" width=\"0\" height=\"0\"/>"
 echo -e "\t\t<Sensor black=\"$BLACK\" white=\"$WHITE\"/>"
 echo -e "\t</Camera>"
 echo ""
+
+if [[ $MAKE == Panasonic ]]; then
+  echo "NOTE: Panasonic RW2s are different dependant on aspect ratio, please run this tool on RW2 for each of the camera's ratios (4:3,3:2,16:9,1:1)"
+  echo ""
+fi
+echo "NOTE: The default crop exposes the full sensor including garbage pixels, which need to be visually inspected. (negative width/height values are right/bottom crops, which are preferred)"
+echo ""
+echo "NOTE: Sensor black and white levels sometimes vary based on ISO, please run this tool on raws for each of the camera's supported ISOs"
+echo ""
 echo "$ git commit -a -m \"rawspeed: $MANGLED_MAKE_MODEL support\" --author \"$AUTHOR\""
 echo ""

@@ -5302,6 +5302,42 @@ const wb_data wb_preset[] =
   { "SAMSUNG", "NX200", Tungsten, 0,		{ 1.511719, 1, 2.941406, 0 } },
   { "SAMSUNG", "NX200", Flash, 0,		{ 2.914063, 1, 1.191406, 0 } },
 
+  // Copied from Samsung NX200
+  { "SAMSUNG", "NX210", Daylight, 0,		{ 2.773438, 1, 1.625000, 0 } },
+  { "SAMSUNG", "NX210", Cloudy, 0,		{ 2.902344, 1, 1.546875, 0 } },
+  { "SAMSUNG", "NX210", WhiteFluorescent, 0,	{ 2.445313, 1, 2.316406, 0 } },
+  { "SAMSUNG", "NX210", NeutralFluorescent, 0,	{ 2.746094, 1, 1.937500, 0 } },
+  { "SAMSUNG", "NX210", DaylightFluorescent, 0,	{ 3.214844, 1, 1.679688, 0 } },
+  { "SAMSUNG", "NX210", Tungsten, 0,		{ 1.511719, 1, 2.941406, 0 } },
+  { "SAMSUNG", "NX210", Flash, 0,		{ 2.914063, 1, 1.191406, 0 } },
+
+  // Copied from Samsung NX200
+  { "SAMSUNG", "NX20", Daylight, 0,		{ 2.773438, 1, 1.625000, 0 } },
+  { "SAMSUNG", "NX20", Cloudy, 0,		{ 2.902344, 1, 1.546875, 0 } },
+  { "SAMSUNG", "NX20", WhiteFluorescent, 0,	{ 2.445313, 1, 2.316406, 0 } },
+  { "SAMSUNG", "NX20", NeutralFluorescent, 0,	{ 2.746094, 1, 1.937500, 0 } },
+  { "SAMSUNG", "NX20", DaylightFluorescent, 0,	{ 3.214844, 1, 1.679688, 0 } },
+  { "SAMSUNG", "NX20", Tungsten, 0,		{ 1.511719, 1, 2.941406, 0 } },
+  { "SAMSUNG", "NX20", Flash, 0,		{ 2.914063, 1, 1.191406, 0 } },
+
+  // Copied from Samsung NX200
+  { "SAMSUNG", "NX1000", Daylight, 0,		{ 2.773438, 1, 1.625000, 0 } },
+  { "SAMSUNG", "NX1000", Cloudy, 0,		{ 2.902344, 1, 1.546875, 0 } },
+  { "SAMSUNG", "NX1000", WhiteFluorescent, 0,	{ 2.445313, 1, 2.316406, 0 } },
+  { "SAMSUNG", "NX1000", NeutralFluorescent, 0,	{ 2.746094, 1, 1.937500, 0 } },
+  { "SAMSUNG", "NX1000", DaylightFluorescent, 0,{ 3.214844, 1, 1.679688, 0 } },
+  { "SAMSUNG", "NX1000", Tungsten, 0,		{ 1.511719, 1, 2.941406, 0 } },
+  { "SAMSUNG", "NX1000", Flash, 0,		{ 2.914063, 1, 1.191406, 0 } },
+
+  // Copied from Samsung NX200
+  { "SAMSUNG", "NX1100", Daylight, 0,		{ 2.773438, 1, 1.625000, 0 } },
+  { "SAMSUNG", "NX1100", Cloudy, 0,		{ 2.902344, 1, 1.546875, 0 } },
+  { "SAMSUNG", "NX1100", WhiteFluorescent, 0,	{ 2.445313, 1, 2.316406, 0 } },
+  { "SAMSUNG", "NX1100", NeutralFluorescent, 0,	{ 2.746094, 1, 1.937500, 0 } },
+  { "SAMSUNG", "NX1100", DaylightFluorescent, 0,{ 3.214844, 1, 1.679688, 0 } },
+  { "SAMSUNG", "NX1100", Tungsten, 0,		{ 1.511719, 1, 2.941406, 0 } },
+  { "SAMSUNG", "NX1100", Flash, 0,		{ 2.914063, 1, 1.191406, 0 } },
+
   // SAMSUNG NX300 Firmware Version 1.40
   { "SAMSUNG", "NX300", Daylight, -7,			{ 2.308594, 1, 2.097656, 0 } },
   { "SAMSUNG", "NX300", Daylight, -6,			{ 2.347656, 1, 2.027344, 0 } },
