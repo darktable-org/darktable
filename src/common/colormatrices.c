@@ -159,6 +159,9 @@ static dt_profiled_colormatrix_t dt_profiled_colormatrices[] =
   // Isaac Chanin, Wolf Faust IT8, direct sunlight, well lit
   { "NIKON D5100",                  { 994339, 388123,  37186}, { 226578, 1268478, -310028}, {  1404, -393173, 1285812}, {705582, 733917, 623779}},
 
+  // Torsten Wortwein, Wolf Faust IT8, direct sunlight, well lit
+  { "NIKON D5300",                  { 977005, 388763,  42267}, { 144699, 1161331, -312805}, { 61615, -333832, 1270767}, {702164, 733490, 600052}},
+
   // Robert Park, ColorChecker Passport, strobe, well lit
   { "NIKON D7000",                  { 744919, 228027, -46982}, { 454605, 1326797,  -33585}, {-132294, -467194, 985611}, {609375, 629852, 515625}},
 
