@@ -356,7 +356,7 @@
 <secondary>#</secondary>
 </indexterm>
 <synopsis><link linkend="types_dt_lua_tag_t">types.dt_lua_tag_t</link></synopsis>
-<para>Each existing tag has a numeric entry in the tags table - use ipairs to iterate over them.</para>
+<para>Each existing tag has a numeric entry in the tags table &mdash; use ipairs to iterate over them.</para>
 
 </sect4>
 
@@ -620,7 +620,7 @@
 
 <varlistentry><term id="darktable.preferences.register.type">type</term><listitem>
 <synopsis>string</synopsis>
-<para>The type of the preference - one of the string values described above.</para>
+<para>The type of the preference &mdash; one of the string values described above.</para>
 
 </listitem></varlistentry>
 
@@ -681,7 +681,7 @@
 
 <varlistentry><term id="darktable.preferences.read.type">type</term><listitem>
 <synopsis>string</synopsis>
-<para>The type of the preference - one of the string values described above.</para>
+<para>The type of the preference &mdash; one of the string values described above.</para>
 
 </listitem></varlistentry>
 
@@ -719,7 +719,7 @@
 
 <varlistentry><term id="darktable.preferences.write.type">type</term><listitem>
 <synopsis>string</synopsis>
-<para>The type of the preference - one of the string values described above.</para>
+<para>The type of the preference &mdash; one of the string values described above.</para>
 
 </listitem></varlistentry>
 
@@ -997,7 +997,7 @@
 <variablelist>
 <varlistentry><term><emphasis>return</emphasis></term><listitem>
 <synopsis><link linkend="types_dt_imageio_module_format_data_png">types.dt_imageio_module_format_data_png</link></synopsis>
-<para>A new format object describing the parameters to export to png - initialised to the values contained in the GUI.</para>
+<para>A new format object describing the parameters to export to png &mdash; initialised to the values contained in the GUI.</para>
 
 </listitem></varlistentry>
 
@@ -1116,7 +1116,7 @@
 <variablelist>
 <varlistentry><term><emphasis>return</emphasis></term><listitem>
 <synopsis><link linkend="types_dt_imageio_module_storage">types.dt_imageio_module_storage</link></synopsis>
-<para>A new storage object describing the parameters to export with - initialised to the values contained in the GUI.</para>
+<para>A new storage object describing the parameters to export with &mdash; initialised to the values contained in the GUI.</para>
 
 </listitem></varlistentry>
 
@@ -1226,7 +1226,7 @@
 
 <varlistentry><term><emphasis>return</emphasis></term><listitem>
 <synopsis>string</synopsis>
-<para>A string containing a text description of the object - can be very long.</para>
+<para>A string containing a text description of the object &mdash; can be very long.</para>
 
 </listitem></varlistentry>
 

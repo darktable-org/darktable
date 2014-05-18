@@ -112,14 +112,14 @@
   <bridgehead renderas="sect4">maximum width of image drawing area</bridgehead>
 
   <para>
-    Maximum width of the image drawing area in darkroom mode - adjust to your screen. Needs a
+    Maximum width of the image drawing area in darkroom mode &mdash; adjust to your screen. Needs a
     restart and will invalidate current thumbnail caches (default 1300).
   </para>
 
   <bridgehead renderas="sect4">maximum height of image drawing area</bridgehead>
 
   <para>
-    Maximum height of the image drawing area in darkroom mode - adjust to your screen. Needs a
+    Maximum height of the image drawing area in darkroom mode &mdash; adjust to your screen. Needs a
     restart and will invalidate current thumbnail caches (default 1000).
   </para>
 

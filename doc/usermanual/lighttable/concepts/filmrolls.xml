@@ -13,7 +13,7 @@
   </indexterm>
 
   <para>
-    The basic element for organizing images in darktable is called a film roll - a kind of
+    The basic element for organizing images in darktable is called a film roll &mdash; a kind of
     virtual folder. Whenever you import images from disk, the images are organized in a film
     roll whose name is derived from the name of the disk folder. Re-importing a disk folder will
     add any new images to the existing film roll; images already present in the film roll are

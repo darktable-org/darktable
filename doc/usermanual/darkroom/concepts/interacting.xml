@@ -21,7 +21,7 @@
     In its default setting darktable will only expand one GUI at a time. If you click the
     expander bar of another module, the previous GUI gets collapsed. If you want to see more
     than one GUI expanded, you may expand further modules with <emphasis>shift-click</emphasis>
-    - all previously expanded GUIs remain opened. The expander bar behavior on
+    &mdash; all previously expanded GUIs remain opened. The expander bar behavior on
     <emphasis>click</emphasis> and <emphasis>shift-click</emphasis>, respectively, is controlled
     by a preference setting in gui options (see <xref linkend="gui_options"/>).
   </para>
@@ -131,7 +131,7 @@
       <para>
         Alternatively you can type in a new value using your keyboard and commit by hitting the
         enter key. You may even supply the new value in the form of an arithmetic expressions
-        which darktable will calculate for you - the old value is referenced as
+        which darktable will calculate for you &mdash; the old value is referenced as
         <quote>x</quote>.
       </para></listitem>
 

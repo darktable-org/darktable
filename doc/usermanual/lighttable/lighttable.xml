@@ -185,7 +185,7 @@
     <para>
       Holding down the <emphasis>ctlr-z</emphasis> key fully zooms into the image and
       additionally activates an analysis for focus regions. Areas of high sharpness are
-      indicated by a red border - the higher the color intensity the better the sharpness. In
+      indicated by a red border &mdash; the higher the color intensity the better the sharpness. In
       case that no area of <emphasis>high</emphasis> sharpness is detected darktable indicates
       areas of <emphasis>moderate</emphasis> sharpness with a blue border. For this tool to work
       the input image needs to hold an embedded JPEG thumbnail which is the case for most RAW
@@ -194,7 +194,7 @@
 
     <para>
       Sometimes pressing <emphasis>z</emphasis> or <emphasis>ctrl-z</emphasis> may not reveal an
-      immediate effect - in that case please click into the center area and press the
+      immediate effect &mdash; in that case please click into the center area and press the
       corresponding key again.
     </para>
 

@@ -64,7 +64,7 @@
     <sect5>
       <title>orientation</title>
       <para>
-        If you select a non-square aspect ratio this combobox defines the orientation - portrait
+        If you select a non-square aspect ratio this combobox defines the orientation &mdash; portrait
         or landscape. Set to <quote>auto</quote> if you want darktable to select the most
         reasonable orientation based on the underlying image.
       </para>

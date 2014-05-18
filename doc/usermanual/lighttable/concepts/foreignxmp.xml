@@ -13,8 +13,8 @@
     file. Other than the formats <quote>&lt;basename&gt;.&lt;extension&gt;.xmp</quote> and
     <quote>&lt;basename&gt;<emphasis>_nn</emphasis>.&lt;extension&gt;.xmp</quote> darktable also
     checks for the presence of a file in the form <quote>&lt;basename&gt;.xmp</quote>.
-    darktable's own sidecar files are always stored in the first format - the latter one would
-    only be read - not overwritten.
+    darktable's own sidecar files are always stored in the first format &mdash; the latter one would
+    only be read &mdash; not overwritten.
   </para>
 
   <para>

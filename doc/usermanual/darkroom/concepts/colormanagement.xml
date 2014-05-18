@@ -16,8 +16,8 @@
     <itemizedlist>
 
       <listitem><para>
-        Input color specifications are taken from embedded or user supplied ICC profiles or - in
-        case of raw files - alternatively from a library of camera specific color matrices.
+        Input color specifications are taken from embedded or user supplied ICC profiles or &mdash; in
+        case of raw files &mdash; alternatively from a library of camera specific color matrices.
       </para></listitem>
 
       <listitem><para>
@@ -47,7 +47,7 @@
 
     <para>
       darktable's input images are either RGB files (like JPEGs or TIFFs) or pre-demosaiced
-      camera raws - both represent colors by a combination of red, green and blue. Most part of
+      camera raws &mdash; both represent colors by a combination of red, green and blue. Most part of
       our modules act in the <ulink url="http://en.wikipedia.org/wiki/Lab_color_space">CIELAB
       color space</ulink> (often just called <quote>Lab</quote>) which describes color as a
       combination of lightness data (L) and a point in the a-b color plane. The final output of
