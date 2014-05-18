@@ -47,6 +47,11 @@ int MrwDecoder::isMRW(FileMap* input) {
                           (((uint64)(data)[pos+3]) << 24) | (((uint64)(data)[pos+2]) << 16) | \
                           (((uint64)(data)[pos+1]) << 8) | ((uint64)(data)[pos]))
                         
+/* This table includes all cameras that have ever had official MRW raw support.
+   There were also a few compacts (G400, G500, G530 and G600) that had a raw
+   mode in a hidden menu with MRW format written to JPG named files. It should
+   be easy to support them given example files but chances are it was more of a
+   novelty than something people actually used. */
 static mrw_camera_t mrw_camera_table[] = {
   {"27820001", "DIMAGE A1"},
   {"27200001", "DIMAGE A2"},
