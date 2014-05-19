@@ -37,35 +37,33 @@ typedef enum {
   CFA_YELLOW = 6,
   CFA_WHITE = 7,
   CFA_COLOR_MAX = 8,
+  CFA_FUJI_GREEN = 9,
   CFA_UNKNOWN = 255
 } CFAColor;
 
-typedef enum {
-  CFA_POS_UPPERLEFT,
-  CFA_POS_UPPERRIGHT,
-  CFA_POS_LOWERLEFT,
-  CFA_POS_LOWERRIGHT
-} CFAPos;
 
 class ColorFilterArray
 {
 public:
-  ColorFilterArray(void);
-  ColorFilterArray(CFAColor up_left, CFAColor up_right, CFAColor down_left, CFAColor down_right);
+  ColorFilterArray();
+  ColorFilterArray(const ColorFilterArray& other );
+  ColorFilterArray& operator= (const ColorFilterArray& other);
+  ColorFilterArray(iPoint2D size);
   virtual ~ColorFilterArray(void);
-  void setCFA(CFAColor up_left, CFAColor up_right, CFAColor down_left, CFAColor down_right);
+  virtual void setSize(iPoint2D size);
   void setColorAt(iPoint2D pos, CFAColor c);
-  void setCFA(uchar8 dcrawCode);
-  __inline CFAColor getColorAt(uint32 x, uint32 y) {return cfa[(x&1)+((y&1)<<1)];}
-  uint32 toDcrawColor(CFAColor c);
-  uint32 getDcrawFilter();
-  void shiftLeft();
-  void shiftDown();
-  iPoint2D size;
-  std::string asString();
+  virtual void setCFA(iPoint2D size, ...);
+  CFAColor* getCfaWrt() {return cfa;};
+  virtual CFAColor getColorAt(uint32 x, uint32 y);
+  virtual uint32 getDcrawFilter();
+  virtual void shiftLeft(int n = 1);
+  virtual void shiftDown(int n = 1);
+  virtual std::string asString();
   static std::string colorToString(CFAColor c);
-private:
-  CFAColor cfa[4];
+  uint32 toDcrawColor(CFAColor c);
+  iPoint2D size;
+protected:
+  CFAColor *cfa;
 };
 
 } // namespace RawSpeed

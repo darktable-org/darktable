@@ -197,7 +197,7 @@ void Rw2Decoder::checkSupportInternal(CameraMetaData *meta) {
 }
 
 void Rw2Decoder::decodeMetaDataInternal(CameraMetaData *meta) {
-  mRaw->cfa.setCFA(CFA_BLUE, CFA_GREEN, CFA_GREEN2, CFA_RED);
+  mRaw->cfa.setCFA(iPoint2D(2,2), CFA_BLUE, CFA_GREEN, CFA_GREEN2, CFA_RED);
   vector<TiffIFD*> data = mRootIFD->getIFDsWithTag(MODEL);
 
   if (data.empty())

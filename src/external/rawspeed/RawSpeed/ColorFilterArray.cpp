@@ -24,60 +24,117 @@
 
 namespace RawSpeed {
 
-ColorFilterArray::ColorFilterArray(void) :
-size(2,2) 
+ColorFilterArray::ColorFilterArray( iPoint2D _size)
 {
-  setCFA(CFA_UNKNOWN, CFA_UNKNOWN, CFA_UNKNOWN, CFA_UNKNOWN);
+  cfa = NULL;
+  setSize(_size);
 }
 
-ColorFilterArray::ColorFilterArray(CFAColor up_left, CFAColor up_right, CFAColor down_left, CFAColor down_right)  :
-size(2,2) 
+ColorFilterArray::ColorFilterArray() :
+size(0,0) 
 {
-  cfa[0] = up_left;
-  cfa[1] = up_right;
-  cfa[2] = down_left;
-  cfa[3] = down_right;
+  cfa = NULL; 
 }
 
-ColorFilterArray::~ColorFilterArray(void) {
+
+ColorFilterArray::ColorFilterArray( const ColorFilterArray& other )
+{
+  cfa = NULL;
+  setSize(other.size);
+  if (cfa)
+    memcpy(cfa, other.cfa, size.area()*sizeof(CFAColor));
 }
 
-void ColorFilterArray::setCFA(CFAColor up_left, CFAColor up_right, CFAColor down_left, CFAColor down_right) {
-  cfa[0] = up_left;
-  cfa[1] = up_right;
-  cfa[2] = down_left;
-  cfa[3] = down_right;
+ColorFilterArray& ColorFilterArray::operator=(const ColorFilterArray& other ) 
+{
+  cfa = NULL;
+  setSize(other.size);
+  if (cfa)
+    memcpy(cfa, other.cfa, size.area()*sizeof(CFAColor));
+  return *this;
 }
 
-void ColorFilterArray::setCFA(uchar8 dcrawCode) {
-  cfa[0] = (CFAColor)(dcrawCode & 0x3);
-  cfa[1] = (CFAColor)((dcrawCode >> 2) & 0x3);
-  cfa[2] = (CFAColor)((dcrawCode >> 4) & 0x3);
-  cfa[3] = (CFAColor)((dcrawCode >> 6) & 0x3);
+void ColorFilterArray::setSize( iPoint2D _size )
+{
+  size = _size;
+  if (cfa)
+    delete[] cfa;
+  cfa = NULL;
+  if (size.area() <= 0)
+    return;
+  cfa = new CFAColor[size.area()];
+  if (!cfa)
+    ThrowRDE("ColorFilterArray:setSize Unable to allocate memory");
+  memset(cfa, CFA_UNKNOWN, size.area()*sizeof(CFAColor));
 }
 
-uint32 ColorFilterArray::getDcrawFilter() {
-  if (cfa[0] > 3 || cfa[1] > 3 || cfa[2] > 3 || cfa[3] > 3)
-    ThrowRDE("getDcrawFilter: Invalid colors defined.");
-  uint32 v =  cfa[0] | cfa[1] << 2 | cfa[2] << 4 | cfa[3] << 6;
-  return v | (v << 8) | (v << 16) | (v << 24);
+ColorFilterArray::~ColorFilterArray( void )
+{
+  if (cfa)
+    delete[] cfa;
+  cfa = NULL;
 }
 
+CFAColor ColorFilterArray::getColorAt( uint32 x, uint32 y )
+{
+  if (!cfa)
+    ThrowRDE("ColorFilterArray:getColorAt: No CFA size set");
+  if (x >= (uint32)size.x || y >= (uint32)size.y) {
+    x = x%size.x;
+    y = y%size.y;
+  }
+  return cfa[x+y*size.x];
+}
+
+void ColorFilterArray::setCFA( iPoint2D in_size, ... )
+{
+  if (in_size != size) {
+    setSize(in_size);
+  }
+  va_list arguments;
+  va_start(arguments, in_size);
+  for (uint32 i = 0; i <  size.area(); i++ ) {
+    cfa[i] = (CFAColor)va_arg(arguments, int);
+  }
+  va_end (arguments);   
+}
+
+void ColorFilterArray::shiftLeft(int n) {
+  writeLog(DEBUG_PRIO_EXTRA, "Shift left:%d\n", n);
+  int shift = n % size.x;
+  if (0 == shift)
+    return;
+  CFAColor* tmp = new CFAColor[size.x];
+  for (int y = 0; y < size.y; y++) {
+    CFAColor *old = &cfa[y*size.x];
+    memcpy(tmp, &old[shift], (size.x-shift)*sizeof(CFAColor));
+    memcpy(&tmp[size.x-shift], old, shift*sizeof(CFAColor));
+    memcpy(old, tmp, size.x * sizeof(CFAColor));
+  }
+  delete[] tmp;
+}
+
+void ColorFilterArray::shiftDown(int n) {
+  writeLog(DEBUG_PRIO_EXTRA, "Shift down:%d\n", n);
+  int shift = n % size.y;
+  if (0 == shift)
+    return;
+  CFAColor* tmp = new CFAColor[size.y];
+  for (int x = 0; x < size.x; x++) {
+    CFAColor *old = &cfa[x];
+    for (int y = 0; y < size.y; y++)
+      tmp[y] = old[((y+shift)%size.y)*size.x];
+    for (int y = 0; y < size.y; y++)
+      old[y*size.x] = tmp[y];
+  }
+  delete[] tmp;
+}
+
+// FIXME:
 std::string ColorFilterArray::asString() {
-  string s("Upper left:");
-  s += colorToString(cfa[0]);
-  s.append(" * Upper right:");
-  s += colorToString(cfa[1]);
-  s += ("\nLower left:");
-  s += colorToString(cfa[2]);
-  s.append(" * Lower right:");
-  s += colorToString(cfa[3]);
-  s.append("\n");
-
-  s += string("CFA_") + colorToString(cfa[0]) + string(", CFA_") + colorToString(cfa[1]);
-  s += string(", CFA_") + colorToString(cfa[2]) + string(", CFA_") + colorToString(cfa[3]) + string("\n");
-  return s;
+  return string("");
 }
+
 
 std::string ColorFilterArray::colorToString(CFAColor c) {
   switch (c) {
@@ -97,36 +154,64 @@ std::string ColorFilterArray::colorToString(CFAColor c) {
       return string("YELLOW");
     case CFA_WHITE:
       return string("WHITE");
+    case CFA_FUJI_GREEN:
+      return string("FUJIGREEN");
     default:
       return string("UNKNOWN");
   }
 }
 
+
 void ColorFilterArray::setColorAt(iPoint2D pos, CFAColor c) {
-  if (pos.x > 1 || pos.x < 0)
+  if (pos.x >= size.x || pos.x < 0)
     ThrowRDE("ColorFilterArray::SetColor: position out of CFA pattern");
-  if (pos.y > 1 || pos.y < 0)
+  if (pos.y >= size.y || pos.y < 0)
     ThrowRDE("ColorFilterArray::SetColor: position out of CFA pattern");
-  cfa[pos.x+pos.y*2] = c;
-//  _RPT2(0, "cfa[%u] = %u\n",pos.x+pos.y*2, c);
+  cfa[pos.x+pos.y*size.x] = c;
 }
 
-void ColorFilterArray::shiftLeft() {
-  CFAColor tmp1 = cfa[0];
-  CFAColor tmp2 = cfa[2];
-  cfa[0] = cfa[1];
-  cfa[2] = cfa[3];
-  cfa[1] = tmp1;
-  cfa[3] = tmp2;
+RawSpeed::uint32 ColorFilterArray::getDcrawFilter()
+{
+  if (size.x > 8 || size.y > 2 || 0 == cfa)
+    return 1;
+
+  if (!isPowerOfTwo(size.x))
+    return 1;
+
+  uint32 ret = 0;
+  for (int x = 0; x < 8; x++) {
+    for (int y = 0; y < 2; y++) {
+      uint32 c = toDcrawColor(getColorAt(x,y));
+      int g = (x >> 1) * 8;
+      ret |= c << ((x&1)*2 + y*4 + g);
+    }
+  }
+  for (int y = 0; y < size.y; y++) {
+    for (int x = 0; x < size.x; x++) {
+      writeLog(DEBUG_PRIO_EXTRA, "%s,", colorToString((CFAColor)toDcrawColor(getColorAt(x,y))).c_str());
+    }
+    writeLog(DEBUG_PRIO_EXTRA, "\n");
+  }
+  writeLog(DEBUG_PRIO_EXTRA, "DCRAW filter:%x\n",ret);
+  return ret;
 }
 
-void ColorFilterArray::shiftDown() {
-  CFAColor tmp1 = cfa[0];
-  CFAColor tmp2 = cfa[1];
-  cfa[0] = cfa[2];
-  cfa[1] = cfa[3];
-  cfa[2] = tmp1;
-  cfa[3] = tmp2;
+RawSpeed::uint32 ColorFilterArray::toDcrawColor( CFAColor c )
+{
+  switch (c) {
+    case CFA_FUJI_GREEN:
+    case CFA_RED: return 0;
+    case CFA_MAGENTA:
+    case CFA_GREEN: return 1;
+    case CFA_CYAN:
+    case CFA_BLUE: return 2;
+    case CFA_YELLOW:
+    case CFA_GREEN2: return 3;
+    default:
+      break;
+  }
+  return 0;
 }
+
 
 } // namespace RawSpeed

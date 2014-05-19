@@ -33,13 +33,13 @@ class TiffEntryBE :
 public:
 //  TiffEntryBE(void);
   TiffEntryBE(FileMap* f, uint32 offset);
+  TiffEntryBE(TiffTag tag, TiffDataType type, uint32 count, const uchar8* data = NULL);
   virtual ~TiffEntryBE(void);
   virtual uint32 getInt();
   virtual ushort16 getShort();
   virtual const uint32* getIntArray();
   virtual const ushort16* getShortArray();
-private:
-  bool mDataSwapped;
+  virtual void setData(const void *in_data, uint32 byte_count );
 };
 
 } // namespace RawSpeed

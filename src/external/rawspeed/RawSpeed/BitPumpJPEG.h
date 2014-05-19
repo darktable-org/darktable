@@ -129,7 +129,7 @@ __inline uint32 peekByte() {
 protected:
   void __inline init();
   const uchar8* buffer;
-  uchar8* current_buffer;
+  uchar8 current_buffer[16];
   const uint32 size;            // This if the end of buffer.
   uint32 mLeft;
   uint32 off;                  // Offset in bytes

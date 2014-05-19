@@ -115,8 +115,11 @@ public:
   /* Only enable if you are sure that is what you want */
   bool uncorrectedRawValues;
 
+  /* Should Fuji images be rotated? */
+  bool fujiRotate;
+
   /* Vector of objects that will be destroyed alongside the decoder */
-  vector<void*> ownedObjects;
+  vector<FileMap*> ownedObjects;
 
   /* Retrieve the main RAW chunk */
   /* Returns NULL if unknown */

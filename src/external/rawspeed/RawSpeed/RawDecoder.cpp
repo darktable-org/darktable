@@ -24,17 +24,18 @@
 
 namespace RawSpeed {
 
-	RawDecoder::RawDecoder(FileMap* file) : mRaw(RawImage::create()), mFile(file) {
+RawDecoder::RawDecoder(FileMap* file) : mRaw(RawImage::create()), mFile(file) {
   decoderVersion = 0;
   failOnUnknown = FALSE;
   interpolateBadPixels = TRUE;
   applyStage1DngOpcodes = TRUE;
   applyCrop = TRUE;
   uncorrectedRawValues = FALSE;
+  fujiRotate = TRUE;
 }
 
 RawDecoder::~RawDecoder(void) {
-  for (vector<void*>::iterator i = ownedObjects.begin(); i != ownedObjects.end(); ++i) {
+  for (vector<FileMap*>::iterator i = ownedObjects.begin(); i != ownedObjects.end(); ++i) {
     delete(*i);
   }
   ownedObjects.clear();
@@ -210,7 +211,7 @@ bool RawDecoder::checkCameraSupported(CameraMetaData *meta, string make, string 
   Camera* cam = meta->getCamera(make, model, mode);
   if (!cam) {
     if (mode.length() == 0)
-      printf("[rawspeed] Unable to find camera in database: %s %s %s\n", make.c_str(), model.c_str(), mode.c_str());
+      writeLog(DEBUG_PRIO_WARNING, "Unable to find camera in database: %s %s %s\n", make.c_str(), model.c_str(), mode.c_str());
 
      if (failOnUnknown)
        ThrowRDE("Camera '%s' '%s', mode '%s' not supported, and not allowed to guess. Sorry.", make.c_str(), model.c_str(), mode.c_str());
@@ -235,8 +236,8 @@ void RawDecoder::setMetaData(CameraMetaData *meta, string make, string model, st
   TrimSpaces(model);
   Camera *cam = meta->getCamera(make, model, mode);
   if (!cam) {
-    printf("[rawspeed] ISO:%d\n", iso_speed);
-    printf("[rawspeed] Unable to find camera in database: %s %s %s\n[rawspeed] Please upload file to ftp.rawstudio.org, thanks!\n", make.c_str(), model.c_str(), mode.c_str());
+    writeLog(DEBUG_PRIO_INFO, "ISO:%d\n", iso_speed);
+    writeLog(DEBUG_PRIO_WARNING, "Unable to find camera in database: %s %s %s\nPlease upload file to ftp.rawstudio.org, thanks!\n", make.c_str(), model.c_str(), mode.c_str());
     return;
   }
 
@@ -259,7 +260,6 @@ void RawDecoder::setMetaData(CameraMetaData *meta, string make, string model, st
     if (cam->cropPos.y & 1)
       mRaw->cfa.shiftDown();
   }
-
 
   const CameraSensorInfo *sensor = cam->getSensorInfo(iso_speed);
   mRaw->blackLevel = sensor->mBlackLevel;
@@ -303,9 +303,8 @@ void RawDecoder::startThreads() {
   int y_per_thread = (mRaw->dim.y + threads - 1) / threads;
   RawDecoderThread *t = new RawDecoderThread[threads];
 
-  pthread_attr_t attr;
-
   /* Initialize and set thread detached attribute */
+  pthread_attr_t attr;
   pthread_attr_init(&attr);
   pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_JOINABLE);
 
@@ -381,6 +380,15 @@ void RawDecoder::startTasks( uint32 tasks )
   int ctask = 0;
   RawDecoderThread *t = new RawDecoderThread[threads];
 
+  if (threads == 1) {
+    t[0].parent = this;
+    while ((uint32)ctask < tasks) {
+      t[0].taskNo = ctask++;
+      RawDecoderDecodeThread(t);
+    }
+    delete[] t;
+    return;
+  }
   pthread_attr_t attr;
 
   /* Initialize and set thread detached attribute */

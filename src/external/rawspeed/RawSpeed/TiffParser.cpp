@@ -51,6 +51,7 @@ void TiffParser::parseData() {
   const unsigned char* data = mInput->getData(0);
   if (mInput->getSize() < 16)
     throw TiffParserException("Not a TIFF file (size too small)");
+
   if (data[0] != 0x49 || data[1] != 0x49) {
     tiff_endian = big;
     if (data[0] != 0x4D || data[1] != 0x4D)
@@ -120,6 +121,10 @@ RawDecoder* TiffParser::getDecoder() {
         mRootIFD = NULL;
         return new Cr2Decoder(root, mInput);
       }
+      if (!make.compare("FUJIFILM")) {
+        mRootIFD = NULL;
+        return new RafDecoder(root, mInput);
+      }
       if (!make.compare("NIKON CORPORATION")) {
         mRootIFD = NULL;
         return new NefDecoder(root, mInput);
@@ -136,7 +141,7 @@ RawDecoder* TiffParser::getDecoder() {
         mRootIFD = NULL;
         return new ArwDecoder(root, mInput);
       }
-      if (!make.compare("PENTAX Corporation")) {
+      if (!make.compare("PENTAX Corporation") || !make.compare("RICOH IMAGING COMPANY, LTD.")) {
         mRootIFD = NULL;
         return new PefDecoder(root, mInput);
       }
@@ -156,6 +161,24 @@ RawDecoder* TiffParser::getDecoder() {
   }
   throw TiffParserException("No decoder found. Sorry.");
   return NULL;
+}
+
+void TiffParser::MergeIFD( TiffParser* other_tiff)
+{
+  if (!other_tiff || !other_tiff->mRootIFD || other_tiff->mRootIFD->mSubIFD.empty())
+    return;
+
+  TiffIFD *other_root = other_tiff->mRootIFD;
+  for (vector<TiffIFD*>::iterator i = other_root->mSubIFD.begin(); i != other_root->mSubIFD.end(); ++i) {
+    mRootIFD->mSubIFD.push_back(*i);
+  }
+
+  for (map<TiffTag, TiffEntry*>::iterator i = other_root->mEntry.begin(); i != other_root->mEntry.end(); ++i) {    
+    mRootIFD->mEntry[(*i).first] = (*i).second;
+  }
+  other_root->mSubIFD.clear();
+  other_root->mEntry.clear();
+  other_tiff->mRootIFD = NULL;
 }
 
 } // namespace RawSpeed

@@ -96,6 +96,9 @@ extern "C" {
 #include <list>
 using namespace std;
 
+#include "pugixml.hpp"
+#include <float.h>
+
 //My own
 #include "TiffTag.h"
 #include "Common.h"

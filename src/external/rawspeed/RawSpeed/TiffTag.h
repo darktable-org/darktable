@@ -34,6 +34,7 @@ typedef enum {
   PANASONIC_ISO_SPEED = 23,
   NEWSUBFILETYPE                  = 0x00FE,
   SUBFILETYPE                     = 0x00FF,
+  MAKERNOTE_ALT                   = 0x2e,
 
   IMAGEWIDTH    = 0x0100,
   IMAGELENGTH    = 0x0101,
@@ -307,9 +308,15 @@ typedef enum {
   SONY_LENGTH = 29185,
   SONY_KEY = 29217,
 
-
   // PRINT IMAGE MATCHING DATA
-  PIMIFDPOINTER                   = 0xC4A5
+  PIMIFDPOINTER                   = 0xC4A5,
+  FUJI_RAW_IFD = 0xF000,
+  FUJI_RAWIMAGEFULLWIDTH = 0xF001,
+  FUJI_RAWIMAGEFULLHEIGHT = 0xF002,
+  FUJI_BITSPERSAMPLE = 0xF003,
+  FUJI_STRIPOFFSETS = 0xF007,
+  FUJI_STRIPBYTECOUNTS = 0xF008,
+  FUJI_WB_GRBLEVELS = 0xF00E
 } TiffTag;
 
 } // namespace RawSpeed

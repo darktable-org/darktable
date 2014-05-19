@@ -133,11 +133,7 @@ RawImage DngDecoder::decodeRawInternal() {
             }
       */
       iPoint2D cfaSize(pDim[1], pDim[0]);
-      if (pDim[0] != 2)
-        ThrowRDE("DNG Decoder: Unsupported CFA configuration.");
-      if (pDim[1] != 2)
-        ThrowRDE("DNG Decoder: Unsupported CFA configuration.");
-
+      mRaw->cfa.setSize(cfaSize);
       if (cfaSize.area() != raw->getEntry(CFAPATTERN)->count)
         ThrowRDE("DNG Decoder: CFA pattern dimension and pattern count does not match: %d.");
 
@@ -152,6 +148,14 @@ RawImage DngDecoder::decodeRawInternal() {
               c2 = CFA_GREEN; break;
             case 2:
               c2 = CFA_BLUE; break;
+            case 3:
+              c2 = CFA_CYAN; break;
+            case 4:
+              c2 = CFA_MAGENTA; break;
+            case 5:
+              c2 = CFA_YELLOW; break;
+            case 6:
+              c2 = CFA_WHITE; break;
             default:
               c2 = CFA_UNKNOWN;
               ThrowRDE("DNG Decoder: Unsupported CFA Color.");

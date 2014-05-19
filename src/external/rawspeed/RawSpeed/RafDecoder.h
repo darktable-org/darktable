@@ -1,11 +1,14 @@
-#ifndef CAMERA_META_DATA_H
-#define CAMERA_META_DATA_H
+#ifndef RAF_DECODER_H
+#define RAF_DECODER_H
 
-#include "Camera.h"
-/* 
+#include "RawDecoder.h"
+#include "TiffIFD.h"
+#include "BitPumpPlain.h"
+#include "TiffParser.h"
+/*
     RawSpeed - RAW file decoder.
 
-    Copyright (C) 2009 Klaus Post
+    Copyright (C) 2013 Klaus Post
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Lesser General Public
@@ -26,21 +29,23 @@
 
 namespace RawSpeed {
 
-using namespace pugi;
-
-class CameraMetaData
+class RafDecoder :
+  public RawDecoder
 {
 public:
-  CameraMetaData();
-  CameraMetaData(const char *docname);
-  virtual ~CameraMetaData(void);
-  map<string,Camera*> cameras;
-  Camera* getCamera(string make, string model, string mode);
-  bool hasCamera(string make, string model, string mode);
-  void disableMake(string make);
-  void disableCamera(string make, string model);
+  RafDecoder(TiffIFD *rootIFD, FileMap* file);
+  virtual ~RafDecoder(void);
+  RawImage decodeRawInternal();
+  virtual void decodeMetaDataInternal(CameraMetaData *meta);
+  virtual void checkSupportInternal(CameraMetaData *meta);
+  TiffIFD *mRootIFD;
+  virtual TiffIFD* getRootIFD() {return mRootIFD;}
 protected:
-  void addCamera(Camera* cam);
+  virtual void decodeThreaded(RawDecoderThread* t);
+  iPoint2D final_size;
+  uchar8 alt_layout;
+  uint32 fuji_width;
+  void DecodeRaf();
 };
 
 } // namespace RawSpeed

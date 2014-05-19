@@ -74,6 +74,12 @@ typedef enum Endianness {
   big, little, unknown
 } Endianness;
 
+const int DEBUG_PRIO_ERROR = 0x10;
+const int DEBUG_PRIO_WARNING = 0x100;
+const int DEBUG_PRIO_INFO = 0x1000;
+const int DEBUG_PRIO_EXTRA = 0x10000;
+
+void writeLog(int priority, const char *format, ...);
 
 inline void BitBlt(uchar8* dstp, int dst_pitch, const uchar8* srcp, int src_pitch, int row_size, int height) {
   if (height == 1 || (dst_pitch == src_pitch && src_pitch == row_size)) {

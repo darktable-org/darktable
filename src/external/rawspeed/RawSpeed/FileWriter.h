@@ -1,8 +1,4 @@
-#ifndef CAMERA_META_DATA_H
-#define CAMERA_META_DATA_H
-
-#include "Camera.h"
-/* 
+/*
     RawSpeed - RAW file decoder.
 
     Copyright (C) 2009 Klaus Post
@@ -23,26 +19,28 @@
 
     http://www.klauspost.com
 */
+#ifndef FILE_WRITER_H
+#define FILE_WRITER_H
+
+#include "FileIOException.h"
+#include "FileMap.h"
 
 namespace RawSpeed {
 
-using namespace pugi;
-
-class CameraMetaData
+class FileWriter
 {
 public:
-  CameraMetaData();
-  CameraMetaData(const char *docname);
-  virtual ~CameraMetaData(void);
-  map<string,Camera*> cameras;
-  Camera* getCamera(string make, string model, string mode);
-  bool hasCamera(string make, string model, string mode);
-  void disableMake(string make);
-  void disableCamera(string make, string model);
-protected:
-  void addCamera(Camera* cam);
+	FileWriter(LPCWSTR filename);
+public:
+	void writeFile(FileMap* fileMap, uint32 size = 0);
+	virtual ~FileWriter();
+  LPCWSTR Filename() const { return mFilename; }
+//  void Filename(LPCWSTR val) { mFilename = val; }
+private:
+  LPCWSTR mFilename;
 };
 
 } // namespace RawSpeed
 
 #endif
+

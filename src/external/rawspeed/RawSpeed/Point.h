@@ -1,4 +1,4 @@
-/* 
+/*
     RawSpeed - RAW file decoder.
 
     Copyright (C) 2009 Klaus Post
@@ -19,6 +19,7 @@
 
     http://www.klauspost.com
 */
+
 #ifndef SS_Point_H
 #define SS_Point_H
 
@@ -38,6 +39,8 @@ public:
   iPoint2D operator - (const iPoint2D& b) const { return iPoint2D(x-b.x,y-b.y); }
   iPoint2D operator + (const iPoint2D& b) const { return iPoint2D(x+b.x,y+b.y); }
   iPoint2D operator = (const iPoint2D& b) { x = b.x; y = b.y; return *this;}
+  bool operator==(const iPoint2D& rhs){ return this->x==rhs.x && this->y==rhs.y; }
+  bool operator!=(const iPoint2D& rhs){ return this->x!=rhs.x || this->y!=rhs.y; }
 	~iPoint2D() {};
   uint32 area() const {return abs(x*y);}
   bool isThisInside(const iPoint2D &otherPoint) const {return (x<=otherPoint.x && y<=otherPoint.y); };
@@ -87,8 +90,8 @@ public:
   bool cropArea(){ dim.x = max(0,dim.x); dim.y = max(0, dim.y); return hasPositiveArea();};
   /* This will make sure that offset is positive, and make the area smaller if needed */
   /* This will return true if there is any area left */
-  bool cropOffsetToZero(){ 
-    iPoint2D crop_pixels; 
+  bool cropOffsetToZero(){
+    iPoint2D crop_pixels;
     if (pos.x < 0) {
       crop_pixels.x = -(pos.x);
       pos.x = 0;

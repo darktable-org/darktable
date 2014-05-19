@@ -34,6 +34,7 @@
 #include "PefDecoder.h"
 #include "NefDecoder.h"
 #include "OrfDecoder.h"
+#include "RafDecoder.h"
 #include "Rw2Decoder.h"
 #include "SrwDecoder.h"
 
@@ -48,7 +49,10 @@ public:
   virtual void parseData();
   virtual RawDecoder* getDecoder();
   Endianness tiff_endian;
+  /* Returns the Root IFD - this object still retains ownership */
   TiffIFD* RootIFD() const { return mRootIFD; }
+  /* Merges root of other TIFF into this - clears the root of the other */
+  void MergeIFD(TiffParser* other_tiff);
   RawSpeed::Endianness getHostEndian() const { return host_endian; }
 protected:
   FileMap *mInput;

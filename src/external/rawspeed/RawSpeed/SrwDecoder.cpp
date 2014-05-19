@@ -119,9 +119,10 @@ void SrwDecoder::decodeCompressed( TiffIFD* raw )
     ushort16* img_up2 = (ushort16*)mRaw->getData(0, max(0, (int)y - 2));
     // Image is arranged in groups of 16 pixels horizontally
     for (uint32 x = 0; x < width; x += 16) {
-      bool dir = !!bits.getBit();
+			bits.fill();
+      bool dir = !!bits.getBitNoFill();
       for (int i = 0; i < 4; i++)
-        op[i] = bits.getBits(2);
+        op[i] = bits.getBitsNoFill(2);
       for (int i = 0; i < 4; i++) {
         switch (op[i]) {
           case 3: len[i] = bits.getBits(4);
@@ -189,7 +190,7 @@ void SrwDecoder::checkSupportInternal(CameraMetaData *meta) {
 }
 
 void SrwDecoder::decodeMetaDataInternal(CameraMetaData *meta) {
-  mRaw->cfa.setCFA(CFA_RED, CFA_GREEN, CFA_GREEN2, CFA_BLUE);
+  mRaw->cfa.setCFA(iPoint2D(2,2), CFA_RED, CFA_GREEN, CFA_GREEN2, CFA_BLUE);
   vector<TiffIFD*> data = mRootIFD->getIFDsWithTag(MODEL);
 
   if (data.empty())

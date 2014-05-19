@@ -1,11 +1,7 @@
-#ifndef CAMERA_META_DATA_H
-#define CAMERA_META_DATA_H
-
-#include "Camera.h"
-/* 
+/*
     RawSpeed - RAW file decoder.
 
-    Copyright (C) 2009 Klaus Post
+    Copyright (C) 2009-2011 Klaus Post
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Lesser General Public
@@ -23,26 +19,9 @@
 
     http://www.klauspost.com
 */
+#include "StdAfx.h"
+#include "FileReader.h"
+#include "RawParser.h"
+#include "RawDecoder.h"
+#include "CameraMetaData.h"
 
-namespace RawSpeed {
-
-using namespace pugi;
-
-class CameraMetaData
-{
-public:
-  CameraMetaData();
-  CameraMetaData(const char *docname);
-  virtual ~CameraMetaData(void);
-  map<string,Camera*> cameras;
-  Camera* getCamera(string make, string model, string mode);
-  bool hasCamera(string make, string model, string mode);
-  void disableMake(string make);
-  void disableCamera(string make, string model);
-protected:
-  void addCamera(Camera* cam);
-};
-
-} // namespace RawSpeed
-
-#endif
