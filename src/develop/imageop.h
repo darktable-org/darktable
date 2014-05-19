@@ -239,6 +239,10 @@ typedef struct dt_iop_module_t
   dt_dev_pixelpipe_type_t request_histogram_source;
   /** set histogram generation params */
   dt_dev_histogram_params_t histogram_params;
+  /** INFO: count of histogram bins during last histogram capture. */
+  uint32_t histogram_bins_count;
+  /** INFO: count of pixels used during last histogram capture. */
+  uint32_t histogram_pixels;
   /** set to 1 if you want the mask to be transferred into alpha channel during next eval. gui mode only. */
   int32_t request_mask_display;
   /** set to 1 if you want the blendif mask to be suppressed in the module in focus. gui mode only. */
