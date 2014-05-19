@@ -58,7 +58,7 @@ static void dt_iop_levels_percentiles_callback(GtkWidget* slider, gpointer user_
 typedef enum dt_iop_levels_mode_t
 {
   LEVELS_MODE_MANUAL,
-  LEVELS_MODE_PARAMETRIC
+  LEVELS_MODE_AUTOMATIC
 }
 dt_iop_levels_mode_t;
 
@@ -159,7 +159,7 @@ legacy_params (dt_iop_module_t *self, const void *const old_params, const int ol
   return 1;
 }
 
-static void dt_iop_levels_compute_levels(const uint32_t *histogram, float *levels)
+static void dt_iop_levels_compute_levels_manual(const uint32_t *histogram, float *levels)
 {
   if(!histogram) return;
 
@@ -184,13 +184,13 @@ static void dt_iop_levels_compute_levels(const uint32_t *histogram, float *level
   levels[1] = levels[0]/2 + levels[2]/2;
 }
 
-static void dt_iop_levels_compute_levels_new(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece)
+static void dt_iop_levels_compute_levels_automatic(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece)
 {
   dt_iop_levels_data_t *d = (dt_iop_levels_data_t *)piece->data;
 
   if(self->histogram == NULL) return;
 
-  float total = 0.0f;
+  uint32_t total = 0;
   for(uint32_t i=0; i < self->histogram_params.bins_count; i++)
   {
     total += self->histogram[4*i];
@@ -204,8 +204,8 @@ static void dt_iop_levels_compute_levels_new(dt_iop_module_t *self, dt_dev_pixel
   }
 
   // find min and max levels
-  float n = 0.0f;
-  for(uint32_t i=0; i < self->histogram_params.bins_count; i++)
+  uint32_t n = 0;
+  for(uint32_t i=0; i < self->histogram_bins_count; i++)
   {
     n += self->histogram[4*i];
 
@@ -213,7 +213,7 @@ static void dt_iop_levels_compute_levels_new(dt_iop_module_t *self, dt_dev_pixel
     {
       if (isnan(d->levels[k]) && (n >= thr[k]))
       {
-        d->levels[k] = (float)i / (float)(self->histogram_params.bins_count-1);
+        d->levels[k] = (float)i / (float)(self->histogram_bins_count-1);
       }
     }
   }
@@ -244,9 +244,9 @@ static void commit_params_late(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *pi
 {
   dt_iop_levels_data_t *d = (dt_iop_levels_data_t *)piece->data;
 
-  if(d->mode == LEVELS_MODE_PARAMETRIC)
+  if(d->mode == LEVELS_MODE_AUTOMATIC)
   {
-    dt_iop_levels_compute_levels_new(self, piece);
+    dt_iop_levels_compute_levels_automatic(self, piece);
     compute_lut(self, piece);
   }
 }
@@ -256,7 +256,7 @@ void process (dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *
   const int ch = piece->colors;
   const dt_iop_levels_data_t * const d = (dt_iop_levels_data_t *)piece->data;
 
-  if(d->mode == LEVELS_MODE_PARAMETRIC)
+  if(d->mode == LEVELS_MODE_AUTOMATIC)
   {
     commit_params_late(self, piece);
   }
@@ -315,7 +315,7 @@ process_cl (dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in,
   dt_iop_levels_data_t *d = (dt_iop_levels_data_t *)piece->data;
   dt_iop_levels_global_data_t *gd = (dt_iop_levels_global_data_t *)self->data;
 
-  if(d->mode == LEVELS_MODE_PARAMETRIC)
+  if(d->mode == LEVELS_MODE_AUTOMATIC)
   {
     commit_params_late(self, piece);
   }
@@ -377,7 +377,7 @@ void commit_params (dt_iop_module_t *self, dt_iop_params_t *p1,
   gboolean histogram_is_good = ((self->histogram_bins_count == 16384)
                                 && (self->histogram != NULL));
 
-  if(p->mode == LEVELS_MODE_PARAMETRIC)
+  if(p->mode == LEVELS_MODE_AUTOMATIC)
   {
     self->histogram_params.bins_count = 16384;
 
@@ -449,7 +449,7 @@ void gui_update(dt_iop_module_t *self)
 
   switch(p->mode)
   {
-    case LEVELS_MODE_PARAMETRIC:
+    case LEVELS_MODE_AUTOMATIC:
       gtk_widget_hide(GTK_WIDGET(g->vbox_manual));
       gtk_widget_show(GTK_WIDGET(g->vbox_automatic));
       break;
@@ -532,15 +532,15 @@ void gui_init(dt_iop_module_t *self)
   self->widget = GTK_WIDGET(gtk_vbox_new(FALSE, 5));
 
   c->mode = dt_bauhaus_combobox_new(self);
-  dt_bauhaus_widget_set_label(c->mode, NULL, _("Mode"));
+  dt_bauhaus_widget_set_label(c->mode, NULL, _("mode"));
 
   dt_bauhaus_combobox_add(c->mode, _("manual"));
   c->modes = g_list_append(c->modes, GUINT_TO_POINTER(LEVELS_MODE_MANUAL));
 
   dt_bauhaus_combobox_add(c->mode, _("automatic"));
-  c->modes = g_list_append(c->modes, GUINT_TO_POINTER(LEVELS_MODE_PARAMETRIC));
+  c->modes = g_list_append(c->modes, GUINT_TO_POINTER(LEVELS_MODE_AUTOMATIC));
 
-  dt_bauhaus_combobox_set_default(c->mode, 0);
+  dt_bauhaus_combobox_set_default(c->mode, LEVELS_MODE_MANUAL);
   dt_bauhaus_combobox_set(c->mode, g_list_index(c->modes, GUINT_TO_POINTER(p->mode)));
   gtk_box_pack_start(GTK_BOX(self->widget), c->mode, TRUE, TRUE, 0);
 
@@ -606,19 +606,19 @@ void gui_init(dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), c->vbox_manual, TRUE, TRUE, 0);
 
   c->percentile_black = dt_bauhaus_slider_new_with_range(self, 0.0f, 100.0f, .1f, p->percentiles[0], 3);
-  g_object_set(G_OBJECT(c->percentile_black), "tooltip-text", _("Black percentile"), (char *)NULL);
+  g_object_set(G_OBJECT(c->percentile_black), "tooltip-text", _("black percentile"), (char *)NULL);
   dt_bauhaus_slider_set_format(c->percentile_black,"%.1f%%");
-  dt_bauhaus_widget_set_label(c->percentile_black, NULL, _("Black"));
+  dt_bauhaus_widget_set_label(c->percentile_black, NULL, _("black"));
 
   c->percentile_grey = dt_bauhaus_slider_new_with_range(self, 0.0f, 100.0f, .1f, p->percentiles[1], 3);
-  g_object_set(G_OBJECT(c->percentile_grey), "tooltip-text", _("Grey percentile"), (char *)NULL);
+  g_object_set(G_OBJECT(c->percentile_grey), "tooltip-text", _("grey percentile"), (char *)NULL);
   dt_bauhaus_slider_set_format(c->percentile_grey,"%.1f%%");
-  dt_bauhaus_widget_set_label(c->percentile_grey, NULL, _("Grey"));
+  dt_bauhaus_widget_set_label(c->percentile_grey, NULL, _("grey"));
 
   c->percentile_white = dt_bauhaus_slider_new_with_range(self, 0.0f, 100.0f, .1f, p->percentiles[2], 3);
-  g_object_set(G_OBJECT(c->percentile_white), "tooltip-text", _("White percentile"), (char *)NULL);
+  g_object_set(G_OBJECT(c->percentile_white), "tooltip-text", _("white percentile"), (char *)NULL);
   dt_bauhaus_slider_set_format(c->percentile_white,"%.1f%%");
-  dt_bauhaus_widget_set_label(c->percentile_white, NULL, _("White"));
+  dt_bauhaus_widget_set_label(c->percentile_white, NULL, _("white"));
 
   c->vbox_automatic = GTK_WIDGET(gtk_vbox_new(FALSE, 5));
   gtk_box_pack_start(GTK_BOX(c->vbox_automatic), GTK_WIDGET(c->percentile_black), FALSE, FALSE, 0);
@@ -628,7 +628,7 @@ void gui_init(dt_iop_module_t *self)
 
   switch(p->mode)
   {
-    case LEVELS_MODE_PARAMETRIC:
+    case LEVELS_MODE_AUTOMATIC:
       gtk_widget_hide(GTK_WIDGET(c->vbox_manual));
       gtk_widget_show(GTK_WIDGET(c->vbox_automatic));
       break;
@@ -682,16 +682,16 @@ static gboolean dt_iop_levels_expose(GtkWidget *widget, GdkEventExpose *event, g
   dt_iop_levels_gui_data_t *c = (dt_iop_levels_gui_data_t *)self->gui_data;
   dt_iop_levels_params_t *p = (dt_iop_levels_params_t *)self->params;
 
+  dt_develop_t *dev = darktable.develop;
+
   if(c->reprocess_on_next_expose)
   {
-    c->reprocess_on_next_expose = FALSE;
-    dt_dev_reprocess_all(self->dev);
+    dev->pipe->changed |= DT_DEV_PIPE_SYNCH;
     return TRUE;
   }
 
   if(p->mode != LEVELS_MODE_MANUAL) return FALSE;
 
-  dt_develop_t *dev = darktable.develop;
   const int inset = DT_GUI_CURVE_EDITOR_INSET;
   GtkAllocation allocation;
   gtk_widget_get_allocation(widget, &allocation);
@@ -1114,7 +1114,7 @@ static void dt_iop_levels_autoadjust_callback(GtkRange *range, dt_iop_module_t *
   dt_iop_levels_params_t *p = (dt_iop_levels_params_t *)self->params;
   dt_iop_levels_gui_data_t *c = (dt_iop_levels_gui_data_t *)self->gui_data;
 
-  dt_iop_levels_compute_levels(self->histogram, p->levels);
+  dt_iop_levels_compute_levels_manual(self->histogram, p->levels);
 
   if (c->activeToggleButton != NULL) gtk_toggle_button_set_active(c->activeToggleButton, FALSE);
   c->last_picked_color = -1;
@@ -1136,8 +1136,8 @@ dt_iop_levels_mode_callback(GtkWidget *combo, gpointer user_data)
 
   switch(new_mode)
   {
-    case LEVELS_MODE_PARAMETRIC:
-      p->mode = LEVELS_MODE_PARAMETRIC;
+    case LEVELS_MODE_AUTOMATIC:
+      p->mode = LEVELS_MODE_AUTOMATIC;
       gtk_widget_hide(GTK_WIDGET(g->vbox_manual));
       gtk_widget_show(GTK_WIDGET(g->vbox_automatic));
       break;
