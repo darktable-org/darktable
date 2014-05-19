@@ -198,12 +198,12 @@ error:
 
 /* input: 0 - 16384 (valid range: from black level to white level) */
 /* output: -14 ... 0 */
-static float raw_to_ev(float raw, float black_level, float white_level)
+static float raw_to_ev(uint32_t raw, uint32_t black_level, uint32_t white_level)
 {
-    float raw_max = white_level - black_level;
-    float raw_ev = -log2f(raw_max) + log2f(CLAMP(raw, 0.0f, 16384.0f));
+  uint32_t raw_max = white_level - black_level;
+  float raw_ev = -log2f(raw_max) + log2f(CLAMP(raw, 0.0f, 16384.0f));
 
-    return raw_ev;
+  return raw_ev;
 }
 
 static int compute_correction(dt_iop_module_t *self, float *correction)
@@ -212,19 +212,19 @@ static int compute_correction(dt_iop_module_t *self, float *correction)
 
   if(self->histogram == NULL) return 1;
 
-  float total = 0;
-  for(int i=0; i < self->histogram_params.bins_count; i++)
+  uint32_t total = 0;
+  for(uint32_t i=0; i < self->histogram_params.bins_count; i++)
   {
     total += self->histogram[4*i];
     total += self->histogram[4*i+1];
     total += self->histogram[4*i+2];
   }
 
-  float thr = (total * p->deflicker_percentile / 100) - 2; // 50% => median; allow up to 2 stuck pixels
-  float n = 0;
-  float raw = -1;
+  float thr = (total * p->deflicker_percentile / 100.0f) - 2; // 50% => median; allow up to 2 stuck pixels
+  uint32_t n = 0;
+  uint32_t raw = -1;
 
-  for(int i=0; i < self->histogram_params.bins_count; i++)
+  for(uint32_t i=0; i < self->histogram_params.bins_count; i++)
   {
     n += self->histogram[4*i];
     n += self->histogram[4*i+1];

@@ -22,6 +22,8 @@
 #include <math.h>
 #include <assert.h>
 #include <string.h>
+#include <stdint.h>
+
 #include "develop/imageop.h"
 #include "develop/develop.h"
 #include "control/control.h"
@@ -563,13 +565,12 @@ static gboolean dt_iop_levels_expose(GtkWidget *widget, GdkEventExpose *event, g
   // only if the module is enabled
   if (self->enabled)
   {
-    float *hist, hist_max;
-    hist = self->histogram;
-    hist_max = dev->histogram_type == DT_DEV_HISTOGRAM_LINEAR?self->histogram_max[0]:logf(1.0 + self->histogram_max[0]);
-    if(hist && hist_max > 0)
+    uint32_t *hist = self->histogram;
+    float hist_max = dev->histogram_type == DT_DEV_HISTOGRAM_LINEAR?self->histogram_max[0]:logf(1.0 + self->histogram_max[0]);
+    if(hist && hist_max > 0.0f)
     {
       cairo_save(cr);
-      cairo_scale(cr, width/63.0, -(height-DT_PIXEL_APPLY_DPI(5))/(float)hist_max);
+      cairo_scale(cr, width/63.0, -(height-DT_PIXEL_APPLY_DPI(5))/hist_max);
       cairo_set_source_rgba(cr, .2, .2, .2, 0.5);
       dt_draw_histogram_8(cr, hist, 0, dev->histogram_type == DT_DEV_HISTOGRAM_WAVEFORM?DT_DEV_HISTOGRAM_LOGARITHMIC:dev->histogram_type); // TODO: make draw handle waveform histograms
       cairo_restore(cr);
@@ -838,7 +839,7 @@ static void dt_iop_levels_autoadjust_callback(GtkRange *range, dt_iop_module_t *
   dt_iop_levels_params_t *p = (dt_iop_levels_params_t *)self->params;
   dt_iop_levels_gui_data_t *c = (dt_iop_levels_gui_data_t *)self->gui_data;
 
-  float *hist = self->histogram;
+  uint32_t *hist = self->histogram;
 
   if(!hist) return;
 

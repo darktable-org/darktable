@@ -36,6 +36,7 @@
 #include <stdlib.h>
 #include <math.h>
 #include <unistd.h>
+#include <stdint.h>
 
 typedef enum dt_pixelpipe_flow_t
 {
@@ -316,7 +317,7 @@ get_output_bpp(dt_iop_module_t *module, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpi
 // helper to get per module histogram
 static void
 histogram_collect(dt_iop_module_t *module, const void *pixel, const dt_iop_roi_t *roi,
-                  float **histogram, float *histogram_max)
+                  uint32_t **histogram, uint32_t *histogram_max)
 {
   dt_dev_histogram_params_t *histogram_params = (dt_dev_histogram_params_t*)malloc(sizeof(dt_dev_histogram_params_t));
   memcpy(histogram_params, &module->histogram_params, sizeof(dt_dev_histogram_params_t));
@@ -340,7 +341,7 @@ histogram_collect(dt_iop_module_t *module, const void *pixel, const dt_iop_roi_t
 // as long as we work on small image sizes like in image preview
 static void
 histogram_collect_cl(int devid, dt_iop_module_t *module, cl_mem img, const dt_iop_roi_t *roi,
-                     float **histogram, float *histogram_max, float *buffer, size_t bufsize)
+                     uint32_t **histogram, uint32_t *histogram_max, float *buffer, size_t bufsize)
 {
   float *tmpbuf = NULL;
   float *pixel;
@@ -1985,7 +1986,7 @@ post_process_collect_info:
         box[3] = roi_out->height-1;
       }
       dev->histogram_max = 0;
-      memset(dev->histogram, 0, sizeof(float)*4*64);
+      memset(dev->histogram, 0, sizeof(uint32_t)*4*64);
       for(int j=box[1]; j<=box[3]; j+=4) for(int i=box[0]; i<=box[2]; i+=4)
         {
           uint8_t rgb[3];

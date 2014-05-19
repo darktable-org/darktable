@@ -20,15 +20,18 @@
 #ifndef DT_DEVELOP_IMAGEOP_H
 #define DT_DEVELOP_IMAGEOP_H
 
+#include <gmodule.h>
+#include <gtk/gtk.h>
+#include <sched.h>
+#include <stdint.h>
+
 #include "common/darktable.h"
 #include "common/introspection.h"
 #include "common/opencl.h"
 #include "control/settings.h"
 #include "develop/pixelpipe.h"
 #include "dtgtk/togglebutton.h"
-#include <gmodule.h>
-#include <gtk/gtk.h>
-#include <sched.h>
+
 struct dt_develop_t;
 struct dt_dev_pixelpipe_t;
 struct dt_dev_pixelpipe_iop_t;
@@ -249,9 +252,9 @@ typedef struct dt_iop_module_t
   /** place to store the picked color of module output (before blending). */
   float picked_output_color[3], picked_output_color_min[3], picked_output_color_max[3];
   /** pointer to pre-module histogram data; if available: histogram_bins_count bins with 4 channels each */
-  float *histogram;
+  uint32_t *histogram;
   /** maximum levels in histogram, one per channel */
-  float histogram_max[4];
+  uint32_t histogram_max[4];
   /** reference for dlopened libs. */
   darktable_t *dt;
   /** the module is used in this develop module. */

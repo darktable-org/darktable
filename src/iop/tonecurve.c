@@ -23,6 +23,8 @@
 #include <math.h>
 #include <assert.h>
 #include <string.h>
+#include <stdint.h>
+
 #include "develop/develop.h"
 #include "develop/imageop.h"
 #include "control/control.h"
@@ -954,7 +956,8 @@ static gboolean dt_iop_tonecurve_expose(GtkWidget *widget, GdkEventExpose *event
   // only if module is enabled
   if (self->enabled)
   {
-    float *hist, hist_max;
+    uint32_t *hist;
+    float hist_max;
     float *raw_mean, *raw_min, *raw_max;
     float *raw_mean_output;
     float picker_mean[3], picker_min[3], picker_max[3];
@@ -967,10 +970,10 @@ static gboolean dt_iop_tonecurve_expose(GtkWidget *widget, GdkEventExpose *event
 
     hist = self->histogram;
     hist_max = dev->histogram_type == DT_DEV_HISTOGRAM_LINEAR?self->histogram_max[ch]:logf(1.0 + self->histogram_max[ch]);
-    if(hist && hist_max > 0)
+    if(hist && hist_max > 0.0f)
     {
       cairo_save(cr);
-      cairo_scale(cr, width/63.0, -(height-DT_PIXEL_APPLY_DPI(5))/(float)hist_max);
+      cairo_scale(cr, width/63.0, -(height-DT_PIXEL_APPLY_DPI(5))/hist_max);
       cairo_set_source_rgba(cr, .2, .2, .2, 0.5);
       dt_draw_histogram_8(cr, hist, ch, dev->histogram_type == DT_DEV_HISTOGRAM_WAVEFORM?DT_DEV_HISTOGRAM_LOGARITHMIC:dev->histogram_type); // TODO: make draw handle waveform histograms
       cairo_restore(cr);

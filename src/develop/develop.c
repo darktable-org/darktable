@@ -16,6 +16,15 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
+#include <glib/gprintf.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <math.h>
+#include <string.h>
+#include <strings.h>
+#include <assert.h>
+#include <stdint.h>
+
 #include "develop/develop.h"
 #include "develop/imageop.h"
 #include "develop/blend.h"
@@ -32,19 +41,9 @@
 #include "gui/gtk.h"
 #include "gui/presets.h"
 
-#include <glib/gprintf.h>
-#include <stdlib.h>
-#include <unistd.h>
-#include <math.h>
-#include <string.h>
-#include <strings.h>
-#include <assert.h>
-
-
 #define DT_DEV_AVERAGE_DELAY_START            250
 #define DT_DEV_PREVIEW_AVERAGE_DELAY_START     50
 #define DT_DEV_AVERAGE_DELAY_COUNT              5
-
 
 const gchar* dt_dev_histogram_type_names[DT_DEV_HISTOGRAM_N] = { "logarithmic", "linear", "waveform" };
 
@@ -95,12 +94,10 @@ void dt_dev_init(dt_develop_t *dev, int32_t gui_attached)
     dt_dev_pixelpipe_init(dev->pipe);
     dt_dev_pixelpipe_init_preview(dev->preview_pipe);
 
-    dev->histogram = (float *)malloc(sizeof(float)*4*256);
-    dev->histogram_pre_tonecurve = (float *)malloc(sizeof(float)*4*256);
-    dev->histogram_pre_levels = (float*)malloc(sizeof(float) * 4 * 256);
-    memset(dev->histogram, 0, sizeof(float)*256*4);
-    memset(dev->histogram_pre_tonecurve, 0, sizeof(float)*256*4);
-    memset(dev->histogram_pre_levels, 0, sizeof(float)*256*4);
+    dev->histogram = (uint32_t *)calloc(4*256, sizeof(uint32_t));
+    dev->histogram_pre_tonecurve = (uint32_t *)calloc(4*256, sizeof(uint32_t));
+    dev->histogram_pre_levels = (uint32_t *)calloc(4*256, sizeof(uint32_t));
+
     dev->histogram_max = -1;
     dev->histogram_pre_tonecurve_max = -1;
     dev->histogram_pre_levels_max = -1;
