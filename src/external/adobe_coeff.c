@@ -1,4 +1,4 @@
-static void dt_dcraw_adobe_coeff(const char *make, const char *model, float cam_xyz[1][12])
+static void dt_dcraw_adobe_coeff(const char *name, float cam_xyz[1][12])
 {
   static const struct {
     const char *prefix;
@@ -462,9 +462,6 @@ static void dt_dcraw_adobe_coeff(const char *make, const char *model, float cam_
     { "SONY SLT-A99V", 128, 0, { 6344,-1612,-462,-4863,12477,2681,-865,1786,6899 } },
     { "SONY SLT-A99", 128, 0, { 6344,-1612,-462,-4863,12477,2681,-865,1786,6899 } },
   };
-
-  char name[130];
-  sprintf (name, "%s %s", make, model);
 
   for (int i=0; i < sizeof table / sizeof *table; i++) {
     if (!strncmp (name, table[i].prefix, strlen(table[i].prefix))) {
