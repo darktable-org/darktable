@@ -463,7 +463,7 @@ static void dt_dcraw_adobe_coeff(const char *name, float cam_xyz[1][12])
     { "SONY SLT-A99", 128, 0, { 6344,-1612,-462,-4863,12477,2681,-865,1786,6899 } },
   };
 
-  for (int i=0; i < sizeof table / sizeof *table; i++) {
+  for (int i=0; i < sizeof(table)/sizeof(table[1]); i++) {
     if (!strncmp (name, table[i].prefix, strlen(table[i].prefix))) {
       if (strcmp(name, table[i].prefix))
         fprintf(stderr, "[adobe_coeff] Warning: partial matching of \"%s\" to \"%s\"\n", name, table[i].prefix);
