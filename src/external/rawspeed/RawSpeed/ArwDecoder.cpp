@@ -38,8 +38,34 @@ ArwDecoder::~ArwDecoder(void) {
 RawImage ArwDecoder::decodeRawInternal() {
   vector<TiffIFD*> data = mRootIFD->getIFDsWithTag(STRIPOFFSETS);
 
-  if (data.empty())
-    ThrowRDE("ARW Decoder: No image data found");
+  if (data.empty()) {
+    TiffEntry *model = mRootIFD->getEntryRecursive(MODEL);
+
+    if (model && model->getString() == "DSLR-A100") {
+      // We've caught the elusive A100 in the wild, a transitional format
+      // between the simple sanity of the MRW custom format and the wordly
+      // wonderfullness of the Tiff-based ARW format, let's shoot from the hip
+      uint32 off = mRootIFD->getEntryRecursive(SUBIFDS)->getInt();
+      uint32 width = 3881;
+      uint32 height = 2608;
+
+      mRaw->dim = iPoint2D(width, height);
+      mRaw->createData();
+      // FIXME: there may be a better way to set the total max size;
+      ByteStream input(mFile->getData(off),mFile->getSize()-off);
+
+      try {
+        DecodeARW(input, width, height);
+      } catch (IOException &e) {
+        mRaw->setError(e.what());
+        // Let's ignore it, it may have delivered somewhat useful data.
+      }
+
+      return mRaw;
+    } else {
+      ThrowRDE("ARW Decoder: No image data found");
+    }
+  }
 
   TiffIFD* raw = data[0];
   int compression = raw->getEntry(COMPRESSION)->getInt();

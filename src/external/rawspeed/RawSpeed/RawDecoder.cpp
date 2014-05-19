@@ -205,6 +205,48 @@ void RawDecoder::Decode12BitRaw(ByteStream &input, uint32 w, uint32 h) {
   }
 }
 
+void RawDecoder::Decode12BitRawBE(ByteStream &input, uint32 w, uint32 h) {
+  uchar8* data = mRaw->getData();
+  uint32 pitch = mRaw->pitch;
+  const uchar8 *in = input.getData();
+  if (input.getRemainSize() < ((w*12/8)*h)) {
+    if ((uint32)input.getRemainSize() > (w*12/8))
+      h = input.getRemainSize() / (w*12/8) - 1;
+    else
+      ThrowIOE("readUncompressedRaw: Not enough data to decode a single line. Image file truncated.");
+  }
+  for (uint32 y = 0; y < h; y++) {
+    ushort16* dest = (ushort16*) & data[y*pitch];
+    for (uint32 x = 0 ; x < w; x += 2) {
+      uint32 g1 = *in++;
+      uint32 g2 = *in++;
+      dest[x] = (g1 << 4) | (g2 >> 4);
+      uint32 g3 = *in++;
+      dest[x+1] = ((g2 & 0x0f) << 8) | g3;
+    }
+  }
+}
+
+void RawDecoder::Decode12BitRawBEunpacked(ByteStream &input, uint32 w, uint32 h) {
+  uchar8* data = mRaw->getData();
+  uint32 pitch = mRaw->pitch;
+  const uchar8 *in = input.getData();
+  if (input.getRemainSize() < w*h*2) {
+    if ((uint32)input.getRemainSize() > w*2)
+      h = input.getRemainSize() / (w*2) - 1;
+    else
+      ThrowIOE("readUncompressedRaw: Not enough data to decode a single line. Image file truncated.");
+  }
+  for (uint32 y = 0; y < h; y++) {
+    ushort16* dest = (ushort16*) & data[y*pitch];
+    for (uint32 x = 0 ; x < w; x += 1) {
+      uint32 g1 = *in++;
+      uint32 g2 = *in++;
+      dest[x] = ((g1 & 0x0f) << 8) | g2;
+    }
+  }
+}
+
 bool RawDecoder::checkCameraSupported(CameraMetaData *meta, string make, string model, string mode) {
   TrimSpaces(make);
   TrimSpaces(model);
