@@ -42,7 +42,8 @@
 
 DT_MODULE_INTROSPECTION(2, dt_iop_levels_params_t)
 
-static gboolean dt_iop_levels_expose(GtkWidget *widget, GdkEventExpose *event, gpointer user_data);
+static gboolean dt_iop_levels_area_expose(GtkWidget *widget, GdkEventExpose *event, gpointer user_data);
+static gboolean dt_iop_levels_vbox_automatic_expose(GtkWidget *widget, GdkEventExpose *event, gpointer user_data);
 static gboolean dt_iop_levels_motion_notify(GtkWidget *widget, GdkEventMotion *event, gpointer user_data);
 static gboolean dt_iop_levels_button_press(GtkWidget *widget, GdkEventButton *event, gpointer user_data);
 static gboolean dt_iop_levels_button_release(GtkWidget *widget, GdkEventButton *event, gpointer user_data);
@@ -418,6 +419,16 @@ void commit_params (dt_iop_module_t *self, dt_iop_params_t *p1,
     d->levels[2] = p->levels[2];
     compute_lut(self, piece);
   }
+
+  /*
+   * FIXME: for some reason first "g->reprocess_on_next_expose = TRUE;"
+   * does not catch all cases
+   */
+  if(self->dev->gui_attached &&
+      (isnan(d->levels[0]) || isnan(d->levels[1]) || isnan(d->levels[2])))
+  {
+    g->reprocess_on_next_expose = TRUE;
+  }
 }
 
 void init_pipe (dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe,
@@ -549,7 +560,7 @@ void gui_init(dt_iop_module_t *self)
 
   gtk_widget_add_events(GTK_WIDGET(c->area), GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK | GDK_LEAVE_NOTIFY_MASK);
   g_signal_connect (G_OBJECT (c->area), "expose-event",
-                    G_CALLBACK (dt_iop_levels_expose), self);
+                    G_CALLBACK (dt_iop_levels_area_expose), self);
   g_signal_connect (G_OBJECT (c->area), "button-press-event",
                     G_CALLBACK (dt_iop_levels_button_press), self);
   g_signal_connect (G_OBJECT (c->area), "button-release-event",
@@ -635,6 +646,9 @@ void gui_init(dt_iop_module_t *self)
       break;
   }
 
+  g_signal_connect (G_OBJECT (c->vbox_automatic), "expose-event",
+                    G_CALLBACK (dt_iop_levels_vbox_automatic_expose), self);
+
   g_signal_connect (G_OBJECT (c->mode), "value-changed",
                     G_CALLBACK (dt_iop_levels_mode_callback), self);
   g_signal_connect (G_OBJECT (c->percentile_black), "value-changed",
@@ -672,25 +686,16 @@ static gboolean dt_iop_levels_leave_notify(GtkWidget *widget, GdkEventCrossing *
   return TRUE;
 }
 
-static gboolean dt_iop_levels_expose(GtkWidget *widget, GdkEventExpose *event, gpointer user_data)
+static gboolean dt_iop_levels_area_expose(GtkWidget *widget, GdkEventExpose *event, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_levels_gui_data_t *c = (dt_iop_levels_gui_data_t *)self->gui_data;
   dt_iop_levels_params_t *p = (dt_iop_levels_params_t *)self->params;
 
   dt_develop_t *dev = darktable.develop;
-
-  if(c->reprocess_on_next_expose)
-  {
-    dev->pipe->changed |= DT_DEV_PIPE_SYNCH;
-    return TRUE;
-  }
-
-  if(p->mode != LEVELS_MODE_MANUAL) return FALSE;
-
   const int inset = DT_GUI_CURVE_EDITOR_INSET;
   GtkAllocation allocation;
-  gtk_widget_get_allocation(widget, &allocation);
+  gtk_widget_get_allocation(GTK_WIDGET(c->area), &allocation);
   int width = allocation.width, height = allocation.height;
   cairo_surface_t *cst = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height);
   cairo_t *cr = cairo_create(cst);
@@ -851,11 +856,27 @@ static gboolean dt_iop_levels_expose(GtkWidget *widget, GdkEventExpose *event, g
 
   // Cleaning up
   cairo_destroy(cr);
-  cairo_t *cr_pixmap = gdk_cairo_create(gtk_widget_get_window(widget));
+  cairo_t *cr_pixmap = gdk_cairo_create(gtk_widget_get_window(GTK_WIDGET(c->area)));
   cairo_set_source_surface (cr_pixmap, cst, 0, 0);
   cairo_paint(cr_pixmap);
   cairo_destroy(cr_pixmap);
   cairo_surface_destroy(cst);
+  return TRUE;
+}
+
+static gboolean dt_iop_levels_vbox_automatic_expose(GtkWidget *widget, GdkEventExpose *event, gpointer user_data)
+{
+  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
+  dt_iop_levels_gui_data_t *g = (dt_iop_levels_gui_data_t *)self->gui_data;
+
+  if(g->reprocess_on_next_expose)
+  {
+    g->reprocess_on_next_expose = FALSE;
+    //FIXME: or just use dev->pipe->changed |= DT_DEV_PIPE_SYNCH; ?
+    dt_dev_reprocess_all(self->dev);
+    return FALSE;
+  }
+
   return TRUE;
 }
 
