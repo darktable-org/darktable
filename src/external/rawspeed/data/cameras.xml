@@ -3761,7 +3761,7 @@
 			<Color x="0" y="1">BLUE</Color>
 			<Color x="1" y="1">GREEN</Color>
 		</CFA>
-		<Crop x="0" y="0" width="3881" height="2607"/>
+		<Crop x="0" y="0" width="-1" height="-2"/>
 		<Sensor black="0" white="4095"/>
 	</Camera>
 	<Camera make="SONY" model="DSLR-A200">
