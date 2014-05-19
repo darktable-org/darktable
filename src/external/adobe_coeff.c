@@ -467,7 +467,7 @@ static void dt_dcraw_adobe_coeff(const char *name, float cam_xyz[1][12])
     if (!strncmp (name, table[i].prefix, strlen(table[i].prefix))) {
       if (strcmp(name, table[i].prefix))
         fprintf(stderr, "[adobe_coeff] Warning: partial matching of \"%s\" to \"%s\"\n", name, table[i].prefix);
-      /* FIXME: If we don't use black and maximum should we just delete them from the table?
+      /* FIXME: If we don't use the black and white points should we just delete them from the table?
       if (table[i].black)   black   = (ushort) table[i].black;
       if (table[i].maximum) maximum = (ushort) table[i].maximum; */
       if (table[i].trans[0]) {
