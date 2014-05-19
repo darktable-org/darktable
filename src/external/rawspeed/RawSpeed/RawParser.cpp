@@ -5,6 +5,7 @@
 #include "X3fParser.h"
 #include "ByteStreamSwap.h"
 #include "TiffEntryBE.h"
+#include "MrwDecoder.h"
 
 /*
     RawSpeed - RAW file decoder.
@@ -44,6 +45,14 @@ RawDecoder* RawParser::getDecoder() {
   // For now it is 104 bytes for RAF images.
   if (mInput->getSize() <=  104)
     ThrowRDE("File too small");
+
+  // MRW images are easy to check for, let's try that first
+  if (MrwDecoder::isMRW(mInput)) {
+    try {
+      return new MrwDecoder(mInput);
+    } catch (RawDecoderException) {
+    }
+  }
 
   // FUJI has pointers to IFD's at fixed byte offsets
   // So if camera is FUJI, we cannot use ordinary TIFF parser
@@ -126,7 +135,6 @@ RawDecoder* RawParser::getDecoder() {
   }
 
   // TIFF image could not be decoded, so no further options for now.
-
   throw RawDecoderException("No decoder found. Sorry.");
   return NULL;
 }
