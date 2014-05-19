@@ -24,8 +24,6 @@
 
 #include "RawDecoder.h"
 
-#define MRW_DYNAX_5D 0
-
 namespace RawSpeed {
 
 typedef struct {
