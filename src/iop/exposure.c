@@ -387,7 +387,7 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
   d->deflicker_percentile = p->deflicker_percentile;
   d->deflicker_level = p->deflicker_level;
 
-  if(p->mode == EXPOSURE_MODE_DEFLICKER)
+  if(p->mode == EXPOSURE_MODE_DEFLICKER && dt_image_is_raw(&self->dev->image_storage))
   {
     if(p->deflicker_histogram_source == DEFLICKER_HISTOGRAM_SOURCE_SOURCEFILE)
     {
@@ -461,6 +461,12 @@ void gui_update(struct dt_iop_module_t *self)
 {
   dt_iop_exposure_gui_data_t *g = (dt_iop_exposure_gui_data_t *)self->gui_data;
   dt_iop_exposure_params_t *p = (dt_iop_exposure_params_t *)self->params;
+
+  if(!dt_image_is_raw(&self->dev->image_storage))
+  {
+    p->mode = EXPOSURE_MODE_MANUAL;
+    dt_dev_add_history_item(darktable.develop, self, TRUE);
+  }
 
   dt_bauhaus_combobox_set(g->mode, g_list_index(g->modes, GUINT_TO_POINTER(p->mode)));
 
@@ -583,6 +589,11 @@ mode_callback(GtkWidget *combo, gpointer user_data)
   switch(new_mode)
   {
     case EXPOSURE_MODE_DEFLICKER:
+      if(!dt_image_is_raw(&self->dev->image_storage))
+      {
+        dt_bauhaus_combobox_set(g->mode, g_list_index(g->modes, GUINT_TO_POINTER(EXPOSURE_MODE_MANUAL)));
+        break;
+      }
       p->mode = EXPOSURE_MODE_DEFLICKER;
       gtk_widget_hide(GTK_WIDGET(g->vbox_manual));
       gtk_widget_show(GTK_WIDGET(g->vbox_deflicker));
