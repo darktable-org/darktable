@@ -7,6 +7,8 @@ unzip -j -o develop.zip rawspeed-develop/data/* -d data
 
 rm develop.zip
 
+rm RawSpeed/*.vcproj
+
 fromdos RawSpeed/*
 fromdos data/*
 
