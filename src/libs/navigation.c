@@ -86,9 +86,8 @@ static void _lib_navigation_control_redraw_callback(gpointer instance, gpointer 
 void gui_init(dt_lib_module_t *self)
 {
   /* initialize ui widgets */
-  dt_lib_navigation_t *d = (dt_lib_navigation_t *)g_malloc(sizeof(dt_lib_navigation_t));
+  dt_lib_navigation_t *d = (dt_lib_navigation_t *)g_malloc0(sizeof(dt_lib_navigation_t));
   self->data = (void *)d;
-  memset(d,0,sizeof(dt_lib_navigation_t));
 
   /* create drawingarea */
   self->widget = gtk_drawing_area_new();

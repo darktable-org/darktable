@@ -75,8 +75,7 @@ static inline char *dt_conf_get_var(const char *name)
   }
 
   // still no luck? insert garbage:
-  char *garbage = (char *)g_malloc(sizeof(int32_t));
-  memset(garbage, 0, sizeof(int32_t));
+  char *garbage = (char *)g_malloc0(sizeof(int32_t));
   g_hash_table_insert(darktable.conf->table, g_strdup(name), garbage);
   return garbage;
 }

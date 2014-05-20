@@ -109,8 +109,7 @@ static void _lib_histogram_change_callback(gpointer instance, gpointer user_data
 void gui_init(dt_lib_module_t *self)
 {
   /* initialize ui widgets */
-  dt_lib_histogram_t *d = (dt_lib_histogram_t *)g_malloc(sizeof(dt_lib_histogram_t));
-  memset(d,0,sizeof(dt_lib_histogram_t));
+  dt_lib_histogram_t *d = (dt_lib_histogram_t *)g_malloc0(sizeof(dt_lib_histogram_t));
   self->data = (void *)d;
 
   d->red = dt_conf_get_bool("plugins/darkroom/histogram/show_red");

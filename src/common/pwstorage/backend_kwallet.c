@@ -251,8 +251,7 @@ static gboolean init_kwallet(backend_kwallet_context_t *context)
 // General initialization. Takes care of all the other stuff.
 const backend_kwallet_context_t* dt_pwstorage_kwallet_new()
 {
-  backend_kwallet_context_t *context = g_malloc(sizeof(backend_kwallet_context_t));
-  memset(context, 0, sizeof(backend_kwallet_context_t));
+  backend_kwallet_context_t *context = g_malloc0(sizeof(backend_kwallet_context_t));
 
   GError* error = NULL;
   context->connection = g_bus_get_sync(G_BUS_TYPE_SESSION,NULL, &error);

@@ -75,8 +75,7 @@ int position()
 void gui_init(dt_lib_module_t *self)
 {
   /* initialize ui widgets */
-  dt_lib_modulelist_t *d = (dt_lib_modulelist_t *)g_malloc(sizeof(dt_lib_modulelist_t));
-  memset(d,0,sizeof(dt_lib_modulelist_t));
+  dt_lib_modulelist_t *d = (dt_lib_modulelist_t *)g_malloc0(sizeof(dt_lib_modulelist_t));
   self->data = (void *)d;
   self->widget = gtk_scrolled_window_new(NULL, NULL); //GTK_ADJUSTMENT(gtk_adjustment_new(200, 100, 200, 10, 100, 100))
   gtk_widget_set_size_request(self->widget, -1, DT_PIXEL_APPLY_DPI(208));

@@ -89,8 +89,7 @@ int32_t dt_camera_capture_job_run(dt_job_t *job)
 
   // register listener
   dt_camctl_listener_t *listener;
-  listener = g_malloc(sizeof(dt_camctl_listener_t));
-  memset(listener, 0, sizeof(dt_camctl_listener_t));
+  listener = g_malloc0(sizeof(dt_camctl_listener_t));
   listener->data=t;
   listener->image_downloaded=_camera_capture_image_downloaded;
   listener->request_image_path=_camera_request_image_path;

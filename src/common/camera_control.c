@@ -513,8 +513,7 @@ void _camctl_unlock(const dt_camctl_t *c)
 
 dt_camctl_t *dt_camctl_new()
 {
-  dt_camctl_t *camctl=g_malloc(sizeof(dt_camctl_t));
-  memset(camctl,0,sizeof(dt_camctl_t));
+  dt_camctl_t *camctl = g_malloc0(sizeof(dt_camctl_t));
   dt_print(DT_DEBUG_CAMCTL,"[camera_control] creating new context %p\n", camctl);
 
   // Initialize gphoto2 context and setup dispatch callbacks
@@ -635,8 +634,7 @@ void dt_camctl_detect_cameras(const dt_camctl_t *c)
 
   for(int i=0; i<gp_list_count( available_cameras ); i++)
   {
-    dt_camera_t *camera=g_malloc(sizeof(dt_camera_t));
-    memset( camera,0,sizeof(dt_camera_t));
+    dt_camera_t *camera = g_malloc0(sizeof(dt_camera_t));
     const gchar *s;
     gp_list_get_name (available_cameras, i, &s);
     camera->model = g_strdup(s);

@@ -263,10 +263,8 @@ gboolean _variable_get_value(dt_variables_params_t *params, gchar *variable,gcha
 
 void dt_variables_params_init(dt_variables_params_t **params)
 {
-  *params=g_malloc(sizeof(dt_variables_params_t));
-  memset(*params ,0,sizeof(dt_variables_params_t));
-  (*params)->data = g_malloc(sizeof(dt_variables_data_t));
-  memset((*params)->data ,0,sizeof(dt_variables_data_t));
+  *params = g_malloc0(sizeof(dt_variables_params_t));
+  (*params)->data = g_malloc0(sizeof(dt_variables_data_t));
   (*params)->data->time=time(NULL);
   (*params)->sequence = -1;
 }

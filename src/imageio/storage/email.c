@@ -149,8 +149,7 @@ void init(dt_imageio_module_storage_t *self)
 void*
 get_params(dt_imageio_module_storage_t *self)
 {
-  dt_imageio_email_t *d = (dt_imageio_email_t *)g_malloc(sizeof(dt_imageio_email_t));
-  memset( d,0,sizeof( dt_imageio_email_t));
+  dt_imageio_email_t *d = (dt_imageio_email_t *)g_malloc0(sizeof(dt_imageio_email_t));
   return d;
 }
 

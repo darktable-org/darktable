@@ -685,8 +685,7 @@ dt_database_t *dt_database_init(char *alternative)
   }
 
   /* create database */
-  dt_database_t *db = (dt_database_t *)g_malloc(sizeof(dt_database_t));
-  memset(db,0,sizeof(dt_database_t));
+  dt_database_t *db = (dt_database_t *)g_malloc0(sizeof(dt_database_t));
   db->dbfilename = g_strdup(dbfilename);
   db->is_new_database = FALSE;
   db->lock_acquired = FALSE;

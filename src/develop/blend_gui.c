@@ -1482,8 +1482,7 @@ void dt_iop_gui_init_blending(GtkWidget *iopw, dt_iop_module_t *module)
   {
     const int bs = DT_PIXEL_APPLY_DPI(14);
 
-    module->blend_data = g_malloc(sizeof(dt_iop_gui_blend_data_t));
-    memset(module->blend_data, 0, sizeof(dt_iop_gui_blend_data_t));
+    module->blend_data = g_malloc0(sizeof(dt_iop_gui_blend_data_t));
     dt_iop_gui_blend_data_t *bd = (dt_iop_gui_blend_data_t*)module->blend_data;
 
     bd->iopw = iopw;

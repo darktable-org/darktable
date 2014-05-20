@@ -1434,9 +1434,8 @@ void gui_init(dt_lib_module_t *self)
   const int bs2 = DT_PIXEL_APPLY_DPI(13);
 
   /* initialize ui widgets */
-  dt_lib_masks_t *d = (dt_lib_masks_t *)g_malloc(sizeof(dt_lib_masks_t));
+  dt_lib_masks_t *d = (dt_lib_masks_t *)g_malloc0(sizeof(dt_lib_masks_t));
   self->data = (void *)d;
-  memset(d,0,sizeof(dt_lib_masks_t));
   d->gui_reset = 0;
 
   //initialise all masks icons

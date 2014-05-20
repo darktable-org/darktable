@@ -80,9 +80,8 @@ void gui_init(dt_lib_module_t *self)
   char filename[PATH_MAX];
   char datadir[PATH_MAX];
   /* initialize ui widgets */
-  dt_lib_darktable_t *d = (dt_lib_darktable_t *)g_malloc(sizeof(dt_lib_darktable_t));
+  dt_lib_darktable_t *d = (dt_lib_darktable_t *)g_malloc0(sizeof(dt_lib_darktable_t));
   self->data = (void *)d;
-  memset(d,0,sizeof(dt_lib_darktable_t));
 
   /* create drawing area */
   self->widget = gtk_event_box_new();

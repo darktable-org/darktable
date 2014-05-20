@@ -271,9 +271,9 @@ void reload_defaults(dt_iop_module_t *self)
 
 void init(dt_iop_module_t *module)
 {
-  // module->data = g_malloc(sizeof(dt_iop_invert_data_t));
-  module->params = g_malloc(sizeof(dt_iop_invert_params_t));
-  module->default_params = g_malloc(sizeof(dt_iop_invert_params_t));
+  // module->data = g_malloc0(sizeof(dt_iop_invert_data_t));
+  module->params = g_malloc0(sizeof(dt_iop_invert_params_t));
+  module->default_params = g_malloc0(sizeof(dt_iop_invert_params_t));
   module->default_enabled = 0;
   module->params_size = sizeof(dt_iop_invert_params_t);
   module->gui_data = NULL;
@@ -297,7 +297,7 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *params, dt_dev
 
 void init_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
-  piece->data = g_malloc(sizeof(dt_iop_invert_data_t));
+  piece->data = g_malloc0(sizeof(dt_iop_invert_data_t));
   self->commit_params(self, self->default_params, pipe, piece);
 }
 
@@ -326,7 +326,7 @@ void gui_update(dt_iop_module_t *self)
 
 void gui_init(dt_iop_module_t *self)
 {
-  self->gui_data = g_malloc(sizeof(dt_iop_invert_gui_data_t));
+  self->gui_data = g_malloc0(sizeof(dt_iop_invert_gui_data_t));
   dt_iop_invert_gui_data_t *g = (dt_iop_invert_gui_data_t *)self->gui_data;
   dt_iop_invert_params_t *p = (dt_iop_invert_params_t *)self->params;
 

@@ -102,8 +102,7 @@ int expandable()
 void gui_init(dt_lib_module_t *self)
 {
   /* initialize ui widgets */
-  dt_lib_backgroundjobs_t *d = (dt_lib_backgroundjobs_t *)g_malloc(sizeof(dt_lib_backgroundjobs_t));
-  memset(d,0,sizeof(dt_lib_backgroundjobs_t));
+  dt_lib_backgroundjobs_t *d = (dt_lib_backgroundjobs_t *)g_malloc0(sizeof(dt_lib_backgroundjobs_t));
   self->data = (void *)d;
 
   d->jobs = g_hash_table_new(g_direct_hash,g_direct_equal);

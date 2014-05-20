@@ -87,8 +87,7 @@ static  GType _signal_type;
 
 dt_control_signal_t *dt_control_signal_init()
 {
-  dt_control_signal_t *ctlsig = g_malloc(sizeof(dt_control_signal_t));
-  memset(ctlsig, 0, sizeof(dt_control_signal_t));
+  dt_control_signal_t *ctlsig = g_malloc0(sizeof(dt_control_signal_t));
 
   /* setup dummy gobject typeinfo */
   GTypeQuery query;

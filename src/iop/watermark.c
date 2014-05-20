@@ -609,8 +609,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   int stride = cairo_format_stride_for_width (CAIRO_FORMAT_ARGB32,roi_out->width);
 
   /* create cairo memory surface */
-  guint8 *image= (guint8 *)g_malloc (stride*roi_out->height);
-  memset (image,0,(size_t)stride*roi_out->height);
+  guint8 *image= (guint8 *)g_malloc0(stride*roi_out->height);
   cairo_surface_t *surface = cairo_image_surface_create_for_data (image,CAIRO_FORMAT_ARGB32,roi_out->width,roi_out->height,stride);
   if (cairo_surface_status(surface)!=	CAIRO_STATUS_SUCCESS)
   {

@@ -127,8 +127,7 @@ static _flickr_api_context_t *_flickr_api_authenticate(dt_storage_flickr_gui_dat
   gchar *token;
   char *flickr_user_token = NULL;
   gint result;
-  _flickr_api_context_t *ctx = (_flickr_api_context_t *)g_malloc(sizeof(_flickr_api_context_t));
-  memset(ctx,0,sizeof(_flickr_api_context_t));
+  _flickr_api_context_t *ctx = (_flickr_api_context_t *)g_malloc0(sizeof(_flickr_api_context_t));
 
   flickcurl_init ();
   ctx->fc = flickcurl_new ();
@@ -264,10 +263,9 @@ static _flickr_api_context_t *_flickr_api_authenticate(dt_storage_flickr_gui_dat
 static flickcurl_upload_status *_flickr_api_upload_photo( dt_storage_flickr_params_t *p, char *fname, char *caption, char *description, gint imgid )
 {
 
-  flickcurl_upload_params *params = g_malloc(sizeof(flickcurl_upload_params));
+  flickcurl_upload_params *params = g_malloc0(sizeof(flickcurl_upload_params));
   flickcurl_upload_status *status;
 
-  memset(params,0,sizeof(flickcurl_upload_params));
   params->safety_level = 1; //Defaults to safe photos
   params->content_type = 1; //Defaults to photo (we don't support video!)
 
@@ -464,8 +462,7 @@ focus_out(GtkWidget *widget, GdkEventFocus *event, gpointer user_data)
 void
 gui_init (dt_imageio_module_storage_t *self)
 {
-  self->gui_data = (dt_storage_flickr_gui_data_t *)g_malloc(sizeof(dt_storage_flickr_gui_data_t));
-  memset(self->gui_data,0,sizeof(dt_storage_flickr_gui_data_t));
+  self->gui_data = (dt_storage_flickr_gui_data_t *)g_malloc0(sizeof(dt_storage_flickr_gui_data_t));
   dt_storage_flickr_gui_data_t *ui= self->gui_data;
   self->widget = gtk_vbox_new(FALSE, 0);
 
@@ -765,9 +762,8 @@ get_params(dt_imageio_module_storage_t *self)
   // have to return the size of the struct to store (i.e. without all the variable pointers at the end)
   // TODO: if a hash to encrypted data is stored here, return only this size and store it at the beginning of the struct!
   dt_storage_flickr_gui_data_t *ui =(dt_storage_flickr_gui_data_t *)self->gui_data;
-  dt_storage_flickr_params_t *d = (dt_storage_flickr_params_t *)g_malloc(sizeof(dt_storage_flickr_params_t));
+  dt_storage_flickr_params_t *d = (dt_storage_flickr_params_t *)g_malloc0(sizeof(dt_storage_flickr_params_t));
   if(!d) return NULL;
-  memset(d,0,sizeof(dt_storage_flickr_params_t));
   d->hash = 1;
 
   // fill d from controls in ui

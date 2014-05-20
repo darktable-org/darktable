@@ -76,9 +76,8 @@ int position()
 void gui_init(dt_lib_module_t *self)
 {
   /* initialize ui widgets */
-  dt_lib_ratings_t *d = (dt_lib_ratings_t *)g_malloc(sizeof(dt_lib_ratings_t));
+  dt_lib_ratings_t *d = (dt_lib_ratings_t *)g_malloc0(sizeof(dt_lib_ratings_t));
   self->data = (void *)d;
-  memset(d,0,sizeof(dt_lib_ratings_t));
 
   /* create a centered drawing area within alignment */
   self->widget = gtk_alignment_new(0.5, 0.5, 0, 0);

@@ -218,8 +218,7 @@ static gchar *picasa_get_user_refresh_token(PicasaContext *ctx);
 static size_t _picasa_api_buffer_write_func(void *ptr, size_t size, size_t nmemb, void *stream)
 {
   _buffer_t *buffer=(_buffer_t *)stream;
-  char *newdata=g_malloc(buffer->size+nmemb+1);
-  memset(newdata,0, buffer->size+nmemb+1);
+  char *newdata = g_malloc0(buffer->size+nmemb+1);
   if( buffer->data != NULL ) memcpy(newdata, buffer->data, buffer->size);
   memcpy(newdata+buffer->size, ptr, nmemb);
   g_free( buffer->data );

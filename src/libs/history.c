@@ -94,9 +94,8 @@ void connect_key_accels(dt_lib_module_t *self)
 void gui_init(dt_lib_module_t *self)
 {
   /* initialize ui widgets */
-  dt_lib_history_t *d = (dt_lib_history_t *)g_malloc(sizeof(dt_lib_history_t));
+  dt_lib_history_t *d = (dt_lib_history_t *)g_malloc0(sizeof(dt_lib_history_t));
   self->data = (void *)d;
-  memset(d,0,sizeof(dt_lib_history_t));
 
   self->widget =  gtk_vbox_new (FALSE,2);
   d->history_box = gtk_vbox_new(FALSE,0);

@@ -1250,8 +1250,7 @@ void init_main_table(GtkWidget *container)
  */
 dt_ui_t *dt_ui_initialize(int argc, char **argv)
 {
-  dt_ui_t *ui=g_malloc(sizeof(dt_ui_t));
-  memset(ui,0,sizeof(dt_ui_t));
+  dt_ui_t *ui = g_malloc0(sizeof(dt_ui_t));
   return ui;
 }
 

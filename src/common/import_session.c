@@ -77,8 +77,7 @@ _import_session_initialize_filmroll(dt_import_session_t *self, const char *path)
   }
 
   /* open one or initialize a filmroll for the session */
-  self->film = (dt_film_t *)g_malloc(sizeof(dt_film_t));
-  memset(self->film, 0, sizeof(dt_film_t));
+  self->film = (dt_film_t *)g_malloc0(sizeof(dt_film_t));
   film_id = dt_film_new(self->film, path);
   if (film_id == 0)
   {
@@ -148,8 +147,7 @@ dt_import_session_new()
 {
   dt_import_session_t *is;
 
-  is = (dt_import_session_t *)g_malloc(sizeof(dt_import_session_t));
-  memset(is, 0, sizeof(dt_import_session_t));
+  is = (dt_import_session_t *)g_malloc0(sizeof(dt_import_session_t));
 
   dt_variables_params_init(&is->vp);
 

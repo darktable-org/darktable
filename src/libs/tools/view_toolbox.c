@@ -59,9 +59,8 @@ int position()
 void gui_init(dt_lib_module_t *self)
 {
   /* initialize ui widgets */
-  dt_lib_view_toolbox_t *d = (dt_lib_view_toolbox_t *)g_malloc(sizeof(dt_lib_view_toolbox_t));
+  dt_lib_view_toolbox_t *d = (dt_lib_view_toolbox_t *)g_malloc0(sizeof(dt_lib_view_toolbox_t));
   self->data = (void *)d;
-  memset(d,0,sizeof(dt_lib_view_toolbox_t));
 
   /* the toolbar container */
   d->container = self->widget = gtk_hbox_new(FALSE,10);

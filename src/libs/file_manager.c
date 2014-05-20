@@ -74,7 +74,7 @@ int position()
 
 void gui_init(dt_lib_module_t *self)
 {
-  dt_lib_file_manager_t *d = (dt_lib_file_manager_t *)g_malloc(sizeof(dt_lib_file_manager_t));
+  dt_lib_file_manager_t *d = (dt_lib_file_manager_t *)g_malloc0(sizeof(dt_lib_file_manager_t));
   self->data = (void *)d;
 
   d->terminal = VTE_TERMINAL(vte_terminal_new());

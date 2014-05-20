@@ -437,7 +437,7 @@ void connect_key_accels(dt_lib_module_t *self)
 void gui_init(dt_lib_module_t *self)
 {
   /* initialize ui widgets */
-  dt_lib_metadata_view_t *d = (dt_lib_metadata_view_t *)g_malloc(sizeof(dt_lib_metadata_view_t));
+  dt_lib_metadata_view_t *d = (dt_lib_metadata_view_t *)g_malloc0(sizeof(dt_lib_metadata_view_t));
   self->data = (void *)d;
   _lib_metatdata_view_init_labels();
 

@@ -88,8 +88,7 @@ dt_gpx_t *dt_gpx_new(const gchar *filename)
     goto error;
 
   /* allocate new dt_gpx_t context */
-  gpx = g_malloc(sizeof(dt_gpx_t));
-  memset(gpx, 0, sizeof(dt_gpx_t));
+  gpx = g_malloc0(sizeof(dt_gpx_t));
 
   /* initialize the parser and start parse gpx xml data */
   ctx = g_markup_parse_context_new(&_gpx_parser, 0, gpx, NULL);
@@ -199,8 +198,7 @@ void _gpx_parser_start_element(GMarkupParseContext *ctx,
 
     if (*attribute_name)
     {
-      gpx->current_track_point = g_malloc(sizeof(_gpx_track_point_t));
-      memset(gpx->current_track_point, 0, sizeof(_gpx_track_point_t));
+      gpx->current_track_point = g_malloc0(sizeof(_gpx_track_point_t));
 
       /* initialize with NAN for validation check */
       gpx->current_track_point->longitude = NAN;

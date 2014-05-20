@@ -274,17 +274,15 @@ void gui_reset(dt_lib_module_t *self)
 void gui_init(dt_lib_module_t *self)
 {
   /* initialize ui widgets */
-  dt_lib_snapshots_t *d = (dt_lib_snapshots_t *)g_malloc(sizeof(dt_lib_snapshots_t));
+  dt_lib_snapshots_t *d = (dt_lib_snapshots_t *)g_malloc0(sizeof(dt_lib_snapshots_t));
   self->data = (void *)d;
-  memset(d,0,sizeof(dt_lib_snapshots_t));
 
   /* initialize snapshot storages */
   d->size = 4;
-  d->snapshot = (dt_lib_snapshot_t *)g_malloc(sizeof(dt_lib_snapshot_t)*d->size);
+  d->snapshot = (dt_lib_snapshot_t *)g_malloc0(sizeof(dt_lib_snapshot_t)*d->size);
   d->vp_xpointer = 0.5;
   d->vp_ypointer = 0.5;
   d->vertical = TRUE;
-  memset(d->snapshot,0,sizeof(dt_lib_snapshot_t)*d->size);
 
   /* initialize ui containers */
   self->widget = gtk_vbox_new(FALSE,2);
