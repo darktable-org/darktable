@@ -273,9 +273,9 @@ void process(
     case DT_IOP_HIGHLIGHTS_INPAINT: // a1ex's (magiclantern) idea of color inpainting:
     {
       const float clips[4] = {
-        data->clip * piece->pipe->processed_maximum[0],
-        data->clip * piece->pipe->processed_maximum[1],
-        data->clip * piece->pipe->processed_maximum[2],
+        0.987*data->clip * piece->pipe->processed_maximum[0],
+        0.987*data->clip * piece->pipe->processed_maximum[1],
+        0.987*data->clip * piece->pipe->processed_maximum[2],
         clip};
 #ifdef _OPENMP
       #pragma omp parallel for schedule(dynamic) default(none) shared(ovoid, ivoid, roi_in, roi_out, data, piece)
