@@ -818,8 +818,7 @@ void gui_init(struct dt_iop_module_t *self)
 {
   const int high_quality_processing = dt_conf_get_bool("plugins/lighttable/export/force_lcms2");
 
-  self->gui_data = malloc(sizeof(dt_iop_colorout_gui_data_t));
-  memset(self->gui_data,0,sizeof(dt_iop_colorout_gui_data_t));
+  self->gui_data = calloc(1, sizeof(dt_iop_colorout_gui_data_t));
   dt_iop_colorout_gui_data_t *g = (dt_iop_colorout_gui_data_t *)self->gui_data;
 
   g->profiles = NULL;

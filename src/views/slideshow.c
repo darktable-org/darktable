@@ -310,9 +310,8 @@ uint32_t view(dt_view_t *self)
 
 void init(dt_view_t *self)
 {
-  self->data = malloc(sizeof(dt_slideshow_t));
+  self->data = calloc(1, sizeof(dt_slideshow_t));
   dt_slideshow_t *lib = (dt_slideshow_t*)self->data;
-  memset(lib, 0, sizeof(dt_slideshow_t));
   dt_pthread_mutex_init(&lib->lock, 0);
 }
 

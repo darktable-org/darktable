@@ -821,13 +821,12 @@ static int dt_gradient_get_mask(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t 
   }
 
   //we allocate the buffer
-  *buffer = malloc(w*h*sizeof(float));
+  *buffer = calloc(w*h, sizeof(float));
   if(*buffer == NULL)
   {
     free(points);
     return 0;
   }
-  memset(*buffer,0,w*h*sizeof(float));
 
   //we fill the mask buffer by interpolation
 #ifdef _OPENMP

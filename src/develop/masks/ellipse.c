@@ -1111,9 +1111,8 @@ static int dt_ellipse_get_mask(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *
   start2 = dt_get_wtime();
 
   //we allocate the buffer
-  *buffer = malloc(w*h*sizeof(float));
-  memset(*buffer,0,w*h*sizeof(float));
-  
+  *buffer = calloc(w*h, sizeof(float));
+
   //we populate the buffer
   const int wi = piece->pipe->iwidth, hi=piece->pipe->iheight;
   const float center[2] = {ellipse->center[0]*wi, ellipse->center[1]*hi};

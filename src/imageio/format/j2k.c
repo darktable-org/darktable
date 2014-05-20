@@ -515,8 +515,7 @@ params_size(dt_imageio_module_format_t *self)
 void*
 get_params(dt_imageio_module_format_t *self)
 {
-  dt_imageio_j2k_t *d = (dt_imageio_j2k_t *)malloc(sizeof(dt_imageio_j2k_t));
-  memset(d, 0, sizeof(dt_imageio_j2k_t));
+  dt_imageio_j2k_t *d = (dt_imageio_j2k_t *)calloc(1, sizeof(dt_imageio_j2k_t));
   d->bpp = 16; // can be 8, 12 or 16
   d->format = dt_conf_get_int("plugins/imageio/format/j2k/format");
   d->preset = dt_conf_get_int("plugins/imageio/format/j2k/preset");

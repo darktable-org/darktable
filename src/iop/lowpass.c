@@ -532,9 +532,8 @@ commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpi
 
 void init_pipe (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
-  dt_iop_lowpass_data_t *d = (dt_iop_lowpass_data_t *)malloc(sizeof(dt_iop_lowpass_data_t));
+  dt_iop_lowpass_data_t *d = (dt_iop_lowpass_data_t *)calloc(1, sizeof(dt_iop_lowpass_data_t));
   piece->data =  (void *)d;
-  memset(piece->data,0,sizeof(dt_iop_lowpass_data_t));
   self->commit_params(self, self->default_params, pipe, piece);
   for(int k=0; k<0x10000; k++) d->ctable[k] = d->ltable[k] = 100.0f*k/0x10000; // identity
 }

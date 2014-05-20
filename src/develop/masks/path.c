@@ -48,13 +48,12 @@ static gboolean _path_buffer_grow(float **buffer, int *buffer_count, int *buffer
   {
     float *oldbuffer = *buffer;
     *buffer_max += stepsize;
-    *buffer = malloc(*buffer_max*sizeof(float));
+    *buffer = calloc(*buffer_max, sizeof(float));
     if(*buffer == NULL)
     {
       free(oldbuffer);
       return FALSE;
     }
-    memset(*buffer, 0, *buffer_max*sizeof(float));
     memcpy(*buffer, oldbuffer, *buffer_count*sizeof(float));
     free(oldbuffer);
   }
@@ -427,11 +426,10 @@ static int _path_find_self_intersection(int *inter, int nb_corners, float *borde
   const int ss = hb*wb;
   if (ss < 10) return 0;
 
-  int *binter = malloc(sizeof(int)*ss);
+  int *binter = calloc(ss, sizeof(int));
   if(binter == NULL)
     return 0;
 
-  memset(binter,0,sizeof(int)*ss);
   int lastx = border[(posextr[1]-1)*2];
   int lasty = border[(posextr[1]-1)*2+1];
 
@@ -2111,8 +2109,7 @@ static int dt_path_get_mask(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *pie
   start2 = dt_get_wtime();
 
   //we allocate the buffer
-  *buffer = malloc((*width)*(*height)*sizeof(float));
-  memset(*buffer,0,(*width)*(*height)*sizeof(float));
+  *buffer = calloc((*width)*(*height), sizeof(float));
 
   //we write all the point around the path into the buffer
   int nbp = border_count;

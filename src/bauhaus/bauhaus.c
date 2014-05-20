@@ -615,8 +615,7 @@ guess_font_size()
 void
 dt_bauhaus_init()
 {
-  darktable.bauhaus = (dt_bauhaus_t *)malloc(sizeof(dt_bauhaus_t));
-  memset(darktable.bauhaus, 0, sizeof(dt_bauhaus_t));
+  darktable.bauhaus = (dt_bauhaus_t *)calloc(1, sizeof(dt_bauhaus_t));
   darktable.bauhaus->keys_cnt = 0;
   darktable.bauhaus->current = NULL;
   darktable.bauhaus->popup_area = gtk_drawing_area_new();

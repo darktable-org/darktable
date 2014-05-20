@@ -1723,9 +1723,8 @@ void dt_masks_cleanup_unused(dt_develop_t *dev)
 {
   //we create a table to store the ids of used forms
   guint nbf = g_list_length(dev->forms);
-  int *used = malloc(nbf*sizeof(int));
-  memset(used,0,nbf*sizeof(int));
-  
+  int *used = calloc(nbf, sizeof(int));
+
   //now we iterate throught all iop to find used forms
   GList *iops = g_list_first(dev->iop);
   while(iops)

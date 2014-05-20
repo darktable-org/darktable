@@ -435,8 +435,7 @@ void init(dt_imageio_module_storage_t *self)
 void*
 get_params(dt_imageio_module_storage_t *self)
 {
-  dt_imageio_latex_t *d = (dt_imageio_latex_t *)malloc(sizeof(dt_imageio_latex_t));
-  memset(d, 0, sizeof(dt_imageio_latex_t));
+  dt_imageio_latex_t *d = (dt_imageio_latex_t *)calloc(1, sizeof(dt_imageio_latex_t));
   latex_t *g = (latex_t *)self->gui_data;
   d->vp = NULL;
   d->l = NULL;

@@ -509,8 +509,7 @@ void init(dt_imageio_module_storage_t *self)
 void*
 get_params(dt_imageio_module_storage_t *self)
 {
-  dt_imageio_gallery_t *d = (dt_imageio_gallery_t *)malloc(sizeof(dt_imageio_gallery_t));
-  memset(d, 0, sizeof(dt_imageio_gallery_t));
+  dt_imageio_gallery_t *d = (dt_imageio_gallery_t *)calloc(1, sizeof(dt_imageio_gallery_t));
   gallery_t *g = (gallery_t *)self->gui_data;
   d->vp = NULL;
   d->l = NULL;

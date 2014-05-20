@@ -108,8 +108,7 @@ position ()
 void
 gui_init (dt_lib_module_t *self)
 {
-  self->data = malloc(sizeof(dt_lib_location_t));
-  memset(self->data, 0, sizeof(dt_lib_location_t));
+  self->data = calloc(1, sizeof(dt_lib_location_t));
   dt_lib_location_t *lib = self->data;
 
   self->widget = gtk_vbox_new(FALSE, 5);

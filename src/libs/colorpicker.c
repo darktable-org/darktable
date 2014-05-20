@@ -442,10 +442,8 @@ void gui_init(dt_lib_module_t *self)
   GtkWidget *samples_options_row = gtk_hbox_new(FALSE, 2);
 
   // Initializing self data structure
-  dt_lib_colorpicker_t *data =
-    (dt_lib_colorpicker_t*)malloc(sizeof(dt_lib_colorpicker_t));
+  dt_lib_colorpicker_t *data = (dt_lib_colorpicker_t*)calloc(1, sizeof(dt_lib_colorpicker_t));
   self->data = (void*)data;
-  memset(data, 0, sizeof(dt_lib_colorpicker_t));
 
   // Initializing proxy functions and data
   darktable.lib->proxy.colorpicker.module = self;

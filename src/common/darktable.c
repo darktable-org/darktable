@@ -612,8 +612,7 @@ int dt_init(int argc, char *argv[], const int init_gui)
   snprintf(filename, sizeof(filename), "%s/darktablerc", datadir);
 
   // initialize the config backend. this needs to be done first...
-  darktable.conf = (dt_conf_t *)malloc(sizeof(dt_conf_t));
-  memset(darktable.conf, 0, sizeof(dt_conf_t));
+  darktable.conf = (dt_conf_t *)calloc(1, sizeof(dt_conf_t));
   dt_conf_init(darktable.conf, filename, config_override);
   g_slist_free_full(config_override, g_free);
 
@@ -706,8 +705,7 @@ int dt_init(int argc, char *argv[], const int init_gui)
   dt_pthread_mutex_init(&(darktable.db_insert), NULL);
   dt_pthread_mutex_init(&(darktable.plugin_threadsafe), NULL);
   dt_pthread_mutex_init(&(darktable.capabilities_threadsafe), NULL);
-  darktable.control = (dt_control_t *)malloc(sizeof(dt_control_t));
-  memset(darktable.control, 0, sizeof(dt_control_t));
+  darktable.control = (dt_control_t *)calloc(1, sizeof(dt_control_t));
   if(init_gui)
   {
     dt_control_init(darktable.control);
@@ -736,28 +734,23 @@ int dt_init(int argc, char *argv[], const int init_gui)
   InitializeMagick(darktable.progname);
 #endif
 
-  darktable.opencl = (dt_opencl_t *)malloc(sizeof(dt_opencl_t));
-  memset(darktable.opencl, 0, sizeof(dt_opencl_t));
+  darktable.opencl = (dt_opencl_t *)calloc(1, sizeof(dt_opencl_t));
 #ifdef HAVE_OPENCL
   dt_opencl_init(darktable.opencl, argc, argv);
 #endif
 
-  darktable.blendop = (dt_blendop_t *)malloc(sizeof(dt_blendop_t));
-  memset(darktable.blendop, 0, sizeof(dt_blendop_t));
+  darktable.blendop = (dt_blendop_t *)calloc(1, sizeof(dt_blendop_t));
   dt_develop_blend_init(darktable.blendop);
 
-  darktable.points = (dt_points_t *)malloc(sizeof(dt_points_t));
-  memset(darktable.points, 0, sizeof(dt_points_t));
+  darktable.points = (dt_points_t *)calloc(1, sizeof(dt_points_t));
   dt_points_init(darktable.points, dt_get_num_threads());
 
   // must come before mipmap_cache, because that one will need to access
   // image dimensions stored in here:
-  darktable.image_cache = (dt_image_cache_t *)malloc(sizeof(dt_image_cache_t));
-  memset(darktable.image_cache, 0, sizeof(dt_image_cache_t));
+  darktable.image_cache = (dt_image_cache_t *)calloc(1, sizeof(dt_image_cache_t));
   dt_image_cache_init(darktable.image_cache);
 
-  darktable.mipmap_cache = (dt_mipmap_cache_t *)malloc(sizeof(dt_mipmap_cache_t));
-  memset(darktable.mipmap_cache, 0, sizeof(dt_mipmap_cache_t));
+  darktable.mipmap_cache = (dt_mipmap_cache_t *)calloc(1, sizeof(dt_mipmap_cache_t));
   dt_mipmap_cache_init(darktable.mipmap_cache);
 
   // The GUI must be initialized before the views, because the init()
@@ -766,15 +759,13 @@ int dt_init(int argc, char *argv[], const int init_gui)
 
   if(init_gui)
   {
-    darktable.gui = (dt_gui_gtk_t *)malloc(sizeof(dt_gui_gtk_t));
-    memset(darktable.gui,0,sizeof(dt_gui_gtk_t));
+    darktable.gui = (dt_gui_gtk_t *)calloc(1, sizeof(dt_gui_gtk_t));
     if(dt_gui_gtk_init(darktable.gui, argc, argv)) return 1;
     dt_bauhaus_init();
   }
   else darktable.gui = NULL;
 
-  darktable.view_manager = (dt_view_manager_t *)malloc(sizeof(dt_view_manager_t));
-  memset(darktable.view_manager, 0, sizeof(dt_view_manager_t));
+  darktable.view_manager = (dt_view_manager_t *)calloc(1, sizeof(dt_view_manager_t));
   dt_view_manager_init(darktable.view_manager);
 
   // load the darkroom mode plugins once:
@@ -782,14 +773,12 @@ int dt_init(int argc, char *argv[], const int init_gui)
 
   if(init_gui)
   {
-    darktable.lib = (dt_lib_t *)malloc(sizeof(dt_lib_t));
-    memset(darktable.lib, 0, sizeof(dt_lib_t));
+    darktable.lib = (dt_lib_t *)calloc(1, sizeof(dt_lib_t));
     dt_lib_init(darktable.lib);
 
     dt_control_load_config(darktable.control);
   }
-  darktable.imageio = (dt_imageio_t *)malloc(sizeof(dt_imageio_t));
-  memset(darktable.imageio, 0, sizeof(dt_imageio_t));
+  darktable.imageio = (dt_imageio_t *)calloc(1, sizeof(dt_imageio_t));
   dt_imageio_init(darktable.imageio);
 
   if(init_gui)

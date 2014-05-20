@@ -2018,9 +2018,7 @@ popup_button_callback(GtkWidget *widget, GdkEventButton *event, dt_lib_collect_r
 void
 gui_init (dt_lib_module_t *self)
 {
-  dt_lib_collect_t *d = (dt_lib_collect_t *)malloc(sizeof(dt_lib_collect_t));
-
-  memset(d, 0, sizeof(dt_lib_collect_t));
+  dt_lib_collect_t *d = (dt_lib_collect_t *)calloc(1, sizeof(dt_lib_collect_t));
 
   self->data = (void *)d;
   self->widget = gtk_vbox_new(FALSE, 5);

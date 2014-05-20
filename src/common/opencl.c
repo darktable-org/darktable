@@ -1647,7 +1647,6 @@ cl_event *dt_opencl_events_get_slot(const int devid, const char *tag)
       *eventtags=NULL;
       return NULL;
     }
-    memset(*eventtags, 0, newevents*sizeof(dt_opencl_eventtag_t));
     *maxevents = newevents;
   }
 

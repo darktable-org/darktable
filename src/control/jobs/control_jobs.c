@@ -172,10 +172,8 @@ int32_t dt_control_merge_hdr_job_run(dt_job_t *job)
     if(!pixels)
     {
       first_imgid = imgid;
-      pixels = (float *)malloc(sizeof(float)*image.width*image.height);
-      weight = (float *)malloc(sizeof(float)*image.width*image.height);
-      memset(pixels, 0x0, sizeof(float)*image.width*image.height);
-      memset(weight, 0x0, sizeof(float)*image.width*image.height);
+      pixels = (float *)calloc(image.width*image.height, sizeof(float));
+      weight = (float *)calloc(image.width*image.height, sizeof(float));
       wd = image.width;
       ht = image.height;
     }

@@ -371,9 +371,8 @@ static int _get_full_preview_id(dt_view_t *self)
 
 void init(dt_view_t *self)
 {
-  self->data = malloc(sizeof(dt_library_t));
+  self->data = calloc(1, sizeof(dt_library_t));
   dt_library_t *lib = (dt_library_t *)self->data;
-  memset(self->data,0,sizeof(dt_library_t));
 
   darktable.view_manager->proxy.lighttable.set_position = _set_position;
   darktable.view_manager->proxy.lighttable.get_position = _get_position;

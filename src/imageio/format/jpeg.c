@@ -456,8 +456,7 @@ void*
 get_params(dt_imageio_module_format_t *self)
 {
   // adjust this if more params are stored (subsampling etc)
-  dt_imageio_jpeg_t *d = (dt_imageio_jpeg_t *)malloc(sizeof(dt_imageio_jpeg_t));
-  memset(d,0,sizeof(dt_imageio_jpeg_t));
+  dt_imageio_jpeg_t *d = (dt_imageio_jpeg_t *)calloc(1, sizeof(dt_imageio_jpeg_t));
   d->quality = dt_conf_get_int("plugins/imageio/format/jpeg/quality");
   if(d->quality <= 0 || d->quality > 100) d->quality = 100;
   return d;

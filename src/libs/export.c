@@ -753,8 +753,7 @@ get_params (dt_lib_module_t *self, int *size)
   int32_t fname_len = strlen(fname), sname_len = strlen(sname);
   *size = fname_len + sname_len + 2 + 2*sizeof(int32_t) + fsize + ssize + 3*sizeof(int32_t) + strlen(iccprofile) + 1;
 
-  char *params = (char *)malloc(*size);
-  memset(params, 0, *size);
+  char *params = (char *)calloc(1, *size);
   int pos = 0;
   memcpy(params+pos, &max_width, sizeof(int32_t));
   pos += sizeof(int32_t);

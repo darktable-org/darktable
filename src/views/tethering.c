@@ -126,8 +126,7 @@ gboolean film_strip_key_accel(GtkAccelGroup *accel_group,
 
 void init(dt_view_t *self)
 {
-  self->data = malloc(sizeof(dt_capture_t));
-  memset(self->data,0,sizeof(dt_capture_t));
+  self->data = calloc(1, sizeof(dt_capture_t));
 
   /* prefetch next few from first selected image on. */
   dt_view_filmstrip_prefetch();

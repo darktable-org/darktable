@@ -303,9 +303,8 @@ CA_correct(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const fl
 
   /* assign working space; this would not be necessary
    if the algorithm is part of the larger pre-interpolation processing */
-  buffer = (char *) malloc(11*sizeof(float)*TS*TS);
+  buffer = (char *)calloc(11*TS*TS, sizeof(float));
   //merror(buffer,"CA_correct()");
-  memset(buffer,0,11*sizeof(float)*TS*TS);
 
   // rgb array
   rgb         = (float (*)[3])		buffer;
@@ -334,9 +333,8 @@ CA_correct(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const fl
   //float blockshifts[1000][3][2]; //fixed memory allocation
   //float blockwt[1000]; //fixed memory allocation
 
-  buffer1 = (char *) malloc(vblsz*hblsz*(3*2+1)*sizeof(float));
+  buffer1 = (char *)calloc(vblsz*hblsz*(3*2+1), sizeof(float));
   //merror(buffer1,"CA_correct()");
-  memset(buffer1,0,vblsz*hblsz*(3*2+1)*sizeof(float));
   // block CA shifts
   blockwt		= (float (*))			(buffer1);
   blockshifts	= (float (*)[3][2])		(buffer1+(vblsz*hblsz*sizeof(float)));

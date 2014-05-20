@@ -49,13 +49,12 @@ static gboolean _brush_buffer_grow(float **buffer, int *buffer_count, int *buffe
   {
     float *oldbuffer = *buffer;
     *buffer_max += stepsize;
-    *buffer = malloc(*buffer_max*sizeof(float));
+    *buffer = calloc(*buffer_max, sizeof(float));
     if(*buffer == NULL)
     {
       free(oldbuffer);
       return FALSE;
     }
-    memset(*buffer, 0, *buffer_max*sizeof(float));
     memcpy(*buffer, oldbuffer, *buffer_count*sizeof(float));
     free(oldbuffer);
   }
@@ -2549,8 +2548,7 @@ static int dt_brush_get_mask(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *pi
   start2 = dt_get_wtime();
 
   //we allocate the buffer
-  *buffer = malloc((*width)*(*height)*sizeof(float));
-  memset(*buffer,0,(*width)*(*height)*sizeof(float));
+  *buffer = calloc((*width)*(*height), sizeof(float));
 
   //now we fill the falloff
   int p0[2], p1[2];
