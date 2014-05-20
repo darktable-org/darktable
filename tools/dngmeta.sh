@@ -28,7 +28,7 @@ DNG=$1
 MAKE=$(exiv2 -Pkt $DNG 2>/dev/null | grep 'Exif.Image.Make ' | sed 's#Exif.Image.Make *##g')
 MODEL=$(exiv2 -Pkt $DNG 2>/dev/null | grep 'Exif.Image.Model ' | sed 's#Exif.Image.Model *##g')
 
-MANGLED_MAKE_MODEL=$(echo $MAKE $MODEL | sed 's# CORPORATION##gi' | sed 's#Canon Canon#Canon#g' | sed 's#NIKON NIKON#NIKON#g' | sed 's#PENTAX PENTAX#PENTAX#g' | sed 's#OLYMPUS IMAGING CORP.#OLYMPUS#g' | sed 's#OLYMPUS OPTICAL CO.,LTD#OLYMPUS#g')
+MANGLED_MAKE_MODEL=$(echo $MAKE $MODEL | sed 's# CORPORATION##gi' | sed 's#Canon Canon#Canon#g' | sed 's#NIKON NIKON#NIKON#g' | sed 's#PENTAX PENTAX#PENTAX#g' | sed 's#OLYMPUS IMAGING CORP.#OLYMPUS#g' | sed 's#OLYMPUS OPTICAL CO.,LTD#OLYMPUS#g' | sed 's# FinePix##g')
 
 SOFTWARE=$(exiv2 -Pkt $DNG 2>/dev/null | grep 'Exif.Image.Software ' | awk '{print $2 " " $3 " " $4 " " $5 " " $6}')
 

@@ -31,6 +31,7 @@ cat src/external/rawspeed/data/cameras.xml | grep '<Camera ' \
                                            | sed 's#PENTAX PENTAX#PENTAX#g' \
                                            | sed 's#OLYMPUS IMAGING CORP.#OLYMPUS#g' \
                                            | sed 's#OLYMPUS OPTICAL CO.,LTD#OLYMPUS#g' \
+                                           | sed 's# FinePix##g' \
                                            | sort | uniq | while read CAM
 do
   if [[ ! `grep -i "$CAM" src/external/adobe_coeff.c 2>/dev/null` ]]; then
