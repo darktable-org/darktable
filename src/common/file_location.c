@@ -57,7 +57,7 @@ gchar* dt_loc_get_home_dir(const gchar* user)
   int bufsize = 4096;
 #endif
 
-  gchar* buffer = g_malloc0(sizeof(gchar) * bufsize);
+  gchar* buffer = g_malloc0_n(bufsize, sizeof(gchar));
   if (buffer == NULL)
   {
     return NULL;
