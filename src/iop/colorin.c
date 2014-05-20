@@ -600,7 +600,7 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
     dt_colorspaces_get_makermodel(makermodel, sizeof(makermodel), pipe->image.exif_maker, pipe->image.exif_model);
     float cam_xyz[12];
     cam_xyz[0] = NAN;
-    dt_dcraw_adobe_coeff(makermodel, "", (float (*)[12])cam_xyz);
+    dt_dcraw_adobe_coeff(makermodel, (float (*)[12])cam_xyz);
     if(isnan(cam_xyz[0]))
     {
       fprintf(stderr, "[colorin] `%s' color matrix not found!\n", makermodel);
@@ -935,7 +935,7 @@ static void update_profile_list(dt_iop_module_t *self)
   dt_colorspaces_get_makermodel(makermodel, sizeof(makermodel), self->dev->image_storage.exif_maker, self->dev->image_storage.exif_model);
   float cam_xyz[12];
   cam_xyz[0] = NAN;
-  dt_dcraw_adobe_coeff(makermodel, "", (float (*)[12])cam_xyz);
+  dt_dcraw_adobe_coeff(makermodel, (float (*)[12])cam_xyz);
   if(!isnan(cam_xyz[0]))
   {
     prof = (dt_iop_color_profile_t *)g_malloc0(sizeof(dt_iop_color_profile_t));
