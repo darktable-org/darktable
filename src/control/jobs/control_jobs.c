@@ -1288,7 +1288,8 @@ void dt_control_export(GList *imgid_list, int max_width, int max_height, int for
   dt_control_add_job(darktable.control, &job);
 
   // tell the storage that we got its params for an export so it can reset itself to a safe state
-  mstorage->export_dispatched(mstorage);
+  if (mstorage->export_dispatched)
+    mstorage->export_dispatched(mstorage);
 }
 
 #if GLIB_CHECK_VERSION (2, 26, 0)
