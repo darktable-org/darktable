@@ -173,6 +173,9 @@ protected:
   /* Faster version for reading unpacked 12 bit MSB data */
   void Decode12BitRawBEunpacked(ByteStream &input, uint32 w, uint32 h);
 
+  /* Faster version for reading unpacked 12 bit LSB data */
+  void Decode12BitRawUnpacked(ByteStream &input, uint32 w, uint32 h);
+
   /* Generic decompressor for uncompressed images */
   /* order: Order of the bits - see Common.h for possibilities. */
   void decodeUncompressed(TiffIFD *rawIFD, BitOrder order);
