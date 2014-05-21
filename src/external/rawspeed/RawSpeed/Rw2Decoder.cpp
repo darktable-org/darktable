@@ -72,9 +72,11 @@ RawImage Rw2Decoder::decodeRawInternal() {
 
     if (size >= width*height*2) {
       Decode12BitRawUnpacked(*input_start, width, height);
-    } else {
+    } else if (size >= width*height*3/2) {
       // It's using new decoding method
-      load_flags = 0x2008;
+      Decode12BitRaw(*input_start, width, height);
+    } else {
+      load_flags = 0;
       DecodeRw2();
     }
   } else {
