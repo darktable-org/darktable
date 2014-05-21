@@ -56,6 +56,7 @@ protected:
   virtual void decodeThreaded(RawDecoderThread* t);
 private:
   void DecodeRw2();
+  void DecodePanasonicPackedRaw(ByteStream &input, uint32 w, uint32 h);
   std::string guessMode();
   ByteStream* input_start;
   uint32 load_flags;
