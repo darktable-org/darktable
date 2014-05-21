@@ -70,7 +70,7 @@ RawImage Rw2Decoder::decodeRawInternal() {
     uint32 size = mFile->getSize() - off;
     input_start = new ByteStream(mFile->getData(off), mFile->getSize() - off);
 
-    if (size == width*height*2) {
+    if (size >= width*height*2) {
       Decode12BitRawUnpacked(*input_start, width, height);
     } else {
       // It's using new decoding method
