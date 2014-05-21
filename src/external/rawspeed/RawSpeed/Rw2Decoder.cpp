@@ -55,9 +55,7 @@ RawImage Rw2Decoder::decodeRawInternal() {
   uint32 width = raw->getEntry((TiffTag)2)->getShort();
 
   if (isOldPanasonic) {
-    ThrowRDE("Cannot decode old-style Panasonic RAW files");
     TiffEntry *offsets = raw->getEntry(STRIPOFFSETS);
-    TiffEntry *counts = raw->getEntry(STRIPBYTECOUNTS);
 
     if (offsets->count != 1) {
       ThrowRDE("RW2 Decoder: Multiple Strips found: %u", offsets->count);
@@ -66,19 +64,19 @@ RawImage Rw2Decoder::decodeRawInternal() {
     if (!mFile->isValid(off))
       ThrowRDE("Panasonic RAW Decoder: Invalid image data offset, cannot decode.");
 
-    int count = counts->getInt();
-    if (count != (int)(width*height*2))
-      ThrowRDE("Panasonic RAW Decoder: Byte count is wrong.");
-
-    if (!mFile->isValid(off+count))
-      ThrowRDE("Panasonic RAW Decoder: Invalid image data offset, cannot decode.");
-      
     mRaw->dim = iPoint2D(width, height);
     mRaw->createData();
-    ByteStream input_start(mFile->getData(off), mFile->getSize() - off);
-    iPoint2D pos(0, 0);
-    readUncompressedRaw(input_start, mRaw->dim,pos, width*2, 16, BitOrder_Plain);
 
+    uint32 size = mFile->getSize() - off;
+    input_start = new ByteStream(mFile->getData(off), mFile->getSize() - off);
+
+    if (size == width*height*2) {
+      Decode12BitRawUnpacked(*input_start, width, height);
+    } else {
+      // It's using new decoding method
+      load_flags = 0x2008;
+      DecodeRw2();
+    }
   } else {
 
     mRaw->dim = iPoint2D(width, height);
