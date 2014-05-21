@@ -38,7 +38,7 @@ void FileWriter::writeFile(FileMap* filemap, uint32 size) {
   if (size > filemap->getSize())
     size = filemap->getSize();
 #if defined(__unix__) || defined(__APPLE__)
-  int bytes_written = 0;
+  size_t bytes_written = 0;
   FILE *file;
   char *src;
 
