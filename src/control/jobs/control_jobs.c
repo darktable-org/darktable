@@ -42,7 +42,6 @@
   #include <glob.h>
 #endif
 
-#if GLIB_CHECK_VERSION (2, 26, 0)
 typedef struct dt_control_time_offset_t
 {
   long int offset;
@@ -53,7 +52,6 @@ typedef struct dt_control_gpx_apply_t
   gchar *filename;
   gchar *tz;
 } dt_control_gpx_apply_t;
-#endif
 
 void dt_control_write_sidecar_files()
 {
@@ -569,7 +567,6 @@ int32_t dt_control_delete_images_job_run(dt_job_t *job)
   return 0;
 }
 
-#if GLIB_CHECK_VERSION (2, 26, 0)
 int32_t dt_control_gpx_apply_job_run(dt_job_t *job)
 {
   dt_control_image_enumerator_t *t1 = (dt_control_image_enumerator_t *)job->param;
@@ -674,7 +671,6 @@ bail_out:
   g_free(t1->data);
   return 1;
 }
-#endif
 
 /* enumerator of images from filmroll */
 void dt_control_image_enumerator_job_film_init(dt_control_image_enumerator_t *t, int32_t filmid)
@@ -752,7 +748,6 @@ void dt_control_delete_images_job_init(dt_job_t *job)
   dt_control_image_enumerator_job_selected_init(t);
 }
 
-#if GLIB_CHECK_VERSION (2, 26, 0)
 void dt_control_gpx_apply_job_init(dt_job_t *job, const gchar *filename, int32_t filmid, const gchar *tz)
 {
   dt_control_job_init(job, "gpx apply");
@@ -768,7 +763,6 @@ void dt_control_gpx_apply_job_init(dt_job_t *job, const gchar *filename, int32_t
   data->tz = g_strdup(tz);
   t->data = data;
 }
-#endif
 
 void dt_control_merge_hdr()
 {
@@ -777,14 +771,12 @@ void dt_control_merge_hdr()
   dt_control_add_job(darktable.control, &j);
 }
 
-#if GLIB_CHECK_VERSION (2, 26, 0)
 void dt_control_gpx_apply(const gchar *filename, int32_t filmid, const gchar *tz)
 {
   dt_job_t j;
   dt_control_gpx_apply_job_init(&j, filename, filmid, tz);
   dt_control_add_job(darktable.control, &j);
 }
-#endif
 
 void dt_control_duplicate_images()
 {
@@ -1291,7 +1283,6 @@ void dt_control_export(GList *imgid_list, int max_width, int max_height, int for
   mstorage->export_dispatched(mstorage);
 }
 
-#if GLIB_CHECK_VERSION (2, 26, 0)
 int32_t dt_control_time_offset_job_run(dt_job_t *job)
 {
   dt_control_image_enumerator_t *t1 = (dt_control_image_enumerator_t *)job->param;
@@ -1363,7 +1354,6 @@ void dt_control_time_offset(const long int offset, int imgid)
   dt_control_time_offset_job_init(&j, offset, imgid);
   dt_control_add_job(darktable.control, &j);
 }
-#endif
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

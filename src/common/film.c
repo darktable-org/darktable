@@ -389,8 +389,7 @@ void dt_film_import1(dt_film_t *film)
     /* check if we need to initialize a new filmroll */
     if(!cfr || g_strcmp0(cfr->dirname, cdn) != 0)
     {
-
-#if GLIB_CHECK_VERSION (2, 26, 0)
+      //FIXME: maybe refactor into function and call it?
       if(cfr && cfr->dir)
       {
         /* check if we can find a gpx data file to be auto applied
@@ -411,7 +410,6 @@ void dt_film_import1(dt_film_t *film)
           }
         }
       }
-#endif
 
       /* cleanup previously imported filmroll*/
       if(cfr && cfr!=film)
@@ -449,7 +447,7 @@ void dt_film_import1(dt_film_t *film)
   dt_control_backgroundjobs_destroy(darktable.control, jid);
   dt_control_signal_raise(darktable.signals , DT_SIGNAL_FILMROLLS_IMPORTED,film->id);
 
-#if GLIB_CHECK_VERSION (2, 26, 0)
+  //FIXME: maybe refactor into function and call it?
   if(cfr && cfr->dir)
   {
     /* check if we can find a gpx data file to be auto applied
@@ -470,7 +468,6 @@ void dt_film_import1(dt_film_t *film)
       }
     }
   }
-#endif
 }
 
 
