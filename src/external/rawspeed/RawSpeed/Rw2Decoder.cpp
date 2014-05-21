@@ -55,9 +55,7 @@ RawImage Rw2Decoder::decodeRawInternal() {
   uint32 width = raw->getEntry((TiffTag)2)->getShort();
 
   if (isOldPanasonic) {
-    ThrowRDE("Cannot decode old-style Panasonic RAW files");
     TiffEntry *offsets = raw->getEntry(STRIPOFFSETS);
-    TiffEntry *counts = raw->getEntry(STRIPBYTECOUNTS);
 
     if (offsets->count != 1) {
       ThrowRDE("RW2 Decoder: Multiple Strips found: %u", offsets->count);
@@ -66,19 +64,23 @@ RawImage Rw2Decoder::decodeRawInternal() {
     if (!mFile->isValid(off))
       ThrowRDE("Panasonic RAW Decoder: Invalid image data offset, cannot decode.");
 
-    int count = counts->getInt();
-    if (count != (int)(width*height*2))
-      ThrowRDE("Panasonic RAW Decoder: Byte count is wrong.");
-
-    if (!mFile->isValid(off+count))
-      ThrowRDE("Panasonic RAW Decoder: Invalid image data offset, cannot decode.");
-      
     mRaw->dim = iPoint2D(width, height);
     mRaw->createData();
-    ByteStream input_start(mFile->getData(off), mFile->getSize() - off);
-    iPoint2D pos(0, 0);
-    readUncompressedRaw(input_start, mRaw->dim,pos, width*2, 16, BitOrder_Plain);
 
+    uint32 size = mFile->getSize() - off;
+    input_start = new ByteStream(mFile->getData(off), mFile->getSize() - off);
+
+    if (size >= width*height*2) {
+      // It's completely unpacked little-endian
+      Decode12BitRawUnpacked(*input_start, width, height);
+    } else if (size >= width*height*3/2) {
+      // It's a packed format
+      DecodePanasonicPackedRaw(*input_start, width, height);
+    } else {
+      // It's using the new .RW2 decoding method
+      load_flags = 0;
+      DecodeRw2();
+    }
   } else {
 
     mRaw->dim = iPoint2D(width, height);
@@ -105,6 +107,31 @@ RawImage Rw2Decoder::decodeRawInternal() {
     mRaw->blackLevelSeparate[3] = raw->getEntry((TiffTag)0x1e)->getInt() + 15;
   }
   return mRaw;
+}
+
+void Rw2Decoder::DecodePanasonicPackedRaw(ByteStream &input, uint32 w, uint32 h) {
+  uchar8* data = mRaw->getData();
+  uint32 pitch = mRaw->pitch;
+  const uchar8 *in = input.getData();
+  if (input.getRemainSize() < ((w*12/8)*h)) {
+    if ((uint32)input.getRemainSize() > (w*12/8))
+      h = input.getRemainSize() / (w*12/8) - 1;
+    else
+      ThrowIOE("readUncompressedRaw: Not enough data to decode a single line. Image file truncated.");
+  }
+  uint32 x;
+  for (uint32 y = 0; y < h; y++) {
+    ushort16* dest = (ushort16*) & data[y*pitch];
+    for (x = 0 ; x < w; x += 2) {
+      uint32 g1 = *in++;
+      uint32 g2 = *in++;
+      dest[x] = g1 | ((g2 & 0xf) << 8);
+      uint32 g3 = *in++;
+      dest[x+1] = (g2 >> 4) | (g3 << 4);
+      if ((x % 10) == 8)
+        in++;
+    }
+  }
 }
 
 void Rw2Decoder::DecodeRw2() {
