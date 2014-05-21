@@ -202,6 +202,7 @@ void RawDecoder::Decode12BitRaw(ByteStream &input, uint32 w, uint32 h) {
       uint32 g3 = *in++;
       dest[x+1] = (g2 >> 4) | (g3 << 4);
     }
+    in++;
   }
 }
 

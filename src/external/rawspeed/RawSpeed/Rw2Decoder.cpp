@@ -71,11 +71,13 @@ RawImage Rw2Decoder::decodeRawInternal() {
     input_start = new ByteStream(mFile->getData(off), mFile->getSize() - off);
 
     if (size >= width*height*2) {
+      // It's completely unpacked little-endian
       Decode12BitRawUnpacked(*input_start, width, height);
     } else if (size >= width*height*3/2) {
-      // It's using new decoding method
+      // It's a packed format
       Decode12BitRaw(*input_start, width, height);
     } else {
+      // It's using the new .RW2 decoding method
       load_flags = 0;
       DecodeRw2();
     }
