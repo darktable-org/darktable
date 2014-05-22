@@ -495,6 +495,11 @@ static bool dt_exif_read_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
     {
       img->orientation = dt_image_orientation_to_flip_bits(pos->toLong());
     }
+    else if ( (pos=exifData.findKey(Exiv2::ExifKey("Exif.PanasonicRaw.Orientation")))
+              != exifData.end() && pos->size())
+    {
+      img->orientation = dt_image_orientation_to_flip_bits(pos->toLong());
+    }
 
     /* minolta and sony have their own rotation */
     if ( ( (pos=exifData.findKey(Exiv2::ExifKey("Exif.MinoltaCs5D.Rotation")))
@@ -599,36 +604,34 @@ static bool dt_exif_read_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
          != exifData.end() && pos->size())
     {
       dt_strlcpy_to_utf8(img->exif_maker, sizeof(img->exif_maker), pos, exifData);
-      for(char *c=img->exif_maker+sizeof(img->exif_maker)-1; c > img->exif_maker; c--) if(*c != ' ' && *c != '\0')
-        {
-          *(c+1) = '\0';
-          break;
-        }
+    }
+    else if ( (pos=exifData.findKey(Exiv2::ExifKey("Exif.PanasonicRaw.Make")))
+              != exifData.end() && pos->size())
+    {
+      dt_strlcpy_to_utf8(img->exif_maker, sizeof(img->exif_maker), pos, exifData);
     }
 
-    if (!strlen(img->exif_maker))
+    for(char *c=img->exif_maker+sizeof(img->exif_maker)-1; c > img->exif_maker; c--) if(*c != ' ' && *c != '\0')
     {
-      if ( (pos=exifData.findKey(Exiv2::ExifKey("Exif.PanasonicRaw.Make")))
-           != exifData.end() && pos->size())
-        dt_strlcpy_to_utf8(img->exif_maker, sizeof(img->exif_maker), pos, exifData);
+      *(c+1) = '\0';
+      break;
     }
 
     if ( (pos=exifData.findKey(Exiv2::ExifKey("Exif.Image.Model")))
          != exifData.end() && pos->size())
     {
       dt_strlcpy_to_utf8(img->exif_model, sizeof(img->exif_model), pos, exifData);
-      for(char *c=img->exif_model+sizeof(img->exif_model)-1; c > img->exif_model; c--) if(*c != ' ' && *c != '\0')
-        {
-          *(c+1) = '\0';
-          break;
-        }
+    }
+    else if ( (pos=exifData.findKey(Exiv2::ExifKey("Exif.PanasonicRaw.Model")))
+              != exifData.end() && pos->size())
+    {
+      dt_strlcpy_to_utf8(img->exif_model, sizeof(img->exif_model), pos, exifData);
     }
 
-    if (!strlen(img->exif_model))
+    for(char *c=img->exif_model+sizeof(img->exif_model)-1; c > img->exif_model; c--) if(*c != ' ' && *c != '\0')
     {
-      if ( (pos=exifData.findKey(Exiv2::ExifKey("Exif.PanasonicRaw.Model")))
-           != exifData.end() && pos->size())
-        dt_strlcpy_to_utf8(img->exif_model, sizeof(img->exif_model), pos, exifData);
+      *(c+1) = '\0';
+      break;
     }
 
     if ( (pos=exifData.findKey(Exiv2::ExifKey("Exif.Image.DateTimeOriginal")))
