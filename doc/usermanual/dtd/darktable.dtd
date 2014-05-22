@@ -1,6 +1,8 @@
 <!ENTITY author_firstname "Henrik">
 <!ENTITY author_surname "Andersson">
 
+<!ENTITY mdash "&#x8212;">
+
 <!-- Shared graphics -->
 <!ENTITY img_module_expander "images/darkroom_module_expander.png">
 <!ENTITY icon_general_collapse "images/general_icon_collapse.png">
