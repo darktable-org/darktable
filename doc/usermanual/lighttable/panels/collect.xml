@@ -45,7 +45,7 @@
   </para>
 
   <para>
-    The default collection is based on the film roll attribute - it displays all images of the
+    The default collection is based on the film roll attribute &mdash; it displays all images of the
     last imported film roll or any other film roll chosen.
   </para>
 
@@ -272,7 +272,7 @@
       <sect5>
         <title>clear this rule</title>
         <para>
-          Removes this rule - or resets to default if this is the only rule defined.
+          Removes this rule &mdash; or resets to default if this is the only rule defined.
         </para>
       </sect5>
 
