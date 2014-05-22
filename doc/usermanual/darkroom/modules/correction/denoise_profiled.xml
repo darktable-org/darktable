@@ -1,10 +1,10 @@
 <sect3 status="final" id="denoise_profiled">
 
-  <title>Denoise &mdash; profiled</title>
+  <title>Denoise - profiled</title>
 
   <indexterm>
     <primary>modules</primary>
-    <secondary>denoise &mdash; profiled</secondary>
+    <secondary>denoise - profiled</secondary>
   </indexterm>
 
   <indexterm>
@@ -28,7 +28,7 @@
         <tbody>
           <row>
             <entry>
-              This module offers an easy to use and &mdash; at the same time &mdash; highly efficient
+              This module offers an easy to use and - at the same time - highly efficient
               denoise operation. Under the hood it applies (your choice of) a non-local means or
               edge-aware wavelet denoise algorithm with parameters specifically profiled for
               certain camera models and ISO settings.

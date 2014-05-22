@@ -78,7 +78,7 @@
       application can use OpenCL on different GPU architectures (even at the same time). All
       hardware <quote>secrets</quote> are hidden in this compiler and are normally not visible
       to the user (or the application). The compiled OpenCL code is loaded onto your GPU and -
-      with certain API calls &mdash; it is ready to do calculations for you.
+      with certain API calls - it is ready to do calculations for you.
     </para>
 
   </sect2>
@@ -193,8 +193,8 @@
     <para>
       darktable might find your libOpenCL.so but then tell you that it couldn't get a platform.
       NVIDIA drivers will often give error code -1001 in that case. This happens because
-      libOpenCL.so is only a wrapper library. For the real work further libraries &mdash; specific to
-      vendor, device and driver &mdash; need to be loaded. This failed for some reason. There is a
+      libOpenCL.so is only a wrapper library. For the real work further libraries - specific to
+      vendor, device and driver - need to be loaded. This failed for some reason. There is a
       structure of files in /etc/OpenCL on your system that libOpenCL.so consults to find these
       libraries. Check if you find something fishy in there and try to fix it. Often the needed
       libraries cannot be found by your system's dynamic loader. Giving full path names might
@@ -361,8 +361,8 @@
     </para>
 
     <para>
-      After each reprocessing of pixelpipe &mdash; caused by module parameter change, zooming,
-      panning, etc. &mdash; you will get the total time and the time spent in each of our OpenCL
+      After each reprocessing of pixelpipe - caused by module parameter change, zooming,
+      panning, etc. - you will get the total time and the time spent in each of our OpenCL
       kernels. The most reliable value is the total time spent in pixelpipe. Please note that
       the timings given for each individual module are unreliable when running the OpenCL
       pixelpipe asynchronously (see opencl_async_pixelpipe below).
@@ -518,11 +518,11 @@
 
     <para>
       It is important to understand how darktable uses OpenCL devices. Each processing sequence
-      of an image &mdash; to convert an input to the final output using a certain history stack &mdash; is
+      of an image - to convert an input to the final output using a certain history stack - is
       run in a so called pixelpipe. There are four different types of pixelpipe in darktable.
       One type is responsible to process the center image view (or full view) in darkroom mode,
       another pixelpipe processes the preview image (navigation window) top left in darkroom
-      mode. Of each of these two pixelpipe there can be one at a time &mdash; with the full and the
+      mode. Of each of these two pixelpipe there can be one at a time - with the full and the
       preview pixelpipe running in parallel. In addition there can be multiple parallel
       pixelpipes doing file exports and there can be multiple parallel pixelpipes generating
       thumbnails. If an OpenCL device is available darktable dynamically allocates it to one
@@ -565,8 +565,8 @@
       receive number <quote>0</quote>. All further devices are numbered consecutively. This
       number together with the device name is displayed when you start darktable with
       <quote>darktable -d opencl</quote>. You can specify a device either by number or by name
-      (upper/lower case and whitespace do not matter). If you have more than one device &mdash; all
-      with the same name &mdash; you need to use the device numbers in order to differentiate them.
+      (upper/lower case and whitespace do not matter). If you have more than one device - all
+      with the same name - you need to use the device numbers in order to differentiate them.
     </para>
 
     <para>
@@ -650,7 +650,7 @@
     <para>
       For file export and thumbnail generation we want all hands on deck. However, darktable
       should first look if device Tahiti is free, because it's faster. If that's not the case,
-      all other devices &mdash; in fact only the GTS450 &mdash; are checked.
+      all other devices - in fact only the GTS450 - are checked.
     </para>
 
   </sect2>

@@ -92,7 +92,7 @@
       <para>
         darktable provides some nifty tools to setup a capture in the user interface. You can
         setup timelapse captures and brackets for HDR creations. The configuration is so dynamic
-        that you can create sequential capture of brackets &mdash; go figure... For more information
+        that you can create sequential capture of brackets - go figure... For more information
         read the documentation about the capture panel and the examples in this chapter.
       </para>
 

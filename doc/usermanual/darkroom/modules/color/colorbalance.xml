@@ -39,7 +39,7 @@
     <title>Usage</title>
 
     <para>
-      For each of the three primary colors &mdash; red, green, and blue &mdash; there are three sliders
+      For each of the three primary colors - red, green, and blue - there are three sliders
       <quote>lift</quote>, <quote>gamma</quote> and <quote>gain</quote> to control dark tones,
       mid tones and high tones, respectively. Changing these parameters adds offsets to the
       individual RGB channels and influences the color balance of the image.
@@ -54,16 +54,16 @@
     <para>
       The way to best envision the module's way of working is if you consider
       <quote>lift</quote>, <quote>gamma</quote> and <quote>gain</quote> as parameters
-      influencing the properties of a tone curve which &mdash; in its original state &mdash; is a straight
+      influencing the properties of a tone curve which - in its original state - is a straight
       line going diagonally from bottom left to top right.
     </para>
 
     <para>
-      The lift parameter adjusts the left axis intercept of the line &mdash; the intercept can be
+      The lift parameter adjusts the left axis intercept of the line - the intercept can be
       shifted from its default zero value to negative or positive values. The gamma parameter
-      modifies the line shape &mdash; the default shape is linear and can be turned into a convex
+      modifies the line shape - the default shape is linear and can be turned into a convex
       curve with increased or into a concave curve with lowered gamma values. Finally, the gain
-      parameter defines the steepness of the curve &mdash; by default the curve runs diagonally,
+      parameter defines the steepness of the curve - by default the curve runs diagonally,
       higher values lead to a steeper curve and lower values to a flatter one.
     </para>
 

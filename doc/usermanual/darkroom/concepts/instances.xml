@@ -55,7 +55,7 @@
 
     <para>
       Please be aware that of course each instance also adds to the workload of your pixelpipe.
-      Generating too many instances &mdash; especially of the more demanding modules &mdash; will certainly
+      Generating too many instances - especially of the more demanding modules - will certainly
       cause some noticeable slow-down.
     </para>
 
