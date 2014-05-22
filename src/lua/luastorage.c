@@ -291,6 +291,7 @@ static dt_imageio_module_storage_t ref_storage =
   .get_params = get_params_wrapper,
   .free_params = free_params_wrapper,
   .set_params = set_params_wrapper,
+  .export_dispatched = empty_wrapper,
   .parameter_lua_type = LUAA_INVALID_TYPE,
 
 };
