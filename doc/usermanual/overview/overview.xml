@@ -1030,8 +1030,8 @@
       <para>
         The export is modularized into <emphasis>storage</emphasis> and
         <emphasis>format</emphasis>. darktable ships with several storage modules such as
-        <emphasis>save on disk</emphasis>, <emphasis>picasa</emphasis> and <emphasis>flickr
-        webalbum</emphasis> and more. Format modules are the actual image formats such as JPEG,
+        <emphasis>save on disk</emphasis>, various webalbums, a LaTeX photo book template
+        and more. Format modules are the actual image formats such as JPEG,
         PNG, TIFF, OpenEXR and more.
       </para>
 

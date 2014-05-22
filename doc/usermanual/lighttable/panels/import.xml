@@ -46,10 +46,8 @@
     <title>Import from filesystem</title>
 
     <para>
-      You can import either a single image, or a folder. If a folder is imported, the images in
-      that folder will show up in a film roll with the same name as the imported folder. If
-      single images are imported, they will show up in the film roll called <quote>single
-      images</quote>.
+      You can import either a single image, or a folder. The imported image(s) will show up in a 
+      film roll with the name of the filesystem folder.
     </para>
 
     <para>
