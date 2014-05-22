@@ -28,7 +28,7 @@
       Each blend mode is further controlled by a parameter called opacity, which can have a
       value between 0% and 100% and defines how input and output image contribute to the final
       result. Typically an opacity value of 0% gives as a result an image that is identical to
-      the input image - the module remains without effect. An opacity value of 100% delivers the
+      the input image &mdash; the module remains without effect. An opacity value of 100% delivers the
       maximum effect of the module with the blend mode chosen.
     </para>
 
@@ -84,7 +84,7 @@
       <sect5>
         <title>uniformily</title>
         <para>
-          reprocessing takes place with the chosen blend mode and opacity value - the same for
+          reprocessing takes place with the chosen blend mode and opacity value &mdash; the same for
           all pixels. Additional controls to select blend mode and opacity value are displayed.
           The default blend mode is <quote>normal</quote> with an opacity of 100%.
         </para>
@@ -173,7 +173,7 @@
           Sometimes it is useful to visualize the module's effect without the mask taking
           action. You can do so by clicking on the
           <inlinegraphic fileref="&icon_module_eye;" scalefit="1" width="2%" align="center"/>
-          symbol, which will temporarily deactivate the mask - the selected blend mode and
+          symbol, which will temporarily deactivate the mask &mdash; the selected blend mode and
           opacity remain in effect. Switch this button on and off to see if the mask is acting
           on the image as intended.
         </para>

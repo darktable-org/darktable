@@ -13,25 +13,24 @@
   </indexterm>
 
   <para>
-    Quite commonly users have huge image collections which they store on an external storage
-    medium like a RAID NAS. It is a frequent wish to be able to develop some of the images while
-    travelling using a notebook and later synchronize them to the external storage. Copying
-    images manually from external storage to the notebook and back is prone to errors and
-    cumbersome.
+    Many users have huge image collections which they store on extra hard drives in their desktop computer,
+    or on an external storage medium like a RAID NAS, etc. So it is a common use case to develop some images while
+    travelling using a notebook and then later synchronize them to the original storage medium. But copying
+    images manually from the main storage to the notebook and back is cumbersome and prone to errors.
   </para>
 
   <para>
-    The local copies feature of darktable has been designed to directly support those use cases.
-    With the help of this feature you can create local copies of selected pictures on the local
-    drive of your computer. This copy is then used when the original image is not accessible. At
-    a later point, when connected again with your external storage medium, you can synchronize
-    back the XMP sidecar files, deleting the local copy of your input image. These operations
-    can be found in the <quote>selected images</quote> panel (see
+    The <quote>local copies</quote> feature of darktable has been designed to directly support
+    those use cases. You can create local copies of selected pictures on your computer's local
+    drive. This local copy is then used when the original image file is not accessible.
+    At a later point, when connected again with your main storage medium, you can synchronize
+    the XMP sidecar files, deleting the local copy of your input image. These operations
+    can be found in the <emphasis>selected images</emphasis> panel (see
     <xref linkend="selected_images"/>).
   </para>
 
   <para>
-    For safety reasons, if local copies exist and the external storage is available the local
+    For safety reasons, if local copies exist and the external storage is available, the local
     XMP sidecars are automatically synchronized at start up.
   </para>
 

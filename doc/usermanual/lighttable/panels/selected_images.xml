@@ -104,7 +104,7 @@
       <para>
         Physically copy selected images (parent file plus accompanying XMP sidecar file) to
         another filesystem folder. If an image with the given name already exists in the target
-        folder it does not get overwritten - instead a new duplicate with the given history
+        folder it does not get overwritten &mdash; instead a new duplicate with the given history
         stack is generated.
       </para>
 
@@ -158,7 +158,7 @@
 
     <sect4>
 
-      <title>cache locally</title>
+      <title>copy locally</title>
 
       <indexterm>
         <primary>local copies</primary>
@@ -174,11 +174,12 @@
 
     <sect4>
 
-      <title>reset cache</title>
+      <title>resync local copy</title>
 
       <para>
-        This action will synchronize back the XMP sidecars if needed and will remove the local
-        copies. Note that if a local copy has been modified and the external storage is not
+        This action will synchronize the XMP sidecars of the temporary local copy and the copy
+        in external storage, if needed, and will remove the local copies. Note that if a local
+        copy has been modified and the external storage is not
         accessible the local copy won't be deleted (see <xref linkend="local_copies"/>).
       </para>
 
