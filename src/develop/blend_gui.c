@@ -953,6 +953,7 @@ void dt_iop_gui_init_blendif(GtkVBox *blendw, dt_iop_module_t *module)
     char *ttoutput = _("adjustment based on unblended output of this module:\n* range defined by upper markers: blend fully\n* range defined by lower markers: do not blend at all\n* range between adjacent upper/lower markers: blend gradually");
 
     bd->tab = 0;
+    const int bs = DT_PIXEL_APPLY_DPI(14);
 
     int maxchannels = 0;
     char **labels = NULL;
@@ -1070,6 +1071,7 @@ void dt_iop_gui_init_blendif(GtkVBox *blendw, dt_iop_module_t *module)
 
     bd->colorpicker = dtgtk_togglebutton_new(dtgtk_cairo_paint_colorpicker, CPF_STYLE_FLAT|CPF_DO_NOT_USE_BORDER);
     g_object_set(G_OBJECT(bd->colorpicker), "tooltip-text", _("pick GUI color from image"), (char *)NULL);
+    gtk_widget_set_size_request(GTK_WIDGET(bd->colorpicker), bs, bs);
 
     GtkWidget *res = dtgtk_button_new(dtgtk_cairo_paint_reset, CPF_STYLE_FLAT);
     g_object_set(G_OBJECT(res), "tooltip-text", _("reset blend mask settings"), (char *)NULL);
