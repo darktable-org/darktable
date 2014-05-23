@@ -1164,7 +1164,7 @@ _lib_filmstrip_dnd_begin_callback(GtkWidget *widget, GdkDragContext *context, gp
       uint8_t *scratchmem = dt_mipmap_cache_alloc_scratchmem(darktable.mipmap_cache);
       uint8_t *buf_decompressed = dt_mipmap_cache_decompress(&buf, scratchmem);
 
-      uint8_t *rgbbuf = g_malloc((buf.width+2)*(buf.height+2)*3);
+      uint8_t *rgbbuf = g_malloc_n(3*(buf.width+2)*(buf.height+2), sizeof(uint8_t));
       memset(rgbbuf, 64, (buf.width+2)*(buf.height+2)*3);
       for(int i=1; i<=buf.height; i++)
         for(int j=1; j<=buf.width; j++)

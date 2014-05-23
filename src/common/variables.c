@@ -288,7 +288,7 @@ gchar *dt_variables_get_result(dt_variables_params_t *params)
 gboolean dt_variables_expand(dt_variables_params_t *params, gchar *string, gboolean iterate)
 {
   gchar *variable=g_malloc(128);
-  gchar *value=g_malloc(1024*sizeof(gchar));
+  gchar *value = g_malloc_n(1024, sizeof(gchar));
   gchar *token=NULL;
 
   // Let's free previous expanded result if any...

@@ -84,7 +84,7 @@ gchar* dt_util_str_replace(const gchar* string, const gchar* pattern, const gcha
   gchar* nstring;
   if(occurences)
   {
-    nstring=g_malloc(strlen(string)+(occurences*strlen(substitute))+1);
+    nstring = g_malloc_n(strlen(string)+(occurences*strlen(substitute))+1, sizeof(gchar));
     const gchar *pend=string+strlen(string);
     const gchar *s = string, *p = string;
     gchar *np = nstring;
@@ -117,7 +117,7 @@ gchar* dt_util_glist_to_str(const gchar* separator, GList * items, const unsigne
 
   // add the entries to an char* array
   items = g_list_first(items);
-  gchar** strings = g_malloc(sizeof(gchar*) * (count+1));
+  gchar** strings = g_malloc_n(count+1, sizeof(gchar *));
   if(items != NULL)
   {
     int i = 0;

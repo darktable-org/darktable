@@ -179,8 +179,8 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
     if(g->out_preview_buffer)
       g_free (g->out_preview_buffer);
 
-    in_buffer = g->in_preview_buffer = g_malloc ((size_t)width*height);
-    out_buffer = g->out_preview_buffer = g_malloc ((size_t)width*height);
+    in_buffer = g->in_preview_buffer = g_malloc_n((size_t)width*height, sizeof(guchar));
+    out_buffer = g->out_preview_buffer = g_malloc_n((size_t)width*height, sizeof(guchar));
     g->preview_width = width;
     g->preview_height = height;
 
@@ -243,7 +243,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
 
     dt_gaussian_t *gauss = dt_gaussian_init(width, height, 1, Lmax, Lmin, sigma, DT_IOP_GAUSSIAN_ZERO);
 
-    float *tmp = g_malloc((size_t)width*height*sizeof(float));
+    float *tmp = g_malloc_n((size_t)width*height, sizeof(float));
 
     if(gauss && tmp)
     {
@@ -836,7 +836,7 @@ dt_iop_zonesystem_preview_expose (GtkWidget *widget, GdkEventExpose *event, dt_i
     _iop_zonesystem_calculate_zonemap (p,zonemap);
 
     /* let's generate a pixbuf from pixel zone buffer */
-    guchar *image = g_malloc ((g->preview_width*g->preview_height)*4);
+    guchar *image = g_malloc_n((size_t)4*g->preview_width*g->preview_height, sizeof(guchar));
     guchar *buffer = g->mouse_over_output_zones ? g->out_preview_buffer : g->in_preview_buffer;
     for (int k=0; k<g->preview_width*g->preview_height; k++)
     {

@@ -355,7 +355,7 @@ copy_res(const char *src, const char *dst)
     fseek(fin,0,SEEK_END);
     size_t end = ftell(fin);
     rewind(fin);
-    content = (char*)g_malloc(sizeof(char)*end);
+    content = (char *)g_malloc_n(end, sizeof(char));
     if(content == NULL)
       goto END;
     if(fread(content,sizeof(char),end,fin) != end)
