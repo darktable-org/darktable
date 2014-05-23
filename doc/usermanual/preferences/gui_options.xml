@@ -194,10 +194,18 @@
     <emphasis>shift+click</emphasis> (default on).
   </para>
 
+  <bridgehead renderas="sect4">do high quality processing for slideshow</bridgehead>
+
+  <para>
+    Controls how images are processed for the slideshow view. It this option is enabled, the image will 
+    first be processed in full resolution, and downscaled at the very end. This can result in better quality 
+    sometimes, but will always be slower (default on).
+  </para>
+
   <bridgehead renderas="sect4">method to use for getting the display profile</bridgehead>
 
   <para>
-    This option allows to force a specific means of getting the current display profile in the
+    This option allows to force a specific way of getting the current display profile in the
     output color profile module (see <xref linkend="output_color_profile"/>). In the default
     setting <quote>all</quote> darktable will either query the X display server's xatom or the
     <emphasis>colord</emphasis> system service. You can set this option to <quote>xatom</quote>

@@ -1,4 +1,10 @@
-<chapter status="final" id="slideshow_chapter">
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE chapter PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
+               "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd" [
+		<!ENTITY % darktable_dtd SYSTEM "../dtd/darktable.dtd">
+		%darktable_dtd;
+		]>
+<chapter status="draft" id="slideshow_chapter">
 
   <chapterinfo>
     <keywordset>
@@ -14,27 +20,93 @@
   </indexterm>
 
   <para>
-    The slideshow view starts a slideshow of your most recent collection.
+    The slideshow view starts a slideshow of your current collection.
   </para>
 
   <para>
     <screenshot>
 
-      <screeninfo>The slideshow view [ needs its own screenshot ]</screeninfo>
+      <screeninfo>The slideshow view</screeninfo>
 
-      <graphic fileref="tethering/images/tethering_view.png" scalefit="1" width="80%"></graphic>
+      <graphic fileref="images/slideshow_view.png" scalefit="1" width="80%"></graphic>
 
     </screenshot>
   </para>
 
-  <sect1 status="final">
+  <sect1 status="draft">
 
     <title>Overview</title>
 
     <para>
-      [ Documentation on the slideshow view goes here ]
+      Entering the slideshow view starts a slide show of the images of the current collection with filtering rules
+      and sort order applied. To learn more on how to define the collection, the filtering and the sort order see
+      <xref linkend="collect_images"/> and <xref linkend="filtering_and_sort_order"/>.
     </para>
 
+    <para>
+      The image display is optimized to take full advantage of your screen size. You should therefore put darktable 
+      into fullscreen mode which is toggled by pressing <emphasis>F11</emphasis>.
+    </para>
+
+  </sect1>
+
+  <sect1 status="draft">
+
+    <title>Usage</title>
+
+    <para>
+      The slideshow view is in an early stage of development with a basic set of features.
+      <informaltable frame="none" width="80%">
+        <tgroup cols="2" colsep="0" rowsep="0">
+          <colspec colwidth='1*'/>
+          <colspec colwidth='3*'/>
+          <tbody>
+            <row>
+              <entry>
+                <emphasis>left-click</emphasis>
+              </entry>
+              <entry>
+                switch to the next image of the collection
+              </entry>
+            </row>
+            <row>
+              <entry>
+                <emphasis>right-click</emphasis>
+              </entry>
+              <entry>
+                switch to the previous image of the collection
+              </entry>
+            </row>
+            <row>
+              <entry>
+                <emphasis>space</emphasis>
+              </entry>
+              <entry>
+                start and stop auto-advance mode which automatically switches to the next images
+                every five seconds and after the last image loops back to the beginning
+              </entry>
+            </row>
+            <row>
+              <entry>
+                <emphasis>ESC</emphasis>
+              </entry>
+              <entry>
+                leave slideshow mode and return to lighttable view
+              </entry>
+            </row>
+          </tbody>
+        </tgroup>
+      </informaltable>
+    </para>
+
+    <para>
+      Depending on the complexity of the history stack and the power of your hardware, processing an image
+      with high resolution can take a significant amount of time. darktable prefetches the next image in the background in order 
+      to minimize latencies. If you still experience long delays when switching between images or if you intend to quickly
+      advance in your collection consider to disable the option <quote>do high quality processing for slideshow</quote>
+      which gives a much higher processing speed at the expense of a possible slight loss in quality
+      (see <xref linkend="gui_options"/>).
+    </para>
 
   </sect1>
 

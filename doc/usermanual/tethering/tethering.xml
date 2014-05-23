@@ -28,7 +28,7 @@
 
       <screeninfo>The tethering view</screeninfo>
 
-      <graphic fileref="tethering/images/tethering_view.png" scalefit="1" width="80%"></graphic>
+      <graphic fileref="images/tethering_view.png" scalefit="1" width="80%"></graphic>
 
     </screenshot>
   </para>
