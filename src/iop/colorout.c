@@ -420,6 +420,7 @@ process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoi
   const dt_iop_colorout_data_t *const d = (dt_iop_colorout_data_t *)piece->data;
   const int ch = piece->colors;
   const int gamutcheck = (d->softproof_enabled == DT_SOFTPROOF_GAMUTCHECK);
+  gboolean force_alpha_copy = false;
 
   if(!isnan(d->cmatrix[0]))
   {
@@ -469,6 +470,10 @@ process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoi
   else
   {
     //fprintf(stderr,"Using xform codepath\n");
+
+    // apparently LCMS puts garbage into 4th channel, so we unconditionally copy it
+    force_alpha_copy = true;
+
     const __m128 outofgamutpixel = _mm_set_ps(0.0f, 1.0f, 1.0f, 0.0f);
 #ifdef _OPENMP
     #pragma omp parallel for schedule(static) default(none) shared(ivoid, ovoid, roi_out)
@@ -483,14 +488,23 @@ process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoi
         cmsDoTransform(d->xform, in, out, roi_out->width);
       } else {
         void *rgb = dt_alloc_align(16, 4*sizeof(float)*roi_out->width);
+
         cmsDoTransform(d->xform, in, rgb, roi_out->width);
+
+        // apparently LCMS puts garbage into 4th channel, so we unconditionally copy it
+        dt_iop_alpha_copy(in, rgb, roi_out->width, 1);
+
         float *rgbptr = (float *)rgb;
         for (int j=0; j<roi_out->width; j++,rgbptr+=4,out+=4)
         {
           const __m128 pixel = _mm_load_ps(rgbptr);
-          const __m128 ingamut = _mm_cmpge_ps(pixel, _mm_setzero_ps());
-          const __m128 result = _mm_or_ps(_mm_andnot_ps(ingamut, outofgamutpixel),
-                                          _mm_and_ps(ingamut, pixel));
+          __m128 ingamut = _mm_cmplt_ps(pixel, _mm_setzero_ps());
+
+          ingamut = _mm_or_ps(_mm_unpacklo_ps(ingamut, ingamut), _mm_unpackhi_ps(ingamut, ingamut));
+          ingamut = _mm_or_ps(_mm_unpacklo_ps(ingamut, ingamut), _mm_unpackhi_ps(ingamut, ingamut));
+
+          const __m128 result = _mm_or_ps(_mm_and_ps(ingamut, outofgamutpixel),
+                                          _mm_andnot_ps(ingamut, pixel));
           _mm_stream_ps(out, result);
         }
         dt_free_align(rgb);
@@ -499,7 +513,7 @@ process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoi
     _mm_sfence();
   }
 
-  if(piece->pipe->mask_display)
+  if(piece->pipe->mask_display || (force_alpha_copy && !gamutcheck))
     dt_iop_alpha_copy(ivoid, ovoid, roi_out->width, roi_out->height);
 }
 
