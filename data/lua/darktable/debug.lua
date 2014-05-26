@@ -135,7 +135,7 @@ function M.dump(object,name)
 	if name == nil or name == "" then
 		name = "toplevel"
 	end
-	return introspect_internal(object,"",name,{},{})
+	return introspect_internal(object,"",name,{[key(_G)]="_G", [key(_ENV)]="_ENV"},{})
 end
 
 function M.type(object)
