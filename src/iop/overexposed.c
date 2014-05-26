@@ -20,7 +20,9 @@
 #include "config.h"
 #endif
 #include <stdlib.h>
+#include <xmmintrin.h>
 #include <cairo.h>
+
 #include "develop/develop.h"
 #include "develop/imageop.h"
 #include "control/control.h"
@@ -120,11 +122,11 @@ process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void
     return;
   }
 
-  const __m128 upper = _mm_set_ps(2.0f,
+  const __m128 upper = _mm_set_ps(FLT_MAX,
                                   dev->overexposed.upper / 100.0f,
                                   dev->overexposed.upper / 100.0f,
                                   dev->overexposed.upper / 100.0f);
-  const __m128 lower = _mm_set_ps(2.0f,
+  const __m128 lower = _mm_set_ps(FLT_MAX,
                                   dev->overexposed.lower / 100.0f,
                                   dev->overexposed.lower / 100.0f,
                                   dev->overexposed.lower / 100.0f);
