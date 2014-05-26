@@ -660,11 +660,11 @@
 
     <sect2 status="final" id="filmstrip_overview">
 
+      <title>Filmstrip</title>
+
       <indexterm>
         <primary>filmstrip</primary>
       </indexterm>
-
-      <title>Filmstrip</title>
 
       <para>
         The filmstrip along the bottom shows the same images as lighttable, with respect to
