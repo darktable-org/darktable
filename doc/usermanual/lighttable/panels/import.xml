@@ -143,7 +143,7 @@
       darktable is focused on managing and developing camera RAW files. It supports a huge
       number of file formats from various camera manufacturers. In addition darktable can read
       specific <emphasis>low dynamic range</emphasis> and <emphasis>high dynamic
-      range</emphasis> images &mdash; mainly for data exchange between darktable and other software.
+      range</emphasis> images &ndash; mainly for data exchange between darktable and other software.
     </para>
 
     <para>
@@ -175,7 +175,7 @@
 
       <para>
         darktable reads RAW files using two open source libraries: RawSpeed (developed by Klaus
-        Post) and &mdash; failing that &mdash; with LibRaw. The number of supported cameras and file formats
+        Post) and &ndash; failing that &ndash; with LibRaw. The number of supported cameras and file formats
         is constantly increasing. It is beyond the scope of this manual to give an exhaustive
         list. Most modern camera models are supported, and new ones tend to get added very
         quickly. darktable does not decode images from cameras with non-Bayer sensors (e.g. Fuji

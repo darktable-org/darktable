@@ -1,6 +1,7 @@
 <!ENTITY author_firstname "Henrik">
 <!ENTITY author_surname "Andersson">
 
+<!ENTITY ndash "&#8211;">
 <!ENTITY mdash "&#8212;">
 
 <!-- Shared graphics -->

@@ -35,8 +35,8 @@
     Each duplicate is represented by a separate XMP sidecar file with a filename constructed in
     the form <quote>&lt;basename&gt;<emphasis>_nn</emphasis>.&lt;extension&gt;.xmp</quote>,
     where <emphasis>nn</emphasis> represents the (minimum two-digit) version number of that
-    edit. Information for the initial edit &mdash; the <quote>duplicate</quote> with version number zero
-    &mdash; is stored in the sidecar file <quote>&lt;basename&gt;.&lt;extension&gt;.xmp</quote>. The version number of a
+    edit. Information for the initial edit &ndash; the <quote>duplicate</quote> with version number zero
+    &ndash; is stored in the sidecar file <quote>&lt;basename&gt;.&lt;extension&gt;.xmp</quote>. The version number of a
     duplicate is displayed in the image information panel in each of darktable's views (see an
     example in <xref linkend="image_information"/>).
   </para>

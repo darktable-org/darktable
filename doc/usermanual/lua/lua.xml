@@ -170,7 +170,7 @@
       <para>
         It is important to yield whenever you have some code that you expect to block other Lua
         code from being executed. In particular you should always yield when calling an external
-        program from Lua &mdash; especially if it is a long, time consuming task.
+        program from Lua &ndash; especially if it is a long, time consuming task.
       </para>
 
     </sect2>
