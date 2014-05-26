@@ -27,8 +27,6 @@
 #include "common/opencl.h"
 #include "gui/accelerators.h"
 
-#include "xmmintrin.h"
-
 DT_MODULE(3)
 
 typedef enum dt_iop_overexposed_colorscheme_t

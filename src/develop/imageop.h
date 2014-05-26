@@ -584,20 +584,6 @@ static inline void dt_iop_alpha_copy(const void *ivoid, void *ovoid, const int w
   }
 }
 
-/** Set alpha channel to alpha for all pixels in ovoid */
-static inline void dt_iop_alpha_set(void *ovoid, const float alpha, const int width, const int height)
-{
-#ifdef _OPENMP
-  #pragma omp parallel for default(none) shared(ovoid) schedule(static)
-#endif
-  for(int j=0; j<height; j++)
-  {
-    float *out = ((float *)ovoid)+(size_t)4*width*j+3;
-    for(int i=0; i<width; i++,out+=4)
-      *out = alpha;
-  }
-}
-
 #endif
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
