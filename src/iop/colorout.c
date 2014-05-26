@@ -420,7 +420,7 @@ process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoi
   const dt_iop_colorout_data_t *const d = (dt_iop_colorout_data_t *)piece->data;
   const int ch = piece->colors;
   const int gamutcheck = (d->softproof_enabled == DT_SOFTPROOF_GAMUTCHECK);
-  gboolean force_alpha_copy = false;
+  gboolean force_alpha_copy = FALSE;
 
   if(!isnan(d->cmatrix[0]))
   {
@@ -472,7 +472,7 @@ process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoi
     //fprintf(stderr,"Using xform codepath\n");
 
     // apparently LCMS puts garbage into 4th channel, so we unconditionally copy it
-    force_alpha_copy = true;
+    force_alpha_copy = TRUE;
 
     const __m128 outofgamutpixel = _mm_set_ps(0.0f, 1.0f, 1.0f, 0.0f);
 #ifdef _OPENMP

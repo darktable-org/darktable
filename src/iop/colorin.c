@@ -337,7 +337,7 @@ process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoi
   const int ch = piece->colors;
   const int map_blues = piece->pipe->image.flags & DT_IMAGE_RAW;
   const int clipping = (d->nrgb != NULL);
-  gboolean force_alpha_copy = false;
+  gboolean force_alpha_copy = FALSE;
 
   if(!isnan(d->cmatrix[0]))
   {
@@ -428,7 +428,7 @@ process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoi
     //fprintf(stderr,"Using xform codepath\n");
 
     // apparently LCMS puts garbage into 4th channel, so we unconditionally copy it
-    force_alpha_copy = true;
+    force_alpha_copy = TRUE;
 #ifdef _OPENMP
     #pragma omp parallel for schedule(static) default(none) shared(ivoid, ovoid, roi_out)
 #endif
