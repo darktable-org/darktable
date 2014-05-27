@@ -77,31 +77,27 @@ local function get_reported_type(node,simple)
 end
 
 local function print_attributes(node)
-	local concat=""
 	local result = ""
 	for k2,v2 in sorted_pairs(node._luadoc_attributes) do
 		if not doc.get_attribute(doc.toplevel.attributes[k2],"internal_attr") then
 			if(type(v2) == "boolean") then
-				concat = concat..get_node_with_link(doc.toplevel.attributes[k2],k2).." "
+				result = result..listel(emphasis(get_node_with_link(doc.toplevel.attributes[k2],k2)))
 			elseif type(v2) == "string" then
-				result = result..listel(emphasis(get_node_with_link(doc.toplevel.attributes[k2],k2).." : ")..v2..para())
+				result = result..listel(emphasis(get_node_with_link(doc.toplevel.attributes[k2],k2).." : ")..v2)
 			elseif type(v2) == "table" and v2._luadoc_type then
-				result = result..listel(emphasis(get_node_with_link(doc.toplevel.attributes[k2],k2).." : ")..tostring(v2)..para())
+				result = result..listel(emphasis(get_node_with_link(doc.toplevel.attributes[k2],k2).." : ")..tostring(v2))
 			elseif type(v2) == "table" then
-				result = result..listel(emphasis(get_node_with_link(doc.toplevel.attributes[k2],k2).." : ")..para())..startlist()
+				tmp = ""
 				for k,v in pairs(v2) do
-					result = result..listel(tostring(v));
+					tmp = tmp..listel(tostring(v));
 				end
-				result = result..endlist()
+				result = result..listel(emphasis(get_node_with_link(doc.toplevel.attributes[k2],k2).." : ")..para()..startlist()..tmp..endlist())
 			elseif type(v2) == "number" then
-				result = result..listel(emphasis(get_node_with_link(doc.toplevel.attributes[k2],k2).." : ")..tostring(v2)..para())
+				result = result..listel(emphasis(get_node_with_link(doc.toplevel.attributes[k2],k2).." : ")..tostring(v2))
 			else
 				error("unhandle attribute type\n"..dump(v2,k2))
 			end
 		end
-	end
-	if concat ~="" then
-		result = result..listel("Attributes : ")..concat
 	end
 	if  result ~= "" then
 		result = [[<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">

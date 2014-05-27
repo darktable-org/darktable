@@ -289,8 +289,10 @@ All functions and data are accessed through the darktable module.</para>
 <tbody><row>
 <entry>Attributes:</entry>
 <entry><synopsis><itemizedlist>
-<listitem><para>Attributes : </para></listitem>
-<link linkend="attributes_has_ipairs">has_ipairs</link> <link linkend="attributes_has_length">has_length</link> <link linkend="attributes_has_pairs">has_pairs</link> </itemizedlist>
+<listitem><para><emphasis><link linkend="attributes_has_ipairs">has_ipairs</link></emphasis></para></listitem>
+<listitem><para><emphasis><link linkend="attributes_has_length">has_length</link></emphasis></para></listitem>
+<listitem><para><emphasis><link linkend="attributes_has_pairs">has_pairs</link></emphasis></para></listitem>
+</itemizedlist>
 </synopsis></entry>
 </row></tbody>
 </tgroup></informaltable>
@@ -357,8 +359,8 @@ see <link linkend="types_dt_lua_film_t_delete">types.dt_lua_film_t.delete</link>
 <tbody><row>
 <entry>Attributes:</entry>
 <entry><synopsis><itemizedlist>
-<listitem><para>Attributes : </para></listitem>
-<link linkend="attributes_has_pairs">has_pairs</link> </itemizedlist>
+<listitem><para><emphasis><link linkend="attributes_has_pairs">has_pairs</link></emphasis></para></listitem>
+</itemizedlist>
 </synopsis></entry>
 </row></tbody>
 </tgroup></informaltable>
@@ -399,8 +401,8 @@ see <link linkend="types_dt_lua_film_t_delete">types.dt_lua_film_t.delete</link>
 <tbody><row>
 <entry>Attributes:</entry>
 <entry><synopsis><itemizedlist>
-<listitem><para>Attributes : </para></listitem>
-<link linkend="attributes_implicit_yield">implicit_yield</link> </itemizedlist>
+<listitem><para><emphasis><link linkend="attributes_implicit_yield">implicit_yield</link></emphasis></para></listitem>
+</itemizedlist>
 </synopsis></entry>
 </row></tbody>
 </tgroup></informaltable>
@@ -462,8 +464,10 @@ see <link linkend="types_dt_lua_film_t_delete">types.dt_lua_film_t.delete</link>
 <tbody><row>
 <entry>Attributes:</entry>
 <entry><synopsis><itemizedlist>
-<listitem><para>Attributes : </para></listitem>
-<link linkend="attributes_has_ipairs">has_ipairs</link> <link linkend="attributes_has_length">has_length</link> <link linkend="attributes_has_pairs">has_pairs</link> </itemizedlist>
+<listitem><para><emphasis><link linkend="attributes_has_ipairs">has_ipairs</link></emphasis></para></listitem>
+<listitem><para><emphasis><link linkend="attributes_has_length">has_length</link></emphasis></para></listitem>
+<listitem><para><emphasis><link linkend="attributes_has_pairs">has_pairs</link></emphasis></para></listitem>
+</itemizedlist>
 </synopsis></entry>
 </row></tbody>
 </tgroup></informaltable>
@@ -925,8 +929,10 @@ see <link linkend="types_dt_lua_film_t_delete">types.dt_lua_film_t.delete</link>
 <tbody><row>
 <entry>Attributes:</entry>
 <entry><synopsis><itemizedlist>
-<listitem><para>Attributes : </para></listitem>
-<link linkend="attributes_has_ipairs">has_ipairs</link> <link linkend="attributes_has_length">has_length</link> <link linkend="attributes_has_pairs">has_pairs</link> </itemizedlist>
+<listitem><para><emphasis><link linkend="attributes_has_ipairs">has_ipairs</link></emphasis></para></listitem>
+<listitem><para><emphasis><link linkend="attributes_has_length">has_length</link></emphasis></para></listitem>
+<listitem><para><emphasis><link linkend="attributes_has_pairs">has_pairs</link></emphasis></para></listitem>
+</itemizedlist>
 </synopsis></entry>
 </row></tbody>
 </tgroup></informaltable>
@@ -1076,8 +1082,10 @@ see <link linkend="types_dt_lua_film_t_delete">types.dt_lua_film_t.delete</link>
 <tbody><row>
 <entry>Attributes:</entry>
 <entry><synopsis><itemizedlist>
-<listitem><para>Attributes : </para></listitem>
-<link linkend="attributes_has_ipairs">has_ipairs</link> <link linkend="attributes_has_length">has_length</link> <link linkend="attributes_has_pairs">has_pairs</link> </itemizedlist>
+<listitem><para><emphasis><link linkend="attributes_has_ipairs">has_ipairs</link></emphasis></para></listitem>
+<listitem><para><emphasis><link linkend="attributes_has_length">has_length</link></emphasis></para></listitem>
+<listitem><para><emphasis><link linkend="attributes_has_pairs">has_pairs</link></emphasis></para></listitem>
+</itemizedlist>
 </synopsis></entry>
 </row></tbody>
 </tgroup></informaltable>
@@ -1239,8 +1247,8 @@ see <link linkend="types_dt_lua_image_t_delete">types.dt_lua_image_t.delete</lin
 <tbody><row>
 <entry>Attributes:</entry>
 <entry><synopsis><itemizedlist>
-<listitem><para>Attributes : </para></listitem>
-<link linkend="attributes_has_pairs">has_pairs</link> </itemizedlist>
+<listitem><para><emphasis><link linkend="attributes_has_pairs">has_pairs</link></emphasis></para></listitem>
+</itemizedlist>
 </synopsis></entry>
 </row></tbody>
 </tgroup></informaltable>
@@ -1353,8 +1361,8 @@ New values may appear in this table if new storages are registered using Lua.</p
 <tbody><row>
 <entry>Attributes:</entry>
 <entry><synopsis><itemizedlist>
-<listitem><para>Attributes : </para></listitem>
-<link linkend="attributes_has_pairs">has_pairs</link> </itemizedlist>
+<listitem><para><emphasis><link linkend="attributes_has_pairs">has_pairs</link></emphasis></para></listitem>
+</itemizedlist>
 </synopsis></entry>
 </row></tbody>
 </tgroup></informaltable>
@@ -1447,8 +1455,8 @@ see <link linkend="darktable_modules_storage_email">darktable.modules.storage.em
 <tbody><row>
 <entry>Attributes:</entry>
 <entry><synopsis><itemizedlist>
-<listitem><para>Attributes : </para></listitem>
-<link linkend="attributes_has_pairs">has_pairs</link> </itemizedlist>
+<listitem><para><emphasis><link linkend="attributes_has_pairs">has_pairs</link></emphasis></para></listitem>
+</itemizedlist>
 </synopsis></entry>
 </row></tbody>
 </tgroup></informaltable>
@@ -1465,10 +1473,10 @@ see <link linkend="darktable_modules_storage_email">darktable.modules.storage.em
 <tbody><row>
 <entry>Attributes:</entry>
 <entry><synopsis><itemizedlist>
-<listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_view_t">types.dt_view_t</link></para>
-<para></para></listitem>
-<listitem><para>Attributes : </para></listitem>
-<link linkend="attributes_has_pairs">has_pairs</link> <link linkend="attributes_has_tostring">has_tostring</link> </itemizedlist>
+<listitem><para><emphasis><link linkend="attributes_has_pairs">has_pairs</link></emphasis></para></listitem>
+<listitem><para><emphasis><link linkend="attributes_has_tostring">has_tostring</link></emphasis></para></listitem>
+<listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_view_t">types.dt_view_t</link></para></listitem>
+</itemizedlist>
 </synopsis></entry>
 </row></tbody>
 </tgroup></informaltable>
@@ -1520,10 +1528,10 @@ see <link linkend="darktable_modules_storage_email">darktable.modules.storage.em
 <tbody><row>
 <entry>Attributes:</entry>
 <entry><synopsis><itemizedlist>
-<listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_view_t">types.dt_view_t</link></para>
-<para></para></listitem>
-<listitem><para>Attributes : </para></listitem>
-<link linkend="attributes_has_pairs">has_pairs</link> <link linkend="attributes_has_tostring">has_tostring</link> </itemizedlist>
+<listitem><para><emphasis><link linkend="attributes_has_pairs">has_pairs</link></emphasis></para></listitem>
+<listitem><para><emphasis><link linkend="attributes_has_tostring">has_tostring</link></emphasis></para></listitem>
+<listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_view_t">types.dt_view_t</link></para></listitem>
+</itemizedlist>
 </synopsis></entry>
 </row></tbody>
 </tgroup></informaltable>
@@ -1542,10 +1550,10 @@ see <link linkend="darktable_modules_storage_email">darktable.modules.storage.em
 <tbody><row>
 <entry>Attributes:</entry>
 <entry><synopsis><itemizedlist>
-<listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_view_t">types.dt_view_t</link></para>
-<para></para></listitem>
-<listitem><para>Attributes : </para></listitem>
-<link linkend="attributes_has_pairs">has_pairs</link> <link linkend="attributes_has_tostring">has_tostring</link> </itemizedlist>
+<listitem><para><emphasis><link linkend="attributes_has_pairs">has_pairs</link></emphasis></para></listitem>
+<listitem><para><emphasis><link linkend="attributes_has_tostring">has_tostring</link></emphasis></para></listitem>
+<listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_view_t">types.dt_view_t</link></para></listitem>
+</itemizedlist>
 </synopsis></entry>
 </row></tbody>
 </tgroup></informaltable>
@@ -1564,10 +1572,10 @@ see <link linkend="darktable_modules_storage_email">darktable.modules.storage.em
 <tbody><row>
 <entry>Attributes:</entry>
 <entry><synopsis><itemizedlist>
-<listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_view_t">types.dt_view_t</link></para>
-<para></para></listitem>
-<listitem><para>Attributes : </para></listitem>
-<link linkend="attributes_has_pairs">has_pairs</link> <link linkend="attributes_has_tostring">has_tostring</link> </itemizedlist>
+<listitem><para><emphasis><link linkend="attributes_has_pairs">has_pairs</link></emphasis></para></listitem>
+<listitem><para><emphasis><link linkend="attributes_has_tostring">has_tostring</link></emphasis></para></listitem>
+<listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_view_t">types.dt_view_t</link></para></listitem>
+</itemizedlist>
 </synopsis></entry>
 </row></tbody>
 </tgroup></informaltable>
@@ -1586,10 +1594,10 @@ see <link linkend="darktable_modules_storage_email">darktable.modules.storage.em
 <tbody><row>
 <entry>Attributes:</entry>
 <entry><synopsis><itemizedlist>
-<listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_view_t">types.dt_view_t</link></para>
-<para></para></listitem>
-<listitem><para>Attributes : </para></listitem>
-<link linkend="attributes_has_pairs">has_pairs</link> <link linkend="attributes_has_tostring">has_tostring</link> </itemizedlist>
+<listitem><para><emphasis><link linkend="attributes_has_pairs">has_pairs</link></emphasis></para></listitem>
+<listitem><para><emphasis><link linkend="attributes_has_tostring">has_tostring</link></emphasis></para></listitem>
+<listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_view_t">types.dt_view_t</link></para></listitem>
+</itemizedlist>
 </synopsis></entry>
 </row></tbody>
 </tgroup></informaltable>
@@ -1623,8 +1631,8 @@ end</programlisting>
 <tbody><row>
 <entry>Attributes:</entry>
 <entry><synopsis><itemizedlist>
-<listitem><para>Attributes : </para></listitem>
-<link linkend="attributes_has_pairs">has_pairs</link> </itemizedlist>
+<listitem><para><emphasis><link linkend="attributes_has_pairs">has_pairs</link></emphasis></para></listitem>
+</itemizedlist>
 </synopsis></entry>
 </row></tbody>
 </tgroup></informaltable>
@@ -1641,21 +1649,19 @@ end</programlisting>
 <tbody><row>
 <entry>Attributes:</entry>
 <entry><synopsis><itemizedlist>
-<listitem><para><emphasis>container : </emphasis>DT_UI_CONTAINER_PANEL_LEFT_BOTTOM</para>
-<para></para></listitem>
-<listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_lib_module_t">types.dt_lib_module_t</link></para>
-<para></para></listitem>
-<listitem><para><emphasis>position : </emphasis>1</para>
-<para></para></listitem>
+<listitem><para><emphasis>container : </emphasis>DT_UI_CONTAINER_PANEL_LEFT_BOTTOM</para></listitem>
+<listitem><para><emphasis><link linkend="attributes_has_pairs">has_pairs</link></emphasis></para></listitem>
+<listitem><para><emphasis><link linkend="attributes_has_tostring">has_tostring</link></emphasis></para></listitem>
+<listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_lib_module_t">types.dt_lib_module_t</link></para></listitem>
+<listitem><para><emphasis>position : </emphasis>1</para></listitem>
 <listitem><para><emphasis>views : </emphasis></para>
-<para></para></listitem>
-<itemizedlist>
+<para><itemizedlist>
 <listitem><para><link linkend="darktable_modules_view_lighttable">darktable.modules.view.lighttable</link></para></listitem>
 <listitem><para><link linkend="darktable_modules_view_darkroom">darktable.modules.view.darkroom</link></para></listitem>
 <listitem><para><link linkend="darktable_modules_view_tethering">darktable.modules.view.tethering</link></para></listitem>
 </itemizedlist>
-<listitem><para>Attributes : </para></listitem>
-<link linkend="attributes_has_pairs">has_pairs</link> <link linkend="attributes_has_tostring">has_tostring</link> </itemizedlist>
+</para></listitem>
+</itemizedlist>
 </synopsis></entry>
 </row></tbody>
 </tgroup></informaltable>
@@ -1721,19 +1727,17 @@ end</programlisting>
 <tbody><row>
 <entry>Attributes:</entry>
 <entry><synopsis><itemizedlist>
-<listitem><para><emphasis>container : </emphasis>DT_UI_CONTAINER_PANEL_RIGHT_CENTER</para>
-<para></para></listitem>
-<listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_lib_module_t">types.dt_lib_module_t</link></para>
-<para></para></listitem>
-<listitem><para><emphasis>position : </emphasis>599</para>
-<para></para></listitem>
+<listitem><para><emphasis>container : </emphasis>DT_UI_CONTAINER_PANEL_RIGHT_CENTER</para></listitem>
+<listitem><para><emphasis><link linkend="attributes_has_pairs">has_pairs</link></emphasis></para></listitem>
+<listitem><para><emphasis><link linkend="attributes_has_tostring">has_tostring</link></emphasis></para></listitem>
+<listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_lib_module_t">types.dt_lib_module_t</link></para></listitem>
+<listitem><para><emphasis>position : </emphasis>599</para></listitem>
 <listitem><para><emphasis>views : </emphasis></para>
-<para></para></listitem>
-<itemizedlist>
+<para><itemizedlist>
 <listitem><para><link linkend="darktable_modules_view_lighttable">darktable.modules.view.lighttable</link></para></listitem>
 </itemizedlist>
-<listitem><para>Attributes : </para></listitem>
-<link linkend="attributes_has_pairs">has_pairs</link> <link linkend="attributes_has_tostring">has_tostring</link> </itemizedlist>
+</para></listitem>
+</itemizedlist>
 </synopsis></entry>
 </row></tbody>
 </tgroup></informaltable>
@@ -1752,23 +1756,21 @@ end</programlisting>
 <tbody><row>
 <entry>Attributes:</entry>
 <entry><synopsis><itemizedlist>
-<listitem><para><emphasis>container : </emphasis>DT_UI_CONTAINER_PANEL_LEFT_CENTER</para>
-<para></para></listitem>
-<listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_lib_module_t">types.dt_lib_module_t</link></para>
-<para></para></listitem>
-<listitem><para><emphasis>position : </emphasis>299</para>
-<para></para></listitem>
+<listitem><para><emphasis>container : </emphasis>DT_UI_CONTAINER_PANEL_LEFT_CENTER</para></listitem>
+<listitem><para><emphasis><link linkend="attributes_has_pairs">has_pairs</link></emphasis></para></listitem>
+<listitem><para><emphasis><link linkend="attributes_has_tostring">has_tostring</link></emphasis></para></listitem>
+<listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_lib_module_t">types.dt_lib_module_t</link></para></listitem>
+<listitem><para><emphasis>position : </emphasis>299</para></listitem>
 <listitem><para><emphasis>views : </emphasis></para>
-<para></para></listitem>
-<itemizedlist>
+<para><itemizedlist>
 <listitem><para><link linkend="darktable_modules_view_lighttable">darktable.modules.view.lighttable</link></para></listitem>
 <listitem><para><link linkend="darktable_modules_view_darkroom">darktable.modules.view.darkroom</link></para></listitem>
 <listitem><para><link linkend="darktable_modules_view_tethering">darktable.modules.view.tethering</link></para></listitem>
 <listitem><para><link linkend="darktable_modules_view_map">darktable.modules.view.map</link></para></listitem>
 <listitem><para><link linkend="darktable_modules_view_slideshow">darktable.modules.view.slideshow</link></para></listitem>
 </itemizedlist>
-<listitem><para>Attributes : </para></listitem>
-<link linkend="attributes_has_pairs">has_pairs</link> <link linkend="attributes_has_tostring">has_tostring</link> </itemizedlist>
+</para></listitem>
+</itemizedlist>
 </synopsis></entry>
 </row></tbody>
 </tgroup></informaltable>
@@ -1787,20 +1789,18 @@ end</programlisting>
 <tbody><row>
 <entry>Attributes:</entry>
 <entry><synopsis><itemizedlist>
-<listitem><para><emphasis>container : </emphasis>DT_UI_CONTAINER_PANEL_RIGHT_CENTER</para>
-<para></para></listitem>
-<listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_lib_module_t">types.dt_lib_module_t</link></para>
-<para></para></listitem>
-<listitem><para><emphasis>position : </emphasis>510</para>
-<para></para></listitem>
+<listitem><para><emphasis>container : </emphasis>DT_UI_CONTAINER_PANEL_RIGHT_CENTER</para></listitem>
+<listitem><para><emphasis><link linkend="attributes_has_pairs">has_pairs</link></emphasis></para></listitem>
+<listitem><para><emphasis><link linkend="attributes_has_tostring">has_tostring</link></emphasis></para></listitem>
+<listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_lib_module_t">types.dt_lib_module_t</link></para></listitem>
+<listitem><para><emphasis>position : </emphasis>510</para></listitem>
 <listitem><para><emphasis>views : </emphasis></para>
-<para></para></listitem>
-<itemizedlist>
+<para><itemizedlist>
 <listitem><para><link linkend="darktable_modules_view_lighttable">darktable.modules.view.lighttable</link></para></listitem>
 <listitem><para><link linkend="darktable_modules_view_tethering">darktable.modules.view.tethering</link></para></listitem>
 </itemizedlist>
-<listitem><para>Attributes : </para></listitem>
-<link linkend="attributes_has_pairs">has_pairs</link> <link linkend="attributes_has_tostring">has_tostring</link> </itemizedlist>
+</para></listitem>
+</itemizedlist>
 </synopsis></entry>
 </row></tbody>
 </tgroup></informaltable>
@@ -1819,21 +1819,19 @@ end</programlisting>
 <tbody><row>
 <entry>Attributes:</entry>
 <entry><synopsis><itemizedlist>
-<listitem><para><emphasis>container : </emphasis>DT_UI_CONTAINER_PANEL_TOP_CENTER</para>
-<para></para></listitem>
-<listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_lib_module_t">types.dt_lib_module_t</link></para>
-<para></para></listitem>
-<listitem><para><emphasis>position : </emphasis>1</para>
-<para></para></listitem>
+<listitem><para><emphasis>container : </emphasis>DT_UI_CONTAINER_PANEL_TOP_CENTER</para></listitem>
+<listitem><para><emphasis><link linkend="attributes_has_pairs">has_pairs</link></emphasis></para></listitem>
+<listitem><para><emphasis><link linkend="attributes_has_tostring">has_tostring</link></emphasis></para></listitem>
+<listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_lib_module_t">types.dt_lib_module_t</link></para></listitem>
+<listitem><para><emphasis>position : </emphasis>1</para></listitem>
 <listitem><para><emphasis>views : </emphasis></para>
-<para></para></listitem>
-<itemizedlist>
+<para><itemizedlist>
 <listitem><para><link linkend="darktable_modules_view_lighttable">darktable.modules.view.lighttable</link></para></listitem>
 <listitem><para><link linkend="darktable_modules_view_darkroom">darktable.modules.view.darkroom</link></para></listitem>
 <listitem><para><link linkend="darktable_modules_view_tethering">darktable.modules.view.tethering</link></para></listitem>
 </itemizedlist>
-<listitem><para>Attributes : </para></listitem>
-<link linkend="attributes_has_pairs">has_pairs</link> <link linkend="attributes_has_tostring">has_tostring</link> </itemizedlist>
+</para></listitem>
+</itemizedlist>
 </synopsis></entry>
 </row></tbody>
 </tgroup></informaltable>
@@ -1852,19 +1850,17 @@ end</programlisting>
 <tbody><row>
 <entry>Attributes:</entry>
 <entry><synopsis><itemizedlist>
-<listitem><para><emphasis>container : </emphasis>DT_UI_CONTAINER_PANEL_RIGHT_BOTTOM</para>
-<para></para></listitem>
-<listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_lib_module_t">types.dt_lib_module_t</link></para>
-<para></para></listitem>
-<listitem><para><emphasis>position : </emphasis>1</para>
-<para></para></listitem>
+<listitem><para><emphasis>container : </emphasis>DT_UI_CONTAINER_PANEL_RIGHT_BOTTOM</para></listitem>
+<listitem><para><emphasis><link linkend="attributes_has_pairs">has_pairs</link></emphasis></para></listitem>
+<listitem><para><emphasis><link linkend="attributes_has_tostring">has_tostring</link></emphasis></para></listitem>
+<listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_lib_module_t">types.dt_lib_module_t</link></para></listitem>
+<listitem><para><emphasis>position : </emphasis>1</para></listitem>
 <listitem><para><emphasis>views : </emphasis></para>
-<para></para></listitem>
-<itemizedlist>
+<para><itemizedlist>
 <listitem><para><link linkend="darktable_modules_view_darkroom">darktable.modules.view.darkroom</link></para></listitem>
 </itemizedlist>
-<listitem><para>Attributes : </para></listitem>
-<link linkend="attributes_has_pairs">has_pairs</link> <link linkend="attributes_has_tostring">has_tostring</link> </itemizedlist>
+</para></listitem>
+</itemizedlist>
 </synopsis></entry>
 </row></tbody>
 </tgroup></informaltable>
@@ -1883,21 +1879,19 @@ end</programlisting>
 <tbody><row>
 <entry>Attributes:</entry>
 <entry><synopsis><itemizedlist>
-<listitem><para><emphasis>container : </emphasis>DT_UI_CONTAINER_PANEL_BOTTOM</para>
-<para></para></listitem>
-<listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_lib_module_t">types.dt_lib_module_t</link></para>
-<para></para></listitem>
-<listitem><para><emphasis>position : </emphasis>1001</para>
-<para></para></listitem>
+<listitem><para><emphasis>container : </emphasis>DT_UI_CONTAINER_PANEL_BOTTOM</para></listitem>
+<listitem><para><emphasis><link linkend="attributes_has_pairs">has_pairs</link></emphasis></para></listitem>
+<listitem><para><emphasis><link linkend="attributes_has_tostring">has_tostring</link></emphasis></para></listitem>
+<listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_lib_module_t">types.dt_lib_module_t</link></para></listitem>
+<listitem><para><emphasis>position : </emphasis>1001</para></listitem>
 <listitem><para><emphasis>views : </emphasis></para>
-<para></para></listitem>
-<itemizedlist>
+<para><itemizedlist>
 <listitem><para><link linkend="darktable_modules_view_darkroom">darktable.modules.view.darkroom</link></para></listitem>
 <listitem><para><link linkend="darktable_modules_view_tethering">darktable.modules.view.tethering</link></para></listitem>
 <listitem><para><link linkend="darktable_modules_view_map">darktable.modules.view.map</link></para></listitem>
 </itemizedlist>
-<listitem><para>Attributes : </para></listitem>
-<link linkend="attributes_has_pairs">has_pairs</link> <link linkend="attributes_has_tostring">has_tostring</link> </itemizedlist>
+</para></listitem>
+</itemizedlist>
 </synopsis></entry>
 </row></tbody>
 </tgroup></informaltable>
@@ -1916,23 +1910,21 @@ end</programlisting>
 <tbody><row>
 <entry>Attributes:</entry>
 <entry><synopsis><itemizedlist>
-<listitem><para><emphasis>container : </emphasis>DT_UI_CONTAINER_PANEL_TOP_RIGHT</para>
-<para></para></listitem>
-<listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_lib_module_t">types.dt_lib_module_t</link></para>
-<para></para></listitem>
-<listitem><para><emphasis>position : </emphasis>1001</para>
-<para></para></listitem>
+<listitem><para><emphasis>container : </emphasis>DT_UI_CONTAINER_PANEL_TOP_RIGHT</para></listitem>
+<listitem><para><emphasis><link linkend="attributes_has_pairs">has_pairs</link></emphasis></para></listitem>
+<listitem><para><emphasis><link linkend="attributes_has_tostring">has_tostring</link></emphasis></para></listitem>
+<listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_lib_module_t">types.dt_lib_module_t</link></para></listitem>
+<listitem><para><emphasis>position : </emphasis>1001</para></listitem>
 <listitem><para><emphasis>views : </emphasis></para>
-<para></para></listitem>
-<itemizedlist>
+<para><itemizedlist>
 <listitem><para><link linkend="darktable_modules_view_lighttable">darktable.modules.view.lighttable</link></para></listitem>
 <listitem><para><link linkend="darktable_modules_view_darkroom">darktable.modules.view.darkroom</link></para></listitem>
 <listitem><para><link linkend="darktable_modules_view_tethering">darktable.modules.view.tethering</link></para></listitem>
 <listitem><para><link linkend="darktable_modules_view_map">darktable.modules.view.map</link></para></listitem>
 <listitem><para><link linkend="darktable_modules_view_slideshow">darktable.modules.view.slideshow</link></para></listitem>
 </itemizedlist>
-<listitem><para>Attributes : </para></listitem>
-<link linkend="attributes_has_pairs">has_pairs</link> <link linkend="attributes_has_tostring">has_tostring</link> </itemizedlist>
+</para></listitem>
+</itemizedlist>
 </synopsis></entry>
 </row></tbody>
 </tgroup></informaltable>
@@ -1951,23 +1943,21 @@ end</programlisting>
 <tbody><row>
 <entry>Attributes:</entry>
 <entry><synopsis><itemizedlist>
-<listitem><para><emphasis>container : </emphasis>DT_UI_CONTAINER_PANEL_TOP_LEFT</para>
-<para></para></listitem>
-<listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_lib_module_t">types.dt_lib_module_t</link></para>
-<para></para></listitem>
-<listitem><para><emphasis>position : </emphasis>1001</para>
-<para></para></listitem>
+<listitem><para><emphasis>container : </emphasis>DT_UI_CONTAINER_PANEL_TOP_LEFT</para></listitem>
+<listitem><para><emphasis><link linkend="attributes_has_pairs">has_pairs</link></emphasis></para></listitem>
+<listitem><para><emphasis><link linkend="attributes_has_tostring">has_tostring</link></emphasis></para></listitem>
+<listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_lib_module_t">types.dt_lib_module_t</link></para></listitem>
+<listitem><para><emphasis>position : </emphasis>1001</para></listitem>
 <listitem><para><emphasis>views : </emphasis></para>
-<para></para></listitem>
-<itemizedlist>
+<para><itemizedlist>
 <listitem><para><link linkend="darktable_modules_view_lighttable">darktable.modules.view.lighttable</link></para></listitem>
 <listitem><para><link linkend="darktable_modules_view_darkroom">darktable.modules.view.darkroom</link></para></listitem>
 <listitem><para><link linkend="darktable_modules_view_tethering">darktable.modules.view.tethering</link></para></listitem>
 <listitem><para><link linkend="darktable_modules_view_map">darktable.modules.view.map</link></para></listitem>
 <listitem><para><link linkend="darktable_modules_view_slideshow">darktable.modules.view.slideshow</link></para></listitem>
 </itemizedlist>
-<listitem><para>Attributes : </para></listitem>
-<link linkend="attributes_has_pairs">has_pairs</link> <link linkend="attributes_has_tostring">has_tostring</link> </itemizedlist>
+</para></listitem>
+</itemizedlist>
 </synopsis></entry>
 </row></tbody>
 </tgroup></informaltable>
@@ -1986,21 +1976,19 @@ end</programlisting>
 <tbody><row>
 <entry>Attributes:</entry>
 <entry><synopsis><itemizedlist>
-<listitem><para><emphasis>container : </emphasis>DT_UI_CONTAINER_PANEL_RIGHT_CENTER</para>
-<para></para></listitem>
-<listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_lib_module_t">types.dt_lib_module_t</link></para>
-<para></para></listitem>
-<listitem><para><emphasis>position : </emphasis>500</para>
-<para></para></listitem>
+<listitem><para><emphasis>container : </emphasis>DT_UI_CONTAINER_PANEL_RIGHT_CENTER</para></listitem>
+<listitem><para><emphasis><link linkend="attributes_has_pairs">has_pairs</link></emphasis></para></listitem>
+<listitem><para><emphasis><link linkend="attributes_has_tostring">has_tostring</link></emphasis></para></listitem>
+<listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_lib_module_t">types.dt_lib_module_t</link></para></listitem>
+<listitem><para><emphasis>position : </emphasis>500</para></listitem>
 <listitem><para><emphasis>views : </emphasis></para>
-<para></para></listitem>
-<itemizedlist>
+<para><itemizedlist>
 <listitem><para><link linkend="darktable_modules_view_lighttable">darktable.modules.view.lighttable</link></para></listitem>
 <listitem><para><link linkend="darktable_modules_view_tethering">darktable.modules.view.tethering</link></para></listitem>
 <listitem><para><link linkend="darktable_modules_view_map">darktable.modules.view.map</link></para></listitem>
 </itemizedlist>
-<listitem><para>Attributes : </para></listitem>
-<link linkend="attributes_has_pairs">has_pairs</link> <link linkend="attributes_has_tostring">has_tostring</link> </itemizedlist>
+</para></listitem>
+</itemizedlist>
 </synopsis></entry>
 </row></tbody>
 </tgroup></informaltable>
@@ -2019,19 +2007,17 @@ end</programlisting>
 <tbody><row>
 <entry>Attributes:</entry>
 <entry><synopsis><itemizedlist>
-<listitem><para><emphasis>container : </emphasis>DT_UI_CONTAINER_PANEL_RIGHT_CENTER</para>
-<para></para></listitem>
-<listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_lib_module_t">types.dt_lib_module_t</link></para>
-<para></para></listitem>
-<listitem><para><emphasis>position : </emphasis>450</para>
-<para></para></listitem>
+<listitem><para><emphasis>container : </emphasis>DT_UI_CONTAINER_PANEL_RIGHT_CENTER</para></listitem>
+<listitem><para><emphasis><link linkend="attributes_has_pairs">has_pairs</link></emphasis></para></listitem>
+<listitem><para><emphasis><link linkend="attributes_has_tostring">has_tostring</link></emphasis></para></listitem>
+<listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_lib_module_t">types.dt_lib_module_t</link></para></listitem>
+<listitem><para><emphasis>position : </emphasis>450</para></listitem>
 <listitem><para><emphasis>views : </emphasis></para>
-<para></para></listitem>
-<itemizedlist>
+<para><itemizedlist>
 <listitem><para><link linkend="darktable_modules_view_lighttable">darktable.modules.view.lighttable</link></para></listitem>
 </itemizedlist>
-<listitem><para>Attributes : </para></listitem>
-<link linkend="attributes_has_pairs">has_pairs</link> <link linkend="attributes_has_tostring">has_tostring</link> </itemizedlist>
+</para></listitem>
+</itemizedlist>
 </synopsis></entry>
 </row></tbody>
 </tgroup></informaltable>
@@ -2050,20 +2036,18 @@ end</programlisting>
 <tbody><row>
 <entry>Attributes:</entry>
 <entry><synopsis><itemizedlist>
-<listitem><para><emphasis>container : </emphasis>DT_UI_CONTAINER_PANEL_LEFT_CENTER</para>
-<para></para></listitem>
-<listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_lib_module_t">types.dt_lib_module_t</link></para>
-<para></para></listitem>
-<listitem><para><emphasis>position : </emphasis>350</para>
-<para></para></listitem>
+<listitem><para><emphasis>container : </emphasis>DT_UI_CONTAINER_PANEL_LEFT_CENTER</para></listitem>
+<listitem><para><emphasis><link linkend="attributes_has_pairs">has_pairs</link></emphasis></para></listitem>
+<listitem><para><emphasis><link linkend="attributes_has_tostring">has_tostring</link></emphasis></para></listitem>
+<listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_lib_module_t">types.dt_lib_module_t</link></para></listitem>
+<listitem><para><emphasis>position : </emphasis>350</para></listitem>
 <listitem><para><emphasis>views : </emphasis></para>
-<para></para></listitem>
-<itemizedlist>
+<para><itemizedlist>
 <listitem><para><link linkend="darktable_modules_view_lighttable">darktable.modules.view.lighttable</link></para></listitem>
 <listitem><para><link linkend="darktable_modules_view_map">darktable.modules.view.map</link></para></listitem>
 </itemizedlist>
-<listitem><para>Attributes : </para></listitem>
-<link linkend="attributes_has_pairs">has_pairs</link> <link linkend="attributes_has_tostring">has_tostring</link> </itemizedlist>
+</para></listitem>
+</itemizedlist>
 </synopsis></entry>
 </row></tbody>
 </tgroup></informaltable>
@@ -2082,22 +2066,20 @@ end</programlisting>
 <tbody><row>
 <entry>Attributes:</entry>
 <entry><synopsis><itemizedlist>
-<listitem><para><emphasis>container : </emphasis>DT_UI_CONTAINER_PANEL_CENTER_TOP_RIGHT</para>
-<para></para></listitem>
-<listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_lib_module_t">types.dt_lib_module_t</link></para>
-<para></para></listitem>
-<listitem><para><emphasis>position : </emphasis>1001</para>
-<para></para></listitem>
+<listitem><para><emphasis>container : </emphasis>DT_UI_CONTAINER_PANEL_CENTER_TOP_RIGHT</para></listitem>
+<listitem><para><emphasis><link linkend="attributes_has_pairs">has_pairs</link></emphasis></para></listitem>
+<listitem><para><emphasis><link linkend="attributes_has_tostring">has_tostring</link></emphasis></para></listitem>
+<listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_lib_module_t">types.dt_lib_module_t</link></para></listitem>
+<listitem><para><emphasis>position : </emphasis>1001</para></listitem>
 <listitem><para><emphasis>views : </emphasis></para>
-<para></para></listitem>
-<itemizedlist>
+<para><itemizedlist>
 <listitem><para><link linkend="darktable_modules_view_lighttable">darktable.modules.view.lighttable</link></para></listitem>
 <listitem><para><link linkend="darktable_modules_view_darkroom">darktable.modules.view.darkroom</link></para></listitem>
 <listitem><para><link linkend="darktable_modules_view_tethering">darktable.modules.view.tethering</link></para></listitem>
 <listitem><para><link linkend="darktable_modules_view_map">darktable.modules.view.map</link></para></listitem>
 </itemizedlist>
-<listitem><para>Attributes : </para></listitem>
-<link linkend="attributes_has_pairs">has_pairs</link> <link linkend="attributes_has_tostring">has_tostring</link> </itemizedlist>
+</para></listitem>
+</itemizedlist>
 </synopsis></entry>
 </row></tbody>
 </tgroup></informaltable>
@@ -2116,23 +2098,21 @@ end</programlisting>
 <tbody><row>
 <entry>Attributes:</entry>
 <entry><synopsis><itemizedlist>
-<listitem><para><emphasis>container : </emphasis>DT_UI_CONTAINER_PANEL_CENTER_TOP_CENTER</para>
-<para></para></listitem>
-<listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_lib_module_t">types.dt_lib_module_t</link></para>
-<para></para></listitem>
-<listitem><para><emphasis>position : </emphasis>1001</para>
-<para></para></listitem>
+<listitem><para><emphasis>container : </emphasis>DT_UI_CONTAINER_PANEL_CENTER_TOP_CENTER</para></listitem>
+<listitem><para><emphasis><link linkend="attributes_has_pairs">has_pairs</link></emphasis></para></listitem>
+<listitem><para><emphasis><link linkend="attributes_has_tostring">has_tostring</link></emphasis></para></listitem>
+<listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_lib_module_t">types.dt_lib_module_t</link></para></listitem>
+<listitem><para><emphasis>position : </emphasis>1001</para></listitem>
 <listitem><para><emphasis>views : </emphasis></para>
-<para></para></listitem>
-<itemizedlist>
+<para><itemizedlist>
 <listitem><para><link linkend="darktable_modules_view_lighttable">darktable.modules.view.lighttable</link></para></listitem>
 <listitem><para><link linkend="darktable_modules_view_darkroom">darktable.modules.view.darkroom</link></para></listitem>
 <listitem><para><link linkend="darktable_modules_view_tethering">darktable.modules.view.tethering</link></para></listitem>
 <listitem><para><link linkend="darktable_modules_view_map">darktable.modules.view.map</link></para></listitem>
 <listitem><para><link linkend="darktable_modules_view_slideshow">darktable.modules.view.slideshow</link></para></listitem>
 </itemizedlist>
-<listitem><para>Attributes : </para></listitem>
-<link linkend="attributes_has_pairs">has_pairs</link> <link linkend="attributes_has_tostring">has_tostring</link> </itemizedlist>
+</para></listitem>
+</itemizedlist>
 </synopsis></entry>
 </row></tbody>
 </tgroup></informaltable>
@@ -2151,19 +2131,17 @@ end</programlisting>
 <tbody><row>
 <entry>Attributes:</entry>
 <entry><synopsis><itemizedlist>
-<listitem><para><emphasis>container : </emphasis>DT_UI_CONTAINER_PANEL_LEFT_CENTER</para>
-<para></para></listitem>
-<listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_lib_module_t">types.dt_lib_module_t</link></para>
-<para></para></listitem>
-<listitem><para><emphasis>position : </emphasis>999</para>
-<para></para></listitem>
+<listitem><para><emphasis>container : </emphasis>DT_UI_CONTAINER_PANEL_LEFT_CENTER</para></listitem>
+<listitem><para><emphasis><link linkend="attributes_has_pairs">has_pairs</link></emphasis></para></listitem>
+<listitem><para><emphasis><link linkend="attributes_has_tostring">has_tostring</link></emphasis></para></listitem>
+<listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_lib_module_t">types.dt_lib_module_t</link></para></listitem>
+<listitem><para><emphasis>position : </emphasis>999</para></listitem>
 <listitem><para><emphasis>views : </emphasis></para>
-<para></para></listitem>
-<itemizedlist>
+<para><itemizedlist>
 <listitem><para><link linkend="darktable_modules_view_lighttable">darktable.modules.view.lighttable</link></para></listitem>
 </itemizedlist>
-<listitem><para>Attributes : </para></listitem>
-<link linkend="attributes_has_pairs">has_pairs</link> <link linkend="attributes_has_tostring">has_tostring</link> </itemizedlist>
+</para></listitem>
+</itemizedlist>
 </synopsis></entry>
 </row></tbody>
 </tgroup></informaltable>
@@ -2182,20 +2160,18 @@ end</programlisting>
 <tbody><row>
 <entry>Attributes:</entry>
 <entry><synopsis><itemizedlist>
-<listitem><para><emphasis>container : </emphasis>DT_UI_CONTAINER_PANEL_CENTER_BOTTOM_LEFT</para>
-<para></para></listitem>
-<listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_lib_module_t">types.dt_lib_module_t</link></para>
-<para></para></listitem>
-<listitem><para><emphasis>position : </emphasis>1002</para>
-<para></para></listitem>
+<listitem><para><emphasis>container : </emphasis>DT_UI_CONTAINER_PANEL_CENTER_BOTTOM_LEFT</para></listitem>
+<listitem><para><emphasis><link linkend="attributes_has_pairs">has_pairs</link></emphasis></para></listitem>
+<listitem><para><emphasis><link linkend="attributes_has_tostring">has_tostring</link></emphasis></para></listitem>
+<listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_lib_module_t">types.dt_lib_module_t</link></para></listitem>
+<listitem><para><emphasis>position : </emphasis>1002</para></listitem>
 <listitem><para><emphasis>views : </emphasis></para>
-<para></para></listitem>
-<itemizedlist>
+<para><itemizedlist>
 <listitem><para><link linkend="darktable_modules_view_lighttable">darktable.modules.view.lighttable</link></para></listitem>
 <listitem><para><link linkend="darktable_modules_view_tethering">darktable.modules.view.tethering</link></para></listitem>
 </itemizedlist>
-<listitem><para>Attributes : </para></listitem>
-<link linkend="attributes_has_pairs">has_pairs</link> <link linkend="attributes_has_tostring">has_tostring</link> </itemizedlist>
+</para></listitem>
+</itemizedlist>
 </synopsis></entry>
 </row></tbody>
 </tgroup></informaltable>
@@ -2214,19 +2190,17 @@ end</programlisting>
 <tbody><row>
 <entry>Attributes:</entry>
 <entry><synopsis><itemizedlist>
-<listitem><para><emphasis>container : </emphasis>DT_UI_CONTAINER_PANEL_RIGHT_CENTER</para>
-<para></para></listitem>
-<listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_lib_module_t">types.dt_lib_module_t</link></para>
-<para></para></listitem>
-<listitem><para><emphasis>position : </emphasis>800</para>
-<para></para></listitem>
+<listitem><para><emphasis>container : </emphasis>DT_UI_CONTAINER_PANEL_RIGHT_CENTER</para></listitem>
+<listitem><para><emphasis><link linkend="attributes_has_pairs">has_pairs</link></emphasis></para></listitem>
+<listitem><para><emphasis><link linkend="attributes_has_tostring">has_tostring</link></emphasis></para></listitem>
+<listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_lib_module_t">types.dt_lib_module_t</link></para></listitem>
+<listitem><para><emphasis>position : </emphasis>800</para></listitem>
 <listitem><para><emphasis>views : </emphasis></para>
-<para></para></listitem>
-<itemizedlist>
+<para><itemizedlist>
 <listitem><para><link linkend="darktable_modules_view_lighttable">darktable.modules.view.lighttable</link></para></listitem>
 </itemizedlist>
-<listitem><para>Attributes : </para></listitem>
-<link linkend="attributes_has_pairs">has_pairs</link> <link linkend="attributes_has_tostring">has_tostring</link> </itemizedlist>
+</para></listitem>
+</itemizedlist>
 </synopsis></entry>
 </row></tbody>
 </tgroup></informaltable>
@@ -2245,20 +2219,18 @@ end</programlisting>
 <tbody><row>
 <entry>Attributes:</entry>
 <entry><synopsis><itemizedlist>
-<listitem><para><emphasis>container : </emphasis>DT_UI_CONTAINER_PANEL_LEFT_CENTER</para>
-<para></para></listitem>
-<listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_lib_module_t">types.dt_lib_module_t</link></para>
-<para></para></listitem>
-<listitem><para><emphasis>position : </emphasis>400</para>
-<para></para></listitem>
+<listitem><para><emphasis>container : </emphasis>DT_UI_CONTAINER_PANEL_LEFT_CENTER</para></listitem>
+<listitem><para><emphasis><link linkend="attributes_has_pairs">has_pairs</link></emphasis></para></listitem>
+<listitem><para><emphasis><link linkend="attributes_has_tostring">has_tostring</link></emphasis></para></listitem>
+<listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_lib_module_t">types.dt_lib_module_t</link></para></listitem>
+<listitem><para><emphasis>position : </emphasis>400</para></listitem>
 <listitem><para><emphasis>views : </emphasis></para>
-<para></para></listitem>
-<itemizedlist>
+<para><itemizedlist>
 <listitem><para><link linkend="darktable_modules_view_lighttable">darktable.modules.view.lighttable</link></para></listitem>
 <listitem><para><link linkend="darktable_modules_view_map">darktable.modules.view.map</link></para></listitem>
 </itemizedlist>
-<listitem><para>Attributes : </para></listitem>
-<link linkend="attributes_has_pairs">has_pairs</link> <link linkend="attributes_has_tostring">has_tostring</link> </itemizedlist>
+</para></listitem>
+</itemizedlist>
 </synopsis></entry>
 </row></tbody>
 </tgroup></informaltable>
@@ -2277,20 +2249,18 @@ end</programlisting>
 <tbody><row>
 <entry>Attributes:</entry>
 <entry><synopsis><itemizedlist>
-<listitem><para><emphasis>container : </emphasis>DT_UI_CONTAINER_PANEL_CENTER_BOTTOM_LEFT</para>
-<para></para></listitem>
-<listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_lib_module_t">types.dt_lib_module_t</link></para>
-<para></para></listitem>
-<listitem><para><emphasis>position : </emphasis>1001</para>
-<para></para></listitem>
+<listitem><para><emphasis>container : </emphasis>DT_UI_CONTAINER_PANEL_CENTER_BOTTOM_LEFT</para></listitem>
+<listitem><para><emphasis><link linkend="attributes_has_pairs">has_pairs</link></emphasis></para></listitem>
+<listitem><para><emphasis><link linkend="attributes_has_tostring">has_tostring</link></emphasis></para></listitem>
+<listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_lib_module_t">types.dt_lib_module_t</link></para></listitem>
+<listitem><para><emphasis>position : </emphasis>1001</para></listitem>
 <listitem><para><emphasis>views : </emphasis></para>
-<para></para></listitem>
-<itemizedlist>
+<para><itemizedlist>
 <listitem><para><link linkend="darktable_modules_view_lighttable">darktable.modules.view.lighttable</link></para></listitem>
 <listitem><para><link linkend="darktable_modules_view_tethering">darktable.modules.view.tethering</link></para></listitem>
 </itemizedlist>
-<listitem><para>Attributes : </para></listitem>
-<link linkend="attributes_has_pairs">has_pairs</link> <link linkend="attributes_has_tostring">has_tostring</link> </itemizedlist>
+</para></listitem>
+</itemizedlist>
 </synopsis></entry>
 </row></tbody>
 </tgroup></informaltable>
@@ -2309,19 +2279,17 @@ end</programlisting>
 <tbody><row>
 <entry>Attributes:</entry>
 <entry><synopsis><itemizedlist>
-<listitem><para><emphasis>container : </emphasis>DT_UI_CONTAINER_PANEL_CENTER_BOTTOM_CENTER</para>
-<para></para></listitem>
-<listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_lib_module_t">types.dt_lib_module_t</link></para>
-<para></para></listitem>
-<listitem><para><emphasis>position : </emphasis>1001</para>
-<para></para></listitem>
+<listitem><para><emphasis>container : </emphasis>DT_UI_CONTAINER_PANEL_CENTER_BOTTOM_CENTER</para></listitem>
+<listitem><para><emphasis><link linkend="attributes_has_pairs">has_pairs</link></emphasis></para></listitem>
+<listitem><para><emphasis><link linkend="attributes_has_tostring">has_tostring</link></emphasis></para></listitem>
+<listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_lib_module_t">types.dt_lib_module_t</link></para></listitem>
+<listitem><para><emphasis>position : </emphasis>1001</para></listitem>
 <listitem><para><emphasis>views : </emphasis></para>
-<para></para></listitem>
-<itemizedlist>
+<para><itemizedlist>
 <listitem><para><link linkend="darktable_modules_view_lighttable">darktable.modules.view.lighttable</link></para></listitem>
 </itemizedlist>
-<listitem><para>Attributes : </para></listitem>
-<link linkend="attributes_has_pairs">has_pairs</link> <link linkend="attributes_has_tostring">has_tostring</link> </itemizedlist>
+</para></listitem>
+</itemizedlist>
 </synopsis></entry>
 </row></tbody>
 </tgroup></informaltable>
@@ -2340,19 +2308,17 @@ end</programlisting>
 <tbody><row>
 <entry>Attributes:</entry>
 <entry><synopsis><itemizedlist>
-<listitem><para><emphasis>container : </emphasis>DT_UI_CONTAINER_PANEL_RIGHT_CENTER</para>
-<para></para></listitem>
-<listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_lib_module_t">types.dt_lib_module_t</link></para>
-<para></para></listitem>
-<listitem><para><emphasis>position : </emphasis>600</para>
-<para></para></listitem>
+<listitem><para><emphasis>container : </emphasis>DT_UI_CONTAINER_PANEL_RIGHT_CENTER</para></listitem>
+<listitem><para><emphasis><link linkend="attributes_has_pairs">has_pairs</link></emphasis></para></listitem>
+<listitem><para><emphasis><link linkend="attributes_has_tostring">has_tostring</link></emphasis></para></listitem>
+<listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_lib_module_t">types.dt_lib_module_t</link></para></listitem>
+<listitem><para><emphasis>position : </emphasis>600</para></listitem>
 <listitem><para><emphasis>views : </emphasis></para>
-<para></para></listitem>
-<itemizedlist>
+<para><itemizedlist>
 <listitem><para><link linkend="darktable_modules_view_lighttable">darktable.modules.view.lighttable</link></para></listitem>
 </itemizedlist>
-<listitem><para>Attributes : </para></listitem>
-<link linkend="attributes_has_pairs">has_pairs</link> <link linkend="attributes_has_tostring">has_tostring</link> </itemizedlist>
+</para></listitem>
+</itemizedlist>
 </synopsis></entry>
 </row></tbody>
 </tgroup></informaltable>
@@ -2371,19 +2337,17 @@ end</programlisting>
 <tbody><row>
 <entry>Attributes:</entry>
 <entry><synopsis><itemizedlist>
-<listitem><para><emphasis>container : </emphasis>DT_UI_CONTAINER_PANEL_RIGHT_CENTER</para>
-<para></para></listitem>
-<listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_lib_module_t">types.dt_lib_module_t</link></para>
-<para></para></listitem>
-<listitem><para><emphasis>position : </emphasis>700</para>
-<para></para></listitem>
+<listitem><para><emphasis>container : </emphasis>DT_UI_CONTAINER_PANEL_RIGHT_CENTER</para></listitem>
+<listitem><para><emphasis><link linkend="attributes_has_pairs">has_pairs</link></emphasis></para></listitem>
+<listitem><para><emphasis><link linkend="attributes_has_tostring">has_tostring</link></emphasis></para></listitem>
+<listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_lib_module_t">types.dt_lib_module_t</link></para></listitem>
+<listitem><para><emphasis>position : </emphasis>700</para></listitem>
 <listitem><para><emphasis>views : </emphasis></para>
-<para></para></listitem>
-<itemizedlist>
+<para><itemizedlist>
 <listitem><para><link linkend="darktable_modules_view_lighttable">darktable.modules.view.lighttable</link></para></listitem>
 </itemizedlist>
-<listitem><para>Attributes : </para></listitem>
-<link linkend="attributes_has_pairs">has_pairs</link> <link linkend="attributes_has_tostring">has_tostring</link> </itemizedlist>
+</para></listitem>
+</itemizedlist>
 </synopsis></entry>
 </row></tbody>
 </tgroup></informaltable>
@@ -2402,19 +2366,17 @@ end</programlisting>
 <tbody><row>
 <entry>Attributes:</entry>
 <entry><synopsis><itemizedlist>
-<listitem><para><emphasis>container : </emphasis>DT_UI_CONTAINER_PANEL_RIGHT_TOP</para>
-<para></para></listitem>
-<listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_lib_module_t">types.dt_lib_module_t</link></para>
-<para></para></listitem>
-<listitem><para><emphasis>position : </emphasis>999</para>
-<para></para></listitem>
+<listitem><para><emphasis>container : </emphasis>DT_UI_CONTAINER_PANEL_RIGHT_TOP</para></listitem>
+<listitem><para><emphasis><link linkend="attributes_has_pairs">has_pairs</link></emphasis></para></listitem>
+<listitem><para><emphasis><link linkend="attributes_has_tostring">has_tostring</link></emphasis></para></listitem>
+<listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_lib_module_t">types.dt_lib_module_t</link></para></listitem>
+<listitem><para><emphasis>position : </emphasis>999</para></listitem>
 <listitem><para><emphasis>views : </emphasis></para>
-<para></para></listitem>
-<itemizedlist>
+<para><itemizedlist>
 <listitem><para><link linkend="darktable_modules_view_darkroom">darktable.modules.view.darkroom</link></para></listitem>
 </itemizedlist>
-<listitem><para>Attributes : </para></listitem>
-<link linkend="attributes_has_pairs">has_pairs</link> <link linkend="attributes_has_tostring">has_tostring</link> </itemizedlist>
+</para></listitem>
+</itemizedlist>
 </synopsis></entry>
 </row></tbody>
 </tgroup></informaltable>
@@ -2433,21 +2395,19 @@ end</programlisting>
 <tbody><row>
 <entry>Attributes:</entry>
 <entry><synopsis><itemizedlist>
-<listitem><para><emphasis>container : </emphasis>DT_UI_CONTAINER_PANEL_CENTER_BOTTOM_RIGHT</para>
-<para></para></listitem>
-<listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_lib_module_t">types.dt_lib_module_t</link></para>
-<para></para></listitem>
-<listitem><para><emphasis>position : </emphasis>100</para>
-<para></para></listitem>
+<listitem><para><emphasis>container : </emphasis>DT_UI_CONTAINER_PANEL_CENTER_BOTTOM_RIGHT</para></listitem>
+<listitem><para><emphasis><link linkend="attributes_has_pairs">has_pairs</link></emphasis></para></listitem>
+<listitem><para><emphasis><link linkend="attributes_has_tostring">has_tostring</link></emphasis></para></listitem>
+<listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_lib_module_t">types.dt_lib_module_t</link></para></listitem>
+<listitem><para><emphasis>position : </emphasis>100</para></listitem>
 <listitem><para><emphasis>views : </emphasis></para>
-<para></para></listitem>
-<itemizedlist>
+<para><itemizedlist>
 <listitem><para><link linkend="darktable_modules_view_lighttable">darktable.modules.view.lighttable</link></para></listitem>
 <listitem><para><link linkend="darktable_modules_view_darkroom">darktable.modules.view.darkroom</link></para></listitem>
 <listitem><para><link linkend="darktable_modules_view_tethering">darktable.modules.view.tethering</link></para></listitem>
 </itemizedlist>
-<listitem><para>Attributes : </para></listitem>
-<link linkend="attributes_has_pairs">has_pairs</link> <link linkend="attributes_has_tostring">has_tostring</link> </itemizedlist>
+</para></listitem>
+</itemizedlist>
 </synopsis></entry>
 </row></tbody>
 </tgroup></informaltable>
@@ -2466,19 +2426,17 @@ end</programlisting>
 <tbody><row>
 <entry>Attributes:</entry>
 <entry><synopsis><itemizedlist>
-<listitem><para><emphasis>container : </emphasis>DT_UI_CONTAINER_PANEL_LEFT_CENTER</para>
-<para></para></listitem>
-<listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_lib_module_t">types.dt_lib_module_t</link></para>
-<para></para></listitem>
-<listitem><para><emphasis>position : </emphasis>1000</para>
-<para></para></listitem>
+<listitem><para><emphasis>container : </emphasis>DT_UI_CONTAINER_PANEL_LEFT_CENTER</para></listitem>
+<listitem><para><emphasis><link linkend="attributes_has_pairs">has_pairs</link></emphasis></para></listitem>
+<listitem><para><emphasis><link linkend="attributes_has_tostring">has_tostring</link></emphasis></para></listitem>
+<listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_lib_module_t">types.dt_lib_module_t</link></para></listitem>
+<listitem><para><emphasis>position : </emphasis>1000</para></listitem>
 <listitem><para><emphasis>views : </emphasis></para>
-<para></para></listitem>
-<itemizedlist>
+<para><itemizedlist>
 <listitem><para><link linkend="darktable_modules_view_darkroom">darktable.modules.view.darkroom</link></para></listitem>
 </itemizedlist>
-<listitem><para>Attributes : </para></listitem>
-<link linkend="attributes_has_pairs">has_pairs</link> <link linkend="attributes_has_tostring">has_tostring</link> </itemizedlist>
+</para></listitem>
+</itemizedlist>
 </synopsis></entry>
 </row></tbody>
 </tgroup></informaltable>
@@ -2497,19 +2455,17 @@ end</programlisting>
 <tbody><row>
 <entry>Attributes:</entry>
 <entry><synopsis><itemizedlist>
-<listitem><para><emphasis>container : </emphasis>DT_UI_CONTAINER_PANEL_RIGHT_CENTER</para>
-<para></para></listitem>
-<listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_lib_module_t">types.dt_lib_module_t</link></para>
-<para></para></listitem>
-<listitem><para><emphasis>position : </emphasis>999</para>
-<para></para></listitem>
+<listitem><para><emphasis>container : </emphasis>DT_UI_CONTAINER_PANEL_RIGHT_CENTER</para></listitem>
+<listitem><para><emphasis><link linkend="attributes_has_pairs">has_pairs</link></emphasis></para></listitem>
+<listitem><para><emphasis><link linkend="attributes_has_tostring">has_tostring</link></emphasis></para></listitem>
+<listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_lib_module_t">types.dt_lib_module_t</link></para></listitem>
+<listitem><para><emphasis>position : </emphasis>999</para></listitem>
 <listitem><para><emphasis>views : </emphasis></para>
-<para></para></listitem>
-<itemizedlist>
+<para><itemizedlist>
 <listitem><para><link linkend="darktable_modules_view_tethering">darktable.modules.view.tethering</link></para></listitem>
 </itemizedlist>
-<listitem><para>Attributes : </para></listitem>
-<link linkend="attributes_has_pairs">has_pairs</link> <link linkend="attributes_has_tostring">has_tostring</link> </itemizedlist>
+</para></listitem>
+</itemizedlist>
 </synopsis></entry>
 </row></tbody>
 </tgroup></informaltable>
@@ -2528,20 +2484,18 @@ end</programlisting>
 <tbody><row>
 <entry>Attributes:</entry>
 <entry><synopsis><itemizedlist>
-<listitem><para><emphasis>container : </emphasis>DT_UI_CONTAINER_PANEL_RIGHT_TOP</para>
-<para></para></listitem>
-<listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_lib_module_t">types.dt_lib_module_t</link></para>
-<para></para></listitem>
-<listitem><para><emphasis>position : </emphasis>1001</para>
-<para></para></listitem>
+<listitem><para><emphasis>container : </emphasis>DT_UI_CONTAINER_PANEL_RIGHT_TOP</para></listitem>
+<listitem><para><emphasis><link linkend="attributes_has_pairs">has_pairs</link></emphasis></para></listitem>
+<listitem><para><emphasis><link linkend="attributes_has_tostring">has_tostring</link></emphasis></para></listitem>
+<listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_lib_module_t">types.dt_lib_module_t</link></para></listitem>
+<listitem><para><emphasis>position : </emphasis>1001</para></listitem>
 <listitem><para><emphasis>views : </emphasis></para>
-<para></para></listitem>
-<itemizedlist>
+<para><itemizedlist>
 <listitem><para><link linkend="darktable_modules_view_darkroom">darktable.modules.view.darkroom</link></para></listitem>
 <listitem><para><link linkend="darktable_modules_view_tethering">darktable.modules.view.tethering</link></para></listitem>
 </itemizedlist>
-<listitem><para>Attributes : </para></listitem>
-<link linkend="attributes_has_pairs">has_pairs</link> <link linkend="attributes_has_tostring">has_tostring</link> </itemizedlist>
+</para></listitem>
+</itemizedlist>
 </synopsis></entry>
 </row></tbody>
 </tgroup></informaltable>
@@ -2560,19 +2514,17 @@ end</programlisting>
 <tbody><row>
 <entry>Attributes:</entry>
 <entry><synopsis><itemizedlist>
-<listitem><para><emphasis>container : </emphasis>DT_UI_CONTAINER_PANEL_RIGHT_CENTER</para>
-<para></para></listitem>
-<listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_lib_module_t">types.dt_lib_module_t</link></para>
-<para></para></listitem>
-<listitem><para><emphasis>position : </emphasis>0</para>
-<para></para></listitem>
+<listitem><para><emphasis>container : </emphasis>DT_UI_CONTAINER_PANEL_RIGHT_CENTER</para></listitem>
+<listitem><para><emphasis><link linkend="attributes_has_pairs">has_pairs</link></emphasis></para></listitem>
+<listitem><para><emphasis><link linkend="attributes_has_tostring">has_tostring</link></emphasis></para></listitem>
+<listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_lib_module_t">types.dt_lib_module_t</link></para></listitem>
+<listitem><para><emphasis>position : </emphasis>0</para></listitem>
 <listitem><para><emphasis>views : </emphasis></para>
-<para></para></listitem>
-<itemizedlist>
+<para><itemizedlist>
 <listitem><para><link linkend="darktable_modules_view_lighttable">darktable.modules.view.lighttable</link></para></listitem>
 </itemizedlist>
-<listitem><para>Attributes : </para></listitem>
-<link linkend="attributes_has_pairs">has_pairs</link> <link linkend="attributes_has_tostring">has_tostring</link> </itemizedlist>
+</para></listitem>
+</itemizedlist>
 </synopsis></entry>
 </row></tbody>
 </tgroup></informaltable>
@@ -2591,19 +2543,17 @@ end</programlisting>
 <tbody><row>
 <entry>Attributes:</entry>
 <entry><synopsis><itemizedlist>
-<listitem><para><emphasis>container : </emphasis>DT_UI_CONTAINER_PANEL_LEFT_CENTER</para>
-<para></para></listitem>
-<listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_lib_module_t">types.dt_lib_module_t</link></para>
-<para></para></listitem>
-<listitem><para><emphasis>position : </emphasis>900</para>
-<para></para></listitem>
+<listitem><para><emphasis>container : </emphasis>DT_UI_CONTAINER_PANEL_LEFT_CENTER</para></listitem>
+<listitem><para><emphasis><link linkend="attributes_has_pairs">has_pairs</link></emphasis></para></listitem>
+<listitem><para><emphasis><link linkend="attributes_has_tostring">has_tostring</link></emphasis></para></listitem>
+<listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_lib_module_t">types.dt_lib_module_t</link></para></listitem>
+<listitem><para><emphasis>position : </emphasis>900</para></listitem>
 <listitem><para><emphasis>views : </emphasis></para>
-<para></para></listitem>
-<itemizedlist>
+<para><itemizedlist>
 <listitem><para><link linkend="darktable_modules_view_darkroom">darktable.modules.view.darkroom</link></para></listitem>
 </itemizedlist>
-<listitem><para>Attributes : </para></listitem>
-<link linkend="attributes_has_pairs">has_pairs</link> <link linkend="attributes_has_tostring">has_tostring</link> </itemizedlist>
+</para></listitem>
+</itemizedlist>
 </synopsis></entry>
 </row></tbody>
 </tgroup></informaltable>
@@ -2622,19 +2572,17 @@ end</programlisting>
 <tbody><row>
 <entry>Attributes:</entry>
 <entry><synopsis><itemizedlist>
-<listitem><para><emphasis>container : </emphasis>DT_UI_CONTAINER_PANEL_LEFT_CENTER</para>
-<para></para></listitem>
-<listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_lib_module_t">types.dt_lib_module_t</link></para>
-<para></para></listitem>
-<listitem><para><emphasis>position : </emphasis>800</para>
-<para></para></listitem>
+<listitem><para><emphasis>container : </emphasis>DT_UI_CONTAINER_PANEL_LEFT_CENTER</para></listitem>
+<listitem><para><emphasis><link linkend="attributes_has_pairs">has_pairs</link></emphasis></para></listitem>
+<listitem><para><emphasis><link linkend="attributes_has_tostring">has_tostring</link></emphasis></para></listitem>
+<listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_lib_module_t">types.dt_lib_module_t</link></para></listitem>
+<listitem><para><emphasis>position : </emphasis>800</para></listitem>
 <listitem><para><emphasis>views : </emphasis></para>
-<para></para></listitem>
-<itemizedlist>
+<para><itemizedlist>
 <listitem><para><link linkend="darktable_modules_view_darkroom">darktable.modules.view.darkroom</link></para></listitem>
 </itemizedlist>
-<listitem><para>Attributes : </para></listitem>
-<link linkend="attributes_has_pairs">has_pairs</link> <link linkend="attributes_has_tostring">has_tostring</link> </itemizedlist>
+</para></listitem>
+</itemizedlist>
 </synopsis></entry>
 </row></tbody>
 </tgroup></informaltable>
@@ -2653,19 +2601,17 @@ end</programlisting>
 <tbody><row>
 <entry>Attributes:</entry>
 <entry><synopsis><itemizedlist>
-<listitem><para><emphasis>container : </emphasis>DT_UI_CONTAINER_PANEL_LEFT_TOP</para>
-<para></para></listitem>
-<listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_lib_module_t">types.dt_lib_module_t</link></para>
-<para></para></listitem>
-<listitem><para><emphasis>position : </emphasis>1001</para>
-<para></para></listitem>
+<listitem><para><emphasis>container : </emphasis>DT_UI_CONTAINER_PANEL_LEFT_TOP</para></listitem>
+<listitem><para><emphasis><link linkend="attributes_has_pairs">has_pairs</link></emphasis></para></listitem>
+<listitem><para><emphasis><link linkend="attributes_has_tostring">has_tostring</link></emphasis></para></listitem>
+<listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_lib_module_t">types.dt_lib_module_t</link></para></listitem>
+<listitem><para><emphasis>position : </emphasis>1001</para></listitem>
 <listitem><para><emphasis>views : </emphasis></para>
-<para></para></listitem>
-<itemizedlist>
+<para><itemizedlist>
 <listitem><para><link linkend="darktable_modules_view_darkroom">darktable.modules.view.darkroom</link></para></listitem>
 </itemizedlist>
-<listitem><para>Attributes : </para></listitem>
-<link linkend="attributes_has_pairs">has_pairs</link> <link linkend="attributes_has_tostring">has_tostring</link> </itemizedlist>
+</para></listitem>
+</itemizedlist>
 </synopsis></entry>
 </row></tbody>
 </tgroup></informaltable>
@@ -2684,19 +2630,17 @@ end</programlisting>
 <tbody><row>
 <entry>Attributes:</entry>
 <entry><synopsis><itemizedlist>
-<listitem><para><emphasis>container : </emphasis>DT_UI_CONTAINER_PANEL_LEFT_CENTER</para>
-<para></para></listitem>
-<listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_lib_module_t">types.dt_lib_module_t</link></para>
-<para></para></listitem>
-<listitem><para><emphasis>position : </emphasis>10</para>
-<para></para></listitem>
+<listitem><para><emphasis>container : </emphasis>DT_UI_CONTAINER_PANEL_LEFT_CENTER</para></listitem>
+<listitem><para><emphasis><link linkend="attributes_has_pairs">has_pairs</link></emphasis></para></listitem>
+<listitem><para><emphasis><link linkend="attributes_has_tostring">has_tostring</link></emphasis></para></listitem>
+<listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_lib_module_t">types.dt_lib_module_t</link></para></listitem>
+<listitem><para><emphasis>position : </emphasis>10</para></listitem>
 <listitem><para><emphasis>views : </emphasis></para>
-<para></para></listitem>
-<itemizedlist>
+<para><itemizedlist>
 <listitem><para><link linkend="darktable_modules_view_darkroom">darktable.modules.view.darkroom</link></para></listitem>
 </itemizedlist>
-<listitem><para>Attributes : </para></listitem>
-<link linkend="attributes_has_pairs">has_pairs</link> <link linkend="attributes_has_tostring">has_tostring</link> </itemizedlist>
+</para></listitem>
+</itemizedlist>
 </synopsis></entry>
 </row></tbody>
 </tgroup></informaltable>
@@ -2715,21 +2659,19 @@ end</programlisting>
 <tbody><row>
 <entry>Attributes:</entry>
 <entry><synopsis><itemizedlist>
-<listitem><para><emphasis>container : </emphasis>DT_UI_CONTAINER_PANEL_CENTER_BOTTOM_LEFT</para>
-<para></para></listitem>
-<listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_lib_module_t">types.dt_lib_module_t</link></para>
-<para></para></listitem>
-<listitem><para><emphasis>position : </emphasis>100</para>
-<para></para></listitem>
+<listitem><para><emphasis>container : </emphasis>DT_UI_CONTAINER_PANEL_CENTER_BOTTOM_LEFT</para></listitem>
+<listitem><para><emphasis><link linkend="attributes_has_pairs">has_pairs</link></emphasis></para></listitem>
+<listitem><para><emphasis><link linkend="attributes_has_tostring">has_tostring</link></emphasis></para></listitem>
+<listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_lib_module_t">types.dt_lib_module_t</link></para></listitem>
+<listitem><para><emphasis>position : </emphasis>100</para></listitem>
 <listitem><para><emphasis>views : </emphasis></para>
-<para></para></listitem>
-<itemizedlist>
+<para><itemizedlist>
 <listitem><para><link linkend="darktable_modules_view_lighttable">darktable.modules.view.lighttable</link></para></listitem>
 <listitem><para><link linkend="darktable_modules_view_darkroom">darktable.modules.view.darkroom</link></para></listitem>
 <listitem><para><link linkend="darktable_modules_view_tethering">darktable.modules.view.tethering</link></para></listitem>
 </itemizedlist>
-<listitem><para>Attributes : </para></listitem>
-<link linkend="attributes_has_pairs">has_pairs</link> <link linkend="attributes_has_tostring">has_tostring</link> </itemizedlist>
+</para></listitem>
+</itemizedlist>
 </synopsis></entry>
 </row></tbody>
 </tgroup></informaltable>
@@ -2748,19 +2690,17 @@ end</programlisting>
 <tbody><row>
 <entry>Attributes:</entry>
 <entry><synopsis><itemizedlist>
-<listitem><para><emphasis>container : </emphasis>DT_UI_CONTAINER_PANEL_RIGHT_CENTER</para>
-<para></para></listitem>
-<listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_lib_module_t">types.dt_lib_module_t</link></para>
-<para></para></listitem>
-<listitem><para><emphasis>position : </emphasis>998</para>
-<para></para></listitem>
+<listitem><para><emphasis>container : </emphasis>DT_UI_CONTAINER_PANEL_RIGHT_CENTER</para></listitem>
+<listitem><para><emphasis><link linkend="attributes_has_pairs">has_pairs</link></emphasis></para></listitem>
+<listitem><para><emphasis><link linkend="attributes_has_tostring">has_tostring</link></emphasis></para></listitem>
+<listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_lib_module_t">types.dt_lib_module_t</link></para></listitem>
+<listitem><para><emphasis>position : </emphasis>998</para></listitem>
 <listitem><para><emphasis>views : </emphasis></para>
-<para></para></listitem>
-<itemizedlist>
+<para><itemizedlist>
 <listitem><para><link linkend="darktable_modules_view_tethering">darktable.modules.view.tethering</link></para></listitem>
 </itemizedlist>
-<listitem><para>Attributes : </para></listitem>
-<link linkend="attributes_has_pairs">has_pairs</link> <link linkend="attributes_has_tostring">has_tostring</link> </itemizedlist>
+</para></listitem>
+</itemizedlist>
 </synopsis></entry>
 </row></tbody>
 </tgroup></informaltable>
@@ -2779,19 +2719,17 @@ end</programlisting>
 <tbody><row>
 <entry>Attributes:</entry>
 <entry><synopsis><itemizedlist>
-<listitem><para><emphasis>container : </emphasis>DT_UI_CONTAINER_PANEL_RIGHT_CENTER</para>
-<para></para></listitem>
-<listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_lib_module_t">types.dt_lib_module_t</link></para>
-<para></para></listitem>
-<listitem><para><emphasis>position : </emphasis>990</para>
-<para></para></listitem>
+<listitem><para><emphasis>container : </emphasis>DT_UI_CONTAINER_PANEL_RIGHT_CENTER</para></listitem>
+<listitem><para><emphasis><link linkend="attributes_has_pairs">has_pairs</link></emphasis></para></listitem>
+<listitem><para><emphasis><link linkend="attributes_has_tostring">has_tostring</link></emphasis></para></listitem>
+<listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_lib_module_t">types.dt_lib_module_t</link></para></listitem>
+<listitem><para><emphasis>position : </emphasis>990</para></listitem>
 <listitem><para><emphasis>views : </emphasis></para>
-<para></para></listitem>
-<itemizedlist>
+<para><itemizedlist>
 <listitem><para><link linkend="darktable_modules_view_map">darktable.modules.view.map</link></para></listitem>
 </itemizedlist>
-<listitem><para>Attributes : </para></listitem>
-<link linkend="attributes_has_pairs">has_pairs</link> <link linkend="attributes_has_tostring">has_tostring</link> </itemizedlist>
+</para></listitem>
+</itemizedlist>
 </synopsis></entry>
 </row></tbody>
 </tgroup></informaltable>
@@ -2810,19 +2748,17 @@ end</programlisting>
 <tbody><row>
 <entry>Attributes:</entry>
 <entry><synopsis><itemizedlist>
-<listitem><para><emphasis>container : </emphasis>DT_UI_CONTAINER_PANEL_RIGHT_CENTER</para>
-<para></para></listitem>
-<listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_lib_module_t">types.dt_lib_module_t</link></para>
-<para></para></listitem>
-<listitem><para><emphasis>position : </emphasis>997</para>
-<para></para></listitem>
+<listitem><para><emphasis>container : </emphasis>DT_UI_CONTAINER_PANEL_RIGHT_CENTER</para></listitem>
+<listitem><para><emphasis><link linkend="attributes_has_pairs">has_pairs</link></emphasis></para></listitem>
+<listitem><para><emphasis><link linkend="attributes_has_tostring">has_tostring</link></emphasis></para></listitem>
+<listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_lib_module_t">types.dt_lib_module_t</link></para></listitem>
+<listitem><para><emphasis>position : </emphasis>997</para></listitem>
 <listitem><para><emphasis>views : </emphasis></para>
-<para></para></listitem>
-<itemizedlist>
+<para><itemizedlist>
 <listitem><para><link linkend="darktable_modules_view_tethering">darktable.modules.view.tethering</link></para></listitem>
 </itemizedlist>
-<listitem><para>Attributes : </para></listitem>
-<link linkend="attributes_has_pairs">has_pairs</link> <link linkend="attributes_has_tostring">has_tostring</link> </itemizedlist>
+</para></listitem>
+</itemizedlist>
 </synopsis></entry>
 </row></tbody>
 </tgroup></informaltable>
@@ -2841,19 +2777,17 @@ end</programlisting>
 <tbody><row>
 <entry>Attributes:</entry>
 <entry><synopsis><itemizedlist>
-<listitem><para><emphasis>container : </emphasis>DT_UI_CONTAINER_PANEL_RIGHT_CENTER</para>
-<para></para></listitem>
-<listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_lib_module_t">types.dt_lib_module_t</link></para>
-<para></para></listitem>
-<listitem><para><emphasis>position : </emphasis>999</para>
-<para></para></listitem>
+<listitem><para><emphasis>container : </emphasis>DT_UI_CONTAINER_PANEL_RIGHT_CENTER</para></listitem>
+<listitem><para><emphasis><link linkend="attributes_has_pairs">has_pairs</link></emphasis></para></listitem>
+<listitem><para><emphasis><link linkend="attributes_has_tostring">has_tostring</link></emphasis></para></listitem>
+<listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_lib_module_t">types.dt_lib_module_t</link></para></listitem>
+<listitem><para><emphasis>position : </emphasis>999</para></listitem>
 <listitem><para><emphasis>views : </emphasis></para>
-<para></para></listitem>
-<itemizedlist>
+<para><itemizedlist>
 <listitem><para><link linkend="darktable_modules_view_map">darktable.modules.view.map</link></para></listitem>
 </itemizedlist>
-<listitem><para>Attributes : </para></listitem>
-<link linkend="attributes_has_pairs">has_pairs</link> <link linkend="attributes_has_tostring">has_tostring</link> </itemizedlist>
+</para></listitem>
+</itemizedlist>
 </synopsis></entry>
 </row></tbody>
 </tgroup></informaltable>
@@ -2972,10 +2906,9 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
 <tbody><row>
 <entry>Attributes:</entry>
 <entry><synopsis><itemizedlist>
-<listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_imageio_module_storage_t">types.dt_imageio_module_storage_t</link></para>
-<para></para></listitem>
-<listitem><para>Attributes : </para></listitem>
-<link linkend="attributes_has_pairs">has_pairs</link> </itemizedlist>
+<listitem><para><emphasis><link linkend="attributes_has_pairs">has_pairs</link></emphasis></para></listitem>
+<listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_imageio_module_storage_t">types.dt_imageio_module_storage_t</link></para></listitem>
+</itemizedlist>
 </synopsis></entry>
 </row></tbody>
 </tgroup></informaltable>
@@ -2997,8 +2930,9 @@ Note that this is the real image object; changing the value of a field will imme
 <tbody><row>
 <entry>Attributes:</entry>
 <entry><synopsis><itemizedlist>
-<listitem><para>Attributes : </para></listitem>
-<link linkend="attributes_has_pairs">has_pairs</link> <link linkend="attributes_has_tostring">has_tostring</link> </itemizedlist>
+<listitem><para><emphasis><link linkend="attributes_has_pairs">has_pairs</link></emphasis></para></listitem>
+<listitem><para><emphasis><link linkend="attributes_has_tostring">has_tostring</link></emphasis></para></listitem>
+</itemizedlist>
 </synopsis></entry>
 </row></tbody>
 </tgroup></informaltable>
@@ -3575,8 +3509,8 @@ see <link linkend="types_dt_lua_image_t_red">types.dt_lua_image_t.red</link>
 <tbody><row>
 <entry>Attributes:</entry>
 <entry><synopsis><itemizedlist>
-<listitem><para>Attributes : </para></listitem>
-<link linkend="attributes_has_pairs">has_pairs</link> </itemizedlist>
+<listitem><para><emphasis><link linkend="attributes_has_pairs">has_pairs</link></emphasis></para></listitem>
+</itemizedlist>
 </synopsis></entry>
 </row></tbody>
 </tgroup></informaltable>
@@ -3660,8 +3594,8 @@ see <link linkend="types_dt_lua_image_t_red">types.dt_lua_image_t.red</link>
 <tbody><row>
 <entry>Attributes:</entry>
 <entry><synopsis><itemizedlist>
-<listitem><para>Attributes : </para></listitem>
-<link linkend="attributes_implicit_yield">implicit_yield</link> </itemizedlist>
+<listitem><para><emphasis><link linkend="attributes_implicit_yield">implicit_yield</link></emphasis></para></listitem>
+</itemizedlist>
 </synopsis></entry>
 </row></tbody>
 </tgroup></informaltable>
@@ -3710,10 +3644,9 @@ see <link linkend="types_dt_lua_image_t_red">types.dt_lua_image_t.red</link>
 <tbody><row>
 <entry>Attributes:</entry>
 <entry><synopsis><itemizedlist>
-<listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_imageio_module_format_t">types.dt_imageio_module_format_t</link></para>
-<para></para></listitem>
-<listitem><para>Attributes : </para></listitem>
-<link linkend="attributes_has_pairs">has_pairs</link> </itemizedlist>
+<listitem><para><emphasis><link linkend="attributes_has_pairs">has_pairs</link></emphasis></para></listitem>
+<listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_imageio_module_format_t">types.dt_imageio_module_format_t</link></para></listitem>
+</itemizedlist>
 </synopsis></entry>
 </row></tbody>
 </tgroup></informaltable>
@@ -3744,10 +3677,9 @@ see <link linkend="types_dt_lua_image_t_red">types.dt_lua_image_t.red</link>
 <tbody><row>
 <entry>Attributes:</entry>
 <entry><synopsis><itemizedlist>
-<listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_imageio_module_format_t">types.dt_imageio_module_format_t</link></para>
-<para></para></listitem>
-<listitem><para>Attributes : </para></listitem>
-<link linkend="attributes_has_pairs">has_pairs</link> </itemizedlist>
+<listitem><para><emphasis><link linkend="attributes_has_pairs">has_pairs</link></emphasis></para></listitem>
+<listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_imageio_module_format_t">types.dt_imageio_module_format_t</link></para></listitem>
+</itemizedlist>
 </synopsis></entry>
 </row></tbody>
 </tgroup></informaltable>
@@ -3778,10 +3710,9 @@ see <link linkend="types_dt_lua_image_t_red">types.dt_lua_image_t.red</link>
 <tbody><row>
 <entry>Attributes:</entry>
 <entry><synopsis><itemizedlist>
-<listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_imageio_module_format_t">types.dt_imageio_module_format_t</link></para>
-<para></para></listitem>
-<listitem><para>Attributes : </para></listitem>
-<link linkend="attributes_has_pairs">has_pairs</link> </itemizedlist>
+<listitem><para><emphasis><link linkend="attributes_has_pairs">has_pairs</link></emphasis></para></listitem>
+<listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_imageio_module_format_t">types.dt_imageio_module_format_t</link></para></listitem>
+</itemizedlist>
 </synopsis></entry>
 </row></tbody>
 </tgroup></informaltable>
@@ -3801,10 +3732,9 @@ see <link linkend="types_dt_lua_image_t_red">types.dt_lua_image_t.red</link>
 <tbody><row>
 <entry>Attributes:</entry>
 <entry><synopsis><itemizedlist>
-<listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_imageio_module_format_t">types.dt_imageio_module_format_t</link></para>
-<para></para></listitem>
-<listitem><para>Attributes : </para></listitem>
-<link linkend="attributes_has_pairs">has_pairs</link> </itemizedlist>
+<listitem><para><emphasis><link linkend="attributes_has_pairs">has_pairs</link></emphasis></para></listitem>
+<listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_imageio_module_format_t">types.dt_imageio_module_format_t</link></para></listitem>
+</itemizedlist>
 </synopsis></entry>
 </row></tbody>
 </tgroup></informaltable>
@@ -3824,10 +3754,9 @@ see <link linkend="types_dt_lua_image_t_red">types.dt_lua_image_t.red</link>
 <tbody><row>
 <entry>Attributes:</entry>
 <entry><synopsis><itemizedlist>
-<listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_imageio_module_format_t">types.dt_imageio_module_format_t</link></para>
-<para></para></listitem>
-<listitem><para>Attributes : </para></listitem>
-<link linkend="attributes_has_pairs">has_pairs</link> </itemizedlist>
+<listitem><para><emphasis><link linkend="attributes_has_pairs">has_pairs</link></emphasis></para></listitem>
+<listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_imageio_module_format_t">types.dt_imageio_module_format_t</link></para></listitem>
+</itemizedlist>
 </synopsis></entry>
 </row></tbody>
 </tgroup></informaltable>
@@ -3847,10 +3776,9 @@ see <link linkend="types_dt_lua_image_t_red">types.dt_lua_image_t.red</link>
 <tbody><row>
 <entry>Attributes:</entry>
 <entry><synopsis><itemizedlist>
-<listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_imageio_module_format_t">types.dt_imageio_module_format_t</link></para>
-<para></para></listitem>
-<listitem><para>Attributes : </para></listitem>
-<link linkend="attributes_has_pairs">has_pairs</link> </itemizedlist>
+<listitem><para><emphasis><link linkend="attributes_has_pairs">has_pairs</link></emphasis></para></listitem>
+<listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_imageio_module_format_t">types.dt_imageio_module_format_t</link></para></listitem>
+</itemizedlist>
 </synopsis></entry>
 </row></tbody>
 </tgroup></informaltable>
@@ -3881,10 +3809,9 @@ see <link linkend="types_dt_lua_image_t_red">types.dt_lua_image_t.red</link>
 <tbody><row>
 <entry>Attributes:</entry>
 <entry><synopsis><itemizedlist>
-<listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_imageio_module_format_t">types.dt_imageio_module_format_t</link></para>
-<para></para></listitem>
-<listitem><para>Attributes : </para></listitem>
-<link linkend="attributes_has_pairs">has_pairs</link> </itemizedlist>
+<listitem><para><emphasis><link linkend="attributes_has_pairs">has_pairs</link></emphasis></para></listitem>
+<listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_imageio_module_format_t">types.dt_imageio_module_format_t</link></para></listitem>
+</itemizedlist>
 </synopsis></entry>
 </row></tbody>
 </tgroup></informaltable>
@@ -3904,10 +3831,9 @@ see <link linkend="types_dt_lua_image_t_red">types.dt_lua_image_t.red</link>
 <tbody><row>
 <entry>Attributes:</entry>
 <entry><synopsis><itemizedlist>
-<listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_imageio_module_format_t">types.dt_imageio_module_format_t</link></para>
-<para></para></listitem>
-<listitem><para>Attributes : </para></listitem>
-<link linkend="attributes_has_pairs">has_pairs</link> </itemizedlist>
+<listitem><para><emphasis><link linkend="attributes_has_pairs">has_pairs</link></emphasis></para></listitem>
+<listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_imageio_module_format_t">types.dt_imageio_module_format_t</link></para></listitem>
+</itemizedlist>
 </synopsis></entry>
 </row></tbody>
 </tgroup></informaltable>
@@ -3960,10 +3886,9 @@ see <link linkend="types_dt_lua_image_t_red">types.dt_lua_image_t.red</link>
 <tbody><row>
 <entry>Attributes:</entry>
 <entry><synopsis><itemizedlist>
-<listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_imageio_module_format_t">types.dt_imageio_module_format_t</link></para>
-<para></para></listitem>
-<listitem><para>Attributes : </para></listitem>
-<link linkend="attributes_has_pairs">has_pairs</link> </itemizedlist>
+<listitem><para><emphasis><link linkend="attributes_has_pairs">has_pairs</link></emphasis></para></listitem>
+<listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_imageio_module_format_t">types.dt_imageio_module_format_t</link></para></listitem>
+</itemizedlist>
 </synopsis></entry>
 </row></tbody>
 </tgroup></informaltable>
@@ -4027,8 +3952,8 @@ see <link linkend="types_dt_lua_image_t_red">types.dt_lua_image_t.red</link>
 <tbody><row>
 <entry>Attributes:</entry>
 <entry><synopsis><itemizedlist>
-<listitem><para>Attributes : </para></listitem>
-<link linkend="attributes_has_pairs">has_pairs</link> </itemizedlist>
+<listitem><para><emphasis><link linkend="attributes_has_pairs">has_pairs</link></emphasis></para></listitem>
+</itemizedlist>
 </synopsis></entry>
 </row></tbody>
 </tgroup></informaltable>
@@ -4146,10 +4071,9 @@ see <link linkend="types_dt_lua_image_t_red">types.dt_lua_image_t.red</link>
 <tbody><row>
 <entry>Attributes:</entry>
 <entry><synopsis><itemizedlist>
-<listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_imageio_module_storage_t">types.dt_imageio_module_storage_t</link></para>
-<para></para></listitem>
-<listitem><para>Attributes : </para></listitem>
-<link linkend="attributes_has_pairs">has_pairs</link> </itemizedlist>
+<listitem><para><emphasis><link linkend="attributes_has_pairs">has_pairs</link></emphasis></para></listitem>
+<listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_imageio_module_storage_t">types.dt_imageio_module_storage_t</link></para></listitem>
+</itemizedlist>
 </synopsis></entry>
 </row></tbody>
 </tgroup></informaltable>
@@ -4169,10 +4093,9 @@ see <link linkend="types_dt_lua_image_t_red">types.dt_lua_image_t.red</link>
 <tbody><row>
 <entry>Attributes:</entry>
 <entry><synopsis><itemizedlist>
-<listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_imageio_module_storage_t">types.dt_imageio_module_storage_t</link></para>
-<para></para></listitem>
-<listitem><para>Attributes : </para></listitem>
-<link linkend="attributes_has_pairs">has_pairs</link> </itemizedlist>
+<listitem><para><emphasis><link linkend="attributes_has_pairs">has_pairs</link></emphasis></para></listitem>
+<listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_imageio_module_storage_t">types.dt_imageio_module_storage_t</link></para></listitem>
+</itemizedlist>
 </synopsis></entry>
 </row></tbody>
 </tgroup></informaltable>
@@ -4192,10 +4115,9 @@ see <link linkend="types_dt_lua_image_t_red">types.dt_lua_image_t.red</link>
 <tbody><row>
 <entry>Attributes:</entry>
 <entry><synopsis><itemizedlist>
-<listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_imageio_module_storage_t">types.dt_imageio_module_storage_t</link></para>
-<para></para></listitem>
-<listitem><para>Attributes : </para></listitem>
-<link linkend="attributes_has_pairs">has_pairs</link> </itemizedlist>
+<listitem><para><emphasis><link linkend="attributes_has_pairs">has_pairs</link></emphasis></para></listitem>
+<listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_imageio_module_storage_t">types.dt_imageio_module_storage_t</link></para></listitem>
+</itemizedlist>
 </synopsis></entry>
 </row></tbody>
 </tgroup></informaltable>
@@ -4237,10 +4159,9 @@ see <link linkend="types_dt_lua_image_t_red">types.dt_lua_image_t.red</link>
 <tbody><row>
 <entry>Attributes:</entry>
 <entry><synopsis><itemizedlist>
-<listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_imageio_module_storage_t">types.dt_imageio_module_storage_t</link></para>
-<para></para></listitem>
-<listitem><para>Attributes : </para></listitem>
-<link linkend="attributes_has_pairs">has_pairs</link> </itemizedlist>
+<listitem><para><emphasis><link linkend="attributes_has_pairs">has_pairs</link></emphasis></para></listitem>
+<listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_imageio_module_storage_t">types.dt_imageio_module_storage_t</link></para></listitem>
+</itemizedlist>
 </synopsis></entry>
 </row></tbody>
 </tgroup></informaltable>
@@ -4260,10 +4181,9 @@ see <link linkend="types_dt_lua_image_t_red">types.dt_lua_image_t.red</link>
 <tbody><row>
 <entry>Attributes:</entry>
 <entry><synopsis><itemizedlist>
-<listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_imageio_module_storage_t">types.dt_imageio_module_storage_t</link></para>
-<para></para></listitem>
-<listitem><para>Attributes : </para></listitem>
-<link linkend="attributes_has_pairs">has_pairs</link> </itemizedlist>
+<listitem><para><emphasis><link linkend="attributes_has_pairs">has_pairs</link></emphasis></para></listitem>
+<listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_imageio_module_storage_t">types.dt_imageio_module_storage_t</link></para></listitem>
+</itemizedlist>
 </synopsis></entry>
 </row></tbody>
 </tgroup></informaltable>
@@ -4305,10 +4225,9 @@ see <link linkend="types_dt_lua_image_t_red">types.dt_lua_image_t.red</link>
 <tbody><row>
 <entry>Attributes:</entry>
 <entry><synopsis><itemizedlist>
-<listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_imageio_module_storage_t">types.dt_imageio_module_storage_t</link></para>
-<para></para></listitem>
-<listitem><para>Attributes : </para></listitem>
-<link linkend="attributes_has_pairs">has_pairs</link> </itemizedlist>
+<listitem><para><emphasis><link linkend="attributes_has_pairs">has_pairs</link></emphasis></para></listitem>
+<listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_imageio_module_storage_t">types.dt_imageio_module_storage_t</link></para></listitem>
+</itemizedlist>
 </synopsis></entry>
 </row></tbody>
 </tgroup></informaltable>
@@ -4339,8 +4258,11 @@ see <link linkend="types_dt_lua_image_t_red">types.dt_lua_image_t.red</link>
 <tbody><row>
 <entry>Attributes:</entry>
 <entry><synopsis><itemizedlist>
-<listitem><para>Attributes : </para></listitem>
-<link linkend="attributes_has_ipairs">has_ipairs</link> <link linkend="attributes_has_length">has_length</link> <link linkend="attributes_has_pairs">has_pairs</link> <link linkend="attributes_has_tostring">has_tostring</link> </itemizedlist>
+<listitem><para><emphasis><link linkend="attributes_has_ipairs">has_ipairs</link></emphasis></para></listitem>
+<listitem><para><emphasis><link linkend="attributes_has_length">has_length</link></emphasis></para></listitem>
+<listitem><para><emphasis><link linkend="attributes_has_pairs">has_pairs</link></emphasis></para></listitem>
+<listitem><para><emphasis><link linkend="attributes_has_tostring">has_tostring</link></emphasis></para></listitem>
+</itemizedlist>
 </synopsis></entry>
 </row></tbody>
 </tgroup></informaltable>
@@ -4436,8 +4358,11 @@ see <link linkend="darktable_database_copy_image">darktable.database.copy_image<
 <tbody><row>
 <entry>Attributes:</entry>
 <entry><synopsis><itemizedlist>
-<listitem><para>Attributes : </para></listitem>
-<link linkend="attributes_has_ipairs">has_ipairs</link> <link linkend="attributes_has_length">has_length</link> <link linkend="attributes_has_pairs">has_pairs</link> <link linkend="attributes_has_tostring">has_tostring</link> </itemizedlist>
+<listitem><para><emphasis><link linkend="attributes_has_ipairs">has_ipairs</link></emphasis></para></listitem>
+<listitem><para><emphasis><link linkend="attributes_has_length">has_length</link></emphasis></para></listitem>
+<listitem><para><emphasis><link linkend="attributes_has_pairs">has_pairs</link></emphasis></para></listitem>
+<listitem><para><emphasis><link linkend="attributes_has_tostring">has_tostring</link></emphasis></para></listitem>
+</itemizedlist>
 </synopsis></entry>
 </row></tbody>
 </tgroup></informaltable>
@@ -4517,8 +4442,9 @@ see <link linkend="darktable_styles_apply">darktable.styles.apply</link>
 <tbody><row>
 <entry>Attributes:</entry>
 <entry><synopsis><itemizedlist>
-<listitem><para>Attributes : </para></listitem>
-<link linkend="attributes_has_pairs">has_pairs</link> <link linkend="attributes_has_tostring">has_tostring</link> </itemizedlist>
+<listitem><para><emphasis><link linkend="attributes_has_pairs">has_pairs</link></emphasis></para></listitem>
+<listitem><para><emphasis><link linkend="attributes_has_tostring">has_tostring</link></emphasis></para></listitem>
+</itemizedlist>
 </synopsis></entry>
 </row></tbody>
 </tgroup></informaltable>
@@ -4560,8 +4486,11 @@ see <link linkend="darktable_styles_apply">darktable.styles.apply</link>
 <tbody><row>
 <entry>Attributes:</entry>
 <entry><synopsis><itemizedlist>
-<listitem><para>Attributes : </para></listitem>
-<link linkend="attributes_has_ipairs">has_ipairs</link> <link linkend="attributes_has_length">has_length</link> <link linkend="attributes_has_pairs">has_pairs</link> <link linkend="attributes_has_tostring">has_tostring</link> </itemizedlist>
+<listitem><para><emphasis><link linkend="attributes_has_ipairs">has_ipairs</link></emphasis></para></listitem>
+<listitem><para><emphasis><link linkend="attributes_has_length">has_length</link></emphasis></para></listitem>
+<listitem><para><emphasis><link linkend="attributes_has_pairs">has_pairs</link></emphasis></para></listitem>
+<listitem><para><emphasis><link linkend="attributes_has_tostring">has_tostring</link></emphasis></para></listitem>
+</itemizedlist>
 </synopsis></entry>
 </row></tbody>
 </tgroup></informaltable>
@@ -4630,8 +4559,8 @@ see <link linkend="darktable_tags_detach">darktable.tags.detach</link>
 <tbody><row>
 <entry>Attributes:</entry>
 <entry><synopsis><itemizedlist>
-<listitem><para>Attributes : </para></listitem>
-<link linkend="attributes_has_pairs">has_pairs</link> </itemizedlist>
+<listitem><para><emphasis><link linkend="attributes_has_pairs">has_pairs</link></emphasis></para></listitem>
+</itemizedlist>
 </synopsis></entry>
 </row></tbody>
 </tgroup></informaltable>
@@ -4683,8 +4612,8 @@ see <link linkend="darktable_tags_detach">darktable.tags.detach</link>
 <tbody><row>
 <entry>Attributes:</entry>
 <entry><synopsis><itemizedlist>
-<listitem><para>Attributes : </para></listitem>
-<link linkend="attributes_implicit_yield">implicit_yield</link> </itemizedlist>
+<listitem><para><emphasis><link linkend="attributes_implicit_yield">implicit_yield</link></emphasis></para></listitem>
+</itemizedlist>
 </synopsis></entry>
 </row></tbody>
 </tgroup></informaltable>
@@ -4761,8 +4690,8 @@ see <link linkend="darktable_tags_detach">darktable.tags.detach</link>
 <tbody><row>
 <entry>Attributes:</entry>
 <entry><synopsis><itemizedlist>
-<listitem><para>Attributes : </para></listitem>
-<link linkend="attributes_has_pairs">has_pairs</link> </itemizedlist>
+<listitem><para><emphasis><link linkend="attributes_has_pairs">has_pairs</link></emphasis></para></listitem>
+</itemizedlist>
 </synopsis></entry>
 </row></tbody>
 </tgroup></informaltable>
@@ -4804,8 +4733,8 @@ see <link linkend="darktable_tags_detach">darktable.tags.detach</link>
 <tbody><row>
 <entry>Attributes:</entry>
 <entry><synopsis><itemizedlist>
-<listitem><para>Attributes : </para></listitem>
-<link linkend="attributes_has_pairs">has_pairs</link> </itemizedlist>
+<listitem><para><emphasis><link linkend="attributes_has_pairs">has_pairs</link></emphasis></para></listitem>
+</itemizedlist>
 </synopsis></entry>
 </row></tbody>
 </tgroup></informaltable>
