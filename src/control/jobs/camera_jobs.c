@@ -30,7 +30,7 @@
 
 /** Both import and capture jobs uses this */
 static const char *
-_camera_request_image_filename(const dt_camera_t *camera,const char *filename,void *data)
+_camera_request_image_filename(const dt_camera_t *camera,const char *filename,time_t exif_time,void *data)
 {
   const gchar *file;
   struct dt_camera_shared_t *shared;
@@ -39,6 +39,7 @@ _camera_request_image_filename(const dt_camera_t *camera,const char *filename,vo
   /* update import session with orginal filename so that $(FILE_EXTENSION)
      and alikes can be expanded. */
   dt_import_session_set_filename(shared->session, filename);
+  dt_import_session_set_exif_time(shared->session, exif_time);
   file = dt_import_session_filename(shared->session, FALSE);
 
   if (file == NULL)
@@ -49,10 +50,11 @@ _camera_request_image_filename(const dt_camera_t *camera,const char *filename,vo
 
 /** Both import and capture jobs uses this */
 static const char *
-_camera_request_image_path(const dt_camera_t *camera, void *data)
+_camera_request_image_path(const dt_camera_t *camera,time_t exif_time,void *data)
 {
   struct dt_camera_shared_t *shared;
   shared = (struct dt_camera_shared_t *)data;
+  dt_import_session_set_exif_time(shared->session, exif_time);
   return dt_import_session_path(shared->session, FALSE);
 }
 
@@ -278,6 +280,13 @@ void _camera_import_image_downloaded(const dt_camera_t *camera,const char *filen
 
   t->import_count++;
 }
+
+void _camera_change_exif_time(const dt_camera_t *camera,time_t exif_time,void *data)
+{
+  dt_camera_import_t *t = (dt_camera_import_t *)data;
+  dt_import_session_set_time(t->shared.session, exif_time);
+}
+
 
 int32_t dt_camera_import_job_run(dt_job_t *job)
 {
