@@ -51,6 +51,7 @@ typedef struct _camera_gconf_widget_t
   GtkWidget *widget;
   GtkWidget *entry;
   gchar *value;
+  gchar *configstring;
   struct _camera_import_dialog_t *dialog;
 }
 _camera_gconf_widget_t;
@@ -111,12 +112,11 @@ static void
 _gcw_store_callback (GtkDarktableButton *button, gpointer user_data)
 {
   _camera_gconf_widget_t *gcw=(_camera_gconf_widget_t*)user_data;
-  gchar *configstring=g_object_get_data(G_OBJECT(gcw->widget),"gconf:string");
   const gchar *newvalue=gtk_entry_get_text( GTK_ENTRY( gcw->entry ));
-  if(newvalue && strlen(newvalue) > 0 )
+  if(newvalue && *newvalue)
   {
-    dt_conf_set_string(configstring,newvalue);
-    if(gcw->value) g_free(gcw->value);
+    dt_conf_set_string(gcw->configstring, newvalue);
+    g_free(gcw->value);
     gcw->value=g_strdup(newvalue);
   }
 }
@@ -125,13 +125,11 @@ static void
 _gcw_reset_callback (GtkDarktableButton *button, gpointer user_data)
 {
   _camera_gconf_widget_t *gcw=(_camera_gconf_widget_t*)user_data;
-  gchar *configstring=g_object_get_data(G_OBJECT(gcw->widget),"gconf:string");
-  gchar *value = dt_conf_get_string(configstring);
+  gchar *value = dt_conf_get_string(gcw->configstring);
   if(value)
   {
     gtk_entry_set_text( GTK_ENTRY( gcw->entry ), value);
-    if(gcw->value)
-      g_free(gcw->value);
+    g_free(gcw->value);
     gcw->value = value;
   }
 }
@@ -141,8 +139,7 @@ static void
 _entry_text_changed(_camera_gconf_widget_t *gcw,GtkEntryBuffer *entrybuffer)
 {
   const gchar *value=gtk_entry_buffer_get_text(entrybuffer);
-  if(gcw->value)
-    g_free(gcw->value);
+  g_free(gcw->value);
   gcw->value=g_strdup(value);
 
 }
@@ -166,7 +163,7 @@ static _camera_gconf_widget_t *_camera_import_gconf_widget(_camera_import_dialog
   GtkWidget *vbox,*hbox;
   gcw->widget=vbox=GTK_WIDGET(gtk_vbox_new(FALSE,0));
   hbox=GTK_WIDGET(gtk_hbox_new(FALSE,0));
-  g_object_set_data(G_OBJECT(vbox),"gconf:string",confstring);
+  gcw->configstring = g_strdup(confstring);
   gcw->dialog=dlg;
 
   gcw->entry=gtk_entry_new();
@@ -174,8 +171,7 @@ static _camera_gconf_widget_t *_camera_import_gconf_widget(_camera_import_dialog
   if(value)
   {
     gtk_entry_set_text( GTK_ENTRY( gcw->entry ), value);
-    if(gcw->value)
-      g_free(gcw->value);
+    g_free(gcw->value);
     gcw->value = value;
   }
 
@@ -360,7 +356,7 @@ static int _camera_storage_image_filename(const dt_camera_t *camera,const char *
   gtk_list_store_append(data->store,&iter);
   gtk_list_store_set(data->store,&iter,0,thumb,1,file_info,-1);
   if(pixbuf) g_object_unref(pixbuf);
-  if(thumb) g_object_ref(thumb);
+  if(thumb) g_object_unref(thumb);
 
   if (i_own_lock) dt_control_gdk_unlock();
 
@@ -369,6 +365,8 @@ static int _camera_storage_image_filename(const dt_camera_t *camera,const char *
 
 static void _camera_import_dialog_free(_camera_import_dialog_t *data)
 {
+  g_free(data->import.jobname->value);
+  g_free(data->import.jobname->configstring);
   gtk_list_store_clear( data->store );
   g_object_unref( data->store );
 }
