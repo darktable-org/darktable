@@ -160,7 +160,7 @@ entry_it_callback(GtkEntryBuffer *entrybuffer,guint a1, gchar *a2, guint a3,gpoi
 }
 
 /** Creates a gconf widget. */
-_camera_gconf_widget_t *_camera_import_gconf_widget(_camera_import_dialog_t *dlg,gchar *label,gchar *confstring)
+static _camera_gconf_widget_t *_camera_import_gconf_widget(_camera_import_dialog_t *dlg, gchar *label, gchar *confstring)
 {
   _camera_gconf_widget_t *gcw = calloc(1, sizeof(_camera_gconf_widget_t));
   GtkWidget *vbox,*hbox;
@@ -211,7 +211,7 @@ _camera_gconf_widget_t *_camera_import_gconf_widget(_camera_import_dialog_t *dlg
 
 
 
-void _camera_import_dialog_new(_camera_import_dialog_t *data)
+static void _camera_import_dialog_new(_camera_import_dialog_t *data)
 {
   data->dialog=gtk_dialog_new_with_buttons(_("import images from camera"),NULL,GTK_DIALOG_MODAL,_("cancel"),GTK_RESPONSE_NONE,C_("camera import", "import"),GTK_RESPONSE_ACCEPT,NULL);
   GtkWidget *content = gtk_dialog_get_content_area (GTK_DIALOG (data->dialog));
@@ -298,7 +298,7 @@ void _camera_import_dialog_new(_camera_import_dialog_t *data)
   //gtk_widget_set_size_request(content, DT_PIXEL_APPLY_DPI(400), DT_PIXEL_APPLY_DPI(400));
 }
 
-int _camera_storage_image_filename(const dt_camera_t *camera,const char *filename,CameraFile *preview,CameraFile *exif,void *user_data)
+static int _camera_storage_image_filename(const dt_camera_t *camera,const char *filename,CameraFile *preview,CameraFile *exif,void *user_data)
 {
   _camera_import_dialog_t *data=(_camera_import_dialog_t*)user_data;
   GtkTreeIter iter;
@@ -367,7 +367,7 @@ int _camera_storage_image_filename(const dt_camera_t *camera,const char *filenam
   return 1;
 }
 
-void _camera_import_dialog_free(_camera_import_dialog_t *data)
+static void _camera_import_dialog_free(_camera_import_dialog_t *data)
 {
   gtk_list_store_clear( data->store );
   g_object_unref( data->store );
@@ -436,7 +436,7 @@ static time_t parse_date_time(const char* date_time_text)
   return 0;
 }
 
-void _camera_import_dialog_run(_camera_import_dialog_t *data)
+static void _camera_import_dialog_run(_camera_import_dialog_t *data)
 {
   gtk_widget_show_all(data->dialog);
 
@@ -474,7 +474,7 @@ void _camera_import_dialog_run(_camera_import_dialog_t *data)
       GtkTreeSelection *selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(gtk_bin_get_child(GTK_BIN(data->import.treeview))));
       // Now build up result from store into GList **result
       if(data->params->result)
-        g_list_free(data->params->result);
+        g_list_free_full(data->params->result, g_free);
       data->params->result=NULL;
       GtkTreeModel *model=GTK_TREE_MODEL(data->store);
       GList *sp= gtk_tree_selection_get_selected_rows(selection,&model);
