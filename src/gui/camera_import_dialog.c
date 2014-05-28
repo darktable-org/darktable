@@ -352,7 +352,7 @@ static int _camera_storage_image_filename(const dt_camera_t *camera,const char *
 #endif
 
   // filename\n 1/60 f/2.8 24mm iso 160
-  snprintf(file_info, sizeof(file_info), "%s%c%s",filename,strlen(exif_info)?'\n':'\0',strlen(exif_info)?exif_info:"");
+  snprintf(file_info, sizeof(file_info), "%s%c%s", filename, *exif_info?'\n':'\0', *exif_info?exif_info:"");
   gtk_list_store_append(data->store,&iter);
   gtk_list_store_set(data->store,&iter,0,thumb,1,file_info,-1);
   if(pixbuf) g_object_unref(pixbuf);
