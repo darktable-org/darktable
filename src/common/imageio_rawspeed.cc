@@ -163,6 +163,26 @@ dt_imageio_open_rawspeed(
       img->flags &= ~DT_IMAGE_LDR;
       img->flags |= DT_IMAGE_RAW;
       if(r->getDataType() == TYPE_FLOAT32) img->flags |= DT_IMAGE_HDR;
+      // special handling for x-trans sensors
+      if ((r->cfa.size.x == 6) && (r->cfa.size.y == 6)) {
+        img->filters = 9;       // signifies to look for CFA in img->xtrans
+        uint8_t xorig[6][6], xtemp[6][6];
+        for (int i=0; i < 6; ++i)
+          for (int j=0; j < 6; ++j)
+            xorig[j][i] = r->cfa.getColorAt(i,j);
+        dt_imageio_flip_buffers((char *)xtemp, (char *)xorig, sizeof(uint8_t), 6, 6, 6, 6, 6, img->orientation);
+        // offset filter from topleft of cropped rotated image
+        iPoint2D tl_margin = r->getCropOffset();
+        int bottom_offset = 6 - ((r->dim.y + tl_margin.y) % 6);
+        int right_offset = 6 - ((r->dim.x + tl_margin.x) % 6);
+        int yoffset = (img->orientation & 2) ? bottom_offset : tl_margin.y;
+        int xoffset = (img->orientation & 1) ? right_offset : tl_margin.x;
+        int joff = (img->orientation & 4) ? xoffset : yoffset;
+        int ioff = (img->orientation & 4) ? yoffset : xoffset;
+        for (int i=0; i < 6; ++i)
+          for (int j=0; j < 6; ++j)
+            img->xtrans[j][i] = xtemp[(j+joff)%6][(i+ioff)%6];
+      }
     }
 
     img->width  = r->dim.x;
