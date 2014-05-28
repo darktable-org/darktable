@@ -13,7 +13,6 @@ node_to_string = function(node,name)
 end
 
 code = function(text) 
-	--return "\n\n<pre><code class=\"lua\">"..text.."</code></pre>\n\n"
 	return "\n\n<programlisting language=\"lua\">"..text.."</programlisting>\n\n"
 end
 
@@ -58,11 +57,11 @@ local function get_reported_type(node,simple)
 		local sig = doc.get_attribute(node,"signature")
 		for k,v in pairs(sig) do
 			if(doc.get_attribute(v,"optional")) then
-				--rtype = rtype.."["..emphasis(get_node_with_link(v,doc.get_short_name(v))).."]"
-				rtype = rtype.."["..emphasis(doc.get_short_name(v)).."]"
+				rtype = rtype.."["..emphasis(get_node_with_link(v,doc.get_short_name(v))).."]"
+				--rtype = rtype.."["..emphasis(doc.get_short_name(v)).."]"
 			else
-				--rtype = rtype..emphasis(get_node_with_link(v,doc.get_short_name(v)))
-				rtype = rtype..emphasis(doc.get_short_name(v))
+				rtype = rtype..emphasis(get_node_with_link(v,doc.get_short_name(v)))
+				--rtype = rtype..emphasis(doc.get_short_name(v))
 			end
 			if next(sig,k) then
 				rtype = rtype..", "
@@ -100,12 +99,13 @@ local function print_attributes(node)
 		end
 	end
 	if  result ~= "" then
+		-- synopsis was within the <entry> below
 		result = [[<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
 <colspec colwidth="2*"/>
 <colspec colwidth="8*"/>
 <tbody><row>
 <entry>Attributes:</entry>
-<entry><synopsis>]]..startlist()..result..endlist()..[[</synopsis></entry>
+<entry>]]..startlist()..result..endlist()..[[</entry>
 </row></tbody>
 </tgroup></informaltable>]]
 	end
@@ -119,7 +119,8 @@ local function print_content(node)
 	local rtype = get_reported_type(node)
 	local result = ""
 	if  rtype then
-		result = result .."<synopsis>"..rtype.."</synopsis>\n"
+		-- synopsis was here
+		result = result ..rtype.."\n"
 	end
 	--result = result ..parse_text(node).."\n"
 	result = result .."<para>"..doc.get_text(node).."</para>\n"
@@ -181,7 +182,7 @@ parse_doc_node = function(node,parent,prev_name)
 		if(node:get_short_name() == "return") then
 			result = result ..'<varlistentry><term><emphasis>return</emphasis></term><listitem>\n'
 		else
-			result = result ..'<varlistentry><term id="'..doc.get_name(node):gsub("%.","_"):gsub("#","_hash_")..'">'..doc.get_short_name(node).."</term><listitem>\n"
+			result = result ..'<varlistentry id="'..doc.get_name(node):gsub("%.","_"):gsub("#","_hash_")..'"><term>'..doc.get_short_name(node).."</term><listitem>\n"
 		end
 	elseif depth ~= 0 then
 		--result = result..'<sect'..(depth+1)..' status="final" '
