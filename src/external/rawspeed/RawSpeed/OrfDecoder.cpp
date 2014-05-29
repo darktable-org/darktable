@@ -126,7 +126,10 @@ void OrfDecoder::decodeOldORF(TiffIFD* raw) {
   mRaw->createData();
   ByteStream input(mFile->getData(off), width*height*2);
 
-  Decode12BitRawUnpacked(input, width, height);
+  if (raw->endian == little)
+    Decode12BitRawUnpacked(input, width, height);
+  else
+    Decode12BitRawBEunpackedLeftAligned(input, width, height);
 }
 
 /* This is probably the slowest decoder of them all.
