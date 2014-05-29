@@ -94,7 +94,10 @@ RawImage OrfDecoder::decodeRawInternal() {
     if (oly->type == TIFF_UNDEFINED)
       ThrowRDE("ORF Decoder: Unsupported compression");
   } catch (TiffParserException) {
-    ThrowRDE("ORF Decoder: Unable to parse makernote");
+    // We're probably in an old packed ORF, try to decode it like that
+    ByteStream input(mFile->getData(offsets->getInt()), width*height*3/2);
+    Decode12BitRawWithControl(input, width, height);
+    return mRaw;
   }
 
   // We add 3 bytes slack, since the bitpump might be a few bytes ahead.
