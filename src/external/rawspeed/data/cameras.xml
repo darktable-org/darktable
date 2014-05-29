@@ -4391,4 +4391,14 @@
 		<Crop x="73" y="1" width="-73" height="-1"/>
 		<Sensor black="255" white="4000"/>
 	</Camera>
+	<Camera make="SONY" model="DSC-R1">
+		<CFA width="2" height="2">
+			<Color x="0" y="0">GREEN</Color>
+			<Color x="1" y="0">RED</Color>
+			<Color x="0" y="1">BLUE</Color>
+			<Color x="1" y="1">GREEN</Color>
+		</CFA>
+		<Crop x="0" y="0" width="0" height="0"/>
+		<Sensor black="511" white="16383"/>
+	</Camera>
 </Cameras>
