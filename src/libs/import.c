@@ -154,7 +154,7 @@ static void _lib_import_from_camera_callback(GtkButton *button,gpointer data)
     dt_control_add_job(darktable.control, &j);
   }
   g_free(params->jobcode);
-  g_list_free_full(params->result, g_free);
+  g_list_free(params->result);
   g_free(params);
 }
 
