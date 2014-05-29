@@ -1723,7 +1723,7 @@
 			<Color x="1" y="1">BLUE</Color>
 		</CFA>
 		<Crop x="0" y="0" width="2576" height="1924"/>
-		<Sensor black="32" white="1023"/>
+		<Sensor black="0" white="4092"/>
 	</Camera>
 	<Camera make="OLYMPUS IMAGING CORP." model="E-M1">
 		<CFA width="2" height="2">
