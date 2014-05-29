@@ -55,7 +55,13 @@ RawImage OrfDecoder::decodeRawInternal() {
   TiffEntry *counts = raw->getEntry(STRIPBYTECOUNTS);
 
   if (offsets->count != 1) {
-    ThrowRDE("ORF Decoder: Multiple Strips found: %u", offsets->count);
+    // We're in an old-school ORF file, decode it separately
+    try {
+      decodeOldORF(raw);
+    } catch (IOException &e) {
+       mRaw->setError(e.what());
+    }
+    return mRaw;
   }
   if (counts->count != offsets->count) {
     ThrowRDE("ORF Decoder: Byte count number does not match strip size: count:%u, strips:%u ", counts->count, offsets->count);
@@ -110,6 +116,19 @@ RawImage OrfDecoder::decodeRawInternal() {
 
   return mRaw;
 }
+
+void OrfDecoder::decodeOldORF(TiffIFD* raw) {
+  uint32 width = raw->getEntry(IMAGEWIDTH)->getInt();
+  uint32 height = raw->getEntry(IMAGELENGTH)->getInt();
+  uint32 off = raw->getEntry(STRIPOFFSETS)->getInt();
+
+  mRaw->dim = iPoint2D(width, height);
+  mRaw->createData();
+  ByteStream input(mFile->getData(off), width*height*2);
+
+  Decode12BitRawUnpacked(input, width, height);
+}
+
 /* This is probably the slowest decoder of them all.
  * I cannot see any way to effectively speed up the prediction
  * phase, which is by far the slowest part of this algorithm.
