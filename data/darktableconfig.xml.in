@@ -1227,8 +1227,9 @@
       <enum>
         <option>auto</option>
         <option>none</option>
-        <option>kwallet</option>
-        <option>gnome keyring</option>
+        <option capability="libsecret">libsecret</option>
+        <option capability="kwallet">kwallet</option>
+        <option capability="gnome-keyring">gnome keyring</option>
       </enum>
     </type>
     <default>auto</default>

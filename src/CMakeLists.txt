@@ -232,7 +232,17 @@ endif(USE_OPENJPEG)
 #
 # Detect compile of optional pwstorage backends
 #
-if(USE_GNOME_KEYRING)
+if(USE_LIBSECRET)
+  find_package(Libsecret)
+  if(LIBSECRET_FOUND)
+    set(SOURCES ${SOURCES} "common/pwstorage/backend_libsecret.c")
+    include_directories(SYSTEM ${LIBSECRET_INCLUDE_DIRS})
+    list(APPEND LIBS ${LIBSECRET_LIBRARIES})
+    add_definitions("-DHAVE_LIBSECRET")
+  endif(LIBSECRET_FOUND)
+endif(USE_LIBSECRET)
+
+if(USE_GNOME_KEYRING AND NOT USE_LIBSECRET)
   find_package(GnomeKeyring)
   if(GNOMEKEYRING_FOUND)
     if(${GnomeKeyring_VERSION} VERSION_LESS "3.12.0")
@@ -245,7 +255,11 @@ if(USE_GNOME_KEYRING)
       set(GNOMEKEYRING_FOUND FALSE)
     endif(${GnomeKeyring_VERSION} VERSION_LESS "3.12.0")
   endif(GNOMEKEYRING_FOUND)
-endif(USE_GNOME_KEYRING)
+endif(USE_GNOME_KEYRING AND NOT USE_LIBSECRET)
+
+if(USE_KWALLET AND NOT USE_LIBSECRET)
+  add_definitions("-DHAVE_KWALLET")
+endif(USE_KWALLET AND NOT USE_LIBSECRET)
 
 if(USE_MAC_INTEGRATION)
   find_package(MacIntegration)
