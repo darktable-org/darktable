@@ -291,11 +291,19 @@
     gint pos = -1;
 </xsl:text>
     <xsl:for-each select="./type/enum/option">
-      <xsl:text>    gtk_list_store_append(store, &amp;iter);
-    gtk_list_store_set(store, &amp;iter, 0, "</xsl:text><xsl:value-of select="."/><xsl:text>", 1, C_("preferences", "</xsl:text><xsl:value-of select="."/><xsl:text>"), -1);
-    if(pos == -1 &amp;&amp; strcmp(str, "</xsl:text><xsl:value-of select="."/><xsl:text>") == 0)
-      pos = </xsl:text><xsl:value-of select="position()-1" /><xsl:text>;
-</xsl:text>
+        <xsl:if test="@capability">
+          <xsl:text>if(dt_capabilities_check("</xsl:text><xsl:value-of select="@capability"/><xsl:text>")) {</xsl:text>
+        </xsl:if>
+        <xsl:text>
+        gtk_list_store_append(store, &amp;iter);
+        gtk_list_store_set(store, &amp;iter, 0, "</xsl:text><xsl:value-of select="."/><xsl:text>", 1, C_("preferences", "</xsl:text><xsl:value-of select="."/><xsl:text>"), -1);
+        if(pos == -1 &amp;&amp; strcmp(str, "</xsl:text><xsl:value-of select="."/><xsl:text>") == 0)
+          pos = </xsl:text><xsl:value-of select="position()-1" /><xsl:text>;
+      </xsl:text>
+        <xsl:if test="@capability">
+          <xsl:text>}
+          </xsl:text>
+        </xsl:if>
     </xsl:for-each>
     <xsl:text>    widget = gtk_combo_box_new_with_model(GTK_TREE_MODEL(store));
     g_object_unref(store);
