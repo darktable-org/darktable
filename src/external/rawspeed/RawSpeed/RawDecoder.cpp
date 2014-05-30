@@ -269,8 +269,8 @@ void RawDecoder::Decode12BitRawBEInterlaced(ByteStream &input, uint32 w, uint32 
     y = row % half * 2 + row / half;
     ushort16* dest = (ushort16*) & data[y*pitch];
     if (y == 1) {
-      uint32 offset = -(-(((int32)half)*((int32)w)*3/2) & -2048);
-      fprintf(stderr, "Jumping to %d\n", offset);
+      // The second field starts at a 2048 byte aligment
+      uint32 offset = ((half*w*3/2 >> 11) + 1) << 11;
       if (offset < 0 || offset > input.getRemainSize())
         ThrowIOE("Decode12BitSplitRaw: Trying to jump to invalid offset %d", offset);
       in = input.getData() + offset;
