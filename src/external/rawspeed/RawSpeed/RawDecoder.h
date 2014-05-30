@@ -115,8 +115,11 @@ public:
   /* Only enable if you are sure that is what you want */
   bool uncorrectedRawValues;
 
+  /* Should Fuji images be rotated? */
+  bool fujiRotate;
+
   /* Vector of objects that will be destroyed alongside the decoder */
-  vector<void*> ownedObjects;
+  vector<FileMap*> ownedObjects;
 
   /* Retrieve the main RAW chunk */
   /* Returns NULL if unknown */
@@ -163,6 +166,15 @@ protected:
 
   /* Faster version for unpacking 12 bit LSB data */
   void Decode12BitRaw(ByteStream &input, uint32 w, uint32 h);
+
+  /* Faster version for unpacking 12 bit MSB data */
+  void Decode12BitRawBE(ByteStream &input, uint32 w, uint32 h);
+
+  /* Faster version for reading unpacked 12 bit MSB data */
+  void Decode12BitRawBEunpacked(ByteStream &input, uint32 w, uint32 h);
+
+  /* Faster version for reading unpacked 12 bit LSB data */
+  void Decode12BitRawUnpacked(ByteStream &input, uint32 w, uint32 h);
 
   /* Generic decompressor for uncompressed images */
   /* order: Order of the bits - see Common.h for possibilities. */

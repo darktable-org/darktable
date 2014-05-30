@@ -55,7 +55,7 @@
 
     <para>
       Please be aware that of course each instance also adds to the workload of your pixelpipe.
-      Generating too many instances - especially of the more demanding modules - will certainly
+      Generating too many instances&nbsp;&ndash; especially of the more demanding modules&nbsp;&ndash; will certainly
       cause some noticeable slow-down.
     </para>
 
@@ -85,7 +85,7 @@
     </informaltable>
 
     <para>
-      Selecting <quote>new instance</quote> generates a new module instance below any existing
+      Selecting <quote>new instance</quote> generates a new module instance above any existing
       ones. All parameters are set to default values. The new instance gets its own complete set
       of GUI controls and a number appended to the base module name for distinction.
     </para>

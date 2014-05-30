@@ -78,7 +78,7 @@ int dt_dlopencl_init(const char *name, dt_dlopencl_t **ocl)
       return FALSE;
     }
 
-    d->symbols = (dt_dlopencl_symbols_t *)malloc(sizeof(dt_dlopencl_symbols_t));
+    d->symbols = (dt_dlopencl_symbols_t *)calloc(1, sizeof(dt_dlopencl_symbols_t));
 
     if (d->symbols == NULL)
     {
@@ -88,7 +88,6 @@ int dt_dlopencl_init(const char *name, dt_dlopencl_t **ocl)
       return FALSE;
     }
 
-    memset(d->symbols, 0, sizeof(dt_dlopencl_symbols_t));
     d->library = module->library;
 
     /* assign noop function as a default to each function pointer */

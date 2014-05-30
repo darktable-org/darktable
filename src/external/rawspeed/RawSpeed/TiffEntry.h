@@ -65,6 +65,7 @@ class TiffEntry
 {
 public:
   TiffEntry();
+  TiffEntry(TiffTag tag, TiffDataType type, uint32 count, const uchar8* data = NULL);
   TiffEntry(FileMap* f, uint32 offset);
   virtual ~TiffEntry(void);
   virtual uint32 getInt();
@@ -75,6 +76,8 @@ public:
   string getString();
   uchar8 getByte();
   const uchar8* getData() {return data;};
+  uchar8* getDataWrt();;
+  virtual void setData(const void *data, uint32 byte_count );
   int getElementSize();
   int getElementShift();
 // variables:
@@ -84,8 +87,11 @@ public:
   uint32 getDataOffset() const { return data_offset; }
   bool isFloat();
   bool isInt();
+  bool isString();
 protected:
-  uchar8* data;
+  string getValueAsString();
+  uchar8* own_data;
+  const uchar8* data;
   uint32 data_offset;
 #ifdef _DEBUG
   int debug_intVal;

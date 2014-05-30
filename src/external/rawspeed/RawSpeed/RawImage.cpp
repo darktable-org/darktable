@@ -29,7 +29,7 @@
 namespace RawSpeed {
 
 RawImageData::RawImageData(void):
-    dim(0, 0), isCFA(true),
+    dim(0, 0), isCFA(true), cfa(iPoint2D(0,0)),
     blackLevel(-1), whitePoint(65536),
     dataRefCount(0), data(0), cpp(1), bpp(0),
     uncropped_dim(0, 0) {
@@ -40,10 +40,12 @@ RawImageData::RawImageData(void):
   mBadPixelMap = NULL;
   pthread_mutex_init(&errMutex, NULL);
   pthread_mutex_init(&mBadPixelMutex, NULL);
+  mDitherScale = TRUE;
+  fujiWidth = 0;
 }
 
 RawImageData::RawImageData(iPoint2D _dim, uint32 _bpc, uint32 _cpp) :
-    dim(_dim),
+    dim(_dim), isCFA(_cpp==1), cfa(iPoint2D(0,0)),
     blackLevel(-1), whitePoint(65536),
     dataRefCount(0), data(0), cpp(_cpp), bpp(_bpc * _cpp),
     uncropped_dim(0, 0) {
@@ -51,6 +53,8 @@ RawImageData::RawImageData(iPoint2D _dim, uint32 _bpc, uint32 _cpp) :
   subsampling.x = subsampling.y = 1;
   isoSpeed = 0;
   mBadPixelMap = NULL;
+  mDitherScale = TRUE;
+  fujiWidth = 0;
   createData();
   pthread_mutex_init(&mymutex, NULL);
   pthread_mutex_init(&errMutex, NULL);
@@ -151,11 +155,11 @@ iPoint2D RawImageData::getCropOffset()
 
 void RawImageData::subFrame(iRectangle2D crop) {
   if (!crop.dim.isThisInside(dim - crop.pos)) {
-    printf("WARNING: RawImageData::subFrame - Attempted to create new subframe larger than original size. Crop skipped.\n");
+    writeLog(DEBUG_PRIO_WARNING, "WARNING: RawImageData::subFrame - Attempted to create new subframe larger than original size. Crop skipped.\n");
     return;
   }
   if (crop.pos.x < 0 || crop.pos.y < 0 || !crop.hasPositiveArea()) {
-    printf("WARNING: RawImageData::subFrame - Negative crop offset. Crop skipped.\n");
+    writeLog(DEBUG_PRIO_WARNING, "WARNING: RawImageData::subFrame - Negative crop offset. Crop skipped.\n");
     return;
   }
 
@@ -380,6 +384,17 @@ void RawImageData::expandBorder(iRectangle2D validData)
       memcpy(dst_pos, src_pos, dim.x*bpp);
     }
   }
+}
+
+void RawImageData::clearArea( iRectangle2D area, uchar8 val /*= 0*/ )
+{
+  area = area.getOverlap(iRectangle2D(iPoint2D(0,0), dim));
+
+  if (area.area() <= 0)
+    return;
+
+  for (int y = area.getTop(); y < area.getBottom(); y++)
+    memset(getData(area.getLeft(),y), val, area.getWidth() * bpp);
 }
 
 RawImageData* RawImage::operator->() {

@@ -191,7 +191,7 @@ _simplex(double (*objfunc) (double[], void*[]), double start[], int n, double EP
   int vh;			/* vertex with next smallest value */
   int vg;			/* vertex with largest value */
 
-  int i, j, m, row;
+  int i, j=0, m, row;
   int k;			/* track the number of function evaluations */
   int itr;			/* track the number of iterations */
 
@@ -616,7 +616,7 @@ _default_process_tiling_ptp (struct dt_iop_module_t *self, struct dt_dev_pixelpi
   }
 
   /* calculate optimal size of tiles */
-  float available = (float)dt_conf_get_int("host_memory_limit")*1024.0f*1024.0f;
+  float available = dt_conf_get_float("host_memory_limit")*1024.0f*1024.0f;
   assert(available >= 500.0f*1024.0f*1024.0f);
   /* correct for size of ivoid and ovoid which are needed on top of tiling */
   available = fmax(available - ((float)roi_out->width*roi_out->height*out_bpp)
@@ -626,7 +626,7 @@ _default_process_tiling_ptp (struct dt_iop_module_t *self, struct dt_dev_pixelpi
   /* we ignore the above value if singlebuffer_limit (is defined and) is higher than available/tiling.factor.
      this will mainly allow tiling for modules with high and "unpredictable" memory demand which is
      reflected in high values of tiling.factor (take bilateral noise reduction as an example). */
-  float singlebuffer = (float)dt_conf_get_int("singlebuffer_limit")*1024.0f*1024.0f;
+  float singlebuffer = dt_conf_get_float("singlebuffer_limit")*1024.0f*1024.0f;
   singlebuffer = fmax(singlebuffer, 2.0f*1024.0f*1024.0f);
   float factor = fmax(tiling.factor, 1.0f);
   float maxbuf = fmax(tiling.maxbuf, 1.0f);
@@ -855,7 +855,7 @@ _default_process_tiling_roi (struct dt_iop_module_t *self, struct dt_dev_pixelpi
   }
 
   /* calculate optimal size of tiles */
-  float available = (float)dt_conf_get_int("host_memory_limit")*1024.0f*1024.0f;
+  float available = dt_conf_get_float("host_memory_limit")*1024.0f*1024.0f;
   assert(available >= 500.0f*1024.0f*1024.0f);
   /* correct for size of ivoid and ovoid which are needed on top of tiling */
   available = fmax(available - ((float)roi_out->width*roi_out->height*out_bpp)
@@ -865,7 +865,7 @@ _default_process_tiling_roi (struct dt_iop_module_t *self, struct dt_dev_pixelpi
   /* we ignore the above value if singlebuffer_limit (is defined and) is higher than available/tiling.factor.
      this will mainly allow tiling for modules with high and "unpredictable" memory demand which is
      reflected in high values of tiling.factor (take bilateral noise reduction as an example). */
-  float singlebuffer = (float)dt_conf_get_int("singlebuffer_limit")*1024.0f*1024.0f;
+  float singlebuffer = dt_conf_get_float("singlebuffer_limit")*1024.0f*1024.0f;
   singlebuffer = fmax(singlebuffer, 2.0f*1024.0f*1024.0f);
   float factor = fmax(tiling.factor, 1.0f);
   float maxbuf = fmax(tiling.maxbuf, 1.0f);
@@ -1161,7 +1161,7 @@ _default_process_tiling_cl_ptp (struct dt_iop_module_t *self, struct dt_dev_pixe
   const float pinned_buffer_slack = use_pinned_memory ? 0.85f : 1.0f; // avoid problems when pinned buffer size gets too close to max_mem_alloc size
 
   /* calculate optimal size of tiles */
-  float headroom = (float)dt_conf_get_int("opencl_memory_headroom")*1024.0f*1024.0f;
+  float headroom = dt_conf_get_float("opencl_memory_headroom")*1024.0f*1024.0f;
   headroom = fmin(fmax(headroom, 0.0f), (float)darktable.opencl->dev[devid].max_global_mem);
   const float available = darktable.opencl->dev[devid].max_global_mem - headroom;
   float factor = fmax(tiling.factor + pinned_buffer_overhead, 1.0f);                     
@@ -1482,7 +1482,7 @@ _default_process_tiling_cl_roi (struct dt_iop_module_t *self, struct dt_dev_pixe
   const float pinned_buffer_slack = use_pinned_memory ? 0.85f : 1.0f; // avoid problems when pinned buffer size gets too close to max_mem_alloc size
 
   /* calculate optimal size of tiles */
-  float headroom = (float)dt_conf_get_int("opencl_memory_headroom")*1024*1024;
+  float headroom = dt_conf_get_float("opencl_memory_headroom")*1024.0f*1024.0f;
   headroom = fmin(fmax(headroom, 0.0f), (float)darktable.opencl->dev[devid].max_global_mem);
   const float available = darktable.opencl->dev[devid].max_global_mem - headroom;
   float factor = fmax(tiling.factor + pinned_buffer_overhead, 1.0f);

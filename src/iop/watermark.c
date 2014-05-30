@@ -231,15 +231,15 @@ static gchar * _watermark_get_svgdoc( dt_iop_module_t *self, dt_iop_watermark_da
   gsize length;
 
   gchar *svgdoc=NULL;
-  gchar configdir[DT_MAX_PATH_LEN];
-  gchar datadir[DT_MAX_PATH_LEN];
+  gchar configdir[PATH_MAX];
+  gchar datadir[PATH_MAX];
   gchar *filename;
-  dt_loc_get_datadir(datadir, DT_MAX_PATH_LEN);
-  dt_loc_get_user_config_dir(configdir, DT_MAX_PATH_LEN);
-  g_strlcat(datadir,"/watermarks/", DT_MAX_PATH_LEN);
-  g_strlcat(configdir,"/watermarks/", DT_MAX_PATH_LEN);
-  g_strlcat(datadir,data->filename, DT_MAX_PATH_LEN);
-  g_strlcat(configdir,data->filename, DT_MAX_PATH_LEN);
+  dt_loc_get_datadir(datadir, sizeof(datadir));
+  dt_loc_get_user_config_dir(configdir, sizeof(configdir));
+  g_strlcat(datadir, "/watermarks/", sizeof(datadir));
+  g_strlcat(configdir, "/watermarks/", sizeof(configdir));
+  g_strlcat(datadir, data->filename, sizeof(datadir));
+  g_strlcat(configdir, data->filename, sizeof(configdir));
 
   if (g_file_test(configdir,G_FILE_TEST_EXISTS))
     filename=configdir;
@@ -609,8 +609,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   int stride = cairo_format_stride_for_width (CAIRO_FORMAT_ARGB32,roi_out->width);
 
   /* create cairo memory surface */
-  guint8 *image= (guint8 *)g_malloc (stride*roi_out->height);
-  memset (image,0,(size_t)stride*roi_out->height);
+  guint8 *image= (guint8 *)g_malloc0_n(roi_out->height, stride);
   cairo_surface_t *surface = cairo_image_surface_create_for_data (image,CAIRO_FORMAT_ARGB32,roi_out->width,roi_out->height,stride);
   if (cairo_surface_status(surface)!=	CAIRO_STATUS_SUCCESS)
   {
@@ -802,13 +801,13 @@ static void refresh_watermarks( dt_iop_module_t *self )
   // check watermarkdir and update combo with entries...
   int count=0;
   const gchar *d_name = NULL;
-  gchar configdir[DT_MAX_PATH_LEN];
-  gchar datadir[DT_MAX_PATH_LEN];
-  gchar filename[DT_MAX_PATH_LEN];
-  dt_loc_get_datadir(datadir, DT_MAX_PATH_LEN);
-  dt_loc_get_user_config_dir(configdir, DT_MAX_PATH_LEN);
-  g_strlcat(datadir,"/watermarks", DT_MAX_PATH_LEN);
-  g_strlcat(configdir,"/watermarks", DT_MAX_PATH_LEN);
+  gchar configdir[PATH_MAX];
+  gchar datadir[PATH_MAX];
+  gchar filename[PATH_MAX];
+  dt_loc_get_datadir(datadir, sizeof(datadir));
+  dt_loc_get_user_config_dir(configdir, sizeof(configdir));
+  g_strlcat(datadir,"/watermarks", sizeof(datadir));
+  g_strlcat(configdir,"/watermarks", sizeof(configdir));
 
   /* read watermarks from datadir */
   GDir *dir = g_dir_open(datadir, 0, NULL);
@@ -816,7 +815,7 @@ static void refresh_watermarks( dt_iop_module_t *self )
   {
     while((d_name = g_dir_read_name(dir)))
     {
-      snprintf(filename, DT_MAX_PATH_LEN, "%s/%s", datadir, d_name);
+      snprintf(filename, sizeof(filename), "%s/%s", datadir, d_name);
       gtk_combo_box_text_append_text(g->combobox1, d_name);
       count++;
     }
@@ -829,7 +828,7 @@ static void refresh_watermarks( dt_iop_module_t *self )
   {
     while((d_name = g_dir_read_name(dir)))
     {
-      snprintf(filename, DT_MAX_PATH_LEN, "%s/%s", configdir, d_name);
+      snprintf(filename, sizeof(filename), "%s/%s", configdir, d_name);
       gtk_combo_box_text_append_text(g->combobox1, d_name);
       count++;
     }
@@ -1061,7 +1060,7 @@ void gui_init(struct dt_iop_module_t *self)
   for(int i=0; i<9; i++)
   {
     g->dtba[i] = DTGTK_TOGGLEBUTTON (dtgtk_togglebutton_new (dtgtk_cairo_paint_alignment,CPF_STYLE_FLAT|(CPF_SPECIAL_FLAG<<(i+1))));
-    gtk_widget_set_size_request (GTK_WIDGET (g->dtba[i]),16,16);
+    gtk_widget_set_size_request (GTK_WIDGET (g->dtba[i]), DT_PIXEL_APPLY_DPI(16), DT_PIXEL_APPLY_DPI(16));
     gtk_table_attach (GTK_TABLE (bat), GTK_WIDGET (g->dtba[i]), (i%3),(i%3)+1,(i/3),(i/3)+1,0,0,0,0);
     g_signal_connect (G_OBJECT (g->dtba[i]), "toggled",G_CALLBACK (alignment_callback), self);
   }

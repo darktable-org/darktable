@@ -141,6 +141,17 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
     return TRUE;
   }
 
+  // special case handling: very small image with one or two dimensions below 2*rad+1 => no sharpening,
+  // normally not needed for OpenCL but implemented here for identity with CPU code path
+  if(width < 2*rad+1 || height < 2*rad+1)
+  {
+    size_t origin[] = {0, 0, 0};
+    size_t region[] = {width, height, 1};
+    err = dt_opencl_enqueue_copy_image(devid, dev_in, dev_out, origin, origin, region);
+    if (err != CL_SUCCESS) goto error;
+    return TRUE;
+  }
+
   // init gaussian kernel
   float *m = mat + rad;
   const float sigma2 = (1.0f/(2.5*2.5))*(d->radius*roi_in->scale/piece->iscale)*(d->radius*roi_in->scale/piece->iscale);
@@ -268,6 +279,14 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   const int ch = piece->colors;
   const int rad = MIN(MAXR, ceilf(data->radius * roi_in->scale / piece->iscale));
   if(rad == 0)
+  {
+    memcpy(ovoid, ivoid, (size_t)sizeof(float)*ch*roi_out->width*roi_out->height);
+    return;
+  }
+
+  // special case handling: very small image with one or two dimensions below 2*rad+1 => no sharpening
+  // avoids handling of all kinds of border cases below
+  if(roi_out->width < 2*rad+1 || roi_out->height < 2*rad+1)
   {
     memcpy(ovoid, ivoid, (size_t)sizeof(float)*ch*roi_out->width*roi_out->height);
     return;

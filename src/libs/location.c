@@ -108,8 +108,7 @@ position ()
 void
 gui_init (dt_lib_module_t *self)
 {
-  self->data = malloc(sizeof(dt_lib_location_t));
-  memset(self->data, 0, sizeof(dt_lib_location_t));
+  self->data = calloc(1, sizeof(dt_lib_location_t));
   dt_lib_location_t *lib = self->data;
 
   self->widget = gtk_vbox_new(FALSE, 5);
@@ -178,8 +177,7 @@ static size_t _lib_location_curl_write_data(void *buffer, size_t size, size_t nm
 {
   dt_lib_location_t *lib = (dt_lib_location_t *)userp;
 
-  char *newdata = g_malloc(lib->response_size + nmemb + 1);
-  memset(newdata,0, lib->response_size + nmemb + 1);
+  char *newdata = g_malloc0(lib->response_size + nmemb + 1);
   if( lib->response != NULL )
     memcpy(newdata, lib->response, lib->response_size);
   memcpy(newdata + lib->response_size, buffer, nmemb);
@@ -394,10 +392,9 @@ static void _lib_location_parser_start_element(GMarkupParseContext *cxt,
     return;
 
   /* create new place */
-  _lib_location_result_t *place = g_malloc(sizeof(_lib_location_result_t));
+  _lib_location_result_t *place = g_malloc0(sizeof(_lib_location_result_t));
   if(!place) return;
 
-  memset(place, 0, sizeof(_lib_location_result_t));
   place->lon = NAN;
   place->lat = NAN;
 

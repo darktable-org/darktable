@@ -111,7 +111,7 @@ int dt_view_load_module(dt_view_t *view, const char *module)
   view->vscroll_pos = view->hscroll_pos = 0.0;
   view->height = view->width = 100; // set to non-insane defaults before first expose/configure.
   g_strlcpy(view->module_name, module, sizeof(view->module_name));
-  char plugindir[1024];
+  char plugindir[PATH_MAX];
   dt_loc_get_plugindir(plugindir, sizeof(plugindir));
   g_strlcat(plugindir, "/views", sizeof(plugindir));
   gchar *libname = g_module_build_path(plugindir, (const gchar *)module);
@@ -231,6 +231,8 @@ int dt_view_manager_switch (dt_view_manager_t *vm, int k)
 
   int newv = vm->current_view;
   if (k < vm->num_views) newv = k;
+
+  if(newv < 0) return 1;
   dt_view_t *nv = vm->view + newv;
 
   if (nv->try_enter)
@@ -376,14 +378,14 @@ int dt_view_manager_switch (dt_view_manager_t *vm, int k)
     dt_ui_container_add_widget(darktable.gui->ui, DT_UI_CONTAINER_PANEL_LEFT_CENTER, endmarker);
     g_signal_connect (G_OBJECT (endmarker), "expose-event",
                       G_CALLBACK (dt_control_expose_endmarker), 0);
-    gtk_widget_set_size_request(endmarker, -1, 50);
+    gtk_widget_set_size_request(endmarker, -1, DT_PIXEL_APPLY_DPI(50));
     gtk_widget_show(endmarker);
 
     endmarker = gtk_drawing_area_new();
     dt_ui_container_add_widget(darktable.gui->ui, DT_UI_CONTAINER_PANEL_RIGHT_CENTER, endmarker);
     g_signal_connect (G_OBJECT (endmarker), "expose-event",
                       G_CALLBACK (dt_control_expose_endmarker), GINT_TO_POINTER(1));
-    gtk_widget_set_size_request(endmarker, -1, 50);
+    gtk_widget_set_size_request(endmarker, -1, DT_PIXEL_APPLY_DPI(50));
     gtk_widget_show(endmarker);
   }
 
@@ -860,12 +862,12 @@ dt_view_image_expose(
 
   // draw centered and fitted:
   cairo_save(cr);
-  cairo_translate(cr, width/2.0, height/2.0f);
+  cairo_translate(cr, width/2.0, height/2.0);
   cairo_scale(cr, scale, scale);
 
   if(buf.buf)
   {
-    cairo_translate(cr, -.5f*buf.width, -.5f*buf.height);
+    cairo_translate(cr, -0.5*buf.width, -0.5*buf.height);
     cairo_set_source_surface (cr, surface, 0, 0);
     // set filter no nearest:
     // in skull mode, we want to see big pixels.
@@ -880,11 +882,12 @@ dt_view_image_expose(
     cairo_rectangle(cr, 0, 0, buf.width, buf.height);
   }
 
+
   // border around image
-  const float border = zoom == 1 ? 16/scale : 2/scale;
   cairo_set_source_rgb(cr, bordercol, bordercol, bordercol);
   if(buf.buf && (selected || zoom == 1))
   {
+    const float border = zoom == 1 ? 16/scale : 2/scale;
     cairo_set_line_width(cr, 1./scale);
     if(zoom == 1)
     {
@@ -916,7 +919,7 @@ dt_view_image_expose(
   }
   else if(buf.buf)
   {
-    cairo_set_line_width(cr, 1);
+    cairo_set_line_width(cr, 0.5/scale);
     cairo_stroke(cr);
   }
   cairo_restore(cr);

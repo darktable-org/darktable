@@ -20,6 +20,13 @@
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
+
+#include <stdlib.h>
+#include <stdio.h>
+#include <png.h>
+#include <inttypes.h>
+#include <zlib.h>
+
 #include "common/darktable.h"
 #include "common/imageio_module.h"
 #include "common/imageio.h"
@@ -27,11 +34,6 @@
 #include "control/conf.h"
 #include "dtgtk/slider.h"
 #include "common/imageio_format.h"
-#include <stdlib.h>
-#include <stdio.h>
-#include <png.h>
-#include <inttypes.h>
-#include <zlib.h>
 
 DT_MODULE(1)
 
@@ -339,8 +341,7 @@ params_size(dt_imageio_module_format_t *self)
 void*
 get_params(dt_imageio_module_format_t *self)
 {
-  dt_imageio_png_t *d = (dt_imageio_png_t *)malloc(sizeof(dt_imageio_png_t));
-  memset(d, 0, sizeof(dt_imageio_png_t));
+  dt_imageio_png_t *d = (dt_imageio_png_t *)calloc(1, sizeof(dt_imageio_png_t));
   d->bpp = dt_conf_get_int("plugins/imageio/format/png/bpp");
   if(d->bpp < 12) d->bpp = 8;
   else            d->bpp = 16;

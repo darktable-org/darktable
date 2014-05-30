@@ -367,7 +367,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
 {
   dt_iop_grain_data_t *data = (dt_iop_grain_data_t *)piece->data;
 
-  unsigned int hash = _hash_string(piece->pipe->image.filename) % (int)(roi_out->width * 0.3);
+  unsigned int hash = _hash_string(piece->pipe->image.filename) % (int)fmax(roi_out->width * 0.3, 1.0);
 
   const int ch = piece->colors;
   // Apply grain to image
@@ -467,8 +467,7 @@ void init_pipe (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_p
   // create part of the gegl pipeline
   piece->data = NULL;
 #else
-  piece->data = malloc(sizeof(dt_iop_grain_data_t));
-  memset(piece->data,0,sizeof(dt_iop_grain_data_t));
+  piece->data = calloc(1, sizeof(dt_iop_grain_data_t));
   self->commit_params(self, self->default_params, pipe, piece);
 #endif
 }

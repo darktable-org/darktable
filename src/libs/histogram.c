@@ -15,6 +15,7 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
+#include <stdint.h>
 
 #include "common/darktable.h"
 #include "common/debug.h"
@@ -108,8 +109,7 @@ static void _lib_histogram_change_callback(gpointer instance, gpointer user_data
 void gui_init(dt_lib_module_t *self)
 {
   /* initialize ui widgets */
-  dt_lib_histogram_t *d = (dt_lib_histogram_t *)g_malloc(sizeof(dt_lib_histogram_t));
-  memset(d,0,sizeof(dt_lib_histogram_t));
+  dt_lib_histogram_t *d = (dt_lib_histogram_t *)g_malloc0(sizeof(dt_lib_histogram_t));
   self->data = (void *)d;
 
   d->red = dt_conf_get_bool("plugins/darkroom/histogram/show_red");
@@ -247,7 +247,7 @@ static gboolean _lib_histogram_expose_callback(GtkWidget *widget, GdkEventExpose
   dt_lib_histogram_t *d = (dt_lib_histogram_t *)self->data;
 
   dt_develop_t *dev = darktable.develop;
-  float *hist = dev->histogram;
+  uint32_t *hist = dev->histogram;
   float hist_max = dev->histogram_type == DT_DEV_HISTOGRAM_LINEAR?dev->histogram_max:logf(1.0 + dev->histogram_max);
   const int inset = DT_HIST_INSET;
   GtkAllocation allocation;
@@ -336,7 +336,7 @@ static gboolean _lib_histogram_expose_callback(GtkWidget *widget, GdkEventExpose
   else
     dt_draw_grid(cr, 4, 0, 0, width, height);
 
-  if(hist_max > 0)
+  if(hist_max > 0.0f)
   {
     cairo_save(cr);
     if(dev->histogram_type == DT_DEV_HISTOGRAM_WAVEFORM)

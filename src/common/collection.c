@@ -58,8 +58,7 @@ static void _dt_collection_recount_callback_2(gpointer instance, uint8_t id, gpo
 const dt_collection_t *
 dt_collection_new (const dt_collection_t *clone)
 {
-  dt_collection_t *collection = g_malloc (sizeof (dt_collection_t));
-  memset (collection,0,sizeof (dt_collection_t));
+  dt_collection_t *collection = g_malloc0(sizeof(dt_collection_t));
 
   /* initialize collection context*/
   if (clone)   /* if clone is provided let's copy it into this context */

@@ -159,6 +159,9 @@ static dt_profiled_colormatrix_t dt_profiled_colormatrices[] =
   // Isaac Chanin, Wolf Faust IT8, direct sunlight, well lit
   { "NIKON D5100",                  { 994339, 388123,  37186}, { 226578, 1268478, -310028}, {  1404, -393173, 1285812}, {705582, 733917, 623779}},
 
+  // Torsten Wortwein, Wolf Faust IT8, direct sunlight, well lit
+  { "NIKON D5300",                  { 977005, 388763,  42267}, { 144699, 1161331, -312805}, { 61615, -333832, 1270767}, {702164, 733490, 600052}},
+
   // Robert Park, ColorChecker Passport, strobe, well lit
   { "NIKON D7000",                  { 744919, 228027, -46982}, { 454605, 1326797,  -33585}, {-132294, -467194, 985611}, {609375, 629852, 515625}},
 
@@ -274,6 +277,9 @@ static dt_profiled_colormatrix_t dt_profiled_colormatrices[] =
   { "SAMSUNG NX5",                  { 859955, 369919,  17136}, { 127045,  869888, -258362}, { 69351, -149155, 1121475}, {854538, 897888, 691147}},
   { "SAMSUNG NX10",                 { 859955, 369919,  17136}, { 127045,  869888, -258362}, { 69351, -149155, 1121475}, {854538, 897888, 691147}},
   { "SAMSUNG NX11",                 { 859955, 369919,  17136}, { 127045,  869888, -258362}, { 69351, -149155, 1121475}, {854538, 897888, 691147}},
+
+  // Pascal de Bruijn, ColorChecker Classic, direct sunlight, well lit
+  { "SAMSUNG NX300",                { 852844, 342072,  35950}, { 201965, 1022202, -298492}, { 37766, -234436, 1215851}, {754166, 791092, 635132}},
 
   // Pieter de Boer, CMP Digital Target 3, camera strobe, well lit
   { "KODAK EASYSHARE Z1015 IS",     { 716446, 157928, -39536}, { 288498, 1234573, -412460}, { 43045, -337677, 1385773}, {774048, 823563, 644012}},

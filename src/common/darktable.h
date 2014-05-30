@@ -489,8 +489,6 @@ int dt_load_from_string(const gchar* image_to_load, gboolean open_image_in_dr);
 
 /** define for max path/filename length */
 #define DT_MAX_FILENAME_LEN 256
-// TODO: separate into path/filename and store 256 for filename
-#define DT_MAX_PATH_LEN 1024
 
 #endif
 

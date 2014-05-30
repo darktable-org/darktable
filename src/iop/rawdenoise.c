@@ -143,7 +143,7 @@ static void wavelet_denoise(const float *const in, float *const out, const dt_io
   for (c=0; c<4; c++)
     cblack[c] *= BIT16;
 #endif
-  float *const fimg = malloc(size*4*sizeof *fimg);
+  float *const fimg = calloc(size*4, sizeof *fimg);
 
 
   const int nc = 4;

@@ -73,7 +73,7 @@ void to_charfilename_length(lua_State* L, luaA_Type type_id, void* c_out, int in
 }
 void to_charpath_length(lua_State* L, luaA_Type type_id, void* c_out, int index)
 {
-  to_char_num(L,type_id,c_out,index,DT_MAX_PATH_LEN);
+  to_char_num(L,type_id,c_out,index,PATH_MAX);
 }
 
 int dt_lua_autotype_inext(lua_State *L)

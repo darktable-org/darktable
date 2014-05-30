@@ -44,8 +44,8 @@ _icon_size_request(GtkWidget *widget,GtkRequisition *requisition)
   g_return_if_fail (widget != NULL);
   g_return_if_fail (DTGTK_IS_ICON(widget));
   g_return_if_fail (requisition != NULL);
-  requisition->width = 17;
-  requisition->height = 17;
+  requisition->width = DT_PIXEL_APPLY_DPI(17);
+  requisition->height = DT_PIXEL_APPLY_DPI(17);
 }
 
 static gboolean

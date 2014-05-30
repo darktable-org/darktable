@@ -132,8 +132,7 @@ dt_lib_camera_property_t *_lib_property_add_new(dt_lib_camera_t * lib, const gch
       // We got a value for property lets construct the gui for the property and add values
       int i=0;
       const char *current_value = dt_camctl_camera_get_property(darktable.camctl, NULL, propertyname);
-      dt_lib_camera_property_t *prop = malloc(sizeof(dt_lib_camera_property_t));
-      memset(prop,0,sizeof(dt_lib_camera_property_t));
+      dt_lib_camera_property_t *prop = calloc(1, sizeof(dt_lib_camera_property_t));
       prop->name=label;
       prop->property_name=propertyname;
       prop->label = GTK_LABEL(gtk_label_new(label));
@@ -389,13 +388,11 @@ void
 gui_init (dt_lib_module_t *self)
 {
   self->widget = gtk_vbox_new(FALSE, 5);
-  self->data = malloc(sizeof(dt_lib_camera_t));
-  memset(self->data,0,sizeof(dt_lib_camera_t));
+  self->data = calloc(1, sizeof(dt_lib_camera_t));
 
   // Setup lib data
   dt_lib_camera_t *lib=self->data;
-  lib->data.listener = malloc(sizeof(dt_camctl_listener_t));
-  memset(lib->data.listener,0,sizeof(dt_camctl_listener_t));
+  lib->data.listener = calloc(1, sizeof(dt_camctl_listener_t));
   lib->data.listener->data=lib;
   lib->data.listener->camera_error=_camera_error_callback;
   lib->data.listener->camera_property_value_changed=_camera_property_value_changed;

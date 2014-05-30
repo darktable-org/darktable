@@ -39,9 +39,6 @@ BitPumpJPEG::BitPumpJPEG(const uchar8* _buffer, uint32 _size) :
 }
 
 __inline void BitPumpJPEG::init() {
-  current_buffer = (uchar8*)_aligned_malloc(16, 16);
-  if (!current_buffer)
-    ThrowRDE("BitPumpJPEG::init(): Unable to allocate memory");
   memset(current_buffer,0,16);
   fill();
 }
@@ -92,7 +89,7 @@ void BitPumpJPEG::fill()
       }
     }
     current_buffer[11-i] = val;
-  } 
+  }
   mLeft+=96;
 }
 
@@ -132,7 +129,6 @@ void BitPumpJPEG::setAbsoluteOffset(unsigned int offset) {
 
 
 BitPumpJPEG::~BitPumpJPEG(void) {
-	_aligned_free(current_buffer);
 }
 
 } // namespace RawSpeed

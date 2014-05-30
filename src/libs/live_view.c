@@ -264,8 +264,7 @@ static void _overlay_splitline_changed(GtkWidget *combo, gpointer user_data)
 void
 gui_init (dt_lib_module_t *self)
 {
-  self->data = malloc(sizeof(dt_lib_live_view_t));
-  memset(self->data,0,sizeof(dt_lib_live_view_t));
+  self->data = calloc(1, sizeof(dt_lib_live_view_t));
 
   // Setup lib data
   dt_lib_live_view_t *lib=self->data;

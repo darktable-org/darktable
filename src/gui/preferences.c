@@ -229,7 +229,7 @@ void dt_gui_preferences_show()
   gtk_window_set_position(GTK_WINDOW(_preferences_dialog), GTK_WIN_POS_CENTER_ALWAYS);
   GtkWidget *content = gtk_dialog_get_content_area (GTK_DIALOG (_preferences_dialog));
   GtkWidget *notebook = gtk_notebook_new();
-  gtk_widget_set_size_request(notebook, -1, 500);
+  gtk_widget_set_size_request(notebook, -1, DT_PIXEL_APPLY_DPI(500));
   gtk_widget_set_name(notebook, "preferences_notebook");
   gtk_box_pack_start(GTK_BOX(content), notebook, TRUE, TRUE, 0);
 
@@ -257,6 +257,7 @@ void dt_gui_preferences_show()
     darktable.control->accel_remap_path = NULL;
   }
 
+  dt_control_signal_raise(darktable.signals, DT_SIGNAL_PREFERENCES_CHANGE);
 }
 
 static void tree_insert_presets(GtkTreeStore *tree_model)
@@ -962,8 +963,8 @@ static gboolean tree_key_press(GtkWidget *widget, GdkEventKey *event,
   dt_accel_t query;
 
   gchar accel[256];
-  gchar datadir[1024];
-  gchar accelpath[1024];
+  gchar datadir[PATH_MAX];
+  gchar accelpath[PATH_MAX];
 
   // We can just ignore mod key presses outright
   if(event->is_modifier)
@@ -1107,8 +1108,8 @@ static gboolean tree_key_press_presets(GtkWidget *widget, GdkEventKey *event,
 static void import_export(GtkButton *button, gpointer data)
 {
   GtkWidget *chooser;
-  gchar confdir[1024];
-  gchar accelpath[1024];
+  gchar confdir[PATH_MAX];
+  gchar accelpath[PATH_MAX];
 
   if(data)
   {
@@ -1188,8 +1189,8 @@ static void restore_defaults(GtkButton *button, gpointer data)
   GList *ops;
   dt_iop_module_so_t *op;
   gchar accelpath[256];
-  gchar dir[1024];
-  gchar path[1024];
+  gchar dir[PATH_MAX];
+  gchar path[PATH_MAX];
 
   GtkWidget *message = gtk_message_dialog_new(
                          NULL, GTK_DIALOG_MODAL,

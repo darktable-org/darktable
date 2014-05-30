@@ -1844,12 +1844,12 @@ void gui_draw_sym(cairo_t *cr, float x, float y, gboolean active)
 {
   cairo_text_extents_t extents;
   cairo_select_font_face(cr, "sans-serif", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_BOLD);
-  cairo_set_font_size(cr, 16);
+  cairo_set_font_size(cr, DT_PIXEL_APPLY_DPI(16));
   //VERIF : is there any pb to use such special char here ?
   cairo_text_extents (cr, "ꝏ", &extents);
   cairo_set_source_rgba(cr, .5,.5,.5, .7);
-  gui_draw_rounded_rectangle(cr,extents.width+4,extents.height+8,x-extents.width/2.0f-2,y-extents.height/2.0f-4);
-  cairo_move_to(cr,x-extents.width/2.0f-1,y+extents.height/2.0f-1);
+  gui_draw_rounded_rectangle(cr,extents.width+DT_PIXEL_APPLY_DPI(4),extents.height+DT_PIXEL_APPLY_DPI(8),x-extents.width/2.0f-DT_PIXEL_APPLY_DPI(2),y-extents.height/2.0f-DT_PIXEL_APPLY_DPI(4));
+  cairo_move_to(cr,x-extents.width/2.0f-DT_PIXEL_APPLY_DPI(1),y+extents.height/2.0f-DT_PIXEL_APPLY_DPI(1));
   if (active) cairo_set_source_rgba(cr, 1.0,0.0,0.0, .9);
   else cairo_set_source_rgba(cr, .2,.2,.2, .9);
   cairo_show_text(cr, "ꝏ");
@@ -1881,7 +1881,7 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
   cairo_scale(cr, zoom_scale, zoom_scale);
   cairo_translate(cr, -.5f*wd-zoom_x*wd, -.5f*ht-zoom_y*ht);
 
-  double dashes = 5.0/zoom_scale;
+  double dashes = DT_PIXEL_APPLY_DPI(5.0)/zoom_scale;
 
   // draw cropping window
   float pzx, pzy;
@@ -1917,7 +1917,7 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
             (float)procw * g->clip_w, (float)proch * g->clip_h);
     cairo_select_font_face(cr, "sans-serif", CAIRO_FONT_SLANT_NORMAL,
                            CAIRO_FONT_WEIGHT_BOLD);
-    cairo_set_font_size(cr, 16);
+    cairo_set_font_size(cr, DT_PIXEL_APPLY_DPI(16));
 
     cairo_text_extents (cr, dimensions, &extents);
     cairo_move_to(cr, (g->clip_x + g->clip_w / 2) * wd - extents.width * .5f, (g->clip_y + g->clip_h/2) * ht);
@@ -1939,7 +1939,7 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
   cairo_save(cr);
   cairo_rectangle (cr, left, top, cwidth, cheight);
   cairo_clip(cr);
-  cairo_set_line_width(cr, 1.0/zoom_scale);
+  cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(1.0)/zoom_scale);
   cairo_set_source_rgb(cr, .8, .8, .8);
 
   // draw guides
@@ -2059,15 +2059,15 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
   }
   cairo_restore(cr);
 
-  cairo_set_line_width(cr, 2.0/zoom_scale);
+  cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(2.0)/zoom_scale);
   cairo_set_source_rgb(cr, .3, .3, .3);
-  const int border = 30.0/zoom_scale;
+  const int border = DT_PIXEL_APPLY_DPI(30.0)/zoom_scale;
   if(g->straightening)
   {
     float bzx = g->button_down_zoom_x + .5f, bzy = g->button_down_zoom_y + .5f;
-    cairo_arc (cr, bzx*wd, bzy*ht, 3, 0, 2.0*M_PI);
+    cairo_arc (cr, bzx*wd, bzy*ht, DT_PIXEL_APPLY_DPI(3), 0, 2.0*M_PI);
     cairo_stroke (cr);
-    cairo_arc (cr, pzx*wd, pzy*ht, 3, 0, 2.0*M_PI);
+    cairo_arc (cr, pzx*wd, pzy*ht, DT_PIXEL_APPLY_DPI(3), 0, 2.0*M_PI);
     cairo_stroke (cr);
     cairo_move_to (cr, bzx*wd, bzy*ht);
     cairo_line_to (cr, pzx*wd, pzy*ht);
@@ -2091,8 +2091,8 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
     cairo_set_source_rgb(cr, .7, .7, .7);
     cairo_select_font_face(cr, "sans-serif", CAIRO_FONT_SLANT_NORMAL,
                            CAIRO_FONT_WEIGHT_BOLD);
-    cairo_set_font_size(cr, 16);
-    cairo_move_to (cr, pzx*wd + 20, pzy*ht);
+    cairo_set_font_size(cr, DT_PIXEL_APPLY_DPI(16));
+    cairo_move_to (cr, pzx*wd + DT_PIXEL_APPLY_DPI(20), pzy*ht);
     cairo_show_text(cr, view_angle);
   }
   else if (g->k_show != 1)
@@ -2146,7 +2146,7 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
         cairo_line_to(cr,wd,h2r);
         cairo_stroke(cr);
         //redraw selected one
-        cairo_set_line_width(cr, 4.0/zoom_scale);
+        cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(4.0)/zoom_scale);
         if (g->k_selected_segment == 0)
         {
           cairo_move_to(cr,pts[0],pts[1]);
@@ -2188,7 +2188,7 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
         cairo_line_to(cr,wd,h2r);
         cairo_stroke(cr);
         //redraw selected one
-        cairo_set_line_width(cr, 4.0/zoom_scale);
+        cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(4.0)/zoom_scale);
         if (g->k_selected_segment == 1)
         {
           cairo_move_to(cr,pts[4],pts[5]);
@@ -2218,7 +2218,7 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
         cairo_line_to(cr,v2b,ht);
         cairo_stroke(cr);
         //redraw selected one
-        cairo_set_line_width(cr, 4.0/zoom_scale);
+        cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(4.0)/zoom_scale);
         if (g->k_selected_segment == 0)
         {
           cairo_move_to(cr,pts[0],pts[1]);
@@ -2236,61 +2236,61 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
       //draw the points
       if (g->k_selected == 0) //point 1
       {
-        cairo_set_line_width(cr, 4.0/zoom_scale);
+        cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(4.0)/zoom_scale);
         cairo_set_source_rgba(cr, 1.0, 0, 0, .8);
       }
       else
       {
-        cairo_set_line_width(cr, 2.0/zoom_scale);
+        cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(2.0)/zoom_scale);
         cairo_set_source_rgba(cr, 1.0, 0, 0, .5);
       }
-      cairo_arc (cr, pts[0], pts[1], 5.0/zoom_scale, 0, 2.0*M_PI);
+      cairo_arc (cr, pts[0], pts[1], DT_PIXEL_APPLY_DPI(5.0)/zoom_scale, 0, 2.0*M_PI);
       cairo_stroke (cr);
       if (g->k_selected == 1) //point 2
       {
-        cairo_set_line_width(cr, 4.0/zoom_scale);
+        cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(4.0)/zoom_scale);
         cairo_set_source_rgba(cr, 1.0, 0, 0, .8);
       }
       else
       {
-        cairo_set_line_width(cr, 2.0/zoom_scale);
+        cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(2.0)/zoom_scale);
         cairo_set_source_rgba(cr, 1.0, 0, 0, .5);
       }
-      cairo_arc (cr, pts[2], pts[3], 5.0/zoom_scale, 0, 2.0*M_PI);
+      cairo_arc (cr, pts[2], pts[3], DT_PIXEL_APPLY_DPI(5.0)/zoom_scale, 0, 2.0*M_PI);
       cairo_stroke (cr);
       if (g->k_selected == 2) //point 3
       {
-        cairo_set_line_width(cr, 4.0/zoom_scale);
+        cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(4.0)/zoom_scale);
         cairo_set_source_rgba(cr, 1.0, 0, 0, .8);
       }
       else
       {
-        cairo_set_line_width(cr, 2.0/zoom_scale);
+        cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(2.0)/zoom_scale);
         cairo_set_source_rgba(cr, 1.0, 0, 0, .5);
       }
-      cairo_arc (cr, pts[4], pts[5], 5.0/zoom_scale, 0, 2.0*M_PI);
+      cairo_arc (cr, pts[4], pts[5], DT_PIXEL_APPLY_DPI(5.0)/zoom_scale, 0, 2.0*M_PI);
       cairo_stroke (cr);
       if (g->k_selected == 3) //point 4
       {
-        cairo_set_line_width(cr, 4.0/zoom_scale);
+        cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(4.0)/zoom_scale);
         cairo_set_source_rgba(cr, 1.0, 0, 0, .8);
       }
       else
       {
-        cairo_set_line_width(cr, 2.0/zoom_scale);
+        cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(2.0)/zoom_scale);
         cairo_set_source_rgba(cr, 1.0, 0, 0, .5);
       }
-      cairo_arc (cr, pts[6], pts[7], 5.0/zoom_scale, 0, 2.0*M_PI);
+      cairo_arc (cr, pts[6], pts[7], DT_PIXEL_APPLY_DPI(5.0)/zoom_scale, 0, 2.0*M_PI);
       cairo_stroke (cr);
 
       //draw the apply "button"
       cairo_text_extents_t extents;
       cairo_select_font_face(cr, "sans-serif", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_BOLD);
-      cairo_set_font_size(cr, 16);
+      cairo_set_font_size(cr, DT_PIXEL_APPLY_DPI(16));
       cairo_text_extents (cr, "ok", &extents);
       int c[2] = {(MIN(pts[4],pts[2])+MAX(pts[0],pts[6]))/2.0f, (MIN(pts[5],pts[7])+MAX(pts[1],pts[3]))/2.0f};
       cairo_set_source_rgba(cr, .5,.5,.5, .9);
-      gui_draw_rounded_rectangle(cr,extents.width+8,extents.height+12,c[0]-extents.width/2.0f-4,c[1]-extents.height/2.0f-6);
+      gui_draw_rounded_rectangle(cr,extents.width+DT_PIXEL_APPLY_DPI(8),extents.height+DT_PIXEL_APPLY_DPI(12),c[0]-extents.width/2.0f-DT_PIXEL_APPLY_DPI(4),c[1]-extents.height/2.0f-DT_PIXEL_APPLY_DPI(6));
       cairo_move_to(cr,c[0]-extents.width/2.0f,c[1]+extents.height/2.0f);
       cairo_set_source_rgba(cr, .2,.2,.2, .9);
       cairo_show_text(cr, "ok");
@@ -2355,7 +2355,7 @@ int mouse_moved(struct dt_iop_module_t *self, double x, double y, double pressur
   pzy += 0.5f;
   static int old_grab = -1;
   _iop_clipping_set_max_clip(self);
-  int grab = get_grab (pzx, pzy, g, 30.0/zoom_scale, wd, ht);
+  int grab = get_grab (pzx, pzy, g, DT_PIXEL_APPLY_DPI(30.0)/zoom_scale, wd, ht);
 
   if(darktable.control->button_down && darktable.control->button_down_which == 3 && g->k_show != 1)
   {
@@ -2572,7 +2572,7 @@ int mouse_moved(struct dt_iop_module_t *self, double x, double y, double pressur
     if(old_grab != grab) dt_control_change_cursor(GDK_FLEUR);
     g->straightening = g->cropping = 0;
     //or maybe keystone
-    float ext = 0.005f / zoom_scale;
+    float ext = DT_PIXEL_APPLY_DPI(0.005f) / zoom_scale;
     if (g->k_show == 1 && g->k_drag == FALSE)
     {
       float pts[2] = {pzx*wd,pzy*ht};
@@ -2724,7 +2724,7 @@ int button_pressed(struct dt_iop_module_t *self, double x, double y, double pres
     
         float xx=pzx*self->dev->preview_pipe->backbuf_width, yy=pzy*self->dev->preview_pipe->backbuf_height;
         float c[2] = {(MIN(pts[4],pts[2])+MAX(pts[0],pts[6]))/2.0f, (MIN(pts[5],pts[7])+MAX(pts[1],pts[3]))/2.0f};
-        float ext = 10.0/(zoom_scale);
+        float ext = DT_PIXEL_APPLY_DPI(10.0)/(zoom_scale);
         //Apply button
         if (xx>c[0]-ext && xx<c[0]+ext && yy>c[1]-ext && yy<c[1]+ext)
         {

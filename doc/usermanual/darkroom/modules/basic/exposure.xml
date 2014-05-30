@@ -1,3 +1,8 @@
+<!DOCTYPE sect3 PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
+               "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd" [
+		<!ENTITY % darktable_dtd SYSTEM "../../../dtd/darktable.dtd">
+		%darktable_dtd;
+		]>
 <sect3 status="final" id="exposure">
 
   <title>Exposure</title>
@@ -50,7 +55,7 @@
 
     <para>
       This module is responsible for one of the most basic steps in each raw image development.
-      An exposure adjustment value allows you - within certain limits - to correct for under- or
+      An exposure adjustment value allows you&nbsp;&ndash; within certain limits&nbsp;&ndash; to correct for under- or
       overexposure. A shift by 1EV is equivalent to a change of exposure time by a factor of 2.
     </para>
 

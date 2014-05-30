@@ -78,9 +78,9 @@ extern "C"
     Imf::FrameBuffer data;
 
     uint32_t channelsize=(exr->width*exr->height);
-    float *red=(float *)malloc(channelsize*sizeof(float));
-    float *green=(float *)malloc(channelsize*sizeof(float));
-    float *blue=(float *)malloc(channelsize*sizeof(float));
+    float *red=(float *)calloc(channelsize, sizeof(float));
+    float *green=(float *)calloc(channelsize, sizeof(float));
+    float *blue=(float *)calloc(channelsize, sizeof(float));
 
     for(uint32_t j=0; j<channelsize; j++)
     {
@@ -117,8 +117,7 @@ extern "C"
   void*
     get_params(dt_imageio_module_format_t *self)
     {
-      dt_imageio_exr_t *d = (dt_imageio_exr_t *)malloc(sizeof(dt_imageio_exr_t));
-      memset(d,0,sizeof(dt_imageio_exr_t));
+      dt_imageio_exr_t *d = (dt_imageio_exr_t *)calloc(1, sizeof(dt_imageio_exr_t));
       return d;
     }
 

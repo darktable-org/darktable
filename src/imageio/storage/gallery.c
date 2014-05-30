@@ -48,9 +48,9 @@ gallery_t;
 // saved params
 typedef struct dt_imageio_gallery_t
 {
-  char filename[DT_MAX_PATH_LEN];
+  char filename[1024];
   char title[1024];
-  char cached_dirname[DT_MAX_PATH_LEN]; // expanded during first img store, not stored in param struct.
+  char cached_dirname[1024]; // expanded during first img store, not stored in param struct.
   dt_variables_params_t *vp;
   GList *l;
 }
@@ -92,8 +92,8 @@ button_clicked (GtkWidget *widget, dt_imageio_module_storage_t *self)
   if (gtk_dialog_run (GTK_DIALOG (filechooser)) == GTK_RESPONSE_ACCEPT)
   {
     gchar *dir = gtk_file_chooser_get_filename (GTK_FILE_CHOOSER (filechooser));
-    char composed[DT_MAX_PATH_LEN];
-    snprintf(composed, DT_MAX_PATH_LEN, "%s/$(FILE_NAME)", dir);
+    char composed[PATH_MAX];
+    snprintf(composed, sizeof(composed), "%s/$(FILE_NAME)", dir);
     gtk_entry_set_text(GTK_ENTRY(d->entry), composed);
     dt_conf_set_string("plugins/imageio/storage/gallery/file_directory", composed);
     g_free(dir);
@@ -158,7 +158,7 @@ gui_init (dt_imageio_module_storage_t *self)
   g_free(tooltip_text);
 
   widget = dtgtk_button_new(dtgtk_cairo_paint_directory, 0);
-  gtk_widget_set_size_request(widget, 18, 18);
+  gtk_widget_set_size_request(widget, DT_PIXEL_APPLY_DPI(18), DT_PIXEL_APPLY_DPI(18));
   g_object_set(G_OBJECT(widget), "tooltip-text", _("select directory"), (char *)NULL);
   gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, FALSE, 0);
   g_signal_connect(G_OBJECT(widget), "clicked", G_CALLBACK(button_clicked), self);
@@ -209,40 +209,40 @@ store (dt_imageio_module_storage_t *self, dt_imageio_module_data_t *sdata, const
 {
   dt_imageio_gallery_t *d = (dt_imageio_gallery_t *)sdata;
 
-  char filename[DT_MAX_PATH_LEN]= {0};
-  char dirname[DT_MAX_PATH_LEN]= {0};
+  char filename[PATH_MAX]= {0};
+  char dirname[PATH_MAX]= {0};
   gboolean from_cache = FALSE;
-  dt_image_full_path(imgid, dirname, DT_MAX_PATH_LEN, &from_cache);
+  dt_image_full_path(imgid, dirname, sizeof(dirname), &from_cache);
   // we're potentially called in parallel. have sequence number synchronized:
   dt_pthread_mutex_lock(&darktable.plugin_threadsafe);
   {
 
-    char tmp_dir[DT_MAX_PATH_LEN];
+    char tmp_dir[PATH_MAX];
 
     d->vp->filename = dirname;
     d->vp->jobcode = "export";
     d->vp->imgid = imgid;
     d->vp->sequence = num;
     dt_variables_expand(d->vp, d->filename, TRUE);
-    g_strlcpy(tmp_dir, dt_variables_get_result(d->vp), DT_MAX_PATH_LEN);
+    g_strlcpy(tmp_dir, dt_variables_get_result(d->vp), sizeof(tmp_dir));
 
     // if filenamepattern is a directory just let att ${FILE_NAME} as default..
     if ( g_file_test(tmp_dir, G_FILE_TEST_EXISTS | G_FILE_TEST_IS_DIR) || ((d->filename+strlen(d->filename)-1)[0]=='/' || (d->filename+strlen(d->filename)-1)[0]=='\\') )
-      snprintf (d->filename+strlen(d->filename), DT_MAX_PATH_LEN-strlen(d->filename), "/$(FILE_NAME)");
+      snprintf (d->filename+strlen(d->filename), sizeof(d->filename)-strlen(d->filename), "/$(FILE_NAME)");
 
     // avoid braindead export which is bound to overwrite at random:
     if(total > 1 && !g_strrstr(d->filename, "$"))
     {
-      snprintf(d->filename+strlen(d->filename), DT_MAX_PATH_LEN-strlen(d->filename), "_$(SEQUENCE)");
+      snprintf(d->filename+strlen(d->filename), sizeof(d->filename)-strlen(d->filename), "_$(SEQUENCE)");
     }
 
     gchar* fixed_path = dt_util_fix_path(d->filename);
-    g_strlcpy(d->filename, fixed_path, DT_MAX_PATH_LEN);
+    g_strlcpy(d->filename, fixed_path, sizeof(d->filename));
     g_free(fixed_path);
 
     dt_variables_expand(d->vp, d->filename, TRUE);
-    g_strlcpy(filename, dt_variables_get_result(d->vp), DT_MAX_PATH_LEN);
-    g_strlcpy(dirname, filename, DT_MAX_PATH_LEN);
+    g_strlcpy(filename, dt_variables_get_result(d->vp), sizeof(filename));
+    g_strlcpy(dirname, filename, sizeof(dirname));
 
     const char *ext = format->extension(fdata);
     char *c = dirname + strlen(dirname);
@@ -257,7 +257,7 @@ store (dt_imageio_module_storage_t *self, dt_imageio_module_data_t *sdata, const
     }
 
     // store away dir.
-    snprintf(d->cached_dirname, DT_MAX_PATH_LEN, "%s", dirname);
+    snprintf(d->cached_dirname, sizeof(d->cached_dirname), "%s", dirname);
 
     c = filename + strlen(filename);
     for(; c>filename && *c != '.' && *c != '/' ; c--);
@@ -295,8 +295,8 @@ store (dt_imageio_module_storage_t *self, dt_imageio_module_data_t *sdata, const
     if(c <= relthumbfilename) c = relthumbfilename + strlen(relthumbfilename);
     sprintf(c, "-thumb.%s", ext);
 
-    char subfilename[DT_MAX_PATH_LEN], relsubfilename[256];
-    snprintf(subfilename, DT_MAX_PATH_LEN, "%s", d->cached_dirname);
+    char subfilename[PATH_MAX], relsubfilename[256];
+    snprintf(subfilename, sizeof(subfilename), "%s", d->cached_dirname);
     char* sc = subfilename + strlen(subfilename);
     sprintf(sc, "/img_%d.html", num);
     snprintf(relsubfilename, sizeof(relsubfilename), "img_%d.html", num);
@@ -360,8 +360,8 @@ store (dt_imageio_module_storage_t *self, dt_imageio_module_data_t *sdata, const
 static void
 copy_res(const char *src, const char *dst)
 {
-  char share[DT_MAX_PATH_LEN];
-  dt_loc_get_datadir(share, DT_MAX_PATH_LEN);
+  char share[PATH_MAX];
+  dt_loc_get_datadir(share, sizeof(share));
   gchar *sourcefile = g_build_filename(share, src, NULL);
   char* content = NULL;
   FILE *fin = fopen(sourcefile, "rb");
@@ -372,7 +372,7 @@ copy_res(const char *src, const char *dst)
     fseek(fin,0,SEEK_END);
     size_t end = ftell(fin);
     rewind(fin);
-    content = (char*)g_malloc(sizeof(char)*end);
+    content = (char *)g_malloc_n(end, sizeof(char));
     if(content == NULL)
       goto END;
     if(fread(content,sizeof(char),end,fin) != end)
@@ -395,8 +395,8 @@ void
 finalize_store(dt_imageio_module_storage_t *self, dt_imageio_module_data_t *dd)
 {
   dt_imageio_gallery_t *d = (dt_imageio_gallery_t *)dd;
-  char filename[DT_MAX_PATH_LEN];
-  snprintf(filename, DT_MAX_PATH_LEN, "%s", d->cached_dirname);
+  char filename[PATH_MAX];
+  snprintf(filename, sizeof(filename), "%s", d->cached_dirname);
   char *c = filename + strlen(filename);
 
   // also create style/ subdir:
@@ -509,17 +509,16 @@ void init(dt_imageio_module_storage_t *self)
 void*
 get_params(dt_imageio_module_storage_t *self)
 {
-  dt_imageio_gallery_t *d = (dt_imageio_gallery_t *)malloc(sizeof(dt_imageio_gallery_t));
-  memset(d, 0, sizeof(dt_imageio_gallery_t));
+  dt_imageio_gallery_t *d = (dt_imageio_gallery_t *)calloc(1, sizeof(dt_imageio_gallery_t));
   gallery_t *g = (gallery_t *)self->gui_data;
   d->vp = NULL;
   d->l = NULL;
   dt_variables_params_init(&d->vp);
   const char *text = gtk_entry_get_text(GTK_ENTRY(g->entry));
-  g_strlcpy(d->filename, text, DT_MAX_PATH_LEN);
+  g_strlcpy(d->filename, text, sizeof(d->filename));
   dt_conf_set_string("plugins/imageio/storage/gallery/file_directory", d->filename);
   text = gtk_entry_get_text(GTK_ENTRY(g->title_entry));
-  g_strlcpy(d->title, text, DT_MAX_PATH_LEN);
+  g_strlcpy(d->title, text, sizeof(d->title));
   dt_conf_set_string("plugins/imageio/storage/gallery/title", d->title);
   return d;
 }

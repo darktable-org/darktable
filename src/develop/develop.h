@@ -18,15 +18,16 @@
 #ifndef DARKTABLE_DEVELOP_H
 #define DARKTABLE_DEVELOP_H
 
+#include <inttypes.h>
+#include <cairo.h>
+#include <glib.h>
+#include <stdint.h>
+
 #include "common/darktable.h"
 #include "common/dtpthread.h"
 #include "control/settings.h"
 #include "develop/imageop.h"
 #include "common/image.h"
-
-#include <inttypes.h>
-#include <cairo.h>
-#include <glib.h>
 
 struct dt_iop_module_t;
 struct dt_iop_params_t;
@@ -100,8 +101,8 @@ typedef struct dt_develop_t
   GList *iop;
 
   // histogram for display.
-  float *histogram, *histogram_pre_tonecurve, *histogram_pre_levels;
-  float histogram_max, histogram_pre_tonecurve_max, histogram_pre_levels_max;
+  uint32_t *histogram, *histogram_pre_tonecurve, *histogram_pre_levels;
+  uint32_t histogram_max, histogram_pre_tonecurve_max, histogram_pre_levels_max;
   uint32_t *histogram_waveform, histogram_waveform_width, histogram_waveform_height, histogram_waveform_stride;
   // we should process the waveform histogram in the correct size to make it not look like crap. since this requires gui knowledge we need this mutex
 //   dt_pthread_mutex_t histogram_waveform_mutex;
@@ -276,6 +277,9 @@ void dt_dev_module_remove(dt_develop_t *dev, struct dt_iop_module_t *module);
 void dt_dev_module_update_multishow(dt_develop_t *dev, struct dt_iop_module_t *module);
 /** same, but for all modules */
 void dt_dev_modules_update_multishow(dt_develop_t *dev);
+/** generates item multi-instance name */
+gchar *dt_history_item_get_name(struct dt_iop_module_t *module);
+gchar *dt_history_item_get_name_html(struct dt_iop_module_t *module);
 
 /*
  * distort functions

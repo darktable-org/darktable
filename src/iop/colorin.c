@@ -49,8 +49,8 @@ typedef enum dt_iop_color_normalize_t
   DT_NORMALIZE_OFF,
   DT_NORMALIZE_SRGB,
   DT_NORMALIZE_ADOBE_RGB,
-  DT_NORMALIZE_LINEAR_RGB,
-  DT_NORMALIZE_BETA_RGB
+  DT_NORMALIZE_LINEAR_REC709_RGB,
+  DT_NORMALIZE_LINEAR_REC2020_RGB
 }
 dt_iop_color_normalize_t;
 
@@ -515,11 +515,11 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
     case DT_NORMALIZE_ADOBE_RGB:
       d->nrgb = dt_colorspaces_create_adobergb_profile();
       break;
-    case DT_NORMALIZE_LINEAR_RGB:
-      d->nrgb = dt_colorspaces_create_linear_rgb_profile();
+    case DT_NORMALIZE_LINEAR_REC709_RGB:
+      d->nrgb = dt_colorspaces_create_linear_rec709_rgb_profile();
       break;
-    case DT_NORMALIZE_BETA_RGB:
-      d->nrgb = dt_colorspaces_create_betargb_profile();
+    case DT_NORMALIZE_LINEAR_REC2020_RGB:
+      d->nrgb = dt_colorspaces_create_linear_rec2020_rgb_profile();
       break;
     case DT_NORMALIZE_OFF:
     default:
@@ -547,9 +547,9 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
   d->lut[1][0] = -1.0f;
   d->lut[2][0] = -1.0f;
   piece->process_cl_ready = 1;
-  char datadir[DT_MAX_PATH_LEN];
-  char filename[DT_MAX_PATH_LEN];
-  dt_loc_get_datadir(datadir, DT_MAX_PATH_LEN);
+  char datadir[PATH_MAX];
+  char filename[PATH_MAX];
+  dt_loc_get_datadir(datadir, sizeof(datadir));
 
   if(!strcmp(p->iccprofile, "Lab"))
   {
@@ -600,8 +600,13 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
     dt_colorspaces_get_makermodel(makermodel, sizeof(makermodel), pipe->image.exif_maker, pipe->image.exif_model);
     float cam_xyz[12];
     cam_xyz[0] = NAN;
-    dt_dcraw_adobe_coeff(makermodel, "", (float (*)[12])cam_xyz);
-    if(isnan(cam_xyz[0])) snprintf(p->iccprofile, sizeof(p->iccprofile), "linear_rgb");
+    dt_dcraw_adobe_coeff(makermodel, (float (*)[12])cam_xyz);
+    if(isnan(cam_xyz[0]))
+    {
+      fprintf(stderr, "[colorin] `%s' color matrix not found!\n", makermodel);
+      dt_control_log(_("`%s' color matrix not found!"), makermodel);
+      snprintf(p->iccprofile, sizeof(p->iccprofile), "linear_rec709_rgb");
+    }
     else d->input = dt_colorspaces_create_xyzimatrix_profile((float (*)[3])cam_xyz);
   }
 
@@ -621,20 +626,24 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
   {
     d->input = dt_colorspaces_create_adobergb_profile();
   }
-  else if(!strcmp(p->iccprofile, "linear_rgb"))
+  else if(!strcmp(p->iccprofile, "linear_rec709_rgb") || !strcmp(p->iccprofile, "linear_rgb"))
   {
-    d->input = dt_colorspaces_create_linear_rgb_profile();
+    d->input = dt_colorspaces_create_linear_rec709_rgb_profile();
+  }
+  else if(!strcmp(p->iccprofile, "linear_rec2020_rgb"))
+  {
+    d->input = dt_colorspaces_create_linear_rec2020_rgb_profile();
   }
   else if(!d->input)
   {
-    dt_colorspaces_find_profile(filename, DT_MAX_PATH_LEN, p->iccprofile, "in");
+    dt_colorspaces_find_profile(filename, sizeof(filename), p->iccprofile, "in");
     d->input = cmsOpenProfileFromFile(filename, "r");
   }
 
   if(!d->input && strcmp(p->iccprofile, "sRGB"))
   {
-    // use linear_rgb as fallback for missing non-sRGB profiles:
-    d->input = dt_colorspaces_create_linear_rgb_profile();
+    // use linear_rec709_rgb as fallback for missing non-sRGB profiles:
+    d->input = dt_colorspaces_create_linear_rec709_rgb_profile();
   }
 
   // final resort: sRGB
@@ -704,7 +713,7 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
     if(d->input) dt_colorspaces_cleanup_profile(d->input);
     if(d->nrgb) dt_colorspaces_cleanup_profile(d->nrgb);
     d->nrgb = NULL;
-    d->input = dt_colorspaces_create_linear_rgb_profile();
+    d->input = dt_colorspaces_create_linear_rec709_rgb_profile();
     if(dt_colorspaces_get_matrix_from_input_profile (d->input, d->cmatrix, d->lut[0], d->lut[1], d->lut[2], LUT_SAMPLES))
     {
       piece->process_cl_ready = 0;
@@ -820,9 +829,9 @@ void reload_defaults(dt_iop_module_t *module)
   const dt_image_t *cimg = dt_image_cache_read_get(darktable.image_cache, module->dev->image_storage.id);
   if(!cimg->profile)
   {
-    char filename[DT_MAX_PATH_LEN];
+    char filename[PATH_MAX];
     gboolean from_cache = TRUE;
-    dt_image_full_path(cimg->id, filename, DT_MAX_PATH_LEN, &from_cache);
+    dt_image_full_path(cimg->id, filename, sizeof(filename), &from_cache);
     const gchar *cc = filename + strlen(filename);
     for(; *cc!='.'&&cc>filename; cc--);
     gchar *ext = g_ascii_strdown(cc+1, -1);
@@ -926,7 +935,7 @@ static void update_profile_list(dt_iop_module_t *self)
   dt_colorspaces_get_makermodel(makermodel, sizeof(makermodel), self->dev->image_storage.exif_maker, self->dev->image_storage.exif_model);
   float cam_xyz[12];
   cam_xyz[0] = NAN;
-  dt_dcraw_adobe_coeff(makermodel, "", (float (*)[12])cam_xyz);
+  dt_dcraw_adobe_coeff(makermodel, (float (*)[12])cam_xyz);
   if(!isnan(cam_xyz[0]))
   {
     prof = (dt_iop_color_profile_t *)g_malloc0(sizeof(dt_iop_color_profile_t));
@@ -1003,8 +1012,10 @@ static void update_profile_list(dt_iop_module_t *self)
       dt_bauhaus_combobox_add(g->cbox2, _("sRGB (e.g. JPG)"));
     else if(!strcmp(prof->name, "adobergb"))
       dt_bauhaus_combobox_add(g->cbox2, _("Adobe RGB (compatible)"));
-    else if(!strcmp(prof->name, "linear_rgb"))
+    else if(!strcmp(prof->name, "linear_rec709_rgb") || !strcmp(prof->name, "linear_rgb"))
       dt_bauhaus_combobox_add(g->cbox2, _("linear Rec709 RGB"));
+    else if(!strcmp(prof->name, "linear_rec2020_rgb"))
+      dt_bauhaus_combobox_add(g->cbox2, _("linear Rec2020 RGB"));
     else if(!strcmp(prof->name, "infrared"))
       dt_bauhaus_combobox_add(g->cbox2, _("linear infrared BGR"));
     else if(!strcmp(prof->name, "XYZ"))
@@ -1035,8 +1046,10 @@ static void update_profile_list(dt_iop_module_t *self)
       dt_bauhaus_combobox_add(g->cbox2, _("sRGB (e.g. JPG)"));
     else if(!strcmp(prof->name, "adobergb"))
       dt_bauhaus_combobox_add(g->cbox2, _("Adobe RGB (compatible)"));
-    else if(!strcmp(prof->name, "linear_rgb"))
+    else if(!strcmp(prof->name, "linear_rec709_rgb") || !strcmp(prof->name, "linear_rgb"))
       dt_bauhaus_combobox_add(g->cbox2, _("linear Rec709 RGB"));
+    else if(!strcmp(prof->name, "linear_rec2020_rgb"))
+      dt_bauhaus_combobox_add(g->cbox2, _("linear Rec2020 RGB"));
     else if(!strcmp(prof->name, "infrared"))
       dt_bauhaus_combobox_add(g->cbox2, _("linear infrared BGR"));
     else if(!strcmp(prof->name, "XYZ"))
@@ -1060,6 +1073,13 @@ void gui_init(struct dt_iop_module_t *self)
 
   // the profiles that are available for every image
   int pos = -1;
+
+  // add linear Rec2020 RGB profile:
+  prof = (dt_iop_color_profile_t *)g_malloc0(sizeof(dt_iop_color_profile_t));
+  g_strlcpy(prof->filename, "linear_rec2020_rgb", sizeof(prof->filename));
+  g_strlcpy(prof->name, "linear_rec2020_rgb", sizeof(prof->name));
+  g->global_profiles = g_list_append(g->global_profiles, prof);
+  prof->pos = ++pos;
 
   // add linear Rec709 RGB profile:
   prof = (dt_iop_color_profile_t *)g_malloc0(sizeof(dt_iop_color_profile_t));
@@ -1104,15 +1124,15 @@ void gui_init(struct dt_iop_module_t *self)
   prof->pos = ++pos;
 
   // read {userconfig,datadir}/color/in/*.icc, in this order.
-  char datadir[DT_MAX_PATH_LEN];
-  char confdir[DT_MAX_PATH_LEN];
-  char dirname[DT_MAX_PATH_LEN];
-  char filename[DT_MAX_PATH_LEN];
-  dt_loc_get_user_config_dir(confdir, DT_MAX_PATH_LEN);
-  dt_loc_get_datadir(datadir, DT_MAX_PATH_LEN);
-  snprintf(dirname, DT_MAX_PATH_LEN, "%s/color/in", confdir);
+  char datadir[PATH_MAX];
+  char confdir[PATH_MAX];
+  char dirname[PATH_MAX];
+  char filename[PATH_MAX];
+  dt_loc_get_user_config_dir(confdir, sizeof(confdir));
+  dt_loc_get_datadir(datadir, sizeof(datadir));
+  snprintf(dirname, sizeof(dirname), "%s/color/in", confdir);
   if(!g_file_test(dirname, G_FILE_TEST_IS_DIR))
-    snprintf(dirname, DT_MAX_PATH_LEN, "%s/color/in", datadir);
+    snprintf(dirname, sizeof(dirname), "%s/color/in", datadir);
   cmsHPROFILE tmpprof;
   const gchar *d_name;
   GDir *dir = g_dir_open(dirname, 0, NULL);
@@ -1120,8 +1140,8 @@ void gui_init(struct dt_iop_module_t *self)
   {
     while((d_name = g_dir_read_name(dir)))
     {
-      if(!strcmp(d_name, "linear_rgb")) continue;
-      snprintf(filename, DT_MAX_PATH_LEN, "%s/%s", dirname, d_name);
+      if(!strcmp(d_name, "linear_rec709_rgb") || !strcmp(d_name, "linear_rgb")) continue;
+      snprintf(filename, sizeof(filename), "%s/%s", dirname, d_name);
       tmpprof = cmsOpenProfileFromFile(filename, "r");
       if(tmpprof)
       {
@@ -1165,7 +1185,7 @@ void gui_init(struct dt_iop_module_t *self)
   dt_bauhaus_combobox_add(g->cbox3, _("sRGB"));
   dt_bauhaus_combobox_add(g->cbox3, _("Adobe RGB (compatible)"));
   dt_bauhaus_combobox_add(g->cbox3, _("linear Rec709 RGB"));
-  dt_bauhaus_combobox_add(g->cbox3, _("Beta RGB (compatible)"));
+  dt_bauhaus_combobox_add(g->cbox3, _("linear Rec2020 RGB"));
 
   g_object_set(G_OBJECT(g->cbox3), "tooltip-text", _("confine Lab values to gamut of RGB color space"), (char *)NULL);
 

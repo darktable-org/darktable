@@ -290,11 +290,13 @@ dt_iop_load_module_by_so(dt_iop_module_t *module, dt_iop_module_so_t *so, dt_dev
   module->off = NULL;
   module->priority = 0;
   module->hide_enable_button = 0;
-  module->request_color_pick = 0;
+  module->request_color_pick = DT_REQUEST_COLORPICK_OFF;
   module->request_histogram = DT_REQUEST_ONLY_IN_GUI;
   module->request_histogram_source = DT_DEV_PIXELPIPE_PREVIEW;
   module->histogram_params.roi = NULL;
   module->histogram_params.bins_count = 64;
+  module->histogram_bins_count = 0;
+  module->histogram_pixels = 0;
   module->multi_priority = 0;
   for(int k=0; k<3; k++)
   {
@@ -385,14 +387,14 @@ dt_iop_load_module_by_so(dt_iop_module_t *module, dt_iop_module_so_t *so, dt_dev
     dt_iop_gui_set_state(module,state);
   }
 
+  module->data = so->data;
+
   // now init the instance:
   module->init(module);
 
   /* initialize blendop params and default values */
-  module->blend_params=g_malloc(sizeof(dt_develop_blend_params_t));
-  module->default_blendop_params=g_malloc(sizeof(dt_develop_blend_params_t));
-  memset(module->blend_params, 0, sizeof(dt_develop_blend_params_t));
-  memset(module->default_blendop_params, 0, sizeof(dt_develop_blend_params_t));
+  module->blend_params = g_malloc0(sizeof(dt_develop_blend_params_t));
+  module->default_blendop_params = g_malloc0(sizeof(dt_develop_blend_params_t));
   memcpy(module->default_blendop_params, &_default_blendop_params, sizeof(dt_develop_blend_params_t));
   memcpy(module->blend_params, &_default_blendop_params, sizeof(dt_develop_blend_params_t));
 
@@ -413,8 +415,7 @@ dt_iop_load_module_by_so(dt_iop_module_t *module, dt_iop_module_so_t *so, dt_dev
 void dt_iop_init_pipe(struct dt_iop_module_t *module, struct dt_dev_pixelpipe_t *pipe, struct dt_dev_pixelpipe_iop_t *piece)
 {
   module->init_pipe(module, pipe, piece);
-  piece->blendop_data = malloc(sizeof(dt_develop_blend_params_t));
-  memset(piece->blendop_data, 0, sizeof(dt_develop_blend_params_t));
+  piece->blendop_data = calloc(1, sizeof(dt_develop_blend_params_t));
   /// FIXME: Commit params is already done in module
   dt_iop_commit_params(module, module->default_params, module->default_blendop_params, pipe, piece);
 }
@@ -699,6 +700,7 @@ dt_iop_gui_duplicate(dt_iop_module_t *base, gboolean copy_params)
   if (!dt_iop_is_hidden(module))
   {
     module->gui_init(module);
+    dt_iop_reload_defaults(module); // some modules like profiled denoise update the gui in reload_defaults
     if(copy_params)
     {
       memcpy(module->params, base->params, module->params_size);
@@ -712,8 +714,6 @@ dt_iop_gui_duplicate(dt_iop_module_t *base, gboolean copy_params)
         }
       }
     }
-    else
-      dt_iop_reload_defaults(module);
 
     //we save the new instance creation but keep it disabled
     dt_dev_add_history_item(module->dev, module, FALSE);
@@ -834,7 +834,9 @@ dt_iop_gui_off_callback(GtkToggleButton *togglebutton, gpointer user_data)
     dt_dev_add_history_item(module->dev, module, FALSE);
   }
   char tooltip[512];
-  snprintf(tooltip, sizeof(tooltip), module->enabled ? _("%s is switched on") : _("%s is switched off"), module->name());
+  gchar *module_label = dt_history_item_get_name(module);
+  snprintf(tooltip, sizeof(tooltip), module->enabled ? _("%s is switched on") : _("%s is switched off"), module_label);
+  g_free(module_label);
   g_object_set(G_OBJECT(togglebutton), "tooltip-text", tooltip, (char *)NULL);
 }
 
@@ -873,14 +875,10 @@ gboolean dt_iop_shown_in_group(dt_iop_module_t *module, uint32_t group)
 
 static void _iop_panel_label(GtkWidget *lab, dt_iop_module_t *module)
 {
-  char label[128];
-  // if multi_name is emptry or "0"
-  if(!module->multi_name[0] || strcmp(module->multi_name,"0") == 0)
-    g_snprintf(label,sizeof(label),"<span size=\"larger\">%s</span>  ",module->name());
-  else
-    g_snprintf(label,sizeof(label),"<span size=\"larger\">%s</span> %s",module->name(),module->multi_name);
   gtk_widget_set_name(lab, "panel_label");
-  gtk_label_set_markup(GTK_LABEL(lab),label);
+  gchar *label = dt_history_item_get_name_html(module);
+  gtk_label_set_markup(GTK_LABEL(lab), label);
+  g_free(label);
 }
 
 static void _iop_gui_update_header(dt_iop_module_t *module)
@@ -989,8 +987,7 @@ init_presets(dt_iop_module_so_t *module_so)
 
       // we need a dt_iop_module_t for legacy_params()
       dt_iop_module_t *module;
-      module = (dt_iop_module_t *)malloc(sizeof(dt_iop_module_t));
-      memset(module, 0, sizeof(dt_iop_module_t));
+      module = (dt_iop_module_t *)calloc(1, sizeof(dt_iop_module_t));
       if( dt_iop_load_module_by_so(module, module_so, NULL) )
       {
         free(module);
@@ -1010,8 +1007,7 @@ init_presets(dt_iop_module_so_t *module_so)
         module->reload_defaults(module);
 
       int32_t new_params_size = module->params_size;
-      void *new_params = malloc(new_params_size);
-      memset(new_params, 0, new_params_size);
+      void *new_params = calloc(1, new_params_size);
 
       // convert the old params to new
       if( module->legacy_params(module, old_params, old_params_version, new_params, module_version ) )
@@ -1050,15 +1046,13 @@ init_presets(dt_iop_module_so_t *module_so)
 
       // we need a dt_iop_module_t for dt_develop_blend_legacy_params()
       dt_iop_module_t *module;
-      module = (dt_iop_module_t *)malloc(sizeof(dt_iop_module_t));
-      memset(module, 0, sizeof(dt_iop_module_t));
+      module = (dt_iop_module_t *)calloc(1, sizeof(dt_iop_module_t));
       if( dt_iop_load_module_by_so(module, module_so, NULL) )
       {
         free(module);
         continue;
       }
 
-      module->init(module);
       if(module->params_size == 0)
       {
         dt_iop_cleanup_module(module);
@@ -1122,7 +1116,7 @@ void dt_iop_load_modules_so()
   GList *res = NULL;
   dt_iop_module_so_t *module;
   darktable.iop = NULL;
-  char plugindir[1024], op[20];
+  char plugindir[PATH_MAX], op[20];
   const gchar *d_name;
   dt_loc_get_plugindir(plugindir, sizeof(plugindir));
   g_strlcat(plugindir, "/plugins", sizeof(plugindir));
@@ -1137,8 +1131,7 @@ void dt_iop_load_modules_so()
     if(!g_str_has_suffix(d_name, SHARED_MODULE_SUFFIX)) continue;
     strncpy(op, d_name+name_offset, strlen(d_name)-name_end);
     op[strlen(d_name)-name_end] = '\0';
-    module = (dt_iop_module_so_t *)malloc(sizeof(dt_iop_module_so_t));
-    memset(module,0,sizeof(dt_iop_module_so_t));
+    module = (dt_iop_module_so_t *)calloc(1, sizeof(dt_iop_module_so_t));
     gchar *libname = g_module_build_path(plugindir, (const gchar *)op);
     if(dt_iop_load_module_so(module, libname, op))
     {
@@ -1195,8 +1188,7 @@ GList *dt_iop_load_modules(dt_develop_t *dev)
   while(iop)
   {
     module_so = (dt_iop_module_so_t *)iop->data;
-    module    = (dt_iop_module_t *)malloc(sizeof(dt_iop_module_t));
-    memset(module,0,sizeof(dt_iop_module_t));
+    module    = (dt_iop_module_t *)calloc(1, sizeof(dt_iop_module_t));
     if(dt_iop_load_module_by_so(module, module_so, dev))
     {
       free(module);
@@ -1224,8 +1216,11 @@ void dt_iop_cleanup_module(dt_iop_module_t *module)
 {
   module->cleanup(module);
 
-  free(module->default_params);
-  module->default_params = NULL;
+  if (module->default_params != NULL)
+  {
+    free(module->default_params);
+    module->default_params = NULL;
+  }
   if (module->blend_params != NULL)
   {
     free(module->blend_params);
@@ -1637,7 +1632,7 @@ _iop_plugin_header_button_press(GtkWidget *w, GdkEventButton *e, gpointer user_d
 
 GtkWidget *dt_iop_gui_get_expander(dt_iop_module_t *module)
 {
-  int bs = 12;
+  int bs = DT_PIXEL_APPLY_DPI(12);
   char tooltip[512];
   GtkWidget *expander = gtk_vbox_new(FALSE, 3);
   GtkWidget *header_evb = gtk_event_box_new();
@@ -1731,7 +1726,9 @@ GtkWidget *dt_iop_gui_get_expander(dt_iop_module_t *module)
   /* add enabled button */
   hw[idx] = dtgtk_togglebutton_new(dtgtk_cairo_paint_switch, CPF_STYLE_FLAT|CPF_DO_NOT_USE_BORDER);
   gtk_widget_set_no_show_all(hw[idx],TRUE);
-  snprintf(tooltip, sizeof(tooltip), module->enabled ? _("%s is switched on") : _("%s is switched off"), module->name());
+  gchar *module_label = dt_history_item_get_name(module);
+  snprintf(tooltip, sizeof(tooltip), module->enabled ? _("%s is switched on") : _("%s is switched off"), module_label);
+  g_free(module_label);
   g_object_set(G_OBJECT(hw[idx]), "tooltip-text", tooltip, (char *)NULL);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(hw[idx]), module->enabled);
   g_signal_connect (G_OBJECT (hw[idx]), "toggled",

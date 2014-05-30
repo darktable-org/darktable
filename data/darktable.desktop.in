@@ -21,3 +21,5 @@ MimeType=application/x-darktable;image/x-dcraw;
 
 Icon=darktable
 
+X-Unity-IconBackgroundColor=#252525
+

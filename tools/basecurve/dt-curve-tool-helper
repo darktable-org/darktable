@@ -1,63 +1,199 @@
 #!/bin/sh 
 
+#############################################################################
+# Copyright(C) 2014 Edouard Gomez
+#
+# Licensed under the GPLv3 or later
+# As of this writing it can be found at http://www.gnu.org/licenses/gpl.txt
+#############################################################################
+
+#############################################################################
+# Script vars
+#############################################################################
+
 _raw=""
 _keep=0
-_rotate=0
 _quiet=0
+_raw=""
+_jpeg=""
+_args=""
+_state=""
 
-while [ $# -gt 0 ] ; do
-	case $1 in
-	-k)
-		_keep=1
-		;;
-	-r)
-		shift
-		_rotate=$1
-		;;
-	-q)
-		_quiet=1
-		;;
-	*)
-		_raw="$1"
-		;;
-	esac
-	shift
-done
+#############################################################################
+# Script functions
+#############################################################################
 
+print_help()
+{
+cat <<EOF
+usage: dt-curve-tool-helper [OPTIONS] <RAW> [JPEG]
+
+OPTIONS:
+-k, --keep    Keep intermediary PPM files (default: no)
+-s, --state   dt-curve-tool state file path (default: program's default)
+-q, --quiet   Quiet mode, do not print final message (default: no)
+-h, --help    Print this help message
+EOF
+}
+
+parse_args()
+{
+    while [ $# -gt 0 ] ; do
+        case $1 in
+        -k|--keep)
+            _keep=1
+            ;;
+        -q|--quiet)
+            _quiet=1
+            ;;
+        -s|--state)
+            shift
+            _state="$1"
+            ;;
+        -h|--help)
+            print_help
+            exit 0
+            ;;
+        *)
+            _args="$_args $1"
+            ;;
+        esac
+        shift
+    done
+}
+
+setup_sources()
+{
+    _raw="$1"
+    _jpeg="$2"
+}
+
+generate_ppm_raw()
+{
+    local _src="$1"
+    local _dst="$2"
+    local _base=$(printf "$_src"| sed s,'\(.*\)\..*$','\1',g)
+    local _tmpppm="${_base}.ppm"
+
+    dcraw -6 -W -g 1 1 -w "$_src"
+    mv "$_tmpppm" "$_dst"
+}
+
+extract_jpeg_from_raw()
+{
+    local _src="$1"
+    local _dst="$2"
+    local _make=$(exiftool -Make -t "$_src"|cut -d "$(printf '\t')" -f 2)
+
+    case "$_make" in
+    [Nn][Ii][Kk][Oo][Nn]*)
+        exiftool -b -JpgFromRaw "$_src" > "$_dst"
+        ;;
+    [Cc][Aa][Nn][Oo][Nn]*)
+        exiftool -b -PreviewImage "$_src" > "$_dst"
+        ;;
+    *)
+        printf "unknown camera manufacturer $_make, please provide a sample file to darktable developers to see if an embedded JPEG could be used"
+        ;;
+    esac
+}
+
+generate_ppm_jpeg()
+{
+    local _srcraw="$1"
+    local _srcjpeg="$2"
+    local _dst="$3"
+
+    local _orientation=$(exiftool -t -n -Orientation "$_srcraw"|cut -d "$(printf '\t')" -f 2)
+    local _transform=""
+
+    case "$_orientation" in
+    1) _transform="";;
+    2) _transform="-flip horizontal";;
+    3) _transform="-rotate 180";;
+    4) _transform="-flip vertical";;
+    5) _transform="-transpose";;
+    6) _transform="-rotate 90";;
+    7) _transform="-transverse";;
+    8) _transform="-rotate 270";;
+    *) _transform="";;
+    esac
+
+    convert $_transform "$_srcjpeg" "$_dst"
+}
+
+#############################################################################
+# Script starts here
+#############################################################################
+
+# parse arguments
+parse_args $@
+
+# first setup source file vars, first is the raw and second is the JPEG if any
+setup_sources $_args
+
+# bail out if no raw
+if [ ! -f "$_raw" ] ; then
+    printf "error: input raw file not found\n"
+    exit 1
+fi
+
+# some intermediary vars
 _base=$(printf "$_raw"| sed s,'\(.*\)\..*$','\1',g)
-TMPPPM="${_base}.ppm"
-TMPJPG="${_base}.jpg"
-PPM16="${_base}-16.ppm"
-PPM8="${_base}-8.ppm"
-MAGIC=""
-_rotate=$(($_rotate % 360))
-if [ $_rotate -ne 0 ] ; then
-	MAGIC="-rotate $_rotate"
+_ppm16="${_base}-16.ppm"
+_ppm8="${_base}-8.ppm"
+
+# generate the PPM from the raw file
+generate_ppm_raw "$_raw" "$_ppm16"
+if [ ! -f "$_ppm16" ] ; then
+    printf "error: failed generating the PPM from the raw file\n"
+    exit 1
 fi
 
-dcraw -6 -W -g 1 1 -w "$_raw"
-mv "$TMPPPM" "$PPM16"
-_make=$(exiftool -Make -t "$_raw"|cut -d "$(printf '\t')" -f 2)
-case "$_make" in
-[Nn][Ii][Kk][Oo][Nn]*)
-	exiftool -b -JpgFromRaw "$_raw" > "$TMPJPG"
-	;;
-[Cc][Aa][Nn][Oo][Nn]*)
-	exiftool -b -PreviewImage "$_raw" > "$TMPJPG"
-	;;
-*)
-	echo "unknown camera manufacturer $_make, please inform darktable developers"
-	exit 1
-	;;
-esac
-convert $MAGIC "$TMPJPG" "$PPM8"
-rm -f "$TMPJPG"
-dt-curve-tool "$PPM16" "$PPM8"
+# Figure out what JPEG file the script will use
+_jpegtmp=""
+if [ -z "$_jpeg" ] || [ ! -f "$_jpeg" ] ; then
+    if [ -f "$_base.JPG" ] ; then
+        _jpeg="$_base.JPG"
+    elif [ -f "$_base.jpg" ] ; then
+        _jpeg="$_base.jpg"
+    else
+        _jpegtmp="${_base}.jpg"
+        _jpeg="$_jpegtmp"
+        extract_jpeg_from_raw "$_raw" "$_jpegtmp"
+    fi
+fi
+
+# bail out if no suitable JPEG
+if [ ! -f "$_jpeg" ] ; then
+    printf "error: no JPEG on command line or extracted from raw found\n"
+    exit 1
+fi
+
+# generate PPM from JPEG file
+generate_ppm_jpeg "$_raw" "$_jpeg" "$_ppm8"
+if [ ! -f "$_ppm8" ] ; then
+    printf "error: failed generating the PPM from the JPEG file\n"
+    exit 1
+fi
+
+# clean temporary extracted JPEG if any
+if [ -n "$_jpegtmp" ] && [ -f "$_jpegtmp" ] ; then
+    rm -f "$_jpegtmp"
+fi
+
+# turn the state file to a valid option for dt-curve-tool
+if [ -n "$_state" ] ; then
+    _state="-s $_state"
+fi
+
+# analyze the images
+dt-curve-tool $_state "$_ppm16" "$_ppm8"
 if [ $_keep -eq 0 ] ; then
-	rm "$PPM16" "$PPM8"
+    rm -f "$_ppm16" "$_ppm8"
 fi
 
-if [ "$_quiet" -eq 0 ] ; then
-	echo "if you accumulated enough data, you can now output the curves with"
-	echo "dt-curve-tool -z -e "$_raw" -n 16"
+if [ $_quiet -eq 0 ] ; then
+    printf "if you accumulated enough data, you can now output the curves with\n"
+    printf "dt-curve-tool $_state -z -e "$_raw" -n 16\n"
 fi

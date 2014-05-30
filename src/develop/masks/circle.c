@@ -546,7 +546,7 @@ static int dt_circle_get_points(dt_develop_t *dev, float x, float y, float radiu
   int l = (int) (2.0*M_PI*r);
 
   //buffer allocations
-  *points = malloc(2*(l+1)*sizeof(float));
+  *points = calloc(2*(l+1), sizeof(float));
   *points_count = l+1;
 
   //now we set the points
@@ -578,7 +578,7 @@ static int dt_circle_get_source_area(dt_iop_module_t *module, dt_dev_pixelpipe_i
   float r = (circle->radius + circle->border)*MIN(wd,ht);
   int l = (int) (2.0*M_PI*r);
   //buffer allocations
-  float *points = malloc(2*(l+1)*sizeof(float));
+  float *points = calloc(2*(l+1), sizeof(float));
 
   //now we set the points
   points[0] = form->source[0]*wd;
@@ -626,7 +626,7 @@ static int dt_circle_get_area(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *p
   float r = (circle->radius + circle->border)*MIN(wd,ht);
   int l = (int) (2.0*M_PI*r);
   //buffer allocations
-  float *points = malloc(2*(l+1)*sizeof(float));
+  float *points = calloc(2*(l+1), sizeof(float));
 
   //now we set the points
   points[0] = circle->center[0]*wd;
@@ -703,9 +703,8 @@ static int dt_circle_get_mask(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *p
   start2 = dt_get_wtime();
 
   //we allocate the buffer
-  *buffer = malloc(w*h*sizeof(float));
-  memset(*buffer,0,w*h*sizeof(float));
-  
+  *buffer = calloc(w*h, sizeof(float));
+
   //we populate the buffer
   int wi = piece->pipe->iwidth, hi=piece->pipe->iheight;
   float center[2] = {circle->center[0]*wi, circle->center[1]*hi};

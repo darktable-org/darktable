@@ -347,7 +347,7 @@ void expose(dt_view_t *self, cairo_t *cri, int32_t width_i, int32_t height_i, in
   }
 
   // execute module callback hook.
-  if(dev->gui_module && dev->gui_module->request_color_pick)
+  if(dev->gui_module && dev->gui_module->request_color_pick != DT_REQUEST_COLORPICK_OFF)
   {
     float wd = dev->preview_pipe->backbuf_width;
     float ht = dev->preview_pipe->backbuf_height;
@@ -459,9 +459,9 @@ int try_enter(dt_view_t *self)
   const dt_image_t *img = dt_image_cache_read_get(darktable.image_cache, selected);
   // get image and check if it has been deleted from disk first!
 
-  char imgfilename[DT_MAX_PATH_LEN];
+  char imgfilename[PATH_MAX];
   gboolean from_cache = TRUE;
-  dt_image_full_path(img->id, imgfilename, DT_MAX_PATH_LEN, &from_cache);
+  dt_image_full_path(img->id, imgfilename, sizeof(imgfilename), &from_cache);
   if(!g_file_test(imgfilename, G_FILE_TEST_IS_REGULAR))
   {
     dt_control_log(_("image `%s' is currently unavailable"), img->filename);
@@ -546,8 +546,7 @@ dt_dev_change_image(dt_develop_t *dev, const uint32_t imgid)
   //cleanup visible masks
   if (!dev->form_gui)
   {
-    dev->form_gui = (dt_masks_form_gui_t *) malloc(sizeof(dt_masks_form_gui_t));
-    memset(dev->form_gui,0,sizeof(dt_masks_form_gui_t));
+    dev->form_gui = (dt_masks_form_gui_t *)calloc(1, sizeof(dt_masks_form_gui_t));
   }
   dt_masks_init_form_gui(dev);
   dev->form_visible = NULL;
@@ -1080,8 +1079,7 @@ void enter(dt_view_t *self)
   dt_develop_t *dev = (dt_develop_t *)self->data;
   if (!dev->form_gui)
   {
-    dev->form_gui = (dt_masks_form_gui_t *) malloc(sizeof(dt_masks_form_gui_t));
-    memset(dev->form_gui,0,sizeof(dt_masks_form_gui_t));
+    dev->form_gui = (dt_masks_form_gui_t *)calloc(1, sizeof(dt_masks_form_gui_t));
   }
   dt_masks_init_form_gui(dev);
   dev->form_visible = NULL;
@@ -1412,7 +1410,8 @@ void mouse_moved(dt_view_t *self, double x, double y, double pressure, int which
   int handled = 0;
   x += offx;
   y += offy;
-  if(dev->gui_module && dev->gui_module->request_color_pick &&
+  if(dev->gui_module && 
+      dev->gui_module->request_color_pick != DT_REQUEST_COLORPICK_OFF &&
       ctl->button_down &&
       ctl->button_down_which == 1)
   {
@@ -1502,7 +1501,7 @@ int button_pressed(dt_view_t *self, double x, double y, double pressure, int whi
   if(height_i > capht) y += (capht-height_i)*.5f;
 
   int handled = 0;
-  if(dev->gui_module && dev->gui_module->request_color_pick && which == 1)
+  if(dev->gui_module && dev->gui_module->request_color_pick != DT_REQUEST_COLORPICK_OFF && which == 1)
   {
     float zoom_x, zoom_y;
     dt_dev_get_pointer_zoom_pos(dev, x, y, &zoom_x, &zoom_y);

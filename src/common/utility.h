@@ -38,6 +38,16 @@ size_t dt_utf8_strlcpy(char *dest, const char *src, size_t n);
 off_t dt_util_get_file_size(const char *filename);
 /** returns true if dirname is empty */
 gboolean dt_util_is_dir_empty(const char *dirname);
+
+static inline int is_it_xmas(void)
+{
+  time_t now;
+  time(&now);
+  struct tm lt;
+  localtime_r(&now, &lt);
+  return (lt.tm_mon == 11 && lt.tm_mday >= 24);
+}
+
 #endif
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

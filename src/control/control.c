@@ -320,7 +320,7 @@ void dt_control_init(dt_control_t *s)
 
   // start threads
   s->num_threads = CLAMP(dt_conf_get_int ("worker_threads"), 1, 8);
-  s->thread = (pthread_t *)malloc(sizeof(pthread_t)*s->num_threads);
+  s->thread = (pthread_t *)calloc(s->num_threads, sizeof(pthread_t));
   dt_pthread_mutex_lock(&s->run_mutex);
   s->running = 1;
   dt_pthread_mutex_unlock(&s->run_mutex);

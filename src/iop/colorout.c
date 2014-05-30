@@ -488,9 +488,16 @@ process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoi
         for (int j=0; j<roi_out->width; j++,rgbptr+=4,out+=4)
         {
           const __m128 pixel = _mm_load_ps(rgbptr);
-          const __m128 ingamut = _mm_cmpge_ps(pixel, _mm_setzero_ps());
-          const __m128 result = _mm_or_ps(_mm_andnot_ps(ingamut, outofgamutpixel),
-                                          _mm_and_ps(ingamut, pixel));
+          __m128 ingamut = _mm_cmplt_ps(pixel, _mm_set_ps(-FLT_MAX,
+							   0.0f,
+							   0.0f,
+							   0.0f));
+
+          ingamut = _mm_or_ps(_mm_unpacklo_ps(ingamut, ingamut), _mm_unpackhi_ps(ingamut, ingamut));
+          ingamut = _mm_or_ps(_mm_unpacklo_ps(ingamut, ingamut), _mm_unpackhi_ps(ingamut, ingamut));
+
+          const __m128 result = _mm_or_ps(_mm_and_ps(ingamut, outofgamutpixel),
+                                          _mm_andnot_ps(ingamut, pixel));
           _mm_stream_ps(out, result);
         }
         dt_free_align(rgb);
@@ -511,9 +518,13 @@ static cmsHPROFILE _create_profile(gchar *iccprofile)
     // default: sRGB
     profile = dt_colorspaces_create_srgb_profile();
   }
-  else if(!strcmp(iccprofile, "linear_rgb"))
+  else if(!strcmp(iccprofile, "linear_rec709_rgb") || !strcmp(iccprofile, "linear_rgb"))
   {
-    profile = dt_colorspaces_create_linear_rgb_profile();
+    profile = dt_colorspaces_create_linear_rec709_rgb_profile();
+  }
+  else if(!strcmp(iccprofile, "linear_rec2020_rgb"))
+  {
+    profile = dt_colorspaces_create_linear_rec2020_rgb_profile();
   }
   else if(!strcmp(iccprofile, "adobergb"))
   {
@@ -530,8 +541,8 @@ static cmsHPROFILE _create_profile(gchar *iccprofile)
   else
   {
     // else: load file name
-    char filename[DT_MAX_PATH_LEN];
-    dt_colorspaces_find_profile(filename, DT_MAX_PATH_LEN, iccprofile, "out");
+    char filename[PATH_MAX];
+    dt_colorspaces_find_profile(filename, sizeof(filename), iccprofile, "out");
     profile = cmsOpenProfileFromFile(filename, "r");
   }
 
@@ -814,8 +825,7 @@ void gui_init(struct dt_iop_module_t *self)
 {
   const int high_quality_processing = dt_conf_get_bool("plugins/lighttable/export/force_lcms2");
 
-  self->gui_data = malloc(sizeof(dt_iop_colorout_gui_data_t));
-  memset(self->gui_data,0,sizeof(dt_iop_colorout_gui_data_t));
+  self->gui_data = calloc(1, sizeof(dt_iop_colorout_gui_data_t));
   dt_iop_colorout_gui_data_t *g = (dt_iop_colorout_gui_data_t *)self->gui_data;
 
   g->profiles = NULL;
@@ -849,16 +859,23 @@ void gui_init(struct dt_iop_module_t *self)
   display_pos = prof->display_pos = 3;
   g->profiles = g_list_append(g->profiles, prof);
 
+  prof = (dt_iop_color_profile_t *)g_malloc0(sizeof(dt_iop_color_profile_t));
+  g_strlcpy(prof->filename, "linear_rec2020_rgb", sizeof(prof->filename));
+  g_strlcpy(prof->name, "linear_rec2020_rgb", sizeof(prof->name));
+  pos = prof->pos = 3;
+  display_pos = prof->display_pos = 4;
+  g->profiles = g_list_append(g->profiles, prof);
+
   // read {conf,data}dir/color/out/*.icc
-  char datadir[DT_MAX_PATH_LEN];
-  char confdir[DT_MAX_PATH_LEN];
-  char dirname[DT_MAX_PATH_LEN];
-  char filename[DT_MAX_PATH_LEN];
-  dt_loc_get_user_config_dir(confdir, DT_MAX_PATH_LEN);
-  dt_loc_get_datadir(datadir, DT_MAX_PATH_LEN);
-  snprintf(dirname, DT_MAX_PATH_LEN, "%s/color/out", confdir);
+  char datadir[PATH_MAX];
+  char confdir[PATH_MAX];
+  char dirname[PATH_MAX];
+  char filename[PATH_MAX];
+  dt_loc_get_user_config_dir(confdir, sizeof(confdir));
+  dt_loc_get_datadir(datadir, sizeof(datadir));
+  snprintf(dirname, sizeof(dirname), "%s/color/out", confdir);
   if(!g_file_test(dirname, G_FILE_TEST_IS_DIR))
-    snprintf(dirname, DT_MAX_PATH_LEN, "%s/color/out", datadir);
+    snprintf(dirname, sizeof(dirname), "%s/color/out", datadir);
   cmsHPROFILE tmpprof;
   const gchar *d_name;
   GDir *dir = g_dir_open(dirname, 0, NULL);
@@ -866,7 +883,7 @@ void gui_init(struct dt_iop_module_t *self)
   {
     while((d_name = g_dir_read_name(dir)))
     {
-      snprintf(filename, DT_MAX_PATH_LEN, "%s/%s", dirname, d_name);
+      snprintf(filename, sizeof(filename), "%s/%s", dirname, d_name);
       tmpprof = cmsOpenProfileFromFile(filename, "r");
       if(tmpprof)
       {
@@ -929,11 +946,17 @@ void gui_init(struct dt_iop_module_t *self)
       // the system display profile is only suitable for display purposes
       dt_bauhaus_combobox_add(g->cbox3, _("system display profile"));
     }
-    else if(!strcmp(prof->name, "linear_rgb"))
+    else if(!strcmp(prof->name, "linear_rec709_rgb") || !strcmp(prof->name, "linear_rgb"))
     {
       dt_bauhaus_combobox_add(g->cbox2, _("linear Rec709 RGB"));
       dt_bauhaus_combobox_add(g->cbox3, _("linear Rec709 RGB"));
       dt_bauhaus_combobox_add(g->cbox5, _("linear Rec709 RGB"));
+    }
+    else if(!strcmp(prof->name, "linear_rec2020_rgb"))
+    {
+      dt_bauhaus_combobox_add(g->cbox2, _("linear Rec2020 RGB"));
+      dt_bauhaus_combobox_add(g->cbox3, _("linear Rec2020 RGB"));
+      dt_bauhaus_combobox_add(g->cbox5, _("linear Rec2020 RGB"));
     }
     else if(!strcmp(prof->name, "sRGB"))
     {

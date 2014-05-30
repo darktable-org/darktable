@@ -42,7 +42,7 @@ _email_attachment_t;
 // saved params
 typedef struct dt_imageio_email_t
 {
-  char filename[DT_MAX_PATH_LEN];
+  char filename[1024];
   GList *images;
 }
 dt_imageio_email_t;
@@ -90,10 +90,10 @@ store (dt_imageio_module_storage_t *self, dt_imageio_module_data_t *sdata, const
   attachment->imgid = imgid;
 
   /* construct a temporary file name */
-  char tmpdir[4096]= {0};
+  char tmpdir[PATH_MAX]= {0};
   dt_loc_get_tmp_dir (tmpdir, sizeof(tmpdir));
 
-  char dirname[4096];
+  char dirname[PATH_MAX];
   gboolean from_cache = FALSE;
   dt_image_full_path(imgid, dirname, sizeof(dirname), &from_cache);
   gchar * filename = g_path_get_basename( dirname );
@@ -149,8 +149,7 @@ void init(dt_imageio_module_storage_t *self)
 void*
 get_params(dt_imageio_module_storage_t *self)
 {
-  dt_imageio_email_t *d = (dt_imageio_email_t *)g_malloc(sizeof(dt_imageio_email_t));
-  memset( d,0,sizeof( dt_imageio_email_t));
+  dt_imageio_email_t *d = (dt_imageio_email_t *)g_malloc0(sizeof(dt_imageio_email_t));
   return d;
 }
 

@@ -25,53 +25,49 @@
 
 namespace RawSpeed {
 
-Camera::Camera(xmlDocPtr doc, xmlNodePtr cur) {
-  xmlChar *key;
-  key = xmlGetProp(cur, (const xmlChar *)"make");
+using namespace pugi;
+
+
+Camera::Camera(pugi::xml_node &camera) : cfa(iPoint2D(0,0)) {
+
+  pugi::xml_attribute key = camera.attribute("make");
   if (!key)
     ThrowCME("Camera XML Parser: \"make\" attribute not found.");
-  make = string((const char*)key);
-  xmlFree(key);
+  make = key.as_string();
 
-  key = xmlGetProp(cur, (const xmlChar *)"model");
+  key = camera.attribute("model");
   if (!key)
     ThrowCME("Camera XML Parser: \"model\" attribute not found.");
-  model = string((const char*)key);
-  xmlFree(key);
+  model = key.as_string();
 
   supported = true;
-  key = xmlGetProp(cur, (const xmlChar *)"supported");
+  key = camera.attribute("supported");
   if (key) {
-    string s = string((const char*)key);
+    string s = string(key.as_string());
     if (s.compare("no") == 0)
       supported = false;
-    xmlFree(key);
   }
 
-  key = xmlGetProp(cur, (const xmlChar *)"mode");
+  key = camera.attribute("mode");
   if (key) {
-    mode = string((const char*)key);
-    xmlFree(key);
+    mode = key.as_string();
   } else {
     mode = string("");
   }
 
-  key = xmlGetProp(cur, (const xmlChar *)"decoder_version");
+  key = camera.attribute("decoder_version");
   if (key) {
-    decoderVersion = getAttributeAsInt(cur, cur->name, "decoder_version");
-    xmlFree(key);
+    decoderVersion = key.as_int(0);
   } else {
     decoderVersion = 0;
   }
 
-  cur = cur->xmlChildrenNode;
-  while (cur != NULL) {
-    parseCameraChild(doc, cur);
-    cur = cur->next;
+  for (xml_node node = camera.first_child(); node; node = node.next_sibling()) {
+    parseCameraChild(node);
   }
 }
 
-Camera::Camera( const Camera* camera, uint32 alias_num)
+Camera::Camera( const Camera* camera, uint32 alias_num) : cfa(iPoint2D(0,0))
 {
   if (alias_num >= camera->aliases.size())
     ThrowCME("Camera: Internal error, alias number out of range specified.");
@@ -99,138 +95,143 @@ Camera::Camera( const Camera* camera, uint32 alias_num)
 Camera::~Camera(void) {
 }
 
-void Camera::parseCameraChild(xmlDocPtr doc, xmlNodePtr cur) {
+static bool isTag(const char_t *a, const char* b) {
+  return 0 == strcmp(a, b);
+}
 
-  if (!xmlStrcmp(cur->name, (const xmlChar *) "CFA")) {    
-    if (2 != getAttributeAsInt(cur, cur->name, "width") || 2 != getAttributeAsInt(cur, cur->name, "height")) {
+void Camera::parseCameraChild(xml_node &cur) {
+  if (isTag(cur.name(), "CFA")) {
+    if (2 != cur.attribute("width").as_int(0) || 2 != cur.attribute("height").as_int(0)) {
       supported = FALSE;
     } else {
-      cur = cur->xmlChildrenNode;
-      while (cur != NULL) {
-        parseCFA(doc, cur);
-        cur = cur->next;
+      cfa.setSize(iPoint2D(2,2));
+      xml_node c = cur.child("Color");
+      while (c != NULL) {
+        parseCFA(c);
+        c = c.next_sibling("Color");
       }
     }
     return;
   }
-  if (!xmlStrcmp(cur->name, (const xmlChar *) "Crop")) {
-    cropPos.x = getAttributeAsInt(cur, cur->name, "x");
-    cropPos.y = getAttributeAsInt(cur, cur->name, "y");
+
+  if (isTag(cur.name(), "CFA2")) {
+    cfa.setSize(iPoint2D(cur.attribute("width").as_int(0),cur.attribute("height").as_int(0)));
+    xml_node c = cur.child("Color");
+    while (c != NULL) {
+      parseCFA(c);
+      c = c.next_sibling("Color");
+    }
+    return;
+  }
+
+  if (isTag(cur.name(), "Crop")) {
+    cropPos.x = cur.attribute("x").as_int(0);
+    cropPos.y = cur.attribute("y").as_int(0);
 
     if (cropPos.x < 0)
       ThrowCME("Negative X axis crop specified in camera %s %s", make.c_str(), model.c_str());
     if (cropPos.y < 0)
       ThrowCME("Negative Y axis crop specified in camera %s %s", make.c_str(), model.c_str());
 
-    cropSize.x = getAttributeAsInt(cur, cur->name, "width");
-    cropSize.y = getAttributeAsInt(cur, cur->name, "height");
+    cropSize.x = cur.attribute("width").as_int(0);
+    cropSize.y = cur.attribute("height").as_int(0);
     return;
   }
 
-  if (!xmlStrcmp(cur->name, (const xmlChar *) "Sensor")) {
-    parseSensorInfo(doc, cur);
+  if (isTag(cur.name(), "Sensor")) {
+    parseSensorInfo(cur);
     return;
   }
 
-  if (!xmlStrcmp(cur->name, (const xmlChar *) "BlackAreas")) {
-    cur = cur->xmlChildrenNode;
-    while (cur != NULL) {
-      parseBlackAreas(doc, cur);
-      cur = cur->next;
+  if (isTag(cur.name(), "BlackAreas")) {
+    xml_node c = cur.first_child();
+    while (c != NULL) {
+      parseBlackAreas(c);
+      c = c.next_sibling();
     }
     return;
   }
 
-  if (!xmlStrcmp(cur->name, (const xmlChar *) "Aliases")) {
-    cur = cur->xmlChildrenNode;
-    while (cur != NULL) {
-      parseAlias(doc, cur);
-      cur = cur->next;
+  if (isTag(cur.name(), "Aliases")) {
+    xml_node c = cur.child("Alias");
+    while (c != NULL) {
+      parseAlias(c);
+      c = c.next_sibling();
     }
     return;
   }
-
-  if (!xmlStrcmp(cur->name, (const xmlChar *) "Hints")) {
-    cur = cur->xmlChildrenNode;
-    while (cur != NULL) {
-      parseHint(doc, cur);
-      cur = cur->next;
+  
+  if (isTag(cur.name(), "Hints")) {
+    xml_node c = cur.child("Hint");
+    while (c != NULL) {
+      parseHint(c);
+      c = c.next_sibling();
     }
     return;
   }
 }
 
-void Camera::parseCFA(xmlDocPtr doc, xmlNodePtr cur) {
-  xmlChar *key;
-  if (!xmlStrcmp(cur->name, (const xmlChar *) "Color")) {
-    int x = getAttributeAsInt(cur, cur->name, "x");
-    if (x < 0 || x > 1) {
+void Camera::parseCFA(xml_node &cur) {
+  if (isTag(cur.name(), "Color")) {
+    int x = cur.attribute("x").as_int(-1);
+    if (x < 0 || x >= cfa.size.x) {
       ThrowCME("Invalid x coordinate in CFA array of in camera %s %s", make.c_str(), model.c_str());
     }
 
-    int y = getAttributeAsInt(cur, cur->name, "y");
-    if (y < 0 || y > 1) {
+    int y = cur.attribute("y").as_int(-1);
+    if (y < 0 || y >= cfa.size.y) {
       ThrowCME("Invalid y coordinate in CFA array of in camera %s %s", make.c_str(), model.c_str());
     }
 
-    key = xmlNodeListGetString(doc, cur->children, 1);
-    if (!xmlStrcmp(key, (const xmlChar *) "GREEN"))
+    const char* key = cur.first_child().value();
+    if (isTag(key, "GREEN"))
       cfa.setColorAt(iPoint2D(x, y), CFA_GREEN);
-    else if (!xmlStrcmp(key, (const xmlChar *) "RED"))
+    else if (isTag(key, "RED"))
       cfa.setColorAt(iPoint2D(x, y), CFA_RED);
-    else if (!xmlStrcmp(key, (const xmlChar *) "BLUE"))
+    else if (isTag(key, "BLUE"))
       cfa.setColorAt(iPoint2D(x, y), CFA_BLUE);
-
-    xmlFree(key);
+    else if (isTag(key, "FUJIGREEN"))
+      cfa.setColorAt(iPoint2D(x, y), CFA_FUJI_GREEN);
+    else if (isTag(key, "CYAN"))
+      cfa.setColorAt(iPoint2D(x, y), CFA_CYAN);
+    else if (isTag(key, "MAGENTA"))
+      cfa.setColorAt(iPoint2D(x, y), CFA_MAGENTA);
+    else if (isTag(key, "YELLOW"))
+      cfa.setColorAt(iPoint2D(x, y), CFA_YELLOW);
   }
 }
 
-void Camera::parseBlackAreas(xmlDocPtr doc, xmlNodePtr cur) {
-  if (!xmlStrcmp(cur->name, (const xmlChar *) "Vertical")) {
+void Camera::parseBlackAreas(xml_node &cur) {
+  if (isTag(cur.name(), "Vertical")) {
 
-    int x = getAttributeAsInt(cur, cur->name, "x");
+    int x = cur.attribute("x").as_int(-1);
     if (x < 0) {
       ThrowCME("Invalid x coordinate in vertical BlackArea of in camera %s %s", make.c_str(), model.c_str());
     }
 
-    int w = getAttributeAsInt(cur, cur->name, "width");
+    int w = cur.attribute("width").as_int(-1);
     if (w < 0) {
       ThrowCME("Invalid width in vertical BlackArea of in camera %s %s", make.c_str(), model.c_str());
     }
 
     blackAreas.push_back(BlackArea(x, w, true));
 
-  } else if (!xmlStrcmp(cur->name, (const xmlChar *) "Horizontal")) {
+  } else if (isTag(cur.name(), "Horizontal")) {
 
-    int y = getAttributeAsInt(cur, cur->name, "y");
+    int y = cur.attribute("y").as_int(-1);
     if (y < 0) {
       ThrowCME("Invalid y coordinate in horizontal BlackArea of in camera %s %s", make.c_str(), model.c_str());
     }
 
-    int h = getAttributeAsInt(cur, cur->name, "height");
+    int h = cur.attribute("height").as_int(-1);
     if (h < 0) {
       ThrowCME("Invalid width in horizontal BlackArea of in camera %s %s", make.c_str(), model.c_str());
     }
-
     blackAreas.push_back(BlackArea(y, h, false));
-
   }
 }
 
-int Camera::StringToInt(const xmlChar *in, const xmlChar *tag, const char* attribute) {
-  int i;
-
-#if defined(__unix__) || defined(__APPLE__) || defined(__MINGW32__)
-  if (EOF == sscanf((const char*)in, "%d", &i))
-#else
-  if (EOF == sscanf_s((const char*)in, "%d", &i))
-#endif
-    ThrowCME("Error parsing attribute %s in tag %s, in camera %s %s.", attribute, tag, make.c_str(), model.c_str());
-
-  return i;
-}
-
-vector<int> Camera::MultipleStringToInt(const xmlChar *in, const xmlChar *tag, const char* attribute) {
+vector<int> Camera::MultipleStringToInt(const char *in, const char *tag, const char* attribute) {
   int i;
   vector<int> ret;
   vector<string> v = split_string(string((const char*)in), ' ');
@@ -247,91 +248,48 @@ vector<int> Camera::MultipleStringToInt(const xmlChar *in, const xmlChar *tag, c
   return ret;
 }
 
-
-int Camera::getAttributeAsInt(xmlNodePtr cur , const xmlChar *tag, const char* attribute) {
-  xmlChar *key = xmlGetProp(cur, (const xmlChar *)attribute);
-
-  if (!key)
-    ThrowCME("Could not find attribute %s in tag %s, in camera %s %s.", attribute, tag, make.c_str(), model.c_str());
-
-  try {
-    int i = StringToInt(key, tag, attribute);
-    xmlFree(key);
-    return i;
-  } catch (CameraMetadataException &e) {
-    xmlFree(key);
-    throw e;
-  }
-
- /* Never actually reachable */
-  return 0;
-}
-
-void Camera::parseAlias( xmlDocPtr doc, xmlNodePtr cur )
+void Camera::parseAlias( xml_node &cur )
 {
-  if (!xmlStrcmp(cur->name, (const xmlChar *) "Alias")) {
-    cur = cur->xmlChildrenNode;
-    while (NULL != cur) {
-      if (cur && !xmlStrcmp(cur->name, (const xmlChar *) "text"))
-        aliases.push_back(string((const char*)cur->content));
-      cur = cur->next;
-    }
+  if (isTag(cur.name(), "Alias")) {
+    aliases.push_back(string(cur.first_child().value()));
   }
 }
 
-void Camera::parseHint( xmlDocPtr doc, xmlNodePtr cur )
+void Camera::parseHint( xml_node &cur )
 {
-  if (!xmlStrcmp(cur->name, (const xmlChar *) "Hint")) {
-    xmlChar *key;
+  if (isTag(cur.name(), "Hint")) {
     string hint_name, hint_value;
-    key = xmlGetProp(cur, (const xmlChar *)"name");
+    pugi::xml_attribute key = cur.attribute("name");
     if (key) {
-      hint_name = string((const char*)key);
-      xmlFree(key);
-    }
-    else 
+      hint_name = string(key.as_string());
+    } else 
       ThrowCME("CameraMetadata: Could not find name for hint for %s %s camera.", make.c_str(), model.c_str());
 
-    key = xmlGetProp(cur, (const xmlChar *)"value");
+    key = cur.attribute("value");
     if (key) {
-      hint_value = string((const char*)key);
-      xmlFree(key);
-    }
-    else 
+      hint_value = string(key.as_string());
+    } else 
       ThrowCME("CameraMetadata: Could not find value for hint %s for %s %s camera.", hint_name.c_str(), make.c_str(), model.c_str());
 
     hints.insert(make_pair(hint_name, hint_value));
   }
 }
 
-void Camera::parseSensorInfo( xmlDocPtr doc, xmlNodePtr cur )
+void Camera::parseSensorInfo( xml_node &cur )
 {
-  int min_iso = 0;
-  int max_iso = 0;
-  int black = getAttributeAsInt(cur, cur->name, "black");
-  int white = getAttributeAsInt(cur, cur->name, "white");
+  int min_iso = cur.attribute("iso_min").as_int(0);
+  int max_iso = cur.attribute("iso_max").as_int(0);;
+  int black = cur.attribute("black").as_int(-1);
+  int white = cur.attribute("white").as_int(65536);
 
-  xmlChar *key = xmlGetProp(cur, (const xmlChar *)"iso_min");
-  if (key) {
-    min_iso = StringToInt(key, cur->name, "iso_min");
-    xmlFree(key);
-  }
-
-  key = xmlGetProp(cur, (const xmlChar *)"iso_max");
-  if (key) {
-    max_iso = StringToInt(key, cur->name, "iso_max");
-    xmlFree(key);
-  }
-  key = xmlGetProp(cur, (const xmlChar *)"black_colors");
+  pugi::xml_attribute key = cur.attribute("black_colors");
   vector<int> black_colors;
   if (key) {
-    black_colors = MultipleStringToInt(key, cur->name, "black_colors");
-    xmlFree(key);
+    black_colors = MultipleStringToInt(key.as_string(), cur.name(), "black_colors");
   }
-  key = xmlGetProp(cur, (const xmlChar *)"iso_list");
+  key = cur.attribute("iso_list");
   if (key) {
-    vector<int> values = MultipleStringToInt(key, cur->name, "iso_list");
-    xmlFree(key);
+    vector<int> values = MultipleStringToInt(key.as_string(), cur.name(), "iso_list");
     if (!values.empty()) {
       for (uint32 i = 0; i < values.size(); i++) {
         sensorInfo.push_back(CameraSensorInfo(black, white, values[i], values[i], black_colors));
@@ -344,7 +302,7 @@ void Camera::parseSensorInfo( xmlDocPtr doc, xmlNodePtr cur )
 
 const CameraSensorInfo* Camera::getSensorInfo( int iso )
 {
-  /* If only one, just return that */
+  // If only one, just return that
   if (sensorInfo.size() == 1)
     return &sensorInfo[0];
 
@@ -365,7 +323,7 @@ const CameraSensorInfo* Camera::getSensorInfo( int iso )
     if (!(*j)->isDefault())
       return *j;
   } while (++j != candidates.end());
-  /* Several defaults??? Just return first */
+  // Several defaults??? Just return first
   return candidates[0];
 }
 

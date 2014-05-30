@@ -1,5 +1,7 @@
 #include "StdAfx.h"
 #include "PentaxDecompressor.h"
+#include "ByteStreamSwap.h"
+
 /*
     RawSpeed - RAW file decoder.
 
@@ -48,18 +50,23 @@ void PentaxDecompressor::decodePentax(TiffIFD *root, uint32 offset, uint32 size)
   if (root->hasEntryRecursive((TiffTag)0x220)) {
     TiffEntry *t = root->getEntryRecursive((TiffTag)0x220);
     if (t->type == TIFF_UNDEFINED) {
-      const uchar8* data = t->getData();
-      uint32 depth = (data[1]+12)&0xf;
-      data +=14;
+
+      ByteStream *stream;
+      if (root->endian == getHostEndianness())
+        stream = new ByteStream(t->getData(), t->count);
+      else
+        stream = new ByteStreamSwap(t->getData(), t->count);
+
+      uint32 depth = (stream->getShort()+12)&0xf;
+      stream->skipBytes(12);
       uint32 v0[16];
       uint32 v1[16];
       uint32 v2[16];
       for (uint32 i = 0; i < depth; i++)
-         v0[i] = (uint32)(data[i*2])<<8 | (uint32)(data[i*2+1]);
-      data+=depth*2;
+         v0[i] = stream->getShort();
 
       for (uint32 i = 0; i < depth; i++)
-        v1[i] = data[i];
+        v1[i] = stream->getByte();
 
       /* Reset bits */
       for (uint32 i = 0; i < 17; i++)
@@ -87,6 +94,8 @@ void PentaxDecompressor::decodePentax(TiffIFD *root, uint32 offset, uint32 size)
         dctbl1->huffval[i] = sm_num;
         v2[sm_num]=0xffffffff;
       }
+    } else {
+      ThrowRDE("PentaxDecompressor: Unknown Huffman table type.");
     }
   } else {
     /* Initialize with legacy data */
@@ -186,7 +195,7 @@ int PentaxDecompressor::HuffDecodePentax() {
     * With garbage input we may reach the sentinel value l = 17.
     */
 
-    if (l > 12) {
+    if (l > 16) {
       ThrowRDE("Corrupt JPEG data: bad Huffman code:%u\n", l);
     } else {
       rv = dctbl1->huffval[dctbl1->valptr[l] +

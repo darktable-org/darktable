@@ -1,3 +1,8 @@
+<!DOCTYPE sect1 PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
+               "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd" [
+		<!ENTITY % darktable_dtd SYSTEM "../dtd/darktable.dtd">
+		%darktable_dtd;
+		]>
 <sect1 status="final" id="darktable_and_memory">
 
   <title>darktable and memory</title>
@@ -252,8 +257,8 @@
     <para>
       Typically there is no need to restrict oneself in the number of background threads on a 64-bit system.
       On a multi-processor system a number of two to eight threads can speed up thumbnail generation considerably versus
-      only one thread. The reason is not so much taking maximum advantage of all your CPU cores - darktable's pixelpipe
-      anyhow uses all of them in parallel - but hiding I/O latency.
+      only one thread. The reason is not so much taking maximum advantage of all your CPU cores&nbsp;&ndash; darktable's pixelpipe
+      anyhow uses all of them in parallel&nbsp;&ndash; but hiding I/O latency.
     </para>
 
     <indexterm>

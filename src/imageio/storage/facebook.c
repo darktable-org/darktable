@@ -1159,7 +1159,7 @@ int store(dt_imageio_module_storage_t *self, struct dt_imageio_module_data_t *sd
   dt_storage_facebook_param_t *p = (dt_storage_facebook_param_t*)sdata;
 
   const char *ext = format->extension(fdata);
-  char fname[4096]= {0};
+  char fname[PATH_MAX]= {0};
   dt_loc_get_tmp_dir(fname, sizeof(fname));
   g_strlcat(fname, "/darktable.XXXXXX.", sizeof(fname));
   g_strlcat(fname, ext, sizeof(fname));

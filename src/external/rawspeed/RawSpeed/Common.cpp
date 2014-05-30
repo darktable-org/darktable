@@ -31,13 +31,13 @@ int macosx_version()
   SInt32 gestalt_version;
   static int ver = 0; // cached
   if (0 == ver && (Gestalt(gestaltSystemVersion, &gestalt_version) == noErr)) {
-    ver = ((gestalt_version & 0x00F0) >> 4);
+    ver = gestalt_version;
   }
   return ver;
 }
 void* _aligned_malloc(size_t bytes, size_t alignment) {
 
-  if (macosx_version() >=6) { // 10.6+
+  if (macosx_version() >=0x1060) { // 10.6+
     void* ret= NULL;
     if (0 == posix_memalign(&ret, alignment, bytes))
       return ret;
@@ -58,3 +58,23 @@ void* _aligned_malloc(size_t bytes, size_t alignment) {
 }
 
 #endif
+
+namespace RawSpeed {
+
+void writeLog(int priority, const char *format, ...)
+{
+  string msg("RawSpeed:");
+  msg.append(format);
+  va_list args;
+  va_start(args, format);
+
+#ifdef _DEBUG
+  vprintf(msg.c_str(), args);
+#else
+  if(priority < DEBUG_PRIO_INFO)
+    vprintf(msg.c_str(), args);
+#endif // _DEBUG
+  va_end(args);
+}
+
+} // Namespace RawSpeed

@@ -16,6 +16,15 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
+#include <glib/gprintf.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <math.h>
+#include <string.h>
+#include <strings.h>
+#include <assert.h>
+#include <stdint.h>
+
 #include "develop/develop.h"
 #include "develop/imageop.h"
 #include "develop/blend.h"
@@ -32,19 +41,9 @@
 #include "gui/gtk.h"
 #include "gui/presets.h"
 
-#include <glib/gprintf.h>
-#include <stdlib.h>
-#include <unistd.h>
-#include <math.h>
-#include <string.h>
-#include <strings.h>
-#include <assert.h>
-
-
 #define DT_DEV_AVERAGE_DELAY_START            250
 #define DT_DEV_PREVIEW_AVERAGE_DELAY_START     50
 #define DT_DEV_AVERAGE_DELAY_COUNT              5
-
 
 const gchar* dt_dev_histogram_type_names[DT_DEV_HISTOGRAM_N] = { "logarithmic", "linear", "waveform" };
 
@@ -95,12 +94,10 @@ void dt_dev_init(dt_develop_t *dev, int32_t gui_attached)
     dt_dev_pixelpipe_init(dev->pipe);
     dt_dev_pixelpipe_init_preview(dev->preview_pipe);
 
-    dev->histogram = (float *)malloc(sizeof(float)*4*256);
-    dev->histogram_pre_tonecurve = (float *)malloc(sizeof(float)*4*256);
-    dev->histogram_pre_levels = (float*)malloc(sizeof(float) * 4 * 256);
-    memset(dev->histogram, 0, sizeof(float)*256*4);
-    memset(dev->histogram_pre_tonecurve, 0, sizeof(float)*256*4);
-    memset(dev->histogram_pre_levels, 0, sizeof(float)*256*4);
+    dev->histogram = (uint32_t *)calloc(4*256, sizeof(uint32_t));
+    dev->histogram_pre_tonecurve = (uint32_t *)calloc(4*256, sizeof(uint32_t));
+    dev->histogram_pre_levels = (uint32_t *)calloc(4*256, sizeof(uint32_t));
+
     dev->histogram_max = -1;
     dev->histogram_pre_tonecurve_max = -1;
     dev->histogram_pre_levels_max = -1;
@@ -667,13 +664,9 @@ void dt_dev_reload_history_items(dt_develop_t *dev)
     
       /* get arrow icon widget */
       wlabel = g_list_nth(gtk_container_get_children(GTK_CONTAINER(header)),5)->data;
-      char label[128];
-      if(strcmp(module->multi_name,"0") == 0)
-        g_snprintf(label,sizeof(label),"<span size=\"larger\">%s</span>  ",module->name());
-      else
-        g_snprintf(label,sizeof(label),"<span size=\"larger\">%s</span> %s",module->name(),module->multi_name);
-      gtk_label_set_markup(GTK_LABEL(wlabel),label);
-  
+      gchar *label = dt_history_item_get_name_html(module);
+      gtk_label_set_markup(GTK_LABEL(wlabel), label);
+      g_free(label);
     }
     modules = g_list_next(modules);
   }
@@ -1145,7 +1138,9 @@ void dt_dev_get_pointer_zoom_pos(dt_develop_t *dev, const float px, const float 
 
 void dt_dev_get_history_item_label(dt_dev_history_item_t *hist, char *label, const int cnt)
 {
-  g_snprintf(label, cnt, "%s (%s)", hist->module->name(), hist->enabled ? _("on") : _("off"));
+  gchar *module_label = dt_history_item_get_name(hist->module);
+  g_snprintf(label, cnt, "%s (%s)", module_label, hist->enabled ? _("on") : _("off"));
+  g_free(module_label);
 }
 
 int
@@ -1440,6 +1435,26 @@ void dt_dev_modules_update_multishow(dt_develop_t *dev)
     dt_dev_module_update_multishow(dev,mod);
     modules = g_list_next(modules);
   }
+}
+gchar *dt_history_item_get_name(struct dt_iop_module_t *module)
+{
+  gchar *label;
+  /* create a history button and add to box */
+  if(!module->multi_name[0] || strcmp(module->multi_name, "0") == 0)
+    label = g_strdup_printf("%s", module->name());
+  else
+    label = g_strdup_printf("%s %s", module->name(), module->multi_name);
+  return label;
+}
+gchar *dt_history_item_get_name_html(struct dt_iop_module_t *module)
+{
+  gchar *label;
+  /* create a history button and add to box */
+  if(!module->multi_name[0] || strcmp(module->multi_name, "0") == 0)
+    label = g_strdup_printf("<span size=\"larger\">%s</span>", module->name());
+  else
+    label = g_strdup_printf("<span size=\"larger\">%s</span> %s", module->name(), module->multi_name);
+  return label;
 }
 
 int dt_dev_distort_transform(dt_develop_t *dev, float *points, size_t points_count)

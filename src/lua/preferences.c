@@ -116,8 +116,7 @@ static int register_pref(lua_State*L)
 {
   // to avoid leaks, we need to first get all params (which could raise errors) then alloc and fill the struct
   // this is complicated, but needed
-  pref_element * built_elt = malloc(sizeof(pref_element));
-  memset(built_elt,0,sizeof(pref_element));
+  pref_element * built_elt = calloc(1, sizeof(pref_element));
   int cur_param =1;
 
   if(!lua_isstring(L,cur_param)) goto error;

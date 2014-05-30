@@ -96,12 +96,12 @@ static int32_t run_early_script(struct dt_job_t *job) {
   lua_State *L = darktable.lua_state.state;
   gboolean has_lock = dt_lua_lock();
   // run global init script
-  dt_loc_get_datadir(tmp_path, PATH_MAX);
-  g_strlcat(tmp_path,"/luarc",PATH_MAX);
+  dt_loc_get_datadir(tmp_path, sizeof(tmp_path));
+  g_strlcat(tmp_path, "/luarc", sizeof(tmp_path));
   dt_lua_dofile(L,tmp_path);
   // run user init script
-  dt_loc_get_user_config_dir(tmp_path, PATH_MAX);
-  g_strlcat(tmp_path,"/luarc",PATH_MAX);
+  dt_loc_get_user_config_dir(tmp_path, sizeof(tmp_path));
+  g_strlcat(tmp_path, "/luarc", sizeof(tmp_path));
   dt_lua_dofile(L,tmp_path);
   dt_lua_unlock(has_lock);
   return 0;
@@ -159,11 +159,11 @@ void dt_lua_init(lua_State*L,const int init_gui)
   lua_getglobal(L,"package");
   lua_getfield(L,-1,"path");
   lua_pushstring(L,";");
-  dt_loc_get_datadir(tmp_path, PATH_MAX);
+  dt_loc_get_datadir(tmp_path, sizeof(tmp_path));
   lua_pushstring(L,tmp_path);
   lua_pushstring(L,"/lua/?.lua");
   lua_pushstring(L,";");
-  dt_loc_get_user_config_dir(tmp_path, PATH_MAX);
+  dt_loc_get_user_config_dir(tmp_path, sizeof(tmp_path));
   lua_pushstring(L,tmp_path);
   lua_pushstring(L,"/lua/?.lua");
   lua_concat(L,7);

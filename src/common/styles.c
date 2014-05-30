@@ -259,7 +259,7 @@ dt_styles_update (const char *name, const char *newname, const char *newdescript
   _dt_style_cleanup_multi_instance(id);
 
   /* backup style to disk */
-  char stylesdir[1024];
+  char stylesdir[PATH_MAX];
   dt_loc_get_user_config_dir(stylesdir, sizeof(stylesdir));
   g_strlcat(stylesdir, "/styles",sizeof(stylesdir));
   g_mkdir_with_parents(stylesdir,00755);
@@ -336,7 +336,7 @@ dt_styles_create_from_style (const char *name, const char *newname, const char *
     _dt_style_cleanup_multi_instance(id);
 
     /* backup style to disk */
-    char stylesdir[1024];
+    char stylesdir[PATH_MAX];
     dt_loc_get_user_config_dir(stylesdir, sizeof(stylesdir));
     g_strlcat(stylesdir, "/styles", sizeof(stylesdir));
     g_mkdir_with_parents(stylesdir,00755);
@@ -397,7 +397,7 @@ dt_styles_create_from_image (const char *name,const char *description,int32_t im
     _dt_style_cleanup_multi_instance(id);
 
     /* backup style to disk */
-    char stylesdir[1024];
+    char stylesdir[PATH_MAX];
     dt_loc_get_user_config_dir(stylesdir, sizeof(stylesdir));
     g_strlcat(stylesdir, "/styles", sizeof(stylesdir));
     g_mkdir_with_parents(stylesdir,00755);

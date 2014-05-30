@@ -338,14 +338,10 @@ static bool dt_exif_read_iptc_data(dt_image_t *img, Exiv2::IptcData &iptcData)
     if( (pos=iptcData.findKey(Exiv2::IptcKey("Iptc.Application2.Keywords")))
         != iptcData.end() )
     {
-      while(pos != iptcData.end())
-      {
-        std::string str = pos->print(/*&iptcData*/);
-        guint tagid = 0;
-        dt_tag_new(str.c_str(),&tagid);
-        dt_tag_attach(tagid, img->id);
-        ++pos;
-      }
+      std::string str = pos->print(/*&iptcData*/);
+      guint tagid = 0;
+      dt_tag_new(str.c_str(),&tagid);
+      dt_tag_attach(tagid, img->id);
     }
     if ( (pos=iptcData.findKey(Exiv2::IptcKey("Iptc.Application2.Caption")))
          != iptcData.end() )
@@ -499,6 +495,11 @@ static bool dt_exif_read_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
     {
       img->orientation = dt_image_orientation_to_flip_bits(pos->toLong());
     }
+    else if ( (pos=exifData.findKey(Exiv2::ExifKey("Exif.PanasonicRaw.Orientation")))
+              != exifData.end() && pos->size())
+    {
+      img->orientation = dt_image_orientation_to_flip_bits(pos->toLong());
+    }
 
     /* minolta and sony have their own rotation */
     if ( ( (pos=exifData.findKey(Exiv2::ExifKey("Exif.MinoltaCs5D.Rotation")))
@@ -603,22 +604,36 @@ static bool dt_exif_read_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
          != exifData.end() && pos->size())
     {
       dt_strlcpy_to_utf8(img->exif_maker, sizeof(img->exif_maker), pos, exifData);
-      for(char *c=img->exif_maker+sizeof(img->exif_maker)-1; c > img->exif_maker; c--) if(*c != ' ' && *c != '\0')
-        {
-          *(c+1) = '\0';
-          break;
-        }
     }
+    else if ( (pos=exifData.findKey(Exiv2::ExifKey("Exif.PanasonicRaw.Make")))
+              != exifData.end() && pos->size())
+    {
+      dt_strlcpy_to_utf8(img->exif_maker, sizeof(img->exif_maker), pos, exifData);
+    }
+
+    for(char *c=img->exif_maker+sizeof(img->exif_maker)-1; c > img->exif_maker; c--) if(*c != ' ' && *c != '\0')
+    {
+      *(c+1) = '\0';
+      break;
+    }
+
     if ( (pos=exifData.findKey(Exiv2::ExifKey("Exif.Image.Model")))
          != exifData.end() && pos->size())
     {
       dt_strlcpy_to_utf8(img->exif_model, sizeof(img->exif_model), pos, exifData);
-      for(char *c=img->exif_model+sizeof(img->exif_model)-1; c > img->exif_model; c--) if(*c != ' ' && *c != '\0')
-        {
-          *(c+1) = '\0';
-          break;
-        }
     }
+    else if ( (pos=exifData.findKey(Exiv2::ExifKey("Exif.PanasonicRaw.Model")))
+              != exifData.end() && pos->size())
+    {
+      dt_strlcpy_to_utf8(img->exif_model, sizeof(img->exif_model), pos, exifData);
+    }
+
+    for(char *c=img->exif_model+sizeof(img->exif_model)-1; c > img->exif_model; c--) if(*c != ' ' && *c != '\0')
+    {
+      *(c+1) = '\0';
+      break;
+    }
+
     if ( (pos=exifData.findKey(Exiv2::ExifKey("Exif.Image.DateTimeOriginal")))
          != exifData.end() && pos->size())
     {
@@ -972,16 +987,7 @@ int dt_exif_read_blob(
     if ( (pos=exifData.findKey(Exiv2::ExifKey("Exif.Image.StripByteCounts")))
          != exifData.end() )
       exifData.erase(pos);
-    if ( (pos=exifData.findKey(Exiv2::ExifKey("Exif.Image.XResolution")))
-         != exifData.end() )
-      exifData.erase(pos);
-    if ( (pos=exifData.findKey(Exiv2::ExifKey("Exif.Image.YResolution")))
-         != exifData.end() )
-      exifData.erase(pos);
     if ( (pos=exifData.findKey(Exiv2::ExifKey("Exif.Image.PlanarConfiguration")))
-         != exifData.end() )
-      exifData.erase(pos);
-    if ( (pos=exifData.findKey(Exiv2::ExifKey("Exif.Image.ResolutionUnit")))
          != exifData.end() )
       exifData.erase(pos);
 
@@ -1105,6 +1111,26 @@ int dt_exif_read_blob(
       exifData["Exif.Photo.PixelXDimension"] = out_width;
     if (out_height > 0)
       exifData["Exif.Photo.PixelYDimension"] = out_height;
+
+    int resolution = dt_conf_get_int("metadata/resolution");
+    if (resolution > 0)
+    {
+      exifData["Exif.Image.XResolution"] = resolution;
+      exifData["Exif.Image.YResolution"] = resolution;
+      exifData["Exif.Image.ResolutionUnit"] = uint16_t(2); /* inches */
+    }
+    else
+    {
+      if ( (pos=exifData.findKey(Exiv2::ExifKey("Exif.Image.XResolution")))
+           != exifData.end() )
+        exifData.erase(pos);
+      if ( (pos=exifData.findKey(Exiv2::ExifKey("Exif.Image.YResolution")))
+           != exifData.end() )
+        exifData.erase(pos);
+      if ( (pos=exifData.findKey(Exiv2::ExifKey("Exif.Image.ResolutionUnit")))
+           != exifData.end() )
+        exifData.erase(pos);
+    }
 
     exifData["Exif.Image.Software"] = PACKAGE_STRING;
 
@@ -2019,7 +2045,7 @@ int dt_exif_xmp_attach (const int imgid, const char* filename)
 {
   try
   {
-    char input_filename[1024];
+    char input_filename[PATH_MAX];
     gboolean from_cache = FALSE;
     dt_image_full_path(imgid, input_filename, sizeof(input_filename), &from_cache);
 
@@ -2052,7 +2078,7 @@ int dt_exif_xmp_attach (const int imgid, const char* filename)
 int dt_exif_xmp_write (const int imgid, const char* filename)
 {
   // refuse to write sidecar for non-existent image:
-  char imgfname[1024];
+  char imgfname[PATH_MAX];
   gboolean from_cache = TRUE;
 
   dt_image_full_path(imgid, imgfname, sizeof(imgfname), &from_cache);

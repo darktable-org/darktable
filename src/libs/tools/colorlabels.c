@@ -61,9 +61,8 @@ int position()
 void gui_init(dt_lib_module_t *self)
 {
   /* initialize ui widgets */
-  dt_lib_colorlabels_t *d = (dt_lib_colorlabels_t *)g_malloc(sizeof(dt_lib_colorlabels_t));
+  dt_lib_colorlabels_t *d = (dt_lib_colorlabels_t *)g_malloc0(sizeof(dt_lib_colorlabels_t));
   self->data = (void *)d;
-  memset(d,0,sizeof(dt_lib_colorlabels_t));
 
   /* setup list of tooltips */
   d->tooltips[0] = _("toggle red label\nof selected images (f1)");
@@ -79,7 +78,7 @@ void gui_init(dt_lib_module_t *self)
   for(int k = 0; k < 6; k++)
   {
     button = dtgtk_button_new(dtgtk_cairo_paint_label, (k|8|CPF_BG_TRANSPARENT|CPF_DO_NOT_USE_BORDER));
-    gtk_widget_set_size_request(button,16,16);
+    gtk_widget_set_size_request(button, DT_PIXEL_APPLY_DPI(16), DT_PIXEL_APPLY_DPI(16));
     g_object_set(G_OBJECT(button), "tooltip-text", d->tooltips[k], (gchar*)NULL);
     gtk_box_pack_start(GTK_BOX(self->widget), button, TRUE, TRUE, 0);
     g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(_lib_colorlabels_button_clicked_callback), GINT_TO_POINTER(k));

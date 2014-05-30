@@ -47,17 +47,17 @@ int dt_lua_init_configuration(lua_State*L)
   // build the table containing the configuration info
 
   lua_pushstring(L,"tmp_dir");
-  dt_loc_get_tmp_dir(tmp_path, PATH_MAX);
+  dt_loc_get_tmp_dir(tmp_path, sizeof(tmp_path));
   lua_pushstring(L,tmp_path);
   lua_settable(L,-3);
 
   lua_pushstring(L,"config_dir");
-  dt_loc_get_user_config_dir(tmp_path, PATH_MAX);
+  dt_loc_get_user_config_dir(tmp_path, sizeof(tmp_path));
   lua_pushstring(L,tmp_path);
   lua_settable(L,-3);
 
   lua_pushstring(L,"cache_dir");
-  dt_loc_get_user_cache_dir(tmp_path, PATH_MAX);
+  dt_loc_get_user_cache_dir(tmp_path, sizeof(tmp_path));
   lua_pushstring(L,tmp_path);
   lua_settable(L,-3);
 

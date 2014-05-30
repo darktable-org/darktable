@@ -1,3 +1,8 @@
+<!DOCTYPE sect3 PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
+               "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd" [
+		<!ENTITY % darktable_dtd SYSTEM "../../../dtd/darktable.dtd">
+		%darktable_dtd;
+		]>
 <sect3 status="final" id="zone_system">
 
   <title>Zone system</title>
@@ -56,8 +61,8 @@
     </para>
 
     <para>
-      The preview shows the image broken down in zones. When hovering above a zone on the zonebar, that zone - either from input
-      or output - is highlighted on the preview. 
+      The preview shows the image broken down in zones. When hovering above a zone on the zonebar, that zone&nbsp;&ndash; either from input
+      or output&nbsp;&ndash; is highlighted on the preview. 
     </para>
 
   </sect4>

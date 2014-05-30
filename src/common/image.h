@@ -349,10 +349,8 @@ void dt_image_write_sidecar_file(int imgid);
 void dt_image_synch_xmp(const int selected);
 void dt_image_synch_all_xmp(const gchar *pathname);
 
-#if GLIB_CHECK_VERSION (2, 26, 0)
 // add an offset to the exif_datetime_taken field
 void dt_image_add_time_offset(const int imgid, const long int offset);
-#endif
 
 /** helper function to get the audio file filename that is accompanying the image. g_free() after use */
 char* dt_image_get_audio_path(const int32_t imgid);

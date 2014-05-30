@@ -34,7 +34,7 @@
 #include <assert.h>
 #include <string.h>
 
-#define DT_GUI_CURVE_EDITOR_INSET 5
+#define DT_GUI_CURVE_EDITOR_INSET DT_PIXEL_APPLY_DPI(5)
 #define DT_GUI_CURVE_INFL .3f
 #define DT_IOP_TONECURVE_RES 256
 #define MAXNODES 20
@@ -344,8 +344,7 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
 void init_pipe (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
   // create part of the gegl pipeline
-  piece->data = malloc(sizeof(dt_iop_basecurve_data_t));
-  memset(piece->data, 0, sizeof(dt_iop_basecurve_data_t));
+  piece->data = calloc(1, sizeof(dt_iop_basecurve_data_t));
   self->commit_params(self, self->default_params, pipe, piece);
 }
 
@@ -508,7 +507,7 @@ dt_iop_basecurve_expose(GtkWidget *widget, GdkEventExpose *event, gpointer user_
     cairo_fill(cr);
   }
 #else
-  cairo_set_line_width(cr, 1.0);
+  cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(1.0));
   cairo_set_source_rgb (cr, .1, .1, .1);
   cairo_rectangle(cr, 0, 0, width, height);
   cairo_stroke(cr);
@@ -522,7 +521,7 @@ dt_iop_basecurve_expose(GtkWidget *widget, GdkEventExpose *event, gpointer user_
   cairo_scale(cr, 1.0f, -1.0f);
 
   // draw grid
-  cairo_set_line_width(cr, .4);
+  cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(.4));
   cairo_set_source_rgb (cr, .1, .1, .1);
   if(c->loglogscale)
     dt_draw_loglog_grid(cr, 4, 0, 0, width, height, c->loglogscale);
@@ -530,28 +529,28 @@ dt_iop_basecurve_expose(GtkWidget *widget, GdkEventExpose *event, gpointer user_
     dt_draw_grid(cr, 4, 0, 0, width, height);
 
   // draw nodes positions
-  cairo_set_line_width(cr, 1.);
+  cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(1.));
   cairo_set_source_rgb(cr, 0.6, 0.6, 0.6);
   for(int k=0; k<nodes; k++)
   {
     const float x = to_log(basecurve[k].x, c->loglogscale), y = to_log(basecurve[k].y, c->loglogscale);
-    cairo_arc(cr, x*width, y*height, 3, 0, 2.*M_PI);
+    cairo_arc(cr, x*width, y*height, DT_PIXEL_APPLY_DPI(3), 0, 2.*M_PI);
     cairo_stroke(cr);
   }
 
   // draw selected cursor
-  cairo_set_line_width(cr, 1.);
+  cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(1.));
 
   if(c->selected >= 0)
   {
     cairo_set_source_rgb(cr, .9, .9, .9);
     const float x = to_log(basecurve[c->selected].x, c->loglogscale), y = to_log(basecurve[c->selected].y, c->loglogscale);
-    cairo_arc(cr, x*width, y*height, 4, 0, 2.*M_PI);
+    cairo_arc(cr, x*width, y*height, DT_PIXEL_APPLY_DPI(4), 0, 2.*M_PI);
     cairo_stroke(cr);
   }
 
   // draw curve
-  cairo_set_line_width(cr, 2.);
+  cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(2.));
   cairo_set_source_rgb(cr, .9, .9, .9);
   // cairo_set_line_cap  (cr, CAIRO_LINE_CAP_SQUARE);
   cairo_move_to(cr, 0, height*to_log(c->draw_ys[0], c->loglogscale));
@@ -763,11 +762,9 @@ void gui_init(struct dt_iop_module_t *self)
   self->widget = gtk_vbox_new(FALSE, DT_BAUHAUS_SPACE);
   c->area = GTK_DRAWING_AREA(gtk_drawing_area_new());
   g_object_set (GTK_OBJECT(c->area), "tooltip-text", _("abscissa: input, ordinate: output. works on RGB channels"), (char *)NULL);
-  // GtkWidget *asp = gtk_aspect_frame_new(NULL, 0.5, 0.5, 1.0, TRUE);
-  // gtk_box_pack_start(GTK_BOX(self->widget), asp, TRUE, TRUE, 0);
-  // gtk_container_add(GTK_CONTAINER(asp), GTK_WIDGET(c->area));
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(c->area), TRUE, TRUE, 0);
-  gtk_widget_set_size_request(GTK_WIDGET(c->area), 0, 258);
+  int size = dt_conf_get_int("panel_width") * 0.95;
+  gtk_widget_set_size_request(GTK_WIDGET(c->area), 0, size);
 
   c->scale = dt_bauhaus_combobox_new(self);
   dt_bauhaus_widget_set_label(c->scale, NULL, _("scale"));

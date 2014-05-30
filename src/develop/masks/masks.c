@@ -178,7 +178,9 @@ void dt_masks_gui_form_save_creation(dt_iop_module_t *module, dt_masks_form_t *f
       //we create a new group
       if (form->type & DT_MASKS_CLONE) grp = dt_masks_create(DT_MASKS_GROUP | DT_MASKS_CLONE);
       else grp = dt_masks_create(DT_MASKS_GROUP);
-      snprintf(grp->name,sizeof(grp->name),"grp %s %s",module->name(),module->multi_name);
+      gchar *module_label = dt_history_item_get_name(module);
+      snprintf(grp->name,sizeof(grp->name),"grp %s",module_label);
+      g_free(module_label);
       _check_id(grp);
       darktable.develop->forms = g_list_append(darktable.develop->forms,grp);
       module->blend_params->mask_id = grpid = grp->formid;
@@ -605,7 +607,7 @@ void dt_masks_write_form(dt_masks_form_t *form, dt_develop_t *dev)
   else if (form->type & DT_MASKS_PATH)
   {
     guint nb = g_list_length(form->points);
-    dt_masks_point_path_t *ptbuf = (dt_masks_point_path_t *)malloc(nb*sizeof(dt_masks_point_path_t));
+    dt_masks_point_path_t *ptbuf = (dt_masks_point_path_t *)calloc(nb, sizeof(dt_masks_point_path_t));
     GList *points = g_list_first(form->points);
     int pos=0;
     while(points)
@@ -623,7 +625,7 @@ void dt_masks_write_form(dt_masks_form_t *form, dt_develop_t *dev)
   else if (form->type & DT_MASKS_GROUP)
   {
     guint nb = g_list_length(form->points);
-    dt_masks_point_group_t *ptbuf = (dt_masks_point_group_t *)malloc(nb*sizeof(dt_masks_point_group_t));
+    dt_masks_point_group_t *ptbuf = (dt_masks_point_group_t *)calloc(nb, sizeof(dt_masks_point_group_t));
     GList *points = g_list_first(form->points);
     int pos=0;
     while(points)
@@ -657,7 +659,7 @@ void dt_masks_write_form(dt_masks_form_t *form, dt_develop_t *dev)
   else if (form->type & DT_MASKS_BRUSH)
   {
     guint nb = g_list_length(form->points);
-    dt_masks_point_brush_t *ptbuf = (dt_masks_point_brush_t *)malloc(nb*sizeof(dt_masks_point_brush_t));
+    dt_masks_point_brush_t *ptbuf = (dt_masks_point_brush_t *)calloc(nb, sizeof(dt_masks_point_brush_t));
     GList *points = g_list_first(form->points);
     int pos=0;
     while(points)
@@ -708,7 +710,7 @@ void dt_masks_write_forms(dt_develop_t *dev)
     else if (form->type & DT_MASKS_PATH)
     {
       guint nb = g_list_length(form->points);
-      dt_masks_point_path_t *ptbuf = (dt_masks_point_path_t *)malloc(nb*sizeof(dt_masks_point_path_t));
+      dt_masks_point_path_t *ptbuf = (dt_masks_point_path_t *)calloc(nb, sizeof(dt_masks_point_path_t));
       GList *points = g_list_first(form->points);
       int pos=0;
       while(points)
@@ -726,7 +728,7 @@ void dt_masks_write_forms(dt_develop_t *dev)
     else if (form->type & DT_MASKS_GROUP)
     {
       guint nb = g_list_length(form->points);
-      dt_masks_point_group_t *ptbuf = (dt_masks_point_group_t *)malloc(nb*sizeof(dt_masks_point_group_t));
+      dt_masks_point_group_t *ptbuf = (dt_masks_point_group_t *)calloc(nb, sizeof(dt_masks_point_group_t));
       GList *points = g_list_first(form->points);
       int pos=0;
       while(points)
@@ -760,7 +762,7 @@ void dt_masks_write_forms(dt_develop_t *dev)
     else if (form->type & DT_MASKS_BRUSH)
     {
       guint nb = g_list_length(form->points);
-      dt_masks_point_brush_t *ptbuf = (dt_masks_point_brush_t *)malloc(nb*sizeof(dt_masks_point_brush_t));
+      dt_masks_point_brush_t *ptbuf = (dt_masks_point_brush_t *)calloc(nb, sizeof(dt_masks_point_brush_t));
       GList *points = g_list_first(form->points);
       int pos=0;
       while(points)
@@ -1121,7 +1123,9 @@ static void _menu_add_exist(dt_iop_module_t *module, int formid)
   {
     //we create a new group
     grp = dt_masks_create(DT_MASKS_GROUP);
-    snprintf(grp->name,sizeof(grp->name),"grp %s",module->name());
+    gchar *module_label = dt_history_item_get_name(module);
+    snprintf(grp->name,sizeof(grp->name),"grp %s",module_label);
+    g_free(module_label);
     _check_id(grp);
     darktable.develop->forms = g_list_append(darktable.develop->forms,grp);
     module->blend_params->mask_id = grpid = grp->formid;
@@ -1159,7 +1163,9 @@ void dt_masks_iop_use_same_as(dt_iop_module_t *module, dt_iop_module_t *src)
   {
     //we create a new group
     grp = dt_masks_create(DT_MASKS_GROUP);
-    snprintf(grp->name,sizeof(grp->name),"grp %s %s",module->name(),module->multi_name);
+    gchar *module_label = dt_history_item_get_name(module);
+    snprintf(grp->name,sizeof(grp->name),"grp %s",module_label);
+    g_free(module_label);
     _check_id(grp);
     darktable.develop->forms = g_list_append(darktable.develop->forms,grp);
     module->blend_params->mask_id = grpid = grp->formid;
@@ -1275,12 +1281,9 @@ void dt_masks_iop_combo_populate(struct dt_iop_module_t **m)
           dt_bauhaus_combobox_add(combo,str2);
           cids[pos++] = 0;  //nothing to do
         }
-        char str[256] = "";
-        g_strlcat(str,m->name(),sizeof(str));
-        g_strlcat(str," ",sizeof(str));
-        g_strlcat(str,m->multi_name,sizeof(str));
-        g_strlcat(str,"   ",sizeof(str));
-        dt_bauhaus_combobox_add(combo,str);
+        gchar *module_label = dt_history_item_get_name(m);
+        dt_bauhaus_combobox_add(combo, module_label);
+        g_free(module_label);
         cids[pos++] = -1*pos2;
         nb++;
       }
@@ -1720,9 +1723,8 @@ void dt_masks_cleanup_unused(dt_develop_t *dev)
 {
   //we create a table to store the ids of used forms
   guint nbf = g_list_length(dev->forms);
-  int *used = malloc(nbf*sizeof(int));
-  memset(used,0,nbf*sizeof(int));
-  
+  int *used = calloc(nbf, sizeof(int));
+
   //now we iterate throught all iop to find used forms
   GList *iops = g_list_first(dev->iop);
   while(iops)

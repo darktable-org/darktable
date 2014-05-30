@@ -30,6 +30,7 @@ TiffIFDBE::TiffIFDBE() {
 }
 
 TiffIFDBE::TiffIFDBE(FileMap* f, uint32 offset) {
+  mFile = f;
   endian = big;
   int entries;
   CHECKSIZE(offset);

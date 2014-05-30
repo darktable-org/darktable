@@ -320,8 +320,7 @@ gui_reset (dt_lib_module_t *self)
 void
 gui_init (dt_lib_module_t *self)
 {
-  dt_lib_recentcollect_t *d = (dt_lib_recentcollect_t *)malloc(sizeof(dt_lib_recentcollect_t));
-  memset(d,0,sizeof(dt_lib_recentcollect_t));
+  dt_lib_recentcollect_t *d = (dt_lib_recentcollect_t *)calloc(1, sizeof(dt_lib_recentcollect_t));
   self->data = (void *)d;
   self->widget = gtk_vbox_new(FALSE, 0);
   d->inited = 0;

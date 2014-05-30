@@ -427,7 +427,7 @@ acquire_button_pressed (GtkButton *button, dt_iop_module_t *self)
   if(darktable.gui->reset) return;
   // request color pick
   // needed to trigger expose events:
-  self->request_color_pick = 1;
+  self->request_color_pick = DT_REQUEST_COLORPICK_MODULE;
   self->color_picker_box[0] = self->color_picker_box[1] = 0.0f;
   self->color_picker_box[2] = self->color_picker_box[3] = 1.0f;
   self->color_picker_point[0] = self->color_picker_point[1] = 0.5f;
@@ -458,7 +458,7 @@ expose (GtkWidget *widget, GdkEventExpose *event, dt_iop_module_t *self)
   if(p->flag == ACQUIRED)
   {
     // clear the color picking request if we got the cluster data
-    self->request_color_pick = 0;
+    self->request_color_pick = DT_REQUEST_COLORPICK_OFF;
     p->flag = NEUTRAL;
     dt_dev_add_history_item(darktable.develop, self, TRUE);
   }
@@ -468,7 +468,7 @@ expose (GtkWidget *widget, GdkEventExpose *event, dt_iop_module_t *self)
     // toggle a commit_params
     p->flag = ACQUIRE3;
     dt_dev_add_history_item(darktable.develop, self, TRUE);
-    self->request_color_pick = 0;
+    self->request_color_pick = DT_REQUEST_COLORPICK_OFF;
   }
   return FALSE;
 }

@@ -32,9 +32,9 @@
 #define DTGTK_SLIDER_LABEL_KEY  "dtgtk_slider_label"
 #define DTGTK_SLIDER_VALUE_UNIT_KEY  "dtgtk_slider_value_unit"
 
-#define DTGTK_SLIDER_CONTROL_MIN_HEIGHT	22
-#define DTGTK_SLIDER_ADJUST_BUTTON_WIDTH 10
-#define DTGTK_SLIDER_BORDER_WIDTH 1
+#define DTGTK_SLIDER_CONTROL_MIN_HEIGHT     DT_PIXEL_APPLY_DPI(22)
+#define DTGTK_SLIDER_ADJUST_BUTTON_WIDTH    DT_PIXEL_APPLY_DPI(10)
+#define DTGTK_SLIDER_BORDER_WIDTH           DT_PIXEL_APPLY_DPI(1)
 #define DTGTK_VALUE_SENSITIVITY 5.0
 #define DTGTK_SLIDER_SENSIBILITY_KEY GDK_Control_L
 // Delay before emitting value change while dragging value.. (prevent hogging hostapp)
@@ -385,7 +385,7 @@ static void  _slider_size_request(GtkWidget *widget,GtkRequisition *requisition)
 
   GTK_WIDGET_CLASS(_slider_parent_class)->size_request(widget, requisition);
 
-  requisition->width = 100;
+  requisition->width = DT_PIXEL_APPLY_DPI(100);
   requisition->height = DTGTK_SLIDER_CONTROL_MIN_HEIGHT;
 }
 
@@ -430,7 +430,7 @@ static void _slider_realize(GtkWidget *widget)
   attributes.window_type = GDK_WINDOW_CHILD;
   attributes.x = allocation.x;
   attributes.y = allocation.y;
-  attributes.width = 100;
+  attributes.width = DT_PIXEL_APPLY_DPI(100);
   attributes.height = DTGTK_SLIDER_CONTROL_MIN_HEIGHT;
 
   attributes.wclass = GDK_INPUT_OUTPUT;
@@ -511,7 +511,7 @@ static gboolean _slider_expose(GtkWidget *widget, GdkEventExpose *event)
                         0.2
                        );
 
-  _slider_draw_rounded_rect(cr,vr.x,vr.y,vr.width*vscale,vr.height,3,1);
+  _slider_draw_rounded_rect(cr,vr.x,vr.y,vr.width*vscale,vr.height,DT_PIXEL_APPLY_DPI(3),1);
 
   /* setup font using family from style */
   const gchar *font_family = pango_font_description_get_family(style->font_desc);
@@ -574,12 +574,12 @@ static gboolean _slider_expose(GtkWidget *widget, GdkEventExpose *event)
   /* draw up/down arrows */
   dtgtk_cairo_paint_arrow(cr,
                           width-DTGTK_SLIDER_ADJUST_BUTTON_WIDTH-DTGTK_SLIDER_BORDER_WIDTH, DTGTK_SLIDER_BORDER_WIDTH*2,
-                          DTGTK_SLIDER_ADJUST_BUTTON_WIDTH, DTGTK_SLIDER_ADJUST_BUTTON_WIDTH-4,
+                          DTGTK_SLIDER_ADJUST_BUTTON_WIDTH, DTGTK_SLIDER_ADJUST_BUTTON_WIDTH-DT_PIXEL_APPLY_DPI(4),
                           CPF_DIRECTION_UP);
 
   dtgtk_cairo_paint_arrow(cr,
                           width-DTGTK_SLIDER_ADJUST_BUTTON_WIDTH-DTGTK_SLIDER_BORDER_WIDTH, height-DTGTK_SLIDER_ADJUST_BUTTON_WIDTH+4-DTGTK_SLIDER_BORDER_WIDTH*2,
-                          DTGTK_SLIDER_ADJUST_BUTTON_WIDTH, DTGTK_SLIDER_ADJUST_BUTTON_WIDTH-4,
+                          DTGTK_SLIDER_ADJUST_BUTTON_WIDTH, DTGTK_SLIDER_ADJUST_BUTTON_WIDTH-DT_PIXEL_APPLY_DPI(4),
                           CPF_DIRECTION_DOWN);
 
 

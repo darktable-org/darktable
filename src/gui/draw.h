@@ -226,7 +226,7 @@ static inline int dt_draw_curve_add_point(dt_draw_curve_t *c, const            f
   return 0;
 }
 
-static inline void dt_draw_histogram_8_linear(cairo_t *cr, float *hist, int32_t channel)
+static inline void dt_draw_histogram_8_linear(cairo_t *cr, uint32_t *hist, int32_t channel)
 {
   cairo_move_to(cr, 0, 0);
   for(int k=0; k<64; k++)
@@ -236,7 +236,7 @@ static inline void dt_draw_histogram_8_linear(cairo_t *cr, float *hist, int32_t 
   cairo_fill(cr);
 }
 
-static inline void dt_draw_histogram_8_log(cairo_t *cr, float *hist, int32_t channel)
+static inline void dt_draw_histogram_8_log(cairo_t *cr, uint32_t *hist, int32_t channel)
 {
   cairo_move_to(cr, 0, 0);
   for(int k=0; k<64; k++)
@@ -246,7 +246,7 @@ static inline void dt_draw_histogram_8_log(cairo_t *cr, float *hist, int32_t cha
   cairo_fill(cr);
 }
 
-static inline void dt_draw_histogram_8(cairo_t *cr, float *hist, int32_t channel, dt_dev_histogram_type_t type)
+static inline void dt_draw_histogram_8(cairo_t *cr, uint32_t *hist, int32_t channel, dt_dev_histogram_type_t type)
 {
   switch(type)
   {

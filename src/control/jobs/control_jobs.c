@@ -42,7 +42,6 @@
   #include <glob.h>
 #endif
 
-#if GLIB_CHECK_VERSION (2, 26, 0)
 typedef struct dt_control_time_offset_t
 {
   long int offset;
@@ -53,7 +52,6 @@ typedef struct dt_control_gpx_apply_t
   gchar *filename;
   gchar *tz;
 } dt_control_gpx_apply_t;
-#endif
 
 void dt_control_write_sidecar_files()
 {
@@ -82,10 +80,10 @@ int32_t dt_control_write_sidecar_files_job_run(dt_job_t *job)
     gboolean from_cache = FALSE;
     imgid = GPOINTER_TO_INT(t->data);
     const dt_image_t *img = dt_image_cache_read_get(darktable.image_cache, (int32_t)imgid);
-    char dtfilename[DT_MAX_PATH_LEN+8];
-    dt_image_full_path(img->id, dtfilename, DT_MAX_PATH_LEN, &from_cache);
-    dt_image_path_append_version(img->id, dtfilename, DT_MAX_PATH_LEN);
-    g_strlcat(dtfilename, ".xmp", DT_MAX_PATH_LEN);
+    char dtfilename[PATH_MAX];
+    dt_image_full_path(img->id, dtfilename, sizeof(dtfilename), &from_cache);
+    dt_image_path_append_version(img->id, dtfilename, sizeof(dtfilename));
+    g_strlcat(dtfilename, ".xmp", sizeof(dtfilename));
     if(!dt_exif_xmp_write(imgid, dtfilename))
     {
       // put the timestamp into db. this can't be done in exif.cc since that code gets called
@@ -172,10 +170,8 @@ int32_t dt_control_merge_hdr_job_run(dt_job_t *job)
     if(!pixels)
     {
       first_imgid = imgid;
-      pixels = (float *)malloc(sizeof(float)*image.width*image.height);
-      weight = (float *)malloc(sizeof(float)*image.width*image.height);
-      memset(pixels, 0x0, sizeof(float)*image.width*image.height);
-      memset(weight, 0x0, sizeof(float)*image.width*image.height);
+      pixels = (float *)calloc(image.width*image.height, sizeof(float));
+      weight = (float *)calloc(image.width*image.height, sizeof(float));
       wd = image.width;
       ht = image.height;
     }
@@ -244,9 +240,9 @@ int32_t dt_control_merge_hdr_job_run(dt_job_t *job)
 
   // output hdr as digital negative with exif data.
   uint8_t exif[65535];
-  char pathname[DT_MAX_PATH_LEN];
+  char pathname[PATH_MAX];
   gboolean from_cache = TRUE;
-  dt_image_full_path(first_imgid, pathname, DT_MAX_PATH_LEN, &from_cache);
+  dt_image_full_path(first_imgid, pathname, sizeof(pathname), &from_cache);
   // last param is dng mode
   const int exif_len = dt_exif_read_blob(exif, pathname, first_imgid, 0, wd, ht, 1);
   char *c = pathname + strlen(pathname);
@@ -328,7 +324,7 @@ static char *_get_image_list(GList *l)
 {
   const guint size = g_list_length(l);
   char num[8];
-  char *buffer = malloc (size*sizeof(num));
+  char *buffer = calloc(size, sizeof(num));
   int imgid;
   gboolean first=TRUE;
 
@@ -469,9 +465,9 @@ int32_t dt_control_delete_images_job_run(dt_job_t *job)
   while(t)
   {
     imgid = GPOINTER_TO_INT(t->data);
-    char filename[DT_MAX_PATH_LEN];
+    char filename[PATH_MAX];
     gboolean from_cache = FALSE;
-    dt_image_full_path(imgid, filename, DT_MAX_PATH_LEN, &from_cache);
+    dt_image_full_path(imgid, filename, sizeof(filename), &from_cache);
 
     int duplicates = 0;
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
@@ -490,8 +486,7 @@ int32_t dt_control_delete_images_job_run(dt_job_t *job)
       // all sidecar files - including left-overs - can be deleted;
       // left-overs can result when previously duplicates have been REMOVED;
       // no need to keep them as the source data file is gone.
-      const int len = DT_MAX_PATH_LEN + 30;
-      gchar pattern[len];
+      gchar pattern[PATH_MAX];
 
       // NULL terminated list of glob patterns; should include "" and can be extended if needed
       static const gchar *glob_patterns[] = { "", "_[0-9][0-9]", "_[0-9][0-9][0-9]", "_[0-9][0-9][0-9][0-9]", NULL };
@@ -500,13 +495,13 @@ int32_t dt_control_delete_images_job_run(dt_job_t *job)
       GList *files = NULL;
       while(*glob_pattern)
       {
-        snprintf(pattern, len, "%s", filename);
+        snprintf(pattern, sizeof(pattern), "%s", filename);
         gchar *c1 = pattern + strlen(pattern);
         while(*c1 != '.' && c1 > pattern) c1--;
-        snprintf(c1, pattern + len - c1, "%s", *glob_pattern);
+        snprintf(c1, pattern + sizeof(pattern) - c1, "%s", *glob_pattern);
         const gchar *c2 = filename + strlen(filename);
         while(*c2 != '.' && c2 > filename) c2--;
-        snprintf(c1+strlen(*glob_pattern), pattern + len - c1 - strlen(*glob_pattern), "%s.xmp", c2);
+        snprintf(c1+strlen(*glob_pattern), pattern + sizeof(pattern) - c1 - strlen(*glob_pattern), "%s.xmp", c2);
 
 #ifdef __WIN32__
         WIN32_FIND_DATA data;
@@ -544,8 +539,8 @@ int32_t dt_control_delete_images_job_run(dt_job_t *job)
       // don't remove the actual source data if there are further duplicates using it;
       // just delete the xmp file of the duplicate selected.
 
-      dt_image_path_append_version(imgid, filename, DT_MAX_PATH_LEN);
-      g_strlcat(filename, ".xmp", DT_MAX_PATH_LEN);
+      dt_image_path_append_version(imgid, filename, sizeof(filename));
+      g_strlcat(filename, ".xmp", sizeof(filename));
 
       dt_image_remove(imgid);
       (void)g_unlink(filename);
@@ -572,7 +567,6 @@ int32_t dt_control_delete_images_job_run(dt_job_t *job)
   return 0;
 }
 
-#if GLIB_CHECK_VERSION (2, 26, 0)
 int32_t dt_control_gpx_apply_job_run(dt_job_t *job)
 {
   dt_control_image_enumerator_t *t1 = (dt_control_image_enumerator_t *)job->param;
@@ -677,7 +671,6 @@ bail_out:
   g_free(t1->data);
   return 1;
 }
-#endif
 
 /* enumerator of images from filmroll */
 void dt_control_image_enumerator_job_film_init(dt_control_image_enumerator_t *t, int32_t filmid)
@@ -755,7 +748,6 @@ void dt_control_delete_images_job_init(dt_job_t *job)
   dt_control_image_enumerator_job_selected_init(t);
 }
 
-#if GLIB_CHECK_VERSION (2, 26, 0)
 void dt_control_gpx_apply_job_init(dt_job_t *job, const gchar *filename, int32_t filmid, const gchar *tz)
 {
   dt_control_job_init(job, "gpx apply");
@@ -771,7 +763,6 @@ void dt_control_gpx_apply_job_init(dt_job_t *job, const gchar *filename, int32_t
   data->tz = g_strdup(tz);
   t->data = data;
 }
-#endif
 
 void dt_control_merge_hdr()
 {
@@ -780,14 +771,12 @@ void dt_control_merge_hdr()
   dt_control_add_job(darktable.control, &j);
 }
 
-#if GLIB_CHECK_VERSION (2, 26, 0)
 void dt_control_gpx_apply(const gchar *filename, int32_t filmid, const gchar *tz)
 {
   dt_job_t j;
   dt_control_gpx_apply_job_init(&j, filename, filmid, tz);
   dt_control_add_job(darktable.control, &j);
 }
-#endif
 
 void dt_control_duplicate_images()
 {
@@ -1133,6 +1122,7 @@ static int32_t dt_control_export_job_run(dt_job_t *job)
   g_assert(mformat);
   dt_imageio_module_storage_t *mstorage = dt_imageio_get_storage_by_index(settings->storage_index);
   g_assert(mstorage);
+  dt_imageio_module_data_t *sdata = settings->sdata;
 
   // Get max dimensions...
   uint32_t w,h,fw,fh,sw,sh;
@@ -1146,14 +1136,6 @@ static int32_t dt_control_export_job_run(dt_job_t *job)
   if( sh==0 || fh==0) h=sh>fh?sh:fh;
   else h=sh<fh?sh:fh;
 
-  // get shared storage param struct (global sequence counter, one picasa connection etc)
-  dt_imageio_module_data_t *sdata = mstorage->get_params(mstorage);
-  if(sdata == NULL)
-  {
-    dt_control_log(_("failed to get parameters from storage module `%s', aborting export.."), mstorage->name(mstorage));
-    g_free(t1->data);
-    return 1;
-  }
   if(mstorage->initialize_store) {
     /* get temporary format params */
     dt_imageio_module_data_t *fdata = mformat->get_params(mformat);
@@ -1220,12 +1202,12 @@ static int32_t dt_control_export_job_run(dt_job_t *job)
       // make sure the 'exported' tag is set on the image
       dt_tag_attach(etagid, imgid);
       // check if image still exists:
-      char imgfilename[DT_MAX_PATH_LEN];
+      char imgfilename[PATH_MAX];
       const dt_image_t *image = dt_image_cache_read_get(darktable.image_cache, (int32_t)imgid);
       if(image)
       {
         gboolean from_cache = TRUE;
-        dt_image_full_path(image->id, imgfilename, DT_MAX_PATH_LEN, &from_cache);
+        dt_image_full_path(image->id, imgfilename, sizeof(imgfilename), &from_cache);
         if(!g_file_test(imgfilename, G_FILE_TEST_IS_REGULAR))
         {
           dt_control_log(_("image `%s' is currently unavailable"), image->filename);
@@ -1268,7 +1250,7 @@ static int32_t dt_control_export_job_run(dt_job_t *job)
 }
 
 
-void dt_control_export(GList *imgid_list,int max_width, int max_height, int format_index, int storage_index, gboolean high_quality,char *style)
+void dt_control_export(GList *imgid_list, int max_width, int max_height, int format_index, int storage_index, gboolean high_quality,char *style)
 {
   dt_job_t job;
   dt_control_job_init(&job, "export");
@@ -1280,14 +1262,27 @@ void dt_control_export(GList *imgid_list,int max_width, int max_height, int form
   data->max_height = max_height;
   data->format_index = format_index;
   data->storage_index = storage_index;
+  dt_imageio_module_storage_t *mstorage = dt_imageio_get_storage_by_index(storage_index);
+  g_assert(mstorage);
+  // get shared storage param struct (global sequence counter, one picasa connection etc)
+  dt_imageio_module_data_t *sdata = mstorage->get_params(mstorage);
+  if(sdata == NULL)
+  {
+    dt_control_log(_("failed to get parameters from storage module `%s', aborting export.."), mstorage->name(mstorage));
+    free(data);
+    return;
+  }
+  data->sdata = sdata;
   data->high_quality = high_quality;
   g_strlcpy(data->style,style,sizeof(data->style));
   t->data = data;
   dt_control_signal_raise(darktable.signals,DT_SIGNAL_IMAGE_EXPORT_MULTIPLE,t);
   dt_control_add_job(darktable.control, &job);
+
+  // tell the storage that we got its params for an export so it can reset itself to a safe state
+  mstorage->export_dispatched(mstorage);
 }
 
-#if GLIB_CHECK_VERSION (2, 26, 0)
 int32_t dt_control_time_offset_job_run(dt_job_t *job)
 {
   dt_control_image_enumerator_t *t1 = (dt_control_image_enumerator_t *)job->param;
@@ -1359,7 +1354,6 @@ void dt_control_time_offset(const long int offset, int imgid)
   dt_control_time_offset_job_init(&j, offset, imgid);
   dt_control_add_job(darktable.control, &j);
 }
-#endif
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

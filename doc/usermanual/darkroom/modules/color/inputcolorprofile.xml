@@ -1,3 +1,8 @@
+<!DOCTYPE sect3 PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
+               "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd" [
+		<!ENTITY % darktable_dtd SYSTEM "../../../dtd/darktable.dtd">
+		%darktable_dtd;
+		]>
 <sect3 status="final" id="input_color_profile">
 
   <title>Input color profile</title>
@@ -101,12 +106,47 @@
       <para>
         You can select from a list of RGB profiles. Input colors with a saturation that exceeds
         the permissible range of the selected profile get clipped to a maximum value.
-        <quote>Beta RGB (compatible)</quote> and <quote>Adobe RGB (compatible)</quote> allow for
-        a broader range of unclipped colors, while <quote>sRGB</quote> and <quote>linear Rec709
+        <quote>linear Rec2020 RGB</quote> and <quote>Adobe RGB (compatible)</quote> allow for a
+        broader range of unclipped colors, while <quote>sRGB</quote> and <quote>linear Rec709
         RGB</quote> produce a tighter clipping. You should select the profile that prevents
         artifacts while still maintaining highest color dynamics.
       </para>
     </sect5>
+
+  </sect4>
+
+  <sect4>
+
+    <title>Examples</title>
+
+    <para>
+      <informaltable frame="none">
+        <tgroup cols="2" colsep="0" rowsep="0">
+          <colspec colwidth="4*"/>
+          <colspec colwidth="6*"/>
+          <tbody>
+            <row>
+              <entry>
+                <graphic fileref="darkroom/modules/images/inputcolorprofile_ex1.png" scalefit="1" width="90%" align="center" />
+              </entry>
+              <entry>
+                Close-up of a blue light source (LED) with gamut clipping off. The activated
+                levels module produces a ring of black pixel artifacts.
+              </entry>
+            </row>
+            <row>
+              <entry>
+                <graphic fileref="darkroom/modules/images/inputcolorprofile_ex2.png" scalefit="1" width="90%" align="center" />
+              </entry>
+              <entry>
+                The same image and processing with gamut clipping set to <quote>linear Rec2020
+                RGB </quote>.
+              </entry>
+            </row>
+          </tbody>
+        </tgroup>
+      </informaltable>
+    </para>
 
   </sect4>
 

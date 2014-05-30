@@ -145,7 +145,7 @@ gui_reset (dt_lib_module_t *self)
   g_free(storage_name);
   gtk_combo_box_set_active(d->storage, storage_index);
 
-  gtk_combo_box_set_active(d->intent, (int)dt_conf_get_int("plugins/lighttable/export/iccintent") + 1);
+  gtk_combo_box_set_active(d->intent, dt_conf_get_int("plugins/lighttable/export/iccintent") + 1);
   // iccprofile
   int iccfound = 0;
   gchar *iccprofile = dt_conf_get_string("plugins/lighttable/export/iccprofile");
@@ -560,35 +560,35 @@ gui_init (dt_lib_module_t *self)
   d->profiles = g_list_append(d->profiles, prof);
 
   prof = (dt_lib_export_profile_t *)g_malloc0(sizeof(dt_lib_export_profile_t));
-  g_strlcpy(prof->filename, "X profile", sizeof(prof->filename));
-  dt_utf8_strlcpy(prof->name, "X profile", sizeof(prof->name));
-  prof->pos = 3;
+  g_strlcpy(prof->filename, "linear_rgb", sizeof(prof->filename));
+  dt_utf8_strlcpy(prof->name, _("linear Rec709 RGB"), sizeof(prof->name));
+  pos = prof->pos = 3;
   d->profiles = g_list_append(d->profiles, prof);
 
   prof = (dt_lib_export_profile_t *)g_malloc0(sizeof(dt_lib_export_profile_t));
-  g_strlcpy(prof->filename, "linear_rgb", sizeof(prof->filename));
-  dt_utf8_strlcpy(prof->name, _("linear Rec709 RGB"), sizeof(prof->name));
+  g_strlcpy(prof->filename, "linear_rec2020_rgb", sizeof(prof->filename));
+  dt_utf8_strlcpy(prof->name, _("linear Rec2020 RGB"), sizeof(prof->name));
   pos = prof->pos = 4;
   d->profiles = g_list_append(d->profiles, prof);
 
   // read datadir/color/out/*.icc
-  char datadir[DT_MAX_PATH_LEN];
-  char confdir[DT_MAX_PATH_LEN];
-  char dirname[DT_MAX_PATH_LEN];
-  char filename[DT_MAX_PATH_LEN];
-  dt_loc_get_user_config_dir(confdir, DT_MAX_PATH_LEN);
-  dt_loc_get_datadir(datadir, DT_MAX_PATH_LEN);
+  char datadir[PATH_MAX];
+  char confdir[PATH_MAX];
+  char dirname[PATH_MAX];
+  char filename[PATH_MAX];
+  dt_loc_get_user_config_dir(confdir, sizeof(confdir));
+  dt_loc_get_datadir(datadir, sizeof(datadir));
   cmsHPROFILE tmpprof;
   const gchar *d_name;
-  snprintf(dirname, DT_MAX_PATH_LEN, "%s/color/out", confdir);
+  snprintf(dirname, sizeof(dirname), "%s/color/out", confdir);
   if(!g_file_test(dirname, G_FILE_TEST_IS_DIR))
-    snprintf(dirname, DT_MAX_PATH_LEN, "%s/color/out", datadir);
+    snprintf(dirname, sizeof(dirname), "%s/color/out", datadir);
   GDir *dir = g_dir_open(dirname, 0, NULL);
   if(dir)
   {
     while((d_name = g_dir_read_name(dir)))
     {
-      snprintf(filename, DT_MAX_PATH_LEN, "%s/%s", dirname, d_name);
+      snprintf(filename, sizeof(filename), "%s/%s", dirname, d_name);
       tmpprof = cmsOpenProfileFromFile(filename, "r");
       if(tmpprof)
       {
@@ -617,10 +617,7 @@ gui_init (dt_lib_module_t *self)
   while(l)
   {
     dt_lib_export_profile_t *prof = (dt_lib_export_profile_t *)l->data;
-    if(!strcmp(prof->name, "X profile"))
-      gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(d->profile), _("system display profile"));
-    else
-      gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(d->profile), prof->name);
+    gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(d->profile), prof->name);
     l = g_list_next(l);
   }
 
@@ -756,8 +753,7 @@ get_params (dt_lib_module_t *self, int *size)
   int32_t fname_len = strlen(fname), sname_len = strlen(sname);
   *size = fname_len + sname_len + 2 + 2*sizeof(int32_t) + fsize + ssize + 3*sizeof(int32_t) + strlen(iccprofile) + 1;
 
-  char *params = (char *)malloc(*size);
-  memset(params, 0, *size);
+  char *params = (char *)calloc(1, *size);
   int pos = 0;
   memcpy(params+pos, &max_width, sizeof(int32_t));
   pos += sizeof(int32_t);

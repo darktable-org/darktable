@@ -24,7 +24,8 @@
 
 namespace RawSpeed {
 
-TiffEntryBE::TiffEntryBE(FileMap* f, uint32 offset) : mDataSwapped(false) {
+TiffEntryBE::TiffEntryBE(FileMap* f, uint32 offset) {
+  own_data = NULL;
   type = TIFF_UNDEFINED;  // We set type to undefined to avoid debug assertion errors.
   data = f->getDataWrt(offset);
   tag = (TiffTag)getShort();
@@ -56,6 +57,20 @@ TiffEntryBE::TiffEntryBE(FileMap* f, uint32 offset) : mDataSwapped(false) {
 #endif
 }
 
+TiffEntryBE::TiffEntryBE( TiffTag tag, TiffDataType type, uint32 count, const uchar8* data /*= NULL*/ )
+: TiffEntry(tag, type,count, data)
+{
+#ifdef _DEBUG
+  debug_intVal = 0xC0CAC01A;
+  debug_floatVal = sqrtf(-1);
+
+  if (type == TIFF_LONG || type == TIFF_SHORT)
+    debug_intVal = getInt();
+  if (type == TIFF_FLOAT || type == TIFF_DOUBLE)
+    debug_floatVal = getFloat();
+#endif
+}
+
 TiffEntryBE::~TiffEntryBE(void) {
 }
 
@@ -64,49 +79,53 @@ unsigned int TiffEntryBE::getInt() {
     ThrowTPE("TIFF, getInt: Wrong type 0x%x encountered. Expected Int", type);
   if (type == TIFF_SHORT)
     return getShort();
-  if (mDataSwapped)
-    return *(unsigned int*)&data[0];
   return (unsigned int)data[0] << 24 | (unsigned int)data[1] << 16 | (unsigned int)data[2] << 8 | (unsigned int)data[3];
 }
 
 unsigned short TiffEntryBE::getShort() {
   if (!(type == TIFF_SHORT || type == TIFF_UNDEFINED))
     ThrowTPE("TIFF, getShort: Wrong type 0x%x encountered. Expected Short", type);
-  if (mDataSwapped)
-    return *(unsigned short*)&data[0];
   return (unsigned short)data[0] << 8 | (unsigned short)data[1];
 }
 
-const unsigned int* TiffEntryBE::getIntArray() {
-  //TODO: Make critical section to avoid clashes.
+const uint32* TiffEntryBE::getIntArray() {
   if (!(type == TIFF_LONG || type == TIFF_UNDEFINED || type == TIFF_RATIONAL ||  type == TIFF_SRATIONAL))
     ThrowTPE("TIFF, getIntArray: Wrong type 0x%x encountered. Expected Int", type);
-  if (mDataSwapped)
-    return (unsigned int*)&data[0];
+  if (own_data)
+    return (uint32*)own_data;
 
-  unsigned int* d = (unsigned int*) & data[0];
   uint32 ncount = count * ((type == TIFF_RATIONAL ||  type == TIFF_SRATIONAL) ? 2 : 1);
+  own_data = new uchar8[ncount*4];
+  uint32* d = (uint32*)own_data;
   for (uint32 i = 0; i < ncount; i++) {
-    d[i] = (unsigned int)data[i*4+0] << 24 | (unsigned int)data[i*4+1] << 16 | (unsigned int)data[i*4+2] << 8 | (unsigned int)data[i*4+3];
+#ifdef LE_PLATFORM_HAS_BSWAP
+      d[i] = PLATFORM_BSWAP32(*(uint32*)&data[i*4]);
+#else
+      d[i] = (unsigned int)data[i*4+0] << 24 | (unsigned int)data[i*4+1] << 16 | (unsigned int)data[i*4+2] << 8 | (unsigned int)data[i*4+3];
+#endif
   }
-  mDataSwapped = true;
-  return d;
+  return (uint32*)own_data;
 }
 
-const unsigned short* TiffEntryBE::getShortArray() {
-  //TODO: Make critical section to avoid clashes.
+const ushort16* TiffEntryBE::getShortArray() {
   if (!(type == TIFF_SHORT || type == TIFF_UNDEFINED))
     ThrowTPE("TIFF, getShortArray: Wrong type 0x%x encountered. Expected Short", type);
 
-  if (mDataSwapped)
-    return (unsigned short*)&data[0];
+  if (own_data)
+    return (unsigned short*)own_data;
 
-  unsigned short* d = (unsigned short*) & data[0];
+  own_data = new uchar8[count*2];
+  ushort16* d = (ushort16*)own_data;
   for (uint32 i = 0; i < count; i++) {
-    d[i] = (unsigned short)data[i*2+0] << 8 | (unsigned short)data[i*2+1];
+    d[i] = (ushort16)data[i*2+0] << 8 | (ushort16)data[i*2+1];
   }
-  mDataSwapped = true;
   return d;
 }
 
+void TiffEntryBE::setData( const void *in_data, uint32 byte_count )
+{
+  if (datashifts[type] != 0)
+    ThrowTPE("TIFF, Unable to set data on byteswapped platforms (unsupported)");
+  TiffEntry::setData(in_data, byte_count);
+}
 } // namespace RawSpeed

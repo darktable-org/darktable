@@ -19,27 +19,29 @@
 #ifndef DT_COMMON_HISTOGRAM_H
 #define DT_COMMON_HISTOGRAM_H
 
+#include <stdint.h>
+
 #include "develop/imageop.h"
 #include "develop/pixelpipe.h"
 
 void
 dt_histogram_helper_cs_RAW_uint16(const dt_dev_histogram_params_t *histogram_params,
-                                  const void *pixel, float *histogram, int j);
+                                  const void *pixel, uint32_t *histogram, int j);
 
 typedef void ((*dt_worker)(const dt_dev_histogram_params_t *histogram_params,
-                           const void *pixel, float *histogram, int j));
+                           const void *pixel, uint32_t *histogram, int j));
 
 void
 dt_histogram_worker(const dt_dev_histogram_params_t *histogram_params,
-                    const void *pixel, float **histogram, dt_worker Worker);
+                    const void *pixel, uint32_t **histogram, dt_worker Worker);
 
 void
 dt_histogram_helper(const dt_dev_histogram_params_t *histogram_params,
-                    dt_iop_colorspace_type_t cst, const void *pixel, float **histogram);
+                    dt_iop_colorspace_type_t cst, const void *pixel, uint32_t **histogram);
 
 void
 dt_histogram_max_helper(const dt_dev_histogram_params_t *histogram_params,
-                        dt_iop_colorspace_type_t cst, float **histogram, float *histogram_max);
+                        dt_iop_colorspace_type_t cst, uint32_t **histogram, uint32_t *histogram_max);
 
 #endif
 

@@ -269,10 +269,8 @@ gboolean _variable_get_value(dt_variables_params_t *params, gchar *variable,gcha
 
 void dt_variables_params_init(dt_variables_params_t **params)
 {
-  *params=g_malloc(sizeof(dt_variables_params_t));
-  memset(*params ,0,sizeof(dt_variables_params_t));
-  (*params)->data = g_malloc(sizeof(dt_variables_data_t));
-  memset((*params)->data ,0,sizeof(dt_variables_data_t));
+  *params = g_malloc0(sizeof(dt_variables_params_t));
+  (*params)->data = g_malloc0(sizeof(dt_variables_data_t));
   (*params)->data->time=time(NULL);
   (*params)->data->exif_time=0;
   (*params)->sequence = -1;
@@ -302,7 +300,7 @@ gchar *dt_variables_get_result(dt_variables_params_t *params)
 gboolean dt_variables_expand(dt_variables_params_t *params, gchar *string, gboolean iterate)
 {
   gchar *variable=g_malloc(128);
-  gchar *value=g_malloc(1024*sizeof(gchar));
+  gchar *value = g_malloc_n(1024, sizeof(gchar));
   gchar *token=NULL;
 
   // Let's free previous expanded result if any...

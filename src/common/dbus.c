@@ -88,14 +88,14 @@ _handle_get_property(GDBusConnection  *connection,
   ret = NULL;
   if(!g_strcmp0(property_name, "DataDir"))
   {
-    gchar datadir[DT_MAX_PATH_LEN];
-    dt_loc_get_datadir(datadir, DT_MAX_PATH_LEN);
+    gchar datadir[PATH_MAX];
+    dt_loc_get_datadir(datadir, sizeof(datadir));
     ret = g_variant_new_string(datadir);
   }
   else if(!g_strcmp0(property_name, "ConfigDir"))
   {
-    gchar configdir[DT_MAX_PATH_LEN];
-    dt_loc_get_user_config_dir(configdir, DT_MAX_PATH_LEN);
+    gchar configdir[PATH_MAX];
+    dt_loc_get_user_config_dir(configdir, sizeof(configdir));
     ret = g_variant_new_string(configdir);
   }
   return ret;
@@ -152,9 +152,8 @@ static void _on_name_lost(GDBusConnection *connection, const gchar *name, gpoint
 
 struct dt_dbus_t *dt_dbus_init()
 {
-  dt_dbus_t *dbus = (dt_dbus_t *)g_malloc(sizeof(dt_dbus_t));
+  dt_dbus_t *dbus = (dt_dbus_t *)g_malloc0(sizeof(dt_dbus_t));
   if(!dbus) return NULL;
-  memset(dbus, 0, sizeof(dt_dbus_t));
 
   dbus->introspection_data = g_dbus_node_info_new_for_xml(introspection_xml, NULL);
 

@@ -66,7 +66,7 @@ int write_image (dt_imageio_module_data_t *ppm, const char *filename, const void
   size_t end = ftell(fin);
   rewind(fin);
 
-  content = (char*)g_malloc(sizeof(char)*end);
+  content = (char *)g_malloc_n(end, sizeof(char));
   if(content == NULL)
     goto END;
   if(fread(content,sizeof(char),end,fin) != end)
@@ -109,8 +109,7 @@ params_size(dt_imageio_module_format_t *self)
 void*
 get_params(dt_imageio_module_format_t *self)
 {
-  dt_imageio_module_data_t *d = (dt_imageio_module_data_t *)malloc(sizeof(dt_imageio_module_data_t));
-  memset(d,0,sizeof(dt_imageio_module_data_t));
+  dt_imageio_module_data_t *d = (dt_imageio_module_data_t *)calloc(1, sizeof(dt_imageio_module_data_t));
   return d;
 }
 

@@ -20,10 +20,10 @@
           <entry>
             This panel is for managing tags on images. Tags are stored in both, sidecar files
             (.xmp), and within the darktable database for a faster access. The panel is divided
-            into two parts: the upper part contains the tag(s) currently set for the image under
-            mouse (if the mouse is over an image) or the selected image (if the mouse is outside
-            the lighttable). The lower part contains all available tags, which can be filtered
-            in the upper text box.
+            into two parts: the upper part contains the tag(s) currently attached to the image
+            under the cursor, or the selected image(s) if the mouse is outside the lighttable.
+            The lower part contains a list of all available tags in the database, which can be
+            filtered in the text box above.
           </entry>
           <entry>
             <graphic fileref="lighttable/images/panel_tagging.png" scalefit="1" width="80%" align="center" />
@@ -32,6 +32,29 @@
       </tbody>
     </tgroup>
   </informaltable>
+
+  <para>
+    New tags get added to the list either by typing into the text box and pressing the
+    <quote>new</quote> button, or if an automatically generated tag gets attached to an image,
+    or on import of already tagged images. darktable sorts the list of tags by relevance and
+    frequency of usage.
+  </para>
+
+  <para>
+    Hierarchical tags are supported and can be create using the pipe symbol <quote>|</quote>.
+  </para>
+
+  <para>
+    As you may notice there are automatically created tags like <quote>darktable|
+    exported</quote> or <quote>darktable|styles|your style</quote>, which keep track of your
+    actions and let you easily find already exported images or images with specific styles
+    applied.
+  </para>
+
+  <para>
+    <emphasis> Tip: ctrl-t opens a small text box at the bottom of the central view for quickly
+    tagging your selected images by typing a tag phrase and hitting return. </emphasis>
+  </para>
 
   <sect3>
 
@@ -42,7 +65,7 @@
       <title>attach</title>
 
       <para>
-        Attach the selected tag(s) from the list below to all selected images.
+        Attach the selected tag from the list below to all selected images.
       </para>
 
     </sect4>
@@ -52,7 +75,8 @@
       <title>detach</title>
 
       <para>
-        Detach selected tag(s) from the list above from all selected images.
+        Detach the selected tag from all selected images. This also can be done by double
+        clicking the specific tag.
       </para>
 
     </sect4>
@@ -72,7 +96,9 @@
       <title>delete</title>
 
       <para>
-        Delete a tag from the list.
+        Delete a tag from the list and from all images. A warning will be displayed on how many
+        images have this tag attached. Take this warning serious as there is no way to recover
+        or later find the affected images.
       </para>
 
     </sect4>

@@ -86,9 +86,8 @@ static void _lib_navigation_control_redraw_callback(gpointer instance, gpointer 
 void gui_init(dt_lib_module_t *self)
 {
   /* initialize ui widgets */
-  dt_lib_navigation_t *d = (dt_lib_navigation_t *)g_malloc(sizeof(dt_lib_navigation_t));
+  dt_lib_navigation_t *d = (dt_lib_navigation_t *)g_malloc0(sizeof(dt_lib_navigation_t));
   self->data = (void *)d;
-  memset(d,0,sizeof(dt_lib_navigation_t));
 
   /* create drawingarea */
   self->widget = gtk_drawing_area_new();
@@ -227,7 +226,7 @@ static gboolean _lib_navigation_expose_callback(GtkWidget *widget, GdkEventExpos
       cairo_translate(cr, 0, height);
       cairo_set_source_rgba(cr, 1., 1., 1., 0.5);
       cairo_select_font_face (cr, "sans-serif", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_BOLD);
-      cairo_set_font_size (cr, 11);
+      cairo_set_font_size (cr, DT_PIXEL_APPLY_DPI(11));
 
       char zoomline[5];
       snprintf(zoomline, sizeof(zoomline), "%.0f%%", cur_scale*100);
@@ -257,7 +256,7 @@ static gboolean _lib_navigation_expose_callback(GtkWidget *widget, GdkEventExpos
       cairo_set_source_rgb(cr, 0.6, 0.6, 0.6);
       cairo_text_extents_t ext;
       cairo_select_font_face (cr, "sans-serif", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_BOLD);
-      cairo_set_font_size (cr, 11);
+      cairo_set_font_size (cr, DT_PIXEL_APPLY_DPI(11));
       cairo_text_extents(cr,"100%",&ext); //dummy text, just to get the height
       h = d->zoom_h = ext.height;
       w = h*1.5;

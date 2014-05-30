@@ -56,11 +56,19 @@ void fill();
     return (uint32)((mCurr >> (--mLeft)) & 1);
   }
 
+  __inline uint32 getBitNoFill() {
+    return (uint32)((mCurr >> (--mLeft)) & 1);
+  }
+
   __inline uint32 getBits(uint32 nbits) {
     if (mLeft < nbits) {
       fill();
     }
 
+    return (uint32)((mCurr >> (mLeft -= (nbits))) & ((1 << nbits) - 1));
+  }
+
+  __inline uint32 getBitsNoFill(uint32 nbits) {
     return (uint32)((mCurr >> (mLeft -= (nbits))) & ((1 << nbits) - 1));
   }
 

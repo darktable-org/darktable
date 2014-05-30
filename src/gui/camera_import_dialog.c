@@ -160,10 +160,9 @@ entry_it_callback(GtkEntryBuffer *entrybuffer,guint a1, gchar *a2, guint a3,gpoi
 }
 
 /** Creates a gconf widget. */
-_camera_gconf_widget_t *_camera_import_gconf_widget(_camera_import_dialog_t *dlg,gchar *label,gchar *confstring)
+static _camera_gconf_widget_t *_camera_import_gconf_widget(_camera_import_dialog_t *dlg, gchar *label, gchar *confstring)
 {
-  _camera_gconf_widget_t *gcw=malloc(sizeof(_camera_gconf_widget_t));
-  memset(gcw,0,sizeof(_camera_gconf_widget_t));
+  _camera_gconf_widget_t *gcw = calloc(1, sizeof(_camera_gconf_widget_t));
   GtkWidget *vbox,*hbox;
   gcw->widget=vbox=GTK_WIDGET(gtk_vbox_new(FALSE,0));
   hbox=GTK_WIDGET(gtk_hbox_new(FALSE,0));
@@ -184,14 +183,14 @@ _camera_gconf_widget_t *_camera_import_gconf_widget(_camera_import_dialog_t *dlg
 
   GtkWidget *button=dtgtk_button_new(dtgtk_cairo_paint_store,CPF_STYLE_FLAT|CPF_DO_NOT_USE_BORDER);
   g_object_set(button,"tooltip-text",_("store value as default"),(char *)NULL);
-  gtk_widget_set_size_request(button,13,13);
+  gtk_widget_set_size_request(button, DT_PIXEL_APPLY_DPI(13), DT_PIXEL_APPLY_DPI(13));
   gtk_box_pack_start(GTK_BOX(hbox),button,FALSE,FALSE,0);
   g_signal_connect (G_OBJECT (button), "clicked",
                     G_CALLBACK (_gcw_store_callback), gcw);
 
   button=dtgtk_button_new(dtgtk_cairo_paint_reset,CPF_STYLE_FLAT|CPF_DO_NOT_USE_BORDER);
   g_object_set(button,"tooltip-text",_("reset value to default"),(char *)NULL);
-  gtk_widget_set_size_request(button,13,13);
+  gtk_widget_set_size_request(button, DT_PIXEL_APPLY_DPI(13), DT_PIXEL_APPLY_DPI(13));
   gtk_box_pack_start(GTK_BOX(hbox),button,FALSE,FALSE,0);
   g_signal_connect (G_OBJECT (button), "clicked",
                     G_CALLBACK (_gcw_reset_callback), gcw);
@@ -212,7 +211,7 @@ _camera_gconf_widget_t *_camera_import_gconf_widget(_camera_import_dialog_t *dlg
 
 
 
-void _camera_import_dialog_new(_camera_import_dialog_t *data)
+static void _camera_import_dialog_new(_camera_import_dialog_t *data)
 {
   data->dialog=gtk_dialog_new_with_buttons(_("import images from camera"),NULL,GTK_DIALOG_MODAL,_("cancel"),GTK_RESPONSE_NONE,C_("camera import", "import"),GTK_RESPONSE_ACCEPT,NULL);
   GtkWidget *content = gtk_dialog_get_content_area (GTK_DIALOG (data->dialog));
@@ -296,10 +295,10 @@ void _camera_import_dialog_new(_camera_import_dialog_t *data)
 
   // end
   gtk_box_pack_start(GTK_BOX(content),data->notebook,TRUE,TRUE,0);
-  //gtk_widget_set_size_request(content,400,400);
+  //gtk_widget_set_size_request(content, DT_PIXEL_APPLY_DPI(400), DT_PIXEL_APPLY_DPI(400));
 }
 
-int _camera_storage_image_filename(const dt_camera_t *camera,const char *filename,CameraFile *preview,CameraFile *exif,void *user_data)
+static int _camera_storage_image_filename(const dt_camera_t *camera,const char *filename,CameraFile *preview,CameraFile *exif,void *user_data)
 {
   _camera_import_dialog_t *data=(_camera_import_dialog_t*)user_data;
   GtkTreeIter iter;
@@ -357,7 +356,7 @@ int _camera_storage_image_filename(const dt_camera_t *camera,const char *filenam
 #endif
 
   // filename\n 1/60 f/2.8 24mm iso 160
-  snprintf(file_info, sizeof(file_info), "%s%c%s",filename,strlen(exif_info)?'\n':'\0',strlen(exif_info)?exif_info:"");
+  snprintf(file_info, sizeof(file_info), "%s%c%s", filename, *exif_info?'\n':'\0', *exif_info?exif_info:"");
   gtk_list_store_append(data->store,&iter);
   gtk_list_store_set(data->store,&iter,0,thumb,1,file_info,-1);
   if(pixbuf) g_object_unref(pixbuf);
@@ -368,7 +367,7 @@ int _camera_storage_image_filename(const dt_camera_t *camera,const char *filenam
   return 1;
 }
 
-void _camera_import_dialog_free(_camera_import_dialog_t *data)
+static void _camera_import_dialog_free(_camera_import_dialog_t *data)
 {
   gtk_list_store_clear( data->store );
   g_object_unref( data->store );
@@ -437,7 +436,7 @@ static time_t parse_date_time(const char* date_time_text)
   return 0;
 }
 
-void _camera_import_dialog_run(_camera_import_dialog_t *data)
+static void _camera_import_dialog_run(_camera_import_dialog_t *data)
 {
   gtk_widget_show_all(data->dialog);
 

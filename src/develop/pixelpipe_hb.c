@@ -36,6 +36,7 @@
 #include <stdlib.h>
 #include <math.h>
 #include <unistd.h>
+#include <stdint.h>
 
 typedef enum dt_pixelpipe_flow_t
 {
@@ -316,7 +317,7 @@ get_output_bpp(dt_iop_module_t *module, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpi
 // helper to get per module histogram
 static void
 histogram_collect(dt_iop_module_t *module, const void *pixel, const dt_iop_roi_t *roi,
-                  float **histogram, float *histogram_max)
+                  uint32_t **histogram, uint32_t *histogram_max)
 {
   dt_dev_histogram_params_t *histogram_params = (dt_dev_histogram_params_t*)malloc(sizeof(dt_dev_histogram_params_t));
   memcpy(histogram_params, &module->histogram_params, sizeof(dt_dev_histogram_params_t));
@@ -330,6 +331,9 @@ histogram_collect(dt_iop_module_t *module, const void *pixel, const dt_iop_roi_t
   dt_histogram_helper(histogram_params, cst, pixel, histogram);
   dt_histogram_max_helper(histogram_params, cst, histogram, histogram_max);
 
+  module->histogram_bins_count = histogram_params->bins_count;
+  module->histogram_pixels = (roi->width - roi->x) * (roi->height - roi->y);
+
   free(histogram_params);
 }
 
@@ -340,15 +344,23 @@ histogram_collect(dt_iop_module_t *module, const void *pixel, const dt_iop_roi_t
 // as long as we work on small image sizes like in image preview
 static void
 histogram_collect_cl(int devid, dt_iop_module_t *module, cl_mem img, const dt_iop_roi_t *roi,
-                     float **histogram, float *histogram_max)
+                     uint32_t **histogram, uint32_t *histogram_max, float *buffer, size_t bufsize)
 {
-  void *pixel = dt_alloc_align(64, roi->width*roi->height*4*sizeof(float));
-  if(pixel == NULL) return;
+  float *tmpbuf = NULL;
+  float *pixel;
+
+  // if buffer is supplied and if size fits let's use it
+  if(buffer && bufsize >= (size_t)roi->width*roi->height*4*sizeof(float))
+    pixel = buffer;
+  else
+    pixel = tmpbuf = dt_alloc_align(64, (size_t)roi->width*roi->height*4*sizeof(float));
+  
+  if(!pixel) return;
 
   cl_int err = dt_opencl_copy_device_to_host(devid, pixel, img, roi->width, roi->height, 4*sizeof(float));
   if(err != CL_SUCCESS)
   {
-    dt_free_align(pixel);
+    if (tmpbuf) dt_free_align(tmpbuf);
     return;
   }
 
@@ -364,8 +376,11 @@ histogram_collect_cl(int devid, dt_iop_module_t *module, cl_mem img, const dt_io
   dt_histogram_helper(histogram_params, cst, pixel, histogram);
   dt_histogram_max_helper(histogram_params, cst, histogram, histogram_max);
 
+  module->histogram_bins_count = histogram_params->bins_count;
+  module->histogram_pixels = (roi->width - roi->x) * (roi->height - roi->y);
+
   free(histogram_params);
-  dt_free_align(pixel);
+  if(tmpbuf) dt_free_align(tmpbuf);
 }
 #endif
 
@@ -378,12 +393,11 @@ pixelpipe_picker(dt_iop_module_t *module, const float *img, const dt_iop_roi_t *
   const float ht = darktable.develop->preview_pipe->backbuf_height;
   const int width = roi->width;
   const int height = roi->height;
-  float Lab[3];
 
   // initialize picker values. a positive value of picked_color_max[0] can later be used to check for validity of data
-  for(int k=0; k<3; k++) picked_color_min[k] =  666.0f;
-  for(int k=0; k<3; k++) picked_color_max[k] = -666.0f;
-  for(int k=0; k<3; k++) Lab[k] = picked_color[k] = 0.0f;
+  for(int k=0; k<3; k++) picked_color_min[k] =  INFINITY;
+  for(int k=0; k<3; k++) picked_color_max[k] = -INFINITY;
+  for(int k=0; k<3; k++) picked_color[k] = 0.0f;
 
   // do not continue if one of the point coordinates is set to a negative value indicating a not yet defined position
   if(module->color_picker_point[0] < 0 || module->color_picker_point[1] < 0) return;
@@ -419,22 +433,56 @@ pixelpipe_picker(dt_iop_module_t *module, const float *img, const dt_iop_roi_t *
     for(int k=1; k<4; k+=2) box[k] = MIN(height-1, MAX(0, box[k]));
 
     const float w = 1.0/((box[3]-box[1]+1)*(box[2]-box[0]+1));
-    for(int j=box[1]; j<=box[3]; j++) for(int i=box[0]; i<=box[2]; i++)
+
+    const int numthreads = dt_get_num_threads();    
+
+    float mean[3*numthreads];
+    float mmin[3*numthreads];
+    float mmax[3*numthreads];
+
+    for(int n = 0; n < 3*numthreads; n++)
+    {
+      mean[n] = 0.0f;
+      mmin[n] = INFINITY;
+      mmax[n] = -INFINITY;
+    }
+
+#ifdef _OPENMP
+    #pragma omp parallel for default(none) shared(img, box, mean, mmin, mmax) schedule(static)
+#endif
+    for(size_t j=box[1]; j<=box[3]; j++)
+    {
+      for(size_t i=box[0]; i<=box[2]; i++)
       {
-        const float L = img[4*(width*j + i) + 0];
-        const float a = img[4*(width*j + i) + 1];
-        const float b = img[4*(width*j + i) + 2];
-        Lab[0] += w*L;
-        Lab[1] += w*a;
-        Lab[2] += w*b;
-        picked_color_min[0] = fminf(picked_color_min[0], L);
-        picked_color_min[1] = fminf(picked_color_min[1], a);
-        picked_color_min[2] = fminf(picked_color_min[2], b);
-        picked_color_max[0] = fmaxf(picked_color_max[0], L);
-        picked_color_max[1] = fmaxf(picked_color_max[1], a);
-        picked_color_max[2] = fmaxf(picked_color_max[2], b);
-        for(int k=0; k<3; k++) picked_color[k] = Lab[k];
+        const int tnum = dt_get_thread_num();
+        float *tmean = mean + 3*tnum;
+        float *tmmin = mmin + 3*tnum;
+        float *tmmax = mmax + 3*tnum;
+        const size_t k = 4*(width*j + i);
+        const float L = img[k];
+        const float a = img[k + 1];
+        const float b = img[k + 2];
+        tmean[0] += w*L;
+        tmean[1] += w*a;
+        tmean[2] += w*b;
+        tmmin[0] = fminf(tmmin[0], L);
+        tmmin[1] = fminf(tmmin[1], a);
+        tmmin[2] = fminf(tmmin[2], b);
+        tmmax[0] = fmaxf(tmmax[0], L);
+        tmmax[1] = fmaxf(tmmax[1], a);
+        tmmax[2] = fmaxf(tmmax[2], b);
       }
+    }
+
+    for(int n = 0; n < numthreads; n++)
+    {
+      for(int k = 0; k < 3; k++)
+      {
+        picked_color[k] += mean[3*n+k];
+        picked_color_min[k] = fminf(picked_color_min[k], mmin[3*n+k]);
+        picked_color_max[k] = fmaxf(picked_color_max[k], mmax[3*n+k]);
+      }
+    }
   }
   else
   {
@@ -470,7 +518,7 @@ pixelpipe_picker(dt_iop_module_t *module, const float *img, const dt_iop_roi_t *
 // as long as we work on small image sizes like in image preview
 static void
 pixelpipe_picker_cl(int devid, dt_iop_module_t *module, cl_mem img, const dt_iop_roi_t *roi,
-                    float *picked_color, float *picked_color_min, float *picked_color_max)
+                    float *picked_color, float *picked_color_min, float *picked_color_max, float *buffer, size_t bufsize)
 {
   const float wd = darktable.develop->preview_pipe->backbuf_width;
   const float ht = darktable.develop->preview_pipe->backbuf_height;
@@ -481,12 +529,11 @@ pixelpipe_picker_cl(int devid, dt_iop_module_t *module, cl_mem img, const dt_iop
 
   size_t origin[3];
   size_t region[3];
-  float Lab[3];
 
   // initialize picker values. a positive value of picked_color_max[0] can later be used to check for validity of data
-  for(int k=0; k<3; k++) picked_color_min[k] =  666.0f;
-  for(int k=0; k<3; k++) picked_color_max[k] = -666.0f;
-  for(int k=0; k<3; k++) Lab[k] = picked_color[k] = 0.0f;
+  for(int k=0; k<3; k++) picked_color_min[k] =  INFINITY;
+  for(int k=0; k<3; k++) picked_color_max[k] = -INFINITY;
+  for(int k=0; k<3; k++) picked_color[k] = 0.0f;
 
   // do not continue if one of the point coordinates is set to a negative value indicating a not yet defined position
   if(module->color_picker_point[0] < 0 || module->color_picker_point[1] < 0) return;
@@ -533,35 +580,100 @@ pixelpipe_picker_cl(int devid, dt_iop_module_t *module, cl_mem img, const dt_iop
   region[1] = box[3] - box[1] + 1;
   region[2] = 1;
 
-  size_t bufsize = (size_t)region[0] * region[1];
-  float *buffer = dt_alloc_align(64, bufsize*4*sizeof(float));
-  if(buffer == NULL) return;
+  float *pixel;
+  float *tmpbuf = NULL;
+
+  const size_t size = region[0] * region[1];
+
+  // if a buffer is supplied and if size fits let's use it
+  if(buffer && bufsize >= size*4*sizeof(float))
+    pixel = buffer;
+  else
+    pixel = tmpbuf = dt_alloc_align(64, size*4*sizeof(float));
+
+  if(pixel == NULL) return;
 
   // get the required part of the image from opencl device
-  cl_int err = dt_opencl_read_host_from_device_raw(devid, buffer, img, origin, region, region[0]*4*sizeof(float), CL_TRUE);
+  cl_int err = dt_opencl_read_host_from_device_raw(devid, pixel, img, origin, region, region[0]*4*sizeof(float), CL_TRUE);
 
   if(err == CL_SUCCESS)
   {
     const float w = 1.0f/(region[0] * region[1]);
-    for(size_t k = 0; k < 4*bufsize; k += 4)
+
+    if(size > 100)  // avoid inefficient multi-threading in case of small region size (arbitrary limit)
     {
-      const float L = buffer[k];
-      const float a = buffer[k + 1];
-      const float b = buffer[k + 2];
-      Lab[0] += w*L;
-      Lab[1] += w*a;
-      Lab[2] += w*b;
-      picked_color_min[0] = fminf(picked_color_min[0], L);
-      picked_color_min[1] = fminf(picked_color_min[1], a);
-      picked_color_min[2] = fminf(picked_color_min[2], b);
-      picked_color_max[0] = fmaxf(picked_color_max[0], L);
-      picked_color_max[1] = fmaxf(picked_color_max[1], a);
-      picked_color_max[2] = fmaxf(picked_color_max[2], b);
-      for(int k=0; k<3; k++) picked_color[k] = Lab[k];
+      const int numthreads = dt_get_num_threads();    
+
+      float mean[3*numthreads];
+      float mmin[3*numthreads];
+      float mmax[3*numthreads];
+
+      for(int n = 0; n < 3*numthreads; n++)
+      {
+        mean[n] = 0.0f;
+        mmin[n] = INFINITY;
+        mmax[n] = -INFINITY;
+      }
+
+#ifdef _OPENMP
+      #pragma omp parallel for default(none) shared(pixel, mean, mmin, mmax, region) schedule(static)
+#endif
+      for(size_t j=0; j < region[1]; j++)
+      {
+        for(size_t i=0; i < region[0]; i++)
+        {
+          const int tnum = dt_get_thread_num();
+          float *tmean = mean + 3*tnum;
+          float *tmmin = mmin + 3*tnum;
+          float *tmmax = mmax + 3*tnum;
+          const size_t k = 4*(region[0]*j + i);
+          const float L = pixel[k];
+          const float a = pixel[k + 1];
+          const float b = pixel[k + 2];
+          tmean[0] += w*L;
+          tmean[1] += w*a;
+          tmean[2] += w*b;
+          tmmin[0] = fminf(tmmin[0], L);
+          tmmin[1] = fminf(tmmin[1], a);
+          tmmin[2] = fminf(tmmin[2], b);
+          tmmax[0] = fmaxf(tmmax[0], L);
+          tmmax[1] = fmaxf(tmmax[1], a);
+          tmmax[2] = fmaxf(tmmax[2], b);
+        }
+      }
+
+      for(int n = 0; n < numthreads; n++)
+      {
+        for(int k = 0; k < 3; k++)
+        {
+          picked_color[k] += mean[3*n+k];
+          picked_color_min[k] = fminf(picked_color_min[k], mmin[3*n+k]);
+          picked_color_max[k] = fmaxf(picked_color_max[k], mmax[3*n+k]);
+        }
+      }
+    }
+    else
+    {
+      // code path for small region, especially for color picker point mode
+      for(size_t k = 0; k < 4*size; k += 4)
+      {
+        const float L = pixel[k];
+        const float a = pixel[k + 1];
+        const float b = pixel[k + 2];
+        picked_color[0] += w*L;
+        picked_color[1] += w*a;
+        picked_color[2] += w*b;
+        picked_color_min[0] = fminf(picked_color_min[0], L);
+        picked_color_min[1] = fminf(picked_color_min[1], a);
+        picked_color_min[2] = fminf(picked_color_min[2], b);
+        picked_color_max[0] = fmaxf(picked_color_max[0], L);
+        picked_color_max[1] = fmaxf(picked_color_max[1], a);
+        picked_color_max[2] = fmaxf(picked_color_max[2], b);
+      }
     }
   }
 
-  dt_free_align(buffer);
+  if(tmpbuf) dt_free_align(tmpbuf);
 }
 #endif
 
@@ -887,7 +999,10 @@ dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, void *
           if(success_opencl && (dev->gui_attached || !(module->request_histogram & DT_REQUEST_ONLY_IN_GUI)) &&
             (module->request_histogram_source & pipe->type) && (module->request_histogram & DT_REQUEST_ON))
           {
-            histogram_collect_cl(pipe->devid, module, cl_mem_input, &roi_in, &(module->histogram), module->histogram_max);
+            // we abuse the empty output buffer on host for intermediate storage of data in histogram_collect_cl()
+            size_t outbufsize = roi_out->width*roi_out->height*bpp;
+
+            histogram_collect_cl(pipe->devid, module, cl_mem_input, &roi_in, &(module->histogram), module->histogram_max, *output, outbufsize);
             pixelpipe_flow |=  (PIXELPIPE_FLOW_HISTOGRAM_ON_GPU);
             pixelpipe_flow &= ~(PIXELPIPE_FLOW_HISTOGRAM_NONE | PIXELPIPE_FLOW_HISTOGRAM_ON_CPU);
 
@@ -921,10 +1036,16 @@ dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, void *
           // Lab color picking for module
           if(success_opencl && dev->gui_attached && pipe == dev->preview_pipe && // pick from preview pipe to get pixels outside the viewport
               module == dev->gui_module && // only modules with focus can pick
-              module->request_color_pick) // and they want to pick ;)
+              module->request_color_pick != DT_REQUEST_COLORPICK_OFF) // and they want to pick ;)
           {
-            pixelpipe_picker_cl(pipe->devid, module, cl_mem_input, &roi_in, module->picked_color, module->picked_color_min, module->picked_color_max);
-            pixelpipe_picker_cl(pipe->devid, module, (*cl_mem_output), roi_out, module->picked_output_color, module->picked_output_color_min, module->picked_output_color_max);
+
+            // we abuse the empty output buffer on host for intermediate storage of data in pixelpipe_picker_cl()
+            size_t outbufsize = roi_out->width*roi_out->height*bpp;
+
+            pixelpipe_picker_cl(pipe->devid, module, cl_mem_input, &roi_in, module->picked_color, module->picked_color_min, 
+                                module->picked_color_max, *output, outbufsize);
+            pixelpipe_picker_cl(pipe->devid, module, (*cl_mem_output), roi_out, module->picked_output_color, module->picked_output_color_min, 
+                                module->picked_output_color_max, *output, outbufsize);
 
             dt_pthread_mutex_unlock(&pipe->busy_mutex);
 
@@ -1032,7 +1153,7 @@ dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, void *
           // Lab color picking for module
           if(success_opencl && dev->gui_attached && pipe == dev->preview_pipe && // pick from preview pipe to get pixels outside the viewport
               module == dev->gui_module && // only modules with focus can pick
-              module->request_color_pick) // and they want to pick ;)
+              module->request_color_pick != DT_REQUEST_COLORPICK_OFF) // and they want to pick ;)
           {
             pixelpipe_picker(module, (float*)input, &roi_in, module->picked_color, module->picked_color_min, module->picked_color_max);
             pixelpipe_picker(module, (float*)(*output), roi_out, module->picked_output_color, module->picked_output_color_min, module->picked_output_color_max);
@@ -1218,7 +1339,7 @@ dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, void *
           // Lab color picking for module
           if(dev->gui_attached && pipe == dev->preview_pipe && // pick from preview pipe to get pixels outside the viewport
               module == dev->gui_module && // only modules with focus can pick
-              module->request_color_pick) // and they want to pick ;)
+              module->request_color_pick != DT_REQUEST_COLORPICK_OFF) // and they want to pick ;)
           {
             pixelpipe_picker(module, (float *)input, &roi_in, module->picked_color, module->picked_color_min, module->picked_color_max);
             pixelpipe_picker(module, (float *)(*output), roi_out, module->picked_output_color, module->picked_output_color_min, module->picked_output_color_max);
@@ -1329,7 +1450,7 @@ dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, void *
         // Lab color picking for module
         if(dev->gui_attached && pipe == dev->preview_pipe && // pick from preview pipe to get pixels outside the viewport
             module == dev->gui_module && // only modules with focus can pick
-            module->request_color_pick) // and they want to pick ;)
+            module->request_color_pick != DT_REQUEST_COLORPICK_OFF) // and they want to pick ;)
         {
           pixelpipe_picker(module, (float *)input, &roi_in, module->picked_color, module->picked_color_min, module->picked_color_max);
           pixelpipe_picker(module, (float *)(*output), roi_out, module->picked_output_color, module->picked_output_color_min, module->picked_output_color_max);
@@ -1410,7 +1531,7 @@ dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, void *
       // Lab color picking for module
       if(dev->gui_attached && pipe == dev->preview_pipe && // pick from preview pipe to get pixels outside the viewport
           module == dev->gui_module && // only modules with focus can pick
-          module->request_color_pick) // and they want to pick ;)
+          module->request_color_pick != DT_REQUEST_COLORPICK_OFF) // and they want to pick ;)
       {
         pixelpipe_picker(module, (float *)input, &roi_in, module->picked_color, module->picked_color_min, module->picked_color_max);
         pixelpipe_picker(module, (float *)(*output), roi_out, module->picked_output_color, module->picked_output_color_min, module->picked_output_color_max);
@@ -1477,7 +1598,7 @@ dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, void *
     // Lab color picking for module
     if(dev->gui_attached && pipe == dev->preview_pipe && // pick from preview pipe to get pixels outside the viewport
         module == dev->gui_module && // only modules with focus can pick
-        module->request_color_pick) // and they want to pick ;)
+        module->request_color_pick != DT_REQUEST_COLORPICK_OFF) // and they want to pick ;)
     {
       pixelpipe_picker(module, (float *)input, &roi_in, module->picked_color, module->picked_color_min, module->picked_color_max);
       pixelpipe_picker(module, (float *)(*output), roi_out, module->picked_output_color, module->picked_output_color_min, module->picked_output_color_max);
@@ -1508,12 +1629,14 @@ dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, void *
                (pixelpipe_flow & PIXELPIPE_FLOW_HISTOGRAM_ON_GPU ? "GPU" : pixelpipe_flow & PIXELPIPE_FLOW_HISTOGRAM_ON_CPU ? "CPU" : ""));
     }
 
-    dt_show_times(&start, "[dev_pixelpipe]", "processing `%s' on %s%s%s, blending on %s [%s]", module->name(),
+    gchar *module_label = dt_history_item_get_name(module);
+    dt_show_times(&start, "[dev_pixelpipe]", "processing `%s' on %s%s%s, blending on %s [%s]", module_label,
                   pixelpipe_flow & PIXELPIPE_FLOW_PROCESSED_ON_GPU ? "GPU" : pixelpipe_flow & PIXELPIPE_FLOW_PROCESSED_ON_CPU ? "CPU" : "",
                   pixelpipe_flow & PIXELPIPE_FLOW_PROCESSED_WITH_TILING ? " with tiling" : "",
                   (!(pixelpipe_flow & PIXELPIPE_FLOW_HISTOGRAM_NONE) && (module->request_histogram & DT_REQUEST_ON)) ? histogram_log : "",
                   pixelpipe_flow & PIXELPIPE_FLOW_BLENDED_ON_GPU ? "GPU" : pixelpipe_flow & PIXELPIPE_FLOW_BLENDED_ON_CPU ? "CPU" : "",
                   _pipe_type_to_str(pipe->type));
+    g_free(module_label);
     // in case we get this buffer from the cache, also get the processed max:
     for(int k=0; k<3; k++) piece->processed_maximum[k] = pipe->processed_maximum[k];
     dt_pthread_mutex_unlock(&pipe->busy_mutex);
@@ -1558,10 +1681,12 @@ dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, void *
             }
           }
         }
-        if(hasnan) fprintf(stderr, "[dev_pixelpipe] module `%s' outputs NaNs! [%s]\n", module->name(), _pipe_type_to_str(pipe->type));
-        if(hasinf) fprintf(stderr, "[dev_pixelpipe] module `%s' outputs non-finite floats! [%s]\n", module->name(), _pipe_type_to_str(pipe->type));
-        fprintf(stderr, "[dev_pixelpipe] module `%s' min: (%f; %f; %f) max: (%f; %f; %f) [%s]\n", module->name(),
+        gchar *module_label = dt_history_item_get_name(module);
+        if(hasnan) fprintf(stderr, "[dev_pixelpipe] module `%s' outputs NaNs! [%s]\n", module_label, _pipe_type_to_str(pipe->type));
+        if(hasinf) fprintf(stderr, "[dev_pixelpipe] module `%s' outputs non-finite floats! [%s]\n", module_label, _pipe_type_to_str(pipe->type));
+        fprintf(stderr, "[dev_pixelpipe] module `%s' min: (%f; %f; %f) max: (%f; %f; %f) [%s]\n", module_label,
                 min[0], min[1], min[2], max[0], max[1], max[2], _pipe_type_to_str(pipe->type));
+        g_free(module_label);
       }
       dt_pthread_mutex_unlock(&pipe->busy_mutex);
     }
@@ -1699,7 +1824,7 @@ post_process_collect_info:
         && (strcmp(module->op, "gamma") == 0) // only gamma provides meaningful RGB data
         && dev->gui_module
         && !strcmp(dev->gui_module->op, "colorout")
-        && dev->gui_module->request_color_pick
+        && dev->gui_module->request_color_pick != DT_REQUEST_COLORPICK_OFF
         && darktable.lib->proxy.colorpicker.picked_color_rgb_mean) // colorpicker module active
     {
       uint8_t *pixel = (uint8_t*)*output;
@@ -1833,7 +1958,7 @@ post_process_collect_info:
       // Constraining the area if the colorpicker is active in area mode
       if(dev->gui_module
           && !strcmp(dev->gui_module->op, "colorout")
-          && dev->gui_module->request_color_pick
+          && dev->gui_module->request_color_pick != DT_REQUEST_COLORPICK_OFF
           && darktable.lib->proxy.colorpicker.restrict_histogram)
       {
         if(darktable.lib->proxy.colorpicker.size == DT_COLORPICKER_SIZE_BOX)
@@ -1867,7 +1992,7 @@ post_process_collect_info:
         box[3] = roi_out->height-1;
       }
       dev->histogram_max = 0;
-      memset(dev->histogram, 0, sizeof(float)*4*64);
+      memset(dev->histogram, 0, sizeof(uint32_t)*4*64);
       for(int j=box[1]; j<=box[3]; j+=4) for(int i=box[0]; i<=box[2]; i+=4)
         {
           uint8_t rgb[3];
@@ -1909,7 +2034,8 @@ post_process_collect_info:
             const int out_x = MIN(x / bin_width, dev->histogram_waveform_width - 1);
             for(int k = 0; k < 3; k++)
             {
-              const int out_y = CLAMP(1.0 - (8.0/9.0) * rgb[k], 0.0, 1.0) * _height;
+              const float v = isnan(rgb[k]) ? 0.0f : rgb[k];   // catch NaNs as they don't convert well to integers
+              const int out_y = CLAMP(1.0 - (8.0/9.0) * v, 0.0, 1.0) * _height;
               uint32_t * const out = buf + (out_y * dev->histogram_waveform_width * 3 + out_x * 3 + k);
               (*out)++;
 //               mincol[k] = MIN(mincol[k], *out);

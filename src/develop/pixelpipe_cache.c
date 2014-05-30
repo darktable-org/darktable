@@ -34,11 +34,10 @@
 int dt_dev_pixelpipe_cache_init(dt_dev_pixelpipe_cache_t *cache, int entries, size_t size)
 {
   cache->entries = entries;
-  cache->data = (void **)malloc(sizeof(void *)*entries);
-  cache->size = (size_t *)malloc(sizeof(size_t)*entries);
-  cache->hash = (uint64_t *)malloc(sizeof(uint64_t)*entries);
-  cache->used = (int32_t *)malloc(sizeof(int32_t)*entries);
-  memset(cache->data,0,sizeof(void *)*entries);
+  cache->data = (void **)calloc(entries, sizeof(void *));
+  cache->size = (size_t *)calloc(entries, sizeof(size_t));
+  cache->hash = (uint64_t *)calloc(entries, sizeof(uint64_t));
+  cache->used = (int32_t *)calloc(entries, sizeof(int32_t));
   for(int k=0; k<entries; k++)
   {
     cache->data[k] = (void *)dt_alloc_align(16, size);
@@ -92,7 +91,7 @@ uint64_t dt_dev_pixelpipe_cache_hash(int imgid, const dt_iop_roi_t *roi, dt_dev_
     if(!(dev->gui_module && (dev->gui_module->operation_tags_filter() &  piece->module->operation_tags())))
     {
       hash = ((hash << 5) + hash) ^ piece->hash;
-      if(piece->module->request_color_pick)
+      if(piece->module->request_color_pick != DT_REQUEST_COLORPICK_OFF)
       {
         if(darktable.lib->proxy.colorpicker.size)
         {

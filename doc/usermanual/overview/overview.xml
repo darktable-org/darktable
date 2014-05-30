@@ -236,7 +236,7 @@
               location, e.g. if you want to do some experiments without compromising your
               original library.db. If the database file does not exist, darktable creates it for
               you. You may also give <quote>:memory:</quote> as a library file in which case the
-              database is kept in system memory - all changes are discarded when darktable
+              database is kept in system memory&nbsp;&ndash; all changes are discarded when darktable
               terminates.
             </para></listitem>
 
@@ -299,7 +299,7 @@
               darktable keeps a cache of image thumbnails for fast image preview and of
               precompiled OpenCL binaries for fast startup. By default the cache is located in
               <quote>$HOME/.cache/darktable/</quote>. There may exist multiple thumbnail caches
-              in parallel - one for each library file.
+              in parallel&nbsp;&ndash; one for each library file.
             </para></listitem>
 
           </varlistentry>
@@ -322,9 +322,9 @@
 
             <listitem><para>
               darktable supports a rich set of configuration parameters which the user defines
-              in <quote>darktablerc</quote> - darktable's configuration file in the user config
+              in <quote>darktablerc</quote>&nbsp;&ndash; darktable's configuration file in the user config
               directory. You may temporarily overwrite individual settings on the command line
-              with this option - however, these settings will not be stored in
+              with this option&nbsp;&ndash; however, these settings will not be stored in
               <quote>darktablerc</quote>.
             </para></listitem>
 
@@ -514,7 +514,7 @@
       <para>
         darktable consists of several views or modes. There are five available views as
         described in this section. You can switch between views by clicking the view name at the
-        top of the right panel - the active view is highlighted - or by using one of the key
+        top of the right panel&nbsp;&ndash; the active view is highlighted&nbsp;&ndash; or by using one of the key
         accelerators:
         <informaltable frame="none" width="60%">
           <tgroup cols="2" colsep="0" rowsep="0">
@@ -661,6 +661,10 @@
     <sect2 status="final" id="filmstrip_overview">
 
       <title>Filmstrip</title>
+
+      <indexterm>
+        <primary>filmstrip</primary>
+      </indexterm>
 
       <para>
         The filmstrip along the bottom shows the same images as lighttable, with respect to
@@ -848,7 +852,7 @@
           module offers an almost <quote>single-click</quote> solution to fight noise. From a
           user perspective the effect only depends on camera type and ISO value, both derived
           from EXIF data. All other settings are taken from a database of noise profiles that
-          the darktable team has collected - now covering already over 100 popular camera
+          the darktable team has collected&nbsp;&ndash; now covering already over 100 popular camera
           models. In addition you have several other options in darktable to reduce noise. There
           is <link linkend="raw_denoise"><emphasis>raw denoise</emphasis></link>,
           <link linkend="denoise_bilateral"><emphasis>denoising based on bilateral
@@ -958,8 +962,8 @@
           adjust overall color saturation. The <link linkend="color_zones"><emphasis>color
           zones</emphasis></link> module offers a much finer control to adjust saturation, or
           lightness, and even hue, in user defined zones. darktable's
-          <link linkend="tone_curve"><emphasis>tone curve</emphasis></link> module - in addition
-          to the classical adjustment of tonal values - gives you fine control over the colors
+          <link linkend="tone_curve"><emphasis>tone curve</emphasis></link> module&nbsp;&ndash; in addition
+          to the classical adjustment of tonal values&nbsp;&ndash; gives you fine control over the colors
           in an image. Finally, if you intend to convert an image into black &amp; white, a good
           starting point, with an easy to use and intuitive user interface, is offered by the
           <link linkend="monochrome"><emphasis>monochrome</emphasis></link> module.
@@ -1026,8 +1030,8 @@
       <para>
         The export is modularized into <emphasis>storage</emphasis> and
         <emphasis>format</emphasis>. darktable ships with several storage modules such as
-        <emphasis>save on disk</emphasis>, <emphasis>picasa</emphasis> and <emphasis>flickr
-        webalbum</emphasis> and more. Format modules are the actual image formats such as JPEG,
+        <emphasis>save on disk</emphasis>, various webalbums, a LaTeX photo book template
+        and more. Format modules are the actual image formats such as JPEG,
         PNG, TIFF, OpenEXR and more.
       </para>
 
