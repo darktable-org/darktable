@@ -95,7 +95,9 @@ RawImage OrfDecoder::decodeRawInternal() {
       ThrowRDE("ORF Decoder: Unsupported compression");
   } catch (TiffParserException) {
     // We're probably in an old packed ORF, try to decode it like that
-    ByteStream input(mFile->getData(offsets->getInt()), width*height*3/2);
+    uint32 off = offsets->getInt();
+    uint32 size = mFile->getSize() - off;
+    ByteStream input(mFile->getData(off), size);
     Decode12BitRawWithControl(input, width, height);
     return mRaw;
   }
@@ -125,14 +127,24 @@ void OrfDecoder::decodeOldORF(TiffIFD* raw) {
   uint32 height = raw->getEntry(IMAGELENGTH)->getInt();
   uint32 off = raw->getEntry(STRIPOFFSETS)->getInt();
 
+  if (!mFile->isValid(off))
+      ThrowRDE("ORF Decoder: Invalid image data offset, cannot decode.");
+
   mRaw->dim = iPoint2D(width, height);
   mRaw->createData();
-  ByteStream input(mFile->getData(off), width*height*2);
+  uint32 size = mFile->getSize() - off;
+  ByteStream input(mFile->getData(off), size);
 
-  if (raw->endian == little)
-    Decode12BitRawUnpacked(input, width, height);
-  else
-    Decode12BitRawBEunpackedLeftAligned(input, width, height);
+  if (size >= width*height*2) { // We're in an unpacked raw
+    if (raw->endian == little)
+      Decode12BitRawUnpacked(input, width, height);
+    else
+      Decode12BitRawBEunpackedLeftAligned(input, width, height);
+  } else if (size >= width*height*3/2) { // We're in a packed raw
+    Decode12BitSplitRaw(input, width, height);
+  } else {
+    ThrowRDE("ORF Decoder: Don't know how to handle the encoding in this file\n");
+  }
 }
 
 /* This is probably the slowest decoder of them all.
