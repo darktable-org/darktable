@@ -140,8 +140,8 @@ void OrfDecoder::decodeOldORF(TiffIFD* raw) {
       Decode12BitRawUnpacked(input, width, height);
     else
       Decode12BitRawBEunpackedLeftAligned(input, width, height);
-  } else if (size >= width*height*3/2) { // We're in a packed raw
-    Decode12BitSplitRaw(input, width, height);
+  } else if (size >= width*height*3/2) { // We're in one of those weird interlaced packed raws
+      Decode12BitRawBEInterlaced(input, width, height);
   } else {
     ThrowRDE("ORF Decoder: Don't know how to handle the encoding in this file\n");
   }

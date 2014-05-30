@@ -173,6 +173,9 @@ protected:
   /* Faster version for unpacking 12 bit MSB data */
   void Decode12BitRawBE(ByteStream &input, uint32 w, uint32 h);
 
+  /* Faster version for unpacking 12 bit MSB data with interlaced lines */
+  void Decode12BitRawBEInterlaced(ByteStream &input, uint32 w, uint32 h);
+
   /* Faster version for reading unpacked 12 bit MSB data */
   void Decode12BitRawBEunpacked(ByteStream &input, uint32 w, uint32 h);
 
