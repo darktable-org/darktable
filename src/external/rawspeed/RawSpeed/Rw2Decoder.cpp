@@ -75,7 +75,7 @@ RawImage Rw2Decoder::decodeRawInternal() {
       Decode12BitRawUnpacked(*input_start, width, height);
     } else if (size >= width*height*3/2) {
       // It's a packed format
-      DecodePanasonicPackedRaw(*input_start, width, height);
+      Decode12BitRawWithControl(*input_start, width, height);
     } else {
       // It's using the new .RW2 decoding method
       load_flags = 0;
@@ -107,31 +107,6 @@ RawImage Rw2Decoder::decodeRawInternal() {
     mRaw->blackLevelSeparate[3] = raw->getEntry((TiffTag)0x1e)->getInt() + 15;
   }
   return mRaw;
-}
-
-void Rw2Decoder::DecodePanasonicPackedRaw(ByteStream &input, uint32 w, uint32 h) {
-  uchar8* data = mRaw->getData();
-  uint32 pitch = mRaw->pitch;
-  const uchar8 *in = input.getData();
-  if (input.getRemainSize() < ((w*12/8)*h)) {
-    if ((uint32)input.getRemainSize() > (w*12/8))
-      h = input.getRemainSize() / (w*12/8) - 1;
-    else
-      ThrowIOE("readUncompressedRaw: Not enough data to decode a single line. Image file truncated.");
-  }
-  uint32 x;
-  for (uint32 y = 0; y < h; y++) {
-    ushort16* dest = (ushort16*) & data[y*pitch];
-    for (x = 0 ; x < w; x += 2) {
-      uint32 g1 = *in++;
-      uint32 g2 = *in++;
-      dest[x] = g1 | ((g2 & 0xf) << 8);
-      uint32 g3 = *in++;
-      dest[x+1] = (g2 >> 4) | (g3 << 4);
-      if ((x % 10) == 8)
-        in++;
-    }
-  }
 }
 
 void Rw2Decoder::DecodeRw2() {

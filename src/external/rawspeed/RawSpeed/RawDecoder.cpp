@@ -205,6 +205,31 @@ void RawDecoder::Decode12BitRaw(ByteStream &input, uint32 w, uint32 h) {
   }
 }
 
+void RawDecoder::Decode12BitRawWithControl(ByteStream &input, uint32 w, uint32 h) {
+  uchar8* data = mRaw->getData();
+  uint32 pitch = mRaw->pitch;
+  const uchar8 *in = input.getData();
+  if (input.getRemainSize() < ((w*12/8)*h)) {
+    if ((uint32)input.getRemainSize() > (w*12/8))
+      h = input.getRemainSize() / (w*12/8) - 1;
+    else
+      ThrowIOE("readUncompressedRaw: Not enough data to decode a single line. Image file truncated.");
+  }
+  uint32 x;
+  for (uint32 y = 0; y < h; y++) {
+    ushort16* dest = (ushort16*) & data[y*pitch];
+    for (x = 0 ; x < w; x += 2) {
+      uint32 g1 = *in++;
+      uint32 g2 = *in++;
+      dest[x] = g1 | ((g2 & 0xf) << 8);
+      uint32 g3 = *in++;
+      dest[x+1] = (g2 >> 4) | (g3 << 4);
+      if ((x % 10) == 8)
+        in++;
+    }
+  }
+}
+
 void RawDecoder::Decode12BitRawBE(ByteStream &input, uint32 w, uint32 h) {
   uchar8* data = mRaw->getData();
   uint32 pitch = mRaw->pitch;
@@ -217,6 +242,39 @@ void RawDecoder::Decode12BitRawBE(ByteStream &input, uint32 w, uint32 h) {
   }
   for (uint32 y = 0; y < h; y++) {
     ushort16* dest = (ushort16*) & data[y*pitch];
+    for (uint32 x = 0 ; x < w; x += 2) {
+      uint32 g1 = *in++;
+      uint32 g2 = *in++;
+      dest[x] = (g1 << 4) | (g2 >> 4);
+      uint32 g3 = *in++;
+      dest[x+1] = ((g2 & 0x0f) << 8) | g3;
+    }
+  }
+}
+
+void RawDecoder::Decode12BitRawBEInterlaced(ByteStream &input, uint32 w, uint32 h) {
+  uchar8* data = mRaw->getData();
+  uint32 pitch = mRaw->pitch;
+  const uchar8 *in = input.getData();
+  if (input.getRemainSize() < ((w*12/8)*h)) {
+    if ((uint32)input.getRemainSize() > (w*12/8))
+      h = input.getRemainSize() / (w*12/8) - 1;
+    else
+      ThrowIOE("readUncompressedRaw: Not enough data to decode a single line. Image file truncated.");
+  }
+
+  uint32 half = (h+1) >> 1;
+  uint32 y = 0;
+  for (uint32 row = 0; row < h; row++) {
+    y = row % half * 2 + row / half;
+    ushort16* dest = (ushort16*) & data[y*pitch];
+    if (y == 1) {
+      // The second field starts at a 2048 byte aligment
+      uint32 offset = ((half*w*3/2 >> 11) + 1) << 11;
+      if (offset < 0 || offset > input.getRemainSize())
+        ThrowIOE("Decode12BitSplitRaw: Trying to jump to invalid offset %d", offset);
+      in = input.getData() + offset;
+    }
     for (uint32 x = 0 ; x < w; x += 2) {
       uint32 g1 = *in++;
       uint32 g2 = *in++;
@@ -247,6 +305,26 @@ void RawDecoder::Decode12BitRawBEunpacked(ByteStream &input, uint32 w, uint32 h)
   }
 }
 
+void RawDecoder::Decode12BitRawBEunpackedLeftAligned(ByteStream &input, uint32 w, uint32 h) {
+  uchar8* data = mRaw->getData();
+  uint32 pitch = mRaw->pitch;
+  const uchar8 *in = input.getData();
+  if (input.getRemainSize() < w*h*2) {
+    if ((uint32)input.getRemainSize() > w*2)
+      h = input.getRemainSize() / (w*2) - 1;
+    else
+      ThrowIOE("readUncompressedRaw: Not enough data to decode a single line. Image file truncated.");
+  }
+  for (uint32 y = 0; y < h; y++) {
+    ushort16* dest = (ushort16*) & data[y*pitch];
+    for (uint32 x = 0 ; x < w; x += 1) {
+      uint32 g1 = *in++;
+      uint32 g2 = *in++;
+      dest[x] = (((g1 << 8) | (g2 & 0xf0)) >> 4);
+    }
+  }
+}
+
 void RawDecoder::Decode14BitRawBEunpacked(ByteStream &input, uint32 w, uint32 h) {
   uchar8* data = mRaw->getData();
   uint32 pitch = mRaw->pitch;
@@ -262,7 +340,7 @@ void RawDecoder::Decode14BitRawBEunpacked(ByteStream &input, uint32 w, uint32 h)
     for (uint32 x = 0 ; x < w; x += 1) {
       uint32 g1 = *in++;
       uint32 g2 = *in++;
-      dest[x] = (g1 << 8) | g2;
+      dest[x] = ((g1 & 0x3f) << 8) | g2;
     }
   }
 }

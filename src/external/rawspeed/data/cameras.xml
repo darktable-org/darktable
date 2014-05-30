@@ -1525,6 +1525,16 @@
 			<Hint name="coolpixsplit" value=""/>
 		</Hints>
 	</Camera>
+	<Camera make="OLYMPUS OPTICAL CO.,LTD" model="C5050Z">
+		<CFA width="2" height="2">
+			<Color x="0" y="0">BLUE</Color>
+			<Color x="1" y="0">GREEN</Color>
+			<Color x="0" y="1">GREEN</Color>
+			<Color x="1" y="1">RED</Color>
+		</CFA>
+		<Crop x="0" y="0" width="0" height="0"/>
+		<Sensor black="0" white="4095"/>
+	</Camera>
 	<Camera make="OLYMPUS CORPORATION" model="C8080WZ">
 		<CFA width="2" height="2">
 			<Color x="0" y="0">BLUE</Color>
@@ -1723,7 +1733,7 @@
 			<Color x="1" y="1">BLUE</Color>
 		</CFA>
 		<Crop x="0" y="0" width="2576" height="1924"/>
-		<Sensor black="32" white="1023"/>
+		<Sensor black="0" white="4092"/>
 	</Camera>
 	<Camera make="OLYMPUS IMAGING CORP." model="E-M1">
 		<CFA width="2" height="2">

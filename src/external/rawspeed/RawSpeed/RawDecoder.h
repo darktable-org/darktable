@@ -167,12 +167,21 @@ protected:
   /* Faster version for unpacking 12 bit LSB data */
   void Decode12BitRaw(ByteStream &input, uint32 w, uint32 h);
 
+  /* Faster version for unpacking 12 bit LSB data with a control byte every 10 pixels */
+  void Decode12BitRawWithControl(ByteStream &input, uint32 w, uint32 h);
+
   /* Faster version for unpacking 12 bit MSB data */
   void Decode12BitRawBE(ByteStream &input, uint32 w, uint32 h);
+
+  /* Faster version for unpacking 12 bit MSB data with interlaced lines */
+  void Decode12BitRawBEInterlaced(ByteStream &input, uint32 w, uint32 h);
 
   /* Faster version for reading unpacked 12 bit MSB data */
   void Decode12BitRawBEunpacked(ByteStream &input, uint32 w, uint32 h);
 
+  /* Faster version for reading unpacked 12 bit MSB data that is left aligned (needs >> 4 shift) */
+  void Decode12BitRawBEunpackedLeftAligned(ByteStream &input, uint32 w, uint32 h);
+  
   /* Faster version for reading unpacked 14 bit MSB data */
   void Decode14BitRawBEunpacked(ByteStream &input, uint32 w, uint32 h);
 

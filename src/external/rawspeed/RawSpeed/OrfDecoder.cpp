@@ -55,7 +55,13 @@ RawImage OrfDecoder::decodeRawInternal() {
   TiffEntry *counts = raw->getEntry(STRIPBYTECOUNTS);
 
   if (offsets->count != 1) {
-    ThrowRDE("ORF Decoder: Multiple Strips found: %u", offsets->count);
+    // We're in an old-school ORF file, decode it separately
+    try {
+      decodeOldORF(raw);
+    } catch (IOException &e) {
+       mRaw->setError(e.what());
+    }
+    return mRaw;
   }
   if (counts->count != offsets->count) {
     ThrowRDE("ORF Decoder: Byte count number does not match strip size: count:%u, strips:%u ", counts->count, offsets->count);
@@ -88,7 +94,12 @@ RawImage OrfDecoder::decodeRawInternal() {
     if (oly->type == TIFF_UNDEFINED)
       ThrowRDE("ORF Decoder: Unsupported compression");
   } catch (TiffParserException) {
-    ThrowRDE("ORF Decoder: Unable to parse makernote");
+    // We're probably in an old packed ORF, try to decode it like that
+    uint32 off = offsets->getInt();
+    uint32 size = mFile->getSize() - off;
+    ByteStream input(mFile->getData(off), size);
+    Decode12BitRawWithControl(input, width, height);
+    return mRaw;
   }
 
   // We add 3 bytes slack, since the bitpump might be a few bytes ahead.
@@ -110,6 +121,32 @@ RawImage OrfDecoder::decodeRawInternal() {
 
   return mRaw;
 }
+
+void OrfDecoder::decodeOldORF(TiffIFD* raw) {
+  uint32 width = raw->getEntry(IMAGEWIDTH)->getInt();
+  uint32 height = raw->getEntry(IMAGELENGTH)->getInt();
+  uint32 off = raw->getEntry(STRIPOFFSETS)->getInt();
+
+  if (!mFile->isValid(off))
+      ThrowRDE("ORF Decoder: Invalid image data offset, cannot decode.");
+
+  mRaw->dim = iPoint2D(width, height);
+  mRaw->createData();
+  uint32 size = mFile->getSize() - off;
+  ByteStream input(mFile->getData(off), size);
+
+  if (size >= width*height*2) { // We're in an unpacked raw
+    if (raw->endian == little)
+      Decode12BitRawUnpacked(input, width, height);
+    else
+      Decode12BitRawBEunpackedLeftAligned(input, width, height);
+  } else if (size >= width*height*3/2) { // We're in one of those weird interlaced packed raws
+      Decode12BitRawBEInterlaced(input, width, height);
+  } else {
+    ThrowRDE("ORF Decoder: Don't know how to handle the encoding in this file\n");
+  }
+}
+
 /* This is probably the slowest decoder of them all.
  * I cannot see any way to effectively speed up the prediction
  * phase, which is by far the slowest part of this algorithm.

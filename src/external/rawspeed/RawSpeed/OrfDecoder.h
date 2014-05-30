@@ -42,6 +42,7 @@ public:
   virtual TiffIFD* getRootIFD() {return mRootIFD;}
 private:
   void decodeCompressed(ByteStream& s,uint32 w, uint32 h);
+  void decodeOldORF(TiffIFD* raw);
   TiffIFD *mRootIFD;
 };
 
