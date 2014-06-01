@@ -920,6 +920,19 @@ void dt_iop_reload_defaults(dt_iop_module_t *module)
     _iop_gui_update_header(module);
 }
 
+void dt_iop_cleanup_histogram(gpointer data, gpointer user_data)
+{
+  dt_iop_module_t *module = (dt_iop_module_t *)data;
+
+  if(module->histogram)
+  {
+    free(module->histogram);
+    module->histogram = NULL;
+  }
+  module->histogram_bins_count = 0;
+  module->histogram_pixels = 0;
+}
+
 static void
 init_presets(dt_iop_module_so_t *module_so)
 {
