@@ -19,6 +19,7 @@
 #include <stddef.h>
 #include <stdint.h>
 #include <xmmintrin.h>
+#include <stdlib.h>
 #include <assert.h>
 
 #include "common/darktable.h"
@@ -240,8 +241,7 @@ dt_histogram_worker(const dt_dev_histogram_params_t *histogram_params,
 
   const size_t bins_total = histogram_params->bins_count * 4;
   const size_t buf_size = bins_total * sizeof(uint32_t);
-  void *partial_hists = dt_alloc_align(16, buf_size * nthreads);
-  memset (partial_hists, 0, buf_size * nthreads);
+  void *partial_hists = calloc(nthreads, buf_size);
 
   const dt_iop_roi_t *roi = histogram_params->roi;
 
@@ -255,9 +255,8 @@ dt_histogram_worker(const dt_dev_histogram_params_t *histogram_params,
   }
 
 #ifdef _OPENMP
-  *histogram = dt_alloc_align(16, buf_size);
+  *histogram = calloc(1, buf_size);
   uint32_t *hist = *histogram;
-  memset (hist, 0, buf_size);
 
   #pragma omp parallel for schedule(static) default(none) shared(hist,partial_hists)
   for(size_t k = 0; k < bins_total; k++)
