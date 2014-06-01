@@ -449,6 +449,12 @@ void dt_iop_load_default_params(dt_iop_module_t *module);
 /** reloads certain gui/param defaults when the image was switched. */
 void dt_iop_reload_defaults(dt_iop_module_t *module);
 
+/*
+ * must be called in dt_dev_change_image() to fix wrong histogram in levels
+ * just after switching images and before full redraw
+ */
+void dt_iop_cleanup_histogram(gpointer data, gpointer user_data);
+
 /** let plugins have breakpoints: */
 int dt_iop_breakpoint(struct dt_develop_t *dev, struct dt_dev_pixelpipe_t *pipe);
 

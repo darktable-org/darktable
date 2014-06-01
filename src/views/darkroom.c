@@ -699,6 +699,9 @@ dt_dev_change_image(dt_develop_t *dev, const uint32_t imgid)
   /* last set the group to update visibility of iop modules for new pipe */
   dt_dev_modulegroups_set(dev,dt_conf_get_int("plugins/darkroom/groups"));
 
+  /* cleanup histograms */
+  g_list_foreach(dev->iop, (GFunc)dt_iop_cleanup_histogram, (gpointer)NULL);
+
   // make signals work again, but only after focus event,
   // to avoid crop/rotate for example to add another history item.
   darktable.gui->reset = 0;
