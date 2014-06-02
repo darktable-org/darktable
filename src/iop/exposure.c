@@ -86,6 +86,7 @@ typedef struct dt_iop_exposure_gui_data_t
   GList *deflicker_histogram_sources;
   GtkWidget *deflicker_histogram_source;
   uint32_t *deflicker_histogram; //used to cache histogram of source file
+  dt_dev_histogram_stats_t deflicker_histogram_stats;
   gboolean reprocess_on_next_expose;
 }
 dt_iop_exposure_gui_data_t;
@@ -216,7 +217,8 @@ void init_presets (dt_iop_module_so_t *self)
 }
 
 static void
-deflicker_prepare_histogram(dt_iop_module_t *self, uint32_t **histogram)
+deflicker_prepare_histogram(dt_iop_module_t *self, uint32_t **histogram,
+                            dt_dev_histogram_stats_t *histogram_stats)
 {
   dt_mipmap_buffer_t buf;
   dt_mipmap_cache_read_get(darktable.mipmap_cache, &buf, self->dev->image_storage.id, DT_MIPMAP_FULL, DT_MIPMAP_BLOCKING);
@@ -229,13 +231,14 @@ deflicker_prepare_histogram(dt_iop_module_t *self, uint32_t **histogram)
     return;
   }
 
-  dt_dev_histogram_params_t histogram_params;
-  memcpy(&histogram_params, &self->histogram_params, sizeof(dt_dev_histogram_params_t));
+  dt_dev_histogram_collection_params_t histogram_params;
+  memcpy(&histogram_params, &self->histogram_params, sizeof(dt_dev_histogram_collection_params_t));
 
   dt_iop_roi_t roi = {0, 0, img->width, img->height, 1.0f};
   histogram_params.roi = &roi;
 
-  dt_histogram_worker(&histogram_params, buf.buf, histogram, dt_histogram_helper_cs_RAW_uint16);
+  dt_histogram_worker(&histogram_params, histogram_stats, buf.buf, histogram, dt_histogram_helper_cs_RAW_uint16);
+  histogram_stats->ch = 1u;
 
   dt_mipmap_cache_read_release(darktable.mipmap_cache, &buf);
 }
@@ -250,22 +253,26 @@ static float raw_to_ev(uint32_t raw, uint32_t black_level, uint32_t white_level)
   return raw_ev;
 }
 
-static int compute_correction(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const uint32_t * const histogram, int ch, float *correction)
+static int
+compute_correction(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
+                   const uint32_t *const histogram,
+                   const dt_dev_histogram_stats_t *const histogram_stats,
+                   float *correction)
 {
   dt_iop_exposure_data_t *d = (dt_iop_exposure_data_t *)piece->data;
 
   if(histogram == NULL) return 1;
 
-  uint32_t total = ch*self->histogram_pixels;
+  uint32_t total = histogram_stats->ch*histogram_stats->pixels;
 
   float thr = (total * d->deflicker_percentile / 100.0f) - 2; // 50% => median; allow up to 2 stuck pixels
   uint32_t n = 0;
   uint32_t raw = 0;
   gboolean found = FALSE;
 
-  for(uint32_t i=0; i < self->histogram_params.bins_count; i++)
+  for(uint32_t i=0; i < histogram_stats->bins_count; i++)
   {
-    for(int k=0; k < ch; k++)
+    for(uint32_t k=0; k < histogram_stats->ch; k++)
       n += histogram[4*i+k];
 
     if (!found && (n >= thr))
@@ -293,7 +300,7 @@ static void commit_params_late (struct dt_iop_module_t *self, dt_dev_pixelpipe_i
 
   if(d->mode == EXPOSURE_MODE_DEFLICKER)
   {
-    compute_correction(self, piece, self->histogram, 3, &d->exposure);
+    compute_correction(self, piece, self->histogram, &self->histogram_stats, &d->exposure);
   }
 }
 
@@ -380,7 +387,7 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
   self->request_histogram        |=  (DT_REQUEST_ONLY_IN_GUI);
   self->request_histogram_source  =  (DT_DEV_PIXELPIPE_PREVIEW);
 
-  gboolean histogram_is_good = ((self->histogram_bins_count == 16384)
+  gboolean histogram_is_good = ((self->histogram_stats.bins_count == 16384)
                                 && (self->histogram != NULL));
 
   d->deflicker_percentile = p->deflicker_percentile;
@@ -393,13 +400,14 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
       if(self->dev->gui_attached)
       {
         // histogram is precomputed and cached
-        compute_correction(self, piece, g->deflicker_histogram, 1, &d->exposure);
+        compute_correction(self, piece, g->deflicker_histogram, &g->deflicker_histogram_stats, &d->exposure);
       }
       else
       {
         uint32_t *histogram = NULL;
-        deflicker_prepare_histogram(self, &histogram);
-        compute_correction(self, piece, histogram, 1, &d->exposure);
+        dt_dev_histogram_stats_t histogram_stats;
+        deflicker_prepare_histogram(self, &histogram, &histogram_stats);
+        compute_correction(self, piece, histogram, &histogram_stats, &d->exposure);
         if(histogram != NULL)
           free(histogram);
       }
@@ -546,7 +554,7 @@ void reload_defaults(dt_iop_module_t *module)
     }
 
     if(dt_image_is_raw(&module->dev->image_storage))
-      deflicker_prepare_histogram(module, &(g->deflicker_histogram));
+      deflicker_prepare_histogram(module, &g->deflicker_histogram, &g->deflicker_histogram_stats);
   }
 }
 

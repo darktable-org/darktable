@@ -319,22 +319,17 @@ static void
 histogram_collect(dt_iop_module_t *module, const void *pixel, const dt_iop_roi_t *roi,
                   uint32_t **histogram, uint32_t *histogram_max)
 {
-  dt_dev_histogram_params_t *histogram_params = (dt_dev_histogram_params_t*)malloc(sizeof(dt_dev_histogram_params_t));
-  memcpy(histogram_params, &module->histogram_params, sizeof(dt_dev_histogram_params_t));
+  dt_dev_histogram_collection_params_t histogram_params;
+  memcpy(&histogram_params, &module->histogram_params, sizeof(dt_dev_histogram_collection_params_t));
 
   //if the current module does did not specified its own ROI, use the full ROI
-  if(histogram_params->roi == NULL)
-    histogram_params->roi = roi;
+  if(histogram_params.roi == NULL)
+    histogram_params.roi = roi;
 
   const dt_iop_colorspace_type_t cst = dt_iop_module_colorspace(module);
 
-  dt_histogram_helper(histogram_params, cst, pixel, histogram);
-  dt_histogram_max_helper(histogram_params, cst, histogram, histogram_max);
-
-  module->histogram_bins_count = histogram_params->bins_count;
-  module->histogram_pixels = (roi->width - roi->x) * (roi->height - roi->y);
-
-  free(histogram_params);
+  dt_histogram_helper(&histogram_params, &module->histogram_stats, cst, pixel, histogram);
+  dt_histogram_max_helper(&module->histogram_stats, cst, histogram, histogram_max);
 }
 
 #ifdef HAVE_OPENCL
@@ -364,22 +359,18 @@ histogram_collect_cl(int devid, dt_iop_module_t *module, cl_mem img, const dt_io
     return;
   }
 
-  dt_dev_histogram_params_t *histogram_params = (dt_dev_histogram_params_t*)malloc(sizeof(dt_dev_histogram_params_t));
-  memcpy(histogram_params, &module->histogram_params, sizeof(dt_dev_histogram_params_t));
+  dt_dev_histogram_collection_params_t histogram_params;
+  memcpy(&histogram_params, &module->histogram_params, sizeof(dt_dev_histogram_collection_params_t));
 
   //if the current module does did not specified its own ROI, use the full ROI
-  if(histogram_params->roi == NULL)
-    histogram_params->roi = roi;
+  if(histogram_params.roi == NULL)
+    histogram_params.roi = roi;
 
   const dt_iop_colorspace_type_t cst = dt_iop_module_colorspace(module);
 
-  dt_histogram_helper(histogram_params, cst, pixel, histogram);
-  dt_histogram_max_helper(histogram_params, cst, histogram, histogram_max);
+  dt_histogram_helper(&histogram_params, &module->histogram_stats, cst, pixel, histogram);
+  dt_histogram_max_helper(&module->histogram_stats, cst, histogram, histogram_max);
 
-  module->histogram_bins_count = histogram_params->bins_count;
-  module->histogram_pixels = (roi->width - roi->x) * (roi->height - roi->y);
-
-  free(histogram_params);
   if(tmpbuf) dt_free_align(tmpbuf);
 }
 #endif

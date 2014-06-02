@@ -191,7 +191,7 @@ static void dt_iop_levels_compute_levels_automatic(dt_iop_module_t *self, dt_dev
 
   if(self->histogram == NULL) return;
 
-  uint32_t total = self->histogram_pixels;
+  uint32_t total = self->histogram_stats.pixels;
 
   float thr[3];
   for(int k=0; k < 3; k++)
@@ -202,7 +202,7 @@ static void dt_iop_levels_compute_levels_automatic(dt_iop_module_t *self, dt_dev
 
   // find min and max levels
   uint32_t n = 0;
-  for(uint32_t i=0; i < self->histogram_bins_count; i++)
+  for(uint32_t i=0; i < self->histogram_stats.bins_count; i++)
   {
     n += self->histogram[4*i];
 
@@ -210,7 +210,7 @@ static void dt_iop_levels_compute_levels_automatic(dt_iop_module_t *self, dt_dev
     {
       if (isnan(d->levels[k]) && (n >= thr[k]))
       {
-        d->levels[k] = (float)i / (float)(self->histogram_bins_count-1);
+        d->levels[k] = (float)i / (float)(self->histogram_stats.bins_count-1);
       }
     }
   }
@@ -371,7 +371,7 @@ void commit_params (dt_iop_module_t *self, dt_iop_params_t *p1,
   self->request_histogram_source  =  (DT_DEV_PIXELPIPE_PREVIEW);
   self->histogram_params.bins_count = 64;
 
-  gboolean histogram_is_good = ((self->histogram_bins_count == 16384)
+  gboolean histogram_is_good = ((self->histogram_stats.bins_count == 16384)
                                 && (self->histogram != NULL));
 
   if(p->mode == LEVELS_MODE_AUTOMATIC)
