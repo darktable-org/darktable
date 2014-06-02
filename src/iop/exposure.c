@@ -229,14 +229,13 @@ deflicker_prepare_histogram(dt_iop_module_t *self, uint32_t **histogram)
     return;
   }
 
-  dt_dev_histogram_params_t *histogram_params = (dt_dev_histogram_params_t*)malloc(sizeof(dt_dev_histogram_params_t));
-  memcpy(histogram_params, &self->histogram_params, sizeof(dt_dev_histogram_params_t));
+  dt_dev_histogram_params_t histogram_params;
+  memcpy(&histogram_params, &self->histogram_params, sizeof(dt_dev_histogram_params_t));
 
   dt_iop_roi_t roi = {0, 0, img->width, img->height, 1.0f};
-  histogram_params->roi = &roi;
+  histogram_params.roi = &roi;
 
-  dt_histogram_worker(histogram_params, buf.buf, histogram, dt_histogram_helper_cs_RAW_uint16);
-  free(histogram_params);
+  dt_histogram_worker(&histogram_params, buf.buf, histogram, dt_histogram_helper_cs_RAW_uint16);
 
   dt_mipmap_cache_read_release(darktable.mipmap_cache, &buf);
 }
@@ -449,6 +448,7 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
 void init_pipe (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
   piece->data = malloc(sizeof(dt_iop_exposure_data_t));
+  self->commit_params(self, self->default_params, pipe, piece);
 }
 
 void cleanup_pipe (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
