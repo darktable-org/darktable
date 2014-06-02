@@ -294,6 +294,10 @@ compute_correction(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
   return 1;
 }
 
+/*
+ * WARNING: unlike commit_params, which is thread safe wrt gui thread and
+ * pipes, this function lives in the pipeline thread, and NOT thread safe!
+ */
 static void commit_params_late (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece)
 {
   dt_iop_exposure_data_t *d = (dt_iop_exposure_data_t *)piece->data;

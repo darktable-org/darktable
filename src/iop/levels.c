@@ -237,6 +237,10 @@ static void compute_lut(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece)
   }
 }
 
+/*
+ * WARNING: unlike commit_params, which is thread safe wrt gui thread and
+ * pipes, this function lives in the pipeline thread, and NOT thread safe!
+ */
 static void commit_params_late(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece)
 {
   dt_iop_levels_data_t *d = (dt_iop_levels_data_t *)piece->data;
