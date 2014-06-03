@@ -223,7 +223,7 @@ void dt_focus_draw_clusters(
     int imgid,
     int buffer_width,
     int buffer_height,
-    int orientation,
+    dt_image_orientation_t orientation,
     dt_focus_cluster_t *focus,
     int frows,
     int fcols)
@@ -233,7 +233,7 @@ void dt_focus_draw_clusters(
   cairo_translate(cr, width/2.0, height/2.0f);
 
   int wd = buffer_width, ht = buffer_height;
-  if(orientation & 4)
+  if(orientation & ORIENTATION_SWAP_XY)
     wd = buffer_height, ht = buffer_width;
 
   // array with cluster positions
@@ -243,15 +243,15 @@ void dt_focus_draw_clusters(
     const float stddevx = sqrtf(focus[k].x2 - focus[k].x*focus[k].x);
     const float stddevy = sqrtf(focus[k].y2 - focus[k].y*focus[k].y);
     float x = focus[k].x, y = focus[k].y;
-    if(orientation & 1)
+    if(orientation & ORIENTATION_FLIP_Y)
     {
       x = buffer_width - 1 - x;
     }
-    if(orientation & 2)
+    if(orientation & ORIENTATION_FLIP_X)
     {
       y = buffer_height - 1 - y;
     }
-    if(orientation & 4)
+    if(orientation & ORIENTATION_SWAP_XY)
     {
       pos[2*k + 0] = y;
       pos[2*k + 1] = x;

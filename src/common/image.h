@@ -83,13 +83,33 @@ typedef struct dt_image_raw_parameters_t
 }
 dt_image_raw_parameters_t;
 
+typedef enum dt_image_orientation_t
+{
+  ORIENTATION_NULL    = -1,    //-1, or autodetect
+  ORIENTATION_NONE    =  0,    // 0
+  ORIENTATION_FLIP_Y  =  1<<0, // 1
+  ORIENTATION_FLIP_X  =  1<<1, // 2
+  ORIENTATION_SWAP_XY =  1<<2, // 4
+
+  /* ClockWise rotation == "-"; CounterClockWise rotation == "+" */
+  ORIENTATION_FLIP_HORIZONTALLY = ORIENTATION_FLIP_Y,                       //1
+  ORIENTATION_FLIP_VERTICALLY   = ORIENTATION_FLIP_X,                       //2
+  ORIENTATION_ROTATE_180_DEG    = ORIENTATION_FLIP_Y | ORIENTATION_FLIP_X,  //3
+  ORIENTATION_400   /* ??? */   = ORIENTATION_SWAP_XY,                      //4
+  ORIENTATION_ROTATE_CCW_90_DEG = ORIENTATION_FLIP_Y | ORIENTATION_SWAP_XY, //5
+  ORIENTATION_ROTATE_CW_90_DEG  = ORIENTATION_FLIP_X | ORIENTATION_SWAP_XY, //6
+  ORIENTATION_421   /* ??? */   = ORIENTATION_FLIP_Y | ORIENTATION_FLIP_X
+                                  | ORIENTATION_SWAP_XY                     //7
+}
+dt_image_orientation_t;
+
 // TODO: add color labels and such as cachable
 // __attribute__ ((aligned (128)))
 typedef struct dt_image_t
 {
   // minimal exif data here (all in multiples of 4-byte to interface nicely with c++):
   int32_t exif_inited;
-  int32_t orientation;
+  dt_image_orientation_t orientation;
   float exif_exposure;
   float exif_aperture;
   float exif_iso;
@@ -170,9 +190,9 @@ void dt_image_set_location(const int32_t imgid, double lon, double lat);
 /** returns 1 if there is history data found for this image, 0 else. */
 int dt_image_altered(const uint32_t imgid);
 /** returns the orientation bits of the image, exif or user override, if set. */
-static inline int dt_image_orientation(const dt_image_t *img)
+static inline dt_image_orientation_t dt_image_orientation(const dt_image_t *img)
 {
-  return img->orientation > 0 ? img->orientation : 0;
+  return img->orientation != ORIENTATION_NULL ? img->orientation : ORIENTATION_NONE;
 }
 /** returns the filter string for the demosaic pattern. */
 static inline uint32_t
@@ -208,29 +228,29 @@ dt_image_filter(const dt_image_t *img)
   return img->filters;
 }
 /** return the raw orientation, from jpg orientation. */
-static inline int
+static inline dt_image_orientation_t
 dt_image_orientation_to_flip_bits(const int orient)
 {
   switch(orient)
   {
     case 1:
-      return 0 | 0 | 0;
+      return ORIENTATION_NONE;
     case 2:
-      return 0 | 2 | 0;
+      return ORIENTATION_FLIP_VERTICALLY;
     case 3:
-      return 0 | 2 | 1;
+      return ORIENTATION_ROTATE_180_DEG;
     case 4:
-      return 0 | 0 | 1;
+      return ORIENTATION_FLIP_HORIZONTALLY;
     case 5:
-      return 4 | 0 | 0;
+      return ORIENTATION_400; // ???
     case 6:
-      return 4 | 2 | 0;
+      return ORIENTATION_ROTATE_CW_90_DEG;
     case 7:
-      return 4 | 2 | 1;
+      return ORIENTATION_421; // ???
     case 8:
-      return 4 | 0 | 1;
+      return ORIENTATION_ROTATE_CCW_90_DEG;
     default:
-      return 0;
+      return ORIENTATION_NONE;
   }
 }
 

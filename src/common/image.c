@@ -301,7 +301,7 @@ void dt_image_flip(const int32_t imgid, const int32_t cw)
   // this is light table only:
   const dt_view_t *cv = dt_view_manager_get_current_view(darktable.view_manager);
   if(darktable.develop->image_storage.id == imgid && cv->view((dt_view_t*)cv) == DT_VIEW_DARKROOM) return;
-  int32_t orientation = 0;
+  dt_image_orientation_t orientation = ORIENTATION_NONE;
   sqlite3_stmt *stmt;
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
                               "select * from history where imgid = ?1 and operation = 'flip' and "
@@ -317,17 +317,17 @@ void dt_image_flip(const int32_t imgid, const int32_t cw)
 
   if(cw == 1)
   {
-    if(orientation & 4) orientation ^= 1;
-    else                orientation ^= 2; // flip x
+    if(orientation & ORIENTATION_SWAP_XY) orientation ^= ORIENTATION_FLIP_Y;
+    else                                  orientation ^= ORIENTATION_FLIP_X;
   }
   else
   {
-    if(orientation & 4) orientation ^= 2;
-    else                orientation ^= 1; // flip y
+    if(orientation & ORIENTATION_SWAP_XY) orientation ^= ORIENTATION_FLIP_X;
+    else                                  orientation ^= ORIENTATION_FLIP_Y;
   }
-  orientation ^= 4;             // flip axes
+  orientation ^= ORIENTATION_SWAP_XY;
 
-  if(cw == 2) orientation = 0; // reset
+  if(cw == 2) orientation = ORIENTATION_NONE;
   dt_image_set_flip(imgid, orientation);
 }
 
@@ -850,7 +850,7 @@ uint32_t dt_image_import(const int32_t film_id, const char *filename, gboolean o
 void dt_image_init(dt_image_t *img)
 {
   img->width = img->height = 0;
-  img->orientation = -1;
+  img->orientation = ORIENTATION_NULL;
   img->legacy_flip.legacy = 0;
   img->legacy_flip.user_flip = 0;
 

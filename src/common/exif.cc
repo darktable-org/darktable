@@ -510,13 +510,13 @@ static bool dt_exif_read_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
       switch(pos->toLong())
       {
         case 76: // 90 cw
-          img->orientation = 4 | 2 | 0; // swap x/y, flip x
+          img->orientation = ORIENTATION_ROTATE_CW_90_DEG; // swap x/y, flip x
           break;
         case 82: // 270 cw
-          img->orientation = 4 | 0 | 1; // swap x/y, flip y
+          img->orientation = ORIENTATION_ROTATE_CCW_90_DEG; // swap x/y, flip y
           break;
         default: // 72, horizontal
-          img->orientation = 0 | 0 | 0; // do nothing
+          img->orientation = ORIENTATION_NONE; // do nothing
       }
     }
 
@@ -2126,7 +2126,7 @@ int dt_exif_thumbnail(
   uint8_t    *out,
   uint32_t    width,
   uint32_t    height,
-  int         orientation,
+  dt_image_orientation_t orientation,
   uint32_t   *wd,
   uint32_t   *ht)
 {

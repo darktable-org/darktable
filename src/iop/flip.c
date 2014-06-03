@@ -51,7 +51,7 @@ dt_iop_flip_params_t;
 
 typedef struct dt_iop_flip_data_t
 {
-  int32_t orientation;
+  dt_image_orientation_t orientation;
 }
 dt_iop_flip_data_t;
 
@@ -100,9 +100,9 @@ int flags()
 
 
 static void
-backtransform(const int32_t *x, int32_t *o, const int32_t orientation, int32_t iw, int32_t ih)
+backtransform(const int32_t *x, int32_t *o, const dt_image_orientation_t orientation, int32_t iw, int32_t ih)
 {
-  if(orientation & 4)
+  if(orientation & ORIENTATION_SWAP_XY)
   {
     o[1] = x[0];
     o[0] = x[1];
@@ -115,11 +115,11 @@ backtransform(const int32_t *x, int32_t *o, const int32_t orientation, int32_t i
     o[0] = x[0];
     o[1] = x[1];
   }
-  if(orientation & 2)
+  if(orientation & ORIENTATION_FLIP_X)
   {
     o[1] = ih - o[1] - 1;
   }
-  if(orientation & 1)
+  if(orientation & ORIENTATION_FLIP_Y)
   {
     o[0] = iw - o[0] - 1;
   }
@@ -136,9 +136,9 @@ int distort_transform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, floa
   {
     x = points[i];
     y = points[i+1];
-    if(d->orientation & 2) y = piece->buf_in.height - points[i+1];
-    if(d->orientation & 1) x = piece->buf_in.width - points[i];
-    if(d->orientation & 4)
+    if(d->orientation & ORIENTATION_FLIP_X) y = piece->buf_in.height - points[i+1];
+    if(d->orientation & ORIENTATION_FLIP_Y) x = piece->buf_in.width - points[i];
+    if(d->orientation & ORIENTATION_SWAP_XY)
     {
       float yy = y;
       y = x;
@@ -159,7 +159,7 @@ int distort_backtransform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, 
 
   for (size_t i=0; i<points_count*2; i+=2)
   {
-    if(d->orientation & 4)
+    if(d->orientation & ORIENTATION_SWAP_XY)
     {
       y = points[i];
       x = points[i+1];
@@ -169,8 +169,8 @@ int distort_backtransform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, 
       x = points[i];
       y = points[i+1];
     }
-    if(d->orientation & 2) y = piece->buf_in.height - y;
-    if(d->orientation & 1) x = piece->buf_in.width - x;
+    if(d->orientation & ORIENTATION_FLIP_X) y = piece->buf_in.height - y;
+    if(d->orientation & ORIENTATION_FLIP_Y) x = piece->buf_in.width - x;
     points[i] = x;
     points[i+1] = y;
   }
@@ -186,13 +186,13 @@ void modify_roi_out(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t 
   dt_iop_flip_data_t *d = (dt_iop_flip_data_t *)piece->data;
 
   // transform whole buffer roi
-  if(d->orientation & 4)
+  if(d->orientation & ORIENTATION_SWAP_XY)
   {
     roi_out->width  = roi_in->height;
     roi_out->height = roi_in->width;
   }
 
-  piece->pipe->iflipped = d->orientation & 4;
+  piece->pipe->iflipped = d->orientation & ORIENTATION_SWAP_XY;
 }
 
 // 2nd pass: which roi would this operation need as input to fill the given output region?
@@ -383,19 +383,19 @@ static void
 do_rotate(dt_iop_module_t *self, uint32_t cw)
 {
   dt_iop_flip_params_t *p = (dt_iop_flip_params_t *)self->params;
-  int32_t orientation = p->orientation;
+  dt_image_orientation_t orientation = p->orientation;
 
   if(cw == 1)
   {
-    if(orientation & 4) orientation ^= 1;
-    else                orientation ^= 2; // flip x
+    if(orientation & ORIENTATION_SWAP_XY) orientation ^= ORIENTATION_FLIP_Y;
+    else                                  orientation ^= ORIENTATION_FLIP_X;
   }
   else
   {
-    if(orientation & 4) orientation ^= 2;
-    else                orientation ^= 1; // flip y
+    if(orientation & ORIENTATION_SWAP_XY) orientation ^= ORIENTATION_FLIP_X;
+    else                                  orientation ^= ORIENTATION_FLIP_Y;
   }
-  orientation ^= 4;             // flip axes
+  orientation ^= ORIENTATION_SWAP_XY;
   p->orientation = orientation;
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }

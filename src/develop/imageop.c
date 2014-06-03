@@ -1803,30 +1803,30 @@ dt_iop_flip_and_zoom_8(
   uint8_t *out,
   int32_t ow,
   int32_t oh,
-  const int32_t orientation,
+  const dt_image_orientation_t orientation,
   uint32_t *width,
   uint32_t *height)
 {
   // init strides:
-  const uint32_t iwd = (orientation & 4) ? ih : iw;
-  const uint32_t iht = (orientation & 4) ? iw : ih;
+  const uint32_t iwd = (orientation & ORIENTATION_SWAP_XY) ? ih : iw;
+  const uint32_t iht = (orientation & ORIENTATION_SWAP_XY) ? iw : ih;
   const float scale = fmaxf(iwd/(float)ow, iht/(float)oh);
   const uint32_t wd = *width  = MIN(ow, iwd/scale);
   const uint32_t ht = *height = MIN(oh, iht/scale);
   const int bpp = 4; // bytes per pixel
   int32_t ii = 0, jj = 0;
   int32_t si = 1, sj = iw;
-  if(orientation & 2)
+  if(orientation & ORIENTATION_FLIP_X)
   {
     jj = ih - jj - 1;
     sj = -sj;
   }
-  if(orientation & 1)
+  if(orientation & ORIENTATION_FLIP_Y)
   {
     ii = iw - ii - 1;
     si = -si;
   }
-  if(orientation & 4)
+  if(orientation & ORIENTATION_SWAP_XY)
   {
     int t = sj;
     sj = si;

@@ -31,7 +31,7 @@
 
 typedef struct tiff_t {
   TIFF *tiff;
-  int orientation;
+  dt_image_orientation_t orientation;
   uint32_t width;
   uint32_t height;
   uint16_t bpp;
