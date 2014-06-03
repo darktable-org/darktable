@@ -543,7 +543,8 @@ int dt_init(int argc, char *argv[], const int init_gui)
       else if(!strcmp(argv[k], "--conf"))
       {
         gchar *keyval = g_strdup(argv[++k]), *c = keyval;
-        while(*c != '=' && c < keyval + strlen(keyval)) c++;
+        gchar *end = keyval + strlen(keyval);
+        while(*c != '=' && c < end) c++;
         if(*c == '=' && *(c+1) != '\0')
         {
           *c++ = '\0';

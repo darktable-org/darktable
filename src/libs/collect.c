@@ -475,7 +475,7 @@ void view_popup_menu_onSearchFilmroll (GtkWidget *menuitem, gpointer userdata)
 
         sqlite3_stmt *stmt2;
         DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt2, NULL);
-        DT_DEBUG_SQLITE3_BIND_TEXT(stmt2, 1, final, strlen(final), SQLITE_STATIC);
+        DT_DEBUG_SQLITE3_BIND_TEXT(stmt2, 1, final, -1, SQLITE_STATIC);
         DT_DEBUG_SQLITE3_BIND_INT(stmt2, 2, id);
         sqlite3_step(stmt2);
         sqlite3_finalize(stmt2);
@@ -1144,11 +1144,11 @@ static void tags_view (dt_lib_collect_rule_t *dr)
           }
 
           /* lets add new keyword and assign current */
-          if (!found && strlen(pch[j])>0)
-          {         
+          if (!found && pch[j] && *pch[j])
+          {
             gchar *pth2 = NULL;
             pth2 = dt_util_dstrcat(pth2, "");
-    
+
             for (int i=0; i <= level; i++)
             {
               pth2 = dt_util_dstrcat(pth2, "%s|", pch[i]);
@@ -1388,7 +1388,7 @@ list_view (dt_lib_collect_rule_t *dr)
       folder = dt_image_film_roll_name(folder);
     }
     gchar *value =  (gchar *)sqlite3_column_text(stmt, 0);
-    gchar *escaped_text = g_markup_escape_text(value, strlen(value));
+    gchar *escaped_text = g_markup_escape_text(value, -1);
     gtk_list_store_set (GTK_LIST_STORE(listmodel), &iter,
                         DT_LIB_COLLECT_COL_TEXT, folder,
                         DT_LIB_COLLECT_COL_ID, sqlite3_column_int(stmt, 1),
@@ -1491,7 +1491,7 @@ create_folders_gui (dt_lib_collect_rule_t *dr)
       }
       else
       {
-        label = gtk_label_new (g_ascii_strdown(mount_name, strlen(mount_name)));
+        label = gtk_label_new (g_ascii_strdown(mount_name, -1));
       }
       g_ptr_array_add(d->labels, (gpointer) label);
       gtk_box_pack_start(d->box, GTK_WIDGET(label), FALSE, FALSE, 0);

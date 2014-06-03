@@ -100,8 +100,7 @@ dt_film_open2 (dt_film_t *film)
     DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
                                 "update film_rolls set datetime_accessed = ?1 where id = ?2",
                                 -1, &stmt, NULL);
-    DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, datetime, strlen(datetime),
-                               SQLITE_STATIC);
+    DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, datetime, -1, SQLITE_STATIC);
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, film->id);
     sqlite3_step (stmt);
 
@@ -132,8 +131,7 @@ int dt_film_open(const int32_t id)
     DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
                                 "update film_rolls set datetime_accessed = ?1 where id = ?2",
                                 -1, &stmt, NULL);
-    DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, datetime, strlen(datetime),
-                               SQLITE_STATIC);
+    DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, datetime, -1, SQLITE_STATIC);
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, id);
     sqlite3_step(stmt);
   }
@@ -163,8 +161,7 @@ int dt_film_open_recent(const int num)
     DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
                                 "update film_rolls set datetime_accessed = ?1 where id = ?2",
                                 -1, &stmt, NULL);
-    DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, datetime, strlen(datetime),
-                               SQLITE_STATIC);
+    DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, datetime, -1, SQLITE_STATIC);
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, id);
     sqlite3_step(stmt);
   }
@@ -181,8 +178,7 @@ int dt_film_new(dt_film_t *film, const char *directory)
   sqlite3_stmt *stmt;
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
                               "select id from film_rolls where folder = ?1", -1, &stmt, NULL);
-  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, directory, strlen(directory),
-                             SQLITE_STATIC);
+  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, directory, -1, SQLITE_STATIC);
   if(sqlite3_step(stmt) == SQLITE_ROW)
     film->id = sqlite3_column_int(stmt, 0);
   sqlite3_finalize(stmt);
@@ -196,10 +192,8 @@ int dt_film_new(dt_film_t *film, const char *directory)
     DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
                                 "insert into film_rolls (id, datetime_accessed, folder) "
                                 "values (null, ?1, ?2)", -1, &stmt, NULL);
-    DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, datetime, strlen(datetime),
-                               SQLITE_STATIC);
-    DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 2, directory, strlen(directory),
-                               SQLITE_STATIC);
+    DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, datetime, -1, SQLITE_STATIC);
+    DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 2, directory, -1, SQLITE_STATIC);
     dt_pthread_mutex_lock(&darktable.db_insert);
     rc = sqlite3_step(stmt);
     if(rc != SQLITE_DONE)
@@ -208,8 +202,7 @@ int dt_film_new(dt_film_t *film, const char *directory)
     sqlite3_finalize(stmt);
     DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
                                 "select id from film_rolls where folder=?1", -1, &stmt, NULL);
-    DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, directory, strlen(directory),
-                               SQLITE_STATIC);
+    DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, directory, -1, SQLITE_STATIC);
     if(sqlite3_step(stmt) == SQLITE_ROW)
       film->id = sqlite3_column_int(stmt, 0);
     sqlite3_finalize(stmt);
@@ -236,8 +229,7 @@ int dt_film_import(const char *dirname)
   /* lookup if film exists and reuse id */
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
                               "select id from film_rolls where folder = ?1", -1, &stmt, NULL);
-  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, dirname, strlen(dirname),
-                             SQLITE_STATIC);
+  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, dirname, -1, SQLITE_STATIC);
   if(sqlite3_step(stmt) == SQLITE_ROW)
     film->id = sqlite3_column_int(stmt, 0);
   sqlite3_finalize(stmt);
@@ -251,10 +243,8 @@ int dt_film_import(const char *dirname)
     DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
                                 "insert into film_rolls (id, datetime_accessed, folder) values "
                                 "(null, ?1, ?2)", -1, &stmt, NULL);
-    DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, datetime, strlen(datetime),
-                               SQLITE_STATIC);
-    DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 2, dirname, strlen(dirname),
-                               SQLITE_STATIC);
+    DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, datetime, -1, SQLITE_STATIC);
+    DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 2, dirname, -1, SQLITE_STATIC);
 
     rc = sqlite3_step(stmt);
     if(rc != SQLITE_DONE)
@@ -265,8 +255,7 @@ int dt_film_import(const char *dirname)
     /* requery for filmroll and fetch new id */
     DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
                                 "select id from film_rolls where folder=?1", -1, &stmt, NULL);
-    DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, dirname, strlen(dirname),
-                               SQLITE_STATIC);
+    DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, dirname, -1, SQLITE_STATIC);
     if(sqlite3_step(stmt) == SQLITE_ROW)
       film->id = sqlite3_column_int(stmt, 0);
     sqlite3_finalize(stmt);
@@ -399,8 +388,9 @@ void dt_film_import1(dt_film_t *film)
         while ((dfn = g_dir_read_name(cfr->dir)) != NULL)
         {
           /* check if we have a gpx to be auto applied to filmroll */
-          if(strcmp(dfn+strlen(dfn)-4,".gpx") == 0 ||
-              strcmp(dfn+strlen(dfn)-4,".GPX") == 0)
+          size_t len = strlen(dfn);
+          if(strcmp(dfn+len-4,".gpx") == 0 ||
+              strcmp(dfn+len-4,".GPX") == 0)
           {
             gchar *gpx_file = g_build_path (G_DIR_SEPARATOR_S, cfr->dirname, dfn, NULL);
             gchar *tz = dt_conf_get_string("plugins/lighttable/geotagging/tz");
@@ -457,8 +447,9 @@ void dt_film_import1(dt_film_t *film)
     while ((dfn = g_dir_read_name(cfr->dir)) != NULL)
     {
       /* check if we have a gpx to be auto applied to filmroll */
-      if(strcmp(dfn+strlen(dfn)-4,".gpx") == 0 ||
-          strcmp(dfn+strlen(dfn)-4,".GPX") == 0)
+      size_t len = strlen(dfn);
+      if(strcmp(dfn+len-4,".gpx") == 0 ||
+          strcmp(dfn+len-4,".GPX") == 0)
       {
         gchar *gpx_file = g_build_path (G_DIR_SEPARATOR_S, cfr->dirname, dfn, NULL);
         gchar *tz = dt_conf_get_string("plugins/lighttable/geotagging/tz");

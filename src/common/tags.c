@@ -33,7 +33,7 @@ gboolean dt_tag_new(const char *name,guint *tagid)
 
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
                               "SELECT id FROM tags WHERE name = ?1", -1, &stmt, NULL);
-  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, name, strlen(name), SQLITE_TRANSIENT);
+  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, name, -1, SQLITE_TRANSIENT);
   rt = sqlite3_step(stmt);
   if(rt == SQLITE_ROW)
   {
@@ -47,7 +47,7 @@ gboolean dt_tag_new(const char *name,guint *tagid)
 
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
                               "INSERT INTO tags (id, name) VALUES (null, ?1)", -1, &stmt, NULL);
-  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, name, strlen(name), SQLITE_TRANSIENT);
+  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, name, -1, SQLITE_TRANSIENT);
   sqlite3_step(stmt);
   sqlite3_finalize(stmt);
 
@@ -56,7 +56,7 @@ gboolean dt_tag_new(const char *name,guint *tagid)
     *tagid = 0;
     DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
                                 "SELECT id FROM tags WHERE name = ?1", -1, &stmt, NULL);
-    DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, name, strlen(name), SQLITE_TRANSIENT);
+    DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, name, -1, SQLITE_TRANSIENT);
     if (sqlite3_step(stmt) == SQLITE_ROW)
       *tagid = sqlite3_column_int(stmt, 0);
     sqlite3_finalize(stmt);
@@ -152,7 +152,7 @@ gboolean dt_tag_exists(const char *name,guint *tagid)
   sqlite3_stmt *stmt;
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
                               "SELECT id FROM tags WHERE name = ?1", -1, &stmt, NULL);
-  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, name, strlen(name), SQLITE_TRANSIENT);
+  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, name, -1, SQLITE_TRANSIENT);
   rt = sqlite3_step(stmt);
 
   if(rt == SQLITE_ROW)

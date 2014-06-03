@@ -195,7 +195,7 @@ finalize_store(dt_imageio_module_storage_t *self, dt_imageio_module_data_t *para
     g_snprintf(body+strlen(body),4096-strlen(body), imageBodyFormat, filename, exif );
     g_free(filename);
 
-    if( strlen( attachments ) )
+    if(*attachments)
       g_snprintf(attachments+strlen(attachments),4096-strlen(attachments), "%s", attachmentSeparator );
 
     g_snprintf(attachments+strlen(attachments),4096-strlen(attachments), attachmentFormat, attachment->file );

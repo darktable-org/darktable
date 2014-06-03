@@ -349,7 +349,8 @@ void dt_opencl_init(dt_opencl_t *cl, const int argc, char *argv[])
         g_free(confline_pattern);
         if(rd != 1) continue;
         // remove comments:
-        for(size_t pos=0; pos<strlen(confentry); pos++)
+        size_t end = strlen(confentry);
+        for(size_t pos=0; pos<end; pos++)
           if(confentry[pos] == '#')
           {
             confentry[pos] = '\0';

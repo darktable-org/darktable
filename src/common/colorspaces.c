@@ -978,7 +978,8 @@ dt_colorspaces_get_makermodel(char *makermodel, size_t makermodel_len, const cha
   c = maker;
   d = model;
   int match = 1;
-  while(*c != ' ' && c < maker + strlen(maker)) if(*(c++) != *(d++))
+  const char* end = maker + strlen(maker);
+  while(*c != ' ' && c < end) if(*(c++) != *(d++))
     {
       match = 0;
       break;
@@ -1000,7 +1001,8 @@ dt_colorspaces_get_makermodel(char *makermodel, size_t makermodel_len, const cha
     // else need to append first word of the maker:
     c = maker;
     d = model;
-    for(e=makermodel; c<maker+strlen(maker) && *c != ' '; c++,e++) *e = *c;
+    const char* end = maker+strlen(maker);
+    for(e=makermodel; c<end && *c != ' '; c++,e++) *e = *c;
     // separate with space
     *(e++) = ' ';
     // and continue with model.
@@ -1020,7 +1022,8 @@ dt_colorspaces_get_makermodel_split(char *makermodel, size_t makermodel_len, cha
 {
   dt_colorspaces_get_makermodel(makermodel, makermodel_len, maker, model);
   *modelo = makermodel;
-  for(; **modelo != ' ' && *modelo < makermodel + strlen(makermodel); (*modelo)++);
+  const char *end = makermodel + strlen(makermodel);
+  for(; **modelo != ' ' && *modelo < end; (*modelo)++);
   **modelo = '\0';
   (*modelo)++;
 }

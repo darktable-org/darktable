@@ -1427,7 +1427,7 @@ static void _exif_import_tags(dt_image_t *img,Exiv2::XmpData::iterator &pos)
       // check if tag is available, get its id:
       for (int k=0; k<2; k++)
       {
-        DT_DEBUG_SQLITE3_BIND_TEXT(stmt_sel_id, 1, tag, strlen(tag), SQLITE_TRANSIENT);
+        DT_DEBUG_SQLITE3_BIND_TEXT(stmt_sel_id, 1, tag, -1, SQLITE_TRANSIENT);
         if(sqlite3_step(stmt_sel_id) == SQLITE_ROW)
           tagid = sqlite3_column_int(stmt_sel_id, 0);
         sqlite3_reset(stmt_sel_id);
@@ -1438,7 +1438,7 @@ static void _exif_import_tags(dt_image_t *img,Exiv2::XmpData::iterator &pos)
 
         fprintf(stderr,"[xmp_import] creating tag: %s\n", tag);
         // create this tag (increment id, leave icon empty), retry.
-        DT_DEBUG_SQLITE3_BIND_TEXT(stmt_ins_tags, 1, tag, strlen(tag), SQLITE_TRANSIENT);
+        DT_DEBUG_SQLITE3_BIND_TEXT(stmt_ins_tags, 1, tag, -1, SQLITE_TRANSIENT);
         sqlite3_step(stmt_ins_tags);
         sqlite3_reset(stmt_ins_tags);
         sqlite3_clear_bindings(stmt_ins_tags);
@@ -1578,28 +1578,26 @@ int dt_exif_xmp_read (dt_image_t *img, const char* filename, const int history_o
           if(mask_name_str.c_str() != NULL)
           {
             const char *mname = mask_name_str.c_str();
-            DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 4, mname, strlen(mname), SQLITE_TRANSIENT);
+            DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 4, mname, -1, SQLITE_TRANSIENT);
           }
           else
           {
             const char *mname = "form";
-            DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 4, mname, strlen(mname), SQLITE_TRANSIENT);
+            DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 4, mname, -1, SQLITE_TRANSIENT);
           }
           DT_DEBUG_SQLITE3_BIND_INT(stmt, 5, mask_version->toLong());
           std::string mask_str = mask->toString(i);
           const char *mask_c = mask_str.c_str();
-          const int mask_c_len = strlen(mask_c);
-          int mask_len = 0;
-          const unsigned char *mask_d = dt_exif_xmp_decode(mask_c, mask_c_len, &mask_len);
-          DT_DEBUG_SQLITE3_BIND_BLOB(stmt, 6, mask_d, mask_len, SQLITE_TRANSIENT);
+          const size_t mask_c_len = strlen(mask_c);
+          const unsigned char *mask_d = dt_exif_xmp_decode(mask_c, mask_c_len, NULL);
+          DT_DEBUG_SQLITE3_BIND_BLOB(stmt, 6, mask_d, -1, SQLITE_TRANSIENT);
           DT_DEBUG_SQLITE3_BIND_INT(stmt, 7, mask_nb->toLong(i));
 
           std::string mask_src_str = mask_src->toString(i);
           const char *mask_src_c = mask_src_str.c_str();
-          const int mask_src_c_len = strlen(mask_src_c);
-          int mask_src_len = 0;
-          unsigned char *mask_src = dt_exif_xmp_decode(mask_src_c, mask_src_c_len, &mask_src_len);
-          DT_DEBUG_SQLITE3_BIND_BLOB(stmt, 8, mask_src, mask_src_len, SQLITE_TRANSIENT);
+          const size_t mask_src_c_len = strlen(mask_src_c);
+          unsigned char *mask_src = dt_exif_xmp_decode(mask_src_c, mask_src_c_len, NULL);
+          DT_DEBUG_SQLITE3_BIND_BLOB(stmt, 8, mask_src, -1, SQLITE_TRANSIENT);
 
           sqlite3_step(stmt);
           sqlite3_finalize (stmt);
@@ -1650,9 +1648,8 @@ int dt_exif_xmp_read (dt_image_t *img, const char* filename, const int history_o
           const char *operation = op_str.c_str();
           std::string param_str = param->toString(i);
           const char *param_c = param_str.c_str();
-          const int param_c_len = strlen(param_c);
-          int params_len = 0;
-          unsigned char *params = dt_exif_xmp_decode(param_c, param_c_len, &params_len);
+          const size_t param_c_len = strlen(param_c);
+          unsigned char *params = dt_exif_xmp_decode(param_c, param_c_len, NULL);
           // TODO: why this update set?
           DT_DEBUG_SQLITE3_BIND_INT(stmt_sel_num, 1, img->id);
           DT_DEBUG_SQLITE3_BIND_INT(stmt_sel_num, 2, i);
@@ -1665,8 +1662,8 @@ int dt_exif_xmp_read (dt_image_t *img, const char* filename, const int history_o
             sqlite3_clear_bindings(stmt_ins_hist);
           }
 
-          DT_DEBUG_SQLITE3_BIND_TEXT(stmt_upd_hist, 1, operation, strlen(operation), SQLITE_TRANSIENT);
-          DT_DEBUG_SQLITE3_BIND_BLOB(stmt_upd_hist, 2, params, params_len, SQLITE_TRANSIENT);
+          DT_DEBUG_SQLITE3_BIND_TEXT(stmt_upd_hist, 1, operation, -1, SQLITE_TRANSIENT);
+          DT_DEBUG_SQLITE3_BIND_BLOB(stmt_upd_hist, 2, params, -1, SQLITE_TRANSIENT);
           DT_DEBUG_SQLITE3_BIND_INT(stmt_upd_hist, 3, modversion);
           DT_DEBUG_SQLITE3_BIND_INT(stmt_upd_hist, 4, enabled);
           DT_DEBUG_SQLITE3_BIND_INT(stmt_upd_hist, 5, img->id);
@@ -1674,12 +1671,11 @@ int dt_exif_xmp_read (dt_image_t *img, const char* filename, const int history_o
 
           /* check if we got blendop from xmp */
           unsigned char *blendop_params = NULL;
-          int blendop_size = 0;
           if(blendop != xmpData.end() && blendop->size() > 0 && blendop->count () > i && blendop->toString(i).c_str() != NULL)
           {
             std::string blendop_str = blendop->toString(i);
-            blendop_params = dt_exif_xmp_decode(blendop_str.c_str(), strlen(blendop_str.c_str()), &blendop_size);
-            DT_DEBUG_SQLITE3_BIND_BLOB(stmt_upd_hist, 7, blendop_params, blendop_size, SQLITE_TRANSIENT);
+            blendop_params = dt_exif_xmp_decode(blendop_str.c_str(), strlen(blendop_str.c_str()), NULL);
+            DT_DEBUG_SQLITE3_BIND_BLOB(stmt_upd_hist, 7, blendop_params, -1, SQLITE_TRANSIENT);
           }
           else
             sqlite3_bind_null(stmt_upd_hist, 7);
@@ -1701,12 +1697,12 @@ int dt_exif_xmp_read (dt_image_t *img, const char* filename, const int history_o
           {
             std::string multi_name_str = multi_name->toString(i);
             const char *mname = multi_name_str.c_str();
-            DT_DEBUG_SQLITE3_BIND_TEXT(stmt_upd_hist, 10, mname, strlen(mname), SQLITE_TRANSIENT);
+            DT_DEBUG_SQLITE3_BIND_TEXT(stmt_upd_hist, 10, mname, -1, SQLITE_TRANSIENT);
           }
           else
           {
             const char *mname = " ";
-            DT_DEBUG_SQLITE3_BIND_TEXT(stmt_upd_hist, 10, mname, strlen(mname), SQLITE_TRANSIENT);
+            DT_DEBUG_SQLITE3_BIND_TEXT(stmt_upd_hist, 10, mname, -1, SQLITE_TRANSIENT);
           }
 
 

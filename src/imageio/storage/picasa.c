@@ -791,7 +791,7 @@ static gboolean combobox_separator(GtkTreeModel *model,GtkTreeIter *iter,gpointe
   gchar *v=NULL;
   if (G_VALUE_HOLDS_STRING (&value))
   {
-    if( (v=(gchar *)g_value_get_string (&value))!=NULL && strlen(v) == 0 ) return TRUE;
+    if( (v=(gchar *)g_value_get_string (&value))!=NULL && *v == '\0' ) return TRUE;
   }
   return FALSE;
 }
@@ -1459,7 +1459,7 @@ int store(dt_imageio_module_storage_t *self, struct dt_imageio_module_data_t *sd
     goto cleanup;
   }
 
-  if (strlen(ctx->album_id) == 0)
+  if (!(ctx->album_id && *ctx->album_id))
   {
     if (ctx->album_title == NULL)
     {

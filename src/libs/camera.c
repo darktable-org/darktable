@@ -279,7 +279,8 @@ _add_property_button_clicked (GtkWidget *widget, gpointer user_data)
       gchar key[256]= {"plugins/capture/tethering/properties/"};
       g_strlcat(key, label, sizeof(key));
       gchar *p = key;
-      while( p++<key+strlen(key) ) if(*p==' ') *p='_';
+      const char *end = key + strlen(key);
+      while( p++ < end ) if(*p==' ') *p='_';
       dt_conf_set_string(key,property);
 
       /* clean entries */
@@ -604,7 +605,8 @@ gui_init (dt_lib_module_t *self)
 
         /* get the label from key */
         char *p=entry->key;
-        while (p++<entry->key+strlen(entry->key)) if (*p=='_') *p=' ';
+        const char *end = entry->key + strlen(entry->key);
+        while (p++ < end) if (*p=='_') *p=' ';
 
         if ((prop = _lib_property_add_new (lib, entry->key,entry->value )) != NULL)
         {

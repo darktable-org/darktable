@@ -1364,8 +1364,9 @@ static void aspect_presets_changed (GtkWidget *combo, dt_iop_module_t *self)
     if(text)
     {
       const char *c = text;
-      while(*c != ':' && *c != '/' && c < text + strlen(text)) c++;
-      if(c < text + strlen(text) - 1)
+      const char *end = text + strlen(text);
+      while(*c != ':' && *c != '/' && c < end) c++;
+      if(c < end - 1)
       {
         c++;
         int dd = atoi(text);

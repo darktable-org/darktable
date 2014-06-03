@@ -593,7 +593,7 @@ void dt_masks_write_form(dt_masks_form_t *form, dt_develop_t *dev)
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, dev->image_storage.id);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, form->formid);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 3, form->type);
-  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 4, form->name, strlen(form->name), SQLITE_TRANSIENT);
+  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 4, form->name, -1, SQLITE_TRANSIENT);
   DT_DEBUG_SQLITE3_BIND_BLOB(stmt, 8, form->source, 2*sizeof(float), SQLITE_TRANSIENT);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 5, form->version);
   if (form->type & DT_MASKS_CIRCLE)
@@ -696,7 +696,7 @@ void dt_masks_write_forms(dt_develop_t *dev)
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, dev->image_storage.id);
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, form->formid);
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 3, form->type);
-    DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 4, form->name, strlen(form->name), SQLITE_TRANSIENT);
+    DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 4, form->name, -1, SQLITE_TRANSIENT);
     DT_DEBUG_SQLITE3_BIND_BLOB(stmt, 8, form->source, 2*sizeof(float), SQLITE_TRANSIENT);
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 5, form->version);
     if (form->type & DT_MASKS_CIRCLE)

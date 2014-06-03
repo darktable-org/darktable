@@ -1136,7 +1136,7 @@ _init_f(
   char filename[2048] = {0};
   gboolean from_cache = TRUE;
   dt_image_full_path(imgid, filename, sizeof(filename), &from_cache);
-  if (strlen(filename) == 0 || !g_file_test(filename, G_FILE_TEST_EXISTS))
+  if ( !*filename || !g_file_test(filename, G_FILE_TEST_EXISTS))
   {
     *width = *height = 0;
     return;
@@ -1246,7 +1246,7 @@ _init_8(
 
   /* do not even try to process file if it isnt available */
   dt_image_full_path(imgid, filename, sizeof(filename), &from_cache);
-  if (strlen(filename) == 0 || !g_file_test(filename, G_FILE_TEST_EXISTS))
+  if ( !*filename || !g_file_test(filename, G_FILE_TEST_EXISTS))
   {
     *width = *height = 0;
     return;

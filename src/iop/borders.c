@@ -647,8 +647,9 @@ aspect_changed (GtkWidget *combo, dt_iop_module_t *self)
     if(text)
     {
       const char *c = text;
-      while(*c != ':' && *c != '/' && c < text + strlen(text)) c++;
-      if(c < text + strlen(text) - 1)
+      const char *end = text + strlen(text);
+      while(*c != ':' && *c != '/' && c < end) c++;
+      if(c < end - 1)
       {
         // *c = '\0'; // not needed, atof will stop there.
         c++;
@@ -687,8 +688,9 @@ position_h_changed (GtkWidget *combo, dt_iop_module_t *self)
     if(text)
     {
       const char *c = text;
-      while(*c != ':' && *c != '/' && c < text + strlen(text)) c++;
-      if(c < text + strlen(text) - 1)
+      const char *end = text + strlen(text);
+      while(*c != ':' && *c != '/' && c < end) c++;
+      if(c < end - 1)
       {
         // *c = '\0'; // not needed, atof will stop there.
         c++;
@@ -724,8 +726,9 @@ position_v_changed (GtkWidget *combo, dt_iop_module_t *self)
     if(text)
     {
       const char *c = text;
-      while(*c != ':' && *c != '/' && c < text + strlen(text)) c++;
-      if(c < text + strlen(text) - 1)
+      const char *end = text + strlen(text);
+      while(*c != ':' && *c != '/' && c < end) c++;
+      if(c < end - 1)
       {
         // *c = '\0'; // not needed, atof will stop there.
         c++;

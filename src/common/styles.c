@@ -160,8 +160,8 @@ dt_styles_create_style_header(const char *name, const char *description)
   DT_DEBUG_SQLITE3_PREPARE_V2
     (dt_database_get(darktable.db),
      "INSERT INTO styles (name,description,id) VALUES (?1,?2,(SELECT COALESCE(MAX(id),0)+1 FROM styles))", -1, &stmt, NULL);
-  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, name,strlen (name),SQLITE_STATIC);
-  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 2, description,strlen (description),SQLITE_STATIC);
+  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, name, -1, SQLITE_STATIC);
+  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 2, description, -1, SQLITE_STATIC);
   sqlite3_step (stmt);
   sqlite3_finalize (stmt);
   return TRUE;
@@ -223,8 +223,8 @@ dt_styles_update (const char *name, const char *newname, const char *newdescript
   if ((g_strcmp0(name, newname)) || (g_strcmp0(desc, newdescription)))
   {
     DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "UPDATE styles SET name=?1, description=?2 WHERE id=?3", -1, &stmt, NULL);
-    DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, newname, strlen (newname), SQLITE_STATIC);
-    DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 2, newdescription, strlen (newdescription), SQLITE_STATIC);
+    DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, newname, -1, SQLITE_STATIC);
+    DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 2, newdescription, -1, SQLITE_STATIC);
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 3, id);
     sqlite3_step(stmt);
     sqlite3_finalize(stmt);
@@ -604,7 +604,7 @@ dt_styles_get_item_list (const char *name, gboolean params, int imgid)
         // is used to compare against the internal module name.
         const char *multi_name = (const char *)sqlite3_column_text (stmt, 5);
 
-        if (!multi_name || (strlen(multi_name)==0))
+        if (!(multi_name && *multi_name))
           g_snprintf(name,sizeof(name),"%s",sqlite3_column_text (stmt, 1));
         else
           g_snprintf(name,sizeof(name),"%s %s",sqlite3_column_text (stmt, 1), multi_name);
@@ -625,7 +625,7 @@ dt_styles_get_item_list (const char *name, gboolean params, int imgid)
         const char *multi_name = (const char *)sqlite3_column_text (stmt, 4);
         gboolean has_multi_name = FALSE;
 
-        if (multi_name && strlen(multi_name)>0 && strcmp(multi_name,"0")!=0)
+        if (multi_name && *multi_name && strcmp(multi_name,"0")!=0)
           has_multi_name = TRUE;
 
         if (has_multi_name)
@@ -676,7 +676,7 @@ dt_styles_get_list (const char *filter)
   sqlite3_stmt *stmt;
   snprintf(filterstring, sizeof(filterstring), "%%%s%%", filter);
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select name, description from styles where name like ?1 or description like ?1 order by name", -1, &stmt, NULL);
-  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, filterstring, strlen(filterstring), SQLITE_TRANSIENT);
+  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, filterstring, -1, SQLITE_TRANSIENT);
   GList *result = NULL;
   while (sqlite3_step(stmt) == SQLITE_ROW)
   {
@@ -1051,7 +1051,7 @@ dt_styles_get_id_by_name (const char *name)
   int id=0;
   sqlite3_stmt *stmt;
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "SELECT id FROM styles WHERE name=?1 ORDER BY id DESC LIMIT 1", -1, &stmt, NULL);
-  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, name,strlen (name),SQLITE_TRANSIENT);
+  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, name, -1, SQLITE_TRANSIENT);
   if(sqlite3_step(stmt) == SQLITE_ROW)
   {
     id = sqlite3_column_int (stmt, 0);
@@ -1107,7 +1107,7 @@ dt_style_t *dt_styles_get_by_name (const char *name)
 {
   sqlite3_stmt *stmt;
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select name, description from styles where name = ?1", -1, &stmt, NULL);
-  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, name, strlen(name), SQLITE_STATIC);
+  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, name, -1, SQLITE_STATIC);
   if (sqlite3_step(stmt) == SQLITE_ROW)
   {
     const char *name = (const char *)sqlite3_column_text (stmt, 0);

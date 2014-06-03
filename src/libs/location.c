@@ -271,7 +271,7 @@ static gboolean _lib_location_search(gpointer user_data)
   /* get escaped search text */
   text = g_uri_escape_string(gtk_entry_get_text(lib->search), NULL, FALSE);
 
-  if (!text || strlen(text) < 1)
+  if (!(text && *text))
     goto bail_out;
 
   /* clean up previous results before adding new */
