@@ -28,8 +28,8 @@
         <row>
           <entry>
             Each workflow ends in this panel: the export of your developed images. You can
-            export either to a file on disk, or to various on-line storage places. Tip: you can
-            use <emphasis>ctrl-e</emphasis> from within darkroom mode to export.
+            export either to a file on disk, or to various on-line storage places. You can also
+            use <emphasis>Ctrl + e</emphasis> from within darkroom mode to export.
           </entry>
           <entry>
             <graphic fileref="lighttable/images/panel_exportselected.png" scalefit="1" width="80%" align="center" />
@@ -40,7 +40,7 @@
   </informaltable>
 
   <para>
-    All settings of this panel can be saved for later reuse. Press the
+    All settings for this panel can be saved for later reuse. Press the
     <inlinegraphic fileref="&icon_module_presets;" scalefit="1" width="2%" align="center" />
     button to manage your presets.
   </para>
@@ -55,7 +55,7 @@
 
       <para>
         Where to store your selected images. Different back-ends are implemented, including file
-        on disk, a LaTeX book template and various web albums. Depending on the selected target,
+        on disk, a LaTeX book template, and various web albums. Depending on the selected target,
         you will be asked to give additional information, like filenames, or account name and
         password.
       </para>
@@ -67,7 +67,7 @@
       <title>filename template</title>
 
       <para>
-        You can define filenames that darktable generates for export. Several pre-defined
+        You can define filenames that darktable generates for export. Several
         variables can be used as placeholders:
       </para>
 
@@ -79,7 +79,7 @@
                 $(ROLL_NAME)
               </entry>
               <entry>
-                roll of the input image
+                film roll of the RAW input image
               </entry>
             </row>
             <row>
@@ -87,7 +87,7 @@
                 $(FILE_FOLDER)
               </entry>
               <entry>
-                folder containing the input image
+                folder containing the RAW input image
               </entry>
             </row>
             <row>
@@ -95,7 +95,7 @@
                 $(FILE_NAME)
               </entry>
               <entry>
-                basename of the input image
+                basename of the RAW input image
               </entry>
             </row>
             <row>
@@ -103,7 +103,7 @@
                 $(FILE_EXTENSION)
               </entry>
               <entry>
-                extension of the input image
+                file extension of the RAW input image
               </entry>
             </row>
             <row>
@@ -111,7 +111,7 @@
                 $(SEQUENCE)
               </entry>
               <entry>
-                a sequence number within export job
+                a file's number among the sequence of files for the export job
               </entry>
             </row>
             <row>
@@ -119,7 +119,7 @@
                 $(YEAR)
               </entry>
               <entry>
-                year at date of export
+                year at the date of export
               </entry>
             </row>
             <row>
@@ -127,7 +127,7 @@
                 $(MONTH)
               </entry>
               <entry>
-                month at date of export
+                month at the date of export
               </entry>
             </row>
             <row>
@@ -135,7 +135,7 @@
                 $(DAY)
               </entry>
               <entry>
-                day at date of export
+                day at the date of export
               </entry>
             </row>
             <row>
@@ -143,7 +143,7 @@
                 $(HOUR)
               </entry>
               <entry>
-                hour at time of export
+                hour at the time of export
               </entry>
             </row>
             <row>
@@ -151,7 +151,7 @@
                 $(MINUTE)
               </entry>
               <entry>
-                minute at time of export
+                minute at the time of export
               </entry>
             </row>
             <row>
@@ -159,7 +159,7 @@
                 $(SECOND)
               </entry>
               <entry>
-                second at time of export
+                second at the time of export
               </entry>
             </row>
             <row>
@@ -167,7 +167,7 @@
                 $(EXIF_YEAR)
               </entry>
               <entry>
-                exif year
+                year from the image's EXIF data, i.e., the year the photo was taken
               </entry>
             </row>
             <row>
@@ -175,7 +175,7 @@
                 $(EXIF_MONTH)
               </entry>
               <entry>
-                exif month
+                month from the image's EXIF data, i.e., the month the photo was taken
               </entry>
             </row>
             <row>
@@ -183,7 +183,7 @@
                 $(EXIF_DAY)
               </entry>
               <entry>
-                exif day
+                day from the image's EXIF data, i.e., the day the photo was taken
               </entry>
             </row>
             <row>
@@ -191,7 +191,7 @@
                 $(EXIF_HOUR)
               </entry>
               <entry>
-                exif hour
+                hour from the image's EXIF data, i.e., the hour the photo was taken
               </entry>
             </row>
             <row>
@@ -199,7 +199,7 @@
                 $(EXIF_MINUTE)
               </entry>
               <entry>
-                exif minute
+                minute from the image's EXIF data, i.e., the minute the photo was taken
               </entry>
             </row>
             <row>
@@ -207,7 +207,7 @@
                 $(EXIF_SECOND)
               </entry>
               <entry>
-                exif second
+                second from the image's EXIF data, i.e., the second the photo was taken
               </entry>
             </row>
             <row>
@@ -215,7 +215,7 @@
                 $(STARS)
               </entry>
               <entry>
-                star rating
+                the number for the image's star rating; so a rating of four stars will show as just <quote>4</quote>
               </entry>
             </row>
             <row>
@@ -223,7 +223,7 @@
                 $(LABELS)
               </entry>
               <entry>
-                colorlabels
+                the image's color label; if there are multiple labels, these are separated by commas without spaces
               </entry>
             </row>
             <row>
@@ -231,7 +231,7 @@
                 $(PICTURES_FOLDER)
               </entry>
               <entry>
-                pictures folder
+                the desktop user account's default pictures folder
               </entry>
             </row>
             <row>
@@ -239,7 +239,7 @@
                 $(HOME)
               </entry>
               <entry>
-                home folder
+                the desktop user account's home folder
               </entry>
             </row>
             <row>
@@ -247,7 +247,7 @@
                 $(DESKTOP)
               </entry>
               <entry>
-                desktop folder
+                the desktop user account's <quote>desktop</quote> folder
               </entry>
             </row>
           </tbody>
@@ -261,9 +261,9 @@
       <title>output directory</title>
 
       <para>
-        Pressing button
+        Pressing the
         <inlinegraphic fileref="&icon_directory;" scalefit="1" width="2%" align="center" />
-        opens a dialog to select the parent directory for export.
+        button opens a dialog to select a directory to contain the exported files.
       </para>
 
     </sect4>
@@ -274,9 +274,10 @@
 
       <para>
         Enabling the
-        <inlinegraphic fileref="&icon_general_checkbox;" scalefit="1" width="2%" align="center" /> checkbox
-        allows darktable to overwrite existing images during export. If this option is not checked
-        darktable automatically selects a unique new file name in case of naming conflicts. The overwrite 
+        <inlinegraphic fileref="&icon_general_checkbox;" scalefit="1" width="2%" align="center" /> overwrite checkbox
+        allows darktable to overwrite existing images during export. If this option is not checked,
+        in cases of naming conflict, darktable automatically selects a new unique file name (generally adding
+        a suffix like <quote>_1</quote> or <quote>_2</quote> before the file extensions). The overwrite
         option gets reset after each export in order to protect you from accidental data loss.
       </para>
 
@@ -288,21 +289,23 @@
 
       <para>
         darktable can export to various file formats. For some of them you need to define the
-        desired bit depth of the exported image. If you export to a JPEG file you can define an
-        output quality. Higher values will lead to larger file sizes.
+        desired bit depth of the exported image. If you export to a JPEG file, you can define an
+        output quality, which determines how <quote>lossy</quote> the JPEG compression algorithm will be.
+        (PNG and TIFF are lossless image formats.) Higher values for bit depth or JPEG quality
+        will lead to larger file sizes.
       </para>
 
       <para>
         If the file format supports embedded metadata, like JPEG, JPEG2000 and TIFF, darktable
-        will try to store the history stack as XMP tags within the output file. This information
+        will also try to store the history stack as XMP tags within the output file. This information
         can later be used to reconstruct your parameters and settings that have produced the
         exported image (see <xref linkend="history_stack"/>).
       </para>
 
       <para>
-        <emphasis>Caution: for various reasons embedding XMP tags into output files may fail
-        without notice, eg. if certain size limits are exceeded. Users are therefore advised to
-        not rely their backup strategy on this feature. To backup your data make sure to save
+        <emphasis>Caution: for various reasons, embedding XMP tags into output files may fail
+        without notice, e.g., if certain size limits are exceeded. Users are therefore advised to
+        not completely rely on this feature to save the history stack. To backup your data, make sure to save
         your input (RAW) file as well as all of darktable's XMP sidecar files.</emphasis>
       </para>
 
@@ -326,13 +329,13 @@
 
       <para>
         Set the maximum width and height of the output images in pixels. Set both to a value of
-        "0" to export with full resolution. darktable currently can only do down-scaling; the
-        maximum output resolution is defined by the parent image.
+        "0" to export the full image size. darktable currently can only do down-scaling, so the
+        maximum output image size is defined by the source image.
       </para>
 
       <para>
-        <emphasis>Caution: it's a frequent pitfall to accidentally put low values, like 1 or 10,
-        in these fields, causing darktable to produce miniature output files. You might think
+        <emphasis>Caution: Some users accidentally enter low values, like 1 or 10,
+        in these fields, causing darktable to produce tiny output files. You might think
         darktable's output is broken, but in fact it only generated what you asked
         for.</emphasis>
       </para>
@@ -344,7 +347,7 @@
       <title>intent</title>
 
       <para>
-        This option lets you define the intent, i.e. the way darktable will deal with
+        This option lets you define the intent&nbsp;&ndash; i.e., the way darktable will deal with
         out-of-gamut colors. See <xref linkend="output_color_profile"/> for a more detailed
         description of the available options.
       </para>
@@ -358,7 +361,7 @@
       <para>
         This defines the output color profile. Select <quote>image settings</quote> if you want
         the settings in the <emphasis>output color profile</emphasis> (see
-        <xref linkend="output_color_profile"/>) module of the individual images to take
+        <xref linkend="output_color_profile"/>) of the individual images to take
         precedence.
       </para>
 
@@ -369,13 +372,13 @@
       <title>style</title>
 
       <para>
-        This option lets you choose a style, i.e. a collection of history stack items, which
+        This option lets you choose a <emphasis>style</emphasis>: a collection of history stack items, which
         darktable concatenates with the existing history stack to generate the output image.
-        These history items are only added temporarily; the original history stack is not
-        overwritten. You can use this feature to add processing steps and parameters that you
-        want to be applied specifically to exported images, e.g. you may define a style that
-        adds a stronger level of sharpening when you produce scaled-down JPEG files for the
-        internet. Learn more about styles in <xref linkend="styles"/>, and
+        These history items are only added temporarily; the original history stack does not
+        change. You can use this feature to add extra processing steps and parameters that you
+        want to be applied to a particular batch of exported images. For example, you may define a style that
+        adds a stronger level of sharpening, and apply it when you produce scaled-down JPEG files for the
+        web. Learn more about styles in <xref linkend="styles"/>, and
         <xref linkend="history"/>.
       </para>
 
@@ -386,10 +389,11 @@
       <title>export</title>
 
       <para>
-        Pressing this button starts a background job to export all selected images. A bar at the
-        bottom of the left side panel displays the progress. Whenever a file is successfully
+        Pressing this button starts the export process for all selected images; the export will run
+        in the background so you can continue work developing other images, if you wish. A bar at the
+        bottom of the left side panel displays the export progress. Whenever a file is successfully
         exported, a notification message pops up for a few seconds. You may click on the pop-up
-        to make it disappear.
+        to make it disappear sooner.
       </para>
 
     </sect4>
