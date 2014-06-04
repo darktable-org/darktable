@@ -223,10 +223,11 @@ deflicker_prepare_histogram(dt_iop_module_t *self, uint32_t **histogram,
   dt_mipmap_buffer_t buf;
   dt_mipmap_cache_read_get(darktable.mipmap_cache, &buf, self->dev->image_storage.id, DT_MIPMAP_FULL, DT_MIPMAP_BLOCKING);
   const dt_image_t *img = dt_image_cache_read_get(darktable.image_cache, self->dev->image_storage.id);
+  dt_image_t image = *img;
   dt_image_cache_read_release(darktable.image_cache, img);
   if(buf.size != DT_MIPMAP_FULL)
   {
-    dt_control_log(_("failed to get raw buffer from image `%s'"), img->filename);
+    dt_control_log(_("failed to get raw buffer from image `%s'"), image.filename);
     dt_mipmap_cache_read_release(darktable.mipmap_cache, &buf);
     return;
   }
@@ -234,7 +235,7 @@ deflicker_prepare_histogram(dt_iop_module_t *self, uint32_t **histogram,
   dt_dev_histogram_collection_params_t histogram_params;
   memcpy(&histogram_params, &self->histogram_params, sizeof(dt_dev_histogram_collection_params_t));
 
-  dt_iop_roi_t roi = {0, 0, img->width, img->height, 1.0f};
+  dt_iop_roi_t roi = {0, 0, image.width, image.height, 1.0f};
   histogram_params.roi = &roi;
 
   dt_histogram_worker(&histogram_params, histogram_stats, buf.buf, histogram, dt_histogram_helper_cs_RAW_uint16);
