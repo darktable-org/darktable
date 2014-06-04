@@ -65,6 +65,9 @@ static int tag_index(lua_State *L)
   dt_lua_tag_t tagid;
   luaA_to(L,dt_lua_tag_t,&tagid,-2);
   int index = luaL_checkinteger(L,-1);
+  if(index < 1) {
+    return luaL_error(L,"incorrect index in database");
+  }
   sqlite3_stmt *stmt = NULL;
   char query[1024];
   snprintf(query,sizeof(query),"select imgid from tagged_images order by imgid limit 1 offset %d",index -1);

@@ -193,6 +193,9 @@ static GList * style_item_table_to_id_list(lua_State*L, int index)
 static int style_table_index(lua_State*L)
 {
   int index = luaL_checkinteger(L,-1);
+  if(index < 1) {
+    return luaL_error(L,"incorrect index in database");
+  }
   sqlite3_stmt *stmt = NULL;
   char query[1024];
   snprintf(query,sizeof(query),"select name from styles order by name limit 1 offset %d",index -1);

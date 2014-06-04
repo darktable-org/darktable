@@ -128,6 +128,9 @@ static int film_len(lua_State*L)
 static int film_getnum(lua_State*L)
 {
   int index = luaL_checkinteger(L,-1);
+  if(index < 1) {
+    return luaL_error(L,"incorrect index in database");
+  }
   dt_lua_film_t film_id;
   luaA_to(L,dt_lua_film_t,&film_id,-2);
   sqlite3_stmt *stmt = NULL;
@@ -164,6 +167,9 @@ static int films_len(lua_State*L)
 static int films_index(lua_State*L)
 {
   int index = luaL_checkinteger(L,-1);
+  if(index < 1) {
+    return luaL_error(L,"incorrect index in database");
+  }
   sqlite3_stmt *stmt = NULL;
   char query[1024];
   snprintf(query,sizeof(query),"select id from film_rolls order by id limit 1 offset %d",index -1);
