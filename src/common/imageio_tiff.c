@@ -188,17 +188,9 @@ dt_imageio_open_tiff(
   }
 
   /* initialize cached image buffer */
-  t.orientation = dt_image_orientation(img);
-  if(t.orientation & 4)
-  {
-    t.image->width = t.height;
-    t.image->height = t.width;
-  }
-  else
-  {
-    t.image->width = t.width;
-    t.image->height = t.height;
-  }
+  t.orientation = 0;
+  t.image->width = t.width;
+  t.image->height = t.height;
 
   t.image->bpp = 4*sizeof(float);
 

@@ -206,7 +206,7 @@ CA_correct(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const fl
   const int height = roi_in->height;
   memcpy(out, in2, width*height*sizeof(float));
   const float *const in = out;
-  const uint32_t filters = dt_image_flipped_filter(&piece->pipe->image);
+  const uint32_t filters = dt_image_filter(&piece->pipe->image);
   //const float clip_pt = fminf(piece->pipe->processed_maximum[0], fminf(piece->pipe->processed_maximum[1], piece->pipe->processed_maximum[2]));
   const int TS = (width > 2024 && height > 2024) ? 256 : 64;
 

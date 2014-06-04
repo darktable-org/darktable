@@ -234,7 +234,7 @@ static int32_t dt_control_merge_hdr_job_run(dt_job_t *job)
     const dt_image_t *img = dt_image_cache_read_get(darktable.image_cache, imgid);
     dt_image_t image = *img;
     dt_image_cache_read_release(darktable.image_cache, img);
-    if(image.filters == 0 || image.bpp != sizeof(uint16_t))
+    if(image.filters == 0u || image.bpp != sizeof(uint16_t))
     {
       dt_control_log(_("exposure bracketing only works on raw images"));
       dt_mipmap_cache_read_release(darktable.mipmap_cache, &buf);
@@ -242,7 +242,7 @@ static int32_t dt_control_merge_hdr_job_run(dt_job_t *job)
       free(weight);
       goto error;
     }
-    filter = dt_image_flipped_filter(img);
+    filter = dt_image_filter(img);
     if(buf.size != DT_MIPMAP_FULL)
     {
       dt_control_log(_("failed to get raw buffer from image `%s'"), image.filename);

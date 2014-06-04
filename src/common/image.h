@@ -174,9 +174,9 @@ static inline int dt_image_orientation(const dt_image_t *img)
 {
   return img->orientation > 0 ? img->orientation : 0;
 }
-/** returns the (flipped) filter string for the demosaic pattern. */
+/** returns the filter string for the demosaic pattern. */
 static inline uint32_t
-dt_image_flipped_filter(const dt_image_t *img)
+dt_image_filter(const dt_image_t *img)
 {
   // from the dcraw source code documentation:
   //
@@ -203,108 +203,9 @@ dt_image_flipped_filter(const dt_image_t *img)
   // 0x16161616 <-> 0x49494949
   // 0x61616161 <-> 0x94949494
 
-  const int orient = dt_image_orientation(img);
-  uint32_t filters = img->filters;
-  if((orient & 1) && (img->height & 1))
-  {
-    switch(filters)
-    {
-      case 0x16161616u:
-        filters = 0x49494949u;
-        break;
-      case 0x49494949u:
-        filters = 0x16161616u;
-        break;
-      case 0x61616161u:
-        filters = 0x94949494u;
-        break;
-      case 0x94949494u:
-        filters = 0x61616161u;
-        break;
-      default:
-        filters = 0;
-        break;
-    }
-  }
-  if((orient & 2) && (img->width & 1))
-  {
-    switch(filters)
-    {
-      case 0x16161616u:
-        filters = 0x61616161u;
-        break;
-      case 0x49494949u:
-        filters = 0x94949494u;
-        break;
-      case 0x61616161u:
-        filters = 0x16161616u;
-        break;
-      case 0x94949494u:
-        filters = 0x49494949u;
-        break;
-      default:
-        filters = 0;
-        break;
-    }
-  }
-  switch(filters)
-  {
-    case 0:
-      // no mosaic is no mosaic, even rotated:
-      return 0;
-    case 0x16161616u:
-      switch(orient)
-      {
-        case 5:
-          return 0x61616161u;
-        case 6:
-          return 0x49494949u;
-        case 3:
-          return 0x94949494u;
-        default:
-          return 0x16161616u;
-      }
-      break;
-    case 0x61616161u:
-      switch(orient)
-      {
-        case 6:
-          return 0x16161616u;
-        case 3:
-          return 0x49494949u;
-        case 5:
-          return 0x94949494u;
-        default:
-          return 0x61616161u;
-      }
-      break;
-    case 0x49494949u:
-      switch(orient)
-      {
-        case 3:
-          return 0x61616161u;
-        case 6:
-          return 0x94949494u;
-        case 5:
-          return 0x16161616u;
-        default:
-          return 0x49494949u;
-      }
-      break;
-    default: // case 0x94949494u:
-      switch(orient)
-      {
-        case 6:
-          return 0x61616161u;
-        case 5:
-          return 0x49494949u;
-        case 3:
-          return 0x16161616u;
-        default:
-          return 0x94949494u;
-      }
-      break;
-  }
+  //NOTE: we do not rotate data until flip IOP
+
+  return img->filters;
 }
 /** return the raw orientation, from jpg orientation. */
 static inline int

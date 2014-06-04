@@ -559,13 +559,10 @@ dt_imageio_retval_t dt_imageio_open_jpeg(dt_image_t *img,  const char *filename,
   if(!img->exif_inited)
     (void) dt_exif_read(img, filename);
 
-  const int orientation = dt_image_orientation(img);
-
   dt_imageio_jpeg_t jpg;
   if(dt_imageio_jpeg_read_header(filename, &jpg)) return DT_IMAGEIO_FILE_CORRUPTED;
-  img->width  = (orientation & 4) ? jpg.height : jpg.width;
-  img->height = (orientation & 4) ? jpg.width  : jpg.height;
-
+  img->width  = jpg.width;
+  img->height = jpg.height;
 
   uint8_t *tmp = (uint8_t *)malloc(sizeof(uint8_t)*jpg.width*jpg.height*4);
   if(dt_imageio_jpeg_read(&jpg, tmp))
@@ -582,7 +579,7 @@ dt_imageio_retval_t dt_imageio_open_jpeg(dt_image_t *img,  const char *filename,
     return DT_IMAGEIO_CACHE_FULL;
   }
 
-  dt_imageio_flip_buffers_ui8_to_float((float *)buf, tmp, 0.0f, 255.0f, 4, jpg.width, jpg.height, jpg.width, jpg.height, 4*jpg.width, orientation);
+  dt_imageio_flip_buffers_ui8_to_float((float *)buf, tmp, 0.0f, 255.0f, 4, jpg.width, jpg.height, jpg.width, jpg.height, 4*jpg.width, 0);
 
   free(tmp);
 

@@ -200,7 +200,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   // do nothing
 //   }
 
-  const int filters = dt_image_flipped_filter(&piece->pipe->image);
+  const int filters = dt_image_filter(&piece->pipe->image);
 
   if(!dt_dev_pixelpipe_uses_downsampled_input(piece->pipe) && filters && piece->pipe->image.bpp != 4)
   {

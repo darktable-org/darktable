@@ -139,8 +139,8 @@ dt_imageio_retval_t dt_imageio_open_exr (dt_image_t *img, const char *filename, 
     return DT_IMAGEIO_CACHE_FULL;
   }
 
-  for (int i=0; i < img->width * img->height * 4; i++)
-    buf[i] = 0.0;
+  //FIXME: is this really needed?
+  memset(buf, 0, 4*img->width*img->height*sizeof(float));
 
   /* setup framebuffer */
   xstride = sizeof(float) * 4;
