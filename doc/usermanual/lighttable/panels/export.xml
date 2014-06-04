@@ -372,8 +372,8 @@
       <title>style</title>
 
       <para>
-        This option lets you choose a <emphasis>style</emphasis>: a collection of history stack items, which
-        darktable concatenates with the existing history stack to generate the output image.
+        This option lets you choose a <emphasis>style</emphasis>: an extra set of development steps which
+        darktable adds to an image's existing history stack to generate the output image.
         These history items are only added temporarily; the original history stack does not
         change. You can use this feature to add extra processing steps and parameters that you
         want to be applied to a particular batch of exported images. For example, you may define a style that
