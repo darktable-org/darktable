@@ -418,9 +418,15 @@ darktable.debug.dump:set_text([[This will return a string describing everything 
 This function is recursion-safe and can be used to dump _G if needed.]])
 darktable.debug.dump:add_parameter("object","anything",[[The object to dump.]])
 darktable.debug.dump:add_parameter("name","string",[[A name to use for the object.]]):set_attribute("optional",true)
+tmp_node = darktable.debug.dump:add_parameter("known","table",[[A table of object,string pairs. Any object in that table will not be dumped, the string will be printed instead.]]..para().."defaults to "..my_tostring(darktable.debug.known).." if not set")
+tmp_node:set_attribute("optional",true)
 darktable.debug.dump:add_return("string",[[A string containing a text description of the object - can be very long.]])
 
 darktable.debug.debug:set_text([[Initialized to false; set it to true to also dump information about metatables.]])
+darktable.debug.max_depth:set_text([[Initialized to 10; The maximum depth to recursively dump content.]])
+
+remove_all_children(darktable.debug.known) -- debug values, not interesting
+darktable.debug.known:set_text([[A table containing the default value of ]]..my_tostring(tmp_node))
 darktable.debug.type:set_text([[Similar to the system function type() but it will return the real type instead of "userdata" for darktable specific objects.]])
 darktable.debug.type:add_parameter("object","anything",[[The object whos type must be reported.]])
 darktable.debug.type:add_return("string",[[A string describing the type of the object.]])

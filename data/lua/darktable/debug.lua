@@ -4,7 +4,7 @@ local dt = require "darktable"
 local debug = require "debug"
 local introspect_internal
 local introspect_body
-local M = {debug = false}
+local M = {debug = false, max_depth = 10, known = {[_G] = "_G", [_ENV] = "_ENV" }}
 local depth = 0;
 
 local function get_userdata_type(object)
@@ -68,7 +68,7 @@ end
 introspect_body = function (object,indent,name,known,ancestors)
 	if name == nil then name = "(unknown)" end
 	local result = ""
-	if #indent > 10*#indent_string then
+	if #indent > M.max_depth*#indent_string then
 		return "max depth\n"
 	end
 	local obj_expand_mode = type(object)
@@ -131,11 +131,19 @@ end
 
 
 
-function M.dump(object,name) 
+function M.dump(object,name,orig_known) 
 	if name == nil or name == "" then
 		name = "toplevel"
 	end
-	return introspect_internal(object,"",name,{[key(_G)]="_G", [key(_ENV)]="_ENV"},{})
+	if orig_known == nil then
+		orig_known = M.known
+	end
+	local known = {}
+	for k,v in pairs(orig_known) do
+		known[key(k)] = v
+	end
+	known[key(object)] = nil -- always document the object that was actually asked
+	return introspect_internal(object,"",name,known,{})
 end
 
 function M.type(object)
