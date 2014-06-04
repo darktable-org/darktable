@@ -106,14 +106,27 @@ typedef void dt_iop_gui_data_t;
 typedef void dt_iop_data_t;
 typedef void dt_iop_global_data_t;
 
-typedef struct dt_dev_histogram_params_t
+//params to be used to collect histogram
+typedef struct dt_dev_histogram_collection_params_t
 {
   /** histogram_collect: if NULL, correct is set; else should be set manually */
   const struct dt_iop_roi_t *roi;
   /** count of histogram bins. */
   uint32_t bins_count;
 }
-dt_dev_histogram_params_t;
+dt_dev_histogram_collection_params_t;
+
+//params used to collect histogram during last histogram capture
+typedef struct dt_dev_histogram_stats_t
+{
+  /** count of histogram bins. */
+  uint32_t bins_count;
+  /** count of pixels sampled during histogram capture. */
+  uint32_t pixels;
+  /** count of channels: 1 for RAW, 3 for rgb/Lab. */
+  uint32_t ch;
+}
+dt_dev_histogram_stats_t;
 
 /** when to collect histogram */
 typedef enum dt_dev_request_flags_t
@@ -238,11 +251,9 @@ typedef struct dt_iop_module_t
   /** set to source for histogram */
   dt_dev_pixelpipe_type_t request_histogram_source;
   /** set histogram generation params */
-  dt_dev_histogram_params_t histogram_params;
-  /** INFO: count of histogram bins during last histogram capture. */
-  uint32_t histogram_bins_count;
-  /** INFO: count of pixels used during last histogram capture. */
-  uint32_t histogram_pixels;
+  dt_dev_histogram_collection_params_t histogram_params;
+  /** stats of captured histogram */
+  dt_dev_histogram_stats_t histogram_stats;
   /** set to 1 if you want the mask to be transferred into alpha channel during next eval. gui mode only. */
   int32_t request_mask_display;
   /** set to 1 if you want the blendif mask to be suppressed in the module in focus. gui mode only. */
