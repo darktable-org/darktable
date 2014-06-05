@@ -22,7 +22,7 @@
 #include <string.h>
 #include <stdarg.h>
 
-void to_char_num(lua_State* L, luaA_Type type_id,void* c_out, int index,int size)
+static void to_char_array(lua_State* L, luaA_Type type_id,void* c_out, int index,int size)
 {
   size_t tgt_size;
   const char * value = luaL_checklstring(L,index,&tgt_size);
@@ -30,7 +30,7 @@ void to_char_num(lua_State* L, luaA_Type type_id,void* c_out, int index,int size
   {
     luaL_error(L,"string '%s' too long (max is %d)",value,size);
   }
-  luaA_to_char_ptr(L,type_id,c_out,index);
+  strncpy(c_out,value,size);
 }
 
 int push_char_array(lua_State* L, luaA_Type type_id,const void* c_in)
@@ -41,39 +41,39 @@ int push_char_array(lua_State* L, luaA_Type type_id,const void* c_in)
 
 void to_char20(lua_State* L, luaA_Type type_id, void* c_out, int index)
 {
-  to_char_num(L,type_id,c_out,index,20);
+  to_char_array(L,type_id,c_out,index,20);
 }
 void to_char32(lua_State* L, luaA_Type type_id, void* c_out, int index)
 {
-  to_char_num(L,type_id,c_out,index,32);
+  to_char_array(L,type_id,c_out,index,32);
 }
 void to_char52(lua_State* L, luaA_Type type_id, void* c_out, int index)
 {
-  to_char_num(L,type_id,c_out,index,52);
+  to_char_array(L,type_id,c_out,index,52);
 }
 void to_char64(lua_State* L, luaA_Type type_id, void* c_out, int index)
 {
-  to_char_num(L,type_id,c_out,index,64);
+  to_char_array(L,type_id,c_out,index,64);
 }
 void to_char128(lua_State* L, luaA_Type type_id, void* c_out, int index)
 {
-  to_char_num(L,type_id,c_out,index,128);
+  to_char_array(L,type_id,c_out,index,128);
 }
 void to_char512(lua_State* L, luaA_Type type_id, void* c_out, int index)
 {
-  to_char_num(L,type_id,c_out,index,512);
+  to_char_array(L,type_id,c_out,index,512);
 }
 void to_char1024(lua_State* L, luaA_Type type_id, void* c_out, int index)
 {
-  to_char_num(L,type_id,c_out,index,1024);
+  to_char_array(L,type_id,c_out,index,1024);
 }
 void to_charfilename_length(lua_State* L, luaA_Type type_id, void* c_out, int index)
 {
-  to_char_num(L,type_id,c_out,index,DT_MAX_FILENAME_LEN);
+  to_char_array(L,type_id,c_out,index,DT_MAX_FILENAME_LEN);
 }
 void to_charpath_length(lua_State* L, luaA_Type type_id, void* c_out, int index)
 {
-  to_char_num(L,type_id,c_out,index,PATH_MAX);
+  to_char_array(L,type_id,c_out,index,PATH_MAX);
 }
 
 int dt_lua_autotype_inext(lua_State *L)
