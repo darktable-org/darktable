@@ -588,6 +588,20 @@ void cleanup_global(dt_iop_module_so_t *module)
 }
 
 static void
+autoexp_disable(dt_iop_module_t *self)
+{
+  if (self->request_color_pick != DT_REQUEST_COLORPICK_MODULE) return;
+
+  dt_iop_exposure_gui_data_t *g = (dt_iop_exposure_gui_data_t *)self->gui_data;
+
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->autoexp), FALSE);
+
+  gtk_widget_set_sensitive(GTK_WIDGET(g->autoexpp), FALSE);
+
+  self->request_color_pick = DT_REQUEST_COLORPICK_OFF;
+}
+
+static void
 mode_callback(GtkWidget *combo, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
@@ -602,6 +616,7 @@ mode_callback(GtkWidget *combo, gpointer user_data)
   switch(new_mode)
   {
     case EXPOSURE_MODE_DEFLICKER:
+      autoexp_disable(self);
       if(!dt_image_is_raw(&self->dev->image_storage))
       {
         dt_bauhaus_combobox_set(g->mode, g_list_index(g->modes, GUINT_TO_POINTER(EXPOSURE_MODE_MANUAL)));
@@ -623,28 +638,6 @@ mode_callback(GtkWidget *combo, gpointer user_data)
 }
 
 static void exposure_set_black(struct dt_iop_module_t *self, const float black);
-
-static void
-autoexp_disable(dt_iop_module_t *self)
-{
-  if (self->request_color_pick != DT_REQUEST_COLORPICK_MODULE) return;
-
-  dt_iop_exposure_gui_data_t *g = (dt_iop_exposure_gui_data_t *)self->gui_data;
-
-  gulong signal_id = g_signal_lookup("toggled", GTK_TYPE_CHECK_BUTTON);
-  gulong handler_id = g_signal_handler_find(G_OBJECT(g->autoexp),
-                                            G_SIGNAL_MATCH_ID,
-                                            signal_id,
-                                            0, NULL, NULL, NULL);
-
-  g_signal_handler_block(G_OBJECT (g->autoexp), handler_id);
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->autoexp), FALSE);
-  g_signal_handler_unblock(G_OBJECT (g->autoexp), handler_id);
-
-  gtk_widget_set_sensitive(GTK_WIDGET(g->autoexpp), FALSE);
-
-  self->request_color_pick = DT_REQUEST_COLORPICK_OFF;
-}
 
 static void exposure_set_white(struct dt_iop_module_t *self, const float white)
 {
