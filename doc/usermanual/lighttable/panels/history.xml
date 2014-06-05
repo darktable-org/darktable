@@ -18,9 +18,13 @@
       <tbody>
         <row>
           <entry>
-            This panel allows manipulating the history stack (development) of images. For each
-            image, development is written in a sidecar file (.xmp), and is fully
-            non-destructive.
+            This panel lets you manipulate an image's <emphasis>history stack</emphasis>, which
+            contains all the steps of the development process as you edit a photo in darkroom mode.
+            For each image you edit, the history stack is stored in a sidecar .xmp file, along with
+            other metadata, while the RAW file remains untouched, so there is no risk to the original image.
+            When you select a RAW image in lighttable view to copy and paste its history stack, the history
+            is copied from the associated sidecar file. The history stack is not saved to the sidecar files
+            for <emphasis>exported</emphasis> images, hower.
           </entry>
           <entry>
             <graphic fileref="lighttable/images/panel_historystack.png" scalefit="1" width="80%" align="center" />
@@ -39,9 +43,11 @@
       <title>copy</title>
 
       <para>
-        Copy the history stack of the selected image. You will be prompted for which items are
-        to be include. If more than one image is selected, the history stack is taken from the
-        image that has been selected first.
+        Copy part or all of the history stack of the selected RAW image. Different steps in the image's development
+        history will appear as a list of items, and you will be prompted to check which items to
+        include when you copy an image's history. You can then paste the history stack onto other images,
+        reproducing the development steps for the new images. If more than one image is selected, the history
+        stack is copied only from the image whose thumbnail is the highest in the lighttable view.
       </para>
 
     </sect4>
@@ -51,9 +57,9 @@
       <title>copy all</title>
 
       <para>
-        Copy the complete history stack of the first selected image; all items will be included.
-        If more than one image is selected, the history stack is taken from the image that has
-        been selected first.
+        Copy the complete history stack of the selected image; all history items will be included.
+        If more than one image is selected, the history stack is copied only from the image whose
+        thumbnail is the highest in the lighttable view.
       </para>
 
     </sect4>
@@ -74,9 +80,9 @@
       <title>overwrite/append</title>
 
       <para>
-        Describes how a new history stack behaves when pasted on an image that already has a
-        history stack. <quote>Overwrite</quote> will delete the previous history stack, whereas
-        <quote>append</quote> will concatenate the two history stacks.
+        Describes how a copied history stack behaves when pasted on an image that already has a
+        history stack. <quote>Overwrite</quote> will replace the previous history stack, whereas
+        <quote>append</quote> will add the copied processing steps after the existing history stack.
       </para>
 
     </sect4>
@@ -86,9 +92,9 @@
       <title>paste</title>
 
       <para>
-        Paste a previously copied history stack onto all selected images. You will be prompted
-        for which items to include. This button is greyed out, until a history stack is copied
-        from another image.
+        Paste part or all of a previously copied history stack onto all selected images. You will be prompted
+        to check which history items to include. This button is greyed out and unusable until you copy
+        the history stack from an image.
       </para>
 
     </sect4>
@@ -98,8 +104,8 @@
       <title>paste all</title>
 
       <para>
-        Paste all previously copied items of a history history stack onto all selected images.
-        This button is greyed out, until a history stack is copied from another image.
+        Paste all previously copied items of a history stack onto all selected images.
+        This button is greyed out and unusable until you copy the history stack from an image.
       </para>
 
     </sect4>
@@ -117,17 +123,22 @@
       </indexterm>
 
       <para>
-        Opens a dialog box to select an XMP file, thus loading a history stack that you can
-        paste on images.
+        Opens a dialog box to select an XMP file, thus loading a history stack <emphasis>and</emphasis>
+        automatically pasting it onto the currently selected images. The history stack is not saved to
+        the sidecar files for exported images, only metadata, so those sidecars won't work here;
+        in fact, if you try to directly load a sidecar file which has no history data, it will delete any
+        existing history stacks for the selected images, so be careful. The <quote>load sidecar</quote>
+        function is mostly useful because you can select RAW .xmp files from anywhere, not just from
+        images visible in the current collection in lighttable view.
       </para>
 
       <para>
-        Files that were exported by darktable typically contain the full history stack if the
+        darktable does <emphasis>embed</emphasis> the full history stack into exported images, if the
         file format supports embedded metadata (see <xref linkend="export_selected"/> about this
-        feature and its limitations). You can load an exported image as a sidecar file in the
-        same way as you do with an XMP file. This feature allows you to recover all parameter
-        settings in case you have accidentally lost or overwritten the XMP file. All you need is
-        the source image, typically a RAW, and the exported file.
+        feature and its limitations). You can therefore also load an <emphasis>exported image</emphasis>
+        as if it were a sidecar file, in the same way as you do with XMP files. This
+        allows you to recover the development history in case you accidentally lose or
+        overwrite the XMP file.
       </para>
 
     </sect4>
@@ -142,9 +153,9 @@
       </para>
 
       <para>
-        By default darktable generates and updates sidecar files automatically whenever you work
+        By default, darktable already generates and updates sidecar files automatically as you work
         on an image and change the history stack. You can disable automatic sidecar file
-        generation in the preferences dialog (see <xref linkend="core_options"/>). However, this
+        generation in the preferences dialog (see <xref linkend="core_options"/>); however, this
         is not recommended.
       </para>
 
