@@ -603,8 +603,11 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
     dt_dcraw_adobe_coeff(makermodel, (float (*)[12])cam_xyz);
     if(isnan(cam_xyz[0]))
     {
-      fprintf(stderr, "[colorin] `%s' color matrix not found!\n", makermodel);
-      dt_control_log(_("`%s' color matrix not found!"), makermodel);
+      if(dt_image_is_raw(&pipe->image))
+      {
+        fprintf(stderr, "[colorin] `%s' color matrix not found!\n", makermodel);
+        dt_control_log(_("`%s' color matrix not found!"), makermodel);
+      }
       snprintf(p->iccprofile, sizeof(p->iccprofile), "linear_rec709_rgb");
     }
     else d->input = dt_colorspaces_create_xyzimatrix_profile((float (*)[3])cam_xyz);
