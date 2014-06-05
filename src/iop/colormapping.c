@@ -1133,7 +1133,7 @@ gui_cleanup(struct dt_iop_module_t *self)
   dt_colorspaces_cleanup_profile(g->hLab);
   cmsDeleteTransform(g->xform);
   dt_pthread_mutex_destroy(&g->lock);
-  if(g->buffer) free(g->buffer);
+  free(g->buffer);
   free(self->gui_data);
   self->gui_data = NULL;
 }

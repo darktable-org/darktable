@@ -1921,10 +1921,8 @@ static int dt_path_get_source_area(dt_iop_module_t *module, dt_dev_pixelpipe_iop
   int points_count,border_count;
   if (!_path_get_points_border(module->dev,form,module->priority,piece->pipe,&points,&points_count,&border,&border_count,1))
   {
-    if(points)
-      free(points);
-    if(border)
-      free(border);
+    free(points);
+    free(border);
     return 0;
   }
 
@@ -1977,10 +1975,8 @@ static int dt_path_get_area(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *pie
   int points_count,border_count;
   if (!_path_get_points_border(module->dev,form,module->priority,piece->pipe,&points,&points_count,&border,&border_count,0))
   {
-    if(points)
-      free(points);
-    if(border)
-      free(border);
+    free(points);
+    free(border);
     return 0;
   }
 
@@ -2058,10 +2054,8 @@ static int dt_path_get_mask(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *pie
   int points_count,border_count;
   if (!_path_get_points_border(module->dev,form,module->priority,piece->pipe,&points,&points_count,&border,&border_count,0))
   {
-    if(points)
-      free(points);
-    if(border)
-      free(border);
+    free(points);
+    free(border);
     return 0;
   }
 
@@ -2436,10 +2430,8 @@ static int dt_path_get_mask_roi(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t 
   int points_count, border_count;
   if (!_path_get_points_border(module->dev,form,module->priority,piece->pipe,&points,&points_count,&border,&border_count,0) || (points_count <= 2))
   {
-    if(points)
-      free(points);
-    if(border)
-      free(border);
+    free(points);
+    free(border);
     return 0;
   }
 

@@ -260,16 +260,10 @@ exit:
     // Until we get symbolic error status codes, if rc is 1, return 0
     rc = (rc == 1) ? 0 : 1;
   }
-  if (profile)
-  {
-    free(profile);
-    profile = NULL;
-  }
-  if (rowdata)
-  {
-    free(rowdata);
-    rowdata = NULL;
-  }
+  free(profile);
+  profile = NULL;
+  free(rowdata);
+  rowdata = NULL;
 
   return rc;
 }

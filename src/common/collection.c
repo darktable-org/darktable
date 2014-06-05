@@ -172,8 +172,7 @@ dt_collection_update (const dt_collection_t *collection)
   result = _dt_collection_store(collection, query);
 
   /* free memory used */
-  if (sq)
-    g_free(sq);
+  g_free(sq);
   g_free(wq);
   g_free(selq);
   g_free (query);
@@ -477,8 +476,7 @@ GList *dt_collection_get_selected (const dt_collection_t *collection, int limit)
 
 
   /* free allocated strings */
-  if (sq)
-    g_free(sq);
+  g_free(sq);
 
   g_free(query);
 

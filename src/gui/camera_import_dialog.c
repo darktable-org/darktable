@@ -470,8 +470,7 @@ static void _camera_import_dialog_run(_camera_import_dialog_t *data)
       all_good=TRUE;
       GtkTreeSelection *selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(gtk_bin_get_child(GTK_BIN(data->import.treeview))));
       // Now build up result from store into GList **result
-      if(data->params->result)
-        g_list_free(data->params->result);
+      g_list_free(data->params->result);
       data->params->result=NULL;
       GtkTreeModel *model=GTK_TREE_MODEL(data->store);
       GList *sp= gtk_tree_selection_get_selected_rows(selection,&model);

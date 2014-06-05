@@ -924,11 +924,8 @@ void dt_iop_cleanup_histogram(gpointer data, gpointer user_data)
 {
   dt_iop_module_t *module = (dt_iop_module_t *)data;
 
-  if(module->histogram)
-  {
-    free(module->histogram);
-    module->histogram = NULL;
-  }
+  free(module->histogram);
+  module->histogram = NULL;
   module->histogram_stats.bins_count = 0;
   module->histogram_stats.pixels = 0;
 }
@@ -1229,26 +1226,14 @@ void dt_iop_cleanup_module(dt_iop_module_t *module)
 {
   module->cleanup(module);
 
-  if (module->default_params != NULL)
-  {
-    free(module->default_params);
-    module->default_params = NULL;
-  }
-  if (module->blend_params != NULL)
-  {
-    free(module->blend_params);
-    module->blend_params = NULL;
-  }
-  if (module->default_blendop_params != NULL)
-  {
-    free(module->default_blendop_params);
-    module->default_blendop_params = NULL;
-  }
-  if (module->histogram != NULL)
-  {
-    free(module->histogram);
-    module->histogram = NULL;
-  }
+  free(module->default_params);
+  module->default_params = NULL;
+  free(module->blend_params);
+  module->blend_params = NULL;
+  free(module->default_blendop_params);
+  module->default_blendop_params = NULL;
+  free(module->histogram);
+  module->histogram = NULL;
 }
 
 void dt_iop_unload_modules_so()

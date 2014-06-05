@@ -930,11 +930,11 @@ void dt_masks_events_post_expose (struct dt_iop_module_t *module, cairo_t *cr, i
 
 void dt_masks_clear_form_gui(dt_develop_t *dev)
 {
-  if (dev->form_gui->points) g_list_free(dev->form_gui->points);
+  g_list_free(dev->form_gui->points);
   dev->form_gui->points = NULL;
-  if (dev->form_gui->guipoints) free(dev->form_gui->guipoints);
+  free(dev->form_gui->guipoints);
   dev->form_gui->guipoints = NULL;
-  if (dev->form_gui->guipoints_payload) free(dev->form_gui->guipoints_payload);
+  free(dev->form_gui->guipoints_payload);
   dev->form_gui->guipoints_payload = NULL;
   dev->form_gui->guipoints_count = 0;
   dev->form_gui->pipe_hash = dev->form_gui->formid = 0;

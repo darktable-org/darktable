@@ -292,8 +292,7 @@ gboolean dt_variables_expand(dt_variables_params_t *params, gchar *string, gbool
   gchar *token=NULL;
 
   // Let's free previous expanded result if any...
-  if( params->data->result )
-    g_free(  params->data->result );
+  g_free(  params->data->result );
 
   if(iterate)
     params->data->sequence++;

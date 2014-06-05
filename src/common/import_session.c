@@ -205,8 +205,7 @@ void
 dt_import_session_set_name(struct dt_import_session_t *self, const char *name)
 {
   /* free previous jobcode name */
-  if (self->vp->jobcode)
-    g_free((void *)self->vp->jobcode);
+  g_free((void *)self->vp->jobcode);
 
   self->vp->jobcode = g_strdup(name);
 

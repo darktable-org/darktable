@@ -501,7 +501,7 @@ int write_image (dt_imageio_module_data_t *j2k_tmp, const char *filename, const 
 
   /* free user parameters structure */
   g_free(parameters.cp_comment);
-  if(parameters.cp_matrice) free(parameters.cp_matrice);
+  free(parameters.cp_matrice);
 
   return ((rc == 1) ? 0 : 1);
 }

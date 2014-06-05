@@ -824,8 +824,7 @@ after_drawing:
     }
   }
 
-  if(query_ids)
-    free(query_ids);
+  free(query_ids);
   //oldpan = pan;
   if(darktable.unmuted & DT_DEBUG_CACHE)
     dt_mipmap_cache_print(darktable.mipmap_cache);
@@ -1162,11 +1161,8 @@ void expose_full_preview(dt_view_t *self, cairo_t *cr, int32_t width, int32_t he
       gboolean from_cache = FALSE;
       char filename[2048];
       dt_image_full_path(lib->full_preview_id, filename, sizeof(filename), &from_cache);
-      if(lib->full_res_thumb)
-      {
-        free(lib->full_res_thumb);
-        lib->full_res_thumb = 0; 
-      }
+      free(lib->full_res_thumb);
+      lib->full_res_thumb = NULL;
       if(!dt_imageio_large_thumbnail(
           filename,
           &lib->full_res_thumb,

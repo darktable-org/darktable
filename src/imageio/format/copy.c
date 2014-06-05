@@ -85,14 +85,10 @@ int write_image (dt_imageio_module_data_t *ppm, const char *filename, const void
 
   status = 0;
 END:
-  if(sourcefile)
-    g_free(sourcefile);
-  if(targetfile)
-    g_free(targetfile);
-  if(xmpfile)
-    g_free(xmpfile);
-  if(content)
-    g_free(content);
+  g_free(sourcefile);
+  g_free(targetfile);
+  g_free(xmpfile);
+  g_free(content);
   if(fin)
     fclose(fin);
   if(fout)

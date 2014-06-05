@@ -143,8 +143,7 @@ gchar* dt_util_glist_to_str(const gchar* separator, GList * items, const unsigne
     while((items=g_list_next(items)) != NULL);
   }
   g_list_free(items);
-  if(strings != NULL)
-    g_free(strings);
+  g_free(strings);
 
   return result;
 }

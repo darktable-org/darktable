@@ -322,9 +322,9 @@ store (dt_imageio_module_storage_t *self, dt_imageio_module_data_t *sdata, const
              "\\newpage\n\n", relfilename);
 
     pair->pos = num;
-    // if(res_title) g_list_free_full(res_title, &g_free);
-    // if(res_desc) g_list_free_full(res_desc, &g_free);
-    // if(res_subj) g_list_free_full(res_subj, &g_free);
+    // g_list_free_full(res_title, &g_free);
+    // g_list_free_full(res_desc, &g_free);
+    // g_list_free_full(res_subj, &g_free);
     // g_free(tags);
     d->l = g_list_insert_sorted(d->l, pair, (GCompareFunc)sort_pos);
   } // end of critical block

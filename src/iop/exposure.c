@@ -413,8 +413,7 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
         dt_dev_histogram_stats_t histogram_stats;
         deflicker_prepare_histogram(self, &histogram, &histogram_stats);
         compute_correction(self, piece, histogram, &histogram_stats, &d->exposure);
-        if(histogram != NULL)
-          free(histogram);
+        free(histogram);
       }
       d->mode = EXPOSURE_MODE_MANUAL;
     }
@@ -552,11 +551,8 @@ void reload_defaults(dt_iop_module_t *module)
   {
     dt_iop_exposure_gui_data_t *g = (dt_iop_exposure_gui_data_t *)module->gui_data;
 
-    if(g->deflicker_histogram)
-    {
-      free(g->deflicker_histogram);
-      g->deflicker_histogram = NULL;
-    }
+    free(g->deflicker_histogram);
+    g->deflicker_histogram = NULL;
 
     if(dt_image_is_raw(&module->dev->image_storage))
       deflicker_prepare_histogram(module, &g->deflicker_histogram, &g->deflicker_histogram_stats);
@@ -988,11 +984,8 @@ void gui_init(struct dt_iop_module_t *self)
 void gui_cleanup(struct dt_iop_module_t *self)
 {
   dt_iop_exposure_gui_data_t *g = (dt_iop_exposure_gui_data_t *)self->gui_data;
-  if(g->deflicker_histogram)
-  {
-    free(g->deflicker_histogram);
-    g->deflicker_histogram = NULL;
-  }
+  free(g->deflicker_histogram);
+  g->deflicker_histogram = NULL;
   g_list_free(g->deflicker_histogram_sources);
   g_list_free(g->modes);
 

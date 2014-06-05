@@ -221,8 +221,7 @@ static gchar *_string_substitute(gchar *string,const gchar *search,const gchar *
 {
   gchar* _replace = _string_escape(replace);
   gchar* result = dt_util_str_replace(string, search, _replace);
-  if(_replace)
-    g_free(_replace);
+  g_free(_replace);
   return result;
 }
 

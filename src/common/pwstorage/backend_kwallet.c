@@ -223,8 +223,7 @@ static gboolean init_kwallet(backend_kwallet_context_t *context)
     return FALSE;
 
   // Get the wallet name.
-  if(context->wallet_name)
-    g_free(context->wallet_name);
+  g_free(context->wallet_name);
 
   ret = g_dbus_proxy_call_sync(context->proxy,
                                "networkWallet",

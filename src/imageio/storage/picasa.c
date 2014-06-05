@@ -741,8 +741,7 @@ static const gchar *picasa_upload_photo_to_album(PicasaContext *ctx, gchar *albu
 
       xmlFree( updateUri );
       xmlFree( writebuffer.data );
-      if (response.data != NULL)
-        g_free(response.data);
+      g_free(response.data);
 
       curl_slist_free_all( headers );
     }

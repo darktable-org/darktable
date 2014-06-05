@@ -288,7 +288,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
       dt_pthread_mutex_unlock(&g->lock);
     }
 
-    if (tmp) g_free(tmp);
+    g_free(tmp);
     if (gauss) dt_gaussian_free(gauss);
   }
 }
@@ -555,8 +555,8 @@ void gui_cleanup(struct dt_iop_module_t *self)
                                self);
 
   dt_iop_zonesystem_gui_data_t *g = (dt_iop_zonesystem_gui_data_t *)self->gui_data;
-  if(g->in_preview_buffer) g_free (g->in_preview_buffer);
-  if(g->out_preview_buffer) g_free (g->out_preview_buffer);
+  g_free (g->in_preview_buffer);
+  g_free (g->out_preview_buffer);
   if(g->image) cairo_surface_destroy(g->image);
   free(g->image_buffer);
   dt_pthread_mutex_destroy(&g->lock);
