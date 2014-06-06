@@ -129,9 +129,9 @@ void init_key_accels(dt_iop_module_so_t *self)
   dt_accel_register_slider_iop(self, FALSE, NC_("accel", "black"));
   dt_accel_register_slider_iop(self, FALSE, NC_("accel", "exposure"));
   dt_accel_register_slider_iop(self, FALSE, NC_("accel", "auto-exposure"));
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "deflicker-percentile"));
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "deflicker-level"));
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "deflicker-histogram-source"));
+  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "percentile"));
+  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "level"));
+  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "histogram source"));
 }
 
 void connect_key_accels(dt_iop_module_t *self)
@@ -142,9 +142,9 @@ void connect_key_accels(dt_iop_module_t *self)
   dt_accel_connect_slider_iop(self, "black", GTK_WIDGET(g->black));
   dt_accel_connect_slider_iop(self, "exposure", GTK_WIDGET(g->exposure));
   dt_accel_connect_slider_iop(self, "auto-exposure", GTK_WIDGET(g->autoexpp));
-  dt_accel_connect_slider_iop(self, "deflicker-percentile", GTK_WIDGET(g->deflicker_percentile));
-  dt_accel_connect_slider_iop(self, "deflicker-level", GTK_WIDGET(g->deflicker_level));
-  dt_accel_connect_slider_iop(self, "deflicker-histogram-source", GTK_WIDGET(g->deflicker_histogram_source));
+  dt_accel_connect_slider_iop(self, "percentile", GTK_WIDGET(g->deflicker_percentile));
+  dt_accel_connect_slider_iop(self, "level", GTK_WIDGET(g->deflicker_level));
+  dt_accel_connect_slider_iop(self, "histogram source", GTK_WIDGET(g->deflicker_histogram_source));
 }
 
 int

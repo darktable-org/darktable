@@ -461,7 +461,7 @@ void gui_init(struct dt_iop_module_t *self)
   dt_bauhaus_combobox_add(g->combo1,_("red"));
   dt_bauhaus_combobox_add(g->combo1,_("green"));
   dt_bauhaus_combobox_add(g->combo1,_("blue"));
-  dt_bauhaus_combobox_add(g->combo1,_("gray"));
+  dt_bauhaus_combobox_add(g->combo1,C_("channelmixer", "gray"));
   dt_bauhaus_combobox_set(g->combo1, CHANNEL_RED );
 
   g_signal_connect (G_OBJECT (g->combo1), "value-changed",
