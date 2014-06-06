@@ -120,9 +120,8 @@ local function print_content(node)
 	local result = ""
 	if  rtype then
 		-- synopsis was here
-		result = result ..rtype.."\n"
+		result = result .."<formalpara><title>"..rtype.."</title><para></para></formalpara>\n"
 	end
-	--result = result ..parse_text(node).."\n"
 	result = result .."<para>"..doc.get_text(node).."</para>\n"
 	result = result ..print_attributes(node)
 	result = result.."\n"
@@ -198,7 +197,7 @@ parse_doc_node = function(node,parent,prev_name)
 		result = result..'</indexterm>\n'
 	end
 	if(not doc.is_main_parent(node,parent,prev_name) ) then
-		result = result .. "see "..get_node_with_link(node,doc.get_name(node)).."\n"
+		result = result .. "<para>see "..get_node_with_link(node,doc.get_name(node)).."</para>\n"
 	else
 		result = result .. print_content(node,parent)
 	end
