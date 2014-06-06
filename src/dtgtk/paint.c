@@ -18,6 +18,7 @@
 
 #include <math.h>
 #include "paint.h"
+#include "gui/draw.h"
 
 #ifndef M_PI
 #define M_PI 3.141592654
@@ -963,10 +964,11 @@ void dtgtk_cairo_paint_overlays(cairo_t *cr,gint x,gint y,gint w,gint h,gint fla
   gint s = (w<h?w:h);
   cairo_translate(cr, x+(w/2.0)-(s/2.0), y+(h/2.0)-(s/2.0));
   cairo_scale (cr,s,s);
-
   cairo_set_line_width(cr, .3);
-  cairo_arc (cr, 0.5, 0.5, 0.4, 0., 2.0f*M_PI);
-  cairo_stroke (cr);
+
+  dt_draw_star(cr, 0.5, 0.5, 1.0, 0.5);
+
+  cairo_stroke(cr);
 }
 
 // TODO: Find better icon
