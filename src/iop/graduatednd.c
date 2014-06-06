@@ -66,27 +66,27 @@ void init_presets (dt_iop_module_so_t *self)
 {
   DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "begin", NULL, NULL, NULL);
 
-  dt_gui_presets_add_generic(_("neutral grey ND2 (soft)"), self->op, self->version(), &(dt_iop_graduatednd_params_t)
+  dt_gui_presets_add_generic(_("neutral gray ND2 (soft)"), self->op, self->version(), &(dt_iop_graduatednd_params_t)
   {
     1,0,0,50,0,0
   } , sizeof(dt_iop_graduatednd_params_t), 1);
-  dt_gui_presets_add_generic(_("neutral grey ND4 (soft)"), self->op, self->version(), &(dt_iop_graduatednd_params_t)
+  dt_gui_presets_add_generic(_("neutral gray ND4 (soft)"), self->op, self->version(), &(dt_iop_graduatednd_params_t)
   {
     2,0,0,50,0,0
   } , sizeof(dt_iop_graduatednd_params_t), 1);
-  dt_gui_presets_add_generic(_("neutral grey ND8 (soft)"), self->op, self->version(), &(dt_iop_graduatednd_params_t)
+  dt_gui_presets_add_generic(_("neutral gray ND8 (soft)"), self->op, self->version(), &(dt_iop_graduatednd_params_t)
   {
     3,0,0,50,0,0
   } , sizeof(dt_iop_graduatednd_params_t), 1);
-  dt_gui_presets_add_generic(_("neutral grey ND2 (hard)"), self->op, self->version(), &(dt_iop_graduatednd_params_t)
+  dt_gui_presets_add_generic(_("neutral gray ND2 (hard)"), self->op, self->version(), &(dt_iop_graduatednd_params_t)
   {
     1,75,0,50,0,0
   } , sizeof(dt_iop_graduatednd_params_t), 1);
-  dt_gui_presets_add_generic(_("neutral grey ND4 (hard)"), self->op, self->version(), &(dt_iop_graduatednd_params_t)
+  dt_gui_presets_add_generic(_("neutral gray ND4 (hard)"), self->op, self->version(), &(dt_iop_graduatednd_params_t)
   {
     2,75,0,50,0,0
   } , sizeof(dt_iop_graduatednd_params_t), 1);
-  dt_gui_presets_add_generic(_("neutral grey ND8 (hard)"), self->op, self->version(), &(dt_iop_graduatednd_params_t)
+  dt_gui_presets_add_generic(_("neutral gray ND8 (hard)"), self->op, self->version(), &(dt_iop_graduatednd_params_t)
   {
     3,75,0,50,0,0
   } , sizeof(dt_iop_graduatednd_params_t), 1);

@@ -560,7 +560,7 @@ void gui_init(dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(c->vbox_manual), GTK_WIDGET(c->area), TRUE, TRUE, 0);
 
   gtk_widget_set_size_request(GTK_WIDGET(c->area), panel_width, panel_width * (9.0 / 16.0));
-  g_object_set (GTK_OBJECT(c->area), "tooltip-text", _("drag handles to set black, grey, and white points.  operates on L channel."), (char *)NULL);
+  g_object_set (GTK_OBJECT(c->area), "tooltip-text", _("drag handles to set black, gray, and white points.  operates on L channel."), (char *)NULL);
 
   gtk_widget_add_events(GTK_WIDGET(c->area), GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK | GDK_LEAVE_NOTIFY_MASK);
   g_signal_connect (G_OBJECT (c->area), "expose-event",
@@ -581,15 +581,15 @@ void gui_init(dt_iop_module_t *self)
   gtk_widget_set_size_request(autobutton, DT_PIXEL_APPLY_DPI(70), DT_PIXEL_APPLY_DPI(24));
 
   GtkWidget *blackpick = dtgtk_togglebutton_new(dtgtk_cairo_paint_colorpicker, CPF_STYLE_FLAT);
-  g_object_set(G_OBJECT(blackpick), "tooltip-text", _("pick blackpoint from image"), (char *)NULL);
+  g_object_set(G_OBJECT(blackpick), "tooltip-text", _("pick black point from image"), (char *)NULL);
   gtk_widget_set_size_request(blackpick, DT_PIXEL_APPLY_DPI(24), DT_PIXEL_APPLY_DPI(24));
 
   GtkWidget *greypick = dtgtk_togglebutton_new(dtgtk_cairo_paint_colorpicker, CPF_STYLE_FLAT);
-  g_object_set(G_OBJECT(greypick), "tooltip-text", _("pick medium greypoint from image"), (char *)NULL);
+  g_object_set(G_OBJECT(greypick), "tooltip-text", _("pick medium gray point from image"), (char *)NULL);
   gtk_widget_set_size_request(greypick, DT_PIXEL_APPLY_DPI(24), DT_PIXEL_APPLY_DPI(24));
 
   GtkWidget *whitepick = dtgtk_togglebutton_new(dtgtk_cairo_paint_colorpicker, CPF_STYLE_FLAT);
-  g_object_set(G_OBJECT(whitepick), "tooltip-text", _("pick whitepoint from image"), (char *)NULL);
+  g_object_set(G_OBJECT(whitepick), "tooltip-text", _("pick white point from image"), (char *)NULL);
   gtk_widget_set_size_request(whitepick, DT_PIXEL_APPLY_DPI(24), DT_PIXEL_APPLY_DPI(24));
 
   GdkColor col;
@@ -622,9 +622,9 @@ void gui_init(dt_iop_module_t *self)
   dt_bauhaus_widget_set_label(c->percentile_black, NULL, _("black"));
 
   c->percentile_grey = dt_bauhaus_slider_new_with_range(self, 0.0f, 100.0f, .1f, p->percentiles[1], 3);
-  g_object_set(G_OBJECT(c->percentile_grey), "tooltip-text", _("grey percentile"), (char *)NULL);
+  g_object_set(G_OBJECT(c->percentile_grey), "tooltip-text", _("gray percentile"), (char *)NULL);
   dt_bauhaus_slider_set_format(c->percentile_grey,"%.1f%%");
-  dt_bauhaus_widget_set_label(c->percentile_grey, NULL, _("grey"));
+  dt_bauhaus_widget_set_label(c->percentile_grey, NULL, _("gray"));
 
   c->percentile_white = dt_bauhaus_slider_new_with_range(self, 0.0f, 100.0f, .1f, p->percentiles[2], 3);
   g_object_set(G_OBJECT(c->percentile_white), "tooltip-text", _("white percentile"), (char *)NULL);
