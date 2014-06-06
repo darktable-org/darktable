@@ -112,6 +112,11 @@
         for import into a film roll in darktable.
       </para>
 
+      <para>
+        You define the base directory for storing imported images and the naming pattern
+        of sub directories and individual images in the preferences dialog (see <xref linkend="session_options"/>).
+      </para>
+
     </sect4>
 
     <sect4>

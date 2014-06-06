@@ -46,6 +46,10 @@
 
   <xi:include href="core_options.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
 
+<!-- session options -->
+
+  <xi:include href="session_options.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
+
 <!-- Keyaccelerators/shortcuts -->
 
   <xi:include href="keyaccelerators.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>

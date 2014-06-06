@@ -172,6 +172,7 @@
                input,lighttable,masks,memory,nan,opencl,
                perf,pwstorage,sql}]
           [IMG_1234.{RAW,..}|image_folder/] 
+          [--version]
           [--disable-opencl] 
           [--library &lt;library file&gt;] 
           [--datadir &lt;data directory&gt;] 
@@ -212,6 +213,18 @@
             </para></listitem>
 
           </varlistentry>
+
+          <varlistentry>
+
+            <term>--version</term>
+
+            <listitem><para>
+              This option causes darktable to print its version number, a copyright notice,
+              some other useful information, and then terminates.
+            </para></listitem>
+
+          </varlistentry>
+
 
           <varlistentry>
 

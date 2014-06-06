@@ -160,6 +160,13 @@
     Always ask user before deleting a tag from an image (default on).
   </para>
 
+  <bridgehead renderas="sect4">only draw images on map that are currently collected and filtered</bridgehead>
+
+  <para>
+    Use the current filter settings to select the geotagged images drawn in the map view. This limits the images drawn to 
+    those currently shown in the filmstrip and thus reduces the time needed (default off).
+  </para>
+
   <bridgehead renderas="sect4">maximum number of images drawn on map</bridgehead>
 
   <para>

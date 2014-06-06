@@ -56,4 +56,13 @@
     image.
   </para>
 
+  <para>
+    Once an image has been imported into darktable the database entries take precedence over the XMP file.
+    Subsequent changes to the XMP file by any other software are not visible to darktable&nbsp;&ndash; any 
+    changes get overwritten the next time darktable synchronizes the file. This behavior can be changed
+    in the preferences dialog (see <xref linkend="core_options"/>). On request darktable looks for
+    updated XMP files at startup and offers a choice whether to update the database or overwrite the
+    XMP file.
+  </para>
+
 </sect2>
