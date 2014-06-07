@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 1.3\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2014-06-06 13:17+0200\n"
-"PO-Revision-Date: 2014-06-06 13:35+0100\n"
+"POT-Creation-Date: 2014-06-07 08:38+0200\n"
+"PO-Revision-Date: 2014-06-07 08:40+0100\n"
 "Last-Translator: Pascal Obry <pascal@obry.net>\n"
 "Language-Team: \n"
 "Language: fr_FR\n"
@@ -3557,6 +3557,7 @@ msgid "lightness"
 msgstr "clarté"
 
 #: ../src/iop/channelmixer.c:464
+msgctxt "channelmixer"
 msgid "gray"
 msgstr "gris"
 
@@ -4611,18 +4612,18 @@ msgstr "exposition auto"
 
 #: ../src/iop/exposure.c:132
 msgctxt "accel"
-msgid "deflicker-percentile"
-msgstr "percentile-deflicker"
+msgid "percentile"
+msgstr "percentile"
 
 #: ../src/iop/exposure.c:133
 msgctxt "accel"
-msgid "deflicker-level"
-msgstr "valeur-deflicker"
+msgid "level"
+msgstr "niveaux"
 
 #: ../src/iop/exposure.c:134
 msgctxt "accel"
-msgid "deflicker-histogram-source"
-msgstr "deflicker-source-histogramme"
+msgid "histogram source"
+msgstr "histogramme de"
 
 #: ../src/iop/exposure.c:207
 msgid "magic lantern defaults"
@@ -4762,27 +4763,27 @@ msgid "the target light for tonemapper specified as cd/m2"
 msgstr "cible de luminosité spécifiée en cd/m2"
 
 #: ../src/iop/graduatednd.c:69
-msgid "neutral grey ND2 (soft)"
+msgid "neutral gray ND2 (soft)"
 msgstr "gris neutre ND2 (doux)"
 
 #: ../src/iop/graduatednd.c:73
-msgid "neutral grey ND4 (soft)"
+msgid "neutral gray ND4 (soft)"
 msgstr "gris neutre ND4 (doux)"
 
 #: ../src/iop/graduatednd.c:77
-msgid "neutral grey ND8 (soft)"
+msgid "neutral gray ND8 (soft)"
 msgstr "gris neutre ND8 (doux)"
 
 #: ../src/iop/graduatednd.c:81
-msgid "neutral grey ND2 (hard)"
+msgid "neutral gray ND2 (hard)"
 msgstr "gris neutre ND2 (dur)"
 
 #: ../src/iop/graduatednd.c:85
-msgid "neutral grey ND4 (hard)"
+msgid "neutral gray ND4 (hard)"
 msgstr "gris neutre ND4 (dur)"
 
 #: ../src/iop/graduatednd.c:89
-msgid "neutral grey ND8 (hard)"
+msgid "neutral gray ND8 (hard)"
 msgstr "gris neutre ND8 (dur)"
 
 #: ../src/iop/graduatednd.c:93
@@ -5225,7 +5226,7 @@ msgstr "niveaux"
 
 #: ../src/iop/levels.c:563
 msgid ""
-"drag handles to set black, grey, and white points.  operates on L channel."
+"drag handles to set black, gray, and white points.  operates on L channel."
 msgstr ""
 "déplacer les barres pour régler les points noir, gris et blanc. agit sur le "
 "canal L."
@@ -5235,15 +5236,15 @@ msgid "apply auto levels"
 msgstr "niveaux automatiques"
 
 #: ../src/iop/levels.c:584
-msgid "pick blackpoint from image"
+msgid "pick black point from image"
 msgstr "choisir le point noir dans l'image"
 
 #: ../src/iop/levels.c:588
-msgid "pick medium greypoint from image"
+msgid "pick medium gray point from image"
 msgstr "choisir le point gris dans l'image"
 
 #: ../src/iop/levels.c:592
-msgid "pick whitepoint from image"
+msgid "pick white point from image"
 msgstr "choisir le point blanc dans l'image"
 
 #: ../src/iop/levels.c:620
@@ -5251,11 +5252,11 @@ msgid "black percentile"
 msgstr "percentile des noir"
 
 #: ../src/iop/levels.c:625
-msgid "grey percentile"
+msgid "gray percentile"
 msgstr "percentile des gris"
 
 #: ../src/iop/levels.c:627
-msgid "grey"
+msgid "gray"
 msgstr "gris"
 
 #: ../src/iop/levels.c:630
@@ -7049,7 +7050,7 @@ msgid "resync local copy"
 msgstr "resync copie locale"
 
 #: ../src/libs/image.c:217
-msgid "synchronize the image XMP and remove the local copy"
+msgid "synchronize the image's XMP and remove the local copy"
 msgstr "synchronise le fichier XMP de l'image et supprime la copie locale"
 
 #: ../src/libs/image.c:224
@@ -8699,6 +8700,21 @@ msgstr "photo"
 #: ../src/imageio/format/webp.c:316
 msgid "graphic"
 msgstr "graphique"
+
+#~ msgctxt "accel"
+#~ msgid "deflicker-percentile"
+#~ msgstr "percentile-deflicker"
+
+#~ msgctxt "accel"
+#~ msgid "deflicker-level"
+#~ msgstr "valeur-deflicker"
+
+#~ msgctxt "accel"
+#~ msgid "deflicker-histogram-source"
+#~ msgstr "deflicker-source-histogramme"
+
+#~ msgid "grey"
+#~ msgstr "gris"
 
 #~ msgctxt "accel"
 #~ msgid "deflicker"
