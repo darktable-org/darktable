@@ -418,6 +418,7 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
       d->mode = EXPOSURE_MODE_MANUAL;
     }
     else
+    {
       if(p->deflicker_histogram_source == DEFLICKER_HISTOGRAM_SOURCE_THUMBNAIL)
       {
         self->request_histogram |=  (DT_REQUEST_ON);
@@ -450,6 +451,7 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
           }
         }
       }
+    }
   }
   else
   {
@@ -467,6 +469,20 @@ void cleanup_pipe (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_de
 {
   free(piece->data);
   piece->data = NULL;
+}
+
+static void
+autoexp_disable(dt_iop_module_t *self)
+{
+  if (self->request_color_pick != DT_REQUEST_COLORPICK_MODULE) return;
+
+  dt_iop_exposure_gui_data_t *g = (dt_iop_exposure_gui_data_t *)self->gui_data;
+
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->autoexp), FALSE);
+
+  gtk_widget_set_sensitive(GTK_WIDGET(g->autoexpp), FALSE);
+
+  self->request_color_pick = DT_REQUEST_COLORPICK_OFF;
 }
 
 void gui_update(struct dt_iop_module_t *self)
@@ -495,11 +511,19 @@ void gui_update(struct dt_iop_module_t *self)
 
   self->request_color_pick = DT_REQUEST_COLORPICK_OFF;
 
+  free(g->deflicker_histogram);
+  g->deflicker_histogram = NULL;
+
   switch(p->mode)
   {
     case EXPOSURE_MODE_DEFLICKER:
+      autoexp_disable(self);
       gtk_widget_hide(GTK_WIDGET(g->vbox_manual));
       gtk_widget_show(GTK_WIDGET(g->vbox_deflicker));
+
+      if(p->deflicker_histogram_source == DEFLICKER_HISTOGRAM_SOURCE_SOURCEFILE)
+        deflicker_prepare_histogram(self, &g->deflicker_histogram,
+                                    &g->deflicker_histogram_stats);
       break;
     case EXPOSURE_MODE_MANUAL:
     default:
@@ -546,17 +570,6 @@ void reload_defaults(dt_iop_module_t *module)
 
   memcpy(module->params, &tmp, sizeof(dt_iop_exposure_params_t));
   memcpy(module->default_params, &tmp, sizeof(dt_iop_exposure_params_t));
-
-  if(module->gui_data)
-  {
-    dt_iop_exposure_gui_data_t *g = (dt_iop_exposure_gui_data_t *)module->gui_data;
-
-    free(g->deflicker_histogram);
-    g->deflicker_histogram = NULL;
-
-    if(dt_image_is_raw(&module->dev->image_storage))
-      deflicker_prepare_histogram(module, &g->deflicker_histogram, &g->deflicker_histogram_stats);
-  }
 }
 
 void init_global(dt_iop_module_so_t *module)
@@ -584,20 +597,6 @@ void cleanup_global(dt_iop_module_so_t *module)
 }
 
 static void
-autoexp_disable(dt_iop_module_t *self)
-{
-  if (self->request_color_pick != DT_REQUEST_COLORPICK_MODULE) return;
-
-  dt_iop_exposure_gui_data_t *g = (dt_iop_exposure_gui_data_t *)self->gui_data;
-
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->autoexp), FALSE);
-
-  gtk_widget_set_sensitive(GTK_WIDGET(g->autoexpp), FALSE);
-
-  self->request_color_pick = DT_REQUEST_COLORPICK_OFF;
-}
-
-static void
 mode_callback(GtkWidget *combo, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
@@ -608,6 +607,9 @@ mode_callback(GtkWidget *combo, gpointer user_data)
   dt_iop_exposure_params_t *p = (dt_iop_exposure_params_t *)self->params;
 
   const dt_iop_exposure_mode_t new_mode = GPOINTER_TO_UINT(g_list_nth_data(g->modes, dt_bauhaus_combobox_get(combo)));
+
+  free(g->deflicker_histogram);
+  g->deflicker_histogram = NULL;
 
   switch(new_mode)
   {
@@ -621,6 +623,9 @@ mode_callback(GtkWidget *combo, gpointer user_data)
       p->mode = EXPOSURE_MODE_DEFLICKER;
       gtk_widget_hide(GTK_WIDGET(g->vbox_manual));
       gtk_widget_show(GTK_WIDGET(g->vbox_deflicker));
+      if(p->deflicker_histogram_source == DEFLICKER_HISTOGRAM_SOURCE_SOURCEFILE)
+        deflicker_prepare_histogram(self, &g->deflicker_histogram,
+                                    &g->deflicker_histogram_stats);
       break;
     case EXPOSURE_MODE_MANUAL:
     default:
@@ -796,10 +801,14 @@ deflicker_histogram_source_callback(GtkWidget *combo, gpointer user_data)
   {
     case DEFLICKER_HISTOGRAM_SOURCE_SOURCEFILE:
       p->deflicker_histogram_source = DEFLICKER_HISTOGRAM_SOURCE_SOURCEFILE;
+      deflicker_prepare_histogram(self, &g->deflicker_histogram,
+                                  &g->deflicker_histogram_stats);
       break;
     case DEFLICKER_HISTOGRAM_SOURCE_THUMBNAIL:
     default:
       p->deflicker_histogram_source = DEFLICKER_HISTOGRAM_SOURCE_THUMBNAIL;
+      free(g->deflicker_histogram);
+      g->deflicker_histogram = NULL;
       break;
   }
 
@@ -952,23 +961,6 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(g->vbox_deflicker), GTK_WIDGET(g->deflicker_histogram_source), TRUE, TRUE, 0);
 
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->vbox_deflicker), TRUE, TRUE, 0);
-
-  darktable.gui->reset = 1;
-  self->gui_update(self);
-  darktable.gui->reset = 0;
-
-  switch(p->mode)
-  {
-    case EXPOSURE_MODE_DEFLICKER:
-      gtk_widget_hide(GTK_WIDGET(g->vbox_manual));
-      gtk_widget_show(GTK_WIDGET(g->vbox_deflicker));
-      break;
-    case EXPOSURE_MODE_MANUAL:
-    default:
-      gtk_widget_hide(GTK_WIDGET(g->vbox_deflicker));
-      gtk_widget_show(GTK_WIDGET(g->vbox_manual));
-      break;
-  }
 
   g_signal_connect(G_OBJECT(g->mode), "value-changed", G_CALLBACK(mode_callback), self);
   g_signal_connect(G_OBJECT(g->black), "value-changed", G_CALLBACK(black_callback), self);
