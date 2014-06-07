@@ -263,16 +263,16 @@ void process (struct dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece, voi
 
       // color biasing
       if (a > 0.0)
-        a = a*(0.1 + p->m_bias); // magenta bias
+        a = a*(p->m_bias); // magenta bias
       else
-        a = a*(0.1 + p->g_bias); // green bias
+        a = a*(p->g_bias); // green bias
 
       if (b > 0.0)
-        b = b*(0.1 + p->y_bias); // yellow bias
+        b = b*(p->y_bias); // yellow bias
       else
-        b = b*(0.1 + p->b_bias); // blue bias
+        b = b*(p->b_bias); // blue bias
 
-      float edge = (a*a+b*b); //range up to 2 * (1.1*256)^2 -> approx. 0 to 158598
+      float edge = (a*a+b*b); //range up to 2*(256)^2 -> approx. 0 to 131072
       // maybe useful later again:
       //float pseudo_saturation = fabs(in[v*width*ch + t*ch +1]) + fabs(in[v*width*ch + t*ch +2]);
       //float pseudo_luminosity = in[v*width*ch + t*ch];
