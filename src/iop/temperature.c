@@ -217,12 +217,14 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
 #endif
     for(int j=0; j<roi_out->height; j++)
     {
-      int i=0;
       const uint16_t *in = ((uint16_t *)ivoid) + (size_t)j*roi_out->width;
       float *out = ((float*)ovoid) + (size_t)j*roi_out->width;
 
+      int i=0;
+      int alignment = ((8 - (j * roi_out->width & (8-1))) & (8-1));
+
       // process unaligned pixels
-      for ( ; i < ((4-(j*roi_out->width & 3)) & 3) ; i++,out++,in++)
+      for ( ; i < alignment ; i++,out++,in++)
         *out = *in * coeffsi[FC(j+roi_out->y, i+roi_out->x, filters)];
 
       const __m128 coeffs = _mm_set_ps(coeffsi[FC(j+roi_out->y, roi_out->x+i+3, filters)],
@@ -231,9 +233,23 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
                                        coeffsi[FC(j+roi_out->y, roi_out->x+i  , filters)]);
 
       // process aligned pixels with SSE
-      for( ; i < roi_out->width - 3 ; i+=4,out+=4,in+=4)
+      for( ; i < roi_out->width - (8-1); i+=8,in+=8)
       {
-        _mm_stream_ps(out,_mm_mul_ps(coeffs,_mm_set_ps(in[3],in[2],in[1],in[0])));
+        const __m128i input = _mm_load_si128((__m128i *)in);
+
+        __m128i ilo = _mm_unpacklo_epi16(input, _mm_set1_epi16(0));
+        __m128i ihi = _mm_unpackhi_epi16(input, _mm_set1_epi16(0));
+
+        __m128 flo = _mm_cvtepi32_ps(ilo);
+        __m128 fhi = _mm_cvtepi32_ps(ihi);
+
+        flo = _mm_mul_ps(flo, coeffs);
+        fhi = _mm_mul_ps(fhi, coeffs);
+
+        _mm_stream_ps(out, flo);
+        out += 4;
+        _mm_stream_ps(out, fhi);
+        out += 4;
       }
 
       // process the rest
