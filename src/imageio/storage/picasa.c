@@ -1458,7 +1458,7 @@ int store(dt_imageio_module_storage_t *self, struct dt_imageio_module_data_t *sd
     goto cleanup;
   }
 
-  if (!(ctx->album_id && *ctx->album_id))
+  if (!*(ctx->album_id))
   {
     if (ctx->album_title == NULL)
     {
