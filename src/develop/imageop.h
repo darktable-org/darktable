@@ -97,11 +97,7 @@ typedef enum dt_iop_module_state_t
 
 }
 dt_iop_module_state_t;
-typedef struct dt_iop_params_t
-{
-  int keep;
-}
-dt_iop_params_t;
+
 typedef void dt_iop_gui_data_t;
 typedef void dt_iop_data_t;
 typedef void dt_iop_global_data_t;
@@ -207,7 +203,7 @@ typedef struct dt_iop_module_so_t
   void (*original_init)        (struct dt_iop_module_t *self);
   void (*cleanup)              (struct dt_iop_module_t *self);
   void (*init_pipe)            (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_t *pipe, struct dt_dev_pixelpipe_iop_t *piece);
-  void (*commit_params)        (struct dt_iop_module_t *self, struct dt_iop_params_t *params, struct dt_dev_pixelpipe_t *pipe, struct dt_dev_pixelpipe_iop_t *piece);
+  void (*commit_params)        (struct dt_iop_module_t *self, dt_iop_params_t *params, struct dt_dev_pixelpipe_t *pipe, struct dt_dev_pixelpipe_iop_t *piece);
   void (*reload_defaults)      (struct dt_iop_module_t *self);
   void (*cleanup_pipe)         (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_t *pipe, struct dt_dev_pixelpipe_iop_t *piece);
   void (*modify_roi_in)        (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, const struct dt_iop_roi_t *roi_out, struct dt_iop_roi_t *roi_in);
@@ -369,7 +365,7 @@ typedef struct dt_iop_module_t
   void (*init_pipe)       (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_t *pipe, struct dt_dev_pixelpipe_iop_t *piece);
   /** this resets the params to factory defaults. used at the beginning of each history synch. */
   /** this commits (a mutex will be locked to synch gegl/gui) the given history params to the gegl pipe piece. */
-  void (*commit_params)   (struct dt_iop_module_t *self, struct dt_iop_params_t *params, struct dt_dev_pixelpipe_t *pipe, struct dt_dev_pixelpipe_iop_t *piece);
+  void (*commit_params)   (struct dt_iop_module_t *self, dt_iop_params_t *params, struct dt_dev_pixelpipe_t *pipe, struct dt_dev_pixelpipe_iop_t *piece);
   /** this is the chance to update default parameters, after the full raw is loaded. */
   void (*reload_defaults) (struct dt_iop_module_t *self);
   /** this destroys all (gegl etc) resources needed by the piece of the pipeline. */
@@ -445,7 +441,7 @@ void dt_iop_gui_set_state(dt_iop_module_t *module,dt_iop_module_state_t state);
 void dt_iop_gui_update_header(dt_iop_module_t *module);
 
 /** commits params and updates piece hash. */
-void dt_iop_commit_params(dt_iop_module_t *module, struct dt_iop_params_t *params, struct dt_develop_blend_params_t * blendop_params, struct dt_dev_pixelpipe_t *pipe, struct dt_dev_pixelpipe_iop_t *piece);
+void dt_iop_commit_params(dt_iop_module_t *module, dt_iop_params_t *params, struct dt_develop_blend_params_t * blendop_params, struct dt_dev_pixelpipe_t *pipe, struct dt_dev_pixelpipe_iop_t *piece);
 /** creates a label widget for the expander, with callback to enable/disable this module. */
 GtkWidget *dt_iop_gui_get_expander(dt_iop_module_t *module);
 /** get the widget of plugin ui in expander */
