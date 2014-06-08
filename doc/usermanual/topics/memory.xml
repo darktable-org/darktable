@@ -191,11 +191,11 @@
 
         <varlistentry>
 
-          <term>memory in bytes to use for mipmap cache</term>
+          <term>memory in megabytes to use for mipmap cache</term>
 
           <listitem><para>
             This controls how many thumbnails (or mip maps) can be stored in memory at a time.
-            As a starting point set this to something like 256MB (give the number in bytes). To
+            As a starting point set this to something like 256MB. To
             avoid the problem of memory fragmentation during longer runs of darktable, the new
             caching scheme frontloads the memory costs and allocates this cache once at the
             beginning. Some Linux kernels use over-committing memory allocation, which means you

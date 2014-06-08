@@ -82,7 +82,7 @@
       that it hands over to a hardware specific OpenCL compiler at run-time. This way the
       application can use OpenCL on different GPU architectures (even at the same time). All
       hardware <quote>secrets</quote> are hidden in this compiler and are normally not visible
-      to the user (or the application). The compiled OpenCL code is loaded onto your GPU and -
+      to the user (or the application). The compiled OpenCL code is loaded onto your GPU and&nbsp;&ndash;
       with certain API calls&nbsp;&ndash; it is ready to do calculations for you.
     </para>
 
@@ -102,8 +102,8 @@
     </para>
 
     <para>
-      When darktable starts, it will first try to find and load libOpenCL.so and – on success
-      – check if the available graphics card comes with OpenCL support. A sufficient amount of
+      When darktable starts, it will first try to find and load libOpenCL.so and&nbsp;&ndash; on 
+      success&nbsp;&ndash; check if the available graphics card comes with OpenCL support. A sufficient amount of
       graphics memory (1GB+) needs to be available to take advantage of the GPU. If that is OK,
       darktable tries to setup its OpenCL environment: a processing context needs to be
       initialized, a calculation pipeline to be started, OpenCL source code files (extension is

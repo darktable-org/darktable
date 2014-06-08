@@ -160,7 +160,7 @@
 
       <para>
         Lua employs a cooperative multitasking concept. Without further action a Lua thread
-        (e.g. a routine that is triggered by a certain event) continues to run till the end -
+        (e.g. a routine that is triggered by a certain event) continues to run till the end&nbsp;&ndash;
         effectively blocking other Lua threads from being executed in the meantime. This
         behavior can only be changed if the first Lua thread voluntarily and temporarily gives
         back control to the system, thus allowing other Lua threads to be run in parallel. This

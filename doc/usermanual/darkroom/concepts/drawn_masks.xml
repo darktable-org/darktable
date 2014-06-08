@@ -72,7 +72,7 @@
       You leave edit mode by clicking on the
       <inlinegraphic fileref="&shape_edit;" scalefit="1" width="2%" align="center"/>
       symbol. You can at any time go back to edit mode and do further adjustments by clicking
-      the edit symbol again. In edit mode you can also remove a shape by right-clicking on it -
+      the edit symbol again. In edit mode you can also remove a shape by right-clicking on it&nbsp;&ndash;
       the shape is removed from the current mask but it's still in the list of defined shapes.
     </para>
 

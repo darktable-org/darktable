@@ -162,7 +162,7 @@
         <para>
           Blurring the mask creates a softer transition between blended and unblended parts of
           an image and avoids artifacts. The mask blur slider controls the radius of a gaussian
-          blur applied to the final blend mask. The higher the radius, the stronger the blur -
+          blur applied to the final blend mask. The higher the radius, the stronger the blur&nbsp;&ndash;
           or set to 0 for an unblurred mask.
         </para>
       </sect5>
