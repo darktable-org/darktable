@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 1.3\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2014-06-07 08:38+0200\n"
-"PO-Revision-Date: 2014-06-07 08:40+0100\n"
+"POT-Creation-Date: 2014-06-08 18:45+0200\n"
+"PO-Revision-Date: 2014-06-08 18:45+0100\n"
 "Last-Translator: Pascal Obry <pascal@obry.net>\n"
 "Language-Team: \n"
 "Language: fr_FR\n"
@@ -1942,7 +1942,7 @@ msgstr ""
 msgid "jobcode"
 msgstr "code projet"
 
-#: ../src/gui/camera_import_dialog.c:242 ../src/iop/exposure.c:944
+#: ../src/gui/camera_import_dialog.c:242 ../src/iop/exposure.c:953
 msgid "thumbnail"
 msgstr "aperçu"
 
@@ -2248,7 +2248,7 @@ msgstr "ISO"
 #. exposure
 #: ../src/gui/preferences.c:470 ../src/gui/preferences.c:1387
 #: ../src/gui/presets.c:451 ../src/iop/exposure.c:111
-#: ../src/iop/exposure.c:909 ../src/iop/relight.c:384
+#: ../src/iop/exposure.c:918 ../src/iop/relight.c:384
 #: ../src/libs/metadata_view.c:93
 msgid "exposure"
 msgstr "exposition"
@@ -2268,7 +2268,7 @@ msgid "focal length"
 msgstr "focale"
 
 #: ../src/gui/preferences.c:491 ../src/iop/borders.c:1054
-#: ../src/iop/exposure.c:915 ../src/iop/levels.c:579
+#: ../src/iop/exposure.c:924 ../src/iop/levels.c:579
 #: ../src/iop/tonecurve.c:780
 msgid "auto"
 msgstr "auto"
@@ -4476,7 +4476,7 @@ msgstr "profil pour ISO %d trouvé"
 msgid "interpolated from ISO %d and %d"
 msgstr "interpolé depuis ISO %d et %d"
 
-#: ../src/iop/denoiseprofile.c:1725 ../src/iop/exposure.c:885
+#: ../src/iop/denoiseprofile.c:1725 ../src/iop/exposure.c:894
 #: ../src/iop/lens.c:2105 ../src/iop/levels.c:546
 msgid "mode"
 msgstr "mode"
@@ -4617,8 +4617,8 @@ msgstr "percentile"
 
 #: ../src/iop/exposure.c:133
 msgctxt "accel"
-msgid "level"
-msgstr "niveaux"
+msgid "target level"
+msgstr "valeur cible"
 
 #: ../src/iop/exposure.c:134
 msgctxt "accel"
@@ -4633,45 +4633,45 @@ msgstr "défauts de magic lantern"
 msgid "almost no clipping"
 msgstr "presque aucune troncature"
 
-#: ../src/iop/exposure.c:887 ../src/iop/levels.c:548
+#: ../src/iop/exposure.c:896 ../src/iop/levels.c:548
 #: ../src/iop/tonecurve.c:781
 msgid "manual"
 msgstr "manuelle"
 
-#: ../src/iop/exposure.c:890 ../src/iop/levels.c:551
+#: ../src/iop/exposure.c:899 ../src/iop/levels.c:551
 #: ../src/iop/vignette.c:1115
 msgid "automatic"
 msgstr "auto"
 
-#: ../src/iop/exposure.c:899
+#: ../src/iop/exposure.c:908
 msgid "adjust the black level"
 msgstr "ajuste les niveaux de noir"
 
-#: ../src/iop/exposure.c:901 ../src/iop/levels.c:622
+#: ../src/iop/exposure.c:910 ../src/iop/levels.c:622
 msgid "black"
 msgstr "noir"
 
-#: ../src/iop/exposure.c:907
+#: ../src/iop/exposure.c:916
 msgid "adjust the exposure correction"
 msgstr "ajuste la correction d'exposition [IL]"
 
-#: ../src/iop/exposure.c:920
+#: ../src/iop/exposure.c:929
 msgid "percentage of bright values clipped out"
 msgstr "pourcentage de valeurs hautes tronquées"
 
-#: ../src/iop/exposure.c:930 ../src/iop/exposure.c:932
+#: ../src/iop/exposure.c:939 ../src/iop/exposure.c:941
 msgid "percentile"
 msgstr "percentile"
 
-#: ../src/iop/exposure.c:936 ../src/iop/exposure.c:938
+#: ../src/iop/exposure.c:945 ../src/iop/exposure.c:947
 msgid "target level"
 msgstr "valeur cible"
 
-#: ../src/iop/exposure.c:942
+#: ../src/iop/exposure.c:951
 msgid "histogram of"
 msgstr "histogramme de"
 
-#: ../src/iop/exposure.c:947
+#: ../src/iop/exposure.c:956
 msgid "source raw data"
 msgstr "données raw"
 
@@ -8700,6 +8700,10 @@ msgstr "photo"
 #: ../src/imageio/format/webp.c:316
 msgid "graphic"
 msgstr "graphique"
+
+#~ msgctxt "accel"
+#~ msgid "level"
+#~ msgstr "niveaux"
 
 #~ msgctxt "accel"
 #~ msgid "deflicker-percentile"
