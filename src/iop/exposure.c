@@ -66,7 +66,7 @@ typedef struct dt_iop_exposure_params_t
   dt_iop_exposure_mode_t mode;
   float black;
   float exposure;
-  float deflicker_percentile, deflicker_level;
+  float deflicker_percentile, deflicker_target_level;
   dt_iop_exposure_deflicker_histogram_source_t deflicker_histogram_source;
 }
 dt_iop_exposure_params_t;
@@ -82,7 +82,7 @@ typedef struct dt_iop_exposure_gui_data_t
   GtkWidget *autoexpp;
   GtkWidget *vbox_deflicker;
   GtkWidget *deflicker_percentile;
-  GtkWidget *deflicker_level;
+  GtkWidget *deflicker_target_level;
   GList *deflicker_histogram_sources;
   GtkWidget *deflicker_histogram_source;
   uint32_t *deflicker_histogram; //used to cache histogram of source file
@@ -96,7 +96,7 @@ typedef struct dt_iop_exposure_data_t
   dt_iop_exposure_mode_t mode;
   float black;
   float exposure;
-  float deflicker_percentile, deflicker_level;
+  float deflicker_percentile, deflicker_target_level;
 }
 dt_iop_exposure_data_t;
 
@@ -130,7 +130,7 @@ void init_key_accels(dt_iop_module_so_t *self)
   dt_accel_register_slider_iop(self, FALSE, NC_("accel", "exposure"));
   dt_accel_register_slider_iop(self, FALSE, NC_("accel", "auto-exposure"));
   dt_accel_register_slider_iop(self, FALSE, NC_("accel", "percentile"));
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "level"));
+  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "target level"));
   dt_accel_register_slider_iop(self, FALSE, NC_("accel", "histogram source"));
 }
 
@@ -143,7 +143,7 @@ void connect_key_accels(dt_iop_module_t *self)
   dt_accel_connect_slider_iop(self, "exposure", GTK_WIDGET(g->exposure));
   dt_accel_connect_slider_iop(self, "auto-exposure", GTK_WIDGET(g->autoexpp));
   dt_accel_connect_slider_iop(self, "percentile", GTK_WIDGET(g->deflicker_percentile));
-  dt_accel_connect_slider_iop(self, "level", GTK_WIDGET(g->deflicker_level));
+  dt_accel_connect_slider_iop(self, "target level", GTK_WIDGET(g->deflicker_target_level));
   dt_accel_connect_slider_iop(self, "histogram source", GTK_WIDGET(g->deflicker_histogram_source));
 }
 
@@ -180,7 +180,7 @@ legacy_params (dt_iop_module_t *self, const void *const old_params, const int ol
     {
       float black, exposure;
       gboolean deflicker;
-      float deflicker_percentile, deflicker_level;
+      float deflicker_percentile, deflicker_target_level;
     }
     dt_iop_exposure_params_v3_t;
 
@@ -194,7 +194,7 @@ legacy_params (dt_iop_module_t *self, const void *const old_params, const int ol
     n->black = o->black;
     n->exposure = o->exposure;
     n->deflicker_percentile = o->deflicker_percentile;
-    n->deflicker_level = o->deflicker_level;
+    n->deflicker_target_level = o->deflicker_target_level;
     return 0;
   }
   return 1;
@@ -287,7 +287,7 @@ compute_correction(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
   if(found)
   {
     float ev = raw_to_ev(raw, self->dev->image_storage.raw_black_level + d->black, self->dev->image_storage.raw_white_point);
-    *correction = d->deflicker_level - ev;
+    *correction = d->deflicker_target_level - ev;
 
     return 0;
   }
@@ -396,7 +396,7 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
                                 && (self->histogram != NULL));
 
   d->deflicker_percentile = p->deflicker_percentile;
-  d->deflicker_level = p->deflicker_level;
+  d->deflicker_target_level = p->deflicker_target_level;
 
   if(p->mode == EXPOSURE_MODE_DEFLICKER && dt_image_is_raw(&self->dev->image_storage))
   {
@@ -506,7 +506,7 @@ void gui_update(struct dt_iop_module_t *self)
   gtk_widget_set_sensitive(GTK_WIDGET(g->autoexpp), FALSE);
 
   dt_bauhaus_slider_set(g->deflicker_percentile, p->deflicker_percentile);
-  dt_bauhaus_slider_set(g->deflicker_level, p->deflicker_level);
+  dt_bauhaus_slider_set(g->deflicker_target_level, p->deflicker_target_level);
   dt_bauhaus_combobox_set(g->deflicker_histogram_source, g_list_index(g->deflicker_histogram_sources, GUINT_TO_POINTER(p->deflicker_histogram_source)));
 
   self->request_color_pick = DT_REQUEST_COLORPICK_OFF;
@@ -565,7 +565,7 @@ void reload_defaults(dt_iop_module_t *module)
   tmp.black = 0.0f;
   tmp.exposure = 0.0f;
   tmp.deflicker_percentile = 100.0f;
-  tmp.deflicker_level = -1.0f;
+  tmp.deflicker_target_level = -1.0f;
   tmp.deflicker_histogram_source = DEFLICKER_HISTOGRAM_SOURCE_THUMBNAIL;
 
   memcpy(module->params, &tmp, sizeof(dt_iop_exposure_params_t));
@@ -666,10 +666,10 @@ static void dt_iop_exposure_set_white(struct dt_iop_module_t *self, const float 
   {
     dt_iop_exposure_gui_data_t *g = (dt_iop_exposure_gui_data_t *)self->gui_data;
 
-    p->deflicker_level = white;
+    p->deflicker_target_level = white;
 
     darktable.gui->reset = 1;
-    dt_bauhaus_slider_set(g->deflicker_level, p->deflicker_level);
+    dt_bauhaus_slider_set(g->deflicker_target_level, p->deflicker_target_level);
     darktable.gui->reset = 0;
 
     dt_dev_add_history_item(darktable.develop, self, TRUE);
@@ -687,7 +687,7 @@ static float dt_iop_exposure_get_white(struct dt_iop_module_t *self)
 
   if(p->mode == EXPOSURE_MODE_DEFLICKER)
   {
-    return p->deflicker_level;
+    return p->deflicker_target_level;
   }
   else
   {
@@ -778,7 +778,7 @@ deflicker_params_callback (GtkWidget* slider, gpointer user_data)
   if(p->mode != EXPOSURE_MODE_DEFLICKER) return;
 
   p->deflicker_percentile = dt_bauhaus_slider_get(g->deflicker_percentile);
-  p->deflicker_level = dt_bauhaus_slider_get(g->deflicker_level);
+  p->deflicker_target_level = dt_bauhaus_slider_get(g->deflicker_target_level);
 
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
@@ -941,11 +941,11 @@ void gui_init(struct dt_iop_module_t *self)
   dt_bauhaus_widget_set_label(g->deflicker_percentile, NULL, _("percentile"));
   gtk_box_pack_start(GTK_BOX(g->vbox_deflicker), GTK_WIDGET(g->deflicker_percentile), TRUE, TRUE, 0);
 
-  g->deflicker_level = dt_bauhaus_slider_new_with_range(self, -18.0, 18.0, .01, p->deflicker_level, 3);
-  g_object_set(G_OBJECT(g->deflicker_level), "tooltip-text", _("target level"), (char *)NULL);
-  dt_bauhaus_slider_set_format(g->deflicker_level,"%.2fEV");
-  dt_bauhaus_widget_set_label(g->deflicker_level, NULL, _("target level"));
-  gtk_box_pack_start(GTK_BOX(g->vbox_deflicker), GTK_WIDGET(g->deflicker_level), TRUE, TRUE, 0);
+  g->deflicker_target_level = dt_bauhaus_slider_new_with_range(self, -18.0, 18.0, .01, p->deflicker_target_level, 3);
+  g_object_set(G_OBJECT(g->deflicker_target_level), "tooltip-text", _("target level"), (char *)NULL);
+  dt_bauhaus_slider_set_format(g->deflicker_target_level,"%.2fEV");
+  dt_bauhaus_widget_set_label(g->deflicker_target_level, NULL, _("target level"));
+  gtk_box_pack_start(GTK_BOX(g->vbox_deflicker), GTK_WIDGET(g->deflicker_target_level), TRUE, TRUE, 0);
 
   g->deflicker_histogram_source = dt_bauhaus_combobox_new(self);
   dt_bauhaus_widget_set_label(g->deflicker_histogram_source, NULL, _("histogram of"));
@@ -968,7 +968,7 @@ void gui_init(struct dt_iop_module_t *self)
   g_signal_connect(G_OBJECT(g->autoexpp), "value-changed", G_CALLBACK(autoexpp_callback), self);
   g_signal_connect(G_OBJECT(g->autoexp), "toggled", G_CALLBACK(autoexp_callback), self);
   g_signal_connect(G_OBJECT(g->deflicker_percentile), "value-changed", G_CALLBACK(deflicker_params_callback), self);
-  g_signal_connect(G_OBJECT(g->deflicker_level), "value-changed", G_CALLBACK(deflicker_params_callback), self);
+  g_signal_connect(G_OBJECT(g->deflicker_target_level), "value-changed", G_CALLBACK(deflicker_params_callback), self);
   g_signal_connect(G_OBJECT(g->deflicker_histogram_source), "value-changed", G_CALLBACK(deflicker_histogram_source_callback), self);
   g_signal_connect(G_OBJECT(self->widget), "expose-event", G_CALLBACK(expose), self);
 }
