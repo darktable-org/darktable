@@ -740,7 +740,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
         || (ih<iw && data->sizeto==DT_SCALE_SMALLER_BORDER))
     {
       svg_height = ih * uscale;
-      svg_width = dimension.width * (svg_height / dimension.height );
+      svg_width = dimension.width * (svg_height / dimension.height);
     }
     else
     {
@@ -938,7 +938,7 @@ opacity_callback(GtkWidget *slider, gpointer user_data)
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(self->dt->gui->reset) return;
   dt_iop_watermark_params_t *p = (dt_iop_watermark_params_t *)self->params;
-  p->opacity= dt_bauhaus_slider_get(slider);
+  p->opacity = dt_bauhaus_slider_get(slider);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
@@ -948,7 +948,7 @@ xoffset_callback(GtkWidget *slider, gpointer user_data)
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(self->dt->gui->reset) return;
   dt_iop_watermark_params_t *p = (dt_iop_watermark_params_t *)self->params;
-  p->xoffset= dt_bauhaus_slider_get(slider);
+  p->xoffset = dt_bauhaus_slider_get(slider);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
@@ -958,7 +958,7 @@ yoffset_callback(GtkWidget *slider, gpointer user_data)
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(self->dt->gui->reset) return;
   dt_iop_watermark_params_t *p = (dt_iop_watermark_params_t *)self->params;
-  p->yoffset= dt_bauhaus_slider_get(slider);
+  p->yoffset = dt_bauhaus_slider_get(slider);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
@@ -968,7 +968,7 @@ scale_callback(GtkWidget *slider, gpointer user_data)
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(self->dt->gui->reset) return;
   dt_iop_watermark_params_t *p = (dt_iop_watermark_params_t *)self->params;
-  p->scale= dt_bauhaus_slider_get(slider);
+  p->scale = dt_bauhaus_slider_get(slider);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
