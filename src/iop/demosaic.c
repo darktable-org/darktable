@@ -1498,12 +1498,6 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
     return FALSE;
   }
 
-  if(img->filters==9)
-  {
-    dt_print(DT_DEBUG_OPENCL, "[opencl_demosaic] non-Bayer demosaic not yet supported by opencl code\n");
-    return FALSE;
-  }
-
   const int devid = piece->pipe->devid;
   const int qual = get_quality();
 
