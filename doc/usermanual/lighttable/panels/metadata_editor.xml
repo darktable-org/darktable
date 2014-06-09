@@ -18,9 +18,9 @@
       <tbody>
         <row>
           <entry>
-            Edit metadata of an image, like <emphasis>title</emphasis>,
+            This panel lets you edit four parts of an image's metadata: the <emphasis>title</emphasis>,
             <emphasis>description</emphasis>, <emphasis>creator</emphasis>,
-            <emphasis>publisher</emphasis>, or <emphasis>rights</emphasis>. You can define your
+            <emphasis>publisher</emphasis>, and <emphasis>rights</emphasis>. You can define your
             own presets, if you want to apply specific settings frequently.
           </entry>
           <entry>
