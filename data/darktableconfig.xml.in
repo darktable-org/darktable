@@ -2247,4 +2247,11 @@
     <shortdescription>executable for playing audio files</shortdescription>
     <longdescription>this external program is used to play audio files some cameras record to keep notes for images</longdescription>
   </dtconfig>
+  <dtconfig>
+    <name>screen_dpi_overwrite</name>
+    <type>float</type>
+    <default>-1.0</default>
+    <shortdescription>overwrite the screen's dpi setting</shortdescription>
+    <longdescription>if this value is > 0.0 then it is used as the screen's dpi setting which is used to scale the gui</longdescription>
+  </dtconfig>
 </dtconfiglist>

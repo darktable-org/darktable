@@ -1056,8 +1056,22 @@ static void init_widgets(dt_gui_gtk_t *gui)
   gui->ui->main_window = widget;
 
   // get the screen resolution
-  gui->dpi = gdk_screen_get_resolution(gtk_widget_get_screen(widget));
-  gui->dpi_factor = gui->dpi / 96; // according to man xrandr 96 is the default
+  float screen_dpi_overwrite = dt_conf_get_float("screen_dpi_overwrite");
+  if(screen_dpi_overwrite > 0.0)
+  {
+    gui->dpi = screen_dpi_overwrite;
+    gdk_screen_set_resolution(gtk_widget_get_screen(widget), screen_dpi_overwrite);
+  }
+  else
+  {
+    gui->dpi = gdk_screen_get_resolution(gtk_widget_get_screen(widget));
+    if(gui->dpi < 0.0)
+    {
+      gui->dpi = 96.0;
+      gdk_screen_set_resolution(gtk_widget_get_screen(widget), 96.0);
+    }
+  }
+  gui->dpi_factor = gui->dpi / 96; // according to man xrandr and the docs of gdk_screen_set_resolution 96 is the default
 
   gtk_window_set_default_size(GTK_WINDOW(widget), DT_PIXEL_APPLY_DPI(900), DT_PIXEL_APPLY_DPI(500));
 
