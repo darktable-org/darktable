@@ -100,9 +100,9 @@ output_bpp(dt_iop_module_t *module, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_i
   return sizeof(float);
 }
 
-int
+static int
 process_xtrans(
-  void *i, void *o,
+  const void *const i, void *const o,
   const dt_iop_roi_t *const roi_in,
   const int width, const int height,
   const uint8_t (*const xtrans)[6],
@@ -132,7 +132,7 @@ process_xtrans(
 
   int fixed = 0;
 #ifdef _OPENMP
-  #pragma omp parallel for default(none) shared(i, o, offsets) reduction(+:fixed) schedule(static)
+  #pragma omp parallel for default(none) shared(offsets) reduction(+:fixed) schedule(static)
 #endif
   for (int row=1; row<height-1; row++)
   {

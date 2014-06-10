@@ -433,7 +433,7 @@ green_equilibration_favg(float *out, const float *const in, const int width, con
 /*
    Frank Markesteijn's algorithm for Fuji X-Trans sensors
  */
-void
+static void
 xtrans_markesteijn_interpolate(
   float *const out, const float *const in,
   const dt_iop_roi_t *const roi_out,
@@ -800,7 +800,8 @@ xtrans_markesteijn_interpolate(
 
 /* taken from dcraw and demosaic_ppg below */
 
-void xtrans_lin_interpolate(
+static void
+xtrans_lin_interpolate(
   float *const out, const float *const in,
   const dt_iop_roi_t *const roi_out,
   const dt_iop_roi_t *const roi_in,
@@ -918,7 +919,8 @@ void xtrans_lin_interpolate(
    I've extended the basic idea to work with non-Bayer filter arrays.
    Gradients are numbered clockwise from NW=0 to W=7.
  */
-void xtrans_vng_interpolate(
+static void
+xtrans_vng_interpolate(
   float *const out, const float *const in,
   const dt_iop_roi_t *const roi_out, const dt_iop_roi_t *const roi_in,
   const uint8_t (*const xtrans)[6])

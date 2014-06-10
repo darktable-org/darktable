@@ -365,7 +365,8 @@ static inline void _interpolate_color(
   }
 }
 
-void process_lch_xtrans(
+static void
+process_lch_xtrans(
   void *ivoid, void *ovoid,
   const int width, const int height,
   const float clip)
