@@ -807,6 +807,10 @@ xtrans_lin_interpolate(
   const dt_iop_roi_t *const roi_in,
   const uint8_t (*const xtrans)[6])
 {
+  // border interpolate
+#ifdef _OPENMP
+  #pragma omp parallel for default(none) schedule(static)
+#endif
   for (int row=0; row < roi_out->height; row++)
     for (int col=0; col < roi_out->width; col++)
     {
