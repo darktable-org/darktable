@@ -628,7 +628,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   float *in  = (float *)ivoid;
   float *out = (float *)ovoid;
   const int ch = piece->colors;
-  double angle = (M_PI / 180) * data->rotate;
+  double angle = (M_PI / 180) * -data->rotate;
 
   /* Load svg if not loaded */
   gchar *svgdoc = _watermark_get_svgdoc (self, data, &piece->pipe->image);
