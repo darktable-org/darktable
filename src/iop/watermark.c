@@ -776,8 +776,8 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   cairo_translate (cr,tx*roi_out->scale,ty*roi_out->scale);
 
   // compute the center of the svg to rotate from the center
-  float cX = ((roi_in->x)+(svg_width/2.0 * roi_out->scale));
-  float cY = ((roi_in->y)+(svg_height/2.0 * roi_out->scale));
+  float cX = svg_width / 2.0 * roi_out->scale;
+  float cY = svg_height / 2.0 * roi_out->scale;
 
   cairo_translate(cr,cX,cY);
   cairo_rotate (cr, angle);
