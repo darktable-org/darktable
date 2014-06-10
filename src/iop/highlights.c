@@ -376,8 +376,8 @@ process_lch_xtrans(
 #endif
   for(int j=0; j<height; j++)
   {
-    float *out = (float *)ovoid + width*j;
-    float *in  = (float *)ivoid + width*j;
+    float *out = (float *)ovoid + (size_t)width*j;
+    float *in  = (float *)ivoid + (size_t)width*j;
     for(int i=0; i<width; i++)
     {
       if(i<3 || i>width-3 || j<3 || j>height-3)
@@ -395,7 +395,7 @@ process_lch_xtrans(
         {
           for(int ii=-3; ii<3; ii++)
           {
-            const float val = in[jj*width + ii];
+            const float val = in[(size_t)jj*width + ii];
             mean += val;
             blend += (fminf(post_clip, val) - near_clip)/(post_clip-near_clip);
           }

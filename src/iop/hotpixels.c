@@ -136,8 +136,8 @@ process_xtrans(
 #endif
   for (int row=1; row<height-1; row++)
   {
-    const float *in = (float*)i + width*row+2;
-    float *out = (float*)o + width*row+2;
+    const float *in = (float*)i + (size_t)width*row+2;
+    float *out = (float*)o + (size_t)width*row+2;
     for (int col=1; col<width-1; col++, in++, out++)
     {
       float mid= *in * multiplier;

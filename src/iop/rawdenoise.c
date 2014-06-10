@@ -270,7 +270,7 @@ static void wavelet_denoise_xtrans(const float *const in, float *const out, cons
 
   const int width  = roi->width;
   const int height = roi->height;
-  const int size = width*height;
+  const size_t size = (size_t)width*height;
   float *const fimg = malloc(size*4*sizeof *fimg);
 
   for (int c=0; c<3; c++)
@@ -283,8 +283,8 @@ static void wavelet_denoise_xtrans(const float *const in, float *const out, cons
     for (int row=(c!=1); row<height-1; row++)
     {
       int col=(c!=1);
-      const float *inp = in + row*width + col;
-      float *fimgp = fimg + size + row*width + col;
+      const float *inp = in + (size_t)row*width + col;
+      float *fimgp = fimg + size + (size_t)row*width + col;
       for (; col<width-1; col++, inp++, fimgp++)
         if (xtrans[(row+roi->y)%6][(col+roi->x)%6] == c)
         {
@@ -306,28 +306,28 @@ static void wavelet_denoise_xtrans(const float *const in, float *const out, cons
 
     for (int lev=0; lev < 5; lev++)
     {
-      const int pass1 = size*((lev & 1)*2 + 1);
-      const int pass2 = 2*size;
-      const int pass3 = 4*size - pass1;
+      const size_t pass1 = size*((lev & 1)*2 + 1);
+      const size_t pass2 = 2*size;
+      const size_t pass3 = 4*size - pass1;
 
       // filter horizontally and transpose
 #ifdef _OPENMP
       #pragma omp parallel for default(none) shared(lev) schedule(static)
 #endif
       for (int col=0; col < width; col++)
-        hat_transform(fimg+pass2+col*height, fimg+pass1+col, width, height, 1 << lev);
+        hat_transform(fimg+pass2+(size_t)col*height, fimg+pass1+col, width, height, 1 << lev);
       // filter vertically and transpose back
 #ifdef _OPENMP
       #pragma omp parallel for default(none) shared(lev) schedule(static)
 #endif
       for (int row=0; row < height; row++)
-        hat_transform(fimg+pass3+row*width, fimg+pass2+row, height, width, 1 << lev);
+        hat_transform(fimg+pass3+(size_t)row*width, fimg+pass2+row, height, width, 1 << lev);
 
       const float thold = threshold * noise[lev];
 #ifdef _OPENMP
       #pragma omp parallel for default(none) shared(lev)
 #endif
-      for (int i=0; i < size; i++)
+      for (size_t i=0; i < size; i++)
       {
         float *fimgp = fimg + i;
         const float diff = fimgp[pass1] - fimgp[pass3];
@@ -342,8 +342,8 @@ static void wavelet_denoise_xtrans(const float *const in, float *const out, cons
 #endif
     for (int row=0; row<height; row++)
     {
-      const float *fimgp = fimg + row*width;
-      float *outp = out + row*width;
+      const float *fimgp = fimg + (size_t)row*width;
+      float *outp = out + (size_t)row*width;
       for (int col = 0; col<width; col++, outp++, fimgp++)
         if (xtrans[(row+roi->y)%6][(col+roi->x)%6] == c)
         {

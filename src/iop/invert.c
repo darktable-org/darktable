@@ -212,8 +212,8 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
 #endif
     for(int j=0; j<roi_out->height; j++)
     {
-      const uint16_t *in = ((uint16_t*)ivoid) + j*roi_out->width;
-      uint16_t *out = ((uint16_t*)ovoid) + j*roi_out->width;
+      const uint16_t *in = ((uint16_t*)ivoid) + (size_t)j*roi_out->width;
+      uint16_t *out = ((uint16_t*)ovoid) + (size_t)j*roi_out->width;
       for(int i=0; i<roi_out->width; i++,out++,in++)
       {
         *out = CLAMP(film_rgb_i[(*xtrans)[(j+roi_out->y)%6][(i+roi_out->x)%6]] - (int32_t)in[0], 0, 0xffff);
