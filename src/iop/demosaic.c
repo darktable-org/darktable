@@ -1465,7 +1465,7 @@ process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, v
   }
   else
   {
-    // sample half (or 1/3)-size raw
+    // sample half-size raw (Bayer) or 1/3-size raw (X-Trans)
     const float clip = fminf(piece->pipe->processed_maximum[0], fminf(piece->pipe->processed_maximum[1], piece->pipe->processed_maximum[2]));
     if(img->filters==9)
       dt_iop_clip_and_zoom_demosaic_third_size_xtrans_f((float *)o, pixels, &roo, &roi, roo.width, roi.width, img->xtrans);

@@ -1169,8 +1169,9 @@ _init_f(
   if(image->filters)
   {
     // demosaic during downsample
-    if(image->filters!=9u)       // Bayer
+    if(image->filters!=9u)
     {
+      // Bayer
       if(image->bpp == sizeof(float))
       {
         dt_iop_clip_and_zoom_demosaic_half_size_f(
@@ -1186,8 +1187,9 @@ _init_f(
           dt_image_filter(image));
       }
     }
-    else                         // X-Trans
+    else
     {
+      // X-Trans
       if(image->bpp == sizeof(float))
       {
         dt_iop_clip_and_zoom_demosaic_third_size_xtrans_f(
