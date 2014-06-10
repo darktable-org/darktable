@@ -520,7 +520,7 @@ dt_iop_clip_and_zoom_demosaic_third_size_xtrans(
   const struct dt_iop_roi_t *const roi_in,
   const int32_t out_stride,
   const int32_t in_stride,
-  const uint8_t xtrans[6][6]);
+  const uint8_t (*const xtrans)[6]);
 
 void
 dt_iop_clip_and_zoom_demosaic_third_size_xtrans_f(
@@ -530,7 +530,7 @@ dt_iop_clip_and_zoom_demosaic_third_size_xtrans_f(
   const struct dt_iop_roi_t *const roi_in,
   const int32_t out_stride,
   const int32_t in_stride,
-  const uint8_t xtrans[6][6]);
+  const uint8_t (*const xtrans)[6]);
 
 /** as dt_iop_clip_and_zoom, but for rgba 8-bit channels. */
 void dt_iop_clip_and_zoom_8(const uint8_t *i, int32_t ix, int32_t iy, int32_t iw, int32_t ih, int32_t ibw, int32_t ibh,

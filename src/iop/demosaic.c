@@ -435,10 +435,12 @@ green_equilibration_favg(float *out, const float *const in, const int width, con
  */
 void
 xtrans_markesteijn_interpolate(
-  float *out, const float *in,
-  dt_iop_roi_t *roi_out, const dt_iop_roi_t *roi_in,
+  float *const out, const float *const in,
+  const dt_iop_roi_t *const roi_out,
+  const dt_iop_roi_t *const roi_in,
   const dt_image_t *img,
-  const uint8_t xtrans[6][6], int passes)
+  const uint8_t (*const xtrans)[6],
+  const int passes)
 {
   static const short orth[12] = { 1,0,0,1,-1,0,0,-1,1,0,0,1 },
         patt[2][16] = { { 0,1,0,-1,2,0,-1,0,1,1,1,-1,0,0,0,0 },
@@ -455,26 +457,22 @@ xtrans_markesteijn_interpolate(
   const int yoff = roi_in->y;
   const int ndir = 4 << (passes > 1);
 
-  // snap to start of mosaic block, though this is also happens for now in process()
-  roi_out->x = 0;
-  roi_out->y = 0;
-
   const size_t image_size = width*height*4*(size_t)sizeof(float);
   const size_t buffer_size = TS*TS*(ndir*((size_t)sizeof(char)+7*(size_t)sizeof(float)));
-  char *all_buffers = (char *) dt_alloc_align(16, image_size+dt_get_num_threads()*buffer_size);
+  char *const all_buffers = (char *) dt_alloc_align(16, image_size+dt_get_num_threads()*buffer_size);
   if (!all_buffers)
   {
     printf("[demosaic] not able to allocate Markesteijn buffers\n");
     return;
   }
 
-  float (*image)[4] = (float (*)[4]) all_buffers;
+  float (*const image)[4] = (float (*)[4]) all_buffers;
   // Work in a 4-color temp buffer with 6-pixel borders filled with
   // mirrored/interpolated edge data. The extra border helps the
   // algorithm avoid discontinuities at image edges.
 #define TRANSLATE(n,size) ((n<6)?(6-n):((n>=size-6)?(2*size-n-20):(n-6)))
 #ifdef _OPENMP
-  #pragma omp parallel for default(none) shared(in, image, xtrans, roi_in) schedule(static)
+  #pragma omp parallel for default(none) schedule(static)
 #endif
   for (int row=0; row < height; row++)
     for (int col=0; col < width; col++)
@@ -529,7 +527,7 @@ xtrans_markesteijn_interpolate(
 
   /* Set green1 and green3 to the minimum and maximum allowed values:   */
 #ifdef _OPENMP
-  #pragma omp parallel for default(none) shared(image, xtrans, allhex, sgrow) schedule(static)
+  #pragma omp parallel for default(none) shared(allhex, sgrow) schedule(static)
 #endif
   for (int row=2; row < height-2; row++)
   {
@@ -571,15 +569,15 @@ xtrans_markesteijn_interpolate(
   }
 
 #ifdef _OPENMP
-  #pragma omp parallel for default(none) shared(passes, sgrow, sgcol, xtrans, allhex, image, all_buffers) schedule(static)
+  #pragma omp parallel for default(none) shared(sgrow, sgcol, allhex) schedule(static)
 #endif
   for (int top=3; top < height-19; top += TS-16)
   {
-    char *buffer = all_buffers + image_size + dt_get_thread_num() * buffer_size;
-    float (*rgb)[TS][TS][3]  = (float(*)[TS][TS][3]) buffer;
-    float (*yuv)    [TS][3]  = (float(*)    [TS][3])(buffer + TS*TS*(ndir*3*sizeof(float)));
-    float (*drv)[TS][TS]     = (float(*)[TS][TS])   (buffer + TS*TS*(ndir*6*sizeof(float)));
-    char (*homo)[TS][TS]     = (char (*)[TS][TS])   (buffer + TS*TS*(ndir*7*sizeof(float)));
+    char *const buffer = all_buffers + image_size + dt_get_thread_num() * buffer_size;
+    float       (*rgb)[TS][TS][3]  = (float(*)[TS][TS][3]) buffer;
+    float (*const yuv)    [TS][3]  = (float(*)    [TS][3])(buffer + TS*TS*(ndir*3*sizeof(float)));
+    float (*const drv)[TS][TS]     = (float(*)[TS][TS])   (buffer + TS*TS*(ndir*6*sizeof(float)));
+    char (*const homo)[TS][TS]     = (char (*)[TS][TS])   (buffer + TS*TS*(ndir*7*sizeof(float)));
 
     for (int left=3; left < width-19; left += TS-16)
     {
@@ -787,7 +785,7 @@ xtrans_markesteijn_interpolate(
   }
 
 #ifdef _OPENMP
-  #pragma omp parallel for default(none) shared(image, out, roi_out) schedule(static)
+  #pragma omp parallel for default(none) schedule(static)
 #endif
   for (int row=0; row < roi_out->height; row++)
     for (int col=0; col < roi_out->width; col++)
@@ -803,15 +801,11 @@ xtrans_markesteijn_interpolate(
 /* taken from dcraw and demosaic_ppg below */
 
 void xtrans_lin_interpolate(
-  float *out, const float *in,
-  dt_iop_roi_t *roi_out, const dt_iop_roi_t *roi_in,
-  // FIXME: make this const uint8_t (*const xtrans)?
-  const uint8_t xtrans[6][6])
+  float *const out, const float *const in,
+  const dt_iop_roi_t *const roi_out,
+  const dt_iop_roi_t *const roi_in,
+  const uint8_t (*const xtrans)[6])
 {
-  // snap to start of mosaic block
-  roi_out->x = 0;
-  roi_out->y = 0;
-
   for (int row=0; row < roi_out->height; row++)
     for (int col=0; col < roi_out->width; col++)
     {
@@ -888,7 +882,7 @@ void xtrans_lin_interpolate(
     }
 
 #ifdef _OPENMP
-  #pragma omp parallel for default(none) shared(roi_in, roi_out, in, out, lookup) schedule(static)
+  #pragma omp parallel for default(none) shared(lookup) schedule(static)
 #endif
   for (int row=1; row < roi_out->height-1; row++)
   {
@@ -925,9 +919,9 @@ void xtrans_lin_interpolate(
    Gradients are numbered clockwise from NW=0 to W=7.
  */
 void xtrans_vng_interpolate(
-  float *out, const float *in,
-  dt_iop_roi_t *roi_out, const dt_iop_roi_t *roi_in,
-  const uint8_t xtrans[6][6])
+  float *const out, const float *const in,
+  const dt_iop_roi_t *const roi_out, const dt_iop_roi_t *const roi_in,
+  const uint8_t (*const xtrans)[6])
 {
   static const signed char terms[] =
     {
@@ -1012,7 +1006,7 @@ void xtrans_vng_interpolate(
   for (int row=2; row < height-2; row++)        /* Do VNG interpolation */
   {
 #ifdef _OPENMP
-    #pragma omp parallel for default(none) shared(row, out, code, brow, xtrans) private(ip) schedule(static)
+    #pragma omp parallel for default(none) shared(row, code, brow) private(ip) schedule(static)
 #endif
     for (int col=2; col < width-2; col++)
     {

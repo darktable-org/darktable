@@ -155,10 +155,10 @@ output_bpp(dt_iop_module_t *module, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_i
 
 static inline void _interpolate_color_xtrans(
     void *ivoid, void *ovoid,
-    const dt_iop_roi_t *roi_in,
-    const dt_iop_roi_t *roi_out,
+    const dt_iop_roi_t *const roi_in,
+    const dt_iop_roi_t *const roi_out,
     int dim, int dir, int other, const float *clip,
-    const uint8_t xtrans[6][6],
+    const uint8_t (*const xtrans)[6],
     const int pass)
 {
 #define fcol(row,col) xtrans[(roi_in->y+(row)+6)%6][(roi_in->x+(col)+6)%6]

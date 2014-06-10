@@ -263,7 +263,7 @@ static void wavelet_denoise(const float *const in, float *const out, const dt_io
   free(fimg);
 }
 
-static void wavelet_denoise_xtrans(const float *const in, float *const out, const dt_iop_roi_t *const roi, float threshold, uint8_t xtrans[6][6])
+static void wavelet_denoise_xtrans(const float *const in, float *const out, const dt_iop_roi_t *const roi, float threshold, uint8_t (*const xtrans)[6])
 {
   static const float noise[] =
     { 0.8002,0.2735,0.1202,0.0585,0.0291,0.0152,0.0080,0.0044 };
@@ -278,7 +278,7 @@ static void wavelet_denoise_xtrans(const float *const in, float *const out, cons
     memset(fimg,0,size*sizeof(float));
 
 #ifdef _OPENMP
-    #pragma omp parallel for default(none) shared(c,xtrans) schedule(static)
+    #pragma omp parallel for default(none) shared(c) schedule(static)
 #endif
     for (int row=(c!=1); row<height-1; row++)
     {
@@ -338,7 +338,7 @@ static void wavelet_denoise_xtrans(const float *const in, float *const out, cons
     }
 
 #ifdef _OPENMP
-    #pragma omp parallel for default(none) shared(c,xtrans,lastpass) schedule(static)
+    #pragma omp parallel for default(none) shared(c,lastpass) schedule(static)
 #endif
     for (int row=0; row<height; row++)
     {

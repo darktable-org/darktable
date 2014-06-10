@@ -2301,19 +2301,19 @@ dt_iop_clip_and_zoom_demosaic_half_size_f(
  */
 void
 dt_iop_clip_and_zoom_demosaic_third_size_xtrans(
-  float *out,
+  float *const out,
   const uint16_t *const in,
   const dt_iop_roi_t *const roi_out,
   const dt_iop_roi_t *const roi_in,
   const int32_t out_stride,
   const int32_t in_stride,
-  const uint8_t xtrans[6][6])
+  const uint8_t (*const xtrans)[6])
 {
   const float px_footprint = 1.f/roi_out->scale;
   const int samples = round(px_footprint/3);
 
 #ifdef _OPENMP
-  #pragma omp parallel for default(none) shared(xtrans, out) schedule(static)
+  #pragma omp parallel for default(none) schedule(static)
 #endif
   for(int y=0; y<roi_out->height; y++)
   {
@@ -2388,19 +2388,19 @@ dt_iop_clip_and_zoom_demosaic_third_size_xtrans(
 
 void
 dt_iop_clip_and_zoom_demosaic_third_size_xtrans_f(
-  float *out,
+  float *const out,
   const float *const in,
   const dt_iop_roi_t *const roi_out,
   const dt_iop_roi_t *const roi_in,
   const int32_t out_stride,
   const int32_t in_stride,
-  const uint8_t xtrans[6][6])
+  const uint8_t (*const xtrans)[6])
 {
   const float px_footprint = 1.f/roi_out->scale;
   const int samples = round(px_footprint/3);
 
 #ifdef _OPENMP
-  #pragma omp parallel for default(none) shared(xtrans, out) schedule(static)
+  #pragma omp parallel for default(none) schedule(static)
 #endif
   for(int y=0; y<roi_out->height; y++)
   {

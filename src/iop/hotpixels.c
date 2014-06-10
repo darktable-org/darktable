@@ -103,9 +103,9 @@ output_bpp(dt_iop_module_t *module, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_i
 int
 process_xtrans(
   void *i, void *o,
-  const dt_iop_roi_t *roi_in,
+  const dt_iop_roi_t *const roi_in,
   const int width, const int height,
-  const uint8_t xtrans[6][6],
+  const uint8_t (*const xtrans)[6],
   const float threshold, const float multiplier,
   const gboolean markfixed, const int min_neighbours)
 {
