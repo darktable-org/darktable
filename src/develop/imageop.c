@@ -2319,14 +2319,14 @@ dt_iop_clip_and_zoom_demosaic_third_size_xtrans(
   {
     float *outc = out + 4*(out_stride*y);
 
-    int py = (y + roi_out->y)*px_footprint;
+    int py = floorf((y + roi_out->y)*px_footprint);
     py = MIN(roi_in->height-4, py);
     int maxj = MIN(roi_in->height-3, py+3*samples);
 
     float fx = roi_out->x*px_footprint;
     for(int x=0; x<roi_out->width; x++, fx += px_footprint)
     {
-      int px = (int)fx;
+      int px = floorf(fx);
       px = MIN(roi_in->width-4, px);
       int maxi = MIN(roi_in->width-3, px+3*samples);
 
@@ -2407,7 +2407,7 @@ dt_iop_clip_and_zoom_demosaic_third_size_xtrans_f(
     float *outc = out + 4*(out_stride*y);
 
     float fy = (y + roi_out->y)*px_footprint;
-    int py = (int)fy;
+    int py = floorf(fy);
     const float dy = (fy - py)/2;
     py = MIN(roi_in->height-7, py);
     int maxj = MIN(roi_in->height-6, py+3*samples);
@@ -2418,7 +2418,7 @@ dt_iop_clip_and_zoom_demosaic_third_size_xtrans_f(
       float num[3] = {0.0f};
 
       float fx = (x + roi_out->x)*px_footprint;
-      int px = (int)fx;
+      int px = floorf(fx);
       const float dx = (fx - px)/2;
       px = MIN(roi_in->width-7, px);
       int maxi = MIN(roi_in->width-6, px+3*samples);
