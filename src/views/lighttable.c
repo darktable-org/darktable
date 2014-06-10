@@ -1393,7 +1393,7 @@ star_key_accel_callback(GtkAccelGroup *accel_group, GObject *acceleratable,
   return TRUE;
 }
 
-static void _lighttable_mipamps_updated_signal_callback(gpointer instance, gpointer user_data)
+static void _lighttable_mipmaps_updated_signal_callback(gpointer instance, gpointer user_data)
 {
   dt_control_queue_redraw_center();
 }
@@ -1430,7 +1430,7 @@ void enter(dt_view_t *self)
 
   /* connect to signals */
   dt_control_signal_connect(darktable.signals, DT_SIGNAL_DEVELOP_MIPMAP_UPDATED,
-                            G_CALLBACK(_lighttable_mipamps_updated_signal_callback),
+                            G_CALLBACK(_lighttable_mipmaps_updated_signal_callback),
                             (gpointer)self);
 
   gtk_widget_grab_focus(dt_ui_center(darktable.gui->ui));
@@ -1452,7 +1452,7 @@ void leave(dt_view_t *self)
   gtk_drag_dest_unset(dt_ui_center(darktable.gui->ui));
 
   /* disconnect from signals */
-  dt_control_signal_disconnect(darktable.signals, G_CALLBACK(_lighttable_mipamps_updated_signal_callback), (gpointer)self);
+  dt_control_signal_disconnect(darktable.signals, G_CALLBACK(_lighttable_mipmaps_updated_signal_callback), (gpointer)self);
 
   // clear some state variables
   dt_library_t *lib = (dt_library_t *)self->data;
