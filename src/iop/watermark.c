@@ -46,7 +46,7 @@
 #include "common/file_location.h"
 
 #define CLIP(x) ((x<0)?0.0:(x>1.0)?1.0:x)
-DT_MODULE_INTROSPECTION(2, dt_iop_watermark_params_t)
+DT_MODULE_INTROSPECTION(3, dt_iop_watermark_params_t)
 
 // gchar *checksum = g_compute_checksum_for_data(G_CHECKSUM_MD5,data,length);
 
@@ -70,6 +70,8 @@ typedef struct dt_iop_watermark_params_t
   float yoffset;
   /** Alignment value 0-8 3x3 */
   int alignment;
+  /** Rotation **/
+  float rotate;
   dt_iop_watermark_base_scale_t sizeto;
   char filename[64];
 }
@@ -82,6 +84,7 @@ typedef struct dt_iop_watermark_data_t
   float xoffset;
   float yoffset;
   int alignment;
+  float rotate;
   dt_iop_watermark_base_scale_t sizeto;
   char filename[64];
 }
@@ -94,13 +97,14 @@ typedef struct dt_iop_watermark_gui_data_t
   GtkDarktableToggleButton *dtba[9];	                                   // Alignment buttons
   GtkWidget *scale1,*scale2,*scale3,*scale4;      	     // opacity, scale, xoffs, yoffs
   GtkWidget *sizeto;		                                             // relative size to
+  GtkWidget *rotate;
 }
 dt_iop_watermark_gui_data_t;
 
 int
 legacy_params (dt_iop_module_t *self, const void *const old_params, const int old_version, void *new_params, const int new_version)
 {
-  if(old_version == 1 && new_version == 2)
+  if(old_version == 1 && new_version == 3)
   {
     typedef struct dt_iop_watermark_params_v1_t
     {
@@ -129,6 +133,42 @@ legacy_params (dt_iop_module_t *self, const void *const old_params, const int ol
     n->xoffset = o->xoffset;
     n->yoffset = o->yoffset;
     n->alignment = o->alignment;
+    n->rotate = 0.0;
+    n->sizeto = DT_SCALE_IMAGE;
+    g_strlcpy(n->filename, o->filename, sizeof(n->filename));
+    return 0;
+  }
+  else if(old_version == 2 && new_version == 3)
+  {
+    typedef struct dt_iop_watermark_params_v2_t
+    {
+      /** opacity value of rendering watermark */
+      float opacity;
+      /** scale value of rendering watermark */
+      float scale;
+      /** Pixel independent xoffset, 0 to 1 */
+      float xoffset;
+      /** Pixel independent yoffset, 0 to 1 */
+      float yoffset;
+      /** Alignment value 0-8 3x3 */
+      int alignment;
+      dt_iop_watermark_base_scale_t sizeto;
+      char filename[64];
+    }
+    dt_iop_watermark_params_v2_t;
+
+    dt_iop_watermark_params_v2_t *o = (dt_iop_watermark_params_v2_t *)old_params;
+    dt_iop_watermark_params_t *n = (dt_iop_watermark_params_t *)new_params;
+    dt_iop_watermark_params_t *d = (dt_iop_watermark_params_t *)self->default_params;
+
+    *n = *d;  // start with a fresh copy of default parameters
+
+    n->opacity = o->opacity;
+    n->scale = o->scale;
+    n->xoffset = o->xoffset;
+    n->yoffset = o->yoffset;
+    n->alignment = o->alignment;
+    n->rotate = 0.0;
     n->sizeto = DT_SCALE_IMAGE;
     g_strlcpy(n->filename, o->filename, sizeof(n->filename));
     return 0;
@@ -162,6 +202,7 @@ void init_key_accels(dt_iop_module_so_t *self)
   dt_accel_register_iop(self, FALSE, NC_("accel", "refresh"), 0, 0);
   dt_accel_register_slider_iop(self, FALSE, NC_("accel", "opacity"));
   dt_accel_register_slider_iop(self, FALSE, NC_("accel", "scale"));
+  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "rotate"));
   dt_accel_register_slider_iop(self, FALSE, NC_("accel", "x offset"));
   dt_accel_register_slider_iop(self, FALSE, NC_("accel", "y offset"));
 }
@@ -176,6 +217,8 @@ void connect_key_accels(dt_iop_module_t *self)
                               GTK_WIDGET(g->scale1));
   dt_accel_connect_slider_iop(self, "scale",
                               GTK_WIDGET(g->scale2));
+  dt_accel_connect_slider_iop(self, "rotate",
+                              GTK_WIDGET(g->rotate));
   dt_accel_connect_slider_iop(self, "x offset",
                               GTK_WIDGET(g->scale3));
   dt_accel_connect_slider_iop(self, "y offset",
@@ -585,6 +628,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   float *in  = (float *)ivoid;
   float *out = (float *)ovoid;
   const int ch = piece->colors;
+  double angle = (M_PI / 180) * data->rotate;
 
   /* Load svg if not loaded */
   gchar *svgdoc = _watermark_get_svgdoc (self, data, &piece->pipe->image);
@@ -696,7 +740,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
         || (ih<iw && data->sizeto==DT_SCALE_SMALLER_BORDER))
     {
       svg_height = ih * uscale;
-      svg_width = dimension.width * (svg_height / dimension.height );
+      svg_width = dimension.width * (svg_height / dimension.height);
     }
     else
     {
@@ -730,6 +774,14 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   ty += data->yoffset*hbase;
 
   cairo_translate (cr,tx*roi_out->scale,ty*roi_out->scale);
+
+  // compute the center of the svg to rotate from the center
+  float cX = ((roi_in->x)+(svg_width/2.0 * roi_out->scale));
+  float cY = ((roi_in->y)+(svg_height/2.0 * roi_out->scale));
+
+  cairo_translate(cr,cX,cY);
+  cairo_rotate (cr, angle);
+  cairo_translate(cr,-cX,-cY);
 
   // now set proper scale for the watermark itself
   cairo_scale(cr, scale, scale);
@@ -886,7 +938,7 @@ opacity_callback(GtkWidget *slider, gpointer user_data)
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(self->dt->gui->reset) return;
   dt_iop_watermark_params_t *p = (dt_iop_watermark_params_t *)self->params;
-  p->opacity= dt_bauhaus_slider_get(slider);
+  p->opacity = dt_bauhaus_slider_get(slider);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
@@ -896,7 +948,7 @@ xoffset_callback(GtkWidget *slider, gpointer user_data)
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(self->dt->gui->reset) return;
   dt_iop_watermark_params_t *p = (dt_iop_watermark_params_t *)self->params;
-  p->xoffset= dt_bauhaus_slider_get(slider);
+  p->xoffset = dt_bauhaus_slider_get(slider);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
@@ -906,7 +958,7 @@ yoffset_callback(GtkWidget *slider, gpointer user_data)
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(self->dt->gui->reset) return;
   dt_iop_watermark_params_t *p = (dt_iop_watermark_params_t *)self->params;
-  p->yoffset= dt_bauhaus_slider_get(slider);
+  p->yoffset = dt_bauhaus_slider_get(slider);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
@@ -916,7 +968,17 @@ scale_callback(GtkWidget *slider, gpointer user_data)
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(self->dt->gui->reset) return;
   dt_iop_watermark_params_t *p = (dt_iop_watermark_params_t *)self->params;
-  p->scale= dt_bauhaus_slider_get(slider);
+  p->scale = dt_bauhaus_slider_get(slider);
+  dt_dev_add_history_item(darktable.develop, self, TRUE);
+}
+
+static void
+rotate_callback(GtkWidget *slider, gpointer user_data)
+{
+  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
+  if(self->dt->gui->reset) return;
+  dt_iop_watermark_params_t *p = (dt_iop_watermark_params_t *)self->params;
+  p->rotate = dt_bauhaus_slider_get(slider);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
@@ -941,6 +1003,7 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
   dt_iop_watermark_data_t *d = (dt_iop_watermark_data_t *)piece->data;
   d->opacity= p->opacity;
   d->scale= p->scale;
+  d->rotate=p->rotate;
   d->xoffset= p->xoffset;
   d->yoffset= p->yoffset;
   d->alignment= p->alignment;
@@ -983,6 +1046,7 @@ void gui_update(struct dt_iop_module_t *self)
   dt_iop_watermark_params_t *p = (dt_iop_watermark_params_t *)module->params;
   dt_bauhaus_slider_set(g->scale1, p->opacity);
   dt_bauhaus_slider_set(g->scale2, p->scale);
+  dt_bauhaus_slider_set(g->rotate, p->rotate);
   dt_bauhaus_slider_set(g->scale3, p->xoffset);
   dt_bauhaus_slider_set(g->scale4, p->yoffset);
   gtk_toggle_button_set_active( GTK_TOGGLE_BUTTON(g->dtba[ p->alignment ]), TRUE);
@@ -1001,7 +1065,7 @@ void init(dt_iop_module_t *module)
   module->gui_data = NULL;
   dt_iop_watermark_params_t tmp = (dt_iop_watermark_params_t)
   {
-    100.0,100.0,0.0,0.0,4,DT_SCALE_IMAGE, {"darktable.svg"}
+    100.0,100.0,0.0,0.0,4,0.0,DT_SCALE_IMAGE, {"darktable.svg"}
   }; // opacity,scale,xoffs,yoffs,alignment
   memcpy(module->params, &tmp, sizeof(dt_iop_watermark_params_t));
   memcpy(module->default_params, &tmp, sizeof(dt_iop_watermark_params_t));
@@ -1042,8 +1106,12 @@ void gui_init(struct dt_iop_module_t *self)
   g->scale2 = dt_bauhaus_slider_new_with_range(self, 1.0, 100.0, 1.0, p->scale, 0);
   dt_bauhaus_slider_set_format(g->scale2, "%.f%%");
   dt_bauhaus_widget_set_label(g->scale2, NULL, _("scale"));
+  g->rotate = dt_bauhaus_slider_new_with_range(self, -180.0, 180.0, 1.0, p->rotate, 2);
+  dt_bauhaus_slider_set_format(g->rotate, "%.02f°");
+  dt_bauhaus_widget_set_label(g->rotate, NULL, _("rotate"));
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->scale1), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->scale2), TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->rotate), TRUE, TRUE, 0);
 
   g->sizeto = dt_bauhaus_combobox_new(self);
   dt_bauhaus_combobox_add(g->sizeto, C_("size", "image"));
@@ -1082,11 +1150,14 @@ void gui_init(struct dt_iop_module_t *self)
   // Let's add some tooltips and hook up some signals...
   g_object_set(G_OBJECT(g->scale1), "tooltip-text", _("the opacity of the watermark"), (char *)NULL);
   g_object_set(G_OBJECT(g->scale2), "tooltip-text", _("the scale of the watermark"), (char *)NULL);
+  g_object_set(G_OBJECT(g->rotate), "tooltip-text", _("the rotation of the watermark"), (char *)NULL);
 
   g_signal_connect (G_OBJECT (g->scale1), "value-changed",
                     G_CALLBACK (opacity_callback), self);
   g_signal_connect (G_OBJECT (g->scale2), "value-changed",
                     G_CALLBACK (scale_callback), self);
+  g_signal_connect (G_OBJECT (g->rotate), "value-changed",
+                    G_CALLBACK (rotate_callback), self);
 
   g_signal_connect (G_OBJECT (g->scale3), "value-changed",
                     G_CALLBACK (xoffset_callback), self);
