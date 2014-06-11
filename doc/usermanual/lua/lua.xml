@@ -175,6 +175,23 @@
 
     </sect2>
 
+    <sect2 id="lua_dbus">
+       <title>Calling Lua from DBus</title>
+       <para>
+	It is possible to send a string to darktable via its DBus interface. The method <emphasis>
+	org.darktable.service.Remote.Lua</emphasis> takes a single string parameter which is
+	interpreted as a lua commend. The command will be executed in the current lua context and 
+	should return either <emphasis>nil</emphasis> or a string. The result will be passed back as
+	the result of the DBus method.
+       </para>
+       <para>
+	If the Lua call results in an error, the DBus method call will return an error <emphasis>
+	org.darktable.Error.LuaError</emphasis> with the lua error message as the message attached
+	to the DBus error
+       </para>
+    </sect2>
+
+
   </sect1>
 
 <!-- Lua Api -->
