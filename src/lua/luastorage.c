@@ -116,7 +116,7 @@ static int store_wrapper(struct dt_imageio_module_storage_t *self,struct dt_imag
   lua_pushboolean(L,high_quality);
   lua_pushlightuserdata(L,self_data);
   lua_gettable(L,LUA_REGISTRYINDEX);
-  dt_lua_do_chunk(L,8,1);
+  dt_lua_do_chunk_silent(L,8,1);
   int result = lua_toboolean(L,-1);
   lua_pop(L,3);
   dt_lua_unlock(has_lock);
@@ -161,7 +161,7 @@ static void initialize_store_wrapper (struct dt_imageio_module_storage_t *self, 
   lua_pushlightuserdata(L,data);
   lua_gettable(L,LUA_REGISTRYINDEX);
 
-  dt_lua_do_chunk(L,5,1);
+  dt_lua_do_chunk_silent(L,5,1);
   if(!lua_isnoneornil(L,-1)) {
     luaL_checktype(L,-1,LUA_TTABLE);
     g_list_free(*images);
@@ -217,7 +217,7 @@ static void finalize_store_wrapper (struct dt_imageio_module_storage_t *self, dt
   lua_pushlightuserdata(L,data);
   lua_gettable(L,LUA_REGISTRYINDEX);
 
-  dt_lua_do_chunk(L,3,0);
+  dt_lua_do_chunk_silent(L,3,0);
   lua_pop(L,2);
   dt_lua_unlock(has_lock);
 }
@@ -378,7 +378,7 @@ static int register_storage(lua_State *L)
       luaA_push_typeid(L,format->parameter_lua_type,fdata);
       format->free_params(format,fdata);
       storage->free_params(storage,sdata);
-      dt_lua_do_chunk(L,2,1);
+      dt_lua_do_chunk_silent(L,2,1);
       int result = lua_toboolean(L,-1);
       lua_pop(L,1);
       if(result) {

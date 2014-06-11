@@ -98,11 +98,11 @@ static int32_t run_early_script(struct dt_job_t *job) {
   // run global init script
   dt_loc_get_datadir(tmp_path, sizeof(tmp_path));
   g_strlcat(tmp_path, "/luarc", sizeof(tmp_path));
-  dt_lua_dofile(L,tmp_path);
+  dt_lua_dofile_silent(L,tmp_path,0,0);
   // run user init script
   dt_loc_get_user_config_dir(tmp_path, sizeof(tmp_path));
   g_strlcat(tmp_path, "/luarc", sizeof(tmp_path));
-  dt_lua_dofile(L,tmp_path);
+  dt_lua_dofile_silent(L,tmp_path,0,0);
   dt_lua_unlock(has_lock);
   return 0;
 }

@@ -148,7 +148,7 @@ static int trigger_keyed_event(lua_State * L) {
   lua_pushstring(L,evt_name);// param 1 is the event
   lua_insert(L,top_marker-nargs+2);
   lua_pop(L,2);
-  return dt_lua_do_chunk(L,nargs+1,0);
+  return 0;
 }
 
 /*
@@ -251,7 +251,7 @@ static int trigger_multiinstance_event(lua_State * L) {
     for(int i = 0 ; i<nargs ;i++) { // event dependant parameters
       lua_pushvalue(L, top_marker -nargs +1 +i); 
     }
-    nresult += dt_lua_do_chunk(L,nargs+1,0);
+    nresult += dt_lua_do_chunk_silent(L,nargs+1,0);
   }
   return nresult;
 }
