@@ -180,7 +180,7 @@
        <para>
 	It is possible to send a string to darktable via its DBus interface. The method <emphasis>
 	org.darktable.service.Remote.Lua</emphasis> takes a single string parameter which is
-	interpreted as a lua commend. The command will be executed in the current lua context and 
+	interpreted as a lua command. The command will be executed in the current lua context and 
 	should return either <emphasis>nil</emphasis> or a string. The result will be passed back as
 	the result of the DBus method.
        </para>
