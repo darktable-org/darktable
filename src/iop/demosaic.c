@@ -569,7 +569,7 @@ xtrans_markesteijn_interpolate(
   }
 
 #ifdef _OPENMP
-  #pragma omp parallel for default(none) shared(sgrow, sgcol, allhex) schedule(static)
+  #pragma omp parallel for ordered default(none) shared(sgrow, sgcol, allhex) schedule(static)
 #endif
   for (int top=3; top < height-19; top += TS-16)
   {
