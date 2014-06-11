@@ -217,7 +217,8 @@ static void dt_iop_levels_compute_levels_automatic(dt_iop_module_t *self, dt_dev
 
   // compute middle level from min and max levels
   float center = d->percentiles[1] / 100.0f;
-  d->levels[1] = (1.0f-center)*d->levels[0] + center*d->levels[2];
+  if(!isnan(d->levels[0]) && !isnan(d->levels[2]))
+    d->levels[1] = (1.0f-center)*d->levels[0] + center*d->levels[2];
 }
 
 static void compute_lut(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece)
@@ -386,25 +387,30 @@ void commit_params (dt_iop_module_t *self, dt_iop_params_t *p1,
     d->percentiles[1] = p->percentiles[1];
     d->percentiles[2] = p->percentiles[2];
 
+    gboolean failed = !histogram_is_good;
+
     if(self->dev->gui_attached && histogram_is_good)
     {
       /*
        * if in GUI, user might zoomed main view => we would get histogram of
        * only part of image, so if in GUI we must always use histogram of
-       * preview pipe, wich is always full-size and have biggest size
+       * preview pipe, which is always full-size and have biggest size
        */
-      d->mode = p->mode;
+      d->mode = LEVELS_MODE_AUTOMATIC;
       commit_params_late(self, piece);
       d->mode = LEVELS_MODE_MANUAL;
+
+      if(isnan(d->levels[0]) || isnan(d->levels[1]) || isnan(d->levels[2]))
+        failed = TRUE;
     }
-    else
+    else if(failed || !(self->dev->gui_attached && histogram_is_good))
     {
-      d->mode = p->mode;
+      d->mode = LEVELS_MODE_AUTOMATIC;
       //commit_params_late() will compute LUT later
       self->request_histogram        &= ~(DT_REQUEST_ONLY_IN_GUI);
       self->request_histogram_source  =  (DT_DEV_PIXELPIPE_ANY);
 
-      if(self->dev->gui_attached && !histogram_is_good)
+      if(failed && self->dev->gui_attached)
       {
         /*
          * but sadly we do not yet have a histogram to do so, so this time we
@@ -417,21 +423,11 @@ void commit_params (dt_iop_module_t *self, dt_iop_params_t *p1,
   }
   else
   {
-    d->mode = p->mode;
+    d->mode = LEVELS_MODE_MANUAL;
     d->levels[0] = p->levels[0];
     d->levels[1] = p->levels[1];
     d->levels[2] = p->levels[2];
     compute_lut(self, piece);
-  }
-
-  /*
-   * FIXME: for some reason first "g->reprocess_on_next_expose = TRUE;"
-   * does not catch all cases
-   */
-  if(self->dev->gui_attached &&
-      (isnan(d->levels[0]) || isnan(d->levels[1]) || isnan(d->levels[2])))
-  {
-    g->reprocess_on_next_expose = TRUE;
   }
 }
 

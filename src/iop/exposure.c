@@ -264,6 +264,8 @@ compute_correction(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
 
   if(histogram == NULL) return 1;
 
+  *correction = NAN;
+
   uint32_t total = histogram_stats->ch*histogram_stats->pixels;
 
   float thr = (total * d->deflicker_percentile / 100.0f) - 2; // 50% => median; allow up to 2 stuck pixels
@@ -422,25 +424,31 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
       if(p->deflicker_histogram_source == DEFLICKER_HISTOGRAM_SOURCE_THUMBNAIL)
       {
         self->request_histogram |=  (DT_REQUEST_ON);
-        /*
-         * if in GUI, user might zoomed main view => we would get histogram of
-         * only part of image, so if in GUI we must always use histogram of
-         * preview pipe, wich is always full-size and have biggest size
-         */
+
+        gboolean failed = !histogram_is_good;
+
         if(self->dev->gui_attached && histogram_is_good)
         {
+          /*
+           * if in GUI, user might zoomed main view => we would get histogram of
+           * only part of image, so if in GUI we must always use histogram of
+           * preview pipe, which is always full-size and have biggest size
+           */
           d->mode = EXPOSURE_MODE_DEFLICKER;
           commit_params_late(self, piece);
           d->mode = EXPOSURE_MODE_MANUAL;
+
+          if(isnan(d->exposure))
+            failed = TRUE;
         }
-        else
+        else if(failed || !(self->dev->gui_attached && histogram_is_good))
         {
-          self->request_histogram        &= ~(DT_REQUEST_ONLY_IN_GUI);
-          self->request_histogram_source  =  (DT_DEV_PIXELPIPE_ANY);
           d->mode = EXPOSURE_MODE_DEFLICKER;
           //commit_params_late() will compute correct d->exposure later
+          self->request_histogram        &= ~(DT_REQUEST_ONLY_IN_GUI);
+          self->request_histogram_source  =  (DT_DEV_PIXELPIPE_ANY);
 
-          if(self->dev->gui_attached && !histogram_is_good)
+          if(failed && self->dev->gui_attached)
           {
             /*
              * but sadly we do not yet have a histogram to do so, so this time
