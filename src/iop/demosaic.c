@@ -84,7 +84,7 @@ typedef struct dt_iop_demosaic_data_t
 }
 dt_iop_demosaic_data_t;
 
-#define DEMOSAIC_XTRANS 1024    // maks for non-Bayer demosaic ops
+#define DEMOSAIC_XTRANS 1024    // masks for non-Bayer demosaic ops
 
 typedef enum dt_iop_demosaic_method_t
 {
