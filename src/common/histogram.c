@@ -256,7 +256,8 @@ dt_histogram_worker(const dt_dev_histogram_collection_params_t * const histogram
   }
 
 #ifdef _OPENMP
-  *histogram = calloc(1, buf_size);
+  *histogram = realloc(*histogram, buf_size);
+  memset(*histogram, 0, buf_size);
   uint32_t *hist = *histogram;
 
   #pragma omp parallel for schedule(static) default(none) shared(hist,partial_hists)
@@ -268,10 +269,11 @@ dt_histogram_worker(const dt_dev_histogram_collection_params_t * const histogram
       hist[k] += thread_hist[k];
     }
   }
-  free(partial_hists);
 #else
-  *histogram = partial_hists;
+  *histogram = realloc(*histogram, buf_size);
+  memmove(*histogram, partial_hists, buf_size);
 #endif
+  free(partial_hists);
 
   histogram_stats->bins_count = histogram_params->bins_count;
   histogram_stats->pixels = (roi->width - roi->x) * (roi->height - roi->y);
