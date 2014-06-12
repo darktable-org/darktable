@@ -119,10 +119,6 @@ dt_iop_lensfun_global_data_t;
 typedef struct dt_iop_lensfun_data_t
 {
   lfLens *lens;
-  float *tmpbuf;
-  float *tmpbuf2;
-  size_t tmpbuf_len;
-  size_t tmpbuf2_len;
   int modify_flags;
   int inverse;
   float scale;
@@ -956,14 +952,6 @@ void init_pipe (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_p
 #error "lensfun needs to be ported to GEGL!"
 #else
   piece->data = calloc(1, sizeof(dt_iop_lensfun_data_t));
-
-  //TODO: check if removing tmpbuf,tmpbuf2 from dt_iop_lensfun_data_t is good idea.
-  dt_iop_lensfun_data_t *d = (dt_iop_lensfun_data_t *)piece->data;
-  d->tmpbuf2_len = 0;
-  d->tmpbuf2 = NULL;
-  d->tmpbuf_len = 0;
-  d->tmpbuf = NULL;
-
   self->commit_params(self, self->default_params, pipe, piece);
 #endif
 }
@@ -979,8 +967,6 @@ void cleanup_pipe (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_de
     lf_lens_destroy(d->lens);
     d->lens = NULL;
   }
-  dt_free_align(d->tmpbuf);
-  dt_free_align(d->tmpbuf2);
   free(piece->data);
   piece->data = NULL;
 #endif
