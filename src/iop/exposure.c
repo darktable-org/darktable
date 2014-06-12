@@ -958,7 +958,7 @@ void gui_init(struct dt_iop_module_t *self)
   g->deflicker_histogram_source = dt_bauhaus_combobox_new(self);
   dt_bauhaus_widget_set_label(g->deflicker_histogram_source, NULL, _("histogram of"));
 
-  dt_bauhaus_combobox_add(g->deflicker_histogram_source, _("thumbnail"));
+  dt_bauhaus_combobox_add(g->deflicker_histogram_source, _("pre-processed image"));
   g->deflicker_histogram_sources = g_list_append(g->deflicker_histogram_sources, GUINT_TO_POINTER(DEFLICKER_HISTOGRAM_SOURCE_THUMBNAIL));
 
   dt_bauhaus_combobox_add(g->deflicker_histogram_source, _("source raw data"));
