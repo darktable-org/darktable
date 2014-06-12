@@ -23,18 +23,19 @@
 
   <para>
     You can give a rating from zero to five stars to an image. The quality criteria which lead
-    to a rating are fully up to you. Whenever you import images, each image receives a default rating which you
-    can define in core options (see <xref linkend="core_options"/>). You can later revise the
-    rating at any time. You can also mark an image as <quote>rejected</quote> by pressing the
+    to a rating are fully up to you. Whenever you import images, each image receives a default
+    rating which you can define in core options (see <xref linkend="core_options"/>). You can
+    later revise the rating at any time. You can also mark an image as <quote>rejected</quote>
+    by pressing the
     <inlinegraphic fileref="&icon_lighttable_reject;" scalefit="1" width="2%" align="center"/>
     icon or typing the <emphasis>r</emphasis> key.
   </para>
 
   <para>
-    There are several ways to change a rating. While hovering the cursor over an image thumbnail, you can
-    press a number key <emphasis>0&nbsp;&ndash; 5</emphasis> for the number of stars, or type <emphasis>r</emphasis>
-    to <quote>reject</quote> an image; this is probably the fastest way when rating your images on first 
-    inspection of a film roll.
+    There are several ways to change a rating. While hovering the cursor over an image
+    thumbnail, you can press a number key <emphasis>0&nbsp;&ndash; 5</emphasis> for the number
+    of stars, or type <emphasis>r</emphasis> to <quote>reject</quote> an image; this is probably
+    the fastest way when rating your images on first inspection of a film roll.
   </para>
 
   <para>
@@ -45,10 +46,10 @@
         <tbody>
           <row>
             <entry>
-              You can also directly click on the stars displayed in the thumbnails;
-              click the <emphasis>x</emphasis> to reject, click the fifth star to get a rating of five stars,
-              etc. Clicking either the <emphasis>x</emphasis> or the first star for a second time resets the image rating to
-              unranked, or zero stars.
+              You can also directly click on the stars displayed in the thumbnails; click the
+              <emphasis>x</emphasis> to reject, click the fifth star to get a rating of five
+              stars, etc. Clicking either the <emphasis>x</emphasis> or the first star for a
+              second time resets the image rating to unranked, or zero stars.
             </entry>
             <entry>
               <graphic fileref="lighttable/concepts/images/star_rating_thumbs.png" scalefit="1" width="80%" align="center" />
@@ -67,9 +68,10 @@
         <tbody>
           <row>
             <entry>
-              To rate one or more images at once, select those images (see <xref linkend="select"/>)
-              and then press the key for your rating, or click the desired star rating in 
-              <emphasis>the bottom panel</emphasis> of the lighttable view.
+              To rate one or more images at once, select those images (see
+              <xref linkend="select"/>) and then press the key for your rating, or click the
+              desired star rating in <emphasis>the bottom panel</emphasis> of the lighttable
+              view.
             </entry>
             <entry>
               <graphic fileref="lighttable/concepts/images/star_rating_panel.png" scalefit="1" width="80%" align="center" />
@@ -81,15 +83,15 @@
   </para>
 
   <para>
-    Color labels are another way to sort images, and can be used as an alternative to star ratings
-    or work alongside star ratings. Each image can carry any combination of one or more color
-    labels in red, yellow, green, blue, and purple.
+    Color labels are another way to sort images, and can be used as an alternative to star
+    ratings or work alongside star ratings. Each image can carry any combination of one or more
+    color labels in red, yellow, green, blue, and purple.
   </para>
 
   <para>
-    You can set the color labels for a single image by hovering your cursor over the
-    thumbnail and pressing the function keys <emphasis>F1&nbsp;&ndash; F5</emphasis>, which correspond with the
-    labels in the order given above.
+    You can set the color labels for a single image by hovering your cursor over the thumbnail
+    and pressing the function keys <emphasis>F1&nbsp;&ndash; F5</emphasis>, which correspond
+    with the labels in the order given above.
   </para>
 
   <para>
@@ -102,7 +104,8 @@
             <entry>
               To toggle the color labels of one or more images, select the desired images (see
               <xref linkend="select"/>) and then press the corresponding color button in the
-              bottom panel. To remove all labels from the selected images, press the grey button.
+              bottom panel. To remove all labels from the selected images, press the grey
+              button.
             </entry>
             <entry>
               <graphic fileref="lighttable/concepts/images/color_labels_panel.png" scalefit="1" width="80%" align="center" />

@@ -102,9 +102,9 @@
         This parameter controls the mapping between source and target clusters. At the lowest
         value mapping is based on color proximity. This typically leads to very subtle effects
         on the target image. At the maximum value mapping is based on the relative weight of the
-        color clusters&nbsp;&ndash; dominant colors of the source image are mapped to dominant colors of
-        the target image. This typically leads to a very bold effect. In-between values
-        incrementally shift between the extremes.
+        color clusters&nbsp;&ndash; dominant colors of the source image are mapped to dominant
+        colors of the target image. This typically leads to a very bold effect. In-between
+        values incrementally shift between the extremes.
       </para>
     </sect5>
 

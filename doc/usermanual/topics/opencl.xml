@@ -82,8 +82,9 @@
       that it hands over to a hardware specific OpenCL compiler at run-time. This way the
       application can use OpenCL on different GPU architectures (even at the same time). All
       hardware <quote>secrets</quote> are hidden in this compiler and are normally not visible
-      to the user (or the application). The compiled OpenCL code is loaded onto your GPU and&nbsp;&ndash;
-      with certain API calls&nbsp;&ndash; it is ready to do calculations for you.
+      to the user (or the application). The compiled OpenCL code is loaded onto your GPU
+      and&nbsp;&ndash; with certain API calls&nbsp;&ndash; it is ready to do calculations for
+      you.
     </para>
 
   </sect2>
@@ -102,14 +103,14 @@
     </para>
 
     <para>
-      When darktable starts, it will first try to find and load libOpenCL.so and&nbsp;&ndash; on 
-      success&nbsp;&ndash; check if the available graphics card comes with OpenCL support. A sufficient amount of
-      graphics memory (1GB+) needs to be available to take advantage of the GPU. If that is OK,
-      darktable tries to setup its OpenCL environment: a processing context needs to be
-      initialized, a calculation pipeline to be started, OpenCL source code files (extension is
-      .cl) need to be read and compiled and the included routines (called OpenCL kernels) need
-      to be prepared for darktablele’s modules. If all that is done, the preparation is
-      finished.
+      When darktable starts, it will first try to find and load libOpenCL.so and&nbsp;&ndash; on
+      success&nbsp;&ndash; check if the available graphics card comes with OpenCL support. A
+      sufficient amount of graphics memory (1GB+) needs to be available to take advantage of the
+      GPU. If that is OK, darktable tries to setup its OpenCL environment: a processing context
+      needs to be initialized, a calculation pipeline to be started, OpenCL source code files
+      (extension is .cl) need to be read and compiled and the included routines (called OpenCL
+      kernels) need to be prepared for darktablele’s modules. If all that is done, the
+      preparation is finished.
     </para>
 
     <para>
@@ -198,12 +199,12 @@
     <para>
       darktable might find your libOpenCL.so but then tell you that it couldn't get a platform.
       NVIDIA drivers will often give error code -1001 in that case. This happens because
-      libOpenCL.so is only a wrapper library. For the real work further libraries&nbsp;&ndash; specific to
-      vendor, device and driver&nbsp;&ndash; need to be loaded. This failed for some reason. There is a
-      structure of files in /etc/OpenCL on your system that libOpenCL.so consults to find these
-      libraries. Check if you find something fishy in there and try to fix it. Often the needed
-      libraries cannot be found by your system's dynamic loader. Giving full path names might
-      help.
+      libOpenCL.so is only a wrapper library. For the real work further libraries&nbsp;&ndash;
+      specific to vendor, device and driver&nbsp;&ndash; need to be loaded. This failed for some
+      reason. There is a structure of files in /etc/OpenCL on your system that libOpenCL.so
+      consults to find these libraries. Check if you find something fishy in there and try to
+      fix it. Often the needed libraries cannot be found by your system's dynamic loader. Giving
+      full path names might help.
     </para>
 
     <para>
@@ -366,11 +367,11 @@
     </para>
 
     <para>
-      After each reprocessing of pixelpipe&nbsp;&ndash; caused by module parameter change, zooming,
-      panning, etc.&nbsp;&ndash; you will get the total time and the time spent in each of our OpenCL
-      kernels. The most reliable value is the total time spent in pixelpipe. Please note that
-      the timings given for each individual module are unreliable when running the OpenCL
-      pixelpipe asynchronously (see opencl_async_pixelpipe below).
+      After each reprocessing of pixelpipe&nbsp;&ndash; caused by module parameter change,
+      zooming, panning, etc.&nbsp;&ndash; you will get the total time and the time spent in each
+      of our OpenCL kernels. The most reliable value is the total time spent in pixelpipe.
+      Please note that the timings given for each individual module are unreliable when running
+      the OpenCL pixelpipe asynchronously (see opencl_async_pixelpipe below).
     </para>
 
     <para>
@@ -523,15 +524,15 @@
 
     <para>
       It is important to understand how darktable uses OpenCL devices. Each processing sequence
-      of an image&nbsp;&ndash; to convert an input to the final output using a certain history stack&nbsp;&ndash; is
-      run in a so called pixelpipe. There are four different types of pixelpipe in darktable.
-      One type is responsible to process the center image view (or full view) in darkroom mode,
-      another pixelpipe processes the preview image (navigation window) top left in darkroom
-      mode. Of each of these two pixelpipe there can be one at a time&nbsp;&ndash; with the full and the
-      preview pixelpipe running in parallel. In addition there can be multiple parallel
-      pixelpipes doing file exports and there can be multiple parallel pixelpipes generating
-      thumbnails. If an OpenCL device is available darktable dynamically allocates it to one
-      specific pixelpipe for one run and releases it afterwards.
+      of an image&nbsp;&ndash; to convert an input to the final output using a certain history
+      stack&nbsp;&ndash; is run in a so called pixelpipe. There are four different types of
+      pixelpipe in darktable. One type is responsible to process the center image view (or full
+      view) in darkroom mode, another pixelpipe processes the preview image (navigation window)
+      top left in darkroom mode. Of each of these two pixelpipe there can be one at a
+      time&nbsp;&ndash; with the full and the preview pixelpipe running in parallel. In addition
+      there can be multiple parallel pixelpipes doing file exports and there can be multiple
+      parallel pixelpipes generating thumbnails. If an OpenCL device is available darktable
+      dynamically allocates it to one specific pixelpipe for one run and releases it afterwards.
     </para>
 
     <para>
@@ -570,8 +571,9 @@
       receive number <quote>0</quote>. All further devices are numbered consecutively. This
       number together with the device name is displayed when you start darktable with
       <quote>darktable -d opencl</quote>. You can specify a device either by number or by name
-      (upper/lower case and whitespace do not matter). If you have more than one device&nbsp;&ndash; all
-      with the same name&nbsp;&ndash; you need to use the device numbers in order to differentiate them.
+      (upper/lower case and whitespace do not matter). If you have more than one
+      device&nbsp;&ndash; all with the same name&nbsp;&ndash; you need to use the device numbers
+      in order to differentiate them.
     </para>
 
     <para>

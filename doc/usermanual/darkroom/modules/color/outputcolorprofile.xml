@@ -157,8 +157,8 @@
       </para>
       <para>
         Likewise <emphasis>gamut check</emphasis> is toggled on and off by pressing
-        <emphasis>ctrl-g</emphasis>; this function highlights in cyan all pixels out of gamut with respect
-        to the selected softproof profile.
+        <emphasis>ctrl-g</emphasis>; this function highlights in cyan all pixels out of gamut
+        with respect to the selected softproof profile.
       </para>
       <para>
         <emphasis>softproof</emphasis> and <emphasis>gamut check</emphasis> are mutually

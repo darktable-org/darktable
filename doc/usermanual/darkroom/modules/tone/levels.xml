@@ -126,7 +126,7 @@
       <para>
         Sets the gray point in percentiles relative to the left and right borders of the
         histogram <emphasis>after</emphasis> having applied the black point and white point
-        corrections (only <quote>automatic</quote> mode ).
+        corrections (only <quote>automatic</quote> mode).
       </para>
     </sect5>
 

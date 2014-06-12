@@ -82,10 +82,10 @@
       <title>Channel tabs</title>
 
       <para>
-        Each tab selects a data channel&nbsp;&ndash; real or virtual. Modules acting in Lab color space
-        have data channels for L, a, b, C (chroma of LCh) and h (hue of LCh). Modules acting in
-        RGB color space have data channels for g (gray), R, G, B, H (hue of HSL), S (saturation
-        of HSL), and L (lightness of HSL). Consult for example
+        Each tab selects a data channel&nbsp;&ndash; real or virtual. Modules acting in Lab
+        color space have data channels for L, a, b, C (chroma of LCh) and h (hue of LCh).
+        Modules acting in RGB color space have data channels for g (gray), R, G, B, H (hue of
+        HSL), S (saturation of HSL), and L (lightness of HSL). Consult for example
         <ulink url="http://en.wikipedia.org/wiki/Color_space"> Wikipedia's article on color
         spaces</ulink> for a deeper look.
       </para>

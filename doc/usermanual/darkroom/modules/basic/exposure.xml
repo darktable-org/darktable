@@ -55,8 +55,9 @@
 
     <para>
       This module is responsible for one of the most basic steps in each raw image development.
-      An exposure adjustment value allows you&nbsp;&ndash; within certain limits&nbsp;&ndash; to correct for under- or
-      overexposure. A shift by 1EV is equivalent to a change of exposure time by a factor of 2.
+      An exposure adjustment value allows you&nbsp;&ndash; within certain limits&nbsp;&ndash; to
+      correct for under- or overexposure. A shift by 1EV is equivalent to a change of exposure
+      time by a factor of 2.
     </para>
 
     <para>

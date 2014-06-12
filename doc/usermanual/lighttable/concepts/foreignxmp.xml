@@ -13,8 +13,8 @@
     file. Other than the formats <quote>&lt;basename&gt;.&lt;extension&gt;.xmp</quote> and
     <quote>&lt;basename&gt;<emphasis>_nn</emphasis>.&lt;extension&gt;.xmp</quote> darktable also
     checks for the presence of a file in the form <quote>&lt;basename&gt;.xmp</quote>.
-    darktable's own sidecar files are always stored in the first format&nbsp;&ndash; the latter one would
-    only be read&nbsp;&ndash; not overwritten.
+    darktable's own sidecar files are always stored in the first format&nbsp;&ndash; the latter
+    one would only be read&nbsp;&ndash; not overwritten.
   </para>
 
   <para>
@@ -48,8 +48,8 @@
     image in case you migrate to darktable. It is very important to understand that this import
     process will never give identical results. The underlying development engines are very
     different from application to application, and additionally depend a lot on the specific
-    image. In some cases, it will probably be close, and in some cases, the development will need
-    manual adjustment in darktable.
+    image. In some cases, it will probably be close, and in some cases, the development will
+    need manual adjustment in darktable.
   </para>
 
   <para>
@@ -59,7 +59,7 @@
 
   <para>
     At present, darktable is able to deal with the following development steps from
-	Lightroom-generated XMP files (with the corresponding darktable module in parentheses):
+    Lightroom-generated XMP files (with the corresponding darktable module in parentheses):
     <itemizedlist>
 
       <listitem><para>

@@ -85,19 +85,20 @@
       grayscale image. We try to mimic this impression in darktable when you look at zoomed-out
       images in the center view, in the navigation window and for thumbnails. This is
       accomplished by dithering those images into a higher number of grayscale levels. Note that
-      as a consequence the histogram&nbsp;&ndash; which is derived from the navigation window&nbsp;&ndash; will show
-      this increased number of levels and is no longer a full match of the output image.
+      as a consequence the histogram&nbsp;&ndash; which is derived from the navigation
+      window&nbsp;&ndash; will show this increased number of levels and is no longer a full
+      match of the output image.
     </para>
 
     <sect5>
       <title>method</title>
       <para>
-        This combobox sets the dithering method. Floyd-Steinberg error diffusion&nbsp;&ndash; with some
-        typical output bit depths&nbsp;&ndash; and random noise dithering are both supported.
-        Floyd-Steinberg systematically distributes quantization errors over neighboring pixels,
-        whereas random dithering just adds some level of randomness to break sharp tonal value
-        bands. The default setting is <quote>floyd-steinberg auto</quote>, which automatically
-        adapts to the desired output format.
+        This combobox sets the dithering method. Floyd-Steinberg error diffusion&nbsp;&ndash;
+        with some typical output bit depths&nbsp;&ndash; and random noise dithering are both
+        supported. Floyd-Steinberg systematically distributes quantization errors over
+        neighboring pixels, whereas random dithering just adds some level of randomness to break
+        sharp tonal value bands. The default setting is <quote>floyd-steinberg auto</quote>,
+        which automatically adapts to the desired output format.
       </para>
     </sect5>
 

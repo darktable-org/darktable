@@ -30,8 +30,8 @@
       Most of our modules are highly versatile and depending on parameters can deliver quite
       varying effects. For example the <emphasis>fill light</emphasis> module
       (<xref linkend="fill_light"/>) allows local modification of lightness based on pixel
-      values. You might want to do two lightness corrections in your image at the same time&nbsp;&ndash;
-      one for dark tones and another one for lighter tones.
+      values. You might want to do two lightness corrections in your image at the same
+      time&nbsp;&ndash; one for dark tones and another one for lighter tones.
     </para>
 
     <para>
@@ -55,8 +55,8 @@
 
     <para>
       Please be aware that of course each instance also adds to the workload of your pixelpipe.
-      Generating too many instances&nbsp;&ndash; especially of the more demanding modules&nbsp;&ndash; will certainly
-      cause some noticeable slow-down.
+      Generating too many instances&nbsp;&ndash; especially of the more demanding
+      modules&nbsp;&ndash; will certainly cause some noticeable slow-down.
     </para>
 
   </sect3>

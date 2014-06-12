@@ -46,7 +46,7 @@
     <title>Import from filesystem</title>
 
     <para>
-      You can import either a single image, or a folder. The imported image(s) will show up in a 
+      You can import either a single image, or a folder. The imported image(s) will show up in a
       film roll with the name of the filesystem folder.
     </para>
 
@@ -113,8 +113,9 @@
       </para>
 
       <para>
-        You define the base directory for storing imported images and the naming pattern
-        of sub directories and individual images in the preferences dialog (see <xref linkend="session_options"/>).
+        You define the base directory for storing imported images and the naming pattern of sub
+        directories and individual images in the preferences dialog (see
+        <xref linkend="session_options"/>).
       </para>
 
     </sect4>
@@ -148,7 +149,8 @@
       darktable is focused on managing and developing camera RAW files. It supports a huge
       number of file formats from various camera manufacturers. In addition darktable can read
       specific <emphasis>low dynamic range</emphasis> and <emphasis>high dynamic
-      range</emphasis> images&nbsp;&ndash; mainly for data exchange between darktable and other software.
+      range</emphasis> images&nbsp;&ndash; mainly for data exchange between darktable and other
+      software.
     </para>
 
     <para>
@@ -180,11 +182,11 @@
 
       <para>
         darktable reads RAW files using two open source libraries: RawSpeed (developed by Klaus
-        Post) and&nbsp;&ndash; failing that&nbsp;&ndash; with LibRaw. The number of supported cameras and file formats
-        is constantly increasing. It is beyond the scope of this manual to give an exhaustive
-        list. Most modern camera models are supported, and new ones tend to get added very
-        quickly. darktable does not decode images from cameras with non-Bayer sensors (e.g. Fuji
-        X-Pro1 or Sigmas with the Foveon X3 sensor).
+        Post) and&nbsp;&ndash; failing that&nbsp;&ndash; with LibRaw. The number of supported
+        cameras and file formats is constantly increasing. It is beyond the scope of this manual
+        to give an exhaustive list. Most modern camera models are supported, and new ones tend
+        to get added very quickly. darktable does not decode images from cameras with non-Bayer
+        sensors (e.g. Fuji X-Pro1 or Sigmas with the Foveon X3 sensor).
       </para>
 
     </sect4>

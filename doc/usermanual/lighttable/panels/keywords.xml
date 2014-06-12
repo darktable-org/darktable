@@ -26,9 +26,9 @@
 
             <para>
               Double-clicking on a tag adds a corresponding rule to the <emphasis>collect
-              images</emphasis> panel (see <xref linkend="collect_images"/>)&nbsp;&ndash; the current
-              collection gets limited to the images which have the tag attached. In order to
-              return to the previous collection you clear that rule.
+              images</emphasis> panel (see <xref linkend="collect_images"/>)&nbsp;&ndash; the
+              current collection gets limited to the images which have the tag attached. In
+              order to return to the previous collection you clear that rule.
             </para>
           </entry>
           <entry>

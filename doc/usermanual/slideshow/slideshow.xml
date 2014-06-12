@@ -38,14 +38,17 @@
     <title>Overview</title>
 
     <para>
-      Entering the slideshow view starts a slide show of the images of the current collection with filtering rules
-      and sort order applied. To learn more on how to define the collection, the filtering and the sort order see
-      <xref linkend="collect_images"/> and <xref linkend="filtering_and_sort_order"/>.
+      Entering the slideshow view starts a slide show of the images of the current collection
+      with filtering rules and sort order applied. To learn more on how to define the
+      collection, the filtering and the sort order see <xref linkend="collect_images"/> and
+      <xref linkend="filtering_and_sort_order"/>.
     </para>
 
     <para>
-      The image display is optimized to take full advantage of your screen size. You should therefore put darktable 
-      into fullscreen mode which is toggled by pressing <emphasis>F11</emphasis>.
+      The image display is optimized to take full advantage of your screen size. You should
+      therefore put darktable into fullscreen mode which is toggled by pressing
+      <emphasis>F11</emphasis>. You may press <emphasis>TAB</emphasis> in order to hide all
+      remaining panels&nbsp;&ndash; namely the filtering option in the top panel.
     </para>
 
   </sect1>
@@ -100,12 +103,13 @@
     </para>
 
     <para>
-      Depending on the complexity of the history stack and the power of your hardware, processing an image
-      with high resolution can take a significant amount of time. darktable prefetches the next image in the background in order 
-      to minimize latencies. If you still experience long delays when switching between images or if you intend to quickly
-      advance in your collection consider to disable the option <quote>do high quality processing for slideshow</quote>
-      which gives a much higher processing speed at the expense of a possible slight loss in quality
-      (see <xref linkend="gui_options"/>).
+      Depending on the complexity of the history stack and the power of your hardware,
+      processing an image with high resolution can take a significant amount of time. darktable
+      prefetches the next image in the background in order to minimize latencies. If you still
+      experience long delays when switching between images or if you intend to quickly advance
+      in your collection consider to disable the option <quote>do high quality processing for
+      slideshow</quote> which gives a much higher processing speed at the expense of a possible
+      slight loss in quality (see <xref linkend="gui_options"/>).
     </para>
 
   </sect1>

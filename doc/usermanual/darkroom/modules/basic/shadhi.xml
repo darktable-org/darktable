@@ -102,8 +102,8 @@
         This slider controls the color saturation adjustment made to shadows; high values cause
         saturation enhancements on lightened shadows; low values cause desaturation on lightened
         shadows. It is normally safe to leave this at its default of 100%. This gives a natural
-        saturation boost on shadows&nbsp;&ndash; similar to the one you would also expect in nature if
-        shadows would receive more light.
+        saturation boost on shadows&nbsp;&ndash; similar to the one you would also expect in
+        nature if shadows would receive more light.
       </para>
     </sect5>
 

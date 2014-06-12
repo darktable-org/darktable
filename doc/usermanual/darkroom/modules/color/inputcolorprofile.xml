@@ -99,7 +99,7 @@
       <para>
         This combobox lets you activate a color clipping mechanism. In most cases you can leave
         it at its default <quote>off</quote> state. However, if your image shows some specific
-        features like highly saturated blue light sources gamut, clipping might be useful to
+        features like highly saturated blue light sources, gamut clipping might be useful to
         avoid black pixel artifacts. See <xref linkend="possible_color_artifacts"/> for more
         background information.
       </para>

@@ -15,8 +15,8 @@
   <para>
     This section describes how darktable combines individual masks to form the final mask of a
     module. Individual masks are the drawn mask and all the single channels of a parametric
-    mask. The topic is rather advanced&nbsp;&ndash; if you don't want to go through all the theoretical
-    details just jump down where we describe two typical use cases.
+    mask. The topic is rather advanced&nbsp;&ndash; if you don't want to go through all the
+    theoretical details just jump down where we describe two typical use cases.
   </para>
 
   <sect3>
@@ -47,14 +47,14 @@
 
     <para>
       An alternative way to combine masks is the following: we first invert each individual mask
-     &nbsp;&ndash; calculating 1.0 minus its value&nbsp;&ndash; then we multiply these inverted masks and as a last
-      step invert the final mask again. Now if one of the non-inverted individual masks has a
-      value of 1.0 at a pixel location the final will also be 1.0. The final mask can only reach
-      a pixel value of 0 if all the individual masks have a value of 0. We call this way of
-      combination <quote>inclusive</quote>. Any individual mask can include a pixel by setting
-      its value to 1.0, regardless of what the other individual masks do. Once a pixel is
-      included (its value is 1.0) by any mask there is no way to exclude it again by any other
-      individual mask.
+      &nbsp;&ndash; calculating 1.0 minus its value&nbsp;&ndash; then we multiply these inverted
+      masks and as a last step invert the final mask again. Now if one of the non-inverted
+      individual masks has a value of 1.0 at a pixel location the final will also be 1.0. The
+      final mask can only reach a pixel value of 0 if all the individual masks have a value of
+      0. We call this way of combination <quote>inclusive</quote>. Any individual mask can
+      include a pixel by setting its value to 1.0, regardless of what the other individual masks
+      do. Once a pixel is included (its value is 1.0) by any mask there is no way to exclude it
+      again by any other individual mask.
     </para>
 
     <para>
@@ -88,11 +88,11 @@
           <row>
             <entry>
               You will typically want to combine drawn and parametric masks to first select a
-              certain region of your image&nbsp;&ndash; either by the drawn or the parametric mask&nbsp;&ndash; and
-              use the other mask type to finetune your selection. Finetuning can either mean
-              that you want to include further parts of the image, which are not included in the
-              first place, or you want to exclude parts of the image that were previously
-              included.
+              certain region of your image&nbsp;&ndash; either by the drawn or the parametric
+              mask&nbsp;&ndash; and use the other mask type to finetune your selection.
+              Finetuning can either mean that you want to include further parts of the image,
+              which are not included in the first place, or you want to exclude parts of the
+              image that were previously included.
             </entry>
             <entry>
               <graphic fileref="darkroom/concepts/images/combined_masks.png" scalefit="1" width="80%" align="center" />

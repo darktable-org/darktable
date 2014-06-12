@@ -160,11 +160,11 @@
 
       <para>
         Lua employs a cooperative multitasking concept. Without further action a Lua thread
-        (e.g. a routine that is triggered by a certain event) continues to run till the end&nbsp;&ndash;
-        effectively blocking other Lua threads from being executed in the meantime. This
-        behavior can only be changed if the first Lua thread voluntarily and temporarily gives
-        back control to the system, thus allowing other Lua threads to be run in parallel. This
-        is accomplished by the <emphasis>yield()</emphasis> call.
+        (e.g. a routine that is triggered by a certain event) continues to run till the
+        end&nbsp;&ndash; effectively blocking other Lua threads from being executed in the
+        meantime. This behavior can only be changed if the first Lua thread voluntarily and
+        temporarily gives back control to the system, thus allowing other Lua threads to be run
+        in parallel. This is accomplished by the <emphasis>yield()</emphasis> call.
       </para>
 
       <para>
@@ -176,21 +176,24 @@
     </sect2>
 
     <sect2 id="lua_dbus">
-       <title>Calling Lua from DBus</title>
-       <para>
-	It is possible to send a string to darktable via its DBus interface. The method <emphasis>
-	org.darktable.service.Remote.Lua</emphasis> takes a single string parameter which is
-	interpreted as a lua command. The command will be executed in the current lua context and 
-	should return either <emphasis>nil</emphasis> or a string. The result will be passed back as
-	the result of the DBus method.
-       </para>
-       <para>
-	If the Lua call results in an error, the DBus method call will return an error <emphasis>
-	org.darktable.Error.LuaError</emphasis> with the lua error message as the message attached
-	to the DBus error
-       </para>
-    </sect2>
 
+      <title>Calling Lua from DBus</title>
+
+      <para>
+        It is possible to send a string to darktable via its DBus interface. The method
+        <emphasis> org.darktable.service.Remote.Lua</emphasis> takes a single string parameter
+        which is interpreted as a lua command. The command will be executed in the current lua
+        context and should return either <emphasis>nil</emphasis> or a string. The result will
+        be passed back as the result of the DBus method.
+      </para>
+
+      <para>
+        If the Lua call results in an error, the DBus method call will return an error
+        <emphasis> org.darktable.Error.LuaError</emphasis> with the lua error message as the
+        message attached to the DBus error
+      </para>
+
+    </sect2>
 
   </sect1>
 

@@ -18,10 +18,10 @@
       </para>
 
       <para>
-        darktable has been developed with major contribution by Aldric Renaudin, Alexandre Prokoudine,
-        Bruce Guenter, Christian Tellefsen, Edouard Gomez, Ger Siemerink, Igor Kuzmin, James C. McPherson,
-        Jean-Sébastien Pédron, Jérémy Rosen, Jose Carlos Garcia Sogo, Olivier Toulouse, Pascal Obry,
-        Robert Bieber, Simon Spannagel and many others.
+        darktable has been developed with major contribution by Aldric Renaudin, Alexandre
+        Prokoudine, Bruce Guenter, Christian Tellefsen, Edouard Gomez, Ger Siemerink, Igor
+        Kuzmin, James C. McPherson, Jean-Sébastien Pédron, Jérémy Rosen, Jose Carlos Garcia
+        Sogo, Olivier Toulouse, Pascal Obry, Robert Bieber, Simon Spannagel and many others.
       </para>
 
       <para>
@@ -127,7 +127,7 @@
     <para>
       Many thanks to all contributors to this user manual. Special thanks for proof reading,
       style improvement, and constructive criticism go to Colin Adams, Mark Garrow, Simon
-      Harhues, Ammon Riley, Rob Z. Smith, and David Vincent-Jones.
+      Harhues, Ammon Riley, Rob Z. Smith, Andrew Toskin, and David Vincent-Jones.
     </para>
 
 <!-- <para>For the course of this documentation the arrow keys on your keyboard are referenced as with arrow symbols: &uarr;&larr;&darr;&rarr;.

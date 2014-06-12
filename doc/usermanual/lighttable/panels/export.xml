@@ -274,10 +274,11 @@
 
       <para>
         Enabling the
-        <inlinegraphic fileref="&icon_general_checkbox;" scalefit="1" width="2%" align="center" /> checkbox
-        allows darktable to overwrite existing images during export. If this option is not checked
-        darktable automatically selects a unique new file name in case of naming conflicts. The overwrite 
-        option gets reset after each export in order to protect you from accidental data loss.
+        <inlinegraphic fileref="&icon_general_checkbox;" scalefit="1" width="2%" align="center" />
+        checkbox allows darktable to overwrite existing images during export. If this option is
+        not checked darktable automatically selects a unique new file name in case of naming
+        conflicts. The overwrite option gets reset after each export in order to protect you
+        from accidental data loss.
       </para>
 
     </sect4>
