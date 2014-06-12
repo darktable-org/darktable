@@ -848,35 +848,31 @@ void modify_roi_in(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *
                    d->distance, d->scale,
                    d->target_geom, d->modify_flags, d->inverse);
 
-  if (modflags & (LF_MODIFY_TCA | LF_MODIFY_DISTORTION |
-                  LF_MODIFY_GEOMETRY | LF_MODIFY_SCALE))
+  if(modflags & (LF_MODIFY_TCA | LF_MODIFY_DISTORTION |
+                 LF_MODIFY_GEOMETRY | LF_MODIFY_SCALE))
   {
     // acquire temp memory for distorted pixel coords
-    const size_t req2 = roi_in->width*2*3*sizeof(float);
-    if(req2 > 0 && d->tmpbuf2_len < req2)
-    {
-      d->tmpbuf2_len = req2;
-      dt_free_align(d->tmpbuf2);
-      d->tmpbuf2 = (float *)dt_alloc_align(16, d->tmpbuf2_len);
-    }
+    void *buf = dt_alloc_align(16, roi_in->width*2*3*sizeof(float));
+
     for (int y = 0; y < roi_out->height; y++)
     {
       lf_modifier_apply_subpixel_geometry_distortion (
-        modifier, roi_out->x, roi_out->y+y, roi_out->width, 1, d->tmpbuf2);
-      const float *pi = d->tmpbuf2;
+        modifier, roi_out->x, roi_out->y+y, roi_out->width, 1, buf);
+
       // reverse transform the global coords from lf to our buffer
+      float *bufptr = ((float *)buf);
       for (int x = 0; x < roi_out->width; x++)
       {
-        for(int c=0; c<3; c++)
+        for(int c=0; c<3; c++, bufptr+=2)
         {
-          xm = fminf(xm, pi[0]);
-          xM = fmaxf(xM, pi[0]);
-          ym = fminf(ym, pi[1]);
-          yM = fmaxf(yM, pi[1]);
-          pi+=2;
+          xm = fminf(xm, bufptr[0]);
+          xM = fmaxf(xM, bufptr[0]);
+          ym = fminf(ym, bufptr[1]);
+          yM = fmaxf(yM, bufptr[1]);
         }
       }
     }
+    dt_free_align(buf);
 
     const struct dt_interpolation* interpolation = dt_interpolation_new(DT_INTERPOLATION_USERPREF);
     roi_in->x = fmaxf(0.0f, xm-interpolation->width);
