@@ -36,6 +36,7 @@ typedef char* char_1024;
 typedef char* char_filename_length;
 typedef char* char_path_length;
 typedef const char * const_string; // string that has no push function
+typedef double protected_double; // like double, but NAN is mapped to nil
 
 
 

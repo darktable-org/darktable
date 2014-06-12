@@ -21,6 +21,7 @@
 #include "lua/types.h"
 #include <string.h>
 #include <stdarg.h>
+#include <math.h>
 
 static void to_char_array(lua_State* L, luaA_Type type_id,void* c_out, int index,int size)
 {
@@ -33,47 +34,57 @@ static void to_char_array(lua_State* L, luaA_Type type_id,void* c_out, int index
   strncpy(c_out,value,size);
 }
 
-int push_char_array(lua_State* L, luaA_Type type_id,const void* c_in)
+static int push_char_array(lua_State* L, luaA_Type type_id,const void* c_in)
 {
   lua_pushstring(L, c_in);
   return 1;
 }
 
-void to_char20(lua_State* L, luaA_Type type_id, void* c_out, int index)
+static void to_char20(lua_State* L, luaA_Type type_id, void* c_out, int index)
 {
   to_char_array(L,type_id,c_out,index,20);
 }
-void to_char32(lua_State* L, luaA_Type type_id, void* c_out, int index)
+static void to_char32(lua_State* L, luaA_Type type_id, void* c_out, int index)
 {
   to_char_array(L,type_id,c_out,index,32);
 }
-void to_char52(lua_State* L, luaA_Type type_id, void* c_out, int index)
+static void to_char52(lua_State* L, luaA_Type type_id, void* c_out, int index)
 {
   to_char_array(L,type_id,c_out,index,52);
 }
-void to_char64(lua_State* L, luaA_Type type_id, void* c_out, int index)
+static void to_char64(lua_State* L, luaA_Type type_id, void* c_out, int index)
 {
   to_char_array(L,type_id,c_out,index,64);
 }
-void to_char128(lua_State* L, luaA_Type type_id, void* c_out, int index)
+static void to_char128(lua_State* L, luaA_Type type_id, void* c_out, int index)
 {
   to_char_array(L,type_id,c_out,index,128);
 }
-void to_char512(lua_State* L, luaA_Type type_id, void* c_out, int index)
+static void to_char512(lua_State* L, luaA_Type type_id, void* c_out, int index)
 {
   to_char_array(L,type_id,c_out,index,512);
 }
-void to_char1024(lua_State* L, luaA_Type type_id, void* c_out, int index)
+static void to_char1024(lua_State* L, luaA_Type type_id, void* c_out, int index)
 {
   to_char_array(L,type_id,c_out,index,1024);
 }
-void to_charfilename_length(lua_State* L, luaA_Type type_id, void* c_out, int index)
+static void to_charfilename_length(lua_State* L, luaA_Type type_id, void* c_out, int index)
 {
   to_char_array(L,type_id,c_out,index,DT_MAX_FILENAME_LEN);
 }
-void to_charpath_length(lua_State* L, luaA_Type type_id, void* c_out, int index)
+static void to_charpath_length(lua_State* L, luaA_Type type_id, void* c_out, int index)
 {
   to_char_array(L,type_id,c_out,index,PATH_MAX);
+}
+static int push_protected_double(lua_State* L, luaA_Type type_id, const void* c_in)
+{
+  double value =*(double*)c_in;
+  if(!isnormal(value)){
+    lua_pushnil(L);
+  } else {
+    lua_pushnumber(L,value);
+  }
+  return 1;
 }
 
 int dt_lua_autotype_inext(lua_State *L)
@@ -744,15 +755,17 @@ int dt_lua_init_types(lua_State *L)
   luaA_conversion_push(const char_128,push_char_array);
   luaA_conversion(char_512,push_char_array,to_char512);
   luaA_conversion_push(const char_512,push_char_array);
-  luaA_conversion(char_1024,push_char_array,to_char512);
+  luaA_conversion(char_1024,push_char_array,to_char1024);
   luaA_conversion_push(const char_1024,push_char_array);
   luaA_conversion(char_filename_length,push_char_array,to_charfilename_length);
   luaA_conversion_push(const char_filename_length,push_char_array);
-  luaA_conversion(char_path_length,push_char_array,to_charfilename_length);
+  luaA_conversion(char_path_length,push_char_array,to_charpath_length);
   luaA_conversion_push(const char_path_length,push_char_array);
   luaA_conversion(int32_t,luaA_push_int, luaA_to_int);
   luaA_conversion_push(const int32_t,luaA_push_int);
   luaA_conversion_push(const_string,luaA_push_const_char_ptr);
+  luaA_conversion(protected_double,push_protected_double, luaA_to_double);
+
 
   return 0;
 }

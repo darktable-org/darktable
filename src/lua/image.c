@@ -527,8 +527,8 @@ int dt_lua_init_image(lua_State * L)
   luaA_struct_member(L,dt_image_t,filename,const char_filename_length);
   luaA_struct_member(L,dt_image_t,width,const int32_t);
   luaA_struct_member(L,dt_image_t,height,const int32_t);
-  luaA_struct_member(L,dt_image_t,longitude,double);
-  luaA_struct_member(L,dt_image_t,latitude,double);
+  luaA_struct_member(L,dt_image_t,longitude,protected_double);//set to NAN if value is not set
+  luaA_struct_member(L,dt_image_t,latitude,protected_double);//set to NAN if value is not set
 
   dt_lua_init_int_type(L,dt_lua_image_t);
   dt_lua_register_type_callback_list(L,dt_lua_image_t,image_index,image_newindex,image_fields_name);
