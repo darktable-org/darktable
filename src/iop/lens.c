@@ -306,13 +306,11 @@ _lens_sanitize(const char *orig_lens)
 }
 
 void
-process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoid, void *ovoid, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
+process (dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void * const ivoid, void *ovoid, const dt_iop_roi_t * const roi_in, const dt_iop_roi_t * const roi_out)
 {
   dt_iop_lensfun_data_t *d = (dt_iop_lensfun_data_t *)piece->data;
   dt_iop_lensfun_gui_data_t *g = (dt_iop_lensfun_gui_data_t *)self->gui_data;
 
-  float *in  = (float *)ivoid;
-  float *out = (float *)ovoid;
   const int ch = piece->colors;
   const int ch_width = ch*roi_in->width;
   const int mask_display = piece->pipe->mask_display;
@@ -321,7 +319,7 @@ process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoi
 
   if(!d->lens || !d->lens->Maker || d->crop <= 0.0f)
   {
-    memcpy(out, in, (size_t)ch*sizeof(float)*roi_out->width*roi_out->height);
+    memcpy(ovoid, ivoid, (size_t)ch*sizeof(float)*roi_out->width*roi_out->height);
     return;
   }
 
@@ -330,12 +328,14 @@ process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoi
   dt_pthread_mutex_lock(&darktable.plugin_threadsafe);
   lfModifier *modifier = lf_modifier_new(d->lens, d->crop, orig_w, orig_h);
 
-  int modflags = lf_modifier_initialize(
-                   modifier, d->lens, LF_PF_F32,
-                   d->focal, d->aperture,
-                   d->distance, d->scale,
-                   d->target_geom, d->modify_flags, d->inverse);
+  const int modflags = lf_modifier_initialize(
+                         modifier, d->lens, LF_PF_F32,
+                         d->focal, d->aperture,
+                         d->distance, d->scale,
+                         d->target_geom, d->modify_flags, d->inverse);
   dt_pthread_mutex_unlock(&darktable.plugin_threadsafe);
+
+  const struct dt_interpolation * const interpolation = dt_interpolation_new(DT_INTERPOLATION_USERPREF);
 
   if(d->inverse)
   {
@@ -351,11 +351,10 @@ process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoi
         dt_free_align(d->tmpbuf2);
         d->tmpbuf2 = (float *)dt_alloc_align(16, d->tmpbuf2_len);
       }
-
-      const struct  dt_interpolation* interpolation = dt_interpolation_new(DT_INTERPOLATION_USERPREF);
+      const float * const in  = (const float * const)ivoid;
 
 #ifdef _OPENMP
-      #pragma omp parallel for default(none) shared(roi_out, roi_in, in, d, ovoid, modifier, interpolation) schedule(static)
+      #pragma omp parallel for default(none) shared(d, modifier, ovoid) schedule(static)
 #endif
       for (int y = 0; y < roi_out->height; y++)
       {
@@ -385,25 +384,21 @@ process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoi
     }
     else
     {
-#ifdef _OPENMP
-      #pragma omp parallel for default(none) shared(roi_out, out, in) schedule(static)
-#endif
-      for (int y = 0; y < roi_out->height; y++)
-        memcpy(out+(size_t)ch*y*roi_out->width, in+(size_t)ch*y*roi_out->width, (size_t)ch*sizeof(float)*roi_out->width);
+      memcpy(ovoid, ivoid, (size_t)ch*sizeof(float)*roi_out->width*roi_out->height);
     }
 
     if (modflags & LF_MODIFY_VIGNETTING)
     {
 #ifdef _OPENMP
-      #pragma omp parallel for default(none) shared(roi_out, out, modifier) schedule(static)
+      #pragma omp parallel for default(none) shared(ovoid, modifier) schedule(static)
 #endif
       for (int y = 0; y < roi_out->height; y++)
       {
         /* Colour correction: vignetting and CCI */
         // actually this way row stride does not matter.
-        float *buf = out;
+        float *out = ((float *)ovoid) + (size_t)y*roi_out->width*ch;
         lf_modifier_apply_color_modification (modifier,
-                                              buf + (size_t)ch*roi_out->width*y, roi_out->x, roi_out->y + y,
+                                              out, roi_out->x, roi_out->y + y,
                                               roi_out->width, 1, pixelformat, ch*roi_out->width);
       }
     }
@@ -418,11 +413,11 @@ process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoi
       dt_free_align(d->tmpbuf);
       d->tmpbuf = (float *)dt_alloc_align(16, d->tmpbuf_len);
     }
-    memcpy(d->tmpbuf, in, req);
+    memcpy(d->tmpbuf, ivoid, req);
     if (modflags & LF_MODIFY_VIGNETTING)
     {
 #ifdef _OPENMP
-      #pragma omp parallel for default(none) shared(roi_in, out, modifier, d) schedule(static)
+      #pragma omp parallel for default(none) shared(d, modifier) schedule(static)
 #endif
       for (int y = 0; y < roi_in->height; y++)
       {
@@ -447,10 +442,8 @@ process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoi
         d->tmpbuf2 = (float *)dt_alloc_align(16, d->tmpbuf2_len);
       }
 
-      const struct dt_interpolation* interpolation = dt_interpolation_new(DT_INTERPOLATION_USERPREF);
-
 #ifdef _OPENMP
-      #pragma omp parallel for default(none) shared(roi_in, roi_out, d, ovoid, modifier, interpolation) schedule(static)
+      #pragma omp parallel for default(none) shared(d, modifier, ovoid) schedule(static)
 #endif
       for (int y = 0; y < roi_out->height; y++)
       {
@@ -482,12 +475,12 @@ process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoi
     else
     {
       const size_t len = (size_t)sizeof(float)*ch*roi_out->width*roi_out->height;
-      const float *const input = (d->tmpbuf_len >= len) ? d->tmpbuf : in;
+      const float *const input = (d->tmpbuf_len >= len) ? d->tmpbuf : ivoid;
 #ifdef _OPENMP
-      #pragma omp parallel for default(none) shared(roi_out, out) schedule(static)
+      #pragma omp parallel for default(none) shared(ovoid) schedule(static)
 #endif
       for (int y = 0; y < roi_out->height; y++)
-        memcpy(out+(size_t)ch*y*roi_out->width, input+(size_t)ch*y*roi_out->width, (size_t)ch*sizeof(float)*roi_out->width);
+        memcpy(((float *)ovoid)+(size_t)ch*y*roi_out->width, input+(size_t)ch*y*roi_out->width, (size_t)ch*sizeof(float)*roi_out->width);
     }
   }
   lf_modifier_destroy(modifier);
