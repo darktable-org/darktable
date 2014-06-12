@@ -340,54 +340,56 @@ process (dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void * cons
   if(d->inverse)
   {
     // reverse direction (useful for renderings)
-    if (modflags & (LF_MODIFY_TCA | LF_MODIFY_DISTORTION |
-                    LF_MODIFY_GEOMETRY | LF_MODIFY_SCALE))
+    if(modflags & (LF_MODIFY_TCA | LF_MODIFY_DISTORTION |
+                   LF_MODIFY_GEOMETRY | LF_MODIFY_SCALE))
     {
       // acquire temp memory for distorted pixel coords
-      const size_t req2 = (size_t)roi_out->width*2*3*sizeof(float);
-      if(req2 > 0 && d->tmpbuf2_len < req2*dt_get_num_threads())
-      {
-        d->tmpbuf2_len = req2*dt_get_num_threads();
-        dt_free_align(d->tmpbuf2);
-        d->tmpbuf2 = (float *)dt_alloc_align(16, d->tmpbuf2_len);
-      }
-      const float * const in  = (const float * const)ivoid;
+      const size_t bufsize = (size_t)roi_out->width*2*3;
+      void *buf = dt_alloc_align(16, bufsize*dt_get_num_threads()*sizeof(float));
 
 #ifdef _OPENMP
-      #pragma omp parallel for default(none) shared(d, modifier, ovoid) schedule(static)
+      #pragma omp parallel for default(none) shared(buf, modifier, ovoid) schedule(static)
 #endif
       for (int y = 0; y < roi_out->height; y++)
       {
-        float *pi = (float *)(((char *)d->tmpbuf2) + req2*dt_get_thread_num());
-        lf_modifier_apply_subpixel_geometry_distortion (
-          modifier, roi_out->x, roi_out->y+y, roi_out->width, 1, pi);
+        float *bufptr = ((float *)buf) + (size_t)bufsize*dt_get_thread_num();
+        lf_modifier_apply_subpixel_geometry_distortion(
+          modifier, roi_out->x, roi_out->y+y, roi_out->width, 1, bufptr);
+
         // reverse transform the global coords from lf to our buffer
-        float *buf = ((float *)ovoid) + (size_t)y*roi_out->width*ch;
-        for (int x = 0; x < roi_out->width; x++,buf+=ch,pi+=6)
+        float *out = ((float *)ovoid) + (size_t)y*roi_out->width*ch;
+        for (int x = 0; x < roi_out->width; x++,bufptr+=6,out+=ch)
         {
-          for(int c=0; c<3; c++)
+          for(int c=0; c < 3; c++)
           {
-            const float pi0 = pi[c*2] - roi_in->x;
-            const float pi1 = pi[c*2+1] - roi_in->y;
-            buf[c] = dt_interpolation_compute_sample(interpolation, in+c, pi0, pi1, roi_in->width, roi_in->height, ch, ch_width);
+            const float * const inptr  = (const float * const)ivoid + (size_t)c;
+            const float pi0 = bufptr[c*2] - roi_in->x;
+            const float pi1 = bufptr[c*2+1] - roi_in->y;
+            out[c] = dt_interpolation_compute_sample(
+                       interpolation, inptr, pi0, pi1, roi_in->width,
+                       roi_in->height, ch, ch_width);
           }
 
           if(mask_display)
           {
             // take green channel distortion also for alpha channel
-            const float pi0 = pi[2] - roi_in->x;
-            const float pi1 = pi[3] - roi_in->y;
-            buf[3] = dt_interpolation_compute_sample(interpolation, in+3, pi0, pi1, roi_in->width, roi_in->height, ch, ch_width);
+            const float * const inptr  = (const float * const)ivoid + (size_t)3;
+            const float pi0 = bufptr[2] - roi_in->x;
+            const float pi1 = bufptr[3] - roi_in->y;
+            out[3] = dt_interpolation_compute_sample(
+                       interpolation, inptr, pi0, pi1, roi_in->width,
+                       roi_in->height, ch, ch_width);
           }
         }
       }
+      dt_free_align(buf);
     }
     else
     {
       memcpy(ovoid, ivoid, (size_t)ch*sizeof(float)*roi_out->width*roi_out->height);
     }
 
-    if (modflags & LF_MODIFY_VIGNETTING)
+    if(modflags & LF_MODIFY_VIGNETTING)
     {
 #ifdef _OPENMP
       #pragma omp parallel for default(none) shared(ovoid, modifier) schedule(static)
@@ -397,9 +399,10 @@ process (dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void * cons
         /* Colour correction: vignetting and CCI */
         // actually this way row stride does not matter.
         float *out = ((float *)ovoid) + (size_t)y*roi_out->width*ch;
-        lf_modifier_apply_color_modification (modifier,
-                                              out, roi_out->x, roi_out->y + y,
-                                              roi_out->width, 1, pixelformat, ch*roi_out->width);
+        lf_modifier_apply_color_modification(modifier, out,
+                                             roi_out->x, roi_out->y + y,
+                                             roi_out->width, 1, pixelformat,
+                                             ch*roi_out->width);
       }
     }
   }
