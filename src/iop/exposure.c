@@ -500,8 +500,12 @@ void gui_update(struct dt_iop_module_t *self)
 
   if(!dt_image_is_raw(&self->dev->image_storage))
   {
+    gtk_widget_hide(GTK_WIDGET(g->mode));
     p->mode = EXPOSURE_MODE_MANUAL;
     dt_dev_add_history_item(darktable.develop, self, TRUE);
+  } else
+  {
+    gtk_widget_show(GTK_WIDGET(g->mode));
   }
 
   dt_bauhaus_combobox_set(g->mode, g_list_index(g->modes, GUINT_TO_POINTER(p->mode)));
@@ -626,6 +630,7 @@ mode_callback(GtkWidget *combo, gpointer user_data)
       if(!dt_image_is_raw(&self->dev->image_storage))
       {
         dt_bauhaus_combobox_set(g->mode, g_list_index(g->modes, GUINT_TO_POINTER(EXPOSURE_MODE_MANUAL)));
+        gtk_widget_hide(GTK_WIDGET(g->mode));
         break;
       }
       p->mode = EXPOSURE_MODE_DEFLICKER;
