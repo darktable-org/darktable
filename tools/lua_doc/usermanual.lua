@@ -45,11 +45,11 @@ end
 
 
 local function get_reported_type(node,simple)
-	if not doc.get_attribute(node,"reported_type") then
+	local rtype = doc.get_attribute(node,"reported_type")
+	if not rtype then
 		doc.debug_print(node)
 		error("all types should have a reported type")
 	end
-	local rtype = doc.get_attribute(node,"reported_type")
 	if rtype == "documentation node" then rtype = nil end
 	if rtype == "dt_singleton" then rtype = nil end
 	if( rtype and not simple and doc.get_attribute(node,"signature")) then
@@ -57,17 +57,15 @@ local function get_reported_type(node,simple)
 		local sig = doc.get_attribute(node,"signature")
 		for k,v in pairs(sig) do
 			if(doc.get_attribute(v,"optional")) then
-				rtype = rtype.."["..emphasis(get_node_with_link(v,doc.get_short_name(v))).."]"
-				--rtype = rtype.."["..emphasis(doc.get_short_name(v)).."]"
+				rtype = rtype.."\n\t["..emphasis(get_node_with_link(v,doc.get_short_name(v))).." : "..get_reported_type(v,true).."]"
 			else
-				rtype = rtype..emphasis(get_node_with_link(v,doc.get_short_name(v)))
-				--rtype = rtype..emphasis(doc.get_short_name(v))
+				rtype = rtype.."\n\t"..emphasis(get_node_with_link(v,doc.get_short_name(v))).." : "..get_reported_type(v,true)
 			end
 			if next(sig,k) then
 				rtype = rtype..", "
 			end
 		end
-		rtype = rtype.." )"
+		rtype = rtype.."\n)"
 	end
 	if(not simple and doc.get_attribute(node,"ret_val")) then
 		rtype = rtype.." : "..get_reported_type(doc.get_attribute(node,"ret_val",true))
@@ -120,7 +118,7 @@ local function print_content(node)
 	local result = ""
 	if  rtype then
 		-- synopsis was here
-		result = result .."<formalpara><title>"..rtype.."</title><para></para></formalpara>\n"
+		result = result .."<synopsis>"..rtype.."</synopsis>\n"
 	end
 	result = result .."<para>"..doc.get_text(node).."</para>\n"
 	result = result ..print_attributes(node)
