@@ -1228,6 +1228,88 @@ void dt_view_image_expose(dt_view_image_over_t *image_over, uint32_t imgid, cair
     dt_print(DT_DEBUG_LIGHTTABLE, "[lighttable] image expose took %0.04f sec\n", end - start);
 }
 
+void
+dt_view_image_only_expose(
+  uint32_t imgid,
+  cairo_t *cr,
+  int32_t width,
+  int32_t height,
+  int32_t offsetx,
+  int32_t offsety)
+{
+  const double start = dt_get_wtime();
+  // some performance tuning stuff, for your pleasure.
+  // on my machine with 7 image per row it seems grouping has the largest
+  // impact from around 400ms -> 55ms per redraw.
+
+  // this function is not thread-safe (gui-thread only), so we
+  // can safely allocate this leaking bit of memory to decompress thumbnails:
+  static int first_time = 1;
+  static uint8_t *scratchmem = NULL;
+  if(first_time)
+  {
+    // scratchmem might still be NULL after this, if compression is off.
+    scratchmem = dt_mipmap_cache_alloc_scratchmem(darktable.mipmap_cache);
+    first_time = 0;
+  }
+
+  const dt_image_t *img = dt_image_cache_read_get(darktable.image_cache, imgid);
+  float imgwd = 1.0f;
+
+  dt_mipmap_buffer_t buf;
+  dt_mipmap_size_t mip = dt_mipmap_cache_get_matching_size(darktable.mipmap_cache,
+                                                           imgwd*width, imgwd*height);
+  dt_mipmap_cache_read_get(darktable.mipmap_cache, &buf, imgid, mip, DT_MIPMAP_BEST_EFFORT);
+
+  float scale = 1.0;
+  // decompress image, if necessary. if compression is off, scratchmem will be == NULL,
+  // so get the real pointer back:
+  uint8_t *buf_decompressed = dt_mipmap_cache_decompress(&buf, scratchmem);
+
+  cairo_surface_t *surface = NULL;
+  if(buf.buf)
+  {
+    const int32_t stride = cairo_format_stride_for_width (CAIRO_FORMAT_RGB24, buf.width);
+    surface = cairo_image_surface_create_for_data (buf_decompressed, CAIRO_FORMAT_RGB24, buf.width, buf.height, stride);
+    scale = fminf(
+      fminf(darktable.thumbnail_width, width) / (float)buf.width,
+      fminf(darktable.thumbnail_height, height) / (float)buf.height
+      );
+  }
+
+  // draw at offset offsetx, offsety
+  cairo_save(cr);
+  cairo_translate (cr, offsetx, offsety);
+  cairo_scale(cr, scale, scale);
+
+  if(buf.buf)
+  {
+    cairo_set_source_surface (cr, surface, 0, 0);
+    cairo_pattern_set_filter(cairo_get_source(cr), CAIRO_FILTER_NEAREST);
+    cairo_rectangle(cr, 0, 0, buf.width, buf.height);
+    cairo_fill(cr);
+    cairo_surface_destroy (surface);
+  }
+
+  cairo_restore(cr);
+
+  if(buf.buf)
+    dt_mipmap_cache_read_release(darktable.mipmap_cache, &buf);
+
+  cairo_save(cr);
+
+  // kill all paths, in case img was not loaded yet, or is blocked:
+  cairo_new_path(cr);
+
+  if(img) dt_image_cache_read_release(darktable.image_cache, img);
+
+  cairo_restore(cr);
+
+  const double end = dt_get_wtime();
+  if (darktable.unmuted & DT_DEBUG_PERF)
+    dt_print(DT_DEBUG_LIGHTTABLE, "[lighttable] image expose took %0.04f sec\n", end-start);
+}
+
 
 /**
  * \brief Set the selection bit to a given value for the specified image

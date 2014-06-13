@@ -122,6 +122,19 @@ int32_t dt_view_get_image_to_act_on();
 void dt_view_image_expose(dt_view_image_over_t *image_over, uint32_t index, cairo_t *cr, int32_t width,
                           int32_t height, int32_t zoom, int32_t px, int32_t py, gboolean full_preview);
 
+/* expose only the image imgid at position (offsetx,offsety) into the cairo surface occupying width/height pixels.
+   this routine does not output any meta-data as the version above.
+ */
+void
+dt_view_image_only_expose(
+  uint32_t imgid,
+  cairo_t *cr,
+  int32_t width,
+  int32_t height,
+  int32_t offsetx,
+  int32_t offsety);
+
+
 /** Set the selection bit to a given value for the specified image */
 void dt_view_set_selection(int imgid, int value);
 /** toggle selection of given image. */
