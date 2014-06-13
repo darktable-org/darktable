@@ -16,6 +16,14 @@
     <primary>exposure</primary>
   </indexterm>
 
+  <indexterm>
+    <primary>time-lapse photography</primary>
+  </indexterm>
+
+  <indexterm>
+    <primary>deflicker</primary>
+  </indexterm>
+
   <sect4>
 
     <title>Overview</title>
@@ -99,7 +107,11 @@
       define a <emphasis>target level</emphasis>&nbsp;&ndash; darktable automatically calculates
       the exposure compensation that is needed to shift the selected position to that target
       value. The black level adjustment is the same as in manual mode. Automatic adjustment is
-      only available for raw images.
+      only available for raw images. A typical use case is deflickering of
+      <ulink url="http://en.wikipedia.org/wiki/Time-lapse_photography"><emphasis>time-lapse
+      photographs</emphasis></ulink>. You apply an automatic exposure correction with the same
+      set of parameters to all images of the series&nbsp;&ndash; differences in lighting get
+      compensated so that the final video sequence does not show any flickering.
     </para>
 
     <sect5>
