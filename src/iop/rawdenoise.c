@@ -263,6 +263,14 @@ static void wavelet_denoise(const float *const in, float *const out, const dt_io
   free(fimg);
 }
 
+static uint8_t
+FCxtrans(size_t row, size_t col,
+         const dt_iop_roi_t *const roi,
+         uint8_t (*const xtrans)[6])
+{
+  return xtrans[(row+roi->y) % 6][(col+roi->x) % 6];
+}
+
 static void wavelet_denoise_xtrans(const float *const in, float *const out, const dt_iop_roi_t *const roi, float threshold, uint8_t (*const xtrans)[6])
 {
   static const float noise[] =
@@ -286,7 +294,7 @@ static void wavelet_denoise_xtrans(const float *const in, float *const out, cons
       const float *inp = in + (size_t)row*width + col;
       float *fimgp = fimg + size + (size_t)row*width + col;
       for (; col<width-1; col++, inp++, fimgp++)
-        if (xtrans[(row+roi->y)%6][(col+roi->x)%6] == c)
+        if (FCxtrans(row,col,roi,xtrans) == c)
         {
           float d = sqrt(MAX(0, *inp));
           *fimgp = d;
@@ -345,7 +353,7 @@ static void wavelet_denoise_xtrans(const float *const in, float *const out, cons
       const float *fimgp = fimg + (size_t)row*width;
       float *outp = out + (size_t)row*width;
       for (int col = 0; col<width; col++, outp++, fimgp++)
-        if (xtrans[(row+roi->y)%6][(col+roi->x)%6] == c)
+        if (FCxtrans(row,col,roi,xtrans) == c)
         {
           float d = fimgp[0] + fimgp[lastpass];
           *outp = d * d;

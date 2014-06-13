@@ -422,7 +422,12 @@ green_equilibration_favg(float *out, const float *const in, const int width, con
 // x-trans specific demosaicing algorithms
 //
 
-#define fcol(row,col) xtrans[((row)+6)%6][((col)+6)%6]
+static uint8_t
+FCxtrans(size_t y, size_t x,
+         const uint8_t (*const xtrans)[6])
+{
+  return xtrans[(y+6) % 6][(x+6) % 6];
+}
 
 // xtrans_interpolate adapted from dcraw 9.20
 
@@ -478,7 +483,7 @@ xtrans_markesteijn_interpolate(
     for (int col=0; col < width; col++)
       if (col>=6 && row >= 6 && col < width-6 && row < height-6)
       {
-        const uint8_t f = fcol(row-6+yoff,col-6+xoff);
+        const uint8_t f = FCxtrans(row+yoff, col+xoff, xtrans);
         for (int c=0; c<3; c++)
           image[row*width+col][c] = (c == f) ? in[roi_in->width*(row-6) + (col-6)] : 0;
       }
@@ -490,12 +495,12 @@ xtrans_markesteijn_interpolate(
           for (int x=col-1; x <= col+1; x++)
           {
             const int xx=TRANSLATE(x,width), yy=TRANSLATE(y,height);
-            const uint8_t f = fcol(yy+yoff,xx+xoff);
+            const uint8_t f = FCxtrans(yy+yoff, xx+xoff, xtrans);
             sum[f] += in[roi_in->width*yy + xx];
             count[f]++;
           }
         const int cx=TRANSLATE(col,width), cy=TRANSLATE(row,height);
-        const uint8_t f = fcol(cy+yoff,cx+xoff);
+        const uint8_t f = FCxtrans(cy+yoff, cx+xoff, xtrans);
         for (int c=0; c<3; c++)
           if (c != f && count[c] != 0)
             image[row*width+col][c] = sum[c] / count[c];
@@ -508,8 +513,8 @@ xtrans_markesteijn_interpolate(
     for (int col=0; col < 3; col++)
       for (int ng=0, d=0; d < 10; d+=2)
       {
-        int g = fcol(row,col) == 1;
-        if (fcol(row+orth[d],col+orth[d+2]) == 1) ng=0; else ng++;
+        int g = FCxtrans(row,col,xtrans) == 1;
+        if (FCxtrans(row+orth[d],col+orth[d+2],xtrans) == 1) ng=0; else ng++;
         if (ng == 4)
         {
           sgrow = row;
@@ -534,7 +539,7 @@ xtrans_markesteijn_interpolate(
     float min=FLT_MAX, max=0;
     for (int col=2; col < width-2; col++)
     {
-      if (fcol(yoff+row,xoff+col) == 1)
+      if (FCxtrans(yoff+row,xoff+col,xtrans) == 1)
       {
         min=FLT_MAX;
         max=0;
@@ -597,7 +602,7 @@ xtrans_markesteijn_interpolate(
         for (int col=left; col < mcol; col++)
         {
           float color[8];
-          int f = fcol(row+yoff,col+xoff);
+          int f = FCxtrans(row+yoff,col+xoff,xtrans);
           if (f == 1) continue;
           float (*pix)[4] = image + row*width + col;
           short *hex = allhex[row%3][col%3][0];
@@ -628,7 +633,7 @@ xtrans_markesteijn_interpolate(
           for (int row=top+2; row < mrow-2; row++)
             for (int col=left+2; col < mcol-2; col++)
             {
-              int f = fcol(row+yoff,col+xoff);
+              int f = FCxtrans(row+yoff,col+xoff,xtrans);
               if (f == 1) continue;
               float (*pix)[4] = image + row*width + col;
               short *hex = allhex[row%3][col%3][1];
@@ -647,7 +652,7 @@ xtrans_markesteijn_interpolate(
           for (int col=(left-sgcol+4)/3*3+sgcol; col < mcol-2; col+=3)
           {
             float (*rfx)[3] = &rgb[0][row-top][col-left];
-            int h = fcol(row+yoff,col+xoff+1);
+            int h = FCxtrans(row+yoff,col+xoff+1,xtrans);
             float diff[6] = {0.0f};
             float color[3][8];
             for (int i=1, d=0; d < 6; d++, i^=TS^1, h^=2)
@@ -675,7 +680,7 @@ xtrans_markesteijn_interpolate(
         for (int row=top+1; row < mrow-1; row++)
           for (int col=left+1; col < mcol-1; col++)
           {
-            int f = 2-fcol(row+yoff,col+xoff);
+            int f = 2-FCxtrans(row+yoff,col+xoff,xtrans);
             if (f == 1) continue;
             float (*rfx)[3] = &rgb[0][row-top][col-left];
             int i = (row-sgrow) % 3 ? TS:1;
@@ -839,12 +844,12 @@ xtrans_lin_interpolate(
           const int yy = y + roi_out->y, xx = x + roi_out->x;
           if (yy >= 0 && xx >= 0 && yy < roi_in->height && xx < roi_in->width)
           {
-            const uint8_t f = fcol(y+roi_in->y,x+roi_in->x);
+            const uint8_t f = FCxtrans(y+roi_in->y,x+roi_in->x,xtrans);
             sum[f] += in[y*roi_in->width + x];
             count[f]++;
           }
         }
-      const uint8_t f = fcol(row+roi_in->y,col+roi_in->x);
+      const uint8_t f = FCxtrans(row+roi_in->y,col+roi_in->x,xtrans);
       // for current cell, copy the current sensor's color data,
       // interpolate the other two colors from surrounding pixels of
       // their color
@@ -877,13 +882,13 @@ xtrans_lin_interpolate(
     {
       int *ip = lookup[row][col]+1;
       int sum[3] = {0};
-      const uint8_t f = fcol(row+roi_in->y,col+roi_in->x);
+      const uint8_t f = FCxtrans(row+roi_in->y,col+roi_in->x,xtrans);
       // make list of adjoining pixel offsets by weight & color
       for (int y=-1; y <= 1; y++)
         for (int x=-1; x <= 1; x++)
         {
           int weight = 1 << ((y==0) + (x==0));
-          const uint8_t color = fcol(row+y+roi_in->y,col+x+roi_in->x);
+          const uint8_t color = FCxtrans(row+y+roi_in->y,col+x+roi_in->x,xtrans);
           if (color == f) continue;
           *ip++ = (roi_in->width*(y + roi_out->y) + roi_out->x + x);
           *ip++ = weight;
@@ -996,9 +1001,10 @@ xtrans_vng_interpolate(
         int y2 = *cp++, x2 = *cp++;
         int weight = *cp++;
         int grads = *cp++;
-        int color = fcol(row+y1,col+x1);
-        if (fcol(row+y2,col+x2) != color) continue;
-        int diag = (fcol(row,col+1) == color && fcol(row+1,col) == color) ? 2:1;
+        int color = FCxtrans(row+y1,col+x1,xtrans);
+        if (FCxtrans(row+y2,col+x2,xtrans) != color) continue;
+        int diag = (FCxtrans(row,col+1,xtrans) == color &&
+                    FCxtrans(row+1,col,xtrans) == color) ? 2:1;
         if (abs(y1-y2) == diag && abs(x1-x2) == diag) continue;
         *ip++ = (y1*width + x1)*4 + color;
         *ip++ = (y2*width + x2)*4 + color;
@@ -1013,8 +1019,9 @@ xtrans_vng_interpolate(
       {
         int y = *cp++, x = *cp++;
         *ip++ = (y*width + x) * 4;
-        int color = fcol(row,col);
-        if (fcol(row+y,col+x) != color && fcol(row+y*2,col+x*2) == color)
+        int color = FCxtrans(row,col,xtrans);
+        if (FCxtrans(row+y,col+x,xtrans) != color &&
+            FCxtrans(row+y*2,col+x*2,xtrans) == color)
           *ip++ = (y*width + x) * 8 + color;
         else
           *ip++ = 0;
@@ -1058,7 +1065,7 @@ xtrans_vng_interpolate(
       }
       float thold = gmin + (gmax * 0.5f);
       float sum[3] = { 0.0f };
-      int color = fcol(row,col);
+      int color = FCxtrans(row,col,xtrans);
       int num=0;
       for (g=0; g < 8; g++,ip+=2)               /* Average the neighbors */
       {

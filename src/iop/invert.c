@@ -190,6 +190,14 @@ FC(const int row, const int col, const unsigned int filters)
   return filters >> (((row << 1 & 14) + (col & 1)) << 1) & 3;
 }
 
+static uint8_t
+FCxtrans(size_t row, size_t col,
+         const dt_iop_roi_t *const roi,
+         uint8_t (*const xtrans)[6])
+{
+  return xtrans[(row+roi->y) % 6][(col+roi->x) % 6];
+}
+
 void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoid, void *ovoid, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
 {
   dt_iop_invert_data_t *d = (dt_iop_invert_data_t *)piece->data;
@@ -201,7 +209,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
 //   }
 
   const int filters = dt_image_filter(&piece->pipe->image);
-  uint8_t (*const xtrans)[6][6] = &self->dev->image_storage.xtrans;
+  uint8_t (*const xtrans)[6] = self->dev->image_storage.xtrans;
 
   if(!dt_dev_pixelpipe_uses_downsampled_input(piece->pipe) && (filters == 9u) && piece->pipe->image.bpp != 4)
   { // xtrans int mosaiced
@@ -216,7 +224,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
       uint16_t *out = ((uint16_t*)ovoid) + (size_t)j*roi_out->width;
       for(int i=0; i<roi_out->width; i++,out++,in++)
       {
-        *out = CLAMP(film_rgb_i[(*xtrans)[(j+roi_out->y)%6][(i+roi_out->x)%6]] - (int32_t)in[0], 0, 0xffff);
+        *out = CLAMP(film_rgb_i[FCxtrans(j,i,roi_out,xtrans)] - (int32_t)in[0], 0, 0xffff);
       }
     }
 
@@ -254,7 +262,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
       float *out = ((float*)ovoid) + j*roi_out->width;
       for(int i=0; i<roi_out->width; i++,out++,in++)
       {
-        *out = CLAMP(film_rgb[(*xtrans)[(j+roi_out->y)%6][(i+roi_out->x)%6]] - *in, 0, 1.0f);
+        *out = CLAMP(film_rgb[FCxtrans(j,i,roi_out,xtrans)] - *in, 0, 1.0f);
       }
     }
     for(int k=0; k<3; k++)

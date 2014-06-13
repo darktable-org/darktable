@@ -153,6 +153,14 @@ output_bpp(dt_iop_module_t *module, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_i
   else return 4*sizeof(float);
 }
 
+static uint8_t
+FCxtrans(size_t row, size_t col,
+         const dt_iop_roi_t *const roi,
+         const uint8_t (*const xtrans)[6])
+{
+  return xtrans[(row+roi->y+6) % 6][(col+roi->x+6) % 6];
+}
+
 static inline void _interpolate_color_xtrans(
     void *ivoid, void *ovoid,
     const dt_iop_roi_t *const roi_in,
@@ -161,8 +169,6 @@ static inline void _interpolate_color_xtrans(
     const uint8_t (*const xtrans)[6],
     const int pass)
 {
-#define fcol(row,col) xtrans[(roi_in->y+(row)+6)%6][(roi_in->x+(col)+6)%6]
-
   // similar to Bayer version, but in Bayer each row/column has only
   // green/red or green/blue transitions, in x-trans there can be
   // red/green, red/blue, and green/blue
@@ -203,9 +209,9 @@ static inline void _interpolate_color_xtrans(
     }
     else
     {
-      const uint8_t f0 = fcol(j, i);
-      const uint8_t f1 = fcol(dim?(j+dir):j, dim?i:(i+dir));
-      const uint8_t f2 = fcol(dim?(j+dir*2):j, dim?i:(i+dir*2));
+      const uint8_t f0 = FCxtrans(j, i, roi_in, xtrans);
+      const uint8_t f1 = FCxtrans(dim?(j+dir):j, dim?i:(i+dir), roi_in, xtrans);
+      const uint8_t f2 = FCxtrans(dim?(j+dir*2):j, dim?i:(i+dir*2), roi_in, xtrans);
       const float clip0 = clip[f0];
       const float clip1 = clip[f1];
       const float clip2 = clip[f2];

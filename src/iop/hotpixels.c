@@ -100,6 +100,14 @@ output_bpp(dt_iop_module_t *module, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_i
   return sizeof(float);
 }
 
+static uint8_t
+FCxtrans(size_t row, size_t col,
+         const dt_iop_roi_t *const roi,
+         const uint8_t (*const xtrans)[6])
+{
+  return xtrans[(row+roi->y+6) % 6][(col+roi->x+6) % 6];
+}
+
 static int
 process_xtrans(
   const void *const i, void *const o,
@@ -109,8 +117,6 @@ process_xtrans(
   const float threshold, const float multiplier,
   const gboolean markfixed, const int min_neighbours)
 {
-#define fcol(row,col) xtrans[(roi_in->y+(row)+6)%6][(roi_in->x+(col)+6)%6]
-
   // for each cell of sensor array, a list of the x/y offsets of the
   // four radially nearest pixels of the same color
   int offsets[6][6][4][2];
@@ -118,10 +124,10 @@ process_xtrans(
   for (int j=0; j<6; ++j)
     for (int i=0; i<6; ++i)
     {
-      const uint8_t c = fcol(j,i);
+      const uint8_t c = FCxtrans(j,i,roi_in,xtrans);
       for (int s=0, found=0; s<20 && found<4; ++s)
       {
-        if (c == fcol(j+search[s][1],i+search[s][0]))
+        if (c == FCxtrans(j+search[s][1],i+search[s][0],roi_in,xtrans))
         {
           offsets[i][j][found][0] = search[s][0];
           offsets[i][j][found][1] = search[s][1];

@@ -2294,6 +2294,13 @@ dt_iop_clip_and_zoom_demosaic_half_size_f(
 }
 #endif
 
+static uint8_t
+FCxtrans(size_t row, size_t col,
+         const dt_iop_roi_t *const roi,
+         const uint8_t (*const xtrans)[6])
+{
+  return xtrans[(row+roi->y) % 6][(col+roi->x) % 6];
+}
 
 /**
  * downscales and clips a Fujifilm X-Trans mosaiced buffer (in) to the given region of interest (r_*)
@@ -2317,7 +2324,7 @@ dt_iop_clip_and_zoom_demosaic_third_size_xtrans(
 #endif
   for(int y=0; y<roi_out->height; y++)
   {
-    float *outc = out + 4*(out_stride*y);
+    float *outc = out + (size_t)4*(out_stride*y);
 
     int py = floorf((y + roi_out->y)*px_footprint);
     py = MIN(roi_in->height-4, py);
@@ -2351,7 +2358,7 @@ dt_iop_clip_and_zoom_demosaic_third_size_xtrans(
             for (int ii=0; ii < 3; ++ii)
               for (int jj=0; jj < 3; ++jj)
               {
-                const uint8_t c = xtrans[(j+jj+roi_in->y)%6][(i+ii+roi_in->x)%6];
+                const uint8_t c = FCxtrans(j+jj, i+ii, roi_in, xtrans);
                 sum[c] += in[i+ii + in_stride*(j + jj)];
                 num[c]++;
               }
@@ -2375,7 +2382,7 @@ dt_iop_clip_and_zoom_demosaic_third_size_xtrans(
       for (int xx=0; xx < 3; ++xx)                         \
       {                                                    \
         const uint8_t c =                                  \
-          xtrans[((py)+yy+roi_in->y)%6][((px)+xx+roi_in->x)%6]; \
+          FCxtrans((py)+yy, (px)+xx, roi_in, xtrans);      \
         sum[c] += in[(px) + xx + in_stride*((py) + yy)];   \
         num[c] += (weight);                                \
       }                                                    \
