@@ -392,7 +392,7 @@ process (dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void * cons
 #endif
       for (int y = 0; y < roi_out->height; y++)
       {
-        /* Colour correction: vignetting and CCI */
+        /* Colour correction: vignetting */
         // actually this way row stride does not matter.
         float *out = ((float *)ovoid) + (size_t)y*roi_out->width*ch;
         lf_modifier_apply_color_modification(modifier, out,
@@ -416,7 +416,7 @@ process (dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void * cons
 #endif
       for (int y = 0; y < roi_in->height; y++)
       {
-        /* Colour correction: vignetting and CCI */
+        /* Colour correction: vignetting */
         // actually this way row stride does not matter.
         float *bufptr = ((float *)buf) + (size_t)ch*roi_in->width*y;
         lf_modifier_apply_color_modification(modifier, bufptr,
@@ -613,7 +613,7 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
 #endif
       for (int y = 0; y < roi_out->height; y++)
       {
-        /* Colour correction: vignetting and CCI */
+        /* Colour correction: vignetting */
         // actually this way row stride does not matter.
         float *buf = tmpbuf + (size_t)y * ch*roi_out->width;
         for (int k=0; k < ch*roi_out->width; k++) buf[k] = 0.5f;
@@ -652,7 +652,7 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
 #endif
       for (int y = 0; y < roi_in->height; y++)
       {
-        /* Colour correction: vignetting and CCI */
+        /* Colour correction: vignetting */
         // actually this way row stride does not matter.
         float *buf = tmpbuf + (size_t)y * ch*roi_in->width;
         for (int k=0; k < ch*roi_in->width; k++) buf[k] = 0.5f;
