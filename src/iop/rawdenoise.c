@@ -273,6 +273,9 @@ FCxtrans(size_t row, size_t col,
 
 static void wavelet_denoise_xtrans(const float *const in, float *out, const dt_iop_roi_t *const roi, float threshold, uint8_t (*const xtrans)[6])
 {
+  // note that these constants are the same for X-Trans and Bayer, as
+  // they are proportional to image detail on each channel, not the
+  // sensor pattern
   static const float noise[] =
     { 0.8002,0.2735,0.1202,0.0585,0.0291,0.0152,0.0080,0.0044 };
 
