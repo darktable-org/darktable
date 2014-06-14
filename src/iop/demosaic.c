@@ -440,7 +440,7 @@ FCxtrans(size_t y, size_t x,
  */
 static void
 xtrans_markesteijn_interpolate(
-  float *const out, const float *const in,
+  float *out, const float *const in,
   const dt_iop_roi_t *const roi_out,
   const dt_iop_roi_t *const roi_in,
   const dt_image_t *img,
@@ -471,13 +471,13 @@ xtrans_markesteijn_interpolate(
     return;
   }
 
-  float (*const image)[4] = (float (*)[4]) all_buffers;
+  float (*image)[4] = (float (*)[4]) all_buffers;
   // Work in a 4-color temp buffer with 6-pixel borders filled with
   // mirrored/interpolated edge data. The extra border helps the
   // algorithm avoid discontinuities at image edges.
 #define TRANSLATE(n,size) ((n<6)?(6-n):((n>=size-6)?(2*size-n-20):(n-6)))
 #ifdef _OPENMP
-  #pragma omp parallel for default(none) schedule(static)
+  #pragma omp parallel for default(none) shared(image) schedule(static)
 #endif
   for (int row=0; row < height; row++)
     for (int col=0; col < width; col++)
@@ -532,7 +532,7 @@ xtrans_markesteijn_interpolate(
 
   /* Set green1 and green3 to the minimum and maximum allowed values:   */
 #ifdef _OPENMP
-  #pragma omp parallel for default(none) shared(allhex, sgrow) schedule(static)
+  #pragma omp parallel for default(none) shared(allhex, sgrow, image) schedule(static)
 #endif
   for (int row=2; row < height-2; row++)
   {
@@ -574,7 +574,7 @@ xtrans_markesteijn_interpolate(
   }
 
 #ifdef _OPENMP
-  #pragma omp parallel for ordered default(none) shared(sgrow, sgcol, allhex) schedule(static)
+  #pragma omp parallel for ordered default(none) shared(sgrow, sgcol, allhex, image) schedule(static)
 #endif
   for (int top=3; top < height-19; top += TS-16)
   {
@@ -804,7 +804,7 @@ xtrans_markesteijn_interpolate(
   }
 
 #ifdef _OPENMP
-  #pragma omp parallel for default(none) schedule(static)
+  #pragma omp parallel for default(none) shared(image, out) schedule(static)
 #endif
   for (int row=0; row < roi_out->height; row++)
     for (int col=0; col < roi_out->width; col++)
@@ -821,14 +821,14 @@ xtrans_markesteijn_interpolate(
 
 static void
 xtrans_lin_interpolate(
-  float *const out, const float *const in,
+  float *out, const float *const in,
   const dt_iop_roi_t *const roi_out,
   const dt_iop_roi_t *const roi_in,
   const uint8_t (*const xtrans)[6])
 {
   // border interpolate
 #ifdef _OPENMP
-  #pragma omp parallel for default(none) schedule(static)
+  #pragma omp parallel for default(none) shared(out) schedule(static)
 #endif
   for (int row=0; row < roi_out->height; row++)
     for (int col=0; col < roi_out->width; col++)
@@ -906,7 +906,7 @@ xtrans_lin_interpolate(
     }
 
 #ifdef _OPENMP
-  #pragma omp parallel for default(none) shared(lookup) schedule(static)
+  #pragma omp parallel for default(none) shared(lookup, out) schedule(static)
 #endif
   for (int row=1; row < roi_out->height-1; row++)
   {
@@ -944,7 +944,7 @@ xtrans_lin_interpolate(
  */
 static void
 xtrans_vng_interpolate(
-  float *const out, const float *const in,
+  float *out, const float *const in,
   const dt_iop_roi_t *const roi_out, const dt_iop_roi_t *const roi_in,
   const uint8_t (*const xtrans)[6])
 {
@@ -1033,7 +1033,7 @@ xtrans_vng_interpolate(
   for (int row=2; row < height-2; row++)        /* Do VNG interpolation */
   {
 #ifdef _OPENMP
-    #pragma omp parallel for default(none) shared(row, code, brow) private(ip) schedule(static)
+    #pragma omp parallel for default(none) shared(row, code, brow, out) private(ip) schedule(static)
 #endif
     for (int col=2; col < width-2; col++)
     {

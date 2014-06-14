@@ -2308,7 +2308,7 @@ FCxtrans(size_t row, size_t col,
  */
 void
 dt_iop_clip_and_zoom_demosaic_third_size_xtrans(
-  float *const out,
+  float *out,
   const uint16_t *const in,
   const dt_iop_roi_t *const roi_out,
   const dt_iop_roi_t *const roi_in,
@@ -2320,7 +2320,7 @@ dt_iop_clip_and_zoom_demosaic_third_size_xtrans(
   const int samples = round(px_footprint/3);
 
 #ifdef _OPENMP
-  #pragma omp parallel for default(none) schedule(static)
+  #pragma omp parallel for default(none) shared(out) schedule(static)
 #endif
   for(int y=0; y<roi_out->height; y++)
   {
@@ -2395,7 +2395,7 @@ dt_iop_clip_and_zoom_demosaic_third_size_xtrans(
 
 void
 dt_iop_clip_and_zoom_demosaic_third_size_xtrans_f(
-  float *const out,
+  float *out,
   const float *const in,
   const dt_iop_roi_t *const roi_out,
   const dt_iop_roi_t *const roi_in,
@@ -2407,7 +2407,7 @@ dt_iop_clip_and_zoom_demosaic_third_size_xtrans_f(
   const int samples = round(px_footprint/3);
 
 #ifdef _OPENMP
-  #pragma omp parallel for default(none) schedule(static)
+  #pragma omp parallel for default(none) shared(out) schedule(static)
 #endif
   for(int y=0; y<roi_out->height; y++)
   {

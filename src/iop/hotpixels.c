@@ -110,7 +110,7 @@ FCxtrans(size_t row, size_t col,
 
 static int
 process_xtrans(
-  const void *const i, void *const o,
+  const void *const i, void *o,
   const dt_iop_roi_t *const roi_in,
   const int width, const int height,
   const uint8_t (*const xtrans)[6],
@@ -138,7 +138,7 @@ process_xtrans(
 
   int fixed = 0;
 #ifdef _OPENMP
-  #pragma omp parallel for default(none) shared(offsets) reduction(+:fixed) schedule(static)
+  #pragma omp parallel for default(none) shared(o, offsets) reduction(+:fixed) schedule(static)
 #endif
   for (int row=1; row<height-1; row++)
   {
