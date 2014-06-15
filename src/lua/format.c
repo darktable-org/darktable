@@ -91,7 +91,7 @@ static int get_format_params(lua_State *L)
 static int write_image(lua_State *L)
 {
   /* check that param 1 is a module_format_t */
-  luaL_argcheck(L,dt_lua_isa(L,-1,dt_imageio_module_format_t),-1,"dt_imageio_module_format_t expected");
+  luaL_argcheck(L,dt_lua_isa(L,1,dt_imageio_module_format_t),-1,"dt_imageio_module_format_t expected");
 
   lua_getmetatable(L,1);
   lua_getfield(L,-1,"__luaA_Type");
