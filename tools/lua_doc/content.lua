@@ -269,6 +269,15 @@ darktable.styles.apply:add_parameter("style",my_tostring(types.dt_style_t),[[The
 darktable.styles.apply:add_parameter("image",my_tostring(types.dt_lua_image_t),[[The image to apply the style to.]])
 darktable.styles.apply:set_main_parent(darktable.styles)
 
+darktable.styles.import:set_text([[Import a style from an external .dtstyle file]]):add_version_info("function_added")
+darktable.styles.import:add_parameter("filename","string","The file to import");
+darktable.styles.import:set_main_parent(darktable.styles)
+
+darktable.styles.export:set_text([[Export a style to an external .dtstyle file]]):add_version_info("function_added")
+darktable.styles.export:add_parameter("style",my_tostring(types.dt_style_t),"The file to import");
+darktable.styles.export:add_parameter("directory","string","The directory to export to");
+darktable.styles.export:add_parameter("overwrite","boolean","Is overwriting an existing file allowed"):set_attribute("optional")
+darktable.styles.export:set_main_parent(darktable.styles)
 -------------------------
 --  DARKTABLE.DATABASE --
 -------------------------

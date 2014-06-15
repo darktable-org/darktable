@@ -1156,6 +1156,62 @@ All functions and data are accessed through the darktable module.</para>
 </variablelist>
 </section>
 
+<section status="final" id="darktable_styles_import">
+<title>darktable.styles.import</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>import</secondary>
+</indexterm>
+<synopsis>function( 
+	<emphasis><link linkend="darktable_styles_import_filename">filename</link></emphasis> : string
+)</synopsis>
+<para>Import a style from an external .dtstyle file</para>
+
+<variablelist>
+<varlistentry id="darktable_styles_import_filename"><term>filename</term><listitem>
+<synopsis>string</synopsis>
+<para>The file to import</para>
+
+</listitem></varlistentry>
+
+</variablelist>
+</section>
+
+<section status="final" id="darktable_styles_export">
+<title>darktable.styles.export</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>export</secondary>
+</indexterm>
+<synopsis>function( 
+	<emphasis><link linkend="darktable_styles_export_style">style</link></emphasis> : <link linkend="types_dt_style_t">types.dt_style_t</link>, 
+	<emphasis><link linkend="darktable_styles_export_filename">filename</link></emphasis> : string, 
+	<emphasis><link linkend="darktable_styles_export_overwrite">overwrite</link></emphasis> : boolean
+)</synopsis>
+<para>Export a style to an external .dtstyle file</para>
+
+<variablelist>
+<varlistentry id="darktable_styles_export_style"><term>style</term><listitem>
+<synopsis><link linkend="types_dt_style_t">types.dt_style_t</link></synopsis>
+<para>The file to import</para>
+
+</listitem></varlistentry>
+
+<varlistentry id="darktable_styles_export_filename"><term>filename</term><listitem>
+<synopsis>string</synopsis>
+<para>The file to import</para>
+
+</listitem></varlistentry>
+
+<varlistentry id="darktable_styles_export_overwrite"><term>overwrite</term><listitem>
+<synopsis>boolean</synopsis>
+<para>Is overwriting an existing file allowd</para>
+
+</listitem></varlistentry>
+
+</variablelist>
+</section>
+
 </section>
 
 <section status="final" id="darktable_database">
@@ -4552,6 +4608,15 @@ Note that this is the real image object; changing the value of a field will imme
 <secondary>apply</secondary>
 </indexterm>
 <para>see <link linkend="darktable_styles_apply">darktable.styles.apply</link></para>
+</section>
+
+<section status="final" >
+<title>types.dt_style_t.export</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>export</secondary>
+</indexterm>
+<para>see <link linkend="darktable_styles_export">darktable.styles.export</link></para>
 </section>
 
 <section status="final" id="types_dt_style_t_name">

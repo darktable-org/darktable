@@ -264,6 +264,24 @@ int dt_lua_style_apply(lua_State*L)
   return 1;
 }
 
+int dt_lua_style_import(lua_State*L) 
+{
+  const char*filename = luaL_checkstring(L,1);
+  dt_styles_import_from_file(filename);
+  return 0;
+}
+
+int dt_lua_style_export(lua_State*L) 
+{
+  dt_style_t style;
+  luaA_to(L,dt_style_t,&style,1);
+  const char*filename = lua_tostring(L,2);
+  if(!filename) filename =".";
+  gboolean overwrite = lua_toboolean(L,3);
+  dt_styles_save_to_file(style.name,filename,overwrite);
+  return 0;
+}
+
 
 
 int dt_lua_init_styles(lua_State * L)
@@ -278,6 +296,8 @@ int dt_lua_init_styles(lua_State * L)
   dt_lua_register_type_callback_stack(L,dt_style_t,"delete");
   lua_pushcfunction(L,dt_lua_style_apply);
   dt_lua_register_type_callback_stack(L,dt_style_t,"apply");
+  lua_pushcfunction(L,dt_lua_style_export);
+  dt_lua_register_type_callback_stack(L,dt_style_t,"export");
   luaL_getmetatable(L,"dt_style_t");
   lua_pushcfunction(L,style_gc);
   lua_setfield(L,-2,"__gc");
@@ -315,6 +335,10 @@ int dt_lua_init_styles(lua_State * L)
   dt_lua_register_type_callback_stack_typeid(L,type_id,"create");
   lua_pushcfunction(L,dt_lua_style_apply);
   dt_lua_register_type_callback_stack_typeid(L,type_id,"apply");
+  lua_pushcfunction(L,dt_lua_style_import);
+  dt_lua_register_type_callback_stack_typeid(L,type_id,"import");
+  lua_pushcfunction(L,dt_lua_style_export);
+  dt_lua_register_type_callback_stack_typeid(L,type_id,"export");
 
   return 0;
 }
