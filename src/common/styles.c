@@ -571,17 +571,17 @@ dt_styles_get_item_list (const char *name, gboolean params, int imgid)
   if ((id=dt_styles_get_id_by_name(name)) != 0)
   {
     if (params)
-      DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select num, operation, enabled, op_params, blendop_params, multi_name from style_items where styleid=?1 order by num desc", -1, &stmt, NULL);
+      DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select num, module, operation, enabled, op_params, blendop_params, multi_name from style_items where styleid=?1 order by num desc", -1, &stmt, NULL);
     else if (imgid != -1)
     {
       // get all items from the style
       //    UNION
       // get all items from history, not in the style : select only the last operation, that is max(num)
-      DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select num, operation, enabled, (select max(num) from history where imgid=?2 and operation=style_items.operation group by multi_priority),multi_name from style_items where styleid=?1 UNION select -1,history.operation,history.enabled,history.num,multi_name from history where imgid=?2 and history.enabled=1 and (history.operation not in (select operation from style_items where styleid=?1) or (history.op_params not in (select op_params from style_items where styleid=?1 and operation=history.operation)) or (history.blendop_params not in (select blendop_params from style_items where styleid=?1 and operation=history.operation))) group by operation having max(num) order by num desc", -1, &stmt, NULL);
+      DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select num, module, operation, enabled, (select max(num) from history where imgid=?2 and operation=style_items.operation group by multi_priority),multi_name from style_items where styleid=?1 UNION select -1,history.moddule,history.operation,history.enabled,history.num,multi_name from history where imgid=?2 and history.enabled=1 and (history.operation not in (select operation from style_items where styleid=?1) or (history.op_params not in (select op_params from style_items where styleid=?1 and operation=history.operation)) or (history.blendop_params not in (select blendop_params from style_items where styleid=?1 and operation=history.operation))) group by operation having max(num) order by num desc", -1, &stmt, NULL);
       DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, imgid);
     }
     else
-      DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select num, operation, enabled, 0, multi_name from style_items where styleid=?1 order by num desc", -1, &stmt, NULL);
+      DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select num, module, operation, enabled, 0, multi_name from style_items where styleid=?1 order by num desc", -1, &stmt, NULL);
 
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, id);
     while (sqlite3_step(stmt) == SQLITE_ROW)
@@ -595,24 +595,25 @@ dt_styles_get_item_list (const char *name, gboolean params, int imgid)
         item->num = sqlite3_column_int (stmt, 0);
 
       item->selimg_num = -1;
+      item->module = sqlite3_column_int(stmt, 1);
 
-      item->enabled = sqlite3_column_int(stmt, 2);
+      item->enabled = sqlite3_column_int(stmt, 3);
 
       if (params)
       {
         // when we get the parameters we do not want to get the operation localized as this
         // is used to compare against the internal module name.
-        const char *multi_name = (const char *)sqlite3_column_text (stmt, 5);
+        const char *multi_name = (const char *)sqlite3_column_text (stmt, 6);
 
         if (!(multi_name && *multi_name))
-          g_snprintf(name,sizeof(name),"%s",sqlite3_column_text (stmt, 1));
+          g_snprintf(name,sizeof(name),"%s",sqlite3_column_text (stmt, 2));
         else
-          g_snprintf(name,sizeof(name),"%s %s",sqlite3_column_text (stmt, 1), multi_name);
+          g_snprintf(name,sizeof(name),"%s %s",sqlite3_column_text (stmt, 2), multi_name);
 
-        const unsigned char *op_blob = sqlite3_column_blob(stmt, 3);
-        const int32_t op_len = sqlite3_column_bytes(stmt, 3);
-        const unsigned char *bop_blob = sqlite3_column_blob(stmt, 4);
-        const int32_t bop_len = sqlite3_column_bytes(stmt, 4);
+        const unsigned char *op_blob = sqlite3_column_blob(stmt, 4);
+        const int32_t op_len = sqlite3_column_bytes(stmt, 4);
+        const unsigned char *bop_blob = sqlite3_column_blob(stmt, 5);
+        const int32_t bop_len = sqlite3_column_bytes(stmt, 5);
 
         item->params = malloc(op_len);
         memcpy(item->params, op_blob, op_len);
@@ -622,21 +623,21 @@ dt_styles_get_item_list (const char *name, gboolean params, int imgid)
       }
       else
       {
-        const char *multi_name = (const char *)sqlite3_column_text (stmt, 4);
+        const char *multi_name = (const char *)sqlite3_column_text (stmt, 5);
         gboolean has_multi_name = FALSE;
 
         if (multi_name && *multi_name && strcmp(multi_name,"0")!=0)
           has_multi_name = TRUE;
 
         if (has_multi_name)
-          g_snprintf(name,sizeof(name),"%s %s (%s)",dt_iop_get_localized_name((gchar *)sqlite3_column_text (stmt, 1)),multi_name,(sqlite3_column_int (stmt, 2)!=0)?_("on"):_("off"));
+          g_snprintf(name,sizeof(name),"%s %s (%s)",dt_iop_get_localized_name((gchar *)sqlite3_column_text (stmt, 2)),multi_name,(sqlite3_column_int (stmt, 3)!=0)?_("on"):_("off"));
         else
-          g_snprintf(name,sizeof(name),"%s (%s)",dt_iop_get_localized_name((gchar *)sqlite3_column_text (stmt, 1)),(sqlite3_column_int (stmt, 2)!=0)?_("on"):_("off"));
+          g_snprintf(name,sizeof(name),"%s (%s)",dt_iop_get_localized_name((gchar *)sqlite3_column_text (stmt, 2)),(sqlite3_column_int (stmt, 3)!=0)?_("on"):_("off"));
 
         item->params = NULL;
         item->blendop_params = NULL;
-        if (imgid != -1 && sqlite3_column_type(stmt,3)!=SQLITE_NULL)
-          item->selimg_num = sqlite3_column_int (stmt, 3);
+        if (imgid != -1 && sqlite3_column_type(stmt,4)!=SQLITE_NULL)
+          item->selimg_num = sqlite3_column_int (stmt, 4);
       }
       item->name = g_strdup (name);
       result = g_list_append (result,item);
