@@ -162,7 +162,7 @@ int main(int argc, char *arg[])
   }
 
   // init dt without gui:
-  if(dt_init(m_argc, m_arg, 0)) exit(1);
+  if(dt_init(m_argc, m_arg, 0,NULL)) exit(1);
 
   dt_film_t film;
   int id = 0;

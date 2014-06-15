@@ -356,7 +356,7 @@ int dt_load_from_string(const gchar* input, gboolean open_image_in_dr)
   return id;
 }
 
-int dt_init(int argc, char *argv[], const int init_gui)
+int dt_init(int argc, char *argv[], const int init_gui,lua_State *L)
 {
 #ifndef __WIN32__
   if(getuid() == 0 || geteuid() == 0)
@@ -602,7 +602,7 @@ int dt_init(int argc, char *argv[], const int init_gui)
   gegl_init(&argc, &argv);
 #endif
 #ifdef USE_LUA
-  dt_lua_init_early(NULL);
+  dt_lua_init_early(L);
 #endif
 
   // thread-safe init:
