@@ -160,7 +160,13 @@ RawDecoder* TiffParser::getDecoder() {
         mRootIFD = NULL;
         return new SrwDecoder(root, mInput);
       }
+      if (!make.compare("Mamiya-OP Co.,Ltd.")) {
+        mRootIFD = NULL;
+        return new MefDecoder(root, mInput);
+      }
     }
+  } else {
+    fprintf(stderr, "Empty potentials!\n");
   }
   throw TiffParserException("No decoder found. Sorry.");
   return NULL;
