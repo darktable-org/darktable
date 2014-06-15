@@ -70,8 +70,9 @@ static int tag_index(lua_State *L)
   }
   sqlite3_stmt *stmt = NULL;
   char query[1024];
-  snprintf(query,sizeof(query),"select imgid from tagged_images order by imgid limit 1 offset %d",index -1);
+  snprintf(query,sizeof(query),"select imgid from tagged_images WHERE tagid=?1 order by imgid limit 1 offset %d",index -1);
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),query, -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, tagid);
   if(sqlite3_step(stmt) == SQLITE_ROW)
   {
     int imgid = sqlite3_column_int(stmt, 0);
