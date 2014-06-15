@@ -165,8 +165,6 @@ RawDecoder* TiffParser::getDecoder() {
         return new MefDecoder(root, mInput);
       }
     }
-  } else {
-    fprintf(stderr, "Empty potentials!\n");
   }
   throw TiffParserException("No decoder found. Sorry.");
   return NULL;
