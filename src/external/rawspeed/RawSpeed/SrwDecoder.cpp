@@ -33,12 +33,16 @@ namespace RawSpeed {
 SrwDecoder::SrwDecoder(TiffIFD *rootIFD, FileMap* file):
 RawDecoder(file), mRootIFD(rootIFD) {
   decoderVersion = 3;
+  b = NULL;
 }
 
 SrwDecoder::~SrwDecoder(void) {
   if (mRootIFD)
     delete mRootIFD;
   mRootIFD = NULL;
+  if (NULL != b)
+    delete b;
+  b = NULL;
 }
 
 RawImage SrwDecoder::decodeRawInternal() {
@@ -98,7 +102,9 @@ void SrwDecoder::decodeCompressed( TiffIFD* raw )
   mRaw->createData();
   const uint32 offset = raw->getEntry(STRIPOFFSETS)->getInt();
   uint32 compressed_offset = raw->getEntry((TiffTag)40976)->getInt();
-  ByteStream *b;
+
+  if (NULL != b)
+    delete b;
   if (getHostEndianness() == little)
     b = new ByteStream(mFile->getData(0), mFile->getSize());
   else

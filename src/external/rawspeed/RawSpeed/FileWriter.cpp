@@ -1,6 +1,6 @@
 #include "StdAfx.h"
 #include "FileWriter.h"
-#if defined(__unix__) || defined(__APPLE__)
+#if defined(__unix__) || defined(__APPLE__) 
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>
@@ -10,7 +10,7 @@
 /*
     RawSpeed - RAW file decoder.
 
-    Copyright (C) 2009 Klaus Post
+    Copyright (C) 2009-2014 Klaus Post
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Lesser General Public
@@ -37,7 +37,7 @@ FileWriter::FileWriter(LPCWSTR _filename) : mFilename(_filename) {
 void FileWriter::writeFile(FileMap* filemap, uint32 size) {
   if (size > filemap->getSize())
     size = filemap->getSize();
-#if defined(__unix__) || defined(__APPLE__)
+#if defined(__unix__) || defined(__APPLE__) 
   size_t bytes_written = 0;
   FILE *file;
   char *src;

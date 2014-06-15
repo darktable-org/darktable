@@ -3,7 +3,8 @@
 /*
     RawSpeed - RAW file decoder.
 
-    Copyright (C) 2009 Klaus Post
+    Copyright (C) 2009-2014 Klaus Post
+    Copyright (C) 2014 Pedro Côrte-Real
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Lesser General Public
@@ -271,7 +272,7 @@ void RawDecoder::Decode12BitRawBEInterlaced(ByteStream &input, uint32 w, uint32 
     if (y == 1) {
       // The second field starts at a 2048 byte aligment
       uint32 offset = ((half*w*3/2 >> 11) + 1) << 11;
-      if (offset < 0 || offset > input.getRemainSize())
+      if (offset > input.getRemainSize())
         ThrowIOE("Decode12BitSplitRaw: Trying to jump to invalid offset %d", offset);
       in = input.getData() + offset;
     }

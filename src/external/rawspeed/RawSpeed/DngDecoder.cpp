@@ -5,7 +5,7 @@
 /*
     RawSpeed - RAW file decoder.
 
-    Copyright (C) 2009 Klaus Post
+    Copyright (C) 2009-2014 Klaus Post
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Lesser General Public
@@ -377,9 +377,9 @@ RawImage DngDecoder::decodeRawInternal() {
       ThrowRDE("DNG Decoder: No positive crop area");
 
     mRaw->subFrame(cropped);
-    if (cropped.pos.x %2 == 1)
+    if (mRaw->isCFA && cropped.pos.x %2 == 1)
       mRaw->cfa.shiftLeft();
-    if (cropped.pos.y %2 == 1)
+    if (mRaw->isCFA && cropped.pos.y %2 == 1)
       mRaw->cfa.shiftDown();
   }
   if (mRaw->dim.area() <= 0)

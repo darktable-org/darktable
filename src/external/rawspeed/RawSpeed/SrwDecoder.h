@@ -43,6 +43,7 @@ public:
 private:
   void decodeCompressed( TiffIFD* raw);
   TiffIFD *mRootIFD;
+  ByteStream *b;
 };
 
 } // namespace RawSpeed

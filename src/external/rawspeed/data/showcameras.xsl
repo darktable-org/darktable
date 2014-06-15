@@ -59,21 +59,21 @@
 					</xsl:if>
 					<br/>
 					<xsl:for-each select="Sensor">
-						Sensor, 
+						Sensor,
 						<xsl:choose>
 							<xsl:when test ="@iso_min != ''">
 								<xsl:if test ="@iso_max = ''">
 									ISO <xsl:value-of select="@iso_min"/> - Maximum ISO
 								</xsl:if>
 								<xsl:if test ="@iso_max != ''">
-									ISO <xsl:value-of select="@iso_min"/> - <xsl:value-of select="@iso_max"/> 
+									ISO <xsl:value-of select="@iso_min"/> - <xsl:value-of select="@iso_max"/>
 								</xsl:if>
 							</xsl:when>
 							<xsl:when test ="@iso_max != ''">
-								ISO 0 - <xsl:value-of select="@iso_max"/> 
+								ISO 0 - <xsl:value-of select="@iso_max"/>
 							</xsl:when>
 							<xsl:when test ="@iso_list != ''">
-								at ISO <xsl:value-of select="@iso_list"/> 
+								at ISO <xsl:value-of select="@iso_list"/>
 							</xsl:when>
 							<xsl:otherwise>
 								default values
@@ -88,19 +88,36 @@
 						<xsl:for-each select="CFA/Color">
 							<xsl:sort data-type = "number" select = "@y*2+@x"/>
 							<xsl:variable name = "color" ><xsl:value-of select="."/></xsl:variable>
-							<xsl:if test="position()=last()-1"><br/></xsl:if>						
+							<xsl:if test="position()=last()-1"><br/></xsl:if>
 							<xsl:if test ="$color = 'RED'"><span class="param" style="color:red;">[<xsl:copy-of select="$color" />]</span></xsl:if>
 							<xsl:if test ="$color = 'GREEN'"><span class="param" style="color:green;">[<xsl:copy-of select="$color" />]</span></xsl:if>
 							<xsl:if test ="$color = 'BLUE'"><span class="param" style="color:blue;">[<xsl:copy-of select="$color" />]</span></xsl:if>
 						</xsl:for-each>
 						<br/><br/>
 					</xsl:if>
+					<xsl:if test="CFA2"><br/>
+						Uncropped Sensor Colors Positions:<br/>
+						<xsl:for-each select="CFA2/Color">
+							<xsl:sort data-type = "number" select = "@y*2+@x"/>
+							<xsl:variable name = "color" ><xsl:value-of select="."/></xsl:variable>
+							<xsl:if test="position()=last()-1"><br/></xsl:if>
+							<xsl:if test ="$color = 'RED'"><span class="param" style="color:red;">[<xsl:copy-of select="$color" />]</span></xsl:if>
+							<xsl:if test ="$color = 'GREEN'"><span class="param" style="color:green;">[<xsl:copy-of select="$color" />]</span></xsl:if>
+							<xsl:if test ="$color = 'BLUE'"><span class="param" style="color:blue;">[<xsl:copy-of select="$color" />]</span></xsl:if>
+						</xsl:for-each>
+						<xsl:for-each select="CFA2/ColorRow">
+							<xsl:sort data-type = "number" select = "@y"/>
+							<xsl:value-of select="."/>
+							<br/>
+						</xsl:for-each>
+						<br/>
+					</xsl:if>
 					<xsl:for-each select="BlackAreas/Horizontal">
 						Horizontal Black Area at Y = <span class="param"><xsl:value-of select="@y"/></span>, height is <span class="param"><xsl:value-of select="@height"/> pixels.</span><br/>
-					</xsl:for-each>					
+					</xsl:for-each>
 					<xsl:for-each select="BlackAreas/Vertical">
 						Vertical Black Area at X = <span class="param"><xsl:value-of select="@x"/></span>, width is <span class="param"><xsl:value-of select="@width"/> pixels.</span><br/>
-					</xsl:for-each>					
+					</xsl:for-each>
 					<xsl:for-each select="Hints/Hint">
 						Decoder Hint: <span class="param">&quot;<xsl:value-of select="@name"/>&quot;</span>:<span class="param">&quot;<xsl:value-of select="@value"/>&quot;</span> <br/>
 					</xsl:for-each>

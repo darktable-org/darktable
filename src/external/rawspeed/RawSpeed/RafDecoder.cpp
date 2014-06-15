@@ -47,7 +47,6 @@ RawImage RafDecoder::decodeRawInternal() {
   uint32 width = 0;
 
   alt_layout = hints.find("set_alt_layout") == hints.end();
-  fuji_width = hints.find("set_fuji_width") == hints.end();
 
   if (raw->hasEntry(FUJI_RAWIMAGEFULLHEIGHT)) {
     height = raw->getEntry(FUJI_RAWIMAGEFULLHEIGHT)->getInt();

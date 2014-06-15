@@ -4,7 +4,8 @@
 /*
     RawSpeed - RAW file decoder.
 
-    Copyright (C) 2009 Klaus Post
+    Copyright (C) 2009-2014 Klaus Post
+    Copyright (C) 2014 Pedro Côrte-Real
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Lesser General Public
@@ -26,7 +27,7 @@ namespace RawSpeed {
 
 Rw2Decoder::Rw2Decoder(TiffIFD *rootIFD, FileMap* file) :
     RawDecoder(file), mRootIFD(rootIFD), input_start(0) {
-      decoderVersion = 1;
+      decoderVersion = 2;
 }
 Rw2Decoder::~Rw2Decoder(void) {
   if (input_start)

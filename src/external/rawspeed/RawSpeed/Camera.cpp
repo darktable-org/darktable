@@ -4,7 +4,7 @@
 /*
     RawSpeed - RAW file decoder.
 
-    Copyright (C) 2009 Klaus Post
+    Copyright (C) 2009-2014 Klaus Post
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Lesser General Public
@@ -121,6 +121,11 @@ void Camera::parseCameraChild(xml_node &cur) {
       parseCFA(c);
       c = c.next_sibling("Color");
     }
+    c = cur.child("ColorRow");
+    while (c != NULL) {
+      parseCFA(c);
+      c = c.next_sibling("ColorRow");
+    }
     return;
   }
 
@@ -160,7 +165,7 @@ void Camera::parseCameraChild(xml_node &cur) {
     }
     return;
   }
-  
+
   if (isTag(cur.name(), "Hints")) {
     xml_node c = cur.child("Hint");
     while (c != NULL) {
@@ -172,6 +177,35 @@ void Camera::parseCameraChild(xml_node &cur) {
 }
 
 void Camera::parseCFA(xml_node &cur) {
+  if (isTag(cur.name(), "ColorRow")) {
+    int y = cur.attribute("y").as_int(-1);
+    if (y < 0 || y >= cfa.size.y) {
+      ThrowCME("Invalid y coordinate in CFA array of in camera %s %s", make.c_str(), model.c_str());
+    }
+    const char* key = cur.first_child().value();
+    if (strlen(key) != cfa.size.x) {
+      ThrowCME("Invalid number of colors in definition for row %d in camera %s %s. Expected %d, found %d.", y, make.c_str(), model.c_str(),  cfa.size.x, strlen(key));
+    }
+    for (int x = 0; x < cfa.size.x; x++) {
+    	char v = (char)tolower((int)key[x]);
+    	if (v == 'g')
+      	cfa.setColorAt(iPoint2D(x, y), CFA_GREEN);
+    	else if (v == 'r')
+      	cfa.setColorAt(iPoint2D(x, y), CFA_RED);
+    	else if (v == 'b')
+      	cfa.setColorAt(iPoint2D(x, y), CFA_BLUE);
+    	else if (v == 'f')
+      	cfa.setColorAt(iPoint2D(x, y), CFA_FUJI_GREEN);
+    	else if (v == 'c')
+      	cfa.setColorAt(iPoint2D(x, y), CFA_CYAN);
+    	else if (v == 'm')
+      	cfa.setColorAt(iPoint2D(x, y), CFA_MAGENTA);
+    	else if (v == 'y')
+      	cfa.setColorAt(iPoint2D(x, y), CFA_YELLOW);
+      else 
+        supported = FALSE;
+    }
+  }
   if (isTag(cur.name(), "Color")) {
     int x = cur.attribute("x").as_int(-1);
     if (x < 0 || x >= cfa.size.x) {
@@ -262,13 +296,13 @@ void Camera::parseHint( xml_node &cur )
     pugi::xml_attribute key = cur.attribute("name");
     if (key) {
       hint_name = string(key.as_string());
-    } else 
+    } else
       ThrowCME("CameraMetadata: Could not find name for hint for %s %s camera.", make.c_str(), model.c_str());
 
     key = cur.attribute("value");
     if (key) {
       hint_value = string(key.as_string());
-    } else 
+    } else
       ThrowCME("CameraMetadata: Could not find value for hint %s for %s %s camera.", hint_name.c_str(), make.c_str(), model.c_str());
 
     hints.insert(make_pair(hint_name, hint_value));
@@ -293,7 +327,7 @@ void Camera::parseSensorInfo( xml_node &cur )
     if (!values.empty()) {
       for (uint32 i = 0; i < values.size(); i++) {
         sensorInfo.push_back(CameraSensorInfo(black, white, values[i], values[i], black_colors));
-      }      
+      }
     }
   } else {
     sensorInfo.push_back(CameraSensorInfo(black, white, min_iso, max_iso, black_colors));
@@ -308,7 +342,7 @@ const CameraSensorInfo* Camera::getSensorInfo( int iso )
 
   vector<CameraSensorInfo*> candidates;
   vector<CameraSensorInfo>::iterator i = sensorInfo.begin();
-  do 
+  do
   {
     if (i->isIsoWithin(iso))
       candidates.push_back(&(*i));
@@ -318,7 +352,7 @@ const CameraSensorInfo* Camera::getSensorInfo( int iso )
     return candidates[0];
 
   vector<CameraSensorInfo*>::iterator j = candidates.begin();
-  do 
+  do
   {
     if (!(*j)->isDefault())
       return *j;

@@ -38,35 +38,43 @@ X3fParser::X3fParser(FileMap* file) {
     bytes = new ByteStream(file->getData(0), size);
   else
     bytes = new ByteStreamSwap(file->getData(0), size);
-
   try {
-    // Read signature
-    if (bytes->getUInt() != 0x62564f46)
-      ThrowRDE("X3F Decoder: Not an X3f file (Signature)");
+    try {
+      // Read signature
+      if (bytes->getUInt() != 0x62564f46)
+        ThrowRDE("X3F Decoder: Not an X3f file (Signature)");
 
-    uint32 version = bytes->getUInt();
-    if (version < 0x00020000)
-      ThrowRDE("X3F Decoder: File version too old");
+      uint32 version = bytes->getUInt();
+      if (version < 0x00020000)
+        ThrowRDE("X3F Decoder: File version too old");
 
-    // Skip identifier + mark bits
-    bytes->skipBytes(16+4);
+      // Skip identifier + mark bits
+      bytes->skipBytes(16+4);
 
-    bytes->setAbsoluteOffset(0);
-    decoder = new X3fDecoder(file);
-    readDirectory();
-  } catch (IOException e) {
-    ThrowRDE("X3F Decoder: IO Error while reading header: %s", e.what());
+      bytes->setAbsoluteOffset(0);
+      decoder = new X3fDecoder(file);
+      readDirectory();
+    } catch (IOException e) {
+      ThrowRDE("X3F Decoder: IO Error while reading header: %s", e.what());
+    }
+  } catch (RawDecoderException e) {
+    freeObjects();
+    throw e;
   }
 }
 
-X3fParser::~X3fParser(void)
-{
+void X3fParser::freeObjects() {
   if (bytes)
     delete bytes;
   if (decoder)
     delete decoder;
   decoder = NULL;
   bytes = NULL;
+}
+
+X3fParser::~X3fParser(void)
+{
+  freeObjects();
 }
 
 
