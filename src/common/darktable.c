@@ -843,7 +843,7 @@ int dt_init(int argc, char *argv[], const int init_gui,lua_State *L)
 
   /* init lua last, since it's user made stuff it must be in the real environment */
 #ifdef USE_LUA
-  dt_lua_init(darktable.lua_state.state,init_gui);
+  dt_lua_init(darktable.lua_state.state);
 #endif
 
   // last but not least construct the popup that asks the user about images whose xmp files are newer than the db entry
