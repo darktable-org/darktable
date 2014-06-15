@@ -115,36 +115,20 @@ static int current_view_cb(lua_State *L)
 int dt_lua_init_gui(lua_State * L)
 {
 
-  /* images */
-  dt_lua_push_darktable_lib(L);
-  luaA_Type type_id = dt_lua_init_singleton(L,"gui_lib",NULL);
-  lua_setfield(L,-2,"gui");
-  lua_pop(L,1);
+  if(darktable.gui != NULL) {
+    /* images */
+    dt_lua_push_darktable_lib(L);
+    luaA_Type type_id = dt_lua_init_singleton(L,"gui_lib",NULL);
+    lua_setfield(L,-2,"gui");
+    lua_pop(L,1);
 
-  luaA_enum(L,dt_ui_container_t);
-  luaA_enum_value(L,dt_ui_container_t,DT_UI_CONTAINER_PANEL_LEFT_TOP,false);
-  luaA_enum_value(L,dt_ui_container_t,DT_UI_CONTAINER_PANEL_LEFT_CENTER,false);
-  luaA_enum_value(L,dt_ui_container_t,DT_UI_CONTAINER_PANEL_LEFT_BOTTOM,false);
-  luaA_enum_value(L,dt_ui_container_t,DT_UI_CONTAINER_PANEL_RIGHT_TOP,false);
-  luaA_enum_value(L,dt_ui_container_t,DT_UI_CONTAINER_PANEL_RIGHT_CENTER,false);
-  luaA_enum_value(L,dt_ui_container_t,DT_UI_CONTAINER_PANEL_RIGHT_BOTTOM,false);
-  luaA_enum_value(L,dt_ui_container_t,DT_UI_CONTAINER_PANEL_TOP_LEFT,false);
-  luaA_enum_value(L,dt_ui_container_t,DT_UI_CONTAINER_PANEL_TOP_CENTER,false);
-  luaA_enum_value(L,dt_ui_container_t,DT_UI_CONTAINER_PANEL_TOP_RIGHT,false);
-  luaA_enum_value(L,dt_ui_container_t,DT_UI_CONTAINER_PANEL_CENTER_TOP_LEFT,false);
-  luaA_enum_value(L,dt_ui_container_t,DT_UI_CONTAINER_PANEL_CENTER_TOP_CENTER,false);
-  luaA_enum_value(L,dt_ui_container_t,DT_UI_CONTAINER_PANEL_CENTER_TOP_RIGHT,false);
-  luaA_enum_value(L,dt_ui_container_t,DT_UI_CONTAINER_PANEL_CENTER_BOTTOM_LEFT,false);
-  luaA_enum_value(L,dt_ui_container_t,DT_UI_CONTAINER_PANEL_CENTER_BOTTOM_CENTER,false);
-  luaA_enum_value(L,dt_ui_container_t,DT_UI_CONTAINER_PANEL_CENTER_BOTTOM_RIGHT,false);
-  luaA_enum_value(L,dt_ui_container_t,DT_UI_CONTAINER_PANEL_BOTTOM,false);
-
-  lua_pushcfunction(L,selection_cb);
-  dt_lua_register_type_callback_stack_typeid(L,type_id,"selection");
-  dt_lua_register_type_callback_typeid(L,type_id,hovered_cb,NULL,"hovered",NULL);
-  dt_lua_register_type_callback_typeid(L,type_id,act_on_cb,NULL,"action_images",NULL);
-  lua_pushcfunction(L,current_view_cb);
-  dt_lua_register_type_callback_stack_typeid(L,type_id,"current_view");
+    lua_pushcfunction(L,selection_cb);
+    dt_lua_register_type_callback_stack_typeid(L,type_id,"selection");
+    dt_lua_register_type_callback_typeid(L,type_id,hovered_cb,NULL,"hovered",NULL);
+    dt_lua_register_type_callback_typeid(L,type_id,act_on_cb,NULL,"action_images",NULL);
+    lua_pushcfunction(L,current_view_cb);
+    dt_lua_register_type_callback_stack_typeid(L,type_id,"current_view");
+  }
   return 0;
 }
 
