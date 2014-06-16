@@ -595,7 +595,7 @@ dt_styles_get_item_list (const char *name, gboolean params, int imgid)
         item->num = sqlite3_column_int (stmt, 0);
 
       item->selimg_num = -1;
-      item->module = sqlite3_column_int(stmt, 1);
+      item->module_version = sqlite3_column_int(stmt, 1);
 
       item->enabled = sqlite3_column_int(stmt, 3);
 
