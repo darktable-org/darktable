@@ -717,6 +717,15 @@ int dt_imageio_export_with_flags(
           h->multi_priority = 1;
           g_strlcpy(h->multi_name, "", sizeof(h->multi_name));
 
+          if(m->legacy_params && (s->module != m->version()))
+          {
+            void *new_params = malloc(m->params_size);
+            m->legacy_params (m, h->params, s->module, new_params, labs(m->version()));
+
+            free (h->params);
+            h->params = new_params;
+          }
+
           dev.history_end++;
           dev.history = g_list_append(dev.history, h);
           break;
