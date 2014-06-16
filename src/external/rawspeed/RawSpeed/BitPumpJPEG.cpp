@@ -43,10 +43,8 @@ __inline void BitPumpJPEG::init() {
   fill();
 }
 
-void BitPumpJPEG::fill()
+void BitPumpJPEG::_fill()
 {
-  if (mLeft >=24)
-    return;
   // Fill in 96 bits
   int* b = (int*)current_buffer;
   if ((off + 12) >= size) {
@@ -123,7 +121,7 @@ void BitPumpJPEG::setAbsoluteOffset(unsigned int offset) {
 
   mLeft = 0;
   off = offset;
-  fill();
+  _fill();
 }
 
 

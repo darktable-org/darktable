@@ -183,7 +183,7 @@ void Camera::parseCFA(xml_node &cur) {
       ThrowCME("Invalid y coordinate in CFA array of in camera %s %s", make.c_str(), model.c_str());
     }
     const char* key = cur.first_child().value();
-    if (strlen(key) != cfa.size.x) {
+    if ((int)strlen(key) != cfa.size.x) {
       ThrowCME("Invalid number of colors in definition for row %d in camera %s %s. Expected %d, found %d.", y, make.c_str(), model.c_str(),  cfa.size.x, strlen(key));
     }
     for (int x = 0; x < cfa.size.x; x++) {

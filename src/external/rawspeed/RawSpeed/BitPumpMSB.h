@@ -44,7 +44,7 @@ public:
   __inline void checkPos()  { if (mStuffed > 8) ThrowIOE("Out of buffer read");};        // Check if we have a valid position
 
   // Fill the buffer with at least 24 bits
- void fill();
+  void __inline fill() {if (mLeft<25) _fill();}
  __inline uint32 peekBitsNoFill( uint32 nbits )
  {
    int shift = mLeft-nbits;
@@ -53,9 +53,8 @@ public:
    return ret & ((1 << nbits) - 1);
  }
 
-
 __inline uint32 getBit() {
-  if (!mLeft) fill();
+  if (!mLeft) _fill();
   mLeft--;
   uint32 _byte = mLeft >> 3;
   return (current_buffer[_byte] >> (mLeft & 0x7)) & 1;
@@ -73,7 +72,7 @@ __inline uint32 getBits(uint32 nbits) {
 }
 
 __inline uint32 peekBit() {
-  if (!mLeft) fill();
+  if (!mLeft) _fill();
   return (current_buffer[(mLeft-1) >> 3] >> ((mLeft-1) & 0x7)) & 1;
 }
 __inline uint32 getBitNoFill() {
@@ -127,6 +126,7 @@ __inline uint32 peekByte() {
   }
 
 protected:
+  void _fill();
   void __inline init();
   uchar8 current_buffer[16];
   const uchar8* buffer;

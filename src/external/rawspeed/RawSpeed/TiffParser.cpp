@@ -164,10 +164,6 @@ RawDecoder* TiffParser::getDecoder() {
         mRootIFD = NULL;
         return new MefDecoder(root, mInput);
       }
-      if (!make.compare("Hasselblad")) {
-        mRootIFD = NULL;
-        return new ThreefrDecoder(root, mInput);
-      }
     }
   }
   throw TiffParserException("No decoder found. Sorry.");

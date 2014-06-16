@@ -44,10 +44,8 @@ __inline void BitPumpMSB::init() {
   fill();
 }
 
-void BitPumpMSB::fill()
+void BitPumpMSB::_fill()
 {
-  if (mLeft >=24)
-    return;
   // Fill in 96 bits
   int* b = (int*)current_buffer;
   if ((off + 12) > size) {

@@ -38,7 +38,6 @@
 #include "Rw2Decoder.h"
 #include "SrwDecoder.h"
 #include "MefDecoder.h"
-#include "ThreefrDecoder.h"
 
 namespace RawSpeed {
 

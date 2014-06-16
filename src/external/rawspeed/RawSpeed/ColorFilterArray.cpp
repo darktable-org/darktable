@@ -183,6 +183,10 @@ void ColorFilterArray::setColorAt(iPoint2D pos, CFAColor c) {
 
 RawSpeed::uint32 ColorFilterArray::getDcrawFilter()
 {
+  //dcraw magic
+  if (size.x == 6 && size.y == 6) 
+    return 9;
+
   if (size.x > 8 || size.y > 2 || 0 == cfa)
     return 1;
 
