@@ -142,7 +142,9 @@ function M.dump(object,name,orig_known)
 	for k,v in pairs(orig_known) do
 		known[key(k)] = v
 	end
-	known[key(object)] = nil -- always document the object that was actually asked
+	if(key(object)) then
+		known[key(object)] = nil -- always document the object that was actually asked
+	end
 	return introspect_internal(object,"",name,known,{})
 end
 
