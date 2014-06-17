@@ -62,6 +62,11 @@ static lua_CFunction early_init_funcs[] =
   NULL
 };
 
+static int dt_call_after_load(lua_State *L)
+{
+  return luaL_error(L,"Attempt to initialize DT twice");
+}
+
 void dt_lua_init_early(lua_State*L)
 {
   if(!L) {
@@ -74,10 +79,12 @@ void dt_lua_init_early(lua_State*L)
   luaA_open();
   dt_lua_push_darktable_lib(L);
   // set the metatable
-  lua_newtable(L);
+  lua_getmetatable(L,-1);
+  lua_pushcfunction(L,dt_call_after_load);
+  lua_setfield(L,-2,"__call");
   lua_pushcfunction(L,dt_luacleanup);
   lua_setfield(L,-2,"__gc");
-  lua_setmetatable(L,-2);
+  lua_pop(L,1);
 
   lua_pop(L,1);
 
@@ -199,14 +206,14 @@ static int load_from_lua(lua_State *L)
   if(darktable.lua_state.state) {
     luaL_error(L,"Attempt to load darktable multiple time.");
   }
-  int argc =lua_gettop(L)+1;
+  int argc =lua_gettop(L);
 
   char **argv=calloc(argc+1,sizeof(char*)); 
   char *argv_copy[argc+1]; 
   argv[0] =strdup("lua");
   argv_copy[0] = argv[0];
   for(int i = 1 ; i < argc ; i++) {
-    argv[i] = strdup(luaL_checkstring(L,i));
+    argv[i] = strdup(luaL_checkstring(L,i+1));
     argv_copy[i] = argv[i];
   }
   lua_pop(L,lua_gettop(L));
@@ -223,7 +230,11 @@ static int load_from_lua(lua_State *L)
 }
 // function used by the lua interpreter to load darktable
 int luaopen_darktable(lua_State *L) {
+  dt_lua_push_darktable_lib(L);
+  lua_getmetatable(L,-1);
   lua_pushcfunction(L,load_from_lua);
+  lua_setfield(L,-2,"__call");
+  lua_pop(L,1);
   return 1;
 }
 

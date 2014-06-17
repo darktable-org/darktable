@@ -56,6 +56,8 @@ int dt_lua_push_darktable_lib(lua_State* L)
   {
     lua_pop(L,1);
     lua_newtable(L);
+    lua_newtable(L);
+    lua_setmetatable(L,-2);
     lua_pushvalue(L,-1);
     lua_setfield(L,LUA_REGISTRYINDEX,"dt_lua_dtlib");
   }
