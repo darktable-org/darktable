@@ -189,7 +189,7 @@ gui_init (dt_imageio_module_storage_t *self)
     gtk_entry_set_text(GTK_ENTRY(d->title_entry), dir);
     g_free(dir);
   }
-  g_signal_connect(G_OBJECT(widget), "changed", G_CALLBACK(title_changed_callback), self);
+  g_signal_connect(G_OBJECT(d->title_entry), "changed", G_CALLBACK(title_changed_callback), self);
 }
 
 void
