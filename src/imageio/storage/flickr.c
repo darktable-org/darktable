@@ -760,6 +760,7 @@ get_params(dt_imageio_module_storage_t *self)
   dt_storage_flickr_gui_data_t *ui =(dt_storage_flickr_gui_data_t *)self->gui_data;
   dt_storage_flickr_params_t *d = (dt_storage_flickr_params_t *)g_malloc0(sizeof(dt_storage_flickr_params_t));
   if(!d) return NULL;
+  if(!ui) return NULL; // gui not initialized, CLI mode
   d->hash = 1;
 
   // fill d from controls in ui

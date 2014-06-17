@@ -101,6 +101,16 @@ button_clicked (GtkWidget *widget, dt_imageio_module_storage_t *self)
   gtk_widget_destroy (filechooser);
 }
 
+static void entry_changed_callback(GtkEntry *entry, gpointer user_data)
+{
+  dt_conf_set_string("plugins/imageio/storage/latex/file_directory", gtk_entry_get_text(entry));
+}
+
+static void title_changed_callback(GtkEntry *entry, gpointer user_data)
+{
+  dt_conf_set_string("plugins/imageio/storage/latex/title", gtk_entry_get_text(entry));
+}
+
 void
 gui_init (dt_imageio_module_storage_t *self)
 {
@@ -155,6 +165,7 @@ gui_init (dt_imageio_module_storage_t *self)
                          _("enter the path where to put exported images\nrecognized variables:"),
                          compl_list);
   g_object_set(G_OBJECT(widget), "tooltip-text", tooltip_text, (char *)NULL);
+  g_signal_connect(G_OBJECT(widget), "changed", G_CALLBACK(entry_changed_callback), self);
   g_free(tooltip_text);
 
   widget = dtgtk_button_new(dtgtk_cairo_paint_directory, 0);
@@ -179,6 +190,7 @@ gui_init (dt_imageio_module_storage_t *self)
     gtk_entry_set_text(GTK_ENTRY(d->title_entry), dir);
     g_free(dir);
   }
+  g_signal_connect(G_OBJECT(widget), "changed", G_CALLBACK(title_changed_callback), self);
 }
 
 void
@@ -436,16 +448,18 @@ void*
 get_params(dt_imageio_module_storage_t *self)
 {
   dt_imageio_latex_t *d = (dt_imageio_latex_t *)calloc(1, sizeof(dt_imageio_latex_t));
-  latex_t *g = (latex_t *)self->gui_data;
   d->vp = NULL;
   d->l = NULL;
   dt_variables_params_init(&d->vp);
-  const char *text = gtk_entry_get_text(GTK_ENTRY(g->entry));
+
+  char *text = dt_conf_get_string("plugins/imageio/storage/latex/file_directory");
   g_strlcpy(d->filename, text, sizeof(d->filename));
-  dt_conf_set_string("plugins/imageio/storage/latex/file_directory", d->filename);
-  text = gtk_entry_get_text(GTK_ENTRY(g->title_entry));
+  g_free(text);
+
+  text = dt_conf_get_string("plugins/imageio/storage/latex/title");
   g_strlcpy(d->title, text, sizeof(d->title));
-  dt_conf_set_string("plugins/imageio/storage/latex/title", d->title);
+  g_free(text);
+
   return d;
 }
 

@@ -1520,6 +1520,7 @@ void init(dt_imageio_module_storage_t *self)
 void *get_params(struct dt_imageio_module_storage_t *self)
 {
   dt_storage_picasa_gui_data_t *ui = (dt_storage_picasa_gui_data_t*)self->gui_data;
+  if(!ui) return NULL; // gui not initialized, CLI mode
   if(ui->picasa_api == NULL || ui->picasa_api->token == NULL)
   {
     return NULL;
