@@ -238,9 +238,10 @@ typedef struct {
   lua_storage_t* data;
 } free_param_wrapper_data;
 
-static int32_t free_param_wrapper_job(struct dt_job_t *job) 
+static int32_t free_param_wrapper_job(dt_job_t *job)
 {
-  lua_storage_t *d = ((free_param_wrapper_data*) job->param)->data;
+  free_param_wrapper_data *params = dt_control_job_get_params(job);
+  lua_storage_t *d = params->data;
   g_list_free(d->imgids);
   g_list_free_full(d->file_names,free);
   if(d->data_created) {
@@ -251,18 +252,24 @@ static int32_t free_param_wrapper_job(struct dt_job_t *job)
     dt_lua_unlock(has_lock);
   }
   free(d);
+  free(params);
   return 0;
 }
 
 
 static void  free_params_wrapper  (struct dt_imageio_module_storage_t *self, dt_imageio_module_data_t *data)
 {
-  dt_job_t job;
-  dt_control_job_init(&job, "lua: destroy storage param");
-  job.execute = &free_param_wrapper_job;
-  free_param_wrapper_data *t = (free_param_wrapper_data*)job.param;
+  dt_job_t *job = dt_control_job_create(&free_param_wrapper_job, "lua: destroy storage param");
+  if(!job) return;
+  free_param_wrapper_data *t = (free_param_wrapper_data*)calloc(1, sizeof(free_param_wrapper_data));
+  if(!t)
+  {
+    dt_control_job_dispose(job);
+    return;
+  }
+  dt_control_job_set_params(job, t);
   t->data = (lua_storage_t*)data;
-  dt_control_add_job(darktable.control, &job);
+  dt_control_add_job(darktable.control, DT_JOB_QUEUE_SYSTEM_FG, job);
 }
 
 static int   set_params_wrapper   (struct dt_imageio_module_storage_t *self, const void *params, const int size)

@@ -197,16 +197,17 @@ process_next_image(dt_slideshow_t *d)
 
 static int32_t process_job_run(dt_job_t *job)
 {
-  dt_slideshow_t *d = *(dt_slideshow_t **)job->param;
+  dt_slideshow_t *d = dt_control_job_get_params(job);
   process_next_image(d);
   return 0;
 }
 
-static void process_job_init(dt_job_t *job, dt_slideshow_t *d)
+static dt_job_t * process_job_create(dt_slideshow_t *d)
 {
-  dt_control_job_init(job, "process slideshow image");
-  job->execute = process_job_run;
-  *((dt_slideshow_t **)job->param) = d;
+  dt_job_t *job = dt_control_job_create(&process_job_run, "process slideshow image");
+  if(!job) return NULL;
+  dt_control_job_set_params(job, d);
+  return job;
 }
 
 static gboolean auto_advance(gpointer user_data)
@@ -280,9 +281,7 @@ static void _step_state(dt_slideshow_t *d, dt_slideshow_event_t event)
       // if(event == s_blended)
       {
         // start bgjob
-        dt_job_t job;
-        process_job_init(&job, d);
-        dt_control_add_job(darktable.control, &job);
+        dt_control_add_job(darktable.control, DT_JOB_QUEUE_SYSTEM_FG, process_job_create(d));
         d->state = s_prefetching;
       }
       break;

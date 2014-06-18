@@ -156,18 +156,14 @@ void dt_dev_cleanup(dt_develop_t *dev)
 void dt_dev_process_image(dt_develop_t *dev)
 {
   if(!dev->gui_attached || dev->pipe->processing) return;
-  dt_job_t job;
-  dt_dev_process_image_job_init(&job, dev);
-  int err = dt_control_add_job_res(darktable.control, &job, DT_CTL_WORKER_2);
+  int err = dt_control_add_job_res(darktable.control, dt_dev_process_image_job_create(dev), DT_CTL_WORKER_ZOOM_1);
   if(err) fprintf(stderr, "[dev_process_image] job queue exceeded!\n");
 }
 
 void dt_dev_process_preview(dt_develop_t *dev)
 {
   if(!dev->gui_attached) return;
-  dt_job_t job;
-  dt_dev_process_preview_job_init(&job, dev);
-  int err = dt_control_add_job_res(darktable.control, &job, DT_CTL_WORKER_3);
+  int err = dt_control_add_job_res(darktable.control, dt_dev_process_preview_job_create(dev), DT_CTL_WORKER_ZOOM_FILL);
   if(err) fprintf(stderr, "[dev_process_preview] job queue exceeded!\n");
 }
 

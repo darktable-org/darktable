@@ -56,6 +56,7 @@ FILE(GLOB SOURCE_FILES
   "common/histogram.c"
   "control/control.c"
   "control/crawler.c"
+  "control/jobs.c"
   "control/jobs/control_jobs.c"
   "control/jobs/develop_jobs.c"
   "control/jobs/film_jobs.c"

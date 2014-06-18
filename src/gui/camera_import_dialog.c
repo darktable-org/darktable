@@ -392,9 +392,9 @@ static void _control_status(dt_camctl_status_t status,void *user_data)
   }
 }
 
-static void _preview_job_state_changed(dt_job_t *job,int state)
+static void _preview_job_state_changed(dt_job_t *job, dt_job_state_t state)
 {
-  _camera_import_dialog_t *data=(_camera_import_dialog_t*)job->user_data;
+  _camera_import_dialog_t *data = dt_camera_previews_job_get_data(job);
   /* store job reference if needed for cancellation */
   if(  state == DT_JOB_STATE_RUNNING )
     data->preview_job = job;
@@ -449,10 +449,12 @@ static void _camera_import_dialog_run(_camera_import_dialog_t *data)
     listener.control_status=_control_status;
     listener.camera_storage_image_filename=_camera_storage_image_filename;
 
-    dt_job_t job;
-    dt_camera_get_previews_job_init(&job,data->params->camera, &listener, CAMCTL_IMAGE_PREVIEW_DATA);
-    dt_control_job_set_state_callback(&job,_preview_job_state_changed,data);
-    dt_control_add_job(darktable.control, &job);
+    dt_job_t *job = dt_camera_get_previews_job_create(data->params->camera, &listener, CAMCTL_IMAGE_PREVIEW_DATA, data);
+    if(job)
+    {
+      dt_control_job_set_state_callback(job,_preview_job_state_changed);
+      dt_control_add_job(darktable.control, DT_JOB_QUEUE_SYSTEM_FG, job);
+    }
   }
   else
     return;

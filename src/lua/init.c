@@ -97,7 +97,8 @@ void dt_lua_init_early(lua_State*L)
 
 }
 
-static int32_t run_early_script(struct dt_job_t *job) {
+static int32_t run_early_script(dt_job_t *job)
+{
   char tmp_path[PATH_MAX];
   lua_State *L = darktable.lua_state.state;
   gboolean has_lock = dt_lua_lock();
@@ -105,16 +106,17 @@ static int32_t run_early_script(struct dt_job_t *job) {
   dt_loc_get_datadir(tmp_path, sizeof(tmp_path));
   g_strlcat(tmp_path, "/luarc", sizeof(tmp_path));
   dt_lua_dofile_silent(L,tmp_path,0,0);
-  if(darktable.gui != NULL) {
+  if(darktable.gui != NULL)
+  {
     // run user init script
     dt_loc_get_user_config_dir(tmp_path, sizeof(tmp_path));
     g_strlcat(tmp_path, "/luarc", sizeof(tmp_path));
     dt_lua_dofile_silent(L,tmp_path,0,0);
   }
-  if(job->user_data) {
-    dt_lua_dostring_silent(L,job->user_data,0,0);
-    free(job->user_data);
-  }
+  char *lua_command = dt_control_job_get_params(job);
+  if(lua_command)
+    dt_lua_dostring_silent(L, lua_command, 0, 0);
+  free(lua_command);
   dt_lua_unlock(has_lock);
   return 0;
 }
@@ -184,16 +186,16 @@ void dt_lua_init(lua_State*L,const char *lua_command)
 
 
 
-  dt_job_t job;
-  dt_control_job_init(&job, "lua: run initial script");
-  if(lua_command) {
-    job.user_data = strdup(lua_command);
+  dt_job_t *job = dt_control_job_create(&run_early_script, "lua: run initial script");
+  dt_control_job_set_params(job, g_strdup(lua_command));
+  if(darktable.gui)
+  {
+    dt_control_add_job(darktable.control, DT_JOB_QUEUE_USER_BG, job);
   }
-  job.execute = &run_early_script;
-  if(darktable.gui) {
-    dt_control_add_job(darktable.control, &job);
-  } else {
-    run_early_script(&job);
+  else
+  {
+    run_early_script(job);
+    dt_control_job_dispose(job);
   }
 
 }

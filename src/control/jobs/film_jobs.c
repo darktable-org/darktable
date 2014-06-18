@@ -20,35 +20,50 @@
 #include "control/jobs/film_jobs.h"
 #include <stdlib.h>
 
-void dt_film_import1_init(dt_job_t *job, dt_film_t *film)
+typedef struct dt_film_import1_t
 {
-  dt_control_job_init(job, "cache load raw images for preview");
-  job->execute = &dt_film_import1_run;
-  dt_film_import1_t *t = (dt_film_import1_t *)job->param;
-  t->film = film;
+  dt_film_t *film;
+}
+dt_film_import1_t;
+
+static int32_t dt_film_import1_run(dt_job_t *job)
+{
+  dt_film_import1_t *params = dt_control_job_get_params(job);
+  dt_film_import1(params->film);
+  dt_pthread_mutex_lock(&params->film->images_mutex);
+  params->film->ref--;
+  dt_pthread_mutex_unlock(&params->film->images_mutex);
+  if(params->film->ref <= 0)
+  {
+    if(dt_film_is_empty(params->film->id))
+    {
+      dt_film_remove(params->film->id);
+    }
+    dt_film_cleanup(params->film);
+    free(params->film);
+  }
+  free(params);
+  return 0;
+}
+
+dt_job_t * dt_film_import1_create(dt_film_t *film)
+{
+  dt_job_t *job = dt_control_job_create(&dt_film_import1_run, "cache load raw images for preview");
+  if(!job) return NULL;
+  dt_film_import1_t *params = (dt_film_import1_t*)calloc(1, sizeof(dt_film_import1_t));
+  if(!params)
+  {
+    dt_control_job_dispose(job);
+    return NULL;
+  }
+  dt_control_job_set_params(job, params);
+  params->film = film;
   dt_pthread_mutex_lock(&film->images_mutex);
   film->ref++;
   dt_pthread_mutex_unlock(&film->images_mutex);
+  return job;
 }
 
-int32_t dt_film_import1_run(dt_job_t *job)
-{
-  dt_film_import1_t *t = (dt_film_import1_t *)job->param;
-  dt_film_import1(t->film);
-  dt_pthread_mutex_lock(&t->film->images_mutex);
-  t->film->ref--;
-  dt_pthread_mutex_unlock(&t->film->images_mutex);
-  if(t->film->ref <= 0)
-  {
-    if(dt_film_is_empty(t->film->id))
-    {
-      dt_film_remove(t->film->id);
-    }
-    dt_film_cleanup(t->film);
-    free(t->film);
-  }
-  return 0;
-}
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

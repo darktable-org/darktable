@@ -159,11 +159,12 @@ static int trigger_keyed_event(lua_State * L) {
 typedef struct {
   char* name;
 } shortcut_callback_data;
-static int32_t shortcut_callback_job(struct dt_job_t *job) {
+static int32_t shortcut_callback_job(dt_job_t *job) {
   gboolean has_lock = dt_lua_lock();
-  shortcut_callback_data *t = (shortcut_callback_data*)job->param;
+  shortcut_callback_data *t = dt_control_job_get_params(job);
   lua_pushstring(darktable.lua_state.state,t->name);
   free(t->name);
+  free(t);
   run_event("shortcut",1);
   dt_lua_unlock(has_lock);
   return 0;
@@ -174,12 +175,21 @@ static gboolean shortcut_callback(GtkAccelGroup *accel_group,
     GdkModifierType modifier,
     gpointer p)
 {
-  dt_job_t job;
-  dt_control_job_init(&job, "lua: on shortcut");
-  job.execute = &shortcut_callback_job;
-  shortcut_callback_data *t = (shortcut_callback_data*)job.param;
-  t->name = strdup(p);
-  dt_control_add_job(darktable.control, &job);
+  dt_job_t *job = dt_control_job_create(&shortcut_callback_job, "lua: on shortcut");
+  if(job)
+  {
+    shortcut_callback_data *t = (shortcut_callback_data*)calloc(1, sizeof(shortcut_callback_data));
+    if(!t)
+    {
+      dt_control_job_dispose(job);
+    }
+    else
+    {
+      dt_control_job_set_params(job, t);
+      t->name = strdup(p);
+      dt_control_add_job(darktable.control, DT_JOB_QUEUE_USER_FG, job);
+    }
+  }
   return TRUE;
 }
 

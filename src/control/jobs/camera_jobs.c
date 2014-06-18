@@ -16,7 +16,6 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 #include "common/darktable.h"
-#include "common/camera_control.h"
 #include "common/utility.h"
 #include "common/import_session.h"
 #include "views/view.h"
@@ -27,6 +26,61 @@
 
 #include <stdio.h>
 #include <glib.h>
+
+typedef struct dt_camera_shared_t
+{
+  struct dt_import_session_t *session;
+} dt_camera_shared_t;
+
+typedef struct dt_camera_capture_t
+{
+  dt_camera_shared_t shared;
+  int32_t total;
+  pthread_mutex_t mutex;
+  pthread_cond_t done;
+
+  /** delay between each capture, 0 no delay */
+  uint32_t delay;
+  /** count of images to capture, 0==1 */
+  uint32_t count;
+  /** bracket capture, 0=no bracket */
+  uint32_t brackets;
+
+  /** steps for each bracket, only used ig bracket capture*/
+  uint32_t steps;
+
+}
+dt_camera_capture_t;
+
+typedef struct dt_camera_get_previews_t
+{
+  struct dt_camera_t *camera;
+  uint32_t flags;
+  struct dt_camctl_listener_t *listener;
+  void *data;
+}
+dt_camera_get_previews_t;
+
+typedef struct dt_camera_import_t
+{
+  dt_camera_shared_t shared;
+
+  GList *images;
+  struct dt_camera_t *camera;
+  const guint *bgj;
+  double fraction;
+  uint32_t import_count;
+}
+dt_camera_import_t;
+
+void *dt_camera_previews_job_get_data(const dt_job_t *job)
+{
+  if(!job) return NULL;
+  dt_camera_get_previews_t *params = dt_control_job_get_params(job);
+  if(!params) return NULL;
+  return params->data;
+}
+
 
 /** Both import and capture jobs uses this */
 static const char *
@@ -58,14 +112,12 @@ _camera_request_image_path(const dt_camera_t *camera, void *data)
 
 void _camera_capture_image_downloaded(const dt_camera_t *camera,const char *filename,void *data)
 {
-  dt_job_t j;
   dt_camera_capture_t *t;
 
   t = (dt_camera_capture_t*)data;
 
   /* create an import job of downloaded image */
-  dt_image_import_job_init(&j, dt_import_session_film_id(t->shared.session), filename);
-  dt_control_add_job(darktable.control, &j);
+  dt_control_add_job(darktable.control, DT_JOB_QUEUE_USER_BG, dt_image_import_job_create(dt_import_session_film_id(t->shared.session), filename));
   if (--t->total == 0)
   {
     pthread_mutex_lock(&t->mutex);
@@ -74,26 +126,26 @@ void _camera_capture_image_downloaded(const dt_camera_t *camera,const char *file
   }
 }
 
-int32_t dt_camera_capture_job_run(dt_job_t *job)
+static int32_t dt_camera_capture_job_run(dt_job_t *job)
 {
-  dt_camera_capture_t *t=(dt_camera_capture_t*)job->param;
+  dt_camera_capture_t *params = dt_control_job_get_params(job);
   int total;
   char message[512]= {0};
   double fraction=0;
 
-  total = t->total = t->brackets ? t->count * t->brackets : t->count;
+  total = params->total = params->brackets ? params->count * params->brackets : params->count;
   snprintf(message, sizeof(message), ngettext ("capturing %d image", "capturing %d images", total), total );
 
-  pthread_mutex_init(&t->mutex, NULL);
-  pthread_cond_init(&t->done, NULL);
+  pthread_mutex_init(&params->mutex, NULL);
+  pthread_cond_init(&params->done, NULL);
 
   // register listener
   dt_camctl_listener_t *listener;
   listener = g_malloc0(sizeof(dt_camctl_listener_t));
-  listener->data=t;
-  listener->image_downloaded=_camera_capture_image_downloaded;
-  listener->request_image_path=_camera_request_image_path;
-  listener->request_image_filename=_camera_request_image_filename;
+  listener->data = params;
+  listener->image_downloaded = _camera_capture_image_downloaded;
+  listener->request_image_path = _camera_request_image_path;
+  listener->request_image_filename = _camera_request_image_filename;
   dt_camctl_register_listener(darktable.camctl, listener);
 
   /* try to get exp program mode for nikon */
@@ -110,7 +162,7 @@ int32_t dt_camera_capture_job_run(dt_job_t *job)
   const char *value = dt_camctl_camera_property_get_first_choice(darktable.camctl, NULL, "shutterspeed");
 
   /* get values for bracketing */
-  if (t->brackets && expprogram && expprogram[0]=='M' && value && cvalue)
+  if (params->brackets && expprogram && expprogram[0]=='M' && value && cvalue)
   {
     do
     {
@@ -125,9 +177,18 @@ int32_t dt_camera_capture_job_run(dt_job_t *job)
   else
   {
     /* if this was an intended bracket capture bail out */
-    if(t->brackets)
+    if(params->brackets)
     {
       dt_control_log(_("please set your camera to manual mode first!"));
+      pthread_mutex_lock(&params->mutex);
+      pthread_cond_wait(&params->done, &params->mutex);
+      pthread_mutex_unlock(&params->mutex);
+      pthread_mutex_destroy(&params->mutex);
+      pthread_cond_destroy(&params->done);
+      dt_import_session_destroy(params->shared.session);
+      dt_camctl_unregister_listener(darktable.camctl, listener);
+      g_free(listener);
+      free(params);
       return 1;
     }
   }
@@ -136,35 +197,35 @@ int32_t dt_camera_capture_job_run(dt_job_t *job)
   const guint *jid  = dt_control_backgroundjobs_create(darktable.control, 0, message);
 
   GList *current_value = g_list_find(values,original_value);
-  for(uint32_t i=0; i<t->count; i++)
+  for(uint32_t i=0; i < params->count; i++)
   {
     // Delay if active
-    if(t->delay)
-      g_usleep(t->delay*G_USEC_PER_SEC);
+    if(params->delay)
+      g_usleep(params->delay*G_USEC_PER_SEC);
 
-    for(uint32_t b=0; b<(t->brackets*2)+1; b++)
+    for(uint32_t b=0; b < (params->brackets*2)+1; b++)
     {
       // If bracket capture, lets set change shutterspeed
-      if (t->brackets)
+      if (params->brackets)
       {
         if (b == 0)
         {
           // First bracket, step down time with (steps*brackets), also check so we never set the longest shuttertime which would be bulb mode
-          for(uint32_t s=0; s<(t->steps*t->brackets); s++)
+          for(uint32_t s=0; s < (params->steps * params->brackets); s++)
             if (g_list_next(current_value) && g_list_next(g_list_next(current_value)))
               current_value = g_list_next(current_value);
         }
         else
         {
           // Step up with (steps)
-          for(uint32_t s=0; s<t->steps; s++)
+          for(uint32_t s=0; s < params->steps; s++)
             if(g_list_previous(current_value))
               current_value = g_list_previous(current_value);
         }
       }
 
       // set the time property for bracket capture
-      if (t->brackets && current_value)
+      if (params->brackets && current_value)
         dt_camctl_camera_set_property_string(darktable.camctl, NULL, "shutterspeed", current_value->data);
 
       // Capture image
@@ -175,7 +236,7 @@ int32_t dt_camera_capture_job_run(dt_job_t *job)
     }
 
     // lets reset to original value before continue
-    if (t->brackets)
+    if (params->brackets)
     {
       current_value = g_list_find(values,original_value);
       dt_camctl_camera_set_property_string(darktable.camctl, NULL, "shutterspeed", current_value->data);
@@ -183,15 +244,15 @@ int32_t dt_camera_capture_job_run(dt_job_t *job)
   }
 
   /* wait for last image capture before exiting job */
-  pthread_mutex_lock(&t->mutex);
-  pthread_cond_wait(&t->done, &t->mutex);
-  pthread_mutex_unlock(&t->mutex);
-  pthread_mutex_destroy(&t->mutex);
-  pthread_cond_destroy(&t->done);
+  pthread_mutex_lock(&params->mutex);
+  pthread_cond_wait(&params->done, &params->mutex);
+  pthread_mutex_unlock(&params->mutex);
+  pthread_mutex_destroy(&params->mutex);
+  pthread_cond_destroy(&params->done);
 
   /* cleanup */
   dt_control_backgroundjobs_destroy(darktable.control, jid);
-  dt_import_session_destroy(t->shared.session);
+  dt_import_session_destroy(params->shared.session);
   dt_camctl_unregister_listener(darktable.camctl, listener);
   g_free(listener);
 
@@ -200,65 +261,63 @@ int32_t dt_camera_capture_job_run(dt_job_t *job)
   {
     g_list_free_full(values, g_free);
   }
-
+  free(params);
   return 0;
 }
 
-void dt_camera_capture_job_init(dt_job_t *job,const char *jobcode, uint32_t delay, uint32_t count, uint32_t brackets, uint32_t steps)
+dt_job_t * dt_camera_capture_job_create(const char *jobcode, uint32_t delay, uint32_t count, uint32_t brackets, uint32_t steps)
 {
-  dt_control_job_init(job, "remote capture of image(s)");
-  job->execute = &dt_camera_capture_job_run;
-  dt_camera_capture_t *t = (dt_camera_capture_t *)job->param;
+  dt_job_t *job = dt_control_job_create(&dt_camera_capture_job_run, "remote capture of image(s)");
+  if(!job) return NULL;
+  dt_camera_capture_t *params = (dt_camera_capture_t *)calloc(1, sizeof(dt_camera_capture_t));
+  if(!params)
+  {
+    dt_control_job_dispose(job);
+    return NULL;
+  }
+  dt_control_job_set_params(job, params);
 
-  t->shared.session = dt_import_session_new();
-  dt_import_session_set_name(t->shared.session, jobcode);
+  params->shared.session = dt_import_session_new();
+  dt_import_session_set_name(params->shared.session, jobcode);
 
-  t->delay=delay;
-  t->count=count;
-  t->brackets=brackets;
-  t->steps=steps;
+  params->delay=delay;
+  params->count=count;
+  params->brackets=brackets;
+  params->steps=steps;
+  return job;
 }
 
-void dt_camera_get_previews_job_init(dt_job_t *job,dt_camera_t *camera,dt_camctl_listener_t *listener,uint32_t flags)
+static int32_t dt_camera_get_previews_job_run(dt_job_t *job)
 {
-  dt_control_job_init(job, "get camera previews job");
-  job->execute = &dt_camera_get_previews_job_run;
-  dt_camera_get_previews_t *t = (dt_camera_get_previews_t *)job->param;
+  dt_camera_get_previews_t *params = dt_control_job_get_params(job);
 
-  t->listener=g_malloc(sizeof(dt_camctl_listener_t));
-  memcpy(t->listener,listener,sizeof(dt_camctl_listener_t));
-
-  t->camera=camera;
-  t->flags=flags;
-}
-
-int32_t dt_camera_get_previews_job_run(dt_job_t *job)
-{
-  dt_camera_get_previews_t *t=(dt_camera_get_previews_t*)job->param;
-
-  dt_camctl_register_listener(darktable.camctl,t->listener);
-  dt_camctl_get_previews(darktable.camctl,t->flags,t->camera);
-  dt_camctl_unregister_listener(darktable.camctl,t->listener);
-  g_free(t->listener);
+  dt_camctl_register_listener(darktable.camctl, params->listener);
+  dt_camctl_get_previews(darktable.camctl, params->flags, params->camera);
+  dt_camctl_unregister_listener(darktable.camctl, params->listener);
+  g_free(params->listener);
+  free(params);
   return 0;
 }
 
-void dt_camera_import_job_init(dt_job_t *job, const char *jobcode, GList *images, struct dt_camera_t *camera, time_t time_override)
+dt_job_t * dt_camera_get_previews_job_create(dt_camera_t *camera, dt_camctl_listener_t *listener, uint32_t flags, void *data)
 {
-  dt_control_job_init(job, "import selected images from camera");
-  job->execute = &dt_camera_import_job_run;
-  dt_camera_import_t *t = (dt_camera_import_t *)job->param;
+  dt_job_t *job = dt_control_job_create(&dt_camera_get_previews_job_run, "get camera previews job");
+  if(!job) return NULL;
+  dt_camera_get_previews_t *params = (dt_camera_get_previews_t *)calloc(1, sizeof(dt_camera_get_previews_t));
+  if(!params)
+  {
+    dt_control_job_dispose(job);
+    return NULL;
+  }
+  dt_control_job_set_params(job, params);
 
-  /* intitialize import session for camera import job */
-  t->shared.session = dt_import_session_new();
-  dt_import_session_set_name(t->shared.session, jobcode);
-  if(time_override != 0)
-    dt_import_session_set_time(t->shared.session, time_override);
+  params->listener=g_malloc(sizeof(dt_camctl_listener_t));
+  memcpy(params->listener, listener, sizeof(dt_camctl_listener_t));
 
-  t->fraction=0;
-  t->images=g_list_copy(images);
-  t->camera=camera;
-  t->import_count=0;
+  params->camera=camera;
+  params->flags=flags;
+  params->data = data;
+  return job;
 }
 
 /** Listener interface for import job */
@@ -279,42 +338,69 @@ void _camera_import_image_downloaded(const dt_camera_t *camera,const char *filen
   t->import_count++;
 }
 
-int32_t dt_camera_import_job_run(dt_job_t *job)
+static int32_t dt_camera_import_job_run(dt_job_t *job)
 {
-  dt_camera_import_t *t = (dt_camera_import_t *)job->param;
+  dt_camera_import_t *params = dt_control_job_get_params(job);
   dt_control_log(_("starting to import images from camera"));
 
-  if (!dt_import_session_ready(t->shared.session))
+  if (!dt_import_session_ready(params->shared.session))
   {
     dt_control_log("Failed to import images from camera.");
+    free(params);
     return 1;
   }
 
-  guint total = g_list_length( t->images );
+  guint total = g_list_length( params->images );
   char message[512]= {0};
   snprintf(message, sizeof(message), ngettext ("importing %d image from camera", "importing %d images from camera", total), total );
-  t->bgj = dt_control_backgroundjobs_create(darktable.control, 0, message);
+  params->bgj = dt_control_backgroundjobs_create(darktable.control, 0, message);
 
   // Switch to new filmroll
-  dt_film_open(dt_import_session_film_id(t->shared.session));
+  dt_film_open(dt_import_session_film_id(params->shared.session));
   dt_ctl_switch_mode_to(DT_LIBRARY);
 
   // register listener
   dt_camctl_listener_t listener= {0};
-  listener.data=t;
+  listener.data=params;
   listener.image_downloaded=_camera_import_image_downloaded;
   listener.request_image_path=_camera_request_image_path;
   listener.request_image_filename=_camera_request_image_filename;
 
   // start download of images
   dt_camctl_register_listener(darktable.camctl,&listener);
-  dt_camctl_import(darktable.camctl,t->camera,t->images);
+  dt_camctl_import(darktable.camctl, params->camera, params->images);
   dt_camctl_unregister_listener(darktable.camctl,&listener);
-  dt_control_backgroundjobs_destroy(darktable.control, t->bgj);
+  dt_control_backgroundjobs_destroy(darktable.control, params->bgj);
 
-  dt_import_session_destroy(t->shared.session);
+  dt_import_session_destroy(params->shared.session);
+  free(params);
 
   return 0;
+}
+
+dt_job_t * dt_camera_import_job_create(const char *jobcode, GList *images, struct dt_camera_t *camera, time_t time_override)
+{
+  dt_job_t *job = dt_control_job_create(&dt_camera_import_job_run, "import selected images from camera");
+  if(!job) return NULL;
+  dt_camera_import_t *params = (dt_camera_import_t *)calloc(1, sizeof(dt_camera_import_t));
+  if(!params)
+  {
+    dt_control_job_dispose(job);
+    return NULL;
+  }
+  dt_control_job_set_params(job, params);
+
+  /* intitialize import session for camera import job */
+  params->shared.session = dt_import_session_new();
+  dt_import_session_set_name(params->shared.session, jobcode);
+  if(time_override != 0)
+    dt_import_session_set_time(params->shared.session, time_override);
+
+  params->fraction=0;
+  params->images=g_list_copy(images);
+  params->camera=camera;
+  params->import_count=0;
+  return job;
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

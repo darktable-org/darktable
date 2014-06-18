@@ -228,12 +228,10 @@ _capture_button_clicked(GtkWidget *widget, gpointer user_data)
   uint32_t count = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(lib->gui.tb2))==TRUE?(uint32_t)gtk_spin_button_get_value(GTK_SPIN_BUTTON(lib->gui.sb2)):1;
   uint32_t brackets = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(lib->gui.tb3))==TRUE?(uint32_t)gtk_spin_button_get_value(GTK_SPIN_BUTTON(lib->gui.sb3)):0;
   uint32_t steps = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(lib->gui.tb3))==TRUE?(uint32_t)gtk_spin_button_get_value(GTK_SPIN_BUTTON(lib->gui.sb4)):0;
-  dt_job_t j;
 
   /* create a capture background job */
   jobcode = dt_view_tethering_get_job_code(darktable.view_manager);
-  dt_camera_capture_job_init(&j, jobcode, delay, count, brackets, steps);
-  dt_control_add_job(darktable.control, &j);
+  dt_control_add_job(darktable.control, DT_JOB_QUEUE_USER_FG, dt_camera_capture_job_create(jobcode, delay, count, brackets, steps));
 }
 
 

@@ -53,26 +53,110 @@ typedef struct dt_control_gpx_apply_t
   gchar *tz;
 } dt_control_gpx_apply_t;
 
-void dt_control_write_sidecar_files()
+/* enumerator of images from filmroll */
+static void dt_control_image_enumerator_job_film_init(dt_control_image_enumerator_t *t, int32_t filmid)
 {
-  dt_job_t j;
-  dt_control_write_sidecar_files_job_init(&j);
-  dt_control_add_job(darktable.control, &j);
+  sqlite3_stmt *stmt;
+  /* get a list of images in filmroll */
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                              "select * from images where film_id = ?1",
+                              -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, filmid);
+
+  while (sqlite3_step(stmt) == SQLITE_ROW)
+  {
+    int imgid = sqlite3_column_int(stmt, 0);
+    t->index = g_list_append(t->index, GINT_TO_POINTER(imgid));
+  }
+  sqlite3_finalize(stmt);
 }
 
-void dt_control_write_sidecar_files_job_init(dt_job_t *job)
+/* enumerator of selected images */
+static void dt_control_image_enumerator_job_selected_init(dt_control_image_enumerator_t *t)
 {
-  dt_control_job_init(job, "write sidecar files");
-  job->execute = &dt_control_write_sidecar_files_job_run;
-  dt_control_image_enumerator_t *t = (dt_control_image_enumerator_t *)job->param;
-  dt_control_image_enumerator_job_selected_init(t);
+  GList *list = NULL;
+  int imgid = dt_view_get_image_to_act_on();
+
+  if(imgid < 0) {
+    /* get sorted list of selected images */
+    t->index = dt_collection_get_selected(darktable.collection, -1);
+  }
+  else {
+    /* Create a list with only one image */
+    list = g_list_append (list, GINT_TO_POINTER(imgid));
+    t->index = list;
+  }
 }
 
-int32_t dt_control_write_sidecar_files_job_run(dt_job_t *job)
+static int32_t _generic_dt_control_fileop_images_job_run(dt_job_t *job,
+    int32_t (*fileop_callback)(const int32_t, const int32_t),
+    const char *desc, const char *desc_pl)
+{
+  dt_control_image_enumerator_t *params = (dt_control_image_enumerator_t *)dt_control_job_get_params(job);
+  GList *t = params->index;
+  guint total = g_list_length(t);
+  char message[512]= {0};
+  double fraction = 0;
+  gchar *newdir = (gchar *)params->data;
+
+  /* create a cancellable bgjob ui template */
+  g_snprintf(message, sizeof(message), ngettext(desc, desc_pl, total), total);
+  const guint *jid = dt_control_backgroundjobs_create(darktable.control, 0, message);
+  dt_control_backgroundjobs_set_cancellable(darktable.control, jid, job);
+
+  // create new film roll for the destination directory
+  dt_film_t new_film;
+  const int32_t film_id = dt_film_new(&new_film, newdir);
+  g_free(newdir);
+
+  if (film_id <= 0)
+  {
+    dt_control_log(_("failed to create film roll for destination directory, aborting move.."));
+    dt_control_backgroundjobs_destroy(darktable.control, jid);
+    return -1;
+  }
+
+  while(t && dt_control_job_get_state(job) != DT_JOB_STATE_CANCELLED)
+  {
+    fileop_callback(GPOINTER_TO_INT(t->data), film_id);
+    t = g_list_delete_link(t, t);
+    fraction+=1.0/total;
+    dt_control_backgroundjobs_progress(darktable.control, jid, fraction);
+  }
+
+  char collect[1024];
+  snprintf(collect, sizeof(collect), "1:0:0:%s$", new_film.dirname);
+  dt_collection_deserialize(collect);
+  dt_control_backgroundjobs_destroy(darktable.control, jid);
+  dt_film_remove_empty();
+  dt_control_signal_raise(darktable.signals, DT_SIGNAL_FILMROLLS_CHANGED);
+  dt_control_queue_redraw_center();
+  free(params);
+  return 0;
+}
+
+static dt_job_t * dt_control_generic_images_job_create(dt_job_execute_callback execute, const char * message, int flag, gpointer data)
+{
+  dt_job_t *job = dt_control_job_create(execute, message);
+  if(!job) return NULL;
+  dt_control_image_enumerator_t *params = (dt_control_image_enumerator_t *)calloc(1, sizeof(dt_control_image_enumerator_t));
+  if(!params)
+  {
+    dt_control_job_dispose(job);
+    return NULL;
+  }
+  dt_control_job_set_params(job, params);
+  dt_control_image_enumerator_job_selected_init(params);
+  params->flag = flag;
+  params->data = data;
+  return job;
+}
+
+static int32_t dt_control_write_sidecar_files_job_run(dt_job_t *job)
 {
   int imgid = -1;
-  dt_control_image_enumerator_t *t1 = (dt_control_image_enumerator_t *)job->param;
-  GList *t = t1->index;
+  dt_control_image_enumerator_t *params = dt_control_job_get_params(job);
+  GList *t = params->index;
   sqlite3_stmt *stmt;
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "UPDATE images SET write_timestamp = STRFTIME('%s', 'now') WHERE id = ?1", -1, &stmt, NULL);
   while(t)
@@ -97,9 +181,9 @@ int32_t dt_control_write_sidecar_files_job_run(dt_job_t *job)
     t = g_list_delete_link(t, t);
   }
   sqlite3_finalize(stmt);
+  free(params);
   return 0;
 }
-
 
 static float
 envelope(const float xx)
@@ -122,11 +206,11 @@ envelope(const float xx)
   }
 }
 
-int32_t dt_control_merge_hdr_job_run(dt_job_t *job)
+static int32_t dt_control_merge_hdr_job_run(dt_job_t *job)
 {
   int imgid = -1;
-  dt_control_image_enumerator_t *t1 = (dt_control_image_enumerator_t *)job->param;
-  GList *t = t1->index;
+  dt_control_image_enumerator_t *params = dt_control_job_get_params(job);
+  GList *t = params->index;
   guint total = g_list_length(t);
   char message[512]= {0};
   double fraction=0;
@@ -267,15 +351,16 @@ int32_t dt_control_merge_hdr_job_run(dt_job_t *job)
 error:
   dt_control_backgroundjobs_destroy(darktable.control, jid);
   dt_control_queue_redraw_center();
+  free(params);
   return 0;
 }
 
-int32_t dt_control_duplicate_images_job_run(dt_job_t *job)
+static int32_t dt_control_duplicate_images_job_run(dt_job_t *job)
 {
   int imgid = -1;
   int newimgid = -1;
-  dt_control_image_enumerator_t *t1 = (dt_control_image_enumerator_t *)job->param;
-  GList *t = t1->index;
+  dt_control_image_enumerator_t *params = dt_control_job_get_params(job);
+  GList *t = params->index;
   guint total = g_list_length(t);
   char message[512]= {0};
   double fraction=0;
@@ -293,15 +378,16 @@ int32_t dt_control_duplicate_images_job_run(dt_job_t *job)
   dt_control_backgroundjobs_destroy(darktable.control, jid);
   dt_control_signal_raise(darktable.signals, DT_SIGNAL_FILMROLLS_CHANGED);
   dt_control_queue_redraw_center();
+  free(params);
   return 0;
 }
 
-int32_t dt_control_flip_images_job_run(dt_job_t *job)
+static int32_t dt_control_flip_images_job_run(dt_job_t *job)
 {
   int imgid = -1;
-  dt_control_image_enumerator_t *t1 = (dt_control_image_enumerator_t *)job->param;
-  const int cw = t1->flag;
-  GList *t = t1->index;
+  dt_control_image_enumerator_t *params = dt_control_job_get_params(job);
+  const int cw = params->flag;
+  GList *t = params->index;
   guint total = g_list_length(t);
   double fraction=0;
   char message[512]= {0};
@@ -317,6 +403,7 @@ int32_t dt_control_flip_images_job_run(dt_job_t *job)
   }
   dt_control_backgroundjobs_destroy(darktable.control, jid);
   dt_control_queue_redraw_center();
+  free(params);
   return 0;
 }
 
@@ -366,11 +453,11 @@ static GList *_get_full_pathname(char *imgs)
   return list;
 }
 
-int32_t dt_control_remove_images_job_run(dt_job_t *job)
+static int32_t dt_control_remove_images_job_run(dt_job_t *job)
 {
   int imgid = -1;
-  dt_control_image_enumerator_t *t1 = (dt_control_image_enumerator_t *)job->param;
-  GList *t = t1->index;
+  dt_control_image_enumerator_t *params = dt_control_job_get_params(job);
+  GList *t = params->index;
   char *imgs = _get_image_list(t);
   guint total = g_list_length(t);
   char message[512]= {0};
@@ -401,6 +488,7 @@ int32_t dt_control_remove_images_job_run(dt_job_t *job)
     dt_control_log(_("cannot remove local copy when the original file is not accessible."));
     dt_control_backgroundjobs_destroy(darktable.control, jid);
     free(imgs);
+    free(params);
     return 0;
   }
 
@@ -434,15 +522,16 @@ int32_t dt_control_remove_images_job_run(dt_job_t *job)
   dt_film_remove_empty();
   dt_control_signal_raise(darktable.signals, DT_SIGNAL_FILMROLLS_CHANGED);
   dt_control_queue_redraw_center();
+  free(params);
   return 0;
 }
 
 
-int32_t dt_control_delete_images_job_run(dt_job_t *job)
+static int32_t dt_control_delete_images_job_run(dt_job_t *job)
 {
   int imgid = -1;
-  dt_control_image_enumerator_t *t1 = (dt_control_image_enumerator_t *)job->param;
-  GList *t = t1->index;
+  dt_control_image_enumerator_t *params = dt_control_job_get_params(job);
+  GList *t = params->index;
   char *imgs = _get_image_list(t);
   guint total = g_list_length(t);
   char message[512]= {0};
@@ -564,16 +653,17 @@ int32_t dt_control_delete_images_job_run(dt_job_t *job)
   dt_film_remove_empty();
   dt_control_signal_raise(darktable.signals, DT_SIGNAL_FILMROLLS_CHANGED);
   dt_control_queue_redraw_center();
+  free(params);
   return 0;
 }
 
-int32_t dt_control_gpx_apply_job_run(dt_job_t *job)
+static int32_t dt_control_gpx_apply_job_run(dt_job_t *job)
 {
-  dt_control_image_enumerator_t *t1 = (dt_control_image_enumerator_t *)job->param;
-  GList *t = t1->index;
+  dt_control_image_enumerator_t *params = dt_control_job_get_params(job);
+  GList *t = params->index;
   struct dt_gpx_t *gpx = NULL;
   uint32_t cntr = 0;
-  const dt_control_gpx_apply_t *d = t1->data;
+  const dt_control_gpx_apply_t *d = params->data;
   const gchar *filename = d->filename;
   const gchar *tz = d->tz;
 
@@ -659,7 +749,8 @@ int32_t dt_control_gpx_apply_job_run(dt_job_t *job)
   dt_gpx_destroy(gpx);
   g_free(d->filename);
   g_free(d->tz);
-  g_free(t1->data);
+  g_free(params->data);
+  free(params);
   return 0;
 
 bail_out:
@@ -668,410 +759,32 @@ bail_out:
 
   g_free(d->filename);
   g_free(d->tz);
-  g_free(t1->data);
+  g_free(params->data);
+  free(params);
   return 1;
 }
 
-/* enumerator of images from filmroll */
-void dt_control_image_enumerator_job_film_init(dt_control_image_enumerator_t *t, int32_t filmid)
-{
-  sqlite3_stmt *stmt;
-  /* get a list of images in filmroll */
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                              "select * from images where film_id = ?1",
-                              -1, &stmt, NULL);
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, filmid);
-
-  while (sqlite3_step(stmt) == SQLITE_ROW)
-  {
-    int imgid = sqlite3_column_int(stmt, 0);
-    t->index = g_list_append(t->index, GINT_TO_POINTER(imgid));
-  }
-  sqlite3_finalize(stmt);
-}
-
-/* enumerator of selected images */
-void dt_control_image_enumerator_job_selected_init(dt_control_image_enumerator_t *t)
-{
-  GList *list = NULL;
-  int imgid = dt_view_get_image_to_act_on();
-
-  if(imgid < 0) {
-    /* get sorted list of selected images */
-    t->index = dt_collection_get_selected(darktable.collection, -1);
-  }
-  else {
-    /* Create a list with only one image */
-    list = g_list_append (list, GINT_TO_POINTER(imgid));
-    t->index = list;
-  }
-}
-
-void dt_control_merge_hdr_job_init(dt_job_t *job)
-{
-  dt_control_job_init(job, "merge hdr image");
-  job->execute = &dt_control_merge_hdr_job_run;
-  dt_control_image_enumerator_t *t = (dt_control_image_enumerator_t *)job->param;
-  dt_control_image_enumerator_job_selected_init(t);
-}
-
-void dt_control_duplicate_images_job_init(dt_job_t *job)
-{
-  dt_control_job_init(job, "duplicate images");
-  job->execute = &dt_control_duplicate_images_job_run;
-  dt_control_image_enumerator_t *t = (dt_control_image_enumerator_t *)job->param;
-  dt_control_image_enumerator_job_selected_init(t);
-}
-
-void dt_control_flip_images_job_init(dt_job_t *job, const int32_t cw)
-{
-  dt_control_job_init(job, "flip images");
-  job->execute = &dt_control_flip_images_job_run;
-  dt_control_image_enumerator_t *t = (dt_control_image_enumerator_t *)job->param;
-  dt_control_image_enumerator_job_selected_init(t);
-  t->flag = cw;
-}
-
-void dt_control_remove_images_job_init(dt_job_t *job)
-{
-  dt_control_job_init(job, "remove images");
-  job->execute = &dt_control_remove_images_job_run;
-  dt_control_image_enumerator_t *t = (dt_control_image_enumerator_t *)job->param;
-  dt_control_image_enumerator_job_selected_init(t);
-}
-
-void dt_control_delete_images_job_init(dt_job_t *job)
-{
-  dt_control_job_init(job, "delete images");
-  job->execute = &dt_control_delete_images_job_run;
-  dt_control_image_enumerator_t *t = (dt_control_image_enumerator_t *)job->param;
-  dt_control_image_enumerator_job_selected_init(t);
-}
-
-void dt_control_gpx_apply_job_init(dt_job_t *job, const gchar *filename, int32_t filmid, const gchar *tz)
-{
-  dt_control_job_init(job, "gpx apply");
-  job->execute = &dt_control_gpx_apply_job_run;
-  dt_control_image_enumerator_t *t = (dt_control_image_enumerator_t *)job->param;
-  if (filmid != -1)
-    dt_control_image_enumerator_job_film_init(t, filmid);
-  else
-    dt_control_image_enumerator_job_selected_init(t);
-
-  dt_control_gpx_apply_t *data = (dt_control_gpx_apply_t*)malloc(sizeof(dt_control_gpx_apply_t));
-  data->filename = g_strdup(filename);
-  data->tz = g_strdup(tz);
-  t->data = data;
-}
-
-void dt_control_merge_hdr()
-{
-  dt_job_t j;
-  dt_control_merge_hdr_job_init(&j);
-  dt_control_add_job(darktable.control, &j);
-}
-
-void dt_control_gpx_apply(const gchar *filename, int32_t filmid, const gchar *tz)
-{
-  dt_job_t j;
-  dt_control_gpx_apply_job_init(&j, filename, filmid, tz);
-  dt_control_add_job(darktable.control, &j);
-}
-
-void dt_control_duplicate_images()
-{
-  dt_job_t j;
-  dt_control_duplicate_images_job_init(&j);
-  dt_control_add_job(darktable.control, &j);
-}
-
-void dt_control_flip_images(const int32_t cw)
-{
-  dt_job_t j;
-  dt_control_flip_images_job_init(&j, cw);
-  dt_control_add_job(darktable.control, &j);
-}
-
-void dt_control_remove_images()
-{
-  if(dt_conf_get_bool("ask_before_remove"))
-  {
-    GtkWidget *dialog;
-    GtkWidget *win = dt_ui_main_window(darktable.gui->ui);
-
-    int number = dt_collection_get_selected_count(darktable.collection);
-
-    // Do not show the dialog if no image is selected:
-    if(number == 0) return;
-
-    dialog = gtk_message_dialog_new(GTK_WINDOW(win),
-                                    GTK_DIALOG_DESTROY_WITH_PARENT,
-                                    GTK_MESSAGE_QUESTION,
-                                    GTK_BUTTONS_YES_NO,
-                                    ngettext("do you really want to remove %d selected image from the collection?",
-                                        "do you really want to remove %d selected images from the collection?", number), number);
-
-    gtk_window_set_title(GTK_WINDOW(dialog), _("remove images?"));
-    gint res = gtk_dialog_run(GTK_DIALOG(dialog));
-    gtk_widget_destroy(dialog);
-    if(res != GTK_RESPONSE_YES) return;
-  }
-  dt_job_t j;
-  dt_control_remove_images_job_init(&j);
-  dt_control_add_job(darktable.control, &j);
-}
-
-void dt_control_delete_images()
-{
-  if(dt_conf_get_bool("ask_before_delete"))
-  {
-    GtkWidget *dialog;
-    GtkWidget *win = dt_ui_main_window(darktable.gui->ui);
-
-    int number = dt_collection_get_selected_count(darktable.collection);
-
-    // Do not show the dialog if no image is selected:
-    if(number == 0) return;
-
-    dialog = gtk_message_dialog_new(GTK_WINDOW(win),
-                                    GTK_DIALOG_DESTROY_WITH_PARENT,
-                                    GTK_MESSAGE_QUESTION,
-                                    GTK_BUTTONS_YES_NO,
-                                    ngettext("do you really want to physically delete %d selected image from disk?",
-                                        "do you really want to physically delete %d selected images from disk?", number), number);
-
-    gtk_window_set_title(GTK_WINDOW(dialog), _("delete images?"));
-    gint res = gtk_dialog_run(GTK_DIALOG(dialog));
-    gtk_widget_destroy(dialog);
-    if(res != GTK_RESPONSE_YES) return;
-  }
-  dt_job_t j;
-  dt_control_delete_images_job_init(&j);
-  dt_control_add_job(darktable.control, &j);
-}
-
-static int32_t _generic_dt_control_fileop_images_job_run(dt_job_t *job,
-    int32_t (*fileop_callback)(const int32_t, const int32_t),
-    const char *desc, const char *desc_pl)
-{
-  dt_control_image_enumerator_t *t1 = (dt_control_image_enumerator_t *)job->param;
-  GList *t = t1->index;
-  guint total = g_list_length(t);
-  char message[512]= {0};
-  double fraction = 0;
-  gchar *newdir = (gchar *)job->user_data;
-
-  /* create a cancellable bgjob ui template */
-  g_snprintf(message, sizeof(message), ngettext(desc, desc_pl, total), total);
-  const guint *jid = dt_control_backgroundjobs_create(darktable.control, 0, message);
-  dt_control_backgroundjobs_set_cancellable(darktable.control, jid, job);
-
-  // create new film roll for the destination directory
-  dt_film_t new_film;
-  const int32_t film_id = dt_film_new(&new_film, newdir);
-  g_free(newdir);
-
-  if (film_id <= 0)
-  {
-    dt_control_log(_("failed to create film roll for destination directory, aborting move.."));
-    dt_control_backgroundjobs_destroy(darktable.control, jid);
-    return -1;
-  }
-
-  while(t && dt_control_job_get_state(job) != DT_JOB_STATE_CANCELLED)
-  {
-    fileop_callback(GPOINTER_TO_INT(t->data), film_id);
-    t = g_list_delete_link(t, t);
-    fraction+=1.0/total;
-    dt_control_backgroundjobs_progress(darktable.control, jid, fraction);
-  }
-
-  char collect[1024];
-  snprintf(collect, sizeof(collect), "1:0:0:%s$", new_film.dirname);
-  dt_collection_deserialize(collect);
-  dt_control_backgroundjobs_destroy(darktable.control, jid);
-  dt_film_remove_empty();
-  dt_control_signal_raise(darktable.signals, DT_SIGNAL_FILMROLLS_CHANGED);
-  dt_control_queue_redraw_center();
-  return 0;
-}
-
-void dt_control_move_images()
-{
-  // Open file chooser dialog
-  gchar *dir = NULL;
-  GtkWidget *win = dt_ui_main_window(darktable.gui->ui);
-  int number = dt_collection_get_selected_count(darktable.collection);
-
-  // Do not show the dialog if no image is selected:
-  if(number == 0) return;
-
-  GtkWidget *filechooser = gtk_file_chooser_dialog_new (_("select directory"),
-                           GTK_WINDOW (win),
-                           GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER,
-                           GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
-                           GTK_STOCK_OPEN, GTK_RESPONSE_ACCEPT,
-                           (char *)NULL);
-
-  gtk_file_chooser_set_select_multiple(GTK_FILE_CHOOSER(filechooser), FALSE);
-  if (gtk_dialog_run (GTK_DIALOG (filechooser)) == GTK_RESPONSE_ACCEPT)
-  {
-    dir = gtk_file_chooser_get_filename (GTK_FILE_CHOOSER (filechooser));
-  }
-  gtk_widget_destroy (filechooser);
-
-  if(!dir || !g_file_test(dir, G_FILE_TEST_IS_DIR))
-    goto abort;
-
-  if(dt_conf_get_bool("ask_before_move"))
-  {
-    GtkWidget *dialog = gtk_message_dialog_new(GTK_WINDOW(win),
-                        GTK_DIALOG_DESTROY_WITH_PARENT,
-                        GTK_MESSAGE_QUESTION,
-                        GTK_BUTTONS_YES_NO,
-                        ngettext("do you really want to physically move the %d selected image to %s?\n"
-                                 "(all unselected duplicates will be moved along)",
-                                 "do you really want to physically move %d selected images to %s?\n"
-                                 "(all unselected duplicates will be moved along)", number), number, dir);
-    gtk_window_set_title(GTK_WINDOW(dialog), ngettext("move image?", "move images?", number));
-
-    gint res = gtk_dialog_run(GTK_DIALOG(dialog));
-    gtk_widget_destroy(dialog);
-
-    if(res != GTK_RESPONSE_YES)
-      goto abort;
-  }
-
-  dt_job_t j;
-  dt_control_move_images_job_init(&j);
-  j.user_data = dir;
-  dt_control_add_job(darktable.control, &j);
-  return;
-
-abort:
-  g_free(dir);
-  return;
-}
-
-void dt_control_copy_images()
-{
-  // Open file chooser dialog
-  gchar *dir = NULL;
-  GtkWidget *win = dt_ui_main_window(darktable.gui->ui);
-  int number = dt_collection_get_selected_count(darktable.collection);
-
-  // Do not show the dialog if no image is selected:
-  if(number == 0) return;
-
-  GtkWidget *filechooser = gtk_file_chooser_dialog_new (_("select directory"),
-                           GTK_WINDOW (win),
-                           GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER,
-                           GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
-                           GTK_STOCK_OPEN, GTK_RESPONSE_ACCEPT,
-                           (char *)NULL);
-
-  gtk_file_chooser_set_select_multiple(GTK_FILE_CHOOSER(filechooser), FALSE);
-  if (gtk_dialog_run (GTK_DIALOG (filechooser)) == GTK_RESPONSE_ACCEPT)
-  {
-    dir = gtk_file_chooser_get_filename (GTK_FILE_CHOOSER (filechooser));
-  }
-  gtk_widget_destroy (filechooser);
-
-  if(!dir || !g_file_test(dir, G_FILE_TEST_IS_DIR))
-    goto abort;
-
-  if(dt_conf_get_bool("ask_before_copy"))
-  {
-    GtkWidget *dialog = gtk_message_dialog_new(GTK_WINDOW(win),
-                        GTK_DIALOG_DESTROY_WITH_PARENT,
-                        GTK_MESSAGE_QUESTION,
-                        GTK_BUTTONS_YES_NO,
-                        ngettext("do you really want to physically copy the %d selected image to %s?",
-                                 "do you really want to physically copy %d selected images to %s?", number),
-                        number, dir);
-    gtk_window_set_title(GTK_WINDOW(dialog), ngettext("copy image?", "copy images?", number));
-
-    gint res = gtk_dialog_run(GTK_DIALOG(dialog));
-    gtk_widget_destroy(dialog);
-
-    if(res != GTK_RESPONSE_YES)
-      goto abort;
-  }
-
-  dt_job_t j;
-  dt_control_copy_images_job_init(&j);
-  j.user_data = dir;
-  dt_control_add_job(darktable.control, &j);
-  return;
-
-abort:
-  g_free(dir);
-  return;
-}
-
-void dt_control_set_local_copy_images()
-{
-  dt_job_t j;
-  dt_control_local_copy_images_job_init(&j);
-  j.user_data=(void *)1;
-  dt_control_add_job(darktable.control, &j);
-  return;
-}
-
-void dt_control_reset_local_copy_images()
-{
-  dt_job_t j;
-  dt_control_local_copy_images_job_init(&j);
-  j.user_data=(void *)0;
-  dt_control_add_job(darktable.control, &j);
-  return;
-}
-
-void dt_control_move_images_job_init(dt_job_t *job)
-{
-  dt_control_job_init(job, "move images");
-  job->execute = &dt_control_move_images_job_run;
-  dt_control_image_enumerator_t *t = (dt_control_image_enumerator_t *)job->param;
-  dt_control_image_enumerator_job_selected_init(t);
-}
-
-void dt_control_copy_images_job_init(dt_job_t *job)
-{
-  dt_control_job_init(job, "copy images");
-  job->execute = &dt_control_copy_images_job_run;
-  dt_control_image_enumerator_t *t = (dt_control_image_enumerator_t *)job->param;
-  dt_control_image_enumerator_job_selected_init(t);
-}
-
-void dt_control_local_copy_images_job_init(dt_job_t *job)
-{
-  dt_control_job_init(job, "local copy images");
-  job->execute = &dt_control_local_copy_images_job_run;
-  dt_control_image_enumerator_t *t = (dt_control_image_enumerator_t *)job->param;
-  dt_control_image_enumerator_job_selected_init(t);
-}
-
-int32_t dt_control_move_images_job_run(dt_job_t *job)
+static int32_t dt_control_move_images_job_run(dt_job_t *job)
 {
   return _generic_dt_control_fileop_images_job_run(job, &dt_image_move,
          _("moving %d image"), _("moving %d images"));
 }
 
-int32_t dt_control_copy_images_job_run(dt_job_t *job)
+static int32_t dt_control_copy_images_job_run(dt_job_t *job)
 {
   return _generic_dt_control_fileop_images_job_run(job, &dt_image_copy,
          _("copying %d image"), _("copying %d images"));
 }
 
-int32_t dt_control_local_copy_images_job_run(dt_job_t *job)
+static int32_t dt_control_local_copy_images_job_run(dt_job_t *job)
 {
   int imgid = -1;
-  dt_control_image_enumerator_t *t1 = (dt_control_image_enumerator_t *)job->param;
-  GList *t = t1->index;
+  dt_control_image_enumerator_t *params = (dt_control_image_enumerator_t *)dt_control_job_get_params(job);
+  GList *t = params->index;
   guint tagid = 0;
   const guint total = g_list_length(t);
   double fraction=0;
-  gboolean is_copy = GPOINTER_TO_INT(job->user_data) == 1;
+  gboolean is_copy = params->flag == 1;
   char message[512]= {0};
 
   if (is_copy)
@@ -1091,7 +804,7 @@ int32_t dt_control_local_copy_images_job_run(dt_job_t *job)
   while(t && dt_control_job_get_state(job) != DT_JOB_STATE_CANCELLED)
   {
     imgid = GPOINTER_TO_INT(t->data);
-    if (GPOINTER_TO_INT(job->user_data) == 1)
+    if (is_copy)
     {
       dt_image_local_copy_set(imgid);
       dt_tag_attach(tagid, imgid);
@@ -1109,15 +822,16 @@ int32_t dt_control_local_copy_images_job_run(dt_job_t *job)
 
   dt_control_backgroundjobs_destroy(control, jid);
   dt_control_signal_raise(darktable.signals, DT_SIGNAL_FILMROLLS_CHANGED);
+  free(params);
   return 0;
 }
 
 static int32_t dt_control_export_job_run(dt_job_t *job)
 {
   int imgid = -1;
-  dt_control_image_enumerator_t *t1 = (dt_control_image_enumerator_t *)job->param;
-  dt_control_export_t *settings = (dt_control_export_t*)t1->data;
-  GList *t = t1->index;
+  dt_control_image_enumerator_t *params = (dt_control_image_enumerator_t *)dt_control_job_get_params(job);
+  dt_control_export_t *settings = (dt_control_export_t*)params->data;
+  GList *t = params->index;
   dt_imageio_module_format_t  *mformat  = dt_imageio_get_format_by_index(settings->format_index);
   g_assert(mformat);
   dt_imageio_module_storage_t *mstorage = dt_imageio_get_storage_by_index(settings->storage_index);
@@ -1245,18 +959,248 @@ static int32_t dt_control_export_job_run(dt_job_t *job)
 #ifdef _OPENMP
   }
 #endif
-  g_free(t1->data);
+  g_free(params->data);
+  free(params);
   return 0;
 }
 
-
-void dt_control_export(GList *imgid_list, int max_width, int max_height, int format_index, int storage_index, gboolean high_quality,char *style)
+static dt_job_t * dt_control_gpx_apply_job_create(const gchar *filename, int32_t filmid, const gchar *tz)
 {
-  dt_job_t job;
-  dt_control_job_init(&job, "export");
-  job.execute = &dt_control_export_job_run;
-  dt_control_image_enumerator_t *t = (dt_control_image_enumerator_t *)job.param;
-  t->index = imgid_list;
+  dt_job_t *job = dt_control_job_create(&dt_control_gpx_apply_job_run, "gpx apply");
+  if(!job) return NULL;
+  dt_control_image_enumerator_t *params = (dt_control_image_enumerator_t *)calloc(1, sizeof(dt_control_image_enumerator_t));
+  if(!params)
+  {
+    dt_control_job_dispose(job);
+    return NULL;
+  }
+  dt_control_job_set_params(job, params);
+  if (filmid != -1)
+    dt_control_image_enumerator_job_film_init(params, filmid);
+  else
+    dt_control_image_enumerator_job_selected_init(params);
+
+  dt_control_gpx_apply_t *data = (dt_control_gpx_apply_t*)malloc(sizeof(dt_control_gpx_apply_t));
+  data->filename = g_strdup(filename);
+  data->tz = g_strdup(tz);
+  params->data = data;
+  return job;
+}
+
+void dt_control_merge_hdr()
+{
+  dt_control_add_job(darktable.control, DT_JOB_QUEUE_USER_FG, dt_control_generic_images_job_create(&dt_control_merge_hdr_job_run, "merge hdr image", 0, NULL));
+}
+
+void dt_control_gpx_apply(const gchar *filename, int32_t filmid, const gchar *tz)
+{
+  dt_control_add_job(darktable.control, DT_JOB_QUEUE_USER_FG, dt_control_gpx_apply_job_create(filename, filmid, tz));
+}
+
+void dt_control_duplicate_images()
+{
+  dt_control_add_job(darktable.control, DT_JOB_QUEUE_USER_FG, dt_control_generic_images_job_create(&dt_control_duplicate_images_job_run, "duplicate images", 0, NULL));
+}
+
+void dt_control_flip_images(const int32_t cw)
+{
+  dt_control_add_job(darktable.control, DT_JOB_QUEUE_USER_FG, dt_control_generic_images_job_create(&dt_control_flip_images_job_run, "flip images", cw, NULL));
+}
+
+void dt_control_remove_images()
+{
+  if(dt_conf_get_bool("ask_before_remove"))
+  {
+    GtkWidget *dialog;
+    GtkWidget *win = dt_ui_main_window(darktable.gui->ui);
+
+    int number = dt_collection_get_selected_count(darktable.collection);
+
+    // Do not show the dialog if no image is selected:
+    if(number == 0) return;
+
+    dialog = gtk_message_dialog_new(GTK_WINDOW(win),
+                                    GTK_DIALOG_DESTROY_WITH_PARENT,
+                                    GTK_MESSAGE_QUESTION,
+                                    GTK_BUTTONS_YES_NO,
+                                    ngettext("do you really want to remove %d selected image from the collection?",
+                                        "do you really want to remove %d selected images from the collection?", number), number);
+
+    gtk_window_set_title(GTK_WINDOW(dialog), _("remove images?"));
+    gint res = gtk_dialog_run(GTK_DIALOG(dialog));
+    gtk_widget_destroy(dialog);
+    if(res != GTK_RESPONSE_YES) return;
+  }
+  dt_control_add_job(darktable.control, DT_JOB_QUEUE_USER_FG, dt_control_generic_images_job_create(&dt_control_remove_images_job_run, "remove images", 0, NULL));
+}
+
+void dt_control_delete_images()
+{
+  if(dt_conf_get_bool("ask_before_delete"))
+  {
+    GtkWidget *dialog;
+    GtkWidget *win = dt_ui_main_window(darktable.gui->ui);
+
+    int number = dt_collection_get_selected_count(darktable.collection);
+
+    // Do not show the dialog if no image is selected:
+    if(number == 0) return;
+
+    dialog = gtk_message_dialog_new(GTK_WINDOW(win),
+                                    GTK_DIALOG_DESTROY_WITH_PARENT,
+                                    GTK_MESSAGE_QUESTION,
+                                    GTK_BUTTONS_YES_NO,
+                                    ngettext("do you really want to physically delete %d selected image from disk?",
+                                        "do you really want to physically delete %d selected images from disk?", number), number);
+
+    gtk_window_set_title(GTK_WINDOW(dialog), _("delete images?"));
+    gint res = gtk_dialog_run(GTK_DIALOG(dialog));
+    gtk_widget_destroy(dialog);
+    if(res != GTK_RESPONSE_YES) return;
+  }
+  dt_control_add_job(darktable.control, DT_JOB_QUEUE_USER_FG, dt_control_generic_images_job_create(&dt_control_delete_images_job_run, "delete images", 0, NULL));
+}
+
+void dt_control_move_images()
+{
+  // Open file chooser dialog
+  gchar *dir = NULL;
+  GtkWidget *win = dt_ui_main_window(darktable.gui->ui);
+  int number = dt_collection_get_selected_count(darktable.collection);
+
+  // Do not show the dialog if no image is selected:
+  if(number == 0) return;
+
+  GtkWidget *filechooser = gtk_file_chooser_dialog_new (_("select directory"),
+                           GTK_WINDOW (win),
+                           GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER,
+                           GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
+                           GTK_STOCK_OPEN, GTK_RESPONSE_ACCEPT,
+                           (char *)NULL);
+
+  gtk_file_chooser_set_select_multiple(GTK_FILE_CHOOSER(filechooser), FALSE);
+  if (gtk_dialog_run (GTK_DIALOG (filechooser)) == GTK_RESPONSE_ACCEPT)
+  {
+    dir = gtk_file_chooser_get_filename (GTK_FILE_CHOOSER (filechooser));
+  }
+  gtk_widget_destroy (filechooser);
+
+  if(!dir || !g_file_test(dir, G_FILE_TEST_IS_DIR))
+    goto abort;
+
+  if(dt_conf_get_bool("ask_before_move"))
+  {
+    GtkWidget *dialog = gtk_message_dialog_new(GTK_WINDOW(win),
+                        GTK_DIALOG_DESTROY_WITH_PARENT,
+                        GTK_MESSAGE_QUESTION,
+                        GTK_BUTTONS_YES_NO,
+                        ngettext("do you really want to physically move the %d selected image to %s?\n"
+                                 "(all unselected duplicates will be moved along)",
+                                 "do you really want to physically move %d selected images to %s?\n"
+                                 "(all unselected duplicates will be moved along)", number), number, dir);
+    gtk_window_set_title(GTK_WINDOW(dialog), ngettext("move image?", "move images?", number));
+
+    gint res = gtk_dialog_run(GTK_DIALOG(dialog));
+    gtk_widget_destroy(dialog);
+
+    if(res != GTK_RESPONSE_YES)
+      goto abort;
+  }
+
+  dt_control_add_job(darktable.control, DT_JOB_QUEUE_USER_FG,
+                     dt_control_generic_images_job_create(&dt_control_move_images_job_run, "move images", 0, dir)
+                    );
+  return;
+
+abort:
+  g_free(dir);
+  return;
+}
+
+void dt_control_copy_images()
+{
+  // Open file chooser dialog
+  gchar *dir = NULL;
+  GtkWidget *win = dt_ui_main_window(darktable.gui->ui);
+  int number = dt_collection_get_selected_count(darktable.collection);
+
+  // Do not show the dialog if no image is selected:
+  if(number == 0) return;
+
+  GtkWidget *filechooser = gtk_file_chooser_dialog_new (_("select directory"),
+                           GTK_WINDOW (win),
+                           GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER,
+                           GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
+                           GTK_STOCK_OPEN, GTK_RESPONSE_ACCEPT,
+                           (char *)NULL);
+
+  gtk_file_chooser_set_select_multiple(GTK_FILE_CHOOSER(filechooser), FALSE);
+  if (gtk_dialog_run (GTK_DIALOG (filechooser)) == GTK_RESPONSE_ACCEPT)
+  {
+    dir = gtk_file_chooser_get_filename (GTK_FILE_CHOOSER (filechooser));
+  }
+  gtk_widget_destroy (filechooser);
+
+  if(!dir || !g_file_test(dir, G_FILE_TEST_IS_DIR))
+    goto abort;
+
+  if(dt_conf_get_bool("ask_before_copy"))
+  {
+    GtkWidget *dialog = gtk_message_dialog_new(GTK_WINDOW(win),
+                        GTK_DIALOG_DESTROY_WITH_PARENT,
+                        GTK_MESSAGE_QUESTION,
+                        GTK_BUTTONS_YES_NO,
+                        ngettext("do you really want to physically copy the %d selected image to %s?",
+                                 "do you really want to physically copy %d selected images to %s?", number),
+                        number, dir);
+    gtk_window_set_title(GTK_WINDOW(dialog), ngettext("copy image?", "copy images?", number));
+
+    gint res = gtk_dialog_run(GTK_DIALOG(dialog));
+    gtk_widget_destroy(dialog);
+
+    if(res != GTK_RESPONSE_YES)
+      goto abort;
+  }
+
+  dt_control_add_job(darktable.control, DT_JOB_QUEUE_USER_FG,
+                     dt_control_generic_images_job_create(&dt_control_copy_images_job_run, "copy images", 0, dir)
+                    );
+
+  return;
+
+abort:
+  g_free(dir);
+  return;
+}
+
+void dt_control_set_local_copy_images()
+{
+  dt_control_add_job(darktable.control, DT_JOB_QUEUE_USER_FG,
+                     dt_control_generic_images_job_create(&dt_control_local_copy_images_job_run, "local copy images", 1, NULL)
+                    );
+  return;
+}
+
+void dt_control_reset_local_copy_images()
+{
+  dt_control_add_job(darktable.control, DT_JOB_QUEUE_USER_FG,
+                     dt_control_generic_images_job_create(&dt_control_local_copy_images_job_run, "local copy images", 0, NULL)
+                    );
+  return;
+}
+
+void dt_control_export(GList *imgid_list, int max_width, int max_height, int format_index, int storage_index, gboolean high_quality, char *style)
+{
+  dt_job_t *job = dt_control_job_create(&dt_control_export_job_run, "export");
+  if(!job) return;
+  dt_control_image_enumerator_t *params = (dt_control_image_enumerator_t *)calloc(1, sizeof(dt_control_image_enumerator_t));
+  if(!params)
+  {
+    dt_control_job_dispose(job);
+    return;
+  }
+  dt_control_job_set_params(job, params);
+  params->index = imgid_list;
   dt_control_export_t *data = (dt_control_export_t*)malloc(sizeof(dt_control_export_t));
   data->max_width = max_width;
   data->max_height = max_height;
@@ -1270,33 +1214,36 @@ void dt_control_export(GList *imgid_list, int max_width, int max_height, int for
   {
     dt_control_log(_("failed to get parameters from storage module `%s', aborting export.."), mstorage->name(mstorage));
     free(data);
+    free(params);
+    dt_control_job_dispose(job);
     return;
   }
   data->sdata = sdata;
   data->high_quality = high_quality;
   g_strlcpy(data->style,style,sizeof(data->style));
-  t->data = data;
-  dt_control_signal_raise(darktable.signals,DT_SIGNAL_IMAGE_EXPORT_MULTIPLE,t);
-  dt_control_add_job(darktable.control, &job);
+  params->data = data;
+  dt_control_signal_raise(darktable.signals, DT_SIGNAL_IMAGE_EXPORT_MULTIPLE, params);
+  dt_control_add_job(darktable.control, DT_JOB_QUEUE_USER_FG, job);
 
   // tell the storage that we got its params for an export so it can reset itself to a safe state
   mstorage->export_dispatched(mstorage);
 }
 
-int32_t dt_control_time_offset_job_run(dt_job_t *job)
+static int32_t dt_control_time_offset_job_run(dt_job_t *job)
 {
-  dt_control_image_enumerator_t *t1 = (dt_control_image_enumerator_t *)job->param;
+  dt_control_image_enumerator_t *params = (dt_control_image_enumerator_t *)dt_control_job_get_params(job);
   uint32_t cntr = 0;
   double fraction = 0.0;
-  GList *t = t1->index;
-  const long int offset = ((dt_control_time_offset_t*)t1->data)->offset;
+  GList *t = params->index;
+  const long int offset = ((dt_control_time_offset_t*)params->data)->offset;
   guint *jid = NULL;
   char message[512]= {0};
 
   /* do we have any selected images and is offset != 0 */
   if(!t || offset == 0)
   {
-    g_free(t1->data);
+    g_free(params->data);
+    free(params);
     return 1;
   }
 
@@ -1329,30 +1276,41 @@ int32_t dt_control_time_offset_job_run(dt_job_t *job)
   if (jid)
     dt_control_backgroundjobs_destroy(darktable.control, jid);
 
-  g_free(t1->data);
+  g_free(params->data);
+  free(params);
   return 0;
 }
 
-void dt_control_time_offset_job_init(dt_job_t *job, const long int offset, int imgid)
+static dt_job_t * dt_control_time_offset_job_create(const long int offset, int imgid)
 {
-  dt_control_job_init(job, "time offset");
-  job->execute = &dt_control_time_offset_job_run;
-  dt_control_image_enumerator_t *t = (dt_control_image_enumerator_t *)job->param;
+  dt_job_t *job = dt_control_job_create(&dt_control_time_offset_job_run, "time offset");
+  if(!job) return NULL;
+  dt_control_image_enumerator_t *params = (dt_control_image_enumerator_t *)calloc(1, sizeof(dt_control_image_enumerator_t));
+  if(!params)
+  {
+    dt_control_job_dispose(job);
+    return NULL;
+  }
+  dt_control_job_set_params(job, params);
   if (imgid != -1)
-    t->index = g_list_append(t->index, GINT_TO_POINTER(imgid));
+    params->index = g_list_append(params->index, GINT_TO_POINTER(imgid));
   else
-    dt_control_image_enumerator_job_selected_init(t);
+    dt_control_image_enumerator_job_selected_init(params);
 
   dt_control_time_offset_t *data = (dt_control_time_offset_t*)malloc(sizeof(dt_control_time_offset_t));
   data->offset = offset;
-  t->data = data;
+  params->data = data;
+  return job;
 }
 
 void dt_control_time_offset(const long int offset, int imgid)
 {
-  dt_job_t j;
-  dt_control_time_offset_job_init(&j, offset, imgid);
-  dt_control_add_job(darktable.control, &j);
+  dt_control_add_job(darktable.control, DT_JOB_QUEUE_USER_FG, dt_control_time_offset_job_create(offset, imgid));
+}
+
+void dt_control_write_sidecar_files()
+{
+  dt_control_add_job(darktable.control, DT_JOB_QUEUE_USER_FG, dt_control_generic_images_job_create(&dt_control_write_sidecar_files_job_run, "write sidecar files", 0, NULL));
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

@@ -19,63 +19,21 @@
 #define DT_CONTROL_JOBS_CAMERA_H
 
 #include <inttypes.h>
+#include "common/camera_control.h"
 #include "common/film.h"
 #include "common/variables.h"
 #include "control/control.h"
 
-typedef struct dt_camera_shared_t
-{
-  struct dt_import_session_t *session;
-} dt_camera_shared_t;
-
 /** Camera capture job */
-typedef struct dt_camera_capture_t
-{
-  dt_camera_shared_t shared;
-  int32_t total;
-  pthread_mutex_t mutex;
-  pthread_cond_t done;
-
-  /** delay between each capture, 0 no delay */
-  uint32_t delay;
-  /** count of images to capture, 0==1 */
-  uint32_t count;
-  /** bracket capture, 0=no bracket */
-  uint32_t brackets;
-
-  /** steps for each bracket, only used ig bracket capture*/
-  uint32_t steps;
-
-}
-dt_camera_capture_t;
-int32_t dt_camera_capture_job_run(dt_job_t *job);
-void dt_camera_capture_job_init(dt_job_t *job, const char *jobcode, uint32_t delay, uint32_t count, uint32_t brackets, uint32_t steps);
+dt_job_t * dt_camera_capture_job_create(const char *jobcode, uint32_t delay, uint32_t count, uint32_t brackets, uint32_t steps);
 
 /** camera get previews job. */
-typedef struct dt_camera_get_previews_t
-{
-  struct dt_camera_t *camera;
-  uint32_t flags;
-  struct dt_camctl_listener_t *listener;
-}
-dt_camera_get_previews_t;
-int32_t dt_camera_get_previews_job_run(dt_job_t *job);
-void dt_camera_get_previews_job_init(dt_job_t *job,struct dt_camera_t *camera,struct dt_camctl_listener_t *listener,uint32_t flags);
+dt_job_t * dt_camera_get_previews_job_create(struct dt_camera_t *camera, struct dt_camctl_listener_t *listener, uint32_t flags, void *data);
 
 /** Camera import job */
-typedef struct dt_camera_import_t
-{
-  dt_camera_shared_t shared;
+dt_job_t * dt_camera_import_job_create(const char *jobcode, GList *images, struct dt_camera_t *camera, time_t time_override);
 
-  GList *images;
-  struct dt_camera_t *camera;
-  const guint *bgj;
-  double fraction;
-  uint32_t import_count;
-}
-dt_camera_import_t;
-int32_t dt_camera_import_job_run(dt_job_t *job);
-void dt_camera_import_job_init(dt_job_t *job, const char *jobcode, GList *images, struct dt_camera_t *camera, time_t time_override);
+void *dt_camera_previews_job_get_data(const dt_job_t *job);
 
 #endif
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

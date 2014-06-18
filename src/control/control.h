@@ -31,20 +31,7 @@
 
 #include <gtk/gtk.h>
 #include "libs/lib.h"
-// #include "control/job.def"
-
-#define DT_CONTROL_MAX_JOBS 30
-#define DT_CONTROL_JOB_DEBUG
-#define DT_CONTROL_DESCRIPTION_LEN 256
-// reserved workers
-#define DT_CTL_WORKER_RESERVED 8
-#define DT_CTL_WORKER_1 0 // dev load raw
-#define DT_CTL_WORKER_2 1 // dev zoom 1
-#define DT_CTL_WORKER_3 2 // dev zoom fill
-#define DT_CTL_WORKER_4 3 // dev zoom fit
-#define DT_CTL_WORKER_5 4 // dev small prev
-#define DT_CTL_WORKER_6 5 // dev prefetch
-#define DT_CTL_WORKER_7 6 // scheduled jobs nice level
+#include "control/jobs.h"
 
 // A mask to strip out the Ctrl, Shift, and Alt mod keys for shortcuts
 #define KEY_STATE_MASK (GDK_CONTROL_MASK | GDK_SHIFT_MASK | GDK_MOD1_MASK)
@@ -133,7 +120,6 @@ void dt_ctl_switch_mode();
 void dt_ctl_switch_mode_to(dt_control_gui_mode_t mode);
 
 struct dt_control_t;
-struct dt_job_t;
 
 /* backgroundjobs proxy funcs */
 /** creates a background job and returns hash id reference */
@@ -143,7 +129,7 @@ void dt_control_backgroundjobs_destroy(const struct dt_control_t *s, const guint
 /** sets the progress of a backgroundjob using hash id reference */
 void dt_control_backgroundjobs_progress(const struct dt_control_t *s, const guint *key, double progress);
 /** assign a dt_job_t to a bgjob which makes it cancellable thru ui interaction */
-void dt_control_backgroundjobs_set_cancellable(const struct dt_control_t *s, const guint *key,struct dt_job_t *job);
+void dt_control_backgroundjobs_set_cancellable(const struct dt_control_t *s, const guint *key, dt_job_t *job);
 
 /** sets the hinter message */
 void dt_control_hinter_message(const struct dt_control_t *s, const char *message);
@@ -155,54 +141,7 @@ void dt_control_key_accelerators_off(struct dt_control_t *s);
 
 int dt_control_is_key_accelerators_on(struct dt_control_t *s);
 
-/**
- * smallest unit of work.
- */
-struct dt_job_t;
-typedef void (*dt_job_state_change_callback)(struct dt_job_t*,int state);
-#define DT_JOB_STATE_INITIALIZED    0
-#define DT_JOB_STATE_QUEUED         1
-#define DT_JOB_STATE_RUNNING        2
-#define DT_JOB_STATE_FINISHED       3
-#define DT_JOB_STATE_CANCELLED      4
-#define DT_JOB_STATE_DISCARDED      5
-typedef struct dt_job_t
-{
-  int32_t (*execute) (struct dt_job_t *job);
-  int32_t result;
-
-  /* timestamp of job added to queue */
-  time_t ts_added;
-  /* if job is a delayed job it will be run as a backgroundjob
-      and ts_execute will be the timestamp of when to start job */
-  time_t ts_execute;
-
-  dt_pthread_mutex_t state_mutex;
-  dt_pthread_mutex_t wait_mutex;
-
-  int32_t state;
-  dt_job_state_change_callback state_changed_cb;
-  void *user_data;
-
-  int32_t param[32];
-#ifdef DT_CONTROL_JOB_DEBUG
-  char description[DT_CONTROL_DESCRIPTION_LEN];
-#endif
-}
-dt_job_t;
-
-/** initializes a job */
-void dt_control_job_init(dt_job_t *j, const char *msg, ...);
-/** setup a state callback for job. */
-void dt_control_job_set_state_callback(dt_job_t *j,dt_job_state_change_callback cb,void *user_data);
-void dt_control_job_print(dt_job_t *j);
-/** cancel a job, running or in queue. */
-void dt_control_job_cancel(dt_job_t *j);
-int dt_control_job_get_state(dt_job_t *j);
-/** wait for a job to finish execution. */
-void dt_control_job_wait(dt_job_t *j);
-
-//z All the accelerator keys for the key_pressed style shortcuts
+// All the accelerator keys for the key_pressed style shortcuts
 typedef struct dt_control_accels_t
 {
   GtkAccelKey
@@ -280,8 +219,11 @@ typedef struct dt_control_t
   pthread_cond_t cond;
   int32_t num_threads;
   pthread_t *thread,kick_on_workers_thread;
-  GList *queue;
-  dt_job_t job_res[DT_CTL_WORKER_RESERVED];
+
+  GList *queues[DT_JOB_QUEUE_MAX];
+  size_t queue_length[DT_JOB_QUEUE_MAX];
+
+  dt_job_t *job_res[DT_CTL_WORKER_RESERVED];
   uint8_t new_res[DT_CTL_WORKER_RESERVED];
   pthread_t thread_res[DT_CTL_WORKER_RESERVED];
 
@@ -321,20 +263,8 @@ void dt_control_quit();
 int dt_control_load_config(dt_control_t *c);
 int dt_control_write_config(dt_control_t *c);
 
-int32_t dt_control_run_job(dt_control_t *s);
-int32_t dt_control_add_job(dt_control_t *s, dt_job_t *job);
-/** adds a job to queue tagged as background job and with a delay */
-int32_t dt_control_add_background_job(dt_control_t *s, dt_job_t *job, time_t delay);
-int32_t dt_control_revive_job(dt_control_t *s, dt_job_t *job);
-int32_t dt_control_run_job_res(dt_control_t *s, int32_t res);
-int32_t dt_control_add_job_res(dt_control_t *s, dt_job_t *job, int32_t res);
-
 /** get threadsafe running state. */
 int dt_control_running();
-void *dt_control_work(void *ptr);
-void *dt_control_work_res(void *ptr);
-int32_t dt_control_get_threadid();
-int32_t dt_control_get_threadid_res();
 
 // thread-safe interface between core and gui.
 // is the locking really needed?
