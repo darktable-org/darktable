@@ -605,7 +605,7 @@ xtrans_markesteijn_interpolate(
       // that into rgb[1], rgb[2], and rgb[3]
       for (int row=top; row < mrow; row++)
         for (int col=left; col < mcol; col++)
-          memcpy (rgb[0][row-top][col-left], image[row*width+col], 3*sizeof(float));
+          memcpy (rgb[0][row-top][col-left], image[row*width+col], (size_t)3*sizeof(float));
       for (int c=1; c<=3; c++)
         memcpy (rgb[c], rgb[0], sizeof(*rgb));
 
@@ -635,7 +635,7 @@ xtrans_markesteijn_interpolate(
         {
           // if on second pass, copy rgb[0] to [3] into rgb[4] to [7],
           // and process that second set of buffers
-          memcpy(rgb+4, rgb, 4*sizeof(*rgb));
+          memcpy(rgb+4, rgb, (size_t)4*sizeof(*rgb));
           rgb += 4;
         }
 
@@ -1072,7 +1072,7 @@ xtrans_vng_interpolate(
       }
       if (gmax == 0)
       {
-        memcpy (brow[2][col], pix, 4 * sizeof(*out));
+        memcpy (brow[2][col], pix, (size_t)4 * sizeof(*out));
         continue;
       }
       float thold = gmin + (gmax * 0.5f);
@@ -1100,13 +1100,13 @@ xtrans_vng_interpolate(
       }
     }
     if (row > 3)                                /* Write buffer to image */
-      memcpy (out + 4*((row-2)*width+2), brow[0]+2, (width-4)*4*sizeof(*out));
+      memcpy (out + 4*((row-2)*width+2), brow[0]+2, (size_t)(width-4)*4*sizeof(*out));
     for (int g=0; g < 4; g++)
       brow[(g-1) & 3] = brow[g];
   }
   // copy the final two rows to the image
-  memcpy (out + (4*((height-4)*width+2)), brow[0]+2, (width-4)*4*sizeof(*out));
-  memcpy (out + (4*((height-3)*width+2)), brow[1]+2, (width-4)*4*sizeof(*out));
+  memcpy (out + (4*((height-4)*width+2)), brow[0]+2, (size_t)(width-4)*4*sizeof(*out));
+  memcpy (out + (4*((height-3)*width+2)), brow[1]+2, (size_t)(width-4)*4*sizeof(*out));
   free (brow[4]);
   free (code[0][0]);
 }

@@ -282,7 +282,7 @@ static void wavelet_denoise_xtrans(const float *const in, float *out, const dt_i
   const int width  = roi->width;
   const int height = roi->height;
   const size_t size = (size_t)width*height;
-  float *const fimg = malloc(size*4*sizeof *fimg);
+  float *const fimg = malloc((size_t)size*4 * sizeof(float));
 
   for (int c=0; c<3; c++)
   {
