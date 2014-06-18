@@ -176,6 +176,7 @@
           [--configdir &lt;user config directory&gt;]
           [--cachedir &lt;user cache directory&gt;]
           [--localedir &lt;locale directory&gt;]
+          [--luacmd &lt;lua command&gt;]
           [--conf &lt;key&gt;=&lt;value&gt;]</synopsis>
 
       <para>
@@ -319,6 +320,19 @@
               The place where darktable finds its language specific text strings. The default
               place depends on your installation. Typical places are
               <quote>/opt/darktable/share/locale/</quote> and <quote>/usr/share/locale/</quote>
+            </para></listitem>
+
+          </varlistentry>
+
+          <varlistentry>
+
+            <term>--luacmd &lt;lua command&gt;</term>
+
+            <listitem><para>
+              A string containing lua commands to execute after lua initialization. These
+	      commands will be run after your <quote>luarc</quote> file.
+	      </para><para>
+	      If lua is not compiled in, this option will be accepted but won't do anything
             </para></listitem>
 
           </varlistentry>

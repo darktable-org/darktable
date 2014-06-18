@@ -194,6 +194,20 @@ int dt_lua_dofile_silent(lua_State *L,const char* filename,int nargs,int nresult
   return dt_lua_do_chunk_silent(L,nargs,nresults);
 }
 
+int dt_lua_dostring_silent(lua_State *L,const char* command,int nargs,int nresults)
+{
+  int load_result = luaL_loadstring(L, command);
+  if(load_result != LUA_OK )
+  {
+    const char *error_msg = lua_tostring(L,-1);
+    luaL_traceback(L,L,error_msg,0);
+    lua_remove(L,-2);
+    return load_result;
+  }
+  lua_insert(L,-(nargs+1));
+  return dt_lua_do_chunk_silent(L,nargs,nresults);
+}
+
 int dt_lua_do_chunk_silent(lua_State *L,int nargs, int nresults)
 {
   int orig_top = lua_gettop(L);

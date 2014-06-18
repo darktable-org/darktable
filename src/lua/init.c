@@ -111,6 +111,10 @@ static int32_t run_early_script(struct dt_job_t *job) {
     g_strlcat(tmp_path, "/luarc", sizeof(tmp_path));
     dt_lua_dofile_silent(L,tmp_path,0,0);
   }
+  if(job->user_data) {
+    dt_lua_dostring_silent(L,job->user_data,0,0);
+    free(job->user_data);
+  }
   dt_lua_unlock(has_lock);
   return 0;
 }
@@ -135,7 +139,7 @@ static lua_CFunction init_funcs[] =
 };
 
 
-void dt_lua_init(lua_State*L)
+void dt_lua_init(lua_State*L,const char *lua_command)
 {
   /*
      Note to reviewers
@@ -180,13 +184,16 @@ void dt_lua_init(lua_State*L)
 
 
 
-  if(darktable.gui) {
   dt_job_t job;
   dt_control_job_init(&job, "lua: run initial script");
+  if(lua_command) {
+    job.user_data = strdup(lua_command);
+  }
   job.execute = &run_early_script;
-  dt_control_add_job(darktable.control, &job);
+  if(darktable.gui) {
+    dt_control_add_job(darktable.control, &job);
   } else {
-    run_early_script(NULL);
+    run_early_script(&job);
   }
 
 }
