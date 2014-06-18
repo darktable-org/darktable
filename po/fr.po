@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 1.3\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2014-06-10 08:53+0200\n"
-"PO-Revision-Date: 2014-06-10 08:54+0100\n"
+"POT-Creation-Date: 2014-06-18 15:40+0200\n"
+"PO-Revision-Date: 2014-06-18 15:45+0100\n"
 "Last-Translator: Pascal Obry <pascal@obry.net>\n"
 "Language-Team: \n"
 "Language: fr_FR\n"
@@ -742,7 +742,7 @@ msgstr ""
 "impossible d'obtenir les paramètres du module de format, exportation "
 "abandonnée..."
 
-#: ../src/common/collection.c:546 ../src/develop/lightroom.c:981
+#: ../src/common/collection.c:546 ../src/develop/lightroom.c:980
 #: ../src/iop/bilateral.cc:348 ../src/iop/channelmixer.c:461
 #: ../src/iop/channelmixer.c:473 ../src/iop/colorbalance.c:641
 #: ../src/iop/colorbalance.c:679 ../src/iop/colorbalance.c:717
@@ -751,12 +751,12 @@ msgstr ""
 msgid "red"
 msgstr "rouge"
 
-#: ../src/common/collection.c:547 ../src/develop/lightroom.c:983
+#: ../src/common/collection.c:547 ../src/develop/lightroom.c:982
 #: ../src/libs/collect.c:1279 ../src/libs/collect.c:1281
 msgid "yellow"
 msgstr "jaune"
 
-#: ../src/common/collection.c:548 ../src/develop/lightroom.c:985
+#: ../src/common/collection.c:548 ../src/develop/lightroom.c:984
 #: ../src/iop/bilateral.cc:349 ../src/iop/channelmixer.c:462
 #: ../src/iop/channelmixer.c:480 ../src/iop/colorbalance.c:650
 #: ../src/iop/colorbalance.c:688 ../src/iop/colorbalance.c:726
@@ -765,7 +765,7 @@ msgstr "jaune"
 msgid "green"
 msgstr "vert"
 
-#: ../src/common/collection.c:549 ../src/develop/lightroom.c:987
+#: ../src/common/collection.c:549 ../src/develop/lightroom.c:986
 #: ../src/iop/bilateral.cc:350 ../src/iop/channelmixer.c:463
 #: ../src/iop/channelmixer.c:487 ../src/iop/colorbalance.c:659
 #: ../src/iop/colorbalance.c:697 ../src/iop/colorbalance.c:735
@@ -798,43 +798,43 @@ msgid_plural "%d images of %d in current collection are selected"
 msgstr[0] "%d image sur %d de la collection courante est sélectionnée"
 msgstr[1] "%d images sur %d de la collection courante sont sélectionnées"
 
-#: ../src/common/darktable.c:300
+#: ../src/common/darktable.c:303
 #, c-format
 msgid "found strange path `%s'"
 msgstr "chemin étrange «%s»"
 
-#: ../src/common/darktable.c:318
+#: ../src/common/darktable.c:321
 #, c-format
 msgid "error loading directory `%s'"
 msgstr "erreur de chargement du dossier «%s»"
 
-#: ../src/common/darktable.c:338
+#: ../src/common/darktable.c:341
 #, c-format
 msgid "file `%s' has unknown format!"
 msgstr "le fichier «%s» possède un format inconnu !"
 
-#: ../src/common/darktable.c:352 ../src/libs/import.c:726
+#: ../src/common/darktable.c:355 ../src/libs/import.c:731
 #, c-format
 msgid "error loading file `%s'"
 msgstr "erreur de chargement du fichier «%s»"
 
-#: ../src/common/darktable.c:580
+#: ../src/common/darktable.c:589
 #, c-format
 msgid "ERROR : invalid temporary directory : %s\n"
 msgstr "ERREUR : répertoire temporaire invalide : %s\n"
 
-#: ../src/common/film.c:356
+#: ../src/common/film.c:354
 msgid "no supported images were found to be imported"
 msgstr "aucune image supportée n'a été importée"
 
-#: ../src/common/film.c:368
+#: ../src/common/film.c:366
 #, c-format
 msgid "importing %d image"
 msgid_plural "importing %d images"
 msgstr[0] "importation de %d image"
 msgstr[1] "importation de %d images"
 
-#: ../src/common/film.c:530
+#: ../src/common/film.c:528
 msgid ""
 "cannot remove film roll having local copies with non accessible originals"
 msgstr ""
@@ -848,16 +848,16 @@ msgstr ""
 "sur une autre"
 
 #: ../src/common/history.c:274 ../src/common/history.c:275
-#: ../src/common/history.c:291 ../src/common/styles.c:632
-#: ../src/common/styles.c:634 ../src/develop/blend_gui.c:1691
-#: ../src/develop/develop.c:1142 ../src/libs/live_view.c:412
+#: ../src/common/history.c:291 ../src/common/styles.c:633
+#: ../src/common/styles.c:635 ../src/develop/blend_gui.c:1691
+#: ../src/develop/develop.c:1138 ../src/libs/live_view.c:412
 msgid "on"
 msgstr "activé(e)"
 
 #: ../src/common/history.c:274 ../src/common/history.c:275
-#: ../src/common/history.c:291 ../src/common/styles.c:632
-#: ../src/common/styles.c:634 ../src/develop/blend_gui.c:1539
-#: ../src/develop/blend_gui.c:1688 ../src/develop/develop.c:1142
+#: ../src/common/history.c:291 ../src/common/styles.c:633
+#: ../src/common/styles.c:635 ../src/develop/blend_gui.c:1539
+#: ../src/develop/blend_gui.c:1688 ../src/develop/develop.c:1138
 #: ../src/imageio/format/j2k.c:637 ../src/iop/colorin.c:1187
 #: ../src/iop/demosaic.c:1315 ../src/iop/vignette.c:1118
 #: ../src/libs/history.c:154 ../src/libs/live_view.c:411
@@ -877,7 +877,7 @@ msgstr ""
 msgid "cannot create local copy."
 msgstr "copie locale impossible."
 
-#: ../src/common/image.c:1216 ../src/control/jobs/control_jobs.c:401
+#: ../src/common/image.c:1216 ../src/control/jobs/control_jobs.c:488
 msgid "cannot remove local copy when the original file is not accessible."
 msgstr ""
 "impossible de supprimer la copie locale lorsque l'original n'est pas "
@@ -909,7 +909,7 @@ msgctxt "noun"
 msgid "export"
 msgstr "l'image"
 
-#: ../src/common/imageio.c:676 ../src/common/mipmap_cache.c:1165
+#: ../src/common/imageio.c:676 ../src/common/mipmap_cache.c:1161
 #, c-format
 msgid "image `%s' is not available!"
 msgstr "image '%s\" non disponible"
@@ -950,8 +950,8 @@ msgstr "le style «%s» existe déjà"
 #. freed by _destroy_style_shortcut_callback
 #: ../src/common/styles.c:274 ../src/common/styles.c:278
 #: ../src/common/styles.c:348 ../src/common/styles.c:409
-#: ../src/common/styles.c:560 ../src/common/styles.c:1072
-#: ../src/common/styles.c:1096
+#: ../src/common/styles.c:560 ../src/common/styles.c:1073
+#: ../src/common/styles.c:1097
 #, c-format
 msgctxt "accel"
 msgid "styles/apply %s"
@@ -968,17 +968,17 @@ msgstr "le style «%s» a été créé"
 msgid "no image selected!"
 msgstr "aucune image sélectionnée"
 
-#: ../src/common/styles.c:718
+#: ../src/common/styles.c:719
 #, c-format
 msgid "failed to overwrite style file for %s"
 msgstr "impossible de remplacer le style %s"
 
-#: ../src/common/styles.c:724
+#: ../src/common/styles.c:725
 #, c-format
 msgid "style file for %s exists"
 msgstr "le fichier du style «%s» existe"
 
-#: ../src/common/styles.c:962
+#: ../src/common/styles.c:963
 #, c-format
 msgid "style %s was successfully imported"
 msgstr "le style «%s» a été importé"
@@ -992,11 +992,11 @@ msgstr "le style «%s» a été importé"
 msgid "none"
 msgstr "sans"
 
-#: ../src/control/control.c:949 ../src/control/control.c:952
+#: ../src/control/control.c:550 ../src/control/control.c:553
 msgid "working.."
 msgstr "en cours..."
 
-#: ../src/control/control.c:1035
+#: ../src/control/control.c:636
 #, c-format
 msgid "switch to %s mode"
 msgstr "passer en mode %s"
@@ -1033,96 +1033,154 @@ msgstr "relire fichiers xmp selectionnés"
 msgid "overwrite selected xmp files"
 msgstr "écraser les fichiers xmp selectionnés"
 
-#: ../src/control/jobs/camera_jobs.c:85
+#: ../src/control/jobs/camera_jobs.c:137
 #, c-format
 msgid "capturing %d image"
 msgid_plural "capturing %d images"
 msgstr[0] "capture de %d image"
 msgstr[1] "capture de %d images"
 
-#: ../src/control/jobs/camera_jobs.c:130
+#: ../src/control/jobs/camera_jobs.c:182
 msgid "please set your camera to manual mode first!"
 msgstr "merci de régler le boîtier en mode manuel !"
 
-#: ../src/control/jobs/camera_jobs.c:272
+#: ../src/control/jobs/camera_jobs.c:331
 #, c-format
 msgid "%d/%d imported to %s"
 msgstr "%d/%d importé(s) vers %s"
 
-#: ../src/control/jobs/camera_jobs.c:285
+#: ../src/control/jobs/camera_jobs.c:344
 msgid "starting to import images from camera"
 msgstr "début de l'importation d'images depuis le boîtier"
 
-#: ../src/control/jobs/camera_jobs.c:295
+#: ../src/control/jobs/camera_jobs.c:355
 #, c-format
 msgid "importing %d image from camera"
 msgid_plural "importing %d images from camera"
 msgstr[0] "importation de %d image depuis l'appareil photo"
 msgstr[1] "importation de %d images depuis l'appareil photo"
 
-#: ../src/control/jobs/control_jobs.c:133
+#: ../src/control/jobs/control_jobs.c:114
+msgid "failed to create film roll for destination directory, aborting move.."
+msgstr ""
+"échec de la création du dossier de destination, abandon du déplacement..."
+
+#: ../src/control/jobs/control_jobs.c:217
 #, c-format
 msgid "merging %d image"
 msgid_plural "merging %d images"
 msgstr[0] "fusion de %d image"
 msgstr[1] "fusion  de %d images"
 
-#: ../src/control/jobs/control_jobs.c:154
+#: ../src/control/jobs/control_jobs.c:238
 msgid "exposure bracketing only works on raw images"
 msgstr "fourchette d'exposition uniquement pour les raw"
 
-#: ../src/control/jobs/control_jobs.c:163 ../src/iop/exposure.c:230
+#: ../src/control/jobs/control_jobs.c:247 ../src/iop/exposure.c:230
 #, c-format
 msgid "failed to get raw buffer from image `%s'"
 msgstr "échec de l'obtention du cache pour l'image «%s»"
 
-#: ../src/control/jobs/control_jobs.c:180
+#: ../src/control/jobs/control_jobs.c:264
 msgid "images have to be of same size!"
 msgstr "les images doivent avoir la même taille !"
 
-#: ../src/control/jobs/control_jobs.c:256
+#: ../src/control/jobs/control_jobs.c:340
 #, c-format
 msgid "wrote merged HDR `%s'"
 msgstr "image HDR «%s» écrite"
 
-#: ../src/control/jobs/control_jobs.c:282
+#: ../src/control/jobs/control_jobs.c:367
 #, c-format
 msgid "duplicating %d image"
 msgid_plural "duplicating %d images"
 msgstr[0] "duplication de %d image"
 msgstr[1] "duplication de %d images"
 
-#: ../src/control/jobs/control_jobs.c:308
+#: ../src/control/jobs/control_jobs.c:394
 #, c-format
 msgid "flipping %d image"
 msgid_plural "flipping %d images"
 msgstr[0] "rotation de %d image"
 msgstr[1] "rotation de %d images"
 
-#: ../src/control/jobs/control_jobs.c:378
+#: ../src/control/jobs/control_jobs.c:465
 #, c-format
 msgid "removing %d image"
 msgid_plural "removing %d images"
 msgstr[0] "enlèvement de %d image"
 msgstr[1] "enlèvement de %d images"
 
-#: ../src/control/jobs/control_jobs.c:450
+#: ../src/control/jobs/control_jobs.c:539
 #, c-format
 msgid "deleting %d image"
 msgid_plural "deleting %d images"
 msgstr[0] "suppression de %d image"
 msgstr[1] "suppression de %d images"
 
-#: ../src/control/jobs/control_jobs.c:588
+#: ../src/control/jobs/control_jobs.c:678
 msgid "failed to parse GPX file"
 msgstr "erreur de lecture du fichier GPX"
 
-#: ../src/control/jobs/control_jobs.c:655
+#: ../src/control/jobs/control_jobs.c:745
 #, c-format
 msgid "applied matched GPX location onto %d image(s)"
 msgstr "application des données GPX recalées à %d image(s)"
 
-#: ../src/control/jobs/control_jobs.c:811
+#: ../src/control/jobs/control_jobs.c:770
+#, c-format
+msgid "moving %d image"
+msgstr "déplacement de %d image"
+
+#: ../src/control/jobs/control_jobs.c:770
+#, c-format
+msgid "moving %d images"
+msgstr "déplacement de %d images"
+
+#: ../src/control/jobs/control_jobs.c:776
+#, c-format
+msgid "copying %d image"
+msgstr "copie de %d image"
+
+#: ../src/control/jobs/control_jobs.c:776
+#, c-format
+msgid "copying %d images"
+msgstr "copie de %d images"
+
+#: ../src/control/jobs/control_jobs.c:791
+#, c-format
+msgid "creating local copy of %d image"
+msgid_plural "creating local copies of %d images"
+msgstr[0] "création de copie locale de %d image"
+msgstr[1] "création des copies locales de %d images"
+
+#: ../src/control/jobs/control_jobs.c:793
+#, c-format
+msgid "removing local copy of %d image"
+msgid_plural "removing local copies of %d images"
+msgstr[0] "suppression de la copie locale de %d image"
+msgstr[1] "suppression des copies locales de %d images"
+
+#: ../src/control/jobs/control_jobs.c:861
+#, c-format
+msgid "exporting %d image.."
+msgid_plural "exporting %d images.."
+msgstr[0] "exportation de %d image..."
+msgstr[1] "exportation de %d images..."
+
+#: ../src/control/jobs/control_jobs.c:863
+#, c-format
+msgid "exporting %d image to %s"
+msgid_plural "exporting %d images to %s"
+msgstr[0] "exportation de %d image vers %s"
+msgstr[1] "exportation de %d images vers %s"
+
+#: ../src/control/jobs/control_jobs.c:927 ../src/views/darkroom.c:467
+#, c-format
+msgid "image `%s' is currently unavailable"
+msgstr "image '%s\" non disponible actuellement"
+
+#: ../src/control/jobs/control_jobs.c:1026
 #, c-format
 msgid "do you really want to remove %d selected image from the collection?"
 msgid_plural ""
@@ -1133,11 +1191,11 @@ msgstr[1] ""
 "êtes-vous sûr de vouloir enlever de la bibliothèque les %d images "
 "sélectionnées ?"
 
-#: ../src/control/jobs/control_jobs.c:814
+#: ../src/control/jobs/control_jobs.c:1029
 msgid "remove images?"
 msgstr "enlever les images ?"
 
-#: ../src/control/jobs/control_jobs.c:840
+#: ../src/control/jobs/control_jobs.c:1053
 #, c-format
 msgid "do you really want to physically delete %d selected image from disk?"
 msgid_plural ""
@@ -1149,24 +1207,19 @@ msgstr[1] ""
 "êtes-vous sûr de vouloir supprimer du disque définitivement les %d images "
 "sélectionnées  ?"
 
-#: ../src/control/jobs/control_jobs.c:843
+#: ../src/control/jobs/control_jobs.c:1056
 msgid "delete images?"
 msgstr "supprimer les images ?"
 
-#: ../src/control/jobs/control_jobs.c:876
-msgid "failed to create film roll for destination directory, aborting move.."
-msgstr ""
-"échec de la création du dossier de destination, abandon du déplacement..."
-
-#: ../src/control/jobs/control_jobs.c:909
-#: ../src/control/jobs/control_jobs.c:966 ../src/imageio/storage/disk.c:70
+#: ../src/control/jobs/control_jobs.c:1074
+#: ../src/control/jobs/control_jobs.c:1130 ../src/imageio/storage/disk.c:70
 #: ../src/imageio/storage/disk.c:138 ../src/imageio/storage/gallery.c:79
-#: ../src/imageio/storage/gallery.c:162 ../src/imageio/storage/latex.c:79
-#: ../src/imageio/storage/latex.c:162 ../src/libs/styles.c:240
+#: ../src/imageio/storage/gallery.c:173 ../src/imageio/storage/latex.c:79
+#: ../src/imageio/storage/latex.c:173 ../src/libs/styles.c:240
 msgid "select directory"
 msgstr "sélectionner répertoire"
 
-#: ../src/control/jobs/control_jobs.c:932
+#: ../src/control/jobs/control_jobs.c:1097
 #, c-format
 msgid ""
 "do you really want to physically move the %d selected image to %s?\n"
@@ -1181,13 +1234,13 @@ msgstr[1] ""
 "êtes-vous sûr de vouloir déplacer les %d images sélectionnées vers %s  ?\n"
 "(les clones non sélectionnés seront également déplacés)"
 
-#: ../src/control/jobs/control_jobs.c:936
+#: ../src/control/jobs/control_jobs.c:1101
 msgid "move image?"
 msgid_plural "move images?"
 msgstr[0] "déplacer l' image ?"
 msgstr[1] "déplacer les images ?"
 
-#: ../src/control/jobs/control_jobs.c:989
+#: ../src/control/jobs/control_jobs.c:1153
 #, c-format
 msgid "do you really want to physically copy the %d selected image to %s?"
 msgid_plural "do you really want to physically copy %d selected images to %s?"
@@ -1197,85 +1250,32 @@ msgstr[1] ""
 "êtes-vous sûr de vouloir copier physiquement les %d images sélectionnées "
 "vers %s  ?"
 
-#: ../src/control/jobs/control_jobs.c:992
+#: ../src/control/jobs/control_jobs.c:1156
 msgid "copy image?"
 msgid_plural "copy images?"
 msgstr[0] "copier l'image ?"
 msgstr[1] "copier les images ?"
 
-#: ../src/control/jobs/control_jobs.c:1057
-#, c-format
-msgid "moving %d image"
-msgstr "déplacement de %d image"
-
-#: ../src/control/jobs/control_jobs.c:1057
-#, c-format
-msgid "moving %d images"
-msgstr "déplacement de %d images"
-
-#: ../src/control/jobs/control_jobs.c:1063
-#, c-format
-msgid "copying %d image"
-msgstr "copie de %d image"
-
-#: ../src/control/jobs/control_jobs.c:1063
-#, c-format
-msgid "copying %d images"
-msgstr "copie de %d images"
-
-#: ../src/control/jobs/control_jobs.c:1078
-#, c-format
-msgid "creating local copy of %d image"
-msgid_plural "creating local copies of %d images"
-msgstr[0] "création de copie locale de %d image"
-msgstr[1] "création des copies locales de %d images"
-
-#: ../src/control/jobs/control_jobs.c:1080
-#, c-format
-msgid "removing local copy of %d image"
-msgid_plural "removing local copies of %d images"
-msgstr[0] "suppression de la copie locale de %d image"
-msgstr[1] "suppression des copies locales de %d images"
-
-#: ../src/control/jobs/control_jobs.c:1147
-#, c-format
-msgid "exporting %d image.."
-msgid_plural "exporting %d images.."
-msgstr[0] "exportation de %d image..."
-msgstr[1] "exportation de %d images..."
-
-#: ../src/control/jobs/control_jobs.c:1149
-#, c-format
-msgid "exporting %d image to %s"
-msgid_plural "exporting %d images to %s"
-msgstr[0] "exportation de %d image vers %s"
-msgstr[1] "exportation de %d images vers %s"
-
-#: ../src/control/jobs/control_jobs.c:1213 ../src/views/darkroom.c:467
-#, c-format
-msgid "image `%s' is currently unavailable"
-msgstr "image '%s\" non disponible actuellement"
-
-#: ../src/control/jobs/control_jobs.c:1271
+#: ../src/control/jobs/control_jobs.c:1215
 #, c-format
 msgid "failed to get parameters from storage module `%s', aborting export.."
 msgstr ""
 "impossible d'obtenir les paramètres du module de stockage `%s', exportation "
 "abandonnée..."
 
-#: ../src/control/jobs/control_jobs.c:1307
+#: ../src/control/jobs/control_jobs.c:1254
 #, c-format
 msgid "adding time offset to %d image"
 msgid_plural "adding time offset to %d images"
 msgstr[0] "ajout du décalage horaire à %d image"
 msgstr[1] "ajout du décalage horaire à %d images"
 
-#: ../src/control/jobs/control_jobs.c:1327
+#: ../src/control/jobs/control_jobs.c:1274
 #, c-format
 msgid "added time offset to %d image(s)"
 msgstr "décalage horaire ajouté à %d image(s)"
 
-#: ../src/control/jobs/image_jobs.c:61
+#: ../src/control/jobs/image_jobs.c:83
 #, c-format
 msgid "importing image %s"
 msgstr "importation de l'image %s"
@@ -1715,7 +1715,7 @@ msgstr "fusion ignorée dans le module «%s»: paramètres incompatibles"
 msgid "could not allocate buffer for blending"
 msgstr "impossible d'allouer la mémoire pour la fusion"
 
-#: ../src/develop/develop.c:972
+#: ../src/develop/develop.c:968
 #, c-format
 msgid "%s: module `%s' version mismatch: %d != %d"
 msgstr "%s: module «%s» version non cohérentes: %d != %d"
@@ -1758,7 +1758,7 @@ msgstr "%s est désactivé"
 #: ../src/gui/accelerators.c:840 ../src/gui/accelerators.c:1007
 #: ../src/gui/accelerators.c:1032 ../src/gui/presets.c:182
 #: ../src/gui/presets.c:284 ../src/gui/presets.c:625
-#: ../src/iop/temperature.c:770 ../src/libs/import.c:499 ../src/libs/lib.c:292
+#: ../src/iop/temperature.c:770 ../src/libs/import.c:504 ../src/libs/lib.c:292
 #: ../src/libs/lib.c:321 ../src/libs/lib.c:1006
 msgid "preset"
 msgstr "pré-réglage"
@@ -1802,36 +1802,36 @@ msgstr "réinitialiser les paramètres"
 msgid "presets"
 msgstr "pré-réglages"
 
-#: ../src/develop/lightroom.c:409
+#: ../src/develop/lightroom.c:408
 msgid "cannot find lightroom XMP!"
 msgstr "impossible de trouver un XMP venant de Lightroom !"
 
-#: ../src/develop/lightroom.c:441 ../src/develop/lightroom.c:463
-#: ../src/develop/lightroom.c:483 ../src/develop/lightroom.c:493
-#: ../src/develop/lightroom.c:514
+#: ../src/develop/lightroom.c:440 ../src/develop/lightroom.c:462
+#: ../src/develop/lightroom.c:482 ../src/develop/lightroom.c:492
+#: ../src/develop/lightroom.c:513
 #, c-format
 msgid "`%s' not a lightroom XMP!"
 msgstr "(%s) n'est pas un XMP de Lightroom !"
 
-#: ../src/develop/lightroom.c:1441 ../src/libs/import.c:523
+#: ../src/develop/lightroom.c:1440 ../src/libs/import.c:528
 msgid "tags"
 msgstr "mots-clés"
 
-#: ../src/develop/lightroom.c:1450 ../src/libs/tools/filter.c:148
+#: ../src/develop/lightroom.c:1449 ../src/libs/tools/filter.c:148
 msgid "rating"
 msgstr "étoile"
 
-#: ../src/develop/lightroom.c:1459 ../src/libs/collect.h:47
+#: ../src/develop/lightroom.c:1458 ../src/libs/collect.h:47
 #: ../src/libs/geotagging.c:45
 msgid "geotagging"
 msgstr "géolocalisation"
 
-#: ../src/develop/lightroom.c:1468 ../src/libs/collect.h:37
+#: ../src/develop/lightroom.c:1467 ../src/libs/collect.h:37
 #: ../src/libs/tools/filter.c:150
 msgid "color label"
 msgstr "labels de couleur"
 
-#: ../src/develop/lightroom.c:1478
+#: ../src/develop/lightroom.c:1477
 #, c-format
 msgid "%s has been imported"
 msgid_plural "%s have been imported"
@@ -1942,7 +1942,7 @@ msgstr ""
 msgid "jobcode"
 msgstr "code projet"
 
-#: ../src/gui/camera_import_dialog.c:242 ../src/iop/exposure.c:953
+#: ../src/gui/camera_import_dialog.c:242
 msgid "thumbnail"
 msgstr "aperçu"
 
@@ -1956,11 +1956,11 @@ msgid "general"
 msgstr "général"
 
 #. ignoring of jpegs. hack while we don't handle raw+jpeg in the same directories.
-#: ../src/gui/camera_import_dialog.c:268 ../src/libs/import.c:399
+#: ../src/gui/camera_import_dialog.c:268 ../src/libs/import.c:404
 msgid "ignore JPEG files"
 msgstr "ignorer les fichiers JPEG"
 
-#: ../src/gui/camera_import_dialog.c:269 ../src/libs/import.c:400
+#: ../src/gui/camera_import_dialog.c:269 ../src/libs/import.c:405
 msgid ""
 "do not load files with an extension of .jpg or .jpeg. this can be useful "
 "when there are raw+JPEG in a directory."
@@ -1993,7 +1993,7 @@ msgid "settings"
 msgstr "paramètres"
 
 #. Lets run dialog
-#: ../src/gui/camera_import_dialog.c:461
+#: ../src/gui/camera_import_dialog.c:463
 msgid ""
 "select the images from the list below that you want to import into a new "
 "filmroll"
@@ -2001,7 +2001,7 @@ msgstr ""
 "sélectionner les images de la liste ci-dessous que vous souhaitez importer "
 "dans une nouvelle pellicule"
 
-#: ../src/gui/camera_import_dialog.c:505
+#: ../src/gui/camera_import_dialog.c:507
 msgid "please use YYYY-MM-DD format for date override"
 msgstr "utiliser AAAA-MM-JJ pour la surcharge de date"
 
@@ -2087,88 +2087,88 @@ msgctxt "accel"
 msgid "switch view"
 msgstr "changer de vue"
 
-#: ../src/gui/gtkentry.c:195 ../src/imageio/storage/gallery.c:127
-#: ../src/imageio/storage/latex.c:127
+#: ../src/gui/gtkentry.c:195 ../src/imageio/storage/gallery.c:137
+#: ../src/imageio/storage/latex.c:137
 msgid "$(ROLL_NAME) - roll of the input image"
 msgstr "$(ROLL_NAME) - nom du dossier"
 
-#: ../src/gui/gtkentry.c:196 ../src/imageio/storage/gallery.c:128
-#: ../src/imageio/storage/latex.c:128
+#: ../src/gui/gtkentry.c:196 ../src/imageio/storage/gallery.c:138
+#: ../src/imageio/storage/latex.c:138
 msgid "$(FILE_FOLDER) - folder containing the input image"
 msgstr "$(FILE_FOLDER) - chemin du dossier de l'image d'origine"
 
-#: ../src/gui/gtkentry.c:197 ../src/imageio/storage/gallery.c:129
-#: ../src/imageio/storage/latex.c:129
+#: ../src/gui/gtkentry.c:197 ../src/imageio/storage/gallery.c:139
+#: ../src/imageio/storage/latex.c:139
 msgid "$(FILE_NAME) - basename of the input image"
 msgstr "$(FILE_NAME) - nom de base de l'image d'origine"
 
-#: ../src/gui/gtkentry.c:198 ../src/imageio/storage/gallery.c:130
-#: ../src/imageio/storage/latex.c:130
+#: ../src/gui/gtkentry.c:198 ../src/imageio/storage/gallery.c:140
+#: ../src/imageio/storage/latex.c:140
 msgid "$(FILE_EXTENSION) - extension of the input image"
 msgstr "$(FILE_EXTENSION) - extension du fichier image d'origine"
 
-#: ../src/gui/gtkentry.c:199 ../src/imageio/storage/gallery.c:131
-#: ../src/imageio/storage/latex.c:131
+#: ../src/gui/gtkentry.c:199 ../src/imageio/storage/gallery.c:141
+#: ../src/imageio/storage/latex.c:141
 msgid "$(SEQUENCE) - sequence number"
 msgstr "$(SEQUENCE) - nombre séquentiel"
 
-#: ../src/gui/gtkentry.c:200 ../src/imageio/storage/gallery.c:132
-#: ../src/imageio/storage/latex.c:132
+#: ../src/gui/gtkentry.c:200 ../src/imageio/storage/gallery.c:142
+#: ../src/imageio/storage/latex.c:142
 msgid "$(YEAR) - year"
 msgstr "$(YEAR) - année"
 
-#: ../src/gui/gtkentry.c:201 ../src/imageio/storage/gallery.c:133
-#: ../src/imageio/storage/latex.c:133
+#: ../src/gui/gtkentry.c:201 ../src/imageio/storage/gallery.c:143
+#: ../src/imageio/storage/latex.c:143
 msgid "$(MONTH) - month"
 msgstr "$(MONTH) - mois"
 
-#: ../src/gui/gtkentry.c:202 ../src/imageio/storage/gallery.c:134
-#: ../src/imageio/storage/latex.c:134
+#: ../src/gui/gtkentry.c:202 ../src/imageio/storage/gallery.c:144
+#: ../src/imageio/storage/latex.c:144
 msgid "$(DAY) - day"
 msgstr "$(DAY) - jour"
 
-#: ../src/gui/gtkentry.c:203 ../src/imageio/storage/gallery.c:135
-#: ../src/imageio/storage/latex.c:135
+#: ../src/gui/gtkentry.c:203 ../src/imageio/storage/gallery.c:145
+#: ../src/imageio/storage/latex.c:145
 msgid "$(HOUR) - hour"
 msgstr "$(HOUR) - heure"
 
-#: ../src/gui/gtkentry.c:204 ../src/imageio/storage/gallery.c:136
-#: ../src/imageio/storage/latex.c:136
+#: ../src/gui/gtkentry.c:204 ../src/imageio/storage/gallery.c:146
+#: ../src/imageio/storage/latex.c:146
 msgid "$(MINUTE) - minute"
 msgstr "$(MINUTE) - minutes"
 
-#: ../src/gui/gtkentry.c:205 ../src/imageio/storage/gallery.c:137
-#: ../src/imageio/storage/latex.c:137
+#: ../src/gui/gtkentry.c:205 ../src/imageio/storage/gallery.c:147
+#: ../src/imageio/storage/latex.c:147
 msgid "$(SECOND) - second"
 msgstr "$(SECOND) - secondes"
 
-#: ../src/gui/gtkentry.c:206 ../src/imageio/storage/gallery.c:138
-#: ../src/imageio/storage/latex.c:138
+#: ../src/gui/gtkentry.c:206 ../src/imageio/storage/gallery.c:148
+#: ../src/imageio/storage/latex.c:148
 msgid "$(EXIF_YEAR) - EXIF year"
 msgstr "$(EXIF_YEAR) - année EXIF"
 
-#: ../src/gui/gtkentry.c:207 ../src/imageio/storage/gallery.c:139
-#: ../src/imageio/storage/latex.c:139
+#: ../src/gui/gtkentry.c:207 ../src/imageio/storage/gallery.c:149
+#: ../src/imageio/storage/latex.c:149
 msgid "$(EXIF_MONTH) - EXIF month"
 msgstr "$(EXIF_MONTH) - mois EXIF"
 
-#: ../src/gui/gtkentry.c:208 ../src/imageio/storage/gallery.c:140
-#: ../src/imageio/storage/latex.c:140
+#: ../src/gui/gtkentry.c:208 ../src/imageio/storage/gallery.c:150
+#: ../src/imageio/storage/latex.c:150
 msgid "$(EXIF_DAY) - EXIF day"
 msgstr "$(EXIF_DAY) - jour EXIF"
 
-#: ../src/gui/gtkentry.c:209 ../src/imageio/storage/gallery.c:141
-#: ../src/imageio/storage/latex.c:141
+#: ../src/gui/gtkentry.c:209 ../src/imageio/storage/gallery.c:151
+#: ../src/imageio/storage/latex.c:151
 msgid "$(EXIF_HOUR) - EXIF hour"
 msgstr "$(EXIF_HOUR) - heure EXIF"
 
-#: ../src/gui/gtkentry.c:210 ../src/imageio/storage/gallery.c:142
-#: ../src/imageio/storage/latex.c:142
+#: ../src/gui/gtkentry.c:210 ../src/imageio/storage/gallery.c:152
+#: ../src/imageio/storage/latex.c:152
 msgid "$(EXIF_MINUTE) - EXIF minute"
 msgstr "$(EXIF_MINUTE) - minutes EXIF"
 
-#: ../src/gui/gtkentry.c:211 ../src/imageio/storage/gallery.c:143
-#: ../src/imageio/storage/latex.c:143
+#: ../src/gui/gtkentry.c:211 ../src/imageio/storage/gallery.c:153
+#: ../src/imageio/storage/latex.c:153
 msgid "$(EXIF_SECOND) - EXIF second"
 msgstr "$(EXIF_SECOND) - secondes EXIF "
 
@@ -2176,28 +2176,28 @@ msgstr "$(EXIF_SECOND) - secondes EXIF "
 msgid "$(EXIF_ISO) - ISO value"
 msgstr "$(EXIF_ISO) - valeur ISO"
 
-#: ../src/gui/gtkentry.c:213 ../src/imageio/storage/gallery.c:144
-#: ../src/imageio/storage/latex.c:144
+#: ../src/gui/gtkentry.c:213 ../src/imageio/storage/gallery.c:154
+#: ../src/imageio/storage/latex.c:154
 msgid "$(STARS) - star rating"
 msgstr "$(STARS) - étoiles"
 
-#: ../src/gui/gtkentry.c:214 ../src/imageio/storage/gallery.c:145
-#: ../src/imageio/storage/latex.c:145
+#: ../src/gui/gtkentry.c:214 ../src/imageio/storage/gallery.c:155
+#: ../src/imageio/storage/latex.c:155
 msgid "$(LABELS) - colorlabels"
 msgstr "$(LABELS) - labels de couleur"
 
-#: ../src/gui/gtkentry.c:215 ../src/imageio/storage/gallery.c:146
-#: ../src/imageio/storage/latex.c:146
+#: ../src/gui/gtkentry.c:215 ../src/imageio/storage/gallery.c:156
+#: ../src/imageio/storage/latex.c:156
 msgid "$(PICTURES_FOLDER) - pictures folder"
 msgstr "$(PICTURES_FOLDER) - fichier 'images'"
 
-#: ../src/gui/gtkentry.c:216 ../src/imageio/storage/gallery.c:147
-#: ../src/imageio/storage/latex.c:147
+#: ../src/gui/gtkentry.c:216 ../src/imageio/storage/gallery.c:157
+#: ../src/imageio/storage/latex.c:157
 msgid "$(HOME) - home folder"
 msgstr "$(HOME) - dossier personnel"
 
-#: ../src/gui/gtkentry.c:217 ../src/imageio/storage/gallery.c:148
-#: ../src/imageio/storage/latex.c:148
+#: ../src/gui/gtkentry.c:217 ../src/imageio/storage/gallery.c:158
+#: ../src/imageio/storage/latex.c:158
 msgid "$(DESKTOP) - desktop folder"
 msgstr "$(DESKTOP) - dossier 'bureau'"
 
@@ -2240,7 +2240,7 @@ msgstr "objectif"
 
 #. iso
 #: ../src/gui/preferences.c:463 ../src/gui/preferences.c:1374
-#: ../src/gui/presets.c:438 ../src/libs/camera.c:555 ../src/libs/collect.h:44
+#: ../src/gui/presets.c:438 ../src/libs/camera.c:553 ../src/libs/collect.h:44
 #: ../src/libs/metadata_view.c:96
 msgid "ISO"
 msgstr "ISO"
@@ -2248,27 +2248,27 @@ msgstr "ISO"
 #. exposure
 #: ../src/gui/preferences.c:470 ../src/gui/preferences.c:1387
 #: ../src/gui/presets.c:451 ../src/iop/exposure.c:111
-#: ../src/iop/exposure.c:918 ../src/iop/relight.c:384
+#: ../src/iop/exposure.c:931 ../src/iop/relight.c:384
 #: ../src/libs/metadata_view.c:93
 msgid "exposure"
 msgstr "exposition"
 
 #. aperture
 #: ../src/gui/preferences.c:477 ../src/gui/preferences.c:1402
-#: ../src/gui/presets.c:466 ../src/libs/camera.c:507 ../src/libs/camera.c:516
+#: ../src/gui/presets.c:466 ../src/libs/camera.c:505 ../src/libs/camera.c:514
 #: ../src/libs/collect.h:45 ../src/libs/metadata_view.c:92
 msgid "aperture"
 msgstr "ouverture"
 
 #. focal length
 #: ../src/gui/preferences.c:484 ../src/gui/preferences.c:1417
-#: ../src/gui/presets.c:481 ../src/libs/camera.c:526
+#: ../src/gui/presets.c:481 ../src/libs/camera.c:524
 #: ../src/libs/metadata_view.c:94
 msgid "focal length"
 msgstr "focale"
 
 #: ../src/gui/preferences.c:491 ../src/iop/borders.c:1054
-#: ../src/iop/exposure.c:924 ../src/iop/levels.c:579
+#: ../src/iop/exposure.c:937 ../src/iop/levels.c:575
 #: ../src/iop/tonecurve.c:780
 msgid "auto"
 msgstr "auto"
@@ -2570,7 +2570,7 @@ msgid "J2K"
 msgstr "J2K"
 
 #: ../src/imageio/format/j2k.c:623 ../src/imageio/format/jpeg.c:546
-#: ../src/libs/camera.c:575 ../src/imageio/format/webp.c:293
+#: ../src/libs/camera.c:573 ../src/imageio/format/webp.c:293
 msgid "quality"
 msgstr "qualité"
 
@@ -2650,8 +2650,8 @@ msgstr "deflate avec prédiction (flottant)"
 msgid "file on disk"
 msgstr "fichier sur le disque"
 
-#: ../src/imageio/storage/disk.c:128 ../src/imageio/storage/gallery.c:155
-#: ../src/imageio/storage/latex.c:155
+#: ../src/imageio/storage/disk.c:128 ../src/imageio/storage/gallery.c:165
+#: ../src/imageio/storage/latex.c:165
 msgid ""
 "enter the path where to put exported images\n"
 "recognized variables:"
@@ -2663,8 +2663,8 @@ msgstr ""
 msgid "overwrite"
 msgstr "écraser"
 
-#: ../src/imageio/storage/disk.c:226 ../src/imageio/storage/gallery.c:254
-#: ../src/imageio/storage/latex.c:250
+#: ../src/imageio/storage/disk.c:226 ../src/imageio/storage/gallery.c:266
+#: ../src/imageio/storage/latex.c:262
 #, c-format
 msgid "could not create directory `%s'!"
 msgstr "impossible de créer le répertoire %s !"
@@ -2676,14 +2676,14 @@ msgstr "impossible d'écrire dans le répertoire %s !"
 
 #: ../src/imageio/storage/disk.c:267 ../src/imageio/storage/email.c:118
 #: ../src/imageio/storage/facebook.c:1194 ../src/imageio/storage/flickr.c:668
-#: ../src/imageio/storage/gallery.c:327 ../src/imageio/storage/gallery.c:346
+#: ../src/imageio/storage/gallery.c:339 ../src/imageio/storage/gallery.c:358
 #: ../src/imageio/storage/picasa.c:1456
 #, c-format
 msgid "could not export to file `%s'!"
 msgstr "impossible d'exporter le fichier %s !"
 
 #: ../src/imageio/storage/disk.c:274 ../src/imageio/storage/email.c:127
-#: ../src/imageio/storage/gallery.c:356 ../src/imageio/storage/latex.c:339
+#: ../src/imageio/storage/gallery.c:368 ../src/imageio/storage/latex.c:351
 #, c-format
 msgid "%d/%d exported to `%s%s'"
 msgstr "%d/%d exportée(s) vers '%s%s'"
@@ -2771,7 +2771,7 @@ msgstr "album web facebook"
 #. create labels
 #. xmp
 #: ../src/imageio/storage/facebook.c:1021 ../src/imageio/storage/flickr.c:477
-#: ../src/imageio/storage/gallery.c:168 ../src/imageio/storage/latex.c:168
+#: ../src/imageio/storage/gallery.c:179 ../src/imageio/storage/latex.c:179
 #: ../src/imageio/storage/picasa.c:1316 ../src/libs/collect.h:38
 #: ../src/libs/metadata.c:328 ../src/libs/metadata_view.c:102
 msgid "title"
@@ -2848,11 +2848,11 @@ msgid "flickr webalbum"
 msgstr "album web flickr"
 
 #: ../src/imageio/storage/flickr.c:330 ../src/imageio/storage/flickr.c:370
-#: ../src/imageio/storage/flickr.c:845 ../src/imageio/storage/flickr.c:851
+#: ../src/imageio/storage/flickr.c:846 ../src/imageio/storage/flickr.c:852
 msgid "not authenticated"
 msgstr "non authentifié"
 
-#: ../src/imageio/storage/flickr.c:366 ../src/imageio/storage/flickr.c:841
+#: ../src/imageio/storage/flickr.c:366 ../src/imageio/storage/flickr.c:842
 msgid "authenticated"
 msgstr "authentifié"
 
@@ -2927,7 +2927,7 @@ msgstr "%d/%d exportée(s) vers album web flickr"
 msgid "website gallery"
 msgstr "galerie web"
 
-#: ../src/imageio/storage/gallery.c:174
+#: ../src/imageio/storage/gallery.c:185
 msgid "enter the title of the website"
 msgstr "entrer un nom pour le site"
 
@@ -2936,7 +2936,7 @@ msgid "LaTeX book template"
 msgstr "modèle de livre LaTeX"
 
 #. TODO: support title, author, subject, keywords (collect tags?)
-#: ../src/imageio/storage/latex.c:175
+#: ../src/imageio/storage/latex.c:186
 msgid "enter the title of the book"
 msgstr "entrer le titre du livre"
 
@@ -3283,7 +3283,7 @@ msgctxt "accel"
 msgid "strength"
 msgstr "force"
 
-#: ../src/iop/bloom.c:537 ../src/iop/soften.c:564 ../src/libs/camera.c:585
+#: ../src/iop/bloom.c:537 ../src/iop/soften.c:564 ../src/libs/camera.c:583
 msgid "size"
 msgstr "taille"
 
@@ -3351,7 +3351,7 @@ msgstr "sélectionne la couleur du cadre"
 
 #. add import single image buttons
 #: ../src/iop/borders.c:971 ../src/iop/clipping.c:1747
-#: ../src/libs/import.c:831
+#: ../src/libs/import.c:836
 msgid "image"
 msgstr "image"
 
@@ -4476,8 +4476,8 @@ msgstr "profil pour ISO %d trouvé"
 msgid "interpolated from ISO %d and %d"
 msgstr "interpolé depuis ISO %d et %d"
 
-#: ../src/iop/denoiseprofile.c:1725 ../src/iop/exposure.c:894
-#: ../src/iop/lens.c:2105 ../src/iop/levels.c:546
+#: ../src/iop/denoiseprofile.c:1725 ../src/iop/exposure.c:907
+#: ../src/iop/lens.c:2105 ../src/iop/levels.c:542
 msgid "mode"
 msgstr "mode"
 
@@ -4633,45 +4633,49 @@ msgstr "défauts de magic lantern"
 msgid "almost no clipping"
 msgstr "presque aucune troncature"
 
-#: ../src/iop/exposure.c:896 ../src/iop/levels.c:548
+#: ../src/iop/exposure.c:909 ../src/iop/levels.c:544
 #: ../src/iop/tonecurve.c:781
 msgid "manual"
 msgstr "manuelle"
 
-#: ../src/iop/exposure.c:899 ../src/iop/levels.c:551
+#: ../src/iop/exposure.c:912 ../src/iop/levels.c:547
 #: ../src/iop/vignette.c:1115
 msgid "automatic"
 msgstr "auto"
 
-#: ../src/iop/exposure.c:908
+#: ../src/iop/exposure.c:921
 msgid "adjust the black level"
 msgstr "ajuste les niveaux de noir"
 
-#: ../src/iop/exposure.c:910 ../src/iop/levels.c:622
+#: ../src/iop/exposure.c:923 ../src/iop/levels.c:618
 msgid "black"
 msgstr "noir"
 
-#: ../src/iop/exposure.c:916
+#: ../src/iop/exposure.c:929
 msgid "adjust the exposure correction"
 msgstr "ajuste la correction d'exposition [IL]"
 
-#: ../src/iop/exposure.c:929
+#: ../src/iop/exposure.c:942
 msgid "percentage of bright values clipped out"
 msgstr "pourcentage de valeurs hautes tronquées"
 
-#: ../src/iop/exposure.c:939 ../src/iop/exposure.c:941
+#: ../src/iop/exposure.c:952 ../src/iop/exposure.c:954
 msgid "percentile"
 msgstr "percentile"
 
-#: ../src/iop/exposure.c:945 ../src/iop/exposure.c:947
+#: ../src/iop/exposure.c:958 ../src/iop/exposure.c:960
 msgid "target level"
 msgstr "valeur cible"
 
-#: ../src/iop/exposure.c:951
+#: ../src/iop/exposure.c:964
 msgid "histogram of"
 msgstr "histogramme de"
 
-#: ../src/iop/exposure.c:956
+#: ../src/iop/exposure.c:966
+msgid "pre-processed image"
+msgstr "image développée"
+
+#: ../src/iop/exposure.c:969
 msgid "source raw data"
 msgstr "données raw"
 
@@ -5224,46 +5228,46 @@ msgstr "corrections réellement effectuées"
 msgid "levels"
 msgstr "niveaux"
 
-#: ../src/iop/levels.c:563
+#: ../src/iop/levels.c:559
 msgid ""
 "drag handles to set black, gray, and white points.  operates on L channel."
 msgstr ""
 "déplacer les barres pour régler les points noir, gris et blanc. agit sur le "
 "canal L."
 
-#: ../src/iop/levels.c:580
+#: ../src/iop/levels.c:576
 msgid "apply auto levels"
 msgstr "niveaux automatiques"
 
-#: ../src/iop/levels.c:584
+#: ../src/iop/levels.c:580
 msgid "pick black point from image"
 msgstr "choisir le point noir dans l'image"
 
-#: ../src/iop/levels.c:588
+#: ../src/iop/levels.c:584
 msgid "pick medium gray point from image"
 msgstr "choisir le point gris dans l'image"
 
-#: ../src/iop/levels.c:592
+#: ../src/iop/levels.c:588
 msgid "pick white point from image"
 msgstr "choisir le point blanc dans l'image"
 
-#: ../src/iop/levels.c:620
+#: ../src/iop/levels.c:616
 msgid "black percentile"
 msgstr "percentile des noir"
 
-#: ../src/iop/levels.c:625
+#: ../src/iop/levels.c:621
 msgid "gray percentile"
 msgstr "percentile des gris"
 
-#: ../src/iop/levels.c:627
+#: ../src/iop/levels.c:623
 msgid "gray"
 msgstr "gris"
 
-#: ../src/iop/levels.c:630
+#: ../src/iop/levels.c:626
 msgid "white percentile"
 msgstr "percentile des blanc"
 
-#: ../src/iop/levels.c:632
+#: ../src/iop/levels.c:628
 msgid "white"
 msgstr "blanc"
 
@@ -6262,60 +6266,60 @@ msgstr ""
 msgid "connection with camera lost, exiting tethering mode"
 msgstr "connexion avec le boîtier interrompue, sortie du mode de capture"
 
-#: ../src/libs/camera.c:341
+#: ../src/libs/camera.c:339
 msgid "battery"
 msgstr "pile"
 
-#: ../src/libs/camera.c:341
+#: ../src/libs/camera.c:339
 msgid "n/a"
 msgstr "n/a"
 
 #. Camera control
-#: ../src/libs/camera.c:407
+#: ../src/libs/camera.c:405
 msgid "camera control"
 msgstr "pilotage du boîtier"
 
-#: ../src/libs/camera.c:411
+#: ../src/libs/camera.c:409
 msgid "modes"
 msgstr "modes"
 
-#: ../src/libs/camera.c:412
+#: ../src/libs/camera.c:410
 msgid "timer (s)"
 msgstr "retardateur (s)"
 
-#: ../src/libs/camera.c:413
+#: ../src/libs/camera.c:411
 msgid "count"
 msgstr "nombre"
 
-#: ../src/libs/camera.c:414
+#: ../src/libs/camera.c:412
 msgid "brackets"
 msgstr "fourchette"
 
-#: ../src/libs/camera.c:415
+#: ../src/libs/camera.c:413
 msgid "bkt. steps"
 msgstr "pas de fourchette"
 
-#: ../src/libs/camera.c:451
+#: ../src/libs/camera.c:449
 msgid "capture image(s)"
 msgstr "capturer"
 
-#: ../src/libs/camera.c:454
+#: ../src/libs/camera.c:452
 msgid "toggle delayed capture mode"
 msgstr "active/désactive le mode \"retardateur\""
 
-#: ../src/libs/camera.c:455
+#: ../src/libs/camera.c:453
 msgid "toggle sequenced capture mode"
 msgstr "active/désactive le mode \"séquence\""
 
-#: ../src/libs/camera.c:456
+#: ../src/libs/camera.c:454
 msgid "toggle bracketed capture mode"
 msgstr "active/désactive le mode \"fourchette d'exposition\""
 
-#: ../src/libs/camera.c:457
+#: ../src/libs/camera.c:455
 msgid "the count of seconds before actually doing a capture"
 msgstr "nombre de secondes avant d'effectuer une capture"
 
-#: ../src/libs/camera.c:458
+#: ../src/libs/camera.c:456
 msgid ""
 "the amount of images to capture in a sequence,\n"
 "you can use this in conjunction with delayed mode to create stop-motion "
@@ -6325,7 +6329,7 @@ msgstr ""
 "vous pouvez utiliser cela avec le mode de retardement pour créer des "
 "séquences de stop-motion."
 
-#: ../src/libs/camera.c:459
+#: ../src/libs/camera.c:457
 msgid ""
 "the amount of brackets on each side of centered shoot, amount of images = "
 "(brackets*2)+1."
@@ -6333,7 +6337,7 @@ msgstr ""
 "nombre d'expositions de chaque côté de l'exposition nominale, nombre "
 "d'images = (nombre d'expositions * 2) + 1"
 
-#: ../src/libs/camera.c:460
+#: ../src/libs/camera.c:458
 msgid ""
 "the amount of steps per bracket, steps is camera configurable and usually 3 "
 "steps per stop\n"
@@ -6343,44 +6347,44 @@ msgstr ""
 "de 3 pas par \"stop\"\n"
 "autrement dit, 3 pas correspondent à 1 IL entre expositions."
 
-#: ../src/libs/camera.c:474
+#: ../src/libs/camera.c:472
 msgid "properties"
 msgstr "paramètres"
 
-#: ../src/libs/camera.c:478
+#: ../src/libs/camera.c:476
 msgid "program"
 msgstr "programme"
 
-#: ../src/libs/camera.c:488 ../src/libs/camera.c:497
+#: ../src/libs/camera.c:486 ../src/libs/camera.c:495
 msgid "focus mode"
 msgstr "mode de focus"
 
-#: ../src/libs/camera.c:536
+#: ../src/libs/camera.c:534
 msgid "shutterspeed2"
 msgstr "vitesse"
 
-#: ../src/libs/camera.c:545
+#: ../src/libs/camera.c:543
 msgid "shutterspeed"
 msgstr "vitesse d'obturation"
 
-#: ../src/libs/camera.c:565
+#: ../src/libs/camera.c:563
 msgid "WB"
 msgstr "BdB"
 
 #. user specified properties
-#: ../src/libs/camera.c:635
+#: ../src/libs/camera.c:633
 msgid "additional properties"
 msgstr "paramètres additionnels"
 
-#: ../src/libs/camera.c:639
+#: ../src/libs/camera.c:637
 msgid "label"
 msgstr "nom"
 
-#: ../src/libs/camera.c:645
+#: ../src/libs/camera.c:643
 msgid "property"
 msgstr "paramètres"
 
-#: ../src/libs/camera.c:657
+#: ../src/libs/camera.c:655
 msgid "add user property"
 msgstr "ajouter"
 
@@ -6500,17 +6504,17 @@ msgstr "historique"
 msgid "description"
 msgstr "description"
 
-#: ../src/libs/collect.h:40 ../src/libs/import.c:505
+#: ../src/libs/collect.h:40 ../src/libs/import.c:510
 #: ../src/libs/metadata.c:354 ../src/libs/metadata_view.c:103
 msgid "creator"
 msgstr "auteur"
 
-#: ../src/libs/collect.h:41 ../src/libs/import.c:511
+#: ../src/libs/collect.h:41 ../src/libs/import.c:516
 #: ../src/libs/metadata.c:367
 msgid "publisher"
 msgstr "diffuseur"
 
-#: ../src/libs/collect.h:42 ../src/libs/import.c:517
+#: ../src/libs/collect.h:42 ../src/libs/import.c:522
 #: ../src/libs/metadata.c:380
 msgid "rights"
 msgstr "droits"
@@ -6585,7 +6589,7 @@ msgid "XMP sidecar files"
 msgstr "fichiers XMP"
 
 #: ../src/libs/copy_history.c:88 ../src/libs/geotagging.c:459
-#: ../src/libs/import.c:695 ../src/libs/styles.c:281
+#: ../src/libs/import.c:700 ../src/libs/styles.c:281
 msgid "all files"
 msgstr "tous les fichiers"
 
@@ -7160,87 +7164,87 @@ msgid "import folder"
 msgstr "importer un dossier"
 
 #. add the rescan button
-#: ../src/libs/import.c:188
+#: ../src/libs/import.c:193
 msgid "scan for devices"
 msgstr "rechercher un appareil"
 
-#: ../src/libs/import.c:191
+#: ../src/libs/import.c:196
 msgid "scan for newly attached devices"
 msgstr "recherche des appareils branchés récemment"
 
-#: ../src/libs/import.c:218
+#: ../src/libs/import.c:223
 #, c-format
 msgid "device \"%s\" connected on port \"%s\"."
 msgstr "appareil \"%s\" connecté sur le port \"%s\""
 
-#: ../src/libs/import.c:227
+#: ../src/libs/import.c:232
 msgid "import from camera"
 msgstr "importer depuis le boîtier"
 
-#: ../src/libs/import.c:232
+#: ../src/libs/import.c:237
 msgid "tethered shoot"
 msgstr "commander le boîtier"
 
 #. No supported devices is detected lets notice user..
-#: ../src/libs/import.c:254
+#: ../src/libs/import.c:259
 msgid "no supported devices found"
 msgstr "aucun appareil supporté n'a été détecté"
 
 #. add extra lines to 'extra'. don't forget to destroy the widgets later.
-#: ../src/libs/import.c:373
+#: ../src/libs/import.c:378
 msgid "import options"
 msgstr "options d'importation"
 
 #. recursive opening.
-#: ../src/libs/import.c:393
+#: ../src/libs/import.c:398
 msgid "import directories recursively"
 msgstr "importer les dossiers récursivement"
 
-#: ../src/libs/import.c:394
+#: ../src/libs/import.c:399
 msgid ""
 "recursively import subdirectories. each directory goes into a new film roll."
 msgstr "importe les dossiers de manière récursive"
 
-#: ../src/libs/import.c:408
+#: ../src/libs/import.c:413
 msgid "apply metadata on import"
 msgstr "appliquer des métadonnées lors de l'importation"
 
-#: ../src/libs/import.c:409
+#: ../src/libs/import.c:414
 msgid "apply some metadata to all newly imported images."
 msgstr ""
 "appliquer des métadonnées\n"
 "à toutes les images nouvellement importées"
 
-#: ../src/libs/import.c:446
+#: ../src/libs/import.c:451
 msgid "comma separated list of tags"
 msgstr "liste de mots-clés séparés par une virgule"
 
-#: ../src/libs/import.c:662
+#: ../src/libs/import.c:667
 msgid "import image"
 msgstr "importer une image"
 
-#: ../src/libs/import.c:690
+#: ../src/libs/import.c:695
 msgid "supported images"
 msgstr "images supportées"
 
-#: ../src/libs/import.c:740
+#: ../src/libs/import.c:745
 msgid "file has unknown format!"
 msgstr "le fichier possède un format inconnu !"
 
-#: ../src/libs/import.c:758
+#: ../src/libs/import.c:763
 msgid "import film"
 msgstr "importer un dossier"
 
-#: ../src/libs/import.c:834
+#: ../src/libs/import.c:839
 msgid "select one or more images to import"
 msgstr "sélectionner une ou plusieurs images à importer"
 
 #. adding the import folder button
-#: ../src/libs/import.c:843
+#: ../src/libs/import.c:848
 msgid "folder"
 msgstr "dossier"
 
-#: ../src/libs/import.c:847
+#: ../src/libs/import.c:852
 msgid "select a folder to import as film roll"
 msgstr "sélectionner un dossier à importer"
 
@@ -7611,35 +7615,35 @@ msgctxt "accel"
 msgid "jump to film roll"
 msgstr "aller à la pellicule"
 
-#: ../src/libs/modulegroups.c:69
+#: ../src/libs/modulegroups.c:72
 msgid "modulegroups"
 msgstr "groupes de modules"
 
-#: ../src/libs/modulegroups.c:107
+#: ../src/libs/modulegroups.c:110
 msgid "show modules explicit specified by user"
 msgstr "modules choisis comme favoris"
 
-#: ../src/libs/modulegroups.c:112
+#: ../src/libs/modulegroups.c:115
 msgid "the modules used in active pipe"
 msgstr "modules utilisés dans le développement"
 
-#: ../src/libs/modulegroups.c:117
+#: ../src/libs/modulegroups.c:120
 msgid "basic group"
 msgstr "modules de base"
 
-#: ../src/libs/modulegroups.c:122
+#: ../src/libs/modulegroups.c:125
 msgid "correction group"
 msgstr "modules d'amélioration"
 
-#: ../src/libs/modulegroups.c:127
+#: ../src/libs/modulegroups.c:130
 msgid "color group"
 msgstr "modules de couleur"
 
-#: ../src/libs/modulegroups.c:132
+#: ../src/libs/modulegroups.c:135
 msgid "tone group"
 msgstr "modules de tonalité"
 
-#: ../src/libs/modulegroups.c:137
+#: ../src/libs/modulegroups.c:140
 msgid "effect group"
 msgstr "modules d'effets"
 
@@ -8272,7 +8276,7 @@ msgstr "boîte à outils de module"
 msgid "ratings"
 msgstr "étoiles"
 
-#: ../src/libs/tools/viewswitcher.c:46
+#: ../src/libs/tools/viewswitcher.c:49
 msgid "viewswitcher"
 msgstr "changer de vue"
 
@@ -8489,11 +8493,11 @@ msgid "end of images. press any key to return to lighttable mode"
 msgstr ""
 "fin des images, appuyez sur une touche pour revenir à la table lumineuse"
 
-#: ../src/views/slideshow.c:303
+#: ../src/views/slideshow.c:302
 msgid "slideshow"
 msgstr "diaporama"
 
-#: ../src/views/slideshow.c:494
+#: ../src/views/slideshow.c:493
 msgctxt "accel"
 msgid "start and stop"
 msgstr "marche et arrêt"
