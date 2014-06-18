@@ -268,13 +268,14 @@ void dt_image_set_location(const int32_t imgid, double lon, double lat)
   dt_image_cache_read_release(darktable.image_cache, image);
 }
 
-void dt_image_set_flip(const int32_t imgid, const int32_t orientation)
+void dt_image_set_flip(const int32_t imgid, const dt_image_orientation_t orientation)
 {
   sqlite3_stmt *stmt;
   // push new orientation to sql via additional history entry:
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
                               "select MAX(num) from history where imgid = ?1", -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
+  const int iop_flip_MODVER = 2;
   int num = 0;
   if(sqlite3_step(stmt) == SQLITE_ROW)
   {
@@ -283,11 +284,12 @@ void dt_image_set_flip(const int32_t imgid, const int32_t orientation)
   sqlite3_finalize(stmt);
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
                               "insert into history (imgid, num, module, operation, op_params, enabled, "
-                              "blendop_params, blendop_version) values"
-                              " (?1, ?2, 1, 'flip', ?3, 1, null, 0) ", -1, &stmt, NULL);
+                              "blendop_params, blendop_version, multi_priority, multi_name) values"
+                              " (?1, ?2, ?3, 'flip', ?4, 1, null, 0, 0, '') ", -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, num);
-  DT_DEBUG_SQLITE3_BIND_BLOB(stmt, 3, &orientation, sizeof(int32_t),
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 3, iop_flip_MODVER);
+  DT_DEBUG_SQLITE3_BIND_BLOB(stmt, 4, &orientation, sizeof(int32_t),
                              SQLITE_TRANSIENT);
   sqlite3_step (stmt);
   sqlite3_finalize(stmt);
@@ -301,7 +303,7 @@ void dt_image_flip(const int32_t imgid, const int32_t cw)
   // this is light table only:
   const dt_view_t *cv = dt_view_manager_get_current_view(darktable.view_manager);
   if(darktable.develop->image_storage.id == imgid && cv->view((dt_view_t*)cv) == DT_VIEW_DARKROOM) return;
-  dt_image_orientation_t orientation = ORIENTATION_NONE;
+  dt_image_orientation_t orientation = ORIENTATION_NULL;
   sqlite3_stmt *stmt;
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
                               "select * from history where imgid = ?1 and operation = 'flip' and "
@@ -315,6 +317,13 @@ void dt_image_flip(const int32_t imgid, const int32_t cw)
   }
   sqlite3_finalize(stmt);
 
+  if(orientation == ORIENTATION_NULL)
+  {
+    const dt_image_t *img = dt_image_cache_read_get(darktable.image_cache, imgid);
+    orientation = dt_image_orientation(img);
+    dt_image_cache_read_release(darktable.image_cache, img);
+  }
+
   if(cw == 1)
   {
     if(orientation & ORIENTATION_SWAP_XY) orientation ^= ORIENTATION_FLIP_Y;
@@ -327,7 +336,7 @@ void dt_image_flip(const int32_t imgid, const int32_t cw)
   }
   orientation ^= ORIENTATION_SWAP_XY;
 
-  if(cw == 2) orientation = ORIENTATION_NONE;
+  if(cw == 2) orientation = ORIENTATION_NULL;
   dt_image_set_flip(imgid, orientation);
 }
 

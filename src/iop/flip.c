@@ -41,11 +41,11 @@
 #include "gui/draw.h"
 #include "gui/presets.h"
 
-DT_MODULE_INTROSPECTION(1, dt_iop_flip_params_t)
+DT_MODULE_INTROSPECTION(2, dt_iop_flip_params_t)
 
 typedef struct dt_iop_flip_params_t
 {
-  int32_t orientation;
+  dt_image_orientation_t orientation;
 }
 dt_iop_flip_params_t;
 
@@ -60,7 +60,6 @@ typedef struct dt_iop_flip_global_data_t
   int kernel_flip;
 }
 dt_iop_flip_global_data_t;
-
 
 // helper to count corners in for loops:
 static void get_corner(const int32_t *aabb, const int i, int32_t *p)
@@ -98,6 +97,30 @@ int flags()
   return IOP_FLAGS_ALLOW_TILING | IOP_FLAGS_TILING_FULL_ROI | IOP_FLAGS_ONE_INSTANCE;
 }
 
+int
+legacy_params (dt_iop_module_t *self, const void *const old_params, const int old_version, void *new_params, const int new_version)
+{
+  if(old_version == 1 && new_version == 2)
+  {
+    typedef struct dt_iop_flip_params_v1_t
+    {
+      int32_t orientation;
+    }
+    dt_iop_flip_params_v1_t;
+
+    dt_iop_flip_params_v1_t *o = (dt_iop_flip_params_v1_t *)old_params;
+    dt_iop_flip_params_t *n = (dt_iop_flip_params_t *)new_params;
+    dt_iop_flip_params_t *d = (dt_iop_flip_params_t *)self->default_params;
+    dt_image_orientation_t i_o = dt_image_orientation(&self->dev->image_storage);
+
+    *n = *d;  // start with a fresh copy of default parameters
+
+    //TODO !!!
+
+    return 1;
+  }
+  return 1;
+}
 
 static void
 backtransform(const int32_t *x, int32_t *o, const dt_image_orientation_t orientation, int32_t iw, int32_t ih)
@@ -242,8 +265,6 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
                           roi_in->width, roi_in->height, roi_in->width, roi_in->height, stride, d->orientation);
 }
 
-
-
 #ifdef HAVE_OPENCL
 int
 process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
@@ -255,7 +276,7 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
   const int devid = piece->pipe->devid;
   const int width = roi_in->width;
   const int height = roi_in->height;
-  const int orientation = data->orientation;
+  const uint32_t orientation = data->orientation;
 
   size_t sizes[] = { ROUNDUPWD(width), ROUNDUPWD(height), 1};
 
@@ -263,7 +284,7 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
   dt_opencl_set_kernel_arg(devid, gd->kernel_flip, 1, sizeof(cl_mem), (void *)&dev_out);
   dt_opencl_set_kernel_arg(devid, gd->kernel_flip, 2, sizeof(int), (void *)&width);
   dt_opencl_set_kernel_arg(devid, gd->kernel_flip, 3, sizeof(int), (void *)&height);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_flip, 4, sizeof(int), (void *)&orientation);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_flip, 4, sizeof(uint32_t), (void *)&orientation);
   err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_flip, sizes);
 
   if(err != CL_SUCCESS) goto error;
@@ -275,27 +296,33 @@ error:
 }
 #endif
 
-void init_global(dt_iop_module_so_t *module)
+void init_global(dt_iop_module_so_t *self)
 {
   const int program = 2; // basic.cl, from programs.conf
   dt_iop_flip_global_data_t *gd = (dt_iop_flip_global_data_t *)malloc(sizeof(dt_iop_flip_global_data_t));
-  module->data = gd;
+  self->data = gd;
   gd->kernel_flip = dt_opencl_create_kernel(program, "flip");
 }
 
-void cleanup_global(dt_iop_module_so_t *module)
+void cleanup_global(dt_iop_module_so_t *self)
 {
-  dt_iop_flip_global_data_t *gd = (dt_iop_flip_global_data_t *)module->data;
+  dt_iop_flip_global_data_t *gd = (dt_iop_flip_global_data_t *)self->data;
   dt_opencl_free_kernel(gd->kernel_flip);
-  free(module->data);
-  module->data = NULL;
+  free(self->data);
+  self->data = NULL;
 }
 
 void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
   dt_iop_flip_params_t *p = (dt_iop_flip_params_t *)p1;
   dt_iop_flip_data_t *d = (dt_iop_flip_data_t *)piece->data;
-  d->orientation = p->orientation;
+
+  if(p->orientation == ORIENTATION_NULL)
+    d->orientation = dt_image_orientation(&self->dev->image_storage);
+  else
+    d->orientation = p->orientation;
+
+  if(d->orientation == ORIENTATION_NONE) piece->enabled = 0;
 }
 
 void init_pipe (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
@@ -314,19 +341,27 @@ void init_presets (dt_iop_module_so_t *self)
 {
   dt_iop_flip_params_t p = (dt_iop_flip_params_t)
   {
-    0
+    ORIENTATION_NONE
   };
   DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "begin", NULL, NULL, NULL);
-  p.orientation = 1;
+
+  p.orientation = ORIENTATION_NULL;
+  dt_gui_presets_add_generic(_("autodetect"), self->op, self->version(), &p, sizeof(p), 1);
+  dt_gui_presets_update_autoapply(_("autodetect"), self->op, self->version(), 1);
+
+  p.orientation = ORIENTATION_NONE;
+  dt_gui_presets_add_generic(_("no rotation"), self->op, self->version(), &p, sizeof(p), 1);
+
+  p.orientation = ORIENTATION_FLIP_HORIZONTALLY;
   dt_gui_presets_add_generic(_("flip horizontally"), self->op, self->version(), &p, sizeof(p), 1);
-  p.orientation = 2;
+  p.orientation = ORIENTATION_FLIP_VERTICALLY;
   dt_gui_presets_add_generic(_("flip vertically"), self->op, self->version(), &p, sizeof(p), 1);
-  p.orientation = 6;
-  dt_gui_presets_add_generic(_("rotate by -90"), self->op, self->version(), &p, sizeof(p), 1);
-  p.orientation = 5;
-  dt_gui_presets_add_generic(_("rotate by  90"), self->op, self->version(), &p, sizeof(p), 1);
-  p.orientation = 3;
-  dt_gui_presets_add_generic(_("rotate by 180"), self->op, self->version(), &p, sizeof(p), 1);
+  p.orientation = ORIENTATION_ROTATE_CW_90_DEG;
+  dt_gui_presets_add_generic(_("rotate by -90 degrees"), self->op, self->version(), &p, sizeof(p), 1);
+  p.orientation = ORIENTATION_ROTATE_CCW_90_DEG;
+  dt_gui_presets_add_generic(_("rotate by  90 degrees"), self->op, self->version(), &p, sizeof(p), 1);
+  p.orientation = ORIENTATION_ROTATE_180_DEG;
+  dt_gui_presets_add_generic(_("rotate by 180 degrees"), self->op, self->version(), &p, sizeof(p), 1);
   DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "commit", NULL, NULL, NULL);
 }
 
@@ -334,9 +369,10 @@ void reload_defaults(dt_iop_module_t *self)
 {
   dt_iop_flip_params_t tmp = (dt_iop_flip_params_t)
   {
-    0
+    ORIENTATION_NULL
   };
-  self->default_enabled = 0;
+  self->default_enabled = 1;
+
   if(self->dev->image_storage.legacy_flip.user_flip != 0 &&
       self->dev->image_storage.legacy_flip.user_flip != 0xff)
   {
@@ -365,7 +401,7 @@ void init(dt_iop_module_t *module)
   // module->data = malloc(sizeof(dt_iop_flip_data_t));
   module->params = malloc(sizeof(dt_iop_flip_params_t));
   module->default_params = malloc(sizeof(dt_iop_flip_params_t));
-  module->default_enabled = 0;
+  module->default_enabled = 1;
   module->params_size = sizeof(dt_iop_flip_params_t);
   module->gui_data = NULL;
   module->priority = 228; // module order created by iop_dependencies.py, do not edit!
@@ -385,6 +421,9 @@ do_rotate(dt_iop_module_t *self, uint32_t cw)
   dt_iop_flip_params_t *p = (dt_iop_flip_params_t *)self->params;
   dt_image_orientation_t orientation = p->orientation;
 
+  if(orientation == ORIENTATION_NULL)
+    orientation = dt_image_orientation(&self->dev->image_storage);
+
   if(cw == 1)
   {
     if(orientation & ORIENTATION_SWAP_XY) orientation ^= ORIENTATION_FLIP_Y;
@@ -396,6 +435,7 @@ do_rotate(dt_iop_module_t *self, uint32_t cw)
     else                                  orientation ^= ORIENTATION_FLIP_Y;
   }
   orientation ^= ORIENTATION_SWAP_XY;
+
   p->orientation = orientation;
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }

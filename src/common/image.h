@@ -184,7 +184,7 @@ int32_t dt_image_duplicate_with_version(const int32_t imgid, const int32_t newve
 int32_t dt_image_duplicate(const int32_t imgid);
 /** flips the image, clock wise, if given flag. */
 void dt_image_flip(const int32_t imgid, const int32_t cw);
-void dt_image_set_flip(const int32_t imgid, const int32_t user_flip);
+void dt_image_set_flip(const int32_t imgid, const dt_image_orientation_t user_flip);
 /** set image location lon/lat */
 void dt_image_set_location(const int32_t imgid, double lon, double lat);
 /** returns 1 if there is history data found for this image, 0 else. */
