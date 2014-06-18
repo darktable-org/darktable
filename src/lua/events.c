@@ -402,15 +402,43 @@ static void on_export_image_tmpfile(gpointer instance,
   dt_lua_unlock(has_lock);
 }
 
+
+typedef struct {
+  dt_view_t * old_view;
+  dt_view_t * new_view;
+} view_changed_callback_data_t;
+
+
+static int32_t view_changed_callback_job(dt_job_t *job) {
+  gboolean has_lock = dt_lua_lock();
+  view_changed_callback_data_t *t = dt_control_job_get_params(job);
+  dt_lua_module_push_entry(darktable.lua_state.state,"view",t->old_view->module_name);
+  dt_lua_module_push_entry(darktable.lua_state.state,"view",t->new_view->module_name);
+  run_event("view-changed",2);
+  dt_lua_unlock(has_lock);
+  return 0;
+}
+
 static void on_view_changed(gpointer instance,
     dt_view_t* old_view,
     dt_view_t* new_view,
      gpointer user_data){
-  gboolean has_lock = dt_lua_lock();
-  dt_lua_module_push_entry(darktable.lua_state.state,"view",old_view->module_name);
-  dt_lua_module_push_entry(darktable.lua_state.state,"view",new_view->module_name);
-  run_event("view-changed",2);
-  dt_lua_unlock(has_lock);
+  dt_job_t *job = dt_control_job_create(&view_changed_callback_job, "lua: on view changed");
+  if(job)
+  {
+    view_changed_callback_data_t *t = (view_changed_callback_data_t*)calloc(1, sizeof(view_changed_callback_data_t));
+    if(!t)
+    {
+      dt_control_job_dispose(job);
+    }
+    else
+    {
+      dt_control_job_set_params(job, t);
+      t->old_view = old_view;
+      t->new_view = new_view;
+      dt_control_add_job(darktable.control, DT_JOB_QUEUE_USER_FG, job);
+    }
+  }
 }
 
 static void on_image_imported(gpointer instance,uint32_t id, gpointer user_data){
