@@ -192,7 +192,9 @@ void dt_dev_process_preview_job(dt_develop_t *dev)
   dt_pthread_mutex_lock(&dev->preview_pipe_mutex);
   dt_control_log_busy_enter();
   dev->preview_pipe->input_timestamp = dev->timestamp;
-  dev->preview_dirty = 1;
+  // we have to set this to 0 in the beginning and 1 when bailing out early since we check this without caring about the mutex in some places.
+  // adding locking everywhere would block the gui and make putting this into its own thread pointless. i guess.
+  dev->preview_dirty = 0;
 
   // lock if there, issue a background load, if not (best-effort for mip f).
   dt_mipmap_cache_read_get(darktable.mipmap_cache, &buf, dev->image_storage.id, DT_MIPMAP_F, 0);
@@ -200,6 +202,7 @@ void dt_dev_process_preview_job(dt_develop_t *dev)
   {
     dt_control_log_busy_leave();
     dt_pthread_mutex_unlock(&dev->preview_pipe_mutex);
+    dev->preview_dirty = 1;
     return; // not loaded yet. load will issue a gtk redraw on completion, which in turn will trigger us again later.
   }
   // init pixel pipeline for preview.
@@ -227,6 +230,7 @@ restart:
     dt_control_log_busy_leave();
     dt_pthread_mutex_unlock(&dev->preview_pipe_mutex);
     dt_mipmap_cache_read_release(darktable.mipmap_cache, &buf);
+    dev->preview_dirty = 1;
     return;
   }
   // adjust pipeline according to changed flag set by {add,pop}_history_item.
@@ -241,6 +245,7 @@ restart:
       dt_control_log_busy_leave();
       dt_pthread_mutex_unlock(&dev->preview_pipe_mutex);
       dt_mipmap_cache_read_release(darktable.mipmap_cache, &buf);
+      dev->preview_dirty = 1;
       return;
     }
     else goto restart;
@@ -248,7 +253,6 @@ restart:
   dt_show_times(&start, "[dev_process_preview] pixel pipeline processing", NULL);
   dt_dev_average_delay_update(&start, &dev->preview_average_delay);
 
-  dev->preview_dirty = 0;
   // redraw the whole thing, to also update color picker values and histograms etc.
   if(dev->gui_attached)
     dt_control_queue_redraw();
