@@ -199,10 +199,9 @@ int dt_lua_dostring_silent(lua_State *L,const char* command,int nargs,int nresul
   int load_result = luaL_loadstring(L, command);
   if(load_result != LUA_OK )
   {
-    const char *error_msg = lua_tostring(L,-1);
-    luaL_traceback(L,L,error_msg,0);
-    lua_remove(L,-2);
-    return load_result;
+    dt_print(DT_DEBUG_LUA,"LUA ERROR %s\n",lua_tostring(L,-1));
+    lua_pop(L,1);
+    return -1;
   }
   lua_insert(L,-(nargs+1));
   return dt_lua_do_chunk_silent(L,nargs,nresults);

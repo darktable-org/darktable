@@ -560,7 +560,7 @@ int dt_init(int argc, char *argv[], const int init_gui,lua_State *L)
         }
         g_free(keyval);
       }
-      else if(!strcmp(argv[k], "--luamcd"))
+      else if(!strcmp(argv[k], "--luacmd"))
       {
         lua_command = argv[++k];
       }
