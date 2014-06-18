@@ -164,7 +164,8 @@ dt_imageio_open_rawspeed(
       img->flags |= DT_IMAGE_RAW;
       if(r->getDataType() == TYPE_FLOAT32) img->flags |= DT_IMAGE_HDR;
       // special handling for x-trans sensors
-      if ((r->cfa.size.x == 6) && (r->cfa.size.y == 6)) {
+      if ((r->cfa.size.x == 6) && (r->cfa.size.y == 6))
+      {
         img->filters = 9;       // signifies to look for CFA in img->xtrans
         uint8_t xorig[6][6], xtemp[6][6];
         for (int i=0; i < 6; ++i)

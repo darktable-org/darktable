@@ -2368,7 +2368,8 @@ dt_iop_clip_and_zoom_demosaic_third_size_xtrans(
 
 
 #define SUM33(px,py,weight)                                \
-  do {                                                     \
+  do                                                       \
+  {                                                        \
     float sum[3] = {0.0f};                                 \
     for (int yy=0; yy < 3; ++yy)                           \
       for (int xx=0; xx < 3; ++xx)                         \
@@ -2381,7 +2382,8 @@ dt_iop_clip_and_zoom_demosaic_third_size_xtrans(
     col[0] += (weight) * sum[0];                           \
     col[1] += (weight) * sum[1];                           \
     col[2] += (weight) * sum[2];                           \
-  } while (0)
+  }                                                        \
+  while (0)
 
 
 void

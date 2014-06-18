@@ -213,13 +213,16 @@ static inline void _interpolate_color_xtrans(
       // record ratio to next different-colored pixel if this & next unclamped
       if(in[0] < clip0 && in[0] > 1e-5f)
       {
-        if(in[offs] < clip1 && in[offs] > 1e-5f) {
+        if(in[offs] < clip1 && in[offs] > 1e-5f)
+        {
           if (f0 != f1) {  // not first of gg block
             if (f0 < f1)
               ratios[f0][f1] = (3.0f*ratios[f0][f1] + in[0]/in[offs])/4.0f;
             else
               ratios[f1][f0] = (3.0f*ratios[f1][f0] + in[offs]/in[0])/4.0f;
-          } else {
+          }
+          else
+          {
             if(in[offs*2] < clip2 && in[offs*2] > 1e-5f) {
               if (f0 < f2)
                 ratios[f0][f2] = (3.0f*ratios[f0][f2] + in[0]/in[offs*2])/4.0f;
@@ -233,21 +236,32 @@ static inline void _interpolate_color_xtrans(
       if(in[0] >= clip0-1e-5f)
       {
         float add = 0.0f;
-        if (f0 != f1) { // not double green block
-          if (in[offs] >= clip1-1e-5f) {
+        if (f0 != f1)   // not double green block
+        {
+          if (in[offs] >= clip1-1e-5f)
+          {
             add = fmaxf(clip0, clip1);
-          } else {
+          }
+          else
+          {
             if (f0 < f1)
               add = in[offs]*ratios[f0][f1];
             else
               add = in[offs]/ratios[f1][f0];
           }
-        } else {
-          if (1 && in[offs] < clip1-1e-5f) {  // adjacent green isn't clipped
+        }
+        else
+        {
+          if (1 && in[offs] < clip1-1e-5f)  // adjacent green isn't clipped
+          {
             add = in[offs];
-          } else if (in[offs*2] >= clip2-1e-5f) {
+          }
+          else if (in[offs*2] >= clip2-1e-5f)
+          {
             add = fmaxf(clip0, clip2);
-          } else {
+          }
+          else
+          {
             if (f0 < f2)
               add = in[offs*2]*ratios[f0][f2];
             else
@@ -445,7 +459,8 @@ void process(
         0.987*data->clip * piece->pipe->processed_maximum[2],
         clip};
 
-      if (filters == 9) {
+      if (filters == 9)
+      {
         const dt_image_t *img = &self->dev->image_storage;
 #ifdef _OPENMP
         #pragma omp parallel for schedule(dynamic) default(none) shared(ovoid, ivoid, roi_in, roi_out, img)
