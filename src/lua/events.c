@@ -149,7 +149,7 @@ static int trigger_keyed_event(lua_State * L) {
   lua_pushstring(L,evt_name);// param 1 is the event
   lua_insert(L,top_marker-nargs+2);
   lua_pop(L,2);
-  return 0;
+  return dt_lua_do_chunk_silent(L,2,0);
 }
 
 /*
@@ -414,6 +414,7 @@ static int32_t view_changed_callback_job(dt_job_t *job) {
   view_changed_callback_data_t *t = dt_control_job_get_params(job);
   dt_lua_module_push_entry(darktable.lua_state.state,"view",t->old_view->module_name);
   dt_lua_module_push_entry(darktable.lua_state.state,"view",t->new_view->module_name);
+  free(t);
   run_event("view-changed",2);
   dt_lua_unlock(has_lock);
   return 0;
