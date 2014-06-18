@@ -19,17 +19,10 @@
 #include "control/jobs/develop_jobs.h"
 #include "control/jobs/control_jobs.h"
 
-typedef struct dt_dev_process_t
-{
-  dt_develop_t *dev;
-}
-dt_dev_process_t;
-
 static int32_t dt_dev_process_preview_job_run(dt_job_t *job)
 {
-  dt_dev_process_t *params = dt_control_job_get_params(job);
-  dt_dev_process_preview_job(params->dev);
-  free(params);
+  dt_develop_t *dev = dt_control_job_get_params(job);
+  dt_dev_process_preview_job(dev);
   return 0;
 }
 
@@ -37,22 +30,14 @@ dt_job_t * dt_dev_process_preview_job_create(dt_develop_t *dev)
 {
   dt_job_t *job = dt_control_job_create(&dt_dev_process_preview_job_run, "develop process preview");
   if(!job) return NULL;
-  dt_dev_process_t *params = (dt_dev_process_t *)calloc(1, sizeof(dt_dev_process_t));
-  if(!params)
-  {
-    dt_control_job_dispose(job);
-    return NULL;
-  }
-  dt_control_job_set_params(job, params);
-  params->dev = dev;
+  dt_control_job_set_params(job, dev);
   return job;
 }
 
 static int32_t dt_dev_process_image_job_run(dt_job_t *job)
 {
-  dt_dev_process_t *params = dt_control_job_get_params(job);
-  dt_dev_process_image_job(params->dev);
-  free(params);
+  dt_develop_t *dev = dt_control_job_get_params(job);
+  dt_dev_process_image_job(dev);
   return 0;
 }
 
@@ -60,14 +45,7 @@ dt_job_t * dt_dev_process_image_job_create(dt_develop_t *dev)
 {
   dt_job_t *job = dt_control_job_create(&dt_dev_process_image_job_run, "develop process image");
   if(!job) return NULL;
-  dt_dev_process_t *params = (dt_dev_process_t *)calloc(1, sizeof(dt_dev_process_t));
-  if(!params)
-  {
-    dt_control_job_dispose(job);
-    return NULL;
-  }
-  dt_control_job_set_params(job, params);
-  params->dev = dev;
+  dt_control_job_set_params(job, dev);
   return job;
 }
 

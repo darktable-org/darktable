@@ -165,7 +165,10 @@ static int32_t dt_control_run_job_res(dt_control_t *control, int32_t res)
   _dt_job_t *job = NULL;
   dt_pthread_mutex_lock(&control->queue_mutex);
   if(control->new_res[res])
+  {
     job = control->job_res[res];
+    control->job_res[res] = NULL; // this job belongs to us now, the queue may not touch it any longer
+  }
   control->new_res[res] = 0;
   dt_pthread_mutex_unlock(&control->queue_mutex);
   if(!job)
@@ -297,6 +300,13 @@ int32_t dt_control_add_job_res(dt_control_t *control, _dt_job_t *job, int32_t re
 
   // TODO: pthread cancel and restart in tough cases?
   dt_pthread_mutex_lock(&control->queue_mutex);
+
+  // if there is a job in the queue we have to discard that first
+  if(control->job_res[res])
+  {
+    dt_control_job_set_state(control->job_res[res], DT_JOB_STATE_DISCARDED);
+    dt_control_job_dispose(control->job_res[res]);
+  }
 
   dt_print(DT_DEBUG_CONTROL, "[add_job_res] %d | ", res);
   dt_control_job_print(job);
