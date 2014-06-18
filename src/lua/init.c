@@ -209,6 +209,7 @@ static int load_from_lua(lua_State *L)
     argv[i] = strdup(luaL_checkstring(L,i));
     argv_copy[i] = argv[i];
   }
+  lua_pop(L,lua_gettop(L));
   argv[argc] = NULL;
   argv_copy[argc] = NULL;
   gtk_init(&argc,&argv);
