@@ -453,7 +453,8 @@ xtrans_markesteijn_interpolate(
         dir[4] = { 1,TS,TS+1,TS-1 };
 
   short allhex[3][3][2][8];
-  // initialize as gcc thinks these could be uninitialized below
+  // sgrow/sgcol is the offset in the sensor matrix of the solitary
+  // green pixels (initialized here only to avoid compiler warning)
   unsigned short sgrow=0, sgcol=0;
 
   const int width = roi_out->width+12;
@@ -531,43 +532,54 @@ xtrans_markesteijn_interpolate(
       }
 
   /* Set green1 and green3 to the minimum and maximum allowed values:   */
+  // run through each red/blue or blue/red pair, setting their g1 and
+  // g3 values to the min/max of green pixels surrounding the pair
 #ifdef _OPENMP
   #pragma omp parallel for default(none) shared(allhex, sgrow, image) schedule(static)
 #endif
   for (int row=2; row < height-2; row++)
   {
-    float min=FLT_MAX, max=0;
+    // setting max to 0.0f signifies that this is a new pair, which
+    // requires a new min/max calculation of its neighboring greens
+    float min=FLT_MAX, max=0.0f;
     for (int col=2; col < width-2; col++)
     {
+      // if in row of horizontal red & blue pairs (or processing
+      // vertical red & blue pairs near image bottom), reset min/max
+      // between each pair
       if (FCxtrans(yoff+row,xoff+col,xtrans) == 1)
       {
-        min=FLT_MAX;
-        max=0;
+        min=FLT_MAX, max=0.0f;
         continue;
       }
-      float (*pix)[4] = image + row*width + col;
-      short *hex = allhex[row%3][col%3][0];
-      if (max==0)
+      float (*const pix)[4] = image + row*width + col;
+      const short *const hex = allhex[row%3][col%3][0];
+      // if at start of red & blue pair, calculate min/max of green
+      // pixels surrounding it; note that while normally using == to
+      // compare floats is suspect, here the check is if 0.0f has
+      // explicitly been assigned to max (which signifies a new
+      // red/blue pair)
+      if (max==0.0f)
         for (int c=0; c<6; c++)
         {
-          float val = pix[hex[c]][1];
+          const float val = pix[hex[c]][1];
           min = fminf(min,val);
           max = fmaxf(max,val);
         }
       pix[0][1] = min;
       pix[0][3] = max;
+      // handle vertical red/blue pairs
       switch ((row-sgrow) % 3)
       {
+        // hop down a row to second pixel in vertical pair
         case 1:
           if (row < height-3)
-          {
-            row++;
-            col--;
-          }
+            row++, col--;
           break;
+        // then if not done with the row hop up and right to next
+        // vertical red/blue pair, resetting min/max
         case 2:
-          min=FLT_MAX;
-          max=0;
+          min=FLT_MAX, max=0.0f;
           if ((col+=2) < width-3 && row > 2) row--;
       }
     }
