@@ -1185,7 +1185,7 @@ All functions and data are accessed through the darktable module.</para>
 </indexterm>
 <synopsis>function( 
 	<emphasis><link linkend="darktable_styles_export_style">style</link></emphasis> : <link linkend="types_dt_style_t">types.dt_style_t</link>, 
-	<emphasis><link linkend="darktable_styles_export_filename">filename</link></emphasis> : string, 
+	<emphasis><link linkend="darktable_styles_export_directory">directory</link></emphasis> : string, 
 	<emphasis><link linkend="darktable_styles_export_overwrite">overwrite</link></emphasis> : boolean
 )</synopsis>
 <para>Export a style to an external .dtstyle file</para>
@@ -1197,15 +1197,15 @@ All functions and data are accessed through the darktable module.</para>
 
 </listitem></varlistentry>
 
-<varlistentry id="darktable_styles_export_filename"><term>filename</term><listitem>
+<varlistentry id="darktable_styles_export_directory"><term>directory</term><listitem>
 <synopsis>string</synopsis>
-<para>The file to import</para>
+<para>The directory to export to</para>
 
 </listitem></varlistentry>
 
 <varlistentry id="darktable_styles_export_overwrite"><term>overwrite</term><listitem>
 <synopsis>boolean</synopsis>
-<para>Is overwriting an existing file allowd</para>
+<para>Is overwriting an existing file allowed</para>
 
 </listitem></varlistentry>
 
@@ -5223,6 +5223,55 @@ This event can only be registered once per value of shortcut.
 
 <section status="final" id="events_post-import-film_extra_registration_parameters">
 <title>events.post-import-film.extra_registration_parameters</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>extra_registration_parameters</secondary>
+</indexterm>
+<para>This event has no extra registration parameters.</para>
+
+</section>
+
+</section>
+
+<section status="final" id="events_view-changed">
+<title>events.view-changed</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>view-changed</secondary>
+</indexterm>
+<synopsis>event</synopsis>
+<para>This event is triggered after the user changed the active view</para>
+
+<section status="final" id="events_view-changed_callback">
+<title>events.view-changed.callback</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>callback</secondary>
+</indexterm>
+<synopsis>function( 
+	<emphasis><link linkend="events_view-changed_callback_old_view">old_view</link></emphasis> : <link linkend="types_dt_view_t">types.dt_view_t</link>, 
+	<emphasis><link linkend="events_view-changed_callback_new_view">new_view</link></emphasis> : <link linkend="types_dt_view_t">types.dt_view_t</link>
+)</synopsis>
+<para></para>
+
+<variablelist>
+<varlistentry id="events_view-changed_callback_old_view"><term>old_view</term><listitem>
+<synopsis><link linkend="types_dt_view_t">types.dt_view_t</link></synopsis>
+<para>The view that we just left</para>
+
+</listitem></varlistentry>
+
+<varlistentry id="events_view-changed_callback_new_view"><term>new_view</term><listitem>
+<synopsis><link linkend="types_dt_view_t">types.dt_view_t</link></synopsis>
+<para>The view we are now in</para>
+
+</listitem></varlistentry>
+
+</variablelist>
+</section>
+
+<section status="final" id="events_view-changed_extra_registration_parameters">
+<title>events.view-changed.extra_registration_parameters</title>
 <indexterm>
 <primary>Lua API</primary>
 <secondary>extra_registration_parameters</secondary>

@@ -39,7 +39,10 @@ static gboolean _lib_viewswitcher_button_press_callback(GtkWidget *w,GdkEventBut
 /* helper function to create a label */
 static GtkWidget* _lib_viewswitcher_create_label(dt_view_t *view);
 /* callback when view changed signal happens */
-static void _lib_viewswitcher_view_changed_callback(gpointer instance, gpointer user_data);
+static void _lib_viewswitcher_view_changed_callback(gpointer instance, 
+    dt_view_t* old_view,
+    dt_view_t* new_view,
+    gpointer user_data);
 
 const char* name()
 {
@@ -142,7 +145,10 @@ static void _lib_viewswitcher_leave_notify_callback(GtkWidget *w, GdkEventCrossi
   }
 }
 
-static void _lib_viewswitcher_view_changed_callback(gpointer instance, gpointer user_data)
+static void _lib_viewswitcher_view_changed_callback(gpointer instance,
+    dt_view_t* old_view,
+    dt_view_t* new_view,
+    gpointer user_data)
 {
   dt_lib_module_t *self = (dt_lib_module_t*)user_data;
 

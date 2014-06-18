@@ -241,12 +241,12 @@ int dt_view_manager_switch (dt_view_manager_t *vm, int k)
   if (!error)
   {
     GList *plugins;
+    dt_view_t *v = vm->view + vm->current_view;
 
     /* cleanup current view before initialization of new  */
     if (vm->current_view >=0)
     {
       /* leave current view */
-      dt_view_t *v = vm->view + vm->current_view;
       if(v->leave) v->leave(v);
       dt_accel_disconnect_list(v->accel_closures);
       v->accel_closures = NULL;
@@ -371,7 +371,7 @@ int dt_view_manager_switch (dt_view_manager_t *vm, int k)
       nv->connect_key_accels(nv);
 
     /* raise view changed signal */
-    dt_control_signal_raise(darktable.signals, DT_SIGNAL_VIEWMANAGER_VIEW_CHANGED);
+    dt_control_signal_raise(darktable.signals, DT_SIGNAL_VIEWMANAGER_VIEW_CHANGED,v,nv);
 
     /* add endmarkers to left and right center containers */
     GtkWidget *endmarker = gtk_drawing_area_new();

@@ -62,7 +62,10 @@ static gboolean _lib_modulegroups_test(dt_lib_module_t *self, uint32_t group, ui
 static void _lib_modulegroups_switch_group(dt_lib_module_t *self, dt_iop_module_t *module);
 
 /* hook up with viewmanager view change to initialize modulegroup */
-static void _lib_modulegroups_viewchanged_callback(gpointer instance, gpointer data);
+static void _lib_modulegroups_viewchanged_callback(gpointer instance, 
+    dt_view_t* old_view,
+    dt_view_t* new_view,
+    gpointer data);
 
 const char* name()
 {
@@ -183,7 +186,10 @@ void gui_cleanup(dt_lib_module_t *self)
   self->data = NULL;
 }
 
-static void _lib_modulegroups_viewchanged_callback(gpointer instance, gpointer data)
+static void _lib_modulegroups_viewchanged_callback(gpointer instance, 
+    dt_view_t* old_view,
+    dt_view_t* new_view,
+    gpointer data)
 {
 }
 

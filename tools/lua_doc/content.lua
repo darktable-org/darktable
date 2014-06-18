@@ -677,6 +677,10 @@ events["post-import-film"].callback:add_parameter("event","string",[[The name of
 
 events["post-import-film"].callback:add_parameter("film",my_tostring(types.dt_lua_film_t),[[The new film that has been added. If multiple films were added recursively only the top level film is reported.]])
 events["post-import-film"].extra_registration_parameters:set_text([[This event has no extra registration parameters.]])
+events["view-changed"]:set_text([[This event is triggered after the user changed the active view]])
+events["view-changed"].callback:add_parameter("old_view",my_tostring(types.dt_view_t),[[The view that we just left]])
+events["view-changed"].callback:add_parameter("new_view",my_tostring(types.dt_view_t),[[The view we are now in]])
+events["view-changed"].extra_registration_parameters:set_text([[This event has no extra registration parameters.]])
 ----------------------
 --  ATTRIBUTES      --
 ----------------------

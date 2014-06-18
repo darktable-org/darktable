@@ -45,6 +45,7 @@ static event_handler event_list[] = {
   {"post-import-image",register_multiinstance_event,trigger_multiinstance_event,FALSE},
   {"post-import-film",register_multiinstance_event,trigger_multiinstance_event,FALSE},
   {"intermediate-export-image",register_multiinstance_event,trigger_multiinstance_event,FALSE},
+  {"view-changed",register_multiinstance_event,trigger_multiinstance_event,FALSE},
   //{"test",register_singleton_event,trigger_singleton_event},  // avoid error because of unused function
   {NULL,NULL,NULL}
 };
@@ -391,6 +392,17 @@ static void on_export_image_tmpfile(gpointer instance,
   dt_lua_unlock(has_lock);
 }
 
+static void on_view_changed(gpointer instance,
+    dt_view_t* old_view,
+    dt_view_t* new_view,
+     gpointer user_data){
+  gboolean has_lock = dt_lua_lock();
+  dt_lua_module_push_entry(darktable.lua_state.state,"view",old_view->module_name);
+  dt_lua_module_push_entry(darktable.lua_state.state,"view",new_view->module_name);
+  run_event("view-changed",2);
+  dt_lua_unlock(has_lock);
+}
+
 static void on_image_imported(gpointer instance,uint32_t id, gpointer user_data){
   gboolean has_lock = dt_lua_lock();
   luaA_push(darktable.lua_state.state,dt_lua_image_t,&id);
@@ -425,6 +437,7 @@ int dt_lua_init_events(lua_State *L) {
   dt_control_signal_connect(darktable.signals,DT_SIGNAL_FILMROLLS_IMPORTED,G_CALLBACK(on_film_imported),NULL);
   //dt_control_signal_connect(darktable.signals,DT_SIGNAL_IMAGE_EXPORT_MULTIPLE,G_CALLBACK(on_export_selection),NULL);
   dt_control_signal_connect(darktable.signals,DT_SIGNAL_IMAGE_EXPORT_TMPFILE,G_CALLBACK(on_export_image_tmpfile),NULL);
+  dt_control_signal_connect(darktable.signals,DT_SIGNAL_VIEWMANAGER_VIEW_CHANGED,G_CALLBACK(on_view_changed),NULL);
   return 0;
 }
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
