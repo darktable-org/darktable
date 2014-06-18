@@ -459,7 +459,7 @@ int dt_init(int argc, char *argv[], const int init_gui,lua_State *L)
   char *configdir_from_command = NULL;
   char *cachedir_from_command = NULL;
 
-  char *lua_command = NULL;
+  char *lua_command  __attribute__((unused))= NULL;
 
   darktable.num_openmp_threads = 1;
 #ifdef _OPENMP
