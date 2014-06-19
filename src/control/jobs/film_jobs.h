@@ -20,6 +20,7 @@
 
 #include <inttypes.h>
 #include "control/control.h"
+#include "common/film.h"
 
 dt_job_t * dt_film_import1_create(dt_film_t *film);
 

@@ -78,7 +78,9 @@ int32_t dt_control_add_job_res(struct dt_control_t *s, dt_job_t *job, int32_t re
 
 int32_t dt_control_get_threadid();
 
+#ifdef HAVE_GPHOTO2
 #include "control/jobs/camera_jobs.h"
+#endif
 #include "control/jobs/control_jobs.h"
 #include "control/jobs/develop_jobs.h"
 #include "control/jobs/film_jobs.h"

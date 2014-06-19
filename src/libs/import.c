@@ -28,7 +28,9 @@
 #include "libraw/libraw.h"
 #include "control/control.h"
 #include "control/conf.h"
+#ifdef HAVE_GPHOTO2
 #include "control/jobs/camera_jobs.h"
+#endif
 #include "dtgtk/label.h"
 #include "dtgtk/button.h"
 #include "gui/accelerators.h"
