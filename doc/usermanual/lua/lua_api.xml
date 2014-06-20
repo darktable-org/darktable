@@ -4900,6 +4900,21 @@ Note that this is the real image object; changing the value of a field will imme
 
 </section>
 
+<section status="final" id="types_dt_lib_module_t_reset">
+<title>types.dt_lib_module_t.reset</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>reset</secondary>
+</indexterm>
+<synopsis>function( 
+)</synopsis>
+<para>A function to reset the lib to its default values</para>
+<para>This function will do nothing if the lib is not visible or can't be reset</para>
+
+<variablelist>
+</variablelist>
+</section>
+
 </section>
 
 <section status="final" id="types_dt_view_t">

@@ -124,6 +124,16 @@ static int lib_newindex(lua_State*L)
   }
 }
 
+static int lib_reset(lua_State * L)
+{
+  dt_lib_module_t * module = *(dt_lib_module_t**)lua_touserdata(L,1);
+  if(module->widget && module->gui_reset) {
+    printf("calling reest on %s\n",module->plugin_name);
+    module->gui_reset(module);
+  }
+  return 0;
+}
+
 static int lib_tostring(lua_State* L)
 {
   dt_lib_module_t * module = *(dt_lib_module_t**)lua_touserdata(L,-1);
@@ -167,6 +177,8 @@ int dt_lua_init_lib(lua_State *L)
   dt_lua_register_type_callback_list(L,dt_lib_module_t,lib_index,NULL,lib_fields_name);
   // add a writer to the read/write fields
   dt_lua_register_type_callback(L,dt_lib_module_t,lib_index,lib_newindex, "expanded","visible", NULL) ;
+  lua_pushcfunction(L,lib_reset);
+  dt_lua_register_type_callback_stack(L,dt_lib_module_t,"reset");
 
   dt_lua_init_module_type(L,"lib");
   return 0;

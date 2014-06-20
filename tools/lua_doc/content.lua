@@ -618,6 +618,9 @@ types.dt_lib_module_t.expandable:set_text([[True if the lib can be expanded/retr
 types.dt_lib_module_t.expanded:set_text([[True if the lib is expanded]]);
 types.dt_lib_module_t.position:set_text([[A value deciding the position of the lib within its container]])
 types.dt_lib_module_t.views:set_text([[A table of all teh views that display this widget]])
+types.dt_lib_module_t.reset:set_text([[A function to reset the lib to its default values]]..para()..
+[[This function will do nothing if the lib is not visible or can't be reset]])
+types.dt_lib_module_t.reset:add_parameter("self",my_tostring(types.dt_lib_module_t),[[The lib to reset]])
 
 types.dt_view_t:set_text([[A darktable view]])
 types.dt_view_t:add_version_info([[Type added]])
