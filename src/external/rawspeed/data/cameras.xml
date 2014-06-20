@@ -1300,7 +1300,7 @@
 			<Color x="1" y="1">BLUE</Color>
 		</CFA>
 		<Crop x="2" y="0" width="-48" height="0"/>
-		<Sensor black="0" white="3972"/>
+		<Sensor black="0" white="3880"/>
 		<Aliases>
 			<Alias>NIKON D800E</Alias>
 		</Aliases>
