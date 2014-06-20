@@ -92,10 +92,9 @@ typedef enum dt_iop_demosaic_method_t
   DT_IOP_DEMOSAIC_PPG = 0,
   DT_IOP_DEMOSAIC_AMAZE = 1,
   // methods for x-trans images
-  DT_IOP_DEMOSAIC_LINEAR = DEMOSAIC_XTRANS | 0,
-  DT_IOP_DEMOSAIC_VNG = DEMOSAIC_XTRANS | 1,
-  DT_IOP_DEMOSAIC_MARKESTEIJN = DEMOSAIC_XTRANS | 2,
-  DT_IOP_DEMOSAIC_MARKESTEIJN_3 = DEMOSAIC_XTRANS | 3
+  DT_IOP_DEMOSAIC_VNG = DEMOSAIC_XTRANS | 0,
+  DT_IOP_DEMOSAIC_MARKESTEIJN = DEMOSAIC_XTRANS | 1,
+  DT_IOP_DEMOSAIC_MARKESTEIJN_3 = DEMOSAIC_XTRANS | 2
 }
 dt_iop_demosaic_method_t;
 
@@ -1346,7 +1345,7 @@ modify_roi_in (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piec
   }
   else
   {
-    // bilinear can handle any offset, but Markesteijn needs factors of 3
+    // Markesteijn needs factors of 3
     roi_in->x = MAX(0, roi_in->x - (roi_in->x%3));
     roi_in->y = MAX(0, roi_in->y - (roi_in->y%3));
   }
@@ -1391,7 +1390,7 @@ process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, v
   const int qual = get_quality();
   int demosaicing_method = data->demosaicing_method;
   if(piece->pipe->type == DT_DEV_PIXELPIPE_FULL && qual < 2 && roi_out->scale<=.99999f) // only overwrite setting if quality << requested and in dr mode
-    demosaicing_method = (img->filters != 9) ? DT_IOP_DEMOSAIC_PPG : MIN(demosaicing_method, DT_IOP_DEMOSAIC_LINEAR + qual);
+    demosaicing_method = (img->filters != 9) ? DT_IOP_DEMOSAIC_PPG : DT_IOP_DEMOSAIC_VNG;
 
   const float *const pixels = (float *)i;
   if(roi_out->scale > .99999f && roi_out->scale < 1.00001f)
@@ -1399,9 +1398,7 @@ process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, v
     // output 1:1
     if(img->filters==9)
     {
-      if (demosaicing_method == DT_IOP_DEMOSAIC_LINEAR)
-        xtrans_lin_interpolate((float *)o, pixels, &roo, &roi, img->xtrans);
-      else if (demosaicing_method < DT_IOP_DEMOSAIC_MARKESTEIJN)
+      if (demosaicing_method < DT_IOP_DEMOSAIC_MARKESTEIJN)
         xtrans_vng_interpolate((float *)o, pixels, &roo, &roi, img->xtrans);
       else
         xtrans_markesteijn_interpolate(
@@ -1456,9 +1453,7 @@ process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, v
     float *tmp = (float *)dt_alloc_align(16, (size_t)roo.width*roo.height*4*sizeof(float));
     if(img->filters==9)
     {
-      if (demosaicing_method == DT_IOP_DEMOSAIC_LINEAR)
-        xtrans_lin_interpolate(tmp, pixels, &roo, &roi, img->xtrans);
-      else if (demosaicing_method < DT_IOP_DEMOSAIC_MARKESTEIJN)
+      if (demosaicing_method < DT_IOP_DEMOSAIC_MARKESTEIJN)
         xtrans_vng_interpolate(tmp, pixels, &roo, &roi, img->xtrans);
       else
         xtrans_markesteijn_interpolate(
@@ -2078,7 +2073,7 @@ demosaic_method_xtrans_callback(GtkWidget *combo, dt_iop_module_t *self)
 {
   dt_iop_demosaic_params_t *p = (dt_iop_demosaic_params_t *)self->params;
   p->demosaicing_method = dt_bauhaus_combobox_get(combo)|DEMOSAIC_XTRANS;
-  if ((p->demosaicing_method > DT_IOP_DEMOSAIC_MARKESTEIJN_3) || (p->demosaicing_method < DT_IOP_DEMOSAIC_LINEAR))
+  if ((p->demosaicing_method > DT_IOP_DEMOSAIC_MARKESTEIJN_3) || (p->demosaicing_method < DT_IOP_DEMOSAIC_VNG))
     p->demosaicing_method = DT_IOP_DEMOSAIC_VNG;
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
@@ -2101,7 +2096,6 @@ void gui_init     (struct dt_iop_module_t *self)
   g->demosaic_method_xtrans = dt_bauhaus_combobox_new(self);
   dt_bauhaus_widget_set_label(g->demosaic_method_xtrans, NULL, _("method"));
   gtk_box_pack_start(GTK_BOX(self->widget), g->demosaic_method_xtrans, TRUE, TRUE, 0);
-  dt_bauhaus_combobox_add(g->demosaic_method_xtrans, _("linear (fast)"));
   dt_bauhaus_combobox_add(g->demosaic_method_xtrans, _("VNG"));
   dt_bauhaus_combobox_add(g->demosaic_method_xtrans, _("Markesteijn 1-pass (slow)"));
   dt_bauhaus_combobox_add(g->demosaic_method_xtrans, _("Markesteijn 3-pass (slower)"));

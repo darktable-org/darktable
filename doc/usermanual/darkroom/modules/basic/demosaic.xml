@@ -71,10 +71,9 @@
     <para>
       There are a few cameras whose sensors do not use a Bayer filter. Cameras with an "X-Trans"
       sensor have their own set of demosaicing algorithms. The default algorithm for X-Trans
-      sensors is VNG, which produces decent quality output and isn't too slow. For noticeably
-      better quality (at the cost of slower processing), choose Markesteijn 1-pass or (for the
-      best quality, but the slowest processing) Markesteijn 3-pass. If even VNG is too slow,
-      linear demosaic can speed things up at the cost of many more artifacts.
+      sensors is VNG. For noticeably better quality (at the cost of slower processing), choose
+      Markesteijn 1-pass or (for the best quality, but the slowest processing) Markesteijn
+      3-pass.
     </para>
 
     <para>
@@ -94,8 +93,8 @@
       <title>method</title>
       <para>
         Set the demosaic method. darktable currently supports PPG and AMAZE for Bayer sensors.
-        For X-Trans sensors darktable supports linear, VNG, Markesteijn 1-pass, and Markesteijn
-        3-pass.
+        For X-Trans sensors darktable currently supports VNG, Markesteijn 1-pass, and
+        Markesteijn 3-pass.
       </para>
     </sect5>
 
