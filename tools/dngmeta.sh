@@ -51,7 +51,7 @@ WHITE_HEX="0x$(echo "ibase=10;obase=16;$WHITE" | bc | tr 'A-Z' 'a-z')"
 CFA_PATTERN_WIDTH=$(exiv2 -Pkt $DNG 2>/dev/null | grep 'Exif.SubImage1.CFARepeatPatternDim ' | awk '{print $2}')
 CFA_PATTERN_HEIGHT=$(exiv2 -Pkt $DNG 2>/dev/null | grep 'Exif.SubImage1.CFARepeatPatternDim ' | awk '{print $3}')
 
-CFA_PATTERN=($(exiv2 -Pkt $DNG 2>/dev/null | grep 'Exif.SubImage1.CFAPattern ' | awk '{$1=""; print $0}' | sed 's#0#RED#g' | sed 's#1#GREEN#g' | sed 's#2#BLUE#g'))
+CFA_PATTERN=($(exiv2 -Pkt $DNG 2>/dev/null | grep 'Exif.SubImage1.CFAPattern ' | awk '{$1=""; print $0}' | sed 's#0#RED#g; s#1#GREEN#g; s#2#BLUE#g'))
 
 IMG_WIDTH=$(exiv2 -Pkt $DNG 2>/dev/null | grep 'Exif.SubImage1.ImageWidth ' | awk '{print $2}')
 IMG_LENGTH=$(exiv2 -Pkt $DNG 2>/dev/null | grep 'Exif.SubImage1.ImageLength ' | awk '{print $2}')
