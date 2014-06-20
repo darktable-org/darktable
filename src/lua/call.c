@@ -162,7 +162,7 @@ int dt_lua_do_chunk(lua_State *L,int nargs,int nresults)
 error:
   {
     const char *error_msg = lua_tostring(new_thread,-1);
-    luaL_traceback(L,L,error_msg,0);
+    luaL_traceback(L,new_thread,error_msg,0);
     lua_remove(L,-2); // remove the new thread from L
     return thread_result;
   }
