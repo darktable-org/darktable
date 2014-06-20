@@ -394,6 +394,11 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
   self->request_histogram        |=  (DT_REQUEST_ONLY_IN_GUI);
   self->request_histogram_source  =  (DT_DEV_PIXELPIPE_PREVIEW);
 
+  if(self->dev->gui_attached)
+  {
+    g->reprocess_on_next_expose = FALSE;
+  }
+
   gboolean histogram_is_good = ((self->histogram_stats.bins_count == 16384)
                                 && (self->histogram != NULL));
 
@@ -857,9 +862,10 @@ expose (GtkWidget *widget, GdkEventExpose *event, dt_iop_module_t *self)
 
   dt_iop_exposure_gui_data_t *g = (dt_iop_exposure_gui_data_t *)self->gui_data;
 
-  if(g->reprocess_on_next_expose)
+  if(self->enabled && g->reprocess_on_next_expose)
   {
     g->reprocess_on_next_expose = FALSE;
+    //FIXME: or just use dev->pipe->changed |= DT_DEV_PIPE_SYNCH; ?
     dt_dev_reprocess_all(self->dev);
     return TRUE;
   }

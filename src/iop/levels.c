@@ -376,6 +376,11 @@ void commit_params (dt_iop_module_t *self, dt_iop_params_t *p1,
   self->request_histogram_source  =  (DT_DEV_PIXELPIPE_PREVIEW);
   self->histogram_params.bins_count = 64;
 
+  if(self->dev->gui_attached)
+  {
+    g->reprocess_on_next_expose = FALSE;
+  }
+
   gboolean histogram_is_good = ((self->histogram_stats.bins_count == 16384)
                                 && (self->histogram != NULL));
 
@@ -869,7 +874,7 @@ static gboolean dt_iop_levels_vbox_automatic_expose(GtkWidget *widget, GdkEventE
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_levels_gui_data_t *g = (dt_iop_levels_gui_data_t *)self->gui_data;
 
-  if(g->reprocess_on_next_expose)
+  if(self->enabled && g->reprocess_on_next_expose)
   {
     g->reprocess_on_next_expose = FALSE;
     //FIXME: or just use dev->pipe->changed |= DT_DEV_PIPE_SYNCH; ?
