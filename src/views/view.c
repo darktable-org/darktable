@@ -215,6 +215,7 @@ int dt_view_manager_switch (dt_view_manager_t *vm, int k)
         plugin->gui_cleanup(plugin);
         dt_accel_disconnect_list(plugin->accel_closures);
         plugin->accel_closures = NULL;
+        plugin->widget = NULL;
       }
 
       /* get next plugin */
@@ -271,6 +272,7 @@ int dt_view_manager_switch (dt_view_manager_t *vm, int k)
           plugin->gui_cleanup(plugin);
           dt_accel_disconnect_list(plugin->accel_closures);
           plugin->accel_closures = NULL;
+          plugin->widget = NULL;
         }
 
         /* get next plugin */
