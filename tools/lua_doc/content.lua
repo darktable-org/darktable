@@ -610,7 +610,7 @@ types.dt_lib_module_t:add_version_info([[Type added]])
 types.dt_lib_module_t.id:set_text([[A unit string identifying the lib]])
 types.dt_lib_module_t.name:set_text([[The translated title of the UI element]])
 types.dt_lib_module_t.version:set_text([[The version of the internal data of this lib]])
-types.dt_lib_module_t.visible:set_text([[Whether the UI element is visible.]]..para()..
+types.dt_lib_module_t.visible:set_text([[Allow to make a lib module completely invisible to the user.]]..para()..
 [[Note that if the module is invisible the user will have no way to restore it without lua]])
 types.dt_lib_module_t.visible:set_attribute("implicit_yield",true)
 types.dt_lib_module_t.container:set_text([[The location of the lib in the darktable UI]])
@@ -621,6 +621,7 @@ types.dt_lib_module_t.views:set_text([[A table of all teh views that display thi
 types.dt_lib_module_t.reset:set_text([[A function to reset the lib to its default values]]..para()..
 [[This function will do nothing if the lib is not visible or can't be reset]])
 types.dt_lib_module_t.reset:add_parameter("self",my_tostring(types.dt_lib_module_t),[[The lib to reset]])
+types.dt_lib_module_t.on_screen:set_text([[True if the lib is currently visible on the screen]])
 
 types.dt_view_t:set_text([[A darktable view]])
 types.dt_view_t:add_version_info([[Type added]])

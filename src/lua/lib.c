@@ -29,6 +29,7 @@ typedef enum
   GET_EXPANDED,
   GET_POSITION,
   GET_VISIBLE,
+  GET_ON_SCREEN,
   GET_CONTAINER,
   GET_VIEWS,
   LAST_LIB_FIELD
@@ -42,6 +43,7 @@ static const char *lib_fields_name[] =
   "expanded",
   "position",
   "visible",
+  "on_screen",
   "container",
   "views",
   NULL
@@ -77,6 +79,9 @@ static int lib_index(lua_State*L)
       return 1;
     case GET_VISIBLE:
       lua_pushboolean(L,dt_lib_is_visible(module));
+      return 1;
+    case GET_ON_SCREEN:
+      lua_pushboolean(L,module->widget != NULL);
       return 1;
     case GET_CONTAINER:
       {
