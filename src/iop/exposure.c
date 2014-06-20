@@ -88,6 +88,8 @@ typedef struct dt_iop_exposure_gui_data_t
   uint32_t *deflicker_histogram; //used to cache histogram of source file
   dt_dev_histogram_stats_t deflicker_histogram_stats;
   gboolean reprocess_on_next_expose;
+  GtkLabel *deflicker_used_EC;
+  float deflicker_computed_exposure;
 }
 dt_iop_exposure_gui_data_t;
 
@@ -317,6 +319,7 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
 {
   dt_iop_exposure_data_t *d = (dt_iop_exposure_data_t *)piece->data;
   dt_iop_exposure_global_data_t *gd = (dt_iop_exposure_global_data_t *)self->data;
+  dt_iop_exposure_gui_data_t *g = (dt_iop_exposure_gui_data_t *)self->gui_data;
 
   if(d->mode == EXPOSURE_MODE_DEFLICKER)
   {
@@ -341,6 +344,10 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
   err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_exposure, sizes);
   if(err != CL_SUCCESS) goto error;
   for(int k=0; k<3; k++) piece->pipe->processed_maximum[k] *= scale;
+  if(g != NULL && self->dev->gui_attached && piece->pipe->type == DT_DEV_PIXELPIPE_PREVIEW)
+  {
+    g->deflicker_computed_exposure = d->exposure;
+  }
   return TRUE;
 
 error:
@@ -352,6 +359,7 @@ error:
 void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, void *o, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
 {
   dt_iop_exposure_data_t *d = (dt_iop_exposure_data_t *)piece->data;
+  dt_iop_exposure_gui_data_t *g = (dt_iop_exposure_gui_data_t *)self->gui_data;
 
   if(d->mode == EXPOSURE_MODE_DEFLICKER)
   {
@@ -379,6 +387,11 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
     dt_iop_alpha_copy(i, o, roi_out->width, roi_out->height);
 
   for(int k=0; k<3; k++) piece->pipe->processed_maximum[k] *= scale;
+
+  if(g != NULL && self->dev->gui_attached && piece->pipe->type == DT_DEV_PIXELPIPE_PREVIEW)
+  {
+    g->deflicker_computed_exposure = d->exposure;
+  }
 }
 
 void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
@@ -530,6 +543,11 @@ void gui_update(struct dt_iop_module_t *self)
 
   free(g->deflicker_histogram);
   g->deflicker_histogram = NULL;
+
+  g->reprocess_on_next_expose = FALSE;
+
+  gtk_label_set_text(g->deflicker_used_EC, "");
+  g->deflicker_computed_exposure = NAN;
 
   switch(p->mode)
   {
@@ -862,6 +880,18 @@ expose (GtkWidget *widget, GdkEventExpose *event, dt_iop_module_t *self)
 
   dt_iop_exposure_gui_data_t *g = (dt_iop_exposure_gui_data_t *)self->gui_data;
 
+  if(!isnan(g->deflicker_computed_exposure))
+  {
+    gchar *str = g_strdup_printf("%.2fEV", g->deflicker_computed_exposure);
+
+    darktable.gui->reset = 1;
+    gtk_label_set_text(g->deflicker_used_EC, str);
+    darktable.gui->reset = 0;
+
+    g_free(str);
+    g->deflicker_computed_exposure = NAN;
+  }
+
   if(self->enabled && g->reprocess_on_next_expose)
   {
     g->reprocess_on_next_expose = FALSE;
@@ -978,6 +1008,17 @@ void gui_init(struct dt_iop_module_t *self)
   dt_bauhaus_combobox_set_default(g->deflicker_histogram_source, DEFLICKER_HISTOGRAM_SOURCE_THUMBNAIL);
   dt_bauhaus_combobox_set(g->deflicker_histogram_source, g_list_index(g->modes, GUINT_TO_POINTER(p->deflicker_histogram_source)));
   gtk_box_pack_start(GTK_BOX(g->vbox_deflicker), GTK_WIDGET(g->deflicker_histogram_source), TRUE, TRUE, 0);
+
+  GtkHBox *hbox1 = GTK_HBOX(gtk_hbox_new(FALSE, 0));
+  GtkLabel *label = GTK_LABEL(gtk_label_new(_("computed EC: ")));
+  gtk_box_pack_start(GTK_BOX(hbox1), GTK_WIDGET(label), FALSE, FALSE, 0);
+
+  g->deflicker_used_EC = GTK_LABEL(gtk_label_new("")); // This gets filled in by process
+  g_object_set(GTK_OBJECT(g->deflicker_used_EC), "tooltip-text", _("what exposure correction have actually been used"), (char *)NULL);
+  gtk_box_pack_start(GTK_BOX(hbox1), GTK_WIDGET(g->deflicker_used_EC), FALSE, FALSE, 0);
+  g->deflicker_computed_exposure = NAN;
+
+  gtk_box_pack_start(GTK_BOX(g->vbox_deflicker), GTK_WIDGET(hbox1), FALSE, FALSE, 0);
 
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->vbox_deflicker), TRUE, TRUE, 0);
 
