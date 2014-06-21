@@ -3510,6 +3510,16 @@
 		<Crop x="0" y="0" width="3040" height="2024"/>
 		<Sensor black="127" white="3950"/>
 	</Camera>
+	<Camera make="PENTAX Corporation" model="PENTAX K100D Super">
+		<CFA width="2" height="2">
+			<Color x="0" y="0">RED</Color>
+			<Color x="1" y="0">GREEN</Color>
+			<Color x="0" y="1">GREEN</Color>
+			<Color x="1" y="1">BLUE</Color>
+		</CFA>
+		<Crop x="0" y="0" width="0" height="0"/>
+		<Sensor black="127" white="4095"/>
+	</Camera>
 	<Camera make="PENTAX" model="PENTAX K100D">
 		<CFA width="2" height="2">
 			<Color x="0" y="0">RED</Color>
@@ -3519,6 +3529,16 @@
 		</CFA>
 		<Crop x="0" y="0" width="3040" height="2024"/>
 		<Sensor black="127" white="3950"/>
+	</Camera>
+	<Camera make="PENTAX Corporation" model="PENTAX *ist D">
+		<CFA width="2" height="2">
+			<Color x="0" y="0">RED</Color>
+			<Color x="1" y="0">GREEN</Color>
+			<Color x="0" y="1">GREEN</Color>
+			<Color x="1" y="1">BLUE</Color>
+		</CFA>
+		<Crop x="0" y="0" width="0" height="0"/>
+		<Sensor black="128" white="4095"/>
 	</Camera>
 	<Camera make="PENTAX Corporation" model="PENTAX K10D">
 		<CFA width="2" height="2">
