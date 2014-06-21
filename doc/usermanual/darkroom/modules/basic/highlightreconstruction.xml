@@ -73,7 +73,7 @@
 
     <para>
       <quote>Reconstruct color</quote> uses an algorithm that transfers color information from
-      the unclipped surrounding sinto the clipped highlights. This method works very well on
+      the unclipped surroundings into the clipped highlights. This method works very well on
       areas with homogeneous colors and is especially useful on skin tones with smoothly fading
       highlights. It fails in certain cases where it produces maze-like artifacts at highlights
       behind high-contrast edges, such as fine, well-exposed structures in front of overexposed
