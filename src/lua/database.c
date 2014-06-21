@@ -149,7 +149,7 @@ static int database_len(lua_State*L)
   return 1;
 }
 
-static int database_index(lua_State*L)
+static int number_member(lua_State*L)
 {
   int index = luaL_checkinteger(L,-1);
   if(index < 1) {
@@ -182,17 +182,23 @@ int dt_lua_init_database(lua_State * L)
   lua_setfield(L,-2,"database");
   lua_pop(L,1);
 
-  dt_lua_register_type_callback_number_typeid(L,type_id,database_index,NULL,database_len);
+  lua_pushcfunction(L,number_member);
+  dt_lua_type_register_number_const_typeid(L,type_id,database_len);
   lua_pushcfunction(L,dt_lua_duplicate_image);
-  dt_lua_register_type_callback_stack_typeid(L,type_id,"duplicate");
+  lua_pushcclosure(L,dt_lua_type_member_common,1);
+  dt_lua_type_register_const_typeid(L,type_id,"duplicate");
   lua_pushcfunction(L,dt_lua_delete_image);
-  dt_lua_register_type_callback_stack_typeid(L,type_id,"delete");
+  lua_pushcclosure(L,dt_lua_type_member_common,1);
+  dt_lua_type_register_const_typeid(L,type_id,"delete");
   lua_pushcfunction(L,import_images);
-  dt_lua_register_type_callback_stack_typeid(L,type_id,"import");
+  lua_pushcclosure(L,dt_lua_type_member_common,1);
+  dt_lua_type_register_const_typeid(L,type_id,"import");
   lua_pushcfunction(L,dt_lua_move_image);
-  dt_lua_register_type_callback_stack_typeid(L,type_id,"move_image");
+  lua_pushcclosure(L,dt_lua_type_member_common,1);
+  dt_lua_type_register_const_typeid(L,type_id,"move_image");
   lua_pushcfunction(L,dt_lua_copy_image);
-  dt_lua_register_type_callback_stack_typeid(L,type_id,"copy_image");
+  lua_pushcclosure(L,dt_lua_type_member_common,1);
+  dt_lua_type_register_const_typeid(L,type_id,"copy_image");
 
   return 0;
 }

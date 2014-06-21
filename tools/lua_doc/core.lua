@@ -94,18 +94,24 @@ local function document_type_sub(node,result,parent,prev_name)
 			set_attribute(result["#"],"is_attribute",true)
 		elseif field == "__get" then
 			for k,v in pairs(node.__get) do
-				nojoin[v] = true
-				result[k] = document_unknown(v,result,k)
-				set_attribute(result[k],"read",true)
-				set_attribute(result[k],"is_attribute",true)
+				if not node.__luaA_ParentMetatable or
+					node.__luaA_ParentMetatable.__get[k] ~= v then
+					nojoin[v] = true
+					result[k] = document_unknown(v,result,k)
+					set_attribute(result[k],"read",true)
+					set_attribute(result[k],"is_attribute",true)
+				end
 			end
 			for k,v in pairs(node.__set) do
-				nojoin[v] = true
-				if not result[k] then
-					result[k] = document_unknown(v,result,k)
+				if not node.__luaA_ParentMetatable or
+					node.__luaA_ParentMetatable.__set[k] ~= v then
+					nojoin[v] = true
+					if not result[k] then
+						result[k] = document_unknown(v,result,k)
+					end
+					set_attribute(result[k],"write",true)
+					set_attribute(result[k],"is_attribute",true)
 				end
-				set_attribute(result[k],"write",true)
-				set_attribute(result[k],"is_attribute",true)
 			end
 		elseif field == "__luaA_ParentMetatable" then
 				local type_node = create_documentation_node(value,toplevel.types,value.__luaA_TypeName);

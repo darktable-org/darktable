@@ -116,7 +116,8 @@ dt_imageio_load_module_format (dt_imageio_module_format_t *module, const char *l
 #endif
     module->init(module);
 #ifdef USE_LUA
-    dt_lua_register_type_callback_type_typeid(darktable.lua_state.state,my_type,NULL,NULL,my_type);
+    lua_pushcfunction(darktable.lua_state.state,dt_lua_type_member_luaautoc);
+    dt_lua_type_register_struct_typeid(darktable.lua_state.state,my_type);
   }
 #endif
 
@@ -233,7 +234,8 @@ dt_imageio_load_module_storage (dt_imageio_module_storage_t *module, const char 
 #endif
   module->init(module);
 #ifdef USE_LUA
-    dt_lua_register_type_callback_type_typeid(darktable.lua_state.state,my_type,NULL,NULL,my_type);
+    lua_pushcfunction(darktable.lua_state.state,dt_lua_type_member_luaautoc);
+    dt_lua_type_register_struct_typeid(darktable.lua_state.state,my_type);
   }
 #endif
 

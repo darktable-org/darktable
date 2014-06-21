@@ -350,6 +350,9 @@ darktable.modules.storage.email:set_alias(darktable.modules.storage.flickr)
 darktable.modules.storage.email:set_alias(darktable.modules.storage.facebook)
 darktable.modules.storage.email:set_alias(darktable.modules.storage.picasa)
 
+for k, v in darktable.modules.view:unskiped_children() do
+	v:set_main_parent(darktable.modules.view)
+end
 darktable.modules.view:set_text([[The different views in darktable]])
 darktable.modules.view:add_version_info([[View objects added]])
 darktable.modules.view.map:set_text([[The map view]])

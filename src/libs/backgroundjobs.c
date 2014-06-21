@@ -418,16 +418,17 @@ void init(struct dt_lib_module_t *self)
   int my_typeid = dt_lua_module_get_entry_typeid(L,"lib",self->plugin_name);
   lua_pushlightuserdata(L,self);
   lua_pushcclosure(L,lua_create_job,1);
-  dt_lua_register_type_callback_stack_typeid(L,my_typeid,"create_job");
+  lua_pushcclosure(L,dt_lua_type_member_common,1);
+  dt_lua_type_register_const_typeid(L,my_typeid,"create_job");
 
   // create a type describing a job object
   int job_typeid = dt_lua_init_gpointer_type(L,dt_lua_backgroundjob_t);
   lua_pushlightuserdata(L,self);
   lua_pushcclosure(L,lua_job_progress,1);
-  dt_lua_register_type_callback_stack_entry_typeid(L,job_typeid,"percent");
+  dt_lua_type_register_typeid(L,job_typeid,"percent");
   lua_pushlightuserdata(L,self);
   lua_pushcclosure(L,lua_job_valid,1);
-  dt_lua_register_type_callback_stack_entry_typeid(L,job_typeid,"valid");
+  dt_lua_type_register_typeid(L,job_typeid,"valid");
 #endif //USE_LUA
 }
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

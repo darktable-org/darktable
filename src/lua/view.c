@@ -19,46 +19,19 @@
 #include "lua/modules.h"
 #include "lua/types.h"
 
-typedef enum
+static int id_member(lua_State *L) 
 {
-  GET_ID,
-  GET_NAME,
-  LAST_VIEW_FIELD
-} view_fields;
-static const char *view_fields_name[] =
-{
-  "id",
-  "name",
-  NULL
-};
-
-static int view_index(lua_State*L)
-{
-  int index = luaL_checkoption(L,-1,NULL,view_fields_name);
-  dt_view_t * module = *(dt_view_t**)lua_touserdata(L,-2);
-  switch(index)
-  {
-    case GET_ID:
-      lua_pushstring(L,module->module_name);
-      return 1;
-    case GET_NAME:
-      lua_pushstring(L,module->name(module));
-      return 1;
-    default:
-      return luaL_error(L,"should never happen %d",index);
-  }
+  dt_view_t * module = *(dt_view_t**)lua_touserdata(L,1);
+  lua_pushstring(L,module->module_name);
+  return 1;
 }
-/*
-static int lib_newindex(lua_State*L)
+
+static int name_member(lua_State *L) 
 {
-  int index = luaL_checkoption(L,2,NULL,lib_fields_name);
-  dt_lib_module_t * module = *(dt_lib_module_t**)lua_touserdata(L,1);
-  switch(index)
-  {
-    default:
-      return luaL_error(L,"unknown index for lib : ",lua_tostring(L,-2));
-  }
-}*/
+  dt_view_t * module = *(dt_view_t**)lua_touserdata(L,1);
+      lua_pushstring(L,module->name(module));
+  return 1;
+}
 
 static int view_tostring(lua_State* L)
 {
@@ -71,7 +44,7 @@ void dt_lua_register_view(lua_State* L,dt_view_t* module)
 {
   dt_lua_register_module_entry_new(L,"view",module->module_name,module);
   int my_type = dt_lua_module_get_entry_typeid(L,"view",module->module_name);
-  dt_lua_register_type_callback_inherit_typeid(L,my_type,luaA_type_find("dt_view_t"));
+  dt_lua_type_register_parent_typeid(L,my_type,luaA_type_find("dt_view_t"));
   luaL_getmetatable(L,luaA_type_name(my_type));
   lua_pushcfunction(L,view_tostring);
   lua_setfield(L,-2,"__tostring");
@@ -81,10 +54,10 @@ int dt_lua_init_view(lua_State *L)
 {
 
   dt_lua_init_type(L,dt_view_t);
-  dt_lua_register_type_callback_list(L,dt_view_t,view_index,NULL,view_fields_name);
-  // add a writer to the read/write fields
-  //dt_lua_register_type_callback(L,dt_view_t,lib_index,lib_newindex,
-    //  "expanded","visible", NULL) ;
+  lua_pushcfunction(L,id_member);
+  dt_lua_type_register_const(L,dt_view_t,"id");
+  lua_pushcfunction(L,name_member);
+  dt_lua_type_register_const(L,dt_view_t,"name");
 
   dt_lua_init_module_type(L,"view");
   return 0;

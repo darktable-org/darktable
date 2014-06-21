@@ -208,14 +208,19 @@ int dt_lua_tag_get_attached(lua_State *L)
 int dt_lua_init_tags(lua_State*L)
 {
   dt_lua_init_int_type(L,dt_lua_tag_t);
-  dt_lua_register_type_callback_number(L,dt_lua_tag_t,tag_index,NULL,tag_length);
-  dt_lua_register_type_callback(L,dt_lua_tag_t,tag_name,NULL,"name",NULL);
+  lua_pushcfunction(L,tag_index);
+  dt_lua_type_register_number_const(L,dt_lua_tag_t,tag_length);
+  lua_pushcfunction(L,tag_name);
+  dt_lua_type_register_const(L,dt_lua_tag_t,"name");
   lua_pushcfunction(L,tag_delete);
-  dt_lua_register_type_callback_stack(L,dt_lua_tag_t,"delete");
+  lua_pushcclosure(L,dt_lua_type_member_common,1);
+  dt_lua_type_register_const(L,dt_lua_tag_t,"delete");
   lua_pushcfunction(L,dt_lua_tag_attach);
-  dt_lua_register_type_callback_stack(L,dt_lua_tag_t,"attach");
+  lua_pushcclosure(L,dt_lua_type_member_common,1);
+  dt_lua_type_register_const(L,dt_lua_tag_t,"attach");
   lua_pushcfunction(L,dt_lua_tag_detach);
-  dt_lua_register_type_callback_stack(L,dt_lua_tag_t,"detach");
+  lua_pushcclosure(L,dt_lua_type_member_common,1);
+  dt_lua_type_register_const(L,dt_lua_tag_t,"detach");
   luaL_getmetatable(L,"dt_lua_tag_t");
   lua_pushcfunction(L,tag_tostring);
   lua_setfield(L,-2,"__tostring");
@@ -227,19 +232,26 @@ int dt_lua_init_tags(lua_State*L)
   lua_setfield(L,-2,"tags");
   lua_pop(L,1);
 
-  dt_lua_register_type_callback_number_typeid(L,type_id,tag_lib_index,NULL,tag_lib_length);
+  lua_pushcfunction(L,tag_lib_index);
+  dt_lua_type_register_number_const_typeid(L,type_id,tag_lib_length);
   lua_pushcfunction(L,tag_lib_create);
-  dt_lua_register_type_callback_stack_typeid(L,type_id,"create");
+  lua_pushcclosure(L,dt_lua_type_member_common,1);
+  dt_lua_type_register_const_typeid(L,type_id,"create");
   lua_pushcfunction(L,tag_lib_find);
-  dt_lua_register_type_callback_stack_typeid(L,type_id,"find");
+  lua_pushcclosure(L,dt_lua_type_member_common,1);
+  dt_lua_type_register_const_typeid(L,type_id,"find");
   lua_pushcfunction(L,tag_delete);
-  dt_lua_register_type_callback_stack_typeid(L,type_id,"delete");
+  lua_pushcclosure(L,dt_lua_type_member_common,1);
+  dt_lua_type_register_const_typeid(L,type_id,"delete");
   lua_pushcfunction(L,dt_lua_tag_attach);
-  dt_lua_register_type_callback_stack_typeid(L,type_id,"attach");
+  lua_pushcclosure(L,dt_lua_type_member_common,1);
+  dt_lua_type_register_const_typeid(L,type_id,"attach");
   lua_pushcfunction(L,dt_lua_tag_detach);
-  dt_lua_register_type_callback_stack_typeid(L,type_id,"detach");
+  lua_pushcclosure(L,dt_lua_type_member_common,1);
+  dt_lua_type_register_const_typeid(L,type_id,"detach");
   lua_pushcfunction(L,dt_lua_tag_get_attached);
-  dt_lua_register_type_callback_stack_typeid(L,type_id,"get_tags");
+  lua_pushcclosure(L,dt_lua_type_member_common,1);
+  dt_lua_type_register_const_typeid(L,type_id,"get_tags");
 
 
   return 0;

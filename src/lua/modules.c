@@ -45,7 +45,8 @@ void dt_lua_register_module_entry_new(lua_State *L, const char* module_type_name
   lua_getfield(L,-1,"__luaA_Type");
   luaA_Type table_type = luaL_checkint(L,-1);
   lua_pop(L,3);
-  dt_lua_register_type_callback_stack_typeid(L,table_type,entry_name);
+  lua_pushcclosure(L,dt_lua_type_member_common,1);
+  dt_lua_type_register_const_typeid(L,table_type,entry_name);
 }
 
 void dt_lua_register_module_entry(lua_State *L, int index, const char* module_type_name,const char* entry_name)
@@ -58,7 +59,8 @@ void dt_lua_register_module_entry(lua_State *L, int index, const char* module_ty
   luaA_Type table_type = luaL_checkint(L,-1);
   lua_pop(L,3);
   lua_pushvalue(L,index);
-  dt_lua_register_type_callback_stack_typeid(L,table_type,entry_name);
+  lua_pushcclosure(L,dt_lua_type_member_common,1);
+  dt_lua_type_register_const_typeid(L,table_type,entry_name);
 }
 
 void dt_lua_module_push_entry(lua_State *L, const char* module_type_name,const char* entry_name)
@@ -113,7 +115,8 @@ void dt_lua_register_current_preset(lua_State*L, const char* module_type_name, c
   char tmp_string[1024];
   snprintf(tmp_string, sizeof(tmp_string),"module_current_settings_%s_%s",module_type_name,entry_name);
   dt_lua_init_wrapped_singleton(L,pusher,getter,tmp_string,entry);
-  dt_lua_register_type_callback_stack_typeid(L,entry_type,"settings");
+  lua_pushcclosure(L,dt_lua_type_member_common,1);
+  dt_lua_type_register_const_typeid(L,entry_type,"settings");
 }
 
 

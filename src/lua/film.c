@@ -26,54 +26,34 @@
 #include "common/grealpath.h"
 #include <errno.h>
 
-static int film_delete(lua_State *L);
-
-typedef enum
-{
-  PATH,
-  ID,
-  DELETE,
-  LAST_FILM_FIELD
-} film_fields;
-const char *film_fields_name[] =
-{
-  "path",
-  "id",
-  "delete",
-  NULL
-};
-static int film_index(lua_State *L)
+static int path_member(lua_State *L)
 {
   dt_lua_film_t film_id;
-  luaA_to(L,dt_lua_film_t,&film_id,-2);
-  switch(luaL_checkoption(L,-1,NULL,film_fields_name))
+  luaA_to(L,dt_lua_film_t,&film_id,1);
+  sqlite3_stmt *stmt;
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select folder from film_rolls where id  = ?1", -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, film_id);
+  if(sqlite3_step(stmt) == SQLITE_ROW)
   {
-    case PATH:
-      {
-        sqlite3_stmt *stmt;
-        DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select folder from film_rolls where id  = ?1", -1, &stmt, NULL);
-        DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, film_id);
-        if(sqlite3_step(stmt) == SQLITE_ROW)
-        {
-          lua_pushstring(L,(char *)sqlite3_column_text(stmt, 0));
-        }
-        else
-        {
-          sqlite3_finalize(stmt);
-          return luaL_error(L,"should never happen");
-        }
-        sqlite3_finalize(stmt);
-        break;
-      }
-    case ID:
-      lua_pushinteger(L,film_id);
-      break;
-    case DELETE:
-      lua_pushcfunction(L,film_delete);
-      break;
+    lua_pushstring(L,(char *)sqlite3_column_text(stmt, 0));
   }
+  else
+  {
+    sqlite3_finalize(stmt);
+    return luaL_error(L,"should never happen");
+  }
+  sqlite3_finalize(stmt);
   return 1;
 }
+
+static int id_member(lua_State *L)
+{
+  dt_lua_film_t film_id;
+  luaA_to(L,dt_lua_film_t,&film_id,1);
+  lua_pushinteger(L,film_id);
+  return 1;
+}
+
 
 static int film_delete(lua_State *L)
 {
@@ -217,12 +197,22 @@ int dt_lua_init_film(lua_State * L)
 {
 
   dt_lua_init_int_type(L,dt_lua_film_t);
-  dt_lua_register_type_callback_list(L,dt_lua_film_t,film_index,NULL,film_fields_name);
-  dt_lua_register_type_callback_number(L,dt_lua_film_t,film_getnum,NULL,film_len);
+  lua_pushcfunction(L,film_delete);
+  lua_pushcclosure(L,dt_lua_type_member_common,1);
+  dt_lua_type_register_const(L,dt_lua_film_t,"delete");
+  lua_pushcfunction(L,path_member);
+  dt_lua_type_register(L,dt_lua_film_t,"path");
+  lua_pushcfunction(L,id_member);
+  dt_lua_type_register(L,dt_lua_film_t,"id");
+
+  lua_pushcfunction(L,film_getnum);
+  dt_lua_type_register_number_const(L,dt_lua_film_t,film_len);
   lua_pushcfunction(L,dt_lua_move_image);
-  dt_lua_register_type_callback_stack(L,dt_lua_film_t,"move_image");
+  lua_pushcclosure(L,dt_lua_type_member_common,1);
+  dt_lua_type_register_const(L,dt_lua_film_t,"move_image");
   lua_pushcfunction(L,dt_lua_copy_image);
-  dt_lua_register_type_callback_stack(L,dt_lua_film_t,"copy_image");
+  lua_pushcclosure(L,dt_lua_type_member_common,1);
+  dt_lua_type_register_const(L,dt_lua_film_t,"copy_image");
   luaL_getmetatable(L,"dt_lua_film_t");
   lua_pushcfunction(L,film_tostring);
   lua_setfield(L,-2,"__tostring");
@@ -234,11 +224,14 @@ int dt_lua_init_film(lua_State * L)
   lua_setfield(L,-2,"films");
   lua_pop(L,1);
 
-  dt_lua_register_type_callback_number_typeid(L,type_id,films_index,NULL,films_len);
+  lua_pushcfunction(L,films_index);
+  dt_lua_type_register_number_const_typeid(L,type_id,films_len);
   lua_pushcfunction(L,films_new);
-  dt_lua_register_type_callback_stack_typeid(L,type_id,"new");
+  lua_pushcclosure(L,dt_lua_type_member_common,1);
+  dt_lua_type_register_const_typeid(L,type_id,"new");
   lua_pushcfunction(L,film_delete);
-  dt_lua_register_type_callback_stack_typeid(L,type_id,"delete");
+  lua_pushcclosure(L,dt_lua_type_member_common,1);
+  dt_lua_type_register_const_typeid(L,type_id,"delete");
 
   return 0;
 }

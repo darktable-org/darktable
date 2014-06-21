@@ -123,11 +123,15 @@ int dt_lua_init_gui(lua_State * L)
     lua_pop(L,1);
 
     lua_pushcfunction(L,selection_cb);
-    dt_lua_register_type_callback_stack_typeid(L,type_id,"selection");
-    dt_lua_register_type_callback_typeid(L,type_id,hovered_cb,NULL,"hovered",NULL);
-    dt_lua_register_type_callback_typeid(L,type_id,act_on_cb,NULL,"action_images",NULL);
+    lua_pushcclosure(L,dt_lua_type_member_common,1);
+    dt_lua_type_register_const_typeid(L,type_id,"selection");
+    lua_pushcfunction(L,hovered_cb);
+    dt_lua_type_register_const_typeid(L,type_id,"hovered");
+    lua_pushcfunction(L,act_on_cb);
+    dt_lua_type_register_const_typeid(L,type_id,"action_images");
     lua_pushcfunction(L,current_view_cb);
-    dt_lua_register_type_callback_stack_typeid(L,type_id,"current_view");
+    lua_pushcclosure(L,dt_lua_type_member_common,1);
+    dt_lua_type_register_const_typeid(L,type_id,"current_view");
   }
   return 0;
 }
