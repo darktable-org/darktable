@@ -208,8 +208,9 @@ int dt_lua_tag_get_attached(lua_State *L)
 int dt_lua_init_tags(lua_State*L)
 {
   dt_lua_init_int_type(L,dt_lua_tag_t);
+  lua_pushcfunction(L,tag_length);
   lua_pushcfunction(L,tag_index);
-  dt_lua_type_register_number_const(L,dt_lua_tag_t,tag_length);
+  dt_lua_type_register_number_const(L,dt_lua_tag_t);
   lua_pushcfunction(L,tag_name);
   dt_lua_type_register_const(L,dt_lua_tag_t,"name");
   lua_pushcfunction(L,tag_delete);
@@ -232,8 +233,9 @@ int dt_lua_init_tags(lua_State*L)
   lua_setfield(L,-2,"tags");
   lua_pop(L,1);
 
+  lua_pushcfunction(L,tag_lib_length);
   lua_pushcfunction(L,tag_lib_index);
-  dt_lua_type_register_number_const_typeid(L,type_id,tag_lib_length);
+  dt_lua_type_register_number_const_typeid(L,type_id);
   lua_pushcfunction(L,tag_lib_create);
   lua_pushcclosure(L,dt_lua_type_member_common,1);
   dt_lua_type_register_const_typeid(L,type_id,"create");

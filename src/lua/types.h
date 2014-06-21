@@ -84,13 +84,14 @@ void dt_lua_type_register_typeid(lua_State* L,luaA_Type type_id,const char* name
 void dt_lua_type_register_struct_typeid(lua_State* L,luaA_Type type_id);
 
 // register a function for number index
-// the function will be used for index, newindex AND len
-#define dt_lua_type_register_number(L,type_name,len) \
-  dt_lua_type_register_number_typeid(L,luaA_type_find(#type_name),len)
-void dt_lua_type_register_number_typeid(lua_State* L,luaA_Type type_id,lua_CFunction len);
-#define dt_lua_type_register_number_const(L,type_name,len) \
-  dt_lua_type_register_number_const_typeid(L,luaA_type_find(#type_name),len)
-void dt_lua_type_register_number_const_typeid(lua_State* L,luaA_Type type_id,lua_CFunction len);
+// first push the len function (can be nil)
+// then push the member function
+#define dt_lua_type_register_number(L,type_name) \
+  dt_lua_type_register_number_typeid(L,luaA_type_find(#type_name))
+void dt_lua_type_register_number_typeid(lua_State* L,luaA_Type type_id);
+#define dt_lua_type_register_number_const(L,type_name) \
+  dt_lua_type_register_number_const_typeid(L,luaA_type_find(#type_name))
+void dt_lua_type_register_number_const_typeid(lua_State* L,luaA_Type type_id);
 
 /// register a type as a parent type
 /// the type will reuse all functions from the parent (overwriting its own if any)

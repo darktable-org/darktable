@@ -182,8 +182,9 @@ int dt_lua_init_database(lua_State * L)
   lua_setfield(L,-2,"database");
   lua_pop(L,1);
 
+  lua_pushcfunction(L,database_len);
   lua_pushcfunction(L,number_member);
-  dt_lua_type_register_number_const_typeid(L,type_id,database_len);
+  dt_lua_type_register_number_const_typeid(L,type_id);
   lua_pushcfunction(L,dt_lua_duplicate_image);
   lua_pushcclosure(L,dt_lua_type_member_common,1);
   dt_lua_type_register_const_typeid(L,type_id,"duplicate");

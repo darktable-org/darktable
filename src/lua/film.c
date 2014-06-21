@@ -205,8 +205,9 @@ int dt_lua_init_film(lua_State * L)
   lua_pushcfunction(L,id_member);
   dt_lua_type_register(L,dt_lua_film_t,"id");
 
+  lua_pushcfunction(L,film_len);
   lua_pushcfunction(L,film_getnum);
-  dt_lua_type_register_number_const(L,dt_lua_film_t,film_len);
+  dt_lua_type_register_number_const(L,dt_lua_film_t);
   lua_pushcfunction(L,dt_lua_move_image);
   lua_pushcclosure(L,dt_lua_type_member_common,1);
   dt_lua_type_register_const(L,dt_lua_film_t,"move_image");
@@ -224,8 +225,9 @@ int dt_lua_init_film(lua_State * L)
   lua_setfield(L,-2,"films");
   lua_pop(L,1);
 
+  lua_pushcfunction(L,films_len);
   lua_pushcfunction(L,films_index);
-  dt_lua_type_register_number_const_typeid(L,type_id,films_len);
+  dt_lua_type_register_number_const_typeid(L,type_id);
   lua_pushcfunction(L,films_new);
   lua_pushcclosure(L,dt_lua_type_member_common,1);
   dt_lua_type_register_const_typeid(L,type_id,"new");

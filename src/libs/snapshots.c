@@ -641,8 +641,9 @@ void init(struct dt_lib_module_t *self)
   lua_pushcclosure(L,lua_take_snapshot,1);
   lua_pushcclosure(L,dt_lua_type_member_common,1);
   dt_lua_type_register_const_typeid(L,my_typeid,"take_snapshot");
+  lua_pushcfunction(L,snapshots_length);
   lua_pushcfunction(L,number_member);
-  dt_lua_type_register_number_typeid(L,my_typeid,snapshots_length);
+  dt_lua_type_register_number_typeid(L,my_typeid);
   lua_pushcfunction(L,selected_member);
   dt_lua_type_register_const_typeid(L,my_typeid,"selected");
 

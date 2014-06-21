@@ -275,8 +275,9 @@ int dt_lua_init_styles(lua_State * L)
   dt_lua_type_register_const(L,dt_style_t,"name");
   lua_pushcfunction(L,description_member);
   dt_lua_type_register_const(L,dt_style_t,"description");
+  lua_pushcfunction(L,style_length);
   lua_pushcfunction(L,style_getnumber);
-  dt_lua_type_register_number_const(L,dt_style_t,style_length);
+  dt_lua_type_register_number_const(L,dt_style_t);
   lua_pushcfunction(L,style_duplicate);
   lua_pushcclosure(L,dt_lua_type_member_common,1);
   dt_lua_type_register_const(L,dt_style_t,"duplicate");
@@ -318,8 +319,9 @@ int dt_lua_init_styles(lua_State * L)
   lua_setfield(L,-2,"styles");
   lua_pop(L,1);
 
+  lua_pushcfunction(L,style_table_len);
   lua_pushcfunction(L,style_table_index);
-  dt_lua_type_register_number_const_typeid(L,type_id,style_table_len);
+  dt_lua_type_register_number_const_typeid(L,type_id);
   lua_pushcfunction(L,style_duplicate);
   lua_pushcclosure(L,dt_lua_type_member_common,1);
   dt_lua_type_register_const_typeid(L,type_id,"duplicate");
