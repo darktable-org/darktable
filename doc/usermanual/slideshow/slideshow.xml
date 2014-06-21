@@ -38,7 +38,7 @@
     <title>Overview</title>
 
     <para>
-      Entering the slideshow view starts a slide show of the images of the current collection
+      Entering the slideshow view starts a slideshow of the images of the current collection
       with filtering rules and sort order applied. To learn more on how to define the
       collection, the filtering and the sort order see <xref linkend="collect_images"/> and
       <xref linkend="filtering_and_sort_order"/>.

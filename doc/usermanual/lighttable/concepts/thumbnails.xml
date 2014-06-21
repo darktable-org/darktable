@@ -46,10 +46,10 @@
 
     <para>
       As the thumbnail cache has a pre-defined maximum size it will eventually get filled up.
-      Then if new thumbnails get in, old ones need to be dropped. This typically passes
+      Then if new thumbnails are added, old ones need to be dropped. This typically passes
       unnoticed to the user unless a too small cache size is selected. In that case you might
       observe adverse effects like continuous regeneration of thumbnails each time you move in
-      your collection, flickering of thumbnail images, or even darktable getting unresponsive
+      your collection, flickering of thumbnail images, or even darktable becoming unresponsive
       while continuously generating new thumbnails and dropping them again. A good choice of the
       cache size is 512MB or higher. Please mind that the inherent limits of <emphasis>32-bit
       systems</emphasis> will force you to go for a much lower cache size (see

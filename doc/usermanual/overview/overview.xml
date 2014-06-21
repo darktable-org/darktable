@@ -330,9 +330,11 @@
 
             <listitem><para>
               A string containing lua commands to execute after lua initialization. These
-	      commands will be run after your <quote>luarc</quote> file.
-	      </para><para>
-	      If lua is not compiled in, this option will be accepted but won't do anything
+              commands will be run after your <quote>luarc</quote> file.
+            </para>
+
+            <para>
+              If lua is not compiled in, this option will be accepted but won't do anything
             </para></listitem>
 
           </varlistentry>

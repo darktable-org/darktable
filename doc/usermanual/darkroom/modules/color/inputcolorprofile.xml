@@ -66,8 +66,8 @@
 
     <para>
       In this module you define the input color profile, i.e. how colors of your input image are
-      to be interpreted. You also have an option to make colors get confined to a certain gamut
-      in order to mitigate some (infrequent) color artifacts.
+      to be interpreted. You also have an option to have colors confined to a certain gamut in
+      order to mitigate some (infrequent) color artifacts.
     </para>
 
     <sect5>

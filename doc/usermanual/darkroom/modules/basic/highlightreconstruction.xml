@@ -72,16 +72,16 @@
     </para>
 
     <para>
-      <quote>Recontruct color</quote> uses an algorithm that transfers color information from
-      the unclipped surrounding into the clipped highlights. This method works very well on
+      <quote>Reconstruct color</quote> uses an algorithm that transfers color information from
+      the unclipped surrounding sinto the clipped highlights. This method works very well on
       areas with homogeneous colors and is especially useful on skin tones with smoothly fading
-      highlights. It has fail cases where it produces maze-like artifacts at highlights behind
-      high-contrast edges, such as fine, well-exposed structures in front of overexposed
+      highlights. It fails in certain cases where it produces maze-like artifacts at highlights
+      behind high-contrast edges, such as fine, well-exposed structures in front of overexposed
       background (for instance ship masts or flags in front of the blown-out sky).
     </para>
 
     <para>
-      Tip: for highlight reconstruction to take effect you need to apply a negative EV
+      Tip: for highlight reconstruction to be effective you need to apply a negative EV
       correction in the exposure module (see <xref linkend="exposure"/>). If you want to avoid a
       general darkening of your image you can use darktable's mask feature in that module to
       limit the EV correction to only the highlights (see <xref linkend="drawn_mask"/> and
@@ -91,7 +91,7 @@
     <sect5>
       <title>method</title>
       <para>
-        Choose the methods for highlight reconstruction.
+        Choose the method for highlight reconstruction.
       </para>
     </sect5>
 

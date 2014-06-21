@@ -51,7 +51,7 @@
               of whether the image has already been altered in darkroom. Also, when the mouse
               hovers over an image frame, image information (EXIF data, metadata) is shown in
               the <link linkend="image_information"><emphasis>image
-              information</emphasis></link> panel in the bottom left.
+              information</emphasis></link> panel at the bottom left.
             </entry>
             <entry>
               <graphic fileref="images/lighttable_thumb.png" scalefit="1" width="80%" align="center" />
@@ -149,13 +149,13 @@
     </para>
 
     <para>
-      At the bottom you have an option to choose between zoomable lighttable view or filemanager
-      view of the thumbnails. In zoomable lighttable view, scroll with your mouse wheel to zoom
-      in and out. Moving the mouse while <emphasis>pressing the left mouse button</emphasis>
-      allows you to navigate through your collection. In filemanager view, you can can change
-      the number of images in each row, using the slider next to the filemanager option, or by
-      using <emphasis>ctrl-(mouse wheel)</emphasis>. Use your mouse wheel to navigate through
-      your collection.
+      In the bottom panel you have an option to choose between zoomable lighttable view or
+      filemanager view of the thumbnails. In zoomable lighttable view, scroll with your mouse
+      wheel to zoom in and out. Moving the mouse while <emphasis>pressing the left mouse
+      button</emphasis> allows you to navigate through your collection. In filemanager view, you
+      can can change the number of images in each row, using the slider next to the filemanager
+      option, or by using <emphasis>ctrl-(mouse wheel)</emphasis>. Use your mouse wheel to
+      navigate through your collection.
     </para>
 
     <para>

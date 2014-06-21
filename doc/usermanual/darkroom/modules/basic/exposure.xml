@@ -138,12 +138,12 @@
     <sect5>
       <title>auto</title>
       <para>
-        Activating this checkbox makes darktable calculate a correct exposition for the
+        Activating this checkbox makes darktable calculate a correct exposure for the
         rectangular view appearing in the centre of the image. You can draw your own selection
-        using your mouse. An adjustment slider right to the auto exposure checkbox lets you
-        define what percentage of bright values are to be clipped out in the calculation. This
-        feature is not to be confused with the <quote>automatic</quote> mode of this exposure
-        module and is only available in <quote>manual</quote> mode.
+        using your mouse. An adjustment slider to the right of the auto exposure checkbox lets
+        you define what percentage of bright values are to be clipped out in the calculation.
+        This feature is not to be confused with the <quote>automatic</quote> mode of the
+        exposure module and is only available in <quote>manual</quote> mode.
       </para>
     </sect5>
 

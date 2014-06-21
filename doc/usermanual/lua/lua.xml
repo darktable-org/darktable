@@ -197,16 +197,17 @@
 
     <sect2 id="lua_lib">
 
-       <title>Using Darktable from a lua script</title>
+      <title>Using Darktable from a lua script</title>
 
       <para>
-        The lua interface allows you to use darktable from any lua script. This will load darktable as
-	a library and provide you with most of the lua API (darktable is configured headless, so the 
-	functions related to the user interface are not available).
+        The lua interface allows you to use darktable from any lua script. This will load
+        darktable as a library and provide you with most of the lua API (darktable is configured
+        headless, so the functions related to the user interface are not available).
       </para>
+
       <para>
-	As an example, the following program will print the list of all images in your library.
-	<programlisting language="lua">#!/usr/bin/env lua
+        As an example, the following program will print the list of all images in your library.
+<programlisting language="lua">#!/usr/bin/env lua
 package = require "package"
 package.cpath=package.cpath..";./lib/darktable/lib?.so"
 
@@ -224,15 +225,26 @@ for k,v in ipairs(dt.database) do
 	print(tostring(v))
 end
 </programlisting>
-    </para>
-    <para>
-Note the thid line that points to the location of the <filename>libdarktable.so</filename> file.
-    </para>
-    <para>
-	    Also note that the call to <function>require</function> returns a function that can be called only once and allows you to set darktable's command line parameter. The <function>:memory:</function> parameter to <function>--library</function> is usefull here if you don't want to work on your personal library
+      </para>
 
-    </para>
-  </sect2>
+      <para>
+        Note the thid line that points to the location of the
+        <filename>libdarktable.so</filename> file.
+      </para>
+
+      <para>
+        Also note that the call to
+        <function>require</function>
+        returns a function that can be called only once and allows you to set darktable's
+        command line parameter. The
+        <function>:memory:</function>
+        parameter to
+        <function>--library</function>
+        is usefull here if you don't want to work on your personal library
+      </para>
+
+    </sect2>
+
   </sect1>
 
 <!-- Lua Api -->

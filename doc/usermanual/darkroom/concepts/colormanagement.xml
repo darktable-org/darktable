@@ -154,15 +154,15 @@
       Pixels with these kind of values are said to have <quote>unbounded colors</quote>. One
       could <emphasis>clamp</emphasis> (i.e. confine) those values to the allowed range at every
       processing step. However, it has been found that it is much preferred and less prone to
-      artifacts to not clamp in-between unbounded colors but treat them just like any other
+      artifacts to not clamp in-between unbounded colors, but treat them just like any other
       color data.
     </para>
 
     <para>
       In darktable there is no technical requirement for clamping; due to the fact that we are
-      using floating point arithmetics for all processing steps unbounded values can be passed
-      along like any other value until the final color conversion module makes sure they are
-      transferred into the most reasonable color within the selected output color space.
+      using floating point arithmetics for all processing steps, unbounded values can be passed
+      along like any other value until the final color conversion module makes sure that they
+      are transferred into the most reasonable color within the selected output color space.
       Therefore darktable avoids clamping as far as the underlying algorithms allow.
     </para>
 
@@ -206,7 +206,7 @@
       In order to mitigate that issue the <emphasis>input color profile</emphasis> module (see
       <xref linkend="input_color_profile"/>) has a <emphasis>gamut clipping</emphasis> option.
       It is off by default but can be activated in case you observe artifacts. Depending on the
-      settings colors get confined to one of the offered RGB gamuts. In effect black pixel
+      settings, colors get confined to one of the offered RGB gamuts. In effect black pixel
       artifacts are prevented at the costs of losing some color dynamics. See
       <xref linkend="input_color_profile"/> for an example.
     </para>

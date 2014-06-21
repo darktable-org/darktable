@@ -21,7 +21,8 @@
         darktable has been developed with major contribution by Aldric Renaudin, Alexandre
         Prokoudine, Bruce Guenter, Christian Tellefsen, Edouard Gomez, Ger Siemerink, Igor
         Kuzmin, James C. McPherson, Jean-Sébastien Pédron, Jérémy Rosen, Jose Carlos Garcia
-        Sogo, Olivier Toulouse, Pascal Obry, Robert Bieber, Simon Spannagel and many others.
+        Sogo, Roman Lebedev, Olivier Toulouse, Pascal Obry, Robert Bieber, Simon Spannagel and
+        many others.
       </para>
 
       <para>
@@ -102,10 +103,10 @@
                 user manual
               </entry>
               <entry>
-                1.5.0
+                1.5.1
               </entry>
               <entry>
-                April 2014
+                June 2014
               </entry>
             </row>
             <row>
@@ -116,7 +117,7 @@
                 1.5
               </entry>
               <entry>
-                April 2014
+                June 2014
               </entry>
             </row>
           </tbody>
