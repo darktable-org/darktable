@@ -49,8 +49,68 @@ RawImage DcrDecoder::decodeRawInternal() {
   mRaw->createData();
   ByteStream input(mFile->getData(off), c2);
 
-  // We need to figure out what the decoder is, dcraw's kodak_65000_load_raw should be a good start
+  parseKodak65000(input, width, height);
   return mRaw;
+}
+
+void DcrDecoder::parseKodak65000(ByteStream &input, uint32 w, uint32 h) {
+  ushort16 buf[256];
+  uint32 pred[2];
+  uchar8* data = mRaw->getData();
+  uint32 pitch = mRaw->pitch;
+  in = input.getData();
+
+  for (uint32 y = 0; y < h; y++) {
+    ushort16* dest = (ushort16*) & data[y*pitch];
+    for (uint32 x = 0 ; x < w; x += 256) {
+      uint32 len = MIN(256, w-x);
+      bool ret = decodeKodak65000(buf, len);
+      for (uint32 i = 0; i < len; i++) {
+        dest[x+i] = ret ? buf[i] : (pred[i & 1] += buf[i]); // FIXME: dcraw applies a curve here
+      }
+    }
+  }
+}
+
+bool DcrDecoder::decodeKodak65000(ushort16 *out, uint32 bsize) {
+  uchar8 blen[768];
+  uint64 bitbuf=0;
+  uint32 bits=0, i, j, len, diff;
+
+  bsize = (bsize + 3) & -4;
+  for (i=0; i < bsize; i+=2) {
+    if ((blen[i  ] = *in & 15) > 12 ||
+        (blen[i+1] = *in >> 4) > 12 ) {
+      for (i=0; i < bsize; i+=8) {
+        out[i  ] = *in >> 12 << 8 | *(in+2) >> 12 << 4 | *(in+4) >> 12;
+        out[i+1] = *(in+1) >> 12 << 8 | *(in+3) >> 12 << 4 | *(in+5) >> 12;        
+        for (j=0; j < 6; j++)
+          out[i+2+j] = *(in+j) & 0xfff;
+        in += 6;
+      }
+      return TRUE;
+    }
+  }
+  if ((bsize & 7) == 4) {
+    bitbuf  = *in++ << 8;
+    bitbuf += *in++;
+    bits = 16;
+  }
+  for (i=0; i < bsize; i++) {
+    len = blen[i];
+    if (bits < len) {
+      for (j=0; j < 32; j+=8)
+        bitbuf += (uint64) *in++ << (bits+(j^8));
+      bits += 32;
+    }
+    diff = bitbuf & (0xffff >> (16-len));
+    bitbuf >>= len;
+    bits -= len;
+    if ((diff & (1 << (len-1))) == 0)
+      diff -= (1 << len) - 1;
+    out[i] = diff;
+  }
+  return FALSE;
 }
 
 void DcrDecoder::checkSupportInternal(CameraMetaData *meta) {
