@@ -33,26 +33,28 @@ MosDecoder::MosDecoder(TiffIFD *rootIFD, FileMap* file)  :
   if (!xmp)
     ThrowRDE("MOS Decoder: Couldn't find the XMP");
 
+  xmpText = NULL;
   parseXMP(xmp);
 }
 
 MosDecoder::~MosDecoder(void) {
+  delete xmpText;
 }
 
 void MosDecoder::parseXMP(TiffEntry *xmp) {
-  uchar8 *text = xmp->getDataWrt();
-  text[xmp->count - 1] = 0; // Make sure the string is NUL terminated
+  xmpText = xmp->getDataWrt();
+  xmpText[xmp->count - 1] = 0; // Make sure the string is NUL terminated
 
   char *makeEnd;
-  make = strstr((char *) text, "<tiff:Make>");
-  makeEnd = strstr((char *) text, "</tiff:Make>");
+  make = strstr((char *) xmpText, "<tiff:Make>");
+  makeEnd = strstr((char *) xmpText, "</tiff:Make>");
   if (!make || !makeEnd)
     ThrowRDE("MOS Decoder: Couldn't find the Make in the XMP");
   make += 11; // Advance to the end of the start tag
 
   char *modelEnd;
-  model = strstr((char *) text, "<tiff:Model>");
-  modelEnd = strstr((char *) text, "</tiff:Model>");
+  model = strstr((char *) xmpText, "<tiff:Model>");
+  modelEnd = strstr((char *) xmpText, "</tiff:Model>");
   if (!model || !modelEnd)
     ThrowRDE("MOS Decoder: Couldn't find the Model in the XMP");
   model += 12; // Advance to the end of the start tag

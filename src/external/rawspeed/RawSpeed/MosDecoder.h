@@ -40,6 +40,7 @@ public:
 protected:
   TiffIFD *mRootIFD;
   char *make, *model;
+  uchar8 *xmpText;
   void parseXMP(TiffEntry *xmp);
 };
 
