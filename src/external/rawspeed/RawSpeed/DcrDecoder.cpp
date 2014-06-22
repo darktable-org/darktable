@@ -79,28 +79,29 @@ bool DcrDecoder::decodeKodak65000(ushort16 *out, uint32 bsize) {
 
   bsize = (bsize + 3) & -4;
   for (i=0; i < bsize; i+=2) {
-    if ((blen[i  ] = *in & 15) > 12 ||
-        (blen[i+1] = *in >> 4) > 12 ) {
+    if ((blen[i  ] = ((uint32) *in) & 15) > 12 ||
+        (blen[i+1] = ((uint32) *in) >> 4) > 12 ) {
       for (i=0; i < bsize; i+=8) {
-        out[i  ] = *in >> 12 << 8 | *(in+2) >> 12 << 4 | *(in+4) >> 12;
-        out[i+1] = *(in+1) >> 12 << 8 | *(in+3) >> 12 << 4 | *(in+5) >> 12;        
+        ushort16 *raw = (ushort16 *) in;
+        out[i  ] = *(raw+1) >> 12 << 8 | *(raw+3) >> 12 << 4 | *(raw+5) >> 12;
+        out[i+1] = *(raw+0) >> 12 << 8 | *(raw+2) >> 12 << 4 | *(raw+4) >> 12;
         for (j=0; j < 6; j++)
-          out[i+2+j] = *(in+j) & 0xfff;
-        in += 6;
+          out[i+2+j] = ((uint32) *in+j) & 0xfff;
+        in += 12;
       }
       return TRUE;
     }
   }
   if ((bsize & 7) == 4) {
-    bitbuf  = *in++ << 8;
-    bitbuf += *in++;
+    bitbuf  = ((uint32) *in++) << 8;
+    bitbuf += ((uint32) *in++);
     bits = 16;
   }
   for (i=0; i < bsize; i++) {
     len = blen[i];
     if (bits < len) {
       for (j=0; j < 32; j+=8)
-        bitbuf += (uint64) *in++ << (bits+(j^8));
+        bitbuf += (uint64) ((uint32) *in++) << (bits+(j^8));
       bits += 32;
     }
     diff = bitbuf & (0xffff >> (16-len));
