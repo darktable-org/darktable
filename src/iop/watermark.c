@@ -621,7 +621,6 @@ static gchar * _watermark_get_svgdoc( dt_iop_module_t *self, dt_iop_watermark_da
   return svgdoc;
 }
 
-
 void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoid, void *ovoid, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
 {
   dt_iop_watermark_data_t *data = (dt_iop_watermark_data_t *)piece->data;
@@ -749,22 +748,29 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
     }
   }
 
+  // compute bounding box of rotated watermark
+  float bb_width, bb_height;
+  bb_width  = fabs(svg_width * cos(angle)) + fabs(svg_height * sin(angle));
+  bb_height = fabs(svg_width * sin(angle)) + fabs(svg_height * cos(angle));
+  float bX = bb_width / 2.0 - svg_width / 2.0;
+  float bY = bb_height / 2.0 - svg_height / 2.0;
+
   // compute translation for the given alignment in image dimension
 
   float ty=0,tx=0;
   if( data->alignment >=0 && data->alignment <3) // Align to verttop
-    ty=0;
+    ty=bY;
   else if( data->alignment >=3 && data->alignment <6) // Align to vertcenter
     ty=(ih/2.0)-(svg_height/2.0);
   else if( data->alignment >=6 && data->alignment <9) // Align to vertbottom
-    ty=ih-svg_height;
+    ty=ih-svg_height-bY;
 
   if( data->alignment == 0 ||  data->alignment == 3 || data->alignment==6 )
-    tx=0;
+    tx=bX;
   else if( data->alignment == 1 ||  data->alignment == 4 || data->alignment==7 )
     tx=(iw/2.0)-(svg_width/2.0);
   else if( data->alignment == 2 ||  data->alignment == 5 || data->alignment==8 )
-    tx=iw-svg_width;
+    tx=iw-svg_width-bX;
 
   // translate to position
   cairo_translate (cr,-roi_in->x,-roi_in->y);
