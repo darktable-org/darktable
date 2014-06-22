@@ -49,7 +49,12 @@ RawImage DcrDecoder::decodeRawInternal() {
   mRaw->createData();
   ByteStream input(mFile->getData(off), c2);
 
-  parseKodak65000(input, width, height);
+  int compression = raw->getEntry(COMPRESSION)->getInt();
+  if (65000 == compression)
+    parseKodak65000(input, width, height);
+  else
+    ThrowRDE("DCR Decoder: Unsupported compression %d", compression);
+
   return mRaw;
 }
 
