@@ -406,7 +406,7 @@ void dt_lua_type_register_number_const_typeid(lua_State* L,luaA_Type type_id,lua
 	  lua_setfield(L,-2,"__inext");
   }
 
-  lua_pop(L,1);
+  lua_pop(L,2);
 }
 void dt_lua_type_register_number_typeid(lua_State* L,luaA_Type type_id,lua_CFunction length)
 {
@@ -429,7 +429,7 @@ void dt_lua_type_register_number_typeid(lua_State* L,luaA_Type type_id,lua_CFunc
 	  lua_setfield(L,-2,"__inext");
   }
 
-  lua_pop(L,1);
+  lua_pop(L,2);
 }
 
 int dt_lua_type_member_luaautoc(lua_State *L) 
@@ -503,12 +503,14 @@ void dt_lua_type_register_parent_typeid(lua_State* L,luaA_Type type_id,luaA_Type
 
   lua_getfield(L,-1,"__len");
   if(!lua_isnil(L,-1)){
+    lua_getfield(L,-1,"__len");
     lua_setfield(L,-3,"__len");
     lua_getfield(L,-1,"__number_index");
     lua_setfield(L,-3,"__number_index");
     lua_getfield(L,-1,"__number_newindex");
     lua_setfield(L,-3,"__number_newindex");
   }
+  lua_pop(L,3);
 }
 
 static void init_metatable(lua_State* L, luaA_Type type_id)
