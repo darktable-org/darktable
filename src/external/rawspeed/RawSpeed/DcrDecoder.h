@@ -39,8 +39,8 @@ public:
 protected:
   TiffIFD *mRootIFD;
   const uchar8 *in;
-  void parseKodak65000(ByteStream &input, uint32 w, uint32 h);
-  void decodeKodak65000(short *out, int bsize);
+  void decodeKodak65000(ByteStream &input, uint32 w, uint32 h);
+  void decodeKodak65000Segment(short *out, int bsize);
 };
 
 } // namespace RawSpeed

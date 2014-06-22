@@ -53,14 +53,14 @@ RawImage DcrDecoder::decodeRawInternal() {
 
   int compression = raw->getEntry(COMPRESSION)->getInt();
   if (65000 == compression)
-    parseKodak65000(input, width, height);
+    decodeKodak65000(input, width, height);
   else
     ThrowRDE("DCR Decoder: Unsupported compression %d", compression);
 
   return mRaw;
 }
 
-void DcrDecoder::parseKodak65000(ByteStream &input, uint32 w, uint32 h) {
+void DcrDecoder::decodeKodak65000(ByteStream &input, uint32 w, uint32 h) {
   short buf[256];
   int pred[2];
   uchar8* data = mRaw->getData();
@@ -72,7 +72,7 @@ void DcrDecoder::parseKodak65000(ByteStream &input, uint32 w, uint32 h) {
     for (uint32 x = 0 ; x < w; x += 256) {
       pred[0] = pred[1] = 0;
       uint32 len = MIN(256, w-x);
-      decodeKodak65000(buf, len);
+      decodeKodak65000Segment(buf, len);
       for (uint32 i = 0; i < len; i++) {
         dest[x+i] = pred[i & 1] += buf[i]; // FIXME: dcraw applies a curve here
         //fprintf(stderr, "RAW %d\n", dest[x+i]);
@@ -82,11 +82,11 @@ void DcrDecoder::parseKodak65000(ByteStream &input, uint32 w, uint32 h) {
   }
 }
 
-void DcrDecoder::decodeKodak65000(short *out, int bsize) {
+void DcrDecoder::decodeKodak65000Segment(short *out, int bsize) {
   uchar8 blen[768], c;
   uint64 bitbuf=0;
   int bits=0, i, j, len, diff;
-
+  
   bsize = (bsize + 3) & -4;
   for (i=0; i < bsize; i+=2) {
     c = *in++;
