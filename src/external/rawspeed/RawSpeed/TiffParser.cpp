@@ -164,6 +164,10 @@ RawDecoder* TiffParser::getDecoder() {
         mRootIFD = NULL;
         return new MefDecoder(root, mInput);
       }
+      if (!make.compare("Kodak")) {
+        mRootIFD = NULL;
+        return new DcrDecoder(root, mInput);
+      }
     }
   }
   throw TiffParserException("No decoder found. Sorry.");
