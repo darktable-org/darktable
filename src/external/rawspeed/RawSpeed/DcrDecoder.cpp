@@ -70,39 +70,28 @@ void DcrDecoder::parseKodak65000(ByteStream &input, uint32 w, uint32 h) {
   for (uint32 y = 0; y < h; y++) {
     ushort16* dest = (ushort16*) & data[y*pitch];
     for (uint32 x = 0 ; x < w; x += 256) {
+      pred[0] = pred[1] = 0;
       uint32 len = MIN(256, w-x);
-      int ret = decodeKodak65000(buf, len);
+      decodeKodak65000(buf, len);
       for (uint32 i = 0; i < len; i++) {
-        dest[x+i] = ret ? buf[i] : (pred[i & 1] += buf[i]); // FIXME: dcraw applies a curve here
+        dest[x+i] = pred[i & 1] += buf[i]; // FIXME: dcraw applies a curve here
+        //fprintf(stderr, "RAW %d\n", dest[x+i]);
+        //exit(2);
       }
     }
   }
 }
 
-int DcrDecoder::decodeKodak65000(short *out, int bsize) {
+void DcrDecoder::decodeKodak65000(short *out, int bsize) {
   uchar8 blen[768], c;
-  ushort16 raw[6];
-  long bitbuf=0;
+  uint64 bitbuf=0;
   int bits=0, i, j, len, diff;
 
-  const uchar8 *save = in;
   bsize = (bsize + 3) & -4;
   for (i=0; i < bsize; i+=2) {
-    c = ((int) *in++);
-    if ((blen[i  ] = c & 15) > 12 ||
-        (blen[i+1] = c >> 4) > 12 ) {
-      in = save;
-      for (i=0; i < bsize; i+=8) {
-        memcpy(raw, in, 12);
-        in += 12;
-        //swab(raw, raw, 12);
-        out[i  ] = raw[0] >> 12 << 8 | raw[2] >> 12 << 4 | raw[4] >> 12;
-        out[i+1] = raw[1] >> 12 << 8 | raw[3] >> 12 << 4 | raw[5] >> 12;
-        for (j=0; j < 6; j++)
-          out[i+2+j] = raw[j] & 0xfff;
-      }
-      return 1;
-    }
+    c = *in++;
+    blen[i] = c & 15;
+    blen[i+1] = c >> 4;
   }
   if ((bsize & 7) == 4) {
     bitbuf  = ((int) *in++) << 8;
@@ -112,8 +101,9 @@ int DcrDecoder::decodeKodak65000(short *out, int bsize) {
   for (i=0; i < bsize; i++) {
     len = blen[i];
     if (bits < len) {
-      for (j=0; j < 32; j+=8)
-        bitbuf += (long) ((int) *in++) << (bits+(j^8));
+      for (j=0; j < 32; j+=8) {
+        bitbuf += (long long) ((int) *in++) << (bits+(j^8));
+      }
       bits += 32;
     }
     diff = bitbuf & (0xffff >> (16-len));
@@ -123,7 +113,6 @@ int DcrDecoder::decodeKodak65000(short *out, int bsize) {
       diff -= (1 << len) - 1;
     out[i] = diff;
   }
-  return 0;
 }
 
 void DcrDecoder::checkSupportInternal(CameraMetaData *meta) {
