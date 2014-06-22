@@ -166,6 +166,17 @@ RawDecoder* TiffParser::getDecoder() {
       }
     }
   }
+
+  potentials = mRootIFD->getIFDsWithTag(SOFTWARE);
+  if (!potentials.empty()) {
+    string software = potentials[0]->getEntry(SOFTWARE)->getString();
+    TrimSpaces(software);
+    if (!software.compare("Camera Library")) {
+      mRootIFD = NULL;
+      return new MosDecoder(root, mInput);
+    }
+  }
+
   throw TiffParserException("No decoder found. Sorry.");
   return NULL;
 }

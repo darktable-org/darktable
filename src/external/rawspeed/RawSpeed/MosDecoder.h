@@ -1,7 +1,8 @@
-/* 
+/*
     RawSpeed - RAW file decoder.
 
     Copyright (C) 2009-2014 Klaus Post
+    Copyright (C) 2014 Pedro Côrte-Real
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Lesser General Public
@@ -19,47 +20,28 @@
 
     http://www.klauspost.com
 */
+#ifndef MOS_DECODER_H
+#define MOS_DECODER_H
 
-#ifndef TIFF_PARSER_H
-#define TIFF_PARSER_H
-
-#include "FileMap.h"
-#include "TiffIFD.h"
-#include "TiffIFDBE.h"
-#include "TiffParserException.h"
 #include "RawDecoder.h"
-#include "DngDecoder.h"
-#include "Cr2Decoder.h"
-#include "ArwDecoder.h"
-#include "PefDecoder.h"
-#include "NefDecoder.h"
-#include "OrfDecoder.h"
-#include "RafDecoder.h"
-#include "Rw2Decoder.h"
-#include "SrwDecoder.h"
-#include "MefDecoder.h"
-#include "MosDecoder.h"
+#include "string.h"
 
 namespace RawSpeed {
 
-class TiffParser 
+class MosDecoder :
+  public RawDecoder
 {
 public:
-  TiffParser(FileMap* input);
-  virtual ~TiffParser(void);
-
-  virtual void parseData();
-  virtual RawDecoder* getDecoder();
-  Endianness tiff_endian;
-  /* Returns the Root IFD - this object still retains ownership */
-  TiffIFD* RootIFD() const { return mRootIFD; }
-  /* Merges root of other TIFF into this - clears the root of the other */
-  void MergeIFD(TiffParser* other_tiff);
-  RawSpeed::Endianness getHostEndian() const { return host_endian; }
+  MosDecoder(TiffIFD *rootIFD, FileMap* file);
+  virtual ~MosDecoder(void);
+  virtual RawImage decodeRawInternal();
+  virtual void checkSupportInternal(CameraMetaData *meta);
+  virtual void decodeMetaDataInternal(CameraMetaData *meta);
 protected:
-  FileMap *mInput;
-  TiffIFD* mRootIFD;
-  Endianness host_endian;
+  TiffIFD *mRootIFD;
+  char *make, *model;
+  uchar8 *xmpText;
+  void parseXMP(TiffEntry *xmp);
 };
 
 } // namespace RawSpeed
