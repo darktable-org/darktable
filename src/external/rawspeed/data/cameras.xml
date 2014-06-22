@@ -4741,4 +4741,14 @@
 		<Crop x="0" y="0" width="0" height="0"/>
 		<Sensor black="0" white="4000"/>
 	</Camera>
+	<Camera make="Kodak" model="DCS Pro SLR/n">
+		<CFA width="2" height="2">
+			<Color x="0" y="0">GREEN</Color>
+			<Color x="1" y="0">RED</Color>
+			<Color x="0" y="1">BLUE</Color>
+			<Color x="1" y="1">GREEN</Color>
+		</CFA>
+		<Crop x="0" y="0" width="0" height="0"/>
+		<Sensor black="0" white="3700"/>
+	</Camera>
 </Cameras>
