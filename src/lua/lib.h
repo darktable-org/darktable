@@ -23,7 +23,7 @@
 
 struct dt_lib_module_t;
 
-void dt_lua_register_lib(lua_State* L,struct dt_lib_module_t* self);
+void dt_lua_lib_register(lua_State* L,struct dt_lib_module_t* self);
 
 
 

@@ -119,7 +119,7 @@ static int lib_tostring(lua_State* L)
   return 1;
 }
 
-void dt_lua_register_lib(lua_State* L,dt_lib_module_t* module)
+void dt_lua_lib_register(lua_State* L,dt_lib_module_t* module)
 {
   dt_lua_register_module_entry_new(L,"lib",module->plugin_name,module);
   int my_type = dt_lua_module_get_entry_typeid(L,"lib",module->plugin_name);

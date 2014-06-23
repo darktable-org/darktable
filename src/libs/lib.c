@@ -552,7 +552,7 @@ dt_lib_load_module (dt_lib_module_t *module, const char *libname, const char *pl
                           NC_("accel", "show preset menu"), 0, 0);
   }
 #ifdef USE_LUA
-  dt_lua_register_lib(darktable.lua_state.state,module);
+  dt_lua_lib_register(darktable.lua_state.state,module);
 #endif
   if(module->init) module->init(module);
 
