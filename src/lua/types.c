@@ -96,7 +96,9 @@ static int push_protected_double(lua_State* L, luaA_Type type_id, const void* c_
 /************************************/
 static int autotype_inext(lua_State *L)
 {
-  lua_len(L,-3);
+  luaL_getmetafield(L,1,"__len");
+  lua_pushvalue(L,-3);
+  lua_call(L,1,1);
   int length = lua_tonumber(L,-1);
   lua_pop(L,1);
   int key = 0;
