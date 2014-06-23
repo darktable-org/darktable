@@ -4187,7 +4187,7 @@ const wb_data wb_preset[] =
 
   /* Firmware version 1.5 */
   { "OLYMPUS", "E-P5", Daylight, 0,		{ 1.945313, 1, 1.796875, 0 } },
-  { "OLYMPUS", "E-P5", Shade, 0 		{ 2.273438, 1, 1.40625, 0 } },
+  { "OLYMPUS", "E-P5", Shade, 0,		{ 2.273438, 1, 1.40625, 0 } },
   { "OLYMPUS", "E-P5", Cloudy, 0,		{ 2.09375, 1, 1.625, 0 } },
   { "OLYMPUS", "E-P5", Incandescent, 0,	{ 1.203125, 1, 3.21875, 0 } },
   { "OLYMPUS", "E-P5", Fluorescent, 0,		{ 1.890625, 1, 2.585938, 0 } },
