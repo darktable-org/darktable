@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: darktable 1.3\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2014-06-23 15:40+0200\n"
-"PO-Revision-Date: 2014-06-20 08:39+0100\n"
+"PO-Revision-Date: 2014-06-23 16:09+0100\n"
 "Last-Translator: Pascal Obry <pascal@obry.net>\n"
 "Language-Team: \n"
 "Language: fr_FR\n"
@@ -4681,13 +4681,12 @@ msgstr "données raw"
 
 #: ../src/iop/exposure.c:1013
 msgid "computed EC: "
-msgstr ""
+msgstr "CE calculée"
 
 #. This gets filled in by process
 #: ../src/iop/exposure.c:1017
-#, fuzzy
 msgid "what exposure correction have actually been used"
-msgstr "corrections réellement effectuées"
+msgstr "la correction d'exposition utilisée "
 
 #: ../src/iop/flip.c:321
 msgid "flip horizontally"
