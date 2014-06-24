@@ -164,6 +164,14 @@ RawDecoder* TiffParser::getDecoder() {
         mRootIFD = NULL;
         return new MefDecoder(root, mInput);
       }
+      if (!make.compare("Kodak")) {
+        mRootIFD = NULL;
+        return new DcrDecoder(root, mInput);
+      }
+      if (!make.compare("EASTMAN KODAK COMPANY")) {
+        mRootIFD = NULL;
+        return new KdcDecoder(root, mInput);
+      }
     }
   }
 
