@@ -677,4 +677,11 @@ end
 M.toplevel = toplevel
 M.create_documentation_node = create_documentation_node
 M.document_function = document_function
+dt.gui.selection{dt.database[1]}
+for _,view in pairs(dt.modules.view) do
+	dt.gui.current_view(view);
+	for libname,lib in pairs(dt.modules.lib) do
+		document_type_from_obj(lib,toplevel.darktable.modules.lib[libname])
+	end
+end
 return M;
