@@ -172,6 +172,10 @@ RawDecoder* TiffParser::getDecoder() {
         mRootIFD = NULL;
         return new KdcDecoder(root, mInput);
       }
+      if (!make.compare("SEIKO EPSON CORP.")) {
+        mRootIFD = NULL;
+        return new ErfDecoder(root, mInput);
+      }
     }
   }
 
