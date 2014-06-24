@@ -1,5 +1,5 @@
 #include "StdAfx.h"
-#include "KdcDecoder.h"
+#include "ErfDecoder.h"
 
 /*
     RawSpeed - RAW file decoder.
@@ -26,54 +26,51 @@
 
 namespace RawSpeed {
 
-KdcDecoder::KdcDecoder(TiffIFD *rootIFD, FileMap* file)  :
+ErfDecoder::ErfDecoder(TiffIFD *rootIFD, FileMap* file)  :
     RawDecoder(file), mRootIFD(rootIFD) {
   decoderVersion = 0;
 }
 
-KdcDecoder::~KdcDecoder(void) {
+ErfDecoder::~ErfDecoder(void) {
 }
 
-RawImage KdcDecoder::decodeRawInternal() {
+RawImage ErfDecoder::decodeRawInternal() {
   vector<TiffIFD*> data = mRootIFD->getIFDsWithTag(STRIPOFFSETS);
 
-  int compression = mRootIFD->getEntryRecursive(COMPRESSION)->getInt();
-  if (7 != compression)
-    ThrowRDE("KDC Decoder: Unsupported compression %d", compression);
-
-  uint32 width = mRootIFD->getEntryRecursive(PIXELXDIMENSION)->getInt();
-  uint32 height = mRootIFD->getEntryRecursive(PIXELYDIMENSION)->getInt();
-  TiffEntry *offset = mRootIFD->getEntryRecursive(KODAK_KDC_OFFSET);
-  if (!offset || offset->count < 13)
-    ThrowRDE("KDC Decoder: Couldn't find the KDC offset");
-  const uint32 *offsetarray = offset->getIntArray();
-  uint32 off = offsetarray[4] + offsetarray[12];
+  if (data.size() < 2)
+    ThrowRDE("ERF Decoder: No image data found");
+    
+  TiffIFD* raw = data[1];
+  uint32 width = raw->getEntry(IMAGEWIDTH)->getInt();
+  uint32 height = raw->getEntry(IMAGELENGTH)->getInt();
+  uint32 off = raw->getEntry(STRIPOFFSETS)->getInt();
+  uint32 c2 = raw->getEntry(STRIPBYTECOUNTS)->getInt();
 
   mRaw->dim = iPoint2D(width, height);
   mRaw->createData();
-  ByteStream input(mFile->getData(off), mFile->getSize()-off);
+  ByteStream input(mFile->getData(off), c2);
 
-  Decode12BitRawBE(input, width, height);
+  Decode12BitRawBEWithControl(input, width, height);
 
   return mRaw;
 }
 
-void KdcDecoder::checkSupportInternal(CameraMetaData *meta) {
+void ErfDecoder::checkSupportInternal(CameraMetaData *meta) {
   vector<TiffIFD*> data = mRootIFD->getIFDsWithTag(MODEL);
   if (data.empty())
-    ThrowRDE("KDC Support check: Model name not found");
+    ThrowRDE("ERF Support check: Model name not found");
   string make = data[0]->getEntry(MAKE)->getString();
   string model = data[0]->getEntry(MODEL)->getString();
   this->checkCameraSupported(meta, make, model, "");
 }
 
-void KdcDecoder::decodeMetaDataInternal(CameraMetaData *meta) {
+void ErfDecoder::decodeMetaDataInternal(CameraMetaData *meta) {
   vector<TiffIFD*> data = mRootIFD->getIFDsWithTag(MODEL);
 
   if (data.empty())
-    ThrowRDE("KDC Decoder: Model name found");
+    ThrowRDE("ERF Decoder: Model name found");
   if (!data[0]->hasEntry(MAKE))
-    ThrowRDE("KDC Decoder: Make name not found");
+    ThrowRDE("ERF Decoder: Make name not found");
 
   string make = data[0]->getEntry(MAKE)->getString();
   string model = data[0]->getEntry(MODEL)->getString();
