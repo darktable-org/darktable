@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 1.3\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2014-06-20 08:38+0200\n"
-"PO-Revision-Date: 2014-06-20 08:39+0100\n"
+"POT-Creation-Date: 2014-06-23 15:40+0200\n"
+"PO-Revision-Date: 2014-06-23 16:09+0100\n"
 "Last-Translator: Pascal Obry <pascal@obry.net>\n"
 "Language-Team: \n"
 "Language: fr_FR\n"
@@ -1076,7 +1076,7 @@ msgstr[1] "fusion  de %d images"
 msgid "exposure bracketing only works on raw images"
 msgstr "fourchette d'exposition uniquement pour les raw"
 
-#: ../src/control/jobs/control_jobs.c:247 ../src/iop/exposure.c:230
+#: ../src/control/jobs/control_jobs.c:247 ../src/iop/exposure.c:232
 #, c-format
 msgid "failed to get raw buffer from image `%s'"
 msgstr "échec de l'obtention du cache pour l'image «%s»"
@@ -1643,7 +1643,7 @@ msgstr "mode de fusion"
 msgid "choose blending mode"
 msgstr "détermine le mode de fusion"
 
-#: ../src/develop/blend_gui.c:1656 ../src/iop/watermark.c:1105
+#: ../src/develop/blend_gui.c:1656 ../src/iop/watermark.c:1111
 msgid "opacity"
 msgstr "opacité"
 
@@ -2247,8 +2247,8 @@ msgstr "ISO"
 
 #. exposure
 #: ../src/gui/preferences.c:470 ../src/gui/preferences.c:1387
-#: ../src/gui/presets.c:451 ../src/iop/exposure.c:111
-#: ../src/iop/exposure.c:931 ../src/iop/relight.c:384
+#: ../src/gui/presets.c:451 ../src/iop/exposure.c:113
+#: ../src/iop/exposure.c:967 ../src/iop/relight.c:384
 #: ../src/libs/metadata_view.c:93
 msgid "exposure"
 msgstr "exposition"
@@ -2268,7 +2268,7 @@ msgid "focal length"
 msgstr "focale"
 
 #: ../src/gui/preferences.c:491 ../src/iop/borders.c:1054
-#: ../src/iop/exposure.c:937 ../src/iop/levels.c:575
+#: ../src/iop/exposure.c:973 ../src/iop/levels.c:580
 #: ../src/iop/tonecurve.c:780
 msgid "auto"
 msgstr "auto"
@@ -3176,7 +3176,7 @@ msgid "abscissa: input, ordinate: output. works on RGB channels"
 msgstr "abscisse : entrée, ordonnée : sortie. fonctionne sur les canaux RVB"
 
 #: ../src/iop/basecurve.c:770 ../src/iop/lens.c:2096
-#: ../src/iop/vignette.c:1124 ../src/iop/watermark.c:1108
+#: ../src/iop/vignette.c:1124 ../src/iop/watermark.c:1114
 msgid "scale"
 msgstr "échelle"
 
@@ -4476,8 +4476,8 @@ msgstr "profil pour ISO %d trouvé"
 msgid "interpolated from ISO %d and %d"
 msgstr "interpolé depuis ISO %d et %d"
 
-#: ../src/iop/denoiseprofile.c:1725 ../src/iop/exposure.c:907
-#: ../src/iop/lens.c:2105 ../src/iop/levels.c:542
+#: ../src/iop/denoiseprofile.c:1725 ../src/iop/exposure.c:943
+#: ../src/iop/lens.c:2105 ../src/iop/levels.c:547
 msgid "mode"
 msgstr "mode"
 
@@ -4590,94 +4590,103 @@ msgstr ""
 "il apparaît afin que vous le désactiviez\n"
 "et utilisiez le nouvel égaliseur"
 
-#: ../src/iop/exposure.c:128
+#: ../src/iop/exposure.c:130
 msgctxt "accel"
 msgid "mode"
 msgstr "mode"
 
-#: ../src/iop/exposure.c:129
+#: ../src/iop/exposure.c:131
 msgctxt "accel"
 msgid "black"
 msgstr "noir"
 
-#: ../src/iop/exposure.c:130 ../src/iop/relight.c:110
+#: ../src/iop/exposure.c:132 ../src/iop/relight.c:110
 msgctxt "accel"
 msgid "exposure"
 msgstr "exposition"
 
-#: ../src/iop/exposure.c:131
+#: ../src/iop/exposure.c:133
 msgctxt "accel"
 msgid "auto-exposure"
 msgstr "exposition auto"
 
-#: ../src/iop/exposure.c:132
+#: ../src/iop/exposure.c:134
 msgctxt "accel"
 msgid "percentile"
 msgstr "percentile"
 
-#: ../src/iop/exposure.c:133
+#: ../src/iop/exposure.c:135
 msgctxt "accel"
 msgid "target level"
 msgstr "valeur cible"
 
-#: ../src/iop/exposure.c:134
+#: ../src/iop/exposure.c:136
 msgctxt "accel"
 msgid "histogram source"
 msgstr "histogramme de"
 
-#: ../src/iop/exposure.c:207
+#: ../src/iop/exposure.c:209
 msgid "magic lantern defaults"
 msgstr "défauts de magic lantern"
 
-#: ../src/iop/exposure.c:211
+#: ../src/iop/exposure.c:213
 msgid "almost no clipping"
 msgstr "presque aucune troncature"
 
-#: ../src/iop/exposure.c:909 ../src/iop/levels.c:544
+#: ../src/iop/exposure.c:945 ../src/iop/levels.c:549
 #: ../src/iop/tonecurve.c:781
 msgid "manual"
 msgstr "manuelle"
 
-#: ../src/iop/exposure.c:912 ../src/iop/levels.c:547
+#: ../src/iop/exposure.c:948 ../src/iop/levels.c:552
 #: ../src/iop/vignette.c:1115
 msgid "automatic"
 msgstr "auto"
 
-#: ../src/iop/exposure.c:921
+#: ../src/iop/exposure.c:957
 msgid "adjust the black level"
 msgstr "ajuste les niveaux de noir"
 
-#: ../src/iop/exposure.c:923 ../src/iop/levels.c:618
+#: ../src/iop/exposure.c:959 ../src/iop/levels.c:623
 msgid "black"
 msgstr "noir"
 
-#: ../src/iop/exposure.c:929
+#: ../src/iop/exposure.c:965
 msgid "adjust the exposure correction"
 msgstr "ajuste la correction d'exposition [IL]"
 
-#: ../src/iop/exposure.c:942
+#: ../src/iop/exposure.c:978
 msgid "percentage of bright values clipped out"
 msgstr "pourcentage de valeurs hautes tronquées"
 
-#: ../src/iop/exposure.c:952 ../src/iop/exposure.c:954
+#: ../src/iop/exposure.c:988 ../src/iop/exposure.c:990
 msgid "percentile"
 msgstr "percentile"
 
-#: ../src/iop/exposure.c:958 ../src/iop/exposure.c:960
+#: ../src/iop/exposure.c:994 ../src/iop/exposure.c:996
 msgid "target level"
 msgstr "valeur cible"
 
-#: ../src/iop/exposure.c:964
+#: ../src/iop/exposure.c:1000
 msgid "histogram of"
 msgstr "histogramme de"
 
-#: ../src/iop/exposure.c:966
+#: ../src/iop/exposure.c:1002
 msgid "pre-processed image"
 msgstr "image développée"
 
-#: ../src/iop/exposure.c:969
+#: ../src/iop/exposure.c:1005
 msgid "source raw data"
 msgstr "données raw"
+
+#: ../src/iop/exposure.c:1013
+msgid "computed EC: "
+msgstr "CE calculée"
+
+#. This gets filled in by process
+#: ../src/iop/exposure.c:1017
+msgid "what exposure correction have actually been used"
+msgstr "la correction d'exposition utilisée "
 
 #: ../src/iop/flip.c:321
 msgid "flip horizontally"
@@ -4699,7 +4708,7 @@ msgstr "tourner de 90"
 msgid "rotate by 180"
 msgstr "tourner de 180"
 
-#: ../src/iop/flip.c:432 ../src/iop/watermark.c:1111
+#: ../src/iop/flip.c:432 ../src/iop/watermark.c:1117
 msgid "rotate"
 msgstr "rotation"
 
@@ -5228,46 +5237,46 @@ msgstr "corrections réellement effectuées"
 msgid "levels"
 msgstr "niveaux"
 
-#: ../src/iop/levels.c:559
+#: ../src/iop/levels.c:564
 msgid ""
 "drag handles to set black, gray, and white points.  operates on L channel."
 msgstr ""
 "déplacer les barres pour régler les points noir, gris et blanc. agit sur le "
 "canal L."
 
-#: ../src/iop/levels.c:576
+#: ../src/iop/levels.c:581
 msgid "apply auto levels"
 msgstr "niveaux automatiques"
 
-#: ../src/iop/levels.c:580
+#: ../src/iop/levels.c:585
 msgid "pick black point from image"
 msgstr "choisir le point noir dans l'image"
 
-#: ../src/iop/levels.c:584
+#: ../src/iop/levels.c:589
 msgid "pick medium gray point from image"
 msgstr "choisir le point gris dans l'image"
 
-#: ../src/iop/levels.c:588
+#: ../src/iop/levels.c:593
 msgid "pick white point from image"
 msgstr "choisir le point blanc dans l'image"
 
-#: ../src/iop/levels.c:616
+#: ../src/iop/levels.c:621
 msgid "black percentile"
 msgstr "percentile des noir"
 
-#: ../src/iop/levels.c:621
+#: ../src/iop/levels.c:626
 msgid "gray percentile"
 msgstr "percentile des gris"
 
-#: ../src/iop/levels.c:623
+#: ../src/iop/levels.c:628
 msgid "gray"
 msgstr "gris"
 
-#: ../src/iop/levels.c:626
+#: ../src/iop/levels.c:631
 msgid "white percentile"
 msgstr "percentile des blanc"
 
-#: ../src/iop/levels.c:628
+#: ../src/iop/levels.c:633
 msgid "white"
 msgstr "blanc"
 
@@ -6071,53 +6080,53 @@ msgctxt "accel"
 msgid "y offset"
 msgstr "décalage y"
 
-#: ../src/iop/watermark.c:1090
+#: ../src/iop/watermark.c:1096
 msgid "marker"
 msgstr "fichier"
 
-#: ../src/iop/watermark.c:1091
+#: ../src/iop/watermark.c:1097
 msgid "alignment"
 msgstr "alignement"
 
-#: ../src/iop/watermark.c:1117
+#: ../src/iop/watermark.c:1123
 msgctxt "size"
 msgid "image"
 msgstr "image"
 
-#: ../src/iop/watermark.c:1118
+#: ../src/iop/watermark.c:1124
 msgid "larger border"
 msgstr "grand coté"
 
-#: ../src/iop/watermark.c:1119
+#: ../src/iop/watermark.c:1125
 msgid "smaller border"
 msgstr "petit coté"
 
-#: ../src/iop/watermark.c:1121
+#: ../src/iop/watermark.c:1127
 msgid "scale on"
 msgstr "échelle sur"
 
-#: ../src/iop/watermark.c:1123
+#: ../src/iop/watermark.c:1129
 msgid "size is relative to"
 msgstr "la taille est relative à"
 
-#: ../src/iop/watermark.c:1142
+#: ../src/iop/watermark.c:1148
 msgid "x offset"
 msgstr "décalage x"
 
-#: ../src/iop/watermark.c:1145
+#: ../src/iop/watermark.c:1151
 msgid "y offset"
 msgstr "décalage y"
 
 #. Let's add some tooltips and hook up some signals...
-#: ../src/iop/watermark.c:1151
+#: ../src/iop/watermark.c:1157
 msgid "the opacity of the watermark"
 msgstr "opacité du filigrane"
 
-#: ../src/iop/watermark.c:1152
+#: ../src/iop/watermark.c:1158
 msgid "the scale of the watermark"
 msgstr "taille du filigrane"
 
-#: ../src/iop/watermark.c:1153
+#: ../src/iop/watermark.c:1159
 msgid "the rotation of the watermark"
 msgstr "la rotation du filigrane"
 
@@ -8351,7 +8360,7 @@ msgstr "seuil au-dessus duquel les pixels sont considérés sur-exposés"
 
 #. Film strip shortcuts
 #. Setup key accelerators in capture view...
-#: ../src/views/darkroom.c:1705 ../src/views/map.c:718
+#: ../src/views/darkroom.c:1705 ../src/views/map.c:701
 #: ../src/views/tethering.c:386
 msgctxt "accel"
 msgid "toggle film strip"
@@ -8478,12 +8487,12 @@ msgstr "aperçu avec détection de la mise au point"
 msgid "map"
 msgstr "carte"
 
-#: ../src/views/map.c:715
+#: ../src/views/map.c:698
 msgctxt "accel"
 msgid "undo"
 msgstr "défaire"
 
-#: ../src/views/map.c:716
+#: ../src/views/map.c:699
 msgctxt "accel"
 msgid "redo"
 msgstr "refaire"
