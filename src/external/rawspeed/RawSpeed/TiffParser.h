@@ -40,6 +40,7 @@
 #include "MefDecoder.h"
 #include "MosDecoder.h"
 #include "DcrDecoder.h"
+#include "KdcDecoder.h"
 
 namespace RawSpeed {
 

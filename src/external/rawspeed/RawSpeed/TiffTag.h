@@ -320,6 +320,7 @@ typedef enum {
 
   KODAK_IFD = 0x8290,
   KODAK_LINEARIZATION = 0x090D,
+  KODAK_KDC_OFFSET = 0xFD04,
 } TiffTag;
 
 } // namespace RawSpeed
