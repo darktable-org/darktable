@@ -52,15 +52,27 @@ RawImage DcrDecoder::decodeRawInternal() {
   ByteStream input(mFile->getData(off), c2);
 
   int compression = raw->getEntry(COMPRESSION)->getInt();
-  if (65000 == compression)
-    decodeKodak65000(input, width, height);
-  else
+  if (65000 == compression) {
+    TiffEntry *ifdoffset = mRootIFD->getEntryRecursive(KODAK_IFD);
+    if (!ifdoffset)
+      ThrowRDE("DCR Decoder: Couldn't find the Kodak IFD offset");
+    TiffIFDBE kodakifd = TiffIFDBE(mFile, ifdoffset->getInt());
+    TiffEntry *linearization = kodakifd.getEntryRecursive(KODAK_LINEARIZATION);
+    if (!linearization)
+      ThrowRDE("DCR Decoder: Couldn't find the linearization table");
+    if (linearization->count != 1024)
+      ThrowRDE("DCR Decoder: Linearization table is wrong size %d", linearization->count);
+    if (linearization->type != TIFF_SHORT)
+      ThrowRDE("DCR Decoder: Linearization table is wrong type");
+
+    decodeKodak65000(input, width, height, linearization->getShortArray());
+  } else
     ThrowRDE("DCR Decoder: Unsupported compression %d", compression);
 
   return mRaw;
 }
 
-void DcrDecoder::decodeKodak65000(ByteStream &input, uint32 w, uint32 h) {
+void DcrDecoder::decodeKodak65000(ByteStream &input, uint32 w, uint32 h, const ushort16 *curve) {
   short buf[256];
   int pred[2];
   uchar8* data = mRaw->getData();
@@ -74,9 +86,10 @@ void DcrDecoder::decodeKodak65000(ByteStream &input, uint32 w, uint32 h) {
       uint32 len = MIN(256, w-x);
       decodeKodak65000Segment(buf, len);
       for (uint32 i = 0; i < len; i++) {
-        dest[x+i] = pred[i & 1] += buf[i]; // FIXME: dcraw applies a curve here
-        //fprintf(stderr, "RAW %d\n", dest[x+i]);
-        //exit(2);
+        ushort16 value = pred[i & 1] += buf[i];
+        if (value > 1023)
+          ThrowRDE("DCR Decoder: Value out of bounds %d", value);
+        dest[x+i] = curve[value];
       }
     }
   }

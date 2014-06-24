@@ -24,6 +24,7 @@
 #define DCR_DECODER_H
 
 #include "RawDecoder.h"
+#include "TiffIFDBE.h"
 
 namespace RawSpeed {
 
@@ -39,7 +40,7 @@ public:
 protected:
   TiffIFD *mRootIFD;
   const uchar8 *in;
-  void decodeKodak65000(ByteStream &input, uint32 w, uint32 h);
+  void decodeKodak65000(ByteStream &input, uint32 w, uint32 h, const ushort16 *curve);
   void decodeKodak65000Segment(short *out, int bsize);
 };
 
