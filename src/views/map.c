@@ -798,7 +798,7 @@ static void _view_map_collection_changed(gpointer instance, gpointer user_data)
 
   if(dt_conf_get_bool("plugins/map/filter_images_drawn"))
   {
-    /* only redraw when map mode is curently active, otherwise enter() does the magic */
+    /* only redraw when map mode is currently active, otherwise enter() does the magic */
     if(darktable.view_manager->proxy.map.view)
       g_signal_emit_by_name(lib->map, "changed");
   }
