@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2014-06-18 20:31+0200\n"
-"PO-Revision-Date: 2014-06-18 20:33+0100\n"
+"POT-Creation-Date: 2014-06-24 08:49+0200\n"
+"PO-Revision-Date: 2014-06-24 08:53+0100\n"
 "Last-Translator: Ger Siemerink <g.siemerink@gmail.com>\n"
 "Language-Team: Ger Siemerink <g.siemerink@gmail.com>\n"
 "Language: nl_NL\n"
@@ -814,7 +814,7 @@ msgstr "fout bij het inladen van map `%s'"
 msgid "file `%s' has unknown format!"
 msgstr "bestand `%s' heeft een onbekend formaat!"
 
-#: ../src/common/darktable.c:355 ../src/libs/import.c:731
+#: ../src/common/darktable.c:355 ../src/libs/import.c:733
 #, c-format
 msgid "error loading file `%s'"
 msgstr "fout bij het inladen van bestand `%s'"
@@ -850,14 +850,14 @@ msgstr ""
 #: ../src/common/history.c:274 ../src/common/history.c:275
 #: ../src/common/history.c:291 ../src/common/styles.c:633
 #: ../src/common/styles.c:635 ../src/develop/blend_gui.c:1691
-#: ../src/develop/develop.c:1138 ../src/libs/live_view.c:412
+#: ../src/develop/develop.c:1142 ../src/libs/live_view.c:412
 msgid "on"
 msgstr "aan"
 
 #: ../src/common/history.c:274 ../src/common/history.c:275
 #: ../src/common/history.c:291 ../src/common/styles.c:633
 #: ../src/common/styles.c:635 ../src/develop/blend_gui.c:1539
-#: ../src/develop/blend_gui.c:1688 ../src/develop/develop.c:1138
+#: ../src/develop/blend_gui.c:1688 ../src/develop/develop.c:1142
 #: ../src/imageio/format/j2k.c:637 ../src/iop/colorin.c:1187
 #: ../src/iop/demosaic.c:1315 ../src/iop/vignette.c:1118
 #: ../src/libs/history.c:154 ../src/libs/live_view.c:411
@@ -1074,7 +1074,7 @@ msgstr[1] "samenvoegen %d afbeeldingen"
 msgid "exposure bracketing only works on raw images"
 msgstr "bracketing werkt alleen bij raw afbeeldingen"
 
-#: ../src/control/jobs/control_jobs.c:247 ../src/iop/exposure.c:230
+#: ../src/control/jobs/control_jobs.c:247 ../src/iop/exposure.c:232
 #, c-format
 msgid "failed to get raw buffer from image `%s'"
 msgstr "invoer raw buffer van afbeelding `%s' is mislukt"
@@ -1631,7 +1631,7 @@ msgstr "overvloei modus"
 msgid "choose blending mode"
 msgstr "kies overvloei modus"
 
-#: ../src/develop/blend_gui.c:1656 ../src/iop/watermark.c:1105
+#: ../src/develop/blend_gui.c:1656 ../src/iop/watermark.c:1111
 msgid "opacity"
 msgstr "dekking"
 
@@ -1704,7 +1704,7 @@ msgstr "mengen in module '%s' overgeslagen: roi's komen niet overeen"
 msgid "could not allocate buffer for blending"
 msgstr "toewijzen buffer t.g.v. mengen mislukt"
 
-#: ../src/develop/develop.c:968
+#: ../src/develop/develop.c:972
 #, c-format
 msgid "%s: module `%s' version mismatch: %d != %d"
 msgstr "%s: module `%s' versie komt niet overeen: %d != %d"
@@ -1745,7 +1745,7 @@ msgstr "%s is uitgeschakeld"
 #: ../src/gui/accelerators.c:840 ../src/gui/accelerators.c:1007
 #: ../src/gui/accelerators.c:1032 ../src/gui/presets.c:182
 #: ../src/gui/presets.c:284 ../src/gui/presets.c:625
-#: ../src/iop/temperature.c:770 ../src/libs/import.c:504 ../src/libs/lib.c:292
+#: ../src/iop/temperature.c:770 ../src/libs/import.c:506 ../src/libs/lib.c:292
 #: ../src/libs/lib.c:321 ../src/libs/lib.c:1006
 msgid "preset"
 msgstr "voorkeur"
@@ -1800,7 +1800,7 @@ msgstr "ligthroom xmp niet gevonden!"
 msgid "`%s' not a lightroom XMP!"
 msgstr "`%s' is geen lightroom xmp!"
 
-#: ../src/develop/lightroom.c:1440 ../src/libs/import.c:528
+#: ../src/develop/lightroom.c:1440 ../src/libs/import.c:530
 msgid "tags"
 msgstr "labels"
 
@@ -1943,11 +1943,11 @@ msgid "general"
 msgstr "algemeen"
 
 #. ignoring of jpegs. hack while we don't handle raw+jpeg in the same directories.
-#: ../src/gui/camera_import_dialog.c:268 ../src/libs/import.c:404
+#: ../src/gui/camera_import_dialog.c:268 ../src/libs/import.c:406
 msgid "ignore JPEG files"
 msgstr "negeer JPEG bestanden"
 
-#: ../src/gui/camera_import_dialog.c:269 ../src/libs/import.c:405
+#: ../src/gui/camera_import_dialog.c:269 ../src/libs/import.c:407
 msgid ""
 "do not load files with an extension of .jpg or .jpeg. this can be useful "
 "when there are raw+JPEG in a directory."
@@ -2234,8 +2234,8 @@ msgstr "ISO"
 
 #. exposure
 #: ../src/gui/preferences.c:470 ../src/gui/preferences.c:1387
-#: ../src/gui/presets.c:451 ../src/iop/exposure.c:111
-#: ../src/iop/exposure.c:931 ../src/iop/relight.c:384
+#: ../src/gui/presets.c:451 ../src/iop/exposure.c:113
+#: ../src/iop/exposure.c:967 ../src/iop/relight.c:384
 #: ../src/libs/metadata_view.c:93
 msgid "exposure"
 msgstr "belichting"
@@ -2255,7 +2255,7 @@ msgid "focal length"
 msgstr "brandpuntsafstand (mm)"
 
 #: ../src/gui/preferences.c:491 ../src/iop/borders.c:1054
-#: ../src/iop/exposure.c:937 ../src/iop/levels.c:575
+#: ../src/iop/exposure.c:973 ../src/iop/levels.c:580
 #: ../src/iop/tonecurve.c:780
 msgid "auto"
 msgstr "auto"
@@ -3162,7 +3162,7 @@ msgid "abscissa: input, ordinate: output. works on RGB channels"
 msgstr "abscis: invoer, coördineer: uitvoer beïnvloedt de RGB kanalen"
 
 #: ../src/iop/basecurve.c:770 ../src/iop/lens.c:2096
-#: ../src/iop/vignette.c:1124 ../src/iop/watermark.c:1108
+#: ../src/iop/vignette.c:1124 ../src/iop/watermark.c:1114
 msgid "scale"
 msgstr "schaal"
 
@@ -3331,7 +3331,7 @@ msgstr "kies frame kleur"
 
 #. add import single image buttons
 #: ../src/iop/borders.c:971 ../src/iop/clipping.c:1747
-#: ../src/libs/import.c:836
+#: ../src/libs/import.c:838
 msgid "image"
 msgstr "afbeelding"
 
@@ -4456,8 +4456,8 @@ msgstr "overeenkomst voor ISO %d gevonden"
 msgid "interpolated from ISO %d and %d"
 msgstr "geïnterpoleerd uit ISO %d en %d"
 
-#: ../src/iop/denoiseprofile.c:1725 ../src/iop/exposure.c:907
-#: ../src/iop/lens.c:2105 ../src/iop/levels.c:542
+#: ../src/iop/denoiseprofile.c:1725 ../src/iop/exposure.c:943
+#: ../src/iop/lens.c:2105 ../src/iop/levels.c:547
 msgid "mode"
 msgstr "modus"
 
@@ -4570,94 +4570,103 @@ msgstr ""
 "and is only here so you can switch it off\n"
 "and move to the new equalizer."
 
-#: ../src/iop/exposure.c:128
+#: ../src/iop/exposure.c:130
 msgctxt "accel"
 msgid "mode"
 msgstr "modus"
 
-#: ../src/iop/exposure.c:129
+#: ../src/iop/exposure.c:131
 msgctxt "accel"
 msgid "black"
 msgstr "zwartpunt"
 
-#: ../src/iop/exposure.c:130 ../src/iop/relight.c:110
+#: ../src/iop/exposure.c:132 ../src/iop/relight.c:110
 msgctxt "accel"
 msgid "exposure"
 msgstr "belichting"
 
-#: ../src/iop/exposure.c:131
+#: ../src/iop/exposure.c:133
 msgctxt "accel"
 msgid "auto-exposure"
 msgstr "automatische belichting"
 
-#: ../src/iop/exposure.c:132
+#: ../src/iop/exposure.c:134
 msgctxt "accel"
 msgid "percentile"
 msgstr "percentiel"
 
-#: ../src/iop/exposure.c:133
+#: ../src/iop/exposure.c:135
 msgctxt "accel"
 msgid "target level"
 msgstr "doel niveau"
 
-#: ../src/iop/exposure.c:134
+#: ../src/iop/exposure.c:136
 msgctxt "accel"
 msgid "histogram source"
 msgstr "histogram van"
 
-#: ../src/iop/exposure.c:207
+#: ../src/iop/exposure.c:209
 msgid "magic lantern defaults"
 msgstr "magic lantern standaard"
 
-#: ../src/iop/exposure.c:211
+#: ../src/iop/exposure.c:213
 msgid "almost no clipping"
 msgstr "bijna geen clipping"
 
-#: ../src/iop/exposure.c:909 ../src/iop/levels.c:544
+#: ../src/iop/exposure.c:945 ../src/iop/levels.c:549
 #: ../src/iop/tonecurve.c:781
 msgid "manual"
 msgstr "handmatig"
 
-#: ../src/iop/exposure.c:912 ../src/iop/levels.c:547
+#: ../src/iop/exposure.c:948 ../src/iop/levels.c:552
 #: ../src/iop/vignette.c:1115
 msgid "automatic"
 msgstr "automatisch"
 
-#: ../src/iop/exposure.c:921
+#: ../src/iop/exposure.c:957
 msgid "adjust the black level"
 msgstr "aanpassen zwartpunt"
 
-#: ../src/iop/exposure.c:923 ../src/iop/levels.c:618
+#: ../src/iop/exposure.c:959 ../src/iop/levels.c:623
 msgid "black"
 msgstr "zwartpunt"
 
-#: ../src/iop/exposure.c:929
+#: ../src/iop/exposure.c:965
 msgid "adjust the exposure correction"
 msgstr "aanpassen belichtingscorrectie (EV)"
 
-#: ../src/iop/exposure.c:942
+#: ../src/iop/exposure.c:978
 msgid "percentage of bright values clipped out"
 msgstr "percentage uitgeclipte hooglichten  "
 
-#: ../src/iop/exposure.c:952 ../src/iop/exposure.c:954
+#: ../src/iop/exposure.c:988 ../src/iop/exposure.c:990
 msgid "percentile"
 msgstr "percentiel"
 
-#: ../src/iop/exposure.c:958 ../src/iop/exposure.c:960
+#: ../src/iop/exposure.c:994 ../src/iop/exposure.c:996
 msgid "target level"
 msgstr "doel niveau"
 
-#: ../src/iop/exposure.c:964
+#: ../src/iop/exposure.c:1000
 msgid "histogram of"
 msgstr "histogram van"
 
-#: ../src/iop/exposure.c:966
+#: ../src/iop/exposure.c:1002
 msgid "pre-processed image"
 msgstr "voorbereide  afbeeldingen"
 
-#: ../src/iop/exposure.c:969
+#: ../src/iop/exposure.c:1005
 msgid "source raw data"
 msgstr "bron ruwe data"
+
+#: ../src/iop/exposure.c:1013
+msgid "computed EC: "
+msgstr ""
+
+#. This gets filled in by process
+#: ../src/iop/exposure.c:1017
+msgid "what exposure correction have actually been used"
+msgstr "de actuel gebruikte belichtingscorrectie"
 
 #: ../src/iop/flip.c:321
 msgid "flip horizontally"
@@ -4679,7 +4688,7 @@ msgstr "roteer 90 graden"
 msgid "rotate by 180"
 msgstr "roteer 180 graden"
 
-#: ../src/iop/flip.c:432 ../src/iop/watermark.c:1111
+#: ../src/iop/flip.c:432 ../src/iop/watermark.c:1117
 msgid "rotate"
 msgstr "draai"
 
@@ -5200,46 +5209,46 @@ msgstr "welke correcties zijn tot nu toe uitgevoerd"
 msgid "levels"
 msgstr "niveaus"
 
-#: ../src/iop/levels.c:559
+#: ../src/iop/levels.c:564
 msgid ""
 "drag handles to set black, gray, and white points.  operates on L channel."
 msgstr ""
 "sleep de handvaten en bepaal het zwart-, grijs- en witpunt dit beïnvloedt "
 "het L-kanaal"
 
-#: ../src/iop/levels.c:576
+#: ../src/iop/levels.c:581
 msgid "apply auto levels"
 msgstr "niveaus automatisch aanpassen"
 
-#: ../src/iop/levels.c:580
+#: ../src/iop/levels.c:585
 msgid "pick black point from image"
 msgstr "kies zwartpunt van afbeelding"
 
-#: ../src/iop/levels.c:584
+#: ../src/iop/levels.c:589
 msgid "pick medium gray point from image"
 msgstr "kies middelgrijspunt van afbeelding"
 
-#: ../src/iop/levels.c:588
+#: ../src/iop/levels.c:593
 msgid "pick white point from image"
 msgstr "kies witpunt van afbeelding"
 
-#: ../src/iop/levels.c:616
+#: ../src/iop/levels.c:621
 msgid "black percentile"
 msgstr "zwart percentiel"
 
-#: ../src/iop/levels.c:621
+#: ../src/iop/levels.c:626
 msgid "gray percentile"
 msgstr "grijs percentiel"
 
-#: ../src/iop/levels.c:623
+#: ../src/iop/levels.c:628
 msgid "gray"
 msgstr "grijs"
 
-#: ../src/iop/levels.c:626
+#: ../src/iop/levels.c:631
 msgid "white percentile"
 msgstr "wit percentiel"
 
-#: ../src/iop/levels.c:628
+#: ../src/iop/levels.c:633
 msgid "white"
 msgstr "wit"
 
@@ -6040,53 +6049,53 @@ msgctxt "accel"
 msgid "y offset"
 msgstr "compenseer y"
 
-#: ../src/iop/watermark.c:1090
+#: ../src/iop/watermark.c:1096
 msgid "marker"
 msgstr "bestand"
 
-#: ../src/iop/watermark.c:1091
+#: ../src/iop/watermark.c:1097
 msgid "alignment"
 msgstr "uitlijning"
 
-#: ../src/iop/watermark.c:1117
+#: ../src/iop/watermark.c:1123
 msgctxt "size"
 msgid "image"
 msgstr "afbeelding"
 
-#: ../src/iop/watermark.c:1118
+#: ../src/iop/watermark.c:1124
 msgid "larger border"
 msgstr "grotere rand"
 
-#: ../src/iop/watermark.c:1119
+#: ../src/iop/watermark.c:1125
 msgid "smaller border"
 msgstr "kleinere rand"
 
-#: ../src/iop/watermark.c:1121
+#: ../src/iop/watermark.c:1127
 msgid "scale on"
 msgstr "vergroting"
 
-#: ../src/iop/watermark.c:1123
+#: ../src/iop/watermark.c:1129
 msgid "size is relative to"
 msgstr "afmeting is relatief aan"
 
-#: ../src/iop/watermark.c:1142
+#: ../src/iop/watermark.c:1148
 msgid "x offset"
 msgstr "compenseer x"
 
-#: ../src/iop/watermark.c:1145
+#: ../src/iop/watermark.c:1151
 msgid "y offset"
 msgstr "compenseer y"
 
 #. Let's add some tooltips and hook up some signals...
-#: ../src/iop/watermark.c:1151
+#: ../src/iop/watermark.c:1157
 msgid "the opacity of the watermark"
 msgstr "de dekking van het watermerk"
 
-#: ../src/iop/watermark.c:1152
+#: ../src/iop/watermark.c:1158
 msgid "the scale of the watermark"
 msgstr "de grootte van het watermerk"
 
-#: ../src/iop/watermark.c:1153
+#: ../src/iop/watermark.c:1159
 msgid "the rotation of the watermark"
 msgstr "de draaiing van het watermerk"
 
@@ -6466,17 +6475,17 @@ msgstr "geschiedenis"
 msgid "description"
 msgstr "omschrijving"
 
-#: ../src/libs/collect.h:40 ../src/libs/import.c:510
+#: ../src/libs/collect.h:40 ../src/libs/import.c:512
 #: ../src/libs/metadata.c:354 ../src/libs/metadata_view.c:103
 msgid "creator"
 msgstr "fotograaf"
 
-#: ../src/libs/collect.h:41 ../src/libs/import.c:516
+#: ../src/libs/collect.h:41 ../src/libs/import.c:518
 #: ../src/libs/metadata.c:367
 msgid "publisher"
 msgstr "uitgever"
 
-#: ../src/libs/collect.h:42 ../src/libs/import.c:522
+#: ../src/libs/collect.h:42 ../src/libs/import.c:524
 #: ../src/libs/metadata.c:380
 msgid "rights"
 msgstr "rechten"
@@ -6550,7 +6559,7 @@ msgid "XMP sidecar files"
 msgstr "xmp bestanden"
 
 #: ../src/libs/copy_history.c:88 ../src/libs/geotagging.c:459
-#: ../src/libs/import.c:700 ../src/libs/styles.c:281
+#: ../src/libs/import.c:702 ../src/libs/styles.c:281
 msgid "all files"
 msgstr "alle bestanden"
 
@@ -7082,117 +7091,117 @@ msgctxt "accel"
 msgid "ungroup"
 msgstr "degroeperen"
 
-#: ../src/libs/import.c:85
+#: ../src/libs/import.c:87
 msgid "import"
 msgstr "importeren"
 
-#: ../src/libs/import.c:106
+#: ../src/libs/import.c:108
 msgctxt "accel"
 msgid "scan for devices"
 msgstr "media"
 
-#: ../src/libs/import.c:107
+#: ../src/libs/import.c:109
 msgctxt "accel"
 msgid "import from camera"
 msgstr "importeer van camera"
 
-#: ../src/libs/import.c:108
+#: ../src/libs/import.c:110
 msgctxt "accel"
 msgid "tethered shoot"
 msgstr "tethered shoot (communiceer direct met camera)"
 
-#: ../src/libs/import.c:109
+#: ../src/libs/import.c:111
 msgctxt "accel"
 msgid "import image"
 msgstr "importeer afbeelding"
 
-#: ../src/libs/import.c:110
+#: ../src/libs/import.c:112
 msgctxt "accel"
 msgid "import folder"
 msgstr "importeer een map"
 
 #. add the rescan button
-#: ../src/libs/import.c:193
+#: ../src/libs/import.c:195
 msgid "scan for devices"
 msgstr "media"
 
-#: ../src/libs/import.c:196
+#: ../src/libs/import.c:198
 msgid "scan for newly attached devices"
 msgstr "zoek media"
 
-#: ../src/libs/import.c:223
+#: ../src/libs/import.c:225
 #, c-format
 msgid "device \"%s\" connected on port \"%s\"."
 msgstr "station \"%s\" verbonden op poort \"%s\"."
 
-#: ../src/libs/import.c:232
+#: ../src/libs/import.c:234
 msgid "import from camera"
 msgstr "importeer vanaf camera"
 
-#: ../src/libs/import.c:237
+#: ../src/libs/import.c:239
 msgid "tethered shoot"
 msgstr "tethered shoot (communiceer direct met camera)"
 
 #. No supported devices is detected lets notice user..
-#: ../src/libs/import.c:259
+#: ../src/libs/import.c:261
 msgid "no supported devices found"
 msgstr "geen media gevonden"
 
 #. add extra lines to 'extra'. don't forget to destroy the widgets later.
-#: ../src/libs/import.c:378
+#: ../src/libs/import.c:380
 msgid "import options"
 msgstr "importeer opties"
 
 #. recursive opening.
-#: ../src/libs/import.c:398
+#: ../src/libs/import.c:400
 msgid "import directories recursively"
 msgstr "importeer mappen recursief"
 
-#: ../src/libs/import.c:399
+#: ../src/libs/import.c:401
 msgid ""
 "recursively import subdirectories. each directory goes into a new film roll."
 msgstr ""
 "recursief onderliggende mappen importeren, elke map wordt daarbij in een "
 "nieuwe map geplaatst."
 
-#: ../src/libs/import.c:413
+#: ../src/libs/import.c:415
 msgid "apply metadata on import"
 msgstr "toepassen metadata op import"
 
-#: ../src/libs/import.c:414
+#: ../src/libs/import.c:416
 msgid "apply some metadata to all newly imported images."
 msgstr "pas metadata  toe op alle nieuw geïmporteerde afbeeldingen "
 
-#: ../src/libs/import.c:451
+#: ../src/libs/import.c:453
 msgid "comma separated list of tags"
 msgstr "labels gescheiden door komma's"
 
-#: ../src/libs/import.c:667
+#: ../src/libs/import.c:669
 msgid "import image"
 msgstr "importeer afbeelding"
 
-#: ../src/libs/import.c:695
+#: ../src/libs/import.c:697
 msgid "supported images"
 msgstr "ondersteunde afbeeldingen"
 
-#: ../src/libs/import.c:745
+#: ../src/libs/import.c:747
 msgid "file has unknown format!"
 msgstr "formaat bestand onbekend!"
 
-#: ../src/libs/import.c:763
+#: ../src/libs/import.c:765
 msgid "import film"
 msgstr "importeer een map"
 
-#: ../src/libs/import.c:839
+#: ../src/libs/import.c:841
 msgid "select one or more images to import"
 msgstr "importeer nieuwe afbeelding(en)"
 
 #. adding the import folder button
-#: ../src/libs/import.c:848
+#: ../src/libs/import.c:850
 msgid "folder"
 msgstr "mappen"
 
-#: ../src/libs/import.c:852
+#: ../src/libs/import.c:854
 msgid "select a folder to import as film roll"
 msgstr "importeer nieuwe map(pen)"
 
@@ -7594,7 +7603,7 @@ msgstr "volledig"
 
 #: ../src/libs/navigation.c:439
 msgid "200%"
-msgstr "200%"
+msgstr "vergroot"
 
 #: ../src/libs/recentcollect.c:54
 msgid "recently used collections"
@@ -8259,7 +8268,7 @@ msgstr "drempel voor wat moet worden beschouwt als overbelicht"
 
 #. Film strip shortcuts
 #. Setup key accelerators in capture view...
-#: ../src/views/darkroom.c:1705 ../src/views/map.c:718
+#: ../src/views/darkroom.c:1705 ../src/views/map.c:701
 #: ../src/views/tethering.c:386
 msgctxt "accel"
 msgid "toggle film strip"
@@ -8385,12 +8394,12 @@ msgstr "voorvertoning met focus detectie"
 msgid "map"
 msgstr "kaart"
 
-#: ../src/views/map.c:715
+#: ../src/views/map.c:698
 msgctxt "accel"
 msgid "undo"
 msgstr "herstel"
 
-#: ../src/views/map.c:716
+#: ../src/views/map.c:699
 msgctxt "accel"
 msgid "redo"
 msgstr "opnieuw"
