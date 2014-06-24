@@ -1,6 +1,5 @@
 #include "StdAfx.h"
 #include "DcrDecoder.h"
-#include <unistd.h>
 
 /*
     RawSpeed - RAW file decoder.
