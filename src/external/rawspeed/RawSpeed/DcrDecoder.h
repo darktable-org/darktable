@@ -40,7 +40,7 @@ public:
 protected:
   TiffIFD *mRootIFD;
   void decodeKodak65000(ByteStream &input, uint32 w, uint32 h, const ushort16 *curve);
-  void decodeKodak65000Segment(ByteStream &input, short *out, int bsize);
+  void decodeKodak65000Segment(ByteStream &input, ushort16 *out, uint32 bsize);
 };
 
 } // namespace RawSpeed
