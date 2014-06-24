@@ -19,6 +19,7 @@
 #include "common/file_location.h"
 #include "control/control.h"
 #include "lua/types.h"
+#include "lua/call.h"
 #include <string.h>
 #include <stdarg.h>
 #include <math.h>
@@ -187,18 +188,27 @@ static int autotype_next(lua_State *L)
   }
   if(key_in_get) {
     lua_pushvalue(L,-2);
-    if(lua_next(L,-2)) {
-      // we have a next
-      lua_pop(L,1);
-      lua_remove(L,-2);
-      lua_remove(L,-2);
-      lua_pushvalue(L,-1);
-      lua_gettable(L,-3);
-      return 2;
-    } else {
-      // key was the last for __get
-      lua_pop(L,2);
-      lua_pushnil(L);
+    int nil_found = false;
+    while(!nil_found) {
+      if(lua_next(L,-2)) {
+        // we have a next
+        lua_pop(L,1);
+        lua_pushvalue(L,-4);
+        lua_pushvalue(L,-2);
+        //hacky way to avoid a subfunction just to do a pcall around getting a value in a table
+        int result = dt_lua_dostring(L,"args ={...}; return args[1][args[2]]",2,1);
+        if(result == LUA_OK) {
+          return 2;
+        } else {
+          lua_pop(L,1);
+          //and loop to find the next possible value
+        }
+      } else {
+        // key was the last for __get
+        lua_pop(L,2);
+        lua_pushnil(L);
+        nil_found = true;
+      }
     }
   }
 

@@ -1,10 +1,5 @@
-doc = require "core"
 real_darktable = require "darktable"
 require "darktable.debug"
-darktable = doc.toplevel.darktable
-types = doc.toplevel.types
-events = doc.toplevel.events
-attributes = doc.toplevel.attributes
 local tmp_node
 
 ---------------------
@@ -26,21 +21,11 @@ if  #real_darktable.styles == 0 then
 end
 
 
-
-----------------------
---  EARLY TWEAKING  --
-----------------------
-for k, v in pairs(real_darktable.modules.format) do
-	local res = v()
-	doc.document_type_from_obj(res,types[real_darktable.debug.type(res)])
-end
-
-for k, v in pairs(real_darktable.modules.storage) do
-	local res = v()
-	if res then
-		doc.document_type_from_obj(res,types[real_darktable.debug.type(res)])
-	end
-end
+doc = require "core"
+darktable = doc.toplevel.darktable
+types = doc.toplevel.types
+events = doc.toplevel.events
+attributes = doc.toplevel.attributes
 
 
 local function my_tostring(obj)
@@ -633,10 +618,6 @@ types.dt_view_t.name:set_text([[The name of the view]])
 
 
 types.dt_lua_backgroundjob_t:set_text([[A lua-managed entry in the backgroundjob lib]]):add_version_info("type added")
-local job = real_darktable.modules.lib.backgroundjobs.create_job("test job",true)
-doc.document_type_from_obj(job,types.dt_lua_backgroundjob_t)
-job.valid = false
-job = nil
 types.dt_lua_backgroundjob_t.percent:set_text([[The value of the progress bar. nil if there is no progress bar]])
 types.dt_lua_backgroundjob_t.valid:set_text([[True if the job is displayed, set it to false to destroy the entry]]..para().."An invalid job cannot be made valid again")
 

@@ -146,7 +146,7 @@ local function document_type_from_obj(obj,type_doc)
 		if type_doc[k] and M.get_attribute(type_doc[k],"reported_type")== "undocumented" then
 			M.remove_parent(type_doc[k],type_doc)
 			type_doc[k] = create_documentation_node(v,type_doc,k)
-		elseif type(k) == "number" and M.get_attribute(type_doc["#"],"reported_type")== "undocumented" then
+		elseif type(k) == "number" and type_doc["#"] and M.get_attribute(type_doc["#"],"reported_type")== "undocumented" then
 			M.remove_parent(type_doc["#"],type_doc)
 			nojoin[v] = true
 			type_doc["#"] = create_documentation_node(v,type_doc,"#")
@@ -608,6 +608,7 @@ end
 --------------------------
 -- GENERATE DOCUMENTATION
 --------------------------
+dt.gui.selection{dt.database[1]}
 toplevel = create_documentation_node()
 toplevel.attributes = create_documentation_node(nil,toplevel,"attributes")
 
@@ -628,6 +629,50 @@ for k,v in pairs(debug.getregistry().dt_lua_event_list) do
 	toplevel.events[k] = document_event(v,toplevel.events,k);
 	set_attribute(toplevel.events[k],"reported_type","event")
 end
+
+
+
+-- formats and modules are constructors, call them all once to document
+for k, v in pairs(dt.modules.format) do
+	local res = v()
+	document_type_from_obj(res,toplevel.types[dt.debug.type(res)])
+end
+
+for k, v in pairs(dt.modules.storage) do
+	local res = v()
+	if res then
+		document_type_from_obj(res,toplevel.types[dt.debug.type(res)])
+	end
+end
+
+
+
+
+
+
+-- libs might be available only in certain views, iterate through all views to document them
+for _,view in pairs(dt.modules.view) do
+	dt.gui.current_view(view);
+	print("entering ".._);
+	if(view == dt.modules.view.darkroom) then
+		dt.modules.lib.snapshots:take_snapshot();
+		local snapshot = dt.modules.lib.snapshots[1]
+		document_type_from_obj(snapshot,toplevel.types.dt_lua_snapshot_t)
+	elseif(view == dt.modules.view.lighttable) then
+		local job =dt.modules.lib.backgroundjobs.create_job("test job",true)
+		document_type_from_obj(job,toplevel.types.dt_lua_backgroundjob_t)
+		job.valid = false
+		job = nil
+	end
+	for libname,lib in pairs(dt.modules.lib) do
+		print("\tentering "..libname);
+		document_type_from_obj(lib,toplevel.darktable.modules.lib[libname])
+	end
+end
+
+
+
+
 
 M.toplevel = toplevel
 M.create_documentation_node = create_documentation_node
