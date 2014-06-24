@@ -330,6 +330,7 @@ static void lua_job_cancelled(GtkWidget *w, gpointer user_data)
 
 static int lua_create_job(lua_State *L){
   dt_lib_module_t*self = lua_touserdata(L,lua_upvalueindex(1));
+  dt_lua_lib_check_error(L,self);
   const char * message = luaL_checkstring(L,1);
   int type = !lua_toboolean(L,2);//inverted logic, true => no percentage bar
   int cancellable = FALSE;
@@ -354,6 +355,7 @@ static int lua_create_job(lua_State *L){
 }
 static int lua_job_progress(lua_State *L){
   dt_lib_module_t*self = lua_touserdata(L,lua_upvalueindex(1));
+  dt_lua_lib_check_error(L,self);
   const guint *key;
   luaA_to(L,dt_lua_backgroundjob_t,&key,1);
   if(lua_isnone(L,3)) {
@@ -381,6 +383,7 @@ static int lua_job_progress(lua_State *L){
 
 static int lua_job_valid(lua_State*L){
   dt_lib_module_t*self = lua_touserdata(L,lua_upvalueindex(1));
+  dt_lua_lib_check_error(L,self);
   const guint *key;
   luaA_to(L,dt_lua_backgroundjob_t,&key,1);
   if(lua_isnone(L,3)) {
