@@ -101,7 +101,6 @@ static int current_view_cb(lua_State *L)
   {
     luaL_argcheck(L,dt_lua_isa(L,1,dt_view_t),1,"dt_view_t expected");
     dt_view_t * module = *(dt_view_t**)lua_touserdata(L,1);
-    printf("switch to %d\n",module->view(module));
     int i = 0;
     while(i< darktable.view_manager->num_views && module != &darktable.view_manager->view[i]) i++;
     if(i == darktable.view_manager->num_views) return luaL_error(L,"should never happen : %s %d\n",__FILE__,__LINE__);
