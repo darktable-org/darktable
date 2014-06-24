@@ -39,9 +39,8 @@ public:
   virtual void decodeMetaDataInternal(CameraMetaData *meta);
 protected:
   TiffIFD *mRootIFD;
-  const uchar8 *in;
   void decodeKodak65000(ByteStream &input, uint32 w, uint32 h, const ushort16 *curve);
-  void decodeKodak65000Segment(short *out, int bsize);
+  void decodeKodak65000Segment(ByteStream &input, short *out, int bsize);
 };
 
 } // namespace RawSpeed

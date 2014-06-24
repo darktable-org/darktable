@@ -77,14 +77,13 @@ void DcrDecoder::decodeKodak65000(ByteStream &input, uint32 w, uint32 h, const u
   int pred[2];
   uchar8* data = mRaw->getData();
   uint32 pitch = mRaw->pitch;
-  in = input.getData();
 
   for (uint32 y = 0; y < h; y++) {
     ushort16* dest = (ushort16*) & data[y*pitch];
     for (uint32 x = 0 ; x < w; x += 256) {
       pred[0] = pred[1] = 0;
       uint32 len = MIN(256, w-x);
-      decodeKodak65000Segment(buf, len);
+      decodeKodak65000Segment(input, buf, len);
       for (uint32 i = 0; i < len; i++) {
         ushort16 value = pred[i & 1] += buf[i];
         if (value > 1023)
@@ -95,27 +94,26 @@ void DcrDecoder::decodeKodak65000(ByteStream &input, uint32 w, uint32 h, const u
   }
 }
 
-void DcrDecoder::decodeKodak65000Segment(short *out, int bsize) {
-  uchar8 blen[768], c;
+void DcrDecoder::decodeKodak65000Segment(ByteStream &input, short *out, int bsize) {
+  uchar8 blen[768];
   uint64 bitbuf=0;
   int bits=0, i, j, len, diff;
   
   bsize = (bsize + 3) & -4;
   for (i=0; i < bsize; i+=2) {
-    c = *in++;
-    blen[i] = c & 15;
-    blen[i+1] = c >> 4;
+    blen[i] = input.peekByte() & 15;
+    blen[i+1] = input.getByte() >> 4;
   }
   if ((bsize & 7) == 4) {
-    bitbuf  = ((int) *in++) << 8;
-    bitbuf += ((int) *in++);
+    bitbuf  = ((int) input.getByte()) << 8;
+    bitbuf += ((int) input.getByte());
     bits = 16;
   }
   for (i=0; i < bsize; i++) {
     len = blen[i];
     if (bits < len) {
       for (j=0; j < 32; j+=8) {
-        bitbuf += (long long) ((int) *in++) << (bits+(j^8));
+        bitbuf += (long long) ((int) input.getByte()) << (bits+(j^8));
       }
       bits += 32;
     }
