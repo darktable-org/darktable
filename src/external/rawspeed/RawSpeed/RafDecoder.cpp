@@ -119,9 +119,13 @@ RawImage RafDecoder::decodeRawInternal() {
 
   mRaw->dim = iPoint2D(width, height);
   mRaw->createData();
-  ByteStream input_start(mFile->getData(off), mFile->getSize() - off);
+  ByteStream input(mFile->getData(off), mFile->getSize() - off);
   iPoint2D pos(0, 0);
-  readUncompressedRaw(input_start, mRaw->dim,pos, width*bps/8, bps, BitOrder_Plain);
+
+  if (mRootIFD->endian == big)
+    Decode16BitRawBEunpacked(input, width, height);
+  else
+    readUncompressedRaw(input, mRaw->dim, pos, width*bps/8, bps, BitOrder_Plain);
 
   return mRaw;
 }
