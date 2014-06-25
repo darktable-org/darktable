@@ -230,6 +230,19 @@ int dt_lua_do_chunk_silent(lua_State *L,int nargs, int nresults)
   return 0;
 }
 
+int dt_lua_do_chunk_raise(lua_State *L,int nargs, int nresults)
+{
+  int orig_top = lua_gettop(L);
+  int thread_result = dt_lua_do_chunk(L,nargs,nresults);
+  if(thread_result == LUA_OK) {
+    return lua_gettop(L) - orig_top;
+  } else {
+    const char * message = lua_tostring(L,-1);
+    return luaL_error(L,message);
+  }
+
+}
+
 int dt_lua_init_call(lua_State *L) {
   luaA_enum(L,yield_type);
   luaA_enum_value(L,yield_type,WAIT_MS,false);
