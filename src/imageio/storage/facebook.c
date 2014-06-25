@@ -1008,6 +1008,13 @@ const char *name(const struct dt_imageio_module_storage_t *self)
   return _("facebook webalbum");
 }
 
+int recommended_dimension(struct dt_imageio_module_storage_t *self, uint32_t *width, uint32_t *height)
+{
+  *width=FB_IMAGE_MAX_SIZE;
+  *height=FB_IMAGE_MAX_SIZE;
+  return 1;
+}
+
 /* construct widget above */
 void gui_init(struct dt_imageio_module_storage_t *self)
 {
