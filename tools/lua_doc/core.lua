@@ -653,7 +653,6 @@ end
 -- libs might be available only in certain views, iterate through all views to document them
 for _,view in pairs(dt.modules.view) do
 	dt.gui.current_view(view);
-	print("entering ".._);
 	if(view == dt.modules.view.darkroom) then
 		dt.modules.lib.snapshots:take_snapshot();
 		local snapshot = dt.modules.lib.snapshots[1]
@@ -665,7 +664,6 @@ for _,view in pairs(dt.modules.view) do
 		job = nil
 	end
 	for libname,lib in pairs(dt.modules.lib) do
-		print("\tentering "..libname);
 		document_type_from_obj(lib,toplevel.darktable.modules.lib[libname])
 	end
 end

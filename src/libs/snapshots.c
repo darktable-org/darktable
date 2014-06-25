@@ -437,6 +437,241 @@ static void _lib_snapshots_toggled_callback(GtkToggleButton *widget, gpointer us
   dt_control_queue_redraw_center();
 }
 
+#ifdef USE_LUA
+typedef enum {
+  SNS_LEFT,
+  SNS_RIGHT,
+  SNS_TOP,
+  SNS_BOTTOM,
+} snapshot_direction_t;
+
+static int direction_member(lua_State * L) 
+{
+  dt_lib_module_t * self = *(dt_lib_module_t**)lua_touserdata(L,1);
+  dt_lib_snapshots_t *d = (dt_lib_snapshots_t *)self->data;
+  dt_lua_lib_check_error(L,self);
+  if(lua_gettop(L) != 3) {
+    snapshot_direction_t result;
+    if(!d->vertical && !d->inverted) {
+      result = SNS_TOP;
+    } else if(!d->vertical && d->inverted) {
+      result = SNS_BOTTOM;
+    } else if(d->vertical && !d->inverted) {
+      result = SNS_LEFT;
+    } else {
+      result = SNS_RIGHT;
+    }
+    luaA_push(L,snapshot_direction_t,&result);
+      return 1;
+  } else {
+    snapshot_direction_t direction;
+    luaA_to(L,snapshot_direction_t,&direction,3);
+    if(direction == SNS_TOP) {
+      d->vertical = FALSE ;
+      d->inverted = FALSE;
+    } else if(direction == SNS_BOTTOM) {
+      d->vertical = FALSE ;
+      d->inverted = TRUE;
+    } else if(direction == SNS_LEFT) {
+      d->vertical = TRUE ;
+      d->inverted = FALSE;
+    } else {
+      d->vertical = TRUE ;
+      d->inverted = TRUE;
+    }
+    return 0;
+  }
+}
+
+static int ratio_member(lua_State*L)
+{
+  dt_lib_module_t * self = *(dt_lib_module_t**)lua_touserdata(L,1);
+  dt_lib_snapshots_t *d = (dt_lib_snapshots_t *)self->data;
+  dt_lua_lib_check_error(L,self);
+  if(lua_gettop(L) != 3) {
+    if(!d->vertical && !d->inverted) {
+      lua_pushnumber(L,d->vp_ypointer);
+    } else if(!d->vertical && d->inverted) {
+      lua_pushnumber(L,1 - d->vp_ypointer);
+    } else if(d->vertical && !d->inverted) {
+      lua_pushnumber(L,d->vp_xpointer);
+    } else {
+      lua_pushnumber(L,1 - d->vp_xpointer);
+    }
+    return 1;
+  } else {
+    double ratio;
+    luaA_to(L,double,&ratio,3);
+    if(ratio < 0.0) ratio = 0.0;
+    if(ratio > 1.0) ratio = 1.0;
+    if(!d->vertical && !d->inverted) {
+      d->vp_ypointer = ratio;
+    } else if(!d->vertical && d->inverted) {
+      d->vp_ypointer = 1.0 - ratio;
+    } else if(d->vertical && !d->inverted) {
+      d->vp_xpointer = ratio;
+    } else {
+      d->vp_xpointer = 1.0 - ratio;
+    }
+    return 0;
+  }
+}
+
+static int max_snapshot_member(lua_State*L)
+{
+  dt_lib_module_t * self = *(dt_lib_module_t**)lua_touserdata(L,1);
+  dt_lib_snapshots_t *d = (dt_lib_snapshots_t *)self->data;
+  dt_lua_lib_check_error(L,self);
+  lua_pushnumber(L,d->size);
+  return 1;
+}
+
+static int lua_take_snapshot(lua_State*L)
+{
+  dt_lib_module_t* self = lua_touserdata(L,lua_upvalueindex(1));
+  dt_lib_snapshots_t *d = (dt_lib_snapshots_t *)self->data;
+  dt_lua_lib_check_error(L,self);
+  _lib_snapshots_add_button_clicked_callback(d->take_button,self);
+  return 0;
+
+}
+
+typedef int dt_lua_snapshot_t;
+static int selected_member(lua_State *L)
+{
+  dt_lib_module_t * self = *(dt_lib_module_t**)lua_touserdata(L,1);
+  dt_lib_snapshots_t *d = (dt_lib_snapshots_t *)self->data;
+  dt_lua_lib_check_error(L,self);
+  for (int i = 0 ; i< d->num_snapshots ; i++) {
+    GtkWidget *widget = d->snapshot[i].button;
+    if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget)))
+    {
+      luaA_push(L,dt_lua_snapshot_t,&i);
+      return 1;
+    }
+  }
+  lua_pushnil(L);
+  return 1;
+}
+
+static int snapshots_length(lua_State *L)
+{
+  dt_lib_module_t * self = *(dt_lib_module_t**)lua_touserdata(L,1);
+  dt_lib_snapshots_t *d = (dt_lib_snapshots_t *)self->data;
+  if(!dt_lua_lib_check(L,self)) {
+    lua_pushnumber(L,0);
+    return 1;
+  }
+  lua_pushnumber(L,d->num_snapshots);
+  return 1;
+}
+
+static int number_member(lua_State *L) 
+{
+  dt_lib_module_t * self = *(dt_lib_module_t**)lua_touserdata(L,1);
+  dt_lib_snapshots_t *d = (dt_lib_snapshots_t *)self->data;
+  dt_lua_lib_check_error(L,self);
+  int index = luaL_checkinteger(L,2);
+  if(index > d->num_snapshots || index < 1) {
+    return luaL_error(L,"Accessing a non-existant snapshot");
+  }
+  index = index-1;
+  luaA_push(L,dt_lua_snapshot_t,&index);
+  return 1;
+}
+
+
+static int filename_member(lua_State*L)
+{
+  dt_lua_snapshot_t index;
+  luaA_to(L,dt_lua_snapshot_t,&index,1);
+  dt_lib_module_t* module = lua_touserdata(L,lua_upvalueindex(1));
+  dt_lib_snapshots_t *d = (dt_lib_snapshots_t *)module->data;
+  dt_lua_lib_check_error(L,module);
+  if(index >= d->num_snapshots || index < 0) {
+    return luaL_error(L,"Accessing a non-existant snapshot");
+  }
+  lua_pushstring(L,d->snapshot[index].filename);
+  return 1;
+
+}
+static int name_member(lua_State*L)
+{
+  dt_lua_snapshot_t index;
+  luaA_to(L,dt_lua_snapshot_t,&index,1);
+  dt_lib_module_t* module = lua_touserdata(L,lua_upvalueindex(1));
+  dt_lib_snapshots_t *d = (dt_lib_snapshots_t *)module->data;
+  dt_lua_lib_check_error(L,module);
+  if(index >= d->num_snapshots || index < 0) {
+    return luaL_error(L,"Accessing a non-existant snapshot");
+  }
+  lua_pushstring(L,gtk_button_get_label(GTK_BUTTON(d->snapshot[index].button)));
+  return 1;
+
+}
+
+static int lua_select(lua_State*L)
+{
+  dt_lua_snapshot_t index;
+  luaA_to(L,dt_lua_snapshot_t,&index,1);
+  dt_lib_module_t* module = lua_touserdata(L,lua_upvalueindex(1));
+  dt_lua_lib_check_error(L,module);
+  dt_lib_snapshots_t *d = (dt_lib_snapshots_t *)module->data;
+  if(index >= d->num_snapshots || index < 0) {
+    return luaL_error(L,"Accessing a non-existant snapshot");
+  }
+  dt_lib_snapshot_t *self = &d->snapshot[index];
+  gtk_button_clicked(GTK_BUTTON(self->button));
+  return 0;
+}
+
+// selected : boolean r/w
+
+void init(struct dt_lib_module_t *self)
+{
+  lua_State *L=darktable.lua_state.state;
+  int my_typeid = dt_lua_module_get_entry_typeid(L,"lib",self->plugin_name);
+  lua_pushcfunction(L,direction_member);
+  dt_lua_type_register_typeid(L,my_typeid,"direction");
+  lua_pushcfunction(L,ratio_member);
+  dt_lua_type_register_typeid(L,my_typeid,"ratio");
+  lua_pushcfunction(L,max_snapshot_member);
+  dt_lua_type_register_const_typeid(L,my_typeid,"max_snapshot");
+  lua_pushlightuserdata(L,self);
+  lua_pushcclosure(L,lua_take_snapshot,1);
+  lua_pushcclosure(L,dt_lua_type_member_common,1);
+  dt_lua_type_register_const_typeid(L,my_typeid,"take_snapshot");
+  lua_pushcfunction(L,number_member);
+  dt_lua_type_register_number_typeid(L,my_typeid,snapshots_length);
+  lua_pushcfunction(L,selected_member);
+  dt_lua_type_register_const_typeid(L,my_typeid,"selected");
+
+  dt_lua_init_int_type(L,dt_lua_snapshot_t);
+  lua_pushlightuserdata(L,self);
+  lua_pushcclosure(L,filename_member,1);
+  dt_lua_type_register_const(L,dt_lua_snapshot_t,"filename");
+  lua_pushlightuserdata(L,self);
+  lua_pushcclosure(L,name_member,1);
+  dt_lua_type_register_const(L,dt_lua_snapshot_t,"name");
+  lua_pushlightuserdata(L,self);
+  lua_pushcclosure(L,lua_select,1);
+  lua_pushcclosure(L,dt_lua_type_member_common,1);
+  dt_lua_type_register_const(L,dt_lua_snapshot_t,"select");
+  luaL_getmetatable(L,"dt_lua_snapshot_t");
+  lua_pushlightuserdata(L,self);
+  lua_pushcclosure(L,name_member,1);
+  lua_setfield(L,-2,"__tostring");
+
+
+
+  luaA_enum(L,snapshot_direction_t);
+  luaA_enum_value_name(L,snapshot_direction_t,SNS_LEFT,"left",false);
+  luaA_enum_value_name(L,snapshot_direction_t,SNS_RIGHT,"right",false);
+  luaA_enum_value_name(L,snapshot_direction_t,SNS_TOP,"top",false);
+  luaA_enum_value_name(L,snapshot_direction_t,SNS_BOTTOM,"bottom",false);
+}
+#endif //USE_LUA
+
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

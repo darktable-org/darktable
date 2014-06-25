@@ -1877,6 +1877,110 @@ end</programlisting>
 
 </section>
 
+<section status="final" id="darktable_modules_lib_snapshots">
+<title>darktable.modules.lib.snapshots</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>snapshots</secondary>
+</indexterm>
+<para>The UI element that manipulates snapshots in darkroom</para>
+<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
+<colspec colwidth="2*"/>
+<colspec colwidth="8*"/>
+<tbody><row>
+<entry>Attributes:</entry>
+<entry><itemizedlist>
+<listitem><para><emphasis>container : </emphasis>DT_UI_CONTAINER_PANEL_LEFT_CENTER</para></listitem>
+<listitem><para><emphasis><link linkend="attributes_has_ipairs">has_ipairs</link></emphasis></para></listitem>
+<listitem><para><emphasis><link linkend="attributes_has_length">has_length</link></emphasis></para></listitem>
+<listitem><para><emphasis><link linkend="attributes_has_pairs">has_pairs</link></emphasis></para></listitem>
+<listitem><para><emphasis><link linkend="attributes_has_tostring">has_tostring</link></emphasis></para></listitem>
+<listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_lib_module_t">types.dt_lib_module_t</link></para></listitem>
+<listitem><para><emphasis>position : </emphasis>1000</para></listitem>
+<listitem><para><emphasis>views : </emphasis></para>
+<para><itemizedlist>
+<listitem><para><link linkend="darktable_modules_view_darkroom">darktable.modules.view.darkroom</link></para></listitem>
+</itemizedlist>
+</para></listitem>
+</itemizedlist>
+</entry>
+</row></tbody>
+</tgroup></informaltable>
+<section status="final" id="darktable_modules_lib_snapshots_ratio">
+<title>darktable.modules.lib.snapshots.ratio</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>ratio</secondary>
+</indexterm>
+<synopsis>number</synopsis>
+<para>The place in the screen where the line separating the snapshot is. Between 0 and 1</para>
+
+</section>
+
+<section status="final" id="darktable_modules_lib_snapshots_direction">
+<title>darktable.modules.lib.snapshots.direction</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>direction</secondary>
+</indexterm>
+<synopsis>string</synopsis>
+<para>The direction of the snapshot overlay, can be one of:<itemizedlist>
+<listitem><para>top</para></listitem>
+<listitem><para>bottom</para></listitem>
+<listitem><para>left</para></listitem>
+<listitem><para>right</para></listitem>
+</para>
+
+</section>
+
+<section status="final" id="darktable_modules_lib_snapshots__hash_">
+<title>darktable.modules.lib.snapshots.#</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>#</secondary>
+</indexterm>
+<synopsis><link linkend="types_dt_lua_snapshot_t">types.dt_lua_snapshot_t</link></synopsis>
+<para>The different snapshots for the image</para>
+
+</section>
+
+<section status="final" id="darktable_modules_lib_snapshots_selected">
+<title>darktable.modules.lib.snapshots.selected</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>selected</secondary>
+</indexterm>
+<para>The currently selected snapshot</para>
+
+</section>
+
+<section status="final" id="darktable_modules_lib_snapshots_take_snapshot">
+<title>darktable.modules.lib.snapshots.take_snapshot</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>take_snapshot</secondary>
+</indexterm>
+<synopsis>function( 
+)</synopsis>
+<para>Take a snapshot of the current image</para>
+
+<variablelist>
+</variablelist>
+</section>
+
+<section status="final" id="darktable_modules_lib_snapshots_max_snapshot">
+<title>darktable.modules.lib.snapshots.max_snapshot</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>max_snapshot</secondary>
+</indexterm>
+<synopsis>number</synopsis>
+<para>The maximum number of snapshots</para>
+
+</section>
+
+</section>
+
 <section status="final" id="darktable_modules_lib_styles">
 <title>darktable.modules.lib.styles</title>
 <indexterm>
@@ -2568,35 +2672,6 @@ end</programlisting>
 <listitem><para><link linkend="darktable_modules_view_lighttable">darktable.modules.view.lighttable</link></para></listitem>
 <listitem><para><link linkend="darktable_modules_view_darkroom">darktable.modules.view.darkroom</link></para></listitem>
 <listitem><para><link linkend="darktable_modules_view_tethering">darktable.modules.view.tethering</link></para></listitem>
-</itemizedlist>
-</para></listitem>
-</itemizedlist>
-</entry>
-</row></tbody>
-</tgroup></informaltable>
-</section>
-
-<section status="final" id="darktable_modules_lib_snapshots">
-<title>darktable.modules.lib.snapshots</title>
-<indexterm>
-<primary>Lua API</primary>
-<secondary>snapshots</secondary>
-</indexterm>
-<para>The UI element that manipulates snapshots in darkroom</para>
-<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
-<colspec colwidth="2*"/>
-<colspec colwidth="8*"/>
-<tbody><row>
-<entry>Attributes:</entry>
-<entry><itemizedlist>
-<listitem><para><emphasis>container : </emphasis>DT_UI_CONTAINER_PANEL_LEFT_CENTER</para></listitem>
-<listitem><para><emphasis><link linkend="attributes_has_pairs">has_pairs</link></emphasis></para></listitem>
-<listitem><para><emphasis><link linkend="attributes_has_tostring">has_tostring</link></emphasis></para></listitem>
-<listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_lib_module_t">types.dt_lib_module_t</link></para></listitem>
-<listitem><para><emphasis>position : </emphasis>1000</para></listitem>
-<listitem><para><emphasis>views : </emphasis></para>
-<para><itemizedlist>
-<listitem><para><link linkend="darktable_modules_view_darkroom">darktable.modules.view.darkroom</link></para></listitem>
 </itemizedlist>
 </para></listitem>
 </itemizedlist>
@@ -5017,6 +5092,71 @@ Note that this is the real image object; changing the value of a field will imme
 <synopsis>boolean</synopsis>
 <para>True if the job is displayed, set it to false to destroy the entry</para>
 <para>An invalid job cannot be made valid again</para>
+
+</section>
+
+</section>
+
+<section status="final" id="types_dt_lua_snapshot_t">
+<title>types.dt_lua_snapshot_t</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>dt_lua_snapshot_t</secondary>
+</indexterm>
+<synopsis>dt_type</synopsis>
+<para>The description of a snapshot in the snapshot lib</para>
+<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
+<colspec colwidth="2*"/>
+<colspec colwidth="8*"/>
+<tbody><row>
+<entry>Attributes:</entry>
+<entry><itemizedlist>
+<listitem><para><emphasis><link linkend="attributes_has_pairs">has_pairs</link></emphasis></para></listitem>
+<listitem><para><emphasis><link linkend="attributes_has_tostring">has_tostring</link></emphasis></para></listitem>
+</itemizedlist>
+</entry>
+</row></tbody>
+</tgroup></informaltable>
+<section status="final" id="types_dt_lua_snapshot_t_filename">
+<title>types.dt_lua_snapshot_t.filename</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>filename</secondary>
+</indexterm>
+<synopsis>string</synopsis>
+<para>The filename of an image containing the snapshot</para>
+
+</section>
+
+<section status="final" id="types_dt_lua_snapshot_t_select">
+<title>types.dt_lua_snapshot_t.select</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>select</secondary>
+</indexterm>
+<synopsis>function( 
+	<emphasis><link linkend="types_dt_lua_snapshot_t_select_snapshot">snapshot</link></emphasis> : <link linkend="types_dt_lua_snapshot_t">types.dt_lua_snapshot_t</link>
+)</synopsis>
+<para>Activates this snapshot on the display. To deactivate all snapshot you need to call this function on the active snapshot</para>
+
+<variablelist>
+<varlistentry id="types_dt_lua_snapshot_t_select_snapshot"><term>snapshot</term><listitem>
+<synopsis><link linkend="types_dt_lua_snapshot_t">types.dt_lua_snapshot_t</link></synopsis>
+<para>The snapshot to activate</para>
+
+</listitem></varlistentry>
+
+</variablelist>
+</section>
+
+<section status="final" id="types_dt_lua_snapshot_t_name">
+<title>types.dt_lua_snapshot_t.name</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>name</secondary>
+</indexterm>
+<synopsis>string</synopsis>
+<para>The name of the snapshot, as seen in the UI</para>
 
 </section>
 
