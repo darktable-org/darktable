@@ -95,7 +95,8 @@ endif()
 if(NOT SOURCE_PACKAGE)
 	message("-- Determining version")
 	EXECUTE_PROCESS(COMMAND git describe --tags HEAD #OUTPUT_VARIABLE PROJECT_VERSION OUTPUT_STRIP_TRAILING_WHITESPACE
-			COMMAND sed "s,^release-,,;s,-,+,;s,-,~,;" OUTPUT_STRIP_TRAILING_WHITESPACE OUTPUT_VARIABLE PROJECT_VERSION)
+			COMMAND sed "s,^release-,,;s,-,+,;s,-,~,;" OUTPUT_STRIP_TRAILING_WHITESPACE OUTPUT_VARIABLE PROJECT_VERSION
+			WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
 	configure_file("${CMAKE_CURRENT_SOURCE_DIR}/cmake/version.cmake.cmake" "${CMAKE_CURRENT_BINARY_DIR}/version.cmake" @ONLY)
 else(NOT SOURCE_PACKAGE)
 	include(cmake/version.cmake)
