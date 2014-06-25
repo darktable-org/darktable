@@ -109,6 +109,16 @@ void dt_lua_unlock(gboolean relock_gdk)
   }
 }
 
+void dt_lua_redraw_screen()
+{
+  if(darktable.gui!=NULL)
+  {
+    dt_lua_unlock(false);
+    dt_control_signal_raise(darktable.signals, DT_SIGNAL_FILMROLLS_CHANGED); // just for good measure
+    dt_control_queue_redraw();
+    dt_lua_lock();
+  }
+}
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

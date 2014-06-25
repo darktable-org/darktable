@@ -117,6 +117,7 @@ static int32_t run_early_script(dt_job_t *job)
   if(lua_command)
     dt_lua_dostring_silent(L, lua_command, 0, 0);
   free(lua_command);
+  dt_lua_redraw_screen();
   dt_lua_unlock(has_lock);
   return 0;
 }

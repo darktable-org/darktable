@@ -308,6 +308,7 @@ static void run_event(const char*event,int nargs) {
   lua_pushstring(darktable.lua_state.state,event);
   lua_pushnumber(darktable.lua_state.state,nargs);
   dt_lua_do_chunk(darktable.lua_state.state,nargs+2,0);
+  dt_lua_redraw_screen();
   
 }
 #if 0
