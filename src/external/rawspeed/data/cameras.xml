@@ -4360,8 +4360,8 @@
 	</Camera>
 	<Camera make="FUJIFILM" model="FinePix F700">
 		<CFA2 width="2" height="2">
-			<ColorRow y="0">GR</ColorRow>
-			<ColorRow y="1">BG</ColorRow>
+			<ColorRow y="0">GB</ColorRow>
+			<ColorRow y="1">RG</ColorRow>
 		</CFA2>
 		<Crop x="0" y="0" width="0" height="0"/>
 		<Sensor black="0" white="16383"/>
