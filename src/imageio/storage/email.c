@@ -56,8 +56,8 @@ name (const struct dt_imageio_module_storage_t *self)
 
 int recommended_dimension(struct dt_imageio_module_storage_t *self, uint32_t *width, uint32_t *height)
 {
-  *width=1280;
-  *height=1280;
+  *width=1536;
+  *height=1536;
   return 1;
 }
 
