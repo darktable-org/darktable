@@ -303,39 +303,23 @@ void NefDecoder::readCoolpixSplitRaw(ByteStream &input, iPoint2D& size, iPoint2D
 }
 
 void NefDecoder::DecodeD100Uncompressed() {
+  vector<TiffIFD*> data = mRootIFD->getIFDsWithTag(STRIPOFFSETS);
 
-  ThrowRDE("NEF DEcoder: D100 uncompressed not supported");
-  /*
-    TiffIFD* raw = mRootIFD->getIFDsWithTag(CFAPATTERN)[0];
+  if (data.size() < 2)
+    ThrowRDE("DecodeD100Uncompressed: No image data found");
 
-    uint32 nslices = raw->getEntry(STRIPOFFSETS)->count;
-    uint32 offset = raw->getEntry(STRIPOFFSETS)->getInt();
-    uint32 count = raw->getEntry(STRIPBYTECOUNTS)->getInt();
-    if (!mFile->isValid(offset+count))
-      ThrowRDE("DecodeD100Uncompressed: Truncated file");
+  TiffIFD* raw = data[1];
 
-    const uchar8 *in =  mFile->getData(offset);
+  uint32 offset = raw->getEntry(STRIPOFFSETS)->getInt();
+  // Hardcode the sizes as at least the width is not correctly reported
+  uint32 width = 3040;
+  uint32 height = 2024;
 
-    uint32 w = raw->getEntry(IMAGEWIDTH)->getInt();
-    uint32 h = raw->getEntry(IMAGELENGTH)->getInt();
+  mRaw->dim = iPoint2D(width, height);
+  mRaw->createData();
+  ByteStream input(mFile->getData(offset), mFile->getSize()-offset);
 
-    mRaw->dim = iPoint2D(w, h);
-    mRaw->bpp = 2;
-    mRaw->createData();
-
-    uchar8* data = mRaw->getData();
-    uint32 outPitch = mRaw->pitch;
-
-    BitPumpMSB bits(mFile->getData(offset),count);
-    for (uint32 y = 0; y < h; y++) {
-      ushort16* dest = (ushort16*)&data[y*outPitch];
-      for(uint32 x =0 ; x < w; x++) {
-        uint32 b = bits.getBits(12);
-        dest[x] = b;
-        if ((x % 10) == 9)
-          bits.skipBits(8);
-      }
-    }*/
+  Decode12BitRawBEWithControl(input, width, height);
 }
 
 void NefDecoder::checkSupportInternal(CameraMetaData *meta) {
