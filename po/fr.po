@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 1.3\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2014-06-23 15:40+0200\n"
-"PO-Revision-Date: 2014-06-23 16:09+0100\n"
+"POT-Creation-Date: 2014-06-25 18:44+0200\n"
+"PO-Revision-Date: 2014-06-25 18:45+0100\n"
 "Last-Translator: Pascal Obry <pascal@obry.net>\n"
 "Language-Team: \n"
 "Language: fr_FR\n"
@@ -1922,7 +1922,7 @@ msgstr "réinitialiser à la valeur par défaut"
 msgid "import images from camera"
 msgstr "importer des images depuis le boîtier"
 
-#: ../src/gui/camera_import_dialog.c:213
+#: ../src/gui/camera_import_dialog.c:213 ../src/libs/geotagging.c:396
 msgid "cancel"
 msgstr "annuler"
 
@@ -6548,6 +6548,11 @@ msgstr ""
 "survoler pour mettre en surbrillance dans l'image, cliquer pour verrouiller "
 "l'échantillon"
 
+# lorsque l'action n'engendre pas de suppression physique, on emploie le terme "enlever"
+#: ../src/libs/colorpicker.c:335 ../src/libs/image.c:140
+msgid "remove"
+msgstr "enlever"
+
 #: ../src/libs/colorpicker.c:439
 msgid "live samples"
 msgstr "échantillons en temps réel"
@@ -6579,6 +6584,10 @@ msgstr "RVB"
 #: ../src/libs/colorpicker.c:555
 msgid "restrict histogram to selection"
 msgstr "restreindre l'histogramme à la sélection"
+
+#: ../src/libs/colorpicker.c:599
+msgid "add"
+msgstr "ajouter"
 
 #: ../src/libs/colorpicker.c:612
 msgid "display sample areas on image"
@@ -6850,6 +6859,10 @@ msgstr ""
 "entrer l'heure affichée sur les images sélectionnées\n"
 "format : hh:mm:ss"
 
+#: ../src/libs/geotagging.c:397
+msgid "ok"
+msgstr "ok"
+
 #: ../src/libs/geotagging.c:437
 msgid "open GPX file"
 msgstr "ouvrir un fichier GPX"
@@ -6991,11 +7004,6 @@ msgstr "original"
 #: ../src/libs/image.c:50
 msgid "selected image[s]"
 msgstr "images sélectionnées"
-
-# lorsque l'action n'engendre pas de suppression physique, on emploie le terme "enlever"
-#: ../src/libs/image.c:140
-msgid "remove"
-msgstr "enlever"
 
 #: ../src/libs/image.c:142
 msgid "remove from the collection"
