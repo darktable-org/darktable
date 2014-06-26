@@ -392,7 +392,7 @@ endlist())
 
 darktable.modules.lib.snapshots["#"]:set_text([[The different snapshots for the image]])
 darktable.modules.lib.snapshots.selected:set_text([[The currently selected snapshot]])
-darktable.modules.lib.snapshots.take_snapshot:set_text([[Take a snapshot of the current image]])
+darktable.modules.lib.snapshots.take_snapshot:set_text([[Take a snapshot of the current image and add it to the UI]]..para()..[[The snapshot file will be generated at the next redraw of the main window]])
 darktable.modules.lib.snapshots.max_snapshot:set_text([[The maximum number of snapshots]])
 
 darktable.modules.lib.styles:set_text([[The style selection menu]])

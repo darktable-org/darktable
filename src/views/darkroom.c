@@ -254,7 +254,7 @@ void expose(dt_view_t *self, cairo_t *cri, int32_t width_i, int32_t height_i, in
   }
 
   /* check if we should create a snapshot of view */
-  if(darktable.develop->proxy.snapshot.request)
+  if(darktable.develop->proxy.snapshot.request && !darktable.develop->image_loading)
   {
     /* reset the request */
     darktable.develop->proxy.snapshot.request = FALSE;

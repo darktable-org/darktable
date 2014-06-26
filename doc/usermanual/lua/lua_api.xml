@@ -1963,7 +1963,8 @@ end</programlisting>
 </indexterm>
 <synopsis>function( 
 )</synopsis>
-<para>Take a snapshot of the current image</para>
+<para>Take a snapshot of the current image and add it to the UI</para>
+<para>The snapshot file will be generated at the next redraw of the main window</para>
 
 <variablelist>
 </variablelist>
