@@ -387,7 +387,9 @@ darktable.modules.lib.snapshots.direction:set_text([[The direction of the snapsh
 listel("top")..
 listel("bottom")..
 listel("left")..
-listel("right"))
+listel("right")..
+endlist())
+
 darktable.modules.lib.snapshots["#"]:set_text([[The different snapshots for the image]])
 darktable.modules.lib.snapshots.selected:set_text([[The currently selected snapshot]])
 darktable.modules.lib.snapshots.take_snapshot:set_text([[Take a snapshot of the current image]])
