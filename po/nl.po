@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2014-06-24 08:49+0200\n"
-"PO-Revision-Date: 2014-06-24 08:53+0100\n"
+"POT-Creation-Date: 2014-06-26 19:43+0200\n"
+"PO-Revision-Date: 2014-06-26 19:47+0100\n"
 "Last-Translator: Ger Siemerink <g.siemerink@gmail.com>\n"
 "Language-Team: Ger Siemerink <g.siemerink@gmail.com>\n"
 "Language: nl_NL\n"
@@ -746,7 +746,7 @@ msgstr ""
 #: ../src/iop/bilateral.cc:348 ../src/iop/channelmixer.c:461
 #: ../src/iop/channelmixer.c:473 ../src/iop/colorbalance.c:641
 #: ../src/iop/colorbalance.c:679 ../src/iop/colorbalance.c:717
-#: ../src/iop/temperature.c:758 ../src/libs/collect.c:1273
+#: ../src/iop/temperature.c:774 ../src/libs/collect.c:1273
 #: ../src/libs/collect.c:1275
 msgid "red"
 msgstr "rood"
@@ -760,7 +760,7 @@ msgstr "geel"
 #: ../src/iop/bilateral.cc:349 ../src/iop/channelmixer.c:462
 #: ../src/iop/channelmixer.c:480 ../src/iop/colorbalance.c:650
 #: ../src/iop/colorbalance.c:688 ../src/iop/colorbalance.c:726
-#: ../src/iop/temperature.c:759 ../src/libs/collect.c:1285
+#: ../src/iop/temperature.c:775 ../src/libs/collect.c:1285
 #: ../src/libs/collect.c:1287
 msgid "green"
 msgstr "groen"
@@ -769,7 +769,7 @@ msgstr "groen"
 #: ../src/iop/bilateral.cc:350 ../src/iop/channelmixer.c:463
 #: ../src/iop/channelmixer.c:487 ../src/iop/colorbalance.c:659
 #: ../src/iop/colorbalance.c:697 ../src/iop/colorbalance.c:735
-#: ../src/iop/temperature.c:760 ../src/libs/collect.c:1291
+#: ../src/iop/temperature.c:776 ../src/libs/collect.c:1291
 #: ../src/libs/collect.c:1293
 msgid "blue"
 msgstr "blauw"
@@ -1745,7 +1745,7 @@ msgstr "%s is uitgeschakeld"
 #: ../src/gui/accelerators.c:840 ../src/gui/accelerators.c:1007
 #: ../src/gui/accelerators.c:1032 ../src/gui/presets.c:182
 #: ../src/gui/presets.c:284 ../src/gui/presets.c:625
-#: ../src/iop/temperature.c:770 ../src/libs/import.c:506 ../src/libs/lib.c:292
+#: ../src/iop/temperature.c:786 ../src/libs/import.c:506 ../src/libs/lib.c:292
 #: ../src/libs/lib.c:321 ../src/libs/lib.c:1006
 msgid "preset"
 msgstr "voorkeur"
@@ -1908,7 +1908,7 @@ msgstr "reset waarde naar standaard"
 msgid "import images from camera"
 msgstr "importeer afbeeldingen vanaf de camera"
 
-#: ../src/gui/camera_import_dialog.c:213
+#: ../src/gui/camera_import_dialog.c:213 ../src/libs/geotagging.c:396
 msgid "cancel"
 msgstr "annuleer"
 
@@ -2661,7 +2661,7 @@ msgid "could not write to directory `%s'!"
 msgstr "kan niet schrijven in map `%s'!"
 
 #: ../src/imageio/storage/disk.c:267 ../src/imageio/storage/email.c:118
-#: ../src/imageio/storage/facebook.c:1194 ../src/imageio/storage/flickr.c:668
+#: ../src/imageio/storage/facebook.c:1201 ../src/imageio/storage/flickr.c:668
 #: ../src/imageio/storage/gallery.c:339 ../src/imageio/storage/gallery.c:358
 #: ../src/imageio/storage/picasa.c:1456
 #, c-format
@@ -2744,7 +2744,7 @@ msgstr "uitloggen"
 #. Set default permission to private
 #: ../src/imageio/storage/facebook.c:932 ../src/imageio/storage/facebook.c:945
 #: ../src/imageio/storage/facebook.c:972
-#: ../src/imageio/storage/facebook.c:1074 ../src/imageio/storage/flickr.c:523
+#: ../src/imageio/storage/facebook.c:1081 ../src/imageio/storage/flickr.c:523
 #: ../src/imageio/storage/picasa.c:1117 ../src/imageio/storage/picasa.c:1275
 #: ../src/imageio/storage/picasa.c:1288 ../src/imageio/storage/picasa.c:1354
 msgid "login"
@@ -2756,52 +2756,52 @@ msgstr "facebook webalbum"
 
 #. create labels
 #. xmp
-#: ../src/imageio/storage/facebook.c:1021 ../src/imageio/storage/flickr.c:477
+#: ../src/imageio/storage/facebook.c:1028 ../src/imageio/storage/flickr.c:477
 #: ../src/imageio/storage/gallery.c:179 ../src/imageio/storage/latex.c:179
 #: ../src/imageio/storage/picasa.c:1316 ../src/libs/collect.h:38
 #: ../src/libs/metadata.c:328 ../src/libs/metadata_view.c:102
 msgid "title"
 msgstr "titel"
 
-#: ../src/imageio/storage/facebook.c:1022 ../src/imageio/storage/flickr.c:478
+#: ../src/imageio/storage/facebook.c:1029 ../src/imageio/storage/flickr.c:478
 #: ../src/imageio/storage/picasa.c:1317
 msgid "summary"
 msgstr "samenvatting"
 
-#: ../src/imageio/storage/facebook.c:1023
+#: ../src/imageio/storage/facebook.c:1030
 msgid "privacy"
 msgstr "privacy"
 
-#: ../src/imageio/storage/facebook.c:1063
+#: ../src/imageio/storage/facebook.c:1070
 msgid "only me"
 msgstr "alleen ik"
 
-#: ../src/imageio/storage/facebook.c:1065 ../src/imageio/storage/flickr.c:536
+#: ../src/imageio/storage/facebook.c:1072 ../src/imageio/storage/flickr.c:536
 msgid "friends"
 msgstr "vrienden"
 
-#: ../src/imageio/storage/facebook.c:1067
+#: ../src/imageio/storage/facebook.c:1074
 msgid "public"
 msgstr "publiek"
 
-#: ../src/imageio/storage/facebook.c:1069
+#: ../src/imageio/storage/facebook.c:1076
 msgid "friends of friends"
 msgstr "vrienden van vrienden"
 
-#: ../src/imageio/storage/facebook.c:1203 ../src/imageio/storage/picasa.c:1465
+#: ../src/imageio/storage/facebook.c:1210 ../src/imageio/storage/picasa.c:1465
 msgid "unable to create album, no title provided"
 msgstr "aanmaak album mislukt, geen titel opgegeven"
 
-#: ../src/imageio/storage/facebook.c:1210 ../src/imageio/storage/picasa.c:1472
+#: ../src/imageio/storage/facebook.c:1217 ../src/imageio/storage/picasa.c:1472
 msgid "unable to create album"
 msgstr "aanmaak album mislukt"
 
-#: ../src/imageio/storage/facebook.c:1220
+#: ../src/imageio/storage/facebook.c:1227
 msgid "unable to export photo to webalbum"
 msgstr "exporteren naar webalbum niet mogelijk"
 
 #. this makes sense only if the export was successful
-#: ../src/imageio/storage/facebook.c:1232
+#: ../src/imageio/storage/facebook.c:1239
 #, c-format
 msgid "%d/%d exported to facebook webalbum"
 msgstr "%d/%d geëxporteerd naar facebook webalbum"
@@ -4661,7 +4661,7 @@ msgstr "bron ruwe data"
 
 #: ../src/iop/exposure.c:1013
 msgid "computed EC: "
-msgstr ""
+msgstr "berekende EC: "
 
 #. This gets filled in by process
 #: ../src/iop/exposure.c:1017
@@ -5758,40 +5758,40 @@ msgctxt "accel"
 msgid "temperature"
 msgstr "temperatuur"
 
-#: ../src/iop/temperature.c:385
+#: ../src/iop/temperature.c:401
 msgid "camera white balance"
 msgstr "camera witbalans"
 
-#: ../src/iop/temperature.c:386
+#: ../src/iop/temperature.c:402
 msgid "spot white balance"
 msgstr "spot witbalans"
 
-#: ../src/iop/temperature.c:387
+#: ../src/iop/temperature.c:403
 msgid "passthrough"
 msgstr "doorvoer"
 
-#: ../src/iop/temperature.c:756
+#: ../src/iop/temperature.c:772
 msgid "tint"
 msgstr "tint"
 
-#: ../src/iop/temperature.c:757
+#: ../src/iop/temperature.c:773
 msgid "temperature"
 msgstr "temperatuur"
 
-#: ../src/iop/temperature.c:772
+#: ../src/iop/temperature.c:788
 msgid "choose white balance preset from camera"
 msgstr "neem camera witbalans"
 
-#: ../src/iop/temperature.c:775
+#: ../src/iop/temperature.c:791
 msgid "finetune"
 msgstr "fijnafstelling"
 
-#: ../src/iop/temperature.c:776
+#: ../src/iop/temperature.c:792
 #, c-format
 msgid "%.0f mired"
 msgstr "%.0f mired"
 
-#: ../src/iop/temperature.c:780
+#: ../src/iop/temperature.c:796
 msgid "fine tune white balance preset"
 msgstr "fijnafstelling witbalans voorkeur"
 
@@ -6510,6 +6510,10 @@ msgstr ""
 "beweeg om het voorbeeld op het canvas te doen oplichten, klik om het "
 "voorbeeld vast te zetten"
 
+#: ../src/libs/colorpicker.c:335 ../src/libs/image.c:140
+msgid "remove"
+msgstr "uitschrijven"
+
 #: ../src/libs/colorpicker.c:439
 msgid "live samples"
 msgstr "live voorbeelden"
@@ -6541,6 +6545,10 @@ msgstr "RGB"
 #: ../src/libs/colorpicker.c:555
 msgid "restrict histogram to selection"
 msgstr "beperk histogram tot selectie"
+
+#: ../src/libs/colorpicker.c:599
+msgid "add"
+msgstr "optellen"
 
 #: ../src/libs/colorpicker.c:612
 msgid "display sample areas on image"
@@ -6801,6 +6809,10 @@ msgstr ""
 "apparaat\n"
 "formaat: hh:mm:ss"
 
+#: ../src/libs/geotagging.c:397
+msgid "ok"
+msgstr "ok"
+
 #: ../src/libs/geotagging.c:437
 msgid "open GPX file"
 msgstr "open GPX bestand"
@@ -6944,10 +6956,6 @@ msgstr "origineel"
 #: ../src/libs/image.c:50
 msgid "selected image[s]"
 msgstr "selectie bewerken"
-
-#: ../src/libs/image.c:140
-msgid "remove"
-msgstr "uitschrijven"
 
 #: ../src/libs/image.c:142
 msgid "remove from the collection"
@@ -8126,7 +8134,7 @@ msgstr "sluit gegroepeerde afbeeldingen"
 #: ../src/libs/tools/global_toolbox.c:95
 #: ../src/libs/tools/global_toolbox.c:141
 msgid "hide image overlays"
-msgstr "beeldoverlays verbergen"
+msgstr "beeld overlays verbergen"
 
 #: ../src/libs/tools/global_toolbox.c:97
 #: ../src/libs/tools/global_toolbox.c:143
