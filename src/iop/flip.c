@@ -97,6 +97,36 @@ int flags()
   return IOP_FLAGS_ALLOW_TILING | IOP_FLAGS_TILING_FULL_ROI | IOP_FLAGS_ONE_INSTANCE;
 }
 
+static dt_image_orientation_t
+merge_two_orientations(dt_image_orientation_t raw_orientation, dt_image_orientation_t user_orientation)
+{
+  dt_image_orientation_t raw_orientation_corrected = raw_orientation;
+
+  /*
+   * if user-specified orientation has ORIENTATION_SWAP_XY set, then we need
+   * to swap ORIENTATION_FLIP_Y and ORIENTATION_FLIP_X bits
+   * in raw orientation
+   */
+  if((user_orientation & ORIENTATION_SWAP_XY) == ORIENTATION_SWAP_XY)
+  {
+    if((raw_orientation & ORIENTATION_FLIP_Y) == ORIENTATION_FLIP_Y)
+      raw_orientation_corrected |=  ORIENTATION_FLIP_X;
+    else
+      raw_orientation_corrected &= ~ORIENTATION_FLIP_X;
+
+    if((raw_orientation & ORIENTATION_FLIP_X) == ORIENTATION_FLIP_X)
+      raw_orientation_corrected |=  ORIENTATION_FLIP_Y;
+    else
+      raw_orientation_corrected &= ~ORIENTATION_FLIP_Y;
+
+    if((raw_orientation & ORIENTATION_SWAP_XY) == ORIENTATION_SWAP_XY)
+      raw_orientation_corrected |=  ORIENTATION_SWAP_XY;
+  }
+
+  // and now we can automagically compute new new flip
+  return raw_orientation_corrected ^ user_orientation;
+}
+
 int
 legacy_params (dt_iop_module_t *self, const void *const old_params, const int old_version, void *new_params, const int new_version)
 {
@@ -114,33 +144,10 @@ legacy_params (dt_iop_module_t *self, const void *const old_params, const int ol
 
     *n = *d;  // start with a fresh copy of default parameters
 
-    dt_image_orientation_t r  = dt_image_orientation(&self->dev->image_storage),
-                           rc = r,
-                           o  = (dt_image_orientation_t)(old->orientation);
-
-    /*
-     * if user-specified orientation has ORIENTATION_SWAP_XY set, then we need
-     * to swap ORIENTATION_FLIP_Y and ORIENTATION_FLIP_X bits
-     * in raw orientation
-     */
-    if((o & ORIENTATION_SWAP_XY) == ORIENTATION_SWAP_XY)
-    {
-      if((r & ORIENTATION_FLIP_Y) == ORIENTATION_FLIP_Y)
-        rc |=  ORIENTATION_FLIP_X;
-      else
-        rc &= ~ORIENTATION_FLIP_X;
-
-      if((r & ORIENTATION_FLIP_X) == ORIENTATION_FLIP_X)
-        rc |=  ORIENTATION_FLIP_Y;
-      else
-        rc &= ~ORIENTATION_FLIP_Y;
-
-      if((r & ORIENTATION_SWAP_XY) == ORIENTATION_SWAP_XY)
-        rc |=  ORIENTATION_SWAP_XY;
-    }
-
-    // and now we can automagically compute new new flip
-    n->orientation = rc ^ o;
+    n->orientation = merge_two_orientations(
+                       dt_image_orientation(&self->dev->image_storage),
+                       (dt_image_orientation_t)(old->orientation)
+                     );
 
     return 0;
   }
