@@ -415,7 +415,10 @@ void reload_defaults(dt_iop_module_t *self)
     {
       // convert the old legacy flip bits to a proper parameter set:
       self->default_enabled = 1;
-      tmp.orientation = self->dev->image_storage.legacy_flip.user_flip;
+      tmp.orientation = merge_two_orientations(
+                          dt_image_orientation(&self->dev->image_storage),
+                          (dt_image_orientation_t)(self->dev->image_storage.legacy_flip.user_flip)
+                        );
     }
     sqlite3_finalize(stmt);
   }
