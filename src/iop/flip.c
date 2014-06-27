@@ -108,16 +108,41 @@ legacy_params (dt_iop_module_t *self, const void *const old_params, const int ol
     }
     dt_iop_flip_params_v1_t;
 
-    dt_iop_flip_params_v1_t *o = (dt_iop_flip_params_v1_t *)old_params;
+    dt_iop_flip_params_v1_t *old = (dt_iop_flip_params_v1_t *)old_params;
     dt_iop_flip_params_t *n = (dt_iop_flip_params_t *)new_params;
     dt_iop_flip_params_t *d = (dt_iop_flip_params_t *)self->default_params;
-    dt_image_orientation_t i_o = dt_image_orientation(&self->dev->image_storage);
 
     *n = *d;  // start with a fresh copy of default parameters
 
-    //TODO !!!
+    dt_image_orientation_t r  = dt_image_orientation(&self->dev->image_storage),
+                           rc = r,
+                           o  = (dt_image_orientation_t)(old->orientation);
 
-    return 1;
+    /*
+     * if user-specified orientation has ORIENTATION_SWAP_XY set, then we need
+     * to swap ORIENTATION_FLIP_Y and ORIENTATION_FLIP_X bits
+     * in raw orientation
+     */
+    if((o & ORIENTATION_SWAP_XY) == ORIENTATION_SWAP_XY)
+    {
+      if((r & ORIENTATION_FLIP_Y) == ORIENTATION_FLIP_Y)
+        rc |=  ORIENTATION_FLIP_X;
+      else
+        rc &= ~ORIENTATION_FLIP_X;
+
+      if((r & ORIENTATION_FLIP_X) == ORIENTATION_FLIP_X)
+        rc |=  ORIENTATION_FLIP_Y;
+      else
+        rc &= ~ORIENTATION_FLIP_Y;
+
+      if((r & ORIENTATION_SWAP_XY) == ORIENTATION_SWAP_XY)
+        rc |=  ORIENTATION_SWAP_XY;
+    }
+
+    // and now we can automagically compute new new flip
+    n->orientation = rc ^ o;
+
+    return 0;
   }
   return 1;
 }
