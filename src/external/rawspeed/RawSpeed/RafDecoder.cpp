@@ -171,14 +171,7 @@ void RafDecoder::decodeMetaDataInternal(CameraMetaData *meta) {
           w = ((y+1) >> 1) + x;
         }
         if (h < rotated->dim.y && w < rotated->dim.x) {
-          if (dst[w + h * dest_pitch] != 0) {
-            fprintf(stderr, "Overwriting, %dx%d\n", h, w);
-            exit(2);
-          }
           dst[w + h * dest_pitch] = src[x];
-        } else {
-          fprintf(stderr, "Writing out of bounds %dx%d\n", h, w);
-          exit(2);
         }
       }
     }
