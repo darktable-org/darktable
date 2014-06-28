@@ -4389,7 +4389,6 @@
 		<Sensor black="0" white="15872"/>
 		<Hints>
 			<Hint name="fuji_rotate" value=""/>
-			<Hint name="set_alt_layout" value=""/>
 		</Hints>
 	</Camera>
 	<Camera make="FUJIFILM" model="FinePix S3Pro">
@@ -4401,7 +4400,6 @@
 		<Sensor black="0" white="15872"/>
 		<Hints>
 			<Hint name="fuji_rotate" value=""/>
-			<Hint name="set_alt_layout" value=""/>
 		</Hints>
 	</Camera>
 	<Camera make="FUJIFILM" model="FinePix S5Pro">
@@ -4413,7 +4411,6 @@
 		<Sensor black="0" white="15872"/>
 		<Hints>
 			<Hint name="fuji_rotate" value=""/>
-			<Hint name="set_alt_layout" value=""/>
 		</Hints>
 	</Camera>
 	<Camera make="FUJIFILM" model="FinePix S5600">
@@ -4447,7 +4444,6 @@
 		<Crop x="32" y="32" width="-32" height="-32"/>
 		<Hints>
 			<Hint name="fuji_rotate" value=""/>
-			<Hint name="set_alt_layout" value=""/>
 		</Hints>
 	</Camera>
 	<Camera make="FUJIFILM" model="FinePix S5000">
@@ -4489,7 +4485,6 @@
 		<Sensor black="0" white="15872"/>
 		<Hints>
 			<Hint name="fuji_rotate" value=""/>
-			<Hint name="set_alt_layout" value=""/>
 		</Hints>
 	</Camera>
 	<Camera make="FUJIFILM" model="FinePix S9500">
@@ -4512,7 +4507,6 @@
 		<Crop x="32" y="0" width="-32" height="0"/>
 		<Hints>
 			<Hint name="fuji_rotate" value=""/>
-			<Hint name="set_alt_layout" value=""/>
 		</Hints>
 	</Camera>
 	<Camera make="FUJIFILM" model="FinePix S9600fd">
@@ -4524,7 +4518,6 @@
 		<Crop x="64" y="0" width="-64" height="0"/>
 		<Hints>
 			<Hint name="fuji_rotate" value=""/>
-			<Hint name="set_alt_layout" value=""/>
 		</Hints>
 	</Camera>
 	<Camera make="FUJIFILM" model="FinePix X100">

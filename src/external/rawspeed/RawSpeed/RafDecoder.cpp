@@ -45,24 +45,31 @@ RawImage RafDecoder::decodeRawInternal() {
   mFile = raw->getFileMap();
   uint32 height = 0;
   uint32 width = 0;
+  alt_layout = FALSE;
 
   if (raw->hasEntry(FUJI_RAWIMAGEFULLHEIGHT)) {
     height = raw->getEntry(FUJI_RAWIMAGEFULLHEIGHT)->getInt();
     width = raw->getEntry(FUJI_RAWIMAGEFULLWIDTH)->getInt();
-  } else if (raw->hasEntry((TiffTag)0x100)) {
-    TiffEntry *e = raw->getEntry((TiffTag)0x100);
+  } else if (raw->hasEntry(IMAGEWIDTH)) {
+    TiffEntry *e = raw->getEntry(IMAGEWIDTH);
     if (e->count < 2)
       ThrowRDE("Fuji decoder: Size array too small");
     const ushort16 *size = e->getShortArray();
     height = size[0];
     width = size[1];
   }
+  if (raw->hasEntry(FUJI_LAYOUT)) {
+    TiffEntry *e = raw->getEntry(FUJI_LAYOUT);
+    if (e->count < 2)
+      ThrowRDE("Fuji decoder: Layout array too small");
+    const uchar8 *layout = e->getData();
+    alt_layout = !(layout[0] >> 7);
+  }
 
   if (width <= 0 ||  height <= 0)
     ThrowRDE("RAF decoder: Unable to locate image size");
     
   TiffEntry *offsets = raw->getEntry(FUJI_STRIPOFFSETS);
-  //TiffEntry *counts = raw->getEntry(FUJI_STRIPBYTECOUNTS);
 
   if (offsets->count != 1)
     ThrowRDE("RAF Decoder: Multiple Strips found: %u", offsets->count);
@@ -133,15 +140,16 @@ void RafDecoder::decodeMetaDataInternal(CameraMetaData *meta) {
   }
   
   bool rotate = hints.find("fuji_rotate") != hints.end();
-  bool alt_layout = hints.find("set_alt_layout") != hints.end();
   rotate = rotate & fujiRotate;
 
   // Rotate 45 degrees - could be multithreaded.
   if (rotate && !this->uncorrectedRawValues) {
     // Calculate the 45 degree rotated size;
     uint32 rotatedsize;
-    if (alt_layout)
+    if (alt_layout) {
       rotatedsize = new_size.y+new_size.x/2;
+      fprintf(stderr, "alt layout image\n");
+    }
     else
       rotatedsize = new_size.x+new_size.y/2;
 

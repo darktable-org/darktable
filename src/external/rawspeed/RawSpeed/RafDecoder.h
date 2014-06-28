@@ -43,6 +43,7 @@ public:
 protected:
   virtual void decodeThreaded(RawDecoderThread* t);
   void DecodeRaf();
+  bool alt_layout;
 };
 
 } // namespace RawSpeed
