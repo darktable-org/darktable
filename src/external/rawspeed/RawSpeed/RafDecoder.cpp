@@ -35,7 +35,6 @@ RafDecoder::~RafDecoder(void) {
 }
 
 RawImage RafDecoder::decodeRawInternal() {
-
   vector<TiffIFD*> data = mRootIFD->getIFDsWithTag(FUJI_STRIPOFFSETS);
 
   if (data.empty())
@@ -68,7 +67,7 @@ RawImage RafDecoder::decodeRawInternal() {
 
   if (width <= 0 ||  height <= 0)
     ThrowRDE("RAF decoder: Unable to locate image size");
-    
+
   TiffEntry *offsets = raw->getEntry(FUJI_STRIPOFFSETS);
 
   if (offsets->count != 1)
@@ -127,7 +126,7 @@ void RafDecoder::decodeMetaDataInternal(CameraMetaData *meta) {
   if (mRootIFD->hasEntryRecursive(ISOSPEEDRATINGS))
     iso = mRootIFD->getEntryRecursive(ISOSPEEDRATINGS)->getInt();
   mRaw->isoSpeed = iso;
-  
+
   // This is where we'd normally call setMetaData but since we may still need
   // to rotate the image for SuperCCD cameras we do everything ourselves
   TrimSpaces(make);
@@ -148,7 +147,7 @@ void RafDecoder::decodeMetaDataInternal(CameraMetaData *meta) {
     if (new_size.y <= 0)
       new_size.y = mRaw->dim.y - cam->cropPos.y + new_size.y;
   }
-  
+
   bool rotate = hints.find("fuji_rotate") != hints.end();
   rotate = rotate & fujiRotate;
 
@@ -166,7 +165,7 @@ void RafDecoder::decodeMetaDataInternal(CameraMetaData *meta) {
     rotated->clearArea(iRectangle2D(iPoint2D(0,0), rotated->dim));
     int dest_pitch = (int)rotated->pitch / 2;
     ushort16 *dst = (ushort16*)rotated->getData(0,0);
-    
+
     for (int y = 0; y < new_size.y; y++) {
       ushort16 *src = (ushort16*)mRaw->getData(crop_offset.x, crop_offset.y + y);
       for (int x = 0; x < new_size.x; x++) {
