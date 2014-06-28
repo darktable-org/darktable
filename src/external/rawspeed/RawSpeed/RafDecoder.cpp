@@ -164,15 +164,16 @@ void RafDecoder::decodeMetaDataInternal(CameraMetaData *meta) {
       for (int x = 0; x < new_size.x; x++) {
         int h, w;
         if (alt_layout) { // Swapped x and y
-          h = new_size.y - 1 - y + (x >> 1);
+          h = rotatedsize - (new_size.y + 1 - y + (x >> 1));
           w = ((x+1) >> 1) + y;
         } else {
           h = new_size.x - 1 - x + (y >> 1);
           w = ((y+1) >> 1) + x;
         }
-        if (h < rotated->dim.y && w < rotated->dim.x) {
+        if (h < rotated->dim.y && w < rotated->dim.x)
           dst[w + h * dest_pitch] = src[x];
-        }
+        else
+          ThrowRDE("RAF Decoder: Trying to write out of bounds");
       }
     }
     mRaw = rotated;
