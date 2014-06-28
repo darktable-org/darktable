@@ -4358,7 +4358,7 @@
 			<Hint name="fuji_rotate" value=""/>
 		</Hints>
 	</Camera>
-	<Camera make="FUJIFILM" model="FinePix F700">
+	<Camera make="FUJIFILM" model="FinePix F700" supported="no">
 		<CFA2 width="2" height="2">
 			<ColorRow y="0">GB</ColorRow>
 			<ColorRow y="1">RG</ColorRow>
