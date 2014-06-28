@@ -121,7 +121,9 @@ void RafDecoder::decodeMetaDataInternal(CameraMetaData *meta) {
   if (mRootIFD->hasEntryRecursive(ISOSPEEDRATINGS))
     iso = mRootIFD->getEntryRecursive(ISOSPEEDRATINGS)->getInt();
   mRaw->isoSpeed = iso;
-  /* We fetch data ourselves */
+  
+  // This is where we'd normally call setMetaData but since we may still need
+  // to rotate the image for SuperCCD cameras we do everything ourselves
   TrimSpaces(make);
   TrimSpaces(model);
   Camera *cam = meta->getCamera(make, model, "");
