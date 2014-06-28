@@ -133,15 +133,19 @@ void RafDecoder::decodeMetaDataInternal(CameraMetaData *meta) {
   }
   
   bool rotate = hints.find("fuji_rotate") != hints.end();
+  bool alt_layout = hints.find("set_alt_layout") != hints.end();
   rotate = rotate & fujiRotate;
 
   // Rotate 45 degrees - could be multithreaded.
   if (rotate && !this->uncorrectedRawValues) {
     // Calculate the 45 degree rotated size;
-    uint32 rotatedwidth = new_size.x+new_size.y/2;
-    uint32 rotatedheight = new_size.x+new_size.y/2-1;
-    fprintf(stderr, "%dx%d to %dx%d\n", new_size.x, new_size.y, rotatedwidth, rotatedheight);
-    iPoint2D final_size(rotatedwidth, rotatedheight);
+    uint32 rotatedsize;
+    if (alt_layout)
+      rotatedsize = new_size.y+new_size.x/2;
+    else
+      rotatedsize = new_size.x+new_size.y/2;
+
+    iPoint2D final_size(rotatedsize, rotatedsize);
     RawImage rotated = RawImage::create(final_size, TYPE_USHORT16, 1);
     rotated->clearArea(iRectangle2D(iPoint2D(0,0), rotated->dim));
     int dest_pitch = (int)rotated->pitch / 2;
@@ -150,10 +154,24 @@ void RafDecoder::decodeMetaDataInternal(CameraMetaData *meta) {
     for (int y = 0; y < new_size.y; y++) {
       ushort16 *src = (ushort16*)mRaw->getData(crop_offset.x, crop_offset.y + y);
       for (int x = 0; x < new_size.x; x++) {
-        int h = new_size.x + (y >> 1) - x;
-        int w = (y >> 1) + x;
-        if (h < rotated->dim.y && w < rotated->dim.x)
+        int h, w;
+        if (alt_layout) { // Swapped x and y
+          h = new_size.y - 1 - y + (x >> 1);
+          w = ((x+1) >> 1) + y;
+        } else {
+          h = new_size.x - 1 - x + (y >> 1);
+          w = ((y+1) >> 1) + x;
+        }
+        if (h < rotated->dim.y && w < rotated->dim.x) {
+          if (dst[w + h * dest_pitch] != 0) {
+            fprintf(stderr, "Overwriting, %dx%d\n", h, w);
+            exit(2);
+          }
           dst[w + h * dest_pitch] = src[x];
+        } else {
+          fprintf(stderr, "Writing out of bounds %dx%d\n", h, w);
+          exit(2);
+        }
       }
     }
     mRaw = rotated;
