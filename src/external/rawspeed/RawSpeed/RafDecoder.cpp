@@ -78,6 +78,12 @@ RawImage RafDecoder::decodeRawInternal() {
   if (!mFile->isValid(off))
     ThrowRDE("RAF RAW Decoder: Invalid image data offset, cannot decode.");
 
+  int bps = 16;
+  if (raw->hasEntry(FUJI_BITSPERSAMPLE))
+    bps = raw->getEntry(FUJI_BITSPERSAMPLE)->getInt();
+  // x-trans sensors report 14bpp, but data isn't packed so read as 16bpp
+  if (bps == 14) bps = 16;
+
   mRaw->dim = iPoint2D(width, height);
   mRaw->createData();
   ByteStream input(mFile->getData(off), mFile->getSize() - off);
@@ -86,7 +92,7 @@ RawImage RafDecoder::decodeRawInternal() {
   if (mRootIFD->endian == big)
     Decode16BitRawBEunpacked(input, width, height);
   else
-    readUncompressedRaw(input, mRaw->dim, pos, width*2, 16, BitOrder_Plain);
+    readUncompressedRaw(input, mRaw->dim, pos, width*bps/8, bps, BitOrder_Plain);
 
   return mRaw;
 }
