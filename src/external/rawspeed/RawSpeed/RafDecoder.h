@@ -42,9 +42,6 @@ public:
   virtual TiffIFD* getRootIFD() {return mRootIFD;}
 protected:
   virtual void decodeThreaded(RawDecoderThread* t);
-  iPoint2D final_size;
-  uchar8 alt_layout;
-  uint32 fuji_width;
   void DecodeRaf();
 };
 

@@ -46,8 +46,6 @@ RawImage RafDecoder::decodeRawInternal() {
   uint32 height = 0;
   uint32 width = 0;
 
-  alt_layout = hints.find("set_alt_layout") == hints.end();
-
   if (raw->hasEntry(FUJI_RAWIMAGEFULLHEIGHT)) {
     height = raw->getEntry(FUJI_RAWIMAGEFULLHEIGHT)->getInt();
     width = raw->getEntry(FUJI_RAWIMAGEFULLWIDTH)->getInt();
@@ -58,57 +56,13 @@ RawImage RafDecoder::decodeRawInternal() {
     const ushort16 *size = e->getShortArray();
     height = size[0];
     width = size[1];
-  } 
-  if (raw->hasEntry((TiffTag)0x130)) {
-    TiffEntry *e = raw->getEntry((TiffTag)0x130);
-    if (e->count < 2)
-      ThrowRDE("Fuji decoder: Layout array too small");
-    const uchar8 *layout = e->getData();
-    alt_layout = layout[0] >> 7;
-    fuji_width = !(layout[1] & 8);
   }
-  if (raw->hasEntry((TiffTag)0x121)) {
-    TiffEntry *e = raw->getEntry((TiffTag)0x121);
-    if (e->count < 2)
-      ThrowRDE("Fuji decoder: Size array too small");
-
-    const ushort16 *size = e->getShortArray();
-
-    final_size = iPoint2D(size[1], size[0]);
-    if (final_size.x == 4284)
-      final_size.x += 3;
-  }
-  if (raw->hasEntry((TiffTag)0xc000)) {
-    TiffEntry *e = raw->getEntry((TiffTag)0xc000);
-    if (e->count < 2)
-      ThrowRDE("Fuji decoder: Size array too small");
-    const uint32 *size = e->getIntArray();
-
-    int index = 0;
-    final_size.x = size[index++];
-    if (final_size.x > 10000  && e->count > 2)
-      final_size.x  = size[index++];
-    final_size.y = size[index++];
-  }
-
-  final_size.x >>= alt_layout;
-  final_size.y <<= alt_layout;
-
-  fuji_width = final_size.x >> (alt_layout ? 0 : 1);
-  final_size.x = (final_size.y >> alt_layout) + fuji_width;
-  final_size.y = final_size.x - 1;
 
   if (width <= 0 ||  height <= 0)
     ThrowRDE("RAF decoder: Unable to locate image size");
-
+    
   TiffEntry *offsets = raw->getEntry(FUJI_STRIPOFFSETS);
   //TiffEntry *counts = raw->getEntry(FUJI_STRIPBYTECOUNTS);
-
-  int bps = 16;
-  if (raw->hasEntry(FUJI_BITSPERSAMPLE))    
-    bps = raw->getEntry(FUJI_BITSPERSAMPLE)->getInt();
-  // x-trans sensors report 14bpp, but data isn't packed so read as 16bpp
-  if (bps == 14) bps = 16;
 
   if (offsets->count != 1)
     ThrowRDE("RAF Decoder: Multiple Strips found: %u", offsets->count);
@@ -125,7 +79,7 @@ RawImage RafDecoder::decodeRawInternal() {
   if (mRootIFD->endian == big)
     Decode16BitRawBEunpacked(input, width, height);
   else
-    readUncompressedRaw(input, mRaw->dim, pos, width*bps/8, bps, BitOrder_Plain);
+    readUncompressedRaw(input, mRaw->dim, pos, width*2, 16, BitOrder_Plain);
 
   return mRaw;
 }
@@ -177,30 +131,29 @@ void RafDecoder::decodeMetaDataInternal(CameraMetaData *meta) {
     if (new_size.y <= 0)
       new_size.y = mRaw->dim.y - cam->cropPos.y + new_size.y;
   }
-
+  
   bool rotate = hints.find("fuji_rotate") != hints.end();
   rotate = rotate & fujiRotate;
 
   // Rotate 45 degrees - could be multithreaded.
   if (rotate && !this->uncorrectedRawValues) {
+    // Calculate the 45 degree rotated size;
+    uint32 rotatedwidth = new_size.x+new_size.y/2;
+    uint32 rotatedheight = new_size.x+new_size.y/2-1;
+    fprintf(stderr, "%dx%d to %dx%d\n", new_size.x, new_size.y, rotatedwidth, rotatedheight);
+    iPoint2D final_size(rotatedwidth, rotatedheight);
     RawImage rotated = RawImage::create(final_size, TYPE_USHORT16, 1);
     rotated->clearArea(iRectangle2D(iPoint2D(0,0), rotated->dim));
-    uint32 max_x = fuji_width << (alt_layout ? 0 : 1);
-    int r,c;
     int dest_pitch = (int)rotated->pitch / 2;
     ushort16 *dst = (ushort16*)rotated->getData(0,0);
+    
     for (int y = 0; y < new_size.y; y++) {
       ushort16 *src = (ushort16*)mRaw->getData(crop_offset.x, crop_offset.y + y);
-      for (uint32 x = 0; x < max_x; x++) {
-        if (alt_layout) {
-          r = fuji_width - 1 - x + (y >> 1);
-          c = x + ((y+1) >> 1);
-        } else {
-          r = fuji_width - 1 + y - (x >> 1);
-          c = y + ((x+1) >> 1);
-        }
-        if (r < rotated->dim.y && c < rotated->dim.y)
-          dst[c + r * dest_pitch] = src[x];
+      for (int x = 0; x < new_size.x; x++) {
+        int h = new_size.x + (y >> 1) - x;
+        int w = (y >> 1) + x;
+        if (h < rotated->dim.y && w < rotated->dim.x)
+          dst[w + h * dest_pitch] = src[x];
       }
     }
     mRaw = rotated;
@@ -208,7 +161,7 @@ void RafDecoder::decodeMetaDataInternal(CameraMetaData *meta) {
     mRaw->subFrame(iRectangle2D(crop_offset, new_size));
   }
 
-  mRaw->cfa.setCFA(iPoint2D(2,2), CFA_GREEN, CFA_BLUE, CFA_RED, CFA_GREEN);
+  mRaw->cfa.setCFA(iPoint2D(2,2), CFA_BLUE, CFA_GREEN, CFA_GREEN, CFA_RED);
   mRaw->isCFA = true;
   if (cam) {
     const CameraSensorInfo *sensor = cam->getSensorInfo(iso);
@@ -217,8 +170,6 @@ void RafDecoder::decodeMetaDataInternal(CameraMetaData *meta) {
     mRaw->blackAreas = cam->blackAreas;
     mRaw->cfa = cam->cfa;
   }
-  if (rotate)
-    mRaw->fujiWidth = fuji_width;
 }
 
 
