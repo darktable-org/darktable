@@ -125,10 +125,12 @@ void RafDecoder::decodeMetaDataInternal(CameraMetaData *meta) {
   TrimSpaces(make);
   TrimSpaces(model);
   Camera *cam = meta->getCamera(make, model, "");
+  if (!cam)
+    ThrowRDE("RAF Meta Decoder: Couldn't find camera");
 
   iPoint2D new_size(mRaw->dim);
   iPoint2D crop_offset = iPoint2D(0,0);
-  if (cam && applyCrop) {
+  if (applyCrop) {
     new_size = cam->cropSize;
     crop_offset = cam->cropPos;
     // If crop size is negative, use relative cropping
@@ -146,10 +148,8 @@ void RafDecoder::decodeMetaDataInternal(CameraMetaData *meta) {
   if (rotate && !this->uncorrectedRawValues) {
     // Calculate the 45 degree rotated size;
     uint32 rotatedsize;
-    if (alt_layout) {
+    if (alt_layout)
       rotatedsize = new_size.y+new_size.x/2;
-      fprintf(stderr, "alt layout image\n");
-    }
     else
       rotatedsize = new_size.x+new_size.y/2;
 
@@ -187,15 +187,11 @@ void RafDecoder::decodeMetaDataInternal(CameraMetaData *meta) {
     mRaw->subFrame(iRectangle2D(crop_offset, new_size));
   }
 
-  mRaw->cfa.setCFA(iPoint2D(2,2), CFA_BLUE, CFA_GREEN, CFA_GREEN, CFA_RED);
-  mRaw->isCFA = true;
-  if (cam) {
-    const CameraSensorInfo *sensor = cam->getSensorInfo(iso);
-    mRaw->blackLevel = sensor->mBlackLevel;
-    mRaw->whitePoint = sensor->mWhiteLevel;
-    mRaw->blackAreas = cam->blackAreas;
-    mRaw->cfa = cam->cfa;
-  }
+  const CameraSensorInfo *sensor = cam->getSensorInfo(iso);
+  mRaw->blackLevel = sensor->mBlackLevel;
+  mRaw->whitePoint = sensor->mWhiteLevel;
+  mRaw->blackAreas = cam->blackAreas;
+  mRaw->cfa = cam->cfa;
 }
 
 
