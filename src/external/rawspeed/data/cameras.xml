@@ -4527,7 +4527,7 @@
 			<Color x="0" y="1">GREEN</Color>
 			<Color x="1" y="1">RED</Color>
 		</CFA>
-                <Crop x="73" y="1" width="-73" height="-1"/>
+		<Crop x="73" y="1" width="-73" height="-1"/>
 		<Sensor black="254" white="4000"/>
 	</Camera>
 	<Camera make="FUJIFILM" model="X10">

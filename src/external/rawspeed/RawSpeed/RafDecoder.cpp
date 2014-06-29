@@ -57,7 +57,7 @@ RawImage RafDecoder::decodeRawInternal() {
     const ushort16 *size = e->getShortArray();
     height = size[0];
     width = size[1];
-  }
+  } 
   if (raw->hasEntry(FUJI_LAYOUT)) {
     TiffEntry *e = raw->getEntry(FUJI_LAYOUT);
     if (e->count < 2)

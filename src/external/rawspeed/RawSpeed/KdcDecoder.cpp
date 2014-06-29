@@ -41,8 +41,15 @@ RawImage KdcDecoder::decodeRawInternal() {
   if (7 != compression)
     ThrowRDE("KDC Decoder: Unsupported compression %d", compression);
 
-  uint32 width = mRootIFD->getEntryRecursive(PIXELXDIMENSION)->getInt();
-  uint32 height = mRootIFD->getEntryRecursive(PIXELYDIMENSION)->getInt();
+  TiffEntry *ex = mRootIFD->getEntryRecursive(PIXELXDIMENSION);
+  TiffEntry *ey = mRootIFD->getEntryRecursive(PIXELYDIMENSION);
+
+  if (NULL == ex || NULL == ey)
+    ThrowRDE("KDC Decoder: Unable to retrieve image size");
+
+  uint32 width = ex->getInt();
+  uint32 height = ey->getInt();
+
   TiffEntry *offset = mRootIFD->getEntryRecursive(KODAK_KDC_OFFSET);
   if (!offset || offset->count < 13)
     ThrowRDE("KDC Decoder: Couldn't find the KDC offset");

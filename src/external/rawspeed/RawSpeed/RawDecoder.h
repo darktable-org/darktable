@@ -170,7 +170,7 @@ protected:
 
   /* Faster version for unpacking 12 bit LSB data with a control byte every 10 pixels */
   void Decode12BitRawWithControl(ByteStream &input, uint32 w, uint32 h);
-  
+
   /* Faster version for unpacking 12 bit MSB data with a control byte every 10 pixels */
   void Decode12BitRawBEWithControl(ByteStream &input, uint32 w, uint32 h);
 
