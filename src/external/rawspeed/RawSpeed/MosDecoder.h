@@ -25,6 +25,7 @@
 
 #include "RawDecoder.h"
 #include "string.h"
+#include "LJpegPlain.h"
 
 namespace RawSpeed {
 

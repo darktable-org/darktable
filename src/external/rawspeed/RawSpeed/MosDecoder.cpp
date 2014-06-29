@@ -73,10 +73,6 @@ RawImage MosDecoder::decodeRawInternal() {
   if (data.empty())
     ThrowRDE("MOS Decoder: No image data found");
 
-  int compression = data[0]->getEntry(COMPRESSION)->getInt();
-  if (1 != compression)
-    ThrowRDE("MOS Decoder: Unsupported compression");
-
   TiffIFD* raw = data[0];
   uint32 width = raw->getEntry(IMAGEWIDTH)->getInt();
   uint32 height = raw->getEntry(IMAGELENGTH)->getInt();
@@ -86,7 +82,19 @@ RawImage MosDecoder::decodeRawInternal() {
   mRaw->createData();
   ByteStream input(mFile->getData(off), mFile->getSize()-off);
 
-  Decode16BitRawBEunpacked(input, width, height);
+  int compression = data[0]->getEntry(COMPRESSION)->getInt();
+  if (1 == compression) {
+    if (mRootIFD->endian == big)
+      Decode16BitRawBEunpacked(input, width, height);
+    else
+      Decode16BitRawUnpacked(input, width, height);
+  }
+  else if (99 == compression || 7 == compression) {
+    LJpegPlain l(mFile, mRaw);
+    l.startDecoder(off, mFile->getSize()-off, 0, 0);
+  } else
+    ThrowRDE("MOS Decoder: Unsupported compression: %d", compression);
+
   return mRaw;
 }
 
