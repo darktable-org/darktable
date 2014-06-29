@@ -177,7 +177,7 @@ static _flickr_api_context_t *_flickr_api_authenticate(dt_storage_flickr_gui_dat
     char *sign = g_strdup_printf ("%sapi_key%sfrob%spermswrite", SHARED_SECRET, API_KEY, frob);
     char *sign_md5 = g_compute_checksum_for_string (G_CHECKSUM_MD5, sign, strlen (sign));
     gchar auth_url[250];
-    snprintf(auth_url, sizeof(auth_url), "http://flickr.com/services/auth/?api_key=%s&perms=write&frob=%s&api_sig=%s", API_KEY, frob, sign_md5);
+    snprintf(auth_url, sizeof(auth_url), "https://flickr.com/services/auth/?api_key=%s&perms=write&frob=%s&api_sig=%s", API_KEY, frob, sign_md5);
 
     if(!gtk_show_uri (gdk_screen_get_default(), auth_url, gtk_get_current_event_time (), &error))
     {
