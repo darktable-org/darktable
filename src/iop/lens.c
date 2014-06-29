@@ -44,6 +44,16 @@
 #define LF_SEARCH_SORT_AND_UNIQUIFY 2
 #endif
 
+#ifndef __GNUC_PREREQ
+// on OSX, gcc-4.6 and clang chokes if this is not here.
+#if defined __GNUC__ && defined __GNUC_MINOR__
+# define __GNUC_PREREQ(maj, min) \
+((__GNUC__ << 16) + __GNUC_MINOR__ >= ((maj) << 16) + (min))
+#else
+# define __GNUC_PREREQ(maj, min) 0
+#endif
+#endif
+
 DT_MODULE_INTROSPECTION(4, dt_iop_lensfun_params_t)
 
 typedef enum dt_iop_lensfun_modflag_t
@@ -811,7 +821,7 @@ void modify_roi_out(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t 
   *roi_out = *roi_in;
 }
 
-void modify_roi_in(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, const dt_iop_roi_t *roi_out, dt_iop_roi_t *roi_in)
+void modify_roi_in(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, const dt_iop_roi_t * const roi_out, dt_iop_roi_t *roi_in)
 {
   dt_iop_lensfun_data_t *d = (dt_iop_lensfun_data_t *)piece->data;
   *roi_in = *roi_out;
@@ -835,23 +845,31 @@ void modify_roi_in(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *
                  LF_MODIFY_GEOMETRY | LF_MODIFY_SCALE))
   {
     // acquire temp memory for distorted pixel coords
-    void *buf = dt_alloc_align(16, roi_in->width*2*3*sizeof(float));
+    const size_t bufsize = (size_t)roi_in->width*2*3;
 
+#if defined(_OPENMP) && __GNUC_PREREQ(4,7)
+    void *buf = dt_alloc_align(16, bufsize*dt_get_num_threads()*sizeof(float));
+
+    #pragma omp parallel for default(none) shared(buf, modifier) reduction(min: xm, ym) reduction(max: xM, yM) schedule(static)
+#else
+    void *buf = dt_alloc_align(16, bufsize*sizeof(float));
+#endif
     for (int y = 0; y < roi_out->height; y++)
     {
-      lf_modifier_apply_subpixel_geometry_distortion (
-        modifier, roi_out->x, roi_out->y+y, roi_out->width, 1, buf);
+      float *bufptr = ((float *)buf) + (size_t)bufsize*dt_get_thread_num();
+
+      lf_modifier_apply_subpixel_geometry_distortion(
+        modifier, roi_out->x, roi_out->y+y, roi_out->width, 1, bufptr);
 
       // reverse transform the global coords from lf to our buffer
-      float *bufptr = ((float *)buf);
       for (int x = 0; x < roi_out->width; x++)
       {
         for(int c=0; c<3; c++, bufptr+=2)
         {
-          xm = fminf(xm, bufptr[0]);
-          xM = fmaxf(xM, bufptr[0]);
-          ym = fminf(ym, bufptr[1]);
-          yM = fmaxf(yM, bufptr[1]);
+          xm = MIN(xm, bufptr[0]);
+          xM = MAX(xM, bufptr[0]);
+          ym = MIN(ym, bufptr[1]);
+          yM = MAX(yM, bufptr[1]);
         }
       }
     }
