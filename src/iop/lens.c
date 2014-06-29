@@ -44,6 +44,16 @@
 #define LF_SEARCH_SORT_AND_UNIQUIFY 2
 #endif
 
+#ifndef __GNUC_PREREQ
+// on OSX, gcc-4.6 and clang chokes if this is not here.
+#if defined __GNUC__ && defined __GNUC_MINOR__
+# define __GNUC_PREREQ(maj, min) \
+((__GNUC__ << 16) + __GNUC_MINOR__ >= ((maj) << 16) + (min))
+#else
+# define __GNUC_PREREQ(maj, min) 0
+#endif
+#endif
+
 DT_MODULE_INTROSPECTION(4, dt_iop_lensfun_params_t)
 
 typedef enum dt_iop_lensfun_modflag_t
@@ -119,10 +129,6 @@ dt_iop_lensfun_global_data_t;
 typedef struct dt_iop_lensfun_data_t
 {
   lfLens *lens;
-  float *tmpbuf;
-  float *tmpbuf2;
-  size_t tmpbuf_len;
-  size_t tmpbuf2_len;
   int modify_flags;
   int inverse;
   float scale;
@@ -306,13 +312,11 @@ _lens_sanitize(const char *orig_lens)
 }
 
 void
-process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoid, void *ovoid, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
+process (dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void * const ivoid, void *ovoid, const dt_iop_roi_t * const roi_in, const dt_iop_roi_t * const roi_out)
 {
   dt_iop_lensfun_data_t *d = (dt_iop_lensfun_data_t *)piece->data;
   dt_iop_lensfun_gui_data_t *g = (dt_iop_lensfun_gui_data_t *)self->gui_data;
 
-  float *in  = (float *)ivoid;
-  float *out = (float *)ovoid;
   const int ch = piece->colors;
   const int ch_width = ch*roi_in->width;
   const int mask_display = piece->pipe->mask_display;
@@ -321,7 +325,7 @@ process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoi
 
   if(!d->lens || !d->lens->Maker || d->crop <= 0.0f)
   {
-    memcpy(out, in, (size_t)ch*sizeof(float)*roi_out->width*roi_out->height);
+    memcpy(ovoid, ivoid, (size_t)ch*sizeof(float)*roi_out->width*roi_out->height);
     return;
   }
 
@@ -330,164 +334,153 @@ process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoi
   dt_pthread_mutex_lock(&darktable.plugin_threadsafe);
   lfModifier *modifier = lf_modifier_new(d->lens, d->crop, orig_w, orig_h);
 
-  int modflags = lf_modifier_initialize(
-                   modifier, d->lens, LF_PF_F32,
-                   d->focal, d->aperture,
-                   d->distance, d->scale,
-                   d->target_geom, d->modify_flags, d->inverse);
+  const int modflags = lf_modifier_initialize(
+                         modifier, d->lens, LF_PF_F32,
+                         d->focal, d->aperture,
+                         d->distance, d->scale,
+                         d->target_geom, d->modify_flags, d->inverse);
   dt_pthread_mutex_unlock(&darktable.plugin_threadsafe);
+
+  const struct dt_interpolation * const interpolation = dt_interpolation_new(DT_INTERPOLATION_USERPREF);
 
   if(d->inverse)
   {
     // reverse direction (useful for renderings)
-    if (modflags & (LF_MODIFY_TCA | LF_MODIFY_DISTORTION |
-                    LF_MODIFY_GEOMETRY | LF_MODIFY_SCALE))
+    if(modflags & (LF_MODIFY_TCA | LF_MODIFY_DISTORTION |
+                   LF_MODIFY_GEOMETRY | LF_MODIFY_SCALE))
     {
       // acquire temp memory for distorted pixel coords
-      const size_t req2 = (size_t)roi_out->width*2*3*sizeof(float);
-      if(req2 > 0 && d->tmpbuf2_len < req2*dt_get_num_threads())
-      {
-        d->tmpbuf2_len = req2*dt_get_num_threads();
-        dt_free_align(d->tmpbuf2);
-        d->tmpbuf2 = (float *)dt_alloc_align(16, d->tmpbuf2_len);
-      }
-
-      const struct  dt_interpolation* interpolation = dt_interpolation_new(DT_INTERPOLATION_USERPREF);
+      const size_t bufsize = (size_t)roi_out->width*2*3;
+      void *buf = dt_alloc_align(16, bufsize*dt_get_num_threads()*sizeof(float));
 
 #ifdef _OPENMP
-      #pragma omp parallel for default(none) shared(roi_out, roi_in, in, d, ovoid, modifier, interpolation) schedule(static)
+      #pragma omp parallel for default(none) shared(buf, modifier, ovoid) schedule(static)
 #endif
       for (int y = 0; y < roi_out->height; y++)
       {
-        float *pi = (float *)(((char *)d->tmpbuf2) + req2*dt_get_thread_num());
-        lf_modifier_apply_subpixel_geometry_distortion (
-          modifier, roi_out->x, roi_out->y+y, roi_out->width, 1, pi);
+        float *bufptr = ((float *)buf) + (size_t)bufsize*dt_get_thread_num();
+        lf_modifier_apply_subpixel_geometry_distortion(
+          modifier, roi_out->x, roi_out->y+y, roi_out->width, 1, bufptr);
+
         // reverse transform the global coords from lf to our buffer
-        float *buf = ((float *)ovoid) + (size_t)y*roi_out->width*ch;
-        for (int x = 0; x < roi_out->width; x++,buf+=ch,pi+=6)
+        float *out = ((float *)ovoid) + (size_t)y*roi_out->width*ch;
+        for (int x = 0; x < roi_out->width; x++,bufptr+=6,out+=ch)
         {
-          for(int c=0; c<3; c++)
+          for(int c=0; c < 3; c++)
           {
-            const float pi0 = pi[c*2] - roi_in->x;
-            const float pi1 = pi[c*2+1] - roi_in->y;
-            buf[c] = dt_interpolation_compute_sample(interpolation, in+c, pi0, pi1, roi_in->width, roi_in->height, ch, ch_width);
+            const float * const inptr  = (const float * const)ivoid + (size_t)c;
+            const float pi0 = bufptr[c*2] - roi_in->x;
+            const float pi1 = bufptr[c*2+1] - roi_in->y;
+            out[c] = dt_interpolation_compute_sample(
+                       interpolation, inptr, pi0, pi1, roi_in->width,
+                       roi_in->height, ch, ch_width);
           }
 
           if(mask_display)
           {
             // take green channel distortion also for alpha channel
-            const float pi0 = pi[2] - roi_in->x;
-            const float pi1 = pi[3] - roi_in->y;
-            buf[3] = dt_interpolation_compute_sample(interpolation, in+3, pi0, pi1, roi_in->width, roi_in->height, ch, ch_width);
+            const float * const inptr  = (const float * const)ivoid + (size_t)3;
+            const float pi0 = bufptr[2] - roi_in->x;
+            const float pi1 = bufptr[3] - roi_in->y;
+            out[3] = dt_interpolation_compute_sample(
+                       interpolation, inptr, pi0, pi1, roi_in->width,
+                       roi_in->height, ch, ch_width);
           }
         }
       }
+      dt_free_align(buf);
     }
     else
     {
-#ifdef _OPENMP
-      #pragma omp parallel for default(none) shared(roi_out, out, in) schedule(static)
-#endif
-      for (int y = 0; y < roi_out->height; y++)
-        memcpy(out+(size_t)ch*y*roi_out->width, in+(size_t)ch*y*roi_out->width, (size_t)ch*sizeof(float)*roi_out->width);
+      memcpy(ovoid, ivoid, (size_t)ch*sizeof(float)*roi_out->width*roi_out->height);
     }
 
-    if (modflags & LF_MODIFY_VIGNETTING)
+    if(modflags & LF_MODIFY_VIGNETTING)
     {
 #ifdef _OPENMP
-      #pragma omp parallel for default(none) shared(roi_out, out, modifier) schedule(static)
+      #pragma omp parallel for default(none) shared(ovoid, modifier) schedule(static)
 #endif
       for (int y = 0; y < roi_out->height; y++)
       {
-        /* Colour correction: vignetting and CCI */
+        /* Colour correction: vignetting */
         // actually this way row stride does not matter.
-        float *buf = out;
-        lf_modifier_apply_color_modification (modifier,
-                                              buf + (size_t)ch*roi_out->width*y, roi_out->x, roi_out->y + y,
-                                              roi_out->width, 1, pixelformat, ch*roi_out->width);
+        float *out = ((float *)ovoid) + (size_t)y*roi_out->width*ch;
+        lf_modifier_apply_color_modification(modifier, out,
+                                             roi_out->x, roi_out->y + y,
+                                             roi_out->width, 1, pixelformat,
+                                             ch*roi_out->width);
       }
     }
   }
   else // correct distortions:
   {
     // acquire temp memory for image buffer
-    const size_t req = (size_t)roi_in->width*roi_in->height*ch*sizeof(float);
-    if(req > 0 && d->tmpbuf_len < req)
-    {
-      d->tmpbuf_len = req;
-      dt_free_align(d->tmpbuf);
-      d->tmpbuf = (float *)dt_alloc_align(16, d->tmpbuf_len);
-    }
-    memcpy(d->tmpbuf, in, req);
-    if (modflags & LF_MODIFY_VIGNETTING)
+    const size_t bufsize = (size_t)roi_in->width*roi_in->height*ch*sizeof(float);
+    void *buf = dt_alloc_align(16, bufsize);
+    memcpy(buf, ivoid, bufsize);
+
+    if(modflags & LF_MODIFY_VIGNETTING)
     {
 #ifdef _OPENMP
-      #pragma omp parallel for default(none) shared(roi_in, out, modifier, d) schedule(static)
+      #pragma omp parallel for default(none) shared(buf, modifier) schedule(static)
 #endif
       for (int y = 0; y < roi_in->height; y++)
       {
-        /* Colour correction: vignetting and CCI */
+        /* Colour correction: vignetting */
         // actually this way row stride does not matter.
-        float *buf = d->tmpbuf;
-        lf_modifier_apply_color_modification (modifier,
-                                              buf + (size_t)ch*roi_in->width*y, roi_in->x, roi_in->y + y,
-                                              roi_in->width, 1, pixelformat, ch*roi_in->width);
+        float *bufptr = ((float *)buf) + (size_t)ch*roi_in->width*y;
+        lf_modifier_apply_color_modification(modifier, bufptr,
+                                             roi_in->x, roi_in->y + y,
+                                             roi_in->width, 1, pixelformat,
+                                             ch*roi_in->width);
       }
     }
 
-    const size_t req2 = (size_t)roi_out->width*2*3*sizeof(float);
     if (modflags & (LF_MODIFY_TCA | LF_MODIFY_DISTORTION |
                     LF_MODIFY_GEOMETRY | LF_MODIFY_SCALE))
     {
       // acquire temp memory for distorted pixel coords
-      if(req2 > 0 && d->tmpbuf2_len < req2*dt_get_num_threads())
-      {
-        d->tmpbuf2_len = req2*dt_get_num_threads();
-        dt_free_align(d->tmpbuf2);
-        d->tmpbuf2 = (float *)dt_alloc_align(16, d->tmpbuf2_len);
-      }
-
-      const struct dt_interpolation* interpolation = dt_interpolation_new(DT_INTERPOLATION_USERPREF);
+      const size_t buf2size = (size_t)roi_out->width*2*3;
+      void *buf2 = dt_alloc_align(16, buf2size*sizeof(float)*dt_get_num_threads());
 
 #ifdef _OPENMP
-      #pragma omp parallel for default(none) shared(roi_in, roi_out, d, ovoid, modifier, interpolation) schedule(static)
+      #pragma omp parallel for default(none) shared(buf2, buf, modifier, ovoid) schedule(static)
 #endif
       for (int y = 0; y < roi_out->height; y++)
       {
-        float *pi = (float *)(((char *)d->tmpbuf2) + dt_get_thread_num()*req2);
+        float *buf2ptr = ((float *)buf2) + (size_t)buf2size*dt_get_thread_num();
         lf_modifier_apply_subpixel_geometry_distortion (
-          modifier, roi_out->x, roi_out->y+y, roi_out->width, 1, pi);
+          modifier, roi_out->x, roi_out->y+y, roi_out->width, 1, buf2ptr);
         // reverse transform the global coords from lf to our buffer
         float *out = ((float *)ovoid) + (size_t)y*roi_out->width*ch;
-        for (int x = 0; x < roi_out->width; x++,pi+=6)
+        for (int x = 0; x < roi_out->width; x++,buf2ptr+=6,out+=ch)
         {
           for(int c=0; c<3; c++)
           {
-            const float pi0 = pi[c*2] - roi_in->x;
-            const float pi1 = pi[c*2+1] - roi_in->y;
-            out[c] = dt_interpolation_compute_sample(interpolation, d->tmpbuf+c, pi0, pi1, roi_in->width, roi_in->height, ch, ch_width);
+            float *bufptr = ((float *)buf) + c;
+            const float pi0 = buf2ptr[c*2] - roi_in->x;
+            const float pi1 = buf2ptr[c*2+1] - roi_in->y;
+            out[c] = dt_interpolation_compute_sample(
+                       interpolation, bufptr, pi0, pi1, roi_in->width,
+                       roi_in->height, ch, ch_width);
           }
 
           if(mask_display)
           {
             // take green channel distortion also for alpha channel
-            const float pi0 = pi[2] - roi_in->x;
-            const float pi1 = pi[3] - roi_in->y;
-            out[3] = dt_interpolation_compute_sample(interpolation, d->tmpbuf+3, pi0, pi1, roi_in->width, roi_in->height, ch, ch_width);
+            float *bufptr = ((float *)buf) + 3;
+            const float pi0 = buf2ptr[2] - roi_in->x;
+            const float pi1 = buf2ptr[3] - roi_in->y;
+            out[3] = dt_interpolation_compute_sample(
+                       interpolation, bufptr, pi0, pi1, roi_in->width,
+                       roi_in->height, ch, ch_width);
           }
-          out += ch;
         }
       }
     }
     else
     {
-      const size_t len = (size_t)sizeof(float)*ch*roi_out->width*roi_out->height;
-      const float *const input = (d->tmpbuf_len >= len) ? d->tmpbuf : in;
-#ifdef _OPENMP
-      #pragma omp parallel for default(none) shared(roi_out, out) schedule(static)
-#endif
-      for (int y = 0; y < roi_out->height; y++)
-        memcpy(out+(size_t)ch*y*roi_out->width, input+(size_t)ch*y*roi_out->width, (size_t)ch*sizeof(float)*roi_out->width);
+      memcpy(ovoid, buf, bufsize);
     }
   }
   lf_modifier_destroy(modifier);
@@ -630,7 +623,7 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
 #endif
       for (int y = 0; y < roi_out->height; y++)
       {
-        /* Colour correction: vignetting and CCI */
+        /* Colour correction: vignetting */
         // actually this way row stride does not matter.
         float *buf = tmpbuf + (size_t)y * ch*roi_out->width;
         for (int k=0; k < ch*roi_out->width; k++) buf[k] = 0.5f;
@@ -669,7 +662,7 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
 #endif
       for (int y = 0; y < roi_in->height; y++)
       {
-        /* Colour correction: vignetting and CCI */
+        /* Colour correction: vignetting */
         // actually this way row stride does not matter.
         float *buf = tmpbuf + (size_t)y * ch*roi_in->width;
         for (int k=0; k < ch*roi_in->width; k++) buf[k] = 0.5f;
@@ -828,7 +821,7 @@ void modify_roi_out(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t 
   *roi_out = *roi_in;
 }
 
-void modify_roi_in(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, const dt_iop_roi_t *roi_out, dt_iop_roi_t *roi_in)
+void modify_roi_in(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, const dt_iop_roi_t * const roi_out, dt_iop_roi_t *roi_in)
 {
   dt_iop_lensfun_data_t *d = (dt_iop_lensfun_data_t *)piece->data;
   *roi_in = *roi_out;
@@ -848,35 +841,39 @@ void modify_roi_in(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *
                    d->distance, d->scale,
                    d->target_geom, d->modify_flags, d->inverse);
 
-  if (modflags & (LF_MODIFY_TCA | LF_MODIFY_DISTORTION |
-                  LF_MODIFY_GEOMETRY | LF_MODIFY_SCALE))
+  if(modflags & (LF_MODIFY_TCA | LF_MODIFY_DISTORTION |
+                 LF_MODIFY_GEOMETRY | LF_MODIFY_SCALE))
   {
     // acquire temp memory for distorted pixel coords
-    const size_t req2 = roi_in->width*2*3*sizeof(float);
-    if(req2 > 0 && d->tmpbuf2_len < req2)
-    {
-      d->tmpbuf2_len = req2;
-      dt_free_align(d->tmpbuf2);
-      d->tmpbuf2 = (float *)dt_alloc_align(16, d->tmpbuf2_len);
-    }
+    const size_t bufsize = (size_t)roi_in->width*2*3;
+
+#if defined(_OPENMP) && __GNUC_PREREQ(4,7)
+    void *buf = dt_alloc_align(16, bufsize*dt_get_num_threads()*sizeof(float));
+
+    #pragma omp parallel for default(none) shared(buf, modifier) reduction(min: xm, ym) reduction(max: xM, yM) schedule(static)
+#else
+    void *buf = dt_alloc_align(16, bufsize*sizeof(float));
+#endif
     for (int y = 0; y < roi_out->height; y++)
     {
-      lf_modifier_apply_subpixel_geometry_distortion (
-        modifier, roi_out->x, roi_out->y+y, roi_out->width, 1, d->tmpbuf2);
-      const float *pi = d->tmpbuf2;
+      float *bufptr = ((float *)buf) + (size_t)bufsize*dt_get_thread_num();
+
+      lf_modifier_apply_subpixel_geometry_distortion(
+        modifier, roi_out->x, roi_out->y+y, roi_out->width, 1, bufptr);
+
       // reverse transform the global coords from lf to our buffer
       for (int x = 0; x < roi_out->width; x++)
       {
-        for(int c=0; c<3; c++)
+        for(int c=0; c<3; c++, bufptr+=2)
         {
-          xm = fminf(xm, pi[0]);
-          xM = fmaxf(xM, pi[0]);
-          ym = fminf(ym, pi[1]);
-          yM = fmaxf(yM, pi[1]);
-          pi+=2;
+          xm = MIN(xm, bufptr[0]);
+          xM = MAX(xM, bufptr[0]);
+          ym = MIN(ym, bufptr[1]);
+          yM = MAX(yM, bufptr[1]);
         }
       }
     }
+    dt_free_align(buf);
 
     const struct dt_interpolation* interpolation = dt_interpolation_new(DT_INTERPOLATION_USERPREF);
     roi_in->x = fmaxf(0.0f, xm-interpolation->width);
@@ -973,14 +970,6 @@ void init_pipe (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_p
 #error "lensfun needs to be ported to GEGL!"
 #else
   piece->data = calloc(1, sizeof(dt_iop_lensfun_data_t));
-
-  //TODO: check if removing tmpbuf,tmpbuf2 from dt_iop_lensfun_data_t is good idea.
-  dt_iop_lensfun_data_t *d = (dt_iop_lensfun_data_t *)piece->data;
-  d->tmpbuf2_len = 0;
-  d->tmpbuf2 = NULL;
-  d->tmpbuf_len = 0;
-  d->tmpbuf = NULL;
-
   self->commit_params(self, self->default_params, pipe, piece);
 #endif
 }
@@ -996,8 +985,6 @@ void cleanup_pipe (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_de
     lf_lens_destroy(d->lens);
     d->lens = NULL;
   }
-  dt_free_align(d->tmpbuf);
-  dt_free_align(d->tmpbuf2);
   free(piece->data);
   piece->data = NULL;
 #endif
