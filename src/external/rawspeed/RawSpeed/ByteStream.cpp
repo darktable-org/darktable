@@ -86,7 +86,7 @@ void ByteStream::setAbsoluteOffset(uint32 offset) {
 
 void ByteStream::skipToMarker() {
   int c = 0;
-  while (!(buffer[off] == 0xFF && buffer[off+1] != 0)) {
+  while (!(buffer[off] == 0xFF && buffer[off+1] != 0 && buffer[off+1] != 0xFF)) {
     off++;
     c++;
     if (off >= size)

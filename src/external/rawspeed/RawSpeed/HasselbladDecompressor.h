@@ -1,4 +1,11 @@
-/* 
+#ifndef HASSELBLAD_DECOMPRESSOR_H
+#define HASSELBLAD_DECOMPRESSOR_H
+
+#include "LJpegDecompressor.h"
+#include "BitPumpMSB.h"
+#include "TiffIFD.h"
+
+/*
     RawSpeed - RAW file decoder.
 
     Copyright (C) 2009-2014 Klaus Post
@@ -20,36 +27,23 @@
     http://www.klauspost.com
 */
 
-#ifndef TIFF_PARSER_H
-#define TIFF_PARSER_H
-
-#include "FileMap.h"
-#include "TiffIFD.h"
-#include "TiffIFDBE.h"
-#include "TiffParserException.h"
-#include "RawDecoder.h"
-
-
 namespace RawSpeed {
 
-class TiffParser 
+class HasselbladDecompressor :
+  public LJpegDecompressor
 {
 public:
-  TiffParser(FileMap* input);
-  virtual ~TiffParser(void);
-
-  virtual void parseData();
-  virtual RawDecoder* getDecoder();
-  Endianness tiff_endian;
-  /* Returns the Root IFD - this object still retains ownership */
-  TiffIFD* RootIFD() const { return mRootIFD; }
-  /* Merges root of other TIFF into this - clears the root of the other */
-  void MergeIFD(TiffParser* other_tiff);
-  RawSpeed::Endianness getHostEndian() const { return host_endian; }
+  HasselbladDecompressor(FileMap* file, RawImage img);
+  virtual ~HasselbladDecompressor(void);
+  int HuffDecodeHasselblad();
+  void decodeHasselblad(TiffIFD *root, uint32 offset, uint32 size);
+  int pixelBaseOffset;
 protected:
-  FileMap *mInput;
-  TiffIFD* mRootIFD;
-  Endianness host_endian;
+  int HuffGetLength();
+  virtual void parseSOS();
+  void decodeScanHasselblad();
+  inline int getBits(int len);
+  BitPumpMSB32* ph1_bits;  // Phase One has unescaped bits.
 };
 
 } // namespace RawSpeed

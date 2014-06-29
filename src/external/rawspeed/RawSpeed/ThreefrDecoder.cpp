@@ -1,6 +1,7 @@
 #include "StdAfx.h"
-#include "KdcDecoder.h"
-
+#include "ThreefrDecoder.h"
+#include "HasselbladDecompressor.h"
+#include "LJpegPlain.h"
 /*
     RawSpeed - RAW file decoder.
 
@@ -26,59 +27,64 @@
 
 namespace RawSpeed {
 
-KdcDecoder::KdcDecoder(TiffIFD *rootIFD, FileMap* file)  :
+ThreefrDecoder::ThreefrDecoder(TiffIFD *rootIFD, FileMap* file)  :
     RawDecoder(file), mRootIFD(rootIFD) {
   decoderVersion = 0;
 }
 
-KdcDecoder::~KdcDecoder(void) {
+ThreefrDecoder::~ThreefrDecoder(void) {
 }
 
-RawImage KdcDecoder::decodeRawInternal() {
-  int compression = mRootIFD->getEntryRecursive(COMPRESSION)->getInt();
-  if (7 != compression)
-    ThrowRDE("KDC Decoder: Unsupported compression %d", compression);
+RawImage ThreefrDecoder::decodeRawInternal() {
+  vector<TiffIFD*> data = mRootIFD->getIFDsWithTag(STRIPOFFSETS);
 
-  TiffEntry *ex = mRootIFD->getEntryRecursive(PIXELXDIMENSION);
-  TiffEntry *ey = mRootIFD->getEntryRecursive(PIXELYDIMENSION);
+  if (data.size() < 2)
+    ThrowRDE("3FR Decoder: No image data found");
 
-  if (NULL == ex || NULL == ey)
-    ThrowRDE("KDC Decoder: Unable to retrieve image size");
-
-  uint32 width = ex->getInt();
-  uint32 height = ey->getInt();
-
-  TiffEntry *offset = mRootIFD->getEntryRecursive(KODAK_KDC_OFFSET);
-  if (!offset || offset->count < 13)
-    ThrowRDE("KDC Decoder: Couldn't find the KDC offset");
-  const uint32 *offsetarray = offset->getIntArray();
-  uint32 off = offsetarray[4] + offsetarray[12];
+  TiffIFD* raw = data[1];
+  uint32 width = raw->getEntry(IMAGEWIDTH)->getInt();
+  uint32 height = raw->getEntry(IMAGELENGTH)->getInt();
+  uint32 off = raw->getEntry(STRIPOFFSETS)->getInt();
+  uint32 c2 = raw->getEntry(STRIPBYTECOUNTS)->getInt();
 
   mRaw->dim = iPoint2D(width, height);
   mRaw->createData();
-  ByteStream input(mFile->getData(off), mFile->getSize()-off);
+  ByteStream input(mFile->getData(off), mFile->getSize() - off);
 
-  Decode12BitRawBE(input, width, height);
+  HasselbladDecompressor l(mFile, mRaw);
+  map<string,string>::iterator pixelOffset = hints.find("pixelBaseOffset");
+  if (pixelOffset != hints.end()) {
+    stringstream convert((*pixelOffset).second);
+    convert >> l.pixelBaseOffset;
+  }
+
+  try {
+    l.decodeHasselblad(mRootIFD, off, mFile->getSize() - off);
+  } catch (IOException &e) {
+    mRaw->setError(e.what());
+    // Let's ignore it, it may have delivered somewhat useful data.
+  }
 
   return mRaw;
 }
 
-void KdcDecoder::checkSupportInternal(CameraMetaData *meta) {
+void ThreefrDecoder::checkSupportInternal(CameraMetaData *meta) {
   vector<TiffIFD*> data = mRootIFD->getIFDsWithTag(MODEL);
   if (data.empty())
-    ThrowRDE("KDC Support check: Model name not found");
+    ThrowRDE("3FR Support check: Model name not found");
   string make = data[0]->getEntry(MAKE)->getString();
   string model = data[0]->getEntry(MODEL)->getString();
   this->checkCameraSupported(meta, make, model, "");
 }
 
-void KdcDecoder::decodeMetaDataInternal(CameraMetaData *meta) {
+void ThreefrDecoder::decodeMetaDataInternal(CameraMetaData *meta) {
+  mRaw->cfa.setCFA(iPoint2D(2,2), CFA_RED, CFA_GREEN, CFA_GREEN, CFA_BLUE);
   vector<TiffIFD*> data = mRootIFD->getIFDsWithTag(MODEL);
 
   if (data.empty())
-    ThrowRDE("KDC Decoder: Model name found");
+    ThrowRDE("3FR Decoder: Model name found");
   if (!data[0]->hasEntry(MAKE))
-    ThrowRDE("KDC Decoder: Make name not found");
+    ThrowRDE("3FR Decoder: Make name not found");
 
   string make = data[0]->getEntry(MAKE)->getString();
   string model = data[0]->getEntry(MODEL)->getString();
