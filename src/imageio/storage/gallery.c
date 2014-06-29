@@ -526,11 +526,11 @@ get_params(dt_imageio_module_storage_t *self)
   d->l = NULL;
   dt_variables_params_init(&d->vp);
 
-  char *text = dt_conf_get_string("plugins/imageio/storage/latex/file_directory");
+  char *text = dt_conf_get_string("plugins/imageio/storage/gallery/file_directory");
   g_strlcpy(d->filename, text, sizeof(d->filename));
   g_free(text);
 
-  text = dt_conf_get_string("plugins/imageio/storage/latex/title");
+  text = dt_conf_get_string("plugins/imageio/storage/gallery/title");
   g_strlcpy(d->title, text, sizeof(d->title));
   g_free(text);
 
