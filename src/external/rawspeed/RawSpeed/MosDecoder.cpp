@@ -29,16 +29,30 @@ MosDecoder::MosDecoder(TiffIFD *rootIFD, FileMap* file)  :
     RawDecoder(file), mRootIFD(rootIFD) {
   decoderVersion = 0;
 
-  TiffEntry *xmp = mRootIFD->getEntryRecursive(XMP);
-  if (!xmp)
-    ThrowRDE("MOS Decoder: Couldn't find the XMP");
-
   xmpText = NULL;
-  parseXMP(xmp);
+  make = NULL;
+  model = NULL;
+
+  vector<TiffIFD*> data = mRootIFD->getIFDsWithTag(MAKE);
+  if (!data.empty()) {
+    make = (const char *) data[0]->getEntry(MAKE)->getDataWrt();
+    model = (const char *) data[0]->getEntry(MODEL)->getDataWrt();
+  } else {
+    TiffEntry *xmp = mRootIFD->getEntryRecursive(XMP);
+    if (!xmp)
+      ThrowRDE("MOS Decoder: Couldn't find the XMP");
+
+    parseXMP(xmp);
+  }
 }
 
 MosDecoder::~MosDecoder(void) {
-  delete xmpText;
+  if (xmpText)
+    delete xmpText;
+  if (make)
+    delete make;
+  if (model)
+    delete model;
 }
 
 void MosDecoder::parseXMP(TiffEntry *xmp) {

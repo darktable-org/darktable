@@ -40,7 +40,7 @@ public:
   virtual void decodeMetaDataInternal(CameraMetaData *meta);
 protected:
   TiffIFD *mRootIFD;
-  char *make, *model;
+  const char *make, *model;
   uchar8 *xmpText;
   void parseXMP(TiffEntry *xmp);
 };
