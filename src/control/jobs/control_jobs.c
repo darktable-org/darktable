@@ -234,9 +234,9 @@ static int32_t dt_control_merge_hdr_job_run(dt_job_t *job)
     const dt_image_t *img = dt_image_cache_read_get(darktable.image_cache, imgid);
     dt_image_t image = *img;
     dt_image_cache_read_release(darktable.image_cache, img);
-    if(image.filters == 0u || image.bpp != sizeof(uint16_t))
+    if(image.filters == 0u || image.filters == 9u || image.bpp != sizeof(uint16_t))
     {
-      dt_control_log(_("exposure bracketing only works on raw images"));
+      dt_control_log(_("exposure bracketing only works on Bayer raw images"));
       dt_mipmap_cache_read_release(darktable.mipmap_cache, &buf);
       free(pixels);
       free(weight);

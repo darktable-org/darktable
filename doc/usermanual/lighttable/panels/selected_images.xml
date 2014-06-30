@@ -129,7 +129,8 @@
         been taken on a sturdy tripod. You can also generate HDRs with programs like
         <ulink url="http://qtpfsgui.sourceforge.net/"><emphasis>Luminance
         HDR</emphasis></ulink>, and later import them into darktable for further processing (see
-        <xref linkend="supported_file_formats"/>).
+        <xref linkend="supported_file_formats"/>). Note that darktable cannot currently create
+        HDR files from images made with non-Bayer (e.g. Fujifilm X-Trans) sensors.
       </para>
 
     </sect4>
