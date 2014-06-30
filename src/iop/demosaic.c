@@ -1841,22 +1841,35 @@ void tiling_callback  (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop
   const int qual = get_quality();
   const float ioratio = (float)roi_out->width*roi_out->height/((float)roi_in->width*roi_in->height);
   const float smooth = data->color_smoothing ? ioratio : 0.0f;
+  const float markesteijn_factor = ((data->demosaicing_method >= DT_IOP_DEMOSAIC_MARKESTEIJN) ? 1.0f : 0.0f);
 
   tiling->factor = 1.0f + ioratio;
 
   if(roi_out->scale > 0.99999f && roi_out->scale < 1.00001f)
-    tiling->factor += fmax(0.25f, smooth);
-  else if(roi_out->scale > 0.5f ||
+    tiling->factor += fmax(0.25f + markesteijn_factor, smooth);
+  else if(roi_out->scale > (data->filters == 9 ? 0.333f : 0.5f) ||
           (piece->pipe->type == DT_DEV_PIXELPIPE_FULL && qual > 0) || (piece->pipe->type == DT_DEV_PIXELPIPE_EXPORT))
-    tiling->factor += fmax(1.25f, smooth);
+    tiling->factor += fmax(1.25f + markesteijn_factor, smooth);
   else
     tiling->factor += fmax(0.25f, smooth);
 
+  // note that even Markesteijn demosiac's buffers aren't
+  // significantly large enough to change maxbuf, except in the case
+  // of small image crops which won't be tiled anyhow
   tiling->maxbuf = 1.0f;
   tiling->overhead = 0;
-  tiling->overlap = 5; // take care of border handling
-  tiling->xalign = 2; // Bayer pattern
-  tiling->yalign = 2; // Bayer pattern
+  if(data->filters != 9)
+  {  // Bayer pattern
+    tiling->xalign = 2;
+    tiling->yalign = 2;
+    tiling->overlap = 5; // take care of border handling
+  }
+  else
+  {  // X-Trans pattern, take care of Markesteijn's limits
+    tiling->xalign = 3;
+    tiling->yalign = 3;
+    tiling->overlap = 6;
+  }
   return;
 }
 
