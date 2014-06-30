@@ -117,9 +117,6 @@ inline int HasselbladDecompressor::getBits(int len) {
 }
 
 void HasselbladDecompressor::decodeScanHasselblad() {
-  // Hasselblad has a single huffman table
-  HuffmanTable *dctbl1 = &huff[frame.compInfo[0].dcTblNo];
-
   // Pixels are packed two at a time, not like LJPEG:
   // [p1_length_as_huffman][p2_length_as_huffman][p0_diff_with_length][p1_diff_with_length]|NEXT PIXELS
   for (uint32 y = 0; y < frame.h; y++) {
@@ -139,7 +136,7 @@ void HasselbladDecompressor::decodeScanHasselblad() {
 }
 
 int HasselbladDecompressor::HuffGetLength() {
-  int rv;
+  int rv = 0;
   int l, temp;
   int code, val;
 
