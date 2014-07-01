@@ -82,15 +82,25 @@ void MosDecoder::parseXMP(TiffEntry *xmp) {
 }
 
 RawImage MosDecoder::decodeRawInternal() {
-  vector<TiffIFD*> data = mRootIFD->getIFDsWithTag(TILEOFFSETS);
+  vector<TiffIFD*> data;
+  TiffIFD* raw = NULL;
+  uint32 off = 0;
 
-  if (data.empty())
-    ThrowRDE("MOS Decoder: No image data found");
-
-  TiffIFD* raw = data[0];
+  data = mRootIFD->getIFDsWithTag(TILEOFFSETS);
+  if (!data.empty()) {
+    raw = data[0];
+    off = raw->getEntry(TILEOFFSETS)->getInt();
+  } else {
+    data = mRootIFD->getIFDsWithTag(STRIPOFFSETS);
+    if (data.size() == 2) {
+      raw = data[0];
+      off = raw->getEntry(STRIPOFFSETS)->getInt();
+    } else
+      ThrowRDE("MOS Decoder: No image data found");
+  }
+  
   uint32 width = raw->getEntry(IMAGEWIDTH)->getInt();
   uint32 height = raw->getEntry(IMAGELENGTH)->getInt();
-  uint32 off = raw->getEntry(TILEOFFSETS)->getInt();
 
   mRaw->dim = iPoint2D(width, height);
   mRaw->createData();
