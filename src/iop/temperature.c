@@ -206,7 +206,7 @@ FC(const int row, const int col, const unsigned int filters)
 }
 
 static uint8_t
-FCxtrans(size_t row, size_t col,
+FCxtrans(const int row, const int col,
          const dt_iop_roi_t *const roi,
          uint8_t (*const xtrans)[6])
 {

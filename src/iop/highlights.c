@@ -154,11 +154,11 @@ output_bpp(dt_iop_module_t *module, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_i
 }
 
 static uint8_t
-FCxtrans(size_t row, size_t col,
+FCxtrans(const int row, const int col,
          const dt_iop_roi_t *const roi,
          const uint8_t (*const xtrans)[6])
 {
-  return xtrans[(row+roi->y+6) % 6][(col+roi->x+6) % 6];
+  return xtrans[(row+roi->y) % 6][(col+roi->x) % 6];
 }
 
 static inline void _interpolate_color_xtrans(

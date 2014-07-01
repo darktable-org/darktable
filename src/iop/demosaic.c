@@ -423,10 +423,13 @@ green_equilibration_favg(float *out, const float *const in, const int width, con
 //
 
 static uint8_t
-FCxtrans(size_t y, size_t x,
+FCxtrans(const int row, const int col,
          const uint8_t (*const xtrans)[6])
 {
-  return xtrans[(y+6) % 6][(x+6) % 6];
+  // There are a few cases in Markesteijn and VNG demosaic in which
+  // row or col is -1 or -2. The +6 ensures a non-negative array
+  // index.
+  return xtrans[(row+6) % 6][(col+6) % 6];
 }
 
 // xtrans_interpolate adapted from dcraw 9.20

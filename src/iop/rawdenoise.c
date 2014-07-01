@@ -264,7 +264,7 @@ static void wavelet_denoise(const float *const in, float *const out, const dt_io
 }
 
 static uint8_t
-FCxtrans(size_t row, size_t col,
+FCxtrans(const int row, const int col,
          const dt_iop_roi_t *const roi,
          uint8_t (*const xtrans)[6])
 {
