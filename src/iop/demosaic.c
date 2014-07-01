@@ -453,7 +453,7 @@ xtrans_markesteijn_interpolate(
                         { 0,1,0,-2,1,0,-2,0,1,1,-2,-2,1,-1,-1,1 } },
         dir[4] = { 1,TS,TS+1,TS-1 };
 
-  short allhex[3][3][2][8];
+  short allhex[3][3][8];
   // sgrow/sgcol is the offset in the sensor matrix of the solitary
   // green pixels (initialized here only to avoid compiler warning)
   unsigned short sgrow=0, sgcol=0;
@@ -464,7 +464,7 @@ xtrans_markesteijn_interpolate(
   const int yoff = roi_in->y;
   const int ndir = 4 << (passes > 1);
 
-  const size_t image_size = width*height*4*(size_t)sizeof(float);
+  const size_t image_size = width*height*3*(size_t)sizeof(float);
   const size_t buffer_size = (size_t) TS*TS*(ndir*4+3)*sizeof(float);
   char *const all_buffers = (char *) dt_alloc_align(16, image_size+dt_get_num_threads()*buffer_size);
   if (!all_buffers)
@@ -473,9 +473,9 @@ xtrans_markesteijn_interpolate(
     return;
   }
 
-  float (*image)[4] = (float (*)[4]) all_buffers;
-  // Work in a 4-color temp buffer with 6-pixel borders filled with
-  // mirrored/interpolated edge data. The extra border helps the
+  float (*image)[3] = (float (*)[3]) all_buffers;
+  // Work in a 3-channel RGB temp buffer with 6-pixel borders filled
+  // with mirrored/interpolated edge data. The extra border helps the
   // algorithm avoid discontinuities at image edges.
 #define TRANSLATE(n,size) ((n<6)?(6-n):((n>=size-6)?(2*size-n-20):(n-6)))
 #ifdef _OPENMP
@@ -527,67 +527,12 @@ xtrans_markesteijn_interpolate(
           {
             int v = orth[d  ]*patt[g][c*2] + orth[d+1]*patt[g][c*2+1];
             int h = orth[d+2]*patt[g][c*2] + orth[d+3]*patt[g][c*2+1];
-            allhex[row][col][0][c^(g*2 & d)] = h + v*width;
-            allhex[row][col][1][c^(g*2 & d)] = h + v*TS;
+            allhex[row][col][c^(g*2 & d)] = h + v*TS;
           }
       }
 
-  /* Set green1 and green3 to the minimum and maximum allowed values:   */
-  // run through each red/blue or blue/red pair, setting their g1 and
-  // g3 values to the min/max of green pixels surrounding the pair
 #ifdef _OPENMP
-  #pragma omp parallel for default(none) shared(allhex, sgrow, image) schedule(static)
-#endif
-  for (int row=2; row < height-2; row++)
-  {
-    // setting max to 0.0f signifies that this is a new pair, which
-    // requires a new min/max calculation of its neighboring greens
-    float min=FLT_MAX, max=0.0f;
-    for (int col=2; col < width-2; col++)
-    {
-      // if in row of horizontal red & blue pairs (or processing
-      // vertical red & blue pairs near image bottom), reset min/max
-      // between each pair
-      if (FCxtrans(yoff+row,xoff+col,xtrans) == 1)
-      {
-        min=FLT_MAX, max=0.0f;
-        continue;
-      }
-      float (*const pix)[4] = image + row*width + col;
-      const short *const hex = allhex[row%3][col%3][0];
-      // if at start of red & blue pair, calculate min/max of green
-      // pixels surrounding it; note that while normally using == to
-      // compare floats is suspect, here the check is if 0.0f has
-      // explicitly been assigned to max (which signifies a new
-      // red/blue pair)
-      if (max==0.0f)
-        for (int c=0; c<6; c++)
-        {
-          const float val = pix[hex[c]][1];
-          min = fminf(min,val);
-          max = fmaxf(max,val);
-        }
-      pix[0][1] = min;
-      pix[0][3] = max;
-      // handle vertical red/blue pairs
-      switch ((row-sgrow) % 3)
-      {
-        // hop down a row to second pixel in vertical pair
-        case 1:
-          if (row < height-3)
-            row++, col--;
-          break;
-        // then if not done with the row hop up and right to next
-        // vertical red/blue pair, resetting min/max
-        case 2:
-          min=FLT_MAX, max=0.0f;
-          if ((col+=2) < width-3 && row > 2) row--;
-      }
-    }
-  }
-
-#ifdef _OPENMP
-  #pragma omp parallel for ordered default(none) shared(sgrow, sgcol, allhex, image) schedule(static)
+  #pragma omp parallel for ordered default(none) shared(sgrow, sgcol, allhex, image, out) schedule(static)
 #endif
   for (int top=3; top < height-19; top += TS-16)
   {
@@ -597,9 +542,13 @@ xtrans_markesteijn_interpolate(
     // yuv points to 3 channel (Y, u, and v) TSxTS tiles
     // note that channels come before tiles to allow for a
     // vectorization optimization when building drv[] from yuv[]
-    float (*const yuv)[TS][TS]     = (float(*)[TS][TS])   (buffer + ndir*TS*TS*3*sizeof(float));
+    float (*const yuv)[TS][TS]     = (float(*)[TS][TS])   (buffer + TS*TS*ndir*3*sizeof(float));
     // drv points to ndir TSxTS tiles, each a single chanel of derivatives
     float (*const drv)[TS][TS]     = (float(*)[TS][TS])   (buffer + TS*TS*(ndir*3+3)*sizeof(float));
+    // gmin and gmax reuse memory which is used later by yuv buffer;
+    // each points to a TSxTS tile of single channel data
+    float (*const gmin)[TS]          = (float(*)[TS])       (buffer + TS*TS*ndir*3*sizeof(float));
+    float (*const gmax)[TS]          = (float(*)[TS])       (buffer + TS*TS*(ndir*3+1)*sizeof(float));
     // homo and homosum reuse memory which is used earlier in the
     // loop; each points to ndir single-channel TSxTS tiles
     uint8_t (*const homo)   [TS][TS] = (uint8_t (*)[TS][TS]) (buffer + TS*TS*ndir*3*sizeof(float));
@@ -613,10 +562,62 @@ xtrans_markesteijn_interpolate(
       // copy current tile from image to buffer rgb[0], then duplicate
       // that into rgb[1], rgb[2], and rgb[3]
       for (int row=top; row < mrow; row++)
-        for (int col=left; col < mcol; col++)
-          memcpy (rgb[0][row-top][col-left], image[row*width+col], (size_t)3*sizeof(float));
+        memcpy (rgb[0][row-top][0], image[row*width+left], (size_t)3*(mcol-left)*sizeof(float));
       for (int c=1; c<=3; c++)
         memcpy (rgb[c], rgb[0], sizeof(*rgb));
+
+      /* Set green1 and green3 to the minimum and maximum allowed values:   */
+      // run through each red/blue or blue/red pair, setting their g1 and
+      // g3 values to the min/max of green pixels surrounding the pair
+      for (int row=top; row < mrow; row++)
+      {
+        // setting max to 0.0f signifies that this is a new pair, which
+        // requires a new min/max calculation of its neighboring greens
+        float min=FLT_MAX, max=0.0f;
+        for (int col=left; col < mcol; col++)
+        {
+          // if in row of horizontal red & blue pairs (or processing
+          // vertical red & blue pairs near image bottom), reset min/max
+          // between each pair
+          if (FCxtrans(yoff+row,xoff+col,xtrans) == 1)
+          {
+            min=FLT_MAX, max=0.0f;
+            continue;
+          }
+          // if at start of red & blue pair, calculate min/max of green
+          // pixels surrounding it; note that while normally using == to
+          // compare floats is suspect, here the check is if 0.0f has
+          // explicitly been assigned to max (which signifies a new
+          // red/blue pair)
+          if (max==0.0f)
+          {
+            float (*const pix)[3] = &rgb[0][row-top][col-left];
+            const short *const hex = allhex[row%3][col%3];
+            for (int c=0; c<6; c++)
+            {
+              const float val = pix[hex[c]][1];
+              if (min > val) min=val;
+              if (max < val) max=val;
+            }
+          }
+          gmin[row-top][col-left] = min;
+          gmax[row-top][col-left] = max;
+          // handle vertical red/blue pairs
+          switch ((row-sgrow) % 3)
+          {
+            // hop down a row to second pixel in vertical pair
+            case 1:
+              if (row < mrow-1)
+                row++, col--;
+              break;
+            // then if not done with the row hop up and right to next
+            // vertical red/blue pair, resetting min/max
+            case 2:
+              min=FLT_MAX, max=0.0f;
+              if ((col+=2) < mcol-1 && row > top+1) row--;
+          }
+        }
+      }
 
       /* Interpolate green horizontally, vertically, and along both diagonals: */
       for (int row=top; row < mrow; row++)
@@ -625,17 +626,18 @@ xtrans_markesteijn_interpolate(
           float color[8];
           int f = FCxtrans(row+yoff,col+xoff,xtrans);
           if (f == 1) continue;
-          float (*pix)[4] = image + row*width + col;
-          short *hex = allhex[row%3][col%3][0];
+          float (*const pix)[3] = &rgb[0][row-top][col-left];
+          short *hex = allhex[row%3][col%3];
           color[0] = 0.68 * (pix[  hex[1]][1] + pix[  hex[0]][1]) -
                      0.18 * (pix[2*hex[1]][1] + pix[2*hex[0]][1]);
           color[1] = 0.87 *  pix[  hex[3]][1] + pix[  hex[2]][1] * 0.13 +
                      0.36 * (pix[      0 ][f] - pix[ -hex[2]][f]);
-          for (int c=0; c<2; c++) color[2+c] =
-                0.64 * pix[hex[4+c]][1] + 0.36 * pix[-2*hex[4+c]][1] + 0.13 *
-                (2*pix[0][f] - pix[3*hex[4+c]][f] - pix[-3*hex[4+c]][f]);
-          for (int c=0; c<4; c++) rgb[c^!((row-sgrow) % 3)][row-top][col-left][1] =
-                CLAMPS(color[c],pix[0][1],pix[0][3]);
+          for (int c=0; c<2; c++)
+            color[2+c] = 0.64 * pix[hex[4+c]][1] + 0.36 * pix[-2*hex[4+c]][1] + 0.13 *
+              (2*pix[0][f] - pix[3*hex[4+c]][f] - pix[-3*hex[4+c]][f]);
+          for (int c=0; c<4; c++)
+            rgb[c^!((row-sgrow) % 3)][row-top][col-left][1] =
+              CLAMPS(color[c],gmin[row-top][col-left],gmax[row-top][col-left]);
         }
 
       for (int pass=0; pass < passes; pass++)
@@ -656,14 +658,13 @@ xtrans_markesteijn_interpolate(
             {
               int f = FCxtrans(row+yoff,col+xoff,xtrans);
               if (f == 1) continue;
-              float (*pix)[4] = image + row*width + col;
-              short *hex = allhex[row%3][col%3][1];
+              short *hex = allhex[row%3][col%3];
               for (int d=3; d < 6; d++)
               {
                 float (*rfx)[3] = &rgb[(d-2)^!((row-sgrow) % 3)][row-top][col-left];
                 float val = rfx[-2*hex[d]][1] + 2*rfx[hex[d]][1]
                     - rfx[-2*hex[d]][f] - 2*rfx[hex[d]][f] + 3*rfx[0][f];
-                rfx[0][1] = CLAMPS(val/3,pix[0][1],pix[0][3]);
+                rfx[0][1] = CLAMPS(val/3.0f, gmin[row-top][col-left], gmax[row-top][col-left]);
               }
             }
         }
@@ -717,7 +718,7 @@ xtrans_markesteijn_interpolate(
               if ((col-sgcol) % 3)
               {
                 float (*rfx)[3] = &rgb[0][row-top][col-left];
-                short *hex = allhex[row%3][col%3][1];
+                short *hex = allhex[row%3][col%3];
                 for (int d=0; d < ndir; d+=2, rfx += TS*TS)
                   if (hex[d] + hex[d+1])
                   {
@@ -840,19 +841,10 @@ xtrans_markesteijn_interpolate(
               avg[3]++;
             }
           for (int c=0; c<3; c++)
-            image[(row+top)*width+col+left][c] = avg[c]/avg[3];
+            out[4*(roi_out->width*(row+top-6) + col+left-6) + c] = avg[c]/avg[3];
         }
     }
   }
-
-#ifdef _OPENMP
-  #pragma omp parallel for default(none) shared(image, out) schedule(static)
-#endif
-  for (int row=0; row < roi_out->height; row++)
-    for (int col=0; col < roi_out->width; col++)
-      for (int c=0; c<3; c++)
-        out[4*(roi_out->width*row + col) + c] = image[(row+6)*width+(col+6)][c];
-
   free(all_buffers);
 }
 
@@ -1904,7 +1896,7 @@ void tiling_callback  (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop
   const int qual = get_quality();
   const float ioratio = (float)roi_out->width*roi_out->height/((float)roi_in->width*roi_in->height);
   const float smooth = data->color_smoothing ? ioratio : 0.0f;
-  const float markesteijn_factor = ((data->demosaicing_method >= DT_IOP_DEMOSAIC_MARKESTEIJN) ? 1.0f : 0.0f);
+  const float markesteijn_factor = ((data->demosaicing_method >= DT_IOP_DEMOSAIC_MARKESTEIJN) ? 0.75f : 0.0f);
 
   tiling->factor = 1.0f + ioratio;
 
