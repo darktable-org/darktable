@@ -309,7 +309,7 @@ return_label:
 static gboolean
 _blacklisted_ext(const gchar *filename)
 {
-  const char *extensions_blacklist[] = { "dng", "cr2", "nef", "nrw", "orf", "rw2", "pef", "srw", "arw", "raf", "mrw", "raw", "sr2", "mef", "mos", "dcr", "erf", NULL };
+  const char *extensions_blacklist[] = { "dng", "cr2", "nef", "nrw", "orf", "rw2", "pef", "srw", "arw", "raf", "mrw", "raw", "sr2", "mef", "mos", "dcr", "erf", "3fr", NULL };
   gboolean supported = TRUE;
   char *ext = g_strrstr(filename, ".");
   if(!ext) return FALSE;

@@ -44,6 +44,11 @@ RawImage DcrDecoder::decodeRawInternal() {
   uint32 width = raw->getEntry(IMAGEWIDTH)->getInt();
   uint32 height = raw->getEntry(IMAGELENGTH)->getInt();
   uint32 off = raw->getEntry(STRIPOFFSETS)->getInt();
+  uint32 c2 = raw->getEntry(STRIPBYTECOUNTS)->getInt();
+
+  if (c2 > mFile->getSize() - off) {
+    mRaw->setError("Warning: byte count larger than file size, file probably truncated.");
+  }
 
   mRaw->dim = iPoint2D(width, height);
   mRaw->createData();

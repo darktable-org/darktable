@@ -157,7 +157,7 @@ string TiffEntry::getString() {
     memcpy(own_data, data, count);
     own_data[count-1] = 0;  // Ensure string is not larger than count defines
   }
-  return string((const char*)&data[0]);
+  return string((const char*)&own_data[0]);
 }
 
 bool TiffEntry::isString() {

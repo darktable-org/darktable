@@ -1,7 +1,8 @@
-/* 
+/*
     RawSpeed - RAW file decoder.
 
     Copyright (C) 2009-2014 Klaus Post
+    Copyright (C) 2014 Pedro Côrte-Real
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Lesser General Public
@@ -19,37 +20,24 @@
 
     http://www.klauspost.com
 */
+#ifndef THREEFR_DECODER_H
+#define THREEFR_DECODER_H
 
-#ifndef TIFF_PARSER_H
-#define TIFF_PARSER_H
-
-#include "FileMap.h"
-#include "TiffIFD.h"
-#include "TiffIFDBE.h"
-#include "TiffParserException.h"
 #include "RawDecoder.h"
-
 
 namespace RawSpeed {
 
-class TiffParser 
+class ThreefrDecoder :
+  public RawDecoder
 {
 public:
-  TiffParser(FileMap* input);
-  virtual ~TiffParser(void);
-
-  virtual void parseData();
-  virtual RawDecoder* getDecoder();
-  Endianness tiff_endian;
-  /* Returns the Root IFD - this object still retains ownership */
-  TiffIFD* RootIFD() const { return mRootIFD; }
-  /* Merges root of other TIFF into this - clears the root of the other */
-  void MergeIFD(TiffParser* other_tiff);
-  RawSpeed::Endianness getHostEndian() const { return host_endian; }
+  ThreefrDecoder(TiffIFD *rootIFD, FileMap* file);
+  virtual ~ThreefrDecoder(void);
+  virtual RawImage decodeRawInternal();
+  virtual void checkSupportInternal(CameraMetaData *meta);
+  virtual void decodeMetaDataInternal(CameraMetaData *meta);
 protected:
-  FileMap *mInput;
-  TiffIFD* mRootIFD;
-  Endianness host_endian;
+  TiffIFD *mRootIFD;
 };
 
 } // namespace RawSpeed
