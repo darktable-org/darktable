@@ -92,6 +92,22 @@ static int push_protected_double(lua_State* L, luaA_Type type_id, const void* c_
   return 1;
 }
 
+static int push_progress_double(lua_State* L, luaA_Type type_id, const void* c_in)
+{
+  double value =*(double*)c_in;
+  if(value < 0.0) value = 0.0;
+  if(value > 1.0) value = 1.0;
+  lua_pushnumber(L,value);
+  return 1;
+}
+
+static void to_progress_double(lua_State* L, luaA_Type type_id, void* c_out, int index)
+{
+  luaA_to_double(L,type_id,c_out,index);
+  if(*(double*)c_out < 0.0) *(double*)c_out = 0.0;
+  if(*(double*)c_out > 1.0) *(double*)c_out = 1.0;
+}
+
 /************************************/
 /* METATBLE CALLBACSK FOR AUTOTYPES */
 /************************************/
@@ -332,6 +348,7 @@ static int int_pushfunc(lua_State *L, luaA_Type type_id, const void *cin)
     *udata = singleton;
     luaL_setmetatable(L,luaA_type_name(type_id));
     lua_pushinteger(L,singleton);
+    // warning : no uservalue
     lua_pushvalue(L,-2);
     lua_settable(L,-4);
     if (luaL_getmetafield(L, -1, "__init")) {
@@ -362,6 +379,8 @@ static int gpointer_pushfunc(lua_State *L, luaA_Type type_id, const void *cin)
   if(lua_isnoneornil(L,-1)) {
     lua_pop(L,1);
     gpointer* udata = lua_newuserdata(L,sizeof(gpointer));
+    lua_newtable(L);
+    lua_setuservalue(L,-2);
     *udata = singleton;
     luaL_setmetatable(L,luaA_type_name(type_id));
     lua_pushlightuserdata(L,singleton);
@@ -744,6 +763,7 @@ int dt_lua_init_types(lua_State *L)
   luaA_conversion_push(const int32_t,luaA_push_int);
   luaA_conversion_push(const_string,luaA_push_const_char_ptr);
   luaA_conversion(protected_double,push_protected_double, luaA_to_double);
+  luaA_conversion(progress_double,push_progress_double, to_progress_double);
 
 
   return 0;

@@ -137,6 +137,13 @@ darktable.gui.current_view:set_text([[Allows to change the current view.]])
 darktable.gui.current_view:add_parameter("view",my_tostring(types.dt_view_t),[[The view to switch to. If empty the current view is unchanged]]):set_attribute("optional",true)
 darktable.gui.current_view:add_return(my_tostring(types.dt_view_t),[[the current view]])
 darktable.gui.current_view:add_version_info([[Function added]])
+darktable.gui.create_job:set_text([[Create a new progress_bar displayed in ]]..my_tostring(darktable.modules.lib.backgroundjobs))
+darktable.gui.create_job:add_parameter("text","string",[[The text to display in the job entry]])
+darktable.gui.create_job:add_parameter("percentage","boolean",[[Should a progress bar be displayed]]):set_attribute("optional",true)
+tmp = darktable.gui.create_job:add_parameter("cancel_callback","function",[[A function called when the cancel button for that job is pressed]]..para().."note that the job won't be destroyed automatically. You need to set "..my_tostring(types.dt_lua_backgroundjob_t.valid).." to false for that")
+tmp:set_attribute("optional",true)
+tmp:add_parameter("job",my_tostring(types.dt_lua_backgroundjob_t),[[The job who is being cancelded]])
+darktable.gui.create_job:add_return(my_tostring(types.dt_lua_backgroundjob_t),[[The newly created job object]])
 
 ----------------------
 --  DARKTABLE.TAGS  --
@@ -372,14 +379,6 @@ while true do
 end]]))
 darktable.modules.lib:add_version_info([[lib were added]])
 
-darktable.modules.lib.backgroundjobs:set_text([[The window displaying the currently running jobs]])
-darktable.modules.lib.backgroundjobs.create_job:set_text([[The window displaying the currently running jobs]])
-darktable.modules.lib.backgroundjobs.create_job:add_parameter("text","string",[[The text to display in the job entry]])
-darktable.modules.lib.backgroundjobs.create_job:add_parameter("percentage","boolean",[[Should a progress bar be displayed]]):set_attribute("optional",true)
-tmp = darktable.modules.lib.backgroundjobs.create_job:add_parameter("cancel_callback","function",[[A function called when the cancel button for that job is pressed]]..para().."note that the job won't be destroyed automatically. You need to set "..my_tostring(types.dt_lua_backgroundjob_t.valid).." to false for that")
-tmp:set_attribute("optional",true)
-tmp:add_parameter("job",my_tostring(types.dt_lua_backgroundjob_t),[[The job who is being cancelded]])
-darktable.modules.lib.backgroundjobs.create_job:add_return(my_tostring(types.dt_lua_backgroundjob_t),[[The newly created job object]])
 
 darktable.modules.lib.snapshots:set_text([[The UI element that manipulates snapshots in darkroom]])
 darktable.modules.lib.snapshots.ratio:set_text([[The place in the screen where the line separating the snapshot is. Between 0 and 1]])
@@ -430,6 +429,7 @@ darktable.modules.lib.live_view:set_text([[The liveview window]])
 darktable.modules.lib.map_settings:set_text([[The map setting window]])
 darktable.modules.lib.camera:set_text([[The camera selection UI]])
 darktable.modules.lib.location:set_text([[The location ui]])
+darktable.modules.lib.backgroundjobs:set_text([[The window displaying the currently running jobs]])
 
 ----------------------
 --  DARKTABLE.DEBUG --
@@ -631,7 +631,7 @@ types.dt_view_t.name:set_text([[The name of the view]])
 
 
 types.dt_lua_backgroundjob_t:set_text([[A lua-managed entry in the backgroundjob lib]]):add_version_info("type added")
-types.dt_lua_backgroundjob_t.percent:set_text([[The value of the progress bar. nil if there is no progress bar]])
+types.dt_lua_backgroundjob_t.percent:set_text([[The value of the progress bar, between 0 and 1. will return nil if there is no progress bar, will raise an error if read or written on an invalid job]])
 types.dt_lua_backgroundjob_t.valid:set_text([[True if the job is displayed, set it to false to destroy the entry]]..para().."An invalid job cannot be made valid again")
 
 

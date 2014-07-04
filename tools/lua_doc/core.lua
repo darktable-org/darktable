@@ -647,6 +647,10 @@ end
 
 
 
+local job =dt.gui.create_job("test job",true)
+document_type_from_obj(job,toplevel.types.dt_lua_backgroundjob_t)
+job.valid = false
+job = nil
 
 
 
@@ -657,11 +661,6 @@ for _,view in pairs(dt.modules.view) do
 		dt.modules.lib.snapshots:take_snapshot();
 		local snapshot = dt.modules.lib.snapshots[1]
 		document_type_from_obj(snapshot,toplevel.types.dt_lua_snapshot_t)
-	elseif(view == dt.modules.view.lighttable) then
-		local job =dt.modules.lib.backgroundjobs.create_job("test job",true)
-		document_type_from_obj(job,toplevel.types.dt_lua_backgroundjob_t)
-		job.valid = false
-		job = nil
 	end
 	for libname,lib in pairs(dt.modules.lib) do
 		document_type_from_obj(lib,toplevel.darktable.modules.lib[libname])

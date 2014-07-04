@@ -37,6 +37,7 @@ typedef char* char_filename_length;
 typedef char* char_path_length;
 typedef const char * const_string; // string that has no push function
 typedef double protected_double; // like double, but NAN is mapped to nil
+typedef double progress_double; // a double in [0.0,1.0] any value out of bound will be silently converted to the bound both at push and pull time
 
 
 
