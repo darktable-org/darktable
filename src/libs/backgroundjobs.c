@@ -54,7 +54,7 @@ const char* name()
 
 uint32_t views()
 {
-  return DT_VIEW_LIGHTTABLE | DT_VIEW_TETHERING | DT_VIEW_DARKROOM;
+  return DT_VIEW_LIGHTTABLE | DT_VIEW_TETHERING | DT_VIEW_DARKROOM | DT_VIEW_MAP;
 }
 
 uint32_t container()
@@ -217,6 +217,9 @@ static void _lib_backgroundjobs_updated(dt_lib_module_t * self, dt_lib_backgroun
   if(i_own_lock) dt_control_gdk_unlock();
 }
 
+////////////////////////////////////////////////////////////////////////
+// TODO: everything below this line should move to src/lua/progress.c //
+////////////////////////////////////////////////////////////////////////
 
 #ifdef USE_LUA
 
