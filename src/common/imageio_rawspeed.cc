@@ -221,6 +221,7 @@ dt_imageio_open_rawspeed_sraw(dt_image_t *img, RawImage r, dt_mipmap_cache_alloc
 
   // actually we want to store full floats here:
   img->bpp = 4*sizeof(float);
+  img->cpp = r->getCpp();
   void *buf = dt_mipmap_cache_alloc(img, DT_MIPMAP_FULL, a);
   if(!buf)
     return DT_IMAGEIO_CACHE_FULL;
@@ -231,7 +232,7 @@ dt_imageio_open_rawspeed_sraw(dt_image_t *img, RawImage r, dt_mipmap_cache_alloc
   ushort16* raw_img = (ushort16*)r->getData();
 
 #if 0
-  dt_imageio_flip_buffers_ui16_to_float(buf, raw_img, black, white, 3, raw_width, raw_height,
+  dt_imageio_flip_buffers_ui16_to_float(buf, raw_img, black, white, img->cpp, raw_width, raw_height,
                                         raw_width, raw_height, raw_width + raw_width_extra, orientation);
 #else
 
@@ -242,7 +243,7 @@ dt_imageio_open_rawspeed_sraw(dt_image_t *img, RawImage r, dt_mipmap_cache_alloc
       for( int k = 0; k < 3; ++k )
         ((float *)buf)[4 * dt_imageio_write_pos(col, row, raw_width, raw_height, raw_width, raw_height, orientation) + k] =
           // ((float)raw_img[row*(raw_width + raw_width_extra)*3 + col*3 + k] - black) * scale;
-          ((float)raw_img[row*(r->pitch/2) + col*3 + k] - black) * scale;
+          ((float)raw_img[row*(r->pitch/2) + col*img->cpp + k] - black) * scale;
 #endif
 
   return DT_IMAGEIO_OK;

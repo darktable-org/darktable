@@ -109,6 +109,7 @@ typedef struct dt_image_t
 
   uint32_t filters;          // demosaic pattern
   int32_t bpp;               // bytes per pixel
+  int32_t cpp;               // components per pixel
   float d65_color_matrix[9]; // the 3x3 matrix embedded in some DNGs
   uint8_t *profile;          // embedded profile, for example from JPEGs
   uint32_t profile_size;
