@@ -85,7 +85,7 @@ uint32_t container()
 static void
 export_button_clicked (GtkWidget *widget, gpointer user_data)
 {
-  char style[128];
+  char style[128] = {0};
 
   // Let's get the max dimension restriction if any...
   // TODO: pass the relevant values directly, not using the conf ...
