@@ -248,6 +248,7 @@ void dt_focus_draw_clusters(
     offy[2*k + 0] = x;
     offy[2*k + 1] = y + stddevy;
   }
+
   if(dt_image_altered(imgid))
   {
     dt_develop_t dev;
