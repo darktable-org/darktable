@@ -1248,7 +1248,6 @@ void expose_full_preview(dt_view_t *self, cairo_t *cr, int32_t width, int32_t he
         lib->full_preview_id,
         lib->full_res_thumb_wd,
         lib->full_res_thumb_ht,
-        lib->full_res_thumb_orientation,
         lib->full_res_focus, frows, fcols);
 }
 
