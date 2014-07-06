@@ -7788,7 +7788,7 @@ msgid ""
 "take snapshot to compare with another image or the same image at another "
 "stage of development"
 msgstr ""
-"prends un instantané pour le comparer avec une autre image or avec la même "
+"prends un instantané pour le comparer avec une autre image ou avec la même "
 "image à une autre étape du développement"
 
 #: ../src/libs/snapshots.c:374
@@ -8668,7 +8668,7 @@ msgstr "supprimer les formes non utilisées"
 
 #: ../src/libs/masks.c:1495
 msgid "created shapes"
-msgstr "formes existants"
+msgstr "formes existantes"
 
 #: ../src/lua/preferences.c:404
 msgid "lua options"
