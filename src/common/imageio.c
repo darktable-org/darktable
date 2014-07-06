@@ -77,7 +77,7 @@ int dt_imageio_large_thumbnail(const char *filename, uint8_t **buffer, int32_t *
 
   image = libraw_dcraw_make_mem_thumb(raw, &ret);
   if(!image || ret) goto libraw_fail;
-  *orientation = 0;
+  *orientation = raw->sizes.flip;
   if(image->type == LIBRAW_IMAGE_JPEG)
   {
     dt_imageio_jpeg_t jpg;

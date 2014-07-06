@@ -1252,7 +1252,7 @@ _init_8(
   int res = 1;
 
   const dt_image_t *cimg = dt_image_cache_read_get(darktable.image_cache, imgid);
-  const dt_image_orientation_t orientation = ORIENTATION_NONE;
+  const dt_image_orientation_t orientation = dt_image_orientation(cimg);
   // the orientation for this camera is not read correctly from exiv2, so we need
   // to go the full libraw path (as the thumbnail will be flipped the wrong way round)
   const int incompatible = !strncmp(cimg->exif_maker, "Phase One", 9);
