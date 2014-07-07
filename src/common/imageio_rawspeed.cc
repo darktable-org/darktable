@@ -172,6 +172,13 @@ dt_imageio_open_rawspeed(
             xorig[j][i] = r->cfa.getColorAt(i,j);
         dt_imageio_flip_buffers((char *)xtemp, (char *)xorig, sizeof(uint8_t), 6, 6, 6, 6, 6, img->orientation);
         // offset filter from topleft of cropped rotated image
+	// NOTE: This is different from how things are done with Bayer
+	// sensors. For these, the CFA in cameras.xml is pre-offset
+	// depending on the distance modulo 2 between raw and usable
+	// image data. For X-Trans, the CFA in cameras.xml is
+	// (currently) aligned with the top left of the raw data, and
+	// hence it is shifted here to align with the top left of the
+	// cropped image.
         iPoint2D tl_margin = r->getCropOffset();
         int bottom_offset = 6 - ((r->dim.y + tl_margin.y) % 6);
         int right_offset = 6 - ((r->dim.x + tl_margin.x) % 6);
