@@ -145,7 +145,7 @@ static gboolean _lib_navigation_expose_callback(GtkWidget *widget, GdkEventExpos
 
   dt_develop_t *dev = darktable.develop;
 
-  if (dev->preview_dirty) return FALSE;
+  if (dev->preview_status != DT_DEV_PIXELPIPE_VALID) return FALSE;
 
   /* get the current style */
   GtkStyle *style=gtk_rc_get_style_by_paths(gtk_settings_get_default(), NULL,"GtkWidget", GTK_TYPE_WIDGET);
@@ -162,7 +162,7 @@ static gboolean _lib_navigation_expose_callback(GtkWidget *widget, GdkEventExpos
   cairo_translate(cr, inset, inset);
 
   /* draw navigation image if available */
-  if(dev->preview_pipe->backbuf && !dev->preview_dirty)
+  if(dev->preview_pipe->backbuf && (dev->preview_status == DT_DEV_PIXELPIPE_VALID))
   {
     dt_pthread_mutex_t *mutex = &dev->preview_pipe->backbuf_mutex;
     dt_pthread_mutex_lock(mutex);

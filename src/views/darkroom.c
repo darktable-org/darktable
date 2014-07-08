@@ -145,8 +145,8 @@ void expose(dt_view_t *self, cairo_t *cri, int32_t width_i, int32_t height_i, in
     dev->gui_synch = 0;
   }
 
-  if(dev->image_dirty || dev->pipe->input_timestamp < dev->preview_pipe->input_timestamp) dt_dev_process_image(dev);
-  if(dev->preview_dirty || dev->pipe->input_timestamp > dev->preview_pipe->input_timestamp) dt_dev_process_preview(dev);
+  if(dev->image_status == DT_DEV_PIXELPIPE_DIRTY || dev->image_status == DT_DEV_PIXELPIPE_INVALID || dev->pipe->input_timestamp < dev->preview_pipe->input_timestamp) dt_dev_process_image(dev);
+  if(dev->preview_status == DT_DEV_PIXELPIPE_DIRTY || dev->preview_status == DT_DEV_PIXELPIPE_INVALID || dev->pipe->input_timestamp > dev->preview_pipe->input_timestamp) dt_dev_process_preview(dev);
 
   dt_pthread_mutex_t *mutex = NULL;
   int wd, ht, stride, closeup;
@@ -181,7 +181,7 @@ void expose(dt_view_t *self, cairo_t *cri, int32_t width_i, int32_t height_i, in
     dt_view_set_scrollbar(self, zx+.5-boxw*.5, 1.0, boxw, zy+.5-boxh*.5, 1.0, boxh);
   }
 
-  if(!dev->image_dirty && dev->pipe->input_timestamp >= dev->preview_pipe->input_timestamp)
+  if((dev->image_status == DT_DEV_PIXELPIPE_VALID) && dev->pipe->input_timestamp >= dev->preview_pipe->input_timestamp)
   {
     // draw image
     roi_hash_old = roi_hash;
@@ -216,7 +216,7 @@ void expose(dt_view_t *self, cairo_t *cri, int32_t width_i, int32_t height_i, in
     dt_pthread_mutex_unlock(mutex);
     image_surface_imgid = dev->image_storage.id;
   }
-  else if(!dev->preview_dirty && (roi_hash != roi_hash_old))
+  else if((dev->preview_status == DT_DEV_PIXELPIPE_VALID) && (roi_hash != roi_hash_old))
   {
     // draw preview
     roi_hash_old = roi_hash;
