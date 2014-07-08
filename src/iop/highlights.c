@@ -112,7 +112,7 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
 
   size_t sizes[] = { ROUNDUPWD(width), ROUNDUPHT(height), 1};
   const float clip = d->clip * fminf(piece->pipe->processed_maximum[0], fminf(piece->pipe->processed_maximum[1], piece->pipe->processed_maximum[2]));
-  const int filters = dt_image_flipped_filter(&piece->pipe->image);
+  const int filters = dt_image_filter(&piece->pipe->image);
   if(dt_dev_pixelpipe_uses_downsampled_input(piece->pipe) || !filters)
   {
     dt_opencl_set_kernel_arg(devid, gd->kernel_highlights_4f, 0, sizeof(cl_mem), (void *)&dev_in);
@@ -242,7 +242,7 @@ void process(
     const dt_iop_roi_t *roi_in,
     const dt_iop_roi_t *roi_out)
 {
-  const int filters = dt_image_flipped_filter(&piece->pipe->image);
+  const int filters = dt_image_filter(&piece->pipe->image);
   dt_iop_highlights_data_t *data = (dt_iop_highlights_data_t *)piece->data;
 
   const float clip = data->clip * fminf(piece->pipe->processed_maximum[0], fminf(piece->pipe->processed_maximum[1], piece->pipe->processed_maximum[2]));

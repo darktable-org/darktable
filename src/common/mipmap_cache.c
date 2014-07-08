@@ -1173,12 +1173,12 @@ _init_f(
       dt_iop_clip_and_zoom_demosaic_half_size_f(
         out, (const float *)buf.buf,
         &roi_out, &roi_in, roi_out.width, roi_in.width,
-        dt_image_flipped_filter(image), 1.0f);
+        dt_image_filter(image), 1.0f);
     else
       dt_iop_clip_and_zoom_demosaic_half_size(
         out, (const uint16_t *)buf.buf,
         &roi_out, &roi_in, roi_out.width, roi_in.width,
-        dt_image_flipped_filter(image));
+        dt_image_filter(image));
   }
   else
   {
@@ -1252,7 +1252,7 @@ _init_8(
   int res = 1;
 
   const dt_image_t *cimg = dt_image_cache_read_get(darktable.image_cache, imgid);
-  const int orientation = dt_image_orientation(cimg);
+  const dt_image_orientation_t orientation = dt_image_orientation(cimg);
   // the orientation for this camera is not read correctly from exiv2, so we need
   // to go the full libraw path (as the thumbnail will be flipped the wrong way round)
   const int incompatible = !strncmp(cimg->exif_maker, "Phase One", 9);
@@ -1293,7 +1293,8 @@ _init_8(
     else
     {
       uint8_t *tmp = 0;
-      int32_t thumb_width, thumb_height, orientation;
+      int32_t thumb_width, thumb_height;
+      dt_image_orientation_t orientation;
       res = dt_imageio_large_thumbnail(filename, &tmp, &thumb_width, &thumb_height, &orientation);
       if(!res)
       {

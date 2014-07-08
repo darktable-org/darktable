@@ -124,7 +124,7 @@ libraw_fail:
 }
 
 void
-dt_imageio_flip_buffers(char *out, const char *in, const size_t bpp, const int wd, const int ht, const int fwd, const int fht, const int stride, const int orientation)
+dt_imageio_flip_buffers(char *out, const char *in, const size_t bpp, const int wd, const int ht, const int fwd, const int fht, const int stride, const dt_image_orientation_t orientation)
 {
   if(!orientation)
   {
@@ -136,17 +136,17 @@ dt_imageio_flip_buffers(char *out, const char *in, const size_t bpp, const int w
   }
   int ii = 0, jj = 0;
   int si = bpp, sj = wd*bpp;
-  if(orientation & 4)
+  if(orientation & ORIENTATION_SWAP_XY)
   {
     sj = bpp;
     si = ht*bpp;
   }
-  if(orientation & 2)
+  if(orientation & ORIENTATION_FLIP_X)
   {
     jj = (int)fht - jj - 1;
     sj = -sj;
   }
-  if(orientation & 1)
+  if(orientation & ORIENTATION_FLIP_Y)
   {
     ii = (int)fwd - ii - 1;
     si = -si;
@@ -168,7 +168,7 @@ dt_imageio_flip_buffers(char *out, const char *in, const size_t bpp, const int w
 }
 
 void
-dt_imageio_flip_buffers_ui16_to_float(float *out, const uint16_t *in, const float black, const float white, const int ch, const int wd, const int ht, const int fwd, const int fht, const int stride, const int orientation)
+dt_imageio_flip_buffers_ui16_to_float(float *out, const uint16_t *in, const float black, const float white, const int ch, const int wd, const int ht, const int fwd, const int fht, const int stride, const dt_image_orientation_t orientation)
 {
   const float scale = 1.0f/(white - black);
   if(!orientation)
@@ -181,17 +181,17 @@ dt_imageio_flip_buffers_ui16_to_float(float *out, const uint16_t *in, const floa
   }
   int ii = 0, jj = 0;
   int si = 4, sj = wd*4;
-  if(orientation & 4)
+  if(orientation & ORIENTATION_SWAP_XY)
   {
     sj = 4;
     si = ht*4;
   }
-  if(orientation & 2)
+  if(orientation & ORIENTATION_FLIP_X)
   {
     jj = (int)fht - jj - 1;
     sj = -sj;
   }
-  if(orientation & 1)
+  if(orientation & ORIENTATION_FLIP_Y)
   {
     ii = (int)fwd - ii - 1;
     si = -si;
@@ -213,7 +213,7 @@ dt_imageio_flip_buffers_ui16_to_float(float *out, const uint16_t *in, const floa
 }
 
 void
-dt_imageio_flip_buffers_ui8_to_float(float *out, const uint8_t *in, const float black, const float white, const int ch, const int wd, const int ht, const int fwd, const int fht, const int stride, const int orientation)
+dt_imageio_flip_buffers_ui8_to_float(float *out, const uint8_t *in, const float black, const float white, const int ch, const int wd, const int ht, const int fwd, const int fht, const int stride, const dt_image_orientation_t orientation)
 {
   const float scale = 1.0f/(white - black);
   if(!orientation)
@@ -226,17 +226,17 @@ dt_imageio_flip_buffers_ui8_to_float(float *out, const uint8_t *in, const float 
   }
   int ii = 0, jj = 0;
   int si = 4, sj = wd*4;
-  if(orientation & 4)
+  if(orientation & ORIENTATION_SWAP_XY)
   {
     sj = 4;
     si = ht*4;
   }
-  if(orientation & 2)
+  if(orientation & ORIENTATION_FLIP_X)
   {
     jj = (int)fht - jj - 1;
     sj = -sj;
   }
-  if(orientation & 1)
+  if(orientation & ORIENTATION_FLIP_Y)
   {
     ii = (int)fwd - ii - 1;
     si = -si;
@@ -257,10 +257,10 @@ dt_imageio_flip_buffers_ui8_to_float(float *out, const uint8_t *in, const float 
   }
 }
 
-size_t dt_imageio_write_pos(int i, int j, int wd, int ht, float fwd, float fht, int orientation)
+size_t dt_imageio_write_pos(int i, int j, int wd, int ht, float fwd, float fht, dt_image_orientation_t orientation)
 {
   int ii = i, jj = j, w = wd, fw = fwd, fh = fht;
-  if(orientation & 4)
+  if(orientation & ORIENTATION_SWAP_XY)
   {
     w = ht;
     ii = j;
@@ -268,8 +268,8 @@ size_t dt_imageio_write_pos(int i, int j, int wd, int ht, float fwd, float fht, 
     fw = fht;
     fh = fwd;
   }
-  if(orientation & 2) ii = (int)fw - ii - 1;
-  if(orientation & 1) jj = (int)fh - jj - 1;
+  if(orientation & ORIENTATION_FLIP_X) ii = (int)fw - ii - 1;
+  if(orientation & ORIENTATION_FLIP_Y) jj = (int)fh - jj - 1;
   return (size_t)jj*w + ii;
 }
 
@@ -293,7 +293,7 @@ dt_imageio_open_hdr(
 return_label:
   if(ret == DT_IMAGEIO_OK)
   {
-    img->filters = 0;
+    img->filters = 0u;
     img->flags &= ~DT_IMAGE_LDR;
     img->flags &= ~DT_IMAGE_RAW;
     img->flags |=  DT_IMAGE_HDR;
@@ -379,7 +379,7 @@ dt_imageio_open_raw(
   raw->params.document_mode = 2; // color scaling (clip,wb,max) and black point, but no demosaic
   raw->params.output_color = 0;
   raw->params.output_bps = 16;
-  raw->params.user_flip = -1; // -1 means: use orientation from raw
+  raw->params.user_flip = 0; // -1: use orientation from raw; 0: do not rotate
   raw->params.gamm[0] = 1.0;
   raw->params.gamm[1] = 1.0;
   // raw->params.user_qual = img->raw_params.demosaic_method; // 3: AHD, 2: PPG, 1: VNG
@@ -416,8 +416,8 @@ dt_imageio_open_raw(
   // filters seem only ever to take a useful value after unpack/process
   img->filters = raw->idata.filters;
   img->bpp = img->filters ? sizeof(uint16_t) : 4*sizeof(float);
-  img->width  = (img->orientation & 4) ? raw->sizes.height : raw->sizes.width;
-  img->height = (img->orientation & 4) ? raw->sizes.width  : raw->sizes.height;
+  img->width  = raw->sizes.width;
+  img->height = raw->sizes.height;
 #if 0 // disabled libraw exif data. it's inconsistent with exiv2, we don't want that.
   img->exif_iso = raw->other.iso_speed;
   img->exif_exposure = raw->other.shutter;
@@ -554,7 +554,7 @@ dt_imageio_open_ldr(
   ret = dt_imageio_open_tiff(img, filename, a);
   if(ret == DT_IMAGEIO_OK || ret == DT_IMAGEIO_CACHE_FULL)
   {
-    img->filters = 0;
+    img->filters = 0u;
     img->flags &= ~DT_IMAGE_RAW;
     img->flags &= ~DT_IMAGE_HDR;
     img->flags |= DT_IMAGE_LDR;
@@ -564,7 +564,7 @@ dt_imageio_open_ldr(
   ret = dt_imageio_open_png(img, filename, a);
   if(ret == DT_IMAGEIO_OK || ret == DT_IMAGEIO_CACHE_FULL)
   {
-    img->filters = 0;
+    img->filters = 0u;
     img->flags &= ~DT_IMAGE_RAW;
     img->flags &= ~DT_IMAGE_HDR;
     img->flags |= DT_IMAGE_LDR;
@@ -575,7 +575,7 @@ dt_imageio_open_ldr(
   ret = dt_imageio_open_j2k(img, filename, a);
   if(ret == DT_IMAGEIO_OK || ret == DT_IMAGEIO_CACHE_FULL)
   {
-    img->filters = 0;
+    img->filters = 0u;
     img->flags &= ~DT_IMAGE_RAW;
     img->flags &= ~DT_IMAGE_HDR;
     img->flags |= DT_IMAGE_LDR;
@@ -586,7 +586,7 @@ dt_imageio_open_ldr(
   ret = dt_imageio_open_jpeg(img, filename, a);
   if(ret == DT_IMAGEIO_OK || ret == DT_IMAGEIO_CACHE_FULL)
   {
-    img->filters = 0;
+    img->filters = 0u;
     img->flags &= ~DT_IMAGE_RAW;
     img->flags &= ~DT_IMAGE_HDR;
     img->flags |= DT_IMAGE_LDR;

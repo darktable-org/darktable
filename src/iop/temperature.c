@@ -207,7 +207,7 @@ FC(const int row, const int col, const unsigned int filters)
 
 void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoid, void *ovoid, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
 {
-  const int filters = dt_image_flipped_filter(&piece->pipe->image);
+  const int filters = dt_image_filter(&piece->pipe->image);
   dt_iop_temperature_data_t *d = (dt_iop_temperature_data_t *)piece->data;
   if(!dt_dev_pixelpipe_uses_downsampled_input(piece->pipe) && filters && piece->pipe->image.bpp != 4)
   {
@@ -297,7 +297,7 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
   dt_iop_temperature_global_data_t *gd = (dt_iop_temperature_global_data_t *)self->data;
 
   const int devid = piece->pipe->devid;
-  const int filters = dt_image_flipped_filter(&piece->pipe->image);
+  const int filters = dt_image_filter(&piece->pipe->image);
   float coeffs[3] = {d->coeffs[0], d->coeffs[1], d->coeffs[2]};
   cl_mem dev_coeffs = NULL;
   cl_int err = -999;

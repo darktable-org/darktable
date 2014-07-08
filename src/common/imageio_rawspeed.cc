@@ -146,7 +146,7 @@ dt_imageio_open_rawspeed(
     d.reset();
     m.reset();
 
-    img->filters = 0;
+    img->filters = 0u;
     if( !r->isCFA )
     {
       dt_imageio_retval_t ret = dt_imageio_open_rawspeed_sraw(img, r, a);
@@ -165,10 +165,8 @@ dt_imageio_open_rawspeed(
       if(r->getDataType() == TYPE_FLOAT32) img->flags |= DT_IMAGE_HDR;
     }
 
-    // also include used override in orient:
-    const int orientation = dt_image_orientation(img);
-    img->width  = (orientation & 4) ? r->dim.y : r->dim.x;
-    img->height = (orientation & 4) ? r->dim.x : r->dim.y;
+    img->width  = r->dim.x;
+    img->height = r->dim.y;
 
     /* needed in exposure iop for Deflicker */
     img->raw_black_level = r->blackLevel;
@@ -178,7 +176,7 @@ dt_imageio_open_rawspeed(
     if(!buf)
       return DT_IMAGEIO_CACHE_FULL;
 
-    dt_imageio_flip_buffers((char *)buf, (char *)r->getData(), r->getBpp(), r->dim.x, r->dim.y, r->dim.x, r->dim.y, r->pitch, orientation);
+    dt_imageio_flip_buffers((char *)buf, (char *)r->getData(), r->getBpp(), r->dim.x, r->dim.y, r->dim.x, r->dim.y, r->pitch, ORIENTATION_NONE);
   }
   catch (const std::exception &exc)
   {
@@ -204,9 +202,8 @@ dt_imageio_open_rawspeed_sraw(dt_image_t *img, RawImage r, dt_mipmap_cache_alloc
   img->flags &= ~DT_IMAGE_LDR;
   img->flags &= ~DT_IMAGE_RAW;
 
-  const int orientation = dt_image_orientation(img);
-  img->width  = (orientation & 4) ? r->dim.y : r->dim.x;
-  img->height = (orientation & 4) ? r->dim.x : r->dim.y;
+  img->width  = r->dim.x;
+  img->height = r->dim.y;
 
   /* needed by Deflicker */
   img->raw_black_level = r->blackLevel;
@@ -241,7 +238,7 @@ dt_imageio_open_rawspeed_sraw(dt_image_t *img, RawImage r, dt_mipmap_cache_alloc
   for( size_t row = 0; row < raw_height; ++row )
     for( size_t col = 0; col < raw_width; ++col )
       for( int k = 0; k < 3; ++k )
-        ((float *)buf)[4 * dt_imageio_write_pos(col, row, raw_width, raw_height, raw_width, raw_height, orientation) + k] =
+        ((float *)buf)[4 * dt_imageio_write_pos(col, row, raw_width, raw_height, raw_width, raw_height, ORIENTATION_NONE) + k] =
           // ((float)raw_img[row*(raw_width + raw_width_extra)*3 + col*3 + k] - black) * scale;
           ((float)raw_img[row*(r->pitch/2) + col*img->cpp + k] - black) * scale;
 #endif
