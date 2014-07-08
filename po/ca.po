@@ -8,8 +8,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 0.6.1~rc\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2014-07-08 18:12+0200\n"
-"PO-Revision-Date: 2014-07-08 18:04+0100\n"
+"POT-Creation-Date: 2014-07-08 20:21+0200\n"
+"PO-Revision-Date: 2014-07-08 20:56+0100\n"
 "Last-Translator: Josep V. Moragues <josepvm@arrakis.es>\n"
 "Language-Team: Catalan\n"
 "Language: ca\n"
@@ -7047,9 +7047,8 @@ msgid "copy to other folder"
 msgstr ""
 
 #: ../src/libs/image.c:171
-#, fuzzy
 msgid "create HDR"
-msgstr "crea"
+msgstr "crea HDR"
 
 #: ../src/libs/image.c:175
 msgid "create a high dynamic range image from selected shots"
@@ -7060,39 +7059,32 @@ msgid "duplicate"
 msgstr "duplica"
 
 #: ../src/libs/image.c:179
-#, fuzzy
 msgid "add a duplicate to the collection, including its history stack"
-msgstr "afegeix un duplicat a la col·lecció"
+msgstr "afegeix un duplicat a la col·lecció, incloent-hi l'historial"
 
 #: ../src/libs/image.c:189
-#, fuzzy
 msgid "rotate selected images 90 degrees CCW"
-msgstr "coinideix amb les imatges seleccionades"
+msgstr "gira les imatges seleccionades 90 graus en sentit antihorari"
 
 #: ../src/libs/image.c:195
-#, fuzzy
 msgid "rotate selected images 90 degrees CW"
-msgstr "coinideix amb les imatges seleccionades"
+msgstr "gira les imatges seleccionades 90 graus en sentit horari"
 
 #: ../src/libs/image.c:200
-#, fuzzy
 msgid "reset rotation"
-msgstr "saturació"
+msgstr "desfés la rotació"
 
 #: ../src/libs/image.c:202
-#, fuzzy
 msgid "reset rotation to EXIF data"
-msgstr "reinicia al valor per defecte"
+msgstr "reinicia la rotació al valors EXIF"
 
 #: ../src/libs/image.c:209
-#, fuzzy
 msgid "copy locally"
-msgstr "copia"
+msgstr "fes copia local"
 
 #: ../src/libs/image.c:211
-#, fuzzy
 msgid "copy the image locally"
-msgstr "voleu suprimir les imatges?"
+msgstr "fes còpia local de la imatge"
 
 #: ../src/libs/image.c:215
 msgid "resync local copy"
@@ -7115,51 +7107,43 @@ msgid "ungroup"
 msgstr ""
 
 #: ../src/libs/image.c:232
-#, fuzzy
 msgid "remove selected images from the group"
-msgstr "coinideix amb les imatges seleccionades"
+msgstr "treu del grup les imatges seleccionades"
 
 #: ../src/libs/image.c:248
-#, fuzzy
 msgctxt "accel"
 msgid "remove from collection"
 msgstr "suprimeix de la col·lecció"
 
 #: ../src/libs/image.c:250
-#, fuzzy
 msgctxt "accel"
 msgid "delete from disk"
 msgstr "elimineu físicament del disc"
 
 #: ../src/libs/image.c:252
-#, fuzzy
 msgctxt "accel"
 msgid "rotate selected images 90 degrees CW"
-msgstr "coinideix amb les imatges seleccionades"
+msgstr "gira les imatges seleccionades 90 graus en sentit horari"
 
 #: ../src/libs/image.c:255
-#, fuzzy
 msgctxt "accel"
 msgid "rotate selected images 90 degrees CCW"
-msgstr "coinideix amb les imatges seleccionades"
+msgstr "gira les imatges seleccionades 90 graus en sentit antihorari"
 
 #: ../src/libs/image.c:257
-#, fuzzy
 msgctxt "accel"
 msgid "create HDR"
-msgstr "crea"
+msgstr "crea HDR"
 
 #: ../src/libs/image.c:258
-#, fuzzy
 msgctxt "accel"
 msgid "duplicate"
 msgstr "duplica"
 
 #: ../src/libs/image.c:259
-#, fuzzy
 msgctxt "accel"
 msgid "reset rotation"
-msgstr "saturació"
+msgstr "desfés la rotació"
 
 #. Grouping keys
 #: ../src/libs/image.c:261
@@ -7177,13 +7161,11 @@ msgid "import"
 msgstr "importa"
 
 #: ../src/libs/import.c:108
-#, fuzzy
 msgctxt "accel"
 msgid "scan for devices"
 msgstr "escaneja els dispositius"
 
 #: ../src/libs/import.c:109
-#, fuzzy
 msgctxt "accel"
 msgid "import from camera"
 msgstr "importa de la càmera"
@@ -7194,16 +7176,14 @@ msgid "tethered shoot"
 msgstr ""
 
 #: ../src/libs/import.c:111
-#, fuzzy
 msgctxt "accel"
 msgid "import image"
-msgstr "imorta una imatge"
+msgstr "importa una imatge"
 
 #: ../src/libs/import.c:112
-#, fuzzy
 msgctxt "accel"
 msgid "import folder"
-msgstr "importa de la càmera"
+msgstr "importa una carpeta"
 
 #. add the rescan button
 #: ../src/libs/import.c:195
@@ -7234,9 +7214,8 @@ msgstr "no s'ha trobat cap dispositiu compatible"
 
 #. add extra lines to 'extra'. don't forget to destroy the widgets later.
 #: ../src/libs/import.c:380
-#, fuzzy
 msgid "import options"
-msgstr "opcions globals"
+msgstr "opcions d'importació"
 
 #. recursive opening.
 #: ../src/libs/import.c:400
@@ -7269,18 +7248,16 @@ msgid "supported images"
 msgstr ""
 
 #: ../src/libs/import.c:747
-#, fuzzy
 msgid "file has unknown format!"
-msgstr "format del fitxer"
+msgstr "format de fitxer desconegut!"
 
 #: ../src/libs/import.c:765
 msgid "import film"
 msgstr ""
 
 #: ../src/libs/import.c:841
-#, fuzzy
 msgid "select one or more images to import"
-msgstr "suprimeix els originals un cop importats"
+msgstr "selecciona una o més imatges a importar"
 
 #. adding the import folder button
 #: ../src/libs/import.c:850
@@ -7339,14 +7316,12 @@ msgid "zoom live view"
 msgstr ""
 
 #: ../src/libs/live_view.c:293
-#, fuzzy
 msgid "rotate 90 degrees ccw"
-msgstr "coinideix amb les imatges seleccionades"
+msgstr "gira 90 graus en sentit antihorari"
 
 #: ../src/libs/live_view.c:294
-#, fuzzy
 msgid "rotate 90 degrees cw"
-msgstr "coinideix amb les imatges seleccionades"
+msgstr "gira 90 graus en sentit horari"
 
 #: ../src/libs/live_view.c:295
 msgid "flip live view horizontally"
@@ -7373,23 +7348,20 @@ msgid "overlay"
 msgstr ""
 
 #: ../src/libs/live_view.c:361
-#, fuzzy
 msgid "selected image"
-msgstr "imatges seleccionades"
+msgstr "imatge seleccionada"
 
 #: ../src/libs/live_view.c:362 ../src/libs/tools/filter.c:149
-#, fuzzy
 msgid "id"
-msgstr "d"
+msgstr "identificador"
 
 #: ../src/libs/live_view.c:363
 msgid "overlay another image over the live view"
 msgstr ""
 
 #: ../src/libs/live_view.c:368 ../src/libs/metadata_view.c:82
-#, fuzzy
 msgid "image id"
-msgstr "imatge"
+msgstr "identificador de la imatge"
 
 #: ../src/libs/live_view.c:372
 msgid "enter image id of the overlay manually"
@@ -7472,19 +7444,16 @@ msgid "only draw part of the overlay"
 msgstr ""
 
 #: ../src/libs/location.c:80
-#, fuzzy
 msgid "find location"
-msgstr "inverteix la selecció"
+msgstr "troba ubicació"
 
 #: ../src/libs/map_settings.c:37
-#, fuzzy
 msgid "map settings"
-msgstr "paràmetres de la càmera"
+msgstr "ajustaments de mapa"
 
 #: ../src/libs/map_settings.c:92
-#, fuzzy
 msgid "show OSD"
-msgstr "mostra %s"
+msgstr "mostra OSD"
 
 #: ../src/libs/map_settings.c:93
 msgid "toggle the visibility of the map overlays"
@@ -7499,16 +7468,14 @@ msgid "select the source of the map. some entries might not work"
 msgstr ""
 
 #: ../src/libs/metadata.c:56
-#, fuzzy
 msgid "metadata editor"
-msgstr "metadades"
+msgstr "editor de metadades"
 
 #: ../src/libs/metadata.c:90
 msgid "<leave unchanged>"
 msgstr ""
 
 #: ../src/libs/metadata.c:299
-#, fuzzy
 msgctxt "accel"
 msgid "clear"
 msgstr "neteja"
@@ -7518,14 +7485,12 @@ msgid "clear"
 msgstr "neteja"
 
 #: ../src/libs/metadata.c:400
-#, fuzzy
 msgid "remove metadata from selected images"
-msgstr "coinideix amb les imatges seleccionades"
+msgstr "esborra metadades de les imatges seleccionades"
 
 #: ../src/libs/metadata.c:407
-#, fuzzy
 msgid "write metadata for selected images"
-msgstr "coinideix amb les imatges seleccionades"
+msgstr "escriu metadades per les imatges seleccionades"
 
 #. <title>\0<description>\0<rights>\0<creator>\0<publisher>
 #: ../src/libs/metadata.c:448
@@ -7590,26 +7555,22 @@ msgid "filmroll"
 msgstr ""
 
 #: ../src/libs/metadata_view.c:84
-#, fuzzy
 msgid "version"
-msgstr "sessió"
+msgstr "versió"
 
 #: ../src/libs/metadata_view.c:85
 msgid "full path"
 msgstr ""
 
 #: ../src/libs/metadata_view.c:86
-#, fuzzy
 msgid "local copy"
-msgstr "contrast fosc"
+msgstr "còpia local"
 
 #: ../src/libs/metadata_view.c:95
-#, fuzzy
 msgid "focus distance"
-msgstr "tipus d'enfocament"
+msgstr "distància d'enfocament"
 
 #: ../src/libs/metadata_view.c:97
-#, fuzzy
 msgid "datetime"
 msgstr "data/hora"
 
@@ -7618,9 +7579,8 @@ msgid "height"
 msgstr "alçada"
 
 #: ../src/libs/metadata_view.c:104
-#, fuzzy
 msgid "copyright"
-msgstr "dreta"
+msgstr "drets d'autor"
 
 #. geotagging
 #: ../src/libs/metadata_view.c:107
@@ -7632,22 +7592,22 @@ msgid "longitude"
 msgstr ""
 
 #: ../src/libs/metadata_view.c:120
-#, fuzzy
 msgid "image information"
-msgstr "format del fitxer"
+msgstr "informació de la imatge"
 
 #: ../src/libs/metadata_view.c:224
-#, fuzzy, c-format
+#, c-format
 msgid ""
 "double click to jump to film roll\n"
 "%s"
-msgstr "feu doble clic per seleccionar"
+msgstr ""
+"feu doble clic per anar al rodet\n"
+"%s"
 
 #: ../src/libs/metadata_view.c:427
-#, fuzzy
 msgctxt "accel"
 msgid "jump to film roll"
-msgstr "selecciona-ho tot"
+msgstr "vés al rodet"
 
 #: ../src/libs/modulegroups.c:72
 msgid "modulegroups"
@@ -7674,18 +7634,16 @@ msgid "color group"
 msgstr ""
 
 #: ../src/libs/modulegroups.c:135
-#, fuzzy
 msgid "tone group"
-msgstr "grup d'efectes"
+msgstr "grup de tonalitat"
 
 #: ../src/libs/modulegroups.c:140
 msgid "effect group"
 msgstr "grup d'efectes"
 
 #: ../src/libs/modulelist.c:57
-#, fuzzy
 msgid "more modules"
-msgstr "no hi ha cap mòdul seleccionat"
+msgstr "més mòduls"
 
 #: ../src/libs/navigation.c:56
 msgid "navigation"
@@ -7696,9 +7654,8 @@ msgid "small"
 msgstr ""
 
 #: ../src/libs/navigation.c:431
-#, fuzzy
 msgid "fit to screen"
-msgstr "verd"
+msgstr "ajusta a la pantalla"
 
 #: ../src/libs/navigation.c:435
 msgid "100%"
@@ -7709,9 +7666,8 @@ msgid "200%"
 msgstr ""
 
 #: ../src/libs/recentcollect.c:54
-#, fuzzy
 msgid "recently used collections"
-msgstr "suprimeix de la col·lecció"
+msgstr "col·leccions emprades recentment"
 
 #: ../src/libs/recentcollect.c:90
 msgctxt "accel"
@@ -7789,7 +7745,6 @@ msgid "snapshots"
 msgstr "instantànies"
 
 #: ../src/libs/snapshots.c:101
-#, fuzzy
 msgctxt "accel"
 msgid "take snapshot"
 msgstr "fes una captura"
@@ -7814,72 +7769,59 @@ msgid "styles"
 msgstr ""
 
 #: ../src/libs/styles.c:68 ../src/libs/tagging.c:82
-#, fuzzy
 msgctxt "accel"
 msgid "delete"
 msgstr "elimina"
 
 #: ../src/libs/styles.c:70
-#, fuzzy
 msgctxt "accel"
 msgid "import"
 msgstr "importa"
 
 #: ../src/libs/styles.c:263
-#, fuzzy
 msgid "select style"
-msgstr "selecciona-ho tot"
+msgstr "selecciona l'estil"
 
 #: ../src/libs/styles.c:276
-#, fuzzy
 msgid "darktable style files"
-msgstr "tots els fitxers"
+msgstr "fitxers d'estil del darktable"
 
 #: ../src/libs/styles.c:350
-#, fuzzy
 msgid ""
 "available styles,\n"
 "doubleclick to apply"
 msgstr ""
-"etiquetes relacionades,\n"
-"feu doble click per adjuntar"
+"estils disponibles,\n"
+"feu doble click per aplicar"
 
 #: ../src/libs/styles.c:356
-#, fuzzy
 msgid "enter style name"
-msgstr "introduïu el nom de l'etiqueta"
+msgstr "introduïu el nom de l'estil"
 
 #: ../src/libs/styles.c:369
-#, fuzzy
 msgid "create duplicate"
-msgstr "duplica"
+msgstr "crea duplicat"
 
 #: ../src/libs/styles.c:373
 msgid "creates a duplicate of the image before applying style"
 msgstr ""
 
 #: ../src/libs/styles.c:383
-#, fuzzy
 msgid "create styles from history stack of selected images"
-msgstr ""
-"descarta la pila de l'historial\n"
-"de totes les imatges seleccionades"
+msgstr "crea un estil a partir de l'historial de les imatges seleccionades"
 
 #. edit
 #: ../src/libs/styles.c:387
-#, fuzzy
 msgid "edit"
-msgstr "edita '%s'"
+msgstr "edita"
 
 #: ../src/libs/styles.c:390
-#, fuzzy
 msgid "edit the selected style in list above"
-msgstr "suprimeix l'etiqueta seleccionada"
+msgstr "edita l'estil seleccionat de la llista anterior"
 
 #: ../src/libs/styles.c:397
-#, fuzzy
 msgid "deletes the selected style in list above"
-msgstr "suprimeix l'etiqueta seleccionada"
+msgstr "suprimeix de la llista anterior l'estil seleccionat"
 
 #. import button
 #: ../src/libs/styles.c:401
