@@ -8,8 +8,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 0.6.1~rc\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2014-07-03 22:52+0200\n"
-"PO-Revision-Date: 2014-07-08 13:30+0100\n"
+"POT-Creation-Date: 2014-07-08 18:12+0200\n"
+"PO-Revision-Date: 2014-07-08 18:04+0100\n"
 "Last-Translator: Josep V. Moragues <josepvm@arrakis.es>\n"
 "Language-Team: Catalan\n"
 "Language: ca\n"
@@ -774,14 +774,14 @@ msgstr ""
 #: ../src/common/history.c:274 ../src/common/history.c:275
 #: ../src/common/history.c:291 ../src/common/styles.c:633
 #: ../src/common/styles.c:635 ../src/develop/blend_gui.c:1691
-#: ../src/develop/develop.c:1142 ../src/libs/live_view.c:412
+#: ../src/develop/develop.c:1145 ../src/libs/live_view.c:412
 msgid "on"
 msgstr "actiu"
 
 #: ../src/common/history.c:274 ../src/common/history.c:275
 #: ../src/common/history.c:291 ../src/common/styles.c:633
 #: ../src/common/styles.c:635 ../src/develop/blend_gui.c:1539
-#: ../src/develop/blend_gui.c:1688 ../src/develop/develop.c:1142
+#: ../src/develop/blend_gui.c:1688 ../src/develop/develop.c:1145
 #: ../src/imageio/format/j2k.c:637 ../src/iop/colorin.c:1187
 #: ../src/iop/demosaic.c:1315 ../src/iop/vignette.c:1118
 #: ../src/libs/history.c:154 ../src/libs/live_view.c:411
@@ -905,7 +905,7 @@ msgstr ""
 #: ../src/common/variables.c:239 ../src/common/variables.c:254
 #: ../src/iop/clipping.c:1476 ../src/iop/clipping.c:1709
 #: ../src/iop/clipping.c:1727 ../src/iop/clipping.c:1770
-#: ../src/iop/clipping.c:1789 ../src/iop/lens.c:1932 ../src/libs/export.c:639
+#: ../src/iop/clipping.c:1789 ../src/iop/lens.c:1934 ../src/libs/export.c:639
 #: ../src/libs/live_view.c:330 ../src/libs/live_view.c:342
 #: ../src/libs/live_view.c:360
 msgid "none"
@@ -1312,7 +1312,7 @@ msgstr ""
 
 #: ../src/develop/blend_gui.c:1125 ../src/develop/blend_gui.c:1126
 msgid "double click to reset"
-msgstr "feu doble clic per tornar a valors per defecte"
+msgstr "feu doble clic per tornar a valor inicial"
 
 #: ../src/develop/blend_gui.c:1186
 #, c-format
@@ -1517,9 +1517,8 @@ msgid "unbounded (deprecated)"
 msgstr ""
 
 #: ../src/develop/blend_gui.c:1542
-#, fuzzy
 msgid "uniformly"
-msgstr "uniformitat"
+msgstr "uniformement"
 
 #: ../src/develop/blend_gui.c:1553
 msgid "parametric mask"
@@ -1556,9 +1555,8 @@ msgid "combine masks"
 msgstr ""
 
 #: ../src/develop/blend_gui.c:1667
-#, fuzzy
 msgid "exclusive"
-msgstr "sessió"
+msgstr "exclusiu"
 
 #: ../src/develop/blend_gui.c:1670
 msgid "inclusive"
@@ -1579,9 +1577,8 @@ msgid ""
 msgstr ""
 
 #: ../src/develop/blend_gui.c:1686
-#, fuzzy
 msgid "invert mask"
-msgstr "inverteix"
+msgstr "inverteix màscara"
 
 #: ../src/develop/blend_gui.c:1695
 msgid "apply mask in normal or inverted mode"
@@ -1614,30 +1611,26 @@ msgstr ""
 msgid "could not allocate buffer for blending"
 msgstr ""
 
-#: ../src/develop/develop.c:972
+#: ../src/develop/develop.c:975
 #, c-format
 msgid "%s: module `%s' version mismatch: %d != %d"
 msgstr "%s: la versió del mòdul '%s' no coincideix: %d != %d"
 
 #: ../src/develop/imageop.c:793
-#, fuzzy
 msgid "new instance"
-msgstr "tipus d'enfocament"
+msgstr "nova instància"
 
 #: ../src/develop/imageop.c:798
-#, fuzzy
 msgid "duplicate instance"
-msgstr "duplica"
+msgstr "duplica instància"
 
 #: ../src/develop/imageop.c:803 ../src/libs/masks.c:1065
-#, fuzzy
 msgid "move up"
-msgstr "suprimeix"
+msgstr "mou amunt"
 
 #: ../src/develop/imageop.c:809 ../src/libs/masks.c:1068
-#, fuzzy
 msgid "move down"
-msgstr "navegació"
+msgstr "mou avall"
 
 #. delete
 #: ../src/develop/imageop.c:815 ../src/libs/image.c:146
@@ -1661,15 +1654,13 @@ msgstr "%s està desactivat"
 #: ../src/gui/presets.c:284 ../src/gui/presets.c:625
 #: ../src/iop/temperature.c:786 ../src/libs/import.c:506 ../src/libs/lib.c:292
 #: ../src/libs/lib.c:321 ../src/libs/lib.c:1006
-#, fuzzy
 msgid "preset"
-msgstr "reinicia"
+msgstr "predefinit"
 
 #: ../src/develop/imageop.c:1159
-#, fuzzy
 msgctxt "accel"
 msgid "fusion"
-msgstr "sessió"
+msgstr "fusió"
 
 #. Adding the optional show accelerator to the table (blank)
 #: ../src/develop/imageop.c:1164
@@ -1721,21 +1712,18 @@ msgid "tags"
 msgstr ""
 
 #: ../src/develop/lightroom.c:1449 ../src/libs/tools/filter.c:148
-#, fuzzy
 msgid "rating"
-msgstr "saturació"
+msgstr "puntuació"
 
 #: ../src/develop/lightroom.c:1458 ../src/libs/collect.h:47
 #: ../src/libs/geotagging.c:45
-#, fuzzy
 msgid "geotagging"
-msgstr "etiquetatge"
+msgstr "geoetiquetatge"
 
 #: ../src/develop/lightroom.c:1467 ../src/libs/collect.h:37
 #: ../src/libs/tools/filter.c:150
-#, fuzzy
 msgid "color label"
-msgstr "etiquetes de color"
+msgstr "etiqueta de color"
 
 #: ../src/develop/lightroom.c:1477
 #, c-format
@@ -1756,9 +1744,8 @@ msgid ""
 msgstr ""
 
 #: ../src/dtgtk/resetlabel.c:61
-#, fuzzy
 msgid "double-click to reset"
-msgstr "feu doble clic per seleccionar"
+msgstr "feu doble clic per tornar a valor inicial"
 
 #: ../src/gui/accelerators.c:34 ../src/gui/accelerators.c:84
 #, fuzzy
@@ -3115,7 +3102,7 @@ msgstr "corba base"
 msgid "abscissa: input, ordinate: output. works on RGB channels"
 msgstr ""
 
-#: ../src/iop/basecurve.c:770 ../src/iop/lens.c:2083
+#: ../src/iop/basecurve.c:770 ../src/iop/lens.c:2085
 #: ../src/iop/vignette.c:1124 ../src/iop/watermark.c:1114
 msgid "scale"
 msgstr "escala"
@@ -3742,7 +3729,7 @@ msgstr ""
 msgid "golden spiral"
 msgstr ""
 
-#: ../src/iop/clipping.c:1802 ../src/iop/lens.c:1938
+#: ../src/iop/clipping.c:1802 ../src/iop/lens.c:1940
 #: ../src/libs/live_view.c:354 ../src/libs/tools/filter.c:121
 msgid "all"
 msgstr ""
@@ -4451,7 +4438,7 @@ msgid "interpolated from ISO %d and %d"
 msgstr ""
 
 #: ../src/iop/denoiseprofile.c:1725 ../src/iop/exposure.c:943
-#: ../src/iop/lens.c:2092 ../src/iop/levels.c:547
+#: ../src/iop/lens.c:2094 ../src/iop/levels.c:547
 #, fuzzy
 msgid "mode"
 msgstr "model"
@@ -5042,7 +5029,7 @@ msgctxt "accel"
 msgid "select corrections"
 msgstr "correcció del color"
 
-#: ../src/iop/lens.c:1271
+#: ../src/iop/lens.c:1273
 #, c-format
 msgid ""
 "maker:\t\t%s\n"
@@ -5051,15 +5038,15 @@ msgid ""
 "crop factor:\t%.1f"
 msgstr ""
 
-#: ../src/iop/lens.c:1509
+#: ../src/iop/lens.c:1511
 msgid "camera/lens not found - please select manually"
 msgstr ""
 
-#: ../src/iop/lens.c:1511
+#: ../src/iop/lens.c:1513
 msgid "try to locate your camera/lens in the above two menus"
 msgstr ""
 
-#: ../src/iop/lens.c:1556
+#: ../src/iop/lens.c:1558
 #, fuzzy, c-format
 msgid ""
 "maker:\t\t%s\n"
@@ -5078,157 +5065,157 @@ msgstr ""
 "tipus:\\t\\t%s\n"
 "muntatge:\\t\\t%s"
 
-#: ../src/iop/lens.c:1601
+#: ../src/iop/lens.c:1603
 msgid "mm"
 msgstr "mm"
 
-#: ../src/iop/lens.c:1602
+#: ../src/iop/lens.c:1604
 msgid "focal length (mm)"
 msgstr "distància focal (mm)"
 
-#: ../src/iop/lens.c:1628
+#: ../src/iop/lens.c:1630
 msgid "f/"
 msgstr "f/"
 
-#: ../src/iop/lens.c:1629
+#: ../src/iop/lens.c:1631
 msgid "f-number (aperture)"
 msgstr ""
 
-#: ../src/iop/lens.c:1644
+#: ../src/iop/lens.c:1646
 msgid "d"
 msgstr "d"
 
-#: ../src/iop/lens.c:1645
+#: ../src/iop/lens.c:1647
 msgid "distance to subject"
 msgstr ""
 
-#: ../src/iop/lens.c:1944
+#: ../src/iop/lens.c:1946
 msgid "distortion & TCA"
 msgstr ""
 
-#: ../src/iop/lens.c:1950
+#: ../src/iop/lens.c:1952
 #, fuzzy
 msgid "distortion & vignetting"
 msgstr "vinyetatge"
 
-#: ../src/iop/lens.c:1956
+#: ../src/iop/lens.c:1958
 #, fuzzy
 msgid "TCA & vignetting"
 msgstr "vinyetatge"
 
-#: ../src/iop/lens.c:1962
+#: ../src/iop/lens.c:1964
 msgid "only distortion"
 msgstr ""
 
-#: ../src/iop/lens.c:1968
+#: ../src/iop/lens.c:1970
 msgid "only TCA"
 msgstr ""
 
-#: ../src/iop/lens.c:1974
+#: ../src/iop/lens.c:1976
 #, fuzzy
 msgid "only vignetting"
 msgstr "vinyetatge"
 
-#: ../src/iop/lens.c:1997
+#: ../src/iop/lens.c:1999
 #, fuzzy
 msgid "find camera"
 msgstr "càmera"
 
-#: ../src/iop/lens.c:2014
+#: ../src/iop/lens.c:2016
 #, fuzzy
 msgid "find lens"
 msgstr "lent"
 
-#: ../src/iop/lens.c:2046
+#: ../src/iop/lens.c:2048
 #, fuzzy
 msgid "corrections"
 msgstr "opcions globals"
 
-#: ../src/iop/lens.c:2048
+#: ../src/iop/lens.c:2050
 msgid "which corrections to apply"
 msgstr ""
 
-#: ../src/iop/lens.c:2063
+#: ../src/iop/lens.c:2065
 msgid "geometry"
 msgstr "geometria"
 
-#: ../src/iop/lens.c:2065
+#: ../src/iop/lens.c:2067
 msgid "target geometry"
 msgstr ""
 
-#: ../src/iop/lens.c:2066
+#: ../src/iop/lens.c:2068
 msgid "rectilinear"
 msgstr "rectilínia"
 
-#: ../src/iop/lens.c:2067
+#: ../src/iop/lens.c:2069
 msgid "fish-eye"
 msgstr ""
 
-#: ../src/iop/lens.c:2068
+#: ../src/iop/lens.c:2070
 msgid "panoramic"
 msgstr "panoràmica"
 
-#: ../src/iop/lens.c:2069
+#: ../src/iop/lens.c:2071
 msgid "equirectangular"
 msgstr ""
 
-#: ../src/iop/lens.c:2071
+#: ../src/iop/lens.c:2073
 msgid "orthographic"
 msgstr ""
 
-#: ../src/iop/lens.c:2072
+#: ../src/iop/lens.c:2074
 msgid "stereographic"
 msgstr ""
 
-#: ../src/iop/lens.c:2073
+#: ../src/iop/lens.c:2075
 msgid "equisolid angle"
 msgstr ""
 
-#: ../src/iop/lens.c:2074
+#: ../src/iop/lens.c:2076
 msgid "thoby fish-eye"
 msgstr ""
 
-#: ../src/iop/lens.c:2082
+#: ../src/iop/lens.c:2084
 #, fuzzy
 msgid "auto scale"
 msgstr "escala"
 
-#: ../src/iop/lens.c:2094
+#: ../src/iop/lens.c:2096
 msgid "correct distortions or apply them"
 msgstr ""
 
-#: ../src/iop/lens.c:2095
+#: ../src/iop/lens.c:2097
 msgid "correct"
 msgstr "correccions"
 
-#: ../src/iop/lens.c:2096
+#: ../src/iop/lens.c:2098
 #, fuzzy
 msgid "distort"
 msgstr "historial"
 
-#: ../src/iop/lens.c:2103
+#: ../src/iop/lens.c:2105
 msgid "Transversal Chromatic Aberration red"
 msgstr ""
 
-#: ../src/iop/lens.c:2104
+#: ../src/iop/lens.c:2106
 msgid "TCA red"
 msgstr ""
 
-#: ../src/iop/lens.c:2109
+#: ../src/iop/lens.c:2111
 msgid "Transversal Chromatic Aberration blue"
 msgstr ""
 
-#: ../src/iop/lens.c:2110
+#: ../src/iop/lens.c:2112
 #, fuzzy
 msgid "TCA blue"
 msgstr "blau"
 
-#: ../src/iop/lens.c:2117
+#: ../src/iop/lens.c:2119
 #, fuzzy
 msgid "corrections done: "
 msgstr "opcions globals"
 
-#: ../src/iop/lens.c:2118
+#: ../src/iop/lens.c:2120
 msgid "which corrections have actually been done"
 msgstr ""
 
@@ -6295,7 +6282,7 @@ msgid ""
 "right-click on a marker to delete it"
 msgstr ""
 
-#: ../src/libs/backgroundjobs.c:52
+#: ../src/libs/backgroundjobs.c:48
 msgid "background jobs"
 msgstr ""
 
@@ -7896,7 +7883,6 @@ msgstr "suprimeix l'etiqueta seleccionada"
 
 #. import button
 #: ../src/libs/styles.c:401
-#, fuzzy
 msgctxt "styles"
 msgid "import"
 msgstr "importa"
@@ -7906,34 +7892,29 @@ msgid "import style from a style file"
 msgstr ""
 
 #: ../src/libs/styles.c:410
-#, fuzzy
 msgid "export the selected style into a style file"
-msgstr "suprimeix l'etiqueta seleccionada"
+msgstr "exporta l'estil seleccionat a un fitxer d'estil"
 
 #: ../src/libs/tagging.c:64
 msgid "tagging"
 msgstr "etiquetatge"
 
 #: ../src/libs/tagging.c:79
-#, fuzzy
 msgctxt "accel"
 msgid "attach"
 msgstr "adjunta"
 
 #: ../src/libs/tagging.c:80
-#, fuzzy
 msgctxt "accel"
 msgid "detach"
-msgstr "adjunta"
+msgstr "treu"
 
 #: ../src/libs/tagging.c:81
-#, fuzzy
 msgctxt "accel"
 msgid "new"
 msgstr "nova"
 
 #: ../src/libs/tagging.c:83
-#, fuzzy
 msgctxt "accel"
 msgid "tag"
 msgstr "etiqueta"
@@ -8008,69 +7989,61 @@ msgid "delete selected tag"
 msgstr "suprimeix l'etiqueta seleccionada"
 
 #: ../src/libs/tools/colorlabels.c:38
-#, fuzzy
 msgid "colorlabels"
 msgstr "etiquetes de color"
 
 #. setup list of tooltips
 #: ../src/libs/tools/colorlabels.c:68
-#, fuzzy
 msgid ""
 "toggle red label\n"
 "of selected images (f1)"
 msgstr ""
 "commuta l'etiqueta vermella de les\n"
-"imatges seleccionades (ctrl-1)"
+"imatges seleccionades (f1)"
 
 #: ../src/libs/tools/colorlabels.c:69
-#, fuzzy
 msgid ""
 "toggle yellow label\n"
 "of selected images (f2)"
 msgstr ""
 "commuta l'etiqueta groga de les\n"
-"imatges seleccionades (ctrl-2)"
+"imatges seleccionades (f2)"
 
 #: ../src/libs/tools/colorlabels.c:70
-#, fuzzy
 msgid ""
 "toggle green label\n"
 "of selected images (f3)"
 msgstr ""
 "commuta l'etiqueta verda de les\n"
-"imatges seleccionades (ctrl-3)"
+"imatges seleccionades (f3)"
 
 #: ../src/libs/tools/colorlabels.c:71
-#, fuzzy
 msgid ""
 "toggle blue label\n"
 "of selected images (f4)"
 msgstr ""
-"commuta l'etiqueta vermella de les\n"
-"imatges seleccionades (ctrl-1)"
+"commuta l'etiqueta blava de les\n"
+"imatges seleccionades (f4)"
 
 #: ../src/libs/tools/colorlabels.c:72
-#, fuzzy
 msgid ""
 "toggle purple label\n"
 "of selected images (f5)"
 msgstr ""
-"commuta l'etiqueta vermella de les\n"
-"imatges seleccionades (ctrl-1)"
+"commuta l'etiqueta porpra de les\n"
+"imatges seleccionades (f5)"
 
 #: ../src/libs/tools/colorlabels.c:73
 msgid "clear all labels of selected images"
 msgstr ""
 
 #: ../src/libs/tools/darktable.c:55
-#, fuzzy
 msgid "darktable"
-msgstr "quant el darktable"
+msgstr "darktable"
 
 #: ../src/libs/tools/darktable.c:270
-#, fuzzy
 msgid "organize and develop images from digital cameras"
-msgstr "s'està important %d imatge de la càmera"
+msgstr "organitza i revela imatges de càmeres digitals"
 
 #: ../src/libs/tools/darktable.c:275
 msgid "* developers *"
@@ -8104,16 +8077,14 @@ msgstr ""
 #. Initializing accelerators
 #. Rating keys
 #: ../src/libs/tools/filmstrip.c:161 ../src/views/lighttable.c:1878
-#, fuzzy
 msgctxt "accel"
 msgid "rate 0"
-msgstr "gira 180°"
+msgstr "puntua 0"
 
 #: ../src/libs/tools/filmstrip.c:162 ../src/views/lighttable.c:1879
-#, fuzzy
 msgctxt "accel"
 msgid "rate 1"
-msgstr "gira 180°"
+msgstr "puntua 1"
 
 #: ../src/libs/tools/filmstrip.c:163 ../src/views/lighttable.c:1880
 msgctxt "accel"
@@ -8142,28 +8113,24 @@ msgstr ""
 
 #. setup history key accelerators
 #: ../src/libs/tools/filmstrip.c:171
-#, fuzzy
 msgctxt "accel"
 msgid "copy history"
-msgstr "historial"
+msgstr "copia l'historial"
 
 #: ../src/libs/tools/filmstrip.c:173
-#, fuzzy
 msgctxt "accel"
 msgid "copy history parts"
-msgstr "historial"
+msgstr "copia parts de l'historial"
 
 #: ../src/libs/tools/filmstrip.c:175
-#, fuzzy
 msgctxt "accel"
 msgid "paste history"
-msgstr "historial"
+msgstr "enganxa l'historial"
 
 #: ../src/libs/tools/filmstrip.c:177
-#, fuzzy
 msgctxt "accel"
 msgid "paste history parts"
-msgstr "historial"
+msgstr "enganxa parts de l'historial"
 
 #: ../src/libs/tools/filmstrip.c:179
 msgctxt "accel"
