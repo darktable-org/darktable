@@ -218,7 +218,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   const int filters = dt_image_filter(&piece->pipe->image);
   uint8_t (*const xtrans)[6] = self->dev->image_storage.xtrans;
   dt_iop_temperature_data_t *d = (dt_iop_temperature_data_t *)piece->data;
-  if(!dt_dev_pixelpipe_uses_downsampled_input(piece->pipe) && filters == 9 && piece->pipe->image.bpp != 4)
+  if(!dt_dev_pixelpipe_uses_downsampled_input(piece->pipe) && filters == 9u && piece->pipe->image.bpp != 4)
   {  // xtrans int mosaiced
     const float coeffsi[3] = {d->coeffs[0]/65535.0f, d->coeffs[1]/65535.0f, d->coeffs[2]/65535.0f};
 #ifdef _OPENMP
@@ -281,7 +281,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
     }
     _mm_sfence();
   }
-  else if(!dt_dev_pixelpipe_uses_downsampled_input(piece->pipe) && (filters == 9) && piece->pipe->image.bpp == 4)
+  else if(!dt_dev_pixelpipe_uses_downsampled_input(piece->pipe) && (filters == 9u) && piece->pipe->image.bpp == 4)
   { // xtrans float mosaiced
 #ifdef _OPENMP
     #pragma omp parallel for default(none) shared(roi_out, ivoid, ovoid, d) schedule(static)
@@ -401,7 +401,7 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
   for(int k=0; k<3; k++) d->coeffs[k]  = p->coeffs[k];
 
   // x-trans images not implemented in OpenCL yet
-  if(pipe->image.filters == 9)
+  if(pipe->image.filters == 9u)
     piece->process_cl_ready = 0;
 }
 

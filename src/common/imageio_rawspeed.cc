@@ -164,31 +164,20 @@ dt_imageio_open_rawspeed(
       img->flags |= DT_IMAGE_RAW;
       if(r->getDataType() == TYPE_FLOAT32) img->flags |= DT_IMAGE_HDR;
       // special handling for x-trans sensors
-      if (img->filters == 9)
+      if (img->filters == 9u)
       {
-        uint8_t xorig[6][6], xtemp[6][6];
-        for (int i=0; i < 6; ++i)
-          for (int j=0; j < 6; ++j)
-            xorig[j][i] = r->cfa.getColorAt(i,j);
-        dt_imageio_flip_buffers((char *)xtemp, (char *)xorig, sizeof(uint8_t), 6, 6, 6, 6, 6, img->orientation);
-        // offset filter from topleft of cropped rotated image
-	// NOTE: This is different from how things are done with Bayer
-	// sensors. For these, the CFA in cameras.xml is pre-offset
-	// depending on the distance modulo 2 between raw and usable
-	// image data. For X-Trans, the CFA in cameras.xml is
-	// (currently) aligned with the top left of the raw data, and
-	// hence it is shifted here to align with the top left of the
-	// cropped image.
+        // get 6x6 CFA offset from top left of cropped image
+        // NOTE: This is different from how things are done with Bayer
+        // sensors. For these, the CFA in cameras.xml is pre-offset
+        // depending on the distance modulo 2 between raw and usable
+        // image data. For X-Trans, the CFA in cameras.xml is
+        // (currently) aligned with the top left of the raw data, and
+        // hence it is shifted here to align with the top left of the
+        // cropped image.
         iPoint2D tl_margin = r->getCropOffset();
-        int bottom_offset = 6 - ((r->dim.y + tl_margin.y) % 6);
-        int right_offset = 6 - ((r->dim.x + tl_margin.x) % 6);
-        int yoffset = (img->orientation & 2) ? bottom_offset : tl_margin.y;
-        int xoffset = (img->orientation & 1) ? right_offset : tl_margin.x;
-        int joff = (img->orientation & 4) ? xoffset : yoffset;
-        int ioff = (img->orientation & 4) ? yoffset : xoffset;
         for (int i=0; i < 6; ++i)
           for (int j=0; j < 6; ++j)
-            img->xtrans[j][i] = xtemp[(j+joff)%6][(i+ioff)%6];
+            img->xtrans[j][i] = r->cfa.getColorAt((i+tl_margin.x)%6,(j+tl_margin.y)%6);
       }
     }
 

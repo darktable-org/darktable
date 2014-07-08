@@ -145,7 +145,7 @@ typedef struct dt_image_t
   uint16_t raw_black_level;
   uint16_t raw_white_point;
 
-  /* filter for Fuji X-Trans images, only used if filters == 9 */
+  /* filter for Fuji X-Trans images, only used if filters == 9u */
   uint8_t xtrans[6][6];
 }
 dt_image_t;

@@ -1226,7 +1226,7 @@ void reload_defaults(dt_iop_module_t *module)
   memcpy(module->default_params, &tmp, sizeof(dt_iop_cacorrect_params_t));
 
   // can't be switched on for non-raw or x-trans images:
-  if(dt_image_is_raw(&module->dev->image_storage) && (module->dev->image_storage.filters != 9)) module->hide_enable_button = 0;
+  if(dt_image_is_raw(&module->dev->image_storage) && (module->dev->image_storage.filters != 9u)) module->hide_enable_button = 0;
   else module->hide_enable_button = 1;
   module->default_enabled = 0;
 }
@@ -1282,7 +1282,7 @@ void cleanup_pipe  (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_d
 void gui_update    (dt_iop_module_t *self)
 {
   if(dt_image_is_raw(&self->dev->image_storage))
-    if(self->dev->image_storage.filters != 9)
+    if(self->dev->image_storage.filters != 9u)
       gtk_label_set_text(GTK_LABEL(self->widget), _("automatic chromatic aberration correction"));
     else
       gtk_label_set_text(GTK_LABEL(self->widget), _("automatic chromatic aberration correction\ndisabled for non-Bayer sensors"));

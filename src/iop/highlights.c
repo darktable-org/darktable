@@ -466,7 +466,7 @@ void process(
         0.987*data->clip * piece->pipe->processed_maximum[2],
         clip};
 
-      if (filters == 9)
+      if (filters == 9u)
       {
         const dt_image_t *img = &self->dev->image_storage;
 #ifdef _OPENMP
@@ -509,7 +509,7 @@ void process(
       break;
     }
     case DT_IOP_HIGHLIGHTS_LCH:
-      if (filters == 9)
+      if (filters == 9u)
       {
         process_lch_xtrans(ivoid, ovoid, roi_out->width, roi_out->height, clip);
         break;
@@ -607,7 +607,7 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
   piece->process_cl_ready = 1;
 
   // x-trans images not implemented in OpenCL yet
-  if(pipe->image.filters == 9)
+  if(pipe->image.filters == 9u)
     piece->process_cl_ready = 0;
 
   // no OpenCL for DT_IOP_HIGHLIGHTS_INPAINT yet.

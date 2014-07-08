@@ -251,7 +251,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
     for(int k=0; k<3; k++)
       piece->pipe->processed_maximum[k] = 1.0f;
   }
-  else if(!dt_dev_pixelpipe_uses_downsampled_input(piece->pipe) && (filters == 9) && piece->pipe->image.bpp == 4)
+  else if(!dt_dev_pixelpipe_uses_downsampled_input(piece->pipe) && (filters == 9u) && piece->pipe->image.bpp == 4)
   { // xtrans float mosaiced
 #ifdef _OPENMP
     #pragma omp parallel for default(none) shared(roi_out, ivoid, ovoid) schedule(static)
