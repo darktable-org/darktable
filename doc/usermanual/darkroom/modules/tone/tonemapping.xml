@@ -57,7 +57,8 @@
     <sect5>
       <title>contrast compression</title>
       <para>
-        Sets the compression level of the contrast layer to fit the lower dynamic range.
+        Sets the contrast compression level of the base layer. A higher compression will make the
+        image fit a lower dynamic range.
       </para>
     </sect5>
 
