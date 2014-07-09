@@ -4613,7 +4613,7 @@ msgstr "exposition auto"
 #: ../src/iop/exposure.c:134
 msgctxt "accel"
 msgid "percentile"
-msgstr "percentile"
+msgstr "centile"
 
 #: ../src/iop/exposure.c:135
 msgctxt "accel"
@@ -4661,7 +4661,7 @@ msgstr "pourcentage de valeurs hautes tronquées"
 
 #: ../src/iop/exposure.c:988 ../src/iop/exposure.c:990
 msgid "percentile"
-msgstr "percentile"
+msgstr "centile"
 
 #: ../src/iop/exposure.c:994 ../src/iop/exposure.c:996
 msgid "target level"
@@ -4681,7 +4681,7 @@ msgstr "données raw"
 
 #: ../src/iop/exposure.c:1013
 msgid "computed EC: "
-msgstr "CE calculée"
+msgstr "CE calculée: "
 
 #. This gets filled in by process
 #: ../src/iop/exposure.c:1017
@@ -5270,11 +5270,11 @@ msgstr "choisir le point blanc dans l'image"
 
 #: ../src/iop/levels.c:621
 msgid "black percentile"
-msgstr "percentile des noir"
+msgstr "centile des noirs"
 
 #: ../src/iop/levels.c:626
 msgid "gray percentile"
-msgstr "percentile des gris"
+msgstr "centile des gris"
 
 #: ../src/iop/levels.c:628
 msgid "gray"
@@ -5282,7 +5282,7 @@ msgstr "gris"
 
 #: ../src/iop/levels.c:631
 msgid "white percentile"
-msgstr "percentile des blanc"
+msgstr "centile des blancs"
 
 #: ../src/iop/levels.c:633
 msgid "white"
