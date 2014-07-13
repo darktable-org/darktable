@@ -328,11 +328,19 @@ static int get_output_bpp(dt_iop_module_t *module, dt_dev_pixelpipe_t *pipe, dt_
 static void histogram_collect(dt_iop_module_t *module, const void *pixel, const dt_iop_roi_t *roi,
                               uint32_t **histogram, uint32_t *histogram_max)
 {
-  dt_dev_histogram_collection_params_t histogram_params;
-  memcpy(&histogram_params, &module->histogram_params, sizeof(dt_dev_histogram_collection_params_t));
+  dt_dev_histogram_collection_params_t histogram_params = module->histogram_params;
+
+  dt_histogram_roi_t histogram_roi;
 
   // if the current module does did not specified its own ROI, use the full ROI
-  if(histogram_params.roi == NULL) histogram_params.roi = roi;
+  if(histogram_params.roi == NULL)
+  {
+    histogram_roi = (dt_histogram_roi_t){
+      .width = roi->width, .height = roi->height, .crop_x = 0, .crop_y = 0, .crop_width = 0, .crop_height = 0
+    };
+
+    histogram_params.roi = &histogram_roi;
+  }
 
   const dt_iop_colorspace_type_t cst = dt_iop_module_colorspace(module);
 
@@ -366,11 +374,19 @@ static void histogram_collect_cl(int devid, dt_iop_module_t *module, cl_mem img,
     return;
   }
 
-  dt_dev_histogram_collection_params_t histogram_params;
-  memcpy(&histogram_params, &module->histogram_params, sizeof(dt_dev_histogram_collection_params_t));
+  dt_dev_histogram_collection_params_t histogram_params = module->histogram_params;
+
+  dt_histogram_roi_t histogram_roi;
 
   // if the current module does did not specified its own ROI, use the full ROI
-  if(histogram_params.roi == NULL) histogram_params.roi = roi;
+  if(histogram_params.roi == NULL)
+  {
+    histogram_roi = (dt_histogram_roi_t){
+      .width = roi->width, .height = roi->height, .crop_x = 0, .crop_y = 0, .crop_width = 0, .crop_height = 0
+    };
+
+    histogram_params.roi = &histogram_roi;
+  }
 
   const dt_iop_colorspace_type_t cst = dt_iop_module_colorspace(module);
 

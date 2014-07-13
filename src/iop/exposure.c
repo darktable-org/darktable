@@ -223,11 +223,13 @@ static void deflicker_prepare_histogram(dt_iop_module_t *self, uint32_t **histog
     return;
   }
 
-  dt_dev_histogram_collection_params_t histogram_params;
-  memcpy(&histogram_params, &self->histogram_params, sizeof(dt_dev_histogram_collection_params_t));
+  dt_dev_histogram_collection_params_t histogram_params = self->histogram_params;
 
-  dt_iop_roi_t roi = { 0, 0, image.width, image.height, 1.0f };
-  histogram_params.roi = &roi;
+  dt_histogram_roi_t histogram_roi = {
+    .width = image.width, .height = image.height, .crop_x = 0, .crop_y = 0, .crop_width = 0, .crop_height = 0
+  };
+
+  histogram_params.roi = &histogram_roi;
 
   dt_histogram_worker(&histogram_params, histogram_stats, buf.buf, histogram,
                       dt_histogram_helper_cs_RAW_uint16);

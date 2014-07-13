@@ -105,7 +105,7 @@ typedef void dt_iop_global_data_t;
 typedef struct dt_dev_histogram_collection_params_t
 {
   /** histogram_collect: if NULL, correct is set; else should be set manually */
-  const struct dt_iop_roi_t *roi;
+  const struct dt_histogram_roi_t *roi;
   /** count of histogram bins. */
   uint32_t bins_count;
 } dt_dev_histogram_collection_params_t;
