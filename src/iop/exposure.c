@@ -131,7 +131,7 @@ void init_key_accels(dt_iop_module_so_t *self)
   dt_accel_register_slider_iop(self, FALSE, NC_("accel", "black"));
   dt_accel_register_slider_iop_coarse(self, FALSE, NC_("accel", "exposure"));
   dt_accel_register_slider_iop(self, FALSE, NC_("accel", "auto-exposure"));
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "percentile"));
+  dt_accel_register_slider_iop_coarse(self, FALSE, NC_("accel", "percentile"));
   dt_accel_register_slider_iop_coarse(self, FALSE, NC_("accel", "target level"));
   dt_accel_register_slider_iop(self, FALSE, NC_("accel", "histogram source"));
 }
@@ -965,6 +965,7 @@ void gui_init(struct dt_iop_module_t *self)
   g_object_set(G_OBJECT(g->exposure), "tooltip-text", _("adjust the exposure correction"), (char *)NULL);
   dt_bauhaus_slider_set_format(g->exposure,"%.2fEV");
   dt_bauhaus_widget_set_label(g->exposure, NULL, _("exposure"));
+  dt_bauhaus_slider_set_coarse_step(g->exposure, dt_bauhaus_coarse_EV_step());
   dt_bauhaus_slider_enable_soft_boundaries(g->exposure, -18.0, 18.0);
   gtk_box_pack_start(GTK_BOX(g->vbox_manual), GTK_WIDGET(g->exposure), TRUE, TRUE, 0);
 
@@ -988,12 +989,14 @@ void gui_init(struct dt_iop_module_t *self)
   g_object_set(G_OBJECT(g->deflicker_percentile), "tooltip-text", _("percentile"), (char *)NULL);
   dt_bauhaus_slider_set_format(g->deflicker_percentile,"%.2f%%");
   dt_bauhaus_widget_set_label(g->deflicker_percentile, NULL, _("percentile"));
+  dt_bauhaus_slider_set_coarse_step(g->deflicker_percentile, dt_bauhaus_coarse_percent_step());
   gtk_box_pack_start(GTK_BOX(g->vbox_deflicker), GTK_WIDGET(g->deflicker_percentile), TRUE, TRUE, 0);
 
   g->deflicker_target_level = dt_bauhaus_slider_new_with_range(self, -18.0, 18.0, .01, p->deflicker_target_level, 3);
   g_object_set(G_OBJECT(g->deflicker_target_level), "tooltip-text", _("target level"), (char *)NULL);
   dt_bauhaus_slider_set_format(g->deflicker_target_level,"%.2fEV");
   dt_bauhaus_widget_set_label(g->deflicker_target_level, NULL, _("target level"));
+  dt_bauhaus_slider_set_coarse_step(g->deflicker_target_level, dt_bauhaus_coarse_EV_step());
   gtk_box_pack_start(GTK_BOX(g->vbox_deflicker), GTK_WIDGET(g->deflicker_target_level), TRUE, TRUE, 0);
 
   g->deflicker_histogram_source = dt_bauhaus_combobox_new(self);

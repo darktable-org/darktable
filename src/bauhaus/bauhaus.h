@@ -269,6 +269,11 @@ void dt_bauhaus_vimkey_exec(const char *input);
 // give autocomplete suggestions
 GList* dt_bauhaus_vimkey_complete(const char *input);
 
+// the following should be turned into real functions which read user preferences:
+#define dt_bauhaus_coarse_EV_step() (1.0/3.0)
+#define dt_bauhaus_coarse_temp_step() (100.0)
+#define dt_bauhaus_coarse_percent_step() (10.0)
+
 #endif
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
