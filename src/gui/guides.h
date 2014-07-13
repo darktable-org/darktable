@@ -28,7 +28,7 @@ dt_QRect_t;
 
 void dt_guides_q_rect(dt_QRect_t *R1, float left, float top, float width, float height);
 
-void dt_guides_draw_simple_grid(cairo_t *cr, const float left, const float top,  const float right, const float bottom, float zoom_scale);
+void dt_guides_draw_simple_grid(cairo_t *cr, const float left, const float top,  const float right, const float bottom, float zoom_scale, int num_cells);
 
 void dt_guides_draw_diagonal_method(cairo_t *cr, const float x, const float y, const float w, const float h);
 

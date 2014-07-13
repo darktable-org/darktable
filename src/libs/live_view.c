@@ -93,7 +93,7 @@ typedef struct dt_lib_live_view_t
 
   GtkWidget *live_view, *live_view_zoom, *rotate_ccw, *rotate_cw, *flip;
   GtkWidget *focus_out_small, *focus_out_big, *focus_in_small, *focus_in_big;
-  GtkWidget *guide_selector, *flip_guides, *golden_extras;
+  GtkWidget *guide_selector, *flip_guides, *golden_extras, *grid_cells;
   GtkWidget *overlay, *overlay_id_box, *overlay_id, *overlay_mode, *overlay_splitline;
 }
 dt_lib_live_view_t;
@@ -111,6 +111,11 @@ guides_presets_changed (GtkWidget *combo, dt_lib_live_view_t *lib)
     gtk_widget_set_visible(GTK_WIDGET(lib->golden_extras), TRUE);
   else
     gtk_widget_set_visible(GTK_WIDGET(lib->golden_extras), FALSE);
+
+  if (which == GUIDE_GRID)
+    gtk_widget_set_visible(GTK_WIDGET(lib->grid_cells), TRUE);
+  else
+    gtk_widget_set_visible(GTK_WIDGET(lib->grid_cells), FALSE);
 }
 
 static void
@@ -354,6 +359,12 @@ gui_init (dt_lib_module_t *self)
   dt_bauhaus_combobox_add(lib->golden_extras, _("all"));
   g_object_set(G_OBJECT(lib->golden_extras), "tooltip-text", _("show some extra guides"), (char *)NULL);
   gtk_box_pack_start(GTK_BOX(self->widget), lib->golden_extras, TRUE, TRUE, 0);
+
+  lib->grid_cells = dt_bauhaus_slider_new_with_range(NULL, 1.0, 30.0, 1.0, 9.0, 0.0);
+  dt_bauhaus_widget_set_label(lib->grid_cells, NULL, _("grid cells"));
+  dt_bauhaus_slider_set_format(lib->grid_cells, "%.0f");
+  g_object_set(G_OBJECT(lib->grid_cells), "tooltip-text", _("number of grid cells"), (char *)NULL);
+  gtk_box_pack_start(GTK_BOX(self->widget), lib->grid_cells, TRUE, TRUE, 0);
 
   lib->overlay = dt_bauhaus_combobox_new(NULL);
   dt_bauhaus_widget_set_label(lib->overlay, NULL, _("overlay"));
@@ -677,7 +688,7 @@ gui_post_expose(dt_lib_module_t *self, cairo_t *cr, int32_t width, int32_t heigh
   switch(which)
   {
     case GUIDE_GRID:
-      dt_guides_draw_simple_grid(cr, left, top, right, bottom, 1.0);
+      dt_guides_draw_simple_grid(cr, left, top, right, bottom, 1.0, dt_bauhaus_slider_get(lib->grid_cells));
       break;
 
     case GUIDE_DIAGONAL:
