@@ -129,10 +129,10 @@ void init_key_accels(dt_iop_module_so_t *self)
 {
   dt_accel_register_slider_iop(self, FALSE, NC_("accel", "mode"));
   dt_accel_register_slider_iop(self, FALSE, NC_("accel", "black"));
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "exposure"));
+  dt_accel_register_slider_iop_coarse(self, FALSE, NC_("accel", "exposure"));
   dt_accel_register_slider_iop(self, FALSE, NC_("accel", "auto-exposure"));
   dt_accel_register_slider_iop(self, FALSE, NC_("accel", "percentile"));
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "target level"));
+  dt_accel_register_slider_iop_coarse(self, FALSE, NC_("accel", "target level"));
   dt_accel_register_slider_iop(self, FALSE, NC_("accel", "histogram source"));
 }
 

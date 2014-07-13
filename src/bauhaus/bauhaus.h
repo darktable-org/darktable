@@ -61,6 +61,7 @@ typedef struct dt_bauhaus_slider_data_t
   float pos;      // normalized slider value
   float oldpos;   // slider value before entering finetune mode (normalized)
   float step;     // step width (not normalized)
+  float coarse_step; // step width for coarse_increase/coarse_decrease accelators
   float defpos;   // default value (normalized)
   float min, max; // min and max range
   float soft_min, soft_max;
@@ -235,8 +236,11 @@ GtkWidget* dt_bauhaus_slider_new_with_range_and_feedback(dt_iop_module_t *self, 
 // outside doesn't see the real type, we cast it internally.
 void dt_bauhaus_slider_set(GtkWidget *w, float pos);
 void dt_bauhaus_slider_set_soft(GtkWidget *w, float pos);
+void dt_bauhaus_slider_set_coarse_step(GtkWidget *widget, float step);
 float dt_bauhaus_slider_get(GtkWidget *w);
 float dt_bauhaus_slider_get_step(GtkWidget *widget);
+float dt_bauhaus_slider_get_coarse_step(GtkWidget *widget);
+bool dt_bauhaus_slider_has_coarse_steps(GtkWidget *widget);
 void dt_bauhaus_slider_reset(GtkWidget *widget);
 void dt_bauhaus_slider_set_format(GtkWidget *w, const char *format);
 void dt_bauhaus_slider_set_stop(GtkWidget *widget, float stop, float r, float g, float b);
