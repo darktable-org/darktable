@@ -209,7 +209,7 @@ cmake_boolean_option()
 	esac
 }
 
-CMAKE_MORE_OPTIONS=""
+CMAKE_MORE_OPTIONS="-DDONT_USE_INTERNAL_LUA=Off"
 cmake_boolean_option USE_FLICKR $OPT_FLICKR
 cmake_boolean_option USE_LIBSECRET $OPT_LIBSECRET
 cmake_boolean_option USE_KWALLET $OPT_KWALLET
