@@ -54,8 +54,7 @@ static void inline histogram_helper_cs_RAW_helper_process_pixel_uint16(
     const dt_dev_histogram_collection_params_t *const histogram_params, const uint16_t *pixel,
     uint32_t *histogram)
 {
-  const uint32_t V = CLAMP((float)(histogram_params->bins_count) / (float)UINT16_MAX * *pixel, 0,
-                           histogram_params->bins_count - 1);
+  const uint16_t V = *pixel;
   histogram[4 * V]++;
 }
 
