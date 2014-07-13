@@ -669,8 +669,6 @@ void dt_accel_connect_slider_iop(dt_iop_module_t *module, const gchar *path,
   gchar coarse_decrease_path[256];
   gchar reset_path[256];
   gchar edit_path[256];
-  dt_accel_t *accel = NULL;
-  GClosure *closure;
   char *paths[] = {increase_path, decrease_path, reset_path, edit_path,
                    coarse_increase_path, coarse_decrease_path};
   if (dt_bauhaus_slider_get_coarse_step(slider) > dt_bauhaus_slider_get_step(slider))
@@ -678,102 +676,18 @@ void dt_accel_connect_slider_iop(dt_iop_module_t *module, const gchar *path,
 
   dt_accel_paths_slider_iop(paths, 256, module->op, path, coarse);
 
-  if (DT_IS_BAUHAUS_WIDGET(slider)) {
-    closure = g_cclosure_new(G_CALLBACK(bauhaus_slider_increase_callback),
-                             (gpointer)slider, NULL);
-
-  } else {
-    closure = g_cclosure_new(G_CALLBACK(slider_increase_callback),
-                             (gpointer)slider, NULL);
-  }
-
-  accel = _lookup_accel(increase_path);
-
-  if (accel)
-    accel->closure = closure;
-
-  if(accel && accel->local)
-  {
-    _connect_local_accel(module, accel);
-  }
-  else
-  {
-    gtk_accel_group_connect_by_path(darktable.control->accelerators,
-                                    increase_path, closure);
-    module->accel_closures = g_slist_prepend(module->accel_closures, accel);
-  }
-
-  if (DT_IS_BAUHAUS_WIDGET(slider)) {
-    closure = g_cclosure_new(G_CALLBACK(bauhaus_slider_decrease_callback),
-                             (gpointer)slider, NULL);
-  } else {
-    closure = g_cclosure_new(G_CALLBACK(slider_decrease_callback),
-                             (gpointer)slider, NULL);
-  }
-
-  accel = _lookup_accel(decrease_path);
-
-  if (accel)
-    accel->closure = closure;
-
-  if(accel && accel->local)
-  {
-    _connect_local_accel(module, accel);
-  }
-  else
-  {
-    gtk_accel_group_connect_by_path(darktable.control->accelerators,
-                                    decrease_path, closure);
-    module->accel_closures = g_slist_prepend(module->accel_closures, accel);
-  }
-
-  if (DT_IS_BAUHAUS_WIDGET(slider)) {
-    closure = g_cclosure_new(G_CALLBACK(bauhaus_slider_reset_callback),
-                             (gpointer)slider, NULL);
-  } else {
-    closure = g_cclosure_new(G_CALLBACK(slider_reset_callback),
-                             (gpointer)slider, NULL);
-  }
-
-  accel = _lookup_accel(reset_path);
-
-  if (accel)
-    accel->closure = closure;
-
-  if(accel && accel->local)
-  {
-    _connect_local_accel(module, accel);
-  }
-  else
-  {
-    gtk_accel_group_connect_by_path(darktable.control->accelerators,
-                                    reset_path, closure);
-    module->accel_closures = g_slist_prepend(module->accel_closures, accel);
-  }
-
-  if (DT_IS_BAUHAUS_WIDGET(slider)) {
-    closure = g_cclosure_new(G_CALLBACK(bauhaus_slider_edit_callback),
-                           (gpointer)slider, NULL);
-  } else {
-    closure = g_cclosure_new(G_CALLBACK(slider_edit_callback),
-                             (gpointer)slider, NULL);
-  }
-
-  accel = _lookup_accel(edit_path);
-
-  if (accel)
-    accel->closure = closure;
-
-  if(accel && accel->local)
-  {
-    _connect_local_accel(module, accel);
-  }
-  else
-  {
-    gtk_accel_group_connect_by_path(darktable.control->accelerators,
-                                    edit_path, closure);
-    module->accel_closures = g_slist_prepend(module->accel_closures, accel);
-  }
+  add_accel(module, slider, increase_path,
+            bauhaus_slider_increase_callback,
+            slider_increase_callback);
+  add_accel(module, slider, decrease_path,
+            bauhaus_slider_decrease_callback,
+            slider_decrease_callback);
+  add_accel(module, slider, reset_path,
+            bauhaus_slider_reset_callback,
+            slider_reset_callback);
+  add_accel(module, slider, edit_path,
+            bauhaus_slider_edit_callback,
+            slider_edit_callback);
 
   if (!coarse)
     return;
