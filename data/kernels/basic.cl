@@ -34,17 +34,6 @@ letsgofloat_1ui(read_only image2d_t in, write_only image2d_t out,
 }
 
 kernel void
-whitebalance_1ui(read_only image2d_t in, write_only image2d_t out, const int width, const int height, global float *coeffs,
-    const unsigned int filters, const int rx, const int ry)
-{
-  const int x = get_global_id(0);
-  const int y = get_global_id(1);
-  if(x >= width || y >= height) return;
-  const uint4 pixel = read_imageui(in, sampleri, (int2)(x, y));
-  write_imagef (out, (int2)(x, y), (float4)(pixel.x * coeffs[FC(ry+y, rx+x, filters)], 0.0f, 0.0f, 0.0f));
-}
-
-kernel void
 whitebalance_1f(read_only image2d_t in, write_only image2d_t out, const int width, const int height, global float *coeffs,
     const unsigned int filters, const int rx, const int ry)
 {

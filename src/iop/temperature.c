@@ -67,7 +67,6 @@ dt_iop_temperature_data_t;
 
 typedef struct dt_iop_temperature_global_data_t
 {
-  int kernel_whitebalance_1ui;
   int kernel_whitebalance_4f;
   int kernel_whitebalance_1f;
 }
@@ -324,17 +323,11 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
 
   const int devid = piece->pipe->devid;
   const int filters = dt_image_filter(&piece->pipe->image);
-  float coeffs[3] = {d->coeffs[0], d->coeffs[1], d->coeffs[2]};
   cl_mem dev_coeffs = NULL;
   cl_int err = -999;
   int kernel = -1;
 
-  if(!dt_dev_pixelpipe_uses_downsampled_input(piece->pipe) && filters && piece->pipe->image.bpp != 4)
-  {
-    kernel = gd->kernel_whitebalance_1ui;
-    for(int k=0; k<3; k++) coeffs[k] /= 65535.0f;
-  }
-  else if(!dt_dev_pixelpipe_uses_downsampled_input(piece->pipe) && filters && piece->pipe->image.bpp == 4)
+  if(!dt_dev_pixelpipe_uses_downsampled_input(piece->pipe) && filters)
   {
     kernel = gd->kernel_whitebalance_1f;
   }
@@ -343,7 +336,7 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
     kernel = gd->kernel_whitebalance_4f;
   }
 
-  dev_coeffs = dt_opencl_copy_host_to_device_constant(devid, sizeof(float)*3, coeffs);
+  dev_coeffs = dt_opencl_copy_host_to_device_constant(devid, sizeof(float)*3, d->coeffs);
   if (dev_coeffs == NULL) goto error;
 
   const int width = roi_in->width;
@@ -576,7 +569,6 @@ void init_global(dt_iop_module_so_t *module)
   const int program = 2; // basic.cl, from programs.conf
   dt_iop_temperature_global_data_t *gd = (dt_iop_temperature_global_data_t *)malloc(sizeof(dt_iop_temperature_global_data_t));
   module->data = gd;
-  gd->kernel_whitebalance_1ui = dt_opencl_create_kernel(program, "whitebalance_1ui");
   gd->kernel_whitebalance_4f  = dt_opencl_create_kernel(program, "whitebalance_4f");
   gd->kernel_whitebalance_1f  = dt_opencl_create_kernel(program, "whitebalance_1f");
 }
@@ -601,7 +593,6 @@ void cleanup (dt_iop_module_t *module)
 void cleanup_global(dt_iop_module_so_t *module)
 {
   dt_iop_temperature_global_data_t *gd = (dt_iop_temperature_global_data_t *)module->data;
-  dt_opencl_free_kernel(gd->kernel_whitebalance_1ui);
   dt_opencl_free_kernel(gd->kernel_whitebalance_4f);
   dt_opencl_free_kernel(gd->kernel_whitebalance_1f);
   free(module->data);
