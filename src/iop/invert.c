@@ -83,9 +83,7 @@ void connect_key_accels(dt_iop_module_t *self)
 int
 output_bpp(dt_iop_module_t *module, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
-  // this is bytes per pixel, so it has to be 4*sizeof(float) or sizeof(float) for raw images.
-  if(!dt_dev_pixelpipe_uses_downsampled_input(pipe) && piece->pipe->image.filters && piece->pipe->image.bpp != 4) return sizeof(uint16_t);
-  if(!dt_dev_pixelpipe_uses_downsampled_input(pipe) && piece->pipe->image.filters && piece->pipe->image.bpp == 4) return sizeof(float);
+  if(!dt_dev_pixelpipe_uses_downsampled_input(pipe) && (pipe->image.flags & DT_IMAGE_RAW)) return sizeof(float);
   return 4*sizeof(float);
 }
 
