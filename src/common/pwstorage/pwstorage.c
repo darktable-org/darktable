@@ -43,7 +43,22 @@ const dt_pwstorage_t* dt_pwstorage_new()
   gchar* _backend_str = dt_conf_get_string( "plugins/pwstorage/pwstorage_backend" );
   gint _backend = -1;
 
-  if(strcmp(_backend_str, "none") == 0)
+  if (strcmp(_backend_str, "auto") == 0)
+  {
+    if (strcmp(getenv("XDG_CURRENT_DESKTOP"), "KDE") == 0)
+      _backend = PW_STORAGE_BACKEND_KWALLET;
+    else if (strcmp(getenv("XDG_CURRENT_DESKTOP"), "GNOME") == 0)
+      _backend = PW_STORAGE_BACKEND_GNOME_KEYRING;
+    else if (strcmp(getenv("XDG_CURRENT_DESKTOP"), "Unity") == 0)
+      _backend = PW_STORAGE_BACKEND_GNOME_KEYRING;
+    else if (strcmp(getenv("XDG_CURRENT_DESKTOP"), "XFCE") == 0)
+      _backend = PW_STORAGE_BACKEND_GNOME_KEYRING;
+    else
+      _backend = PW_STORAGE_BACKEND_NONE;
+
+    dt_print(DT_DEBUG_PWSTORAGE,"[pwstorage_new] autodetected storage backend.\n");
+  }
+  else if(strcmp(_backend_str, "none") == 0)
     _backend = PW_STORAGE_BACKEND_NONE;
   else if(strcmp(_backend_str, "kwallet") == 0)
     _backend = PW_STORAGE_BACKEND_KWALLET;

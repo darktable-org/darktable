@@ -1218,12 +1218,13 @@
     <name>plugins/pwstorage/pwstorage_backend</name>
     <type>
       <enum>
+        <option>auto</option>
         <option>none</option>
         <option>kwallet</option>
         <option>gnome keyring</option>
       </enum>
     </type>
-    <default>none</default>
+    <default>auto</default>
     <shortdescription>password storage backend to use</shortdescription>
     <longdescription>the storage backend for password storage: none, kwallet, gnome keyring</longdescription>
   </dtconfig>
