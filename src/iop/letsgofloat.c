@@ -26,6 +26,7 @@
 #include "develop/imageop.h"
 #include "develop/pixelpipe.h"
 #include "common/image.h"
+#include "develop/tiling.h"
 
 DT_MODULE(1)
 
@@ -43,7 +44,7 @@ const char *name()
 int
 flags()
 {
-  return IOP_FLAGS_ONE_INSTANCE |
+  return IOP_FLAGS_ALLOW_TILING | IOP_FLAGS_ONE_INSTANCE |
          IOP_FLAGS_HIDDEN | IOP_FLAGS_NO_HISTORY_STACK;
 }
 
