@@ -190,6 +190,14 @@ FC(const int row, const int col, const unsigned int filters)
   return filters >> (((row << 1 & 14) + (col & 1)) << 1) & 3;
 }
 
+static uint8_t
+FCxtrans(const int row, const int col,
+         const dt_iop_roi_t *const roi,
+         uint8_t (*const xtrans)[6])
+{
+  return xtrans[(row+roi->y) % 6][(col+roi->x) % 6];
+}
+
 void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoid, void *ovoid, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
 {
   dt_iop_invert_data_t *d = (dt_iop_invert_data_t *)piece->data;
@@ -201,9 +209,10 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
 //   }
 
   const int filters = dt_image_filter(&piece->pipe->image);
+  uint8_t (*const xtrans)[6] = self->dev->image_storage.xtrans;
 
-  if(!dt_dev_pixelpipe_uses_downsampled_input(piece->pipe) && filters && piece->pipe->image.bpp != 4)
-  {
+  if(!dt_dev_pixelpipe_uses_downsampled_input(piece->pipe) && (filters == 9u) && piece->pipe->image.bpp != 4)
+  { // xtrans int mosaiced
     const float *const m = piece->pipe->processed_maximum;
     const int32_t film_rgb_i[3] = {m[0]*film_rgb[0]*65535, m[1]*film_rgb[1]*65535, m[2]*film_rgb[2]*65535};
 #ifdef _OPENMP
@@ -215,15 +224,52 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
       uint16_t *out = ((uint16_t*)ovoid) + (size_t)j*roi_out->width;
       for(int i=0; i<roi_out->width; i++,out++,in++)
       {
-        *out = CLAMP(film_rgb_i[FC(j+roi_out->x, i+roi_out->y, filters)] - (int32_t)in[0], 0, 0xffff);
+        *out = CLAMP(film_rgb_i[FCxtrans(j,i,roi_out,xtrans)] - (int32_t)in[0], 0, 0xffff);
       }
     }
 
     for(int k=0; k<3; k++)
       piece->pipe->processed_maximum[k] = 1.0f;
   }
+  else if(!dt_dev_pixelpipe_uses_downsampled_input(piece->pipe) && filters && piece->pipe->image.bpp != 4)
+  { // bayer int mosaiced
+    const float *const m = piece->pipe->processed_maximum;
+    const int32_t film_rgb_i[3] = {m[0]*film_rgb[0]*65535, m[1]*film_rgb[1]*65535, m[2]*film_rgb[2]*65535};
+#ifdef _OPENMP
+    #pragma omp parallel for default(none) shared(roi_out, ivoid, ovoid /*film_rgb_i, min, max, res*/) schedule(static)
+#endif
+    for(int j=0; j<roi_out->height; j++)
+    {
+      const uint16_t *in = ((uint16_t*)ivoid) + (size_t)j*roi_out->width;
+      uint16_t *out = ((uint16_t*)ovoid) + (size_t)j*roi_out->width;
+      for(int i=0; i<roi_out->width; i++,out++,in++)
+      {
+        *out = CLAMP(film_rgb_i[FC(j+roi_out->y, i+roi_out->x, filters)] - (int32_t)in[0], 0, 0xffff);
+      }
+    }
+
+    for(int k=0; k<3; k++)
+      piece->pipe->processed_maximum[k] = 1.0f;
+  }
+  else if(!dt_dev_pixelpipe_uses_downsampled_input(piece->pipe) && (filters == 9u) && piece->pipe->image.bpp == 4)
+  { // xtrans float mosaiced
+#ifdef _OPENMP
+    #pragma omp parallel for default(none) shared(roi_out, ivoid, ovoid) schedule(static)
+#endif
+    for(int j=0; j<roi_out->height; j++)
+    {
+      const float *in = ((float *)ivoid) + j*roi_out->width;
+      float *out = ((float*)ovoid) + j*roi_out->width;
+      for(int i=0; i<roi_out->width; i++,out++,in++)
+      {
+        *out = CLAMP(film_rgb[FCxtrans(j,i,roi_out,xtrans)] - *in, 0, 1.0f);
+      }
+    }
+    for(int k=0; k<3; k++)
+      piece->pipe->processed_maximum[k] = 1.0f;
+  }
   else if(!dt_dev_pixelpipe_uses_downsampled_input(piece->pipe) && filters && piece->pipe->image.bpp == 4)
-  {
+  { // bayer float mosaiced
 #ifdef _OPENMP
     #pragma omp parallel for default(none) shared(roi_out, ivoid, ovoid) schedule(static)
 #endif
@@ -233,14 +279,14 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
       float *out = ((float*)ovoid) + (size_t)j*roi_out->width;
       for(int i=0; i<roi_out->width; i++,out++,in++)
       {
-        *out = CLAMP(film_rgb[FC(j+roi_out->x, i+roi_out->y, filters)] - *in/(float)0xffff, 0, 1.0f);
+        *out = CLAMP(film_rgb[FC(j+roi_out->y, i+roi_out->x, filters)] - *in, 0, 1.0f);
       }
     }
     for(int k=0; k<3; k++)
       piece->pipe->processed_maximum[k] = 1.0f;
   }
   else
-  {
+  { // non-mosaiced
     const int ch = piece->colors;
 #ifdef _OPENMP
     #pragma omp parallel for default(none) shared(roi_out, ivoid, ovoid) schedule(static)

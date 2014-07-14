@@ -127,7 +127,7 @@ typedef struct dt_image_t
   // used by library
   int32_t num, flags, film_id, id, group_id, version;
 
-  uint32_t filters;          // demosaic pattern
+  uint32_t filters;          // Bayer demosaic pattern
   int32_t bpp;               // bytes per pixel
   int32_t cpp;               // components per pixel
   float d65_color_matrix[9]; // the 3x3 matrix embedded in some DNGs
@@ -144,6 +144,9 @@ typedef struct dt_image_t
   /* needed in exposure iop for Deflicker */
   uint16_t raw_black_level;
   uint16_t raw_white_point;
+
+  /* filter for Fuji X-Trans images, only used if filters == 9u */
+  uint8_t xtrans[6][6];
 }
 dt_image_t;
 

@@ -1169,16 +1169,42 @@ _init_f(
   if(image->filters)
   {
     // demosaic during downsample
-    if(image->bpp == sizeof(float))
-      dt_iop_clip_and_zoom_demosaic_half_size_f(
-        out, (const float *)buf.buf,
-        &roi_out, &roi_in, roi_out.width, roi_in.width,
-        dt_image_filter(image), 1.0f);
+    if(image->filters!=9u)
+    {
+      // Bayer
+      if(image->bpp == sizeof(float))
+      {
+        dt_iop_clip_and_zoom_demosaic_half_size_f(
+          out, (const float *)buf.buf,
+          &roi_out, &roi_in, roi_out.width, roi_in.width,
+          dt_image_filter(image), 1.0f);
+      }
+      else
+      {
+        dt_iop_clip_and_zoom_demosaic_half_size(
+          out, (const uint16_t *)buf.buf,
+          &roi_out, &roi_in, roi_out.width, roi_in.width,
+          dt_image_filter(image));
+      }
+    }
     else
-      dt_iop_clip_and_zoom_demosaic_half_size(
-        out, (const uint16_t *)buf.buf,
-        &roi_out, &roi_in, roi_out.width, roi_in.width,
-        dt_image_filter(image));
+    {
+      // X-Trans
+      if(image->bpp == sizeof(float))
+      {
+        dt_iop_clip_and_zoom_demosaic_third_size_xtrans_f(
+          out, (const float *)buf.buf,
+          &roi_out, &roi_in, roi_out.width, roi_in.width,
+          image->xtrans);
+      }
+      else
+      {
+        dt_iop_clip_and_zoom_demosaic_third_size_xtrans(
+          out, (const uint16_t *)buf.buf,
+          &roi_out, &roi_in, roi_out.width, roi_in.width,
+          image->xtrans);
+      }
+    }
   }
   else
   {

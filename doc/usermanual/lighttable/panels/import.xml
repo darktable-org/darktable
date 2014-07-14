@@ -157,7 +157,7 @@
       In order for darktable to consider a file for import, it must have one of the following
       extensions (case independent): 3FR, ARW, BAY, BMQ, CAP, CINE, CR2, CRW, CS1, DC2, DCR,
       DNG, ERF, FFF, EXR, IA, IIQ, JPEG, JPG, K25, KC2, KDC, MDC, MEF, MOS, MRW, NEF, NRW, ORF,
-      PEF, PFM, PNG, PXN, QTK, RAW, RAW, RDC, RW1, RW2, SR2, SRF, SRW, STI, TIF, TIFF, X3F.
+      PEF, PFM, PNG, PXN, QTK, RAF, RAW, RDC, RW1, RW2, SR2, SRF, SRW, STI, TIF, TIFF, X3F.
     </para>
 
     <para>
@@ -185,8 +185,9 @@
         Post) and&nbsp;&ndash; failing that&nbsp;&ndash; with LibRaw. The number of supported
         cameras and file formats is constantly increasing. It is beyond the scope of this manual
         to give an exhaustive list. Most modern camera models are supported, and new ones tend
-        to get added very quickly. darktable does not decode images from cameras with non-Bayer
-        sensors (e.g. Fuji X-Pro1 or Sigmas with the Foveon X3 sensor).
+        to get added very quickly. With the exception of Fujifilm X-Trans cameras, darktable
+        does not decode images from cameras with non-Bayer sensors (e.g. Sigmas with the Foveon
+        X3 sensor).
       </para>
 
     </sect4>

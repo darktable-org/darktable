@@ -205,12 +205,35 @@ FC(const int row, const int col, const unsigned int filters)
   return filters >> (((row << 1 & 14) + (col & 1)) << 1) & 3;
 }
 
+static uint8_t
+FCxtrans(const int row, const int col,
+         const dt_iop_roi_t *const roi,
+         uint8_t (*const xtrans)[6])
+{
+  return xtrans[(row+roi->y) % 6][(col+roi->x) % 6];
+}
+
 void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoid, void *ovoid, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
 {
   const int filters = dt_image_filter(&piece->pipe->image);
+  uint8_t (*const xtrans)[6] = self->dev->image_storage.xtrans;
   dt_iop_temperature_data_t *d = (dt_iop_temperature_data_t *)piece->data;
-  if(!dt_dev_pixelpipe_uses_downsampled_input(piece->pipe) && filters && piece->pipe->image.bpp != 4)
-  {
+  if(!dt_dev_pixelpipe_uses_downsampled_input(piece->pipe) && filters == 9u && piece->pipe->image.bpp != 4)
+  {  // xtrans int mosaiced
+    const float coeffsi[3] = {d->coeffs[0]/65535.0f, d->coeffs[1]/65535.0f, d->coeffs[2]/65535.0f};
+#ifdef _OPENMP
+    #pragma omp parallel for default(none) shared(roi_out, ivoid, ovoid, d) schedule(static)
+#endif
+    for(int j=0; j<roi_out->height; j++)
+    {
+      const uint16_t *in = ((uint16_t *)ivoid) + (size_t)j*roi_out->width;
+      float *out = ((float*)ovoid) + (size_t)j*roi_out->width;
+      for(int i=0; i<roi_out->width; i++,out++,in++)
+        *out = *in * coeffsi[FCxtrans(j,i,roi_out,xtrans)];
+    }
+  }
+  else if(!dt_dev_pixelpipe_uses_downsampled_input(piece->pipe) && filters && piece->pipe->image.bpp != 4)
+  { // bayer int mosaiced
     const float coeffsi[3] = {d->coeffs[0]/65535.0f, d->coeffs[1]/65535.0f, d->coeffs[2]/65535.0f};
 #ifdef _OPENMP
     #pragma omp parallel for default(none) shared(roi_out, ivoid, ovoid, d) schedule(static)
@@ -258,8 +281,21 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
     }
     _mm_sfence();
   }
+  else if(!dt_dev_pixelpipe_uses_downsampled_input(piece->pipe) && (filters == 9u) && piece->pipe->image.bpp == 4)
+  { // xtrans float mosaiced
+#ifdef _OPENMP
+    #pragma omp parallel for default(none) shared(roi_out, ivoid, ovoid, d) schedule(static)
+#endif
+    for(int j=0; j<roi_out->height; j++)
+    {
+      const float *in = ((float *)ivoid) + (size_t)j*roi_out->width;
+      float *out = ((float*)ovoid) + (size_t)j*roi_out->width;
+      for(int i=0; i<roi_out->width; i++,out++,in++)
+        *out = *in * d->coeffs[FCxtrans(j,i,roi_out,xtrans)];
+    }
+  }
   else if(!dt_dev_pixelpipe_uses_downsampled_input(piece->pipe) && filters && piece->pipe->image.bpp == 4)
-  {
+  { // bayer float mosaiced
 #ifdef _OPENMP
     #pragma omp parallel for default(none) shared(roi_out, ivoid, ovoid, d) schedule(static)
 #endif
@@ -272,7 +308,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
     }
   }
   else
-  {
+  { // non-mosaiced
     const int ch = piece->colors;
 #ifdef _OPENMP
     #pragma omp parallel for default(none) shared(roi_out, ivoid, ovoid, d) schedule(static)
@@ -363,6 +399,10 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
   dt_iop_temperature_params_t *p = (dt_iop_temperature_params_t *)p1;
   dt_iop_temperature_data_t *d = (dt_iop_temperature_data_t *)piece->data;
   for(int k=0; k<3; k++) d->coeffs[k]  = p->coeffs[k];
+
+  // x-trans images not implemented in OpenCL yet
+  if(pipe->image.filters == 9u)
+    piece->process_cl_ready = 0;
 }
 
 void init_pipe (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)

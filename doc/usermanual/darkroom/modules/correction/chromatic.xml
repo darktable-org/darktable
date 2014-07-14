@@ -57,6 +57,11 @@
       interactive work, not to file export.
     </para>
 
+    <para>
+      This module currently only works for images recorded with a Bayer sensor (which is the
+      sensor used in the majority of cameras).
+    </para>
+
   </sect4>
 
 </sect3>

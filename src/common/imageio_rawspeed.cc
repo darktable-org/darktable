@@ -163,6 +163,22 @@ dt_imageio_open_rawspeed(
       img->flags &= ~DT_IMAGE_LDR;
       img->flags |= DT_IMAGE_RAW;
       if(r->getDataType() == TYPE_FLOAT32) img->flags |= DT_IMAGE_HDR;
+      // special handling for x-trans sensors
+      if (img->filters == 9u)
+      {
+        // get 6x6 CFA offset from top left of cropped image
+        // NOTE: This is different from how things are done with Bayer
+        // sensors. For these, the CFA in cameras.xml is pre-offset
+        // depending on the distance modulo 2 between raw and usable
+        // image data. For X-Trans, the CFA in cameras.xml is
+        // (currently) aligned with the top left of the raw data, and
+        // hence it is shifted here to align with the top left of the
+        // cropped image.
+        iPoint2D tl_margin = r->getCropOffset();
+        for (int i=0; i < 6; ++i)
+          for (int j=0; j < 6; ++j)
+            img->xtrans[j][i] = r->cfa.getColorAt((i+tl_margin.x)%6,(j+tl_margin.y)%6);
+      }
     }
 
     img->width  = r->dim.x;

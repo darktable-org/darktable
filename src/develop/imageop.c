@@ -2294,6 +2294,200 @@ dt_iop_clip_and_zoom_demosaic_half_size_f(
 }
 #endif
 
+static uint8_t
+FCxtrans(size_t row, size_t col,
+         const dt_iop_roi_t *const roi,
+         const uint8_t (*const xtrans)[6])
+{
+  return xtrans[(row+roi->y) % 6][(col+roi->x) % 6];
+}
+
+/**
+ * downscales and clips a Fujifilm X-Trans mosaiced buffer (in) to the given region of interest (r_*)
+ * and writes it to out in float4 format.
+ */
+void
+dt_iop_clip_and_zoom_demosaic_third_size_xtrans(
+  float *out,
+  const uint16_t *const in,
+  const dt_iop_roi_t *const roi_out,
+  const dt_iop_roi_t *const roi_in,
+  const int32_t out_stride,
+  const int32_t in_stride,
+  const uint8_t (*const xtrans)[6])
+{
+  const float px_footprint = 1.f/roi_out->scale;
+  const int samples = round(px_footprint/3);
+
+#ifdef _OPENMP
+  #pragma omp parallel for default(none) shared(out) schedule(static)
+#endif
+  for(int y=0; y<roi_out->height; y++)
+  {
+    float *outc = out + (size_t)4*(out_stride*y);
+
+    int py = floorf((y + roi_out->y)*px_footprint);
+    py = MIN(roi_in->height-4, py);
+    int maxj = MIN(roi_in->height-3, py+3*samples);
+
+    float fx = roi_out->x*px_footprint;
+    for(int x=0; x<roi_out->width; x++, fx += px_footprint)
+    {
+      int px = floorf(fx);
+      px = MIN(roi_in->width-4, px);
+      int maxi = MIN(roi_in->width-3, px+3*samples);
+
+      uint16_t pc = 0;
+      for (int ii=0; ii < 3; ++ii)
+        for (int jj=0; jj < 3; ++jj)
+          pc = MAX(pc,in[px+ii + in_stride*(py + jj)]);
+
+      uint8_t num[3] = {0};
+      uint32_t sum[3] = {0};
+
+      for(int j=py; j<=maxj; j+=3)
+        for(int i=px; i<=maxi; i+=3)
+        {
+          uint16_t lcl_max = 0;
+          for (int ii=0; ii < 3; ++ii)
+            for (int jj=0; jj < 3; ++jj)
+              lcl_max = MAX(lcl_max,in[i + ii + in_stride*(j + jj)]);
+
+          if (!((pc >= 60000) ^ (lcl_max >= 60000)))
+          {
+            for (int ii=0; ii < 3; ++ii)
+              for (int jj=0; jj < 3; ++jj)
+              {
+                const uint8_t c = FCxtrans(j+jj, i+ii, roi_in, xtrans);
+                sum[c] += in[i+ii + in_stride*(j + jj)];
+                num[c]++;
+              }
+          }
+        }
+
+      outc[0] = sum[0] / 65535.0f / num[0];
+      outc[1] = sum[1] / 65535.0f / num[1];
+      outc[2] = sum[2] / 65535.0f / num[2];
+      outc += 4;
+    }
+  }
+}
+
+
+#define SUM33(px,py,weight)                                \
+  do                                                       \
+  {                                                        \
+    float sum[3] = {0.0f};                                 \
+    for (int yy=0; yy < 3; ++yy)                           \
+      for (int xx=0; xx < 3; ++xx)                         \
+      {                                                    \
+        const uint8_t c =                                  \
+          FCxtrans((py)+yy, (px)+xx, roi_in, xtrans);      \
+        sum[c] += in[(px) + xx + in_stride*((py) + yy)];   \
+        num[c] += (weight);                                \
+      }                                                    \
+    col[0] += (weight) * sum[0];                           \
+    col[1] += (weight) * sum[1];                           \
+    col[2] += (weight) * sum[2];                           \
+  }                                                        \
+  while (0)
+
+
+void
+dt_iop_clip_and_zoom_demosaic_third_size_xtrans_f(
+  float *out,
+  const float *const in,
+  const dt_iop_roi_t *const roi_out,
+  const dt_iop_roi_t *const roi_in,
+  const int32_t out_stride,
+  const int32_t in_stride,
+  const uint8_t (*const xtrans)[6])
+{
+  const float px_footprint = 1.f/roi_out->scale;
+  const int samples = round(px_footprint/3);
+
+#ifdef _OPENMP
+  #pragma omp parallel for default(none) shared(out) schedule(static)
+#endif
+  for(int y=0; y<roi_out->height; y++)
+  {
+    float *outc = out + 4*(out_stride*y);
+
+    float fy = (y + roi_out->y)*px_footprint;
+    int py = floorf(fy);
+    const float dy = (fy - py)/2;
+    py = MIN(roi_in->height-7, py);
+    int maxj = MIN(roi_in->height-6, py+3*samples);
+
+    for(int x=0; x<roi_out->width; x++, outc += 4)
+    {
+      float col[3] = {0.0f};
+      float num[3] = {0.0f};
+
+      float fx = (x + roi_out->x)*px_footprint;
+      int px = floorf(fx);
+      const float dx = (fx - px)/2;
+      px = MIN(roi_in->width-7, px);
+      int maxi = MIN(roi_in->width-6, px+3*samples);
+
+      // upper left block of sampling region
+      SUM33(px, py, (1-dx)*(1-dy));
+      // left block border of sampling region
+      for (int j = py+2 ; j <= maxj ; j+=2)
+        SUM33(px, j, 1-dx);
+      // upper block border of sampling region
+      for (int i = px+2 ; i <= maxi ; i+=2)
+        SUM33(i, py, 1-dy);
+      // 3x3 blocks in the middle of sampling region
+      for(int j=py+2; j<=maxj; j+=2)
+        for(int i=px+2; i<=maxi; i+=2)
+          SUM33(i, j, 1);
+
+      // if not cutting up against the right or bottom
+      if (maxi == px + 3*samples && maxj == py + 3*samples)
+      {
+        // right border
+        for (int j = py+2 ; j <= maxj ; j+=2)
+          // FIXME: should this be maxi+3 or maxi?
+          SUM33(maxi, j, dx);
+        // upper right
+        SUM33(maxi+3, py, dx*(1-dy));
+        // lower border
+        for (int i = px+2 ; i <= maxi ; i+=2)
+          SUM33(i, maxj+3, dy);
+        // lower left block
+        SUM33(px, maxj+3, (1-dx)*dy);
+        // lower right block
+        SUM33(maxi+3, maxj+3, dx*dy);
+      }
+      else if (maxi == px + 3*samples)
+      {
+        // right border
+        for (int j = py+2 ; j <= maxj ; j+=2)
+          SUM33(maxi+3, j, dx);
+        // upper right
+        SUM33(maxi+3, py, dx*(1-dy));
+      }
+      else if (maxj == py + 3*samples)
+      {
+        // lower border
+        for (int i = px+2 ; i <= maxi ; i+=2)
+          SUM33(i, maxj+3, dy);
+        // lower left block
+        SUM33(px, maxj+3, (1-dx)*dy);
+      }
+
+      // in theory if looking at enough cells, RGB weighting averages
+      // to 2:5:2 so don't have to add up num, could determine by
+      // equation as with Bayer, but for now am adding
+      outc[0] = col[0]/num[0];
+      outc[1] = col[1]/num[1];
+      outc[2] = col[2]/num[2];
+    }
+  }
+}
+
+
 void dt_iop_RGB_to_YCbCr(const float *rgb, float *yuv)
 {
   yuv[0] =  0.299*rgb[0] + 0.587*rgb[1] + 0.114*rgb[2];

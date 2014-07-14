@@ -153,6 +153,143 @@ output_bpp(dt_iop_module_t *module, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_i
   else return 4*sizeof(float);
 }
 
+static uint8_t
+FCxtrans(const int row, const int col,
+         const dt_iop_roi_t *const roi,
+         const uint8_t (*const xtrans)[6])
+{
+  return xtrans[(row+roi->y) % 6][(col+roi->x) % 6];
+}
+
+static inline void _interpolate_color_xtrans(
+    void *ivoid, void *ovoid,
+    const dt_iop_roi_t *const roi_in,
+    const dt_iop_roi_t *const roi_out,
+    int dim, int dir, int other, const float *clip,
+    const uint8_t (*const xtrans)[6],
+    const int pass)
+{
+  // similar to Bayer version, but in Bayer each row/column has only
+  // green/red or green/blue transitions, in x-trans there can be
+  // red/green, red/blue, and green/blue
+  float ratios[2][3] = { { 1.0f, 1.0f, 1.0f}, { 1.0f, 1.0f, 1.0f} };
+  float *in, *out;
+
+  int i = 0, j = 0;
+  if(dim == 0) j = other;
+  else         i = other;
+  ssize_t offs = dim ? roi_out->width : 1;
+  if(dir < 0) offs = - offs;
+  int beg, end;
+  if(dim == 0 && dir == 1) { beg = 0; end = roi_out->width; }
+  else if(dim == 0 && dir == -1) { beg = roi_out->width-1; end = -1; }
+  else if(dim == 1 && dir == 1) { beg = 0; end = roi_out->height; }
+  else if(dim == 1 && dir == -1) { beg = roi_out->height-1; end = -1; }
+  else return;
+
+  if(dim == 1)
+  {
+    out = (float *)ovoid + i + (size_t)beg*roi_out->width;
+    in  = (float *)ivoid + i + (size_t)beg*roi_out->width;
+  }
+  else
+  {
+    out = (float *)ovoid + beg + (size_t)j*roi_out->width;
+    in  = (float *)ivoid + beg + (size_t)j*roi_out->width;
+  }
+
+  for(int k=beg;k!=end;k+=dir)
+  {
+    if(dim == 1) j = k;
+    else         i = k;
+    if(i<2 || i>roi_out->width-3 || j<2 || j>roi_out->height-3)
+    {
+      if(pass == 3)
+        out[0] = in[0];
+    }
+    else
+    {
+      const uint8_t f0 = FCxtrans(j, i, roi_in, xtrans);
+      const uint8_t f1 = FCxtrans(dim?(j+dir):j, dim?i:(i+dir), roi_in, xtrans);
+      const uint8_t f2 = FCxtrans(dim?(j+dir*2):j, dim?i:(i+dir*2), roi_in, xtrans);
+      const float clip0 = clip[f0];
+      const float clip1 = clip[f1];
+      const float clip2 = clip[f2];
+
+      // record ratio to next different-colored pixel if this & next unclamped
+      if(in[0] < clip0 && in[0] > 1e-5f)
+      {
+        if(in[offs] < clip1 && in[offs] > 1e-5f)
+        {
+          if (f0 != f1) {  // not first of gg block
+            if (f0 < f1)
+              ratios[f0][f1] = (3.0f*ratios[f0][f1] + in[0]/in[offs])/4.0f;
+            else
+              ratios[f1][f0] = (3.0f*ratios[f1][f0] + in[offs]/in[0])/4.0f;
+          }
+          else
+          {
+            if(in[offs*2] < clip2 && in[offs*2] > 1e-5f) {
+              if (f0 < f2)
+                ratios[f0][f2] = (3.0f*ratios[f0][f2] + in[0]/in[offs*2])/4.0f;
+              else
+                ratios[f2][f0] = (3.0f*ratios[f2][f0] + in[offs*2]/in[0])/4.0f;
+            }
+          }
+        }
+      }
+
+      if(in[0] >= clip0-1e-5f)
+      {
+        float add = 0.0f;
+        if (f0 != f1)   // not double green block
+        {
+          if (in[offs] >= clip1-1e-5f)
+          {
+            add = fmaxf(clip0, clip1);
+          }
+          else
+          {
+            if (f0 < f1)
+              add = in[offs]*ratios[f0][f1];
+            else
+              add = in[offs]/ratios[f1][f0];
+          }
+        }
+        else
+        {
+          if (1 && in[offs] < clip1-1e-5f)  // adjacent green isn't clipped
+          {
+            add = in[offs];
+          }
+          else if (in[offs*2] >= clip2-1e-5f)
+          {
+            add = fmaxf(clip0, clip2);
+          }
+          else
+          {
+            if (f0 < f2)
+              add = in[offs*2]*ratios[f0][f2];
+            else
+              add = in[offs*2]/ratios[f2][f0];
+          }
+        }
+
+        if(pass == 0) out[0] = add;
+        else if(pass == 3) out[0] = (out[0] + add)/4.0f;
+        else out[0] += add;
+      }
+      else
+      {
+        if(pass == 3)
+          out[0] = in[0];
+      }
+    }
+    out += offs;
+    in += offs;
+  }
+}
+
 static int
 FC(const int row, const int col, const unsigned int filters)
 {
@@ -234,6 +371,57 @@ static inline void _interpolate_color(
   }
 }
 
+static void
+process_lch_xtrans(
+  void *ivoid, void *ovoid,
+  const int width, const int height,
+  const float clip)
+{
+#ifdef _OPENMP
+  #pragma omp parallel for schedule(static) default(none) shared(ovoid, ivoid)
+#endif
+  for(int j=0; j<height; j++)
+  {
+    float *out = (float *)ovoid + (size_t)width*j;
+    float *in  = (float *)ivoid + (size_t)width*j;
+    for(int i=0; i<width; i++)
+    {
+      if(i<3 || i>width-3 || j<3 || j>height-3)
+      {
+        // fast path for border
+        out[0] = in[0];
+      }
+      else
+      {
+        const float near_clip = 0.96f*clip;
+        const float post_clip = 1.10f*clip;
+        float blend = 0.0f;
+        float mean = 0.0f;
+        for(int jj=-3; jj<3; jj++)
+        {
+          for(int ii=-3; ii<3; ii++)
+          {
+            const float val = in[(size_t)jj*width + ii];
+            mean += val;
+            blend += (fminf(post_clip, val) - near_clip)/(post_clip-near_clip);
+          }
+        }
+        blend = CLAMP(blend, 0.0f, 1.0f);
+        if(blend > 0)
+        {
+          // recover:
+          mean /= 36.0f;
+          out[0] = blend*mean + (1.f-blend)*in[0];
+        }
+        else out[0] = in[0];
+      }
+      out ++;
+      in ++;
+    }
+  }
+}
+
+
 void process(
     struct dt_iop_module_t *self,
     dt_dev_pixelpipe_iop_t *piece,
@@ -277,6 +465,29 @@ void process(
         0.987*data->clip * piece->pipe->processed_maximum[1],
         0.987*data->clip * piece->pipe->processed_maximum[2],
         clip};
+
+      if (filters == 9u)
+      {
+        const dt_image_t *img = &self->dev->image_storage;
+#ifdef _OPENMP
+        #pragma omp parallel for schedule(dynamic) default(none) shared(ovoid, ivoid, roi_in, roi_out, img)
+#endif
+        for(int j=0; j<roi_out->height; j++)
+        {
+          _interpolate_color_xtrans(ivoid, ovoid, roi_in, roi_out, 0, 1, j, clips, img->xtrans, 0);
+          _interpolate_color_xtrans(ivoid, ovoid, roi_in, roi_out, 0, -1, j, clips, img->xtrans, 1);
+        }
+#ifdef _OPENMP
+        #pragma omp parallel for schedule(dynamic) default(none) shared(ovoid, ivoid, roi_in, roi_out, img)
+#endif
+        for(int i=0; i<roi_out->width; i++)
+        {
+          _interpolate_color_xtrans(ivoid, ovoid, roi_in, roi_out, 1, 1, i, clips, img->xtrans, 2);
+          _interpolate_color_xtrans(ivoid, ovoid, roi_in, roi_out, 1, -1, i, clips, img->xtrans, 3);
+        }
+        break;
+      }
+
 #ifdef _OPENMP
       #pragma omp parallel for schedule(dynamic) default(none) shared(ovoid, ivoid, roi_in, roi_out, data, piece)
 #endif
@@ -298,6 +509,11 @@ void process(
       break;
     }
     case DT_IOP_HIGHLIGHTS_LCH:
+      if (filters == 9u)
+      {
+        process_lch_xtrans(ivoid, ovoid, roi_out->width, roi_out->height, clip);
+        break;
+      }
 #ifdef _OPENMP
       #pragma omp parallel for schedule(dynamic) default(none) shared(ovoid, ivoid, roi_in, roi_out, data, piece)
 #endif
@@ -389,6 +605,10 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
   memcpy(d, p, sizeof(*p));
 
   piece->process_cl_ready = 1;
+
+  // x-trans images not implemented in OpenCL yet
+  if(pipe->image.filters == 9u)
+    piece->process_cl_ready = 0;
 
   // no OpenCL for DT_IOP_HIGHLIGHTS_INPAINT yet.
   if(d->mode == DT_IOP_HIGHLIGHTS_INPAINT)
