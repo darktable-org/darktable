@@ -50,6 +50,7 @@ dt_iop_invert_gui_data_t;
 typedef struct dt_iop_invert_global_data_t
 {
   int kernel_invert_1f;
+  int kernel_invert_4f;
 }
 dt_iop_invert_global_data_t;
 
@@ -312,8 +313,16 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
   const int filters = dt_image_filter(&piece->pipe->image);
   cl_mem dev_color = NULL;
   cl_int err = -999;
+  int kernel = -1;
 
-  int kernel = gd->kernel_invert_1f;
+  if(!dt_dev_pixelpipe_uses_downsampled_input(piece->pipe) && filters)
+  {
+    kernel = gd->kernel_invert_1f;
+  }
+  else
+  {
+    kernel = gd->kernel_invert_4f;
+  }
 
   dev_color = dt_opencl_copy_host_to_device_constant(devid, sizeof(float)*3, d->color);
   if (dev_color == NULL) goto error;
@@ -366,6 +375,7 @@ void init_global(dt_iop_module_so_t *module)
 
   dt_iop_invert_global_data_t *gd = module->data;
   gd->kernel_invert_1f = dt_opencl_create_kernel(program, "invert_1f");
+  gd->kernel_invert_4f = dt_opencl_create_kernel(program, "invert_4f");
 }
 
 void init(dt_iop_module_t *module)
@@ -389,6 +399,7 @@ void cleanup(dt_iop_module_t *module)
 void cleanup_global(dt_iop_module_so_t *module)
 {
   dt_iop_invert_global_data_t *gd = (dt_iop_invert_global_data_t *)module->data;
+  dt_opencl_free_kernel(gd->kernel_invert_4f);
   dt_opencl_free_kernel(gd->kernel_invert_1f);
   free(module->data);
   module->data = NULL;
@@ -402,10 +413,6 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *params, dt_dev
 
   // x-trans images not implemented in OpenCL yet
   if(pipe->image.filters == 9u)
-    piece->process_cl_ready = 0;
-
-  if(!(pipe->image.flags & DT_IMAGE_RAW) ||
-    dt_dev_pixelpipe_uses_downsampled_input(pipe))
     piece->process_cl_ready = 0;
 }
 
