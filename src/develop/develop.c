@@ -989,13 +989,12 @@ void dt_dev_read_history(dt_develop_t *dev)
       /*
        * fix for flip iop: previously it was not always needed, but it might be
        * in history stack as "orientation (off)", but now we always want it
-       * by default, so enable it. if user want's, he can disable it.
-       *
-       * TODO: how about replacing following if with following: ?
-       *       if(hist->module->default_enabled == 1)
+       * by default, so if it is disabled, enable it, and replace params with
+       * default_params. if user want to, he can disable it.
        */
-      if(!strcmp(hist->module->op,"flip") && modversion == 1)
+      if(!strcmp(hist->module->op,"flip") && hist->enabled == 0 && modversion == 1)
       {
+        memcpy(hist->params, hist->module->default_params, hist->module->params_size);
         hist->enabled = 1;
       }
     }
