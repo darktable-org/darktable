@@ -230,20 +230,18 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
       piece->pipe->processed_maximum[k] = 1.0f;
   }
   else if(!dt_dev_pixelpipe_uses_downsampled_input(piece->pipe) && filters && piece->pipe->image.bpp != 4)
-  { // bayer int mosaiced
+  { // bayer float mosaiced
     const float *const m = piece->pipe->processed_maximum;
-    const int32_t film_rgb_i[3] = {m[0]*film_rgb[0]*65535, m[1]*film_rgb[1]*65535, m[2]*film_rgb[2]*65535};
+    const float film_rgb_f[3] = {m[0]*film_rgb[0], m[1]*film_rgb[1], m[2]*film_rgb[2]};
 #ifdef _OPENMP
     #pragma omp parallel for default(none) shared(roi_out, ivoid, ovoid /*film_rgb_i, min, max, res*/) schedule(static)
 #endif
     for(int j=0; j<roi_out->height; j++)
     {
-      const uint16_t *in = ((uint16_t*)ivoid) + (size_t)j*roi_out->width;
-      uint16_t *out = ((uint16_t*)ovoid) + (size_t)j*roi_out->width;
+      const float *in = ((float*)ivoid) + (size_t)j*roi_out->width;
+      float *out = ((float*)ovoid) + (size_t)j*roi_out->width;
       for(int i=0; i<roi_out->width; i++,out++,in++)
-      {
-        *out = CLAMP(film_rgb_i[FC(j+roi_out->y, i+roi_out->x, filters)] - (int32_t)in[0], 0, 0xffff);
-      }
+        *out = CLAMP(film_rgb_f[FC(j+roi_out->y, i+roi_out->x, filters)] - *in, 0.0f, 1.0f);
     }
 
     for(int k=0; k<3; k++)
