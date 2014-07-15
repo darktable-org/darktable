@@ -444,7 +444,6 @@ void reload_defaults(dt_iop_module_t *module)
   if(dt_image_is_raw(&module->dev->image_storage))
   {
     module->default_enabled = 1;
-    module->hide_enable_button = 1;
   }
   else module->default_enabled = 0;
   dt_iop_temperature_params_t tmp = (dt_iop_temperature_params_t)
