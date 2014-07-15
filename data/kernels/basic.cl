@@ -34,6 +34,19 @@ letsgofloat_1ui(read_only image2d_t in, write_only image2d_t out,
 }
 
 kernel void
+invert_1f(read_only image2d_t in, write_only image2d_t out, const int width, const int height, global float *color,
+          const unsigned int filters, const int rx, const int ry)
+{
+  const int x = get_global_id(0);
+  const int y = get_global_id(1);
+  if(x >= width || y >= height) return;
+  const float pixel = read_imagef(in, sampleri, (int2)(x, y)).x;
+  const float inv_pixel = color[FC(rx+y, ry+x, filters)] - pixel;
+
+  write_imagef (out, (int2)(x, y), (float4)(clamp(inv_pixel, 0.0f, 1.0f), 0.0f, 0.0f, 0.0f));
+}
+
+kernel void
 whitebalance_1f(read_only image2d_t in, write_only image2d_t out, const int width, const int height, global float *coeffs,
     const unsigned int filters, const int rx, const int ry)
 {
