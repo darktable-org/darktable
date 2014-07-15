@@ -985,6 +985,19 @@ void dt_dev_read_history(dt_develop_t *dev)
           memcpy(hist->module->blend_params, hist->module->default_blendop_params,sizeof(dt_develop_blend_params_t));
         }
       }
+
+      /*
+       * fix for flip iop: previously it was not always needed, but it might be
+       * in history stack as "orientation (off)", but now we always want it
+       * by default, so enable it. if user want's, he can disable it.
+       *
+       * TODO: how about replacing following if with following: ?
+       *       if(hist->module->default_enabled == 1)
+       */
+      if(!strcmp(hist->module->op,"flip") && modversion == 1)
+      {
+        hist->enabled = 1;
+      }
     }
     else
     {
