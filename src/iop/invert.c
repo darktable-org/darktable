@@ -210,20 +210,18 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   uint8_t (*const xtrans)[6] = self->dev->image_storage.xtrans;
 
   if(!dt_dev_pixelpipe_uses_downsampled_input(piece->pipe) && (filters == 9u) && piece->pipe->image.bpp != 4)
-  { // xtrans int mosaiced
+  { // xtrans float mosaiced
     const float *const m = piece->pipe->processed_maximum;
-    const int32_t film_rgb_i[3] = {m[0]*film_rgb[0]*65535, m[1]*film_rgb[1]*65535, m[2]*film_rgb[2]*65535};
+    const float film_rgb_f[3] = {m[0]*film_rgb[0], m[1]*film_rgb[1], m[2]*film_rgb[2]};
 #ifdef _OPENMP
-    #pragma omp parallel for default(none) shared(roi_out, ivoid, ovoid, /*film_rgb_i, min, max, res*/) schedule(static)
+    #pragma omp parallel for default(none) shared(roi_out, ivoid, ovoid) schedule(static)
 #endif
     for(int j=0; j<roi_out->height; j++)
     {
-      const uint16_t *in = ((uint16_t*)ivoid) + (size_t)j*roi_out->width;
-      uint16_t *out = ((uint16_t*)ovoid) + (size_t)j*roi_out->width;
+      const float *in = ((float *)ivoid) + (size_t)j*roi_out->width;
+      float *out = ((float *)ovoid) + (size_t)j*roi_out->width;
       for(int i=0; i<roi_out->width; i++,out++,in++)
-      {
-        *out = CLAMP(film_rgb_i[FCxtrans(j,i,roi_out,xtrans)] - (int32_t)in[0], 0, 0xffff);
-      }
+        *out = CLAMP(film_rgb_f[FCxtrans(j,i,roi_out,xtrans)] - *in, 0.0f, 1.0f);
     }
 
     for(int k=0; k<3; k++)
