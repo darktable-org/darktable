@@ -233,22 +233,22 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
     }
   }
   else if(!dt_dev_pixelpipe_uses_downsampled_input(piece->pipe) && filters && piece->pipe->image.bpp != 4)
-  { // bayer int mosaiced
-    const float coeffsi[3] = {d->coeffs[0]/65535.0f, d->coeffs[1]/65535.0f, d->coeffs[2]/65535.0f};
+  { // bayer float mosaiced
+    const float coeffsi[3] = {d->coeffs[0], d->coeffs[1], d->coeffs[2]};
 #ifdef _OPENMP
     #pragma omp parallel for default(none) shared(roi_out, ivoid, ovoid, d) schedule(static)
 #endif
     for(int j=0; j<roi_out->height; j++)
     {
-      const uint16_t *in = ((uint16_t *)ivoid) + (size_t)j*roi_out->width;
+      const float *in = ((float *)ivoid) + (size_t)j*roi_out->width;
       float *out = ((float*)ovoid) + (size_t)j*roi_out->width;
 
-      int i=0;
-      int alignment = ((8 - (j * roi_out->width & (8-1))) & (8-1));
+      int i = 0;
+      int alignment = ((4 - (j * roi_out->width & (4 - 1))) & (4 - 1));
 
       // process unaligned pixels
-      for ( ; i < alignment ; i++,out++,in++)
-        *out = *in * coeffsi[FC(j+roi_out->y, i+roi_out->x, filters)];
+      for ( ; i < alignment ; i++, out++, in++)
+        *out = *in * coeffsi[FC(j+roi_out->x, i+roi_out->y, filters)];
 
       const __m128 coeffs = _mm_set_ps(coeffsi[FC(j+roi_out->y, roi_out->x+i+3, filters)],
                                        coeffsi[FC(j+roi_out->y, roi_out->x+i+2, filters)],
@@ -256,23 +256,13 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
                                        coeffsi[FC(j+roi_out->y, roi_out->x+i  , filters)]);
 
       // process aligned pixels with SSE
-      for( ; i < roi_out->width - (8-1); i+=8,in+=8)
+      for( ; i < roi_out->width - (4-1); i+=4,in+=4,out+=4)
       {
-        const __m128i input = _mm_load_si128((__m128i *)in);
+        const __m128 input = _mm_load_ps(in);
 
-        __m128i ilo = _mm_unpacklo_epi16(input, _mm_set1_epi16(0));
-        __m128i ihi = _mm_unpackhi_epi16(input, _mm_set1_epi16(0));
+        const __m128 multiplied = _mm_mul_ps(input, coeffs);
 
-        __m128 flo = _mm_cvtepi32_ps(ilo);
-        __m128 fhi = _mm_cvtepi32_ps(ihi);
-
-        flo = _mm_mul_ps(flo, coeffs);
-        fhi = _mm_mul_ps(fhi, coeffs);
-
-        _mm_stream_ps(out, flo);
-        out += 4;
-        _mm_stream_ps(out, fhi);
-        out += 4;
+        _mm_stream_ps(out, multiplied);
       }
 
       // process the rest
