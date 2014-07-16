@@ -91,6 +91,7 @@ typedef enum dt_iop_demosaic_method_t
   // methods for Bayer images
   DT_IOP_DEMOSAIC_PPG = 0,
   DT_IOP_DEMOSAIC_AMAZE = 1,
+  DT_IOP_DEMOSAIC_VNG4 = 2,
   // methods for x-trans images
   DT_IOP_DEMOSAIC_VNG = DEMOSAIC_XTRANS | 0,
   DT_IOP_DEMOSAIC_MARKESTEIJN = DEMOSAIC_XTRANS | 1,
@@ -834,16 +835,28 @@ xtrans_markesteijn_interpolate(
 
 #undef TS
 
+static int
+fcol(const int row, const int col,
+     const unsigned int filters, const uint8_t (*const xtrans)[6])
+{
+  if (filters == 9)
+    return FCxtrans(row, col, xtrans);
+  else
+    return FC(row, col, filters);
+}
 
 /* taken from dcraw and demosaic_ppg below */
 
 static void
-xtrans_lin_interpolate(
+lin_interpolate(
   float *out, const float *const in,
   const dt_iop_roi_t *const roi_out,
   const dt_iop_roi_t *const roi_in,
+  const unsigned int filters,
   const uint8_t (*const xtrans)[6])
 {
+  const int colors = (filters == 9) ? 3 : 4;
+
   // border interpolate
 #ifdef _OPENMP
   #pragma omp parallel for default(none) shared(out) schedule(static)
@@ -851,32 +864,29 @@ xtrans_lin_interpolate(
   for (int row=0; row < roi_out->height; row++)
     for (int col=0; col < roi_out->width; col++)
     {
-      float sum[3] = {0.0f};
-      uint8_t count[3] = {0};
+      float sum[4] = {0.0f};
+      uint8_t count[4] = {0};
       if (col==1 && row >= 1 && row < roi_out->height-1)
         col = roi_out->width-1;
       // average all the adjoining pixels inside image by color
       for (int y=row-1; y != row+2; y++)
         for (int x=col-1; x != col+2; x++)
-        {
-          const int yy = y + roi_out->y, xx = x + roi_out->x;
-          if (yy >= 0 && xx >= 0 && yy < roi_in->height && xx < roi_in->width)
+          if (y >= 0 && x >= 0 && y < roi_in->height && x < roi_in->width)
           {
-            const uint8_t f = FCxtrans(y+roi_in->y,x+roi_in->x,xtrans);
+            const int f = fcol(y+roi_in->y,x+roi_in->x,filters,xtrans);
             sum[f] += in[y*roi_in->width + x];
             count[f]++;
           }
-        }
-      const uint8_t f = FCxtrans(row+roi_in->y,col+roi_in->x,xtrans);
+      const int f = fcol(row+roi_in->y,col+roi_in->x,filters,xtrans);
       // for current cell, copy the current sensor's color data,
       // interpolate the other two colors from surrounding pixels of
       // their color
-      for (int c=0; c<3; c++)
+      for (int c=0; c < colors; c++)
       {
         if (c != f && count[c] != 0)
           out[4*(row*roi_out->width+col)+c] = sum[c] / count[c];
         else
-          out[4*(row*roi_out->width+col)+c] = in[(row+roi_out->y)*roi_in->width+col+roi_out->x];
+          out[4*(row*roi_out->width+col)+c] = in[row*roi_in->width+col];
       }
     }
 
@@ -892,29 +902,28 @@ xtrans_lin_interpolate(
   // COLORB TOT_WEIGHT
   // COLORPIX                   # color of center pixel
 
-  // would be nice to precalculate this for each orientation, but offsets change
-  // depending on roi_in->width
-  int lookup[6][6][32];
-  for (int row=0; row < 6; row++)
-    for (int col=0; col < 6; col++)
+  int lookup[16][16][32];
+  const int size=(filters == 9) ? 6 : 16;
+  for (int row=0; row < size; row++)
+    for (int col=0; col < size; col++)
     {
       int *ip = lookup[row][col]+1;
-      int sum[3] = {0};
-      const uint8_t f = FCxtrans(row+roi_in->y,col+roi_in->x,xtrans);
+      int sum[4] = {0};
+      const int f = fcol(row+roi_in->y,col+roi_in->x,filters,xtrans);
       // make list of adjoining pixel offsets by weight & color
       for (int y=-1; y <= 1; y++)
         for (int x=-1; x <= 1; x++)
         {
           int weight = 1 << ((y==0) + (x==0));
-          const uint8_t color = FCxtrans(row+y+roi_in->y,col+x+roi_in->x,xtrans);
+          const int color = fcol(row+y+roi_in->y,col+x+roi_in->x,filters,xtrans);
           if (color == f) continue;
-          *ip++ = (roi_in->width*(y + roi_out->y) + roi_out->x + x);
+          *ip++ = (roi_in->width*y + x);
           *ip++ = weight;
           *ip++ = color;
           sum[color] += weight;
         }
       lookup[row][col][0] = (ip - lookup[row][col]) / 3; /* # of neighboring pixels found */
-      for (int c=0; c < 3; c++)
+      for (int c=0; c < colors; c++)
         if (c != f)
         {
           *ip++ = c;
@@ -929,16 +938,16 @@ xtrans_lin_interpolate(
   for (int row=1; row < roi_out->height-1; row++)
   {
     float *buf = out + 4*roi_out->width*row + 4;
-    const float *buf_in = in + roi_in->width*(row + roi_out->y) + 1 + roi_out->x;
+    const float *buf_in = in + roi_in->width*row + 1;
     for (int col=1; col < roi_out->width-1; col++)
     {
-      float sum[3] = {0.0f};
-      int *ip = lookup[row % 6][col % 6]; // interp. lookup for current pos in sensor
+      float sum[4] = {0.0f};
+      int *ip = lookup[row % size][col % size];
       // for each adjoining pixel not of this pixel's color, sum up its weighted values
       for (int i=*ip++; i--; ip+=3)
         sum[ip[2]] += buf_in[ip[0]] * ip[1];
       // for each interpolated color, load it into the pixel
-      for (int i=3; --i; ip+=2)
+      for (int i=colors; --i; ip+=2)
         buf[*ip] = sum[ip[0]] / ip[1];
       buf[*ip] = *buf_in;
       buf += 4;
@@ -961,9 +970,10 @@ xtrans_lin_interpolate(
    Gradients are numbered clockwise from NW=0 to W=7.
  */
 static void
-xtrans_vng_interpolate(
+vng_interpolate(
   float *out, const float *const in,
   const dt_iop_roi_t *const roi_out, const dt_iop_roi_t *const roi_in,
+  const unsigned int filters,
   const uint8_t (*const xtrans)[6])
 {
   static const signed char terms[] =
@@ -992,24 +1002,38 @@ xtrans_vng_interpolate(
       +1,+0,+2,+1,1,0x10
     },
     chood[] = { -1,-1, -1,0, -1,+1, 0,+1, +1,+1, +1,0, +1,-1, 0,-1 };
-  int *ip, *code[6][6];
-  float (*brow[5])[4];
+  int *ip, *code[16][16];
+  // ring buffer pointing to three most recent rows procesed (brow[3]
+  // is only used for rotating the buffer
+  float (*brow[4])[4];
   const int width = roi_out->width, height = roi_out->height;
+  const int prow = (filters == 9) ? 6 : 8;
+  const int pcol = (filters == 9) ? 6 : 2;
+  const int colors = (filters == 9) ? 3 : 4;
 
-  xtrans_lin_interpolate(out, in, roi_out, roi_in, xtrans);
+  // separate out G1 and G2 in Bayer patterns
+  unsigned int filters4;
+  if (filters == 9)
+    filters4 = filters;
+  else if ((filters & 3) == 1)
+    filters4 = filters | 0x03030303u;
+  else
+    filters4 = filters | 0x0c0c0c0cu;
 
-  ip = (int *) dt_alloc_align(16, (size_t)sizeof(*ip) * 6*6 * 320);
-  brow[4] = (float (*)[4]) dt_alloc_align(16, (size_t)sizeof(**brow)*width*3);
-  if (!ip || !brow[4])
+  lin_interpolate(out, in, roi_out, roi_in, filters4, xtrans);
+
+  char *buffer = (char *) dt_alloc_align(16, (size_t)sizeof(**brow)*width*3 + sizeof(*ip) * prow*pcol * 320);
+  if (!buffer)
   {
-    fprintf(stderr, "[demosaic] not able to allocate VNG buffers\n");
-    free(ip);
-    free(brow[4]);
+    fprintf(stderr, "[demosaic] not able to allocate VNG buffer\n");
     return;
   }
+  for (int row=0; row < 3; row++)
+    brow[row] = (float (*)[4]) buffer + row*width;
+  ip = (int *) (buffer + (size_t)sizeof(**brow)*width*3);
 
-  for (int row=0; row < 6; row++)               /* Precalculate for VNG */
-    for (int col=0; col < 6; col++)
+  for (int row=0; row < prow; row++)               /* Precalculate for VNG */
+    for (int col=0; col < pcol; col++)
     {
       code[row][col] = ip;
       const signed char *cp = terms;
@@ -1019,10 +1043,10 @@ xtrans_vng_interpolate(
         int y2 = *cp++, x2 = *cp++;
         int weight = *cp++;
         int grads = *cp++;
-        int color = FCxtrans(row+y1,col+x1,xtrans);
-        if (FCxtrans(row+y2,col+x2,xtrans) != color) continue;
-        int diag = (FCxtrans(row,col+1,xtrans) == color &&
-                    FCxtrans(row+1,col,xtrans) == color) ? 2:1;
+        int color = fcol(row+y1,col+x1,filters4,xtrans);
+        if (fcol(row+y2,col+x2,filters4,xtrans) != color) continue;
+        int diag = (fcol(row,col+1,filters4,xtrans) == color &&
+                    fcol(row+1,col,filters4,xtrans) == color) ? 2:1;
         if (abs(y1-y2) == diag && abs(x1-x2) == diag) continue;
         *ip++ = (y1*width + x1)*4 + color;
         *ip++ = (y2*width + x2)*4 + color;
@@ -1037,28 +1061,26 @@ xtrans_vng_interpolate(
       {
         int y = *cp++, x = *cp++;
         *ip++ = (y*width + x) * 4;
-        int color = FCxtrans(row,col,xtrans);
-        if (FCxtrans(row+y,col+x,xtrans) != color &&
-            FCxtrans(row+y*2,col+x*2,xtrans) == color)
+        int color = fcol(row,col,filters4,xtrans);
+        if (fcol(row+y,col+x,filters4,xtrans) != color &&
+            fcol(row+y*2,col+x*2,filters4,xtrans) == color)
           *ip++ = (y*width + x) * 8 + color;
         else
           *ip++ = 0;
       }
     }
 
-  for (int row=0; row < 3; row++)
-    brow[row] = brow[4] + row*width;
   for (int row=2; row < height-2; row++)        /* Do VNG interpolation */
   {
 #ifdef _OPENMP
-    #pragma omp parallel for default(none) shared(row, code, brow, out) private(ip) schedule(static)
+    #pragma omp parallel for default(none) shared(row, code, brow, out, filters4) private(ip) schedule(static)
 #endif
     for (int col=2; col < width-2; col++)
     {
       int g;
       float gval[8] = { 0.0f };
       float *pix = out + 4*(row*width+col);
-      ip = code[row%6][col%6];
+      ip = code[row%prow][col%pcol];
       while ((g = ip[0]) != INT_MAX)            /* Calculate gradients */
       {
         float diff = fabsf(pix[g] - pix[ip[1]]) * ip[2];
@@ -1082,14 +1104,14 @@ xtrans_vng_interpolate(
         continue;
       }
       float thold = gmin + (gmax * 0.5f);
-      float sum[3] = { 0.0f };
-      int color = FCxtrans(row,col,xtrans);
+      float sum[4] = { 0.0f };
+      int color = fcol(row,col,filters4,xtrans);
       int num=0;
       for (g=0; g < 8; g++,ip+=2)               /* Average the neighbors */
       {
         if (gval[g] <= thold)
         {
-          for (int c=0; c < 3; c++)
+          for (int c=0; c < colors; c++)
             if (c == color && ip[1])
               sum[c] += (pix[c] + pix[ip[1]]) * 0.5f;
             else
@@ -1097,7 +1119,7 @@ xtrans_vng_interpolate(
           num++;
         }
       }
-      for (int c=0; c < 3; c++)                 /* Save to buffer */
+      for (int c=0; c < colors; c++)            /* Save to buffer */
       {
         float tot = pix[color];
         if (c != color)
@@ -1107,14 +1129,22 @@ xtrans_vng_interpolate(
     }
     if (row > 3)                                /* Write buffer to image */
       memcpy (out + 4*((row-2)*width+2), brow[0]+2, (size_t)(width-4)*4*sizeof(*out));
+    // rotate ring buffer
     for (int g=0; g < 4; g++)
       brow[(g-1) & 3] = brow[g];
   }
   // copy the final two rows to the image
   memcpy (out + (4*((height-4)*width+2)), brow[0]+2, (size_t)(width-4)*4*sizeof(*out));
   memcpy (out + (4*((height-3)*width+2)), brow[1]+2, (size_t)(width-4)*4*sizeof(*out));
-  free (brow[4]);
-  free (code[0][0]);
+  free (buffer);
+
+  if (filters4 != 9)
+    // for Bayer mix the two greens to make VNG4
+#ifdef _OPENMP
+    #pragma omp parallel for default(none) shared(out) schedule(static)
+#endif
+    for (int i=0; i < height * width; i++)
+      out[i*4+1] = (out[i*4+1] + out[i*4+3])/2.0f;
 }
 
 
@@ -1399,7 +1429,7 @@ process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, v
     if(img->filters==9u)
     {
       if (demosaicing_method < DT_IOP_DEMOSAIC_MARKESTEIJN)
-        xtrans_vng_interpolate((float *)o, pixels, &roo, &roi, img->xtrans);
+        vng_interpolate((float *)o, pixels, &roo, &roi, data->filters, img->xtrans);
       else
         xtrans_markesteijn_interpolate(
           (float *)o, pixels, &roo, &roi, img, img->xtrans, 1+(demosaicing_method-DT_IOP_DEMOSAIC_MARKESTEIJN)*2);
@@ -1425,7 +1455,9 @@ process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, v
                                    data->filters, roi_in->x, roi_in->y, 1, threshold);
           break;
       }
-      if (demosaicing_method != DT_IOP_DEMOSAIC_AMAZE)
+      if (demosaicing_method == DT_IOP_DEMOSAIC_VNG4)
+        vng_interpolate((float *)o, in, &roo, &roi, data->filters, img->xtrans);
+      else if (demosaicing_method != DT_IOP_DEMOSAIC_AMAZE)
         demosaic_ppg((float *)o, in, &roo, &roi, data->filters, data->median_thrs);
       else
         amaze_demosaic_RT(self, piece, in, (float *)o, &roi, &roo, data->filters);
@@ -1433,7 +1465,9 @@ process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, v
     }
     else
     {
-      if (demosaicing_method != DT_IOP_DEMOSAIC_AMAZE)
+      if (demosaicing_method == DT_IOP_DEMOSAIC_VNG4)
+        vng_interpolate((float *)o, pixels, &roo, &roi, data->filters, img->xtrans);
+      else if (demosaicing_method != DT_IOP_DEMOSAIC_AMAZE)
         demosaic_ppg((float *)o, pixels, &roo, &roi, data->filters, data->median_thrs);
       else
         amaze_demosaic_RT(self, piece, pixels, (float *)o, &roi, &roo, data->filters);
@@ -1454,7 +1488,7 @@ process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, v
     if(img->filters==9u)
     {
       if (demosaicing_method < DT_IOP_DEMOSAIC_MARKESTEIJN)
-        xtrans_vng_interpolate(tmp, pixels, &roo, &roi, img->xtrans);
+        vng_interpolate(tmp, pixels, &roo, &roi, data->filters, img->xtrans);
       else
         xtrans_markesteijn_interpolate(
           tmp, pixels, &roo, &roi, img, img->xtrans, 1+(demosaicing_method-DT_IOP_DEMOSAIC_MARKESTEIJN)*2);
@@ -1479,8 +1513,10 @@ process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, v
                                    data->filters, roi_in->x, roi_in->y, 1, threshold);
           break;
       }
-      // wanted ppg or zoomed out a lot and quality is limited to 1
-      if(demosaicing_method != DT_IOP_DEMOSAIC_AMAZE)
+      if (demosaicing_method == DT_IOP_DEMOSAIC_VNG4)
+        vng_interpolate(tmp, in, &roo, &roi, data->filters, img->xtrans);
+      else if(demosaicing_method != DT_IOP_DEMOSAIC_AMAZE)
+        // wanted ppg or zoomed out a lot and quality is limited to 1
         demosaic_ppg(tmp, in, &roo, &roi, data->filters, data->median_thrs);
       else
         amaze_demosaic_RT(self, piece, in, tmp, &roi, &roo, data->filters);
@@ -1488,7 +1524,9 @@ process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, v
     }
     else
     {
-      if(demosaicing_method != DT_IOP_DEMOSAIC_AMAZE)
+      if (demosaicing_method == DT_IOP_DEMOSAIC_VNG4)
+        vng_interpolate(tmp, pixels, &roo, &roi, data->filters, img->xtrans);
+      else if(demosaicing_method != DT_IOP_DEMOSAIC_AMAZE)
         demosaic_ppg(tmp, pixels, &roo, &roi, data->filters, data->median_thrs);
       else
         amaze_demosaic_RT(self, piece, pixels, tmp, &roi, &roo, data->filters);
@@ -1944,8 +1982,9 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *params, dt_de
   if(d->filters == 9u)
     piece->process_cl_ready = 0;
 
-  // Demosaic mode AMAZE not implemented in OpenCL yet.
-  if(d->demosaicing_method == DT_IOP_DEMOSAIC_AMAZE)
+  // Demosaic modes AMAZE and VNG4 not implemented in OpenCL yet.
+  if((d->demosaicing_method != DT_IOP_DEMOSAIC_AMAZE) ||
+     (d->demosaicing_method != DT_IOP_DEMOSAIC_VNG4))
     piece->process_cl_ready = 0;
 
   // OpenCL can not (yet) green-equilibrate over full image.
@@ -2060,6 +2099,9 @@ demosaic_method_bayer_callback(GtkWidget *combo, dt_iop_module_t *self)
     case DT_IOP_DEMOSAIC_AMAZE:
       p->demosaicing_method = DT_IOP_DEMOSAIC_AMAZE;
       break;
+    case DT_IOP_DEMOSAIC_VNG4:
+      p->demosaicing_method = DT_IOP_DEMOSAIC_VNG4;
+      break;
     default:
     case DT_IOP_DEMOSAIC_PPG:
       p->demosaicing_method = DT_IOP_DEMOSAIC_PPG;
@@ -2091,6 +2133,7 @@ void gui_init     (struct dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), g->demosaic_method_bayer, TRUE, TRUE, 0);
   dt_bauhaus_combobox_add(g->demosaic_method_bayer, _("PPG (fast)"));
   dt_bauhaus_combobox_add(g->demosaic_method_bayer, _("amaze (slow)"));
+  dt_bauhaus_combobox_add(g->demosaic_method_bayer, _("VNG4 (smooths artifacts)"));
   g_object_set(G_OBJECT(g->demosaic_method_bayer), "tooltip-text", _("demosaicing raw data method"), (char *)NULL);
 
   g->demosaic_method_xtrans = dt_bauhaus_combobox_new(self);
