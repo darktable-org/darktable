@@ -2133,7 +2133,7 @@ void gui_init     (struct dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), g->demosaic_method_bayer, TRUE, TRUE, 0);
   dt_bauhaus_combobox_add(g->demosaic_method_bayer, _("PPG (fast)"));
   dt_bauhaus_combobox_add(g->demosaic_method_bayer, _("AMaZE (slow)"));
-  dt_bauhaus_combobox_add(g->demosaic_method_bayer, _("VNG4 (smooths artifacts)"));
+  dt_bauhaus_combobox_add(g->demosaic_method_bayer, _("VNG4 (slow)"));
   g_object_set(G_OBJECT(g->demosaic_method_bayer), "tooltip-text", _("demosaicing raw data method"), (char *)NULL);
 
   g->demosaic_method_xtrans = dt_bauhaus_combobox_new(self);
