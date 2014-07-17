@@ -462,6 +462,15 @@ int dt_masks_version(void)
   return 2;
 }
 
+int
+dt_masks_legacy_params(
+  dt_develop_t *dev,
+  void *params,
+  const int old_version, const int new_version)
+{
+  return 1;
+}
+
 dt_masks_form_t *dt_masks_create(dt_masks_type_t type)
 {
   dt_masks_form_t *form = (dt_masks_form_t *)malloc(sizeof(dt_masks_form_t));
@@ -575,10 +584,24 @@ void dt_masks_read_forms(dt_develop_t *dev)
       }
     }
 
-    /*
-     * TODO:
-     *       2. add legacy masks update infrastructure.
-     */
+    if(form->version != dt_masks_version())
+    {
+      if(dt_masks_legacy_params(dev,
+                                form,
+                                form->version, dt_masks_version()))
+      {
+        const char *fname = dev->image_storage.filename + strlen(dev->image_storage.filename);
+        while(fname > dev->image_storage.filename && *fname != '/') fname --;
+        if(fname > dev->image_storage.filename) fname++;
+
+        fprintf(stderr, "[dt_masks_read_forms] %s (imgid `%i'): mask version mismatch: history is %d, dt %d.\n", fname, dev->image_storage.id, form->version, dt_masks_version());
+        dt_control_log(_("%s: mask version mismatch: %d != %d"), fname, dt_masks_version(), form->version);
+
+        dt_masks_free_form(form);
+
+        continue;
+      }
+    }
 
     //and we can add the form to the list
     dev->forms = g_list_append(dev->forms,form);
