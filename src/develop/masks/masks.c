@@ -457,11 +457,16 @@ int dt_masks_get_mask_roi(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece
   return 0;
 }
 
+int dt_masks_version(void)
+{
+  return 1;
+}
+
 dt_masks_form_t *dt_masks_create(dt_masks_type_t type)
 {
   dt_masks_form_t *form = (dt_masks_form_t *)malloc(sizeof(dt_masks_form_t));
   form->type = type;
-  form->version = 1;
+  form->version = dt_masks_version();
   form->formid = time(NULL);
 
   form->points = NULL;
