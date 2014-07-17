@@ -570,6 +570,11 @@ void dt_masks_read_forms(dt_develop_t *dev)
       }
     }
 
+    /*
+     * TODO: 1. bump mask version to 2
+     *       2. add legacy masks update infrastructure.
+     */
+
     //and we can add the form to the list
     dev->forms = g_list_append(dev->forms,form);
   }
