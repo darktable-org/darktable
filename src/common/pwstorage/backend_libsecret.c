@@ -31,6 +31,8 @@
 
 #define GFOREACH(item, list) for(GList *__glist = list; __glist && (item = __glist->data, true); __glist = __glist->next)
 
+#define EMPTY_STRING(string) !*(string)
+
 const SecretSchema * secret_darktable_get_schema (void) G_GNUC_CONST;
 #define SECRET_SCHEMA_DARKTABLE  secret_darktable_get_schema ()
 
@@ -115,7 +117,7 @@ dt_pwstorage_libsecret_destroy(const backend_libsecret_context_t *context)
 gboolean dt_pwstorage_libsecret_set(const backend_libsecret_context_t* context,
     const gchar* slot, GHashTable* attributes)
 {
-  if (context == NULL || slot == NULL || strlen(slot) == 0 || attributes == NULL) {
+  if (context == NULL || slot == NULL || EMPTY_STRING(slot) || attributes == NULL) {
     return FALSE;
   }
 
@@ -154,7 +156,7 @@ gboolean dt_pwstorage_libsecret_set(const backend_libsecret_context_t* context,
 GHashTable* dt_pwstorage_libsecret_get(const backend_libsecret_context_t*
     context, const gchar* slot)
 {
-  if (context == NULL || slot == NULL || strlen(slot) == 0) {
+  if (context == NULL || slot == NULL || EMPTY_STRING(slot)) {
     goto error_out;
   }
 
