@@ -468,6 +468,30 @@ dt_masks_legacy_params(
   void *params,
   const int old_version, const int new_version)
 {
+  if(old_version == 1 && new_version == 2)
+  {
+    /*
+     * difference: before v2 images were originally rotated on load, and then
+     * maybe in flip iop
+     * after v2: images are only rotated in flip iop.
+     */
+
+    dt_masks_form_t *m = (dt_masks_form_t *)params;
+
+    const dt_image_orientation_t ori = dt_image_orientation(&dev->image_storage);
+
+    if(ori == ORIENTATION_NONE)
+    {
+      //image is not rotated, we're fine!
+      m->version = new_version;
+      return 0;
+    }
+    else
+    {
+      //TODO !!!
+    }
+  }
+
   return 1;
 }
 
