@@ -459,7 +459,7 @@ int dt_masks_get_mask_roi(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece
 
 int dt_masks_version(void)
 {
-  return 1;
+  return 2;
 }
 
 dt_masks_form_t *dt_masks_create(dt_masks_type_t type)
@@ -576,7 +576,7 @@ void dt_masks_read_forms(dt_develop_t *dev)
     }
 
     /*
-     * TODO: 1. bump mask version to 2
+     * TODO:
      *       2. add legacy masks update infrastructure.
      */
 
