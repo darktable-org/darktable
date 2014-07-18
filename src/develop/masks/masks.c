@@ -541,8 +541,8 @@ dt_masks_legacy_params(
 
       if(m->type & DT_MASKS_CIRCLE)
       {
-        // TODO
-        return 1;
+        dt_masks_point_circle_t *circle = (dt_masks_point_circle_t *)p->data;
+        module->distort_backtransform(module, &piece, circle->center, 1);
       }
       if(m->type & DT_MASKS_PATH)
       {
