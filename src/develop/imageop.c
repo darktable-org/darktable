@@ -280,7 +280,7 @@ error:
   return 1;
 }
 
-static int
+int
 dt_iop_load_module_by_so(dt_iop_module_t *module, dt_iop_module_so_t *so, dt_develop_t *dev)
 {
   module->dt = &darktable;

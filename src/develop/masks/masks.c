@@ -488,7 +488,65 @@ dt_masks_legacy_params(
     }
     else
     {
-      //TODO !!!
+      dt_iop_module_so_t *module_so = NULL;
+
+      GList *iop = darktable.iop;
+      while(iop)
+      {
+        module_so = (dt_iop_module_so_t *)iop->data;
+
+        if(!strncmp(module_so->op, "flip", 20))
+          break;
+        else
+          module_so = NULL;
+
+        iop = g_list_next(iop);
+      }
+
+      if(module_so == NULL)
+        return 1;
+
+      dt_iop_module_t *module = calloc(1, sizeof(dt_iop_module_t));
+      if(dt_iop_load_module_by_so(module, module_so, dev))
+      {
+        free(module);
+        return 1;
+      }
+      module->data = module_so->data;
+      module->so = module_so;
+
+      module->init(module);
+      if(module->params_size == 0)
+      {
+        dt_iop_cleanup_module(module);
+        free(module);
+        return 1;
+      }
+
+      if(module->reload_defaults)
+        module->reload_defaults(module);
+
+      dt_dev_pixelpipe_iop_t piece = { 0 };
+
+      module->init_pipe(module, NULL, &piece);
+      module->commit_params(module, module->default_params, NULL, &piece);
+
+      piece.buf_in.width  = 1;
+      piece.buf_in.height = 1;
+
+      GList *p = g_list_first(m->points);
+
+      if(!p)
+        return 1;
+
+      // TODO
+
+      m->version = new_version;
+
+      dt_iop_cleanup_module(module);
+      free(module);
+
+      return 1;
     }
   }
 
