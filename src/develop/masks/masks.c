@@ -566,6 +566,7 @@ dt_masks_legacy_params(
       }
       if(m->type & DT_MASKS_CLONE)
       {
+        // NOTE: can be: DT_MASKS_CIRCLE, DT_MASKS_ELLIPSE, DT_MASKS_PATH
         // TODO
         return 1;
       }
