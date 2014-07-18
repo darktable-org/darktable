@@ -586,8 +586,7 @@ dt_masks_legacy_params(
       if(m->type & DT_MASKS_CLONE)
       {
         // NOTE: can be: DT_MASKS_CIRCLE, DT_MASKS_ELLIPSE, DT_MASKS_PATH
-        // TODO
-        return 1;
+        module->distort_backtransform(module, &piece, m->source, 1);
       }
 
       m->version = new_version;
