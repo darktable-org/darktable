@@ -539,14 +539,43 @@ dt_masks_legacy_params(
       if(!p)
         return 1;
 
-      // TODO
+      if(m->type & DT_MASKS_CIRCLE)
+      {
+        // TODO
+        return 1;
+      }
+      if(m->type & DT_MASKS_PATH)
+      {
+        // TODO
+        return 1;
+      }
+      if(m->type & DT_MASKS_GRADIENT)
+      {
+        // TODO
+        return 1;
+      }
+      if(m->type & DT_MASKS_ELLIPSE)
+      {
+        // TODO
+        return 1;
+      }
+      if(m->type & DT_MASKS_BRUSH)
+      {
+        // TODO
+        return 1;
+      }
+      if(m->type & DT_MASKS_CLONE)
+      {
+        // TODO
+        return 1;
+      }
 
       m->version = new_version;
 
       dt_iop_cleanup_module(module);
       free(module);
 
-      return 1;
+      return 0;
     }
   }
 
