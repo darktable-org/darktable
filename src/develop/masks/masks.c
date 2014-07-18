@@ -566,7 +566,12 @@ dt_masks_legacy_params(
       }
       if(m->type & DT_MASKS_BRUSH)
       {
-        // TODO
+        while(p)
+        {
+          // TODO
+
+          p = g_list_next(p);
+        }
         return 1;
       }
       if(m->type & DT_MASKS_CLONE)
