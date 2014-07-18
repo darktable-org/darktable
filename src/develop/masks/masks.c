@@ -561,8 +561,15 @@ dt_masks_legacy_params(
       }
       if(m->type & DT_MASKS_ELLIPSE)
       {
-        // TODO
-        return 1;
+        dt_masks_point_ellipse_t *ellipse = (dt_masks_point_ellipse_t *)p->data;
+        module->distort_backtransform(module, &piece, ellipse->center, 1);
+
+        if(ori & ORIENTATION_SWAP_XY)
+        {
+          const float y = ellipse->radius[0];
+          ellipse->radius[0] = ellipse->radius[1];
+          ellipse->radius[1] = y;
+        }
       }
       if(m->type & DT_MASKS_BRUSH)
       {
