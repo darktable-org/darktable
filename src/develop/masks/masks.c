@@ -577,11 +577,13 @@ dt_masks_legacy_params(
       {
         while(p)
         {
-          // TODO
+          dt_masks_point_brush_t *brush = (dt_masks_point_brush_t *)p->data;
+          module->distort_backtransform(module, &piece, brush->corner, 1);
+          module->distort_backtransform(module, &piece, brush->ctrl1, 1);
+          module->distort_backtransform(module, &piece, brush->ctrl2, 1);
 
           p = g_list_next(p);
         }
-        return 1;
       }
       if(m->type & DT_MASKS_CLONE)
       {
