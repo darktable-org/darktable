@@ -548,11 +548,13 @@ dt_masks_legacy_params(
       {
         while(p)
         {
-          // TODO
+          dt_masks_point_path_t *path = (dt_masks_point_path_t *)p->data;
+          module->distort_backtransform(module, &piece, path->corner, 1);
+          module->distort_backtransform(module, &piece, path->ctrl1, 1);
+          module->distort_backtransform(module, &piece, path->ctrl2, 1);
 
           p = g_list_next(p);
         }
-        return 1;
       }
       if(m->type & DT_MASKS_GRADIENT)
       {
