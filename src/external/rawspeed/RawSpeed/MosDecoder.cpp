@@ -122,7 +122,6 @@ RawImage MosDecoder::decodeRawInternal() {
   mRaw->createData();
   ByteStream input(mFile->getData(off), mFile->getSize()-off);
 
-  fprintf(stderr, "Decoding %dx%d image at offset %d\n", width, height, off);
   int compression = raw->getEntry(COMPRESSION)->getInt();
   if (1 == compression) {
     if (mRootIFD->endian == big)
@@ -132,7 +131,6 @@ RawImage MosDecoder::decodeRawInternal() {
   }
   else if (99 == compression || 7 == compression) {
     LJpegPlain l(mFile, mRaw);
-    fprintf(stderr, "starting ljpeg at offset %d\n", off);
     l.startDecoder(off, mFile->getSize()-off, 0, 0);
   } else
     ThrowRDE("MOS Decoder: Unsupported compression: %d", compression);
