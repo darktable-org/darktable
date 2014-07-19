@@ -1051,6 +1051,18 @@ fit:;
     fprintf(stdout, "echo \"INSERT INTO presets (name,description,operation,op_version,op_params,enabled,blendop_params,blendop_version,multi_priority,multi_name,model,maker,lens,iso_min,iso_max,exposure_min,exposure_max,aperture_min,aperture_max,focal_length_min,focal_length_max,writeprotect,autoapply,filter,def,format) VALUES('%s','','basecurve',%d,X'%s',1,X'00000000180000000000C842000000000000000000000000000000000000000000000000000000000000000000000000000000000000803F0000803F00000000000000000000803F0000803F00000000000000000000803F0000803F00000000000000000000803F0000803F00000000000000000000803F0000803F00000000000000000000803F0000803F00000000000000000000803F0000803F00000000000000000000803F0000803F00000000000000000000803F0000803F00000000000000000000803F0000803F00000000000000000000803F0000803F00000000000000000000803F0000803F00000000000000000000803F0000803F00000000000000000000803F0000803F00000000000000000000803F0000803F00000000000000000000803F0000803F',7,0,'','%%','%%','%%',0.0,51200.0,0.0,10000000.0,0.0,100000000.0,0.0,1000.0,0,0,0,0,2);\" | sqlite3 ~/.config/darktable/library.db\n",
       opt.filename_exif ? model : "new measured basecurve",
       BASECURVE_PARAMS_VERSION, encoded);
+
+    fprintf(stdout, "\n\n\n"
+            "# if it pleases you, then in iop/basecurve.c append the following line to the array basecurve_presets and modify its name\n"
+            "# {\"%s\", \"%s\", \"%s\", 0, 51200, {{{",
+            opt.filename_exif ? model : "new measured basecurve",
+            opt.filename_exif ? maker : "<MAKER>",
+            opt.filename_exif ? model : "<MODEL>");
+    for(int k=0;k<fit.m_numAnchors;k++)
+    {
+      fprintf(stdout, "{%f, %f}%s", params.basecurve[0][k].x, params.basecurve[0][k].y, k==fit.m_numAnchors-1?"":", ");
+    }
+    fprintf(stdout, "}}, {%d}, {m}}, 0, 1},\n\n\n", fit.m_numAnchors);
   }
 
   /* ------------------------------------------------------------------------
