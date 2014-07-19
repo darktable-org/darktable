@@ -557,9 +557,16 @@ dt_masks_legacy_params(
         }
       }
       if(m->type & DT_MASKS_GRADIENT)
-      {
-        // TODO
-        return 1;
+      { // TODO: new ones have wrong rotation.
+        dt_masks_point_gradient_t *gradient = (dt_masks_point_gradient_t *)p->data;
+        module->distort_backtransform(module, &piece, gradient->anchor, 1);
+
+        if(ori == ORIENTATION_ROTATE_180_DEG)
+          gradient->rotation -=  180.0f;
+        else if(ori == ORIENTATION_ROTATE_CCW_90_DEG)
+          gradient->rotation -=  90.0f;
+        else if(ori == ORIENTATION_ROTATE_CW_90_DEG)
+          gradient->rotation -= -90.0f;
       }
       if(m->type & DT_MASKS_ELLIPSE)
       {
