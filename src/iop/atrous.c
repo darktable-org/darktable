@@ -781,21 +781,7 @@ void init_presets (dt_iop_module_so_t *self)
     p.y[atrous_Lt][k] = 0.0f;
     p.y[atrous_ct][k] = 0.0f;
   }
-  dt_gui_presets_add_generic(_("enhance coarse"), self->op, self->version(), &p, sizeof(p), 1);
-  for(int k=0; k<BANDS; k++)
-  {
-    p.x[atrous_L][k] = k/(BANDS-1.0);
-    p.x[atrous_c][k] = k/(BANDS-1.0);
-    p.x[atrous_s][k] = k/(BANDS-1.0);
-    p.y[atrous_L][k] = .5f+.5f*k/(float)BANDS;
-    p.y[atrous_c][k] = .5f;
-    p.y[atrous_s][k] = .5f;
-    p.x[atrous_Lt][k] = k/(BANDS-1.0);
-    p.x[atrous_ct][k] = k/(BANDS-1.0);
-    p.y[atrous_Lt][k] = .4f*k/(float)BANDS;
-    p.y[atrous_ct][k] = .6f*k/(float)BANDS;
-  }
-  dt_gui_presets_add_generic(_("sharpen and denoise (strong)"), self->op, self->version(), &p, sizeof(p), 1);
+  dt_gui_presets_add_generic(_("coarse"), self->op, self->version(), &p, sizeof(p), 1);
   for(int k=0; k<BANDS; k++)
   {
     p.x[atrous_L][k] = k/(BANDS-1.0);
@@ -809,21 +795,7 @@ void init_presets (dt_iop_module_so_t *self)
     p.y[atrous_Lt][k] = .2f*k/(float)BANDS;
     p.y[atrous_ct][k] = .3f*k/(float)BANDS;
   }
-  dt_gui_presets_add_generic(_("sharpen and denoise"), self->op, self->version(), &p, sizeof(p), 1);
-  for(int k=0; k<BANDS; k++)
-  {
-    p.x[atrous_L][k] = k/(BANDS-1.0);
-    p.x[atrous_c][k] = k/(BANDS-1.0);
-    p.x[atrous_s][k] = k/(BANDS-1.0);
-    p.y[atrous_L][k] = .5f+.5f*k/(float)BANDS;
-    p.y[atrous_c][k] = .5f;
-    p.y[atrous_s][k] = .5f;
-    p.x[atrous_Lt][k] = k/(BANDS-1.0);
-    p.x[atrous_ct][k] = k/(BANDS-1.0);
-    p.y[atrous_Lt][k] = 0.0f;
-    p.y[atrous_ct][k] = 0.0f;
-  }
-  dt_gui_presets_add_generic(_("sharpen (strong)"), self->op, self->version(), &p, sizeof(p), 1);
+  dt_gui_presets_add_generic(_("denoise sharpen"), self->op, self->version(), &p, sizeof(p), 1);
   for(int k=0; k<BANDS; k++)
   {
     p.x[atrous_L][k] = k/(BANDS-1.0);
@@ -851,21 +823,7 @@ void init_presets (dt_iop_module_so_t *self)
     p.y[atrous_Lt][k] = .0f;
     p.y[atrous_ct][k] = fmaxf(0.0f, (.60f*k/(float)BANDS) - 0.30f);
   }
-  dt_gui_presets_add_generic(_("chroma denoise"), self->op, self->version(), &p, sizeof(p), 1);
-  for(int k=0; k<BANDS; k++)
-  {
-    p.x[atrous_L][k] = k/(BANDS-1.0);
-    p.x[atrous_c][k] = k/(BANDS-1.0);
-    p.x[atrous_s][k] = k/(BANDS-1.0);
-    p.y[atrous_L][k] = .5f;
-    p.y[atrous_c][k] = .5f;
-    p.y[atrous_s][k] = .0f;
-    p.x[atrous_Lt][k] = k/(BANDS-1.0);
-    p.x[atrous_ct][k] = k/(BANDS-1.0);
-    p.y[atrous_Lt][k] = fmaxf(0.0f, (.30f*k/(float)BANDS) - 0.15f);
-    p.y[atrous_ct][k] = .30f*k/(float)BANDS;
-  }
-  dt_gui_presets_add_generic(_("denoise (subtle)"), self->op, self->version(), &p, sizeof(p), 1);
+  dt_gui_presets_add_generic(_("denoise chroma"), self->op, self->version(), &p, sizeof(p), 1);
   for(int k=0; k<BANDS; k++)
   {
     p.x[atrous_L][k] = k/(BANDS-1.0);
@@ -885,22 +843,6 @@ void init_presets (dt_iop_module_so_t *self)
     p.x[atrous_L][k] = k/(BANDS-1.0);
     p.x[atrous_c][k] = k/(BANDS-1.0);
     p.x[atrous_s][k] = k/(BANDS-1.0);
-    p.y[atrous_L][k] = .5f;//-.4f*k/(float)BANDS;
-    p.y[atrous_c][k] = .5f;//fmaxf(0.0f, .5f-.6f*k/(float)BANDS);
-    p.y[atrous_s][k] = .5f;
-    p.x[atrous_Lt][k] = k/(BANDS-1.0);
-    p.x[atrous_ct][k] = k/(BANDS-1.0);
-    p.y[atrous_Lt][k] = .4f*k/(float)BANDS;
-    p.y[atrous_ct][k] = fminf(.5f, .8f*k/(float)BANDS);
-  }
-  p.y[atrous_s][BANDS-1] = 0.0f;
-  p.y[atrous_s][BANDS-2] = 0.42f;
-  dt_gui_presets_add_generic(_("denoise (strong)"), self->op, self->version(), &p, sizeof(p), 1);
-  for(int k=0; k<BANDS; k++)
-  {
-    p.x[atrous_L][k] = k/(BANDS-1.0);
-    p.x[atrous_c][k] = k/(BANDS-1.0);
-    p.x[atrous_s][k] = k/(BANDS-1.0);
     p.y[atrous_L][k] = fminf(.5f, .3f + .35f * k/(BANDS-1.0));
     p.y[atrous_c][k] = .5f;
     p.y[atrous_s][k] = .0f;
@@ -911,20 +853,6 @@ void init_presets (dt_iop_module_so_t *self)
   }
   p.y[atrous_L][0] = .5f;
   dt_gui_presets_add_generic(_("bloom"), self->op, self->version(), &p, sizeof(p), 1);
-  for(int k=0; k<BANDS; k++)
-  {
-    p.x[atrous_L][k] = k/(BANDS-1.0);
-    p.x[atrous_c][k] = k/(BANDS-1.0);
-    p.x[atrous_s][k] = k/(BANDS-1.0);
-    p.y[atrous_L][k] = 0.55f;
-    p.y[atrous_c][k] = .5f;
-    p.y[atrous_s][k] = .0f;
-    p.x[atrous_Lt][k] = k/(BANDS-1.0);
-    p.x[atrous_ct][k] = k/(BANDS-1.0);
-    p.y[atrous_Lt][k] = 0.0f;
-    p.y[atrous_ct][k] = 0.0f;
-  }
-  dt_gui_presets_add_generic(_("clarity (subtle)"), self->op, self->version(), &p, sizeof(p), 1);
   for(int k=0; k<BANDS; k++)
   {
     p.x[atrous_L][k] = k/(BANDS-1.0);

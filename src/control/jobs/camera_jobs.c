@@ -22,6 +22,7 @@
 #include "control/conf.h"
 #include "control/jobs/camera_jobs.h"
 #include "control/jobs/image_jobs.h"
+#include "control/progress.h"
 #include "gui/gtk.h"
 
 #include <stdio.h>
@@ -67,7 +68,7 @@ typedef struct dt_camera_import_t
 
   GList *images;
   struct dt_camera_t *camera;
-  const guint *bgj;
+  dt_progress_t *progress;
   double fraction;
   uint32_t import_count;
 }
@@ -194,7 +195,7 @@ static int32_t dt_camera_capture_job_run(dt_job_t *job)
   }
 
   /* create the bgjob plate */
-  const guint *jid  = dt_control_backgroundjobs_create(darktable.control, 0, message);
+  dt_progress_t *progress = dt_control_progress_create(darktable.control, TRUE, message);
 
   GList *current_value = g_list_find(values,original_value);
   for(uint32_t i=0; i < params->count; i++)
@@ -232,7 +233,7 @@ static int32_t dt_camera_capture_job_run(dt_job_t *job)
       dt_camctl_camera_capture(darktable.camctl,NULL);
 
       fraction += 1.0/total;
-      dt_control_backgroundjobs_progress(darktable.control, jid, fraction);
+      dt_control_progress_set_progress(darktable.control, progress, fraction);
     }
 
     // lets reset to original value before continue
@@ -251,7 +252,7 @@ static int32_t dt_camera_capture_job_run(dt_job_t *job)
   pthread_cond_destroy(&params->done);
 
   /* cleanup */
-  dt_control_backgroundjobs_destroy(darktable.control, jid);
+  dt_control_progress_destroy(darktable.control, progress);
   dt_import_session_destroy(params->shared.session);
   dt_camctl_unregister_listener(darktable.camctl, listener);
   g_free(listener);
@@ -333,7 +334,7 @@ void _camera_import_image_downloaded(const dt_camera_t *camera,const char *filen
 
   t->fraction+=1.0/g_list_length(t->images);
 
-  dt_control_backgroundjobs_progress(darktable.control, t->bgj, t->fraction );
+  dt_control_progress_set_progress(darktable.control, t->progress, t->fraction);
 
   t->import_count++;
 }
@@ -353,7 +354,7 @@ static int32_t dt_camera_import_job_run(dt_job_t *job)
   guint total = g_list_length( params->images );
   char message[512]= {0};
   snprintf(message, sizeof(message), ngettext ("importing %d image from camera", "importing %d images from camera", total), total );
-  params->bgj = dt_control_backgroundjobs_create(darktable.control, 0, message);
+  params->progress = dt_control_progress_create(darktable.control, TRUE, message);
 
   // Switch to new filmroll
   dt_film_open(dt_import_session_film_id(params->shared.session));
@@ -370,7 +371,7 @@ static int32_t dt_camera_import_job_run(dt_job_t *job)
   dt_camctl_register_listener(darktable.camctl,&listener);
   dt_camctl_import(darktable.camctl, params->camera, params->images);
   dt_camctl_unregister_listener(darktable.camctl,&listener);
-  dt_control_backgroundjobs_destroy(darktable.control, params->bgj);
+  dt_control_progress_destroy(darktable.control, params->progress);
 
   dt_import_session_destroy(params->shared.session);
   free(params);

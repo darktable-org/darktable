@@ -20,6 +20,7 @@
 #include "control/control.h"
 #include "control/conf.h"
 #include "control/jobs.h"
+#include "control/progress.h"
 #include "common/film.h"
 #include "common/dtpthread.h"
 #include "common/collection.h"
@@ -364,7 +365,8 @@ void dt_film_import1(dt_film_t *film)
   guint total = g_list_length(images);
   g_snprintf(message, sizeof(message) - 1,
              ngettext("importing %d image","importing %d images", total), total);
-  const guint *jid = dt_control_backgroundjobs_create(darktable.control, 0, message);
+  dt_progress_t *progress = dt_control_progress_create(darktable.control, TRUE, message);
+
 
   /* loop thru the images and import to current film roll */
   dt_film_t *cfr = film;
@@ -423,7 +425,8 @@ void dt_film_import1(dt_film_t *film)
     dt_image_import(cfr->id, (const gchar *)image->data, FALSE);
 
     fraction+=1.0/total;
-    dt_control_backgroundjobs_progress(darktable.control, jid, fraction);
+    dt_control_progress_set_progress(darktable.control, progress, fraction);
+
 
   }
   while( (image = g_list_next(image)) != NULL);
@@ -432,7 +435,7 @@ void dt_film_import1(dt_film_t *film)
   dt_control_queue_redraw_center();
   dt_control_signal_raise(darktable.signals,DT_SIGNAL_TAG_CHANGED);
 
-  dt_control_backgroundjobs_destroy(darktable.control, jid);
+  dt_control_progress_destroy(darktable.control, progress);
   dt_control_signal_raise(darktable.signals , DT_SIGNAL_FILMROLLS_IMPORTED,film->id);
 
   //FIXME: maybe refactor into function and call it?

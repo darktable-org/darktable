@@ -34,6 +34,7 @@ device=$(hdiutil attach -readwrite -noverify -noautoopen "pack.temp.dmg" | \
 echo '
  tell application "Finder"
 	tell disk "'${PROGN}'"
+		close
 		open
 		set current view of container window to icon view
 		set toolbar visible of container window to false
@@ -45,9 +46,6 @@ echo '
 		set position of item "'${PROGN}'" of container window to {100, 100}
 		set position of item "Applications" of container window to {375, 100}
 		update without registering applications
-		close
-		open
-		delay 5
 	end tell
  end tell
 ' | osascript

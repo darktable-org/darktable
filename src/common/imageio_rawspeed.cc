@@ -146,7 +146,7 @@ dt_imageio_open_rawspeed(
     d.reset();
     m.reset();
 
-    img->filters = 0;
+    img->filters = 0u;
     if( !r->isCFA )
     {
       dt_imageio_retval_t ret = dt_imageio_open_rawspeed_sraw(img, r, a);
@@ -163,12 +163,26 @@ dt_imageio_open_rawspeed(
       img->flags &= ~DT_IMAGE_LDR;
       img->flags |= DT_IMAGE_RAW;
       if(r->getDataType() == TYPE_FLOAT32) img->flags |= DT_IMAGE_HDR;
+      // special handling for x-trans sensors
+      if (img->filters == 9u)
+      {
+        // get 6x6 CFA offset from top left of cropped image
+        // NOTE: This is different from how things are done with Bayer
+        // sensors. For these, the CFA in cameras.xml is pre-offset
+        // depending on the distance modulo 2 between raw and usable
+        // image data. For X-Trans, the CFA in cameras.xml is
+        // (currently) aligned with the top left of the raw data, and
+        // hence it is shifted here to align with the top left of the
+        // cropped image.
+        iPoint2D tl_margin = r->getCropOffset();
+        for (int i=0; i < 6; ++i)
+          for (int j=0; j < 6; ++j)
+            img->xtrans[j][i] = r->cfa.getColorAt((i+tl_margin.x)%6,(j+tl_margin.y)%6);
+      }
     }
 
-    // also include used override in orient:
-    const int orientation = dt_image_orientation(img);
-    img->width  = (orientation & 4) ? r->dim.y : r->dim.x;
-    img->height = (orientation & 4) ? r->dim.x : r->dim.y;
+    img->width  = r->dim.x;
+    img->height = r->dim.y;
 
     /* needed in exposure iop for Deflicker */
     img->raw_black_level = r->blackLevel;
@@ -178,7 +192,7 @@ dt_imageio_open_rawspeed(
     if(!buf)
       return DT_IMAGEIO_CACHE_FULL;
 
-    dt_imageio_flip_buffers((char *)buf, (char *)r->getData(), r->getBpp(), r->dim.x, r->dim.y, r->dim.x, r->dim.y, r->pitch, orientation);
+    dt_imageio_flip_buffers((char *)buf, (char *)r->getData(), r->getBpp(), r->dim.x, r->dim.y, r->dim.x, r->dim.y, r->pitch, ORIENTATION_NONE);
   }
   catch (const std::exception &exc)
   {
@@ -204,9 +218,8 @@ dt_imageio_open_rawspeed_sraw(dt_image_t *img, RawImage r, dt_mipmap_cache_alloc
   img->flags &= ~DT_IMAGE_LDR;
   img->flags &= ~DT_IMAGE_RAW;
 
-  const int orientation = dt_image_orientation(img);
-  img->width  = (orientation & 4) ? r->dim.y : r->dim.x;
-  img->height = (orientation & 4) ? r->dim.x : r->dim.y;
+  img->width  = r->dim.x;
+  img->height = r->dim.y;
 
   /* needed by Deflicker */
   img->raw_black_level = r->blackLevel;
@@ -221,6 +234,7 @@ dt_imageio_open_rawspeed_sraw(dt_image_t *img, RawImage r, dt_mipmap_cache_alloc
 
   // actually we want to store full floats here:
   img->bpp = 4*sizeof(float);
+  img->cpp = r->getCpp();
   void *buf = dt_mipmap_cache_alloc(img, DT_MIPMAP_FULL, a);
   if(!buf)
     return DT_IMAGEIO_CACHE_FULL;
@@ -231,7 +245,7 @@ dt_imageio_open_rawspeed_sraw(dt_image_t *img, RawImage r, dt_mipmap_cache_alloc
   ushort16* raw_img = (ushort16*)r->getData();
 
 #if 0
-  dt_imageio_flip_buffers_ui16_to_float(buf, raw_img, black, white, 3, raw_width, raw_height,
+  dt_imageio_flip_buffers_ui16_to_float(buf, raw_img, black, white, img->cpp, raw_width, raw_height,
                                         raw_width, raw_height, raw_width + raw_width_extra, orientation);
 #else
 
@@ -240,9 +254,9 @@ dt_imageio_open_rawspeed_sraw(dt_image_t *img, RawImage r, dt_mipmap_cache_alloc
   for( size_t row = 0; row < raw_height; ++row )
     for( size_t col = 0; col < raw_width; ++col )
       for( int k = 0; k < 3; ++k )
-        ((float *)buf)[4 * dt_imageio_write_pos(col, row, raw_width, raw_height, raw_width, raw_height, orientation) + k] =
+        ((float *)buf)[4 * dt_imageio_write_pos(col, row, raw_width, raw_height, raw_width, raw_height, ORIENTATION_NONE) + k] =
           // ((float)raw_img[row*(raw_width + raw_width_extra)*3 + col*3 + k] - black) * scale;
-          ((float)raw_img[row*(r->pitch/2) + col*3 + k] - black) * scale;
+          ((float)raw_img[row*(r->pitch/2) + col*img->cpp + k] - black) * scale;
 #endif
 
   return DT_IMAGEIO_OK;

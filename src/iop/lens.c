@@ -477,11 +477,13 @@ process (dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void * cons
           }
         }
       }
+      dt_free_align(buf2);
     }
     else
     {
       memcpy(ovoid, buf, bufsize);
     }
+    dt_free_align(buf);
   }
   lf_modifier_destroy(modifier);
 

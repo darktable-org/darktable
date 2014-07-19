@@ -492,6 +492,59 @@ All functions and data are accessed through the darktable module.</para>
 </variablelist>
 </section>
 
+<section status="final" id="darktable_gui_create_job">
+<title>darktable.gui.create_job</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>create_job</secondary>
+</indexterm>
+<synopsis>function( 
+	<emphasis><link linkend="darktable_gui_create_job_text">text</link></emphasis> : string, 
+	[<emphasis><link linkend="darktable_gui_create_job_percentage">percentage</link></emphasis> : boolean], 
+	[<emphasis><link linkend="darktable_gui_create_job_cancel_callback">cancel_callback</link></emphasis> : function]
+) : <link linkend="types_dt_lua_backgroundjob_t">types.dt_lua_backgroundjob_t</link></synopsis>
+<para>Create a new progress_bar displayed in <link linkend="darktable_modules_lib_backgroundjobs">darktable.modules.lib.backgroundjobs</link></para>
+
+<variablelist>
+<varlistentry id="darktable_gui_create_job_text"><term>text</term><listitem>
+<synopsis>string</synopsis>
+<para>The text to display in the job entry</para>
+
+</listitem></varlistentry>
+
+<varlistentry id="darktable_gui_create_job_percentage"><term>percentage</term><listitem>
+<synopsis>boolean</synopsis>
+<para>Should a progress bar be displayed</para>
+
+</listitem></varlistentry>
+
+<varlistentry id="darktable_gui_create_job_cancel_callback"><term>cancel_callback</term><listitem>
+<synopsis>function( 
+	<emphasis><link linkend="darktable_gui_create_job_cancel_callback_job">job</link></emphasis> : <link linkend="types_dt_lua_backgroundjob_t">types.dt_lua_backgroundjob_t</link>
+)</synopsis>
+<para>A function called when the cancel button for that job is pressed</para>
+<para>note that the job won't be destroyed automatically. You need to set <link linkend="types_dt_lua_backgroundjob_t_valid">types.dt_lua_backgroundjob_t.valid</link> to false for that</para>
+
+<variablelist>
+<varlistentry id="darktable_gui_create_job_cancel_callback_job"><term>job</term><listitem>
+<synopsis><link linkend="types_dt_lua_backgroundjob_t">types.dt_lua_backgroundjob_t</link></synopsis>
+<para>The job who is being cancelded</para>
+
+</listitem></varlistentry>
+
+</variablelist>
+</listitem></varlistentry>
+
+<varlistentry><term><emphasis>return</emphasis></term><listitem>
+<synopsis><link linkend="types_dt_lua_backgroundjob_t">types.dt_lua_backgroundjob_t</link></synopsis>
+<para>The newly created job object</para>
+
+</listitem></varlistentry>
+
+
+</variablelist>
+</section>
+
 </section>
 
 <section status="final" id="darktable_tags">
@@ -1793,90 +1846,6 @@ end</programlisting>
 </entry>
 </row></tbody>
 </tgroup></informaltable>
-<section status="final" id="darktable_modules_lib_backgroundjobs">
-<title>darktable.modules.lib.backgroundjobs</title>
-<indexterm>
-<primary>Lua API</primary>
-<secondary>backgroundjobs</secondary>
-</indexterm>
-<para>The window displaying the currently running jobs</para>
-<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
-<colspec colwidth="2*"/>
-<colspec colwidth="8*"/>
-<tbody><row>
-<entry>Attributes:</entry>
-<entry><itemizedlist>
-<listitem><para><emphasis>container : </emphasis>DT_UI_CONTAINER_PANEL_LEFT_BOTTOM</para></listitem>
-<listitem><para><emphasis><link linkend="attributes_has_pairs">has_pairs</link></emphasis></para></listitem>
-<listitem><para><emphasis><link linkend="attributes_has_tostring">has_tostring</link></emphasis></para></listitem>
-<listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_lib_module_t">types.dt_lib_module_t</link></para></listitem>
-<listitem><para><emphasis>position : </emphasis>1</para></listitem>
-<listitem><para><emphasis>views : </emphasis></para>
-<para><itemizedlist>
-<listitem><para><link linkend="darktable_modules_view_lighttable">darktable.modules.view.lighttable</link></para></listitem>
-<listitem><para><link linkend="darktable_modules_view_darkroom">darktable.modules.view.darkroom</link></para></listitem>
-<listitem><para><link linkend="darktable_modules_view_tethering">darktable.modules.view.tethering</link></para></listitem>
-</itemizedlist>
-</para></listitem>
-</itemizedlist>
-</entry>
-</row></tbody>
-</tgroup></informaltable>
-<section status="final" id="darktable_modules_lib_backgroundjobs_create_job">
-<title>darktable.modules.lib.backgroundjobs.create_job</title>
-<indexterm>
-<primary>Lua API</primary>
-<secondary>create_job</secondary>
-</indexterm>
-<synopsis>function( 
-	<emphasis><link linkend="darktable_modules_lib_backgroundjobs_create_job_text">text</link></emphasis> : string, 
-	[<emphasis><link linkend="darktable_modules_lib_backgroundjobs_create_job_percentage">percentage</link></emphasis> : boolean], 
-	[<emphasis><link linkend="darktable_modules_lib_backgroundjobs_create_job_cancel_callback">cancel_callback</link></emphasis> : function]
-) : <link linkend="types_dt_lua_backgroundjob_t">types.dt_lua_backgroundjob_t</link></synopsis>
-<para>The window displaying the currently running jobs</para>
-
-<variablelist>
-<varlistentry id="darktable_modules_lib_backgroundjobs_create_job_text"><term>text</term><listitem>
-<synopsis>string</synopsis>
-<para>The text to display in the job entry</para>
-
-</listitem></varlistentry>
-
-<varlistentry id="darktable_modules_lib_backgroundjobs_create_job_percentage"><term>percentage</term><listitem>
-<synopsis>boolean</synopsis>
-<para>Should a progress bar be displayed</para>
-
-</listitem></varlistentry>
-
-<varlistentry id="darktable_modules_lib_backgroundjobs_create_job_cancel_callback"><term>cancel_callback</term><listitem>
-<synopsis>function( 
-	<emphasis><link linkend="darktable_modules_lib_backgroundjobs_create_job_cancel_callback_job">job</link></emphasis> : <link linkend="types_dt_lua_backgroundjob_t">types.dt_lua_backgroundjob_t</link>
-)</synopsis>
-<para>A function called when the cancel button for that job is pressed</para>
-<para>note that the job won't be destroyed automatically. You need to set <link linkend="types_dt_lua_backgroundjob_t_valid">types.dt_lua_backgroundjob_t.valid</link> to false for that</para>
-
-<variablelist>
-<varlistentry id="darktable_modules_lib_backgroundjobs_create_job_cancel_callback_job"><term>job</term><listitem>
-<synopsis><link linkend="types_dt_lua_backgroundjob_t">types.dt_lua_backgroundjob_t</link></synopsis>
-<para>The job who is being cancelded</para>
-
-</listitem></varlistentry>
-
-</variablelist>
-</listitem></varlistentry>
-
-<varlistentry><term><emphasis>return</emphasis></term><listitem>
-<synopsis><link linkend="types_dt_lua_backgroundjob_t">types.dt_lua_backgroundjob_t</link></synopsis>
-<para>The newly created job object</para>
-
-</listitem></varlistentry>
-
-
-</variablelist>
-</section>
-
-</section>
-
 <section status="final" id="darktable_modules_lib_snapshots">
 <title>darktable.modules.lib.snapshots</title>
 <indexterm>
@@ -3024,6 +2993,38 @@ end</programlisting>
 <listitem><para><emphasis>position : </emphasis>999</para></listitem>
 <listitem><para><emphasis>views : </emphasis></para>
 <para><itemizedlist>
+<listitem><para><link linkend="darktable_modules_view_map">darktable.modules.view.map</link></para></listitem>
+</itemizedlist>
+</para></listitem>
+</itemizedlist>
+</entry>
+</row></tbody>
+</tgroup></informaltable>
+</section>
+
+<section status="final" id="darktable_modules_lib_backgroundjobs">
+<title>darktable.modules.lib.backgroundjobs</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>backgroundjobs</secondary>
+</indexterm>
+<para>The window displaying the currently running jobs</para>
+<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
+<colspec colwidth="2*"/>
+<colspec colwidth="8*"/>
+<tbody><row>
+<entry>Attributes:</entry>
+<entry><itemizedlist>
+<listitem><para><emphasis>container : </emphasis>DT_UI_CONTAINER_PANEL_LEFT_BOTTOM</para></listitem>
+<listitem><para><emphasis><link linkend="attributes_has_pairs">has_pairs</link></emphasis></para></listitem>
+<listitem><para><emphasis><link linkend="attributes_has_tostring">has_tostring</link></emphasis></para></listitem>
+<listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_lib_module_t">types.dt_lib_module_t</link></para></listitem>
+<listitem><para><emphasis>position : </emphasis>1</para></listitem>
+<listitem><para><emphasis>views : </emphasis></para>
+<para><itemizedlist>
+<listitem><para><link linkend="darktable_modules_view_lighttable">darktable.modules.view.lighttable</link></para></listitem>
+<listitem><para><link linkend="darktable_modules_view_darkroom">darktable.modules.view.darkroom</link></para></listitem>
+<listitem><para><link linkend="darktable_modules_view_tethering">darktable.modules.view.tethering</link></para></listitem>
 <listitem><para><link linkend="darktable_modules_view_map">darktable.modules.view.map</link></para></listitem>
 </itemizedlist>
 </para></listitem>
@@ -5081,7 +5082,7 @@ Note that this is the real image object; changing the value of a field will imme
 <secondary>percent</secondary>
 </indexterm>
 <synopsis>number</synopsis>
-<para>The value of the progress bar. nil if there is no progress bar</para>
+<para>The value of the progress bar, between 0 and 1. will return nil if there is no progress bar, will raise an error if read or written on an invalid job</para>
 
 </section>
 

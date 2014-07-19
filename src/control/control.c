@@ -311,7 +311,7 @@ void dt_control_init(dt_control_t *s)
   dt_pthread_mutex_init(&s->run_mutex, NULL);
   pthread_rwlock_init(&s->xprofile_lock, NULL);
   dt_pthread_mutex_init(&(s->global_mutex), NULL);
-  dt_pthread_mutex_init(&(s->image_mutex), NULL);
+  dt_pthread_mutex_init(&(s->progress_system.mutex), NULL);
 
   // start threads
   dt_control_jobs_init(s);
@@ -418,6 +418,7 @@ void dt_control_cleanup(dt_control_t *s)
   dt_pthread_mutex_destroy(&s->cond_mutex);
   dt_pthread_mutex_destroy(&s->log_mutex);
   dt_pthread_mutex_destroy(&s->run_mutex);
+  dt_pthread_mutex_destroy(&s->progress_system.mutex);
   pthread_rwlock_destroy(&s->xprofile_lock);
   if (s->accelerator_list)
   {
@@ -995,31 +996,6 @@ void dt_control_hinter_message(const struct dt_control_t *s, const char *message
 {
   if (s->proxy.hinter.module)
     return s->proxy.hinter.set_message(s->proxy.hinter.module, message);
-}
-
-const guint *dt_control_backgroundjobs_create(const struct dt_control_t *s, guint type,const gchar *message)
-{
-  if (s->proxy.backgroundjobs.module)
-    return s->proxy.backgroundjobs.create(s->proxy.backgroundjobs.module, type, message);
-  return 0;
-}
-
-void dt_control_backgroundjobs_destroy(const struct dt_control_t *s, const guint *key)
-{
-  if (s->proxy.backgroundjobs.module)
-    s->proxy.backgroundjobs.destroy(s->proxy.backgroundjobs.module, key);
-}
-
-void dt_control_backgroundjobs_progress(const struct dt_control_t *s, const guint *key, double progress)
-{
-  if (s->proxy.backgroundjobs.module)
-    s->proxy.backgroundjobs.progress(s->proxy.backgroundjobs.module, key, progress);
-}
-
-void dt_control_backgroundjobs_set_cancellable(const struct dt_control_t *s, const guint *key, dt_job_t *job)
-{
-  if (s->proxy.backgroundjobs.module)
-    s->proxy.backgroundjobs.set_cancellable(s->proxy.backgroundjobs.module, key, job);
 }
 
 int32_t dt_control_get_mouse_over_id()

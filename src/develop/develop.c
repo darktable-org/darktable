@@ -66,7 +66,7 @@ void dt_dev_init(dt_develop_t *dev, int32_t gui_attached)
   dev->height = -1;
 
   dt_image_init(&dev->image_storage);
-  dev->image_dirty = dev->preview_dirty = 1;
+  dev->image_status = dev->preview_status = DT_DEV_PIXELPIPE_DIRTY;
   dev->image_loading = dev->preview_loading = 0;
   dev->image_force_reload = 0;
   dev->preview_input_changed = 0;
@@ -169,14 +169,14 @@ void dt_dev_process_preview(dt_develop_t *dev)
 
 void dt_dev_invalidate(dt_develop_t *dev)
 {
-  dev->image_dirty = 1;
+  dev->image_status = DT_DEV_PIXELPIPE_DIRTY;
   dev->timestamp++;
   if(dev->preview_pipe) dev->preview_pipe->input_timestamp = dev->timestamp;
 }
 
 void dt_dev_invalidate_all(dt_develop_t *dev)
 {
-  dev->preview_dirty = dev->image_dirty = 1;
+  dev->image_status = dev->preview_status = DT_DEV_PIXELPIPE_DIRTY;
   dev->timestamp++;
 }
 
@@ -192,17 +192,15 @@ void dt_dev_process_preview_job(dt_develop_t *dev)
   dt_pthread_mutex_lock(&dev->preview_pipe_mutex);
   dt_control_log_busy_enter();
   dev->preview_pipe->input_timestamp = dev->timestamp;
-  // we have to set this to 0 in the beginning and 1 when bailing out early since we check this without caring about the mutex in some places.
-  // adding locking everywhere would block the gui and make putting this into its own thread pointless. i guess.
-  dev->preview_dirty = 0;
+  dev->preview_status = DT_DEV_PIXELPIPE_RUNNING;
 
   // lock if there, issue a background load, if not (best-effort for mip f).
   dt_mipmap_cache_read_get(darktable.mipmap_cache, &buf, dev->image_storage.id, DT_MIPMAP_F, 0);
   if(!buf.buf)
   {
     dt_control_log_busy_leave();
+    dev->preview_status = DT_DEV_PIXELPIPE_DIRTY;
     dt_pthread_mutex_unlock(&dev->preview_pipe_mutex);
-    dev->preview_dirty = 1;
     return; // not loaded yet. load will issue a gtk redraw on completion, which in turn will trigger us again later.
   }
   // init pixel pipeline for preview.
@@ -228,9 +226,9 @@ restart:
   if(dev->gui_leaving)
   {
     dt_control_log_busy_leave();
+    dev->preview_status = DT_DEV_PIXELPIPE_INVALID;
     dt_pthread_mutex_unlock(&dev->preview_pipe_mutex);
     dt_mipmap_cache_read_release(darktable.mipmap_cache, &buf);
-    dev->preview_dirty = 1;
     return;
   }
   // adjust pipeline according to changed flag set by {add,pop}_history_item.
@@ -243,13 +241,16 @@ restart:
     if(dev->preview_loading || dev->preview_input_changed)
     {
       dt_control_log_busy_leave();
+      dev->preview_status = DT_DEV_PIXELPIPE_INVALID;
       dt_pthread_mutex_unlock(&dev->preview_pipe_mutex);
       dt_mipmap_cache_read_release(darktable.mipmap_cache, &buf);
-      dev->preview_dirty = 1;
       return;
     }
     else goto restart;
   }
+
+  dev->preview_status = DT_DEV_PIXELPIPE_VALID;
+
   dt_show_times(&start, "[dev_process_preview] pixel pipeline processing", NULL);
   dt_dev_average_delay_update(&start, &dev->preview_average_delay);
 
@@ -266,7 +267,7 @@ void dt_dev_process_image_job(dt_develop_t *dev)
   dt_pthread_mutex_lock(&dev->pipe_mutex);
   dt_control_log_busy_enter();
   // let gui know to draw preview instead of us, if it's there:
-  dev->image_dirty = 1;
+  dev->image_status = DT_DEV_PIXELPIPE_RUNNING;
 
   dt_mipmap_buffer_t buf;
   dt_times_t start;
@@ -285,6 +286,7 @@ void dt_dev_process_image_job(dt_develop_t *dev)
   if(!buf.buf)
   {
     dt_control_log_busy_leave();
+    dev->image_status = DT_DEV_PIXELPIPE_DIRTY;
     dt_pthread_mutex_unlock(&dev->pipe_mutex);
     return;
   }
@@ -297,13 +299,12 @@ void dt_dev_process_image_job(dt_develop_t *dev)
     dt_dev_pixelpipe_cleanup_nodes(dev->pipe);
     dt_dev_pixelpipe_create_nodes(dev->pipe, dev);
     if(dev->image_force_reload) dt_dev_pixelpipe_flush_caches(dev->pipe);
-    dev->image_dirty = 1;
     dev->image_force_reload = 0;
     if(dev->gui_attached)
     {
       // during load, a mipf update could have been issued.
       dev->preview_input_changed = 1;
-      dev->preview_dirty = 1;
+      dev->preview_status = DT_DEV_PIXELPIPE_DIRTY;
       dev->gui_synch = 1; // notify gui thread we want to synch (call gui_update in the modules)
       dev->preview_pipe->changed |= DT_DEV_PIPE_SYNCH;
     }
@@ -320,6 +321,7 @@ restart:
   {
     dt_mipmap_cache_read_release(darktable.mipmap_cache, &buf);
     dt_control_log_busy_leave();
+    dev->image_status = DT_DEV_PIXELPIPE_INVALID;
     dt_pthread_mutex_unlock(&dev->pipe_mutex);
     return;
   }
@@ -345,6 +347,7 @@ restart:
     {
       dt_mipmap_cache_read_release(darktable.mipmap_cache, &buf);
       dt_control_log_busy_leave();
+      dev->image_status = DT_DEV_PIXELPIPE_INVALID;
       dt_pthread_mutex_unlock(&dev->pipe_mutex);
       return;
     }
@@ -358,7 +361,7 @@ restart:
   if(dev->pipe->changed != DT_DEV_PIPE_UNCHANGED) goto restart;
 
   // cool, we got a new image!
-  dev->image_dirty = 0;
+  dev->image_status = DT_DEV_PIXELPIPE_VALID;
   dev->image_loading = 0;
 
   dt_mipmap_cache_read_release(darktable.mipmap_cache, &buf);
@@ -422,7 +425,7 @@ void dt_dev_load_image(dt_develop_t *dev, const uint32_t imgid)
   dev->image_loading = 1;
   dev->preview_loading = 1;
   dev->first_load = 1;
-  dev->image_dirty = dev->preview_dirty = 1;
+  dev->image_status = dev->preview_status = DT_DEV_PIXELPIPE_DIRTY;
 
   dt_masks_read_forms(dev);
   dev->form_visible = NULL;
@@ -982,6 +985,31 @@ void dt_dev_read_history(dt_develop_t *dev)
           memcpy(hist->module->blend_params, hist->module->default_blendop_params,sizeof(dt_develop_blend_params_t));
         }
       }
+
+      /*
+       * r3 fix for flip iop: previously it was not always needed, but it might be
+       * in history stack as "orientation (off)", but now we always want it
+       * by default, so if it is disabled, enable it, and replace params with
+       * default_params. if user want to, he can disable it.
+       *
+       * r3: for future fix of broken masks (regression)
+       */
+      if(!strcmp(hist->module->op, "flip") && hist->enabled == 0 &&
+          labs(modversion) == 1 && labs(hist->module->version()) == 2)
+      {
+        typedef struct dt_iop_flip_params_t
+        {
+          dt_image_orientation_t orientation;
+        }
+        dt_iop_flip_params_t;
+        /* yes, i know, it's awful :/ */
+        dt_iop_flip_params_t tmp = {
+          .orientation = dt_image_orientation(&hist->module->dev->image_storage)
+        };
+
+        memcpy(hist->params, &tmp, hist->module->params_size);
+        hist->enabled = 1;
+      }
     }
     else
     {
@@ -1475,7 +1503,7 @@ int dt_dev_distort_transform_plus(dt_develop_t *dev, dt_dev_pixelpipe_t *pipe, i
     if (!pieces) return 0;
     dt_iop_module_t *module = (dt_iop_module_t *) (modules->data);
     dt_dev_pixelpipe_iop_t *piece = (dt_dev_pixelpipe_iop_t *) (pieces->data);
-    if ((module->enabled || piece->enabled) && module->priority <= pmax && module->priority >= pmin)
+    if(piece->enabled && module->priority <= pmax && module->priority >= pmin)
     {
       module->distort_transform(module,piece,points,points_count);
     }
@@ -1494,7 +1522,7 @@ int dt_dev_distort_backtransform_plus(dt_develop_t *dev, dt_dev_pixelpipe_t *pip
     if (!pieces) return 0;
     dt_iop_module_t *module = (dt_iop_module_t *) (modules->data);
     dt_dev_pixelpipe_iop_t *piece = (dt_dev_pixelpipe_iop_t *) (pieces->data);
-    if ((module->enabled || piece->enabled) && module->priority <= pmax && module->priority >= pmin)
+    if(piece->enabled && module->priority <= pmax && module->priority >= pmin)
     {
       module->distort_backtransform(module,piece,points,points_count);
     }

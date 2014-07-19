@@ -151,6 +151,11 @@ dt_history_copy_and_paste_on_image (int32_t imgid, int32_t dest_imgid, gboolean 
     return 1;
   }
 
+  // be sure the current history is written before pasting some other history data
+  const dt_view_t *cv = dt_view_manager_get_current_view(darktable.view_manager);
+  if(cv->view((dt_view_t*)cv) == DT_VIEW_DARKROOM)
+    dt_dev_write_history(darktable.develop);
+
   /* if merge onto history stack, lets find history offest in destination image */
   int32_t offs = 0;
   if (merge)

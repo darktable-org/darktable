@@ -32,9 +32,12 @@
 #include <gtk/gtk.h>
 #include "libs/lib.h"
 #include "control/jobs.h"
+#include "control/progress.h"
 
 // A mask to strip out the Ctrl, Shift, and Alt mod keys for shortcuts
 #define KEY_STATE_MASK (GDK_CONTROL_MASK | GDK_SHIFT_MASK | GDK_MOD1_MASK)
+
+struct dt_lib_backgroundjob_element_t;
 
 typedef enum dt_control_gui_mode_t
 {
@@ -120,16 +123,6 @@ void dt_ctl_switch_mode();
 void dt_ctl_switch_mode_to(dt_control_gui_mode_t mode);
 
 struct dt_control_t;
-
-/* backgroundjobs proxy funcs */
-/** creates a background job and returns hash id reference */
-const guint *dt_control_backgroundjobs_create(const struct dt_control_t *s,guint type,const gchar *message);
-/** destroys a backgroundjob using hash id reference */
-void dt_control_backgroundjobs_destroy(const struct dt_control_t *s, const guint *key);
-/** sets the progress of a backgroundjob using hash id reference */
-void dt_control_backgroundjobs_progress(const struct dt_control_t *s, const guint *key, double progress);
-/** assign a dt_job_t to a bgjob which makes it cancellable thru ui interaction */
-void dt_control_backgroundjobs_set_cancellable(const struct dt_control_t *s, const guint *key, dt_job_t *job);
 
 /** sets the hinter message */
 void dt_control_hinter_message(const struct dt_control_t *s, const char *message);
@@ -227,18 +220,27 @@ typedef struct dt_control_t
   uint8_t new_res[DT_CTL_WORKER_RESERVED];
   pthread_t thread_res[DT_CTL_WORKER_RESERVED];
 
-  /* proxy */
   struct
   {
-    /* proxy functions for backgroundjobs ui*/
+    GList *list;
+    size_t list_length;
+    dt_pthread_mutex_t mutex;
+
+    // these proxy functions should ONLY be used by control/process.c!
     struct
     {
       dt_lib_module_t *module;
-      const guint *(*create)(dt_lib_module_t *self, int type, const gchar *message);
-      void (*destroy)(dt_lib_module_t *self, const guint *key);
-      void (*progress)(dt_lib_module_t *self, const guint *key, double progress);
-      void (*set_cancellable)(dt_lib_module_t *self, const guint *key, dt_job_t *job);
-    } backgroundjobs;
+      void *(*added)(dt_lib_module_t *self, gboolean has_progress_bar, const gchar *message);
+      void  (*destroyed)(dt_lib_module_t * self, struct dt_lib_backgroundjob_element_t * instance);
+      void  (*cancellable)(dt_lib_module_t * self, struct dt_lib_backgroundjob_element_t * instance, dt_progress_t * progress);
+      void  (*updated)(dt_lib_module_t * self, struct dt_lib_backgroundjob_element_t * instance, double value);
+    } proxy;
+
+  } progress_system;
+
+  /* proxy */
+  struct
+  {
 
     struct
     {

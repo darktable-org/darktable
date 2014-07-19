@@ -51,10 +51,7 @@ WHITE_HEX="0x$(echo "ibase=10;obase=16;$WHITE" | bc | tr 'A-Z' 'a-z')"
 CFA_PATTERN_WIDTH=$(exiv2 -Pkt $DNG 2>/dev/null | grep 'Exif.SubImage1.CFARepeatPatternDim ' | awk '{print $2}')
 CFA_PATTERN_HEIGHT=$(exiv2 -Pkt $DNG 2>/dev/null | grep 'Exif.SubImage1.CFARepeatPatternDim ' | awk '{print $3}')
 
-CFA_UPPER_LEFT=$(exiv2 -Pkt $DNG 2>/dev/null | grep 'Exif.SubImage1.CFAPattern' | awk '{print $2}' | sed 's#0#RED#' | sed 's#1#GREEN#' | sed 's#2#BLUE#')
-CFA_UPPER_RIGHT=$(exiv2 -Pkt $DNG 2>/dev/null | grep 'Exif.SubImage1.CFAPattern' | awk '{print $3}' | sed 's#0#RED#' | sed 's#1#GREEN#' | sed 's#2#BLUE#')
-CFA_LOWER_LEFT=$(exiv2 -Pkt $DNG 2>/dev/null | grep 'Exif.SubImage1.CFAPattern' | awk '{print $4}' | sed 's#0#RED#' | sed 's#1#GREEN#' | sed 's#2#BLUE#')
-CFA_LOWER_RIGHT=$(exiv2 -Pkt $DNG 2>/dev/null | grep 'Exif.SubImage1.CFAPattern' | awk '{print $5}' | sed 's#0#RED#' | sed 's#1#GREEN#' | sed 's#2#BLUE#')
+CFA_PATTERN=($(exiv2 -Pkt $DNG 2>/dev/null | grep 'Exif.SubImage1.CFAPattern ' | awk '{$1=""; print $0}' | sed 's#0#RED#g; s#1#GREEN#g; s#2#BLUE#g'))
 
 IMG_WIDTH=$(exiv2 -Pkt $DNG 2>/dev/null | grep 'Exif.SubImage1.ImageWidth ' | awk '{print $2}')
 IMG_LENGTH=$(exiv2 -Pkt $DNG 2>/dev/null | grep 'Exif.SubImage1.ImageLength ' | awk '{print $2}')
@@ -97,12 +94,35 @@ echo ""
 echo "$ nano -w src/external/rawspeed/data/cameras.xml (mind the tabs)"
 echo ""
 echo -e "\t<Camera make=\"$MAKE\" model=\"$MODEL\"$MODE>"
-echo -e "\t\t<CFA width=\"$CFA_PATTERN_WIDTH\" height=\"$CFA_PATTERN_HEIGHT\">"
-echo -e "\t\t\t<Color x=\"0\" y=\"0\">$CFA_UPPER_LEFT</Color>"
-echo -e "\t\t\t<Color x=\"1\" y=\"0\">$CFA_UPPER_RIGHT</Color>"
-echo -e "\t\t\t<Color x=\"0\" y=\"1\">$CFA_LOWER_LEFT</Color>"
-echo -e "\t\t\t<Color x=\"1\" y=\"1\">$CFA_LOWER_RIGHT</Color>"
-echo -e "\t\t</CFA>"
+
+if [[ $MAKE == FUJIFILM && $CFA_PATTERN_WIDTH == 6 && $CFA_PATTERN_HEIGHT == 6 ]]; then
+  echo -e "\t\t<CFA2 width=\"$CFA_PATTERN_WIDTH\" height=\"$CFA_PATTERN_HEIGHT\">"
+  # The DNG's CFA pattern is mysteriously shifted horizontally for
+  # 14-bit x-trans chips (despite it being stored unshifted in the raw
+  # file). Identify 14-bit cips by their max white value.
+  if [[ $WHITE -gt 16000 ]]; then
+    COL_OFFSET=2
+  else
+    COL_OFFSET=0
+  fi
+  for ROW in {0..5}; do
+    COLORS=""
+    for COL in {0..5}; do
+      COLORS+=${CFA_PATTERN[$((ROW*6+(COL+COL_OFFSET)%6))]:0:1}
+    done
+    echo -e "\t\t\t<ColorRow y=\"$ROW\">$COLORS</ColorRow>"
+  done
+  echo -e "\t\t</CFA2>"
+else
+  # CFA2 is a superset of CFA, but keep with tradition and use CFA for Bayer matrices
+  echo -e "\t\t<CFA width=\"$CFA_PATTERN_WIDTH\" height=\"$CFA_PATTERN_HEIGHT\">"
+  echo -e "\t\t\t<Color x=\"0\" y=\"0\">${CFA_PATTERN[0]}</Color>"
+  echo -e "\t\t\t<Color x=\"1\" y=\"0\">${CFA_PATTERN[1]}</Color>"
+  echo -e "\t\t\t<Color x=\"0\" y=\"1\">${CFA_PATTERN[2]}</Color>"
+  echo -e "\t\t\t<Color x=\"1\" y=\"1\">${CFA_PATTERN[3]}</Color>"
+  echo -e "\t\t</CFA>"
+fi
+
 echo -e "\t\t<Crop x=\"0\" y=\"0\" width=\"0\" height=\"0\"/>"
 echo -e "\t\t<Sensor black=\"$BLACK\" white=\"$WHITE\"/>"
 echo -e "\t</Camera>"

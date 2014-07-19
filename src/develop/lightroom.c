@@ -1134,6 +1134,8 @@ void dt_lightroom_import (int imgid, dt_develop_t *dev, gboolean iauto)
            pc.cy = pc.cx;
            pc.cx = 1.0 - tmp;
            break;
+         default:
+           break;
       }
 
       if (pc.angle != 0)

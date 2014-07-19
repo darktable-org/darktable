@@ -1088,8 +1088,8 @@ static int dt_path_events_button_pressed(struct dt_iop_module_t *module, float p
         bzpt2->border[0] = bzpt2->border[1] = MAX(0.005f,masks_border);
         bzpt2->state = DT_MASKS_POINT_STATE_NORMAL;
         form->points = g_list_append(form->points,bzpt2);
-        form->source[0] = bzpt->corner[0] + 0.1f;
-        form->source[1] = bzpt->corner[1] + 0.1f;
+        form->source[0] = bzpt->corner[0] + 0.02f;
+        form->source[1] = bzpt->corner[1] + 0.02f;
         nb++;
       }
       form->points = g_list_append(form->points,bzpt);

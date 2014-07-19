@@ -58,6 +58,15 @@ typedef enum dt_dev_histogram_type_t
   DT_DEV_HISTOGRAM_N // needs to be the last one
 } dt_dev_histogram_type_t;
 
+typedef enum dt_dev_pixelpipe_status_t
+{
+  DT_DEV_PIXELPIPE_DIRTY = 0,		// history stack changed or image new
+  DT_DEV_PIXELPIPE_RUNNING = 1,		// pixelpipe is running
+  DT_DEV_PIXELPIPE_VALID = 2,		// pixelpipe has finished; valid result
+  DT_DEV_PIXELPIPE_INVALID = 3		// pixelpipe has finished; invalid result
+}
+dt_dev_pixelpipe_status_t;
+
 extern const gchar* dt_dev_histogram_type_names[];
 
 struct dt_dev_pixelpipe_t;
@@ -66,9 +75,9 @@ typedef struct dt_develop_t
   int32_t gui_attached; // != 0 if the gui should be notified of changes in hist stack and modules should be gui_init'ed.
   int32_t gui_leaving;  // set if everything is scheduled to shut down.
   int32_t gui_synch; // set by the render threads if gui_update should be called in the modules.
-  int32_t image_loading, image_dirty, first_load;
-  int32_t image_force_reload;
-  int32_t preview_loading, preview_dirty, preview_input_changed;
+  int32_t image_loading, first_load, image_force_reload;
+  int32_t preview_loading, preview_input_changed;
+  dt_dev_pixelpipe_status_t image_status, preview_status;
   uint32_t timestamp;
   uint32_t average_delay;
   uint32_t preview_average_delay;

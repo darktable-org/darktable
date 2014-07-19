@@ -8335,11 +8335,19 @@ cp_e2500:
       height = width - 1;
       if (~fuji_width & 1) filters = 0x49494949;
     }
+    // Darktable's temperature iop uses LibRaw to retrieve camera
+    // white balance. Both X-Trans & Bayer RAF files stores this with
+    // the same tag, so it's OK to handle X-Pro1 and other X-Trans
+    // files in that case. Note that this is LibRaw 0.14.7 which won't
+    // handle the actual raw data. 2014 vintage RawSpeed or LibRaw
+    // 0.16.0 can.
+#if 0
     if (!strcmp(model,"X-Pro1")) {
       left_margin = 0;
       filters = 2;
       is_raw = 0; /* Not supported! */
     }
+#endif
   } else if (!strcmp(model,"RD175")) {
     height = 986;
     width = 1534;
