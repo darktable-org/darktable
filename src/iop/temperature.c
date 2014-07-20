@@ -370,8 +370,8 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
   for(int k=0; k<3; k++) d->coeffs[k]  = p->coeffs[k];
 
   /*
-   * if preset == passthrough, and since `x * 1.0f == x`
-   * (multiplication is pointless), so just disable piece (out = in)
+   * since `x * 1.0f == x` (multiplication is pointless),
+   * disable piece (out = in)
    */
   if(1.0f == p->coeffs[0] && 1.0f == p->coeffs[1] && 1.0f == p->coeffs[2])
     piece->enabled = 0;
@@ -416,8 +416,7 @@ void gui_update (struct dt_iop_module_t *self)
   dt_bauhaus_combobox_clear(g->presets);
   dt_bauhaus_combobox_add(g->presets, _("camera white balance"));
   dt_bauhaus_combobox_add(g->presets, _("spot white balance"));
-  dt_bauhaus_combobox_add(g->presets, _("passthrough"));
-  g->preset_cnt = 3;
+  g->preset_cnt = 2;
   const char *wb_name = NULL;
   char makermodel[1024];
   char *model = makermodel;
@@ -725,9 +724,6 @@ apply_preset(dt_iop_module_t *self)
       if (self->request_color_pick != DT_REQUEST_COLORPICK_OFF)
         dt_lib_colorpicker_set_area(darktable.lib, 0.99);
 
-      break;
-    case 2: // passthrough mode, raw data
-      for(int k=0; k<3; k++) p->coeffs[k] = 1.0;
       break;
     default:
       for(int i=g->preset_num[pos]; i<wb_preset_count; i++)
