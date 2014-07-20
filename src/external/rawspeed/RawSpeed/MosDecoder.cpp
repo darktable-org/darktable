@@ -130,8 +130,9 @@ RawImage MosDecoder::decodeRawInternal() {
       Decode16BitRawUnpacked(input, width, height);
   }
   else if (99 == compression || 7 == compression) {
-    LJpegPlain l(mFile, mRaw);
-    l.startDecoder(off, mFile->getSize()-off, 0, 0);
+    ThrowRDE("MOS Decoder: Leaf LJpeg not yet supported");
+    //LJpegPlain l(mFile, mRaw);
+    //l.startDecoder(off, mFile->getSize()-off, 0, 0);
   } else
     ThrowRDE("MOS Decoder: Unsupported compression: %d", compression);
 
