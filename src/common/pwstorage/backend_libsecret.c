@@ -85,7 +85,7 @@ dt_pwstorage_libsecret_new()
   if (collection_exists == FALSE) {
     context->secret_collection =
       secret_collection_create_sync(context->secret_service, DARKTABLE_KEYRING,
-          NULL, SECRET_COLLECTION_CREATE_NONE, NULL, NULL);
+          DARKTABLE_KEYRING, SECRET_COLLECTION_CREATE_NONE, NULL, NULL);
 
     if (context->secret_collection == NULL) {
       dt_pwstorage_libsecret_destroy(context);
