@@ -1117,7 +1117,7 @@
 			<Color x="1" y="1">BLUE</Color>
 		</CFA>
 		<Crop x="0" y="0" width="-46" height="0"/>
-		<Sensor black="0" white="65536"/>
+		<Sensor black="0" white="15892"/>
 	</Camera>
 	<Camera make="NIKON CORPORATION" model="NIKON D3100"  decoder_version="2">
 		<CFA width="2" height="2">
