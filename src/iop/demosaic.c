@@ -1919,7 +1919,7 @@ void init(dt_iop_module_t *module)
   module->params = malloc(sizeof(dt_iop_demosaic_params_t));
   module->default_params = malloc(sizeof(dt_iop_demosaic_params_t));
   module->default_enabled = 1;
-  module->priority = 122; // module order created by iop_dependencies.py, do not edit!
+  module->priority = 140; // module order created by iop_dependencies.py, do not edit!
   module->hide_enable_button = 1;
   module->params_size = sizeof(dt_iop_demosaic_params_t);
   module->gui_data = NULL;

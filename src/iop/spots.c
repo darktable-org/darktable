@@ -457,7 +457,7 @@ void init(dt_iop_module_t *module)
   // our module is disabled by default
   // by default:
   module->default_enabled = 0;
-  module->priority = 192; // module order created by iop_dependencies.py, do not edit!
+  module->priority = 210; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_spots_params_t);
   module->gui_data = NULL;
   // init defaults:
