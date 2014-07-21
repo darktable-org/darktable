@@ -409,8 +409,6 @@ typedef struct dt_iop_module_t
 }
 dt_iop_module_t;
 
-int dt_iop_load_module_by_so(dt_iop_module_t *module, dt_iop_module_so_t *so, struct dt_develop_t *dev);
-
 /** loads and inits the modules in the plugins/ directory. */
 void dt_iop_load_modules_so();
 /** cleans up the dlopen refs. */
