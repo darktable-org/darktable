@@ -45,13 +45,14 @@ const dt_pwstorage_t* dt_pwstorage_new()
 
   if (strcmp(_backend_str, "auto") == 0)
   {
-    if (strcmp(getenv("XDG_CURRENT_DESKTOP"), "KDE") == 0)
+    const gchar *desktop = getenv("XDG_CURRENT_DESKTOP");
+    if (g_strcmp0(desktop, "KDE") == 0)
       _backend = PW_STORAGE_BACKEND_KWALLET;
-    else if (strcmp(getenv("XDG_CURRENT_DESKTOP"), "GNOME") == 0)
+    else if (g_strcmp0(desktop, "GNOME") == 0)
       _backend = PW_STORAGE_BACKEND_GNOME_KEYRING;
-    else if (strcmp(getenv("XDG_CURRENT_DESKTOP"), "Unity") == 0)
+    else if (g_strcmp0(desktop, "Unity") == 0)
       _backend = PW_STORAGE_BACKEND_GNOME_KEYRING;
-    else if (strcmp(getenv("XDG_CURRENT_DESKTOP"), "XFCE") == 0)
+    else if (g_strcmp0(desktop, "XFCE") == 0)
       _backend = PW_STORAGE_BACKEND_GNOME_KEYRING;
     else
       _backend = PW_STORAGE_BACKEND_NONE;
