@@ -987,27 +987,15 @@ void dt_dev_read_history(dt_develop_t *dev)
       }
 
       /*
-       * r3 fix for flip iop: previously it was not always needed, but it might be
+       * Fix for flip iop: previously it was not always needed, but it might be
        * in history stack as "orientation (off)", but now we always want it
        * by default, so if it is disabled, enable it, and replace params with
        * default_params. if user want to, he can disable it.
-       *
-       * r3: for future fix of broken masks (regression)
        */
       if(!strcmp(hist->module->op, "flip") && hist->enabled == 0 &&
-          labs(modversion) == 1 && labs(hist->module->version()) == 2)
+          labs(modversion) == 1)
       {
-        typedef struct dt_iop_flip_params_t
-        {
-          dt_image_orientation_t orientation;
-        }
-        dt_iop_flip_params_t;
-        /* yes, i know, it's awful :/ */
-        dt_iop_flip_params_t tmp = {
-          .orientation = dt_image_orientation(&hist->module->dev->image_storage)
-        };
-
-        memcpy(hist->params, &tmp, hist->module->params_size);
+        memcpy(hist->params, hist->module->default_params, hist->module->params_size);
         hist->enabled = 1;
       }
     }
