@@ -27,6 +27,7 @@
 #include "develop/pixelpipe.h"
 #include "common/image.h"
 #include "develop/tiling.h"
+#include "common/opencl.h"
 
 DT_MODULE(1)
 
@@ -35,6 +36,12 @@ typedef struct dt_iop_letsgofloat_params_t
   int keep;
 }
 dt_iop_letsgofloat_params_t;
+
+typedef struct dt_iop_letsgofloat_global_data_t
+{
+  int kernel_letsgofloat_1ui;
+}
+dt_iop_letsgofloat_global_data_t;
 
 const char *name()
 {
@@ -117,6 +124,39 @@ process(
   _mm_sfence();
 }
 
+#ifdef HAVE_OPENCL
+int
+process_cl(
+  struct dt_iop_module_t *self,
+  dt_dev_pixelpipe_iop_t *piece,
+  cl_mem dev_in, cl_mem dev_out,
+  const dt_iop_roi_t *roi_in,
+  const dt_iop_roi_t *roi_out)
+{
+  dt_iop_letsgofloat_global_data_t *gd = (dt_iop_letsgofloat_global_data_t *)self->data;
+
+  cl_int err = -999;
+
+  const int devid = piece->pipe->devid;
+  const int width = roi_in->width;
+  const int height = roi_in->height;
+
+  size_t sizes[] = { ROUNDUPWD(width), ROUNDUPHT(height), 1};
+  dt_opencl_set_kernel_arg(devid, gd->kernel_letsgofloat_1ui, 0, sizeof(cl_mem), (void *)&dev_in);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_letsgofloat_1ui, 1, sizeof(cl_mem), (void *)&dev_out);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_letsgofloat_1ui, 2, sizeof(int), (void *)&width);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_letsgofloat_1ui, 3, sizeof(int), (void *)&height);
+  err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_letsgofloat_1ui, sizes);
+  if(err != CL_SUCCESS) goto error;
+
+  return TRUE;
+
+  error:
+  dt_print(DT_DEBUG_OPENCL, "[opencl_letsgofloat] couldn't enqueue kernel! %d\n", err);
+  return FALSE;
+}
+#endif
+
 void
 commit_params(
   struct dt_iop_module_t *self,
@@ -127,6 +167,17 @@ commit_params(
   if(!(pipe->image.flags & DT_IMAGE_RAW) ||
       dt_dev_pixelpipe_uses_downsampled_input(pipe))
     piece->enabled = 0;
+}
+
+void
+init_global(
+  dt_iop_module_so_t *self)
+{
+  const int program = 2; // basic.cl, from programs.conf
+  self->data = malloc(sizeof(dt_iop_letsgofloat_global_data_t));
+
+  dt_iop_letsgofloat_global_data_t *gd = self->data;
+  gd->kernel_letsgofloat_1ui = dt_opencl_create_kernel(program, "letsgofloat_1ui");
 }
 
 void
@@ -148,6 +199,16 @@ cleanup(
 {
   free(self->params);
   self->params = NULL;
+}
+
+void
+cleanup_global(
+  dt_iop_module_so_t *self)
+{
+  dt_iop_letsgofloat_global_data_t *gd = (dt_iop_letsgofloat_global_data_t *)self->data;
+  dt_opencl_free_kernel(gd->kernel_letsgofloat_1ui);
+  free(self->data);
+  self->data = NULL;
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
