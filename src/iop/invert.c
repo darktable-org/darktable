@@ -245,9 +245,32 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
     {
       const float *in = ((float*)ivoid) + (size_t)j*roi_out->width;
       float *out = ((float*)ovoid) + (size_t)j*roi_out->width;
-      for(int i=0; i<roi_out->width; i++,out++,in++)
+
+      int i = 0;
+      int alignment = ((4 - (j * roi_out->width & (4 - 1))) & (4 - 1));
+
+      // process unaligned pixels
+      for ( ; i < alignment ; i++, out++, in++)
+        *out = CLAMP(film_rgb_f[FC(j+roi_out->y, i+roi_out->x, filters)] - *in, 0.0f, 1.0f);
+
+      const __m128 film = _mm_set_ps(film_rgb_f[FC(j+roi_out->y, roi_out->x+i+3, filters)],
+                                     film_rgb_f[FC(j+roi_out->y, roi_out->x+i+2, filters)],
+                                     film_rgb_f[FC(j+roi_out->y, roi_out->x+i+1, filters)],
+                                     film_rgb_f[FC(j+roi_out->y, roi_out->x+i  , filters)]);
+
+      // process aligned pixels with SSE
+      for( ; i < roi_out->width - (4-1); i+=4,in+=4,out+=4)
+      {
+        const __m128 input = _mm_load_ps(in);
+        const __m128 subtracted = _mm_sub_ps(film, input);
+        _mm_stream_ps(out, subtracted);
+      }
+
+      // process the rest
+      for( ; i<roi_out->width; i++,out++,in++)
         *out = CLAMP(film_rgb_f[FC(j+roi_out->y, i+roi_out->x, filters)] - *in, 0.0f, 1.0f);
     }
+    _mm_sfence();
 
     for(int k=0; k<3; k++)
       piece->pipe->processed_maximum[k] = 1.0f;
