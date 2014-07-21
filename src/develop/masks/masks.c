@@ -1156,6 +1156,7 @@ void dt_masks_reset_form_gui(void)
 
 void dt_masks_reset_show_masks_icons(void)
 {
+  if(darktable.develop->first_load) return;
   GList *modules = g_list_first(darktable.develop->iop);
   while (modules)
   {
@@ -1163,6 +1164,7 @@ void dt_masks_reset_show_masks_icons(void)
     if ((m->flags() & IOP_FLAGS_SUPPORTS_BLENDING) && !(m->flags() & IOP_FLAGS_NO_MASKS))
     {
       dt_iop_gui_blend_data_t *bd = (dt_iop_gui_blend_data_t*)m->blend_data;
+      if(!bd) break;
       bd->masks_shown = DT_MASKS_EDIT_OFF;
       gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(bd->masks_edit), FALSE);
       gtk_widget_queue_draw(bd->masks_edit);
