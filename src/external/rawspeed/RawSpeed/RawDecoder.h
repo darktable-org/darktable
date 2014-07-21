@@ -189,6 +189,9 @@ protected:
   /* Faster version for reading unpacked 14 bit MSB data */
   void Decode14BitRawBEunpacked(ByteStream &input, uint32 w, uint32 h);
 
+  /* Faster version for reading unpacked 16 bit LSB data */
+  void Decode16BitRawUnpacked(ByteStream &input, uint32 w, uint32 h);
+
   /* Faster version for reading unpacked 16 bit MSB data */
   void Decode16BitRawBEunpacked(ByteStream &input, uint32 w, uint32 h);
 

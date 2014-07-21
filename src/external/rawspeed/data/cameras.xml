@@ -4812,6 +4812,96 @@
 		<Crop x="0" y="0" width="0" height="0"/>
 		<Sensor black="0" white="16191"/>
 	</Camera>
+	<Camera make="Leaf" model="Credo 40">
+		<CFA width="2" height="2">
+			<Color x="0" y="0">RED</Color>
+			<Color x="1" y="0">GREEN</Color>
+			<Color x="0" y="1">GREEN</Color>
+			<Color x="1" y="1">BLUE</Color>
+		</CFA>
+		<Crop x="0" y="0" width="0" height="0"/>
+		<Sensor black="" white="65535"/>
+	</Camera>
+	<Camera make="Leaf" model="Credo 60">
+		<CFA width="2" height="2">
+			<Color x="0" y="0">RED</Color>
+			<Color x="1" y="0">GREEN</Color>
+			<Color x="0" y="1">GREEN</Color>
+			<Color x="1" y="1">BLUE</Color>
+		</CFA>
+		<Crop x="0" y="0" width="0" height="0"/>
+		<Sensor black="" white="65535"/>
+	</Camera>
+	<Camera make="Leaf" model="Credo 80">
+		<CFA width="2" height="2">
+			<Color x="0" y="0">RED</Color>
+			<Color x="1" y="0">GREEN</Color>
+			<Color x="0" y="1">GREEN</Color>
+			<Color x="1" y="1">BLUE</Color>
+		</CFA>
+		<Crop x="0" y="0" width="0" height="0"/>
+		<Sensor black="" white="65535"/>
+	</Camera>
+	<Camera make="Leaf" model="Leaf Aptus-II 5(LI300059   )/Mamiya 645 AFD">
+		<CFA width="2" height="2">
+			<Color x="0" y="0">GREEN</Color>
+			<Color x="1" y="0">RED</Color>
+			<Color x="0" y="1">BLUE</Color>
+			<Color x="1" y="1">GREEN</Color>
+		</CFA>
+		<Crop x="0" y="0" width="0" height="0"/>
+		<Sensor black="0" white="15000"/>
+	</Camera>
+	<Camera make="Leaf" model="Leaf Aptus-II 8(LI300247   )/Mamiya 645 AFD">
+		<CFA width="2" height="2">
+			<Color x="0" y="0">GREEN</Color>
+			<Color x="1" y="0">BLUE</Color>
+			<Color x="0" y="1">RED</Color>
+			<Color x="1" y="1">GREEN</Color>
+		</CFA>
+		<Crop x="0" y="0" width="0" height="0"/>
+		<Sensor black="0" white="15000"/>
+	</Camera>
+	<Camera make="Leaf" model="Leaf AFi-II 7(BT12701    )/Leaf AFi">
+		<CFA width="2" height="2">
+			<Color x="0" y="0">RED</Color>
+			<Color x="1" y="0">GREEN</Color>
+			<Color x="0" y="1">GREEN</Color>
+			<Color x="1" y="1">BLUE</Color>
+		</CFA>
+		<Crop x="0" y="0" width="0" height="0"/>
+		<Sensor black="0" white="15000"/>
+	</Camera>
+	<Camera make="Leaf" model="Leaf Aptus-II 10(LI300019   )/Phase One 645DF">
+		<CFA width="2" height="2">
+			<Color x="0" y="0">RED</Color>
+			<Color x="1" y="0">GREEN</Color>
+			<Color x="0" y="1">GREEN</Color>
+			<Color x="1" y="1">BLUE</Color>
+		</CFA>
+		<Crop x="0" y="0" width="0" height="0"/>
+		<Sensor black="0" white="15000"/>
+	</Camera>
+	<Camera make="Leaf" model="Leaf Aptus-II 10R(           )/Large Format">
+		<CFA width="2" height="2">
+			<Color x="0" y="0">RED</Color>
+			<Color x="1" y="0">GREEN</Color>
+			<Color x="0" y="1">GREEN</Color>
+			<Color x="1" y="1">BLUE</Color>
+		</CFA>
+		<Crop x="0" y="0" width="0" height="0"/>
+		<Sensor black="0" white="15000"/>
+	</Camera>
+	<Camera make="Leaf" model="Leaf Aptus-II 12(LI301306   )/Phase One 645DF/645AF">
+		<CFA width="2" height="2">
+			<Color x="0" y="0">RED</Color>
+			<Color x="1" y="0">GREEN</Color>
+			<Color x="0" y="1">GREEN</Color>
+			<Color x="1" y="1">BLUE</Color>
+		</CFA>
+		<Crop x="0" y="0" width="0" height="0"/>
+		<Sensor black="0" white="15000"/>
+	</Camera>
 	<Camera make="Kodak" model="DCS Pro SLR/n">
 		<CFA width="2" height="2">
 			<Color x="0" y="0">GREEN</Color>
