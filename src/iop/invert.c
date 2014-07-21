@@ -47,6 +47,13 @@ typedef struct dt_iop_invert_gui_data_t
 }
 dt_iop_invert_gui_data_t;
 
+typedef struct dt_iop_invert_global_data_t
+{
+  int kernel_invert_1f;
+  int kernel_invert_4f;
+}
+dt_iop_invert_global_data_t;
+
 typedef struct dt_iop_invert_params_t dt_iop_invert_data_t;
 
 const char *name()
@@ -83,9 +90,7 @@ void connect_key_accels(dt_iop_module_t *self)
 int
 output_bpp(dt_iop_module_t *module, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
-  // this is bytes per pixel, so it has to be 4*sizeof(float) or sizeof(float) for raw images.
-  if(!dt_dev_pixelpipe_uses_downsampled_input(pipe) && piece->pipe->image.filters && piece->pipe->image.bpp != 4) return sizeof(uint16_t);
-  if(!dt_dev_pixelpipe_uses_downsampled_input(pipe) && piece->pipe->image.filters && piece->pipe->image.bpp == 4) return sizeof(float);
+  if(!dt_dev_pixelpipe_uses_downsampled_input(pipe) && (pipe->image.flags & DT_IMAGE_RAW)) return sizeof(float);
   return 4*sizeof(float);
 }
 
@@ -212,40 +217,36 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   uint8_t (*const xtrans)[6] = self->dev->image_storage.xtrans;
 
   if(!dt_dev_pixelpipe_uses_downsampled_input(piece->pipe) && (filters == 9u) && piece->pipe->image.bpp != 4)
-  { // xtrans int mosaiced
+  { // xtrans float mosaiced
     const float *const m = piece->pipe->processed_maximum;
-    const int32_t film_rgb_i[3] = {m[0]*film_rgb[0]*65535, m[1]*film_rgb[1]*65535, m[2]*film_rgb[2]*65535};
+    const float film_rgb_f[3] = {m[0]*film_rgb[0], m[1]*film_rgb[1], m[2]*film_rgb[2]};
 #ifdef _OPENMP
-    #pragma omp parallel for default(none) shared(roi_out, ivoid, ovoid, /*film_rgb_i, min, max, res*/) schedule(static)
+    #pragma omp parallel for default(none) shared(roi_out, ivoid, ovoid) schedule(static)
 #endif
     for(int j=0; j<roi_out->height; j++)
     {
-      const uint16_t *in = ((uint16_t*)ivoid) + (size_t)j*roi_out->width;
-      uint16_t *out = ((uint16_t*)ovoid) + (size_t)j*roi_out->width;
+      const float *in = ((float *)ivoid) + (size_t)j*roi_out->width;
+      float *out = ((float *)ovoid) + (size_t)j*roi_out->width;
       for(int i=0; i<roi_out->width; i++,out++,in++)
-      {
-        *out = CLAMP(film_rgb_i[FCxtrans(j,i,roi_out,xtrans)] - (int32_t)in[0], 0, 0xffff);
-      }
+        *out = CLAMP(film_rgb_f[FCxtrans(j,i,roi_out,xtrans)] - *in, 0.0f, 1.0f);
     }
 
     for(int k=0; k<3; k++)
       piece->pipe->processed_maximum[k] = 1.0f;
   }
   else if(!dt_dev_pixelpipe_uses_downsampled_input(piece->pipe) && filters && piece->pipe->image.bpp != 4)
-  { // bayer int mosaiced
+  { // bayer float mosaiced
     const float *const m = piece->pipe->processed_maximum;
-    const int32_t film_rgb_i[3] = {m[0]*film_rgb[0]*65535, m[1]*film_rgb[1]*65535, m[2]*film_rgb[2]*65535};
+    const float film_rgb_f[3] = {m[0]*film_rgb[0], m[1]*film_rgb[1], m[2]*film_rgb[2]};
 #ifdef _OPENMP
     #pragma omp parallel for default(none) shared(roi_out, ivoid, ovoid /*film_rgb_i, min, max, res*/) schedule(static)
 #endif
     for(int j=0; j<roi_out->height; j++)
     {
-      const uint16_t *in = ((uint16_t*)ivoid) + (size_t)j*roi_out->width;
-      uint16_t *out = ((uint16_t*)ovoid) + (size_t)j*roi_out->width;
+      const float *in = ((float*)ivoid) + (size_t)j*roi_out->width;
+      float *out = ((float*)ovoid) + (size_t)j*roi_out->width;
       for(int i=0; i<roi_out->width; i++,out++,in++)
-      {
-        *out = CLAMP(film_rgb_i[FC(j+roi_out->y, i+roi_out->x, filters)] - (int32_t)in[0], 0, 0xffff);
-      }
+        *out = CLAMP(film_rgb_f[FC(j+roi_out->y, i+roi_out->x, filters)] - *in, 0.0f, 1.0f);
     }
 
     for(int k=0; k<3; k++)
@@ -301,6 +302,58 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   }
 }
 
+#ifdef HAVE_OPENCL
+int
+process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
+{
+  dt_iop_invert_data_t *d = (dt_iop_invert_data_t *)piece->data;
+  dt_iop_invert_global_data_t *gd = (dt_iop_invert_global_data_t *)self->data;
+
+  const int devid = piece->pipe->devid;
+  const int filters = dt_image_filter(&piece->pipe->image);
+  cl_mem dev_color = NULL;
+  cl_int err = -999;
+  int kernel = -1;
+
+  if(!dt_dev_pixelpipe_uses_downsampled_input(piece->pipe) && filters)
+  {
+    kernel = gd->kernel_invert_1f;
+  }
+  else
+  {
+    kernel = gd->kernel_invert_4f;
+  }
+
+  dev_color = dt_opencl_copy_host_to_device_constant(devid, sizeof(float)*3, d->color);
+  if (dev_color == NULL) goto error;
+
+  const int width = roi_in->width;
+  const int height = roi_in->height;
+
+  size_t sizes[] = { ROUNDUPWD(width), ROUNDUPHT(height), 1};
+  dt_opencl_set_kernel_arg(devid, kernel, 0, sizeof(cl_mem), (void *)&dev_in);
+  dt_opencl_set_kernel_arg(devid, kernel, 1, sizeof(cl_mem), (void *)&dev_out);
+  dt_opencl_set_kernel_arg(devid, kernel, 2, sizeof(int), (void *)&width);
+  dt_opencl_set_kernel_arg(devid, kernel, 3, sizeof(int), (void *)&height);
+  dt_opencl_set_kernel_arg(devid, kernel, 4, sizeof(cl_mem), (void *)&dev_color);
+  dt_opencl_set_kernel_arg(devid, kernel, 5, sizeof(uint32_t), (void *)&filters);
+  dt_opencl_set_kernel_arg(devid, kernel, 6, sizeof(uint32_t), (void *)&roi_out->x);
+  dt_opencl_set_kernel_arg(devid, kernel, 7, sizeof(uint32_t), (void *)&roi_out->y);
+  err = dt_opencl_enqueue_kernel_2d(devid, kernel, sizes);
+  if(err != CL_SUCCESS) goto error;
+
+  dt_opencl_release_mem_object(dev_color);
+  for(int k=0; k<3; k++)
+    piece->pipe->processed_maximum[k] = 1.0f;
+  return TRUE;
+
+  error:
+  if (dev_color != NULL) dt_opencl_release_mem_object(dev_color);
+  dt_print(DT_DEBUG_OPENCL, "[opencl_invert] couldn't enqueue kernel! %d\n", err);
+  return FALSE;
+}
+#endif
+
 void reload_defaults(dt_iop_module_t *self)
 {
   dt_iop_invert_params_t tmp = (dt_iop_invert_params_t)
@@ -315,9 +368,18 @@ void reload_defaults(dt_iop_module_t *self)
   self->default_enabled = 0;
 }
 
+void init_global(dt_iop_module_so_t *module)
+{
+  const int program = 2; // basic.cl, from programs.conf
+  module->data = malloc(sizeof(dt_iop_invert_global_data_t));
+
+  dt_iop_invert_global_data_t *gd = module->data;
+  gd->kernel_invert_1f = dt_opencl_create_kernel(program, "invert_1f");
+  gd->kernel_invert_4f = dt_opencl_create_kernel(program, "invert_4f");
+}
+
 void init(dt_iop_module_t *module)
 {
-  // module->data = g_malloc0(sizeof(dt_iop_invert_data_t));
   module->params = g_malloc0(sizeof(dt_iop_invert_params_t));
   module->default_params = g_malloc0(sizeof(dt_iop_invert_params_t));
   module->default_enabled = 0;
@@ -334,11 +396,24 @@ void cleanup(dt_iop_module_t *module)
   module->params = NULL;
 }
 
+void cleanup_global(dt_iop_module_so_t *module)
+{
+  dt_iop_invert_global_data_t *gd = (dt_iop_invert_global_data_t *)module->data;
+  dt_opencl_free_kernel(gd->kernel_invert_4f);
+  dt_opencl_free_kernel(gd->kernel_invert_1f);
+  free(module->data);
+  module->data = NULL;
+}
+
 void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *params, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
   dt_iop_invert_params_t *p = (dt_iop_invert_params_t *)params;
   dt_iop_invert_data_t *d = (dt_iop_invert_data_t *)piece->data;
   memcpy(d, p, sizeof(dt_iop_invert_params_t));
+
+  // x-trans images not implemented in OpenCL yet
+  if(pipe->image.filters == 9u)
+    piece->process_cl_ready = 0;
 }
 
 void init_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)

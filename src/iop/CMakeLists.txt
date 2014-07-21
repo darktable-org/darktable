@@ -16,6 +16,7 @@ macro (add_iop _lib _src)
   install(TARGETS  ${_lib} DESTINATION ${LIB_INSTALL}/darktable/plugins)
 endmacro (add_iop)
 
+add_iop(letsgofloat "letsgofloat.c")
 add_iop(soften "soften.c")
 add_iop(bloom "bloom.c")
 add_iop(highpass "highpass.c")
