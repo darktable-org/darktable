@@ -526,7 +526,7 @@ dt_masks_legacy_params(
         dt_masks_point_circle_t *circle = (dt_masks_point_circle_t *)p->data;
         module->distort_backtransform(module, &piece, circle->center, 1);
       }
-      if(m->type & DT_MASKS_PATH)
+      else if(m->type & DT_MASKS_PATH)
       {
         while(p)
         {
@@ -538,7 +538,7 @@ dt_masks_legacy_params(
           p = g_list_next(p);
         }
       }
-      if(m->type & DT_MASKS_GRADIENT)
+      else if(m->type & DT_MASKS_GRADIENT)
       { // TODO: new ones have wrong rotation.
         dt_masks_point_gradient_t *gradient = (dt_masks_point_gradient_t *)p->data;
         module->distort_backtransform(module, &piece, gradient->anchor, 1);
@@ -550,7 +550,7 @@ dt_masks_legacy_params(
         else if(ori == ORIENTATION_ROTATE_CW_90_DEG)
           gradient->rotation -= -90.0f;
       }
-      if(m->type & DT_MASKS_ELLIPSE)
+      else if(m->type & DT_MASKS_ELLIPSE)
       {
         dt_masks_point_ellipse_t *ellipse = (dt_masks_point_ellipse_t *)p->data;
         module->distort_backtransform(module, &piece, ellipse->center, 1);
@@ -562,7 +562,7 @@ dt_masks_legacy_params(
           ellipse->radius[1] = y;
         }
       }
-      if(m->type & DT_MASKS_BRUSH)
+      else if(m->type & DT_MASKS_BRUSH)
       {
         while(p)
         {
@@ -574,6 +574,7 @@ dt_masks_legacy_params(
           p = g_list_next(p);
         }
       }
+
       if(m->type & DT_MASKS_CLONE)
       {
         // NOTE: can be: DT_MASKS_CIRCLE, DT_MASKS_ELLIPSE, DT_MASKS_PATH
