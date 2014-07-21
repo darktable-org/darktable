@@ -206,7 +206,11 @@ FCxtrans(const int row, const int col,
 void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoid, void *ovoid, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
 {
   dt_iop_invert_data_t *d = (dt_iop_invert_data_t *)piece->data;
+
+  const float *const m = piece->pipe->processed_maximum;
+
   const float film_rgb[3] = {d->color[0], d->color[1], d->color[2]};
+  const float film_rgb_f[3] = {d->color[0] * m[0], d->color[1] * m[1], d->color[2] * m[2]};
 
   //FIXME: it could be wise to make this a NOP when picking colors. not sure about that though.
 //   if(self->request_color_pick){
@@ -218,8 +222,6 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
 
   if(!dt_dev_pixelpipe_uses_downsampled_input(piece->pipe) && (filters == 9u) && piece->pipe->image.bpp != 4)
   { // xtrans float mosaiced
-    const float *const m = piece->pipe->processed_maximum;
-    const float film_rgb_f[3] = {m[0]*film_rgb[0], m[1]*film_rgb[1], m[2]*film_rgb[2]};
 #ifdef _OPENMP
     #pragma omp parallel for default(none) shared(roi_out, ivoid, ovoid) schedule(static)
 #endif
@@ -236,8 +238,6 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   }
   else if(!dt_dev_pixelpipe_uses_downsampled_input(piece->pipe) && filters && piece->pipe->image.bpp != 4)
   { // bayer float mosaiced
-    const float *const m = piece->pipe->processed_maximum;
-    const float film_rgb_f[3] = {m[0]*film_rgb[0], m[1]*film_rgb[1], m[2]*film_rgb[2]};
 #ifdef _OPENMP
     #pragma omp parallel for default(none) shared(roi_out, ivoid, ovoid /*film_rgb_i, min, max, res*/) schedule(static)
 #endif
