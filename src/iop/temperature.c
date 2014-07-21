@@ -271,6 +271,12 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   else
   { // non-mosaiced
     const int ch = piece->colors;
+
+    const __m128 coeffs = _mm_set_ps(1.0f,
+                                     d->coeffs[2],
+                                     d->coeffs[1],
+                                     d->coeffs[0]);
+
 #ifdef _OPENMP
     #pragma omp parallel for default(none) shared(roi_out, ivoid, ovoid, d) schedule(static)
 #endif
@@ -279,8 +285,16 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
       const float *in = ((float*)ivoid) + (size_t)ch*k*roi_out->width;
       float *out = ((float*)ovoid) + (size_t)ch*k*roi_out->width;
       for (int j=0; j<roi_out->width; j++,in+=ch,out+=ch)
-        for(int c=0; c<3; c++) out[c] = in[c]*d->coeffs[c];
+      {
+        const __m128 input = _mm_load_ps(in);
+        const __m128 multiplied = _mm_mul_ps(input, coeffs);
+        _mm_stream_ps(out, multiplied);
+      }
     }
+    _mm_sfence();
+
+    if(piece->pipe->mask_display)
+      dt_iop_alpha_copy(ivoid, ovoid, roi_out->width, roi_out->height);
   }
   for(int k=0; k<3; k++)
     piece->pipe->processed_maximum[k] = d->coeffs[k] * piece->pipe->processed_maximum[k];
