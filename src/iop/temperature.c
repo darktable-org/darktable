@@ -217,9 +217,8 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   const int filters = dt_image_filter(&piece->pipe->image);
   uint8_t (*const xtrans)[6] = self->dev->image_storage.xtrans;
   dt_iop_temperature_data_t *d = (dt_iop_temperature_data_t *)piece->data;
-  if(!dt_dev_pixelpipe_uses_downsampled_input(piece->pipe) && filters == 9u && piece->pipe->image.bpp != 4)
-  {  // xtrans float mosaiced
-    const float coeffsi[3] = {d->coeffs[0], d->coeffs[1], d->coeffs[2]};
+  if(!dt_dev_pixelpipe_uses_downsampled_input(piece->pipe) && filters == 9u)
+  { // xtrans float mosaiced
 #ifdef _OPENMP
     #pragma omp parallel for default(none) shared(roi_out, ivoid, ovoid, d) schedule(static)
 #endif
@@ -228,7 +227,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
       const float *in = ((float *)ivoid) + (size_t)j*roi_out->width;
       float *out = ((float*)ovoid) + (size_t)j*roi_out->width;
       for(int i=0; i<roi_out->width; i++,out++,in++)
-        *out = *in * coeffsi[FCxtrans(j,i,roi_out,xtrans)];
+        *out = *in * d->coeffs[FCxtrans(j,i,roi_out,xtrans)];
     }
   }
   else if(!dt_dev_pixelpipe_uses_downsampled_input(piece->pipe) && filters)
@@ -268,19 +267,6 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
         *out = *in * d->coeffs[FC(j+roi_out->y, i+roi_out->x, filters)];
     }
     _mm_sfence();
-  }
-  else if(!dt_dev_pixelpipe_uses_downsampled_input(piece->pipe) && (filters == 9u) && piece->pipe->image.bpp == 4)
-  { // xtrans float mosaiced
-#ifdef _OPENMP
-    #pragma omp parallel for default(none) shared(roi_out, ivoid, ovoid, d) schedule(static)
-#endif
-    for(int j=0; j<roi_out->height; j++)
-    {
-      const float *in = ((float *)ivoid) + (size_t)j*roi_out->width;
-      float *out = ((float*)ovoid) + (size_t)j*roi_out->width;
-      for(int i=0; i<roi_out->width; i++,out++,in++)
-        *out = *in * d->coeffs[FCxtrans(j,i,roi_out,xtrans)];
-    }
   }
   else
   { // non-mosaiced
