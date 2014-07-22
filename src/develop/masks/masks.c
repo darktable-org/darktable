@@ -457,9 +457,10 @@ int dt_masks_get_mask_roi(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece
   return 0;
 }
 
-int dt_masks_version(void)
+int
+dt_masks_version(void)
 {
-  return 2;
+  return DEVELOP_MASKS_VERSION;
 }
 
 int
