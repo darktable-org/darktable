@@ -855,6 +855,8 @@ fcol(const int row, const int col,
      const unsigned int filters, const uint8_t (*const xtrans)[6])
 {
   if (filters == 9)
+    // There are a few cases in VNG demosaic in which row or col is -1
+    // or -2. The +6 ensures a non-negative array index.
     return FCxtrans(row+6, col+6, xtrans);
   else
     return FC(row, col, filters);
