@@ -433,7 +433,8 @@ FCxtrans(const int row, const int col,
 
 #define CLIPF(x) CLAMPS(x,0.0f,1.0f)
 #define SQR(x) ((x)*(x))
-#define TS 156          /* Tile Size */
+// tile size, optimized to keep data in L2 cache
+#define TS 88
 
 /*
    Frank Markesteijn's algorithm for Fuji X-Trans sensors
@@ -464,7 +465,7 @@ xtrans_markesteijn_interpolate(
   const int ndir = 4 << (passes > 1);
 
   const size_t image_size = width*height*4*(size_t)sizeof(float);
-  const size_t buffer_size = (3+ndir*4)*TS*TS*(size_t)sizeof(float);
+  const size_t buffer_size = (size_t) TS*TS*(ndir*4+3)*sizeof(float);
   char *const all_buffers = (char *) dt_alloc_align(16, image_size+dt_get_num_threads()*buffer_size);
   if (!all_buffers)
   {
@@ -593,14 +594,16 @@ xtrans_markesteijn_interpolate(
     char *const buffer = all_buffers + image_size + dt_get_thread_num() * buffer_size;
     // rgb points to ndir TSxTS tiles of 3 channels (R, G, and B)
     float       (*rgb)[TS][TS][3]  = (float(*)[TS][TS][3]) buffer;
-    // yuv points to a TSxTS tile of 3 channels (Y, u, and v)
-    float (*const yuv)    [TS][3]  = (float(*)    [TS][3]) (buffer + ndir*TS*TS*3*sizeof(float));
+    // yuv points to 3 channel (Y, u, and v) TSxTS tiles
+    // note that channels come before tiles to allow for a
+    // vectorization optimization when building drv[] from yuv[]
+    float (*const yuv)[TS][TS]     = (float(*)[TS][TS])   (buffer + ndir*TS*TS*3*sizeof(float));
     // drv points to ndir TSxTS tiles, each a single chanel of derivatives
-    float (*const drv)[TS][TS]     = (float(*)[TS][TS]) (buffer + (ndir+1)*TS*TS*3*sizeof(float));
-    // homo and homosum reuse buffers which are used at other points
-    // in the loop; each points to ndir single-channel TSxTS tiles
-    uint8_t (*const homo)   [TS][TS] = (uint8_t (*)[TS][TS]) (buffer + ndir*TS*TS*3*sizeof(float));
-    uint8_t (*const homosum)[TS][TS] = (uint8_t (*)[TS][TS]) (buffer + ndir*TS*TS*(3*sizeof(float) + sizeof(uint8_t)));
+    float (*const drv)[TS][TS]     = (float(*)[TS][TS])   (buffer + TS*TS*(ndir*3+3)*sizeof(float));
+    // homo and homosum reuse memory which is used earlier in the
+    // loop; each points to ndir single-channel TSxTS tiles
+    uint8_t (*const homo)   [TS][TS] = (uint8_t (*)[TS][TS]) (buffer + TS*TS*ndir*3*sizeof(float));
+    uint8_t (*const homosum)[TS][TS] = (uint8_t (*)[TS][TS]) (buffer + TS*TS*ndir*(3*sizeof(float) + sizeof(uint8_t)));
 
     for (int left=3; left < width-19; left += TS-16)
     {
@@ -756,24 +759,23 @@ xtrans_markesteijn_interpolate(
             // dt_iop_RGB_to_YCbCr which uses Rec. 601 conversion,
             // which appears less good with specular highlights
             float y = 0.2627 * rx[0] + 0.6780 * rx[1] + 0.0593 * rx[2];
-            yuv[row][col][0] = y;
-            yuv[row][col][1] = (rx[2]-y)*0.56433;
-            yuv[row][col][2] = (rx[0]-y)*0.67815;
+            yuv[0][row][col] = y;
+            yuv[1][row][col] = (rx[2]-y)*0.56433;
+            yuv[2][row][col] = (rx[0]-y)*0.67815;
           }
-        int f=dir[d & 3];
+        const int f=dir[d & 3];
         for (int row=3; row < mrow-3; row++)
           for (int col=3; col < mcol-3; col++)
           {
-            float (*yfx)[3] = &yuv[row][col];
-            float g = 2*yfx[0][0] - yfx[f][0] - yfx[-f][0];
-            drv[d][row][col] = SQR(g)
-              + SQR(2*yfx[0][1] - yfx[f][1] - yfx[-f][1])
-              + SQR(2*yfx[0][2] - yfx[f][2] - yfx[-f][2]);
+            float (*yfx)[TS][TS] = (float(*)[TS][TS]) &yuv[0][row][col];
+            drv[d][row][col] = SQR(2*yfx[0][0][0] - yfx[0][0][f] - yfx[0][0][-f])
+                             + SQR(2*yfx[1][0][0] - yfx[1][0][f] - yfx[1][0][-f])
+                             + SQR(2*yfx[2][0][0] - yfx[2][0][f] - yfx[2][0][-f]);
           }
       }
 
       /* Build homogeneity maps from the derivatives:                   */
-      memset(homo, 0, ndir*TS*TS);
+      memset(homo, 0, (size_t)ndir*TS*TS*sizeof(uint8_t));
       for (int row=4; row < mrow-4; row++)
         for (int col=4; col < mcol-4; col++)
         {
@@ -796,7 +798,7 @@ xtrans_markesteijn_interpolate(
         for (int row = MIN(top,8); row < mrow-8; row++)
         {
           int col = MIN(left,8);
-          int v5sum[5] = {0};
+          uint8_t v5sum[5] = {0};
           for (int v=-2; v<=2; v++)
             for (int h=-2; h<=2; h++)
               v5sum[(col+h)%5] += homo[d][row+v][col+h];
@@ -804,7 +806,7 @@ xtrans_markesteijn_interpolate(
           // calculate by rolling through column sums
           for (col++; col < mcol-8; col++)
           {
-            int colsum = 0;
+            uint8_t colsum = 0;
             for (int v=-2; v<=2; v++)
               colsum += homo[d][row+v][col+2];
             homosum[d][row][col] = homosum[d][row][col-1] - v5sum[col%5] + colsum;
@@ -816,8 +818,8 @@ xtrans_markesteijn_interpolate(
       for (int row = MIN(top,8); row < mrow-8; row++)
         for (int col = MIN(left,8); col < mcol-8; col++)
         {
-          int hm[8] = { 0 };
-          unsigned int maxval = 0;
+          uint8_t hm[8] = { 0 };
+          uint8_t maxval = 0;
           for (int d=0; d < ndir; d++)
           {
             hm[d] = homosum[d][row][col];
