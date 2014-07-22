@@ -195,9 +195,14 @@ RawDecoder* TiffParser::getDecoder() {
         mRootIFD = NULL;
         return new ThreefrDecoder(root, mInput);
       }
+      if (!make.compare("Leaf")) {
+        mRootIFD = NULL;
+        return new MosDecoder(root, mInput);
+      }
     }
   }
 
+  // Last ditch effort to identify Leaf cameras that don't have a Tiff Make set
   potentials = mRootIFD->getIFDsWithTag(SOFTWARE);
   if (!potentials.empty()) {
     string software = potentials[0]->getEntry(SOFTWARE)->getString();

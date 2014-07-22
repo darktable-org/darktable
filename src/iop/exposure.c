@@ -584,7 +584,7 @@ void init(dt_iop_module_t *module)
   module->default_params = malloc(sizeof(dt_iop_exposure_params_t));
   module->default_enabled = 0;
   module->histogram_params.bins_count = 16384; // we neeed really maximally reliable histogrem
-  module->priority = 175; // module order created by iop_dependencies.py, do not edit!
+  module->priority = 192; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_exposure_params_t);
   module->gui_data = NULL;
 }

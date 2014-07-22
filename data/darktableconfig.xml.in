@@ -1107,7 +1107,7 @@
     </type>
     <default>at most PPG (reasonable)</default>
     <shortdescription>demosaicing for zoomed out darkroom mode</shortdescription>
-    <longdescription>interpolation when not viewing 1:1 in darkroom mode: bilinear is fastest, but not as sharp. middle ground is using PPG + interpolation modes specified below, full will use exactly the settings for full-size export.</longdescription>
+    <longdescription>interpolation when not viewing 1:1 in darkroom mode: bilinear is fastest, but not as sharp. middle ground is using PPG + interpolation modes specified below, full will use exactly the settings for full-size export. X-Trans sensors use VNG rather than PPG as middle ground.</longdescription>
   </dtconfig>
   <dtconfig prefs="core">
     <name>plugins/lighttable/export/pixel_interpolator</name>
@@ -1218,12 +1218,13 @@
     <name>plugins/pwstorage/pwstorage_backend</name>
     <type>
       <enum>
+        <option>auto</option>
         <option>none</option>
         <option>kwallet</option>
         <option>gnome keyring</option>
       </enum>
     </type>
-    <default>none</default>
+    <default>auto</default>
     <shortdescription>password storage backend to use</shortdescription>
     <longdescription>the storage backend for password storage: none, kwallet, gnome keyring</longdescription>
   </dtconfig>

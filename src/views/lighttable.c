@@ -97,7 +97,8 @@ typedef struct dt_library_t
   int images_in_row;
 
   uint8_t *full_res_thumb;
-  int32_t full_res_thumb_id, full_res_thumb_wd, full_res_thumb_ht, full_res_thumb_orientation;
+  int32_t full_res_thumb_id, full_res_thumb_wd, full_res_thumb_ht;
+  dt_image_orientation_t full_res_thumb_orientation;
   dt_focus_cluster_t full_res_focus[49];
 
   int32_t last_mouse_over_id;
@@ -1189,7 +1190,7 @@ void expose_full_preview(dt_view_t *self, cairo_t *cr, int32_t width, int32_t he
     cairo_surface_t *surface = cairo_image_surface_create_for_data (lib->full_res_thumb, CAIRO_FORMAT_RGB24, lib->full_res_thumb_wd, lib->full_res_thumb_ht, stride);
     cairo_save(cr);
     int wd = lib->full_res_thumb_wd, ht = lib->full_res_thumb_ht;
-    if(lib->full_res_thumb_orientation & 4)
+    if(lib->full_res_thumb_orientation & ORIENTATION_SWAP_XY)
       wd = lib->full_res_thumb_ht, ht = lib->full_res_thumb_wd;
     if(pointerx >= 0 && pointery >= 0)
     { // avoid jumps in case mouse leaves drawing area
@@ -1199,17 +1200,17 @@ void expose_full_preview(dt_view_t *self, cairo_t *cr, int32_t width, int32_t he
     const float tx = -(wd - width ) * CLAMP(pointerx_c/(float)width,  0.0f, 1.0f),
                 ty = -(ht - height) * CLAMP(pointery_c/(float)height, 0.0f, 1.0f);
     cairo_translate(cr, tx, ty);
-    if(lib->full_res_thumb_orientation & 4)
+    if(lib->full_res_thumb_orientation & ORIENTATION_SWAP_XY)
     {
       cairo_matrix_t m = (cairo_matrix_t){0.0, 1.0, 1.0, 0.0, 0.0, 0.0};
       cairo_transform(cr, &m);
     }
-    if(lib->full_res_thumb_orientation & 2)
+    if(lib->full_res_thumb_orientation & ORIENTATION_FLIP_X)
     {
       cairo_scale(cr, 1, -1);
       cairo_translate(cr, 0, -lib->full_res_thumb_ht-1);
     }
-    if(lib->full_res_thumb_orientation & 1)
+    if(lib->full_res_thumb_orientation & ORIENTATION_FLIP_Y)
     {
       cairo_scale(cr, -1, 1);
       cairo_translate(cr, -lib->full_res_thumb_wd-1, 0);
@@ -1247,7 +1248,6 @@ void expose_full_preview(dt_view_t *self, cairo_t *cr, int32_t width, int32_t he
         lib->full_preview_id,
         lib->full_res_thumb_wd,
         lib->full_res_thumb_ht,
-        lib->full_res_thumb_orientation,
         lib->full_res_focus, frows, fcols);
 }
 

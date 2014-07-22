@@ -67,7 +67,6 @@ dt_iop_temperature_data_t;
 
 typedef struct dt_iop_temperature_global_data_t
 {
-  int kernel_whitebalance_1ui;
   int kernel_whitebalance_4f;
   int kernel_whitebalance_1f;
 }
@@ -205,61 +204,21 @@ FC(const int row, const int col, const unsigned int filters)
   return filters >> (((row << 1 & 14) + (col & 1)) << 1) & 3;
 }
 
+static uint8_t
+FCxtrans(const int row, const int col,
+         const dt_iop_roi_t *const roi,
+         uint8_t (*const xtrans)[6])
+{
+  return xtrans[(row+roi->y) % 6][(col+roi->x) % 6];
+}
+
 void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoid, void *ovoid, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
 {
-  const int filters = dt_image_flipped_filter(&piece->pipe->image);
+  const int filters = dt_image_filter(&piece->pipe->image);
+  uint8_t (*const xtrans)[6] = self->dev->image_storage.xtrans;
   dt_iop_temperature_data_t *d = (dt_iop_temperature_data_t *)piece->data;
-  if(!dt_dev_pixelpipe_uses_downsampled_input(piece->pipe) && filters && piece->pipe->image.bpp != 4)
-  {
-    const float coeffsi[3] = {d->coeffs[0]/65535.0f, d->coeffs[1]/65535.0f, d->coeffs[2]/65535.0f};
-#ifdef _OPENMP
-    #pragma omp parallel for default(none) shared(roi_out, ivoid, ovoid, d) schedule(static)
-#endif
-    for(int j=0; j<roi_out->height; j++)
-    {
-      const uint16_t *in = ((uint16_t *)ivoid) + (size_t)j*roi_out->width;
-      float *out = ((float*)ovoid) + (size_t)j*roi_out->width;
-
-      int i=0;
-      int alignment = ((8 - (j * roi_out->width & (8-1))) & (8-1));
-
-      // process unaligned pixels
-      for ( ; i < alignment ; i++,out++,in++)
-        *out = *in * coeffsi[FC(j+roi_out->y, i+roi_out->x, filters)];
-
-      const __m128 coeffs = _mm_set_ps(coeffsi[FC(j+roi_out->y, roi_out->x+i+3, filters)],
-                                       coeffsi[FC(j+roi_out->y, roi_out->x+i+2, filters)],
-                                       coeffsi[FC(j+roi_out->y, roi_out->x+i+1, filters)],
-                                       coeffsi[FC(j+roi_out->y, roi_out->x+i  , filters)]);
-
-      // process aligned pixels with SSE
-      for( ; i < roi_out->width - (8-1); i+=8,in+=8)
-      {
-        const __m128i input = _mm_load_si128((__m128i *)in);
-
-        __m128i ilo = _mm_unpacklo_epi16(input, _mm_set1_epi16(0));
-        __m128i ihi = _mm_unpackhi_epi16(input, _mm_set1_epi16(0));
-
-        __m128 flo = _mm_cvtepi32_ps(ilo);
-        __m128 fhi = _mm_cvtepi32_ps(ihi);
-
-        flo = _mm_mul_ps(flo, coeffs);
-        fhi = _mm_mul_ps(fhi, coeffs);
-
-        _mm_stream_ps(out, flo);
-        out += 4;
-        _mm_stream_ps(out, fhi);
-        out += 4;
-      }
-
-      // process the rest
-      for( ; i<roi_out->width; i++,out++,in++)
-        *out = *in * coeffsi[FC(j+roi_out->y, i+roi_out->x, filters)];
-    }
-    _mm_sfence();
-  }
-  else if(!dt_dev_pixelpipe_uses_downsampled_input(piece->pipe) && filters && piece->pipe->image.bpp == 4)
-  {
+  if(!dt_dev_pixelpipe_uses_downsampled_input(piece->pipe) && filters == 9u)
+  { // xtrans float mosaiced
 #ifdef _OPENMP
     #pragma omp parallel for default(none) shared(roi_out, ivoid, ovoid, d) schedule(static)
 #endif
@@ -268,12 +227,56 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
       const float *in = ((float *)ivoid) + (size_t)j*roi_out->width;
       float *out = ((float*)ovoid) + (size_t)j*roi_out->width;
       for(int i=0; i<roi_out->width; i++,out++,in++)
-        *out = *in * d->coeffs[FC(j+roi_out->x, i+roi_out->y, filters)];
+        *out = *in * d->coeffs[FCxtrans(j,i,roi_out,xtrans)];
     }
   }
+  else if(!dt_dev_pixelpipe_uses_downsampled_input(piece->pipe) && filters)
+  { // bayer float mosaiced
+#ifdef _OPENMP
+    #pragma omp parallel for default(none) shared(roi_out, ivoid, ovoid, d) schedule(static)
+#endif
+    for(int j=0; j<roi_out->height; j++)
+    {
+      const float *in = ((float *)ivoid) + (size_t)j*roi_out->width;
+      float *out = ((float*)ovoid) + (size_t)j*roi_out->width;
+
+      int i = 0;
+      int alignment = ((4 - (j * roi_out->width & (4 - 1))) & (4 - 1));
+
+      // process unaligned pixels
+      for ( ; i < alignment ; i++, out++, in++)
+        *out = *in * d->coeffs[FC(j+roi_out->x, i+roi_out->y, filters)];
+
+      const __m128 coeffs = _mm_set_ps(d->coeffs[FC(j+roi_out->y, roi_out->x+i+3, filters)],
+                                       d->coeffs[FC(j+roi_out->y, roi_out->x+i+2, filters)],
+                                       d->coeffs[FC(j+roi_out->y, roi_out->x+i+1, filters)],
+                                       d->coeffs[FC(j+roi_out->y, roi_out->x+i  , filters)]);
+
+      // process aligned pixels with SSE
+      for( ; i < roi_out->width - (4-1); i+=4,in+=4,out+=4)
+      {
+        const __m128 input = _mm_load_ps(in);
+
+        const __m128 multiplied = _mm_mul_ps(input, coeffs);
+
+        _mm_stream_ps(out, multiplied);
+      }
+
+      // process the rest
+      for( ; i<roi_out->width; i++,out++,in++)
+        *out = *in * d->coeffs[FC(j+roi_out->y, i+roi_out->x, filters)];
+    }
+    _mm_sfence();
+  }
   else
-  {
+  { // non-mosaiced
     const int ch = piece->colors;
+
+    const __m128 coeffs = _mm_set_ps(1.0f,
+                                     d->coeffs[2],
+                                     d->coeffs[1],
+                                     d->coeffs[0]);
+
 #ifdef _OPENMP
     #pragma omp parallel for default(none) shared(roi_out, ivoid, ovoid, d) schedule(static)
 #endif
@@ -282,8 +285,16 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
       const float *in = ((float*)ivoid) + (size_t)ch*k*roi_out->width;
       float *out = ((float*)ovoid) + (size_t)ch*k*roi_out->width;
       for (int j=0; j<roi_out->width; j++,in+=ch,out+=ch)
-        for(int c=0; c<3; c++) out[c] = in[c]*d->coeffs[c];
+      {
+        const __m128 input = _mm_load_ps(in);
+        const __m128 multiplied = _mm_mul_ps(input, coeffs);
+        _mm_stream_ps(out, multiplied);
+      }
     }
+    _mm_sfence();
+
+    if(piece->pipe->mask_display)
+      dt_iop_alpha_copy(ivoid, ovoid, roi_out->width, roi_out->height);
   }
   for(int k=0; k<3; k++)
     piece->pipe->processed_maximum[k] = d->coeffs[k] * piece->pipe->processed_maximum[k];
@@ -297,18 +308,12 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
   dt_iop_temperature_global_data_t *gd = (dt_iop_temperature_global_data_t *)self->data;
 
   const int devid = piece->pipe->devid;
-  const int filters = dt_image_flipped_filter(&piece->pipe->image);
-  float coeffs[3] = {d->coeffs[0], d->coeffs[1], d->coeffs[2]};
+  const int filters = dt_image_filter(&piece->pipe->image);
   cl_mem dev_coeffs = NULL;
   cl_int err = -999;
   int kernel = -1;
 
-  if(!dt_dev_pixelpipe_uses_downsampled_input(piece->pipe) && filters && piece->pipe->image.bpp != 4)
-  {
-    kernel = gd->kernel_whitebalance_1ui;
-    for(int k=0; k<3; k++) coeffs[k] /= 65535.0f;
-  }
-  else if(!dt_dev_pixelpipe_uses_downsampled_input(piece->pipe) && filters && piece->pipe->image.bpp == 4)
+  if(!dt_dev_pixelpipe_uses_downsampled_input(piece->pipe) && filters)
   {
     kernel = gd->kernel_whitebalance_1f;
   }
@@ -317,7 +322,7 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
     kernel = gd->kernel_whitebalance_4f;
   }
 
-  dev_coeffs = dt_opencl_copy_host_to_device_constant(devid, sizeof(float)*3, coeffs);
+  dev_coeffs = dt_opencl_copy_host_to_device_constant(devid, sizeof(float)*3, d->coeffs);
   if (dev_coeffs == NULL) goto error;
 
   const int width = roi_in->width;
@@ -363,6 +368,10 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
   dt_iop_temperature_params_t *p = (dt_iop_temperature_params_t *)p1;
   dt_iop_temperature_data_t *d = (dt_iop_temperature_data_t *)piece->data;
   for(int k=0; k<3; k++) d->coeffs[k]  = p->coeffs[k];
+
+  // x-trans images not implemented in OpenCL yet
+  if(pipe->image.filters == 9u)
+    piece->process_cl_ready = 0;
 }
 
 void init_pipe (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
@@ -546,7 +555,6 @@ void init_global(dt_iop_module_so_t *module)
   const int program = 2; // basic.cl, from programs.conf
   dt_iop_temperature_global_data_t *gd = (dt_iop_temperature_global_data_t *)malloc(sizeof(dt_iop_temperature_global_data_t));
   module->data = gd;
-  gd->kernel_whitebalance_1ui = dt_opencl_create_kernel(program, "whitebalance_1ui");
   gd->kernel_whitebalance_4f  = dt_opencl_create_kernel(program, "whitebalance_4f");
   gd->kernel_whitebalance_1f  = dt_opencl_create_kernel(program, "whitebalance_1f");
 }
@@ -555,7 +563,7 @@ void init (dt_iop_module_t *module)
 {
   module->params = malloc(sizeof(dt_iop_temperature_params_t));
   module->default_params = malloc(sizeof(dt_iop_temperature_params_t));
-  module->priority = 35; // module order created by iop_dependencies.py, do not edit!
+  module->priority = 52; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_temperature_params_t);
   module->gui_data = NULL;
 }
@@ -571,7 +579,6 @@ void cleanup (dt_iop_module_t *module)
 void cleanup_global(dt_iop_module_so_t *module)
 {
   dt_iop_temperature_global_data_t *gd = (dt_iop_temperature_global_data_t *)module->data;
-  dt_opencl_free_kernel(gd->kernel_whitebalance_1ui);
   dt_opencl_free_kernel(gd->kernel_whitebalance_4f);
   dt_opencl_free_kernel(gd->kernel_whitebalance_1f);
   free(module->data);

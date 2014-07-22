@@ -2,6 +2,7 @@
     This file is part of darktable,
     copyright (c) 2009--2013 johannes hanika.
     copyright (c) 2014 Ulrich Pegelow.
+    copyright (c) 2014 LebedevRI.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -22,14 +23,41 @@
 #include "colorspace.cl"
 
 kernel void
-whitebalance_1ui(read_only image2d_t in, write_only image2d_t out, const int width, const int height, global float *coeffs,
-    const unsigned int filters, const int rx, const int ry)
+letsgofloat_1ui(read_only image2d_t in, write_only image2d_t out,
+               const int width, const int height)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
   if(x >= width || y >= height) return;
-  const uint4 pixel = read_imageui(in, sampleri, (int2)(x, y));
-  write_imagef (out, (int2)(x, y), (float4)(pixel.x * coeffs[FC(ry+y, rx+x, filters)], 0.0f, 0.0f, 0.0f));
+  const float pixel = read_imageui(in, sampleri, (int2)(x, y)).x;
+  write_imagef (out, (int2)(x, y), (float4)(pixel / 65535.0f, 0.0f, 0.0f, 0.0f));
+}
+
+kernel void
+invert_1f(read_only image2d_t in, write_only image2d_t out, const int width, const int height, global float *color,
+          const unsigned int filters, const int rx, const int ry)
+{
+  const int x = get_global_id(0);
+  const int y = get_global_id(1);
+  if(x >= width || y >= height) return;
+  const float pixel = read_imagef(in, sampleri, (int2)(x, y)).x;
+  const float inv_pixel = color[FC(rx+y, ry+x, filters)] - pixel;
+
+  write_imagef (out, (int2)(x, y), (float4)(clamp(inv_pixel, 0.0f, 1.0f), 0.0f, 0.0f, 0.0f));
+}
+
+kernel void
+invert_4f(read_only image2d_t in, write_only image2d_t out, const int width, const int height, global float *color,
+                const unsigned int filters, const int rx, const int ry)
+{
+  const int x = get_global_id(0);
+  const int y = get_global_id(1);
+  if(x >= width || y >= height) return;
+  float4 pixel = read_imagef(in, sampleri, (int2)(x, y));
+  pixel.xyz = color[FC(rx+y, ry+x, filters)] - pixel.xyz;
+  pixel.xyz = clamp(pixel.xyz, 0.0f, 1.0f);
+
+  write_imagef (out, (int2)(x, y), pixel);
 }
 
 kernel void

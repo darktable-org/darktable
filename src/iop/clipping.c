@@ -1204,6 +1204,9 @@ static float _ratio_get_aspect(dt_iop_module_t *self)
 {
   dt_iop_clipping_params_t *p = (dt_iop_clipping_params_t *)self->params;
 
+  int iwd, iht;
+  dt_dev_get_processed_size(darktable.develop, &iwd, &iht);
+
   // if we do not have yet computed the aspect ratio, let's do it now
   if (p->ratio_d == -2 && p->ratio_n == -2)
   {
@@ -1211,9 +1214,9 @@ static float _ratio_get_aspect(dt_iop_module_t *self)
     else
     {
       const struct dt_interpolation* interpolation = dt_interpolation_new(DT_INTERPOLATION_USERPREF);
-      float whratio = ((float)(self->dev->image_storage.width - 2 * interpolation->width) * (fabsf(p->cw) - p->cx)) /
-                      ((float)(self->dev->image_storage.height - 2 * interpolation->width) * (fabsf(p->ch) - p->cy));
-      float ri = self->dev->image_storage.width / (float)self->dev->image_storage.height;
+      float whratio = ((float)(iwd - 2 * interpolation->width) * (fabsf(p->cw) - p->cx)) /
+                      ((float)(iht - 2 * interpolation->width) * (fabsf(p->ch) - p->cy));
+      float ri = (float)iwd / (float)iht;
 
       float prec = 0.0003f;
       if (fabsf(whratio-3.0f/2.0f)<prec) p->ratio_d=3, p->ratio_n=2;
@@ -1235,7 +1238,7 @@ static float _ratio_get_aspect(dt_iop_module_t *self)
 
   if (p->ratio_d==0 && p->ratio_n==0) return -1.0f;
   float d=1.0f, n=1.0f;
-  if (p->ratio_n==0) d=copysign(self->dev->image_storage.width,p->ratio_d), n=self->dev->image_storage.height;
+  if (p->ratio_n==0) d=copysign(iwd, p->ratio_d), n=iht;
   else d=p->ratio_d, n=p->ratio_n;
 
   if (d<0) return -n/d;

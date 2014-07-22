@@ -62,10 +62,19 @@
     <para>
       As interpolation is prone to produce artifacts, various different demosaic algorithms have
       been developed in the past. Artifacts would typically be visible as moiré-like patterns
-      when you strongly zoom into your image. Currently darktable supports PPG and AMAZE. Both
-      algorithms produce high quality output with a low tendency to artifacts. AMAZE is reported
-      to sometimes give slightly better results. However, as AMAZE is significantly slower,
-      darktable uses PPG as a default.
+      when you strongly zoom into your image. Currently darktable supports PPG, AMAZE, and VNG4.
+      All these algorithms produce high quality output with a low tendency to artifacts. AMAZE
+      is reported to sometimes give slightly better results. However, as AMAZE is significantly
+      slower, darktable uses PPG as a default. VNG4 produces the softest results of the three
+      algorithms, but if you see "maze" artifacts, try VNG4 to eliminate them.
+    </para>
+
+    <para>
+      There are a few cameras whose sensors do not use a Bayer filter. Cameras with an "X-Trans"
+      sensor have their own set of demosaicing algorithms. The default algorithm for X-Trans
+      sensors is VNG. For noticeably better quality (at the cost of slower processing), choose
+      Markesteijn 1-pass or (for the best quality, but the slowest processing) Markesteijn
+      3-pass.
     </para>
 
     <para>
@@ -84,7 +93,9 @@
     <sect5>
       <title>method</title>
       <para>
-        Set the demosaic method. darktable currently supports PPG and AMAZE.
+        Set the demosaic method. darktable currently supports PPG, AMAZE, and VNG4 for Bayer
+        sensors. For X-Trans sensors darktable supports VNG, Markesteijn 1-pass, and
+        Markesteijn 3-pass.
       </para>
     </sect5>
 
@@ -92,7 +103,7 @@
       <title>edge threshold</title>
       <para>
         Set the threshold for an additional median pass. Defaults to <quote>0</quote> which
-        disables median filtering.
+        disables median filtering. This option is not shown for X-Trans sensors.
       </para>
     </sect5>
 
@@ -109,7 +120,7 @@
         In some cameras the green filters have slightly varying properties. This parameter adds
         an additional equalization step to suppress artifacts. Available options are
         <quote>disabled</quote>, <quote>local average</quote>, <quote>full average</quote> and
-        <quote>full and local average</quote>.
+        <quote>full and local average</quote>. This option is not shown for X-Trans sensors.
       </para>
     </sect5>
 

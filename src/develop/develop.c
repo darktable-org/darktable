@@ -427,10 +427,10 @@ void dt_dev_load_image(dt_develop_t *dev, const uint32_t imgid)
   dev->first_load = 1;
   dev->image_status = dev->preview_status = DT_DEV_PIXELPIPE_DIRTY;
 
+  dev->iop = dt_iop_load_modules(dev);
+
   dt_masks_read_forms(dev);
   dev->form_visible = NULL;
-
-  dev->iop = dt_iop_load_modules(dev);
 
   dt_dev_read_history(dev);
 
@@ -985,6 +985,19 @@ void dt_dev_read_history(dt_develop_t *dev)
           memcpy(hist->module->blend_params, hist->module->default_blendop_params,sizeof(dt_develop_blend_params_t));
         }
       }
+
+      /*
+       * Fix for flip iop: previously it was not always needed, but it might be
+       * in history stack as "orientation (off)", but now we always want it
+       * by default, so if it is disabled, enable it, and replace params with
+       * default_params. if user want to, he can disable it.
+       */
+      if(!strcmp(hist->module->op, "flip") && hist->enabled == 0 &&
+          labs(modversion) == 1)
+      {
+        memcpy(hist->params, hist->module->default_params, hist->module->params_size);
+        hist->enabled = 1;
+      }
     }
     else
     {
@@ -1478,7 +1491,7 @@ int dt_dev_distort_transform_plus(dt_develop_t *dev, dt_dev_pixelpipe_t *pipe, i
     if (!pieces) return 0;
     dt_iop_module_t *module = (dt_iop_module_t *) (modules->data);
     dt_dev_pixelpipe_iop_t *piece = (dt_dev_pixelpipe_iop_t *) (pieces->data);
-    if ((module->enabled || piece->enabled) && module->priority <= pmax && module->priority >= pmin)
+    if(piece->enabled && module->priority <= pmax && module->priority >= pmin)
     {
       module->distort_transform(module,piece,points,points_count);
     }
@@ -1497,7 +1510,7 @@ int dt_dev_distort_backtransform_plus(dt_develop_t *dev, dt_dev_pixelpipe_t *pip
     if (!pieces) return 0;
     dt_iop_module_t *module = (dt_iop_module_t *) (modules->data);
     dt_dev_pixelpipe_iop_t *piece = (dt_dev_pixelpipe_iop_t *) (pieces->data);
-    if ((module->enabled || piece->enabled) && module->priority <= pmax && module->priority >= pmin)
+    if(piece->enabled && module->priority <= pmax && module->priority >= pmin)
     {
       module->distort_backtransform(module,piece,points,points_count);
     }
