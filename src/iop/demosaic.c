@@ -422,7 +422,7 @@ green_equilibration_favg(float *out, const float *const in, const int width, con
 // x-trans specific demosaicing algorithms
 //
 
-static uint8_t
+static int
 FCxtrans(const int row, const int col,
          const uint8_t (*const xtrans)[6])
 {
