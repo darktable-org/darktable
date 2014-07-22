@@ -238,6 +238,10 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   }
   else if(!dt_dev_pixelpipe_uses_downsampled_input(piece->pipe) && filters)
   { // bayer float mosaiced
+
+    const __m128 val_min = _mm_setzero_ps();
+    const __m128 val_max = _mm_set1_ps(1.0f);
+
 #ifdef _OPENMP
     #pragma omp parallel for default(none) shared(roi_out, ivoid, ovoid) schedule(static)
 #endif
@@ -263,7 +267,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
       {
         const __m128 input = _mm_load_ps(in);
         const __m128 subtracted = _mm_sub_ps(film, input);
-        _mm_stream_ps(out, subtracted);
+        _mm_stream_ps(out, _mm_max_ps(_mm_min_ps(subtracted, val_max), val_min));
       }
 
       // process the rest
