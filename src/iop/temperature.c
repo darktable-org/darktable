@@ -245,7 +245,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
 
       // process unaligned pixels
       for ( ; i < alignment ; i++, out++, in++)
-        *out = *in * d->coeffs[FC(j+roi_out->x, i+roi_out->y, filters)];
+        *out = *in * d->coeffs[FC(j+roi_out->y, i+roi_out->x, filters)];
 
       const __m128 coeffs = _mm_set_ps(d->coeffs[FC(j+roi_out->y, roi_out->x+i+3, filters)],
                                        d->coeffs[FC(j+roi_out->y, roi_out->x+i+2, filters)],
