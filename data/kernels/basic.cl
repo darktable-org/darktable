@@ -54,7 +54,9 @@ invert_4f(read_only image2d_t in, write_only image2d_t out, const int width, con
   const int y = get_global_id(1);
   if(x >= width || y >= height) return;
   float4 pixel = read_imagef(in, sampleri, (int2)(x, y));
-  pixel.xyz = color[FC(rx+y, ry+x, filters)] - pixel.xyz;
+  pixel.x = color[0] - pixel.x;
+  pixel.y = color[1] - pixel.y;
+  pixel.z = color[2] - pixel.z;
   pixel.xyz = clamp(pixel.xyz, 0.0f, 1.0f);
 
   write_imagef (out, (int2)(x, y), pixel);
