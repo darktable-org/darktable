@@ -19,6 +19,7 @@
 #include "config.h"
 #endif
 #include "develop/imageop.h"
+#include "develop/tiling.h"
 #include "bauhaus/bauhaus.h"
 #include "gui/gtk.h"
 
@@ -47,12 +48,26 @@ const char *name()
 
 int flags()
 {
-  return IOP_FLAGS_ONE_INSTANCE;
+  return IOP_FLAGS_ALLOW_TILING | IOP_FLAGS_TILING_FULL_ROI | IOP_FLAGS_ONE_INSTANCE;
 }
 
 int groups()
 {
   return IOP_GROUP_BASIC;
+}
+
+void tiling_callback(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const dt_iop_roi_t *const roi_in,
+                     const dt_iop_roi_t *const roi_out, dt_develop_tiling_t *tiling)
+{
+  float ioratio = (float)roi_out->width * roi_out->height / ((float)roi_in->width * roi_in->height);
+
+  tiling->factor = 1.0f + ioratio; // in + out, no temp
+  tiling->maxbuf = 1.0f;
+  tiling->overhead = 0;
+  tiling->overlap = 0;
+  tiling->xalign = 2; // Bayer pattern
+  tiling->yalign = 2; // Bayer pattern
+  return;
 }
 
 int output_bpp(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
