@@ -4,6 +4,7 @@ po/*.pot
 doc/usermanual/darktable-usermanual*.pdf
 doc/api/
 tools/iop_deps.pdf
+*.kdev4
 .DS_Store
 cscope.out
 .*.swp
