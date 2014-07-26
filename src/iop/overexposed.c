@@ -115,13 +115,6 @@ process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void
 
   const int ch = piece->colors;
 
-  // FIXME: turn off the module instead?
-  if(!dev->overexposed.enabled || !dev->gui_attached)
-  {
-    memcpy(ovoid, ivoid, (size_t)roi_out->width*roi_out->height*sizeof(float)*ch);
-    return;
-  }
-
   const __m128 upper = _mm_set_ps(FLT_MAX,
                                   dev->overexposed.upper / 100.0f,
                                   dev->overexposed.upper / 100.0f,
@@ -190,15 +183,6 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
   const float *upper_color  = dt_iop_overexposed_colors[colorscheme][0];
   const float *lower_color = dt_iop_overexposed_colors[colorscheme][1];
 
-  if(!dev->overexposed.enabled || !dev->gui_attached)
-  {
-    size_t origin[] = { 0, 0, 0};
-    size_t region[] = { width, height, 1};
-    err = dt_opencl_enqueue_copy_image(devid, dev_in, dev_out, origin, origin, region);
-    if (err != CL_SUCCESS) goto error;
-    return TRUE;
-  }
-
   size_t sizes[2] = { ROUNDUPWD(width), ROUNDUPHT(height) };
   dt_opencl_set_kernel_arg(devid, gd->kernel_overexposed, 0, sizeof(cl_mem), &dev_in);
   dt_opencl_set_kernel_arg(devid, gd->kernel_overexposed, 1, sizeof(cl_mem), &dev_out);
@@ -238,7 +222,9 @@ void cleanup_global(dt_iop_module_so_t *module)
 
 void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
-  if(pipe->type != DT_DEV_PIXELPIPE_FULL) piece->enabled = 0;
+  if(pipe->type != DT_DEV_PIXELPIPE_FULL ||
+      !self->dev->overexposed.enabled || !self->dev->gui_attached)
+    piece->enabled = 0;
 }
 
 void init_pipe (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)

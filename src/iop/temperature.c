@@ -245,7 +245,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
 
       // process unaligned pixels
       for ( ; i < alignment ; i++, out++, in++)
-        *out = *in * d->coeffs[FC(j+roi_out->x, i+roi_out->y, filters)];
+        *out = *in * d->coeffs[FC(j+roi_out->y, i+roi_out->x, filters)];
 
       const __m128 coeffs = _mm_set_ps(d->coeffs[FC(j+roi_out->y, roi_out->x+i+3, filters)],
                                        d->coeffs[FC(j+roi_out->y, roi_out->x+i+2, filters)],
@@ -369,6 +369,13 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
   dt_iop_temperature_data_t *d = (dt_iop_temperature_data_t *)piece->data;
   for(int k=0; k<3; k++) d->coeffs[k]  = p->coeffs[k];
 
+  /*
+   * since `x * 1.0f == x` (multiplication is pointless),
+   * disable piece (out = in)
+   */
+  if(1.0f == p->coeffs[0] && 1.0f == p->coeffs[1] && 1.0f == p->coeffs[2])
+    piece->enabled = 0;
+
   // x-trans images not implemented in OpenCL yet
   if(pipe->image.filters == 9u)
     piece->process_cl_ready = 0;
@@ -409,8 +416,7 @@ void gui_update (struct dt_iop_module_t *self)
   dt_bauhaus_combobox_clear(g->presets);
   dt_bauhaus_combobox_add(g->presets, _("camera white balance"));
   dt_bauhaus_combobox_add(g->presets, _("spot white balance"));
-  dt_bauhaus_combobox_add(g->presets, _("passthrough"));
-  g->preset_cnt = 3;
+  g->preset_cnt = 2;
   const char *wb_name = NULL;
   char makermodel[1024];
   char *model = makermodel;
@@ -444,7 +450,6 @@ void reload_defaults(dt_iop_module_t *module)
   if(dt_image_is_raw(&module->dev->image_storage))
   {
     module->default_enabled = 1;
-    module->hide_enable_button = 1;
   }
   else module->default_enabled = 0;
   dt_iop_temperature_params_t tmp = (dt_iop_temperature_params_t)
@@ -719,9 +724,6 @@ apply_preset(dt_iop_module_t *self)
       if (self->request_color_pick != DT_REQUEST_COLORPICK_OFF)
         dt_lib_colorpicker_set_area(darktable.lib, 0.99);
 
-      break;
-    case 2: // passthrough mode, raw data
-      for(int k=0; k<3; k++) p->coeffs[k] = 1.0;
       break;
     default:
       for(int i=g->preset_num[pos]; i<wb_preset_count; i++)

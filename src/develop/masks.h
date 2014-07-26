@@ -28,6 +28,8 @@
 #include "develop/pixelpipe.h"
 #include "common/opencl.h"
 
+#define DEVELOP_MASKS_VERSION (2)
+
 /**forms types */
 typedef enum dt_masks_type_t
 {

@@ -22,14 +22,15 @@
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
+#include <gtk/gtk.h>
+#include <stdlib.h>
+#include <xmmintrin.h>
 #include "control/control.h"
 #include "develop/imageop.h"
 #include "dtgtk/resetlabel.h"
 #include "dtgtk/button.h"
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
-#include <gtk/gtk.h>
-#include <stdlib.h>
 
 DT_MODULE_INTROSPECTION(1, dt_iop_invert_params_t)
 

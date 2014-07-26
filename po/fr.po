@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 1.3\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2014-07-15 19:22+0200\n"
-"PO-Revision-Date: 2014-06-25 18:45+0100\n"
+"POT-Creation-Date: 2014-07-24 19:12+0200\n"
+"PO-Revision-Date: 2014-07-24 19:12+0100\n"
 "Last-Translator: Pascal Obry <pascal@obry.net>\n"
 "Language-Team: \n"
 "Language: fr_FR\n"
@@ -753,7 +753,7 @@ msgstr ""
 #: ../src/iop/bilateral.cc:348 ../src/iop/channelmixer.c:461
 #: ../src/iop/channelmixer.c:473 ../src/iop/colorbalance.c:641
 #: ../src/iop/colorbalance.c:679 ../src/iop/colorbalance.c:717
-#: ../src/iop/temperature.c:814 ../src/libs/collect.c:1273
+#: ../src/iop/temperature.c:783 ../src/libs/collect.c:1273
 #: ../src/libs/collect.c:1275
 msgid "red"
 msgstr "rouge"
@@ -767,7 +767,7 @@ msgstr "jaune"
 #: ../src/iop/bilateral.cc:349 ../src/iop/channelmixer.c:462
 #: ../src/iop/channelmixer.c:480 ../src/iop/colorbalance.c:650
 #: ../src/iop/colorbalance.c:688 ../src/iop/colorbalance.c:726
-#: ../src/iop/temperature.c:815 ../src/libs/collect.c:1285
+#: ../src/iop/temperature.c:784 ../src/libs/collect.c:1285
 #: ../src/libs/collect.c:1287
 msgid "green"
 msgstr "vert"
@@ -776,7 +776,7 @@ msgstr "vert"
 #: ../src/iop/bilateral.cc:350 ../src/iop/channelmixer.c:463
 #: ../src/iop/channelmixer.c:487 ../src/iop/colorbalance.c:659
 #: ../src/iop/colorbalance.c:697 ../src/iop/colorbalance.c:735
-#: ../src/iop/temperature.c:816 ../src/libs/collect.c:1291
+#: ../src/iop/temperature.c:785 ../src/libs/collect.c:1291
 #: ../src/libs/collect.c:1293
 msgid "blue"
 msgstr "bleu"
@@ -866,7 +866,7 @@ msgstr "activé(e)"
 #: ../src/common/styles.c:635 ../src/develop/blend_gui.c:1539
 #: ../src/develop/blend_gui.c:1688 ../src/develop/develop.c:1158
 #: ../src/imageio/format/j2k.c:637 ../src/iop/colorin.c:1187
-#: ../src/iop/demosaic.c:2112 ../src/iop/vignette.c:1137
+#: ../src/iop/demosaic.c:2155 ../src/iop/vignette.c:1137
 #: ../src/libs/history.c:154 ../src/libs/live_view.c:411
 msgid "off"
 msgstr "désactivé(e)"
@@ -1765,7 +1765,7 @@ msgstr "%s est désactivé"
 #: ../src/gui/accelerators.c:840 ../src/gui/accelerators.c:1007
 #: ../src/gui/accelerators.c:1032 ../src/gui/presets.c:182
 #: ../src/gui/presets.c:284 ../src/gui/presets.c:625
-#: ../src/iop/temperature.c:826 ../src/libs/import.c:506 ../src/libs/lib.c:292
+#: ../src/iop/temperature.c:795 ../src/libs/import.c:506 ../src/libs/lib.c:292
 #: ../src/libs/lib.c:321 ../src/libs/lib.c:1006
 msgid "preset"
 msgstr "pré-réglage"
@@ -3207,19 +3207,19 @@ msgid "radius"
 msgstr "rayon"
 
 #: ../src/iop/bilateral.cc:89 ../src/iop/channelmixer.c:134
-#: ../src/iop/temperature.c:98
+#: ../src/iop/temperature.c:97
 msgctxt "accel"
 msgid "red"
 msgstr "rouge"
 
 #: ../src/iop/bilateral.cc:90 ../src/iop/channelmixer.c:135
-#: ../src/iop/temperature.c:99
+#: ../src/iop/temperature.c:98
 msgctxt "accel"
 msgid "green"
 msgstr "vert"
 
 #: ../src/iop/bilateral.cc:91 ../src/iop/channelmixer.c:136
-#: ../src/iop/temperature.c:100
+#: ../src/iop/temperature.c:99
 msgctxt "accel"
 msgid "blue"
 msgstr "bleu"
@@ -4361,45 +4361,49 @@ msgstr "sélection par"
 msgid "choose selection criterion, will be the abscissa in the graph"
 msgstr "critère de sélection; correspond à l’abscisse du graphique"
 
-#: ../src/iop/demosaic.c:116
+#: ../src/iop/demosaic.c:117
 msgid "demosaic"
 msgstr "dématriçage"
 
-#: ../src/iop/demosaic.c:133
+#: ../src/iop/demosaic.c:134
 msgctxt "accel"
 msgid "edge threshold"
 msgstr "seuil "
 
-#: ../src/iop/demosaic.c:2090 ../src/iop/demosaic.c:2097
+#: ../src/iop/demosaic.c:2132 ../src/iop/demosaic.c:2140
 #: ../src/iop/dither.c:564 ../src/iop/highlights.c:702
 msgid "method"
 msgstr "méthode"
 
-#: ../src/iop/demosaic.c:2092
+#: ../src/iop/demosaic.c:2134
 msgid "PPG (fast)"
 msgstr "PPG (rapide)"
 
-#: ../src/iop/demosaic.c:2093
-msgid "amaze (slow)"
-msgstr "amaze (lent)"
+#: ../src/iop/demosaic.c:2135
+msgid "AMaZE (slow)"
+msgstr "AMaZE (lent)"
 
-#: ../src/iop/demosaic.c:2094 ../src/iop/demosaic.c:2102
+#: ../src/iop/demosaic.c:2136
+msgid "VNG4 (slow)"
+msgstr "VNG4 (lent)"
+
+#: ../src/iop/demosaic.c:2137 ../src/iop/demosaic.c:2145
 msgid "demosaicing raw data method"
 msgstr "méthode de dématriçage"
 
-#: ../src/iop/demosaic.c:2099
+#: ../src/iop/demosaic.c:2142
 msgid "VNG"
 msgstr "VNG"
 
-#: ../src/iop/demosaic.c:2100
+#: ../src/iop/demosaic.c:2143
 msgid "Markesteijn 1-pass (slow)"
 msgstr "Markesteijn 1-passe (slow)"
 
-#: ../src/iop/demosaic.c:2101
+#: ../src/iop/demosaic.c:2144
 msgid "Markesteijn 3-pass (slower)"
 msgstr "Markesteijn 3-passes (plus lent)"
 
-#: ../src/iop/demosaic.c:2105
+#: ../src/iop/demosaic.c:2148
 msgid ""
 "threshold for edge-aware median.\n"
 "set to 0.0 to switch off.\n"
@@ -4409,59 +4413,59 @@ msgstr ""
 "mettre 0.0 pour désactiver\n"
 "mettre 1.0 pour ignorer les bords"
 
-#: ../src/iop/demosaic.c:2106
+#: ../src/iop/demosaic.c:2149
 msgid "edge threshold"
 msgstr "seuil "
 
-#: ../src/iop/demosaic.c:2110
+#: ../src/iop/demosaic.c:2153
 msgid "color smoothing"
 msgstr "lissage des couleurs"
 
-#: ../src/iop/demosaic.c:2113
+#: ../src/iop/demosaic.c:2156
 msgid "one time"
 msgstr "une passe"
 
-#: ../src/iop/demosaic.c:2114
+#: ../src/iop/demosaic.c:2157
 msgid "two times"
 msgstr "deux passes"
 
-#: ../src/iop/demosaic.c:2115
+#: ../src/iop/demosaic.c:2158
 msgid "three times"
 msgstr "trois passes"
 
-#: ../src/iop/demosaic.c:2116
+#: ../src/iop/demosaic.c:2159
 msgid "four times"
 msgstr "quatre passes"
 
-#: ../src/iop/demosaic.c:2117
+#: ../src/iop/demosaic.c:2160
 msgid "five times"
 msgstr "cinq passes"
 
-#: ../src/iop/demosaic.c:2118
+#: ../src/iop/demosaic.c:2161
 msgid "how many color smoothing median steps after demosaicing"
 msgstr "nombre de passes pour le lissage de couleur après le dématriçage"
 
-#: ../src/iop/demosaic.c:2122
+#: ../src/iop/demosaic.c:2165
 msgid "match greens"
 msgstr "correction des verts"
 
-#: ../src/iop/demosaic.c:2123
+#: ../src/iop/demosaic.c:2166
 msgid "disabled"
 msgstr "désactivée"
 
-#: ../src/iop/demosaic.c:2124
+#: ../src/iop/demosaic.c:2167
 msgid "local average"
 msgstr "moyenne locale"
 
-#: ../src/iop/demosaic.c:2125
+#: ../src/iop/demosaic.c:2168
 msgid "full average"
 msgstr "moyenne globale"
 
-#: ../src/iop/demosaic.c:2126
+#: ../src/iop/demosaic.c:2169
 msgid "full and local average"
 msgstr "moyenne globale et locale"
 
-#: ../src/iop/demosaic.c:2127
+#: ../src/iop/demosaic.c:2170
 msgid "green channels matching method"
 msgstr "méthode de calcul des verts"
 
@@ -4998,24 +5002,24 @@ msgstr "détection par 3 voisins"
 msgid "mark fixed pixels"
 msgstr "montrer"
 
-#: ../src/iop/invert.c:54
+#: ../src/iop/invert.c:62
 msgid "invert"
 msgstr "inverser"
 
-#: ../src/iop/invert.c:71
+#: ../src/iop/invert.c:79
 msgctxt "accel"
 msgid "pick color of film material from image"
 msgstr "choisir la couleur du film dans l'image"
 
-#: ../src/iop/invert.c:157
+#: ../src/iop/invert.c:163
 msgid "select color of film material"
 msgstr "sélectionne la couleur du film"
 
-#: ../src/iop/invert.c:364
+#: ../src/iop/invert.c:447
 msgid "color of film material"
 msgstr "couleur du film"
 
-#: ../src/iop/invert.c:395
+#: ../src/iop/invert.c:478
 msgid "pick color of film material from image"
 msgstr "choisir la couleur du film dans l'image"
 
@@ -5794,55 +5798,51 @@ msgstr ""
 "défiler à la souris pour ajuster la taille.\n"
 "clic-droit pour supprimer."
 
-#: ../src/iop/temperature.c:78
+#: ../src/iop/temperature.c:77
 msgctxt "modulename"
 msgid "white balance"
 msgstr "balance des blancs"
 
-#: ../src/iop/temperature.c:96
+#: ../src/iop/temperature.c:95
 msgctxt "accel"
 msgid "tint"
 msgstr "teinte"
 
-#: ../src/iop/temperature.c:97
+#: ../src/iop/temperature.c:96
 msgctxt "accel"
 msgid "temperature"
 msgstr "température"
 
-#: ../src/iop/temperature.c:441
+#: ../src/iop/temperature.c:417
 msgid "camera white balance"
 msgstr "boîtier"
 
-#: ../src/iop/temperature.c:442
+#: ../src/iop/temperature.c:418
 msgid "spot white balance"
 msgstr "spot"
 
-#: ../src/iop/temperature.c:443
-msgid "passthrough"
-msgstr "aucune"
-
-#: ../src/iop/temperature.c:812
+#: ../src/iop/temperature.c:781
 msgid "tint"
 msgstr "teinte"
 
-#: ../src/iop/temperature.c:813
+#: ../src/iop/temperature.c:782
 msgid "temperature"
 msgstr "température"
 
-#: ../src/iop/temperature.c:828
+#: ../src/iop/temperature.c:797
 msgid "choose white balance preset from camera"
 msgstr "choisir la balance des blancs du boîtier"
 
-#: ../src/iop/temperature.c:831
+#: ../src/iop/temperature.c:800
 msgid "finetune"
 msgstr "ajustement"
 
-#: ../src/iop/temperature.c:832
+#: ../src/iop/temperature.c:801
 #, c-format
 msgid "%.0f mired"
 msgstr "%.0f mired"
 
-#: ../src/iop/temperature.c:836
+#: ../src/iop/temperature.c:805
 msgid "fine tune white balance preset"
 msgstr "ajustement de balance des blancs"
 
@@ -8632,11 +8632,16 @@ msgstr "pinceau #%d"
 msgid "copy of %s"
 msgstr "copie de %s"
 
-#: ../src/develop/masks/masks.c:1253 ../src/libs/masks.c:948
+#: ../src/develop/masks/masks.c:718
+#, c-format
+msgid "%s: mask version mismatch: %d != %d"
+msgstr "%s: version non cohérente du masque: %d != %d"
+
+#: ../src/develop/masks/masks.c:1408 ../src/libs/masks.c:948
 msgid "add existing shape"
 msgstr "ajouter un masque existant"
 
-#: ../src/develop/masks/masks.c:1280
+#: ../src/develop/masks/masks.c:1435
 msgid "use same shapes as"
 msgstr "utiliser les mêmes masques que"
 
@@ -8753,6 +8758,9 @@ msgstr "photo"
 #: ../src/imageio/format/webp.c:316
 msgid "graphic"
 msgstr "graphique"
+
+#~ msgid "passthrough"
+#~ msgstr "aucune"
 
 #~ msgid "enhance coarse"
 #~ msgstr "contraste global"
