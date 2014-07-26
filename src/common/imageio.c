@@ -359,7 +359,7 @@ dt_imageio_open_raw(
   const char  *filename,
   dt_mipmap_cache_allocator_t a)
 {
-  if(!_blacklisted_ext(filename)) fprintf(stderr,"[imageio] '%s' blacklisted extension passed to libraw\n", filename);
+  if(!_blacklisted_ext(filename)) return DT_IMAGEIO_FILE_CORRUPTED;
 
   if(!img->exif_inited)
     (void) dt_exif_read(img, filename);
