@@ -2373,26 +2373,6 @@ dt_iop_clip_and_zoom_demosaic_third_size_xtrans(
   }
 }
 
-
-#define SUM33(px,py,weight)                                \
-  do                                                       \
-  {                                                        \
-    float sum[3] = {0.0f};                                 \
-    for (int yy=0; yy < 3; ++yy)                           \
-      for (int xx=0; xx < 3; ++xx)                         \
-      {                                                    \
-        const uint8_t c =                                  \
-          FCxtrans((py)+yy, (px)+xx, roi_in, xtrans);      \
-        sum[c] += in[(px) + xx + in_stride*((py) + yy)];   \
-        num[c] += (weight);                                \
-      }                                                    \
-    col[0] += (weight) * sum[0];                           \
-    col[1] += (weight) * sum[1];                           \
-    col[2] += (weight) * sum[2];                           \
-  }                                                        \
-  while (0)
-
-
 void
 dt_iop_clip_and_zoom_demosaic_third_size_xtrans_f(
   float *out,
@@ -2406,87 +2386,47 @@ dt_iop_clip_and_zoom_demosaic_third_size_xtrans_f(
   const float px_footprint = 1.f/roi_out->scale;
   const int samples = round(px_footprint/3);
 
+  // A slightly different algorithm than
+  // dt_iop_clip_and_zoom_demosaic_half_size_f() which aligns to 2x2
+  // Bayer grid and hence most pull additional data from all edges
+  // which don't align with CFA. Instead align to a 3x3 pattern (which
+  // is semi-regular in X-Trans CFA). If instead had aligned the
+  // samples to the full 6x6 X-Trans CFA, wouldn't need to perform a
+  // CFA lookup, but then would only work at 1/6 scale or less. This
+  // code doesn't worry about fractional pixel offset of top/left of
+  // pattern nor oversampling by non-integer number of samples.
+
 #ifdef _OPENMP
   #pragma omp parallel for default(none) shared(out) schedule(static)
 #endif
   for(int y=0; y<roi_out->height; y++)
   {
     float *outc = out + 4*(out_stride*y);
-
-    float fy = (y + roi_out->y)*px_footprint;
-    int py = floorf(fy);
-    const float dy = (fy - py)/2;
-    py = MIN(roi_in->height-7, py);
-    int maxj = MIN(roi_in->height-6, py+3*samples);
+    const int py = MIN(roi_in->height-3, (int) floorf((y + roi_out->y)*px_footprint));
+    const int ymax = MIN(roi_in->height-3, py+3*samples);
 
     for(int x=0; x<roi_out->width; x++, outc += 4)
     {
       float col[3] = {0.0f};
-      float num[3] = {0.0f};
+      int num = 0;
+      const int px = MIN(roi_in->width-3, (int) floorf((x + roi_out->x)*px_footprint));
+      const int xmax = MIN(roi_in->width-3, px+3*samples);
+      for(int yy=py; yy<=ymax; yy+=3)
+        for(int xx=px; xx<=xmax; xx+=3)
+        {
+          for (int j=0; j<3; ++j)
+            for (int i=0; i<3; ++i)
+              col[FCxtrans(yy+j, xx+i, roi_in, xtrans)] += in[xx+i + in_stride*(yy+j)];
+          num++;
+        }
 
-      float fx = (x + roi_out->x)*px_footprint;
-      int px = floorf(fx);
-      const float dx = (fx - px)/2;
-      px = MIN(roi_in->width-7, px);
-      int maxi = MIN(roi_in->width-6, px+3*samples);
-
-      // upper left block of sampling region
-      SUM33(px, py, (1-dx)*(1-dy));
-      // left block border of sampling region
-      for (int j = py+2 ; j <= maxj ; j+=2)
-        SUM33(px, j, 1-dx);
-      // upper block border of sampling region
-      for (int i = px+2 ; i <= maxi ; i+=2)
-        SUM33(i, py, 1-dy);
-      // 3x3 blocks in the middle of sampling region
-      for(int j=py+2; j<=maxj; j+=2)
-        for(int i=px+2; i<=maxi; i+=2)
-          SUM33(i, j, 1);
-
-      // if not cutting up against the right or bottom
-      if (maxi == px + 3*samples && maxj == py + 3*samples)
-      {
-        // right border
-        for (int j = py+2 ; j <= maxj ; j+=2)
-          // FIXME: should this be maxi+3 or maxi?
-          SUM33(maxi, j, dx);
-        // upper right
-        SUM33(maxi+3, py, dx*(1-dy));
-        // lower border
-        for (int i = px+2 ; i <= maxi ; i+=2)
-          SUM33(i, maxj+3, dy);
-        // lower left block
-        SUM33(px, maxj+3, (1-dx)*dy);
-        // lower right block
-        SUM33(maxi+3, maxj+3, dx*dy);
-      }
-      else if (maxi == px + 3*samples)
-      {
-        // right border
-        for (int j = py+2 ; j <= maxj ; j+=2)
-          SUM33(maxi+3, j, dx);
-        // upper right
-        SUM33(maxi+3, py, dx*(1-dy));
-      }
-      else if (maxj == py + 3*samples)
-      {
-        // lower border
-        for (int i = px+2 ; i <= maxi ; i+=2)
-          SUM33(i, maxj+3, dy);
-        // lower left block
-        SUM33(px, maxj+3, (1-dx)*dy);
-      }
-
-      // in theory if looking at enough cells, RGB weighting averages
-      // to 2:5:2 so don't have to add up num, could determine by
-      // equation as with Bayer, but for now am adding
-      outc[0] = col[0]/num[0];
-      outc[1] = col[1]/num[1];
-      outc[2] = col[2]/num[2];
+      // X-Trans RGB weighting averages to 2:5:2 for each 3x3 cell
+      outc[0] = col[0]/(num*2);
+      outc[1] = col[1]/(num*5);
+      outc[2] = col[2]/(num*2);
     }
   }
 }
-
 
 void dt_iop_RGB_to_YCbCr(const float *rgb, float *yuv)
 {
