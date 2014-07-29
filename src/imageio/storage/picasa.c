@@ -1,7 +1,7 @@
 /*
     This file is part of darktable,
     copyright (c) 2012 Pierre Lamot
-    copyright (c) 2013 Jose Carlos Garcia Sogo
+    copyright (c) 2013-2014 Jose Carlos Garcia Sogo
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -836,8 +836,8 @@ static int picasa_get_user_auth_token(dt_storage_picasa_gui_data_t *ui)
   gchar *text1 = _("step 1: a new window or tab of your browser should have been "
                    "loaded. you have to login into your google+ account there "
                    "and authorize darktable to upload photos before continuing.");
-  gchar *text2 = _("step 2: paste your browser URL and click the OK button once "
-                   "you are done.");
+  gchar *text2 = _("step 2: paste the verification code shown to you in the browser "
+                   "and click the OK button once you are done.");
 
   GtkWidget *window = dt_ui_main_window(darktable.gui->ui);
   GtkDialog *picasa_auth_dialog = GTK_DIALOG(gtk_message_dialog_new (GTK_WINDOW (window),
