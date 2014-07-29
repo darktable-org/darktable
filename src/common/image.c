@@ -779,10 +779,8 @@ uint32_t dt_image_import(const int32_t film_id, const char *filename, gboolean o
         dt_image_cache_write_release(darktable.image_cache, other_img, DT_IMAGE_CACHE_SAFE);
         dt_image_cache_read_release(darktable.image_cache, cother_img);
         sqlite3_finalize(stmt);
-        DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select group_id from images where film_id = ?1 and filename like ?2 and id != ?3 and group_id != id", -1, &stmt, NULL);
-        DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, film_id);
-        DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 2, sql_pattern, -1, SQLITE_TRANSIENT);
-        DT_DEBUG_SQLITE3_BIND_INT(stmt, 3, id);
+        DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select id from images where group_id = ?1 and id != ?1", -1, &stmt, NULL);
+        DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, other_id);
         while(sqlite3_step(stmt) == SQLITE_ROW)
         {
           other_id = sqlite3_column_int(stmt, 0);
