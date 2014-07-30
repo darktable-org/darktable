@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2014-07-15 19:47+0200\n"
-"PO-Revision-Date: 2014-07-15 19:55+0100\n"
+"POT-Creation-Date: 2014-07-30 12:17+0200\n"
+"PO-Revision-Date: 2014-07-30 12:19+0100\n"
 "Last-Translator: Ger Siemerink <g.siemerink@gmail.com>\n"
 "Language-Team: Ger Siemerink <g.siemerink@gmail.com>\n"
 "Language: nl_NL\n"
@@ -750,7 +750,7 @@ msgstr ""
 #: ../src/iop/bilateral.cc:348 ../src/iop/channelmixer.c:461
 #: ../src/iop/channelmixer.c:473 ../src/iop/colorbalance.c:641
 #: ../src/iop/colorbalance.c:679 ../src/iop/colorbalance.c:717
-#: ../src/iop/temperature.c:814 ../src/libs/collect.c:1273
+#: ../src/iop/temperature.c:783 ../src/libs/collect.c:1273
 #: ../src/libs/collect.c:1275
 msgid "red"
 msgstr "rood"
@@ -764,7 +764,7 @@ msgstr "geel"
 #: ../src/iop/bilateral.cc:349 ../src/iop/channelmixer.c:462
 #: ../src/iop/channelmixer.c:480 ../src/iop/colorbalance.c:650
 #: ../src/iop/colorbalance.c:688 ../src/iop/colorbalance.c:726
-#: ../src/iop/temperature.c:815 ../src/libs/collect.c:1285
+#: ../src/iop/temperature.c:784 ../src/libs/collect.c:1285
 #: ../src/libs/collect.c:1287
 msgid "green"
 msgstr "groen"
@@ -773,7 +773,7 @@ msgstr "groen"
 #: ../src/iop/bilateral.cc:350 ../src/iop/channelmixer.c:463
 #: ../src/iop/channelmixer.c:487 ../src/iop/colorbalance.c:659
 #: ../src/iop/colorbalance.c:697 ../src/iop/colorbalance.c:735
-#: ../src/iop/temperature.c:816 ../src/libs/collect.c:1291
+#: ../src/iop/temperature.c:785 ../src/libs/collect.c:1291
 #: ../src/libs/collect.c:1293
 msgid "blue"
 msgstr "blauw"
@@ -823,7 +823,7 @@ msgstr "bestand `%s' heeft een onbekend formaat!"
 msgid "error loading file `%s'"
 msgstr "fout bij het inladen van bestand `%s'"
 
-#: ../src/common/darktable.c:589
+#: ../src/common/darktable.c:596
 #, c-format
 msgid "ERROR : invalid temporary directory : %s\n"
 msgstr "ERRO: ongeldige tijdelijk map: %s\n"
@@ -863,7 +863,7 @@ msgstr "aan"
 #: ../src/common/styles.c:635 ../src/develop/blend_gui.c:1539
 #: ../src/develop/blend_gui.c:1688 ../src/develop/develop.c:1158
 #: ../src/imageio/format/j2k.c:637 ../src/iop/colorin.c:1187
-#: ../src/iop/demosaic.c:2112 ../src/iop/vignette.c:1137
+#: ../src/iop/demosaic.c:2155 ../src/iop/vignette.c:1137
 #: ../src/libs/history.c:154 ../src/libs/live_view.c:411
 msgid "off"
 msgstr "uit"
@@ -893,7 +893,7 @@ msgid_plural "%d local copies have been synchronized"
 msgstr[0] "%d lokale kopie is gesynchroniseerd"
 msgstr[1] "%d lokale kopieën zijn gesynchroniseerd"
 
-#: ../src/common/imageio.c:668
+#: ../src/common/imageio.c:636
 #, c-format
 msgid ""
 "failed to allocate memory for %s, please lower the threads used for export "
@@ -902,22 +902,22 @@ msgstr ""
 "geheugen toewijzing voor %s  mislukt,  verlaag het aantal exporteer stappen "
 "of koop meer geheugen"
 
-#: ../src/common/imageio.c:668
+#: ../src/common/imageio.c:636
 msgctxt "noun"
 msgid "thumbnail export"
 msgstr "miniatuur exporteren"
 
-#: ../src/common/imageio.c:668
+#: ../src/common/imageio.c:636
 msgctxt "noun"
 msgid "export"
 msgstr "exporteren"
 
-#: ../src/common/imageio.c:676 ../src/common/mipmap_cache.c:1161
+#: ../src/common/imageio.c:644 ../src/common/mipmap_cache.c:1161
 #, c-format
 msgid "image `%s' is not available!"
 msgstr "afbeelding `%s' is niet beschikbaar"
 
-#: ../src/common/imageio.c:692
+#: ../src/common/imageio.c:660
 #, c-format
 msgid "cannot find the style '%s' to apply during export."
 msgstr "toe te passen stijl '%s'  bij het exporteren is niet gevonden"
@@ -1749,7 +1749,7 @@ msgstr "%s is uitgeschakeld"
 #: ../src/gui/accelerators.c:840 ../src/gui/accelerators.c:1007
 #: ../src/gui/accelerators.c:1032 ../src/gui/presets.c:182
 #: ../src/gui/presets.c:284 ../src/gui/presets.c:625
-#: ../src/iop/temperature.c:826 ../src/libs/import.c:506 ../src/libs/lib.c:292
+#: ../src/iop/temperature.c:795 ../src/libs/import.c:506 ../src/libs/lib.c:292
 #: ../src/libs/lib.c:321 ../src/libs/lib.c:1006
 msgid "preset"
 msgstr "voorkeur"
@@ -2702,7 +2702,7 @@ msgstr ""
 "facebook account en autoriseer darktable voor het uploaden van foto's "
 "voordat u verder gaat"
 
-#: ../src/imageio/storage/facebook.c:618 ../src/imageio/storage/picasa.c:839
+#: ../src/imageio/storage/facebook.c:618
 msgid ""
 "step 2: paste your browser URL and click the OK button once you are done."
 msgstr "stap 2: plak de webbrowser URL en klik op de oké button."
@@ -2940,6 +2940,14 @@ msgstr ""
 "stap 1: een nieuwe webpagina of tabblad is nu opgestart, log in op uw google"
 "+ account en autoriseer darktable voor het uploaden van foto's voordat u "
 "verder gaat"
+
+#: ../src/imageio/storage/picasa.c:839
+msgid ""
+"step 2: paste the verification code shown to you in the browser and click "
+"the OK button once you are done."
+msgstr ""
+"stap 2: plak de verficatie code vanuit je webbrowser URL en klik vervolgens "
+"op de oké button."
 
 #: ../src/imageio/storage/picasa.c:847
 msgid "google+ authentication"
@@ -3190,19 +3198,19 @@ msgid "radius"
 msgstr "straal"
 
 #: ../src/iop/bilateral.cc:89 ../src/iop/channelmixer.c:134
-#: ../src/iop/temperature.c:98
+#: ../src/iop/temperature.c:97
 msgctxt "accel"
 msgid "red"
 msgstr "rood"
 
 #: ../src/iop/bilateral.cc:90 ../src/iop/channelmixer.c:135
-#: ../src/iop/temperature.c:99
+#: ../src/iop/temperature.c:98
 msgctxt "accel"
 msgid "green"
 msgstr "groen"
 
 #: ../src/iop/bilateral.cc:91 ../src/iop/channelmixer.c:136
-#: ../src/iop/temperature.c:100
+#: ../src/iop/temperature.c:99
 msgctxt "accel"
 msgid "blue"
 msgstr "blauw"
@@ -4338,45 +4346,49 @@ msgstr "selecteer op"
 msgid "choose selection criterion, will be the abscissa in the graph"
 msgstr "kies selectie criteria, dat is dan de abscis van de grafiek"
 
-#: ../src/iop/demosaic.c:116
+#: ../src/iop/demosaic.c:117
 msgid "demosaic"
 msgstr "demosaic"
 
-#: ../src/iop/demosaic.c:133
+#: ../src/iop/demosaic.c:134
 msgctxt "accel"
 msgid "edge threshold"
 msgstr "rand drempelwaarde"
 
-#: ../src/iop/demosaic.c:2090 ../src/iop/demosaic.c:2097
+#: ../src/iop/demosaic.c:2132 ../src/iop/demosaic.c:2140
 #: ../src/iop/dither.c:564 ../src/iop/highlights.c:702
 msgid "method"
 msgstr "methode"
 
-#: ../src/iop/demosaic.c:2092
+#: ../src/iop/demosaic.c:2134
 msgid "PPG (fast)"
 msgstr "PPG (snel)"
 
-#: ../src/iop/demosaic.c:2093
-msgid "amaze (slow)"
-msgstr "amaze (langzaam)"
+#: ../src/iop/demosaic.c:2135
+msgid "AMaZE (slow)"
+msgstr "AMaZE (langzaam)"
 
-#: ../src/iop/demosaic.c:2094 ../src/iop/demosaic.c:2102
+#: ../src/iop/demosaic.c:2136
+msgid "VNG4 (slow)"
+msgstr "VNG4 (langzaam)"
+
+#: ../src/iop/demosaic.c:2137 ../src/iop/demosaic.c:2145
 msgid "demosaicing raw data method"
 msgstr "demosaicing raw data methode"
 
-#: ../src/iop/demosaic.c:2099
+#: ../src/iop/demosaic.c:2142
 msgid "VNG"
 msgstr "VNG"
 
-#: ../src/iop/demosaic.c:2100
+#: ../src/iop/demosaic.c:2143
 msgid "Markesteijn 1-pass (slow)"
 msgstr "Markesteijn 1-pass (langzaam)"
 
-#: ../src/iop/demosaic.c:2101
+#: ../src/iop/demosaic.c:2144
 msgid "Markesteijn 3-pass (slower)"
 msgstr "Markesteijn 3-pass (langzamer)"
 
-#: ../src/iop/demosaic.c:2105
+#: ../src/iop/demosaic.c:2148
 msgid ""
 "threshold for edge-aware median.\n"
 "set to 0.0 to switch off.\n"
@@ -4386,59 +4398,59 @@ msgstr ""
 "schakel uit met 0.0\n"
 "kies 1.0 om de randen te negeren"
 
-#: ../src/iop/demosaic.c:2106
+#: ../src/iop/demosaic.c:2149
 msgid "edge threshold"
 msgstr "rand drempelwaarde"
 
-#: ../src/iop/demosaic.c:2110
+#: ../src/iop/demosaic.c:2153
 msgid "color smoothing"
 msgstr "kleuren vervagen"
 
-#: ../src/iop/demosaic.c:2113
+#: ../src/iop/demosaic.c:2156
 msgid "one time"
 msgstr "een keer"
 
-#: ../src/iop/demosaic.c:2114
+#: ../src/iop/demosaic.c:2157
 msgid "two times"
 msgstr "twee keer"
 
-#: ../src/iop/demosaic.c:2115
+#: ../src/iop/demosaic.c:2158
 msgid "three times"
 msgstr "drie keer"
 
-#: ../src/iop/demosaic.c:2116
+#: ../src/iop/demosaic.c:2159
 msgid "four times"
 msgstr "vier keer"
 
-#: ../src/iop/demosaic.c:2117
+#: ../src/iop/demosaic.c:2160
 msgid "five times"
 msgstr "vijf keer"
 
-#: ../src/iop/demosaic.c:2118
+#: ../src/iop/demosaic.c:2161
 msgid "how many color smoothing median steps after demosaicing"
 msgstr "aantal  stappen mediaan kleurafvlakking  na demosaicing"
 
-#: ../src/iop/demosaic.c:2122
+#: ../src/iop/demosaic.c:2165
 msgid "match greens"
 msgstr "groen matchen"
 
-#: ../src/iop/demosaic.c:2123
+#: ../src/iop/demosaic.c:2166
 msgid "disabled"
 msgstr "uitgeschakeld"
 
-#: ../src/iop/demosaic.c:2124
+#: ../src/iop/demosaic.c:2167
 msgid "local average"
 msgstr "lokaal gemiddelde"
 
-#: ../src/iop/demosaic.c:2125
+#: ../src/iop/demosaic.c:2168
 msgid "full average"
 msgstr "volledig gemiddelde"
 
-#: ../src/iop/demosaic.c:2126
+#: ../src/iop/demosaic.c:2169
 msgid "full and local average"
 msgstr "volledig en lokaal gemiddelde"
 
-#: ../src/iop/demosaic.c:2127
+#: ../src/iop/demosaic.c:2170
 msgid "green channels matching method"
 msgstr "methode voor matchen groen kanalen"
 
@@ -4967,24 +4979,24 @@ msgstr "detecteer met 3 naaste"
 msgid "mark fixed pixels"
 msgstr "markeer hersteld"
 
-#: ../src/iop/invert.c:54
+#: ../src/iop/invert.c:62
 msgid "invert"
 msgstr "keer om"
 
-#: ../src/iop/invert.c:71
+#: ../src/iop/invert.c:79
 msgctxt "accel"
 msgid "pick color of film material from image"
 msgstr "kies een kleur voor het filmmateriaal uit de afbeelding"
 
-#: ../src/iop/invert.c:157
+#: ../src/iop/invert.c:163
 msgid "select color of film material"
 msgstr "selecteer kleur van het filmmateriaal"
 
-#: ../src/iop/invert.c:364
+#: ../src/iop/invert.c:447
 msgid "color of film material"
 msgstr "kleur van het film materiaal"
 
-#: ../src/iop/invert.c:395
+#: ../src/iop/invert.c:478
 msgid "pick color of film material from image"
 msgstr "kies een kleur voor het filmmateriaal uit afbeelding"
 
@@ -5759,55 +5771,51 @@ msgstr ""
 "bepaal met het muiswiel de afmeting\n"
 "klik rechts om een lijn te verwijderen"
 
-#: ../src/iop/temperature.c:78
+#: ../src/iop/temperature.c:77
 msgctxt "modulename"
 msgid "white balance"
 msgstr "witbalans"
 
-#: ../src/iop/temperature.c:96
+#: ../src/iop/temperature.c:95
 msgctxt "accel"
 msgid "tint"
 msgstr "tint"
 
-#: ../src/iop/temperature.c:97
+#: ../src/iop/temperature.c:96
 msgctxt "accel"
 msgid "temperature"
 msgstr "temperatuur"
 
-#: ../src/iop/temperature.c:441
+#: ../src/iop/temperature.c:417
 msgid "camera white balance"
 msgstr "camera witbalans"
 
-#: ../src/iop/temperature.c:442
+#: ../src/iop/temperature.c:418
 msgid "spot white balance"
 msgstr "spot witbalans"
 
-#: ../src/iop/temperature.c:443
-msgid "passthrough"
-msgstr "doorvoer"
-
-#: ../src/iop/temperature.c:812
+#: ../src/iop/temperature.c:781
 msgid "tint"
 msgstr "tint"
 
-#: ../src/iop/temperature.c:813
+#: ../src/iop/temperature.c:782
 msgid "temperature"
 msgstr "temperatuur"
 
-#: ../src/iop/temperature.c:828
+#: ../src/iop/temperature.c:797
 msgid "choose white balance preset from camera"
 msgstr "neem camera witbalans"
 
-#: ../src/iop/temperature.c:831
+#: ../src/iop/temperature.c:800
 msgid "finetune"
 msgstr "fijnafstelling"
 
-#: ../src/iop/temperature.c:832
+#: ../src/iop/temperature.c:801
 #, c-format
 msgid "%.0f mired"
 msgstr "%.0f mired"
 
-#: ../src/iop/temperature.c:836
+#: ../src/iop/temperature.c:805
 msgid "fine tune white balance preset"
 msgstr "fijnafstelling witbalans voorkeur"
 
@@ -6421,44 +6429,44 @@ msgstr "niet gewijzigd"
 msgid "not tagged"
 msgstr "niet gelabeld"
 
-#: ../src/libs/collect.c:1490
+#: ../src/libs/collect.c:1501
 msgid "local HDD"
 msgstr "lokale HDD"
 
-#: ../src/libs/collect.c:1575 ../src/libs/collect.c:1589
-#: ../src/libs/collect.c:1979
+#: ../src/libs/collect.c:1586 ../src/libs/collect.c:1600
+#: ../src/libs/collect.c:1990
 msgid "clear this rule"
 msgstr "verwijder voorwaarde"
 
-#: ../src/libs/collect.c:1580
+#: ../src/libs/collect.c:1591
 msgid "clear this rule or add new rules"
 msgstr "voorwaarde toevoegen / verwijderen"
 
-#: ../src/libs/collect.c:1985
+#: ../src/libs/collect.c:1996
 msgid "narrow down search"
 msgstr "submappen"
 
-#: ../src/libs/collect.c:1989
+#: ../src/libs/collect.c:2000
 msgid "add more images"
 msgstr "afbeeldingen toevoegen "
 
-#: ../src/libs/collect.c:1993
+#: ../src/libs/collect.c:2004
 msgid "exclude images"
 msgstr "afbeeldingen uitsluiten "
 
-#: ../src/libs/collect.c:1999
+#: ../src/libs/collect.c:2010
 msgid "change to: and"
 msgstr "wijzig in <en>"
 
-#: ../src/libs/collect.c:2003
+#: ../src/libs/collect.c:2014
 msgid "change to: or"
 msgstr "wijzig in <of>"
 
-#: ../src/libs/collect.c:2007
+#: ../src/libs/collect.c:2018
 msgid "change to: except"
 msgstr "wijzig in <en niet>"
 
-#: ../src/libs/collect.c:2052
+#: ../src/libs/collect.c:2063
 #, no-c-format
 msgid "type your query, use `%' as wildcard"
 msgstr "type uw zoekopdracht, gebruik `%' als vervanging"
@@ -8534,11 +8542,16 @@ msgstr "penseel #%d"
 msgid "copy of %s"
 msgstr "kopie van %s"
 
-#: ../src/develop/masks/masks.c:1253 ../src/libs/masks.c:948
+#: ../src/develop/masks/masks.c:718
+#, c-format
+msgid "%s: mask version mismatch: %d != %d"
+msgstr "%s: masker versie komt niet overeen: %d != %d"
+
+#: ../src/develop/masks/masks.c:1408 ../src/libs/masks.c:948
 msgid "add existing shape"
 msgstr "bestaande vorm toevoegen"
 
-#: ../src/develop/masks/masks.c:1280
+#: ../src/develop/masks/masks.c:1435
 msgid "use same shapes as"
 msgstr "gebruik dezelfde vorm als"
 
@@ -8655,6 +8668,9 @@ msgstr "foto"
 #: ../src/imageio/format/webp.c:316
 msgid "graphic"
 msgstr "grafisch"
+
+#~ msgid "passthrough"
+#~ msgstr "doorvoer"
 
 #~ msgid "enhance coarse"
 #~ msgstr "verbeteren korrel"
