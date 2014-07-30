@@ -54,7 +54,7 @@ int main(int argc, char *arg[])
   bind_textdomain_codeset (GETTEXT_PACKAGE, "UTF-8");
   textdomain (GETTEXT_PACKAGE);
 
-  gtk_init (&argc, &arg);
+  gtk_init_check(&argc, &arg);
 
   // parse command line arguments
   char *image_filename = NULL;
