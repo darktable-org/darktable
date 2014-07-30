@@ -225,9 +225,14 @@ static void deflicker_prepare_histogram(dt_iop_module_t *self, uint32_t **histog
 
   dt_dev_histogram_collection_params_t histogram_params = self->histogram_params;
 
-  dt_histogram_roi_t histogram_roi = {
-    .width = image.width, .height = image.height, .crop_x = 0, .crop_y = 0, .crop_width = 0, .crop_height = 0
-  };
+  dt_histogram_roi_t histogram_roi = {.width = image.width,
+                                      .height = image.height,
+
+                                      // FIXME: get those from rawprepare IOP somehow !!!
+                                      .crop_x = image.crop_x,
+                                      .crop_y = image.crop_y,
+                                      .crop_width = image.crop_width,
+                                      .crop_height = image.crop_height };
 
   histogram_params.roi = &histogram_roi;
 
