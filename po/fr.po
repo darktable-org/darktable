@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 1.3\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2014-07-24 19:12+0200\n"
-"PO-Revision-Date: 2014-07-24 19:12+0100\n"
+"POT-Creation-Date: 2014-07-31 18:38+0200\n"
+"PO-Revision-Date: 2014-07-31 18:39+0100\n"
 "Last-Translator: Pascal Obry <pascal@obry.net>\n"
 "Language-Team: \n"
 "Language: fr_FR\n"
@@ -825,7 +825,7 @@ msgstr "le fichier «%s» possède un format inconnu !"
 msgid "error loading file `%s'"
 msgstr "erreur de chargement du fichier «%s»"
 
-#: ../src/common/darktable.c:589
+#: ../src/common/darktable.c:596
 #, c-format
 msgid "ERROR : invalid temporary directory : %s\n"
 msgstr "ERREUR : répertoire temporaire invalide : %s\n"
@@ -866,7 +866,7 @@ msgstr "activé(e)"
 #: ../src/common/styles.c:635 ../src/develop/blend_gui.c:1539
 #: ../src/develop/blend_gui.c:1688 ../src/develop/develop.c:1158
 #: ../src/imageio/format/j2k.c:637 ../src/iop/colorin.c:1187
-#: ../src/iop/demosaic.c:2155 ../src/iop/vignette.c:1137
+#: ../src/iop/demosaic.c:2192 ../src/iop/vignette.c:1137
 #: ../src/libs/history.c:154 ../src/libs/live_view.c:411
 msgid "off"
 msgstr "désactivé(e)"
@@ -897,7 +897,7 @@ msgid_plural "%d local copies have been synchronized"
 msgstr[0] "%d copie locale a été synchronisée"
 msgstr[1] "%d copies locales ont été synchronisées"
 
-#: ../src/common/imageio.c:668
+#: ../src/common/imageio.c:636
 #, c-format
 msgid ""
 "failed to allocate memory for %s, please lower the threads used for export "
@@ -906,22 +906,22 @@ msgstr ""
 "échec de l'allocation de mémoire pour %s, merci de diminuer le nombre de "
 "fils utilisés pour l'exportation ou d'acheter de la mémoire."
 
-#: ../src/common/imageio.c:668
+#: ../src/common/imageio.c:636
 msgctxt "noun"
 msgid "thumbnail export"
 msgstr "l'aperçu"
 
-#: ../src/common/imageio.c:668
+#: ../src/common/imageio.c:636
 msgctxt "noun"
 msgid "export"
 msgstr "l'image"
 
-#: ../src/common/imageio.c:676 ../src/common/mipmap_cache.c:1161
+#: ../src/common/imageio.c:644 ../src/common/mipmap_cache.c:1161
 #, c-format
 msgid "image `%s' is not available!"
 msgstr "image '%s\" non disponible"
 
-#: ../src/common/imageio.c:692
+#: ../src/common/imageio.c:660
 #, c-format
 msgid "cannot find the style '%s' to apply during export."
 msgstr "impossible de trouver le style «%s» à appliquer pendant l'exportation."
@@ -2719,7 +2719,7 @@ msgstr ""
 "navigateur. connectez-vous à votre compte facebook et autorisez darktable à "
 "charger des fichiers pour continuer."
 
-#: ../src/imageio/storage/facebook.c:618 ../src/imageio/storage/picasa.c:839
+#: ../src/imageio/storage/facebook.c:618
 msgid ""
 "step 2: paste your browser URL and click the OK button once you are done."
 msgstr "étape 2 : coller l'URL du navigateur cliquez sur \"OK\""
@@ -2957,6 +2957,14 @@ msgstr ""
 "étape 1 : une nouvelle fenêtre ou un nouvel onglet s'est ouvert dans votre "
 "navigateur. connectez-vous à votre compte google+ et autorisez darktable à "
 "charger des fichiers pour continuer."
+
+#: ../src/imageio/storage/picasa.c:839
+msgid ""
+"step 2: paste the verification code shown to you in the browser and click "
+"the OK button once you are done."
+msgstr ""
+"étape 2 : coller le code de vérification affiché par le navigateur et "
+"cliquer \"OK\""
 
 #: ../src/imageio/storage/picasa.c:847
 msgid "google+ authentication"
@@ -4370,40 +4378,40 @@ msgctxt "accel"
 msgid "edge threshold"
 msgstr "seuil "
 
-#: ../src/iop/demosaic.c:2132 ../src/iop/demosaic.c:2140
+#: ../src/iop/demosaic.c:2169 ../src/iop/demosaic.c:2177
 #: ../src/iop/dither.c:564 ../src/iop/highlights.c:702
 msgid "method"
 msgstr "méthode"
 
-#: ../src/iop/demosaic.c:2134
+#: ../src/iop/demosaic.c:2171
 msgid "PPG (fast)"
 msgstr "PPG (rapide)"
 
-#: ../src/iop/demosaic.c:2135
+#: ../src/iop/demosaic.c:2172
 msgid "AMaZE (slow)"
 msgstr "AMaZE (lent)"
 
-#: ../src/iop/demosaic.c:2136
+#: ../src/iop/demosaic.c:2173
 msgid "VNG4 (slow)"
 msgstr "VNG4 (lent)"
 
-#: ../src/iop/demosaic.c:2137 ../src/iop/demosaic.c:2145
+#: ../src/iop/demosaic.c:2174 ../src/iop/demosaic.c:2182
 msgid "demosaicing raw data method"
 msgstr "méthode de dématriçage"
 
-#: ../src/iop/demosaic.c:2142
+#: ../src/iop/demosaic.c:2179
 msgid "VNG"
 msgstr "VNG"
 
-#: ../src/iop/demosaic.c:2143
+#: ../src/iop/demosaic.c:2180
 msgid "Markesteijn 1-pass (slow)"
 msgstr "Markesteijn 1-passe (slow)"
 
-#: ../src/iop/demosaic.c:2144
+#: ../src/iop/demosaic.c:2181
 msgid "Markesteijn 3-pass (slower)"
 msgstr "Markesteijn 3-passes (plus lent)"
 
-#: ../src/iop/demosaic.c:2148
+#: ../src/iop/demosaic.c:2185
 msgid ""
 "threshold for edge-aware median.\n"
 "set to 0.0 to switch off.\n"
@@ -4413,59 +4421,59 @@ msgstr ""
 "mettre 0.0 pour désactiver\n"
 "mettre 1.0 pour ignorer les bords"
 
-#: ../src/iop/demosaic.c:2149
+#: ../src/iop/demosaic.c:2186
 msgid "edge threshold"
 msgstr "seuil "
 
-#: ../src/iop/demosaic.c:2153
+#: ../src/iop/demosaic.c:2190
 msgid "color smoothing"
 msgstr "lissage des couleurs"
 
-#: ../src/iop/demosaic.c:2156
+#: ../src/iop/demosaic.c:2193
 msgid "one time"
 msgstr "une passe"
 
-#: ../src/iop/demosaic.c:2157
+#: ../src/iop/demosaic.c:2194
 msgid "two times"
 msgstr "deux passes"
 
-#: ../src/iop/demosaic.c:2158
+#: ../src/iop/demosaic.c:2195
 msgid "three times"
 msgstr "trois passes"
 
-#: ../src/iop/demosaic.c:2159
+#: ../src/iop/demosaic.c:2196
 msgid "four times"
 msgstr "quatre passes"
 
-#: ../src/iop/demosaic.c:2160
+#: ../src/iop/demosaic.c:2197
 msgid "five times"
 msgstr "cinq passes"
 
-#: ../src/iop/demosaic.c:2161
+#: ../src/iop/demosaic.c:2198
 msgid "how many color smoothing median steps after demosaicing"
 msgstr "nombre de passes pour le lissage de couleur après le dématriçage"
 
-#: ../src/iop/demosaic.c:2165
+#: ../src/iop/demosaic.c:2202
 msgid "match greens"
 msgstr "correction des verts"
 
-#: ../src/iop/demosaic.c:2166
+#: ../src/iop/demosaic.c:2203
 msgid "disabled"
 msgstr "désactivée"
 
-#: ../src/iop/demosaic.c:2167
+#: ../src/iop/demosaic.c:2204
 msgid "local average"
 msgstr "moyenne locale"
 
-#: ../src/iop/demosaic.c:2168
+#: ../src/iop/demosaic.c:2205
 msgid "full average"
 msgstr "moyenne globale"
 
-#: ../src/iop/demosaic.c:2169
+#: ../src/iop/demosaic.c:2206
 msgid "full and local average"
 msgstr "moyenne globale et locale"
 
-#: ../src/iop/demosaic.c:2170
+#: ../src/iop/demosaic.c:2207
 msgid "green channels matching method"
 msgstr "méthode de calcul des verts"
 
@@ -6460,44 +6468,44 @@ msgstr "non développées"
 msgid "not tagged"
 msgstr "non positionnée"
 
-#: ../src/libs/collect.c:1490
+#: ../src/libs/collect.c:1501
 msgid "local HDD"
 msgstr "disque dur local"
 
-#: ../src/libs/collect.c:1575 ../src/libs/collect.c:1589
-#: ../src/libs/collect.c:1979
+#: ../src/libs/collect.c:1586 ../src/libs/collect.c:1600
+#: ../src/libs/collect.c:1990
 msgid "clear this rule"
 msgstr "supprimer cette condition"
 
-#: ../src/libs/collect.c:1580
+#: ../src/libs/collect.c:1591
 msgid "clear this rule or add new rules"
 msgstr "supprimer cette condition ou en ajouter une nouvelle"
 
-#: ../src/libs/collect.c:1985
+#: ../src/libs/collect.c:1996
 msgid "narrow down search"
 msgstr "affiner la recherche"
 
-#: ../src/libs/collect.c:1989
+#: ../src/libs/collect.c:2000
 msgid "add more images"
 msgstr "inclure des images"
 
-#: ../src/libs/collect.c:1993
+#: ../src/libs/collect.c:2004
 msgid "exclude images"
 msgstr "exclure des images"
 
-#: ../src/libs/collect.c:1999
+#: ../src/libs/collect.c:2010
 msgid "change to: and"
 msgstr "changer en \"et\""
 
-#: ../src/libs/collect.c:2003
+#: ../src/libs/collect.c:2014
 msgid "change to: or"
 msgstr "changer en \"ou\""
 
-#: ../src/libs/collect.c:2007
+#: ../src/libs/collect.c:2018
 msgid "change to: except"
 msgstr "changer en \"mais sans\""
 
-#: ../src/libs/collect.c:2052
+#: ../src/libs/collect.c:2063
 #, no-c-format
 msgid "type your query, use `%' as wildcard"
 msgstr ""
