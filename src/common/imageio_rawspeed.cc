@@ -204,11 +204,11 @@ dt_imageio_retval_t dt_imageio_open_rawspeed(dt_image_t *img, const char *filena
 
     // dimensions of uncropped image
     iPoint2D dimUncropped = r->getUncroppedDim();
+    img->width = dimUncropped.x;
+    img->height = dimUncropped.y;
 
     // dimensions of cropped image
     iPoint2D dimCropped = r->dim;
-    img->width = dimCropped.x;
-    img->height = dimCropped.y;
 
     // crop - Top,Left corner
     iPoint2D cropTL = r->getCropOffset();
@@ -229,8 +229,25 @@ dt_imageio_retval_t dt_imageio_open_rawspeed(dt_image_t *img, const char *filena
     void *buf = dt_mipmap_cache_alloc(mbuf, img);
     if(!buf) return DT_IMAGEIO_CACHE_FULL;
 
-    dt_imageio_flip_buffers((char *)buf, (char *)r->getData(), r->getBpp(), dimCropped.x, dimCropped.y,
-                            dimCropped.x, dimCropped.y, r->pitch, ORIENTATION_NONE);
+    /*
+     * since we do not want to crop black borders at this stage,
+     * and we do not want to rotate image, we can just use memcpy,
+     * as it is faster than dt_imageio_flip_buffers, but only if
+     * buffer sizes are equal,
+     * (from Klaus: r->pitch may differ from DT pitch (line to line spacing))
+     * else fallback to generic dt_imageio_flip_buffers()
+     */
+    const size_t bufSize_mipmap = (size_t)img->width * img->height * img->bpp;
+    const size_t bufSize_rawspeed = (size_t)r->pitch * dimUncropped.y;
+    if(bufSize_mipmap == bufSize_rawspeed)
+    {
+      memcpy(buf, r->getDataUncropped(0, 0), bufSize_mipmap);
+    }
+    else
+    {
+      dt_imageio_flip_buffers((char *)buf, (char *)r->getDataUncropped(0, 0), r->getBpp(), dimUncropped.x,
+                              dimUncropped.y, dimUncropped.x, dimUncropped.y, r->pitch, ORIENTATION_NONE);
+    }
   }
   catch(const std::exception &exc)
   {
