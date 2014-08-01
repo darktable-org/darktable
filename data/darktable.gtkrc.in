@@ -56,13 +56,13 @@ style "clearlooks-default"
   bg[SELECTED]      = "#353535"
 
   base[NORMAL]      = "#212121"
-  base[ACTIVE]      = "#5A5C5F"
-  base[INSENSITIVE] = "#5A5C5F"
-  base[PRELIGHT]    = "#646668"
+  base[ACTIVE]      = "#5C5C5C"
+  base[INSENSITIVE] = "#5C5C5C"
+  base[PRELIGHT]    = "#666666"
   # active plugins:
   base[SELECTED]    = "#353535"
 
-  text[NORMAL]      = "#CACAC6"
+  text[NORMAL]      = "#CACACA"
   text[ACTIVE]      = "#000000"
   text[PRELIGHT]    = "#000000"
   text[SELECTED]    = "#E0E0E0"
@@ -152,14 +152,14 @@ style "clearlooks-entry" = "clearlooks-default"
   bg[PRELIGHT]      = "#6C6C6C"
   bg[SELECTED]      = "#353535"
 
-  base[NORMAL]      = "#919499"
-  base[ACTIVE]      = "#5A5C5F"
-  base[INSENSITIVE] = "#5A5C5F"
-  base[PRELIGHT]    = "#646668"
+  base[NORMAL]      = "#949494"
+  base[ACTIVE]      = "#5C5C5C"
+  base[INSENSITIVE] = "#5C5C5C"
+  base[PRELIGHT]    = "#666666"
   # active plugins:
   base[SELECTED]    = "#353535"
 
-  text[NORMAL]      = "#CACAC6"
+  text[NORMAL]      = "#CACACA"
   text[ACTIVE]      = "#000000"
   text[PRELIGHT]    = "#000000"
   text[SELECTED]    = "#E0E0E0"
@@ -252,7 +252,7 @@ style "metacity-frame"
 
   # Unfocused title text color
   #fg[INSENSITIVE]  = { 1.55, 1.55, 1.55 }
-  fg[NORMAL]        = "#CACAC6"
+  fg[NORMAL]        = "#CACACA"
 
   # Focused icon color
   #fg[NORMAL]  = { 0.2, 0.2, 0.2 }
