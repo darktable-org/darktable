@@ -1160,6 +1160,38 @@ int32_t dt_image_copy(const int32_t imgid, const int32_t filmid)
         sqlite3_step(stmt);
         sqlite3_finalize(stmt);
 
+        // image group handling follows
+        // get group_id of potential image duplicates in destination filmroll
+        int32_t new_group_id = -1;
+        DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                                    "select distinct a.group_id from images as a join images as b where "
+                                    "a.film_id = b.film_id and a.filename = b.filename and "
+                                    "b.id = ?1 and a.id != ?1", -1, &stmt, NULL);
+        DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, newid);
+
+        if(sqlite3_step(stmt) == SQLITE_ROW)
+          new_group_id = sqlite3_column_int(stmt, 0);
+
+        // then check if there are further duplicates belonging to different group(s)
+        if(sqlite3_step(stmt) == SQLITE_ROW)
+          new_group_id = -1;
+        sqlite3_finalize(stmt);
+
+        // rationale:
+        // if no group exists or if the image duplicates belong to multiple groups, then the 
+        // new image builds a group of its own, else it is added to the (one) existing group
+        if(new_group_id == -1) new_group_id = newid;
+
+        // make copied image belong to a group
+        DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                                    "update images set group_id=?1 where id = ?2",
+                                    -1, &stmt, NULL);
+
+        DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, new_group_id);
+        DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, newid);
+        sqlite3_step(stmt);
+        sqlite3_finalize(stmt);
+
         dt_history_copy_and_paste_on_image(imgid, newid, FALSE, NULL);
 
         // write xmp file
