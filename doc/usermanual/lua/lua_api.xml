@@ -412,7 +412,7 @@ All functions and data are accessed through the darktable module.</para>
 <synopsis>table</synopsis>
 <para>A table of <link linkend="types_dt_lua_image_t">types.dt_lua_image_t</link> on which the user expects UI actions to happen.</para>
 <para>It is based on both the hovered image and the selection and is consistent with the way darktable works.</para>
-<para>It is recommended to use this table to implement Lua actions rather than dt.gui.hovered or dt.gui.selected to be consistant with darktable's GUI.</para>
+<para>It is recommended to use this table to implement Lua actions rather than <link linkend="darktable_gui_hovered">darktable.gui.hovered</link> or <link linkend="darktable_gui_selection">darktable.gui.selection</link> to be consistant with darktable's GUI.</para>
 
 </section>
 
