@@ -198,7 +198,10 @@ dt_imageio_retval_t dt_imageio_open_rawspeed(dt_image_t *img, const char *filena
         iPoint2D tl_margin = r->getCropOffset();
         for(int i = 0; i < 6; ++i)
           for(int j = 0; j < 6; ++j)
+          {
+            img->xtrans_uncropped[j][i] = r->cfa.getColorAt(i % 6, j % 6);
             img->xtrans[j][i] = r->cfa.getColorAt((i + tl_margin.x) % 6, (j + tl_margin.y) % 6);
+          }
       }
     }
 
