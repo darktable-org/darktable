@@ -821,13 +821,13 @@ static void _init_f(float *out, uint32_t *width, uint32_t *height, const uint32_
       // Bayer
       if(image->bpp == sizeof(float))
       {
-        dt_iop_clip_and_zoom_demosaic_half_size_f(out, (const float *)buf.buf, &roi_out, &roi_in,
-                                                  roi_out.width, roi_in.width, dt_image_filter(image), 1.0f);
+        dt_iop_clip_and_zoom_demosaic_half_size_crop_blacks_f(out, (const float *)buf.buf, &roi_out, &roi_in,
+                                                              roi_out.width, roi_in.width, image, 1.0f);
       }
       else
       {
-        dt_iop_clip_and_zoom_demosaic_half_size(out, (const uint16_t *)buf.buf, &roi_out, &roi_in,
-                                                roi_out.width, roi_in.width, dt_image_filter(image));
+        dt_iop_clip_and_zoom_demosaic_half_size_crop_blacks(out, (const uint16_t *)buf.buf, &roi_out, &roi_in,
+                                                            roi_out.width, roi_in.width, image);
       }
     }
     else
