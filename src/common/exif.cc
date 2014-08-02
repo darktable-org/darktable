@@ -771,7 +771,7 @@ static bool dt_exif_read_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
     // http://dev.exiv2.org/issues/883
     // http://darktable.org/redmine/issues/8813
     // FIXME: This is still a workaround
-    if(!strncmp(img->exif_model, "NEX", 3))
+    if((!strncmp(img->exif_model, "NEX", 3)) || (!strncmp(img->exif_model, "ILCE", 4)))
     {
       snprintf(img->exif_lens, sizeof(img->exif_lens), "(unknown)");
       if ( (pos=exifData.findKey(Exiv2::ExifKey("Exif.Photo.LensModel"))) != exifData.end() && pos->size())
