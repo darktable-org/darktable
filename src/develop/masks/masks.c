@@ -505,126 +505,132 @@ int dt_masks_version(void)
   return DEVELOP_MASKS_VERSION;
 }
 
+static int dt_masks_legacy_params_v1_to_v2(dt_develop_t *dev, void *params)
+{
+  /*
+   * difference: before v2 images were originally rotated on load, and then
+   * maybe in flip iop
+   * after v2: images are only rotated in flip iop.
+   */
+
+  dt_masks_form_t *m = (dt_masks_form_t *)params;
+
+  const dt_image_orientation_t ori = dt_image_orientation(&dev->image_storage);
+
+  if(ori == ORIENTATION_NONE)
+  {
+    // image is not rotated, we're fine!
+    m->version = 2;
+    return 0;
+  }
+  else
+  {
+    if(dev->iop == NULL) return 1;
+
+    const char *opname = "flip";
+    dt_iop_module_t *module = NULL;
+
+    GList *modules = dev->iop;
+    while(modules)
+    {
+      dt_iop_module_t *find_op = (dt_iop_module_t *)modules->data;
+      if(!strcmp(find_op->op, opname))
+      {
+        module = find_op;
+        break;
+      }
+      modules = g_list_next(modules);
+    }
+
+    if(module == NULL) return 1;
+
+    dt_dev_pixelpipe_iop_t piece = { 0 };
+
+    module->init_pipe(module, NULL, &piece);
+    module->commit_params(module, module->default_params, NULL, &piece);
+
+    piece.buf_in.width = 1;
+    piece.buf_in.height = 1;
+
+    GList *p = g_list_first(m->points);
+
+    if(!p) return 1;
+
+    if(m->type & DT_MASKS_CIRCLE)
+    {
+      dt_masks_point_circle_t *circle = (dt_masks_point_circle_t *)p->data;
+      module->distort_backtransform(module, &piece, circle->center, 1);
+    }
+    else if(m->type & DT_MASKS_PATH)
+    {
+      while(p)
+      {
+        dt_masks_point_path_t *path = (dt_masks_point_path_t *)p->data;
+        module->distort_backtransform(module, &piece, path->corner, 1);
+        module->distort_backtransform(module, &piece, path->ctrl1, 1);
+        module->distort_backtransform(module, &piece, path->ctrl2, 1);
+
+        p = g_list_next(p);
+      }
+    }
+    else if(m->type & DT_MASKS_GRADIENT)
+    { // TODO: new ones have wrong rotation.
+      dt_masks_point_gradient_t *gradient = (dt_masks_point_gradient_t *)p->data;
+      module->distort_backtransform(module, &piece, gradient->anchor, 1);
+
+      if(ori == ORIENTATION_ROTATE_180_DEG)
+        gradient->rotation -= 180.0f;
+      else if(ori == ORIENTATION_ROTATE_CCW_90_DEG)
+        gradient->rotation -= 90.0f;
+      else if(ori == ORIENTATION_ROTATE_CW_90_DEG)
+        gradient->rotation -= -90.0f;
+    }
+    else if(m->type & DT_MASKS_ELLIPSE)
+    {
+      dt_masks_point_ellipse_t *ellipse = (dt_masks_point_ellipse_t *)p->data;
+      module->distort_backtransform(module, &piece, ellipse->center, 1);
+
+      if(ori & ORIENTATION_SWAP_XY)
+      {
+        const float y = ellipse->radius[0];
+        ellipse->radius[0] = ellipse->radius[1];
+        ellipse->radius[1] = y;
+      }
+    }
+    else if(m->type & DT_MASKS_BRUSH)
+    {
+      while(p)
+      {
+        dt_masks_point_brush_t *brush = (dt_masks_point_brush_t *)p->data;
+        module->distort_backtransform(module, &piece, brush->corner, 1);
+        module->distort_backtransform(module, &piece, brush->ctrl1, 1);
+        module->distort_backtransform(module, &piece, brush->ctrl2, 1);
+
+        p = g_list_next(p);
+      }
+    }
+
+    if(m->type & DT_MASKS_CLONE)
+    {
+      // NOTE: can be: DT_MASKS_CIRCLE, DT_MASKS_ELLIPSE, DT_MASKS_PATH
+      module->distort_backtransform(module, &piece, m->source, 1);
+    }
+
+    m->version = 2;
+
+    return 0;
+  }
+}
+
 int dt_masks_legacy_params(dt_develop_t *dev, void *params, const int old_version, const int new_version)
 {
+  int res = 1;
   if(old_version == 1 && new_version == 2)
   {
-    /*
-     * difference: before v2 images were originally rotated on load, and then
-     * maybe in flip iop
-     * after v2: images are only rotated in flip iop.
-     */
-
-    dt_masks_form_t *m = (dt_masks_form_t *)params;
-
-    const dt_image_orientation_t ori = dt_image_orientation(&dev->image_storage);
-
-    if(ori == ORIENTATION_NONE)
-    {
-      // image is not rotated, we're fine!
-      m->version = new_version;
-      return 0;
-    }
-    else
-    {
-      if(dev->iop == NULL) return 1;
-
-      const char *opname = "flip";
-      dt_iop_module_t *module = NULL;
-
-      GList *modules = dev->iop;
-      while(modules)
-      {
-        dt_iop_module_t *find_op = (dt_iop_module_t *)modules->data;
-        if(!strcmp(find_op->op, opname))
-        {
-          module = find_op;
-          break;
-        }
-        modules = g_list_next(modules);
-      }
-
-      if(module == NULL) return 1;
-
-      dt_dev_pixelpipe_iop_t piece = { 0 };
-
-      module->init_pipe(module, NULL, &piece);
-      module->commit_params(module, module->default_params, NULL, &piece);
-
-      piece.buf_in.width = 1;
-      piece.buf_in.height = 1;
-
-      GList *p = g_list_first(m->points);
-
-      if(!p) return 1;
-
-      if(m->type & DT_MASKS_CIRCLE)
-      {
-        dt_masks_point_circle_t *circle = (dt_masks_point_circle_t *)p->data;
-        module->distort_backtransform(module, &piece, circle->center, 1);
-      }
-      else if(m->type & DT_MASKS_PATH)
-      {
-        while(p)
-        {
-          dt_masks_point_path_t *path = (dt_masks_point_path_t *)p->data;
-          module->distort_backtransform(module, &piece, path->corner, 1);
-          module->distort_backtransform(module, &piece, path->ctrl1, 1);
-          module->distort_backtransform(module, &piece, path->ctrl2, 1);
-
-          p = g_list_next(p);
-        }
-      }
-      else if(m->type & DT_MASKS_GRADIENT)
-      { // TODO: new ones have wrong rotation.
-        dt_masks_point_gradient_t *gradient = (dt_masks_point_gradient_t *)p->data;
-        module->distort_backtransform(module, &piece, gradient->anchor, 1);
-
-        if(ori == ORIENTATION_ROTATE_180_DEG)
-          gradient->rotation -= 180.0f;
-        else if(ori == ORIENTATION_ROTATE_CCW_90_DEG)
-          gradient->rotation -= 90.0f;
-        else if(ori == ORIENTATION_ROTATE_CW_90_DEG)
-          gradient->rotation -= -90.0f;
-      }
-      else if(m->type & DT_MASKS_ELLIPSE)
-      {
-        dt_masks_point_ellipse_t *ellipse = (dt_masks_point_ellipse_t *)p->data;
-        module->distort_backtransform(module, &piece, ellipse->center, 1);
-
-        if(ori & ORIENTATION_SWAP_XY)
-        {
-          const float y = ellipse->radius[0];
-          ellipse->radius[0] = ellipse->radius[1];
-          ellipse->radius[1] = y;
-        }
-      }
-      else if(m->type & DT_MASKS_BRUSH)
-      {
-        while(p)
-        {
-          dt_masks_point_brush_t *brush = (dt_masks_point_brush_t *)p->data;
-          module->distort_backtransform(module, &piece, brush->corner, 1);
-          module->distort_backtransform(module, &piece, brush->ctrl1, 1);
-          module->distort_backtransform(module, &piece, brush->ctrl2, 1);
-
-          p = g_list_next(p);
-        }
-      }
-
-      if(m->type & DT_MASKS_CLONE)
-      {
-        // NOTE: can be: DT_MASKS_CIRCLE, DT_MASKS_ELLIPSE, DT_MASKS_PATH
-        module->distort_backtransform(module, &piece, m->source, 1);
-      }
-
-      m->version = new_version;
-
-      return 0;
-    }
+    res = dt_masks_legacy_params_v1_to_v2(dev, params);
   }
 
-  return 1;
+  return res;
 }
 
 dt_masks_form_t *dt_masks_create(dt_masks_type_t type)
