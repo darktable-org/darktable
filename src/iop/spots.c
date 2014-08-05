@@ -290,6 +290,62 @@ void modify_roi_in(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *
   roi_in->height = CLAMP(roib - roi_in->y, 1, piece->pipe->iheight * roi_in->scale + .5f - roi_in->y);
 }
 
+static void masks_point_denormalize(dt_dev_pixelpipe_iop_t *piece, const dt_iop_roi_t *roi,
+                                    const float *points, size_t points_count, float *new)
+{
+  const float scalex = piece->pipe->iwidth * roi->scale, scaley = piece->pipe->iheight * roi->scale;
+
+  for(size_t i = 0; i < points_count * 2; i += 2)
+  {
+    new[i] = points[i] * scalex;
+    new[i + 1] = points[i + 1] * scaley;
+  }
+}
+
+static int masks_point_calc_delta(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
+                                  const dt_iop_roi_t *roi, const float *target, const float *source, int *dx,
+                                  int *dy)
+{
+  float points[4];
+  masks_point_denormalize(piece, roi, target, 1, points);
+  masks_point_denormalize(piece, roi, source, 1, points + 2);
+
+  int res = dt_dev_distort_transform_plus(self->dev, piece->pipe, 0, self->priority, points, 2);
+  if(!res) return res;
+
+  *dx = points[0] - points[2];
+  *dy = points[1] - points[3];
+
+  return res;
+}
+
+static int masks_get_delta(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const dt_iop_roi_t *roi,
+                           dt_masks_form_t *form, int *dx, int *dy)
+{
+  int res = 0;
+
+  if(form->type & DT_MASKS_PATH)
+  {
+    dt_masks_point_path_t *pt = (dt_masks_point_path_t *)g_list_nth_data(form->points, 0);
+
+    res = masks_point_calc_delta(self, piece, roi, pt->corner, form->source, dx, dy);
+  }
+  else if(form->type & DT_MASKS_CIRCLE)
+  {
+    dt_masks_point_circle_t *pt = (dt_masks_point_circle_t *)g_list_nth_data(form->points, 0);
+
+    res = masks_point_calc_delta(self, piece, roi, pt->center, form->source, dx, dy);
+  }
+  else if(form->type & DT_MASKS_ELLIPSE)
+  {
+    dt_masks_point_ellipse_t *pt = (dt_masks_point_ellipse_t *)g_list_nth_data(form->points, 0);
+
+    res = masks_point_calc_delta(self, piece, roi, pt->center, form->source, dx, dy);
+  }
+
+  return res;
+}
+
 void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, void *o,
              const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
 {
@@ -350,17 +406,32 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *
       if(d->clone_algo[pos] == 1 && (form->type & DT_MASKS_CIRCLE))
       {
         dt_masks_point_circle_t *circle = (dt_masks_point_circle_t *)g_list_nth_data(form->points, 0);
+
+        float points[4];
+        masks_point_denormalize(piece, roi_in, circle->center, 1, points);
+        masks_point_denormalize(piece, roi_in, form->source, 1, points + 2);
+
+        if(!dt_dev_distort_transform_plus(self->dev, piece->pipe, 0, self->priority, points, 2))
+        {
+          forms = g_list_next(forms);
+          pos++;
+          continue;
+        }
+
         // convert from world space:
-        const int rad = circle->radius * MIN(piece->buf_in.width, piece->buf_in.height) * roi_in->scale;
-        const int posx = (circle->center[0] * piece->buf_in.width) * roi_in->scale - rad;
-        const int posy = (circle->center[1] * piece->buf_in.height) * roi_in->scale - rad;
-        const int posx_source = (form->source[0] * piece->buf_in.width) * roi_in->scale - rad;
-        const int posy_source = (form->source[1] * piece->buf_in.height) * roi_in->scale - rad;
+        float rad10[2] = { circle->radius, circle->radius };
+        float radf[2];
+        masks_point_denormalize(piece, roi_in, rad10, 1, radf);
+
+        const int rad = MIN(radf[0], radf[1]);
+        const int posx = points[0] - rad;
+        const int posy = points[1] - rad;
+        const int posx_source = points[2] - rad;
+        const int posy_source = points[3] - rad;
         const int dx = posx - posx_source;
         const int dy = posy - posy_source;
         fw = fh = 2 * rad;
 
-        // convert from world space:
         float filter[2 * rad + 1];
 
         if(rad > 0)
@@ -405,33 +476,16 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *
         dt_masks_get_mask(self, piece, form, &mask, &width, &height, &posx, &posy);
         int fts = posy * roi_in->scale, fhs = height * roi_in->scale, fls = posx * roi_in->scale,
             fws = width * roi_in->scale;
+        int dx = 0, dy = 0;
+
         // now we search the delta with the source
-        int dx, dy;
-        dx = dy = 0;
-        if(form->type & DT_MASKS_PATH)
+        if(!masks_get_delta(self, piece, roi_in, form, &dx, &dy))
         {
-          dt_masks_point_path_t *pt = (dt_masks_point_path_t *)g_list_nth_data(form->points, 0);
-          dx = pt->corner[0] * roi_in->scale * piece->buf_in.width
-               - form->source[0] * roi_in->scale * piece->buf_in.width;
-          dy = pt->corner[1] * roi_in->scale * piece->buf_in.height
-               - form->source[1] * roi_in->scale * piece->buf_in.height;
+          forms = g_list_next(forms);
+          pos++;
+          continue;
         }
-        else if(form->type & DT_MASKS_CIRCLE)
-        {
-          dt_masks_point_circle_t *pt = (dt_masks_point_circle_t *)g_list_nth_data(form->points, 0);
-          dx = pt->center[0] * roi_in->scale * piece->buf_in.width
-               - form->source[0] * roi_in->scale * piece->buf_in.width;
-          dy = pt->center[1] * roi_in->scale * piece->buf_in.height
-               - form->source[1] * roi_in->scale * piece->buf_in.height;
-        }
-        else if(form->type & DT_MASKS_ELLIPSE)
-        {
-          dt_masks_point_ellipse_t *pt = (dt_masks_point_ellipse_t *)g_list_nth_data(form->points, 0);
-          dx = pt->center[0] * roi_in->scale * piece->buf_in.width
-               - form->source[0] * roi_in->scale * piece->buf_in.width;
-          dy = pt->center[1] * roi_in->scale * piece->buf_in.height
-               - form->source[1] * roi_in->scale * piece->buf_in.height;
-        }
+
         if(dx != 0 || dy != 0)
         {
           // now we do the pixel clone
