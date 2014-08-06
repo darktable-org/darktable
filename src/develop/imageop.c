@@ -2384,7 +2384,7 @@ dt_iop_clip_and_zoom_demosaic_third_size_xtrans_f(
   const uint8_t (*const xtrans)[6])
 {
   const float px_footprint = 1.f/roi_out->scale;
-  const int samples = round(px_footprint/3);
+  const int samples = MAX(1, (int) floorf(px_footprint/3));
 
   // A slightly different algorithm than
   // dt_iop_clip_and_zoom_demosaic_half_size_f() which aligns to 2x2
@@ -2402,14 +2402,14 @@ dt_iop_clip_and_zoom_demosaic_third_size_xtrans_f(
   for(int y=0; y<roi_out->height; y++)
   {
     float *outc = out + 4*(out_stride*y);
-    const int py = MIN(roi_in->height-3, (int) floorf((y + roi_out->y)*px_footprint));
+    const int py = CLAMPS((int) round((y + roi_out->y - 0.5f)*px_footprint), 0, roi_in->height-3);
     const int ymax = MIN(roi_in->height-3, py+3*samples);
 
     for(int x=0; x<roi_out->width; x++, outc += 4)
     {
       float col[3] = {0.0f};
       int num = 0;
-      const int px = MIN(roi_in->width-3, (int) floorf((x + roi_out->x)*px_footprint));
+      const int px = CLAMPS((int) round((x + roi_out->x - 0.5f)*px_footprint), 0, roi_in->width-3);
       const int xmax = MIN(roi_in->width-3, px+3*samples);
       for(int yy=py; yy<=ymax; yy+=3)
         for(int xx=px; xx<=xmax; xx+=3)
