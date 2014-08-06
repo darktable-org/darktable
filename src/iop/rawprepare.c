@@ -66,6 +66,11 @@ const char *name()
   return C_("modulename", "raw black/white point");
 }
 
+int operation_tags()
+{
+  return IOP_TAG_DISTORT;
+}
+
 int flags()
 {
   return IOP_FLAGS_ALLOW_TILING | IOP_FLAGS_TILING_FULL_ROI | IOP_FLAGS_ONE_INSTANCE
@@ -123,6 +128,41 @@ int output_bpp(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe
     return sizeof(float);
   else
     return 4 * sizeof(float);
+}
+
+int distort_transform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, float *points, size_t points_count)
+{
+  dt_iop_rawprepare_data_t *d = (dt_iop_rawprepare_data_t *)piece->data;
+
+  const float scale = piece->buf_in.scale / piece->iscale;
+
+  const float x = (float)d->x * scale, y = (float)d->y * scale;
+
+  for(size_t i = 0; i < points_count * 2; i += 2)
+  {
+    points[i] -= x;
+    points[i + 1] -= y;
+  }
+
+  return 1;
+}
+
+int distort_backtransform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, float *points,
+                          size_t points_count)
+{
+  dt_iop_rawprepare_data_t *d = (dt_iop_rawprepare_data_t *)piece->data;
+
+  const float scale = piece->buf_in.scale / piece->iscale;
+
+  const float x = (float)d->x * scale, y = (float)d->y * scale;
+
+  for(size_t i = 0; i < points_count * 2; i += 2)
+  {
+    points[i] += x;
+    points[i + 1] += y;
+  }
+
+  return 1;
 }
 
 // we're not scaling here (bayer input), so just crop borders
