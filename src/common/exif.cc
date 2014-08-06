@@ -43,6 +43,8 @@
 #include <exiv2/image.hpp>
 #include <exiv2/exif.hpp>
 
+#include <cmath>
+
 extern "C"
 {
 #include "common/exif.h"
@@ -1177,7 +1179,7 @@ int dt_exif_read_blob(
 
       //GPS data
       const dt_image_t *cimg = dt_image_cache_read_get(darktable.image_cache, imgid);
-      if(!isnan(cimg->longitude) && !isnan(cimg->latitude))
+      if(!std::isnan(cimg->longitude) && !std::isnan(cimg->latitude))
       {
         exifData["Exif.GPSInfo.GPSLongitudeRef"] = (cimg->longitude < 0 ) ? "W" : "E";
         exifData["Exif.GPSInfo.GPSLatitudeRef"]  = (cimg->latitude < 0 ) ? "S" : "N";
@@ -1767,7 +1769,7 @@ dt_exif_xmp_read_data(Exiv2::XmpData &xmpData, const int imgid)
     xmpData["Xmp.xmpMM.DerivedFrom"] = filename;
 
   // GPS data
-  if(!isnan(longitude) && !isnan(latitude))
+  if(!std::isnan(longitude) && !std::isnan(latitude))
   {
     char long_dir = 'E', lat_dir = 'N';
     if(longitude < 0) long_dir = 'W';

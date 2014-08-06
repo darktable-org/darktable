@@ -54,6 +54,7 @@ FILE(GLOB SOURCE_FILES
   "common/dlopencl.c"
   "common/ratings.c"
   "common/histogram.c"
+  "control/conf.c"
   "control/control.c"
   "control/crawler.c"
   "control/jobs.c"
