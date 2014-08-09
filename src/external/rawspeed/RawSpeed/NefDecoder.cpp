@@ -344,7 +344,7 @@ string NefDecoder::getMode() {
   if (1 == compression)
     mode << bitPerPixel << "bit-uncompressed";
   else
-    mode << bitPerPixel << "bit-uncompressed";
+    mode << bitPerPixel << "bit-compressed";
   return mode.str();
 }
 
