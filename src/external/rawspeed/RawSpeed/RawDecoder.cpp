@@ -82,7 +82,7 @@ void RawDecoder::decodeUncompressed(TiffIFD *rawIFD, BitOrder order) {
     ByteStream in(mFile->getData(slice.offset), slice.count);
     iPoint2D size(width, slice.h);
     iPoint2D pos(0, offY);
-    bitPerPixel = (int)((uint64)(slice.count * 8) / (slice.h * width));
+    bitPerPixel = (int)((uint64)((uint64)slice.count * 8u) / (slice.h * width));
     try {
       readUncompressedRaw(in, size, pos, width*bitPerPixel / 8, bitPerPixel, order);
     } catch (RawDecoderException &e) {
