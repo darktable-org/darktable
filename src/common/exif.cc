@@ -846,7 +846,13 @@ int dt_exif_read(dt_image_t *img, const char* path)
 {
   // at least set datetime taken to something useful in case there is no exif data in this file (pfm, png, ...)
   struct stat statbuf;
-  stat(path, &statbuf);
+
+  if(stat(path, &statbuf) == -1)
+  {
+    perror("dt_exif_read(): stat()");
+    return 1;
+  }
+
   struct tm result;
   strftime(img->exif_datetime_taken, 20, "%Y:%m:%d %H:%M:%S", localtime_r(&statbuf.st_mtime, &result));
 
