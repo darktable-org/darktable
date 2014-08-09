@@ -788,15 +788,10 @@ zoom_key_accel(GtkAccelGroup *accel_group,
   {
     case 1:
       zoom = dt_control_get_dev_zoom();
-      zoom_x = dt_control_get_dev_zoom_x();
-      zoom_y = dt_control_get_dev_zoom_y();
       closeup = dt_control_get_dev_closeup();
       if(zoom == DT_ZOOM_1) closeup ^= 1;
-      dt_dev_check_zoom_bounds(dev, &zoom_x, &zoom_y, DT_ZOOM_1, closeup, NULL, NULL);
-      dt_control_set_dev_zoom(DT_ZOOM_1);
-      dt_control_set_dev_zoom_x(zoom_x);
-      dt_control_set_dev_zoom_y(zoom_y);
       dt_control_set_dev_closeup(closeup);
+      dt_control_set_dev_zoom(DT_ZOOM_1);
       dt_dev_invalidate(dev);
       break;
     case 2:

@@ -333,6 +333,12 @@ restart:
   closeup = dt_control_get_dev_closeup();
   zoom_x = dt_control_get_dev_zoom_x();
   zoom_y = dt_control_get_dev_zoom_y();
+  // if just changed to an image with a different aspect ratio, zoomed
+  // out at image edge, or altered image orientation, the prior zoom
+  // xy could now be beyond the image boundary
+  dt_dev_check_zoom_bounds(dev, &zoom_x, &zoom_y, zoom, closeup, NULL, NULL);
+  dt_control_set_dev_zoom_x(zoom_x);
+  dt_control_set_dev_zoom_y(zoom_y);
 
   scale = dt_dev_get_zoom_scale(dev, zoom, 1.0f, 0);
   window_width = dev->width;
