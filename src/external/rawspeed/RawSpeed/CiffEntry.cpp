@@ -128,6 +128,25 @@ string CiffEntry::getString() {
   return string((const char*)&own_data[0]);
 }
 
+vector<string> CiffEntry::getStrings() {
+  vector<string> strs;
+  if (type != CIFF_ASCII)
+    ThrowCPE("CIFF, getString: Wrong type 0x%x encountered. Expected Ascii", type);
+  if (!own_data) {
+    own_data = new uchar8[count];
+    memcpy(own_data, data, count);
+    own_data[count-1] = 0;  // Ensure string is not larger than count defines
+  }
+  uint32 start = 0;
+  for (uint32 i=0; i< count; i++) {
+    if (own_data[i] == 0) {
+      strs.push_back(string((const char*)&own_data[start]));
+      start = i+1;
+    }
+  }
+  return strs;
+}
+
 bool CiffEntry::isString() {
   return (type == CIFF_ASCII);
 }

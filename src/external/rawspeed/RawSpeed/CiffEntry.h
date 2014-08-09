@@ -69,6 +69,7 @@ public:
   virtual const uint32* getIntArray();
   virtual const ushort16* getShortArray();
   string getString();
+  vector<string> getStrings();
   uchar8 getByte();
   const uchar8* getData() {return data;};
   uchar8* getDataWrt();;

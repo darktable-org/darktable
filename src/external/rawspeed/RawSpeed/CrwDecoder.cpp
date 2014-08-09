@@ -45,8 +45,11 @@ void CrwDecoder::checkSupportInternal(CameraMetaData *meta) {
   vector<CiffIFD*> data = mRootIFD->getIFDsWithTag(CIFF_MAKEMODEL);
   if (data.empty())
     ThrowRDE("CRW Support check: Model name not found");
-  string make = data[0]->getEntry(CIFF_MAKEMODEL)->getString();
-  string model = data[0]->getEntry(CIFF_MAKEMODEL)->getString();
+  vector<string> makemodel = data[0]->getEntry(CIFF_MAKEMODEL)->getStrings();
+  if (makemodel.size() < 2)
+    ThrowRDE("CRW Support check: wrong number of strings for make/model");
+  string make = makemodel[0];
+  string model = makemodel[1];
 
   this->checkCameraSupported(meta, make, model, "");
 }
@@ -57,8 +60,11 @@ void CrwDecoder::decodeMetaDataInternal(CameraMetaData *meta) {
   vector<CiffIFD*> data = mRootIFD->getIFDsWithTag(CIFF_MAKEMODEL);
   if (data.empty())
     ThrowRDE("CRW Support check: Model name not found");
-  string make = data[0]->getEntry(CIFF_MAKEMODEL)->getString();
-  string model = data[0]->getEntry(CIFF_MAKEMODEL)->getString();
+  vector<string> makemodel = data[0]->getEntry(CIFF_MAKEMODEL)->getStrings();
+  if (makemodel.size() < 2)
+    ThrowRDE("CRW Support check: wrong number of strings for make/model");
+  string make = makemodel[0];
+  string model = makemodel[1];
   string mode = "";
 
   setMetaData(meta, make, model, mode, iso);
