@@ -314,6 +314,7 @@ void dt_dev_process_image_job(dt_develop_t *dev)
   dt_dev_zoom_t zoom;
   float zoom_x, zoom_y, scale;
   int window_width, window_height, x, y, closeup;
+  dt_dev_pixelpipe_change_t pipe_changed;
 
   // adjust pipeline according to changed flag set by {add,pop}_history_item.
 restart:
@@ -326,6 +327,8 @@ restart:
     return;
   }
   dev->pipe->input_timestamp = dev->timestamp;
+  // dt_dev_pixelpipe_change() will clear the changed value
+  pipe_changed = dev->pipe->changed;
   // this locks dev->history_mutex.
   dt_dev_pixelpipe_change(dev->pipe, dev);
   // determine scale according to new dimensions
@@ -333,12 +336,15 @@ restart:
   closeup = dt_control_get_dev_closeup();
   zoom_x = dt_control_get_dev_zoom_x();
   zoom_y = dt_control_get_dev_zoom_y();
-  // if just changed to an image with a different aspect ratio, zoomed
-  // out at image edge, or altered image orientation, the prior zoom
-  // xy could now be beyond the image boundary
-  dt_dev_check_zoom_bounds(dev, &zoom_x, &zoom_y, zoom, closeup, NULL, NULL);
-  dt_control_set_dev_zoom_x(zoom_x);
-  dt_control_set_dev_zoom_y(zoom_y);
+  // if just changed to an image with a different aspect ratio or
+  // altered image orientation, the prior zoom xy could now be beyond
+  // the image boundary
+  if (dev->image_loading || (pipe_changed != DT_DEV_PIPE_UNCHANGED))
+  {
+    dt_dev_check_zoom_bounds(dev, &zoom_x, &zoom_y, zoom, closeup, NULL, NULL);
+    dt_control_set_dev_zoom_x(zoom_x);
+    dt_control_set_dev_zoom_y(zoom_y);
+  }
 
   scale = dt_dev_get_zoom_scale(dev, zoom, 1.0f, 0);
   window_width = dev->width;
