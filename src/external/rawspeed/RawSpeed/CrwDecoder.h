@@ -39,9 +39,11 @@ public:
   virtual void decodeMetaDataInternal(CameraMetaData *meta);
   virtual ~CrwDecoder(void);
 protected:
-  int sraw_coeffs[3];
-
   CiffIFD *mRootIFD;
+  ushort16 *makeDecoder (const uchar8 *source);
+  void initHuffTables (uint32 table, ushort16 *huff[2]);
+  uint32 getbithuff (ByteStream &input, int nbits, ushort16 *huff);
+  void decodeRaw(bool lowbits, uint32 dec_table, uint32 width, uint32 height);
 };
 
 } // namespace RawSpeed

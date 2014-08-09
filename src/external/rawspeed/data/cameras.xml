@@ -95,7 +95,7 @@
 			<Color x="0" y="1">GREEN</Color>
 			<Color x="1" y="1">BLUE</Color>
 		</CFA>
-		<Crop x="0" y="0" width="0" height="0"/>
+		<Crop x="64" y="12" width="0" height="0"/>
 		<Sensor black="124" white="4000"/>
 	</Camera>
 	<Camera make="Canon" model="Canon EOS 20D">
