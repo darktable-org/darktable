@@ -88,6 +88,16 @@
 			<Alias>Canon EOS Kiss X7</Alias>
 		</Aliases>
 	</Camera>
+	<Camera make="Canon" model="Canon EOS 300D DIGITAL">
+		<CFA width="2" height="2">
+			<Color x="0" y="0">RED</Color>
+			<Color x="1" y="0">GREEN</Color>
+			<Color x="0" y="1">GREEN</Color>
+			<Color x="1" y="1">BLUE</Color>
+		</CFA>
+		<Crop x="0" y="0" width="0" height="0"/>
+		<Sensor black="124" white="4000"/>
+	</Camera>
 	<Camera make="Canon" model="Canon EOS 20D">
 		<CFA width="2" height="2">
 			<Color x="0" y="0">RED</Color>

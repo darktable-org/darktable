@@ -38,6 +38,15 @@ CrwDecoder::~CrwDecoder(void) {
 }
 
 RawImage CrwDecoder::decodeRawInternal() {
+  CiffEntry *sensorInfo = mRootIFD->getEntryRecursive(CIFF_SENSORINFO);
+  if (!sensorInfo || sensorInfo->count < 6)
+    ThrowRDE("CRW: Couldn't find image width & height");
+  uint32 width = sensorInfo->getShortArray()[1];
+  uint32 height = sensorInfo->getShortArray()[2];
+
+  mRaw->dim = iPoint2D(width, height);
+  mRaw->createData();
+
   return mRaw;
 }
 
