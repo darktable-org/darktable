@@ -106,7 +106,7 @@
                 1.5.1
               </entry>
               <entry>
-                June 2014
+                August 2014
               </entry>
             </row>
             <row>
@@ -117,7 +117,7 @@
                 1.5
               </entry>
               <entry>
-                June 2014
+                August 2014
               </entry>
             </row>
           </tbody>
@@ -127,8 +127,8 @@
 
     <para>
       Many thanks to all contributors to this user manual. Special thanks for proof reading,
-      style improvement, and constructive criticism go to Colin Adams, Mark Garrow, Simon
-      Harhues, Ammon Riley, Rob Z. Smith, Andrew Toskin, and David Vincent-Jones.
+      style improvement, constructive criticism, and valuable contributions go to Colin Adams, Mark Garrow, Simon
+      Harhues, Rudolf Martin, Ammon Riley, Rob Z. Smith, Andrew Toskin, and David Vincent-Jones.
     </para>
 
 <!-- <para>For the course of this documentation the arrow keys on your keyboard are referenced as with arrow symbols: &uarr;&larr;&darr;&rarr;.
