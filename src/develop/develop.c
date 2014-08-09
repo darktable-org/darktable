@@ -313,7 +313,7 @@ void dt_dev_process_image_job(dt_develop_t *dev)
 
   dt_dev_zoom_t zoom;
   float zoom_x, zoom_y, scale;
-  int x, y;
+  int window_width, window_height, x, y, closeup;
 
   // adjust pipeline according to changed flag set by {add,pop}_history_item.
 restart:
@@ -330,12 +330,20 @@ restart:
   dt_dev_pixelpipe_change(dev->pipe, dev);
   // determine scale according to new dimensions
   zoom = dt_control_get_dev_zoom();
+  closeup = dt_control_get_dev_closeup();
   zoom_x = dt_control_get_dev_zoom_x();
   zoom_y = dt_control_get_dev_zoom_y();
 
   scale = dt_dev_get_zoom_scale(dev, zoom, 1.0f, 0);
-  dev->capwidth  = MIN(MIN(dev->width,  dev->pipe->processed_width *scale), darktable.thumbnail_width);
-  dev->capheight = MIN(MIN(dev->height, dev->pipe->processed_height*scale), darktable.thumbnail_height);
+  window_width = dev->width;
+  window_height = dev->height;
+  if (closeup)
+  {
+    window_width /= 2;
+    window_height /= 2;
+  }
+  dev->capwidth  = MIN(MIN(window_width,  dev->pipe->processed_width *scale), darktable.thumbnail_width);
+  dev->capheight = MIN(MIN(window_height, dev->pipe->processed_height*scale), darktable.thumbnail_height);
   x = MAX(0, scale*dev->pipe->processed_width *(.5+zoom_x)-dev->capwidth/2);
   y = MAX(0, scale*dev->pipe->processed_height*(.5+zoom_y)-dev->capheight/2);
 
