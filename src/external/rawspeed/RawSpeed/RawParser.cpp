@@ -64,7 +64,7 @@ RawDecoder* RawParser::getDecoder() {
       ThrowRDE("File too small (FUJI first IFD)");
 
     // RAW IFD on newer, pointer to raw data on older models, so we try parsing first
-    // And adds it as data if parsin fails
+    // And adds it as data if parsing fails
     uint32 second_ifd = (uint32)data[103] | (data[102]<<8) | (data[101]<<16) | (data[100]<<24);
     if (mInput->getSize() <=  second_ifd)
       second_ifd = 0;
