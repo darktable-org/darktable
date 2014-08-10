@@ -1185,6 +1185,7 @@ int dt_exif_read_blob(
       const dt_image_t *cimg = dt_image_cache_read_get(darktable.image_cache, imgid);
       if(!isnan(cimg->longitude) && !isnan(cimg->latitude))
       {
+        exifData["Exif.GPSInfo.GPSVersionID"] = "02 02 00 00";
         exifData["Exif.GPSInfo.GPSLongitudeRef"] = (cimg->longitude < 0 ) ? "W" : "E";
         exifData["Exif.GPSInfo.GPSLatitudeRef"]  = (cimg->latitude < 0 ) ? "S" : "N";
 
