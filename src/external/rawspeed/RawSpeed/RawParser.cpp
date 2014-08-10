@@ -142,7 +142,6 @@ RawDecoder* RawParser::getDecoder() {
     p.parseData();
     return p.getDecoder();
   } catch (CiffParserException &e) {
-    std::cerr << "exception caught: " << e.what() << '\n';
   }
 
   // File could not be decoded, so no further options for now.
