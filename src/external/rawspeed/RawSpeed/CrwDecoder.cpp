@@ -51,8 +51,7 @@ RawImage CrwDecoder::decodeRawInternal() {
   mRaw->dim = iPoint2D(width, height);
   mRaw->createData();
 
-  bool lowbits = TRUE;
-
+  bool lowbits = hints.find("no_decompressed_lowbits") == hints.end();
   decodeRaw(lowbits, dec_table, width, height);
 
   return mRaw;

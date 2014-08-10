@@ -743,6 +743,72 @@
 		<Crop x="0" y="0" width="0" height="0"/>
 		<Sensor black="0" white="65535"/>
 	</Camera>
+	<Camera make="Canon" model="Canon PowerShot Pro1">
+		<CFA width="2" height="2">
+			<Color x="0" y="0">RED</Color>
+			<Color x="1" y="0">GREEN</Color>
+			<Color x="0" y="1">GREEN</Color>
+			<Color x="1" y="1">BLUE</Color>
+		</CFA>
+		<Crop x="4" y="6" width="-52" height="-6"/>
+		<Sensor black="129" white="4095"/>
+	</Camera>
+	<Camera make="Canon" model="Canon PowerShot G1">
+		<CFA width="2" height="2">
+			<Color x="0" y="0">RED</Color>
+			<Color x="1" y="0">GREEN</Color>
+			<Color x="0" y="1">GREEN</Color>
+			<Color x="1" y="1">BLUE</Color>
+		</CFA>
+		<Crop x="4" y="8" width="-52" height="-2"/>
+		<Sensor black="31" white="1023"/>
+		<Hints>
+			<Hint name="no_decompressed_lowbits" value=""/>
+		</Hints>
+	</Camera>
+	<Camera make="Canon" model="Canon PowerShot G2">
+		<CFA width="2" height="2">
+			<Color x="0" y="0">RED</Color>
+			<Color x="1" y="0">GREEN</Color>
+			<Color x="0" y="1">GREEN</Color>
+			<Color x="1" y="1">BLUE</Color>
+		</CFA>
+		<Crop x="12" y="6" width="-52" height="-2"/>
+		<Sensor black="0" white="1023"/>
+		<Hints>
+			<Hint name="no_decompressed_lowbits" value=""/>
+		</Hints>
+	</Camera>
+	<Camera make="Canon" model="Canon PowerShot G3">
+		<CFA width="2" height="2">
+			<Color x="0" y="0">RED</Color>
+			<Color x="1" y="0">GREEN</Color>
+			<Color x="0" y="1">GREEN</Color>
+			<Color x="1" y="1">BLUE</Color>
+		</CFA>
+		<Crop x="12" y="6" width="-52" height="-2"/>
+		<Sensor black="0" white="4095"/>
+	</Camera>
+	<Camera make="Canon" model="Canon PowerShot G5">
+		<CFA width="2" height="2">
+			<Color x="0" y="0">RED</Color>
+			<Color x="1" y="0">GREEN</Color>
+			<Color x="0" y="1">GREEN</Color>
+			<Color x="1" y="1">BLUE</Color>
+		</CFA>
+		<Crop x="12" y="6" width="-44" height="-2"/>
+		<Sensor black="0" white="4095"/>
+	</Camera>
+	<Camera make="Canon" model="Canon PowerShot G6">
+		<CFA width="2" height="2">
+			<Color x="0" y="0">RED</Color>
+			<Color x="1" y="0">GREEN</Color>
+			<Color x="0" y="1">GREEN</Color>
+			<Color x="1" y="1">BLUE</Color>
+		</CFA>
+		<Crop x="44" y="12" width="-4" height="-4"/>
+		<Sensor black="128" white="4095"/>
+	</Camera>
 	<Camera make="Canon" model="Canon PowerShot G1 X">
 		<CFA width="2" height="2">
 			<Color x="0" y="0">RED</Color>
@@ -871,6 +937,72 @@
 			<Vertical x="0" width="188"/>
 			<Horizontal y="0" height="10"/>
 		</BlackAreas>
+	</Camera>
+	<Camera make="Canon" model="Canon PowerShot S30">
+		<CFA width="2" height="2">
+			<Color x="0" y="0">RED</Color>
+			<Color x="1" y="0">GREEN</Color>
+			<Color x="0" y="1">GREEN</Color>
+			<Color x="1" y="1">BLUE</Color>
+		</CFA>
+		<Crop x="4" y="8" width="-52" height="-2"/>
+		<Sensor black="31" white="1023"/>
+		<Hints>
+			<Hint name="no_decompressed_lowbits" value=""/>
+		</Hints>
+	</Camera>
+	<Camera make="Canon" model="Canon PowerShot S40">
+		<CFA width="2" height="2">
+			<Color x="0" y="0">RED</Color>
+			<Color x="1" y="0">GREEN</Color>
+			<Color x="0" y="1">GREEN</Color>
+			<Color x="1" y="1">BLUE</Color>
+		</CFA>
+		<Crop x="12" y="6" width="-52" height="-2"/>
+		<Sensor black="129" white="4095"/>
+		<Hints>
+			<Hint name="no_decompressed_lowbits" value=""/>
+		</Hints>
+	</Camera>
+	<Camera make="Canon" model="Canon PowerShot S45">
+		<CFA width="2" height="2">
+			<Color x="0" y="0">RED</Color>
+			<Color x="1" y="0">GREEN</Color>
+			<Color x="0" y="1">GREEN</Color>
+			<Color x="1" y="1">BLUE</Color>
+		</CFA>
+		<Crop x="12" y="6" width="-52" height="-2"/>
+		<Sensor black="129" white="4095"/>
+	</Camera>
+	<Camera make="Canon" model="Canon PowerShot S50">
+		<CFA width="2" height="2">
+			<Color x="0" y="0">RED</Color>
+			<Color x="1" y="0">GREEN</Color>
+			<Color x="0" y="1">GREEN</Color>
+			<Color x="1" y="1">BLUE</Color>
+		</CFA>
+		<Crop x="12" y="6" width="-44" height="-2"/>
+		<Sensor black="129" white="4095"/>
+	</Camera>
+	<Camera make="Canon" model="Canon PowerShot S60">
+		<CFA width="2" height="2">
+			<Color x="0" y="0">RED</Color>
+			<Color x="1" y="0">GREEN</Color>
+			<Color x="0" y="1">GREEN</Color>
+			<Color x="1" y="1">BLUE</Color>
+		</CFA>
+		<Crop x="12" y="6" width="-44" height="-2"/>
+		<Sensor black="129" white="4095"/>
+	</Camera>
+	<Camera make="Canon" model="Canon PowerShot S70">
+		<CFA width="2" height="2">
+			<Color x="0" y="0">RED</Color>
+			<Color x="1" y="0">GREEN</Color>
+			<Color x="0" y="1">GREEN</Color>
+			<Color x="1" y="1">BLUE</Color>
+		</CFA>
+		<Crop x="44" y="12" width="-4" height="-4"/>
+		<Sensor black="129" white="4095"/>
 	</Camera>
 	<Camera make="Canon" model="Canon PowerShot S90">
 		<CFA width="2" height="2">
