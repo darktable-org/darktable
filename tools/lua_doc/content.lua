@@ -198,13 +198,17 @@ darktable.configuration.api_version_string:add_version_info([[field added]])
 -----------------------------
 darktable.preferences:set_text([[Lua allows you do manipulate preferences. Lua has its own namespace for preferences and you can't access nor write normal darktable preferences.]]..para()..
 [[Preference handling functions take a _script_ parameter. This is a string used to avoid name collision in preferences (i.e namespace). Set it to something unique, usually the name of the script handling the preference.]]..para()..
-[[Preference handling functions can't guess the type of a parameter. You must pass the type of the preference you are handling. Allowed values are the following strings
+[[Preference handling functions can't guess the type of a parameter. You must pass the type of the preference you are handling. Allowed values are the following strings]]..
+startlist()..
+listel('string')..
+listel('bool')..
+listel('integer')..
+listel('float')..
+listel('file')..
+listel('directory')..
+endlist())
 
-* string
-* bool
-* integer
-* float]])
-darktable.preferences:add_version_info("added float parameters")
+darktable.preferences:add_version_info("added float,file,directory parameters")
 
 darktable.preferences.register:set_text([[Creates a new preference entry in the Lua tab of the preference screen. If this function is not called the preference can't be set by the user (you can still read and write invisible preferences).]])
 darktable.preferences.register:add_parameter("script","string",[[Invisible prefix to guarantee unicity of preferences.]])

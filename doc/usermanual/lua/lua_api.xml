@@ -875,12 +875,15 @@ All functions and data are accessed through the darktable module.</para>
 <synopsis>table</synopsis>
 <para>Lua allows you do manipulate preferences. Lua has its own namespace for preferences and you can't access nor write normal darktable preferences.</para>
 <para>Preference handling functions take a _script_ parameter. This is a string used to avoid name collision in preferences (i.e namespace). Set it to something unique, usually the name of the script handling the preference.</para>
-<para>Preference handling functions can't guess the type of a parameter. You must pass the type of the preference you are handling. Allowed values are the following strings
-
-* string
-* bool
-* integer
-* float</para>
+<para>Preference handling functions can't guess the type of a parameter. You must pass the type of the preference you are handling. Allowed values are the following strings<itemizedlist>
+<listitem><para>string</para></listitem>
+<listitem><para>bool</para></listitem>
+<listitem><para>integer</para></listitem>
+<listitem><para>float</para></listitem>
+<listitem><para>file</para></listitem>
+<listitem><para>directory</para></listitem>
+</itemizedlist>
+</para>
 
 <section status="final" id="darktable_preferences_register">
 <title>darktable.preferences.register</title>
