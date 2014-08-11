@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 1.5\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2014-07-30 19:58+0200\n"
+"POT-Creation-Date: 2014-08-11 16:33+0200\n"
 "PO-Revision-Date: \n"
 "Last-Translator: Mauro 'bartokk' Bartoccelli <bartokk@gmail.com>\n"
 "Language-Team: \n"
@@ -25,7 +25,7 @@ msgstr "Dimensione dei pannelli laterali in pixel"
 #: ../build/src/preferences_gen.h:1583 ../build/src/preferences_gen.h:1626
 #: ../build/src/preferences_gen.h:1650 ../build/src/preferences_gen.h:1840
 #: ../build/src/preferences_gen.h:2035 ../build/src/preferences_gen.h:2059
-#: ../build/src/preferences_gen.h:2084 ../src/lua/preferences.c:441
+#: ../build/src/preferences_gen.h:2084 ../src/lua/preferences.c:537
 #, c-format
 msgid "double click to reset to `%d'"
 msgstr "Doppio click per ripristinare a '%d'"
@@ -55,8 +55,9 @@ msgstr "Non usare l'anteprima jpeg incorporata, ma la dimensione media RAW "
 #: ../build/src/preferences_gen.h:2285 ../build/src/preferences_gen.h:2328
 #: ../build/src/preferences_gen.h:2347 ../build/src/preferences_gen.h:2366
 #: ../build/src/preferences_gen.h:2416 ../build/src/preferences_gen.h:2435
-#: ../build/src/preferences_gen.h:2454 ../src/lua/preferences.c:424
-#: ../src/lua/preferences.c:432
+#: ../build/src/preferences_gen.h:2454 ../src/lua/preferences.c:499
+#: ../src/lua/preferences.c:510 ../src/lua/preferences.c:520
+#: ../src/lua/preferences.c:528
 #, c-format
 msgid "double click to reset to `%s'"
 msgstr "Doppio click per ripristinare a '%s'"
@@ -835,7 +836,7 @@ msgstr "Il file '%s' ha un formato sconosciuto!"
 msgid "error loading file `%s'"
 msgstr "Errore nel caricamento del file '%s'"
 
-#: ../src/common/darktable.c:596
+#: ../src/common/darktable.c:602
 #, c-format
 msgid "ERROR : invalid temporary directory : %s\n"
 msgstr "ERRORE: cartella temporanea errata: %s\n"
@@ -867,15 +868,15 @@ msgstr ""
 #: ../src/common/history.c:279 ../src/common/history.c:280
 #: ../src/common/history.c:296 ../src/common/styles.c:633
 #: ../src/common/styles.c:635 ../src/develop/blend_gui.c:1691
-#: ../src/develop/develop.c:1158 ../src/libs/live_view.c:412
+#: ../src/develop/develop.c:1178 ../src/libs/live_view.c:412
 msgid "on"
 msgstr "Abilitato"
 
 #: ../src/common/history.c:279 ../src/common/history.c:280
 #: ../src/common/history.c:296 ../src/common/styles.c:633
 #: ../src/common/styles.c:635 ../src/develop/blend_gui.c:1539
-#: ../src/develop/blend_gui.c:1688 ../src/develop/develop.c:1158
-#: ../src/imageio/format/j2k.c:637 ../src/iop/colorin.c:1187
+#: ../src/develop/blend_gui.c:1688 ../src/develop/develop.c:1178
+#: ../src/imageio/format/j2k.c:637 ../src/iop/colorin.c:1195
 #: ../src/iop/demosaic.c:2192 ../src/iop/vignette.c:1137
 #: ../src/libs/history.c:154 ../src/libs/live_view.c:411
 msgid "off"
@@ -885,23 +886,23 @@ msgstr "Disabilitato"
 msgid "orphaned image"
 msgstr "Immagine orfana"
 
-#: ../src/common/image.c:1194
+#: ../src/common/image.c:1228
 msgid "cannot create local copy when the original file is not accessible."
 msgstr ""
 "Impossibile creare una copia locale quando il file originale non è "
 "accessibile."
 
-#: ../src/common/image.c:1208
+#: ../src/common/image.c:1242
 msgid "cannot create local copy."
 msgstr "Impossibile creare una copia locale."
 
-#: ../src/common/image.c:1242 ../src/control/jobs/control_jobs.c:489
+#: ../src/common/image.c:1276 ../src/control/jobs/control_jobs.c:489
 msgid "cannot remove local copy when the original file is not accessible."
 msgstr ""
 "Impossibile rimuovere la copia locale quando il file originale non è "
 "accessibile"
 
-#: ../src/common/image.c:1393
+#: ../src/common/image.c:1427
 #, c-format
 msgid "%d local copy has been synchronized"
 msgid_plural "%d local copies have been synchronized"
@@ -982,7 +983,7 @@ msgstr "Stile '%s' è stato creato con successo"
 
 #. fail :(
 #: ../src/common/styles.c:444 ../src/common/styles.c:463
-#: ../src/views/darkroom.c:454
+#: ../src/views/darkroom.c:448
 msgid "no image selected!"
 msgstr "Nessuna immagine selezionata!"
 
@@ -1196,7 +1197,7 @@ msgid_plural "exporting %d images to %s"
 msgstr[0] "Esporto %d immagine in %s"
 msgstr[1] "Esporto %d immagini in %s"
 
-#: ../src/control/jobs/control_jobs.c:930 ../src/views/darkroom.c:467
+#: ../src/control/jobs/control_jobs.c:930 ../src/views/darkroom.c:461
 #, c-format
 msgid "image `%s' is currently unavailable"
 msgstr "Immagine '%s' al momento non disponibile"
@@ -1727,7 +1728,7 @@ msgstr "Fusione non effettuata nel modulo '%s': mancata corrispondenza"
 msgid "could not allocate buffer for blending"
 msgstr "Impossibile allocare il buffer per la fusione"
 
-#: ../src/develop/develop.c:975
+#: ../src/develop/develop.c:995
 #, c-format
 msgid "%s: module `%s' version mismatch: %d != %d"
 msgstr "%s: mancata corrispondenza di versione del modulo '%s': %d != %d"
@@ -2279,7 +2280,6 @@ msgstr "Lunghezza focale"
 
 #: ../src/gui/preferences.c:491 ../src/iop/borders.c:1054
 #: ../src/iop/exposure.c:973 ../src/iop/levels.c:580
-#: ../src/iop/tonecurve.c:780
 msgid "auto"
 msgstr "Auto"
 
@@ -3165,29 +3165,29 @@ msgstr "Fotogenetic (punta & scatta)"
 msgid "fotogenetic (EV3)"
 msgstr "Fotogenetic (EV3) "
 
-#: ../src/iop/basecurve.c:203
+#: ../src/iop/basecurve.c:206
 msgid "base curve"
 msgstr "Curva base"
 
-#: ../src/iop/basecurve.c:766
+#: ../src/iop/basecurve.c:769
 msgid "abscissa: input, ordinate: output. works on RGB channels"
 msgstr "Ascissa: input, Ordinata: output. Lavorano sui canali RGB"
 
-#: ../src/iop/basecurve.c:772 ../src/iop/lens.c:2085
+#: ../src/iop/basecurve.c:775 ../src/iop/lens.c:2085
 #: ../src/iop/vignette.c:1143 ../src/iop/watermark.c:1114
 msgid "scale"
 msgstr "Scala"
 
-#: ../src/iop/basecurve.c:773 ../src/iop/profile_gamma.c:337
+#: ../src/iop/basecurve.c:776 ../src/iop/profile_gamma.c:337
 #: ../src/iop/tonecurve.c:418
 msgid "linear"
 msgstr "Lineare"
 
-#: ../src/iop/basecurve.c:774
+#: ../src/iop/basecurve.c:777
 msgid "logarithmic"
 msgstr "Logaritmica"
 
-#: ../src/iop/basecurve.c:775
+#: ../src/iop/basecurve.c:778
 msgid ""
 "scale to use in the graph. use logarithmic scale for more precise control "
 "near the blacks"
@@ -3986,106 +3986,106 @@ msgstr ""
 msgid "set the global saturation"
 msgstr "Imposta la saturazione globale"
 
-#: ../src/iop/colorin.c:107
+#: ../src/iop/colorin.c:108
 msgid "input color profile"
 msgstr "Profilo colore di ingresso"
 
-#: ../src/iop/colorin.c:609
+#: ../src/iop/colorin.c:610
 #, c-format
 msgid "`%s' color matrix not found!"
 msgstr "`%s' matrice colore non trovata!"
 
-#: ../src/iop/colorin.c:658
+#: ../src/iop/colorin.c:659
 msgid "input profile could not be generated!"
 msgstr "Il profilo in ingresso non può essere generato!"
 
-#: ../src/iop/colorin.c:715
+#: ../src/iop/colorin.c:716
 msgid "unsupported input profile has been replaced by linear Rec709 RGB!"
 msgstr ""
 "Il profilo di ingresso non supportato è stato sostituito con Rec709 RGB "
 "lineare!"
 
-#: ../src/iop/colorin.c:1003 ../src/iop/colorin.c:1037
+#: ../src/iop/colorin.c:1011 ../src/iop/colorin.c:1045
 msgid "embedded ICC profile"
 msgstr "Profilo ICC incorporato"
 
-#: ../src/iop/colorin.c:1005 ../src/iop/colorin.c:1039
+#: ../src/iop/colorin.c:1013 ../src/iop/colorin.c:1047
 msgid "DNG embedded matrix"
 msgstr "Matrice DNG incorporata"
 
-#: ../src/iop/colorin.c:1007 ../src/iop/colorin.c:1041
+#: ../src/iop/colorin.c:1015 ../src/iop/colorin.c:1049
 msgid "standard color matrix"
 msgstr "Matrice colore standard"
 
-#: ../src/iop/colorin.c:1009 ../src/iop/colorin.c:1043
+#: ../src/iop/colorin.c:1017 ../src/iop/colorin.c:1051
 msgid "enhanced color matrix"
 msgstr "Matrice colore potenziata"
 
-#: ../src/iop/colorin.c:1011 ../src/iop/colorin.c:1045
+#: ../src/iop/colorin.c:1019 ../src/iop/colorin.c:1053
 msgid "vendor color matrix"
 msgstr "Matrice colore del produttore"
 
-#: ../src/iop/colorin.c:1013 ../src/iop/colorin.c:1047
+#: ../src/iop/colorin.c:1021 ../src/iop/colorin.c:1055
 msgid "alternate color matrix"
 msgstr "Matrice colore alternativa"
 
-#: ../src/iop/colorin.c:1015 ../src/iop/colorin.c:1049
+#: ../src/iop/colorin.c:1023 ../src/iop/colorin.c:1057
 msgid "sRGB (e.g. JPG)"
 msgstr "sRGB (es. JPG)"
 
-#: ../src/iop/colorin.c:1017 ../src/iop/colorin.c:1051
-#: ../src/iop/colorin.c:1189 ../src/iop/colorout.c:969
+#: ../src/iop/colorin.c:1025 ../src/iop/colorin.c:1059
+#: ../src/iop/colorin.c:1197 ../src/iop/colorout.c:969
 #: ../src/iop/colorout.c:970 ../src/iop/colorout.c:971
 #: ../src/libs/export.c:558
 msgid "Adobe RGB (compatible)"
 msgstr "Adobe RGB (compatibile)"
 
-#: ../src/iop/colorin.c:1019 ../src/iop/colorin.c:1053
-#: ../src/iop/colorin.c:1190 ../src/iop/colorout.c:951
+#: ../src/iop/colorin.c:1027 ../src/iop/colorin.c:1061
+#: ../src/iop/colorin.c:1198 ../src/iop/colorout.c:951
 #: ../src/iop/colorout.c:952 ../src/iop/colorout.c:953
 #: ../src/libs/export.c:564
 msgid "linear Rec709 RGB"
 msgstr "Rec709 RGB lineare"
 
-#: ../src/iop/colorin.c:1021 ../src/iop/colorin.c:1055
-#: ../src/iop/colorin.c:1191 ../src/iop/colorout.c:957
+#: ../src/iop/colorin.c:1029 ../src/iop/colorin.c:1063
+#: ../src/iop/colorin.c:1199 ../src/iop/colorout.c:957
 #: ../src/iop/colorout.c:958 ../src/iop/colorout.c:959
 #: ../src/libs/export.c:570
 msgid "linear Rec2020 RGB"
 msgstr "Rec2020 RGB lineare"
 
-#: ../src/iop/colorin.c:1023 ../src/iop/colorin.c:1057
+#: ../src/iop/colorin.c:1031 ../src/iop/colorin.c:1065
 msgid "linear infrared BGR"
 msgstr "BGR lineare infrarosso "
 
-#: ../src/iop/colorin.c:1025 ../src/iop/colorin.c:1059
+#: ../src/iop/colorin.c:1033 ../src/iop/colorin.c:1067
 msgid "linear XYZ"
 msgstr "XYZ lineare "
 
-#: ../src/iop/colorin.c:1027 ../src/iop/colorin.c:1061
+#: ../src/iop/colorin.c:1035 ../src/iop/colorin.c:1069
 #: ../src/libs/colorpicker.c:539 ../src/libs/colorpicker.c:590
 msgid "Lab"
 msgstr "Lab"
 
-#: ../src/iop/colorin.c:1168 ../src/iop/denoiseprofile.c:1724
+#: ../src/iop/colorin.c:1176 ../src/iop/denoiseprofile.c:1724
 #: ../src/libs/export.c:609
 msgid "profile"
 msgstr "Profilo"
 
-#: ../src/iop/colorin.c:1177
+#: ../src/iop/colorin.c:1185
 #, c-format
 msgid "ICC profiles in %s/color/in or %s/color/in"
 msgstr "Profili ICC in %s/color/in o %s/color/in"
 
-#: ../src/iop/colorin.c:1185
+#: ../src/iop/colorin.c:1193
 msgid "gamut clipping"
 msgstr "Tosaggio gamma"
 
-#: ../src/iop/colorin.c:1188
+#: ../src/iop/colorin.c:1196
 msgid "sRGB"
 msgstr "sRGB"
 
-#: ../src/iop/colorin.c:1193
+#: ../src/iop/colorin.c:1201
 msgid "confine Lab values to gamut of RGB color space"
 msgstr "Confina i valori LAB nella gamma dello spazio colore RGB"
 
@@ -4658,12 +4658,12 @@ msgid "almost no clipping"
 msgstr "Quasi nessun tosaggio"
 
 #: ../src/iop/exposure.c:945 ../src/iop/levels.c:549
-#: ../src/iop/tonecurve.c:781
+msgctxt "mode"
 msgid "manual"
 msgstr "Manuale"
 
 #: ../src/iop/exposure.c:948 ../src/iop/levels.c:552
-#: ../src/iop/vignette.c:1134
+#: ../src/iop/tonecurve.c:780 ../src/iop/vignette.c:1134
 msgid "automatic"
 msgstr "Automatico"
 
@@ -4712,52 +4712,52 @@ msgstr "Correzione esposizione calcolata:"
 msgid "what exposure correction have actually been used"
 msgstr "Quale correzione esposizione è stata usata"
 
-#: ../src/iop/flip.c:381 ../src/iop/flip.c:382
+#: ../src/iop/flip.c:382 ../src/iop/flip.c:383
 msgid "autodetect"
 msgstr "Automatico"
 
-#: ../src/iop/flip.c:385
+#: ../src/iop/flip.c:386
 msgid "no rotation"
 msgstr "Nessuna rotazione"
 
-#: ../src/iop/flip.c:388
+#: ../src/iop/flip.c:389
 msgid "flip horizontally"
 msgstr "Rifletti orizzontalmente"
 
-#: ../src/iop/flip.c:390
+#: ../src/iop/flip.c:391
 msgid "flip vertically"
 msgstr "Rifletti verticalmente"
 
-#: ../src/iop/flip.c:392
+#: ../src/iop/flip.c:393
 msgid "rotate by -90 degrees"
 msgstr "Ruota di 90° in senso orario"
 
-#: ../src/iop/flip.c:394
+#: ../src/iop/flip.c:395
 msgid "rotate by  90 degrees"
 msgstr "Ruota di 90° in senso orario"
 
-#: ../src/iop/flip.c:396
+#: ../src/iop/flip.c:397
 msgid "rotate by 180 degrees"
 msgstr "Ruota di 180°"
 
-#: ../src/iop/flip.c:507 ../src/iop/watermark.c:1117
+#: ../src/iop/flip.c:508 ../src/iop/watermark.c:1117
 msgid "rotate"
 msgstr "ruota"
 
-#: ../src/iop/flip.c:512
+#: ../src/iop/flip.c:513
 msgid "rotate 90 degrees CCW"
 msgstr "Ruota di 90° in senso orario"
 
-#: ../src/iop/flip.c:518
+#: ../src/iop/flip.c:519
 msgid "rotate 90 degrees CW"
 msgstr "Ruota di 90° in senso orario"
 
-#: ../src/iop/flip.c:530 ../src/libs/live_view.c:169
+#: ../src/iop/flip.c:531 ../src/libs/live_view.c:169
 msgctxt "accel"
 msgid "rotate 90 degrees CCW"
 msgstr "Ruota di 90° in senso orario"
 
-#: ../src/iop/flip.c:532 ../src/libs/live_view.c:170
+#: ../src/iop/flip.c:533 ../src/libs/live_view.c:170
 msgctxt "accel"
 msgid "rotate 90 degrees CW"
 msgstr "Ruota di 90° in senso orario"
@@ -5535,7 +5535,7 @@ msgctxt "accel"
 msgid "noise threshold"
 msgstr "Soglia rumore"
 
-#: ../src/iop/rawdenoise.c:474
+#: ../src/iop/rawdenoise.c:472
 msgid "noise threshold"
 msgstr "Soglia rumore"
 
@@ -5889,6 +5889,11 @@ msgstr "Doppio click per ripristinare la curva"
 msgid "scale chroma"
 msgstr "Scala di crominanza"
 
+#: ../src/iop/tonecurve.c:781
+msgctxt "scale"
+msgid "manual"
+msgstr "Manuale"
+
 #: ../src/iop/tonecurve.c:783
 msgid ""
 "if set to auto, a and b curves have no effect and are not displayed. chroma "
@@ -6233,7 +6238,7 @@ msgstr "Tramonto"
 msgid "underwater"
 msgstr "Sott'acqua"
 
-#: ../src/iop/wb_presets.c:73 ../src/views/darkroom.c:1176
+#: ../src/iop/wb_presets.c:73 ../src/views/darkroom.c:1175
 msgid "black & white"
 msgstr "bianco & nero"
 
@@ -6819,7 +6824,7 @@ msgstr "Esporta con le impostazioni correnti (Ctrl-e)"
 
 #. enable shortcut to export with current export settings:
 #: ../src/libs/export.c:874 ../src/libs/styles.c:69
-#: ../src/views/darkroom.c:1717
+#: ../src/views/darkroom.c:1716
 msgctxt "accel"
 msgid "export"
 msgstr "Esporta "
@@ -8252,28 +8257,28 @@ msgstr "Visualizza strumenti"
 msgid "darkroom"
 msgstr "Camera Oscura"
 
-#: ../src/views/darkroom.c:898
+#: ../src/views/darkroom.c:897
 msgid "no userdefined presets for favorite modules were found"
 msgstr "Non sono state trovate preimpostazioni per i moduli preferiti "
 
-#: ../src/views/darkroom.c:903
+#: ../src/views/darkroom.c:902
 #, c-format
 msgid "applied style `%s' on current image"
 msgstr "Applicato lo stile '%s' sull'immagine corrente"
 
-#: ../src/views/darkroom.c:961
+#: ../src/views/darkroom.c:960
 msgid "no styles have been created yet"
 msgstr "Nessuno stile è stato ancora creato"
 
-#: ../src/views/darkroom.c:1111
+#: ../src/views/darkroom.c:1110
 msgid "quick access to presets of your favorites"
 msgstr "Accesso rapido alle preimpostazioni preferite"
 
-#: ../src/views/darkroom.c:1123
+#: ../src/views/darkroom.c:1122
 msgid "quick access for applying any of your styles"
 msgstr "Accesso rapido all'applicazione degli stili"
 
-#: ../src/views/darkroom.c:1131
+#: ../src/views/darkroom.c:1130
 msgid ""
 "toggle over/under exposed indication\n"
 "right click for options"
@@ -8281,75 +8286,75 @@ msgstr ""
 "Passa all'indicazione di sovra/sotto esposizione\n"
 "click destro per ulteriori opzioni"
 
-#: ../src/views/darkroom.c:1175
+#: ../src/views/darkroom.c:1174
 msgid "color scheme"
 msgstr "Combinazione colori"
 
-#: ../src/views/darkroom.c:1177
+#: ../src/views/darkroom.c:1176
 msgid "red & blue"
 msgstr "rosso & blu"
 
-#: ../src/views/darkroom.c:1178
+#: ../src/views/darkroom.c:1177
 msgid "purple & green"
 msgstr "viola & verde"
 
-#: ../src/views/darkroom.c:1180
+#: ../src/views/darkroom.c:1179
 msgid "select colors to indicate over/under exposure"
 msgstr "Scegli i colori per indicare sovra/sotto esposizione"
 
-#: ../src/views/darkroom.c:1190
+#: ../src/views/darkroom.c:1189
 msgid "lower threshold"
 msgstr "Soglia inferiore"
 
-#: ../src/views/darkroom.c:1191
+#: ../src/views/darkroom.c:1190
 msgid "threshold of what shall be considered underexposed"
 msgstr "Soglia per la sottoesposizione"
 
-#: ../src/views/darkroom.c:1200
+#: ../src/views/darkroom.c:1199
 msgid "upper threshold"
 msgstr "Soglia superiore"
 
-#: ../src/views/darkroom.c:1201
+#: ../src/views/darkroom.c:1200
 msgid "threshold of what shall be considered overexposed"
 msgstr "Soglia per la sovraesposizione"
 
 #. Film strip shortcuts
 #. Setup key accelerators in capture view...
-#: ../src/views/darkroom.c:1705 ../src/views/map.c:701
+#: ../src/views/darkroom.c:1704 ../src/views/map.c:701
 #: ../src/views/tethering.c:386
 msgctxt "accel"
 msgid "toggle film strip"
 msgstr "Cambia rullino"
 
 #. Zoom shortcuts
-#: ../src/views/darkroom.c:1709
+#: ../src/views/darkroom.c:1708
 msgctxt "accel"
 msgid "zoom close-up"
 msgstr "Primo piano"
 
-#: ../src/views/darkroom.c:1711
+#: ../src/views/darkroom.c:1710
 msgctxt "accel"
 msgid "zoom fill"
 msgstr "Riempi"
 
-#: ../src/views/darkroom.c:1713
+#: ../src/views/darkroom.c:1712
 msgctxt "accel"
 msgid "zoom fit"
 msgstr "Adatta"
 
 #. Shortcut to skip images
-#: ../src/views/darkroom.c:1721
+#: ../src/views/darkroom.c:1720
 msgctxt "accel"
 msgid "image forward"
 msgstr "Immagine avanti"
 
-#: ../src/views/darkroom.c:1723
+#: ../src/views/darkroom.c:1722
 msgctxt "accel"
 msgid "image back"
 msgstr "Immagine indietro"
 
 #. toggle overexposure indication
-#: ../src/views/darkroom.c:1727
+#: ../src/views/darkroom.c:1726
 msgctxt "accel"
 msgid "overexposed"
 msgstr "Sovraesposizione"
@@ -8621,11 +8626,19 @@ msgstr "Elimina forme non in uso"
 msgid "created shapes"
 msgstr "Forme create"
 
-#: ../src/lua/preferences.c:404
+#: ../src/lua/preferences.c:478
 msgid "lua options"
 msgstr "Opzioni lua"
 
-#: ../src/lua/preferences.c:450
+#: ../src/lua/preferences.c:493
+msgid "Select a directory"
+msgstr "Seleziona una cartella"
+
+#: ../src/lua/preferences.c:504
+msgid "Select a file"
+msgstr "Seleziona un file"
+
+#: ../src/lua/preferences.c:546
 #, c-format
 msgid "double click to reset to `%f'"
 msgstr "Doppio click per ripristinare a `%f'"
