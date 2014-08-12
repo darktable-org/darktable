@@ -1,10 +1,15 @@
-#ifndef BLACK_AREA_H
-#define BLACK_AREA_H
+#ifndef CIFF_IFD_H
+#define CIFF_IFD_H
+
+#include "FileMap.h"
+#include "CiffEntry.h"
+#include "CiffParserException.h"
 
 /* 
     RawSpeed - RAW file decoder.
 
     Copyright (C) 2009-2014 Klaus Post
+    Copyright (C) 2014 Pedro Côrte-Real
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Lesser General Public
@@ -22,16 +27,32 @@
 
     http://www.klauspost.com
 */
+
 namespace RawSpeed {
 
-class BlackArea
+
+class CiffIFD
 {
 public:
-  BlackArea(int offset, int size, bool isVertical);
-  virtual ~BlackArea(void);
-  int32 offset; // Offset in bayer pixels.
-  uint32 size;   // Size in bayer pixels.
-  bool isVertical;  // Otherwise horizontal
+  CiffIFD(FileMap* f, uint32 start, uint32 end);
+  virtual ~CiffIFD(void);
+  vector<CiffIFD*> mSubIFD;
+  map<CiffTag, CiffEntry*> mEntry;
+  int getNextIFD() {return nextIFD;}
+  vector<CiffIFD*> getIFDsWithTag(CiffTag tag);
+  CiffEntry* getEntry(CiffTag tag);
+  bool hasEntry(CiffTag tag);
+  bool hasEntryRecursive(CiffTag tag);
+  CiffEntry* getEntryRecursive(CiffTag tag);
+  CiffEntry* getEntryRecursiveWhere(CiffTag tag, uint32 isValue);
+  CiffEntry* getEntryRecursiveWhere(CiffTag tag, string isValue);
+  vector<CiffIFD*> getIFDsWithTagWhere(CiffTag tag, string isValue);
+  vector<CiffIFD*> getIFDsWithTagWhere(CiffTag tag, uint32 isValue);
+  Endianness endian;
+  FileMap* getFileMap() {return mFile;};
+protected:
+  int nextIFD;
+  FileMap *mFile;
 };
 
 } // namespace RawSpeed

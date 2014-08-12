@@ -1,10 +1,14 @@
-#ifndef BLACK_AREA_H
-#define BLACK_AREA_H
+#ifndef CRW_DECODER_H
+#define CRW_DECODER_H
 
+#include "RawDecoder.h"
+#include "LJpegPlain.h"
+#include "CiffIFD.h"
 /* 
     RawSpeed - RAW file decoder.
 
     Copyright (C) 2009-2014 Klaus Post
+    Copyright (C) 2014 Pedro Côrte-Real
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Lesser General Public
@@ -22,18 +26,25 @@
 
     http://www.klauspost.com
 */
+
 namespace RawSpeed {
 
-class BlackArea
+class CrwDecoder :
+  public RawDecoder
 {
 public:
-  BlackArea(int offset, int size, bool isVertical);
-  virtual ~BlackArea(void);
-  int32 offset; // Offset in bayer pixels.
-  uint32 size;   // Size in bayer pixels.
-  bool isVertical;  // Otherwise horizontal
+  CrwDecoder(CiffIFD *rootIFD, FileMap* file);
+  virtual RawImage decodeRawInternal();
+  virtual void checkSupportInternal(CameraMetaData *meta);
+  virtual void decodeMetaDataInternal(CameraMetaData *meta);
+  virtual ~CrwDecoder(void);
+protected:
+  CiffIFD *mRootIFD;
+  ushort16 *makeDecoder (const uchar8 *source);
+  void initHuffTables (uint32 table, ushort16 *huff[2]);
+  uint32 getbithuff (ByteStream &input, int nbits, ushort16 *huff);
+  void decodeRaw(bool lowbits, uint32 dec_table, uint32 width, uint32 height);
 };
 
 } // namespace RawSpeed
-
 #endif

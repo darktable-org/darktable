@@ -1,10 +1,15 @@
-#ifndef BLACK_AREA_H
-#define BLACK_AREA_H
+#include "StdAfx.h"
+#include "CiffParserException.h"
+#if !defined(WIN32) || defined(__MINGW32__)
+#include <stdarg.h>
+#define vsprintf_s(...) vsnprintf(__VA_ARGS__)
+#endif
 
-/* 
+/*
     RawSpeed - RAW file decoder.
 
     Copyright (C) 2009-2014 Klaus Post
+    Copyright (C) 2014 Pedro Côrte-Real
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Lesser General Public
@@ -22,18 +27,21 @@
 
     http://www.klauspost.com
 */
+
 namespace RawSpeed {
 
-class BlackArea
-{
-public:
-  BlackArea(int offset, int size, bool isVertical);
-  virtual ~BlackArea(void);
-  int32 offset; // Offset in bayer pixels.
-  uint32 size;   // Size in bayer pixels.
-  bool isVertical;  // Otherwise horizontal
+CiffParserException::CiffParserException(const string _msg) : runtime_error(_msg) {
+  _RPT1(0, "CIFF Exception: %s\n", _msg.c_str());
 };
 
-} // namespace RawSpeed
+void ThrowCPE(const char* fmt, ...) {
+  va_list val;
+  va_start(val, fmt);
+  char buf[8192];
+  vsprintf_s(buf, 8192, fmt, val);
+  va_end(val);
+  _RPT1(0, "EXCEPTION: %s\n", buf);
+  throw CiffParserException(buf);
+}
 
-#endif
+} // namespace RawSpeed

@@ -1,10 +1,8 @@
-#ifndef BLACK_AREA_H
-#define BLACK_AREA_H
-
-/* 
+/*
     RawSpeed - RAW file decoder.
 
     Copyright (C) 2009-2014 Klaus Post
+    Copyright (C) 2014 Pedro Côrte-Real
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Lesser General Public
@@ -22,18 +20,23 @@
 
     http://www.klauspost.com
 */
+
+#ifndef CIFF_TAG_H
+#define CIFF_TAG_H
+
 namespace RawSpeed {
 
-class BlackArea
-{
-public:
-  BlackArea(int offset, int size, bool isVertical);
-  virtual ~BlackArea(void);
-  int32 offset; // Offset in bayer pixels.
-  uint32 size;   // Size in bayer pixels.
-  bool isVertical;  // Otherwise horizontal
-};
+typedef enum {
+  CIFF_NULL         = 0x0000,
+  CIFF_MAKEMODEL    = 0x080a,
+  CIFF_SENSORINFO   = 0x1031,
+  CIFF_IMAGEINFO    = 0x1810,
+  CIFF_DECODERTABLE = 0x1835,
+  CIFF_RAWDATA      = 0x2005,
+  CIFF_SUBIFD       = 0x300a,
+  CIFF_EXIF         = 0x300b,
+} CiffTag;
 
 } // namespace RawSpeed
 
-#endif
+#endif // CIFF_TAG_H

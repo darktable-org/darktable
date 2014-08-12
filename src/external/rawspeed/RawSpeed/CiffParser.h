@@ -1,10 +1,8 @@
-#ifndef BLACK_AREA_H
-#define BLACK_AREA_H
-
 /* 
     RawSpeed - RAW file decoder.
 
     Copyright (C) 2009-2014 Klaus Post
+    Copyright (C) 2014 Pedro Côrte-Real
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Lesser General Public
@@ -22,16 +20,33 @@
 
     http://www.klauspost.com
 */
+
+#ifndef CIFF_PARSER_H
+#define CIFF_PARSER_H
+
+#include "FileMap.h"
+#include "CiffIFD.h"
+#include "CiffParserException.h"
+#include "RawDecoder.h"
+
+
 namespace RawSpeed {
 
-class BlackArea
+class CiffParser 
 {
 public:
-  BlackArea(int offset, int size, bool isVertical);
-  virtual ~BlackArea(void);
-  int32 offset; // Offset in bayer pixels.
-  uint32 size;   // Size in bayer pixels.
-  bool isVertical;  // Otherwise horizontal
+  CiffParser(FileMap* input);
+  virtual ~CiffParser(void);
+
+  virtual void parseData();
+  virtual RawDecoder* getDecoder();
+  /* Returns the Root IFD - this object still retains ownership */
+  CiffIFD* RootIFD() const { return mRootIFD; }
+  /* Merges root of other CIFF into this - clears the root of the other */
+  void MergeIFD(CiffParser* other_ciff);
+protected:
+  FileMap *mInput;
+  CiffIFD* mRootIFD;
 };
 
 } // namespace RawSpeed

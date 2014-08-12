@@ -2,6 +2,8 @@
 #include "RawParser.h"
 #include "TiffParserException.h"
 #include "TiffParser.h"
+#include "CiffParserException.h"
+#include "CiffParser.h"
 #include "X3fParser.h"
 #include "ByteStreamSwap.h"
 #include "TiffEntryBE.h"
@@ -134,7 +136,15 @@ RawDecoder* RawParser::getDecoder() {
   } catch (RawDecoderException) {
   }
 
-  // TIFF image could not be decoded, so no further options for now.
+  // CIFF images
+  try {
+    CiffParser p(mInput);
+    p.parseData();
+    return p.getDecoder();
+  } catch (CiffParserException &e) {
+  }
+
+  // File could not be decoded, so no further options for now.
 
   ThrowRDE("No decoder found. Sorry.");
   return NULL;
