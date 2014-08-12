@@ -97,6 +97,10 @@
 		</CFA>
 		<Crop x="64" y="12" width="0" height="0"/>
 		<Sensor black="124" white="4000"/>
+		<BlackAreas>
+			<Vertical x="0" width="60"/>
+			<Horizontal y="0" height="10"/>
+		</BlackAreas>
 	</Camera>
 	<Camera make="Canon" model="Canon EOS D30">
 		<CFA width="2" height="2">
@@ -107,6 +111,9 @@
 		</CFA>
 		<Crop x="48" y="6" width="0" height="-2"/>
 		<Sensor black="126" white="4095"/>
+		<BlackAreas>
+			<Vertical x="0" width="46"/>
+		</BlackAreas>
 	</Camera>
 	<Camera make="Canon" model="Canon EOS D60">
 		<CFA width="2" height="2">
@@ -117,6 +124,10 @@
 		</CFA>
 		<Crop x="64" y="12" width="0" height="0"/>
 		<Sensor black="127" white="4000"/>
+		<BlackAreas>
+			<Vertical x="0" width="60"/>
+			<Horizontal y="0" height="10"/>
+		</BlackAreas>
 	</Camera>
 	<Camera make="Canon" model="Canon EOS 10D">
 		<CFA width="2" height="2">
@@ -752,6 +763,9 @@
 		</CFA>
 		<Crop x="4" y="6" width="-52" height="-6"/>
 		<Sensor black="129" white="4095"/>
+		<BlackAreas>
+			<Vertical x="-50" width="50"/>
+		</BlackAreas>
 	</Camera>
 	<Camera make="Canon" model="Canon PowerShot G1">
 		<CFA width="2" height="2">
@@ -765,6 +779,9 @@
 		<Hints>
 			<Hint name="no_decompressed_lowbits" value=""/>
 		</Hints>
+		<BlackAreas>
+			<Vertical x="-50" width="50"/>
+		</BlackAreas>
 	</Camera>
 	<Camera make="Canon" model="Canon PowerShot G2">
 		<CFA width="2" height="2">
@@ -778,6 +795,10 @@
 		<Hints>
 			<Hint name="no_decompressed_lowbits" value=""/>
 		</Hints>
+		<BlackAreas>
+			<Vertical x="-50" width="50"/>
+			<Horizontal y="0" height="10"/>
+		</BlackAreas>
 	</Camera>
 	<Camera make="Canon" model="Canon PowerShot G3">
 		<CFA width="2" height="2">
@@ -788,6 +809,10 @@
 		</CFA>
 		<Crop x="12" y="6" width="-52" height="-2"/>
 		<Sensor black="0" white="4095"/>
+		<BlackAreas>
+			<Vertical x="-50" width="50"/>
+			<Horizontal y="0" height="10"/>
+		</BlackAreas>
 	</Camera>
 	<Camera make="Canon" model="Canon PowerShot G5">
 		<CFA width="2" height="2">
@@ -798,6 +823,10 @@
 		</CFA>
 		<Crop x="12" y="6" width="-44" height="-2"/>
 		<Sensor black="0" white="4095"/>
+		<BlackAreas>
+			<Vertical x="-40" width="40"/>
+			<Horizontal y="0" height="10"/>
+		</BlackAreas>
 	</Camera>
 	<Camera make="Canon" model="Canon PowerShot G6">
 		<CFA width="2" height="2">
@@ -808,6 +837,10 @@
 		</CFA>
 		<Crop x="44" y="12" width="-4" height="-4"/>
 		<Sensor black="128" white="4095"/>
+		<BlackAreas>
+			<Vertical x="0" width="40"/>
+			<Horizontal y="0" height="10"/>
+		</BlackAreas>
 	</Camera>
 	<Camera make="Canon" model="Canon PowerShot G1 X">
 		<CFA width="2" height="2">
@@ -950,6 +983,9 @@
 		<Hints>
 			<Hint name="no_decompressed_lowbits" value=""/>
 		</Hints>
+		<BlackAreas>
+			<Vertical x="-50" width="50"/>
+		</BlackAreas>
 	</Camera>
 	<Camera make="Canon" model="Canon PowerShot S40">
 		<CFA width="2" height="2">
@@ -959,10 +995,14 @@
 			<Color x="1" y="1">BLUE</Color>
 		</CFA>
 		<Crop x="12" y="6" width="-52" height="-2"/>
-		<Sensor black="129" white="4095"/>
+		<Sensor black="0" white="1023"/>
 		<Hints>
 			<Hint name="no_decompressed_lowbits" value=""/>
 		</Hints>
+		<BlackAreas>
+			<Vertical x="-50" width="50"/>
+			<Horizontal y="0" height="10"/>
+		</BlackAreas>
 	</Camera>
 	<Camera make="Canon" model="Canon PowerShot S45">
 		<CFA width="2" height="2">
@@ -973,6 +1013,9 @@
 		</CFA>
 		<Crop x="12" y="6" width="-52" height="-2"/>
 		<Sensor black="129" white="4095"/>
+		<BlackAreas>
+			<Vertical x="-50" width="50"/>
+		</BlackAreas>
 	</Camera>
 	<Camera make="Canon" model="Canon PowerShot S50">
 		<CFA width="2" height="2">
@@ -983,6 +1026,10 @@
 		</CFA>
 		<Crop x="12" y="6" width="-44" height="-2"/>
 		<Sensor black="129" white="4095"/>
+		<BlackAreas>
+			<Vertical x="-40" width="40"/>
+			<Horizontal y="0" height="10"/>
+		</BlackAreas>
 	</Camera>
 	<Camera make="Canon" model="Canon PowerShot S60">
 		<CFA width="2" height="2">
@@ -993,6 +1040,10 @@
 		</CFA>
 		<Crop x="12" y="6" width="-44" height="-2"/>
 		<Sensor black="129" white="4095"/>
+		<BlackAreas>
+			<Vertical x="-40" width="40"/>
+			<Horizontal y="0" height="10"/>
+		</BlackAreas>
 	</Camera>
 	<Camera make="Canon" model="Canon PowerShot S70">
 		<CFA width="2" height="2">
@@ -1003,6 +1054,10 @@
 		</CFA>
 		<Crop x="44" y="12" width="-4" height="-4"/>
 		<Sensor black="129" white="4095"/>
+		<BlackAreas>
+			<Vertical x="0" width="40"/>
+			<Horizontal y="0" height="10"/>
+		</BlackAreas>
 	</Camera>
 	<Camera make="Canon" model="Canon PowerShot S90">
 		<CFA width="2" height="2">

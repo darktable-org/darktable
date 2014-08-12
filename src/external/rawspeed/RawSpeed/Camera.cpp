@@ -239,10 +239,6 @@ void Camera::parseBlackAreas(xml_node &cur) {
   if (isTag(cur.name(), "Vertical")) {
 
     int x = cur.attribute("x").as_int(-1);
-    if (x < 0) {
-      ThrowCME("Invalid x coordinate in vertical BlackArea of in camera %s %s", make.c_str(), model.c_str());
-    }
-
     int w = cur.attribute("width").as_int(-1);
     if (w < 0) {
       ThrowCME("Invalid width in vertical BlackArea of in camera %s %s", make.c_str(), model.c_str());
@@ -253,10 +249,6 @@ void Camera::parseBlackAreas(xml_node &cur) {
   } else if (isTag(cur.name(), "Horizontal")) {
 
     int y = cur.attribute("y").as_int(-1);
-    if (y < 0) {
-      ThrowCME("Invalid y coordinate in horizontal BlackArea of in camera %s %s", make.c_str(), model.c_str());
-    }
-
     int h = cur.attribute("height").as_int(-1);
     if (h < 0) {
       ThrowCME("Invalid width in horizontal BlackArea of in camera %s %s", make.c_str(), model.c_str());
