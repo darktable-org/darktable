@@ -228,6 +228,9 @@ dt_imageio_open_rawspeed_sraw(dt_image_t *img, RawImage r, dt_mipmap_cache_alloc
   size_t raw_width = r->dim.x;
   size_t raw_height = r->dim.y;
 
+  iPoint2D dimUncropped = r->getUncroppedDim();
+  iPoint2D cropTL = r->getCropOffset();
+
   // work around 50D bug
   char makermodel[1024];
   dt_colorspaces_get_makermodel(makermodel, sizeof(makermodel), img->exif_maker, img->exif_model);
@@ -242,7 +245,7 @@ dt_imageio_open_rawspeed_sraw(dt_image_t *img, RawImage r, dt_mipmap_cache_alloc
   int black = r->blackLevel;
   int white = r->whitePoint;
 
-  uint16_t* raw_img = (uint16_t*)r->getData();
+  uint16_t* raw_img = (uint16_t*)r->getDataUncropped(0, 0);
 
   const float scale = (float)(white - black);
 
@@ -251,10 +254,10 @@ dt_imageio_open_rawspeed_sraw(dt_image_t *img, RawImage r, dt_mipmap_cache_alloc
 #endif
   for(size_t row = 0; row < raw_height; row++)
   {
-    const uint16_t *in = ((uint16_t *)raw_img) + (size_t)row*(r->pitch/2);
+    const uint16_t *in = ((uint16_t *)raw_img) + (size_t)(img->cpp*(dimUncropped.x*(row+cropTL.y) + cropTL.x));
     float *out = ((float *)buf) + (size_t)4*row*raw_width;
 
-    for(size_t col = 0; col < raw_width; col++, in+=1, out+=4)
+    for(size_t col = 0; col < raw_width; col++, in+=img->cpp, out+=4)
     {
       for(int k = 0; k < 3; k++)
       {
