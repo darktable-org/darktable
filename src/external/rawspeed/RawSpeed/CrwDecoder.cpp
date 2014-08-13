@@ -201,14 +201,17 @@ uint32 CrwDecoder::getbithuff (ByteStream &input, int nbits, ushort16 *huff)
 {
   static unsigned bitbuf=0;
   static int vbits=0, reset=0;
-  unsigned c;
+  uint32 c;
 
   if (nbits > 25) return 0;
   if (nbits < 0)
     return bitbuf = vbits = reset = 0;
   if (nbits == 0 || vbits < 0) return 0;
-  while (!reset && vbits < nbits && (c = ((int)input.getByte())) != EOF &&
-    !(reset = 1 && c == 0xff && ((int) input.getByte()))) {
+  // The <1000 comparison is spurious and will always return true as the value 
+  // is a byte converted to uint32. It used to be != EOF in dcraw when using fgetc
+  // but doesn't make sense with getByte as that will throw an exception instead
+  while (!reset && vbits < nbits && (c = ((uint32)input.getByte())) < 1000 &&
+    !(reset = 1 && c == 0xff && ((uint32) input.getByte()))) {
     bitbuf = (bitbuf << 8) + (uchar8) c;
     vbits += 8;
   }
