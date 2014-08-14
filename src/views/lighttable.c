@@ -1043,7 +1043,7 @@ expose_zoomable (dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, in
         id = sqlite3_column_int(lib->statements.main_query, 0);
 
         // set mouse over id
-        if((zoom == 1 && mouse_over_id < 0) || ((!pan || track) && seli == col && selj == row))
+        if((zoom == 1 && mouse_over_id < 0) || ((!pan || track) && seli == col && selj == row && pointerx > 0 && pointerx < width && pointery > 0 && pointery < height))
         {
           mouse_over_id = id;
           dt_control_set_mouse_over_id(mouse_over_id);
