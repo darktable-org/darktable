@@ -181,6 +181,19 @@ void SrwDecoder::decodeCompressed( TiffIFD* raw )
       img_up2 += 16;
     }
   }
+
+  // Swap red and blue pixels to get the final CFA pattern
+  for (uint32 y = 0; y < height-1; y+=2) {
+    ushort16* topline = (ushort16*)mRaw->getData(0, y);
+    ushort16* bottomline = (ushort16*)mRaw->getData(0, y+1);
+    for (uint32 x = 0; x < width-1; x += 2) {
+      ushort16 temp = topline[1];
+      topline[1] = bottomline[0];
+      bottomline[0] = temp;
+      topline += 2;
+      bottomline += 2;
+    }
+  }
 }
 
 
