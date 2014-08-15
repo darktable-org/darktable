@@ -123,8 +123,6 @@ void SrwDecoder::decodeCompressed( TiffIFD* raw )
     b = new ByteStreamSwap(mFile->getData(0), mFile->getSize());
   b->setAbsoluteOffset(compressed_offset);
 
-  fprintf(stderr, "Starting decompression at %d\n", compressed_offset);
-
   for (uint32 y = 0; y < height; y++) {
     uint32 line_offset = offset + b->getInt();
     if (line_offset >= mFile->getSize())
