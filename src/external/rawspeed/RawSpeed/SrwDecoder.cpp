@@ -242,8 +242,8 @@ void SrwDecoder::decodeCompressed2( TiffIFD* raw, int bits)
       else
         hpred[x & 1] += diff;
       img[x] = hpred[x & 1];
-      if (hpred[x & 1] >> bits)
-        ThrowRDE("SRW: Error decoding");
+      if (img[x] >> bits)
+        ThrowRDE("SRW: Error: decoded value out of bounds");
     }
   }
 }
