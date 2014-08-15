@@ -465,8 +465,14 @@ void reload_defaults(dt_iop_module_t *module)
   {
     gboolean from_cache = TRUE;
     dt_image_full_path(module->dev->image_storage.id, filename, sizeof(filename), &from_cache);
-    libraw_data_t *raw = libraw_init(0);
 
+    char makermodel[1024];
+    char *model = makermodel;
+    dt_colorspaces_get_makermodel_split(makermodel, sizeof(makermodel), &model,
+                                        module->dev->image_storage.exif_maker,
+                                        module->dev->image_storage.exif_model);
+
+    libraw_data_t *raw = libraw_init(0);
     ret = libraw_open_file(raw, filename);
     if(!ret)
     {
@@ -480,11 +486,6 @@ void reload_defaults(dt_iop_module_t *module)
       if(tmp.coeffs[0] == 0 || tmp.coeffs[1] == 0 || tmp.coeffs[2] == 0)
       {
         // could not get useful info, try presets:
-        char makermodel[1024];
-        char *model = makermodel;
-        dt_colorspaces_get_makermodel_split(makermodel, sizeof(makermodel), &model,
-                                            module->dev->image_storage.exif_maker,
-                                            module->dev->image_storage.exif_model);
         for(int i=0; i<wb_preset_count; i++)
         {
           if(!strcmp(wb_preset[i].make,  makermodel) &&
@@ -523,11 +524,6 @@ void reload_defaults(dt_iop_module_t *module)
       {
         // if we didn't find anything for daylight wb, look for a wb preset with appropriate name.
         // we're normalising that to be D65
-        char makermodel[1024];
-        char *model = makermodel;
-        dt_colorspaces_get_makermodel_split(makermodel, sizeof(makermodel), &model,
-            module->dev->image_storage.exif_maker,
-            module->dev->image_storage.exif_model);
         for(int i=0; i<wb_preset_count; i++)
         {
           if(!strcmp(wb_preset[i].make,  makermodel) &&
