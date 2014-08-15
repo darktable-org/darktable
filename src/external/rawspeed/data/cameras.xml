@@ -4634,6 +4634,16 @@
 			<Hint name="fuji_rotate" value=""/>
 		</Hints>
 	</Camera>
+	<Camera make="FUJIFILM" model="FinePix S200EXR">
+		<CFA width="2" height="2">
+			<Color x="0" y="0">RED</Color>
+			<Color x="1" y="0">GREEN</Color>
+			<Color x="0" y="1">GREEN</Color>
+			<Color x="1" y="1">BLUE</Color>
+		</CFA>
+		<Crop x="0" y="0" width="0" height="0"/>
+		<Sensor black="519" white="16250"/>
+	</Camera>
 	<Camera make="FUJIFILM" model="FinePix F700" supported="no">
 		<CFA2 width="2" height="2">
 			<ColorRow y="0">GB</ColorRow>
@@ -4644,6 +4654,16 @@
 	  <Hints>
 			<Hint name="fuji_rotate" value=""/>
 		</Hints>
+	</Camera>
+	<Camera make="FUJIFILM" model="FinePix F900EXR">
+		<CFA width="2" height="2">
+			<Color x="0" y="0">BLUE</Color>
+			<Color x="1" y="0">GREEN</Color>
+			<Color x="0" y="1">GREEN</Color>
+			<Color x="1" y="1">RED</Color>
+		</CFA>
+		<Crop x="0" y="0" width="0" height="0"/>
+		<Sensor black="256" white="3900"/>
 	</Camera>
 	<Camera make="FUJIFILM" model="FinePix E550">
 		<CFA2 width="2" height="2">
