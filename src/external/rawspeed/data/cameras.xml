@@ -4826,6 +4826,19 @@
 			<Hint name="fuji_rotate" value=""/>
 		</Hints>
 	</Camera>
+	<Camera make="FUJIFILM" model="FinePix HS10 HS11">
+		<CFA width="2" height="2">
+			<Color x="0" y="0">BLUE</Color>
+			<Color x="1" y="0">GREEN</Color>
+			<Color x="0" y="1">GREEN</Color>
+			<Color x="1" y="1">RED</Color>
+		</CFA>
+		<Crop x="0" y="0" width="0" height="0"/>
+		<Sensor black="50" white="3900"/>
+		<Hints>
+			<Hint name="jpeg32_bitorder" value=""/>
+		</Hints>
+	</Camera>
 	<Camera make="FUJIFILM" model="FinePix X100">
 		<CFA width="2" height="2">
 			<Color x="0" y="0">BLUE</Color>

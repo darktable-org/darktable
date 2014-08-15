@@ -91,9 +91,12 @@ RawImage RafDecoder::decodeRawInternal() {
 
   if (mRootIFD->endian == big)
     Decode16BitRawBEunpacked(input, width, height);
-  else
-    readUncompressedRaw(input, mRaw->dim, pos, width*bps/8, bps, BitOrder_Plain);
-
+  else {
+    if (hints.find("jpeg32_bitorder") != hints.end())
+      readUncompressedRaw(input, mRaw->dim, pos, width*bps/8, bps, BitOrder_Jpeg32);
+    else
+      readUncompressedRaw(input, mRaw->dim, pos, width*bps/8, bps, BitOrder_Plain);
+  }
   return mRaw;
 }
 
