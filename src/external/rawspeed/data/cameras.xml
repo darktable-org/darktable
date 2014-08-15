@@ -1798,6 +1798,16 @@
 		<Crop x="0" y="0" width="0" height="0"/>
 		<Sensor black="0" white="4095"/>
 	</Camera>
+	<Camera make="OLYMPUS CORPORATION" model="C5060WZ">
+		<CFA width="2" height="2">
+			<Color x="0" y="0">RED</Color>
+			<Color x="1" y="0">GREEN</Color>
+			<Color x="0" y="1">GREEN</Color>
+			<Color x="1" y="1">BLUE</Color>
+		</CFA>
+		<Crop x="0" y="0" width="0" height="0"/>
+		<Sensor black="0" white="4095"/>
+	</Camera>
 	<Camera make="OLYMPUS CORPORATION" model="C8080WZ">
 		<CFA width="2" height="2">
 			<Color x="0" y="0">BLUE</Color>
@@ -5073,6 +5083,16 @@
 		<Sensor black="0" white="4000"/>
 	</Camera>
 	<Camera make="Creo/Leaf" model="Leaf Aptus 22(LF3779     )/Hasselblad H1">
+		<CFA width="2" height="2">
+			<Color x="0" y="0">RED</Color>
+			<Color x="1" y="0">GREEN</Color>
+			<Color x="0" y="1">GREEN</Color>
+			<Color x="1" y="1">BLUE</Color>
+		</CFA>
+		<Crop x="0" y="0" width="0" height="0"/>
+		<Sensor black="0" white="16191"/>
+	</Camera>
+	<Camera make="Leaf" model="Leaf Aptus 75(LI400146   )/Large Format">
 		<CFA width="2" height="2">
 			<Color x="0" y="0">RED</Color>
 			<Color x="1" y="0">GREEN</Color>
