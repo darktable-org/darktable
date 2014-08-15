@@ -4651,7 +4651,7 @@
 			<Color x="0" y="1">GREEN</Color>
 			<Color x="1" y="1">BLUE</Color>
 		</CFA>
-		<Crop x="0" y="0" width="0" height="0"/>
+		<Crop x="28" y="0" width="-28" height="0"/>
 		<Sensor black="519" white="16250"/>
 	</Camera>
 	<Camera make="FUJIFILM" model="FinePix F700">
@@ -4673,7 +4673,7 @@
 			<Color x="0" y="1">GREEN</Color>
 			<Color x="1" y="1">RED</Color>
 		</CFA>
-		<Crop x="0" y="0" width="0" height="0"/>
+		<Crop x="0" y="0" width="-64" height="0"/>
 		<Sensor black="256" white="3900"/>
 	</Camera>
 	<Camera make="FUJIFILM" model="FinePix E550">
