@@ -69,6 +69,7 @@ int dt_image_is_raw(const dt_image_t *img)
   const char *c = img->filename + strlen(img->filename);
   while(*c != '.' && c > img->filename) c--;
   if((img->flags & DT_IMAGE_RAW) || (strcasecmp(c, ".jpg") &&
+                                     strcasecmp(c, ".tif") && strcasecmp(c, ".tiff") &&
                                      strcasecmp(c, ".png") && strcasecmp(c, ".ppm") &&
                                      strcasecmp(c, ".hdr") && strcasecmp(c, ".exr") && strcasecmp(c, ".pfm")))
     return 1;
