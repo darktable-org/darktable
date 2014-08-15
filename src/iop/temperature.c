@@ -495,20 +495,20 @@ void reload_defaults(dt_iop_module_t *module)
             break;
           }
         }
-        if(tmp.coeffs[0] == 0 || tmp.coeffs[1] == 0 || tmp.coeffs[2] == 0)
-        {
-          // final security net: hardcoded default that fits most cams.
-          tmp.coeffs[0] = 2.0f;
-          tmp.coeffs[1] = 1.0f;
-          tmp.coeffs[2] = 1.5f;
-        }
       }
-      else
-      {
-        tmp.coeffs[0] /= tmp.coeffs[1];
-        tmp.coeffs[2] /= tmp.coeffs[1];
-        tmp.coeffs[1] = 1.0f;
-      }
+    }
+    if(tmp.coeffs[0] == 1.0f || tmp.coeffs[1] == 1.0f || tmp.coeffs[2] == 1.0f)
+    {
+      // final security net: hardcoded default that fits most cams.
+      tmp.coeffs[0] = 2.0f;
+      tmp.coeffs[1] = 1.0f;
+      tmp.coeffs[2] = 1.5f;
+    }
+
+    tmp.coeffs[0] /= tmp.coeffs[1];
+    tmp.coeffs[2] /= tmp.coeffs[1];
+    tmp.coeffs[1] = 1.0f;
+
       // remember daylight wb used for temperature/tint conversion,
       // assuming it corresponds to CIE daylight (D65)
       if(module->gui_data)
@@ -547,7 +547,6 @@ void reload_defaults(dt_iop_module_t *module)
         dt_bauhaus_slider_set_default(g->scale_tint, tint);
       }
 
-    }
     libraw_close(raw);
   }
 
