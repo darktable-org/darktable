@@ -56,7 +56,7 @@ RawImage SrwDecoder::decodeRawInternal() {
   int compression = raw->getEntry(COMPRESSION)->getInt();
   int bits = raw->getEntry(BITSPERSAMPLE)->getInt();
 
-  if (32769 != compression && 32770 != compression )
+  if (32769 != compression && 32770 != compression && 32772 != compression)
     ThrowRDE("Srw Decoder: Unsupported compression");
 
   if (32769 == compression)
@@ -90,6 +90,18 @@ RawImage SrwDecoder::decodeRawInternal() {
       return mRaw;
     }
   }
+  if (32772 == compression)
+  {
+    uint32 nslices = raw->getEntry(STRIPOFFSETS)->count;
+    if (nslices != 1)
+      ThrowRDE("Srw Decoder: Only one slice supported, found %u", nslices);
+    try {
+      decodeCompressed2(raw, bits);
+    } catch (RawDecoderException& e) {
+      mRaw->setError(e.what());
+    }
+    return mRaw;
+  }
   ThrowRDE("Srw Decoder: Unsupported compression");
   return mRaw;
 }
@@ -110,6 +122,8 @@ void SrwDecoder::decodeCompressed( TiffIFD* raw )
   else
     b = new ByteStreamSwap(mFile->getData(0), mFile->getSize());
   b->setAbsoluteOffset(compressed_offset);
+
+  fprintf(stderr, "Starting decompression at %d\n", compressed_offset);
 
   for (uint32 y = 0; y < height; y++) {
     uint32 line_offset = offset + b->getInt();
@@ -195,6 +209,87 @@ void SrwDecoder::decodeCompressed( TiffIFD* raw )
     }
   }
 }
+
+// Decoder for compressed srw files (NX3000 and later)
+void SrwDecoder::decodeCompressed2( TiffIFD* raw, int bits)
+{
+  uint32 width = raw->getEntry(IMAGEWIDTH)->getInt();
+  uint32 height = raw->getEntry(IMAGELENGTH)->getInt();
+  uint32 offset = raw->getEntry(STRIPOFFSETS)->getInt();
+
+  mRaw->dim = iPoint2D(width, height);
+  mRaw->createData();
+
+  const ushort16 tab[14] = { 0x304,0x307,0x206,0x205,0x403,0x600,0x709,
+                             0x80a,0x90b,0xa0c,0xa0d,0x501,0x408,0x402 };
+  ushort16 huff[1026], vpred[2][2] = {{0,0},{0,0}}, hpred[2];
+
+  uint32 n = 0;
+  huff[n] = 10;
+  for (uint32 i=0; i < 14; i++)
+    for(int32 c = 0; c < (1024 >> (tab[i] >> 8)); c++)
+      huff[++n] = tab[i];
+
+  ByteStream input(mFile->getData(offset), mFile->getSize());
+  getbithuff(input, -1, NULL);
+
+  for (uint32 y = 0; y < height; y++) {
+    ushort16* img = (ushort16*)mRaw->getData(0, y);
+    for (uint32 x = 0; x < width; x++) {
+      int32 diff = ljpegDiff(input, huff);
+      if (x < 2)
+        hpred[x] = vpred[y & 1][x] += diff;
+      else
+        hpred[x & 1] += diff;
+      img[x] = hpred[x & 1];
+      if (hpred[x & 1] >> bits)
+        ThrowRDE("SRW: Error decoding");
+    }
+  }
+}
+
+int32 SrwDecoder::ljpegDiff (ByteStream &input, ushort16 *huff)
+{
+  int32 len, diff;
+
+  len = getbithuff(input, *huff, huff+1);
+  if (len == 16)
+    return -32768;
+  diff = getbithuff(input, len, NULL);
+  if ((diff & (1 << (len-1))) == 0)
+    diff -= (1 << len) - 1;
+  return diff;
+}
+
+uint32 SrwDecoder::getbithuff (ByteStream &input, int nbits, ushort16 *huff)
+{
+  static unsigned bitbuf=0;
+  static int vbits=0, reset=0;
+  uint32 c;
+
+  if (nbits > 25) return 0;
+  if (nbits < 0)
+    return bitbuf = vbits = reset = 0;
+  if (nbits == 0 || vbits < 0) return 0;
+  // The <1000 comparison is spurious and will always return true as the value 
+  // is a byte converted to uint32. It used to be != EOF in dcraw when using fgetc
+  // but doesn't make sense with getByte as that will throw an exception instead
+  while (!reset && vbits < nbits && (c = ((uint32)input.getByte())) < 1000 &&
+    !(reset = 0 && c == 0xff && ((uint32) input.getByte()))) {
+    bitbuf = (bitbuf << 8) + (uchar8) c;
+    vbits += 8;
+  }
+  c = bitbuf << (32-vbits) >> (32-nbits);
+  if (huff) {
+    vbits -= huff[c] >> 8;
+    c = (uchar8) huff[c];
+  } else
+    vbits -= nbits;
+  if (vbits < 0)
+    ThrowRDE("CRW: Asking for bits we don't have");
+  return c;
+}
+
 
 
 void SrwDecoder::checkSupportInternal(CameraMetaData *meta) {

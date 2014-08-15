@@ -41,7 +41,10 @@ public:
   virtual void checkSupportInternal(CameraMetaData *meta);
   virtual TiffIFD* getRootIFD() {return mRootIFD;}
 private:
-  void decodeCompressed( TiffIFD* raw);
+  void decodeCompressed(TiffIFD* raw);
+  void decodeCompressed2(TiffIFD* raw, int bits);
+  int32 ljpegDiff (ByteStream &input, ushort16 *huff);
+  uint32 getbithuff (ByteStream &input, int nbits, ushort16 *huff);
   TiffIFD *mRootIFD;
   ByteStream *b;
 };
