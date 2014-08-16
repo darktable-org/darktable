@@ -1147,6 +1147,32 @@
 			<Horizontal y="0" height="16"/>
 		</BlackAreas>
 	</Camera>
+	<Camera make="Canon" model="PowerShot S3 IS">
+		<CFA width="2" height="2">
+			<Color x="0" y="0">RED</Color>
+			<Color x="1" y="0">GREEN</Color>
+			<Color x="0" y="1">GREEN</Color>
+			<Color x="1" y="1">BLUE</Color>
+		</CFA>
+		<Crop x="44" y="8" width="-4" height="0"/>
+		<Sensor black="0" white="1023"/>
+		<BlackAreas>
+			<Vertical x="0" width="40"/>
+		</BlackAreas>
+	</Camera>
+	<Camera make="Canon" model="PowerShot A610">
+		<CFA width="2" height="2">
+			<Color x="0" y="0">RED</Color>
+			<Color x="1" y="0">GREEN</Color>
+			<Color x="0" y="1">GREEN</Color>
+			<Color x="1" y="1">BLUE</Color>
+		</CFA>
+		<Crop x="12" y="8" width="-44" height="0"/>
+		<Sensor black="0" white="1023"/>
+		<BlackAreas>
+			<Vertical x="-40" width="40"/>
+		</BlackAreas>
+	</Camera>
 	<Camera make="Canon" model="PowerShot A620">
 		<CFA width="2" height="2">
 			<Color x="0" y="0">RED</Color>
@@ -1157,9 +1183,47 @@
 		<Crop x="36" y="12" width="-4" height="0"/>
 		<BlackAreas>
 			<Vertical x="0" width="30"/>
-			<Horizontal y="0" height="10"/>
 		</BlackAreas>
 		<Sensor black="0" white="1023"/>
+	</Camera>
+	<Camera make="Canon" model="PowerShot A640">
+		<CFA width="2" height="2">
+			<Color x="0" y="0">RED</Color>
+			<Color x="1" y="0">GREEN</Color>
+			<Color x="0" y="1">GREEN</Color>
+			<Color x="1" y="1">BLUE</Color>
+		</CFA>
+		<Crop x="12" y="6" width="-52" height="-6"/>
+		<Sensor black="0" white="1023"/>
+		<BlackAreas>
+			<Vertical x="-50" width="50"/>
+		</BlackAreas>
+	</Camera>
+	<Camera make="Canon" model="PowerShot A650">
+		<CFA width="2" height="2">
+			<Color x="0" y="0">RED</Color>
+			<Color x="1" y="0">GREEN</Color>
+			<Color x="0" y="1">GREEN</Color>
+			<Color x="1" y="1">BLUE</Color>
+		</CFA>
+		<Crop x="48" y="12" width="-24" height="-12"/>
+		<Sensor black="0" white="1023"/>
+		<BlackAreas>
+			<Vertical x="0" width="45"/>
+		</BlackAreas>
+	</Camera>
+	<Camera make="Canon" model="PowerShot A720 IS">
+		<CFA width="2" height="2">
+			<Color x="0" y="0">GREEN</Color>
+			<Color x="1" y="0">BLUE</Color>
+			<Color x="0" y="1">RED</Color>
+			<Color x="1" y="1">GREEN</Color>
+		</CFA>
+		<Crop x="6" y="5" width="-32" height="-3"/>
+		<Sensor black="0" white="1023"/>
+		<BlackAreas>
+			<Vertical x="-30" width="30"/>
+		</BlackAreas>
 	</Camera>
 	<Camera make="NIKON CORPORATION" model="NIKON D100">
 		<CFA width="2" height="2">
