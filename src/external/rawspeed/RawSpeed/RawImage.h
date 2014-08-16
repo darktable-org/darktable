@@ -98,9 +98,8 @@ public:
   uint32 mBadPixelMapPitch;
   bool mDitherScale;           // Should upscaling be done with dither to minimize banding?
 
-  // How many pixels far down the left edge the image corner is when the image
-  // is rotated 45 degrees in Fuji rotated sensors.
-  // On the right edge the opposite corner is fujiRotationPos+1 from the bottom.
+  // How many pixels far down the left edge and far up the right edge the image 
+  // corners are when the image is rotated 45 degrees in Fuji rotated sensors.
   uint32 fujiRotationPos;
 
   // Aspect ratio of the pixels, usually 1 but some cameras need scaling
