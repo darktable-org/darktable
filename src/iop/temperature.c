@@ -504,6 +504,7 @@ void reload_defaults(dt_iop_module_t *module)
       if (!(!strncmp(module->dev->image_storage.exif_maker, "Leica Camera AG", 15) && !strncmp(module->dev->image_storage.exif_model, "M9 monochrom", 12)))
       {
         dt_control_log(_("failed to read camera white balance information!"));
+        fprintf(stderr, "[temperature] failed to read camera white balance information!\n");
 
         // final security net: hardcoded default that fits most cams.
         tmp.coeffs[0] = 2.0f;
