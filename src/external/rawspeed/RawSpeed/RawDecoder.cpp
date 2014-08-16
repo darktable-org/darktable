@@ -147,6 +147,18 @@ void RawDecoder::readUncompressedRaw(ByteStream &input, iPoint2D& size, iPoint2D
       }
       bits.skipBits(skipBits);
     }
+  } else if (BitOrder_Jpeg16 == order) {
+      BitPumpMSB16 bits(&input);
+      w *= cpp;
+      for (; y < h; y++) {
+        ushort16* dest = (ushort16*) & data[offset.x*sizeof(ushort16)*cpp+y*outPitch];
+        bits.checkPos();
+        for (uint32 x = 0 ; x < w; x++) {
+          uint32 b = bits.getBits(bitPerPixel);
+          dest[x] = b;
+        }
+        bits.skipBits(skipBits);
+      }
   } else if (BitOrder_Jpeg32 == order) {
       BitPumpMSB32 bits(&input);
       w *= cpp;

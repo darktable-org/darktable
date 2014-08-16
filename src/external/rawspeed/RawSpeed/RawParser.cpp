@@ -8,6 +8,7 @@
 #include "ByteStreamSwap.h"
 #include "TiffEntryBE.h"
 #include "MrwDecoder.h"
+#include "NakedDecoder.h"
 
 /*
     RawSpeed - RAW file decoder.
@@ -144,7 +145,13 @@ RawDecoder* RawParser::getDecoder() {
   } catch (CiffParserException &e) {
   }
 
-  // File could not be decoded, so no further options for now.
+  // File could not be decoded, so do one last ditch effort based on file size
+  if (NakedDecoder::couldBeNakedRaw(mInput)) {
+    try {
+      return new NakedDecoder(mInput);
+    } catch (RawDecoderException) {
+    }
+  }
 
   ThrowRDE("No decoder found. Sorry.");
   return NULL;
