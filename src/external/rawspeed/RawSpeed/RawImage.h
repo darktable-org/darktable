@@ -97,7 +97,11 @@ public:
   uchar8 *mBadPixelMap;
   uint32 mBadPixelMapPitch;
   bool mDitherScale;           // Should upscaling be done with dither to minimize banding?
-  uint32 fujiWidth;            // Similar to dcraw.
+
+  // How many pixels far down the left edge the image corner is when the image
+  // is rotated 45 degrees in Fuji rotated sensors.
+  // On the right edge the opposite corner is fujiRotationPos+1 from the bottom.
+  uint32 fujiRotationPos;
 
 protected:
   RawImageType dataType;

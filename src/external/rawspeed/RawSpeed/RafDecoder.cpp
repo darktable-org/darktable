@@ -161,14 +161,21 @@ void RafDecoder::decodeMetaDataInternal(CameraMetaData *meta) {
   if (rotate && !this->uncorrectedRawValues) {
     // Calculate the 45 degree rotated size;
     uint32 rotatedsize;
-    if (alt_layout)
+    uint32 rotationPos;
+    if (alt_layout) {
       rotatedsize = new_size.y+new_size.x/2;
-    else
+      rotationPos = new_size.x/2 - 1;
+    }
+    else {
       rotatedsize = new_size.x+new_size.y/2;
+      rotationPos = new_size.x - 1;
+    }
 
     iPoint2D final_size(rotatedsize, rotatedsize);
     RawImage rotated = RawImage::create(final_size, TYPE_USHORT16, 1);
     rotated->clearArea(iRectangle2D(iPoint2D(0,0), rotated->dim));
+    rotated->fujiRotationPos = rotationPos;
+
     int dest_pitch = (int)rotated->pitch / 2;
     ushort16 *dst = (ushort16*)rotated->getData(0,0);
 
