@@ -602,6 +602,10 @@ RawSpeed::RawImage RawDecoder::decodeRaw()
 {
   try {
     RawImage raw = decodeRawInternal();
+    if(hints.find("pixel_aspect_ratio") != hints.end()) {
+      stringstream convert(hints.find("pixel_aspect_ratio")->second);
+      convert >> raw->pixelAspectRatio;
+    }
     if (interpolateBadPixels)
       raw->fixBadPixels();
     return raw;

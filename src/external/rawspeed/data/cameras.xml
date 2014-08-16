@@ -1255,7 +1255,7 @@
 		<Crop x="0" y="0" width="2012" height="1324"/>
 		<Sensor black="0" white="4095"/>
 	</Camera>
-	<Camera make="NIKON CORPORATION" model="NIKON D1X" supported="no">
+	<Camera make="NIKON CORPORATION" model="NIKON D1X">
 		<CFA width="2" height="2">
 			<Color x="0" y="0">BLUE</Color>
 			<Color x="1" y="0">GREEN</Color>
@@ -1264,6 +1264,9 @@
 		</CFA>
 		<Crop x="0" y="0" width="4024" height="1324"/>
 		<Sensor black="0" white="4095"/>
+		<Hints>
+			<Hint name="pixel_aspect_ratio" value="0.5"/>
+		</Hints>
 	</Camera>
 	<Camera make="NIKON CORPORATION" model="NIKON D200">
 		<CFA width="2" height="2">
@@ -4729,10 +4732,10 @@
 			<Color x="0" y="1">GREEN</Color>
 			<Color x="1" y="1">BLUE</Color>
 		</CFA>
-		<Crop x="0" y="0" width="0" height="0"/>
+		<Crop x="28" y="0" width="-28" height="0"/>
 		<Sensor black="519" white="16250"/>
 	</Camera>
-	<Camera make="FUJIFILM" model="FinePix F700" supported="no">
+	<Camera make="FUJIFILM" model="FinePix F700">
 		<CFA2 width="2" height="2">
 			<ColorRow y="0">GB</ColorRow>
 			<ColorRow y="1">RG</ColorRow>
@@ -4741,6 +4744,7 @@
 		<Sensor black="0" white="16383"/>
 	  <Hints>
 			<Hint name="fuji_rotate" value=""/>
+			<Hint name="double_width_unpacked" value=""/>
 		</Hints>
 	</Camera>
 	<Camera make="FUJIFILM" model="FinePix F900EXR">
@@ -4750,7 +4754,7 @@
 			<Color x="0" y="1">GREEN</Color>
 			<Color x="1" y="1">RED</Color>
 		</CFA>
-		<Crop x="0" y="0" width="0" height="0"/>
+		<Crop x="0" y="0" width="-64" height="0"/>
 		<Sensor black="256" white="3900"/>
 	</Camera>
 	<Camera make="FUJIFILM" model="FinePix E550">
@@ -4902,6 +4906,19 @@
 		<Crop x="64" y="0" width="-64" height="0"/>
 		<Hints>
 			<Hint name="fuji_rotate" value=""/>
+		</Hints>
+	</Camera>
+	<Camera make="FUJIFILM" model="FinePix HS10 HS11">
+		<CFA width="2" height="2">
+			<Color x="0" y="0">BLUE</Color>
+			<Color x="1" y="0">GREEN</Color>
+			<Color x="0" y="1">GREEN</Color>
+			<Color x="1" y="1">RED</Color>
+		</CFA>
+		<Crop x="0" y="0" width="0" height="0"/>
+		<Sensor black="50" white="3900"/>
+		<Hints>
+			<Hint name="jpeg32_bitorder" value=""/>
 		</Hints>
 	</Camera>
 	<Camera make="FUJIFILM" model="FinePix X100">
