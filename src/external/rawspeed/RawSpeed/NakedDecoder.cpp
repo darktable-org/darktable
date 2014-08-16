@@ -135,7 +135,6 @@ static naked_camera_t naked_camera_table[] = {
 int NakedDecoder::couldBeNakedRaw(FileMap* input) {
   for (uint32 i=0; i<sizeof(naked_camera_table)/sizeof(naked_camera_table[0]); i++) { 
     if (input->getSize() == naked_camera_table[i].fsize) {
-      //fprintf(stderr, "Identified camera as \"%s\" \"%s\"\n", naked_camera_table[i].make, naked_camera_table[i].model);
       return TRUE;
     }
   }
@@ -151,7 +150,6 @@ void NakedDecoder::identifyFile() {
       height = naked_camera_table[i].height;
       offset = naked_camera_table[i].offset;
       bits = mFile->getSize()*8/width/height;
-      fprintf(stderr, "Found bitsize %d\n", bits);
     }
   }
 }
@@ -162,7 +160,6 @@ RawImage NakedDecoder::decodeRawInternal() {
 
   ByteStream input(mFile->getData(offset), mFile->getSize()-offset);
   iPoint2D pos(0, 0);
-  //Decode10BitRawStackOrder(input, width, height);
   readUncompressedRaw(input, mRaw->dim, pos, width*bits/8, bits, BitOrder_Jpeg16);
 
   return mRaw;
