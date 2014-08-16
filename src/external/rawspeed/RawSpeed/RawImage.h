@@ -103,6 +103,11 @@ public:
   // On the right edge the opposite corner is fujiRotationPos+1 from the bottom.
   uint32 fujiRotationPos;
 
+  // Aspect ratio of the pixels, usually 1 but some cameras need scaling
+  // <1 means the image needs to be stretched vertically, (0.5 means 2x)
+  // >1 means the image needs to be stretched horizontally (2 mean 2x)
+  double pixelAspectRatio;
+
 protected:
   RawImageType dataType;
   RawImageData(void);
