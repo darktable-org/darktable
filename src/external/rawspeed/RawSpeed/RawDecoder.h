@@ -6,6 +6,7 @@
 #include "BitPumpJPEG.h" // Includes bytestream
 #include "RawImage.h"
 #include "BitPumpMSB.h"
+#include "BitPumpMSB16.h"
 #include "BitPumpMSB32.h"
 #include "BitPumpPlain.h"
 #include "CameraMetaData.h"

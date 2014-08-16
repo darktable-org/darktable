@@ -1147,6 +1147,20 @@
 			<Horizontal y="0" height="16"/>
 		</BlackAreas>
 	</Camera>
+	<Camera make="Canon" model="PowerShot A620">
+		<CFA width="2" height="2">
+			<Color x="0" y="0">RED</Color>
+			<Color x="1" y="0">GREEN</Color>
+			<Color x="0" y="1">GREEN</Color>
+			<Color x="1" y="1">BLUE</Color>
+		</CFA>
+		<Crop x="36" y="12" width="-4" height="0"/>
+		<BlackAreas>
+			<Vertical x="0" width="30"/>
+			<Horizontal y="0" height="10"/>
+		</BlackAreas>
+		<Sensor black="0" white="1023"/>
+	</Camera>
 	<Camera make="NIKON CORPORATION" model="NIKON D100">
 		<CFA width="2" height="2">
 			<Color x="0" y="0">GREEN</Color>
