@@ -501,7 +501,7 @@ void reload_defaults(dt_iop_module_t *module)
     if(tmp.coeffs[0] == 1.0f || tmp.coeffs[1] == 1.0f || tmp.coeffs[2] == 1.0f)
     {
       // nop white balance is valid for monochrome sraws
-      if (!strncmp(module->dev->image_storage.exif_maker, "Leica Camera AG", 15) && !strncmp(module->dev->image_storage.exif_model, "M9 monochrom", 12))
+      if (strncmp(module->dev->image_storage.exif_maker, "Leica Camera AG", 15) && strncmp(module->dev->image_storage.exif_model, "M9 monochrom", 12))
       {
         dt_control_log(_("failed to read camera white balance information!"));
 
