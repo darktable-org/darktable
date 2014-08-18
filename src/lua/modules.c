@@ -46,7 +46,7 @@ void dt_lua_register_module_entry_new(lua_State *L, const char* module_type_name
   luaA_Type table_type = luaL_checkint(L,-1);
   lua_pop(L,3);
   lua_pushcclosure(L,dt_lua_type_member_common,1);
-  dt_lua_type_register_const_typeid(L,table_type,entry_name);
+  dt_lua_type_register_const_type(L,table_type,entry_name);
 }
 
 void dt_lua_register_module_entry(lua_State *L, int index, const char* module_type_name,const char* entry_name)
@@ -60,7 +60,7 @@ void dt_lua_register_module_entry(lua_State *L, int index, const char* module_ty
   lua_pop(L,3);
   lua_pushvalue(L,index);
   lua_pushcclosure(L,dt_lua_type_member_common,1);
-  dt_lua_type_register_const_typeid(L,table_type,entry_name);
+  dt_lua_type_register_const_type(L,table_type,entry_name);
 }
 
 void dt_lua_module_push_entry(lua_State *L, const char* module_type_name,const char* entry_name)
@@ -73,7 +73,7 @@ void dt_lua_module_push_entry(lua_State *L, const char* module_type_name,const c
 }
 
 
-luaA_Type dt_lua_module_get_entry_typeid(lua_State *L, const char* module_type_name,const char* entry_name)
+luaA_Type dt_lua_module_get_entry_type(lua_State *L, const char* module_type_name,const char* entry_name)
 {
   dt_lua_module_push_entry(L,module_type_name,entry_name);
   lua_getmetatable(L,-1);
@@ -84,18 +84,18 @@ luaA_Type dt_lua_module_get_entry_typeid(lua_State *L, const char* module_type_n
 
 }
 
-void dt_lua_register_module_presets_typeid(lua_State*L, const char* module_type_name,const char* entry_name,luaA_Type preset_typeid)
+void dt_lua_register_module_presets_type(lua_State*L, const char* module_type_name,const char* entry_name,luaA_Type preset_type)
 {
   dt_lua_module_push_entry(L,module_type_name,entry_name);
   lua_getmetatable(L,-1);
 
-  lua_pushinteger(L,preset_typeid);
+  lua_pushinteger(L,preset_type);
   lua_setfield(L,-2,"__preset_type");
   lua_pop(L,2);
 
 }
 
-luaA_Type dt_lua_module_get_preset_typeid(lua_State *L, const char* module_type_name,const char* entry_name)
+luaA_Type dt_lua_module_get_preset_type(lua_State *L, const char* module_type_name,const char* entry_name)
 {
   dt_lua_module_push_entry(L,module_type_name,entry_name);
   lua_getmetatable(L,-1);
@@ -109,14 +109,14 @@ void dt_lua_register_current_preset(lua_State*L, const char* module_type_name, c
   // stack usefull values
   dt_lua_module_push_entry(L,module_type_name,entry_name);
   void * entry =  *(void**)lua_touserdata(L,-1);
-  luaA_Type entry_type = dt_lua_module_get_entry_typeid(L,module_type_name,entry_name);
+  luaA_Type entry_type = dt_lua_module_get_entry_type(L,module_type_name,entry_name);
   lua_pop(L,1);
 
   char tmp_string[1024];
   snprintf(tmp_string, sizeof(tmp_string),"module_current_settings_%s_%s",module_type_name,entry_name);
   dt_lua_init_wrapped_singleton(L,pusher,getter,tmp_string,entry);
   lua_pushcclosure(L,dt_lua_type_member_common,1);
-  dt_lua_type_register_const_typeid(L,entry_type,"settings");
+  dt_lua_type_register_const_type(L,entry_type,"settings");
 }
 
 

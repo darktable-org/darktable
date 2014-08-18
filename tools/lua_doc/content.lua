@@ -322,8 +322,8 @@ darktable.modules:set_text([[This table describe the different loadable modules 
 
 darktable.modules.format:set_text([[Functions to get parameter objects for the different export formats.]])
 
-darktable.modules.format.png:set_text([[Used to get a new png format object.]])
-darktable.modules.format.png:add_return(my_tostring(types.dt_imageio_module_format_data_png),[[A new format object describing the parameters to export to png - initialised to the values contained in the GUI.]])
+darktable.modules.format.png:set_text([[Used to get a new format object.]])
+darktable.modules.format.png:add_return(my_tostring(types.dt_imageio_module_format_t),[[A new format object describing the parameters used for export - initialised to the values contained in the GUI.]])
 
 darktable.modules.format.png:set_alias(darktable.modules.format.tiff)
 darktable.modules.format.png:set_alias(darktable.modules.format.exr)

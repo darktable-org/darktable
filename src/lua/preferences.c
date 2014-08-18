@@ -560,12 +560,12 @@ void init_tab_lua (GtkWidget *dialog, GtkWidget *tab)
 int dt_lua_init_preferences(lua_State * L)
 {
   luaA_enum(L,lua_pref_type);
-  luaA_enum_value_name(L,lua_pref_type,pref_string,"string",true);
-  luaA_enum_value_name(L,lua_pref_type,pref_bool,"bool",true);
-  luaA_enum_value_name(L,lua_pref_type,pref_int,"integer",true);
-  luaA_enum_value_name(L,lua_pref_type,pref_float,"float",true);
-  luaA_enum_value_name(L,lua_pref_type,pref_file,"file",true);
-  luaA_enum_value_name(L,lua_pref_type,pref_dir,"directory",true);
+  luaA_enum_value_name(L,lua_pref_type,pref_string,"string");
+  luaA_enum_value_name(L,lua_pref_type,pref_bool,"bool");
+  luaA_enum_value_name(L,lua_pref_type,pref_int,"integer");
+  luaA_enum_value_name(L,lua_pref_type,pref_float,"float");
+  luaA_enum_value_name(L,lua_pref_type,pref_file,"file");
+  luaA_enum_value_name(L,lua_pref_type,pref_dir,"directory");
 
   dt_lua_push_darktable_lib(L);
   dt_lua_goto_subtable(L,"preferences");

@@ -107,9 +107,9 @@ static int store_wrapper(struct dt_imageio_module_storage_t *self,struct dt_imag
     return 1;
   }
 
-  luaA_push_typeid(L,self->parameter_lua_type,self_data);
+  luaA_push_type(L,self->parameter_lua_type,self_data);
   luaA_push(L,dt_lua_image_t,&imgid);
-  luaA_push_typeid(L,format->parameter_lua_type,fdata);
+  luaA_push_type(L,format->parameter_lua_type,fdata);
   lua_pushstring(L,complete_name);
   lua_pushnumber(L,num);
   lua_pushnumber(L,total);
@@ -139,8 +139,8 @@ static void initialize_store_wrapper (struct dt_imageio_module_storage_t *self, 
     return;
   }
 
-  luaA_push_typeid(L,self->parameter_lua_type,data);
-  luaA_push_typeid(L,format->parameter_lua_type,fdata);
+  luaA_push_type(L,self->parameter_lua_type,data);
+  luaA_push_type(L,format->parameter_lua_type,fdata);
 
   GList* imgids =*images;
   lua_newtable(L);
@@ -194,7 +194,7 @@ static void finalize_store_wrapper (struct dt_imageio_module_storage_t *self, dt
     return;
   }
 
-  luaA_push_typeid(L,self->parameter_lua_type,data);
+  luaA_push_type(L,self->parameter_lua_type,data);
 
   lua_storage_t *d = (lua_storage_t*) data;
   GList* imgids =d->imgids;
@@ -365,10 +365,10 @@ static int register_storage(lua_State *L)
 
   char tmp[1024];
   snprintf(tmp,sizeof(tmp),"dt_imageio_module_data_pseudo_%s",storage->plugin_name);
-  luaA_Type type_id = luaA_type_add(tmp,storage->params_size(storage));
-  storage->parameter_lua_type = dt_lua_init_type_typeid(darktable.lua_state.state,type_id);
-  luaA_struct_typeid(darktable.lua_state.state,type_id);
-  dt_lua_register_storage_typeid(darktable.lua_state.state,storage,type_id);
+  luaA_Type type_id = luaA_type_add(L,tmp,storage->params_size(storage));
+  storage->parameter_lua_type = dt_lua_init_type_type(darktable.lua_state.state,type_id);
+  luaA_struct_type(darktable.lua_state.state,type_id);
+  dt_lua_register_storage_type(darktable.lua_state.state,storage,type_id);
 
 
 
@@ -381,8 +381,8 @@ static int register_storage(lua_State *L)
       dt_imageio_module_format_t *format = (dt_imageio_module_format_t *)it->data;
       dt_imageio_module_data_t *sdata = storage->get_params(storage);
       dt_imageio_module_data_t *fdata = format->get_params(format);
-      luaA_push_typeid(L,storage->parameter_lua_type,sdata);
-      luaA_push_typeid(L,format->parameter_lua_type,fdata);
+      luaA_push_type(L,storage->parameter_lua_type,sdata);
+      luaA_push_type(L,format->parameter_lua_type,fdata);
       format->free_params(format,fdata);
       storage->free_params(storage,sdata);
       dt_lua_do_chunk_silent(L,2,1);

@@ -538,7 +538,7 @@ if(USE_LUA)
   # liblautoc for lua automated interface generation
   add_library(lautoc_static STATIC IMPORTED)
   set_target_properties(lautoc_static PROPERTIES IMPORTED_LOCATION ${CMAKE_CURRENT_BINARY_DIR}/external/LuaAutoC/liblautoc.a)
-  include_directories(${CMAKE_CURRENT_SOURCE_DIR}/external/LuaAutoC/include)
+  include_directories(${CMAKE_CURRENT_SOURCE_DIR}/external/LuaAutoC/)
   add_subdirectory(external/LuaAutoC)
   list(APPEND LIB_DEPS lautoc)
   list(APPEND STATIC_LIBS lautoc_static)

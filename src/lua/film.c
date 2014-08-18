@@ -227,13 +227,13 @@ int dt_lua_init_film(lua_State * L)
 
   lua_pushcfunction(L,films_len);
   lua_pushcfunction(L,films_index);
-  dt_lua_type_register_number_const_typeid(L,type_id);
+  dt_lua_type_register_number_const_type(L,type_id);
   lua_pushcfunction(L,films_new);
   lua_pushcclosure(L,dt_lua_type_member_common,1);
-  dt_lua_type_register_const_typeid(L,type_id,"new");
+  dt_lua_type_register_const_type(L,type_id,"new");
   lua_pushcfunction(L,film_delete);
   lua_pushcclosure(L,dt_lua_type_member_common,1);
-  dt_lua_type_register_const_typeid(L,type_id,"delete");
+  dt_lua_type_register_const_type(L,type_id,"delete");
 
   return 0;
 }

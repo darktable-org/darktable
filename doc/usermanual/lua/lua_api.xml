@@ -12,7 +12,7 @@
 <programlisting language="lua">darktable = require "darktable"</programlisting>
 
 All functions and data are accessed through the darktable module.</para>
-<para>This documentation for API version 1.1.0-dev.</para>
+<para>This documentation for API version 2.0.0-dev.</para>
 
 <section status="final" id="darktable">
 <title>darktable</title>
@@ -1470,13 +1470,13 @@ NOTE2: If the parameter is a directory the call is non-blocking; the film object
 <secondary>png</secondary>
 </indexterm>
 <synopsis>function( 
-) : <link linkend="types_dt_imageio_module_format_data_png">types.dt_imageio_module_format_data_png</link></synopsis>
-<para>Used to get a new png format object.</para>
+) : <link linkend="types_dt_imageio_module_format_t">types.dt_imageio_module_format_t</link></synopsis>
+<para>Used to get a new format object.</para>
 
 <variablelist>
 <varlistentry><term><emphasis>return</emphasis></term><listitem>
-<synopsis><link linkend="types_dt_imageio_module_format_data_png">types.dt_imageio_module_format_data_png</link></synopsis>
-<para>A new format object describing the parameters to export to png - initialised to the values contained in the GUI.</para>
+<synopsis><link linkend="types_dt_imageio_module_format_t">types.dt_imageio_module_format_t</link></synopsis>
+<para>A new format object describing the parameters used for export - initialised to the values contained in the GUI.</para>
 
 </listitem></varlistentry>
 

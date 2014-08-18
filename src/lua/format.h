@@ -28,8 +28,8 @@ struct dt_imageio_module_format_t;
 helper for formats to declare their lua interface
 */
 #define dt_lua_register_format(L,format,type_name) \
-  dt_lua_register_format_typeid(L,format,luaA_type_find(#type_name))
-void dt_lua_register_format_typeid(lua_State* L, struct dt_imageio_module_format_t* module,luaA_Type type_id);
+  dt_lua_register_format_type(L,format,luaA_type_find(#type_name))
+void dt_lua_register_format_type(lua_State* L, struct dt_imageio_module_format_t* module,luaA_Type type_id);
 
 int dt_lua_init_format(lua_State *L);
 

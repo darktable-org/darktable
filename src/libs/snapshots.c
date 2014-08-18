@@ -630,22 +630,22 @@ static int lua_select(lua_State*L)
 void init(struct dt_lib_module_t *self)
 {
   lua_State *L=darktable.lua_state.state;
-  int my_typeid = dt_lua_module_get_entry_typeid(L,"lib",self->plugin_name);
+  int my_type = dt_lua_module_get_entry_type(L,"lib",self->plugin_name);
   lua_pushcfunction(L,direction_member);
-  dt_lua_type_register_typeid(L,my_typeid,"direction");
+  dt_lua_type_register_type(L,my_type,"direction");
   lua_pushcfunction(L,ratio_member);
-  dt_lua_type_register_typeid(L,my_typeid,"ratio");
+  dt_lua_type_register_type(L,my_type,"ratio");
   lua_pushcfunction(L,max_snapshot_member);
-  dt_lua_type_register_const_typeid(L,my_typeid,"max_snapshot");
+  dt_lua_type_register_const_type(L,my_type,"max_snapshot");
   lua_pushlightuserdata(L,self);
   lua_pushcclosure(L,lua_take_snapshot,1);
   lua_pushcclosure(L,dt_lua_type_member_common,1);
-  dt_lua_type_register_const_typeid(L,my_typeid,"take_snapshot");
+  dt_lua_type_register_const_type(L,my_type,"take_snapshot");
   lua_pushcfunction(L,snapshots_length);
   lua_pushcfunction(L,number_member);
-  dt_lua_type_register_number_typeid(L,my_typeid);
+  dt_lua_type_register_number_type(L,my_type);
   lua_pushcfunction(L,selected_member);
-  dt_lua_type_register_const_typeid(L,my_typeid,"selected");
+  dt_lua_type_register_const_type(L,my_type,"selected");
 
   dt_lua_init_int_type(L,dt_lua_snapshot_t);
   lua_pushlightuserdata(L,self);
@@ -666,10 +666,10 @@ void init(struct dt_lib_module_t *self)
 
 
   luaA_enum(L,snapshot_direction_t);
-  luaA_enum_value_name(L,snapshot_direction_t,SNS_LEFT,"left",false);
-  luaA_enum_value_name(L,snapshot_direction_t,SNS_RIGHT,"right",false);
-  luaA_enum_value_name(L,snapshot_direction_t,SNS_TOP,"top",false);
-  luaA_enum_value_name(L,snapshot_direction_t,SNS_BOTTOM,"bottom",false);
+  luaA_enum_value_name(L,snapshot_direction_t,SNS_LEFT,"left");
+  luaA_enum_value_name(L,snapshot_direction_t,SNS_RIGHT,"right");
+  luaA_enum_value_name(L,snapshot_direction_t,SNS_TOP,"top");
+  luaA_enum_value_name(L,snapshot_direction_t,SNS_BOTTOM,"bottom");
 }
 #endif //USE_LUA
 

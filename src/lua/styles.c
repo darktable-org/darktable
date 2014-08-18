@@ -331,25 +331,25 @@ int dt_lua_init_styles(lua_State * L)
 
   lua_pushcfunction(L,style_table_len);
   lua_pushcfunction(L,style_table_index);
-  dt_lua_type_register_number_const_typeid(L,type_id);
+  dt_lua_type_register_number_const_type(L,type_id);
   lua_pushcfunction(L,style_duplicate);
   lua_pushcclosure(L,dt_lua_type_member_common,1);
-  dt_lua_type_register_const_typeid(L,type_id,"duplicate");
+  dt_lua_type_register_const_type(L,type_id,"duplicate");
   lua_pushcfunction(L,style_delete);
   lua_pushcclosure(L,dt_lua_type_member_common,1);
-  dt_lua_type_register_const_typeid(L,type_id,"delete");
+  dt_lua_type_register_const_type(L,type_id,"delete");
   lua_pushcfunction(L,dt_lua_style_create_from_image);
   lua_pushcclosure(L,dt_lua_type_member_common,1);
-  dt_lua_type_register_const_typeid(L,type_id,"create");
+  dt_lua_type_register_const_type(L,type_id,"create");
   lua_pushcfunction(L,dt_lua_style_apply);
   lua_pushcclosure(L,dt_lua_type_member_common,1);
-  dt_lua_type_register_const_typeid(L,type_id,"apply");
+  dt_lua_type_register_const_type(L,type_id,"apply");
   lua_pushcfunction(L,dt_lua_style_import);
   lua_pushcclosure(L,dt_lua_type_member_common,1);
-  dt_lua_type_register_const_typeid(L,type_id,"import");
+  dt_lua_type_register_const_type(L,type_id,"import");
   lua_pushcfunction(L,dt_lua_style_export);
   lua_pushcclosure(L,dt_lua_type_member_common,1);
-  dt_lua_type_register_const_typeid(L,type_id,"export");
+  dt_lua_type_register_const_type(L,type_id,"export");
 
   return 0;
 }

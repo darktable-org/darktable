@@ -114,15 +114,15 @@ static int get_storage_params(lua_State *L)
     lua_pushnil(L);
     return 1;
   }
-  luaA_push_typeid(L,storage_module->parameter_lua_type,fdata);
+  luaA_push_type(L,storage_module->parameter_lua_type,fdata);
   storage_module->free_params(storage_module,fdata);
   return 1;
 }
 
-void dt_lua_register_storage_typeid(lua_State* L, dt_imageio_module_storage_t* module, luaA_Type type_id)
+void dt_lua_register_storage_type(lua_State* L, dt_imageio_module_storage_t* module, luaA_Type type_id)
 {
-  dt_lua_type_register_parent_typeid(L,type_id,luaA_type_find("dt_imageio_module_storage_t"));
-  luaL_getmetatable(L,luaA_type_name(type_id));
+  dt_lua_type_register_parent_type(L,type_id,luaA_type_find(L,"dt_imageio_module_storage_t"));
+  luaL_getmetatable(L,luaA_typename(L,type_id));
   lua_pushlightuserdata(L,module);
   lua_setfield(L,-2,"__associated_object");
   lua_pop(L,1); // pop the metatable

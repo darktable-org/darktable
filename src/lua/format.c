@@ -79,7 +79,7 @@ static int get_format_params(lua_State *L)
 {
   dt_imageio_module_format_t *format_module = lua_touserdata(L,lua_upvalueindex(1));
   dt_imageio_module_data_t *fdata = format_module->get_params(format_module);
-  luaA_push_typeid(L,format_module->parameter_lua_type,fdata);
+  luaA_push_type(L,format_module->parameter_lua_type,fdata);
   format_module->free_params(format_module,fdata);
   return 1;
 }
@@ -97,7 +97,7 @@ static int write_image(lua_State *L)
   dt_imageio_module_format_t * format = lua_touserdata(L,-1);
   lua_pop(L,2);
   dt_imageio_module_data_t* fdata = format->get_params(format);
-  luaA_to_typeid(L,format_type,fdata,1);
+  luaA_to_type(L,format_type,fdata,1);
 
   /* check that param 2 is an image */
   dt_lua_image_t imgid;
@@ -116,10 +116,10 @@ static int write_image(lua_State *L)
   return 1;
 }
 
-void dt_lua_register_format_typeid(lua_State* L, dt_imageio_module_format_t* module, luaA_Type type_id)
+void dt_lua_register_format_type(lua_State* L, dt_imageio_module_format_t* module, luaA_Type type_id)
 {
-  dt_lua_type_register_parent_typeid(L,type_id,luaA_type_find("dt_imageio_module_format_t"));
-  luaL_getmetatable(L,luaA_type_name(type_id));
+  dt_lua_type_register_parent_type(L,type_id,luaA_type_find(L,"dt_imageio_module_format_t"));
+  luaL_getmetatable(L,luaA_typename(L,type_id));
   lua_pushlightuserdata(L,module);
   lua_setfield(L,-2,"__associated_object");
   lua_pop(L,1); // pop the metatable

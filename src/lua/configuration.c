@@ -29,9 +29,9 @@
  */
 // LAST RELEASED VERSION : 1.4 was 1.0.0
 /* incompatible API change */
-#define API_VERSION_MAJOR  1
+#define API_VERSION_MAJOR  2
 /* backward compatible API change */
-#define API_VERSION_MINOR  1
+#define API_VERSION_MINOR  0
 /* bugfixes that should not change anything to the API */
 #define API_VERSION_PATCH  0
 /* suffix for unstable version */

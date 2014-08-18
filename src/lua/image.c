@@ -450,12 +450,12 @@ static int image_luaautoc_member(lua_State *L)
   const char * member_name = luaL_checkstring(L,2);
   if(lua_gettop(L) != 3) {
     const dt_image_t * image = checkreadimage(L,1);
-    luaA_struct_push_member_name(L,dt_image_t,image,member_name);
+    luaA_struct_push_member_name(L,dt_image_t,member_name,image);
     releasereadimage(L,image);
     return 1;
   } else {
     dt_image_t * image = checkwriteimage(L,1);
-    luaA_struct_to_member_name(L,dt_image_t,image,member_name,3);
+    luaA_struct_to_member_name(L,dt_image_t,member_name,image,3);
     releasewriteimage(L,image);
     return 0;
   }
@@ -486,7 +486,7 @@ int dt_lua_init_image(lua_State * L)
   while(member_name != LUAA_INVALID_MEMBER_NAME)
   {
     lua_pushcfunction(L,image_luaautoc_member);
-    if(luaA_type_has_to_func(luaA_struct_typeof_member_name(L, dt_image_t, member_name))) {
+    if(luaA_conversion_to_registered_type(L,luaA_struct_typeof_member_name(L, dt_image_t, member_name))) {
       dt_lua_type_register(L,dt_lua_image_t,member_name);
     } else {
       dt_lua_type_register_const(L,dt_lua_image_t,member_name);

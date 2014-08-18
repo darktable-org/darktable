@@ -76,7 +76,7 @@ void dt_lua_init_early(lua_State*L)
   darktable.lua_state.ending = false;
   dt_lua_init_lock();
   luaL_openlibs(darktable.lua_state.state);
-  luaA_open();
+  luaA_open(L);
   dt_lua_push_darktable_lib(L);
   // set the metatable
   lua_getmetatable(L,-1);
@@ -250,11 +250,11 @@ int luaopen_darktable(lua_State *L) {
 
 void dt_lua_finalize() 
 {
+  luaA_close(darktable.lua_state.state);
   if(!darktable.lua_state.ending) {
     darktable.lua_state.ending = true;
     lua_close(darktable.lua_state.state);
   }
-  luaA_close();
   darktable.lua_state.state = NULL;
 }
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
