@@ -478,7 +478,7 @@ void dt_lua_type_register_number_type(lua_State* L,luaA_Type type_id)
 
 int dt_lua_type_member_luaautoc(lua_State *L) 
 {
-  char * member_name = luaL_checkstring(L,2);
+  const char * member_name = luaL_checkstring(L,2);
   luaL_getmetafield(L,1,"__luaA_Type");
   luaA_Type my_type = luaL_checkint(L,-1);
   lua_pop(L,1);
@@ -487,7 +487,7 @@ int dt_lua_type_member_luaautoc(lua_State *L)
     luaA_struct_push_member_name_type(L,my_type,member_name,object);
     return 1;
   } else {
-    luaA_struct_to_member_name_type(L,my_type,object,member_name,3);
+    luaA_struct_to_member_name_type(L,my_type,member_name,object,3);
     return 0;
   }
 
