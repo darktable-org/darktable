@@ -706,7 +706,7 @@ escape_image_loop:
         {
           int neighbour_group = -1;
           // top border
-          if(row > 0)
+          if(row > 0 && ((current_image - iir) >= 0))
           {
             int _id = query_ids[current_image - iir];
             if(_id > 0)
@@ -723,7 +723,7 @@ escape_image_loop:
           }
           // left border
           neighbour_group = -1;
-          if(col > 0)
+          if(col > 0 && current_image > 0)
           {
             int _id = query_ids[current_image-1];
             if(_id > 0)

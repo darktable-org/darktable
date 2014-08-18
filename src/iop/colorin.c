@@ -32,6 +32,7 @@
 #include "common/imageio_j2k.h"
 #endif
 #include "common/imageio_jpeg.h"
+#include "common/imageio_tiff.h"
 #include "external/adobe_coeff.c"
 #include <xmmintrin.h>
 #include <stdlib.h>
@@ -828,7 +829,7 @@ void reload_defaults(dt_iop_module_t *module)
 {
   gboolean use_eprofile = FALSE;
   // some file formats like jpeg can have an embedded color profile
-  // currently we only support jpeg
+  // currently we only support jpeg, j2k and tiff
   const dt_image_t *cimg = dt_image_cache_read_get(darktable.image_cache, module->dev->image_storage.id);
   if(!cimg->profile)
   {
@@ -858,6 +859,13 @@ void reload_defaults(dt_iop_module_t *module)
       dt_image_cache_write_release(darktable.image_cache, img, DT_IMAGE_CACHE_RELAXED);
     }
 #endif
+    else if(!strcmp(ext, "tif") || !strcmp(ext, "tiff"))
+    {
+      dt_image_t *img = dt_image_cache_write_get(darktable.image_cache, cimg);
+      img->profile_size = dt_imageio_tiff_read_profile(filename, &img->profile);
+      use_eprofile = (img->profile_size > 0);
+      dt_image_cache_write_release(darktable.image_cache, img, DT_IMAGE_CACHE_RELAXED);
+    }
     g_free(ext);
   }
   else
@@ -913,7 +921,7 @@ static void update_profile_list(dt_iop_module_t *self)
   dt_iop_color_profile_t *prof;
   int pos = -1;
   // some file formats like jpeg can have an embedded color profile
-  // currently we only support jpeg
+  // currently we only support jpeg, j2k and tiff
   const dt_image_t *cimg = dt_image_cache_read_get(darktable.image_cache, self->dev->image_storage.id);
   if(cimg->profile)
   {

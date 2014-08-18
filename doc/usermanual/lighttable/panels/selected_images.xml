@@ -157,7 +157,9 @@
 
       <para>
         Perform a counter-clockwise or clockwise rotation on selected images. The third button
-        resets the image rotation to the value in the EXIF data.
+        resets the image rotation to the value in the EXIF data. This feature is directly linked
+        to the orientation module (see <xref linkend="orientation"/>)&nbsp;&ndash; adjustments
+        are converted into history stack items of that module.      
       </para>
 
     </sect4>

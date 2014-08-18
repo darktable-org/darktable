@@ -97,7 +97,15 @@ public:
   uchar8 *mBadPixelMap;
   uint32 mBadPixelMapPitch;
   bool mDitherScale;           // Should upscaling be done with dither to minimize banding?
-  uint32 fujiWidth;            // Similar to dcraw.
+
+  // How many pixels far down the left edge and far up the right edge the image 
+  // corners are when the image is rotated 45 degrees in Fuji rotated sensors.
+  uint32 fujiRotationPos;
+
+  // Aspect ratio of the pixels, usually 1 but some cameras need scaling
+  // <1 means the image needs to be stretched vertically, (0.5 means 2x)
+  // >1 means the image needs to be stretched horizontally (2 mean 2x)
+  double pixelAspectRatio;
 
 protected:
   RawImageType dataType;

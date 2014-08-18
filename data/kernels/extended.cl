@@ -285,7 +285,7 @@ __kernel void
 vignette (read_only image2d_t in, write_only image2d_t out, const int width, const int height,
           const float2 scale, const float2 roi_center_scaled, const float2 expt,
           const float dscale, const float fscale, const float brightness, const float saturation,
-          const float dither)
+          const float dither, const int centerclip)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
@@ -328,6 +328,12 @@ vignette (read_only image2d_t in, write_only image2d_t out, const int width, con
     pixel.y = clamp(pixel.y - (mv - pixel.y)* wss, 0.0f, 1.0f);
     pixel.z = clamp(pixel.z - (mv - pixel.z)* wss, 0.0f, 1.0f);
 
+  }
+  else if(centerclip)
+  {
+    pixel.x = clamp(pixel.x, 0.0f, 1.0f);
+    pixel.y = clamp(pixel.y, 0.0f, 1.0f);
+    pixel.z = clamp(pixel.z, 0.0f, 1.0f);
   }
 
   write_imagef (out, (int2)(x, y), pixel); 

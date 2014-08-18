@@ -233,6 +233,28 @@ dt_imageio_open_tiff(
   return (ok == 1 ? DT_IMAGEIO_OK : DT_IMAGEIO_FILE_CORRUPTED);
 }
 
+int dt_imageio_tiff_read_profile(const char *filename, uint8_t **out)
+{
+  TIFF *tiff = NULL;
+  uint32_t profile_len = 0;
+  uint8_t *profile = NULL;
+
+  if(!(filename && *filename && out)) return 0;
+
+  if((tiff = TIFFOpen(filename, "rb")) == NULL) return 0;
+
+  if(TIFFGetField(tiff, TIFFTAG_ICCPROFILE, &profile_len, &profile))
+  {
+    *out = (uint8_t*)malloc(profile_len);
+    memcpy(*out, profile, profile_len);
+  }
+  else
+    profile_len = 0;
+
+  TIFFClose(tiff);
+
+  return profile_len;
+}
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

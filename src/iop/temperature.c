@@ -465,8 +465,14 @@ void reload_defaults(dt_iop_module_t *module)
   {
     gboolean from_cache = TRUE;
     dt_image_full_path(module->dev->image_storage.id, filename, sizeof(filename), &from_cache);
-    libraw_data_t *raw = libraw_init(0);
 
+    char makermodel[1024];
+    char *model = makermodel;
+    dt_colorspaces_get_makermodel_split(makermodel, sizeof(makermodel), &model,
+                                        module->dev->image_storage.exif_maker,
+                                        module->dev->image_storage.exif_model);
+
+    libraw_data_t *raw = libraw_init(0);
     ret = libraw_open_file(raw, filename);
     if(!ret)
     {
@@ -480,11 +486,6 @@ void reload_defaults(dt_iop_module_t *module)
       if(tmp.coeffs[0] == 0 || tmp.coeffs[1] == 0 || tmp.coeffs[2] == 0)
       {
         // could not get useful info, try presets:
-        char makermodel[1024];
-        char *model = makermodel;
-        dt_colorspaces_get_makermodel_split(makermodel, sizeof(makermodel), &model,
-                                            module->dev->image_storage.exif_maker,
-                                            module->dev->image_storage.exif_model);
         for(int i=0; i<wb_preset_count; i++)
         {
           if(!strcmp(wb_preset[i].make,  makermodel) &&
@@ -495,58 +496,58 @@ void reload_defaults(dt_iop_module_t *module)
             break;
           }
         }
-        if(tmp.coeffs[0] == 0 || tmp.coeffs[1] == 0 || tmp.coeffs[2] == 0)
-        {
-          // final security net: hardcoded default that fits most cams.
-          tmp.coeffs[0] = 2.0f;
-          tmp.coeffs[1] = 1.0f;
-          tmp.coeffs[2] = 1.5f;
-        }
       }
-      else
+    }
+    if(tmp.coeffs[0] == 1.0f && tmp.coeffs[1] == 1.0f && tmp.coeffs[2] == 1.0f)
+    {
+      // nop white balance is valid for monochrome sraws (like the leica monochrom produces)
+      if (!(!strncmp(module->dev->image_storage.exif_maker, "Leica Camera AG", 15) && !strncmp(module->dev->image_storage.exif_model, "M9 monochrom", 12)))
       {
-        tmp.coeffs[0] /= tmp.coeffs[1];
-        tmp.coeffs[2] /= tmp.coeffs[1];
-        tmp.coeffs[1] = 1.0f;
-      }
-      // remember daylight wb used for temperature/tint conversion,
-      // assuming it corresponds to CIE daylight (D65)
-      if(module->gui_data)
-      {
-        dt_iop_temperature_gui_data_t *g = (dt_iop_temperature_gui_data_t *)module->gui_data;
-        for(int c = 0; c < 3; c++)
-          g->daylight_wb[c] = raw->color.pre_mul[c];
+        dt_control_log(_("failed to read camera white balance information!"));
+        fprintf(stderr, "[temperature] failed to read camera white balance information!\n");
 
-        if(g->daylight_wb[0] == 1.0f &&
-           g->daylight_wb[1] == 1.0f &&
-           g->daylight_wb[2] == 1.0f)
+        // final security net: hardcoded default that fits most cams.
+        tmp.coeffs[0] = 2.0f;
+        tmp.coeffs[1] = 1.0f;
+        tmp.coeffs[2] = 1.5f;
+      }
+    }
+
+    tmp.coeffs[0] /= tmp.coeffs[1];
+    tmp.coeffs[2] /= tmp.coeffs[1];
+    tmp.coeffs[1] = 1.0f;
+
+    // remember daylight wb used for temperature/tint conversion,
+    // assuming it corresponds to CIE daylight (D65)
+    if(module->gui_data)
+    {
+      dt_iop_temperature_gui_data_t *g = (dt_iop_temperature_gui_data_t *)module->gui_data;
+      for(int c = 0; c < 3; c++)
+        g->daylight_wb[c] = raw->color.pre_mul[c];
+
+      if(g->daylight_wb[0] == 1.0f &&
+         g->daylight_wb[1] == 1.0f &&
+         g->daylight_wb[2] == 1.0f)
+      {
+        // if we didn't find anything for daylight wb, look for a wb preset with appropriate name.
+        // we're normalising that to be D65
+        for(int i=0; i<wb_preset_count; i++)
         {
-          // if we didn't find anything for daylight wb, look for a wb preset with appropriate name.
-          // we're normalising that to be D65
-          char makermodel[1024];
-          char *model = makermodel;
-          dt_colorspaces_get_makermodel_split(makermodel, sizeof(makermodel), &model,
-              module->dev->image_storage.exif_maker,
-              module->dev->image_storage.exif_model);
-          for(int i=0; i<wb_preset_count; i++)
+          if(!strcmp(wb_preset[i].make,  makermodel) &&
+             !strcmp(wb_preset[i].model, model) &&
+             !strncasecmp(wb_preset[i].name, "daylight", 8))
           {
-            if(!strcmp(wb_preset[i].make,  makermodel) &&
-               !strcmp(wb_preset[i].model, model) &&
-               !strncasecmp(wb_preset[i].name, "daylight", 8))
-            {
-              for(int k=0;k<3;k++)
-                g->daylight_wb[k] = wb_preset[i].channel[k];
-              break;
-            }
+            for(int k=0;k<3;k++)
+              g->daylight_wb[k] = wb_preset[i].channel[k];
+            break;
           }
         }
-        float temp, tint, mul[3];
-        for(int k=0; k<3; k++) mul[k] = g->daylight_wb[k]/tmp.coeffs[k];
-        convert_rgb_to_k(mul, &temp, &tint);
-        dt_bauhaus_slider_set_default(g->scale_k,    temp);
-        dt_bauhaus_slider_set_default(g->scale_tint, tint);
       }
-
+      float temp, tint, mul[3];
+      for(int k=0; k<3; k++) mul[k] = g->daylight_wb[k]/tmp.coeffs[k];
+      convert_rgb_to_k(mul, &temp, &tint);
+      dt_bauhaus_slider_set_default(g->scale_k,    temp);
+      dt_bauhaus_slider_set_default(g->scale_tint, tint);
     }
     libraw_close(raw);
   }

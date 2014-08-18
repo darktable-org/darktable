@@ -412,7 +412,7 @@ All functions and data are accessed through the darktable module.</para>
 <synopsis>table</synopsis>
 <para>A table of <link linkend="types_dt_lua_image_t">types.dt_lua_image_t</link> on which the user expects UI actions to happen.</para>
 <para>It is based on both the hovered image and the selection and is consistent with the way darktable works.</para>
-<para>It is recommended to use this table to implement Lua actions rather than dt.gui.hovered or dt.gui.selected to be consistant with darktable's GUI.</para>
+<para>It is recommended to use this table to implement Lua actions rather than <link linkend="darktable_gui_hovered">darktable.gui.hovered</link> or <link linkend="darktable_gui_selection">darktable.gui.selection</link> to be consistant with darktable's GUI.</para>
 
 </section>
 
@@ -875,12 +875,15 @@ All functions and data are accessed through the darktable module.</para>
 <synopsis>table</synopsis>
 <para>Lua allows you do manipulate preferences. Lua has its own namespace for preferences and you can't access nor write normal darktable preferences.</para>
 <para>Preference handling functions take a _script_ parameter. This is a string used to avoid name collision in preferences (i.e namespace). Set it to something unique, usually the name of the script handling the preference.</para>
-<para>Preference handling functions can't guess the type of a parameter. You must pass the type of the preference you are handling. Allowed values are the following strings
-
-* string
-* bool
-* integer
-* float</para>
+<para>Preference handling functions can't guess the type of a parameter. You must pass the type of the preference you are handling. Allowed values are the following strings<itemizedlist>
+<listitem><para>string</para></listitem>
+<listitem><para>bool</para></listitem>
+<listitem><para>integer</para></listitem>
+<listitem><para>float</para></listitem>
+<listitem><para>file</para></listitem>
+<listitem><para>directory</para></listitem>
+</itemizedlist>
+</para>
 
 <section status="final" id="darktable_preferences_register">
 <title>darktable.preferences.register</title>

@@ -70,8 +70,8 @@
       border and corner handles. Use the button right of the aspect box, to swap between
       portrait and landscape mode. You can move around the crop rectangle by holding down left
       mouse button and move around. When you are done and want to execute the crop, just give
-      focus to another module. You can at any time change your crop area by just revisiting this
-      module.
+      focus to another module or double-click into the image base. You can at any time change 
+      your crop area by just revisiting this module.
     </para>
 
     <sect5>

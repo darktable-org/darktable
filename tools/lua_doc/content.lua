@@ -124,7 +124,7 @@ darktable.gui:set_text([[This subtable contains function and data to manipulate 
 
 darktable.gui.action_images:set_text([[A table of ]]..my_tostring(types.dt_lua_image_t)..[[ on which the user expects UI actions to happen.]]..para()..
 [[It is based on both the hovered image and the selection and is consistent with the way darktable works.]]..para()..
-[[It is recommended to use this table to implement Lua actions rather than dt.gui.hovered or dt.gui.selected to be consistant with darktable's GUI.]])
+[[It is recommended to use this table to implement Lua actions rather than ]]..my_tostring(darktable.gui.hovered)..[[ or ]]..my_tostring(darktable.gui.selection)..[[ to be consistant with darktable's GUI.]])
 
 remove_all_children(darktable.gui.action_images)
 
@@ -198,13 +198,17 @@ darktable.configuration.api_version_string:add_version_info([[field added]])
 -----------------------------
 darktable.preferences:set_text([[Lua allows you do manipulate preferences. Lua has its own namespace for preferences and you can't access nor write normal darktable preferences.]]..para()..
 [[Preference handling functions take a _script_ parameter. This is a string used to avoid name collision in preferences (i.e namespace). Set it to something unique, usually the name of the script handling the preference.]]..para()..
-[[Preference handling functions can't guess the type of a parameter. You must pass the type of the preference you are handling. Allowed values are the following strings
+[[Preference handling functions can't guess the type of a parameter. You must pass the type of the preference you are handling. Allowed values are the following strings]]..
+startlist()..
+listel('string')..
+listel('bool')..
+listel('integer')..
+listel('float')..
+listel('file')..
+listel('directory')..
+endlist())
 
-* string
-* bool
-* integer
-* float]])
-darktable.preferences:add_version_info("added float parameters")
+darktable.preferences:add_version_info("added float,file,directory parameters")
 
 darktable.preferences.register:set_text([[Creates a new preference entry in the Lua tab of the preference screen. If this function is not called the preference can't be set by the user (you can still read and write invisible preferences).]])
 darktable.preferences.register:add_parameter("script","string",[[Invisible prefix to guarantee unicity of preferences.]])
@@ -689,6 +693,7 @@ events["view-changed"]:set_text([[This event is triggered after the user changed
 events["view-changed"].callback:add_parameter("old_view",my_tostring(types.dt_view_t),[[The view that we just left]])
 events["view-changed"].callback:add_parameter("new_view",my_tostring(types.dt_view_t),[[The view we are now in]])
 events["view-changed"].extra_registration_parameters:set_text([[This event has no extra registration parameters.]])
+events["view-changed"]:add_version_info("event added")
 ----------------------
 --  ATTRIBUTES      --
 ----------------------

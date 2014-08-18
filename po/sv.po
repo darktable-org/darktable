@@ -24,8 +24,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 1.3\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2014-07-21 04:17+0200\n"
-"PO-Revision-Date: 2014-07-21 04:26+0200\n"
+"POT-Creation-Date: 2014-08-03 10:42+0200\n"
+"PO-Revision-Date: 2014-08-03 10:44+0200\n"
 "Last-Translator: Richard Levitte <richard@levitte.org>\n"
 "Language-Team: \n"
 "Language: sv\n"
@@ -586,7 +586,12 @@ msgid ""
 "but not as sharp. middle ground is using PPG + interpolation modes specified "
 "below, full will use exactly the settings for full-size export. X-Trans "
 "sensors use VNG rather than PPG as middle ground."
-msgstr "interpolation som används när bilden inte visas 1:1 (in-zoomat) i darkroom: bilinear är snabbast men inte så skarp. en medelväg är att använda PPG + någon av interpolationsmetoderna nedan, fullt ut kommer att använda exakt samma inställningar som export av bild i full storlek. för X-Trans-sensorer används VNG istf PPG i medelvägen."
+msgstr ""
+"interpolation som används när bilden inte visas 1:1 (in-zoomat) i darkroom: "
+"bilinear är snabbast men inte så skarp. en medelväg är att använda PPG + "
+"någon av interpolationsmetoderna nedan, fullt ut kommer att använda exakt "
+"samma inställningar som export av bild i full storlek. för X-Trans-sensorer "
+"används VNG istf PPG i medelvägen."
 
 #: ../build/src/preferences_gen.h:2252
 msgid "pixel interpolator"
@@ -757,7 +762,7 @@ msgstr "kunde inte hämta parametrar från formatmodul, avbryter exporten..."
 #: ../src/iop/bilateral.cc:348 ../src/iop/channelmixer.c:461
 #: ../src/iop/channelmixer.c:473 ../src/iop/colorbalance.c:641
 #: ../src/iop/colorbalance.c:679 ../src/iop/colorbalance.c:717
-#: ../src/iop/temperature.c:814 ../src/libs/collect.c:1273
+#: ../src/iop/temperature.c:783 ../src/libs/collect.c:1273
 #: ../src/libs/collect.c:1275
 msgid "red"
 msgstr "röd"
@@ -771,7 +776,7 @@ msgstr "gul"
 #: ../src/iop/bilateral.cc:349 ../src/iop/channelmixer.c:462
 #: ../src/iop/channelmixer.c:480 ../src/iop/colorbalance.c:650
 #: ../src/iop/colorbalance.c:688 ../src/iop/colorbalance.c:726
-#: ../src/iop/temperature.c:815 ../src/libs/collect.c:1285
+#: ../src/iop/temperature.c:784 ../src/libs/collect.c:1285
 #: ../src/libs/collect.c:1287
 msgid "green"
 msgstr "grön"
@@ -780,7 +785,7 @@ msgstr "grön"
 #: ../src/iop/bilateral.cc:350 ../src/iop/channelmixer.c:463
 #: ../src/iop/channelmixer.c:487 ../src/iop/colorbalance.c:659
 #: ../src/iop/colorbalance.c:697 ../src/iop/colorbalance.c:735
-#: ../src/iop/temperature.c:816 ../src/libs/collect.c:1291
+#: ../src/iop/temperature.c:785 ../src/libs/collect.c:1291
 #: ../src/libs/collect.c:1293
 msgid "blue"
 msgstr "blå"
@@ -829,7 +834,7 @@ msgstr "`%s' är av okänt format!"
 msgid "error loading file `%s'"
 msgstr "fel uppstod vid läsning av fil '%s'"
 
-#: ../src/common/darktable.c:589
+#: ../src/common/darktable.c:602
 #, c-format
 msgid "ERROR : invalid temporary directory : %s\n"
 msgstr "FEL : ogiltig temporär katalog : %s\n"
@@ -860,16 +865,16 @@ msgstr ""
 #: ../src/common/history.c:279 ../src/common/history.c:280
 #: ../src/common/history.c:296 ../src/common/styles.c:633
 #: ../src/common/styles.c:635 ../src/develop/blend_gui.c:1691
-#: ../src/develop/develop.c:1170 ../src/libs/live_view.c:412
+#: ../src/develop/develop.c:1158 ../src/libs/live_view.c:412
 msgid "on"
 msgstr "på"
 
 #: ../src/common/history.c:279 ../src/common/history.c:280
 #: ../src/common/history.c:296 ../src/common/styles.c:633
 #: ../src/common/styles.c:635 ../src/develop/blend_gui.c:1539
-#: ../src/develop/blend_gui.c:1688 ../src/develop/develop.c:1170
+#: ../src/develop/blend_gui.c:1688 ../src/develop/develop.c:1158
 #: ../src/imageio/format/j2k.c:637 ../src/iop/colorin.c:1187
-#: ../src/iop/demosaic.c:2155 ../src/iop/vignette.c:1137
+#: ../src/iop/demosaic.c:2192 ../src/iop/vignette.c:1137
 #: ../src/libs/history.c:154 ../src/libs/live_view.c:411
 msgid "off"
 msgstr "av"
@@ -878,26 +883,26 @@ msgstr "av"
 msgid "orphaned image"
 msgstr "anonyma bilder"
 
-#: ../src/common/image.c:1194
+#: ../src/common/image.c:1228
 msgid "cannot create local copy when the original file is not accessible."
 msgstr "kan inte skapa lokal kopia när originalfilen inte går att nå."
 
-#: ../src/common/image.c:1208
+#: ../src/common/image.c:1242
 msgid "cannot create local copy."
 msgstr "kan inte skapa lokal kopia."
 
-#: ../src/common/image.c:1242 ../src/control/jobs/control_jobs.c:489
+#: ../src/common/image.c:1276 ../src/control/jobs/control_jobs.c:489
 msgid "cannot remove local copy when the original file is not accessible."
 msgstr "kan inte ta bort lokal kopia när originalfilen inte går att nå."
 
-#: ../src/common/image.c:1393
+#: ../src/common/image.c:1427
 #, c-format
 msgid "%d local copy has been synchronized"
 msgid_plural "%d local copies have been synchronized"
 msgstr[0] "%d lokal kopia har synkroniserats"
 msgstr[1] "%d lokala kopior har synkroniserats"
 
-#: ../src/common/imageio.c:668
+#: ../src/common/imageio.c:636
 #, c-format
 msgid ""
 "failed to allocate memory for %s, please lower the threads used for export "
@@ -906,22 +911,22 @@ msgstr ""
 "misslyckades med att tilldela minne för %s, var god och minska antalet "
 "trådar som används för export eller köp mer minne."
 
-#: ../src/common/imageio.c:668
+#: ../src/common/imageio.c:636
 msgctxt "noun"
 msgid "thumbnail export"
 msgstr "export av miniatyrbild"
 
-#: ../src/common/imageio.c:668
+#: ../src/common/imageio.c:636
 msgctxt "noun"
 msgid "export"
 msgstr "export"
 
-#: ../src/common/imageio.c:676 ../src/common/mipmap_cache.c:1161
+#: ../src/common/imageio.c:644 ../src/common/mipmap_cache.c:1161
 #, c-format
 msgid "image `%s' is not available!"
 msgstr "bild `%s' är inte tillgänglig"
 
-#: ../src/common/imageio.c:692
+#: ../src/common/imageio.c:660
 #, c-format
 msgid "cannot find the style '%s' to apply during export."
 msgstr "kan inte finna stilen '%s' att applicera under export."
@@ -1749,7 +1754,7 @@ msgstr "%s är avslagen"
 #: ../src/gui/accelerators.c:840 ../src/gui/accelerators.c:1007
 #: ../src/gui/accelerators.c:1032 ../src/gui/presets.c:182
 #: ../src/gui/presets.c:284 ../src/gui/presets.c:625
-#: ../src/iop/temperature.c:826 ../src/libs/import.c:506 ../src/libs/lib.c:292
+#: ../src/iop/temperature.c:795 ../src/libs/import.c:506 ../src/libs/lib.c:292
 #: ../src/libs/lib.c:321 ../src/libs/lib.c:1006
 msgid "preset"
 msgstr "förinställning"
@@ -2236,7 +2241,7 @@ msgstr "ISO"
 #. exposure
 #: ../src/gui/preferences.c:470 ../src/gui/preferences.c:1387
 #: ../src/gui/presets.c:451 ../src/iop/exposure.c:113
-#: ../src/iop/exposure.c:967 ../src/iop/relight.c:384
+#: ../src/iop/exposure.c:971 ../src/iop/relight.c:384
 #: ../src/libs/metadata_view.c:93
 msgid "exposure"
 msgstr "exponering"
@@ -2256,7 +2261,7 @@ msgid "focal length"
 msgstr "brännvidd"
 
 #: ../src/gui/preferences.c:491 ../src/iop/borders.c:1054
-#: ../src/iop/exposure.c:973 ../src/iop/levels.c:580
+#: ../src/iop/exposure.c:977 ../src/iop/levels.c:580
 #: ../src/iop/tonecurve.c:780
 msgid "auto"
 msgstr "automatisk"
@@ -2699,7 +2704,7 @@ msgstr ""
 "måste logga in med ditt facebook-konto där och bekräfta att darktable får "
 "ladda upp bilder innan du kan fortsätta."
 
-#: ../src/imageio/storage/facebook.c:618 ../src/imageio/storage/picasa.c:839
+#: ../src/imageio/storage/facebook.c:618
 msgid ""
 "step 2: paste your browser URL and click the OK button once you are done."
 msgstr ""
@@ -2939,6 +2944,12 @@ msgstr ""
 "steg 1: ett nytt fönster eller flik i din internetbrowser ska ha visats. du "
 "måste logga in med ditt google+-konto där och bekräfta att darktable får "
 "ladda upp bilder innan du kan fortsätta."
+
+#: ../src/imageio/storage/picasa.c:839
+msgid ""
+"step 2: paste the verification code shown to you in the browser and click "
+"the OK button once you are done."
+msgstr "steg 2: klistra in verifikationskoden som visas i din internetbrowser och klicka på OK-knappen när du är klar."
 
 #: ../src/imageio/storage/picasa.c:847
 msgid "google+ authentication"
@@ -3189,19 +3200,19 @@ msgid "radius"
 msgstr "radie"
 
 #: ../src/iop/bilateral.cc:89 ../src/iop/channelmixer.c:134
-#: ../src/iop/temperature.c:98
+#: ../src/iop/temperature.c:97
 msgctxt "accel"
 msgid "red"
 msgstr "röd"
 
 #: ../src/iop/bilateral.cc:90 ../src/iop/channelmixer.c:135
-#: ../src/iop/temperature.c:99
+#: ../src/iop/temperature.c:98
 msgctxt "accel"
 msgid "green"
 msgstr "grön"
 
 #: ../src/iop/bilateral.cc:91 ../src/iop/channelmixer.c:136
-#: ../src/iop/temperature.c:100
+#: ../src/iop/temperature.c:99
 msgctxt "accel"
 msgid "blue"
 msgstr "blå"
@@ -4335,40 +4346,40 @@ msgctxt "accel"
 msgid "edge threshold"
 msgstr "kant tröskel"
 
-#: ../src/iop/demosaic.c:2132 ../src/iop/demosaic.c:2140
+#: ../src/iop/demosaic.c:2169 ../src/iop/demosaic.c:2177
 #: ../src/iop/dither.c:564 ../src/iop/highlights.c:702
 msgid "method"
 msgstr "metod"
 
-#: ../src/iop/demosaic.c:2134
+#: ../src/iop/demosaic.c:2171
 msgid "PPG (fast)"
 msgstr "PPG (snabb)"
 
-#: ../src/iop/demosaic.c:2135
+#: ../src/iop/demosaic.c:2172
 msgid "AMaZE (slow)"
 msgstr "AMaZE (långsam)"
 
-#: ../src/iop/demosaic.c:2136
+#: ../src/iop/demosaic.c:2173
 msgid "VNG4 (slow)"
 msgstr "VNG4 (långsam)"
 
-#: ../src/iop/demosaic.c:2137 ../src/iop/demosaic.c:2145
+#: ../src/iop/demosaic.c:2174 ../src/iop/demosaic.c:2182
 msgid "demosaicing raw data method"
 msgstr "demosaicing-metod för rådata"
 
-#: ../src/iop/demosaic.c:2142
+#: ../src/iop/demosaic.c:2179
 msgid "VNG"
 msgstr "VNG"
 
-#: ../src/iop/demosaic.c:2143
+#: ../src/iop/demosaic.c:2180
 msgid "Markesteijn 1-pass (slow)"
 msgstr "Markesteijn, 1 pass (långsamt)"
 
-#: ../src/iop/demosaic.c:2144
+#: ../src/iop/demosaic.c:2181
 msgid "Markesteijn 3-pass (slower)"
 msgstr "Markesteijn, 3 pass (långsammare)"
 
-#: ../src/iop/demosaic.c:2148
+#: ../src/iop/demosaic.c:2185
 msgid ""
 "threshold for edge-aware median.\n"
 "set to 0.0 to switch off.\n"
@@ -4378,59 +4389,59 @@ msgstr ""
 "värde 0.0 stänger av funktionen.\n"
 "värde 1.0 ignorerar kanter."
 
-#: ../src/iop/demosaic.c:2149
+#: ../src/iop/demosaic.c:2186
 msgid "edge threshold"
 msgstr "kant tröskel"
 
-#: ../src/iop/demosaic.c:2153
+#: ../src/iop/demosaic.c:2190
 msgid "color smoothing"
 msgstr "färguppmjukning"
 
-#: ../src/iop/demosaic.c:2156
+#: ../src/iop/demosaic.c:2193
 msgid "one time"
 msgstr "en gång"
 
-#: ../src/iop/demosaic.c:2157
+#: ../src/iop/demosaic.c:2194
 msgid "two times"
 msgstr "två gånger"
 
-#: ../src/iop/demosaic.c:2158
+#: ../src/iop/demosaic.c:2195
 msgid "three times"
 msgstr "tre gånger"
 
-#: ../src/iop/demosaic.c:2159
+#: ../src/iop/demosaic.c:2196
 msgid "four times"
 msgstr "fyra gånger"
 
-#: ../src/iop/demosaic.c:2160
+#: ../src/iop/demosaic.c:2197
 msgid "five times"
 msgstr "fem gånger"
 
-#: ../src/iop/demosaic.c:2161
+#: ../src/iop/demosaic.c:2198
 msgid "how many color smoothing median steps after demosaicing"
 msgstr "antal färkuppmjukningspass efter demosaicking"
 
-#: ../src/iop/demosaic.c:2165
+#: ../src/iop/demosaic.c:2202
 msgid "match greens"
 msgstr "matcha grön"
 
-#: ../src/iop/demosaic.c:2166
+#: ../src/iop/demosaic.c:2203
 msgid "disabled"
 msgstr "av"
 
-#: ../src/iop/demosaic.c:2167
+#: ../src/iop/demosaic.c:2204
 msgid "local average"
 msgstr "lokalt medel"
 
-#: ../src/iop/demosaic.c:2168
+#: ../src/iop/demosaic.c:2205
 msgid "full average"
 msgstr "fullständigt medel"
 
-#: ../src/iop/demosaic.c:2169
+#: ../src/iop/demosaic.c:2206
 msgid "full and local average"
 msgstr "fullständig och lokalt medel"
 
-#: ../src/iop/demosaic.c:2170
+#: ../src/iop/demosaic.c:2207
 msgid "green channels matching method"
 msgstr "metod för matchning av grön färgkanal"
 
@@ -4448,7 +4459,7 @@ msgstr "fann motsvarighet till ISO %d"
 msgid "interpolated from ISO %d and %d"
 msgstr "interpolerat från ISO %d och %d"
 
-#: ../src/iop/denoiseprofile.c:1725 ../src/iop/exposure.c:943
+#: ../src/iop/denoiseprofile.c:1725 ../src/iop/exposure.c:947
 #: ../src/iop/lens.c:2094 ../src/iop/levels.c:547
 msgid "mode"
 msgstr "läge"
@@ -4615,60 +4626,60 @@ msgstr "standardvärden från magic lantern"
 msgid "almost no clipping"
 msgstr "nästan ingen klippning"
 
-#: ../src/iop/exposure.c:945 ../src/iop/levels.c:549
+#: ../src/iop/exposure.c:949 ../src/iop/levels.c:549
 #: ../src/iop/tonecurve.c:781
 msgid "manual"
 msgstr "manuell"
 
-#: ../src/iop/exposure.c:948 ../src/iop/levels.c:552
+#: ../src/iop/exposure.c:952 ../src/iop/levels.c:552
 #: ../src/iop/vignette.c:1134
 msgid "automatic"
 msgstr "automatisk"
 
-#: ../src/iop/exposure.c:957
+#: ../src/iop/exposure.c:961
 msgid "adjust the black level"
 msgstr "justeringen av svart nivå"
 
-#: ../src/iop/exposure.c:959 ../src/iop/levels.c:623
+#: ../src/iop/exposure.c:963 ../src/iop/levels.c:623
 msgid "black"
 msgstr "svärta"
 
-#: ../src/iop/exposure.c:965
+#: ../src/iop/exposure.c:969
 msgid "adjust the exposure correction"
 msgstr "justera exponeringskompensation [EV]"
 
-#: ../src/iop/exposure.c:978
+#: ../src/iop/exposure.c:982
 msgid "percentage of bright values clipped out"
 msgstr ""
 "procentdel av ljusa värden\n"
 "som kapas bort"
 
-#: ../src/iop/exposure.c:988 ../src/iop/exposure.c:990
+#: ../src/iop/exposure.c:992 ../src/iop/exposure.c:994
 msgid "percentile"
 msgstr "percentil"
 
-#: ../src/iop/exposure.c:994 ../src/iop/exposure.c:996
+#: ../src/iop/exposure.c:998 ../src/iop/exposure.c:1000
 msgid "target level"
 msgstr "målnivå"
 
-#: ../src/iop/exposure.c:1000
+#: ../src/iop/exposure.c:1004
 msgid "histogram of"
 msgstr "histogram för"
 
-#: ../src/iop/exposure.c:1002
+#: ../src/iop/exposure.c:1006
 msgid "pre-processed image"
 msgstr "förprocessad bild"
 
-#: ../src/iop/exposure.c:1005
+#: ../src/iop/exposure.c:1009
 msgid "source raw data"
 msgstr "källans rådata"
 
-#: ../src/iop/exposure.c:1013
+#: ../src/iop/exposure.c:1017
 msgid "computed EC: "
 msgstr "beräknad EK: "
 
 #. This gets filled in by process
-#: ../src/iop/exposure.c:1017
+#: ../src/iop/exposure.c:1021
 msgid "what exposure correction have actually been used"
 msgstr "vilken exponeringskorrigering som faktiskt har gjorts"
 
@@ -4963,24 +4974,24 @@ msgstr "hitta via 3 grannar"
 msgid "mark fixed pixels"
 msgstr "markera pixlar"
 
-#: ../src/iop/invert.c:54
+#: ../src/iop/invert.c:62
 msgid "invert"
 msgstr "invertera"
 
-#: ../src/iop/invert.c:71
+#: ../src/iop/invert.c:79
 msgctxt "accel"
 msgid "pick color of film material from image"
 msgstr "välj färg på filmmaterial från bild"
 
-#: ../src/iop/invert.c:157
+#: ../src/iop/invert.c:163
 msgid "select color of film material"
 msgstr "välj färg på filmmaterial"
 
-#: ../src/iop/invert.c:364
+#: ../src/iop/invert.c:447
 msgid "color of film material"
 msgstr "färg på filmmaterial"
 
-#: ../src/iop/invert.c:395
+#: ../src/iop/invert.c:478
 msgid "pick color of film material from image"
 msgstr "välj färg för filmmaterial från bild"
 
@@ -5496,7 +5507,7 @@ msgctxt "accel"
 msgid "noise threshold"
 msgstr "tröskelvärde för brus"
 
-#: ../src/iop/rawdenoise.c:474
+#: ../src/iop/rawdenoise.c:472
 msgid "noise threshold"
 msgstr "tröskelvärde för brus"
 
@@ -5754,55 +5765,51 @@ msgstr ""
 "använd skrollhjulet på musen för att justera storleken.\n"
 "högerklick för att ta bort en form."
 
-#: ../src/iop/temperature.c:78
+#: ../src/iop/temperature.c:77
 msgctxt "modulename"
 msgid "white balance"
 msgstr "vitbalans"
 
-#: ../src/iop/temperature.c:96
+#: ../src/iop/temperature.c:95
 msgctxt "accel"
 msgid "tint"
 msgstr "nyans"
 
-#: ../src/iop/temperature.c:97
+#: ../src/iop/temperature.c:96
 msgctxt "accel"
 msgid "temperature"
 msgstr "temperatur"
 
-#: ../src/iop/temperature.c:441
+#: ../src/iop/temperature.c:417
 msgid "camera white balance"
 msgstr "vitbalans från kamera"
 
-#: ../src/iop/temperature.c:442
+#: ../src/iop/temperature.c:418
 msgid "spot white balance"
 msgstr "vitbalans i mätningsområde"
 
-#: ../src/iop/temperature.c:443
-msgid "passthrough"
-msgstr "passa vidare"
-
-#: ../src/iop/temperature.c:812
+#: ../src/iop/temperature.c:781
 msgid "tint"
 msgstr "nyans"
 
-#: ../src/iop/temperature.c:813
+#: ../src/iop/temperature.c:782
 msgid "temperature"
 msgstr "temperatur"
 
-#: ../src/iop/temperature.c:828
+#: ../src/iop/temperature.c:797
 msgid "choose white balance preset from camera"
 msgstr "välj förinställd vitbalans från kamera"
 
-#: ../src/iop/temperature.c:831
+#: ../src/iop/temperature.c:800
 msgid "finetune"
 msgstr "finjustering"
 
-#: ../src/iop/temperature.c:832
+#: ../src/iop/temperature.c:801
 #, c-format
 msgid "%.0f mired"
 msgstr "%.0f justerad"
 
-#: ../src/iop/temperature.c:836
+#: ../src/iop/temperature.c:805
 msgid "fine tune white balance preset"
 msgstr "finjustera förinställd vitbalans"
 
@@ -6413,44 +6420,44 @@ msgstr "oförändrad"
 msgid "not tagged"
 msgstr "otaggad"
 
-#: ../src/libs/collect.c:1490
+#: ../src/libs/collect.c:1501
 msgid "local HDD"
 msgstr "lokal hårddisk"
 
-#: ../src/libs/collect.c:1575 ../src/libs/collect.c:1589
-#: ../src/libs/collect.c:1979
+#: ../src/libs/collect.c:1586 ../src/libs/collect.c:1600
+#: ../src/libs/collect.c:1990
 msgid "clear this rule"
 msgstr "ta bort denna regel"
 
-#: ../src/libs/collect.c:1580
+#: ../src/libs/collect.c:1591
 msgid "clear this rule or add new rules"
 msgstr "rensa denna regel eller skapa en ny"
 
-#: ../src/libs/collect.c:1985
+#: ../src/libs/collect.c:1996
 msgid "narrow down search"
 msgstr "smalna av sökning"
 
-#: ../src/libs/collect.c:1989
+#: ../src/libs/collect.c:2000
 msgid "add more images"
 msgstr "lägg till fler bilder"
 
-#: ../src/libs/collect.c:1993
+#: ../src/libs/collect.c:2004
 msgid "exclude images"
 msgstr "exkludera bilder"
 
-#: ../src/libs/collect.c:1999
+#: ../src/libs/collect.c:2010
 msgid "change to: and"
 msgstr "ändra till: och"
 
-#: ../src/libs/collect.c:2003
+#: ../src/libs/collect.c:2014
 msgid "change to: or"
 msgstr "ändra till: eller"
 
-#: ../src/libs/collect.c:2007
+#: ../src/libs/collect.c:2018
 msgid "change to: except"
 msgstr "ändra till: för utom"
 
-#: ../src/libs/collect.c:2052
+#: ../src/libs/collect.c:2063
 #, no-c-format
 msgid "type your query, use `%' as wildcard"
 msgstr "ange din förfrågan, använd `%' som wildcard"
@@ -8516,11 +8523,16 @@ msgstr "pensel #%d"
 msgid "copy of %s"
 msgstr "kopia av %"
 
-#: ../src/develop/masks/masks.c:1253 ../src/libs/masks.c:948
+#: ../src/develop/masks/masks.c:718
+#, c-format
+msgid "%s: mask version mismatch: %d != %d"
+msgstr "%s: maskering skiljer i version: %d != %d"
+
+#: ../src/develop/masks/masks.c:1408 ../src/libs/masks.c:948
 msgid "add existing shape"
 msgstr "lägg till existerande form"
 
-#: ../src/develop/masks/masks.c:1280
+#: ../src/develop/masks/masks.c:1435
 msgid "use same shapes as"
 msgstr "använd samma form som"
 
@@ -8638,6 +8650,9 @@ msgstr "foto"
 #: ../src/imageio/format/webp.c:316
 msgid "graphic"
 msgstr "grafik"
+
+#~ msgid "passthrough"
+#~ msgstr "passa vidare"
 
 #~ msgid "enhance coarse"
 #~ msgstr "förbättra ojämnheter"

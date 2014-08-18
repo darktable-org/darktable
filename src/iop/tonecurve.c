@@ -777,8 +777,8 @@ void gui_init(struct dt_iop_module_t *self)
 
   c->autoscale_ab = dt_bauhaus_combobox_new(self);
   dt_bauhaus_widget_set_label(c->autoscale_ab, NULL, _("scale chroma"));
-  dt_bauhaus_combobox_add(c->autoscale_ab, _("auto"));
-  dt_bauhaus_combobox_add(c->autoscale_ab, _("manual"));
+  dt_bauhaus_combobox_add(c->autoscale_ab, _("automatic"));
+  dt_bauhaus_combobox_add(c->autoscale_ab, C_("scale", "manual"));
   gtk_box_pack_start(GTK_BOX(self->widget), c->autoscale_ab, TRUE, TRUE, 0);
   g_object_set (GTK_OBJECT(c->autoscale_ab), "tooltip-text", _("if set to auto, a and b curves have no effect and are not displayed. chroma values (a and b) of each pixel are then adjusted based on L curve data."), (char *)NULL);
   g_signal_connect(G_OBJECT(c->autoscale_ab), "value-changed", G_CALLBACK(autoscale_ab_callback), self);

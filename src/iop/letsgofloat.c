@@ -165,7 +165,9 @@ commit_params(
   dt_dev_pixelpipe_iop_t *piece)
 {
   if(!(pipe->image.flags & DT_IMAGE_RAW) ||
-      dt_dev_pixelpipe_uses_downsampled_input(pipe))
+      dt_dev_pixelpipe_uses_downsampled_input(pipe) ||
+      !dt_image_filter(&piece->pipe->image) ||
+      piece->pipe->image.bpp != sizeof(uint16_t))
     piece->enabled = 0;
 }
 

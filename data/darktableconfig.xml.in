@@ -24,7 +24,7 @@
   </dtconfig>
   <dtconfig prefs="core">
     <name>cache_memory</name>
-    <type factor="(1.0 / (1024.0 * 1024.0))" min="0">int64</type>
+    <type factor="(1.0 / (1024.0 * 1024.0))" min="(1024 * 1024 * 100)">int64</type>
     <default>(1024 * 1024 * 512)</default>
     <shortdescription>memory in megabytes to use for mipmap cache</shortdescription>
     <longdescription>this controls how much memory is going to be used for thumbnails and other buffers (needs a restart).</longdescription>

@@ -21,24 +21,25 @@
 #include <string.h>
 #include "control/conf.h"
 
-static const char *pref_type_name[] =
-{
-  "string",
-  "bool",
-  "integer",
-  "float",
-  NULL
-};
-
 typedef enum
 {
   pref_string,
   pref_bool,
   pref_int,
   pref_float,
-} pref_type;
+  pref_file,
+  pref_dir,
+} lua_pref_type;
 
 
+typedef struct dir_data_t
+{
+	char *default_value;
+} dir_data_t;
+typedef struct file_data_t
+{
+	char *default_value;
+} file_data_t;
 typedef struct string_data_t
 {
 	char *default_value;
@@ -68,6 +69,8 @@ typedef union all_data_t
 	bool_data_t bool_data;
 	int_data_t int_data;
 	float_data_t float_data;
+  file_data_t file_data;
+  dir_data_t dir_data;
 } all_data_t;
 typedef struct pref_element
 {
@@ -75,7 +78,7 @@ typedef struct pref_element
   char*name;
   char* label;
   char* tooltip;
-  pref_type type;
+  lua_pref_type type;
   struct pref_element* next;
   all_data_t type_data;
   // ugly hack, written every time the dialog is displayed and unused when not displayed
@@ -93,6 +96,12 @@ static void destroy_pref_element(pref_element*elt)
   // don't free the widget field
   switch(elt->type)
   {
+    case pref_dir:
+      free(elt->type_data.dir_data.default_value);
+      break;
+    case pref_file:
+      free(elt->type_data.file_data.default_value);
+      break;
     case pref_string:
       free(elt->type_data.string_data.default_value);
       break;
@@ -112,120 +121,145 @@ static void get_pref_name(char *tgt,size_t size,const char*script,const char*nam
   snprintf(tgt,size,"lua/%s/%s",script,name);
 }
 
-static int register_pref(lua_State*L)
+static int register_pref_sub(lua_State*L)
 {
   // to avoid leaks, we need to first get all params (which could raise errors) then alloc and fill the struct
   // this is complicated, but needed
-  pref_element * built_elt = calloc(1, sizeof(pref_element));
+  pref_element ** tmp = lua_touserdata(L,-1);
+  lua_pop(L,1);
+  *tmp = calloc(1, sizeof(pref_element));
+  pref_element * built_elt = *tmp;
   int cur_param =1;
 
-  if(!lua_isstring(L,cur_param)) goto error;
-  built_elt->script = strdup(lua_tostring(L,cur_param));
+  built_elt->script = strdup(luaL_checkstring(L,cur_param));
   cur_param++;
 
-  if(!lua_isstring(L,cur_param)) goto error;
-  built_elt->name = strdup(lua_tostring(L,cur_param));
+  built_elt->name = strdup(luaL_checkstring(L,cur_param));
   cur_param++;
 
-  int i;
-  const char* type_name = lua_tostring(L,cur_param);
-  if(!type_name) goto error;
-  for (i=0; pref_type_name[i]; i++)
-    if (strcmp(pref_type_name[i], type_name) == 0)
-    {
-      built_elt->type =i;
-      break;
-    }
-  if(!pref_type_name[i]) goto error;
+  luaA_to(L,lua_pref_type,&built_elt->type,cur_param);
   cur_param++;
 
-  if(!lua_isstring(L,cur_param)) goto error;
-  built_elt->label = strdup(lua_tostring(L,cur_param));
+  built_elt->label = strdup(luaL_checkstring(L,cur_param));
   cur_param++;
 
-  if(!lua_isstring(L,cur_param)) goto error;
-  built_elt->tooltip = strdup(lua_tostring(L,cur_param));
+  built_elt->tooltip = strdup(luaL_checkstring(L,cur_param));
   cur_param++;
 
   char pref_name[1024];
   get_pref_name(pref_name,sizeof(pref_name),built_elt->script,built_elt->name);
   switch(built_elt->type)
   {
+    case pref_dir:
+      built_elt->type_data.dir_data.default_value = strdup(luaL_checkstring(L,cur_param));
+      cur_param++;
+
+      if(!dt_conf_key_exists(pref_name)) dt_conf_set_string(pref_name,built_elt->type_data.dir_data.default_value);
+      break;
+    case pref_file:
+      built_elt->type_data.file_data.default_value = strdup(luaL_checkstring(L,cur_param));
+      cur_param++;
+
+      if(!dt_conf_key_exists(pref_name)) dt_conf_set_string(pref_name,built_elt->type_data.file_data.default_value);
+      break;
     case pref_string:
-      if(!lua_isstring(L,cur_param)) goto error;
-      built_elt->type_data.string_data.default_value = strdup(lua_tostring(L,cur_param));
+      built_elt->type_data.string_data.default_value = strdup(luaL_checkstring(L,cur_param));
       cur_param++;
 
       if(!dt_conf_key_exists(pref_name)) dt_conf_set_string(pref_name,built_elt->type_data.string_data.default_value);
       break;
     case pref_bool:
-      if(!lua_isboolean(L,cur_param)) goto error;
+      luaL_checktype(L,cur_param,LUA_TBOOLEAN);
       built_elt->type_data.bool_data.default_value = lua_toboolean(L,cur_param);
       cur_param++;
 
       if(!dt_conf_key_exists(pref_name)) dt_conf_set_bool(pref_name,built_elt->type_data.bool_data.default_value);
       break;
     case pref_int:
-      if(!lua_isnumber(L,cur_param)) goto error;
+      luaL_checktype(L,cur_param,LUA_TNUMBER);
       built_elt->type_data.int_data.default_value = lua_tointeger(L,cur_param);
       cur_param++;
 
-      if(!lua_isnumber(L,cur_param)) goto error;
+      luaL_checktype(L,cur_param,LUA_TNUMBER);
       built_elt->type_data.int_data.min = lua_tointeger(L,cur_param);
       cur_param++;
 
-      if(!lua_isnumber(L,cur_param)) goto error;
+      luaL_checktype(L,cur_param,LUA_TNUMBER);
       built_elt->type_data.int_data.max = lua_tointeger(L,cur_param);
       cur_param++;
 
       if(!dt_conf_key_exists(pref_name)) dt_conf_set_int(pref_name,built_elt->type_data.int_data.default_value);
       break;
     case pref_float:
-      if(!lua_isnumber(L,cur_param)) goto error;
+      luaL_checktype(L,cur_param,LUA_TNUMBER);
       built_elt->type_data.float_data.default_value = lua_tonumber(L,cur_param);
       cur_param++;
 
-      if(!lua_isnumber(L,cur_param)) goto error;
+      luaL_checktype(L,cur_param,LUA_TNUMBER);
       built_elt->type_data.float_data.min = lua_tonumber(L,cur_param);
       cur_param++;
 
-      if(!lua_isnumber(L,cur_param)) goto error;
+      luaL_checktype(L,cur_param,LUA_TNUMBER);
       built_elt->type_data.float_data.max = lua_tonumber(L,cur_param);
       cur_param++;
 
-      if(!lua_isnumber(L,cur_param)) goto error;
+      luaL_checktype(L,cur_param,LUA_TNUMBER);
       built_elt->type_data.float_data.step = lua_tonumber(L,cur_param);
       cur_param++;
 
       if(!dt_conf_key_exists(pref_name)) dt_conf_set_float(pref_name,built_elt->type_data.float_data.default_value);
       break;
   }
-
-
-  built_elt->next = pref_list;
-  pref_list = built_elt;
   return 0;
-error:
-  destroy_pref_element(built_elt);
-  return luaL_argerror(L,cur_param,NULL);
+
 }
+
+
+static int register_pref(lua_State*L)
+{
+  // wrapper to catch lua errors in a clean way
+  pref_element * built_elt= NULL;
+  lua_pushcfunction(L,register_pref_sub);
+  lua_insert(L,1);
+  lua_pushlightuserdata(L,&built_elt);
+  int result  = lua_pcall(L,lua_gettop(L) -1,0,0);
+  if(result == LUA_OK) {
+      built_elt->next = pref_list;
+      pref_list = built_elt;
+      return 0;
+  } else {
+    destroy_pref_element(built_elt);
+    return lua_error(L);
+    
+  }
+}
+
+
 static int read_pref(lua_State*L)
 {
   const char *script = luaL_checkstring(L,1);
   const char *name = luaL_checkstring(L,2);
-  const char* type_name = luaL_checkstring(L,3);
-  int i;
-  for (i=0; pref_type_name[i]; i++)
-    if (strcmp(pref_type_name[i], type_name) == 0)
-    {
-      break;
-    }
-  if(!pref_type_name[i]) luaL_argerror(L,3,NULL);
+  lua_pref_type i;
+  luaA_to(L,lua_pref_type,&i,3);
 
   char pref_name[1024];
   get_pref_name(pref_name,sizeof(pref_name),script,name);
   switch(i)
   {
+    case pref_dir:
+    {
+      char *str = dt_conf_get_string(pref_name);
+      lua_pushstring(L,str);
+      g_free(str);
+      break;
+    }
+    case pref_file:
+    {
+      char *str = dt_conf_get_string(pref_name);
+      lua_pushstring(L,str);
+      g_free(str);
+      break;
+    }
     case pref_string:
     {
       char *str = dt_conf_get_string(pref_name);
@@ -250,19 +284,19 @@ static int write_pref(lua_State*L)
 {
   const char *script = luaL_checkstring(L,1);
   const char *name = luaL_checkstring(L,2);
-  const char* type_name = luaL_checkstring(L,3);
   int i;
-  for (i=0; pref_type_name[i]; i++)
-    if (strcmp(pref_type_name[i], type_name) == 0)
-    {
-      break;
-    }
-  if(!pref_type_name[i]) luaL_argerror(L,3,NULL);
+  luaA_to(L,lua_pref_type,&i,3);
 
   char pref_name[1024];
   get_pref_name(pref_name,sizeof(pref_name),script,name);
   switch(i)
   {
+    case pref_dir:
+      dt_conf_set_string(pref_name,luaL_checkstring(L,4));
+      break;
+    case pref_file:
+      dt_conf_set_string(pref_name,luaL_checkstring(L,4));
+      break;
     case pref_string:
       dt_conf_set_string(pref_name,luaL_checkstring(L,4));
       break;
@@ -281,6 +315,18 @@ static int write_pref(lua_State*L)
 }
 
 
+static void callback_dir(GtkWidget *widget, pref_element*cur_elt )
+{
+  char pref_name[1024];
+  get_pref_name(pref_name,sizeof(pref_name),cur_elt->script,cur_elt->name);
+  dt_conf_set_string(pref_name,gtk_file_chooser_get_current_folder(GTK_FILE_CHOOSER(widget)));
+}
+static void callback_file(GtkWidget *widget, pref_element*cur_elt )
+{
+  char pref_name[1024];
+  get_pref_name(pref_name,sizeof(pref_name),cur_elt->script,cur_elt->name);
+  dt_conf_set_string(pref_name,gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(widget)));
+}
 static void callback_string(GtkWidget *widget, pref_element*cur_elt )
 {
   char pref_name[1024];
@@ -306,6 +352,24 @@ static void callback_float(GtkWidget *widget, pref_element*cur_elt )
   dt_conf_set_float(pref_name, gtk_spin_button_get_value(GTK_SPIN_BUTTON(widget)));
 }
 
+static void response_callback_dir(GtkDialog *dialog, gint response_id, pref_element* cur_elt)
+{
+  if(response_id == GTK_RESPONSE_ACCEPT)
+  {
+    char pref_name[1024];
+    get_pref_name(pref_name,sizeof(pref_name),cur_elt->script,cur_elt->name);
+    dt_conf_set_string(pref_name,gtk_file_chooser_get_current_folder(GTK_FILE_CHOOSER(cur_elt->widget)));
+  }
+}
+static void response_callback_file(GtkDialog *dialog, gint response_id, pref_element* cur_elt)
+{
+  if(response_id == GTK_RESPONSE_ACCEPT)
+  {
+    char pref_name[1024];
+    get_pref_name(pref_name,sizeof(pref_name),cur_elt->script,cur_elt->name);
+    dt_conf_set_string(pref_name,gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(cur_elt->widget)));
+  }
+}
 static void response_callback_string(GtkDialog *dialog, gint response_id, pref_element* cur_elt)
 {
   if(response_id == GTK_RESPONSE_ACCEPT)
@@ -343,12 +407,29 @@ static void response_callback_float(GtkDialog *dialog, gint response_id, pref_el
   }
 }
 
+
+static gboolean reset_widget_dir (GtkWidget *label, GdkEventButton *event, pref_element*cur_elt)
+{
+  if(event->type == GDK_2BUTTON_PRESS)
+  {
+    gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(cur_elt->widget), cur_elt->type_data.dir_data.default_value);
+    return TRUE;
+  }
+  return FALSE;
+}
+static gboolean reset_widget_file (GtkWidget *label, GdkEventButton *event, pref_element*cur_elt)
+{
+  if(event->type == GDK_2BUTTON_PRESS)
+  {
+    gtk_file_chooser_set_filename(GTK_FILE_CHOOSER(cur_elt->widget), cur_elt->type_data.file_data.default_value);
+    return TRUE;
+  }
+  return FALSE;
+}
 static gboolean reset_widget_string (GtkWidget *label, GdkEventButton *event, pref_element*cur_elt)
 {
   if(event->type == GDK_2BUTTON_PRESS)
   {
-    char pref_name[1024];
-    get_pref_name(pref_name,sizeof(pref_name),cur_elt->script,cur_elt->name);
     gtk_entry_set_text(GTK_ENTRY(cur_elt->widget), cur_elt->type_data.string_data.default_value);
     return TRUE;
   }
@@ -358,9 +439,6 @@ static gboolean reset_widget_bool (GtkWidget *label, GdkEventButton *event, pref
 {
   if(event->type == GDK_2BUTTON_PRESS)
   {
-    char pref_name[1024];
-    get_pref_name(pref_name,sizeof(pref_name),cur_elt->script,cur_elt->name);
-    gtk_entry_set_text(GTK_ENTRY(cur_elt->widget), cur_elt->type_data.string_data.default_value);
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(cur_elt->widget), cur_elt->type_data.bool_data.default_value);
     return TRUE;
   }
@@ -370,8 +448,6 @@ static gboolean reset_widget_int (GtkWidget *label, GdkEventButton *event, pref_
 {
   if(event->type == GDK_2BUTTON_PRESS)
   {
-    char pref_name[1024];
-    get_pref_name(pref_name,sizeof(pref_name),cur_elt->script,cur_elt->name);
     gtk_spin_button_set_value(GTK_SPIN_BUTTON(cur_elt->widget), cur_elt->type_data.int_data.default_value);
     return TRUE;
   }
@@ -381,8 +457,6 @@ static gboolean reset_widget_float (GtkWidget *label, GdkEventButton *event, pre
 {
   if(event->type == GDK_2BUTTON_PRESS)
   {
-    char pref_name[1024];
-    get_pref_name(pref_name,sizeof(pref_name),cur_elt->script,cur_elt->name);
     gtk_spin_button_set_value(GTK_SPIN_BUTTON(cur_elt->widget), cur_elt->type_data.float_data.default_value);
     return TRUE;
   }
@@ -415,9 +489,31 @@ void init_tab_lua (GtkWidget *dialog, GtkWidget *tab)
     gtk_container_add(GTK_CONTAINER(labelev), label);
     switch(cur_elt->type)
     {
+      case pref_dir:
+        cur_elt->widget = gtk_file_chooser_button_new(_("Select a directory"),GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER);
+        gtk_file_chooser_button_set_width_chars (GTK_FILE_CHOOSER_BUTTON(cur_elt->widget),20);
+        gchar *str = dt_conf_get_string(pref_name);
+        gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(cur_elt->widget), str);
+        g_free(str);
+        g_signal_connect(G_OBJECT(cur_elt->widget), "file-set", G_CALLBACK(callback_dir), cur_elt);
+        snprintf(tooltip, sizeof(tooltip), _("double click to reset to `%s'"), cur_elt->type_data.dir_data.default_value);
+        g_signal_connect(G_OBJECT(labelev), "button-press-event", G_CALLBACK(reset_widget_dir), cur_elt);
+        g_signal_connect(G_OBJECT(dialog), "response", G_CALLBACK(response_callback_dir), cur_elt);
+        break;
+      case pref_file:
+        cur_elt->widget = gtk_file_chooser_button_new(_("Select a file"),GTK_FILE_CHOOSER_ACTION_OPEN);
+        gtk_file_chooser_button_set_width_chars (GTK_FILE_CHOOSER_BUTTON(cur_elt->widget),20);
+        str = dt_conf_get_string(pref_name);
+        gtk_file_chooser_set_filename(GTK_FILE_CHOOSER(cur_elt->widget), str);
+        g_free(str);
+        g_signal_connect(G_OBJECT(cur_elt->widget), "file-set", G_CALLBACK(callback_file), cur_elt);
+        snprintf(tooltip, sizeof(tooltip), _("double click to reset to `%s'"), cur_elt->type_data.file_data.default_value);
+        g_signal_connect(G_OBJECT(labelev), "button-press-event", G_CALLBACK(reset_widget_file), cur_elt);
+        g_signal_connect(G_OBJECT(dialog), "response", G_CALLBACK(response_callback_file), cur_elt);
+        break;
       case pref_string:
         cur_elt->widget = gtk_entry_new();
-        gchar *str = dt_conf_get_string(pref_name);
+        str = dt_conf_get_string(pref_name);
         gtk_entry_set_text(GTK_ENTRY(cur_elt->widget), str);
         g_free(str);
         g_signal_connect(G_OBJECT(cur_elt->widget), "activate", G_CALLBACK(callback_string), cur_elt);
@@ -463,6 +559,13 @@ void init_tab_lua (GtkWidget *dialog, GtkWidget *tab)
 
 int dt_lua_init_preferences(lua_State * L)
 {
+  luaA_enum(L,lua_pref_type);
+  luaA_enum_value_name(L,lua_pref_type,pref_string,"string",true);
+  luaA_enum_value_name(L,lua_pref_type,pref_bool,"bool",true);
+  luaA_enum_value_name(L,lua_pref_type,pref_int,"integer",true);
+  luaA_enum_value_name(L,lua_pref_type,pref_float,"float",true);
+  luaA_enum_value_name(L,lua_pref_type,pref_file,"file",true);
+  luaA_enum_value_name(L,lua_pref_type,pref_dir,"directory",true);
 
   dt_lua_push_darktable_lib(L);
   dt_lua_goto_subtable(L,"preferences");

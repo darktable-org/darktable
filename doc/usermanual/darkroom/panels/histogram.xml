@@ -31,7 +31,8 @@
               module's controls from the histogram. You can left-click towards the right hand
               side of the histogram and then drag right to increase or drag left to decrease the
               exposure. In a similar manner you can control the black level by clicking and
-              dragging in the left hand side.
+              dragging in the left hand side. Double-clicking in the histogram resets the exposure
+              module's parameters to their defaults.
             </para>
           </entry>
           <entry>

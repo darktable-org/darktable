@@ -2420,7 +2420,9 @@ void dt_noiseprofile_interpolate(
 {
   // stupid linear interpolation.
   // to be confirmed for gaussian part.
-  const float t = CLAMP((out->iso - p1->iso)/(p2->iso - p1->iso), 0.0f, 1.0f);
+  const float t = CLAMP(
+                    (float)(out->iso - p1->iso) / (float)(p2->iso - p1->iso),
+                    0.0f, 1.0f);
   for(int k=0; k<3; k++)
   {
     out->a[k] = (1.0f-t)*p1->a[k] + t*p2->a[k];

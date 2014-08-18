@@ -942,7 +942,7 @@ void gui_init(struct dt_iop_module_t *self)
   g->mode = dt_bauhaus_combobox_new(self);
   dt_bauhaus_widget_set_label(g->mode, NULL, _("mode"));
 
-  dt_bauhaus_combobox_add(g->mode, _("manual"));
+  dt_bauhaus_combobox_add(g->mode, C_("mode", "manual"));
   g->modes = g_list_append(g->modes, GUINT_TO_POINTER(EXPOSURE_MODE_MANUAL));
 
   dt_bauhaus_combobox_add(g->mode, _("automatic"));

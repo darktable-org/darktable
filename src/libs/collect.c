@@ -1388,13 +1388,24 @@ list_view (dt_lib_collect_rule_t *dr)
       folder = dt_image_film_roll_name(folder);
     }
     gchar *value =  (gchar *)sqlite3_column_text(stmt, 0);
-    gchar *escaped_text = g_markup_escape_text(value, -1);
+
+    // replace invalid utf8 characters if any
+    gchar *text = g_strdup(value);
+    gchar *ptr = text;
+    while(!g_utf8_validate(ptr, -1, (const gchar **)&ptr)) ptr[0] = '?';
+
+    gchar *escaped_text = g_markup_escape_text(text, -1);
+
+
     gtk_list_store_set (GTK_LIST_STORE(listmodel), &iter,
                         DT_LIB_COLLECT_COL_TEXT, folder,
                         DT_LIB_COLLECT_COL_ID, sqlite3_column_int(stmt, 1),
                         DT_LIB_COLLECT_COL_TOOLTIP, escaped_text,
                         DT_LIB_COLLECT_COL_PATH, value,
                         -1);
+    g_free(text);
+    g_free(escaped_text);
+
   }
   sqlite3_finalize(stmt);
 

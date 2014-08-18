@@ -82,7 +82,7 @@ void RawDecoder::decodeUncompressed(TiffIFD *rawIFD, BitOrder order) {
     ByteStream in(mFile->getData(slice.offset), slice.count);
     iPoint2D size(width, slice.h);
     iPoint2D pos(0, offY);
-    bitPerPixel = (int)((uint64)(slice.count * 8) / (slice.h * width));
+    bitPerPixel = (int)((uint64)((uint64)slice.count * 8u) / (slice.h * width));
     try {
       readUncompressedRaw(in, size, pos, width*bitPerPixel / 8, bitPerPixel, order);
     } catch (RawDecoderException &e) {
@@ -147,6 +147,18 @@ void RawDecoder::readUncompressedRaw(ByteStream &input, iPoint2D& size, iPoint2D
       }
       bits.skipBits(skipBits);
     }
+  } else if (BitOrder_Jpeg16 == order) {
+      BitPumpMSB16 bits(&input);
+      w *= cpp;
+      for (; y < h; y++) {
+        ushort16* dest = (ushort16*) & data[offset.x*sizeof(ushort16)*cpp+y*outPitch];
+        bits.checkPos();
+        for (uint32 x = 0 ; x < w; x++) {
+          uint32 b = bits.getBits(bitPerPixel);
+          dest[x] = b;
+        }
+        bits.skipBits(skipBits);
+      }
   } else if (BitOrder_Jpeg32 == order) {
       BitPumpMSB32 bits(&input);
       w *= cpp;
@@ -590,6 +602,10 @@ RawSpeed::RawImage RawDecoder::decodeRaw()
 {
   try {
     RawImage raw = decodeRawInternal();
+    if(hints.find("pixel_aspect_ratio") != hints.end()) {
+      stringstream convert(hints.find("pixel_aspect_ratio")->second);
+      convert >> raw->pixelAspectRatio;
+    }
     if (interpolateBadPixels)
       raw->fixBadPixels();
     return raw;

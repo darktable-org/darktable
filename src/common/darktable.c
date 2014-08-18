@@ -433,7 +433,14 @@ int dt_init(int argc, char *argv[], const int init_gui,lua_State *L)
         new_xdg_data_dirs = g_strjoin(":", DARKTABLE_SHAREDIR, xdg_data_dirs, NULL);
     }
     else
-      new_xdg_data_dirs = g_strdup(DARKTABLE_SHAREDIR);
+    {
+      // see http://standards.freedesktop.org/basedir-spec/latest/ar01s03.html for a reason to use those as a default
+      if(!g_strcmp0(DARKTABLE_SHAREDIR, "/usr/local/share") || !g_strcmp0(DARKTABLE_SHAREDIR, "/usr/local/share/") ||
+         !g_strcmp0(DARKTABLE_SHAREDIR, "/usr/share") || !g_strcmp0(DARKTABLE_SHAREDIR, "/usr/share/"))
+        new_xdg_data_dirs = g_strdup("/usr/local/share/:/usr/share/");
+      else
+        new_xdg_data_dirs = g_strdup_printf("%s:/usr/local/share/:/usr/share/", DARKTABLE_SHAREDIR);
+    }
 
     if(set_env)
       g_setenv("XDG_DATA_DIRS", new_xdg_data_dirs, 1);
@@ -459,7 +466,9 @@ int dt_init(int argc, char *argv[], const int init_gui,lua_State *L)
   char *configdir_from_command = NULL;
   char *cachedir_from_command = NULL;
 
-  char *lua_command  __attribute__((unused))= NULL;
+#ifdef USE_LUA
+  char *lua_command = NULL;
+#endif
 
   darktable.num_openmp_threads = 1;
 #ifdef _OPENMP
@@ -562,7 +571,11 @@ int dt_init(int argc, char *argv[], const int init_gui,lua_State *L)
       }
       else if(!strcmp(argv[k], "--luacmd"))
       {
+#ifdef USE_LUA
         lua_command = argv[++k];
+#else
+        ++k;
+#endif
       }
     }
 #ifndef MAC_INTEGRATION

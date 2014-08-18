@@ -89,11 +89,16 @@ RawImage RafDecoder::decodeRawInternal() {
   ByteStream input(mFile->getData(off), mFile->getSize() - off);
   iPoint2D pos(0, 0);
 
-  if (mRootIFD->endian == big)
+  if (hints.find("double_width_unpacked") != hints.end()) {
+    Decode16BitRawUnpacked(input, width*2, height);
+  } else if (mRootIFD->endian == big) {
     Decode16BitRawBEunpacked(input, width, height);
-  else
-    readUncompressedRaw(input, mRaw->dim, pos, width*bps/8, bps, BitOrder_Plain);
-
+  } else {
+    if (hints.find("jpeg32_bitorder") != hints.end())
+      readUncompressedRaw(input, mRaw->dim, pos, width*bps/8, bps, BitOrder_Jpeg32);
+    else
+      readUncompressedRaw(input, mRaw->dim, pos, width*bps/8, bps, BitOrder_Plain);
+  }
   return mRaw;
 }
 
@@ -156,14 +161,21 @@ void RafDecoder::decodeMetaDataInternal(CameraMetaData *meta) {
   if (rotate && !this->uncorrectedRawValues) {
     // Calculate the 45 degree rotated size;
     uint32 rotatedsize;
-    if (alt_layout)
+    uint32 rotationPos;
+    if (alt_layout) {
       rotatedsize = new_size.y+new_size.x/2;
-    else
+      rotationPos = new_size.x/2 - 1;
+    }
+    else {
       rotatedsize = new_size.x+new_size.y/2;
+      rotationPos = new_size.x - 1;
+    }
 
-    iPoint2D final_size(rotatedsize, rotatedsize);
+    iPoint2D final_size(rotatedsize, rotatedsize-1);
     RawImage rotated = RawImage::create(final_size, TYPE_USHORT16, 1);
     rotated->clearArea(iRectangle2D(iPoint2D(0,0), rotated->dim));
+    rotated->fujiRotationPos = rotationPos;
+
     int dest_pitch = (int)rotated->pitch / 2;
     ushort16 *dst = (ushort16*)rotated->getData(0,0);
 
