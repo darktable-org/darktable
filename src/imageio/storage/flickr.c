@@ -153,8 +153,7 @@ static _flickr_api_context_t *_flickr_api_authenticate(dt_storage_flickr_gui_dat
       }
       g_free (_username);
     }
-    if (_user_token)
-      g_free (_user_token);
+    g_free(_user_token);
   }
   else
   {
@@ -589,8 +588,7 @@ gui_init (dt_imageio_module_storage_t *self)
   }
   */
 
-  if( _username )
-    g_free (_username);
+  g_free(_username);
   gtk_combo_box_set_active(GTK_COMBO_BOX(ui->comboBox1), 0);
 }
 

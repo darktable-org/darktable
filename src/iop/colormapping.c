@@ -574,8 +574,7 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
   if(self->dev->gui_attached && g && piece->pipe->type == DT_DEV_PIXELPIPE_PREVIEW && (data->flag & ACQUIRE))
   {
     dt_pthread_mutex_lock(&g->lock);
-    if(g->buffer)
-      free (g->buffer);
+    free(g->buffer);
 
     g->buffer = malloc (width*height*ch*sizeof(float));
     g->width = width;
