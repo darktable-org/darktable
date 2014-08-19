@@ -54,7 +54,7 @@
 #endif
 #endif
 
-DT_MODULE_INTROSPECTION(4, dt_iop_lensfun_params_t)
+DT_MODULE_INTROSPECTION(5, dt_iop_lensfun_params_t)
 
 typedef enum dt_iop_lensfun_modflag_t
 {
@@ -200,7 +200,7 @@ void connect_key_accels(dt_iop_module_t *self)
 int
 legacy_params (dt_iop_module_t *self, const void *const old_params, const int old_version, void *new_params, const int new_version)
 {
-  if (old_version == 2 && new_version == 4)
+  if (old_version == 2 && new_version == 5)
   {
     // legacy params of version 2; version 1 comes from ancient times and seems to be forgotten by now
     typedef struct dt_iop_lensfun_params_v2_t
@@ -235,15 +235,17 @@ legacy_params (dt_iop_module_t *self, const void *const old_params, const int ol
     n->distance = o->distance;
     n->target_geom = o->target_geom;
     n->tca_override = o->tca_override;
-    n->tca_r = o->tca_r;
-    n->tca_b = o->tca_b;
     strncpy(n->camera, o->camera, sizeof(n->camera));
     strncpy(n->lens, o->lens, sizeof(n->lens));
     n->modified = 1;
 
+    // old versions had R and B swapped
+    n->tca_r = o->tca_b;
+    n->tca_b = o->tca_r;
+
     return 0;
   }
-  if (old_version == 3 && new_version == 4)
+  if (old_version == 3 && new_version == 5)
   {
     typedef struct dt_iop_lensfun_params_v3_t
     {
@@ -268,12 +270,53 @@ legacy_params (dt_iop_module_t *self, const void *const old_params, const int ol
 
     *n = *d;  // start with a fresh copy of default parameters
 
-    // one more parameter and changed parameters in case we autodetect
     memcpy(n, o, sizeof(dt_iop_lensfun_params_t) - sizeof(int));
+
+    // one more parameter and changed parameters in case we autodetect
     n->modified = 1;
+
+    // old versions had R and B swapped
+    n->tca_r = o->tca_b;
+    n->tca_b = o->tca_r;
 
     return 0;
   }
+
+  if (old_version == 4 && new_version == 5)
+  {
+    typedef struct dt_iop_lensfun_params_v4_t
+    {
+      int modify_flags;
+      int inverse;
+      float scale;
+      float crop;
+      float focal;
+      float aperture;
+      float distance;
+      lfLensType target_geom;
+      char camera[128];
+      char lens[128];
+      int tca_override;
+      float tca_r, tca_b;
+      int modified;
+    }
+    dt_iop_lensfun_params_v4_t;
+
+    const dt_iop_lensfun_params_v4_t *o = (dt_iop_lensfun_params_v4_t *)old_params;
+    dt_iop_lensfun_params_t *n = (dt_iop_lensfun_params_t *)new_params;
+    dt_iop_lensfun_params_t *d = (dt_iop_lensfun_params_t *)self->default_params;
+
+    *n = *d;  // start with a fresh copy of default parameters
+
+    memcpy(n, o, sizeof(dt_iop_lensfun_params_t));
+
+    // old versions had R and B swapped
+    n->tca_r = o->tca_b;
+    n->tca_b = o->tca_r;
+
+    return 0;
+  }
+
   return 1;
 }
 
@@ -945,8 +988,8 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
         memset(&tca, 0, sizeof(lfLensCalibTCA));
         tca.Focal = 0;
         tca.Model = LF_TCA_MODEL_LINEAR;
-        tca.Terms[0] = p->tca_b;
-        tca.Terms[1] = p->tca_r;
+        tca.Terms[0] = p->tca_r;
+        tca.Terms[1] = p->tca_b;
         if(d->lens->CalibTCA)
           while (d->lens->CalibTCA[0])
             lf_lens_remove_calib_tca (d->lens, 0);
