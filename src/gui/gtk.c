@@ -1061,6 +1061,7 @@ static void init_widgets(dt_gui_gtk_t *gui)
   {
     gui->dpi = screen_dpi_overwrite;
     gdk_screen_set_resolution(gtk_widget_get_screen(widget), screen_dpi_overwrite);
+    dt_print(DT_DEBUG_CONTROL, "[screen resolution] setting the screen resolution to %f dpi as specified in the configuration file\n", screen_dpi_overwrite);
   }
   else
   {
@@ -1069,7 +1070,11 @@ static void init_widgets(dt_gui_gtk_t *gui)
     {
       gui->dpi = 96.0;
       gdk_screen_set_resolution(gtk_widget_get_screen(widget), 96.0);
+      dt_print(DT_DEBUG_CONTROL, "[screen resolution] setting the screen resolution to the default 96 dpi\n");
     }
+    else
+      dt_print(DT_DEBUG_CONTROL, "[screen resolution] setting the screen resolution to %f dpi\n", gui->dpi);
+
   }
   gui->dpi_factor = gui->dpi / 96; // according to man xrandr and the docs of gdk_screen_set_resolution 96 is the default
 
