@@ -43,6 +43,8 @@
 #include <exiv2/image.hpp>
 #include <exiv2/exif.hpp>
 
+using namespace std;
+
 extern "C"
 {
 #include "common/exif.h"
