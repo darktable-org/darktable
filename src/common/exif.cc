@@ -20,22 +20,27 @@
 
 #define __STDC_FORMAT_MACROS
 
+extern "C"
+{
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
 
-#include <iostream>
-#include <fstream>
-#include <sstream>
-#include <cassert>
 #include <glib.h>
 #include <zlib.h>
-#include <string>
 #include <time.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>
 #include <sqlite3.h>
+}
+
+#include <cmath>
+#include <iostream>
+#include <fstream>
+#include <string>
+#include <sstream>
+#include <cassert>
 
 #include <exiv2/easyaccess.hpp>
 #include <exiv2/xmp.hpp>
@@ -1185,7 +1190,7 @@ int dt_exif_read_blob(
 
       //GPS data
       const dt_image_t *cimg = dt_image_cache_read_get(darktable.image_cache, imgid);
-      if(!isnan(cimg->longitude) && !isnan(cimg->latitude))
+      if(!std::isnan(cimg->longitude) && !std::isnan(cimg->latitude))
       {
         exifData["Exif.GPSInfo.GPSVersionID"] = "02 02 00 00";
         exifData["Exif.GPSInfo.GPSLongitudeRef"] = (cimg->longitude < 0 ) ? "W" : "E";
@@ -1776,7 +1781,7 @@ dt_exif_xmp_read_data(Exiv2::XmpData &xmpData, const int imgid)
     xmpData["Xmp.xmpMM.DerivedFrom"] = filename;
 
   // GPS data
-  if(!isnan(longitude) && !isnan(latitude))
+  if(!std::isnan(longitude) && !std::isnan(latitude))
   {
     char long_dir = 'E', lat_dir = 'N';
     if(longitude < 0) long_dir = 'W';
