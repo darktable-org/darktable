@@ -843,7 +843,7 @@ int luaA_enum_push_type(lua_State *L, luaA_Type type, const void* value) {
     size_t size = lua_tointeger(L, -1);
     lua_pop(L, 2);
     
-    lua_Integer lvalue;
+    lua_Integer lvalue =0;
     memcpy(&lvalue, value, size);
     
     lua_pushinteger(L, lvalue);
@@ -924,7 +924,7 @@ bool luaA_enum_has_value_type(lua_State* L, luaA_Type type, const void* value) {
     size_t size = lua_tointeger(L, -1);
     lua_pop(L, 2);
     
-    lua_Integer lvalue;
+    lua_Integer lvalue = 0;
     memcpy(&lvalue, value, size);
     
     lua_pushinteger(L, lvalue);

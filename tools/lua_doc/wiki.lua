@@ -47,11 +47,11 @@ end
 
 
 local function get_reported_type(node,simple)
-	if not doc.get_attribute(node,"reported_type") then
+	if not node:get_reported_type() then
 		doc.debug_print(node)
 		error("all types should have a reported type")
 	end
-	local rtype = doc.get_attribute(node,"reported_type")
+	local rtype = node:get_reported_type()
 	if rtype == "documentation node" then rtype = nil end
 	if rtype == "dt_singleton" then rtype = nil end
 	if( rtype and not simple and doc.get_attribute(node,"signature")) then
@@ -170,7 +170,7 @@ parse_doc_node = function(node,parent,prev_name)
 	if(node._luadoc_type == "param") then
 		local tmp_node = doc.get_main_parent(node)
 		local tmp_string = "p"
-		while doc.get_attribute(tmp_node,"reported_type") == "function" do
+		while tmp_node:get_reported_type() == "function" do
 			tmp_string = tmp_string.."("
 			tmp_node = doc.get_main_parent(tmp_node)
 		end

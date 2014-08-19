@@ -875,15 +875,7 @@ All functions and data are accessed through the darktable module.</para>
 <synopsis>table</synopsis>
 <para>Lua allows you do manipulate preferences. Lua has its own namespace for preferences and you can't access nor write normal darktable preferences.</para>
 <para>Preference handling functions take a _script_ parameter. This is a string used to avoid name collision in preferences (i.e namespace). Set it to something unique, usually the name of the script handling the preference.</para>
-<para>Preference handling functions can't guess the type of a parameter. You must pass the type of the preference you are handling. Allowed values are the following strings<itemizedlist>
-<listitem><para>string</para></listitem>
-<listitem><para>bool</para></listitem>
-<listitem><para>integer</para></listitem>
-<listitem><para>float</para></listitem>
-<listitem><para>file</para></listitem>
-<listitem><para>directory</para></listitem>
-</itemizedlist>
-</para>
+<para>Preference handling functions can't guess the type of a parameter. You must pass the type of the preference you are handling. </para>
 
 <section status="final" id="darktable_preferences_register">
 <title>darktable.preferences.register</title>
@@ -894,7 +886,7 @@ All functions and data are accessed through the darktable module.</para>
 <synopsis>function( 
 	<emphasis><link linkend="darktable_preferences_register_script">script</link></emphasis> : string, 
 	<emphasis><link linkend="darktable_preferences_register_name">name</link></emphasis> : string, 
-	<emphasis><link linkend="darktable_preferences_register_type">type</link></emphasis> : string, 
+	<emphasis><link linkend="darktable_preferences_register_type">type</link></emphasis> : <link linkend="types_lua_pref_type">types.lua_pref_type</link>, 
 	<emphasis><link linkend="darktable_preferences_register_label">label</link></emphasis> : string, 
 	<emphasis><link linkend="darktable_preferences_register_tooltip">tooltip</link></emphasis> : string, 
 	[<emphasis><link linkend="darktable_preferences_register_default">default</link></emphasis> : depends on type], 
@@ -918,7 +910,7 @@ All functions and data are accessed through the darktable module.</para>
 </listitem></varlistentry>
 
 <varlistentry id="darktable_preferences_register_type"><term>type</term><listitem>
-<synopsis>string</synopsis>
+<synopsis><link linkend="types_lua_pref_type">types.lua_pref_type</link></synopsis>
 <para>The type of the preference - one of the string values described above.</para>
 
 </listitem></varlistentry>
@@ -971,7 +963,7 @@ All functions and data are accessed through the darktable module.</para>
 <synopsis>function( 
 	<emphasis><link linkend="darktable_preferences_read_script">script</link></emphasis> : string, 
 	<emphasis><link linkend="darktable_preferences_read_name">name</link></emphasis> : string, 
-	<emphasis><link linkend="darktable_preferences_read_type">type</link></emphasis> : string
+	<emphasis><link linkend="darktable_preferences_read_type">type</link></emphasis> : <link linkend="types_lua_pref_type">types.lua_pref_type</link>
 ) : depends on type</synopsis>
 <para>Reads a value from a Lua preference.</para>
 
@@ -989,7 +981,7 @@ All functions and data are accessed through the darktable module.</para>
 </listitem></varlistentry>
 
 <varlistentry id="darktable_preferences_read_type"><term>type</term><listitem>
-<synopsis>string</synopsis>
+<synopsis><link linkend="types_lua_pref_type">types.lua_pref_type</link></synopsis>
 <para>The type of the preference - one of the string values described above.</para>
 
 </listitem></varlistentry>
@@ -1013,7 +1005,7 @@ All functions and data are accessed through the darktable module.</para>
 <synopsis>function( 
 	<emphasis><link linkend="darktable_preferences_write_script">script</link></emphasis> : string, 
 	<emphasis><link linkend="darktable_preferences_write_name">name</link></emphasis> : string, 
-	<emphasis><link linkend="darktable_preferences_write_type">type</link></emphasis> : string, 
+	<emphasis><link linkend="darktable_preferences_write_type">type</link></emphasis> : <link linkend="types_lua_pref_type">types.lua_pref_type</link>, 
 	<emphasis><link linkend="darktable_preferences_write_value">value</link></emphasis> : depends on type
 )</synopsis>
 <para>Writes a value to a Lua preference.</para>
@@ -1032,7 +1024,7 @@ All functions and data are accessed through the darktable module.</para>
 </listitem></varlistentry>
 
 <varlistentry id="darktable_preferences_write_type"><term>type</term><listitem>
-<synopsis>string</synopsis>
+<synopsis><link linkend="types_lua_pref_type">types.lua_pref_type</link></synopsis>
 <para>The type of the preference - one of the string values described above.</para>
 
 </listitem></varlistentry>
@@ -1895,14 +1887,8 @@ end</programlisting>
 <primary>Lua API</primary>
 <secondary>direction</secondary>
 </indexterm>
-<synopsis>string</synopsis>
-<para>The direction of the snapshot overlay, can be one of:<itemizedlist>
-<listitem><para>top</para></listitem>
-<listitem><para>bottom</para></listitem>
-<listitem><para>left</para></listitem>
-<listitem><para>right</para></listitem>
-</itemizedlist>
-</para>
+<synopsis><link linkend="types_snapshot_direction_t">types.snapshot_direction_t</link></synopsis>
+<para>The direction of the snapshot overlay</para>
 
 </section>
 
@@ -4146,7 +4132,7 @@ Note that this is the real image object; changing the value of a field will imme
 <primary>Lua API</primary>
 <secondary>comp_type</secondary>
 </indexterm>
-<synopsis>string</synopsis>
+<synopsis><link linkend="types_comp_type_t">types.comp_type_t</link></synopsis>
 <para>The overall quality to use; can be one of "webp_lossy" or "webp_lossless".</para>
 
 </section>
@@ -4157,8 +4143,8 @@ Note that this is the real image object; changing the value of a field will imme
 <primary>Lua API</primary>
 <secondary>hint</secondary>
 </indexterm>
-<synopsis>string</synopsis>
-<para>A hint on the overall content of the image, can be one of "hint_default", "hint_picture", "hint_photo", "hint_graphic".</para>
+<synopsis><link linkend="types_hint_t">types.hint_t</link></synopsis>
+<para>A hint on the overall content of the image.</para>
 
 </section>
 
@@ -4212,8 +4198,8 @@ Note that this is the real image object; changing the value of a field will imme
 <primary>Lua API</primary>
 <secondary>format</secondary>
 </indexterm>
-<synopsis>string</synopsis>
-<para>The format to use can be one of "j2k" or "jp2".</para>
+<synopsis><link linkend="types_dt_imageio_j2k_format_t">types.dt_imageio_j2k_format_t</link></synopsis>
+<para>The format to use.</para>
 
 </section>
 
@@ -4223,8 +4209,8 @@ Note that this is the real image object; changing the value of a field will imme
 <primary>Lua API</primary>
 <secondary>preset</secondary>
 </indexterm>
-<synopsis>string</synopsis>
-<para>The preset to use can be one of "cinema2k_24", "cinema2k_48", "cinema4k_24".</para>
+<synopsis><link linkend="types_dt_imageio_j2k_preset_t">types.dt_imageio_j2k_preset_t</link></synopsis>
+<para>The preset to use.</para>
 
 </section>
 
@@ -4932,7 +4918,7 @@ Note that this is the real image object; changing the value of a field will imme
 <primary>Lua API</primary>
 <secondary>container</secondary>
 </indexterm>
-<synopsis>string</synopsis>
+<synopsis><link linkend="types_dt_ui_container_t">types.dt_ui_container_t</link></synopsis>
 <para>The location of the lib in the darktable UI</para>
 
 </section>
@@ -5166,6 +5152,239 @@ Note that this is the real image object; changing the value of a field will imme
 
 </section>
 
+</section>
+
+<section status="final" id="types_hint_t">
+<title>types.hint_t</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>hint_t</secondary>
+</indexterm>
+<synopsis>enum</synopsis>
+<para>a hint on the way to encode a webp image</para>
+<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
+<colspec colwidth="2*"/>
+<colspec colwidth="8*"/>
+<tbody><row>
+<entry>Attributes:</entry>
+<entry><itemizedlist>
+<listitem><para><emphasis>values : </emphasis></para>
+<para><itemizedlist>
+<listitem><para>hint_picture</para></listitem>
+<listitem><para>hint_default</para></listitem>
+<listitem><para>hint_graphic</para></listitem>
+<listitem><para>hint_photo</para></listitem>
+</itemizedlist>
+</para></listitem>
+</itemizedlist>
+</entry>
+</row></tbody>
+</tgroup></informaltable>
+</section>
+
+<section status="final" id="types_dt_ui_container_t">
+<title>types.dt_ui_container_t</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>dt_ui_container_t</secondary>
+</indexterm>
+<synopsis>enum</synopsis>
+<para>A place in the darktable UI where a lib can be placed</para>
+<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
+<colspec colwidth="2*"/>
+<colspec colwidth="8*"/>
+<tbody><row>
+<entry>Attributes:</entry>
+<entry><itemizedlist>
+<listitem><para><emphasis>values : </emphasis></para>
+<para><itemizedlist>
+<listitem><para>DT_UI_CONTAINER_PANEL_CENTER_BOTTOM_RIGHT</para></listitem>
+<listitem><para>DT_UI_CONTAINER_PANEL_RIGHT_CENTER</para></listitem>
+<listitem><para>DT_UI_CONTAINER_PANEL_LEFT_BOTTOM</para></listitem>
+<listitem><para>DT_UI_CONTAINER_PANEL_CENTER_TOP_LEFT</para></listitem>
+<listitem><para>DT_UI_CONTAINER_PANEL_LEFT_CENTER</para></listitem>
+<listitem><para>DT_UI_CONTAINER_PANEL_LEFT_TOP</para></listitem>
+<listitem><para>DT_UI_CONTAINER_PANEL_RIGHT_TOP</para></listitem>
+<listitem><para>DT_UI_CONTAINER_PANEL_BOTTOM</para></listitem>
+<listitem><para>DT_UI_CONTAINER_PANEL_TOP_RIGHT</para></listitem>
+<listitem><para>DT_UI_CONTAINER_PANEL_TOP_CENTER</para></listitem>
+<listitem><para>DT_UI_CONTAINER_PANEL_CENTER_TOP_CENTER</para></listitem>
+<listitem><para>DT_UI_CONTAINER_PANEL_CENTER_TOP_RIGHT</para></listitem>
+<listitem><para>DT_UI_CONTAINER_PANEL_CENTER_BOTTOM_CENTER</para></listitem>
+<listitem><para>DT_UI_CONTAINER_PANEL_CENTER_BOTTOM_LEFT</para></listitem>
+<listitem><para>DT_UI_CONTAINER_PANEL_TOP_LEFT</para></listitem>
+<listitem><para>DT_UI_CONTAINER_PANEL_RIGHT_BOTTOM</para></listitem>
+</itemizedlist>
+</para></listitem>
+</itemizedlist>
+</entry>
+</row></tbody>
+</tgroup></informaltable>
+</section>
+
+<section status="final" id="types_snapshot_direction_t">
+<title>types.snapshot_direction_t</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>snapshot_direction_t</secondary>
+</indexterm>
+<synopsis>enum</synopsis>
+<para>Which part of the main window is occupied by a snapshot</para>
+<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
+<colspec colwidth="2*"/>
+<colspec colwidth="8*"/>
+<tbody><row>
+<entry>Attributes:</entry>
+<entry><itemizedlist>
+<listitem><para><emphasis>values : </emphasis></para>
+<para><itemizedlist>
+<listitem><para>top</para></listitem>
+<listitem><para>bottom</para></listitem>
+<listitem><para>left</para></listitem>
+<listitem><para>right</para></listitem>
+</itemizedlist>
+</para></listitem>
+</itemizedlist>
+</entry>
+</row></tbody>
+</tgroup></informaltable>
+</section>
+
+<section status="final" id="types_dt_imageio_j2k_format_t">
+<title>types.dt_imageio_j2k_format_t</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>dt_imageio_j2k_format_t</secondary>
+</indexterm>
+<synopsis>enum</synopsis>
+<para>J2K format type</para>
+<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
+<colspec colwidth="2*"/>
+<colspec colwidth="8*"/>
+<tbody><row>
+<entry>Attributes:</entry>
+<entry><itemizedlist>
+<listitem><para><emphasis>values : </emphasis></para>
+<para><itemizedlist>
+<listitem><para>j2k</para></listitem>
+<listitem><para>jp2</para></listitem>
+</itemizedlist>
+</para></listitem>
+</itemizedlist>
+</entry>
+</row></tbody>
+</tgroup></informaltable>
+</section>
+
+<section status="final" id="types_dt_imageio_j2k_preset_t">
+<title>types.dt_imageio_j2k_preset_t</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>dt_imageio_j2k_preset_t</secondary>
+</indexterm>
+<synopsis>enum</synopsis>
+<para>J2K preset type</para>
+<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
+<colspec colwidth="2*"/>
+<colspec colwidth="8*"/>
+<tbody><row>
+<entry>Attributes:</entry>
+<entry><itemizedlist>
+<listitem><para><emphasis>values : </emphasis></para>
+<para><itemizedlist>
+<listitem><para>cinema4k_24</para></listitem>
+<listitem><para>cinema2k_48</para></listitem>
+<listitem><para>off</para></listitem>
+<listitem><para>cinema2k_24</para></listitem>
+</itemizedlist>
+</para></listitem>
+</itemizedlist>
+</entry>
+</row></tbody>
+</tgroup></informaltable>
+</section>
+
+<section status="final" id="types_yield_type">
+<title>types.yield_type</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>yield_type</secondary>
+</indexterm>
+<synopsis>enum</synopsis>
+<para>What type of event to wait for</para>
+<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
+<colspec colwidth="2*"/>
+<colspec colwidth="8*"/>
+<tbody><row>
+<entry>Attributes:</entry>
+<entry><itemizedlist>
+<listitem><para><emphasis>values : </emphasis></para>
+<para><itemizedlist>
+<listitem><para>FILE_READABLE</para></listitem>
+<listitem><para>RUN_COMMAND</para></listitem>
+<listitem><para>WAIT_MS</para></listitem>
+</itemizedlist>
+</para></listitem>
+</itemizedlist>
+</entry>
+</row></tbody>
+</tgroup></informaltable>
+</section>
+
+<section status="final" id="types_comp_type_t">
+<title>types.comp_type_t</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>comp_type_t</secondary>
+</indexterm>
+<synopsis>enum</synopsis>
+<para>Type of compression for webp</para>
+<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
+<colspec colwidth="2*"/>
+<colspec colwidth="8*"/>
+<tbody><row>
+<entry>Attributes:</entry>
+<entry><itemizedlist>
+<listitem><para><emphasis>values : </emphasis></para>
+<para><itemizedlist>
+<listitem><para>webp_lossy</para></listitem>
+<listitem><para>webp_lossless</para></listitem>
+</itemizedlist>
+</para></listitem>
+</itemizedlist>
+</entry>
+</row></tbody>
+</tgroup></informaltable>
+</section>
+
+<section status="final" id="types_lua_pref_type">
+<title>types.lua_pref_type</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>lua_pref_type</secondary>
+</indexterm>
+<synopsis>enum</synopsis>
+<para>The type of value to save in a preference</para>
+<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
+<colspec colwidth="2*"/>
+<colspec colwidth="8*"/>
+<tbody><row>
+<entry>Attributes:</entry>
+<entry><itemizedlist>
+<listitem><para><emphasis>values : </emphasis></para>
+<para><itemizedlist>
+<listitem><para>float</para></listitem>
+<listitem><para>directory</para></listitem>
+<listitem><para>bool</para></listitem>
+<listitem><para>integer</para></listitem>
+<listitem><para>file</para></listitem>
+<listitem><para>string</para></listitem>
+</itemizedlist>
+</para></listitem>
+</itemizedlist>
+</entry>
+</row></tbody>
+</tgroup></informaltable>
 </section>
 
 </section>
@@ -5576,7 +5795,7 @@ This event can only be registered once per value of shortcut.
 <secondary>yield</secondary>
 </indexterm>
 <synopsis>function( 
-	<emphasis><link linkend="system_coroutine_yield_type">type</link></emphasis> : string, 
+	<emphasis><link linkend="system_coroutine_yield_type">type</link></emphasis> : <link linkend="types_yield_type">types.yield_type</link>, 
 	<emphasis><link linkend="system_coroutine_yield_extra">extra</link></emphasis> : variable
 ) : variable</synopsis>
 <para>Lua functions can yield at any point. The parameters and return types depend on why we want to yield.</para>
@@ -5589,8 +5808,8 @@ This event can only be registered once per value of shortcut.
 
 <variablelist>
 <varlistentry id="system_coroutine_yield_type"><term>type</term><listitem>
-<synopsis>string</synopsis>
-<para>The type of yield; can be one of "wait_ms", "file_readable", "run_command".</para>
+<synopsis><link linkend="types_yield_type">types.yield_type</link></synopsis>
+<para>The type of yield.</para>
 
 </listitem></varlistentry>
 

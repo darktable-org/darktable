@@ -198,22 +198,14 @@ darktable.configuration.api_version_string:add_version_info([[field added]])
 -----------------------------
 darktable.preferences:set_text([[Lua allows you do manipulate preferences. Lua has its own namespace for preferences and you can't access nor write normal darktable preferences.]]..para()..
 [[Preference handling functions take a _script_ parameter. This is a string used to avoid name collision in preferences (i.e namespace). Set it to something unique, usually the name of the script handling the preference.]]..para()..
-[[Preference handling functions can't guess the type of a parameter. You must pass the type of the preference you are handling. Allowed values are the following strings]]..
-startlist()..
-listel('string')..
-listel('bool')..
-listel('integer')..
-listel('float')..
-listel('file')..
-listel('directory')..
-endlist())
+[[Preference handling functions can't guess the type of a parameter. You must pass the type of the preference you are handling. ]])
 
 darktable.preferences:add_version_info("added float,file,directory parameters")
 
 darktable.preferences.register:set_text([[Creates a new preference entry in the Lua tab of the preference screen. If this function is not called the preference can't be set by the user (you can still read and write invisible preferences).]])
 darktable.preferences.register:add_parameter("script","string",[[Invisible prefix to guarantee unicity of preferences.]])
 darktable.preferences.register:add_parameter("name","string",[[A unique name used with the script part to identify the preference.]])
-darktable.preferences.register:add_parameter("type","string",[[The type of the preference - one of the string values described above.]])
+darktable.preferences.register:add_parameter("type",my_tostring(types.lua_pref_type),[[The type of the preference - one of the string values described above.]])
 darktable.preferences.register:add_parameter("label","string",[[The label displayed in the preference screen.]])
 darktable.preferences.register:add_parameter("tooltip","string",[[The tooltip to display in the preference menue.]])
 darktable.preferences.register:add_parameter("default","depends on type",[[Default value to use when not set explicitely or by the user.]]):set_attribute("optional",true)
@@ -224,13 +216,13 @@ darktable.preferences.register:add_parameter("step","float",[[Step of the spinne
 darktable.preferences.read:set_text([[Reads a value from a Lua preference.]])
 darktable.preferences.read:add_parameter("script","string",[[Invisible prefix to guarantee unicity of preferences.]])
 darktable.preferences.read:add_parameter("name","string",[[The name of the preference displayed in the preference screen.]])
-darktable.preferences.read:add_parameter("type","string",[[The type of the preference - one of the string values described above.]])
+darktable.preferences.read:add_parameter("type",my_tostring(types.lua_pref_type),[[The type of the preference - one of the string values described above.]])
 darktable.preferences.read:add_return("depends on type",[[The value of the preference.]])
     
 darktable.preferences.write:set_text([[Writes a value to a Lua preference.]])
 darktable.preferences.write:add_parameter("script","string",[[Invisible prefix to guarantee unicity of preferences.]])
 darktable.preferences.write:add_parameter("name","string",[[The name of the preference displayed in the preference screen.]])
-darktable.preferences.write:add_parameter("type","string",[[The type of the preference - one of the string values described above.]])
+darktable.preferences.write:add_parameter("type",my_tostring(types.lua_pref_type),[[The type of the preference - one of the string values described above.]])
 darktable.preferences.write:add_parameter("value","depends on type",[[The value to set the preference to.]])
 
 
@@ -386,12 +378,7 @@ darktable.modules.lib:add_version_info([[lib were added]])
 
 darktable.modules.lib.snapshots:set_text([[The UI element that manipulates snapshots in darkroom]])
 darktable.modules.lib.snapshots.ratio:set_text([[The place in the screen where the line separating the snapshot is. Between 0 and 1]])
-darktable.modules.lib.snapshots.direction:set_text([[The direction of the snapshot overlay, can be one of:]]..startlist()..
-listel("top")..
-listel("bottom")..
-listel("left")..
-listel("right")..
-endlist())
+darktable.modules.lib.snapshots.direction:set_text([[The direction of the snapshot overlay]]):set_reported_type(types.snapshot_direction_t)
 
 darktable.modules.lib.snapshots["#"]:set_text([[The different snapshots for the image]])
 darktable.modules.lib.snapshots.selected:set_text([[The currently selected snapshot]])
@@ -554,13 +541,13 @@ types.dt_imageio_module_format_data_jpeg.quality:set_text([[The quality to use a
 types.dt_imageio_module_format_data_ppm:set_text([[Type object describing parameters to export to ppm.]])
 types.dt_imageio_module_format_data_webp:set_text([[Type object describing parameters to export to webp.]])
 types.dt_imageio_module_format_data_webp.quality:set_text([[The quality to use at export time.]])
-types.dt_imageio_module_format_data_webp.comp_type:set_text([[The overall quality to use; can be one of "webp_lossy" or "webp_lossless".]]);
-types.dt_imageio_module_format_data_webp.hint:set_text([[A hint on the overall content of the image, can be one of "hint_default", "hint_picture", "hint_photo", "hint_graphic".]])
+types.dt_imageio_module_format_data_webp.comp_type:set_text([[The overall quality to use; can be one of "webp_lossy" or "webp_lossless".]]):set_reported_type(types.comp_type_t);
+types.dt_imageio_module_format_data_webp.hint:set_text([[A hint on the overall content of the image.]]):set_reported_type(types.hint_t)
 types.dt_imageio_module_format_data_j2k:set_text([[Type object describing parameters to export to jpeg2000.]])
 types.dt_imageio_module_format_data_j2k.quality:set_text([[The quality to use at export time.]])
 types.dt_imageio_module_format_data_j2k.bpp:set_text([[The bpp parameter to use when exporting.]])
-types.dt_imageio_module_format_data_j2k.format:set_text([[The format to use can be one of "j2k" or "jp2".]])
-types.dt_imageio_module_format_data_j2k.preset:set_text([[The preset to use can be one of "cinema2k_24", "cinema2k_48", "cinema4k_24".]])
+types.dt_imageio_module_format_data_j2k.format:set_text([[The format to use.]]):set_reported_type(types.dt_imageio_j2k_format_t)
+types.dt_imageio_module_format_data_j2k.preset:set_text([[The preset to use.]]):set_reported_type(types.dt_imageio_j2k_preset_t)
 
 
 types.dt_imageio_module_storage_t:set_text([[A virtual type representing all storage types.]])
@@ -618,7 +605,7 @@ types.dt_lib_module_t.version:set_text([[The version of the internal data of thi
 types.dt_lib_module_t.visible:set_text([[Allow to make a lib module completely invisible to the user.]]..para()..
 [[Note that if the module is invisible the user will have no way to restore it without lua]])
 types.dt_lib_module_t.visible:set_attribute("implicit_yield",true)
-types.dt_lib_module_t.container:set_text([[The location of the lib in the darktable UI]])
+types.dt_lib_module_t.container:set_text([[The location of the lib in the darktable UI]]):set_reported_type(types.dt_ui_container_t)
 types.dt_lib_module_t.expandable:set_text([[True if the lib can be expanded/retracted]]);
 types.dt_lib_module_t.expanded:set_text([[True if the lib is expanded]]);
 types.dt_lib_module_t.position:set_text([[A value deciding the position of the lib within its container]])
@@ -644,6 +631,16 @@ types.dt_lua_snapshot_t.filename:set_text([[The filename of an image containing 
 types.dt_lua_snapshot_t.select:set_text([[Activates this snapshot on the display. To deactivate all snapshot you need to call this function on the active snapshot]])
 types.dt_lua_snapshot_t.select:add_parameter("snapshot",my_tostring(types.dt_lua_snapshot_t),[[The snapshot to activate]])
 types.dt_lua_snapshot_t.name:set_text([[The name of the snapshot, as seen in the UI]])
+
+types.hint_t:set_text([[a hint on the way to encode a webp image]])
+types.dt_ui_container_t:set_text([[A place in the darktable UI where a lib can be placed]])
+types.snapshot_direction_t:set_text([[Which part of the main window is occupied by a snapshot]])
+types.dt_imageio_j2k_format_t:set_text([[J2K format type]])
+types.dt_imageio_j2k_preset_t:set_text([[J2K preset type]])
+types.yield_type:set_text([[What type of event to wait for]])
+types.comp_type_t:set_text([[Type of compression for webp]])
+types.lua_pref_type:set_text([[The type of value to save in a preference]])
+
 
 
 ----------------------
@@ -722,6 +719,7 @@ attributes.parent:set_text([[This object inherits some methods from another obje
 attributes.views:set_skiped();
 attributes.position:set_skiped();
 attributes.container:set_skiped();
+attributes.values:set_skiped();
 
 ----------------------
 --  SYSTEM          --
@@ -740,6 +738,6 @@ listel("wait_ms: one extra parameter; the execution will pause for that many mil
 listel("file_readable: an opened file from a call to the OS library; will return when the file is readable; returns nothing;")..
 listel([[* run_command: a command to be run by "sh -c"; will return when the command terminates; returns the return code of the execution.]])..
 endlist())
-system.coroutine.yield:add_parameter("type","string",[[The type of yield; can be one of "wait_ms", "file_readable", "run_command".]])
+system.coroutine.yield:add_parameter("type",my_tostring(types.yield_type),[[The type of yield.]])
 system.coroutine.yield:add_parameter("extra","variable",[[An extra parameter: integer for "wait_ms", open file for "file_readable", string for "run_command".]])
 system.coroutine.yield:add_return("variable",[[Nothing for "wait_ms" and "file_readable"; the returned code of the command for "run_command".]])

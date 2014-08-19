@@ -286,7 +286,19 @@ create_documentation_node = function(node,parent,prev_name)
 	return create_empty_node(node,"undocumented node type "..type(node),parent,prev_name)
 end
 
-
+local function document_lautoc_enum(node,parent,prev_name)
+	local registry = debug.getregistry();
+	local result = create_empty_node(node,"enum",parent,prev_name)
+	set_attribute(result,"reported_type","enum")
+	values = {}
+	for name,data in pairs(node) do
+		if type(name) ~= "number" then
+			table.insert(values,name)
+		end
+	end
+	set_attribute(result,"values",values);
+	return result
+end
 
 ----------------------------------------
 --  HELPERS             --
@@ -581,6 +593,19 @@ function M.set_skiped(node)
 	set_attribute(node,"skiped",true)
 end
 
+function M.get_reported_type(node)
+	return M.get_attribute(node,"reported_type")
+end
+
+function M.set_reported_type(node,type)
+	if type == nil then
+		error("can't set reported type to nil");
+	end
+	set_attribute(node,"reported_type",tostring(type))
+	return node
+end
+
+
 meta_node.__index.set_text = M.set_text
 meta_node.__index.add_parameter = M.add_parameter
 meta_node.__index.add_return = M.add_return
@@ -598,6 +623,8 @@ meta_node.__index.set_skiped = M.set_skiped
 meta_node.__index.add_version_info = M.add_version_info
 meta_node.__index.get_version_info = M.get_version_info
 meta_node.__index.get_name = M.get_name
+meta_node.__index.get_reported_type = M.get_reported_type
+meta_node.__index.set_reported_type = M.set_reported_type
 meta_node.__tostring = function(node)
 	return node_to_string(node)
 end
@@ -613,11 +640,16 @@ toplevel = create_documentation_node()
 toplevel.attributes = create_documentation_node(nil,toplevel,"attributes")
 
 toplevel.types = create_documentation_node(nil,toplevel,"types")
+for num,node in pairs(debug.getregistry()["lautoc_enums"]) do
+	local name = debug.getregistry()["lautoc_type_names"][num]
+	toplevel.types[name] = document_lautoc_enum(node,toplevel.types,name)
+end
 for k,v in pairs(debug.getregistry()) do
 	if is_type(v) then
 		toplevel.types[k] = create_documentation_node(v,toplevel.types,k);
 	end
 end
+	
 
 toplevel.darktable = create_documentation_node(nil,toplevel,"darktable")
 for k,v in pairs(dt) do

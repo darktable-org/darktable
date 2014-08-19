@@ -45,7 +45,7 @@ end
 
 
 local function get_reported_type(node,simple)
-	local rtype = doc.get_attribute(node,"reported_type")
+	local rtype = node:get_reported_type()
 	if not rtype then
 		doc.debug_print(node)
 		error("all types should have a reported type")
@@ -173,7 +173,7 @@ parse_doc_node = function(node,parent,prev_name)
 
 	if(node._luadoc_type == "param") then
 		local tmp_node = doc.get_main_parent(node)
-		while doc.get_attribute(tmp_node,"reported_type") == "function" do
+		while tmp_node:get_reported_type() == "function" do
 			tmp_node = doc.get_main_parent(tmp_node)
 		end
 		if(node:get_short_name() == "return") then
