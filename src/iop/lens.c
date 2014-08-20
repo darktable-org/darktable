@@ -1713,10 +1713,13 @@ static void lens_menu_select (
   GtkMenuItem *menuitem, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
+  dt_iop_lensfun_gui_data_t *g = (dt_iop_lensfun_gui_data_t *)self->gui_data;
+  dt_iop_lensfun_params_t   *p = (dt_iop_lensfun_params_t   *)self->params;
   lens_set (self, (lfLens *)g_object_get_data(G_OBJECT(menuitem), "lfLens"));
   if(darktable.gui->reset) return;
-  dt_iop_lensfun_params_t *p = (dt_iop_lensfun_params_t *)self->params;
   p->modified = 1;
+  const float scale = get_autoscale(self, p, g->camera);
+  dt_bauhaus_slider_set(g->scale, scale);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
