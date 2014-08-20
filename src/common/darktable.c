@@ -1030,7 +1030,7 @@ void dt_configure_defaults()
   {
     fprintf(stderr, "[defaults] setting high quality defaults\n");
     dt_conf_set_int("worker_threads", 8);
-    dt_conf_set_int("cache_memory", 1u<<30);
+    dt_conf_set_int64("cache_memory", 1u<<30);
     dt_conf_set_int("plugins/lighttable/thumbnail_width", 1300);
     dt_conf_set_int("plugins/lighttable/thumbnail_height", 1000);
     dt_conf_set_bool("plugins/lighttable/low_quality_thumbnails", FALSE);
@@ -1039,7 +1039,7 @@ void dt_configure_defaults()
   {
     fprintf(stderr, "[defaults] setting very conservative defaults\n");
     dt_conf_set_int("worker_threads", 1);
-    dt_conf_set_int("cache_memory", 200u<<20);
+    dt_conf_set_int64("cache_memory", 200u<<20);
     dt_conf_set_int("host_memory_limit", 500);
     dt_conf_set_int("singlebuffer_limit", 8);
     dt_conf_set_int("plugins/lighttable/thumbnail_width", 800);
