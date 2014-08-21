@@ -2225,7 +2225,8 @@ void gui_update(struct dt_iop_module_t *self)
     cam = lf_db_find_cameras_ext(dt_iop_lensfun_db,
                                  NULL, p->camera, 0);
     dt_pthread_mutex_unlock(&darktable.plugin_threadsafe);
-    if(cam) g->camera = cam[0];
+    if(cam) camera_set (self, cam[0]);
+    else camera_set (self, NULL);
   }
   if(g->camera && p->lens[0])
   {
