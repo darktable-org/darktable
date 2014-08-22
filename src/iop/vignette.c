@@ -114,7 +114,7 @@ typedef struct dt_iop_vignette_params_t
   float whratio;		// 0-1 = width/height ratio, 1-2 = height/width ratio + 1
   float shape;
   int dithering;                // if and how to perform dithering
-  gboolean centerclip;  // whether the values in the center of the vignette should be clipped
+  gboolean unbound;        // whether the values should be clipped
 }
 dt_iop_vignette_params_t;
 
@@ -145,7 +145,7 @@ typedef struct dt_iop_vignette_data_t
   float whratio;
   float shape;
   int dithering;
-  gboolean centerclip;
+  gboolean unbound;
 }
 dt_iop_vignette_data_t;
 
@@ -229,7 +229,7 @@ legacy_params (dt_iop_module_t *self, const void *const old_params, const int ol
     new->whratio= 1.0;
     new->shape= 1.0;
     new->dithering= DITHER_OFF;
-    new->centerclip = FALSE;
+    new->unbound = FALSE;
     return 0;
   }
   if (old_version == 2 && new_version == 4)
@@ -246,7 +246,7 @@ legacy_params (dt_iop_module_t *self, const void *const old_params, const int ol
     new->whratio= old->whratio;
     new->shape= old->shape;
     new->dithering= DITHER_OFF;
-    new->centerclip = FALSE;
+    new->unbound = FALSE;
     return 0;
   }
   if (old_version == 3 && new_version == 4)
@@ -263,7 +263,7 @@ legacy_params (dt_iop_module_t *self, const void *const old_params, const int ol
     new->whratio= old->whratio;
     new->shape= old->shape;
     new->dithering= old->dithering;
-    new->centerclip = FALSE;
+    new->unbound = FALSE;
     return 0;
   }
 
@@ -681,6 +681,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   const dt_iop_vignette_data_t *data = (dt_iop_vignette_data_t *)piece->data;
   const dt_iop_roi_t *buf_in = &piece->buf_in;
   const int ch = piece->colors;
+  const gboolean unbound = data->unbound;
 
   /* Center coordinates of buf_in, these should not consider buf_in->{x,y}! */
   const dt_iop_vector_2d_t buf_center =
@@ -803,23 +804,26 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
       {
         // Then apply falloff vignette
         float falloff=(data->brightness<0)?(1.0+(weight*data->brightness)):(weight*data->brightness);
-        col0=CLIP( ((data->brightness<0)? col0*falloff+dith : col0+falloff+dith) );
-        col1=CLIP( ((data->brightness<0)? col1*falloff+dith : col1+falloff+dith) );
-        col2=CLIP( ((data->brightness<0)? col2*falloff+dith : col2+falloff+dith) );
+        col0 = data->brightness < 0 ? col0*falloff+dith : col0+falloff+dith;
+        col1 = data->brightness < 0 ? col1*falloff+dith : col1+falloff+dith;
+        col2 = data->brightness < 0 ? col2*falloff+dith : col2+falloff+dith;
+
+        col0 = unbound ? col0 : CLIP( col0 );
+        col1 = unbound ? col1 : CLIP( col1 );
+        col2 = unbound ? col2 : CLIP( col2 );
 
         // apply saturation
         float mv=(col0+col1+col2)/3.0;
         float wss=weight*data->saturation;
-        col0=CLIP( col0-((mv-col0)* wss) );
-        col1=CLIP( col1-((mv-col1)* wss) );
-        col2=CLIP( col2-((mv-col2)* wss) );
+        col0 = col0-((mv-col0)* wss);
+        col1 = col1-((mv-col1)* wss);
+        col2 = col2-((mv-col2)* wss);
+
+        col0 = unbound ? col0 : CLIP( col0 );
+        col1 = unbound ? col1 : CLIP( col1 );
+        col2 = unbound ? col2 : CLIP( col2 );
       }
-      else if( data->centerclip )
-      {
-        col0=CLIP( col0 );
-        col1=CLIP( col1 );
-        col2=CLIP( col2 );
-      }
+
       out[0]=col0;
       out[1]=col1;
       out[2]=col2;
@@ -921,7 +925,7 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
   float expt[2] = { exp1, exp2 };
   float brightness = data->brightness;
   float saturation = data->saturation;
-  int centerclip = data->centerclip;
+  int unbound = data->unbound;
 
   size_t sizes[2] = { ROUNDUPWD(width), ROUNDUPHT(height) };
 
@@ -937,7 +941,7 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
   dt_opencl_set_kernel_arg(devid, gd->kernel_vignette, 9, sizeof(float), &brightness);
   dt_opencl_set_kernel_arg(devid, gd->kernel_vignette, 10, sizeof(float), &saturation);
   dt_opencl_set_kernel_arg(devid, gd->kernel_vignette, 11, sizeof(float), &dither);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_vignette, 12, sizeof(int), &centerclip);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_vignette, 12, sizeof(int), &unbound);
   err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_vignette, sizes);
   if(err != CL_SUCCESS) goto error;
 
@@ -1083,7 +1087,7 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
   d->whratio=p->whratio;
   d->shape=p->shape;
   d->dithering=p->dithering;
-  d->centerclip = p->centerclip;
+  d->unbound = p->unbound;
 }
 
 void init_presets (dt_iop_module_so_t *self)
@@ -1100,7 +1104,7 @@ void init_presets (dt_iop_module_so_t *self)
   p.whratio = 1.0f;
   p.shape = 1.0f;
   p.dithering = 0;
-  p.centerclip = TRUE;
+  p.unbound = TRUE;
   dt_gui_presets_add_generic(_("lomo"), self->op, self->version(), &p, sizeof(p), 1);
   DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "commit", NULL, NULL, NULL);
 }
