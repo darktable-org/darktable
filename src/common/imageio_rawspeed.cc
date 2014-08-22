@@ -250,7 +250,7 @@ dt_imageio_open_rawspeed_sraw(dt_image_t *img, RawImage r, dt_mipmap_cache_alloc
   const float scale = (float)(white - black);
 
 #ifdef _OPENMP
-  #pragma omp parallel for default(none) schedule(static)
+  #pragma omp parallel for default(none) schedule(static) shared(raw_width, raw_height, raw_img, img, dimUncropped, cropTL, buf, black)
 #endif
   for(size_t row = 0; row < raw_height; row++)
   {
