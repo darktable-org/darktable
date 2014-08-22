@@ -1546,8 +1546,13 @@ static void lens_set (dt_iop_module_t *self, const lfLens *lens)
 
   if (!lens)
   {
+    gtk_widget_set_sensitive(GTK_WIDGET(g->modflags), FALSE);
+    gtk_widget_set_sensitive(GTK_WIDGET(g->target_geom), FALSE);
+    gtk_widget_set_sensitive(GTK_WIDGET(g->scale), FALSE);
+    gtk_widget_set_sensitive(GTK_WIDGET(g->reverse), FALSE);
     gtk_widget_set_sensitive(GTK_WIDGET(g->tca_r), FALSE);
     gtk_widget_set_sensitive(GTK_WIDGET(g->tca_b), FALSE);
+    gtk_widget_set_sensitive(GTK_WIDGET(g->message), FALSE);
 
     gtk_container_foreach (
       GTK_CONTAINER (g->detection_warning), delete_children, NULL);
@@ -1566,8 +1571,13 @@ static void lens_set (dt_iop_module_t *self, const lfLens *lens)
   }
   else
   {
+    gtk_widget_set_sensitive(GTK_WIDGET(g->modflags), TRUE);
+    gtk_widget_set_sensitive(GTK_WIDGET(g->target_geom), TRUE);
+    gtk_widget_set_sensitive(GTK_WIDGET(g->scale), TRUE);
+    gtk_widget_set_sensitive(GTK_WIDGET(g->reverse), TRUE);
     gtk_widget_set_sensitive(GTK_WIDGET(g->tca_r), TRUE);
     gtk_widget_set_sensitive(GTK_WIDGET(g->tca_b), TRUE);
+    gtk_widget_set_sensitive(GTK_WIDGET(g->message), TRUE);
   }
 
   maker = lf_mlstr_get (lens->Maker);
@@ -2160,14 +2170,12 @@ void gui_init(struct dt_iop_module_t *self)
   dt_bauhaus_widget_set_label(g->tca_r, NULL, _("TCA red"));
   g_signal_connect (G_OBJECT (g->tca_r), "value-changed", G_CALLBACK (tca_changed), self);
   gtk_box_pack_start(GTK_BOX(self->widget), g->tca_r, TRUE, TRUE, 0);
-  gtk_widget_set_sensitive(GTK_WIDGET(g->tca_r), FALSE);
 
   g->tca_b = dt_bauhaus_slider_new_with_range(self, 0.99, 1.01, 0.0001, p->tca_b, 5);
   g_object_set (GTK_OBJECT(g->tca_b), "tooltip-text", _("Transversal Chromatic Aberration blue"), (char *)NULL);
   dt_bauhaus_widget_set_label(g->tca_b, NULL, _("TCA blue"));
   g_signal_connect (G_OBJECT (g->tca_b), "value-changed", G_CALLBACK (tca_changed), self);
   gtk_box_pack_start(GTK_BOX(self->widget), g->tca_b, TRUE, TRUE, 0);
-  gtk_widget_set_sensitive(GTK_WIDGET(g->tca_b), FALSE);
 
   // message box to inform user what corrections have been done. this is useful as depending on lensfuns
   // profile only some of the lens flaws can be corrected
