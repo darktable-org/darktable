@@ -323,7 +323,7 @@ dt_styles_create_from_style (const char *name, const char *newname, const char *
       DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
     }
     else
-      DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "insert into style_items (styleid,num,module,operation,op_params,enabled,blendop_params,blendop_version,multi_priority,multi_name) select ?1, num,module,operation,op_params,enabled,blendop_params,blendop_version,multi_priority,multi_name from style_items where style_id=?2", -1, &stmt, NULL);
+      DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "insert into style_items (styleid,num,module,operation,op_params,enabled,blendop_params,blendop_version,multi_priority,multi_name) select ?1, num,module,operation,op_params,enabled,blendop_params,blendop_version,multi_priority,multi_name from style_items where styleid=?2", -1, &stmt, NULL);
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, id);
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, oldid);
     sqlite3_step (stmt);
