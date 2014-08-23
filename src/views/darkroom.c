@@ -1639,19 +1639,14 @@ void scrolled(dt_view_t *self, double x, double y, int up, int state)
   dt_control_set_dev_zoom_scale(scale);
   if (fabsf(scale-1.0f) < 0.001f)       zoom = DT_ZOOM_1;
   if (fabsf(scale - fitscale) < 0.001f) zoom = DT_ZOOM_FIT;
-  if(zoom != DT_ZOOM_1)
-  {
-    zoom_x -= mouse_off_x/(procw*scale);
-    zoom_y -= mouse_off_y/(proch*scale);
-  }
+  zoom_x -= mouse_off_x/(procw*scale);
+  zoom_y -= mouse_off_y/(proch*scale);
   dt_dev_check_zoom_bounds(dev, &zoom_x, &zoom_y, zoom, closeup, NULL, NULL);
   dt_control_set_dev_zoom(zoom);
   dt_control_set_dev_closeup(closeup);
-  if(zoom != DT_ZOOM_1)
-  {
-    dt_control_set_dev_zoom_x(zoom_x);
-    dt_control_set_dev_zoom_y(zoom_y);
-  }
+  dt_control_set_dev_zoom_x(zoom_x);
+  dt_control_set_dev_zoom_y(zoom_y);
+
   dt_dev_invalidate(dev);
 
   dt_control_queue_redraw();
