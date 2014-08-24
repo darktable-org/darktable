@@ -43,8 +43,8 @@ public:
 private:
   void decodeCompressed(TiffIFD* raw);
   void decodeCompressed2(TiffIFD* raw, int bits);
-  int32 ljpegDiff (ByteStream &input, ushort16 *huff);
-  uint32 getbithuff (ByteStream &input, int nbits, ushort16 *huff);
+  int32 ljpegDiff (BitPumpMSB &pump, ushort16 *huff);
+  uint32 getbithuff (BitPumpMSB &pump, int nbits, ushort16 *huff);
   TiffIFD *mRootIFD;
   ByteStream *b;
 };
