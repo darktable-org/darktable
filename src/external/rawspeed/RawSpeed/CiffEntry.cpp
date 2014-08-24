@@ -26,10 +26,6 @@
 
 namespace RawSpeed {
 
-CiffEntry::CiffEntry() {
-  own_data = NULL;
-}
-
 CiffEntry::CiffEntry(FileMap* f, uint32 value_data, uint32 offset) {
   own_data = NULL;
   unsigned short p = *(unsigned short*)f->getData(offset);
@@ -39,39 +35,14 @@ CiffEntry::CiffEntry(FileMap* f, uint32 value_data, uint32 offset) {
   if (datalocation == 0x0000) { // Data is offset in value_data
     count = *(int*)f->getData(offset + 2);
     data_offset = *(uint32*)f->getData(offset + 6) + value_data;
-    //fprintf(stderr, "  tag 0x%x, count %d, data_offset %d\n", tag, count, data_offset);
     CHECKSIZE(data_offset);
     data = f->getDataWrt(data_offset);
   } else if (datalocation == 0x4000) { // Data is stored directly in entry
-    data = f->getDataWrt(offset + 2);
-    //fprintf(stderr, "  tag 0x%x\n", tag);
+    data_offset = offset +2;
+    count = 8; // Maximum of 8 bytes of data (the size and offset fields)
+    data = f->getDataWrt(data_offset);
   } else
     ThrowCPE("Don't understand data location 0x%x\n", datalocation);
-}
-
-CiffEntry::CiffEntry(CiffTag _tag, CiffDataType _type, uint32 _count, const uchar8* _data )
-{
-  tag = _tag;
-  type = _type;
-  count = _count;
-  if (NULL == _data) {
-    uint32 bytesize = _count << ciff_datashifts[_type];
-    own_data = new uchar8[bytesize];
-    memset(own_data,0,bytesize);
-    data = own_data;
-  } else {
-    data = _data; 
-    own_data = NULL;
-  }
-#ifdef _DEBUG
-  debug_intVal = 0xC0CAC01A;
-  debug_floatVal = sqrtf(-1);
-
-  if (type == CIFF_LONG || type == CIFF_SHORT)
-    debug_intVal = getInt();
-  if (type == CIFF_FLOAT || type == CIFF_DOUBLE)
-    debug_floatVal = getFloat();
-#endif
 }
 
 CiffEntry::~CiffEntry(void) {
@@ -210,7 +181,7 @@ std::string CiffEntry::getValueAsString()
     }
   }
   string ret(temp_string);
-  delete temp_string;
+  delete [] temp_string;
   return ret;
 }
 

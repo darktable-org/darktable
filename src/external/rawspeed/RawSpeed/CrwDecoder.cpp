@@ -44,7 +44,10 @@ RawImage CrwDecoder::decodeRawInternal() {
   uint32 width = sensorInfo->getShortArray()[1];
   uint32 height = sensorInfo->getShortArray()[2];
 
-  uint32 dec_table = mRootIFD->getEntryRecursive(CIFF_DECODERTABLE)->getInt();
+  CiffEntry *decTable = mRootIFD->getEntryRecursive(CIFF_DECODERTABLE);
+  if (!decTable)
+    ThrowRDE("CRW: Couldn't find decoder table");
+  uint32 dec_table = decTable->getInt();
   if (dec_table > 2)
     ThrowRDE("CRW: Unknown decoder table %d", dec_table);
 
@@ -197,25 +200,29 @@ void CrwDecoder::initHuffTables (uint32 table, ushort16 *huff[2])
   huff[1] = makeDecoder(second_tree[table]);
 }
 
+// This is a BitPumpMSB implementation with a twist. If the zero after 0xff
+// tweak was supported this function could be replaced with the much shorter
+// equivalent one in SrwDecoder
 uint32 CrwDecoder::getbithuff (ByteStream &input, int nbits, ushort16 *huff)
 {
   static unsigned bitbuf=0;
   static int vbits=0, reset=0;
-  uint32 c;
 
   if (nbits > 25) return 0;
   if (nbits < 0)
     return bitbuf = vbits = reset = 0;
   if (nbits == 0 || vbits < 0) return 0;
-  // The <1000 comparison is spurious and will always return true as the value 
-  // is a byte converted to uint32. It used to be != EOF in dcraw when using fgetc
-  // but doesn't make sense with getByte as that will throw an exception instead
-  while (!reset && vbits < nbits && (c = ((uint32)input.getByte())) < 1000 &&
-    !(reset = 1 && c == 0xff && ((uint32) input.getByte()))) {
-    bitbuf = (bitbuf << 8) + (uchar8) c;
-    vbits += 8;
+  while (vbits < nbits) {
+    uint32 in = (uint32) input.getByte();
+    // Consume a zero byte after reading 0xff, this is currently incompatible
+    // with using BitPumpMSB and hard to implement directly in the optimized
+    // _fill() implementation we have now
+    if (in != 0xff || input.getByte() == 0x00) {
+      bitbuf = (bitbuf << 8) + (uchar8) in;
+      vbits += 8;
+    }
   }
-  c = bitbuf << (32-vbits) >> (32-nbits);
+  uint32 c = bitbuf << (32-vbits) >> (32-nbits);
   if (huff) {
     vbits -= huff[c] >> 8;
     c = (uchar8) huff[c];

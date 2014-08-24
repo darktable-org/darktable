@@ -136,7 +136,7 @@ void DcrDecoder::decodeKodak65000Segment(ByteStream &input, ushort16 *out, uint3
     uint32 diff = (uint32)bitbuf & (0xffff >> (16-len));
     bitbuf >>= len;
     bits -= len;
-    if ((diff & (1 << (len-1))) == 0)
+    if (len && (diff & (1 << (len-1))) == 0)
       diff -= (1 << len) - 1;
     out[i] = diff;
   }

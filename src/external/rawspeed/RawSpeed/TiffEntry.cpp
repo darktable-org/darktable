@@ -230,7 +230,7 @@ std::string TiffEntry::getValueAsString()
     }
   }
   string ret(temp_string);
-  delete temp_string;
+  delete [] temp_string;
   return ret;
 }
 
