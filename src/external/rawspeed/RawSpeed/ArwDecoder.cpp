@@ -185,7 +185,7 @@ void ArwDecoder::DecodeARW(ByteStream &input, uint32 w, uint32 h) {
       if (len == 4)
         while (len < 17 && !bits.getBitNoFill()) len++;
       int diff = bits.getBits(len);
-      if ((diff & (1 << (len - 1))) == 0)
+      if (len && (diff & (1 << (len - 1))) == 0)
         diff -= (1 << len) - 1;
       sum += diff;
       _ASSERTE(!(sum >> 12));
