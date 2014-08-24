@@ -259,9 +259,6 @@ int32 SrwDecoder::ljpegDiff (BitPumpMSB &pump, ushort16 *huff)
 
 uint32 SrwDecoder::getbithuff (BitPumpMSB &pump, int nbits, ushort16 *huff)
 {
-  if (nbits > 25) 
-    return 0;
-
   uint32 c = pump.peekBits(nbits);
   // Skip bits given by the high order bits of the huff table
   pump.getBitsSafe(huff[c] >> 8);
