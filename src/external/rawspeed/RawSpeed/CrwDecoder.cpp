@@ -44,7 +44,10 @@ RawImage CrwDecoder::decodeRawInternal() {
   uint32 width = sensorInfo->getShortArray()[1];
   uint32 height = sensorInfo->getShortArray()[2];
 
-  uint32 dec_table = mRootIFD->getEntryRecursive(CIFF_DECODERTABLE)->getInt();
+  CiffEntry *decTable = mRootIFD->getEntryRecursive(CIFF_DECODERTABLE);
+  if (!decTable)
+    ThrowRDE("CRW: Couldn't find decoder table");
+  uint32 dec_table = decTable->getInt();
   if (dec_table > 2)
     ThrowRDE("CRW: Unknown decoder table %d", dec_table);
 
