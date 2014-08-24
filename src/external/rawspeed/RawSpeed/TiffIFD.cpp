@@ -202,7 +202,12 @@ TiffIFD* TiffIFD::parseMakerNote(FileMap *f, uint32 offset, Endianness parent_en
       ThrowTPE("Cannot determine Pentax makernote endianness");
     data +=10;
     offset = 10;
+  // Check for fuji signature in else block so we don't accidentally leak FileMap
+  } else if (0 == memcmp(fuji_signature,&data[0], sizeof(fuji_signature))) {
+    mFile = new FileMap(f->getDataWrt(offset), f->getSize()-offset);
+    offset = 12;
   }
+
   // Panasonic has the word Exif at byte 6, a complete Tiff header starts at byte 12
   // This TIFF is 0 offset based
   if (data[6] == 0x45 && data[7] == 0x78 && data[8] == 0x69 && data[9] == 0x66)
@@ -212,13 +217,6 @@ TiffIFD* TiffIFD::parseMakerNote(FileMap *f, uint32 offset, Endianness parent_en
       ThrowTPE("Cannot determine Panasonic makernote endianness");
     data +=20;
     offset +=20;
-  }
-
-  // Check for fuji signature
-
-  if (0 == memcmp(fuji_signature,&data[0], sizeof(fuji_signature))) {
-    mFile = new FileMap(f->getDataWrt(offset), f->getSize()-offset);
-    offset = 12;
   }
 
   // Some have MM or II to indicate endianness - read that
