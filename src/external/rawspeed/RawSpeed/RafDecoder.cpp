@@ -27,7 +27,8 @@ namespace RawSpeed {
 
 RafDecoder::RafDecoder(TiffIFD *rootIFD, FileMap* file) :
     RawDecoder(file), mRootIFD(rootIFD) {
-      decoderVersion = 1;
+  decoderVersion = 1;
+  alt_layout = FALSE;
 }
 RafDecoder::~RafDecoder(void) {
   if (mRootIFD)
@@ -45,7 +46,6 @@ RawImage RafDecoder::decodeRawInternal() {
   mFile = raw->getFileMap();
   uint32 height = 0;
   uint32 width = 0;
-  alt_layout = FALSE;
 
   if (raw->hasEntry(FUJI_RAWIMAGEFULLHEIGHT)) {
     height = raw->getEntry(FUJI_RAWIMAGEFULLHEIGHT)->getInt();
