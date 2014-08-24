@@ -49,7 +49,7 @@ void MosDecoder::parseXMP(TiffEntry *xmp) {
   if (xmp->count <= 0)
     ThrowRDE("MOS Decoder: Empty XMP");
 
-  xmpText = xmp->getDataWrt();
+  uchar8 *xmpText = xmp->getDataWrt();
   xmpText[xmp->count - 1] = 0; // Make sure the string is NUL terminated
 
   char *makeEnd;
