@@ -181,7 +181,7 @@ std::string CiffEntry::getValueAsString()
     }
   }
   string ret(temp_string);
-  delete temp_string;
+  delete [] temp_string;
   return ret;
 }
 
