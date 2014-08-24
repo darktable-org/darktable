@@ -254,7 +254,7 @@ int32 SrwDecoder::ljpegDiff (ByteStream &input, ushort16 *huff)
   if (len == 16)
     return -32768;
   diff = getbithuff(input, len, NULL);
-  if ((diff & (1 << (len-1))) == 0)
+  if (len && (diff & (1 << (len-1))) == 0)
     diff -= (1 << len) - 1;
   return diff;
 }
