@@ -876,6 +876,7 @@ All functions and data are accessed through the darktable module.</para>
 <para>Lua allows you do manipulate preferences. Lua has its own namespace for preferences and you can't access nor write normal darktable preferences.</para>
 <para>Preference handling functions take a _script_ parameter. This is a string used to avoid name collision in preferences (i.e namespace). Set it to something unique, usually the name of the script handling the preference.</para>
 <para>Preference handling functions can't guess the type of a parameter. You must pass the type of the preference you are handling. </para>
+<para>Note that the directory, enum and file type preferences are stored internally as string. The user can only select valid values, but a lua script can set it to any string</para>
 
 <section status="final" id="darktable_preferences_register">
 <title>darktable.preferences.register</title>
@@ -892,7 +893,8 @@ All functions and data are accessed through the darktable module.</para>
 	[<emphasis><link linkend="darktable_preferences_register_default">default</link></emphasis> : depends on type], 
 	[<emphasis><link linkend="darktable_preferences_register_min">min</link></emphasis> : int or float], 
 	[<emphasis><link linkend="darktable_preferences_register_max">max</link></emphasis> : int or float], 
-	[<emphasis><link linkend="darktable_preferences_register_step">step</link></emphasis> : float]
+	[<emphasis><link linkend="darktable_preferences_register_step">step</link></emphasis> : float], 
+	<emphasis><link linkend="darktable_preferences_register_values">values</link></emphasis> : string...
 )</synopsis>
 <para>Creates a new preference entry in the Lua tab of the preference screen. If this function is not called the preference can't be set by the user (you can still read and write invisible preferences).</para>
 
@@ -930,6 +932,7 @@ All functions and data are accessed through the darktable module.</para>
 <varlistentry id="darktable_preferences_register_default"><term>default</term><listitem>
 <synopsis>depends on type</synopsis>
 <para>Default value to use when not set explicitely or by the user.</para>
+<para>For the enum type of pref, this is mandatory</para>
 
 </listitem></varlistentry>
 
@@ -948,6 +951,12 @@ All functions and data are accessed through the darktable module.</para>
 <varlistentry id="darktable_preferences_register_step"><term>step</term><listitem>
 <synopsis>float</synopsis>
 <para>Step of the spinner (float preferences only).</para>
+
+</listitem></varlistentry>
+
+<varlistentry id="darktable_preferences_register_values"><term>values</term><listitem>
+<synopsis>string...</synopsis>
+<para>Other allowed values (enum preferences only)</para>
 
 </listitem></varlistentry>
 
@@ -982,7 +991,7 @@ All functions and data are accessed through the darktable module.</para>
 
 <varlistentry id="darktable_preferences_read_type"><term>type</term><listitem>
 <synopsis><link linkend="types_lua_pref_type">types.lua_pref_type</link></synopsis>
-<para>The type of the preference - one of the string values described above.</para>
+<para>The type of the preference.</para>
 
 </listitem></varlistentry>
 
@@ -1025,7 +1034,7 @@ All functions and data are accessed through the darktable module.</para>
 
 <varlistentry id="darktable_preferences_write_type"><term>type</term><listitem>
 <synopsis><link linkend="types_lua_pref_type">types.lua_pref_type</link></synopsis>
-<para>The type of the preference - one of the string values described above.</para>
+<para>The type of the preference.</para>
 
 </listitem></varlistentry>
 
@@ -5172,8 +5181,8 @@ Note that this is the real image object; changing the value of a field will imme
 <para><itemizedlist>
 <listitem><para>hint_picture</para></listitem>
 <listitem><para>hint_default</para></listitem>
-<listitem><para>hint_graphic</para></listitem>
 <listitem><para>hint_photo</para></listitem>
+<listitem><para>hint_graphic</para></listitem>
 </itemizedlist>
 </para></listitem>
 </itemizedlist>
@@ -5198,22 +5207,22 @@ Note that this is the real image object; changing the value of a field will imme
 <entry><itemizedlist>
 <listitem><para><emphasis>values : </emphasis></para>
 <para><itemizedlist>
-<listitem><para>DT_UI_CONTAINER_PANEL_CENTER_BOTTOM_RIGHT</para></listitem>
-<listitem><para>DT_UI_CONTAINER_PANEL_RIGHT_CENTER</para></listitem>
-<listitem><para>DT_UI_CONTAINER_PANEL_LEFT_BOTTOM</para></listitem>
-<listitem><para>DT_UI_CONTAINER_PANEL_CENTER_TOP_LEFT</para></listitem>
-<listitem><para>DT_UI_CONTAINER_PANEL_LEFT_CENTER</para></listitem>
-<listitem><para>DT_UI_CONTAINER_PANEL_LEFT_TOP</para></listitem>
-<listitem><para>DT_UI_CONTAINER_PANEL_RIGHT_TOP</para></listitem>
-<listitem><para>DT_UI_CONTAINER_PANEL_BOTTOM</para></listitem>
-<listitem><para>DT_UI_CONTAINER_PANEL_TOP_RIGHT</para></listitem>
-<listitem><para>DT_UI_CONTAINER_PANEL_TOP_CENTER</para></listitem>
-<listitem><para>DT_UI_CONTAINER_PANEL_CENTER_TOP_CENTER</para></listitem>
-<listitem><para>DT_UI_CONTAINER_PANEL_CENTER_TOP_RIGHT</para></listitem>
 <listitem><para>DT_UI_CONTAINER_PANEL_CENTER_BOTTOM_CENTER</para></listitem>
+<listitem><para>DT_UI_CONTAINER_PANEL_BOTTOM</para></listitem>
+<listitem><para>DT_UI_CONTAINER_PANEL_CENTER_BOTTOM_RIGHT</para></listitem>
+<listitem><para>DT_UI_CONTAINER_PANEL_LEFT_CENTER</para></listitem>
 <listitem><para>DT_UI_CONTAINER_PANEL_CENTER_BOTTOM_LEFT</para></listitem>
+<listitem><para>DT_UI_CONTAINER_PANEL_CENTER_TOP_RIGHT</para></listitem>
+<listitem><para>DT_UI_CONTAINER_PANEL_RIGHT_CENTER</para></listitem>
+<listitem><para>DT_UI_CONTAINER_PANEL_LEFT_TOP</para></listitem>
+<listitem><para>DT_UI_CONTAINER_PANEL_CENTER_TOP_LEFT</para></listitem>
+<listitem><para>DT_UI_CONTAINER_PANEL_TOP_CENTER</para></listitem>
+<listitem><para>DT_UI_CONTAINER_PANEL_TOP_RIGHT</para></listitem>
 <listitem><para>DT_UI_CONTAINER_PANEL_TOP_LEFT</para></listitem>
+<listitem><para>DT_UI_CONTAINER_PANEL_LEFT_BOTTOM</para></listitem>
+<listitem><para>DT_UI_CONTAINER_PANEL_RIGHT_TOP</para></listitem>
 <listitem><para>DT_UI_CONTAINER_PANEL_RIGHT_BOTTOM</para></listitem>
+<listitem><para>DT_UI_CONTAINER_PANEL_CENTER_TOP_CENTER</para></listitem>
 </itemizedlist>
 </para></listitem>
 </itemizedlist>
@@ -5238,10 +5247,10 @@ Note that this is the real image object; changing the value of a field will imme
 <entry><itemizedlist>
 <listitem><para><emphasis>values : </emphasis></para>
 <para><itemizedlist>
-<listitem><para>top</para></listitem>
 <listitem><para>bottom</para></listitem>
-<listitem><para>left</para></listitem>
 <listitem><para>right</para></listitem>
+<listitem><para>left</para></listitem>
+<listitem><para>top</para></listitem>
 </itemizedlist>
 </para></listitem>
 </itemizedlist>
@@ -5266,8 +5275,8 @@ Note that this is the real image object; changing the value of a field will imme
 <entry><itemizedlist>
 <listitem><para><emphasis>values : </emphasis></para>
 <para><itemizedlist>
-<listitem><para>j2k</para></listitem>
 <listitem><para>jp2</para></listitem>
+<listitem><para>j2k</para></listitem>
 </itemizedlist>
 </para></listitem>
 </itemizedlist>
@@ -5292,10 +5301,10 @@ Note that this is the real image object; changing the value of a field will imme
 <entry><itemizedlist>
 <listitem><para><emphasis>values : </emphasis></para>
 <para><itemizedlist>
-<listitem><para>cinema4k_24</para></listitem>
-<listitem><para>cinema2k_48</para></listitem>
-<listitem><para>off</para></listitem>
 <listitem><para>cinema2k_24</para></listitem>
+<listitem><para>off</para></listitem>
+<listitem><para>cinema2k_48</para></listitem>
+<listitem><para>cinema4k_24</para></listitem>
 </itemizedlist>
 </para></listitem>
 </itemizedlist>
@@ -5375,10 +5384,11 @@ Note that this is the real image object; changing the value of a field will imme
 <para><itemizedlist>
 <listitem><para>float</para></listitem>
 <listitem><para>directory</para></listitem>
-<listitem><para>bool</para></listitem>
-<listitem><para>integer</para></listitem>
-<listitem><para>file</para></listitem>
 <listitem><para>string</para></listitem>
+<listitem><para>integer</para></listitem>
+<listitem><para>enum</para></listitem>
+<listitem><para>file</para></listitem>
+<listitem><para>bool</para></listitem>
 </itemizedlist>
 </para></listitem>
 </itemizedlist>

@@ -198,7 +198,8 @@ darktable.configuration.api_version_string:add_version_info([[field added]])
 -----------------------------
 darktable.preferences:set_text([[Lua allows you do manipulate preferences. Lua has its own namespace for preferences and you can't access nor write normal darktable preferences.]]..para()..
 [[Preference handling functions take a _script_ parameter. This is a string used to avoid name collision in preferences (i.e namespace). Set it to something unique, usually the name of the script handling the preference.]]..para()..
-[[Preference handling functions can't guess the type of a parameter. You must pass the type of the preference you are handling. ]])
+[[Preference handling functions can't guess the type of a parameter. You must pass the type of the preference you are handling. ]]..para()..
+[[Note that the directory, enum and file type preferences are stored internally as string. The user can only select valid values, but a lua script can set it to any string]])
 
 darktable.preferences:add_version_info("added float,file,directory parameters")
 
@@ -208,21 +209,22 @@ darktable.preferences.register:add_parameter("name","string",[[A unique name use
 darktable.preferences.register:add_parameter("type",my_tostring(types.lua_pref_type),[[The type of the preference - one of the string values described above.]])
 darktable.preferences.register:add_parameter("label","string",[[The label displayed in the preference screen.]])
 darktable.preferences.register:add_parameter("tooltip","string",[[The tooltip to display in the preference menue.]])
-darktable.preferences.register:add_parameter("default","depends on type",[[Default value to use when not set explicitely or by the user.]]):set_attribute("optional",true)
+darktable.preferences.register:add_parameter("default","depends on type",[[Default value to use when not set explicitely or by the user.]]..para().."For the enum type of pref, this is mandatory"):set_attribute("optional",true)
 darktable.preferences.register:add_parameter("min","int or float",[[Minimum value (integer and float preferences only).]]):set_attribute("optional",true)
 darktable.preferences.register:add_parameter("max","int or float",[[Maximum value (integer and float preferences only).]]):set_attribute("optional",true)
 darktable.preferences.register:add_parameter("step","float",[[Step of the spinner (float preferences only).]]):set_attribute("optional",true)
+darktable.preferences.register:add_parameter("values","string...",[[Other allowed values (enum preferences only)]])
     
 darktable.preferences.read:set_text([[Reads a value from a Lua preference.]])
 darktable.preferences.read:add_parameter("script","string",[[Invisible prefix to guarantee unicity of preferences.]])
 darktable.preferences.read:add_parameter("name","string",[[The name of the preference displayed in the preference screen.]])
-darktable.preferences.read:add_parameter("type",my_tostring(types.lua_pref_type),[[The type of the preference - one of the string values described above.]])
+darktable.preferences.read:add_parameter("type",my_tostring(types.lua_pref_type),[[The type of the preference.]])
 darktable.preferences.read:add_return("depends on type",[[The value of the preference.]])
     
 darktable.preferences.write:set_text([[Writes a value to a Lua preference.]])
 darktable.preferences.write:add_parameter("script","string",[[Invisible prefix to guarantee unicity of preferences.]])
 darktable.preferences.write:add_parameter("name","string",[[The name of the preference displayed in the preference screen.]])
-darktable.preferences.write:add_parameter("type",my_tostring(types.lua_pref_type),[[The type of the preference - one of the string values described above.]])
+darktable.preferences.write:add_parameter("type",my_tostring(types.lua_pref_type),[[The type of the preference.]])
 darktable.preferences.write:add_parameter("value","depends on type",[[The value to set the preference to.]])
 
 

@@ -14,6 +14,7 @@ void luaA_open(lua_State* L) {
   lua_newtable(L); lua_setfield(L, LUA_REGISTRYINDEX, LUAA_REGISTRYPREFIX "structs_offset");
   lua_newtable(L); lua_setfield(L, LUA_REGISTRYINDEX, LUAA_REGISTRYPREFIX "enums");
   lua_newtable(L); lua_setfield(L, LUA_REGISTRYINDEX, LUAA_REGISTRYPREFIX "enums_sizes");
+  lua_newtable(L); lua_setfield(L, LUA_REGISTRYINDEX, LUAA_REGISTRYPREFIX "enums_values");
   lua_newtable(L); lua_setfield(L, LUA_REGISTRYINDEX, LUAA_REGISTRYPREFIX "functions");
   
   lua_newuserdata(L, LUAA_RETURN_STACK_SIZE); lua_setfield(L, LUA_REGISTRYINDEX, LUAA_REGISTRYPREFIX "call_ret_stk");
@@ -73,6 +74,7 @@ void luaA_close(lua_State* L) {
   lua_pushnil(L); lua_setfield(L, LUA_REGISTRYINDEX, LUAA_REGISTRYPREFIX "structs_offset");
   lua_pushnil(L); lua_setfield(L, LUA_REGISTRYINDEX, LUAA_REGISTRYPREFIX "enums");
   lua_pushnil(L); lua_setfield(L, LUA_REGISTRYINDEX, LUAA_REGISTRYPREFIX "enums_sizes");
+  lua_pushnil(L); lua_setfield(L, LUA_REGISTRYINDEX, LUAA_REGISTRYPREFIX "enums_values");
   lua_pushnil(L); lua_setfield(L, LUA_REGISTRYINDEX, LUAA_REGISTRYPREFIX "functions");
   
   lua_pushnil(L); lua_setfield(L, LUA_REGISTRYINDEX, LUAA_REGISTRYPREFIX "call_ret_stk");
@@ -831,7 +833,7 @@ const char* luaA_struct_next_member_name_type(lua_State* L, luaA_Type type, cons
 
 int luaA_enum_push_type(lua_State *L, luaA_Type type, const void* value) {
   
-  lua_getfield(L, LUA_REGISTRYINDEX, LUAA_REGISTRYPREFIX "enums");
+  lua_getfield(L, LUA_REGISTRYINDEX, LUAA_REGISTRYPREFIX "enums_values");
   lua_pushinteger(L, type);
   lua_gettable(L, -2);
   
@@ -912,7 +914,7 @@ void luaA_enum_to_type(lua_State* L, luaA_Type type, void* c_out, int index) {
 
 bool luaA_enum_has_value_type(lua_State* L, luaA_Type type, const void* value) {
 
-  lua_getfield(L, LUA_REGISTRYINDEX, LUAA_REGISTRYPREFIX "enums");
+  lua_getfield(L, LUA_REGISTRYINDEX, LUAA_REGISTRYPREFIX "enums_values");
   lua_pushinteger(L, type);
   lua_gettable(L, -2);
   
@@ -981,6 +983,12 @@ void luaA_enum_type(lua_State *L, luaA_Type type, size_t size) {
   lua_settable(L, -3);
   lua_pop(L, 1);
   
+  lua_getfield(L, LUA_REGISTRYINDEX, LUAA_REGISTRYPREFIX "enums_values");
+  lua_pushinteger(L, type);
+  lua_newtable(L);
+  lua_settable(L, -3);
+  lua_pop(L, 1);
+  
   lua_getfield(L, LUA_REGISTRYINDEX, LUAA_REGISTRYPREFIX "enums_sizes");
   lua_pushinteger(L, type);
   lua_pushinteger(L, size);
@@ -1014,11 +1022,15 @@ void luaA_enum_value_type(lua_State *L, luaA_Type type, const void* value, const
     lua_setfield(L, -2, "name");
     
     lua_setfield(L, -2, name);
+
+    lua_getfield(L, LUA_REGISTRYINDEX, LUAA_REGISTRYPREFIX "enums_values");
+    lua_pushinteger(L, type);
+    lua_gettable(L, -2);
     lua_pushinteger(L, lvalue);
-    lua_getfield(L, -2, name);
+    lua_getfield(L, -4, name);
     lua_settable(L, -3);
     
-    lua_pop(L, 2);
+    lua_pop(L, 4);
     return;
     
   }
@@ -1037,6 +1049,33 @@ bool luaA_enum_registered_type(lua_State *L, luaA_Type type){
   return reg;
 }
 
+const char* luaA_enum_next_value_name_type(lua_State* L, luaA_Type type, const char* member) {
+
+  lua_getfield(L, LUA_REGISTRYINDEX, LUAA_REGISTRYPREFIX "enums");
+  lua_pushinteger(L, type);
+  lua_gettable(L, -2);
+  
+  if(!lua_isnil(L,-1)) {
+
+    if(!member) {
+      lua_pushnil(L);
+    } else {
+      lua_pushstring(L,member);
+    }
+    if(!lua_next(L,-2)) {
+      lua_pop(L,2);
+      return LUAA_INVALID_MEMBER_NAME;
+    }
+    const char* result = lua_tostring(L,-2);
+    lua_pop(L,4);
+    return result;
+  }
+  
+  lua_pop(L, 2);
+  lua_pushfstring(L, "luaA_enum_next_enum_name_type: Enum '%s' not registered!", luaA_typename(L, type));
+  lua_error(L);
+  return NULL;//can't be reached
+}
 /*
 ** Functions
 */

@@ -29,9 +29,15 @@ typedef enum
   pref_float,
   pref_file,
   pref_dir,
+  pref_enum
 } lua_pref_type;
 
 
+typedef struct enum_data_t
+{
+	char *default_value;
+  luaA_Type enum_type;
+} enum_data_t;
 typedef struct dir_data_t
 {
 	char *default_value;
@@ -71,6 +77,7 @@ typedef union all_data_t
 	float_data_t float_data;
   file_data_t file_data;
   dir_data_t dir_data;
+  enum_data_t enum_data;
 } all_data_t;
 typedef struct pref_element
 {
@@ -96,6 +103,8 @@ static void destroy_pref_element(pref_element*elt)
   // don't free the widget field
   switch(elt->type)
   {
+    case pref_enum:
+      free(elt->type_data.enum_data.default_value);
     case pref_dir:
       free(elt->type_data.dir_data.default_value);
       break;
@@ -150,6 +159,23 @@ static int register_pref_sub(lua_State*L)
   get_pref_name(pref_name,sizeof(pref_name),built_elt->script,built_elt->name);
   switch(built_elt->type)
   {
+    case pref_enum:
+      {
+        luaA_Type enum_type = luaA_type_add(L,pref_name, sizeof(int));
+        luaA_enum_type(L,enum_type, sizeof(int));
+        built_elt->type_data.enum_data.enum_type = enum_type;
+
+        int value = 0;
+        built_elt->type_data.enum_data.default_value = strdup(luaL_checkstring(L,cur_param));
+        while(!lua_isnoneornil(L,cur_param)) {
+          luaA_enum_value_type(L,enum_type,&value,luaL_checkstring(L,cur_param));
+          cur_param++;
+          value++;
+        }
+
+        if(!dt_conf_key_exists(pref_name)) dt_conf_set_string(pref_name,built_elt->type_data.enum_data.default_value);
+        break;
+      }
     case pref_dir:
       built_elt->type_data.dir_data.default_value = strdup(luaL_checkstring(L,cur_param));
       cur_param++;
@@ -246,6 +272,13 @@ static int read_pref(lua_State*L)
   get_pref_name(pref_name,sizeof(pref_name),script,name);
   switch(i)
   {
+    case pref_enum:
+    {
+      char* str = dt_conf_get_string(pref_name);
+      lua_pushstring(L,str);
+      g_free(str);
+      break;
+    }
     case pref_dir:
     {
       char *str = dt_conf_get_string(pref_name);
@@ -284,13 +317,17 @@ static int write_pref(lua_State*L)
 {
   const char *script = luaL_checkstring(L,1);
   const char *name = luaL_checkstring(L,2);
-  int i;
+  int i,tmp;
   luaA_to(L,lua_pref_type,&i,3);
 
   char pref_name[1024];
   get_pref_name(pref_name,sizeof(pref_name),script,name);
   switch(i)
   {
+    case pref_enum:
+      luaA_to(L,pref_name,&tmp,4);
+      dt_conf_set_string(pref_name,lua_tostring(L,4));
+      break;
     case pref_dir:
       dt_conf_set_string(pref_name,luaL_checkstring(L,4));
       break;
@@ -315,6 +352,14 @@ static int write_pref(lua_State*L)
 }
 
 
+static void callback_enum(GtkWidget *widget, pref_element*cur_elt )
+{
+  char pref_name[1024];
+  get_pref_name(pref_name,sizeof(pref_name),cur_elt->script,cur_elt->name);
+  char* text = gtk_combo_box_text_get_active_text(GTK_COMBO_BOX_TEXT(widget));
+  dt_conf_set_string(pref_name,text);
+  g_free(text);
+}
 static void callback_dir(GtkWidget *widget, pref_element*cur_elt )
 {
   char pref_name[1024];
@@ -352,6 +397,17 @@ static void callback_float(GtkWidget *widget, pref_element*cur_elt )
   dt_conf_set_float(pref_name, gtk_spin_button_get_value(GTK_SPIN_BUTTON(widget)));
 }
 
+static void response_callback_enum(GtkDialog *dialog, gint response_id, pref_element* cur_elt)
+{
+  if(response_id == GTK_RESPONSE_ACCEPT)
+  {
+    char pref_name[1024];
+    get_pref_name(pref_name,sizeof(pref_name),cur_elt->script,cur_elt->name);
+    char* text =gtk_combo_box_text_get_active_text(GTK_COMBO_BOX_TEXT(cur_elt->widget));
+    dt_conf_set_string(pref_name,text);
+    g_free(text);
+  }
+}
 static void response_callback_dir(GtkDialog *dialog, gint response_id, pref_element* cur_elt)
 {
   if(response_id == GTK_RESPONSE_ACCEPT)
@@ -408,6 +464,15 @@ static void response_callback_float(GtkDialog *dialog, gint response_id, pref_el
 }
 
 
+static gboolean reset_widget_enum (GtkWidget *label, GdkEventButton *event, pref_element*cur_elt)
+{
+  if(event->type == GDK_2BUTTON_PRESS)
+  {
+    gtk_combo_box_set_active(GTK_COMBO_BOX(cur_elt->widget), 0);
+    return TRUE;
+  }
+  return FALSE;
+}
 static gboolean reset_widget_dir (GtkWidget *label, GdkEventButton *event, pref_element*cur_elt)
 {
   if(event->type == GDK_2BUTTON_PRESS)
@@ -489,6 +554,29 @@ void init_tab_lua (GtkWidget *dialog, GtkWidget *tab)
     gtk_container_add(GTK_CONTAINER(labelev), label);
     switch(cur_elt->type)
     {
+      case pref_enum:
+        cur_elt->widget = gtk_combo_box_text_new();
+        g_signal_connect(G_OBJECT(cur_elt->widget), "changed", G_CALLBACK(callback_enum), cur_elt);
+        {
+          gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(cur_elt->widget),cur_elt->type_data.enum_data.default_value);
+          const char * entry = luaA_enum_next_value_name_type(darktable.lua_state.state,cur_elt->type_data.enum_data.enum_type,entry);
+          int entry_id = 0;
+          while(entry){
+            if(strcmp(entry,cur_elt->type_data.enum_data.default_value) != 0) {
+              gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(cur_elt->widget),entry);
+              entry_id++;
+              if(!strcmp(entry,dt_conf_get_string(pref_name))) {
+                gtk_combo_box_set_active(GTK_COMBO_BOX(cur_elt->widget),entry_id);
+              }
+            }
+            entry = luaA_enum_next_value_name_type(darktable.lua_state.state,cur_elt->type_data.enum_data.enum_type,entry);
+          }
+
+        }
+        snprintf(tooltip, sizeof(tooltip), _("double click to reset to `%s'"), cur_elt->type_data.enum_data.default_value);
+        g_signal_connect(G_OBJECT(labelev), "button-press-event", G_CALLBACK(reset_widget_enum), cur_elt);
+        g_signal_connect(G_OBJECT(dialog), "response", G_CALLBACK(response_callback_enum), cur_elt);
+        break;
       case pref_dir:
         cur_elt->widget = gtk_file_chooser_button_new(_("Select a directory"),GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER);
         gtk_file_chooser_button_set_width_chars (GTK_FILE_CHOOSER_BUTTON(cur_elt->widget),20);
@@ -566,6 +654,7 @@ int dt_lua_init_preferences(lua_State * L)
   luaA_enum_value_name(L,lua_pref_type,pref_float,"float");
   luaA_enum_value_name(L,lua_pref_type,pref_file,"file");
   luaA_enum_value_name(L,lua_pref_type,pref_dir,"directory");
+  luaA_enum_value_name(L,lua_pref_type,pref_enum,"enum");
 
   dt_lua_push_darktable_lib(L);
   dt_lua_goto_subtable(L,"preferences");

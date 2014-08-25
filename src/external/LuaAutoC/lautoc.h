@@ -172,6 +172,7 @@ const char* luaA_struct_next_member_name_type(lua_State* L, luaA_Type type, cons
 #define luaA_enum_has_name(L, type, name) luaA_enum_has_name_type(L, luaA_type(L, type), name)
 
 #define luaA_enum_registered(L, type) luaA_enum_registered_type(L, luaA_type(L, type))
+#define luaA_enum_next_value_name(L, type, member) luaA_enum_next_value_name_type(L, luaA_type(L,type), member)
 
 void luaA_enum_type(lua_State* L, luaA_Type type, size_t size);
 void luaA_enum_value_type(lua_State *L, luaA_Type type, const void* value, const char* name);
@@ -183,6 +184,7 @@ bool luaA_enum_has_value_type(lua_State* L, luaA_Type type, const void* value);
 bool luaA_enum_has_name_type(lua_State* L, luaA_Type type, const char* name);
 
 bool luaA_enum_registered_type(lua_State *L, luaA_Type type);
+const char* luaA_enum_next_value_name_type(lua_State* L, luaA_Type type, const char* member);
 
 /*
 ** Functions
