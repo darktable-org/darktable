@@ -94,12 +94,9 @@ clip_rotate_bilinear(read_only image2d_t in, write_only image2d_t out, const int
   po.x -= roi_in.x;
   po.y -= roi_in.y;
 
-  const int ii = (int)po.x;
-  const int jj = (int)po.y;
+  float4 pixel = interpolation_compute_pixel_bilinear_4f(in, in_width, in_height, po);
 
-  float4 o = (ii >=0 && jj >= 0 && ii <= in_width-2 && jj <= in_height-2) ? read_imagef(in, samplerf, po) : (float4)0.0f;
-
-  write_imagef (out, (int2)(x, y), o);
+  write_imagef (out, (int2)(x, y), pixel);
 }
 
 /* kernel for clip&rotate: bicubic interpolation */

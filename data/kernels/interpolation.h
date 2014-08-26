@@ -68,3 +68,14 @@ interpolation_func_lanczos(float width, float t)
   return (DT_LANCZOS_EPSILON + width*sign.f*sinf_fast(M_PI_F*r)*sinf_fast(M_PI_F*t/width))/(DT_LANCZOS_EPSILON + M_PI_F*M_PI_F*t*t);
 }
 #endif
+
+float4
+interpolation_compute_pixel_bilinear_4f(
+  read_only image2d_t in,
+  const int in_width, const int in_height,
+  float2 po)
+{
+  float4 o = (po.x >=0 && po.y >= 0 && po.x <= in_width-2 && po.y <= in_height-2) ? read_imagef(in, samplerf, po) : (float4)0.0f;
+
+  return o;
+}
