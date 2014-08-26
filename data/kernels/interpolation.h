@@ -79,3 +79,33 @@ interpolation_compute_pixel_bilinear_4f(
 
   return o;
 }
+
+float4
+interpolation_compute_pixel_bicubic_4f(
+  read_only image2d_t in,
+  const int in_width, const int in_height,
+  float2 po)
+{
+  const int kwidth = 2;
+
+  float4 pixel = (float4)0.0f;
+  float weight = 0.0f;
+
+  for(int jj = 1 - kwidth; jj <= kwidth; jj++)
+    for(int ii = 1 - kwidth; ii <= kwidth; ii++)
+    {
+      const int i = po.x + ii;
+      const int j = po.y + jj;
+
+      float wx = interpolation_func_bicubic((float)i - po.x);
+      float wy = interpolation_func_bicubic((float)j - po.y);
+      float w = (i < 0 || j < 0 || i >= in_width || j >= in_height) ? 0.0f : wx * wy;
+
+      pixel += read_imagef(in, sampleri, (int2)(i, j)) * w;
+      weight += w;
+    }
+
+  pixel = weight > 0.0f ? pixel / weight : (float4)0.0f;
+
+  return pixel;
+}
