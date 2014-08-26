@@ -148,8 +148,6 @@ clip_rotate_lanczos2(read_only image2d_t in, write_only image2d_t out, const int
   const int x = get_global_id(0);
   const int y = get_global_id(1);
 
-  const int kwidth = 2;
-
   if(x >= width || y >= height) return;
 
   float2 pi, po;
@@ -172,27 +170,7 @@ clip_rotate_lanczos2(read_only image2d_t in, write_only image2d_t out, const int
   po.x -= roi_in.x;
   po.y -= roi_in.y;
 
-  int tx = po.x;
-  int ty = po.y;
-
-  float4 pixel = (float4)0.0f;
-  float weight = 0.0f;
-
-  for(int jj = 1 - kwidth; jj <= kwidth; jj++)
-    for(int ii= 1 - kwidth; ii <= kwidth; ii++)
-  {
-    const int i = tx + ii;
-    const int j = ty + jj;
-
-    float wx = interpolation_func_lanczos(2, (float)i - po.x);
-    float wy = interpolation_func_lanczos(2, (float)j - po.y);
-    float w = (i < 0 || j < 0 || i >= in_width || j >= in_height) ? 0.0f : wx * wy;
-
-    pixel += read_imagef(in, sampleri, (int2)(i, j)) * w;
-    weight += w;
-  }
-
-  pixel = weight > 0.0f ? pixel / weight : (float4)0.0f;
+  float4 pixel = interpolation_compute_pixel_lanczos2_4f(in, in_width, in_height, po);
 
   write_imagef (out, (int2)(x, y), pixel);
 }
