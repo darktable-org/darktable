@@ -139,3 +139,33 @@ interpolation_compute_pixel_lanczos2_4f(
 
   return pixel;
 }
+
+float4
+interpolation_compute_pixel_lanczos3_4f(
+  read_only image2d_t in,
+  const int in_width, const int in_height,
+  float2 po)
+{
+  const int kwidth = 3;
+
+  float4 pixel = (float4)0.0f;
+  float weight = 0.0f;
+
+  for(int jj = 1 - kwidth; jj <= kwidth; jj++)
+    for(int ii = 1 - kwidth; ii <= kwidth; ii++)
+    {
+      const int i = po.x + ii;
+      const int j = po.y + jj;
+
+      float wx = interpolation_func_lanczos(3, (float)i - po.x);
+      float wy = interpolation_func_lanczos(3, (float)j - po.y);
+      float w = (i < 0 || j < 0 || i >= in_width || j >= in_height) ? 0.0f : wx * wy;
+
+      pixel += read_imagef(in, sampleri, (int2)(i, j)) * w;
+      weight += w;
+    }
+
+  pixel = weight > 0.0f ? pixel / weight : (float4)0.0f;
+
+  return pixel;
+}
