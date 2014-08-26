@@ -957,7 +957,7 @@ void tiling_callback  (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop
 
 void init_global(dt_iop_module_so_t *module)
 {
-  const int program = 2; // basic.cl from programs.conf
+  const int program = 13; // clip_rotate.cl from programs.conf
   dt_iop_clipping_global_data_t *gd = (dt_iop_clipping_global_data_t *)malloc(sizeof(dt_iop_clipping_global_data_t));
   module->data = gd;
   gd->kernel_clip_rotate_bilinear = dt_opencl_create_kernel(program, "clip_rotate_bilinear");
