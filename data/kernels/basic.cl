@@ -22,6 +22,8 @@
 
 #include "colorspace.cl"
 
+#include "interpolation.h"
+
 kernel void
 letsgofloat_1ui(read_only image2d_t in, write_only image2d_t out,
                const int width, const int height)
@@ -446,59 +448,6 @@ keystone_backtransform(float2 *i, const float4 k_space, const float2 ka, const f
   (*i).x = (ma.w*xx-ma.y*yy)/div + ka.x;
   (*i).y =-(ma.z*xx-ma.x*yy)/div + ka.y;
 }
-
-
-float
-interpolation_func_bicubic(float t)
-{
-  float r;
-  t = fabs(t);
-
-  r = (t >= 2.0f) ? 0.0f : ((t > 1.0f) ? (0.5f*(t*(-t*t + 5.0f*t - 8.0f) + 4.0f)) : (0.5f*(t*(3.0f*t*t - 5.0f*t) + 2.0f)));
-
-  return r;
-}
-
-#define DT_LANCZOS_EPSILON (1e-9f)
-
-#if 0
-float
-interpolation_func_lanczos(float width, float t)
-{
-  float ta = fabs(t);
-
-  float r = (ta > width) ? 0.0f : ((ta < DT_LANCZOS_EPSILON) ? 1.0f : width*native_sin(M_PI_F*t)*native_sin(M_PI_F*t/width)/(M_PI_F*M_PI_F*t*t));
-
-  return r;
-}
-#else
-float
-sinf_fast(float t)
-{
-  const float a = 4.0f/(M_PI_F*M_PI_F);
-  const float p = 0.225f;
-
-  t = a*t*(M_PI_F - fabs(t));
-
-  return p*(t*fabs(t) - t) + t;
-}
-
-float
-interpolation_func_lanczos(float width, float t)
-{
-  /* Compute a value for sinf(pi.t) in [-pi pi] for which the value will be
-   * correct */
-  int a = (int)t;
-  float r = t - (float)a;
-
-  // Compute the correct sign for sinf(pi.r)
-  union { float f; unsigned int i; } sign;
-  sign.i = ((a&1)<<31) | 0x3f800000;
-
-  return (DT_LANCZOS_EPSILON + width*sign.f*sinf_fast(M_PI_F*r)*sinf_fast(M_PI_F*t/width))/(DT_LANCZOS_EPSILON + M_PI_F*M_PI_F*t*t);
-}
-#endif
-
 
 /* kernel for clip&rotate: bilinear interpolation */
 __kernel void
