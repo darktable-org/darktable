@@ -22,6 +22,8 @@
 
 #include "colorspace.cl"
 
+#include "lookup.h"
+
 kernel void
 letsgofloat_1ui(read_only image2d_t in, write_only image2d_t out,
                const int width, const int height)
@@ -156,60 +158,6 @@ highlights_1f (read_only image2d_t in, write_only image2d_t out, const int width
       break;
   }
   write_imagef (out, (int2)(x, y), pixel);
-}
-
-float
-lookup_unbounded(read_only image2d_t lut, const float x, global const float *a)
-{
-  // in case the tone curve is marked as linear, return the fast
-  // path to linear unbounded (does not clip x at 1)
-  if(a[0] >= 0.0f)
-  {
-    if(x < 1.0f/a[0])
-    {
-      const int xi = clamp(x*65535.0f, 0.0f, 65535.0f);
-      const int2 p = (int2)((xi & 0xff), (xi >> 8));
-      return read_imagef(lut, sampleri, p).x;
-    }
-    else return a[1] * native_powr(x*a[0], a[2]);
-  }
-  else return x;
-}
-
-float
-lookup_unbounded_twosided(read_only image2d_t lut, const float x, global const float *a)
-{
-  // in case the tone curve is marked as linear, return the fast
-  // path to linear unbounded (does not clip x at 1)
-  if(a[0] >= 0.0f)
-  {
-    const float ar = 1.0f/a[0];
-    const float al = 1.0f - 1.0f/a[3];
-    if(x < ar && x >= al)
-    {
-      // lut lookup
-      const int xi = clamp(x*65535.0f, 0.0f, 65535.0f);
-      const int2 p = (int2)((xi & 0xff), (xi >> 8));
-      return read_imagef(lut, sampleri, p).x;
-    }
-    else
-    {
-      // two-sided extrapolation (with inverted x-axis for left side)
-      const float xx = (x >= ar) ? x : 1.0f - x;
-      global const float *aa = (x >= ar) ? a : a + 3;
-      return aa[1] * native_powr(xx*aa[0], aa[2]);
-    }
-  }
-  else return x;
-}
-
-
-float
-lookup(read_only image2d_t lut, const float x)
-{
-  int xi = clamp(x*65535.0f, 0.0f, 65535.0f);
-  int2 p = (int2)((xi & 0xff), (xi >> 8));
-  return read_imagef(lut, sampleri, p).x;
 }
 
 /* kernel for the basecurve plugin. */
