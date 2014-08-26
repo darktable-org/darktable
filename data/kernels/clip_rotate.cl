@@ -61,23 +61,17 @@ keystone_backtransform(float2 *i, const float4 k_space, const float2 ka, const f
   (*i).y =-(ma.z*xx-ma.x*yy)/div + ka.y;
 }
 
-/* kernel for clip&rotate: bilinear interpolation */
-__kernel void
-clip_rotate_bilinear(read_only image2d_t in, write_only image2d_t out, const int width, const int height,
-            const int in_width, const int in_height,
-            const int2 roi_in, const float2 roi_out, const float scale_in, const float scale_out,
-            const int flip, const float2 t, const float2 k, const float4 mat,
-            const float4 k_space, const float2 ka, const float4 ma, const float2 mb)
+float2
+calculate_pixel_coords(
+  const int x, const int y,
+  const int2 roi_in, const float2 roi_out, const float scale_in, const float scale_out,
+  const int flip, const float2 t, const float2 k, const float4 mat,
+  const float4 k_space, const float2 ka, const float4 ma, const float2 mb)
 {
-  const int x = get_global_id(0);
-  const int y = get_global_id(1);
-
-  if(x >= width || y >= height) return;
-
   float2 pi, po;
 
-  pi.x = roi_out.x + x ;
-  pi.y = roi_out.y + y ;
+  pi.x = roi_out.x + x;
+  pi.y = roi_out.y + y;
 
   pi.x -= flip ? t.y * scale_out : t.x * scale_out;
   pi.y -= flip ? t.x * scale_out : t.y * scale_out;
@@ -93,6 +87,27 @@ clip_rotate_bilinear(read_only image2d_t in, write_only image2d_t out, const int
 
   po.x -= roi_in.x;
   po.y -= roi_in.y;
+
+  return po;
+}
+
+/* kernel for clip&rotate: bilinear interpolation */
+__kernel void
+clip_rotate_bilinear(read_only image2d_t in, write_only image2d_t out, const int width, const int height,
+            const int in_width, const int in_height,
+            const int2 roi_in, const float2 roi_out, const float scale_in, const float scale_out,
+            const int flip, const float2 t, const float2 k, const float4 mat,
+            const float4 k_space, const float2 ka, const float4 ma, const float2 mb)
+{
+  const int x = get_global_id(0);
+  const int y = get_global_id(1);
+
+  if(x >= width || y >= height) return;
+
+  float2 po = calculate_pixel_coords(x, y,
+                                     roi_in, roi_out, scale_in, scale_out,
+                                     flip, t,  k,  mat,
+                                     k_space, ka, ma, mb);
 
   float4 pixel = interpolation_compute_pixel_bilinear_4f(in, in_width, in_height, po);
 
@@ -112,25 +127,10 @@ clip_rotate_bicubic(read_only image2d_t in, write_only image2d_t out, const int 
 
   if(x >= width || y >= height) return;
 
-  float2 pi, po;
-
-  pi.x = roi_out.x + x ;
-  pi.y = roi_out.y + y ;
-
-  pi.x -= flip ? t.y * scale_out : t.x * scale_out;
-  pi.y -= flip ? t.x * scale_out : t.y * scale_out;
-
-  pi /= scale_out;
-  backtransform(&pi, &po, mat, k);
-  po *= scale_in;
-
-  po.x += t.x * scale_in;
-  po.y += t.y * scale_in;
-
-  if (k_space.z > 0.0f) keystone_backtransform(&po,k_space,ka,ma,mb);
-
-  po.x -= roi_in.x;
-  po.y -= roi_in.y;
+  float2 po = calculate_pixel_coords(x, y,
+                                     roi_in, roi_out, scale_in, scale_out,
+                                     flip, t,  k,  mat,
+                                     k_space, ka, ma, mb);
 
   float4 pixel = interpolation_compute_pixel_bicubic_4f(in, in_width, in_height, po);
 
@@ -150,25 +150,10 @@ clip_rotate_lanczos2(read_only image2d_t in, write_only image2d_t out, const int
 
   if(x >= width || y >= height) return;
 
-  float2 pi, po;
-
-  pi.x = roi_out.x + x ;
-  pi.y = roi_out.y + y ;
-
-  pi.x -= flip ? t.y * scale_out : t.x * scale_out;
-  pi.y -= flip ? t.x * scale_out : t.y * scale_out;
-
-  pi /= scale_out;
-  backtransform(&pi, &po, mat, k);
-  po *= scale_in;
-
-  po.x += t.x * scale_in;
-  po.y += t.y * scale_in;
-
-  if (k_space.z > 0.0f) keystone_backtransform(&po,k_space,ka,ma,mb);
-
-  po.x -= roi_in.x;
-  po.y -= roi_in.y;
+  float2 po = calculate_pixel_coords(x, y,
+                                     roi_in, roi_out, scale_in, scale_out,
+                                     flip, t,  k,  mat,
+                                     k_space, ka, ma, mb);
 
   float4 pixel = interpolation_compute_pixel_lanczos2_4f(in, in_width, in_height, po);
 
@@ -188,25 +173,10 @@ clip_rotate_lanczos3(read_only image2d_t in, write_only image2d_t out, const int
 
   if(x >= width || y >= height) return;
 
-  float2 pi, po;
-
-  pi.x = roi_out.x + x ;
-  pi.y = roi_out.y + y ;
-
-  pi.x -= flip ? t.y * scale_out : t.x * scale_out;
-  pi.y -= flip ? t.x * scale_out : t.y * scale_out;
-
-  pi /= scale_out;
-  backtransform(&pi, &po, mat, k);
-  po *= scale_in;
-
-  po.x += t.x * scale_in;
-  po.y += t.y * scale_in;
-
-  if (k_space.z > 0.0f) keystone_backtransform(&po,k_space,ka,ma,mb);
-
-  po.x -= roi_in.x ;
-  po.y -= roi_in.y ;
+  float2 po = calculate_pixel_coords(x, y,
+                                     roi_in, roi_out, scale_in, scale_out,
+                                     flip, t,  k,  mat,
+                                     k_space, ka, ma, mb);
 
   float4 pixel = interpolation_compute_pixel_lanczos3_4f(in, in_width, in_height, po);
 
