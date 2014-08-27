@@ -4,7 +4,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "POT-Creation-Date: 2014-08-10 22:23+0200\n"
-"PO-Revision-Date: 2014-08-17 22:45+0100\n"
+"PO-Revision-Date: 2014-08-27 14:53+0100\n"
 "Last-Translator: Michel Leblond <michel.leblond62@gmail.com>\n"
 "Language-Team: Jean-Luc Coulon, Victor Lamoine, Michel Leblond\n"
 "Language: fr\n"
@@ -13,7 +13,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
 "X-Generator: Poedit 1.5.4\n"
-"X-Poedit-Bookmarks: 1229,208,331,416,182,458,465,290,-1,729\n"
+"X-Poedit-Bookmarks: 1290,208,331,416,182,458,465,290,-1,729\n"
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:4(title)
 msgid "darktable 1.5"
@@ -10226,7 +10226,7 @@ msgstr ""
 "Astuce : sous certaines conditions, particulièrement en cas de présence dans "
 "le cadre de sources lumineuses bleues fortement saturées, le module niveaux "
 "peut produire des artefacts sous forme de pixels noirs. Voyez l'option "
-"<emphasis>troncature du gamut</emphasis> (<xref linkend=\"input_color_profile"
+"<emphasis>écrêtage du gamut</emphasis> (<xref linkend=\"input_color_profile"
 "\"/>) pour voir comment atténuer ces problèmes."
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:8446(para)
@@ -11119,15 +11119,14 @@ msgid "Output color profile"
 msgstr "Profil de couleur de sortie"
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:9493(para)
-#, fuzzy
 msgid ""
 "This module manages the output profiles for display and export as well as "
 "the rendering intent to be used when mapping between the different color "
 "spaces."
 msgstr ""
 "Ce module gère les profils de sortie d’affichage et d’exportation ainsi que "
-"l’intention de rendu qui seront utilisés lors de la projection sur les "
-"différents espaces colorimétriques."
+"l’objectif de rendu qui seront utilisés lors du mappage entre les différents "
+"espaces colorimétriques."
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:9498(para)
 msgid ""
@@ -11155,20 +11154,20 @@ msgid ""
 "\"><emphasis>littlecms2</emphasis></ulink> with higher accuracy and "
 "significantly higher processing overhead is used instead."
 msgstr ""
-"Un paramètre de configuration <quote>toujours utiliser littlecms2 lors de "
-"l’exportation</quote> dans <emphasis>fonctionnement</emphasis> de darktable "
-"(voir <xref linkend=\"core_options\"/>) définit la manière dont darktable "
-"effectue le rendu des couleurs pour l’affichage et l’exportation. Si ce "
-"paramètre de configuration est désactivé, darktable utilise un algorithme "
-"interne simplifié très rapide pour le rendu. Si cette option est cochée, la "
-"bibliothèque externe <ulink url=\"http://www.littlecms.com/"
-"\"><emphasis>littlecms2</emphasis></ulink>, qui donne une bien meilleure "
-"précision mais une charge de traitement bien plus lourde sera utilisée en "
+"Un paramètre de configuration <quote>toujours essayer d'utiliser LittleCMS2</"
+"quote> dans l'onglet <emphasis>fonctionnement</emphasis> des préférences "
+"globales de darktable (voir <xref linkend=\"core_options\"/>) définit la "
+"manière dont darktable effectue le rendu des couleurs pour l’affichage et "
+"l’exportation. Si ce paramètre de configuration est désactivé, darktable "
+"utilise un algorithme de rendu interne simplifié très rapide. Si cette "
+"option est cochée, la bibliothèque externe <ulink url=\"http://www.littlecms."
+"com/\"><emphasis>littlecms2</emphasis></ulink>, qui donne une bien meilleure "
+"précision mais une charge de traitement bien plus lourde, sera utilisée en "
 "remplacement."
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:9531(title)
 msgid "output intent"
-msgstr "Intention de sortie"
+msgstr "rendu (sortie)"
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:9532(para)
 msgid ""
@@ -11187,13 +11186,13 @@ msgid ""
 "entry><entry> Keep the white point. </entry></row></tbody></tgroup></"
 "informaltable>"
 msgstr ""
-"Définit l’intention de rendu pour la sortie ou l’exportation. Vous pouvez "
+"Définit l’objectif de rendu pour la sortie ou l’exportation. Vous pouvez "
 "facilement passer outre ce comportement lorsque vous effectuez l’exportation "
-"vers la table lumineuse. <informaltable frame=\"none\" width=\"80%\"><tgroup "
-"cols=\"2\" colsep=\"0\" rowsep=\"0\"><colspec colwidth=\"4*\"/><colspec "
-"colwidth=\"6*\"/><tbody><row><entry><emphasis>perceptuel</emphasis></"
-"entry><entry>Adapté à des images car il conserve la position relative des "
-"couleurs. Ceci est habituellement le meilleur choix. </entry></"
+"depuis la table lumineuse. <informaltable frame=\"none\" width=\"80%"
+"\"><tgroup cols=\"2\" colsep=\"0\" rowsep=\"0\"><colspec colwidth=\"4*\"/"
+"><colspec colwidth=\"6*\"/><tbody><row><entry><emphasis>perceptuel</"
+"emphasis></entry><entry>Adapté à des images car il conserve la position "
+"relative des couleurs. Ceci est habituellement le meilleur choix. </entry></"
 "row><row><entry><emphasis>colorimétrie relative</emphasis></entry><entry>Les "
 "couleurs hors gamut sont converties en des couleurs ayant la même clarté, "
 "mais une saturation différente. Les autres couleurs restent inchangées. </"
@@ -11208,24 +11207,23 @@ msgid ""
 "Only rendering with littelcms2 gives you a choice of rendering intent. The "
 "option is hidden, if darktable's internal rendering routines are used."
 msgstr ""
-"<quote>Ne faire le rendu qu'avec littlecms2</quote> vous donne le choix de "
-"l’intention de rendu. Cette option est masquée si on utilise le rendu "
-"interne de darktable."
+"Seul le rendu avec littlecms2 vous donne le choix de l’objectif de rendu. "
+"Cette option est masquée si on utilise le rendu interne de darktable."
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:9585(title)
 msgid "display intent"
-msgstr "Intention de rendu d’affichage"
+msgstr "rendu (écran)"
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:9586(para)
 msgid ""
 "Sets the rendering intent for your display. See above for available options."
 msgstr ""
-"Définit l’intention de rendu pour votre écran. Voir ci-dessus pour les "
+"Définit l’objectif de rendu pour votre écran. Voir ci-dessus pour les "
 "options disponibles."
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:9592(title)
 msgid "output profile"
-msgstr "Profil de sortie"
+msgstr "profil (sortie)"
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:9593(para)
 msgid "Sets the color profile for output/export."
@@ -11233,44 +11231,41 @@ msgstr "Définit le profil de couleur pour la sortie et l’exportation."
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:9599(title)
 msgid "softproof profile"
-msgstr "Profil d’épreuvage"
+msgstr "épreuvage écran"
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:9602(secondary)
 msgid "softproof"
-msgstr "Épreuvage"
+msgstr "épreuvage"
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:9606(secondary)
 msgid "gamut check"
-msgstr "Vérification du gamut"
+msgstr "vérification du gamut"
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:9608(para)
 msgid "Sets the color profile for softproofing."
 msgstr "Définit le profil de couleur pour l’épreuvage."
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:9611(para)
-#, fuzzy
 msgid ""
 "<emphasis>softproof</emphasis> allows you to preview your image rendered "
 "using a printer profile so as to see how colors will end up on the final "
 "print and is toggled on and off by pressing <emphasis>ctrl-s</emphasis>."
 msgstr ""
-"L’<emphasis>épreuvage</emphasis> vous permet de prévisualiser votre image "
-"après rendu en utilisant un profil d’imprimante de manière à ce que l’on se "
-"rende compte de la manière dont seront rendues les couleurs sur le tirage "
-"final. Il peut être basculé entre l’état actif et inactif en pressant "
-"<quote>s</quote>."
+"Afin de voir l'apparence des couleurs du tirage final, "
+"l’<emphasis>épreuvage</emphasis> vous permet de prévisualiser votre image "
+"rendue en utilisant un profil d’imprimante. Il peut être basculé entre les "
+"états actif et inactif en pressant <emphasis>Ctrl-s</emphasis>."
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:9616(para)
-#, fuzzy
 msgid ""
 "Likewise <emphasis>gamut check</emphasis> is toggled on and off by pressing "
 "<emphasis>ctrl-g</emphasis>; this function highlights in cyan all pixels out "
 "of gamut with respect to the selected softproof profile."
 msgstr ""
 "De même, la <emphasis>vérification de gamut</emphasis> est basculée entre "
-"les modes actif et inactif en pressant <quote>g</quote>. Cette fonction met "
-"en évidence en cyan tous les pixels hors du gamut en respectant le profil "
-"d’épreuvage sélectionné."
+"les modes actif et inactif en pressant <emphasis>Ctrl-g</emphasis>. Cette "
+"fonction met en évidence en cyan tous les pixels hors du gamut par rapport "
+"au profil d’épreuvage sélectionné."
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:9621(para)
 msgid ""
@@ -11278,13 +11273,12 @@ msgid ""
 "mutually exclusive modes that can be activated at any place in darkroom mode "
 "and when this module is in focus the status is displayed below the image."
 msgstr ""
-"L’<emphasis>épreuvage</emphasis> et la <emphasis>vérification de gamut</"
-"emphasis> sont des modes mutuellement exclusifs qui peuvent être activés à "
-"tout moment dans le mode chambre noire. Lorsque ce module à la main, l'état "
-"est affiché sous l’image."
+"<emphasis>Épreuvage</emphasis> et <emphasis>vérification de gamut</emphasis> "
+"sont des modes mutuellement exclusifs qui peuvent être activés à tout moment "
+"dans le mode chambre noire. Lorsque ce module a le focus l'état est affiché "
+"sous l'image."
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:9626(para)
-#, fuzzy
 msgid ""
 "Tip: at other times it may not be obvious if the <emphasis>softproof</"
 "emphasis> mode is still active or not. If in doubt press <emphasis>ctrl-g</"
@@ -11292,22 +11286,22 @@ msgid ""
 "clearly distinguishable by cyan marked pixels. Press <emphasis>ctrl-g</"
 "emphasis> again and you are back to normal display mode."
 msgstr ""
-"Astuce : il arrive qu'il ne soit pas évident de savoir si le mode "
-"<emphasis>épreuvage</emphasis> est actif ou pas. Si vous n'en êtes pas "
-"certain, pressez <quote>g</quote>, ce qui va commuter la "
-"<emphasis>vérification de gamut</emphasis> qui sera très discernable avec "
-"les pixels marqués en cyan. Pressez de nouveau <quote>g</quote> pour revenir "
-"au mode d’affichage normal."
+"Astuce : il n'est pas toujours évident de savoir si le mode "
+"<emphasis>épreuvage</emphasis> est actif ou pas. En cas de doute, pressez "
+"<emphasis>Ctrl-g</emphasis>, ce qui activera la <emphasis>vérification de "
+"gamut</emphasis> et la rendra très discernable à cause des pixels marqués en "
+"cyan. Pressez de nouveau <quote>Ctrl-g</quote> pour revenir au mode "
+"d’affichage normal."
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:9635(title)
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:9638(secondary)
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:9644(primary)
 msgid "display profile"
-msgstr "Profil d’affichage"
+msgstr "profil (écran)"
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:9641(primary)
 msgid "monitor profile"
-msgstr "Profil du moniteur"
+msgstr "profil (moniteur)"
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:9646(para)
 msgid ""
@@ -11317,13 +11311,12 @@ msgid ""
 "manager or from your X display server. In <emphasis>gui options</emphasis> "
 "(see <xref linkend=\"gui_options\"/>) you can specify which method to use."
 msgstr ""
-"Définit le profil de couleur de l’affichage. Le profil de l’option "
-"supplémentaire <quote>profil de l’affichage système</quote> est l’option "
-"préférée à choisir lorsque vous travaillez avec un écran calibré : le profil "
-"est pris directement depuis votre système de gestion de la couleur ou depuis "
-"votre serveur X. Vous pouvez indiquer la méthode à utiliser dans "
-"<emphasis>options de l'interface</emphasis> (voir <xref linkend=\"gui_options"
-"\"/>)."
+"Définit le profil de couleur de l’affichage. L’option supplémentaire "
+"<quote>système</quote> est l’option à choisir lorsqu'on travaille avec un "
+"écran calibré ; le profil est extrait soit du gestionnaire de couleur de "
+"votre système, soit de votre serveur X. Vous pouvez indiquer la méthode à "
+"utiliser dans l'onglet <emphasis>options d'interface</emphasis> des "
+"préférences globales (voir <xref linkend=\"gui_options\"/>)."
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:9661(title)
 msgid "Color contrast"
@@ -11354,7 +11347,7 @@ msgstr ""
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:9707(title)
 msgid "green vs. magenta"
-msgstr "Vert par rapport à magenta"
+msgstr "vert vs magenta"
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:9708(para)
 msgid "Changes color contrast for green versus magenta."
@@ -11362,7 +11355,7 @@ msgstr "Modifie le contraste de couleur entre le vert et le magenta."
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:9714(title)
 msgid "blue vs. yellow"
-msgstr "Bleu par rapport à jaune"
+msgstr "bleu vs jaune"
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:9715(para)
 msgid "Changes color contrast for blue versus yellow."
@@ -11382,12 +11375,12 @@ msgid ""
 "This module can be used to modify the global saturation, give a tint to the "
 "image or to split tone it."
 msgstr ""
-"Ce module peut être utilisé afin de modifier la saturation globale, pour "
-"donner une dominante à l’image ou pour y appliquer un virage partiel."
+"Ce module peut être utilisé pour modifier la saturation globale, pour donner "
+"une dominante de couleur à l’image ou pour lui appliquer un virage partiel."
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:9766(title)
 msgid "color board"
-msgstr "Palette de couleurs"
+msgstr "palette de couleurs"
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:9767(para)
 msgid ""
@@ -11395,10 +11388,10 @@ msgid ""
 "select a tint for shadows with the dark spot. For a simple global tint set "
 "both spots to the same color."
 msgstr ""
-"Pour le virage partiel, glissez le point blanc sur la teinte désirée pour "
-"les hautes lumières et sélectionnez une teinte pour les ombres à l’aide du "
-"point noir. Pour obtenir une teinte globale simple, assignez la même couleur "
-"aux deux points."
+"Pour effectuer un virage partiel, glissez le point blanc sur la teinte "
+"désirée pour les hautes lumières et sélectionnez une teinte pour les ombres "
+"à l’aide du point noir. Pour obtenir une teinte globale simple, assignez la "
+"même couleur aux deux points."
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:9776(para)
 msgid "Use the saturation slider to correct the global saturation."
@@ -11411,7 +11404,7 @@ msgstr "Monochrome"
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:9791(secondary)
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:9795(primary)
 msgid "monochrome"
-msgstr "Monochrome"
+msgstr "monochrome"
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:9818(entry)
 msgid ""
@@ -11419,7 +11412,7 @@ msgid ""
 "provides a variable color filter for that conversion."
 msgstr ""
 "Ce module propose une manière rapide de convertir une image en noir et "
-"blanc. Il fournit un filtre de couleur variable pour cette conversion."
+"blanc. Pour cette conversion il fournit un filtre de couleur modifiable."
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:9836(para)
 msgid ""
@@ -11427,19 +11420,18 @@ msgid ""
 "it to an alternate position applies a filter analogously to taking a b&amp;w "
 "photograph through a conventional color filter."
 msgstr ""
-"L’emplacement central par défaut du filtre a un effet neutre mais on peut le "
-"glisser à un autre emplacement ce qui permet d’appliquer un filtre de la "
-"même manière que lors de la prise de vue en noir et blanc au travers d’un "
-"filtre de couleur conventionnel."
+"L’emplacement central par défaut de ce filtre a un effet neutre. Mais en le "
+"glissant à un autre emplacement il se comporte comme un filtre de couleur "
+"conventionnel lors d'une prise de photo en noir et blanc."
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:9842(para)
 msgid ""
 "As well as position you can change the filter size by scrolling with your "
 "mouse wheel. This makes the filter's range of hues more or less selective."
 msgstr ""
-"De même que la position, vous pouvez modifier la taille du filtre avec la "
-"molette de la souris. Ceci rend la plage de teinte des filtres plus ou moins "
-"sélective."
+"De même que la position, vous pouvez modifier la taille du filtre en "
+"défilant avec la molette de la souris. Ceci rend la plage des teintes du "
+"filtre plus ou moins sélective."
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:9847(para)
 msgid ""
@@ -11449,9 +11441,9 @@ msgid ""
 "tonality."
 msgstr ""
 "Astuce : réduisez d’abord la taille du filtre pour concentrer son effet et "
-"déplacez-le sur la palette de teintes afin de trouver la meilleure valeur "
-"que vous désirez pour le rendu de votre image. Étendez ensuite le filtre "
-"pour inclure plus de teintes et donc avoir une tonalité plus naturelle."
+"déplacez-le sur la palette des teintes pour trouver la valeur qui donne le "
+"rendu souhaité de votre image. Étendez ensuite le filtre pour inclure plus "
+"de teintes et donc avoir une tonalité plus naturelle."
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:9853(para)
 msgid ""
@@ -11460,6 +11452,11 @@ msgid ""
 "<emphasis>gamut clipping</emphasis> option (<xref linkend="
 "\"input_color_profile\"/>) on how to mitigate this issue."
 msgstr ""
+"Sous certaines conditions ce module peut produire des artefacts sous forme "
+"de pixels noirs, spécialement si des sources lumineuses de couleur bleue "
+"fortement saturée sont présentes dans l'image. Voyez l'option "
+"<emphasis>écrêtage du gamut</emphasis> (<xref linkend=\"input_color_profile"
+"\"/>) sur la façon d'atténuer ce problème."
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:9865(title)
 msgid "Color zones"
@@ -11470,8 +11467,8 @@ msgid ""
 "This module selectively modifies the colors in your image. It is highly "
 "versatile and allows every transformation possible in the LCh colorspace."
 msgstr ""
-"Ce module vous permet de modifier sélectivement les couleurs de votre image. "
-"Ceci est très flexible et permet toutes les transformations possibles dans "
+"Ce module permet de modifier sélectivement les couleurs de votre image. Ceci "
+"est très flexible et permet toutes les transformations possibles dans "
 "l’espace de couleur LCh."
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:9904(para)
@@ -11503,7 +11500,7 @@ msgid ""
 "also use the eight controlpoints (triangles which define the vertical value "
 "of the nodes) at bottom to adjust the curve."
 msgstr ""
-"Vous pouvez cliquer l’un quelconque des huit nœuds de la courbe et le "
+"Vous pouvez cliquer sur l’un quelconque des huit nœuds de la courbe et le "
 "glisser pour l’ajuster verticalement. Un cercle indique l’intensité avec "
 "laquelle les nœuds adjacents seront affectés. Utilisez la molette de la "
 "souris pour modifier le diamètre du cercle. Vous pouvez aussi utiliser les "
@@ -11512,22 +11509,21 @@ msgstr ""
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:9929(title)
 msgid "Color balance"
-msgstr "Équilibre des couleurs"
+msgstr "Balance couleur"
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:9933(secondary)
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:9937(primary)
 msgid "color balance"
-msgstr "Équilibre des couleurs"
+msgstr "balance couleur"
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:9950(entry)
 msgid ""
 "This module offers a versatile tool for adjusting an image's color balance."
 msgstr ""
-"Ce module fournit un outil flexible pour ajuster l’équilibre des couleurs de "
+"Ce module fournit un outil flexible pour ajuster la balance couleur de "
 "l’image."
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:9967(para)
-#, fuzzy
 msgid ""
 "For each of the three primary colors – red, green, and blue – there are "
 "three sliders <quote>lift</quote>, <quote>gamma</quote> and <quote>gain</"
@@ -11535,11 +11531,11 @@ msgid ""
 "Changing these parameters adds offsets to the individual RGB channels and "
 "influences the color balance of the image."
 msgstr ""
-"Pour chacune des couleurs primaires – rouge, vert et bleu – il y a trois "
-"curseurs <quote>Niveau du noir</quote>, <quote>gamma</quote> et <quote>gain</"
-"quote> afin de contrôler respectivement les ombres, les tons moyens et les "
-"hautes lumières. La modification de ces paramètres ajoute des décalages à "
-"chacun des canaux RVB et influence l’équilibre des couleurs de l’image."
+"Pour chacune des trois couleurs primaires – rouge, vert et bleu – il y a "
+"trois curseurs <quote>lift</quote>, <quote>gamma</quote> et <quote>gain</"
+"quote> permettant de contrôler respectivement les ombres, les tons moyens et "
+"les hautes lumières. La modification de ces paramètres ajoute des décalages "
+"à chacun des canaux RVB et influence la balance couleur de l’image."
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:9974(para)
 msgid ""
@@ -11547,12 +11543,11 @@ msgid ""
 "effect is similar to the controls of the <emphasis>levels</emphasis> module "
 "(see <xref linkend=\"levels\"/>)."
 msgstr ""
-"Des curseurs supplémentaires de <quote>facteur</quote> agissent sur toutes "
-"les couleurs en même temps. Leur effet est semblable aux contrôles du module "
-"des <emphasis>niveaux</emphasis> (voir <xref linkend=\"levels\"/>)."
+"Des curseurs <quote>facteur</quote> supplémentaires agissent simultanément "
+"sur toutes les couleurs. Leur effet est semblable aux contrôles du module "
+"<emphasis>niveaux</emphasis> (voir <xref linkend=\"levels\"/>)."
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:9980(para)
-#, fuzzy
 msgid ""
 "The way to best envision the module's way of working is if you consider "
 "<quote>lift</quote>, <quote>gamma</quote> and <quote>gain</quote> as "
@@ -11560,14 +11555,13 @@ msgid ""
 "original state – is a straight line going diagonally from bottom left to top "
 "right."
 msgstr ""
-"Vous envisagerez mieux la façon de travailler du module si vous considérez "
-"<quote>niveau du noir</quote>, <quote>gamma</quote> et <quote>gain</quote> "
+"Pour mieux comprendre la façon de travailler de ce module il suffit de "
+"considérer <quote>lift</quote>, <quote>gamma</quote> et <quote>gain</quote> "
 "comme des paramètres influençant les propriétés d’une courbe de tonalité qui "
-"– dans son état original – est une ligne droite qui va en diagonale depuis "
-"le bas à gauche jusqu’en haut à droite."
+"– dans son état initial – est une ligne droite allant, en diagonale, du bas "
+"à gauche jusqu’en haut à droite."
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:9987(para)
-#, fuzzy
 msgid ""
 "The lift parameter adjusts the left axis intercept of the line – the "
 "intercept can be shifted from its default zero value to negative or positive "
@@ -11577,16 +11571,15 @@ msgid ""
 "the steepness of the curve – by default the curve runs diagonally, higher "
 "values lead to a steeper curve and lower values to a flatter one."
 msgstr ""
-"Le paramètre niveau du noir (<quote>lift</quote>) ajuste l’interception de "
-"la ligne avec l’axe de gauche – le point d’interception peut être décalé de "
-"sa position par défaut qui est la valeur zéro vers des valeurs positives ou "
-"négatives. Le paramètre de gamma modifie la forme de la courbe – la forme "
-"par défaut est linéaire mais peut être modifiée pour devenir une courbe "
-"convexe ce qui va augmenter les valeurs de gamma ou concave, ce qui va les "
-"diminuer. Enfin, le paramètre de gain définit la pente de la courbe – par "
-"défaut la courbe est une diagonale, des valeurs plus élevées donnent une "
-"courbe avec davantage de pente, des valeurs moins élevées donnent une courbe "
-"plus plate."
+"Le paramètre lift ajuste le point d’intersection de la courbe avec l’axe "
+"horizontal – ce point d’intersection peut être décalé de sa position par "
+"défaut d’abscisse zéro vers des points d'abscisse positive ou négative. Le "
+"paramètre gamma modifie la forme de la courbe – la forme par défaut est "
+"linéaire et peut être modifiée en une courbe convexe, ce qui va augmenter "
+"les valeurs de gamma ou en une courbe concave, ce qui va les diminuer. "
+"Enfin, le paramètre gain définit la pente de la courbe – par défaut la "
+"courbe est une diagonale, des valeurs plus élevées donnent une courbe avec "
+"davantage de pente, des valeurs moins élevées donnent une courbe plus plate."
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:9997(para)
 msgid ""
@@ -11596,12 +11589,12 @@ msgid ""
 msgstr ""
 "Note : bien que ce module agisse sur les couleurs RVB, sa position dans le "
 "pipeline graphique le place dans l’espace colorimétrique Lab. En "
-"conséquence, le module effectue la conversion de Lab vers RVB, effectue ses "
-"ajustements de couleur et le reconvertit en Lab."
+"conséquence, le module convertit de Lab en RVB, effectue ses ajustements de "
+"couleur et reconvertit en Lab."
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:10004(title)
 msgid "lift"
-msgstr "Niveau du noir (<quote>lift</quote>)"
+msgstr "lift"
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:10005(para)
 msgid ""
@@ -11609,36 +11602,36 @@ msgid ""
 "color and with a <quote>factor</quote> slider acting on all three colors at "
 "once."
 msgstr ""
-"Accroît la valeur des couleurs sombres avec des curseurs séparés pour "
-"chacune des couleurs RVB et avec un curseur de <quote>facteur</quote> qui "
-"agit en même temps sur les trois couleurs."
+"Ajuste la valeur des couleurs sombres à l'aide d'un curseur pour chacune des "
+"couleurs RVB et d'un curseur <quote>facteur</quote> agissant simultanément "
+"sur les trois couleurs."
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:10012(title)
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:10305(title)
 msgid "gamma"
-msgstr "Gamma"
+msgstr "gamma"
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:10013(para)
 msgid ""
 "Adjusts the mid tones with individual sliders for each RGB color and with a "
 "<quote>factor</quote> slider acting on all three colors at once."
 msgstr ""
-"Ajuste les tons moyens avec des curseurs séparés pour chacune des couleurs "
-"RVB et avec un curseur de <quote>facteur</quote> qui agit en même temps sur "
-"les trois couleurs."
+"Ajuste les tons moyens à l'aide d'un curseur pour chacune des couleurs RVB "
+"et d'un curseur <quote>facteur</quote> agissant simultanément sur les trois "
+"couleurs."
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:10020(title)
 msgid "gain"
-msgstr "Gain"
+msgstr "gain"
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:10021(para)
 msgid ""
 "Adjusts the high tones with individual sliders for each RGB color and with a "
 "<quote>factor</quote> slider acting on all three colors at once."
 msgstr ""
-"Ajuste les hautes tonalités avec les curseurs individuels pour chacune des "
-"couleurs RVB et avec un curseur de <quote>facteur</quote> qui joue sur les "
-"trois couleurs en même temps."
+"Ajuste les hautes tonalités à l'aide d'un curseur pour chacune des couleurs "
+"RVB et d'un curseur <quote>facteur</quote> agissant simultanément sur les "
+"trois couleurs."
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:10033(title)
 msgid "Vibrance"
@@ -15843,7 +15836,7 @@ msgstr "Fenêtre des préférences"
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:15033(title)
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:15037(secondary)
 msgid "GUI options"
-msgstr "Options de l’interface"
+msgstr "Options d’interface"
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:15040(para)
 msgid "These options control the look and feel of darktable."
