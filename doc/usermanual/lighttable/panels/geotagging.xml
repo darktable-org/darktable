@@ -66,70 +66,63 @@
       offset, then the time zone.
     </para>
 
-    <orderedlist>
+    <informaltable frame="none">
+      <tgroup cols="2" colsep="0" rowsep="0">
+        <colspec colwidth="6*"/>
+        <colspec colwidth="4*"/>
+        <tbody>
+          <row>
+            <entry>
+              <para>
+                To fix the drift of the camera time setting you can either enter it manually
+                into the offset input field or let darktable calculate it. All you need is a
+                picture taken of a reliable time source.
+              </para>
 
-      <listitem><informaltable frame="none">
-        <tgroup cols="2" colsep="0" rowsep="0">
-          <colspec colwidth="6*"/>
-          <colspec colwidth="4*"/>
-          <tbody>
-            <row>
-              <entry>
-                <para>
-                  To fix the drift of the camera time setting you can either enter it manually
-                  into the offset input field or let darktable calculate it. All you need is a
-                  picture taken of a reliable time source.
-                </para>
+              <para>
+                This can be any precise clock or even better the time displayed on your GPS
+                device (normally it shows the local time, although it stores universal time).
+              </para>
+            </entry>
+            <entry>
+              <graphic fileref="lighttable/images/panel_geotagging_ex1.png" scalefit="1" width="80%" align="center" />
+            </entry>
+          </row>
+          <row>
+            <entry>
+              <para>
+                When you have this image selected you can click on the (looking glass) button
+                and darktable will present you an entry box. Just enter the time that is shown
+                on the image. As a result you will get the difference between the time you
+                entered and the one associated with the image in its EXIF data.
+              </para>
 
-                <para>
-                  This can be any precise clock or even better the time displayed on your GPS
-                  device (normally it shows the local time, although it stores universal time).
-                </para>
-
-                <para>
-                  When you have this image selected you can click on the (looking glass) button
-                  and darktable will present you an entry box. Just enter the time that is shown
-                  on the image. As a result you will get the difference between the time you
-                  entered and the one associated with the image in its EXIF data.
-                </para>
-
-                <para>
-                  Now you can select all the images you want to geotag and click the apply
-                  button (currently represented by a check mark). This will alter the time in
-                  darktable's internal database for these pictures&nbsp;&ndash; so you will also
-                  see the change in the image information module on the left.
-                </para>
-              </entry>
-              <entry>
-                <graphic fileref="lighttable/images/panel_geotagging_ex1.png" scalefit="1" width="80%" align="center" />
-              </entry>
-            </row>
-          </tbody>
-        </tgroup>
-      </informaltable></listitem>
-
-      <listitem><informaltable frame="none">
-        <tgroup cols="2" colsep="0" rowsep="0">
-          <colspec colwidth="6*"/>
-          <colspec colwidth="4*"/>
-          <tbody>
-            <row>
-              <entry>
-                <para>
-                  Now you can apply a GPX track. Click the corresponding button and navigate to
-                  the GPX file. Before confirming that dialog you should select the
-                  corresponding time zone for your camera in the drop-down-menu.
-                </para>
-              </entry>
-              <entry>
-                <graphic fileref="lighttable/images/panel_geotagging_ex2.png" scalefit="1" width="80%" align="center" />
-              </entry>
-            </row>
-          </tbody>
-        </tgroup>
-      </informaltable></listitem>
-
-    </orderedlist>
+              <para>
+                Now you can select all the images you want to geotag and click the apply button
+                (currently represented by a check mark). This will alter the time in darktable's
+                internal database for these pictures&nbsp;&ndash; so you will also see the
+                change in the image information module on the left.
+              </para>
+            </entry>
+            <entry>
+              <graphic fileref="lighttable/images/panel_geotagging_ex2.png" scalefit="1" width="80%" align="center" />
+            </entry>
+          </row>
+          <row>
+            <entry>
+              <para>
+                Now you can apply a GPX track. Click the corresponding button and navigate to
+                the GPX file. Before confirming that dialog you should select the corresponding
+                time zone for your camera in the drop-down-menu.
+              </para>
+            </entry>
+            <entry>
+              <graphic fileref="lighttable/images/panel_geotagging_ex3.png" scalefit="1" width="80%" align="center" />
+            </entry>
+          </row>
+        </tbody>
+      </tgroup>
+    </informaltable>
 
     <para>
       Should you ever make a mistake with the time zone selection you can just come back and
