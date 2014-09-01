@@ -92,8 +92,8 @@ const dt_pwstorage_t* dt_pwstorage_new()
       }
       dt_print(DT_DEBUG_PWSTORAGE,"  done.\n");
       break;
-#ifdef HAVE_GKEYRING
     case PW_STORAGE_BACKEND_GNOME_KEYRING:
+#ifdef HAVE_GKEYRING
       dt_print (DT_DEBUG_PWSTORAGE,"[pwstorage_new] using gnome keyring backend for usersname/password storage.\n");
       pwstorage->backend_context = (void*)dt_pwstorage_gkeyring_new ();
       if (pwstorage->backend_context == NULL)
