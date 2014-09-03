@@ -446,16 +446,21 @@ void gui_update (struct dt_iop_module_t *self)
 
 void reload_defaults(dt_iop_module_t *module)
 {
-  // raw images need wb (to convert from uint16_t to float):
+  dt_iop_temperature_params_t tmp = (dt_iop_temperature_params_t)
+  {
+    .temp_out = 5000.0,
+    .coeffs = {1.0, 1.0, 1.0}
+  };
+
+  // we might be called from presets update infrastructure => there is no image
+  if(!module->dev) goto end;
+
+  // raw images need wb:
   if(dt_image_is_raw(&module->dev->image_storage))
   {
     module->default_enabled = 1;
   }
   else module->default_enabled = 0;
-  dt_iop_temperature_params_t tmp = (dt_iop_temperature_params_t)
-  {
-    5000.0, {1.0, 1.0, 1.0}
-  };
 
   // get white balance coefficients, as shot
   char filename[PATH_MAX];
@@ -552,6 +557,7 @@ void reload_defaults(dt_iop_module_t *module)
     libraw_close(raw);
   }
 
+end:
   memcpy(module->params, &tmp, sizeof(dt_iop_temperature_params_t));
   memcpy(module->default_params, &tmp, sizeof(dt_iop_temperature_params_t));
 }
