@@ -1220,15 +1220,20 @@ void reload_defaults(dt_iop_module_t *module)
   // init defaults:
   dt_iop_cacorrect_params_t tmp = (dt_iop_cacorrect_params_t)
   {
-    50
+    .keep = 50
   };
-  memcpy(module->params, &tmp, sizeof(dt_iop_cacorrect_params_t));
-  memcpy(module->default_params, &tmp, sizeof(dt_iop_cacorrect_params_t));
+
+  // we might be called from presets update infrastructure => there is no image
+  if(!module->dev) goto end;
 
   // can't be switched on for non-raw or x-trans images:
   if(dt_image_is_raw(&module->dev->image_storage) && (module->dev->image_storage.filters != 9u)) module->hide_enable_button = 0;
   else module->hide_enable_button = 1;
   module->default_enabled = 0;
+
+end:
+  memcpy(module->params, &tmp, sizeof(dt_iop_cacorrect_params_t));
+  memcpy(module->default_params, &tmp, sizeof(dt_iop_cacorrect_params_t));
 }
 
 /** init, cleanup, commit to pipeline */
