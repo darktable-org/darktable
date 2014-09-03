@@ -402,8 +402,12 @@ void reload_defaults(dt_iop_module_t *self)
 {
   dt_iop_flip_params_t tmp = (dt_iop_flip_params_t)
   {
-    ORIENTATION_NULL
+    .orientation = ORIENTATION_NULL
   };
+
+  // we might be called from presets update infrastructure => there is no image
+  if(!self->dev) goto end;
+
   self->default_enabled = 1;
 
   if(self->dev->image_storage.legacy_flip.user_flip != 0 &&
@@ -423,6 +427,8 @@ void reload_defaults(dt_iop_module_t *self)
     }
     sqlite3_finalize(stmt);
   }
+
+end:
   memcpy(self->params, &tmp, sizeof(dt_iop_flip_params_t));
   memcpy(self->default_params, &tmp, sizeof(dt_iop_flip_params_t));
 }
