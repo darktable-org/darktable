@@ -827,6 +827,16 @@ void gui_update(struct dt_iop_module_t *self)
 // FIXME: update the gui when we add/remove the eprofile or ematrix
 void reload_defaults(dt_iop_module_t *module)
 {
+  dt_iop_colorin_params_t tmp = (dt_iop_colorin_params_t)
+  {
+    .iccprofile = "darktable",
+    .intent = DT_INTENT_PERCEPTUAL,
+    .normalize = DT_NORMALIZE_OFF
+  };
+
+  // we might be called from presets update infrastructure => there is no image
+  if(!module || !module->dev) goto end;
+
   gboolean use_eprofile = FALSE;
   // some file formats like jpeg can have an embedded color profile
   // currently we only support jpeg, j2k and tiff
@@ -872,15 +882,12 @@ void reload_defaults(dt_iop_module_t *module)
     use_eprofile = TRUE; // the image has a profile assigned
   dt_image_cache_read_release(darktable.image_cache, cimg);
 
-  dt_iop_colorin_params_t tmp = (dt_iop_colorin_params_t)
-  {
-    "darktable", DT_INTENT_PERCEPTUAL, DT_NORMALIZE_OFF
-  };
-
   if(use_eprofile) g_strlcpy(tmp.iccprofile, "eprofile", sizeof(tmp.iccprofile));
   else if(module->dev->image_storage.colorspace == DT_IMAGE_COLORSPACE_SRGB) g_strlcpy(tmp.iccprofile, "sRGB", sizeof(tmp.iccprofile));
   else if(module->dev->image_storage.colorspace == DT_IMAGE_COLORSPACE_ADOBE_RGB) g_strlcpy(tmp.iccprofile, "adobergb", sizeof(tmp.iccprofile));
   else if(dt_image_is_ldr(&module->dev->image_storage)) g_strlcpy(tmp.iccprofile, "sRGB", sizeof(tmp.iccprofile));
+
+end:
   memcpy(module->params, &tmp, sizeof(dt_iop_colorin_params_t));
   memcpy(module->default_params, &tmp, sizeof(dt_iop_colorin_params_t));
 }
