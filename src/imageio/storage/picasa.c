@@ -469,8 +469,7 @@ error:
  */
 static const gchar *picasa_create_album(PicasaContext *ctx, gchar *name, gchar *summary, PicasaAlbumPrivacyPolicy privacy)
 {
-  _buffer_t buffer;
-  memset(&buffer,0,sizeof(_buffer_t));
+  _buffer_t buffer = { 0 };
 
   gchar *photo_id=NULL;
   gchar *private = NULL;
@@ -567,8 +566,7 @@ static const gchar *picasa_create_album(PicasaContext *ctx, gchar *name, gchar *
  */
 static const gchar *picasa_upload_photo_to_album(PicasaContext *ctx, gchar *albumid, gchar *fname, gchar *title, gchar *summary, const int imgid)
 {
-  _buffer_t buffer;
-  memset(&buffer,0,sizeof(_buffer_t));
+  _buffer_t buffer = { 0 };
   gchar *photo_id=NULL;
 
   char uri[4096]= {0};
@@ -712,8 +710,7 @@ static const gchar *picasa_upload_photo_to_album(PicasaContext *ctx, gchar *albu
       headers = curl_slist_append(headers,"GData-Version: 2");
       headers = curl_slist_append(headers, authHeader);
 
-      _buffer_t response;
-      memset(&response,0,sizeof(_buffer_t));
+      _buffer_t response = { 0 };
 
       // Setup data to send..
       _buffer_t writebuffer;

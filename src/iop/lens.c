@@ -984,8 +984,7 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
       if(p->tca_override)
       {
         // add manual d->lens stuff:
-        lfLensCalibTCA tca;
-        memset(&tca, 0, sizeof(lfLensCalibTCA));
+        lfLensCalibTCA tca = { 0 };
         tca.Focal = 0;
         tca.Model = LF_TCA_MODEL_LINEAR;
         tca.Terms[0] = p->tca_r;
@@ -1070,8 +1069,7 @@ void reload_defaults(dt_iop_module_t *module)
 {
   // reload image specific stuff
   // get all we can from exif:
-  dt_iop_lensfun_params_t tmp;
-  memset(&tmp, 0, sizeof(dt_iop_lensfun_params_t));
+  dt_iop_lensfun_params_t tmp = { 0 };
 
   // we might be called from presets update infrastructure => there is no image
   if(!module || !module->dev) goto end;
