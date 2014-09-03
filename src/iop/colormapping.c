@@ -857,22 +857,18 @@ cleanup_global(dt_iop_module_so_t *module)
 void
 reload_defaults(dt_iop_module_t *module)
 {
+  dt_iop_colormapping_params_t tmp = (dt_iop_colormapping_params_t)
+  {
+    .flag = NEUTRAL,
+    .n = 3,
+    .dominance = 100.0f,
+    .equalization = 50.0f
+  };
+
+  // we might be called from presets update infrastructure => there is no image
+  if(!module->dev) goto end;
+
   dt_iop_colormapping_gui_data_t *g = (dt_iop_colormapping_gui_data_t *)module->gui_data;
-
-  dt_iop_colormapping_params_t tmp;
-  tmp.flag = NEUTRAL;
-  tmp.n = 3;
-  tmp.dominance = 100.0f;
-  tmp.equalization = 50.0f;
-  memset(tmp.source_ihist, 0, sizeof(float)*HISTN);
-  memset(tmp.source_mean, 0, sizeof(float)*MAXN*2);
-  memset(tmp.source_var, 0,  sizeof(float)*MAXN*2);
-  memset(tmp.source_weight, 0, sizeof(float)*MAXN);
-  memset(tmp.target_hist, 0, sizeof(int)*HISTN);
-  memset(tmp.target_mean, 0, sizeof(float)*MAXN*2);
-  memset(tmp.target_var, 0,  sizeof(float)*MAXN*2);
-  memset(tmp.target_weight, 0, sizeof(float)*MAXN);
-
   if(module->dev->gui_attached && g && g->flowback_set)
   {
     memcpy(tmp.source_ihist, g->flowback.hist, sizeof(float)*HISTN);
@@ -882,10 +878,11 @@ reload_defaults(dt_iop_module_t *module)
     tmp.n = g->flowback.n;
     tmp.flag = HAS_SOURCE;
   }
+  module->default_enabled = 0;
 
+end:
   memcpy(module->default_params, &tmp, sizeof(dt_iop_colormapping_params_t));
   memcpy(module->params, &tmp, sizeof(dt_iop_colormapping_params_t));
-  module->default_enabled = 0;
 }
 
 
