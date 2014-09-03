@@ -656,16 +656,25 @@ void gui_update(struct dt_iop_module_t *self)
 
 void reload_defaults(dt_iop_module_t *module)
 {
+  dt_iop_highlights_params_t tmp = (dt_iop_highlights_params_t)
+  {
+    .mode = DT_IOP_HIGHLIGHTS_CLIP,
+    .blendL = 1.0,
+    .blendC = 0.0,
+    .blendh = 0.0,
+    .clip = 1.0
+  };
+
+  // we might be called from presets update infrastructure => there is no image
+  if(!module->dev) goto end;
+
   // only on for raw images:
   if(dt_image_is_raw(&module->dev->image_storage))
     module->default_enabled = 1;
   else
     module->default_enabled = 0;
 
-  dt_iop_highlights_params_t tmp = (dt_iop_highlights_params_t)
-  {
-    0, 1.0, 0.0, 0.0, 1.0
-  };
+end:
   memcpy(module->params, &tmp, sizeof(dt_iop_highlights_params_t));
   memcpy(module->default_params, &tmp, sizeof(dt_iop_highlights_params_t));
 }
