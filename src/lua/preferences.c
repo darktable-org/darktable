@@ -559,7 +559,7 @@ void init_tab_lua (GtkWidget *dialog, GtkWidget *tab)
         g_signal_connect(G_OBJECT(cur_elt->widget), "changed", G_CALLBACK(callback_enum), cur_elt);
         {
           gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(cur_elt->widget),cur_elt->type_data.enum_data.default_value);
-          const char * entry = luaA_enum_next_value_name_type(darktable.lua_state.state,cur_elt->type_data.enum_data.enum_type,entry);
+          const char * entry = luaA_enum_next_value_name_type(darktable.lua_state.state,cur_elt->type_data.enum_data.enum_type,NULL);
           int entry_id = 0;
           while(entry){
             if(strcmp(entry,cur_elt->type_data.enum_data.default_value) != 0) {
