@@ -27,14 +27,14 @@
 /** Available interpolations */
 enum dt_interpolation_type
 {
-  DT_INTERPOLATION_FIRST=0, /**< Helper for easy iteration on interpolators */
-  DT_INTERPOLATION_BILINEAR=DT_INTERPOLATION_FIRST, /**< Bilinear interpolation (aka tent filter) */
+  DT_INTERPOLATION_BILINEAR, /**< Bilinear interpolation (aka tent filter) */
   DT_INTERPOLATION_BICUBIC, /**< Bicubic interpolation (with -0.5 parameter) */
   DT_INTERPOLATION_LANCZOS2, /**< Lanczos interpolation (with 2 lobes) */
   DT_INTERPOLATION_LANCZOS3, /**< Lanczos interpolation (with 3 lobes) */
-  DT_INTERPOLATION_LAST, /**< Helper for easy iteration on interpolators */
-  DT_INTERPOLATION_DEFAULT=DT_INTERPOLATION_BILINEAR,
-  DT_INTERPOLATION_USERPREF /**< can be specified so that user setting is chosen */
+  DT_INTERPOLATION_USERPREF, /**< can be specified so that user setting is chosen */
+  DT_INTERPOLATION_FIRST=0, /**< Helper for easy iteration on interpolators */
+  DT_INTERPOLATION_LAST=DT_INTERPOLATION_USERPREF, /**< Helper for easy iteration on interpolators */
+  DT_INTERPOLATION_DEFAULT=DT_INTERPOLATION_BILINEAR
 };
 
 /** Interpolation function */
@@ -73,6 +73,20 @@ struct dt_interpolation
  *
  * @return computed sample
  */
+
+float
+dt_interpolation_compute_extrapolated_sample(
+  const struct dt_interpolation* itor,
+  float* in,
+  const float x,
+  const float y,
+  const int xmin,
+  const int ymin,
+  const int xmax,
+  const int ymax,
+  const int samplestride,
+  const int linestride);
+
 float
 dt_interpolation_compute_sample(
   const struct dt_interpolation* itor,
