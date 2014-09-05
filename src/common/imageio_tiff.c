@@ -31,7 +31,6 @@
 
 typedef struct tiff_t {
   TIFF *tiff;
-  dt_image_orientation_t orientation;
   uint32_t width;
   uint32_t height;
   uint16_t bpp;
@@ -180,7 +179,6 @@ dt_imageio_open_tiff(
   }
 
   /* initialize cached image buffer */
-  t.orientation = 0;
   t.image->width = t.width;
   t.image->height = t.height;
 
