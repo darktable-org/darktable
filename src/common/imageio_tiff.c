@@ -36,7 +36,6 @@ typedef struct tiff_t {
   uint32_t height;
   uint16_t bpp;
   uint16_t spp;
-  uint32_t imagelength;
   uint32_t scanlinesize;
   dt_image_t *image;
   float *mipbuf;
@@ -46,7 +45,7 @@ typedef struct tiff_t {
 static inline int
 _read_planar_8(tiff_t *t)
 {
-  for (uint32_t row = 0; row < t->imagelength; row++)
+  for (uint32_t row = 0; row < t->height; row++)
   {
     uint8_t *in = ((uint8_t *)t->buf[0]);
     float *out = ((float *)t->mipbuf) + (size_t)4*row*t->width;
@@ -80,7 +79,7 @@ _read_planar_8(tiff_t *t)
 static inline int
 _read_planar_16(tiff_t *t)
 {
-  for (uint32_t row = 0; row < t->imagelength; row++)
+  for (uint32_t row = 0; row < t->height; row++)
   {
     uint16_t *in = ((uint16_t *)t->buf[0]);
     float *out = ((float *)t->mipbuf) + (size_t)4*row*t->width;
@@ -113,7 +112,7 @@ _read_planar_16(tiff_t *t)
 static inline int
 _read_planar_f(tiff_t *t)
 {
-  for (uint32_t row = 0; row < t->imagelength; row++)
+  for (uint32_t row = 0; row < t->height; row++)
   {
     float *in = ((float *)t->buf[0]);
     float *out = ((float *)t->mipbuf) + (size_t)4*row*t->width;
@@ -167,7 +166,6 @@ dt_imageio_open_tiff(
   TIFFGetField(t.tiff, TIFFTAG_IMAGELENGTH, &t.height);
   TIFFGetField(t.tiff, TIFFTAG_BITSPERSAMPLE, &t.bpp);
   TIFFGetField(t.tiff, TIFFTAG_SAMPLESPERPIXEL, &t.spp);
-  TIFFGetField(t.tiff, TIFFTAG_IMAGELENGTH, &t.imagelength);
   TIFFGetField(t.tiff, TIFFTAG_PLANARCONFIG, &config);
   t.scanlinesize = TIFFScanlineSize(t.tiff);
 
