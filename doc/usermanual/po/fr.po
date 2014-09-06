@@ -4,7 +4,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "POT-Creation-Date: 2014-08-10 22:23+0200\n"
-"PO-Revision-Date: 2014-08-29 22:15+0100\n"
+"PO-Revision-Date: 2014-09-06 15:59+0100\n"
 "Last-Translator: Michel Leblond <michel.leblond62@gmail.com>\n"
 "Language-Team: Jean-Luc Coulon, Victor Lamoine, Michel Leblond\n"
 "Language: fr\n"
@@ -13,7 +13,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
 "X-Generator: Poedit 1.5.4\n"
-"X-Poedit-Bookmarks: 1300,208,331,416,182,458,465,290,-1,729\n"
+"X-Poedit-Bookmarks: 1340,208,331,416,182,458,465,290,-1,729\n"
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:4(title)
 msgid "darktable 1.5"
@@ -8621,7 +8621,7 @@ msgstr ""
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:6988(title)
 msgid "Basic group"
-msgstr "Modules de base"
+msgstr "Groupe des modules de base"
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:6990(para)
 msgid ""
@@ -9891,14 +9891,14 @@ msgstr "Choisir la méthode de récupération des hautes lumières"
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:8057(title)
 msgid "clipping threshold"
-msgstr "seuil de troncature"
+msgstr "seuil d'écrêtage"
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:8058(para)
 msgid ""
 "Manually adjust the clipping threshold against magenta highlights. The "
 "default is usually satisfactory without any need for additional adjustments."
 msgstr ""
-"Ajuste manuellement le seuil de troncature pour éviter les hautes lumières "
+"Ajuste manuellement le seuil d'écrêtage pour éviter les hautes lumières "
 "magenta. La valeur par défaut est en général satisfaisante et ne nécessite "
 "pas d’ajustement supplémentaire."
 
@@ -10049,7 +10049,7 @@ msgstr ""
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:8258(title)
 msgid "Tone group"
-msgstr "Modules de tonalité"
+msgstr "Groupe des modules de tonalité"
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:8260(para)
 msgid ""
@@ -10765,7 +10765,7 @@ msgstr ""
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:9012(title)
 msgid "Color group"
-msgstr "Modules de couleur"
+msgstr "Groupe des modules de couleur"
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:9014(para)
 msgid ""
@@ -11688,7 +11688,9 @@ msgid ""
 "artifacts."
 msgstr ""
 "Dans ce module vous définissez le profil de couleur d'entrée, c'est-à-dire "
-"comment les couleurs de votre image d'entrée doivent être interprétées."
+"comment les couleurs de votre image d'entrée doivent être interprétées. Vous "
+"avez aussi une option qui permet de confiner les couleurs dans un certain "
+"gamut afin d'atténuer des artefacts de couleur (non fréquents)."
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:10157(para)
 msgid ""
@@ -11714,7 +11716,7 @@ msgid ""
 "emphasis> (see <xref linkend=\"unbreak_input_profile\"/>) to use your extra "
 "profiles."
 msgstr ""
-"Vous pouvez aussi fournir vos propres profils d’entrée IIC en les déposant "
+"Vous pouvez aussi fournir vos propres profils d’entrée ICC en les déposant "
 "dans $DARKTABLE/share/darktable/color/in ou $HOME/.config/darktable/color/"
 "in. $DARKTABLE représente le répertoire d’installation de darktable et $HOME "
 "votre répertoire personnel. Une source courante de profils ICC est le "
@@ -11747,13 +11749,13 @@ msgid ""
 "gamut clipping might be useful to avoid black pixel artifacts. See <xref "
 "linkend=\"possible_color_artifacts\"/> for more background information."
 msgstr ""
-"Cette zone de liste déroulante vous permet d'activer un mécanisme de "
-"troncature de couleur. Dans la plupart des cas vous pouvez le laisser à "
+"Cette zone de liste déroulante vous permet d'activer un mécanisme d'écrêtage "
+"de couleur. Dans la plupart des cas vous pouvez le laisser à "
 "<quote>désactivé</quote>, son état par défaut. Cependant, si votre image "
 "présente quelques caractéristiques spécifiques comme des sources lumineuses "
-"de couleur bleue fortement saturée, la troncature de gamut peut être utile "
-"pour éviter les artefacts sous forme de pixels noirs. Pour plus de "
-"renseignements voyez <xref linkend=\"possible_color_artifacts\"/>. "
+"bleu fortement saturé, l'écrêtage de gamut peut être utile pour éviter les "
+"artefacts sous forme de pixels noirs. Pour plus de renseignements voyez "
+"<xref linkend=\"possible_color_artifacts\"/>. "
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:10188(para)
 msgid ""
@@ -11849,7 +11851,7 @@ msgid ""
 "by the profile."
 msgstr ""
 "Définit la limite supérieure de la région considérée comme faisant partie "
-"des ombres et où aucune correction gamma n'est effectuée. Typiquement, des "
+"des ombres et où aucune correction gamma ne sera effectuée. Typiquement, des "
 "valeurs comprises entre 0,0 et 0,1 sont requises par le profil."
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:10306(para)
@@ -11864,7 +11866,7 @@ msgstr ""
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:10320(title)
 msgid "Correction group"
-msgstr "Modules d'amélioration"
+msgstr "Groupe des modules d'amélioration"
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:10322(para)
 msgid ""
@@ -11872,10 +11874,11 @@ msgid ""
 "in an photo such as hotpixels, spot removal, noise, lens correction among "
 "others. This group also includes the basic sharpening tools."
 msgstr ""
-"Le groupe de correction comporte les modules qui corrigeront des problèmes "
-"typiques dans une photo tels que, entre autres, suppression des pixels "
-"chauds, suppression des défauts, du bruit, correction de l’objectif. Ce "
-"groupe comporte aussi les outils de base d’accentuation."
+"Le groupe des modules d'amélioration contient les modules qui corrigeront "
+"des problèmes typiques dans une photo, tels que suppression des pixels "
+"chauds, suppression des défauts, réduction du bruit, correction de "
+"l’objectif et d'autres encore. Ce groupe comporte aussi les outils de base "
+"de l’accentuation."
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:10330(title)
 msgid "Sharpen"
@@ -11892,7 +11895,7 @@ msgid ""
 "This is an standard UnSharp Mask (USM) tool for sharpening the details of an "
 "image."
 msgstr ""
-"Ceci est un outil standard de masque de flou pour accentuer les détails de "
+"C'est un masque de flou standard utilisé pour accentuer les détails de "
 "l’image."
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:10369(para)
@@ -11901,9 +11904,9 @@ msgid ""
 "enhances the impression of sharpness of an image. In darktable this module "
 "is only applied to the L-channel in Lab color space."
 msgstr ""
-"Ce module fonctionne en dopant le contraste autour des contours et en "
-"augmentant donc l’impression de netteté d’une image. Dans darktable, ce "
-"module n'est appliqué que sur le canal L dans l’espace de couleur Lab."
+"Ce module fonctionne en augmentant le contraste autour des contours, "
+"améliorant ainsi l’impression de netteté d’une image. Dans darktable, ce "
+"module n'est appliqué que sur le canal L de l’espace de couleur Lab."
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:10377(para)
 msgid ""
@@ -11911,32 +11914,32 @@ msgid ""
 "controls the blur radius which in turn defines the spatial extent of edge "
 "enhancement. Too high values will lead to ugly over-sharpening."
 msgstr ""
-"Le masque de flou applique un flou gaussien à votre image lors du "
-"déroulement de son algorithme. Ceci contrôle le rayon de flou qui à son tour "
-"définit l’étalement de l’accentuation des bords. Des valeurs trop élevées "
-"conduiront à des effet de suraccentuation qui sont très laids."
+"Dans le cadre de son algorithme, le masque de flou applique un flou gaussien "
+"à votre image. Ce paramètre contrôle le rayon de flou, qui à son tour "
+"définit l’étendue spatiale du renforcement des contours. Des valeurs trop "
+"élevées conduiront à de laids excès de renforcement de la netteté."
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:10385(title)
 msgid "amount"
-msgstr "Intensité"
+msgstr "quantité"
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:10386(para)
 msgid "This controls the strength of the sharpening."
-msgstr "Ceci contrôle l’intensité de l’accentuation."
+msgstr "Ceci contrôle l’intensité du renforcement de la netteté."
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:10392(title)
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:11407(title)
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:12950(title)
 msgid "threshold"
-msgstr "Seuil"
+msgstr "seuil"
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:10393(para)
 msgid ""
 "Contrast differences below this threshold are excluded from sharpening. Use "
 "this to avoid amplification of noise."
 msgstr ""
-"Les différences de contraste inférieures à ce seuil sont exclues de "
-"l’accentuation. À utiliser pour éviter l’amplification du bruit."
+"Les différences de contraste inférieures à ce seuil sont exclues du "
+"renforcement de la netteté. À utiliser pour éviter l’amplification du bruit."
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:10405(title)
 msgid "Equalizer"
@@ -11949,11 +11952,11 @@ msgstr "Égaliseur"
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:10791(primary)
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:11161(primary)
 msgid "denoise"
-msgstr "Réduire le bruit"
+msgstr "réduire le bruit"
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:10422(primary)
 msgid "clarity"
-msgstr "Clarté"
+msgstr "clarté"
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:10441(entry)
 msgid ""
@@ -11962,11 +11965,11 @@ msgid ""
 "wavelet domain and parameters can be tuned for each frequency band "
 "separately."
 msgstr ""
-"Ce module flexible peut être utilisé pour différents effets, tels que le "
-"flou lumineux (<quote>bloom</quote>), la réduction de bruit, la luminosité "
-"et l’amélioration du contraste local. Il fonctionne dans le domaine des "
-"ondelettes et ses paramètres peuvent être ajustés indépendamment pour chaque "
-"bande de fréquences."
+"Ce module flexible peut être utilisé pour réaliser différents effets, tels "
+"que le flou lumineux, la réduction de bruit, la clarté et l’amélioration du "
+"contraste local. Il travaille dans le domaine des ondelettes et ses "
+"paramètres peuvent être ajustés indépendamment pour chaque bande de "
+"fréquences."
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:10460(para)
 msgid ""
@@ -11975,10 +11978,11 @@ msgid ""
 "chromaticity, as well as the sharpness of the wavelet basis on each "
 "frequency scale."
 msgstr ""
-"Chaque bande de fréquences peut être ajustée indépendamment. En particulier, "
-"vous pouvez ajuster les splines d’augmentation du contraste et de seuil de "
-"réduction de bruit à la fois pour la clarté et pour la chromaticité, ainsi "
-"que le piqué de la base des ondelettes sur chaque échelle de fréquences."
+"Chaque bande de fréquences peut être modifiée indépendamment. En "
+"particulier, vous pouvez ajuster la spline servant à augmenter le contraste "
+"et la spline modifiant le seuil de réduction de bruit, à la fois, pour la "
+"clarté et pour la chromaticité, ainsi que la finesse de la base d'ondelettes "
+"sur chaque échelle de fréquences."
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:10472(entry)
 msgid ""
@@ -11988,12 +11992,12 @@ msgid ""
 "mouse position and radius. The small little triangles on the x-axis can be "
 "moved to alter the x-position of the spline nodes."
 msgstr ""
-"Chaque spline peut être glissée selon une approche de modification "
+"Chaque spline peut être glissée selon une approche d'édition "
 "proportionnelle, utilisez la roulette de la souris pour ajuster le rayon "
-"dans lequel vos modifications auront un effet. La zone transparente indique "
-"où vous pouvez glisser la spline avec la position actuelle de la souris et "
-"le rayon actuel. Les petits triangles sur l’axe des x peuvent être déplacés "
-"après la position en x des nœuds le la spline."
+"d'influence de vos modifications. La zone transparente indique où vous "
+"pouvez glisser la spline étant donnés la position de la souris et le rayon "
+"d'influence. Les petits triangles sur l’axe des x peuvent être déplacés pour "
+"modifier la position en x des nœuds de la spline."
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:10493(entry)
 msgid ""
@@ -12002,12 +12006,12 @@ msgid ""
 "contrast boost for that frequency band. Higher frequencies, i.e. smaller "
 "details, are to the right of the grid. Pulling it down works, too."
 msgstr ""
-"Glissez la ligne supérieure (les cercles brillants ici, pour le canal de "
+"Glissez la ligne supérieure (les cercles brillants, ici pour le canal de "
 "clarté) afin de modifier le contraste local. En la tirant vers le haut, "
 "comme il est montré ici, on obtiendra une accentuation du contraste pour "
-"cette bande de fréquences. Les fréquences les plus élevées, c'est-à-dire, "
-"les plus fins détails, se trouvent à la droite de la grille. On peut aussi "
-"la tirer vers le bas."
+"cette bande de fréquences. Les fréquences plus élevées, correspondant aux "
+"détails plus fins, se trouvent à la droite de la grille. On peut aussi la "
+"tirer vers le bas."
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:10513(entry)
 msgid ""
@@ -12017,10 +12021,10 @@ msgid ""
 "contrast enhancement is removed."
 msgstr ""
 "La spline inférieure (cercles noirs) est utilisée pour effectuer la "
-"réduction de bruit. Elle ajuste le rétrécissement du seuil des ondelettes "
-"pour chaque bande de fréquences. Tirez-la vers le haut afin d’en voir "
-"l’effet. Sur cet exemple, le bruit, qui a été amplifié par le contraste "
-"local, est supprimé."
+"réduction de bruit. Elle ajuste le seuil de réduction par ondelettes pour "
+"chaque bande de fréquences. Tirez-la vers le haut afin de voir son effet. "
+"Sur cet exemple, le bruit, qui a été amplifié par l'augmentation du "
+"contraste local, est supprimé."
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:10533(entry)
 msgid ""
@@ -12029,20 +12033,20 @@ msgid ""
 "without edge detection, and results in the characteristic halos around sharp "
 "edges in the image."
 msgstr ""
-"Cet écran montre l’effet du paramètre d’accentuation. Il est ici tiré vers "
-"le bas à zéro pour toutes les bandes. Ceci est effectivement une ondelette "
-"<emphasis>à trous</emphasis> (en français dans le texte), sans détection de "
-"contours, et les résultats donnent les halos caractéristiques autour des "
-"contours marqués de l’image."
+"Cet écran montre l’effet du paramètre netteté. La spline est ici tirée vers "
+"le bas, à zéro pour toutes les bandes. Il s'agit en fait d'une ondelette "
+"régulière <emphasis>à trous</emphasis> (en français dans le texte), sans "
+"détection de contours, et il en résulte des halos caractéristiques autour "
+"des contours marqués de l’image."
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:10553(entry)
 msgid ""
 "This image is the other extreme. The wavelet basis now oversharpens, which "
 "results in ugly gradient reversals near the ridge of the rock."
 msgstr ""
-"Cette image est l’autre extrême. La base de l’ondelette suraccentue "
-"maintenant, ce qui donne une inversion de dégradé très laide près de "
-"l’arrête du rocher."
+"Cette image est l’autre extrême. La base d'ondelettes sur-accentue "
+"maintenant la netteté, ce qui se traduit par de laides inversions de dégradé "
+"près de la crête du rocher."
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:10565(para)
 msgid ""
@@ -12050,10 +12054,10 @@ msgid ""
 "image directly. You will have to change some denoise/contrast boost "
 "parameters to see an effect following adjustments to the sharpness parameter."
 msgstr ""
-"Notez que le paramètre de netteté n'affecte que la base de l’ondelette, pas "
+"Notez que le paramètre netteté n'affecte que la base d’ondelettes, pas "
 "directement l’image. Vous devrez modifier certains paramètres d’accentuation "
 "du contraste ou de réduction de bruit pour rendre l’effet visible lors des "
-"ajustements du paramètre de netteté."
+"ajustements du paramètre netteté."
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:10571(para)
 msgid ""
@@ -12063,13 +12067,12 @@ msgid ""
 "strength of the effect. It is not a module parameter in itself; when you "
 "leave darkroom mode all changes will be consolidated into the spline curves."
 msgstr ""
-"Ce module a un curseur supplémentaire de <quote>mélange</quote> sous "
+"Ce module a un curseur supplémentaire <quote>mélanger</quote> sous "
 "l’interface utilisateur de la spline. Ajuster ce curseur va dilater ou "
 "contracter la spline selon l’axe y. Ce curseur a été ajouté comme outil "
 "pratique pour vous aider à modifier l’intensité de l’effet. Ce n'est pas en "
 "lui-même un paramètre du module ; lorsque vous quittez le mode chambre "
-"noire, toutes les modifications seront consolidées sous la forme de courbes "
-"splines."
+"noire, toutes les modifications seront consolidées dans les courbes splines."
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:10579(para)
 msgid ""
@@ -12084,22 +12087,20 @@ msgstr ""
 "<quote>clarté</quote> d’une image."
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:10591(title)
-#, fuzzy
 msgid "Denoise – profiled"
 msgstr "Réduction du bruit (profil)"
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:10595(secondary)
-#, fuzzy
 msgid "denoise – profiled"
 msgstr "réduction du bruit (profil)"
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:10600(secondary)
 msgid "profiled"
-msgstr "Profilé"
+msgstr "profilé"
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:10604(primary)
 msgid "noise removal"
-msgstr "Supprimer le bruit"
+msgstr "supprimer le bruit"
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:10618(entry)
 #, fuzzy
@@ -12977,7 +12978,7 @@ msgstr ""
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:11509(title)
 msgid "Effect group"
-msgstr "Modules d'effets"
+msgstr "Groupe des modules d'effets"
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:11511(para)
 msgid "In the effect group you will find modules with a more artistic touch."
