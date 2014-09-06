@@ -39,7 +39,7 @@ typedef struct tiff_t {
   uint32_t scanlinesize;
   dt_image_t *image;
   float *mipbuf;
-  tdata_t buf[3];
+  tdata_t buf;
 } tiff_t;
 
 static inline int
@@ -47,7 +47,7 @@ _read_planar_8(tiff_t *t)
 {
   for (uint32_t row = 0; row < t->height; row++)
   {
-    uint8_t *in = ((uint8_t *)t->buf[0]);
+    uint8_t *in = ((uint8_t *)t->buf);
     float *out = ((float *)t->mipbuf) + (size_t)4*row*t->width;
 
     /* read scanline */
@@ -81,7 +81,7 @@ _read_planar_16(tiff_t *t)
 {
   for (uint32_t row = 0; row < t->height; row++)
   {
-    uint16_t *in = ((uint16_t *)t->buf[0]);
+    uint16_t *in = ((uint16_t *)t->buf);
     float *out = ((float *)t->mipbuf) + (size_t)4*row*t->width;
 
     /* read scanline */
@@ -114,7 +114,7 @@ _read_planar_f(tiff_t *t)
 {
   for (uint32_t row = 0; row < t->height; row++)
   {
-    float *in = ((float *)t->buf[0]);
+    float *in = ((float *)t->buf);
     float *out = ((float *)t->mipbuf) + (size_t)4*row*t->width;
 
     /* read scanline */
@@ -200,16 +200,18 @@ dt_imageio_open_tiff(
     return DT_IMAGEIO_CACHE_FULL;
   }
 
-  t.buf[0] = _TIFFmalloc(t.scanlinesize);
-  t.buf[1] = _TIFFmalloc(t.scanlinesize);
-  t.buf[2] = _TIFFmalloc(t.scanlinesize);
-
   /* dont depend on planar config if spp == 1 */
   if (t.spp > 1 && config != PLANARCONFIG_CONTIG)
   {
     fprintf(stderr, "[tiff_open] warning: planar config other than contig is not supported.\n");
     TIFFClose(t.tiff);
     return DT_IMAGEIO_FILE_CORRUPTED;
+  }
+
+  if((t.buf = _TIFFmalloc(t.scanlinesize)) == NULL)
+  {
+    TIFFClose(t.tiff);
+    return DT_IMAGEIO_CACHE_FULL;
   }
 
   int ok = 1;
@@ -223,11 +225,9 @@ dt_imageio_open_tiff(
     ok = 0;
   }
 
-
-  _TIFFfree(t.buf[0]);
-  _TIFFfree(t.buf[1]);
-  _TIFFfree(t.buf[2]);
+  _TIFFfree(t.buf);
   TIFFClose(t.tiff);
+
   return (ok == 1 ? DT_IMAGEIO_OK : DT_IMAGEIO_FILE_CORRUPTED);
 }
 
