@@ -112,29 +112,29 @@ _read_planar_16(tiff_t *t)
 static inline void
 _read_planar_f(tiff_t *t)
 {
-  float *buf;
-
-  buf = (float *)t->buf[0];
-
   for (uint32_t row = 0; row < t->imagelength; row++)
   {
-    TIFFReadScanline(t->tiff, t->buf[0], row, 0);
+    float *in = ((float *)t->buf[0]);
+    float *out = ((float *)t->mipbuf) + (size_t)4*row*t->width;
 
-    for (uint32_t i=0; i < t->width; i++)
+    /* read scanline */
+    TIFFReadScanline(t->tiff, in, row, 0);
+
+    for (uint32_t i=0; i < t->width; i++, in+=t->spp, out+=4)
     {
-      size_t idx = dt_imageio_write_pos(i, row,
-                                        t->width, t->height,
-                                        t->width, t->height,
-                                        t->orientation);
+      out[0] = in[0];
 
-      t->mipbuf[4 * idx + 0] = t->mipbuf[4 * idx + 1] = t->mipbuf[4 * idx + 2] = buf[t->spp * i + 0];
-      t->mipbuf[4 * idx + 3] = 0;
+      if(t->spp == 1)
+      {
+        out[1] = out[2] = out[0];
+      }
+      else
+      {
+        out[1] = in[1];
+        out[2] = in[2];
+      }
 
-      if (t->spp == 1)
-        continue;
-
-      t->mipbuf[4 * idx + 1] = buf[t->spp * i + 1];
-      t->mipbuf[4 * idx + 2] = buf[t->spp * i + 2];
+      out[3] = 0;
     }
   }
 }
