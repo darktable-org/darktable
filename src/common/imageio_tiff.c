@@ -1,6 +1,7 @@
 /*
     This file is part of darktable,
     copyright (c) 2010 -- 2014 Henrik Andersson.
+    copyright (c) 2014 LebedevRI.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -42,7 +43,7 @@ typedef struct tiff_t {
   tdata_t buf[3];
 } tiff_t;
 
-static inline void
+static inline int
 _read_planar_8(tiff_t *t)
 {
   for (uint32_t row = 0; row < t->imagelength; row++)
@@ -51,7 +52,8 @@ _read_planar_8(tiff_t *t)
     float *out = ((float *)t->mipbuf) + (size_t)4*row*t->width;
 
     /* read scanline */
-    TIFFReadScanline(t->tiff, in, row, 0);
+    if(TIFFReadScanline(t->tiff, in, row, 0) == -1)
+      return -1;
 
     for (uint32_t i=0; i < t->width; i++, in+=t->spp, out+=4)
     {
@@ -71,9 +73,11 @@ _read_planar_8(tiff_t *t)
       out[3] = 0;
     }
   }
+
+  return 1;
 }
 
-static inline void
+static inline int
 _read_planar_16(tiff_t *t)
 {
   for (uint32_t row = 0; row < t->imagelength; row++)
@@ -82,7 +86,8 @@ _read_planar_16(tiff_t *t)
     float *out = ((float *)t->mipbuf) + (size_t)4*row*t->width;
 
     /* read scanline */
-    TIFFReadScanline(t->tiff, in, row, 0);
+    if(TIFFReadScanline(t->tiff, in, row, 0) == -1)
+      return -1;
 
     for (uint32_t i=0; i < t->width; i++, in+=t->spp, out+=4)
     {
@@ -101,9 +106,11 @@ _read_planar_16(tiff_t *t)
       out[3] = 0;
     }
   }
+
+  return 1;
 }
 
-static inline void
+static inline int
 _read_planar_f(tiff_t *t)
 {
   for (uint32_t row = 0; row < t->imagelength; row++)
@@ -112,7 +119,8 @@ _read_planar_f(tiff_t *t)
     float *out = ((float *)t->mipbuf) + (size_t)4*row*t->width;
 
     /* read scanline */
-    TIFFReadScanline(t->tiff, in, row, 0);
+    if(TIFFReadScanline(t->tiff, in, row, 0) == -1)
+      return -1;
 
     for (uint32_t i=0; i < t->width; i++, in+=t->spp, out+=4)
     {
@@ -131,6 +139,8 @@ _read_planar_f(tiff_t *t)
       out[3] = 0;
     }
   }
+
+  return 1;
 }
 
 dt_imageio_retval_t
@@ -206,9 +216,9 @@ dt_imageio_open_tiff(
 
   int ok = 1;
 
-  if      (t.bpp == 8 && config == PLANARCONFIG_CONTIG)  _read_planar_8(&t);
-  else if (t.bpp == 16 && config == PLANARCONFIG_CONTIG) _read_planar_16(&t);
-  else if (t.bpp == 32 && config == PLANARCONFIG_CONTIG) _read_planar_f(&t);
+  if      (t.bpp == 8 && config == PLANARCONFIG_CONTIG)  ok = _read_planar_8(&t);
+  else if (t.bpp == 16 && config == PLANARCONFIG_CONTIG) ok = _read_planar_16(&t);
+  else if (t.bpp == 32 && config == PLANARCONFIG_CONTIG) ok = _read_planar_f(&t);
   else
   {
     fprintf(stderr, "[tiff_open] error: Not an supported tiff image format.");
