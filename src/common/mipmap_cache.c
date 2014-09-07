@@ -54,12 +54,9 @@ struct dt_mipmap_buffer_dsc
   uint32_t width;
   uint32_t height;
   size_t size;
-  uint32_t padding1; //
-  uint32_t padding2; // FIXME: any better way ?
-  uint32_t padding3; //
   uint32_t flags;
   /* NB: sizeof must be a multiple of 4*sizeof(float) */
-}  __attribute__((packed));
+} __attribute__((packed,aligned(16)));
 
 // last resort mem alloc for dead images. sizeof(dt_mipmap_buffer_dsc) + dead image pixels (8x8)
 // __m128 type for sse alignment.
