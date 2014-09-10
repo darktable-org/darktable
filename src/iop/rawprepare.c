@@ -171,6 +171,9 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
   }
   else
   { // pre-downsampled buffer that needs black/white scaling
+
+    const __m128 sub = _mm_load_ps(d->sub), div = _mm_load_ps(d->div);
+
 #ifdef _OPENMP
 #pragma omp parallel for default(none) schedule(static) shared(ovoid)
 #endif
@@ -179,12 +182,14 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
       const float *in = ((float *)ivoid) + (size_t)4 * roi_in->width * j;
       float *out = ((float *)ovoid) + (size_t)4 * roi_out->width * j;
 
+      // process aligned pixels with SSE
       for(int i = 0; i < roi_out->width; i++, in += 4, out += 4)
       {
-        for(int c = 0; c < 3; c++)
-        {
-          out[c] = MAX(0.0f, (in[c] - d->sub[0]) / d->div[0]);
-        }
+        const __m128 input = _mm_load_ps(in);
+
+        const __m128 scaled = _mm_div_ps(_mm_sub_ps(input, sub), div);
+
+        _mm_stream_ps(out, _mm_max_ps(_mm_setzero_ps(), scaled));
       }
     }
   }
