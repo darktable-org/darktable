@@ -106,9 +106,16 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
 #endif
     for(int j = 0; j < roi_out->height; j++)
     {
-      const float *const in = ((float *)ivoid) + (size_t)4 * roi_in->width * j;
+      const float *in = ((float *)ivoid) + (size_t)4 * roi_in->width * j;
       float *out = ((float *)ovoid) + (size_t)4 * roi_out->width * j;
-      memcpy(out, in, (size_t)4 * sizeof(float) * roi_out->width);
+
+      for(int i = 0; i < roi_out->width; i++, in += 4, out += 4)
+      {
+        for(int c = 0; c < 3; c++)
+        {
+          out[c] = MAX(0.0f, (in[c] - black) / div);
+        }
+      }
     }
   }
 }
