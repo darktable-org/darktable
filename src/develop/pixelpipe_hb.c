@@ -2201,8 +2201,6 @@ void dt_dev_pixelpipe_disable_after(dt_dev_pixelpipe_t *pipe, const char *op)
     if(!nodes) break;
     piece = (dt_dev_pixelpipe_iop_t *)nodes->data;
   }
-  // disable the last (matching one), too
-  if(piece) piece->enabled = 0;
 }
 
 void dt_dev_pixelpipe_disable_before(dt_dev_pixelpipe_t *pipe, const char *op)
@@ -2217,8 +2215,6 @@ void dt_dev_pixelpipe_disable_before(dt_dev_pixelpipe_t *pipe, const char *op)
     if(!nodes) break;
     piece = (dt_dev_pixelpipe_iop_t *)nodes->data;
   }
-  // disable the last (matching one), too
-  if(piece) piece->enabled = 0;
 }
 
 static int dt_dev_pixelpipe_process_rec_and_backcopy(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev,
