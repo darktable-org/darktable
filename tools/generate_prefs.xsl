@@ -252,7 +252,7 @@
     gtk_spin_button_set_value(GTK_SPIN_BUTTON(widget), dt_conf_get_int64("</xsl:text><xsl:value-of select="name"/><xsl:text>") * factor);
     g_signal_connect(G_OBJECT(widget), "value-changed", G_CALLBACK(preferences_callback_</xsl:text><xsl:value-of select="generate-id(.)"/><xsl:text>), NULL);
     g_signal_connect(G_OBJECT(dialog), "response", G_CALLBACK(preferences_response_callback_</xsl:text><xsl:value-of select="generate-id(.)"/><xsl:text>), widget);
-    snprintf(tooltip, 1024, _("double click to reset to `%"PRId64"'"), (gint64)(</xsl:text><xsl:value-of select="default"/><xsl:text> * factor));
+    snprintf(tooltip, 1024, _("double click to reset to `%"G_GINT64_FORMAT"'"), (gint64)(</xsl:text><xsl:value-of select="default"/><xsl:text> * factor));
     g_object_set(labelev,  "tooltip-text", tooltip, (char *)NULL);
 </xsl:text>
 	</xsl:template>
