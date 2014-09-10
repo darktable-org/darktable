@@ -268,7 +268,7 @@ dt_imageio_open_rawspeed_sraw(dt_image_t *img, RawImage r, dt_mipmap_cache_alloc
            * we need to copy data from only channel to each of 3 channels
            */
 
-          out[k] = (((float)(*in)) - black) / scale;
+          out[k] = MAX(0.0f, (((float)(*in)) - black) / scale);
         }
         else
         {
@@ -277,7 +277,7 @@ dt_imageio_open_rawspeed_sraw(dt_image_t *img, RawImage r, dt_mipmap_cache_alloc
            * just copy 3 ch to 3 ch
            */
 
-          out[k] = (((float)(in[k])) - black) / scale;
+          out[k] = MAX(0.0f, (((float)(in[k])) - black) / scale);
         }
       }
     }
