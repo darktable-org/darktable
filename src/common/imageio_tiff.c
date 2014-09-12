@@ -167,7 +167,7 @@ dt_imageio_open_tiff(
   TIFFGetField(t.tiff, TIFFTAG_IMAGELENGTH, &t.height);
   TIFFGetField(t.tiff, TIFFTAG_BITSPERSAMPLE, &t.bpp);
   TIFFGetField(t.tiff, TIFFTAG_SAMPLESPERPIXEL, &t.spp);
-  TIFFGetField(t.tiff, TIFFTAG_SAMPLEFORMAT, &t.sampleformat);
+  TIFFGetFieldDefaulted(t.tiff, TIFFTAG_SAMPLEFORMAT, &t.sampleformat);
   TIFFGetField(t.tiff, TIFFTAG_PLANARCONFIG, &config);
   t.scanlinesize = TIFFScanlineSize(t.tiff);
 
