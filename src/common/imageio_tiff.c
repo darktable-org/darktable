@@ -36,6 +36,7 @@ typedef struct tiff_t {
   uint32_t height;
   uint16_t bpp;
   uint16_t spp;
+  uint16_t sampleformat;
   uint32_t scanlinesize;
   dt_image_t *image;
   float *mipbuf;
@@ -166,6 +167,7 @@ dt_imageio_open_tiff(
   TIFFGetField(t.tiff, TIFFTAG_IMAGELENGTH, &t.height);
   TIFFGetField(t.tiff, TIFFTAG_BITSPERSAMPLE, &t.bpp);
   TIFFGetField(t.tiff, TIFFTAG_SAMPLESPERPIXEL, &t.spp);
+  TIFFGetField(t.tiff, TIFFTAG_SAMPLEFORMAT, &t.sampleformat);
   TIFFGetField(t.tiff, TIFFTAG_PLANARCONFIG, &config);
   t.scanlinesize = TIFFScanlineSize(t.tiff);
 
@@ -216,9 +218,9 @@ dt_imageio_open_tiff(
 
   int ok = 1;
 
-  if      (t.bpp == 8 && config == PLANARCONFIG_CONTIG)  ok = _read_planar_8(&t);
-  else if (t.bpp == 16 && config == PLANARCONFIG_CONTIG) ok = _read_planar_16(&t);
-  else if (t.bpp == 32 && config == PLANARCONFIG_CONTIG) ok = _read_planar_f(&t);
+  if      (t.bpp == 8  && t.sampleformat == SAMPLEFORMAT_UINT   && config == PLANARCONFIG_CONTIG) ok = _read_planar_8(&t);
+  else if (t.bpp == 16 && t.sampleformat == SAMPLEFORMAT_UINT   && config == PLANARCONFIG_CONTIG) ok = _read_planar_16(&t);
+  else if (t.bpp == 32 && t.sampleformat == SAMPLEFORMAT_IEEEFP && config == PLANARCONFIG_CONTIG) ok = _read_planar_f(&t);
   else
   {
     fprintf(stderr, "[tiff_open] error: Not an supported tiff image format.");
