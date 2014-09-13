@@ -478,6 +478,29 @@ read_finalize:
   if(f) fclose(f);
   free(blob);
   g_unlink(dbfilename);
+
+  for (int k=0; k<=DT_MIPMAP_3; k++) {
+    // Remove all files from disk caches
+    char cachedir[DT_MAX_PATH_LEN];
+    dt_loc_get_user_cache_dir(cachedir, sizeof(cachedir));
+    gchar *mipcachedir = g_strdup_printf("%s/DT_MIPMAP_%d",cachedir,k);
+    //fprintf(stderr, "[mipmap_cache] removing all files from `%s'\n", mipcachedir);
+    if (g_file_test(mipcachedir, G_FILE_TEST_EXISTS | G_FILE_TEST_IS_DIR)) {
+      const gchar *filename;
+      GDir *dir = g_dir_open(mipcachedir, 0, NULL);
+      while (dir && (filename = g_dir_read_name(dir))) {
+        gchar *full_filename = g_strdup_printf("%s/%s",mipcachedir,filename);
+        //fprintf(stderr, "[mipmap_cache] removing `%s'\n", full_filename);
+        g_unlink(full_filename);
+        g_free(full_filename);
+      }
+      if (dir) {
+        g_dir_close(dir);
+      }
+    }
+    g_free(mipcachedir);
+  }
+
   return 1;
 }
 
@@ -723,6 +746,15 @@ void dt_mipmap_cache_init(dt_mipmap_cache_t *cache)
     dt_cache_init(&cache->mip[k].cache, thumbnails,
                   parallel,
                   64, 0.9f*thumbnails*cache->mip[k].buffer_size);
+
+
+    // Set the cache to spill over into disk
+    char cachedir[DT_MAX_PATH_LEN];
+    dt_loc_get_user_cache_dir(cachedir, sizeof(cachedir));
+
+    dt_cache_set_filebacked(&cache->mip[k].cache, 
+                            g_strdup_printf("%s/DT_MIPMAP_%d",cachedir,k), 
+                            cache->mip[k].buffer_size);
 
     // might have been rounded to power of two:
     thumbnails = dt_cache_capacity(&cache->mip[k].cache);

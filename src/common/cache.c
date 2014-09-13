@@ -27,6 +27,9 @@
 #include <inttypes.h>
 #include <assert.h>
 #include <sched.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <errno.h>
 
 // this implements a concurrent LRU cache using
 // a concurrent doubly linked list
@@ -38,6 +41,7 @@
 #define DT_CACHE_EMPTY_HASH -1
 #define DT_CACHE_EMPTY_KEY  -1
 #define DT_CACHE_EMPTY_DATA  NULL
+#define DT_CACHE_GC_REMOVE 1
 
 
 typedef struct dt_cache_bucket_t
@@ -63,6 +67,12 @@ typedef struct dt_cache_segment_t
 }
 dt_cache_segment_t;
 
+static int dt_cache_remove_no_lru_lock_complete(dt_cache_t *cache, const uint32_t key, uint32_t flags);
+int dt_cache_remove_complete(dt_cache_t *cache, const uint32_t key, uint32_t flags);
+
+int dt_cache_filebacked_tryget(dt_cache_t *cache, const uint32_t key, void *data);
+void dt_cache_filebacked_save(dt_cache_t *cache, const uint32_t key, void *data);
+void dt_cache_filebacked_remove(dt_cache_t *cache, const uint32_t key);
 
 static inline int
 dt_cache_testlock(uint32_t *lock)
@@ -221,10 +231,11 @@ add_key_to_beginning_of_list(
   dt_cache_bucket_t *const keys_bucket,
   dt_cache_bucket_t *const free_bucket,
   const uint32_t     hash,
-  const uint32_t     key)
+  const uint32_t     key,
+  const uint32_t     given_cost)
 {
-  int32_t cost = 1;
-  if(cache->allocate)
+  int32_t cost = given_cost;
+  if(!given_cost && cache->allocate)
   {
     // upgrade to a write lock in case the user requests it:
     if(cache->allocate(cache->allocate_data, key, &cost, &free_bucket->data))
@@ -261,10 +272,11 @@ add_key_to_end_of_list(
   dt_cache_bucket_t *const free_bucket,
   const uint32_t     hash,
   const uint32_t     key,
-  dt_cache_bucket_t *const last_bucket)
+  dt_cache_bucket_t *const last_bucket,
+  const uint32_t     given_cost)
 {
-  int32_t cost = 1;
-  if(cache->allocate)
+  int32_t cost = given_cost;
+  if(!given_cost && cache->allocate)
   {
     if(cache->allocate(cache->allocate_data, key, &cost, &free_bucket->data))
       dt_cache_bucket_write_lock(free_bucket);
@@ -727,7 +739,8 @@ wait:
         // goes before add_key, because that might call alloc which might want to set
         // a write lock (which can only be an augmented read lock)
         dt_cache_bucket_read_lock(free_bucket);
-        add_key_to_beginning_of_list(cache, start_bucket, free_bucket, hash, key);
+        uint32_t fromdisksize = dt_cache_filebacked_tryget(cache, key, free_bucket->data);
+        add_key_to_beginning_of_list(cache, start_bucket, free_bucket, hash, key, fromdisksize);
         void *data = free_bucket->data;
         dt_cache_unlock(&segment->lock);
         lru_insert_locked(cache, free_bucket);
@@ -755,7 +768,8 @@ wait:
       {
         // try that again if it's still empty
         dt_cache_bucket_read_lock(free_max_bucket);
-        add_key_to_end_of_list(cache, start_bucket, free_max_bucket, hash, key, last_bucket);
+        uint32_t fromdisksize = dt_cache_filebacked_tryget(cache, key, free_max_bucket->data);
+        add_key_to_end_of_list(cache, start_bucket, free_max_bucket, hash, key, last_bucket, fromdisksize);
         void *data = free_max_bucket->data;
         dt_cache_unlock(&segment->lock);
         lru_insert(cache, free_max_bucket);
@@ -783,7 +797,8 @@ wait:
       if(free_min_bucket->hash == DT_CACHE_EMPTY_HASH)
       {
         dt_cache_bucket_read_lock(free_min_bucket);
-        add_key_to_end_of_list(cache, start_bucket, free_min_bucket, hash, key, last_bucket);
+        uint32_t fromdisksize = dt_cache_filebacked_tryget(cache, key, free_min_bucket->data);
+        add_key_to_end_of_list(cache, start_bucket, free_min_bucket, hash, key, last_bucket, fromdisksize);
         void *data = free_min_bucket->data;
         dt_cache_unlock(&segment->lock);
         lru_insert(cache, free_min_bucket);
@@ -812,14 +827,16 @@ dt_cache_remove_bucket(dt_cache_t *cache, const uint32_t num)
   const uint32_t key = curr_bucket->key;
   dt_cache_unlock(&segment->lock);
   // actually remove by key
-  if(key != DT_CACHE_EMPTY_KEY)
-    return dt_cache_remove(cache, key);
+  if(key != DT_CACHE_EMPTY_KEY) {
+    dt_cache_filebacked_save(cache, key, curr_bucket->data);
+    return dt_cache_remove_complete(cache, key, DT_CACHE_GC_REMOVE);
+  }
   else
     return 2;
 }
 
 int
-dt_cache_remove(dt_cache_t *cache, const uint32_t key)
+dt_cache_remove_complete(dt_cache_t *cache, const uint32_t key, uint32_t flags)
 {
   const uint32_t hash = key;
   dt_cache_segment_t *segment = cache->segments + ((hash >> cache->segment_shift) & cache->segment_mask);
@@ -847,6 +864,11 @@ dt_cache_remove(dt_cache_t *cache, const uint32_t key)
         dt_cache_unlock(&segment->lock);
         return 1;
       }
+
+      // Remove the key from the filebacking if it exists
+      if (!(flags & DT_CACHE_GC_REMOVE)) 
+        dt_cache_filebacked_remove(cache, key);
+
       remove_key(cache, segment, start_bucket, curr_bucket, last_bucket, hash);
       if(cache->optimize_cacheline)
         optimize_cacheline_use(cache, segment, curr_bucket);
@@ -863,11 +885,16 @@ dt_cache_remove(dt_cache_t *cache, const uint32_t key)
   return 1;
 }
 
+int
+dt_cache_remove(dt_cache_t *cache, const uint32_t key) {
+  return dt_cache_remove_complete(cache, key, 0);
+}
+
 #define DT_CACHE_BFL
 #ifdef DT_CACHE_BFL
 // debug helper functions, in case we want a big fat lock for dt_cache_gc():
 static int
-dt_cache_remove_no_lru_lock(dt_cache_t *cache, const uint32_t key)
+dt_cache_remove_no_lru_lock_complete(dt_cache_t *cache, const uint32_t key, uint32_t flags)
 {
   const uint32_t hash = key;
   dt_cache_segment_t *segment = cache->segments + ((hash >> cache->segment_shift) & cache->segment_mask);
@@ -891,10 +918,16 @@ dt_cache_remove_no_lru_lock(dt_cache_t *cache, const uint32_t key)
     {
       if(curr_bucket->read || curr_bucket->write)
       {
-        // fprintf(stderr, "[cache remove] key still in use %u!\n", key);
+        fprintf(stderr, "[cache remove] key still in use %u!\n", key);
+        fprintf(stderr, "[cache remove] read: %d write %d!\n", curr_bucket->read, curr_bucket->write);
         dt_cache_unlock(&segment->lock);
         return 1;
       }
+    
+      // Remove the key from the filebacking if it exists
+      if (!(flags & DT_CACHE_GC_REMOVE)) 
+        dt_cache_filebacked_remove(cache, key);
+
       remove_key(cache, segment, start_bucket, curr_bucket, last_bucket, hash);
       if(cache->optimize_cacheline)
         optimize_cacheline_use(cache, segment, curr_bucket);
@@ -923,8 +956,10 @@ dt_cache_remove_bucket_no_lru_lock(dt_cache_t *cache, const uint32_t num)
   const uint32_t key = curr_bucket->key;
   dt_cache_unlock(&segment->lock);
   // actually remove by key
-  if(key != DT_CACHE_EMPTY_KEY)
-    return dt_cache_remove_no_lru_lock(cache, key);
+  if(key != DT_CACHE_EMPTY_KEY) {
+    dt_cache_filebacked_save(cache, key, curr_bucket->data);
+    return dt_cache_remove_no_lru_lock_complete(cache, key, DT_CACHE_GC_REMOVE);
+  }
   else
     return 2;
 }
@@ -1215,6 +1250,70 @@ void dt_cache_print_locked(dt_cache_t *cache)
     i++;
   }
   dt_cache_unlock(&cache->lru_lock);
+}
+
+void dt_cache_set_filebacked (dt_cache_t *cache, char *path, uint32_t obj_size) {
+  //fprintf(stderr, "Filebacked cache: Trying to setup in %s\n", path);
+  int ret = mkdir(path, 0753);
+  if (!ret || errno == EEXIST) {
+    cache->path = path;
+    cache->obj_size = obj_size;
+  } else {
+    fprintf(stderr, "Filebacked cache: Couldn't create dir %s, error %s\n", path, strerror(errno));
+  }
+}
+
+char *dt_cache_filebacked_getfilename(dt_cache_t *cache, const uint32_t key) {
+  /*TODO: We could allocate the string in the caller's stack, 
+          avoiding allocating memory from the heap*/
+  return g_strdup_printf("%s/%d", cache->path, key);
+}
+
+int dt_cache_filebacked_tryget(dt_cache_t *cache, const uint32_t key, void *data) {
+  /*TODO: We could read directly into *data, avoiding new memory allocations
+          (in g_file_get_contents) and the memcpy */
+  if (cache->path) {
+    char *filename = dt_cache_filebacked_getfilename(cache, key);
+    char *contents;
+    gsize length;
+    if (g_file_get_contents(filename, &contents, &length, NULL)) {
+      assert(length == cache->obj_size);
+      memcpy(data, contents, cache->obj_size);
+      g_free(contents);
+      return cache->obj_size;
+    } else {
+      //fprintf(stderr, "Filebacked cache: Couldn't get %s\n", filename);
+      return 0;
+    }
+    g_free(filename);
+  }
+  return 0;
+}
+
+void dt_cache_filebacked_save(dt_cache_t *cache, const uint32_t key, void *data) {
+  if (cache->path) {
+    char *filename = dt_cache_filebacked_getfilename(cache, key);
+    //fprintf(stderr, "Filebacked cache: Trying to save %s\n", filename);
+    if (!g_file_test(filename, G_FILE_TEST_EXISTS)) {
+      if (!g_file_set_contents(filename, data, cache->obj_size, NULL)) {
+        fprintf(stderr, "Filebacked cache: Couldn't write %s\n", filename);
+      }
+    } else {
+      //fprintf(stderr, "Filebacked cache: File %s already exists, skipping\n", filename);
+    }
+    g_free(filename);
+  }
+}
+
+void dt_cache_filebacked_remove(dt_cache_t *cache, const uint32_t key) {
+  if (cache->path) {
+    char *filename = dt_cache_filebacked_getfilename(cache, key);
+    //fprintf(stderr, "Filebacked cache: Trying to remove %s\n", filename);
+    if (g_file_test(filename, G_FILE_TEST_EXISTS) && unlink(filename)) {
+      fprintf(stderr, "Filebacked cache: Couldn't remove %s, error %s\n", filename, strerror(errno));
+    }
+    g_free(filename);
+  }
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
