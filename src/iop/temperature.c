@@ -369,13 +369,6 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
   dt_iop_temperature_data_t *d = (dt_iop_temperature_data_t *)piece->data;
   for(int k=0; k<3; k++) d->coeffs[k]  = p->coeffs[k];
 
-  /*
-   * since `x * 1.0f == x` (multiplication is pointless),
-   * disable piece (out = in)
-   */
-  if(1.0f == p->coeffs[0] && 1.0f == p->coeffs[1] && 1.0f == p->coeffs[2])
-    piece->enabled = 0;
-
   // x-trans images not implemented in OpenCL yet
   if(pipe->image.filters == 9u)
     piece->process_cl_ready = 0;
