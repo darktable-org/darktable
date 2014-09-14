@@ -16,6 +16,7 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
+#include "common/debug.h"
 #include "common/darktable.h"
 #include "common/colorspaces.h"
 #include "common/imageio_module.h"
@@ -36,7 +37,7 @@
 #include <gdk/gdkkeysyms.h>
 #include "dtgtk/button.h"
 
-DT_MODULE(1)
+DT_MODULE(2)
 
 typedef struct dt_lib_export_t
 {
@@ -704,6 +705,197 @@ init_presets (dt_lib_module_t *self)
 {
   // TODO: store presets in db:
   // dt_lib_presets_add(const char *name, const char *plugin_name, const void *params, const int32_t params_size)
+
+
+  // I know that it is super ugly to have this inside a module, but then is export not your average module since it
+  // handles the params blobs of imageio libs.
+  // - get all existing presets for export from db,
+  // - extract the versions of the embedded format/storage blob
+  // - check if it's up to date
+  // - if older than the module -> call its legacy_params and update the preset
+  // - drop presets that cannot be updated
+
+  int version = self->version();
+
+  sqlite3_stmt *stmt;
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select rowid, op_version, op_params, name from presets where operation='export'", -1, &stmt, NULL);
+  while(sqlite3_step(stmt) == SQLITE_ROW)
+  {
+    int rowid = sqlite3_column_int(stmt, 0);
+    int op_version = sqlite3_column_int(stmt, 1);
+    void *op_params = (void*)sqlite3_column_blob(stmt, 2);
+    size_t op_params_size = sqlite3_column_bytes(stmt, 2);
+    const char *name = (char*)sqlite3_column_text(stmt, 3);
+
+    if(op_version != version)
+    {
+      // shouldn't happen, we run legacy_params on the lib level before calling this
+      fprintf(stderr, "[export_init_presets] found export preset '%s' with version %d, version %d was expected. dropping preset.\n", name, op_version, version);
+      sqlite3_stmt *innerstmt;
+      DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "delete from presets where rowid=?1", -1, &innerstmt, NULL);
+      DT_DEBUG_SQLITE3_BIND_INT(innerstmt, 1, rowid);
+      sqlite3_step(innerstmt);
+      sqlite3_finalize(innerstmt);
+    }
+    else
+    {
+      // extract the interesting parts from the blob
+      const char *buf = (const char* )op_params;
+
+      // skip 3*int32_t: max_width, max_height and iccintent
+      buf += 3*sizeof(int32_t);
+      // next skip iccprofile
+      buf += strlen(buf) + 1;
+
+      // parse both names to '\0'
+      const char *fname = buf;
+      buf += strlen(fname) + 1;
+      const char *sname = buf;
+      buf += strlen(sname) + 1;
+
+      // get module by name and skip if not there.
+      dt_imageio_module_format_t *fmod = dt_imageio_get_format_by_name(fname);
+      dt_imageio_module_storage_t *smod = dt_imageio_get_storage_by_name(sname);
+      if(!fmod || !smod) continue;
+
+      // next we have fversion, sversion, fsize, ssize, fdata, sdata which is the stuff that might change
+      size_t copy_over_part = (void*)buf - (void*)op_params;
+
+      const int fversion  = *(const int *)buf;
+      buf += sizeof(int32_t);
+      const int sversion = *(const int *)buf;
+      buf += sizeof(int32_t);
+      const int fsize  = *(const int *)buf;
+      buf += sizeof(int32_t);
+      const int ssize = *(const int *)buf;
+      buf += sizeof(int32_t);
+
+      const void *fdata = buf;
+      buf += fsize;
+      const void *sdata = buf;
+
+      void *new_fdata = NULL, *new_sdata = NULL;
+      size_t new_fsize = fsize, new_ssize = ssize;
+      int32_t new_fversion = fmod->version(), new_sversion = smod->version();
+
+      if(fversion < new_fversion)
+      {
+        if( ! (fmod->legacy_params && (new_fdata = fmod->legacy_params(fmod, fdata, fsize, fversion, new_fversion, &new_fsize)) != NULL) )
+          goto delete_preset;
+      }
+
+      if(sversion < new_sversion)
+      {
+        if( ! (smod->legacy_params && (new_sdata = smod->legacy_params(smod, sdata, ssize, sversion, new_sversion, &new_ssize)) != NULL) )
+          goto delete_preset;
+      }
+
+      if(new_fdata || new_sdata)
+      {
+        // we got an updated blob -> reassemble the parts and update the preset
+        size_t new_params_size = op_params_size - (fsize + ssize) + (new_fsize + new_ssize);
+        void *new_params = malloc(new_params_size);
+        memcpy(new_params, op_params, copy_over_part);
+        // next we have fversion, sversion, fsize, ssize, fdata, sdata which is the stuff that might change
+        size_t pos = copy_over_part;
+        memcpy(new_params + pos, &new_fversion, sizeof(int32_t));
+        pos += sizeof(int32_t);
+        memcpy(new_params + pos, &new_sversion, sizeof(int32_t));
+        pos += sizeof(int32_t);
+        memcpy(new_params + pos, &new_fsize, sizeof(int32_t));
+        pos += sizeof(int32_t);
+        memcpy(new_params + pos, &new_ssize, sizeof(int32_t));
+        pos += sizeof(int32_t);
+        if(new_fdata)
+          memcpy(new_params + pos, new_fdata, new_fsize);
+        else
+          memcpy(new_params + pos, fdata, fsize);
+        pos += new_fsize;
+        if(new_sdata)
+          memcpy(new_params + pos, new_sdata, new_ssize);
+        else
+          memcpy(new_params + pos, sdata, ssize);
+
+        // write the updated preset back to db
+        fprintf(stderr, "[export_init_presets] updating export preset '%s' from versions %d/%d to versions %d/%d\n", name, fversion, sversion, new_fversion, new_sversion);
+        sqlite3_stmt *innerstmt;
+        DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "update presets set op_params=?1 where rowid=?2", -1, &innerstmt, NULL);
+        DT_DEBUG_SQLITE3_BIND_BLOB(innerstmt, 1, new_params, new_params_size, SQLITE_TRANSIENT);
+        DT_DEBUG_SQLITE3_BIND_INT(innerstmt, 2, rowid);
+        sqlite3_step(innerstmt);
+        sqlite3_finalize(innerstmt);
+
+        free(new_fdata);
+        free(new_sdata);
+        free(new_params);
+      }
+
+      continue;
+
+delete_preset:
+      free(new_fdata);
+      free(new_sdata);
+      fprintf(stderr, "[export_init_presets] export preset '%s' can't be updated from versions %d/%d to versions %d/%d. dropping preset\n", name, fversion, sversion, new_fversion, new_sversion);
+      sqlite3_stmt *innerstmt;
+      DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "delete from presets where rowid=?1", -1, &innerstmt, NULL);
+      DT_DEBUG_SQLITE3_BIND_INT(innerstmt, 1, rowid);
+      sqlite3_step(innerstmt);
+      sqlite3_finalize(innerstmt);
+
+    }
+  }
+  sqlite3_finalize(stmt);
+}
+
+void*
+legacy_params(dt_lib_module_t *self, const void *const old_params, const size_t old_params_size, const int old_version,
+              const int new_version, size_t *new_size)
+{
+  if(old_version == 1 && new_version == 2)
+  {
+    // add version of format & storage to params
+    size_t new_params_size = old_params_size + 2 * sizeof(int32_t);
+    void *new_params = malloc(new_params_size);
+
+    const char *buf = (const char* )old_params;
+
+    // skip 3*int32_t: max_width, max_height and iccintent
+    buf += 3*sizeof(int32_t);
+    // next skip iccprofile
+    buf += strlen(buf) + 1;
+
+    // parse both names to '\0'
+    const char *fname = buf;
+    buf += strlen(fname) + 1;
+    const char *sname = buf;
+    buf += strlen(sname) + 1;
+
+    // get module by name and fail if not there.
+    dt_imageio_module_format_t *fmod = dt_imageio_get_format_by_name(fname);
+    dt_imageio_module_storage_t *smod = dt_imageio_get_storage_by_name(sname);
+    if(!fmod || !smod)
+    {
+      free(new_params);
+      return NULL;
+    }
+
+    // now we are just behind the module/storage names and before their param sizes. this is the place where we want their versions
+    // copy everything until here to the new params
+    size_t first_half = (void*)buf - (void*)old_params;
+    memcpy(new_params, old_params, first_half);
+    // add the versions. at the time this code was added all modules were at version 1, except of picasa which was at 2.
+    // every newer version of the imageio modules should result in a preset that is not going through this code.
+    int32_t fversion = 1;
+    int32_t sversion = (strcmp(sname, "picasa") == 0 ? 2 : 1);
+    memcpy(new_params + first_half, &fversion, sizeof(int32_t));
+    memcpy(new_params + first_half + sizeof(int32_t), &sversion, sizeof(int32_t));
+    // copy the rest of the old params over
+    memcpy(new_params + first_half + 2 * sizeof(int32_t), buf, old_params_size - first_half);
+
+    *new_size = new_params_size;
+    return new_params;
+  }
+  return NULL;
 }
 
 void*
@@ -719,6 +911,8 @@ get_params (dt_lib_module_t *self, int *size)
   dt_imageio_module_data_t *fdata = mformat->get_params(mformat);
   size_t  ssize = mstorage->params_size(mstorage);
   void *sdata = mstorage->get_params(mstorage);
+  int32_t fversion = mformat->version();
+  int32_t sversion = mstorage->version();
   // we allow null pointers (plugin not ready for export in current state), and just dont copy back the settings later:
   if(!sdata) ssize = 0;
   if(!fdata) fsize = 0;
@@ -751,7 +945,7 @@ get_params (dt_lib_module_t *self, int *size)
 
   char *fname = mformat->plugin_name, *sname = mstorage->plugin_name;
   int32_t fname_len = strlen(fname), sname_len = strlen(sname);
-  *size = fname_len + sname_len + 2 + 2*sizeof(int32_t) + fsize + ssize + 3*sizeof(int32_t) + strlen(iccprofile) + 1;
+  *size = fname_len + sname_len + 2 + 4*sizeof(int32_t) + fsize + ssize + 3*sizeof(int32_t) + strlen(iccprofile) + 1;
 
   char *params = (char *)calloc(1, *size);
   int pos = 0;
@@ -767,6 +961,10 @@ get_params (dt_lib_module_t *self, int *size)
   pos += fname_len+1;
   memcpy(params+pos, sname, sname_len+1);
   pos += sname_len+1;
+  memcpy(params+pos, &fversion, sizeof(int32_t));
+  pos += sizeof(int32_t);
+  memcpy(params+pos, &sversion, sizeof(int32_t));
+  pos += sizeof(int32_t);
   memcpy(params+pos, &fsize, sizeof(int32_t));
   pos += sizeof(int32_t);
   memcpy(params+pos, &ssize, sizeof(int32_t));
@@ -839,12 +1037,18 @@ set_params (dt_lib_module_t *self, const void *params, int size)
   dt_imageio_module_storage_t *smod = dt_imageio_get_storage_by_name(sname);
   if(!fmod || !smod) return 1;
 
+  const int32_t fversion = *(const int32_t *)buf;
+  buf += sizeof(int32_t);
+  const int32_t sversion = *(const int32_t *)buf;
+  buf += sizeof(int32_t);
+
   const int fsize = *(const int *)buf;
   buf += sizeof(int32_t);
   const int ssize = *(const int *)buf;
   buf += sizeof(int32_t);
 
-  if(size != strlen(fname) + strlen(sname) + 2 + 2*sizeof(int32_t) + fsize + ssize + 3*sizeof(int32_t) + strlen(iccprofile) + 1) return 1;
+  if(size != strlen(fname) + strlen(sname) + 2 + 4*sizeof(int32_t) + fsize + ssize + 3*sizeof(int32_t) + strlen(iccprofile) + 1) return 1;
+  if(fversion != fmod->version() || sversion != smod->version()) return 1;
 
   const dt_imageio_module_data_t *fdata = (const dt_imageio_module_data_t *)buf;
   if (fdata->style[0] == '\0')

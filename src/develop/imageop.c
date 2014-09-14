@@ -2623,7 +2623,7 @@ dt_iop_get_localized_name(const gchar * op)
       do
       {
         dt_iop_module_so_t * module = (dt_iop_module_so_t *)iop->data;
-        g_hash_table_insert(module_names, module->op, _(module->name()));
+        g_hash_table_insert(module_names, module->op, g_strdup(module->name()));
       }
       while((iop=g_list_next(iop)) != NULL);
     }

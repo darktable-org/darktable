@@ -791,6 +791,9 @@ int dt_init(int argc, char *argv[], const int init_gui,lua_State *L)
   darktable.view_manager = (dt_view_manager_t *)calloc(1, sizeof(dt_view_manager_t));
   dt_view_manager_init(darktable.view_manager);
 
+  darktable.imageio = (dt_imageio_t *)calloc(1, sizeof(dt_imageio_t));
+  dt_imageio_init(darktable.imageio);
+
   // load the darkroom mode plugins once:
   dt_iop_load_modules_so();
 
@@ -801,8 +804,6 @@ int dt_init(int argc, char *argv[], const int init_gui,lua_State *L)
 
     dt_control_load_config(darktable.control);
   }
-  darktable.imageio = (dt_imageio_t *)calloc(1, sizeof(dt_imageio_t));
-  dt_imageio_init(darktable.imageio);
 
   if(init_gui)
   {

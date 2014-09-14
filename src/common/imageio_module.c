@@ -78,13 +78,14 @@ dt_imageio_load_module_format (dt_imageio_module_format_t *module, const char *l
     fprintf(stderr, "[imageio_load_module] `%s' is compiled for another version of dt (module %d (%s) != dt %d (%s)) !\n", libname, abs(version()), version() < 0 ? "debug" : "opt", abs(dt_version()), dt_version() < 0 ? "debug" : "opt");
     goto error;
   }
+  if(!g_module_symbol(module->module, "dt_module_mod_version",        (gpointer)&(module->version)))                      goto error;
   if(!g_module_symbol(module->module, "name",                         (gpointer)&(module->name)))                         goto error;
   if(!g_module_symbol(module->module, "init",                         (gpointer)&(module->init)))                         goto error;
   if(!g_module_symbol(module->module, "cleanup",                      (gpointer)&(module->cleanup)))                      goto error;
   if(!g_module_symbol(module->module, "gui_reset",                    (gpointer)&(module->gui_reset)))                    goto error;
   if(darktable.gui)
   {
-    if(!g_module_symbol(module->module, "gui_init",                     (gpointer)&(module->gui_init)))                     goto error;
+    if(!g_module_symbol(module->module, "gui_init",                   (gpointer)&(module->gui_init)))                     goto error;
   }
   else
   {
@@ -95,7 +96,8 @@ dt_imageio_load_module_format (dt_imageio_module_format_t *module, const char *l
   if(!g_module_symbol(module->module, "mime",                         (gpointer)&(module->mime)))                         goto error;
   if(!g_module_symbol(module->module, "extension",                    (gpointer)&(module->extension)))                    goto error;
   if(!g_module_symbol(module->module, "dimension",                    (gpointer)&(module->dimension)))                    module->dimension = _default_format_dimension;
-  if(!g_module_symbol(module->module, "params_size",                   (gpointer)&(module->params_size)))                   goto error;
+  if(!g_module_symbol(module->module, "legacy_params",                (gpointer)&(module->legacy_params)))                module->legacy_params = NULL;
+  if(!g_module_symbol(module->module, "params_size",                  (gpointer)&(module->params_size)))                  goto error;
   if(!g_module_symbol(module->module, "get_params",                   (gpointer)&(module->get_params)))                   goto error;
   if(!g_module_symbol(module->module, "free_params",                  (gpointer)&(module->free_params)))                  goto error;
   if(!g_module_symbol(module->module, "set_params",                   (gpointer)&(module->set_params)))                   goto error;
@@ -198,11 +200,12 @@ dt_imageio_load_module_storage (dt_imageio_module_storage_t *module, const char 
     fprintf(stderr, "[imageio_load_module] `%s' is compiled for another version of dt (module %d (%s) != dt %d (%s)) !\n", libname, abs(version()), version() < 0 ? "debug" : "opt", abs(dt_version()), dt_version() < 0 ? "debug" : "opt");
     goto error;
   }
+  if(!g_module_symbol(module->module, "dt_module_mod_version",  (gpointer)&(module->version)))                goto error;
   if(!g_module_symbol(module->module, "name",                   (gpointer)&(module->name)))                   goto error;
   if(!g_module_symbol(module->module, "gui_reset",              (gpointer)&(module->gui_reset)))              goto error;
   if(darktable.gui)
   {
-    if(!g_module_symbol(module->module, "gui_init",               (gpointer)&(module->gui_init)))             goto error;
+    if(!g_module_symbol(module->module, "gui_init",             (gpointer)&(module->gui_init)))               goto error;
   }
   else
   {
@@ -212,10 +215,11 @@ dt_imageio_load_module_storage (dt_imageio_module_storage_t *module, const char 
   if(!g_module_symbol(module->module, "init",                   (gpointer)&(module->init)))                   goto error;
 
   if(!g_module_symbol(module->module, "store",                  (gpointer)&(module->store)))                  goto error;
-  if(!g_module_symbol(module->module, "params_size",             (gpointer)&(module->params_size)))           goto error;
+  if(!g_module_symbol(module->module, "legacy_params",          (gpointer)&(module->legacy_params)))          module->legacy_params = NULL;
+  if(!g_module_symbol(module->module, "params_size",            (gpointer)&(module->params_size)))            goto error;
   if(!g_module_symbol(module->module, "get_params",             (gpointer)&(module->get_params)))             goto error;
   if(!g_module_symbol(module->module, "free_params",            (gpointer)&(module->free_params)))            goto error;
-  if(!g_module_symbol(module->module, "initialize_store",         (gpointer)&(module->initialize_store)))     module->initialize_store = NULL;
+  if(!g_module_symbol(module->module, "initialize_store",       (gpointer)&(module->initialize_store)))       module->initialize_store = NULL;
   if(!g_module_symbol(module->module, "finalize_store",         (gpointer)&(module->finalize_store)))         module->finalize_store = NULL;
   if(!g_module_symbol(module->module, "set_params",             (gpointer)&(module->set_params)))             goto error;
 

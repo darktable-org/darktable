@@ -525,14 +525,16 @@ dt_lib_load_module (dt_lib_module_t *module, const char *libname, const char *pl
   if(!g_module_symbol(module->module, "configure",              (gpointer)&(module->configure)))              module->configure = NULL;
   if(!g_module_symbol(module->module, "scrolled",               (gpointer)&(module->scrolled)))               module->scrolled = NULL;
   if(!g_module_symbol(module->module, "position",               (gpointer)&(module->position)))               module->position = NULL;
+  if(!g_module_symbol(module->module, "legacy_params",          (gpointer)&(module->legacy_params)))          module->legacy_params = NULL;
   if((!g_module_symbol(module->module, "get_params",            (gpointer)&(module->get_params))) ||
       (!g_module_symbol(module->module, "set_params",            (gpointer)&(module->set_params))) ||
       (!g_module_symbol(module->module, "init_presets",          (gpointer)&(module->init_presets))))
   {
-    // need both at the same time, or none.
-    module->set_params   = NULL;
-    module->get_params   = NULL;
-    module->init_presets = NULL;
+    // need all at the same time, or none.
+    module->legacy_params = NULL;
+    module->set_params    = NULL;
+    module->get_params    = NULL;
+    module->init_presets  = NULL;
   }
   if(!g_module_symbol(module->module, "init_key_accels", (gpointer)&(module->init_key_accels)))        module->init_key_accels = NULL;
   if(!g_module_symbol(module->module, "connect_key_accels", (gpointer)&(module->connect_key_accels)))        module->connect_key_accels = NULL;
@@ -566,20 +568,73 @@ error:
 static void
 init_presets(dt_lib_module_t *module)
 {
-  if(module->init_presets)
+  // since lighttable presets can't end up in styles or any other place outside of the presets table it is sufficient
+  // to update that very table here and assume that everything is up to date elsewhere.
+  // the intended logic is as follows:
+  // - no set_params -> delete all presets
+  // - op_version >= module_version -> done
+  // - op_version < module_version ->
+  //   - module has legacy_params -> try to update
+  //   - module doesn't have legacy_params -> delete it
+
+  if(module->set_params == NULL)
   {
-    // only if method exists and no writeprotected (static) preset has been inserted yet.
     sqlite3_stmt *stmt;
-    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select name from presets where operation=?1 and op_version=?2 and writeprotect=1", -1, &stmt, NULL);
-    DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, module->name(), -1, SQLITE_TRANSIENT);
-    DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, module->version());
-    if(sqlite3_step(stmt) != SQLITE_ROW)
+    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "delete from presets where operation=?1", -1, &stmt, NULL);
+    DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, module->plugin_name, -1, SQLITE_TRANSIENT);
+    sqlite3_step(stmt);
+    sqlite3_finalize(stmt);
+  }
+  else
+  {
+    sqlite3_stmt *stmt;
+    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select rowid, op_version, op_params, name from presets where operation=?1", -1, &stmt, NULL);
+    DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, module->plugin_name, -1, SQLITE_TRANSIENT);
+    while(sqlite3_step(stmt) == SQLITE_ROW)
     {
-      module->init_presets(module);
+      int rowid = sqlite3_column_int(stmt, 0);
+      int op_version = sqlite3_column_int(stmt, 1);
+      void *op_params = (void*)sqlite3_column_blob(stmt, 2);
+      size_t op_params_size = sqlite3_column_bytes(stmt, 2);
+      const char *name = (char*)sqlite3_column_text(stmt, 3);
+
+      int version = module->version();
+
+      if(op_version < version)
+      {
+        size_t new_params_size = 0;
+        void *new_params = NULL;
+
+        if(module->legacy_params && (new_params = module->legacy_params(module, op_params, op_params_size, op_version, version, &new_params_size)))
+        {
+          // write the updated preset back to db
+          fprintf(stderr, "[lighttable_init_presets] updating '%s' preset '%s' from version %d to version %d\n", module->plugin_name, name, op_version, version);
+          sqlite3_stmt *innerstmt;
+          DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "update presets set op_version=?1, op_params=?2 where rowid=?3", -1, &innerstmt, NULL);
+          DT_DEBUG_SQLITE3_BIND_INT(innerstmt, 1, version);
+          DT_DEBUG_SQLITE3_BIND_BLOB(innerstmt, 2, new_params, new_params_size, SQLITE_TRANSIENT);
+          DT_DEBUG_SQLITE3_BIND_INT(innerstmt, 3, rowid);
+          sqlite3_step(innerstmt);
+          sqlite3_finalize(innerstmt);
+        }
+        else
+        {
+          // delete the preset
+          fprintf(stderr, "[lighttable_init_presets] Can't upgrade '%s' preset '%s' from version %d to %d, no legacy_params() implemented or unable to update\n", module->plugin_name, name, op_version, version);
+          sqlite3_stmt *innerstmt;
+          DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "delete from presets where rowid=?1", -1, &innerstmt, NULL);
+          DT_DEBUG_SQLITE3_BIND_INT(innerstmt, 1, rowid);
+          sqlite3_step(innerstmt);
+          sqlite3_finalize(innerstmt);
+        }
+        free(new_params);
+      }
     }
     sqlite3_finalize(stmt);
-
   }
+
+  if(module->init_presets)
+    module->init_presets(module);
 }
 
 int
@@ -1025,7 +1080,7 @@ dt_lib_get_localized_name(const gchar * plugin_name)
       do
       {
         dt_lib_module_t * module = (dt_lib_module_t *)lib->data;
-        g_hash_table_insert(module_names, module->plugin_name, _(module->name()));
+        g_hash_table_insert(module_names, module->plugin_name, g_strdup(module->name()));
       }
       while((lib=g_list_next(lib)) != NULL);
     }

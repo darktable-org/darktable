@@ -144,8 +144,25 @@ extern "C"
   size_t
     params_size(dt_imageio_module_format_t *self)
     {
-      return sizeof(dt_imageio_module_data_t);
+      return sizeof(dt_imageio_exr_t);
     }
+
+  void*
+  legacy_params(dt_imageio_module_format_t *self,
+                const void *const old_params, const size_t old_params_size, const int old_version,
+                const int new_version, size_t *new_size)
+  {
+    if(old_version == 1 && new_version == 2)
+    {
+      dt_imageio_exr_t *new_params = (dt_imageio_exr_t*)malloc(sizeof(dt_imageio_exr_t));
+      memcpy(new_params, old_params, old_params_size);
+      new_params->compression = NO_COMPRESSION;
+      new_params->pixel_type = UINT;
+      *new_size = sizeof(dt_imageio_exr_t);
+      return new_params;
+    }
+    return NULL;
+  }
 
   void*
     get_params(dt_imageio_module_format_t *self)

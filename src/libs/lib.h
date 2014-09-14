@@ -106,21 +106,22 @@ typedef struct dt_lib_module_t
 
   /** optional event callbacks for big center widget. */
   /** optional method called after lighttable expose. */
-  void (*gui_post_expose) (struct dt_lib_module_t *self, cairo_t *cr, int32_t width, int32_t height, int32_t pointerx, int32_t pointery);
-  int  (*mouse_leave)     (struct dt_lib_module_t *self);
-  int  (*mouse_moved)     (struct dt_lib_module_t *self, double x, double y, double pressure, int which);
-  int  (*button_released) (struct dt_lib_module_t *self, double x, double y, int which, uint32_t state);
-  int  (*button_pressed)  (struct dt_lib_module_t *self, double x, double y, double pressure, int which, int type, uint32_t state);
-  int  (*scrolled)        (struct dt_lib_module_t *self, double x, double y, int up);
-  void (*configure)       (struct dt_lib_module_t *self, int width, int height);
-  int  (*position)        ();
+  void  (*gui_post_expose)    (struct dt_lib_module_t *self, cairo_t *cr, int32_t width, int32_t height, int32_t pointerx, int32_t pointery);
+  int   (*mouse_leave)        (struct dt_lib_module_t *self);
+  int   (*mouse_moved)        (struct dt_lib_module_t *self, double x, double y, double pressure, int which);
+  int   (*button_released)    (struct dt_lib_module_t *self, double x, double y, int which, uint32_t state);
+  int   (*button_pressed)     (struct dt_lib_module_t *self, double x, double y, double pressure, int which, int type, uint32_t state);
+  int   (*scrolled)           (struct dt_lib_module_t *self, double x, double y, int up);
+  void  (*configure)          (struct dt_lib_module_t *self, int width, int height);
+  int   (*position)           ();
   /** implement these three if you want customizable presets to be stored in db. */
-  void* (*get_params)     (struct dt_lib_module_t *self, int *size);
-  int   (*set_params)     (struct dt_lib_module_t *self, const void *params, int size);
-  void  (*init_presets)   (struct dt_lib_module_t *self);
+  void* (*legacy_params)      (struct dt_lib_module_t *self, const void *const old_params, const size_t old_params_size, const int old_version, const int new_version, size_t *new_size);
+  void* (*get_params)         (struct dt_lib_module_t *self, int *size);
+  int   (*set_params)         (struct dt_lib_module_t *self, const void *params, int size);
+  void  (*init_presets)       (struct dt_lib_module_t *self);
   /** Optional callbacks for keyboard accelerators */
-  void (*init_key_accels)(struct dt_lib_module_t *self);
-  void (*connect_key_accels)(struct dt_lib_module_t *self);
+  void  (*init_key_accels)    (struct dt_lib_module_t *self);
+  void  (*connect_key_accels) (struct dt_lib_module_t *self);
 
   GSList *accel_closures;
   GtkWidget *reset_button;

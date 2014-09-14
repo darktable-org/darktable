@@ -69,6 +69,8 @@ typedef struct dt_imageio_module_format_t
   void *gui_data;
 
   // gui and management:
+  /** version */
+  int (*version)      ();
   /* get translated module name */
   const char* (*name) ();
   /* construct widget above */
@@ -79,16 +81,17 @@ typedef struct dt_imageio_module_format_t
   void (*gui_reset)   (struct dt_imageio_module_format_t *self);
 
   /* construct widget above */
-  void (*init)    (struct dt_imageio_module_format_t *self);
+  void (*init)       (struct dt_imageio_module_format_t *self);
   /* construct widget above */
   void (*cleanup)    (struct dt_imageio_module_format_t *self);
 
   /* gets the current export parameters from gui/conf and stores in this struct for later use. */
-  size_t (*params_size) (struct dt_imageio_module_format_t *self);
-  void* (*get_params)   (struct dt_imageio_module_format_t *self);
-  void  (*free_params)  (struct dt_imageio_module_format_t *self, dt_imageio_module_data_t *data);
+  void* (*legacy_params) (struct dt_imageio_module_format_t *self, const void *const old_params, const size_t old_params_size, const int old_version, const int new_version, size_t *new_size);
+  size_t (*params_size)  (struct dt_imageio_module_format_t *self);
+  void* (*get_params)    (struct dt_imageio_module_format_t *self);
+  void  (*free_params)   (struct dt_imageio_module_format_t *self, dt_imageio_module_data_t *data);
   /* resets the gui to the paramters as given here. return != 0 on fail. */
-  int   (*set_params)   (struct dt_imageio_module_format_t *self, const void *params, const int size);
+  int   (*set_params)    (struct dt_imageio_module_format_t *self, const void *params, const int size);
 
   /* returns the mime type of the exported image. */
   const char* (*mime)      (dt_imageio_module_data_t *data);
@@ -129,6 +132,8 @@ typedef struct dt_imageio_module_storage_t
   void *gui_data;
 
   // gui and management:
+  /** version */
+  int (*version)      ();
   /* get translated module name */
   const char* (*name) (const struct dt_imageio_module_storage_t *self);
   /* construct widget above */
@@ -155,10 +160,11 @@ typedef struct dt_imageio_module_storage_t
   /* called once at the end (after exporting all images), if implemented. */
   void (*finalize_store) (struct dt_imageio_module_storage_t *self, dt_imageio_module_data_t *data);
 
-  size_t (*params_size)   (struct dt_imageio_module_storage_t *self);
-  void* (*get_params)   (struct dt_imageio_module_storage_t *self);
-  void  (*free_params)  (struct dt_imageio_module_storage_t *self, dt_imageio_module_data_t *data);
-  int   (*set_params)   (struct dt_imageio_module_storage_t *self, const void *params, const int size);
+  void* (*legacy_params) (struct dt_imageio_module_storage_t *self, const void *const old_params, const size_t old_params_size, const int old_version, const int new_version, size_t *new_size);
+  size_t (*params_size)  (struct dt_imageio_module_storage_t *self);
+  void* (*get_params)    (struct dt_imageio_module_storage_t *self);
+  void  (*free_params)   (struct dt_imageio_module_storage_t *self, dt_imageio_module_data_t *data);
+  int   (*set_params)    (struct dt_imageio_module_storage_t *self, const void *params, const int size);
 
   void  (*export_dispatched) (struct dt_imageio_module_storage_t *self);
 
