@@ -1,6 +1,7 @@
 /*
    This file is part of darktable,
    copyright (c) 2010-2011 Henrik Andersson.
+   copyright (c) 2014 LebedevRI.
 
    darktable is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -98,46 +99,40 @@ extern "C"
   int write_image (dt_imageio_module_data_t *tmp, const char *filename, const void *in_tmp, void *exif, int exif_len, int imgid)
   {
     dt_imageio_exr_t * exr = (dt_imageio_exr_t*) tmp;
-    const float * in = (const float *) in_tmp;
     Imf::Blob exif_blob(exif_len, (uint8_t*)exif);
     Imf::Header header(exr->width,exr->height,1,Imath::V2f (0, 0),1,Imf::INCREASING_Y,(Imf::Compression)exr->compression);
     header.insert("comment",Imf::StringAttribute("Developed using Darktable " PACKAGE_VERSION));
     header.insert("exif", Imf::BlobAttribute(exif_blob));
     header.channels().insert("R",Imf::Channel((Imf::PixelType)exr->pixel_type));
-    header.channels().insert("B",Imf::Channel((Imf::PixelType)exr->pixel_type));
     header.channels().insert("G",Imf::Channel((Imf::PixelType)exr->pixel_type));
+    header.channels().insert("B",Imf::Channel((Imf::PixelType)exr->pixel_type));
     header.setTileDescription(Imf::TileDescription(100, 100, Imf::ONE_LEVEL));
     Imf::TiledOutputFile file(filename, header);
     Imf::FrameBuffer data;
 
-    uint32_t channelsize=(exr->width*exr->height);
-    float *red=(float *)calloc(channelsize, sizeof(float));
-    float *green=(float *)calloc(channelsize, sizeof(float));
-    float *blue=(float *)calloc(channelsize, sizeof(float));
+    const float * in = (const float *) in_tmp;
 
-    for(uint32_t j=0; j<channelsize; j++)
-    {
-      red[j]=in[j*4+0];
-    }
-    data.insert("R",Imf::Slice((Imf::PixelType)exr->pixel_type,(char *)red,sizeof(float)*1,sizeof(float)*exr->width));
+    data.insert("R",
+                Imf::Slice((Imf::PixelType) exr->pixel_type,
+                           (char *)(in + 0),
+                           4 * sizeof(float),
+                           4 * sizeof(float) * exr->width));
 
-    for(uint32_t j=0; j<channelsize; j++)
-    {
-      blue[j]=in[j*4+2];
-    }
-    data.insert("B",Imf::Slice((Imf::PixelType)exr->pixel_type,(char *)blue,sizeof(float)*1,sizeof(float)*exr->width));
+    data.insert("G",
+                Imf::Slice((Imf::PixelType) exr->pixel_type,
+                           (char *)(in + 1),
+                           4 * sizeof(float),
+                           4 * sizeof(float) * exr->width));
 
-    for(uint32_t j=0; j<channelsize; j++)
-    {
-      green[j]=in[j*4+1];
-    }
-    data.insert("G",Imf::Slice((Imf::PixelType)exr->pixel_type,(char *)green,sizeof(float)*1,sizeof(float)*exr->width));
+    data.insert("B",
+                Imf::Slice((Imf::PixelType) exr->pixel_type,
+                           (char *)(in + 2),
+                           4 * sizeof(float),
+                           4 * sizeof(float) * exr->width));
 
     file.setFrameBuffer(data);
     file.writeTiles (0, file.numXTiles() - 1, 0, file.numYTiles() - 1);
-    free(red);
-    free(green);
-    free(blue);
+
     return 0;
   }
 
