@@ -210,7 +210,7 @@ extern "C"
   const char*
     name ()
     {
-      return _("OpenEXR (float)");
+      return _("OpenEXR (16/32-bit)");
     }
 
   static void combobox_changed(GtkComboBox *widget, gpointer user_data)
@@ -266,7 +266,7 @@ extern "C"
 
     GtkComboBoxText *combo2 = GTK_COMBO_BOX_TEXT(gtk_combo_box_text_new());
     gui->compression = GTK_COMBO_BOX(combo2);
-    gtk_combo_box_text_append_text(combo2, _("UINT"));
+    gtk_combo_box_text_append_text(combo2, _("UINT (32 bit)"));
     gtk_combo_box_text_append_text(combo2, _("HALF"));
     gtk_combo_box_text_append_text(combo2, _("FLOAT (default)"));
     gtk_combo_box_set_active(GTK_COMBO_BOX(combo2), pixel_type_last);
