@@ -48,7 +48,7 @@ extern "C"
 {
 #endif
 
-  DT_MODULE(2)
+  DT_MODULE(3)
 
   enum dt_imageio_exr_compression_t
   {
@@ -65,28 +65,18 @@ extern "C"
     NUM_COMPRESSION_METHODS     // number of different compression methods
   }; // copy of Imf::Compression
 
-  enum dt_imageio_exr_pixeltype_t
-  {
-    UINT   = 0,         // unsigned int (32 bit)
-    HALF   = 1,         // half (16 bit floating point)
-    FLOAT  = 2,         // float (32 bit floating point)
-    NUM_PIXELTYPES      // number of different pixel types
-  }; // copy of Imf::PixelType
-
   typedef struct dt_imageio_exr_t
   {
     int max_width, max_height;
     int width, height;
     char style[128];
     dt_imageio_exr_compression_t compression;
-    dt_imageio_exr_pixeltype_t pixel_type;
   }
   dt_imageio_exr_t;
 
   typedef struct dt_imageio_exr_gui_t
   {
     GtkComboBox *compression;
-    GtkComboBox *pixel_type;
   }
   dt_imageio_exr_gui_t;
 
@@ -104,32 +94,42 @@ extern "C"
     Imf::setGlobalThreadCount(dt_get_num_threads());
 
     Imf::Blob exif_blob(exif_len, (uint8_t*)exif);
-    Imf::Header header(exr->width,exr->height,1,Imath::V2f (0, 0),1,Imf::INCREASING_Y,(Imf::Compression)exr->compression);
+
+    Imf::Header header(exr->width, exr->height,
+                       1, Imath::V2f (0, 0),
+                       1, Imf::INCREASING_Y,
+                       (Imf::Compression)exr->compression);
+
     header.insert("comment",Imf::StringAttribute("Developed using Darktable " PACKAGE_VERSION));
+
     header.insert("exif", Imf::BlobAttribute(exif_blob));
-    header.channels().insert("R",Imf::Channel((Imf::PixelType)exr->pixel_type));
-    header.channels().insert("G",Imf::Channel((Imf::PixelType)exr->pixel_type));
-    header.channels().insert("B",Imf::Channel((Imf::PixelType)exr->pixel_type));
+
+    header.channels().insert("R", Imf::Channel(Imf::PixelType::FLOAT));
+    header.channels().insert("G", Imf::Channel(Imf::PixelType::FLOAT));
+    header.channels().insert("B", Imf::Channel(Imf::PixelType::FLOAT));
+
     header.setTileDescription(Imf::TileDescription(100, 100, Imf::ONE_LEVEL));
+
     Imf::TiledOutputFile file(filename, header);
+
     Imf::FrameBuffer data;
 
     const float * in = (const float *) in_tmp;
 
     data.insert("R",
-                Imf::Slice((Imf::PixelType) exr->pixel_type,
+                Imf::Slice(Imf::PixelType::FLOAT,
                            (char *)(in + 0),
                            4 * sizeof(float),
                            4 * sizeof(float) * exr->width));
 
     data.insert("G",
-                Imf::Slice((Imf::PixelType) exr->pixel_type,
+                Imf::Slice(Imf::PixelType::FLOAT,
                            (char *)(in + 1),
                            4 * sizeof(float),
                            4 * sizeof(float) * exr->width));
 
     data.insert("B",
-                Imf::Slice((Imf::PixelType) exr->pixel_type,
+                Imf::Slice(Imf::PixelType::FLOAT,
                            (char *)(in + 2),
                            4 * sizeof(float),
                            4 * sizeof(float) * exr->width));
@@ -151,12 +151,19 @@ extern "C"
                 const void *const old_params, const size_t old_params_size, const int old_version,
                 const int new_version, size_t *new_size)
   {
-    if(old_version == 1 && new_version == 2)
+    if(old_version == 1 && new_version == 3)
     {
       dt_imageio_exr_t *new_params = (dt_imageio_exr_t*)malloc(sizeof(dt_imageio_exr_t));
       memcpy(new_params, old_params, old_params_size);
-      new_params->compression = NO_COMPRESSION;
-      new_params->pixel_type = UINT;
+      new_params->compression = (dt_imageio_exr_compression_t)PIZ_COMPRESSION;
+      *new_size = sizeof(dt_imageio_exr_t);
+      return new_params;
+    }
+    if(old_version == 2 && new_version == 3)
+    {
+      dt_imageio_exr_t *new_params = (dt_imageio_exr_t*)malloc(sizeof(dt_imageio_exr_t));
+      memcpy(new_params, old_params, old_params_size);
+      new_params->compression = (dt_imageio_exr_compression_t)PIZ_COMPRESSION;
       *new_size = sizeof(dt_imageio_exr_t);
       return new_params;
     }
@@ -168,7 +175,6 @@ extern "C"
     {
       dt_imageio_exr_t *d = (dt_imageio_exr_t *)calloc(1, sizeof(dt_imageio_exr_t));
       d->compression = (dt_imageio_exr_compression_t)dt_conf_get_int("plugins/imageio/format/exr/compression");
-      d->pixel_type = (dt_imageio_exr_pixeltype_t)dt_conf_get_int("plugins/imageio/format/exr/pixel_type");
       return d;
     }
 
@@ -185,7 +191,6 @@ extern "C"
       dt_imageio_exr_t *d = (dt_imageio_exr_t *)params;
       dt_imageio_exr_gui_t *g = (dt_imageio_exr_gui_t *)self->gui_data;
       gtk_combo_box_set_active(g->compression, d->compression);
-      gtk_combo_box_set_active(g->pixel_type, d->pixel_type);
       return 0;
     }
 
@@ -214,7 +219,7 @@ extern "C"
   const char*
     name ()
     {
-      return _("OpenEXR (16/32-bit)");
+      return _("OpenEXR (float)");
     }
 
   static void combobox_changed(GtkComboBox *widget, gpointer user_data)
@@ -223,21 +228,14 @@ extern "C"
     dt_conf_set_int("plugins/imageio/format/exr/compression", compression);
   }
 
-  static void combobox2_changed(GtkComboBox *widget, gpointer user_data)
-  {
-    int pixel_type = gtk_combo_box_get_active(widget);
-    dt_conf_set_int("plugins/imageio/format/exr/pixel_type", pixel_type);
-  }
-
   void gui_init(dt_imageio_module_format_t *self)
   {
-    dt_imageio_exr_gui_t *gui = (dt_imageio_exr_gui_t *)malloc(sizeof(dt_imageio_exr_gui_t));
-    self->gui_data = (void *)gui;
+    self->gui_data = malloc(sizeof(dt_imageio_exr_gui_t));
+    dt_imageio_exr_gui_t *gui = (dt_imageio_exr_gui_t *)self->gui_data;
 
     self->widget = gtk_vbox_new(TRUE, 5);
 
     int compression_last = dt_conf_get_int("plugins/imageio/format/exr/compression");
-    int pixel_type_last = dt_conf_get_int("plugins/imageio/format/exr/pixel_type");
 
     GtkWidget *hbox = gtk_hbox_new(TRUE, 5);
     gtk_box_pack_start(GTK_BOX(self->widget), hbox, TRUE, TRUE, 0);
@@ -259,23 +257,6 @@ extern "C"
     gtk_combo_box_set_active(GTK_COMBO_BOX(combo), compression_last);
     gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(combo), TRUE, TRUE, 0);
     g_signal_connect(G_OBJECT(combo), "changed", G_CALLBACK(combobox_changed), NULL);
-
-
-    GtkWidget *hbox2 = gtk_hbox_new(TRUE, 5);
-    gtk_box_pack_start(GTK_BOX(self->widget), hbox2, TRUE, TRUE, 0);
-
-    GtkWidget *label2 = gtk_label_new(_("Pixel type"));
-    gtk_misc_set_alignment(GTK_MISC(label2), 0.0, 0.0);
-    gtk_box_pack_start(GTK_BOX(hbox2), label2, TRUE, TRUE, 0);
-
-    GtkComboBoxText *combo2 = GTK_COMBO_BOX_TEXT(gtk_combo_box_text_new());
-    gui->compression = GTK_COMBO_BOX(combo2);
-    gtk_combo_box_text_append_text(combo2, _("UINT (32 bit)"));
-    gtk_combo_box_text_append_text(combo2, _("HALF"));
-    gtk_combo_box_text_append_text(combo2, _("FLOAT (default)"));
-    gtk_combo_box_set_active(GTK_COMBO_BOX(combo2), pixel_type_last);
-    gtk_box_pack_start(GTK_BOX(hbox2), GTK_WIDGET(combo2), TRUE, TRUE, 0);
-    g_signal_connect(G_OBJECT(combo2), "changed", G_CALLBACK(combobox2_changed), NULL);
   }
 
   void gui_cleanup (dt_imageio_module_format_t *self)
