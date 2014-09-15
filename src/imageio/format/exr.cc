@@ -28,6 +28,7 @@
 #include <OpenEXR/ImfTiledOutputFile.h>
 #include <OpenEXR/ImfChannelList.h>
 #include <OpenEXR/ImfStandardAttributes.h>
+#include <OpenEXR/ImfThreading.h>
 
 extern "C"
 {
@@ -99,6 +100,9 @@ extern "C"
   int write_image (dt_imageio_module_data_t *tmp, const char *filename, const void *in_tmp, void *exif, int exif_len, int imgid)
   {
     dt_imageio_exr_t * exr = (dt_imageio_exr_t*) tmp;
+
+    Imf::setGlobalThreadCount(dt_get_num_threads());
+
     Imf::Blob exif_blob(exif_len, (uint8_t*)exif);
     Imf::Header header(exr->width,exr->height,1,Imath::V2f (0, 0),1,Imf::INCREASING_Y,(Imf::Compression)exr->compression);
     header.insert("comment",Imf::StringAttribute("Developed using Darktable " PACKAGE_VERSION));
