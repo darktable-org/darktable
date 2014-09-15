@@ -236,6 +236,7 @@ dt_imageio_open_tiff(
 int dt_imageio_tiff_read_profile(const char *filename, uint8_t **out)
 {
   TIFF *tiff = NULL;
+  uint16_t spp = 0;
   uint32_t profile_len = 0;
   uint8_t *profile = NULL;
 
@@ -243,7 +244,16 @@ int dt_imageio_tiff_read_profile(const char *filename, uint8_t **out)
 
   if((tiff = TIFFOpen(filename, "rb")) == NULL) return 0;
 
-  if(TIFFGetField(tiff, TIFFTAG_ICCPROFILE, &profile_len, &profile))
+  TIFFGetField(tiff, TIFFTAG_SAMPLESPERPIXEL, &spp);
+
+  if(spp != 3 && spp != 4)
+  {
+    TIFFClose(tiff);
+    return -1;
+  }
+
+  if((spp == 3 || spp == 4) &&
+      TIFFGetField(tiff, TIFFTAG_ICCPROFILE, &profile_len, &profile))
   {
     *out = (uint8_t*)malloc(profile_len);
     memcpy(*out, profile, profile_len);
