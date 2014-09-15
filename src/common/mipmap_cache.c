@@ -60,7 +60,7 @@ struct dt_mipmap_buffer_dsc
 
 // last resort mem alloc for dead images. sizeof(dt_mipmap_buffer_dsc) + dead image pixels (8x8)
 // __m128 type for sse alignment.
-static __m128 dt_mipmap_cache_static_dead_image[1 + 64];
+static __m128 dt_mipmap_cache_static_dead_image[sizeof(struct dt_mipmap_buffer_dsc)/sizeof(__m128) + 64];
 
 static inline void
 dead_image_8(dt_mipmap_buffer_t *buf)
