@@ -26,6 +26,7 @@
 #include "common/darktable.h"
 #include "common/file_location.h"
 
+#include <inttypes.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <strings.h>
