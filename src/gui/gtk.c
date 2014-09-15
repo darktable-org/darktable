@@ -256,14 +256,14 @@ borders_button_pressed (GtkWidget *w, GdkEventButton *event, gpointer user_data)
     case 0: // left border
     {
       g_snprintf(key, sizeof(key), "%s/ui/%s_visible", cv->module_name, _ui_panel_config_names[DT_UI_PANEL_LEFT]);
-      dt_ui_panel_show(ui, DT_UI_PANEL_LEFT, !dt_conf_get_bool(key));
+      dt_ui_panel_show(ui, DT_UI_PANEL_LEFT, !dt_conf_get_bool(key), TRUE);
     }
     break;
 
     case 1:  // right border
     {
       g_snprintf(key, sizeof(key), "%s/ui/%s_visible", cv->module_name, _ui_panel_config_names[DT_UI_PANEL_RIGHT]);
-      dt_ui_panel_show(ui, DT_UI_PANEL_RIGHT, !dt_conf_get_bool(key));
+      dt_ui_panel_show(ui, DT_UI_PANEL_RIGHT, !dt_conf_get_bool(key), TRUE);
     }
     break;
 
@@ -271,12 +271,12 @@ borders_button_pressed (GtkWidget *w, GdkEventButton *event, gpointer user_data)
     {
       g_snprintf(key, sizeof(key), "%s/ui/%s_visible", cv->module_name, _ui_panel_config_names[DT_UI_PANEL_CENTER_TOP]);
       gboolean show = !dt_conf_get_bool(key);
-      dt_ui_panel_show(ui, DT_UI_PANEL_CENTER_TOP, show);
+      dt_ui_panel_show(ui, DT_UI_PANEL_CENTER_TOP, show, TRUE);
 
       /* special case show header */
       g_snprintf(key, sizeof(key), "%s/ui/show_header", cv->module_name);
       if (dt_conf_get_bool(key))
-        dt_ui_panel_show(ui, DT_UI_PANEL_TOP, show);
+        dt_ui_panel_show(ui, DT_UI_PANEL_TOP, show, TRUE);
 
     }
     break;
@@ -286,8 +286,8 @@ borders_button_pressed (GtkWidget *w, GdkEventButton *event, gpointer user_data)
     {
       g_snprintf(key, sizeof(key), "%s/ui/%s_visible", cv->module_name, _ui_panel_config_names[DT_UI_PANEL_CENTER_BOTTOM]);
       gboolean show = !dt_conf_get_bool(key);
-      dt_ui_panel_show(ui, DT_UI_PANEL_CENTER_BOTTOM, show);
-      dt_ui_panel_show(ui, DT_UI_PANEL_BOTTOM, show);
+      dt_ui_panel_show(ui, DT_UI_PANEL_CENTER_BOTTOM, show, TRUE);
+      dt_ui_panel_show(ui, DT_UI_PANEL_BOTTOM, show, TRUE);
     }
     break;
   }
@@ -1336,7 +1336,7 @@ void dt_ui_toggle_panels_visibility(struct dt_ui_t *ui)
   {
     /* restore previous panel view states */
     for (int k=0; k<DT_UI_PANEL_SIZE; k++)
-      dt_ui_panel_show(ui, k, (state>>k)&1);
+      dt_ui_panel_show(ui, k, (state>>k)&1, TRUE);
 
     /* reset state */
     state = 0;
@@ -1349,7 +1349,7 @@ void dt_ui_toggle_panels_visibility(struct dt_ui_t *ui)
 
     /* hide all panels */
     for (int k=0; k<DT_UI_PANEL_SIZE; k++)
-      dt_ui_panel_show(ui, k, FALSE);
+      dt_ui_panel_show(ui, k, FALSE, TRUE);
   }
 
   /* store new state */
@@ -1369,7 +1369,7 @@ void dt_ui_restore_panels(dt_ui_t *ui)
   {
     /* hide all panels */
     for (int k=0; k<DT_UI_PANEL_SIZE; k++)
-      dt_ui_panel_show(ui, k, FALSE);
+      dt_ui_panel_show(ui, k, FALSE, TRUE);
   }
   else
   {
@@ -1403,16 +1403,19 @@ void dt_ui_border_show(dt_ui_t *ui, gboolean show)
   }
 }
 
-void dt_ui_panel_show(dt_ui_t *ui,const dt_ui_panel_t p, gboolean show)
+void dt_ui_panel_show(dt_ui_t *ui,const dt_ui_panel_t p, gboolean show, gboolean write)
 {
   //if(!GTK_IS_WIDGET(ui->panels[p])) return;
   g_return_if_fail(GTK_IS_WIDGET(ui->panels[p]));
 
   const dt_view_t *cv = dt_view_manager_get_current_view(darktable.view_manager);
-  char key[512];
-  g_snprintf(key, sizeof(key), "%s/ui/%s_visible",cv->module_name, _ui_panel_config_names[p]);
-  dt_conf_set_bool(key, show);
-
+  if (write)
+  {
+    char key[512];
+    g_snprintf(key, sizeof(key), "%s/ui/%s_visible",cv->module_name, _ui_panel_config_names[p]);
+    dt_conf_set_bool(key, show);
+  }
+  
   if(show)
     gtk_widget_show(ui->panels[p]);
   else

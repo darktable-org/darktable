@@ -326,10 +326,10 @@ void enter(dt_view_t *self)
 {
   dt_slideshow_t *d = (dt_slideshow_t*)self->data;
 
-  dt_ui_panel_show(darktable.gui->ui, DT_UI_PANEL_LEFT, FALSE);
-  dt_ui_panel_show(darktable.gui->ui, DT_UI_PANEL_RIGHT, FALSE);
-  dt_ui_panel_show(darktable.gui->ui, DT_UI_PANEL_TOP, FALSE);
-  dt_ui_panel_show(darktable.gui->ui, DT_UI_PANEL_BOTTOM, FALSE);
+  dt_ui_panel_show(darktable.gui->ui, DT_UI_PANEL_LEFT, FALSE, TRUE);
+  dt_ui_panel_show(darktable.gui->ui, DT_UI_PANEL_RIGHT, FALSE, TRUE);
+  dt_ui_panel_show(darktable.gui->ui, DT_UI_PANEL_TOP, FALSE, TRUE);
+  dt_ui_panel_show(darktable.gui->ui, DT_UI_PANEL_BOTTOM, FALSE, TRUE);
   // also hide arrows
   dt_ui_border_show(darktable.gui->ui, FALSE);
 
