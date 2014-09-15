@@ -39,7 +39,7 @@ typedef enum dt_signal_t
   */
   DT_SIGNAL_CONTROL_REDRAW_ALL,
 
-  /** \brief This signal is raid when dt_control_queue_redraw_center() is called.
+  /** \brief This signal is raised when dt_control_queue_redraw_center() is called.
     no param, no returned value
    */
   DT_SIGNAL_CONTROL_REDRAW_CENTER,
