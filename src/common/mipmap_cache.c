@@ -415,8 +415,8 @@ dt_mipmap_cache_deserialize(dt_mipmap_cache_t *cache)
 
   while(!feof(f))
   {
-    int level = 0;
-    rd = fread(&level, sizeof(int), 1, f);
+    dt_mipmap_size_t level = 0;
+    rd = fread(&level, sizeof(dt_mipmap_size_t), 1, f);
     if (rd != 1 || level > mip) break;
 
     int32_t key = 0;
