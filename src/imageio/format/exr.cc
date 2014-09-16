@@ -20,6 +20,9 @@
 #include "config.h"
 #endif
 
+// needs to be defined before any system header includes for control/conf.h to work in C++ code
+#define __STDC_FORMAT_MACROS
+
 #include <cstdlib>
 #include <cstdio>
 #include <memory>
