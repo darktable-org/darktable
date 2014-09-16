@@ -4895,6 +4895,9 @@
 		<Hints>
 			<Hint name="fuji_rotate" value=""/>
 		</Hints>
+		<Aliases>
+			<Alias>FinePix S9000</Alias>
+		</Aliases>
 	</Camera>
 	<Camera make="FUJIFILM" model="FinePix S9600">
 		<CFA2 width="2" height="2">
