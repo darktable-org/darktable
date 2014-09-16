@@ -48,7 +48,7 @@ typedef struct dt_cache_bucket_t
   int16_t  write;  // number of writers (0 or 1)
   int32_t  lru;    // for garbage collection: lru list
   int32_t  mru;
-  int32_t  cost;   // cost associated with this entry (such as byte size)
+  size_t   cost;   // cost associated with this entry (such as byte size)
   uint32_t hash;   // hash of the element
   uint32_t key;    // key of the element
   // due to alignment, we waste 32 bits here
@@ -120,7 +120,7 @@ get_start_cacheline_bucket(const dt_cache_t *const cache, dt_cache_bucket_t *con
 
 static void
 add_cost(dt_cache_t    *cache,
-         const int32_t  cost)
+         const size_t   cost)
 {
   __sync_fetch_and_add(&cache->cost, cost);
 }
@@ -223,7 +223,7 @@ add_key_to_beginning_of_list(
   const uint32_t     hash,
   const uint32_t     key)
 {
-  int32_t cost = 1;
+  size_t cost = 1;
   if(cache->allocate)
   {
     // upgrade to a write lock in case the user requests it:
@@ -263,7 +263,7 @@ add_key_to_end_of_list(
   const uint32_t     key,
   dt_cache_bucket_t *const last_bucket)
 {
-  int32_t cost = 1;
+  size_t cost = 1;
   if(cache->allocate)
   {
     if(cache->allocate(cache->allocate_data, key, &cost, &free_bucket->data))
@@ -1096,7 +1096,7 @@ wait:
 }
 
 void
-dt_cache_realloc(dt_cache_t *cache, const uint32_t key, const int32_t cost, void *data)
+dt_cache_realloc(dt_cache_t *cache, const uint32_t key, const size_t cost, void *data)
 {
   // just to support different keys:
   const uint32_t hash = key;
@@ -1118,7 +1118,7 @@ dt_cache_realloc(dt_cache_t *cache, const uint32_t key, const int32_t cost, void
       assert(compare_bucket->write == 1);
       assert(compare_bucket->read == 1);
       compare_bucket->data = data;
-      const int32_t cost_diff = cost - compare_bucket->cost;
+      const size_t cost_diff = cost - compare_bucket->cost;
       compare_bucket->cost = cost;
       add_cost(cache, cost_diff);
       dt_cache_unlock(&segment->lock);

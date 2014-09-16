@@ -485,7 +485,7 @@ static void _init_f(float   *buf, uint32_t *width, uint32_t *height, const uint3
 static void _init_8(uint8_t *buf, uint32_t *width, uint32_t *height, const uint32_t imgid, const dt_mipmap_size_t size);
 
 static int32_t
-scratchmem_allocate(void *data, const uint32_t key, int32_t *cost, void **buf)
+scratchmem_allocate(void *data, const uint32_t key, size_t *cost, void **buf)
 {
   dt_mipmap_cache_one_t *c = (dt_mipmap_cache_one_t *)data;
   // slot is exactly aligned with encapsulated cache's position and already allocated
@@ -494,7 +494,7 @@ scratchmem_allocate(void *data, const uint32_t key, int32_t *cost, void **buf)
 }
 
 int32_t
-dt_mipmap_cache_allocate(void *data, const uint32_t key, int32_t *cost, void **buf)
+dt_mipmap_cache_allocate(void *data, const uint32_t key, size_t *cost, void **buf)
 {
   dt_mipmap_cache_one_t *c = (dt_mipmap_cache_one_t *)data;
   // slot is exactly aligned with encapsulated cache's position and already allocated
@@ -565,7 +565,7 @@ dt_mipmap_cache_alloc(dt_image_t *img, dt_mipmap_size_t size, dt_mipmap_cache_al
 
 // callback for the cache backend to initialize payload pointers
 int32_t
-dt_mipmap_cache_allocate_dynamic(void *data, const uint32_t key, int32_t *cost, void **buf)
+dt_mipmap_cache_allocate_dynamic(void *data, const uint32_t key, size_t *cost, void **buf)
 {
   dt_mipmap_cache_one_t *cache = (dt_mipmap_cache_one_t *)data;
   // for full image buffers
