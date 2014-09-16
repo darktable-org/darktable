@@ -2056,6 +2056,41 @@ const wb_data wb_preset[] =
   { "FUJIFILM", "X100S", "6700K", 0,             { 2.059603, 1, 1.334437, 0 } },
   { "FUJIFILM", "X100S", "10000K", 0,            { 2.370861, 1, 1.13245, 0 } },
 
+  /* FUJIFILM X-E1 Firmware Version 1.01 */
+  // The manual calls it "Direct sunlight".
+  { "FUJIFILM", "X-E1", Daylight, 0,		{ 1.821192, 1, 1.804636, 0 } },
+  // The manual calls it "Shade", but exiftool shows it as "Cloudy".
+  { "FUJIFILM", "X-E1", Shade, 0,		{ 2.039735, 1, 1.572848, 0 } },
+  { "FUJIFILM", "X-E1", DaylightFluorescent, 0,	{ 2.321192, 1, 1.566225, 0 } },
+  { "FUJIFILM", "X-E1", WarmWhiteFluorescent, 0, { 1.966887, 1, 1.837748, 0 } },
+  { "FUJIFILM", "X-E1", CoolWhiteFluorescent, 0, { 1.847682, 1, 2.317881, 0 } },
+  { "FUJIFILM", "X-E1", Incandescent, 0,	{ 1.165563, 1, 2.920530, 0 } },
+  { "FUJIFILM", "X-E1", Underwater, 0,		{ 1.821192, 1, 1.804636, 0 } },
+  { "FUJIFILM", "X-E1", "5000K", 0,		{ 1.814570, 1, 1.731788, 0 } },
+
+  /* FUJIFILM X-Pro1 Firmware Version v3.30 */
+  // The manual calls it "Fine".
+  { "FUJIFILM", "X-Pro1", Daylight, 0,		{ 1.860927, 1, 1.708609, 0 } },
+  // The manual calls it "Shade", but exiftool shows it as "Cloudy".
+  { "FUJIFILM", "X-Pro1", Shade, 0,		{ 2.105960, 1, 1.460265, 0 } },
+  { "FUJIFILM", "X-Pro1", DaylightFluorescent, 0, { 2.390728, 1, 1.500000, 0 } },
+  { "FUJIFILM", "X-Pro1", WarmWhiteFluorescent, 0, { 2.059603, 1, 1.794702, 0 } },
+  { "FUJIFILM", "X-Pro1", CoolWhiteFluorescent, 0, { 1.966887, 1, 2.254967, 0 } },
+  { "FUJIFILM", "X-Pro1", Incandescent, 0,	{ 1.225166, 1, 2.708609, 0 } },
+  { "FUJIFILM", "X-Pro1", Underwater, 0,	{ 1.860927, 1, 1.708609, 0 } },
+  { "FUJIFILM", "X-Pro1", "5000K", 0,		{ 1.857616, 1, 1.701987, 0 } },
+
+  { "KODAK", "P850 ZOOM", Daylight, 0,		{ 1.859375, 1, 1.566406, 0 } },
+  { "KODAK", "P850 ZOOM", Cloudy, 0,		{ 1.960938, 1, 1.570313, 0 } },
+  { "KODAK", "P850 ZOOM", Shade, 0,		{ 2.027344, 1, 1.519531, 0 } },
+  { "KODAK", "P850 ZOOM", EveningSun, 0,	{ 1.679688, 1, 1.812500, 0 } },
+  { "KODAK", "P850 ZOOM", Tungsten, 0,		{ 1.140625, 1, 2.726563, 0 } },
+  { "KODAK", "P850 ZOOM", Fluorescent, 0,	{ 1.113281, 1, 2.949219, 0 } },
+
+  { "KODAK", "EASYSHARE Z1015 IS", Daylight, 0,	{ 1.546875, 1, 2.082031, 0 } },
+  { "KODAK", "EASYSHARE Z1015 IS", Tungsten, 0,	{ 1, 1.024000, 3.384000, 0 } },
+  { "KODAK", "EASYSHARE Z1015 IS", Fluorescent, 0, { 1.562500, 1, 2.515625, 0 } },
+  { "KODAK", "EASYSHARE Z1015 IS", Shade, 0,	{ 1.820313, 1, 1.789062, 0 } },
 
   { "Leica Camera AG", "M8 Digital Camera", Cloudy, 0, { 2.136719, 1, 1.168213, 0 } },
   { "Leica Camera AG", "M8 Digital Camera", Daylight, 0, { 2.007996, 1, 1.268982, 0 } },
