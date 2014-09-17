@@ -126,6 +126,13 @@ add_cost(dt_cache_t    *cache,
 }
 
 static void
+sub_cost(dt_cache_t    *cache,
+         const size_t   cost)
+{
+  __sync_fetch_and_sub(&cache->cost, cost);
+}
+
+static void
 remove_key(dt_cache_t *cache,
            dt_cache_segment_t *segment,
            dt_cache_bucket_t *const from_bucket,
@@ -146,7 +153,7 @@ remove_key(dt_cache_t *cache,
   key_bucket->key  = DT_CACHE_EMPTY_KEY;
 
   // keep track of cost
-  add_cost(cache, -key_bucket->cost);
+  sub_cost(cache, key_bucket->cost);
 
   if(prev_key_bucket == NULL)
   {
