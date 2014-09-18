@@ -1,7 +1,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2014-09-09 20:44+0200\n"
+"POT-Creation-Date: 2014-09-18 21:44+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -902,7 +902,7 @@ msgid "Star ratings and color labels help you to sort and rank images according 
 msgstr ""
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1624(para)
-msgid "You can give a rating from zero to five stars to an image. The quality criteria which lead to a rating are fully up to you. Whenever you import images, each image receives a default rating which you can define in core options (see <xref linkend=\"core_options\"/>). You can later revise the rating at any time. You can also mark an image as <quote>rejected</quote> by pressing the <inlinegraphic fileref=\"images/lighttable_thumb_reject.png\" scalefit=\"1\" width=\"2%\" align=\"center\"/> icon or typing the <emphasis>r</emphasis> key. This will remove all stars. You can reverse the rejection by applying a new star rating."
+msgid "You can give a rating from zero to five stars to an image. The quality criteria which lead to a rating are fully up to you. Whenever you import images, each image receives a default rating which you can define in GUI options (see <xref linkend=\"gui_options\"/>). You can later revise the rating at any time. You can also mark an image as <quote>rejected</quote> by pressing the <inlinegraphic fileref=\"images/lighttable_thumb_reject.png\" scalefit=\"1\" width=\"2%\" align=\"center\"/> icon or typing the <emphasis>r</emphasis> key. This will remove all stars. You can reverse the rejection by applying a new star rating."
 msgstr ""
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1635(para)
@@ -5190,7 +5190,7 @@ msgid "lift"
 msgstr ""
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:10101(para)
-msgid "Increases the value of dark colors with individual sliders for each RGB color and with a <quote>factor</quote> slider acting on all three colors at once."
+msgid "Adjusts the value of dark colors with individual sliders for each RGB color and with a <quote>factor</quote> slider acting on all three colors at once."
 msgstr ""
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:10108(title) /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:10401(title)
@@ -5250,7 +5250,7 @@ msgid "You can also supply your own input ICC profiles and put them into $DARKTA
 msgstr ""
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:10267(para)
-msgid "If your input image is a low dynamic range file like JPEG, or a raw in DNG format, it might already contain an embedded ICC profile which darktable will use as a default. You can always overrule darktable and select a different profile or select <quote>embedded icc profile</quote> to restore the default."
+msgid "If your input image is a low dynamic range file like JPEG, or a raw in DNG format, it might already contain an embedded ICC profile which darktable will use as a default. You can always overrule darktable and select a different profile. Select <quote>embedded icc profile</quote> to restore the default."
 msgstr ""
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:10277(para)
