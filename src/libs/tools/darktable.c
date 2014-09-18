@@ -115,7 +115,7 @@ void gui_init(dt_lib_module_t *self)
     RsvgDimensionData dimension;
     rsvg_handle_get_dimensions(svg,&dimension);
 
-    int width = DT_PIXEL_APPLY_DPI(dimension.width),
+    int width  = DT_PIXEL_APPLY_DPI(dimension.width),
         height = DT_PIXEL_APPLY_DPI(dimension.height);
     int stride = cairo_format_stride_for_width (CAIRO_FORMAT_ARGB32, width);
 
@@ -155,7 +155,7 @@ png_fallback:
       d->image = NULL;
       goto done;
     }
-    int png_width = cairo_image_surface_get_width(surface),
+    int png_width  = cairo_image_surface_get_width(surface),
         png_height = cairo_image_surface_get_height(surface);
 
     // blow up the PNG. Ugly, but at least it has the correct size afterwards :-/
@@ -190,7 +190,7 @@ done:
   d->image_height = d->image?cairo_image_surface_get_height(d->image):0;
 
   /* set size of drawing area */
-  gtk_widget_set_size_request(self->widget, d->image_width + DT_PIXEL_APPLY_DPI(180), d->image_height + DT_PIXEL_APPLY_DPI(8));
+  gtk_widget_set_size_request(self->widget, d->image_width + (int)DT_PIXEL_APPLY_DPI(180), d->image_height + (int)DT_PIXEL_APPLY_DPI(8));
 }
 
 void gui_cleanup(dt_lib_module_t *self)
@@ -222,8 +222,8 @@ static gboolean _lib_darktable_expose_callback(GtkWidget *widget, GdkEventExpose
   /* paint icon image */
   if(d->image)
   {
-    cairo_set_source_surface(cr, d->image, 0, DT_PIXEL_APPLY_DPI(7));
-    cairo_rectangle(cr,0,0,d->image_width + DT_PIXEL_APPLY_DPI(8), d->image_height + DT_PIXEL_APPLY_DPI(8));
+    cairo_set_source_surface(cr, d->image, 0, (int)DT_PIXEL_APPLY_DPI(7));
+    cairo_rectangle(cr,0,0,d->image_width + (int)DT_PIXEL_APPLY_DPI(8), d->image_height + (int)DT_PIXEL_APPLY_DPI(8));
     cairo_fill(cr);
   }
 
