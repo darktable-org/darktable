@@ -82,7 +82,7 @@
     <sect5>
       <title>lift</title>
       <para>
-        Increases the value of dark colors with individual sliders for each RGB color and with a
+        Adjusts the value of dark colors with individual sliders for each RGB color and with a
         <quote>factor</quote> slider acting on all three colors at once.
       </para>
     </sect5>
