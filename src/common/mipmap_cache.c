@@ -707,7 +707,7 @@ void dt_mipmap_cache_init(dt_mipmap_cache_t *cache)
     const int width  = cache->mip[k].max_width;
     const int height = cache->mip[k].max_height;
     // header + adjusted for dxt compression:
-    cache->mip[k].buffer_size = 4*sizeof(uint32_t) + compressed_buffer_size(cache->compression_type, width, height);
+    cache->mip[k].buffer_size = sizeof(struct dt_mipmap_buffer_dsc) + compressed_buffer_size(cache->compression_type, width, height);
     cache->mip[k].size = k;
     // level of parallelism also gives minimum size (which is twice that)
     // is rounded to a power of two by the cache anyways, we might as well.
@@ -762,7 +762,7 @@ void dt_mipmap_cache_init(dt_mipmap_cache_t *cache)
                                  dt_mipmap_cache_allocate_dynamic, &cache->mip[DT_MIPMAP_F]);
   dt_cache_set_cleanup_callback(&cache->mip[DT_MIPMAP_F].cache,
                                 dt_mipmap_cache_deallocate_dynamic, &cache->mip[DT_MIPMAP_F]);
-  cache->mip[DT_MIPMAP_F].buffer_size = 4*sizeof(uint32_t) +
+  cache->mip[DT_MIPMAP_F].buffer_size = sizeof(struct dt_mipmap_buffer_dsc) +
                                         4*sizeof(float) * cache->mip[DT_MIPMAP_F].max_width * cache->mip[DT_MIPMAP_F].max_height;
   cache->mip[DT_MIPMAP_F].size = DT_MIPMAP_F;
   cache->mip[DT_MIPMAP_F].buf = NULL;
