@@ -4,7 +4,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "POT-Creation-Date: 2014-09-18 21:44+0200\n"
-"PO-Revision-Date: 2014-09-18 21:54+0100\n"
+"PO-Revision-Date: 2014-09-20 22:52+0100\n"
 "Last-Translator: Michel Leblond <michel.leblond62@gmail.com>\n"
 "Language-Team: Jean-Luc Coulon, Victor Lamoine, Michel Leblond\n"
 "Language: fr\n"
@@ -13,7 +13,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
 "X-Generator: Poedit 1.5.4\n"
-"X-Poedit-Bookmarks: 1358,208,331,416,182,458,465,290,223,729\n"
+"X-Poedit-Bookmarks: 1380,208,331,416,182,458,465,290,223,729\n"
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:4(title)
 msgid "darktable 1.5"
@@ -12335,18 +12335,16 @@ msgstr ""
 "mieux préserver les structures fines de votre image."
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:10795(title)
-#, fuzzy
 msgid "Denoise – Non local means"
 msgstr "Réduction du bruit (non local)"
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:10799(secondary)
-#, fuzzy
 msgid "denoise – non local means"
 msgstr "réduction du bruit (non local)"
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:10804(secondary)
 msgid "non local means"
-msgstr "Moyenne non locale"
+msgstr "moyennes non locales"
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:10817(entry)
 msgid "This is a denoise algorithm, which will work on chroma and/or luma."
@@ -12364,19 +12362,19 @@ msgid ""
 "resource hungry process, it slows down pixelpipe processing significantly; "
 "consider activating this module late in your workflow."
 msgstr ""
-"Ce module réduit le bruit dans votre image mais préserve les détails. Ceci "
-"est accompli en effectuant la moyenne d’un pixel avec d’autres pixels de "
-"l’image. La pondération de la moyenne dépend du niveau de similitudes entre "
-"les voisins des <quote>pixels semblables</quote> et les voisins du pixel "
-"dont on veut enlever le bruit. Un élément d’une certaine taille est utilisé "
-"pour mesurer cette similitude. Comme la réduction de bruit est un processus "
-"consommateur de ressources, il ralentit de manière significative le "
-"traitement du pipeline graphique. Il est préférable d’activer ce module en "
-"fin de votre flux de travail. "
+"Ce module réduit le bruit dans votre image en préservant les structures. "
+"Ceci est réalisé en calculant la moyenne de chaque pixel avec des pixels "
+"avoisinants de l’image. Le poids d'un tel pixel dans le calcul de la moyenne "
+"dépend de la similitude de son voisinage et du voisinage du pixel dont on "
+"veut réduire le bruit. Un fragment de pixels d’une certaine taille est "
+"utilisé pour mesurer cette similitude. Comme la réduction de bruit est un "
+"processus consommateur de ressources, il ralentit de manière significative "
+"le traitement du pipeline graphique. Il est préférable d’activer tardivement "
+"ce module dans votre flux de travail. "
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:10845(para)
 msgid "The radius of the patch for similarity evaluation."
-msgstr "Rayon de l’élément pour une évaluation des similitudes."
+msgstr "Rayon du fragment pour l'évaluation de la similitude."
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:10852(para)
 msgid "The strength of the denoise. Higher values lead to a stronger effect."
@@ -12386,7 +12384,7 @@ msgstr ""
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:10858(title)
 msgid "luma"
-msgstr "Luminance"
+msgstr "luminance"
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:10859(para)
 msgid ""
@@ -12402,22 +12400,20 @@ msgid ""
 "this parameter compared to luma."
 msgstr ""
 "Niveau de réduction de bruit à appliquer à la chrominance. Vous pouvez être "
-"beaucoup plus agressif avec ce paramètres par rapport à ce que vous avez "
+"beaucoup plus agressif avec ce paramètre par rapport à ce que vous avez "
 "utilisé pour la luminance."
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:10879(title)
-#, fuzzy
 msgid "Denoise – bilateral"
 msgstr "Réduction du bruit (bilatéral)"
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:10883(secondary)
-#, fuzzy
 msgid "denoise – bilateral"
 msgstr "réduction du bruit (bilatéral)"
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:10888(secondary)
 msgid "bilateral"
-msgstr "Bilatéral"
+msgstr "bilatéral"
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:10901(entry)
 msgid ""
@@ -12427,10 +12423,10 @@ msgid ""
 "for sliders, the lesser resources."
 msgstr ""
 "Ce module est utilisé pour réduire le bruit des images prises en ISO élevés. "
-"Il est marqué comme module lent en raison de sa grosse consommation de "
-"ressources tant en termes de cycles CPU que d’utilisation de la mémoire. "
-"D’une manière assez contre-intuitive, les valeurs les plus grandes pour les "
-"curseurs diminuent la consommation de ressources."
+"Il est signalé comme étant un module lent en raison de sa grande "
+"consommation de ressources, à la fois en termes de cycles CPU  et en termes "
+"d’utilisation de la mémoire. D’une manière assez contre-intuitive, plus la "
+"valeur des curseurs augmente, plus la consommation des ressources diminue."
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:10921(para)
 msgid ""
@@ -12441,13 +12437,14 @@ msgid ""
 "process, it slows down pixelpipe processing significantly; consider to "
 "activate this module late in your workflow."
 msgstr ""
-"Ce module réduit le bruit de votre image mais préserve les contours marqués. "
-"Ceci est effectué en faisant la moyenne des pixels avec leurs voisins, en "
-"prenant en compte non seulement leur distance géométrique mais aussi la "
-"distance sur l’échelle de plage, c'est-à-dire la différences des intensités "
-"des couleurs. Comme la réduction de bruit est un processus gourmand en "
-"ressources, il ralentit significativement le traitement du pipeline "
-"graphique. Essayez d’activer ce module en fin de votre flux de travail."
+"Ce module réduit le bruit dans votre image mais préserve les arêtes vives. "
+"Ceci est réalisé en faisant la moyenne des pixels avec leurs voisins, "
+"prenant en compte non seulement la distance géométrique mais aussi la "
+"distance sur l’échelle de plage, c'est-à-dire les différences dans les "
+"intensités de couleur. Comme la réduction de bruit est un processus gourmand "
+"en ressources, il ralentit significativement le traitement du pipeline "
+"graphique. Envisagez d’activer tardivement ce module dans votre flux de "
+"travail."
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:10931(para)
 msgid "Set the spatial extent of the gaussian blur."
@@ -12456,7 +12453,7 @@ msgstr "Définit l’étendue spatiale du flou gaussien."
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:10937(title)
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:20413(secondary)
 msgid "red"
-msgstr "Rouge"
+msgstr "rouge"
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:10938(para)
 msgid "Blur intensity for red channel."
@@ -12465,7 +12462,7 @@ msgstr "Intensité du flou pour le canal rouge."
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:10944(title)
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:20433(secondary)
 msgid "green"
-msgstr "Vert"
+msgstr "vert"
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:10945(para)
 msgid "Blur intensity for green channel."
@@ -12475,7 +12472,7 @@ msgstr "Intensité du flou pour le canal vert."
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:12924(title)
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:20424(secondary)
 msgid "blue"
-msgstr "Bleu"
+msgstr "bleu"
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:10952(para)
 msgid "Blur intensity for blue channel."
