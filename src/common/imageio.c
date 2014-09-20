@@ -902,6 +902,30 @@ int dt_imageio_export_with_flags(
 }
 
 
+// fallback read method in case file could not be opened yet.
+// use GraphicsMagick (if supported) to read exotic LDRs
+dt_imageio_retval_t
+dt_imageio_open_exotic(
+  dt_image_t *img,
+  const char *filename,
+  dt_mipmap_cache_allocator_t a)
+{
+#ifdef HAVE_GRAPHICSMAGICK
+  dt_imageio_retval_t ret = dt_imageio_open_gm(img, filename, a);
+  if(ret == DT_IMAGEIO_OK || ret == DT_IMAGEIO_CACHE_FULL)
+  {
+    img->filters = 0u;
+    img->flags &= ~DT_IMAGE_RAW;
+    img->flags &= ~DT_IMAGE_HDR;
+    img->flags |= DT_IMAGE_LDR;
+    return ret;
+  }
+#endif
+
+  return DT_IMAGEIO_FILE_CORRUPTED;
+}
+
+
 // =================================================
 //   combined reading
 // =================================================
@@ -934,13 +958,9 @@ dt_imageio_open(
   if(ret != DT_IMAGEIO_OK && ret != DT_IMAGEIO_CACHE_FULL)
     ret = dt_imageio_open_raw(img, filename, a);
 
-#ifdef HAVE_GRAPHICSMAGICK
+  /* fallback that tries to open file via GraphicsMagick */
   if(ret != DT_IMAGEIO_OK && ret != DT_IMAGEIO_CACHE_FULL)
-    ret = dt_imageio_open_gm(img, filename, a);
-#else
-  if(ret != DT_IMAGEIO_OK && ret != DT_IMAGEIO_CACHE_FULL)
-    ret = dt_imageio_open_ldr(img, filename, a);
-#endif
+    ret = dt_imageio_open_exotic(img, filename, a);
 
   return ret;
 }

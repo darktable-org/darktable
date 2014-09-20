@@ -66,14 +66,28 @@ int dt_image_is_hdr(const dt_image_t *img)
 
 int dt_image_is_raw(const dt_image_t *img)
 {
+  // NULL terminated list of supported non-RAW extensions
+  const char *dt_non_raw_extensions[] = { ".jpeg", ".jpg", ".pfm", ".hdr", ".exr", ".pxn", ".tif", ".tiff",
+                                          ".png", ".j2c", ".j2k", ".jp2", ".jpc", ".gif", ".jpc", ".jp2", ".bmp",
+                                          ".dcm", ".jng", ".miff", ".mng", ".pbm", ".pnm", ".ppm", ".pgm",
+                                          NULL };
+
+  if (img->flags & DT_IMAGE_RAW) return TRUE;
+
   const char *c = img->filename + strlen(img->filename);
   while(*c != '.' && c > img->filename) c--;
-  if((img->flags & DT_IMAGE_RAW) || (strcasecmp(c, ".jpg") && strcasecmp(c, ".jpeg") &&
-                                     strcasecmp(c, ".tif") && strcasecmp(c, ".tiff") &&
-                                     strcasecmp(c, ".png") && strcasecmp(c, ".ppm") &&
-                                     strcasecmp(c, ".hdr") && strcasecmp(c, ".exr") && strcasecmp(c, ".pfm")))
-    return 1;
-  else return 0;
+
+  gboolean isnonraw = FALSE;
+  for(const char **i = dt_non_raw_extensions; *i != NULL; i++)
+  {
+    if(!g_ascii_strncasecmp(c, *i, strlen(*i)))
+    {
+      isnonraw = TRUE;
+      break;
+    }
+  }
+
+  return !isnonraw;
 }
 
 const char *
