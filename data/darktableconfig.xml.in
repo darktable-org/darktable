@@ -52,7 +52,7 @@
   </dtconfig>
   <dtconfig prefs="core">
     <name>singlebuffer_limit</name>
-    <type min="2">int</type>
+    <type min="2" max="64">int</type>
     <default>16</default>
     <shortdescription>minimum amount of memory (in MB) for a single buffer in tiling</shortdescription>
     <longdescription>if set to a positive, non-zero value this variable defines the minimum amount of memory (in MB) that tiling should take for a single image buffer. has precedence over heuristics based on host_memory_limit (needs a restart).</longdescription>
