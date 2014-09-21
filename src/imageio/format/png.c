@@ -154,7 +154,7 @@ write_image (dt_imageio_module_data_t *p_tmp, const char *filename, const void *
   if (setjmp(png_jmpbuf(png_ptr)))
   {
     fclose(f);
-    png_destroy_write_struct(&png_ptr, NULL);
+    png_destroy_write_struct(&png_ptr, &info_ptr);
     return 1;
   }
 
@@ -170,6 +170,34 @@ write_image (dt_imageio_module_data_t *p_tmp, const char *filename, const void *
   png_set_IHDR(png_ptr, info_ptr, width, height,
                p->bpp, PNG_COLOR_TYPE_RGB, PNG_INTERLACE_NONE,
                PNG_COMPRESSION_TYPE_DEFAULT, PNG_FILTER_TYPE_DEFAULT);
+
+  // metadata has to be written before the pixels
+
+  // embed icc profile
+  if(imgid > 0)
+  {
+    cmsHPROFILE out_profile = dt_colorspaces_create_output_profile(imgid);
+    uint32_t len = 0;
+    cmsSaveProfileToMem(out_profile, 0, &len);
+    if(len > 0)
+    {
+      char buf[len], name[512] = { 0 };
+      cmsSaveProfileToMem(out_profile, buf, &len);
+      dt_colorspaces_get_profile_name(out_profile, "en", "US", name, sizeof(name));
+
+      png_set_iCCP(png_ptr, info_ptr, *name?name:"icc", 0,
+#if (PNG_LIBPNG_VER < 10500)
+                   (png_charp)buf,
+#else
+                   (png_const_bytep)buf,
+#endif
+                   len);
+    }
+    dt_colorspaces_cleanup_profile(out_profile);
+  }
+
+  // write exif data
+  PNGwriteRawProfile(png_ptr, info_ptr, "exif", exif, exif_len);
 
   png_write_info(png_ptr, info_ptr);
 
@@ -198,10 +226,6 @@ write_image (dt_imageio_module_data_t *p_tmp, const char *filename, const void *
       png_write_row(png_ptr, row);
     }
   }
-
-  PNGwriteRawProfile(png_ptr, info_ptr, "exif", exif, exif_len);
-
-  // TODO: embed icc profile!
 
   png_write_end(png_ptr, info_ptr);
   png_destroy_write_struct(&png_ptr, &info_ptr);
