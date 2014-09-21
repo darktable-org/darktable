@@ -33,6 +33,7 @@
 #endif
 #include "common/imageio_jpeg.h"
 #include "common/imageio_tiff.h"
+#include "common/imageio_png.h"
 #include "external/adobe_coeff.c"
 #include <xmmintrin.h>
 #include <stdlib.h>
@@ -882,6 +883,13 @@ void reload_defaults(dt_iop_module_t *module)
         img->profile_size = profile_size;
         use_eprofile = (img->profile_size > 0);
       }
+      dt_image_cache_write_release(darktable.image_cache, img, DT_IMAGE_CACHE_RELAXED);
+    }
+    else if(!strcmp(ext, "png"))
+    {
+      dt_image_t *img = dt_image_cache_write_get(darktable.image_cache, cimg);
+      img->profile_size = dt_imageio_png_read_profile(filename, &img->profile);
+      use_eprofile = (img->profile_size > 0);
       dt_image_cache_write_release(darktable.image_cache, img, DT_IMAGE_CACHE_RELAXED);
     }
     g_free(ext);
