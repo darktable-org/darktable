@@ -214,6 +214,7 @@ typedef struct dt_iop_clipping_gui_data_t
   GtkWidget *guide_lines;
   GtkWidget *flip_guides;
   GtkWidget *golden_extras;
+  GtkWidget *grid_cells;
   GtkWidget *keystone_type;
   GtkWidget *crop_auto;
 
@@ -1657,6 +1658,11 @@ guides_presets_changed (GtkWidget *combo, dt_iop_module_t *self)
   else
     gtk_widget_set_visible(g->golden_extras, FALSE);
 
+  if (which == GUIDE_GRID)
+    gtk_widget_set_visible(g->grid_cells, TRUE);
+  else
+    gtk_widget_set_visible(g->grid_cells, FALSE);
+
   // remember setting
   dt_conf_set_int("plugins/darkroom/clipping/guide", which);
 
@@ -1771,7 +1777,7 @@ void gui_init(struct dt_iop_module_t *self)
   g->guide_lines = dt_bauhaus_combobox_new(self);
   dt_bauhaus_widget_set_label(g->guide_lines, NULL, _("guides"));
   dt_bauhaus_combobox_add(g->guide_lines, _("none"));
-  dt_bauhaus_combobox_add(g->guide_lines, _("grid")); // TODO: make the number of lines configurable with a slider?
+  dt_bauhaus_combobox_add(g->guide_lines, _("grid"));
   dt_bauhaus_combobox_add(g->guide_lines, _("rules of thirds"));
   dt_bauhaus_combobox_add(g->guide_lines, _("metering"));
   dt_bauhaus_combobox_add(g->guide_lines, _("perspective")); // TODO: make the number of lines configurable with a slider?
@@ -1806,6 +1812,13 @@ void gui_init(struct dt_iop_module_t *self)
   g_object_set(G_OBJECT(g->golden_extras), "tooltip-text", _("show some extra guides"), (char *)NULL);
   g_signal_connect (G_OBJECT (g->golden_extras), "value-changed", G_CALLBACK (guides_button_changed), self);
   gtk_box_pack_start(GTK_BOX(self->widget), g->golden_extras, TRUE, TRUE, 0);
+
+  g->grid_cells = dt_bauhaus_slider_new_with_range(self, 2.0, 30.0, 1.0, 9.0, 0);
+  dt_bauhaus_widget_set_label(g->grid_cells, NULL, _("grid cells"));
+  dt_bauhaus_slider_set_format(g->grid_cells, "%.0f");
+  g_signal_connect(G_OBJECT (g->grid_cells), "value-changed", G_CALLBACK (guides_button_changed), self);
+  g_object_set(G_OBJECT(g->grid_cells), "tooltip-text", _("number of grid cells"), (char *)NULL);
+  gtk_box_pack_start(GTK_BOX(self->widget), g->grid_cells, TRUE, TRUE, 0);
 
   gtk_widget_set_visible(g->flip_guides, FALSE);
   gtk_widget_set_visible(g->golden_extras, FALSE);
@@ -1953,7 +1966,7 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
   int which = dt_bauhaus_combobox_get(g->guide_lines);
   if (which == GUIDE_GRID)
   {
-    dt_guides_draw_simple_grid(cr, left, top, right, bottom, zoom_scale);
+    dt_guides_draw_simple_grid(cr, left, top, right, bottom, zoom_scale, dt_bauhaus_slider_get(g->grid_cells));
   }
   else if (which == GUIDE_DIAGONAL)
   {

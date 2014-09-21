@@ -13,19 +13,27 @@ dt_guides_q_rect(dt_QRect_t *R1, float left, float top, float width, float heigh
 
 
 void
-dt_guides_draw_simple_grid(cairo_t *cr, const float left, const float top,  const float right, const float bottom, float zoom_scale)
+dt_guides_draw_simple_grid(cairo_t *cr, const float left, const float top,  const float right, const float bottom, float zoom_scale, int num_cells)
 {
-  // cairo_set_operator(cr, CAIRO_OPERATOR_XOR);
-  cairo_set_line_width(cr, 1.0/zoom_scale);
-  cairo_set_source_rgb(cr, .2, .2, .2);
-  dt_draw_grid(cr, 3, left, top, right, bottom);
-  cairo_translate(cr, 1.0/zoom_scale, 1.0/zoom_scale);
-  cairo_set_source_rgb(cr, .8, .8, .8);
-  dt_draw_grid(cr, 3, left, top, right, bottom);
+  //cairo_set_operator(cr, CAIRO_OPERATOR_XOR);
+
+  // draw all grid lines
   cairo_set_source_rgba(cr, .8, .8, .8, 0.5);
   double dashes = 5.0/zoom_scale;
   cairo_set_dash(cr, &dashes, 1, 0);
-  dt_draw_grid(cr, 9, left, top, right, bottom);
+  dt_draw_grid(cr, num_cells, left, top, right, bottom);
+
+  // draw highlights:
+  cairo_set_line_width(cr, 1.0/zoom_scale);
+  cairo_set_source_rgb(cr, .9, .9, .9);
+
+  // thirds...
+  if (num_cells%3 == 0)
+    dt_draw_grid(cr, 3, left, top, right, bottom);
+
+  // ...and centers
+  if (num_cells % 2 == 0)
+    dt_draw_grid(cr, 2, left, top, right, bottom);
 }
 
 
