@@ -388,6 +388,7 @@ static int32_t on_image_imported_callback_job(dt_job_t *job) {
   on_image_imported_callback_data_t *t = dt_control_job_get_params(job);
   luaA_push(darktable.lua_state.state,dt_lua_image_t,&t->imgid);
   run_event("post-import-image",1);
+  free(t); // i am not sure if the free() may happen before the run_event as a pointer to the imgid inside of it is pushed to the lua stack
   dt_lua_unlock(has_lock);
   return 0;
 }
