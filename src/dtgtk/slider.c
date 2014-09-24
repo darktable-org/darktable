@@ -50,6 +50,8 @@ static void _slider_entry_abort(GtkDarktableSlider *slider);
 static void _slider_class_init(GtkDarktableSliderClass *klass);
 static void _slider_init(GtkDarktableSlider *scale);
 static void _slider_size_request(GtkWidget *widget, GtkRequisition *requisition);
+static void _slider_get_preferred_width(GtkWidget *widget, gint *minimal_width, gint *natural_width);
+static void _slider_get_preferred_height(GtkWidget *widget, gint *minimal_height, gint *natural_height);
 static void _slider_size_allocate(GtkWidget *widget, GtkAllocation *allocation);
 static void _slider_realize(GtkWidget *widget);
 static gboolean _slider_expose(GtkWidget *widget, GdkEventExpose *event);
@@ -95,7 +97,8 @@ static void _slider_class_init(GtkDarktableSliderClass *klass)
   _slider_parent_class = g_type_class_peek(gtk_event_box_get_type());
 
   widget_class->realize = _slider_realize;
-  widget_class->size_request = _slider_size_request;
+  widget_class->get_preferred_width = _slider_get_preferred_width;
+  widget_class->get_preferred_height = _slider_get_preferred_height;
   widget_class->size_allocate = _slider_size_allocate;
   widget_class->expose_event = _slider_expose;
   widget_class->button_press_event = _slider_button_press;
@@ -378,10 +381,26 @@ static void _slider_size_request(GtkWidget *widget, GtkRequisition *requisition)
   g_return_if_fail(DTGTK_IS_SLIDER(widget));
   g_return_if_fail(requisition != NULL);
 
-  GTK_WIDGET_CLASS(_slider_parent_class)->size_request(widget, requisition);
-
   requisition->width = DT_PIXEL_APPLY_DPI(100);
   requisition->height = DTGTK_SLIDER_CONTROL_MIN_HEIGHT;
+}
+
+static void _slider_get_preferred_width(GtkWidget *widget, gint *minimal_width, gint *natural_width)
+{
+  GtkRequisition requisition;
+
+  _slider_size_request(widget, &requisition);
+
+  *minimal_width = *natural_width = requisition.width;
+}
+
+static void _slider_get_preferred_height(GtkWidget *widget, gint *minimal_height, gint *natural_height)
+{
+  GtkRequisition requisition;
+
+  _slider_size_request(widget, &requisition);
+
+  *minimal_height = *natural_height = requisition.height;
 }
 
 static void _slider_size_allocate(GtkWidget *widget, GtkAllocation *allocation)

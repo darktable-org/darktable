@@ -38,6 +38,9 @@ static void _gradient_slider_class_init(GtkDarktableGradientSliderClass *klass);
 static void _gradient_slider_init(GtkDarktableGradientSlider *slider);
 static void _gradient_slider_size_request(GtkWidget *widget, GtkRequisition *requisition);
 // static void _gradient_slider_size_allocate(GtkWidget *widget, GtkAllocation *allocation);
+static void _gradient_slider_get_preferred_width(GtkWidget *widget, gint *minimal_width, gint *natural_width);
+static void _gradient_slider_get_preferred_height(GtkWidget *widget, gint *minimal_height,
+                                                  gint *natural_height);
 static void _gradient_slider_realize(GtkWidget *widget);
 static gboolean _gradient_slider_expose(GtkWidget *widget, GdkEventExpose *event);
 static void _gradient_slider_destroy(GtkObject *object);
@@ -323,8 +326,8 @@ static void _gradient_slider_class_init(GtkDarktableGradientSliderClass *klass)
   GtkWidgetClass *widget_class = (GtkWidgetClass *)klass;
   GtkObjectClass *object_class = (GtkObjectClass *)klass;
   widget_class->realize = _gradient_slider_realize;
-  widget_class->size_request = _gradient_slider_size_request;
-  // widget_class->size_allocate = _gradient_slider_size_allocate;
+  widget_class->get_preferred_width = _gradient_slider_get_preferred_width;
+  widget_class->get_preferred_height = _gradient_slider_get_preferred_height;
   widget_class->expose_event = _gradient_slider_expose;
   object_class->destroy = _gradient_slider_destroy;
 
@@ -373,6 +376,25 @@ static void _gradient_slider_size_request(GtkWidget *widget, GtkRequisition *req
      );
    }
 }*/
+
+static void _gradient_slider_get_preferred_width(GtkWidget *widget, gint *minimal_width, gint *natural_width)
+{
+  GtkRequisition requisition;
+
+  _gradient_slider_size_request(widget, &requisition);
+
+  *minimal_width = *natural_width = requisition.width;
+}
+
+static void _gradient_slider_get_preferred_height(GtkWidget *widget, gint *minimal_height,
+                                                  gint *natural_height)
+{
+  GtkRequisition requisition;
+
+  _gradient_slider_size_request(widget, &requisition);
+
+  *minimal_height = *natural_height = requisition.height;
+}
 
 static void _gradient_slider_realize(GtkWidget *widget)
 {

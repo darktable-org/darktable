@@ -27,6 +27,8 @@ static void _label_init(GtkDarktableLabel *slider);
 static void _label_size_request(GtkWidget *widget, GtkRequisition *requisition);
 // static void _label_size_allocate(GtkWidget *widget, GtkAllocation *allocation);
 // static void _label_realize(GtkWidget *widget);
+static void _label_get_preferred_width(GtkWidget *widget, gint *minimal_width, gint *natural_width);
+static void _label_get_preferred_height(GtkWidget *widget, gint *minimal_height, gint *natural_height);
 static gboolean _label_expose(GtkWidget *widget, GdkEventExpose *event);
 // static void _label_destroy(GtkObject *object);
 
@@ -36,10 +38,11 @@ static void _label_class_init(GtkDarktableLabelClass *klass)
   GtkWidgetClass *widget_class = (GtkWidgetClass *)klass;
   // GtkObjectClass *object_class=(GtkObjectClass *) klass;
   // widget_class->realize = _label_realize;
-  widget_class->size_request = _label_size_request;
   // widget_class->size_allocate = _label_size_allocate;
   widget_class->expose_event = _label_expose;
   // object_class->destroy = _label_destroy;
+  widget_class->get_preferred_width = _label_get_preferred_width;
+  widget_class->get_preferred_height = _label_get_preferred_height;
 }
 
 static void _label_init(GtkDarktableLabel *label)
@@ -83,6 +86,24 @@ static void _label_destroy(GtkObject *object)
      (* GTK_OBJECT_CLASS(klass)->destroy) (object);
   }
 }*/
+
+static void _label_get_preferred_width(GtkWidget *widget, gint *minimal_width, gint *natural_width)
+{
+  GtkRequisition requisition;
+
+  _label_size_request(widget, &requisition);
+
+  *minimal_width = *natural_width = requisition.width;
+}
+
+static void _label_get_preferred_height(GtkWidget *widget, gint *minimal_height, gint *natural_height)
+{
+  GtkRequisition requisition;
+
+  _label_size_request(widget, &requisition);
+
+  *minimal_height = *natural_height = requisition.height;
+}
 
 static gboolean _label_expose(GtkWidget *widget, GdkEventExpose *event)
 {

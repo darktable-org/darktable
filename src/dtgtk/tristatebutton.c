@@ -27,6 +27,9 @@ static guint _tristatebutton_signals[TRISTATEBUTTON_LAST_SIGNAL] = { 0 };
 static void _tristatebutton_class_init(GtkDarktableTriStateButtonClass *klass);
 static void _tristatebutton_init(GtkDarktableTriStateButton *slider);
 static void _tristatebutton_size_request(GtkWidget *widget, GtkRequisition *requisition);
+static void _tristatebutton_get_preferred_width(GtkWidget *widget, gint *minimal_width, gint *natural_width);
+static void _tristatebutton_get_preferred_height(GtkWidget *widget, gint *minimal_height,
+                                                 gint *natural_height);
 // static void _tristatebutton_size_allocate(GtkWidget *widget, GtkAllocation *allocation);
 // static void _tristatebutton_realize(GtkWidget *widget);
 static gboolean _tristatebutton_expose(GtkWidget *widget, GdkEventExpose *event);
@@ -42,7 +45,8 @@ static void _tristatebutton_class_init(GtkDarktableTriStateButtonClass *klass)
   GtkWidgetClass *widget_class = (GtkWidgetClass *)klass;
   // GtkObjectClass *object_class=(GtkObjectClass *) klass;
   // widget_class->realize = _tristatebutton_realize;
-  widget_class->size_request = _tristatebutton_size_request;
+  widget_class->get_preferred_width = _tristatebutton_get_preferred_width;
+  widget_class->get_preferred_height = _tristatebutton_get_preferred_height;
   // widget_class->size_allocate = _tristatebutton_size_allocate;
   widget_class->expose_event = _tristatebutton_expose;
   // object_class->destroy = _tristatebutton_destroy;
@@ -116,6 +120,24 @@ static void _tristatebutton_destroy(GtkObject *object)
   }
 }
 #endif
+
+static void _tristatebutton_get_preferred_width(GtkWidget *widget, gint *minimal_width, gint *natural_width)
+{
+  GtkRequisition requisition;
+
+  _tristatebutton_size_request(widget, &requisition);
+
+  *minimal_width = *natural_width = requisition.width;
+}
+
+static void _tristatebutton_get_preferred_height(GtkWidget *widget, gint *minimal_height, gint *natural_height)
+{
+  GtkRequisition requisition;
+
+  _tristatebutton_size_request(widget, &requisition);
+
+  *minimal_height = *natural_height = requisition.height;
+}
 
 static gboolean _tristatebutton_expose(GtkWidget *widget, GdkEventExpose *event)
 {

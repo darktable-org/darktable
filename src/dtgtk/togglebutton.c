@@ -24,6 +24,8 @@
 static void _togglebutton_class_init(GtkDarktableToggleButtonClass *klass);
 static void _togglebutton_init(GtkDarktableToggleButton *slider);
 static void _togglebutton_size_request(GtkWidget *widget, GtkRequisition *requisition);
+static void _togglebutton_get_preferred_width(GtkWidget *widget, gint *minimal_width, gint *natural_width);
+static void _togglebutton_get_preferred_height(GtkWidget *widget, gint *minimal_height, gint *natural_height);
 static void _togglebutton_size_allocate(GtkWidget *widget, GtkAllocation *allocation);
 // static void _togglebutton_realize(GtkWidget *widget);
 static gboolean _togglebutton_expose(GtkWidget *widget, GdkEventExpose *event);
@@ -40,12 +42,10 @@ void temp()
 static void _togglebutton_class_init(GtkDarktableToggleButtonClass *klass)
 {
   GtkWidgetClass *widget_class = (GtkWidgetClass *)klass;
-  // GtkObjectClass *object_class=(GtkObjectClass *) klass;
-  // widget_class->realize = _togglebutton_realize;
-  widget_class->size_request = _togglebutton_size_request;
-  // widget_class->size_allocate = _togglebutton_size_allocate;
+
+  widget_class->get_preferred_width = _togglebutton_get_preferred_width;
+  widget_class->get_preferred_height = _togglebutton_get_preferred_height;
   widget_class->expose_event = _togglebutton_expose;
-  // object_class->destroy = _togglebutton_destroy;
 }
 
 static void _togglebutton_init(GtkDarktableToggleButton *slider)
@@ -79,6 +79,24 @@ static void _togglebutton_size_request(GtkWidget *widget, GtkRequisition *requis
     requisition->width = DT_PIXEL_APPLY_DPI(22);
     requisition->height = DT_PIXEL_APPLY_DPI(17);
   }
+}
+
+static void _togglebutton_get_preferred_width(GtkWidget *widget, gint *minimal_width, gint *natural_width)
+{
+  GtkRequisition requisition;
+
+  _togglebutton_size_request(widget, &requisition);
+
+  *minimal_width = *natural_width = requisition.width;
+}
+
+static void _togglebutton_get_preferred_height(GtkWidget *widget, gint *minimal_height, gint *natural_height)
+{
+  GtkRequisition requisition;
+
+  _togglebutton_size_request(widget, &requisition);
+
+  *minimal_height = *natural_height = requisition.height;
 }
 
 static void _togglebutton_size_allocate(GtkWidget *widget, GtkAllocation *allocation)
