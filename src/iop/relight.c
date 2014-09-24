@@ -64,7 +64,7 @@ void init_presets(dt_iop_module_so_t *self)
 
 typedef struct dt_iop_relight_gui_data_t
 {
-  GtkVBox *vbox1, *vbox2;               // left and right controlboxes
+  GtkBox *vbox1, *vbox2;                // left and right controlboxes
   GtkLabel *label1, *label2, *label3;   // ev, center, width
   GtkWidget *scale1, *scale2;           // ev,width
   GtkDarktableGradientSlider *gslider1; // center

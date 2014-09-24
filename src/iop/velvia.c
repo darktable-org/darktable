@@ -58,7 +58,7 @@ typedef struct dt_iop_velvia_params1_t
 
 typedef struct dt_iop_velvia_gui_data_t
 {
-  GtkVBox *vbox;
+  GtkBox *vbox;
   GtkWidget *strength_scale;
   GtkWidget *bias_scale;
 } dt_iop_velvia_gui_data_t;

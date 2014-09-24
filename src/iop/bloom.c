@@ -51,7 +51,7 @@ typedef struct dt_iop_bloom_params_t
 
 typedef struct dt_iop_bloom_gui_data_t
 {
-  GtkVBox *vbox;
+  GtkBox *vbox;
   GtkWidget *label1, *label2, *label3; // size,threshold,strength
   GtkWidget *scale1, *scale2, *scale3; // size,threshold,strength
 } dt_iop_bloom_gui_data_t;

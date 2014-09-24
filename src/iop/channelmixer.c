@@ -87,7 +87,7 @@ typedef struct dt_iop_channelmixer_params_t
 
 typedef struct dt_iop_channelmixer_gui_data_t
 {
-  GtkVBox *vbox;
+  GtkBox *vbox;
   GtkWidget *combo1;                      // Output channel
   GtkDarktableLabel *dtlabel1, *dtlabel2; // output channel, source channels
   GtkLabel *label1, *label2, *label3;     // red, green, blue

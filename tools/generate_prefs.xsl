@@ -10,8 +10,8 @@
   GtkWidget *widget, *label, *labelev, *viewport;
   GtkRequisition size;
   GtkWidget *hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5);
-  GtkWidget *vbox1 = gtk_vbox_new(5, TRUE);
-  GtkWidget *vbox2 = gtk_vbox_new(5, TRUE);
+  GtkWidget *vbox1 = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
+  GtkWidget *vbox2 = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
   char tooltip[1024];
   gtk_box_pack_start(GTK_BOX(hbox), vbox1, FALSE, FALSE, 0);
   gtk_box_pack_start(GTK_BOX(hbox), vbox2, FALSE, FALSE, 0);

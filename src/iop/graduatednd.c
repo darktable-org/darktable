@@ -109,7 +109,7 @@ void init_presets(dt_iop_module_so_t *self)
 
 typedef struct dt_iop_graduatednd_gui_data_t
 {
-  GtkVBox *vbox;
+  GtkBox *vbox;
   GtkWidget *label1, *label2, *label3, *label5, *label6; // density, compression, rotation, hue, saturation
   GtkWidget *scale1, *scale2, *scale3;                   // density, compression, rotation
   GtkWidget *gslider1, *gslider2;                        // hue, saturation

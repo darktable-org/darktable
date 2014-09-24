@@ -54,7 +54,7 @@ typedef struct dt_iop_highpass_params_t
 
 typedef struct dt_iop_highpass_gui_data_t
 {
-  GtkVBox *vbox1, *vbox2;
+  GtkBox *vbox1, *vbox2;
   GtkWidget *label1, *label2; // sharpness,contrast
   GtkWidget *scale1, *scale2; // sharpness,contrast
 } dt_iop_highpass_gui_data_t;

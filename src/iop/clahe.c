@@ -47,7 +47,7 @@ typedef struct dt_iop_rlce_params_t
 
 typedef struct dt_iop_rlce_gui_data_t
 {
-  GtkVBox *vbox1, *vbox2;
+  GtkBox *vbox1, *vbox2;
   GtkWidget *label1, *label2;
   GtkDarktableSlider *scale1, *scale2; // radie pixels, slope
 } dt_iop_rlce_gui_data_t;

@@ -59,7 +59,7 @@ typedef struct dt_iop_soften_params_t
 
 typedef struct dt_iop_soften_gui_data_t
 {
-  GtkVBox *vbox1, *vbox2;
+  GtkBox *vbox1, *vbox2;
   GtkWidget *scale1, *scale2, *scale3, *scale4; // size,saturation,brightness,amount
 } dt_iop_soften_gui_data_t;
 

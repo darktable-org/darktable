@@ -57,7 +57,7 @@ typedef struct dt_iop_colorcontrast_gui_data_t
 {
   // whatever you need to make your gui happy.
   // stored in self->gui_data
-  GtkVBox *vbox;
+  GtkBox *vbox;
   GtkWidget *a_scale; // this is needed by gui_update
   GtkWidget *b_scale;
 } dt_iop_colorcontrast_gui_data_t;

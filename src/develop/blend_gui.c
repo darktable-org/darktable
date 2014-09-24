@@ -936,7 +936,7 @@ void dt_iop_gui_update_blendif(dt_iop_module_t *module)
 }
 
 
-void dt_iop_gui_init_blendif(GtkVBox *blendw, dt_iop_module_t *module)
+void dt_iop_gui_init_blendif(GtkBox *blendw, dt_iop_module_t *module)
 {
   dt_iop_gui_blend_data_t *bd = (dt_iop_gui_blend_data_t *)module->blend_data;
 
@@ -1237,7 +1237,7 @@ void dt_iop_gui_update_masks(dt_iop_module_t *module)
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(bd->masks_brush), b5);
 }
 
-void dt_iop_gui_init_masks(GtkVBox *blendw, dt_iop_module_t *module)
+void dt_iop_gui_init_masks(GtkBox *blendw, dt_iop_module_t *module)
 {
   dt_iop_gui_blend_data_t *bd = (dt_iop_gui_blend_data_t *)module->blend_data;
 
