@@ -369,7 +369,8 @@ static gboolean _slider_motion_notify(GtkWidget *widget, GdkEventMotion *event)
 
 static gboolean _slider_enter_notify_event(GtkWidget *widget, GdkEventCrossing *event)
 {
-  gtk_widget_set_state(widget, (event->type == GDK_ENTER_NOTIFY) ? GTK_STATE_PRELIGHT : GTK_STATE_NORMAL);
+  gtk_widget_set_state_flags(
+      widget, (event->type == GDK_ENTER_NOTIFY) ? GTK_STATE_FLAG_PRELIGHT : GTK_STATE_FLAG_NORMAL, TRUE);
   gtk_widget_queue_draw(widget);
   DTGTK_SLIDER(widget)->prev_x_root = event->x_root;
   return FALSE;

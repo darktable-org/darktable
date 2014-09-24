@@ -129,7 +129,7 @@ static gdouble _slider_move(GtkWidget *widget, gint k, gdouble value, gint direc
 static gboolean _gradient_slider_enter_notify_event(GtkWidget *widget, GdkEventCrossing *event)
 {
   GtkDarktableGradientSlider *gslider = DTGTK_GRADIENT_SLIDER(widget);
-  gtk_widget_set_state(widget, GTK_STATE_PRELIGHT);
+  gtk_widget_set_state_flags(widget, GTK_STATE_FLAG_PRELIGHT, TRUE);
   gslider->is_entered = TRUE;
   gtk_widget_queue_draw(widget);
   DTGTK_GRADIENT_SLIDER(widget)->prev_x_root = event->x_root;
@@ -139,7 +139,7 @@ static gboolean _gradient_slider_enter_notify_event(GtkWidget *widget, GdkEventC
 static gboolean _gradient_slider_leave_notify_event(GtkWidget *widget, GdkEventCrossing *event)
 {
   GtkDarktableGradientSlider *gslider = DTGTK_GRADIENT_SLIDER(widget);
-  gtk_widget_set_state(widget, GTK_STATE_NORMAL);
+  gtk_widget_set_state_flags(widget, GTK_STATE_FLAG_NORMAL, TRUE);
   gslider->is_entered = FALSE;
   gtk_widget_queue_draw(widget);
   DTGTK_GRADIENT_SLIDER(widget)->prev_x_root = event->x_root;

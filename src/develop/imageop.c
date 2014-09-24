@@ -1480,7 +1480,8 @@ void dt_iop_request_focus(dt_iop_module_t *module)
     if(darktable.develop->gui_module->gui_focus)
       darktable.develop->gui_module->gui_focus(darktable.develop->gui_module, FALSE);
 
-    gtk_widget_set_state(dt_iop_gui_get_pluginui(darktable.develop->gui_module), GTK_STATE_NORMAL);
+    gtk_widget_set_state_flags(dt_iop_gui_get_pluginui(darktable.develop->gui_module), GTK_STATE_FLAG_NORMAL,
+                               TRUE);
 
     //    gtk_widget_set_state(darktable.develop->gui_module->topwidget, GTK_STATE_NORMAL);
 
@@ -1506,7 +1507,7 @@ void dt_iop_request_focus(dt_iop_module_t *module)
   /* set the focus on module */
   if(module)
   {
-    gtk_widget_set_state(dt_iop_gui_get_pluginui(module), GTK_STATE_SELECTED);
+    gtk_widget_set_state_flags(dt_iop_gui_get_pluginui(module), GTK_STATE_FLAG_SELECTED, TRUE);
 
     // gtk_widget_set_state(module->widget,    GTK_STATE_NORMAL);
 

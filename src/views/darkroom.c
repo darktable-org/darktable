@@ -1106,7 +1106,7 @@ void enter(dt_view_t *self)
     gtk_window_set_opacity(GTK_WINDOW(dev->overexposed.floating_window), 0.9);
 
     //     gtk_widget_set_size_request(frame, panel_width, -1);
-    gtk_widget_set_state(frame, GTK_STATE_SELECTED);
+    gtk_widget_set_state_flags(frame, GTK_STATE_FLAG_SELECTED, TRUE);
     gtk_frame_set_shadow_type(GTK_FRAME(frame), GTK_SHADOW_OUT);
 
     gtk_alignment_set_padding(GTK_ALIGNMENT(alignment), 8, 8, 8, 8);
@@ -1128,7 +1128,7 @@ void enter(dt_view_t *self)
                  (char *)NULL);
     g_signal_connect(G_OBJECT(colorscheme), "value-changed", G_CALLBACK(colorscheme_callback), dev);
     gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(colorscheme), TRUE, TRUE, 0);
-    gtk_widget_set_state(colorscheme, GTK_STATE_SELECTED);
+    gtk_widget_set_state_flags(colorscheme, GTK_STATE_FLAG_SELECTED, TRUE);
 
     /* lower */
     GtkWidget *lower = dt_bauhaus_slider_new_with_range(NULL, 0.0, 100.0, 0.1, 2.0, 2);
