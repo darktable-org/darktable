@@ -124,7 +124,7 @@ static void _slider_init(GtkDarktableSlider *slider)
                                             | GDK_KEY_PRESS_MASK | GDK_KEY_RELEASE_MASK
                                             | GDK_POINTER_MOTION_MASK);
 
-  GtkWidget *hbox = gtk_hbox_new(TRUE, 0);
+  GtkWidget *hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
   slider->hbox = GTK_HBOX(hbox);
 
   GtkWidget *alignment = gtk_alignment_new(0.5, 0.5, 1, 1);

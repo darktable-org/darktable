@@ -348,8 +348,8 @@ void gui_init(dt_lib_module_t *self)
   g_object_set(d->duplicate, "tooltip-text", _("creates a duplicate of the image before applying style"),
                (char *)NULL);
 
-  GtkWidget *hbox1 = gtk_hbox_new(TRUE, 5);
-  GtkWidget *hbox2 = gtk_hbox_new(TRUE, 5);
+  GtkWidget *hbox1 = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5);
+  GtkWidget *hbox2 = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5);
   gtk_box_pack_start(GTK_BOX(self->widget), hbox1, TRUE, FALSE, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), hbox2, TRUE, FALSE, 0);
 

@@ -252,7 +252,7 @@ void gui_init(dt_lib_module_t *self)
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
   GtkWidget *box;
 
-  box = gtk_hbox_new(FALSE, 5);
+  box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5);
   gtk_box_pack_start(GTK_BOX(self->widget), box, TRUE, TRUE, 0);
   lib->live_view = dtgtk_togglebutton_new(dtgtk_cairo_paint_eye, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER);
   lib->live_view_zoom = dtgtk_button_new(
@@ -282,7 +282,7 @@ void gui_init(dt_lib_module_t *self)
   g_signal_connect(G_OBJECT(lib->flip), "clicked", G_CALLBACK(_toggle_flip_clicked), lib);
 
   // focus buttons
-  box = gtk_hbox_new(FALSE, 5);
+  box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5);
   gtk_box_pack_start(GTK_BOX(self->widget), box, TRUE, TRUE, 0);
   lib->focus_in_big = dtgtk_button_new(dtgtk_cairo_paint_solid_triangle,
                                        CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER | CPF_DIRECTION_LEFT);
@@ -360,7 +360,7 @@ void gui_init(dt_lib_module_t *self)
   g_signal_connect(G_OBJECT(lib->overlay), "value-changed", G_CALLBACK(overlay_changed), lib);
   gtk_box_pack_start(GTK_BOX(self->widget), lib->overlay, TRUE, TRUE, 0);
 
-  lib->overlay_id_box = gtk_hbox_new(FALSE, 5);
+  lib->overlay_id_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5);
   GtkWidget *label = gtk_label_new(_("image id"));
   gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
   lib->overlay_id = gtk_spin_button_new_with_range(0, 1000000000, 1);

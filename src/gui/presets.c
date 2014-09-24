@@ -425,8 +425,8 @@ static void edit_preset(const char *name_in, dt_iop_module_t *module)
   g_signal_connect(G_OBJECT(g->autoapply), "toggled", G_CALLBACK(check_buttons_activated), g);
   g_signal_connect(G_OBJECT(g->filter), "toggled", G_CALLBACK(check_buttons_activated), g);
 
-  g->details = GTK_BOX(gtk_hbox_new(FALSE, 0));
-  GtkBox *hbox = GTK_BOX(gtk_hbox_new(TRUE, 5));
+  g->details = GTK_BOX(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0));
+  GtkBox *hbox = GTK_BOX(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5));
   gtk_box_pack_start(box, GTK_WIDGET(g->details), FALSE, FALSE, 0);
   gtk_box_pack_start(g->details, GTK_WIDGET(hbox), FALSE, FALSE, 0);
   gtk_box_pack_start(hbox, GTK_WIDGET(vbox2), TRUE, TRUE, 0);

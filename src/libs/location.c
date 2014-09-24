@@ -132,7 +132,7 @@ static GtkWidget *_lib_location_place_widget_new(_lib_location_result_t *place)
   GtkWidget *eb, *hb, *vb, *w;
   char location[512];
   eb = gtk_event_box_new();
-  hb = gtk_hbox_new(FALSE, 2);
+  hb = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 2);
   vb = gtk_box_new(GTK_ORIENTATION_VERTICAL, 2);
 
   /* add name */

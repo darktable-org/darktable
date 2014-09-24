@@ -614,7 +614,7 @@ void gui_init(dt_imageio_module_format_t *self)
   dt_imageio_j2k_gui_t *gui = (dt_imageio_j2k_gui_t *)malloc(sizeof(dt_imageio_j2k_gui_t));
   self->gui_data = (void *)gui;
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
-  GtkWidget *hbox = gtk_hbox_new(TRUE, 5);
+  GtkWidget *hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5);
   gtk_box_pack_start(GTK_BOX(self->widget), hbox, TRUE, TRUE, 0);
 
   int format_last = dt_conf_get_int("plugins/imageio/format/j2k/format");
@@ -641,7 +641,7 @@ void gui_init(dt_imageio_module_format_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(gui->quality), TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(gui->quality), "value-changed", G_CALLBACK(quality_changed), NULL);
 
-  hbox = gtk_hbox_new(FALSE, 5);
+  hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5);
   gtk_box_pack_start(GTK_BOX(self->widget), hbox, TRUE, TRUE, 0);
   GtkWidget *label = gtk_label_new(_("DCP mode"));
   gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);

@@ -274,7 +274,7 @@ void gui_init(dt_imageio_module_format_t *self)
   GtkWidget *comp_type_label = gtk_label_new(_("compression type"));
   gtk_misc_set_alignment(GTK_MISC(comp_type_label), 0.0, 0.5);
   gtk_box_pack_start(GTK_BOX(self->widget), comp_type_label, TRUE, TRUE, 0);
-  GtkWidget *hbox = gtk_hbox_new(TRUE, 5);
+  GtkWidget *hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5);
   gtk_box_pack_start(GTK_BOX(self->widget), hbox, TRUE, TRUE, 0);
   GtkWidget *radiobutton = gtk_radio_button_new_with_label(NULL, _("lossy"));
   gui->lossy = GTK_TOGGLE_BUTTON(radiobutton);
@@ -296,7 +296,7 @@ void gui_init(dt_imageio_module_format_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(gui->quality), TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(gui->quality), "value-changed", G_CALLBACK(quality_changed), (gpointer)0);
 
-  GtkWidget *hint_hbox = gtk_hbox_new(FALSE, 5);
+  GtkWidget *hint_hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5);
   gtk_box_pack_start(GTK_BOX(self->widget), hint_hbox, TRUE, TRUE, 0);
   GtkWidget *hint_label = gtk_label_new(_("image hint"));
   g_object_set(G_OBJECT(hint_label), "tooltip-text",

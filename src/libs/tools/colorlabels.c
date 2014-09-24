@@ -72,7 +72,7 @@ void gui_init(dt_lib_module_t *self)
   d->tooltips[5] = _("clear all labels of selected images");
 
   /* create buttons */
-  self->widget = gtk_hbox_new(FALSE, 0);
+  self->widget = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
   GtkWidget *button;
   for(int k = 0; k < 6; k++)
   {

@@ -467,8 +467,8 @@ void gui_init(dt_imageio_module_storage_t *self)
   dt_storage_flickr_gui_data_t *ui = self->gui_data;
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
 
-  GtkWidget *hbox1 = gtk_hbox_new(FALSE, 5);
-  GtkWidget *hbox0 = gtk_hbox_new(FALSE, 5);
+  GtkWidget *hbox1 = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5);
+  GtkWidget *hbox0 = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5);
   GtkWidget *vbox1 = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
   GtkWidget *vbox2 = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
 
@@ -517,7 +517,7 @@ void gui_init(dt_imageio_module_storage_t *self)
   gtk_entry_set_text(ui->entry3, _("my new photoset"));
   gtk_entry_set_text(ui->entry4, _("exported from darktable"));
 
-  GtkWidget *albumlist = gtk_hbox_new(FALSE, 0);
+  GtkWidget *albumlist = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
   ui->comboBox1 = GTK_COMBO_BOX_TEXT(gtk_combo_box_text_new()); // Available albums
 
   dt_ellipsize_combo(GTK_COMBO_BOX(ui->comboBox1));
@@ -561,7 +561,7 @@ void gui_init(dt_imageio_module_storage_t *self)
 
 
   // Create Album
-  ui->hbox1 = GTK_BOX(gtk_hbox_new(FALSE, 5));
+  ui->hbox1 = GTK_BOX(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5));
   gtk_widget_set_no_show_all(GTK_WIDGET(ui->hbox1), TRUE);
   vbox1 = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
   vbox2 = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);

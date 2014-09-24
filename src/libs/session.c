@@ -90,7 +90,7 @@ void gui_init(dt_lib_module_t *self)
   GtkBox *hbox, *vbox1, *vbox2;
 
   // Session settings
-  hbox = GTK_BOX(gtk_hbox_new(FALSE, 5));
+  hbox = GTK_BOX(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5));
   vbox1 = GTK_BOX(gtk_box_new(GTK_ORIENTATION_VERTICAL, 5));
   vbox2 = GTK_BOX(gtk_box_new(GTK_ORIENTATION_VERTICAL, 5));
 

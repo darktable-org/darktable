@@ -1069,7 +1069,7 @@ void gui_init(struct dt_iop_module_t *self)
   GtkWidget *label4 = dtgtk_reset_label_new(_("alignment"), self, &p->alignment, sizeof(int));
 
   // Add the marker combobox
-  GtkWidget *hbox = gtk_hbox_new(FALSE, 0);
+  GtkWidget *hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
   g->combobox1 = GTK_COMBO_BOX_TEXT(gtk_combo_box_text_new());
   g->dtbutton1
       = DTGTK_BUTTON(dtgtk_button_new(dtgtk_cairo_paint_refresh, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER));
@@ -1112,7 +1112,7 @@ void gui_init(struct dt_iop_module_t *self)
                      0, 0);
     g_signal_connect(G_OBJECT(g->dtba[i]), "toggled", G_CALLBACK(alignment_callback), self);
   }
-  GtkWidget *hbox2 = gtk_hbox_new(FALSE, 0);
+  GtkWidget *hbox2 = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
   gtk_box_pack_start(GTK_BOX(hbox2), GTK_WIDGET(label4), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(hbox2), GTK_WIDGET(bat), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(hbox2), TRUE, TRUE, 0);

@@ -538,7 +538,7 @@ void gui_init(dt_imageio_module_format_t *self)
   dt_imageio_jpeg_gui_data_t *g = (dt_imageio_jpeg_gui_data_t *)malloc(sizeof(dt_imageio_jpeg_gui_data_t));
   self->gui_data = g;
   // construct gui with jpeg specific options:
-  GtkWidget *box = gtk_hbox_new(FALSE, 20);
+  GtkWidget *box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 20);
   self->widget = box;
   // quality slider
   g->quality = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR, 5, 100, 1, 95, 0));

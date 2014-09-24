@@ -1160,7 +1160,7 @@ void gui_init(struct dt_iop_module_t *self)
 
   gtk_widget_set_sensitive(GTK_WIDGET(g->whratio), !p->autoratio);
 
-  hbox = gtk_hbox_new(FALSE, 0);
+  hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
   gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(label1), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(g->autoratio), TRUE, TRUE, 0);
 

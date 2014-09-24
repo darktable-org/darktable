@@ -569,7 +569,7 @@ void gui_init(struct dt_iop_module_t *self)
   g_object_set (G_OBJECT(g->range), "tooltip-text", _("the gradient range where to apply random dither"), (char *)NULL);
   g->range_label = gtk_label_new(_("gradient range"));
 
-  GtkWidget *rlabel = gtk_hbox_new(FALSE,0);
+  GtkWidget *rlabel = gtk_box_new(GTK_ORIENTATION_HORIZONTAL,0);
   gtk_box_pack_start(GTK_BOX(rlabel), GTK_WIDGET(g->range_label), FALSE, FALSE, 0);
 #endif
 

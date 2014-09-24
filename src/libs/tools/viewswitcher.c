@@ -72,7 +72,7 @@ void gui_init(dt_lib_module_t *self)
   dt_lib_viewswitcher_t *d = (dt_lib_viewswitcher_t *)g_malloc0(sizeof(dt_lib_viewswitcher_t));
   self->data = (void *)d;
 
-  self->widget = gtk_hbox_new(FALSE, 5);
+  self->widget = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5);
 
   for(int k = 0; k < darktable.view_manager->num_views; k++)
   {

@@ -92,7 +92,7 @@ void gui_init(dt_lib_module_t *self)
   dt_lib_tool_lighttable_t *d = (dt_lib_tool_lighttable_t *)g_malloc0(sizeof(dt_lib_tool_lighttable_t));
   self->data = (void *)d;
 
-  self->widget = gtk_hbox_new(FALSE, 2);
+  self->widget = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 2);
 
   GtkWidget *widget;
 

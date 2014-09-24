@@ -428,7 +428,7 @@ void gui_init(dt_imageio_module_format_t *self)
   dt_imageio_png_gui_t *gui = (dt_imageio_png_gui_t *)malloc(sizeof(dt_imageio_png_gui_t));
   self->gui_data = (void *)gui;
   int bpp = dt_conf_get_int("plugins/imageio/format/png/bpp");
-  self->widget = gtk_hbox_new(TRUE, 5);
+  self->widget = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5);
   GtkWidget *radiobutton = gtk_radio_button_new_with_label(NULL, _("8-bit"));
   gui->b8 = GTK_TOGGLE_BUTTON(radiobutton);
   gtk_box_pack_start(GTK_BOX(self->widget), radiobutton, TRUE, TRUE, 0);

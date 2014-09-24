@@ -2016,7 +2016,7 @@ void gui_init(struct dt_iop_module_t *self)
   g_signal_connect(G_OBJECT(self->widget), "draw", G_CALLBACK(draw), self);
 
   // camera selector
-  GtkWidget *hbox = gtk_hbox_new(FALSE, 0);
+  GtkWidget *hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
   g->camera_model = GTK_BUTTON(dtgtk_button_new(NULL, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER));
   dt_gui_key_accel_block_on_focus_connect(GTK_WIDGET(g->camera_model));
   gtk_button_set_label(g->camera_model, self->dev->image_storage.exif_model);
@@ -2031,7 +2031,7 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), hbox, TRUE, TRUE, 0);
 
   // lens selector
-  hbox = gtk_hbox_new(FALSE, 0);
+  hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
   g->lens_model = GTK_BUTTON(dtgtk_button_new(NULL, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER));
   dt_gui_key_accel_block_on_focus_connect(GTK_WIDGET(g->lens_model));
   gtk_button_set_label(g->lens_model, self->dev->image_storage.exif_lens);
@@ -2046,11 +2046,11 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), hbox, TRUE, TRUE, 0);
 
   // lens properties
-  g->lens_param_box = gtk_hbox_new(FALSE, 0);
+  g->lens_param_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), g->lens_param_box, TRUE, TRUE, 0);
 
   // camera/lens not detected warning box
-  g->detection_warning = gtk_hbox_new(FALSE, 0);
+  g->detection_warning = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), g->detection_warning, TRUE, TRUE, 0);
 
 #if 0
@@ -2136,7 +2136,7 @@ void gui_init(struct dt_iop_module_t *self)
 
   // message box to inform user what corrections have been done. this is useful as depending on lensfuns
   // profile only some of the lens flaws can be corrected
-  GtkHBox *hbox1 = GTK_HBOX(gtk_hbox_new(FALSE, 0));
+  GtkHBox *hbox1 = GTK_HBOX(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0));
   GtkLabel *label = GTK_LABEL(gtk_label_new(_("corrections done: ")));
   g_object_set(G_OBJECT(label), "tooltip-text", _("which corrections have actually been done"), (char *)NULL);
   gtk_box_pack_start(GTK_BOX(hbox1), GTK_WIDGET(label), FALSE, FALSE, 0);

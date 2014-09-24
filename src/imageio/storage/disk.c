@@ -126,7 +126,7 @@ void gui_init(dt_imageio_module_storage_t *self)
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
   GtkWidget *widget;
 
-  GtkWidget *hbox = gtk_hbox_new(FALSE, 5);
+  GtkWidget *hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5);
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(hbox), TRUE, FALSE, 0);
 
   widget = gtk_entry_new();

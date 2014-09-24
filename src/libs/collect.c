@@ -1995,7 +1995,7 @@ void gui_init(dt_lib_module_t *self)
   {
     d->rule[i].num = i;
     d->rule[i].typing = FALSE;
-    box = GTK_BOX(gtk_hbox_new(FALSE, 5));
+    box = GTK_BOX(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5));
     d->rule[i].hbox = GTK_WIDGET(box);
     gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(box), TRUE, TRUE, 0);
     w = gtk_combo_box_text_new();

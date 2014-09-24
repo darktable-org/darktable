@@ -906,7 +906,7 @@ GtkWidget *dt_lib_gui_get_expander(dt_lib_module_t *module)
 
   GtkWidget *expander = gtk_box_new(GTK_ORIENTATION_VERTICAL, 3);
   GtkWidget *header_evb = gtk_event_box_new();
-  GtkWidget *header = gtk_hbox_new(FALSE, 0);
+  GtkWidget *header = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
   GtkWidget *pluginui_frame = gtk_frame_new(NULL);
   GtkWidget *pluginui = gtk_event_box_new();
 

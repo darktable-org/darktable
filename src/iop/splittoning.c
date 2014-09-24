@@ -563,7 +563,7 @@ static inline void gui_init_tab(struct dt_iop_module_t *self, const char *name, 
   gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(hue), FALSE, TRUE, 0);
   gtk_box_pack_end(GTK_BOX(vbox), GTK_WIDGET(saturation), FALSE, TRUE, 0);
 
-  GtkWidget *hbox = GTK_WIDGET(gtk_hbox_new(FALSE, 0));
+  GtkWidget *hbox = GTK_WIDGET(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0));
   gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(vbox), TRUE, TRUE, 0);
   gtk_box_pack_end(GTK_BOX(hbox), GTK_WIDGET(color), FALSE, FALSE, 0);
 
@@ -585,7 +585,7 @@ void gui_init(struct dt_iop_module_t *self)
   gui_init_tab(self, _("highlights"), &g->colorpick2, &g->gslider3, &g->gslider4);
 
   // Additional parameters
-  GtkWidget *hbox = GTK_WIDGET(gtk_hbox_new(FALSE, 0));
+  GtkWidget *hbox = GTK_WIDGET(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0));
   GtkWidget *vbox = GTK_WIDGET(gtk_box_new(GTK_ORIENTATION_VERTICAL, 0));
   gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(vbox), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(hbox), TRUE, TRUE, 0);

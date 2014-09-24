@@ -669,7 +669,7 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), g->area, TRUE, TRUE, 0);
   g_signal_connect (G_OBJECT (g->area), "draw", G_CALLBACK (cluster_preview_draw), self);
 
-  GtkBox *box = GTK_BOX(gtk_hbox_new(FALSE, 5));
+  GtkBox *box = GTK_BOX(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5));
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(box), TRUE, TRUE, 0);
   GtkWidget *button;
   g->spinbutton = GTK_SPIN_BUTTON(gtk_spin_button_new_with_range(1, MAXN, 1));

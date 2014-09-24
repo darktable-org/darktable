@@ -950,7 +950,7 @@ void gui_init(struct dt_iop_module_t *self)
   dt_bauhaus_slider_enable_soft_boundaries(g->exposure, -18.0, 18.0);
   gtk_box_pack_start(GTK_BOX(g->vbox_manual), GTK_WIDGET(g->exposure), TRUE, TRUE, 0);
 
-  GtkHBox *hbox = GTK_HBOX(gtk_hbox_new(FALSE, 0));
+  GtkHBox *hbox = GTK_HBOX(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0));
 
   g->autoexp = GTK_CHECK_BUTTON(gtk_check_button_new_with_label(_("auto")));
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->autoexp), FALSE);
@@ -997,7 +997,7 @@ void gui_init(struct dt_iop_module_t *self)
                           g_list_index(g->modes, GUINT_TO_POINTER(p->deflicker_histogram_source)));
   gtk_box_pack_start(GTK_BOX(g->vbox_deflicker), GTK_WIDGET(g->deflicker_histogram_source), TRUE, TRUE, 0);
 
-  GtkHBox *hbox1 = GTK_HBOX(gtk_hbox_new(FALSE, 0));
+  GtkHBox *hbox1 = GTK_HBOX(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0));
   GtkLabel *label = GTK_LABEL(gtk_label_new(_("computed EC: ")));
   gtk_box_pack_start(GTK_BOX(hbox1), GTK_WIDGET(label), FALSE, FALSE, 0);
 

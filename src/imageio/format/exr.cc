@@ -236,7 +236,7 @@ void gui_init(dt_imageio_module_format_t *self)
 
   int compression_last = dt_conf_get_int("plugins/imageio/format/exr/compression");
 
-  GtkWidget *hbox = gtk_hbox_new(FALSE, 5);
+  GtkWidget *hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5);
   gtk_box_pack_start(GTK_BOX(self->widget), hbox, TRUE, TRUE, 0);
 
   GtkWidget *label = gtk_label_new(_("compression mode"));

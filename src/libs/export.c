@@ -511,7 +511,7 @@ void gui_init(dt_lib_module_t *self)
   label = gtk_label_new(_("max size"));
   gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
   gtk_table_attach(GTK_TABLE(self->widget), label, 0, 1, 7, 8, GTK_EXPAND | GTK_FILL, 0, 0, 0);
-  GtkBox *hbox = GTK_BOX(gtk_hbox_new(FALSE, 5));
+  GtkBox *hbox = GTK_BOX(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5));
   gtk_box_pack_start(hbox, GTK_WIDGET(d->width), TRUE, TRUE, 0);
   gtk_box_pack_start(hbox, gtk_label_new(_("x")), FALSE, FALSE, 0);
   gtk_box_pack_start(hbox, GTK_WIDGET(d->height), TRUE, TRUE, 0);

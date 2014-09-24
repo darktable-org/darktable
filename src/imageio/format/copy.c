@@ -142,7 +142,7 @@ void cleanup(dt_imageio_module_format_t *self)
 
 void gui_init(dt_imageio_module_format_t *self)
 {
-  GtkWidget *box = gtk_hbox_new(FALSE, 20);
+  GtkWidget *box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 20);
   self->widget = box;
 
   GtkWidget *label

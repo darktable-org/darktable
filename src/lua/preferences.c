@@ -545,7 +545,7 @@ void init_tab_lua(GtkWidget *dialog, GtkWidget *tab)
   if(!pref_list) return; // no option registered => don't create the tab
   char tooltip[1024];
   GtkWidget *label, *labelev;
-  GtkWidget *hbox = gtk_hbox_new(5, FALSE);
+  GtkWidget *hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5);
   GtkWidget *vbox1 = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
   GtkWidget *vbox2 = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
   gtk_box_pack_start(GTK_BOX(hbox), vbox1, FALSE, FALSE, 0);

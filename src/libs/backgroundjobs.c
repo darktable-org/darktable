@@ -134,7 +134,7 @@ static void *_lib_backgroundjobs_added(dt_lib_module_t *self, gboolean has_progr
   /* initialize the ui elements for job */
   gtk_widget_set_name(GTK_WIDGET(instance->widget), "background_job_eventbox");
   GtkBox *vbox = GTK_BOX(gtk_box_new(GTK_ORIENTATION_VERTICAL, 0));
-  instance->hbox = gtk_hbox_new(FALSE, 0);
+  instance->hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
   gtk_container_set_border_width(GTK_CONTAINER(vbox), 2);
   gtk_container_add(GTK_CONTAINER(instance->widget), GTK_WIDGET(vbox));
 

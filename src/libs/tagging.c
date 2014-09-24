@@ -404,7 +404,7 @@ void gui_init(dt_lib_module_t *self)
   gtk_container_add(GTK_CONTAINER(w), GTK_WIDGET(d->current));
 
   // attach/detach buttons
-  hbox = GTK_BOX(gtk_hbox_new(TRUE, 5));
+  hbox = GTK_BOX(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5));
 
   button = gtk_button_new_with_label(_("attach"));
   d->attach_button = button;
@@ -456,7 +456,7 @@ void gui_init(dt_lib_module_t *self)
   gtk_container_add(GTK_CONTAINER(w), GTK_WIDGET(d->related));
 
   // attach and delete buttons
-  hbox = GTK_BOX(gtk_hbox_new(TRUE, 5));
+  hbox = GTK_BOX(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5));
 
   button = gtk_button_new_with_label(_("new"));
   d->new_button = button;

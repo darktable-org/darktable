@@ -293,7 +293,7 @@ static void _add_sample(GtkButton *widget, gpointer self)
   int i;
 
   // Initializing the UI
-  sample->container = gtk_hbox_new(FALSE, 2);
+  sample->container = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 2);
   gtk_box_pack_start(GTK_BOX(data->samples_container), sample->container, TRUE, TRUE, 0);
 
   sample->output_button = dtgtk_button_new(NULL, CPF_STYLE_BOX);
@@ -399,13 +399,13 @@ void gui_init(dt_lib_module_t *self)
   unsigned int i;
 
   GtkWidget *container = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
-  GtkWidget *output_row = gtk_hbox_new(FALSE, 2);
+  GtkWidget *output_row = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 2);
   GtkWidget *output_options = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
-  GtkWidget *picker_subrow = gtk_hbox_new(FALSE, 2);
+  GtkWidget *picker_subrow = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 2);
   GtkWidget *restrict_button;
   GtkWidget *samples_label
       = dtgtk_label_new(_("live samples"), DARKTABLE_LABEL_TAB | DARKTABLE_LABEL_ALIGN_RIGHT);
-  GtkWidget *samples_options_row = gtk_hbox_new(FALSE, 2);
+  GtkWidget *samples_options_row = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 2);
 
   // Initializing self data structure
   dt_lib_colorpicker_t *data = (dt_lib_colorpicker_t *)calloc(1, sizeof(dt_lib_colorpicker_t));

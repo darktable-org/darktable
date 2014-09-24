@@ -409,7 +409,7 @@ void gui_init(dt_lib_module_t *self)
   g_object_unref(completion);
 
   // reset/apply buttons
-  hbox = GTK_BOX(gtk_hbox_new(TRUE, 5));
+  hbox = GTK_BOX(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5));
 
   button = gtk_button_new_with_label(_("clear"));
   d->clear_button = button;

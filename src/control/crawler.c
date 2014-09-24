@@ -373,14 +373,14 @@ void dt_control_crawler_show_image_list(GList *images)
 
   gtk_box_pack_start(GTK_BOX(content_box), scroll, TRUE, TRUE, 0);
 
-  GtkWidget *box = gtk_hbox_new(FALSE, 5);
+  GtkWidget *box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5);
   gtk_box_pack_start(GTK_BOX(content_box), box, FALSE, FALSE, 0);
   GtkWidget *select_all = gtk_check_button_new_with_label(_("select all"));
   gtk_box_pack_start(GTK_BOX(box), select_all, FALSE, FALSE, 0);
   gui->select_all_handler_id = g_signal_connect(select_all, "toggled", G_CALLBACK(_select_all_callback), gui);
   gui->select_all = select_all;
 
-  box = gtk_hbox_new(FALSE, 5);
+  box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5);
   gtk_box_pack_start(GTK_BOX(content_box), box, FALSE, FALSE, 0);
   GtkWidget *reload_button = gtk_button_new_with_label(_("reload selected xmp files"));
   GtkWidget *overwrite_button = gtk_button_new_with_label(_("overwrite selected xmp files"));

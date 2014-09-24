@@ -393,7 +393,7 @@ static void _lib_geotagging_show_offset_window(GtkWidget *widget, dt_lib_module_
   g_signal_connect(d->floating_window_entry, "key-press-event",
                    G_CALLBACK(_lib_geotagging_floating_key_press), self);
 
-  GtkWidget *hbox = gtk_hbox_new(TRUE, 5);
+  GtkWidget *hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5);
   GtkWidget *cancel_button = gtk_button_new_with_label(_("cancel"));
   GtkWidget *ok_button = gtk_button_new_with_label(_("ok"));
 
@@ -458,7 +458,7 @@ static void _lib_geotagging_gpx_callback(GtkWidget *widget, dt_lib_module_t *sel
   gtk_file_chooser_add_filter(GTK_FILE_CHOOSER(filechooser), filter);
 
   // add time zone selection
-  GtkWidget *extra_box = gtk_hbox_new(FALSE, 5);
+  GtkWidget *extra_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5);
   GtkWidget *label = gtk_label_new(_("camera time zone"));
   g_object_set(G_OBJECT(label), "tooltip-text",
                _("most cameras don't store the time zone in EXIF. give the correct time zone so the GPX data "
@@ -578,7 +578,7 @@ void gui_init(dt_lib_module_t *self)
   GtkWidget *button, *label;
 
   /* the offset line */
-  hbox = GTK_BOX(gtk_hbox_new(TRUE, 5));
+  hbox = GTK_BOX(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5));
   label = GTK_WIDGET(gtk_label_new(_("time offset")));
   gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
   gtk_box_pack_start(hbox, label, TRUE, TRUE, 0);
@@ -598,7 +598,7 @@ void gui_init(dt_lib_module_t *self)
     gtk_entry_set_text(GTK_ENTRY(d->offset_entry), "+00:00:00");
   g_free(str);
 
-  GtkBox *button_box = GTK_BOX(gtk_hbox_new(TRUE, 5));
+  GtkBox *button_box = GTK_BOX(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5));
   button = dtgtk_button_new(dtgtk_cairo_paint_zoom, 0);
   g_object_set(G_OBJECT(button), "tooltip-text", _("calculate the time offset from an image"), (char *)NULL);
   gtk_box_pack_start(button_box, button, TRUE, TRUE, 0);

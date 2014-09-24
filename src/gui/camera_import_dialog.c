@@ -157,7 +157,7 @@ static _camera_gconf_widget_t *_camera_import_gconf_widget(_camera_import_dialog
   _camera_gconf_widget_t *gcw = calloc(1, sizeof(_camera_gconf_widget_t));
   GtkWidget *vbox, *hbox;
   gcw->widget = vbox = GTK_WIDGET(gtk_box_new(GTK_ORIENTATION_VERTICAL, 0));
-  hbox = GTK_WIDGET(gtk_hbox_new(FALSE, 0));
+  hbox = GTK_WIDGET(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0));
   g_object_set_data(G_OBJECT(vbox), "gconf:string", confstring);
   gcw->dialog = dlg;
 
@@ -275,7 +275,7 @@ static void _camera_import_dialog_new(_camera_import_dialog_t *data)
   g_signal_connect(G_OBJECT(data->settings.general.ignore_jpeg), "clicked",
                    G_CALLBACK(_check_button_callback), data);
 
-  GtkWidget *hbox = gtk_hbox_new(FALSE, 5);
+  GtkWidget *hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5);
   data->settings.general.date_override = gtk_check_button_new_with_label(_("override today's date"));
   gtk_box_pack_start(GTK_BOX(hbox), data->settings.general.date_override, FALSE, FALSE, 0);
   g_object_set(data->settings.general.date_override, "tooltip-text",

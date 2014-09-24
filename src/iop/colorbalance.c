@@ -518,7 +518,7 @@ void gui_init(dt_iop_module_t *self)
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
 
 
-  GtkWidget *hbox = gtk_hbox_new(FALSE, DT_BAUHAUS_SPACE);
+  GtkWidget *hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, DT_BAUHAUS_SPACE);
   gtk_box_pack_start(GTK_BOX(self->widget), hbox, FALSE, FALSE, 0);
 
 #ifdef SHOW_COLOR_WHEELS

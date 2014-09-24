@@ -541,7 +541,7 @@ static void init_tab_accels(GtkWidget *book)
   gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(scroll), GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
   gtk_box_pack_start(GTK_BOX(container), scroll, TRUE, TRUE, 0);
 
-  hbox = gtk_hbox_new(FALSE, 5);
+  hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5);
 
   // Adding the restore defaults button
   button = gtk_button_new_with_label(C_("preferences", "default"));
@@ -1207,7 +1207,7 @@ static void edit_preset(GtkTreeView *tree, const gint rowid, const gchar *name, 
   g_signal_connect(G_OBJECT(g->autoapply), "toggled", G_CALLBACK(check_buttons_activated), g);
   g_signal_connect(G_OBJECT(g->filter), "toggled", G_CALLBACK(check_buttons_activated), g);
 
-  g->details = GTK_BOX(gtk_hbox_new(FALSE, 0));
+  g->details = GTK_BOX(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0));
   gtk_box_pack_start(box, GTK_WIDGET(g->details), FALSE, FALSE, 0);
   gtk_box_pack_start(g->details, GTK_WIDGET(grid), FALSE, FALSE, 0);
 

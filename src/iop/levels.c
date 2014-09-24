@@ -590,7 +590,7 @@ void gui_init(dt_iop_module_t *self)
   gtk_widget_modify_bg(GTK_WIDGET(greypick), GTK_STATE_ACTIVE, &col);
   gtk_widget_modify_bg(GTK_WIDGET(whitepick), GTK_STATE_ACTIVE, &col);
 
-  GtkWidget *box = gtk_hbox_new(TRUE, 0);
+  GtkWidget *box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
   gtk_box_pack_start(GTK_BOX(box), GTK_WIDGET(autobutton), FALSE, FALSE, 0);
   gtk_box_pack_start(GTK_BOX(box), GTK_WIDGET(blackpick), FALSE, FALSE, 0);
   gtk_box_pack_start(GTK_BOX(box), GTK_WIDGET(greypick), FALSE, FALSE, 0);

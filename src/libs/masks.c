@@ -1599,7 +1599,7 @@ void gui_init(dt_lib_module_t *self)
 
   // initialise widgets
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 2);
-  GtkWidget *hbox = gtk_hbox_new(FALSE, 0);
+  GtkWidget *hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
 
   GtkWidget *label = gtk_label_new(_("created shapes"));
   gtk_box_pack_start(GTK_BOX(hbox), label, FALSE, TRUE, 0);
