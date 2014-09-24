@@ -352,7 +352,7 @@ void dt_control_change_cursor(dt_cursor_t curs)
   GtkWidget *widget = dt_ui_main_window(darktable.gui->ui);
   GdkCursor *cursor = gdk_cursor_new(curs);
   gdk_window_set_cursor(gtk_widget_get_window(widget), cursor);
-  gdk_cursor_unref(cursor);
+  g_object_unref(cursor);
 }
 
 int dt_control_running()
