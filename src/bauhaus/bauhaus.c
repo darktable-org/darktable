@@ -469,18 +469,21 @@ static gboolean dt_bauhaus_popup_button_press(GtkWidget *widget, GdkEventButton 
 
 static void window_show(GtkWidget *w, gpointer user_data)
 {
-  /* grabbing might not succeed immediately... */
-  if(gdk_keyboard_grab(gtk_widget_get_window(w), FALSE, GDK_CURRENT_TIME) != GDK_GRAB_SUCCESS)
+  GdkDisplay *display = gtk_widget_get_display(w);
+  GdkDeviceManager *mgr = gdk_display_get_device_manager(display);
+  GList *devices = gdk_device_manager_list_devices(mgr, GDK_DEVICE_TYPE_MASTER);
+  GList *tmp = devices;
+  while(tmp)
   {
-    // never happened so far:
-    /* ...wait a while and try again */
-    fprintf(stderr, "[bauhaus] failed to get keyboard focus for popup window!\n");
-    // struct timeval s;
-    // s.tv_sec = 0;
-    // s.tv_usec = 5000;
-    // select(0, NULL, NULL, NULL, &s);
-    // sched_yield();
+    GdkDevice *dev = tmp->data;
+    if(gdk_device_get_source(dev) == GDK_SOURCE_KEYBOARD)
+    {
+      gdk_device_grab(dev, gtk_widget_get_window(w), GDK_OWNERSHIP_NONE, FALSE,
+                      GDK_KEY_PRESS_MASK | GDK_KEY_RELEASE_MASK, NULL, GDK_CURRENT_TIME);
+    }
+    tmp = tmp->next;
   }
+  g_list_free(devices);
 }
 
 static void dt_bh_init(DtBauhausWidget *class)
@@ -1566,7 +1569,20 @@ void dt_bauhaus_hide_popup()
 {
   if(darktable.bauhaus->current)
   {
-    gdk_keyboard_ungrab(GDK_CURRENT_TIME);
+    GdkDisplay *display = gdk_display_get_default();
+    GdkDeviceManager *mgr = gdk_display_get_device_manager(display);
+    GList *devices = gdk_device_manager_list_devices(mgr, GDK_DEVICE_TYPE_MASTER);
+    GList *tmp = devices;
+    while(tmp)
+    {
+      GdkDevice *dev = tmp->data;
+      if(gdk_device_get_source(dev) == GDK_SOURCE_KEYBOARD)
+      {
+        gdk_device_ungrab(dev, GDK_CURRENT_TIME);
+      }
+      tmp = tmp->next;
+    }
+    g_list_free(devices);
     gtk_widget_hide(darktable.bauhaus->popup_window);
     darktable.bauhaus->current = NULL;
     // TODO: give focus to center view? do in accept() as well?
