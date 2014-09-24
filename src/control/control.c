@@ -444,7 +444,9 @@ void *dt_control_expose(void *voidptr)
   width = dt_cairo_image_surface_get_width(darktable.gui->surface);
   height = dt_cairo_image_surface_get_height(darktable.gui->surface);
   GtkWidget *widget = dt_ui_center(darktable.gui->ui);
-  gtk_widget_get_pointer(widget, &pointerx, &pointery);
+  GdkDevice *device
+      = gdk_device_manager_get_client_pointer(gdk_display_get_device_manager(gtk_widget_get_display(widget)));
+  gdk_window_get_device_position(gtk_widget_get_window(widget), device, &pointerx, &pointery, NULL);
 
   // create a gtk-independent surface to draw on
   cairo_surface_t *cst = dt_cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height);

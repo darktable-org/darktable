@@ -579,7 +579,9 @@ static gboolean _lib_tagging_tag_show(GtkAccelGroup *accel_group, GObject *accel
 
   /* put the floating box at the mouse pointer */
   //   gint pointerx, pointery;
-  //   gtk_widget_get_pointer(center, &pointerx, &pointery);
+  //   GdkDevice *device =
+  //   gdk_device_manager_get_client_pointer(gdk_display_get_device_manager(gtk_widget_get_display(widget)));
+  //   gdk_window_get_device_position (gtk_widget_get_window (widget), device, &pointerx, &pointery, NULL);
   //   x = px + pointerx + 1;
   //   y = py + pointery + 1;
 
