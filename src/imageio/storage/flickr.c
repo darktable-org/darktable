@@ -271,7 +271,11 @@ static flickcurl_upload_status *_flickr_api_upload_photo( dt_storage_flickr_para
   params->description = description;
 
   if (imgid)
-    params->tags = dt_tag_get_list(imgid, ",");
+  {
+    GList *tags_list = dt_tag_get_list(imgid);
+    params->tags = dt_util_glist_to_str(",", tags_list);
+    g_list_free_full(tags_list, g_free);
+  }
   params->photo_file = fname; //fname should be the URI of temp file
 
   params->is_public = (int) p->public_perm;
@@ -282,9 +286,11 @@ static flickcurl_upload_status *_flickr_api_upload_photo( dt_storage_flickr_para
   if (!status)
   {
     fprintf (stderr,"[flickr] Something went wrong when uploading");
-    g_free (params);
+    g_free((gchar*)params->tags);
+    g_free(params);
     return NULL;
   }
+  g_free((gchar*)params->tags);
   g_free(params);
   return status;
 }

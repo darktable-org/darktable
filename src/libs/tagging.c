@@ -105,7 +105,7 @@ update (dt_lib_module_t *self, int which)
   {
     int imgsel = dt_control_get_mouse_over_id();
     d->imgsel = imgsel;
-    count = dt_tag_get_attached(imgsel,&tags);
+    count = dt_tag_get_attached(imgsel,&tags, FALSE);
   }
   else // related tags of typed text
     count = dt_tag_get_suggestions(d->keyword,&tags);

@@ -294,7 +294,6 @@ dt_history_get_items_as_string(int32_t imgid)
 {
   GList *items = NULL;
   const char *onoff[2] = {_("off"), _("on")};
-  unsigned int count = 0;
   sqlite3_stmt *stmt;
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select operation, enabled, multi_name from history where imgid=?1 order by num desc", -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
@@ -314,9 +313,10 @@ dt_history_get_items_as_string(int32_t imgid)
                        NULL);
     items = g_list_append(items, name);
     g_free(multi_name);
-    count++;
   }
-  return dt_util_glist_to_str("\n", items, count);
+  char *result = dt_util_glist_to_str("\n", items);
+  g_list_free_full(items, g_free);
+  return result;
 }
 
 int

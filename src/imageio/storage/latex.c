@@ -293,8 +293,7 @@ store (dt_imageio_module_storage_t *self, dt_imageio_module_data_t *sdata, const
       description = res_desc->data;
     }
 
-    unsigned int count = 0;
-    res_subj = dt_metadata_get(imgid, "Xmp.dc.subject", &count);
+    res_subj = dt_metadata_get(imgid, "Xmp.dc.subject", NULL);
     if(res_subj)
     {
       // don't show the internal tags (darktable|...)
@@ -307,11 +306,11 @@ store (dt_imageio_module_storage_t *self, dt_imageio_module_data_t *sdata, const
         {
           g_free(iter->data);
           res_subj = g_list_delete_link(res_subj, iter);
-          count--;
         }
         iter = next;
       }
-      tags = dt_util_glist_to_str(", ", res_subj, count);
+      tags = dt_util_glist_to_str(", ", res_subj);
+      g_list_free_full(res_subj, g_free);
     }
 #endif
 

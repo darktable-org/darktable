@@ -1850,27 +1850,18 @@ dt_exif_xmp_read_data(Exiv2::XmpData &xmpData, const int imgid)
   Exiv2::Value::AutoPtr v1 = Exiv2::Value::create(Exiv2::xmpSeq); // or xmpBag or xmpAlt.
   Exiv2::Value::AutoPtr v2 = Exiv2::Value::create(Exiv2::xmpSeq); // or xmpBag or xmpAlt.
 
-  gchar *tags = NULL;
-  gchar *hierarchical = NULL;
-
-  tags = dt_tag_get_list(imgid, ",");
-  char *beg = tags;
-  while(beg)
+  GList *tags = dt_tag_get_list(imgid);
+  while(tags)
   {
-    char *next = strstr(beg, ",");
-    if(next) *(next++) = 0;
-    v1->read(beg);
-    beg = next;
+    v1->read((char*)tags->data);
+    tags = g_list_next(tags);
   }
 
-  hierarchical = dt_tag_get_hierarchical(imgid, ",");
-  beg = hierarchical;
-  while(beg)
+  GList *hierarchical = dt_tag_get_hierarchical(imgid);
+  while(hierarchical)
   {
-    char *next = strstr(beg, ",");
-    if(next) *(next++) = 0;
-    v2->read(beg);
-    beg = next;
+    v2->read((char*)hierarchical->data);
+    hierarchical = g_list_next(hierarchical);
   }
 
   if(v1->count() > 0)
@@ -2050,8 +2041,8 @@ dt_exif_xmp_read_data(Exiv2::XmpData &xmpData, const int imgid)
     num ++;
   }
   sqlite3_finalize (stmt);
-  g_free(tags);
-  g_free(hierarchical);
+  g_list_free_full(tags, g_free);
+  g_list_free_full(hierarchical, g_free);
 }
 
 int dt_exif_xmp_attach (const int imgid, const char* filename)

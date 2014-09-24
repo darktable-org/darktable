@@ -1116,7 +1116,8 @@ _lib_filmstrip_dnd_get_callback(GtkWidget *widget, GdkDragContext *context, GtkS
           images = g_list_append(images, uri);
         }
         sqlite3_finalize(stmt);
-        gchar* uri_list = dt_util_glist_to_str("\r\n", images, count);
+        gchar* uri_list = dt_util_glist_to_str("\r\n", images);
+        g_list_free_full(images, g_free);
         gtk_selection_data_set(selection_data, gtk_selection_data_get_target(selection_data), _BYTE, (guchar*) uri_list, strlen(uri_list));
         g_free(uri_list);
       }

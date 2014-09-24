@@ -643,8 +643,8 @@ static const gchar *picasa_upload_photo_to_album(PicasaContext *ctx, gchar *albu
     // and use picasa photo update api to add keywords to the photo...
 
     // Build the keywords content string
-    gchar *keywords = NULL;
-    keywords = dt_tag_get_list(imgid, ",");
+    GList *keywords_list = dt_tag_get_list(imgid);
+    gchar *keywords      = dt_util_glist_to_str(",", keywords_list);
 
     xmlDocPtr doc;
     xmlNodePtr entryNode;
@@ -744,6 +744,8 @@ static const gchar *picasa_upload_photo_to_album(PicasaContext *ctx, gchar *albu
     }
 
     xmlFreeDoc(doc);
+    g_free(keywords);
+    g_list_free_full(keywords_list, g_free);
   }
   return photo_id;
 }
