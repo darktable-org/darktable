@@ -428,8 +428,9 @@ static gboolean dt_bauhaus_popup_button_release(GtkWidget *widget, GdkEventButto
     // event might be in wrong system, transform ourselves:
     gint wx, wy, x, y;
     gdk_window_get_origin(gtk_widget_get_window(darktable.bauhaus->popup_window), &wx, &wy);
-    GdkDisplay *display = gdk_display_get_default();
-    gdk_display_get_pointer(display, NULL, &x, &y, NULL);
+    gdk_device_get_position(
+        gdk_device_manager_get_client_pointer(gdk_display_get_device_manager(gdk_display_get_default())),
+        NULL, &x, &y);
     darktable.bauhaus->end_mouse_x = x - wx;
     darktable.bauhaus->end_mouse_y = y - wy;
     dt_bauhaus_widget_accept(darktable.bauhaus->current);
