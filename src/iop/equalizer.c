@@ -397,7 +397,7 @@ void gui_init(struct dt_iop_module_t *self)
   g_signal_connect (G_OBJECT (c->area), "scroll-event",
                     G_CALLBACK (dt_iop_equalizer_scrolled), self);
   // init gtk stuff
-  c->hbox = GTK_HBOX(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0));
+  c->hbox = GTK_BOX(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0));
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(c->hbox), FALSE, FALSE, 0);
 
   c->channel_button[0] = GTK_RADIO_BUTTON(gtk_radio_button_new_with_label(NULL, _("luma")));

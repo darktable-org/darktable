@@ -125,7 +125,7 @@ static void _slider_init(GtkDarktableSlider *slider)
                                             | GDK_POINTER_MOTION_MASK);
 
   GtkWidget *hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-  slider->hbox = GTK_HBOX(hbox);
+  slider->hbox = GTK_BOX(hbox);
 
   GtkWidget *alignment = gtk_alignment_new(0.5, 0.5, 1, 1);
   gtk_alignment_set_padding(GTK_ALIGNMENT(alignment), 0, 0, DTGTK_SLIDER_BORDER_WIDTH * 2,

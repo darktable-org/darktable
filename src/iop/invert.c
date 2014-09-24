@@ -441,7 +441,7 @@ void gui_init(dt_iop_module_t *self)
   g->label = DTGTK_RESET_LABEL(dtgtk_reset_label_new("", self, &p->color, 3 * sizeof(float)));
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->label), TRUE, TRUE, 0);
 
-  g->pickerbuttons = GTK_HBOX(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5));
+  g->pickerbuttons = GTK_BOX(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5));
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->pickerbuttons), TRUE, TRUE, 0);
 
   g->colorpicker = DTGTK_BUTTON(dtgtk_button_new(dtgtk_cairo_paint_color, CPF_IGNORE_FG_STATE | CPF_STYLE_FLAT

@@ -425,7 +425,7 @@ void gui_init(dt_iop_module_t *self)
   g_signal_connect(G_OBJECT(g->permissive), "toggled", G_CALLBACK(permissive_callback), self);
 
 
-  GtkBox *hbox1 = GTK_HBOX(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0));
+  GtkBox *hbox1 = GTK_BOX(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0));
   g->markfixed = GTK_TOGGLE_BUTTON(gtk_check_button_new_with_label(_("mark fixed pixels")));
   gtk_toggle_button_set_active(g->markfixed, p->markfixed);
   gtk_box_pack_start(GTK_BOX(hbox1), GTK_WIDGET(g->markfixed), TRUE, TRUE, 0);
