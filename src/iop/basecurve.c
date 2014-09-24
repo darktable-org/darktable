@@ -1078,7 +1078,7 @@ static gboolean area_resized(GtkWidget *widget, GdkEvent *event, gpointer user_d
   GtkRequisition r;
   r.width = allocation.width;
   r.height = allocation.width;
-  gtk_widget_size_request(widget, &r);
+  gtk_widget_get_preferred_size(widget, &r, NULL);
   return TRUE;
 }
 

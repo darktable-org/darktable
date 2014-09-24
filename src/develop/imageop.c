@@ -1454,7 +1454,7 @@ static void _preset_popup_position(GtkMenu *menu, gint *x, gint *y, gboolean *pu
 {
   GtkRequisition requisition = { 0 };
   gdk_window_get_origin(gtk_widget_get_window(GTK_WIDGET(data)), x, y);
-  gtk_widget_size_request(GTK_WIDGET(menu), &requisition);
+  gtk_widget_get_preferred_size(GTK_WIDGET(menu), &requisition, NULL);
 
   GtkAllocation allocation;
   gtk_widget_get_allocation(GTK_WIDGET(data), &allocation);
