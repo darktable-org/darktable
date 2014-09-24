@@ -9,7 +9,7 @@
 {
   GtkWidget *widget, *label, *labelev, *viewport;
   GtkRequisition size;
-  GtkWidget *hbox = gtk_hbox_new(5, FALSE);
+  GtkWidget *hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5);
   GtkWidget *vbox1 = gtk_vbox_new(5, TRUE);
   GtkWidget *vbox2 = gtk_vbox_new(5, TRUE);
   char tooltip[1024];

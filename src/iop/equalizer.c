@@ -58,7 +58,7 @@ typedef enum dt_iop_equalizer_channel_t
 typedef struct dt_iop_equalizer_gui_data_t
 {
   dt_draw_curve_t *minmax_curve; // curve for gui to draw
-  GtkHBox *hbox;
+  GtkBox *hbox;
   GtkDrawingArea *area;
   GtkComboBox *presets;
   GtkRadioButton *channel_button[3];

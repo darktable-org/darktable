@@ -49,7 +49,7 @@ typedef struct _GtkDarktableSlider
 {
   GtkEventBox widget;
   GtkWidget *entry;
-  GtkHBox *hbox;
+  GtkBox *hbox;
   GtkAdjustment *adjustment;
   gboolean is_dragging;
   gboolean is_sensibility_key_pressed;

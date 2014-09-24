@@ -2136,7 +2136,7 @@ void gui_init(struct dt_iop_module_t *self)
 
   // message box to inform user what corrections have been done. this is useful as depending on lensfuns
   // profile only some of the lens flaws can be corrected
-  GtkHBox *hbox1 = GTK_HBOX(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0));
+  GtkBox *hbox1 = GTK_HBOX(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0));
   GtkLabel *label = GTK_LABEL(gtk_label_new(_("corrections done: ")));
   g_object_set(G_OBJECT(label), "tooltip-text", _("which corrections have actually been done"), (char *)NULL);
   gtk_box_pack_start(GTK_BOX(hbox1), GTK_WIDGET(label), FALSE, FALSE, 0);

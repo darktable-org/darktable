@@ -74,7 +74,7 @@ typedef struct dt_iop_colorzones_params1_t
 typedef struct dt_iop_colorzones_gui_data_t
 {
   dt_draw_curve_t *minmax_curve; // curve for gui to draw
-  GtkHBox *hbox;
+  GtkBox *hbox;
   GtkDrawingArea *area;
   GtkNotebook *channel_tabs;
   GtkWidget *select_by;

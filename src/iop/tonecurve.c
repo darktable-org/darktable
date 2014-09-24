@@ -103,7 +103,7 @@ typedef struct dt_iop_tonecurve_gui_data_t
   dt_draw_curve_t *minmax_curve[3]; // curves for gui to draw
   int minmax_curve_nodes[3];
   int minmax_curve_type[3];
-  GtkHBox *hbox;
+  GtkBox *hbox;
   GtkDrawingArea *area;
   GtkSizeGroup *sizegroup;
   GtkWidget *autoscale_ab;

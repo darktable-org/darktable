@@ -43,7 +43,7 @@ typedef struct dt_iop_invert_gui_data_t
 {
   GtkDarktableButton *colorpicker;
   GtkDarktableResetLabel *label;
-  GtkHBox *pickerbuttons;
+  GtkBox *pickerbuttons;
 } dt_iop_invert_gui_data_t;
 
 typedef struct dt_iop_invert_global_data_t

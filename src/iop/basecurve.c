@@ -536,7 +536,7 @@ typedef struct dt_iop_basecurve_gui_data_t
 {
   dt_draw_curve_t *minmax_curve; // curve for gui to draw
   int minmax_curve_type, minmax_curve_nodes;
-  GtkHBox *hbox;
+  GtkBox *hbox;
   GtkDrawingArea *area;
   GtkWidget *scale;
   double mouse_x, mouse_y;
