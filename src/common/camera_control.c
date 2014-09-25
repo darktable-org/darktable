@@ -151,9 +151,7 @@ void _disable_debug()
 static void _idle_func_dispatch(GPContext *context, void *data)
 {
   // Let's do gtk main event iteration for not locking the ui
-  gdk_threads_enter();
   if(gtk_events_pending()) gtk_main_iteration();
-  gdk_threads_leave();
 }
 
 static void _error_func_dispatch25(GPContext *context, const char *text, void *data)
