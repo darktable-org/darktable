@@ -1600,7 +1600,8 @@ void dt_ellipsize_combo(GtkComboBox *cbox)
 // we only try to enable/disable those devices that are pens and that have a pressure axis
 void dt_gui_enable_extended_input_devices()
 {
-  GdkDevice *core_pointer = gdk_device_get_core_pointer();
+  GdkDevice *core_pointer
+      = gdk_device_manager_get_client_pointer(gdk_display_get_device_manager(gdk_display_get_default()));
   GList *input_devices = gdk_device_manager_list_devices(
       gdk_display_get_device_manager(gdk_display_get_default()), GDK_DEVICE_TYPE_MASTER);
   while(input_devices)
@@ -1623,7 +1624,8 @@ void dt_gui_enable_extended_input_devices()
 
 void dt_gui_disable_extended_input_devices()
 {
-  GdkDevice *core_pointer = gdk_device_get_core_pointer();
+  GdkDevice *core_pointer
+      = gdk_device_manager_get_client_pointer(gdk_display_get_device_manager(gdk_display_get_default()));
   GList *input_devices = gdk_device_manager_list_devices(
       gdk_display_get_device_manager(gdk_display_get_default()), GDK_DEVICE_TYPE_MASTER);
   while(input_devices)
