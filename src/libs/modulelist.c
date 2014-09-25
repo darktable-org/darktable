@@ -267,13 +267,18 @@ static void _lib_modulelist_row_changed_callback(GtkTreeView *treeview, gpointer
   GtkTreeIter iter;
   GtkTreeModel *model;
   GtkTreePath *path;
-  gtk_tree_view_get_cursor(treeview, &path, NULL);
-  model = gtk_tree_view_get_model(treeview);
-  gtk_tree_model_get_iter(model, &iter, path);
-  gtk_tree_path_free(path);
-  gtk_tree_model_get(model, &iter, COL_MODULE, &module, -1);
 
-  dt_iop_gui_set_state(module, (module->state + 1) % dt_iop_state_LAST);
+  gtk_tree_view_get_cursor(treeview, &path, NULL);
+
+  if(path != NULL)
+  {
+    model = gtk_tree_view_get_model(treeview);
+    gtk_tree_model_get_iter(model, &iter, path);
+    gtk_tree_path_free(path);
+    gtk_tree_model_get(model, &iter, COL_MODULE, &module, -1);
+
+    dt_iop_gui_set_state(module, (module->state + 1) % dt_iop_state_LAST);
+  }
 }
 
 static void _lib_modulelist_gui_update(struct dt_lib_module_t *module)
