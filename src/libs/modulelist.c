@@ -111,7 +111,8 @@ enum
 static void image_renderer_function(GtkTreeViewColumn *col, GtkCellRenderer *renderer, GtkTreeModel *model,
                                     GtkTreeIter *iter, gpointer user_data)
 {
-  GdkImage *pixbuf;
+  // FIXME: is that correct?
+  GtkImage *pixbuf;
   dt_iop_module_t *module;
   gtk_tree_model_get(model, iter, COL_IMAGE, &pixbuf, -1);
   gtk_tree_model_get(model, iter, COL_MODULE, &module, -1);
