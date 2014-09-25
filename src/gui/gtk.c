@@ -927,7 +927,8 @@ int dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[])
       = { "GDK_AXIS_IGNORE", "GDK_AXIS_X",     "GDK_AXIS_Y",     "GDK_AXIS_PRESSURE",
           "GDK_AXIS_XTILT",  "GDK_AXIS_YTILT", "GDK_AXIS_WHEEL", "GDK_AXIS_LAST" };
   dt_print(DT_DEBUG_INPUT, "[input device] Input devices found:\n\n");
-  GList *input_devices = gdk_devices_list();
+  GList *input_devices = gdk_device_manager_list_devices(
+      gdk_display_get_device_manager(gdk_display_get_default()), GDK_DEVICE_TYPE_MASTER);
   while(input_devices)
   {
     GdkDevice *device = (GdkDevice *)input_devices->data;
@@ -1600,7 +1601,8 @@ void dt_ellipsize_combo(GtkComboBox *cbox)
 void dt_gui_enable_extended_input_devices()
 {
   GdkDevice *core_pointer = gdk_device_get_core_pointer();
-  GList *input_devices = gdk_devices_list();
+  GList *input_devices = gdk_device_manager_list_devices(
+      gdk_display_get_device_manager(gdk_display_get_default()), GDK_DEVICE_TYPE_MASTER);
   while(input_devices)
   {
     GdkDevice *device = (GdkDevice *)input_devices->data;
@@ -1622,7 +1624,8 @@ void dt_gui_enable_extended_input_devices()
 void dt_gui_disable_extended_input_devices()
 {
   GdkDevice *core_pointer = gdk_device_get_core_pointer();
-  GList *input_devices = gdk_devices_list();
+  GList *input_devices = gdk_device_manager_list_devices(
+      gdk_display_get_device_manager(gdk_display_get_default()), GDK_DEVICE_TYPE_MASTER);
   while(input_devices)
   {
     GdkDevice *device = (GdkDevice *)input_devices->data;
