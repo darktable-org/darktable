@@ -32,7 +32,7 @@ static void _tristatebutton_get_preferred_height(GtkWidget *widget, gint *minima
                                                  gint *natural_height);
 // static void _tristatebutton_size_allocate(GtkWidget *widget, GtkAllocation *allocation);
 // static void _tristatebutton_realize(GtkWidget *widget);
-static gboolean _tristatebutton_expose(GtkWidget *widget, GdkEventExpose *event);
+static gboolean _tristatebutton_draw(GtkWidget *widget, cairo_t *cr);
 // static void _tristatebutton_destroy(GtkObject *object);
 
 static void _tristate_emit_state_changed_signal(GtkDarktableTriStateButton *ts)
@@ -48,7 +48,7 @@ static void _tristatebutton_class_init(GtkDarktableTriStateButtonClass *klass)
   widget_class->get_preferred_width = _tristatebutton_get_preferred_width;
   widget_class->get_preferred_height = _tristatebutton_get_preferred_height;
   // widget_class->size_allocate = _tristatebutton_size_allocate;
-  widget_class->expose_event = _tristatebutton_expose;
+  widget_class->draw = _tristatebutton_draw;
   // object_class->destroy = _tristatebutton_destroy;
 
   _tristatebutton_signals[STATE_CHANGED]
@@ -139,11 +139,11 @@ static void _tristatebutton_get_preferred_height(GtkWidget *widget, gint *minima
   *minimal_height = *natural_height = requisition.height;
 }
 
-static gboolean _tristatebutton_expose(GtkWidget *widget, GdkEventExpose *event)
+static gboolean _tristatebutton_draw(GtkWidget *widget, cairo_t *cr)
 {
   g_return_val_if_fail(widget != NULL, FALSE);
   g_return_val_if_fail(DTGTK_IS_TRISTATEBUTTON(widget), FALSE);
-  g_return_val_if_fail(event != NULL, FALSE);
+
   GtkStyle *style = gtk_widget_get_style(widget);
   int state = gtk_widget_get_state(widget);
 
@@ -165,9 +165,6 @@ static gboolean _tristatebutton_expose(GtkWidget *widget, GdkEventExpose *event)
 
 
   /* begin cairo drawing */
-  cairo_t *cr;
-  cr = gdk_cairo_create(gtk_widget_get_window(widget));
-
   GtkAllocation allocation;
   gtk_widget_get_allocation(widget, &allocation);
   int x = allocation.x;
@@ -259,8 +256,6 @@ static gboolean _tristatebutton_expose(GtkWidget *widget, GdkEventExpose *event)
     pango_cairo_show_layout(cr, layout);
     g_object_unref(layout);
   }
-
-  cairo_destroy(cr);
 
   return FALSE;
 }

@@ -439,10 +439,9 @@ int button_released(struct dt_iop_module_t *self, double x, double y, int which,
 
 static void _iop_zonesystem_redraw_preview_callback(gpointer instance, gpointer user_data);
 
-static gboolean dt_iop_zonesystem_preview_expose(GtkWidget *widget, GdkEventExpose *event,
-                                                 dt_iop_module_t *self);
+static gboolean dt_iop_zonesystem_preview_draw(GtkWidget *widget, cairo_t *crf, dt_iop_module_t *self);
 
-static gboolean dt_iop_zonesystem_bar_expose(GtkWidget *widget, GdkEventExpose *event, dt_iop_module_t *self);
+static gboolean dt_iop_zonesystem_bar_draw(GtkWidget *widget, cairo_t *crf, dt_iop_module_t *self);
 static gboolean dt_iop_zonesystem_bar_motion_notify(GtkWidget *widget, GdkEventMotion *event,
                                                     dt_iop_module_t *self);
 static gboolean dt_iop_zonesystem_bar_leave_notify(GtkWidget *widget, GdkEventCrossing *event,
@@ -474,7 +473,7 @@ void gui_init(struct dt_iop_module_t *self)
   const int panel_width = dt_conf_get_int("panel_width") * 0.8;
 
   g->preview = gtk_drawing_area_new();
-  g_signal_connect(G_OBJECT(g->preview), "expose-event", G_CALLBACK(dt_iop_zonesystem_preview_expose), self);
+  g_signal_connect(G_OBJECT(g->preview), "draw", G_CALLBACK(dt_iop_zonesystem_preview_draw), self);
   gtk_widget_add_events(GTK_WIDGET(g->preview), GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK
                                                 | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK
                                                 | GDK_LEAVE_NOTIFY_MASK);
@@ -486,7 +485,7 @@ void gui_init(struct dt_iop_module_t *self)
                _("lightness zones\nuse mouse scrollwheel to change the number of zones\nleft-click on a "
                  "border to create a marker\nright-click on a marker to delete it"),
                (char *)NULL);
-  g_signal_connect(G_OBJECT(g->zones), "expose-event", G_CALLBACK(dt_iop_zonesystem_bar_expose), self);
+  g_signal_connect(G_OBJECT(g->zones), "draw", G_CALLBACK(dt_iop_zonesystem_bar_draw), self);
   g_signal_connect(G_OBJECT(g->zones), "motion-notify-event", G_CALLBACK(dt_iop_zonesystem_bar_motion_notify),
                    self);
   g_signal_connect(G_OBJECT(g->zones), "leave-notify-event", G_CALLBACK(dt_iop_zonesystem_bar_leave_notify),
@@ -582,7 +581,7 @@ void gui_cleanup(struct dt_iop_module_t *self)
 #define DT_ZONESYSTEM_INSET DT_PIXEL_APPLY_DPI(5)
 #define DT_ZONESYSTEM_BAR_SPLIT_WIDTH 0.0
 #define DT_ZONESYSTEM_REFERENCE_SPLIT 0.30
-static gboolean dt_iop_zonesystem_bar_expose(GtkWidget *widget, GdkEventExpose *event, dt_iop_module_t *self)
+static gboolean dt_iop_zonesystem_bar_draw(GtkWidget *widget, cairo_t *crf, dt_iop_module_t *self)
 {
   dt_iop_zonesystem_gui_data_t *g = (dt_iop_zonesystem_gui_data_t *)self->gui_data;
   dt_iop_zonesystem_params_t *p = (dt_iop_zonesystem_params_t *)self->params;
@@ -667,10 +666,8 @@ static gboolean dt_iop_zonesystem_bar_expose(GtkWidget *widget, GdkEventExpose *
 
   /* push mem surface into widget */
   cairo_destroy(cr);
-  cairo_t *cr_pixmap = gdk_cairo_create(gtk_widget_get_window(widget));
-  cairo_set_source_surface(cr_pixmap, cst, 0, 0);
-  cairo_paint(cr_pixmap);
-  cairo_destroy(cr_pixmap);
+  cairo_set_source_surface(crf, cst, 0, 0);
+  cairo_paint(crf);
   cairo_surface_destroy(cst);
 
   return TRUE;
@@ -811,8 +808,7 @@ static gboolean dt_iop_zonesystem_bar_motion_notify(GtkWidget *widget, GdkEventM
 }
 
 
-static gboolean dt_iop_zonesystem_preview_expose(GtkWidget *widget, GdkEventExpose *event,
-                                                 dt_iop_module_t *self)
+static gboolean dt_iop_zonesystem_preview_draw(GtkWidget *widget, cairo_t *crf, dt_iop_module_t *self)
 {
   const int inset = DT_PIXEL_APPLY_DPI(2);
   GtkAllocation allocation;
@@ -897,10 +893,8 @@ static gboolean dt_iop_zonesystem_preview_expose(GtkWidget *widget, GdkEventExpo
   }
 
   cairo_destroy(cr);
-  cairo_t *cr_pixmap = gdk_cairo_create(gtk_widget_get_window(widget));
-  cairo_set_source_surface(cr_pixmap, cst, 0, 0);
-  cairo_paint(cr_pixmap);
-  cairo_destroy(cr_pixmap);
+  cairo_set_source_surface(crf, cst, 0, 0);
+  cairo_paint(crf);
   cairo_surface_destroy(cst);
 
   return TRUE;

@@ -591,7 +591,7 @@ static void request_pick_toggled_frame(GtkToggleButton *togglebutton, dt_iop_mod
   request_pick_toggled(togglebutton, self);
 }
 
-static gboolean borders_expose(GtkWidget *widget, GdkEventExpose *event, dt_iop_module_t *self)
+static gboolean borders_draw(GtkWidget *widget, cairo_t *cr, dt_iop_module_t *self)
 {
   if(darktable.gui->reset) return FALSE;
   if(self->picked_output_color_max[0] < 0) return FALSE;
@@ -1119,7 +1119,7 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(box), GTK_WIDGET(g->frame_picker), FALSE, FALSE, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), box, TRUE, TRUE, 0);
 
-  g_signal_connect(G_OBJECT(self->widget), "expose-event", G_CALLBACK(borders_expose), self);
+  g_signal_connect(G_OBJECT(self->widget), "draw", G_CALLBACK(borders_draw), self);
 }
 
 

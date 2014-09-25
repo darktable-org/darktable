@@ -364,7 +364,7 @@ void cleanup_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev
   piece->data = NULL;
 }
 
-static gboolean dt_iop_monochrome_expose(GtkWidget *widget, GdkEventExpose *event, gpointer user_data)
+static gboolean dt_iop_monochrome_draw(GtkWidget *widget, cairo_t *crf, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_monochrome_gui_data_t *g = (dt_iop_monochrome_gui_data_t *)self->gui_data;
@@ -420,10 +420,8 @@ static gboolean dt_iop_monochrome_expose(GtkWidget *widget, GdkEventExpose *even
   if(g->dragging) dt_dev_add_history_item(darktable.develop, self, TRUE);
 
   cairo_destroy(cr);
-  cairo_t *cr_pixmap = gdk_cairo_create(gtk_widget_get_window(widget));
-  cairo_set_source_surface(cr_pixmap, cst, 0, 0);
-  cairo_paint(cr_pixmap);
-  cairo_destroy(cr_pixmap);
+  cairo_set_source_surface(crf, cst, 0, 0);
+  cairo_paint(crf);
   cairo_surface_destroy(cst);
   return TRUE;
 }
@@ -541,7 +539,7 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_widget_add_events(GTK_WIDGET(g->area), GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK
                                              | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK
                                              | GDK_LEAVE_NOTIFY_MASK);
-  g_signal_connect(G_OBJECT(g->area), "expose-event", G_CALLBACK(dt_iop_monochrome_expose), self);
+  g_signal_connect(G_OBJECT(g->area), "draw", G_CALLBACK(dt_iop_monochrome_draw), self);
   g_signal_connect(G_OBJECT(g->area), "button-press-event", G_CALLBACK(dt_iop_monochrome_button_press), self);
   g_signal_connect(G_OBJECT(g->area), "button-release-event", G_CALLBACK(dt_iop_monochrome_button_release),
                    self);

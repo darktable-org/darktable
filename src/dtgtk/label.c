@@ -29,7 +29,7 @@ static void _label_size_request(GtkWidget *widget, GtkRequisition *requisition);
 // static void _label_realize(GtkWidget *widget);
 static void _label_get_preferred_width(GtkWidget *widget, gint *minimal_width, gint *natural_width);
 static void _label_get_preferred_height(GtkWidget *widget, gint *minimal_height, gint *natural_height);
-static gboolean _label_expose(GtkWidget *widget, GdkEventExpose *event);
+static gboolean _label_draw(GtkWidget *widget, cairo_t *cr);
 // static void _label_destroy(GtkObject *object);
 
 
@@ -39,10 +39,10 @@ static void _label_class_init(GtkDarktableLabelClass *klass)
   // GtkObjectClass *object_class=(GtkObjectClass *) klass;
   // widget_class->realize = _label_realize;
   // widget_class->size_allocate = _label_size_allocate;
-  widget_class->expose_event = _label_expose;
   // object_class->destroy = _label_destroy;
   widget_class->get_preferred_width = _label_get_preferred_width;
   widget_class->get_preferred_height = _label_get_preferred_height;
+  widget_class->draw = _label_draw;
 }
 
 static void _label_init(GtkDarktableLabel *label)
@@ -105,11 +105,10 @@ static void _label_get_preferred_height(GtkWidget *widget, gint *minimal_height,
   *minimal_height = *natural_height = requisition.height;
 }
 
-static gboolean _label_expose(GtkWidget *widget, GdkEventExpose *event)
+static gboolean _label_draw(GtkWidget *widget, cairo_t *cr)
 {
   g_return_val_if_fail(widget != NULL, FALSE);
   g_return_val_if_fail(DTGTK_IS_LABEL(widget), FALSE);
-  g_return_val_if_fail(event != NULL, FALSE);
 
   GtkAllocation allocation;
   gtk_widget_get_allocation(widget, &allocation);
@@ -131,10 +130,6 @@ static gboolean _label_expose(GtkWidget *widget, GdkEventExpose *event)
 
 
   // Begin cairo drawing
-
-  cairo_t *cr;
-  cr = gdk_cairo_create(gtk_widget_get_window(widget));
-
   cairo_set_source_rgba(cr, 1, 1, 1, 0.10);
 
   cairo_set_antialias(cr, CAIRO_ANTIALIAS_NONE);
@@ -198,7 +193,6 @@ static gboolean _label_expose(GtkWidget *widget, GdkEventExpose *event)
   g_object_unref(layout);
 
   cairo_set_antialias(cr, CAIRO_ANTIALIAS_DEFAULT);
-  cairo_destroy(cr);
 
   return FALSE;
 }

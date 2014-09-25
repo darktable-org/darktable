@@ -194,7 +194,7 @@ static void update(dt_lib_module_t *user_data, gboolean early_bark_out)
 }
 
 
-static gboolean expose(GtkWidget *widget, GdkEventExpose *event, gpointer user_data)
+static gboolean draw(GtkWidget *widget, cairo_t *crf, gpointer user_data)
 {
   if(!dt_control_running()) return FALSE;
   update((dt_lib_module_t *)user_data, TRUE);
@@ -331,7 +331,7 @@ void gui_init(dt_lib_module_t *self)
   self->widget = gtk_table_new(6, 2, FALSE);
   gtk_table_set_row_spacings(GTK_TABLE(self->widget), 5);
 
-  g_signal_connect(self->widget, "expose-event", G_CALLBACK(expose), self);
+  g_signal_connect(self->widget, "draw", G_CALLBACK(draw), self);
 
   label = gtk_label_new(_("title"));
   gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);

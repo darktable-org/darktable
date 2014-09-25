@@ -54,7 +54,7 @@ static void _slider_get_preferred_width(GtkWidget *widget, gint *minimal_width, 
 static void _slider_get_preferred_height(GtkWidget *widget, gint *minimal_height, gint *natural_height);
 static void _slider_size_allocate(GtkWidget *widget, GtkAllocation *allocation);
 static void _slider_realize(GtkWidget *widget);
-static gboolean _slider_expose(GtkWidget *widget, GdkEventExpose *event);
+static gboolean _slider_draw(GtkWidget *widget, cairo_t *cr);
 // static void _slider_destroy(GtkObject *object);
 
 // Slider Events
@@ -100,7 +100,7 @@ static void _slider_class_init(GtkDarktableSliderClass *klass)
   widget_class->get_preferred_width = _slider_get_preferred_width;
   widget_class->get_preferred_height = _slider_get_preferred_height;
   widget_class->size_allocate = _slider_size_allocate;
-  widget_class->expose_event = _slider_expose;
+  widget_class->draw = _slider_draw;
   widget_class->button_press_event = _slider_button_press;
   widget_class->button_release_event = _slider_button_release;
   widget_class->scroll_event = _slider_scroll_event;
@@ -477,11 +477,10 @@ static void _slider_draw_rounded_rect(cairo_t *cr, gfloat x, gfloat y, gfloat wi
   cairo_fill(cr);
 }
 
-static gboolean _slider_expose(GtkWidget *widget, GdkEventExpose *event)
+static gboolean _slider_draw(GtkWidget *widget, cairo_t *cr)
 {
   g_return_val_if_fail(widget != NULL, FALSE);
   g_return_val_if_fail(DTGTK_IS_SLIDER(widget), FALSE);
-  g_return_val_if_fail(event != NULL, FALSE);
 
   GtkAllocation allocation;
   gtk_widget_get_allocation(widget, &allocation);
@@ -499,9 +498,6 @@ static gboolean _slider_expose(GtkWidget *widget, GdkEventExpose *event)
   _slider_get_value_area(widget, &vr);
 
   /* create cairo context */
-  cairo_t *cr;
-  cr = gdk_cairo_create(gtk_widget_get_window(widget));
-
   /* hardcode state for the rest of control */
   state = GTK_STATE_NORMAL;
 
@@ -587,8 +583,6 @@ static gboolean _slider_expose(GtkWidget *widget, GdkEventExpose *event)
                           DTGTK_SLIDER_ADJUST_BUTTON_WIDTH,
                           DTGTK_SLIDER_ADJUST_BUTTON_WIDTH - DT_PIXEL_APPLY_DPI(4), CPF_DIRECTION_DOWN);
 
-
-  cairo_destroy(cr);
   return TRUE;
 }
 

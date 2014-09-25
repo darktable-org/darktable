@@ -90,7 +90,7 @@ static gboolean _lib_filmstrip_mouse_leave_callback(GtkWidget *w, GdkEventCrossi
 /* scroll event */
 static gboolean _lib_filmstrip_scroll_callback(GtkWidget *w, GdkEventScroll *e, gpointer user_data);
 /* expose function for filmstrip module */
-static gboolean _lib_filmstrip_expose_callback(GtkWidget *widget, GdkEventExpose *event, gpointer user_data);
+static gboolean _lib_filmstrip_draw_callback(GtkWidget *widget, cairo_t *cr, gpointer user_data);
 /* button press callback */
 static gboolean _lib_filmstrip_button_press_callback(GtkWidget *widget, GdkEventButton *event,
                                                      gpointer user_data);
@@ -312,7 +312,7 @@ void gui_init(dt_lib_module_t *self)
                                       | GDK_LEAVE_NOTIFY_MASK);
 
   /* connect callbacks */
-  g_signal_connect(G_OBJECT(d->filmstrip), "expose-event", G_CALLBACK(_lib_filmstrip_expose_callback), self);
+  g_signal_connect(G_OBJECT(d->filmstrip), "draw", G_CALLBACK(_lib_filmstrip_draw_callback), self);
   g_signal_connect(G_OBJECT(d->filmstrip), "button-press-event",
                    G_CALLBACK(_lib_filmstrip_button_press_callback), self);
   g_signal_connect(G_OBJECT(d->filmstrip), "button-release-event",
@@ -624,7 +624,7 @@ static gboolean _lib_filmstrip_button_release_callback(GtkWidget *w, GdkEventBut
   return result;
 }
 
-static gboolean _lib_filmstrip_expose_callback(GtkWidget *widget, GdkEventExpose *event, gpointer user_data)
+static gboolean _lib_filmstrip_draw_callback(GtkWidget *widget, cairo_t *cr, gpointer user_data)
 {
   dt_lib_module_t *self = (dt_lib_module_t *)user_data;
   dt_lib_filmstrip_t *strip = (dt_lib_filmstrip_t *)self->data;
@@ -643,9 +643,6 @@ static gboolean _lib_filmstrip_expose_callback(GtkWidget *widget, GdkEventExpose
   if(pointerx >= 0
      && pointery >= 0) // don't reset the global mouse_over_id when the cursor isn't even over the filmstrip
     dt_control_set_mouse_over_id(-1);
-
-  /* create cairo surface */
-  cairo_t *cr = gdk_cairo_create(gtk_widget_get_window(widget));
 
   /* fill background */
   cairo_set_source_rgb(cr, .2, .2, .2);
@@ -751,9 +748,6 @@ failure:
 #ifdef _DEBUG
   if(darktable.unmuted & DT_DEBUG_CACHE) dt_mipmap_cache_print(darktable.mipmap_cache);
 #endif
-
-  /* cleanup */
-  cairo_destroy(cr);
 
   return TRUE;
 }

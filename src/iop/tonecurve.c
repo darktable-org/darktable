@@ -43,7 +43,7 @@
 
 DT_MODULE_INTROSPECTION(4, dt_iop_tonecurve_params_t)
 
-static gboolean dt_iop_tonecurve_expose(GtkWidget *widget, GdkEventExpose *event, gpointer user_data);
+static gboolean dt_iop_tonecurve_draw(GtkWidget *widget, cairo_t *crf, gpointer user_data);
 static gboolean dt_iop_tonecurve_motion_notify(GtkWidget *widget, GdkEventMotion *event, gpointer user_data);
 static gboolean dt_iop_tonecurve_button_press(GtkWidget *widget, GdkEventButton *event, gpointer user_data);
 static gboolean dt_iop_tonecurve_leave_notify(GtkWidget *widget, GdkEventCrossing *event, gpointer user_data);
@@ -752,7 +752,7 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_widget_add_events(GTK_WIDGET(c->area), GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK
                                              | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK
                                              | GDK_LEAVE_NOTIFY_MASK);
-  g_signal_connect(G_OBJECT(c->area), "expose-event", G_CALLBACK(dt_iop_tonecurve_expose), self);
+  g_signal_connect(G_OBJECT(c->area), "draw", G_CALLBACK(dt_iop_tonecurve_draw), self);
   g_signal_connect(G_OBJECT(c->area), "button-press-event", G_CALLBACK(dt_iop_tonecurve_button_press), self);
   g_signal_connect(G_OBJECT(c->area), "motion-notify-event", G_CALLBACK(dt_iop_tonecurve_motion_notify), self);
   g_signal_connect(G_OBJECT(c->area), "leave-notify-event", G_CALLBACK(dt_iop_tonecurve_leave_notify), self);
@@ -819,7 +819,7 @@ static void picker_scale(const float *in, float *out)
   out[2] = CLAMP((in[2] + 128.0f) / 256.0f, 0.0f, 1.0f);
 }
 
-static gboolean dt_iop_tonecurve_expose(GtkWidget *widget, GdkEventExpose *event, gpointer user_data)
+static gboolean dt_iop_tonecurve_draw(GtkWidget *widget, cairo_t *crf, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_tonecurve_gui_data_t *c = (dt_iop_tonecurve_gui_data_t *)self->gui_data;
@@ -1049,10 +1049,8 @@ static gboolean dt_iop_tonecurve_expose(GtkWidget *widget, GdkEventExpose *event
 
 finally:
   cairo_destroy(cr);
-  cairo_t *cr_pixmap = gdk_cairo_create(gtk_widget_get_window(widget));
-  cairo_set_source_surface(cr_pixmap, cst, 0, 0);
-  cairo_paint(cr_pixmap);
-  cairo_destroy(cr_pixmap);
+  cairo_set_source_surface(crf, cst, 0, 0);
+  cairo_paint(crf);
   cairo_surface_destroy(cst);
   return TRUE;
 }

@@ -25,14 +25,15 @@ static void _button_init(GtkDarktableButton *button);
 static void _button_size_request(GtkWidget *widget, GtkRequisition *requisition);
 static void _button_get_preferred_width(GtkWidget *widget, gint *minimal_width, gint *natural_width);
 static void _button_get_preferred_height(GtkWidget *widget, gint *minimal_height, gint *natural_height);
-static gboolean _button_expose(GtkWidget *widget, GdkEventExpose *event);
+static gboolean _button_draw(GtkWidget *widget, cairo_t *cr);
 
 static void _button_class_init(GtkDarktableButtonClass *klass)
 {
   GtkWidgetClass *widget_class = (GtkWidgetClass *)klass;
+
   widget_class->get_preferred_width = _button_get_preferred_width;
   widget_class->get_preferred_height = _button_get_preferred_height;
-  widget_class->expose_event = _button_expose;
+  widget_class->draw = _button_draw;
 }
 
 static void _button_init(GtkDarktableButton *button)
@@ -66,11 +67,11 @@ static void _button_get_preferred_height(GtkWidget *widget, gint *minimal_height
   *minimal_height = *natural_height = requisition.height;
 }
 
-static gboolean _button_expose(GtkWidget *widget, GdkEventExpose *event)
+static gboolean _button_draw(GtkWidget *widget, cairo_t *cr)
 {
   g_return_val_if_fail(widget != NULL, FALSE);
   g_return_val_if_fail(DTGTK_IS_BUTTON(widget), FALSE);
-  g_return_val_if_fail(event != NULL, FALSE);
+
   GtkStyle *style = gtk_widget_get_style(widget);
   int state = gtk_widget_get_state(widget);
 
@@ -101,9 +102,6 @@ static gboolean _button_expose(GtkWidget *widget, GdkEventExpose *event)
   }
 
   /* begin cairo drawing */
-  cairo_t *cr;
-  cr = gdk_cairo_create(gtk_widget_get_window(widget));
-
   GtkAllocation allocation;
   gtk_widget_get_allocation(widget, &allocation);
   int x = allocation.x;
@@ -125,8 +123,8 @@ static gboolean _button_expose(GtkWidget *widget, GdkEventExpose *event)
   else if(!(flags & CPF_BG_TRANSPARENT))
   {
     /* draw default boxed button */
-    gtk_paint_box(gtk_widget_get_style(widget), gdk_cairo_create(gtk_widget_get_window(widget)),
-                  gtk_widget_get_state(widget), GTK_SHADOW_OUT, widget, "button", x, y, width, height);
+    gtk_paint_box(gtk_widget_get_style(widget), cr, gtk_widget_get_state(widget), GTK_SHADOW_OUT, widget,
+                  "button", x, y, width, height);
   }
 
   if(flags & CPF_IGNORE_FG_STATE) state = GTK_STATE_NORMAL;
@@ -155,8 +153,6 @@ static gboolean _button_expose(GtkWidget *widget, GdkEventExpose *event)
     pango_cairo_show_layout(cr, layout);
     g_object_unref(layout);
   }
-
-  cairo_destroy(cr);
 
   return FALSE;
 }

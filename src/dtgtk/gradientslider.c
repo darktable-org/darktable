@@ -42,8 +42,8 @@ static void _gradient_slider_get_preferred_width(GtkWidget *widget, gint *minima
 static void _gradient_slider_get_preferred_height(GtkWidget *widget, gint *minimal_height,
                                                   gint *natural_height);
 static void _gradient_slider_realize(GtkWidget *widget);
-static gboolean _gradient_slider_expose(GtkWidget *widget, GdkEventExpose *event);
-static void _gradient_slider_destroy(GtkObject *object);
+static gboolean _gradient_slider_draw(GtkWidget *widget, cairo_t *cr);
+static void _gradient_slider_destroy(GtkWidget *widget);
 
 // Events
 static gboolean _gradient_slider_enter_notify_event(GtkWidget *widget, GdkEventCrossing *event);
@@ -328,7 +328,7 @@ static void _gradient_slider_class_init(GtkDarktableGradientSliderClass *klass)
   widget_class->realize = _gradient_slider_realize;
   widget_class->get_preferred_width = _gradient_slider_get_preferred_width;
   widget_class->get_preferred_height = _gradient_slider_get_preferred_height;
-  widget_class->expose_event = _gradient_slider_expose;
+  widget_class->draw = _gradient_slider_draw;
   object_class->destroy = _gradient_slider_destroy;
 
   widget_class->enter_notify_event = _gradient_slider_enter_notify_event;
@@ -454,7 +454,7 @@ static void _gradient_slider_destroy(GtkObject *object)
   }
 }
 
-static gboolean _gradient_slider_expose(GtkWidget *widget, GdkEventExpose *event)
+static gboolean _gradient_slider_draw(GtkWidget *widget, cairo_t *cr)
 {
   GtkDarktableGradientSlider *gslider = DTGTK_GRADIENT_SLIDER(widget);
 
@@ -462,7 +462,7 @@ static gboolean _gradient_slider_expose(GtkWidget *widget, GdkEventExpose *event
 
   g_return_val_if_fail(widget != NULL, FALSE);
   g_return_val_if_fail(DTGTK_IS_GRADIENT_SLIDER(widget), FALSE);
-  g_return_val_if_fail(event != NULL, FALSE);
+
   GtkStyle *style = gtk_rc_get_style_by_paths(gtk_settings_get_default(), NULL, "GtkButton", GTK_TYPE_BUTTON);
   if(!style) style = gtk_rc_get_style(widget);
   int state = gtk_widget_get_state(widget);
@@ -476,9 +476,6 @@ static gboolean _gradient_slider_expose(GtkWidget *widget, GdkEventExpose *event
   int margins = gslider->margins;
 
   // Begin cairo drawing
-  cairo_t *cr;
-  cr = gdk_cairo_create(gtk_widget_get_window(widget));
-
   // First build the cairo gradient and then fill the gradient
   float gheight = height / 2.0;
   float gwidth = width - 2 * margins;
@@ -588,7 +585,6 @@ static gboolean _gradient_slider_expose(GtkWidget *widget, GdkEventExpose *event
     }
   }
 
-  cairo_destroy(cr);
   return FALSE;
 }
 

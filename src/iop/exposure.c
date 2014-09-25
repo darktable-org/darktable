@@ -855,7 +855,7 @@ static void black_callback(GtkWidget *slider, gpointer user_data)
   dt_iop_exposure_set_black(self, black);
 }
 
-static gboolean expose(GtkWidget *widget, GdkEventExpose *event, dt_iop_module_t *self)
+static gboolean draw(GtkWidget *widget, cairo_t *cr, dt_iop_module_t *self)
 {
   if(darktable.gui->reset) return FALSE;
 
@@ -1022,7 +1022,7 @@ void gui_init(struct dt_iop_module_t *self)
                    G_CALLBACK(deflicker_params_callback), self);
   g_signal_connect(G_OBJECT(g->deflicker_histogram_source), "value-changed",
                    G_CALLBACK(deflicker_histogram_source_callback), self);
-  g_signal_connect(G_OBJECT(self->widget), "expose-event", G_CALLBACK(expose), self);
+  g_signal_connect(G_OBJECT(self->widget), "draw", G_CALLBACK(draw), self);
 }
 
 void gui_cleanup(struct dt_iop_module_t *self)

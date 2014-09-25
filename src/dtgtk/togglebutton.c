@@ -28,14 +28,14 @@ static void _togglebutton_get_preferred_width(GtkWidget *widget, gint *minimal_w
 static void _togglebutton_get_preferred_height(GtkWidget *widget, gint *minimal_height, gint *natural_height);
 static void _togglebutton_size_allocate(GtkWidget *widget, GtkAllocation *allocation);
 // static void _togglebutton_realize(GtkWidget *widget);
-static gboolean _togglebutton_expose(GtkWidget *widget, GdkEventExpose *event);
+static gboolean _togglebutton_draw(GtkWidget *widget, cairo_t *cr);
 static void _togglebutton_destroy(GtkObject *object);
 
 void temp()
 {
   _togglebutton_size_allocate(NULL, NULL);
   _togglebutton_size_request(NULL, NULL);
-  _togglebutton_expose(NULL, NULL);
+  _togglebutton_draw(NULL, NULL);
   _togglebutton_destroy(NULL);
 }
 
@@ -45,7 +45,7 @@ static void _togglebutton_class_init(GtkDarktableToggleButtonClass *klass)
 
   widget_class->get_preferred_width = _togglebutton_get_preferred_width;
   widget_class->get_preferred_height = _togglebutton_get_preferred_height;
-  widget_class->expose_event = _togglebutton_expose;
+  widget_class->draw = _togglebutton_draw;
 }
 
 static void _togglebutton_init(GtkDarktableToggleButton *slider)
@@ -128,11 +128,11 @@ static void _togglebutton_destroy(GtkObject *object)
   }
 }
 
-static gboolean _togglebutton_expose(GtkWidget *widget, GdkEventExpose *event)
+static gboolean _togglebutton_draw(GtkWidget *widget, cairo_t *cr)
 {
   g_return_val_if_fail(widget != NULL, FALSE);
   g_return_val_if_fail(DTGTK_IS_TOGGLEBUTTON(widget), FALSE);
-  g_return_val_if_fail(event != NULL, FALSE);
+
   GtkStyle *style = gtk_widget_get_style(widget);
   int state = gtk_widget_get_state(widget);
 
@@ -159,9 +159,6 @@ static gboolean _togglebutton_expose(GtkWidget *widget, GdkEventExpose *event)
     flags &= ~CPF_PRELIGHT;
 
   /* begin cairo drawing */
-  cairo_t *cr;
-  cr = gdk_cairo_create(gtk_widget_get_window(widget));
-
   GtkAllocation allocation;
   gtk_widget_get_allocation(widget, &allocation);
   int x = allocation.x;
@@ -183,8 +180,8 @@ static gboolean _togglebutton_expose(GtkWidget *widget, GdkEventExpose *event)
   else if(!(flags & CPF_BG_TRANSPARENT))
   {
     /* draw default boxed button */
-    gtk_paint_box(gtk_widget_get_style(widget), gdk_cairo_create(gtk_widget_get_window(widget)),
-                  gtk_widget_get_state(widget), GTK_SHADOW_OUT, widget, "button", x, y, width, height);
+    gtk_paint_box(gtk_widget_get_style(widget), cr, gtk_widget_get_state(widget), GTK_SHADOW_OUT, widget,
+                  "button", x, y, width, height);
   }
 
 
@@ -232,8 +229,6 @@ static gboolean _togglebutton_expose(GtkWidget *widget, GdkEventExpose *event)
     pango_cairo_show_layout(cr, layout);
     g_object_unref(layout);
   }
-
-  cairo_destroy(cr);
 
   return FALSE;
 }

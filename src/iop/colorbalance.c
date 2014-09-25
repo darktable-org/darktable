@@ -390,9 +390,8 @@ static void gain_blue_callback(GtkWidget *slider, dt_iop_module_t *self)
 }
 
 #ifdef SHOW_COLOR_WHEELS
-static gboolean dt_iop_area_expose(GtkWidget *widget, GdkEventExpose *event, dt_iop_module_t *self)
+static gboolean dt_iop_area_draw(GtkWidget *widget, cairo_t *cr, dt_iop_module_t *self)
 {
-  cairo_t *cr;
   float flt_bg = darktable.bauhaus->bg_normal;
   if(gtk_widget_get_state(GTK_WIDGET(widget)) == GTK_STATE_SELECTED) flt_bg = darktable.bauhaus->bg_focus;
   float flt_dark = flt_bg / 1.5, flt_light = flt_bg * 1.5;
@@ -415,8 +414,6 @@ static gboolean dt_iop_area_expose(GtkWidget *widget, GdkEventExpose *event, dt_
   double diameter = MIN(width, height) - 4;
   double r_outside = diameter / 2.0, r_inside = r_outside * 0.87;
   double r_outside_2 = r_outside * r_outside, r_inside_2 = r_inside * r_inside;
-
-  cr = gdk_cairo_create(gtk_widget_get_window(widget));
 
   // clear the background
   cairo_set_source_rgb(cr, flt_bg, flt_bg, flt_bg);
@@ -508,8 +505,6 @@ static gboolean dt_iop_area_expose(GtkWidget *widget, GdkEventExpose *event, dt_
 
   cairo_surface_destroy(source);
 
-  cairo_destroy(cr);
-
   return TRUE;
 }
 #endif
@@ -536,7 +531,7 @@ void gui_init(dt_iop_module_t *self)
   //   gtk_widget_add_events(g->area,
   //                         GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK |
   //                         GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK | GDK_LEAVE_NOTIFY_MASK);
-  g_signal_connect(G_OBJECT(area), "expose-event", G_CALLBACK(dt_iop_area_expose), self);
+  g_signal_connect(G_OBJECT(area), "draw", G_CALLBACK(dt_iop_area_draw), self);
   //   g_signal_connect (G_OBJECT (area), "button-press-event",
   //                     G_CALLBACK (dt_iop_colorbalance_button_press), self);
   //   g_signal_connect (G_OBJECT (area), "motion-notify-event",
@@ -551,7 +546,7 @@ void gui_init(dt_iop_module_t *self)
   //   gtk_widget_add_events(g->area,
   //                         GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK |
   //                         GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK | GDK_LEAVE_NOTIFY_MASK);
-  g_signal_connect(G_OBJECT(area), "expose-event", G_CALLBACK(dt_iop_area_expose), self);
+  g_signal_connect(G_OBJECT(area), "draw", G_CALLBACK(dt_iop_area_draw), self);
   //   g_signal_connect (G_OBJECT (area), "button-press-event",
   //                     G_CALLBACK (dt_iop_colorbalance_button_press), self);
   //   g_signal_connect (G_OBJECT (area), "motion-notify-event",
@@ -566,7 +561,7 @@ void gui_init(dt_iop_module_t *self)
   //   gtk_widget_add_events(g->area,
   //                         GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK |
   //                         GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK | GDK_LEAVE_NOTIFY_MASK);
-  g_signal_connect(G_OBJECT(area), "expose-event", G_CALLBACK(dt_iop_area_expose), self);
+  g_signal_connect(G_OBJECT(area), "draw", G_CALLBACK(dt_iop_area_draw), self);
 //   g_signal_connect (G_OBJECT (area), "button-press-event",
 //                     G_CALLBACK (dt_iop_colorbalance_button_press), self);
 //   g_signal_connect (G_OBJECT (area), "motion-notify-event",

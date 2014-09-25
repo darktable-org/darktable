@@ -43,7 +43,7 @@ typedef struct dt_lib_darktable_t
 
 
 /* expose function for darktable module */
-static gboolean _lib_darktable_expose_callback(GtkWidget *widget, GdkEventExpose *event, gpointer user_data);
+static gboolean _lib_darktable_draw_callback(GtkWidget *widget, cairo_t *cr, gpointer user_data);
 /* button press callback */
 static gboolean _lib_darktable_button_press_callback(GtkWidget *widget, GdkEventButton *event,
                                                      gpointer user_data);
@@ -87,7 +87,7 @@ void gui_init(dt_lib_module_t *self)
   self->widget = gtk_event_box_new();
 
   /* connect callbacks */
-  g_signal_connect(G_OBJECT(self->widget), "expose-event", G_CALLBACK(_lib_darktable_expose_callback), self);
+  g_signal_connect(G_OBJECT(self->widget), "draw", G_CALLBACK(_lib_darktable_draw_callback), self);
   g_signal_connect(G_OBJECT(self->widget), "button-press-event",
                    G_CALLBACK(_lib_darktable_button_press_callback), self);
 
@@ -217,7 +217,7 @@ void gui_cleanup(dt_lib_module_t *self)
 
 
 
-static gboolean _lib_darktable_expose_callback(GtkWidget *widget, GdkEventExpose *event, gpointer user_data)
+static gboolean _lib_darktable_draw_callback(GtkWidget *widget, cairo_t *cr, gpointer user_data)
 {
   dt_lib_module_t *self = (dt_lib_module_t *)user_data;
   dt_lib_darktable_t *d = (dt_lib_darktable_t *)self->data;
@@ -225,8 +225,6 @@ static gboolean _lib_darktable_expose_callback(GtkWidget *widget, GdkEventExpose
   /* get the current style */
   GtkStyle *style = gtk_rc_get_style_by_paths(gtk_settings_get_default(), NULL, "GtkWidget", GTK_TYPE_WIDGET);
   if(!style) style = gtk_rc_get_style(widget);
-
-  cairo_t *cr = gdk_cairo_create(gtk_widget_get_window(widget));
 
   /* fill background */
   cairo_set_source_rgb(cr, style->bg[0].red / 65535.0, style->bg[0].green / 65535.0,
@@ -264,7 +262,6 @@ static gboolean _lib_darktable_expose_callback(GtkWidget *widget, GdkEventExpose
 
   /* cleanup */
   g_object_unref(layout);
-  cairo_destroy(cr);
 
   return TRUE;
 }

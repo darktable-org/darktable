@@ -567,7 +567,7 @@ static void dt_iop_colorzones_get_params(dt_iop_colorzones_params_t *p, const in
   }
 }
 
-static gboolean colorzones_expose(GtkWidget *widget, GdkEventExpose *event, gpointer user_data)
+static gboolean colorzones_draw(GtkWidget *widget, cairo_t *crf, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_colorzones_gui_data_t *c = (dt_iop_colorzones_gui_data_t *)self->gui_data;
@@ -852,10 +852,8 @@ static gboolean colorzones_expose(GtkWidget *widget, GdkEventExpose *event, gpoi
   cairo_set_operator(cr, CAIRO_OPERATOR_SOURCE);
 
   cairo_destroy(cr);
-  cairo_t *cr_pixmap = gdk_cairo_create(gtk_widget_get_window(widget));
-  cairo_set_source_surface(cr_pixmap, cst, 0, 0);
-  cairo_paint(cr_pixmap);
-  cairo_destroy(cr_pixmap);
+  cairo_set_source_surface(crf, cst, 0, 0);
+  cairo_paint(crf);
   cairo_surface_destroy(cst);
   return TRUE;
 }
@@ -1119,7 +1117,7 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_widget_add_events(GTK_WIDGET(c->area), GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK
                                              | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK
                                              | GDK_LEAVE_NOTIFY_MASK);
-  g_signal_connect(G_OBJECT(c->area), "expose-event", G_CALLBACK(colorzones_expose), self);
+  g_signal_connect(G_OBJECT(c->area), "draw", G_CALLBACK(colorzones_draw), self);
   g_signal_connect(G_OBJECT(c->area), "button-press-event", G_CALLBACK(colorzones_button_press), self);
   g_signal_connect(G_OBJECT(c->area), "button-release-event", G_CALLBACK(colorzones_button_release), self);
   g_signal_connect(G_OBJECT(c->area), "motion-notify-event", G_CALLBACK(colorzones_motion_notify), self);

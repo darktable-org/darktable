@@ -42,7 +42,7 @@ typedef struct dt_lib_histogram_t
   float color_w, button_h, button_y, button_spacing;
 } dt_lib_histogram_t;
 
-static gboolean _lib_histogram_expose_callback(GtkWidget *widget, GdkEventExpose *event, gpointer user_data);
+static gboolean _lib_histogram_draw_callback(GtkWidget *widget, cairo_t *cr, gpointer user_data);
 static gboolean _lib_histogram_motion_notify_callback(GtkWidget *widget, GdkEventMotion *event,
                                                       gpointer user_data);
 static gboolean _lib_histogram_button_press_callback(GtkWidget *widget, GdkEventButton *event,
@@ -131,7 +131,7 @@ void gui_init(dt_lib_module_t *self)
   /* connect callbacks */
   g_object_set(G_OBJECT(self->widget), "tooltip-text", _("drag to change exposure,\ndoubleclick resets"),
                (char *)NULL);
-  g_signal_connect(G_OBJECT(self->widget), "expose-event", G_CALLBACK(_lib_histogram_expose_callback), self);
+  g_signal_connect(G_OBJECT(self->widget), "draw", G_CALLBACK(_lib_histogram_draw_callback), self);
   g_signal_connect(G_OBJECT(self->widget), "button-press-event",
                    G_CALLBACK(_lib_histogram_button_press_callback), self);
   g_signal_connect(G_OBJECT(self->widget), "button-release-event",
@@ -241,7 +241,7 @@ static void _draw_mode_toggle(cairo_t *cr, float x, float y, float width, float 
   cairo_restore(cr);
 }
 
-static gboolean _lib_histogram_expose_callback(GtkWidget *widget, GdkEventExpose *event, gpointer user_data)
+static gboolean _lib_histogram_draw_callback(GtkWidget *widget, cairo_t *crf, gpointer user_data)
 {
   dt_lib_module_t *self = (dt_lib_module_t *)user_data;
   dt_lib_histogram_t *d = (dt_lib_histogram_t *)self->data;
@@ -424,10 +424,8 @@ static gboolean _lib_histogram_expose_callback(GtkWidget *widget, GdkEventExpose
   }
 
   cairo_destroy(cr);
-  cairo_t *cr_pixmap = gdk_cairo_create(gtk_widget_get_window(widget));
-  cairo_set_source_surface(cr_pixmap, cst, 0, 0);
-  cairo_paint(cr_pixmap);
-  cairo_destroy(cr_pixmap);
+  cairo_set_source_surface(crf, cst, 0, 0);
+  cairo_paint(crf);
   cairo_surface_destroy(cst);
   return TRUE;
 }

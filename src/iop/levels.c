@@ -41,9 +41,8 @@
 
 DT_MODULE_INTROSPECTION(2, dt_iop_levels_params_t)
 
-static gboolean dt_iop_levels_area_expose(GtkWidget *widget, GdkEventExpose *event, gpointer user_data);
-static gboolean dt_iop_levels_vbox_automatic_expose(GtkWidget *widget, GdkEventExpose *event,
-                                                    gpointer user_data);
+static gboolean dt_iop_levels_area_draw(GtkWidget *widget, cairo_t *crf, gpointer user_data);
+static gboolean dt_iop_levels_vbox_automatic_draw(GtkWidget *widget, cairo_t *cr, gpointer user_data);
 static gboolean dt_iop_levels_motion_notify(GtkWidget *widget, GdkEventMotion *event, gpointer user_data);
 static gboolean dt_iop_levels_button_press(GtkWidget *widget, GdkEventButton *event, gpointer user_data);
 static gboolean dt_iop_levels_button_release(GtkWidget *widget, GdkEventButton *event, gpointer user_data);
@@ -552,7 +551,7 @@ void gui_init(dt_iop_module_t *self)
   gtk_widget_add_events(GTK_WIDGET(c->area), GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK
                                              | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK
                                              | GDK_LEAVE_NOTIFY_MASK);
-  g_signal_connect(G_OBJECT(c->area), "expose-event", G_CALLBACK(dt_iop_levels_area_expose), self);
+  g_signal_connect(G_OBJECT(c->area), "draw", G_CALLBACK(dt_iop_levels_area_draw), self);
   g_signal_connect(G_OBJECT(c->area), "button-press-event", G_CALLBACK(dt_iop_levels_button_press), self);
   g_signal_connect(G_OBJECT(c->area), "button-release-event", G_CALLBACK(dt_iop_levels_button_release), self);
   g_signal_connect(G_OBJECT(c->area), "motion-notify-event", G_CALLBACK(dt_iop_levels_motion_notify), self);
@@ -634,8 +633,7 @@ void gui_init(dt_iop_module_t *self)
       break;
   }
 
-  g_signal_connect(G_OBJECT(c->vbox_automatic), "expose-event",
-                   G_CALLBACK(dt_iop_levels_vbox_automatic_expose), self);
+  g_signal_connect(G_OBJECT(c->vbox_automatic), "draw", G_CALLBACK(dt_iop_levels_vbox_automatic_draw), self);
 
   g_signal_connect(G_OBJECT(c->mode), "value-changed", G_CALLBACK(dt_iop_levels_mode_callback), self);
   g_signal_connect(G_OBJECT(c->percentile_black), "value-changed",
@@ -670,7 +668,7 @@ static gboolean dt_iop_levels_leave_notify(GtkWidget *widget, GdkEventCrossing *
   return TRUE;
 }
 
-static gboolean dt_iop_levels_area_expose(GtkWidget *widget, GdkEventExpose *event, gpointer user_data)
+static gboolean dt_iop_levels_area_draw(GtkWidget *widget, cairo_t *crf, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_levels_gui_data_t *c = (dt_iop_levels_gui_data_t *)self->gui_data;
@@ -841,16 +839,13 @@ static gboolean dt_iop_levels_area_expose(GtkWidget *widget, GdkEventExpose *eve
 
   // Cleaning up
   cairo_destroy(cr);
-  cairo_t *cr_pixmap = gdk_cairo_create(gtk_widget_get_window(GTK_WIDGET(c->area)));
-  cairo_set_source_surface(cr_pixmap, cst, 0, 0);
-  cairo_paint(cr_pixmap);
-  cairo_destroy(cr_pixmap);
+  cairo_set_source_surface(crf, cst, 0, 0);
+  cairo_paint(crf);
   cairo_surface_destroy(cst);
   return TRUE;
 }
 
-static gboolean dt_iop_levels_vbox_automatic_expose(GtkWidget *widget, GdkEventExpose *event,
-                                                    gpointer user_data)
+static gboolean dt_iop_levels_vbox_automatic_draw(GtkWidget *widget, cairo_t *cr, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_levels_gui_data_t *g = (dt_iop_levels_gui_data_t *)self->gui_data;

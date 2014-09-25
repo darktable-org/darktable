@@ -34,7 +34,7 @@ typedef struct dt_lib_ratings_t
 } dt_lib_ratings_t;
 
 /* redraw the ratings */
-static gboolean _lib_ratings_expose_callback(GtkWidget *widget, GdkEventExpose *event, gpointer user_data);
+static gboolean _lib_ratings_draw_callback(GtkWidget *widget, cairo_t *cr, gpointer user_data);
 /* motion notify handler*/
 static gboolean _lib_ratings_motion_notify_callback(GtkWidget *widget, GdkEventMotion *event,
                                                     gpointer user_data);
@@ -93,7 +93,7 @@ void gui_init(dt_lib_module_t *self)
   /* connect callbacks */
   gtk_widget_set_double_buffered(da, FALSE);
   gtk_widget_set_app_paintable(da, TRUE);
-  g_signal_connect(G_OBJECT(da), "expose-event", G_CALLBACK(_lib_ratings_expose_callback), self);
+  g_signal_connect(G_OBJECT(da), "draw", G_CALLBACK(_lib_ratings_draw_callback), self);
   g_signal_connect(G_OBJECT(da), "button-press-event", G_CALLBACK(_lib_ratings_button_press_callback), self);
   g_signal_connect(G_OBJECT(da), "button-release-event", G_CALLBACK(_lib_ratings_button_release_callback),
                    self);
@@ -112,7 +112,7 @@ void gui_cleanup(dt_lib_module_t *self)
   self->data = NULL;
 }
 
-static gboolean _lib_ratings_expose_callback(GtkWidget *widget, GdkEventExpose *event, gpointer user_data)
+static gboolean _lib_ratings_draw_callback(GtkWidget *widget, cairo_t *crf, gpointer user_data)
 {
   dt_lib_module_t *self = (dt_lib_module_t *)user_data;
   dt_lib_ratings_t *d = (dt_lib_ratings_t *)self->data;
@@ -161,10 +161,8 @@ static gboolean _lib_ratings_expose_callback(GtkWidget *widget, GdkEventExpose *
 
   /* blit memsurface onto widget*/
   cairo_destroy(cr);
-  cairo_t *cr_pixmap = gdk_cairo_create(gtk_widget_get_window(widget));
-  cairo_set_source_surface(cr_pixmap, cst, 0, 0);
-  cairo_paint(cr_pixmap);
-  cairo_destroy(cr_pixmap);
+  cairo_set_source_surface(crf, cst, 0, 0);
+  cairo_paint(crf);
   cairo_surface_destroy(cst);
 
   return TRUE;

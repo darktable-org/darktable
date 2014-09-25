@@ -790,7 +790,7 @@ static void _blendop_masks_polarity_callback(GtkToggleButton *togglebutton, dt_i
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
-static gboolean _blendop_blendif_expose(GtkWidget *widget, GdkEventExpose *event, dt_iop_module_t *module)
+static gboolean _blendop_blendif_draw(GtkWidget *widget, cairo_t *cr, dt_iop_module_t *module)
 {
   if(darktable.gui->reset) return FALSE;
 
@@ -1147,9 +1147,9 @@ void dt_iop_gui_init_blendif(GtkVBox *blendw, dt_iop_module_t *module)
     g_object_set(output, "tooltip-text", ttoutput, (char *)NULL);
     g_object_set(input, "tooltip-text", ttinput, (char *)NULL);
 
-    g_signal_connect(G_OBJECT(bd->lower_slider), "expose-event", G_CALLBACK(_blendop_blendif_expose), module);
+    g_signal_connect(G_OBJECT(bd->lower_slider), "draw", G_CALLBACK(_blendop_blendif_draw), module);
 
-    g_signal_connect(G_OBJECT(bd->upper_slider), "expose-event", G_CALLBACK(_blendop_blendif_expose), module);
+    g_signal_connect(G_OBJECT(bd->upper_slider), "draw", G_CALLBACK(_blendop_blendif_draw), module);
 
     g_signal_connect(G_OBJECT(bd->channel_tabs), "switch_page", G_CALLBACK(_blendop_blendif_tab_switch), bd);
 

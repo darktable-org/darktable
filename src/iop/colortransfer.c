@@ -584,7 +584,7 @@ void cleanup(dt_iop_module_t *module)
 
 #if 0
 static gboolean
-cluster_preview_expose (GtkWidget *widget, GdkEventExpose *event, dt_iop_module_t *self)
+cluster_preview_draw (GtkWidget *widget, cairo_t *crf, dt_iop_module_t *self)
 {
   // dt_iop_colortransfer_params_t *p = (dt_iop_colortransfer_params_t *)self->params;
   dt_iop_colortransfer_gui_data_t *g = (dt_iop_colortransfer_gui_data_t *)self->gui_data;
@@ -635,10 +635,8 @@ cluster_preview_expose (GtkWidget *widget, GdkEventExpose *event, dt_iop_module_
   }
 
   cairo_destroy(cr);
-  cairo_t *cr_pixmap = gdk_cairo_create(gtk_widget_get_window(widget));
-  cairo_set_source_surface (cr_pixmap, cst, 0, 0);
-  cairo_paint(cr_pixmap);
-  cairo_destroy(cr_pixmap);
+  cairo_set_source_surface (crf, cst, 0, 0);
+  cairo_paint(crf);
   cairo_surface_destroy(cst);
   return TRUE;
 }
@@ -663,13 +661,13 @@ void gui_init(struct dt_iop_module_t *self)
   g->xform = cmsCreateTransform(g->hLab, TYPE_Lab_DBL, g->hsRGB, TYPE_RGB_DBL, INTENT_PERCEPTUAL, 0);
 
   self->widget = GTK_WIDGET(gtk_vbox_new(FALSE, DT_GUI_IOP_MODULE_CONTROL_SPACING));
-  g_signal_connect (G_OBJECT(self->widget), "expose-event",
-                    G_CALLBACK(expose), self);
+  g_signal_connect (G_OBJECT(self->widget), "draw",
+                    G_CALLBACK(draw), self);
 
   g->area = gtk_drawing_area_new();
   gtk_widget_set_size_request(GTK_WIDGET(g->area), 300, 100);
   gtk_box_pack_start(GTK_BOX(self->widget), g->area, TRUE, TRUE, 0);
-  g_signal_connect (G_OBJECT (g->area), "expose-event", G_CALLBACK (cluster_preview_expose), self);
+  g_signal_connect (G_OBJECT (g->area), "draw", G_CALLBACK (cluster_preview_draw), self);
 
   GtkBox *box = GTK_BOX(gtk_hbox_new(FALSE, 5));
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(box), TRUE, TRUE, 0);

@@ -1915,7 +1915,7 @@ static void autoscale_pressed(GtkWidget *button, gpointer user_data)
   dt_bauhaus_slider_set(g->scale, scale);
 }
 
-static gboolean expose(GtkWidget *widget, GdkEventExpose *event, dt_iop_module_t *self)
+static gboolean draw(GtkWidget *widget, cairo_t *cr, dt_iop_module_t *self)
 {
   dt_iop_lensfun_gui_data_t *g = (dt_iop_lensfun_gui_data_t *)self->gui_data;
   if(darktable.gui->reset) return FALSE;
@@ -2013,7 +2013,7 @@ void gui_init(struct dt_iop_module_t *self)
 
   self->widget = gtk_vbox_new(TRUE, DT_BAUHAUS_SPACE);
 
-  g_signal_connect(G_OBJECT(self->widget), "expose-event", G_CALLBACK(expose), self);
+  g_signal_connect(G_OBJECT(self->widget), "draw", G_CALLBACK(draw), self);
 
   // camera selector
   GtkWidget *hbox = gtk_hbox_new(FALSE, 0);
