@@ -29,7 +29,7 @@ static void _togglebutton_get_preferred_height(GtkWidget *widget, gint *minimal_
 static void _togglebutton_size_allocate(GtkWidget *widget, GtkAllocation *allocation);
 // static void _togglebutton_realize(GtkWidget *widget);
 static gboolean _togglebutton_draw(GtkWidget *widget, cairo_t *cr);
-static void _togglebutton_destroy(GtkObject *object);
+static void _togglebutton_destroy(GtkWidget *object);
 
 void temp()
 {
@@ -114,17 +114,17 @@ static void _togglebutton_size_allocate(GtkWidget *widget, GtkAllocation *alloca
   }
 }
 
-static void _togglebutton_destroy(GtkObject *object)
+static void _togglebutton_destroy(GtkWidget *widget)
 {
   GtkDarktableToggleButtonClass *klass;
-  g_return_if_fail(object != NULL);
-  g_return_if_fail(DTGTK_IS_TOGGLEBUTTON(object));
+  g_return_if_fail(widget != NULL);
+  g_return_if_fail(DTGTK_IS_TOGGLEBUTTON(widget));
 
   // FIXME: or it should be g_type_class_ref () ?
   klass = g_type_class_peek(gtk_widget_get_type());
-  if(GTK_OBJECT_CLASS(klass)->destroy)
+  if(GTK_WIDGET_CLASS(klass)->destroy)
   {
-    (*GTK_OBJECT_CLASS(klass)->destroy)(object);
+    (*GTK_WIDGET_CLASS(klass)->destroy)(widget);
   }
 }
 

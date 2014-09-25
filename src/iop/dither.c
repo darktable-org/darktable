@@ -554,7 +554,7 @@ void gui_init(struct dt_iop_module_t *self)
 
 #if 0
   g->radius = dt_bauhaus_slider_new_with_range(self, 0.0, 200.0, 0.1, p->random.radius, 2);
-  g_object_set (GTK_OBJECT(g->radius), "tooltip-text", _("radius for blurring step"), (char *)NULL);
+  g_object_set (G_OBJECT(g->radius), "tooltip-text", _("radius for blurring step"), (char *)NULL);
   dt_bauhaus_widget_set_label(g->radius, NULL, _("radius"));
 
   g->range = dtgtk_gradient_slider_multivalue_new(4);
@@ -566,7 +566,7 @@ void gui_init(struct dt_iop_module_t *self)
   dtgtk_gradient_slider_multivalue_set_value(DTGTK_GRADIENT_SLIDER(g->range), p->random.range[1], 1);
   dtgtk_gradient_slider_multivalue_set_value(DTGTK_GRADIENT_SLIDER(g->range), p->random.range[2], 2);
   dtgtk_gradient_slider_multivalue_set_value(DTGTK_GRADIENT_SLIDER(g->range), p->random.range[3], 3);
-  g_object_set (GTK_OBJECT(g->range), "tooltip-text", _("the gradient range where to apply random dither"), (char *)NULL);
+  g_object_set (G_OBJECT(g->range), "tooltip-text", _("the gradient range where to apply random dither"), (char *)NULL);
   g->range_label = gtk_label_new(_("gradient range"));
 
   GtkWidget *rlabel = gtk_hbox_new(FALSE,0);
@@ -574,7 +574,7 @@ void gui_init(struct dt_iop_module_t *self)
 #endif
 
   g->damping = dt_bauhaus_slider_new_with_range(self, -200.0, 0.0, 1.0, p->random.damping, 3);
-  g_object_set(GTK_OBJECT(g->damping), "tooltip-text", _("damping level of random dither"), (char *)NULL);
+  g_object_set(G_OBJECT(g->damping), "tooltip-text", _("damping level of random dither"), (char *)NULL);
   dt_bauhaus_widget_set_label(g->damping, NULL, _("damping"));
   dt_bauhaus_slider_set_format(g->damping, "%.0fdB");
 

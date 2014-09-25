@@ -324,12 +324,12 @@ static gboolean _gradient_slider_scroll_event(GtkWidget *widget, GdkEventScroll 
 static void _gradient_slider_class_init(GtkDarktableGradientSliderClass *klass)
 {
   GtkWidgetClass *widget_class = (GtkWidgetClass *)klass;
-  GtkObjectClass *object_class = (GtkObjectClass *)klass;
+
   widget_class->realize = _gradient_slider_realize;
   widget_class->get_preferred_width = _gradient_slider_get_preferred_width;
   widget_class->get_preferred_height = _gradient_slider_get_preferred_height;
   widget_class->draw = _gradient_slider_draw;
-  object_class->destroy = _gradient_slider_destroy;
+  widget_class->destroy = _gradient_slider_destroy;
 
   widget_class->enter_notify_event = _gradient_slider_enter_notify_event;
   widget_class->leave_notify_event = _gradient_slider_leave_notify_event;
@@ -430,27 +430,27 @@ static void _gradient_slider_realize(GtkWidget *widget)
 }
 
 
-static void _gradient_slider_destroy(GtkObject *object)
+static void _gradient_slider_destroy(GtkWidget *widget)
 {
   GtkDarktableGradientSliderClass *klass;
-  g_return_if_fail(object != NULL);
-  g_return_if_fail(DTGTK_IS_GRADIENT_SLIDER(object));
+  g_return_if_fail(widget != NULL);
+  g_return_if_fail(DTGTK_IS_GRADIENT_SLIDER(widget));
 
-  if(DTGTK_GRADIENT_SLIDER(object)->timeout_handle)
-    g_source_remove(DTGTK_GRADIENT_SLIDER(object)->timeout_handle);
-  DTGTK_GRADIENT_SLIDER(object)->timeout_handle = 0;
+  if(DTGTK_GRADIENT_SLIDER(widget)->timeout_handle)
+    g_source_remove(DTGTK_GRADIENT_SLIDER(widget)->timeout_handle);
+  DTGTK_GRADIENT_SLIDER(widget)->timeout_handle = 0;
 
-  if(DTGTK_GRADIENT_SLIDER(object)->colors)
+  if(DTGTK_GRADIENT_SLIDER(widget)->colors)
   {
-    g_list_free_full(DTGTK_GRADIENT_SLIDER(object)->colors, g_free);
-    DTGTK_GRADIENT_SLIDER(object)->colors = NULL;
+    g_list_free_full(DTGTK_GRADIENT_SLIDER(widget)->colors, g_free);
+    DTGTK_GRADIENT_SLIDER(widget)->colors = NULL;
   }
 
   // FIXME: or it should be g_type_class_ref () ?
   klass = g_type_class_peek(gtk_widget_get_type());
-  if(GTK_OBJECT_CLASS(klass)->destroy)
+  if(GTK_WIDGET_CLASS(klass)->destroy)
   {
-    (*GTK_OBJECT_CLASS(klass)->destroy)(object);
+    (*GTK_WIDGET_CLASS(klass)->destroy)(widget);
   }
 }
 

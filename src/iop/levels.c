@@ -545,7 +545,7 @@ void gui_init(dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(c->vbox_manual), GTK_WIDGET(c->area), TRUE, TRUE, 0);
 
   gtk_widget_set_size_request(GTK_WIDGET(c->area), panel_width, panel_width * (9.0 / 16.0));
-  g_object_set(GTK_OBJECT(c->area), "tooltip-text",
+  g_object_set(G_OBJECT(c->area), "tooltip-text",
                _("drag handles to set black, gray, and white points.  operates on L channel."), (char *)NULL);
 
   gtk_widget_add_events(GTK_WIDGET(c->area), GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK

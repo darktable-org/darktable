@@ -549,7 +549,7 @@ void gui_init(struct dt_iop_module_t *self)
   g_signal_connect(G_OBJECT(g->area), "scroll-event", G_CALLBACK(dt_iop_monochrome_scrolled), self);
 
   g->highlights = dt_bauhaus_slider_new_with_range(self, 0.0, 1.0, 0.01, 0.0, 2);
-  g_object_set(GTK_OBJECT(g->highlights), "tooltip-text", _("how much to keep highlights"), (char *)NULL);
+  g_object_set(G_OBJECT(g->highlights), "tooltip-text", _("how much to keep highlights"), (char *)NULL);
   dt_bauhaus_widget_set_label(g->highlights, NULL, _("highlights"));
   gtk_box_pack_start(GTK_BOX(self->widget), g->highlights, TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(g->highlights), "value-changed", G_CALLBACK(highlights_callback), self);

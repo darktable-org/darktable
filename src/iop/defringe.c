@@ -449,7 +449,7 @@ void gui_init(dt_iop_module_t *module)
   dt_bauhaus_combobox_add(g->mode_select, _("local average (slow)"));    // 1
   dt_bauhaus_combobox_add(g->mode_select, _("static threshold (fast)")); // 2
   g_object_set(
-      GTK_OBJECT(g->mode_select), "tooltip-text",
+      G_OBJECT(g->mode_select), "tooltip-text",
       _("method for color protection:\n - global average: fast, might show slightly wrong previews in high "
         "magnification; might sometimes protect saturation too much or too low in comparison to local "
         "average\n - local average: slower, might protect saturation better than global average by using "

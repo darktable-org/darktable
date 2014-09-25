@@ -1131,7 +1131,7 @@ void gui_init(struct dt_iop_module_t *self)
 
   self->widget = gtk_vbox_new(FALSE, DT_BAUHAUS_SPACE);
   c->area = GTK_DRAWING_AREA(gtk_drawing_area_new());
-  g_object_set(GTK_OBJECT(c->area), "tooltip-text",
+  g_object_set(G_OBJECT(c->area), "tooltip-text",
                _("abscissa: input, ordinate: output. works on RGB channels"), (char *)NULL);
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(c->area), TRUE, TRUE, 0);
   int size = dt_conf_get_int("panel_width") * 0.95;

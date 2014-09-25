@@ -481,7 +481,7 @@ void gui_init(struct dt_iop_module_t *self)
 
   /* create the zonesystem bar widget */
   g->zones = gtk_drawing_area_new();
-  g_object_set(GTK_OBJECT(g->zones), "tooltip-text",
+  g_object_set(G_OBJECT(g->zones), "tooltip-text",
                _("lightness zones\nuse mouse scrollwheel to change the number of zones\nleft-click on a "
                  "border to create a marker\nright-click on a marker to delete it"),
                (char *)NULL);

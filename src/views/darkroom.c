@@ -892,7 +892,7 @@ static void _darkroom_ui_apply_style_popupmenu(GtkWidget *w, gpointer user_data)
       gtk_widget_set_tooltip_markup(mi, tooltip);
 
       gtk_menu_shell_append(menu, mi);
-      g_signal_connect_swapped(GTK_OBJECT(mi), "activate",
+      g_signal_connect_swapped(G_OBJECT(mi), "activate",
                                G_CALLBACK(_darkroom_ui_apply_style_activate_callback),
                                (gpointer)g_strdup(style->name));
       gtk_widget_show(mi);

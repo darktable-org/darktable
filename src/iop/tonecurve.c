@@ -747,7 +747,7 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(c->area), TRUE, TRUE, 0);
   const int panel_width = dt_conf_get_int("panel_width") * 0.95;
   gtk_widget_set_size_request(GTK_WIDGET(c->area), 0, panel_width);
-  g_object_set(GTK_OBJECT(c->area), "tooltip-text", _("double click to reset curve"), (char *)NULL);
+  g_object_set(G_OBJECT(c->area), "tooltip-text", _("double click to reset curve"), (char *)NULL);
 
   gtk_widget_add_events(GTK_WIDGET(c->area), GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK
                                              | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK
@@ -766,7 +766,7 @@ void gui_init(struct dt_iop_module_t *self)
   dt_bauhaus_combobox_add(c->autoscale_ab, _("automatic"));
   dt_bauhaus_combobox_add(c->autoscale_ab, C_("scale", "manual"));
   gtk_box_pack_start(GTK_BOX(self->widget), c->autoscale_ab, TRUE, TRUE, 0);
-  g_object_set(GTK_OBJECT(c->autoscale_ab), "tooltip-text",
+  g_object_set(G_OBJECT(c->autoscale_ab), "tooltip-text",
                _("if set to auto, a and b curves have no effect and are not displayed. chroma values (a and "
                  "b) of each pixel are then adjusted based on L curve data."),
                (char *)NULL);

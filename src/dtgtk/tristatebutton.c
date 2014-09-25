@@ -114,9 +114,9 @@ static void _tristatebutton_destroy(GtkObject *object)
   g_return_if_fail(object != NULL);
   g_return_if_fail(DTGTK_IS_TRISTATEBUTTON(object));
   klass = gtk_type_class(gtk_widget_get_type());
-  if (GTK_OBJECT_CLASS(klass)->destroy)
+  if (G_OBJECT_CLASS(klass)->destroy)
   {
-    (* GTK_OBJECT_CLASS(klass)->destroy) (object);
+    (* G_OBJECT_CLASS(klass)->destroy) (object);
   }
 }
 #endif

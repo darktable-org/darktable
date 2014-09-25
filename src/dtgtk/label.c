@@ -25,21 +25,14 @@
 static void _label_class_init(GtkDarktableLabelClass *klass);
 static void _label_init(GtkDarktableLabel *slider);
 static void _label_size_request(GtkWidget *widget, GtkRequisition *requisition);
-// static void _label_size_allocate(GtkWidget *widget, GtkAllocation *allocation);
-// static void _label_realize(GtkWidget *widget);
 static void _label_get_preferred_width(GtkWidget *widget, gint *minimal_width, gint *natural_width);
 static void _label_get_preferred_height(GtkWidget *widget, gint *minimal_height, gint *natural_height);
 static gboolean _label_draw(GtkWidget *widget, cairo_t *cr);
-// static void _label_destroy(GtkObject *object);
-
 
 static void _label_class_init(GtkDarktableLabelClass *klass)
 {
   GtkWidgetClass *widget_class = (GtkWidgetClass *)klass;
-  // GtkObjectClass *object_class=(GtkObjectClass *) klass;
-  // widget_class->realize = _label_realize;
-  // widget_class->size_allocate = _label_size_allocate;
-  // object_class->destroy = _label_destroy;
+
   widget_class->get_preferred_width = _label_get_preferred_width;
   widget_class->get_preferred_height = _label_get_preferred_height;
   widget_class->draw = _label_draw;
@@ -57,35 +50,6 @@ static void _label_size_request(GtkWidget *widget, GtkRequisition *requisition)
   requisition->width = -1;
   requisition->height = DT_PIXEL_APPLY_DPI(17);
 }
-
-/*static void _label_size_allocate(GtkWidget *widget, GtkAllocation *allocation)
-{
-  g_return_if_fail(widget != NULL);
-  g_return_if_fail(DTGTK_IS_LABEL(widget));
-  g_return_if_fail(allocation != NULL);
-
-  widget->allocation = *allocation;
-
-  if (gtk_widget_get_realized(widget)) {
-     gdk_window_move_resize(
-         gtk_widget_get_window(widget),
-         allocation.x, allocation.y,
-         allocation.width, allocation.height
-     );
-   }
-}*/
-
-/*
-static void _label_destroy(GtkObject *object)
-{
-  GtkDarktableLabelClass *klass;
-  g_return_if_fail(object != NULL);
-  g_return_if_fail(DTGTK_IS_LABEL(object));
-  klass = gtk_type_class(gtk_widget_get_type());
-  if (GTK_OBJECT_CLASS(klass)->destroy) {
-     (* GTK_OBJECT_CLASS(klass)->destroy) (object);
-  }
-}*/
 
 static void _label_get_preferred_width(GtkWidget *widget, gint *minimal_width, gint *natural_width)
 {
