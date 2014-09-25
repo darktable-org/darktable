@@ -711,7 +711,10 @@ static gboolean lowlight_motion_notify(GtkWidget *widget, GdkEventMotion *event,
   }
   gtk_widget_queue_draw(widget);
   gint x, y;
-  gdk_window_get_pointer(event->window, &x, &y, NULL);
+  gdk_window_get_device_position(event->window,
+                                 gdk_device_manager_get_client_pointer(
+                                     gdk_display_get_device_manager(gdk_window_get_display(event->window))),
+                                 &x, &y, NULL);
   return TRUE;
 }
 

@@ -173,7 +173,10 @@ static gboolean _lib_ratings_motion_notify_callback(GtkWidget *widget, GdkEventM
 {
   dt_lib_module_t *self = (dt_lib_module_t *)user_data;
   dt_lib_ratings_t *d = (dt_lib_ratings_t *)self->data;
-  gdk_window_get_pointer(event->window, &d->pointerx, &d->pointery, NULL);
+  gdk_window_get_device_position(event->window,
+                                 gdk_device_manager_get_client_pointer(
+                                     gdk_display_get_device_manager(gdk_window_get_display(event->window))),
+                                 &d->pointerx, &d->pointery, NULL);
   gtk_widget_queue_draw(self->widget);
   return TRUE;
 }

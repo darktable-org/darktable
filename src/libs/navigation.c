@@ -347,7 +347,10 @@ static gboolean _lib_navigation_motion_notify_callback(GtkWidget *widget, GdkEve
   gtk_widget_get_allocation(widget, &allocation);
   _lib_navigation_set_position(self, event->x, event->y, allocation.width, allocation.height);
   gint x, y; // notify gtk for motion_hint.
-  gdk_window_get_pointer(event->window, &x, &y, NULL);
+  gdk_window_get_device_position(event->window,
+                                 gdk_device_manager_get_client_pointer(
+                                     gdk_display_get_device_manager(gdk_window_get_display(event->window))),
+                                 &x, &y, NULL);
   return TRUE;
 }
 
