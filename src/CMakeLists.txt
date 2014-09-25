@@ -588,6 +588,11 @@ if(NOT SOURCE_PACKAGE AND NOT APPLE)
   # apple build fails on deprecated warnings..
   set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Werror -Werror=type-limits")
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Werror -Werror=type-limits")
+
+  #gtk3 porting: disable -Werror=deprecated-declarations for now
+  message(WARNING "REMOVE BEFORE FLIGHT")
+  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-error=deprecated-declarations")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-error=deprecated-declarations")
 elseif(SOURCE_PACKAGE)
   set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -D_RELEASE")
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -D_RELEASE")
