@@ -392,7 +392,7 @@ void gui_init(dt_imageio_module_format_t *self)
 
   int compress = dt_conf_get_int("plugins/imageio/format/tiff/compress");
 
-  self->widget = gtk_vbox_new(TRUE, 5);
+  self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
 
   GtkComboBoxText *bpp_combo = GTK_COMBO_BOX_TEXT(gtk_combo_box_text_new());
   gui->bpp = GTK_COMBO_BOX(bpp_combo);

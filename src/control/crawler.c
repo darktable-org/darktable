@@ -368,7 +368,7 @@ void dt_control_crawler_show_image_list(GList *images)
   gtk_alignment_set_padding(GTK_ALIGNMENT(alignment), 5, 0, 10, 10);
   gtk_container_add(GTK_CONTAINER(content_area), alignment);
 
-  GtkWidget *content_box = gtk_vbox_new(FALSE, 5);
+  GtkWidget *content_box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
   gtk_container_add(GTK_CONTAINER(alignment), content_box);
 
   gtk_box_pack_start(GTK_BOX(content_box), scroll, TRUE, TRUE, 0);

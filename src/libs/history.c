@@ -91,8 +91,8 @@ void gui_init(dt_lib_module_t *self)
   dt_lib_history_t *d = (dt_lib_history_t *)g_malloc0(sizeof(dt_lib_history_t));
   self->data = (void *)d;
 
-  self->widget = gtk_vbox_new(FALSE, 2);
-  d->history_box = gtk_vbox_new(FALSE, 0);
+  self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 2);
+  d->history_box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
 
   GtkWidget *hhbox = gtk_hbox_new(FALSE, 2);
 

@@ -1126,7 +1126,7 @@ void gui_init(struct dt_iop_module_t *self)
   dt_iop_vignette_params_t *p = (dt_iop_vignette_params_t *)self->params;
   GtkWidget *hbox, *label1;
 
-  self->widget = gtk_vbox_new(FALSE, DT_BAUHAUS_SPACE);
+  self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
 
   label1 = dtgtk_reset_label_new(_("automatic ratio"), self, &p->autoratio, sizeof p->autoratio);
 

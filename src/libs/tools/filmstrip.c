@@ -290,7 +290,7 @@ void gui_init(dt_lib_module_t *self)
   dt_gui_hist_dialog_init(&d->dg);
 
   /* creating drawing area */
-  self->widget = gtk_vbox_new(FALSE, 0);
+  self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
 
 
   /* creating filmstrip box*/

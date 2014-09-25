@@ -876,7 +876,7 @@ void gui_init(struct dt_iop_module_t *self)
   dt_iop_temperature_params_t *p = (dt_iop_temperature_params_t *)self->default_params;
 
   self->request_color_pick = DT_REQUEST_COLORPICK_OFF;
-  self->widget = gtk_vbox_new(TRUE, DT_BAUHAUS_SPACE);
+  self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
   g_signal_connect(G_OBJECT(self->widget), "draw", G_CALLBACK(draw), self);
 
   for(int k = 0; k < 3; k++) g->daylight_wb[k] = 1.0f;

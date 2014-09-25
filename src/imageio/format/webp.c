@@ -270,7 +270,7 @@ void gui_init(dt_imageio_module_format_t *self)
   int quality = dt_conf_get_int("plugins/imageio/format/webp/quality");
   int hint = dt_conf_get_int("plugins/imageio/format/webp/hint");
 
-  self->widget = gtk_vbox_new(TRUE, 5);
+  self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
   GtkWidget *comp_type_label = gtk_label_new(_("compression type"));
   gtk_misc_set_alignment(GTK_MISC(comp_type_label), 0.0, 0.5);
   gtk_box_pack_start(GTK_BOX(self->widget), comp_type_label, TRUE, TRUE, 0);

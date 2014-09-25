@@ -398,9 +398,9 @@ void gui_init(dt_lib_module_t *self)
 {
   unsigned int i;
 
-  GtkWidget *container = gtk_vbox_new(FALSE, 5);
+  GtkWidget *container = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
   GtkWidget *output_row = gtk_hbox_new(FALSE, 2);
-  GtkWidget *output_options = gtk_vbox_new(FALSE, 5);
+  GtkWidget *output_options = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
   GtkWidget *picker_subrow = gtk_hbox_new(FALSE, 2);
   GtkWidget *restrict_button;
   GtkWidget *samples_label
@@ -529,7 +529,7 @@ void gui_init(dt_lib_module_t *self)
 
   g_signal_connect(G_OBJECT(data->add_sample_button), "clicked", G_CALLBACK(_add_sample), self);
 
-  data->samples_container = gtk_vbox_new(FALSE, 2);
+  data->samples_container = gtk_box_new(GTK_ORIENTATION_VERTICAL, 2);
   gtk_box_pack_start(GTK_BOX(container), data->samples_container, TRUE, TRUE, 0);
 
   data->display_samples_check_box = gtk_check_button_new_with_label(_("display sample areas on image"));

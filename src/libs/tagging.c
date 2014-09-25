@@ -373,7 +373,7 @@ void gui_init(dt_lib_module_t *self)
   self->data = (void *)d;
   d->imgsel = -1;
 
-  self->widget = gtk_vbox_new(TRUE, 5);
+  self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
   //   gtk_widget_set_size_request(self->widget, DT_PIXEL_APPLY_DPI(100), -1);
 
   GtkBox *box, *hbox;
@@ -382,7 +382,7 @@ void gui_init(dt_lib_module_t *self)
   GtkListStore *liststore;
 
   // left side, current
-  box = GTK_BOX(gtk_vbox_new(FALSE, 5));
+  box = GTK_BOX(gtk_box_new(GTK_ORIENTATION_VERTICAL, 5));
 
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(box), TRUE, TRUE, 0);
   w = gtk_scrolled_window_new(NULL, NULL);
@@ -421,7 +421,7 @@ void gui_init(dt_lib_module_t *self)
   gtk_box_pack_start(box, GTK_WIDGET(hbox), FALSE, TRUE, 0);
 
   // right side, related
-  box = GTK_BOX(gtk_vbox_new(FALSE, 5));
+  box = GTK_BOX(gtk_box_new(GTK_ORIENTATION_VERTICAL, 5));
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(box), TRUE, TRUE, 5);
 
   // text entry and new button

@@ -73,7 +73,7 @@ int expandable()
 void gui_init(dt_lib_module_t *self)
 {
   /* initialize base */
-  self->widget = gtk_vbox_new(FALSE, 0);
+  self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
   gtk_widget_set_no_show_all(self->widget, TRUE);
   gtk_container_set_border_width(GTK_CONTAINER(self->widget), 5);
 
@@ -133,7 +133,7 @@ static void *_lib_backgroundjobs_added(dt_lib_module_t *self, gboolean has_progr
 
   /* initialize the ui elements for job */
   gtk_widget_set_name(GTK_WIDGET(instance->widget), "background_job_eventbox");
-  GtkBox *vbox = GTK_BOX(gtk_vbox_new(FALSE, 0));
+  GtkBox *vbox = GTK_BOX(gtk_box_new(GTK_ORIENTATION_VERTICAL, 0));
   instance->hbox = gtk_hbox_new(FALSE, 0);
   gtk_container_set_border_width(GTK_CONTAINER(vbox), 2);
   gtk_container_add(GTK_CONTAINER(instance->widget), GTK_WIDGET(vbox));

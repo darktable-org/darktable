@@ -439,7 +439,7 @@ void gui_init(dt_iop_module_t *module)
   dt_iop_defringe_gui_data_t *g = (dt_iop_defringe_gui_data_t *)module->gui_data;
   dt_iop_defringe_params_t *p = (dt_iop_defringe_params_t *)module->params;
 
-  module->widget = gtk_vbox_new(FALSE, DT_BAUHAUS_SPACE);
+  module->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
 
   /* mode selection */
   g->mode_select = dt_bauhaus_combobox_new(module);

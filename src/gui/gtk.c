@@ -1069,7 +1069,7 @@ static void init_widgets(dt_gui_gtk_t *gui)
   container = widget;
 
   // Adding the outermost vbox
-  widget = gtk_vbox_new(FALSE, 0);
+  widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
   gtk_container_add(GTK_CONTAINER(container), widget);
   gtk_widget_show(widget);
 
@@ -1165,7 +1165,7 @@ void init_main_table(GtkWidget *container)
   /*
    * initialize the center top/center/bottom
    */
-  widget = gtk_vbox_new(FALSE, 0);
+  widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
   gtk_table_attach(GTK_TABLE(container), widget, 2, 3, 1, 2, GTK_EXPAND | GTK_FILL, GTK_EXPAND | GTK_FILL, 0,
                    0);
 
@@ -1377,7 +1377,7 @@ GtkWidget *dt_ui_main_window(dt_ui_t *ui)
 
 static GtkWidget *_ui_init_panel_container_top(GtkWidget *container)
 {
-  GtkWidget *w = gtk_vbox_new(FALSE, DT_UI_PANEL_MODULE_SPACING);
+  GtkWidget *w = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_UI_PANEL_MODULE_SPACING);
   gtk_box_pack_start(GTK_BOX(container), w, FALSE, FALSE, 4);
   return w;
 }
@@ -1410,7 +1410,7 @@ static GtkWidget *_ui_init_panel_container_center(GtkWidget *container, gboolean
 
   /* create the container */
   container = widget;
-  widget = gtk_vbox_new(FALSE, DT_UI_PANEL_MODULE_SPACING);
+  widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_UI_PANEL_MODULE_SPACING);
   gtk_widget_set_name(widget, "plugins_vbox_left");
   gtk_widget_set_size_request(widget, 0, -1);
   gtk_container_add(GTK_CONTAINER(container), widget);
@@ -1420,7 +1420,7 @@ static GtkWidget *_ui_init_panel_container_center(GtkWidget *container, gboolean
 
 static GtkWidget *_ui_init_panel_container_bottom(GtkWidget *container)
 {
-  GtkWidget *w = gtk_vbox_new(FALSE, DT_UI_PANEL_MODULE_SPACING);
+  GtkWidget *w = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_UI_PANEL_MODULE_SPACING);
   gtk_box_pack_start(GTK_BOX(container), w, FALSE, FALSE, DT_UI_PANEL_MODULE_SPACING);
   return w;
 }
@@ -1441,7 +1441,7 @@ static void _ui_init_panel_left(dt_ui_t *ui, GtkWidget *container)
 
   // Adding the vbox which will contain TOP,CENTER,BOTTOM
   container = widget;
-  widget = gtk_vbox_new(FALSE, 0);
+  widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
   gtk_container_add(GTK_CONTAINER(container), widget);
 
   /* add top,center,bottom*/
@@ -1470,7 +1470,7 @@ static void _ui_init_panel_right(dt_ui_t *ui, GtkWidget *container)
 
   // Adding the vbox which will containt TOP,CENTER,BOTTOM
   container = widget;
-  widget = gtk_vbox_new(FALSE, 0);
+  widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
   gtk_container_add(GTK_CONTAINER(container), widget);
   gtk_widget_set_size_request(widget, 0, -1);
 
@@ -1563,7 +1563,7 @@ static void _ui_init_panel_center_bottom(dt_ui_t *ui, GtkWidget *container)
                      DT_UI_PANEL_MODULE_SPACING);
 
   /* adding the center box */
-  ui->containers[DT_UI_CONTAINER_PANEL_CENTER_BOTTOM_CENTER] = gtk_vbox_new(FALSE, 0);
+  ui->containers[DT_UI_CONTAINER_PANEL_CENTER_BOTTOM_CENTER] = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
   gtk_box_pack_start(GTK_BOX(widget), ui->containers[DT_UI_CONTAINER_PANEL_CENTER_BOTTOM_CENTER], FALSE, TRUE,
                      DT_UI_PANEL_MODULE_SPACING);
 

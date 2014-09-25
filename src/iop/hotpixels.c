@@ -399,7 +399,7 @@ void gui_init(dt_iop_module_t *self)
   dt_iop_hotpixels_params_t *p = (dt_iop_hotpixels_params_t *)self->params;
   g->pixels_fixed = -1;
 
-  self->widget = gtk_vbox_new(FALSE, DT_BAUHAUS_SPACE);
+  self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
   g_signal_connect(G_OBJECT(self->widget), "draw", G_CALLBACK(draw), self);
 
   /* threshold */

@@ -156,7 +156,7 @@ static _camera_gconf_widget_t *_camera_import_gconf_widget(_camera_import_dialog
 {
   _camera_gconf_widget_t *gcw = calloc(1, sizeof(_camera_gconf_widget_t));
   GtkWidget *vbox, *hbox;
-  gcw->widget = vbox = GTK_WIDGET(gtk_vbox_new(FALSE, 0));
+  gcw->widget = vbox = GTK_WIDGET(gtk_box_new(GTK_ORIENTATION_VERTICAL, 0));
   hbox = GTK_WIDGET(gtk_hbox_new(FALSE, 0));
   g_object_set_data(G_OBJECT(vbox), "gconf:string", confstring);
   gcw->dialog = dlg;
@@ -211,7 +211,7 @@ static void _camera_import_dialog_new(_camera_import_dialog_t *data)
   data->store = gtk_list_store_new(2, GDK_TYPE_PIXBUF, G_TYPE_STRING);
 
   // IMPORT PAGE
-  data->import.page = gtk_vbox_new(FALSE, 5);
+  data->import.page = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
   gtk_container_set_border_width(GTK_CONTAINER(data->import.page), 5);
 
   // Top info
@@ -255,7 +255,7 @@ static void _camera_import_dialog_new(_camera_import_dialog_t *data)
 
 
   // SETTINGS PAGE
-  data->settings.page = gtk_vbox_new(FALSE, 5);
+  data->settings.page = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
   gtk_container_set_border_width(GTK_CONTAINER(data->settings.page), 5);
 
   // general settings

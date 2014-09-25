@@ -1695,7 +1695,7 @@ GtkWidget *dt_iop_gui_get_expander(dt_iop_module_t *module)
 {
   int bs = DT_PIXEL_APPLY_DPI(12);
   char tooltip[512];
-  GtkWidget *expander = gtk_vbox_new(FALSE, 3);
+  GtkWidget *expander = gtk_box_new(GTK_ORIENTATION_VERTICAL, 3);
   GtkWidget *header_evb = gtk_event_box_new();
   GtkWidget *header = gtk_hbox_new(FALSE, 0);
   GtkWidget *pluginui_frame = gtk_frame_new(NULL);
@@ -1805,7 +1805,7 @@ GtkWidget *dt_iop_gui_get_expander(dt_iop_module_t *module)
 
 
   /* add the blending ui if supported */
-  GtkWidget *iopw = gtk_vbox_new(FALSE, 3 * DT_BAUHAUS_SPACE);
+  GtkWidget *iopw = gtk_box_new(GTK_ORIENTATION_VERTICAL, 3 * DT_BAUHAUS_SPACE);
   gtk_box_pack_start(GTK_BOX(iopw), module->widget, TRUE, TRUE, 0);
   dt_iop_gui_init_blending(iopw, module);
 

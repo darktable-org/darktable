@@ -546,8 +546,8 @@ void init_tab_lua(GtkWidget *dialog, GtkWidget *tab)
   char tooltip[1024];
   GtkWidget *label, *labelev;
   GtkWidget *hbox = gtk_hbox_new(5, FALSE);
-  GtkWidget *vbox1 = gtk_vbox_new(5, TRUE);
-  GtkWidget *vbox2 = gtk_vbox_new(5, TRUE);
+  GtkWidget *vbox1 = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
+  GtkWidget *vbox2 = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
   gtk_box_pack_start(GTK_BOX(hbox), vbox1, FALSE, FALSE, 0);
   gtk_box_pack_start(GTK_BOX(hbox), vbox2, FALSE, FALSE, 0);
   GtkWidget *alignment = gtk_alignment_new(0.5, 0.0, 1.0, 0.0);

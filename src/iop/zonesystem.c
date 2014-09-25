@@ -467,7 +467,7 @@ void gui_init(struct dt_iop_module_t *self)
 
   dt_pthread_mutex_init(&g->lock, NULL);
 
-  self->widget = gtk_vbox_new(FALSE, DT_GUI_IOP_MODULE_CONTROL_SPACING);
+  self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_GUI_IOP_MODULE_CONTROL_SPACING);
 
   /* create the zone preview widget */
   const int panel_width = dt_conf_get_int("panel_width") * 0.8;

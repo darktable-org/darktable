@@ -142,7 +142,7 @@ int dt_gui_hist_dialog_new(dt_gui_hist_dialog_t *d, int imgid, gboolean iscopy)
   GtkWidget *alignment = gtk_alignment_new(0.5, 0.5, 1.0, 1.0);
   gtk_alignment_set_padding(GTK_ALIGNMENT(alignment), 5, 5, 5, 5);
   gtk_container_add(content_area, alignment);
-  GtkBox *box = GTK_BOX(gtk_vbox_new(FALSE, 3));
+  GtkBox *box = GTK_BOX(gtk_box_new(GTK_ORIENTATION_VERTICAL, 3));
   gtk_container_add(GTK_CONTAINER(alignment), GTK_WIDGET(box));
 
   /* create the list of items */

@@ -660,7 +660,7 @@ void gui_init(struct dt_iop_module_t *self)
   g->hLab  = dt_colorspaces_create_lab_profile();
   g->xform = cmsCreateTransform(g->hLab, TYPE_Lab_DBL, g->hsRGB, TYPE_RGB_DBL, INTENT_PERCEPTUAL, 0);
 
-  self->widget = GTK_WIDGET(gtk_vbox_new(FALSE, DT_GUI_IOP_MODULE_CONTROL_SPACING));
+  self->widget = GTK_WIDGET(gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_GUI_IOP_MODULE_CONTROL_SPACING));
   g_signal_connect (G_OBJECT(self->widget), "draw",
                     G_CALLBACK(draw), self);
 

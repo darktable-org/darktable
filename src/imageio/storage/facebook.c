@@ -987,7 +987,7 @@ void gui_init(struct dt_imageio_module_storage_t *self)
   dt_storage_facebook_gui_data_t *ui = self->gui_data;
   ui->facebook_api = fb_api_init();
 
-  self->widget = gtk_vbox_new(FALSE, 0);
+  self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
 
   // create labels
   ui->label_album_title = GTK_LABEL(gtk_label_new(_("title")));
@@ -1055,8 +1055,8 @@ void gui_init(struct dt_imageio_module_storage_t *self)
   // pack the ui
   ////the auth box
   GtkWidget *hbox_auth = gtk_hbox_new(FALSE, 5);
-  GtkWidget *vbox_auth_labels = gtk_vbox_new(FALSE, 0);
-  GtkWidget *vbox_auth_fields = gtk_vbox_new(FALSE, 0);
+  GtkWidget *vbox_auth_labels = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
+  GtkWidget *vbox_auth_fields = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
   gtk_box_pack_start(GTK_BOX(hbox_auth), vbox_auth_labels, FALSE, FALSE, 0);
   gtk_box_pack_start(GTK_BOX(hbox_auth), vbox_auth_fields, TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(hbox_auth), TRUE, FALSE, 2);
@@ -1070,8 +1070,8 @@ void gui_init(struct dt_imageio_module_storage_t *self)
   ////the album creation box
   ui->hbox_album = GTK_BOX(gtk_hbox_new(FALSE, 5));
   gtk_widget_set_no_show_all(GTK_WIDGET(ui->hbox_album), TRUE); // hide it by default
-  GtkWidget *vbox_album_labels = gtk_vbox_new(FALSE, 0);
-  GtkWidget *vbox_album_fields = gtk_vbox_new(FALSE, 0);
+  GtkWidget *vbox_album_labels = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
+  GtkWidget *vbox_album_fields = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(ui->hbox_album), TRUE, FALSE, 5);
   gtk_box_pack_start(GTK_BOX(ui->hbox_album), vbox_album_labels, FALSE, FALSE, 0);
   gtk_box_pack_start(GTK_BOX(ui->hbox_album), vbox_album_fields, TRUE, TRUE, 0);

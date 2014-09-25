@@ -339,7 +339,7 @@ void gui_init(struct dt_iop_module_t *self)
   dt_iop_velvia_gui_data_t *g = (dt_iop_velvia_gui_data_t *)self->gui_data;
   dt_iop_velvia_params_t *p = (dt_iop_velvia_params_t *)self->params;
 
-  self->widget = gtk_vbox_new(FALSE, DT_BAUHAUS_SPACE);
+  self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
 
   /* strength */
   g->strength_scale = dt_bauhaus_slider_new_with_range(self, 0.0, 100.0, 1, p->strength, 0);

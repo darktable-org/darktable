@@ -1129,7 +1129,7 @@ void gui_init(struct dt_iop_module_t *self)
   c->selected = -1;
   c->loglogscale = 0;
 
-  self->widget = gtk_vbox_new(FALSE, DT_BAUHAUS_SPACE);
+  self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
   c->area = GTK_DRAWING_AREA(gtk_drawing_area_new());
   g_object_set(G_OBJECT(c->area), "tooltip-text",
                _("abscissa: input, ordinate: output. works on RGB channels"), (char *)NULL);

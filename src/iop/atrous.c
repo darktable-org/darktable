@@ -1358,8 +1358,8 @@ void gui_init(struct dt_iop_module_t *self)
   c->dragging = 0;
   c->x_move = -1;
   c->mouse_radius = 1.0 / BANDS;
-  self->widget = gtk_vbox_new(FALSE, DT_BAUHAUS_SPACE);
-  GtkWidget *vbox = gtk_vbox_new(FALSE, 0);
+  self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
+  GtkWidget *vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), vbox, FALSE, FALSE, 0);
 
   c->channel_tabs = GTK_NOTEBOOK(gtk_notebook_new());

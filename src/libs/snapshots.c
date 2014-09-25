@@ -281,8 +281,8 @@ void gui_init(dt_lib_module_t *self)
   d->vertical = TRUE;
 
   /* initialize ui containers */
-  self->widget = gtk_vbox_new(FALSE, 2);
-  d->snapshots_box = gtk_vbox_new(FALSE, 0);
+  self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 2);
+  d->snapshots_box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
 
   /* create take snapshot button */
   GtkWidget *button = gtk_button_new_with_label(_("take snapshot"));

@@ -1598,7 +1598,7 @@ void gui_init(dt_lib_module_t *self)
                                         cairo_image_surface_get_stride(used_cst), NULL, NULL);
 
   // initialise widgets
-  self->widget = gtk_vbox_new(FALSE, 2);
+  self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 2);
   GtkWidget *hbox = gtk_hbox_new(FALSE, 0);
 
   GtkWidget *label = gtk_label_new(_("created shapes"));

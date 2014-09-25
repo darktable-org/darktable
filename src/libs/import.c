@@ -222,7 +222,7 @@ void _lib_import_ui_devices_update(dt_lib_module_t *self)
 
       /* add camera actions buttons */
       GtkWidget *ib = NULL, *tb = NULL;
-      GtkWidget *vbx = gtk_vbox_new(FALSE, 5);
+      GtkWidget *vbx = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
       if(camera->can_import == TRUE)
       {
         gtk_box_pack_start(GTK_BOX(vbx), (ib = gtk_button_new_with_label(_("import from camera"))), FALSE,
@@ -384,7 +384,7 @@ static GtkWidget *_lib_import_get_extra_widget(dt_lib_import_metadata_t *data, g
   gtk_container_add(GTK_CONTAINER(alignment), expander);
 
   GtkWidget *extra;
-  extra = gtk_vbox_new(FALSE, 0);
+  extra = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
   gtk_container_add(GTK_CONTAINER(expander), extra);
 
   GtkWidget *recursive = NULL, *ignore_jpeg = NULL;
@@ -828,7 +828,7 @@ void gui_init(dt_lib_module_t *self)
   /* initialize ui widgets */
   dt_lib_import_t *d = (dt_lib_import_t *)g_malloc0(sizeof(dt_lib_import_t));
   self->data = (void *)d;
-  self->widget = gtk_vbox_new(FALSE, 5);
+  self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
 
   /* add import single image buttons */
   GtkWidget *widget = gtk_button_new_with_label(_("image"));
@@ -852,7 +852,7 @@ void gui_init(dt_lib_module_t *self)
 
 #ifdef HAVE_GPHOTO2
   /* add devices container for cameras */
-  d->devices = GTK_BOX(gtk_vbox_new(FALSE, 5));
+  d->devices = GTK_BOX(gtk_box_new(GTK_ORIENTATION_VERTICAL, 5));
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(d->devices), FALSE, FALSE, 0);
 
   /* initialize camctl listener and update devices */

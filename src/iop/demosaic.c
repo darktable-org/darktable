@@ -2144,7 +2144,7 @@ void gui_init(struct dt_iop_module_t *self)
   dt_iop_demosaic_gui_data_t *g = (dt_iop_demosaic_gui_data_t *)self->gui_data;
   dt_iop_demosaic_params_t *p = (dt_iop_demosaic_params_t *)self->params;
 
-  self->widget = gtk_vbox_new(TRUE, DT_BAUHAUS_SPACE);
+  self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
 
   g->demosaic_method_bayer = dt_bauhaus_combobox_new(self);
   dt_bauhaus_widget_set_label(g->demosaic_method_bayer, NULL, _("method"));

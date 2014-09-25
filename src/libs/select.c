@@ -83,7 +83,7 @@ void gui_init(dt_lib_module_t *self)
 {
   dt_lib_select_t *d = (dt_lib_select_t *)malloc(sizeof(dt_lib_select_t));
   self->data = d;
-  self->widget = gtk_vbox_new(TRUE, 5);
+  self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
   GtkBox *hbox;
   GtkWidget *button;
   hbox = GTK_BOX(gtk_hbox_new(TRUE, 5));

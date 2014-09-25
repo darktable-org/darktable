@@ -525,7 +525,7 @@ void gui_init(dt_iop_module_t *self)
   c->last_picked_color = -1;
   for(int i = 0; i < 3; i++)
     for(int j = 0; j < 2; j++) c->pick_xy_positions[i][j] = -1;
-  self->widget = GTK_WIDGET(gtk_vbox_new(FALSE, 5));
+  self->widget = GTK_WIDGET(gtk_box_new(GTK_ORIENTATION_VERTICAL, 5));
 
   c->mode = dt_bauhaus_combobox_new(self);
   dt_bauhaus_widget_set_label(c->mode, NULL, _("mode"));
@@ -541,7 +541,7 @@ void gui_init(dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), c->mode, TRUE, TRUE, 0);
 
   c->area = GTK_DRAWING_AREA(gtk_drawing_area_new());
-  c->vbox_manual = GTK_WIDGET(gtk_vbox_new(FALSE, 5));
+  c->vbox_manual = GTK_WIDGET(gtk_box_new(GTK_ORIENTATION_VERTICAL, 5));
   gtk_box_pack_start(GTK_BOX(c->vbox_manual), GTK_WIDGET(c->area), TRUE, TRUE, 0);
 
   gtk_widget_set_size_request(GTK_WIDGET(c->area), panel_width, panel_width * (9.0 / 16.0));
@@ -614,7 +614,7 @@ void gui_init(dt_iop_module_t *self)
   dt_bauhaus_slider_set_format(c->percentile_white, "%.1f%%");
   dt_bauhaus_widget_set_label(c->percentile_white, NULL, _("white"));
 
-  c->vbox_automatic = GTK_WIDGET(gtk_vbox_new(FALSE, 5));
+  c->vbox_automatic = GTK_WIDGET(gtk_box_new(GTK_ORIENTATION_VERTICAL, 5));
   gtk_box_pack_start(GTK_BOX(c->vbox_automatic), GTK_WIDGET(c->percentile_black), FALSE, FALSE, 0);
   gtk_box_pack_start(GTK_BOX(c->vbox_automatic), GTK_WIDGET(c->percentile_grey), FALSE, FALSE, 0);
   gtk_box_pack_start(GTK_BOX(c->vbox_automatic), GTK_WIDGET(c->percentile_white), FALSE, FALSE, 0);

@@ -135,7 +135,7 @@ void gui_init(dt_imageio_module_storage_t *self)
 {
   latex_t *d = (latex_t *)malloc(sizeof(latex_t));
   self->gui_data = (void *)d;
-  self->widget = gtk_vbox_new(TRUE, 5);
+  self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
   GtkWidget *hbox = gtk_hbox_new(FALSE, 5);
   gtk_box_pack_start(GTK_BOX(self->widget), hbox, TRUE, TRUE, 0);
   GtkWidget *widget;

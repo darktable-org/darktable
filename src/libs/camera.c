@@ -387,7 +387,7 @@ void gui_post_expose(dt_lib_module_t *self, cairo_t *cr, int32_t width, int32_t 
 
 void gui_init(dt_lib_module_t *self)
 {
-  self->widget = gtk_vbox_new(FALSE, 5);
+  self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
   self->data = calloc(1, sizeof(dt_lib_camera_t));
 
   // Setup lib data
@@ -399,15 +399,15 @@ void gui_init(dt_lib_module_t *self)
   lib->data.listener->camera_property_accessibility_changed = _camera_property_accessibility_changed;
 
   // Setup gui
-  self->widget = gtk_vbox_new(FALSE, 5);
+  self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
   GtkBox *hbox, *vbox1, *vbox2;
 
   // Camera control
   gtk_box_pack_start(GTK_BOX(self->widget),
                      dtgtk_label_new(_("camera control"), DARKTABLE_LABEL_TAB | DARKTABLE_LABEL_ALIGN_RIGHT),
                      TRUE, TRUE, 5);
-  vbox1 = GTK_BOX(gtk_vbox_new(TRUE, 0));
-  vbox2 = GTK_BOX(gtk_vbox_new(TRUE, 0));
+  vbox1 = GTK_BOX(gtk_box_new(GTK_ORIENTATION_VERTICAL, 0));
+  vbox2 = GTK_BOX(gtk_box_new(GTK_ORIENTATION_VERTICAL, 0));
 
   lib->gui.label1 = gtk_label_new(_("modes"));
   lib->gui.label2 = gtk_label_new(_("timer (s)"));
@@ -487,8 +487,8 @@ void gui_init(dt_lib_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget),
                      dtgtk_label_new(_("properties"), DARKTABLE_LABEL_TAB | DARKTABLE_LABEL_ALIGN_RIGHT),
                      TRUE, TRUE, 0);
-  lib->gui.pvbox1 = GTK_BOX(gtk_vbox_new(TRUE, 0));
-  lib->gui.pvbox2 = GTK_BOX(gtk_vbox_new(TRUE, 0));
+  lib->gui.pvbox1 = GTK_BOX(gtk_box_new(GTK_ORIENTATION_VERTICAL, 0));
+  lib->gui.pvbox2 = GTK_BOX(gtk_box_new(GTK_ORIENTATION_VERTICAL, 0));
 
   if((prop = _lib_property_add_new(lib, _("program"), "expprogram")) != NULL)
   {
@@ -652,8 +652,8 @@ void gui_init(dt_lib_module_t *self)
       GTK_BOX(self->widget),
       dtgtk_label_new(_("additional properties"), DARKTABLE_LABEL_TAB | DARKTABLE_LABEL_ALIGN_RIGHT), TRUE,
       TRUE, 5);
-  vbox1 = GTK_BOX(gtk_vbox_new(TRUE, 0));
-  vbox2 = GTK_BOX(gtk_vbox_new(TRUE, 0));
+  vbox1 = GTK_BOX(gtk_box_new(GTK_ORIENTATION_VERTICAL, 0));
+  vbox2 = GTK_BOX(gtk_box_new(GTK_ORIENTATION_VERTICAL, 0));
 
   gtk_box_pack_start(vbox1, GTK_WIDGET(gtk_label_new(_("label"))), TRUE, TRUE, 0);
   lib->gui.plabel = gtk_entry_new();

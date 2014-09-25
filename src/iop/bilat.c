@@ -254,7 +254,7 @@ void gui_init(dt_iop_module_t *self)
   // init the slider (more sophisticated layouts are possible with gtk tables and boxes):
   self->gui_data = malloc(sizeof(dt_iop_bilat_gui_data_t));
   dt_iop_bilat_gui_data_t *g = (dt_iop_bilat_gui_data_t *)self->gui_data;
-  self->widget = gtk_vbox_new(FALSE, DT_BAUHAUS_SPACE);
+  self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
 
   g->spatial = dt_bauhaus_slider_new_with_range(self, 1, 100, 1, 50, 0);
   dt_bauhaus_widget_set_label(g->spatial, NULL, _("coarseness"));

@@ -378,7 +378,7 @@ static void _lib_geotagging_show_offset_window(GtkWidget *widget, dt_lib_module_
 
   GtkWidget *alignment = gtk_alignment_new(0.5, 0.5, 1, 1);
   gtk_alignment_set_padding(GTK_ALIGNMENT(alignment), 0, 5, 5, 5);
-  GtkWidget *vbox = gtk_vbox_new(TRUE, 5);
+  GtkWidget *vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
   gtk_container_add(GTK_CONTAINER(alignment), vbox);
 
   d->floating_window_entry = gtk_entry_new();
@@ -573,7 +573,7 @@ void gui_init(dt_lib_module_t *self)
   dt_lib_geotagging_t *d = (dt_lib_geotagging_t *)malloc(sizeof(dt_lib_geotagging_t));
   self->data = (void *)d;
   d->timezones = _lib_geotagging_get_timezones();
-  self->widget = gtk_vbox_new(TRUE, 5);
+  self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
   GtkBox *hbox;
   GtkWidget *button, *label;
 

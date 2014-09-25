@@ -249,7 +249,7 @@ void gui_init(dt_lib_module_t *self)
   lib->splitline_x = lib->splitline_y = 0.5;
 
   // Setup gui
-  self->widget = gtk_vbox_new(FALSE, 5);
+  self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
   GtkWidget *box;
 
   box = gtk_hbox_new(FALSE, 5);
