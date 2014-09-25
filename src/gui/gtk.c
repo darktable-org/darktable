@@ -944,9 +944,6 @@ int dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[])
     input_devices = g_list_next(input_devices);
   }
 
-  widget = dt_ui_center(darktable.gui->ui);
-  gtk_widget_set_extension_events(widget, GDK_EXTENSION_EVENTS_CURSOR);
-
   return 0;
 }
 
