@@ -831,8 +831,6 @@ int dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[])
   dt_gui_presets_init();
 
   widget = dt_ui_center(darktable.gui->ui);
-  gtk_widget_set_double_buffered(widget, FALSE);
-  // gtk_widget_set_double_buffered(widget, TRUE);
   gtk_widget_set_app_paintable(widget, TRUE);
 
   // TODO: make this work as: libgnomeui testgnome.c
