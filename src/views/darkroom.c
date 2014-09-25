@@ -1103,7 +1103,7 @@ void enter(dt_view_t *self)
     gtk_window_set_decorated(GTK_WINDOW(dev->overexposed.floating_window), FALSE);
     gtk_window_set_type_hint(GTK_WINDOW(dev->overexposed.floating_window), GDK_WINDOW_TYPE_HINT_POPUP_MENU);
     gtk_window_set_transient_for(GTK_WINDOW(dev->overexposed.floating_window), GTK_WINDOW(window));
-    gtk_window_set_opacity(GTK_WINDOW(dev->overexposed.floating_window), 0.9);
+    gtk_widget_set_opacity(dev->overexposed.floating_window, 0.9);
 
     //     gtk_widget_set_size_request(frame, panel_width, -1);
     gtk_widget_set_state_flags(frame, GTK_STATE_FLAG_SELECTED, TRUE);
