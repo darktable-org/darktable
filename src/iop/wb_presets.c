@@ -3447,6 +3447,14 @@ const wb_data wb_preset[] =
   { "NIKON", "D5100", HighTempMercuryVaporFluorescent, 5,  { 2.375000, 1, 1.511719, 0 } },
   { "NIKON", "D5100", HighTempMercuryVaporFluorescent, 6,  { 2.375000, 1, 1.511719, 0 } },
 
+  /* Nikon D5200 firmware version 1.01 */
+  { "NIKON", "D5200", Incandescent, 0,		{ 1.445313, 1, 2.667969, 0 } },
+  { "NIKON", "D5200", CoolWhiteFluorescent, 0,	{ 2.222656, 1, 2.417969, 0 } },
+  { "NIKON", "D5200", DirectSunlight, 0,	{ 2.386719, 1, 1.597656, 0 } },
+  { "NIKON", "D5200", Flash, 0,			{ 2.753906, 1, 1.371094, 0 } },
+  { "NIKON", "D5200", Cloudy, 0,		{ 2.656250, 1, 1.453125, 0 } },
+  { "NIKON", "D5200", Shade, 0,			{ 3.183594, 1, 1.292969, 0 } },
+
   { "NIKON", "D5300", Incandescent, 0,		{ 1.312500, 1, 2.214844, 0 } },
   { "NIKON", "D5300", CoolWhiteFluorescent, 0,	{ 1.855469, 1, 2.023438, 0 } },
   { "NIKON", "D5300", DirectSunlight, 0,	{ 2.054688, 1, 1.394531, 0 } },
