@@ -921,7 +921,8 @@ int dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[])
 
   // let's try to support pressure sensitive input devices like tablets for mask drawing
   static const gchar *SOURCE_NAMES[]
-      = { "GDK_SOURCE_MOUSE", "GDK_SOURCE_PEN", "GDK_SOURCE_ERASER", "GDK_SOURCE_CURSOR" };
+      = { "GDK_SOURCE_MOUSE",    "GDK_SOURCE_PEN",         "GDK_SOURCE_ERASER",  "GDK_SOURCE_CURSOR",
+          "GDK_SOURCE_KEYBOARD", "GDK_SOURCE_TOUCHSCREEN", "GDK_SOURCE_TOUCHPAD" };
   static const gchar *MODE_NAMES[] = { "GDK_MODE_DISABLED", "GDK_MODE_SCREEN", "GDK_MODE_WINDOW" };
   static const gchar *AXIS_NAMES[]
       = { "GDK_AXIS_IGNORE", "GDK_AXIS_X",     "GDK_AXIS_Y",     "GDK_AXIS_PRESSURE",
@@ -932,10 +933,12 @@ int dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[])
   while(input_devices)
   {
     GdkDevice *device = (GdkDevice *)input_devices->data;
+
     dt_print(DT_DEBUG_INPUT, "%s (%s), source: %s, mode: %s, %d axes, %d keys\n", gdk_device_get_name(device),
              gdk_device_get_has_cursor(device) ? "with cursor" : "no cursor",
              SOURCE_NAMES[gdk_device_get_source(device)], MODE_NAMES[gdk_device_get_mode(device)],
              gdk_device_get_n_axes(device), gdk_device_get_n_keys(device));
+
     for(int i = 0; i < gdk_device_get_n_axes(device); i++)
     {
       dt_print(DT_DEBUG_INPUT, "  %s\n", AXIS_NAMES[gdk_device_get_axis_use(device, i)]);
