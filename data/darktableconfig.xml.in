@@ -963,6 +963,13 @@
     <shortdescription/>
     <longdescription/>
   </dtconfig>
+  <dtconfig>
+    <name>plugins/darkroom/tagging/visible</name>
+    <type>bool</type>
+    <default>true</default>
+    <shortdescription/>
+    <longdescription/>
+  </dtconfig>
   <dtconfig prefs="gui">
     <name>plugins/lighttable/tagging/ask_before_delete_tag</name>
     <type>bool</type>
