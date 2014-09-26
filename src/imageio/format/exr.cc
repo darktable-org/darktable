@@ -85,6 +85,19 @@ extern "C"
 
   void init(dt_imageio_module_format_t *self)
   {
+#ifdef USE_LUA
+    luaA_enum(darktable.lua_state.state, dt_imageio_exr_compression_t);
+    luaA_enum_value_name(darktable.lua_state.state,dt_imageio_exr_compression_t,NO_COMPRESSION,"off");
+    luaA_enum_value_name(darktable.lua_state.state,dt_imageio_exr_compression_t,RLE_COMPRESSION,"rle");
+    luaA_enum_value_name(darktable.lua_state.state,dt_imageio_exr_compression_t,ZIPS_COMPRESSION,"zips");
+    luaA_enum_value_name(darktable.lua_state.state,dt_imageio_exr_compression_t,ZIP_COMPRESSION,"zip");
+    luaA_enum_value_name(darktable.lua_state.state,dt_imageio_exr_compression_t,PIZ_COMPRESSION,"piz");
+    luaA_enum_value_name(darktable.lua_state.state,dt_imageio_exr_compression_t,PXR24_COMPRESSION,"pxr24");
+    luaA_enum_value_name(darktable.lua_state.state,dt_imageio_exr_compression_t,B44_COMPRESSION,"b44");
+    luaA_enum_value_name(darktable.lua_state.state,dt_imageio_exr_compression_t,B44A_COMPRESSION,"b44a");
+
+    dt_lua_register_module_member(darktable.lua_state.state,self,dt_imageio_exr_t,compression,dt_imageio_exr_compression_t);
+#endif
     Imf::BlobAttribute::registerAttributeType();
   }
 

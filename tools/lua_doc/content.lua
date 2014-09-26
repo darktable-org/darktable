@@ -541,6 +541,7 @@ darktable.debug.type:set_text([[Similar to the system function type() but it wil
 	types.dt_imageio_module_format_data_tiff:set_text([[Type object describing parameters to export to tiff.]])
 	types.dt_imageio_module_format_data_tiff.bpp:set_text([[The bpp parameter to use when exporting.]])
 	types.dt_imageio_module_format_data_exr:set_text([[Type object describing parameters to export to exr.]])
+	types.dt_imageio_module_format_data_exr.compression:set_text([[The compression parameter to use when exporting.]])
 	types.dt_imageio_module_format_data_copy:set_text([[Type object describing parameters to export to copy.]])
 	types.dt_imageio_module_format_data_pfm:set_text([[Type object describing parameters to export to pfm.]])
 	types.dt_imageio_module_format_data_jpeg:set_text([[Type object describing parameters to export to jpeg.]])
