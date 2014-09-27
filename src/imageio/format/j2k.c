@@ -116,7 +116,7 @@ void init(dt_imageio_module_format_t *self)
   dt_lua_register_module_member(darktable.lua_state.state,self,dt_imageio_j2k_t,bpp,int);
   luaA_enum(darktable.lua_state.state,dt_imageio_j2k_format_t);
   luaA_enum_value_name(darktable.lua_state.state,dt_imageio_j2k_format_t,J2K_CFMT,"j2k");
-  luaA_enum_value_name(darktable.lua_state.state,dt_imageio_j2k_format_t,J2K_CFMT,"jp2");
+  luaA_enum_value_name(darktable.lua_state.state,dt_imageio_j2k_format_t,JP2_CFMT,"jp2");
   dt_lua_register_module_member(darktable.lua_state.state,self,dt_imageio_j2k_t,format,dt_imageio_j2k_format_t);
   dt_lua_register_module_member(darktable.lua_state.state,self,dt_imageio_j2k_t,quality,int);
   luaA_enum(darktable.lua_state.state,dt_imageio_j2k_preset_t);
