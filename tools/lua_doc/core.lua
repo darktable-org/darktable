@@ -291,11 +291,14 @@ local function document_lautoc_enum(node,parent,prev_name)
 	local result = create_empty_node(node,"enum",parent,prev_name)
 	set_attribute(result,"reported_type","enum")
 	values = {}
+	matcher = {}
 	for name,data in pairs(node) do
 		if type(name) ~= "number" then
 			table.insert(values,name)
+			matcher[name] = data["value"]
 		end
 	end
+	table.sort(values,function(name1,name2) return matcher[name1] < matcher[name2] end)
 	set_attribute(result,"values",values);
 	return result
 end

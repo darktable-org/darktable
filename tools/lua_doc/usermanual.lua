@@ -55,7 +55,7 @@ local function get_reported_type(node,simple)
 	if( rtype and not simple and doc.get_attribute(node,"signature")) then
 		rtype = rtype.."( "
 		local sig = doc.get_attribute(node,"signature")
-		for k,v in pairs(sig) do
+		for k,v in sorted_pairs(sig) do
 			if(doc.get_attribute(v,"optional")) then
 				rtype = rtype.."\n\t["..emphasis(get_node_with_link(v,doc.get_short_name(v))).." : "..get_reported_type(v,true).."]"
 			else
@@ -85,7 +85,7 @@ local function print_attributes(node)
 				result = result..listel(emphasis(get_node_with_link(doc.toplevel.attributes[k2],k2).." : ")..tostring(v2))
 			elseif type(v2) == "table" then
 				tmp = ""
-				for k,v in pairs(v2) do
+				for k,v in sorted_pairs(v2) do
 					tmp = tmp..listel(tostring(v));
 				end
 				result = result..listel(emphasis(get_node_with_link(doc.toplevel.attributes[k2],k2).." : ")..para()..startlist()..tmp..endlist())
@@ -129,7 +129,7 @@ local function print_content(node)
 		result = result.."<variablelist>\n"
 	end
 	if(sig) then
-		for k,v in pairs(sig) do
+		for k,v in sorted_pairs(sig) do
 			result = result .. parse_doc_node(v,node,doc.get_short_name(v)).."\n";
 		end
 	end

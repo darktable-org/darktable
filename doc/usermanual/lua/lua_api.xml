@@ -5202,8 +5202,8 @@ Note that this is the real image object; changing the value of a field will imme
 <entry><itemizedlist>
 <listitem><para><emphasis>values : </emphasis></para>
 <para><itemizedlist>
-<listitem><para>hint_picture</para></listitem>
 <listitem><para>hint_default</para></listitem>
+<listitem><para>hint_picture</para></listitem>
 <listitem><para>hint_photo</para></listitem>
 <listitem><para>hint_graphic</para></listitem>
 </itemizedlist>
@@ -5230,22 +5230,22 @@ Note that this is the real image object; changing the value of a field will imme
 <entry><itemizedlist>
 <listitem><para><emphasis>values : </emphasis></para>
 <para><itemizedlist>
-<listitem><para>DT_UI_CONTAINER_PANEL_CENTER_BOTTOM_CENTER</para></listitem>
-<listitem><para>DT_UI_CONTAINER_PANEL_BOTTOM</para></listitem>
-<listitem><para>DT_UI_CONTAINER_PANEL_CENTER_BOTTOM_RIGHT</para></listitem>
-<listitem><para>DT_UI_CONTAINER_PANEL_LEFT_CENTER</para></listitem>
-<listitem><para>DT_UI_CONTAINER_PANEL_CENTER_BOTTOM_LEFT</para></listitem>
-<listitem><para>DT_UI_CONTAINER_PANEL_CENTER_TOP_RIGHT</para></listitem>
-<listitem><para>DT_UI_CONTAINER_PANEL_RIGHT_CENTER</para></listitem>
 <listitem><para>DT_UI_CONTAINER_PANEL_LEFT_TOP</para></listitem>
-<listitem><para>DT_UI_CONTAINER_PANEL_CENTER_TOP_LEFT</para></listitem>
-<listitem><para>DT_UI_CONTAINER_PANEL_TOP_CENTER</para></listitem>
-<listitem><para>DT_UI_CONTAINER_PANEL_TOP_RIGHT</para></listitem>
-<listitem><para>DT_UI_CONTAINER_PANEL_TOP_LEFT</para></listitem>
+<listitem><para>DT_UI_CONTAINER_PANEL_LEFT_CENTER</para></listitem>
 <listitem><para>DT_UI_CONTAINER_PANEL_LEFT_BOTTOM</para></listitem>
 <listitem><para>DT_UI_CONTAINER_PANEL_RIGHT_TOP</para></listitem>
+<listitem><para>DT_UI_CONTAINER_PANEL_RIGHT_CENTER</para></listitem>
 <listitem><para>DT_UI_CONTAINER_PANEL_RIGHT_BOTTOM</para></listitem>
+<listitem><para>DT_UI_CONTAINER_PANEL_TOP_LEFT</para></listitem>
+<listitem><para>DT_UI_CONTAINER_PANEL_TOP_CENTER</para></listitem>
+<listitem><para>DT_UI_CONTAINER_PANEL_TOP_RIGHT</para></listitem>
+<listitem><para>DT_UI_CONTAINER_PANEL_CENTER_TOP_LEFT</para></listitem>
 <listitem><para>DT_UI_CONTAINER_PANEL_CENTER_TOP_CENTER</para></listitem>
+<listitem><para>DT_UI_CONTAINER_PANEL_CENTER_TOP_RIGHT</para></listitem>
+<listitem><para>DT_UI_CONTAINER_PANEL_CENTER_BOTTOM_LEFT</para></listitem>
+<listitem><para>DT_UI_CONTAINER_PANEL_CENTER_BOTTOM_CENTER</para></listitem>
+<listitem><para>DT_UI_CONTAINER_PANEL_CENTER_BOTTOM_RIGHT</para></listitem>
+<listitem><para>DT_UI_CONTAINER_PANEL_BOTTOM</para></listitem>
 </itemizedlist>
 </para></listitem>
 </itemizedlist>
@@ -5270,10 +5270,10 @@ Note that this is the real image object; changing the value of a field will imme
 <entry><itemizedlist>
 <listitem><para><emphasis>values : </emphasis></para>
 <para><itemizedlist>
-<listitem><para>bottom</para></listitem>
-<listitem><para>right</para></listitem>
 <listitem><para>left</para></listitem>
+<listitem><para>right</para></listitem>
 <listitem><para>top</para></listitem>
+<listitem><para>bottom</para></listitem>
 </itemizedlist>
 </para></listitem>
 </itemizedlist>
@@ -5324,8 +5324,8 @@ Note that this is the real image object; changing the value of a field will imme
 <entry><itemizedlist>
 <listitem><para><emphasis>values : </emphasis></para>
 <para><itemizedlist>
-<listitem><para>cinema2k_24</para></listitem>
 <listitem><para>off</para></listitem>
+<listitem><para>cinema2k_24</para></listitem>
 <listitem><para>cinema2k_48</para></listitem>
 <listitem><para>cinema4k_24</para></listitem>
 </itemizedlist>
@@ -5352,9 +5352,9 @@ Note that this is the real image object; changing the value of a field will imme
 <entry><itemizedlist>
 <listitem><para><emphasis>values : </emphasis></para>
 <para><itemizedlist>
+<listitem><para>WAIT_MS</para></listitem>
 <listitem><para>FILE_READABLE</para></listitem>
 <listitem><para>RUN_COMMAND</para></listitem>
-<listitem><para>WAIT_MS</para></listitem>
 </itemizedlist>
 </para></listitem>
 </itemizedlist>
@@ -5405,13 +5405,13 @@ Note that this is the real image object; changing the value of a field will imme
 <entry><itemizedlist>
 <listitem><para><emphasis>values : </emphasis></para>
 <para><itemizedlist>
-<listitem><para>float</para></listitem>
-<listitem><para>directory</para></listitem>
 <listitem><para>string</para></listitem>
-<listitem><para>integer</para></listitem>
-<listitem><para>enum</para></listitem>
-<listitem><para>file</para></listitem>
 <listitem><para>bool</para></listitem>
+<listitem><para>integer</para></listitem>
+<listitem><para>float</para></listitem>
+<listitem><para>file</para></listitem>
+<listitem><para>directory</para></listitem>
+<listitem><para>enum</para></listitem>
 </itemizedlist>
 </para></listitem>
 </itemizedlist>
