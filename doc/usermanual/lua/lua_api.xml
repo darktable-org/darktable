@@ -341,7 +341,17 @@ All functions and data are accessed through the darktable module.</para>
 </indexterm>
 <synopsis><link linkend="types_dt_lua_film_t">types.dt_lua_film_t</link></synopsis>
 <para>Each film has a numeric entry in the database.</para>
-
+<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
+<colspec colwidth="2*"/>
+<colspec colwidth="8*"/>
+<tbody><row>
+<entry>Attributes:</entry>
+<entry><itemizedlist>
+<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
+</itemizedlist>
+</entry>
+</row></tbody>
+</tgroup></informaltable>
 </section>
 
 <section status="final" id="darktable_films_new">
@@ -355,7 +365,17 @@ All functions and data are accessed through the darktable module.</para>
 ) : <link linkend="types_dt_lua_film_t">types.dt_lua_film_t</link></synopsis>
 <para>Creates a new empty film</para>
 <para> see <link linkend="darktable_database_import">darktable.database.import</link> to import a directory with all its images and to add images to a film</para>
-
+<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
+<colspec colwidth="2*"/>
+<colspec colwidth="8*"/>
+<tbody><row>
+<entry>Attributes:</entry>
+<entry><itemizedlist>
+<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
+</itemizedlist>
+</entry>
+</row></tbody>
+</tgroup></informaltable>
 <variablelist>
 <varlistentry id="darktable_films_new_directory"><term>directory</term><listitem>
 <synopsis>string</synopsis>
@@ -413,7 +433,17 @@ All functions and data are accessed through the darktable module.</para>
 <para>A table of <link linkend="types_dt_lua_image_t">types.dt_lua_image_t</link> on which the user expects UI actions to happen.</para>
 <para>It is based on both the hovered image and the selection and is consistent with the way darktable works.</para>
 <para>It is recommended to use this table to implement Lua actions rather than <link linkend="darktable_gui_hovered">darktable.gui.hovered</link> or <link linkend="darktable_gui_selection">darktable.gui.selection</link> to be consistant with darktable's GUI.</para>
-
+<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
+<colspec colwidth="2*"/>
+<colspec colwidth="8*"/>
+<tbody><row>
+<entry>Attributes:</entry>
+<entry><itemizedlist>
+<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
+</itemizedlist>
+</entry>
+</row></tbody>
+</tgroup></informaltable>
 </section>
 
 <section status="final" id="darktable_gui_hovered">
@@ -423,7 +453,17 @@ All functions and data are accessed through the darktable module.</para>
 <secondary>hovered</secondary>
 </indexterm>
 <para>The image under the cursor or nil if no image is hovered.</para>
-
+<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
+<colspec colwidth="2*"/>
+<colspec colwidth="8*"/>
+<tbody><row>
+<entry>Attributes:</entry>
+<entry><itemizedlist>
+<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
+</itemizedlist>
+</entry>
+</row></tbody>
+</tgroup></informaltable>
 </section>
 
 <section status="final" id="darktable_gui_selection">
@@ -443,6 +483,7 @@ All functions and data are accessed through the darktable module.</para>
 <entry>Attributes:</entry>
 <entry><itemizedlist>
 <listitem><para><emphasis><link linkend="attributes_implicit_yield">implicit_yield</link></emphasis></para></listitem>
+<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
 </itemizedlist>
 </entry>
 </row></tbody>
@@ -474,7 +515,17 @@ All functions and data are accessed through the darktable module.</para>
 	[<emphasis><link linkend="darktable_gui_current_view_view">view</link></emphasis> : <link linkend="types_dt_view_t">types.dt_view_t</link>]
 ) : <link linkend="types_dt_view_t">types.dt_view_t</link></synopsis>
 <para>Allows to change the current view.</para>
-
+<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
+<colspec colwidth="2*"/>
+<colspec colwidth="8*"/>
+<tbody><row>
+<entry>Attributes:</entry>
+<entry><itemizedlist>
+<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
+</itemizedlist>
+</entry>
+</row></tbody>
+</tgroup></informaltable>
 <variablelist>
 <varlistentry id="darktable_gui_current_view_view"><term>view</term><listitem>
 <synopsis><link linkend="types_dt_view_t">types.dt_view_t</link></synopsis>
@@ -504,7 +555,17 @@ All functions and data are accessed through the darktable module.</para>
 	[<emphasis><link linkend="darktable_gui_create_job_cancel_callback">cancel_callback</link></emphasis> : function]
 ) : <link linkend="types_dt_lua_backgroundjob_t">types.dt_lua_backgroundjob_t</link></synopsis>
 <para>Create a new progress_bar displayed in <link linkend="darktable_modules_lib_backgroundjobs">darktable.modules.lib.backgroundjobs</link></para>
-
+<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
+<colspec colwidth="2*"/>
+<colspec colwidth="8*"/>
+<tbody><row>
+<entry>Attributes:</entry>
+<entry><itemizedlist>
+<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
+</itemizedlist>
+</entry>
+</row></tbody>
+</tgroup></informaltable>
 <variablelist>
 <varlistentry id="darktable_gui_create_job_text"><term>text</term><listitem>
 <synopsis>string</synopsis>
@@ -575,7 +636,17 @@ All functions and data are accessed through the darktable module.</para>
 </indexterm>
 <synopsis><link linkend="types_dt_lua_tag_t">types.dt_lua_tag_t</link></synopsis>
 <para>Each existing tag has a numeric entry in the tags table - use ipairs to iterate over them.</para>
-
+<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
+<colspec colwidth="2*"/>
+<colspec colwidth="8*"/>
+<tbody><row>
+<entry>Attributes:</entry>
+<entry><itemizedlist>
+<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
+</itemizedlist>
+</entry>
+</row></tbody>
+</tgroup></informaltable>
 </section>
 
 <section status="final" id="darktable_tags_create">
@@ -588,7 +659,17 @@ All functions and data are accessed through the darktable module.</para>
 	<emphasis><link linkend="darktable_tags_create_name">name</link></emphasis> : string
 )</synopsis>
 <para>Creates a new tag and return it. If the tag exists return the existing tag.</para>
-
+<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
+<colspec colwidth="2*"/>
+<colspec colwidth="8*"/>
+<tbody><row>
+<entry>Attributes:</entry>
+<entry><itemizedlist>
+<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
+</itemizedlist>
+</entry>
+</row></tbody>
+</tgroup></informaltable>
 <variablelist>
 <varlistentry id="darktable_tags_create_name"><term>name</term><listitem>
 <synopsis>string</synopsis>
@@ -609,7 +690,17 @@ All functions and data are accessed through the darktable module.</para>
 	<emphasis><link linkend="darktable_tags_find_name">name</link></emphasis> : string
 ) : <link linkend="types_dt_lua_tag_t">types.dt_lua_tag_t</link></synopsis>
 <para>Returns the tag object or nil if the tag doesn't exist.</para>
-
+<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
+<colspec colwidth="2*"/>
+<colspec colwidth="8*"/>
+<tbody><row>
+<entry>Attributes:</entry>
+<entry><itemizedlist>
+<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
+</itemizedlist>
+</entry>
+</row></tbody>
+</tgroup></informaltable>
 <variablelist>
 <varlistentry id="darktable_tags_find_name"><term>name</term><listitem>
 <synopsis>string</synopsis>
@@ -637,7 +728,17 @@ All functions and data are accessed through the darktable module.</para>
 	<emphasis><link linkend="darktable_tags_delete_tag">tag</link></emphasis> : <link linkend="types_dt_lua_tag_t">types.dt_lua_tag_t</link>
 )</synopsis>
 <para>Deletes the tag object, detaching it from all images.</para>
-
+<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
+<colspec colwidth="2*"/>
+<colspec colwidth="8*"/>
+<tbody><row>
+<entry>Attributes:</entry>
+<entry><itemizedlist>
+<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
+</itemizedlist>
+</entry>
+</row></tbody>
+</tgroup></informaltable>
 <variablelist>
 <varlistentry id="darktable_tags_delete_tag"><term>tag</term><listitem>
 <synopsis><link linkend="types_dt_lua_tag_t">types.dt_lua_tag_t</link></synopsis>
@@ -659,7 +760,17 @@ All functions and data are accessed through the darktable module.</para>
 	<emphasis><link linkend="darktable_tags_attach_image">image</link></emphasis> : <link linkend="types_dt_lua_image_t">types.dt_lua_image_t</link>
 )</synopsis>
 <para>Attach a tag to an image; the order of the parameters can be reversed.</para>
-
+<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
+<colspec colwidth="2*"/>
+<colspec colwidth="8*"/>
+<tbody><row>
+<entry>Attributes:</entry>
+<entry><itemizedlist>
+<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
+</itemizedlist>
+</entry>
+</row></tbody>
+</tgroup></informaltable>
 <variablelist>
 <varlistentry id="darktable_tags_attach_tag"><term>tag</term><listitem>
 <synopsis><link linkend="types_dt_lua_tag_t">types.dt_lua_tag_t</link></synopsis>
@@ -687,7 +798,17 @@ All functions and data are accessed through the darktable module.</para>
 	<emphasis><link linkend="darktable_tags_detach_image">image</link></emphasis> : <link linkend="types_dt_lua_image_t">types.dt_lua_image_t</link>
 )</synopsis>
 <para>Detach a tag from an image; the order of the parameters can be reversed.</para>
-
+<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
+<colspec colwidth="2*"/>
+<colspec colwidth="8*"/>
+<tbody><row>
+<entry>Attributes:</entry>
+<entry><itemizedlist>
+<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
+</itemizedlist>
+</entry>
+</row></tbody>
+</tgroup></informaltable>
 <variablelist>
 <varlistentry id="darktable_tags_detach_tag"><term>tag</term><listitem>
 <synopsis><link linkend="types_dt_lua_tag_t">types.dt_lua_tag_t</link></synopsis>
@@ -714,7 +835,17 @@ All functions and data are accessed through the darktable module.</para>
 	<emphasis><link linkend="darktable_tags_get_tags_image">image</link></emphasis> : <link linkend="types_dt_lua_image_t">types.dt_lua_image_t</link>
 ) : table of <link linkend="types_dt_lua_tag_t">types.dt_lua_tag_t</link></synopsis>
 <para>Gets all tags attached to an image.</para>
-
+<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
+<colspec colwidth="2*"/>
+<colspec colwidth="8*"/>
+<tbody><row>
+<entry>Attributes:</entry>
+<entry><itemizedlist>
+<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
+</itemizedlist>
+</entry>
+</row></tbody>
+</tgroup></informaltable>
 <variablelist>
 <varlistentry id="darktable_tags_get_tags_image"><term>image</term><listitem>
 <synopsis><link linkend="types_dt_lua_image_t">types.dt_lua_image_t</link></synopsis>
@@ -1077,7 +1208,17 @@ All functions and data are accessed through the darktable module.</para>
 </indexterm>
 <synopsis><link linkend="types_dt_style_t">types.dt_style_t</link></synopsis>
 <para>Each existing style has a numeric index; you can iterate them using ipairs.</para>
-
+<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
+<colspec colwidth="2*"/>
+<colspec colwidth="8*"/>
+<tbody><row>
+<entry>Attributes:</entry>
+<entry><itemizedlist>
+<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
+</itemizedlist>
+</entry>
+</row></tbody>
+</tgroup></informaltable>
 </section>
 
 <section status="final" id="darktable_styles_create">
@@ -1092,7 +1233,17 @@ All functions and data are accessed through the darktable module.</para>
 	<emphasis><link linkend="darktable_styles_create_description">description</link></emphasis> : string
 ) : <link linkend="types_dt_style_t">types.dt_style_t</link></synopsis>
 <para>Create a new style based on an image.</para>
-
+<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
+<colspec colwidth="2*"/>
+<colspec colwidth="8*"/>
+<tbody><row>
+<entry>Attributes:</entry>
+<entry><itemizedlist>
+<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
+</itemizedlist>
+</entry>
+</row></tbody>
+</tgroup></informaltable>
 <variablelist>
 <varlistentry id="darktable_styles_create_image"><term>image</term><listitem>
 <synopsis><link linkend="types_dt_lua_image_t">types.dt_lua_image_t</link></synopsis>
@@ -1132,7 +1283,17 @@ All functions and data are accessed through the darktable module.</para>
 	<emphasis><link linkend="darktable_styles_delete_style">style</link></emphasis> : <link linkend="types_dt_style_t">types.dt_style_t</link>
 )</synopsis>
 <para>Deletes an existing style.</para>
-
+<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
+<colspec colwidth="2*"/>
+<colspec colwidth="8*"/>
+<tbody><row>
+<entry>Attributes:</entry>
+<entry><itemizedlist>
+<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
+</itemizedlist>
+</entry>
+</row></tbody>
+</tgroup></informaltable>
 <variablelist>
 <varlistentry id="darktable_styles_delete_style"><term>style</term><listitem>
 <synopsis><link linkend="types_dt_style_t">types.dt_style_t</link></synopsis>
@@ -1155,7 +1316,17 @@ All functions and data are accessed through the darktable module.</para>
 	<emphasis><link linkend="darktable_styles_duplicate_description">description</link></emphasis> : string
 ) : <link linkend="types_dt_style_t">types.dt_style_t</link></synopsis>
 <para>Create a new style based on an existing style.</para>
-
+<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
+<colspec colwidth="2*"/>
+<colspec colwidth="8*"/>
+<tbody><row>
+<entry>Attributes:</entry>
+<entry><itemizedlist>
+<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
+</itemizedlist>
+</entry>
+</row></tbody>
+</tgroup></informaltable>
 <variablelist>
 <varlistentry id="darktable_styles_duplicate_style"><term>style</term><listitem>
 <synopsis><link linkend="types_dt_style_t">types.dt_style_t</link></synopsis>
@@ -1196,7 +1367,17 @@ All functions and data are accessed through the darktable module.</para>
 	<emphasis><link linkend="darktable_styles_apply_image">image</link></emphasis> : <link linkend="types_dt_lua_image_t">types.dt_lua_image_t</link>
 )</synopsis>
 <para>Apply a style to an image. The order of parameters can be inverted.</para>
-
+<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
+<colspec colwidth="2*"/>
+<colspec colwidth="8*"/>
+<tbody><row>
+<entry>Attributes:</entry>
+<entry><itemizedlist>
+<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
+</itemizedlist>
+</entry>
+</row></tbody>
+</tgroup></informaltable>
 <variablelist>
 <varlistentry id="darktable_styles_apply_style"><term>style</term><listitem>
 <synopsis><link linkend="types_dt_style_t">types.dt_style_t</link></synopsis>
@@ -1223,7 +1404,17 @@ All functions and data are accessed through the darktable module.</para>
 	<emphasis><link linkend="darktable_styles_import_filename">filename</link></emphasis> : string
 )</synopsis>
 <para>Import a style from an external .dtstyle file</para>
-
+<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
+<colspec colwidth="2*"/>
+<colspec colwidth="8*"/>
+<tbody><row>
+<entry>Attributes:</entry>
+<entry><itemizedlist>
+<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
+</itemizedlist>
+</entry>
+</row></tbody>
+</tgroup></informaltable>
 <variablelist>
 <varlistentry id="darktable_styles_import_filename"><term>filename</term><listitem>
 <synopsis>string</synopsis>
@@ -1246,7 +1437,17 @@ All functions and data are accessed through the darktable module.</para>
 	<emphasis><link linkend="darktable_styles_export_overwrite">overwrite</link></emphasis> : boolean
 )</synopsis>
 <para>Export a style to an external .dtstyle file</para>
-
+<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
+<colspec colwidth="2*"/>
+<colspec colwidth="8*"/>
+<tbody><row>
+<entry>Attributes:</entry>
+<entry><itemizedlist>
+<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
+</itemizedlist>
+</entry>
+</row></tbody>
+</tgroup></informaltable>
 <variablelist>
 <varlistentry id="darktable_styles_export_style"><term>style</term><listitem>
 <synopsis><link linkend="types_dt_style_t">types.dt_style_t</link></synopsis>
@@ -1299,7 +1500,17 @@ All functions and data are accessed through the darktable module.</para>
 </indexterm>
 <synopsis><link linkend="types_dt_lua_image_t">types.dt_lua_image_t</link></synopsis>
 <para>Each image in the database appears with a numerical index; you can interate them using ipairs.</para>
-
+<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
+<colspec colwidth="2*"/>
+<colspec colwidth="8*"/>
+<tbody><row>
+<entry>Attributes:</entry>
+<entry><itemizedlist>
+<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
+</itemizedlist>
+</entry>
+</row></tbody>
+</tgroup></informaltable>
 </section>
 
 <section status="final" id="darktable_database_duplicate">
@@ -1312,7 +1523,17 @@ All functions and data are accessed through the darktable module.</para>
 	<emphasis><link linkend="darktable_database_duplicate_image">image</link></emphasis> : <link linkend="types_dt_lua_image_t">types.dt_lua_image_t</link>
 ) : <link linkend="types_dt_lua_image_t">types.dt_lua_image_t</link></synopsis>
 <para>Creates a duplicate of an image and returns it.</para>
-
+<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
+<colspec colwidth="2*"/>
+<colspec colwidth="8*"/>
+<tbody><row>
+<entry>Attributes:</entry>
+<entry><itemizedlist>
+<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
+</itemizedlist>
+</entry>
+</row></tbody>
+</tgroup></informaltable>
 <variablelist>
 <varlistentry id="darktable_database_duplicate_image"><term>image</term><listitem>
 <synopsis><link linkend="types_dt_lua_image_t">types.dt_lua_image_t</link></synopsis>
@@ -1340,7 +1561,17 @@ All functions and data are accessed through the darktable module.</para>
 	<emphasis><link linkend="darktable_database_import_location">location</link></emphasis> : string
 )</synopsis>
 <para>Imports new images into the database.</para>
-
+<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
+<colspec colwidth="2*"/>
+<colspec colwidth="8*"/>
+<tbody><row>
+<entry>Attributes:</entry>
+<entry><itemizedlist>
+<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
+</itemizedlist>
+</entry>
+</row></tbody>
+</tgroup></informaltable>
 <variablelist>
 <varlistentry id="darktable_database_import_location"><term>location</term><listitem>
 <synopsis>string</synopsis>
@@ -1371,7 +1602,17 @@ NOTE2: If the parameter is a directory the call is non-blocking; the film object
 <para>Physically moves an image (and all its duplicates) to another film.</para>
 <para>This will move the image file, the related XMP and all XMP for the duplicates to the directory of the new film</para>
 <para>Note that the parameter order is not relevant.</para>
-
+<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
+<colspec colwidth="2*"/>
+<colspec colwidth="8*"/>
+<tbody><row>
+<entry>Attributes:</entry>
+<entry><itemizedlist>
+<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
+</itemizedlist>
+</entry>
+</row></tbody>
+</tgroup></informaltable>
 <variablelist>
 <varlistentry id="darktable_database_move_image_image"><term>image</term><listitem>
 <synopsis><link linkend="types_dt_lua_image_t">types.dt_lua_image_t</link></synopsis>
@@ -1402,7 +1643,17 @@ NOTE2: If the parameter is a directory the call is non-blocking; the film object
 <para>This will copy the image file and the related XMP to the directory of the new film</para>
 <para>If there is already a file with the same name as the image file, it wil create a duplicate from that file instead</para>
 <para>Note that the parameter order is not relevant.</para>
-
+<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
+<colspec colwidth="2*"/>
+<colspec colwidth="8*"/>
+<tbody><row>
+<entry>Attributes:</entry>
+<entry><itemizedlist>
+<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
+</itemizedlist>
+</entry>
+</row></tbody>
+</tgroup></informaltable>
 <variablelist>
 <varlistentry id="darktable_database_copy_image_image"><term>image</term><listitem>
 <synopsis><link linkend="types_dt_lua_image_t">types.dt_lua_image_t</link></synopsis>
@@ -1473,7 +1724,17 @@ NOTE2: If the parameter is a directory the call is non-blocking; the film object
 <synopsis>function( 
 ) : <link linkend="types_dt_imageio_module_format_t">types.dt_imageio_module_format_t</link></synopsis>
 <para>Used to get a new format object.</para>
-
+<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
+<colspec colwidth="2*"/>
+<colspec colwidth="8*"/>
+<tbody><row>
+<entry>Attributes:</entry>
+<entry><itemizedlist>
+<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
+</itemizedlist>
+</entry>
+</row></tbody>
+</tgroup></informaltable>
 <variablelist>
 <varlistentry><term><emphasis>return</emphasis></term><listitem>
 <synopsis><link linkend="types_dt_imageio_module_format_t">types.dt_imageio_module_format_t</link></synopsis>
@@ -1588,7 +1849,17 @@ New values may appear in this table if new storages are registered using Lua.</p
 <synopsis>function( 
 ) : <link linkend="types_dt_imageio_module_storage_t">types.dt_imageio_module_storage_t</link></synopsis>
 <para>Used to get a new email storage object.</para>
-
+<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
+<colspec colwidth="2*"/>
+<colspec colwidth="8*"/>
+<tbody><row>
+<entry>Attributes:</entry>
+<entry><itemizedlist>
+<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
+</itemizedlist>
+</entry>
+</row></tbody>
+</tgroup></informaltable>
 <variablelist>
 <varlistentry><term><emphasis>return</emphasis></term><listitem>
 <synopsis><link linkend="types_dt_imageio_module_storage_t">types.dt_imageio_module_storage_t</link></synopsis>
@@ -1690,6 +1961,7 @@ New values may appear in this table if new storages are registered using Lua.</p
 <listitem><para><emphasis><link linkend="attributes_has_pairs">has_pairs</link></emphasis></para></listitem>
 <listitem><para><emphasis><link linkend="attributes_has_tostring">has_tostring</link></emphasis></para></listitem>
 <listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_view_t">types.dt_view_t</link></para></listitem>
+<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
 </itemizedlist>
 </entry>
 </row></tbody>
@@ -1702,7 +1974,18 @@ New values may appear in this table if new storages are registered using Lua.</p
 </indexterm>
 <synopsis>number</synopsis>
 <para>The latitude of the center of the map</para>
-
+<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
+<colspec colwidth="2*"/>
+<colspec colwidth="8*"/>
+<tbody><row>
+<entry>Attributes:</entry>
+<entry><itemizedlist>
+<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
+<listitem><para><emphasis><link linkend="attributes_write">write</link></emphasis></para></listitem>
+</itemizedlist>
+</entry>
+</row></tbody>
+</tgroup></informaltable>
 </section>
 
 <section status="final" id="darktable_modules_view_map_longitude">
@@ -1713,7 +1996,18 @@ New values may appear in this table if new storages are registered using Lua.</p
 </indexterm>
 <synopsis>number</synopsis>
 <para>The longitude of the center of the map</para>
-
+<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
+<colspec colwidth="2*"/>
+<colspec colwidth="8*"/>
+<tbody><row>
+<entry>Attributes:</entry>
+<entry><itemizedlist>
+<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
+<listitem><para><emphasis><link linkend="attributes_write">write</link></emphasis></para></listitem>
+</itemizedlist>
+</entry>
+</row></tbody>
+</tgroup></informaltable>
 </section>
 
 <section status="final" id="darktable_modules_view_map_zoom">
@@ -1724,7 +2018,18 @@ New values may appear in this table if new storages are registered using Lua.</p
 </indexterm>
 <synopsis>number</synopsis>
 <para>The current zoom level of the map</para>
-
+<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
+<colspec colwidth="2*"/>
+<colspec colwidth="8*"/>
+<tbody><row>
+<entry>Attributes:</entry>
+<entry><itemizedlist>
+<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
+<listitem><para><emphasis><link linkend="attributes_write">write</link></emphasis></para></listitem>
+</itemizedlist>
+</entry>
+</row></tbody>
+</tgroup></informaltable>
 </section>
 
 </section>
@@ -1745,6 +2050,7 @@ New values may appear in this table if new storages are registered using Lua.</p
 <listitem><para><emphasis><link linkend="attributes_has_pairs">has_pairs</link></emphasis></para></listitem>
 <listitem><para><emphasis><link linkend="attributes_has_tostring">has_tostring</link></emphasis></para></listitem>
 <listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_view_t">types.dt_view_t</link></para></listitem>
+<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
 </itemizedlist>
 </entry>
 </row></tbody>
@@ -1767,6 +2073,7 @@ New values may appear in this table if new storages are registered using Lua.</p
 <listitem><para><emphasis><link linkend="attributes_has_pairs">has_pairs</link></emphasis></para></listitem>
 <listitem><para><emphasis><link linkend="attributes_has_tostring">has_tostring</link></emphasis></para></listitem>
 <listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_view_t">types.dt_view_t</link></para></listitem>
+<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
 </itemizedlist>
 </entry>
 </row></tbody>
@@ -1789,6 +2096,7 @@ New values may appear in this table if new storages are registered using Lua.</p
 <listitem><para><emphasis><link linkend="attributes_has_pairs">has_pairs</link></emphasis></para></listitem>
 <listitem><para><emphasis><link linkend="attributes_has_tostring">has_tostring</link></emphasis></para></listitem>
 <listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_view_t">types.dt_view_t</link></para></listitem>
+<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
 </itemizedlist>
 </entry>
 </row></tbody>
@@ -1811,6 +2119,7 @@ New values may appear in this table if new storages are registered using Lua.</p
 <listitem><para><emphasis><link linkend="attributes_has_pairs">has_pairs</link></emphasis></para></listitem>
 <listitem><para><emphasis><link linkend="attributes_has_tostring">has_tostring</link></emphasis></para></listitem>
 <listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_view_t">types.dt_view_t</link></para></listitem>
+<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
 </itemizedlist>
 </entry>
 </row></tbody>
@@ -1870,6 +2179,7 @@ end</programlisting>
 <listitem><para><emphasis><link linkend="attributes_has_tostring">has_tostring</link></emphasis></para></listitem>
 <listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_lib_module_t">types.dt_lib_module_t</link></para></listitem>
 <listitem><para><emphasis>position : </emphasis>1000</para></listitem>
+<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
 <listitem><para><emphasis>views : </emphasis></para>
 <para><itemizedlist>
 <listitem><para><link linkend="darktable_modules_view_darkroom">darktable.modules.view.darkroom</link></para></listitem>
@@ -1887,7 +2197,18 @@ end</programlisting>
 </indexterm>
 <synopsis>number</synopsis>
 <para>The place in the screen where the line separating the snapshot is. Between 0 and 1</para>
-
+<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
+<colspec colwidth="2*"/>
+<colspec colwidth="8*"/>
+<tbody><row>
+<entry>Attributes:</entry>
+<entry><itemizedlist>
+<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
+<listitem><para><emphasis><link linkend="attributes_write">write</link></emphasis></para></listitem>
+</itemizedlist>
+</entry>
+</row></tbody>
+</tgroup></informaltable>
 </section>
 
 <section status="final" id="darktable_modules_lib_snapshots_direction">
@@ -1898,7 +2219,18 @@ end</programlisting>
 </indexterm>
 <synopsis><link linkend="types_snapshot_direction_t">types.snapshot_direction_t</link></synopsis>
 <para>The direction of the snapshot overlay</para>
-
+<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
+<colspec colwidth="2*"/>
+<colspec colwidth="8*"/>
+<tbody><row>
+<entry>Attributes:</entry>
+<entry><itemizedlist>
+<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
+<listitem><para><emphasis><link linkend="attributes_write">write</link></emphasis></para></listitem>
+</itemizedlist>
+</entry>
+</row></tbody>
+</tgroup></informaltable>
 </section>
 
 <section status="final" id="darktable_modules_lib_snapshots__hash_">
@@ -1909,7 +2241,17 @@ end</programlisting>
 </indexterm>
 <synopsis><link linkend="types_dt_lua_snapshot_t">types.dt_lua_snapshot_t</link></synopsis>
 <para>The different snapshots for the image</para>
-
+<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
+<colspec colwidth="2*"/>
+<colspec colwidth="8*"/>
+<tbody><row>
+<entry>Attributes:</entry>
+<entry><itemizedlist>
+<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
+</itemizedlist>
+</entry>
+</row></tbody>
+</tgroup></informaltable>
 </section>
 
 <section status="final" id="darktable_modules_lib_snapshots_selected">
@@ -1919,7 +2261,17 @@ end</programlisting>
 <secondary>selected</secondary>
 </indexterm>
 <para>The currently selected snapshot</para>
-
+<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
+<colspec colwidth="2*"/>
+<colspec colwidth="8*"/>
+<tbody><row>
+<entry>Attributes:</entry>
+<entry><itemizedlist>
+<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
+</itemizedlist>
+</entry>
+</row></tbody>
+</tgroup></informaltable>
 </section>
 
 <section status="final" id="darktable_modules_lib_snapshots_take_snapshot">
@@ -1932,7 +2284,17 @@ end</programlisting>
 )</synopsis>
 <para>Take a snapshot of the current image and add it to the UI</para>
 <para>The snapshot file will be generated at the next redraw of the main window</para>
-
+<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
+<colspec colwidth="2*"/>
+<colspec colwidth="8*"/>
+<tbody><row>
+<entry>Attributes:</entry>
+<entry><itemizedlist>
+<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
+</itemizedlist>
+</entry>
+</row></tbody>
+</tgroup></informaltable>
 <variablelist>
 </variablelist>
 </section>
@@ -1945,7 +2307,17 @@ end</programlisting>
 </indexterm>
 <synopsis>number</synopsis>
 <para>The maximum number of snapshots</para>
-
+<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
+<colspec colwidth="2*"/>
+<colspec colwidth="8*"/>
+<tbody><row>
+<entry>Attributes:</entry>
+<entry><itemizedlist>
+<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
+</itemizedlist>
+</entry>
+</row></tbody>
+</tgroup></informaltable>
 </section>
 
 </section>
@@ -1968,6 +2340,7 @@ end</programlisting>
 <listitem><para><emphasis><link linkend="attributes_has_tostring">has_tostring</link></emphasis></para></listitem>
 <listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_lib_module_t">types.dt_lib_module_t</link></para></listitem>
 <listitem><para><emphasis>position : </emphasis>599</para></listitem>
+<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
 <listitem><para><emphasis>views : </emphasis></para>
 <para><itemizedlist>
 <listitem><para><link linkend="darktable_modules_view_lighttable">darktable.modules.view.lighttable</link></para></listitem>
@@ -1997,6 +2370,7 @@ end</programlisting>
 <listitem><para><emphasis><link linkend="attributes_has_tostring">has_tostring</link></emphasis></para></listitem>
 <listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_lib_module_t">types.dt_lib_module_t</link></para></listitem>
 <listitem><para><emphasis>position : </emphasis>299</para></listitem>
+<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
 <listitem><para><emphasis>views : </emphasis></para>
 <para><itemizedlist>
 <listitem><para><link linkend="darktable_modules_view_lighttable">darktable.modules.view.lighttable</link></para></listitem>
@@ -2030,6 +2404,7 @@ end</programlisting>
 <listitem><para><emphasis><link linkend="attributes_has_tostring">has_tostring</link></emphasis></para></listitem>
 <listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_lib_module_t">types.dt_lib_module_t</link></para></listitem>
 <listitem><para><emphasis>position : </emphasis>510</para></listitem>
+<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
 <listitem><para><emphasis>views : </emphasis></para>
 <para><itemizedlist>
 <listitem><para><link linkend="darktable_modules_view_lighttable">darktable.modules.view.lighttable</link></para></listitem>
@@ -2060,6 +2435,7 @@ end</programlisting>
 <listitem><para><emphasis><link linkend="attributes_has_tostring">has_tostring</link></emphasis></para></listitem>
 <listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_lib_module_t">types.dt_lib_module_t</link></para></listitem>
 <listitem><para><emphasis>position : </emphasis>1</para></listitem>
+<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
 <listitem><para><emphasis>views : </emphasis></para>
 <para><itemizedlist>
 <listitem><para><link linkend="darktable_modules_view_lighttable">darktable.modules.view.lighttable</link></para></listitem>
@@ -2091,6 +2467,7 @@ end</programlisting>
 <listitem><para><emphasis><link linkend="attributes_has_tostring">has_tostring</link></emphasis></para></listitem>
 <listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_lib_module_t">types.dt_lib_module_t</link></para></listitem>
 <listitem><para><emphasis>position : </emphasis>1</para></listitem>
+<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
 <listitem><para><emphasis>views : </emphasis></para>
 <para><itemizedlist>
 <listitem><para><link linkend="darktable_modules_view_darkroom">darktable.modules.view.darkroom</link></para></listitem>
@@ -2120,6 +2497,7 @@ end</programlisting>
 <listitem><para><emphasis><link linkend="attributes_has_tostring">has_tostring</link></emphasis></para></listitem>
 <listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_lib_module_t">types.dt_lib_module_t</link></para></listitem>
 <listitem><para><emphasis>position : </emphasis>1001</para></listitem>
+<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
 <listitem><para><emphasis>views : </emphasis></para>
 <para><itemizedlist>
 <listitem><para><link linkend="darktable_modules_view_darkroom">darktable.modules.view.darkroom</link></para></listitem>
@@ -2151,6 +2529,7 @@ end</programlisting>
 <listitem><para><emphasis><link linkend="attributes_has_tostring">has_tostring</link></emphasis></para></listitem>
 <listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_lib_module_t">types.dt_lib_module_t</link></para></listitem>
 <listitem><para><emphasis>position : </emphasis>1001</para></listitem>
+<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
 <listitem><para><emphasis>views : </emphasis></para>
 <para><itemizedlist>
 <listitem><para><link linkend="darktable_modules_view_lighttable">darktable.modules.view.lighttable</link></para></listitem>
@@ -2184,6 +2563,7 @@ end</programlisting>
 <listitem><para><emphasis><link linkend="attributes_has_tostring">has_tostring</link></emphasis></para></listitem>
 <listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_lib_module_t">types.dt_lib_module_t</link></para></listitem>
 <listitem><para><emphasis>position : </emphasis>1001</para></listitem>
+<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
 <listitem><para><emphasis>views : </emphasis></para>
 <para><itemizedlist>
 <listitem><para><link linkend="darktable_modules_view_lighttable">darktable.modules.view.lighttable</link></para></listitem>
@@ -2217,6 +2597,7 @@ end</programlisting>
 <listitem><para><emphasis><link linkend="attributes_has_tostring">has_tostring</link></emphasis></para></listitem>
 <listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_lib_module_t">types.dt_lib_module_t</link></para></listitem>
 <listitem><para><emphasis>position : </emphasis>500</para></listitem>
+<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
 <listitem><para><emphasis>views : </emphasis></para>
 <para><itemizedlist>
 <listitem><para><link linkend="darktable_modules_view_lighttable">darktable.modules.view.lighttable</link></para></listitem>
@@ -2248,6 +2629,7 @@ end</programlisting>
 <listitem><para><emphasis><link linkend="attributes_has_tostring">has_tostring</link></emphasis></para></listitem>
 <listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_lib_module_t">types.dt_lib_module_t</link></para></listitem>
 <listitem><para><emphasis>position : </emphasis>450</para></listitem>
+<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
 <listitem><para><emphasis>views : </emphasis></para>
 <para><itemizedlist>
 <listitem><para><link linkend="darktable_modules_view_lighttable">darktable.modules.view.lighttable</link></para></listitem>
@@ -2277,6 +2659,7 @@ end</programlisting>
 <listitem><para><emphasis><link linkend="attributes_has_tostring">has_tostring</link></emphasis></para></listitem>
 <listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_lib_module_t">types.dt_lib_module_t</link></para></listitem>
 <listitem><para><emphasis>position : </emphasis>350</para></listitem>
+<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
 <listitem><para><emphasis>views : </emphasis></para>
 <para><itemizedlist>
 <listitem><para><link linkend="darktable_modules_view_lighttable">darktable.modules.view.lighttable</link></para></listitem>
@@ -2307,6 +2690,7 @@ end</programlisting>
 <listitem><para><emphasis><link linkend="attributes_has_tostring">has_tostring</link></emphasis></para></listitem>
 <listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_lib_module_t">types.dt_lib_module_t</link></para></listitem>
 <listitem><para><emphasis>position : </emphasis>1001</para></listitem>
+<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
 <listitem><para><emphasis>views : </emphasis></para>
 <para><itemizedlist>
 <listitem><para><link linkend="darktable_modules_view_lighttable">darktable.modules.view.lighttable</link></para></listitem>
@@ -2339,6 +2723,7 @@ end</programlisting>
 <listitem><para><emphasis><link linkend="attributes_has_tostring">has_tostring</link></emphasis></para></listitem>
 <listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_lib_module_t">types.dt_lib_module_t</link></para></listitem>
 <listitem><para><emphasis>position : </emphasis>1001</para></listitem>
+<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
 <listitem><para><emphasis>views : </emphasis></para>
 <para><itemizedlist>
 <listitem><para><link linkend="darktable_modules_view_lighttable">darktable.modules.view.lighttable</link></para></listitem>
@@ -2372,6 +2757,7 @@ end</programlisting>
 <listitem><para><emphasis><link linkend="attributes_has_tostring">has_tostring</link></emphasis></para></listitem>
 <listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_lib_module_t">types.dt_lib_module_t</link></para></listitem>
 <listitem><para><emphasis>position : </emphasis>999</para></listitem>
+<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
 <listitem><para><emphasis>views : </emphasis></para>
 <para><itemizedlist>
 <listitem><para><link linkend="darktable_modules_view_lighttable">darktable.modules.view.lighttable</link></para></listitem>
@@ -2401,6 +2787,7 @@ end</programlisting>
 <listitem><para><emphasis><link linkend="attributes_has_tostring">has_tostring</link></emphasis></para></listitem>
 <listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_lib_module_t">types.dt_lib_module_t</link></para></listitem>
 <listitem><para><emphasis>position : </emphasis>1002</para></listitem>
+<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
 <listitem><para><emphasis>views : </emphasis></para>
 <para><itemizedlist>
 <listitem><para><link linkend="darktable_modules_view_lighttable">darktable.modules.view.lighttable</link></para></listitem>
@@ -2431,6 +2818,7 @@ end</programlisting>
 <listitem><para><emphasis><link linkend="attributes_has_tostring">has_tostring</link></emphasis></para></listitem>
 <listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_lib_module_t">types.dt_lib_module_t</link></para></listitem>
 <listitem><para><emphasis>position : </emphasis>800</para></listitem>
+<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
 <listitem><para><emphasis>views : </emphasis></para>
 <para><itemizedlist>
 <listitem><para><link linkend="darktable_modules_view_lighttable">darktable.modules.view.lighttable</link></para></listitem>
@@ -2460,6 +2848,7 @@ end</programlisting>
 <listitem><para><emphasis><link linkend="attributes_has_tostring">has_tostring</link></emphasis></para></listitem>
 <listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_lib_module_t">types.dt_lib_module_t</link></para></listitem>
 <listitem><para><emphasis>position : </emphasis>400</para></listitem>
+<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
 <listitem><para><emphasis>views : </emphasis></para>
 <para><itemizedlist>
 <listitem><para><link linkend="darktable_modules_view_lighttable">darktable.modules.view.lighttable</link></para></listitem>
@@ -2490,6 +2879,7 @@ end</programlisting>
 <listitem><para><emphasis><link linkend="attributes_has_tostring">has_tostring</link></emphasis></para></listitem>
 <listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_lib_module_t">types.dt_lib_module_t</link></para></listitem>
 <listitem><para><emphasis>position : </emphasis>1001</para></listitem>
+<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
 <listitem><para><emphasis>views : </emphasis></para>
 <para><itemizedlist>
 <listitem><para><link linkend="darktable_modules_view_lighttable">darktable.modules.view.lighttable</link></para></listitem>
@@ -2520,6 +2910,7 @@ end</programlisting>
 <listitem><para><emphasis><link linkend="attributes_has_tostring">has_tostring</link></emphasis></para></listitem>
 <listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_lib_module_t">types.dt_lib_module_t</link></para></listitem>
 <listitem><para><emphasis>position : </emphasis>1001</para></listitem>
+<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
 <listitem><para><emphasis>views : </emphasis></para>
 <para><itemizedlist>
 <listitem><para><link linkend="darktable_modules_view_lighttable">darktable.modules.view.lighttable</link></para></listitem>
@@ -2549,6 +2940,7 @@ end</programlisting>
 <listitem><para><emphasis><link linkend="attributes_has_tostring">has_tostring</link></emphasis></para></listitem>
 <listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_lib_module_t">types.dt_lib_module_t</link></para></listitem>
 <listitem><para><emphasis>position : </emphasis>600</para></listitem>
+<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
 <listitem><para><emphasis>views : </emphasis></para>
 <para><itemizedlist>
 <listitem><para><link linkend="darktable_modules_view_lighttable">darktable.modules.view.lighttable</link></para></listitem>
@@ -2578,6 +2970,7 @@ end</programlisting>
 <listitem><para><emphasis><link linkend="attributes_has_tostring">has_tostring</link></emphasis></para></listitem>
 <listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_lib_module_t">types.dt_lib_module_t</link></para></listitem>
 <listitem><para><emphasis>position : </emphasis>700</para></listitem>
+<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
 <listitem><para><emphasis>views : </emphasis></para>
 <para><itemizedlist>
 <listitem><para><link linkend="darktable_modules_view_lighttable">darktable.modules.view.lighttable</link></para></listitem>
@@ -2607,6 +3000,7 @@ end</programlisting>
 <listitem><para><emphasis><link linkend="attributes_has_tostring">has_tostring</link></emphasis></para></listitem>
 <listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_lib_module_t">types.dt_lib_module_t</link></para></listitem>
 <listitem><para><emphasis>position : </emphasis>999</para></listitem>
+<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
 <listitem><para><emphasis>views : </emphasis></para>
 <para><itemizedlist>
 <listitem><para><link linkend="darktable_modules_view_darkroom">darktable.modules.view.darkroom</link></para></listitem>
@@ -2636,6 +3030,7 @@ end</programlisting>
 <listitem><para><emphasis><link linkend="attributes_has_tostring">has_tostring</link></emphasis></para></listitem>
 <listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_lib_module_t">types.dt_lib_module_t</link></para></listitem>
 <listitem><para><emphasis>position : </emphasis>100</para></listitem>
+<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
 <listitem><para><emphasis>views : </emphasis></para>
 <para><itemizedlist>
 <listitem><para><link linkend="darktable_modules_view_lighttable">darktable.modules.view.lighttable</link></para></listitem>
@@ -2667,6 +3062,7 @@ end</programlisting>
 <listitem><para><emphasis><link linkend="attributes_has_tostring">has_tostring</link></emphasis></para></listitem>
 <listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_lib_module_t">types.dt_lib_module_t</link></para></listitem>
 <listitem><para><emphasis>position : </emphasis>999</para></listitem>
+<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
 <listitem><para><emphasis>views : </emphasis></para>
 <para><itemizedlist>
 <listitem><para><link linkend="darktable_modules_view_tethering">darktable.modules.view.tethering</link></para></listitem>
@@ -2696,6 +3092,7 @@ end</programlisting>
 <listitem><para><emphasis><link linkend="attributes_has_tostring">has_tostring</link></emphasis></para></listitem>
 <listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_lib_module_t">types.dt_lib_module_t</link></para></listitem>
 <listitem><para><emphasis>position : </emphasis>1001</para></listitem>
+<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
 <listitem><para><emphasis>views : </emphasis></para>
 <para><itemizedlist>
 <listitem><para><link linkend="darktable_modules_view_darkroom">darktable.modules.view.darkroom</link></para></listitem>
@@ -2726,6 +3123,7 @@ end</programlisting>
 <listitem><para><emphasis><link linkend="attributes_has_tostring">has_tostring</link></emphasis></para></listitem>
 <listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_lib_module_t">types.dt_lib_module_t</link></para></listitem>
 <listitem><para><emphasis>position : </emphasis>0</para></listitem>
+<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
 <listitem><para><emphasis>views : </emphasis></para>
 <para><itemizedlist>
 <listitem><para><link linkend="darktable_modules_view_lighttable">darktable.modules.view.lighttable</link></para></listitem>
@@ -2755,6 +3153,7 @@ end</programlisting>
 <listitem><para><emphasis><link linkend="attributes_has_tostring">has_tostring</link></emphasis></para></listitem>
 <listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_lib_module_t">types.dt_lib_module_t</link></para></listitem>
 <listitem><para><emphasis>position : </emphasis>900</para></listitem>
+<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
 <listitem><para><emphasis>views : </emphasis></para>
 <para><itemizedlist>
 <listitem><para><link linkend="darktable_modules_view_darkroom">darktable.modules.view.darkroom</link></para></listitem>
@@ -2784,6 +3183,7 @@ end</programlisting>
 <listitem><para><emphasis><link linkend="attributes_has_tostring">has_tostring</link></emphasis></para></listitem>
 <listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_lib_module_t">types.dt_lib_module_t</link></para></listitem>
 <listitem><para><emphasis>position : </emphasis>800</para></listitem>
+<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
 <listitem><para><emphasis>views : </emphasis></para>
 <para><itemizedlist>
 <listitem><para><link linkend="darktable_modules_view_darkroom">darktable.modules.view.darkroom</link></para></listitem>
@@ -2813,6 +3213,7 @@ end</programlisting>
 <listitem><para><emphasis><link linkend="attributes_has_tostring">has_tostring</link></emphasis></para></listitem>
 <listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_lib_module_t">types.dt_lib_module_t</link></para></listitem>
 <listitem><para><emphasis>position : </emphasis>1001</para></listitem>
+<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
 <listitem><para><emphasis>views : </emphasis></para>
 <para><itemizedlist>
 <listitem><para><link linkend="darktable_modules_view_darkroom">darktable.modules.view.darkroom</link></para></listitem>
@@ -2842,6 +3243,7 @@ end</programlisting>
 <listitem><para><emphasis><link linkend="attributes_has_tostring">has_tostring</link></emphasis></para></listitem>
 <listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_lib_module_t">types.dt_lib_module_t</link></para></listitem>
 <listitem><para><emphasis>position : </emphasis>10</para></listitem>
+<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
 <listitem><para><emphasis>views : </emphasis></para>
 <para><itemizedlist>
 <listitem><para><link linkend="darktable_modules_view_darkroom">darktable.modules.view.darkroom</link></para></listitem>
@@ -2871,6 +3273,7 @@ end</programlisting>
 <listitem><para><emphasis><link linkend="attributes_has_tostring">has_tostring</link></emphasis></para></listitem>
 <listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_lib_module_t">types.dt_lib_module_t</link></para></listitem>
 <listitem><para><emphasis>position : </emphasis>100</para></listitem>
+<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
 <listitem><para><emphasis>views : </emphasis></para>
 <para><itemizedlist>
 <listitem><para><link linkend="darktable_modules_view_lighttable">darktable.modules.view.lighttable</link></para></listitem>
@@ -2902,6 +3305,7 @@ end</programlisting>
 <listitem><para><emphasis><link linkend="attributes_has_tostring">has_tostring</link></emphasis></para></listitem>
 <listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_lib_module_t">types.dt_lib_module_t</link></para></listitem>
 <listitem><para><emphasis>position : </emphasis>998</para></listitem>
+<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
 <listitem><para><emphasis>views : </emphasis></para>
 <para><itemizedlist>
 <listitem><para><link linkend="darktable_modules_view_tethering">darktable.modules.view.tethering</link></para></listitem>
@@ -2931,6 +3335,7 @@ end</programlisting>
 <listitem><para><emphasis><link linkend="attributes_has_tostring">has_tostring</link></emphasis></para></listitem>
 <listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_lib_module_t">types.dt_lib_module_t</link></para></listitem>
 <listitem><para><emphasis>position : </emphasis>990</para></listitem>
+<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
 <listitem><para><emphasis>views : </emphasis></para>
 <para><itemizedlist>
 <listitem><para><link linkend="darktable_modules_view_map">darktable.modules.view.map</link></para></listitem>
@@ -2960,6 +3365,7 @@ end</programlisting>
 <listitem><para><emphasis><link linkend="attributes_has_tostring">has_tostring</link></emphasis></para></listitem>
 <listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_lib_module_t">types.dt_lib_module_t</link></para></listitem>
 <listitem><para><emphasis>position : </emphasis>997</para></listitem>
+<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
 <listitem><para><emphasis>views : </emphasis></para>
 <para><itemizedlist>
 <listitem><para><link linkend="darktable_modules_view_tethering">darktable.modules.view.tethering</link></para></listitem>
@@ -2989,6 +3395,7 @@ end</programlisting>
 <listitem><para><emphasis><link linkend="attributes_has_tostring">has_tostring</link></emphasis></para></listitem>
 <listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_lib_module_t">types.dt_lib_module_t</link></para></listitem>
 <listitem><para><emphasis>position : </emphasis>999</para></listitem>
+<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
 <listitem><para><emphasis>views : </emphasis></para>
 <para><itemizedlist>
 <listitem><para><link linkend="darktable_modules_view_map">darktable.modules.view.map</link></para></listitem>
@@ -3018,6 +3425,7 @@ end</programlisting>
 <listitem><para><emphasis><link linkend="attributes_has_tostring">has_tostring</link></emphasis></para></listitem>
 <listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_lib_module_t">types.dt_lib_module_t</link></para></listitem>
 <listitem><para><emphasis>position : </emphasis>1</para></listitem>
+<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
 <listitem><para><emphasis>views : </emphasis></para>
 <para><itemizedlist>
 <listitem><para><link linkend="darktable_modules_view_lighttable">darktable.modules.view.lighttable</link></para></listitem>
@@ -3290,7 +3698,17 @@ Note that this is the real image object; changing the value of a field will imme
 </indexterm>
 <synopsis>number</synopsis>
 <para>A unique id identifying the image in the database.</para>
-
+<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
+<colspec colwidth="2*"/>
+<colspec colwidth="8*"/>
+<tbody><row>
+<entry>Attributes:</entry>
+<entry><itemizedlist>
+<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
+</itemizedlist>
+</entry>
+</row></tbody>
+</tgroup></informaltable>
 </section>
 
 <section status="final" id="types_dt_lua_image_t_path">
@@ -3301,7 +3719,17 @@ Note that this is the real image object; changing the value of a field will imme
 </indexterm>
 <synopsis>string</synopsis>
 <para>The file the directory containing the image.</para>
-
+<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
+<colspec colwidth="2*"/>
+<colspec colwidth="8*"/>
+<tbody><row>
+<entry>Attributes:</entry>
+<entry><itemizedlist>
+<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
+</itemizedlist>
+</entry>
+</row></tbody>
+</tgroup></informaltable>
 </section>
 
 <section status="final" id="types_dt_lua_image_t_film">
@@ -3312,7 +3740,17 @@ Note that this is the real image object; changing the value of a field will imme
 </indexterm>
 <synopsis><link linkend="types_dt_lua_film_t">types.dt_lua_film_t</link></synopsis>
 <para>The film object that contains this image.</para>
-
+<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
+<colspec colwidth="2*"/>
+<colspec colwidth="8*"/>
+<tbody><row>
+<entry>Attributes:</entry>
+<entry><itemizedlist>
+<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
+</itemizedlist>
+</entry>
+</row></tbody>
+</tgroup></informaltable>
 </section>
 
 <section status="final" id="types_dt_lua_image_t_filename">
@@ -3323,7 +3761,17 @@ Note that this is the real image object; changing the value of a field will imme
 </indexterm>
 <synopsis>string</synopsis>
 <para>The filename of the image.</para>
-
+<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
+<colspec colwidth="2*"/>
+<colspec colwidth="8*"/>
+<tbody><row>
+<entry>Attributes:</entry>
+<entry><itemizedlist>
+<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
+</itemizedlist>
+</entry>
+</row></tbody>
+</tgroup></informaltable>
 </section>
 
 <section status="final" id="types_dt_lua_image_t_duplicate_index">
@@ -3334,7 +3782,17 @@ Note that this is the real image object; changing the value of a field will imme
 </indexterm>
 <synopsis>number</synopsis>
 <para>If there are multiple images based on a same file, each will have a unique number, starting from 0.</para>
-
+<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
+<colspec colwidth="2*"/>
+<colspec colwidth="8*"/>
+<tbody><row>
+<entry>Attributes:</entry>
+<entry><itemizedlist>
+<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
+</itemizedlist>
+</entry>
+</row></tbody>
+</tgroup></informaltable>
 </section>
 
 <section status="final" id="types_dt_lua_image_t_publisher">
@@ -3345,7 +3803,18 @@ Note that this is the real image object; changing the value of a field will imme
 </indexterm>
 <synopsis>string</synopsis>
 <para>The publisher field of the image.</para>
-
+<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
+<colspec colwidth="2*"/>
+<colspec colwidth="8*"/>
+<tbody><row>
+<entry>Attributes:</entry>
+<entry><itemizedlist>
+<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
+<listitem><para><emphasis><link linkend="attributes_write">write</link></emphasis></para></listitem>
+</itemizedlist>
+</entry>
+</row></tbody>
+</tgroup></informaltable>
 </section>
 
 <section status="final" id="types_dt_lua_image_t_title">
@@ -3356,7 +3825,18 @@ Note that this is the real image object; changing the value of a field will imme
 </indexterm>
 <synopsis>string</synopsis>
 <para>The title field of the image.</para>
-
+<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
+<colspec colwidth="2*"/>
+<colspec colwidth="8*"/>
+<tbody><row>
+<entry>Attributes:</entry>
+<entry><itemizedlist>
+<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
+<listitem><para><emphasis><link linkend="attributes_write">write</link></emphasis></para></listitem>
+</itemizedlist>
+</entry>
+</row></tbody>
+</tgroup></informaltable>
 </section>
 
 <section status="final" id="types_dt_lua_image_t_creator">
@@ -3367,7 +3847,18 @@ Note that this is the real image object; changing the value of a field will imme
 </indexterm>
 <synopsis>string</synopsis>
 <para>The creator field of the image.</para>
-
+<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
+<colspec colwidth="2*"/>
+<colspec colwidth="8*"/>
+<tbody><row>
+<entry>Attributes:</entry>
+<entry><itemizedlist>
+<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
+<listitem><para><emphasis><link linkend="attributes_write">write</link></emphasis></para></listitem>
+</itemizedlist>
+</entry>
+</row></tbody>
+</tgroup></informaltable>
 </section>
 
 <section status="final" id="types_dt_lua_image_t_rights">
@@ -3378,7 +3869,18 @@ Note that this is the real image object; changing the value of a field will imme
 </indexterm>
 <synopsis>string</synopsis>
 <para>The rights field of the image.</para>
-
+<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
+<colspec colwidth="2*"/>
+<colspec colwidth="8*"/>
+<tbody><row>
+<entry>Attributes:</entry>
+<entry><itemizedlist>
+<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
+<listitem><para><emphasis><link linkend="attributes_write">write</link></emphasis></para></listitem>
+</itemizedlist>
+</entry>
+</row></tbody>
+</tgroup></informaltable>
 </section>
 
 <section status="final" id="types_dt_lua_image_t_description">
@@ -3389,7 +3891,18 @@ Note that this is the real image object; changing the value of a field will imme
 </indexterm>
 <synopsis>string</synopsis>
 <para>The description field for the image.</para>
-
+<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
+<colspec colwidth="2*"/>
+<colspec colwidth="8*"/>
+<tbody><row>
+<entry>Attributes:</entry>
+<entry><itemizedlist>
+<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
+<listitem><para><emphasis><link linkend="attributes_write">write</link></emphasis></para></listitem>
+</itemizedlist>
+</entry>
+</row></tbody>
+</tgroup></informaltable>
 </section>
 
 <section status="final" id="types_dt_lua_image_t_exif_maker">
@@ -3400,7 +3913,18 @@ Note that this is the real image object; changing the value of a field will imme
 </indexterm>
 <synopsis>string</synopsis>
 <para>The maker exif data.</para>
-
+<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
+<colspec colwidth="2*"/>
+<colspec colwidth="8*"/>
+<tbody><row>
+<entry>Attributes:</entry>
+<entry><itemizedlist>
+<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
+<listitem><para><emphasis><link linkend="attributes_write">write</link></emphasis></para></listitem>
+</itemizedlist>
+</entry>
+</row></tbody>
+</tgroup></informaltable>
 </section>
 
 <section status="final" id="types_dt_lua_image_t_exif_model">
@@ -3411,7 +3935,18 @@ Note that this is the real image object; changing the value of a field will imme
 </indexterm>
 <synopsis>string</synopsis>
 <para>The camera model used.</para>
-
+<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
+<colspec colwidth="2*"/>
+<colspec colwidth="8*"/>
+<tbody><row>
+<entry>Attributes:</entry>
+<entry><itemizedlist>
+<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
+<listitem><para><emphasis><link linkend="attributes_write">write</link></emphasis></para></listitem>
+</itemizedlist>
+</entry>
+</row></tbody>
+</tgroup></informaltable>
 </section>
 
 <section status="final" id="types_dt_lua_image_t_exif_lens">
@@ -3422,7 +3957,18 @@ Note that this is the real image object; changing the value of a field will imme
 </indexterm>
 <synopsis>string</synopsis>
 <para>The id string of the lens used.</para>
-
+<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
+<colspec colwidth="2*"/>
+<colspec colwidth="8*"/>
+<tbody><row>
+<entry>Attributes:</entry>
+<entry><itemizedlist>
+<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
+<listitem><para><emphasis><link linkend="attributes_write">write</link></emphasis></para></listitem>
+</itemizedlist>
+</entry>
+</row></tbody>
+</tgroup></informaltable>
 </section>
 
 <section status="final" id="types_dt_lua_image_t_exif_aperture">
@@ -3433,7 +3979,18 @@ Note that this is the real image object; changing the value of a field will imme
 </indexterm>
 <synopsis>number</synopsis>
 <para>The aperture saved in the exif data.</para>
-
+<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
+<colspec colwidth="2*"/>
+<colspec colwidth="8*"/>
+<tbody><row>
+<entry>Attributes:</entry>
+<entry><itemizedlist>
+<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
+<listitem><para><emphasis><link linkend="attributes_write">write</link></emphasis></para></listitem>
+</itemizedlist>
+</entry>
+</row></tbody>
+</tgroup></informaltable>
 </section>
 
 <section status="final" id="types_dt_lua_image_t_exif_exposure">
@@ -3444,7 +4001,18 @@ Note that this is the real image object; changing the value of a field will imme
 </indexterm>
 <synopsis>number</synopsis>
 <para>The exposure time of the image.</para>
-
+<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
+<colspec colwidth="2*"/>
+<colspec colwidth="8*"/>
+<tbody><row>
+<entry>Attributes:</entry>
+<entry><itemizedlist>
+<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
+<listitem><para><emphasis><link linkend="attributes_write">write</link></emphasis></para></listitem>
+</itemizedlist>
+</entry>
+</row></tbody>
+</tgroup></informaltable>
 </section>
 
 <section status="final" id="types_dt_lua_image_t_exif_focal_length">
@@ -3455,7 +4023,18 @@ Note that this is the real image object; changing the value of a field will imme
 </indexterm>
 <synopsis>number</synopsis>
 <para>The focal length of the image.</para>
-
+<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
+<colspec colwidth="2*"/>
+<colspec colwidth="8*"/>
+<tbody><row>
+<entry>Attributes:</entry>
+<entry><itemizedlist>
+<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
+<listitem><para><emphasis><link linkend="attributes_write">write</link></emphasis></para></listitem>
+</itemizedlist>
+</entry>
+</row></tbody>
+</tgroup></informaltable>
 </section>
 
 <section status="final" id="types_dt_lua_image_t_exif_iso">
@@ -3466,7 +4045,18 @@ Note that this is the real image object; changing the value of a field will imme
 </indexterm>
 <synopsis>number</synopsis>
 <para>The iso used on the image.</para>
-
+<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
+<colspec colwidth="2*"/>
+<colspec colwidth="8*"/>
+<tbody><row>
+<entry>Attributes:</entry>
+<entry><itemizedlist>
+<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
+<listitem><para><emphasis><link linkend="attributes_write">write</link></emphasis></para></listitem>
+</itemizedlist>
+</entry>
+</row></tbody>
+</tgroup></informaltable>
 </section>
 
 <section status="final" id="types_dt_lua_image_t_exif_datetime_taken">
@@ -3477,7 +4067,18 @@ Note that this is the real image object; changing the value of a field will imme
 </indexterm>
 <synopsis>string</synopsis>
 <para>The date and time of the image.</para>
-
+<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
+<colspec colwidth="2*"/>
+<colspec colwidth="8*"/>
+<tbody><row>
+<entry>Attributes:</entry>
+<entry><itemizedlist>
+<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
+<listitem><para><emphasis><link linkend="attributes_write">write</link></emphasis></para></listitem>
+</itemizedlist>
+</entry>
+</row></tbody>
+</tgroup></informaltable>
 </section>
 
 <section status="final" id="types_dt_lua_image_t_exif_focus_distance">
@@ -3488,7 +4089,18 @@ Note that this is the real image object; changing the value of a field will imme
 </indexterm>
 <synopsis>number</synopsis>
 <para>The distance of the subject.</para>
-
+<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
+<colspec colwidth="2*"/>
+<colspec colwidth="8*"/>
+<tbody><row>
+<entry>Attributes:</entry>
+<entry><itemizedlist>
+<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
+<listitem><para><emphasis><link linkend="attributes_write">write</link></emphasis></para></listitem>
+</itemizedlist>
+</entry>
+</row></tbody>
+</tgroup></informaltable>
 </section>
 
 <section status="final" id="types_dt_lua_image_t_exif_crop">
@@ -3499,7 +4111,18 @@ Note that this is the real image object; changing the value of a field will imme
 </indexterm>
 <synopsis>number</synopsis>
 <para>The exif crop data.</para>
-
+<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
+<colspec colwidth="2*"/>
+<colspec colwidth="8*"/>
+<tbody><row>
+<entry>Attributes:</entry>
+<entry><itemizedlist>
+<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
+<listitem><para><emphasis><link linkend="attributes_write">write</link></emphasis></para></listitem>
+</itemizedlist>
+</entry>
+</row></tbody>
+</tgroup></informaltable>
 </section>
 
 <section status="final" id="types_dt_lua_image_t_latitude">
@@ -3509,7 +4132,18 @@ Note that this is the real image object; changing the value of a field will imme
 <secondary>latitude</secondary>
 </indexterm>
 <para>GPS latitude data of the image, nil if not set.</para>
-
+<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
+<colspec colwidth="2*"/>
+<colspec colwidth="8*"/>
+<tbody><row>
+<entry>Attributes:</entry>
+<entry><itemizedlist>
+<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
+<listitem><para><emphasis><link linkend="attributes_write">write</link></emphasis></para></listitem>
+</itemizedlist>
+</entry>
+</row></tbody>
+</tgroup></informaltable>
 </section>
 
 <section status="final" id="types_dt_lua_image_t_longitude">
@@ -3519,7 +4153,18 @@ Note that this is the real image object; changing the value of a field will imme
 <secondary>longitude</secondary>
 </indexterm>
 <para>GPS longitude data of the image, nil if not set.</para>
-
+<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
+<colspec colwidth="2*"/>
+<colspec colwidth="8*"/>
+<tbody><row>
+<entry>Attributes:</entry>
+<entry><itemizedlist>
+<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
+<listitem><para><emphasis><link linkend="attributes_write">write</link></emphasis></para></listitem>
+</itemizedlist>
+</entry>
+</row></tbody>
+</tgroup></informaltable>
 </section>
 
 <section status="final" id="types_dt_lua_image_t_is_raw">
@@ -3530,7 +4175,17 @@ Note that this is the real image object; changing the value of a field will imme
 </indexterm>
 <synopsis>boolean</synopsis>
 <para>True if the image is a RAW file.</para>
-
+<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
+<colspec colwidth="2*"/>
+<colspec colwidth="8*"/>
+<tbody><row>
+<entry>Attributes:</entry>
+<entry><itemizedlist>
+<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
+</itemizedlist>
+</entry>
+</row></tbody>
+</tgroup></informaltable>
 </section>
 
 <section status="final" id="types_dt_lua_image_t_is_ldr">
@@ -3541,7 +4196,17 @@ Note that this is the real image object; changing the value of a field will imme
 </indexterm>
 <synopsis>boolean</synopsis>
 <para>True if the image is a ldr image.</para>
-
+<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
+<colspec colwidth="2*"/>
+<colspec colwidth="8*"/>
+<tbody><row>
+<entry>Attributes:</entry>
+<entry><itemizedlist>
+<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
+</itemizedlist>
+</entry>
+</row></tbody>
+</tgroup></informaltable>
 </section>
 
 <section status="final" id="types_dt_lua_image_t_is_hdr">
@@ -3552,7 +4217,17 @@ Note that this is the real image object; changing the value of a field will imme
 </indexterm>
 <synopsis>boolean</synopsis>
 <para>True if the image is a hdr image.</para>
-
+<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
+<colspec colwidth="2*"/>
+<colspec colwidth="8*"/>
+<tbody><row>
+<entry>Attributes:</entry>
+<entry><itemizedlist>
+<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
+</itemizedlist>
+</entry>
+</row></tbody>
+</tgroup></informaltable>
 </section>
 
 <section status="final" id="types_dt_lua_image_t_width">
@@ -3563,7 +4238,17 @@ Note that this is the real image object; changing the value of a field will imme
 </indexterm>
 <synopsis>number</synopsis>
 <para>The width of the image.</para>
-
+<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
+<colspec colwidth="2*"/>
+<colspec colwidth="8*"/>
+<tbody><row>
+<entry>Attributes:</entry>
+<entry><itemizedlist>
+<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
+</itemizedlist>
+</entry>
+</row></tbody>
+</tgroup></informaltable>
 </section>
 
 <section status="final" id="types_dt_lua_image_t_height">
@@ -3574,7 +4259,17 @@ Note that this is the real image object; changing the value of a field will imme
 </indexterm>
 <synopsis>number</synopsis>
 <para>The height of the image.</para>
-
+<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
+<colspec colwidth="2*"/>
+<colspec colwidth="8*"/>
+<tbody><row>
+<entry>Attributes:</entry>
+<entry><itemizedlist>
+<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
+</itemizedlist>
+</entry>
+</row></tbody>
+</tgroup></informaltable>
 </section>
 
 <section status="final" id="types_dt_lua_image_t_rating">
@@ -3585,7 +4280,18 @@ Note that this is the real image object; changing the value of a field will imme
 </indexterm>
 <synopsis>number</synopsis>
 <para>The rating of the image (-1 for rejected).</para>
-
+<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
+<colspec colwidth="2*"/>
+<colspec colwidth="8*"/>
+<tbody><row>
+<entry>Attributes:</entry>
+<entry><itemizedlist>
+<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
+<listitem><para><emphasis><link linkend="attributes_write">write</link></emphasis></para></listitem>
+</itemizedlist>
+</entry>
+</row></tbody>
+</tgroup></informaltable>
 </section>
 
 <section status="final" id="types_dt_lua_image_t_red">
@@ -3596,7 +4302,18 @@ Note that this is the real image object; changing the value of a field will imme
 </indexterm>
 <synopsis>boolean</synopsis>
 <para>True if the image has the corresponding colorlabel.</para>
-
+<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
+<colspec colwidth="2*"/>
+<colspec colwidth="8*"/>
+<tbody><row>
+<entry>Attributes:</entry>
+<entry><itemizedlist>
+<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
+<listitem><para><emphasis><link linkend="attributes_write">write</link></emphasis></para></listitem>
+</itemizedlist>
+</entry>
+</row></tbody>
+</tgroup></informaltable>
 </section>
 
 <section status="final" >
@@ -3645,7 +4362,17 @@ Note that this is the real image object; changing the value of a field will imme
 	<emphasis><link linkend="types_dt_lua_image_t_reset_image">image</link></emphasis> : <link linkend="types_dt_lua_image_t">types.dt_lua_image_t</link>
 )</synopsis>
 <para>Removes all processing from the image, reseting it back to its original state</para>
-
+<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
+<colspec colwidth="2*"/>
+<colspec colwidth="8*"/>
+<tbody><row>
+<entry>Attributes:</entry>
+<entry><itemizedlist>
+<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
+</itemizedlist>
+</entry>
+</row></tbody>
+</tgroup></informaltable>
 <variablelist>
 <varlistentry id="types_dt_lua_image_t_reset_image"><term>image</term><listitem>
 <synopsis><link linkend="types_dt_lua_image_t">types.dt_lua_image_t</link></synopsis>
@@ -3666,7 +4393,17 @@ Note that this is the real image object; changing the value of a field will imme
 	<emphasis><link linkend="types_dt_lua_image_t_delete_image">image</link></emphasis> : <link linkend="types_dt_lua_image_t">types.dt_lua_image_t</link>
 )</synopsis>
 <para>Removes an image from the database</para>
-
+<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
+<colspec colwidth="2*"/>
+<colspec colwidth="8*"/>
+<tbody><row>
+<entry>Attributes:</entry>
+<entry><itemizedlist>
+<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
+</itemizedlist>
+</entry>
+</row></tbody>
+</tgroup></informaltable>
 <variablelist>
 <varlistentry id="types_dt_lua_image_t_delete_image"><term>image</term><listitem>
 <synopsis><link linkend="types_dt_lua_image_t">types.dt_lua_image_t</link></synopsis>
@@ -3688,7 +4425,17 @@ Note that this is the real image object; changing the value of a field will imme
 	[<emphasis><link linkend="types_dt_lua_image_t_group_with_image2">image2</link></emphasis> : <link linkend="types_dt_lua_image_t">types.dt_lua_image_t</link>]
 )</synopsis>
 <para>Puts the first image in the same group as the second image. If no second image is provided the image will be in its own group.</para>
-
+<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
+<colspec colwidth="2*"/>
+<colspec colwidth="8*"/>
+<tbody><row>
+<entry>Attributes:</entry>
+<entry><itemizedlist>
+<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
+</itemizedlist>
+</entry>
+</row></tbody>
+</tgroup></informaltable>
 <variablelist>
 <varlistentry id="types_dt_lua_image_t_group_with_image"><term>image</term><listitem>
 <synopsis><link linkend="types_dt_lua_image_t">types.dt_lua_image_t</link></synopsis>
@@ -3715,7 +4462,17 @@ Note that this is the real image object; changing the value of a field will imme
 	<emphasis><link linkend="types_dt_lua_image_t_make_group_leader_image">image</link></emphasis> : <link linkend="types_dt_lua_image_t">types.dt_lua_image_t</link>
 )</synopsis>
 <para>Makes the image the leader of its group.</para>
-
+<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
+<colspec colwidth="2*"/>
+<colspec colwidth="8*"/>
+<tbody><row>
+<entry>Attributes:</entry>
+<entry><itemizedlist>
+<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
+</itemizedlist>
+</entry>
+</row></tbody>
+</tgroup></informaltable>
 <variablelist>
 <varlistentry id="types_dt_lua_image_t_make_group_leader_image"><term>image</term><listitem>
 <synopsis><link linkend="types_dt_lua_image_t">types.dt_lua_image_t</link></synopsis>
@@ -3736,7 +4493,17 @@ Note that this is the real image object; changing the value of a field will imme
 	<emphasis><link linkend="types_dt_lua_image_t_get_group_members_image">image</link></emphasis> : <link linkend="types_dt_lua_image_t">types.dt_lua_image_t</link>
 ) : table of <link linkend="types_dt_lua_image_t">types.dt_lua_image_t</link></synopsis>
 <para>Returns a table containing all <link linkend="types_dt_lua_image_t">types.dt_lua_image_t</link> of the group. The group leader is both at a numeric key and at the "leader" special key (so you probably want to use ipairs to iterate through that table).</para>
-
+<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
+<colspec colwidth="2*"/>
+<colspec colwidth="8*"/>
+<tbody><row>
+<entry>Attributes:</entry>
+<entry><itemizedlist>
+<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
+</itemizedlist>
+</entry>
+</row></tbody>
+</tgroup></informaltable>
 <variablelist>
 <varlistentry id="types_dt_lua_image_t_get_group_members_image"><term>image</term><listitem>
 <synopsis><link linkend="types_dt_lua_image_t">types.dt_lua_image_t</link></synopsis>
@@ -3762,7 +4529,17 @@ Note that this is the real image object; changing the value of a field will imme
 </indexterm>
 <synopsis><link linkend="types_dt_lua_image_t">types.dt_lua_image_t</link></synopsis>
 <para>The image which is the leader of the group this image is a member of.</para>
-
+<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
+<colspec colwidth="2*"/>
+<colspec colwidth="8*"/>
+<tbody><row>
+<entry>Attributes:</entry>
+<entry><itemizedlist>
+<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
+</itemizedlist>
+</entry>
+</row></tbody>
+</tgroup></informaltable>
 </section>
 
 <section status="final" id="types_dt_lua_image_t_local_copy">
@@ -3773,7 +4550,18 @@ Note that this is the real image object; changing the value of a field will imme
 </indexterm>
 <synopsis>boolean</synopsis>
 <para>True if the image has a copy in the local cache</para>
-
+<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
+<colspec colwidth="2*"/>
+<colspec colwidth="8*"/>
+<tbody><row>
+<entry>Attributes:</entry>
+<entry><itemizedlist>
+<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
+<listitem><para><emphasis><link linkend="attributes_write">write</link></emphasis></para></listitem>
+</itemizedlist>
+</entry>
+</row></tbody>
+</tgroup></informaltable>
 </section>
 
 <section status="final" id="types_dt_lua_image_t_drop_cache">
@@ -3788,7 +4576,17 @@ Note that this is the real image object; changing the value of a field will imme
 <para>drops the cached version of this image.</para>
 <para>This function should be called if an image is modified out of darktable to force DT to regenerate the thumbnail</para>
 <para>Darktable will regenerate the thumbnail by itself when it is needed</para>
-
+<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
+<colspec colwidth="2*"/>
+<colspec colwidth="8*"/>
+<tbody><row>
+<entry>Attributes:</entry>
+<entry><itemizedlist>
+<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
+</itemizedlist>
+</entry>
+</row></tbody>
+</tgroup></informaltable>
 <variablelist>
 <varlistentry id="types_dt_lua_image_t_drop_cache_image"><term>image</term><listitem>
 <synopsis><link linkend="types_dt_lua_image_t">types.dt_lua_image_t</link></synopsis>
@@ -3828,7 +4626,17 @@ Note that this is the real image object; changing the value of a field will imme
 </indexterm>
 <synopsis>string</synopsis>
 <para>A unique name for the plugin.</para>
-
+<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
+<colspec colwidth="2*"/>
+<colspec colwidth="8*"/>
+<tbody><row>
+<entry>Attributes:</entry>
+<entry><itemizedlist>
+<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
+</itemizedlist>
+</entry>
+</row></tbody>
+</tgroup></informaltable>
 </section>
 
 <section status="final" id="types_dt_imageio_module_format_t_name">
@@ -3839,7 +4647,17 @@ Note that this is the real image object; changing the value of a field will imme
 </indexterm>
 <synopsis>string</synopsis>
 <para>A human readable name for the plugin.</para>
-
+<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
+<colspec colwidth="2*"/>
+<colspec colwidth="8*"/>
+<tbody><row>
+<entry>Attributes:</entry>
+<entry><itemizedlist>
+<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
+</itemizedlist>
+</entry>
+</row></tbody>
+</tgroup></informaltable>
 </section>
 
 <section status="final" id="types_dt_imageio_module_format_t_extension">
@@ -3850,7 +4668,17 @@ Note that this is the real image object; changing the value of a field will imme
 </indexterm>
 <synopsis>string</synopsis>
 <para>The typical filename extension for that format.</para>
-
+<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
+<colspec colwidth="2*"/>
+<colspec colwidth="8*"/>
+<tbody><row>
+<entry>Attributes:</entry>
+<entry><itemizedlist>
+<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
+</itemizedlist>
+</entry>
+</row></tbody>
+</tgroup></informaltable>
 </section>
 
 <section status="final" id="types_dt_imageio_module_format_t_mime">
@@ -3861,7 +4689,17 @@ Note that this is the real image object; changing the value of a field will imme
 </indexterm>
 <synopsis>string</synopsis>
 <para>The mime type associated with the format.</para>
-
+<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
+<colspec colwidth="2*"/>
+<colspec colwidth="8*"/>
+<tbody><row>
+<entry>Attributes:</entry>
+<entry><itemizedlist>
+<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
+</itemizedlist>
+</entry>
+</row></tbody>
+</tgroup></informaltable>
 </section>
 
 <section status="final" id="types_dt_imageio_module_format_t_max_width">
@@ -3872,7 +4710,17 @@ Note that this is the real image object; changing the value of a field will imme
 </indexterm>
 <synopsis>number</synopsis>
 <para>The max width allowed for the format (0 = unlimited).</para>
-
+<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
+<colspec colwidth="2*"/>
+<colspec colwidth="8*"/>
+<tbody><row>
+<entry>Attributes:</entry>
+<entry><itemizedlist>
+<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
+</itemizedlist>
+</entry>
+</row></tbody>
+</tgroup></informaltable>
 </section>
 
 <section status="final" id="types_dt_imageio_module_format_t_max_height">
@@ -3883,7 +4731,17 @@ Note that this is the real image object; changing the value of a field will imme
 </indexterm>
 <synopsis>number</synopsis>
 <para>The max height allowed for the format (0 = unlimited).</para>
-
+<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
+<colspec colwidth="2*"/>
+<colspec colwidth="8*"/>
+<tbody><row>
+<entry>Attributes:</entry>
+<entry><itemizedlist>
+<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
+</itemizedlist>
+</entry>
+</row></tbody>
+</tgroup></informaltable>
 </section>
 
 <section status="final" id="types_dt_imageio_module_format_t_write_image">
@@ -3905,6 +4763,7 @@ Note that this is the real image object; changing the value of a field will imme
 <entry>Attributes:</entry>
 <entry><itemizedlist>
 <listitem><para><emphasis><link linkend="attributes_implicit_yield">implicit_yield</link></emphasis></para></listitem>
+<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
 </itemizedlist>
 </entry>
 </row></tbody>
@@ -3968,7 +4827,18 @@ Note that this is the real image object; changing the value of a field will imme
 </indexterm>
 <synopsis>number</synopsis>
 <para>The bpp parameter to use when exporting.</para>
-
+<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
+<colspec colwidth="2*"/>
+<colspec colwidth="8*"/>
+<tbody><row>
+<entry>Attributes:</entry>
+<entry><itemizedlist>
+<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
+<listitem><para><emphasis><link linkend="attributes_write">write</link></emphasis></para></listitem>
+</itemizedlist>
+</entry>
+</row></tbody>
+</tgroup></informaltable>
 </section>
 
 </section>
@@ -4001,7 +4871,18 @@ Note that this is the real image object; changing the value of a field will imme
 </indexterm>
 <synopsis>number</synopsis>
 <para>The bpp parameter to use when exporting.</para>
-
+<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
+<colspec colwidth="2*"/>
+<colspec colwidth="8*"/>
+<tbody><row>
+<entry>Attributes:</entry>
+<entry><itemizedlist>
+<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
+<listitem><para><emphasis><link linkend="attributes_write">write</link></emphasis></para></listitem>
+</itemizedlist>
+</entry>
+</row></tbody>
+</tgroup></informaltable>
 </section>
 
 </section>
@@ -4100,7 +4981,18 @@ Note that this is the real image object; changing the value of a field will imme
 </indexterm>
 <synopsis>number</synopsis>
 <para>The quality to use at export time.</para>
-
+<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
+<colspec colwidth="2*"/>
+<colspec colwidth="8*"/>
+<tbody><row>
+<entry>Attributes:</entry>
+<entry><itemizedlist>
+<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
+<listitem><para><emphasis><link linkend="attributes_write">write</link></emphasis></para></listitem>
+</itemizedlist>
+</entry>
+</row></tbody>
+</tgroup></informaltable>
 </section>
 
 </section>
@@ -4155,7 +5047,18 @@ Note that this is the real image object; changing the value of a field will imme
 </indexterm>
 <synopsis>number</synopsis>
 <para>The quality to use at export time.</para>
-
+<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
+<colspec colwidth="2*"/>
+<colspec colwidth="8*"/>
+<tbody><row>
+<entry>Attributes:</entry>
+<entry><itemizedlist>
+<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
+<listitem><para><emphasis><link linkend="attributes_write">write</link></emphasis></para></listitem>
+</itemizedlist>
+</entry>
+</row></tbody>
+</tgroup></informaltable>
 </section>
 
 <section status="final" id="types_dt_imageio_module_format_data_webp_comp_type">
@@ -4166,7 +5069,17 @@ Note that this is the real image object; changing the value of a field will imme
 </indexterm>
 <synopsis><link linkend="types_comp_type_t">types.comp_type_t</link></synopsis>
 <para>The overall quality to use; can be one of "webp_lossy" or "webp_lossless".</para>
-
+<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
+<colspec colwidth="2*"/>
+<colspec colwidth="8*"/>
+<tbody><row>
+<entry>Attributes:</entry>
+<entry><itemizedlist>
+<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
+</itemizedlist>
+</entry>
+</row></tbody>
+</tgroup></informaltable>
 </section>
 
 <section status="final" id="types_dt_imageio_module_format_data_webp_hint">
@@ -4177,7 +5090,17 @@ Note that this is the real image object; changing the value of a field will imme
 </indexterm>
 <synopsis><link linkend="types_hint_t">types.hint_t</link></synopsis>
 <para>A hint on the overall content of the image.</para>
-
+<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
+<colspec colwidth="2*"/>
+<colspec colwidth="8*"/>
+<tbody><row>
+<entry>Attributes:</entry>
+<entry><itemizedlist>
+<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
+</itemizedlist>
+</entry>
+</row></tbody>
+</tgroup></informaltable>
 </section>
 
 </section>
@@ -4210,7 +5133,18 @@ Note that this is the real image object; changing the value of a field will imme
 </indexterm>
 <synopsis>number</synopsis>
 <para>The quality to use at export time.</para>
-
+<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
+<colspec colwidth="2*"/>
+<colspec colwidth="8*"/>
+<tbody><row>
+<entry>Attributes:</entry>
+<entry><itemizedlist>
+<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
+<listitem><para><emphasis><link linkend="attributes_write">write</link></emphasis></para></listitem>
+</itemizedlist>
+</entry>
+</row></tbody>
+</tgroup></informaltable>
 </section>
 
 <section status="final" id="types_dt_imageio_module_format_data_j2k_bpp">
@@ -4221,7 +5155,18 @@ Note that this is the real image object; changing the value of a field will imme
 </indexterm>
 <synopsis>number</synopsis>
 <para>The bpp parameter to use when exporting.</para>
-
+<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
+<colspec colwidth="2*"/>
+<colspec colwidth="8*"/>
+<tbody><row>
+<entry>Attributes:</entry>
+<entry><itemizedlist>
+<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
+<listitem><para><emphasis><link linkend="attributes_write">write</link></emphasis></para></listitem>
+</itemizedlist>
+</entry>
+</row></tbody>
+</tgroup></informaltable>
 </section>
 
 <section status="final" id="types_dt_imageio_module_format_data_j2k_format">
@@ -4232,7 +5177,17 @@ Note that this is the real image object; changing the value of a field will imme
 </indexterm>
 <synopsis><link linkend="types_dt_imageio_j2k_format_t">types.dt_imageio_j2k_format_t</link></synopsis>
 <para>The format to use.</para>
-
+<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
+<colspec colwidth="2*"/>
+<colspec colwidth="8*"/>
+<tbody><row>
+<entry>Attributes:</entry>
+<entry><itemizedlist>
+<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
+</itemizedlist>
+</entry>
+</row></tbody>
+</tgroup></informaltable>
 </section>
 
 <section status="final" id="types_dt_imageio_module_format_data_j2k_preset">
@@ -4243,7 +5198,17 @@ Note that this is the real image object; changing the value of a field will imme
 </indexterm>
 <synopsis><link linkend="types_dt_imageio_j2k_preset_t">types.dt_imageio_j2k_preset_t</link></synopsis>
 <para>The preset to use.</para>
-
+<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
+<colspec colwidth="2*"/>
+<colspec colwidth="8*"/>
+<tbody><row>
+<entry>Attributes:</entry>
+<entry><itemizedlist>
+<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
+</itemizedlist>
+</entry>
+</row></tbody>
+</tgroup></informaltable>
 </section>
 
 </section>
@@ -4275,7 +5240,18 @@ Note that this is the real image object; changing the value of a field will imme
 </indexterm>
 <synopsis>string</synopsis>
 <para>A unique name for the plugin.</para>
-
+<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
+<colspec colwidth="2*"/>
+<colspec colwidth="8*"/>
+<tbody><row>
+<entry>Attributes:</entry>
+<entry><itemizedlist>
+<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
+<listitem><para><emphasis><link linkend="attributes_write">write</link></emphasis></para></listitem>
+</itemizedlist>
+</entry>
+</row></tbody>
+</tgroup></informaltable>
 </section>
 
 <section status="final" id="types_dt_imageio_module_storage_t_name">
@@ -4286,7 +5262,18 @@ Note that this is the real image object; changing the value of a field will imme
 </indexterm>
 <synopsis>string</synopsis>
 <para>A human readable name for the plugin.</para>
-
+<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
+<colspec colwidth="2*"/>
+<colspec colwidth="8*"/>
+<tbody><row>
+<entry>Attributes:</entry>
+<entry><itemizedlist>
+<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
+<listitem><para><emphasis><link linkend="attributes_write">write</link></emphasis></para></listitem>
+</itemizedlist>
+</entry>
+</row></tbody>
+</tgroup></informaltable>
 </section>
 
 <section status="final" id="types_dt_imageio_module_storage_t_width">
@@ -4297,7 +5284,18 @@ Note that this is the real image object; changing the value of a field will imme
 </indexterm>
 <synopsis>number</synopsis>
 <para>The currently selected width for the plugin.</para>
-
+<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
+<colspec colwidth="2*"/>
+<colspec colwidth="8*"/>
+<tbody><row>
+<entry>Attributes:</entry>
+<entry><itemizedlist>
+<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
+<listitem><para><emphasis><link linkend="attributes_write">write</link></emphasis></para></listitem>
+</itemizedlist>
+</entry>
+</row></tbody>
+</tgroup></informaltable>
 </section>
 
 <section status="final" id="types_dt_imageio_module_storage_t_height">
@@ -4308,7 +5306,18 @@ Note that this is the real image object; changing the value of a field will imme
 </indexterm>
 <synopsis>number</synopsis>
 <para>The currently selected height for the plugin.</para>
-
+<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
+<colspec colwidth="2*"/>
+<colspec colwidth="8*"/>
+<tbody><row>
+<entry>Attributes:</entry>
+<entry><itemizedlist>
+<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
+<listitem><para><emphasis><link linkend="attributes_write">write</link></emphasis></para></listitem>
+</itemizedlist>
+</entry>
+</row></tbody>
+</tgroup></informaltable>
 </section>
 
 <section status="final" id="types_dt_imageio_module_storage_t_recommended_width">
@@ -4319,7 +5328,18 @@ Note that this is the real image object; changing the value of a field will imme
 </indexterm>
 <synopsis>number</synopsis>
 <para>The recommended width for the plugin.</para>
-
+<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
+<colspec colwidth="2*"/>
+<colspec colwidth="8*"/>
+<tbody><row>
+<entry>Attributes:</entry>
+<entry><itemizedlist>
+<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
+<listitem><para><emphasis><link linkend="attributes_write">write</link></emphasis></para></listitem>
+</itemizedlist>
+</entry>
+</row></tbody>
+</tgroup></informaltable>
 </section>
 
 <section status="final" id="types_dt_imageio_module_storage_t_recommended_height">
@@ -4330,7 +5350,18 @@ Note that this is the real image object; changing the value of a field will imme
 </indexterm>
 <synopsis>number</synopsis>
 <para>The recommended height for the plugin.</para>
-
+<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
+<colspec colwidth="2*"/>
+<colspec colwidth="8*"/>
+<tbody><row>
+<entry>Attributes:</entry>
+<entry><itemizedlist>
+<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
+<listitem><para><emphasis><link linkend="attributes_write">write</link></emphasis></para></listitem>
+</itemizedlist>
+</entry>
+</row></tbody>
+</tgroup></informaltable>
 </section>
 
 <section status="final" id="types_dt_imageio_module_storage_t_supports_format">
@@ -4344,7 +5375,17 @@ Note that this is the real image object; changing the value of a field will imme
 	<emphasis><link linkend="types_dt_imageio_module_storage_t_supports_format_format">format</link></emphasis> : <link linkend="types_dt_imageio_module_format_t">types.dt_imageio_module_format_t</link>
 ) : boolean</synopsis>
 <para>Checks if a format is supported by this storage.</para>
-
+<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
+<colspec colwidth="2*"/>
+<colspec colwidth="8*"/>
+<tbody><row>
+<entry>Attributes:</entry>
+<entry><itemizedlist>
+<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
+</itemizedlist>
+</entry>
+</row></tbody>
+</tgroup></informaltable>
 <variablelist>
 <varlistentry id="types_dt_imageio_module_storage_t_supports_format_storage"><term>storage</term><listitem>
 <synopsis><link linkend="types_dt_imageio_module_storage_t">types.dt_imageio_module_storage_t</link></synopsis>
@@ -4442,7 +5483,18 @@ Note that this is the real image object; changing the value of a field will imme
 </indexterm>
 <synopsis>string</synopsis>
 <para>The filename to export to.</para>
-
+<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
+<colspec colwidth="2*"/>
+<colspec colwidth="8*"/>
+<tbody><row>
+<entry>Attributes:</entry>
+<entry><itemizedlist>
+<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
+<listitem><para><emphasis><link linkend="attributes_write">write</link></emphasis></para></listitem>
+</itemizedlist>
+</entry>
+</row></tbody>
+</tgroup></informaltable>
 </section>
 
 <section status="final" id="types_dt_imageio_module_storage_data_latex_title">
@@ -4453,7 +5505,18 @@ Note that this is the real image object; changing the value of a field will imme
 </indexterm>
 <synopsis>string</synopsis>
 <para>The title to use for export.</para>
-
+<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
+<colspec colwidth="2*"/>
+<colspec colwidth="8*"/>
+<tbody><row>
+<entry>Attributes:</entry>
+<entry><itemizedlist>
+<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
+<listitem><para><emphasis><link linkend="attributes_write">write</link></emphasis></para></listitem>
+</itemizedlist>
+</entry>
+</row></tbody>
+</tgroup></informaltable>
 </section>
 
 </section>
@@ -4508,7 +5571,18 @@ Note that this is the real image object; changing the value of a field will imme
 </indexterm>
 <synopsis>string</synopsis>
 <para>The filename to export to.</para>
-
+<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
+<colspec colwidth="2*"/>
+<colspec colwidth="8*"/>
+<tbody><row>
+<entry>Attributes:</entry>
+<entry><itemizedlist>
+<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
+<listitem><para><emphasis><link linkend="attributes_write">write</link></emphasis></para></listitem>
+</itemizedlist>
+</entry>
+</row></tbody>
+</tgroup></informaltable>
 </section>
 
 <section status="final" id="types_dt_imageio_module_storage_data_gallery_title">
@@ -4519,7 +5593,18 @@ Note that this is the real image object; changing the value of a field will imme
 </indexterm>
 <synopsis>string</synopsis>
 <para>The title to use for export.</para>
-
+<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
+<colspec colwidth="2*"/>
+<colspec colwidth="8*"/>
+<tbody><row>
+<entry>Attributes:</entry>
+<entry><itemizedlist>
+<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
+<listitem><para><emphasis><link linkend="attributes_write">write</link></emphasis></para></listitem>
+</itemizedlist>
+</entry>
+</row></tbody>
+</tgroup></informaltable>
 </section>
 
 </section>
@@ -4552,7 +5637,18 @@ Note that this is the real image object; changing the value of a field will imme
 </indexterm>
 <synopsis>string</synopsis>
 <para>The filename to export to.</para>
-
+<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
+<colspec colwidth="2*"/>
+<colspec colwidth="8*"/>
+<tbody><row>
+<entry>Attributes:</entry>
+<entry><itemizedlist>
+<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
+<listitem><para><emphasis><link linkend="attributes_write">write</link></emphasis></para></listitem>
+</itemizedlist>
+</entry>
+</row></tbody>
+</tgroup></informaltable>
 </section>
 
 </section>
@@ -4605,7 +5701,17 @@ Note that this is the real image object; changing the value of a field will imme
 </indexterm>
 <synopsis><link linkend="types_dt_lua_image_t">types.dt_lua_image_t</link></synopsis>
 <para>The different images within the film.</para>
-
+<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
+<colspec colwidth="2*"/>
+<colspec colwidth="8*"/>
+<tbody><row>
+<entry>Attributes:</entry>
+<entry><itemizedlist>
+<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
+</itemizedlist>
+</entry>
+</row></tbody>
+</tgroup></informaltable>
 </section>
 
 <section status="final" id="types_dt_lua_film_t_id">
@@ -4616,7 +5722,18 @@ Note that this is the real image object; changing the value of a field will imme
 </indexterm>
 <synopsis>number</synopsis>
 <para>A unique numeric id used by this film.</para>
-
+<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
+<colspec colwidth="2*"/>
+<colspec colwidth="8*"/>
+<tbody><row>
+<entry>Attributes:</entry>
+<entry><itemizedlist>
+<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
+<listitem><para><emphasis><link linkend="attributes_write">write</link></emphasis></para></listitem>
+</itemizedlist>
+</entry>
+</row></tbody>
+</tgroup></informaltable>
 </section>
 
 <section status="final" id="types_dt_lua_film_t_path">
@@ -4627,7 +5744,18 @@ Note that this is the real image object; changing the value of a field will imme
 </indexterm>
 <synopsis>string</synopsis>
 <para>The path represented by this film.</para>
-
+<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
+<colspec colwidth="2*"/>
+<colspec colwidth="8*"/>
+<tbody><row>
+<entry>Attributes:</entry>
+<entry><itemizedlist>
+<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
+<listitem><para><emphasis><link linkend="attributes_write">write</link></emphasis></para></listitem>
+</itemizedlist>
+</entry>
+</row></tbody>
+</tgroup></informaltable>
 </section>
 
 <section status="final" id="types_dt_lua_film_t_delete">
@@ -4641,7 +5769,17 @@ Note that this is the real image object; changing the value of a field will imme
 	[<emphasis><link linkend="types_dt_lua_film_t_delete_force">force</link></emphasis> : Boolean]
 )</synopsis>
 <para>Removes the film from the database.</para>
-
+<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
+<colspec colwidth="2*"/>
+<colspec colwidth="8*"/>
+<tbody><row>
+<entry>Attributes:</entry>
+<entry><itemizedlist>
+<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
+</itemizedlist>
+</entry>
+</row></tbody>
+</tgroup></informaltable>
 <variablelist>
 <varlistentry id="types_dt_lua_film_t_delete_film"><term>film</term><listitem>
 <synopsis><link linkend="types_dt_lua_film_t">types.dt_lua_film_t</link></synopsis>
@@ -4726,7 +5864,17 @@ Note that this is the real image object; changing the value of a field will imme
 </indexterm>
 <synopsis>string</synopsis>
 <para>The name of the style.</para>
-
+<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
+<colspec colwidth="2*"/>
+<colspec colwidth="8*"/>
+<tbody><row>
+<entry>Attributes:</entry>
+<entry><itemizedlist>
+<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
+</itemizedlist>
+</entry>
+</row></tbody>
+</tgroup></informaltable>
 </section>
 
 <section status="final" id="types_dt_style_t_description">
@@ -4737,7 +5885,17 @@ Note that this is the real image object; changing the value of a field will imme
 </indexterm>
 <synopsis>string</synopsis>
 <para>The description of the style.</para>
-
+<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
+<colspec colwidth="2*"/>
+<colspec colwidth="8*"/>
+<tbody><row>
+<entry>Attributes:</entry>
+<entry><itemizedlist>
+<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
+</itemizedlist>
+</entry>
+</row></tbody>
+</tgroup></informaltable>
 </section>
 
 <section status="final" id="types_dt_style_t__hash_">
@@ -4748,7 +5906,17 @@ Note that this is the real image object; changing the value of a field will imme
 </indexterm>
 <synopsis><link linkend="types_dt_style_item_t">types.dt_style_item_t</link></synopsis>
 <para>The different items that make the style.</para>
-
+<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
+<colspec colwidth="2*"/>
+<colspec colwidth="8*"/>
+<tbody><row>
+<entry>Attributes:</entry>
+<entry><itemizedlist>
+<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
+</itemizedlist>
+</entry>
+</row></tbody>
+</tgroup></informaltable>
 </section>
 
 </section>
@@ -4781,7 +5949,17 @@ Note that this is the real image object; changing the value of a field will imme
 </indexterm>
 <synopsis>string</synopsis>
 <para>The name of the style item.</para>
-
+<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
+<colspec colwidth="2*"/>
+<colspec colwidth="8*"/>
+<tbody><row>
+<entry>Attributes:</entry>
+<entry><itemizedlist>
+<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
+</itemizedlist>
+</entry>
+</row></tbody>
+</tgroup></informaltable>
 </section>
 
 <section status="final" id="types_dt_style_item_t_num">
@@ -4792,7 +5970,17 @@ Note that this is the real image object; changing the value of a field will imme
 </indexterm>
 <synopsis>number</synopsis>
 <para>The position of the style item within its style.</para>
-
+<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
+<colspec colwidth="2*"/>
+<colspec colwidth="8*"/>
+<tbody><row>
+<entry>Attributes:</entry>
+<entry><itemizedlist>
+<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
+</itemizedlist>
+</entry>
+</row></tbody>
+</tgroup></informaltable>
 </section>
 
 </section>
@@ -4854,7 +6042,17 @@ Note that this is the real image object; changing the value of a field will imme
 </indexterm>
 <synopsis>string</synopsis>
 <para>The name of the tag.</para>
-
+<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
+<colspec colwidth="2*"/>
+<colspec colwidth="8*"/>
+<tbody><row>
+<entry>Attributes:</entry>
+<entry><itemizedlist>
+<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
+</itemizedlist>
+</entry>
+</row></tbody>
+</tgroup></informaltable>
 </section>
 
 <section status="final" id="types_dt_lua_tag_t__hash_">
@@ -4865,7 +6063,17 @@ Note that this is the real image object; changing the value of a field will imme
 </indexterm>
 <synopsis><link linkend="types_dt_lua_image_t">types.dt_lua_image_t</link></synopsis>
 <para>The images that have that tag attached to them.</para>
-
+<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
+<colspec colwidth="2*"/>
+<colspec colwidth="8*"/>
+<tbody><row>
+<entry>Attributes:</entry>
+<entry><itemizedlist>
+<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
+</itemizedlist>
+</entry>
+</row></tbody>
+</tgroup></informaltable>
 </section>
 
 </section>
@@ -4897,7 +6105,17 @@ Note that this is the real image object; changing the value of a field will imme
 </indexterm>
 <synopsis>string</synopsis>
 <para>A unit string identifying the lib</para>
-
+<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
+<colspec colwidth="2*"/>
+<colspec colwidth="8*"/>
+<tbody><row>
+<entry>Attributes:</entry>
+<entry><itemizedlist>
+<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
+</itemizedlist>
+</entry>
+</row></tbody>
+</tgroup></informaltable>
 </section>
 
 <section status="final" id="types_dt_lib_module_t_name">
@@ -4908,7 +6126,17 @@ Note that this is the real image object; changing the value of a field will imme
 </indexterm>
 <synopsis>string</synopsis>
 <para>The translated title of the UI element</para>
-
+<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
+<colspec colwidth="2*"/>
+<colspec colwidth="8*"/>
+<tbody><row>
+<entry>Attributes:</entry>
+<entry><itemizedlist>
+<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
+</itemizedlist>
+</entry>
+</row></tbody>
+</tgroup></informaltable>
 </section>
 
 <section status="final" id="types_dt_lib_module_t_version">
@@ -4919,7 +6147,17 @@ Note that this is the real image object; changing the value of a field will imme
 </indexterm>
 <synopsis>number</synopsis>
 <para>The version of the internal data of this lib</para>
-
+<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
+<colspec colwidth="2*"/>
+<colspec colwidth="8*"/>
+<tbody><row>
+<entry>Attributes:</entry>
+<entry><itemizedlist>
+<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
+</itemizedlist>
+</entry>
+</row></tbody>
+</tgroup></informaltable>
 </section>
 
 <section status="final" id="types_dt_lib_module_t_visible">
@@ -4938,6 +6176,8 @@ Note that this is the real image object; changing the value of a field will imme
 <entry>Attributes:</entry>
 <entry><itemizedlist>
 <listitem><para><emphasis><link linkend="attributes_implicit_yield">implicit_yield</link></emphasis></para></listitem>
+<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
+<listitem><para><emphasis><link linkend="attributes_write">write</link></emphasis></para></listitem>
 </itemizedlist>
 </entry>
 </row></tbody>
@@ -4952,7 +6192,17 @@ Note that this is the real image object; changing the value of a field will imme
 </indexterm>
 <synopsis><link linkend="types_dt_ui_container_t">types.dt_ui_container_t</link></synopsis>
 <para>The location of the lib in the darktable UI</para>
-
+<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
+<colspec colwidth="2*"/>
+<colspec colwidth="8*"/>
+<tbody><row>
+<entry>Attributes:</entry>
+<entry><itemizedlist>
+<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
+</itemizedlist>
+</entry>
+</row></tbody>
+</tgroup></informaltable>
 </section>
 
 <section status="final" id="types_dt_lib_module_t_expandable">
@@ -4963,7 +6213,17 @@ Note that this is the real image object; changing the value of a field will imme
 </indexterm>
 <synopsis>boolean</synopsis>
 <para>True if the lib can be expanded/retracted</para>
-
+<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
+<colspec colwidth="2*"/>
+<colspec colwidth="8*"/>
+<tbody><row>
+<entry>Attributes:</entry>
+<entry><itemizedlist>
+<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
+</itemizedlist>
+</entry>
+</row></tbody>
+</tgroup></informaltable>
 </section>
 
 <section status="final" id="types_dt_lib_module_t_expanded">
@@ -4974,7 +6234,18 @@ Note that this is the real image object; changing the value of a field will imme
 </indexterm>
 <synopsis>boolean</synopsis>
 <para>True if the lib is expanded</para>
-
+<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
+<colspec colwidth="2*"/>
+<colspec colwidth="8*"/>
+<tbody><row>
+<entry>Attributes:</entry>
+<entry><itemizedlist>
+<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
+<listitem><para><emphasis><link linkend="attributes_write">write</link></emphasis></para></listitem>
+</itemizedlist>
+</entry>
+</row></tbody>
+</tgroup></informaltable>
 </section>
 
 <section status="final" id="types_dt_lib_module_t_position">
@@ -4985,7 +6256,17 @@ Note that this is the real image object; changing the value of a field will imme
 </indexterm>
 <synopsis>number</synopsis>
 <para>A value deciding the position of the lib within its container</para>
-
+<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
+<colspec colwidth="2*"/>
+<colspec colwidth="8*"/>
+<tbody><row>
+<entry>Attributes:</entry>
+<entry><itemizedlist>
+<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
+</itemizedlist>
+</entry>
+</row></tbody>
+</tgroup></informaltable>
 </section>
 
 <section status="final" id="types_dt_lib_module_t_views">
@@ -4996,7 +6277,17 @@ Note that this is the real image object; changing the value of a field will imme
 </indexterm>
 <synopsis>table</synopsis>
 <para>A table of all teh views that display this widget</para>
-
+<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
+<colspec colwidth="2*"/>
+<colspec colwidth="8*"/>
+<tbody><row>
+<entry>Attributes:</entry>
+<entry><itemizedlist>
+<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
+</itemizedlist>
+</entry>
+</row></tbody>
+</tgroup></informaltable>
 </section>
 
 <section status="final" id="types_dt_lib_module_t_reset">
@@ -5010,7 +6301,17 @@ Note that this is the real image object; changing the value of a field will imme
 )</synopsis>
 <para>A function to reset the lib to its default values</para>
 <para>This function will do nothing if the lib is not visible or can't be reset</para>
-
+<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
+<colspec colwidth="2*"/>
+<colspec colwidth="8*"/>
+<tbody><row>
+<entry>Attributes:</entry>
+<entry><itemizedlist>
+<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
+</itemizedlist>
+</entry>
+</row></tbody>
+</tgroup></informaltable>
 <variablelist>
 <varlistentry id="types_dt_lib_module_t_reset_self"><term>self</term><listitem>
 <synopsis><link linkend="types_dt_lib_module_t">types.dt_lib_module_t</link></synopsis>
@@ -5029,7 +6330,17 @@ Note that this is the real image object; changing the value of a field will imme
 </indexterm>
 <synopsis>boolean</synopsis>
 <para>True if the lib is currently visible on the screen</para>
-
+<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
+<colspec colwidth="2*"/>
+<colspec colwidth="8*"/>
+<tbody><row>
+<entry>Attributes:</entry>
+<entry><itemizedlist>
+<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
+</itemizedlist>
+</entry>
+</row></tbody>
+</tgroup></informaltable>
 </section>
 
 </section>
@@ -5061,7 +6372,17 @@ Note that this is the real image object; changing the value of a field will imme
 </indexterm>
 <synopsis>string</synopsis>
 <para>A unique string identifying the view</para>
-
+<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
+<colspec colwidth="2*"/>
+<colspec colwidth="8*"/>
+<tbody><row>
+<entry>Attributes:</entry>
+<entry><itemizedlist>
+<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
+</itemizedlist>
+</entry>
+</row></tbody>
+</tgroup></informaltable>
 </section>
 
 <section status="final" id="types_dt_view_t_name">
@@ -5072,7 +6393,17 @@ Note that this is the real image object; changing the value of a field will imme
 </indexterm>
 <synopsis>string</synopsis>
 <para>The name of the view</para>
-
+<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
+<colspec colwidth="2*"/>
+<colspec colwidth="8*"/>
+<tbody><row>
+<entry>Attributes:</entry>
+<entry><itemizedlist>
+<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
+</itemizedlist>
+</entry>
+</row></tbody>
+</tgroup></informaltable>
 </section>
 
 </section>
@@ -5104,7 +6435,18 @@ Note that this is the real image object; changing the value of a field will imme
 </indexterm>
 <synopsis>number</synopsis>
 <para>The value of the progress bar, between 0 and 1. will return nil if there is no progress bar, will raise an error if read or written on an invalid job</para>
-
+<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
+<colspec colwidth="2*"/>
+<colspec colwidth="8*"/>
+<tbody><row>
+<entry>Attributes:</entry>
+<entry><itemizedlist>
+<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
+<listitem><para><emphasis><link linkend="attributes_write">write</link></emphasis></para></listitem>
+</itemizedlist>
+</entry>
+</row></tbody>
+</tgroup></informaltable>
 </section>
 
 <section status="final" id="types_dt_lua_backgroundjob_t_valid">
@@ -5116,7 +6458,18 @@ Note that this is the real image object; changing the value of a field will imme
 <synopsis>boolean</synopsis>
 <para>True if the job is displayed, set it to false to destroy the entry</para>
 <para>An invalid job cannot be made valid again</para>
-
+<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
+<colspec colwidth="2*"/>
+<colspec colwidth="8*"/>
+<tbody><row>
+<entry>Attributes:</entry>
+<entry><itemizedlist>
+<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
+<listitem><para><emphasis><link linkend="attributes_write">write</link></emphasis></para></listitem>
+</itemizedlist>
+</entry>
+</row></tbody>
+</tgroup></informaltable>
 </section>
 
 </section>
@@ -5149,7 +6502,17 @@ Note that this is the real image object; changing the value of a field will imme
 </indexterm>
 <synopsis>string</synopsis>
 <para>The filename of an image containing the snapshot</para>
-
+<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
+<colspec colwidth="2*"/>
+<colspec colwidth="8*"/>
+<tbody><row>
+<entry>Attributes:</entry>
+<entry><itemizedlist>
+<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
+</itemizedlist>
+</entry>
+</row></tbody>
+</tgroup></informaltable>
 </section>
 
 <section status="final" id="types_dt_lua_snapshot_t_select">
@@ -5162,7 +6525,17 @@ Note that this is the real image object; changing the value of a field will imme
 	<emphasis><link linkend="types_dt_lua_snapshot_t_select_snapshot">snapshot</link></emphasis> : <link linkend="types_dt_lua_snapshot_t">types.dt_lua_snapshot_t</link>
 )</synopsis>
 <para>Activates this snapshot on the display. To deactivate all snapshot you need to call this function on the active snapshot</para>
-
+<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
+<colspec colwidth="2*"/>
+<colspec colwidth="8*"/>
+<tbody><row>
+<entry>Attributes:</entry>
+<entry><itemizedlist>
+<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
+</itemizedlist>
+</entry>
+</row></tbody>
+</tgroup></informaltable>
 <variablelist>
 <varlistentry id="types_dt_lua_snapshot_t_select_snapshot"><term>snapshot</term><listitem>
 <synopsis><link linkend="types_dt_lua_snapshot_t">types.dt_lua_snapshot_t</link></synopsis>
@@ -5181,7 +6554,17 @@ Note that this is the real image object; changing the value of a field will imme
 </indexterm>
 <synopsis>string</synopsis>
 <para>The name of the snapshot, as seen in the UI</para>
-
+<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
+<colspec colwidth="2*"/>
+<colspec colwidth="8*"/>
+<tbody><row>
+<entry>Attributes:</entry>
+<entry><itemizedlist>
+<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
+</itemizedlist>
+</entry>
+</row></tbody>
+</tgroup></informaltable>
 </section>
 
 </section>
@@ -5298,8 +6681,8 @@ Note that this is the real image object; changing the value of a field will imme
 <entry><itemizedlist>
 <listitem><para><emphasis>values : </emphasis></para>
 <para><itemizedlist>
-<listitem><para>jp2</para></listitem>
 <listitem><para>j2k</para></listitem>
+<listitem><para>jp2</para></listitem>
 </itemizedlist>
 </para></listitem>
 </itemizedlist>

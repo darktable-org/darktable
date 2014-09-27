@@ -144,12 +144,24 @@ local function document_type_from_obj(obj,type_doc)
 	type_doc._luadoc_in_obj_rec = true
 	for k,v in pairs(obj) do
 		if type_doc[k] and M.get_attribute(type_doc[k],"reported_type")== "undocumented" then
+			local old_vers = type_doc[k]
 			M.remove_parent(type_doc[k],type_doc)
 			type_doc[k] = create_documentation_node(v,type_doc,k)
+			for k2,v2 in pairs(old_vers._luadoc_attributes) do
+				if type_doc[k]._luadoc_attributes[k2] == nil then
+					set_attribute(type_doc[k],k2,v2)
+				end
+			end
 		elseif type(k) == "number" and type_doc["#"] and M.get_attribute(type_doc["#"],"reported_type")== "undocumented" then
+			local old_vers = type_doc["#"]
 			M.remove_parent(type_doc["#"],type_doc)
 			nojoin[v] = true
 			type_doc["#"] = create_documentation_node(v,type_doc,"#")
+			for k2,v2 in pairs(old_vers._luadoc_attributes) do
+				if type_doc["#"]._luadoc_attributes[k2] == nil then
+					set_attribute(type_doc["#"],k2,v2)
+				end
+			end
 		end
 	end
 	type_doc._luadoc_in_obj_rec = false

@@ -643,7 +643,7 @@ void init(struct dt_lib_module_t *self)
   dt_lua_type_register_const_type(L,my_type,"take_snapshot");
   lua_pushcfunction(L,snapshots_length);
   lua_pushcfunction(L,number_member);
-  dt_lua_type_register_number_type(L,my_type);
+  dt_lua_type_register_number_const_type(L,my_type);
   lua_pushcfunction(L,selected_member);
   dt_lua_type_register_const_type(L,my_type,"selected");
 
