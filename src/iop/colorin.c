@@ -840,7 +840,7 @@ void reload_defaults(dt_iop_module_t *module)
 
   gboolean use_eprofile = FALSE;
   // some file formats like jpeg can have an embedded color profile
-  // currently we only support jpeg, j2k and tiff
+  // currently we only support jpeg, j2k, tiff and png
   const dt_image_t *cimg = dt_image_cache_read_get(darktable.image_cache, module->dev->image_storage.id);
   if(!cimg->profile)
   {
@@ -944,7 +944,7 @@ static void update_profile_list(dt_iop_module_t *self)
   dt_iop_color_profile_t *prof;
   int pos = -1;
   // some file formats like jpeg can have an embedded color profile
-  // currently we only support jpeg, j2k and tiff
+  // currently we only support jpeg, j2k, tiff and png
   const dt_image_t *cimg = dt_image_cache_read_get(darktable.image_cache, self->dev->image_storage.id);
   if(cimg->profile)
   {
