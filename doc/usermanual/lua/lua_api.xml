@@ -3776,6 +3776,29 @@ Note that this is the real image object; changing the value of a field will imme
 
 </section>
 
+<section status="final" id="types_dt_lua_image_t_drop_cache">
+<title>types.dt_lua_image_t.drop_cache</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>drop_cache</secondary>
+</indexterm>
+<synopsis>function( 
+	<emphasis><link linkend="types_dt_lua_image_t_drop_cache_image">image</link></emphasis> : <link linkend="types_dt_lua_image_t">types.dt_lua_image_t</link>
+)</synopsis>
+<para>drops the cached version of this image.</para>
+<para>This function should be called if an image is modified out of darktable to force DT to regenerate the thumbnail</para>
+<para>Darktable will regenerate the thumbnail by itself when it is needed</para>
+
+<variablelist>
+<varlistentry id="types_dt_lua_image_t_drop_cache_image"><term>image</term><listitem>
+<synopsis><link linkend="types_dt_lua_image_t">types.dt_lua_image_t</link></synopsis>
+<para>The image whose cache must be droped.</para>
+
+</listitem></varlistentry>
+
+</variablelist>
+</section>
+
 </section>
 
 <section status="final" id="types_dt_imageio_module_format_t">

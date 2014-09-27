@@ -30,6 +30,7 @@
 #include "common/metadata.h"
 #include "common/grouping.h"
 #include "common/history.h"
+#include "common/mipmap_cache.h"
 #include "metadata_gen.h"
 
 /***********************************************************************
@@ -82,6 +83,15 @@ static int history_delete(lua_State *L)
   dt_lua_image_t imgid = -1;
   luaA_to(L,dt_lua_image_t,&imgid,-1);
   dt_history_delete_on_image(imgid);
+  return 0;
+}
+
+
+static int drop_cache(lua_State *L)
+{
+  dt_lua_image_t imgid = -1;
+  luaA_to(L,dt_lua_image_t,&imgid,-1);
+  dt_mipmap_cache_remove(darktable.mipmap_cache,imgid);
   return 0;
 }
 
@@ -574,6 +584,9 @@ int dt_lua_init_image(lua_State * L)
   lua_pushcfunction(L,dt_lua_copy_image);
   lua_pushcclosure(L,dt_lua_type_member_common,1);
   dt_lua_type_register_const(L,dt_lua_image_t,"copy");
+  lua_pushcfunction(L,drop_cache);
+  lua_pushcclosure(L,dt_lua_type_member_common,1);
+  dt_lua_type_register_const(L,dt_lua_image_t,"drop_cache");
   luaL_getmetatable(L,"dt_lua_image_t");
   lua_pushcfunction(L,image_tostring);
   lua_setfield(L,-2,"__tostring");
