@@ -627,6 +627,12 @@ get_query_string(const dt_collection_properties_t property, const gchar *escaped
     case DT_COLLECTION_PROP_FILENAME: // filename
       snprintf(query, query_len, "(filename like '%%%s%%')", escaped_text);
       break;
+    case DT_COLLECTION_PROP_BEFORE: // before a given date
+      snprintf(query, query_len, "(datetime_taken <= '%s%%')", escaped_text);
+      break;
+    case DT_COLLECTION_PROP_AFTER: // after a given date
+      snprintf(query, query_len, "(datetime_taken >= '%s%%')", escaped_text);
+      break;
 
     default: // day or time
       snprintf(query, query_len, "(datetime_taken like '%%%s%%')", escaped_text);

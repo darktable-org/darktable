@@ -1372,6 +1372,16 @@ list_view (dt_lib_collect_rule_t *dr)
       snprintf(query, sizeof(query), "SELECT DISTINCT substr(datetime_taken, 1, 10), 1 FROM images WHERE datetime_taken LIKE '%%%s%%' ORDER BY datetime_taken DESC", escaped_text);
       break;
 
+    case DT_COLLECTION_PROP_BEFORE:
+      snprintf(query, sizeof(query), "SELECT DISTINCT datetime_taken, 1 FROM images WHERE datetime_taken <= '%s' ORDER BY datetime_taken DESC", escaped_text);
+      //printf("%s:%d: query: %s\n",__FILE__,__LINE__, query);
+      break;
+
+    case DT_COLLECTION_PROP_AFTER:
+      snprintf(query, sizeof(query), "SELECT DISTINCT datetime_taken, 1 FROM images WHERE datetime_taken >= '%s' ORDER BY datetime_taken DESC", escaped_text);
+      //printf("%s:%d: query: %s\n",__FILE__,__LINE__, query);
+      break;
+
     default: // time
       snprintf(query, sizeof(query), "SELECT DISTINCT datetime_taken, 1 FROM images WHERE datetime_taken LIKE '%%%s%%' ORDER BY datetime_taken DESC", escaped_text);
       break;
