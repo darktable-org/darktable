@@ -41,8 +41,7 @@
 #include <assert.h>
 #include <string.h>
 
-
-DT_MODULE_INTROSPECTION(2, dt_iop_colorin_params_t)
+DT_MODULE_INTROSPECTION(3, dt_iop_colorin_params_t)
 
 static void update_profile_list(dt_iop_module_t *self);
 
@@ -56,18 +55,12 @@ typedef enum dt_iop_color_normalize_t
 }
 dt_iop_color_normalize_t;
 
-typedef struct dt_iop_colorin_params1_t
-{
-  char iccprofile[DT_IOP_COLOR_ICC_LEN];
-  dt_iop_color_intent_t intent;
-}
-dt_iop_colorin_params1_t;
-
 typedef struct dt_iop_colorin_params_t
 {
   char iccprofile[DT_IOP_COLOR_ICC_LEN];
   dt_iop_color_intent_t intent;
   int normalize;
+  int blue_mapping;
 }
 dt_iop_colorin_params_t;
 
@@ -99,6 +92,7 @@ typedef struct dt_iop_colorin_data_t
   float nmatrix[9];
   float lmatrix[9];
   float unbounded_coeffs[3][3];       // approximation for extrapolation of shaper curves
+  int blue_mapping;
 }
 dt_iop_colorin_data_t;
 
@@ -124,14 +118,41 @@ flags ()
 int
 legacy_params (dt_iop_module_t *self, const void *const old_params, const int old_version, void *new_params, const int new_version)
 {
-  if (old_version == 1 && new_version == 2)
+  if (old_version == 1 && new_version == 3)
   {
-    const dt_iop_colorin_params1_t *old = old_params;
-    dt_iop_colorin_params_t *new = new_params;
+    typedef struct dt_iop_colorin_params_v1_t
+    {
+      char iccprofile[DT_IOP_COLOR_ICC_LEN];
+      dt_iop_color_intent_t intent;
+    }
+    dt_iop_colorin_params_v1_t;
+
+    const dt_iop_colorin_params_v1_t *old = (dt_iop_colorin_params_v1_t *)old_params;
+    dt_iop_colorin_params_t *new = (dt_iop_colorin_params_t *)new_params;
 
     g_strlcpy(new->iccprofile, old->iccprofile, DT_IOP_COLOR_ICC_LEN);
     new->intent = old->intent;
     new->normalize = 0;
+    new->blue_mapping = 1;
+    return 0;
+  }
+  if (old_version == 2 && new_version == 3)
+  {
+    typedef struct dt_iop_colorin_params_v2_t
+    {
+      char iccprofile[DT_IOP_COLOR_ICC_LEN];
+      dt_iop_color_intent_t intent;
+      int normalize;
+    }
+    dt_iop_colorin_params_v2_t;
+
+    const dt_iop_colorin_params_v2_t *old = (dt_iop_colorin_params_v2_t *)old_params;
+    dt_iop_colorin_params_t *new = (dt_iop_colorin_params_t *)new_params;
+
+    g_strlcpy(new->iccprofile, old->iccprofile, DT_IOP_COLOR_ICC_LEN);
+    new->intent = old->intent;
+    new->normalize = old->normalize;
+    new->blue_mapping = 1;
     return 0;
   }
   return 1;
@@ -251,7 +272,8 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
   }
 
   cl_int err = -999;
-  const int map_blues = piece->pipe->image.flags & DT_IMAGE_RAW;
+  const int blue_mapping = d->blue_mapping &&
+                           piece->pipe->image.flags & DT_IMAGE_RAW;
   const int devid = piece->pipe->devid;
   const int width = roi_in->width;
   const int height = roi_in->height;
@@ -278,7 +300,7 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
   dt_opencl_set_kernel_arg(devid, kernel, 6, sizeof(cl_mem), (void *)&dev_r);
   dt_opencl_set_kernel_arg(devid, kernel, 7, sizeof(cl_mem), (void *)&dev_g);
   dt_opencl_set_kernel_arg(devid, kernel, 8, sizeof(cl_mem), (void *)&dev_b);
-  dt_opencl_set_kernel_arg(devid, kernel, 9, sizeof(cl_int), (void *)&map_blues);
+  dt_opencl_set_kernel_arg(devid, kernel, 9, sizeof(cl_int), (void *)&blue_mapping);
   dt_opencl_set_kernel_arg(devid, kernel, 10, sizeof(cl_mem), (void *)&dev_coeffs);
   err = dt_opencl_enqueue_kernel_2d(devid, kernel, sizes);
   if(err != CL_SUCCESS) goto error;
@@ -337,8 +359,9 @@ process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoi
 {
   const dt_iop_colorin_data_t *const d = (dt_iop_colorin_data_t *)piece->data;
   const int ch = piece->colors;
-  const int map_blues = piece->pipe->image.flags & DT_IMAGE_RAW;
   const int clipping = (d->nrgb != NULL);
+  const int blue_mapping = d->blue_mapping &&
+                           piece->pipe->image.flags & DT_IMAGE_RAW;
 
   if(!isnan(d->cmatrix[0]))
   {
@@ -380,23 +403,26 @@ process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoi
                                            : dt_iop_eval_exp(d->unbounded_coeffs[i], buf_in[i]))
                                             : buf_in[i];
 
-        const float YY = cam[0]+cam[1]+cam[2];
-        if(map_blues && YY > 0.0f)
+        if(blue_mapping)
         {
-          // manual gamut mapping. these values cause trouble when converting back from Lab to sRGB.
-          // deeply saturated blues turn into purple fringes, so dampen them before conversion.
-          // this is off for non-raw images, which don't seem to have this problem.
-          // might be caused by too loose clipping bounds during highlight clipping?
-          const float zz = cam[2]/YY;
-          // lower amount and higher bound_z make the effect smaller.
-          // the effect is weakened the darker input values are, saturating at bound_Y
-          const float bound_z = 0.5f, bound_Y = 0.8f;
-          const float amount = 0.11f;
-          if (zz > bound_z)
+          const float YY = cam[0] + cam[1] + cam[2];
+          if(YY > 0.0f)
           {
-            const float t = (zz - bound_z)/(1.0f-bound_z) * fminf(1.0f, YY/bound_Y);
-            cam[1] += t*amount;
-            cam[2] -= t*amount;
+            // manual gamut mapping. these values cause trouble when converting back from Lab to sRGB.
+            // deeply saturated blues turn into purple fringes, so dampen them before conversion.
+            // this is off for non-raw images, which don't seem to have this problem.
+            // might be caused by too loose clipping bounds during highlight clipping?
+            const float zz = cam[2] / YY;
+            // lower amount and higher bound_z make the effect smaller.
+            // the effect is weakened the darker input values are, saturating at bound_Y
+            const float bound_z = 0.5f, bound_Y = 0.8f;
+            const float amount = 0.11f;
+            if (zz > bound_z)
+            {
+              const float t = (zz - bound_z) / (1.0f - bound_z) * fminf(1.0f, YY / bound_Y);
+              cam[1] += t * amount;
+              cam[2] -= t * amount;
+            }
           }
         }
 
@@ -434,36 +460,54 @@ process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoi
       const float *in = ((float *)ivoid) + (size_t)ch*k*roi_out->width;
       float *out = ((float *)ovoid) + (size_t)ch*k*roi_out->width;
 
-      void *cam = dt_alloc_align(16, 4*sizeof(float)*roi_out->width);
-
-      float *camptr = (float *)cam;
-      for (int j=0; j<roi_out->width; j++,in+=4,camptr+=4)
+      void *cam = NULL;
+      const void *input = NULL;
+      if(blue_mapping)
       {
-        camptr[0] = in[0];
-        camptr[1] = in[1];
-        camptr[2] = in[2];
-
-        const float YY = camptr[0]+camptr[1]+camptr[2];
-        const float zz = camptr[2]/YY;
-        const float bound_z = 0.5f, bound_Y = 0.5f;
-        const float amount = 0.11f;
-        if (zz > bound_z)
+        input = cam = dt_alloc_align(16, 4 * sizeof(float) * roi_out->width);
+        float *camptr = (float *)cam;
+        for (int j = 0; j < roi_out->width; j++, in += 4, camptr += 4)
         {
-          const float t = (zz - bound_z)/(1.0f-bound_z) * fminf(1.0, YY/bound_Y);
-          camptr[1] += t*amount;
-          camptr[2] -= t*amount;
+          camptr[0] = in[0];
+          camptr[1] = in[1];
+          camptr[2] = in[2];
+
+          const float YY = camptr[0] + camptr[1] + camptr[2];
+          const float zz = camptr[2] / YY;
+          const float bound_z = 0.5f, bound_Y = 0.5f;
+          const float amount = 0.11f;
+          if (zz > bound_z)
+          {
+            const float t = (zz - bound_z) / (1.0f - bound_z) * fminf(1.0, YY / bound_Y);
+            camptr[1] += t * amount;
+            camptr[2] -= t * amount;
+          }
         }
+      }
+      else
+      {
+        input = in;
       }
 
       // convert to (L,a/L,b/L) to be able to change L without changing saturation.
       if(!d->nrgb)
       {
-        cmsDoTransform(d->xform_cam_Lab, cam, out, roi_out->width);
-        dt_free_align(cam);
+        cmsDoTransform(d->xform_cam_Lab, input, out, roi_out->width);
+
+        if(blue_mapping)
+        {
+          dt_free_align(cam);
+          cam = NULL;
+        }
       } else {
         void *rgb = dt_alloc_align(16, 4*sizeof(float)*roi_out->width);
-        cmsDoTransform(d->xform_cam_nrgb, cam, rgb, roi_out->width);
-        dt_free_align(cam);
+        cmsDoTransform(d->xform_cam_nrgb, input, rgb, roi_out->width);
+
+        if(blue_mapping)
+        {
+          dt_free_align(cam);
+          cam = NULL;
+        }
 
         float *rgbptr = (float *)rgb;
         for (int j=0; j<roi_out->width; j++,rgbptr+=4)
@@ -508,6 +552,8 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
   d->input = NULL;
   if(d->nrgb) cmsCloseProfile(d->nrgb);
   d->nrgb = NULL;
+
+  d->blue_mapping = p->blue_mapping;
 
   switch(p->normalize)
   {
@@ -832,7 +878,8 @@ void reload_defaults(dt_iop_module_t *module)
   {
     .iccprofile = "darktable",
     .intent = DT_INTENT_PERCEPTUAL,
-    .normalize = DT_NORMALIZE_OFF
+    .normalize = DT_NORMALIZE_OFF,
+    .blue_mapping = 0
   };
 
   // we might be called from presets update infrastructure => there is no image
