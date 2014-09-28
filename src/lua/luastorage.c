@@ -277,6 +277,10 @@ static int   set_params_wrapper   (struct dt_imageio_module_storage_t *self, con
   return 0;
 }
 
+static int version_wrapper() {
+  return 0;
+}
+
 static dt_imageio_module_storage_t ref_storage =
 {
   .plugin_name = {0},
@@ -300,6 +304,7 @@ static dt_imageio_module_storage_t ref_storage =
   .set_params = set_params_wrapper,
   .export_dispatched = empty_wrapper,
   .parameter_lua_type = LUAA_INVALID_TYPE,
+  .version = version_wrapper,
 
 };
 
