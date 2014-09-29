@@ -200,15 +200,17 @@ function M.get_doc()
 	doc.toplevel:set_text(
 	[[This documentation is for the *developement* version of darktable. for the stable version, please visit "the user manual":http://www.darktable.org/usermanual/index.html.php
 
-]]..doc.get_text(doc.toplevel)..
-[[
+	]]..doc.get_text(doc.toplevel)..
+	[[
 
 
 
-This documentation was generated with darktable version ]]..real_darktable.configuration.version..[[.]])
+	This documentation was generated with darktable version ]]..real_darktable.configuration.version..[[.]])
 	return "{{>toc}}\n\n"..parse_doc_node(doc.toplevel,nil,"")
 end
 
 
 
 return M;
+--
+-- vim: shiftwidth=2 expandtab tabstop=2 cindent syntax=lua

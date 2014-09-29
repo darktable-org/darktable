@@ -1,6 +1,6 @@
 local function get_node_with_link(node,name)
-		 if node:get_attribute("skiped") then return name end
-		 return '<link linkend="'..node:get_name():gsub("%.","_"):gsub("#","_hash_")..'">'..name..'</link>'
+	if node:get_attribute("skiped") then return name end
+	return '<link linkend="'..node:get_name():gsub("%.","_"):gsub("#","_hash_")..'">'..name..'</link>'
 end
 
 para = function() return "</para>\n<para>" end
@@ -99,13 +99,13 @@ local function print_attributes(node)
 	if  result ~= "" then
 		-- synopsis was within the <entry> below
 		result = [[<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
-<colspec colwidth="2*"/>
-<colspec colwidth="8*"/>
-<tbody><row>
-<entry>Attributes:</entry>
-<entry>]]..startlist()..result..endlist()..[[</entry>
-</row></tbody>
-</tgroup></informaltable>]]
+		<colspec colwidth="2*"/>
+		<colspec colwidth="8*"/>
+		<tbody><row>
+		<entry>Attributes:</entry>
+		<entry>]]..startlist()..result..endlist()..[[</entry>
+		</row></tbody>
+		</tgroup></informaltable>]]
 	end
 
 	return result
@@ -214,19 +214,21 @@ M = {}
 M.page_name = page_name
 
 function M.get_doc()
-	 return [[<!DOCTYPE section PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
-               "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd" [
-		<!ENTITY % darktable_dtd SYSTEM "../dtd/darktable.dtd">
-		%darktable_dtd;
-		]>
-   <section status="draft" id="lua_api"><title>Lua API</title>
-   <indexterm>
-      <primary>Lua API</primary>
-   </indexterm>
-]]..parse_doc_node(doc.toplevel,nil,"").."</section>"
+	return [[<!DOCTYPE section PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
+	"http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd" [
+	<!ENTITY % darktable_dtd SYSTEM "../dtd/darktable.dtd">
+	%darktable_dtd;
+	]>
+	<section status="draft" id="lua_api"><title>Lua API</title>
+	<indexterm>
+	<primary>Lua API</primary>
+	</indexterm>
+	]]..parse_doc_node(doc.toplevel,nil,"").."</section>"
 
 
 end
 
 
 return M;
+--
+-- vim: shiftwidth=2 expandtab tabstop=2 cindent syntax=lua

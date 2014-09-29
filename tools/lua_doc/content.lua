@@ -29,10 +29,10 @@ attributes = doc.toplevel.attributes
 
 
 local function my_tostring(obj)
-  if not obj then 
-  error("incorrect object")
-  end
-  return tostring(obj)
+	if not obj then 
+		error("incorrect object")
+	end
+	return tostring(obj)
 end
 
 local function remove_all_children(node)
@@ -214,13 +214,13 @@ darktable.preferences.register:add_parameter("min","int or float",[[Minimum valu
 darktable.preferences.register:add_parameter("max","int or float",[[Maximum value (integer and float preferences only).]]):set_attribute("optional",true)
 darktable.preferences.register:add_parameter("step","float",[[Step of the spinner (float preferences only).]]):set_attribute("optional",true)
 darktable.preferences.register:add_parameter("values","string...",[[Other allowed values (enum preferences only)]])
-    
+
 darktable.preferences.read:set_text([[Reads a value from a Lua preference.]])
 darktable.preferences.read:add_parameter("script","string",[[Invisible prefix to guarantee unicity of preferences.]])
 darktable.preferences.read:add_parameter("name","string",[[The name of the preference displayed in the preference screen.]])
 darktable.preferences.read:add_parameter("type",my_tostring(types.lua_pref_type),[[The type of the preference.]])
 darktable.preferences.read:add_return("depends on type",[[The value of the preference.]])
-    
+
 darktable.preferences.write:set_text([[Writes a value to a Lua preference.]])
 darktable.preferences.write:add_parameter("script","string",[[Invisible prefix to guarantee unicity of preferences.]])
 darktable.preferences.write:add_parameter("name","string",[[The name of the preference displayed in the preference screen.]])
@@ -372,8 +372,8 @@ code([[local tested_module="global_toolbox"
 dt.modules.lib[tested_module].visible=false
 coroutine.yield("wait_ms",2000)
 while true do
-  dt.modules.lib[tested_module].visible = not dt.modules.lib[tested_module].visible
-  coroutine.yield("wait_ms",2000)
+	dt.modules.lib[tested_module].visible = not dt.modules.lib[tested_module].visible
+	coroutine.yield("wait_ms",2000)
 end]]))
 darktable.modules.lib:add_version_info([[lib were added]])
 
@@ -447,304 +447,306 @@ darktable.debug.max_depth:set_text([[Initialized to 10; The maximum depth to rec
 remove_all_children(darktable.debug.known) -- debug values, not interesting
 darktable.debug.known:set_text([[A table containing the default value of ]]..my_tostring(tmp_node))
 darktable.debug.type:set_text([[Similar to the system function type() but it will return the real type instead of "userdata" for darktable specific objects.]])
-darktable.debug.type:add_parameter("object","anything",[[The object whos type must be reported.]])
-darktable.debug.type:add_return("string",[[A string describing the type of the object.]])
-	
-----------------------
---  TYPES           --
-----------------------
-types:set_text([[This section documents types that are specific to darktable's Lua API.]])
+	darktable.debug.type:add_parameter("object","anything",[[The object whos type must be reported.]])
+	darktable.debug.type:add_return("string",[[A string describing the type of the object.]])
+
+	----------------------
+	--  TYPES           --
+	----------------------
+	types:set_text([[This section documents types that are specific to darktable's Lua API.]])
 
 
-types.dt_lua_image_t:set_text([[Image objects represent an image in the database. This is slightly different from a file on disk since a file can have multiple developements.
+	types.dt_lua_image_t:set_text([[Image objects represent an image in the database. This is slightly different from a file on disk since a file can have multiple developements.
 
-Note that this is the real image object; changing the value of a field will immediately change it in darktable and will be reflected on any copy of that image object you may have kept.]])
-
-
-types.dt_lua_image_t.id:set_text([[A unique id identifying the image in the database.]])
-types.dt_lua_image_t.path:set_text([[The file the directory containing the image.]])
-types.dt_lua_image_t.film:set_text([[The film object that contains this image.]])
-types.dt_lua_image_t.filename:set_text([[The filename of the image.]])
-types.dt_lua_image_t.duplicate_index:set_text([[If there are multiple images based on a same file, each will have a unique number, starting from 0.]])
+	Note that this is the real image object; changing the value of a field will immediately change it in darktable and will be reflected on any copy of that image object you may have kept.]])
 
 
-types.dt_lua_image_t.publisher:set_text([[The publisher field of the image.]])
-types.dt_lua_image_t.title:set_text([[The title field of the image.]])
-types.dt_lua_image_t.creator:set_text([[The creator field of the image.]])
-types.dt_lua_image_t.rights:set_text([[The rights field of the image.]])
-types.dt_lua_image_t.description:set_text([[The description field for the image.]])
-
-types.dt_lua_image_t.exif_maker:set_text([[The maker exif data.]])
-types.dt_lua_image_t.exif_model:set_text([[The camera model used.]])
-types.dt_lua_image_t.exif_lens:set_text([[The id string of the lens used.]])
-types.dt_lua_image_t.exif_aperture:set_text([[The aperture saved in the exif data.]])
-types.dt_lua_image_t.exif_exposure:set_text([[The exposure time of the image.]])
-types.dt_lua_image_t.exif_focal_length:set_text([[The focal length of the image.]])
-types.dt_lua_image_t.exif_iso:set_text([[The iso used on the image.]])
-types.dt_lua_image_t.exif_datetime_taken:set_text([[The date and time of the image.]])
-types.dt_lua_image_t.exif_focus_distance:set_text([[The distance of the subject.]])
-types.dt_lua_image_t.exif_crop:set_text([[The exif crop data.]])
-types.dt_lua_image_t.latitude:set_text([[GPS latitude data of the image, nil if not set.]]):add_version_info("the field is now nil instead of NAN if not set")
-types.dt_lua_image_t.longitude:set_text([[GPS longitude data of the image, nil if not set.]]):add_version_info("the field is now nil instead of NAN if not set")
-types.dt_lua_image_t.is_raw:set_text([[True if the image is a RAW file.]])
-types.dt_lua_image_t.is_ldr:set_text([[True if the image is a ldr image.]])
-types.dt_lua_image_t.is_hdr:set_text([[True if the image is a hdr image.]])
-types.dt_lua_image_t.width:set_text([[The width of the image.]])
-types.dt_lua_image_t.height:set_text([[The height of the image.]])
-types.dt_lua_image_t.rating:set_text([[The rating of the image (-1 for rejected).]])
-types.dt_lua_image_t.red:set_text([[True if the image has the corresponding colorlabel.]])
-types.dt_lua_image_t.red:set_alias(types.dt_lua_image_t.blue)
-types.dt_lua_image_t.red:set_alias(types.dt_lua_image_t.green)
-types.dt_lua_image_t.red:set_alias(types.dt_lua_image_t.yellow)
-types.dt_lua_image_t.red:set_alias(types.dt_lua_image_t.purple)
-types.dt_lua_image_t.reset:set_text([[Removes all processing from the image, reseting it back to its original state]])
-types.dt_lua_image_t.reset:add_version_info("field added")
-types.dt_lua_image_t.reset:add_parameter("image",my_tostring(types.dt_lua_image_t),[[The image whose history will be deleted]])
-types.dt_lua_image_t.delete:set_text([[Removes an image from the database]])
-types.dt_lua_image_t.delete:add_version_info("field added")
-types.dt_lua_image_t.delete:add_parameter("image",my_tostring(types.dt_lua_image_t),[[The image to remove]])
-
-types.dt_lua_image_t.group_with:set_text([[Puts the first image in the same group as the second image. If no second image is provided the image will be in its own group.]])
-types.dt_lua_image_t.group_with:add_parameter("image",my_tostring(types.dt_lua_image_t),[[The image whose group must be changed.]])
-types.dt_lua_image_t.group_with:add_parameter("image2",my_tostring(types.dt_lua_image_t),[[The image we want to group with.]]):set_attribute("optional",true)
-types.dt_lua_image_t.make_group_leader:set_text([[Makes the image the leader of its group.]])
-types.dt_lua_image_t.make_group_leader:add_parameter("image",my_tostring(types.dt_lua_image_t),[[The image we want as the leader.]])
-types.dt_lua_image_t.get_group_members:set_text([[Returns a table containing all ]]..my_tostring(types.dt_lua_image_t)..[[ of the group. The group leader is both at a numeric key and at the "leader" special key (so you probably want to use ipairs to iterate through that table).]])
-types.dt_lua_image_t.get_group_members:add_parameter("image",my_tostring(types.dt_lua_image_t),[[The image whose group we are querying.]])
-types.dt_lua_image_t.get_group_members:add_return("table of "..my_tostring(types.dt_lua_image_t),[[A table of image objects containing all images that are in the same group as the image.]])
-darktable.tags.attach:set_alias(types.dt_lua_image_t.attach_tag)
-types.dt_lua_image_t.group_leader:set_text([[The image which is the leader of the group this image is a member of.]])
-types.dt_lua_image_t.local_copy:set_text([[True if the image has a copy in the local cache]])
-types.dt_lua_image_t.local_copy:add_version_info([[field added]])
-types.dt_lua_image_t.drop_cache:set_text("drops the cached version of this image."..para()..
-"This function should be called if an image is modified out of darktable to force DT to regenerate the thumbnail"..para()..
-"Darktable will regenerate the thumbnail by itself when it is needed")
-types.dt_lua_image_t.drop_cache:add_parameter("image",my_tostring(types.dt_lua_image_t),[[The image whose cache must be droped.]])
-types.dt_lua_image_t.drop_cache:add_version_info([[field added]])
-
-types.dt_imageio_module_format_t:set_text([[A virtual type representing all format types.]])
-types.dt_imageio_module_format_t.plugin_name:set_text([[A unique name for the plugin.]])
-types.dt_imageio_module_format_t.name:set_text([[A human readable name for the plugin.]])
-types.dt_imageio_module_format_t.extension:set_text([[The typical filename extension for that format.]])
-types.dt_imageio_module_format_t.mime:set_text([[The mime type associated with the format.]])
-types.dt_imageio_module_format_t.max_width:set_text([[The max width allowed for the format (0 = unlimited).]])
-types.dt_imageio_module_format_t.max_height:set_text([[The max height allowed for the format (0 = unlimited).]])
-types.dt_imageio_module_format_t.write_image:set_text([[Exports an image to a file. This is a blocking operation that will not return until the image is exported.]])
-types.dt_imageio_module_format_t.write_image:set_attribute("implicit_yield",true)
-types.dt_imageio_module_format_t.write_image:add_parameter("format",my_tostring(types.dt_imageio_module_format_t),[[The format that will be used to export.]])
-types.dt_imageio_module_format_t.write_image:add_parameter("image",my_tostring(types.dt_lua_image_t),[[The image object to export.]])
-types.dt_imageio_module_format_t.write_image:add_parameter("filename","string",[[The filename to export to.]])
-types.dt_imageio_module_format_t.write_image:add_return("boolean",[[Returns true on success.]])
-
-types.dt_imageio_module_format_data_png:set_text([[Type object describing parameters to export to png.]])
-types.dt_imageio_module_format_data_png.bpp:set_text([[The bpp parameter to use when exporting.]])
-types.dt_imageio_module_format_data_tiff:set_text([[Type object describing parameters to export to tiff.]])
-types.dt_imageio_module_format_data_tiff.bpp:set_text([[The bpp parameter to use when exporting.]])
-types.dt_imageio_module_format_data_exr:set_text([[Type object describing parameters to export to exr.]])
-types.dt_imageio_module_format_data_copy:set_text([[Type object describing parameters to export to copy.]])
-types.dt_imageio_module_format_data_pfm:set_text([[Type object describing parameters to export to pfm.]])
-types.dt_imageio_module_format_data_jpeg:set_text([[Type object describing parameters to export to jpeg.]])
-types.dt_imageio_module_format_data_jpeg.quality:set_text([[The quality to use at export time.]])
-types.dt_imageio_module_format_data_ppm:set_text([[Type object describing parameters to export to ppm.]])
-types.dt_imageio_module_format_data_webp:set_text([[Type object describing parameters to export to webp.]])
-types.dt_imageio_module_format_data_webp.quality:set_text([[The quality to use at export time.]])
-types.dt_imageio_module_format_data_webp.comp_type:set_text([[The overall quality to use; can be one of "webp_lossy" or "webp_lossless".]]):set_reported_type(types.comp_type_t);
-types.dt_imageio_module_format_data_webp.hint:set_text([[A hint on the overall content of the image.]]):set_reported_type(types.hint_t)
-types.dt_imageio_module_format_data_j2k:set_text([[Type object describing parameters to export to jpeg2000.]])
-types.dt_imageio_module_format_data_j2k.quality:set_text([[The quality to use at export time.]])
-types.dt_imageio_module_format_data_j2k.bpp:set_text([[The bpp parameter to use when exporting.]])
-types.dt_imageio_module_format_data_j2k.format:set_text([[The format to use.]]):set_reported_type(types.dt_imageio_j2k_format_t)
-types.dt_imageio_module_format_data_j2k.preset:set_text([[The preset to use.]]):set_reported_type(types.dt_imageio_j2k_preset_t)
+	types.dt_lua_image_t.id:set_text([[A unique id identifying the image in the database.]])
+	types.dt_lua_image_t.path:set_text([[The file the directory containing the image.]])
+	types.dt_lua_image_t.film:set_text([[The film object that contains this image.]])
+	types.dt_lua_image_t.filename:set_text([[The filename of the image.]])
+	types.dt_lua_image_t.duplicate_index:set_text([[If there are multiple images based on a same file, each will have a unique number, starting from 0.]])
 
 
-types.dt_imageio_module_storage_t:set_text([[A virtual type representing all storage types.]])
-types.dt_imageio_module_storage_t.plugin_name:set_text([[A unique name for the plugin.]])
-types.dt_imageio_module_storage_t.name:set_text([[A human readable name for the plugin.]])
-types.dt_imageio_module_storage_t.width:set_text([[The currently selected width for the plugin.]])
-types.dt_imageio_module_storage_t.height:set_text([[The currently selected height for the plugin.]])
-types.dt_imageio_module_storage_t.recommended_width:set_text([[The recommended width for the plugin.]])
-types.dt_imageio_module_storage_t.recommended_height:set_text([[The recommended height for the plugin.]])
-types.dt_imageio_module_storage_t.supports_format:set_text([[Checks if a format is supported by this storage.]])
-types.dt_imageio_module_storage_t.supports_format:add_parameter("storage",my_tostring(types.dt_imageio_module_storage_t),[[The storage type to check against.]])
-types.dt_imageio_module_storage_t.supports_format:add_parameter("format",my_tostring(types.dt_imageio_module_format_t),[[The format type to check.]])
-types.dt_imageio_module_storage_t.supports_format:add_return("boolean",[[True if the format is supported by the storage.]])
+	types.dt_lua_image_t.publisher:set_text([[The publisher field of the image.]])
+	types.dt_lua_image_t.title:set_text([[The title field of the image.]])
+	types.dt_lua_image_t.creator:set_text([[The creator field of the image.]])
+	types.dt_lua_image_t.rights:set_text([[The rights field of the image.]])
+	types.dt_lua_image_t.description:set_text([[The description field for the image.]])
 
-types.dt_imageio_module_storage_data_email:set_text([[An object containing parameters to export to email.]])
-types.dt_imageio_module_storage_data_flickr:set_text([[An object containing parameters to export to flickr.]])
-types.dt_imageio_module_storage_data_facebook:set_text([[An object containing parameters to export to facebook.]])
-types.dt_imageio_module_storage_data_latex:set_text([[An object containing parameters to export to latex.]])
-types.dt_imageio_module_storage_data_latex.filename:set_text([[The filename to export to.]])
-types.dt_imageio_module_storage_data_latex.title:set_text([[The title to use for export.]])
-types.dt_imageio_module_storage_data_picasa:set_text([[An object containing parameters to export to picasa.]])
-types.dt_imageio_module_storage_data_gallery:set_text([[An object containing parameters to export to gallery.]])
-types.dt_imageio_module_storage_data_gallery.filename:set_text([[The filename to export to.]])
-types.dt_imageio_module_storage_data_gallery.title:set_text([[The title to use for export.]])
-types.dt_imageio_module_storage_data_disk:set_text([[An object containing parameters to export to disk.]])
-types.dt_imageio_module_storage_data_disk.filename:set_text([[The filename to export to.]])
+	types.dt_lua_image_t.exif_maker:set_text([[The maker exif data.]])
+	types.dt_lua_image_t.exif_model:set_text([[The camera model used.]])
+	types.dt_lua_image_t.exif_lens:set_text([[The id string of the lens used.]])
+	types.dt_lua_image_t.exif_aperture:set_text([[The aperture saved in the exif data.]])
+	types.dt_lua_image_t.exif_exposure:set_text([[The exposure time of the image.]])
+	types.dt_lua_image_t.exif_focal_length:set_text([[The focal length of the image.]])
+	types.dt_lua_image_t.exif_iso:set_text([[The iso used on the image.]])
+	types.dt_lua_image_t.exif_datetime_taken:set_text([[The date and time of the image.]])
+	types.dt_lua_image_t.exif_focus_distance:set_text([[The distance of the subject.]])
+	types.dt_lua_image_t.exif_crop:set_text([[The exif crop data.]])
+	types.dt_lua_image_t.latitude:set_text([[GPS latitude data of the image, nil if not set.]]):add_version_info("the field is now nil instead of NAN if not set")
+	types.dt_lua_image_t.longitude:set_text([[GPS longitude data of the image, nil if not set.]]):add_version_info("the field is now nil instead of NAN if not set")
+	types.dt_lua_image_t.is_raw:set_text([[True if the image is a RAW file.]])
+	types.dt_lua_image_t.is_ldr:set_text([[True if the image is a ldr image.]])
+	types.dt_lua_image_t.is_hdr:set_text([[True if the image is a hdr image.]])
+	types.dt_lua_image_t.width:set_text([[The width of the image.]])
+	types.dt_lua_image_t.height:set_text([[The height of the image.]])
+	types.dt_lua_image_t.rating:set_text([[The rating of the image (-1 for rejected).]])
+	types.dt_lua_image_t.red:set_text([[True if the image has the corresponding colorlabel.]])
+	types.dt_lua_image_t.red:set_alias(types.dt_lua_image_t.blue)
+	types.dt_lua_image_t.red:set_alias(types.dt_lua_image_t.green)
+	types.dt_lua_image_t.red:set_alias(types.dt_lua_image_t.yellow)
+	types.dt_lua_image_t.red:set_alias(types.dt_lua_image_t.purple)
+	types.dt_lua_image_t.reset:set_text([[Removes all processing from the image, reseting it back to its original state]])
+	types.dt_lua_image_t.reset:add_version_info("field added")
+	types.dt_lua_image_t.reset:add_parameter("image",my_tostring(types.dt_lua_image_t),[[The image whose history will be deleted]])
+	types.dt_lua_image_t.delete:set_text([[Removes an image from the database]])
+	types.dt_lua_image_t.delete:add_version_info("field added")
+	types.dt_lua_image_t.delete:add_parameter("image",my_tostring(types.dt_lua_image_t),[[The image to remove]])
 
-types.dt_lua_film_t:set_text([[A film in darktable; this represents a directory containing imported images.]])
-types.dt_lua_film_t["#"]:set_text([[The different images within the film.]])
-types.dt_lua_film_t.id:set_text([[A unique numeric id used by this film.]])
-types.dt_lua_film_t.path:set_text([[The path represented by this film.]])
-types.dt_lua_film_t.delete:set_text([[Removes the film from the database.]])
-types.dt_lua_film_t.delete:add_parameter("film",my_tostring(types.dt_lua_film_t),[[The film to remove.]])
-types.dt_lua_film_t.delete:add_parameter("force","Boolean",[[Force removal, even if the film is not empty.]]):set_attribute("optional",true)
-types.dt_lua_film_t.delete:add_version_info("function added")
+	types.dt_lua_image_t.group_with:set_text([[Puts the first image in the same group as the second image. If no second image is provided the image will be in its own group.]])
+	types.dt_lua_image_t.group_with:add_parameter("image",my_tostring(types.dt_lua_image_t),[[The image whose group must be changed.]])
+	types.dt_lua_image_t.group_with:add_parameter("image2",my_tostring(types.dt_lua_image_t),[[The image we want to group with.]]):set_attribute("optional",true)
+	types.dt_lua_image_t.make_group_leader:set_text([[Makes the image the leader of its group.]])
+	types.dt_lua_image_t.make_group_leader:add_parameter("image",my_tostring(types.dt_lua_image_t),[[The image we want as the leader.]])
+	types.dt_lua_image_t.get_group_members:set_text([[Returns a table containing all ]]..my_tostring(types.dt_lua_image_t)..[[ of the group. The group leader is both at a numeric key and at the "leader" special key (so you probably want to use ipairs to iterate through that table).]])
+	types.dt_lua_image_t.get_group_members:add_parameter("image",my_tostring(types.dt_lua_image_t),[[The image whose group we are querying.]])
+	types.dt_lua_image_t.get_group_members:add_return("table of "..my_tostring(types.dt_lua_image_t),[[A table of image objects containing all images that are in the same group as the image.]])
+	darktable.tags.attach:set_alias(types.dt_lua_image_t.attach_tag)
+	types.dt_lua_image_t.group_leader:set_text([[The image which is the leader of the group this image is a member of.]])
+	types.dt_lua_image_t.local_copy:set_text([[True if the image has a copy in the local cache]])
+	types.dt_lua_image_t.local_copy:add_version_info([[field added]])
+	types.dt_lua_image_t.drop_cache:set_text("drops the cached version of this image."..para()..
+	"This function should be called if an image is modified out of darktable to force DT to regenerate the thumbnail"..para()..
+	"Darktable will regenerate the thumbnail by itself when it is needed")
+	types.dt_lua_image_t.drop_cache:add_parameter("image",my_tostring(types.dt_lua_image_t),[[The image whose cache must be droped.]])
+	types.dt_lua_image_t.drop_cache:add_version_info([[field added]])
 
-types.dt_style_t:set_text([[A style that can be applied to an image.]])
-types.dt_style_t.name:set_text([[The name of the style.]])
-types.dt_style_t.description:set_text([[The description of the style.]])
-types.dt_style_t["#"]:set_text([[The different items that make the style.]])
+	types.dt_imageio_module_format_t:set_text([[A virtual type representing all format types.]])
+	types.dt_imageio_module_format_t.plugin_name:set_text([[A unique name for the plugin.]])
+	types.dt_imageio_module_format_t.name:set_text([[A human readable name for the plugin.]])
+	types.dt_imageio_module_format_t.extension:set_text([[The typical filename extension for that format.]])
+	types.dt_imageio_module_format_t.mime:set_text([[The mime type associated with the format.]])
+	types.dt_imageio_module_format_t.max_width:set_text([[The max width allowed for the format (0 = unlimited).]])
+	types.dt_imageio_module_format_t.max_height:set_text([[The max height allowed for the format (0 = unlimited).]])
+	types.dt_imageio_module_format_t.write_image:set_text([[Exports an image to a file. This is a blocking operation that will not return until the image is exported.]])
+	types.dt_imageio_module_format_t.write_image:set_attribute("implicit_yield",true)
+	types.dt_imageio_module_format_t.write_image:add_parameter("format",my_tostring(types.dt_imageio_module_format_t),[[The format that will be used to export.]])
+	types.dt_imageio_module_format_t.write_image:add_parameter("image",my_tostring(types.dt_lua_image_t),[[The image object to export.]])
+	types.dt_imageio_module_format_t.write_image:add_parameter("filename","string",[[The filename to export to.]])
+	types.dt_imageio_module_format_t.write_image:add_return("boolean",[[Returns true on success.]])
 
-types.dt_style_item_t:set_text([[An element that is part of a style.]])
-types.dt_style_item_t.name:set_text([[The name of the style item.]])
-types.dt_style_item_t.num:set_text([[The position of the style item within its style.]])
-
-types.dt_lua_tag_t:set_text([[A tag that can be attached to an image.]])
-types.dt_lua_tag_t.name:set_text([[The name of the tag.]])
-types.dt_lua_tag_t["#"]:set_text([[The images that have that tag attached to them.]])
-
-types.dt_lib_module_t:set_text([[The type of a UI lib]])
-types.dt_lib_module_t:add_version_info([[Type added]])
-types.dt_lib_module_t.id:set_text([[A unit string identifying the lib]])
-types.dt_lib_module_t.name:set_text([[The translated title of the UI element]])
-types.dt_lib_module_t.version:set_text([[The version of the internal data of this lib]])
-types.dt_lib_module_t.visible:set_text([[Allow to make a lib module completely invisible to the user.]]..para()..
-[[Note that if the module is invisible the user will have no way to restore it without lua]])
-types.dt_lib_module_t.visible:set_attribute("implicit_yield",true)
-types.dt_lib_module_t.container:set_text([[The location of the lib in the darktable UI]]):set_reported_type(types.dt_ui_container_t)
-types.dt_lib_module_t.expandable:set_text([[True if the lib can be expanded/retracted]]);
-types.dt_lib_module_t.expanded:set_text([[True if the lib is expanded]]);
-types.dt_lib_module_t.position:set_text([[A value deciding the position of the lib within its container]])
-types.dt_lib_module_t.views:set_text([[A table of all teh views that display this widget]])
-types.dt_lib_module_t.reset:set_text([[A function to reset the lib to its default values]]..para()..
-[[This function will do nothing if the lib is not visible or can't be reset]])
-types.dt_lib_module_t.reset:add_parameter("self",my_tostring(types.dt_lib_module_t),[[The lib to reset]])
-types.dt_lib_module_t.on_screen:set_text([[True if the lib is currently visible on the screen]])
-
-types.dt_view_t:set_text([[A darktable view]])
-types.dt_view_t:add_version_info([[Type added]])
-types.dt_view_t.id:set_text([[A unique string identifying the view]])
-types.dt_view_t.name:set_text([[The name of the view]])
-
-
-types.dt_lua_backgroundjob_t:set_text([[A lua-managed entry in the backgroundjob lib]]):add_version_info("type added")
-types.dt_lua_backgroundjob_t.percent:set_text([[The value of the progress bar, between 0 and 1. will return nil if there is no progress bar, will raise an error if read or written on an invalid job]])
-types.dt_lua_backgroundjob_t.valid:set_text([[True if the job is displayed, set it to false to destroy the entry]]..para().."An invalid job cannot be made valid again")
-
-
-types.dt_lua_snapshot_t:set_text([[The description of a snapshot in the snapshot lib]]):add_version_info("type added")
-types.dt_lua_snapshot_t.filename:set_text([[The filename of an image containing the snapshot]])
-types.dt_lua_snapshot_t.select:set_text([[Activates this snapshot on the display. To deactivate all snapshot you need to call this function on the active snapshot]])
-types.dt_lua_snapshot_t.select:add_parameter("snapshot",my_tostring(types.dt_lua_snapshot_t),[[The snapshot to activate]])
-types.dt_lua_snapshot_t.name:set_text([[The name of the snapshot, as seen in the UI]])
-
-types.hint_t:set_text([[a hint on the way to encode a webp image]])
-types.dt_ui_container_t:set_text([[A place in the darktable UI where a lib can be placed]])
-types.snapshot_direction_t:set_text([[Which part of the main window is occupied by a snapshot]])
-types.dt_imageio_j2k_format_t:set_text([[J2K format type]])
-types.dt_imageio_j2k_preset_t:set_text([[J2K preset type]])
-types.yield_type:set_text([[What type of event to wait for]])
-types.comp_type_t:set_text([[Type of compression for webp]])
-types.lua_pref_type:set_text([[The type of value to save in a preference]])
+	types.dt_imageio_module_format_data_png:set_text([[Type object describing parameters to export to png.]])
+	types.dt_imageio_module_format_data_png.bpp:set_text([[The bpp parameter to use when exporting.]])
+	types.dt_imageio_module_format_data_tiff:set_text([[Type object describing parameters to export to tiff.]])
+	types.dt_imageio_module_format_data_tiff.bpp:set_text([[The bpp parameter to use when exporting.]])
+	types.dt_imageio_module_format_data_exr:set_text([[Type object describing parameters to export to exr.]])
+	types.dt_imageio_module_format_data_copy:set_text([[Type object describing parameters to export to copy.]])
+	types.dt_imageio_module_format_data_pfm:set_text([[Type object describing parameters to export to pfm.]])
+	types.dt_imageio_module_format_data_jpeg:set_text([[Type object describing parameters to export to jpeg.]])
+	types.dt_imageio_module_format_data_jpeg.quality:set_text([[The quality to use at export time.]])
+	types.dt_imageio_module_format_data_ppm:set_text([[Type object describing parameters to export to ppm.]])
+	types.dt_imageio_module_format_data_webp:set_text([[Type object describing parameters to export to webp.]])
+	types.dt_imageio_module_format_data_webp.quality:set_text([[The quality to use at export time.]])
+	types.dt_imageio_module_format_data_webp.comp_type:set_text([[The overall quality to use; can be one of "webp_lossy" or "webp_lossless".]]):set_reported_type(types.comp_type_t);
+	types.dt_imageio_module_format_data_webp.hint:set_text([[A hint on the overall content of the image.]]):set_reported_type(types.hint_t)
+	types.dt_imageio_module_format_data_j2k:set_text([[Type object describing parameters to export to jpeg2000.]])
+	types.dt_imageio_module_format_data_j2k.quality:set_text([[The quality to use at export time.]])
+	types.dt_imageio_module_format_data_j2k.bpp:set_text([[The bpp parameter to use when exporting.]])
+	types.dt_imageio_module_format_data_j2k.format:set_text([[The format to use.]]):set_reported_type(types.dt_imageio_j2k_format_t)
+	types.dt_imageio_module_format_data_j2k.preset:set_text([[The preset to use.]]):set_reported_type(types.dt_imageio_j2k_preset_t)
 
 
+	types.dt_imageio_module_storage_t:set_text([[A virtual type representing all storage types.]])
+	types.dt_imageio_module_storage_t.plugin_name:set_text([[A unique name for the plugin.]])
+	types.dt_imageio_module_storage_t.name:set_text([[A human readable name for the plugin.]])
+	types.dt_imageio_module_storage_t.width:set_text([[The currently selected width for the plugin.]])
+	types.dt_imageio_module_storage_t.height:set_text([[The currently selected height for the plugin.]])
+	types.dt_imageio_module_storage_t.recommended_width:set_text([[The recommended width for the plugin.]])
+	types.dt_imageio_module_storage_t.recommended_height:set_text([[The recommended height for the plugin.]])
+	types.dt_imageio_module_storage_t.supports_format:set_text([[Checks if a format is supported by this storage.]])
+	types.dt_imageio_module_storage_t.supports_format:add_parameter("storage",my_tostring(types.dt_imageio_module_storage_t),[[The storage type to check against.]])
+	types.dt_imageio_module_storage_t.supports_format:add_parameter("format",my_tostring(types.dt_imageio_module_format_t),[[The format type to check.]])
+	types.dt_imageio_module_storage_t.supports_format:add_return("boolean",[[True if the format is supported by the storage.]])
 
-----------------------
---  EVENTS          --
-----------------------
-events:set_text([[This section documents events that can be used to trigger Lua callbacks.]])
+	types.dt_imageio_module_storage_data_email:set_text([[An object containing parameters to export to email.]])
+	types.dt_imageio_module_storage_data_flickr:set_text([[An object containing parameters to export to flickr.]])
+	types.dt_imageio_module_storage_data_facebook:set_text([[An object containing parameters to export to facebook.]])
+	types.dt_imageio_module_storage_data_latex:set_text([[An object containing parameters to export to latex.]])
+	types.dt_imageio_module_storage_data_latex.filename:set_text([[The filename to export to.]])
+	types.dt_imageio_module_storage_data_latex.title:set_text([[The title to use for export.]])
+	types.dt_imageio_module_storage_data_picasa:set_text([[An object containing parameters to export to picasa.]])
+	types.dt_imageio_module_storage_data_gallery:set_text([[An object containing parameters to export to gallery.]])
+	types.dt_imageio_module_storage_data_gallery.filename:set_text([[The filename to export to.]])
+	types.dt_imageio_module_storage_data_gallery.title:set_text([[The title to use for export.]])
+	types.dt_imageio_module_storage_data_disk:set_text([[An object containing parameters to export to disk.]])
+	types.dt_imageio_module_storage_data_disk.filename:set_text([[The filename to export to.]])
+
+	types.dt_lua_film_t:set_text([[A film in darktable; this represents a directory containing imported images.]])
+	types.dt_lua_film_t["#"]:set_text([[The different images within the film.]])
+	types.dt_lua_film_t.id:set_text([[A unique numeric id used by this film.]])
+	types.dt_lua_film_t.path:set_text([[The path represented by this film.]])
+	types.dt_lua_film_t.delete:set_text([[Removes the film from the database.]])
+	types.dt_lua_film_t.delete:add_parameter("film",my_tostring(types.dt_lua_film_t),[[The film to remove.]])
+	types.dt_lua_film_t.delete:add_parameter("force","Boolean",[[Force removal, even if the film is not empty.]]):set_attribute("optional",true)
+	types.dt_lua_film_t.delete:add_version_info("function added")
+
+	types.dt_style_t:set_text([[A style that can be applied to an image.]])
+	types.dt_style_t.name:set_text([[The name of the style.]])
+	types.dt_style_t.description:set_text([[The description of the style.]])
+	types.dt_style_t["#"]:set_text([[The different items that make the style.]])
+
+	types.dt_style_item_t:set_text([[An element that is part of a style.]])
+	types.dt_style_item_t.name:set_text([[The name of the style item.]])
+	types.dt_style_item_t.num:set_text([[The position of the style item within its style.]])
+
+	types.dt_lua_tag_t:set_text([[A tag that can be attached to an image.]])
+	types.dt_lua_tag_t.name:set_text([[The name of the tag.]])
+	types.dt_lua_tag_t["#"]:set_text([[The images that have that tag attached to them.]])
+
+	types.dt_lib_module_t:set_text([[The type of a UI lib]])
+	types.dt_lib_module_t:add_version_info([[Type added]])
+	types.dt_lib_module_t.id:set_text([[A unit string identifying the lib]])
+	types.dt_lib_module_t.name:set_text([[The translated title of the UI element]])
+	types.dt_lib_module_t.version:set_text([[The version of the internal data of this lib]])
+	types.dt_lib_module_t.visible:set_text([[Allow to make a lib module completely invisible to the user.]]..para()..
+	[[Note that if the module is invisible the user will have no way to restore it without lua]])
+	types.dt_lib_module_t.visible:set_attribute("implicit_yield",true)
+	types.dt_lib_module_t.container:set_text([[The location of the lib in the darktable UI]]):set_reported_type(types.dt_ui_container_t)
+	types.dt_lib_module_t.expandable:set_text([[True if the lib can be expanded/retracted]]);
+	types.dt_lib_module_t.expanded:set_text([[True if the lib is expanded]]);
+	types.dt_lib_module_t.position:set_text([[A value deciding the position of the lib within its container]])
+	types.dt_lib_module_t.views:set_text([[A table of all teh views that display this widget]])
+	types.dt_lib_module_t.reset:set_text([[A function to reset the lib to its default values]]..para()..
+	[[This function will do nothing if the lib is not visible or can't be reset]])
+	types.dt_lib_module_t.reset:add_parameter("self",my_tostring(types.dt_lib_module_t),[[The lib to reset]])
+	types.dt_lib_module_t.on_screen:set_text([[True if the lib is currently visible on the screen]])
+
+	types.dt_view_t:set_text([[A darktable view]])
+	types.dt_view_t:add_version_info([[Type added]])
+	types.dt_view_t.id:set_text([[A unique string identifying the view]])
+	types.dt_view_t.name:set_text([[The name of the view]])
 
 
-events["intermediate-export-image"]:set_text([[This event is called each time an image is exported, once for each image after the image has been processed to an image format but before the storage has moved the image to its final destination.]])
-events["intermediate-export-image"].callback:add_parameter("event","string",[[The name of the event that triggered the callback.]])
-events["intermediate-export-image"].callback:add_parameter("image",my_tostring(types.dt_lua_image_t),[[The image object that has been exported.]])
-events["intermediate-export-image"].callback:add_parameter("filename","string",[[The name of the file that is the result of the image being processed.]])
-events["intermediate-export-image"].callback:add_parameter("format",my_tostring(types.dt_imageio_module_format_t),[[The format used to export the image.]]):add_version_info([[field added]])
-events["intermediate-export-image"].callback:add_parameter("storage",my_tostring(types.dt_imageio_module_storage_t),[[The storage used to export the image (can be nil).]]):add_version_info([[field added]])
-events["intermediate-export-image"].extra_registration_parameters:set_text([[This event has no extra registration parameters.]])
+	types.dt_lua_backgroundjob_t:set_text([[A lua-managed entry in the backgroundjob lib]]):add_version_info("type added")
+	types.dt_lua_backgroundjob_t.percent:set_text([[The value of the progress bar, between 0 and 1. will return nil if there is no progress bar, will raise an error if read or written on an invalid job]])
+	types.dt_lua_backgroundjob_t.valid:set_text([[True if the job is displayed, set it to false to destroy the entry]]..para().."An invalid job cannot be made valid again")
 
 
-events["post-import-image"]:set_text([[This event is triggered whenever a new image is imported into the database.
+	types.dt_lua_snapshot_t:set_text([[The description of a snapshot in the snapshot lib]]):add_version_info("type added")
+	types.dt_lua_snapshot_t.filename:set_text([[The filename of an image containing the snapshot]])
+	types.dt_lua_snapshot_t.select:set_text([[Activates this snapshot on the display. To deactivate all snapshot you need to call this function on the active snapshot]])
+	types.dt_lua_snapshot_t.select:add_parameter("snapshot",my_tostring(types.dt_lua_snapshot_t),[[The snapshot to activate]])
+	types.dt_lua_snapshot_t.name:set_text([[The name of the snapshot, as seen in the UI]])
 
-This event can be registered multiple times, all callbacks will be called.]])
-events["post-import-image"].callback:add_parameter("event","string",[[The name of the event that triggered the callback.]])
-events["post-import-image"].callback:add_parameter("image",my_tostring(types.dt_lua_image_t),[[The image object that has been exported.]])
-events["post-import-image"].extra_registration_parameters:set_text([[This event has no extra registration parameters.]])
-
-
-events["shortcut"]:set_text([[This event registers a new keyboad shortcut. The shortcut isn't bound to any key until the users does so in the preference panel.
-
-The event is triggered whenever the shortcut is triggered.
-
-
-This event can only be registered once per value of shortcut.
-]])
-events["shortcut"].callback:add_parameter("event","string",[[The name of the event that triggered the callback.]])
-
-events["shortcut"].callback:add_parameter("shortcut","string",[[The tooltip string that was given at registration time.]])
-events["shortcut"].extra_registration_parameters:set_text("")
-events["shortcut"].extra_registration_parameters:add_parameter("tooltip","string",[[The string that will be displayed on the shortcut preference panel describing the shortcut.]])
+	types.hint_t:set_text([[a hint on the way to encode a webp image]])
+	types.dt_ui_container_t:set_text([[A place in the darktable UI where a lib can be placed]])
+	types.snapshot_direction_t:set_text([[Which part of the main window is occupied by a snapshot]])
+	types.dt_imageio_j2k_format_t:set_text([[J2K format type]])
+	types.dt_imageio_j2k_preset_t:set_text([[J2K preset type]])
+	types.yield_type:set_text([[What type of event to wait for]])
+	types.comp_type_t:set_text([[Type of compression for webp]])
+	types.lua_pref_type:set_text([[The type of value to save in a preference]])
 
 
-events["post-import-film"]:set_text([[This event is triggered when an film import is finished (all post-import-image callbacks have already been triggered). This event can be registered multiple times.
-]])
-events["post-import-film"].callback:add_parameter("event","string",[[The name of the event that triggered the callback.]])
 
-events["post-import-film"].callback:add_parameter("film",my_tostring(types.dt_lua_film_t),[[The new film that has been added. If multiple films were added recursively only the top level film is reported.]])
-events["post-import-film"].extra_registration_parameters:set_text([[This event has no extra registration parameters.]])
-events["view-changed"]:set_text([[This event is triggered after the user changed the active view]])
-events["view-changed"].callback:add_parameter("old_view",my_tostring(types.dt_view_t),[[The view that we just left]])
-events["view-changed"].callback:add_parameter("new_view",my_tostring(types.dt_view_t),[[The view we are now in]])
-events["view-changed"].extra_registration_parameters:set_text([[This event has no extra registration parameters.]])
-events["view-changed"]:add_version_info("event added")
-----------------------
---  ATTRIBUTES      --
-----------------------
-function invisible_attr(attr)
-	attr:set_skiped()
-	attr:set_attribute("internal_attr",true);
-end
-attributes:set_text([[This section documents various attributes used throughout the documentation.]])
-invisible_attr(attributes.ret_val)
-invisible_attr(attributes.signature)
-invisible_attr(attributes.reported_type)
-invisible_attr(attributes.is_singleton)
-invisible_attr(attributes.optional)
-invisible_attr(attributes.skiped)
-invisible_attr(attributes.is_attribute)
-invisible_attr(attributes.internal_attr)
-attributes.write:set_text([[This object is a variable that can be written to.]])
-attributes.read:set_text([[This object is a variable that can be read.]])
-attributes.has_pairs:set_text([[This object can be used as an argument to the system function "pairs" and iterated upon.]])
-attributes.has_ipairs:set_text([[This object can be used as an argument to the system function "ipairs" and iterated upon.]])
---attributes.has_equal:set_text([[This object has a specific comparison function that will be used when comparing it to an object of the same type.]])
-attributes.has_length:set_text([[This object has a specific length function that will be used by the # operator.]])
-attributes.has_tostring:set_text([[This object has a specific reimplementation of the "tostring" method that allows pretty-printing it.]])
-attributes.implicit_yield:set_text([[This call will release the Lua lock while executing, thus allowing other Lua callbacks to run.]])
-attributes.parent:set_text([[This object inherits some methods from another object. You can call the methods from the parent on the child object]])
-attributes.views:set_skiped();
-attributes.position:set_skiped();
-attributes.container:set_skiped();
-attributes.values:set_skiped();
+	----------------------
+	--  EVENTS          --
+	----------------------
+	events:set_text([[This section documents events that can be used to trigger Lua callbacks.]])
 
-----------------------
---  SYSTEM          --
-----------------------
-doc.toplevel.system = doc.create_documentation_node(nil,doc.toplevel,"system")
-local system = doc.toplevel.system
-system:set_text([[This section documents changes to system functions.]])
 
-doc.toplevel.system.coroutine = doc.create_documentation_node(nil,doc.toplevel.system,"coroutine")
-system.coroutine:set_text("")
-system.coroutine.yield = doc.document_function(nil,system.coroutine,"yield");
-system.coroutine.yield:set_real_name("coroutine.yield")
-system.coroutine.yield:set_text([[Lua functions can yield at any point. The parameters and return types depend on why we want to yield.]]..para()..
-[[A callback that is yielding allows other Lua code to run.]]..startlist()..
-listel("wait_ms: one extra parameter; the execution will pause for that many miliseconds; yield returns nothing;")..
-listel("file_readable: an opened file from a call to the OS library; will return when the file is readable; returns nothing;")..
-listel([[* run_command: a command to be run by "sh -c"; will return when the command terminates; returns the return code of the execution.]])..
+	events["intermediate-export-image"]:set_text([[This event is called each time an image is exported, once for each image after the image has been processed to an image format but before the storage has moved the image to its final destination.]])
+	events["intermediate-export-image"].callback:add_parameter("event","string",[[The name of the event that triggered the callback.]])
+	events["intermediate-export-image"].callback:add_parameter("image",my_tostring(types.dt_lua_image_t),[[The image object that has been exported.]])
+	events["intermediate-export-image"].callback:add_parameter("filename","string",[[The name of the file that is the result of the image being processed.]])
+	events["intermediate-export-image"].callback:add_parameter("format",my_tostring(types.dt_imageio_module_format_t),[[The format used to export the image.]]):add_version_info([[field added]])
+	events["intermediate-export-image"].callback:add_parameter("storage",my_tostring(types.dt_imageio_module_storage_t),[[The storage used to export the image (can be nil).]]):add_version_info([[field added]])
+	events["intermediate-export-image"].extra_registration_parameters:set_text([[This event has no extra registration parameters.]])
+
+
+	events["post-import-image"]:set_text([[This event is triggered whenever a new image is imported into the database.
+
+	This event can be registered multiple times, all callbacks will be called.]])
+	events["post-import-image"].callback:add_parameter("event","string",[[The name of the event that triggered the callback.]])
+	events["post-import-image"].callback:add_parameter("image",my_tostring(types.dt_lua_image_t),[[The image object that has been exported.]])
+	events["post-import-image"].extra_registration_parameters:set_text([[This event has no extra registration parameters.]])
+
+
+	events["shortcut"]:set_text([[This event registers a new keyboad shortcut. The shortcut isn't bound to any key until the users does so in the preference panel.
+
+	The event is triggered whenever the shortcut is triggered.
+
+
+	This event can only be registered once per value of shortcut.
+	]])
+	events["shortcut"].callback:add_parameter("event","string",[[The name of the event that triggered the callback.]])
+
+	events["shortcut"].callback:add_parameter("shortcut","string",[[The tooltip string that was given at registration time.]])
+	events["shortcut"].extra_registration_parameters:set_text("")
+	events["shortcut"].extra_registration_parameters:add_parameter("tooltip","string",[[The string that will be displayed on the shortcut preference panel describing the shortcut.]])
+
+
+	events["post-import-film"]:set_text([[This event is triggered when an film import is finished (all post-import-image callbacks have already been triggered). This event can be registered multiple times.
+	]])
+	events["post-import-film"].callback:add_parameter("event","string",[[The name of the event that triggered the callback.]])
+
+	events["post-import-film"].callback:add_parameter("film",my_tostring(types.dt_lua_film_t),[[The new film that has been added. If multiple films were added recursively only the top level film is reported.]])
+	events["post-import-film"].extra_registration_parameters:set_text([[This event has no extra registration parameters.]])
+	events["view-changed"]:set_text([[This event is triggered after the user changed the active view]])
+	events["view-changed"].callback:add_parameter("old_view",my_tostring(types.dt_view_t),[[The view that we just left]])
+	events["view-changed"].callback:add_parameter("new_view",my_tostring(types.dt_view_t),[[The view we are now in]])
+	events["view-changed"].extra_registration_parameters:set_text([[This event has no extra registration parameters.]])
+	events["view-changed"]:add_version_info("event added")
+	----------------------
+	--  ATTRIBUTES      --
+	----------------------
+	function invisible_attr(attr)
+		attr:set_skiped()
+		attr:set_attribute("internal_attr",true);
+	end
+	attributes:set_text([[This section documents various attributes used throughout the documentation.]])
+	invisible_attr(attributes.ret_val)
+	invisible_attr(attributes.signature)
+	invisible_attr(attributes.reported_type)
+	invisible_attr(attributes.is_singleton)
+	invisible_attr(attributes.optional)
+	invisible_attr(attributes.skiped)
+	invisible_attr(attributes.is_attribute)
+	invisible_attr(attributes.internal_attr)
+	attributes.write:set_text([[This object is a variable that can be written to.]])
+	attributes.read:set_text([[This object is a variable that can be read.]])
+	attributes.has_pairs:set_text([[This object can be used as an argument to the system function "pairs" and iterated upon.]])
+	attributes.has_ipairs:set_text([[This object can be used as an argument to the system function "ipairs" and iterated upon.]])
+	--attributes.has_equal:set_text([[This object has a specific comparison function that will be used when comparing it to an object of the same type.]])
+	attributes.has_length:set_text([[This object has a specific length function that will be used by the # operator.]])
+	attributes.has_tostring:set_text([[This object has a specific reimplementation of the "tostring" method that allows pretty-printing it.]])
+	attributes.implicit_yield:set_text([[This call will release the Lua lock while executing, thus allowing other Lua callbacks to run.]])
+	attributes.parent:set_text([[This object inherits some methods from another object. You can call the methods from the parent on the child object]])
+	attributes.views:set_skiped();
+	attributes.position:set_skiped();
+	attributes.container:set_skiped();
+	attributes.values:set_skiped();
+
+	----------------------
+	--  SYSTEM          --
+	----------------------
+	doc.toplevel.system = doc.create_documentation_node(nil,doc.toplevel,"system")
+	local system = doc.toplevel.system
+	system:set_text([[This section documents changes to system functions.]])
+
+	doc.toplevel.system.coroutine = doc.create_documentation_node(nil,doc.toplevel.system,"coroutine")
+	system.coroutine:set_text("")
+	system.coroutine.yield = doc.document_function(nil,system.coroutine,"yield");
+	system.coroutine.yield:set_real_name("coroutine.yield")
+	system.coroutine.yield:set_text([[Lua functions can yield at any point. The parameters and return types depend on why we want to yield.]]..para()..
+	[[A callback that is yielding allows other Lua code to run.]]..startlist()..
+	listel("wait_ms: one extra parameter; the execution will pause for that many miliseconds; yield returns nothing;")..
+	listel("file_readable: an opened file from a call to the OS library; will return when the file is readable; returns nothing;")..
+	listel([[* run_command: a command to be run by "sh -c"; will return when the command terminates; returns the return code of the execution.]])..
 endlist())
 system.coroutine.yield:add_parameter("type",my_tostring(types.yield_type),[[The type of yield.]])
 system.coroutine.yield:add_parameter("extra","variable",[[An extra parameter: integer for "wait_ms", open file for "file_readable", string for "run_command".]])
 system.coroutine.yield:add_return("variable",[[Nothing for "wait_ms" and "file_readable"; the returned code of the command for "run_command".]])
+--
+-- vim: shiftwidth=2 expandtab tabstop=2 cindent syntax=lua

@@ -78,9 +78,11 @@ function M.get_doc()
 
 	end
 	return result
-	
+
 end
 
 
 
 return M;
+--
+-- vim: shiftwidth=2 expandtab tabstop=2 cindent syntax=lua
