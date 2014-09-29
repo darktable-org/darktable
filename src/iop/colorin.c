@@ -1157,8 +1157,8 @@ void gui_init(struct dt_iop_module_t *self)
 
   // add linear Rec709 RGB profile:
   prof = (dt_iop_color_profile_t *)g_malloc0(sizeof(dt_iop_color_profile_t));
-  g_strlcpy(prof->filename, "linear_rgb", sizeof(prof->filename));
-  g_strlcpy(prof->name, "linear_rgb", sizeof(prof->name));
+  g_strlcpy(prof->filename, "linear_rec709_rgb", sizeof(prof->filename));
+  g_strlcpy(prof->name, "linear_rec709_rgb", sizeof(prof->name));
   g->global_profiles = g_list_append(g->global_profiles, prof);
   prof->pos = ++pos;
 
