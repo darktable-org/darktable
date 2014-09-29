@@ -236,15 +236,12 @@ dt_imageio_open_tiff(
 int dt_imageio_tiff_read_profile(const char *filename, uint8_t **out)
 {
   TIFF *tiff = NULL;
-  uint16_t spp = 0;
   uint32_t profile_len = 0;
   uint8_t *profile = NULL;
 
   if(!(filename && *filename && out)) return 0;
 
   if((tiff = TIFFOpen(filename, "rb")) == NULL) return 0;
-
-  TIFFGetField(tiff, TIFFTAG_SAMPLESPERPIXEL, &spp);
 
   if(TIFFGetField(tiff, TIFFTAG_ICCPROFILE, &profile_len, &profile))
   {
