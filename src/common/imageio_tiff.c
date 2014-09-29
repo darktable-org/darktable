@@ -246,14 +246,7 @@ int dt_imageio_tiff_read_profile(const char *filename, uint8_t **out)
 
   TIFFGetField(tiff, TIFFTAG_SAMPLESPERPIXEL, &spp);
 
-  if(spp != 3 && spp != 4)
-  {
-    TIFFClose(tiff);
-    return -1;
-  }
-
-  if((spp == 3 || spp == 4) &&
-      TIFFGetField(tiff, TIFFTAG_ICCPROFILE, &profile_len, &profile))
+  if(TIFFGetField(tiff, TIFFTAG_ICCPROFILE, &profile_len, &profile))
   {
     *out = (uint8_t*)malloc(profile_len);
     memcpy(*out, profile, profile_len);

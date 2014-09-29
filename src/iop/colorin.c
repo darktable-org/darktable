@@ -920,16 +920,8 @@ void reload_defaults(dt_iop_module_t *module)
     else if(!strcmp(ext, "tif") || !strcmp(ext, "tiff"))
     {
       dt_image_t *img = dt_image_cache_write_get(darktable.image_cache, cimg);
-      const int profile_size = dt_imageio_tiff_read_profile(filename, &img->profile);
-      if(profile_size == -1)
-      {
-        dt_control_log(_("unsupported input profile has been ignored!"));
-      }
-      else
-      {
-        img->profile_size = profile_size;
-        use_eprofile = (img->profile_size > 0);
-      }
+      img->profile_size = dt_imageio_tiff_read_profile(filename, &img->profile);
+      use_eprofile = (img->profile_size > 0);
       dt_image_cache_write_release(darktable.image_cache, img, DT_IMAGE_CACHE_RELAXED);
     }
     else if(!strcmp(ext, "png"))
