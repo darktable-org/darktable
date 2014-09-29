@@ -237,7 +237,7 @@ kernel void
 colorin_unbound (read_only image2d_t in, write_only image2d_t out, const int width, const int height,
                  global float *cmat, global float *lmat, 
                  read_only image2d_t lutr, read_only image2d_t lutg, read_only image2d_t lutb,
-                 const int map_blues, global float *a)
+                 const int blue_mapping, global float *a)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
@@ -251,23 +251,26 @@ colorin_unbound (read_only image2d_t in, write_only image2d_t out, const int wid
   cam[1] = lookup_unbounded(lutg, pixel.y, a+3);
   cam[2] = lookup_unbounded(lutb, pixel.z, a+6);
 
-
-  const float YY = cam[0]+cam[1]+cam[2];
-  if(map_blues && YY > 0.0f)
+  if(blue_mapping)
   {
-    // manual gamut mapping. these values cause trouble when converting back from Lab to sRGB:
-    const float zz = cam[2]/YY;
-    // lower amount and higher bound_z make the effect smaller.
-    // the effect is weakened the darker input values are, saturating at bound_Y
-    const float bound_z = 0.5f, bound_Y = 0.8f;
-    const float amount = 0.11f;
-    if (zz > bound_z)
+    const float YY = cam[0] + cam[1] + cam[2];
+    if(YY > 0.0f)
     {
-      const float t = (zz - bound_z)/(1.0f-bound_z) * fmin(1.0f, YY/bound_Y);
-      cam[1] += t*amount;
-      cam[2] -= t*amount;
+      // manual gamut mapping. these values cause trouble when converting back from Lab to sRGB:
+      const float zz = cam[2] / YY;
+      // lower amount and higher bound_z make the effect smaller.
+      // the effect is weakened the darker input values are, saturating at bound_Y
+      const float bound_z = 0.5f, bound_Y = 0.8f;
+      const float amount = 0.11f;
+      if (zz > bound_z)
+      {
+        const float t = (zz - bound_z) / (1.0f - bound_z) * fmin(1.0f, YY / bound_Y);
+        cam[1] += t * amount;
+        cam[2] -= t * amount;
+      }
     }
   }
+
   // now convert camera to XYZ using the color matrix
   for(int j=0;j<3;j++)
   {
@@ -284,7 +287,7 @@ kernel void
 colorin_clipping (read_only image2d_t in, write_only image2d_t out, const int width, const int height,
                   global float *cmat, global float *lmat, 
                   read_only image2d_t lutr, read_only image2d_t lutg, read_only image2d_t lutb,
-                  const int map_blues, global float *a)
+                  const int blue_mapping, global float *a)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
@@ -298,23 +301,26 @@ colorin_clipping (read_only image2d_t in, write_only image2d_t out, const int wi
   cam[1] = lookup_unbounded(lutg, pixel.y, a+3);
   cam[2] = lookup_unbounded(lutb, pixel.z, a+6);
 
-
-  const float YY = cam[0]+cam[1]+cam[2];
-  if(map_blues && YY > 0.0f)
+  if(blue_mapping)
   {
-    // manual gamut mapping. these values cause trouble when converting back from Lab to sRGB:
-    const float zz = cam[2]/YY;
-    // lower amount and higher bound_z make the effect smaller.
-    // the effect is weakened the darker input values are, saturating at bound_Y
-    const float bound_z = 0.5f, bound_Y = 0.8f;
-    const float amount = 0.11f;
-    if (zz > bound_z)
+    const float YY = cam[0] + cam[1] + cam[2];
+    if(YY > 0.0f)
     {
-      const float t = (zz - bound_z)/(1.0f-bound_z) * fmin(1.0f, YY/bound_Y);
-      cam[1] += t*amount;
-      cam[2] -= t*amount;
+      // manual gamut mapping. these values cause trouble when converting back from Lab to sRGB:
+      const float zz = cam[2] / YY;
+      // lower amount and higher bound_z make the effect smaller.
+      // the effect is weakened the darker input values are, saturating at bound_Y
+      const float bound_z = 0.5f, bound_Y = 0.8f;
+      const float amount = 0.11f;
+      if (zz > bound_z)
+      {
+        const float t = (zz - bound_z) / (1.0f - bound_z) * fmin(1.0f, YY / bound_Y);
+        cam[1] += t * amount;
+        cam[2] -= t * amount;
+      }
     }
   }
+
   // convert camera to RGB using the first color matrix
   for(int j=0;j<3;j++)
   {
