@@ -211,9 +211,7 @@ finalize_store(dt_imageio_module_storage_t *self, dt_imageio_module_data_t *para
   fprintf(stderr, "[email] launching `%s'\n", uri);
   if(system( uri ) < 0)
   {
-    // TODO: after string freeze is broken again, report to ui:
-    // dt_control_log(_("could not launch email client!"));
-    fprintf(stderr, "[email] could not launch subprocess!\n");
+    dt_control_log(_("could not launch email client!"));
   }
 }
 
