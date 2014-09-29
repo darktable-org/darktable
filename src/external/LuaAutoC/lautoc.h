@@ -162,13 +162,13 @@ const char* luaA_struct_next_member_name_type(lua_State* L, luaA_Type type, cons
 */
 
 #define luaA_enum(L, type) luaA_enum_type(L, luaA_type(L, type), sizeof(type))
-#define luaA_enum_value(L, type, value) luaA_enum_value_type(L, luaA_type(L, type), (type[]){value}, #value);
-#define luaA_enum_value_name(L, type, value, name) luaA_enum_value_type(L, luaA_type(L, type), (type[]){value}, name);
+#define luaA_enum_value(L, type, value) luaA_enum_value_type(L, luaA_type(L, type), (const type[]){value}, #value);
+#define luaA_enum_value_name(L, type, value, name) luaA_enum_value_type(L, luaA_type(L, type), (const type[]){value}, name);
 
 #define luaA_enum_push(L, type, c_in) luaA_enum_push_type(L, luaA_type(L, type), c_in)
 #define luaA_enum_to(L, type, c_out, index) luaA_enum_to_type(L, luaA_type(L, type), c_out, index)
 
-#define luaA_enum_has_value(L, type, value) luaA_enum_has_value_type(L, luaA_type(L, type), (type[]){value})
+#define luaA_enum_has_value(L, type, value) luaA_enum_has_value_type(L, luaA_type(L, type), (const type[]){value})
 #define luaA_enum_has_name(L, type, name) luaA_enum_has_name_type(L, luaA_type(L, type), name)
 
 #define luaA_enum_registered(L, type) luaA_enum_registered_type(L, luaA_type(L, type))

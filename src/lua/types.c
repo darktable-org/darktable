@@ -499,7 +499,11 @@ void dt_lua_type_register_struct_type(lua_State* L,luaA_Type type_id)
   while(member_name != LUAA_INVALID_MEMBER_NAME)
   {
     lua_pushvalue(L,-1);
-    if(luaA_conversion_to_registered_type(L,luaA_struct_typeof_member_name_type(L, type_id, member_name))) {
+    luaA_Type member_type = luaA_struct_typeof_member_name_type(L, type_id, member_name);
+    if(luaA_conversion_to_registered_type(L,member_type) ||
+        luaA_struct_registered_type(L,member_type)||
+        luaA_enum_registered_type(L,member_type)
+        ) {
       dt_lua_type_register_type(L,type_id,member_name);
     } else {
       dt_lua_type_register_const_type(L,type_id,member_name);

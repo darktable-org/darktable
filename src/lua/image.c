@@ -496,7 +496,11 @@ int dt_lua_init_image(lua_State * L)
   while(member_name != LUAA_INVALID_MEMBER_NAME)
   {
     lua_pushcfunction(L,image_luaautoc_member);
-    if(luaA_conversion_to_registered_type(L,luaA_struct_typeof_member_name(L, dt_image_t, member_name))) {
+    luaA_Type member_type = luaA_struct_typeof_member_name(L, dt_image_t, member_name);
+    if(luaA_conversion_to_registered_type(L,member_type) ||
+        luaA_struct_registered_type(L,member_type)||
+        luaA_enum_registered_type(L,member_type)
+        ) {
       dt_lua_type_register(L,dt_lua_image_t,member_name);
     } else {
       dt_lua_type_register_const(L,dt_lua_image_t,member_name);
