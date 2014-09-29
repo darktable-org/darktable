@@ -764,6 +764,7 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
     if(d->input) dt_colorspaces_cleanup_profile(d->input);
     if(d->nrgb) dt_colorspaces_cleanup_profile(d->nrgb);
     d->nrgb = NULL;
+    snprintf(p->iccprofile, sizeof(p->iccprofile), "linear_rec709_rgb");
     d->input = dt_colorspaces_create_linear_rec709_rgb_profile();
     if(dt_colorspaces_get_matrix_from_input_profile (d->input, d->cmatrix, d->lut[0], d->lut[1], d->lut[2], LUT_SAMPLES))
     {
