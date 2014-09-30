@@ -54,24 +54,47 @@ static int mime_member(lua_State*L) {
 static int max_width_member(lua_State*L) {
   luaL_getmetafield(L,1,"__associated_object");
   dt_imageio_module_format_t * format = lua_touserdata(L,-1);
-  uint32_t width,height;
-  width=0;
-  height=0;
-  format->dimension(format,&width,&height);
-  lua_pushinteger(L,width);
-  return 1;
+  lua_pop(L,1);
+  dt_imageio_module_data_t * data = lua_touserdata(L,1);
+  if(lua_gettop(L) != 3) {
+    lua_pushinteger(L,data->max_width);
+    return 1;
+  } else {
+    uint32_t width,height;
+    width=0;
+    height=0;
+    format->dimension(format,&width,&height);
+    int new_width = luaL_checkinteger(L,3);
+    if(width > 0 && width < new_width) {
+      return luaL_error(L,"attempting to set a width higher than the maximum allowed");
+    } else {
+      data->max_width = new_width;
+      return 0;
+    }
+  }
 }
 
 static int max_height_member(lua_State*L) {
-  uint32_t width,height;
   luaL_getmetafield(L,1,"__associated_object");
   dt_imageio_module_format_t * format = lua_touserdata(L,-1);
-
+  lua_pop(L,1);
+  uint32_t width,height;
   width=0;
   height=0;
   format->dimension(format,&width,&height);
-  lua_pushinteger(L,height);
-  return 1;
+  if(lua_gettop(L) != 3) {
+    lua_pushinteger(L,height);
+    return 1;
+  } else {
+    int new_height = luaL_checkinteger(L,3);
+    if(height > 0 && height < new_height) {
+      return luaL_error(L,"attempting to set a height higher than the maximum allowed");
+    } else {
+      dt_imageio_module_data_t * data = lua_touserdata(L,1);
+      data->max_height = new_height;
+      return 0;
+    }
+  }
 }
 
 
@@ -79,6 +102,12 @@ static int get_format_params(lua_State *L)
 {
   dt_imageio_module_format_t *format_module = lua_touserdata(L,lua_upvalueindex(1));
   dt_imageio_module_data_t *fdata = format_module->get_params(format_module);
+  uint32_t width,height;
+  width=0;
+  height=0;
+  format_module->dimension(format_module,&width,&height);
+  fdata->max_width = width;
+  fdata->max_height = height;
   luaA_push_type(L,format_module->parameter_lua_type,fdata);
   format_module->free_params(format_module,fdata);
   return 1;
@@ -144,9 +173,9 @@ int dt_lua_init_format(lua_State *L)
   lua_pushcfunction(L,mime_member);
   dt_lua_type_register_const(L,dt_imageio_module_format_t,"mime");
   lua_pushcfunction(L,max_width_member);
-  dt_lua_type_register_const(L,dt_imageio_module_format_t,"max_width");
+  dt_lua_type_register(L,dt_imageio_module_format_t,"max_width");
   lua_pushcfunction(L,max_height_member);
-  dt_lua_type_register_const(L,dt_imageio_module_format_t,"max_height");
+  dt_lua_type_register(L,dt_imageio_module_format_t,"max_height");
   lua_pushcfunction(L,write_image);
   lua_pushcclosure(L,dt_lua_type_member_common,1);
   dt_lua_type_register_const(L,dt_imageio_module_format_t,"write_image");
