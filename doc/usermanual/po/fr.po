@@ -4,7 +4,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "POT-Creation-Date: 2014-09-20 23:04+0200\n"
-"PO-Revision-Date: 2014-09-22 21:34+0100\n"
+"PO-Revision-Date: 2014-10-03 22:12+0100\n"
 "Last-Translator: Michel Leblond <michel.leblond62@gmail.com>\n"
 "Language-Team: Jean-Luc Coulon, Victor Lamoine, Michel Leblond\n"
 "Language: fr\n"
@@ -13,7 +13,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
 "X-Generator: Poedit 1.5.4\n"
-"X-Poedit-Bookmarks: 1453,208,331,416,182,458,465,290,223,729\n"
+"X-Poedit-Bookmarks: 1496,208,331,416,182,458,465,290,223,729\n"
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:4(title)
 msgid "darktable 1.5"
@@ -13126,8 +13126,8 @@ msgstr "Groupe des modules d'effets"
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:11607(para)
 msgid "In the effect group you will find modules with a more artistic touch."
 msgstr ""
-"Dans le groupe des effets, vous pouvez trouver les modules qui apporteront "
-"une touche plus artistique."
+"Dans le groupe des modules d'effets, vous trouverez des modules ayant une "
+"touche plus artistique."
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:11613(title)
 msgid "Watermark"
@@ -13148,10 +13148,10 @@ msgid ""
 "your image. Watermarks are standard SVG documents and can be designed using "
 "<ulink url=\"http://www.inkscape.org\"><placeholder-1/></ulink>."
 msgstr ""
-"Le module de filigrane donne un moyen de rendu d’une incrustation vectorisée "
-"sur votre image. Les filigranes sont des documents SVG standards qui peuvent "
-"être créés en utilisant <ulink url=\"http://www.inkscape.org><placeholder-1/"
-"></ulink>."
+"Le module filigrane fournit un moyen de rendu d’une incrustation vectorisée "
+"dans votre image. Les filigranes sont des documents SVG standards qui "
+"peuvent être créés en utilisant <ulink url=\"http://www.inkscape.org"
+"\"><placeholder-1/></ulink>."
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:11647(para)
 msgid ""
@@ -13170,10 +13170,11 @@ msgid ""
 "darktable/watermarks. Once in place, use the reload button at the right of "
 "the watermark file name to update the list of available watermarks to use."
 msgstr ""
-"Les filigranes conçus par l’utilisateur sont placés dans le répertoire "
-"$HOME/.config/darktable/watermarks. Une fois en place, utilisez le bouton de "
-"rechargement situé à la droite du nom du fichier de filigrane afin de mettre "
-"à jour la liste des filigranes disponibles."
+"Les filigranes conçus par l’utilisateur doivent être placés dans le "
+"répertoire $HOME/.config/darktable/watermarks. Une fois que vous avez placé "
+"un filigrane dans ce répertoire, utilisez le bouton de rechargement situé à "
+"la droite du nom du fichier de filigrane pour mettre à jour la liste des "
+"filigranes disponibles."
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:11659(para)
 msgid ""
@@ -13222,58 +13223,55 @@ msgid ""
 "dc.rights) </entry><entry> The rights assigned to the image </entry></row></"
 "tbody></tgroup></informaltable>"
 msgstr ""
-"Voici une liste des chaînes de variables disponibles et prises en charge "
-"pour la substitution à l’intérieur d’un document svg : <informaltable "
-"frame=substitution within the svg document. <informaltable frame=\"none\" "
-"width=\"80%\"><tgroup cols=\"2\" colsep=\"0\" rowsep="
-"\"0\"><tbody><row><entry> $(DARKTABLE.NAME) </entry><entry> Nom de "
-"l’application </entry></row><row><entry> $(DARKTABLE.VERSION) </"
-"entry><entry> Version de darktable </entry></row><row><entry> $(IMAGE.ID) </"
-"entry><entry> Identifiant unique de l’image dans la bibliothèque actuelle </"
-"entry></row><row><entry> $(IMAGE.FILENAME) </entry><entry> Nom de fichier de "
-"l’image </entry></row><row><entry> $(IMAGE.EXIF) </entry><entry> Chaîne exif "
-"de l’image </entry></row><row><entry> $(EXIF.DATE) </entry><entry> Date de "
-"l’image </entry></row><row><entry> $(EXIF.DATE.SECOND) </entry><entry> "
-"Secondes depuis les données EXIF de l’image  </entry></row><row><entry> "
-"$(EXIF.DATE.MINUTE) </entry><entry> Minutes depuis les données EXIF de "
-"l’image </entry></row><row><entry> $(EXIF.DATE.HOUR) </entry><entry> Heures "
-"depuis les données EXIF de l’image (24h) </entry></row><row><entry> $(EXIF."
-"DATE.HOUR_AMPM) </entry><entry> Heures depuis les données EXIF de l’image "
-"(12h, AM/PM) </entry></row><row><entry> $(EXIF.DATE.DAY) </entry><entry> "
-"Jour depuis les données EXIF de l’image </entry></row><row><entry> $(EXIF."
-"DATE.MONTH)</entry><entry/></row><row><entry> $(EXIF.DATE.SHORT_MONTH)</"
-"entry><entry/></row><row><entry> $(EXIF.DATE.LONG_MONTH) </entry><entry/></"
-"row><row><entry>$(EXIF.DATE.SHORT_YEAR) </entry><entry> Années abrégée "
-"depuis les données EXIF de l’image EXIF (2013 donne is \"13\") </entry></"
-"row><row><entry> $(EXIF.DATE.LONG_YEAR)</entry><entry> Année complète depuis "
-"les données EXIF de l’image </entry></row><row><entry> $(DATE) </"
-"entry><entry> Date actuelle du système </entry></row><row><entry> $(DATE."
-"SECOND) </entry><entry> Secondes de l’heure actuelle du système </entry></"
-"row><row><entry> $(DATE.MINUTE) </entry><entry> Minutes de l’heure actuelle "
-"du système</entry></row><row><entry> $(DATE.HOUR) </entry><entry> Heures de "
-"l’heure actuelle du système (24h) </entry></row><row><entry> $(DATE."
-"HOUR_AMPM) </entry><entry> Heures de l’heure actuelle du système (12, AP/PM) "
-"</entry></row><row><entry> $(DATE.DAY) </entry><entry> Jour de l’heure "
-"actuelle du système </entry></row><row><entry> $(DATE.MONTH) </entry><entry> "
-"Mois de l’heure actuelle du système </entry></row><row><entry> $(DATE."
-"SHORT_MONTH)</entry><entry/></row><row><entry> $(DATE.LONG_MONTH) </"
-"entry><entry/></row><row><entry> $(DATE.SHORT_YEAR) </entry><entry> Année de "
-"l’heure actuelle du système (abrégée) </entry></row><row><entry> $(DATE."
-"LONG_YEAR) </entry><entry> Année de l’heure actuelle du système </entry></"
-"row><row><entry> $(EXIF.MAKER) </entry><entry> Fabriquant de l’appareil "
-"photo </entry></row><row><entry> $(EXIF.MODEL) </entry><entry> Modèle de "
-"l’appareil photo </entry></row><row><entry> $(EXIF.LENS) </entry><entry> "
-"Objectif spécifique utilisé </entry></row><row><entry> $(Xmp.dc.creator) </"
-"entry><entry> Chaîne du créateur </entry></row><row><entry> $(Xmp.dc."
-"publisher) </entry><entry> Chaîne du diffuseur </entry></row><row><entry> "
-"$(Xmp.dc.title) </entry><entry> Titre de l’image </entry></row><row><entry> "
-"$(Xmp.dc.description) </entry><entry>Description de l’image </entry></"
-"row><row><entry> $(Xmp.dc.rights) </entry><entry> Droits assignés à l’image "
-"</entry></row></tbody></tgroup></informaltable>"
+"Voici une liste des chaînes de caractères disponibles qui peuvent être "
+"substituées dans un document SVG. <informaltable frame=\"none\" width=\"80%"
+"\"><tgroup cols=\"2\" colsep=\"0\" rowsep=\"0\"><tbody><row><entry> "
+"$(DARKTABLE.NAME) </entry><entry> Nom de l'application </entry></"
+"row><row><entry> $(DARKTABLE.VERSION) </entry><entry> Version de darktable </"
+"entry></row><row><entry> $(IMAGE.ID) </entry><entry> Identifiant unique de "
+"l'image dans la bibliothèque courante </entry></row><row><entry> $(IMAGE."
+"FILENAME) </entry><entry> Nom du fichier de l'image </entry></"
+"row><row><entry> $(IMAGE.EXIF) </entry><entry> Nom EXIF de l'image </entry></"
+"row><row><entry> $(EXIF.DATE) </entry><entry> Date EXIF </entry></"
+"row><row><entry> $(EXIF.DATE.SECOND) </entry><entry> Secondes de la date "
+"EXIF </entry></row><row><entry> $(EXIF.DATE.MINUTE) </entry><entry> Minutes "
+"de la date EXIF </entry></row><row><entry> $(EXIF.DATE.HOUR) </entry><entry> "
+"Heures de la date EXIF (24h) </entry></row><row><entry> $(EXIF.DATE."
+"HOUR_AMPM) </entry><entry> Heures de la date EXIF (12h, AM/PM) </entry></"
+"row><row><entry> $(EXIF.DATE.DAY) </entry><entry> Jour de la date EXIF </"
+"entry></row><row><entry> $(EXIF.DATE.MONTH) </entry><entry>Mois de la date "
+"EXIF</entry></row><row><entry> $(EXIF.DATE.SHORT_MONTH) </entry><entry/></"
+"row><row><entry> $(EXIF.DATE.LONG_MONTH) </entry><entry/></row><row><entry> "
+"$(EXIF.DATE.SHORT_YEAR) </entry><entry> Année abrégée de la date EXIF (2013 "
+"est \"13\") </entry></row><row><entry> $(EXIF.DATE.LONG_YEAR) </"
+"entry><entry> Année complète de la date EXIF </entry></row><row><entry> "
+"$(DATE) </entry><entry> Date système courante </entry></row><row><entry> "
+"$(DATE.SECOND) </entry><entry> Secondes de la date système courante </"
+"entry></row><row><entry> $(DATE.MINUTE) </entry><entry> Minutes de la date "
+"système courante </entry></row><row><entry> $(DATE.HOUR) </entry><entry> "
+"Heures de la date système courante (24h) </entry></row><row><entry> $(DATE."
+"HOUR_AMPM) </entry><entry> Heures de la date système courante (12, AP/PM) </"
+"entry></row><row><entry> $(DATE.DAY) </entry><entry> Jour de la date système "
+"courante </entry></row><row><entry> $(DATE.MONTH) </entry><entry> Mois de la "
+"date système courante </entry></row><row><entry> $(DATE.SHORT_MONTH) </"
+"entry><entry/></row><row><entry> $(DATE.LONG_MONTH) </entry><entry/></"
+"row><row><entry> $(DATE.SHORT_YEAR) </entry><entry> Année de la date système "
+"courante (abrégée) </entry></row><row><entry> $(DATE.LONG_YEAR) </"
+"entry><entry> Année de la date système courante </entry></row><row><entry> "
+"$(EXIF.MAKER) </entry><entry> Fabricant du modèle de boîtier </entry></"
+"row><row><entry> $(EXIF.MODEL) </entry><entry> Modèle de boîtier </entry></"
+"row><row><entry> $(EXIF.LENS) </entry><entry> Objectif spécifique utilisé </"
+"entry></row><row><entry> $(Xmp.dc.creator) </entry><entry> Nom du créateur </"
+"entry></row><row><entry> $(Xmp.dc.publisher) </entry><entry> Nom de "
+"l'éditeur </entry></row><row><entry> $(Xmp.dc.title) </entry><entry> Titre "
+"de l'image </entry></row><row><entry> $(Xmp.dc.description) </entry><entry> "
+"Description de l'image </entry></row><row><entry> $(Xmp.dc.rights) </"
+"entry><entry> Droits assignés à l'image </entry></row></tbody></tgroup></"
+"informaltable>"
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:11947(title)
 msgid "marker"
-msgstr "Marqueur"
+msgstr "fichier"
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:11948(para)
 msgid ""
@@ -13286,10 +13284,9 @@ msgstr ""
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:11955(title)
 msgid "opacity"
-msgstr "Opacité"
+msgstr "opacité"
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:11956(para)
-#, fuzzy
 msgid "Set the opacity of the watermark's rendering."
 msgstr "Définit l’opacité du rendu du filigrane."
 
@@ -13298,14 +13295,12 @@ msgid "Scale the watermark pixel-independently."
 msgstr "Redimensionne le filigrane indépendamment des pixels."
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:11970(para)
-#, fuzzy
 msgid "Set the rotation angle of the watermark."
-msgstr "Définit l’opacité du rendu du filigrane."
+msgstr "Définit l’angle de rotation du filigrane."
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:11976(title)
-#, fuzzy
 msgid "scale on"
-msgstr "Échelle"
+msgstr "échelle sur"
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:11977(para)
 msgid ""
@@ -13314,50 +13309,49 @@ msgid ""
 "size. Alternatively you can scale the watermark relative to the "
 "<quote>larger border</quote> and <quote>smaller border</quote>, respectively."
 msgstr ""
+"Définit la référence pour le paramètre échelle. Le réglage par défaut "
+"<quote>image</quote> redimensionne le filigrane relativement à la taille "
+"horizontale de l'image. Alternativement vous pouvez redimensionner le "
+"filigrane relativement au <quote>grand côté</quote> ou relativement au "
+"<quote>petit côté</quote>."
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:11986(title)
 msgid "alignment"
-msgstr "Alignement"
+msgstr "alignement"
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:11987(para)
 msgid ""
 "Use these controls to align the watermark to any edge or center of the image."
 msgstr ""
-"Utilisez ces contrôles pour aligner le filigrane sur n'importe quel bord ou "
-"au centre de l’image."
+"Utilisez ces contrôles pour aligner le filigrane au centre ou sur n'importe "
+"quel côté de l’image."
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:11993(title)
 msgid "x offset"
-msgstr "Décalage en x"
+msgstr "décalage x"
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:11994(para)
-#, fuzzy
 msgid ""
 "Pixel-independent offset relative to the choice of alignment on the x-axis."
-msgstr ""
-"Décalage, indépendant des pixels, par rapport au choix de l’alignement sur "
-"l’axe des x."
+msgstr "Décalage, indépendant des pixels, pour l'alignement sur l’axe des x."
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:12000(title)
 msgid "y offset"
-msgstr "Décalage en y"
+msgstr "décalage y"
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:12001(para)
-#, fuzzy
 msgid ""
 "Pixel-independent offset relative to the choice of alignment on the y-axis."
-msgstr ""
-"Décalage, indépendant des pixel, par rapport au choix de l’alignement sur "
-"l’axe des y."
+msgstr "Décalage, indépendant des pixels, pour l'alignement sur l’axe des y."
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:12012(title)
 msgid "Framing"
-msgstr "Encadrement"
+msgstr "Cadre décoratif"
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:12016(secondary)
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:12020(primary)
 msgid "framing"
-msgstr "Encadrer"
+msgstr "cadre décoratif"
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:12033(entry)
 msgid ""
@@ -13367,22 +13361,22 @@ msgid ""
 "options for you to control the geometry of your frame."
 msgstr ""
 "Ce module est une fonctionnalité artistique qui génère un cadre autour de "
-"votre image. Le cadre consiste en une bordure dans une couleur définie par "
-"l’utilisateur et une ligne d’encadrement à l’intérieur de cette bordure qui "
-"est elle-même d’une couleur définie par l’utilisateur. Il y a diverses "
-"options qui vous permettent de contrôler la géométrie du cadre."
+"votre image. Le cadre est constitué d'une bordure de couleur définie par "
+"l’utilisateur et d'un cadre interne à cette bordure lui même d’une couleur "
+"définie par l’utilisateur. Il y a diverses options qui vous permettent de "
+"contrôler la géométrie du cadre."
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:12054(title)
 msgid "border size"
-msgstr "Dimensions de la bordure"
+msgstr "taille du cadre"
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:12055(para)
 msgid ""
 "This slider controls the size of the frame in percent of the underlying full "
 "image."
 msgstr ""
-"Ce curseur contrôle les dimensions du cadre en pourcentage de l’image sous-"
-"jacente complète."
+"Ce curseur contrôle la taille du cadre en pourcentage de l’image complète "
+"sous-jacente."
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:12062(para)
 msgid ""
@@ -13391,10 +13385,9 @@ msgid ""
 msgstr ""
 "À l’aide de cette zone de liste déroulante, vous pouvez choisir entre "
 "différents rapports d’aspect pour la sortie finale de ce module, c'est-à-"
-"dire de l’image sous-jacente accompagnée de son cadre."
+"dire pour l’image sous-jacente accompagnée de son cadre."
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:12070(para)
-#, fuzzy
 msgid ""
 "If you select a non-square aspect ratio this combobox defines the "
 "orientation – portrait or landscape. Set to <quote>auto</quote> if you want "
@@ -13408,7 +13401,7 @@ msgstr ""
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:12078(title)
 msgid "horizontal position"
-msgstr "Position horizontale"
+msgstr "position horizontale"
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:12079(para)
 msgid ""
@@ -13423,7 +13416,7 @@ msgstr ""
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:12087(title)
 msgid "vertical position"
-msgstr "Position verticale"
+msgstr "position verticale"
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:12088(para)
 msgid ""
@@ -13438,19 +13431,19 @@ msgstr ""
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:12096(title)
 msgid "frame line size"
-msgstr "Largeur de la ligne du cadre"
+msgstr "taille du cadre interne"
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:12097(para)
 msgid ""
 "The percentage of the frame line size relative to the border size at its "
 "smallest part."
 msgstr ""
-"Pourcentage de la largeur de ligne du cadre par rapport aux dimensions de la "
-"bordure à l’endroit de sa largeur la plus faible."
+"La largeur du cadre interne en pourcentage de la plus petite dimension de la "
+"bordure."
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:12103(title)
 msgid "frame line offset"
-msgstr "Décalage de la ligne du cadre"
+msgstr "décalage du cadre interne"
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:12104(para)
 msgid ""
@@ -13458,13 +13451,13 @@ msgid ""
 "a value of 0 for a frame line touching the image, 100% for a frame line "
 "touching the outer border limits."
 msgstr ""
-"Endroit où la ligne de cadre est placée relativement à l’image sous-jacente. "
-"Sélectionner une valeur de 0 pour une ligne de cadre touchant l’image, 100% "
-"pour une ligne de cadre touchant les limites des bords externes."
+"Position du cadre interne relativement à l’image sous-jacente. Sélectionner "
+"la valeur 0% pour un cadre interne touchant l’image, la valeur 100% pour un "
+"cadre interne touchant les limites externes de la bordure."
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:12112(title)
 msgid "border color"
-msgstr "Couleur de la bordure"
+msgstr "couleur de la bordure"
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:12113(para)
 msgid ""
@@ -13474,8 +13467,8 @@ msgid ""
 "darkroom_module_icon_picker.png\" scalefit=\"1\" width=\"2%\" align=\"center"
 "\"/> and take a color probe from your image."
 msgstr ""
-"Cliquer sur le champ coloré va ouvrir un boîte de sélection de couleur qui "
-"permet de définir une couleur pour la bordure dans l’espace colorimétrique "
+"Cliquer sur le champ coloré va ouvrir une boîte de sélection de couleur "
+"permettant de définir la couleur de la bordure dans l’espace colorimétrique "
 "TSV ou RVB. Vous pouvez aussi activer une pipette à couleurs en pressant "
 "<inlinegraphic fileref=\"images/darkroom_module_icon_picker.png\" scalefit="
 "\"1\" width=\"2%\" align=\"center\"/> et prendre un échantillon de couleur "
@@ -13483,7 +13476,7 @@ msgstr ""
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:12123(title)
 msgid "frame line color"
-msgstr "Couleur de la ligne du cadre"
+msgstr "couleur du cadre interne"
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:12124(para)
 msgid ""
@@ -13493,16 +13486,16 @@ msgid ""
 "darkroom_module_icon_picker.png\" scalefit=\"1\" width=\"2%\" align=\"center"
 "\"/> and take a color probe from your image."
 msgstr ""
-"Cliquer sur le champ coloré va ouvrir une boîte de sélection de couleur qui "
-"permet de définir la couleur du cadre dans l’espace colorimétrique TSV ou "
-"RGB. Vous pouvez aussi activer une pipette à couleurs en cliquant "
-"<inlinegraphic fileref=\"images/darkroom_module_icon_picker.png\" scalefit="
-"\"1\" width=\"2%\" align=\"center\"/> et prendre un échantillon de couleur "
-"dans votre image."
+"Cliquer sur le champ coloré va ouvrir une boîte de sélection de couleur "
+"permettant de définir la couleur du cadre interne dans l’espace "
+"colorimétrique TSV ou RVB. Vous pouvez aussi activer une pipette à couleurs "
+"en cliquant <inlinegraphic fileref=\"images/darkroom_module_icon_picker.png"
+"\" scalefit=\"1\" width=\"2%\" align=\"center\"/> et prendre un échantillon "
+"de couleur dans votre image."
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:12149(entry)
 msgid "Example image with a user defined frame."
-msgstr "Image d’exemple avec un cadre défini par l’utilisateur."
+msgstr "Exemple où un cadre a été défini par l’utilisateur."
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:12164(title)
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:13879(para)
