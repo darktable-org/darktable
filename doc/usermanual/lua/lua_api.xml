@@ -1234,7 +1234,7 @@ All functions and data are accessed through the darktable module.</para>
 <variablelist>
 <varlistentry id="darktable_styles_export_style"><term>style</term><listitem>
 <synopsis><link linkend="types_dt_style_t">types.dt_style_t</link></synopsis>
-<para>The file to import</para>
+<para>The style to export</para>
 
 </listitem></varlistentry>
 
@@ -2189,7 +2189,7 @@ end</programlisting>
     <tbody><row>
     <entry>Attributes:</entry>
     <entry><itemizedlist>
-<listitem><para><emphasis>container : </emphasis>DT_UI_CONTAINER_PANEL_RIGHT_CENTER</para></listitem>
+<listitem><para><emphasis>container : </emphasis>DT_UI_CONTAINER_PANEL_LEFT_CENTER</para></listitem>
 <listitem><para><emphasis><link linkend="attributes_has_tostring">has_tostring</link></emphasis></para></listitem>
 <listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_lib_module_t">types.dt_lib_module_t</link></para></listitem>
 <listitem><para><emphasis>position : </emphasis>500</para></listitem>
@@ -3779,13 +3779,12 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
 <primary>Lua API</primary>
 <secondary>reset</secondary>
 </indexterm>
-<synopsis>function( 
-	<emphasis><link linkend="types_dt_lua_image_t_reset_image">image</link></emphasis> : <link linkend="types_dt_lua_image_t">types.dt_lua_image_t</link>
+<synopsis>self:function( 
 )</synopsis>
 <para>Removes all processing from the image, reseting it back to its original state</para>
 
 <variablelist>
-<varlistentry id="types_dt_lua_image_t_reset_image"><term>image</term><listitem>
+<varlistentry id="types_dt_lua_image_t_reset_self"><term>self</term><listitem>
 <synopsis><link linkend="types_dt_lua_image_t">types.dt_lua_image_t</link></synopsis>
 <para>The image whose history will be deleted</para>
 
@@ -3800,13 +3799,12 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
 <primary>Lua API</primary>
 <secondary>delete</secondary>
 </indexterm>
-<synopsis>function( 
-	<emphasis><link linkend="types_dt_lua_image_t_delete_image">image</link></emphasis> : <link linkend="types_dt_lua_image_t">types.dt_lua_image_t</link>
+<synopsis>self:function( 
 )</synopsis>
 <para>Removes an image from the database</para>
 
 <variablelist>
-<varlistentry id="types_dt_lua_image_t_delete_image"><term>image</term><listitem>
+<varlistentry id="types_dt_lua_image_t_delete_self"><term>self</term><listitem>
 <synopsis><link linkend="types_dt_lua_image_t">types.dt_lua_image_t</link></synopsis>
 <para>The image to remove</para>
 
@@ -3821,20 +3819,19 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
 <primary>Lua API</primary>
 <secondary>group_with</secondary>
 </indexterm>
-<synopsis>function( 
-	<emphasis><link linkend="types_dt_lua_image_t_group_with_image">image</link></emphasis> : <link linkend="types_dt_lua_image_t">types.dt_lua_image_t</link>, 
-	[<emphasis><link linkend="types_dt_lua_image_t_group_with_image2">image2</link></emphasis> : <link linkend="types_dt_lua_image_t">types.dt_lua_image_t</link>]
+<synopsis>self:function( 
+	[<emphasis><link linkend="types_dt_lua_image_t_group_with_image">image</link></emphasis> : <link linkend="types_dt_lua_image_t">types.dt_lua_image_t</link>]
 )</synopsis>
 <para>Puts the first image in the same group as the second image. If no second image is provided the image will be in its own group.</para>
 
 <variablelist>
-<varlistentry id="types_dt_lua_image_t_group_with_image"><term>image</term><listitem>
+<varlistentry id="types_dt_lua_image_t_group_with_self"><term>self</term><listitem>
 <synopsis><link linkend="types_dt_lua_image_t">types.dt_lua_image_t</link></synopsis>
 <para>The image whose group must be changed.</para>
 
 </listitem></varlistentry>
 
-<varlistentry id="types_dt_lua_image_t_group_with_image2"><term>image2</term><listitem>
+<varlistentry id="types_dt_lua_image_t_group_with_image"><term>image</term><listitem>
 <synopsis><link linkend="types_dt_lua_image_t">types.dt_lua_image_t</link></synopsis>
 <para>The image we want to group with.</para>
 
@@ -3849,13 +3846,12 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
 <primary>Lua API</primary>
 <secondary>make_group_leader</secondary>
 </indexterm>
-<synopsis>function( 
-	<emphasis><link linkend="types_dt_lua_image_t_make_group_leader_image">image</link></emphasis> : <link linkend="types_dt_lua_image_t">types.dt_lua_image_t</link>
+<synopsis>self:function( 
 )</synopsis>
 <para>Makes the image the leader of its group.</para>
 
 <variablelist>
-<varlistentry id="types_dt_lua_image_t_make_group_leader_image"><term>image</term><listitem>
+<varlistentry id="types_dt_lua_image_t_make_group_leader_self"><term>self</term><listitem>
 <synopsis><link linkend="types_dt_lua_image_t">types.dt_lua_image_t</link></synopsis>
 <para>The image we want as the leader.</para>
 
@@ -3870,13 +3866,12 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
 <primary>Lua API</primary>
 <secondary>get_group_members</secondary>
 </indexterm>
-<synopsis>function( 
-	<emphasis><link linkend="types_dt_lua_image_t_get_group_members_image">image</link></emphasis> : <link linkend="types_dt_lua_image_t">types.dt_lua_image_t</link>
+<synopsis>self:function( 
 ) : table of <link linkend="types_dt_lua_image_t">types.dt_lua_image_t</link></synopsis>
 <para>Returns a table containing all <link linkend="types_dt_lua_image_t">types.dt_lua_image_t</link> of the group. The group leader is both at a numeric key and at the "leader" special key (so you probably want to use ipairs to iterate through that table).</para>
 
 <variablelist>
-<varlistentry id="types_dt_lua_image_t_get_group_members_image"><term>image</term><listitem>
+<varlistentry id="types_dt_lua_image_t_get_group_members_self"><term>self</term><listitem>
 <synopsis><link linkend="types_dt_lua_image_t">types.dt_lua_image_t</link></synopsis>
 <para>The image whose group we are querying.</para>
 
@@ -3930,15 +3925,14 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
 <primary>Lua API</primary>
 <secondary>drop_cache</secondary>
 </indexterm>
-<synopsis>function( 
-	<emphasis><link linkend="types_dt_lua_image_t_drop_cache_image">image</link></emphasis> : <link linkend="types_dt_lua_image_t">types.dt_lua_image_t</link>
+<synopsis>self:function( 
 )</synopsis>
 <para>drops the cached version of this image.</para>
 <para>This function should be called if an image is modified out of darktable to force DT to regenerate the thumbnail</para>
 <para>Darktable will regenerate the thumbnail by itself when it is needed</para>
 
 <variablelist>
-<varlistentry id="types_dt_lua_image_t_drop_cache_image"><term>image</term><listitem>
+<varlistentry id="types_dt_lua_image_t_drop_cache_self"><term>self</term><listitem>
 <synopsis><link linkend="types_dt_lua_image_t">types.dt_lua_image_t</link></synopsis>
 <para>The image whose cache must be droped.</para>
 
@@ -4050,8 +4044,7 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
 <primary>Lua API</primary>
 <secondary>write_image</secondary>
 </indexterm>
-<synopsis>function( 
-	<emphasis><link linkend="types_dt_imageio_module_format_t_write_image_format">format</link></emphasis> : <link linkend="types_dt_imageio_module_format_t">types.dt_imageio_module_format_t</link>, 
+<synopsis>self:function( 
 	<emphasis><link linkend="types_dt_imageio_module_format_t_write_image_image">image</link></emphasis> : <link linkend="types_dt_lua_image_t">types.dt_lua_image_t</link>, 
 	<emphasis><link linkend="types_dt_imageio_module_format_t_write_image_filename">filename</link></emphasis> : string
 ) : boolean</synopsis>
@@ -4068,7 +4061,7 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
     </row></tbody>
     </tgroup></informaltable>
 <variablelist>
-<varlistentry id="types_dt_imageio_module_format_t_write_image_format"><term>format</term><listitem>
+<varlistentry id="types_dt_imageio_module_format_t_write_image_self"><term>self</term><listitem>
 <synopsis><link linkend="types_dt_imageio_module_format_t">types.dt_imageio_module_format_t</link></synopsis>
 <para>The format that will be used to export.</para>
 
@@ -4659,14 +4652,13 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
 <primary>Lua API</primary>
 <secondary>supports_format</secondary>
 </indexterm>
-<synopsis>function( 
-	<emphasis><link linkend="types_dt_imageio_module_storage_t_supports_format_storage">storage</link></emphasis> : <link linkend="types_dt_imageio_module_storage_t">types.dt_imageio_module_storage_t</link>, 
+<synopsis>self:function( 
 	<emphasis><link linkend="types_dt_imageio_module_storage_t_supports_format_format">format</link></emphasis> : <link linkend="types_dt_imageio_module_format_t">types.dt_imageio_module_format_t</link>
 ) : boolean</synopsis>
 <para>Checks if a format is supported by this storage.</para>
 
 <variablelist>
-<varlistentry id="types_dt_imageio_module_storage_t_supports_format_storage"><term>storage</term><listitem>
+<varlistentry id="types_dt_imageio_module_storage_t_supports_format_self"><term>self</term><listitem>
 <synopsis><link linkend="types_dt_imageio_module_storage_t">types.dt_imageio_module_storage_t</link></synopsis>
 <para>The storage type to check against.</para>
 
@@ -5018,14 +5010,13 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
 <primary>Lua API</primary>
 <secondary>delete</secondary>
 </indexterm>
-<synopsis>function( 
-	<emphasis><link linkend="types_dt_lua_film_t_delete_film">film</link></emphasis> : <link linkend="types_dt_lua_film_t">types.dt_lua_film_t</link>, 
+<synopsis>self:function( 
 	[<emphasis><link linkend="types_dt_lua_film_t_delete_force">force</link></emphasis> : Boolean]
 )</synopsis>
 <para>Removes the film from the database.</para>
 
 <variablelist>
-<varlistentry id="types_dt_lua_film_t_delete_film"><term>film</term><listitem>
+<varlistentry id="types_dt_lua_film_t_delete_self"><term>self</term><listitem>
 <synopsis><link linkend="types_dt_lua_film_t">types.dt_lua_film_t</link></synopsis>
 <para>The film to remove.</para>
 
@@ -5383,8 +5374,7 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
 <primary>Lua API</primary>
 <secondary>reset</secondary>
 </indexterm>
-<synopsis>function( 
-	<emphasis><link linkend="types_dt_lib_module_t_reset_self">self</link></emphasis> : <link linkend="types_dt_lib_module_t">types.dt_lib_module_t</link>
+<synopsis>self:function( 
 )</synopsis>
 <para>A function to reset the lib to its default values</para>
 <para>This function will do nothing if the lib is not visible or can't be reset</para>
@@ -5535,13 +5525,12 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
 <primary>Lua API</primary>
 <secondary>select</secondary>
 </indexterm>
-<synopsis>function( 
-	<emphasis><link linkend="types_dt_lua_snapshot_t_select_snapshot">snapshot</link></emphasis> : <link linkend="types_dt_lua_snapshot_t">types.dt_lua_snapshot_t</link>
+<synopsis>self:function( 
 )</synopsis>
 <para>Activates this snapshot on the display. To deactivate all snapshot you need to call this function on the active snapshot</para>
 
 <variablelist>
-<varlistentry id="types_dt_lua_snapshot_t_select_snapshot"><term>snapshot</term><listitem>
+<varlistentry id="types_dt_lua_snapshot_t_select_self"><term>self</term><listitem>
 <synopsis><link linkend="types_dt_lua_snapshot_t">types.dt_lua_snapshot_t</link></synopsis>
 <para>The snapshot to activate</para>
 

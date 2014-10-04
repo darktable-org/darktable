@@ -56,13 +56,18 @@ local function get_reported_type(node,simple)
     rtype = rtype.."( "
     local sig = doc.get_attribute(node,"signature")
     for k,v in sorted_pairs(sig) do
-      if(doc.get_attribute(v,"optional")) then
+      if(doc.get_attribute(v,"is_self")) then
+        rtype = doc.get_short_name(v)..":"..rtype
+      elseif(doc.get_attribute(v,"optional")) then
         rtype = rtype.."\n\t["..emphasis(get_node_with_link(v,doc.get_short_name(v))).." : "..get_reported_type(v,true).."]"
+        if next(sig,k) then
+          rtype = rtype..", "
+        end
       else
         rtype = rtype.."\n\t"..emphasis(get_node_with_link(v,doc.get_short_name(v))).." : "..get_reported_type(v,true)
-      end
-      if next(sig,k) then
-        rtype = rtype..", "
+        if next(sig,k) then
+          rtype = rtype..", "
+        end
       end
     end
     rtype = rtype.."\n)"
