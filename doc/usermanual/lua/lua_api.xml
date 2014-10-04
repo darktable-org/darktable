@@ -326,9 +326,7 @@ All functions and data are accessed through the darktable module.</para>
     <tbody><row>
     <entry>Attributes:</entry>
     <entry><itemizedlist>
-<listitem><para><emphasis><link linkend="attributes_has_ipairs">has_ipairs</link></emphasis></para></listitem>
 <listitem><para><emphasis><link linkend="attributes_has_length">has_length</link></emphasis></para></listitem>
-<listitem><para><emphasis><link linkend="attributes_has_pairs">has_pairs</link></emphasis></para></listitem>
 </itemizedlist>
 </entry>
     </row></tbody>
@@ -341,17 +339,7 @@ All functions and data are accessed through the darktable module.</para>
 </indexterm>
 <synopsis><link linkend="types_dt_lua_film_t">types.dt_lua_film_t</link></synopsis>
 <para>Each film has a numeric entry in the database.</para>
-<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
-    <colspec colwidth="2*"/>
-    <colspec colwidth="8*"/>
-    <tbody><row>
-    <entry>Attributes:</entry>
-    <entry><itemizedlist>
-<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
-</itemizedlist>
-</entry>
-    </row></tbody>
-    </tgroup></informaltable>
+
 </section>
 
 <section status="final" id="darktable_films_new">
@@ -365,17 +353,7 @@ All functions and data are accessed through the darktable module.</para>
 ) : <link linkend="types_dt_lua_film_t">types.dt_lua_film_t</link></synopsis>
 <para>Creates a new empty film</para>
 <para> see <link linkend="darktable_database_import">darktable.database.import</link> to import a directory with all its images and to add images to a film</para>
-<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
-    <colspec colwidth="2*"/>
-    <colspec colwidth="8*"/>
-    <tbody><row>
-    <entry>Attributes:</entry>
-    <entry><itemizedlist>
-<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
-</itemizedlist>
-</entry>
-    </row></tbody>
-    </tgroup></informaltable>
+
 <variablelist>
 <varlistentry id="darktable_films_new_directory"><term>directory</term><listitem>
 <synopsis>string</synopsis>
@@ -412,17 +390,7 @@ All functions and data are accessed through the darktable module.</para>
 </indexterm>
 <para>This subtable contains function and data to manipulate the darktable user interface with Lua.</para>
 <para>Most of these function won't do anything if the GUI is not enabled (i.e you are using the command line version darktabl-cli instead of darktable).</para>
-<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
-    <colspec colwidth="2*"/>
-    <colspec colwidth="8*"/>
-    <tbody><row>
-    <entry>Attributes:</entry>
-    <entry><itemizedlist>
-<listitem><para><emphasis><link linkend="attributes_has_pairs">has_pairs</link></emphasis></para></listitem>
-</itemizedlist>
-</entry>
-    </row></tbody>
-    </tgroup></informaltable>
+
 <section status="final" id="darktable_gui_action_images">
 <title>darktable.gui.action_images</title>
 <indexterm>
@@ -433,17 +401,7 @@ All functions and data are accessed through the darktable module.</para>
 <para>A table of <link linkend="types_dt_lua_image_t">types.dt_lua_image_t</link> on which the user expects UI actions to happen.</para>
 <para>It is based on both the hovered image and the selection and is consistent with the way darktable works.</para>
 <para>It is recommended to use this table to implement Lua actions rather than <link linkend="darktable_gui_hovered">darktable.gui.hovered</link> or <link linkend="darktable_gui_selection">darktable.gui.selection</link> to be consistant with darktable's GUI.</para>
-<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
-    <colspec colwidth="2*"/>
-    <colspec colwidth="8*"/>
-    <tbody><row>
-    <entry>Attributes:</entry>
-    <entry><itemizedlist>
-<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
-</itemizedlist>
-</entry>
-    </row></tbody>
-    </tgroup></informaltable>
+
 </section>
 
 <section status="final" id="darktable_gui_hovered">
@@ -453,17 +411,7 @@ All functions and data are accessed through the darktable module.</para>
 <secondary>hovered</secondary>
 </indexterm>
 <para>The image under the cursor or nil if no image is hovered.</para>
-<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
-    <colspec colwidth="2*"/>
-    <colspec colwidth="8*"/>
-    <tbody><row>
-    <entry>Attributes:</entry>
-    <entry><itemizedlist>
-<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
-</itemizedlist>
-</entry>
-    </row></tbody>
-    </tgroup></informaltable>
+
 </section>
 
 <section status="final" id="darktable_gui_selection">
@@ -483,7 +431,6 @@ All functions and data are accessed through the darktable module.</para>
     <entry>Attributes:</entry>
     <entry><itemizedlist>
 <listitem><para><emphasis><link linkend="attributes_implicit_yield">implicit_yield</link></emphasis></para></listitem>
-<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
 </itemizedlist>
 </entry>
     </row></tbody>
@@ -515,17 +462,7 @@ All functions and data are accessed through the darktable module.</para>
 	[<emphasis><link linkend="darktable_gui_current_view_view">view</link></emphasis> : <link linkend="types_dt_view_t">types.dt_view_t</link>]
 ) : <link linkend="types_dt_view_t">types.dt_view_t</link></synopsis>
 <para>Allows to change the current view.</para>
-<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
-    <colspec colwidth="2*"/>
-    <colspec colwidth="8*"/>
-    <tbody><row>
-    <entry>Attributes:</entry>
-    <entry><itemizedlist>
-<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
-</itemizedlist>
-</entry>
-    </row></tbody>
-    </tgroup></informaltable>
+
 <variablelist>
 <varlistentry id="darktable_gui_current_view_view"><term>view</term><listitem>
 <synopsis><link linkend="types_dt_view_t">types.dt_view_t</link></synopsis>
@@ -555,17 +492,7 @@ All functions and data are accessed through the darktable module.</para>
 	[<emphasis><link linkend="darktable_gui_create_job_cancel_callback">cancel_callback</link></emphasis> : function]
 ) : <link linkend="types_dt_lua_backgroundjob_t">types.dt_lua_backgroundjob_t</link></synopsis>
 <para>Create a new progress_bar displayed in <link linkend="darktable_modules_lib_backgroundjobs">darktable.modules.lib.backgroundjobs</link></para>
-<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
-    <colspec colwidth="2*"/>
-    <colspec colwidth="8*"/>
-    <tbody><row>
-    <entry>Attributes:</entry>
-    <entry><itemizedlist>
-<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
-</itemizedlist>
-</entry>
-    </row></tbody>
-    </tgroup></informaltable>
+
 <variablelist>
 <varlistentry id="darktable_gui_create_job_text"><term>text</term><listitem>
 <synopsis>string</synopsis>
@@ -621,9 +548,7 @@ All functions and data are accessed through the darktable module.</para>
     <tbody><row>
     <entry>Attributes:</entry>
     <entry><itemizedlist>
-<listitem><para><emphasis><link linkend="attributes_has_ipairs">has_ipairs</link></emphasis></para></listitem>
 <listitem><para><emphasis><link linkend="attributes_has_length">has_length</link></emphasis></para></listitem>
-<listitem><para><emphasis><link linkend="attributes_has_pairs">has_pairs</link></emphasis></para></listitem>
 </itemizedlist>
 </entry>
     </row></tbody>
@@ -636,17 +561,7 @@ All functions and data are accessed through the darktable module.</para>
 </indexterm>
 <synopsis><link linkend="types_dt_lua_tag_t">types.dt_lua_tag_t</link></synopsis>
 <para>Each existing tag has a numeric entry in the tags table - use ipairs to iterate over them.</para>
-<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
-    <colspec colwidth="2*"/>
-    <colspec colwidth="8*"/>
-    <tbody><row>
-    <entry>Attributes:</entry>
-    <entry><itemizedlist>
-<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
-</itemizedlist>
-</entry>
-    </row></tbody>
-    </tgroup></informaltable>
+
 </section>
 
 <section status="final" id="darktable_tags_create">
@@ -659,17 +574,7 @@ All functions and data are accessed through the darktable module.</para>
 	<emphasis><link linkend="darktable_tags_create_name">name</link></emphasis> : string
 )</synopsis>
 <para>Creates a new tag and return it. If the tag exists return the existing tag.</para>
-<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
-    <colspec colwidth="2*"/>
-    <colspec colwidth="8*"/>
-    <tbody><row>
-    <entry>Attributes:</entry>
-    <entry><itemizedlist>
-<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
-</itemizedlist>
-</entry>
-    </row></tbody>
-    </tgroup></informaltable>
+
 <variablelist>
 <varlistentry id="darktable_tags_create_name"><term>name</term><listitem>
 <synopsis>string</synopsis>
@@ -690,17 +595,7 @@ All functions and data are accessed through the darktable module.</para>
 	<emphasis><link linkend="darktable_tags_find_name">name</link></emphasis> : string
 ) : <link linkend="types_dt_lua_tag_t">types.dt_lua_tag_t</link></synopsis>
 <para>Returns the tag object or nil if the tag doesn't exist.</para>
-<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
-    <colspec colwidth="2*"/>
-    <colspec colwidth="8*"/>
-    <tbody><row>
-    <entry>Attributes:</entry>
-    <entry><itemizedlist>
-<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
-</itemizedlist>
-</entry>
-    </row></tbody>
-    </tgroup></informaltable>
+
 <variablelist>
 <varlistentry id="darktable_tags_find_name"><term>name</term><listitem>
 <synopsis>string</synopsis>
@@ -728,17 +623,7 @@ All functions and data are accessed through the darktable module.</para>
 	<emphasis><link linkend="darktable_tags_delete_tag">tag</link></emphasis> : <link linkend="types_dt_lua_tag_t">types.dt_lua_tag_t</link>
 )</synopsis>
 <para>Deletes the tag object, detaching it from all images.</para>
-<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
-    <colspec colwidth="2*"/>
-    <colspec colwidth="8*"/>
-    <tbody><row>
-    <entry>Attributes:</entry>
-    <entry><itemizedlist>
-<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
-</itemizedlist>
-</entry>
-    </row></tbody>
-    </tgroup></informaltable>
+
 <variablelist>
 <varlistentry id="darktable_tags_delete_tag"><term>tag</term><listitem>
 <synopsis><link linkend="types_dt_lua_tag_t">types.dt_lua_tag_t</link></synopsis>
@@ -760,17 +645,7 @@ All functions and data are accessed through the darktable module.</para>
 	<emphasis><link linkend="darktable_tags_attach_image">image</link></emphasis> : <link linkend="types_dt_lua_image_t">types.dt_lua_image_t</link>
 )</synopsis>
 <para>Attach a tag to an image; the order of the parameters can be reversed.</para>
-<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
-    <colspec colwidth="2*"/>
-    <colspec colwidth="8*"/>
-    <tbody><row>
-    <entry>Attributes:</entry>
-    <entry><itemizedlist>
-<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
-</itemizedlist>
-</entry>
-    </row></tbody>
-    </tgroup></informaltable>
+
 <variablelist>
 <varlistentry id="darktable_tags_attach_tag"><term>tag</term><listitem>
 <synopsis><link linkend="types_dt_lua_tag_t">types.dt_lua_tag_t</link></synopsis>
@@ -798,17 +673,7 @@ All functions and data are accessed through the darktable module.</para>
 	<emphasis><link linkend="darktable_tags_detach_image">image</link></emphasis> : <link linkend="types_dt_lua_image_t">types.dt_lua_image_t</link>
 )</synopsis>
 <para>Detach a tag from an image; the order of the parameters can be reversed.</para>
-<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
-    <colspec colwidth="2*"/>
-    <colspec colwidth="8*"/>
-    <tbody><row>
-    <entry>Attributes:</entry>
-    <entry><itemizedlist>
-<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
-</itemizedlist>
-</entry>
-    </row></tbody>
-    </tgroup></informaltable>
+
 <variablelist>
 <varlistentry id="darktable_tags_detach_tag"><term>tag</term><listitem>
 <synopsis><link linkend="types_dt_lua_tag_t">types.dt_lua_tag_t</link></synopsis>
@@ -835,17 +700,7 @@ All functions and data are accessed through the darktable module.</para>
 	<emphasis><link linkend="darktable_tags_get_tags_image">image</link></emphasis> : <link linkend="types_dt_lua_image_t">types.dt_lua_image_t</link>
 ) : table of <link linkend="types_dt_lua_tag_t">types.dt_lua_tag_t</link></synopsis>
 <para>Gets all tags attached to an image.</para>
-<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
-    <colspec colwidth="2*"/>
-    <colspec colwidth="8*"/>
-    <tbody><row>
-    <entry>Attributes:</entry>
-    <entry><itemizedlist>
-<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
-</itemizedlist>
-</entry>
-    </row></tbody>
-    </tgroup></informaltable>
+
 <variablelist>
 <varlistentry id="darktable_tags_get_tags_image"><term>image</term><listitem>
 <synopsis><link linkend="types_dt_lua_image_t">types.dt_lua_image_t</link></synopsis>
@@ -1193,9 +1048,7 @@ All functions and data are accessed through the darktable module.</para>
     <tbody><row>
     <entry>Attributes:</entry>
     <entry><itemizedlist>
-<listitem><para><emphasis><link linkend="attributes_has_ipairs">has_ipairs</link></emphasis></para></listitem>
 <listitem><para><emphasis><link linkend="attributes_has_length">has_length</link></emphasis></para></listitem>
-<listitem><para><emphasis><link linkend="attributes_has_pairs">has_pairs</link></emphasis></para></listitem>
 </itemizedlist>
 </entry>
     </row></tbody>
@@ -1208,17 +1061,7 @@ All functions and data are accessed through the darktable module.</para>
 </indexterm>
 <synopsis><link linkend="types_dt_style_t">types.dt_style_t</link></synopsis>
 <para>Each existing style has a numeric index; you can iterate them using ipairs.</para>
-<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
-    <colspec colwidth="2*"/>
-    <colspec colwidth="8*"/>
-    <tbody><row>
-    <entry>Attributes:</entry>
-    <entry><itemizedlist>
-<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
-</itemizedlist>
-</entry>
-    </row></tbody>
-    </tgroup></informaltable>
+
 </section>
 
 <section status="final" id="darktable_styles_create">
@@ -1233,17 +1076,7 @@ All functions and data are accessed through the darktable module.</para>
 	<emphasis><link linkend="darktable_styles_create_description">description</link></emphasis> : string
 ) : <link linkend="types_dt_style_t">types.dt_style_t</link></synopsis>
 <para>Create a new style based on an image.</para>
-<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
-    <colspec colwidth="2*"/>
-    <colspec colwidth="8*"/>
-    <tbody><row>
-    <entry>Attributes:</entry>
-    <entry><itemizedlist>
-<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
-</itemizedlist>
-</entry>
-    </row></tbody>
-    </tgroup></informaltable>
+
 <variablelist>
 <varlistentry id="darktable_styles_create_image"><term>image</term><listitem>
 <synopsis><link linkend="types_dt_lua_image_t">types.dt_lua_image_t</link></synopsis>
@@ -1283,17 +1116,7 @@ All functions and data are accessed through the darktable module.</para>
 	<emphasis><link linkend="darktable_styles_delete_style">style</link></emphasis> : <link linkend="types_dt_style_t">types.dt_style_t</link>
 )</synopsis>
 <para>Deletes an existing style.</para>
-<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
-    <colspec colwidth="2*"/>
-    <colspec colwidth="8*"/>
-    <tbody><row>
-    <entry>Attributes:</entry>
-    <entry><itemizedlist>
-<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
-</itemizedlist>
-</entry>
-    </row></tbody>
-    </tgroup></informaltable>
+
 <variablelist>
 <varlistentry id="darktable_styles_delete_style"><term>style</term><listitem>
 <synopsis><link linkend="types_dt_style_t">types.dt_style_t</link></synopsis>
@@ -1316,17 +1139,7 @@ All functions and data are accessed through the darktable module.</para>
 	<emphasis><link linkend="darktable_styles_duplicate_description">description</link></emphasis> : string
 ) : <link linkend="types_dt_style_t">types.dt_style_t</link></synopsis>
 <para>Create a new style based on an existing style.</para>
-<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
-    <colspec colwidth="2*"/>
-    <colspec colwidth="8*"/>
-    <tbody><row>
-    <entry>Attributes:</entry>
-    <entry><itemizedlist>
-<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
-</itemizedlist>
-</entry>
-    </row></tbody>
-    </tgroup></informaltable>
+
 <variablelist>
 <varlistentry id="darktable_styles_duplicate_style"><term>style</term><listitem>
 <synopsis><link linkend="types_dt_style_t">types.dt_style_t</link></synopsis>
@@ -1367,17 +1180,7 @@ All functions and data are accessed through the darktable module.</para>
 	<emphasis><link linkend="darktable_styles_apply_image">image</link></emphasis> : <link linkend="types_dt_lua_image_t">types.dt_lua_image_t</link>
 )</synopsis>
 <para>Apply a style to an image. The order of parameters can be inverted.</para>
-<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
-    <colspec colwidth="2*"/>
-    <colspec colwidth="8*"/>
-    <tbody><row>
-    <entry>Attributes:</entry>
-    <entry><itemizedlist>
-<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
-</itemizedlist>
-</entry>
-    </row></tbody>
-    </tgroup></informaltable>
+
 <variablelist>
 <varlistentry id="darktable_styles_apply_style"><term>style</term><listitem>
 <synopsis><link linkend="types_dt_style_t">types.dt_style_t</link></synopsis>
@@ -1404,17 +1207,7 @@ All functions and data are accessed through the darktable module.</para>
 	<emphasis><link linkend="darktable_styles_import_filename">filename</link></emphasis> : string
 )</synopsis>
 <para>Import a style from an external .dtstyle file</para>
-<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
-    <colspec colwidth="2*"/>
-    <colspec colwidth="8*"/>
-    <tbody><row>
-    <entry>Attributes:</entry>
-    <entry><itemizedlist>
-<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
-</itemizedlist>
-</entry>
-    </row></tbody>
-    </tgroup></informaltable>
+
 <variablelist>
 <varlistentry id="darktable_styles_import_filename"><term>filename</term><listitem>
 <synopsis>string</synopsis>
@@ -1437,17 +1230,7 @@ All functions and data are accessed through the darktable module.</para>
 	<emphasis><link linkend="darktable_styles_export_overwrite">overwrite</link></emphasis> : boolean
 )</synopsis>
 <para>Export a style to an external .dtstyle file</para>
-<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
-    <colspec colwidth="2*"/>
-    <colspec colwidth="8*"/>
-    <tbody><row>
-    <entry>Attributes:</entry>
-    <entry><itemizedlist>
-<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
-</itemizedlist>
-</entry>
-    </row></tbody>
-    </tgroup></informaltable>
+
 <variablelist>
 <varlistentry id="darktable_styles_export_style"><term>style</term><listitem>
 <synopsis><link linkend="types_dt_style_t">types.dt_style_t</link></synopsis>
@@ -1485,9 +1268,7 @@ All functions and data are accessed through the darktable module.</para>
     <tbody><row>
     <entry>Attributes:</entry>
     <entry><itemizedlist>
-<listitem><para><emphasis><link linkend="attributes_has_ipairs">has_ipairs</link></emphasis></para></listitem>
 <listitem><para><emphasis><link linkend="attributes_has_length">has_length</link></emphasis></para></listitem>
-<listitem><para><emphasis><link linkend="attributes_has_pairs">has_pairs</link></emphasis></para></listitem>
 </itemizedlist>
 </entry>
     </row></tbody>
@@ -1500,17 +1281,7 @@ All functions and data are accessed through the darktable module.</para>
 </indexterm>
 <synopsis><link linkend="types_dt_lua_image_t">types.dt_lua_image_t</link></synopsis>
 <para>Each image in the database appears with a numerical index; you can interate them using ipairs.</para>
-<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
-    <colspec colwidth="2*"/>
-    <colspec colwidth="8*"/>
-    <tbody><row>
-    <entry>Attributes:</entry>
-    <entry><itemizedlist>
-<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
-</itemizedlist>
-</entry>
-    </row></tbody>
-    </tgroup></informaltable>
+
 </section>
 
 <section status="final" id="darktable_database_duplicate">
@@ -1523,17 +1294,7 @@ All functions and data are accessed through the darktable module.</para>
 	<emphasis><link linkend="darktable_database_duplicate_image">image</link></emphasis> : <link linkend="types_dt_lua_image_t">types.dt_lua_image_t</link>
 ) : <link linkend="types_dt_lua_image_t">types.dt_lua_image_t</link></synopsis>
 <para>Creates a duplicate of an image and returns it.</para>
-<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
-    <colspec colwidth="2*"/>
-    <colspec colwidth="8*"/>
-    <tbody><row>
-    <entry>Attributes:</entry>
-    <entry><itemizedlist>
-<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
-</itemizedlist>
-</entry>
-    </row></tbody>
-    </tgroup></informaltable>
+
 <variablelist>
 <varlistentry id="darktable_database_duplicate_image"><term>image</term><listitem>
 <synopsis><link linkend="types_dt_lua_image_t">types.dt_lua_image_t</link></synopsis>
@@ -1561,17 +1322,7 @@ All functions and data are accessed through the darktable module.</para>
 	<emphasis><link linkend="darktable_database_import_location">location</link></emphasis> : string
 )</synopsis>
 <para>Imports new images into the database.</para>
-<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
-    <colspec colwidth="2*"/>
-    <colspec colwidth="8*"/>
-    <tbody><row>
-    <entry>Attributes:</entry>
-    <entry><itemizedlist>
-<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
-</itemizedlist>
-</entry>
-    </row></tbody>
-    </tgroup></informaltable>
+
 <variablelist>
 <varlistentry id="darktable_database_import_location"><term>location</term><listitem>
 <synopsis>string</synopsis>
@@ -1602,17 +1353,7 @@ NOTE2: If the parameter is a directory the call is non-blocking; the film object
 <para>Physically moves an image (and all its duplicates) to another film.</para>
 <para>This will move the image file, the related XMP and all XMP for the duplicates to the directory of the new film</para>
 <para>Note that the parameter order is not relevant.</para>
-<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
-    <colspec colwidth="2*"/>
-    <colspec colwidth="8*"/>
-    <tbody><row>
-    <entry>Attributes:</entry>
-    <entry><itemizedlist>
-<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
-</itemizedlist>
-</entry>
-    </row></tbody>
-    </tgroup></informaltable>
+
 <variablelist>
 <varlistentry id="darktable_database_move_image_image"><term>image</term><listitem>
 <synopsis><link linkend="types_dt_lua_image_t">types.dt_lua_image_t</link></synopsis>
@@ -1643,17 +1384,7 @@ NOTE2: If the parameter is a directory the call is non-blocking; the film object
 <para>This will copy the image file and the related XMP to the directory of the new film</para>
 <para>If there is already a file with the same name as the image file, it wil create a duplicate from that file instead</para>
 <para>Note that the parameter order is not relevant.</para>
-<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
-    <colspec colwidth="2*"/>
-    <colspec colwidth="8*"/>
-    <tbody><row>
-    <entry>Attributes:</entry>
-    <entry><itemizedlist>
-<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
-</itemizedlist>
-</entry>
-    </row></tbody>
-    </tgroup></informaltable>
+
 <variablelist>
 <varlistentry id="darktable_database_copy_image_image"><term>image</term><listitem>
 <synopsis><link linkend="types_dt_lua_image_t">types.dt_lua_image_t</link></synopsis>
@@ -1704,17 +1435,7 @@ NOTE2: If the parameter is a directory the call is non-blocking; the film object
 <secondary>format</secondary>
 </indexterm>
 <para>Functions to get parameter objects for the different export formats.</para>
-<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
-    <colspec colwidth="2*"/>
-    <colspec colwidth="8*"/>
-    <tbody><row>
-    <entry>Attributes:</entry>
-    <entry><itemizedlist>
-<listitem><para><emphasis><link linkend="attributes_has_pairs">has_pairs</link></emphasis></para></listitem>
-</itemizedlist>
-</entry>
-    </row></tbody>
-    </tgroup></informaltable>
+
 <section status="final" id="darktable_modules_format_png">
 <title>darktable.modules.format.png</title>
 <indexterm>
@@ -1724,17 +1445,7 @@ NOTE2: If the parameter is a directory the call is non-blocking; the film object
 <synopsis>function( 
 ) : <link linkend="types_dt_imageio_module_format_t">types.dt_imageio_module_format_t</link></synopsis>
 <para>Used to get a new format object.</para>
-<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
-    <colspec colwidth="2*"/>
-    <colspec colwidth="8*"/>
-    <tbody><row>
-    <entry>Attributes:</entry>
-    <entry><itemizedlist>
-<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
-</itemizedlist>
-</entry>
-    </row></tbody>
-    </tgroup></informaltable>
+
 <variablelist>
 <varlistentry><term><emphasis>return</emphasis></term><listitem>
 <synopsis><link linkend="types_dt_imageio_module_format_t">types.dt_imageio_module_format_t</link></synopsis>
@@ -1829,17 +1540,7 @@ NOTE2: If the parameter is a directory the call is non-blocking; the film object
 <para>Functions to get parameter objects for the different export storages.
 
 New values may appear in this table if new storages are registered using Lua.</para>
-<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
-    <colspec colwidth="2*"/>
-    <colspec colwidth="8*"/>
-    <tbody><row>
-    <entry>Attributes:</entry>
-    <entry><itemizedlist>
-<listitem><para><emphasis><link linkend="attributes_has_pairs">has_pairs</link></emphasis></para></listitem>
-</itemizedlist>
-</entry>
-    </row></tbody>
-    </tgroup></informaltable>
+
 <section status="final" id="darktable_modules_storage_email">
 <title>darktable.modules.storage.email</title>
 <indexterm>
@@ -1849,17 +1550,7 @@ New values may appear in this table if new storages are registered using Lua.</p
 <synopsis>function( 
 ) : <link linkend="types_dt_imageio_module_storage_t">types.dt_imageio_module_storage_t</link></synopsis>
 <para>Used to get a new email storage object.</para>
-<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
-    <colspec colwidth="2*"/>
-    <colspec colwidth="8*"/>
-    <tbody><row>
-    <entry>Attributes:</entry>
-    <entry><itemizedlist>
-<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
-</itemizedlist>
-</entry>
-    </row></tbody>
-    </tgroup></informaltable>
+
 <variablelist>
 <varlistentry><term><emphasis>return</emphasis></term><listitem>
 <synopsis><link linkend="types_dt_imageio_module_storage_t">types.dt_imageio_module_storage_t</link></synopsis>
@@ -1934,17 +1625,7 @@ New values may appear in this table if new storages are registered using Lua.</p
 <secondary>view</secondary>
 </indexterm>
 <para>The different views in darktable</para>
-<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
-    <colspec colwidth="2*"/>
-    <colspec colwidth="8*"/>
-    <tbody><row>
-    <entry>Attributes:</entry>
-    <entry><itemizedlist>
-<listitem><para><emphasis><link linkend="attributes_has_pairs">has_pairs</link></emphasis></para></listitem>
-</itemizedlist>
-</entry>
-    </row></tbody>
-    </tgroup></informaltable>
+
 <section status="final" id="darktable_modules_view_map">
 <title>darktable.modules.view.map</title>
 <indexterm>
@@ -1958,10 +1639,8 @@ New values may appear in this table if new storages are registered using Lua.</p
     <tbody><row>
     <entry>Attributes:</entry>
     <entry><itemizedlist>
-<listitem><para><emphasis><link linkend="attributes_has_pairs">has_pairs</link></emphasis></para></listitem>
 <listitem><para><emphasis><link linkend="attributes_has_tostring">has_tostring</link></emphasis></para></listitem>
 <listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_view_t">types.dt_view_t</link></para></listitem>
-<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
 </itemizedlist>
 </entry>
     </row></tbody>
@@ -1980,7 +1659,6 @@ New values may appear in this table if new storages are registered using Lua.</p
     <tbody><row>
     <entry>Attributes:</entry>
     <entry><itemizedlist>
-<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
 <listitem><para><emphasis><link linkend="attributes_write">write</link></emphasis></para></listitem>
 </itemizedlist>
 </entry>
@@ -2002,7 +1680,6 @@ New values may appear in this table if new storages are registered using Lua.</p
     <tbody><row>
     <entry>Attributes:</entry>
     <entry><itemizedlist>
-<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
 <listitem><para><emphasis><link linkend="attributes_write">write</link></emphasis></para></listitem>
 </itemizedlist>
 </entry>
@@ -2024,7 +1701,6 @@ New values may appear in this table if new storages are registered using Lua.</p
     <tbody><row>
     <entry>Attributes:</entry>
     <entry><itemizedlist>
-<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
 <listitem><para><emphasis><link linkend="attributes_write">write</link></emphasis></para></listitem>
 </itemizedlist>
 </entry>
@@ -2047,10 +1723,8 @@ New values may appear in this table if new storages are registered using Lua.</p
     <tbody><row>
     <entry>Attributes:</entry>
     <entry><itemizedlist>
-<listitem><para><emphasis><link linkend="attributes_has_pairs">has_pairs</link></emphasis></para></listitem>
 <listitem><para><emphasis><link linkend="attributes_has_tostring">has_tostring</link></emphasis></para></listitem>
 <listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_view_t">types.dt_view_t</link></para></listitem>
-<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
 </itemizedlist>
 </entry>
     </row></tbody>
@@ -2070,10 +1744,8 @@ New values may appear in this table if new storages are registered using Lua.</p
     <tbody><row>
     <entry>Attributes:</entry>
     <entry><itemizedlist>
-<listitem><para><emphasis><link linkend="attributes_has_pairs">has_pairs</link></emphasis></para></listitem>
 <listitem><para><emphasis><link linkend="attributes_has_tostring">has_tostring</link></emphasis></para></listitem>
 <listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_view_t">types.dt_view_t</link></para></listitem>
-<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
 </itemizedlist>
 </entry>
     </row></tbody>
@@ -2093,10 +1765,8 @@ New values may appear in this table if new storages are registered using Lua.</p
     <tbody><row>
     <entry>Attributes:</entry>
     <entry><itemizedlist>
-<listitem><para><emphasis><link linkend="attributes_has_pairs">has_pairs</link></emphasis></para></listitem>
 <listitem><para><emphasis><link linkend="attributes_has_tostring">has_tostring</link></emphasis></para></listitem>
 <listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_view_t">types.dt_view_t</link></para></listitem>
-<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
 </itemizedlist>
 </entry>
     </row></tbody>
@@ -2116,10 +1786,8 @@ New values may appear in this table if new storages are registered using Lua.</p
     <tbody><row>
     <entry>Attributes:</entry>
     <entry><itemizedlist>
-<listitem><para><emphasis><link linkend="attributes_has_pairs">has_pairs</link></emphasis></para></listitem>
 <listitem><para><emphasis><link linkend="attributes_has_tostring">has_tostring</link></emphasis></para></listitem>
 <listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_view_t">types.dt_view_t</link></para></listitem>
-<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
 </itemizedlist>
 </entry>
     </row></tbody>
@@ -2148,17 +1816,7 @@ while true do
 end</programlisting>
 
 </para>
-<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
-    <colspec colwidth="2*"/>
-    <colspec colwidth="8*"/>
-    <tbody><row>
-    <entry>Attributes:</entry>
-    <entry><itemizedlist>
-<listitem><para><emphasis><link linkend="attributes_has_pairs">has_pairs</link></emphasis></para></listitem>
-</itemizedlist>
-</entry>
-    </row></tbody>
-    </tgroup></informaltable>
+
 <section status="final" id="darktable_modules_lib_snapshots">
 <title>darktable.modules.lib.snapshots</title>
 <indexterm>
@@ -2173,13 +1831,10 @@ end</programlisting>
     <entry>Attributes:</entry>
     <entry><itemizedlist>
 <listitem><para><emphasis>container : </emphasis>DT_UI_CONTAINER_PANEL_LEFT_CENTER</para></listitem>
-<listitem><para><emphasis><link linkend="attributes_has_ipairs">has_ipairs</link></emphasis></para></listitem>
 <listitem><para><emphasis><link linkend="attributes_has_length">has_length</link></emphasis></para></listitem>
-<listitem><para><emphasis><link linkend="attributes_has_pairs">has_pairs</link></emphasis></para></listitem>
 <listitem><para><emphasis><link linkend="attributes_has_tostring">has_tostring</link></emphasis></para></listitem>
 <listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_lib_module_t">types.dt_lib_module_t</link></para></listitem>
 <listitem><para><emphasis>position : </emphasis>1000</para></listitem>
-<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
 <listitem><para><emphasis>views : </emphasis></para>
 <para><itemizedlist>
 <listitem><para><link linkend="darktable_modules_view_darkroom">darktable.modules.view.darkroom</link></para></listitem>
@@ -2203,7 +1858,6 @@ end</programlisting>
     <tbody><row>
     <entry>Attributes:</entry>
     <entry><itemizedlist>
-<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
 <listitem><para><emphasis><link linkend="attributes_write">write</link></emphasis></para></listitem>
 </itemizedlist>
 </entry>
@@ -2225,7 +1879,6 @@ end</programlisting>
     <tbody><row>
     <entry>Attributes:</entry>
     <entry><itemizedlist>
-<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
 <listitem><para><emphasis><link linkend="attributes_write">write</link></emphasis></para></listitem>
 </itemizedlist>
 </entry>
@@ -2241,17 +1894,7 @@ end</programlisting>
 </indexterm>
 <synopsis><link linkend="types_dt_lua_snapshot_t">types.dt_lua_snapshot_t</link></synopsis>
 <para>The different snapshots for the image</para>
-<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
-    <colspec colwidth="2*"/>
-    <colspec colwidth="8*"/>
-    <tbody><row>
-    <entry>Attributes:</entry>
-    <entry><itemizedlist>
-<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
-</itemizedlist>
-</entry>
-    </row></tbody>
-    </tgroup></informaltable>
+
 </section>
 
 <section status="final" id="darktable_modules_lib_snapshots_selected">
@@ -2261,17 +1904,7 @@ end</programlisting>
 <secondary>selected</secondary>
 </indexterm>
 <para>The currently selected snapshot</para>
-<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
-    <colspec colwidth="2*"/>
-    <colspec colwidth="8*"/>
-    <tbody><row>
-    <entry>Attributes:</entry>
-    <entry><itemizedlist>
-<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
-</itemizedlist>
-</entry>
-    </row></tbody>
-    </tgroup></informaltable>
+
 </section>
 
 <section status="final" id="darktable_modules_lib_snapshots_take_snapshot">
@@ -2284,17 +1917,7 @@ end</programlisting>
 )</synopsis>
 <para>Take a snapshot of the current image and add it to the UI</para>
 <para>The snapshot file will be generated at the next redraw of the main window</para>
-<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
-    <colspec colwidth="2*"/>
-    <colspec colwidth="8*"/>
-    <tbody><row>
-    <entry>Attributes:</entry>
-    <entry><itemizedlist>
-<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
-</itemizedlist>
-</entry>
-    </row></tbody>
-    </tgroup></informaltable>
+
 <variablelist>
 </variablelist>
 </section>
@@ -2307,17 +1930,7 @@ end</programlisting>
 </indexterm>
 <synopsis>number</synopsis>
 <para>The maximum number of snapshots</para>
-<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
-    <colspec colwidth="2*"/>
-    <colspec colwidth="8*"/>
-    <tbody><row>
-    <entry>Attributes:</entry>
-    <entry><itemizedlist>
-<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
-</itemizedlist>
-</entry>
-    </row></tbody>
-    </tgroup></informaltable>
+
 </section>
 
 </section>
@@ -2336,11 +1949,9 @@ end</programlisting>
     <entry>Attributes:</entry>
     <entry><itemizedlist>
 <listitem><para><emphasis>container : </emphasis>DT_UI_CONTAINER_PANEL_RIGHT_CENTER</para></listitem>
-<listitem><para><emphasis><link linkend="attributes_has_pairs">has_pairs</link></emphasis></para></listitem>
 <listitem><para><emphasis><link linkend="attributes_has_tostring">has_tostring</link></emphasis></para></listitem>
 <listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_lib_module_t">types.dt_lib_module_t</link></para></listitem>
 <listitem><para><emphasis>position : </emphasis>599</para></listitem>
-<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
 <listitem><para><emphasis>views : </emphasis></para>
 <para><itemizedlist>
 <listitem><para><link linkend="darktable_modules_view_lighttable">darktable.modules.view.lighttable</link></para></listitem>
@@ -2366,11 +1977,9 @@ end</programlisting>
     <entry>Attributes:</entry>
     <entry><itemizedlist>
 <listitem><para><emphasis>container : </emphasis>DT_UI_CONTAINER_PANEL_LEFT_CENTER</para></listitem>
-<listitem><para><emphasis><link linkend="attributes_has_pairs">has_pairs</link></emphasis></para></listitem>
 <listitem><para><emphasis><link linkend="attributes_has_tostring">has_tostring</link></emphasis></para></listitem>
 <listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_lib_module_t">types.dt_lib_module_t</link></para></listitem>
 <listitem><para><emphasis>position : </emphasis>299</para></listitem>
-<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
 <listitem><para><emphasis>views : </emphasis></para>
 <para><itemizedlist>
 <listitem><para><link linkend="darktable_modules_view_lighttable">darktable.modules.view.lighttable</link></para></listitem>
@@ -2400,11 +2009,9 @@ end</programlisting>
     <entry>Attributes:</entry>
     <entry><itemizedlist>
 <listitem><para><emphasis>container : </emphasis>DT_UI_CONTAINER_PANEL_RIGHT_CENTER</para></listitem>
-<listitem><para><emphasis><link linkend="attributes_has_pairs">has_pairs</link></emphasis></para></listitem>
 <listitem><para><emphasis><link linkend="attributes_has_tostring">has_tostring</link></emphasis></para></listitem>
 <listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_lib_module_t">types.dt_lib_module_t</link></para></listitem>
 <listitem><para><emphasis>position : </emphasis>510</para></listitem>
-<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
 <listitem><para><emphasis>views : </emphasis></para>
 <para><itemizedlist>
 <listitem><para><link linkend="darktable_modules_view_lighttable">darktable.modules.view.lighttable</link></para></listitem>
@@ -2431,11 +2038,9 @@ end</programlisting>
     <entry>Attributes:</entry>
     <entry><itemizedlist>
 <listitem><para><emphasis>container : </emphasis>DT_UI_CONTAINER_PANEL_TOP_CENTER</para></listitem>
-<listitem><para><emphasis><link linkend="attributes_has_pairs">has_pairs</link></emphasis></para></listitem>
 <listitem><para><emphasis><link linkend="attributes_has_tostring">has_tostring</link></emphasis></para></listitem>
 <listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_lib_module_t">types.dt_lib_module_t</link></para></listitem>
 <listitem><para><emphasis>position : </emphasis>1</para></listitem>
-<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
 <listitem><para><emphasis>views : </emphasis></para>
 <para><itemizedlist>
 <listitem><para><link linkend="darktable_modules_view_lighttable">darktable.modules.view.lighttable</link></para></listitem>
@@ -2463,11 +2068,9 @@ end</programlisting>
     <entry>Attributes:</entry>
     <entry><itemizedlist>
 <listitem><para><emphasis>container : </emphasis>DT_UI_CONTAINER_PANEL_RIGHT_BOTTOM</para></listitem>
-<listitem><para><emphasis><link linkend="attributes_has_pairs">has_pairs</link></emphasis></para></listitem>
 <listitem><para><emphasis><link linkend="attributes_has_tostring">has_tostring</link></emphasis></para></listitem>
 <listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_lib_module_t">types.dt_lib_module_t</link></para></listitem>
 <listitem><para><emphasis>position : </emphasis>1</para></listitem>
-<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
 <listitem><para><emphasis>views : </emphasis></para>
 <para><itemizedlist>
 <listitem><para><link linkend="darktable_modules_view_darkroom">darktable.modules.view.darkroom</link></para></listitem>
@@ -2493,11 +2096,9 @@ end</programlisting>
     <entry>Attributes:</entry>
     <entry><itemizedlist>
 <listitem><para><emphasis>container : </emphasis>DT_UI_CONTAINER_PANEL_BOTTOM</para></listitem>
-<listitem><para><emphasis><link linkend="attributes_has_pairs">has_pairs</link></emphasis></para></listitem>
 <listitem><para><emphasis><link linkend="attributes_has_tostring">has_tostring</link></emphasis></para></listitem>
 <listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_lib_module_t">types.dt_lib_module_t</link></para></listitem>
 <listitem><para><emphasis>position : </emphasis>1001</para></listitem>
-<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
 <listitem><para><emphasis>views : </emphasis></para>
 <para><itemizedlist>
 <listitem><para><link linkend="darktable_modules_view_darkroom">darktable.modules.view.darkroom</link></para></listitem>
@@ -2525,11 +2126,9 @@ end</programlisting>
     <entry>Attributes:</entry>
     <entry><itemizedlist>
 <listitem><para><emphasis>container : </emphasis>DT_UI_CONTAINER_PANEL_TOP_RIGHT</para></listitem>
-<listitem><para><emphasis><link linkend="attributes_has_pairs">has_pairs</link></emphasis></para></listitem>
 <listitem><para><emphasis><link linkend="attributes_has_tostring">has_tostring</link></emphasis></para></listitem>
 <listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_lib_module_t">types.dt_lib_module_t</link></para></listitem>
 <listitem><para><emphasis>position : </emphasis>1001</para></listitem>
-<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
 <listitem><para><emphasis>views : </emphasis></para>
 <para><itemizedlist>
 <listitem><para><link linkend="darktable_modules_view_lighttable">darktable.modules.view.lighttable</link></para></listitem>
@@ -2559,11 +2158,9 @@ end</programlisting>
     <entry>Attributes:</entry>
     <entry><itemizedlist>
 <listitem><para><emphasis>container : </emphasis>DT_UI_CONTAINER_PANEL_TOP_LEFT</para></listitem>
-<listitem><para><emphasis><link linkend="attributes_has_pairs">has_pairs</link></emphasis></para></listitem>
 <listitem><para><emphasis><link linkend="attributes_has_tostring">has_tostring</link></emphasis></para></listitem>
 <listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_lib_module_t">types.dt_lib_module_t</link></para></listitem>
 <listitem><para><emphasis>position : </emphasis>1001</para></listitem>
-<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
 <listitem><para><emphasis>views : </emphasis></para>
 <para><itemizedlist>
 <listitem><para><link linkend="darktable_modules_view_lighttable">darktable.modules.view.lighttable</link></para></listitem>
@@ -2593,11 +2190,9 @@ end</programlisting>
     <entry>Attributes:</entry>
     <entry><itemizedlist>
 <listitem><para><emphasis>container : </emphasis>DT_UI_CONTAINER_PANEL_RIGHT_CENTER</para></listitem>
-<listitem><para><emphasis><link linkend="attributes_has_pairs">has_pairs</link></emphasis></para></listitem>
 <listitem><para><emphasis><link linkend="attributes_has_tostring">has_tostring</link></emphasis></para></listitem>
 <listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_lib_module_t">types.dt_lib_module_t</link></para></listitem>
 <listitem><para><emphasis>position : </emphasis>500</para></listitem>
-<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
 <listitem><para><emphasis>views : </emphasis></para>
 <para><itemizedlist>
 <listitem><para><link linkend="darktable_modules_view_lighttable">darktable.modules.view.lighttable</link></para></listitem>
@@ -2626,11 +2221,9 @@ end</programlisting>
     <entry>Attributes:</entry>
     <entry><itemizedlist>
 <listitem><para><emphasis>container : </emphasis>DT_UI_CONTAINER_PANEL_RIGHT_CENTER</para></listitem>
-<listitem><para><emphasis><link linkend="attributes_has_pairs">has_pairs</link></emphasis></para></listitem>
 <listitem><para><emphasis><link linkend="attributes_has_tostring">has_tostring</link></emphasis></para></listitem>
 <listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_lib_module_t">types.dt_lib_module_t</link></para></listitem>
 <listitem><para><emphasis>position : </emphasis>450</para></listitem>
-<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
 <listitem><para><emphasis>views : </emphasis></para>
 <para><itemizedlist>
 <listitem><para><link linkend="darktable_modules_view_lighttable">darktable.modules.view.lighttable</link></para></listitem>
@@ -2656,11 +2249,9 @@ end</programlisting>
     <entry>Attributes:</entry>
     <entry><itemizedlist>
 <listitem><para><emphasis>container : </emphasis>DT_UI_CONTAINER_PANEL_LEFT_CENTER</para></listitem>
-<listitem><para><emphasis><link linkend="attributes_has_pairs">has_pairs</link></emphasis></para></listitem>
 <listitem><para><emphasis><link linkend="attributes_has_tostring">has_tostring</link></emphasis></para></listitem>
 <listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_lib_module_t">types.dt_lib_module_t</link></para></listitem>
 <listitem><para><emphasis>position : </emphasis>350</para></listitem>
-<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
 <listitem><para><emphasis>views : </emphasis></para>
 <para><itemizedlist>
 <listitem><para><link linkend="darktable_modules_view_lighttable">darktable.modules.view.lighttable</link></para></listitem>
@@ -2687,11 +2278,9 @@ end</programlisting>
     <entry>Attributes:</entry>
     <entry><itemizedlist>
 <listitem><para><emphasis>container : </emphasis>DT_UI_CONTAINER_PANEL_CENTER_TOP_RIGHT</para></listitem>
-<listitem><para><emphasis><link linkend="attributes_has_pairs">has_pairs</link></emphasis></para></listitem>
 <listitem><para><emphasis><link linkend="attributes_has_tostring">has_tostring</link></emphasis></para></listitem>
 <listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_lib_module_t">types.dt_lib_module_t</link></para></listitem>
 <listitem><para><emphasis>position : </emphasis>1001</para></listitem>
-<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
 <listitem><para><emphasis>views : </emphasis></para>
 <para><itemizedlist>
 <listitem><para><link linkend="darktable_modules_view_lighttable">darktable.modules.view.lighttable</link></para></listitem>
@@ -2720,11 +2309,9 @@ end</programlisting>
     <entry>Attributes:</entry>
     <entry><itemizedlist>
 <listitem><para><emphasis>container : </emphasis>DT_UI_CONTAINER_PANEL_CENTER_TOP_CENTER</para></listitem>
-<listitem><para><emphasis><link linkend="attributes_has_pairs">has_pairs</link></emphasis></para></listitem>
 <listitem><para><emphasis><link linkend="attributes_has_tostring">has_tostring</link></emphasis></para></listitem>
 <listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_lib_module_t">types.dt_lib_module_t</link></para></listitem>
 <listitem><para><emphasis>position : </emphasis>1001</para></listitem>
-<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
 <listitem><para><emphasis>views : </emphasis></para>
 <para><itemizedlist>
 <listitem><para><link linkend="darktable_modules_view_lighttable">darktable.modules.view.lighttable</link></para></listitem>
@@ -2754,11 +2341,9 @@ end</programlisting>
     <entry>Attributes:</entry>
     <entry><itemizedlist>
 <listitem><para><emphasis>container : </emphasis>DT_UI_CONTAINER_PANEL_LEFT_CENTER</para></listitem>
-<listitem><para><emphasis><link linkend="attributes_has_pairs">has_pairs</link></emphasis></para></listitem>
 <listitem><para><emphasis><link linkend="attributes_has_tostring">has_tostring</link></emphasis></para></listitem>
 <listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_lib_module_t">types.dt_lib_module_t</link></para></listitem>
 <listitem><para><emphasis>position : </emphasis>999</para></listitem>
-<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
 <listitem><para><emphasis>views : </emphasis></para>
 <para><itemizedlist>
 <listitem><para><link linkend="darktable_modules_view_lighttable">darktable.modules.view.lighttable</link></para></listitem>
@@ -2784,11 +2369,9 @@ end</programlisting>
     <entry>Attributes:</entry>
     <entry><itemizedlist>
 <listitem><para><emphasis>container : </emphasis>DT_UI_CONTAINER_PANEL_CENTER_BOTTOM_LEFT</para></listitem>
-<listitem><para><emphasis><link linkend="attributes_has_pairs">has_pairs</link></emphasis></para></listitem>
 <listitem><para><emphasis><link linkend="attributes_has_tostring">has_tostring</link></emphasis></para></listitem>
 <listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_lib_module_t">types.dt_lib_module_t</link></para></listitem>
 <listitem><para><emphasis>position : </emphasis>1002</para></listitem>
-<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
 <listitem><para><emphasis>views : </emphasis></para>
 <para><itemizedlist>
 <listitem><para><link linkend="darktable_modules_view_lighttable">darktable.modules.view.lighttable</link></para></listitem>
@@ -2815,11 +2398,9 @@ end</programlisting>
     <entry>Attributes:</entry>
     <entry><itemizedlist>
 <listitem><para><emphasis>container : </emphasis>DT_UI_CONTAINER_PANEL_RIGHT_CENTER</para></listitem>
-<listitem><para><emphasis><link linkend="attributes_has_pairs">has_pairs</link></emphasis></para></listitem>
 <listitem><para><emphasis><link linkend="attributes_has_tostring">has_tostring</link></emphasis></para></listitem>
 <listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_lib_module_t">types.dt_lib_module_t</link></para></listitem>
 <listitem><para><emphasis>position : </emphasis>800</para></listitem>
-<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
 <listitem><para><emphasis>views : </emphasis></para>
 <para><itemizedlist>
 <listitem><para><link linkend="darktable_modules_view_lighttable">darktable.modules.view.lighttable</link></para></listitem>
@@ -2845,11 +2426,9 @@ end</programlisting>
     <entry>Attributes:</entry>
     <entry><itemizedlist>
 <listitem><para><emphasis>container : </emphasis>DT_UI_CONTAINER_PANEL_LEFT_CENTER</para></listitem>
-<listitem><para><emphasis><link linkend="attributes_has_pairs">has_pairs</link></emphasis></para></listitem>
 <listitem><para><emphasis><link linkend="attributes_has_tostring">has_tostring</link></emphasis></para></listitem>
 <listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_lib_module_t">types.dt_lib_module_t</link></para></listitem>
 <listitem><para><emphasis>position : </emphasis>400</para></listitem>
-<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
 <listitem><para><emphasis>views : </emphasis></para>
 <para><itemizedlist>
 <listitem><para><link linkend="darktable_modules_view_lighttable">darktable.modules.view.lighttable</link></para></listitem>
@@ -2876,11 +2455,9 @@ end</programlisting>
     <entry>Attributes:</entry>
     <entry><itemizedlist>
 <listitem><para><emphasis>container : </emphasis>DT_UI_CONTAINER_PANEL_CENTER_BOTTOM_LEFT</para></listitem>
-<listitem><para><emphasis><link linkend="attributes_has_pairs">has_pairs</link></emphasis></para></listitem>
 <listitem><para><emphasis><link linkend="attributes_has_tostring">has_tostring</link></emphasis></para></listitem>
 <listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_lib_module_t">types.dt_lib_module_t</link></para></listitem>
 <listitem><para><emphasis>position : </emphasis>1001</para></listitem>
-<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
 <listitem><para><emphasis>views : </emphasis></para>
 <para><itemizedlist>
 <listitem><para><link linkend="darktable_modules_view_lighttable">darktable.modules.view.lighttable</link></para></listitem>
@@ -2907,11 +2484,9 @@ end</programlisting>
     <entry>Attributes:</entry>
     <entry><itemizedlist>
 <listitem><para><emphasis>container : </emphasis>DT_UI_CONTAINER_PANEL_CENTER_BOTTOM_CENTER</para></listitem>
-<listitem><para><emphasis><link linkend="attributes_has_pairs">has_pairs</link></emphasis></para></listitem>
 <listitem><para><emphasis><link linkend="attributes_has_tostring">has_tostring</link></emphasis></para></listitem>
 <listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_lib_module_t">types.dt_lib_module_t</link></para></listitem>
 <listitem><para><emphasis>position : </emphasis>1001</para></listitem>
-<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
 <listitem><para><emphasis>views : </emphasis></para>
 <para><itemizedlist>
 <listitem><para><link linkend="darktable_modules_view_lighttable">darktable.modules.view.lighttable</link></para></listitem>
@@ -2937,11 +2512,9 @@ end</programlisting>
     <entry>Attributes:</entry>
     <entry><itemizedlist>
 <listitem><para><emphasis>container : </emphasis>DT_UI_CONTAINER_PANEL_RIGHT_CENTER</para></listitem>
-<listitem><para><emphasis><link linkend="attributes_has_pairs">has_pairs</link></emphasis></para></listitem>
 <listitem><para><emphasis><link linkend="attributes_has_tostring">has_tostring</link></emphasis></para></listitem>
 <listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_lib_module_t">types.dt_lib_module_t</link></para></listitem>
 <listitem><para><emphasis>position : </emphasis>600</para></listitem>
-<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
 <listitem><para><emphasis>views : </emphasis></para>
 <para><itemizedlist>
 <listitem><para><link linkend="darktable_modules_view_lighttable">darktable.modules.view.lighttable</link></para></listitem>
@@ -2967,11 +2540,9 @@ end</programlisting>
     <entry>Attributes:</entry>
     <entry><itemizedlist>
 <listitem><para><emphasis>container : </emphasis>DT_UI_CONTAINER_PANEL_RIGHT_CENTER</para></listitem>
-<listitem><para><emphasis><link linkend="attributes_has_pairs">has_pairs</link></emphasis></para></listitem>
 <listitem><para><emphasis><link linkend="attributes_has_tostring">has_tostring</link></emphasis></para></listitem>
 <listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_lib_module_t">types.dt_lib_module_t</link></para></listitem>
 <listitem><para><emphasis>position : </emphasis>700</para></listitem>
-<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
 <listitem><para><emphasis>views : </emphasis></para>
 <para><itemizedlist>
 <listitem><para><link linkend="darktable_modules_view_lighttable">darktable.modules.view.lighttable</link></para></listitem>
@@ -2997,11 +2568,9 @@ end</programlisting>
     <entry>Attributes:</entry>
     <entry><itemizedlist>
 <listitem><para><emphasis>container : </emphasis>DT_UI_CONTAINER_PANEL_RIGHT_TOP</para></listitem>
-<listitem><para><emphasis><link linkend="attributes_has_pairs">has_pairs</link></emphasis></para></listitem>
 <listitem><para><emphasis><link linkend="attributes_has_tostring">has_tostring</link></emphasis></para></listitem>
 <listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_lib_module_t">types.dt_lib_module_t</link></para></listitem>
 <listitem><para><emphasis>position : </emphasis>999</para></listitem>
-<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
 <listitem><para><emphasis>views : </emphasis></para>
 <para><itemizedlist>
 <listitem><para><link linkend="darktable_modules_view_darkroom">darktable.modules.view.darkroom</link></para></listitem>
@@ -3027,11 +2596,9 @@ end</programlisting>
     <entry>Attributes:</entry>
     <entry><itemizedlist>
 <listitem><para><emphasis>container : </emphasis>DT_UI_CONTAINER_PANEL_CENTER_BOTTOM_RIGHT</para></listitem>
-<listitem><para><emphasis><link linkend="attributes_has_pairs">has_pairs</link></emphasis></para></listitem>
 <listitem><para><emphasis><link linkend="attributes_has_tostring">has_tostring</link></emphasis></para></listitem>
 <listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_lib_module_t">types.dt_lib_module_t</link></para></listitem>
 <listitem><para><emphasis>position : </emphasis>100</para></listitem>
-<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
 <listitem><para><emphasis>views : </emphasis></para>
 <para><itemizedlist>
 <listitem><para><link linkend="darktable_modules_view_lighttable">darktable.modules.view.lighttable</link></para></listitem>
@@ -3059,11 +2626,9 @@ end</programlisting>
     <entry>Attributes:</entry>
     <entry><itemizedlist>
 <listitem><para><emphasis>container : </emphasis>DT_UI_CONTAINER_PANEL_RIGHT_CENTER</para></listitem>
-<listitem><para><emphasis><link linkend="attributes_has_pairs">has_pairs</link></emphasis></para></listitem>
 <listitem><para><emphasis><link linkend="attributes_has_tostring">has_tostring</link></emphasis></para></listitem>
 <listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_lib_module_t">types.dt_lib_module_t</link></para></listitem>
 <listitem><para><emphasis>position : </emphasis>999</para></listitem>
-<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
 <listitem><para><emphasis>views : </emphasis></para>
 <para><itemizedlist>
 <listitem><para><link linkend="darktable_modules_view_tethering">darktable.modules.view.tethering</link></para></listitem>
@@ -3089,11 +2654,9 @@ end</programlisting>
     <entry>Attributes:</entry>
     <entry><itemizedlist>
 <listitem><para><emphasis>container : </emphasis>DT_UI_CONTAINER_PANEL_RIGHT_TOP</para></listitem>
-<listitem><para><emphasis><link linkend="attributes_has_pairs">has_pairs</link></emphasis></para></listitem>
 <listitem><para><emphasis><link linkend="attributes_has_tostring">has_tostring</link></emphasis></para></listitem>
 <listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_lib_module_t">types.dt_lib_module_t</link></para></listitem>
 <listitem><para><emphasis>position : </emphasis>1001</para></listitem>
-<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
 <listitem><para><emphasis>views : </emphasis></para>
 <para><itemizedlist>
 <listitem><para><link linkend="darktable_modules_view_darkroom">darktable.modules.view.darkroom</link></para></listitem>
@@ -3120,11 +2683,9 @@ end</programlisting>
     <entry>Attributes:</entry>
     <entry><itemizedlist>
 <listitem><para><emphasis>container : </emphasis>DT_UI_CONTAINER_PANEL_RIGHT_CENTER</para></listitem>
-<listitem><para><emphasis><link linkend="attributes_has_pairs">has_pairs</link></emphasis></para></listitem>
 <listitem><para><emphasis><link linkend="attributes_has_tostring">has_tostring</link></emphasis></para></listitem>
 <listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_lib_module_t">types.dt_lib_module_t</link></para></listitem>
 <listitem><para><emphasis>position : </emphasis>0</para></listitem>
-<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
 <listitem><para><emphasis>views : </emphasis></para>
 <para><itemizedlist>
 <listitem><para><link linkend="darktable_modules_view_lighttable">darktable.modules.view.lighttable</link></para></listitem>
@@ -3150,11 +2711,9 @@ end</programlisting>
     <entry>Attributes:</entry>
     <entry><itemizedlist>
 <listitem><para><emphasis>container : </emphasis>DT_UI_CONTAINER_PANEL_LEFT_CENTER</para></listitem>
-<listitem><para><emphasis><link linkend="attributes_has_pairs">has_pairs</link></emphasis></para></listitem>
 <listitem><para><emphasis><link linkend="attributes_has_tostring">has_tostring</link></emphasis></para></listitem>
 <listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_lib_module_t">types.dt_lib_module_t</link></para></listitem>
 <listitem><para><emphasis>position : </emphasis>900</para></listitem>
-<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
 <listitem><para><emphasis>views : </emphasis></para>
 <para><itemizedlist>
 <listitem><para><link linkend="darktable_modules_view_darkroom">darktable.modules.view.darkroom</link></para></listitem>
@@ -3180,11 +2739,9 @@ end</programlisting>
     <entry>Attributes:</entry>
     <entry><itemizedlist>
 <listitem><para><emphasis>container : </emphasis>DT_UI_CONTAINER_PANEL_LEFT_CENTER</para></listitem>
-<listitem><para><emphasis><link linkend="attributes_has_pairs">has_pairs</link></emphasis></para></listitem>
 <listitem><para><emphasis><link linkend="attributes_has_tostring">has_tostring</link></emphasis></para></listitem>
 <listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_lib_module_t">types.dt_lib_module_t</link></para></listitem>
 <listitem><para><emphasis>position : </emphasis>800</para></listitem>
-<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
 <listitem><para><emphasis>views : </emphasis></para>
 <para><itemizedlist>
 <listitem><para><link linkend="darktable_modules_view_darkroom">darktable.modules.view.darkroom</link></para></listitem>
@@ -3210,11 +2767,9 @@ end</programlisting>
     <entry>Attributes:</entry>
     <entry><itemizedlist>
 <listitem><para><emphasis>container : </emphasis>DT_UI_CONTAINER_PANEL_LEFT_TOP</para></listitem>
-<listitem><para><emphasis><link linkend="attributes_has_pairs">has_pairs</link></emphasis></para></listitem>
 <listitem><para><emphasis><link linkend="attributes_has_tostring">has_tostring</link></emphasis></para></listitem>
 <listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_lib_module_t">types.dt_lib_module_t</link></para></listitem>
 <listitem><para><emphasis>position : </emphasis>1001</para></listitem>
-<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
 <listitem><para><emphasis>views : </emphasis></para>
 <para><itemizedlist>
 <listitem><para><link linkend="darktable_modules_view_darkroom">darktable.modules.view.darkroom</link></para></listitem>
@@ -3240,11 +2795,9 @@ end</programlisting>
     <entry>Attributes:</entry>
     <entry><itemizedlist>
 <listitem><para><emphasis>container : </emphasis>DT_UI_CONTAINER_PANEL_LEFT_CENTER</para></listitem>
-<listitem><para><emphasis><link linkend="attributes_has_pairs">has_pairs</link></emphasis></para></listitem>
 <listitem><para><emphasis><link linkend="attributes_has_tostring">has_tostring</link></emphasis></para></listitem>
 <listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_lib_module_t">types.dt_lib_module_t</link></para></listitem>
 <listitem><para><emphasis>position : </emphasis>10</para></listitem>
-<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
 <listitem><para><emphasis>views : </emphasis></para>
 <para><itemizedlist>
 <listitem><para><link linkend="darktable_modules_view_darkroom">darktable.modules.view.darkroom</link></para></listitem>
@@ -3270,11 +2823,9 @@ end</programlisting>
     <entry>Attributes:</entry>
     <entry><itemizedlist>
 <listitem><para><emphasis>container : </emphasis>DT_UI_CONTAINER_PANEL_CENTER_BOTTOM_LEFT</para></listitem>
-<listitem><para><emphasis><link linkend="attributes_has_pairs">has_pairs</link></emphasis></para></listitem>
 <listitem><para><emphasis><link linkend="attributes_has_tostring">has_tostring</link></emphasis></para></listitem>
 <listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_lib_module_t">types.dt_lib_module_t</link></para></listitem>
 <listitem><para><emphasis>position : </emphasis>100</para></listitem>
-<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
 <listitem><para><emphasis>views : </emphasis></para>
 <para><itemizedlist>
 <listitem><para><link linkend="darktable_modules_view_lighttable">darktable.modules.view.lighttable</link></para></listitem>
@@ -3302,11 +2853,9 @@ end</programlisting>
     <entry>Attributes:</entry>
     <entry><itemizedlist>
 <listitem><para><emphasis>container : </emphasis>DT_UI_CONTAINER_PANEL_RIGHT_CENTER</para></listitem>
-<listitem><para><emphasis><link linkend="attributes_has_pairs">has_pairs</link></emphasis></para></listitem>
 <listitem><para><emphasis><link linkend="attributes_has_tostring">has_tostring</link></emphasis></para></listitem>
 <listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_lib_module_t">types.dt_lib_module_t</link></para></listitem>
 <listitem><para><emphasis>position : </emphasis>998</para></listitem>
-<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
 <listitem><para><emphasis>views : </emphasis></para>
 <para><itemizedlist>
 <listitem><para><link linkend="darktable_modules_view_tethering">darktable.modules.view.tethering</link></para></listitem>
@@ -3332,11 +2881,9 @@ end</programlisting>
     <entry>Attributes:</entry>
     <entry><itemizedlist>
 <listitem><para><emphasis>container : </emphasis>DT_UI_CONTAINER_PANEL_RIGHT_CENTER</para></listitem>
-<listitem><para><emphasis><link linkend="attributes_has_pairs">has_pairs</link></emphasis></para></listitem>
 <listitem><para><emphasis><link linkend="attributes_has_tostring">has_tostring</link></emphasis></para></listitem>
 <listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_lib_module_t">types.dt_lib_module_t</link></para></listitem>
 <listitem><para><emphasis>position : </emphasis>990</para></listitem>
-<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
 <listitem><para><emphasis>views : </emphasis></para>
 <para><itemizedlist>
 <listitem><para><link linkend="darktable_modules_view_map">darktable.modules.view.map</link></para></listitem>
@@ -3362,11 +2909,9 @@ end</programlisting>
     <entry>Attributes:</entry>
     <entry><itemizedlist>
 <listitem><para><emphasis>container : </emphasis>DT_UI_CONTAINER_PANEL_RIGHT_CENTER</para></listitem>
-<listitem><para><emphasis><link linkend="attributes_has_pairs">has_pairs</link></emphasis></para></listitem>
 <listitem><para><emphasis><link linkend="attributes_has_tostring">has_tostring</link></emphasis></para></listitem>
 <listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_lib_module_t">types.dt_lib_module_t</link></para></listitem>
 <listitem><para><emphasis>position : </emphasis>997</para></listitem>
-<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
 <listitem><para><emphasis>views : </emphasis></para>
 <para><itemizedlist>
 <listitem><para><link linkend="darktable_modules_view_tethering">darktable.modules.view.tethering</link></para></listitem>
@@ -3392,11 +2937,9 @@ end</programlisting>
     <entry>Attributes:</entry>
     <entry><itemizedlist>
 <listitem><para><emphasis>container : </emphasis>DT_UI_CONTAINER_PANEL_RIGHT_CENTER</para></listitem>
-<listitem><para><emphasis><link linkend="attributes_has_pairs">has_pairs</link></emphasis></para></listitem>
 <listitem><para><emphasis><link linkend="attributes_has_tostring">has_tostring</link></emphasis></para></listitem>
 <listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_lib_module_t">types.dt_lib_module_t</link></para></listitem>
 <listitem><para><emphasis>position : </emphasis>999</para></listitem>
-<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
 <listitem><para><emphasis>views : </emphasis></para>
 <para><itemizedlist>
 <listitem><para><link linkend="darktable_modules_view_map">darktable.modules.view.map</link></para></listitem>
@@ -3422,11 +2965,9 @@ end</programlisting>
     <entry>Attributes:</entry>
     <entry><itemizedlist>
 <listitem><para><emphasis>container : </emphasis>DT_UI_CONTAINER_PANEL_LEFT_BOTTOM</para></listitem>
-<listitem><para><emphasis><link linkend="attributes_has_pairs">has_pairs</link></emphasis></para></listitem>
 <listitem><para><emphasis><link linkend="attributes_has_tostring">has_tostring</link></emphasis></para></listitem>
 <listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_lib_module_t">types.dt_lib_module_t</link></para></listitem>
 <listitem><para><emphasis>position : </emphasis>1</para></listitem>
-<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
 <listitem><para><emphasis>views : </emphasis></para>
 <para><itemizedlist>
 <listitem><para><link linkend="darktable_modules_view_lighttable">darktable.modules.view.lighttable</link></para></listitem>
@@ -3589,7 +3130,6 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
     <tbody><row>
     <entry>Attributes:</entry>
     <entry><itemizedlist>
-<listitem><para><emphasis><link linkend="attributes_has_pairs">has_pairs</link></emphasis></para></listitem>
 <listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_imageio_module_storage_t">types.dt_imageio_module_storage_t</link></para></listitem>
 </itemizedlist>
 </entry>
@@ -3613,7 +3153,6 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
     <tbody><row>
     <entry>Attributes:</entry>
     <entry><itemizedlist>
-<listitem><para><emphasis><link linkend="attributes_has_pairs">has_pairs</link></emphasis></para></listitem>
 <listitem><para><emphasis><link linkend="attributes_has_tostring">has_tostring</link></emphasis></para></listitem>
 </itemizedlist>
 </entry>
@@ -3699,17 +3238,7 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
 </indexterm>
 <synopsis>number</synopsis>
 <para>A unique id identifying the image in the database.</para>
-<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
-    <colspec colwidth="2*"/>
-    <colspec colwidth="8*"/>
-    <tbody><row>
-    <entry>Attributes:</entry>
-    <entry><itemizedlist>
-<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
-</itemizedlist>
-</entry>
-    </row></tbody>
-    </tgroup></informaltable>
+
 </section>
 
 <section status="final" id="types_dt_lua_image_t_path">
@@ -3720,17 +3249,7 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
 </indexterm>
 <synopsis>string</synopsis>
 <para>The file the directory containing the image.</para>
-<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
-    <colspec colwidth="2*"/>
-    <colspec colwidth="8*"/>
-    <tbody><row>
-    <entry>Attributes:</entry>
-    <entry><itemizedlist>
-<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
-</itemizedlist>
-</entry>
-    </row></tbody>
-    </tgroup></informaltable>
+
 </section>
 
 <section status="final" id="types_dt_lua_image_t_film">
@@ -3741,17 +3260,7 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
 </indexterm>
 <synopsis><link linkend="types_dt_lua_film_t">types.dt_lua_film_t</link></synopsis>
 <para>The film object that contains this image.</para>
-<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
-    <colspec colwidth="2*"/>
-    <colspec colwidth="8*"/>
-    <tbody><row>
-    <entry>Attributes:</entry>
-    <entry><itemizedlist>
-<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
-</itemizedlist>
-</entry>
-    </row></tbody>
-    </tgroup></informaltable>
+
 </section>
 
 <section status="final" id="types_dt_lua_image_t_filename">
@@ -3762,17 +3271,7 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
 </indexterm>
 <synopsis>string</synopsis>
 <para>The filename of the image.</para>
-<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
-    <colspec colwidth="2*"/>
-    <colspec colwidth="8*"/>
-    <tbody><row>
-    <entry>Attributes:</entry>
-    <entry><itemizedlist>
-<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
-</itemizedlist>
-</entry>
-    </row></tbody>
-    </tgroup></informaltable>
+
 </section>
 
 <section status="final" id="types_dt_lua_image_t_duplicate_index">
@@ -3783,17 +3282,7 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
 </indexterm>
 <synopsis>number</synopsis>
 <para>If there are multiple images based on a same file, each will have a unique number, starting from 0.</para>
-<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
-    <colspec colwidth="2*"/>
-    <colspec colwidth="8*"/>
-    <tbody><row>
-    <entry>Attributes:</entry>
-    <entry><itemizedlist>
-<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
-</itemizedlist>
-</entry>
-    </row></tbody>
-    </tgroup></informaltable>
+
 </section>
 
 <section status="final" id="types_dt_lua_image_t_publisher">
@@ -3810,7 +3299,6 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
     <tbody><row>
     <entry>Attributes:</entry>
     <entry><itemizedlist>
-<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
 <listitem><para><emphasis><link linkend="attributes_write">write</link></emphasis></para></listitem>
 </itemizedlist>
 </entry>
@@ -3832,7 +3320,6 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
     <tbody><row>
     <entry>Attributes:</entry>
     <entry><itemizedlist>
-<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
 <listitem><para><emphasis><link linkend="attributes_write">write</link></emphasis></para></listitem>
 </itemizedlist>
 </entry>
@@ -3854,7 +3341,6 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
     <tbody><row>
     <entry>Attributes:</entry>
     <entry><itemizedlist>
-<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
 <listitem><para><emphasis><link linkend="attributes_write">write</link></emphasis></para></listitem>
 </itemizedlist>
 </entry>
@@ -3876,7 +3362,6 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
     <tbody><row>
     <entry>Attributes:</entry>
     <entry><itemizedlist>
-<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
 <listitem><para><emphasis><link linkend="attributes_write">write</link></emphasis></para></listitem>
 </itemizedlist>
 </entry>
@@ -3898,7 +3383,6 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
     <tbody><row>
     <entry>Attributes:</entry>
     <entry><itemizedlist>
-<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
 <listitem><para><emphasis><link linkend="attributes_write">write</link></emphasis></para></listitem>
 </itemizedlist>
 </entry>
@@ -3920,7 +3404,6 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
     <tbody><row>
     <entry>Attributes:</entry>
     <entry><itemizedlist>
-<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
 <listitem><para><emphasis><link linkend="attributes_write">write</link></emphasis></para></listitem>
 </itemizedlist>
 </entry>
@@ -3942,7 +3425,6 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
     <tbody><row>
     <entry>Attributes:</entry>
     <entry><itemizedlist>
-<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
 <listitem><para><emphasis><link linkend="attributes_write">write</link></emphasis></para></listitem>
 </itemizedlist>
 </entry>
@@ -3964,7 +3446,6 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
     <tbody><row>
     <entry>Attributes:</entry>
     <entry><itemizedlist>
-<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
 <listitem><para><emphasis><link linkend="attributes_write">write</link></emphasis></para></listitem>
 </itemizedlist>
 </entry>
@@ -3986,7 +3467,6 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
     <tbody><row>
     <entry>Attributes:</entry>
     <entry><itemizedlist>
-<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
 <listitem><para><emphasis><link linkend="attributes_write">write</link></emphasis></para></listitem>
 </itemizedlist>
 </entry>
@@ -4008,7 +3488,6 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
     <tbody><row>
     <entry>Attributes:</entry>
     <entry><itemizedlist>
-<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
 <listitem><para><emphasis><link linkend="attributes_write">write</link></emphasis></para></listitem>
 </itemizedlist>
 </entry>
@@ -4030,7 +3509,6 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
     <tbody><row>
     <entry>Attributes:</entry>
     <entry><itemizedlist>
-<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
 <listitem><para><emphasis><link linkend="attributes_write">write</link></emphasis></para></listitem>
 </itemizedlist>
 </entry>
@@ -4052,7 +3530,6 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
     <tbody><row>
     <entry>Attributes:</entry>
     <entry><itemizedlist>
-<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
 <listitem><para><emphasis><link linkend="attributes_write">write</link></emphasis></para></listitem>
 </itemizedlist>
 </entry>
@@ -4074,7 +3551,6 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
     <tbody><row>
     <entry>Attributes:</entry>
     <entry><itemizedlist>
-<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
 <listitem><para><emphasis><link linkend="attributes_write">write</link></emphasis></para></listitem>
 </itemizedlist>
 </entry>
@@ -4096,7 +3572,6 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
     <tbody><row>
     <entry>Attributes:</entry>
     <entry><itemizedlist>
-<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
 <listitem><para><emphasis><link linkend="attributes_write">write</link></emphasis></para></listitem>
 </itemizedlist>
 </entry>
@@ -4118,7 +3593,6 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
     <tbody><row>
     <entry>Attributes:</entry>
     <entry><itemizedlist>
-<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
 <listitem><para><emphasis><link linkend="attributes_write">write</link></emphasis></para></listitem>
 </itemizedlist>
 </entry>
@@ -4139,7 +3613,6 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
     <tbody><row>
     <entry>Attributes:</entry>
     <entry><itemizedlist>
-<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
 <listitem><para><emphasis><link linkend="attributes_write">write</link></emphasis></para></listitem>
 </itemizedlist>
 </entry>
@@ -4160,7 +3633,6 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
     <tbody><row>
     <entry>Attributes:</entry>
     <entry><itemizedlist>
-<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
 <listitem><para><emphasis><link linkend="attributes_write">write</link></emphasis></para></listitem>
 </itemizedlist>
 </entry>
@@ -4176,17 +3648,7 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
 </indexterm>
 <synopsis>boolean</synopsis>
 <para>True if the image is a RAW file.</para>
-<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
-    <colspec colwidth="2*"/>
-    <colspec colwidth="8*"/>
-    <tbody><row>
-    <entry>Attributes:</entry>
-    <entry><itemizedlist>
-<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
-</itemizedlist>
-</entry>
-    </row></tbody>
-    </tgroup></informaltable>
+
 </section>
 
 <section status="final" id="types_dt_lua_image_t_is_ldr">
@@ -4197,17 +3659,7 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
 </indexterm>
 <synopsis>boolean</synopsis>
 <para>True if the image is a ldr image.</para>
-<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
-    <colspec colwidth="2*"/>
-    <colspec colwidth="8*"/>
-    <tbody><row>
-    <entry>Attributes:</entry>
-    <entry><itemizedlist>
-<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
-</itemizedlist>
-</entry>
-    </row></tbody>
-    </tgroup></informaltable>
+
 </section>
 
 <section status="final" id="types_dt_lua_image_t_is_hdr">
@@ -4218,17 +3670,7 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
 </indexterm>
 <synopsis>boolean</synopsis>
 <para>True if the image is a hdr image.</para>
-<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
-    <colspec colwidth="2*"/>
-    <colspec colwidth="8*"/>
-    <tbody><row>
-    <entry>Attributes:</entry>
-    <entry><itemizedlist>
-<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
-</itemizedlist>
-</entry>
-    </row></tbody>
-    </tgroup></informaltable>
+
 </section>
 
 <section status="final" id="types_dt_lua_image_t_width">
@@ -4239,17 +3681,7 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
 </indexterm>
 <synopsis>number</synopsis>
 <para>The width of the image.</para>
-<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
-    <colspec colwidth="2*"/>
-    <colspec colwidth="8*"/>
-    <tbody><row>
-    <entry>Attributes:</entry>
-    <entry><itemizedlist>
-<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
-</itemizedlist>
-</entry>
-    </row></tbody>
-    </tgroup></informaltable>
+
 </section>
 
 <section status="final" id="types_dt_lua_image_t_height">
@@ -4260,17 +3692,7 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
 </indexterm>
 <synopsis>number</synopsis>
 <para>The height of the image.</para>
-<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
-    <colspec colwidth="2*"/>
-    <colspec colwidth="8*"/>
-    <tbody><row>
-    <entry>Attributes:</entry>
-    <entry><itemizedlist>
-<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
-</itemizedlist>
-</entry>
-    </row></tbody>
-    </tgroup></informaltable>
+
 </section>
 
 <section status="final" id="types_dt_lua_image_t_rating">
@@ -4287,7 +3709,6 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
     <tbody><row>
     <entry>Attributes:</entry>
     <entry><itemizedlist>
-<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
 <listitem><para><emphasis><link linkend="attributes_write">write</link></emphasis></para></listitem>
 </itemizedlist>
 </entry>
@@ -4309,7 +3730,6 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
     <tbody><row>
     <entry>Attributes:</entry>
     <entry><itemizedlist>
-<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
 <listitem><para><emphasis><link linkend="attributes_write">write</link></emphasis></para></listitem>
 </itemizedlist>
 </entry>
@@ -4363,17 +3783,7 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
 	<emphasis><link linkend="types_dt_lua_image_t_reset_image">image</link></emphasis> : <link linkend="types_dt_lua_image_t">types.dt_lua_image_t</link>
 )</synopsis>
 <para>Removes all processing from the image, reseting it back to its original state</para>
-<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
-    <colspec colwidth="2*"/>
-    <colspec colwidth="8*"/>
-    <tbody><row>
-    <entry>Attributes:</entry>
-    <entry><itemizedlist>
-<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
-</itemizedlist>
-</entry>
-    </row></tbody>
-    </tgroup></informaltable>
+
 <variablelist>
 <varlistentry id="types_dt_lua_image_t_reset_image"><term>image</term><listitem>
 <synopsis><link linkend="types_dt_lua_image_t">types.dt_lua_image_t</link></synopsis>
@@ -4394,17 +3804,7 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
 	<emphasis><link linkend="types_dt_lua_image_t_delete_image">image</link></emphasis> : <link linkend="types_dt_lua_image_t">types.dt_lua_image_t</link>
 )</synopsis>
 <para>Removes an image from the database</para>
-<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
-    <colspec colwidth="2*"/>
-    <colspec colwidth="8*"/>
-    <tbody><row>
-    <entry>Attributes:</entry>
-    <entry><itemizedlist>
-<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
-</itemizedlist>
-</entry>
-    </row></tbody>
-    </tgroup></informaltable>
+
 <variablelist>
 <varlistentry id="types_dt_lua_image_t_delete_image"><term>image</term><listitem>
 <synopsis><link linkend="types_dt_lua_image_t">types.dt_lua_image_t</link></synopsis>
@@ -4426,17 +3826,7 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
 	[<emphasis><link linkend="types_dt_lua_image_t_group_with_image2">image2</link></emphasis> : <link linkend="types_dt_lua_image_t">types.dt_lua_image_t</link>]
 )</synopsis>
 <para>Puts the first image in the same group as the second image. If no second image is provided the image will be in its own group.</para>
-<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
-    <colspec colwidth="2*"/>
-    <colspec colwidth="8*"/>
-    <tbody><row>
-    <entry>Attributes:</entry>
-    <entry><itemizedlist>
-<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
-</itemizedlist>
-</entry>
-    </row></tbody>
-    </tgroup></informaltable>
+
 <variablelist>
 <varlistentry id="types_dt_lua_image_t_group_with_image"><term>image</term><listitem>
 <synopsis><link linkend="types_dt_lua_image_t">types.dt_lua_image_t</link></synopsis>
@@ -4463,17 +3853,7 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
 	<emphasis><link linkend="types_dt_lua_image_t_make_group_leader_image">image</link></emphasis> : <link linkend="types_dt_lua_image_t">types.dt_lua_image_t</link>
 )</synopsis>
 <para>Makes the image the leader of its group.</para>
-<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
-    <colspec colwidth="2*"/>
-    <colspec colwidth="8*"/>
-    <tbody><row>
-    <entry>Attributes:</entry>
-    <entry><itemizedlist>
-<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
-</itemizedlist>
-</entry>
-    </row></tbody>
-    </tgroup></informaltable>
+
 <variablelist>
 <varlistentry id="types_dt_lua_image_t_make_group_leader_image"><term>image</term><listitem>
 <synopsis><link linkend="types_dt_lua_image_t">types.dt_lua_image_t</link></synopsis>
@@ -4494,17 +3874,7 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
 	<emphasis><link linkend="types_dt_lua_image_t_get_group_members_image">image</link></emphasis> : <link linkend="types_dt_lua_image_t">types.dt_lua_image_t</link>
 ) : table of <link linkend="types_dt_lua_image_t">types.dt_lua_image_t</link></synopsis>
 <para>Returns a table containing all <link linkend="types_dt_lua_image_t">types.dt_lua_image_t</link> of the group. The group leader is both at a numeric key and at the "leader" special key (so you probably want to use ipairs to iterate through that table).</para>
-<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
-    <colspec colwidth="2*"/>
-    <colspec colwidth="8*"/>
-    <tbody><row>
-    <entry>Attributes:</entry>
-    <entry><itemizedlist>
-<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
-</itemizedlist>
-</entry>
-    </row></tbody>
-    </tgroup></informaltable>
+
 <variablelist>
 <varlistentry id="types_dt_lua_image_t_get_group_members_image"><term>image</term><listitem>
 <synopsis><link linkend="types_dt_lua_image_t">types.dt_lua_image_t</link></synopsis>
@@ -4530,17 +3900,7 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
 </indexterm>
 <synopsis><link linkend="types_dt_lua_image_t">types.dt_lua_image_t</link></synopsis>
 <para>The image which is the leader of the group this image is a member of.</para>
-<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
-    <colspec colwidth="2*"/>
-    <colspec colwidth="8*"/>
-    <tbody><row>
-    <entry>Attributes:</entry>
-    <entry><itemizedlist>
-<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
-</itemizedlist>
-</entry>
-    </row></tbody>
-    </tgroup></informaltable>
+
 </section>
 
 <section status="final" id="types_dt_lua_image_t_local_copy">
@@ -4557,7 +3917,6 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
     <tbody><row>
     <entry>Attributes:</entry>
     <entry><itemizedlist>
-<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
 <listitem><para><emphasis><link linkend="attributes_write">write</link></emphasis></para></listitem>
 </itemizedlist>
 </entry>
@@ -4577,17 +3936,7 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
 <para>drops the cached version of this image.</para>
 <para>This function should be called if an image is modified out of darktable to force DT to regenerate the thumbnail</para>
 <para>Darktable will regenerate the thumbnail by itself when it is needed</para>
-<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
-    <colspec colwidth="2*"/>
-    <colspec colwidth="8*"/>
-    <tbody><row>
-    <entry>Attributes:</entry>
-    <entry><itemizedlist>
-<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
-</itemizedlist>
-</entry>
-    </row></tbody>
-    </tgroup></informaltable>
+
 <variablelist>
 <varlistentry id="types_dt_lua_image_t_drop_cache_image"><term>image</term><listitem>
 <synopsis><link linkend="types_dt_lua_image_t">types.dt_lua_image_t</link></synopsis>
@@ -4608,17 +3957,7 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
 </indexterm>
 <synopsis>dt_type</synopsis>
 <para>A virtual type representing all format types.</para>
-<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
-    <colspec colwidth="2*"/>
-    <colspec colwidth="8*"/>
-    <tbody><row>
-    <entry>Attributes:</entry>
-    <entry><itemizedlist>
-<listitem><para><emphasis><link linkend="attributes_has_pairs">has_pairs</link></emphasis></para></listitem>
-</itemizedlist>
-</entry>
-    </row></tbody>
-    </tgroup></informaltable>
+
 <section status="final" id="types_dt_imageio_module_format_t_plugin_name">
 <title>types.dt_imageio_module_format_t.plugin_name</title>
 <indexterm>
@@ -4627,17 +3966,7 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
 </indexterm>
 <synopsis>string</synopsis>
 <para>A unique name for the plugin.</para>
-<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
-    <colspec colwidth="2*"/>
-    <colspec colwidth="8*"/>
-    <tbody><row>
-    <entry>Attributes:</entry>
-    <entry><itemizedlist>
-<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
-</itemizedlist>
-</entry>
-    </row></tbody>
-    </tgroup></informaltable>
+
 </section>
 
 <section status="final" id="types_dt_imageio_module_format_t_name">
@@ -4648,17 +3977,7 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
 </indexterm>
 <synopsis>string</synopsis>
 <para>A human readable name for the plugin.</para>
-<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
-    <colspec colwidth="2*"/>
-    <colspec colwidth="8*"/>
-    <tbody><row>
-    <entry>Attributes:</entry>
-    <entry><itemizedlist>
-<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
-</itemizedlist>
-</entry>
-    </row></tbody>
-    </tgroup></informaltable>
+
 </section>
 
 <section status="final" id="types_dt_imageio_module_format_t_extension">
@@ -4669,17 +3988,7 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
 </indexterm>
 <synopsis>string</synopsis>
 <para>The typical filename extension for that format.</para>
-<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
-    <colspec colwidth="2*"/>
-    <colspec colwidth="8*"/>
-    <tbody><row>
-    <entry>Attributes:</entry>
-    <entry><itemizedlist>
-<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
-</itemizedlist>
-</entry>
-    </row></tbody>
-    </tgroup></informaltable>
+
 </section>
 
 <section status="final" id="types_dt_imageio_module_format_t_mime">
@@ -4690,17 +3999,7 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
 </indexterm>
 <synopsis>string</synopsis>
 <para>The mime type associated with the format.</para>
-<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
-    <colspec colwidth="2*"/>
-    <colspec colwidth="8*"/>
-    <tbody><row>
-    <entry>Attributes:</entry>
-    <entry><itemizedlist>
-<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
-</itemizedlist>
-</entry>
-    </row></tbody>
-    </tgroup></informaltable>
+
 </section>
 
 <section status="final" id="types_dt_imageio_module_format_t_max_width">
@@ -4717,7 +4016,6 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
     <tbody><row>
     <entry>Attributes:</entry>
     <entry><itemizedlist>
-<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
 <listitem><para><emphasis><link linkend="attributes_write">write</link></emphasis></para></listitem>
 </itemizedlist>
 </entry>
@@ -4739,7 +4037,6 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
     <tbody><row>
     <entry>Attributes:</entry>
     <entry><itemizedlist>
-<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
 <listitem><para><emphasis><link linkend="attributes_write">write</link></emphasis></para></listitem>
 </itemizedlist>
 </entry>
@@ -4766,7 +4063,6 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
     <entry>Attributes:</entry>
     <entry><itemizedlist>
 <listitem><para><emphasis><link linkend="attributes_implicit_yield">implicit_yield</link></emphasis></para></listitem>
-<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
 </itemizedlist>
 </entry>
     </row></tbody>
@@ -4816,7 +4112,6 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
     <tbody><row>
     <entry>Attributes:</entry>
     <entry><itemizedlist>
-<listitem><para><emphasis><link linkend="attributes_has_pairs">has_pairs</link></emphasis></para></listitem>
 <listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_imageio_module_format_t">types.dt_imageio_module_format_t</link></para></listitem>
 </itemizedlist>
 </entry>
@@ -4836,7 +4131,6 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
     <tbody><row>
     <entry>Attributes:</entry>
     <entry><itemizedlist>
-<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
 <listitem><para><emphasis><link linkend="attributes_write">write</link></emphasis></para></listitem>
 </itemizedlist>
 </entry>
@@ -4860,7 +4154,6 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
     <tbody><row>
     <entry>Attributes:</entry>
     <entry><itemizedlist>
-<listitem><para><emphasis><link linkend="attributes_has_pairs">has_pairs</link></emphasis></para></listitem>
 <listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_imageio_module_format_t">types.dt_imageio_module_format_t</link></para></listitem>
 </itemizedlist>
 </entry>
@@ -4880,7 +4173,6 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
     <tbody><row>
     <entry>Attributes:</entry>
     <entry><itemizedlist>
-<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
 <listitem><para><emphasis><link linkend="attributes_write">write</link></emphasis></para></listitem>
 </itemizedlist>
 </entry>
@@ -4904,12 +4196,32 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
     <tbody><row>
     <entry>Attributes:</entry>
     <entry><itemizedlist>
-<listitem><para><emphasis><link linkend="attributes_has_pairs">has_pairs</link></emphasis></para></listitem>
 <listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_imageio_module_format_t">types.dt_imageio_module_format_t</link></para></listitem>
 </itemizedlist>
 </entry>
     </row></tbody>
     </tgroup></informaltable>
+<section status="final" id="types_dt_imageio_module_format_data_exr_compression">
+<title>types.dt_imageio_module_format_data_exr.compression</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>compression</secondary>
+</indexterm>
+<synopsis>string</synopsis>
+<para>The compression parameter to use when exporting.</para>
+<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
+    <colspec colwidth="2*"/>
+    <colspec colwidth="8*"/>
+    <tbody><row>
+    <entry>Attributes:</entry>
+    <entry><itemizedlist>
+<listitem><para><emphasis><link linkend="attributes_write">write</link></emphasis></para></listitem>
+</itemizedlist>
+</entry>
+    </row></tbody>
+    </tgroup></informaltable>
+</section>
+
 </section>
 
 <section status="final" id="types_dt_imageio_module_format_data_copy">
@@ -4926,7 +4238,6 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
     <tbody><row>
     <entry>Attributes:</entry>
     <entry><itemizedlist>
-<listitem><para><emphasis><link linkend="attributes_has_pairs">has_pairs</link></emphasis></para></listitem>
 <listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_imageio_module_format_t">types.dt_imageio_module_format_t</link></para></listitem>
 </itemizedlist>
 </entry>
@@ -4948,7 +4259,6 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
     <tbody><row>
     <entry>Attributes:</entry>
     <entry><itemizedlist>
-<listitem><para><emphasis><link linkend="attributes_has_pairs">has_pairs</link></emphasis></para></listitem>
 <listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_imageio_module_format_t">types.dt_imageio_module_format_t</link></para></listitem>
 </itemizedlist>
 </entry>
@@ -4970,7 +4280,6 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
     <tbody><row>
     <entry>Attributes:</entry>
     <entry><itemizedlist>
-<listitem><para><emphasis><link linkend="attributes_has_pairs">has_pairs</link></emphasis></para></listitem>
 <listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_imageio_module_format_t">types.dt_imageio_module_format_t</link></para></listitem>
 </itemizedlist>
 </entry>
@@ -4990,7 +4299,6 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
     <tbody><row>
     <entry>Attributes:</entry>
     <entry><itemizedlist>
-<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
 <listitem><para><emphasis><link linkend="attributes_write">write</link></emphasis></para></listitem>
 </itemizedlist>
 </entry>
@@ -5014,7 +4322,6 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
     <tbody><row>
     <entry>Attributes:</entry>
     <entry><itemizedlist>
-<listitem><para><emphasis><link linkend="attributes_has_pairs">has_pairs</link></emphasis></para></listitem>
 <listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_imageio_module_format_t">types.dt_imageio_module_format_t</link></para></listitem>
 </itemizedlist>
 </entry>
@@ -5036,7 +4343,6 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
     <tbody><row>
     <entry>Attributes:</entry>
     <entry><itemizedlist>
-<listitem><para><emphasis><link linkend="attributes_has_pairs">has_pairs</link></emphasis></para></listitem>
 <listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_imageio_module_format_t">types.dt_imageio_module_format_t</link></para></listitem>
 </itemizedlist>
 </entry>
@@ -5056,7 +4362,6 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
     <tbody><row>
     <entry>Attributes:</entry>
     <entry><itemizedlist>
-<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
 <listitem><para><emphasis><link linkend="attributes_write">write</link></emphasis></para></listitem>
 </itemizedlist>
 </entry>
@@ -5078,7 +4383,6 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
     <tbody><row>
     <entry>Attributes:</entry>
     <entry><itemizedlist>
-<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
 <listitem><para><emphasis><link linkend="attributes_write">write</link></emphasis></para></listitem>
 </itemizedlist>
 </entry>
@@ -5100,7 +4404,6 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
     <tbody><row>
     <entry>Attributes:</entry>
     <entry><itemizedlist>
-<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
 <listitem><para><emphasis><link linkend="attributes_write">write</link></emphasis></para></listitem>
 </itemizedlist>
 </entry>
@@ -5124,7 +4427,6 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
     <tbody><row>
     <entry>Attributes:</entry>
     <entry><itemizedlist>
-<listitem><para><emphasis><link linkend="attributes_has_pairs">has_pairs</link></emphasis></para></listitem>
 <listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_imageio_module_format_t">types.dt_imageio_module_format_t</link></para></listitem>
 </itemizedlist>
 </entry>
@@ -5144,7 +4446,6 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
     <tbody><row>
     <entry>Attributes:</entry>
     <entry><itemizedlist>
-<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
 <listitem><para><emphasis><link linkend="attributes_write">write</link></emphasis></para></listitem>
 </itemizedlist>
 </entry>
@@ -5166,7 +4467,6 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
     <tbody><row>
     <entry>Attributes:</entry>
     <entry><itemizedlist>
-<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
 <listitem><para><emphasis><link linkend="attributes_write">write</link></emphasis></para></listitem>
 </itemizedlist>
 </entry>
@@ -5188,7 +4488,6 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
     <tbody><row>
     <entry>Attributes:</entry>
     <entry><itemizedlist>
-<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
 <listitem><para><emphasis><link linkend="attributes_write">write</link></emphasis></para></listitem>
 </itemizedlist>
 </entry>
@@ -5210,7 +4509,6 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
     <tbody><row>
     <entry>Attributes:</entry>
     <entry><itemizedlist>
-<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
 <listitem><para><emphasis><link linkend="attributes_write">write</link></emphasis></para></listitem>
 </itemizedlist>
 </entry>
@@ -5228,17 +4526,7 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
 </indexterm>
 <synopsis>dt_type</synopsis>
 <para>A virtual type representing all storage types.</para>
-<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
-    <colspec colwidth="2*"/>
-    <colspec colwidth="8*"/>
-    <tbody><row>
-    <entry>Attributes:</entry>
-    <entry><itemizedlist>
-<listitem><para><emphasis><link linkend="attributes_has_pairs">has_pairs</link></emphasis></para></listitem>
-</itemizedlist>
-</entry>
-    </row></tbody>
-    </tgroup></informaltable>
+
 <section status="final" id="types_dt_imageio_module_storage_t_plugin_name">
 <title>types.dt_imageio_module_storage_t.plugin_name</title>
 <indexterm>
@@ -5253,7 +4541,6 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
     <tbody><row>
     <entry>Attributes:</entry>
     <entry><itemizedlist>
-<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
 <listitem><para><emphasis><link linkend="attributes_write">write</link></emphasis></para></listitem>
 </itemizedlist>
 </entry>
@@ -5275,7 +4562,6 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
     <tbody><row>
     <entry>Attributes:</entry>
     <entry><itemizedlist>
-<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
 <listitem><para><emphasis><link linkend="attributes_write">write</link></emphasis></para></listitem>
 </itemizedlist>
 </entry>
@@ -5297,7 +4583,6 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
     <tbody><row>
     <entry>Attributes:</entry>
     <entry><itemizedlist>
-<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
 <listitem><para><emphasis><link linkend="attributes_write">write</link></emphasis></para></listitem>
 </itemizedlist>
 </entry>
@@ -5319,7 +4604,6 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
     <tbody><row>
     <entry>Attributes:</entry>
     <entry><itemizedlist>
-<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
 <listitem><para><emphasis><link linkend="attributes_write">write</link></emphasis></para></listitem>
 </itemizedlist>
 </entry>
@@ -5341,7 +4625,6 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
     <tbody><row>
     <entry>Attributes:</entry>
     <entry><itemizedlist>
-<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
 <listitem><para><emphasis><link linkend="attributes_write">write</link></emphasis></para></listitem>
 </itemizedlist>
 </entry>
@@ -5363,7 +4646,6 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
     <tbody><row>
     <entry>Attributes:</entry>
     <entry><itemizedlist>
-<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
 <listitem><para><emphasis><link linkend="attributes_write">write</link></emphasis></para></listitem>
 </itemizedlist>
 </entry>
@@ -5382,17 +4664,7 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
 	<emphasis><link linkend="types_dt_imageio_module_storage_t_supports_format_format">format</link></emphasis> : <link linkend="types_dt_imageio_module_format_t">types.dt_imageio_module_format_t</link>
 ) : boolean</synopsis>
 <para>Checks if a format is supported by this storage.</para>
-<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
-    <colspec colwidth="2*"/>
-    <colspec colwidth="8*"/>
-    <tbody><row>
-    <entry>Attributes:</entry>
-    <entry><itemizedlist>
-<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
-</itemizedlist>
-</entry>
-    </row></tbody>
-    </tgroup></informaltable>
+
 <variablelist>
 <varlistentry id="types_dt_imageio_module_storage_t_supports_format_storage"><term>storage</term><listitem>
 <synopsis><link linkend="types_dt_imageio_module_storage_t">types.dt_imageio_module_storage_t</link></synopsis>
@@ -5432,7 +4704,6 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
     <tbody><row>
     <entry>Attributes:</entry>
     <entry><itemizedlist>
-<listitem><para><emphasis><link linkend="attributes_has_pairs">has_pairs</link></emphasis></para></listitem>
 <listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_imageio_module_storage_t">types.dt_imageio_module_storage_t</link></para></listitem>
 </itemizedlist>
 </entry>
@@ -5454,7 +4725,6 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
     <tbody><row>
     <entry>Attributes:</entry>
     <entry><itemizedlist>
-<listitem><para><emphasis><link linkend="attributes_has_pairs">has_pairs</link></emphasis></para></listitem>
 <listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_imageio_module_storage_t">types.dt_imageio_module_storage_t</link></para></listitem>
 </itemizedlist>
 </entry>
@@ -5476,7 +4746,6 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
     <tbody><row>
     <entry>Attributes:</entry>
     <entry><itemizedlist>
-<listitem><para><emphasis><link linkend="attributes_has_pairs">has_pairs</link></emphasis></para></listitem>
 <listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_imageio_module_storage_t">types.dt_imageio_module_storage_t</link></para></listitem>
 </itemizedlist>
 </entry>
@@ -5496,7 +4765,6 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
     <tbody><row>
     <entry>Attributes:</entry>
     <entry><itemizedlist>
-<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
 <listitem><para><emphasis><link linkend="attributes_write">write</link></emphasis></para></listitem>
 </itemizedlist>
 </entry>
@@ -5518,7 +4786,6 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
     <tbody><row>
     <entry>Attributes:</entry>
     <entry><itemizedlist>
-<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
 <listitem><para><emphasis><link linkend="attributes_write">write</link></emphasis></para></listitem>
 </itemizedlist>
 </entry>
@@ -5542,7 +4809,6 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
     <tbody><row>
     <entry>Attributes:</entry>
     <entry><itemizedlist>
-<listitem><para><emphasis><link linkend="attributes_has_pairs">has_pairs</link></emphasis></para></listitem>
 <listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_imageio_module_storage_t">types.dt_imageio_module_storage_t</link></para></listitem>
 </itemizedlist>
 </entry>
@@ -5564,7 +4830,6 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
     <tbody><row>
     <entry>Attributes:</entry>
     <entry><itemizedlist>
-<listitem><para><emphasis><link linkend="attributes_has_pairs">has_pairs</link></emphasis></para></listitem>
 <listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_imageio_module_storage_t">types.dt_imageio_module_storage_t</link></para></listitem>
 </itemizedlist>
 </entry>
@@ -5584,7 +4849,6 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
     <tbody><row>
     <entry>Attributes:</entry>
     <entry><itemizedlist>
-<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
 <listitem><para><emphasis><link linkend="attributes_write">write</link></emphasis></para></listitem>
 </itemizedlist>
 </entry>
@@ -5606,7 +4870,6 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
     <tbody><row>
     <entry>Attributes:</entry>
     <entry><itemizedlist>
-<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
 <listitem><para><emphasis><link linkend="attributes_write">write</link></emphasis></para></listitem>
 </itemizedlist>
 </entry>
@@ -5630,7 +4893,6 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
     <tbody><row>
     <entry>Attributes:</entry>
     <entry><itemizedlist>
-<listitem><para><emphasis><link linkend="attributes_has_pairs">has_pairs</link></emphasis></para></listitem>
 <listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_imageio_module_storage_t">types.dt_imageio_module_storage_t</link></para></listitem>
 </itemizedlist>
 </entry>
@@ -5650,7 +4912,6 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
     <tbody><row>
     <entry>Attributes:</entry>
     <entry><itemizedlist>
-<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
 <listitem><para><emphasis><link linkend="attributes_write">write</link></emphasis></para></listitem>
 </itemizedlist>
 </entry>
@@ -5674,9 +4935,7 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
     <tbody><row>
     <entry>Attributes:</entry>
     <entry><itemizedlist>
-<listitem><para><emphasis><link linkend="attributes_has_ipairs">has_ipairs</link></emphasis></para></listitem>
 <listitem><para><emphasis><link linkend="attributes_has_length">has_length</link></emphasis></para></listitem>
-<listitem><para><emphasis><link linkend="attributes_has_pairs">has_pairs</link></emphasis></para></listitem>
 <listitem><para><emphasis><link linkend="attributes_has_tostring">has_tostring</link></emphasis></para></listitem>
 </itemizedlist>
 </entry>
@@ -5708,17 +4967,7 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
 </indexterm>
 <synopsis><link linkend="types_dt_lua_image_t">types.dt_lua_image_t</link></synopsis>
 <para>The different images within the film.</para>
-<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
-    <colspec colwidth="2*"/>
-    <colspec colwidth="8*"/>
-    <tbody><row>
-    <entry>Attributes:</entry>
-    <entry><itemizedlist>
-<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
-</itemizedlist>
-</entry>
-    </row></tbody>
-    </tgroup></informaltable>
+
 </section>
 
 <section status="final" id="types_dt_lua_film_t_id">
@@ -5735,7 +4984,6 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
     <tbody><row>
     <entry>Attributes:</entry>
     <entry><itemizedlist>
-<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
 <listitem><para><emphasis><link linkend="attributes_write">write</link></emphasis></para></listitem>
 </itemizedlist>
 </entry>
@@ -5757,7 +5005,6 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
     <tbody><row>
     <entry>Attributes:</entry>
     <entry><itemizedlist>
-<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
 <listitem><para><emphasis><link linkend="attributes_write">write</link></emphasis></para></listitem>
 </itemizedlist>
 </entry>
@@ -5776,17 +5023,7 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
 	[<emphasis><link linkend="types_dt_lua_film_t_delete_force">force</link></emphasis> : Boolean]
 )</synopsis>
 <para>Removes the film from the database.</para>
-<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
-    <colspec colwidth="2*"/>
-    <colspec colwidth="8*"/>
-    <tbody><row>
-    <entry>Attributes:</entry>
-    <entry><itemizedlist>
-<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
-</itemizedlist>
-</entry>
-    </row></tbody>
-    </tgroup></informaltable>
+
 <variablelist>
 <varlistentry id="types_dt_lua_film_t_delete_film"><term>film</term><listitem>
 <synopsis><link linkend="types_dt_lua_film_t">types.dt_lua_film_t</link></synopsis>
@@ -5819,9 +5056,7 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
     <tbody><row>
     <entry>Attributes:</entry>
     <entry><itemizedlist>
-<listitem><para><emphasis><link linkend="attributes_has_ipairs">has_ipairs</link></emphasis></para></listitem>
 <listitem><para><emphasis><link linkend="attributes_has_length">has_length</link></emphasis></para></listitem>
-<listitem><para><emphasis><link linkend="attributes_has_pairs">has_pairs</link></emphasis></para></listitem>
 <listitem><para><emphasis><link linkend="attributes_has_tostring">has_tostring</link></emphasis></para></listitem>
 </itemizedlist>
 </entry>
@@ -5871,17 +5106,7 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
 </indexterm>
 <synopsis>string</synopsis>
 <para>The name of the style.</para>
-<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
-    <colspec colwidth="2*"/>
-    <colspec colwidth="8*"/>
-    <tbody><row>
-    <entry>Attributes:</entry>
-    <entry><itemizedlist>
-<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
-</itemizedlist>
-</entry>
-    </row></tbody>
-    </tgroup></informaltable>
+
 </section>
 
 <section status="final" id="types_dt_style_t_description">
@@ -5892,17 +5117,7 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
 </indexterm>
 <synopsis>string</synopsis>
 <para>The description of the style.</para>
-<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
-    <colspec colwidth="2*"/>
-    <colspec colwidth="8*"/>
-    <tbody><row>
-    <entry>Attributes:</entry>
-    <entry><itemizedlist>
-<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
-</itemizedlist>
-</entry>
-    </row></tbody>
-    </tgroup></informaltable>
+
 </section>
 
 <section status="final" id="types_dt_style_t__hash_">
@@ -5913,17 +5128,7 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
 </indexterm>
 <synopsis><link linkend="types_dt_style_item_t">types.dt_style_item_t</link></synopsis>
 <para>The different items that make the style.</para>
-<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
-    <colspec colwidth="2*"/>
-    <colspec colwidth="8*"/>
-    <tbody><row>
-    <entry>Attributes:</entry>
-    <entry><itemizedlist>
-<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
-</itemizedlist>
-</entry>
-    </row></tbody>
-    </tgroup></informaltable>
+
 </section>
 
 </section>
@@ -5942,7 +5147,6 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
     <tbody><row>
     <entry>Attributes:</entry>
     <entry><itemizedlist>
-<listitem><para><emphasis><link linkend="attributes_has_pairs">has_pairs</link></emphasis></para></listitem>
 <listitem><para><emphasis><link linkend="attributes_has_tostring">has_tostring</link></emphasis></para></listitem>
 </itemizedlist>
 </entry>
@@ -5956,17 +5160,7 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
 </indexterm>
 <synopsis>string</synopsis>
 <para>The name of the style item.</para>
-<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
-    <colspec colwidth="2*"/>
-    <colspec colwidth="8*"/>
-    <tbody><row>
-    <entry>Attributes:</entry>
-    <entry><itemizedlist>
-<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
-</itemizedlist>
-</entry>
-    </row></tbody>
-    </tgroup></informaltable>
+
 </section>
 
 <section status="final" id="types_dt_style_item_t_num">
@@ -5977,17 +5171,7 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
 </indexterm>
 <synopsis>number</synopsis>
 <para>The position of the style item within its style.</para>
-<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
-    <colspec colwidth="2*"/>
-    <colspec colwidth="8*"/>
-    <tbody><row>
-    <entry>Attributes:</entry>
-    <entry><itemizedlist>
-<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
-</itemizedlist>
-</entry>
-    </row></tbody>
-    </tgroup></informaltable>
+
 </section>
 
 </section>
@@ -6006,9 +5190,7 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
     <tbody><row>
     <entry>Attributes:</entry>
     <entry><itemizedlist>
-<listitem><para><emphasis><link linkend="attributes_has_ipairs">has_ipairs</link></emphasis></para></listitem>
 <listitem><para><emphasis><link linkend="attributes_has_length">has_length</link></emphasis></para></listitem>
-<listitem><para><emphasis><link linkend="attributes_has_pairs">has_pairs</link></emphasis></para></listitem>
 <listitem><para><emphasis><link linkend="attributes_has_tostring">has_tostring</link></emphasis></para></listitem>
 </itemizedlist>
 </entry>
@@ -6049,17 +5231,7 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
 </indexterm>
 <synopsis>string</synopsis>
 <para>The name of the tag.</para>
-<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
-    <colspec colwidth="2*"/>
-    <colspec colwidth="8*"/>
-    <tbody><row>
-    <entry>Attributes:</entry>
-    <entry><itemizedlist>
-<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
-</itemizedlist>
-</entry>
-    </row></tbody>
-    </tgroup></informaltable>
+
 </section>
 
 <section status="final" id="types_dt_lua_tag_t__hash_">
@@ -6070,17 +5242,7 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
 </indexterm>
 <synopsis><link linkend="types_dt_lua_image_t">types.dt_lua_image_t</link></synopsis>
 <para>The images that have that tag attached to them.</para>
-<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
-    <colspec colwidth="2*"/>
-    <colspec colwidth="8*"/>
-    <tbody><row>
-    <entry>Attributes:</entry>
-    <entry><itemizedlist>
-<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
-</itemizedlist>
-</entry>
-    </row></tbody>
-    </tgroup></informaltable>
+
 </section>
 
 </section>
@@ -6093,17 +5255,7 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
 </indexterm>
 <synopsis>dt_type</synopsis>
 <para>The type of a UI lib</para>
-<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
-    <colspec colwidth="2*"/>
-    <colspec colwidth="8*"/>
-    <tbody><row>
-    <entry>Attributes:</entry>
-    <entry><itemizedlist>
-<listitem><para><emphasis><link linkend="attributes_has_pairs">has_pairs</link></emphasis></para></listitem>
-</itemizedlist>
-</entry>
-    </row></tbody>
-    </tgroup></informaltable>
+
 <section status="final" id="types_dt_lib_module_t_id">
 <title>types.dt_lib_module_t.id</title>
 <indexterm>
@@ -6112,17 +5264,7 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
 </indexterm>
 <synopsis>string</synopsis>
 <para>A unit string identifying the lib</para>
-<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
-    <colspec colwidth="2*"/>
-    <colspec colwidth="8*"/>
-    <tbody><row>
-    <entry>Attributes:</entry>
-    <entry><itemizedlist>
-<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
-</itemizedlist>
-</entry>
-    </row></tbody>
-    </tgroup></informaltable>
+
 </section>
 
 <section status="final" id="types_dt_lib_module_t_name">
@@ -6133,17 +5275,7 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
 </indexterm>
 <synopsis>string</synopsis>
 <para>The translated title of the UI element</para>
-<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
-    <colspec colwidth="2*"/>
-    <colspec colwidth="8*"/>
-    <tbody><row>
-    <entry>Attributes:</entry>
-    <entry><itemizedlist>
-<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
-</itemizedlist>
-</entry>
-    </row></tbody>
-    </tgroup></informaltable>
+
 </section>
 
 <section status="final" id="types_dt_lib_module_t_version">
@@ -6154,17 +5286,7 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
 </indexterm>
 <synopsis>number</synopsis>
 <para>The version of the internal data of this lib</para>
-<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
-    <colspec colwidth="2*"/>
-    <colspec colwidth="8*"/>
-    <tbody><row>
-    <entry>Attributes:</entry>
-    <entry><itemizedlist>
-<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
-</itemizedlist>
-</entry>
-    </row></tbody>
-    </tgroup></informaltable>
+
 </section>
 
 <section status="final" id="types_dt_lib_module_t_visible">
@@ -6183,7 +5305,6 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
     <entry>Attributes:</entry>
     <entry><itemizedlist>
 <listitem><para><emphasis><link linkend="attributes_implicit_yield">implicit_yield</link></emphasis></para></listitem>
-<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
 <listitem><para><emphasis><link linkend="attributes_write">write</link></emphasis></para></listitem>
 </itemizedlist>
 </entry>
@@ -6199,17 +5320,7 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
 </indexterm>
 <synopsis><link linkend="types_dt_ui_container_t">types.dt_ui_container_t</link></synopsis>
 <para>The location of the lib in the darktable UI</para>
-<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
-    <colspec colwidth="2*"/>
-    <colspec colwidth="8*"/>
-    <tbody><row>
-    <entry>Attributes:</entry>
-    <entry><itemizedlist>
-<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
-</itemizedlist>
-</entry>
-    </row></tbody>
-    </tgroup></informaltable>
+
 </section>
 
 <section status="final" id="types_dt_lib_module_t_expandable">
@@ -6220,17 +5331,7 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
 </indexterm>
 <synopsis>boolean</synopsis>
 <para>True if the lib can be expanded/retracted</para>
-<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
-    <colspec colwidth="2*"/>
-    <colspec colwidth="8*"/>
-    <tbody><row>
-    <entry>Attributes:</entry>
-    <entry><itemizedlist>
-<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
-</itemizedlist>
-</entry>
-    </row></tbody>
-    </tgroup></informaltable>
+
 </section>
 
 <section status="final" id="types_dt_lib_module_t_expanded">
@@ -6247,7 +5348,6 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
     <tbody><row>
     <entry>Attributes:</entry>
     <entry><itemizedlist>
-<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
 <listitem><para><emphasis><link linkend="attributes_write">write</link></emphasis></para></listitem>
 </itemizedlist>
 </entry>
@@ -6263,17 +5363,7 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
 </indexterm>
 <synopsis>number</synopsis>
 <para>A value deciding the position of the lib within its container</para>
-<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
-    <colspec colwidth="2*"/>
-    <colspec colwidth="8*"/>
-    <tbody><row>
-    <entry>Attributes:</entry>
-    <entry><itemizedlist>
-<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
-</itemizedlist>
-</entry>
-    </row></tbody>
-    </tgroup></informaltable>
+
 </section>
 
 <section status="final" id="types_dt_lib_module_t_views">
@@ -6284,17 +5374,7 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
 </indexterm>
 <synopsis>table</synopsis>
 <para>A table of all teh views that display this widget</para>
-<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
-    <colspec colwidth="2*"/>
-    <colspec colwidth="8*"/>
-    <tbody><row>
-    <entry>Attributes:</entry>
-    <entry><itemizedlist>
-<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
-</itemizedlist>
-</entry>
-    </row></tbody>
-    </tgroup></informaltable>
+
 </section>
 
 <section status="final" id="types_dt_lib_module_t_reset">
@@ -6308,17 +5388,7 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
 )</synopsis>
 <para>A function to reset the lib to its default values</para>
 <para>This function will do nothing if the lib is not visible or can't be reset</para>
-<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
-    <colspec colwidth="2*"/>
-    <colspec colwidth="8*"/>
-    <tbody><row>
-    <entry>Attributes:</entry>
-    <entry><itemizedlist>
-<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
-</itemizedlist>
-</entry>
-    </row></tbody>
-    </tgroup></informaltable>
+
 <variablelist>
 <varlistentry id="types_dt_lib_module_t_reset_self"><term>self</term><listitem>
 <synopsis><link linkend="types_dt_lib_module_t">types.dt_lib_module_t</link></synopsis>
@@ -6337,17 +5407,7 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
 </indexterm>
 <synopsis>boolean</synopsis>
 <para>True if the lib is currently visible on the screen</para>
-<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
-    <colspec colwidth="2*"/>
-    <colspec colwidth="8*"/>
-    <tbody><row>
-    <entry>Attributes:</entry>
-    <entry><itemizedlist>
-<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
-</itemizedlist>
-</entry>
-    </row></tbody>
-    </tgroup></informaltable>
+
 </section>
 
 </section>
@@ -6360,17 +5420,7 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
 </indexterm>
 <synopsis>dt_type</synopsis>
 <para>A darktable view</para>
-<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
-    <colspec colwidth="2*"/>
-    <colspec colwidth="8*"/>
-    <tbody><row>
-    <entry>Attributes:</entry>
-    <entry><itemizedlist>
-<listitem><para><emphasis><link linkend="attributes_has_pairs">has_pairs</link></emphasis></para></listitem>
-</itemizedlist>
-</entry>
-    </row></tbody>
-    </tgroup></informaltable>
+
 <section status="final" id="types_dt_view_t_id">
 <title>types.dt_view_t.id</title>
 <indexterm>
@@ -6379,17 +5429,7 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
 </indexterm>
 <synopsis>string</synopsis>
 <para>A unique string identifying the view</para>
-<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
-    <colspec colwidth="2*"/>
-    <colspec colwidth="8*"/>
-    <tbody><row>
-    <entry>Attributes:</entry>
-    <entry><itemizedlist>
-<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
-</itemizedlist>
-</entry>
-    </row></tbody>
-    </tgroup></informaltable>
+
 </section>
 
 <section status="final" id="types_dt_view_t_name">
@@ -6400,17 +5440,7 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
 </indexterm>
 <synopsis>string</synopsis>
 <para>The name of the view</para>
-<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
-    <colspec colwidth="2*"/>
-    <colspec colwidth="8*"/>
-    <tbody><row>
-    <entry>Attributes:</entry>
-    <entry><itemizedlist>
-<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
-</itemizedlist>
-</entry>
-    </row></tbody>
-    </tgroup></informaltable>
+
 </section>
 
 </section>
@@ -6423,17 +5453,7 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
 </indexterm>
 <synopsis>dt_type</synopsis>
 <para>A lua-managed entry in the backgroundjob lib</para>
-<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
-    <colspec colwidth="2*"/>
-    <colspec colwidth="8*"/>
-    <tbody><row>
-    <entry>Attributes:</entry>
-    <entry><itemizedlist>
-<listitem><para><emphasis><link linkend="attributes_has_pairs">has_pairs</link></emphasis></para></listitem>
-</itemizedlist>
-</entry>
-    </row></tbody>
-    </tgroup></informaltable>
+
 <section status="final" id="types_dt_lua_backgroundjob_t_percent">
 <title>types.dt_lua_backgroundjob_t.percent</title>
 <indexterm>
@@ -6448,7 +5468,6 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
     <tbody><row>
     <entry>Attributes:</entry>
     <entry><itemizedlist>
-<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
 <listitem><para><emphasis><link linkend="attributes_write">write</link></emphasis></para></listitem>
 </itemizedlist>
 </entry>
@@ -6471,7 +5490,6 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
     <tbody><row>
     <entry>Attributes:</entry>
     <entry><itemizedlist>
-<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
 <listitem><para><emphasis><link linkend="attributes_write">write</link></emphasis></para></listitem>
 </itemizedlist>
 </entry>
@@ -6495,7 +5513,6 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
     <tbody><row>
     <entry>Attributes:</entry>
     <entry><itemizedlist>
-<listitem><para><emphasis><link linkend="attributes_has_pairs">has_pairs</link></emphasis></para></listitem>
 <listitem><para><emphasis><link linkend="attributes_has_tostring">has_tostring</link></emphasis></para></listitem>
 </itemizedlist>
 </entry>
@@ -6509,17 +5526,7 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
 </indexterm>
 <synopsis>string</synopsis>
 <para>The filename of an image containing the snapshot</para>
-<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
-    <colspec colwidth="2*"/>
-    <colspec colwidth="8*"/>
-    <tbody><row>
-    <entry>Attributes:</entry>
-    <entry><itemizedlist>
-<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
-</itemizedlist>
-</entry>
-    </row></tbody>
-    </tgroup></informaltable>
+
 </section>
 
 <section status="final" id="types_dt_lua_snapshot_t_select">
@@ -6532,17 +5539,7 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
 	<emphasis><link linkend="types_dt_lua_snapshot_t_select_snapshot">snapshot</link></emphasis> : <link linkend="types_dt_lua_snapshot_t">types.dt_lua_snapshot_t</link>
 )</synopsis>
 <para>Activates this snapshot on the display. To deactivate all snapshot you need to call this function on the active snapshot</para>
-<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
-    <colspec colwidth="2*"/>
-    <colspec colwidth="8*"/>
-    <tbody><row>
-    <entry>Attributes:</entry>
-    <entry><itemizedlist>
-<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
-</itemizedlist>
-</entry>
-    </row></tbody>
-    </tgroup></informaltable>
+
 <variablelist>
 <varlistentry id="types_dt_lua_snapshot_t_select_snapshot"><term>snapshot</term><listitem>
 <synopsis><link linkend="types_dt_lua_snapshot_t">types.dt_lua_snapshot_t</link></synopsis>
@@ -6561,17 +5558,7 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
 </indexterm>
 <synopsis>string</synopsis>
 <para>The name of the snapshot, as seen in the UI</para>
-<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
-    <colspec colwidth="2*"/>
-    <colspec colwidth="8*"/>
-    <tbody><row>
-    <entry>Attributes:</entry>
-    <entry><itemizedlist>
-<listitem><para><emphasis><link linkend="attributes_read">read</link></emphasis></para></listitem>
-</itemizedlist>
-</entry>
-    </row></tbody>
-    </tgroup></informaltable>
+
 </section>
 
 </section>
@@ -6802,6 +5789,38 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
 <listitem><para>file</para></listitem>
 <listitem><para>directory</para></listitem>
 <listitem><para>enum</para></listitem>
+</itemizedlist>
+</para></listitem>
+</itemizedlist>
+</entry>
+    </row></tbody>
+    </tgroup></informaltable>
+</section>
+
+<section status="final" id="types_dt_imageio_exr_compression_t">
+<title>types.dt_imageio_exr_compression_t</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>dt_imageio_exr_compression_t</secondary>
+</indexterm>
+<synopsis>enum</synopsis>
+<para>undocumented types.dt_imageio_exr_compression_t</para>
+<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
+    <colspec colwidth="2*"/>
+    <colspec colwidth="8*"/>
+    <tbody><row>
+    <entry>Attributes:</entry>
+    <entry><itemizedlist>
+<listitem><para><emphasis>values : </emphasis></para>
+<para><itemizedlist>
+<listitem><para>off</para></listitem>
+<listitem><para>rle</para></listitem>
+<listitem><para>zips</para></listitem>
+<listitem><para>zip</para></listitem>
+<listitem><para>piz</para></listitem>
+<listitem><para>pxr24</para></listitem>
+<listitem><para>b44</para></listitem>
+<listitem><para>b44a</para></listitem>
 </itemizedlist>
 </para></listitem>
 </itemizedlist>
@@ -7123,46 +6142,6 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
 
 </section>
 
-<section status="final" id="attributes_read">
-<title>attributes.read</title>
-<indexterm>
-<primary>Lua API</primary>
-<secondary>read</secondary>
-</indexterm>
-<para>This object is a variable that can be read.</para>
-
-</section>
-
-<section status="final" id="attributes_has_pairs">
-<title>attributes.has_pairs</title>
-<indexterm>
-<primary>Lua API</primary>
-<secondary>has_pairs</secondary>
-</indexterm>
-<para>This object can be used as an argument to the system function "pairs" and iterated upon.</para>
-
-</section>
-
-<section status="final" id="attributes_has_ipairs">
-<title>attributes.has_ipairs</title>
-<indexterm>
-<primary>Lua API</primary>
-<secondary>has_ipairs</secondary>
-</indexterm>
-<para>This object can be used as an argument to the system function "ipairs" and iterated upon.</para>
-
-</section>
-
-<section status="final" id="attributes_has_length">
-<title>attributes.has_length</title>
-<indexterm>
-<primary>Lua API</primary>
-<secondary>has_length</secondary>
-</indexterm>
-<para>This object has a specific length function that will be used by the # operator.</para>
-
-</section>
-
 <section status="final" id="attributes_has_tostring">
 <title>attributes.has_tostring</title>
 <indexterm>
@@ -7190,6 +6169,16 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
 <secondary>parent</secondary>
 </indexterm>
 <para>This object inherits some methods from another object. You can call the methods from the parent on the child object</para>
+
+</section>
+
+<section status="final" id="attributes_has_length">
+<title>attributes.has_length</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>has_length</secondary>
+</indexterm>
+<para>undocumented attributes.has_length</para>
 
 </section>
 
