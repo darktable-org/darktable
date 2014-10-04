@@ -197,6 +197,45 @@ void RawDecoder::readUncompressedRaw(ByteStream &input, iPoint2D& size, iPoint2D
   }
 }
 
+void RawDecoder::Decode8BitRGB(ByteStream &input, uint32 w, uint32 h) {
+  uchar8* data = mRaw->getData();
+  uint32 pitch = mRaw->pitch;
+  const uchar8 *in = input.getData();
+  if (input.getRemainSize() < (w*h*3)) {
+    if ((uint32)input.getRemainSize() > w*3) {
+      h = input.getRemainSize() / w*3 - 1;
+      mRaw->setError("Image truncated (file is too short)");
+    } else
+      ThrowIOE("Decode8BitRGB: Not enough data to decode a single line. Image file truncated.");
+  }
+  for (uint32 y = 0; y < h; y++) {
+    ushort16* dest = (ushort16*) & data[y*pitch];
+    for (uint32 x = 0 ; x < w*3; x += 6) {
+      /* Decoding method and coefficients taken from
+         http://www.rawdigger.com/howtouse/nikon-small-raw-internals */
+
+      uint32 g1 = *in++;
+      uint32 g2 = *in++;
+      uint32 g3 = *in++;
+      uint32 g4 = *in++;
+      uint32 g5 = *in++;
+      uint32 g6 = *in++;
+
+      float y1 = g1 | ((g2 & 0x0f) << 8);
+      float y2 = (g2 >> 4) | (g3 << 4);
+      float cb = g4 | ((g5 & 0x0f) << 8);
+      float cr = (g5 >> 4) | (g6 << 4);
+
+      dest[x]   = y1 + 1.40200 * (cr - 2048);
+      dest[x+1] = y1 - 0.34414 * (cb - 2048) - 0.71414 * (cr - 2048);
+      dest[x+2] = y1 + 1.77200 * (cb - 2048);
+      dest[x+3] = y2 + 1.40200 * (cr - 2048);
+      dest[x+4] = y2 - 0.34414 * (cb - 2048) - 0.71414 * (cr - 2048);
+      dest[x+5] = y2 + 1.77200 * (cb - 2048);
+    }
+  }
+}
+
 void RawDecoder::Decode12BitRaw(ByteStream &input, uint32 w, uint32 h) {
   uchar8* data = mRaw->getData();
   uint32 pitch = mRaw->pitch;
