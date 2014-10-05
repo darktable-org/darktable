@@ -172,15 +172,17 @@ extern "C"
       dt_imageio_exr_t *new_params = (dt_imageio_exr_t*)malloc(sizeof(dt_imageio_exr_t));
       memcpy(new_params, old_params, old_params_size);
       new_params->compression = (dt_imageio_exr_compression_t)PIZ_COMPRESSION;
-      *new_size = sizeof(dt_imageio_exr_t);
+      *new_size = self->params_size(self);
       return new_params;
     }
     if(old_version == 2 && new_version == 3)
     {
       dt_imageio_exr_t *new_params = (dt_imageio_exr_t*)malloc(sizeof(dt_imageio_exr_t));
-      memcpy(new_params, old_params, old_params_size);
-      new_params->compression = (dt_imageio_exr_compression_t)PIZ_COMPRESSION;
-      *new_size = sizeof(dt_imageio_exr_t);
+
+      //last param was dropped (pixel type)
+      memcpy(new_params, old_params, sizeof(dt_imageio_exr_t));
+
+      *new_size = self->params_size(self);
       return new_params;
     }
     return NULL;
