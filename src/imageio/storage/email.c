@@ -30,7 +30,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-DT_MODULE(1)
+DT_MODULE(2)
 
 typedef struct _email_attachment_t
 {
@@ -42,7 +42,7 @@ _email_attachment_t;
 // saved params
 typedef struct dt_imageio_email_t
 {
-  char filename[1024];
+  char filename[DT_MAX_PATH_FOR_PARAMS];
   GList *images;
 }
 dt_imageio_email_t;
@@ -52,6 +52,31 @@ const char*
 name (const struct dt_imageio_module_storage_t *self)
 {
   return _("send as email");
+}
+
+void *
+legacy_params(dt_imageio_module_storage_t *self,
+              const void *const old_params, const size_t old_params_size, const int old_version,
+              const int new_version, size_t *new_size)
+{
+  if(old_version == 1 && new_version == 2)
+  {
+    typedef struct dt_imageio_email_v1_t
+    {
+      char filename[1024];
+      GList *images;
+    }
+    dt_imageio_email_v1_t;
+
+    dt_imageio_email_t *n = (dt_imageio_email_t *)malloc(sizeof(dt_imageio_email_t));
+    dt_imageio_email_v1_t *o = (dt_imageio_email_v1_t *)old_params;
+
+    g_strlcpy(n->filename, o->filename, sizeof(n->filename));
+
+    *new_size = self->params_size(self);
+    return n;
+  }
+  return NULL;
 }
 
 int recommended_dimension(struct dt_imageio_module_storage_t *self, uint32_t *width, uint32_t *height)
@@ -192,13 +217,13 @@ finalize_store(dt_imageio_module_storage_t *self, dt_imageio_module_data_t *para
     gchar *filename = g_path_get_basename( attachment->file );
     const dt_image_t *img = dt_image_cache_read_get(darktable.image_cache, attachment->imgid);
     dt_image_print_exif(img, exif, sizeof(exif));
-    g_snprintf(body+strlen(body),4096-strlen(body), imageBodyFormat, filename, exif );
+    g_snprintf(body+strlen(body), sizeof(body)-strlen(body), imageBodyFormat, filename, exif );
     g_free(filename);
 
     if(*attachments)
-      g_snprintf(attachments+strlen(attachments),4096-strlen(attachments), "%s", attachmentSeparator );
+      g_snprintf(attachments+strlen(attachments), sizeof(attachments)-strlen(attachments), "%s", attachmentSeparator );
 
-    g_snprintf(attachments+strlen(attachments),4096-strlen(attachments), attachmentFormat, attachment->file );
+    g_snprintf(attachments+strlen(attachments), sizeof(attachments)-strlen(attachments), attachmentFormat, attachment->file );
     // Free attachment item and remove
     dt_image_cache_read_release(darktable.image_cache, img);
     g_free( d->images->data );
