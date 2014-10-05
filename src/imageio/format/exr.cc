@@ -256,7 +256,7 @@ extern "C"
     GtkWidget *hbox = gtk_hbox_new(TRUE, 5);
     gtk_box_pack_start(GTK_BOX(self->widget), hbox, TRUE, TRUE, 0);
 
-    GtkWidget *label = gtk_label_new(_("Compression mode"));
+    GtkWidget *label = gtk_label_new(_("compression mode"));
     gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.0);
     gtk_box_pack_start(GTK_BOX(hbox), label, TRUE, TRUE, 0);
 
