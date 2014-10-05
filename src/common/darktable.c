@@ -390,18 +390,50 @@ int dt_init(int argc, char *argv[], const int init_gui,lua_State *L)
   #error "Unfortunately we depend on SSE3 instructions at this time."
   #error "Please contribute a backport patch (or buy a newer processor)."
 #else
-  #if (__GNUC_PREREQ(4,8) || __has_builtin(__builtin_cpu_supports))
-  //FIXME: check will work only in GCC 4.8+ !!! implement manual cpuid check !!!
-  //NOTE: _may_i_use_cpu_feature() looks better, but only avaliable in ICC
-  if (!__builtin_cpu_supports("sse3"))
   {
-    fprintf(stderr, "[dt_init] unfortunately we depend on SSE3 instructions at this time.\n");
-    fprintf(stderr, "[dt_init] please contribute a backport patch (or buy a newer processor).\n");
-    return 1;
-  }
+    int sse3_supported = 0;
+
+  #if (__GNUC_PREREQ(4,8) || __has_builtin(__builtin_cpu_supports))
+    //NOTE: _may_i_use_cpu_feature() looks better, but only avaliable in ICC
+    sse3_supported = __builtin_cpu_supports("sse3");
+
   #else
-  //FIXME: no way to check for SSE3 in runtime, implement manual cpuid check !!!
+    // Check SSE3 support "manually"
+    // (see http://stackoverflow.com/questions/6121792/how-to-check-if-a-cpu-supports-the-sse3-instruction-set)
+    
+    int cpu_info[4];
+
+    __asm__ __volatile__ (
+            "cpuid":
+            "=a" (cpu_info[0]),
+            "=b" (cpu_info[1]),
+            "=c" (cpu_info[2]),
+            "=d" (cpu_info[3]):
+            "a" (0), "c" (0)
+    );
+
+    if (cpu_info[0] >= 0x00000001)
+    {
+      __asm__ __volatile__ (
+              "cpuid":
+              "=a" (cpu_info[0]),
+              "=b" (cpu_info[1]),
+              "=c" (cpu_info[2]),
+              "=d" (cpu_info[3]):
+              "a" (0x00000001), "c" (0)
+      );
+
+      sse3_supported  = (cpu_info[2] & ((int)1 << 0)) != 0;
+    }
+    
   #endif
+    if (!sse3_supported)
+    {
+      fprintf(stderr, "[dt_init] unfortunately we depend on SSE3 instructions at this time.\n");
+      fprintf(stderr, "[dt_init] please contribute a backport patch (or buy a newer processor).\n");
+      return 1;
+    }
+  }
 #endif
 
 #ifdef M_MMAP_THRESHOLD
