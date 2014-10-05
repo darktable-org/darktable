@@ -43,6 +43,7 @@ RawImageData::RawImageData(void):
   mDitherScale = TRUE;
   fujiRotationPos = 0;
   pixelAspectRatio = 1;
+  preAppliedWB = FALSE;
 }
 
 RawImageData::RawImageData(iPoint2D _dim, uint32 _bpc, uint32 _cpp) :
@@ -57,6 +58,7 @@ RawImageData::RawImageData(iPoint2D _dim, uint32 _bpc, uint32 _cpp) :
   mDitherScale = TRUE;
   fujiRotationPos = 0;
   pixelAspectRatio = 1;
+  preAppliedWB = FALSE;
   createData();
   pthread_mutex_init(&mymutex, NULL);
   pthread_mutex_init(&errMutex, NULL);

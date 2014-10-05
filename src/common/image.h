@@ -147,6 +147,9 @@ typedef struct dt_image_t
 
   /* filter for Fuji X-Trans images, only used if filters == 9u */
   uint8_t xtrans[6][6];
+
+  /* If the image already has WB applied from the start */
+  bool preAppliedWB;
 }
 dt_image_t;
 

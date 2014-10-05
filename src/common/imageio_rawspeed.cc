@@ -147,6 +147,7 @@ dt_imageio_open_rawspeed(
     m.reset();
 
     img->filters = 0u;
+    img->preAppliedWB = r->preAppliedWB;
     if( !r->isCFA )
     {
       dt_imageio_retval_t ret = dt_imageio_open_rawspeed_sraw(img, r, a);
