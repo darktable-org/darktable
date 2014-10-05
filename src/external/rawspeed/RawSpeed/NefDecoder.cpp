@@ -63,8 +63,14 @@ RawImage NefDecoder::decodeRawInternal() {
     }
   }
 
-  if (compression == 1 || (hints.find(string("force_uncompressed")) != hints.end())) {
+  if (compression == 1 || (hints.find(string("force_uncompressed")) != hints.end()) ||
+      NEFIsUncompressed(raw)) {
     DecodeUncompressed();
+    return mRaw;
+  }
+
+  if (NEFIsUncompressedRGB(raw)) {
+    DecodeRGBUncompressed();
     return mRaw;
   }
 
@@ -145,6 +151,30 @@ bool NefDecoder::D100IsCompressed(uint32 offset) {
   return false;
 }
 
+/* At least the D810 has a broken firmware that tags uncompressed images
+   as if they were compressed. For those cases we set uncompressed mode
+   by figuring out that the image is the size of uncompressed packing */
+bool NefDecoder::NEFIsUncompressed(TiffIFD *raw) {
+  const uint32 *counts = raw->getEntry(STRIPBYTECOUNTS)->getIntArray();
+  uint32 width = raw->getEntry(IMAGEWIDTH)->getInt();
+  uint32 height = raw->getEntry(IMAGELENGTH)->getInt();
+  uint32 bitPerPixel = raw->getEntry(BITSPERSAMPLE)->getInt();
+
+  return counts[0] == width*height*bitPerPixel/8;
+}
+
+/* At least the D810 has a broken firmware that tags uncompressed images
+   as if they were compressed. For those cases we set uncompressed mode
+   by figuring out that the image is the size of uncompressed packing */
+bool NefDecoder::NEFIsUncompressedRGB(TiffIFD *raw) {
+  const uint32 *counts = raw->getEntry(STRIPBYTECOUNTS)->getIntArray();
+  uint32 width = raw->getEntry(IMAGEWIDTH)->getInt();
+  uint32 height = raw->getEntry(IMAGELENGTH)->getInt();
+
+  return counts[0] == width*height*3;
+}
+
+
 TiffIFD* NefDecoder::FindBestImage(vector<TiffIFD*>* data) {
   int largest_width = 0;
   TiffIFD* best_ifd = NULL;
@@ -192,9 +222,10 @@ void NefDecoder::DecodeUncompressed() {
     ThrowRDE("NEF Decoder: No valid slices found. File probably truncated.");
 
   mRaw->dim = iPoint2D(width, offY);
+
   mRaw->createData();
   if (bitPerPixel == 14 && width*slices[0].h*2 == slices[0].count)
-    bitPerPixel = 16; // D3
+    bitPerPixel = 16; // D3 & D810
 
   if(hints.find("real_bpp") != hints.end()) {
     stringstream convert(hints.find("real_bpp")->second);
@@ -322,6 +353,23 @@ void NefDecoder::DecodeD100Uncompressed() {
   Decode12BitRawBEWithControl(input, width, height);
 }
 
+void NefDecoder::DecodeRGBUncompressed() {
+  vector<TiffIFD*> data = mRootIFD->getIFDsWithTag(CFAPATTERN);
+  TiffIFD* raw = FindBestImage(&data);
+  uint32 offset = raw->getEntry(STRIPOFFSETS)->getInt();
+  uint32 width = raw->getEntry(IMAGEWIDTH)->getInt();
+  uint32 height = raw->getEntry(IMAGELENGTH)->getInt();
+
+  mRaw->dim = iPoint2D(width, height);
+  mRaw->setCpp(3);
+  mRaw->isCFA = false;
+  mRaw->createData();
+
+  ByteStream in(mFile->getData(offset), mFile->getSize()-offset);
+
+  Decode8BitRGB(in, width, height);
+}
+
 void NefDecoder::checkSupportInternal(CameraMetaData *meta) {
   vector<TiffIFD*> data = mRootIFD->getIFDsWithTag(MODEL);
   if (data.empty())
@@ -341,10 +389,15 @@ string NefDecoder::getMode() {
   TiffIFD* raw = FindBestImage(&data);
   int compression = raw->getEntry(COMPRESSION)->getInt();
   uint32 bitPerPixel = raw->getEntry(BITSPERSAMPLE)->getInt();
-  if (1 == compression)
-    mode << bitPerPixel << "bit-uncompressed";
-  else
-    mode << bitPerPixel << "bit-compressed";
+
+  if (NEFIsUncompressedRGB(raw))
+    mode << "rgb-uncompressed";
+  else {
+    if (1 == compression || NEFIsUncompressed(raw))
+      mode << bitPerPixel << "bit-uncompressed";
+    else
+      mode << bitPerPixel << "bit-compressed";
+  }
   return mode.str();
 }
 
