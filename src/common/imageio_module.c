@@ -69,7 +69,7 @@ dt_imageio_load_module_format (dt_imageio_module_format_t *module, const char *l
   module->widget = NULL;
   module->parameter_lua_type = LUAA_INVALID_TYPE;
   g_strlcpy(module->plugin_name, plugin_name, sizeof(module->plugin_name));
-  module->module = g_module_open(libname, G_MODULE_BIND_LAZY);
+  module->module = g_module_open(libname, G_MODULE_BIND_LAZY | G_MODULE_BIND_LOCAL);
   if(!module->module) goto error;
   int (*version)();
   if(!g_module_symbol(module->module, "dt_module_dt_version", (gpointer)&(version))) goto error;
@@ -191,7 +191,7 @@ dt_imageio_load_module_storage (dt_imageio_module_storage_t *module, const char 
   module->widget = NULL;
   module->parameter_lua_type = LUAA_INVALID_TYPE;
   g_strlcpy(module->plugin_name, plugin_name, sizeof(module->plugin_name));
-  module->module = g_module_open(libname, G_MODULE_BIND_LAZY);
+  module->module = g_module_open(libname, G_MODULE_BIND_LAZY | G_MODULE_BIND_LOCAL);
   if(!module->module) goto error;
   int (*version)();
   if(!g_module_symbol(module->module, "dt_module_dt_version", (gpointer)&(version))) goto error;

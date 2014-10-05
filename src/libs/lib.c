@@ -497,7 +497,7 @@ dt_lib_load_module (dt_lib_module_t *module, const char *libname, const char *pl
   module->dt = &darktable;
   module->widget = NULL;
   g_strlcpy(module->plugin_name, plugin_name, sizeof(module->plugin_name));
-  module->module = g_module_open(libname, G_MODULE_BIND_LAZY);
+  module->module = g_module_open(libname, G_MODULE_BIND_LAZY | G_MODULE_BIND_LOCAL);
   if(!module->module) goto error;
   int (*version)();
   if(!g_module_symbol(module->module, "dt_module_dt_version", (gpointer)&(version))) goto error;

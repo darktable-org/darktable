@@ -198,7 +198,7 @@ int dt_iop_load_module_so(dt_iop_module_so_t *module, const char *libname, const
 {
   g_strlcpy(module->op, op, 20);
   module->data = NULL;
-  module->module = g_module_open(libname, G_MODULE_BIND_LAZY);
+  module->module = g_module_open(libname, G_MODULE_BIND_LAZY | G_MODULE_BIND_LOCAL);
   if(!module->module) goto error;
   int (*version)();
   if(!g_module_symbol(module->module, "dt_module_dt_version", (gpointer)&(version))) goto error;
