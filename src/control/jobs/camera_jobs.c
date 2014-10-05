@@ -393,9 +393,9 @@ dt_job_t * dt_camera_import_job_create(const char *jobcode, GList *images, struc
 
   /* intitialize import session for camera import job */
   params->shared.session = dt_import_session_new();
-  dt_import_session_set_name(params->shared.session, jobcode);
   if(time_override != 0)
     dt_import_session_set_time(params->shared.session, time_override);
+  dt_import_session_set_name(params->shared.session, jobcode);
 
   params->fraction=0;
   params->images=g_list_copy(images);
