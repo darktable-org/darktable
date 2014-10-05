@@ -449,18 +449,21 @@ void reload_defaults(dt_iop_module_t *module)
   if(!module->dev) goto end;
 
   // raw images need wb:
-  if(dt_image_is_raw(&module->dev->image_storage))
-  {
-    module->default_enabled = 1;
-  }
-  else module->default_enabled = 0;
+  module->default_enabled = dt_image_is_raw(&module->dev->image_storage) &&
+                            !module->dev->image_storage.preAppliedWB;
 
   // get white balance coefficients, as shot
   char filename[PATH_MAX];
   int ret=0;
+
   /* check if file is raw / hdr */
-  if(!&module->dev->image_storage.preAppliedWB &&
-     dt_image_is_raw(&module->dev->image_storage))
+  if(dt_image_is_raw(&module->dev->image_storage) &&
+      /*
+       * ugly nikon hack: d810 sraws have WB pre-applied,
+       * but it is still stored inside.
+       * once we move WB coeffs reading into RS, this can be deleted.
+       */
+      !module->dev->image_storage.preAppliedWB)
   {
     gboolean from_cache = TRUE;
     dt_image_full_path(module->dev->image_storage.id, filename, sizeof(filename), &from_cache);
