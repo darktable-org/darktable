@@ -459,7 +459,8 @@ void reload_defaults(dt_iop_module_t *module)
   char filename[PATH_MAX];
   int ret=0;
   /* check if file is raw / hdr */
-  if(dt_image_is_raw(&module->dev->image_storage))
+  if(!&module->dev->image_storage.preAppliedWB &&
+     dt_image_is_raw(&module->dev->image_storage))
   {
     gboolean from_cache = TRUE;
     dt_image_full_path(module->dev->image_storage.id, filename, sizeof(filename), &from_cache);

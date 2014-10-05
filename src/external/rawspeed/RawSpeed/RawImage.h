@@ -107,6 +107,9 @@ public:
   // >1 means the image needs to be stretched horizontally (2 mean 2x)
   double pixelAspectRatio;
 
+  // If the image already has WB corrected (used for Nikon sNEF files)
+  bool preAppliedWB;
+
 protected:
   RawImageType dataType;
   RawImageData(void);

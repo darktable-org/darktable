@@ -363,6 +363,7 @@ void NefDecoder::DecodeRGBUncompressed() {
   mRaw->dim = iPoint2D(width, height);
   mRaw->setCpp(3);
   mRaw->isCFA = false;
+  mRaw->preAppliedWB = true;
   mRaw->createData();
 
   ByteStream in(mFile->getData(offset), mFile->getSize()-offset);
