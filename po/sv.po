@@ -24,8 +24,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 1.3\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2014-10-05 09:03+0200\n"
-"PO-Revision-Date: 2014-10-05 09:17+0200\n"
+"POT-Creation-Date: 2014-10-05 09:19+0200\n"
+"PO-Revision-Date: 2014-10-05 09:20+0200\n"
 "Last-Translator: Richard Levitte <richard@levitte.org>\n"
 "Language-Team: \n"
 "Language: sv\n"
@@ -48,7 +48,7 @@ msgstr "sidopanelernas bredd i pixlar"
 #: ../build/src/preferences_gen.h:1583 ../build/src/preferences_gen.h:1626
 #: ../build/src/preferences_gen.h:1650 ../build/src/preferences_gen.h:1840
 #: ../build/src/preferences_gen.h:2037 ../build/src/preferences_gen.h:2061
-#: ../build/src/preferences_gen.h:2086 ../src/lua/preferences.c:625
+#: ../build/src/preferences_gen.h:2087 ../src/lua/preferences.c:625
 #, c-format
 msgid "double click to reset to `%d'"
 msgstr "dubbelklicka för att återställa till `%d'"
@@ -74,13 +74,13 @@ msgstr ""
 #: ../build/src/preferences_gen.h:1816 ../build/src/preferences_gen.h:1859
 #: ../build/src/preferences_gen.h:1878 ../build/src/preferences_gen.h:1897
 #: ../build/src/preferences_gen.h:1916 ../build/src/preferences_gen.h:1955
-#: ../build/src/preferences_gen.h:2013 ../build/src/preferences_gen.h:2105
-#: ../build/src/preferences_gen.h:2144 ../build/src/preferences_gen.h:2163
-#: ../build/src/preferences_gen.h:2186 ../build/src/preferences_gen.h:2205
-#: ../build/src/preferences_gen.h:2244 ../build/src/preferences_gen.h:2287
-#: ../build/src/preferences_gen.h:2330 ../build/src/preferences_gen.h:2349
-#: ../build/src/preferences_gen.h:2368 ../build/src/preferences_gen.h:2418
-#: ../build/src/preferences_gen.h:2437 ../build/src/preferences_gen.h:2456
+#: ../build/src/preferences_gen.h:2013 ../build/src/preferences_gen.h:2106
+#: ../build/src/preferences_gen.h:2145 ../build/src/preferences_gen.h:2164
+#: ../build/src/preferences_gen.h:2187 ../build/src/preferences_gen.h:2206
+#: ../build/src/preferences_gen.h:2245 ../build/src/preferences_gen.h:2288
+#: ../build/src/preferences_gen.h:2331 ../build/src/preferences_gen.h:2350
+#: ../build/src/preferences_gen.h:2369 ../build/src/preferences_gen.h:2419
+#: ../build/src/preferences_gen.h:2438 ../build/src/preferences_gen.h:2457
 #: ../src/lua/preferences.c:576 ../src/lua/preferences.c:587
 #: ../src/lua/preferences.c:598 ../src/lua/preferences.c:608
 #: ../src/lua/preferences.c:616
@@ -90,8 +90,8 @@ msgstr "dubbelklicka för att återställa till `%s'"
 
 #: ../build/src/preferences_gen.h:1348 ../build/src/preferences_gen.h:1467
 #: ../build/src/preferences_gen.h:1486 ../build/src/preferences_gen.h:1816
-#: ../build/src/preferences_gen.h:1878 ../build/src/preferences_gen.h:2186
-#: ../build/src/preferences_gen.h:2205 ../build/src/preferences_gen.h:2349
+#: ../build/src/preferences_gen.h:1878 ../build/src/preferences_gen.h:2187
+#: ../build/src/preferences_gen.h:2206 ../build/src/preferences_gen.h:2350
 msgctxt "preferences"
 msgid "FALSE"
 msgstr "FALSKT"
@@ -113,8 +113,8 @@ msgstr "fråga innan en bild tas bort från databas"
 #: ../build/src/preferences_gen.h:1405 ../build/src/preferences_gen.h:1424
 #: ../build/src/preferences_gen.h:1602 ../build/src/preferences_gen.h:1798
 #: ../build/src/preferences_gen.h:1859 ../build/src/preferences_gen.h:1897
-#: ../build/src/preferences_gen.h:1916 ../build/src/preferences_gen.h:2105
-#: ../build/src/preferences_gen.h:2163
+#: ../build/src/preferences_gen.h:1916 ../build/src/preferences_gen.h:2106
+#: ../build/src/preferences_gen.h:2164
 msgctxt "preferences"
 msgid "TRUE"
 msgstr "SANT"
@@ -469,7 +469,7 @@ msgstr ""
 msgid "minimum amount of memory (in MB) for a single buffer in tiling"
 msgstr "mängd minne (i MB) för en enkel buffer vid tiling"
 
-#: ../build/src/preferences_gen.h:2089
+#: ../build/src/preferences_gen.h:2090
 msgid ""
 "if set to a positive, non-zero value this variable defines the minimum "
 "amount of memory (in MB) that tiling should take for a single image buffer. "
@@ -479,11 +479,11 @@ msgstr ""
 "'tiling' bör uppta för en bild-buffer.  detta går före heuristik baserad på "
 "host_memory_limit (kräver en omstart)."
 
-#: ../build/src/preferences_gen.h:2096
+#: ../build/src/preferences_gen.h:2097
 msgid "write sidecar file for each image"
 msgstr "skapa en redundant sidofil för varje bild"
 
-#: ../build/src/preferences_gen.h:2108
+#: ../build/src/preferences_gen.h:2109
 msgid ""
 "these redundant files can later be re-imported into a different database, "
 "preserving your changes to the image."
@@ -491,26 +491,26 @@ msgstr ""
 "dessa filer kan senare importeras i en annan databas, utan att skapa "
 "ändringar i originalbilden."
 
-#: ../build/src/preferences_gen.h:2115
+#: ../build/src/preferences_gen.h:2116
 msgid "store xmp tags in compressed format"
 msgstr "spara xmp-taggar i komprimerat format"
 
-#: ../build/src/preferences_gen.h:2125
+#: ../build/src/preferences_gen.h:2126
 msgctxt "preferences"
 msgid "never"
 msgstr "aldrig"
 
-#: ../build/src/preferences_gen.h:2129
+#: ../build/src/preferences_gen.h:2130
 msgctxt "preferences"
 msgid "always"
 msgstr "alltid"
 
-#: ../build/src/preferences_gen.h:2133 ../build/src/preferences_gen.h:2144
+#: ../build/src/preferences_gen.h:2134 ../build/src/preferences_gen.h:2145
 msgctxt "preferences"
 msgid "only large entries"
 msgstr "enbart de med stort innehåll"
 
-#: ../build/src/preferences_gen.h:2147
+#: ../build/src/preferences_gen.h:2148
 msgid ""
 "entries in xmp tags can get rather large and may exceed the available space "
 "to store the history stack in output files. this option allows xmp tags to "
@@ -520,11 +520,11 @@ msgstr ""
 "tillgängligt utrymme för att ligga in historiestacken i exporterade filer.  "
 "detta tillåter att xmp-taggar komprimeras och därmed sparar utrymme."
 
-#: ../build/src/preferences_gen.h:2154
+#: ../build/src/preferences_gen.h:2155
 msgid "activate OpenCL support"
 msgstr "aktivera stöd för OpenCL"
 
-#: ../build/src/preferences_gen.h:2166
+#: ../build/src/preferences_gen.h:2167
 msgid ""
 "if found, use OpenCL runtime on your system for improved processing speed. "
 "can be switched on and off at any time."
@@ -532,23 +532,23 @@ msgstr ""
 "använd systemets stöd för OpenCL för snabbare behandling av bilder, om "
 "stödet finns.  kan slås av eller på närsom helst."
 
-#: ../build/src/preferences_gen.h:2170
+#: ../build/src/preferences_gen.h:2171
 msgid "not available on this system"
 msgstr "ej tillgängligt på detta system"
 
-#: ../build/src/preferences_gen.h:2177
+#: ../build/src/preferences_gen.h:2178
 msgid "always try to use LittleCMS 2"
 msgstr "försök alltid att använda LittleCMS 2"
 
-#: ../build/src/preferences_gen.h:2189
+#: ../build/src/preferences_gen.h:2190
 msgid "this is significantly slower than the default."
 msgstr "detta är betydligt långsammare än standardvalet."
 
-#: ../build/src/preferences_gen.h:2196
+#: ../build/src/preferences_gen.h:2197
 msgid "do high quality resampling during export"
 msgstr "använd högkvalitet av skalning vid export"
 
-#: ../build/src/preferences_gen.h:2208
+#: ../build/src/preferences_gen.h:2209
 msgid ""
 "the image will first be processed in full resolution, and downscaled at the "
 "very end. this can result in better quality sometimes, but will always be "
@@ -558,26 +558,26 @@ msgstr ""
 "precis innan export. detta kan ibland ge bättre kvalitet men påverkar "
 "hastigheten."
 
-#: ../build/src/preferences_gen.h:2215
+#: ../build/src/preferences_gen.h:2216
 msgid "demosaicing for zoomed out darkroom mode"
 msgstr "demosaicing för mörkrummet i ut-zoomat läge"
 
-#: ../build/src/preferences_gen.h:2225
+#: ../build/src/preferences_gen.h:2226
 msgctxt "preferences"
 msgid "always bilinear (fast)"
 msgstr "alltid bilinear (snabbt)"
 
-#: ../build/src/preferences_gen.h:2229 ../build/src/preferences_gen.h:2244
+#: ../build/src/preferences_gen.h:2230 ../build/src/preferences_gen.h:2245
 msgctxt "preferences"
 msgid "at most PPG (reasonable)"
 msgstr "PPG som mest (rimligt)"
 
-#: ../build/src/preferences_gen.h:2233
+#: ../build/src/preferences_gen.h:2234
 msgctxt "preferences"
 msgid "full (possibly slow)"
 msgstr "fullt ut (kan bli långsamt)"
 
-#: ../build/src/preferences_gen.h:2247
+#: ../build/src/preferences_gen.h:2248
 msgid ""
 "interpolation when not viewing 1:1 in darkroom mode: bilinear is fastest, "
 "but not as sharp. middle ground is using PPG + interpolation modes specified "
@@ -590,31 +590,31 @@ msgstr ""
 "samma inställningar som export av bild i full storlek. för X-Trans-sensorer "
 "används VNG istf PPG i medelvägen."
 
-#: ../build/src/preferences_gen.h:2254
+#: ../build/src/preferences_gen.h:2255
 msgid "pixel interpolator"
 msgstr "pixel-interpolator"
 
-#: ../build/src/preferences_gen.h:2264
+#: ../build/src/preferences_gen.h:2265
 msgctxt "preferences"
 msgid "bilinear"
 msgstr "bilinear"
 
-#: ../build/src/preferences_gen.h:2268
+#: ../build/src/preferences_gen.h:2269
 msgctxt "preferences"
 msgid "bicubic"
 msgstr "bicubic"
 
-#: ../build/src/preferences_gen.h:2272
+#: ../build/src/preferences_gen.h:2273
 msgctxt "preferences"
 msgid "lanczos2"
 msgstr "lanczos2"
 
-#: ../build/src/preferences_gen.h:2276 ../build/src/preferences_gen.h:2287
+#: ../build/src/preferences_gen.h:2277 ../build/src/preferences_gen.h:2288
 msgctxt "preferences"
 msgid "lanczos3"
 msgstr "lanczos3"
 
-#: ../build/src/preferences_gen.h:2290
+#: ../build/src/preferences_gen.h:2291
 msgid ""
 "pixel interpolator used in rotation and lens correction (bilinear, bicubic, "
 "lanczos2, lanczos3)."
@@ -622,39 +622,39 @@ msgstr ""
 "pixel-interpolator som används för rotation och linskorrigering (bilinear, "
 "bicubic, lanczos2, lanczos3)."
 
-#: ../build/src/preferences_gen.h:2297
+#: ../build/src/preferences_gen.h:2298
 msgid "password storage backend to use"
 msgstr "lagringsmetod att använda för lösenord"
 
-#: ../build/src/preferences_gen.h:2307 ../build/src/preferences_gen.h:2330
+#: ../build/src/preferences_gen.h:2308 ../build/src/preferences_gen.h:2331
 msgctxt "preferences"
 msgid "auto"
 msgstr "auto"
 
-#: ../build/src/preferences_gen.h:2311
+#: ../build/src/preferences_gen.h:2312
 msgctxt "preferences"
 msgid "none"
 msgstr "ingen"
 
-#: ../build/src/preferences_gen.h:2315
+#: ../build/src/preferences_gen.h:2316
 msgctxt "preferences"
 msgid "kwallet"
 msgstr "kwallet"
 
-#: ../build/src/preferences_gen.h:2319
+#: ../build/src/preferences_gen.h:2320
 msgctxt "preferences"
 msgid "gnome keyring"
 msgstr "gnome nyckelring"
 
-#: ../build/src/preferences_gen.h:2333
+#: ../build/src/preferences_gen.h:2334
 msgid "the storage backend for password storage: none, kwallet, gnome keyring"
 msgstr "metod att lagring av lösenord: ingen, kwallet, gnome keyring"
 
-#: ../build/src/preferences_gen.h:2340
+#: ../build/src/preferences_gen.h:2341
 msgid "look for updated xmp files on startup"
 msgstr "sök efter uppdaterade xmp-filer vid start"
 
-#: ../build/src/preferences_gen.h:2352
+#: ../build/src/preferences_gen.h:2353
 msgid ""
 "check file modification times of all xmp files on startup to check if any "
 "got updated in the meantime"
@@ -662,11 +662,11 @@ msgstr ""
 "kontrollera filändringstiden för alla xmp-filer vid start för att se om "
 "någon har uppdaterats sen senast"
 
-#: ../build/src/preferences_gen.h:2359
+#: ../build/src/preferences_gen.h:2360
 msgid "executable for playing audio files"
 msgstr "program för att spela ljudfiler"
 
-#: ../build/src/preferences_gen.h:2371
+#: ../build/src/preferences_gen.h:2372
 msgid ""
 "this external program is used to play audio files some cameras record to "
 "keep notes for images"
@@ -674,27 +674,27 @@ msgstr ""
 "detta program används för att spela ljudfiler som kameran har skapat för att "
 "spara ljudnoteringar om bilderna"
 
-#: ../build/src/preferences_gen.h:2406
+#: ../build/src/preferences_gen.h:2407
 msgid "session options"
 msgstr "sessionsval"
 
-#: ../build/src/preferences_gen.h:2409
+#: ../build/src/preferences_gen.h:2410
 msgid "base directory naming pattern"
 msgstr "baskatalogens namnmall"
 
-#: ../build/src/preferences_gen.h:2421 ../build/src/preferences_gen.h:2440
+#: ../build/src/preferences_gen.h:2422 ../build/src/preferences_gen.h:2441
 msgid "part of full import path for an import session"
 msgstr "del av hela sökvägen filerna i en import"
 
-#: ../build/src/preferences_gen.h:2428
+#: ../build/src/preferences_gen.h:2429
 msgid "sub directory naming pattern"
 msgstr "underkatalogens namnmall"
 
-#: ../build/src/preferences_gen.h:2447
+#: ../build/src/preferences_gen.h:2448
 msgid "file naming pattern"
 msgstr "filens namnmall"
 
-#: ../build/src/preferences_gen.h:2459
+#: ../build/src/preferences_gen.h:2460
 msgid "file naming pattern used for a import session"
 msgstr "mallen på filnamnen för en import"
 
@@ -870,30 +870,30 @@ msgstr "på"
 #: ../src/common/history.c:296 ../src/common/styles.c:633
 #: ../src/common/styles.c:635 ../src/develop/blend_gui.c:1539
 #: ../src/develop/blend_gui.c:1688 ../src/develop/develop.c:1178
-#: ../src/imageio/format/exr.cc:252 ../src/imageio/format/j2k.c:637
-#: ../src/iop/colorin.c:1210 ../src/iop/demosaic.c:2202
+#: ../src/imageio/format/exr.cc:265 ../src/imageio/format/j2k.c:637
+#: ../src/iop/colorin.c:1258 ../src/iop/demosaic.c:2202
 #: ../src/iop/vignette.c:1188 ../src/libs/history.c:154
 #: ../src/libs/live_view.c:411
 msgid "off"
 msgstr "av"
 
-#: ../src/common/image.c:131
+#: ../src/common/image.c:145
 msgid "orphaned image"
 msgstr "anonyma bilder"
 
-#: ../src/common/image.c:1229
+#: ../src/common/image.c:1243
 msgid "cannot create local copy when the original file is not accessible."
 msgstr "kan inte skapa lokal kopia när originalfilen inte går att nå."
 
-#: ../src/common/image.c:1243
+#: ../src/common/image.c:1257
 msgid "cannot create local copy."
 msgstr "kan inte skapa lokal kopia."
 
-#: ../src/common/image.c:1277 ../src/control/jobs/control_jobs.c:489
+#: ../src/common/image.c:1291 ../src/control/jobs/control_jobs.c:489
 msgid "cannot remove local copy when the original file is not accessible."
 msgstr "kan inte ta bort lokal kopia när originalfilen inte går att nå."
 
-#: ../src/common/image.c:1428
+#: ../src/common/image.c:1442
 #, c-format
 msgid "%d local copy has been synchronized"
 msgid_plural "%d local copies have been synchronized"
@@ -993,7 +993,7 @@ msgstr "stil fil med namn '%s' existerar redan"
 msgid "style %s was successfully imported"
 msgstr "importerade stilen '%s'"
 
-#: ../src/common/variables.c:239 ../src/common/variables.c:254
+#: ../src/common/variables.c:239 ../src/common/variables.c:253
 #: ../src/iop/clipping.c:1479 ../src/iop/clipping.c:1712
 #: ../src/iop/clipping.c:1730 ../src/iop/clipping.c:1773
 #: ../src/iop/clipping.c:1792 ../src/iop/lens.c:1996 ../src/libs/export.c:640
@@ -1734,7 +1734,7 @@ msgstr "flytta ner"
 
 #. delete
 #: ../src/develop/imageop.c:815 ../src/libs/image.c:146
-#: ../src/libs/styles.c:394 ../src/libs/tagging.c:492
+#: ../src/libs/styles.c:394 ../src/libs/tagging.c:499
 msgid "delete"
 msgstr "radera"
 
@@ -1997,83 +1997,83 @@ msgid "please use YYYY-MM-DD format for date override"
 msgstr "använd datumformatet YYYY-MM-DD för egna datum"
 
 #. register keys for view switching
-#: ../src/gui/gtk.c:895
+#: ../src/gui/gtk.c:904
 msgctxt "accel"
 msgid "capture view"
 msgstr "tjudring"
 
-#: ../src/gui/gtk.c:896
+#: ../src/gui/gtk.c:905
 msgctxt "accel"
 msgid "lighttable view"
 msgstr "ljusbord"
 
-#: ../src/gui/gtk.c:897
+#: ../src/gui/gtk.c:906
 msgctxt "accel"
 msgid "darkroom view"
 msgstr "mörkrum"
 
-#: ../src/gui/gtk.c:898
+#: ../src/gui/gtk.c:907
 msgctxt "accel"
 msgid "map view"
 msgstr "karta"
 
-#: ../src/gui/gtk.c:899
+#: ../src/gui/gtk.c:908
 msgctxt "accel"
 msgid "slideshow view"
 msgstr "bildspel"
 
 #. register ctrl-q to quit:
-#: ../src/gui/gtk.c:926
+#: ../src/gui/gtk.c:935
 msgctxt "accel"
 msgid "quit"
 msgstr "avsluta"
 
 #. Contrast and brightness accelerators
-#: ../src/gui/gtk.c:933
+#: ../src/gui/gtk.c:942
 msgctxt "accel"
 msgid "increase brightness"
 msgstr "öka ljusstyrka"
 
-#: ../src/gui/gtk.c:935
+#: ../src/gui/gtk.c:944
 msgctxt "accel"
 msgid "decrease brightness"
 msgstr "minska ljusstyrka"
 
-#: ../src/gui/gtk.c:937
+#: ../src/gui/gtk.c:946
 msgctxt "accel"
 msgid "increase contrast"
 msgstr "öka kontrast"
 
-#: ../src/gui/gtk.c:939
+#: ../src/gui/gtk.c:948
 msgctxt "accel"
 msgid "decrease contrast"
 msgstr "minska kontrast"
 
 #. Full-screen accelerators
-#: ../src/gui/gtk.c:960
+#: ../src/gui/gtk.c:969
 msgctxt "accel"
 msgid "toggle fullscreen"
 msgstr "växla fullskärm"
 
-#: ../src/gui/gtk.c:961
+#: ../src/gui/gtk.c:970
 msgctxt "accel"
 msgid "leave fullscreen"
 msgstr "lämna fullskärm"
 
 #. Side-border hide/show
-#: ../src/gui/gtk.c:973
+#: ../src/gui/gtk.c:982
 msgctxt "accel"
 msgid "toggle side borders"
 msgstr "växla visning av paneler"
 
 #. toggle view of header
-#: ../src/gui/gtk.c:976
+#: ../src/gui/gtk.c:985
 msgctxt "accel"
 msgid "toggle header"
 msgstr "växla visning av huvud"
 
 #. View-switch
-#: ../src/gui/gtk.c:980
+#: ../src/gui/gtk.c:989
 msgctxt "accel"
 msgid "switch view"
 msgstr "byt vy"
@@ -2542,39 +2542,39 @@ msgstr ""
 "gör en 1:1 kopia av valda filer.\n"
 "den globala inställningen nedan kommer att uteslutas!"
 
-#: ../src/imageio/format/exr.cc:225
+#: ../src/imageio/format/exr.cc:238
 msgid "OpenEXR (float)"
 msgstr "OpenEXR (flyttal)"
 
-#: ../src/imageio/format/exr.cc:246
+#: ../src/imageio/format/exr.cc:259
 msgid "Compression mode"
 msgstr "komprimeringstyp"
 
-#: ../src/imageio/format/exr.cc:253
+#: ../src/imageio/format/exr.cc:266
 msgid "RLE"
 msgstr "RLE"
 
-#: ../src/imageio/format/exr.cc:254
+#: ../src/imageio/format/exr.cc:267
 msgid "ZIPS"
 msgstr "ZIPS"
 
-#: ../src/imageio/format/exr.cc:255
+#: ../src/imageio/format/exr.cc:268
 msgid "ZIP"
 msgstr "ZIP"
 
-#: ../src/imageio/format/exr.cc:256
+#: ../src/imageio/format/exr.cc:269
 msgid "PIZ (default)"
 msgstr "PIZ (standard)"
 
-#: ../src/imageio/format/exr.cc:257
+#: ../src/imageio/format/exr.cc:270
 msgid "PXR24 (lossy)"
 msgstr "PXR24 (destruktiv)"
 
-#: ../src/imageio/format/exr.cc:258
+#: ../src/imageio/format/exr.cc:271
 msgid "B44 (lossy)"
 msgstr "B44 (destruktiv)"
 
-#: ../src/imageio/format/exr.cc:259
+#: ../src/imageio/format/exr.cc:272
 msgid "B44A (lossy)"
 msgstr "B44A (destruktiv)"
 
@@ -2619,15 +2619,15 @@ msgstr "JPEG (8-bit)"
 msgid "PFM (float)"
 msgstr "PFM (flyttal)"
 
-#: ../src/imageio/format/png.c:394
+#: ../src/imageio/format/png.c:418
 msgid "PNG (8/16-bit)"
 msgstr "PNG (8/16-bit)"
 
-#: ../src/imageio/format/png.c:421
+#: ../src/imageio/format/png.c:445
 msgid "8-bit"
 msgstr "8-bit"
 
-#: ../src/imageio/format/png.c:426
+#: ../src/imageio/format/png.c:450
 msgid "16-bit"
 msgstr "16-bit"
 
@@ -2696,15 +2696,15 @@ msgid "could not write to directory `%s'!"
 msgstr "kunde inte skriva till katalog `%s'!"
 
 #: ../src/imageio/storage/disk.c:267 ../src/imageio/storage/email.c:118
-#: ../src/imageio/storage/facebook.c:1201 ../src/imageio/storage/flickr.c:666
+#: ../src/imageio/storage/facebook.c:1201 ../src/imageio/storage/flickr.c:672
 #: ../src/imageio/storage/gallery.c:339 ../src/imageio/storage/gallery.c:358
-#: ../src/imageio/storage/picasa.c:1453
+#: ../src/imageio/storage/picasa.c:1455
 #, c-format
 msgid "could not export to file `%s'!"
 msgstr "kunde inte exportera till fil `%s'!"
 
 #: ../src/imageio/storage/disk.c:274 ../src/imageio/storage/email.c:127
-#: ../src/imageio/storage/gallery.c:368 ../src/imageio/storage/latex.c:351
+#: ../src/imageio/storage/gallery.c:368 ../src/imageio/storage/latex.c:350
 #, c-format
 msgid "%d/%d exported to `%s%s'"
 msgstr "%d/%d exporterad till `%s%s'"
@@ -2716,6 +2716,10 @@ msgstr "skicka som epost"
 #: ../src/imageio/storage/email.c:179
 msgid "images exported from darktable"
 msgstr "bilder exporterade från darktable"
+
+#: ../src/imageio/storage/email.c:214
+msgid "could not launch email client!"
+msgstr "kunde inte starta email-klienten!"
 
 #: ../src/imageio/storage/facebook.c:242
 #, c-format
@@ -2744,46 +2748,46 @@ msgstr ""
 msgid "facebook authentication"
 msgstr "facebook-autentisering"
 
-#: ../src/imageio/storage/facebook.c:632 ../src/imageio/storage/picasa.c:850
+#: ../src/imageio/storage/facebook.c:632 ../src/imageio/storage/picasa.c:852
 msgid "URL:"
 msgstr "URL:"
 
-#: ../src/imageio/storage/facebook.c:654 ../src/imageio/storage/picasa.c:872
+#: ../src/imageio/storage/facebook.c:654 ../src/imageio/storage/picasa.c:874
 msgid "please enter the validation URL"
 msgstr "var god ange validerings-URL:en"
 
-#: ../src/imageio/storage/facebook.c:665 ../src/imageio/storage/picasa.c:884
+#: ../src/imageio/storage/facebook.c:665 ../src/imageio/storage/picasa.c:886
 msgid "the given URL is not valid, it should look like: "
 msgstr "den angivna URL:en är inte giltig, den borde se ut såhär: "
 
-#: ../src/imageio/storage/facebook.c:771 ../src/imageio/storage/picasa.c:1015
+#: ../src/imageio/storage/facebook.c:771 ../src/imageio/storage/picasa.c:1017
 msgid "new account"
 msgstr "nytt konto"
 
-#: ../src/imageio/storage/facebook.c:778 ../src/imageio/storage/picasa.c:1022
+#: ../src/imageio/storage/facebook.c:778 ../src/imageio/storage/picasa.c:1024
 msgid "other account"
 msgstr "annat konto"
 
-#: ../src/imageio/storage/facebook.c:809 ../src/imageio/storage/picasa.c:1052
+#: ../src/imageio/storage/facebook.c:809 ../src/imageio/storage/picasa.c:1054
 msgid "unable to retrieve the album list"
 msgstr "kunde inte hämta listan på album"
 
-#: ../src/imageio/storage/facebook.c:817 ../src/imageio/storage/flickr.c:385
-#: ../src/imageio/storage/flickr.c:413 ../src/imageio/storage/picasa.c:1060
+#: ../src/imageio/storage/facebook.c:817 ../src/imageio/storage/flickr.c:391
+#: ../src/imageio/storage/flickr.c:419 ../src/imageio/storage/picasa.c:1062
 msgid "create new album"
 msgstr "skapa nytt album"
 
-#: ../src/imageio/storage/facebook.c:928 ../src/imageio/storage/picasa.c:1108
-#: ../src/imageio/storage/picasa.c:1268
+#: ../src/imageio/storage/facebook.c:928 ../src/imageio/storage/picasa.c:1110
+#: ../src/imageio/storage/picasa.c:1270
 msgid "logout"
 msgstr "logga ut"
 
 #. Set default permission to private
 #: ../src/imageio/storage/facebook.c:932 ../src/imageio/storage/facebook.c:945
 #: ../src/imageio/storage/facebook.c:972
-#: ../src/imageio/storage/facebook.c:1081 ../src/imageio/storage/flickr.c:522
-#: ../src/imageio/storage/picasa.c:1114 ../src/imageio/storage/picasa.c:1272
-#: ../src/imageio/storage/picasa.c:1285 ../src/imageio/storage/picasa.c:1351
+#: ../src/imageio/storage/facebook.c:1081 ../src/imageio/storage/flickr.c:528
+#: ../src/imageio/storage/picasa.c:1116 ../src/imageio/storage/picasa.c:1274
+#: ../src/imageio/storage/picasa.c:1287 ../src/imageio/storage/picasa.c:1353
 msgid "login"
 msgstr "logga in"
 
@@ -2793,15 +2797,15 @@ msgstr "facebook-album"
 
 #. create labels
 #. xmp
-#: ../src/imageio/storage/facebook.c:1028 ../src/imageio/storage/flickr.c:476
+#: ../src/imageio/storage/facebook.c:1028 ../src/imageio/storage/flickr.c:482
 #: ../src/imageio/storage/gallery.c:179 ../src/imageio/storage/latex.c:179
-#: ../src/imageio/storage/picasa.c:1313 ../src/libs/collect.h:38
+#: ../src/imageio/storage/picasa.c:1315 ../src/libs/collect.h:38
 #: ../src/libs/metadata.c:328 ../src/libs/metadata_view.c:107
 msgid "title"
 msgstr "titel"
 
-#: ../src/imageio/storage/facebook.c:1029 ../src/imageio/storage/flickr.c:477
-#: ../src/imageio/storage/picasa.c:1314
+#: ../src/imageio/storage/facebook.c:1029 ../src/imageio/storage/flickr.c:483
+#: ../src/imageio/storage/picasa.c:1316
 msgid "summary"
 msgstr "sammanfattning"
 
@@ -2813,7 +2817,7 @@ msgstr "sekretessnivå"
 msgid "only me"
 msgstr "bara jag"
 
-#: ../src/imageio/storage/facebook.c:1072 ../src/imageio/storage/flickr.c:535
+#: ../src/imageio/storage/facebook.c:1072 ../src/imageio/storage/flickr.c:541
 msgid "friends"
 msgstr "vänner"
 
@@ -2825,11 +2829,11 @@ msgstr "publik"
 msgid "friends of friends"
 msgstr "vänners vänner"
 
-#: ../src/imageio/storage/facebook.c:1210 ../src/imageio/storage/picasa.c:1462
+#: ../src/imageio/storage/facebook.c:1210 ../src/imageio/storage/picasa.c:1464
 msgid "unable to create album, no title provided"
 msgstr "kunde inte skapa album, ingen titel angiven"
 
-#: ../src/imageio/storage/facebook.c:1217 ../src/imageio/storage/picasa.c:1469
+#: ../src/imageio/storage/facebook.c:1217 ../src/imageio/storage/picasa.c:1471
 msgid "unable to create album"
 msgstr "kunde inte skapa album"
 
@@ -2866,82 +2870,82 @@ msgstr "steg 2: klicka på OK knappen när du är klar "
 msgid "flickr authentication"
 msgstr "flickr-konto är inte autentiserat"
 
-#: ../src/imageio/storage/flickr.c:308
+#: ../src/imageio/storage/flickr.c:314
 msgid "flickr webalbum"
 msgstr "flickr-album"
 
-#: ../src/imageio/storage/flickr.c:329 ../src/imageio/storage/flickr.c:369
-#: ../src/imageio/storage/flickr.c:844 ../src/imageio/storage/flickr.c:850
+#: ../src/imageio/storage/flickr.c:335 ../src/imageio/storage/flickr.c:375
+#: ../src/imageio/storage/flickr.c:850 ../src/imageio/storage/flickr.c:856
 msgid "not authenticated"
 msgstr "inte autentiserad"
 
-#: ../src/imageio/storage/flickr.c:365 ../src/imageio/storage/flickr.c:840
+#: ../src/imageio/storage/flickr.c:371 ../src/imageio/storage/flickr.c:846
 msgid "authenticated"
 msgstr "autentiserad"
 
 #. Add standard action
-#: ../src/imageio/storage/flickr.c:384
+#: ../src/imageio/storage/flickr.c:390
 msgid "without album"
 msgstr "utan album"
 
-#: ../src/imageio/storage/flickr.c:469
+#: ../src/imageio/storage/flickr.c:475
 msgid "flickr user"
 msgstr "flickr-användare"
 
-#: ../src/imageio/storage/flickr.c:470
+#: ../src/imageio/storage/flickr.c:476
 msgid "photosets"
 msgstr "bildsamling"
 
-#: ../src/imageio/storage/flickr.c:471
+#: ../src/imageio/storage/flickr.c:477
 msgid "visible to"
 msgstr "visas för"
 
-#: ../src/imageio/storage/flickr.c:474
+#: ../src/imageio/storage/flickr.c:480
 msgid "click login button to start"
 msgstr "tryck inloggningsknapp för att starta"
 
-#: ../src/imageio/storage/flickr.c:511
+#: ../src/imageio/storage/flickr.c:517
 msgid "my new photoset"
 msgstr "min nya bildsamling"
 
-#: ../src/imageio/storage/flickr.c:512
+#: ../src/imageio/storage/flickr.c:518
 msgid "exported from darktable"
 msgstr "exporterat från darktable"
 
-#: ../src/imageio/storage/flickr.c:520
+#: ../src/imageio/storage/flickr.c:526
 msgid "refresh album list"
 msgstr "uppdatera listan av album"
 
-#: ../src/imageio/storage/flickr.c:523
+#: ../src/imageio/storage/flickr.c:529
 msgid "flickr login"
 msgstr "flickr-inloggning"
 
-#: ../src/imageio/storage/flickr.c:530
+#: ../src/imageio/storage/flickr.c:536
 msgid "export tags"
 msgstr "exportera taggar"
 
-#: ../src/imageio/storage/flickr.c:534
+#: ../src/imageio/storage/flickr.c:540
 msgid "you"
 msgstr "du"
 
-#: ../src/imageio/storage/flickr.c:536
+#: ../src/imageio/storage/flickr.c:542
 msgid "family"
 msgstr "familj"
 
-#: ../src/imageio/storage/flickr.c:537
+#: ../src/imageio/storage/flickr.c:543
 msgid "friends + family"
 msgstr "vänner och familj"
 
-#: ../src/imageio/storage/flickr.c:538
+#: ../src/imageio/storage/flickr.c:544
 msgid "everyone"
 msgstr "alla"
 
-#: ../src/imageio/storage/flickr.c:687
+#: ../src/imageio/storage/flickr.c:693
 msgid "could not upload to flickr!"
 msgstr "kunde inte exportera till flickr!"
 
 #. this makes sense only if the export was successful
-#: ../src/imageio/storage/flickr.c:739
+#: ../src/imageio/storage/flickr.c:745
 #, c-format
 msgid "%d/%d exported to flickr webalbum"
 msgstr "%d/%d exporterad till flickr-album"
@@ -2964,7 +2968,7 @@ msgid "enter the title of the book"
 msgstr "ange en titel för boken"
 
 #. //////////// build & show the validation dialog
-#: ../src/imageio/storage/picasa.c:833
+#: ../src/imageio/storage/picasa.c:835
 msgid ""
 "step 1: a new window or tab of your browser should have been loaded. you "
 "have to login into your google+ account there and authorize darktable to "
@@ -2974,7 +2978,7 @@ msgstr ""
 "måste logga in med ditt google+-konto där och bekräfta att darktable får "
 "ladda upp bilder innan du kan fortsätta."
 
-#: ../src/imageio/storage/picasa.c:836
+#: ../src/imageio/storage/picasa.c:838
 msgid ""
 "step 2: paste the verification code shown to you in the browser and click "
 "the OK button once you are done."
@@ -2982,20 +2986,20 @@ msgstr ""
 "steg 2: klistra in verifikationskoden som visas i din internetbrowser och "
 "klicka på OK-knappen när du är klar."
 
-#: ../src/imageio/storage/picasa.c:844
+#: ../src/imageio/storage/picasa.c:846
 msgid "google+ authentication"
 msgstr "google+-autentisering"
 
-#: ../src/imageio/storage/picasa.c:1300
+#: ../src/imageio/storage/picasa.c:1302
 msgid "google+ photos"
 msgstr "google+-bilder"
 
-#: ../src/imageio/storage/picasa.c:1479
+#: ../src/imageio/storage/picasa.c:1481
 msgid "unable to export photo to google+ album"
 msgstr "kunde inte exportera bild till google+-album"
 
 #. this makes sense only if the export was successful
-#: ../src/imageio/storage/picasa.c:1492
+#: ../src/imageio/storage/picasa.c:1494
 #, c-format
 msgid "%d/%d exported to google+ album"
 msgstr "%d/%d exporterad till google+-album"
@@ -3990,108 +3994,104 @@ msgstr ""
 msgid "set the global saturation"
 msgstr "ange den globala färgmättnaden"
 
-#: ../src/iop/colorin.c:108
+#: ../src/iop/colorin.c:103
 msgid "input color profile"
 msgstr "ingående färgprofil"
 
-#: ../src/iop/colorin.c:610
+#: ../src/iop/colorin.c:657
 #, c-format
 msgid "`%s' color matrix not found!"
 msgstr "färgmatrisen `%s' ej funnen!"
 
-#: ../src/iop/colorin.c:659
+#: ../src/iop/colorin.c:706
 msgid "input profile could not be generated!"
 msgstr "kunde inte generera ingående profil"
 
-#: ../src/iop/colorin.c:716
+#: ../src/iop/colorin.c:763
 msgid "unsupported input profile has been replaced by linear Rec709 RGB!"
 msgstr "ej stödd ingående färgprofil har ersatts med linjär Rec709 RGB!"
 
-#: ../src/iop/colorin.c:878
-msgid "unsupported input profile has been ignored!"
-msgstr "ej stödd ingående färgprofil ignorerades!"
-
-#: ../src/iop/colorin.c:1026 ../src/iop/colorin.c:1060
+#: ../src/iop/colorin.c:1074 ../src/iop/colorin.c:1108
 msgid "embedded ICC profile"
 msgstr "inbyggd ICC-profil"
 
-#: ../src/iop/colorin.c:1028 ../src/iop/colorin.c:1062
+#: ../src/iop/colorin.c:1076 ../src/iop/colorin.c:1110
 msgid "DNG embedded matrix"
 msgstr "matris inbyggd i DNG"
 
-#: ../src/iop/colorin.c:1030 ../src/iop/colorin.c:1064
+#: ../src/iop/colorin.c:1078 ../src/iop/colorin.c:1112
 msgid "standard color matrix"
 msgstr "standard färgmatris"
 
-#: ../src/iop/colorin.c:1032 ../src/iop/colorin.c:1066
+#: ../src/iop/colorin.c:1080 ../src/iop/colorin.c:1114
 msgid "enhanced color matrix"
 msgstr "förbättrad färgmatris"
 
-#: ../src/iop/colorin.c:1034 ../src/iop/colorin.c:1068
+#: ../src/iop/colorin.c:1082 ../src/iop/colorin.c:1116
 msgid "vendor color matrix"
 msgstr "tillverkarens färgmatris"
 
-#: ../src/iop/colorin.c:1036 ../src/iop/colorin.c:1070
+#: ../src/iop/colorin.c:1084 ../src/iop/colorin.c:1118
 msgid "alternate color matrix"
 msgstr "alternativ färgmatris"
 
-#: ../src/iop/colorin.c:1038 ../src/iop/colorin.c:1072
+#: ../src/iop/colorin.c:1086 ../src/iop/colorin.c:1120
 msgid "sRGB (e.g. JPG)"
 msgstr "sRGB (tex. JPG)"
 
-#: ../src/iop/colorin.c:1040 ../src/iop/colorin.c:1074
-#: ../src/iop/colorin.c:1212 ../src/iop/colorout.c:969
+#: ../src/iop/colorin.c:1088 ../src/iop/colorin.c:1122
+#: ../src/iop/colorin.c:1260 ../src/iop/colorout.c:969
 #: ../src/iop/colorout.c:970 ../src/iop/colorout.c:971
 #: ../src/libs/export.c:559
 msgid "Adobe RGB (compatible)"
 msgstr "Adobe RGB (kompatibel)"
 
-#: ../src/iop/colorin.c:1042 ../src/iop/colorin.c:1076
-#: ../src/iop/colorin.c:1213 ../src/iop/colorout.c:951
+#: ../src/iop/colorin.c:1090 ../src/iop/colorin.c:1124
+#: ../src/iop/colorin.c:1261 ../src/iop/colorout.c:951
 #: ../src/iop/colorout.c:952 ../src/iop/colorout.c:953
 #: ../src/libs/export.c:565
 msgid "linear Rec709 RGB"
 msgstr "linjär Rec709 RGB"
 
-#: ../src/iop/colorin.c:1044 ../src/iop/colorin.c:1078
-#: ../src/iop/colorin.c:1214 ../src/iop/colorout.c:957
+#: ../src/iop/colorin.c:1092 ../src/iop/colorin.c:1126
+#: ../src/iop/colorin.c:1262 ../src/iop/colorout.c:957
 #: ../src/iop/colorout.c:958 ../src/iop/colorout.c:959
 #: ../src/libs/export.c:571
 msgid "linear Rec2020 RGB"
 msgstr "linjär Rec2020 RGB"
 
-#: ../src/iop/colorin.c:1046 ../src/iop/colorin.c:1080
+#: ../src/iop/colorin.c:1094 ../src/iop/colorin.c:1128
 msgid "linear infrared BGR"
 msgstr "linjär infraröd BGR"
 
-#: ../src/iop/colorin.c:1048 ../src/iop/colorin.c:1082
+#: ../src/iop/colorin.c:1096 ../src/iop/colorin.c:1130
 msgid "linear XYZ"
 msgstr "linjär XYZ"
 
-#: ../src/iop/colorin.c:1050 ../src/iop/colorin.c:1084
+#: ../src/iop/colorin.c:1098 ../src/iop/colorin.c:1132
 #: ../src/libs/colorpicker.c:539 ../src/libs/colorpicker.c:590
 msgid "Lab"
 msgstr "Lab"
 
-#: ../src/iop/colorin.c:1191 ../src/iop/denoiseprofile.c:1724
+#: ../src/iop/colorin.c:1239 ../src/iop/denoiseprofile.c:1724
 #: ../src/libs/export.c:610
 msgid "profile"
 msgstr "profil"
 
-#: ../src/iop/colorin.c:1200
+#: ../src/iop/colorin.c:1248
 #, c-format
 msgid "ICC profiles in %s/color/in or %s/color/in"
 msgstr "ingående ICC profil i %s/color/in eller %s/color/in"
 
-#: ../src/iop/colorin.c:1208
+#: ../src/iop/colorin.c:1256
 msgid "gamut clipping"
 msgstr "klippning av tonomfång"
 
-#: ../src/iop/colorin.c:1211
+#: ../src/iop/colorin.c:1259
 msgid "sRGB"
 msgstr "sRGB"
 
-#: ../src/iop/colorin.c:1216
+#: ../src/iop/colorin.c:1264
 msgid "confine Lab values to gamut of RGB color space"
 msgstr "håll Lab-värdena inom färgrymden för RGB"
 
@@ -7819,7 +7819,7 @@ msgstr "okänd"
 msgid "styles"
 msgstr "stilar"
 
-#: ../src/libs/styles.c:68 ../src/libs/tagging.c:82
+#: ../src/libs/styles.c:68 ../src/libs/tagging.c:89
 msgctxt "accel"
 msgid "delete"
 msgstr "radera"
@@ -7892,27 +7892,27 @@ msgstr "exportera den valda stilen till en fil"
 msgid "tagging"
 msgstr "taggar"
 
-#: ../src/libs/tagging.c:79
+#: ../src/libs/tagging.c:86
 msgctxt "accel"
 msgid "attach"
 msgstr "lägg till"
 
-#: ../src/libs/tagging.c:80
+#: ../src/libs/tagging.c:87
 msgctxt "accel"
 msgid "detach"
 msgstr "ta bort"
 
-#: ../src/libs/tagging.c:81
+#: ../src/libs/tagging.c:88
 msgctxt "accel"
 msgid "new"
 msgstr "ny"
 
-#: ../src/libs/tagging.c:83
+#: ../src/libs/tagging.c:90
 msgctxt "accel"
 msgid "tag"
 msgstr "tagg"
 
-#: ../src/libs/tagging.c:319
+#: ../src/libs/tagging.c:326
 #, c-format
 msgid ""
 "do you really want to delete the tag `%s'?\n"
@@ -7927,11 +7927,11 @@ msgstr[1] ""
 "vill du verkligen ta bort taggen `%s'?\n"
 "%d bilder har denna tagg!"
 
-#: ../src/libs/tagging.c:322
+#: ../src/libs/tagging.c:329
 msgid "delete tag?"
 msgstr "ta bort tagg?"
 
-#: ../src/libs/tagging.c:421
+#: ../src/libs/tagging.c:428
 msgid ""
 "attached tags,\n"
 "doubleclick to detach"
@@ -7939,27 +7939,27 @@ msgstr ""
 "tilllagda taggar,\n"
 "dubbelklicka för att ta bort"
 
-#: ../src/libs/tagging.c:428
+#: ../src/libs/tagging.c:435
 msgid "attach"
 msgstr "lägg till"
 
-#: ../src/libs/tagging.c:430
+#: ../src/libs/tagging.c:437
 msgid "attach tag to all selected images"
 msgstr "lägg till tagg på alla valda bilder"
 
-#: ../src/libs/tagging.c:435
+#: ../src/libs/tagging.c:442
 msgid "detach"
 msgstr "ta bort"
 
-#: ../src/libs/tagging.c:437
+#: ../src/libs/tagging.c:444
 msgid "detach tag from all selected images"
 msgstr "ta bort tagg från alla valda bilder"
 
-#: ../src/libs/tagging.c:450
+#: ../src/libs/tagging.c:457
 msgid "enter tag name"
 msgstr "ange namn för tagg"
 
-#: ../src/libs/tagging.c:478
+#: ../src/libs/tagging.c:485
 msgid ""
 "related tags,\n"
 "doubleclick to attach"
@@ -7967,11 +7967,11 @@ msgstr ""
 "relativa taggar,\n"
 "dubbelklicka för att lägga till"
 
-#: ../src/libs/tagging.c:485
+#: ../src/libs/tagging.c:492
 msgid "new"
 msgstr "ny"
 
-#: ../src/libs/tagging.c:487
+#: ../src/libs/tagging.c:494
 msgid ""
 "create a new tag with the\n"
 "name you entered"
@@ -7979,7 +7979,7 @@ msgstr ""
 "skapa en ny tag med\n"
 "namnet du angav"
 
-#: ../src/libs/tagging.c:494
+#: ../src/libs/tagging.c:501
 msgid "delete selected tag"
 msgstr "ta bort vald tagg"
 
@@ -8074,37 +8074,37 @@ msgstr "filmrulle"
 #. setup rating key accelerators
 #. Initializing accelerators
 #. Rating keys
-#: ../src/libs/tools/filmstrip.c:161 ../src/views/lighttable.c:1878
+#: ../src/libs/tools/filmstrip.c:161 ../src/views/lighttable.c:1932
 msgctxt "accel"
 msgid "rate 0"
 msgstr "rang 0"
 
-#: ../src/libs/tools/filmstrip.c:162 ../src/views/lighttable.c:1879
+#: ../src/libs/tools/filmstrip.c:162 ../src/views/lighttable.c:1933
 msgctxt "accel"
 msgid "rate 1"
 msgstr "rang 1"
 
-#: ../src/libs/tools/filmstrip.c:163 ../src/views/lighttable.c:1880
+#: ../src/libs/tools/filmstrip.c:163 ../src/views/lighttable.c:1934
 msgctxt "accel"
 msgid "rate 2"
 msgstr "rang 2"
 
-#: ../src/libs/tools/filmstrip.c:164 ../src/views/lighttable.c:1881
+#: ../src/libs/tools/filmstrip.c:164 ../src/views/lighttable.c:1935
 msgctxt "accel"
 msgid "rate 3"
 msgstr "rang 3"
 
-#: ../src/libs/tools/filmstrip.c:165 ../src/views/lighttable.c:1882
+#: ../src/libs/tools/filmstrip.c:165 ../src/views/lighttable.c:1936
 msgctxt "accel"
 msgid "rate 4"
 msgstr "rang 4"
 
-#: ../src/libs/tools/filmstrip.c:166 ../src/views/lighttable.c:1883
+#: ../src/libs/tools/filmstrip.c:166 ../src/views/lighttable.c:1937
 msgctxt "accel"
 msgid "rate 5"
 msgstr "rang 5"
 
-#: ../src/libs/tools/filmstrip.c:167 ../src/views/lighttable.c:1884
+#: ../src/libs/tools/filmstrip.c:167 ../src/views/lighttable.c:1938
 msgctxt "accel"
 msgid "rate reject"
 msgstr "avvisad"
@@ -8142,27 +8142,27 @@ msgstr "duplicerar bild"
 
 #. setup color label accelerators
 #. Color keys
-#: ../src/libs/tools/filmstrip.c:187 ../src/views/lighttable.c:1897
+#: ../src/libs/tools/filmstrip.c:187 ../src/views/lighttable.c:1951
 msgctxt "accel"
 msgid "color red"
 msgstr "röd färg"
 
-#: ../src/libs/tools/filmstrip.c:188 ../src/views/lighttable.c:1898
+#: ../src/libs/tools/filmstrip.c:188 ../src/views/lighttable.c:1952
 msgctxt "accel"
 msgid "color yellow"
 msgstr "gul färg"
 
-#: ../src/libs/tools/filmstrip.c:189 ../src/views/lighttable.c:1899
+#: ../src/libs/tools/filmstrip.c:189 ../src/views/lighttable.c:1953
 msgctxt "accel"
 msgid "color green"
 msgstr "grön färg"
 
-#: ../src/libs/tools/filmstrip.c:190 ../src/views/lighttable.c:1900
+#: ../src/libs/tools/filmstrip.c:190 ../src/views/lighttable.c:1954
 msgctxt "accel"
 msgid "color blue"
 msgstr "blå färg"
 
-#: ../src/libs/tools/filmstrip.c:191 ../src/views/lighttable.c:1901
+#: ../src/libs/tools/filmstrip.c:191 ../src/views/lighttable.c:1955
 msgctxt "accel"
 msgid "color purple"
 msgstr "lila färg"
@@ -8267,7 +8267,7 @@ msgstr "visa överlappad information"
 msgid "hinter"
 msgstr "tipsare"
 
-#: ../src/libs/tools/lighttable.c:61 ../src/views/lighttable.c:137
+#: ../src/libs/tools/lighttable.c:61 ../src/views/lighttable.c:138
 msgid "lighttable"
 msgstr "ljusbord"
 
@@ -8418,89 +8418,104 @@ msgctxt "accel"
 msgid "overexposed"
 msgstr "överexponerad"
 
-#: ../src/views/lighttable.c:507
+#: ../src/views/lighttable.c:508
 msgid "there are no images in this collection"
 msgstr "det finns inga bilder i den här samlingen"
 
-#: ../src/views/lighttable.c:509
+#: ../src/views/lighttable.c:510
 msgid "if you have not imported any images yet"
 msgstr "om du inte har importerat några bilder ännu"
 
-#: ../src/views/lighttable.c:511
+#: ../src/views/lighttable.c:512
 msgid "you can do so in the import module"
 msgstr "kan du göra det i importmodulen"
 
-#: ../src/views/lighttable.c:518
+#: ../src/views/lighttable.c:519
 msgid "try to relax the filter settings in the top panel"
 msgstr "försök att lätta på filter-inställningarna i den övre panelen"
 
-#: ../src/views/lighttable.c:525
+#: ../src/views/lighttable.c:526
 msgid "or add images in the collection module in the left panel"
 msgstr "eller lägg till bilder i samlingsmodulen i den vänstra panelen"
 
 #. Navigation keys
-#: ../src/views/lighttable.c:1887
+#: ../src/views/lighttable.c:1941
 msgctxt "accel"
 msgid "navigate up"
 msgstr "navigera upp"
 
-#: ../src/views/lighttable.c:1889
+#: ../src/views/lighttable.c:1943
 msgctxt "accel"
 msgid "navigate down"
 msgstr "navigera ner"
 
-#: ../src/views/lighttable.c:1891
+#: ../src/views/lighttable.c:1945
 msgctxt "accel"
 msgid "navigate page up"
 msgstr "navigera sida upp"
 
-#: ../src/views/lighttable.c:1893
+#: ../src/views/lighttable.c:1947
 msgctxt "accel"
 msgid "navigate page down"
 msgstr "navigera sida ned"
 
 #. Scroll keys
-#: ../src/views/lighttable.c:1904
+#: ../src/views/lighttable.c:1958
 msgctxt "accel"
 msgid "scroll up"
 msgstr "skrolla upp"
 
-#: ../src/views/lighttable.c:1906
+#: ../src/views/lighttable.c:1960
 msgctxt "accel"
 msgid "scroll down"
 msgstr "skrolla ner"
 
-#: ../src/views/lighttable.c:1908
+#: ../src/views/lighttable.c:1962
 msgctxt "accel"
 msgid "scroll left"
 msgstr "skrolla vänster"
 
-#: ../src/views/lighttable.c:1910
+#: ../src/views/lighttable.c:1964
 msgctxt "accel"
 msgid "scroll right"
 msgstr "skrolla höger"
 
-#: ../src/views/lighttable.c:1912
+#: ../src/views/lighttable.c:1966
 msgctxt "accel"
 msgid "scroll center"
 msgstr "centrera"
 
 # TODO: could use better translation
-#: ../src/views/lighttable.c:1914
+#: ../src/views/lighttable.c:1968
 msgctxt "accel"
 msgid "realign images to grid"
 msgstr "räta upp bilder efter rutnätet"
 
 #. Preview key
-#: ../src/views/lighttable.c:1918
+#: ../src/views/lighttable.c:1972
 msgctxt "accel"
 msgid "preview"
 msgstr "förhandsvisning"
 
-#: ../src/views/lighttable.c:1919
+#: ../src/views/lighttable.c:1973
 msgctxt "accel"
 msgid "preview with focus detection"
 msgstr "förhandsvisning med fokusindikation"
+
+#: ../src/views/lighttable.c:1974
+msgctxt "accel"
+msgid "sticky preview"
+msgstr "fast förhandsvisning"
+
+#: ../src/views/lighttable.c:1975
+msgctxt "accel"
+msgid "sticky preview with focus detection"
+msgstr "fast förhandsvisning med fokusindikation"
+
+#: ../src/views/lighttable.c:1976
+msgctxt "accel"
+msgid "exit sticky preview"
+msgstr "gå ur fast förhandsvisning"
 
 #: ../src/views/map.c:107
 msgid "map"
@@ -8755,6 +8770,9 @@ msgstr "foto"
 #: ../src/imageio/format/webp.c:316
 msgid "graphic"
 msgstr "grafik"
+
+#~ msgid "unsupported input profile has been ignored!"
+#~ msgstr "ej stödd ingående färgprofil ignorerades!"
 
 #~ msgid "double click to reset to `%<PRId64>'"
 #~ msgstr "dubbelklicka för att återställa till `%<PRId64>'"
