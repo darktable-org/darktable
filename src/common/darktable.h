@@ -490,6 +490,14 @@ int dt_load_from_string(const gchar* image_to_load, gboolean open_image_in_dr);
 /** define for max path/filename length */
 #define DT_MAX_FILENAME_LEN 256
 
+/*
+ * ONLY TO BE USED FOR PARAMS!!! (e.g. dt_imageio_disk_t)
+ *
+ * WARNING: this should *NEVER* be changed, as it will break params,
+ *          created with previous DT_MAX_PATH_FOR_PARAMS.
+ */
+#define DT_MAX_PATH_FOR_PARAMS 4096
+
 #endif
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
