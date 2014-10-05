@@ -390,18 +390,16 @@ int dt_init(int argc, char *argv[], const int init_gui,lua_State *L)
   #error "Unfortunately we depend on SSE3 instructions at this time."
   #error "Please contribute a backport patch (or buy a newer processor)."
 #else
-  {
-    int sse3_supported = 0;
+  int sse3_supported = 0;
 
   #if (__GNUC_PREREQ(4,8) || __has_builtin(__builtin_cpu_supports))
     //NOTE: _may_i_use_cpu_feature() looks better, but only avaliable in ICC
     sse3_supported = __builtin_cpu_supports("sse3");
-
   #else
     // Check SSE3 support "manually"
     // (see http://stackoverflow.com/questions/6121792/how-to-check-if-a-cpu-supports-the-sse3-instruction-set)
-    
-    int cpu_info[4];
+
+    int cpu_info[4] = {-1};
 
     __asm__ __volatile__ (
             "cpuid":
@@ -425,7 +423,6 @@ int dt_init(int argc, char *argv[], const int init_gui,lua_State *L)
 
       sse3_supported  = (cpu_info[2] & ((int)1 << 0)) != 0;
     }
-    
   #endif
     if (!sse3_supported)
     {
@@ -433,7 +430,6 @@ int dt_init(int argc, char *argv[], const int init_gui,lua_State *L)
       fprintf(stderr, "[dt_init] please contribute a backport patch (or buy a newer processor).\n");
       return 1;
     }
-  }
 #endif
 
 #ifdef M_MMAP_THRESHOLD
