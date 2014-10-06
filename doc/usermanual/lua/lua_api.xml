@@ -2189,7 +2189,7 @@ end</programlisting>
     <tbody><row>
     <entry>Attributes:</entry>
     <entry><itemizedlist>
-<listitem><para><emphasis>container : </emphasis>DT_UI_CONTAINER_PANEL_LEFT_CENTER</para></listitem>
+<listitem><para><emphasis>container : </emphasis>DT_UI_CONTAINER_PANEL_RIGHT_CENTER</para></listitem>
 <listitem><para><emphasis><link linkend="attributes_has_tostring">has_tostring</link></emphasis></para></listitem>
 <listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_lib_module_t">types.dt_lib_module_t</link></para></listitem>
 <listitem><para><emphasis>position : </emphasis>500</para></listitem>
@@ -2293,6 +2293,48 @@ end</programlisting>
 </entry>
     </row></tbody>
     </tgroup></informaltable>
+<section status="final" id="darktable_modules_lib_global_toolbox_grouping">
+<title>darktable.modules.lib.global_toolbox.grouping</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>grouping</secondary>
+</indexterm>
+<synopsis>boolean</synopsis>
+<para>The current status of the image grouping option</para>
+<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
+    <colspec colwidth="2*"/>
+    <colspec colwidth="8*"/>
+    <tbody><row>
+    <entry>Attributes:</entry>
+    <entry><itemizedlist>
+<listitem><para><emphasis><link linkend="attributes_write">write</link></emphasis></para></listitem>
+</itemizedlist>
+</entry>
+    </row></tbody>
+    </tgroup></informaltable>
+</section>
+
+<section status="final" id="darktable_modules_lib_global_toolbox_show_overlays">
+<title>darktable.modules.lib.global_toolbox.show_overlays</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>show_overlays</secondary>
+</indexterm>
+<synopsis>boolean</synopsis>
+<para>the current status of the image overlays option</para>
+<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
+    <colspec colwidth="2*"/>
+    <colspec colwidth="8*"/>
+    <tbody><row>
+    <entry>Attributes:</entry>
+    <entry><itemizedlist>
+<listitem><para><emphasis><link linkend="attributes_write">write</link></emphasis></para></listitem>
+</itemizedlist>
+</entry>
+    </row></tbody>
+    </tgroup></informaltable>
+</section>
+
 </section>
 
 <section status="final" id="darktable_modules_lib_filter">

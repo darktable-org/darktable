@@ -161,6 +161,59 @@ void connect_key_accels(dt_lib_module_t *self)
   dt_accel_connect_button_lib(self, "show overlays", d->overlays_button);
 }
 
+#ifdef USE_LUA
+
+static int grouping_member(lua_State *L)
+{
+  dt_lib_module_t *self = *(dt_lib_module_t**)lua_touserdata(L, 1);
+  dt_lib_tool_preferences_t *d = (dt_lib_tool_preferences_t *)self->data;
+  dt_lua_lib_check_error(L, self);
+  if(lua_gettop(L) != 3) {
+    lua_pushboolean(L, darktable.gui->grouping);
+    return 1;
+  } else {
+    gboolean value = lua_toboolean(L, 3);
+    if(darktable.gui->grouping != value) {
+      dt_lua_unlock(TRUE);
+      gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->grouping_button), value);
+      dt_lua_lock();
+    }
+  }
+  return 0;
+}
+
+static int show_overlays_member(lua_State *L)
+{
+  dt_lib_module_t *self = *(dt_lib_module_t**)lua_touserdata(L, 1);
+  dt_lib_tool_preferences_t *d = (dt_lib_tool_preferences_t *)self->data;
+  dt_lua_lib_check_error(L, self);
+  if(lua_gettop(L) != 3) {
+    lua_pushboolean(L, darktable.gui->show_overlays);
+    return 1;
+  } else {
+    gboolean value = lua_toboolean(L, 3);
+    if(darktable.gui->show_overlays != value) {
+      dt_lua_unlock(TRUE);
+      gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->overlays_button), value);
+      dt_lua_lock();
+    }
+  }
+  return 0;
+}
+
+void init(struct dt_lib_module_t *self)
+{
+  lua_State *L = darktable.lua_state.state;
+  int my_type = dt_lua_module_get_entry_type(L, "lib", self->plugin_name);
+
+  lua_pushcfunction(L, grouping_member);
+  dt_lua_type_register_type(L, my_type, "grouping");
+  lua_pushcfunction(L, show_overlays_member);
+  dt_lua_type_register_type(L, my_type, "show_overlays");
+}
+
+#endif //USE_LUA
+
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;
