@@ -25,6 +25,7 @@
 #include "common/dtpthread.h"
 #include <glib.h>
 #include <inttypes.h>
+#include <stdbool.h>
 
 /** return value of image io functions. */
 typedef enum dt_imageio_retval_t
