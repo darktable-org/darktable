@@ -927,7 +927,7 @@ void dt_image_init(dt_image_t *img)
   img->profile = NULL;
   img->profile_size = 0;
   img->colorspace = DT_IMAGE_COLORSPACE_NONE;
-  img->preAppliedWB = FALSE;
+  img->pre_applied_wb = FALSE;
 }
 
 int32_t dt_image_move(const int32_t imgid, const int32_t filmid)

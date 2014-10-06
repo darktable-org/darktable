@@ -450,7 +450,7 @@ void reload_defaults(dt_iop_module_t *module)
 
   // raw images need wb:
   module->default_enabled = dt_image_is_raw(&module->dev->image_storage) &&
-                            !module->dev->image_storage.preAppliedWB;
+                            !module->dev->image_storage.pre_applied_wb;
 
   // get white balance coefficients, as shot
   char filename[PATH_MAX];
@@ -463,7 +463,7 @@ void reload_defaults(dt_iop_module_t *module)
        * but it is still stored inside.
        * once we move WB coeffs reading into RS, this can be deleted.
        */
-      !module->dev->image_storage.preAppliedWB)
+      !module->dev->image_storage.pre_applied_wb)
   {
     gboolean from_cache = TRUE;
     dt_image_full_path(module->dev->image_storage.id, filename, sizeof(filename), &from_cache);

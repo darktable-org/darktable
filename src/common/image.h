@@ -25,7 +25,6 @@
 #include "common/dtpthread.h"
 #include <glib.h>
 #include <inttypes.h>
-#include <stdbool.h>
 
 /** return value of image io functions. */
 typedef enum dt_imageio_retval_t
@@ -150,7 +149,7 @@ typedef struct dt_image_t
   uint8_t xtrans[6][6];
 
   /* If the image already has WB applied from the start */
-  bool preAppliedWB;
+  gboolean pre_applied_wb;
 }
 dt_image_t;
 
