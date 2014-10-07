@@ -162,6 +162,8 @@ void dt_lua_init(lua_State*L,const char *lua_command)
     (*cur_type)(L);
     cur_type++;
   }
+  assert(lua_gettop(L) ==0); // if you are here, you have probably added an initialisation function that is not stack clean
+
   // build the table containing the configuration info
 
   lua_getglobal(L,"package");

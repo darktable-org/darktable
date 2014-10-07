@@ -662,6 +662,7 @@ void init(struct dt_lib_module_t *self)
   lua_pushlightuserdata(L,self);
   lua_pushcclosure(L,name_member,1);
   lua_setfield(L,-2,"__tostring");
+  lua_pop(L,1);
 
 
 
