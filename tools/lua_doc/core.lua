@@ -221,7 +221,7 @@ local function document_dt_userdata(node,parent,prev_name)
 	local result = create_empty_node(node,"dt_userdata",parent,prev_name);
 	local mt = getmetatable(node)
 	local ret_node = create_documentation_node(mt,result,"reported_type")
-	set_attribute(result,"reported_type",tostring(ret_node))
+	set_attribute(result,"reported_type",ret_node)
 	M.remove_parent(ret_node,result)
 	document_type_from_obj(node,ret_node)
 	return result
@@ -333,7 +333,7 @@ function M.debug_print(node,name)
 		elseif(k == "_luadoc_parents") then
 			local concat=""
 			for k2,v2 in pairs(v) do
-				concat = concat..M.get_name(v2[1]).."."..v2[2].." "
+				concat = concat..M.get_name(v2[1],true).."."..v2[2].." "
 			end
 			print("\t"..k.." : "..concat)
 		elseif(k == "_luadoc_order" and node._luadoc_order_first_key) then
@@ -461,6 +461,9 @@ function M.all_children(node)
 	end
 
 	function M.set_real_name(node,name)
+    if node._luadoc_name == false then
+      error("real name set after use for node "..node:get_name(true))
+    end
 		node._luadoc_name = name
 	end
 
@@ -485,7 +488,7 @@ function M.all_children(node)
 
 	function M.set_text(node,text)
 		if node._luadoc_text then
-			print("warning, double documentation for "..node:get_name())
+			print("warning, double documentation for "..node:get_name(true))
 		end
 		node._luadoc_text = text
 		for k,v in ipairs(node._luadoc_parents) do
@@ -520,12 +523,13 @@ function M.all_children(node)
 	end
 
 
-	local function get_name_sub(node,ancestors)
+	local function get_name_sub(node,ancestors,canonical)
 		if not node then return "" end
 		if not ancestors then return "" end -- our node is the toplevel node
 
-		local subname = get_name_sub(node._luadoc_parents[ancestors[1]][1],ancestors[2])
-		local prev_name = node._luadoc_parents[ancestors[1]][2]
+		local subname = get_name_sub(node._luadoc_parents[ancestors[1]][1],ancestors[2],canonical)
+		local prev_name = node:get_short_name(canonical)
+
 
 		if subname == "" then
 			return prev_name
@@ -534,17 +538,23 @@ function M.all_children(node)
 		end
 	end
 
-	function M.get_short_name(node)
-		if node._luadoc_name then
+	function M.get_short_name(node,canonical)
+		if node._luadoc_name and not canonical then
 			return  node._luadoc_name
 		end
+    if node._luadoc_name == nil then
+      node._luadoc_name = false
+    end
 		local ancestors = get_ancestor_tree(node)
+    if not ancestors then
+      return ""
+    end
 		return node._luadoc_parents[ancestors[1]][2]
 	end
 
-	function M.get_name(node)
+	function M.get_name(node,canonical)
 		local ancestors = get_ancestor_tree(node)
-		return get_name_sub(node,ancestors)
+		return get_name_sub(node,ancestors,canonical)
 	end
 
 
@@ -552,7 +562,7 @@ function M.all_children(node)
 		if node._luadoc_text then
 			return node._luadoc_text
 		else
-			return "undocumented "..M.get_name(node)
+			return "undocumented "..M.get_name(node,true)
 		end
 	end
 
@@ -576,7 +586,7 @@ function M.all_children(node)
 		--M.set_real_name(subnode,param_name)
 		if M.get_attribute(node,"reported_type") ~= "function" and 
 			M.get_attribute(node,"reported_type") ~= "documentation node" then
-			error("not a function documentation : ".. M.get_attribute(node,"reported_type").." for "..node:get_name())
+			error("not a function documentation : ".. M.get_attribute(node,"reported_type").." for "..node:get_name(true))
 		end
 		local signature = M.get_attribute(node,"signature")
 		if not signature then
@@ -616,7 +626,7 @@ function M.all_children(node)
 		if type == nil then
 			error("can't set reported type to nil");
 		end
-		set_attribute(node,"reported_type",tostring(type))
+		set_attribute(node,"reported_type",type)
 		return node
 	end
 

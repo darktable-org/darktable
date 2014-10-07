@@ -47,6 +47,10 @@ print("warning, avoid problems with picasa/facebook")
 types.dt_imageio_module_storage_data_email:set_text([[TBSL undocumented, force first]])
 
 ----------------------
+--  REANAMINGS      --
+----------------------
+
+----------------------
 --  TOPLEVEL        --
 ----------------------
 doc.toplevel:set_text([[To access the darktable specific functions you must load the darktable environement:]]..
@@ -744,7 +748,6 @@ darktable.debug.type:set_text([[Similar to the system function type() but it wil
 	doc.toplevel.system.coroutine = doc.create_documentation_node(nil,doc.toplevel.system,"coroutine")
 	system.coroutine:set_text("")
 	system.coroutine.yield = doc.document_function(nil,system.coroutine,"yield");
-	system.coroutine.yield:set_real_name("coroutine.yield")
 	system.coroutine.yield:set_text([[Lua functions can yield at any point. The parameters and return types depend on why we want to yield.]]..para()..
 	[[A callback that is yielding allows other Lua code to run.]]..startlist()..
 	listel("wait_ms: one extra parameter; the execution will pause for that many miliseconds; yield returns nothing;")..

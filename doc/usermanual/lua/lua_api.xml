@@ -5929,10 +5929,10 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
 </section>
 
 <section status="final" id="events_intermediate-export-image_extra_registration_parameters">
-<title>events.intermediate-export-image.extra_registration_parameters</title>
+<title>events.intermediate-export-image.extra registration parameters</title>
 <indexterm>
 <primary>Lua API</primary>
-<secondary>extra_registration_parameters</secondary>
+<secondary>extra registration parameters</secondary>
 </indexterm>
 <para>This event has no extra registration parameters.</para>
 
@@ -5980,10 +5980,10 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
 </section>
 
 <section status="final" id="events_post-import-image_extra_registration_parameters">
-<title>events.post-import-image.extra_registration_parameters</title>
+<title>events.post-import-image.extra registration parameters</title>
 <indexterm>
 <primary>Lua API</primary>
-<secondary>extra_registration_parameters</secondary>
+<secondary>extra registration parameters</secondary>
 </indexterm>
 <para>This event has no extra registration parameters.</para>
 
@@ -6035,10 +6035,10 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
 </section>
 
 <section status="final" id="events_shortcut_extra_registration_parameters">
-<title>events.shortcut.extra_registration_parameters</title>
+<title>events.shortcut.extra registration parameters</title>
 <indexterm>
 <primary>Lua API</primary>
-<secondary>extra_registration_parameters</secondary>
+<secondary>extra registration parameters</secondary>
 </indexterm>
 <para></para>
 
@@ -6093,10 +6093,10 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
 </section>
 
 <section status="final" id="events_post-import-film_extra_registration_parameters">
-<title>events.post-import-film.extra_registration_parameters</title>
+<title>events.post-import-film.extra registration parameters</title>
 <indexterm>
 <primary>Lua API</primary>
-<secondary>extra_registration_parameters</secondary>
+<secondary>extra registration parameters</secondary>
 </indexterm>
 <para>This event has no extra registration parameters.</para>
 
@@ -6142,10 +6142,10 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
 </section>
 
 <section status="final" id="events_view-changed_extra_registration_parameters">
-<title>events.view-changed.extra_registration_parameters</title>
+<title>events.view-changed.extra registration parameters</title>
 <indexterm>
 <primary>Lua API</primary>
-<secondary>extra_registration_parameters</secondary>
+<secondary>extra registration parameters</secondary>
 </indexterm>
 <para>This event has no extra registration parameters.</para>
 
