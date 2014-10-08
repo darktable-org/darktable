@@ -18,6 +18,8 @@
 #include "lua/view.h"
 #include "lua/modules.h"
 #include "lua/types.h"
+#include "lua/events.h"
+#include "control/jobs/control_jobs.h"
 
 static int id_member(lua_State *L) 
 {
@@ -51,6 +53,46 @@ void dt_lua_register_view(lua_State* L,dt_view_t* module)
   lua_pop(L,1);
 };
 
+
+typedef struct {
+  dt_view_t * old_view;
+  dt_view_t * new_view;
+} view_changed_callback_data_t;
+
+
+static int32_t view_changed_callback_job(dt_job_t *job) {
+  gboolean has_lock = dt_lua_lock();
+  view_changed_callback_data_t *t = dt_control_job_get_params(job);
+  dt_lua_module_push_entry(darktable.lua_state.state,"view",t->old_view->module_name);
+  dt_lua_module_push_entry(darktable.lua_state.state,"view",t->new_view->module_name);
+  free(t);
+  dt_lua_event_trigger(darktable.lua_state.state,"view-changed",2);
+  dt_lua_unlock(has_lock);
+  return 0;
+}
+
+static void on_view_changed(gpointer instance,
+    dt_view_t* old_view,
+    dt_view_t* new_view,
+     gpointer user_data){
+  dt_job_t *job = dt_control_job_create(&view_changed_callback_job, "lua: on view changed");
+  if(job)
+  {
+    view_changed_callback_data_t *t = (view_changed_callback_data_t*)calloc(1, sizeof(view_changed_callback_data_t));
+    if(!t)
+    {
+      dt_control_job_dispose(job);
+    }
+    else
+    {
+      dt_control_job_set_params(job, t);
+      t->old_view = old_view;
+      t->new_view = new_view;
+      dt_control_add_job(darktable.control, DT_JOB_QUEUE_USER_FG, job);
+    }
+  }
+}
+
 int dt_lua_init_early_view(lua_State *L)
 {
 
@@ -61,6 +103,16 @@ int dt_lua_init_early_view(lua_State *L)
   dt_lua_type_register_const(L,dt_view_t,"name");
 
   dt_lua_init_module_type(L,"view");
+
+
+  return 0;
+}
+int dt_lua_init_view(lua_State *L)
+{
+  lua_pushcfunction(L,dt_lua_event_multiinstance_register);
+  lua_pushcfunction(L,dt_lua_event_multiinstance_trigger);
+  dt_lua_event_add(L,"view-changed");
+  dt_control_signal_connect(darktable.signals,DT_SIGNAL_VIEWMANAGER_VIEW_CHANGED,G_CALLBACK(on_view_changed),NULL);
   return 0;
 }
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

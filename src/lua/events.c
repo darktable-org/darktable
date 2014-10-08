@@ -22,29 +22,66 @@
 #include "lua/call.h"
 #include "lua/events.h"
 #include "lua/image.h"
-#include "lua/film.h"
 #include "gui/accelerators.h"
 #include "common/imageio_module.h"
-typedef struct event_handler{
-  const char* evt_name;
-  lua_CFunction on_register;
-  lua_CFunction on_event;
-  gboolean in_use;
-} event_handler;
-
-static int register_shortcut_event(lua_State* L);
 
 
-static event_handler event_list[] = {
-  //{"pre-export",register_chained_event,trigger_chained_event},
-  {"shortcut",register_shortcut_event,dt_lua_event_keyed_trigger,FALSE}, 
-  {"post-import-image",dt_lua_event_multiinstance_register,dt_lua_event_multiinstance_trigger,FALSE},
-  {"post-import-film",dt_lua_event_multiinstance_register,dt_lua_event_multiinstance_trigger,FALSE},
-  {"intermediate-export-image",dt_lua_event_multiinstance_register,dt_lua_event_multiinstance_trigger,FALSE},
-  {"view-changed",dt_lua_event_multiinstance_register,dt_lua_event_multiinstance_trigger,FALSE},
-  //{"test",register_singleton_event,trigger_singleton_event},  // avoid error because of unused function
-  {NULL,NULL,NULL}
-};
+
+void dt_lua_event_trigger(lua_State* L,const char*event,int nargs) {
+  lua_getfield(L,LUA_REGISTRYINDEX,"dt_lua_event_list");
+  if(lua_isnil(L,-1)) {// events have been disabled
+    lua_pop(L,nargs);
+    return; 
+  }
+  lua_getfield(L,-1,event);
+  if(lua_isnil(L,-1)) {// event doesn't exist
+    lua_pop(L,nargs+1);
+    return; 
+  }
+  lua_getfield(L,-1,"in_use");
+  if(!lua_toboolean(L,-1)) { 
+    lua_pop(L,nargs+3);
+    return; 
+  }
+  lua_getfield(L,-2,"on_event");
+  lua_getfield(L,-3,"data");
+  lua_pushstring(L,event);
+  for(int i = 1 ;i <= nargs;i++) lua_pushvalue(L,i);
+  dt_lua_do_chunk(L,nargs+2,0);
+  lua_pop(L,nargs+3);
+  dt_lua_redraw_screen();
+  
+}
+
+
+void dt_lua_event_add(lua_State *L,const char* evt_name)
+{
+  lua_newtable(L);
+
+  lua_pushstring(L,evt_name);
+  lua_setfield(L,-2,"name");
+
+  lua_pushvalue(L,-2);
+  lua_setfield(L,-2,"on_event");
+
+  lua_pushvalue(L,-3);
+  lua_setfield(L,-2,"on_register");
+
+  lua_pushboolean(L,false);
+  lua_setfield(L,-2,"in_use");
+
+  lua_newtable(L);
+  lua_setfield(L,-2,"data");
+
+  lua_getfield(L,LUA_REGISTRYINDEX,"dt_lua_event_list");
+  lua_pushvalue(L,-2);
+  lua_setfield(L,-2,evt_name);
+
+  lua_pop(L,4);
+
+}
+
+
 /*
  * KEYED EVENTS
  * these are events that are triggered with a key
@@ -91,6 +128,86 @@ int dt_lua_event_keyed_trigger(lua_State * L) {
   dt_lua_do_chunk_silent(L,callback_marker - 2,0);
   return 0;
 }
+
+/*
+ * MULTIINSTANCE EVENTS
+ * these events can be registered multiple time with multiple callbacks
+ * all callbacks will be called in the order they were registered
+ * 
+ * all callbacks will receive the same parameters
+ * the result is all return values from all callbacks
+ *
+ * data table is "event => { # => callback }
+ */
+
+
+int dt_lua_event_multiinstance_register(lua_State* L) {
+  // 1 is the data table
+  // 2 is the event name (checked)
+  // 3 is the action to perform (checked)
+
+  // simply add the callback to the data table
+  luaL_ref(L,1);
+  lua_pop(L,2);
+  return 0;
+}
+
+int dt_lua_event_multiinstance_trigger(lua_State * L) {
+  // 1 : the data table
+  // 2 : the name of the event
+  // .. : other parameters
+  const int arg_top = lua_gettop(L);
+  lua_pushnil(L);
+  while(lua_next(L,1)) {
+    for(int i =2;i <= arg_top;i++) {
+      lua_pushvalue(L,i);
+    }
+    dt_lua_do_chunk_silent(L,arg_top-1,0);
+  }
+  return 0;
+}
+
+
+
+static int lua_register_event(lua_State *L) {
+  // 1 is event name
+  const char*evt_name = luaL_checkstring(L,1);
+  const int nparams = lua_gettop(L);
+  // 2 is event handler
+  luaL_checktype(L,2,LUA_TFUNCTION);
+  lua_getfield(L,LUA_REGISTRYINDEX,"dt_lua_event_list");
+  lua_getfield(L,-1,evt_name);
+  if(lua_isnil(L,-1)) {
+    lua_pop(L,2);
+    return luaL_error(L,"unknown event type : %s\n",evt_name);
+  }
+  lua_getfield(L,-1,"on_register");
+  lua_getfield(L,-2,"data");
+  for(int i = 1 ;i <= nparams;i++) lua_pushvalue(L,i);
+  dt_lua_do_chunk_raise(L,nparams+1,0);
+  lua_pushboolean(L,true);
+  lua_setfield(L,-2,"in_use");
+  lua_pop(L,2);
+  return 0;
+
+}
+
+
+
+int dt_lua_init_early_events(lua_State *L) {
+  lua_newtable(L);
+  lua_setfield(L,LUA_REGISTRYINDEX,"dt_lua_event_list");
+  dt_lua_push_darktable_lib(L);
+  lua_pushstring(L,"register_event");
+  lua_pushcfunction(L,&lua_register_event);
+  lua_settable(L,-3);
+  lua_pop(L,1);
+  return 0;
+}
+
+/****************************
+ * MSIC EVENTS REGISTRATION *
+ ****************************/
 
 
 /*
@@ -152,95 +269,6 @@ static int register_shortcut_event(lua_State* L) {
 }
 
 /*
- * MULTIINSTANCE EVENTS
- * these events can be registered multiple time with multiple callbacks
- * all callbacks will be called in the order they were registered
- * 
- * all callbacks will receive the same parameters
- * the result is all return values from all callbacks
- *
- * data table is "event => { # => callback }
- */
-
-
-int dt_lua_event_multiinstance_register(lua_State* L) {
-  // 1 is the data table
-  // 2 is the event name (checked)
-  // 3 is the action to perform (checked)
-
-  // simply add the callback to the data table
-  luaL_ref(L,1);
-  lua_pop(L,2);
-  return 0;
-}
-
-int dt_lua_event_multiinstance_trigger(lua_State * L) {
-  // 1 : the data table
-  // 2 : the name of the event
-  // .. : other parameters
-  const int arg_top = lua_gettop(L);
-  lua_pushnil(L);
-  while(lua_next(L,1)) {
-    for(int i =2;i <= arg_top;i++) {
-      lua_pushvalue(L,i);
-    }
-    dt_lua_do_chunk_silent(L,arg_top-1,0);
-  }
-  return 0;
-}
-
-static int lua_register_event(lua_State *L) {
-  // 1 is event name
-  const char*evt_name = luaL_checkstring(L,1);
-  const int nparams = lua_gettop(L);
-  // 2 is event handler
-  luaL_checktype(L,2,LUA_TFUNCTION);
-  lua_getfield(L,LUA_REGISTRYINDEX,"dt_lua_event_list");
-  lua_getfield(L,-1,evt_name);
-  if(lua_isnil(L,-1)) {
-    lua_pop(L,2);
-    return luaL_error(L,"unknown event type : %s\n",evt_name);
-  }
-  lua_getfield(L,-1,"on_register");
-  lua_getfield(L,-2,"data");
-  for(int i = 1 ;i <= nparams;i++) lua_pushvalue(L,i);
-  dt_lua_do_chunk_raise(L,nparams+1,0);
-  lua_pushboolean(L,true);
-  lua_setfield(L,-2,"in_use");
-  lua_pop(L,2);
-  return 0;
-
-}
-
-
-
-void dt_lua_event_trigger(lua_State* L,const char*event,int nargs) {
-  lua_getfield(L,LUA_REGISTRYINDEX,"dt_lua_event_list");
-  if(lua_isnil(L,-1)) {// events have been disabled
-    lua_pop(L,nargs);
-    return; 
-  }
-  lua_getfield(L,-1,event);
-  if(lua_isnil(L,-1)) {// event doesn't exist
-    lua_pop(L,nargs+1);
-    return; 
-  }
-  lua_getfield(L,-1,"in_use");
-  if(!lua_toboolean(L,-1)) { 
-    lua_pop(L,nargs+3);
-    return; 
-  }
-  lua_getfield(L,-2,"on_event");
-  lua_getfield(L,-3,"data");
-  lua_pushstring(L,event);
-  for(int i = 1 ;i <= nargs;i++) lua_pushvalue(L,i);
-  dt_lua_do_chunk(L,nargs+2,0);
-  lua_pop(L,nargs+3);
-  dt_lua_redraw_screen();
-  
-}
-
-/*
    called on a signal, from a secondary thread
    => we have the gdk lock, but the main UI thread can run if we release it
    */
@@ -267,133 +295,18 @@ static void on_export_image_tmpfile(gpointer instance,
 }
 
 
-typedef struct {
-  dt_view_t * old_view;
-  dt_view_t * new_view;
-} view_changed_callback_data_t;
 
+int dt_lua_init_events(lua_State *L) {
 
-static int32_t view_changed_callback_job(dt_job_t *job) {
-  gboolean has_lock = dt_lua_lock();
-  view_changed_callback_data_t *t = dt_control_job_get_params(job);
-  dt_lua_module_push_entry(darktable.lua_state.state,"view",t->old_view->module_name);
-  dt_lua_module_push_entry(darktable.lua_state.state,"view",t->new_view->module_name);
-  free(t);
-  dt_lua_event_trigger(darktable.lua_state.state,"view-changed",2);
-  dt_lua_unlock(has_lock);
-  return 0;
-}
+  // events that don't really fit anywhere else
+  lua_pushcfunction(L,register_shortcut_event);
+  lua_pushcfunction(L,dt_lua_event_keyed_trigger);
+  dt_lua_event_add(L,"shortcut");
 
-static void on_view_changed(gpointer instance,
-    dt_view_t* old_view,
-    dt_view_t* new_view,
-     gpointer user_data){
-  dt_job_t *job = dt_control_job_create(&view_changed_callback_job, "lua: on view changed");
-  if(job)
-  {
-    view_changed_callback_data_t *t = (view_changed_callback_data_t*)calloc(1, sizeof(view_changed_callback_data_t));
-    if(!t)
-    {
-      dt_control_job_dispose(job);
-    }
-    else
-    {
-      dt_control_job_set_params(job, t);
-      t->old_view = old_view;
-      t->new_view = new_view;
-      dt_control_add_job(darktable.control, DT_JOB_QUEUE_USER_FG, job);
-    }
-  }
-}
-
-typedef struct {
-  uint32_t imgid;
-} on_image_imported_callback_data_t;
-
-
-static int32_t on_image_imported_callback_job(dt_job_t *job) {
-  gboolean has_lock = dt_lua_lock();
-  on_image_imported_callback_data_t *t = dt_control_job_get_params(job);
-  luaA_push(darktable.lua_state.state,dt_lua_image_t,&t->imgid);
-  dt_lua_event_trigger(darktable.lua_state.state,"post-import-image",1);
-  free(t); // i am not sure if the free() may happen before the dt_lua_event_trigger as a pointer to the imgid inside of it is pushed to the lua stack
-  dt_lua_unlock(has_lock);
-  return 0;
-}
-
-static void on_image_imported(gpointer instance,uint32_t id, gpointer user_data){
-  dt_job_t *job = dt_control_job_create(&on_image_imported_callback_job, "lua: on image imported");
-  if(job)
-  {
-    on_image_imported_callback_data_t *t = (on_image_imported_callback_data_t*)calloc(1, sizeof(on_image_imported_callback_data_t));
-    if(!t)
-    {
-      dt_control_job_dispose(job);
-    }
-    else
-    {
-      dt_control_job_set_params(job, t);
-      t->imgid = id;
-      dt_control_add_job(darktable.control, DT_JOB_QUEUE_USER_FG, job);
-    }
-  }
-}
-
-static void on_film_imported(gpointer instance,uint32_t id, gpointer user_data){
-  gboolean has_lock = dt_lua_lock();
-  luaA_push(darktable.lua_state.state,dt_lua_film_t,&id);
-  dt_lua_event_trigger(darktable.lua_state.state,"post-import-film",1);
-  dt_lua_unlock(has_lock);
-}
-
-void dt_lua_event_add(lua_State *L,const char* evt_name)
-{
-  lua_newtable(L);
-
-  lua_pushstring(L,evt_name);
-  lua_setfield(L,-2,"name");
-
-  lua_pushvalue(L,-2);
-  lua_setfield(L,-2,"on_event");
-
-  lua_pushvalue(L,-3);
-  lua_setfield(L,-2,"on_register");
-
-  lua_pushboolean(L,false);
-  lua_setfield(L,-2,"in_use");
-
-  lua_newtable(L);
-  lua_setfield(L,-2,"data");
-
-  lua_getfield(L,LUA_REGISTRYINDEX,"dt_lua_event_list");
-  lua_pushvalue(L,-2);
-  lua_setfield(L,-2,evt_name);
-
-  lua_pop(L,4);
-
-}
-
-int dt_lua_init_early_events(lua_State *L) {
-  lua_newtable(L);
-  lua_setfield(L,LUA_REGISTRYINDEX,"dt_lua_event_list");
-  event_handler * handler = event_list;
-  while(handler->evt_name) {
-    lua_pushcfunction(L,handler->on_register);
-    lua_pushcfunction(L,handler->on_event);
-    dt_lua_event_add(L,handler->evt_name);
-    handler++;
-  }
-  dt_lua_push_darktable_lib(L);
-  lua_pushstring(L,"register_event");
-  lua_pushcfunction(L,&lua_register_event);
-  lua_settable(L,-3);
-  lua_pop(L,1);
-
-  dt_control_signal_connect(darktable.signals,DT_SIGNAL_IMAGE_IMPORT,G_CALLBACK(on_image_imported),NULL);
-  dt_control_signal_connect(darktable.signals,DT_SIGNAL_FILMROLLS_IMPORTED,G_CALLBACK(on_film_imported),NULL);
-  //dt_control_signal_connect(darktable.signals,DT_SIGNAL_IMAGE_EXPORT_MULTIPLE,G_CALLBACK(on_export_selection),NULL);
+  lua_pushcfunction(L,dt_lua_event_multiinstance_register);
+  lua_pushcfunction(L,dt_lua_event_multiinstance_trigger);
+  dt_lua_event_add(L,"intermediate-export-image");
   dt_control_signal_connect(darktable.signals,DT_SIGNAL_IMAGE_EXPORT_TMPFILE,G_CALLBACK(on_export_image_tmpfile),NULL);
-  dt_control_signal_connect(darktable.signals,DT_SIGNAL_VIEWMANAGER_VIEW_CHANGED,G_CALLBACK(on_view_changed),NULL);
   return 0;
 }
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
