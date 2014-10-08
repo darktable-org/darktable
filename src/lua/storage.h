@@ -30,7 +30,7 @@ void dt_lua_register_storage_type(lua_State* L, struct dt_imageio_module_storage
 
 
 
-int dt_lua_init_storage(lua_State *L);
+int dt_lua_init_early_storage(lua_State *L);
 
 #endif
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

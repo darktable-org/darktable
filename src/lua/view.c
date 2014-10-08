@@ -50,7 +50,8 @@ void dt_lua_register_view(lua_State* L,dt_view_t* module)
   lua_setfield(L,-2,"__tostring");
   lua_pop(L,1);
 };
-int dt_lua_init_view(lua_State *L)
+
+int dt_lua_init_early_view(lua_State *L)
 {
 
   dt_lua_init_type(L,dt_view_t);

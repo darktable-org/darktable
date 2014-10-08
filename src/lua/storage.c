@@ -133,7 +133,7 @@ void dt_lua_register_storage_type(lua_State* L, dt_imageio_module_storage_t* mod
   lua_pop(L,1);
 };
 
-int dt_lua_init_storage(lua_State *L)
+int dt_lua_init_early_storage(lua_State *L)
 {
 
   dt_lua_init_type(L,dt_imageio_module_storage_t);

@@ -143,7 +143,7 @@ luaA_Type dt_lua_init_singleton(lua_State* L,const char * unique_name,void* data
 luaA_Type dt_lua_init_wrapped_singleton(lua_State* L, lua_CFunction pusher, lua_CFunction getter, const char* unique_name,void *data);
 
 
-int dt_lua_init_types(lua_State *L);
+int dt_lua_init_early_types(lua_State *L);
 
 #define dt_lua_isa(L,index,type) \
   dt_lua_isa_type(L,index,luaA_type(L,type))

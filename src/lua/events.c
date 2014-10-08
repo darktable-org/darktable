@@ -373,7 +373,7 @@ void dt_lua_event_add(lua_State *L,const char* evt_name)
 
 }
 
-int dt_lua_init_events(lua_State *L) {
+int dt_lua_init_early_events(lua_State *L) {
   lua_newtable(L);
   lua_setfield(L,LUA_REGISTRYINDEX,"dt_lua_event_list");
   event_handler * handler = event_list;

@@ -160,7 +160,7 @@ void dt_lua_register_format_type(lua_State* L, dt_imageio_module_format_t* modul
 };
 
 
-int dt_lua_init_format(lua_State *L)
+int dt_lua_init_early_format(lua_State *L)
 {
 
   dt_lua_init_type(L,dt_imageio_module_format_t);

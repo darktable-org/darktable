@@ -743,7 +743,7 @@ gboolean dt_lua_typeisa_type(lua_State *L, luaA_Type obj_type, luaA_Type type_id
 
 }
 
-int dt_lua_init_types(lua_State *L)
+int dt_lua_init_early_types(lua_State *L)
 {
   luaA_conversion(L,char_20,push_char_array,to_char20);
   luaA_conversion_push(L,const char_20,push_char_array);

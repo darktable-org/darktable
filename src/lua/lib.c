@@ -142,7 +142,7 @@ void dt_lua_lib_register(lua_State* L,dt_lib_module_t* module)
   lua_pop(L,1);
 };
 
-int dt_lua_init_lib(lua_State *L)
+int dt_lua_init_early_lib(lua_State *L)
 {
 
   luaA_enum(L,dt_ui_container_t);

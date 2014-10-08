@@ -24,7 +24,6 @@
 #define dt_lua_register_module_member(L,storage,struct_type,member,member_type) \
   luaA_struct_member_type(L,storage->parameter_lua_type,#member,luaA_type(L,member_type),offsetof(struct_type,member))
 
-int dt_lua_init_modules(lua_State *L);
 
 void dt_lua_init_module_type(lua_State *L,const char* module_type_name);
 
@@ -42,6 +41,7 @@ luaA_Type dt_lua_module_get_preset_type(lua_State *L, const char* module_type_na
 void dt_lua_register_current_preset(lua_State*L, const char* module_type_name, const char*entry_name, lua_CFunction pusher, lua_CFunction getter);
 
 
+int dt_lua_init_early_modules(lua_State *L);
 #endif
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

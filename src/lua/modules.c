@@ -121,7 +121,7 @@ void dt_lua_register_current_preset(lua_State*L, const char* module_type_name, c
 
 
 
-int dt_lua_init_modules(lua_State *L)
+int dt_lua_init_early_modules(lua_State *L)
 {
   return 0;
 }

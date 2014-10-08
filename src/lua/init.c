@@ -53,12 +53,13 @@ static int dt_luacleanup(lua_State*L)
 
 static lua_CFunction early_init_funcs[] =
 {
-  dt_lua_init_types,
-  dt_lua_init_modules,
-  dt_lua_init_format,
-  dt_lua_init_storage,
-  dt_lua_init_lib,
-  dt_lua_init_view,
+  dt_lua_init_early_types,
+  dt_lua_init_early_events,
+  dt_lua_init_early_modules,
+  dt_lua_init_early_format,
+  dt_lua_init_early_storage,
+  dt_lua_init_early_lib,
+  dt_lua_init_early_view,
   NULL
 };
 
@@ -135,7 +136,6 @@ static lua_CFunction init_funcs[] =
   dt_lua_init_gui,
   dt_lua_init_luastorages,
   dt_lua_init_tags,
-  dt_lua_init_events,
   dt_lua_init_film,
   dt_lua_init_call,
   NULL
