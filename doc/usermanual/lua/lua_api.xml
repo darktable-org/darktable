@@ -6153,6 +6153,90 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
 
 </section>
 
+<section status="final" id="events_global_toolbox-grouping_toggle">
+<title>events.global_toolbox-grouping_toggle</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>global_toolbox-grouping_toggle</secondary>
+</indexterm>
+<synopsis>event</synopsis>
+<para>This event is triggered after the user toggled the grouping button.</para>
+
+<section status="final" id="events_global_toolbox-grouping_toggle_callback">
+<title>events.global_toolbox-grouping_toggle.callback</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>callback</secondary>
+</indexterm>
+<synopsis>function( 
+	<emphasis><link linkend="events_global_toolbox-grouping_toggle_callback_toggle">toggle</link></emphasis> : boolean
+)</synopsis>
+<para></para>
+
+<variablelist>
+<varlistentry id="events_global_toolbox-grouping_toggle_callback_toggle"><term>toggle</term><listitem>
+<synopsis>boolean</synopsis>
+<para>the new grouping status.</para>
+
+</listitem></varlistentry>
+
+</variablelist>
+</section>
+
+<section status="final" id="events_global_toolbox-grouping_toggle_extra_registration_parameters">
+<title>events.global_toolbox-grouping_toggle.extra registration parameters</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>extra registration parameters</secondary>
+</indexterm>
+<para>This event has no extra registration parameters.</para>
+
+</section>
+
+</section>
+
+<section status="final" id="events_global_toolbox-overlay_toggle">
+<title>events.global_toolbox-overlay_toggle</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>global_toolbox-overlay_toggle</secondary>
+</indexterm>
+<synopsis>event</synopsis>
+<para>This event is triggered after the user toggled the overlay button.</para>
+
+<section status="final" id="events_global_toolbox-overlay_toggle_callback">
+<title>events.global_toolbox-overlay_toggle.callback</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>callback</secondary>
+</indexterm>
+<synopsis>function( 
+	<emphasis><link linkend="events_global_toolbox-overlay_toggle_callback_toggle">toggle</link></emphasis> : boolean
+)</synopsis>
+<para></para>
+
+<variablelist>
+<varlistentry id="events_global_toolbox-overlay_toggle_callback_toggle"><term>toggle</term><listitem>
+<synopsis>boolean</synopsis>
+<para>the new overlay status.</para>
+
+</listitem></varlistentry>
+
+</variablelist>
+</section>
+
+<section status="final" id="events_global_toolbox-overlay_toggle_extra_registration_parameters">
+<title>events.global_toolbox-overlay_toggle.extra registration parameters</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>extra registration parameters</secondary>
+</indexterm>
+<para>This event has no extra registration parameters.</para>
+
+</section>
+
+</section>
+
 </section>
 
 <section status="final" id="attributes">
