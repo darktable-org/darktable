@@ -74,6 +74,15 @@ void dt_lua_event_add(lua_State *L,const char* evt_name)
   lua_setfield(L,-2,"data");
 
   lua_getfield(L,LUA_REGISTRYINDEX,"dt_lua_event_list");
+
+  lua_getfield(L,-1,evt_name);
+  if(!lua_isnil(L,-1)) {
+    luaL_error(L,"double registration of event %s",evt_name);
+    // triggered early, so should cause an unhandled exception.
+    // This is normal, this error is used as an assert
+  }
+  lua_pop(L,1);
+
   lua_pushvalue(L,-2);
   lua_setfield(L,-2,evt_name);
 
