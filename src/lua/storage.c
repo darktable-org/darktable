@@ -155,6 +155,11 @@ int dt_lua_init_early_storage(lua_State *L)
   dt_lua_type_register_const(L,dt_imageio_module_storage_t,"supports_format");
 
   dt_lua_init_module_type(L,"storage");
+  dt_lua_push_darktable_lib(L);
+  dt_lua_goto_subtable(L,"modules");
+  dt_lua_get_module_type_singleton(L,"storage");
+  lua_setfield(L,-2,"storage");
+  lua_pop(L,1);
   return 0;
 }
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

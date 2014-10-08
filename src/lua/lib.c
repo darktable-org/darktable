@@ -188,7 +188,7 @@ int dt_lua_init_early_lib(lua_State *L)
   lua_pushcfunction(L,on_screen_member);
   dt_lua_type_register_const(L,dt_lib_module_t,"on_screen");
 
-  dt_lua_init_module_type(L,"lib");
+  dt_lua_init_module_type(L,"lib"); // special case : will be attached to dt.gui in lua/gui.c:dt_lua_init_gui
   return 0;
 }
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

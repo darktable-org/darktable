@@ -102,7 +102,7 @@ int dt_lua_init_early_view(lua_State *L)
   lua_pushcfunction(L,name_member);
   dt_lua_type_register_const(L,dt_view_t,"name");
 
-  dt_lua_init_module_type(L,"view");
+  dt_lua_init_module_type(L,"view"); // special case : will be attached to dt.gui in lua/gui.c:dt_lua_init_gui
 
 
   return 0;

@@ -712,15 +712,15 @@ function M.all_children(node)
 
 
 	-- libs might be available only in certain views, iterate through all views to document them
-	for _,view in pairs(dt.modules.view) do
+	for _,view in pairs(dt.gui.views) do
 		dt.gui.current_view(view);
-		if(view == dt.modules.view.darkroom) then
-			dt.modules.lib.snapshots:take_snapshot();
-			local snapshot = dt.modules.lib.snapshots[1]
+		if(view == dt.gui.views.darkroom) then
+			dt.gui.libs.snapshots:take_snapshot();
+			local snapshot = dt.gui.libs.snapshots[1]
 			document_type_from_obj(snapshot,toplevel.types.dt_lua_snapshot_t)
 		end
-		for libname,lib in pairs(dt.modules.lib) do
-			document_type_from_obj(lib,toplevel.darktable.modules.lib[libname])
+		for libname,lib in pairs(dt.gui.libs) do
+			document_type_from_obj(lib,toplevel.darktable.gui.libs[libname])
 		end
 	end
 
@@ -732,10 +732,10 @@ function M.all_children(node)
 	M.create_documentation_node = create_documentation_node
 	M.document_function = document_function
 	dt.gui.selection{dt.database[1]}
-	for _,view in pairs(dt.modules.view) do
+	for _,view in pairs(dt.gui.views) do
 		dt.gui.current_view(view);
-		for libname,lib in pairs(dt.modules.lib) do
-			document_type_from_obj(lib,toplevel.darktable.modules.lib[libname])
+		for libname,lib in pairs(dt.gui.libs) do
+			document_type_from_obj(lib,toplevel.darktable.gui.libs[libname])
 		end
 	end
 	return M;

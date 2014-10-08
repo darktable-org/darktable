@@ -141,7 +141,7 @@ darktable.gui.current_view:set_text([[Allows to change the current view.]])
 darktable.gui.current_view:add_parameter("view",my_tostring(types.dt_view_t),[[The view to switch to. If empty the current view is unchanged]]):set_attribute("optional",true)
 darktable.gui.current_view:add_return(my_tostring(types.dt_view_t),[[the current view]])
 darktable.gui.current_view:add_version_info([[Function added]])
-darktable.gui.create_job:set_text([[Create a new progress_bar displayed in ]]..my_tostring(darktable.modules.lib.backgroundjobs))
+darktable.gui.create_job:set_text([[Create a new progress_bar displayed in ]]..my_tostring(darktable.gui.libs.backgroundjobs))
 darktable.gui.create_job:add_parameter("text","string",[[The text to display in the job entry]])
 darktable.gui.create_job:add_parameter("percentage","boolean",[[Should a progress bar be displayed]]):set_attribute("optional",true)
 tmp = darktable.gui.create_job:add_parameter("cancel_callback","function",[[A function called when the cancel button for that job is pressed]]..para().."note that the job won't be destroyed automatically. You need to set "..my_tostring(types.dt_lua_backgroundjob_t.valid).." to false for that")
@@ -344,91 +344,91 @@ darktable.modules.storage.email:set_alias(darktable.modules.storage.flickr)
 darktable.modules.storage.email:set_alias(darktable.modules.storage.facebook)
 darktable.modules.storage.email:set_alias(darktable.modules.storage.picasa)
 
-for k, v in darktable.modules.view:unskiped_children() do
-	v:set_main_parent(darktable.modules.view)
+for k, v in darktable.gui.views:unskiped_children() do
+	v:set_main_parent(darktable.gui.views)
 end
-darktable.modules.view:set_text([[The different views in darktable]])
-darktable.modules.view:add_version_info([[View objects added]])
-darktable.modules.view.map:set_text([[The map view]])
-darktable.modules.view.map.latitude:set_text([[The latitude of the center of the map]])
-darktable.modules.view.map.longitude:set_text([[The longitude of the center of the map]])
-darktable.modules.view.map.zoom:set_text([[The current zoom level of the map]])
+darktable.gui.views:set_text([[The different views in darktable]])
+darktable.gui.views:add_version_info([[View objects added]])
+darktable.gui.views.map:set_text([[The map view]])
+darktable.gui.views.map.latitude:set_text([[The latitude of the center of the map]])
+darktable.gui.views.map.longitude:set_text([[The longitude of the center of the map]])
+darktable.gui.views.map.zoom:set_text([[The current zoom level of the map]])
 
-darktable.modules.view.darkroom:set_text([[The darkroom view]])
-darktable.modules.view.lighttable:set_text([[The lighttable view]])
-darktable.modules.view.tethering:set_text([[The tethering view]])
-darktable.modules.view.slideshow:set_text([[The slideshow view]])
+darktable.gui.views.darkroom:set_text([[The darkroom view]])
+darktable.gui.views.lighttable:set_text([[The lighttable view]])
+darktable.gui.views.tethering:set_text([[The tethering view]])
+darktable.gui.views.slideshow:set_text([[The slideshow view]])
 
-for k, v in darktable.modules.lib:unskiped_children() do
-	local real_node = real_darktable.modules.lib[k]
+for k, v in darktable.gui.libs:unskiped_children() do
+	local real_node = real_darktable.gui.libs[k]
 	v:set_attribute("position",real_node.position);
 	v:set_attribute("container",real_node.container);
 	local matching_views={}
 	for k2,v2 in pairs(real_node.views) do
-		table.insert(matching_views,darktable.modules.view[v2.id])
+		table.insert(matching_views,darktable.gui.views[v2.id])
 	end
 	v:set_attribute("views",matching_views);
 end
-darktable.modules.lib:set_text([[This table allows to reference all lib objects]]..para()..
+darktable.gui.libs:set_text([[This table allows to reference all lib objects]]..para()..
 [[lib are the graphical blocks within each view.]]..para()..
 [[To quickly figure out what lib is what, you can use the following code which will make a given lib blink.]]..para()..
 code([[local tested_module="global_toolbox"
-dt.modules.lib[tested_module].visible=false
+dt.gui.libs[tested_module].visible=false
 coroutine.yield("wait_ms",2000)
 while true do
-	dt.modules.lib[tested_module].visible = not dt.modules.lib[tested_module].visible
+	dt.gui.libs[tested_module].visible = not dt.gui.libs[tested_module].visible
 	coroutine.yield("wait_ms",2000)
 end]]))
-darktable.modules.lib:add_version_info([[lib were added]])
+darktable.gui.libs:add_version_info([[lib were added]])
 
 
-darktable.modules.lib.snapshots:set_text([[The UI element that manipulates snapshots in darkroom]])
-darktable.modules.lib.snapshots.ratio:set_text([[The place in the screen where the line separating the snapshot is. Between 0 and 1]])
-darktable.modules.lib.snapshots.direction:set_text([[The direction of the snapshot overlay]]):set_reported_type(types.snapshot_direction_t)
+darktable.gui.libs.snapshots:set_text([[The UI element that manipulates snapshots in darkroom]])
+darktable.gui.libs.snapshots.ratio:set_text([[The place in the screen where the line separating the snapshot is. Between 0 and 1]])
+darktable.gui.libs.snapshots.direction:set_text([[The direction of the snapshot overlay]]):set_reported_type(types.snapshot_direction_t)
 
-darktable.modules.lib.snapshots["#"]:set_text([[The different snapshots for the image]])
-darktable.modules.lib.snapshots.selected:set_text([[The currently selected snapshot]])
-darktable.modules.lib.snapshots.take_snapshot:set_text([[Take a snapshot of the current image and add it to the UI]]..para()..[[The snapshot file will be generated at the next redraw of the main window]])
-darktable.modules.lib.snapshots.max_snapshot:set_text([[The maximum number of snapshots]])
+darktable.gui.libs.snapshots["#"]:set_text([[The different snapshots for the image]])
+darktable.gui.libs.snapshots.selected:set_text([[The currently selected snapshot]])
+darktable.gui.libs.snapshots.take_snapshot:set_text([[Take a snapshot of the current image and add it to the UI]]..para()..[[The snapshot file will be generated at the next redraw of the main window]])
+darktable.gui.libs.snapshots.max_snapshot:set_text([[The maximum number of snapshots]])
 
-darktable.modules.lib.styles:set_text([[The style selection menu]])
-darktable.modules.lib.metadata_view:set_text([[The widget displaying metadata about the current image]])
-darktable.modules.lib.metadata:set_text([[The widget allowing modification of metadata fields on the current image]])
-darktable.modules.lib.hinter:set_text([[The small line of text at the top of the UI showing the number of selected images]])
-darktable.modules.lib.modulelist:set_text([[The window allowing to set modules as visible/hidden/favorite]])
-darktable.modules.lib.filmstrip:set_text([[The filmstrip at the bottom of some views]])
-darktable.modules.lib.viewswitcher:set_text([[The labels allowing to switch view]])
-darktable.modules.lib.darktable_label:set_text([[The darktable logo in the upper left corner]])
-darktable.modules.lib.tagging:set_text([[The tag manipulation UI]])
-darktable.modules.lib.geotagging:set_text([[The geotagging time synchronisation UI]])
-darktable.modules.lib.recentcollect:set_text([[The recent collection UI element]])
-darktable.modules.lib.global_toolbox:set_text([[The common tools to all view (settings, grouping...)]])
-darktable.modules.lib.global_toolbox.grouping:set_text([[The current status of the image grouping option]])
-darktable.modules.lib.global_toolbox.show_overlays:set_text([[the current status of the image overlays option]])
-darktable.modules.lib.filter:set_text([[The image-filter menus at the top of the UI]])
-darktable.modules.lib.import:set_text([[The buttons to start importing images]])
-darktable.modules.lib.ratings:set_text([[The starts to set the rating of an image]])
-darktable.modules.lib.select:set_text([[The buttons that allow to quickly change the selection]])
-darktable.modules.lib.collect:set_text([[The collection UI element that allows to filter images by collection]])
-darktable.modules.lib.colorlabels:set_text([[The color buttons that allow to set labels on an image]])
-darktable.modules.lib.lighttable_mode:set_text([[The navigation and zoom level UI in lighttable]])
-darktable.modules.lib.copy_history:set_text([[The UI element that manipulates history]])
-darktable.modules.lib.image:set_text([[The UI element that manipulates the current image]])
-darktable.modules.lib.modulegroups:set_text([[The icons describing the different iop groups]])
-darktable.modules.lib.module_toolbox:set_text([[The tools on the bottom line of the UI (overexposure)]])
-darktable.modules.lib.session:set_text([[The session UI when tethering]])
-darktable.modules.lib.histogram:set_text([[The histogram widget]])
-darktable.modules.lib.export:set_text([[The export menu]])
-darktable.modules.lib.history:set_text([[The history manipulation menu]])
-darktable.modules.lib.colorpicker:set_text([[The colorpicker menu]])
-darktable.modules.lib.navigation:set_text([[The full image preview to allow navigation]])
-darktable.modules.lib.masks:set_text([[The masks window]])
-darktable.modules.lib.view_toolbox:set_text([[]])
-darktable.modules.lib.live_view:set_text([[The liveview window]])
-darktable.modules.lib.map_settings:set_text([[The map setting window]])
-darktable.modules.lib.camera:set_text([[The camera selection UI]])
-darktable.modules.lib.location:set_text([[The location ui]])
-darktable.modules.lib.backgroundjobs:set_text([[The window displaying the currently running jobs]])
+darktable.gui.libs.styles:set_text([[The style selection menu]])
+darktable.gui.libs.metadata_view:set_text([[The widget displaying metadata about the current image]])
+darktable.gui.libs.metadata:set_text([[The widget allowing modification of metadata fields on the current image]])
+darktable.gui.libs.hinter:set_text([[The small line of text at the top of the UI showing the number of selected images]])
+darktable.gui.libs.modulelist:set_text([[The window allowing to set modules as visible/hidden/favorite]])
+darktable.gui.libs.filmstrip:set_text([[The filmstrip at the bottom of some views]])
+darktable.gui.libs.viewswitcher:set_text([[The labels allowing to switch view]])
+darktable.gui.libs.darktable_label:set_text([[The darktable logo in the upper left corner]])
+darktable.gui.libs.tagging:set_text([[The tag manipulation UI]])
+darktable.gui.libs.geotagging:set_text([[The geotagging time synchronisation UI]])
+darktable.gui.libs.recentcollect:set_text([[The recent collection UI element]])
+darktable.gui.libs.global_toolbox:set_text([[The common tools to all view (settings, grouping...)]])
+darktable.gui.libs.global_toolbox.grouping:set_text([[The current status of the image grouping option]])
+darktable.gui.libs.global_toolbox.show_overlays:set_text([[the current status of the image overlays option]])
+darktable.gui.libs.filter:set_text([[The image-filter menus at the top of the UI]])
+darktable.gui.libs.import:set_text([[The buttons to start importing images]])
+darktable.gui.libs.ratings:set_text([[The starts to set the rating of an image]])
+darktable.gui.libs.select:set_text([[The buttons that allow to quickly change the selection]])
+darktable.gui.libs.collect:set_text([[The collection UI element that allows to filter images by collection]])
+darktable.gui.libs.colorlabels:set_text([[The color buttons that allow to set labels on an image]])
+darktable.gui.libs.lighttable_mode:set_text([[The navigation and zoom level UI in lighttable]])
+darktable.gui.libs.copy_history:set_text([[The UI element that manipulates history]])
+darktable.gui.libs.image:set_text([[The UI element that manipulates the current image]])
+darktable.gui.libs.modulegroups:set_text([[The icons describing the different iop groups]])
+darktable.gui.libs.module_toolbox:set_text([[The tools on the bottom line of the UI (overexposure)]])
+darktable.gui.libs.session:set_text([[The session UI when tethering]])
+darktable.gui.libs.histogram:set_text([[The histogram widget]])
+darktable.gui.libs.export:set_text([[The export menu]])
+darktable.gui.libs.history:set_text([[The history manipulation menu]])
+darktable.gui.libs.colorpicker:set_text([[The colorpicker menu]])
+darktable.gui.libs.navigation:set_text([[The full image preview to allow navigation]])
+darktable.gui.libs.masks:set_text([[The masks window]])
+darktable.gui.libs.view_toolbox:set_text([[]])
+darktable.gui.libs.live_view:set_text([[The liveview window]])
+darktable.gui.libs.map_settings:set_text([[The map setting window]])
+darktable.gui.libs.camera:set_text([[The camera selection UI]])
+darktable.gui.libs.location:set_text([[The location ui]])
+darktable.gui.libs.backgroundjobs:set_text([[The window displaying the currently running jobs]])
 
 ----------------------
 --  DARKTABLE.DEBUG --

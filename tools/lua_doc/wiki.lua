@@ -51,7 +51,7 @@ local function get_reported_type(node,simple)
 		doc.debug_print(node)
 		error("all types should have a reported type")
 	end
-	local rtype = node:get_reported_type()
+	local rtype = tostring(node:get_reported_type())
 	if rtype == "documentation node" then rtype = nil end
 	if rtype == "dt_singleton" then rtype = nil end
 	if( rtype and not simple and doc.get_attribute(node,"signature")) then

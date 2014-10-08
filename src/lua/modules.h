@@ -25,7 +25,10 @@
   luaA_struct_member_type(L,storage->parameter_lua_type,#member,luaA_type(L,member_type),offsetof(struct_type,member))
 
 
+// table of entries handling
 void dt_lua_init_module_type(lua_State *L,const char* module_type_name);
+void dt_lua_get_module_type_singleton(lua_State *L,const char* module_type_name);
+
 
 /// entry handling
 void dt_lua_register_module_entry(lua_State *L, int index, const char* module_type_name,const char* entry_name);

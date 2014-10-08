@@ -259,6 +259,12 @@ int dt_lua_init_gui(lua_State * L)
     lua_pushcfunction(L, lua_create_job);
     lua_pushcclosure(L, dt_lua_type_member_common, 1);
     dt_lua_type_register_const_type(L, type_id, "create_job");
+    dt_lua_get_module_type_singleton(L,"lib");
+    lua_pushcclosure(L, dt_lua_type_member_common, 1);
+    dt_lua_type_register_const_type(L, type_id, "libs");
+    dt_lua_get_module_type_singleton(L,"view");
+    lua_pushcclosure(L, dt_lua_type_member_common, 1);
+    dt_lua_type_register_const_type(L, type_id, "views");
 
 
 
