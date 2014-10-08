@@ -4,7 +4,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "POT-Creation-Date: 2014-09-20 23:04+0200\n"
-"PO-Revision-Date: 2014-10-06 16:45+0100\n"
+"PO-Revision-Date: 2014-10-08 22:03+0100\n"
 "Last-Translator: Michel Leblond <michel.leblond62@gmail.com>\n"
 "Language-Team: Jean-Luc Coulon, Victor Lamoine, Michel Leblond\n"
 "Language: fr\n"
@@ -13,7 +13,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
 "X-Generator: Poedit 1.5.4\n"
-"X-Poedit-Bookmarks: 1508,208,331,416,182,458,465,290,223,729\n"
+"X-Poedit-Bookmarks: 1601,208,331,416,182,458,465,290,223,729\n"
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:4(title)
 msgid "darktable 1.5"
@@ -13535,11 +13535,11 @@ msgid ""
 msgstr ""
 "Comparé au virage partiel traditionnel, notre module propose plus de "
 "paramètres pour influencer son comportement. Nous avons le paramètre "
-"<quote>répartition</quote>, qui  – selon votre choix – décale 50% du niveau "
-"gris de votre image plus vers les ombres ou plus vers les hautes lumières. "
-"De plus, avec le paramètre <quote>seuil</quote>, vous pouvez compresser le "
-"virage dans les ombres et les hautes lumières et laisser un intervalle de "
-"tons moyens, qui resteront non modifiés par l’effet."
+"<quote>répartition</quote>, qui  – selon votre choix – décale le 50% du "
+"niveau gris de votre image plus vers les ombres ou plus vers les hautes "
+"lumières. De plus, avec le paramètre <quote>seuil</quote>, vous pouvez "
+"compresser le virage dans les ombres et les hautes lumières et laisser un "
+"intervalle de tons moyens, qui resteront non modifiés par l’effet."
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:12209(para)
 msgid ""
@@ -13622,15 +13622,15 @@ msgstr "Vignetage"
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:12294(secondary)
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:12298(primary)
 msgid "vignetting"
-msgstr "Vignetage"
+msgstr "vignetage"
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:12316(entry)
 msgid ""
 "This module is an artistic feature which creates vignetting (modification of "
 "the brightness/saturation at the borders)."
 msgstr ""
-"Ce module est une fonction artistique qui crée un vignetage (modification de "
-"la luminosité et de la saturation des bords)."
+"Ce module est une fonctionnalité artistique qui crée un vignetage "
+"(modification de la luminosité et de la saturation des bords)."
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:12334(para)
 msgid ""
@@ -13639,11 +13639,10 @@ msgid ""
 "module is in focus. Give it a try to get a feeling of how it works. On-"
 "screen controls and parameter sliders will stay in sync."
 msgstr ""
-"Le module de vignetage possède un jeu important de paramètres afin d’ajuster "
-"correctement son effet. Il affichera aussi des commandes graphiques à "
-"l’intérieur de l’image lorsque le module a la main. Essayez-le afin d’en "
-"appréhender le fonctionnement. Les commandes à l’écran et les curseurs des "
-"paramètres restent synchronisés"
+"Le module vignetage possède un jeu important de paramètres pour ajuster son "
+"effet avec précision. S'il est activé il affichera aussi des contrôles "
+"graphiques dans l’image. Essayez-le afin d’en appréhender le fonctionnement. "
+"Les contrôles écran et les curseurs des paramètres restent synchronisés."
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:12341(para)
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:13389(para)
@@ -13652,6 +13651,9 @@ msgid ""
 "you should consider to activate the <emphasis>dithering</emphasis> module "
 "(see <xref linkend=\"dithering\"/>)."
 msgstr ""
+"Sous certaines conditions, ce module est connu pour provoquer des artefacts "
+"d'effet de bandes. Vous devriez envisager d'activer le module "
+"<emphasis>homogénéisation</emphasis> (voir <xref linkend=\"dithering\"/>)."
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:12349(para)
 msgid "Set the radius of the vignetting area."
@@ -13659,14 +13661,14 @@ msgstr "Définit le rayon de la zone de vignetage."
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:12355(title)
 msgid "fall-off strength"
-msgstr "Intensité de la décroissance"
+msgstr "dégradé"
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:12356(para)
 msgid ""
 "Sets the progressiveness of the fall-off. Higher values will cause a steeper "
 "transition."
 msgstr ""
-"Définit la progressivité de l’atténuation. Des valeurs élevées donneront une "
+"Définit la progressivité du dégradé. Des valeurs élevées donneront une "
 "transition plus brusque."
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:12363(para)
@@ -13687,7 +13689,7 @@ msgstr ""
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:12377(title)
 msgid "horizontal center"
-msgstr "Centre horizontal"
+msgstr "centre horizontal"
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:12378(para)
 msgid "Shifts the center of the vignetting area horizontally."
@@ -13695,7 +13697,7 @@ msgstr "Décaler le centre de la zone de vignetage horizontalement."
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:12384(title)
 msgid "vertical center"
-msgstr "Centre vertical"
+msgstr "centre vertical"
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:12385(para)
 msgid "Shifts the center of the vignetting area vertically."
@@ -13703,7 +13705,7 @@ msgstr "Décaler le centre de la zone de vignetage verticalement."
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:12391(title)
 msgid "shape"
-msgstr "Forme"
+msgstr "forme"
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:12392(para)
 msgid ""
@@ -13711,14 +13713,14 @@ msgid ""
 "circular or elliptical area. Smaller values will shift the shape into a more "
 "square one; higher values turn it into a cross-like shape."
 msgstr ""
-"Influence la forme de la zone de vignetage. La valeur de 1 par défaut donne "
-"une zone circulaire ou elliptique. Des valeurs plus faible feront évoluer la "
-"forme vers une forme plus carrée ; des valeurs plus grandes la feront "
-"ressembler à une étoile."
+"Influence la forme de la zone de vignetage. La valeur 1 par défaut donne une "
+"zone circulaire ou elliptique. Des valeurs plus faibles feront évoluer la "
+"forme vers un aspect plus carré ; des valeurs plus grandes lui donneront un "
+"aspect de croix."
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:12400(title)
 msgid "automatic ratio"
-msgstr "Rapport automatique"
+msgstr "automatique"
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:12401(para)
 msgid ""
@@ -13732,7 +13734,7 @@ msgstr ""
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:12409(title)
 msgid "width/height ratio"
-msgstr "Rapport entre largeur et hauteur"
+msgstr "largeur/hauteur"
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:12410(para)
 msgid "Manually adjust the width/height ratio of the vignetting area."
@@ -13750,31 +13752,31 @@ msgid ""
 "This feature is mostly obsoleted by our new module <emphasis>dithering</"
 "emphasis> (see <xref linkend=\"dithering\"/>)."
 msgstr ""
-"Depuis cette zone de liste déroulante, vous pouvez activer un tramage avec "
-"un bruit aléatoire afin de combattre les artefacts à effet de bandes "
-"(<quote>banding</quote>) provoqués causés par les dégradés du vignetage. "
-"Sélectionnez <quote>sortie 8 bits</quote> afin d’éviter l’effet de bandes "
-"sur l’écran d’affichage et pour les JPEG. Lorsqu'il est défini à "
-"<quote>sortie 16 bits</quote>, seul un faible tramage sera appliqué, juste "
-"assez fort pour compenser l’effet de bandes sur le niveau 16 bits à grain "
-"fin. Cette fonctionnalité est pratiquement rendue obsolète par notre nouveau "
-"module de <emphasis>Tramage</emphasis> (voir <xref linkend=\"dithering\"/>)."
+"Depuis cette zone de liste déroulante, afin de combattre les artefacts "
+"d'effet de bandes causés par les dégradés du vignetage, vous pouvez activer "
+"une homogénéisation à l'aide d'un bruit aléatoire. Sélectionnez "
+"<quote>sortie 8 bits</quote> afin d’éviter l’effet de bandes sur l’écran "
+"d’affichage et dans les JPEG. Lorsqu'elle est définie à <quote>sortie 16 "
+"bits</quote>, seule une faible homogénéisation sera appliquée, juste assez "
+"forte pour compenser l’effet de bandes sur le niveau 16 bits à grain fin. "
+"Cette fonctionnalité est pratiquement rendue obsolète par notre nouveau "
+"module <emphasis>homogénéisation</emphasis> (voir <xref linkend=\"dithering"
+"\"/>)."
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:12443(entry)
 msgid ""
 "An image with vignetting and with graphical vignetting controls displayed."
 msgstr ""
-"Image avec du vignetage et avec les commandes graphiques de vignetage "
-"affichées."
+"Image avec vignetage et avec les contrôles graphiques de vignetage affichés."
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:12458(title)
 msgid "Soften"
-msgstr "Adoucir"
+msgstr "Effet Orton (Adoucir)"
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:12462(secondary)
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:12466(primary)
 msgid "soften"
-msgstr "Adoucir"
+msgstr "effet Orton (adoucir)"
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:12479(entry)
 msgid ""
@@ -13792,9 +13794,9 @@ msgid ""
 "image was blurred."
 msgstr ""
 "Michael Orton a obtenu ses résultats sur des diapositives en utilisant deux "
-"expositions de la même scène, une correctement exposée et une surexposée. Il "
-"a ensuite utilisé une technique de chambre noire pour les fusionner en une "
-"image finale où l’image surexposée était floutée."
+"expositions de la même scène : une correctement exposée et une surexposée. "
+"Il a ensuite utilisé une technique de chambre noire pour les fusionner en "
+"une image finale où l’image surexposée était floutée."
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:12503(para)
 msgid ""
@@ -13802,23 +13804,24 @@ msgid ""
 "domain. You can control brightness and blur with the provided parameters; we "
 "also add a control for saturation of the overexposured image for more play."
 msgstr ""
-"Ce module est pratiquement une copie du processus analogique d’Orton dans le "
-"domaine numérique. Vous pouvez contrôler la luminosité et le flou à l’aide "
+"Ce module est quasiment une copie dans le domaine numérique du processus "
+"analogique d’Orton. Vous pouvez contrôler la luminosité et le flou à l’aide "
 "des paramètres proposés ; nous avons aussi ajouté un contrôle pour la "
-"saturation de l’image surexposée afin d’avoir davantage de marge de manœuvre."
+"saturation de l’image surexposée afin d’avoir une plus grande marge de "
+"manœuvre."
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:12510(title)
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:13039(title)
 msgid "size"
-msgstr "Dimensions"
+msgstr "taille"
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:12511(para)
 msgid ""
 "Set the size of blur of the overexposed image in the process, the bigger the "
 "softer."
 msgstr ""
-"Définit les dimensions du flou de l’image surexposées dans le processus, "
-"plus elle est importante, plus l’image sera douce."
+"Définit la taille, dans le processus, du flou de l’image surexposée ; plus "
+"elle est importante, plus l’image est douce."
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:12518(para)
 msgid "Set the saturation of the overexposed image."
@@ -13828,12 +13831,12 @@ msgstr "Définit la saturation de l’image surexposée."
 msgid ""
 "Expressed in [EV], the brightness slider selects the increase in brightness."
 msgstr ""
-"Exprimé en [IL], le curseur de luminosité permet de définir l’augmentation "
+"Exprimé en [EV], le curseur de luminosité permet de définir l’augmentation "
 "de la luminosité."
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:12531(title)
 msgid "mix"
-msgstr "Mélange"
+msgstr "mélange"
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:12532(para)
 msgid "Controls the mix of the overexposed image and the overall effect."
@@ -13844,7 +13847,7 @@ msgstr "Contrôle le mélange de l’image surexposée et de l’effet global."
 msgid ""
 "This is the original image, use it as reference for the changes below..."
 msgstr ""
-"Ceci est l’image de référence, utilisez-la comme référence pour les "
+"Ceci est l’image originale, utilisez-la comme référence pour les "
 "modifications ci-dessous..."
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:12561(entry)
@@ -13852,7 +13855,7 @@ msgid ""
 "In this image I used the default values, and added 0.33EV to brightness for "
 "a little more light in the soft layer."
 msgstr ""
-"Sur cette image, j'ai utilisé les valeurs par défaut et ajouté 0,33IL de "
+"Sur cette image, j'ai utilisé les valeurs par défaut et ajouté 0,33EV de "
 "luminosité pour avoir un peu plus de lumière sur la couche floue."
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:12570(entry)
@@ -13875,17 +13878,17 @@ msgstr ""
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:12623(para)
 msgid "The grain is processed on the L channel from CIELAB."
-msgstr "Le grain est traité sur le canal L* de CIELAB."
+msgstr "Le grain est traité sur le canal L de CIELAB."
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:12629(para)
 msgid "Set the grain size, which has been scaled to simulate an ISO number."
 msgstr ""
 "Définit la taille du grain, qui a été dimensionnée pour simuler un nombre "
-"d’ISO."
+"ISO."
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:12636(para)
 msgid "Set the strength of the effect."
-msgstr "Définit l’intensité de l’effet."
+msgstr "Définit la force de l’effet."
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:12647(title)
 msgid "Highpass"
@@ -13893,7 +13896,7 @@ msgstr "Filtre passe-haut"
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:12670(quote)
 msgid "soft light"
-msgstr "Lumière douce"
+msgstr "lumière douce"
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:12668(entry)
 msgid ""
@@ -13904,20 +13907,21 @@ msgid ""
 "<placeholder-3/> (see <xref linkend=\"parametric_mask\"/>) to limit the "
 "effect to only parts of your image."
 msgstr ""
-"Passe-haut agit comme un filtre passe-haut. L’utilisation principale de ce "
-"filtre se fait en combinaison avec un opérateur de fusion. Essayez le mode "
-"de fusion <placeholder-1/> afin d’obtenir une accentuation passe-haut. "
-"Utilisez le curseur d’opacité pour ajuster l’intensité de l’effet ou "
-"utilisez la <placeholder-2/> (voir <xref linkend=\"parametric_mask\"/>) afin "
-"de limiter l’effet à certaines parties de l’image."
+"Passe-haut agit comme un filtre passe-haut. Ce filtre est principalement "
+"utilisé en combinaison avec un opérateur de fusion. Essayez le mode fusion "
+"<placeholder-1/> afin d’obtenir une accentuation passe-haut. Utilisez le "
+"curseur d’opacité pour ajuster l’intensité de l’effet ou utilisez un "
+"<placeholder-2/> (voir <xref linkend=\"drawn_mask\"/>) ou un <placeholder-3/"
+"> (voir <xref linkend=\"parametric_mask\"/>) pour limiter l'effet à "
+"certaines parties de votre image."
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:12692(para)
 msgid "Set the sharpness. The higher, the more details."
-msgstr "Définit l’accentuation. Plus elle est élevée, plus il y a de détails."
+msgstr "Définit la netteté. Plus elle est élevée, plus il y a de détails."
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:12698(title)
 msgid "contrast boost"
-msgstr "Accroître le contraste"
+msgstr "renforcer le contraste"
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:12699(para)
 msgid "Set the contrast boost."
@@ -13934,11 +13938,11 @@ msgstr "filtre passe-bas"
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:12734(emphasis)
 msgid "blending operator"
-msgstr "Opérateur de fusion"
+msgstr "opérateur de fusion"
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:12735(quote)
 msgid "local contrast mask"
-msgstr "Masque de contraste local"
+msgstr "masque de contraste local"
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:12731(entry)
 msgid ""
@@ -13948,20 +13952,20 @@ msgid ""
 "\"/>). Try out the preset named <placeholder-2/> with an <placeholder-3/> "
 "blending operation."
 msgstr ""
-"Filtre passe-bas (par ex. flou gaussien) avec des contrôles supplémentaires "
-"pour le résultat à la fois sur le contraste et la saturation. L’utilisation "
-"principale du filtre passe-bas se trouve dans la combinaison avec un "
+"Il s'agit d'un filtre passe-bas (par exemple flou gaussien) ayant des "
+"contrôles supplémentaires agissant à la fois sur le contraste et la "
+"saturation. Ce filtre est principalement utilisé en combinaison avec un "
 "<placeholder-1/> (voir <xref linkend=\"blending_operators\"/>). Essayez le "
 "préréglage appelé <placeholder-2/> avec une opération de fusion "
-"d’<placeholder-3/>."
+"<placeholder-3/>."
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:12752(para)
 msgid ""
 "This module offers enormous artistic potential, albeit, with results that "
 "are sometimes difficult to predict."
 msgstr ""
-"Ce module offre un énorme potentiel artistique, avec parfois cependant des "
-"résultats difficiles à prévoir."
+"Ce module offre un énorme potentiel artistique, mais avec des résultats "
+"parfois difficiles à prévoir."
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:12759(para)
 msgid "Set the radius of the blur."
@@ -13976,10 +13980,10 @@ msgid ""
 "L channel."
 msgstr ""
 "Cette zone de liste déroulante définit l’algorithme de flou, vous pouvez "
-"choisir entre flou <quote>gaussien</quote> (par défaut) et un filtre "
-"<quote>bilatéral</quote>. Ce dernier donne un flou qui préserve les "
-"transitions. <quote>gaussien</quote> va flouter tous les canaux de l’image : "
-"L, a et b alors que <quote>bilatéral</quote> ne va flouter que la canal L."
+"choisir entre flou <quote>gaussien</quote> (par défaut) et filtre "
+"<quote>bilatéral</quote>. Ce dernier donne un flou préservant les bords. "
+"<quote>gaussien</quote> va flouter tous les canaux de l’image : L, a et b "
+"alors que <quote>bilatéral</quote> ne va flouter que la canal L."
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:12776(para)
 msgid ""
@@ -13989,7 +13993,7 @@ msgid ""
 msgstr ""
 "Modifie le contraste. Des valeurs négatives donnent une image négative "
 "inversée. Des valeurs absolues élevées accroissent le contraste ; des "
-"valeurs absolue faibles réduisent le contraste. Une valeur de zéro conduit à "
+"valeurs absolues faibles réduisent le contraste. Une valeur zéro conduit à "
 "un plan neutre."
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:12785(para)
@@ -13997,8 +14001,8 @@ msgid ""
 "Changes the brightness. Negative values result in a darker image. Positive "
 "values increase the image's brightness."
 msgstr ""
-"Modifie la luminosité. Des valeurs négatives donneront une image plus "
-"sombre. Des valeurs positives augmenteront la luminosité de l’image."
+"Modifie la luminosité. Des valeurs négatives donnent une image plus sombre. "
+"Des valeurs positives augmentent la luminosité de l’image."
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:12793(para)
 msgid ""
@@ -14010,44 +14014,44 @@ msgstr ""
 "Change la saturation des couleurs. Des valeurs négatives donnent des "
 "couleurs complémentaires en inversant les canaux a et b. Des valeurs "
 "absolues élevées accroissent la saturation des couleurs alors que des "
-"valeurs absolues faibles diminuent la saturation des couleurs. Une valeur "
-"nulle donne une image noir et blanc désaturée."
+"valeurs absolues faibles la diminuent. Une valeur nulle donne une image noir "
+"et blanc désaturée."
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:12817(entry)
 msgid ""
 "The original image, already heavily processed. The boat is almost a "
 "silhouette."
 msgstr ""
-"L’image d’origine, déjà lourdement traitée. Le bateau n'est pratiquement "
-"plus qu'une silhouette."
+"L’image d’origine, déjà fortement traitée. Le bateau n'est pratiquement plus "
+"qu'une silhouette."
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:12825(entry)
 msgid ""
 "Bilateral blur with high radius. Desaturated, inverted and with high "
 "contrast."
 msgstr ""
-"Flou bilatéral avec rayon élevé. Désaturé, inversé et avec un contraste "
+"Flou bilatéral avec un rayon élevé. Désaturé, inversé et avec un contraste "
 "élevé."
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:12833(entry)
 msgid "Intermediate result after lowpass filter ..."
-msgstr "Image intermédiaire après le filtre passe-bas..."
+msgstr "Image intermédiaire après application du filtre passe-bas..."
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:12841(entry)
 msgid ""
 "... and final image after this was applied with blend mode \"vividlight\"."
 msgstr ""
-"... et l’image finale après qu'il ait été appliqué avec un mode de fusion "
-"<quote>vividlight</quote>."
+"... et l’image finale après qu'il a été appliqué avec le mode fusion "
+"<quote>lumière vive</quote>."
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:12856(title)
 msgid "Low light"
-msgstr "Basses lumières"
+msgstr "Faible lumière"
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:12860(secondary)
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:12864(primary)
 msgid "lowlight"
-msgstr "Basses lumières"
+msgstr "faible lumière"
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:12878(para)
 msgid ""
@@ -14055,10 +14059,10 @@ msgid ""
 "lowlight vision, thus providing ability to make lowlight pictures look "
 "closer to reality. It can also be used to perform a day to night conversion."
 msgstr ""
-"Le module <emphasis>basses lumières</emphasis> permet de simuler la vision "
+"Le module <emphasis>faible lumière</emphasis> permet de simuler la vision "
 "humaine en conditions de faible lumière, il procure donc la possibilité de "
-"rendre l’aspect des images en faible lumière plus proche de la réalité., Il "
-"peut aussi être utilisé afin de réaliser une conversion de jour vers nuit."
+"rendre l’aspect des images en faible lumière plus proche de la réalité. Il "
+"peut aussi être utilisé afin de réaliser une conversion du jour vers la nuit."
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:12884(para)
 msgid ""
@@ -14070,10 +14074,10 @@ msgid ""
 "wikipedia.org/wiki/Purkinje_effect\">Purkinje effect</ulink> by adding some "
 "blueness to the dark parts of the image."
 msgstr ""
-"L’idée est de calculer une image de <ulink url=\"http://fr.wikipedia.org/"
-"wiki/Vision_scotopique\">vision scotopique</ulink> qui est perçue par les "
-"bâtonnets plutôt que par les cones de l’œil dans les conditions de faible "
-"lumière. La clarté scotopique est alors mélangée avec la valeur photopique "
+"L’idée est de calculer une image en <ulink url=\"http://fr.wikipedia.org/"
+"wiki/Vision_scotopique\">vision scotopique</ulink> qui, dans les conditions "
+"de faible lumière, est perçue par les bâtonnets plutôt que par les cônes de "
+"l’œil. La clarté scotopique est alors mélangée avec la valeur photopique "
 "(pixel d’une image  normale en couleurs) en utilisant une fonction de "
 "fusion. Ce module permet aussi de simuler l’<ulink url=\"http://fr.wikipedia."
 "org/wiki/Effet_Purkinje\">effet Purkinje</ulink> en ajoutant du bleu aux "
@@ -14089,7 +14093,7 @@ msgstr ""
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:12915(title)
 msgid "curve"
-msgstr "Courbe"
+msgstr "courbe"
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:12916(para)
 msgid ""
@@ -14097,13 +14101,14 @@ msgid ""
 "(right). The vertical axis represents the kind of vision from night vision "
 "(bottom) to day vision (top)"
 msgstr ""
-"L’axe horizontal représente la clarté depuis les valeurs sombres (à gauche) "
-"vers les valeurs claires (sur la droite). L’axe vertical représente le type "
-"de vision depuis la vision de nuit (en bas) vers la vision de jour (en haut)."
+"L’axe horizontal représente la clarté des pixels depuis les valeurs sombres "
+"(à gauche) vers les valeurs claires (sur la droite). L’axe vertical "
+"représente le type de vision depuis la vision de nuit (en bas) vers la "
+"vision de jour (en haut)."
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:12925(para)
 msgid "Set the blue hint in shadows (Purkinje effect)."
-msgstr "Définit la teinte bleue des ombres (Effet Purkinje)."
+msgstr "Définit la teinte bleue des ombres (effet Purkinje)."
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:12946(entry)
 msgid "Image 1. This is the original image."
@@ -14111,7 +14116,7 @@ msgstr "Image 1. Ceci est l’image d’origine."
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:12954(entry)
 msgid "Image 1. With low light module on."
-msgstr "Image 1. Avec le module faibles lumières actif."
+msgstr "Image 1. Avec le module faible lumière actif."
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:12967(entry)
 msgid "Image 2. This is the original image."
@@ -14119,16 +14124,16 @@ msgstr "Image 2. Ceci est l’image d’origine."
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:12975(entry)
 msgid "Image 2. With low light module on."
-msgstr "Image 2. Avec le module faibles lumières actif."
+msgstr "Image 2. Avec le module faible lumière actif."
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:12993(title)
 msgid "Bloom"
-msgstr "Halo"
+msgstr "Lumière d'arrière plan"
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:12997(secondary)
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:13001(primary)
 msgid "bloom"
-msgstr "Halo"
+msgstr "lumière d'arrière-plan"
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:13014(entry)
 msgid ""
@@ -14136,22 +14141,22 @@ msgid ""
 "hence the name of the effect. There are numerous ways to use this module "
 "depending on the image's actual scenery lighting."
 msgstr ""
-"Ce module renforce les hautes lumières et crée un doux halo autour d’elles, "
-"d’où le nom de l’effet. Il existe de nombreuses manières d’utiliser ce "
-"module selon l’éclairage réel de la scène de l’image."
+"Ce module renforce les hautes lumières et crée un douce lumière d'arrière-"
+"plan autour d’elles, d’où le nom de l’effet. Il existe de nombreuses "
+"manières d’utiliser ce module selon l’éclairage réel de la scène de l’image."
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:13033(para)
 msgid ""
 "Starting from the default settings change the strength value for a pleasant "
 "look, then change the size to control the spread of light."
 msgstr ""
-"En partant des valeurs par défaut des paramètres, modifiez la valeur de "
-"l’intensité afin d’obtenir un aspect agréable, modifiez ensuite les "
-"dimensions afin de contrôler l’étalement de la lumière."
+"En partant des valeurs par défaut des paramètres, modifiez la valeur de la "
+"force afin d’obtenir un aspect agréable, modifiez ensuite la taille afin de "
+"contrôler l’étalement de la lumière."
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:13040(para)
 msgid "Represents the spatial extent of the bloom effect."
-msgstr "Représente l’étendue spatiale de l’effet de halo."
+msgstr "Représente l’étendue spatiale de l’effet de lumière d'arrière-plan."
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:13047(para)
 msgid "Set the threshold for the increase in brightness."
@@ -14159,7 +14164,7 @@ msgstr "Définit le seuil pour l’augmentation de la luminosité."
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:13054(para)
 msgid "Set the strength of overlightning for the effect."
-msgstr "Définit le niveau de sur-luminosité de l’effet."
+msgstr "Définit la force de sur-luminosité de l’effet."
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:13083(entry)
 msgid ""
@@ -14168,8 +14173,8 @@ msgid ""
 "exaggerated effect."
 msgstr ""
 "Ici, nous avons choisi d’utiliser une taille de 10%, ce qui est un rayon "
-"assez petit pour l’étalement de la douce lumière. Nous avons poussé "
-"l’intensité jusqu'à 50% afin d’obtenir un effet plus accentué."
+"assez petit pour l’étalement de la lumière douce. Nous avons poussé la force "
+"jusqu'à 50% afin d’obtenir un effet plus accentué."
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:13100(title)
 msgid "Colorize"
@@ -14178,14 +14183,14 @@ msgstr "Coloriser"
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:13104(secondary)
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:13108(primary)
 msgid "colorize"
-msgstr "Coloriser"
+msgstr "coloriser"
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:13121(entry)
 msgid ""
 "This module is an artistic feature that adds a solid layer of color to your "
 "image."
 msgstr ""
-"Ce module est une fonctionnalité artistique qui ajoute un couche de couleur "
+"Ce module est une fonctionnalité artistique qui ajoute une couche de couleur "
 "unie à votre image."
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:13138(para)
@@ -14212,7 +14217,7 @@ msgstr "Sélectionne la clarté de la couche de couleur."
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:13165(title)
 msgid "source mix"
-msgstr "Mélange de la source"
+msgstr "mélange des sources"
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:13166(para)
 msgid ""
