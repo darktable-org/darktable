@@ -2019,9 +2019,8 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *params, dt_de
   if(d->filters == 9u)
     piece->process_cl_ready = 0;
 
-  // Demosaic modes AMAZE and VNG4 not implemented in OpenCL yet.
-  if((d->demosaicing_method == DT_IOP_DEMOSAIC_AMAZE) ||
-     (d->demosaicing_method == DT_IOP_DEMOSAIC_VNG4))
+  // Only demosaic mode PPG implemented in OpenCL currently
+  if(d->demosaicing_method != DT_IOP_DEMOSAIC_PPG)
     piece->process_cl_ready = 0;
 
   // OpenCL can not (yet) green-equilibrate over full image.
