@@ -24,8 +24,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 1.3\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2014-10-05 09:19+0200\n"
-"PO-Revision-Date: 2014-10-05 09:20+0200\n"
+"POT-Creation-Date: 2014-10-09 09:28+0200\n"
+"PO-Revision-Date: 2014-10-09 09:29+0200\n"
 "Last-Translator: Richard Levitte <richard@levitte.org>\n"
 "Language-Team: \n"
 "Language: sv\n"
@@ -721,20 +721,20 @@ msgstr ""
 msgid "Unknown option for --hq"
 msgstr "okänd inställning för --hq"
 
-#: ../src/cli/main.c:161
+#: ../src/cli/main.c:163
 msgid "output file already exists, it will get renamed"
 msgstr "utgående fil existerar redan, den kommer att få ett nytt namn"
 
-#: ../src/cli/main.c:176
+#: ../src/cli/main.c:178
 #, c-format
 msgid "error: can't open file %s"
 msgstr "fel: kan inte öppna fil %s"
 
-#: ../src/cli/main.c:200
+#: ../src/cli/main.c:202
 msgid "empty history stack"
 msgstr "töm historiken"
 
-#: ../src/cli/main.c:223
+#: ../src/cli/main.c:225
 msgid ""
 "cannot find disk storage module. please check your installation, something "
 "seems to be broken."
@@ -742,16 +742,16 @@ msgstr ""
 "kan inte hitta modulen för att lagra på disk. var god kolla igenom din "
 "installation, något verkar vara trasigt."
 
-#: ../src/cli/main.c:230
+#: ../src/cli/main.c:232
 msgid "failed to get parameters from storage module, aborting export ..."
 msgstr "kunde inte hämta parametrar från lagringsmodul, avbryter exporten..."
 
-#: ../src/cli/main.c:241
+#: ../src/cli/main.c:243
 #, c-format
 msgid "unknown extension '.%s'"
 msgstr "okänt suffix ',%s'"
 
-#: ../src/cli/main.c:249
+#: ../src/cli/main.c:251
 msgid "failed to get parameters from format module, aborting export ..."
 msgstr "kunde inte hämta parametrar från formatmodul, avbryter exporten..."
 
@@ -759,7 +759,7 @@ msgstr "kunde inte hämta parametrar från formatmodul, avbryter exporten..."
 #: ../src/iop/bilateral.cc:348 ../src/iop/channelmixer.c:461
 #: ../src/iop/channelmixer.c:473 ../src/iop/colorbalance.c:641
 #: ../src/iop/colorbalance.c:679 ../src/iop/colorbalance.c:717
-#: ../src/iop/temperature.c:783 ../src/libs/collect.c:1273
+#: ../src/iop/temperature.c:787 ../src/libs/collect.c:1273
 #: ../src/libs/collect.c:1275
 msgid "red"
 msgstr "röd"
@@ -773,7 +773,7 @@ msgstr "gul"
 #: ../src/iop/bilateral.cc:349 ../src/iop/channelmixer.c:462
 #: ../src/iop/channelmixer.c:480 ../src/iop/colorbalance.c:650
 #: ../src/iop/colorbalance.c:688 ../src/iop/colorbalance.c:726
-#: ../src/iop/temperature.c:784 ../src/libs/collect.c:1285
+#: ../src/iop/temperature.c:788 ../src/libs/collect.c:1285
 #: ../src/libs/collect.c:1287
 msgid "green"
 msgstr "grön"
@@ -782,7 +782,7 @@ msgstr "grön"
 #: ../src/iop/bilateral.cc:350 ../src/iop/channelmixer.c:463
 #: ../src/iop/channelmixer.c:487 ../src/iop/colorbalance.c:659
 #: ../src/iop/colorbalance.c:697 ../src/iop/colorbalance.c:735
-#: ../src/iop/temperature.c:785 ../src/libs/collect.c:1291
+#: ../src/iop/temperature.c:789 ../src/libs/collect.c:1291
 #: ../src/libs/collect.c:1293
 msgid "blue"
 msgstr "blå"
@@ -831,7 +831,7 @@ msgstr "`%s' är av okänt format!"
 msgid "error loading file `%s'"
 msgstr "fel uppstod vid läsning av fil '%s'"
 
-#: ../src/common/darktable.c:602
+#: ../src/common/darktable.c:630
 #, c-format
 msgid "ERROR : invalid temporary directory : %s\n"
 msgstr "FEL : ogiltig temporär katalog : %s\n"
@@ -870,7 +870,7 @@ msgstr "på"
 #: ../src/common/history.c:296 ../src/common/styles.c:633
 #: ../src/common/styles.c:635 ../src/develop/blend_gui.c:1539
 #: ../src/develop/blend_gui.c:1688 ../src/develop/develop.c:1178
-#: ../src/imageio/format/exr.cc:265 ../src/imageio/format/j2k.c:637
+#: ../src/imageio/format/exr.cc:267 ../src/imageio/format/j2k.c:637
 #: ../src/iop/colorin.c:1258 ../src/iop/demosaic.c:2202
 #: ../src/iop/vignette.c:1188 ../src/libs/history.c:154
 #: ../src/libs/live_view.c:411
@@ -881,19 +881,19 @@ msgstr "av"
 msgid "orphaned image"
 msgstr "anonyma bilder"
 
-#: ../src/common/image.c:1243
+#: ../src/common/image.c:1244
 msgid "cannot create local copy when the original file is not accessible."
 msgstr "kan inte skapa lokal kopia när originalfilen inte går att nå."
 
-#: ../src/common/image.c:1257
+#: ../src/common/image.c:1258
 msgid "cannot create local copy."
 msgstr "kan inte skapa lokal kopia."
 
-#: ../src/common/image.c:1291 ../src/control/jobs/control_jobs.c:489
+#: ../src/common/image.c:1292 ../src/control/jobs/control_jobs.c:489
 msgid "cannot remove local copy when the original file is not accessible."
 msgstr "kan inte ta bort lokal kopia när originalfilen inte går att nå."
 
-#: ../src/common/image.c:1442
+#: ../src/common/image.c:1443
 #, c-format
 msgid "%d local copy has been synchronized"
 msgid_plural "%d local copies have been synchronized"
@@ -1215,10 +1215,10 @@ msgid "delete images?"
 msgstr "radera bilder?"
 
 #: ../src/control/jobs/control_jobs.c:1077
-#: ../src/control/jobs/control_jobs.c:1133 ../src/imageio/storage/disk.c:70
-#: ../src/imageio/storage/disk.c:138 ../src/imageio/storage/gallery.c:79
-#: ../src/imageio/storage/gallery.c:173 ../src/imageio/storage/latex.c:79
-#: ../src/imageio/storage/latex.c:173 ../src/libs/styles.c:240
+#: ../src/control/jobs/control_jobs.c:1133 ../src/imageio/storage/disk.c:96
+#: ../src/imageio/storage/disk.c:164 ../src/imageio/storage/gallery.c:109
+#: ../src/imageio/storage/gallery.c:203 ../src/imageio/storage/latex.c:109
+#: ../src/imageio/storage/latex.c:203 ../src/libs/styles.c:240
 msgid "select directory"
 msgstr "välj katalog"
 
@@ -1752,7 +1752,7 @@ msgstr "%s är avslagen"
 #: ../src/gui/accelerators.c:840 ../src/gui/accelerators.c:1007
 #: ../src/gui/accelerators.c:1032 ../src/gui/presets.c:182
 #: ../src/gui/presets.c:284 ../src/gui/presets.c:625
-#: ../src/iop/temperature.c:795 ../src/libs/import.c:506 ../src/libs/lib.c:292
+#: ../src/iop/temperature.c:799 ../src/libs/import.c:506 ../src/libs/lib.c:292
 #: ../src/libs/lib.c:321 ../src/libs/lib.c:1061
 msgid "preset"
 msgstr "förinställning"
@@ -2078,88 +2078,88 @@ msgctxt "accel"
 msgid "switch view"
 msgstr "byt vy"
 
-#: ../src/gui/gtkentry.c:195 ../src/imageio/storage/gallery.c:137
-#: ../src/imageio/storage/latex.c:137
+#: ../src/gui/gtkentry.c:195 ../src/imageio/storage/gallery.c:167
+#: ../src/imageio/storage/latex.c:167
 msgid "$(ROLL_NAME) - roll of the input image"
 msgstr "$(ROLL_NAME) - ingående bilds filmrulle"
 
-#: ../src/gui/gtkentry.c:196 ../src/imageio/storage/gallery.c:138
-#: ../src/imageio/storage/latex.c:138
+#: ../src/gui/gtkentry.c:196 ../src/imageio/storage/gallery.c:168
+#: ../src/imageio/storage/latex.c:168
 msgid "$(FILE_FOLDER) - folder containing the input image"
 msgstr "$(FILE_FOLDER) - katalogen som innehåller ingående bild"
 
-#: ../src/gui/gtkentry.c:197 ../src/imageio/storage/gallery.c:139
-#: ../src/imageio/storage/latex.c:139
+#: ../src/gui/gtkentry.c:197 ../src/imageio/storage/gallery.c:169
+#: ../src/imageio/storage/latex.c:169
 msgid "$(FILE_NAME) - basename of the input image"
 msgstr "$(FILE_NAME) - ingående bilds basnamn"
 
-#: ../src/gui/gtkentry.c:198 ../src/imageio/storage/gallery.c:140
-#: ../src/imageio/storage/latex.c:140
+#: ../src/gui/gtkentry.c:198 ../src/imageio/storage/gallery.c:170
+#: ../src/imageio/storage/latex.c:170
 msgid "$(FILE_EXTENSION) - extension of the input image"
 msgstr "$(FILE_EXTENSION) - ingående bilds suffix"
 
-#: ../src/gui/gtkentry.c:199 ../src/imageio/storage/gallery.c:141
-#: ../src/imageio/storage/latex.c:141
+#: ../src/gui/gtkentry.c:199 ../src/imageio/storage/gallery.c:171
+#: ../src/imageio/storage/latex.c:171
 msgid "$(SEQUENCE) - sequence number"
 msgstr "$(SEQUENCE) - sekvensnummer"
 
-#: ../src/gui/gtkentry.c:200 ../src/imageio/storage/gallery.c:142
-#: ../src/imageio/storage/latex.c:142
+#: ../src/gui/gtkentry.c:200 ../src/imageio/storage/gallery.c:172
+#: ../src/imageio/storage/latex.c:172
 msgid "$(YEAR) - year"
 msgstr "$(YEAR) - år"
 
-#: ../src/gui/gtkentry.c:201 ../src/imageio/storage/gallery.c:143
-#: ../src/imageio/storage/latex.c:143
+#: ../src/gui/gtkentry.c:201 ../src/imageio/storage/gallery.c:173
+#: ../src/imageio/storage/latex.c:173
 msgid "$(MONTH) - month"
 msgstr "$(MONTH) - månad"
 
-#: ../src/gui/gtkentry.c:202 ../src/imageio/storage/gallery.c:144
-#: ../src/imageio/storage/latex.c:144
+#: ../src/gui/gtkentry.c:202 ../src/imageio/storage/gallery.c:174
+#: ../src/imageio/storage/latex.c:174
 msgid "$(DAY) - day"
 msgstr "$(DAY) - dag"
 
-#: ../src/gui/gtkentry.c:203 ../src/imageio/storage/gallery.c:145
-#: ../src/imageio/storage/latex.c:145
+#: ../src/gui/gtkentry.c:203 ../src/imageio/storage/gallery.c:175
+#: ../src/imageio/storage/latex.c:175
 msgid "$(HOUR) - hour"
 msgstr "$(HOUR) - timme"
 
-#: ../src/gui/gtkentry.c:204 ../src/imageio/storage/gallery.c:146
-#: ../src/imageio/storage/latex.c:146
+#: ../src/gui/gtkentry.c:204 ../src/imageio/storage/gallery.c:176
+#: ../src/imageio/storage/latex.c:176
 msgid "$(MINUTE) - minute"
 msgstr "$(MINUTE) - minut"
 
-#: ../src/gui/gtkentry.c:205 ../src/imageio/storage/gallery.c:147
-#: ../src/imageio/storage/latex.c:147
+#: ../src/gui/gtkentry.c:205 ../src/imageio/storage/gallery.c:177
+#: ../src/imageio/storage/latex.c:177
 msgid "$(SECOND) - second"
 msgstr "$(SECOND) - sekund"
 
-#: ../src/gui/gtkentry.c:206 ../src/imageio/storage/gallery.c:148
-#: ../src/imageio/storage/latex.c:148
+#: ../src/gui/gtkentry.c:206 ../src/imageio/storage/gallery.c:178
+#: ../src/imageio/storage/latex.c:178
 msgid "$(EXIF_YEAR) - EXIF year"
 msgstr "$(EXIT_YEAR) - år i EXIF-data"
 
-#: ../src/gui/gtkentry.c:207 ../src/imageio/storage/gallery.c:149
-#: ../src/imageio/storage/latex.c:149
+#: ../src/gui/gtkentry.c:207 ../src/imageio/storage/gallery.c:179
+#: ../src/imageio/storage/latex.c:179
 msgid "$(EXIF_MONTH) - EXIF month"
 msgstr "$(EXIF_MONTH) - månad i EXIF-data"
 
-#: ../src/gui/gtkentry.c:208 ../src/imageio/storage/gallery.c:150
-#: ../src/imageio/storage/latex.c:150
+#: ../src/gui/gtkentry.c:208 ../src/imageio/storage/gallery.c:180
+#: ../src/imageio/storage/latex.c:180
 msgid "$(EXIF_DAY) - EXIF day"
 msgstr "$(EXIF_DAY) - dag i EXIF-data"
 
-#: ../src/gui/gtkentry.c:209 ../src/imageio/storage/gallery.c:151
-#: ../src/imageio/storage/latex.c:151
+#: ../src/gui/gtkentry.c:209 ../src/imageio/storage/gallery.c:181
+#: ../src/imageio/storage/latex.c:181
 msgid "$(EXIF_HOUR) - EXIF hour"
 msgstr "$(EXIF_HOUR) - timme i EXIF-data"
 
-#: ../src/gui/gtkentry.c:210 ../src/imageio/storage/gallery.c:152
-#: ../src/imageio/storage/latex.c:152
+#: ../src/gui/gtkentry.c:210 ../src/imageio/storage/gallery.c:182
+#: ../src/imageio/storage/latex.c:182
 msgid "$(EXIF_MINUTE) - EXIF minute"
 msgstr "$(EXIF_MINUTE) - minut i EXIF-data"
 
-#: ../src/gui/gtkentry.c:211 ../src/imageio/storage/gallery.c:153
-#: ../src/imageio/storage/latex.c:153
+#: ../src/gui/gtkentry.c:211 ../src/imageio/storage/gallery.c:183
+#: ../src/imageio/storage/latex.c:183
 msgid "$(EXIF_SECOND) - EXIF second"
 msgstr "$(EXIF_SECOND) - sekund i EXIF-data"
 
@@ -2167,28 +2167,28 @@ msgstr "$(EXIF_SECOND) - sekund i EXIF-data"
 msgid "$(EXIF_ISO) - ISO value"
 msgstr "$(EXIF_ISO) - ISO-värdet"
 
-#: ../src/gui/gtkentry.c:213 ../src/imageio/storage/gallery.c:154
-#: ../src/imageio/storage/latex.c:154
+#: ../src/gui/gtkentry.c:213 ../src/imageio/storage/gallery.c:184
+#: ../src/imageio/storage/latex.c:184
 msgid "$(STARS) - star rating"
 msgstr "$(STARS) - antal stjärnor"
 
-#: ../src/gui/gtkentry.c:214 ../src/imageio/storage/gallery.c:155
-#: ../src/imageio/storage/latex.c:155
+#: ../src/gui/gtkentry.c:214 ../src/imageio/storage/gallery.c:185
+#: ../src/imageio/storage/latex.c:185
 msgid "$(LABELS) - colorlabels"
 msgstr "$(LABELS) - färgmarkeringar"
 
-#: ../src/gui/gtkentry.c:215 ../src/imageio/storage/gallery.c:156
-#: ../src/imageio/storage/latex.c:156
+#: ../src/gui/gtkentry.c:215 ../src/imageio/storage/gallery.c:186
+#: ../src/imageio/storage/latex.c:186
 msgid "$(PICTURES_FOLDER) - pictures folder"
 msgstr "$(PICTURES_FOLDER) - bildkatalog"
 
-#: ../src/gui/gtkentry.c:216 ../src/imageio/storage/gallery.c:157
-#: ../src/imageio/storage/latex.c:157
+#: ../src/gui/gtkentry.c:216 ../src/imageio/storage/gallery.c:187
+#: ../src/imageio/storage/latex.c:187
 msgid "$(HOME) - home folder"
 msgstr "$(HOME) - hemkatalog"
 
-#: ../src/gui/gtkentry.c:217 ../src/imageio/storage/gallery.c:158
-#: ../src/imageio/storage/latex.c:158
+#: ../src/gui/gtkentry.c:217 ../src/imageio/storage/gallery.c:188
+#: ../src/imageio/storage/latex.c:188
 msgid "$(DESKTOP) - desktop folder"
 msgstr "$(DESKTOP) - skrivbordet"
 
@@ -2542,39 +2542,39 @@ msgstr ""
 "gör en 1:1 kopia av valda filer.\n"
 "den globala inställningen nedan kommer att uteslutas!"
 
-#: ../src/imageio/format/exr.cc:238
+#: ../src/imageio/format/exr.cc:240
 msgid "OpenEXR (float)"
 msgstr "OpenEXR (flyttal)"
 
-#: ../src/imageio/format/exr.cc:259
-msgid "Compression mode"
+#: ../src/imageio/format/exr.cc:261
+msgid "compression mode"
 msgstr "komprimeringstyp"
 
-#: ../src/imageio/format/exr.cc:266
+#: ../src/imageio/format/exr.cc:268
 msgid "RLE"
 msgstr "RLE"
 
-#: ../src/imageio/format/exr.cc:267
+#: ../src/imageio/format/exr.cc:269
 msgid "ZIPS"
 msgstr "ZIPS"
 
-#: ../src/imageio/format/exr.cc:268
+#: ../src/imageio/format/exr.cc:270
 msgid "ZIP"
 msgstr "ZIP"
 
-#: ../src/imageio/format/exr.cc:269
+#: ../src/imageio/format/exr.cc:271
 msgid "PIZ (default)"
 msgstr "PIZ (standard)"
 
-#: ../src/imageio/format/exr.cc:270
+#: ../src/imageio/format/exr.cc:272
 msgid "PXR24 (lossy)"
 msgstr "PXR24 (destruktiv)"
 
-#: ../src/imageio/format/exr.cc:271
+#: ../src/imageio/format/exr.cc:273
 msgid "B44 (lossy)"
 msgstr "B44 (destruktiv)"
 
-#: ../src/imageio/format/exr.cc:272
+#: ../src/imageio/format/exr.cc:274
 msgid "B44A (lossy)"
 msgstr "B44A (destruktiv)"
 
@@ -2671,8 +2671,8 @@ msgstr "komprimera med framförhållning (flyttal)"
 msgid "file on disk"
 msgstr "fil på disk"
 
-#: ../src/imageio/storage/disk.c:128 ../src/imageio/storage/gallery.c:165
-#: ../src/imageio/storage/latex.c:165
+#: ../src/imageio/storage/disk.c:154 ../src/imageio/storage/gallery.c:195
+#: ../src/imageio/storage/latex.c:195
 msgid ""
 "enter the path where to put exported images\n"
 "recognized variables:"
@@ -2680,31 +2680,31 @@ msgstr ""
 "ange sökvägen till den katalog där du vill exportera bilder\n"
 "kända variabler:"
 
-#: ../src/imageio/storage/disk.c:142 ../src/libs/copy_history.c:284
+#: ../src/imageio/storage/disk.c:168 ../src/libs/copy_history.c:284
 msgid "overwrite"
 msgstr "skriv över"
 
-#: ../src/imageio/storage/disk.c:226 ../src/imageio/storage/gallery.c:266
-#: ../src/imageio/storage/latex.c:262
+#: ../src/imageio/storage/disk.c:252 ../src/imageio/storage/gallery.c:296
+#: ../src/imageio/storage/latex.c:292
 #, c-format
 msgid "could not create directory `%s'!"
 msgstr "kunde inte skapa katalog %s!"
 
-#: ../src/imageio/storage/disk.c:233
+#: ../src/imageio/storage/disk.c:259
 #, c-format
 msgid "could not write to directory `%s'!"
 msgstr "kunde inte skriva till katalog `%s'!"
 
-#: ../src/imageio/storage/disk.c:267 ../src/imageio/storage/email.c:118
+#: ../src/imageio/storage/disk.c:293 ../src/imageio/storage/email.c:143
 #: ../src/imageio/storage/facebook.c:1201 ../src/imageio/storage/flickr.c:672
-#: ../src/imageio/storage/gallery.c:339 ../src/imageio/storage/gallery.c:358
+#: ../src/imageio/storage/gallery.c:369 ../src/imageio/storage/gallery.c:388
 #: ../src/imageio/storage/picasa.c:1455
 #, c-format
 msgid "could not export to file `%s'!"
 msgstr "kunde inte exportera till fil `%s'!"
 
-#: ../src/imageio/storage/disk.c:274 ../src/imageio/storage/email.c:127
-#: ../src/imageio/storage/gallery.c:368 ../src/imageio/storage/latex.c:350
+#: ../src/imageio/storage/disk.c:300 ../src/imageio/storage/email.c:152
+#: ../src/imageio/storage/gallery.c:398 ../src/imageio/storage/latex.c:380
 #, c-format
 msgid "%d/%d exported to `%s%s'"
 msgstr "%d/%d exporterad till `%s%s'"
@@ -2713,11 +2713,11 @@ msgstr "%d/%d exporterad till `%s%s'"
 msgid "send as email"
 msgstr "skicka som epost"
 
-#: ../src/imageio/storage/email.c:179
+#: ../src/imageio/storage/email.c:204
 msgid "images exported from darktable"
 msgstr "bilder exporterade från darktable"
 
-#: ../src/imageio/storage/email.c:214
+#: ../src/imageio/storage/email.c:239
 msgid "could not launch email client!"
 msgstr "kunde inte starta email-klienten!"
 
@@ -2798,7 +2798,7 @@ msgstr "facebook-album"
 #. create labels
 #. xmp
 #: ../src/imageio/storage/facebook.c:1028 ../src/imageio/storage/flickr.c:482
-#: ../src/imageio/storage/gallery.c:179 ../src/imageio/storage/latex.c:179
+#: ../src/imageio/storage/gallery.c:209 ../src/imageio/storage/latex.c:209
 #: ../src/imageio/storage/picasa.c:1315 ../src/libs/collect.h:38
 #: ../src/libs/metadata.c:328 ../src/libs/metadata_view.c:107
 msgid "title"
@@ -2954,7 +2954,7 @@ msgstr "%d/%d exporterad till flickr-album"
 msgid "website gallery"
 msgstr "webbsite-galleri"
 
-#: ../src/imageio/storage/gallery.c:185
+#: ../src/imageio/storage/gallery.c:215
 msgid "enter the title of the website"
 msgstr "ange en titel på webbsite"
 
@@ -2963,7 +2963,7 @@ msgid "LaTeX book template"
 msgstr "bokmall i LaTeX"
 
 #. TODO: support title, author, subject, keywords (collect tags?)
-#: ../src/imageio/storage/latex.c:186
+#: ../src/imageio/storage/latex.c:216
 msgid "enter the title of the book"
 msgstr "ange en titel för boken"
 
@@ -5821,32 +5821,32 @@ msgstr "vitbalans från kamera"
 msgid "spot white balance"
 msgstr "vitbalans i mätningsområde"
 
-#: ../src/iop/temperature.c:504
+#: ../src/iop/temperature.c:508
 msgid "failed to read camera white balance information!"
 msgstr "kunde inte läsa av kamerans information om vitbalans!"
 
-#: ../src/iop/temperature.c:781
+#: ../src/iop/temperature.c:785
 msgid "tint"
 msgstr "nyans"
 
-#: ../src/iop/temperature.c:782
+#: ../src/iop/temperature.c:786
 msgid "temperature"
 msgstr "temperatur"
 
-#: ../src/iop/temperature.c:797
+#: ../src/iop/temperature.c:801
 msgid "choose white balance preset from camera"
 msgstr "välj förinställd vitbalans från kamera"
 
-#: ../src/iop/temperature.c:800
+#: ../src/iop/temperature.c:804
 msgid "finetune"
 msgstr "finjustering"
 
-#: ../src/iop/temperature.c:801
+#: ../src/iop/temperature.c:805
 #, c-format
 msgid "%.0f mired"
 msgstr "%.0f justerad"
 
-#: ../src/iop/temperature.c:805
+#: ../src/iop/temperature.c:809
 msgid "fine tune white balance preset"
 msgstr "finjustera förinställd vitbalans"
 
