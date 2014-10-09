@@ -705,6 +705,14 @@ darktable.debug.type:set_text([[Similar to the system function type() but it wil
 	events["view-changed"].callback:add_parameter("new_view",my_tostring(types.dt_view_t),[[The view we are now in]])
 	events["view-changed"].extra_registration_parameters:set_text([[This event has no extra registration parameters.]])
 	events["view-changed"]:add_version_info("event added")
+	events["global_toolbox-grouping_toggle"]:set_text([[This event is triggered after the user toggled the grouping button.]])
+	events["global_toolbox-grouping_toggle"].callback:add_parameter("toggle", "boolean", [[the new grouping status.]]);
+	events["global_toolbox-grouping_toggle"].extra_registration_parameters:set_text([[This event has no extra registration parameters.]])
+	events["global_toolbox-grouping_toggle"]:add_version_info("event added")
+	events["global_toolbox-overlay_toggle"]:set_text([[This event is triggered after the user toggled the overlay button.]])
+	events["global_toolbox-overlay_toggle"].callback:add_parameter("toggle", "boolean", [[the new overlay status.]]);
+	events["global_toolbox-overlay_toggle"].extra_registration_parameters:set_text([[This event has no extra registration parameters.]])
+	events["global_toolbox-overlay_toggle"]:add_version_info("event added")
 	----------------------
 	--  ATTRIBUTES      --
 	----------------------
