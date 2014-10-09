@@ -38,6 +38,12 @@
     </itemizedlist>
   </para>
 
+  <para>
+    To investigate your display profile configuration you can call the
+    <filename>darktable-cmstest</filename> binary which prints out useful information like
+    profile name per monitor and tells you if the system is correctly configured.
+  </para>
+
   <sect3 status="draft" id="darktable_color_spaces">
 
     <title>darktable's color spaces</title>
