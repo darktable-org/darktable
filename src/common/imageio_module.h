@@ -27,6 +27,7 @@
 #include "lua/modules.h"
 #include "lua/format.h"
 #include "lua/storage.h"
+#include "lua/events.h"
 #endif
 
 
