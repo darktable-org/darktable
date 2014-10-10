@@ -24,8 +24,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 1.3\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2014-10-09 09:28+0200\n"
-"PO-Revision-Date: 2014-10-09 09:29+0200\n"
+"POT-Creation-Date: 2014-10-10 16:01+0200\n"
+"PO-Revision-Date: 2014-10-10 16:03+0200\n"
 "Last-Translator: Richard Levitte <richard@levitte.org>\n"
 "Language-Team: \n"
 "Language: sv\n"
@@ -871,7 +871,7 @@ msgstr "på"
 #: ../src/common/styles.c:635 ../src/develop/blend_gui.c:1539
 #: ../src/develop/blend_gui.c:1688 ../src/develop/develop.c:1178
 #: ../src/imageio/format/exr.cc:267 ../src/imageio/format/j2k.c:637
-#: ../src/iop/colorin.c:1258 ../src/iop/demosaic.c:2202
+#: ../src/iop/colorin.c:1258 ../src/iop/demosaic.c:2201
 #: ../src/iop/vignette.c:1188 ../src/libs/history.c:154
 #: ../src/libs/live_view.c:411
 msgid "off"
@@ -3085,13 +3085,17 @@ msgstr "chroma"
 msgid "change color saturation at each feature size"
 msgstr "ändra färgmättnad på vardera detaljstorlek"
 
-#: ../src/iop/atrous.c:1365 ../src/iop/highpass.c:508
-msgid "sharpness"
-msgstr "skärpa"
+#: ../src/iop/atrous.c:1365
+msgid "edges"
+msgstr "kanter"
 
 #: ../src/iop/atrous.c:1366
-msgid "sharpness of edges at each feature size"
-msgstr "skärpa av kanter på vardera detaljstorlek"
+msgid ""
+"change edge halos at each feature size\n"
+"only changes results of luma and chroma tabs"
+msgstr ""
+"Ändra halon vid kanterna vid vardera detaljstorlek\n"
+"ändrar enbart luma- och chroma-flikarna"
 
 #: ../src/iop/atrous.c:1402 ../src/iop/colorzones.c:1064
 #: ../src/iop/soften.c:589
@@ -4381,40 +4385,40 @@ msgctxt "accel"
 msgid "edge threshold"
 msgstr "kant tröskel"
 
-#: ../src/iop/demosaic.c:2179 ../src/iop/demosaic.c:2187
+#: ../src/iop/demosaic.c:2178 ../src/iop/demosaic.c:2186
 #: ../src/iop/dither.c:564 ../src/iop/highlights.c:711
 msgid "method"
 msgstr "metod"
 
-#: ../src/iop/demosaic.c:2181
+#: ../src/iop/demosaic.c:2180
 msgid "PPG (fast)"
 msgstr "PPG (snabb)"
 
-#: ../src/iop/demosaic.c:2182
+#: ../src/iop/demosaic.c:2181
 msgid "AMaZE (slow)"
 msgstr "AMaZE (långsam)"
 
-#: ../src/iop/demosaic.c:2183
+#: ../src/iop/demosaic.c:2182
 msgid "VNG4 (slow)"
 msgstr "VNG4 (långsam)"
 
-#: ../src/iop/demosaic.c:2184 ../src/iop/demosaic.c:2192
+#: ../src/iop/demosaic.c:2183 ../src/iop/demosaic.c:2191
 msgid "demosaicing raw data method"
 msgstr "demosaicing-metod för rådata"
 
-#: ../src/iop/demosaic.c:2189
+#: ../src/iop/demosaic.c:2188
 msgid "VNG"
 msgstr "VNG"
 
-#: ../src/iop/demosaic.c:2190
+#: ../src/iop/demosaic.c:2189
 msgid "Markesteijn 1-pass (slow)"
 msgstr "Markesteijn, 1 pass (långsamt)"
 
-#: ../src/iop/demosaic.c:2191
+#: ../src/iop/demosaic.c:2190
 msgid "Markesteijn 3-pass (slower)"
 msgstr "Markesteijn, 3 pass (långsammare)"
 
-#: ../src/iop/demosaic.c:2195
+#: ../src/iop/demosaic.c:2194
 msgid ""
 "threshold for edge-aware median.\n"
 "set to 0.0 to switch off.\n"
@@ -4424,59 +4428,59 @@ msgstr ""
 "värde 0.0 stänger av funktionen.\n"
 "värde 1.0 ignorerar kanter."
 
-#: ../src/iop/demosaic.c:2196
+#: ../src/iop/demosaic.c:2195
 msgid "edge threshold"
 msgstr "kant tröskel"
 
-#: ../src/iop/demosaic.c:2200
+#: ../src/iop/demosaic.c:2199
 msgid "color smoothing"
 msgstr "färguppmjukning"
 
-#: ../src/iop/demosaic.c:2203
+#: ../src/iop/demosaic.c:2202
 msgid "one time"
 msgstr "en gång"
 
-#: ../src/iop/demosaic.c:2204
+#: ../src/iop/demosaic.c:2203
 msgid "two times"
 msgstr "två gånger"
 
-#: ../src/iop/demosaic.c:2205
+#: ../src/iop/demosaic.c:2204
 msgid "three times"
 msgstr "tre gånger"
 
-#: ../src/iop/demosaic.c:2206
+#: ../src/iop/demosaic.c:2205
 msgid "four times"
 msgstr "fyra gånger"
 
-#: ../src/iop/demosaic.c:2207
+#: ../src/iop/demosaic.c:2206
 msgid "five times"
 msgstr "fem gånger"
 
-#: ../src/iop/demosaic.c:2208
+#: ../src/iop/demosaic.c:2207
 msgid "how many color smoothing median steps after demosaicing"
 msgstr "antal färkuppmjukningspass efter demosaicking"
 
-#: ../src/iop/demosaic.c:2212
+#: ../src/iop/demosaic.c:2211
 msgid "match greens"
 msgstr "matcha grön"
 
-#: ../src/iop/demosaic.c:2213
+#: ../src/iop/demosaic.c:2212
 msgid "disabled"
 msgstr "av"
 
-#: ../src/iop/demosaic.c:2214
+#: ../src/iop/demosaic.c:2213
 msgid "local average"
 msgstr "lokalt medel"
 
-#: ../src/iop/demosaic.c:2215
+#: ../src/iop/demosaic.c:2214
 msgid "full average"
 msgstr "fullständigt medel"
 
-#: ../src/iop/demosaic.c:2216
+#: ../src/iop/demosaic.c:2215
 msgid "full and local average"
 msgstr "fullständig och lokalt medel"
 
-#: ../src/iop/demosaic.c:2217
+#: ../src/iop/demosaic.c:2216
 msgid "green channels matching method"
 msgstr "metod för matchning av grön färgkanal"
 
@@ -4970,6 +4974,10 @@ msgstr "skärpa"
 msgctxt "accel"
 msgid "contrast boost"
 msgstr "lyft kontrast"
+
+#: ../src/iop/highpass.c:508
+msgid "sharpness"
+msgstr "skärpa"
 
 #: ../src/iop/highpass.c:511
 msgid "the sharpness of highpass filter"
@@ -8225,22 +8233,22 @@ msgid "preferences"
 msgstr "inställningar"
 
 #: ../src/libs/tools/global_toolbox.c:82
-#: ../src/libs/tools/global_toolbox.c:129
+#: ../src/libs/tools/global_toolbox.c:151
 msgid "expand grouped images"
 msgstr "veckla ut grupperade bilder"
 
 #: ../src/libs/tools/global_toolbox.c:84
-#: ../src/libs/tools/global_toolbox.c:131
+#: ../src/libs/tools/global_toolbox.c:153
 msgid "collapse grouped images"
 msgstr "fäll ihop grupperade bilder"
 
 #: ../src/libs/tools/global_toolbox.c:95
-#: ../src/libs/tools/global_toolbox.c:141
+#: ../src/libs/tools/global_toolbox.c:184
 msgid "hide image overlays"
 msgstr "göm bildöverlappad info"
 
 #: ../src/libs/tools/global_toolbox.c:97
-#: ../src/libs/tools/global_toolbox.c:143
+#: ../src/libs/tools/global_toolbox.c:186
 msgid "show image overlays"
 msgstr "visa bildöverlappad info"
 
@@ -8248,17 +8256,17 @@ msgstr "visa bildöverlappad info"
 msgid "show global preferences"
 msgstr "visa globala inställningar"
 
-#: ../src/libs/tools/global_toolbox.c:150
+#: ../src/libs/tools/global_toolbox.c:214
 msgctxt "accel"
 msgid "grouping"
 msgstr "grupperar"
 
-#: ../src/libs/tools/global_toolbox.c:151
+#: ../src/libs/tools/global_toolbox.c:215
 msgctxt "accel"
 msgid "preferences"
 msgstr "inställningar"
 
-#: ../src/libs/tools/global_toolbox.c:152
+#: ../src/libs/tools/global_toolbox.c:216
 msgctxt "accel"
 msgid "show overlays"
 msgstr "visa överlappad information"
@@ -8770,6 +8778,9 @@ msgstr "foto"
 #: ../src/imageio/format/webp.c:316
 msgid "graphic"
 msgstr "grafik"
+
+#~ msgid "sharpness of edges at each feature size"
+#~ msgstr "skärpa av kanter på vardera detaljstorlek"
 
 #~ msgid "unsupported input profile has been ignored!"
 #~ msgstr "ej stödd ingående färgprofil ignorerades!"
