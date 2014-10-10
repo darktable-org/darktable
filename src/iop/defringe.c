@@ -90,6 +90,8 @@ int flags ()
   return IOP_FLAGS_SUPPORTS_BLENDING;
 }
 
+#define CLIP(x,y,z)  if (x < y) x = y; if (x > z) x = z;
+
 // Verify before actually using this
 /*
 void tiling_callback  (dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out, dt_develop_tiling_t *tiling)
@@ -128,17 +130,17 @@ void fib_latt(int * const x, int * const y, float radius, int step, int idx)
 
 #define MAGIC_THRESHOLD_COEFF 33.0
 
-// the basis of how the following algorithm works comes from rawtherapee's (http://rawtherapee.com/)
+// the basis of how the following algorithm works comes from rawtherapee (http://rawtherapee.com/)
 // defringe -- thanks to Emil Martinec <ejmartin@uchicago.edu> for that
 // quite some modifications were done though:
-// 1. use a fibonacci lattice instead of full window, to speed thigns up
+// 1. use a fibonacci lattice instead of full window, to speed things up
 // 2. option for local averaging or static (RT used the global/region one)
-// 3. color shift/bias options
-// 4. additional condition to reduce sharp edged artifacts, by blurring pixels near to pixels over threshold
+// 3. color bias options
+// 4. additional condition to reduce sharp edged artifacts, by blurring pixels near to pixels over threshold, this really helps improving the filter with thick fringes
 // -----------------------------------------------------------------------------------------
-// in the following you will also see some "magic numbers",
+// in the following you will also see some more "magic numbers",
 // most are chosen arbitrarily and/or by experiment/trial+error ... I am sorry ;-)
-// having everything user-defineable would be just too much
+// and having everything user-defineable would be just too much
 // -----------------------------------------------------------------------------------------
 void process (struct dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece, void *i, void *o, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
 {
@@ -160,6 +162,11 @@ void process (struct dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece, voi
   float * const out = (float*const)o;
   int width = roi_in->width;
   int height = roi_in->height;
+
+  if (width < 2 || width > 7200)
+    printf(" STRANGE WIDTH ERROR ! \n");
+  if (height < 2 || height > 7200)
+    printf(" STRANGE HEIGHT ERROR ! \n");
 
   dt_gaussian_t * gauss = dt_gaussian_init(width, height, ch, Labmax, Labmin, sigma, order);
   if (!gauss) return;
@@ -212,6 +219,7 @@ void process (struct dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece, voi
   }
   else
   {
+    printf("Error allocating memory for defringe module fibonacci lattices");
     return;
   }
 
@@ -229,14 +237,15 @@ void process (struct dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece, voi
   }
   else
   {
+    printf("Error allocating memory for defringe module fibonacci lattices");
     return;
   }
 
   int * xy_artifact;
-  if ((xy_artifact = g_malloc(2 * sizeof(int) * samples_small)))
+  if ((xy_artifact = g_malloc(2 * sizeof(int) * samples_artifact)))
   {
     tmp = xy_artifact;
-    for (int u=0; u < samples_small; u++)
+    for (int u=0; u < samples_artifact; u++)
     {
       int dx,dy;
       fib_latt(&dx,&dy,radius_artifact_filter,u,sampleidx_small);
@@ -246,6 +255,7 @@ void process (struct dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece, voi
   }
   else
   {
+    printf("Error allocating memory for defringe module fibonacci lattices");
     return;
   }
 
@@ -278,7 +288,7 @@ void process (struct dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece, voi
       //float pseudo_luminosity = in[v*width*ch + t*ch];
 
       // save local edge chroma in out[.. +3] , this is later compared with threshold
-      out[v*width*ch + t*ch +3] = edge * base_strength;
+      out[v*width*ch + t*ch +3] = edge * pow(base_strength,2.0);
       // the average chroma of the edge-layer in the roi
       if (MODE_GLOBAL_AVERAGE == p->op_mode) avg_edge_chroma += edge * base_strength;
     }
@@ -288,24 +298,46 @@ void process (struct dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece, voi
   if (MODE_GLOBAL_AVERAGE == p->op_mode)
   {
     avg_edge_chroma = avg_edge_chroma / (width * height);
+    if (avg_edge_chroma < 100*FLT_EPSILON)
+      printf("\nsmall avg edge chroma!!\n\n");
     thresh = 8.0 * p->thresh * avg_edge_chroma / MAGIC_THRESHOLD_COEFF;
   }
   else
   {
     // this fixed value will later be changed when doing local averaging, or kept as-is in "static" mode
     avg_edge_chroma = MAGIC_THRESHOLD_COEFF;
-    thresh = 6.0 * p->thresh;
+    thresh = p->thresh;
   }
 
 #ifdef _OPENMP
-// dynamically scheduled due to possible uneven edge-chroma distribution (thanks to rawtherapee code for this hint!)
-#pragma omp parallel for default(none) shared(width,height,p,xy_small,xy_avg,xy_artifact) firstprivate(thresh,avg_edge_chroma) schedule(dynamic,32)
+// dynamically/guided scheduled due to possible uneven edge-chroma distribution (thanks to rawtherapee code for this hint!)
+#pragma omp parallel for default(none) shared(width,height,p,xy_small,xy_avg,xy_artifact) firstprivate(thresh,avg_edge_chroma) schedule(guided,16)
 #endif
   for (int v=0; v<height; v++)
   {
     for (int t=0; t<width; t++)
     {
-      if (out[v*width*ch +t*ch +3] > thresh)
+      double local_thresh = thresh;
+      // "-funswitch-loops" should unswitch all such things
+      if (MODE_LOCAL_AVERAGE == p->op_mode && out[v*width*ch +t*ch +3] > thresh)
+      {
+        float local_avg = 0.0;
+        // use some and not all values from the neigbourhood to speed things up
+        const int *tmp = xy_avg;
+        for (int u=0; u < samples_avg; u++)
+        {
+          int dx = *tmp++;
+          int dy = *tmp++;
+          int x = MAX(0,MIN(height-1,v+dx));
+          int y = MAX(0,MIN(width-1,t+dy));
+          local_avg += out[x*width*ch + y*ch +3];
+        }
+        local_avg /= (float)samples_avg*2.0;
+        avg_edge_chroma = local_avg;
+        double new_thresh = 8.0 * p->thresh * avg_edge_chroma / MAGIC_THRESHOLD_COEFF;
+        if (new_thresh < thresh) local_thresh = new_thresh;
+      }
+      if (out[v*width*ch +t*ch +3] > local_thresh)
       {
         float atot=0, btot=0;
         float norm=0;
@@ -314,34 +346,18 @@ void process (struct dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece, voi
         // we use a fibonacci lattice for that, samples amount need to be a fibonacci number, this can then be scaled to
         // a certain radius
 
-        // "-funswitch-loops" should unswitch all such things
-        if (MODE_LOCAL_AVERAGE == p->op_mode)
-        {
-          float local_avg = 0.0;
-          // use some and not all values from the neigbourhood to speed things up
-          const int *tmp = xy_avg;
-          for (int u=0; u < samples_avg; u++)
-          {
-            int dx = *tmp++;
-            int dy = *tmp++;
-            int x = MAX(0,MIN(height,v+dx));
-            int y = MAX(0,MIN(width,t+dy));
-            local_avg += out[x*width*ch + y*ch +3];
-          }
-          local_avg /= (float)samples_avg*2.0;
-          avg_edge_chroma = local_avg;
-        }
         // use some neighbourhood pixels for lowest chroma average
         const int *tmp = xy_small;
         for (int u=0; u < samples_small; u++)
         {
           int dx = *tmp++;
           int dy = *tmp++;
-          int x = MAX(0,MIN(height,v+dx));
-          int y = MAX(0,MIN(width,t+dy));
+          int x = MAX(0,MIN(height-1,v+dx));
+          int y = MAX(0,MIN(width-1,t+dy));
           // inverse chroma weighted average of neigbouring pixels inside window
           // also taking average edge chromaticity into account (either global or local average)
           weight = 1.0/(out[x*width*ch + y*ch +3] + avg_edge_chroma);
+          //if (!weight || weight == NAN || weight == INFINITY) weight = 1024 * FLT_EPSILON;
           atot += weight * in[x*width*ch + y*ch +1];
           btot += weight * in[x*width*ch + y*ch +2];
           norm += weight;
@@ -349,19 +365,23 @@ void process (struct dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece, voi
         // here we could try using a "balance" between original and changed value, this could be used to reduce artifcats
         // but on first tries, results weren't very convincing
         // float balance = (out[v*width*ch +t*ch +3]-thresh)/out[v*width*ch +t*ch +3];
-        out[v*width*ch + t*ch +1] = (atot/norm); // *balance + in[v*width*ch + t*ch +1]*(1.0-balance);
-        out[v*width*ch + t*ch +2] = (btot/norm); // *balance + in[v*width*ch + t*ch +2]*(1.0-balance);*/
+        double a = (atot/norm); // *balance + in[v*width*ch + t*ch +1]*(1.0-balance);
+        double b = (btot/norm); // *balance + in[v*width*ch + t*ch +2]*(1.0-balance);
+        if (a < -128.0 || a > 127.0) CLIP(a,-128.0,127.0);
+        if (b < -128.0 || b > 127.0) CLIP(b,-128.0,127.0);
+        out[v*width*ch + t*ch +1] = a;
+        out[v*width*ch + t*ch +2] = b;
       }
       // "artifact reduction filter": iterate also over neighbours of pixel over threshold
       // reducing artifacts could still be better, especially for fringe with a thickness of more than 1..2 pixels
       else if ( out[MAX(0,(v-1))*width*ch +MAX(0,(t-1))*ch +3] > thresh
                 || out[MAX(0,(v-1))*width*ch +t*ch +3] > thresh
-                || out[MAX(0,(v-1))*width*ch +MIN(width,(t+1))*ch +3] > thresh
+                || out[MAX(0,(v-1))*width*ch +MIN(width-1,(t+1))*ch +3] > thresh
                 || out[v*width*ch +MAX(0,(t-1))*ch +3] > thresh
-                || out[v*width*ch +MIN(width,(t+1))*ch +3] > thresh
-                || out[MIN(height,(v+1))*width*ch +MAX(0,(t-1))*ch +3] > thresh
-                || out[MIN(height,(v+1))*width*ch +t*ch +3] > thresh
-                || out[MIN(height,(v+1))*width*ch +MIN(width,(t+1))*ch +3] > thresh )
+                || out[v*width*ch +MIN(width-1,(t+1))*ch +3] > thresh
+                || out[MIN(height-1,(v+1))*width*ch +MAX(0,(t-1))*ch +3] > thresh
+                || out[MIN(height-1,(v+1))*width*ch +t*ch +3] > thresh
+                || out[MIN(height-1,(v+1))*width*ch +MIN(width-1,(t+1))*ch +3] > thresh )
       {
         float atot=0, btot=0;
         float norm=0;
@@ -372,18 +392,23 @@ void process (struct dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece, voi
         {
           int dx = *tmp++;
           int dy = *tmp++;
-          int x = MAX(0,MIN(height,v+dx));
-          int y = MAX(0,MIN(width,t+dy));
+          int x = MAX(0,MIN(height-1,v+dx));
+          int y = MAX(0,MIN(width-1,t+dy));
           // inverse chroma weighted average of neigbouring pixels inside window
           // also taking average edge chromaticity into account (either global or local average)
           weight = 1.0/(out[x*width*ch + y*ch +3] + avg_edge_chroma);
+          //if (!weight || weight == NAN || weight == INFINITY) weight = 1024 * FLT_EPSILON;
           atot += weight * in[x*width*ch + y*ch +1];
           btot += weight * in[x*width*ch + y*ch +2];
           norm += weight;
         }
-        out[v*width*ch + t*ch +1] = (atot/norm);
-        out[v*width*ch + t*ch +2] = (btot/norm);
-      }
+        double a = (atot/norm); // *balance + in[v*width*ch + t*ch +1]*(1.0-balance);
+        double b = (btot/norm); // *balance + in[v*width*ch + t*ch +2]*(1.0-balance);
+        if (a < -128.0 || a > 127.0) CLIP(a,-128.0,127.0);
+        if (b < -128.0 || b > 127.0) CLIP(b,-128.0,127.0);
+        out[v*width*ch + t*ch +1] = a;
+        out[v*width*ch + t*ch +2] = b;
+        }
       else
       {
         out[v*width*ch + t*ch +1] = in[v*width*ch + t*ch +1];
