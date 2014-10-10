@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 1.3\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2014-10-05 11:02+0200\n"
-"PO-Revision-Date: 2014-10-05 11:16+0100\n"
+"POT-Creation-Date: 2014-10-10 18:10+0200\n"
+"PO-Revision-Date: 2014-10-10 18:17+0100\n"
 "Last-Translator: Pascal Obry <pascal@obry.net>\n"
 "Language-Team: \n"
 "Language: fr_FR\n"
@@ -707,21 +707,21 @@ msgstr ""
 msgid "Unknown option for --hq"
 msgstr "Option inconnue pour --hq"
 
-#: ../src/cli/main.c:161
+#: ../src/cli/main.c:163
 msgid "output file already exists, it will get renamed"
 msgstr "ficher de sortie existant, il va être renommé"
 
-#: ../src/cli/main.c:176
+#: ../src/cli/main.c:178
 #, c-format
 msgid "error: can't open file %s"
 msgstr "erreur : impossible d'ouvrir le fichier «%s»"
 
 # dans le contexte de la table lumineuse, "history stack" se traduit par "développement"
-#: ../src/cli/main.c:200
+#: ../src/cli/main.c:202
 msgid "empty history stack"
 msgstr "réinitialiser le développement"
 
-#: ../src/cli/main.c:223
+#: ../src/cli/main.c:225
 msgid ""
 "cannot find disk storage module. please check your installation, something "
 "seems to be broken."
@@ -729,18 +729,18 @@ msgstr ""
 "impossible de trouver le module d'export vers le disque. vérifier votre "
 "installation, quelque chose est brisée."
 
-#: ../src/cli/main.c:230
+#: ../src/cli/main.c:232
 msgid "failed to get parameters from storage module, aborting export ..."
 msgstr ""
 "impossible d'obtenir les paramètres du module de stockage, exportation "
 "abandonnée..."
 
-#: ../src/cli/main.c:241
+#: ../src/cli/main.c:243
 #, c-format
 msgid "unknown extension '.%s'"
 msgstr "extension inconnue '.%s'"
 
-#: ../src/cli/main.c:249
+#: ../src/cli/main.c:251
 msgid "failed to get parameters from format module, aborting export ..."
 msgstr ""
 "impossible d'obtenir les paramètres du module de format, exportation "
@@ -750,7 +750,7 @@ msgstr ""
 #: ../src/iop/bilateral.cc:348 ../src/iop/channelmixer.c:461
 #: ../src/iop/channelmixer.c:473 ../src/iop/colorbalance.c:641
 #: ../src/iop/colorbalance.c:679 ../src/iop/colorbalance.c:717
-#: ../src/iop/temperature.c:783 ../src/libs/collect.c:1273
+#: ../src/iop/temperature.c:787 ../src/libs/collect.c:1273
 #: ../src/libs/collect.c:1275
 msgid "red"
 msgstr "rouge"
@@ -764,7 +764,7 @@ msgstr "jaune"
 #: ../src/iop/bilateral.cc:349 ../src/iop/channelmixer.c:462
 #: ../src/iop/channelmixer.c:480 ../src/iop/colorbalance.c:650
 #: ../src/iop/colorbalance.c:688 ../src/iop/colorbalance.c:726
-#: ../src/iop/temperature.c:784 ../src/libs/collect.c:1285
+#: ../src/iop/temperature.c:788 ../src/libs/collect.c:1285
 #: ../src/libs/collect.c:1287
 msgid "green"
 msgstr "vert"
@@ -773,7 +773,7 @@ msgstr "vert"
 #: ../src/iop/bilateral.cc:350 ../src/iop/channelmixer.c:463
 #: ../src/iop/channelmixer.c:487 ../src/iop/colorbalance.c:659
 #: ../src/iop/colorbalance.c:697 ../src/iop/colorbalance.c:735
-#: ../src/iop/temperature.c:785 ../src/libs/collect.c:1291
+#: ../src/iop/temperature.c:789 ../src/libs/collect.c:1291
 #: ../src/libs/collect.c:1293
 msgid "blue"
 msgstr "bleu"
@@ -822,7 +822,7 @@ msgstr "le fichier «%s» possède un format inconnu !"
 msgid "error loading file `%s'"
 msgstr "erreur de chargement du fichier «%s»"
 
-#: ../src/common/darktable.c:602
+#: ../src/common/darktable.c:630
 #, c-format
 msgid "ERROR : invalid temporary directory : %s\n"
 msgstr "ERREUR : répertoire temporaire invalide : %s\n"
@@ -862,8 +862,8 @@ msgstr "activé(e)"
 #: ../src/common/history.c:296 ../src/common/styles.c:633
 #: ../src/common/styles.c:635 ../src/develop/blend_gui.c:1539
 #: ../src/develop/blend_gui.c:1688 ../src/develop/develop.c:1178
-#: ../src/imageio/format/exr.cc:265 ../src/imageio/format/j2k.c:637
-#: ../src/iop/colorin.c:1258 ../src/iop/demosaic.c:2202
+#: ../src/imageio/format/exr.cc:267 ../src/imageio/format/j2k.c:637
+#: ../src/iop/colorin.c:1258 ../src/iop/demosaic.c:2201
 #: ../src/iop/vignette.c:1188 ../src/libs/history.c:154
 #: ../src/libs/live_view.c:411
 msgid "off"
@@ -873,22 +873,22 @@ msgstr "désactivé(e)"
 msgid "orphaned image"
 msgstr "image orpheline"
 
-#: ../src/common/image.c:1243
+#: ../src/common/image.c:1244
 msgid "cannot create local copy when the original file is not accessible."
 msgstr ""
 "impossible de créer la copie locale lorsque l'original n'est pas accessible."
 
-#: ../src/common/image.c:1257
+#: ../src/common/image.c:1258
 msgid "cannot create local copy."
 msgstr "copie locale impossible."
 
-#: ../src/common/image.c:1291 ../src/control/jobs/control_jobs.c:489
+#: ../src/common/image.c:1292 ../src/control/jobs/control_jobs.c:489
 msgid "cannot remove local copy when the original file is not accessible."
 msgstr ""
 "impossible de supprimer la copie locale lorsque l'original n'est pas "
 "accessible"
 
-#: ../src/common/image.c:1442
+#: ../src/common/image.c:1443
 #, c-format
 msgid "%d local copy has been synchronized"
 msgid_plural "%d local copies have been synchronized"
@@ -1217,10 +1217,10 @@ msgid "delete images?"
 msgstr "supprimer les images ?"
 
 #: ../src/control/jobs/control_jobs.c:1077
-#: ../src/control/jobs/control_jobs.c:1133 ../src/imageio/storage/disk.c:70
-#: ../src/imageio/storage/disk.c:138 ../src/imageio/storage/gallery.c:79
-#: ../src/imageio/storage/gallery.c:173 ../src/imageio/storage/latex.c:79
-#: ../src/imageio/storage/latex.c:173 ../src/libs/styles.c:240
+#: ../src/control/jobs/control_jobs.c:1133 ../src/imageio/storage/disk.c:96
+#: ../src/imageio/storage/disk.c:164 ../src/imageio/storage/gallery.c:109
+#: ../src/imageio/storage/gallery.c:203 ../src/imageio/storage/latex.c:109
+#: ../src/imageio/storage/latex.c:203 ../src/libs/styles.c:240
 msgid "select directory"
 msgstr "sélectionner répertoire"
 
@@ -1763,7 +1763,7 @@ msgstr "%s est désactivé"
 #: ../src/gui/accelerators.c:840 ../src/gui/accelerators.c:1007
 #: ../src/gui/accelerators.c:1032 ../src/gui/presets.c:182
 #: ../src/gui/presets.c:284 ../src/gui/presets.c:625
-#: ../src/iop/temperature.c:795 ../src/libs/import.c:506 ../src/libs/lib.c:292
+#: ../src/iop/temperature.c:799 ../src/libs/import.c:506 ../src/libs/lib.c:292
 #: ../src/libs/lib.c:321 ../src/libs/lib.c:1061
 msgid "preset"
 msgstr "pré-réglage"
@@ -2092,88 +2092,88 @@ msgctxt "accel"
 msgid "switch view"
 msgstr "changer de vue"
 
-#: ../src/gui/gtkentry.c:195 ../src/imageio/storage/gallery.c:137
-#: ../src/imageio/storage/latex.c:137
+#: ../src/gui/gtkentry.c:195 ../src/imageio/storage/gallery.c:167
+#: ../src/imageio/storage/latex.c:167
 msgid "$(ROLL_NAME) - roll of the input image"
 msgstr "$(ROLL_NAME) - nom du dossier"
 
-#: ../src/gui/gtkentry.c:196 ../src/imageio/storage/gallery.c:138
-#: ../src/imageio/storage/latex.c:138
+#: ../src/gui/gtkentry.c:196 ../src/imageio/storage/gallery.c:168
+#: ../src/imageio/storage/latex.c:168
 msgid "$(FILE_FOLDER) - folder containing the input image"
 msgstr "$(FILE_FOLDER) - chemin du dossier de l'image d'origine"
 
-#: ../src/gui/gtkentry.c:197 ../src/imageio/storage/gallery.c:139
-#: ../src/imageio/storage/latex.c:139
+#: ../src/gui/gtkentry.c:197 ../src/imageio/storage/gallery.c:169
+#: ../src/imageio/storage/latex.c:169
 msgid "$(FILE_NAME) - basename of the input image"
 msgstr "$(FILE_NAME) - nom de base de l'image d'origine"
 
-#: ../src/gui/gtkentry.c:198 ../src/imageio/storage/gallery.c:140
-#: ../src/imageio/storage/latex.c:140
+#: ../src/gui/gtkentry.c:198 ../src/imageio/storage/gallery.c:170
+#: ../src/imageio/storage/latex.c:170
 msgid "$(FILE_EXTENSION) - extension of the input image"
 msgstr "$(FILE_EXTENSION) - extension du fichier image d'origine"
 
-#: ../src/gui/gtkentry.c:199 ../src/imageio/storage/gallery.c:141
-#: ../src/imageio/storage/latex.c:141
+#: ../src/gui/gtkentry.c:199 ../src/imageio/storage/gallery.c:171
+#: ../src/imageio/storage/latex.c:171
 msgid "$(SEQUENCE) - sequence number"
 msgstr "$(SEQUENCE) - nombre séquentiel"
 
-#: ../src/gui/gtkentry.c:200 ../src/imageio/storage/gallery.c:142
-#: ../src/imageio/storage/latex.c:142
+#: ../src/gui/gtkentry.c:200 ../src/imageio/storage/gallery.c:172
+#: ../src/imageio/storage/latex.c:172
 msgid "$(YEAR) - year"
 msgstr "$(YEAR) - année"
 
-#: ../src/gui/gtkentry.c:201 ../src/imageio/storage/gallery.c:143
-#: ../src/imageio/storage/latex.c:143
+#: ../src/gui/gtkentry.c:201 ../src/imageio/storage/gallery.c:173
+#: ../src/imageio/storage/latex.c:173
 msgid "$(MONTH) - month"
 msgstr "$(MONTH) - mois"
 
-#: ../src/gui/gtkentry.c:202 ../src/imageio/storage/gallery.c:144
-#: ../src/imageio/storage/latex.c:144
+#: ../src/gui/gtkentry.c:202 ../src/imageio/storage/gallery.c:174
+#: ../src/imageio/storage/latex.c:174
 msgid "$(DAY) - day"
 msgstr "$(DAY) - jour"
 
-#: ../src/gui/gtkentry.c:203 ../src/imageio/storage/gallery.c:145
-#: ../src/imageio/storage/latex.c:145
+#: ../src/gui/gtkentry.c:203 ../src/imageio/storage/gallery.c:175
+#: ../src/imageio/storage/latex.c:175
 msgid "$(HOUR) - hour"
 msgstr "$(HOUR) - heure"
 
-#: ../src/gui/gtkentry.c:204 ../src/imageio/storage/gallery.c:146
-#: ../src/imageio/storage/latex.c:146
+#: ../src/gui/gtkentry.c:204 ../src/imageio/storage/gallery.c:176
+#: ../src/imageio/storage/latex.c:176
 msgid "$(MINUTE) - minute"
 msgstr "$(MINUTE) - minutes"
 
-#: ../src/gui/gtkentry.c:205 ../src/imageio/storage/gallery.c:147
-#: ../src/imageio/storage/latex.c:147
+#: ../src/gui/gtkentry.c:205 ../src/imageio/storage/gallery.c:177
+#: ../src/imageio/storage/latex.c:177
 msgid "$(SECOND) - second"
 msgstr "$(SECOND) - secondes"
 
-#: ../src/gui/gtkentry.c:206 ../src/imageio/storage/gallery.c:148
-#: ../src/imageio/storage/latex.c:148
+#: ../src/gui/gtkentry.c:206 ../src/imageio/storage/gallery.c:178
+#: ../src/imageio/storage/latex.c:178
 msgid "$(EXIF_YEAR) - EXIF year"
 msgstr "$(EXIF_YEAR) - année EXIF"
 
-#: ../src/gui/gtkentry.c:207 ../src/imageio/storage/gallery.c:149
-#: ../src/imageio/storage/latex.c:149
+#: ../src/gui/gtkentry.c:207 ../src/imageio/storage/gallery.c:179
+#: ../src/imageio/storage/latex.c:179
 msgid "$(EXIF_MONTH) - EXIF month"
 msgstr "$(EXIF_MONTH) - mois EXIF"
 
-#: ../src/gui/gtkentry.c:208 ../src/imageio/storage/gallery.c:150
-#: ../src/imageio/storage/latex.c:150
+#: ../src/gui/gtkentry.c:208 ../src/imageio/storage/gallery.c:180
+#: ../src/imageio/storage/latex.c:180
 msgid "$(EXIF_DAY) - EXIF day"
 msgstr "$(EXIF_DAY) - jour EXIF"
 
-#: ../src/gui/gtkentry.c:209 ../src/imageio/storage/gallery.c:151
-#: ../src/imageio/storage/latex.c:151
+#: ../src/gui/gtkentry.c:209 ../src/imageio/storage/gallery.c:181
+#: ../src/imageio/storage/latex.c:181
 msgid "$(EXIF_HOUR) - EXIF hour"
 msgstr "$(EXIF_HOUR) - heure EXIF"
 
-#: ../src/gui/gtkentry.c:210 ../src/imageio/storage/gallery.c:152
-#: ../src/imageio/storage/latex.c:152
+#: ../src/gui/gtkentry.c:210 ../src/imageio/storage/gallery.c:182
+#: ../src/imageio/storage/latex.c:182
 msgid "$(EXIF_MINUTE) - EXIF minute"
 msgstr "$(EXIF_MINUTE) - minutes EXIF"
 
-#: ../src/gui/gtkentry.c:211 ../src/imageio/storage/gallery.c:153
-#: ../src/imageio/storage/latex.c:153
+#: ../src/gui/gtkentry.c:211 ../src/imageio/storage/gallery.c:183
+#: ../src/imageio/storage/latex.c:183
 msgid "$(EXIF_SECOND) - EXIF second"
 msgstr "$(EXIF_SECOND) - secondes EXIF "
 
@@ -2181,28 +2181,28 @@ msgstr "$(EXIF_SECOND) - secondes EXIF "
 msgid "$(EXIF_ISO) - ISO value"
 msgstr "$(EXIF_ISO) - valeur ISO"
 
-#: ../src/gui/gtkentry.c:213 ../src/imageio/storage/gallery.c:154
-#: ../src/imageio/storage/latex.c:154
+#: ../src/gui/gtkentry.c:213 ../src/imageio/storage/gallery.c:184
+#: ../src/imageio/storage/latex.c:184
 msgid "$(STARS) - star rating"
 msgstr "$(STARS) - étoiles"
 
-#: ../src/gui/gtkentry.c:214 ../src/imageio/storage/gallery.c:155
-#: ../src/imageio/storage/latex.c:155
+#: ../src/gui/gtkentry.c:214 ../src/imageio/storage/gallery.c:185
+#: ../src/imageio/storage/latex.c:185
 msgid "$(LABELS) - colorlabels"
 msgstr "$(LABELS) - labels de couleur"
 
-#: ../src/gui/gtkentry.c:215 ../src/imageio/storage/gallery.c:156
-#: ../src/imageio/storage/latex.c:156
+#: ../src/gui/gtkentry.c:215 ../src/imageio/storage/gallery.c:186
+#: ../src/imageio/storage/latex.c:186
 msgid "$(PICTURES_FOLDER) - pictures folder"
 msgstr "$(PICTURES_FOLDER) - fichier 'images'"
 
-#: ../src/gui/gtkentry.c:216 ../src/imageio/storage/gallery.c:157
-#: ../src/imageio/storage/latex.c:157
+#: ../src/gui/gtkentry.c:216 ../src/imageio/storage/gallery.c:187
+#: ../src/imageio/storage/latex.c:187
 msgid "$(HOME) - home folder"
 msgstr "$(HOME) - dossier personnel"
 
-#: ../src/gui/gtkentry.c:217 ../src/imageio/storage/gallery.c:158
-#: ../src/imageio/storage/latex.c:158
+#: ../src/gui/gtkentry.c:217 ../src/imageio/storage/gallery.c:188
+#: ../src/imageio/storage/latex.c:188
 msgid "$(DESKTOP) - desktop folder"
 msgstr "$(DESKTOP) - dossier 'bureau'"
 
@@ -2557,39 +2557,39 @@ msgstr ""
 "effectue une copie conforme des fichiers.\n"
 "les options ci-dessous ne s'appliquent pas !"
 
-#: ../src/imageio/format/exr.cc:238
+#: ../src/imageio/format/exr.cc:240
 msgid "OpenEXR (float)"
 msgstr "OpenEXR (flottant)"
 
-#: ../src/imageio/format/exr.cc:259
+#: ../src/imageio/format/exr.cc:261
 msgid "compression mode"
 msgstr "compression"
 
-#: ../src/imageio/format/exr.cc:266
+#: ../src/imageio/format/exr.cc:268
 msgid "RLE"
 msgstr "RLE"
 
-#: ../src/imageio/format/exr.cc:267
+#: ../src/imageio/format/exr.cc:269
 msgid "ZIPS"
 msgstr "ZIPS"
 
-#: ../src/imageio/format/exr.cc:268
+#: ../src/imageio/format/exr.cc:270
 msgid "ZIP"
 msgstr "ZIP"
 
-#: ../src/imageio/format/exr.cc:269
+#: ../src/imageio/format/exr.cc:271
 msgid "PIZ (default)"
 msgstr "PIZ (défaut)"
 
-#: ../src/imageio/format/exr.cc:270
+#: ../src/imageio/format/exr.cc:272
 msgid "PXR24 (lossy)"
 msgstr "PXR24 (avec perte)"
 
-#: ../src/imageio/format/exr.cc:271
+#: ../src/imageio/format/exr.cc:273
 msgid "B44 (lossy)"
 msgstr "B44 (avec perte)"
 
-#: ../src/imageio/format/exr.cc:272
+#: ../src/imageio/format/exr.cc:274
 msgid "B44A (lossy)"
 msgstr "B44A (avec perte)"
 
@@ -2686,8 +2686,8 @@ msgstr "deflate avec prédiction (flottant)"
 msgid "file on disk"
 msgstr "fichier sur le disque"
 
-#: ../src/imageio/storage/disk.c:128 ../src/imageio/storage/gallery.c:165
-#: ../src/imageio/storage/latex.c:165
+#: ../src/imageio/storage/disk.c:154 ../src/imageio/storage/gallery.c:195
+#: ../src/imageio/storage/latex.c:195
 msgid ""
 "enter the path where to put exported images\n"
 "recognized variables:"
@@ -2695,31 +2695,31 @@ msgstr ""
 "chemin des images exportées\n"
 "variables reconnues :"
 
-#: ../src/imageio/storage/disk.c:142 ../src/libs/copy_history.c:284
+#: ../src/imageio/storage/disk.c:168 ../src/libs/copy_history.c:284
 msgid "overwrite"
 msgstr "écraser"
 
-#: ../src/imageio/storage/disk.c:226 ../src/imageio/storage/gallery.c:266
-#: ../src/imageio/storage/latex.c:262
+#: ../src/imageio/storage/disk.c:252 ../src/imageio/storage/gallery.c:296
+#: ../src/imageio/storage/latex.c:292
 #, c-format
 msgid "could not create directory `%s'!"
 msgstr "impossible de créer le répertoire %s !"
 
-#: ../src/imageio/storage/disk.c:233
+#: ../src/imageio/storage/disk.c:259
 #, c-format
 msgid "could not write to directory `%s'!"
 msgstr "impossible d'écrire dans le répertoire %s !"
 
-#: ../src/imageio/storage/disk.c:267 ../src/imageio/storage/email.c:118
+#: ../src/imageio/storage/disk.c:293 ../src/imageio/storage/email.c:143
 #: ../src/imageio/storage/facebook.c:1201 ../src/imageio/storage/flickr.c:672
-#: ../src/imageio/storage/gallery.c:339 ../src/imageio/storage/gallery.c:358
+#: ../src/imageio/storage/gallery.c:369 ../src/imageio/storage/gallery.c:388
 #: ../src/imageio/storage/picasa.c:1455
 #, c-format
 msgid "could not export to file `%s'!"
 msgstr "impossible d'exporter le fichier %s !"
 
-#: ../src/imageio/storage/disk.c:274 ../src/imageio/storage/email.c:127
-#: ../src/imageio/storage/gallery.c:368 ../src/imageio/storage/latex.c:350
+#: ../src/imageio/storage/disk.c:300 ../src/imageio/storage/email.c:152
+#: ../src/imageio/storage/gallery.c:398 ../src/imageio/storage/latex.c:380
 #, c-format
 msgid "%d/%d exported to `%s%s'"
 msgstr "%d/%d exportée(s) vers '%s%s'"
@@ -2728,11 +2728,11 @@ msgstr "%d/%d exportée(s) vers '%s%s'"
 msgid "send as email"
 msgstr "envoyer par e-mail"
 
-#: ../src/imageio/storage/email.c:179
+#: ../src/imageio/storage/email.c:204
 msgid "images exported from darktable"
 msgstr "images exportées depuis darktable"
 
-#: ../src/imageio/storage/email.c:214
+#: ../src/imageio/storage/email.c:239
 msgid "could not launch email client!"
 msgstr "impossible de lancer le client de messagerie!"
 
@@ -2811,7 +2811,7 @@ msgstr "album web facebook"
 #. create labels
 #. xmp
 #: ../src/imageio/storage/facebook.c:1028 ../src/imageio/storage/flickr.c:482
-#: ../src/imageio/storage/gallery.c:179 ../src/imageio/storage/latex.c:179
+#: ../src/imageio/storage/gallery.c:209 ../src/imageio/storage/latex.c:209
 #: ../src/imageio/storage/picasa.c:1315 ../src/libs/collect.h:38
 #: ../src/libs/metadata.c:328 ../src/libs/metadata_view.c:107
 msgid "title"
@@ -2967,7 +2967,7 @@ msgstr "%d/%d exportée(s) vers album web flickr"
 msgid "website gallery"
 msgstr "galerie web"
 
-#: ../src/imageio/storage/gallery.c:185
+#: ../src/imageio/storage/gallery.c:215
 msgid "enter the title of the website"
 msgstr "entrer un nom pour le site"
 
@@ -2976,7 +2976,7 @@ msgid "LaTeX book template"
 msgstr "modèle de livre LaTeX"
 
 #. TODO: support title, author, subject, keywords (collect tags?)
-#: ../src/imageio/storage/latex.c:186
+#: ../src/imageio/storage/latex.c:216
 msgid "enter the title of the book"
 msgstr "entrer le titre du livre"
 
@@ -3098,13 +3098,17 @@ msgstr "chroma"
 msgid "change color saturation at each feature size"
 msgstr "changer la saturation pour chaque taille"
 
-#: ../src/iop/atrous.c:1365 ../src/iop/highpass.c:508
-msgid "sharpness"
-msgstr "netteté"
+#: ../src/iop/atrous.c:1365
+msgid "edges"
+msgstr "contours"
 
 #: ../src/iop/atrous.c:1366
-msgid "sharpness of edges at each feature size"
-msgstr "netteté des bords pour chaque taille"
+msgid ""
+"change edge halos at each feature size\n"
+"only changes results of luma and chroma tabs"
+msgstr ""
+"change les halos de contour à chaque niveau de détail\n"
+"change uniquement les résultats des sections luma et chroma"
 
 #: ../src/iop/atrous.c:1402 ../src/iop/colorzones.c:1064
 #: ../src/iop/soften.c:589
@@ -4411,40 +4415,40 @@ msgctxt "accel"
 msgid "edge threshold"
 msgstr "seuil "
 
-#: ../src/iop/demosaic.c:2179 ../src/iop/demosaic.c:2187
+#: ../src/iop/demosaic.c:2178 ../src/iop/demosaic.c:2186
 #: ../src/iop/dither.c:564 ../src/iop/highlights.c:711
 msgid "method"
 msgstr "méthode"
 
-#: ../src/iop/demosaic.c:2181
+#: ../src/iop/demosaic.c:2180
 msgid "PPG (fast)"
 msgstr "PPG (rapide)"
 
-#: ../src/iop/demosaic.c:2182
+#: ../src/iop/demosaic.c:2181
 msgid "AMaZE (slow)"
 msgstr "AMaZE (lent)"
 
-#: ../src/iop/demosaic.c:2183
+#: ../src/iop/demosaic.c:2182
 msgid "VNG4 (slow)"
 msgstr "VNG4 (lent)"
 
-#: ../src/iop/demosaic.c:2184 ../src/iop/demosaic.c:2192
+#: ../src/iop/demosaic.c:2183 ../src/iop/demosaic.c:2191
 msgid "demosaicing raw data method"
 msgstr "méthode de dématriçage"
 
-#: ../src/iop/demosaic.c:2189
+#: ../src/iop/demosaic.c:2188
 msgid "VNG"
 msgstr "VNG"
 
-#: ../src/iop/demosaic.c:2190
+#: ../src/iop/demosaic.c:2189
 msgid "Markesteijn 1-pass (slow)"
 msgstr "Markesteijn 1-passe (slow)"
 
-#: ../src/iop/demosaic.c:2191
+#: ../src/iop/demosaic.c:2190
 msgid "Markesteijn 3-pass (slower)"
 msgstr "Markesteijn 3-passes (plus lent)"
 
-#: ../src/iop/demosaic.c:2195
+#: ../src/iop/demosaic.c:2194
 msgid ""
 "threshold for edge-aware median.\n"
 "set to 0.0 to switch off.\n"
@@ -4454,59 +4458,59 @@ msgstr ""
 "mettre 0.0 pour désactiver\n"
 "mettre 1.0 pour ignorer les bords"
 
-#: ../src/iop/demosaic.c:2196
+#: ../src/iop/demosaic.c:2195
 msgid "edge threshold"
 msgstr "seuil "
 
-#: ../src/iop/demosaic.c:2200
+#: ../src/iop/demosaic.c:2199
 msgid "color smoothing"
 msgstr "lissage des couleurs"
 
-#: ../src/iop/demosaic.c:2203
+#: ../src/iop/demosaic.c:2202
 msgid "one time"
 msgstr "une passe"
 
-#: ../src/iop/demosaic.c:2204
+#: ../src/iop/demosaic.c:2203
 msgid "two times"
 msgstr "deux passes"
 
-#: ../src/iop/demosaic.c:2205
+#: ../src/iop/demosaic.c:2204
 msgid "three times"
 msgstr "trois passes"
 
-#: ../src/iop/demosaic.c:2206
+#: ../src/iop/demosaic.c:2205
 msgid "four times"
 msgstr "quatre passes"
 
-#: ../src/iop/demosaic.c:2207
+#: ../src/iop/demosaic.c:2206
 msgid "five times"
 msgstr "cinq passes"
 
-#: ../src/iop/demosaic.c:2208
+#: ../src/iop/demosaic.c:2207
 msgid "how many color smoothing median steps after demosaicing"
 msgstr "nombre de passes pour le lissage de couleur après le dématriçage"
 
-#: ../src/iop/demosaic.c:2212
+#: ../src/iop/demosaic.c:2211
 msgid "match greens"
 msgstr "correction des verts"
 
-#: ../src/iop/demosaic.c:2213
+#: ../src/iop/demosaic.c:2212
 msgid "disabled"
 msgstr "désactivée"
 
-#: ../src/iop/demosaic.c:2214
+#: ../src/iop/demosaic.c:2213
 msgid "local average"
 msgstr "moyenne locale"
 
-#: ../src/iop/demosaic.c:2215
+#: ../src/iop/demosaic.c:2214
 msgid "full average"
 msgstr "moyenne globale"
 
-#: ../src/iop/demosaic.c:2216
+#: ../src/iop/demosaic.c:2215
 msgid "full and local average"
 msgstr "moyenne globale et locale"
 
-#: ../src/iop/demosaic.c:2217
+#: ../src/iop/demosaic.c:2216
 msgid "green channels matching method"
 msgstr "méthode de calcul des verts"
 
@@ -5004,6 +5008,10 @@ msgstr "netteté"
 msgctxt "accel"
 msgid "contrast boost"
 msgstr "renforcer le contraste"
+
+#: ../src/iop/highpass.c:508
+msgid "sharpness"
+msgstr "netteté"
 
 #: ../src/iop/highpass.c:511
 msgid "the sharpness of highpass filter"
@@ -5862,32 +5870,32 @@ msgstr "boîtier"
 msgid "spot white balance"
 msgstr "spot"
 
-#: ../src/iop/temperature.c:504
+#: ../src/iop/temperature.c:508
 msgid "failed to read camera white balance information!"
 msgstr "impossible de récupérer la balance des blancs du boîtier!"
 
-#: ../src/iop/temperature.c:781
+#: ../src/iop/temperature.c:785
 msgid "tint"
 msgstr "teinte"
 
-#: ../src/iop/temperature.c:782
+#: ../src/iop/temperature.c:786
 msgid "temperature"
 msgstr "température"
 
-#: ../src/iop/temperature.c:797
+#: ../src/iop/temperature.c:801
 msgid "choose white balance preset from camera"
 msgstr "choisir la balance des blancs du boîtier"
 
-#: ../src/iop/temperature.c:800
+#: ../src/iop/temperature.c:804
 msgid "finetune"
 msgstr "ajustement"
 
-#: ../src/iop/temperature.c:801
+#: ../src/iop/temperature.c:805
 #, c-format
 msgid "%.0f mired"
 msgstr "%.0f mired"
 
-#: ../src/iop/temperature.c:805
+#: ../src/iop/temperature.c:809
 msgid "fine tune white balance preset"
 msgstr "ajustement de balance des blancs"
 
@@ -8342,22 +8350,22 @@ msgid "preferences"
 msgstr "préférences"
 
 #: ../src/libs/tools/global_toolbox.c:82
-#: ../src/libs/tools/global_toolbox.c:129
+#: ../src/libs/tools/global_toolbox.c:151
 msgid "expand grouped images"
 msgstr "montrer les images groupées"
 
 #: ../src/libs/tools/global_toolbox.c:84
-#: ../src/libs/tools/global_toolbox.c:131
+#: ../src/libs/tools/global_toolbox.c:153
 msgid "collapse grouped images"
 msgstr "cacher les images groupées"
 
 #: ../src/libs/tools/global_toolbox.c:95
-#: ../src/libs/tools/global_toolbox.c:141
+#: ../src/libs/tools/global_toolbox.c:184
 msgid "hide image overlays"
 msgstr "cache les surimpressions"
 
 #: ../src/libs/tools/global_toolbox.c:97
-#: ../src/libs/tools/global_toolbox.c:143
+#: ../src/libs/tools/global_toolbox.c:186
 msgid "show image overlays"
 msgstr "affiche les surimpressions"
 
@@ -8365,17 +8373,17 @@ msgstr "affiche les surimpressions"
 msgid "show global preferences"
 msgstr "montrer les préférences globales"
 
-#: ../src/libs/tools/global_toolbox.c:150
+#: ../src/libs/tools/global_toolbox.c:214
 msgctxt "accel"
 msgid "grouping"
 msgstr "grouper"
 
-#: ../src/libs/tools/global_toolbox.c:151
+#: ../src/libs/tools/global_toolbox.c:215
 msgctxt "accel"
 msgid "preferences"
 msgstr "préférences"
 
-#: ../src/libs/tools/global_toolbox.c:152
+#: ../src/libs/tools/global_toolbox.c:216
 msgctxt "accel"
 msgid "show overlays"
 msgstr "affiche les surimpressions"
@@ -8886,6 +8894,9 @@ msgstr "photo"
 #: ../src/imageio/format/webp.c:316
 msgid "graphic"
 msgstr "graphique"
+
+#~ msgid "sharpness of edges at each feature size"
+#~ msgstr "netteté des bords pour chaque taille"
 
 #~ msgid "double click to reset to `%"
 #~ msgstr "double-cliquer pour réinitialiser «%d»XXXXXXXXX"
