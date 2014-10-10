@@ -13,7 +13,8 @@ INSTALL_PREFIX=""
 BUILD_TYPE=""
 MAKE_TASKS=-1
 BUILD_DIR="./build"
-
+CMAKE_GENERATOR="Unix Makefiles"
+MAKE=make
 PRINT_HELP=0
 
 OPT_FLICKR=-1
@@ -92,6 +93,10 @@ while [ $# -ge 1 ] ; do
 		BUILD_DIR="$2"
 		shift
 		;;
+	-G)
+		CMAKE_GENERATOR="$2"
+		shift
+		;;
 	-j|--jobs)
 		MAKE_TASKS="$2"
 		shift
@@ -129,6 +134,7 @@ Installation:
 Build:
    --builddir <string>   Building directory (default: $DT_SRC_DIR/build)
    --buildtype <string>  Build type (Release, Debug, default: Release)
+   -G                    CMake build generator (default: Unix Makefiles)
 -j --jobs <integer>      Number of tasks (default: number of CPUs)
 
 Features:
@@ -178,10 +184,8 @@ if [ "$(($MAKE_TASKS < 1))" -eq 1 ]; then
 fi
 
 if [ "$KERNELNAME" = "SunOS" ]; then
-	MAKE=gmake
 	PATH=/usr/gnu/bin:$PATH ; export PATH
-else
-	MAKE=make
+	MAKE=gmake
 fi
 
 # Being smart may fail :D
@@ -233,8 +237,8 @@ Darktable build script
 Building directory:  $BUILD_DIR
 Installation prefix: $INSTALL_PREFIX
 Build type:          $BUILD_TYPE
-Make program:        $MAKE
-Make tasks:          $MAKE_TASKS
+Build generator:     $CMAKE_GENERATOR
+Build tasks:         $MAKE_TASKS
 
 
 EOF
@@ -246,16 +250,17 @@ fi
 cd "$BUILD_DIR"
 
 cmake \
+	-G "$CMAKE_GENERATOR" \
 	-DCMAKE_INSTALL_PREFIX=${INSTALL_PREFIX} \
 	-DCMAKE_BUILD_TYPE=${BUILD_TYPE} \
 	${CMAKE_MORE_OPTIONS} \
 	"$DT_SRC_DIR" \
-&& $MAKE -j $MAKE_TASKS
+&& cmake --build  . -- -j $MAKE_TASKS 
 
 if [ $? = 0 ]; then
 	cat <<EOF
 Darktable finished building, to actually install darktable you need to type:
-# cd "$BUILD_DIR"; sudo make install
+# sudo cmake --build "$BUILD_DIR" --target install
 EOF
 else
    exit 1
