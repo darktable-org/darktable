@@ -4,7 +4,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "POT-Creation-Date: 2014-09-20 23:04+0200\n"
-"PO-Revision-Date: 2014-10-08 22:03+0100\n"
+"PO-Revision-Date: 2014-10-11 18:03+0100\n"
 "Last-Translator: Michel Leblond <michel.leblond62@gmail.com>\n"
 "Language-Team: Jean-Luc Coulon, Victor Lamoine, Michel Leblond\n"
 "Language: fr\n"
@@ -13,7 +13,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
 "X-Generator: Poedit 1.5.4\n"
-"X-Poedit-Bookmarks: 1601,208,331,416,182,458,465,290,223,729\n"
+"X-Poedit-Bookmarks: 1724,208,331,416,182,458,465,290,223,729\n"
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:4(title)
 msgid "darktable 1.5"
@@ -14246,12 +14246,12 @@ msgid ""
 msgstr ""
 "Ce module transfère l’apparence et l’ambiance d’une image vers une autre. Il "
 "analyse statistiquement les caractéristiques de couleur d’une image source "
-"et d’une image cible. Les couleurs de l’image source sont alors transposées "
+"et d’une image cible. Les couleurs de l’image source sont alors appliquées "
 "sur les couleurs correspondantes de l’image cible."
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:13219(para)
 msgid "To use this module two steps are required."
-msgstr "Deux étapes sont nécessaires à l’utilisation de ce module."
+msgstr "L'utilisation de ce module s'effectue en deux étapes."
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:13223(para)
 msgid ""
@@ -14265,13 +14265,13 @@ msgid ""
 "clusters."
 msgstr ""
 "Ouvrez tout d’abord votre image source en mode chambre noire et récupérez "
-"ses caractéristiques de couleur en pressant le bouton <quote>Acquérir la "
-"source</quote>. Un jeu de groupes de couleurs est généré et affiché dans la "
-"zone <quote>groupes source</quote>. Chaque groupe est représenté par un jeu "
-"d’échantillons de couleur dont la valeur moyenne se trouve au centre "
-"entourée par des échantillons qui indiquent la variance de la couleur à "
+"ses caractéristiques de couleur en pressant le bouton <quote>acquérir "
+"source</quote>. Un ensemble de groupes de couleurs est généré et affiché "
+"dans la zone <quote>groupes source</quote>. Chaque groupe est représenté par "
+"un ensemble de pastilles de couleur, celle de couleur moyenne se trouve au "
+"centre entourée par des pastilles indiquant la variation de couleur à "
 "l’intérieur de ce groupe. Les groupes sont triés par ordre croissant selon "
-"leur poids, c'est-à-dire le nombre de pixels contribuant au groupe."
+"leur poids, c'est-à-dire selon le nombre de pixels contribuant au groupe."
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:13232(para)
 msgid ""
@@ -14287,9 +14287,9 @@ msgstr ""
 "mémorisé les groupes source précédemment récupérés. S’ils ne sont toujours "
 "pas affichés, pressez le bouton <inlinegraphic fileref=\"images/"
 "darkroom_module_icon_reset.png\" scalefit=\"1\" width=\"2%\" align=\"center"
-"\"/>. Vous pouvez maintenant presser le bouton <quote>Acquérir la cible</"
-"quote> afin de générer le jeu de groupes de couleurs correspondant pour "
-"votre image de destination, ce qui sera affiché dans la zone <quote>groupes "
+"\"/>. Vous pouvez maintenant presser le bouton <quote>acquérir cible</quote> "
+"afin de générer l'ensemble des groupes de couleurs correspondant pour votre "
+"image de destination, cet ensemble sera affiché dans la zone <quote>groupes "
 "cible</quote>."
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:13241(para)
@@ -14304,21 +14304,21 @@ msgid ""
 "(see <xref linkend=\"tone_curve\"/>) or <emphasis>color correction</"
 "emphasis> (see <xref linkend=\"color_correction\"/>)."
 msgstr ""
-"Une fois les groupes de couleurs collectés à la fois sur la source et la "
-"destination, une transposition de couleurs est automatiquement appliquée à "
+"Une fois les groupes de couleurs collectés à la fois dans la source et dans "
+"la destination, un mappage de couleurs est automatiquement appliquée à "
 "l’image cible. Avec ses réglages par défaut, l’effet global est assez "
 "exagéré. Un jeu de curseurs vous permet de contrôler l’intensité de l’effet. "
 "Vous pouvez aussi utiliser l’opérateur de fusion <quote>normal</quote> pour "
 "restreindre l’effet (voir <xref linkend=\"blending_operators\"/>). Comme le "
-"module de <emphasis>transposition de couleurs</emphasis> est pris en charge "
-"tôt dans le pipeline graphique, vous pouvez ajuster les couleurs avec des "
-"modules comme la <emphasis>courbe des tonalités</emphasis> (voir <xref "
-"linkend=\"tone_curve\"/>) ou la <emphasis>correction des couleurs</emphasis> "
-"(voir <xref linkend=\"color_correction\"/>). "
+"module <emphasis>mappage de couleurs</emphasis> est pris en charge tôt dans "
+"le pipeline graphique, vous pouvez ajuster les couleurs avec des modules "
+"comme <emphasis>courbe des tonalités</emphasis> (voir <xref linkend="
+"\"tone_curve\"/>) ou <emphasis>correction des couleurs</emphasis> (voir "
+"<xref linkend=\"color_correction\"/>). "
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:13253(title)
 msgid "acquire as source/target"
-msgstr "Faire l’acquisition de la source/cible"
+msgstr "acquérir source/cible"
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:13254(para)
 msgid ""
@@ -14326,13 +14326,13 @@ msgid ""
 "image, respectively. The processing takes a few seconds during which the GUI "
 "remains unresponsive."
 msgstr ""
-"Pressez le bouton afin de générer les groupes de couleurs pour "
-"respectivement les images source et cible. Le traitement prend quelques "
-"secondes durant lesquelles l’interface est figée."
+"Pressez les boutons pour générer les groupes de couleurs pour respectivement "
+"les images source et cible. Le traitement prend quelques secondes durant "
+"lesquelles l’interface est figée."
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:13262(title)
 msgid "number of clusters"
-msgstr "Nombre de groupes"
+msgstr "nombre de groupes"
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:13263(para)
 msgid ""
@@ -14346,10 +14346,9 @@ msgstr ""
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:13270(title)
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:13325(quote)
 msgid "color dominance"
-msgstr "Dominance de couleur"
+msgstr "dominante couleur"
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:13271(para)
-#, fuzzy
 msgid ""
 "This parameter controls the mapping between source and target clusters. At "
 "the lowest value mapping is based on color proximity. This typically leads "
@@ -14359,20 +14358,19 @@ msgid ""
 "typically leads to a very bold effect. In-between values incrementally shift "
 "between the extremes."
 msgstr ""
-"Ce paramètres contrôle la transposition entre les groupes source et "
-"destination. À la valeur la plus faible, la transposition est faite selon la "
-"proximité de la couleur. Ceci conduit en général à des effets très discrets "
-"sur l’image de destination. À la valeur maximum, la transposition est basée "
-"sur le poids relatif des groupes de couleur – les couleurs dominantes de "
-"l’image source sont transposées vers les couleurs dominantes de l’image de "
-"destination. Typiquement, ceci donne un effet très prononcé. Des valeurs "
-"situées entre les deux permettent de se décaler progressivement entre les "
-"deux extrêmes."
+"Ce paramètre contrôle le mappage entre les groupes source et destination. À "
+"la valeur minimum, le mappage est basé sur la proximité de couleur. Ceci "
+"conduit en général à des effets très discrets sur l’image de destination. À "
+"la valeur maximum, le mappage est basé sur le poids relatif des groupes de "
+"couleur – les couleurs dominantes de l’image source sont appliquées sur les "
+"couleurs dominantes de l’image de destination. Typiquement, ceci donne un "
+"effet très prononcé. Des valeurs intermédiaires permettent d'obtenir "
+"progressivement des résultats entre ces deux extrêmes."
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:13282(title)
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:13326(quote)
 msgid "histogram equalization"
-msgstr "Égalisation de l’histogramme"
+msgstr "égalisation d’histogramme"
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:13283(para)
 msgid ""
@@ -14380,9 +14378,9 @@ msgid ""
 "image's contrast by matching its histogram with the histogram of the source "
 "image. This slider controls the extent of the effect."
 msgstr ""
-"Au-delà de ses caractéristiques de transposition des couleurs, ce module "
-"peut modifier le contraste de l’image de destination en faisant correspondre "
-"son histogramme avec celui de l’image source. Ce curseur permet de contrôler "
+"Au-delà de ses caractéristiques de mappage des couleurs, ce module peut "
+"modifier le contraste de l’image de destination en faisant correspondre son "
+"histogramme avec celui de l’image source. Ce curseur permet de contrôler "
 "l’intensité de cet effet."
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:13306(entry)
@@ -14406,9 +14404,9 @@ msgid ""
 "used. <placeholder-1/> is set to 100% for a bold but still credible effect. "
 "<placeholder-2/> is set to 80%."
 msgstr ""
-"Image de destination avec la transposition de couleurs appliquée. Deux "
-"groupes ont été utilisés. <placeholder-1/> a été fixée à 100% afin d’obtenir "
-"un effet prononcé mais crédible. L’<placeholder-2/> est réglée à 80%."
+"Image de destination après application du mappage de couleurs. Deux groupes "
+"ont été utilisés. <placeholder-1/> a été fixée à 100% afin d’obtenir un "
+"effet prononcé mais crédible. L’<placeholder-2/> est réglée à 80%."
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:13340(title)
 msgid "Graduated Density"
@@ -14424,16 +14422,16 @@ msgid ""
 "This module aims at simulating a graduated density filter, in order to "
 "correct exposure and color in a progressive manner."
 msgstr ""
-"Le but de ce module est de simuler un filtre de densité dégradée, de manière "
-"à corriger l’exposition et la couleur d’une manière progressive."
+"Le but de ce module est de simuler un filtre dégradé pour corriger "
+"l’exposition et la couleur d’une manière progressive."
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:13384(para)
 msgid ""
 "The module uses a gradient to modify the exposure and the color cast of the "
 "image in a non-homogeneously manner."
 msgstr ""
-"Ce module utilise un dégradé afin de modifier l’exposition et la dérive de "
-"couleur de l’image d’une manière non homogène."
+"Ce module utilise un dégradé afin de modifier l’exposition et la dominante "
+"de couleur de l’image d’une manière non homogène."
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:13396(title)
 msgid "density"
@@ -14444,8 +14442,8 @@ msgid ""
 "Set the density of the filter in [ev]. A low value underexposes slightly "
 "whereas a high value creates a strong filter."
 msgstr ""
-"Définit la densité du filtre en [IL]. Une valeur faible sous-expose "
-"légèrement alors qu'une valeur élevée créer un filtre fort."
+"Définit la densité du filtre en [ev]. Une valeur faible sous-expose "
+"légèrement alors qu'une valeur élevée crée un filtre puissant."
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:13401(para)
 msgid ""
@@ -14465,15 +14463,15 @@ msgid ""
 "emphasis></entry><entry> -9 </entry><entry> 2.7 </entry><entry> 0.195% </"
 "entry></row></tbody></tgroup></informaltable>"
 msgstr ""
-"Exprimé en [IL], ceci est l’équivalent de <emphasis>diaphragme (<quote>f-"
-"stops</quote>)</emphasis>. Les filtres sont souvent appelés ND2, ND4, ND8 et "
-"ainsi de suite. Chaque fois que vous ajoutez un [IL], vous doublez le ND. "
-"Donc ND2 fait 1 IL, ND4 fait 2 IL et ainsi de suite. Vous pouvez aussi "
-"l’exprimer en terme de densité optique ou transmittance. La table ci-dessous "
-"regroupe les différentes approches pour les filtres les plus courants : "
-"<informaltable frame=\"none\" width=\"80%\"><tgroup cols=\"4\" colsep=\"0\" "
-"rowsep=\"0\"><tbody><row><entry><emphasis>ND</emphasis></entry><entry>[IL] "
-"ou f-stop</entry><entry>absorbance</entry><entry>transmittance</entry></"
+"Exprimé en [ev], ceci est l’équivalent des <emphasis>valeurs de diaphragme</"
+"emphasis>. Les filtres sont souvent appelés ND2, ND4, ND8 et ainsi de suite. "
+"Chaque fois que vous ajoutez un [ev], vous doublez le ND. Donc ND2 fait 1 "
+"ev, ND4 fait 2 ev et ainsi de suite. Vous pouvez aussi l’exprimer en terme "
+"de densité optique ou transmittance. La table ci-dessous regroupe les "
+"différentes approches pour les filtres les plus courants : <informaltable "
+"frame=\"none\" width=\"80%\"><tgroup cols=\"4\" colsep=\"0\" rowsep="
+"\"0\"><tbody><row><entry><emphasis>ND</emphasis></entry><entry>[ev] ou "
+"ouvertures</entry><entry>absorption</entry><entry>transmittance</entry></"
 "row><row><entry><emphasis>ND2</emphasis></entry><entry>-1 </"
 "entry><entry>0.3</entry><entry>50%</entry></row><row><entry><emphasis>ND4</"
 "emphasis></entry><entry>-2</entry><entry>0.6</entry><entry>25%</entry></"
@@ -14504,7 +14502,7 @@ msgstr ""
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:13509(title)
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:21779(secondary)
 msgid "position"
-msgstr "Position"
+msgstr "position"
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:13517(entry)
 msgid ""
@@ -14522,8 +14520,8 @@ msgid ""
 "Here is an example that shows various options of darktable's graduated "
 "density filter:"
 msgstr ""
-"Voici un exemple qui permet de montrer diverses options des filtres de "
-"densité dégradée de darktable :"
+"Voici un exemple qui permet de montrer diverses options des filtres dégradés "
+"de darktable :"
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:13552(entry)
 msgid ""
@@ -14538,8 +14536,8 @@ msgid ""
 "And now we have added a neutral ND8 filter which does a pretty good job on "
 "the image.."
 msgstr ""
-"Maintenant, nous avons ajouté un filtre neutre ND8 neutre qui donne un assez "
-"bon résultat sur cette image..."
+"J'ai ajouté ici un filtre neutre ND8 qui fait un très bon travail sur cette "
+"image ..."
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:13570(entry)
 msgid ""
@@ -14557,11 +14555,11 @@ msgid ""
 "physical GND filter you can in fact reduce the dynamic range of your scene "
 "to make it better fit the limits of your camera sensor."
 msgstr ""
-"Le filtre de densité dégradé de darktable est un outil très puissant. "
-"Cependant, les filtres matériels ont certains avantages sur une solution "
-"purement logicielle. Avec un filtre GND physique vous pouvez en fait réduire "
-"la plage dynamique de votre scène afin qu'elle corresponde mieux aux limites "
-"du capteur de votre appareil."
+"Le filtre dégradé de darktable est un outil très puissant. Cependant, les "
+"filtres matériels ont certains avantages sur une solution purement "
+"logicielle. Avec un filtre GND physique vous pouvez en fait réduire la plage "
+"dynamique de votre scène afin qu'elle corresponde mieux aux limites du "
+"capteur de votre appareil."
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:13594(entry)
 msgid ""
@@ -14583,19 +14581,18 @@ msgid ""
 "filter. As we only want to compensate the unnatural decay of lightness in "
 "the tree trunks, we combine the module with a suited blend mask."
 msgstr ""
-"Le filtre de densité dégradé de darktable utilisé conjointement avec la "
-"fonctionnalité de masque paramétrique (voir <xref linkend=\"parametric_mask"
-"\"/>) est très pratique. Nous pouvons ajouter un dégradé de clarté qui est "
-"simplement inversé par rapport au filtre matériel. Comme nous ne désirons "
-"que compenser la décroissance de clarté non naturelle sur le tronc des "
-"arbres, nous combinons ce module avec un masque de fusion approprié."
+"Le filtre dégradé de darktable utilisé conjointement avec la fonctionnalité "
+"de masque paramétrique (voir <xref linkend=\"parametric_mask\"/>) est très "
+"pratique. Nous pouvons ajouter un dégradé de clarté simplement inversé par "
+"rapport au filtre matériel. Comme nous désirons seulement compenser la "
+"décroissance de clarté non naturelle sur le tronc des arbres, nous combinons "
+"ce module avec un masque de fusion approprié."
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:13617(entry)
 msgid "The resulting image."
 msgstr "Image résultante."
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:13629(para)
-#, fuzzy
 msgid ""
 "Tip: If you know you intend to use the graduated density filter before "
 "actually making a shot with your camera you might want to underexpose by one "
@@ -14605,14 +14602,14 @@ msgid ""
 "postprocessing. For instructions on how to intentionally underexpose, please "
 "consult your camera's manual, look for <quote>exposure compensation</quote>."
 msgstr ""
-"Astuce : si vous prévoyez d’utiliser le filtre dégradé avant de réellement "
-"faire la prise de vue avec votre appareil, vous pouvez sous-exposer d’un "
-"tiers ou de deux tiers de diaphragme afin d’être certain qu'il restera des "
-"détails dans les hautes lumières. Une fois que les détails ont été vraiment "
-"brûlés, le filtre ne peut plus produire un résultat agréable, ceci est une "
-"limitation propre au post-traitement numérique. Pour savoir comment "
-"intentionnellement sous-exposer une image, veuillez consulter le manuel de "
-"votre appareil photo, recherchez <quote>compensation de l’exposition</quote>."
+"Astuce : si, avant de faire une prise de vue avec votre appareil, vous "
+"prévoyez d’utiliser le filtre dégradé, vous pouvez sous-exposer d’un tiers "
+"ou de deux tiers de diaphragme pour être certain qu'il restera des détails "
+"dans les hautes lumières. Lorsque les détails ont vraiment été brûlés, le "
+"filtre dégradé ne peut plus produire un résultat satisfaisant, ceci est une "
+"limitation propre au post-traitement numérique. Pour savoir comment sous-"
+"exposer volontairement une image, veuillez consulter le manuel de votre "
+"appareil photo, recherchez <quote>compensation de l’exposition</quote>."
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:13654(title)
 msgid "Converting to black and white"
@@ -14626,9 +14623,9 @@ msgid ""
 "white conversion."
 msgstr ""
 "La conversion en noir et blanc peut être effectuée de différentes manières "
-"dans darktable. Bien entendu, darktable comporte de nombreux modules, "
-"particulièrement pour la manipulation des couleurs. Dans ce manuel, je vous "
-"indiquerai 4 manières d’effectuer une conversion en noir et blanc."
+"dans darktable. En effet darktable comporte de nombreux modules, en "
+"particulier pour la manipulation des couleurs. Dans ce manuel, je vous "
+"indiquerai quatre manières d’effectuer une conversion en noir et blanc."
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:13683(title)
 msgid "The obvious way: monochrome module"
@@ -14649,20 +14646,20 @@ msgstr ""
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:13696(title)
 msgid "The simple way: color correction module"
-msgstr "La manière simple : le module de correction des couleurs"
+msgstr "La manière simple : le module correction des couleurs"
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:13698(para)
 msgid ""
 "To perform such conversion we use the <emphasis>color correction</emphasis> "
 "module (<xref linkend=\"color_correction\"/>)."
 msgstr ""
-"Pour effectuer une telle conversion, nous utilisons le module de "
+"Pour effectuer une telle conversion, nous utilisons le module "
 "<emphasis>correction des couleurs</emphasis> (<xref linkend="
 "\"color_correction\"/>)."
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:13705(para)
 msgid "Activate the color correction module"
-msgstr "Activez le module de correction des couleurs"
+msgstr "Activez le module correction des couleurs"
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:13709(para)
 msgid "Use the bottom slider to set saturation to zero"
@@ -14670,19 +14667,19 @@ msgstr "Utilisez le curseur du bas pour régler la saturation à zéro"
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:13719(title)
 msgid "The artistic way: color zones module"
-msgstr "La manière artistique : le module de zones de couleur"
+msgstr "La manière artistique : le module zones de couleur"
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:13721(para)
 msgid ""
 "To perform the conversion we use the <emphasis>color zone</emphasis> module "
 "(<xref linkend=\"color_zones\"/>)."
 msgstr ""
-"Pour effectuer la conversion, nous utiliseront le module <emphasis>zones de "
+"Pour effectuer la conversion, nous utiliserons le module <emphasis>zones de "
 "couleur</emphasis> (<xref linkend=\"color_zones\"/>)."
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:13728(para)
 msgid "Activate the colour zones module"
-msgstr "Activez le module de zones de couleur"
+msgstr "Activez le module zones de couleurs"
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:13732(para)
 msgid ""
@@ -14693,12 +14690,12 @@ msgid ""
 "set all points to the minimum of the vertical scale to de-saturate every hue."
 msgstr ""
 "Par défaut, la première ligne de boutons-radio est définie à "
-"<quote>colorité</quote> alors que la seconde est définie à <quote>teinte</"
+"<quote>saturation</quote> alors que la seconde est définie à <quote>teinte</"
 "quote> ce qui signifie que les couleurs sont sélectionnées selon leur teinte "
-"(échelle horizontale) et que vous pouvez changer la <quote>colorité</quote> "
-"de chaque teinte (échelle verticale). Il vous faudra simplement placer tous "
-"les points au minimum de l’axe vertical afin de désaturer toutes les "
-"couleurs."
+"(échelle horizontale) et que vous pouvez changer la <quote>saturation</"
+"quote> de chaque teinte (échelle verticale). Il vous faudra simplement "
+"placer tous les points au minimum de l’axe vertical afin de désaturer toutes "
+"les couleurs."
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:13740(para)
 msgid ""
@@ -14760,7 +14757,7 @@ msgid ""
 "a cyan hue and increased contrast and saturation."
 msgstr ""
 "Le traitement croisé est une technique issue du monde de la photo argentique "
-"où un film positif (normalement développé grâce à une solution E6) est "
+"où un film diapositive (normalement développé grâce à une solution E6) est "
 "développé dans une solution chimique destinée aux négatifs (C41). Les images "
 "résultantes possèdent des couleurs faussées, généralement une teinte cyan "
 "ainsi qu'un contraste et une saturation augmentés."
@@ -14773,7 +14770,7 @@ msgid ""
 msgstr ""
 "La manière standard de procéder à un traitement croisé en numérique est "
 "d’utiliser un outil de courbe de canal mais darktable ne dispose pas encore "
-"cet outil et un autre moyen est utilisé pour réaliser cet effet."
+"de cet outil et un autre moyen est utilisé pour réaliser cet effet."
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:13822(title)
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:13950(title)
@@ -14784,8 +14781,8 @@ msgstr "Procédure"
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:13952(para)
 msgid "This procedure uses tone curve, channel mixer and splittoning modules."
 msgstr ""
-"Cette procédure utilise la courbe tonale, le mixeur de canaux et le module "
-"de virage partiel."
+"Cette procédure utilise les modules courbe des tonalités, mixeur de canaux "
+"et virage partiel."
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:13830(para)
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:13958(para)
@@ -14811,10 +14808,10 @@ msgid ""
 "module (<xref linkend=\"tone_curve\"/>) to boost the overall contrast in the "
 "image. You might later return here to tune the curve for better result."
 msgstr ""
-"Sélectionnez le préréglage moyen de la courbe de contraste pour le module de "
-"<emphasis>courbe des tonalités</emphasis> (<xref linkend=\"tone_curve\"/>) "
-"afin de pousser le contraste global de l’image. Vous pourrez revenir ici "
-"plus tard afin d’ajuster la courbe pour de meilleurs résultats."
+"Sélectionnez le préréglage contraste moyen du module <emphasis>courbe des "
+"tonalités</emphasis> (<xref linkend=\"tone_curve\"/>) afin de pousser le "
+"contraste global de l’image. Vous pourrez revenir ici plus tard afin "
+"d’ajuster la courbe pour de meilleurs résultats."
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:13849(para)
 msgid "Color cast"
@@ -14839,15 +14836,15 @@ msgstr "Activez le module mixeur de canaux"
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:13865(para)
 msgid "Select blue channel and set blue color value to 0.8"
-msgstr "Sélectionnez le canal bleu et mettre la couleur bleue à la valeur 0.8"
+msgstr "Sélectionnez le canal bleu et mettez la couleur bleue à la valeur 0.8"
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:13869(para)
 msgid "Select red channel and change blue color value to 0.1"
-msgstr "Sélectionnez le canal rouge et mettre la couleur bleue à la valeur 0.1"
+msgstr "Sélectionnez le canal rouge et mettez la couleur bleue à la valeur 0.1"
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:13873(para)
 msgid "Select green channel and change blue color value to 0.1"
-msgstr "Sélectionnez le canal vert et mettre la couleur bleue à la valeur 0.1"
+msgstr "Sélectionnez le canal vert et mettez la couleur bleue à la valeur 0.1"
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:13883(para)
 msgid ""
@@ -14899,19 +14896,18 @@ msgid ""
 "you through how to make this with darktable and how to control the tone. You "
 "can choose any tone of your like for this tutorial..."
 msgstr ""
-"La couleur cyan est une coloration agréable pour les images noir et blanc. "
-"Cet exemple vous guide lors des étapes nécessaires pour réaliser cette "
-"retouche avec darktable. Vous pouvez bien sûr choisir le virage de votre "
-"choix."
+"Cyan est une belle retouche de couleur pour les images noir et blanc. Cet "
+"exemple vous indique comment la réaliser avec darktable et comment contrôler "
+"le virage. Vous pouvez bien sûr utiliser le virage de votre choix."
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:13962(para)
 msgid ""
 "Prepare the image for the cyan toned steps by adjusting the base settings "
 "such as exposure,black level, contrast etc. for a correctly looking image."
 msgstr ""
-"Préparez l’image pour l’étape cyan du virage en ajustant les réglages de "
-"base tels que l’exposition, le niveau du noir, le contraste, etc. afin "
-"d’avoir une image d’aspect correct."
+"Préparez l’image à l’étape du virage cyan en ajustant les réglages de base "
+"tels que l’exposition, le niveau du noir, le contraste, etc. afin d’avoir "
+"une image d’aspect correct."
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:13967(para)
 msgid "Black and white"
@@ -14935,7 +14931,7 @@ msgid ""
 "emphasis> (<xref linkend=\"channel_mixer\"/>), we are going for cyan tone "
 "but you can choose any tone that you like here."
 msgstr ""
-"Cette étape sélectionne le ton de base de l’image en utilisant le "
+"Cette étape sélectionne le ton de base de l’image en utilisant le module "
 "<emphasis>mixeur de canaux</emphasis> (<xref linkend=\"channel_mixer\"/>), "
 "nous utilisons le ton cyan mais vous pouvez choisir le ton que vous désirez."
 
@@ -14948,13 +14944,13 @@ msgstr ""
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:13996(para)
 msgid "Select green channel destination and red color value to 1.15"
 msgstr ""
-"Sélectionnez le canal vert de destination et réglez la couleur rouge à la "
+"Sélectionnez le canal vert de destination et réglez la couleur verte à la "
 "valeur 1,15"
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:14000(para)
 msgid "Select blue channel destination and red color value to 1.15"
 msgstr ""
-"Sélectionnez le canal bleu de destination et réglez la couleur rouge à la "
+"Sélectionnez le canal bleu de destination et réglez la couleur bleue à la "
 "valeur 1,15"
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:14006(para)
@@ -14962,8 +14958,8 @@ msgid ""
 "As you notice we mix blue and green color to get a cyan tone, we substract "
 "0.3 from red channel and add them to blue and green."
 msgstr ""
-"Ainsi que vous pouvez le constater, nous mélangeons les couleurs bleue et "
-"verte pour avoir une teinte cyan ; nous soustrayons 0.3 du canal rouge et "
+"Ainsi que vous pouvez le constater, nous mélangeons les couleurs bleu et "
+"vert pour avoir une teinte cyan ; nous soustrayons 0.3 du canal rouge et "
 "nous l’ajoutons aux canaux bleu et vert."
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:14015(para)
@@ -14975,7 +14971,7 @@ msgid ""
 "accomplish this."
 msgstr ""
 "Le résultat de l’étape précédente ajoute aussi une dominante de couleur aux "
-"hautes lumières alors que nous désirons avoir du blanc pour un résultat plus "
+"hautes lumières que nous désirons rendre blanches pour un résultat plus "
 "agréable. Nous pourrons aussi ajouter une dominante bleue dans les ombres de "
 "manière à les accentuer. Le module <emphasis>virage partiel </emphasis> "
 "(<xref linkend=\"splittoning\"/>) permet d’effectuer cela."
@@ -14983,12 +14979,12 @@ msgstr ""
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:14028(para)
 msgid "Select a blue/cyan tone for shadows and set saturation around 50%"
 msgstr ""
-"Sélectionnez une teinte bleue/cyan pour les ombres avec une saturation à de "
+"Sélectionnez une teinte bleue/cyan pour les ombres avec une saturation de "
 "l’ordre de 50%"
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:14032(para)
 msgid "Set highlights saturation to zero, to remove saturation on highlights."
-msgstr "Mettez la saturation des hautes lumières à 0, pour les dé-saturer."
+msgstr "Mettez la saturation des hautes lumières à zéro pour les dé-saturer."
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:14036(para)
 msgid "Set compression to zero"
@@ -15003,14 +14999,12 @@ msgstr ""
 "utilise une répartition à 70/30"
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:14054(title)
-#, fuzzy
 msgid "Removal of red-eye effect"
-msgstr "Effet touche de couleur"
+msgstr "Suppression des yeux rouges"
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:14057(primary)
-#, fuzzy
 msgid "red-eye removal"
-msgstr "Supprimer le bruit"
+msgstr "suppression des yeux rouges"
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:14071(para)
 msgid ""
@@ -15019,30 +15013,35 @@ msgid ""
 "close to the camera lens (as with most cameras with build-in flash), in "
 "ambient low light."
 msgstr ""
+"En photographie, l'effet yeux rouges est l'apparition de pupilles rouges "
+"dans les photographies couleur des yeux. Il apparaît quand, en faible "
+"lumière ambiante, un flash photographique est utilisé très près de "
+"l'objectif de l'appareil photo (comme avec la plupart des appareils photo "
+"avec flash intégré)."
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:14078(para)
 msgid ""
 "We use the channel mixer module to reduce the red color of the pupil. To "
 "limit the processing to the pupils we have to apply two masks."
 msgstr ""
+"Nous utilisons le module mixeur de canaux pour réduire la couleur rouge de "
+"la pupille. Nous devons appliquer deux masques pour limiter le processus aux "
+"pupilles."
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:14095(title)
-#, fuzzy
 msgid "Masking"
-msgstr "Masques"
+msgstr "masques"
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:14106(para)
-#, fuzzy
 msgid ""
 "Enable the channel mixer module (see <xref linkend=\"channel_mixer\"/>)."
 msgstr ""
-"Pour effectuer la conversion, nous utilisons le module <emphasis>mixeur de "
-"canaux</emphasis> (<xref linkend=\"channel_mixer\"/>)."
+"Activez le module <emphasis>mixeur de canaux</emphasis> (<xref linkend="
+"\"channel_mixer\"/>)."
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:14110(para)
-#, fuzzy
 msgid "Activate blending"
-msgstr "fusion conditionnelle"
+msgstr "Activez la fusion"
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:14114(para)
 msgid ""
@@ -15051,13 +15050,17 @@ msgid ""
 "Set value to <quote>drawn mask</quote>. Additional controls are displayed "
 "which allow you to draw a mask."
 msgstr ""
+"Les modules avec le support de la fusion présente une zone de liste "
+"déroulante <quote>fusion</quote> au bas de leur interface. La fusion est "
+"activée grâce à cette zone de liste déroulante. Définissez la valeur à "
+"<quote>masque dessiné</quote>. Des contrôles supplémentaires sont affichés "
+"qui vous permettent de dessiner un masque."
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:14121(para)
 msgid "Masking the pupil"
-msgstr ""
+msgstr "Masquage de la pupille"
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:14125(para)
-#, fuzzy
 msgid ""
 "Clicking the <inlinegraphic fileref=\"images/shape_circle.png\" scalefit="
 "\"1\" width=\"4%\" align=\"center\"/> symbol adds a circle shape."
@@ -15066,7 +15069,6 @@ msgstr ""
 "scalefit=\"1\" width=\"2%\" align=\"center\"/> ajoute une forme circulaire."
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:14131(para)
-#, fuzzy
 msgid ""
 "Click into the canvas to place the circle. Left-click and drag the circle to "
 "the position of the first pupil. Use the scroll-wheel of your mouse while in "
@@ -15074,67 +15076,62 @@ msgid ""
 "minimize the width of the gradual decay."
 msgstr ""
 "Cliquez dans le canevas pour positionner le cercle. Faites un clic-gauche et "
-"glissez le cercle à une position différente si cela est nécessaire. Utilisez "
-"la molette de défilement de la souris lorsque que le curseur est à "
-"l'intérieur du cercle pour en modifier le diamètre. Une action sur la "
-"molette alors que le curseur est sur le contour ajustera la largeur de la "
-"zone de transition. Avec <emphasis>Ctrl+molette</emphasis>, vous pouvez "
-"ajuster l’opacité du cercle – ceci est mieux observé lorsque le masque est "
-"affiché en pressant le bouton <inlinegraphic fileref=\"images/"
-"darkroom_module_icon_mask.png\"  scalefit=\"1\" width=\"2%\" align=\"center"
-"\"/>."
+"glissez le cercle à la position de la première pupille. Utilisez la molette "
+"de défilement de la souris lorsque le curseur est à l'intérieur du cercle "
+"pour en modifier le diamètre. Une action sur la molette alors que le curseur "
+"est sur le contour ajustera la largeur de la zone de transition."
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:14138(para)
 msgid ""
 "Alternatively you can us an elliptical mask. See <xref linkend=\"drawn_mask"
 "\"/> for further details."
 msgstr ""
+"Vous pouvez alternativement utiliser une forme elliptique. Voyez <xref "
+"linkend=\"drawn_mask\"/> pour plus de détails."
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:14143(para)
 msgid "Repeat step 3."
-msgstr ""
+msgstr "Répétez l'étape 3."
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:14147(para)
-#, fuzzy
 msgid ""
 "Clicking the <inlinegraphic fileref=\"images/shape_circle.png\" scalefit="
 "\"1\" width=\"4%\" align=\"center\"/> symbol adds another circle shape."
 msgstr ""
 "Cliquer le symbole <inlinegraphic fileref=\"images/shape_circle.png\" "
-"scalefit=\"1\" width=\"2%\" align=\"center\"/> ajoute une forme circulaire."
+"scalefit=\"1\" width=\"2%\" align=\"center\"/> ajoute une autre forme "
+"circulaire."
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:14153(para)
 msgid "Mark the second pupil."
-msgstr ""
+msgstr "Marquer la seconde pupille."
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:14176(title)
-#, fuzzy
 msgid "Desaturation"
-msgstr "saturation"
+msgstr "Désaturation"
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:14187(para)
 msgid "Approach - Modifying the output channel <quote>red</quote>."
-msgstr ""
+msgstr "Approche - Modification du canal de sortie <quote>rouge</quote>."
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:14193(para)
 msgid ""
 "Set output channel <quote>destination</quote> to <quote>red</quote> (default)"
 msgstr ""
+"Définissez le canal <quote>destination</quote> à <quote>rouge</quote> "
+"(sélectionné par défaut)"
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:14198(para)
-#, fuzzy
 msgid "Set red color value to 0.00"
-msgstr "Sélectionnez le canal rouge et mettre la couleur bleue à la valeur 0.1"
+msgstr "Définissez à 0 la valeur de la couleur rouge"
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:14202(para)
-#, fuzzy
 msgid "Set green color value to 0.50"
-msgstr "Sélectionnez le canal vert et mettre la couleur bleue à la valeur 0.1"
+msgstr "Définissez à 0.50 la valeur de la couleur verte"
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:14206(para)
-#, fuzzy
 msgid "Set blue color value to 0.50"
-msgstr "Sélectionnez le canal bleu et mettre la couleur bleue à la valeur 0.8"
+msgstr "Définissez à 0.5 la valeur de la couleur bleue"
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:14212(para)
 msgid ""
@@ -15142,35 +15139,38 @@ msgid ""
 "is a good starting point. Another proposal is 10/60/30. The sum of the three "
 "values should be 1."
 msgstr ""
+"Vous êtes libre d'expérimenter ce qui vous donne une pupille la plus "
+"réaliste, mais ceci est un bon point de départ. Une autre proposition est "
+"0.1/0.6/0.3. La somme des trois valeurs doit être égale à 1."
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:14242(para)
 msgid "Approach - Modifying the output channel <quote>gray</quote>."
-msgstr ""
+msgstr "Approche - Modification du canal de sortie <quote>gris</quote>."
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:14248(para)
 msgid "Set output channel <quote>destination</quote> to <quote>gray</quote>"
-msgstr ""
+msgstr "Définissez le canal <quote>destination</quote> à <quote>gris</quote>"
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:14252(para)
-#, fuzzy
 msgid "Set red color value to 0.24"
-msgstr "Sélectionnez le canal rouge et mettre la couleur bleue à la valeur 0.1"
+msgstr "Définissez à 0.24 la valeur de la couleur rouge"
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:14256(para)
-#, fuzzy
 msgid "Set green color value to 0.68"
-msgstr "Sélectionnez le canal bleu et mettre la couleur bleue à la valeur 0.8"
+msgstr "Définissez à 0.68 la valeur de la couleur verte"
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:14260(para)
-#, fuzzy
 msgid "Set blue color value to 0.08"
-msgstr "Sélectionnez le canal bleu et mettre la couleur bleue à la valeur 0.8"
+msgstr "Définissez à 0.08 la valeur de la couleur bleue"
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:14266(para)
 msgid ""
 "You are free to experiment what gives you the most realistic pupil, but this "
 "is a good starting point. The sum of the three values should be 1."
 msgstr ""
+"Vous êtes libre d'expérimenter ce qui vous donne une pupille la plus "
+"réaliste, mais ceci est un bon point de départ. La somme des trois valeurs "
+"doit être égale à 1."
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:14300(keyword)
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:18598(secondary)
