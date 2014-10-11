@@ -132,7 +132,7 @@
 
   </itemizedlist>
 
-  <sect1 status="draft" id="program_invocation">
+  <sect1 status="final" id="program_invocation">
 
     <title>Program invocation</title>
 
@@ -150,7 +150,7 @@
       calling <filename>darktable-cli</filename> .
     </para>
 
-    <sect2 status="draft" id="darktable_commandline_parameters">
+    <sect2 status="final" id="darktable_commandline_parameters">
 
       <title><filename>darktable</filename> binary</title>
 
@@ -358,7 +358,7 @@
 
     </sect2>
 
-    <sect2 status="draft" id="darktable_cli_commandline_parameters">
+    <sect2 status="final" id="darktable_cli_commandline_parameters">
 
       <title><filename>darktable-cli</filename> binary</title>
 
@@ -632,7 +632,7 @@
 
       </sect3>
 
-      <sect3 status="draft">
+      <sect3 status="final">
 
         <title>Slideshow</title>
 
@@ -1009,7 +1009,7 @@
 
       </sect3>
 
-      <sect3 status="draft">
+      <sect3 status="final">
 
         <title>Artistic effects</title>
 

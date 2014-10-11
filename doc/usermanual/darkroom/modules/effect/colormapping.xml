@@ -3,7 +3,7 @@
 		<!ENTITY % darktable_dtd SYSTEM "../../../dtd/darktable.dtd">
 		%darktable_dtd;
 		]>
-<sect3 status="draft" id="color_mapping">
+<sect3 status="final" id="color_mapping">
 
   <title>Color mapping</title>
 

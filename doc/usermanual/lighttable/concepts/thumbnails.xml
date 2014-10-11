@@ -4,7 +4,7 @@
 		<!ENTITY % darktable_dtd SYSTEM "../../dtd/darktable.dtd">
 		%darktable_dtd;
 		]>
-<sect2 status="draft" id="thumbnails">
+<sect2 status="final" id="thumbnails">
 
   <title>Thumbnails</title>
 
@@ -18,7 +18,7 @@
     can be adjusted in the core preferences dialog (see <xref linkend="core_options"/>).
   </para>
 
-  <sect3 status="draft" id="thumbnail_creation">
+  <sect3 status="final" id="thumbnail_creation">
 
     <title>Thumbnail creation</title>
 
@@ -58,7 +58,7 @@
 
   </sect3>
 
-  <sect3 status="draft" id="skulls">
+  <sect3 status="final" id="skulls">
 
     <title>Skulls</title>
 

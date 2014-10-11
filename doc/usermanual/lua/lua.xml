@@ -3,7 +3,7 @@
 		<!ENTITY % darktable_dtd SYSTEM "../dtd/darktable.dtd">
 		%darktable_dtd;
 		]>
-<chapter status="draft" id="lua_chapter">
+<chapter status="final" id="lua_chapter">
 
   <chapterinfo>
     <keywordset>
@@ -251,7 +251,7 @@ end
 
   <xi:include href="lua_api.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
 
-  <sect1 status="draft" id="lua_scripts">
+  <sect1 status="final" id="lua_scripts">
 
     <title>Lua scripts</title>
 
@@ -408,7 +408,7 @@ end,"switch selection with temporary buffer")
 
   </sect1>
 
-  <sect1 status="draft" id="lua_debugging">
+  <sect1 status="final" id="lua_debugging">
 
     <title>Lua debugging</title>
 
