@@ -125,11 +125,10 @@ static void PNGwriteRawProfile(png_struct *ping,
 }
 
 int
-write_image (dt_imageio_module_data_t *p_tmp, const char *filename, const void *in_void, void *exif, int exif_len, int imgid)
+write_image (dt_imageio_module_data_t *p_tmp, const char *filename, const void *ivoid, void *exif, int exif_len, int imgid)
 {
   dt_imageio_png_t*p=(dt_imageio_png_t*)p_tmp;
   const int width = p->width, height = p->height;
-  const uint8_t *in = (uint8_t *)in_void;
   FILE *f = fopen(filename, "wb");
   if (!f) return 1;
 
@@ -201,9 +200,7 @@ write_image (dt_imageio_module_data_t *p_tmp, const char *filename, const void *
 
   png_write_info(png_ptr, info_ptr);
 
-  // png_bytep row_pointer = (png_bytep) in;
   png_byte row[6*width];
-  // unsigned long rowbytes = png_get_rowbytes(png_ptr, info_ptr);
 
   if(p->bpp > 8)
   {
@@ -211,7 +208,7 @@ write_image (dt_imageio_module_data_t *p_tmp, const char *filename, const void *
     {
       for(int x=0; x<width; x++) for(int k=0; k<3; k++)
         {
-          uint16_t pix = ((uint16_t *)in)[(size_t)4*width*y + 4*x + k];
+          uint16_t pix = ((uint16_t *)ivoid)[(size_t)4*width*y + 4*x + k];
           uint16_t swapped = (0xff00 & (pix<<8)) | (pix>>8);
           ((uint16_t *)row)[3*x+k] = swapped;
         }
@@ -222,7 +219,7 @@ write_image (dt_imageio_module_data_t *p_tmp, const char *filename, const void *
   {
     for (int y = 0; y < height; y++)
     {
-      for(int x=0; x<width; x++) for(int k=0; k<3; k++) row[3*x+k] = in[(size_t)4*width*y + 4*x + k];
+      for(int x=0; x<width; x++) for(int k=0; k<3; k++) row[3*x+k] = ((uint8_t *)ivoid)[(size_t)4*width*y + 4*x + k];
       png_write_row(png_ptr, row);
     }
   }
