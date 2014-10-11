@@ -200,20 +200,25 @@ write_image (dt_imageio_module_data_t *p_tmp, const char *filename, const void *
 
   png_write_info(png_ptr, info_ptr);
 
-  png_byte row[6*width];
-
   if(p->bpp > 8)
   {
-    for (int y = 0; y < height; y++)
-    {
-      for(int x=0; x<width; x++) for(int k=0; k<3; k++)
-        {
-          uint16_t pix = ((uint16_t *)ivoid)[(size_t)4*width*y + 4*x + k];
-          uint16_t swapped = (0xff00 & (pix<<8)) | (pix>>8);
-          ((uint16_t *)row)[3*x+k] = swapped;
-        }
-      png_write_row(png_ptr, row);
-    }
+    /*
+     * Get rid of filler (OR ALPHA) bytes, pack XRGB/RGBX/ARGB/RGBA into
+     * RGB (4 channels -> 3 channels). The second parameter is not used.
+     */
+    png_set_filler(png_ptr, 0, PNG_FILLER_AFTER);
+
+    /* swap bytes of 16 bit files to most significant bit first */
+    png_set_swap(png_ptr);
+
+    png_bytep *row_pointers = malloc(height * sizeof(png_bytep));
+
+    for (unsigned i = 0; i < height; i++)
+      row_pointers[i] = (png_bytep)((uint16_t *)ivoid + (size_t)4 * i * width);
+
+    png_write_image (png_ptr, row_pointers);
+
+    free(row_pointers);
   }
   else
   {
