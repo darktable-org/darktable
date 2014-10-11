@@ -2,6 +2,7 @@
     This file is part of darktable,
     copyright (c) 2009--2010 johannes hanika.
     copyright (c) 2011 henrik andersson.
+    copyright (c) 2014 LebedevRI.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -200,43 +201,31 @@ write_image (dt_imageio_module_data_t *p_tmp, const char *filename, const void *
 
   png_write_info(png_ptr, info_ptr);
 
+  /*
+   * Get rid of filler (OR ALPHA) bytes, pack XRGB/RGBX/ARGB/RGBA into
+   * RGB (4 channels -> 3 channels). The second parameter is not used.
+   */
+  png_set_filler(png_ptr, 0, PNG_FILLER_AFTER);
+
+  png_bytep *row_pointers = malloc(height * sizeof(png_bytep));
+
   if(p->bpp > 8)
   {
-    /*
-     * Get rid of filler (OR ALPHA) bytes, pack XRGB/RGBX/ARGB/RGBA into
-     * RGB (4 channels -> 3 channels). The second parameter is not used.
-     */
-    png_set_filler(png_ptr, 0, PNG_FILLER_AFTER);
-
     /* swap bytes of 16 bit files to most significant bit first */
     png_set_swap(png_ptr);
 
-    png_bytep *row_pointers = malloc(height * sizeof(png_bytep));
-
     for (unsigned i = 0; i < height; i++)
       row_pointers[i] = (png_bytep)((uint16_t *)ivoid + (size_t)4 * i * width);
-
-    png_write_image (png_ptr, row_pointers);
-
-    free(row_pointers);
   }
   else
   {
-    /*
-     * Get rid of filler (OR ALPHA) bytes, pack XRGB/RGBX/ARGB/RGBA into
-     * RGB (4 channels -> 3 channels). The second parameter is not used.
-     */
-    png_set_filler(png_ptr, 0, PNG_FILLER_AFTER);
-
-    png_bytep *row_pointers = malloc(height * sizeof(png_bytep));
-
     for (unsigned i = 0; i < height; i++)
       row_pointers[i] = (uint8_t *)ivoid + (size_t)4 * i * width;
-
-    png_write_image (png_ptr, row_pointers);
-
-    free(row_pointers);
   }
+
+  png_write_image (png_ptr, row_pointers);
+
+  free(row_pointers);
 
   png_write_end(png_ptr, info_ptr);
   png_destroy_write_struct(&png_ptr, &info_ptr);
