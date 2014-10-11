@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2013 dennis gnad.
+    copyright (c) 2013-2014 dennis gnad.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -18,8 +18,6 @@
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
-#include <assert.h>
-#include <string.h>
 #include <math.h>
 #include "bauhaus/bauhaus.h"
 #include "common/darktable.h"
@@ -43,10 +41,6 @@ typedef struct dt_iop_defringe_params_t
   float radius;
   float thresh;
   uint32_t op_mode;
-  float g_bias;
-  float m_bias;
-  float b_bias;
-  float y_bias;
   float strength;
 }
 dt_iop_defringe_params_t;
@@ -59,10 +53,6 @@ typedef struct dt_iop_defringe_gui_data_t
   GtkWidget *mode_select;
   GtkWidget *radius_scale;
   GtkWidget *thresh_scale;
-  GtkWidget *g_bias_scale;
-  GtkWidget *m_bias_scale;
-  GtkWidget *b_bias_scale;
-  GtkWidget *y_bias_scale;
   GtkWidget *strength_scale;
 }
 dt_iop_defringe_gui_data_t;
@@ -135,8 +125,7 @@ void fib_latt(int * const x, int * const y, float radius, int step, int idx)
 // quite some modifications were done though:
 // 1. use a fibonacci lattice instead of full window, to speed things up
 // 2. option for local averaging or static (RT used the global/region one)
-// 3. color bias options
-// 4. additional condition to reduce sharp edged artifacts, by blurring pixels near to pixels over threshold, this really helps improving the filter with thick fringes
+// 3. additional condition to reduce sharp edged artifacts, by blurring pixels near pixels over threshold, this really helps improving the filter with thick fringes
 // -----------------------------------------------------------------------------------------
 // in the following you will also see some more "magic numbers",
 // most are chosen arbitrarily and/or by experiment/trial+error ... I am sorry ;-)
@@ -163,11 +152,6 @@ void process (struct dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece, voi
   int width = roi_in->width;
   int height = roi_in->height;
 
-  if (width < 2 || width > 7200)
-    printf(" STRANGE WIDTH ERROR ! \n");
-  if (height < 2 || height > 7200)
-    printf(" STRANGE HEIGHT ERROR ! \n");
-
   dt_gaussian_t * gauss = dt_gaussian_init(width, height, ch, Labmax, Labmin, sigma, order);
   if (!gauss) return;
   dt_gaussian_blur(gauss, in, out);
@@ -179,10 +163,9 @@ void process (struct dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece, voi
   int samples_wish = radius*radius*0.8;
   int sampleidx_avg;
   // select samples by fibonacci number
-  // too slow with 144 samples:
-  //  if (samples_wish > 89) {
-  //    sampleidx = 12; // 144 samples
-  if (samples_wish > 55) {
+  if (samples_wish > 89) {
+    sampleidx_avg = 12; // 144 samples
+  } else if (samples_wish > 55) {
     sampleidx_avg = 11; // 89 samples
   } else if (samples_wish > 34) {
     sampleidx_avg = 10; // ..you get the idea
@@ -194,11 +177,10 @@ void process (struct dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece, voi
     sampleidx_avg = 7;
   }
   const int sampleidx_small = sampleidx_avg-1;
-  // larger area when using local averaging
-  const int radius_avg = ceil((float)radius*11.0);
 
   // smaller area for artifact filter
   const int radius_artifact_filter = radius/2;
+  const int local_radius = radius*10.0;
 
   const int samples_small = fib[sampleidx_small];
   const int samples_avg = fib[sampleidx_avg];
@@ -212,7 +194,7 @@ void process (struct dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece, voi
     for (int u=0; u < samples_avg; u++)
     {
       int dx,dy;
-      fib_latt(&dx,&dy,radius_avg,u,sampleidx_avg);
+      fib_latt(&dx,&dy,local_radius,u,sampleidx_avg);
       *tmp++ = dx;
       *tmp++ = dy;
     }
@@ -271,24 +253,10 @@ void process (struct dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece, voi
       float a = in[v*width*ch + t*ch +1] - out[v*width*ch + t*ch +1];
       float b = in[v*width*ch + t*ch +2] - out[v*width*ch + t*ch +2];
 
-      // color biasing
-      if (a > 0.0)
-        a = a*(p->m_bias); // magenta bias
-      else
-        a = a*(p->g_bias); // green bias
-
-      if (b > 0.0)
-        b = b*(p->y_bias); // yellow bias
-      else
-        b = b*(p->b_bias); // blue bias
-
       float edge = (a*a+b*b); //range up to 2*(256)^2 -> approx. 0 to 131072
-      // maybe useful later again:
-      //float pseudo_saturation = fabs(in[v*width*ch + t*ch +1]) + fabs(in[v*width*ch + t*ch +2]);
-      //float pseudo_luminosity = in[v*width*ch + t*ch];
 
       // save local edge chroma in out[.. +3] , this is later compared with threshold
-      out[v*width*ch + t*ch +3] = edge * pow(base_strength,2.0);
+      out[v*width*ch + t*ch +3] = edge * base_strength * base_strength;
       // the average chroma of the edge-layer in the roi
       if (MODE_GLOBAL_AVERAGE == p->op_mode) avg_edge_chroma += edge * base_strength;
     }
@@ -297,9 +265,7 @@ void process (struct dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece, voi
   float thresh;
   if (MODE_GLOBAL_AVERAGE == p->op_mode)
   {
-    avg_edge_chroma = avg_edge_chroma / (width * height);
-    if (avg_edge_chroma < 100*FLT_EPSILON)
-      printf("\nsmall avg edge chroma!!\n\n");
+    avg_edge_chroma = avg_edge_chroma / (width * height) + 10.0*FLT_EPSILON;
     thresh = 8.0 * p->thresh * avg_edge_chroma / MAGIC_THRESHOLD_COEFF;
   }
   else
@@ -311,18 +277,18 @@ void process (struct dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece, voi
 
 #ifdef _OPENMP
 // dynamically/guided scheduled due to possible uneven edge-chroma distribution (thanks to rawtherapee code for this hint!)
-#pragma omp parallel for default(none) shared(width,height,p,xy_small,xy_avg,xy_artifact) firstprivate(thresh,avg_edge_chroma) schedule(guided,16)
+#pragma omp parallel for default(none) shared(width,height,p,xy_small,xy_avg,xy_artifact) firstprivate(thresh,avg_edge_chroma) schedule(guided,32)
 #endif
   for (int v=0; v<height; v++)
   {
     for (int t=0; t<width; t++)
     {
       double local_thresh = thresh;
-      // "-funswitch-loops" should unswitch all such things
+      // think of compiler setting "-funswitch-loops" to maybe improve these things:
       if (MODE_LOCAL_AVERAGE == p->op_mode && out[v*width*ch +t*ch +3] > thresh)
       {
         float local_avg = 0.0;
-        // use some and not all values from the neigbourhood to speed things up
+        // use some and not all values from the neigbourhood to speed things up:
         const int *tmp = xy_avg;
         for (int u=0; u < samples_avg; u++)
         {
@@ -335,7 +301,7 @@ void process (struct dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece, voi
         local_avg /= (float)samples_avg*2.0;
         avg_edge_chroma = local_avg;
         double new_thresh = 8.0 * p->thresh * avg_edge_chroma / MAGIC_THRESHOLD_COEFF;
-        if (new_thresh < thresh) local_thresh = new_thresh;
+        local_thresh = new_thresh;
       }
       if (out[v*width*ch +t*ch +3] > local_thresh)
       {
@@ -357,13 +323,12 @@ void process (struct dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece, voi
           // inverse chroma weighted average of neigbouring pixels inside window
           // also taking average edge chromaticity into account (either global or local average)
           weight = 1.0/(out[x*width*ch + y*ch +3] + avg_edge_chroma);
-          //if (!weight || weight == NAN || weight == INFINITY) weight = 1024 * FLT_EPSILON;
           atot += weight * in[x*width*ch + y*ch +1];
           btot += weight * in[x*width*ch + y*ch +2];
           norm += weight;
         }
         // here we could try using a "balance" between original and changed value, this could be used to reduce artifcats
-        // but on first tries, results weren't very convincing
+        // but on first tries, results weren't very convincing, and there are blend settings available anyway in dt
         // float balance = (out[v*width*ch +t*ch +3]-thresh)/out[v*width*ch +t*ch +3];
         double a = (atot/norm); // *balance + in[v*width*ch + t*ch +1]*(1.0-balance);
         double b = (btot/norm); // *balance + in[v*width*ch + t*ch +2]*(1.0-balance);
@@ -373,7 +338,7 @@ void process (struct dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece, voi
         out[v*width*ch + t*ch +2] = b;
       }
       // "artifact reduction filter": iterate also over neighbours of pixel over threshold
-      // reducing artifacts could still be better, especially for fringe with a thickness of more than 1..2 pixels
+      // reducing artifacts could still be better, especially for fringe with a thickness of more than 2 pixels
       else if ( out[MAX(0,(v-1))*width*ch +MAX(0,(t-1))*ch +3] > thresh
                 || out[MAX(0,(v-1))*width*ch +t*ch +3] > thresh
                 || out[MAX(0,(v-1))*width*ch +MIN(width-1,(t+1))*ch +3] > thresh
@@ -397,7 +362,6 @@ void process (struct dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece, voi
           // inverse chroma weighted average of neigbouring pixels inside window
           // also taking average edge chromaticity into account (either global or local average)
           weight = 1.0/(out[x*width*ch + y*ch +3] + avg_edge_chroma);
-          //if (!weight || weight == NAN || weight == INFINITY) weight = 1024 * FLT_EPSILON;
           atot += weight * in[x*width*ch + y*ch +1];
           btot += weight * in[x*width*ch + y*ch +2];
           norm += weight;
@@ -440,10 +404,6 @@ void reload_defaults(dt_iop_module_t *module)
   ((dt_iop_defringe_params_t *)module->default_params)->thresh = 10;
   ((dt_iop_defringe_params_t *)module->default_params)->strength = 1.0;
   ((dt_iop_defringe_params_t *)module->default_params)->op_mode = MODE_GLOBAL_AVERAGE;
-  ((dt_iop_defringe_params_t *)module->default_params)->m_bias = +1.0; // magenta
-  ((dt_iop_defringe_params_t *)module->default_params)->g_bias = +1.0; // green
-  ((dt_iop_defringe_params_t *)module->default_params)->b_bias = +1.0; // blue
-  ((dt_iop_defringe_params_t *)module->default_params)->y_bias = +1.0; // yellow
   memcpy(module->params, module->default_params, sizeof(dt_iop_defringe_params_t));
 }
 
@@ -452,7 +412,7 @@ void init(dt_iop_module_t *module)
   module->params = malloc(sizeof(dt_iop_defringe_params_t));
   module->default_params = malloc(sizeof(dt_iop_defringe_params_t));
   module->request_histogram = 1;
-  module->priority = 385; // module order created by iop_dependencies.py, do not edit!
+  module->priority = 344; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_defringe_params_t);
   module->gui_data = NULL;
   module->data = NULL;
@@ -487,23 +447,6 @@ thresh_slider_callback (GtkWidget *w, dt_iop_module_t *module)
 }
 
 static void
-bias_slider_callback (GtkWidget *w, dt_iop_module_t *module)
-{
-  if(darktable.gui->reset) return;
-  dt_iop_defringe_gui_data_t *g = (dt_iop_defringe_gui_data_t *)module->gui_data;
-  dt_iop_defringe_params_t *p = (dt_iop_defringe_params_t *)module->params;
-  if (w == g->g_bias_scale)
-    p->g_bias = dt_bauhaus_slider_get(w);
-  else if (w == g->m_bias_scale)
-    p->m_bias = dt_bauhaus_slider_get(w);
-  else if (w == g->b_bias_scale)
-    p->b_bias = dt_bauhaus_slider_get(w);
-  else if (w == g->y_bias_scale)
-    p->y_bias = dt_bauhaus_slider_get(w);
-  dt_dev_add_history_item(darktable.develop, module, TRUE);
-}
-
-static void
 strength_slider_callback (GtkWidget *w, dt_iop_module_t *module)
 {
   if(darktable.gui->reset) return;
@@ -534,30 +477,30 @@ void gui_init (dt_iop_module_t *module)
   dt_bauhaus_widget_set_label(g->mode_select, NULL, _("operation mode"));
   dt_bauhaus_combobox_add(g->mode_select, _("region average (fast)")); // 0
   dt_bauhaus_combobox_add(g->mode_select, _("local average (slow)")); // 1
-  dt_bauhaus_combobox_add(g->mode_select, _("static")); // 2
-  g_object_set (GTK_OBJECT(g->mode_select), "tooltip-text", _("method for chroma protection:\n - region average: fast, might show slightly wrong previews in high magnification; might sometimes protect chroma too much or too low in comparison to local average\n - local average: slower, might protect chroma better than global average while still allowing for more desaturation where required\n - static: fast, only uses the threshold as a static limit"), (char *)NULL);
+  dt_bauhaus_combobox_add(g->mode_select, _("static threshold (fast)")); // 2
+  g_object_set (GTK_OBJECT(g->mode_select), "tooltip-text", _("method for color protection:\n - region average: fast, might show slightly wrong previews in high magnification; might sometimes protect saturation too much or too low in comparison to local average\n - local average: slower, might protect saturation better than global average by using near pixels as color reference, so it can still allow for more desaturation where required\n - static: fast, only uses the threshold as a static limit"), (char *)NULL);
   g_signal_connect (G_OBJECT (g->mode_select), "value-changed", G_CALLBACK (mode_callback), module);
 
   /* radius and threshold sliders */
   g->radius_scale = dt_bauhaus_slider_new_with_range(module, 0.5, 20.0, 0.1, p->radius, 1);
-  dt_bauhaus_widget_set_label(g->radius_scale, NULL, _("radius / strength"));
+  dt_bauhaus_widget_set_label(g->radius_scale, NULL, _("edge detection radius"));
 
   g->thresh_scale = dt_bauhaus_slider_new_with_range(module, 1.0, 128.0, 0.1, p->thresh, 1);
   dt_bauhaus_widget_set_label(g->thresh_scale, NULL, _("threshold"));
 
   g->strength_scale = dt_bauhaus_slider_new_with_range(module, 0.1, 1.5, 0.1, p->strength, 1);
-  dt_bauhaus_widget_set_label(g->strength_scale, NULL, _("strength bias"));
+  dt_bauhaus_widget_set_label(g->strength_scale, NULL, _("strength"));
 
   gtk_box_pack_start(GTK_BOX(module->widget), GTK_WIDGET(g->radius_scale), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(module->widget), GTK_WIDGET(g->thresh_scale), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(module->widget), GTK_WIDGET(g->strength_scale), TRUE, TRUE, 0);
 
   g_object_set(G_OBJECT(g->radius_scale), "tooltip-text",
-               _("radius for fringe detection"), (char *)NULL);
+               _("radius for detecting fringe"), (char *)NULL);
   g_object_set(G_OBJECT(g->thresh_scale), "tooltip-text",
                _("threshold for defringe, higher values mean less defringing"), (char *)NULL);
   g_object_set(G_OBJECT(g->thresh_scale), "tooltip-text",
-               _("strength, will affect the strength of the edges"), (char *)NULL);
+               _("strength, will affect how strong edges are biased"), (char *)NULL);
 
   g_signal_connect(G_OBJECT(g->radius_scale), "value-changed",
                    G_CALLBACK(radius_slider_callback), module);
@@ -565,47 +508,6 @@ void gui_init (dt_iop_module_t *module)
                    G_CALLBACK(thresh_slider_callback), module);
   g_signal_connect(G_OBJECT(g->strength_scale), "value-changed",
                    G_CALLBACK(strength_slider_callback), module);
-
-  /* color bias/shift/whatever sliders */
-  g->g_bias_scale = dt_bauhaus_slider_new_with_range(module, 0.0, 2.0, 0.01, p->g_bias, 2);
-  dt_bauhaus_widget_set_label(g->g_bias_scale, NULL, _("green bias"));
-  dt_bauhaus_slider_set_stop(g->g_bias_scale, 0.0f, 0.0f, 0.0f, 0.0f);
-  dt_bauhaus_slider_set_stop(g->g_bias_scale, 1.0f, 0.0f, 1.0f, 0.0f);
-  g_object_set(G_OBJECT(g->g_bias_scale), "tooltip-text", _("green sensitivity"), (char *)NULL);
-
-  g->m_bias_scale = dt_bauhaus_slider_new_with_range(module, 0.0, 2.0, 0.01, p->m_bias, 2);
-  dt_bauhaus_widget_set_label(g->m_bias_scale, NULL, _("magenta bias"));
-  dt_bauhaus_slider_set_stop(g->m_bias_scale, 0.0f, 0.0f, 0.0f, 0.0f);
-  dt_bauhaus_slider_set_stop(g->m_bias_scale, 1.0f, 1.0f, 0.0f, 1.0f);
-  g_object_set(G_OBJECT(g->m_bias_scale), "tooltip-text", _("magenta sensitivity"), (char *)NULL);
-
-  g->b_bias_scale = dt_bauhaus_slider_new_with_range(module, 0.0, 2.0, 0.01, p->b_bias, 2);
-  dt_bauhaus_widget_set_label(g->b_bias_scale, NULL, _("blue bias"));
-  dt_bauhaus_slider_set_stop(g->b_bias_scale, 0.0f, 0.0f, 0.0f, 0.0f);
-  dt_bauhaus_slider_set_stop(g->b_bias_scale, 1.0f, 0.0f, 0.0f, 1.0f);
-  g_object_set(G_OBJECT(g->b_bias_scale), "tooltip-text", _("blue sensitivity"), (char *)NULL);
-
-  g->y_bias_scale = dt_bauhaus_slider_new_with_range(module, 0.0, 2.0, 0.01, p->y_bias, 2);
-  dt_bauhaus_widget_set_label(g->y_bias_scale, NULL, _("yellow bias"));
-  dt_bauhaus_slider_set_stop(g->y_bias_scale, 0.0f, 0.0f, 0.0f, 0.0f);
-  dt_bauhaus_slider_set_stop(g->y_bias_scale, 1.0f, 1.0f, 1.0f, 0.0f);
-  g_object_set(G_OBJECT(g->y_bias_scale), "tooltip-text", _("yellow sensitivity"), (char *)NULL);
-
-  g_signal_connect(G_OBJECT(g->g_bias_scale), "value-changed",
-                   G_CALLBACK(bias_slider_callback), module);
-  g_signal_connect(G_OBJECT(g->m_bias_scale), "value-changed",
-                   G_CALLBACK(bias_slider_callback), module);
-  g_signal_connect(G_OBJECT(g->b_bias_scale), "value-changed",
-                   G_CALLBACK(bias_slider_callback), module);
-  g_signal_connect(G_OBJECT(g->y_bias_scale), "value-changed",
-                   G_CALLBACK(bias_slider_callback), module);
-
-  gtk_box_pack_start(GTK_BOX(module->widget), GTK_WIDGET(dtgtk_label_new(_("edge chroma bias"),DARKTABLE_LABEL_TAB|DARKTABLE_LABEL_ALIGN_RIGHT)), FALSE, FALSE, 5);
-
-  gtk_box_pack_start(GTK_BOX(module->widget), GTK_WIDGET(g->g_bias_scale), TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(module->widget), GTK_WIDGET(g->m_bias_scale), TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(module->widget), GTK_WIDGET(g->b_bias_scale), TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(module->widget), GTK_WIDGET(g->y_bias_scale), TRUE, TRUE, 0);
 }
 
 void gui_update (dt_iop_module_t *module)
@@ -616,10 +518,6 @@ void gui_update (dt_iop_module_t *module)
   dt_bauhaus_slider_set(g->radius_scale, p->radius);
   dt_bauhaus_slider_set(g->thresh_scale, p->thresh);
   dt_bauhaus_slider_set(g->strength_scale, p->strength);
-  dt_bauhaus_slider_set(g->g_bias_scale, p->g_bias);
-  dt_bauhaus_slider_set(g->m_bias_scale, p->m_bias);
-  dt_bauhaus_slider_set(g->b_bias_scale, p->b_bias);
-  dt_bauhaus_slider_set(g->y_bias_scale, p->y_bias);
 }
 
 void gui_cleanup (dt_iop_module_t *module)
