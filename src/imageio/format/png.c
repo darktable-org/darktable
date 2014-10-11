@@ -217,11 +217,20 @@ write_image (dt_imageio_module_data_t *p_tmp, const char *filename, const void *
   }
   else
   {
-    for (int y = 0; y < height; y++)
-    {
-      for(int x=0; x<width; x++) for(int k=0; k<3; k++) row[3*x+k] = ((uint8_t *)ivoid)[(size_t)4*width*y + 4*x + k];
-      png_write_row(png_ptr, row);
-    }
+    /*
+     * Get rid of filler (OR ALPHA) bytes, pack XRGB/RGBX/ARGB/RGBA into
+     * RGB (4 channels -> 3 channels). The second parameter is not used.
+     */
+    png_set_filler(png_ptr, 0, PNG_FILLER_AFTER);
+
+    png_bytep *row_pointers = malloc(height * sizeof(png_bytep));
+
+    for (unsigned i = 0; i < height; i++)
+      row_pointers[i] = (uint8_t *)ivoid + (size_t)4 * i * width;
+
+    png_write_image (png_ptr, row_pointers);
+
+    free(row_pointers);
   }
 
   png_write_end(png_ptr, info_ptr);
