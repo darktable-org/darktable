@@ -268,7 +268,7 @@ static int show_overlays_member(lua_State *L)
 void init(struct dt_lib_module_t *self)
 {
   lua_State *L = darktable.lua_state.state;
-  int my_type = dt_lua_module_get_entry_type(L, "lib", self->plugin_name);
+  int my_type = dt_lua_module_entry_get_type(L, "lib", self->plugin_name);
 
   lua_pushcfunction(L, grouping_member);
   dt_lua_type_register_type(L, my_type, "grouping");

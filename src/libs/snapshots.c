@@ -630,7 +630,7 @@ static int lua_select(lua_State*L)
 void init(struct dt_lib_module_t *self)
 {
   lua_State *L=darktable.lua_state.state;
-  int my_type = dt_lua_module_get_entry_type(L,"lib",self->plugin_name);
+  int my_type = dt_lua_module_entry_get_type(L,"lib",self->plugin_name);
   lua_pushcfunction(L,direction_member);
   dt_lua_type_register_type(L,my_type,"direction");
   lua_pushcfunction(L,ratio_member);
