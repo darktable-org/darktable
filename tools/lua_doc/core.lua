@@ -690,12 +690,12 @@ function M.all_children(node)
 
 
 	-- formats and modules are constructors, call them all once to document
-	for k, v in pairs(dt.modules.format) do
+	local registry = debug.getregistry();
+	for k, v in pairs(registry.dt_lua_modules.format) do
 		local res = v()
 		document_type_from_obj(res,toplevel.types[dt.debug.type(res)])
 	end
-
-	for k, v in pairs(dt.modules.storage) do
+	for k, v in pairs(registry.dt_lua_modules.storage) do
 		local res = v()
 		if res then
 			document_type_from_obj(res,toplevel.types[dt.debug.type(res)])

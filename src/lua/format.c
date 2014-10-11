@@ -159,6 +159,14 @@ void dt_lua_register_format_type(lua_State* L, dt_imageio_module_format_t* modul
   lua_pop(L,1);
 };
 
+static int new_format(lua_State*L)
+{
+  const char* entry_name = luaL_checkstring(L,1);
+  dt_lua_module_entry_push(L,"format",entry_name);
+  lua_call(L,0,1);
+  return 1;
+
+}
 
 int dt_lua_init_early_format(lua_State *L)
 {
@@ -181,10 +189,11 @@ int dt_lua_init_early_format(lua_State *L)
   dt_lua_type_register_const(L,dt_imageio_module_format_t,"write_image");
 
   dt_lua_module_new(L,"format");
+
   dt_lua_push_darktable_lib(L);
-  dt_lua_goto_subtable(L,"modules");
-  dt_lua_module_push(L,"format");
-  lua_setfield(L,-2,"format");
+  lua_pushstring(L,"new_format");
+  lua_pushcfunction(L,&new_format);
+  lua_settable(L,-3);
   lua_pop(L,1);
   return 0;
 }

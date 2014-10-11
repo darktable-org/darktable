@@ -120,6 +120,21 @@ darktable.films.new:add_parameter("directory","string",[[The directory that the 
 darktable.films.new:add_return(my_tostring(types.dt_lua_film_t),"The newly created film, or the existing film if the directory is already imported")
 darktable.films.new:add_version_info([[The function was added]])
 
+darktable.new_format:set_text("Creates a new format object to export images")
+tmp =""
+for k,v in pairs(debug.getregistry().dt_lua_modules.format) do
+  tmp = tmp..listel(k)
+end
+darktable.new_format:add_parameter("type","string",[[The type of format object to create, one of : ]]..  startlist().. tmp..endlist()) 
+darktable.new_format:add_return(my_tostring(types.dt_imageio_module_format_t),"The newly created object. Exact type depends on the type passed")
+
+darktable.new_storage:set_text("Creates a new storage object to export images")
+tmp =""
+for k,v in pairs(debug.getregistry().dt_lua_modules.storage) do
+  tmp = tmp..listel(k)
+end
+darktable.new_storage:add_parameter("type","string",[[The type of storage object to create, one of : ]]..  startlist().. tmp..endlist().."(Other, lua-defined, storage types may appear.)") 
+darktable.new_storage:add_return(my_tostring(types.dt_imageio_module_storage_t),"The newly created object. Exact type depends on the type passed")
 ----------------------
 --  DARKTABLE.GUI   --
 ----------------------
@@ -318,37 +333,6 @@ darktable.database.copy_image:add_parameter("film",tostring(types.dt_lua_film_t)
 darktable.database.copy_image:add_return(tostring(types.dt_lua_image_t),[[The new image]])
 darktable.database.copy_image:set_main_parent(darktable.database)
 
-------------------------
---  DARKTABLE.MODULES --
-------------------------
-
-darktable.modules:set_text([[This table describe the different loadable modules of darktable.]])
-
-darktable.modules.format:set_text([[Functions to get parameter objects for the different export formats.]])
-
-darktable.modules.format.png:set_text([[Used to get a new format object.]])
-darktable.modules.format.png:add_return(my_tostring(types.dt_imageio_module_format_t),[[A new format object describing the parameters used for export - initialised to the values contained in the GUI.]])
-
-darktable.modules.format.png:set_alias(darktable.modules.format.tiff)
-darktable.modules.format.png:set_alias(darktable.modules.format.exr)
-darktable.modules.format.png:set_alias(darktable.modules.format.copy)
-darktable.modules.format.png:set_alias(darktable.modules.format.pfm)
-darktable.modules.format.png:set_alias(darktable.modules.format.jpeg)
-darktable.modules.format.png:set_alias(darktable.modules.format.ppm)
-darktable.modules.format.png:set_alias(darktable.modules.format.webp)
-darktable.modules.format.png:set_alias(darktable.modules.format.j2k)
-
-darktable.modules.storage:set_text([[Functions to get parameter objects for the different export storages.
-
-New values may appear in this table if new storages are registered using Lua.]])
-darktable.modules.storage.email:set_text([[Used to get a new email storage object.]])
-darktable.modules.storage.email:add_return(my_tostring(types.dt_imageio_module_storage_t),[[A new storage object describing the parameters to export with - initialised to the values contained in the GUI.]])
-darktable.modules.storage.email:set_alias(darktable.modules.storage.latex)
-darktable.modules.storage.email:set_alias(darktable.modules.storage.disk)
-darktable.modules.storage.email:set_alias(darktable.modules.storage.gallery)
-darktable.modules.storage.email:set_alias(darktable.modules.storage.flickr)
-darktable.modules.storage.email:set_alias(darktable.modules.storage.facebook)
-darktable.modules.storage.email:set_alias(darktable.modules.storage.picasa)
 
 for k, v in darktable.gui.views:unskiped_children() do
 	v:set_main_parent(darktable.gui.views)
@@ -739,6 +723,7 @@ darktable.debug.type:set_text([[Similar to the system function type() but it wil
 	invisible_attr(attributes.has_pairs)
 	invisible_attr(attributes.has_ipairs)
 	invisible_attr(attributes.is_self)
+	invisible_attr(attributes.has_length)
 	attributes.write:set_text([[This object is a variable that can be written to.]])
   --attributes.has_pairs:set_text([[This object can be used as an argument to the system function "pairs" and iterated upon.]])
 	--attributes.has_ipairs:set_text([[This object can be used as an argument to the system function "ipairs" and iterated upon.]])
