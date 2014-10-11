@@ -37,6 +37,47 @@
 /* suffix for unstable version */
 #define API_VERSION_SUFFIX "dev"
 
+static int check_version(lua_State*L)
+{
+  const char * module_name = luaL_checkstring(L,1);
+  gboolean valid = false;
+  for(int i = 2; i <= lua_gettop(L);i++) {
+    lua_pushnumber(L,1);
+    lua_gettable(L,i);
+    int major= luaL_checkint(L,-1);
+    lua_pop(L,1);
+
+    lua_pushnumber(L,2);
+    lua_gettable(L,i);
+    int minor= luaL_checkint(L,-1);
+    lua_pop(L,1);
+
+    /* 
+       patch number is not needed to check for compatibility
+       but let's take the good habits
+       lua_pushnumber(L,3);
+       lua_gettable(L,i);
+       int patch= luaL_checkint(L,-1);
+       lua_pop(L,1);
+     */
+    if(major == API_VERSION_MAJOR && minor <= API_VERSION_MINOR) {
+      valid = true;
+    }
+  }
+  if(valid) {
+    // nothing
+  } else if(strlen(API_VERSION_SUFFIX) == 0) {
+    luaL_error(L,"Module %s is not compatible with API %d.%d.%d",
+        module_name,API_VERSION_MAJOR,API_VERSION_MINOR,API_VERSION_PATCH);
+  } else {
+    dt_print(DT_DEBUG_LUA,"LUA ERROR Module %s is not compatible with API %d.%d.%d-%s\n",
+        module_name,API_VERSION_MAJOR,API_VERSION_MINOR,API_VERSION_PATCH,API_VERSION_SUFFIX);
+  }
+  return 0;
+}
+
+
+
 int dt_lua_init_configuration(lua_State*L)
 {
   char tmp_path[PATH_MAX];
@@ -95,6 +136,10 @@ int dt_lua_init_configuration(lua_State*L)
   } else {
     lua_pushfstring(L,"%d.%d.%d-%s",API_VERSION_MAJOR,API_VERSION_MINOR,API_VERSION_PATCH,API_VERSION_SUFFIX);
   }
+  lua_settable(L,-3);
+
+  lua_pushstring(L,"check_version");
+  lua_pushcfunction(L,check_version);
   lua_settable(L,-3);
 
   lua_pop(L,1); //remove the configuration table from the stack

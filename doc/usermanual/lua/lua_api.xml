@@ -2258,6 +2258,40 @@ end</programlisting>
 
 </section>
 
+<section status="final" id="darktable_configuration_check_version">
+<title>darktable.configuration.check_version</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>check_version</secondary>
+</indexterm>
+<synopsis>function( 
+	<emphasis><link linkend="darktable_configuration_check_version_module name">module name</link></emphasis> : string, 
+	<emphasis><link linkend="darktable_configuration_check_version____">...</link></emphasis> : table...
+)</synopsis>
+<para>Check that a module is compatible with the running version of darktable</para>
+<para>Add the following line at the top of your module : 
+
+<programlisting language="lua">darktable.configuration.check(...,{M,m,p},{M2,m2,p2})</programlisting>
+
+To document that your module has been tested with API version M.m.p and M2.m2.P2.</para>
+<para>This will raise an error if the user is running a released version of DT and a warning if he is running a developement version</para>
+
+<variablelist>
+<varlistentry id="darktable_configuration_check_version_module name"><term>module name</term><listitem>
+<synopsis>string</synopsis>
+<para>The name of the module to report on error</para>
+
+</listitem></varlistentry>
+
+<varlistentry id="darktable_configuration_check_version____"><term>...</term><listitem>
+<synopsis>table...</synopsis>
+<para>Tables of API versions that are known to work with the scrip</para>
+
+</listitem></varlistentry>
+
+</variablelist>
+</section>
+
 </section>
 
 <section status="final" id="darktable_preferences">
