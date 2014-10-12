@@ -158,6 +158,11 @@ void process (struct dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece, voi
   int width = roi_in->width;
   int height = roi_in->height;
 
+  // save the fibonacci lattices in them later
+  int * xy_avg = NULL;
+  int * xy_artifact = NULL;
+  int * xy_small = NULL;
+
   dt_gaussian_t * gauss = NULL;
   gauss = dt_gaussian_init(width, height, ch, Labmax, Labmin, sigma, order);
   if (!gauss)
@@ -170,10 +175,6 @@ void process (struct dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece, voi
 
   // Pre-Compute Fibonacci Lattices
   int *tmp;
-
-  int * xy_avg = NULL;
-  int * xy_artifact = NULL;
-  int * xy_small = NULL;
 
   int samples_wish = radius*radius*0.8;
   int sampleidx_avg;
@@ -262,13 +263,13 @@ void process (struct dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece, voi
     {
       // edge-detect on color channels
       // method: difference of original to gaussian blurred image:
-      float a = in[v*width*ch + t*ch +1] - out[v*width*ch + t*ch +1];
-      float b = in[v*width*ch + t*ch +2] - out[v*width*ch + t*ch +2];
+      float a = in[(size_t)v*width*ch + t*ch +1] - out[(size_t)v*width*ch + t*ch +1];
+      float b = in[(size_t)v*width*ch + t*ch +2] - out[(size_t)v*width*ch + t*ch +2];
 
       float edge = (a*a+b*b); //range up to 2*(256)^2 -> approx. 0 to 131072
 
       // save local edge chroma in out[.. +3] , this is later compared with threshold
-      out[v*width*ch + t*ch +3] = edge * base_strength * base_strength;
+      out[(size_t)v*width*ch + t*ch +3] = edge * base_strength * base_strength;
       // the average chroma of the edge-layer in the roi
       if (MODE_GLOBAL_AVERAGE == p->op_mode) avg_edge_chroma += edge * base_strength;
     }
@@ -297,7 +298,7 @@ void process (struct dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece, voi
     {
       double local_thresh = thresh;
       // think of compiler setting "-funswitch-loops" to maybe improve these things:
-      if (MODE_LOCAL_AVERAGE == p->op_mode && out[v*width*ch +t*ch +3] > thresh)
+      if (MODE_LOCAL_AVERAGE == p->op_mode && out[(size_t)v*width*ch +t*ch +3] > thresh)
       {
         float local_avg = 0.0;
         // use some and not all values from the neigbourhood to speed things up:
@@ -308,14 +309,14 @@ void process (struct dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece, voi
           int dy = *tmp++;
           int x = MAX(0,MIN(width-1,t+dx));
           int y = MAX(0,MIN(height-1,v+dy));
-          local_avg += out[y*width*ch + x*ch +3];
+          local_avg += out[(size_t)y*width*ch + x*ch +3];
         }
         local_avg /= (float)samples_avg*2.0;
         avg_edge_chroma = local_avg;
         double new_thresh = 8.0 * p->thresh * avg_edge_chroma / MAGIC_THRESHOLD_COEFF;
         local_thresh = new_thresh;
       }
-      if (out[v*width*ch +t*ch +3] > local_thresh)
+      if (out[(size_t)v*width*ch +t*ch +3] > local_thresh)
       {
         float atot=0, btot=0;
         float norm=0;
@@ -334,9 +335,9 @@ void process (struct dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece, voi
           int y = MAX(0,MIN(height-1,v+dy));
           // inverse chroma weighted average of neigbouring pixels inside window
           // also taking average edge chromaticity into account (either global or local average)
-          weight = 1.0/(out[y*width*ch + x*ch +3] + avg_edge_chroma);
-          atot += weight * in[y*width*ch + x*ch +1];
-          btot += weight * in[y*width*ch + x*ch +2];
+          weight = 1.0/(out[(size_t)y*width*ch + x*ch +3] + avg_edge_chroma);
+          atot += weight * in[(size_t)y*width*ch + x*ch +1];
+          btot += weight * in[(size_t)y*width*ch + x*ch +2];
           norm += weight;
         }
         // here we could try using a "balance" between original and changed value, this could be used to reduce artifcats
@@ -346,19 +347,19 @@ void process (struct dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece, voi
         double b = (btot/norm); // *balance + in[v*width*ch + t*ch +2]*(1.0-balance);
         if (a < -128.0 || a > 127.0) CLIP(a,-128.0,127.0);
         if (b < -128.0 || b > 127.0) CLIP(b,-128.0,127.0);
-        out[v*width*ch + t*ch +1] = a;
-        out[v*width*ch + t*ch +2] = b;
+        out[(size_t)v*width*ch + t*ch +1] = a;
+        out[(size_t)v*width*ch + t*ch +2] = b;
       }
       // "artifact reduction filter": iterate also over neighbours of pixel over threshold
       // reducing artifacts could still be better, especially for fringe with a thickness of more than 2 pixels
-      else if ( out[MAX(0,(v-1))*width*ch +MAX(0,(t-1))*ch +3] > thresh
-                || out[MAX(0,(v-1))*width*ch +t*ch +3] > thresh
-                || out[MAX(0,(v-1))*width*ch +MIN(width-1,(t+1))*ch +3] > thresh
-                || out[v*width*ch +MAX(0,(t-1))*ch +3] > thresh
-                || out[v*width*ch +MIN(width-1,(t+1))*ch +3] > thresh
-                || out[MIN(height-1,(v+1))*width*ch +MAX(0,(t-1))*ch +3] > thresh
-                || out[MIN(height-1,(v+1))*width*ch +t*ch +3] > thresh
-                || out[MIN(height-1,(v+1))*width*ch +MIN(width-1,(t+1))*ch +3] > thresh )
+      else if ( out[(size_t)MAX(0,(v-1))*width*ch +MAX(0,(t-1))*ch +3] > thresh
+                || out[(size_t)MAX(0,(v-1))*width*ch +t*ch +3] > thresh
+                || out[(size_t)MAX(0,(v-1))*width*ch +MIN(width-1,(t+1))*ch +3] > thresh
+                || out[(size_t)v*width*ch +MAX(0,(t-1))*ch +3] > thresh
+                || out[(size_t)v*width*ch +MIN(width-1,(t+1))*ch +3] > thresh
+                || out[(size_t)MIN(height-1,(v+1))*width*ch +MAX(0,(t-1))*ch +3] > thresh
+                || out[(size_t)MIN(height-1,(v+1))*width*ch +t*ch +3] > thresh
+                || out[(size_t)MIN(height-1,(v+1))*width*ch +MIN(width-1,(t+1))*ch +3] > thresh )
       {
         float atot=0, btot=0;
         float norm=0;
@@ -373,24 +374,24 @@ void process (struct dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece, voi
           int y = MAX(0,MIN(height-1,v+dy));
           // inverse chroma weighted average of neigbouring pixels inside window
           // also taking average edge chromaticity into account (either global or local average)
-          weight = 1.0/(out[y*width*ch + x*ch +3] + avg_edge_chroma);
-          atot += weight * in[y*width*ch + x*ch +1];
-          btot += weight * in[y*width*ch + x*ch +2];
+          weight = 1.0/(out[(size_t)y*width*ch + x*ch +3] + avg_edge_chroma);
+          atot += weight * in[(size_t)y*width*ch + x*ch +1];
+          btot += weight * in[(size_t)y*width*ch + x*ch +2];
           norm += weight;
         }
         double a = (atot/norm); // *balance + in[v*width*ch + t*ch +1]*(1.0-balance);
         double b = (btot/norm); // *balance + in[v*width*ch + t*ch +2]*(1.0-balance);
         if (a < -128.0 || a > 127.0) CLIP(a,-128.0,127.0);
         if (b < -128.0 || b > 127.0) CLIP(b,-128.0,127.0);
-        out[v*width*ch + t*ch +1] = a;
-        out[v*width*ch + t*ch +2] = b;
+        out[(size_t)v*width*ch + t*ch +1] = a;
+        out[(size_t)v*width*ch + t*ch +2] = b;
         }
       else
       {
-        out[v*width*ch + t*ch +1] = in[v*width*ch + t*ch +1];
-        out[v*width*ch + t*ch +2] = in[v*width*ch + t*ch +2];
+        out[(size_t)v*width*ch + t*ch +1] = in[(size_t)v*width*ch + t*ch +1];
+        out[(size_t)v*width*ch + t*ch +2] = in[(size_t)v*width*ch + t*ch +2];
       }
-      out[v*width*ch + t*ch] = in[v*width*ch + t*ch];
+      out[(size_t)v*width*ch + t*ch] = in[(size_t)v*width*ch + t*ch];
     }
   }
 
@@ -403,9 +404,9 @@ ERROR_EXIT:
   memcpy(o, i, (size_t)sizeof(float)*ch*roi_out->width*roi_out->height);
 
 FINISH_PROCESS:
-  if (xy_artifact) free(xy_artifact);
-  if (xy_small) free(xy_small);
-  if (xy_avg) free(xy_avg);
+  free(xy_artifact);
+  free(xy_small);
+  free(xy_avg);
 }
 
 void reload_defaults(dt_iop_module_t *module)
