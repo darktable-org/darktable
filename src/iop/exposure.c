@@ -202,6 +202,7 @@ legacy_params (dt_iop_module_t *self, const void *const old_params, const int ol
   return 1;
 }
 
+/*
 void init_presets (dt_iop_module_so_t *self)
 {
   DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "begin", NULL, NULL, NULL);
@@ -217,6 +218,7 @@ void init_presets (dt_iop_module_so_t *self)
 
   DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "commit", NULL, NULL, NULL);
 }
+*/
 
 static void
 deflicker_prepare_histogram(dt_iop_module_t *self, uint32_t **histogram,
@@ -945,8 +947,10 @@ void gui_init(struct dt_iop_module_t *self)
   dt_bauhaus_combobox_add(g->mode, C_("mode", "manual"));
   g->modes = g_list_append(g->modes, GUINT_TO_POINTER(EXPOSURE_MODE_MANUAL));
 
+/*
   dt_bauhaus_combobox_add(g->mode, _("automatic"));
   g->modes = g_list_append(g->modes, GUINT_TO_POINTER(EXPOSURE_MODE_DEFLICKER));
+*/
 
   dt_bauhaus_combobox_set_default(g->mode, 0);
   dt_bauhaus_combobox_set(g->mode, g_list_index(g->modes, GUINT_TO_POINTER(p->mode)));
