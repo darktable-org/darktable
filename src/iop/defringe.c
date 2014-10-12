@@ -148,8 +148,13 @@ void process (struct dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece, voi
   const int radius = ceil(2.0*ceilf(sigma));
   const float base_strength = fmax(0.1f, p->strength);
 
+  // save the fibonacci lattices in them later
+  int * xy_avg = NULL;
+  int * xy_artifact = NULL;
+  int * xy_small = NULL;
+
   if(roi_out->width < 2*radius+1 || roi_out->height < 2*radius+1)
-    goto ERROR_EXIT;
+   goto ERROR_EXIT;
 
   float avg_edge_chroma = 0.0;
 
@@ -157,11 +162,6 @@ void process (struct dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece, voi
   float * const out = (float*const)o;
   int width = roi_in->width;
   int height = roi_in->height;
-
-  // save the fibonacci lattices in them later
-  int * xy_avg = NULL;
-  int * xy_artifact = NULL;
-  int * xy_small = NULL;
 
   dt_gaussian_t * gauss = NULL;
   gauss = dt_gaussian_init(width, height, ch, Labmax, Labmin, sigma, order);
