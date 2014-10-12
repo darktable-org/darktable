@@ -29,18 +29,21 @@
 #include <stdlib.h>
 #include "common/gaussian.h"
 
-DT_MODULE(1)
+DT_MODULE_INTROSPECTION(1, dt_iop_defringe_params_t)
 
-// these need to be static numbers as they are put to the db
-#define MODE_GLOBAL_AVERAGE 0
-#define MODE_LOCAL_AVERAGE 1
-#define MODE_STATIC 2
+typedef enum dt_iop_defringe_mode_t
+{
+  MODE_GLOBAL_AVERAGE = 0,
+  MODE_LOCAL_AVERAGE = 1,
+  MODE_STATIC = 2
+}
+dt_iop_defringe_mode_t;
 
 typedef struct dt_iop_defringe_params_t
 {
   float radius;
   float thresh;
-  uint32_t op_mode;
+  dt_iop_defringe_mode_t op_mode;
   float strength;
 }
 dt_iop_defringe_params_t;
@@ -137,13 +140,16 @@ void process (struct dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece, voi
   assert(dt_iop_module_colorspace(module) == iop_cs_Lab);
 
   const int order = 1; // 0,1,2
-  const float sigma = p->radius * roi_in->scale / piece->iscale;
+  const float sigma = fmax(0.1f, fabs(p->radius)) * roi_in->scale / piece ->iscale;
   const float Labmax[] = { 100.0f, 128.0f, 128.0f, 1.0f };
   const float Labmin[] = { 0.0f, -128.0f, -128.0f, 0.0f };
   const int ch = piece->colors;
 
   const int radius = ceil(2.0*ceilf(sigma));
   const float base_strength = p->strength;
+
+  if(roi_out->width < 2*radius+1 || roi_out->height < 2*radius+1)
+    goto ERROR_EXIT;
 
   float avg_edge_chroma = 0.0;
 
@@ -188,7 +194,7 @@ void process (struct dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece, voi
 
   // precompute all required fibonacci lattices:
   int * xy_avg;
-  if ((xy_avg = g_malloc(2 * sizeof(int) * samples_avg)))
+  if ((xy_avg = malloc(2 * sizeof(int) * samples_avg)))
   {
     tmp = xy_avg;
     for (int u=0; u < samples_avg; u++)
@@ -202,11 +208,11 @@ void process (struct dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece, voi
   else
   {
     printf("Error allocating memory for defringe module fibonacci lattices");
-    return;
+    goto ERROR_EXIT;
   }
 
   int * xy_small;
-  if ((xy_small = g_malloc(2 * sizeof(int) * samples_small)))
+  if ((xy_small = malloc(2 * sizeof(int) * samples_small)))
   {
     tmp = xy_small;
     for (int u=0; u < samples_small; u++)
@@ -220,11 +226,12 @@ void process (struct dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece, voi
   else
   {
     printf("Error allocating memory for defringe module fibonacci lattices");
-    return;
+    free(xy_avg);
+    goto ERROR_EXIT;
   }
 
   int * xy_artifact;
-  if ((xy_artifact = g_malloc(2 * sizeof(int) * samples_artifact)))
+  if ((xy_artifact = malloc(2 * sizeof(int) * samples_artifact)))
   {
     tmp = xy_artifact;
     for (int u=0; u < samples_artifact; u++)
@@ -238,7 +245,9 @@ void process (struct dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece, voi
   else
   {
     printf("Error allocating memory for defringe module fibonacci lattices");
-    return;
+    free(xy_avg);
+    free(xy_small);
+    goto ERROR_EXIT;
   }
 
 #ifdef _OPENMP
@@ -378,23 +387,22 @@ void process (struct dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece, voi
         out[v*width*ch + t*ch +1] = in[v*width*ch + t*ch +1];
         out[v*width*ch + t*ch +2] = in[v*width*ch + t*ch +2];
       }
+      out[v*width*ch + t*ch] = in[v*width*ch + t*ch];
     }
   }
 
-  // yes this needs to be done in an extra loop (at least for out[.. +3] that was used for edge values)
-  // we might want to use this in a kind of "deferred" way in the upper loop to have a higher probability
-  // of having this still in cache - but probably not worth it..
-  for (int v=0; v<height; v++)
-  {
-    for (int t=0; t<width; t++)
-    {
-      out[v*width*ch + t*ch   ] = in[v*width*ch + t*ch   ];
-      out[v*width*ch + t*ch +3] = in[v*width*ch + t*ch +3];
-    }
-  }
-  g_free(xy_artifact);
-  g_free(xy_small);
-  g_free(xy_avg);
+  if(piece->pipe->mask_display)
+    dt_iop_alpha_copy(i, o, roi_out->width, roi_out->height);
+
+  free(xy_artifact);
+  free(xy_small);
+  free(xy_avg);
+
+  return;
+
+ERROR_EXIT:
+  memcpy(o, i, (size_t)sizeof(float)*ch*roi_out->width*roi_out->height);
+
 }
 
 void reload_defaults(dt_iop_module_t *module)
@@ -411,7 +419,6 @@ void init(dt_iop_module_t *module)
 {
   module->params = malloc(sizeof(dt_iop_defringe_params_t));
   module->default_params = malloc(sizeof(dt_iop_defringe_params_t));
-  module->request_histogram = 1;
   module->priority = 344; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_defringe_params_t);
   module->gui_data = NULL;
@@ -420,8 +427,6 @@ void init(dt_iop_module_t *module)
 
 void cleanup(dt_iop_module_t *module)
 {
-  free(module->gui_data);
-  module->gui_data = NULL;
   free(module->params);
   module->params = NULL;
   free(module->default_params);
