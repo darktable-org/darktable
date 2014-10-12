@@ -2,6 +2,7 @@
     This file is part of darktable,
     copyright (c) 2009--2010 johannes hanika.
     copyright (c) 2011 henrik andersson.
+    copyright (c) 2014 LebedevRI.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -125,11 +126,10 @@ static void PNGwriteRawProfile(png_struct *ping,
 }
 
 int
-write_image (dt_imageio_module_data_t *p_tmp, const char *filename, const void *in_void, void *exif, int exif_len, int imgid)
+write_image (dt_imageio_module_data_t *p_tmp, const char *filename, const void *ivoid, void *exif, int exif_len, int imgid)
 {
   dt_imageio_png_t*p=(dt_imageio_png_t*)p_tmp;
   const int width = p->width, height = p->height;
-  const uint8_t *in = (uint8_t *)in_void;
   FILE *f = fopen(filename, "wb");
   if (!f) return 1;
 
@@ -201,31 +201,31 @@ write_image (dt_imageio_module_data_t *p_tmp, const char *filename, const void *
 
   png_write_info(png_ptr, info_ptr);
 
-  // png_bytep row_pointer = (png_bytep) in;
-  png_byte row[6*width];
-  // unsigned long rowbytes = png_get_rowbytes(png_ptr, info_ptr);
+  /*
+   * Get rid of filler (OR ALPHA) bytes, pack XRGB/RGBX/ARGB/RGBA into
+   * RGB (4 channels -> 3 channels). The second parameter is not used.
+   */
+  png_set_filler(png_ptr, 0, PNG_FILLER_AFTER);
+
+  png_bytep *row_pointers = malloc(height * sizeof(png_bytep));
 
   if(p->bpp > 8)
   {
-    for (int y = 0; y < height; y++)
-    {
-      for(int x=0; x<width; x++) for(int k=0; k<3; k++)
-        {
-          uint16_t pix = ((uint16_t *)in)[(size_t)4*width*y + 4*x + k];
-          uint16_t swapped = (0xff00 & (pix<<8)) | (pix>>8);
-          ((uint16_t *)row)[3*x+k] = swapped;
-        }
-      png_write_row(png_ptr, row);
-    }
+    /* swap bytes of 16 bit files to most significant bit first */
+    png_set_swap(png_ptr);
+
+    for (unsigned i = 0; i < height; i++)
+      row_pointers[i] = (png_bytep)((uint16_t *)ivoid + (size_t)4 * i * width);
   }
   else
   {
-    for (int y = 0; y < height; y++)
-    {
-      for(int x=0; x<width; x++) for(int k=0; k<3; k++) row[3*x+k] = in[(size_t)4*width*y + 4*x + k];
-      png_write_row(png_ptr, row);
-    }
+    for (unsigned i = 0; i < height; i++)
+      row_pointers[i] = (uint8_t *)ivoid + (size_t)4 * i * width;
   }
+
+  png_write_image (png_ptr, row_pointers);
+
+  free(row_pointers);
 
   png_write_end(png_ptr, info_ptr);
   png_destroy_write_struct(&png_ptr, &info_ptr);
