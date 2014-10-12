@@ -146,7 +146,7 @@ void process (struct dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece, voi
   const int ch = piece->colors;
 
   const int radius = ceil(2.0*ceilf(sigma));
-  const float base_strength = p->strength;
+  const float base_strength = fmax(0.1f, p->strength);
 
   if(roi_out->width < 2*radius+1 || roi_out->height < 2*radius+1)
     goto ERROR_EXIT;
@@ -158,13 +158,22 @@ void process (struct dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece, voi
   int width = roi_in->width;
   int height = roi_in->height;
 
-  dt_gaussian_t * gauss = dt_gaussian_init(width, height, ch, Labmax, Labmin, sigma, order);
-  if (!gauss) return;
+  dt_gaussian_t * gauss = NULL;
+  gauss = dt_gaussian_init(width, height, ch, Labmax, Labmin, sigma, order);
+  if (!gauss)
+  {
+    fprintf(stderr, "Error allocating memory for gaussian blur in: defringe module");
+    goto ERROR_EXIT;
+  }
   dt_gaussian_blur(gauss, in, out);
   dt_gaussian_free(gauss);
 
   // Pre-Compute Fibonacci Lattices
   int *tmp;
+
+  int * xy_avg = NULL;
+  int * xy_artifact = NULL;
+  int * xy_small = NULL;
 
   int samples_wish = radius*radius*0.8;
   int sampleidx_avg;
@@ -193,7 +202,6 @@ void process (struct dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece, voi
   const int samples_artifact = samples_avg;
 
   // precompute all required fibonacci lattices:
-  int * xy_avg;
   if ((xy_avg = malloc(2 * sizeof(int) * samples_avg)))
   {
     tmp = xy_avg;
@@ -207,11 +215,10 @@ void process (struct dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece, voi
   }
   else
   {
-    printf("Error allocating memory for defringe module fibonacci lattices");
+    fprintf(stderr, "Error allocating memory for fibonacci lattice in: defringe module");
     goto ERROR_EXIT;
   }
 
-  int * xy_small;
   if ((xy_small = malloc(2 * sizeof(int) * samples_small)))
   {
     tmp = xy_small;
@@ -225,12 +232,10 @@ void process (struct dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece, voi
   }
   else
   {
-    printf("Error allocating memory for defringe module fibonacci lattices");
-    free(xy_avg);
+    fprintf(stderr, "Error allocating memory for fibonacci lattice in: defringe module");
     goto ERROR_EXIT;
   }
 
-  int * xy_artifact;
   if ((xy_artifact = malloc(2 * sizeof(int) * samples_artifact)))
   {
     tmp = xy_artifact;
@@ -244,9 +249,7 @@ void process (struct dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece, voi
   }
   else
   {
-    printf("Error allocating memory for defringe module fibonacci lattices");
-    free(xy_avg);
-    free(xy_small);
+    fprintf(stderr, "Error allocating memory for fibonacci lattice in: defringe module");
     goto ERROR_EXIT;
   }
 
@@ -275,13 +278,13 @@ void process (struct dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece, voi
   if (MODE_GLOBAL_AVERAGE == p->op_mode)
   {
     avg_edge_chroma = avg_edge_chroma / (width * height) + 10.0*FLT_EPSILON;
-    thresh = 8.0 * p->thresh * avg_edge_chroma / MAGIC_THRESHOLD_COEFF;
+    thresh = fmax(0.1f, 8.0 * p->thresh * avg_edge_chroma / MAGIC_THRESHOLD_COEFF);
   }
   else
   {
     // this fixed value will later be changed when doing local averaging, or kept as-is in "static" mode
     avg_edge_chroma = MAGIC_THRESHOLD_COEFF;
-    thresh = p->thresh;
+    thresh = fmax(0.1f, p->thresh);
   }
 
 #ifdef _OPENMP
@@ -303,9 +306,9 @@ void process (struct dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece, voi
         {
           int dx = *tmp++;
           int dy = *tmp++;
-          int x = MAX(0,MIN(height-1,v+dx));
-          int y = MAX(0,MIN(width-1,t+dy));
-          local_avg += out[x*width*ch + y*ch +3];
+          int x = MAX(0,MIN(width-1,t+dx));
+          int y = MAX(0,MIN(height-1,v+dy));
+          local_avg += out[y*width*ch + x*ch +3];
         }
         local_avg /= (float)samples_avg*2.0;
         avg_edge_chroma = local_avg;
@@ -327,13 +330,13 @@ void process (struct dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece, voi
         {
           int dx = *tmp++;
           int dy = *tmp++;
-          int x = MAX(0,MIN(height-1,v+dx));
-          int y = MAX(0,MIN(width-1,t+dy));
+          int x = MAX(0,MIN(width-1,t+dx));
+          int y = MAX(0,MIN(height-1,v+dy));
           // inverse chroma weighted average of neigbouring pixels inside window
           // also taking average edge chromaticity into account (either global or local average)
-          weight = 1.0/(out[x*width*ch + y*ch +3] + avg_edge_chroma);
-          atot += weight * in[x*width*ch + y*ch +1];
-          btot += weight * in[x*width*ch + y*ch +2];
+          weight = 1.0/(out[y*width*ch + x*ch +3] + avg_edge_chroma);
+          atot += weight * in[y*width*ch + x*ch +1];
+          btot += weight * in[y*width*ch + x*ch +2];
           norm += weight;
         }
         // here we could try using a "balance" between original and changed value, this could be used to reduce artifcats
@@ -366,13 +369,13 @@ void process (struct dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece, voi
         {
           int dx = *tmp++;
           int dy = *tmp++;
-          int x = MAX(0,MIN(height-1,v+dx));
-          int y = MAX(0,MIN(width-1,t+dy));
+          int x = MAX(0,MIN(width-1,t+dx));
+          int y = MAX(0,MIN(height-1,v+dy));
           // inverse chroma weighted average of neigbouring pixels inside window
           // also taking average edge chromaticity into account (either global or local average)
-          weight = 1.0/(out[x*width*ch + y*ch +3] + avg_edge_chroma);
-          atot += weight * in[x*width*ch + y*ch +1];
-          btot += weight * in[x*width*ch + y*ch +2];
+          weight = 1.0/(out[y*width*ch + x*ch +3] + avg_edge_chroma);
+          atot += weight * in[y*width*ch + x*ch +1];
+          btot += weight * in[y*width*ch + x*ch +2];
           norm += weight;
         }
         double a = (atot/norm); // *balance + in[v*width*ch + t*ch +1]*(1.0-balance);
@@ -394,15 +397,15 @@ void process (struct dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece, voi
   if(piece->pipe->mask_display)
     dt_iop_alpha_copy(i, o, roi_out->width, roi_out->height);
 
-  free(xy_artifact);
-  free(xy_small);
-  free(xy_avg);
-
-  return;
+  goto FINISH_PROCESS;
 
 ERROR_EXIT:
   memcpy(o, i, (size_t)sizeof(float)*ch*roi_out->width*roi_out->height);
 
+FINISH_PROCESS:
+  if (xy_artifact) free(xy_artifact);
+  if (xy_small) free(xy_small);
+  if (xy_avg) free(xy_avg);
 }
 
 void reload_defaults(dt_iop_module_t *module)
