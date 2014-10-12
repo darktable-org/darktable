@@ -4,7 +4,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "POT-Creation-Date: 2014-10-11 18:14+0200\n"
-"PO-Revision-Date: 2014-10-11 20:58+0100\n"
+"PO-Revision-Date: 2014-10-12 11:18+0100\n"
 "Last-Translator: Michel Leblond <michel.leblond62@gmail.com>\n"
 "Language-Team: Jean-Luc Coulon, Victor Lamoine, Michel Leblond\n"
 "Language: fr\n"
@@ -15217,7 +15217,7 @@ msgstr ""
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:14344(keyword)
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:17536(secondary)
 msgid "tethering"
-msgstr "Mode connecté"
+msgstr "capture"
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:14352(primary)
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:14460(primary)
@@ -15231,7 +15231,7 @@ msgid ""
 "The tethering view allows you to capture images directly into darktable from "
 "your connected camera."
 msgstr ""
-"La vue capture vous permet de capturer les images directement vers darktable "
+"La vue capture vous permet de capturer des images directement dans darktable "
 "à partir de votre appareil connecté."
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:14363(screeninfo)
@@ -15247,13 +15247,13 @@ msgid ""
 "will need to <quote>unmount/eject</quote> the camera. This is required to "
 "unlock the camera so darktable can lock it for usage."
 msgstr ""
-"Pour utiliser la fonctionnalité de connexion, vous devrez connecter votre "
+"Pour utiliser la fonctionnalité de connexion vous devez connecter votre "
 "appareil à votre PC à l’aide d’un câble USB. Votre ordinateur peut vous "
 "demander de monter l’appareil connecté ou d’afficher son contenu. Ne le "
 "montez pas et ne visualisez pas son contenu. Si cela se produit "
 "automatiquement, vous devrez <quote>démonter/éjecter</quote> l’appareil. "
-"Ceci est nécessaire pour libérer l’appareil afin que darktable puisse le "
-"verrouiller pour son utilisation."
+"Ceci est nécessaire pour déverrouiller l’appareil afin que, pour l'utiliser, "
+"darktable puisse le verrouiller."
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:14381(para)
 msgid ""
@@ -15265,11 +15265,10 @@ msgid ""
 msgstr ""
 "Une fois le câble USB connecté, regardez le panneau d’importation du mode "
 "table lumineuse (voir <xref linkend=\"import\"/>). Si votre appareil n'est "
-"pas visible dans ce panneau, cliquez le bouton <quote>rechercher des "
-"périphériques</quote> et il apparaîtra avec deux fonctions : <quote>Importer "
-"depuis l’appareil</quote> et <quote>Prise de vue en mode connecté</quote>. "
-"Cliquez <quote>prise de vue en mode connecté</quote> pour entrer dans le "
-"mode connecté."
+"pas visible dans ce panneau, cliquez le bouton <quote>rechercher un "
+"appareil</quote> et il apparaîtra avec deux fonctions : <quote>importer "
+"depuis le boîtier</quote> et <quote>commander le boîtier</quote>. Cliquez "
+"<quote>commander le boîtier</quote> pour entrer dans le mode connecté."
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:14389(para)
 msgid ""
@@ -15293,7 +15292,7 @@ msgstr ""
 "Les images sont affichées dans la vue centrale au fur et à mesure de leur "
 "capture. Vous pouvez effectuer une prise de vue soit depuis l’interface "
 "utilisateur de darktable, soit en effectuant le déclenchement à la main sur "
-"votre appareil. Si vous utilisez la vue à l’écran, elle sera affichée sur la "
+"votre appareil. Si vous utilisez visée directe, elle sera affichée sur la "
 "vue centrale de darktable."
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:14419(para)
