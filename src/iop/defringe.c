@@ -114,6 +114,8 @@ static const float fib[] =
 static inline
 void fib_latt(int * const x, int * const y, float radius, int step, int idx)
 {
+  // idx < 1 because division by zero is also a problem in the following line
+  if (idx >= sizeof(fib)/sizeof(float) || idx < 1) fprintf(stderr, "Fibonacci lattice index wrong/out of bounds in: defringe module\n");
   float px = step/fib[idx], py = step*(fib[idx+1]/fib[idx]);
   py -= (int)py;
   float dx = px*radius, dy = py*radius;
@@ -136,17 +138,17 @@ void fib_latt(int * const x, int * const y, float radius, int step, int idx)
 // -----------------------------------------------------------------------------------------
 void process (struct dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece, void *i, void *o, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
 {
-  dt_iop_defringe_data_t *p = (dt_iop_defringe_data_t *)piece->data;
+  dt_iop_defringe_data_t *d = (dt_iop_defringe_data_t *)piece->data;
   assert(dt_iop_module_colorspace(module) == iop_cs_Lab);
 
   const int order = 1; // 0,1,2
-  const float sigma = fmax(0.1f, fabs(p->radius)) * roi_in->scale / piece ->iscale;
+  const float sigma = fmax(0.1f, fabs(d->radius)) * roi_in->scale / piece ->iscale;
   const float Labmax[] = { 100.0f, 128.0f, 128.0f, 1.0f };
   const float Labmin[] = { 0.0f, -128.0f, -128.0f, 0.0f };
   const int ch = piece->colors;
 
   const int radius = ceil(2.0*ceilf(sigma));
-  const float base_strength = fmax(0.1f, p->strength);
+  const float base_strength = fmax(0.1f, d->strength);
 
   // save the fibonacci lattices in them later
   int * xy_avg = NULL;
@@ -167,7 +169,7 @@ void process (struct dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece, voi
   gauss = dt_gaussian_init(width, height, ch, Labmax, Labmin, sigma, order);
   if (!gauss)
   {
-    fprintf(stderr, "Error allocating memory for gaussian blur in: defringe module");
+    fprintf(stderr, "Error allocating memory for gaussian blur in: defringe module\n");
     goto ERROR_EXIT;
   }
   dt_gaussian_blur(gauss, in, out);
@@ -216,7 +218,7 @@ void process (struct dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece, voi
   }
   else
   {
-    fprintf(stderr, "Error allocating memory for fibonacci lattice in: defringe module");
+    fprintf(stderr, "Error allocating memory for fibonacci lattice in: defringe module\n");
     goto ERROR_EXIT;
   }
 
@@ -233,7 +235,7 @@ void process (struct dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece, voi
   }
   else
   {
-    fprintf(stderr, "Error allocating memory for fibonacci lattice in: defringe module");
+    fprintf(stderr, "Error allocating memory for fibonacci lattice in: defringe module\n");
     goto ERROR_EXIT;
   }
 
@@ -250,12 +252,12 @@ void process (struct dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece, voi
   }
   else
   {
-    fprintf(stderr, "Error allocating memory for fibonacci lattice in: defringe module");
+    fprintf(stderr, "Error allocating memory for fibonacci lattice in: defringe module\n");
     goto ERROR_EXIT;
   }
 
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(width,height,p) reduction(+:avg_edge_chroma) schedule(static)
+#pragma omp parallel for default(none) shared(width,height,d) reduction(+:avg_edge_chroma) schedule(static)
 #endif
   for (int v=0; v<height; v++)
   {
@@ -271,34 +273,34 @@ void process (struct dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece, voi
       // save local edge chroma in out[.. +3] , this is later compared with threshold
       out[(size_t)v*width*ch + t*ch +3] = edge * base_strength * base_strength;
       // the average chroma of the edge-layer in the roi
-      if (MODE_GLOBAL_AVERAGE == p->op_mode) avg_edge_chroma += edge * base_strength;
+      if (MODE_GLOBAL_AVERAGE == d->op_mode) avg_edge_chroma += edge * base_strength;
     }
   }
 
   float thresh;
-  if (MODE_GLOBAL_AVERAGE == p->op_mode)
+  if (MODE_GLOBAL_AVERAGE == d->op_mode)
   {
     avg_edge_chroma = avg_edge_chroma / (width * height) + 10.0*FLT_EPSILON;
-    thresh = fmax(0.1f, 8.0 * p->thresh * avg_edge_chroma / MAGIC_THRESHOLD_COEFF);
+    thresh = fmax(0.1f, 8.0 * d->thresh * avg_edge_chroma / MAGIC_THRESHOLD_COEFF);
   }
   else
   {
     // this fixed value will later be changed when doing local averaging, or kept as-is in "static" mode
     avg_edge_chroma = MAGIC_THRESHOLD_COEFF;
-    thresh = fmax(0.1f, p->thresh);
+    thresh = fmax(0.1f, d->thresh);
   }
 
 #ifdef _OPENMP
 // dynamically/guided scheduled due to possible uneven edge-chroma distribution (thanks to rawtherapee code for this hint!)
-#pragma omp parallel for default(none) shared(width,height,p,xy_small,xy_avg,xy_artifact) firstprivate(thresh,avg_edge_chroma) schedule(guided,32)
+#pragma omp parallel for default(none) shared(width,height,d,xy_small,xy_avg,xy_artifact) firstprivate(thresh,avg_edge_chroma) schedule(guided,32)
 #endif
   for (int v=0; v<height; v++)
   {
     for (int t=0; t<width; t++)
     {
-      double local_thresh = thresh;
+      float local_thresh = thresh;
       // think of compiler setting "-funswitch-loops" to maybe improve these things:
-      if (MODE_LOCAL_AVERAGE == p->op_mode && out[(size_t)v*width*ch +t*ch +3] > thresh)
+      if (MODE_LOCAL_AVERAGE == d->op_mode && out[(size_t)v*width*ch +t*ch +3] > thresh)
       {
         float local_avg = 0.0;
         // use some and not all values from the neigbourhood to speed things up:
@@ -313,7 +315,7 @@ void process (struct dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece, voi
         }
         local_avg /= (float)samples_avg*2.0;
         avg_edge_chroma = local_avg;
-        double new_thresh = 8.0 * p->thresh * avg_edge_chroma / MAGIC_THRESHOLD_COEFF;
+        float new_thresh = 8.0 * d->thresh * avg_edge_chroma / MAGIC_THRESHOLD_COEFF;
         local_thresh = new_thresh;
       }
       if (out[(size_t)v*width*ch +t*ch +3] > local_thresh)
@@ -412,7 +414,7 @@ FINISH_PROCESS:
 void reload_defaults(dt_iop_module_t *module)
 {
   module->default_enabled = 0;
-  ((dt_iop_defringe_params_t *)module->default_params)->radius = 5.0;
+  ((dt_iop_defringe_params_t *)module->default_params)->radius = 4.0;
   ((dt_iop_defringe_params_t *)module->default_params)->thresh = 10;
   ((dt_iop_defringe_params_t *)module->default_params)->strength = 1.0;
   ((dt_iop_defringe_params_t *)module->default_params)->op_mode = MODE_GLOBAL_AVERAGE;
@@ -497,7 +499,7 @@ void gui_init (dt_iop_module_t *module)
   g->thresh_scale = dt_bauhaus_slider_new_with_range(module, 1.0, 128.0, 0.1, p->thresh, 1);
   dt_bauhaus_widget_set_label(g->thresh_scale, NULL, _("threshold"));
 
-  g->strength_scale = dt_bauhaus_slider_new_with_range(module, 0.1, 1.5, 0.1, p->strength, 1);
+  g->strength_scale = dt_bauhaus_slider_new_with_range(module, 0.1, 2.0, 0.1, p->strength, 1);
   dt_bauhaus_widget_set_label(g->strength_scale, NULL, _("strength"));
 
   gtk_box_pack_start(GTK_BOX(module->widget), GTK_WIDGET(g->radius_scale), TRUE, TRUE, 0);
