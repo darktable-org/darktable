@@ -61,6 +61,7 @@ dt_pwstorage_libsecret_new()
 
   context->secret_service = secret_service_get_sync(SECRET_SERVICE_NONE, NULL, NULL);
   if (context->secret_service == NULL) {
+    dt_pwstorage_libsecret_destroy(context);
     return NULL;
   }
 
