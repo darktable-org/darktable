@@ -210,15 +210,16 @@ modify_roi_out(
               T     = d->ry * scale;
 
   const float y = sqrtf(2.0f * T * T),
-              x = sqrtf(2.0f * (roi_out->width - T) * (roi_in->width - T));
+              x = sqrtf(2.0f * (roi_in->width - T) * (roi_in->width - T));
 
-  roi_out->width  = y;
-  roi_out->height = x;
+  const struct dt_interpolation* interpolation = dt_interpolation_new(DT_INTERPOLATION_USERPREF);
+  const float IW = interpolation->width * scale;
 
-  const int scwidth = piece->pipe->iwidth   * roi_out->scale;
-  const int scheight = piece->pipe->iheight * roi_out->scale;
-  roi_out->x = CLAMP(roi_out->x, 0, scwidth);
-  roi_out->y = CLAMP(roi_out->y, 0, scheight);
+  roi_out->width  = y - IW;
+  roi_out->height = x - IW;
+
+  roi_out->width  = MAX(0, roi_out->width  & ~1);
+  roi_out->height = MAX(0, roi_out->height & ~1);
 }
 
 // 2nd pass: which roi would this operation need as input to fill the given output region?
@@ -256,19 +257,14 @@ modify_roi_in(
     adjust_aabb(o, aabb_in);
   }
 
-  // adjust roi_in to minimally needed region
-  roi_in->x      = aabb_in[0]-1;
-  roi_in->y      = aabb_in[1]-1;
-  roi_in->width  = aabb_in[2]-aabb_in[0]+2;
-  roi_in->height = aabb_in[3]-aabb_in[1]+2;
+  const struct dt_interpolation* interpolation = dt_interpolation_new(DT_INTERPOLATION_USERPREF);
+  const float IW = interpolation->width * scale;
 
-  // sanity check.
-  const int scwidth = piece->pipe->iwidth   * roi_out->scale;
-  const int scheight = piece->pipe->iheight * roi_out->scale;
-  roi_in->x = CLAMP(roi_in->x, 0, scwidth);
-  roi_in->y = CLAMP(roi_in->y, 0, scheight);
-  roi_in->width = CLAMP(roi_in->width, 1, scwidth - roi_in->x);
-  roi_in->height = CLAMP(roi_in->height, 1, scheight - roi_in->y);
+  // adjust roi_in to minimally needed region
+  roi_in->x      = aabb_in[0] - IW;
+  roi_in->y      = aabb_in[1] - IW;
+  roi_in->width  = aabb_in[2] - roi_in->x + IW;
+  roi_in->height = aabb_in[3] - roi_in->y + IW;
 }
 
 // 3rd (final) pass: you get this input region (may be different from what was requested above),
