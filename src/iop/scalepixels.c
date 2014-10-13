@@ -338,8 +338,6 @@ void
 cleanup(
   dt_iop_module_t *self)
 {
-  free(self->gui_data);
-  self->gui_data = NULL;
   free(self->params);
   self->params = NULL;
 }
