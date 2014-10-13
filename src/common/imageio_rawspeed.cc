@@ -189,6 +189,9 @@ dt_imageio_open_rawspeed(
     img->raw_black_level = r->blackLevel;
     img->raw_white_point = r->whitePoint;
 
+    img->fuji_rotation_pos = r->fujiRotationPos;
+    img->pixel_aspect_ratio = (float)r->pixelAspectRatio;
+
     void *buf = dt_mipmap_cache_alloc(img, DT_MIPMAP_FULL, a);
     if(!buf)
       return DT_IMAGEIO_CACHE_FULL;

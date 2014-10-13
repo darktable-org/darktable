@@ -84,10 +84,14 @@ def add_edges(gr):
   gr.add_edge(('basecurve', 'lens'))
   gr.add_edge(('basecurve', 'exposure'))
   
+  # fix mad sensor designs: NIKON D1X have rectangular pixels
+  gr.add_edge(('scalepixels', 'demosaic'))
+
   # flip is a distortion plugin, and as such has to go after spot removal
   # and lens correction, which depend on original input buffers.
   # and after buffer has been downscaled/demosaiced
   gr.add_edge(('flip', 'demosaic'))
+  gr.add_edge(('flip', 'scalepixels'))
   gr.add_edge(('flip', 'lens'))
   gr.add_edge(('flip', 'spots'))
   # plus, it confuses crop/rotate, vignetting and graduated density
@@ -156,6 +160,7 @@ def add_edges(gr):
   # spot removal works on demosaiced data
   # and needs to be before geometric distortions:
   gr.add_edge(('spots', 'demosaic'))
+  gr.add_edge(('scalepixels', 'spots'))
   gr.add_edge(('lens', 'spots'))
   gr.add_edge(('borders', 'spots'))
   gr.add_edge(('clipping', 'spots'))
@@ -376,6 +381,7 @@ gr.add_nodes([
 'profile_gamma',
 'rawdenoise',
 'relight',
+'scalepixels',
 'shadhi',
 'sharpen',
 'soften',

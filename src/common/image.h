@@ -145,6 +145,10 @@ typedef struct dt_image_t
   uint16_t raw_black_level;
   uint16_t raw_white_point;
 
+  /* needed to fix some manufacturers madness */
+  uint32_t fuji_rotation_pos;
+  float pixel_aspect_ratio;
+
   /* filter for Fuji X-Trans images, only used if filters == 9u */
   uint8_t xtrans[6][6];
 
