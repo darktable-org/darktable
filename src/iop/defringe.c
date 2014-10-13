@@ -83,7 +83,8 @@ int flags ()
   return IOP_FLAGS_SUPPORTS_BLENDING;
 }
 
-#define CLIP(x,y,z)  if (x < y) x = y; if (x > z) x = z;
+// try without clipping for now, usually it should be fine
+//#define CLIP(x,y,z)  if (x < y) x = y; if (x > z) x = z;
 
 // Verify before actually using this
 /*
@@ -115,7 +116,13 @@ static inline
 void fib_latt(int * const x, int * const y, float radius, int step, int idx)
 {
   // idx < 1 because division by zero is also a problem in the following line
-  if (idx >= sizeof(fib)/sizeof(float) || idx < 1) fprintf(stderr, "Fibonacci lattice index wrong/out of bounds in: defringe module\n");
+  if (idx >= sizeof(fib)/sizeof(float) || idx < 1)
+  {
+    *x = 0;
+    *y = 0;
+    fprintf(stderr, "Fibonacci lattice index wrong/out of bounds in: defringe module\n");
+    return;
+  }
   float px = step/fib[idx], py = step*(fib[idx+1]/fib[idx]);
   py -= (int)py;
   float dx = px*radius, dy = py*radius;
@@ -347,8 +354,8 @@ void process (struct dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece, voi
         // float balance = (out[v*width*ch +t*ch +3]-thresh)/out[v*width*ch +t*ch +3];
         double a = (atot/norm); // *balance + in[v*width*ch + t*ch +1]*(1.0-balance);
         double b = (btot/norm); // *balance + in[v*width*ch + t*ch +2]*(1.0-balance);
-        if (a < -128.0 || a > 127.0) CLIP(a,-128.0,127.0);
-        if (b < -128.0 || b > 127.0) CLIP(b,-128.0,127.0);
+        //if (a < -128.0 || a > 127.0) CLIP(a,-128.0,127.0);
+        //if (b < -128.0 || b > 127.0) CLIP(b,-128.0,127.0);
         out[(size_t)v*width*ch + t*ch +1] = a;
         out[(size_t)v*width*ch + t*ch +2] = b;
       }
@@ -383,8 +390,8 @@ void process (struct dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece, voi
         }
         double a = (atot/norm); // *balance + in[v*width*ch + t*ch +1]*(1.0-balance);
         double b = (btot/norm); // *balance + in[v*width*ch + t*ch +2]*(1.0-balance);
-        if (a < -128.0 || a > 127.0) CLIP(a,-128.0,127.0);
-        if (b < -128.0 || b > 127.0) CLIP(b,-128.0,127.0);
+        //if (a < -128.0 || a > 127.0) CLIP(a,-128.0,127.0);
+        //if (b < -128.0 || b > 127.0) CLIP(b,-128.0,127.0);
         out[(size_t)v*width*ch + t*ch +1] = a;
         out[(size_t)v*width*ch + t*ch +2] = b;
         }
@@ -536,3 +543,7 @@ void gui_cleanup (dt_iop_module_t *module)
   free(module->gui_data);
   module->gui_data = NULL;
 }
+
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// vim: shiftwidth=2 expandtab tabstop=2 cindent
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;
