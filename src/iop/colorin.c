@@ -955,7 +955,7 @@ void init(dt_iop_module_t *module)
   module->default_params = malloc(sizeof(dt_iop_colorin_params_t));
   module->params_size = sizeof(dt_iop_colorin_params_t);
   module->gui_data = NULL;
-  module->priority = 333; // module order created by iop_dependencies.py, do not edit!
+  module->priority = 350; // module order created by iop_dependencies.py, do not edit!
   module->hide_enable_button = 1;
   module->default_enabled = 1;
 }

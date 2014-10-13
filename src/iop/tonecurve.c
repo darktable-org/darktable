@@ -571,7 +571,7 @@ void init(dt_iop_module_t *module)
   module->default_params = malloc(sizeof(dt_iop_tonecurve_params_t));
   module->default_enabled = 0;
   module->request_histogram |= (DT_REQUEST_ON);
-  module->priority = 649; // module order created by iop_dependencies.py, do not edit!
+  module->priority = 666; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_tonecurve_params_t);
   module->gui_data = NULL;
   dt_iop_tonecurve_params_t tmp = (dt_iop_tonecurve_params_t)
