@@ -33,13 +33,13 @@
 
 #define EMPTY_STRING(string) !*(string)
 
-const SecretSchema * secret_darktable_get_schema (void) G_GNUC_CONST;
+static const SecretSchema * secret_darktable_get_schema (void) G_GNUC_CONST;
 #define SECRET_SCHEMA_DARKTABLE  secret_darktable_get_schema ()
 
 static GHashTable* secret_to_attributes(SecretValue* value);
 static SecretValue* attributes_to_secret(GHashTable* attributes);
 
-const SecretSchema *
+static const SecretSchema *
 secret_darktable_get_schema (void)
 {
   static const SecretSchema darktable_schema = {
