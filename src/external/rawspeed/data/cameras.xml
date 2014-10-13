@@ -2333,6 +2333,16 @@
 		<Crop x="8" y="8" width="-24" height="-8"/>
 		<Sensor black="0" white="4095"/>
 	</Camera>
+	<Camera make="OLYMPUS IMAGING CORP." model="E-PL7" supported="no">
+		<CFA width="2" height="2">
+			<Color x="0" y="0">RED</Color>
+			<Color x="1" y="0">GREEN</Color>
+			<Color x="0" y="1">GREEN</Color>
+			<Color x="1" y="1">BLUE</Color>
+		</CFA>
+		<Crop x="8" y="8" width="-24" height="-8"/>
+		<Sensor black="0" white="4095"/>
+	</Camera>
 	<Camera make="OLYMPUS IMAGING CORP." model="E-P5">
 		<CFA width="2" height="2">
 			<Color x="0" y="0">RED</Color>
