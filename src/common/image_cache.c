@@ -125,6 +125,10 @@ dt_image_cache_deallocate(void *data, const uint32_t key, void *payload)
   // don't free. memory is only allocated once.
   dt_image_t *img = (dt_image_t *)payload;
 
+  // Remove image from mipmap cache so we don't end up with a DT_MIPMAP_F and
+  // no way to know the raw metadata needed to decode it (e.g., blackpoint)
+  dt_mipmap_cache_remove(darktable.mipmap_cache, img->id);
+
   // except for the profile
   g_free(img->profile);
 
