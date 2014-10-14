@@ -97,6 +97,7 @@ dt_pwstorage_libsecret_new()
           DARKTABLE_KEYRING, SECRET_COLLECTION_CREATE_NONE, NULL, NULL);
 
     if (context->secret_collection == NULL) {
+      g_list_free_full(collections, g_object_unref);
       dt_pwstorage_libsecret_destroy(context);
       return NULL;
     }
