@@ -230,7 +230,7 @@ static _flickr_api_context_t *_flickr_api_authenticate(dt_storage_flickr_gui_dat
 
         /* Add creds to pwstorage */
         GHashTable *table = g_hash_table_new(g_str_hash, g_str_equal);
-        gchar* username = g_strdup(gtk_entry_get_text(ui->entry1));
+        gchar* username = (gchar*)gtk_entry_get_text(ui->entry1);
 
         g_hash_table_insert(table, "username", username);
         g_hash_table_insert(table, "token", flickr_user_token);

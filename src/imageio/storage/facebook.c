@@ -700,6 +700,7 @@ static GSList *load_account_info()
 
   GHashTable *table = dt_pwstorage_get("facebook");
   g_hash_table_foreach(table, (GHFunc) load_account_info_fill, &accountlist);
+  g_hash_table_destroy(table);
   return accountlist;
 }
 
@@ -730,7 +731,7 @@ static void save_account_info(dt_storage_facebook_gui_data_t *ui, FBAccountInfo 
   g_object_unref(builder);
 
   GHashTable *table = dt_pwstorage_get("facebook");
-  g_hash_table_insert(table, accountinfo->id, data);
+  g_hash_table_insert(table, g_strdup(accountinfo->id), data);
   dt_pwstorage_set("facebook", table);
 
   g_hash_table_destroy(table);

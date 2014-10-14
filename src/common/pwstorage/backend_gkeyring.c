@@ -110,7 +110,7 @@ GHashTable*
 dt_pwstorage_gkeyring_get(const gchar* slot)
 {
 
-  GHashTable* table = g_hash_table_new (g_str_hash,g_str_equal);
+  GHashTable* table = g_hash_table_new_full (g_str_hash,g_str_equal, g_free, g_free);
   /* find item for slot */
   GList *items=NULL;
   GnomeKeyringAttributeList *attributes;
