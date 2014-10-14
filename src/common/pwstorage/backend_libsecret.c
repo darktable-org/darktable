@@ -57,9 +57,12 @@ secret_darktable_get_schema (void)
 const backend_libsecret_context_t*
 dt_pwstorage_libsecret_new()
 {
-  backend_libsecret_context_t* context = g_malloc(sizeof(backend_libsecret_context_t));
+  backend_libsecret_context_t* context = calloc(1, sizeof(backend_libsecret_context_t));
+  if (context == NULL) {
+    return NULL;
+  }
 
-  context->secret_service = secret_service_get_sync(SECRET_SERVICE_NONE, NULL, NULL);
+  context->secret_service = secret_service_get_sync(SECRET_SERVICE_LOAD_COLLECTIONS, NULL, NULL);
   if (context->secret_service == NULL) {
     dt_pwstorage_libsecret_destroy(context);
     return NULL;
@@ -76,11 +79,16 @@ dt_pwstorage_libsecret_new()
 
   gboolean collection_exists = FALSE;
   GFOREACH(item, collections) {
-    if (g_strcmp0(secret_collection_get_label(item), DARKTABLE_KEYRING)) {
-      context->secret_collection = item;
+    gchar* label = secret_collection_get_label(item);
+    if (g_strcmp0(label, DARKTABLE_KEYRING)) {
       collection_exists = TRUE;
+      context->secret_collection = item;
+      g_object_ref(context->secret_collection);
+
+      g_free(label);
       break;
     }
+    g_free(label);
   }
 
   if (collection_exists == FALSE) {
@@ -93,6 +101,8 @@ dt_pwstorage_libsecret_new()
       return NULL;
     }
   }
+
+  g_list_free_full(collections, g_object_unref);
 
   return context;
 }
@@ -112,7 +122,7 @@ dt_pwstorage_libsecret_destroy(const backend_libsecret_context_t *context)
     g_object_unref(context->secret_collection);
   }
 
-  g_free((backend_libsecret_context_t*) context);
+  free((backend_libsecret_context_t*) context);
 }
 
 gboolean dt_pwstorage_libsecret_set(const backend_libsecret_context_t* context,
@@ -147,11 +157,16 @@ gboolean dt_pwstorage_libsecret_set(const backend_libsecret_context_t* context,
       NULL,
       &error);
 
-  if (item == NULL) {
+  g_free(label);
+  g_hash_table_destroy(secret_attributes);
+  secret_value_unref(secret_value);
+
+  if (item == NULL)
     return FALSE;
-  } else {
-    return TRUE;
-  }
+
+  g_object_unref(item);
+
+  return TRUE;
 }
 
 GHashTable* dt_pwstorage_libsecret_get(const backend_libsecret_context_t*
@@ -175,37 +190,47 @@ GHashTable* dt_pwstorage_libsecret_get(const backend_libsecret_context_t*
       NULL,
       &error);
 
+  g_hash_table_destroy(secret_attributes);
+
   /* Since the search flag is set to SECRET_SEARCH_NONE only one
    * matching item is returned. */
   if (items == NULL || g_list_length(items) != 1) {
-    goto error_out;
+    goto error_free;
   }
 
   SecretItem* item = (SecretItem*) g_list_nth_data(items, 0);
 
   if (item == NULL) {
-    goto error_out;
+    goto error_free;
   }
 
   /* Load secret */
-  secret_item_load_secret_sync(item, NULL, NULL);
+  if (secret_item_load_secret_sync(item, NULL, NULL) == FALSE) {
+    goto error_free;
+  }
 
   SecretValue* value = secret_item_get_secret(item);
 
   if (value == NULL) {
-    goto error_out;
+    goto error_free;
   }
 
   GHashTable* attributes = secret_to_attributes(value);
 
   if (attributes == NULL) {
     secret_value_unref(value);
-    goto error_out;
+    goto error_free;
   }
 
+  g_list_free_full(items, g_object_unref);
   secret_value_unref(value);
 
   return attributes;
+
+error_free:
+
+  if (items != NULL)
+    g_list_free_full(items, g_object_unref);
 
 error_out:
 
