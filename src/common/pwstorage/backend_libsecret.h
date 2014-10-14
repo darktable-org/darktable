@@ -49,8 +49,9 @@ void dt_pwstorage_libsecret_destroy(const backend_libsecret_context_t *context);
 /**
  * Store (key,value) pairs.
  *
- * @param slot The slot
- * @param hash_table List of (key,value) pairs
+ * @param context The libsecret context
+ * @param slot The name of the slot
+ * @param attributes List of (key,value) pairs
  *
  * @return TRUE If function succeeded, otherwise FALSE
  */
@@ -60,8 +61,8 @@ gboolean dt_pwstorage_libsecret_set(const backend_libsecret_context_t* context,
 /**
  * Loads (key, value) pairs
  *
- * @param context
- * @param slot
+ * @param context The libsecret context
+ * @param slot The name of the slot
  *
  * @return table List of (key,value) pairs
  */
@@ -70,5 +71,6 @@ GHashTable* dt_pwstorage_libsecret_get(const backend_libsecret_context_t*
 
 #endif // __BACKEND_LIBSECRET_H__
 
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;
