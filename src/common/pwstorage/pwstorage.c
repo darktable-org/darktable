@@ -65,7 +65,7 @@ const dt_pwstorage_t* dt_pwstorage_new()
     const gchar *desktop = getenv("XDG_CURRENT_DESKTOP");
     if (g_strcmp0(desktop, "KDE") == 0)
       _backend = PW_STORAGE_BACKEND_KWALLET;
-    if (g_strcmp0(desktop, "GNOME") == 0)
+    else if (g_strcmp0(desktop, "GNOME") == 0)
       _backend = PW_STORAGE_BACKEND_GNOME_KEYRING;
     else if (g_strcmp0(desktop, "Unity") == 0)
       _backend = PW_STORAGE_BACKEND_GNOME_KEYRING;
