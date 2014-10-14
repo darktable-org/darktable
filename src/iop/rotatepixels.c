@@ -38,12 +38,6 @@ typedef struct dt_iop_rotatepixels_params_t
 }
 dt_iop_rotatepixels_params_t;
 
-typedef struct dt_iop_rotatepixels_gui_data_t
-{
-  GtkWidget *angle;
-}
-dt_iop_rotatepixels_gui_data_t;
-
 typedef struct dt_iop_rotatepixels_data_t
 {
   uint32_t rx, ry; // rotation center
@@ -403,25 +397,12 @@ end:
   memcpy(self->default_params, &tmp, sizeof(dt_iop_rotatepixels_params_t));
 }
 
-static void
-angle_callback(
-  GtkWidget *slider, dt_iop_module_t *self)
+void gui_update(dt_iop_module_t *self)
 {
-  if(self->dt->gui->reset) return;
-  dt_iop_rotatepixels_params_t *p = (dt_iop_rotatepixels_params_t *)self->params;
-  p->angle = dt_bauhaus_slider_get(slider);
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
-}
-
-void
-gui_update(
-  dt_iop_module_t *self)
-{
-  dt_iop_rotatepixels_gui_data_t *g = (dt_iop_rotatepixels_gui_data_t *)self->gui_data;
-  dt_iop_rotatepixels_params_t *p = (dt_iop_rotatepixels_params_t *)self->params;
-
-  /* update ui elements */
-  dt_bauhaus_slider_set(g->angle, p->angle);
+  if(self->default_enabled)
+    gtk_label_set_text(GTK_LABEL(self->widget), _("automatic pixel rotation"));
+  else
+    gtk_label_set_text(GTK_LABEL(self->widget), _("automatic pixel rotation\nonly works for the images that need it."));
 }
 
 void
@@ -447,25 +428,14 @@ void
 gui_init(
   dt_iop_module_t *self)
 {
-  self->gui_data = malloc(sizeof(dt_iop_rotatepixels_gui_data_t));
-  dt_iop_rotatepixels_gui_data_t *g = (dt_iop_rotatepixels_gui_data_t *)self->gui_data;
-  dt_iop_rotatepixels_params_t *p = (dt_iop_rotatepixels_params_t *)self->params;
-
-  self->widget = gtk_vbox_new(FALSE, DT_BAUHAUS_SPACE);
-
-  g->angle= dt_bauhaus_slider_new_with_range(self, -180.0, 180.0, 0.25, p->angle, 2);
-  dt_bauhaus_widget_set_label(g->angle, NULL, _("angle"));
-  dt_bauhaus_slider_set_format(g->angle, "%.02f°");
-  g_signal_connect (G_OBJECT (g->angle), "value-changed", G_CALLBACK (angle_callback), self);
-  g_object_set(G_OBJECT(g->angle), "tooltip-text", _("right-click and drag a line on the image to drag a straight line"), (char *)NULL);
-  gtk_box_pack_start(GTK_BOX(self->widget), g->angle, TRUE, TRUE, 0);
+  self->widget = gtk_label_new("");
+  gtk_misc_set_alignment(GTK_MISC(self->widget), 0.0, 0.5);
 }
 
 void
 gui_cleanup(
   dt_iop_module_t *self)
 {
-  free(self->gui_data);
   self->gui_data = NULL;
 }
 
