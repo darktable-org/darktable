@@ -146,7 +146,6 @@ gboolean dt_pwstorage_libsecret_set(const backend_libsecret_context_t* context,
   /* Save the item */
   gchar* label = g_strdup_printf("darktable@%s", slot);
 
-  GError* error = NULL;
   SecretItem* item = secret_item_create_sync(
       context->secret_collection,
       SECRET_SCHEMA_DARKTABLE,
@@ -155,7 +154,7 @@ gboolean dt_pwstorage_libsecret_set(const backend_libsecret_context_t* context,
       secret_value,
       SECRET_ITEM_CREATE_REPLACE,
       NULL,
-      &error);
+      NULL);
 
   g_free(label);
   g_hash_table_destroy(secret_attributes);
@@ -181,14 +180,13 @@ GHashTable* dt_pwstorage_libsecret_get(const backend_libsecret_context_t*
       "slot", slot, "magic", PACKAGE_NAME, NULL);
 
   /* Search for item */
-  GError* error = NULL;
   GList* items = secret_collection_search_sync(
       context->secret_collection,
       SECRET_SCHEMA_DARKTABLE,
       secret_attributes,
       SECRET_SEARCH_NONE,
       NULL,
-      &error);
+      NULL);
 
   g_hash_table_destroy(secret_attributes);
 
