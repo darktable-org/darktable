@@ -158,6 +158,8 @@ process_next_image(dt_slideshow_t *d)
   // get random image id from sql
   int32_t id = 0;
   const int32_t cnt = dt_collection_get_count (darktable.collection);
+  if (!cnt)
+    return 1;
   dt_pthread_mutex_lock(&d->lock);
   d->back_num = d->front_num + d->step;
   int32_t ran = d->back_num;
@@ -320,6 +322,17 @@ void cleanup(dt_view_t *self)
   dt_slideshow_t *lib = (dt_slideshow_t*)self->data;
   dt_pthread_mutex_destroy(&lib->lock);
   free(self->data);
+}
+
+int try_enter(dt_view_t *self)
+{
+  /* verify that there are images to display */
+  if (dt_collection_get_count (darktable.collection) != 0) {
+    return 0;
+  } else {
+    dt_control_log(_("No images in collection."));
+    return 1;
+  }
 }
 
 void enter(dt_view_t *self)
