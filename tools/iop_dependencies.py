@@ -89,6 +89,10 @@ def add_edges(gr):
   # fix mad sensor designs: some Fuji have their Bayer pattern rotated by -45deg
   gr.add_edge(('rotatepixels', 'demosaic'))
 
+  # there is no cameras that have non-square pixels AND rotated Bayer pattern
+  # at the same time, but IMO it makes more sense to scale after rotating.
+  gr.add_edge(('scalepixels', 'rotatepixels'))
+
   # flip is a distortion plugin, and as such has to go after spot removal
   # and lens correction, which depend on original input buffers.
   # and after buffer has been downscaled/demosaiced

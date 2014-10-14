@@ -413,7 +413,7 @@ init(
   module->default_params = calloc(1, sizeof(dt_iop_rotatepixels_params_t));
   module->params_size = sizeof(dt_iop_rotatepixels_params_t);
   module->gui_data = NULL;
-  module->priority = 233; // module order created by iop_dependencies.py, do not edit!
+  module->priority = 216; // module order created by iop_dependencies.py, do not edit!
 }
 
 void
