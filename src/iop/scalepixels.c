@@ -299,7 +299,7 @@ reload_defaults(
 {
   dt_iop_scalepixels_params_t tmp = (dt_iop_scalepixels_params_t)
   {
-    .pixel_aspect_ratio = NAN
+    .pixel_aspect_ratio = 1.0f
   };
 
   // we might be called from presets update infrastructure => there is no image
