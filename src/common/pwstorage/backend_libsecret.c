@@ -232,7 +232,7 @@ error_free:
 
 error_out:
 
-  return g_hash_table_new(g_str_hash, g_str_equal);
+  return g_hash_table_new_full(g_str_hash, g_str_equal, g_free, g_free);
 }
 
 static void append_pair_to_json(gpointer key, gpointer value, gpointer data)
@@ -284,7 +284,7 @@ static GHashTable* secret_to_attributes(SecretValue* secret)
   JsonNode* json_root = json_parser_get_root(json_parser);
   JsonReader* json_reader = json_reader_new(json_root);
 
-  GHashTable* attributes = g_hash_table_new(g_str_hash, g_str_equal);
+  GHashTable* attributes = g_hash_table_new_full(g_str_hash, g_str_equal, g_free, g_free);
 
   /* Save each element as an attribute pair */
   gint n_attributes = json_reader_count_members(json_reader);
