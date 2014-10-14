@@ -259,6 +259,7 @@ static SecretValue* attributes_to_secret(GHashTable* attributes)
   /* Create secret */
   SecretValue* secret = secret_value_new(json_data, -1, "text/plain");
 
+  g_free(json_data);
   g_object_unref(json_generator);
   g_object_unref(json_builder);
 
