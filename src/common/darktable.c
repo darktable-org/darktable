@@ -749,9 +749,6 @@ int dt_init(int argc, char *argv[], const int init_gui,lua_State *L)
   darktable.thumbnail_height /= 16;
   darktable.thumbnail_height *= 16;
 
-  // Initialize the password storage engine
-  darktable.pwstorage=dt_pwstorage_new();
-
   // FIXME: move there into dt_database_t
   dt_pthread_mutex_init(&(darktable.db_insert), NULL);
   dt_pthread_mutex_init(&(darktable.plugin_threadsafe), NULL);
@@ -779,6 +776,9 @@ int dt_init(int argc, char *argv[], const int init_gui,lua_State *L)
 
   /* capabilities set to NULL */
   darktable.capabilities = NULL;
+
+  // Initialize the password storage engine
+  darktable.pwstorage=dt_pwstorage_new();
 
 #ifdef HAVE_GRAPHICSMAGICK
   /* GraphicsMagick init */

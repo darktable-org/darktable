@@ -20,11 +20,17 @@
 
 #include "pwstorage.h"
 
+#ifdef HAVE_LIBSECRET
+#include "backend_libsecret.h"
+#endif
+
 #ifdef HAVE_GKEYRING
 #include "backend_gkeyring.h"
 #endif
 
+#ifdef HAVE_KWALLET
 #include "backend_kwallet.h"
+#endif
 
 #include "control/conf.h"
 
@@ -34,6 +40,17 @@
 /** Initializes a new pwstorage context. */
 const dt_pwstorage_t* dt_pwstorage_new()
 {
+  /* add password storage capabilities */
+#ifdef HAVE_LIBSECRET
+  dt_capabilities_add("libsecret");
+#endif
+#ifdef HAVE_KWALLET
+  dt_capabilities_add("kwallet");
+#endif
+#ifdef HAVE_GKEYRING
+  dt_capabilities_add("gnome-keyring");
+#endif
+
   dt_pwstorage_t *pwstorage = g_malloc(sizeof(dt_pwstorage_t));
   dt_print(DT_DEBUG_PWSTORAGE,"[pwstorage_new] Creating new context %p\n", pwstorage);
 
@@ -41,7 +58,7 @@ const dt_pwstorage_t* dt_pwstorage_new()
     return NULL;
 
   gchar* _backend_str = dt_conf_get_string( "plugins/pwstorage/pwstorage_backend" );
-  gint _backend = -1;
+  gint _backend = PW_STORAGE_BACKEND_NONE;
 
   if (strcmp(_backend_str, "auto") == 0)
   {
@@ -54,17 +71,23 @@ const dt_pwstorage_t* dt_pwstorage_new()
       _backend = PW_STORAGE_BACKEND_GNOME_KEYRING;
     else if (g_strcmp0(desktop, "XFCE") == 0)
       _backend = PW_STORAGE_BACKEND_GNOME_KEYRING;
-    else
-      _backend = PW_STORAGE_BACKEND_NONE;
 
     dt_print(DT_DEBUG_PWSTORAGE,"[pwstorage_new] autodetected storage backend.\n");
   }
   else if(strcmp(_backend_str, "none") == 0)
     _backend = PW_STORAGE_BACKEND_NONE;
+#ifdef HAVE_LIBSECRET
+  else if(strcmp(_backend_str, "libsecret") == 0)
+    _backend = PW_STORAGE_BACKEND_LIBSECRET;
+#endif
+#ifdef HAVE_KWALLET
   else if(strcmp(_backend_str, "kwallet") == 0)
     _backend = PW_STORAGE_BACKEND_KWALLET;
+#endif
+#ifdef HAVE_GKEYRING
   else if(strcmp(_backend_str, "gnome keyring") == 0)
     _backend = PW_STORAGE_BACKEND_GNOME_KEYRING;
+#endif
 
   g_free(_backend_str);
 
@@ -77,7 +100,26 @@ const dt_pwstorage_t* dt_pwstorage_new()
       pwstorage->backend_context = NULL;
       dt_print(DT_DEBUG_PWSTORAGE,"[pwstorage_new] no storage backend. not storing username/password. please change in preferences, core tab.\n");
       break;
+    case PW_STORAGE_BACKEND_LIBSECRET:
+#ifdef HAVE_LIBSECRET
+      dt_print(DT_DEBUG_PWSTORAGE,"[pwstorage_new] using libsecret backend for username/password storage");
+      pwstorage->backend_context = (void*)dt_pwstorage_libsecret_new();
+      if (pwstorage->backend_context == NULL)
+      {
+        dt_print(DT_DEBUG_PWSTORAGE,"[pwstorage_new] error starting libsecret. using no storage backend.\n");
+        pwstorage->backend_context = NULL;
+        pwstorage->pw_storage_backend = PW_STORAGE_BACKEND_NONE;
+      } else {
+        pwstorage->pw_storage_backend = PW_STORAGE_BACKEND_LIBSECRET;
+      }
+      break;
+#else
+      dt_print(DT_DEBUG_PWSTORAGE,"[pwstorage_new] libsecret backend not available. using no storage backend.\n");
+      pwstorage->backend_context = NULL;
+      pwstorage->pw_storage_backend = PW_STORAGE_BACKEND_NONE;
+#endif
     case PW_STORAGE_BACKEND_KWALLET:
+#ifdef HAVE_KWALLET
       dt_print(DT_DEBUG_PWSTORAGE,"[pwstorage_new] using kwallet backend for username/password storage");
       pwstorage->backend_context = (void*)dt_pwstorage_kwallet_new();
       if(pwstorage->backend_context == NULL)
@@ -92,6 +134,11 @@ const dt_pwstorage_t* dt_pwstorage_new()
       }
       dt_print(DT_DEBUG_PWSTORAGE,"  done.\n");
       break;
+#else
+      dt_print(DT_DEBUG_PWSTORAGE,"[pwstorage_new] kwallet backend not available. using no storage backend.\n");
+      pwstorage->backend_context = NULL;
+      pwstorage->pw_storage_backend = PW_STORAGE_BACKEND_NONE;
+#endif
     case PW_STORAGE_BACKEND_GNOME_KEYRING:
 #ifdef HAVE_GKEYRING
       dt_print (DT_DEBUG_PWSTORAGE,"[pwstorage_new] using gnome keyring backend for usersname/password storage.\n");
@@ -117,6 +164,9 @@ const dt_pwstorage_t* dt_pwstorage_new()
     case PW_STORAGE_BACKEND_NONE:
       dt_conf_set_string( "plugins/pwstorage/pwstorage_backend", "none" );
       break;
+    case PW_STORAGE_BACKEND_LIBSECRET:
+      dt_conf_set_string( "plugins/pwstorage/pwstorage_backend", "libsecret" );
+      break;
     case PW_STORAGE_BACKEND_KWALLET:
       dt_conf_set_string( "plugins/pwstorage/pwstorage_backend", "kwallet" );
       break;
@@ -137,8 +187,15 @@ void dt_pwstorage_destroy(const dt_pwstorage_t *pwstorage)
     case PW_STORAGE_BACKEND_NONE:
       // nothing to be done
       break;
+    case PW_STORAGE_BACKEND_LIBSECRET:
+#ifdef HAVE_LIBSECRET
+      dt_pwstorage_libsecret_destroy(pwstorage->backend_context);
+#endif
+      break;
     case PW_STORAGE_BACKEND_KWALLET:
+#ifdef HAVE_KWALLET
       dt_pwstorage_kwallet_destroy(pwstorage->backend_context);
+#endif
       break;
     case PW_STORAGE_BACKEND_GNOME_KEYRING:
 #ifdef HAVE_GKEYRING
@@ -156,13 +213,20 @@ gboolean dt_pwstorage_set(const gchar* slot, GHashTable* table)
     case PW_STORAGE_BACKEND_NONE:
       dt_print(DT_DEBUG_PWSTORAGE,"[pwstorage_set] no backend. not storing anything.\n");
       break;
+    case PW_STORAGE_BACKEND_LIBSECRET:
+#if HAVE_LIBSECRET
+      return dt_pwstorage_libsecret_set((backend_libsecret_context_t*)
+          darktable.pwstorage->backend_context, slot, table);
+#endif
+      break;
     case PW_STORAGE_BACKEND_KWALLET:
+#ifdef HAVE_KWALLET
       return dt_pwstorage_kwallet_set((backend_kwallet_context_t*)darktable.pwstorage->backend_context, slot, table);
+#endif
+      break;
     case PW_STORAGE_BACKEND_GNOME_KEYRING:
 #ifdef HAVE_GKEYRING
       return dt_pwstorage_gkeyring_set(slot, table);
-#else
-      dt_print(DT_DEBUG_PWSTORAGE,"[pwstorage_set] no gkeyring backend support on this system. not storing anything.\n");
 #endif
       break;
   }
@@ -177,13 +241,20 @@ GHashTable* dt_pwstorage_get(const gchar* slot)
     case PW_STORAGE_BACKEND_NONE:
       dt_print(DT_DEBUG_PWSTORAGE,"[pwstorage_get] no backend. not reading anything.\n");
       break;
+    case PW_STORAGE_BACKEND_LIBSECRET:
+#if HAVE_LIBSECRET
+      return dt_pwstorage_libsecret_get((backend_libsecret_context_t*)
+          darktable.pwstorage->backend_context, slot);
+#endif
+      break;
     case PW_STORAGE_BACKEND_KWALLET:
+#ifdef HAVE_KWALLET
       return dt_pwstorage_kwallet_get((backend_kwallet_context_t*)darktable.pwstorage->backend_context, slot);
+#endif
+      break;
     case PW_STORAGE_BACKEND_GNOME_KEYRING:
 #ifdef HAVE_GKEYRING
       return dt_pwstorage_gkeyring_get(slot);
-#else
-      dt_print(DT_DEBUG_PWSTORAGE,"[pwstorage_get] no kwallet backend support on this system. not reading anything.\n");
 #endif
       break;
   }
