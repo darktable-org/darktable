@@ -275,13 +275,6 @@ void dt_dev_process_image_job(dt_develop_t *dev)
   dt_mipmap_cache_read_get(darktable.mipmap_cache, &buf, dev->image_storage.id, DT_MIPMAP_FULL, DT_MIPMAP_BLOCKING);
   dt_show_times(&start, "[dev]", "to load the image.");
 
-  // copy over image now that width and height are sure to be correct:
-  const dt_image_t *img = dt_image_cache_read_get(darktable.image_cache, dev->image_storage.id);
-  dev->image_storage = *img;
-  // but don't lock the real thing, as that would avoid any writers to change stuff.
-  // (such as raw loading or star rating changes)
-  dt_image_cache_read_release(darktable.image_cache, img);
-
   // failed to load raw?
   if(!buf.buf)
   {
