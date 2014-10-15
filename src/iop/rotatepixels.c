@@ -402,26 +402,26 @@ void gui_update(dt_iop_module_t *self)
   if(self->default_enabled)
     gtk_label_set_text(GTK_LABEL(self->widget), _("automatic pixel rotation"));
   else
-    gtk_label_set_text(GTK_LABEL(self->widget), _("automatic pixel rotation\nonly works for the images that need it."));
+    gtk_label_set_text(GTK_LABEL(self->widget), _("automatic pixel rotation\nonly works for the sensors that need it."));
 }
 
 void
 init(
-  dt_iop_module_t *module)
+  dt_iop_module_t *self)
 {
-  module->params = calloc(1, sizeof(dt_iop_rotatepixels_params_t));
-  module->default_params = calloc(1, sizeof(dt_iop_rotatepixels_params_t));
-  module->params_size = sizeof(dt_iop_rotatepixels_params_t);
-  module->gui_data = NULL;
-  module->priority = 216; // module order created by iop_dependencies.py, do not edit!
+  self->params = calloc(1, sizeof(dt_iop_rotatepixels_params_t));
+  self->default_params = calloc(1, sizeof(dt_iop_rotatepixels_params_t));
+  self->params_size = sizeof(dt_iop_rotatepixels_params_t);
+  self->gui_data = NULL;
+  self->priority = 216; // module order created by iop_dependencies.py, do not edit!
 }
 
 void
 cleanup(
-  dt_iop_module_t *module)
+  dt_iop_module_t *self)
 {
-  free(module->params);
-  module->params = NULL;
+  free(self->params);
+  self->params = NULL;
 }
 
 void
@@ -436,6 +436,7 @@ void
 gui_cleanup(
   dt_iop_module_t *self)
 {
+  free(self->gui_data);
   self->gui_data = NULL;
 }
 

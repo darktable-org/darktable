@@ -72,22 +72,6 @@ operation_tags()
   return IOP_TAG_DISTORT;
 }
 
-void
-init_key_accels(
-  dt_iop_module_so_t *self)
-{
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "pixel aspect ratio"));
-}
-
-void
-connect_key_accels(
-  dt_iop_module_t *self)
-{
-  dt_iop_scalepixels_gui_data_t* g = self->gui_data;
-
-  dt_accel_connect_slider_iop(self, "pixel aspect ratio", GTK_WIDGET(g->pixel_aspect_ratio));
-}
-
 int
 output_bpp(
   dt_iop_module_t *self,
@@ -313,9 +297,22 @@ reload_defaults(
                            tmp.pixel_aspect_ratio  > 0.0f &&
                            tmp.pixel_aspect_ratio != 1.0f);
 
+  // FIXME: does not work.
+  self->hide_enable_button = !self->default_enabled;
+
 end:
   memcpy(self->params, &tmp, sizeof(dt_iop_scalepixels_params_t));
   memcpy(self->default_params, &tmp, sizeof(dt_iop_scalepixels_params_t));
+}
+
+void
+gui_update(
+  dt_iop_module_t *self)
+{
+  if(self->default_enabled)
+    gtk_label_set_text(GTK_LABEL(self->widget), _("automatic pixel scaling"));
+  else
+    gtk_label_set_text(GTK_LABEL(self->widget), _("automatic pixel scaling\nonly works for the sensors that need it."));
 }
 
 void
@@ -343,45 +340,11 @@ cleanup(
 }
 
 void
-gui_update(
-  dt_iop_module_t *self)
-{
-  dt_iop_scalepixels_gui_data_t *g = self->gui_data;
-  dt_iop_scalepixels_params_t *p = self->params;
-
-  dt_bauhaus_slider_set(g->pixel_aspect_ratio, p->pixel_aspect_ratio);
-}
-
-static void
-callback(
-  GtkWidget *slider, gpointer user_data)
-{
-  dt_iop_module_t *self = user_data;
-  if(self->dt->gui->reset) return;
-
-  dt_iop_scalepixels_params_t *p = self->params;
-
-  p->pixel_aspect_ratio = dt_bauhaus_slider_get(slider);
-
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
-}
-
-void
 gui_init(
   dt_iop_module_t *self)
 {
-  self->gui_data = malloc(sizeof(dt_iop_scalepixels_gui_data_t));
-  dt_iop_scalepixels_gui_data_t *g = self->gui_data;
-  dt_iop_scalepixels_params_t *p = self->params;
-
-  self->widget = gtk_vbox_new(TRUE, DT_BAUHAUS_SPACE);
-
-  g->pixel_aspect_ratio = dt_bauhaus_slider_new_with_range(self, 0.0, 2.0, .1, p->pixel_aspect_ratio, 2);
-  g_object_set(G_OBJECT(g->pixel_aspect_ratio), "tooltip-text", _("<1 means the image needs to be stretched vertically, (0.5 means 2x)\n>1 means the image needs to be stretched horizontally (2 mean 2x)"), (char *)NULL);
-  dt_bauhaus_widget_set_label(g->pixel_aspect_ratio, NULL, _("pixel aspect ratio"));
-  dt_bauhaus_slider_enable_soft_boundaries(g->pixel_aspect_ratio, 0.0, 10.0);
-  g_signal_connect(G_OBJECT(g->pixel_aspect_ratio), "value-changed", G_CALLBACK(callback), self);
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->pixel_aspect_ratio), TRUE, TRUE, 0);
+  self->widget = gtk_label_new("");
+  gtk_misc_set_alignment(GTK_MISC(self->widget), 0.0, 0.5);
 }
 
 void
