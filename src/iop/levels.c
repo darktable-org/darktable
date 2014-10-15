@@ -546,7 +546,7 @@ void gui_init(dt_iop_module_t *self)
   c->mode = dt_bauhaus_combobox_new(self);
   dt_bauhaus_widget_set_label(c->mode, NULL, _("mode"));
 
-  dt_bauhaus_combobox_add(c->mode, _("manual"));
+  dt_bauhaus_combobox_add(c->mode, C_("mode", "manual"));
   c->modes = g_list_append(c->modes, GUINT_TO_POINTER(LEVELS_MODE_MANUAL));
 
   dt_bauhaus_combobox_add(c->mode, _("automatic"));

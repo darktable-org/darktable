@@ -41,10 +41,12 @@ enum
   /* internal */
   md_internal_filmroll=0,
   md_internal_imgid,
+  md_internal_groupid,
   md_internal_filename,
   md_internal_version,
   md_internal_fullpath,
   md_internal_local_copy,
+  md_internal_flags,
 
   /* exif */
   md_exif_model,
@@ -80,10 +82,13 @@ static void _lib_metatdata_view_init_labels()
   /* internal */
   _md_labels[md_internal_filmroll] = _("filmroll");
   _md_labels[md_internal_imgid] = _("image id");
+  _md_labels[md_internal_groupid] = _("group id");
   _md_labels[md_internal_filename] = _("filename");
   _md_labels[md_internal_version] = _("version");
   _md_labels[md_internal_fullpath] = _("full path");
   _md_labels[md_internal_local_copy] = _("local copy");
+  _md_labels[md_internal_flags] = _("flags");
+
 
   /* exif */
   _md_labels[md_exif_model] = _("model");
@@ -227,6 +232,9 @@ static void _metadata_view_update_values(dt_lib_module_t *self)
     snprintf(value,sizeof(value),"%d", img->id);
     _metadata_update_value(d->metadata[md_internal_imgid], value);
 
+    snprintf(value,sizeof(value),"%d", img->group_id);
+    _metadata_update_value(d->metadata[md_internal_groupid], value);
+
     _metadata_update_value(d->metadata[md_internal_filename], img->filename);
 
     snprintf(value,sizeof(value),"%d", img->version);
@@ -238,6 +246,131 @@ static void _metadata_view_update_values(dt_lib_module_t *self)
 
     snprintf(value, sizeof(value), "%s", (img->flags & DT_IMAGE_LOCAL_COPY)?_("yes"):_("no"));
     _metadata_update_value(d->metadata[md_internal_local_copy], value);
+
+    // TODO: decide if this should be removed for a release. maybe #ifdef'ing to only add it to git compiles?
+
+    // the bits of the flags
+    {
+      #define EMPTY_FIELD '.'
+      #define FALSE_FIELD '.'
+      #define TRUE_FIELD '!'
+
+      char *tooltip = NULL;
+      char *flag_descriptions[] = { N_("unused"),
+                                    N_("unused/deprecated"),
+                                    N_("ldr"),
+                                    N_("raw"),
+                                    N_("hdr"),
+                                    N_("marked for deletion"),
+                                    N_("auto-applying presets applied"),
+                                    N_("legacy flag. set for all new images"),
+                                    N_("local copy"),
+                                    N_("has .txt"),
+                                    N_("has .wav")
+      };
+      char *tooltip_parts[13] = { 0 };
+      int next_tooltip_part = 0;
+
+      memset(value, EMPTY_FIELD, sizeof(value));
+
+      int stars = img->flags & 0x7;
+      char *star_string = NULL;
+      if(stars == 6)
+      {
+        value[0] = 'x';
+        tooltip_parts[next_tooltip_part++] = _("image rejected");
+      }
+      else
+      {
+        value[0] = '0' + stars;
+        tooltip_parts[next_tooltip_part++] = star_string = g_strdup_printf(ngettext("image has %d star", "image has %d stars", stars), stars);
+      }
+
+
+      if(img->flags & 8)
+      {
+        value[1] = TRUE_FIELD;
+        tooltip_parts[next_tooltip_part++] = _(flag_descriptions[0]);
+      }
+      else
+        value[1] = FALSE_FIELD;
+
+      if(img->flags & DT_IMAGE_THUMBNAIL_DEPRECATED)
+      {
+        value[2] = TRUE_FIELD;
+        tooltip_parts[next_tooltip_part++] = _(flag_descriptions[1]);
+      }
+      else
+        value[2] = FALSE_FIELD;
+
+      if(img->flags & DT_IMAGE_LDR)
+      {
+        value[3] = 'l';
+        tooltip_parts[next_tooltip_part++] = _(flag_descriptions[2]);
+      }
+
+      if(img->flags & DT_IMAGE_RAW)
+      {
+        value[4] = 'r';
+        tooltip_parts[next_tooltip_part++] = _(flag_descriptions[3]);
+      }
+
+      if(img->flags & DT_IMAGE_HDR)
+      {
+        value[5] = 'h';
+        tooltip_parts[next_tooltip_part++] = _(flag_descriptions[4]);
+      }
+
+      if(img->flags & DT_IMAGE_REMOVE)
+      {
+        value[6] = 'd';
+        tooltip_parts[next_tooltip_part++] = _(flag_descriptions[5]);
+      }
+
+      if(img->flags & DT_IMAGE_AUTO_PRESETS_APPLIED)
+      {
+        value[7] = 'a';
+        tooltip_parts[next_tooltip_part++] = _(flag_descriptions[6]);
+      }
+
+      if(img->flags & DT_IMAGE_NO_LEGACY_PRESETS)
+      {
+        value[8] = 'p';
+        tooltip_parts[next_tooltip_part++] = _(flag_descriptions[7]);
+      }
+
+      if(img->flags & DT_IMAGE_LOCAL_COPY)
+      {
+        value[9] = 'c';
+        tooltip_parts[next_tooltip_part++] = _(flag_descriptions[8]);
+      }
+
+      if(img->flags & DT_IMAGE_HAS_TXT)
+      {
+        value[10] = 't';
+        tooltip_parts[next_tooltip_part++] = _(flag_descriptions[9]);
+      }
+
+      if(img->flags & DT_IMAGE_HAS_WAV)
+      {
+        value[11] = 'w';
+        tooltip_parts[next_tooltip_part++] = _(flag_descriptions[10]);
+      }
+
+      value[12] = '\0';
+
+      tooltip = g_strjoinv("\n", tooltip_parts);
+
+      _metadata_update_value(d->metadata[md_internal_flags], value);
+      g_object_set(G_OBJECT(d->metadata[md_internal_flags]), "tooltip-text", tooltip, (char *)NULL);
+
+      g_free(star_string);
+      g_free(tooltip);
+
+      #undef EMPTY_FIELD
+      #undef FALSE_FIELD
+      #undef TRUE_FIELD
+    }
 
     /* EXIF */
     _metadata_update_value_end(d->metadata[md_exif_model], img->exif_model);

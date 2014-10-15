@@ -79,10 +79,10 @@
       </para></listitem>
 
       <listitem><para>
-        By default, the first radio-buttons row is set to <quote>colorness</quote> whereas the
-        second is set to <quote>hue</quote> which means that color are selected according to
-        their hue (horizontal scale) and you can change for each hue its
-        <quote>colorness</quote> (vertical scale). You simply need to set all points to the
+        By default, the active tabbed control is set to <quote>saturation</quote> whereas the
+        <quote>select by</quote> combobox is set to <quote>hue</quote>. This means that color
+        are selected according to their hue (horizontal scale) and you can change for each hue
+        its <quote>saturation</quote> (vertical scale). You simply need to set all points to the
         minimum of the vertical scale to de-saturate every hue.
       </para></listitem>
 
@@ -93,8 +93,8 @@
       </para>
 
       <para>
-        You can also use presets that perform black and white conversion, keeping some hues
-        saturated.
+        You can also use one of the available presets that perform black and white conversion,
+        keeping some hues saturated.
       </para></listitem>
 
     </orderedlist>

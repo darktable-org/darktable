@@ -2056,6 +2056,52 @@ const wb_data wb_preset[] =
   { "FUJIFILM", "X100S", "6700K", 0,             { 2.059603, 1, 1.334437, 0 } },
   { "FUJIFILM", "X100S", "10000K", 0,            { 2.370861, 1, 1.13245, 0 } },
 
+  /* FUJIFILM X-E1 Firmware Version 1.01 */
+  // The manual calls it "Direct sunlight".
+  { "FUJIFILM", "X-E1", Daylight, 0,		{ 1.821192, 1, 1.804636, 0 } },
+  // The manual calls it "Shade", but exiftool shows it as "Cloudy".
+  { "FUJIFILM", "X-E1", Shade, 0,		{ 2.039735, 1, 1.572848, 0 } },
+  { "FUJIFILM", "X-E1", DaylightFluorescent, 0,	{ 2.321192, 1, 1.566225, 0 } },
+  { "FUJIFILM", "X-E1", WarmWhiteFluorescent, 0, { 1.966887, 1, 1.837748, 0 } },
+  { "FUJIFILM", "X-E1", CoolWhiteFluorescent, 0, { 1.847682, 1, 2.317881, 0 } },
+  { "FUJIFILM", "X-E1", Incandescent, 0,	{ 1.165563, 1, 2.920530, 0 } },
+  { "FUJIFILM", "X-E1", Underwater, 0,		{ 1.821192, 1, 1.804636, 0 } },
+  { "FUJIFILM", "X-E1", "5000K", 0,		{ 1.814570, 1, 1.731788, 0 } },
+
+  /* FUJIFILM X-T1 Firmware Version 1.10 */
+  { "FUJIFILM", "X-T1", Daylight, 0,          { 1.89404, 1, 1.569536, 0 } },
+  // The manual calls it "Shade", but exiftool shows it as "Cloudy".
+  { "FUJIFILM", "X-T1", Shade, 0,            { 2.092715, 1, 1.347682, 0 } },
+  { "FUJIFILM", "X-T1", DaylightFluorescent, 0,{ 2.39404, 1, 1.377483, 0 } },
+  { "FUJIFILM", "X-T1", WarmWhiteFluorescent, 0,{ 2.023179, 1, 1.622517, 0 } },
+  { "FUJIFILM", "X-T1", CoolWhiteFluorescent, 0,{ 1.94702, 1, 2.066225, 0 } },
+  { "FUJIFILM", "X-T1", Incandescent, 0,      { 1.268212, 1, 2.284768, 0 } },
+  { "FUJIFILM", "X-T1", Underwater, 0,        { 1.89404, 1, 1.569536, 0 } },
+  { "FUJIFILM", "X-T1", "5000K", 0,             { 1.847682, 1, 1.546358, 0 } },
+
+  /* FUJIFILM X-Pro1 Firmware Version v3.30 */
+  // The manual calls it "Fine".
+  { "FUJIFILM", "X-Pro1", Daylight, 0,		{ 1.860927, 1, 1.708609, 0 } },
+  // The manual calls it "Shade", but exiftool shows it as "Cloudy".
+  { "FUJIFILM", "X-Pro1", Shade, 0,		{ 2.105960, 1, 1.460265, 0 } },
+  { "FUJIFILM", "X-Pro1", DaylightFluorescent, 0, { 2.390728, 1, 1.500000, 0 } },
+  { "FUJIFILM", "X-Pro1", WarmWhiteFluorescent, 0, { 2.059603, 1, 1.794702, 0 } },
+  { "FUJIFILM", "X-Pro1", CoolWhiteFluorescent, 0, { 1.966887, 1, 2.254967, 0 } },
+  { "FUJIFILM", "X-Pro1", Incandescent, 0,	{ 1.225166, 1, 2.708609, 0 } },
+  { "FUJIFILM", "X-Pro1", Underwater, 0,	{ 1.860927, 1, 1.708609, 0 } },
+  { "FUJIFILM", "X-Pro1", "5000K", 0,		{ 1.857616, 1, 1.701987, 0 } },
+
+  { "KODAK", "P850 ZOOM", Daylight, 0,		{ 1.859375, 1, 1.566406, 0 } },
+  { "KODAK", "P850 ZOOM", Cloudy, 0,		{ 1.960938, 1, 1.570313, 0 } },
+  { "KODAK", "P850 ZOOM", Shade, 0,		{ 2.027344, 1, 1.519531, 0 } },
+  { "KODAK", "P850 ZOOM", EveningSun, 0,	{ 1.679688, 1, 1.812500, 0 } },
+  { "KODAK", "P850 ZOOM", Tungsten, 0,		{ 1.140625, 1, 2.726563, 0 } },
+  { "KODAK", "P850 ZOOM", Fluorescent, 0,	{ 1.113281, 1, 2.949219, 0 } },
+
+  { "KODAK", "EASYSHARE Z1015 IS", Daylight, 0,	{ 1.546875, 1, 2.082031, 0 } },
+  { "KODAK", "EASYSHARE Z1015 IS", Tungsten, 0,	{ 1, 1.024000, 3.384000, 0 } },
+  { "KODAK", "EASYSHARE Z1015 IS", Fluorescent, 0, { 1.562500, 1, 2.515625, 0 } },
+  { "KODAK", "EASYSHARE Z1015 IS", Shade, 0,	{ 1.820313, 1, 1.789062, 0 } },
 
   { "Leica Camera AG", "M8 Digital Camera", Cloudy, 0, { 2.136719, 1, 1.168213, 0 } },
   { "Leica Camera AG", "M8 Digital Camera", Daylight, 0, { 2.007996, 1, 1.268982, 0 } },
@@ -3401,6 +3447,14 @@ const wb_data wb_preset[] =
   { "NIKON", "D5100", HighTempMercuryVaporFluorescent, 5,  { 2.375000, 1, 1.511719, 0 } },
   { "NIKON", "D5100", HighTempMercuryVaporFluorescent, 6,  { 2.375000, 1, 1.511719, 0 } },
 
+  /* Nikon D5200 firmware version 1.01 */
+  { "NIKON", "D5200", Incandescent, 0,		{ 1.445313, 1, 2.667969, 0 } },
+  { "NIKON", "D5200", CoolWhiteFluorescent, 0,	{ 2.222656, 1, 2.417969, 0 } },
+  { "NIKON", "D5200", DirectSunlight, 0,	{ 2.386719, 1, 1.597656, 0 } },
+  { "NIKON", "D5200", Flash, 0,			{ 2.753906, 1, 1.371094, 0 } },
+  { "NIKON", "D5200", Cloudy, 0,		{ 2.656250, 1, 1.453125, 0 } },
+  { "NIKON", "D5200", Shade, 0,			{ 3.183594, 1, 1.292969, 0 } },
+
   { "NIKON", "D5300", Incandescent, 0,		{ 1.312500, 1, 2.214844, 0 } },
   { "NIKON", "D5300", CoolWhiteFluorescent, 0,	{ 1.855469, 1, 2.023438, 0 } },
   { "NIKON", "D5300", DirectSunlight, 0,	{ 2.054688, 1, 1.394531, 0 } },
@@ -4432,6 +4486,30 @@ const wb_data wb_preset[] =
   { "Panasonic", "DMC-FZ50", Shade, 0,		{ 2.463878, 1, 1.414449, 0 } },
   { "Panasonic", "DMC-FZ50", Incandescent, 0,	{ 1.365019, 1, 2.311787, 0 } },
   { "Panasonic", "DMC-FZ50", Flash, 0,		{ 2.338403, 1, 1.338403, 0 } },
+
+  /* Firmware version 1.0 */
+  /* -9/+9 fine tuning is -9/+9 in blue-amber and zero in magenta-green */
+  { "Panasonic", "DMC-FZ200", Daylight, -9,	{ 1.811321, 1, 2.049057, 0 } },
+  { "Panasonic", "DMC-FZ200", Daylight, 0,	{ 2.015094, 1, 1.758491, 0 } },
+  { "Panasonic", "DMC-FZ200", Daylight, 9,	{ 2.264151, 1, 1.550943, 0 } },
+  { "Panasonic", "DMC-FZ200", Cloudy, -9,	{ 1.935849, 1, 1.890566, 0 } },
+  { "Panasonic", "DMC-FZ200", Cloudy, 0,	{ 2.154717, 1, 1.622642, 0 } },
+  { "Panasonic", "DMC-FZ200", Cloudy, 9,	{ 2.426415, 1, 1.433962, 0 } },
+  { "Panasonic", "DMC-FZ200", Shade, -9,	{ 2.052830, 1, 1.773585, 0 } },
+  { "Panasonic", "DMC-FZ200", Shade, 0,		{ 2.286792, 1, 1.524528, 0 } },
+  { "Panasonic", "DMC-FZ200", Shade, 9,		{ 2.569811, 1, 1.343396, 0 } },
+  { "Panasonic", "DMC-FZ200", Incandescent, -9,	{ 1.230189, 1, 3.143396, 0 } },
+  { "Panasonic", "DMC-FZ200", Incandescent, 0,	{ 1.369811, 1, 2.701887, 0 } },
+  { "Panasonic", "DMC-FZ200", Incandescent, 9,	{ 1.539623, 1, 2.384906, 0 } },
+  { "Panasonic", "DMC-FZ200", Flash, -9,	{ 1.962264, 1, 1.932076, 0 } },
+  { "Panasonic", "DMC-FZ200", Flash, 0,		{ 2.184906, 1, 1.660377, 0 } },
+  { "Panasonic", "DMC-FZ200", Flash, 9,		{ 2.460377, 1, 1.464151, 0 } },
+  { "Panasonic", "DMC-FZ200", "2700K", 0,	{ 1.226415, 1, 3.018868, 0 } },
+  { "Panasonic", "DMC-FZ200", "3000K", 0,	{ 1.332075, 1, 2.784906, 0 } },
+  { "Panasonic", "DMC-FZ200", "3300K", 0,	{ 1.422642, 1, 2.573585, 0 } },
+  { "Panasonic", "DMC-FZ200", "5000K", 0,	{ 1.928302, 1, 1.841509, 0 } },
+  { "Panasonic", "DMC-FZ200", "5500K", 0,	{ 2.015094, 1, 1.758491, 0 } },
+  { "Panasonic", "DMC-FZ200", "6500K", 0,	{ 2.203774, 1, 1.577358, 0 } },
 
   { "Panasonic", "DMC-G1", Daylight, 0,		{ 1.942966, 1, 1.448669, 0 } },
   { "Panasonic", "DMC-G1", Cloudy, 0,		{ 2.106464, 1, 1.326996, 0 } },
@@ -5472,6 +5550,15 @@ const wb_data wb_preset[] =
   { "SAMSUNG", "NX300", "5000K", 0,			{ 2.402344, 1, 1.945313, 0 } },
   { "SAMSUNG", "NX300", "5500K", 0,			{ 2.636719, 1, 1.792969, 0 } },
   { "SAMSUNG", "NX300", "6500K", 0,			{ 3.003906, 1, 1.644531, 0 } },
+
+  // Firmware NXF1_01.01
+  { "SAMSUNG", "NX3000", Daylight, 0,			{ 2.214844, 1, 1.816406, 0 } },
+  { "SAMSUNG", "NX3000", Cloudy, 0,			{ 2.347656, 1, 1.656250, 0 } },
+  { "SAMSUNG", "NX3000", CoolWhiteFluorescent, 0,	{ 2.023438, 1, 2.460938, 0 } },
+  { "SAMSUNG", "NX3000", DayWhiteFluorescent, 0,	{ 2.175781, 1, 2.152344, 0 } },
+  { "SAMSUNG", "NX3000", DaylightFluorescent, 0,	{ 2.582031, 1, 1.835938, 0 } },
+  { "SAMSUNG", "NX3000", Tungsten, 0,			{ 1.539063, 1, 2.816406, 0 } },
+  { "SAMSUNG", "NX3000", Flash, 0,			{ 2.597656, 1, 1.566406, 0 } },
 
   { "SONY", "DSC-RX100", Daylight, 0,		{ 2.0703, 1, 2.1602, 0 } },
   { "SONY", "DSC-RX100", Shade, 0,		{ 2.4531, 1, 1.7852, 0 } },

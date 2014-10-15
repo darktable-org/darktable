@@ -285,7 +285,7 @@ __kernel void
 vignette (read_only image2d_t in, write_only image2d_t out, const int width, const int height,
           const float2 scale, const float2 roi_center_scaled, const float2 expt,
           const float dscale, const float fscale, const float brightness, const float saturation,
-          const float dither)
+          const float dither, const int unbound)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
@@ -317,17 +317,16 @@ vignette (read_only image2d_t in, write_only image2d_t out, const int width, con
   {
     float falloff = brightness < 0.0f ? 1.0f + (weight * brightness) : weight * brightness;
 
-    pixel.x =clamp(brightness < 0.0f ? pixel.x * falloff + dith : pixel.x + falloff + dith, 0.0f, 1.0f);
-    pixel.y =clamp(brightness < 0.0f ? pixel.y * falloff + dith : pixel.y + falloff + dith, 0.0f, 1.0f);
-    pixel.z =clamp(brightness < 0.0f ? pixel.z * falloff + dith : pixel.z + falloff + dith, 0.0f, 1.0f);
+    pixel.xyz = (brightness < 0.0f ? pixel * falloff + dith : pixel + falloff + dith).xyz;
+
+    pixel.xyz = unbound ? pixel.xyz : clamp(pixel, (float4)0.0f, (float4)1.0f).xyz;
 
     float mv = (pixel.x + pixel.y + pixel.z) / 3.0f;
     float wss = weight * saturation;
 
-    pixel.x = clamp(pixel.x - (mv - pixel.x)* wss, 0.0f, 1.0f);
-    pixel.y = clamp(pixel.y - (mv - pixel.y)* wss, 0.0f, 1.0f);
-    pixel.z = clamp(pixel.z - (mv - pixel.z)* wss, 0.0f, 1.0f);
+    pixel.xyz = (pixel - (mv - pixel)* wss).xyz,
 
+    pixel.xyz = unbound ? pixel.xyz : clamp(pixel, (float4)0.0f, (float4)1.0f).xyz;
   }
 
   write_imagef (out, (int2)(x, y), pixel); 

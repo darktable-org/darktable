@@ -10,3 +10,8 @@ Stuff that belongs in here:
 The release team should empty this file after each release.
 ==========================================================================================
 
+TODO: decide if we want to keep the flags in the image information lib (metadata_view.c) -- probably not.
+
+TODO: decide if we want to keep the slider in scalepixels iop ? i think we should.
+
+TODO: probably remove auto loading of gpx files during import.

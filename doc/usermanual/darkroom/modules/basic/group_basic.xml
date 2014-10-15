@@ -9,6 +9,8 @@
 
   <xi:include href="crop_and_rotate.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
 
+  <xi:include href="orientation.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
+
   <xi:include href="shadhi.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
 
   <xi:include href="basecurve.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>

@@ -3,7 +3,7 @@
 		<!ENTITY % darktable_dtd SYSTEM "../dtd/darktable.dtd">
 		%darktable_dtd;
 		]>
-<sect1 status="draft" id="session_options">
+<sect1 status="final" id="session_options">
 
   <title>Session options</title>
 

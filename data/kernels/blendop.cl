@@ -163,7 +163,7 @@ blendif_factor_Lab(const float4 input, const float4 output, const unsigned int b
 
     if((blendif & (1<<ch)) == 0)                                  // deal with channels where sliders span the whole range
     {
-      result *= !(blendif & (1<<(ch+16))) == !(mask_combine & DEVELOP_COMBINE_INCL) ? 1.0f : 0.0f;
+      result *= (!(blendif & (1<<(ch+16)))) == (!(mask_combine & DEVELOP_COMBINE_INCL)) ? 1.0f : 0.0f;
       continue;
     }
 
@@ -232,7 +232,7 @@ blendif_factor_rgb(const float4 input, const float4 output, const unsigned int b
 
     if((blendif & (1<<ch)) == 0)                                  // deal with channels where sliders span the whole range
     {
-      result *= !(blendif & (1<<(ch+16))) == !(mask_combine & DEVELOP_COMBINE_INCL) ? 1.0f : 0.0f;
+      result *= (!(blendif & (1<<(ch+16)))) == (!(mask_combine & DEVELOP_COMBINE_INCL)) ? 1.0f : 0.0f;
       continue;
     }
 

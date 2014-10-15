@@ -238,9 +238,9 @@ int dt_lua_do_chunk_raise(lua_State *L,int nargs, int nresults)
 
 int dt_lua_init_call(lua_State *L) {
   luaA_enum(L,yield_type);
-  luaA_enum_value(L,yield_type,WAIT_MS,false);
-  luaA_enum_value(L,yield_type,FILE_READABLE,false);
-  luaA_enum_value(L,yield_type,RUN_COMMAND,false);
+  luaA_enum_value(L,yield_type,WAIT_MS);
+  luaA_enum_value(L,yield_type,FILE_READABLE);
+  luaA_enum_value(L,yield_type,RUN_COMMAND);
   return 0;
 }
 

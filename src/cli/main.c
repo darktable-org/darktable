@@ -54,7 +54,7 @@ int main(int argc, char *arg[])
   bind_textdomain_codeset (GETTEXT_PACKAGE, "UTF-8");
   textdomain (GETTEXT_PACKAGE);
 
-  gtk_init (&argc, &arg);
+  gtk_init_check(&argc, &arg);
 
   // parse command line arguments
   char *image_filename = NULL;
@@ -140,6 +140,8 @@ int main(int argc, char *arg[])
   m_arg[m_argc++] = "darktable-cli";
   m_arg[m_argc++] = "--library";
   m_arg[m_argc++] = ":memory:";
+  m_arg[m_argc++] = "--conf";
+  m_arg[m_argc++] = "write_sidecar_files=FALSE";
   for(; k < argc; k++) m_arg[m_argc++] = arg[k];
   m_arg[m_argc] = NULL;
 
@@ -232,7 +234,7 @@ int main(int argc, char *arg[])
   }
 
   // and now for the really ugly hacks. don't tell your children about this one or they won't sleep at night any longer ...
-  g_strlcpy((char*)sdata, output_filename, 1024);
+  g_strlcpy((char*)sdata, output_filename, DT_MAX_PATH_FOR_PARAMS);
   // all is good now, the last line didn't happen.
 
   format = dt_imageio_get_format_by_name(ext);

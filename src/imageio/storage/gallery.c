@@ -35,7 +35,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-DT_MODULE(1)
+DT_MODULE(2)
 
 // gui data
 typedef struct gallery_t
@@ -48,9 +48,9 @@ gallery_t;
 // saved params
 typedef struct dt_imageio_gallery_t
 {
-  char filename[1024];
+  char filename[DT_MAX_PATH_FOR_PARAMS];
   char title[1024];
-  char cached_dirname[1024]; // expanded during first img store, not stored in param struct.
+  char cached_dirname[DT_MAX_PATH_FOR_PARAMS]; // expanded during first img store, not stored in param struct.
   dt_variables_params_t *vp;
   GList *l;
 }
@@ -69,6 +69,36 @@ const char*
 name (const struct dt_imageio_module_storage_t *self)
 {
   return _("website gallery");
+}
+
+void *
+legacy_params(dt_imageio_module_storage_t *self,
+              const void *const old_params, const size_t old_params_size, const int old_version,
+              const int new_version, size_t *new_size)
+{
+  if(old_version == 1 && new_version == 2)
+  {
+    typedef struct dt_imageio_gallery_v1_t
+    {
+      char filename[1024];
+      char title[1024];
+      char cached_dirname[1024]; // expanded during first img store, not stored in param struct.
+      dt_variables_params_t *vp;
+      GList *l;
+    }
+    dt_imageio_gallery_v1_t;
+
+    dt_imageio_gallery_t *n = (dt_imageio_gallery_t *)malloc(sizeof(dt_imageio_gallery_t));
+    dt_imageio_gallery_v1_t *o = (dt_imageio_gallery_v1_t *)old_params;
+
+    g_strlcpy(n->filename, o->filename, sizeof(n->filename));
+    g_strlcpy(n->title, o->title, sizeof(n->title));
+    g_strlcpy(n->cached_dirname, o->cached_dirname, sizeof(n->cached_dirname));
+
+    *new_size = self->params_size(self);
+    return n;
+  }
+  return NULL;
 }
 
 static void
@@ -295,7 +325,7 @@ store (dt_imageio_module_storage_t *self, dt_imageio_module_data_t *sdata, const
       description = res_desc->data;
     }
 
-    char relfilename[256], relthumbfilename[256];
+    char relfilename[PATH_MAX], relthumbfilename[PATH_MAX];
     c = filename + strlen(filename);
     for(; c>filename && *c != '/' ; c--);
     if(*c == '/') c++;
@@ -307,7 +337,7 @@ store (dt_imageio_module_storage_t *self, dt_imageio_module_data_t *sdata, const
     if(c <= relthumbfilename) c = relthumbfilename + strlen(relthumbfilename);
     sprintf(c, "-thumb.%s", ext);
 
-    char subfilename[PATH_MAX], relsubfilename[256];
+    char subfilename[PATH_MAX], relsubfilename[PATH_MAX];
     snprintf(subfilename, sizeof(subfilename), "%s", d->cached_dirname);
     char* sc = subfilename + strlen(subfilename);
     sprintf(sc, "/img_%d.html", num);
@@ -319,10 +349,10 @@ store (dt_imageio_module_storage_t *self, dt_imageio_module_data_t *sdata, const
              "      <h1>%s</h1>\n"
              "      %s</div>\n", title?title:relfilename, description?description:"&nbsp;", relfilename, relthumbfilename, num, title?title:"&nbsp;", description?description:"&nbsp;");
 
-    char next[256];
+    char next[PATH_MAX];
     snprintf(next, sizeof(next), "img_%d.html", (num)%total+1);
 
-    char prev[256];
+    char prev[PATH_MAX];
     snprintf(prev, sizeof(prev), "img_%d.html", (num==1)?total:num-1);
 
     pair->pos = num;
@@ -507,7 +537,7 @@ finalize_store(dt_imageio_module_storage_t *self, dt_imageio_module_data_t *dd)
 size_t
 params_size(dt_imageio_module_storage_t *self)
 {
-  return sizeof(dt_imageio_gallery_t) - 2*sizeof(void *) - 1024;
+  return sizeof(dt_imageio_gallery_t) - 2*sizeof(void *) - DT_MAX_PATH_FOR_PARAMS;
 }
 
 void init(dt_imageio_module_storage_t *self)

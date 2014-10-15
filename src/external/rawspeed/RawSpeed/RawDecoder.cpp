@@ -82,7 +82,7 @@ void RawDecoder::decodeUncompressed(TiffIFD *rawIFD, BitOrder order) {
     ByteStream in(mFile->getData(slice.offset), slice.count);
     iPoint2D size(width, slice.h);
     iPoint2D pos(0, offY);
-    bitPerPixel = (int)((uint64)(slice.count * 8) / (slice.h * width));
+    bitPerPixel = (int)((uint64)((uint64)slice.count * 8u) / (slice.h * width));
     try {
       readUncompressedRaw(in, size, pos, width*bitPerPixel / 8, bitPerPixel, order);
     } catch (RawDecoderException &e) {
@@ -147,6 +147,18 @@ void RawDecoder::readUncompressedRaw(ByteStream &input, iPoint2D& size, iPoint2D
       }
       bits.skipBits(skipBits);
     }
+  } else if (BitOrder_Jpeg16 == order) {
+      BitPumpMSB16 bits(&input);
+      w *= cpp;
+      for (; y < h; y++) {
+        ushort16* dest = (ushort16*) & data[offset.x*sizeof(ushort16)*cpp+y*outPitch];
+        bits.checkPos();
+        for (uint32 x = 0 ; x < w; x++) {
+          uint32 b = bits.getBits(bitPerPixel);
+          dest[x] = b;
+        }
+        bits.skipBits(skipBits);
+      }
   } else if (BitOrder_Jpeg32 == order) {
       BitPumpMSB32 bits(&input);
       w *= cpp;
@@ -181,6 +193,45 @@ void RawDecoder::readUncompressedRaw(ByteStream &input, iPoint2D& size, iPoint2D
         dest[x] = b;
       }
       bits.skipBits(skipBits);
+    }
+  }
+}
+
+void RawDecoder::Decode8BitRGB(ByteStream &input, uint32 w, uint32 h) {
+  uchar8* data = mRaw->getData();
+  uint32 pitch = mRaw->pitch;
+  const uchar8 *in = input.getData();
+  if (input.getRemainSize() < (w*h*3)) {
+    if ((uint32)input.getRemainSize() > w*3) {
+      h = input.getRemainSize() / w*3 - 1;
+      mRaw->setError("Image truncated (file is too short)");
+    } else
+      ThrowIOE("Decode8BitRGB: Not enough data to decode a single line. Image file truncated.");
+  }
+  for (uint32 y = 0; y < h; y++) {
+    ushort16* dest = (ushort16*) & data[y*pitch];
+    for (uint32 x = 0 ; x < w*3; x += 6) {
+      /* Decoding method and coefficients taken from
+         http://www.rawdigger.com/howtouse/nikon-small-raw-internals */
+
+      uint32 g1 = *in++;
+      uint32 g2 = *in++;
+      uint32 g3 = *in++;
+      uint32 g4 = *in++;
+      uint32 g5 = *in++;
+      uint32 g6 = *in++;
+
+      float y1 = g1 | ((g2 & 0x0f) << 8);
+      float y2 = (g2 >> 4) | (g3 << 4);
+      float cb = g4 | ((g5 & 0x0f) << 8);
+      float cr = (g5 >> 4) | (g6 << 4);
+
+      dest[x]   = y1 + 1.40200 * (cr - 2048);
+      dest[x+1] = y1 - 0.34414 * (cb - 2048) - 0.71414 * (cr - 2048);
+      dest[x+2] = y1 + 1.77200 * (cb - 2048);
+      dest[x+3] = y2 + 1.40200 * (cr - 2048);
+      dest[x+4] = y2 - 0.34414 * (cb - 2048) - 0.71414 * (cr - 2048);
+      dest[x+5] = y2 + 1.77200 * (cb - 2048);
     }
   }
 }
@@ -590,6 +641,10 @@ RawSpeed::RawImage RawDecoder::decodeRaw()
 {
   try {
     RawImage raw = decodeRawInternal();
+    if(hints.find("pixel_aspect_ratio") != hints.end()) {
+      stringstream convert(hints.find("pixel_aspect_ratio")->second);
+      convert >> raw->pixelAspectRatio;
+    }
     if (interpolateBadPixels)
       raw->fixBadPixels();
     return raw;

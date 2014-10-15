@@ -369,13 +369,6 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
   dt_iop_temperature_data_t *d = (dt_iop_temperature_data_t *)piece->data;
   for(int k=0; k<3; k++) d->coeffs[k]  = p->coeffs[k];
 
-  /*
-   * since `x * 1.0f == x` (multiplication is pointless),
-   * disable piece (out = in)
-   */
-  if(1.0f == p->coeffs[0] && 1.0f == p->coeffs[1] && 1.0f == p->coeffs[2])
-    piece->enabled = 0;
-
   // x-trans images not implemented in OpenCL yet
   if(pipe->image.filters == 9u)
     piece->process_cl_ready = 0;
@@ -446,27 +439,42 @@ void gui_update (struct dt_iop_module_t *self)
 
 void reload_defaults(dt_iop_module_t *module)
 {
-  // raw images need wb (to convert from uint16_t to float):
-  if(dt_image_is_raw(&module->dev->image_storage))
-  {
-    module->default_enabled = 1;
-  }
-  else module->default_enabled = 0;
   dt_iop_temperature_params_t tmp = (dt_iop_temperature_params_t)
   {
-    5000.0, {1.0, 1.0, 1.0}
+    .temp_out = 5000.0,
+    .coeffs = {1.0, 1.0, 1.0}
   };
+
+  // we might be called from presets update infrastructure => there is no image
+  if(!module->dev) goto end;
+
+  // raw images need wb:
+  module->default_enabled = dt_image_is_raw(&module->dev->image_storage) &&
+                            !module->dev->image_storage.pre_applied_wb;
 
   // get white balance coefficients, as shot
   char filename[PATH_MAX];
   int ret=0;
+
   /* check if file is raw / hdr */
-  if(dt_image_is_raw(&module->dev->image_storage))
+  if(dt_image_is_raw(&module->dev->image_storage) &&
+      /*
+       * ugly nikon hack: d810 sraws have WB pre-applied,
+       * but it is still stored inside.
+       * once we move WB coeffs reading into RS, this can be deleted.
+       */
+      !module->dev->image_storage.pre_applied_wb)
   {
     gboolean from_cache = TRUE;
     dt_image_full_path(module->dev->image_storage.id, filename, sizeof(filename), &from_cache);
-    libraw_data_t *raw = libraw_init(0);
 
+    char makermodel[1024];
+    char *model = makermodel;
+    dt_colorspaces_get_makermodel_split(makermodel, sizeof(makermodel), &model,
+                                        module->dev->image_storage.exif_maker,
+                                        module->dev->image_storage.exif_model);
+
+    libraw_data_t *raw = libraw_init(0);
     ret = libraw_open_file(raw, filename);
     if(!ret)
     {
@@ -480,11 +488,6 @@ void reload_defaults(dt_iop_module_t *module)
       if(tmp.coeffs[0] == 0 || tmp.coeffs[1] == 0 || tmp.coeffs[2] == 0)
       {
         // could not get useful info, try presets:
-        char makermodel[1024];
-        char *model = makermodel;
-        dt_colorspaces_get_makermodel_split(makermodel, sizeof(makermodel), &model,
-                                            module->dev->image_storage.exif_maker,
-                                            module->dev->image_storage.exif_model);
         for(int i=0; i<wb_preset_count; i++)
         {
           if(!strcmp(wb_preset[i].make,  makermodel) &&
@@ -495,62 +498,63 @@ void reload_defaults(dt_iop_module_t *module)
             break;
           }
         }
-        if(tmp.coeffs[0] == 0 || tmp.coeffs[1] == 0 || tmp.coeffs[2] == 0)
-        {
-          // final security net: hardcoded default that fits most cams.
-          tmp.coeffs[0] = 2.0f;
-          tmp.coeffs[1] = 1.0f;
-          tmp.coeffs[2] = 1.5f;
-        }
       }
-      else
+    }
+    if(tmp.coeffs[0] == 1.0f && tmp.coeffs[1] == 1.0f && tmp.coeffs[2] == 1.0f)
+    {
+      // nop white balance is valid for monochrome sraws (like the leica monochrom produces)
+      if (!(!strncmp(module->dev->image_storage.exif_maker, "Leica Camera AG", 15) && !strncmp(module->dev->image_storage.exif_model, "M9 monochrom", 12)))
       {
-        tmp.coeffs[0] /= tmp.coeffs[1];
-        tmp.coeffs[2] /= tmp.coeffs[1];
-        tmp.coeffs[1] = 1.0f;
-      }
-      // remember daylight wb used for temperature/tint conversion,
-      // assuming it corresponds to CIE daylight (D65)
-      if(module->gui_data)
-      {
-        dt_iop_temperature_gui_data_t *g = (dt_iop_temperature_gui_data_t *)module->gui_data;
-        for(int c = 0; c < 3; c++)
-          g->daylight_wb[c] = raw->color.pre_mul[c];
+        dt_control_log(_("failed to read camera white balance information!"));
+        fprintf(stderr, "[temperature] failed to read camera white balance information!\n");
 
-        if(g->daylight_wb[0] == 1.0f &&
-           g->daylight_wb[1] == 1.0f &&
-           g->daylight_wb[2] == 1.0f)
+        // final security net: hardcoded default that fits most cams.
+        tmp.coeffs[0] = 2.0f;
+        tmp.coeffs[1] = 1.0f;
+        tmp.coeffs[2] = 1.5f;
+      }
+    }
+
+    tmp.coeffs[0] /= tmp.coeffs[1];
+    tmp.coeffs[2] /= tmp.coeffs[1];
+    tmp.coeffs[1] = 1.0f;
+
+    // remember daylight wb used for temperature/tint conversion,
+    // assuming it corresponds to CIE daylight (D65)
+    if(module->gui_data)
+    {
+      dt_iop_temperature_gui_data_t *g = (dt_iop_temperature_gui_data_t *)module->gui_data;
+      for(int c = 0; c < 3; c++)
+        g->daylight_wb[c] = raw->color.pre_mul[c];
+
+      if(g->daylight_wb[0] == 1.0f &&
+         g->daylight_wb[1] == 1.0f &&
+         g->daylight_wb[2] == 1.0f)
+      {
+        // if we didn't find anything for daylight wb, look for a wb preset with appropriate name.
+        // we're normalising that to be D65
+        for(int i=0; i<wb_preset_count; i++)
         {
-          // if we didn't find anything for daylight wb, look for a wb preset with appropriate name.
-          // we're normalising that to be D65
-          char makermodel[1024];
-          char *model = makermodel;
-          dt_colorspaces_get_makermodel_split(makermodel, sizeof(makermodel), &model,
-              module->dev->image_storage.exif_maker,
-              module->dev->image_storage.exif_model);
-          for(int i=0; i<wb_preset_count; i++)
+          if(!strcmp(wb_preset[i].make,  makermodel) &&
+             !strcmp(wb_preset[i].model, model) &&
+             !strncasecmp(wb_preset[i].name, "daylight", 8))
           {
-            if(!strcmp(wb_preset[i].make,  makermodel) &&
-               !strcmp(wb_preset[i].model, model) &&
-               !strncasecmp(wb_preset[i].name, "daylight", 8))
-            {
-              for(int k=0;k<3;k++)
-                g->daylight_wb[k] = wb_preset[i].channel[k];
-              break;
-            }
+            for(int k=0;k<3;k++)
+              g->daylight_wb[k] = wb_preset[i].channel[k];
+            break;
           }
         }
-        float temp, tint, mul[3];
-        for(int k=0; k<3; k++) mul[k] = g->daylight_wb[k]/tmp.coeffs[k];
-        convert_rgb_to_k(mul, &temp, &tint);
-        dt_bauhaus_slider_set_default(g->scale_k,    temp);
-        dt_bauhaus_slider_set_default(g->scale_tint, tint);
       }
-
+      float temp, tint, mul[3];
+      for(int k=0; k<3; k++) mul[k] = g->daylight_wb[k]/tmp.coeffs[k];
+      convert_rgb_to_k(mul, &temp, &tint);
+      dt_bauhaus_slider_set_default(g->scale_k,    temp);
+      dt_bauhaus_slider_set_default(g->scale_tint, tint);
     }
     libraw_close(raw);
   }
 
+end:
   memcpy(module->params, &tmp, sizeof(dt_iop_temperature_params_t));
   memcpy(module->default_params, &tmp, sizeof(dt_iop_temperature_params_t));
 }
@@ -568,7 +572,7 @@ void init (dt_iop_module_t *module)
 {
   module->params = malloc(sizeof(dt_iop_temperature_params_t));
   module->default_params = malloc(sizeof(dt_iop_temperature_params_t));
-  module->priority = 52; // module order created by iop_dependencies.py, do not edit!
+  module->priority = 50; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_temperature_params_t);
   module->gui_data = NULL;
 }

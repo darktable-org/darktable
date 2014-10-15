@@ -24,11 +24,27 @@
     <primary>camera import</primary>
   </indexterm>
 
-  <para>
-    This panel is for importing images into film rolls. You can either import a complete folder,
-    by pressing <quote>import folder</quote>, or a single image with <quote>import
-    image</quote>. You can also import directly from a connected camera.
-  </para>
+  <informaltable frame="none">
+    <tgroup cols="2" colsep="0" rowsep="0">
+      <colspec colwidth="6*"/>
+      <colspec colwidth="4*"/>
+      <tbody>
+        <row>
+          <entry>
+            This panel is for importing images into film rolls. You can either import a complete
+            folder, by pressing <quote>folder</quote>, or a single image with
+            <quote>image</quote>. You can also cause darktable to search for connected cameras
+            by pressing <quote>scan for devices</quote>. If a supported camera is connected you
+            can import directly from that camera or control the camera from within darktable in
+            tethering mode.
+          </entry>
+          <entry>
+            <graphic fileref="lighttable/images/panel_import_1.png" scalefit="1" width="80%" align="center" />
+          </entry>
+        </row>
+      </tbody>
+    </tgroup>
+  </informaltable>
 
   <para>
     Imported images are organized as film rolls (see <xref linkend="film_rolls"/>). All film
@@ -51,13 +67,13 @@
     </para>
 
     <para>
-      <graphic fileref="lighttable/images/panel_import.png" scalefit="1" width="60%" align="center"></graphic>
+      <graphic fileref="lighttable/images/panel_import_2.png" scalefit="1" width="60%" align="center"></graphic>
     </para>
 
     <para>
-      Clicking on <quote>import image</quote> or <quote>import folder</quote> opens a file
-      selector dialog. Navigate through the filesystem, and select the item to import. On the
-      lower part of the dialog, are some further import options.
+      Clicking on <quote>image</quote> or <quote>folder</quote> opens a file selector dialog.
+      Navigate through the filesystem, and select the item to import. On the lower part of the
+      dialog, are some further import options.
     </para>
 
     <para>
@@ -93,19 +109,33 @@
 
   <sect3 status="final">
 
-    <title>Import from camera</title>
+    <title>Importing from a connected camera</title>
 
-    <para>
-      When a camera is detected, it will show up in the device panel. If you hover your mouse
-      over the camera tab label, a tooltip will pop up with information about the camera, such
-      as model, firmware version, and more. Depending on the camera's support, buttons with
-      actions will be available such as <quote>import images</quote> and
-      <quote>tethering</quote>.
-    </para>
+    <informaltable frame="none">
+      <tgroup cols="2" colsep="0" rowsep="0">
+        <colspec colwidth="6*"/>
+        <colspec colwidth="4*"/>
+        <tbody>
+          <row>
+            <entry>
+              When a camera is detected, it will show up in the device panel after pressing
+              <quote>scan for devices</quote>. If you hover your mouse over the camera tab
+              label, a tooltip will pop up with information about the camera, such as model,
+              firmware version, and more. Depending on the camera's support, buttons with
+              actions will be available such as <quote>import from camera</quote> and
+              <quote>tethered shoot</quote>.
+            </entry>
+            <entry>
+              <graphic fileref="lighttable/images/panel_import_3.png" scalefit="1" width="80%" align="center" />
+            </entry>
+          </row>
+        </tbody>
+      </tgroup>
+    </informaltable>
 
     <sect4>
 
-      <title>Import images</title>
+      <title>Import from camera</title>
 
       <para>
         This will bring up an import dialog, showing the images on camera that can be selected
@@ -122,7 +152,7 @@
 
     <sect4>
 
-      <title>Tethering</title>
+      <title>Tethered shoot</title>
 
       <para>
         Tethering is used to integrate darktable with your camera. While you take images with

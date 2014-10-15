@@ -236,7 +236,7 @@
                 <graphic fileref="darkroom/modules/images/graduatedneutraldensity_ex3.png" scalefit="1" width="90%" align="center" />
               </entry>
               <entry>
-                And at last, I added an orange colored filter rotating it -180 degrees, applying
+                And at last, we added an orange colored filter rotating it -180 degrees, applying
                 it on water/trees for a more artistic use of the filter.
               </entry>
             </row>
@@ -260,7 +260,7 @@
           <tbody>
             <row>
               <entry>
-                In this example a hardware GND filter (Hitech ND0.6, soft edge) helped me to
+                In this example a hardware GND filter (Hitech ND0.6, soft edge) helped to
                 prevent over-exposure in the sky and tree tops, while at the same time getting a
                 well exposed image of the ground. A rather disturbing element is the decay of
                 lightness in the tree trunks from bottom to top.

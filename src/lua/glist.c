@@ -20,29 +20,29 @@
 #include <lauxlib.h>
 #include <stdlib.h>
 
-void dt_lua_push_glist_typeid(lua_State *L,GList * list, luaA_Type elt_type)
+void dt_lua_push_glist_type(lua_State *L,GList * list, luaA_Type elt_type)
 {
   GList * elt = list;
   lua_newtable(L);
   while(elt)
   {
-    luaA_push_typeid(L,elt_type,elt->data);
+    luaA_push_type(L,elt_type,elt->data);
     luaL_ref(L,-2);
     elt = g_list_next(elt);
   }
 }
 
-GList* dt_lua_to_glist_typeid(lua_State *L, luaA_Type elt_type,int index)
+GList* dt_lua_to_glist_type(lua_State *L, luaA_Type elt_type,int index)
 {
   // recreate list of images
   GList * list = NULL;
-  size_t type_size = luaA_type_size(elt_type);
+  size_t type_size = luaA_typesize(L,elt_type);
   lua_pushnil(L);  /* first key */
   while (lua_next(L, index -1) != 0)
   {
     /* uses 'key' (at index -2) and 'value' (at index -1) */
     void*obj = malloc(type_size);
-    luaA_to_typeid(L,elt_type,obj,-1);
+    luaA_to_type(L,elt_type,obj,-1);
     lua_pop(L,1);
     list = g_list_prepend(list,(gpointer)obj);
   }

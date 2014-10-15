@@ -511,7 +511,7 @@ static gchar* array2string(const gchar* pos, guint* length)
 // Get the (key,value) pairs back from KWallet.
 GHashTable* dt_pwstorage_kwallet_get(const backend_kwallet_context_t *context, const gchar* slot)
 {
-  GHashTable *table = g_hash_table_new(g_str_hash, g_str_equal);
+  GHashTable *table = g_hash_table_new_full(g_str_hash, g_str_equal, g_free, g_free);
   GError* error = NULL;
 
   // Is there an entry in the wallet?

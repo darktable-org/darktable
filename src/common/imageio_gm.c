@@ -61,7 +61,6 @@ dt_imageio_open_gm(
   dt_mipmap_cache_allocator_t a)
 {
   int err = DT_IMAGEIO_FILE_CORRUPTED;
-  float *buf = NULL;
   ExceptionInfo exception;
   Image *image = NULL;
   ImageInfo *image_info = NULL;
@@ -105,12 +104,9 @@ dt_imageio_open_gm(
     goto error;
   }
 
-  buf = (float *)dt_alloc_align(16, width*img->bpp);
-  if(!buf) goto error;
-
   for (uint32_t row = 0; row < height; row++)
   {
-    void *bufprt = (float *)buf + (size_t)4*row*img->width;
+    float *bufprt = mipbuf + (size_t)4*row*img->width;
     int ret = DispatchImage(image, 0, row, width, 1, "RGBP", FloatPixel, bufprt, &exception);
     if (exception.severity != UndefinedException)
       CatchException(&exception);
@@ -122,7 +118,6 @@ dt_imageio_open_gm(
     }
   }
 
-  if(buf) dt_free_align(buf);
   if(image) DestroyImage(image);
   if(image_info) DestroyImageInfo(image_info);
   DestroyExceptionInfo(&exception);
@@ -135,7 +130,6 @@ dt_imageio_open_gm(
   return DT_IMAGEIO_OK;
 
 error:
-  if(buf) dt_free_align(buf);
   if(image) DestroyImage(image);
   if(image_info) DestroyImageInfo(image_info);
   DestroyExceptionInfo(&exception);

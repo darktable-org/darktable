@@ -114,26 +114,35 @@ static int get_storage_params(lua_State *L)
     lua_pushnil(L);
     return 1;
   }
-  luaA_push_typeid(L,storage_module->parameter_lua_type,fdata);
+  luaA_push_type(L,storage_module->parameter_lua_type,fdata);
   storage_module->free_params(storage_module,fdata);
   return 1;
 }
 
-void dt_lua_register_storage_typeid(lua_State* L, dt_imageio_module_storage_t* module, luaA_Type type_id)
+void dt_lua_register_storage_type(lua_State* L, dt_imageio_module_storage_t* module, luaA_Type type_id)
 {
-  dt_lua_type_register_parent_typeid(L,type_id,luaA_type_find("dt_imageio_module_storage_t"));
-  luaL_getmetatable(L,luaA_type_name(type_id));
+  dt_lua_type_register_parent_type(L,type_id,luaA_type_find(L,"dt_imageio_module_storage_t"));
+  luaL_getmetatable(L,luaA_typename(L,type_id));
   lua_pushlightuserdata(L,module);
   lua_setfield(L,-2,"__associated_object");
   lua_pop(L,1); // pop the metatable
   // add to the table
   lua_pushlightuserdata(L,module);
   lua_pushcclosure(L,get_storage_params,1);
-  dt_lua_register_module_entry(L,-1,"storage",module->plugin_name);
+  dt_lua_module_entry_new(L,-1,"storage",module->plugin_name);
   lua_pop(L,1);
 };
 
-int dt_lua_init_storage(lua_State *L)
+static int new_storage(lua_State*L)
+{
+  const char* entry_name = luaL_checkstring(L,1);
+  dt_lua_module_entry_push(L,"storage",entry_name);
+  lua_call(L,0,1);
+  return 1;
+
+}
+
+int dt_lua_init_early_storage(lua_State *L)
 {
 
   dt_lua_init_type(L,dt_imageio_module_storage_t);
@@ -154,7 +163,13 @@ int dt_lua_init_storage(lua_State *L)
   lua_pushcclosure(L,dt_lua_type_member_common,1);
   dt_lua_type_register_const(L,dt_imageio_module_storage_t,"supports_format");
 
-  dt_lua_init_module_type(L,"storage");
+  dt_lua_module_new(L,"storage");
+
+  dt_lua_push_darktable_lib(L);
+  lua_pushstring(L,"new_storage");
+  lua_pushcfunction(L,&new_storage);
+  lua_settable(L,-3);
+  lua_pop(L,1);
   return 0;
 }
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

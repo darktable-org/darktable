@@ -24,7 +24,7 @@
   </dtconfig>
   <dtconfig prefs="core">
     <name>cache_memory</name>
-    <type factor="(1.0 / (1024.0 * 1024.0))" min="0">int64</type>
+    <type factor="(1.0 / (1024.0 * 1024.0))" min="(1024 * 1024 * 100)">int64</type>
     <default>(1024 * 1024 * 512)</default>
     <shortdescription>memory in megabytes to use for mipmap cache</shortdescription>
     <longdescription>this controls how much memory is going to be used for thumbnails and other buffers (needs a restart).</longdescription>
@@ -52,7 +52,7 @@
   </dtconfig>
   <dtconfig prefs="core">
     <name>singlebuffer_limit</name>
-    <type min="2">int</type>
+    <type min="2" max="64">int</type>
     <default>16</default>
     <shortdescription>minimum amount of memory (in MB) for a single buffer in tiling</shortdescription>
     <longdescription>if set to a positive, non-zero value this variable defines the minimum amount of memory (in MB) that tiling should take for a single image buffer. has precedence over heuristics based on host_memory_limit (needs a restart).</longdescription>
@@ -963,6 +963,13 @@
     <shortdescription/>
     <longdescription/>
   </dtconfig>
+  <dtconfig>
+    <name>plugins/darkroom/tagging/visible</name>
+    <type>bool</type>
+    <default>true</default>
+    <shortdescription/>
+    <longdescription/>
+  </dtconfig>
   <dtconfig prefs="gui">
     <name>plugins/lighttable/tagging/ask_before_delete_tag</name>
     <type>bool</type>
@@ -1220,8 +1227,9 @@
       <enum>
         <option>auto</option>
         <option>none</option>
-        <option>kwallet</option>
-        <option>gnome keyring</option>
+        <option capability="libsecret">libsecret</option>
+        <option capability="kwallet">kwallet</option>
+        <option capability="gnome-keyring">gnome keyring</option>
       </enum>
     </type>
     <default>auto</default>

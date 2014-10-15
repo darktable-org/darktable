@@ -30,6 +30,7 @@
 #include "common/metadata.h"
 #include "common/grouping.h"
 #include "common/history.h"
+#include "common/mipmap_cache.h"
 #include "metadata_gen.h"
 
 /***********************************************************************
@@ -82,6 +83,15 @@ static int history_delete(lua_State *L)
   dt_lua_image_t imgid = -1;
   luaA_to(L,dt_lua_image_t,&imgid,-1);
   dt_history_delete_on_image(imgid);
+  return 0;
+}
+
+
+static int drop_cache(lua_State *L)
+{
+  dt_lua_image_t imgid = -1;
+  luaA_to(L,dt_lua_image_t,&imgid,-1);
+  dt_mipmap_cache_remove(darktable.mipmap_cache,imgid);
   return 0;
 }
 
@@ -450,12 +460,12 @@ static int image_luaautoc_member(lua_State *L)
   const char * member_name = luaL_checkstring(L,2);
   if(lua_gettop(L) != 3) {
     const dt_image_t * image = checkreadimage(L,1);
-    luaA_struct_push_member_name(L,dt_image_t,image,member_name);
+    luaA_struct_push_member_name(L,dt_image_t,member_name,image);
     releasereadimage(L,image);
     return 1;
   } else {
     dt_image_t * image = checkwriteimage(L,1);
-    luaA_struct_to_member_name(L,dt_image_t,image,member_name,3);
+    luaA_struct_to_member_name(L,dt_image_t,member_name,image,3);
     releasewriteimage(L,image);
     return 0;
   }
@@ -486,7 +496,11 @@ int dt_lua_init_image(lua_State * L)
   while(member_name != LUAA_INVALID_MEMBER_NAME)
   {
     lua_pushcfunction(L,image_luaautoc_member);
-    if(luaA_type_has_to_func(luaA_struct_typeof_member_name(L, dt_image_t, member_name))) {
+    luaA_Type member_type = luaA_struct_typeof_member_name(L, dt_image_t, member_name);
+    if(luaA_conversion_to_registered_type(L,member_type) ||
+        luaA_struct_registered_type(L,member_type)||
+        luaA_enum_registered_type(L,member_type)
+        ) {
       dt_lua_type_register(L,dt_lua_image_t,member_name);
     } else {
       dt_lua_type_register_const(L,dt_lua_image_t,member_name);
@@ -574,6 +588,9 @@ int dt_lua_init_image(lua_State * L)
   lua_pushcfunction(L,dt_lua_copy_image);
   lua_pushcclosure(L,dt_lua_type_member_common,1);
   dt_lua_type_register_const(L,dt_lua_image_t,"copy");
+  lua_pushcfunction(L,drop_cache);
+  lua_pushcclosure(L,dt_lua_type_member_common,1);
+  dt_lua_type_register_const(L,dt_lua_image_t,"drop_cache");
   luaL_getmetatable(L,"dt_lua_image_t");
   lua_pushcfunction(L,image_tostring);
   lua_setfield(L,-2,"__tostring");

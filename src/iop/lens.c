@@ -54,7 +54,7 @@
 #endif
 #endif
 
-DT_MODULE_INTROSPECTION(4, dt_iop_lensfun_params_t)
+DT_MODULE_INTROSPECTION(5, dt_iop_lensfun_params_t)
 
 typedef enum dt_iop_lensfun_modflag_t
 {
@@ -200,7 +200,7 @@ void connect_key_accels(dt_iop_module_t *self)
 int
 legacy_params (dt_iop_module_t *self, const void *const old_params, const int old_version, void *new_params, const int new_version)
 {
-  if (old_version == 2 && new_version == 4)
+  if (old_version == 2 && new_version == 5)
   {
     // legacy params of version 2; version 1 comes from ancient times and seems to be forgotten by now
     typedef struct dt_iop_lensfun_params_v2_t
@@ -235,15 +235,17 @@ legacy_params (dt_iop_module_t *self, const void *const old_params, const int ol
     n->distance = o->distance;
     n->target_geom = o->target_geom;
     n->tca_override = o->tca_override;
-    n->tca_r = o->tca_r;
-    n->tca_b = o->tca_b;
     strncpy(n->camera, o->camera, sizeof(n->camera));
     strncpy(n->lens, o->lens, sizeof(n->lens));
     n->modified = 1;
 
+    // old versions had R and B swapped
+    n->tca_r = o->tca_b;
+    n->tca_b = o->tca_r;
+
     return 0;
   }
-  if (old_version == 3 && new_version == 4)
+  if (old_version == 3 && new_version == 5)
   {
     typedef struct dt_iop_lensfun_params_v3_t
     {
@@ -268,12 +270,53 @@ legacy_params (dt_iop_module_t *self, const void *const old_params, const int ol
 
     *n = *d;  // start with a fresh copy of default parameters
 
-    // one more parameter and changed parameters in case we autodetect
     memcpy(n, o, sizeof(dt_iop_lensfun_params_t) - sizeof(int));
+
+    // one more parameter and changed parameters in case we autodetect
     n->modified = 1;
+
+    // old versions had R and B swapped
+    n->tca_r = o->tca_b;
+    n->tca_b = o->tca_r;
 
     return 0;
   }
+
+  if (old_version == 4 && new_version == 5)
+  {
+    typedef struct dt_iop_lensfun_params_v4_t
+    {
+      int modify_flags;
+      int inverse;
+      float scale;
+      float crop;
+      float focal;
+      float aperture;
+      float distance;
+      lfLensType target_geom;
+      char camera[128];
+      char lens[128];
+      int tca_override;
+      float tca_r, tca_b;
+      int modified;
+    }
+    dt_iop_lensfun_params_v4_t;
+
+    const dt_iop_lensfun_params_v4_t *o = (dt_iop_lensfun_params_v4_t *)old_params;
+    dt_iop_lensfun_params_t *n = (dt_iop_lensfun_params_t *)new_params;
+    dt_iop_lensfun_params_t *d = (dt_iop_lensfun_params_t *)self->default_params;
+
+    *n = *d;  // start with a fresh copy of default parameters
+
+    memcpy(n, o, sizeof(dt_iop_lensfun_params_t));
+
+    // old versions had R and B swapped
+    n->tca_r = o->tca_b;
+    n->tca_b = o->tca_r;
+
+    return 0;
+  }
+
   return 1;
 }
 
@@ -941,12 +984,11 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
       if(p->tca_override)
       {
         // add manual d->lens stuff:
-        lfLensCalibTCA tca;
-        memset(&tca, 0, sizeof(lfLensCalibTCA));
+        lfLensCalibTCA tca = { 0 };
         tca.Focal = 0;
         tca.Model = LF_TCA_MODEL_LINEAR;
-        tca.Terms[0] = p->tca_b;
-        tca.Terms[1] = p->tca_r;
+        tca.Terms[0] = p->tca_r;
+        tca.Terms[1] = p->tca_b;
         if(d->lens->CalibTCA)
           while (d->lens->CalibTCA[0])
             lf_lens_remove_calib_tca (d->lens, 0);
@@ -1027,8 +1069,7 @@ void reload_defaults(dt_iop_module_t *module)
 {
   // reload image specific stuff
   // get all we can from exif:
-  dt_iop_lensfun_params_t tmp;
-  memset(&tmp, 0, sizeof(dt_iop_lensfun_params_t));
+  dt_iop_lensfun_params_t tmp = { 0 };
 
   // we might be called from presets update infrastructure => there is no image
   if(!module || !module->dev) goto end;
@@ -1090,7 +1131,7 @@ void init(dt_iop_module_t *module)
   module->default_enabled = 0;
   module->params_size = sizeof(dt_iop_lensfun_params_t);
   module->gui_data = NULL;
-  module->priority = 228; // module order created by iop_dependencies.py, do not edit!
+  module->priority = 250; // module order created by iop_dependencies.py, do not edit!
 }
 
 void cleanup(dt_iop_module_t *module)
@@ -1503,6 +1544,14 @@ static void lens_set (dt_iop_module_t *self, const lfLens *lens)
 
   if (!lens)
   {
+    gtk_widget_set_sensitive(GTK_WIDGET(g->modflags), FALSE);
+    gtk_widget_set_sensitive(GTK_WIDGET(g->target_geom), FALSE);
+    gtk_widget_set_sensitive(GTK_WIDGET(g->scale), FALSE);
+    gtk_widget_set_sensitive(GTK_WIDGET(g->reverse), FALSE);
+    gtk_widget_set_sensitive(GTK_WIDGET(g->tca_r), FALSE);
+    gtk_widget_set_sensitive(GTK_WIDGET(g->tca_b), FALSE);
+    gtk_widget_set_sensitive(GTK_WIDGET(g->message), FALSE);
+
     gtk_container_foreach (
       GTK_CONTAINER (g->detection_warning), delete_children, NULL);
 
@@ -1517,6 +1566,16 @@ static void lens_set (dt_iop_module_t *self, const lfLens *lens)
     gtk_widget_hide(g->lens_param_box);
     gtk_widget_show_all (g->detection_warning);
     return;
+  }
+  else
+  {
+    gtk_widget_set_sensitive(GTK_WIDGET(g->modflags), TRUE);
+    gtk_widget_set_sensitive(GTK_WIDGET(g->target_geom), TRUE);
+    gtk_widget_set_sensitive(GTK_WIDGET(g->scale), TRUE);
+    gtk_widget_set_sensitive(GTK_WIDGET(g->reverse), TRUE);
+    gtk_widget_set_sensitive(GTK_WIDGET(g->tca_r), TRUE);
+    gtk_widget_set_sensitive(GTK_WIDGET(g->tca_b), TRUE);
+    gtk_widget_set_sensitive(GTK_WIDGET(g->message), TRUE);
   }
 
   maker = lf_mlstr_get (lens->Maker);
@@ -1670,10 +1729,13 @@ static void lens_menu_select (
   GtkMenuItem *menuitem, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
+  dt_iop_lensfun_gui_data_t *g = (dt_iop_lensfun_gui_data_t *)self->gui_data;
+  dt_iop_lensfun_params_t   *p = (dt_iop_lensfun_params_t   *)self->params;
   lens_set (self, (lfLens *)g_object_get_data(G_OBJECT(menuitem), "lfLens"));
   if(darktable.gui->reset) return;
-  dt_iop_lensfun_params_t *p = (dt_iop_lensfun_params_t *)self->params;
   p->modified = 1;
+  const float scale = get_autoscale(self, p, g->camera);
+  dt_bauhaus_slider_set(g->scale, scale);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
@@ -2179,7 +2241,8 @@ void gui_update(struct dt_iop_module_t *self)
     cam = lf_db_find_cameras_ext(dt_iop_lensfun_db,
                                  NULL, p->camera, 0);
     dt_pthread_mutex_unlock(&darktable.plugin_threadsafe);
-    if(cam) g->camera = cam[0];
+    if(cam) camera_set (self, cam[0]);
+    else camera_set (self, NULL);
   }
   if(g->camera && p->lens[0])
   {

@@ -18,10 +18,9 @@
     <xref linkend="modules"/> you will find a description for each of the available modules.
   </para>
 
-  <para>
-    Modules are applied in a fixed order. This differentiates darktable, as a non-destructive
-    image editor, from classical image manipulation programs like The Gimp.
-  </para>
+<!-- General concept of pixelpipe, modules and history stack -->
+
+  <xi:include href="pixelpipe.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
 
 <!-- Interacting with modules -->
 

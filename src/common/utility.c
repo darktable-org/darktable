@@ -108,16 +108,17 @@ gchar* dt_util_str_replace(const gchar* string, const gchar* pattern, const gcha
   return nstring;
 }
 
-gchar* dt_util_glist_to_str(const gchar* separator, GList * items, const unsigned int count)
+gchar* dt_util_glist_to_str(const gchar* separator, GList * items)
 {
-  if(count == 0)
+  if(items == NULL)
     return NULL;
 
+  const unsigned int count = g_list_length(items);
   gchar *result = NULL;
 
   // add the entries to an char* array
   items = g_list_first(items);
-  gchar** strings = g_malloc_n(count+1, sizeof(gchar *));
+  gchar** strings = g_malloc0_n(count+1, sizeof(gchar *));
   if(items != NULL)
   {
     int i = 0;
@@ -126,27 +127,45 @@ gchar* dt_util_glist_to_str(const gchar* separator, GList * items, const unsigne
       strings[i++] = items->data;
     }
     while((items=g_list_next(items)) != NULL);
-    strings[i] = NULL;
   }
 
   // join them into a single string
   result = g_strjoinv(separator, strings);
 
-  // free the GList and the array
-  items = g_list_first(items);
-  if(items != NULL)
-  {
-    do
-    {
-      g_free(items->data);
-    }
-    while((items=g_list_next(items)) != NULL);
-  }
-  g_list_free(items);
+  // free the array
   g_free(strings);
 
   return result;
 }
+
+GList* dt_util_glist_uniq(GList * items)
+{
+  if(!items) return NULL;
+
+  gchar *last = NULL;
+  GList *last_item = NULL;
+
+  items = g_list_sort(items, (GCompareFunc)g_strcmp0);
+  GList *iter = items;
+  while(iter)
+  {
+    gchar *value = (gchar*)iter->data;
+    if(!g_strcmp0(last, value))
+    {
+      g_free(value);
+      items = g_list_delete_link(items, iter);
+      iter = last_item;
+    }
+    else
+    {
+      last = value;
+      last_item = iter;
+    }
+    iter = g_list_next(iter);
+  }
+  return items;
+}
+
 
 gchar* dt_util_fix_path(const gchar* path)
 {

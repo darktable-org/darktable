@@ -370,16 +370,12 @@ static void wavelet_denoise_xtrans(const float *const in, float *out, const dt_i
 void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoid, void *ovoid, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
 {
   dt_iop_rawdenoise_data_t *d = (dt_iop_rawdenoise_data_t *)piece->data;
-  if (d->threshold > 0.0)
-  {
-    uint32_t filters = dt_image_filter(&piece->pipe->image);
-    if (filters != 9u)
-      wavelet_denoise(ivoid, ovoid, roi_in, d->threshold, filters);
-    else
-      wavelet_denoise_xtrans(ivoid, ovoid, roi_in, d->threshold, self->dev->image_storage.xtrans);
-  }
+
+  uint32_t filters = dt_image_filter(&piece->pipe->image);
+  if (filters != 9u)
+    wavelet_denoise(ivoid, ovoid, roi_in, d->threshold, filters);
   else
-    memcpy(ovoid, ivoid, (size_t)roi_out->width * roi_out->height * sizeof(float));
+    wavelet_denoise_xtrans(ivoid, ovoid, roi_in, d->threshold, self->dev->image_storage.xtrans);
 }
 
 void reload_defaults(dt_iop_module_t *module)
@@ -387,15 +383,21 @@ void reload_defaults(dt_iop_module_t *module)
   // init defaults:
   dt_iop_rawdenoise_params_t tmp = (dt_iop_rawdenoise_params_t)
   {
-    0.01
+    .threshold = 0.01
   };
-  memcpy(module->params, &tmp, sizeof(dt_iop_rawdenoise_params_t));
-  memcpy(module->default_params, &tmp, sizeof(dt_iop_rawdenoise_params_t));
+
+  // we might be called from presets update infrastructure => there is no image
+  if(!module->dev) goto end;
 
   // can't be switched on for non-raw images:
   if(dt_image_is_raw(&module->dev->image_storage)) module->hide_enable_button = 0;
   else module->hide_enable_button = 1;
   module->default_enabled = 0;
+
+end:
+  memcpy(module->params, &tmp, sizeof(dt_iop_rawdenoise_params_t));
+  memcpy(module->default_params, &tmp, sizeof(dt_iop_rawdenoise_params_t));
+
 }
 
 void init(dt_iop_module_t *module)
@@ -406,7 +408,7 @@ void init(dt_iop_module_t *module)
   module->default_enabled = 0;
 
   // raw denoise must come just before demosaicing.
-  module->priority = 122; // module order created by iop_dependencies.py, do not edit!
+  module->priority = 116; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_rawdenoise_params_t);
   module->gui_data = NULL;
 }
@@ -425,9 +427,11 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *params, dt_de
 {
   dt_iop_rawdenoise_params_t *p = (dt_iop_rawdenoise_params_t *)params;
   dt_iop_rawdenoise_data_t *d = (dt_iop_rawdenoise_data_t *)piece->data;
-  if (!(pipe->image.flags & DT_IMAGE_RAW) || dt_dev_pixelpipe_uses_downsampled_input(pipe))
-    piece->enabled = 0;
+
   d->threshold = p->threshold;
+
+  if (!(pipe->image.flags & DT_IMAGE_RAW) || dt_dev_pixelpipe_uses_downsampled_input(pipe) || !(d->threshold > 0.0f))
+    piece->enabled = 0;
 }
 
 void init_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)

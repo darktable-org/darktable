@@ -22,6 +22,7 @@
 #include "common/mipmap_cache.h"
 
 dt_imageio_retval_t dt_imageio_open_png(dt_image_t *img, const char *filename, dt_mipmap_cache_allocator_t a);
+int dt_imageio_png_read_profile(const char *filename, uint8_t **out);
 
 #endif
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

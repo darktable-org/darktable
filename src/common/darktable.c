@@ -390,18 +390,46 @@ int dt_init(int argc, char *argv[], const int init_gui,lua_State *L)
   #error "Unfortunately we depend on SSE3 instructions at this time."
   #error "Please contribute a backport patch (or buy a newer processor)."
 #else
+  int sse3_supported = 0;
+
   #if (__GNUC_PREREQ(4,8) || __has_builtin(__builtin_cpu_supports))
-  //FIXME: check will work only in GCC 4.8+ !!! implement manual cpuid check !!!
-  //NOTE: _may_i_use_cpu_feature() looks better, but only avaliable in ICC
-  if (!__builtin_cpu_supports("sse3"))
-  {
-    fprintf(stderr, "[dt_init] unfortunately we depend on SSE3 instructions at this time.\n");
-    fprintf(stderr, "[dt_init] please contribute a backport patch (or buy a newer processor).\n");
-    return 1;
-  }
+    //NOTE: _may_i_use_cpu_feature() looks better, but only avaliable in ICC
+    sse3_supported = __builtin_cpu_supports("sse3");
   #else
-  //FIXME: no way to check for SSE3 in runtime, implement manual cpuid check !!!
+    // Check SSE3 support "manually"
+    // (see http://stackoverflow.com/questions/6121792/how-to-check-if-a-cpu-supports-the-sse3-instruction-set)
+
+    int cpu_info[4] = {-1};
+
+    __asm__ __volatile__ (
+            "cpuid":
+            "=a" (cpu_info[0]),
+            "=b" (cpu_info[1]),
+            "=c" (cpu_info[2]),
+            "=d" (cpu_info[3]):
+            "a" (0), "c" (0)
+    );
+
+    if (cpu_info[0] >= 0x00000001)
+    {
+      __asm__ __volatile__ (
+              "cpuid":
+              "=a" (cpu_info[0]),
+              "=b" (cpu_info[1]),
+              "=c" (cpu_info[2]),
+              "=d" (cpu_info[3]):
+              "a" (0x00000001), "c" (0)
+      );
+
+      sse3_supported  = (cpu_info[2] & ((int)1 << 0)) != 0;
+    }
   #endif
+    if (!sse3_supported)
+    {
+      fprintf(stderr, "[dt_init] unfortunately we depend on SSE3 instructions at this time.\n");
+      fprintf(stderr, "[dt_init] please contribute a backport patch (or buy a newer processor).\n");
+      return 1;
+    }
 #endif
 
 #ifdef M_MMAP_THRESHOLD
@@ -433,7 +461,14 @@ int dt_init(int argc, char *argv[], const int init_gui,lua_State *L)
         new_xdg_data_dirs = g_strjoin(":", DARKTABLE_SHAREDIR, xdg_data_dirs, NULL);
     }
     else
-      new_xdg_data_dirs = g_strdup(DARKTABLE_SHAREDIR);
+    {
+      // see http://standards.freedesktop.org/basedir-spec/latest/ar01s03.html for a reason to use those as a default
+      if(!g_strcmp0(DARKTABLE_SHAREDIR, "/usr/local/share") || !g_strcmp0(DARKTABLE_SHAREDIR, "/usr/local/share/") ||
+         !g_strcmp0(DARKTABLE_SHAREDIR, "/usr/share") || !g_strcmp0(DARKTABLE_SHAREDIR, "/usr/share/"))
+        new_xdg_data_dirs = g_strdup("/usr/local/share/:/usr/share/");
+      else
+        new_xdg_data_dirs = g_strdup_printf("%s:/usr/local/share/:/usr/share/", DARKTABLE_SHAREDIR);
+    }
 
     if(set_env)
       g_setenv("XDG_DATA_DIRS", new_xdg_data_dirs, 1);
@@ -459,7 +494,9 @@ int dt_init(int argc, char *argv[], const int init_gui,lua_State *L)
   char *configdir_from_command = NULL;
   char *cachedir_from_command = NULL;
 
-  char *lua_command  __attribute__((unused))= NULL;
+#ifdef USE_LUA
+  char *lua_command = NULL;
+#endif
 
   darktable.num_openmp_threads = 1;
 #ifdef _OPENMP
@@ -562,7 +599,11 @@ int dt_init(int argc, char *argv[], const int init_gui,lua_State *L)
       }
       else if(!strcmp(argv[k], "--luacmd"))
       {
+#ifdef USE_LUA
         lua_command = argv[++k];
+#else
+        ++k;
+#endif
       }
     }
 #ifndef MAC_INTEGRATION
@@ -708,9 +749,6 @@ int dt_init(int argc, char *argv[], const int init_gui,lua_State *L)
   darktable.thumbnail_height /= 16;
   darktable.thumbnail_height *= 16;
 
-  // Initialize the password storage engine
-  darktable.pwstorage=dt_pwstorage_new();
-
   // FIXME: move there into dt_database_t
   dt_pthread_mutex_init(&(darktable.db_insert), NULL);
   dt_pthread_mutex_init(&(darktable.plugin_threadsafe), NULL);
@@ -738,6 +776,9 @@ int dt_init(int argc, char *argv[], const int init_gui,lua_State *L)
 
   /* capabilities set to NULL */
   darktable.capabilities = NULL;
+
+  // Initialize the password storage engine
+  darktable.pwstorage=dt_pwstorage_new();
 
 #ifdef HAVE_GRAPHICSMAGICK
   /* GraphicsMagick init */
@@ -778,6 +819,9 @@ int dt_init(int argc, char *argv[], const int init_gui,lua_State *L)
   darktable.view_manager = (dt_view_manager_t *)calloc(1, sizeof(dt_view_manager_t));
   dt_view_manager_init(darktable.view_manager);
 
+  darktable.imageio = (dt_imageio_t *)calloc(1, sizeof(dt_imageio_t));
+  dt_imageio_init(darktable.imageio);
+
   // load the darkroom mode plugins once:
   dt_iop_load_modules_so();
 
@@ -788,8 +832,6 @@ int dt_init(int argc, char *argv[], const int init_gui,lua_State *L)
 
     dt_control_load_config(darktable.control);
   }
-  darktable.imageio = (dt_imageio_t *)calloc(1, sizeof(dt_imageio_t));
-  dt_imageio_init(darktable.imageio);
 
   if(init_gui)
   {
@@ -1017,7 +1059,7 @@ void dt_configure_defaults()
   {
     fprintf(stderr, "[defaults] setting high quality defaults\n");
     dt_conf_set_int("worker_threads", 8);
-    dt_conf_set_int("cache_memory", 1u<<30);
+    dt_conf_set_int64("cache_memory", 1u<<30);
     dt_conf_set_int("plugins/lighttable/thumbnail_width", 1300);
     dt_conf_set_int("plugins/lighttable/thumbnail_height", 1000);
     dt_conf_set_bool("plugins/lighttable/low_quality_thumbnails", FALSE);
@@ -1026,7 +1068,7 @@ void dt_configure_defaults()
   {
     fprintf(stderr, "[defaults] setting very conservative defaults\n");
     dt_conf_set_int("worker_threads", 1);
-    dt_conf_set_int("cache_memory", 200u<<20);
+    dt_conf_set_int64("cache_memory", 200u<<20);
     dt_conf_set_int("host_memory_limit", 500);
     dt_conf_set_int("singlebuffer_limit", 8);
     dt_conf_set_int("plugins/lighttable/thumbnail_width", 800);

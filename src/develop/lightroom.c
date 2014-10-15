@@ -363,9 +363,7 @@ static float lr2dt_clarity(float value)
 static void dt_add_hist (int imgid, char *operation, dt_iop_params_t *params, int params_size, char *imported, size_t imported_len, int version, int *import_count)
 {
   int32_t num = 0;
-  dt_develop_blend_params_t blend_params;
-
-  memset(&blend_params, 0, sizeof(dt_develop_blend_params_t));
+  dt_develop_blend_params_t blend_params = { 0 };
 
   //  get current num if any
   sqlite3_stmt *stmt;

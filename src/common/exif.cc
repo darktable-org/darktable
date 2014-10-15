@@ -20,28 +20,35 @@
 
 #define __STDC_FORMAT_MACROS
 
+extern "C"
+{
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
 
-#include <iostream>
-#include <fstream>
-#include <sstream>
-#include <cassert>
 #include <glib.h>
 #include <zlib.h>
-#include <string>
 #include <time.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>
 #include <sqlite3.h>
+}
+
+#include <cmath>
+#include <iostream>
+#include <fstream>
+#include <string>
+#include <sstream>
+#include <cassert>
 
 #include <exiv2/easyaccess.hpp>
 #include <exiv2/xmp.hpp>
 #include <exiv2/error.hpp>
 #include <exiv2/image.hpp>
 #include <exiv2/exif.hpp>
+
+using namespace std;
 
 extern "C"
 {
@@ -762,16 +769,18 @@ static bool dt_exif_read_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
       }
     }
 
+#if EXIV2_MINOR_VERSION<23
     // workaround for an exiv2 bug writing random garbage into exif_lens for this camera:
     // http://dev.exiv2.org/issues/779
     if(!strcmp(img->exif_model, "DMC-GH2")) snprintf(img->exif_lens, sizeof(img->exif_lens), "(unknown)");
+#endif
 
     // Workaround for an issue on newer Sony NEX cams.
     // The default EXIF field is not used by Sony to store lens data
     // http://dev.exiv2.org/issues/883
     // http://darktable.org/redmine/issues/8813
     // FIXME: This is still a workaround
-    if(!strncmp(img->exif_model, "NEX", 3))
+    if((!strncmp(img->exif_model, "NEX", 3)) || (!strncmp(img->exif_model, "ILCE", 4)))
     {
       snprintf(img->exif_lens, sizeof(img->exif_lens), "(unknown)");
       if ( (pos=exifData.findKey(Exiv2::ExifKey("Exif.Photo.LensModel"))) != exifData.end() && pos->size())
@@ -846,9 +855,12 @@ int dt_exif_read(dt_image_t *img, const char* path)
 {
   // at least set datetime taken to something useful in case there is no exif data in this file (pfm, png, ...)
   struct stat statbuf;
-  stat(path, &statbuf);
-  struct tm result;
-  strftime(img->exif_datetime_taken, 20, "%Y:%m:%d %H:%M:%S", localtime_r(&statbuf.st_mtime, &result));
+
+  if(!stat(path, &statbuf))
+  {
+    struct tm result;
+    strftime(img->exif_datetime_taken, 20, "%Y:%m:%d %H:%M:%S", localtime_r(&statbuf.st_mtime, &result));
+  }
 
   try
   {
@@ -1177,8 +1189,9 @@ int dt_exif_read_blob(
 
       //GPS data
       const dt_image_t *cimg = dt_image_cache_read_get(darktable.image_cache, imgid);
-      if(!isnan(cimg->longitude) && !isnan(cimg->latitude))
+      if(!std::isnan(cimg->longitude) && !std::isnan(cimg->latitude))
       {
+        exifData["Exif.GPSInfo.GPSVersionID"] = "02 02 00 00";
         exifData["Exif.GPSInfo.GPSLongitudeRef"] = (cimg->longitude < 0 ) ? "W" : "E";
         exifData["Exif.GPSInfo.GPSLatitudeRef"]  = (cimg->latitude < 0 ) ? "S" : "N";
 
@@ -1767,7 +1780,7 @@ dt_exif_xmp_read_data(Exiv2::XmpData &xmpData, const int imgid)
     xmpData["Xmp.xmpMM.DerivedFrom"] = filename;
 
   // GPS data
-  if(!isnan(longitude) && !isnan(latitude))
+  if(!std::isnan(longitude) && !std::isnan(latitude))
   {
     char long_dir = 'E', lat_dir = 'N';
     if(longitude < 0) long_dir = 'W';
@@ -1837,27 +1850,18 @@ dt_exif_xmp_read_data(Exiv2::XmpData &xmpData, const int imgid)
   Exiv2::Value::AutoPtr v1 = Exiv2::Value::create(Exiv2::xmpSeq); // or xmpBag or xmpAlt.
   Exiv2::Value::AutoPtr v2 = Exiv2::Value::create(Exiv2::xmpSeq); // or xmpBag or xmpAlt.
 
-  gchar *tags = NULL;
-  gchar *hierarchical = NULL;
-
-  tags = dt_tag_get_list(imgid, ",");
-  char *beg = tags;
-  while(beg)
+  GList *tags = dt_tag_get_list(imgid);
+  while(tags)
   {
-    char *next = strstr(beg, ",");
-    if(next) *(next++) = 0;
-    v1->read(beg);
-    beg = next;
+    v1->read((char*)tags->data);
+    tags = g_list_next(tags);
   }
 
-  hierarchical = dt_tag_get_hierarchical(imgid, ",");
-  beg = hierarchical;
-  while(beg)
+  GList *hierarchical = dt_tag_get_hierarchical(imgid);
+  while(hierarchical)
   {
-    char *next = strstr(beg, ",");
-    if(next) *(next++) = 0;
-    v2->read(beg);
-    beg = next;
+    v2->read((char*)hierarchical->data);
+    hierarchical = g_list_next(hierarchical);
   }
 
   if(v1->count() > 0)
@@ -2037,8 +2041,8 @@ dt_exif_xmp_read_data(Exiv2::XmpData &xmpData, const int imgid)
     num ++;
   }
   sqlite3_finalize (stmt);
-  g_free(tags);
-  g_free(hierarchical);
+  g_list_free_full(tags, g_free);
+  g_list_free_full(hierarchical, g_free);
 }
 
 int dt_exif_xmp_attach (const int imgid, const char* filename)

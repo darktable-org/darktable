@@ -61,6 +61,7 @@ TiffEntry::TiffEntry(TiffTag _tag, TiffDataType _type, uint32 _count, const ucha
   tag = _tag;
   type = _type;
   count = _count;
+  data_offset = -1; // Set nonsense value in case someone tries to use it
   if (NULL == _data) {
     uint32 bytesize = _count << datashifts[_type];
     own_data = new uchar8[bytesize];
@@ -230,7 +231,7 @@ std::string TiffEntry::getValueAsString()
     }
   }
   string ret(temp_string);
-  delete temp_string;
+  delete [] temp_string;
   return ret;
 }
 

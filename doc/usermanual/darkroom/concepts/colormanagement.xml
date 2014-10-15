@@ -3,7 +3,7 @@
 		<!ENTITY % darktable_dtd SYSTEM "../../dtd/darktable.dtd">
 		%darktable_dtd;
 		]>
-<sect2 status="draft" id="color_management">
+<sect2 status="final" id="color_management">
 
   <title>Color management</title>
 
@@ -38,7 +38,13 @@
     </itemizedlist>
   </para>
 
-  <sect3 status="draft" id="darktable_color_spaces">
+  <para>
+    To investigate your display profile configuration you can call the
+    <filename>darktable-cmstest</filename> binary which prints out useful information like
+    profile name per monitor and tells you if the system is correctly configured.
+  </para>
+
+  <sect3 status="final" id="darktable_color_spaces">
 
     <title>darktable's color spaces</title>
 
@@ -128,7 +134,7 @@
 
   </sect3>
 
-  <sect3 status="draft" id="unbounded_colors">
+  <sect3 status="final" id="unbounded_colors">
 
     <title>Unbounded colors</title>
 
@@ -168,7 +174,7 @@
 
   </sect3>
 
-  <sect3 status="draft" id="possible_color_artifacts">
+  <sect3 status="final" id="possible_color_artifacts">
 
     <title>Possible color artifacts</title>
 

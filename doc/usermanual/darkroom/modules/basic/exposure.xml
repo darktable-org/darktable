@@ -16,6 +16,7 @@
     <primary>exposure</primary>
   </indexterm>
 
+<!--
   <indexterm>
     <primary>time-lapse photography</primary>
   </indexterm>
@@ -23,6 +24,7 @@
   <indexterm>
     <primary>deflicker</primary>
   </indexterm>
+-->
 
   <sect4>
 
@@ -92,6 +94,7 @@
       come later in pixelpipe.
     </para>
 
+<!--
     <para>
       The exposure module has two modes of operation.
     </para>
@@ -122,25 +125,29 @@
       set of parameters to all images of the series&nbsp;&ndash; differences in lighting get
       compensated so that the final video sequence does not show any flickering.
     </para>
+-->
 
     <sect5>
       <title>mode</title>
       <para>
-        Defines the mode of operation. Defaults to <quote>manual</quote>.
+        Defines the mode of operation. Currently darktable only supports <quote>manual</quote> operation.
+        Future versions of darktable will additionally allow automatic exposure correction.
       </para>
     </sect5>
 
     <sect5>
       <title>black</title>
       <para>
-        Adjust the black level in both <quote>manual</quote> and <quote>automatic</quote> mode.
+<!--        Adjust the black level in both <quote>manual</quote> and <quote>automatic</quote> mode.-->
+        Adjust the black level.
       </para>
     </sect5>
 
     <sect5>
       <title>exposure</title>
       <para>
-        Adjust the exposure correction [EV] (only available in <quote>manual</quote> mode).
+<!--        Adjust the exposure correction [EV] (only available in <quote>manual</quote> mode).-->
+        Adjust the exposure correction [EV].
       </para>
     </sect5>
 
@@ -151,11 +158,12 @@
         rectangular view appearing in the centre of the image. You can draw your own selection
         using your mouse. An adjustment slider to the right of the auto exposure checkbox lets
         you define what percentage of bright values are to be clipped out in the calculation.
-        This feature is not to be confused with the <quote>automatic</quote> mode of the
-        exposure module and is only available in <quote>manual</quote> mode.
+<!--        This feature is not to be confused with the <quote>automatic</quote> mode of the
+        exposure module and is only available in <quote>manual</quote> mode.-->
       </para>
     </sect5>
 
+<!--
     <sect5>
       <title>percentile</title>
       <para>
@@ -190,6 +198,7 @@
         the pixelpipe with <emphasis>all</emphasis> the active modules being applied.
       </para>
     </sect5>
+-->
 
   </sect4>
 

@@ -41,6 +41,9 @@ parse_feature()
 	flickr)
 		OPT_FLICKR=$value
 		;;
+	libsecret)
+		OPT_LIBSECRET=$value
+		;;
 	kwallet)
 		OPT_KWALLET=$value
 		;;
@@ -208,6 +211,7 @@ cmake_boolean_option()
 
 CMAKE_MORE_OPTIONS=""
 cmake_boolean_option USE_FLICKR $OPT_FLICKR
+cmake_boolean_option USE_LIBSECRET $OPT_LIBSECRET
 cmake_boolean_option USE_KWALLET $OPT_KWALLET
 cmake_boolean_option USE_GNOME_KEYRING $OPT_GNOME_KEYRING
 cmake_boolean_option USE_OPENMP $OPT_OPENMP

@@ -114,8 +114,8 @@ local function document_type_sub(node,result,parent,prev_name)
 				end
 			end
 		elseif field == "__luaA_ParentMetatable" then
-				local type_node = create_documentation_node(value,toplevel.types,value.__luaA_TypeName);
-				set_attribute(result,"parent",type_node)
+			local type_node = create_documentation_node(value,toplevel.types,value.__luaA_TypeName);
+			set_attribute(result,"parent",type_node)
 		elseif (field == "__index"
 			or field == "__newindex"
 			or field == "__luaA_TypeName"
@@ -144,12 +144,24 @@ local function document_type_from_obj(obj,type_doc)
 	type_doc._luadoc_in_obj_rec = true
 	for k,v in pairs(obj) do
 		if type_doc[k] and M.get_attribute(type_doc[k],"reported_type")== "undocumented" then
+			local old_vers = type_doc[k]
 			M.remove_parent(type_doc[k],type_doc)
 			type_doc[k] = create_documentation_node(v,type_doc,k)
+			for k2,v2 in pairs(old_vers._luadoc_attributes) do
+				if type_doc[k]._luadoc_attributes[k2] == nil then
+					set_attribute(type_doc[k],k2,v2)
+				end
+			end
 		elseif type(k) == "number" and type_doc["#"] and M.get_attribute(type_doc["#"],"reported_type")== "undocumented" then
+			local old_vers = type_doc["#"]
 			M.remove_parent(type_doc["#"],type_doc)
 			nojoin[v] = true
 			type_doc["#"] = create_documentation_node(v,type_doc,"#")
+			for k2,v2 in pairs(old_vers._luadoc_attributes) do
+				if type_doc["#"]._luadoc_attributes[k2] == nil then
+					set_attribute(type_doc["#"],k2,v2)
+				end
+			end
 		end
 	end
 	type_doc._luadoc_in_obj_rec = false
@@ -209,7 +221,7 @@ local function document_dt_userdata(node,parent,prev_name)
 	local result = create_empty_node(node,"dt_userdata",parent,prev_name);
 	local mt = getmetatable(node)
 	local ret_node = create_documentation_node(mt,result,"reported_type")
-	set_attribute(result,"reported_type",tostring(ret_node))
+	set_attribute(result,"reported_type",ret_node)
 	M.remove_parent(ret_node,result)
 	document_type_from_obj(node,ret_node)
 	return result
@@ -286,7 +298,22 @@ create_documentation_node = function(node,parent,prev_name)
 	return create_empty_node(node,"undocumented node type "..type(node),parent,prev_name)
 end
 
-
+local function document_lautoc_enum(node,parent,prev_name)
+	local registry = debug.getregistry();
+	local result = create_empty_node(node,"enum",parent,prev_name)
+	set_attribute(result,"reported_type","enum")
+	values = {}
+	matcher = {}
+	for name,data in pairs(node) do
+		if type(name) ~= "number" then
+			table.insert(values,name)
+			matcher[name] = data["value"]
+		end
+	end
+	table.sort(values,function(name1,name2) return matcher[name1] < matcher[name2] end)
+	set_attribute(result,"values",values);
+	return result
+end
 
 ----------------------------------------
 --  HELPERS             --
@@ -306,7 +333,7 @@ function M.debug_print(node,name)
 		elseif(k == "_luadoc_parents") then
 			local concat=""
 			for k2,v2 in pairs(v) do
-				concat = concat..M.get_name(v2[1]).."."..v2[2].." "
+				concat = concat..M.get_name(v2[1],true).."."..v2[2].." "
 			end
 			print("\t"..k.." : "..concat)
 		elseif(k == "_luadoc_order" and node._luadoc_order_first_key) then
@@ -366,7 +393,7 @@ local function get_ancestor_tree(node)
 	return best_tree,best_depth
 end
 
-	
+
 function M.set_main_parent(node,parent)
 	node._luadoc_main_parent = parent
 end
@@ -407,278 +434,310 @@ function M.all_children(node)
 			( type(nk) == "string" and nk:sub(1,#"_luadoc_") == "_luadoc_")
 			or table._luadoc_order[nk] ~= nil 
 			do
-			nk,nv = next(table,nk)
-		end
-		return nk,nv
-	end,node,nil
-end
+				nk,nv = next(table,nk)
+			end
+			return nk,nv
+		end,node,nil
+	end
 
-function M.unskiped_children(node)
-	local my_all_children = M.all_children(node)
-	return function(table,key)
-		local nk,nv = key,nil
-		while(true) do
-			nk,nv = my_all_children(table,nk)
-			if not nk then return nil, nil end
-			if not M.get_attribute(nv,"skiped") then return nk,nv end 
-		end
-	end,node,nil
-end
+	function M.unskiped_children(node)
+		local my_all_children = M.all_children(node)
+		return function(table,key)
+			local nk,nv = key,nil
+			while(true) do
+				nk,nv = my_all_children(table,nk)
+				if not nk then return nil, nil end
+				if not M.get_attribute(nv,"skiped") then return nk,nv end 
+			end
+		end,node,nil
+	end
 
-function M.remove_parent(node,parent)
-	for k,v in ipairs(node._luadoc_parents) do
-		if v[1] == parent then
+	function M.remove_parent(node,parent)
+		for k,v in ipairs(node._luadoc_parents) do
+			if v[1] == parent then
+				table.remove(node._luadoc_parents,k)
+			end
+		end
+	end
+
+	function M.set_real_name(node,name)
+    if node._luadoc_name == false then
+      error("real name set after use for node "..node:get_name(true))
+    end
+		node._luadoc_name = name
+	end
+
+	local function set_forced_next(node,son_name)
+		if not node or not node[son_name] then
+			return 
+		end
+		if node._luadoc_order[son_name] then
+			return 
+		end
+		for k,v in pairs(node._luadoc_order) do
+			if v == false then
+				node._luadoc_order[k] = son_name
+			end
+		end
+		node._luadoc_order[son_name] = false
+		if not node._luadoc_order_first_key then
+			node._luadoc_order_first_key = son_name
+		end
+	end
+
+
+	function M.set_text(node,text)
+		if node._luadoc_text then
+			print("warning, double documentation for "..node:get_name(true))
+		end
+		node._luadoc_text = text
+		for k,v in ipairs(node._luadoc_parents) do
+			set_forced_next(v[1],v[2])
+		end
+		return node
+
+	end
+
+
+	function M.add_version_info(node,version,text)
+		if not text then -- only two parameters
+			text = version
+			version ="undocumented_version" -- easy grep for the "undocumented" keyword"
+		end
+		if not node._luadoc_version[version] then
+			node._luadoc_version[version] = {}
+		end
+		table.insert(node._luadoc_version[version],text);
+	end
+	function M.get_version_info(node)
+		return node._luadoc_version
+	end
+
+	function M.set_alias(original,node)
+		for k,v in ipairs(node._luadoc_parents) do
+			v[1][v[2]] = original
+			table.insert(original._luadoc_parents,{v[1],v[2]})
 			table.remove(node._luadoc_parents,k)
+			set_forced_next(v[1],v[2])
 		end
 	end
-end
 
-function M.set_real_name(node,name)
-	node._luadoc_name = name
-end
 
-local function set_forced_next(node,son_name)
-	if not node or not node[son_name] then
-		return 
-	end
-	if node._luadoc_order[son_name] then
-		return 
-	end
-	for k,v in pairs(node._luadoc_order) do
-		if v == false then
-			node._luadoc_order[k] = son_name
+	local function get_name_sub(node,ancestors,canonical)
+		if not node then return "" end
+		if not ancestors then return "" end -- our node is the toplevel node
+
+		local subname = get_name_sub(node._luadoc_parents[ancestors[1]][1],ancestors[2],canonical)
+		local prev_name = node:get_short_name(canonical)
+
+
+		if subname == "" then
+			return prev_name
+		else
+			return subname.."."..prev_name
 		end
 	end
-	node._luadoc_order[son_name] = false
-	if not node._luadoc_order_first_key then
-		node._luadoc_order_first_key = son_name
+
+	function M.get_short_name(node,canonical)
+		if node._luadoc_name and not canonical then
+			return  node._luadoc_name
+		end
+    if node._luadoc_name == nil then
+      node._luadoc_name = false
+    end
+		local ancestors = get_ancestor_tree(node)
+    if not ancestors then
+      return ""
+    end
+		return node._luadoc_parents[ancestors[1]][2]
 	end
-end
 
-
-function M.set_text(node,text)
-	if node._luadoc_text then
-		print("warning, double documentation for "..node:get_name())
+	function M.get_name(node,canonical)
+		local ancestors = get_ancestor_tree(node)
+		return get_name_sub(node,ancestors,canonical)
 	end
-	node._luadoc_text = text
-	for k,v in ipairs(node._luadoc_parents) do
-		set_forced_next(v[1],v[2])
+
+
+	function M.get_text(node)
+		if node._luadoc_text then
+			return node._luadoc_text
+		else
+			return "undocumented "..M.get_name(node,true)
+		end
 	end
-	return node
-
-end
 
 
-function M.add_version_info(node,version,text)
-	if not text then -- only two parameters
-		text = version
-		version ="undocumented_version" -- easy grep for the "undocumented" keyword"
+	function M.get_orig_name(node) 
+		if not node then return "" end
+		local parent_info = node._luadoc_orig_parent
+		if not parent_info[1] then
+			return "<top>"
+		end
+		return M.get_orig_name(parent_info[1]).."."..parent_info[2]
 	end
-	if not node._luadoc_version[version] then
-		node._luadoc_version[version] = {}
+
+	function M.get_attribute(node,attribute)
+		return node._luadoc_attributes[attribute]
 	end
-	table.insert(node._luadoc_version[version],text);
-end
-function M.get_version_info(node)
-	return node._luadoc_version
-end
 
-function M.set_alias(original,node)
-	for k,v in ipairs(node._luadoc_parents) do
-		v[1][v[2]] = original
-		table.insert(original._luadoc_parents,{v[1],v[2]})
-		table.remove(node._luadoc_parents,k)
-		set_forced_next(v[1],v[2])
+	function M.add_parameter(node,param_name,param_type,text)
+		local subnode = create_empty_node(nil,"param",node,param_name)
+		set_attribute(subnode,"reported_type",param_type)
+		--M.set_real_name(subnode,param_name)
+		if M.get_attribute(node,"reported_type") ~= "function" and 
+			M.get_attribute(node,"reported_type") ~= "documentation node" then
+			error("not a function documentation : ".. M.get_attribute(node,"reported_type").." for "..node:get_name(true))
+		end
+		local signature = M.get_attribute(node,"signature")
+		if not signature then
+			signature = {}
+		end
+		table.insert(signature,subnode)
+		set_attribute(node,"signature",signature)
+		if text then
+			M.set_text(subnode,text)
+		end
+		return subnode
 	end
-end
 
-
-local function get_name_sub(node,ancestors)
-	if not node then return "" end
-	if not ancestors then return "" end -- our node is the toplevel node
-
-	local subname = get_name_sub(node._luadoc_parents[ancestors[1]][1],ancestors[2])
-	local prev_name = node._luadoc_parents[ancestors[1]][2]
-
-	if subname == "" then
-		return prev_name
-	else
-		return subname.."."..prev_name
+	function M.add_return(node,param_type,text)
+		local subnode = create_empty_node(nil,"param",node,"return")
+		set_attribute(subnode,"reported_type",param_type)
+		if M.get_attribute(node,"reported_type") ~= "function" then
+			error("not a function documentation")
+		end
+		--M.set_real_name(subnode,"return")
+		set_attribute(node,"ret_val",subnode)
+		if text then
+			M.set_text(subnode,text)
+		end
+		return subnode
 	end
-end
 
-function M.get_short_name(node)
-	if node._luadoc_name then
-		return  node._luadoc_name
+	function M.set_skiped(node)
+		set_attribute(node,"skiped",true)
 	end
-	local ancestors = get_ancestor_tree(node)
-	return node._luadoc_parents[ancestors[1]][2]
-end
 
-function M.get_name(node)
-	local ancestors = get_ancestor_tree(node)
-	return get_name_sub(node,ancestors)
-end
-
-
-function M.get_text(node)
-	if node._luadoc_text then
-		return node._luadoc_text
-	else
-		return "undocumented "..M.get_name(node)
+	function M.get_reported_type(node)
+		return M.get_attribute(node,"reported_type")
 	end
-end
 
-
-function M.get_orig_name(node) 
-	if not node then return "" end
-	local parent_info = node._luadoc_orig_parent
-	if not parent_info[1] then
-		return "<top>"
+	function M.set_reported_type(node,type)
+		if type == nil then
+			error("can't set reported type to nil");
+		end
+		set_attribute(node,"reported_type",type)
+		return node
 	end
-	return M.get_orig_name(parent_info[1]).."."..parent_info[2]
-end
 
-function M.get_attribute(node,attribute)
-	return node._luadoc_attributes[attribute]
-end
 
-function M.add_parameter(node,param_name,param_type,text)
-	local subnode = create_empty_node(nil,"param",node,param_name)
-	set_attribute(subnode,"reported_type",param_type)
-	--M.set_real_name(subnode,param_name)
-	if M.get_attribute(node,"reported_type") ~= "function" and 
-		M.get_attribute(node,"reported_type") ~= "documentation node" then
-		error("not a function documentation : ".. M.get_attribute(node,"reported_type").." for "..node:get_name())
+	meta_node.__index.set_text = M.set_text
+	meta_node.__index.add_parameter = M.add_parameter
+	meta_node.__index.add_return = M.add_return
+	meta_node.__index.set_real_name = M.set_real_name
+	meta_node.__index.all_children = M.all_children
+	meta_node.__index.unskiped_children = M.unskiped_children
+	meta_node.__index.set_attribute = set_attribute
+	meta_node.__index.get_attribute = M.get_attribute
+	meta_node.__index.set_alias = M.set_alias
+	meta_node.__index.get_short_name = M.get_short_name
+	meta_node.__index.set_main_parent = M.set_main_parent
+	meta_node.__index.remove_parent = M.remove_parent
+	meta_node.__index.debug_print = M.debug_print
+	meta_node.__index.set_skiped = M.set_skiped
+	meta_node.__index.add_version_info = M.add_version_info
+	meta_node.__index.get_version_info = M.get_version_info
+	meta_node.__index.get_name = M.get_name
+	meta_node.__index.get_reported_type = M.get_reported_type
+	meta_node.__index.set_reported_type = M.set_reported_type
+	meta_node.__tostring = function(node)
+		return node_to_string(node)
 	end
-	local signature = M.get_attribute(node,"signature")
-	if not signature then
-		signature = {}
+	meta_node.__lt = function(a,b)
+		return tostring(a) < tostring(b)
 	end
-	table.insert(signature,subnode)
-	set_attribute(node,"signature",signature)
-	if text then
-		M.set_text(subnode,text)
+
+	--------------------------
+	-- GENERATE DOCUMENTATION
+	--------------------------
+	dt.gui.selection{dt.database[1]}
+	toplevel = create_documentation_node()
+	toplevel.attributes = create_documentation_node(nil,toplevel,"attributes")
+
+	toplevel.types = create_documentation_node(nil,toplevel,"types")
+	for num,node in pairs(debug.getregistry()["lautoc_enums"]) do
+		local name = debug.getregistry()["lautoc_type_names"][num]
+		toplevel.types[name] = document_lautoc_enum(node,toplevel.types,name)
 	end
-	return subnode
-end
-
-function M.add_return(node,param_type,text)
-	local subnode = create_empty_node(nil,"param",node,"return")
-	set_attribute(subnode,"reported_type",param_type)
-	if M.get_attribute(node,"reported_type") ~= "function" then
-		error("not a function documentation")
+	for k,v in pairs(debug.getregistry()) do
+		if is_type(v) then
+			toplevel.types[k] = create_documentation_node(v,toplevel.types,k);
+		end
 	end
-	--M.set_real_name(subnode,"return")
-	set_attribute(node,"ret_val",subnode)
-	if text then
-		M.set_text(subnode,text)
+
+
+	toplevel.darktable = create_documentation_node(nil,toplevel,"darktable")
+	for k,v in pairs(dt) do
+		toplevel.darktable[k] = create_documentation_node(v,toplevel.darktable,k);
 	end
-	return subnode
-end
 
-function M.set_skiped(node)
-	set_attribute(node,"skiped",true)
-end
-
-meta_node.__index.set_text = M.set_text
-meta_node.__index.add_parameter = M.add_parameter
-meta_node.__index.add_return = M.add_return
-meta_node.__index.set_real_name = M.set_real_name
-meta_node.__index.all_children = M.all_children
-meta_node.__index.unskiped_children = M.unskiped_children
-meta_node.__index.set_attribute = set_attribute
-meta_node.__index.get_attribute = M.get_attribute
-meta_node.__index.set_alias = M.set_alias
-meta_node.__index.get_short_name = M.get_short_name
-meta_node.__index.set_main_parent = M.set_main_parent
-meta_node.__index.remove_parent = M.remove_parent
-meta_node.__index.debug_print = M.debug_print
-meta_node.__index.set_skiped = M.set_skiped
-meta_node.__index.add_version_info = M.add_version_info
-meta_node.__index.get_version_info = M.get_version_info
-meta_node.__index.get_name = M.get_name
-meta_node.__tostring = function(node)
-	return node_to_string(node)
-end
-meta_node.__lt = function(a,b)
-	return tostring(a) < tostring(b)
-end
-
---------------------------
--- GENERATE DOCUMENTATION
---------------------------
-dt.gui.selection{dt.database[1]}
-toplevel = create_documentation_node()
-toplevel.attributes = create_documentation_node(nil,toplevel,"attributes")
-
-toplevel.types = create_documentation_node(nil,toplevel,"types")
-for k,v in pairs(debug.getregistry()) do
-	if is_type(v) then
-		toplevel.types[k] = create_documentation_node(v,toplevel.types,k);
+	toplevel.events = create_documentation_node(nil,toplevel,"events")
+	for k,v in pairs(debug.getregistry().dt_lua_event_list) do
+		toplevel.events[k] = document_event(v,toplevel.events,k);
+		set_attribute(toplevel.events[k],"reported_type","event")
 	end
-end
-
-toplevel.darktable = create_documentation_node(nil,toplevel,"darktable")
-for k,v in pairs(dt) do
-	toplevel.darktable[k] = create_documentation_node(v,toplevel.darktable,k);
-end
-
-toplevel.events = create_documentation_node(nil,toplevel,"events")
-for k,v in pairs(debug.getregistry().dt_lua_event_list) do
-	toplevel.events[k] = document_event(v,toplevel.events,k);
-	set_attribute(toplevel.events[k],"reported_type","event")
-end
 
 
 
--- formats and modules are constructors, call them all once to document
-for k, v in pairs(dt.modules.format) do
-	local res = v()
-	document_type_from_obj(res,toplevel.types[dt.debug.type(res)])
-end
-
-for k, v in pairs(dt.modules.storage) do
-	local res = v()
-	if res then
+	-- formats and modules are constructors, call them all once to document
+	local registry = debug.getregistry();
+	for k, v in pairs(registry.dt_lua_modules.format) do
+		local res = v()
 		document_type_from_obj(res,toplevel.types[dt.debug.type(res)])
 	end
-end
-
-
-
-local job =dt.gui.create_job("test job",true)
-document_type_from_obj(job,toplevel.types.dt_lua_backgroundjob_t)
-job.valid = false
-job = nil
-
-
-
--- libs might be available only in certain views, iterate through all views to document them
-for _,view in pairs(dt.modules.view) do
-	dt.gui.current_view(view);
-	if(view == dt.modules.view.darkroom) then
-		dt.modules.lib.snapshots:take_snapshot();
-		local snapshot = dt.modules.lib.snapshots[1]
-		document_type_from_obj(snapshot,toplevel.types.dt_lua_snapshot_t)
+	for k, v in pairs(registry.dt_lua_modules.storage) do
+		local res = v()
+		if res then
+			document_type_from_obj(res,toplevel.types[dt.debug.type(res)])
+		end
 	end
-	for libname,lib in pairs(dt.modules.lib) do
-		document_type_from_obj(lib,toplevel.darktable.modules.lib[libname])
+
+
+
+	local job =dt.gui.create_job("test job",true)
+	document_type_from_obj(job,toplevel.types.dt_lua_backgroundjob_t)
+	job.valid = false
+	job = nil
+
+
+
+	-- libs might be available only in certain views, iterate through all views to document them
+	for _,view in pairs(dt.gui.views) do
+		dt.gui.current_view(view);
+		if(view == dt.gui.views.darkroom) then
+			dt.gui.libs.snapshots:take_snapshot();
+			local snapshot = dt.gui.libs.snapshots[1]
+			document_type_from_obj(snapshot,toplevel.types.dt_lua_snapshot_t)
+		end
+		for libname,lib in pairs(dt.gui.libs) do
+			document_type_from_obj(lib,toplevel.darktable.gui.libs[libname])
+		end
 	end
-end
 
 
 
 
 
-M.toplevel = toplevel
-M.create_documentation_node = create_documentation_node
-M.document_function = document_function
-dt.gui.selection{dt.database[1]}
-for _,view in pairs(dt.modules.view) do
-	dt.gui.current_view(view);
-	for libname,lib in pairs(dt.modules.lib) do
-		document_type_from_obj(lib,toplevel.darktable.modules.lib[libname])
+	M.toplevel = toplevel
+	M.create_documentation_node = create_documentation_node
+	M.document_function = document_function
+	dt.gui.selection{dt.database[1]}
+	for _,view in pairs(dt.gui.views) do
+		dt.gui.current_view(view);
+		for libname,lib in pairs(dt.gui.libs) do
+			document_type_from_obj(lib,toplevel.darktable.gui.libs[libname])
+		end
 	end
-end
-return M;
+	return M;
+	--
+	-- vim: shiftwidth=2 expandtab tabstop=2 cindent syntax=lua

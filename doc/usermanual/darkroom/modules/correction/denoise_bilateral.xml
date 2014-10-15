@@ -50,7 +50,7 @@
     <para>
       This module reduces noise in your image but preserves sharp edges. This is accomplished by
       averaging pixels with their neighbors, taking into account not only the geometric distance
-      but also the distance on the range scale, i.e. differences in color intensities. As
+      but also the distance on the range scale, i.e. differences in the RGB values. As
       denoising is a resource hungry process, it slows down pixelpipe processing significantly;
       consider to activate this module late in your workflow.
     </para>

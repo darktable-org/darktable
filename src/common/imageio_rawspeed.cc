@@ -147,6 +147,7 @@ dt_imageio_open_rawspeed(
     m.reset();
 
     img->filters = 0u;
+    img->pre_applied_wb = r->preAppliedWB;
     if( !r->isCFA )
     {
       dt_imageio_retval_t ret = dt_imageio_open_rawspeed_sraw(img, r, a);
@@ -188,6 +189,9 @@ dt_imageio_open_rawspeed(
     img->raw_black_level = r->blackLevel;
     img->raw_white_point = r->whitePoint;
 
+    img->fuji_rotation_pos = r->fujiRotationPos;
+    img->pixel_aspect_ratio = (float)r->pixelAspectRatio;
+
     void *buf = dt_mipmap_cache_alloc(img, DT_MIPMAP_FULL, a);
     if(!buf)
       return DT_IMAGEIO_CACHE_FULL;
@@ -228,6 +232,9 @@ dt_imageio_open_rawspeed_sraw(dt_image_t *img, RawImage r, dt_mipmap_cache_alloc
   size_t raw_width = r->dim.x;
   size_t raw_height = r->dim.y;
 
+  iPoint2D dimUncropped = r->getUncroppedDim();
+  iPoint2D cropTL = r->getCropOffset();
+
   // work around 50D bug
   char makermodel[1024];
   dt_colorspaces_get_makermodel(makermodel, sizeof(makermodel), img->exif_maker, img->exif_model);
@@ -242,22 +249,43 @@ dt_imageio_open_rawspeed_sraw(dt_image_t *img, RawImage r, dt_mipmap_cache_alloc
   int black = r->blackLevel;
   int white = r->whitePoint;
 
-  ushort16* raw_img = (ushort16*)r->getData();
+  uint16_t* raw_img = (uint16_t*)r->getDataUncropped(0, 0);
 
-#if 0
-  dt_imageio_flip_buffers_ui16_to_float(buf, raw_img, black, white, img->cpp, raw_width, raw_height,
-                                        raw_width, raw_height, raw_width + raw_width_extra, orientation);
-#else
+  const float scale = (float)(white - black);
 
-  // TODO - OMPize this.
-  float scale = 1.0 / (white - black);
-  for( size_t row = 0; row < raw_height; ++row )
-    for( size_t col = 0; col < raw_width; ++col )
-      for( int k = 0; k < 3; ++k )
-        ((float *)buf)[4 * dt_imageio_write_pos(col, row, raw_width, raw_height, raw_width, raw_height, ORIENTATION_NONE) + k] =
-          // ((float)raw_img[row*(raw_width + raw_width_extra)*3 + col*3 + k] - black) * scale;
-          ((float)raw_img[row*(r->pitch/2) + col*img->cpp + k] - black) * scale;
+#ifdef _OPENMP
+  #pragma omp parallel for default(none) schedule(static) shared(raw_width, raw_height, raw_img, img, dimUncropped, cropTL, buf, black)
 #endif
+  for(size_t row = 0; row < raw_height; row++)
+  {
+    const uint16_t *in = ((uint16_t *)raw_img) + (size_t)(img->cpp*(dimUncropped.x*(row+cropTL.y) + cropTL.x));
+    float *out = ((float *)buf) + (size_t)4*row*raw_width;
+
+    for(size_t col = 0; col < raw_width; col++, in+=img->cpp, out+=4)
+    {
+      for(int k = 0; k < 3; k++)
+      {
+        if(img->cpp == 1)
+        {
+          /*
+           * monochrome image (e.g. Leica M9 monochrom),
+           * we need to copy data from only channel to each of 3 channels
+           */
+
+          out[k] = MAX(0.0f, (((float)(*in)) - black) / scale);
+        }
+        else
+        {
+          /*
+           * standard 3-ch image
+           * just copy 3 ch to 3 ch
+           */
+
+          out[k] = MAX(0.0f, (((float)(in[k])) - black) / scale);
+        }
+      }
+    }
+  }
 
   return DT_IMAGEIO_OK;
 }

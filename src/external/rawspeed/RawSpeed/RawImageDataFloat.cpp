@@ -51,6 +51,11 @@ namespace RawSpeed {
       so we have the same amount of pixels for each CFA group */
       area.size = area.size - (area.size&1);
 
+      /* If offset is negative (relative to right or bottom border) calculate
+         the offset from the left or top border */
+      if(area.offset < 0)
+        area.offset += area.isVertical ? uncropped_dim.x : uncropped_dim.y;
+
       /* Process horizontal area */
       if (!area.isVertical) {
         if ((int)area.offset+(int)area.size > uncropped_dim.y)

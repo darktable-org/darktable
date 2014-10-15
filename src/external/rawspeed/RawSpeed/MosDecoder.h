@@ -41,7 +41,6 @@ public:
 protected:
   TiffIFD *mRootIFD;
   const char *make, *model;
-  uchar8 *xmpText;
   void parseXMP(TiffEntry *xmp);
   void DecodePhaseOneC(ByteStream &input, uint32 width, uint32 height);
 };

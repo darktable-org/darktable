@@ -27,7 +27,7 @@
 #include <sqlite3.h>
 
 int32_t
-dt_image_cache_allocate(void *data, const uint32_t key, int32_t *cost, void **buf)
+dt_image_cache_allocate(void *data, const uint32_t key, size_t *cost, void **buf)
 {
   dt_image_cache_t *c = (dt_image_cache_t *)data;
   const uint32_t hash = key; // == image id

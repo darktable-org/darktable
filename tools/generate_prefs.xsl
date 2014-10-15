@@ -252,7 +252,9 @@
     gtk_spin_button_set_value(GTK_SPIN_BUTTON(widget), dt_conf_get_int64("</xsl:text><xsl:value-of select="name"/><xsl:text>") * factor);
     g_signal_connect(G_OBJECT(widget), "value-changed", G_CALLBACK(preferences_callback_</xsl:text><xsl:value-of select="generate-id(.)"/><xsl:text>), NULL);
     g_signal_connect(G_OBJECT(dialog), "response", G_CALLBACK(preferences_response_callback_</xsl:text><xsl:value-of select="generate-id(.)"/><xsl:text>), widget);
-    snprintf(tooltip, 1024, _("double click to reset to `%"PRId64"'"), (gint64)(</xsl:text><xsl:value-of select="default"/><xsl:text> * factor));
+    char value[100];
+    snprintf(value, 100, "%"G_GINT64_FORMAT"",(gint64)(</xsl:text><xsl:value-of select="default"/><xsl:text> * factor));
+    snprintf(tooltip, 1024, _("double click to reset to `%s'"), value);
     g_object_set(labelev,  "tooltip-text", tooltip, (char *)NULL);
 </xsl:text>
 	</xsl:template>
@@ -289,11 +291,19 @@
     gint pos = -1;
 </xsl:text>
     <xsl:for-each select="./type/enum/option">
-      <xsl:text>    gtk_list_store_append(store, &amp;iter);
-    gtk_list_store_set(store, &amp;iter, 0, "</xsl:text><xsl:value-of select="."/><xsl:text>", 1, C_("preferences", "</xsl:text><xsl:value-of select="."/><xsl:text>"), -1);
-    if(pos == -1 &amp;&amp; strcmp(str, "</xsl:text><xsl:value-of select="."/><xsl:text>") == 0)
-      pos = </xsl:text><xsl:value-of select="position()-1" /><xsl:text>;
-</xsl:text>
+        <xsl:if test="@capability">
+          <xsl:text>if(dt_capabilities_check("</xsl:text><xsl:value-of select="@capability"/><xsl:text>")) {</xsl:text>
+        </xsl:if>
+        <xsl:text>
+        gtk_list_store_append(store, &amp;iter);
+        gtk_list_store_set(store, &amp;iter, 0, "</xsl:text><xsl:value-of select="."/><xsl:text>", 1, C_("preferences", "</xsl:text><xsl:value-of select="."/><xsl:text>"), -1);
+        if(pos == -1 &amp;&amp; strcmp(str, "</xsl:text><xsl:value-of select="."/><xsl:text>") == 0)
+          pos = </xsl:text><xsl:value-of select="position()-1" /><xsl:text>;
+      </xsl:text>
+        <xsl:if test="@capability">
+          <xsl:text>}
+          </xsl:text>
+        </xsl:if>
     </xsl:for-each>
     <xsl:text>    widget = gtk_combo_box_new_with_model(GTK_TREE_MODEL(store));
     g_object_unref(store);

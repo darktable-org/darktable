@@ -29,7 +29,7 @@ class BlackArea
 public:
   BlackArea(int offset, int size, bool isVertical);
   virtual ~BlackArea(void);
-  uint32 offset; // Offset in bayer pixels.
+  int32 offset; // Offset in bayer pixels.
   uint32 size;   // Size in bayer pixels.
   bool isVertical;  // Otherwise horizontal
 };

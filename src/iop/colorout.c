@@ -559,7 +559,7 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
   dt_iop_colorout_data_t *d = (dt_iop_colorout_data_t *)piece->data;
   gchar *overprofile = dt_conf_get_string("plugins/lighttable/export/iccprofile");
   const int overintent = dt_conf_get_int("plugins/lighttable/export/iccintent");
-  const int high_quality_processing = dt_conf_get_bool("plugins/lighttable/export/force_lcms2");
+  const int force_lcms2 = dt_conf_get_bool("plugins/lighttable/export/force_lcms2");
   gchar *outprofile=NULL;
   int outintent = 0;
 
@@ -630,7 +630,7 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
 
 
   /* get matrix from profile, if softproofing or high quality exporting always go xform codepath */
-  if (d->softproof_enabled || high_quality_processing ||
+  if (d->softproof_enabled || force_lcms2 ||
       dt_colorspaces_get_matrix_from_output_profile (d->output, d->cmatrix, d->lut[0], d->lut[1], d->lut[2], LUT_SAMPLES))
   {
     d->cmatrix[0] = NAN;
@@ -765,7 +765,7 @@ void init(dt_iop_module_t *module)
   module->default_params = malloc(sizeof(dt_iop_colorout_params_t));
   module->params_size = sizeof(dt_iop_colorout_params_t);
   module->gui_data = NULL;
-  module->priority = 807; // module order created by iop_dependencies.py, do not edit!
+  module->priority = 816; // module order created by iop_dependencies.py, do not edit!
   module->hide_enable_button = 1;
   module->default_enabled = 1;
   dt_iop_colorout_params_t tmp = (dt_iop_colorout_params_t)
@@ -804,8 +804,8 @@ void gui_post_expose (struct dt_iop_module_t *self, cairo_t *cr, int32_t width, 
     cairo_stroke(cr);
   }
 
-  const int high_quality_processing = dt_conf_get_bool("plugins/lighttable/export/force_lcms2");
-  if (high_quality_processing)
+  const int force_lcms2 = dt_conf_get_bool("plugins/lighttable/export/force_lcms2");
+  if (force_lcms2)
   {
     gtk_widget_set_no_show_all(g->cbox1, FALSE);
     gtk_widget_set_visible(g->cbox1, TRUE);
@@ -823,7 +823,7 @@ void gui_post_expose (struct dt_iop_module_t *self, cairo_t *cr, int32_t width, 
 
 void gui_init(struct dt_iop_module_t *self)
 {
-  const int high_quality_processing = dt_conf_get_bool("plugins/lighttable/export/force_lcms2");
+  const int force_lcms2 = dt_conf_get_bool("plugins/lighttable/export/force_lcms2");
 
   self->gui_data = calloc(1, sizeof(dt_iop_colorout_gui_data_t));
   dt_iop_colorout_gui_data_t *g = (dt_iop_colorout_gui_data_t *)self->gui_data;
@@ -920,7 +920,7 @@ void gui_init(struct dt_iop_module_t *self)
   dt_bauhaus_combobox_add(g->cbox4, C_("rendering intent", "saturation"));
   dt_bauhaus_combobox_add(g->cbox4, _("absolute colorimetric"));
 
-  if (!high_quality_processing)
+  if (!force_lcms2)
   {
     gtk_widget_set_no_show_all(g->cbox1, TRUE);
     gtk_widget_set_visible(g->cbox1, FALSE);

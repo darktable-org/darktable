@@ -23,7 +23,8 @@ typedef enum pw_storage_backend_t
 {
   PW_STORAGE_BACKEND_NONE = 0,
   PW_STORAGE_BACKEND_KWALLET,
-  PW_STORAGE_BACKEND_GNOME_KEYRING
+  PW_STORAGE_BACKEND_GNOME_KEYRING,
+  PW_STORAGE_BACKEND_LIBSECRET
 } pw_storage_backend_t;
 
 /** pwstorage context */

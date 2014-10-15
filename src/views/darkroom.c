@@ -196,14 +196,8 @@ void expose(dt_view_t *self, cairo_t *cri, int32_t width_i, int32_t height_i, in
     cairo_translate(cr, .5f*(width-wd), .5f*(height-ht));
     if(closeup)
     {
-      const float closeup_scale = 2.0;
-      cairo_scale(cr, closeup_scale, closeup_scale);
-      float boxw = 1, boxh = 1, zx0 = zoom_x, zy0 = zoom_y, zx1 = zoom_x, zy1 = zoom_y, zxm = -1.0, zym = -1.0;
-      dt_dev_check_zoom_bounds(dev, &zx0, &zy0, zoom, 0, &boxw, &boxh);
-      dt_dev_check_zoom_bounds(dev, &zx1, &zy1, zoom, 1, &boxw, &boxh);
-      dt_dev_check_zoom_bounds(dev, &zxm, &zym, zoom, 1, &boxw, &boxh);
-      const float fx = 1.0 - fmaxf(0.0, (zx0 - zx1)/(zx0 - zxm)), fy = 1.0 - fmaxf(0.0, (zy0 - zy1)/(zy0 - zym));
-      cairo_translate(cr, -wd/(2.0*closeup_scale) * fx, -ht/(2.0*closeup_scale) * fy);
+      cairo_scale(cr, 2.0, 2.0);
+      cairo_translate(cr, -.25f*wd, -.25f*ht);
     }
     cairo_rectangle(cr, 0, 0, wd, ht);
     cairo_set_source_surface (cr, surface, 0, 0);
@@ -794,10 +788,15 @@ zoom_key_accel(GtkAccelGroup *accel_group,
   {
     case 1:
       zoom = dt_control_get_dev_zoom();
+      zoom_x = dt_control_get_dev_zoom_x();
+      zoom_y = dt_control_get_dev_zoom_y();
       closeup = dt_control_get_dev_closeup();
       if(zoom == DT_ZOOM_1) closeup ^= 1;
-      dt_control_set_dev_closeup(closeup);
+      dt_dev_check_zoom_bounds(dev, &zoom_x, &zoom_y, DT_ZOOM_1, closeup, NULL, NULL);
       dt_control_set_dev_zoom(DT_ZOOM_1);
+      dt_control_set_dev_zoom_x(zoom_x);
+      dt_control_set_dev_zoom_y(zoom_y);
+      dt_control_set_dev_closeup(closeup);
       dt_dev_invalidate(dev);
       break;
     case 2:

@@ -34,6 +34,7 @@
 #include <OpenEXR/ImfTiledInputFile.h>
 #include <OpenEXR/ImfChannelList.h>
 #include <OpenEXR/ImfStandardAttributes.h>
+#include <OpenEXR/ImfThreading.h>
 
 extern "C"
 {
@@ -50,6 +51,9 @@ extern "C"
 dt_imageio_retval_t dt_imageio_open_exr (dt_image_t *img, const char *filename, dt_mipmap_cache_allocator_t a)
 {
   bool isTiled=false;
+
+  Imf::setGlobalThreadCount(dt_get_num_threads());
+
 #ifdef __APPLE__
   std::auto_ptr<Imf::TiledInputFile> fileTiled;
   std::auto_ptr<Imf::InputFile> file;

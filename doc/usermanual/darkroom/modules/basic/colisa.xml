@@ -3,7 +3,7 @@
 		<!ENTITY % darktable_dtd SYSTEM "../../../dtd/darktable.dtd">
 		%darktable_dtd;
 		]>
-<sect3 status="draft" id="contrast_brightness_saturation">
+<sect3 status="final" id="contrast_brightness_saturation">
 
   <title>Contrast Brightness Saturation</title>
 
