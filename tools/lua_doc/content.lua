@@ -109,7 +109,6 @@ tmp_node:add_parameter("extra_data","table",[[An empty Lua table to take extra d
 tmp_node:add_return("table or nil",[[The modified table of images to export or nil]]..para()..
 [[If nil (or nothing) is returned, the original list of images will be exported]]..para()..
 [[If a table of images is returned, that table will be used instead. The table can be empty. The images parameter can be modified and returned]])
-tmp_node:add_version_info([[This parameter was added]])
 
 
 darktable.films:set_text([[A table containing all the film objects in the database.]])
@@ -118,7 +117,6 @@ darktable.films.new:set_text([[Creates a new empty film]]..para()..
 [[ see ]]..my_tostring(darktable.database.import)..[[ to import a directory with all its images and to add images to a film]])
 darktable.films.new:add_parameter("directory","string",[[The directory that the new film will represent. The directory must exist]])
 darktable.films.new:add_return(types.dt_lua_film_t,"The newly created film, or the existing film if the directory is already imported")
-darktable.films.new:add_version_info([[The function was added]])
 
 darktable.new_format:set_text("Creates a new format object to export images")
 tmp =""
@@ -155,7 +153,6 @@ darktable.gui.selection:set_attribute("implicit_yield",true)
 darktable.gui.current_view:set_text([[Allows to change the current view.]])
 darktable.gui.current_view:add_parameter("view",types.dt_view_t,[[The view to switch to. If empty the current view is unchanged]]):set_attribute("optional",true)
 darktable.gui.current_view:add_return(types.dt_view_t,[[the current view]])
-darktable.gui.current_view:add_version_info([[Function added]])
 darktable.gui.create_job:set_text([[Create a new progress_bar displayed in ]]..my_tostring(darktable.gui.libs.backgroundjobs))
 darktable.gui.create_job:add_parameter("text","string",[[The text to display in the job entry]])
 darktable.gui.create_job:add_parameter("percentage","boolean",[[Should a progress bar be displayed]]):set_attribute("optional",true)
@@ -202,15 +199,10 @@ darktable.configuration.tmp_dir:set_text([[The name of the directory where darkt
 darktable.configuration.config_dir:set_text([[The name of the directory where darktable will find its global configuration objects (modules).]])
 darktable.configuration.cache_dir:set_text([[The name of the directory where darktable will store its mipmaps.]])
 darktable.configuration.api_version_major:set_text([[The major version number of the lua API.]])
-darktable.configuration.api_version_major:add_version_info([[field added]])
 darktable.configuration.api_version_minor:set_text([[The minor version number of the lua API.]])
-darktable.configuration.api_version_minor:add_version_info([[field added]])
 darktable.configuration.api_version_patch:set_text([[The patch version number of the lua API.]])
-darktable.configuration.api_version_patch:add_version_info([[field added]])
 darktable.configuration.api_version_suffix:set_text([[The version suffix of the lua API.]])
-darktable.configuration.api_version_suffix:add_version_info([[field added]])
 darktable.configuration.api_version_string:set_text([[The version description of the lua API. This is a string compatible with the semantic versionning convention]])
-darktable.configuration.api_version_string:add_version_info([[field added]])
 darktable.configuration.check_version:set_text([[Check that a module is compatible with the running version of darktable]]..para().."Add the following line at the top of your module : "..
 code("darktable.configuration.check(...,{M,m,p},{M2,m2,p2})").."To document that your module has been tested with API version M.m.p and M2.m2.p2."..para()..
 "This will raise an error if the user is running a released version of DT and a warning if he is running a developement version"..para().."(the ... here will automatically expand to your module name if used at the top of your script")
@@ -226,7 +218,6 @@ darktable.preferences:set_text([[Lua allows you do manipulate preferences. Lua h
 [[Preference handling functions can't guess the type of a parameter. You must pass the type of the preference you are handling. ]]..para()..
 [[Note that the directory, enum and file type preferences are stored internally as string. The user can only select valid values, but a lua script can set it to any string]])
 
-darktable.preferences:add_version_info("added float,file,directory parameters")
 
 darktable.preferences.register:set_text([[Creates a new preference entry in the Lua tab of the preference screen. If this function is not called the preference can't be set by the user (you can still read and write invisible preferences).]])
 darktable.preferences.register:add_parameter("script","string",[[Invisible prefix to guarantee unicity of preferences.]])
@@ -284,11 +275,11 @@ darktable.styles.apply:add_parameter("style",types.dt_style_t,[[The style to use
 darktable.styles.apply:add_parameter("image",types.dt_lua_image_t,[[The image to apply the style to.]])
 darktable.styles.apply:set_main_parent(darktable.styles)
 
-darktable.styles.import:set_text([[Import a style from an external .dtstyle file]]):add_version_info("function_added")
+darktable.styles.import:set_text([[Import a style from an external .dtstyle file]])
 darktable.styles.import:add_parameter("filename","string","The file to import");
 darktable.styles.import:set_main_parent(darktable.styles)
 
-darktable.styles.export:set_text([[Export a style to an external .dtstyle file]]):add_version_info("function_added")
+darktable.styles.export:set_text([[Export a style to an external .dtstyle file]])
 darktable.styles.export:add_parameter("style",types.dt_style_t,"The style to export");
 darktable.styles.export:add_parameter("directory","string","The directory to export to");
 darktable.styles.export:add_parameter("overwrite","boolean","Is overwriting an existing file allowed"):set_attribute("optional")
@@ -319,7 +310,6 @@ darktable.database.duplicate:add_return(types.dt_lua_image_t,[[The created image
 darktable.database.move_image:set_text([[Physically moves an image (and all its duplicates) to another film.]]..para()..
 [[This will move the image file, the related XMP and all XMP for the duplicates to the directory of the new film]]..para()..
 [[Note that the parameter order is not relevant.]])
-darktable.database.move_image:add_version_info("function added")
 darktable.database.move_image:add_parameter("image",types.dt_lua_image_t,[[The image to move]])
 darktable.database.move_image:add_parameter("film",types.dt_lua_film_t,[[The film to move to]])
 darktable.database.move_image:set_main_parent(darktable.database)
@@ -327,7 +317,6 @@ darktable.database.copy_image:set_text([[Physically copies an image to another f
 [[This will copy the image file and the related XMP to the directory of the new film]]..para()..
 [[If there is already a file with the same name as the image file, it wil create a duplicate from that file instead]]..para()..
 [[Note that the parameter order is not relevant.]])
-darktable.database.copy_image:add_version_info("function added")
 darktable.database.copy_image:add_parameter("image",types.dt_lua_image_t,[[The image to copy]])
 darktable.database.copy_image:add_parameter("film",types.dt_lua_film_t,[[The film to copy to]])
 darktable.database.copy_image:add_return(types.dt_lua_image_t,[[The new image]])
@@ -338,7 +327,6 @@ for k, v in darktable.gui.views:unskiped_children() do
 	v:set_main_parent(darktable.gui.views)
 end
 darktable.gui.views:set_text([[The different views in darktable]])
-darktable.gui.views:add_version_info([[View objects added]])
 darktable.gui.views.map:set_text([[The map view]])
 darktable.gui.views.map.latitude:set_text([[The latitude of the center of the map]])
 darktable.gui.views.map.longitude:set_text([[The longitude of the center of the map]])
@@ -369,7 +357,6 @@ while true do
 	dt.gui.libs[tested_module].visible = not dt.gui.libs[tested_module].visible
 	coroutine.yield("wait_ms",2000)
 end]]))
-darktable.gui.libs:add_version_info([[lib were added]])
 
 
 darktable.gui.libs.snapshots:set_text([[The UI element that manipulates snapshots in darkroom]])
@@ -480,8 +467,8 @@ darktable.debug.type:set_text([[Similar to the system function type() but it wil
 	types.dt_lua_image_t.exif_datetime_taken:set_text([[The date and time of the image.]])
 	types.dt_lua_image_t.exif_focus_distance:set_text([[The distance of the subject.]])
 	types.dt_lua_image_t.exif_crop:set_text([[The exif crop data.]])
-	types.dt_lua_image_t.latitude:set_text([[GPS latitude data of the image, nil if not set.]]):add_version_info("the field is now nil instead of NAN if not set")
-	types.dt_lua_image_t.longitude:set_text([[GPS longitude data of the image, nil if not set.]]):add_version_info("the field is now nil instead of NAN if not set")
+	types.dt_lua_image_t.latitude:set_text([[GPS latitude data of the image, nil if not set.]])
+	types.dt_lua_image_t.longitude:set_text([[GPS longitude data of the image, nil if not set.]])
 	types.dt_lua_image_t.is_raw:set_text([[True if the image is a RAW file.]])
 	types.dt_lua_image_t.is_ldr:set_text([[True if the image is a ldr image.]])
 	types.dt_lua_image_t.is_hdr:set_text([[True if the image is a hdr image.]])
@@ -494,10 +481,8 @@ darktable.debug.type:set_text([[Similar to the system function type() but it wil
 	types.dt_lua_image_t.red:set_alias(types.dt_lua_image_t.yellow)
 	types.dt_lua_image_t.red:set_alias(types.dt_lua_image_t.purple)
 	types.dt_lua_image_t.reset:set_text([[Removes all processing from the image, reseting it back to its original state]])
-	types.dt_lua_image_t.reset:add_version_info("field added")
 	types.dt_lua_image_t.reset:add_parameter("self",types.dt_lua_image_t,[[The image whose history will be deleted]]):set_attribute("is_self",true)
 	types.dt_lua_image_t.delete:set_text([[Removes an image from the database]])
-	types.dt_lua_image_t.delete:add_version_info("field added")
 	types.dt_lua_image_t.delete:add_parameter("self",types.dt_lua_image_t,[[The image to remove]]):set_attribute("is_self",true)
 
 	types.dt_lua_image_t.group_with:set_text([[Puts the first image in the same group as the second image. If no second image is provided the image will be in its own group.]])
@@ -511,12 +496,10 @@ darktable.debug.type:set_text([[Similar to the system function type() but it wil
 	darktable.tags.attach:set_alias(types.dt_lua_image_t.attach_tag)
 	types.dt_lua_image_t.group_leader:set_text([[The image which is the leader of the group this image is a member of.]])
 	types.dt_lua_image_t.local_copy:set_text([[True if the image has a copy in the local cache]])
-	types.dt_lua_image_t.local_copy:add_version_info([[field added]])
 	types.dt_lua_image_t.drop_cache:set_text("drops the cached version of this image."..para()..
 	"This function should be called if an image is modified out of darktable to force DT to regenerate the thumbnail"..para()..
 	"Darktable will regenerate the thumbnail by itself when it is needed")
 	types.dt_lua_image_t.drop_cache:add_parameter("self",types.dt_lua_image_t,[[The image whose cache must be droped.]]):set_attribute("is_self",true)
-	types.dt_lua_image_t.drop_cache:add_version_info([[field added]])
 
 	types.dt_imageio_module_format_t:set_text([[A virtual type representing all format types.]])
 	types.dt_imageio_module_format_t.plugin_name:set_text([[A unique name for the plugin.]])
@@ -586,7 +569,6 @@ darktable.debug.type:set_text([[Similar to the system function type() but it wil
 	types.dt_lua_film_t.delete:set_text([[Removes the film from the database.]])
 	types.dt_lua_film_t.delete:add_parameter("self",types.dt_lua_film_t,[[The film to remove.]]):set_attribute("is_self",true)
 	types.dt_lua_film_t.delete:add_parameter("force","Boolean",[[Force removal, even if the film is not empty.]]):set_attribute("optional",true)
-	types.dt_lua_film_t.delete:add_version_info("function added")
 
 	types.dt_style_t:set_text([[A style that can be applied to an image.]])
 	types.dt_style_t.name:set_text([[The name of the style.]])
@@ -602,7 +584,6 @@ darktable.debug.type:set_text([[Similar to the system function type() but it wil
 	types.dt_lua_tag_t["#"]:set_text([[The images that have that tag attached to them.]])
 
 	types.dt_lib_module_t:set_text([[The type of a UI lib]])
-	types.dt_lib_module_t:add_version_info([[Type added]])
 	types.dt_lib_module_t.id:set_text([[A unit string identifying the lib]])
 	types.dt_lib_module_t.name:set_text([[The translated title of the UI element]])
 	types.dt_lib_module_t.version:set_text([[The version of the internal data of this lib]])
@@ -620,17 +601,16 @@ darktable.debug.type:set_text([[Similar to the system function type() but it wil
 	types.dt_lib_module_t.on_screen:set_text([[True if the lib is currently visible on the screen]])
 
 	types.dt_view_t:set_text([[A darktable view]])
-	types.dt_view_t:add_version_info([[Type added]])
 	types.dt_view_t.id:set_text([[A unique string identifying the view]])
 	types.dt_view_t.name:set_text([[The name of the view]])
 
 
-	types.dt_lua_backgroundjob_t:set_text([[A lua-managed entry in the backgroundjob lib]]):add_version_info("type added")
+	types.dt_lua_backgroundjob_t:set_text([[A lua-managed entry in the backgroundjob lib]])
 	types.dt_lua_backgroundjob_t.percent:set_text([[The value of the progress bar, between 0 and 1. will return nil if there is no progress bar, will raise an error if read or written on an invalid job]])
 	types.dt_lua_backgroundjob_t.valid:set_text([[True if the job is displayed, set it to false to destroy the entry]]..para().."An invalid job cannot be made valid again")
 
 
-	types.dt_lua_snapshot_t:set_text([[The description of a snapshot in the snapshot lib]]):add_version_info("type added")
+	types.dt_lua_snapshot_t:set_text([[The description of a snapshot in the snapshot lib]])
 	types.dt_lua_snapshot_t.filename:set_text([[The filename of an image containing the snapshot]])
 	types.dt_lua_snapshot_t.select:set_text([[Activates this snapshot on the display. To deactivate all snapshot you need to call this function on the active snapshot]])
 	types.dt_lua_snapshot_t.select:add_parameter("self",types.dt_lua_snapshot_t,[[The snapshot to activate]]):set_attribute("is_self",true)
@@ -657,8 +637,8 @@ darktable.debug.type:set_text([[Similar to the system function type() but it wil
 	events["intermediate-export-image"].callback:add_parameter("event","string",[[The name of the event that triggered the callback.]])
 	events["intermediate-export-image"].callback:add_parameter("image",types.dt_lua_image_t,[[The image object that has been exported.]])
 	events["intermediate-export-image"].callback:add_parameter("filename","string",[[The name of the file that is the result of the image being processed.]])
-	events["intermediate-export-image"].callback:add_parameter("format",types.dt_imageio_module_format_t,[[The format used to export the image.]]):add_version_info([[field added]])
-	events["intermediate-export-image"].callback:add_parameter("storage",types.dt_imageio_module_storage_t,[[The storage used to export the image (can be nil).]]):add_version_info([[field added]])
+	events["intermediate-export-image"].callback:add_parameter("format",types.dt_imageio_module_format_t,[[The format used to export the image.]])
+	events["intermediate-export-image"].callback:add_parameter("storage",types.dt_imageio_module_storage_t,[[The storage used to export the image (can be nil).]])
 	events["intermediate-export-image"].extra_registration_parameters:set_text([[This event has no extra registration parameters.]])
 
 
@@ -694,15 +674,12 @@ darktable.debug.type:set_text([[Similar to the system function type() but it wil
 	events["view-changed"].callback:add_parameter("old_view",types.dt_view_t,[[The view that we just left]])
 	events["view-changed"].callback:add_parameter("new_view",types.dt_view_t,[[The view we are now in]])
 	events["view-changed"].extra_registration_parameters:set_text([[This event has no extra registration parameters.]])
-	events["view-changed"]:add_version_info("event added")
 	events["global_toolbox-grouping_toggle"]:set_text([[This event is triggered after the user toggled the grouping button.]])
 	events["global_toolbox-grouping_toggle"].callback:add_parameter("toggle", "boolean", [[the new grouping status.]]);
 	events["global_toolbox-grouping_toggle"].extra_registration_parameters:set_text([[This event has no extra registration parameters.]])
-	events["global_toolbox-grouping_toggle"]:add_version_info("event added")
 	events["global_toolbox-overlay_toggle"]:set_text([[This event is triggered after the user toggled the overlay button.]])
 	events["global_toolbox-overlay_toggle"].callback:add_parameter("toggle", "boolean", [[the new overlay status.]]);
 	events["global_toolbox-overlay_toggle"].extra_registration_parameters:set_text([[This event has no extra registration parameters.]])
-	events["global_toolbox-overlay_toggle"]:add_version_info("event added")
 	----------------------
 	--  ATTRIBUTES      --
 	----------------------

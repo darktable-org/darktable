@@ -133,17 +133,6 @@ local function print_content(node)
 		result = result.."\n"
 	end
 
-	local history = doc.get_version_info(node)
-	if next(history) then
-		result = result.."\t*Version History* : \n"
-		for version, notes in pairs(history) do
-			result = result.."\t\t*"..version.."*\n"
-			for _,text in pairs(notes) do
-				result = result.."\t\t"..text.."\n"
-			end
-		end
-		result = result.."\n"
-	end
 	for k,v in doc.unskiped_children(node) do
 		result = result .. parse_doc_node(v,node,k).."\n";
 	end
