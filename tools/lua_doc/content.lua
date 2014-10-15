@@ -43,7 +43,7 @@ local function remove_all_children(node)
 end
 -- prevent some objects to appear at the wrong end of the tree
 remove_all_children(types.dt_lib_module_t.views)
-print("warning, avoid problems with picasa/facebook")
+io.stderr:write("warning, avoid problems with picasa/facebook\n")
 types.dt_imageio_module_storage_data_email:set_text([[TBSL undocumented, force first]])
 
 ----------------------
@@ -79,9 +79,9 @@ darktable.register_storage:add_parameter("plugin_name","string",[[A Unique name 
 darktable.register_storage:add_parameter("name","string",[[A human readable name for the plugin.]])
 tmp_node = darktable.register_storage:add_parameter("store","function",[[This function is called once for each exported image. Images can be exported in parallel but the calls to this function will be serialized.]])
 tmp_node:set_attribute("optional",true)
-tmp_node:add_parameter("storage",my_tostring(types.dt_imageio_module_storage_t),[[The storage object used for the export.]])
-tmp_node:add_parameter("image",my_tostring(types.dt_lua_image_t),[[The exported image object.]])
-tmp_node:add_parameter("format",my_tostring(types.dt_imageio_module_format_t),[[The format object used for the export.]])
+tmp_node:add_parameter("storage",types.dt_imageio_module_storage_t,[[The storage object used for the export.]])
+tmp_node:add_parameter("image",types.dt_lua_image_t,[[The exported image object.]])
+tmp_node:add_parameter("format",types.dt_imageio_module_format_t,[[The format object used for the export.]])
 tmp_node:add_parameter("filename","string",[[The name of a temporary file where the processed image is stored.]])
 tmp_node:add_parameter("number","integer",[[The number of the image out of the export series.]])
 tmp_node:add_parameter("total","integer",[[The total number of images in the export series.]])
@@ -89,20 +89,20 @@ tmp_node:add_parameter("high_quality","boolean",[[True if the export is high qua
 tmp_node:add_parameter("extra_data","table",[[An empty Lua table to take extra data. This table is common to the initialize, store and finalize calls in an export serie.]])
 tmp_node = darktable.register_storage:add_parameter("finalize","function",[[This function is called once all images are processed and all store calls are finished.]])
 tmp_node:set_attribute("optional",true)
-tmp_node:add_parameter("storage",my_tostring(types.dt_imageio_module_storage_t),[[The storage object used for the export.]])
+tmp_node:add_parameter("storage",types.dt_imageio_module_storage_t,[[The storage object used for the export.]])
 tmp_node:add_parameter("image_table","table",[[A table keyed by the exported image objects and valued with the corresponding temporary export filename.]])
 tmp_node:add_parameter("extra_data","table",[[An empty Lua table to store extra data. This table is common to all calls to store and the call to finalize in a given export series.]])
 tmp_node = darktable.register_storage:add_parameter("supported","function",[[A function called to check if a given image format is supported by the Lua storage; this is used to build the dropdown format list for the GUI.]]..para()..
 [[Note that the parameters in the format are the ones currently set in the GUI; the user might change them before export.]])
 tmp_node:set_attribute("optional",true)
-tmp_node:add_parameter("storage",my_tostring(types.dt_imageio_module_storage_t),[[The storage object tested.]])
-tmp_node:add_parameter("format",my_tostring(types.dt_imageio_module_format_t),[[The format object to report about.]])
+tmp_node:add_parameter("storage",types.dt_imageio_module_storage_t,[[The storage object tested.]])
+tmp_node:add_parameter("format",types.dt_imageio_module_format_t,[[The format object to report about.]])
 tmp_node:add_return("boolean",[[True if the corresponding format is supported.]])
 tmp_node = darktable.register_storage:add_parameter("initialize","function",[[A function called before storage happens]]..para().. 
 [[This function can change the list of exported functions]])
 tmp_node:set_attribute("optional",true)
-tmp_node:add_parameter("storage",my_tostring(types.dt_imageio_module_storage_t),[[The storage object tested.]])
-tmp_node:add_parameter("format",my_tostring(types.dt_imageio_module_format_t),[[The format object to report about.]])
+tmp_node:add_parameter("storage",types.dt_imageio_module_storage_t,[[The storage object tested.]])
+tmp_node:add_parameter("format",types.dt_imageio_module_format_t,[[The format object to report about.]])
 tmp_node:add_parameter("images","table of "..my_tostring(types.dt_lua_image_t),[[A table containing images to be exported.]])
 tmp_node:add_parameter("high_quality","boolean",[[True if the export is high quality.]])
 tmp_node:add_parameter("extra_data","table",[[An empty Lua table to take extra data. This table is common to the initialize, store and finalize calls in an export serie.]])
@@ -117,7 +117,7 @@ darktable.films['#']:set_text([[Each film has a numeric entry in the database.]]
 darktable.films.new:set_text([[Creates a new empty film]]..para()..
 [[ see ]]..my_tostring(darktable.database.import)..[[ to import a directory with all its images and to add images to a film]])
 darktable.films.new:add_parameter("directory","string",[[The directory that the new film will represent. The directory must exist]])
-darktable.films.new:add_return(my_tostring(types.dt_lua_film_t),"The newly created film, or the existing film if the directory is already imported")
+darktable.films.new:add_return(types.dt_lua_film_t,"The newly created film, or the existing film if the directory is already imported")
 darktable.films.new:add_version_info([[The function was added]])
 
 darktable.new_format:set_text("Creates a new format object to export images")
@@ -126,7 +126,7 @@ for k,v in pairs(debug.getregistry().dt_lua_modules.format) do
   tmp = tmp..listel(k)
 end
 darktable.new_format:add_parameter("type","string",[[The type of format object to create, one of : ]]..  startlist().. tmp..endlist()) 
-darktable.new_format:add_return(my_tostring(types.dt_imageio_module_format_t),"The newly created object. Exact type depends on the type passed")
+darktable.new_format:add_return(types.dt_imageio_module_format_t,"The newly created object. Exact type depends on the type passed")
 
 darktable.new_storage:set_text("Creates a new storage object to export images")
 tmp =""
@@ -134,7 +134,7 @@ for k,v in pairs(debug.getregistry().dt_lua_modules.storage) do
   tmp = tmp..listel(k)
 end
 darktable.new_storage:add_parameter("type","string",[[The type of storage object to create, one of : ]]..  startlist().. tmp..endlist().."(Other, lua-defined, storage types may appear.)") 
-darktable.new_storage:add_return(my_tostring(types.dt_imageio_module_storage_t),"The newly created object. Exact type depends on the type passed")
+darktable.new_storage:add_return(types.dt_imageio_module_storage_t,"The newly created object. Exact type depends on the type passed")
 ----------------------
 --  DARKTABLE.GUI   --
 ----------------------
@@ -153,16 +153,16 @@ darktable.gui.selection:add_parameter("selection","table of "..my_tostring(types
 darktable.gui.selection:add_return("table of "..my_tostring(types.dt_lua_image_t),[[A table containing the selection as it was before the function was called.]])
 darktable.gui.selection:set_attribute("implicit_yield",true)
 darktable.gui.current_view:set_text([[Allows to change the current view.]])
-darktable.gui.current_view:add_parameter("view",my_tostring(types.dt_view_t),[[The view to switch to. If empty the current view is unchanged]]):set_attribute("optional",true)
-darktable.gui.current_view:add_return(my_tostring(types.dt_view_t),[[the current view]])
+darktable.gui.current_view:add_parameter("view",types.dt_view_t,[[The view to switch to. If empty the current view is unchanged]]):set_attribute("optional",true)
+darktable.gui.current_view:add_return(types.dt_view_t,[[the current view]])
 darktable.gui.current_view:add_version_info([[Function added]])
 darktable.gui.create_job:set_text([[Create a new progress_bar displayed in ]]..my_tostring(darktable.gui.libs.backgroundjobs))
 darktable.gui.create_job:add_parameter("text","string",[[The text to display in the job entry]])
 darktable.gui.create_job:add_parameter("percentage","boolean",[[Should a progress bar be displayed]]):set_attribute("optional",true)
 tmp = darktable.gui.create_job:add_parameter("cancel_callback","function",[[A function called when the cancel button for that job is pressed]]..para().."note that the job won't be destroyed automatically. You need to set "..my_tostring(types.dt_lua_backgroundjob_t.valid).." to false for that")
 tmp:set_attribute("optional",true)
-tmp:add_parameter("job",my_tostring(types.dt_lua_backgroundjob_t),[[The job who is being cancelded]])
-darktable.gui.create_job:add_return(my_tostring(types.dt_lua_backgroundjob_t),[[The newly created job object]])
+tmp:add_parameter("job",types.dt_lua_backgroundjob_t,[[The job who is being cancelded]])
+darktable.gui.create_job:add_return(types.dt_lua_backgroundjob_t,[[The newly created job object]])
 
 ----------------------
 --  DARKTABLE.TAGS  --
@@ -174,20 +174,20 @@ darktable.tags.create:set_text([[Creates a new tag and return it. If the tag exi
 darktable.tags.create:add_parameter("name","string",[[The name of the new tag.]])
 darktable.tags.find:set_text([[Returns the tag object or nil if the tag doesn't exist.]])
 darktable.tags.find:add_parameter("name","string",[[The name of the tag to find.]])
-darktable.tags.find:add_return(my_tostring(types.dt_lua_tag_t),[[The tag object or nil.]])
+darktable.tags.find:add_return(types.dt_lua_tag_t,[[The tag object or nil.]])
 darktable.tags.delete:set_text([[Deletes the tag object, detaching it from all images.]])
-darktable.tags.delete:add_parameter("tag",my_tostring(types.dt_lua_tag_t),[[The tag to be deleted.]])
+darktable.tags.delete:add_parameter("tag",types.dt_lua_tag_t,[[The tag to be deleted.]])
 darktable.tags.delete:set_main_parent(darktable.tags)
 darktable.tags.attach:set_text([[Attach a tag to an image; the order of the parameters can be reversed.]])
-darktable.tags.attach:add_parameter("tag",my_tostring(types.dt_lua_tag_t),[[The tag to be attached.]])
-darktable.tags.attach:add_parameter("image",my_tostring(types.dt_lua_image_t),[[The image to attach the tag to.]])
+darktable.tags.attach:add_parameter("tag",types.dt_lua_tag_t,[[The tag to be attached.]])
+darktable.tags.attach:add_parameter("image",types.dt_lua_image_t,[[The image to attach the tag to.]])
 darktable.tags.attach:set_main_parent(darktable.tags)
 darktable.tags.detach:set_text([[Detach a tag from an image; the order of the parameters can be reversed.]])
-darktable.tags.detach:add_parameter("tag",my_tostring(types.dt_lua_tag_t),[[The tag to be detached.]])
-darktable.tags.detach:add_parameter("image",my_tostring(types.dt_lua_image_t),[[The image to detach the tag from.]])
+darktable.tags.detach:add_parameter("tag",types.dt_lua_tag_t,[[The tag to be detached.]])
+darktable.tags.detach:add_parameter("image",types.dt_lua_image_t,[[The image to detach the tag from.]])
 darktable.tags.detach:set_main_parent(darktable.tags)
 darktable.tags.get_tags:set_text([[Gets all tags attached to an image.]])
-darktable.tags.get_tags:add_parameter("image",my_tostring(types.dt_lua_image_t),[[The image to get the tags from.]])
+darktable.tags.get_tags:add_parameter("image",types.dt_lua_image_t,[[The image to get the tags from.]])
 darktable.tags.get_tags:add_return("table of "..my_tostring(types.dt_lua_tag_t),[[A table of tags that are attached to the image.]])
 darktable.tags.get_tags:set_main_parent(darktable.tags)
 
@@ -231,7 +231,7 @@ darktable.preferences:add_version_info("added float,file,directory parameters")
 darktable.preferences.register:set_text([[Creates a new preference entry in the Lua tab of the preference screen. If this function is not called the preference can't be set by the user (you can still read and write invisible preferences).]])
 darktable.preferences.register:add_parameter("script","string",[[Invisible prefix to guarantee unicity of preferences.]])
 darktable.preferences.register:add_parameter("name","string",[[A unique name used with the script part to identify the preference.]])
-darktable.preferences.register:add_parameter("type",my_tostring(types.lua_pref_type),[[The type of the preference - one of the string values described above.]])
+darktable.preferences.register:add_parameter("type",types.lua_pref_type,[[The type of the preference - one of the string values described above.]])
 darktable.preferences.register:add_parameter("label","string",[[The label displayed in the preference screen.]])
 darktable.preferences.register:add_parameter("tooltip","string",[[The tooltip to display in the preference menue.]])
 darktable.preferences.register:add_parameter("default","depends on type",[[Default value to use when not set explicitely or by the user.]]..para().."For the enum type of pref, this is mandatory"):set_attribute("optional",true)
@@ -243,13 +243,13 @@ darktable.preferences.register:add_parameter("values","string...",[[Other allowe
 darktable.preferences.read:set_text([[Reads a value from a Lua preference.]])
 darktable.preferences.read:add_parameter("script","string",[[Invisible prefix to guarantee unicity of preferences.]])
 darktable.preferences.read:add_parameter("name","string",[[The name of the preference displayed in the preference screen.]])
-darktable.preferences.read:add_parameter("type",my_tostring(types.lua_pref_type),[[The type of the preference.]])
+darktable.preferences.read:add_parameter("type",types.lua_pref_type,[[The type of the preference.]])
 darktable.preferences.read:add_return("depends on type",[[The value of the preference.]])
 
 darktable.preferences.write:set_text([[Writes a value to a Lua preference.]])
 darktable.preferences.write:add_parameter("script","string",[[Invisible prefix to guarantee unicity of preferences.]])
 darktable.preferences.write:add_parameter("name","string",[[The name of the preference displayed in the preference screen.]])
-darktable.preferences.write:add_parameter("type",my_tostring(types.lua_pref_type),[[The type of the preference.]])
+darktable.preferences.write:add_parameter("type",types.lua_pref_type,[[The type of the preference.]])
 darktable.preferences.write:add_parameter("value","depends on type",[[The value to set the preference to.]])
 
 
@@ -262,26 +262,26 @@ darktable.styles:set_text([[This pseudo table allows you to access and manipulat
 darktable.styles["#"]:set_text([[Each existing style has a numeric index; you can iterate them using ipairs.]])
 
 darktable.styles.create:set_text([[Create a new style based on an image.]])
-darktable.styles.create:add_parameter("image",my_tostring(types.dt_lua_image_t),[[The image to create the style from.]])
+darktable.styles.create:add_parameter("image",types.dt_lua_image_t,[[The image to create the style from.]])
 darktable.styles.create:add_parameter("name","string",[[The name to give to the new style.]])
 darktable.styles.create:add_parameter("description","string",[[The description of the new style.]]):set_attribute("optional")
-darktable.styles.create:add_return(my_tostring(types.dt_style_t),[[The new style object.]])
+darktable.styles.create:add_return(types.dt_style_t,[[The new style object.]])
 darktable.styles.create:set_main_parent(darktable.styles)
 
 darktable.styles.delete:set_text([[Deletes an existing style.]])
-darktable.styles.delete:add_parameter("style",my_tostring(types.dt_style_t),[[the style to delete]])
+darktable.styles.delete:add_parameter("style",types.dt_style_t,[[the style to delete]])
 darktable.styles.delete:set_main_parent(darktable.styles)
 
 darktable.styles.duplicate:set_text([[Create a new style based on an existing style.]])
-darktable.styles.duplicate:add_parameter("style",my_tostring(types.dt_style_t),[[The style to base the new style on.]])
+darktable.styles.duplicate:add_parameter("style",types.dt_style_t,[[The style to base the new style on.]])
 darktable.styles.duplicate:add_parameter("name","string",[[The new style's name.]])
 darktable.styles.duplicate:add_parameter("description","string",[[The new style's description.]]):set_attribute("optional")
-darktable.styles.duplicate:add_return(my_tostring(types.dt_style_t),[[The new style object.]])
+darktable.styles.duplicate:add_return(types.dt_style_t,[[The new style object.]])
 darktable.styles.duplicate:set_main_parent(darktable.styles)
 
 darktable.styles.apply:set_text([[Apply a style to an image. The order of parameters can be inverted.]])
-darktable.styles.apply:add_parameter("style",my_tostring(types.dt_style_t),[[The style to use.]])
-darktable.styles.apply:add_parameter("image",my_tostring(types.dt_lua_image_t),[[The image to apply the style to.]])
+darktable.styles.apply:add_parameter("style",types.dt_style_t,[[The style to use.]])
+darktable.styles.apply:add_parameter("image",types.dt_lua_image_t,[[The image to apply the style to.]])
 darktable.styles.apply:set_main_parent(darktable.styles)
 
 darktable.styles.import:set_text([[Import a style from an external .dtstyle file]]):add_version_info("function_added")
@@ -289,7 +289,7 @@ darktable.styles.import:add_parameter("filename","string","The file to import");
 darktable.styles.import:set_main_parent(darktable.styles)
 
 darktable.styles.export:set_text([[Export a style to an external .dtstyle file]]):add_version_info("function_added")
-darktable.styles.export:add_parameter("style",my_tostring(types.dt_style_t),"The style to export");
+darktable.styles.export:add_parameter("style",types.dt_style_t,"The style to export");
 darktable.styles.export:add_parameter("directory","string","The directory to export to");
 darktable.styles.export:add_parameter("overwrite","boolean","Is overwriting an existing file allowed"):set_attribute("optional")
 darktable.styles.export:set_main_parent(darktable.styles)
@@ -302,8 +302,8 @@ darktable.database:set_text([[Allows to access the database of images. Note that
 
 darktable.database["#"]:set_text([[Each image in the database appears with a numerical index; you can interate them using ipairs.]])
 darktable.database.duplicate:set_text([[Creates a duplicate of an image and returns it.]])
-darktable.database.duplicate:add_parameter("image",my_tostring(types.dt_lua_image_t),[[the image to duplicate]])
-darktable.database.duplicate:add_return(my_tostring(types.dt_lua_image_t),[[The new image object.]])
+darktable.database.duplicate:add_parameter("image",types.dt_lua_image_t,[[the image to duplicate]])
+darktable.database.duplicate:add_return(types.dt_lua_image_t,[[The new image object.]])
 darktable.database.duplicate:set_main_parent(darktable.database)
 
 darktable.database.import:set_text([[Imports new images into the database.]])
@@ -315,22 +315,22 @@ NOTE2: If the parameter is a directory the call is non-blocking; the film object
 
 
 ]])
-darktable.database.duplicate:add_return(my_tostring(types.dt_lua_image_t),[[The created image if an image is imported or the toplevel film object if a film was imported.]])
+darktable.database.duplicate:add_return(types.dt_lua_image_t,[[The created image if an image is imported or the toplevel film object if a film was imported.]])
 darktable.database.move_image:set_text([[Physically moves an image (and all its duplicates) to another film.]]..para()..
 [[This will move the image file, the related XMP and all XMP for the duplicates to the directory of the new film]]..para()..
 [[Note that the parameter order is not relevant.]])
 darktable.database.move_image:add_version_info("function added")
-darktable.database.move_image:add_parameter("image",tostring(types.dt_lua_image_t),[[The image to move]])
-darktable.database.move_image:add_parameter("film",tostring(types.dt_lua_film_t),[[The film to move to]])
+darktable.database.move_image:add_parameter("image",types.dt_lua_image_t,[[The image to move]])
+darktable.database.move_image:add_parameter("film",types.dt_lua_film_t,[[The film to move to]])
 darktable.database.move_image:set_main_parent(darktable.database)
 darktable.database.copy_image:set_text([[Physically copies an image to another film.]]..para()..
 [[This will copy the image file and the related XMP to the directory of the new film]]..para()..
 [[If there is already a file with the same name as the image file, it wil create a duplicate from that file instead]]..para()..
 [[Note that the parameter order is not relevant.]])
 darktable.database.copy_image:add_version_info("function added")
-darktable.database.copy_image:add_parameter("image",tostring(types.dt_lua_image_t),[[The image to copy]])
-darktable.database.copy_image:add_parameter("film",tostring(types.dt_lua_film_t),[[The film to copy to]])
-darktable.database.copy_image:add_return(tostring(types.dt_lua_image_t),[[The new image]])
+darktable.database.copy_image:add_parameter("image",types.dt_lua_image_t,[[The image to copy]])
+darktable.database.copy_image:add_parameter("film",types.dt_lua_film_t,[[The film to copy to]])
+darktable.database.copy_image:add_return(types.dt_lua_image_t,[[The new image]])
 darktable.database.copy_image:set_main_parent(darktable.database)
 
 
@@ -495,18 +495,18 @@ darktable.debug.type:set_text([[Similar to the system function type() but it wil
 	types.dt_lua_image_t.red:set_alias(types.dt_lua_image_t.purple)
 	types.dt_lua_image_t.reset:set_text([[Removes all processing from the image, reseting it back to its original state]])
 	types.dt_lua_image_t.reset:add_version_info("field added")
-	types.dt_lua_image_t.reset:add_parameter("self",my_tostring(types.dt_lua_image_t),[[The image whose history will be deleted]]):set_attribute("is_self",true)
+	types.dt_lua_image_t.reset:add_parameter("self",types.dt_lua_image_t,[[The image whose history will be deleted]]):set_attribute("is_self",true)
 	types.dt_lua_image_t.delete:set_text([[Removes an image from the database]])
 	types.dt_lua_image_t.delete:add_version_info("field added")
-	types.dt_lua_image_t.delete:add_parameter("self",my_tostring(types.dt_lua_image_t),[[The image to remove]]):set_attribute("is_self",true)
+	types.dt_lua_image_t.delete:add_parameter("self",types.dt_lua_image_t,[[The image to remove]]):set_attribute("is_self",true)
 
 	types.dt_lua_image_t.group_with:set_text([[Puts the first image in the same group as the second image. If no second image is provided the image will be in its own group.]])
-	types.dt_lua_image_t.group_with:add_parameter("self",my_tostring(types.dt_lua_image_t),[[The image whose group must be changed.]]):set_attribute("is_self",true)
-	types.dt_lua_image_t.group_with:add_parameter("image",my_tostring(types.dt_lua_image_t),[[The image we want to group with.]]):set_attribute("optional",true)
+	types.dt_lua_image_t.group_with:add_parameter("self",types.dt_lua_image_t,[[The image whose group must be changed.]]):set_attribute("is_self",true)
+	types.dt_lua_image_t.group_with:add_parameter("image",types.dt_lua_image_t,[[The image we want to group with.]]):set_attribute("optional",true)
 	types.dt_lua_image_t.make_group_leader:set_text([[Makes the image the leader of its group.]])
-	types.dt_lua_image_t.make_group_leader:add_parameter("self",my_tostring(types.dt_lua_image_t),[[The image we want as the leader.]]):set_attribute("is_self",true)
+	types.dt_lua_image_t.make_group_leader:add_parameter("self",types.dt_lua_image_t,[[The image we want as the leader.]]):set_attribute("is_self",true)
 	types.dt_lua_image_t.get_group_members:set_text([[Returns a table containing all ]]..my_tostring(types.dt_lua_image_t)..[[ of the group. The group leader is both at a numeric key and at the "leader" special key (so you probably want to use ipairs to iterate through that table).]])
-	types.dt_lua_image_t.get_group_members:add_parameter("self",my_tostring(types.dt_lua_image_t),[[The image whose group we are querying.]]):set_attribute("is_self",true)
+	types.dt_lua_image_t.get_group_members:add_parameter("self",types.dt_lua_image_t,[[The image whose group we are querying.]]):set_attribute("is_self",true)
 	types.dt_lua_image_t.get_group_members:add_return("table of "..my_tostring(types.dt_lua_image_t),[[A table of image objects containing all images that are in the same group as the image.]])
 	darktable.tags.attach:set_alias(types.dt_lua_image_t.attach_tag)
 	types.dt_lua_image_t.group_leader:set_text([[The image which is the leader of the group this image is a member of.]])
@@ -515,7 +515,7 @@ darktable.debug.type:set_text([[Similar to the system function type() but it wil
 	types.dt_lua_image_t.drop_cache:set_text("drops the cached version of this image."..para()..
 	"This function should be called if an image is modified out of darktable to force DT to regenerate the thumbnail"..para()..
 	"Darktable will regenerate the thumbnail by itself when it is needed")
-	types.dt_lua_image_t.drop_cache:add_parameter("self",my_tostring(types.dt_lua_image_t),[[The image whose cache must be droped.]]):set_attribute("is_self",true)
+	types.dt_lua_image_t.drop_cache:add_parameter("self",types.dt_lua_image_t,[[The image whose cache must be droped.]]):set_attribute("is_self",true)
 	types.dt_lua_image_t.drop_cache:add_version_info([[field added]])
 
 	types.dt_imageio_module_format_t:set_text([[A virtual type representing all format types.]])
@@ -527,8 +527,8 @@ darktable.debug.type:set_text([[Similar to the system function type() but it wil
 	types.dt_imageio_module_format_t.max_height:set_text([[The max height allowed for the format (0 = unlimited).]])
 	types.dt_imageio_module_format_t.write_image:set_text([[Exports an image to a file. This is a blocking operation that will not return until the image is exported.]])
 	types.dt_imageio_module_format_t.write_image:set_attribute("implicit_yield",true)
-	types.dt_imageio_module_format_t.write_image:add_parameter("self",my_tostring(types.dt_imageio_module_format_t),[[The format that will be used to export.]]):set_attribute("is_self",true)
-	types.dt_imageio_module_format_t.write_image:add_parameter("image",my_tostring(types.dt_lua_image_t),[[The image object to export.]])
+	types.dt_imageio_module_format_t.write_image:add_parameter("self",types.dt_imageio_module_format_t,[[The format that will be used to export.]]):set_attribute("is_self",true)
+	types.dt_imageio_module_format_t.write_image:add_parameter("image",types.dt_lua_image_t,[[The image object to export.]])
 	types.dt_imageio_module_format_t.write_image:add_parameter("filename","string",[[The filename to export to.]])
 	types.dt_imageio_module_format_t.write_image:add_return("boolean",[[Returns true on success.]])
 
@@ -562,8 +562,8 @@ darktable.debug.type:set_text([[Similar to the system function type() but it wil
 	types.dt_imageio_module_storage_t.recommended_width:set_text([[The recommended width for the plugin.]])
 	types.dt_imageio_module_storage_t.recommended_height:set_text([[The recommended height for the plugin.]])
 	types.dt_imageio_module_storage_t.supports_format:set_text([[Checks if a format is supported by this storage.]])
-	types.dt_imageio_module_storage_t.supports_format:add_parameter("self",my_tostring(types.dt_imageio_module_storage_t),[[The storage type to check against.]]):set_attribute("is_self",true)
-	types.dt_imageio_module_storage_t.supports_format:add_parameter("format",my_tostring(types.dt_imageio_module_format_t),[[The format type to check.]])
+	types.dt_imageio_module_storage_t.supports_format:add_parameter("self",types.dt_imageio_module_storage_t,[[The storage type to check against.]]):set_attribute("is_self",true)
+	types.dt_imageio_module_storage_t.supports_format:add_parameter("format",types.dt_imageio_module_format_t,[[The format type to check.]])
 	types.dt_imageio_module_storage_t.supports_format:add_return("boolean",[[True if the format is supported by the storage.]])
 
 	types.dt_imageio_module_storage_data_email:set_text([[An object containing parameters to export to email.]])
@@ -584,7 +584,7 @@ darktable.debug.type:set_text([[Similar to the system function type() but it wil
 	types.dt_lua_film_t.id:set_text([[A unique numeric id used by this film.]])
 	types.dt_lua_film_t.path:set_text([[The path represented by this film.]])
 	types.dt_lua_film_t.delete:set_text([[Removes the film from the database.]])
-	types.dt_lua_film_t.delete:add_parameter("self",my_tostring(types.dt_lua_film_t),[[The film to remove.]]):set_attribute("is_self",true)
+	types.dt_lua_film_t.delete:add_parameter("self",types.dt_lua_film_t,[[The film to remove.]]):set_attribute("is_self",true)
 	types.dt_lua_film_t.delete:add_parameter("force","Boolean",[[Force removal, even if the film is not empty.]]):set_attribute("optional",true)
 	types.dt_lua_film_t.delete:add_version_info("function added")
 
@@ -616,7 +616,7 @@ darktable.debug.type:set_text([[Similar to the system function type() but it wil
 	types.dt_lib_module_t.views:set_text([[A table of all teh views that display this widget]])
 	types.dt_lib_module_t.reset:set_text([[A function to reset the lib to its default values]]..para()..
 	[[This function will do nothing if the lib is not visible or can't be reset]])
-	types.dt_lib_module_t.reset:add_parameter("self",my_tostring(types.dt_lib_module_t),[[The lib to reset]]):set_attribute("is_self",true)
+	types.dt_lib_module_t.reset:add_parameter("self",types.dt_lib_module_t,[[The lib to reset]]):set_attribute("is_self",true)
 	types.dt_lib_module_t.on_screen:set_text([[True if the lib is currently visible on the screen]])
 
 	types.dt_view_t:set_text([[A darktable view]])
@@ -633,7 +633,7 @@ darktable.debug.type:set_text([[Similar to the system function type() but it wil
 	types.dt_lua_snapshot_t:set_text([[The description of a snapshot in the snapshot lib]]):add_version_info("type added")
 	types.dt_lua_snapshot_t.filename:set_text([[The filename of an image containing the snapshot]])
 	types.dt_lua_snapshot_t.select:set_text([[Activates this snapshot on the display. To deactivate all snapshot you need to call this function on the active snapshot]])
-	types.dt_lua_snapshot_t.select:add_parameter("self",my_tostring(types.dt_lua_snapshot_t),[[The snapshot to activate]]):set_attribute("is_self",true)
+	types.dt_lua_snapshot_t.select:add_parameter("self",types.dt_lua_snapshot_t,[[The snapshot to activate]]):set_attribute("is_self",true)
 	types.dt_lua_snapshot_t.name:set_text([[The name of the snapshot, as seen in the UI]])
 
 	types.hint_t:set_text([[a hint on the way to encode a webp image]])
@@ -655,10 +655,10 @@ darktable.debug.type:set_text([[Similar to the system function type() but it wil
 
 	events["intermediate-export-image"]:set_text([[This event is called each time an image is exported, once for each image after the image has been processed to an image format but before the storage has moved the image to its final destination.]])
 	events["intermediate-export-image"].callback:add_parameter("event","string",[[The name of the event that triggered the callback.]])
-	events["intermediate-export-image"].callback:add_parameter("image",my_tostring(types.dt_lua_image_t),[[The image object that has been exported.]])
+	events["intermediate-export-image"].callback:add_parameter("image",types.dt_lua_image_t,[[The image object that has been exported.]])
 	events["intermediate-export-image"].callback:add_parameter("filename","string",[[The name of the file that is the result of the image being processed.]])
-	events["intermediate-export-image"].callback:add_parameter("format",my_tostring(types.dt_imageio_module_format_t),[[The format used to export the image.]]):add_version_info([[field added]])
-	events["intermediate-export-image"].callback:add_parameter("storage",my_tostring(types.dt_imageio_module_storage_t),[[The storage used to export the image (can be nil).]]):add_version_info([[field added]])
+	events["intermediate-export-image"].callback:add_parameter("format",types.dt_imageio_module_format_t,[[The format used to export the image.]]):add_version_info([[field added]])
+	events["intermediate-export-image"].callback:add_parameter("storage",types.dt_imageio_module_storage_t,[[The storage used to export the image (can be nil).]]):add_version_info([[field added]])
 	events["intermediate-export-image"].extra_registration_parameters:set_text([[This event has no extra registration parameters.]])
 
 
@@ -666,7 +666,7 @@ darktable.debug.type:set_text([[Similar to the system function type() but it wil
 
 	This event can be registered multiple times, all callbacks will be called.]])
 	events["post-import-image"].callback:add_parameter("event","string",[[The name of the event that triggered the callback.]])
-	events["post-import-image"].callback:add_parameter("image",my_tostring(types.dt_lua_image_t),[[The image object that has been exported.]])
+	events["post-import-image"].callback:add_parameter("image",types.dt_lua_image_t,[[The image object that has been exported.]])
 	events["post-import-image"].extra_registration_parameters:set_text([[This event has no extra registration parameters.]])
 
 
@@ -688,11 +688,11 @@ darktable.debug.type:set_text([[Similar to the system function type() but it wil
 	]])
 	events["post-import-film"].callback:add_parameter("event","string",[[The name of the event that triggered the callback.]])
 
-	events["post-import-film"].callback:add_parameter("film",my_tostring(types.dt_lua_film_t),[[The new film that has been added. If multiple films were added recursively only the top level film is reported.]])
+	events["post-import-film"].callback:add_parameter("film",types.dt_lua_film_t,[[The new film that has been added. If multiple films were added recursively only the top level film is reported.]])
 	events["post-import-film"].extra_registration_parameters:set_text([[This event has no extra registration parameters.]])
 	events["view-changed"]:set_text([[This event is triggered after the user changed the active view]])
-	events["view-changed"].callback:add_parameter("old_view",my_tostring(types.dt_view_t),[[The view that we just left]])
-	events["view-changed"].callback:add_parameter("new_view",my_tostring(types.dt_view_t),[[The view we are now in]])
+	events["view-changed"].callback:add_parameter("old_view",types.dt_view_t,[[The view that we just left]])
+	events["view-changed"].callback:add_parameter("new_view",types.dt_view_t,[[The view we are now in]])
 	events["view-changed"].extra_registration_parameters:set_text([[This event has no extra registration parameters.]])
 	events["view-changed"]:add_version_info("event added")
 	events["global_toolbox-grouping_toggle"]:set_text([[This event is triggered after the user toggled the grouping button.]])
@@ -753,7 +753,7 @@ darktable.debug.type:set_text([[Similar to the system function type() but it wil
 	listel("file_readable: an opened file from a call to the OS library; will return when the file is readable; returns nothing;")..
 	listel([[* run_command: a command to be run by "sh -c"; will return when the command terminates; returns the return code of the execution.]])..
 endlist())
-system.coroutine.yield:add_parameter("type",my_tostring(types.yield_type),[[The type of yield.]])
+system.coroutine.yield:add_parameter("type",types.yield_type,[[The type of yield.]])
 system.coroutine.yield:add_parameter("extra","variable",[[An extra parameter: integer for "wait_ms", open file for "file_readable", string for "run_command".]])
 system.coroutine.yield:add_return("variable",[[Nothing for "wait_ms" and "file_readable"; the returned code of the command for "run_command".]])
 --

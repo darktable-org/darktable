@@ -132,7 +132,7 @@ local function document_type_sub(node,result,parent,prev_name)
 			)	then
 			-- nothing
 		else
-			print("ERROR undocumented metafield "..field.." for type "..prev_name)
+			io.stderr:write("ERROR undocumented metafield "..field.." for type "..prev_name.."\n")
 		end
 	end
 	set_attribute(result,"reported_type","dt_type")
@@ -488,7 +488,7 @@ function M.all_children(node)
 
 	function M.set_text(node,text)
 		if node._luadoc_text then
-			print("warning, double documentation for "..node:get_name(true))
+			io.stderr:write("warning, double documentation for "..node:get_name(true).."\n")
 		end
 		node._luadoc_text = text
 		for k,v in ipairs(node._luadoc_parents) do
