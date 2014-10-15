@@ -35,7 +35,6 @@
 #include "common/colorspaces.h"
 #include "bauhaus/bauhaus.h"
 #include "common/opencl.h"
-#include "libs/colorpicker.h"
 
 #define DT_GUI_CURVE_EDITOR_INSET DT_PIXEL_APPLY_DPI(5)
 #define DT_GUI_CURVE_INFL .3f
