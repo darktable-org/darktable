@@ -388,14 +388,14 @@ All functions and data are accessed through the darktable module.</para>
 <synopsis>string</synopsis>
 <para>The type of format object to create, one of : <itemizedlist>
 <listitem><para>copy</para></listitem>
+<listitem><para>exr</para></listitem>
+<listitem><para>j2k</para></listitem>
+<listitem><para>jpeg</para></listitem>
+<listitem><para>pfm</para></listitem>
 <listitem><para>png</para></listitem>
 <listitem><para>ppm</para></listitem>
-<listitem><para>exr</para></listitem>
-<listitem><para>jpeg</para></listitem>
-<listitem><para>webp</para></listitem>
-<listitem><para>pfm</para></listitem>
 <listitem><para>tiff</para></listitem>
-<listitem><para>j2k</para></listitem>
+<listitem><para>webp</para></listitem>
 </itemizedlist>
 </para>
 
@@ -426,12 +426,12 @@ All functions and data are accessed through the darktable module.</para>
 <varlistentry id="darktable_new_storage_type"><term>type</term><listitem>
 <synopsis>string</synopsis>
 <para>The type of storage object to create, one of : <itemizedlist>
-<listitem><para>facebook</para></listitem>
-<listitem><para>latex</para></listitem>
-<listitem><para>flickr</para></listitem>
 <listitem><para>disk</para></listitem>
 <listitem><para>email</para></listitem>
+<listitem><para>facebook</para></listitem>
+<listitem><para>flickr</para></listitem>
 <listitem><para>gallery</para></listitem>
+<listitem><para>latex</para></listitem>
 <listitem><para>picasa</para></listitem>
 </itemizedlist>
 (Other, lua-defined, storage types may appear.)</para>

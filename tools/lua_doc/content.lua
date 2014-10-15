@@ -2,6 +2,21 @@ real_darktable = require "darktable"
 require "darktable.debug"
 local tmp_node
 
+local function sorted_pairs (t, f)
+  local a = {}
+  for n in pairs(t) do table.insert(a, n) end
+  table.sort(a, f)
+  local i = 0      -- iterator variable
+  local iter = function ()   -- iterator function
+    i = i + 1
+    if a[i] == nil then return nil
+    else return a[i], t[a[i]]
+    end
+  end
+  return iter
+end
+
+
 ---------------------
 -- check for generator functions
 ---------------------
@@ -120,7 +135,7 @@ darktable.films.new:add_return(types.dt_lua_film_t,"The newly created film, or t
 
 darktable.new_format:set_text("Creates a new format object to export images")
 tmp =""
-for k,v in pairs(debug.getregistry().dt_lua_modules.format) do
+for k,v in sorted_pairs(debug.getregistry().dt_lua_modules.format) do
   tmp = tmp..listel(k)
 end
 darktable.new_format:add_parameter("type","string",[[The type of format object to create, one of : ]]..  startlist().. tmp..endlist()) 
@@ -128,7 +143,7 @@ darktable.new_format:add_return(types.dt_imageio_module_format_t,"The newly crea
 
 darktable.new_storage:set_text("Creates a new storage object to export images")
 tmp =""
-for k,v in pairs(debug.getregistry().dt_lua_modules.storage) do
+for k,v in sorted_pairs(debug.getregistry().dt_lua_modules.storage) do
   tmp = tmp..listel(k)
 end
 darktable.new_storage:add_parameter("type","string",[[The type of storage object to create, one of : ]]..  startlist().. tmp..endlist().."(Other, lua-defined, storage types may appear.)") 
