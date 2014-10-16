@@ -224,6 +224,7 @@ static int32_t dt_control_merge_hdr_job_run(dt_job_t *job)
   int wd = 0, ht = 0, first_imgid = -1;
   uint32_t filter = 0;
   float whitelevel = 0.0f;
+  const float epsw = 1e-5f;
   total ++;
   while(t)
   {
@@ -278,28 +279,34 @@ static int32_t dt_control_merge_hdr_job_run(dt_job_t *job)
     const float cal = 100.0f/(aperture*exp*iso);
     // about proportional to how many photons we can expect from this shot:
     const float photoncnt = 100.0f*aperture*exp/iso;
-    // stupid, but we don't know the real sensor saturation level:
-    uint16_t saturation = 0;
-    for(int k=0; k<wd*ht; k++)
-      saturation = MAX(saturation, ((uint16_t *)buf.buf)[k]);
-    // seems to be around 64500--64700 for 5dm2
-    // fprintf(stderr, "saturation: %u\n", saturation);
+    uint16_t saturation = image.raw_white_point - image.raw_black_level;
     whitelevel = fmaxf(whitelevel, saturation*cal);
 #ifdef _OPENMP
     #pragma omp parallel for schedule(static) default(none) shared(buf, pixels, weight, wd, ht, saturation)
 #endif
-    for(int k=0; k<wd*ht; k++)
+    for(int y=0; y<ht; y++) for(int x=0; x<wd; x++)
     {
-      const uint16_t in = ((uint16_t *)buf.buf)[k];
+      const uint16_t in = ((uint16_t *)buf.buf)[x + wd*y];
       // weights based on siggraph 12 poster
       // zijian zhu, zhengguo li, susanto rahardja, pasi fraenti
       // 2d denoising factor for high dynamic range imaging
-      float w = envelope(in/(float)saturation) * photoncnt;
+      float w = photoncnt;
+      // cannot do an envelope based on single pixel values here, need to get
+      // maximum value of all color channels. do find that, go through the bayer
+      // pattern block:
+      int xx = x & ~1, yy = y & ~1;
+      if(xx < wd-1 && yy < ht-1)
+      {
+        uint16_t m = 0;
+        for(int i=0;i<2;i++) for(int j=0;j<2;j++)
+          m = MAX(m, ((uint16_t*)buf.buf)[xx+i + wd*(yy+j)]);
+        w *= envelope(m/(float)saturation);
+        if(w < epsw && m < saturation/3) w = epsw;
+      }
       // in case we are black and drop to zero weight, give it something
       // just so numerics don't collapse. blown out whites are handled below.
-      if(w < 1e-3f && in < saturation/3) w = 1e-3f;
-      pixels[k] += w * in * cal;
-      weight[k] += w;
+      pixels[x+wd*y] += w * in * cal;
+      weight[x+wd*y] += w;
     }
 
     t = g_list_delete_link(t, t);
@@ -310,14 +317,14 @@ static int32_t dt_control_merge_hdr_job_run(dt_job_t *job)
 
     dt_mipmap_cache_read_release(darktable.mipmap_cache, &buf);
   }
-  // normalize by white level to make clipping at 1.0 work as expected (to be sure, scale down one more stop, thus the 0.5):
+  // normalize by white level to make clipping at 1.0 work as expected
 #ifdef _OPENMP
   #pragma omp parallel for schedule(static) default(none) shared(pixels, wd, ht, weight, whitelevel)
 #endif
   for(int k=0; k<wd*ht; k++)
   {
     // in case w == 0, all pixels were overexposed (too dark would have been clamped to w >= eps above)
-    if(weight[k] < 1e-3f)
+    if(weight[k] < epsw)
       pixels[k] = 1.f; // mark as blown out.
     else // normalize:
       pixels[k] = fmaxf(0.0f, pixels[k]/(whitelevel*weight[k]));
