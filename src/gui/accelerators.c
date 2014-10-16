@@ -56,7 +56,7 @@ void dt_accel_path_lib(char *s, size_t n, char *module,
 }
 
 void dt_accel_paths_slider_iop(char *s[], size_t n, char *module,
-                               const char* path)
+                               const char* path, bool coarse)
 {
   snprintf(s[0], n, "<Darktable>/%s/%s/%s/%s",
            NC_("accel", "image operations"), module, path,
@@ -70,6 +70,15 @@ void dt_accel_paths_slider_iop(char *s[], size_t n, char *module,
   snprintf(s[3], n, "<Darktable>/%s/%s/%s/%s",
            NC_("accel", "image operations"), module, path,
            NC_("accel", "edit"));
+  if (coarse)
+  {
+    snprintf(s[4], n, "<Darktable>/%s/%s/%s/%s",
+             NC_("accel", "image operations"), module, path,
+             NC_("accel", "coarse_increase"));
+    snprintf(s[5], n, "<Darktable>/%s/%s/%s/%s",
+             NC_("accel", "image operations"), module, path,
+             NC_("accel", "coarse_decrease"));
+  }
 }
 
 void dt_accel_path_lua(char *s, size_t n, const char* path)
@@ -112,7 +121,8 @@ static void dt_accel_path_lib_translated(char *s, size_t n,
 
 static void dt_accel_paths_slider_iop_translated(char *s[], size_t n,
     dt_iop_module_so_t *module,
-    const char* path)
+    const char* path,
+    bool coarse)
 {
   snprintf(s[0], n, "<Darktable>/%s/%s/%s/%s",
            C_("accel", "image operations"),
@@ -134,7 +144,20 @@ static void dt_accel_paths_slider_iop_translated(char *s[], size_t n,
            module->name(),
            g_dpgettext2(NULL, "accel", path),
            C_("accel", "edit"));
-
+  if (coarse)
+  {
+    snprintf(s[4], n, "<Darktable>/%s/%s/%s/%s",
+             C_("accel", "image operations"),
+             module->name(),
+             g_dpgettext2(NULL, "accel", path),
+             C_("accel", "coarse_increase"));
+    snprintf(s[5], n, "<Darktable>/%s/%s/%s/%s",
+             C_("accel", "image operations"),
+             module->name(),
+             g_dpgettext2(NULL, "accel", path),
+             C_("accel", "coarse_decrease"));
+  }
+  return;
 }
 
 static void dt_accel_path_lua_translated(char *s, size_t n, const char* path)
@@ -224,30 +247,39 @@ void dt_accel_register_lib(dt_lib_module_t *self, const gchar *path,
     g_slist_prepend(darktable.control->accelerator_list, accel);
 }
 
-void dt_accel_register_slider_iop(dt_iop_module_so_t *so, gboolean local,
-                                  const gchar *path)
+static void
+dt_accel_register_slider_iop_common(dt_iop_module_so_t *so, gboolean local,
+                                    const gchar *path, bool coarse)
 {
   gchar increase_path[256];
   gchar decrease_path[256];
+  gchar coarse_increase_path[256];
+  gchar coarse_decrease_path[256];
   gchar reset_path[256];
   gchar edit_path[256];
   gchar increase_path_trans[256];
   gchar decrease_path_trans[256];
+  gchar coarse_increase_path_trans[256];
+  gchar coarse_decrease_path_trans[256];
   gchar reset_path_trans[256];
   gchar edit_path_trans[256];
 
-  char *paths[] = {increase_path, decrease_path, reset_path, edit_path};
+  char *paths[] = {increase_path, decrease_path, reset_path, edit_path,
+                   coarse_increase_path, coarse_decrease_path};
   char *paths_trans[] = {increase_path_trans, decrease_path_trans,
-                         reset_path_trans, edit_path_trans
+                         reset_path_trans, edit_path_trans,
+                         coarse_increase_path_trans,
+                         coarse_decrease_path_trans
                         };
 
   int i = 0;
   dt_accel_t *accel = NULL;
+  int num_paths = coarse ? 6 : 4;
 
-  dt_accel_paths_slider_iop(paths, 256, so->op, path);
-  dt_accel_paths_slider_iop_translated(paths_trans, 256, so, path);
+  dt_accel_paths_slider_iop(paths, 256, so->op, path, coarse);
+  dt_accel_paths_slider_iop_translated(paths_trans, 256, so, path, coarse);
 
-  for(i = 0; i < 4; i++)
+  for(i = 0; i < num_paths; i++)
   {
     gtk_accel_map_add_entry(paths[i], 0, 0);
     accel = (dt_accel_t*)g_malloc(sizeof(dt_accel_t));
@@ -261,10 +293,28 @@ void dt_accel_register_slider_iop(dt_iop_module_so_t *so, gboolean local,
     darktable.control->accelerator_list =
       g_slist_prepend(darktable.control->accelerator_list, accel);
   }
+  return;
+}
+
+void dt_accel_register_slider_iop(dt_iop_module_so_t *so, gboolean local,
+                                  const gchar *path)
+{
+  dt_accel_register_slider_iop_common(so, local, path, false);
+}
+
+void dt_accel_register_slider_iop_coarse(dt_iop_module_so_t *so, gboolean local,
+                                         const gchar *path)
+{
+  // it would be better to auto-detect whether the slider has coarse steps,
+  //   but the slider widget doesn't yet exist when this function is called
+  // the code would be something like
+    //  GtkWidget *widget = so->widget;
+    //  bool coarse = dt_bauhaus_slider_has_coarse_steps(widget);
+  dt_accel_register_slider_iop_common(so, local, path, true);
 }
 
 void dt_accel_register_lua(const gchar *path, guint accel_key,
-                              GdkModifierType mods)
+                           GdkModifierType mods)
 {
   gchar accel_path[256];
   dt_accel_t *accel = (dt_accel_t*)g_malloc(sizeof(dt_accel_t));
@@ -438,6 +488,14 @@ static gboolean slider_increase_callback(GtkAccelGroup *accel_group,
   return TRUE;
 }
 
+static gboolean slider_coarse_increase_callback(GtkAccelGroup *accel_group,
+                                                GObject *acceleratable, guint keyval,
+                                                GdkModifierType modifier, gpointer data)
+{
+  //stub: currently only Bauhaus sliders have coarse steps
+  return slider_increase_callback(accel_group, acceleratable, keyval, modifier, data);
+}
+
 static gboolean slider_decrease_callback(GtkAccelGroup *accel_group,
                                          GObject *acceleratable, guint keyval,
                                          GdkModifierType modifier, gpointer data)
@@ -451,6 +509,14 @@ static gboolean slider_decrease_callback(GtkAccelGroup *accel_group,
   gtk_widget_queue_draw(GTK_WIDGET(slider));
   g_signal_emit_by_name(G_OBJECT(slider),"value-changed");
   return TRUE;
+}
+
+static gboolean slider_coarse_decrease_callback(GtkAccelGroup *accel_group,
+                                                GObject *acceleratable, guint keyval,
+                                                GdkModifierType modifier, gpointer data)
+{
+  //stub: currently only Bauhaus sliders have coarse steps
+  return slider_decrease_callback(accel_group, acceleratable, keyval, modifier, data);
 }
 
 static gboolean slider_reset_callback(GtkAccelGroup *accel_group,
@@ -475,16 +541,57 @@ static gboolean bauhaus_slider_edit_callback(GtkAccelGroup *accel_group,
   return TRUE;
 }
 
-static gboolean bauhaus_slider_increase_callback(GtkAccelGroup *accel_group,
-                                                 GObject *acceleratable, guint keyval,
-                                                 GdkModifierType modifier, gpointer data)
+static gboolean bauhaus_slider_increase_cb(GtkAccelGroup *accel_group,
+                                           GObject *acceleratable, guint keyval,
+                                           GdkModifierType modifier, gpointer data,
+                                           bool coarse)
 {
   GtkWidget *slider = GTK_WIDGET(data);
 
   float value = dt_bauhaus_slider_get(slider);
-  float step  = dt_bauhaus_slider_get_step(slider);
+  float step;
+
+  if (coarse)
+    step = dt_bauhaus_slider_get_coarse_step(slider);
+  else
+    step = dt_bauhaus_slider_get_step(slider);
 
   dt_bauhaus_slider_set(slider, value + step);
+
+  g_signal_emit_by_name(G_OBJECT(slider),"value-changed");
+  return TRUE;
+}
+
+static gboolean bauhaus_slider_increase_callback(GtkAccelGroup *accel_group,
+                                                 GObject *acceleratable, guint keyval,
+                                                 GdkModifierType modifier, gpointer data)
+{
+  return bauhaus_slider_increase_cb(accel_group, acceleratable, keyval, modifier, data, false);
+}
+
+static gboolean bauhaus_slider_coarse_increase_callback(GtkAccelGroup *accel_group,
+                                                        GObject *acceleratable, guint keyval,
+                                                        GdkModifierType modifier, gpointer data)
+{
+  return bauhaus_slider_increase_cb(accel_group, acceleratable, keyval, modifier, data, true);
+}
+
+static gboolean bauhaus_slider_decrease_cb(GtkAccelGroup *accel_group,
+                                           GObject *acceleratable, guint keyval,
+                                           GdkModifierType modifier, gpointer data,
+                                           bool coarse)
+{
+  GtkWidget *slider = GTK_WIDGET(data);
+
+  float value = dt_bauhaus_slider_get(slider);
+  float step;
+
+  if (coarse)
+    step = dt_bauhaus_slider_get_coarse_step(slider);
+  else
+    step = dt_bauhaus_slider_get_step(slider);
+
+  dt_bauhaus_slider_set(slider, value - step);
 
   g_signal_emit_by_name(G_OBJECT(slider),"value-changed");
   return TRUE;
@@ -494,15 +601,14 @@ static gboolean bauhaus_slider_decrease_callback(GtkAccelGroup *accel_group,
                                                  GObject *acceleratable, guint keyval,
                                                  GdkModifierType modifier, gpointer data)
 {
-  GtkWidget *slider = GTK_WIDGET(data);
+  return bauhaus_slider_decrease_cb(accel_group, acceleratable, keyval, modifier, data, false);
+}
 
-  float value = dt_bauhaus_slider_get(slider);
-  float step  = dt_bauhaus_slider_get_step(slider);
-
-  dt_bauhaus_slider_set(slider, value - step);
-
-  g_signal_emit_by_name(G_OBJECT(slider),"value-changed");
-  return TRUE;
+static gboolean bauhaus_slider_coarse_decrease_callback(GtkAccelGroup *accel_group,
+                                                        GObject *acceleratable, guint keyval,
+                                                        GdkModifierType modifier, gpointer data)
+{
+  return bauhaus_slider_decrease_cb(accel_group, acceleratable, keyval, modifier, data, true);
 }
 
 static gboolean bauhaus_slider_reset_callback(GtkAccelGroup *accel_group,
@@ -517,114 +623,81 @@ static gboolean bauhaus_slider_reset_callback(GtkAccelGroup *accel_group,
   return TRUE;
 }
 
+typedef gboolean slider_callback_fn(GtkAccelGroup *, GObject *, guint, GdkModifierType, gpointer);
+static void
+add_accel(dt_iop_module_t *module, GtkWidget *slider,gchar *path,
+          slider_callback_fn *bauhaus_callback,
+          slider_callback_fn *slider_callback)
+{
+  GClosure *closure;
+  dt_accel_t *accel = NULL;
+
+  if (DT_IS_BAUHAUS_WIDGET(slider)) {
+    closure = g_cclosure_new(G_CALLBACK(bauhaus_callback),
+                             (gpointer)slider, NULL);
+
+  } else {
+    closure = g_cclosure_new(G_CALLBACK(slider_callback),
+                             (gpointer)slider, NULL);
+  }
+
+  accel = _lookup_accel(path);
+
+  if (accel)
+    accel->closure = closure;
+
+  if(accel && accel->local)
+  {
+    _connect_local_accel(module, accel);
+  }
+  else
+  {
+    gtk_accel_group_connect_by_path(darktable.control->accelerators,
+                                    path, closure);
+    module->accel_closures = g_slist_prepend(module->accel_closures, accel);
+  }
+  return;
+}
+
 void dt_accel_connect_slider_iop(dt_iop_module_t *module, const gchar *path,
                                  GtkWidget *slider)
 {
+  bool coarse = false;
   gchar increase_path[256];
   gchar decrease_path[256];
+  gchar coarse_increase_path[256];
+  gchar coarse_decrease_path[256];
   gchar reset_path[256];
   gchar edit_path[256];
-  dt_accel_t *accel = NULL;
-  GClosure *closure;
-  char *paths[] = {increase_path, decrease_path, reset_path, edit_path};
-  dt_accel_paths_slider_iop(paths, 256, module->op, path);
+  char *paths[] = {increase_path, decrease_path, reset_path, edit_path,
+                   coarse_increase_path, coarse_decrease_path};
+  if (dt_bauhaus_slider_get_coarse_step(slider) > dt_bauhaus_slider_get_step(slider))
+    coarse = true;
 
-  if (DT_IS_BAUHAUS_WIDGET(slider)) {
-    closure = g_cclosure_new(G_CALLBACK(bauhaus_slider_increase_callback),
-                             (gpointer)slider, NULL);
+  dt_accel_paths_slider_iop(paths, 256, module->op, path, coarse);
 
-  } else {
-    closure = g_cclosure_new(G_CALLBACK(slider_increase_callback),
-                             (gpointer)slider, NULL);
-  }
+  add_accel(module, slider, increase_path,
+            bauhaus_slider_increase_callback,
+            slider_increase_callback);
+  add_accel(module, slider, decrease_path,
+            bauhaus_slider_decrease_callback,
+            slider_decrease_callback);
+  add_accel(module, slider, reset_path,
+            bauhaus_slider_reset_callback,
+            slider_reset_callback);
+  add_accel(module, slider, edit_path,
+            bauhaus_slider_edit_callback,
+            slider_edit_callback);
 
-  accel = _lookup_accel(increase_path);
+  if (!coarse)
+    return;
 
-  if (accel)
-    accel->closure = closure;
-
-  if(accel && accel->local)
-  {
-    _connect_local_accel(module, accel);
-  }
-  else
-  {
-    gtk_accel_group_connect_by_path(darktable.control->accelerators,
-                                    increase_path, closure);
-    module->accel_closures = g_slist_prepend(module->accel_closures, accel);
-  }
-
-  if (DT_IS_BAUHAUS_WIDGET(slider)) {
-    closure = g_cclosure_new(G_CALLBACK(bauhaus_slider_decrease_callback),
-                             (gpointer)slider, NULL);
-  } else {
-    closure = g_cclosure_new(G_CALLBACK(slider_decrease_callback),
-                             (gpointer)slider, NULL);
-  }
-
-  accel = _lookup_accel(decrease_path);
-
-  if (accel)
-    accel->closure = closure;
-
-  if(accel && accel->local)
-  {
-    _connect_local_accel(module, accel);
-  }
-  else
-  {
-    gtk_accel_group_connect_by_path(darktable.control->accelerators,
-                                    decrease_path, closure);
-    module->accel_closures = g_slist_prepend(module->accel_closures, accel);
-  }
-
-  if (DT_IS_BAUHAUS_WIDGET(slider)) {
-    closure = g_cclosure_new(G_CALLBACK(bauhaus_slider_reset_callback),
-                             (gpointer)slider, NULL);
-  } else {
-    closure = g_cclosure_new(G_CALLBACK(slider_reset_callback),
-                             (gpointer)slider, NULL);
-  }
-
-  accel = _lookup_accel(reset_path);
-
-  if (accel)
-    accel->closure = closure;
-
-  if(accel && accel->local)
-  {
-    _connect_local_accel(module, accel);
-  }
-  else
-  {
-    gtk_accel_group_connect_by_path(darktable.control->accelerators,
-                                    reset_path, closure);
-    module->accel_closures = g_slist_prepend(module->accel_closures, accel);
-  }
-
-  if (DT_IS_BAUHAUS_WIDGET(slider)) {
-    closure = g_cclosure_new(G_CALLBACK(bauhaus_slider_edit_callback),
-                           (gpointer)slider, NULL);
-  } else {
-    closure = g_cclosure_new(G_CALLBACK(slider_edit_callback),
-                             (gpointer)slider, NULL);
-  }
-
-  accel = _lookup_accel(edit_path);
-
-  if (accel)
-    accel->closure = closure;
-
-  if(accel && accel->local)
-  {
-    _connect_local_accel(module, accel);
-  }
-  else
-  {
-    gtk_accel_group_connect_by_path(darktable.control->accelerators,
-                                    edit_path, closure);
-    module->accel_closures = g_slist_prepend(module->accel_closures, accel);
-  }
+  add_accel(module, slider, coarse_increase_path,
+            bauhaus_slider_coarse_increase_callback,
+            slider_coarse_increase_callback);
+  add_accel(module, slider, coarse_decrease_path,
+            bauhaus_slider_coarse_decrease_callback,
+            slider_coarse_decrease_callback);
 }
 
 void dt_accel_connect_locals_iop(dt_iop_module_t *module)

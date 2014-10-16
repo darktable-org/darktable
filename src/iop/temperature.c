@@ -93,7 +93,7 @@ flags ()
 void init_key_accels(dt_iop_module_so_t *self)
 {
   dt_accel_register_slider_iop(self, FALSE, NC_("accel", "tint"));
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "temperature"));
+  dt_accel_register_slider_iop_coarse(self, FALSE, NC_("accel", "temperature"));
   dt_accel_register_slider_iop(self, FALSE, NC_("accel", "red"));
   dt_accel_register_slider_iop(self, FALSE, NC_("accel", "green"));
   dt_accel_register_slider_iop(self, FALSE, NC_("accel", "blue"));
@@ -787,6 +787,8 @@ void gui_init (struct dt_iop_module_t *self)
   dt_bauhaus_widget_set_label(g->scale_r, NULL, _("red"));
   dt_bauhaus_widget_set_label(g->scale_g, NULL, _("green"));
   dt_bauhaus_widget_set_label(g->scale_b, NULL, _("blue"));
+
+  dt_bauhaus_slider_set_coarse_step(g->scale_k, dt_bauhaus_coarse_temp_step());
 
   gtk_box_pack_start(GTK_BOX(self->widget), g->scale_tint, TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), g->scale_k, TRUE, TRUE, 0);

@@ -47,14 +47,16 @@ void dt_accel_path_lib(char *s, size_t n, char *module,
                        const char* path);
 void dt_accel_path_lua(char *s, size_t n, const char* path);
 /**
-  * Accepts an array of 4 char*, writes the following paths to them
+  * Accepts an array of 4 or 6 char*, writes the following paths to them
   * 0 - Slider increase path
   * 1 - Slider decrease path
   * 2 - Slider reset path
   * 3 - Slider edit path
+  * 4 - Slider coarse increase path (only if coarse=true)
+  * 5 - Slider coarse decrease path (only if coarse=true)
   */
 void dt_accel_paths_slider_iop(char *s[], size_t n, char *module,
-                               const char *path);
+                               const char *path, bool coarse);
 
 // Accelerator registration functions
 void dt_accel_register_global(const gchar *path, guint accel_key,
@@ -68,6 +70,8 @@ void dt_accel_register_lib(dt_lib_module_t *self,const gchar *path,
                            guint accel_key, GdkModifierType mods);
 void dt_accel_register_slider_iop(dt_iop_module_so_t *so, gboolean local,
                                   const gchar *path);
+void dt_accel_register_slider_iop_coarse(dt_iop_module_so_t *so, gboolean local,
+                                         const gchar *path);
 void dt_accel_register_lua(const gchar *path, guint accel_key,
                               GdkModifierType mods);
 
