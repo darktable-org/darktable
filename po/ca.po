@@ -8,8 +8,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 0.6.1~rc\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2014-10-15 16:43+0200\n"
-"PO-Revision-Date: 2014-10-15 20:20+0100\n"
+"POT-Creation-Date: 2014-10-16 10:57+0200\n"
+"PO-Revision-Date: 2014-10-16 13:39+0100\n"
 "Last-Translator: Josep V. Moragues <josepvm@arrakis.es>\n"
 "Language-Team: Catalan\n"
 "Language: ca\n"
@@ -2160,7 +2160,7 @@ msgid "focal length"
 msgstr "distància focal"
 
 #: ../src/gui/preferences.c:491 ../src/iop/borders.c:1054
-#: ../src/iop/exposure.c:977 ../src/iop/levels.c:580
+#: ../src/iop/exposure.c:977 ../src/iop/levels.c:579
 msgid "auto"
 msgstr "auto"
 
@@ -2914,7 +2914,7 @@ msgstr ""
 
 #: ../src/iop/atrous.c:855 ../src/iop/bloom.c:80
 msgid "bloom"
-msgstr ""
+msgstr "contrallum (bloom)"
 
 #: ../src/iop/atrous.c:869
 msgid "clarity"
@@ -3172,7 +3172,7 @@ msgstr "mida"
 
 #: ../src/iop/bloom.c:538
 msgid "the size of bloom"
-msgstr ""
+msgstr "amplada de la llum difusa"
 
 #: ../src/iop/bloom.c:543 ../src/iop/hotpixels.c:413 ../src/iop/sharpen.c:598
 msgid "threshold"
@@ -3190,7 +3190,7 @@ msgstr ""
 
 #: ../src/iop/bloom.c:550
 msgid "the strength of bloom"
-msgstr "intensitat d'efecte brillantor"
+msgstr "intensitat d'efecte contrallum"
 
 #: ../src/iop/borders.c:166
 msgid "framing"
@@ -3982,9 +3982,8 @@ msgid "select tone color"
 msgstr "selecciona to de color"
 
 #: ../src/iop/colorize.c:463 ../src/iop/splittoning.c:580
-#, fuzzy
 msgid "select the hue tone"
-msgstr "sense selecció"
+msgstr "seleccioneu el to de color"
 
 #: ../src/iop/colorize.c:473
 msgid "select the saturation shadow tone"
@@ -4003,9 +4002,8 @@ msgid "mix value of source lightness"
 msgstr ""
 
 #: ../src/iop/colormapping.c:149
-#, fuzzy
 msgid "color mapping"
-msgstr "correcció del color"
+msgstr "mapa de color"
 
 #: ../src/iop/colormapping.c:168
 msgctxt "accel"
@@ -4030,18 +4028,16 @@ msgid "acquire as source"
 msgstr ""
 
 #: ../src/iop/colormapping.c:1084
-#, fuzzy
 msgid "analyze this image as a source image"
-msgstr "analitza aquesta imatge"
+msgstr "analitza aquesta imatge com a imatge font"
 
 #: ../src/iop/colormapping.c:1088
 msgid "acquire as target"
 msgstr ""
 
 #: ../src/iop/colormapping.c:1090
-#, fuzzy
 msgid "analyze this image as a target image"
-msgstr "analitza aquesta imatge"
+msgstr "analitza aquesta imatge com a imatge de destinació"
 
 #: ../src/iop/colormapping.c:1095
 msgid "number of clusters"
@@ -4052,9 +4048,8 @@ msgid "number of clusters to find in image. value change resets all clusters"
 msgstr ""
 
 #: ../src/iop/colormapping.c:1102
-#, fuzzy
 msgid "color dominance"
-msgstr "zones de color"
+msgstr "dominant de color"
 
 #: ../src/iop/colormapping.c:1103
 msgid ""
@@ -4063,9 +4058,8 @@ msgid ""
 msgstr ""
 
 #: ../src/iop/colormapping.c:1109
-#, fuzzy
 msgid "histogram equalization"
-msgstr "histograma"
+msgstr "equalitzat de l'histograma"
 
 #: ../src/iop/colormapping.c:1110
 msgid "level of histogram equalization"
@@ -4122,9 +4116,8 @@ msgid "output profile"
 msgstr "perfil de sortida"
 
 #: ../src/iop/colorout.c:935
-#, fuzzy
 msgid "softproof profile"
-msgstr "perfil de sortida"
+msgstr "perfil de simulació (softproof)"
 
 #: ../src/iop/colorout.c:936
 msgid "display profile"
@@ -4137,28 +4130,27 @@ msgstr "perfil de la pantalla del sistema"
 
 #: ../src/iop/colorout.c:963 ../src/iop/colorout.c:964
 #: ../src/iop/colorout.c:965 ../src/libs/export.c:552
-#, fuzzy
 msgid "sRGB (web-safe)"
-msgstr "srgb (per a web)"
+msgstr "sRGB (per a web)"
 
 #: ../src/iop/colorout.c:983
 msgid "rendering intent"
 msgstr ""
 
 #: ../src/iop/colorout.c:984
-#, fuzzy, c-format
+#, c-format
 msgid "ICC profiles in %s/color/out or %s/color/out"
-msgstr "perfils icc a %s/color/in"
+msgstr "perfils ICC a %s/color/out o %s/color/out"
 
 #: ../src/iop/colorout.c:986
-#, fuzzy, c-format
+#, c-format
 msgid "display ICC profiles in %s/color/out or %s/color/out"
-msgstr "perfils icc a %s/color/in"
+msgstr "perfils ICC de pantalla a %s/color/out o %s/color/out"
 
 #: ../src/iop/colorout.c:988
-#, fuzzy, c-format
+#, c-format
 msgid "softproof ICC profiles in %s/color/out or %s/color/out"
-msgstr "perfils icc a %s/color/in"
+msgstr "perfils ICC de simulació (softproof) a %s/color/out or %s/color/out"
 
 #: ../src/iop/colorout.c:1026
 msgctxt "accel"
@@ -4175,13 +4167,11 @@ msgid "color transfer"
 msgstr "transferència de color"
 
 #: ../src/iop/colortransfer.c:122
-#, fuzzy
 msgctxt "accel"
 msgid "acquire"
 msgstr "adquireix"
 
 #: ../src/iop/colortransfer.c:123 ../src/libs/metadata.c:300
-#, fuzzy
 msgctxt "accel"
 msgid "apply"
 msgstr "aplica"
@@ -4234,14 +4224,12 @@ msgid "natural skin tones"
 msgstr "tonalitats naturals de pell"
 
 #: ../src/iop/colorzones.c:530
-#, fuzzy
 msgid "black & white film"
-msgstr "Blanc i negre"
+msgstr "pel·lícula blanc i negre"
 
 #: ../src/iop/colorzones.c:1071
-#, fuzzy
 msgid "select by"
-msgstr "selecciona"
+msgstr "selecciona segons"
 
 #: ../src/iop/colorzones.c:1072
 msgid "choose selection criterion, will be the abscissa in the graph"
@@ -4252,10 +4240,9 @@ msgid "demosaic"
 msgstr ""
 
 #: ../src/iop/demosaic.c:134
-#, fuzzy
 msgctxt "accel"
 msgid "edge threshold"
-msgstr "llindar"
+msgstr "llindar de vora"
 
 #: ../src/iop/demosaic.c:2178 ../src/iop/demosaic.c:2186
 #: ../src/iop/dither.c:564 ../src/iop/highlights.c:711
@@ -4298,14 +4285,12 @@ msgid ""
 msgstr ""
 
 #: ../src/iop/demosaic.c:2195
-#, fuzzy
 msgid "edge threshold"
-msgstr "llindar"
+msgstr "llindar de vora"
 
 #: ../src/iop/demosaic.c:2199
-#, fuzzy
 msgid "color smoothing"
-msgstr "correcció del color"
+msgstr "suavitzat de color"
 
 #: ../src/iop/demosaic.c:2202
 msgid "one time"
@@ -4316,9 +4301,8 @@ msgid "two times"
 msgstr ""
 
 #: ../src/iop/demosaic.c:2204
-#, fuzzy
 msgid "three times"
-msgstr "data/hora"
+msgstr "tres cops"
 
 #: ../src/iop/demosaic.c:2205
 msgid "four times"
@@ -4357,9 +4341,8 @@ msgid "green channels matching method"
 msgstr ""
 
 #: ../src/iop/denoiseprofile.c:129
-#, fuzzy
 msgid "denoise (profiled)"
-msgstr "llindar"
+msgstr "treu soroll (amb perfil)"
 
 #: ../src/iop/denoiseprofile.c:1472 ../src/iop/denoiseprofile.c:1480
 #, c-format
@@ -4372,15 +4355,13 @@ msgid "interpolated from ISO %d and %d"
 msgstr ""
 
 #: ../src/iop/denoiseprofile.c:1725 ../src/iop/exposure.c:945
-#: ../src/iop/lens.c:2156 ../src/iop/levels.c:547
-#, fuzzy
+#: ../src/iop/lens.c:2156 ../src/iop/levels.c:546
 msgid "mode"
-msgstr "model"
+msgstr "mode"
 
 #: ../src/iop/denoiseprofile.c:1726 ../src/iop/nlmeans.c:713
-#, fuzzy
 msgid "patch size"
-msgstr "mida màxima"
+msgstr "mida de plantilla"
 
 #: ../src/iop/denoiseprofile.c:1729
 msgid "non-local means"
@@ -4462,19 +4443,17 @@ msgid "damping"
 msgstr ""
 
 #: ../src/iop/equalizer.c:91
-#, fuzzy
 msgid "legacy equalizer"
-msgstr "equalitzador"
+msgstr "equalitzador (antic)"
 
 #: ../src/iop/equalizer.c:309
 msgid "sharpen (strong)"
 msgstr ""
 
 #: ../src/iop/equalizer.c:319
-#, fuzzy
 msgctxt "equalizer"
 msgid "sharpen"
-msgstr "afila"
+msgstr "enfoca"
 
 #: ../src/iop/equalizer.c:325
 msgid "null"
@@ -4492,35 +4471,30 @@ msgid ""
 msgstr ""
 
 #: ../src/iop/exposure.c:130
-#, fuzzy
 msgctxt "accel"
 msgid "mode"
-msgstr "model"
+msgstr "mode"
 
 #: ../src/iop/exposure.c:131
-#, fuzzy
 msgctxt "accel"
 msgid "black"
 msgstr "negre"
 
 #: ../src/iop/exposure.c:132 ../src/iop/relight.c:110
-#, fuzzy
 msgctxt "accel"
 msgid "exposure"
 msgstr "exposició"
 
 #: ../src/iop/exposure.c:133
-#, fuzzy
 msgctxt "accel"
 msgid "auto-exposure"
-msgstr "exposició"
+msgstr "exposició auto"
 
 # FIXME
 #: ../src/iop/exposure.c:134
-#, fuzzy
 msgctxt "accel"
 msgid "percentile"
-msgstr "perceptiu"
+msgstr "percentil"
 
 #: ../src/iop/exposure.c:135
 msgctxt "accel"
@@ -4528,12 +4502,11 @@ msgid "target level"
 msgstr ""
 
 #: ../src/iop/exposure.c:136
-#, fuzzy
 msgctxt "accel"
 msgid "histogram source"
-msgstr "histograma"
+msgstr "font de l'histograma"
 
-#: ../src/iop/exposure.c:947 ../src/iop/levels.c:549
+#: ../src/iop/exposure.c:947 ../src/iop/levels.c:548
 msgctxt "mode"
 msgid "manual"
 msgstr ""
@@ -4542,7 +4515,7 @@ msgstr ""
 msgid "adjust the black level"
 msgstr "ajusta el nivell de negre"
 
-#: ../src/iop/exposure.c:963 ../src/iop/levels.c:623
+#: ../src/iop/exposure.c:963 ../src/iop/levels.c:622
 msgid "black"
 msgstr "negre"
 
@@ -4556,23 +4529,20 @@ msgstr ""
 
 # FIXME
 #: ../src/iop/exposure.c:992 ../src/iop/exposure.c:994
-#, fuzzy
 msgid "percentile"
-msgstr "perceptiu"
+msgstr "percentil"
 
 #: ../src/iop/exposure.c:998 ../src/iop/exposure.c:1000
 msgid "target level"
 msgstr ""
 
 #: ../src/iop/exposure.c:1004
-#, fuzzy
 msgid "histogram of"
-msgstr "histograma"
+msgstr "histograma de"
 
 #: ../src/iop/exposure.c:1006
-#, fuzzy
 msgid "pre-processed image"
-msgstr "imorta una imatge"
+msgstr "imatge pre-processada"
 
 #: ../src/iop/exposure.c:1009
 msgid "source raw data"
@@ -4588,14 +4558,12 @@ msgid "what exposure correction have actually been used"
 msgstr ""
 
 #: ../src/iop/flip.c:371 ../src/iop/flip.c:372
-#, fuzzy
 msgid "autodetect"
-msgstr "auto"
+msgstr "autodetecta"
 
 #: ../src/iop/flip.c:375
-#, fuzzy
 msgid "no rotation"
-msgstr "saturació"
+msgstr "sense girar"
 
 #: ../src/iop/flip.c:378
 msgid "flip horizontally"
@@ -4606,46 +4574,38 @@ msgid "flip vertically"
 msgstr ""
 
 #: ../src/iop/flip.c:382
-#, fuzzy
 msgid "rotate by -90 degrees"
-msgstr "coinideix amb les imatges seleccionades"
+msgstr "gira -90 graus"
 
 #: ../src/iop/flip.c:384
-#, fuzzy
 msgid "rotate by  90 degrees"
-msgstr "coinideix amb les imatges seleccionades"
+msgstr "gira 90 graus"
 
 #: ../src/iop/flip.c:386
-#, fuzzy
 msgid "rotate by 180 degrees"
-msgstr "coinideix amb les imatges seleccionades"
+msgstr "gira 180 graus"
 
 #: ../src/iop/flip.c:503 ../src/iop/watermark.c:1117
-#, fuzzy
 msgid "rotate"
-msgstr "saturació"
+msgstr "gira"
 
 #: ../src/iop/flip.c:508
-#, fuzzy
 msgid "rotate 90 degrees CCW"
-msgstr "coinideix amb les imatges seleccionades"
+msgstr "gira 90 graus sentit antihorari"
 
 #: ../src/iop/flip.c:514
-#, fuzzy
 msgid "rotate 90 degrees CW"
-msgstr "coinideix amb les imatges seleccionades"
+msgstr "gira 90 graus sentit horari"
 
 #: ../src/iop/flip.c:526 ../src/libs/live_view.c:169
-#, fuzzy
 msgctxt "accel"
 msgid "rotate 90 degrees CCW"
-msgstr "coinideix amb les imatges seleccionades"
+msgstr "gira 90 graus sentit antihorari"
 
 #: ../src/iop/flip.c:528 ../src/libs/live_view.c:170
-#, fuzzy
 msgctxt "accel"
 msgid "rotate 90 degrees CW"
-msgstr "coinideix amb les imatges seleccionades"
+msgstr "gira 90 graus sentit horari"
 
 #: ../src/iop/gamma.c:53
 msgctxt "modulename"
@@ -4653,14 +4613,12 @@ msgid "gamma"
 msgstr ""
 
 #: ../src/iop/globaltonemap.c:101
-#, fuzzy
 msgid "global tonemap"
-msgstr "opcions globals"
+msgstr "mapejat de tons global"
 
 #: ../src/iop/globaltonemap.c:620
-#, fuzzy
 msgid "operator"
-msgstr "propietats"
+msgstr "operador"
 
 #: ../src/iop/globaltonemap.c:626
 msgid "the global tonemap operator"
@@ -4746,10 +4704,9 @@ msgid "density"
 msgstr ""
 
 #: ../src/iop/graduatednd.c:170
-#, fuzzy
 msgctxt "accel"
 msgid "compression"
-msgstr "comprimeix"
+msgstr "compressió"
 
 #: ../src/iop/graduatednd.c:1030
 msgid "density"
@@ -4760,9 +4717,8 @@ msgid "the density in EV for the filter"
 msgstr ""
 
 #: ../src/iop/graduatednd.c:1038
-#, fuzzy
 msgid "compression"
-msgstr "comprimeix"
+msgstr "compressió"
 
 #: ../src/iop/graduatednd.c:1040
 #, no-c-format
@@ -4772,9 +4728,8 @@ msgid ""
 msgstr ""
 
 #: ../src/iop/graduatednd.c:1046
-#, fuzzy
 msgid "rotation"
-msgstr "saturació"
+msgstr "gir"
 
 #: ../src/iop/graduatednd.c:1048
 msgid "rotation of filter -180 to 180 degrees"
@@ -4818,9 +4773,8 @@ msgid "reconstruct in LCh"
 msgstr ""
 
 #: ../src/iop/highlights.c:714
-#, fuzzy
 msgid "reconstruct color"
-msgstr "estructura del directori"
+msgstr "reconstrueix color"
 
 #: ../src/iop/highlights.c:715
 msgid "highlight reconstruction method"
@@ -4833,39 +4787,34 @@ msgid ""
 msgstr ""
 
 #: ../src/iop/highlights.c:720
-#, fuzzy
 msgid "clipping threshold"
-msgstr "llindar"
+msgstr "llindar de tall"
 
 #: ../src/iop/highpass.c:82
 msgid "highpass"
 msgstr ""
 
 #: ../src/iop/highpass.c:99
-#, fuzzy
 msgctxt "accel"
 msgid "sharpness"
-msgstr "afila"
+msgstr "nitidesa"
 
 #: ../src/iop/highpass.c:100
-#, fuzzy
 msgctxt "accel"
 msgid "contrast boost"
-msgstr "contrast mitjà"
+msgstr "increment de contrast"
 
 #: ../src/iop/highpass.c:508
-#, fuzzy
 msgid "sharpness"
-msgstr "afila"
+msgstr "nitidesa"
 
 #: ../src/iop/highpass.c:511
 msgid "the sharpness of highpass filter"
 msgstr ""
 
 #: ../src/iop/highpass.c:517
-#, fuzzy
 msgid "contrast boost"
-msgstr "contrast mitjà"
+msgstr "increment de contrast"
 
 #: ../src/iop/highpass.c:520
 msgid "the contrast of highpass filter"
@@ -4885,9 +4834,8 @@ msgid "lower threshold for hot pixel"
 msgstr ""
 
 #: ../src/iop/hotpixels.c:422
-#, fuzzy
 msgid "strength of hot pixel correction"
-msgstr "intensitat de l'efecte"
+msgstr "intensitat de la correcció de píxels calents"
 
 #. 3 neighbours
 #: ../src/iop/hotpixels.c:427
@@ -4924,7 +4872,6 @@ msgid "lens correction"
 msgstr ""
 
 #: ../src/iop/lens.c:168 ../src/iop/vignette.c:176 ../src/iop/watermark.c:204
-#, fuzzy
 msgctxt "accel"
 msgid "scale"
 msgstr "escala"
@@ -4940,40 +4887,34 @@ msgid "TCA B"
 msgstr ""
 
 #: ../src/iop/lens.c:172
-#, fuzzy
 msgctxt "accel"
 msgid "find camera"
-msgstr "càmera"
+msgstr "cerca càmera"
 
 #: ../src/iop/lens.c:173
-#, fuzzy
 msgctxt "accel"
 msgid "find lens"
-msgstr "lent"
+msgstr "cerca lent"
 
 #: ../src/iop/lens.c:174
-#, fuzzy
 msgctxt "accel"
 msgid "auto scale"
-msgstr "escala"
+msgstr "auto escala"
 
 #: ../src/iop/lens.c:175
-#, fuzzy
 msgctxt "accel"
 msgid "camera model"
-msgstr "control de la càmera"
+msgstr "model de càmera"
 
 #: ../src/iop/lens.c:176
-#, fuzzy
 msgctxt "accel"
 msgid "lens model"
-msgstr "model"
+msgstr "model de lent"
 
 #: ../src/iop/lens.c:177
-#, fuzzy
 msgctxt "accel"
 msgid "select corrections"
-msgstr "correcció del color"
+msgstr "tria correccions"
 
 #: ../src/iop/lens.c:1314
 #, c-format
@@ -4993,7 +4934,7 @@ msgid "try to locate your camera/lens in the above two menus"
 msgstr ""
 
 #: ../src/iop/lens.c:1617
-#, fuzzy, c-format
+#, c-format
 msgid ""
 "maker:\t\t%s\n"
 "model:\t\t%s\n"
@@ -5003,13 +4944,13 @@ msgid ""
 "type:\t\t%s\n"
 "mounts:\t\t%s"
 msgstr ""
-"fabricant:\\t\\t%s\n"
-"model:\\t\\t%s\n"
-"distància focal:\\t%s\n"
-"obertura:\\t\\t%s\n"
-"factor d'escapçat:\\t%.1f\n"
-"tipus:\\t\\t%s\n"
-"muntatge:\\t\\t%s"
+"fabricant:\t\t%s\n"
+"model:\t\t%s\n"
+"rang de focal:\t%s\n"
+"obertura:\t%s\n"
+"factor d'escapçat:\t%.1f\n"
+"tipus:\t\t%s\n"
+"montura:\t\t%s"
 
 #: ../src/iop/lens.c:1662
 msgid "mm"
@@ -5040,14 +4981,12 @@ msgid "distortion & TCA"
 msgstr ""
 
 #: ../src/iop/lens.c:2014
-#, fuzzy
 msgid "distortion & vignetting"
-msgstr "vinyetatge"
+msgstr "distorsió i vinyetatge"
 
 #: ../src/iop/lens.c:2020
-#, fuzzy
 msgid "TCA & vignetting"
-msgstr "vinyetatge"
+msgstr "TCA i vinyetatge"
 
 #: ../src/iop/lens.c:2026
 msgid "only distortion"
@@ -5058,24 +4997,20 @@ msgid "only TCA"
 msgstr ""
 
 #: ../src/iop/lens.c:2038
-#, fuzzy
 msgid "only vignetting"
-msgstr "vinyetatge"
+msgstr "només vinyetatge"
 
 #: ../src/iop/lens.c:2061
-#, fuzzy
 msgid "find camera"
-msgstr "càmera"
+msgstr "cerca càmera"
 
 #: ../src/iop/lens.c:2078
-#, fuzzy
 msgid "find lens"
-msgstr "lent"
+msgstr "cerca lent"
 
 #: ../src/iop/lens.c:2110
-#, fuzzy
 msgid "corrections"
-msgstr "opcions globals"
+msgstr "correccions"
 
 #: ../src/iop/lens.c:2112
 msgid "which corrections to apply"
@@ -5122,9 +5057,8 @@ msgid "thoby fish-eye"
 msgstr ""
 
 #: ../src/iop/lens.c:2146
-#, fuzzy
 msgid "auto scale"
-msgstr "escala"
+msgstr "auto escala"
 
 #: ../src/iop/lens.c:2158
 msgid "correct distortions or apply them"
@@ -5135,9 +5069,8 @@ msgid "correct"
 msgstr "correccions"
 
 #: ../src/iop/lens.c:2160
-#, fuzzy
 msgid "distort"
-msgstr "historial"
+msgstr "distorsiona"
 
 #: ../src/iop/lens.c:2167
 msgid "Transversal Chromatic Aberration red"
@@ -5152,68 +5085,64 @@ msgid "Transversal Chromatic Aberration blue"
 msgstr ""
 
 #: ../src/iop/lens.c:2174
-#, fuzzy
 msgid "TCA blue"
-msgstr "blau"
+msgstr "TCA blau"
 
 #: ../src/iop/lens.c:2181
-#, fuzzy
 msgid "corrections done: "
-msgstr "opcions globals"
+msgstr "correccions aplicades:"
 
 #: ../src/iop/lens.c:2182
 msgid "which corrections have actually been done"
 msgstr ""
 
-#: ../src/iop/levels.c:122
+#: ../src/iop/levels.c:121
 msgid "levels"
 msgstr ""
 
-#: ../src/iop/levels.c:552 ../src/iop/tonecurve.c:780
+#: ../src/iop/levels.c:551 ../src/iop/tonecurve.c:780
 #: ../src/iop/vignette.c:1185
-#, fuzzy
 msgid "automatic"
-msgstr "auto"
+msgstr "automàtic"
 
-#: ../src/iop/levels.c:564
+#: ../src/iop/levels.c:563
 msgid ""
 "drag handles to set black, gray, and white points.  operates on L channel."
 msgstr ""
 
-#: ../src/iop/levels.c:581
+#: ../src/iop/levels.c:580
 msgid "apply auto levels"
 msgstr ""
 
-#: ../src/iop/levels.c:585
+#: ../src/iop/levels.c:584
 msgid "pick black point from image"
 msgstr ""
 
-#: ../src/iop/levels.c:589
+#: ../src/iop/levels.c:588
 msgid "pick medium gray point from image"
 msgstr ""
 
-#: ../src/iop/levels.c:593
+#: ../src/iop/levels.c:592
 msgid "pick white point from image"
 msgstr ""
 
-#: ../src/iop/levels.c:621
+#: ../src/iop/levels.c:620
 msgid "black percentile"
 msgstr ""
 
-#: ../src/iop/levels.c:626
+#: ../src/iop/levels.c:625
 msgid "gray percentile"
 msgstr ""
 
-#: ../src/iop/levels.c:628
+#: ../src/iop/levels.c:627
 msgid "gray"
 msgstr "gris"
 
-#: ../src/iop/levels.c:631
-#, fuzzy
+#: ../src/iop/levels.c:630
 msgid "white percentile"
-msgstr "Fluorescent blanc"
+msgstr "percentil de blanc"
 
-#: ../src/iop/levels.c:633
+#: ../src/iop/levels.c:632
 msgid "white"
 msgstr ""
 
@@ -5239,7 +5168,6 @@ msgstr ""
 #. * WB name is standardized to one of the following:
 #. "Sunlight" and other variation should be switched to this:
 #: ../src/iop/lowlight.c:332 ../src/iop/wb_presets.c:45
-#, fuzzy
 msgid "daylight"
 msgstr "Llum del dia"
 
@@ -5256,9 +5184,8 @@ msgid "indoor dark"
 msgstr ""
 
 #: ../src/iop/lowlight.c:400
-#, fuzzy
 msgid "twilight"
-msgstr "dreta"
+msgstr "llum crepuscular"
 
 #: ../src/iop/lowlight.c:417
 msgid "night street lit"
@@ -5273,18 +5200,16 @@ msgid "night street dark"
 msgstr ""
 
 #: ../src/iop/lowlight.c:469
-#, fuzzy
 msgid "night"
-msgstr "dreta"
+msgstr "nocturna"
 
 #: ../src/iop/lowlight.c:619 ../src/iop/lowlight.c:623
 msgid "dark"
 msgstr ""
 
 #: ../src/iop/lowlight.c:626 ../src/iop/lowlight.c:630
-#, fuzzy
 msgid "bright"
-msgstr "dreta"
+msgstr "brillant"
 
 #: ../src/iop/lowlight.c:633 ../src/iop/lowlight.c:635
 msgid "day vision"
@@ -5307,14 +5232,12 @@ msgid "lowpass"
 msgstr ""
 
 #: ../src/iop/lowpass.c:594
-#, fuzzy
 msgid "local contrast mask"
-msgstr "contrast fosc"
+msgstr "màscara de contrast local"
 
 #: ../src/iop/lowpass.c:630
-#, fuzzy
 msgid "filter order"
-msgstr "mida del filtre"
+msgstr "ordre del filtre"
 
 #: ../src/iop/lowpass.c:633
 msgid "0th order"
@@ -5333,10 +5256,9 @@ msgid "filter order of gaussian blur"
 msgstr ""
 
 #: ../src/iop/lowpass.c:647
-#, fuzzy
 msgctxt "lowpass"
 msgid "brightness"
-msgstr "drets"
+msgstr "brillantor"
 
 #: ../src/iop/lowpass.c:651 ../src/iop/shadhi.c:741
 msgid "soften with"
@@ -5347,9 +5269,8 @@ msgid "gaussian"
 msgstr ""
 
 #: ../src/iop/lowpass.c:653 ../src/iop/shadhi.c:743
-#, fuzzy
 msgid "bilateral filter"
-msgstr "filtre de polarització"
+msgstr "filtre bilateral"
 
 #: ../src/iop/lowpass.c:660
 msgid "radius of gaussian/bilateral blur"
@@ -5403,10 +5324,9 @@ msgid "luma"
 msgstr ""
 
 #: ../src/iop/nlmeans.c:115
-#, fuzzy
 msgctxt "accel"
 msgid "chroma"
-msgstr "monocrom"
+msgstr "crominància"
 
 #: ../src/iop/nlmeans.c:721
 msgid "radius of the patches to match"
@@ -5421,16 +5341,14 @@ msgid "how much to smooth colors"
 msgstr ""
 
 #: ../src/iop/overexposed.c:72
-#, fuzzy
 msgid "overexposed"
-msgstr "exposició"
+msgstr "sobreexposat"
 
 #: ../src/iop/profile_gamma.c:65
 msgid "unbreak input profile"
 msgstr ""
 
 #: ../src/iop/profile_gamma.c:81
-#, fuzzy
 msgctxt "accel"
 msgid "linear"
 msgstr "lineal"
@@ -5441,9 +5359,8 @@ msgid "gamma"
 msgstr ""
 
 #: ../src/iop/profile_gamma.c:343
-#, fuzzy
 msgid "linear part"
-msgstr "rgb linear"
+msgstr "part lineal"
 
 #: ../src/iop/profile_gamma.c:344
 msgid "gamma exponential factor"
@@ -5454,15 +5371,13 @@ msgid "raw denoise"
 msgstr ""
 
 #: ../src/iop/rawdenoise.c:82
-#, fuzzy
 msgctxt "accel"
 msgid "noise threshold"
-msgstr "llindar"
+msgstr "llindar de soroll"
 
 #: ../src/iop/rawdenoise.c:478
-#, fuzzy
 msgid "noise threshold"
-msgstr "llindar"
+msgstr "llindar de soroll"
 
 #: ../src/iop/relight.c:56
 msgid "fill-light 0.25EV with 4 zones"
@@ -5477,7 +5392,6 @@ msgid "fill light"
 msgstr ""
 
 #: ../src/iop/relight.c:111
-#, fuzzy
 msgctxt "accel"
 msgid "width"
 msgstr "amplada"
@@ -5508,34 +5422,29 @@ msgid "shadows and highlights"
 msgstr ""
 
 #: ../src/iop/shadhi.c:229
-#, fuzzy
 msgctxt "accel"
 msgid "shadows"
 msgstr "ombres"
 
 #: ../src/iop/shadhi.c:230
-#, fuzzy
 msgctxt "accel"
 msgid "highlights"
-msgstr "drets"
+msgstr "altes llums"
 
 #: ../src/iop/shadhi.c:232 ../src/iop/splittoning.c:107
-#, fuzzy
 msgctxt "accel"
 msgid "compress"
-msgstr "comprimeix"
+msgstr "compressió"
 
 #: ../src/iop/shadhi.c:233
-#, fuzzy
 msgctxt "accel"
 msgid "shadows color correction"
-msgstr "correcció del color"
+msgstr "correcció de color ales ombres "
 
 #: ../src/iop/shadhi.c:234
-#, fuzzy
 msgctxt "accel"
 msgid "highlights color correction"
-msgstr "correcció del color"
+msgstr "correcció de color a les altes llums"
 
 #. Shadows
 #: ../src/iop/shadhi.c:748 ../src/iop/splittoning.c:611
@@ -5555,14 +5464,12 @@ msgid "highlights color adjustment"
 msgstr ""
 
 #: ../src/iop/shadhi.c:769
-#, fuzzy
 msgid "correct shadows"
-msgstr "ombres"
+msgstr "corregeix ombres"
 
 #: ../src/iop/shadhi.c:770
-#, fuzzy
 msgid "correct highlights"
-msgstr "Llum del sol directa"
+msgstr "corregeix altes llums"
 
 #: ../src/iop/shadhi.c:771 ../src/iop/tonemap.cc:316
 msgid "spatial extent"
@@ -5587,10 +5494,9 @@ msgid "adjust saturation of highlights"
 msgstr ""
 
 #: ../src/iop/sharpen.c:72
-#, fuzzy
 msgctxt "sharpen"
 msgid "sharpen"
-msgstr "afila"
+msgstr "enfoca"
 
 #. add the preset.
 #. restrict to raw images
@@ -5600,7 +5506,6 @@ msgid "sharpen"
 msgstr "enfoca (sharpen)"
 
 #: ../src/iop/sharpen.c:105
-#, fuzzy
 msgctxt "accel"
 msgid "amount"
 msgstr "quantitat"
@@ -5610,9 +5515,8 @@ msgid "spatial extent of the unblurring"
 msgstr ""
 
 #: ../src/iop/sharpen.c:594
-#, fuzzy
 msgid "strength of the sharpen"
-msgstr "intensitat de l'efecte"
+msgstr "intensitat de l'efecte enfoc"
 
 #: ../src/iop/sharpen.c:597
 msgid "threshold to activate sharpen"
@@ -5627,18 +5531,16 @@ msgid "the size of blur"
 msgstr ""
 
 #: ../src/iop/soften.c:573
-#, fuzzy
 msgid "the saturation of blur"
-msgstr "saturació"
+msgstr "saturació del difuminat"
 
 #: ../src/iop/soften.c:581
 msgid "the brightness of blur"
 msgstr ""
 
 #: ../src/iop/soften.c:590
-#, fuzzy
 msgid "the mix of effect"
-msgstr "intensitat de l'efecte"
+msgstr "barreja de l'efecte"
 
 #: ../src/iop/splittoning.c:85
 msgid "split toning"
@@ -5655,7 +5557,6 @@ msgid "pick secondary color"
 msgstr ""
 
 #: ../src/iop/splittoning.c:106
-#, fuzzy
 msgctxt "accel"
 msgid "balance"
 msgstr "balanç"
@@ -5665,27 +5566,24 @@ msgstr "balanç"
 #. balance : 63
 #. compress : 0
 #: ../src/iop/splittoning.c:133
-#, fuzzy
 msgid "authentic sepia"
-msgstr "autenticat"
+msgstr "sèpia autèntic"
 
 #. shadows: #446CBB
 #. highlights: #446CBB
 #. balance : 0
 #. compress : 5.22
 #: ../src/iop/splittoning.c:142
-#, fuzzy
 msgid "authentic cyanotype"
-msgstr "autenticat"
+msgstr "cianotípia autèntica"
 
 #. shadows : #A16C5E
 #. highlights : #A16C5E
 #. balance : 100
 #. compress : 0
 #: ../src/iop/splittoning.c:151
-#, fuzzy
 msgid "authentic platinotype"
-msgstr "autenticat"
+msgstr "platinotípia autèntica"
 
 #. shadows: #211A14
 #. highlights: #D9D0C7
@@ -5696,9 +5594,8 @@ msgid "chocolate brown"
 msgstr ""
 
 #: ../src/iop/splittoning.c:588
-#, fuzzy
 msgid "select the saturation tone"
-msgstr "sense selecció"
+msgstr "selecciona el to de saturació"
 
 #: ../src/iop/splittoning.c:626
 msgid "balance"
@@ -5735,16 +5632,14 @@ msgid "white balance"
 msgstr "balanç de blancs"
 
 #: ../src/iop/temperature.c:95
-#, fuzzy
 msgctxt "accel"
 msgid "tint"
 msgstr "tint"
 
 #: ../src/iop/temperature.c:96
-#, fuzzy
 msgctxt "accel"
 msgid "temperature"
-msgstr "obertura"
+msgstr "temperatura"
 
 #: ../src/iop/temperature.c:410
 msgid "camera white balance"
@@ -5763,9 +5658,8 @@ msgid "tint"
 msgstr "tint"
 
 #: ../src/iop/temperature.c:786
-#, fuzzy
 msgid "temperature"
-msgstr "obertura"
+msgstr "temperatura"
 
 #: ../src/iop/temperature.c:801
 msgid "choose white balance preset from camera"
@@ -5789,9 +5683,8 @@ msgid "tone curve"
 msgstr ""
 
 #: ../src/iop/tonecurve.c:414
-#, fuzzy
 msgid "low contrast"
-msgstr "contrast mitjà"
+msgstr "baix contrast"
 
 #: ../src/iop/tonecurve.c:428
 msgid "med contrast"
@@ -5826,9 +5719,8 @@ msgid "tonecurve for b channel"
 msgstr ""
 
 #: ../src/iop/tonecurve.c:758
-#, fuzzy
 msgid "double click to reset curve"
-msgstr "feu doble clic per seleccionar"
+msgstr "feu doble clic per reiniciar la corba"
 
 #: ../src/iop/tonecurve.c:779
 msgid "scale chroma"
@@ -5850,10 +5742,9 @@ msgid "tone mapping"
 msgstr ""
 
 #: ../src/iop/tonemap.cc:98
-#, fuzzy
 msgctxt "accel"
 msgid "contrast compression"
-msgstr "comprimeix"
+msgstr "compressió de contrast"
 
 #: ../src/iop/tonemap.cc:99
 msgctxt "accel"
@@ -5861,19 +5752,17 @@ msgid "spatial extent"
 msgstr ""
 
 #: ../src/iop/tonemap.cc:309
-#, fuzzy
 msgid "contrast compression"
-msgstr "comprimeix"
+msgstr "compressió de contrast"
 
 #: ../src/iop/velvia.c:84
 msgid "velvia"
 msgstr ""
 
 #: ../src/iop/velvia.c:101 ../src/iop/vibrance.c:86
-#, fuzzy
 msgctxt "accel"
 msgid "vibrance"
-msgstr "balanç"
+msgstr "vivesa (vibrance)"
 
 #: ../src/iop/velvia.c:102
 msgctxt "accel"
@@ -5905,10 +5794,9 @@ msgid "vignetting"
 msgstr "vinyetatge"
 
 #: ../src/iop/vignette.c:177
-#, fuzzy
 msgctxt "accel"
 msgid "fall-off strength"
-msgstr "distància focal"
+msgstr "força de la transició"
 
 #: ../src/iop/vignette.c:180
 msgctxt "accel"
@@ -5944,14 +5832,12 @@ msgid "automatic ratio"
 msgstr ""
 
 #: ../src/iop/vignette.c:1189
-#, fuzzy
 msgid "8-bit output"
-msgstr "perfil de sortida"
+msgstr "sortida de 8 bits"
 
 #: ../src/iop/vignette.c:1190
-#, fuzzy
 msgid "16-bit output"
-msgstr "ppm 16 bits"
+msgstr "sortida de 16 bits"
 
 #: ../src/iop/vignette.c:1195
 msgid "fall-off strength"
@@ -5982,14 +5868,12 @@ msgid "the radii scale of vignette for end of fall-off"
 msgstr ""
 
 #: ../src/iop/vignette.c:1223
-#, fuzzy
 msgid "strength of effect on brightness"
-msgstr "intensitat de l'efecte"
+msgstr "intensitat de l'efecte en la brillantor"
 
 #: ../src/iop/vignette.c:1224
-#, fuzzy
 msgid "strength of effect on saturation"
-msgstr "intensitat de l'efecte"
+msgstr "intensitat de l'efecte en la saturació"
 
 #: ../src/iop/vignette.c:1225
 msgid "horizontal offset of center of the effect"
@@ -6034,10 +5918,9 @@ msgid "opacity"
 msgstr ""
 
 #: ../src/iop/watermark.c:205
-#, fuzzy
 msgctxt "accel"
 msgid "rotate"
-msgstr "saturació"
+msgstr "gira"
 
 #: ../src/iop/watermark.c:206
 msgctxt "accel"
@@ -6058,25 +5941,21 @@ msgid "alignment"
 msgstr ""
 
 #: ../src/iop/watermark.c:1123
-#, fuzzy
 msgctxt "size"
 msgid "image"
 msgstr "imatge"
 
 #: ../src/iop/watermark.c:1124
-#, fuzzy
 msgid "larger border"
-msgstr "mida del filtre"
+msgstr "vora més amplia"
 
 #: ../src/iop/watermark.c:1125
-#, fuzzy
 msgid "smaller border"
-msgstr "mida del filtre"
+msgstr "vora més petita"
 
 #: ../src/iop/watermark.c:1127
-#, fuzzy
 msgid "scale on"
-msgstr "escala"
+msgstr "escala segons"
 
 #: ../src/iop/watermark.c:1129
 msgid "size is relative to"
@@ -6100,99 +5979,81 @@ msgid "the scale of the watermark"
 msgstr ""
 
 #: ../src/iop/watermark.c:1159
-#, fuzzy
 msgid "the rotation of the watermark"
-msgstr "reinicia al valor per defecte"
+msgstr "orientació de la marca d'aigua"
 
 #. Probably same as above:
 #: ../src/iop/wb_presets.c:47
-#, fuzzy
 msgid "direct sunlight"
-msgstr "Llum del sol directa"
+msgstr "llum del sol directa"
 
 #: ../src/iop/wb_presets.c:48
-#, fuzzy
 msgid "cloudy"
 msgstr "Nuvolat"
 
 #. "Shadows" should be switched to this:
 #: ../src/iop/wb_presets.c:50
-#, fuzzy
 msgid "shade"
-msgstr "Ombra"
+msgstr "ombra"
 
 #: ../src/iop/wb_presets.c:51
-#, fuzzy
 msgid "incandescent"
-msgstr "Incandescent"
+msgstr "incandescent"
 
 #: ../src/iop/wb_presets.c:52
-#, fuzzy
 msgid "incandescent warm"
-msgstr "Incandescent calent"
+msgstr "incandescent càlida"
 
 #. Same as "Incandescent":
 #: ../src/iop/wb_presets.c:54
-#, fuzzy
 msgid "tungsten"
-msgstr "Tungstè"
+msgstr "tungstè"
 
 #: ../src/iop/wb_presets.c:55
-#, fuzzy
 msgid "fluorescent"
-msgstr "Fluorescent"
+msgstr "fluorescent"
 
 #. In Canon cameras and some newer Nikon cameras:
 #: ../src/iop/wb_presets.c:57
-#, fuzzy
 msgid "fluorescent high"
-msgstr "Fluorescent alt"
+msgstr "fluorescent intensa"
 
 #: ../src/iop/wb_presets.c:58
-#, fuzzy
 msgid "cool white fluorescent"
-msgstr "Fluorescent blanc"
+msgstr "fluorescent blanc fred"
 
 #: ../src/iop/wb_presets.c:59
-#, fuzzy
 msgid "warm white fluorescent"
-msgstr "Fluorescent blanc"
+msgstr "fluorescent blanc càlid"
 
 #: ../src/iop/wb_presets.c:60
-#, fuzzy
 msgid "daylight fluorescent"
-msgstr "Fluorescent blanc"
+msgstr "fluorescent llum de dia"
 
 #: ../src/iop/wb_presets.c:61
-#, fuzzy
 msgid "neutral fluorescent"
-msgstr "Fluorescent blanc"
+msgstr "fluorescent neutre"
 
 #: ../src/iop/wb_presets.c:62
-#, fuzzy
 msgid "white fluorescent"
-msgstr "Fluorescent blanc"
+msgstr "fluorescent blanc"
 
 #. In some newer Nikon cameras:
 #: ../src/iop/wb_presets.c:64
-#, fuzzy
 msgid "sodium-vapor fluorescent"
-msgstr "Fluorescent blanc"
+msgstr "fluorescent de vapor de sodi"
 
 #: ../src/iop/wb_presets.c:65
-#, fuzzy
 msgid "day white fluorescent"
-msgstr "Fluorescent blanc"
+msgstr "fluorescent blanc llum de dia"
 
 #: ../src/iop/wb_presets.c:66
-#, fuzzy
 msgid "high temp. mercury-vapor fluorescent"
-msgstr "Fluorescent blanc"
+msgstr "fluorescent de vapor de mercuri"
 
 #: ../src/iop/wb_presets.c:68
-#, fuzzy
 msgid "flash"
-msgstr "Flaix"
+msgstr "flaix"
 
 #. For Olympus with no real "Flash" preset:
 #: ../src/iop/wb_presets.c:70
@@ -6204,12 +6065,10 @@ msgid "evening sun"
 msgstr ""
 
 #: ../src/iop/wb_presets.c:72
-#, fuzzy
 msgid "underwater"
 msgstr "Sota aigua"
 
 #: ../src/iop/wb_presets.c:73 ../src/views/darkroom.c:1175
-#, fuzzy
 msgid "black & white"
 msgstr "Blanc i negre"
 
@@ -6222,14 +6081,12 @@ msgid "manual WB"
 msgstr ""
 
 #: ../src/iop/wb_presets.c:77
-#, fuzzy
 msgid "camera WB"
-msgstr "càmera"
+msgstr "balanç de blancs de la càmera"
 
 #: ../src/iop/wb_presets.c:78
-#, fuzzy
 msgid "auto WB"
-msgstr "auto"
+msgstr "balanç de blancs auto"
 
 #: ../src/iop/zonesystem.c:108
 msgid "zone system"
@@ -6252,10 +6109,9 @@ msgid "camera settings"
 msgstr "paràmetres de la càmera"
 
 #: ../src/libs/camera.c:106
-#, fuzzy
 msgctxt "accel"
 msgid "capture image(s)"
-msgstr "captura imatges"
+msgstr "captura imatge(s)"
 
 #: ../src/libs/camera.c:143
 msgid "toggle view property in center view"
@@ -6364,16 +6220,14 @@ msgstr ""
 
 #. user specified properties
 #: ../src/libs/camera.c:633
-#, fuzzy
 msgid "additional properties"
-msgstr "propietats"
+msgstr "propietats addicionals"
 
 #: ../src/libs/camera.c:637
 msgid "label"
 msgstr ""
 
 #: ../src/libs/camera.c:643
-#, fuzzy
 msgid "property"
 msgstr "propietats"
 
@@ -6403,9 +6257,8 @@ msgid "sync..."
 msgstr ""
 
 #: ../src/libs/collect.c:555
-#, fuzzy
 msgid "remove..."
-msgstr "suprimeix"
+msgstr "suprimeix..."
 
 #: ../src/libs/collect.c:1058
 msgid "uncategorized"
@@ -6416,9 +6269,8 @@ msgid "not altered"
 msgstr "sense modificar"
 
 #: ../src/libs/collect.c:1263 ../src/libs/collect.c:1265
-#, fuzzy
 msgid "not tagged"
-msgstr "intacta"
+msgstr "sense etiquetar"
 
 #: ../src/libs/collect.c:1501
 msgid "local HDD"
@@ -6438,14 +6290,12 @@ msgid "narrow down search"
 msgstr ""
 
 #: ../src/libs/collect.c:2000
-#, fuzzy
 msgid "add more images"
-msgstr "voleu suprimir les imatges?"
+msgstr "afegeix més imatges"
 
 #: ../src/libs/collect.c:2004
-#, fuzzy
 msgid "exclude images"
-msgstr "voleu eliminar les imatges?"
+msgstr "exclou imatges"
 
 #: ../src/libs/collect.c:2010
 msgid "change to: and"
@@ -6460,9 +6310,9 @@ msgid "change to: except"
 msgstr ""
 
 #: ../src/libs/collect.c:2063
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "type your query, use `%' as wildcard"
-msgstr "escriviu la consulta, empreu `%%' com a comodí"
+msgstr "escriviu la consulta, empreu `%' com a comodí"
 
 #: ../src/libs/collect.h:30
 msgid "film roll"
@@ -6485,7 +6335,6 @@ msgid "date"
 msgstr "data"
 
 #: ../src/libs/collect.h:35 ../src/libs/tools/filter.c:147
-#, fuzzy
 msgid "time"
 msgstr "data/hora"
 
@@ -6494,15 +6343,13 @@ msgid "history"
 msgstr "historial"
 
 #: ../src/libs/collect.h:39 ../src/libs/metadata.c:341
-#, fuzzy
 msgid "description"
-msgstr "opcions globals"
+msgstr "descripció"
 
 #: ../src/libs/collect.h:40 ../src/libs/import.c:512
 #: ../src/libs/metadata.c:354 ../src/libs/metadata_view.c:108
-#, fuzzy
 msgid "creator"
-msgstr "crea"
+msgstr "autor"
 
 #: ../src/libs/collect.h:41 ../src/libs/import.c:518
 #: ../src/libs/metadata.c:367
@@ -6520,9 +6367,8 @@ msgid "filename"
 msgstr "nom del fitxer"
 
 #: ../src/libs/colorpicker.c:36
-#, fuzzy
 msgid "color picker"
-msgstr "transferència de color"
+msgstr "pren mostra de color"
 
 #: ../src/libs/colorpicker.c:61
 msgctxt "accel"
@@ -6554,9 +6400,8 @@ msgid "mean"
 msgstr ""
 
 #: ../src/libs/colorpicker.c:522 ../src/libs/colorpicker.c:574
-#, fuzzy
 msgid "min"
-msgstr "DIN"
+msgstr "min"
 
 #: ../src/libs/colorpicker.c:524 ../src/libs/colorpicker.c:576
 msgid "max"
@@ -6587,9 +6432,8 @@ msgid "open sidecar file"
 msgstr ""
 
 #: ../src/libs/copy_history.c:83
-#, fuzzy
 msgid "XMP sidecar files"
-msgstr "escriu els fitxers dt"
+msgstr "arxius sidecar XMP"
 
 #: ../src/libs/copy_history.c:88 ../src/libs/geotagging.c:459
 #: ../src/libs/import.c:702 ../src/libs/styles.c:281
@@ -6602,18 +6446,16 @@ msgid "error loading file '%s'"
 msgstr "s'ha produït un error en carregar el fitxer '%s'"
 
 #: ../src/libs/copy_history.c:255
-#, fuzzy
 msgid ""
 "copy part history stack of\n"
 "first selected image (ctrl-shift-c)"
 msgstr ""
-"copia la pila de l'historial de la\n"
-"primera imatge seleccionada (ctrl-c)"
+"copia part de la pila de l'historial de la\n"
+"primera imatge seleccionada (ctrl-majs-c)"
 
 #: ../src/libs/copy_history.c:258
-#, fuzzy
 msgid "copy all"
-msgstr "copia"
+msgstr "copia-ho tot"
 
 #: ../src/libs/copy_history.c:260
 msgid ""
@@ -6640,18 +6482,16 @@ msgid "paste"
 msgstr "enganxa"
 
 #: ../src/libs/copy_history.c:272
-#, fuzzy
 msgid ""
 "paste part history stack to\n"
 "all selected images (ctrl-shift-v)"
 msgstr ""
-"enganxa la pila de l'historial a\n"
-"totes les imatges seleccionades (ctrl-v)"
+"enganxa part de la pila de l'historial a\n"
+"totes les imatges seleccionades (ctrl-majs-v)"
 
 #: ../src/libs/copy_history.c:277
-#, fuzzy
 msgid "paste all"
-msgstr "enganxa"
+msgstr "enganxa-ho tot"
 
 #: ../src/libs/copy_history.c:278
 msgid ""
@@ -6680,55 +6520,47 @@ msgid ""
 msgstr ""
 
 #: ../src/libs/copy_history.c:297
-#, fuzzy
 msgid "write sidecar files"
-msgstr "escriu els fitxers dt"
+msgstr "escriu els fitxers XMP"
 
 #: ../src/libs/copy_history.c:299
 msgid "write history stack and tags to XMP sidecar files"
 msgstr ""
 
 #: ../src/libs/copy_history.c:337
-#, fuzzy
 msgctxt "accel"
 msgid "copy all"
-msgstr "copia"
+msgstr "copia-ho tot"
 
 #: ../src/libs/copy_history.c:338
-#, fuzzy
 msgctxt "accel"
 msgid "copy"
 msgstr "copia"
 
 #: ../src/libs/copy_history.c:339
-#, fuzzy
 msgctxt "accel"
 msgid "discard"
 msgstr "descarta"
 
 #: ../src/libs/copy_history.c:340
-#, fuzzy
 msgctxt "accel"
 msgid "paste all"
-msgstr "enganxa"
+msgstr "enganxa-ho tot"
 
 #: ../src/libs/copy_history.c:341
-#, fuzzy
 msgctxt "accel"
 msgid "paste"
 msgstr "enganxa"
 
 #: ../src/libs/copy_history.c:342
-#, fuzzy
 msgctxt "accel"
 msgid "load sidecar files"
-msgstr "escriu els fitxers dt"
+msgstr "carrega els fitxers XMP"
 
 #: ../src/libs/copy_history.c:343
-#, fuzzy
 msgctxt "accel"
 msgid "write sidecar files"
-msgstr "escriu els fitxers dt"
+msgstr "escriu els fitxers XMP"
 
 #: ../src/libs/export.c:73
 msgid "export selected"
@@ -6788,15 +6620,14 @@ msgid "image settings"
 msgstr ""
 
 #: ../src/libs/export.c:627
-#, fuzzy, c-format
+#, c-format
 msgid "output ICC profiles in %s/color/out or %s/color/out"
-msgstr "perfils icc a %s/color/in"
+msgstr "perfils ICC de sortida a %s/color/out o %s/color/out"
 
 #. Add style combo
 #: ../src/libs/export.c:633
-#, fuzzy
 msgid "style"
-msgstr "edita '%s'"
+msgstr "estil"
 
 #: ../src/libs/export.c:650
 msgid "temporary style to append while exporting"
@@ -6809,7 +6640,6 @@ msgstr ""
 #. enable shortcut to export with current export settings:
 #: ../src/libs/export.c:1078 ../src/libs/styles.c:69
 #: ../src/views/darkroom.c:1716
-#, fuzzy
 msgctxt "accel"
 msgid "export"
 msgstr "exporta"
@@ -6819,9 +6649,8 @@ msgstr "exporta"
 #. while(*n != '\n') n++; n++;
 #. return n;
 #: ../src/libs/file_manager.c:43 ../src/libs/tools/lighttable.c:97
-#, fuzzy
 msgid "file manager"
-msgstr "nom del fitxer"
+msgstr "gestor d'arxius"
 
 #: ../src/libs/file_manager.c:95
 msgid ""
@@ -6853,9 +6682,8 @@ msgid "GPS data exchange format"
 msgstr ""
 
 #: ../src/libs/geotagging.c:464
-#, fuzzy
 msgid "camera time zone"
-msgstr "balanç de blanc de la càmera"
+msgstr "zona horària de la càmera"
 
 #: ../src/libs/geotagging.c:465
 msgid ""
@@ -6864,9 +6692,8 @@ msgid ""
 msgstr ""
 
 #: ../src/libs/geotagging.c:587
-#, fuzzy
 msgid "time offset"
-msgstr "temporitzador (s)"
+msgstr "decalatge horari"
 
 #: ../src/libs/geotagging.c:597
 msgid ""
@@ -6879,9 +6706,8 @@ msgid "calculate the time offset from an image"
 msgstr ""
 
 #: ../src/libs/geotagging.c:612
-#, fuzzy
 msgid "apply time offset to selected images"
-msgstr "coinideix amb les imatges seleccionades"
+msgstr "aplica decalatge horari a les imatges seleccionades"
 
 #. gpx
 #: ../src/libs/geotagging.c:620
@@ -6959,7 +6785,6 @@ msgid "apply style from popup menu"
 msgstr ""
 
 #: ../src/libs/history.c:79
-#, fuzzy
 msgctxt "accel"
 msgid "compress history stack"
 msgstr "comprimeix l'historial"
@@ -6977,9 +6802,8 @@ msgid "create a style from the current history stack"
 msgstr ""
 
 #: ../src/libs/history.c:183 ../src/libs/snapshots.c:366
-#, fuzzy
 msgid "original"
-msgstr "0 - original"
+msgstr "original"
 
 #: ../src/libs/image.c:50
 msgid "selected image[s]"
@@ -6994,14 +6818,12 @@ msgid "physically delete from disk"
 msgstr "elimineu físicament del disc"
 
 #: ../src/libs/image.c:155
-#, fuzzy
 msgid "move"
-msgstr "suprimeix"
+msgstr "mou"
 
 #: ../src/libs/image.c:157
-#, fuzzy
 msgid "move to other folder"
-msgstr "suprimeix de la col·lecció"
+msgstr "mou a una altra carpeta"
 
 #: ../src/libs/image.c:163
 msgid "copy to other folder"
@@ -7590,9 +7412,8 @@ msgid "hdr"
 msgstr ""
 
 #: ../src/libs/metadata_view.c:264
-#, fuzzy
 msgid "marked for deletion"
-msgstr "pregunta abans de suprimir una etiqueta"
+msgstr "marcat per a ser esborrat"
 
 #: ../src/libs/metadata_view.c:265
 msgid "auto-applying presets applied"
@@ -7611,9 +7432,8 @@ msgid "has .wav"
 msgstr ""
 
 #: ../src/libs/metadata_view.c:281
-#, fuzzy
 msgid "image rejected"
-msgstr "no hi ha cap imatge seleccionada!"
+msgstr "imatge rebutjada"
 
 #: ../src/libs/metadata_view.c:286
 #, c-format
@@ -8462,20 +8282,19 @@ msgid "preview with focus detection"
 msgstr ""
 
 #: ../src/views/lighttable.c:1974
-#, fuzzy
 msgctxt "accel"
 msgid "sticky preview"
-msgstr "captura"
+msgstr "vista prèvia permanent"
 
 #: ../src/views/lighttable.c:1975
 msgctxt "accel"
 msgid "sticky preview with focus detection"
-msgstr ""
+msgstr "vista prèvia permanent amb detecció de focus"
 
 #: ../src/views/lighttable.c:1976
 msgctxt "accel"
 msgid "exit sticky preview"
-msgstr ""
+msgstr "surt de la vista prèvia permanent"
 
 #: ../src/views/map.c:107
 msgid "map"
@@ -8500,7 +8319,6 @@ msgid "slideshow"
 msgstr ""
 
 #: ../src/views/slideshow.c:333
-#, fuzzy
 msgid "No images in collection."
 msgstr "no hi ha imatges a la col·lecció"
 
@@ -8596,9 +8414,9 @@ msgid "copy of %s"
 msgstr ""
 
 #: ../src/develop/masks/masks.c:718
-#, fuzzy, c-format
+#, c-format
 msgid "%s: mask version mismatch: %d != %d"
-msgstr "%s: la versió del mòdul '%s' no coincideix: %d != %d"
+msgstr "%s: la versió de la màscara no coincideix: %d != %d"
 
 #: ../src/develop/masks/masks.c:1408 ../src/libs/masks.c:948
 msgid "add existing shape"
@@ -8666,14 +8484,12 @@ msgid "lua options"
 msgstr "opcions lua"
 
 #: ../src/lua/preferences.c:581
-#, fuzzy
 msgid "Select a directory"
 msgstr "seleccioneu un directori"
 
 #: ../src/lua/preferences.c:592
-#, fuzzy
 msgid "Select a file"
-msgstr "selecciona-ho tot"
+msgstr "seleccioneu un arxiu"
 
 #: ../src/lua/preferences.c:634
 #, c-format
