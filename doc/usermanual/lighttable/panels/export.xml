@@ -108,6 +108,14 @@
             </row>
             <row>
               <entry>
+                $(VERSION)
+              </entry>
+              <entry>
+                the duplicate version (see <xref linkend="sidecar_files"/>) 
+              </entry>
+            </row>
+            <row>
+              <entry>
                 $(SEQUENCE)
               </entry>
               <entry>
