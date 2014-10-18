@@ -20,6 +20,8 @@
 
   <xi:include href="lenscorrection.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
 
+  <xi:include href="scalepixels.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
+
   <xi:include href="spotremoval.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
 
   <xi:include href="rawdenoise.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
