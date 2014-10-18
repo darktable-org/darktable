@@ -3,7 +3,7 @@
 		<!ENTITY % darktable_dtd SYSTEM "../../../dtd/darktable.dtd">
 		%darktable_dtd;
 		]>
-<sect3 status="draft" id="scalepixels">
+<sect3 status="draft" id="scale_pixels">
 
   <title>Scale pixels</title>
 
@@ -27,8 +27,9 @@
         <tbody>
           <row>
             <entry>
-              Some cameras like the Nikon 1DX have rectangular instead of the usual square sensor cells. Without
-              correction this would lead to distorted images. This module applies the needed scaling.
+              Some cameras like the Nikon D1X have rectangular instead of the usual square
+              sensor cells. Without correction this would lead to distorted images. This module
+              applies the needed scaling.
             </entry>
             <entry>
               <graphic fileref="darkroom/modules/images/scalepixels.png" scalefit="1" width="80%" align="center" />
@@ -45,10 +46,10 @@
     <title>Usage</title>
 
     <para>
-      darktable detects images that need correction by their EXIF data and automatically activates this module.
-      For other images the module always remains disabled. The modules has no parameters.
+      darktable detects images that need correction by their EXIF data and automatically
+      activates this module. For other images the module always remains disabled. The modules
+      has no parameters.
     </para>
-
 
   </sect4>
 
