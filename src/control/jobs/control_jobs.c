@@ -217,14 +217,15 @@ static int32_t dt_control_merge_hdr_job_run(dt_job_t *job)
   double fraction=0;
   snprintf(message, sizeof(message), ngettext ("merging %d image", "merging %d images", total), total );
 
-  dt_progress_t *progress = dt_control_progress_create(darktable.control, FALSE, message);
+  dt_progress_t *progress = dt_control_progress_create(darktable.control, TRUE, message);
+  dt_control_progress_attach_job(darktable.control, progress, job);
 
   float *pixels = NULL;
   float *weight = NULL;
   int wd = 0, ht = 0, first_imgid = -1;
   uint32_t filter = 0;
   float whitelevel = 0.0f;
-  const float epsw = 1e-5f;
+  const float epsw = 1e-6f;
   total ++;
   while(t)
   {
@@ -279,10 +280,11 @@ static int32_t dt_control_merge_hdr_job_run(dt_job_t *job)
     const float cal = 100.0f/(aperture*exp*iso);
     // about proportional to how many photons we can expect from this shot:
     const float photoncnt = 100.0f*aperture*exp/iso;
-    uint16_t saturation = image.raw_white_point - image.raw_black_level;
+    // once we get unscaled raw data in this uint16_t buffer, we need to rescale (and subtract black before using the values):
+    int32_t saturation = 0xffff;//image.raw_white_point - image.raw_black_level;
     whitelevel = fmaxf(whitelevel, saturation*cal);
 #ifdef _OPENMP
-    #pragma omp parallel for schedule(static) default(none) shared(buf, pixels, weight, wd, ht, saturation)
+  #pragma omp parallel for schedule(static) default(none) shared(buf, pixels, weight, wd, ht, saturation, whitelevel)
 #endif
     for(int y=0; y<ht; y++) for(int x=0; x<wd; x++)
     {
@@ -295,18 +297,45 @@ static int32_t dt_control_merge_hdr_job_run(dt_job_t *job)
       // maximum value of all color channels. do find that, go through the bayer
       // pattern block:
       int xx = x & ~1, yy = y & ~1;
+      int32_t M = 0, m = 0xffff;
       if(xx < wd-1 && yy < ht-1)
       {
-        uint16_t m = 0;
         for(int i=0;i<2;i++) for(int j=0;j<2;j++)
-          m = MAX(m, ((uint16_t*)buf.buf)[xx+i + wd*(yy+j)]);
-        w *= envelope(m/(float)saturation);
-        if(w < epsw && m < saturation/3) w = epsw;
+        {
+          M = MAX(M, ((uint16_t*)buf.buf)[xx+i + wd*(yy+j)]);
+          m = MIN(m, ((uint16_t*)buf.buf)[xx+i + wd*(yy+j)]);
+        }
+        // move envelope a little to allow non-zero weight even for clipped regions.
+        // this is because even if the 2x2 block is clipped somewhere, the other channels
+        // might still prove useful. we'll check for individual channel saturation below.
+        w *= epsw + envelope(M/(float)saturation);
       }
-      // in case we are black and drop to zero weight, give it something
-      // just so numerics don't collapse. blown out whites are handled below.
-      pixels[x+wd*y] += w * in * cal;
-      weight[x+wd*y] += w;
+
+      if(M + 4096 >= saturation)
+      {
+        if(weight[x+wd*y] <= 0.0f)
+        { // only consider saturated pixels in case we have nothing better:
+          if(weight[x+wd*y] == 0 || cal < - weight[x+wd*y])
+          {
+            if(m + 4096 >= saturation)
+              pixels[x+wd*y] = 1.0f; // let's admit we were completely clipped, too
+            else
+              pixels[x+wd*y] = in * cal / whitelevel;
+            weight[x+wd*y] = -cal;
+          }
+        }
+        // else silently ignore, others have filled in a better color here already
+      }
+      else
+      {
+        if(weight[x+wd*y] <= 0.0)
+        { // cleanup potentially blown highlights from earlier images
+          pixels[x+wd*y] = 0.0f;
+          weight[x+wd*y] = 0.0f;
+        }
+        pixels[x+wd*y] += w * in * cal;
+        weight[x+wd*y] += w;
+      }
     }
 
     t = g_list_delete_link(t, t);
@@ -323,10 +352,7 @@ static int32_t dt_control_merge_hdr_job_run(dt_job_t *job)
 #endif
   for(int k=0; k<wd*ht; k++)
   {
-    // in case w == 0, all pixels were overexposed (too dark would have been clamped to w >= eps above)
-    if(weight[k] < epsw)
-      pixels[k] = 1.f; // mark as blown out.
-    else // normalize:
+    if(weight[k] > 0.0)
       pixels[k] = fmaxf(0.0f, pixels[k]/(whitelevel*weight[k]));
   }
 
