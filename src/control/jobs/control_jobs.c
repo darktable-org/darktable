@@ -225,7 +225,7 @@ static int32_t dt_control_merge_hdr_job_run(dt_job_t *job)
   int wd = 0, ht = 0, first_imgid = -1;
   uint32_t filter = 0;
   float whitelevel = 0.0f;
-  const float epsw = 1e-6f;
+  const float epsw = 1e-8f;
   total ++;
   while(t)
   {
@@ -293,6 +293,10 @@ static int32_t dt_control_merge_hdr_job_run(dt_job_t *job)
       // zijian zhu, zhengguo li, susanto rahardja, pasi fraenti
       // 2d denoising factor for high dynamic range imaging
       float w = photoncnt;
+
+      // need some safety margin due to upsampling and 16-bit quantization + dithering?
+      int32_t offset = 3000;
+
       // cannot do an envelope based on single pixel values here, need to get
       // maximum value of all color channels. do find that, go through the bayer
       // pattern block:
@@ -308,11 +312,9 @@ static int32_t dt_control_merge_hdr_job_run(dt_job_t *job)
         // move envelope a little to allow non-zero weight even for clipped regions.
         // this is because even if the 2x2 block is clipped somewhere, the other channels
         // might still prove useful. we'll check for individual channel saturation below.
-        w *= epsw + envelope(M/(float)saturation);
+        w *= epsw + envelope((M+offset)/(float)saturation);
       }
 
-      // need some safety margin due to upsampling and 16-bit quantization + dithering?
-      int32_t offset = 3000;
       if(M + offset >= saturation)
       {
         if(weight[x+wd*y] <= 0.0f)
