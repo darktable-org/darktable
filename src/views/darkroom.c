@@ -1219,8 +1219,6 @@ void enter(dt_view_t *self)
     if (!dt_iop_is_hidden(module))
     {
       module->gui_init(module);
-      dt_iop_reload_defaults(module);
-
       /* add module to right panel */
       GtkWidget *expander = dt_iop_gui_get_expander(module);
       dt_ui_container_add_widget(darktable.gui->ui,
