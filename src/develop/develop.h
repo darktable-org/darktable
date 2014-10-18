@@ -84,6 +84,10 @@ typedef struct dt_develop_t
   struct dt_iop_module_t *gui_module; // this module claims gui expose/event callbacks.
   float preview_downsampling; // < 1.0: optionally downsample preview
 
+  // Store the last image we have fully read so that we can run reload_defaults
+  // only once in dt_dev_pixelpipe_set_input instead of once for each pipe
+  uint32_t last_read_imgid;
+
   // width, height: dimensions of window
   // capwidth, capheight: actual dimensions of scaled image inside window.
   int32_t width, height, capwidth, capheight, capwidth_preview, capheight_preview;
