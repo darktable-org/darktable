@@ -311,17 +311,19 @@ static int32_t dt_control_merge_hdr_job_run(dt_job_t *job)
         w *= epsw + envelope(M/(float)saturation);
       }
 
-      if(M + 4096 >= saturation)
+      // need some safety margin due to upsampling and 16-bit quantization + dithering?
+      int32_t offset = 3000;
+      if(M + offset >= saturation)
       {
         if(weight[x+wd*y] <= 0.0f)
         { // only consider saturated pixels in case we have nothing better:
-          if(weight[x+wd*y] == 0 || cal < - weight[x+wd*y])
+          if(weight[x+wd*y] == 0 || m < - weight[x+wd*y])
           {
-            if(m + 4096 >= saturation)
+            if(m + offset >= saturation)
               pixels[x+wd*y] = 1.0f; // let's admit we were completely clipped, too
             else
               pixels[x+wd*y] = in * cal / whitelevel;
-            weight[x+wd*y] = -cal;
+            weight[x+wd*y] = -m; // could use -cal here, but m is per pixel and safer for varying illumination conditions
           }
         }
         // else silently ignore, others have filled in a better color here already
