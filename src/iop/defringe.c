@@ -155,7 +155,7 @@ void process (struct dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece, voi
   const int ch = piece->colors;
 
   const int radius = ceil(2.0*ceilf(sigma));
-  const float base_strength = fmax(0.1f, d->strength);
+  const float base_strength = fmax(0.1f, d->strength * d->strength);
 
   // save the fibonacci lattices in them later
   int * xy_avg = NULL;
@@ -509,7 +509,7 @@ void gui_init (dt_iop_module_t *module)
   g->thresh_scale = dt_bauhaus_slider_new_with_range(module, 1.0, 128.0, 0.1, p->thresh, 1);
   dt_bauhaus_widget_set_label(g->thresh_scale, NULL, _("threshold"));
 
-  g->strength_scale = dt_bauhaus_slider_new_with_range(module, 0.1, 20.0, 0.1, p->strength, 1);
+  g->strength_scale = dt_bauhaus_slider_new_with_range(module, 0.1, 10.0, 0.1, p->strength, 1);
   dt_bauhaus_widget_set_label(g->strength_scale, NULL, _("strength"));
 
   gtk_box_pack_start(GTK_BOX(module->widget), GTK_WIDGET(g->radius_scale), TRUE, TRUE, 0);
