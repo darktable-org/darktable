@@ -321,12 +321,13 @@ void process (struct dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece, voi
           int y = MAX(0,MIN(height-1,v+dy));
           local_avg += out[(size_t)y*width*ch + x*ch +3];
         }
-        local_avg /= (float)samples_avg*2.0;
+        local_avg /= (float)samples_avg;
         avg_edge_chroma = local_avg;
-        float new_thresh = 8.0 * d->thresh * avg_edge_chroma / MAGIC_THRESHOLD_COEFF;
+        float new_thresh = fmax(0.1f, 8.0 * d->thresh * avg_edge_chroma / MAGIC_THRESHOLD_COEFF);
         local_thresh = new_thresh;
         if (local_thresh < min_thresh) min_thresh = local_thresh;
       }
+
       if (out[(size_t)v*width*ch +t*ch +3] > local_thresh)
       {
         float atot=0, btot=0;
@@ -508,7 +509,7 @@ void gui_init (dt_iop_module_t *module)
   g->thresh_scale = dt_bauhaus_slider_new_with_range(module, 1.0, 128.0, 0.1, p->thresh, 1);
   dt_bauhaus_widget_set_label(g->thresh_scale, NULL, _("threshold"));
 
-  g->strength_scale = dt_bauhaus_slider_new_with_range(module, 0.1, 10.0, 0.1, p->strength, 1);
+  g->strength_scale = dt_bauhaus_slider_new_with_range(module, 0.1, 20.0, 0.1, p->strength, 1);
   dt_bauhaus_widget_set_label(g->strength_scale, NULL, _("strength"));
 
   gtk_box_pack_start(GTK_BOX(module->widget), GTK_WIDGET(g->radius_scale), TRUE, TRUE, 0);
