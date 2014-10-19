@@ -70,21 +70,21 @@
     <sect5>
       <title>edge detection radius</title>
       <para>
-        Set the spatial extent of the gaussian blur used for a `difference of gaussians' edge detection, in which only one gaussian is actually computed and the other one is the image itself.
+        Set the spatial extent of the gaussian blur used for an edge detection that uses the difference of gaussian-blurred and original image as an indicator for edges (a special case of the <quote>difference of gaussians</quote> edge detection).
       </para>
     </sect5>
 
     <sect5>
       <title>threshold</title>
       <para>
-        Sets the threshold over which the edge of a pixel has to be to see it as a `fringe' that will get it's new color from neighboring pixels.
+        Sets the threshold over which the edge of a pixel has to be to count it as a <quote>fringe</quote> of which the color will be rebuild from neighboring pixels.
       </para>
     </sect5>
 
     <sect5>
       <title>strength</title>
       <para>
-	Sets the strength of weighing neighboring pixels.
+	Sets the strength of weighing neighboring non-fringing pixels over fringing pixels when rebuilding color.
       </para>
     </sect5>
 
