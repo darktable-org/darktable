@@ -116,7 +116,7 @@ static inline
 void fib_latt(int * const x, int * const y, float radius, int step, int idx)
 {
   // idx < 1 because division by zero is also a problem in the following line
-  if (idx >= sizeof(fib)/sizeof(float) || idx < 1)
+  if (idx >= sizeof(fib)/sizeof(float)-1 || idx < 1)
   {
     *x = 0;
     *y = 0;
