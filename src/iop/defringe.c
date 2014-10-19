@@ -320,11 +320,12 @@ void process (struct dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece, voi
           int y = MAX(0,MIN(height-1,v+dy));
           local_avg += out[(size_t)y*width*ch + x*ch +3];
         }
-        local_avg /= (float)samples_avg*2.0;
+        local_avg /= (float)samples_avg;
         avg_edge_chroma = local_avg;
-        float new_thresh = 8.0 * d->thresh * avg_edge_chroma / MAGIC_THRESHOLD_COEFF;
+        float new_thresh = fmax(0.1f, 8.0 * d->thresh * avg_edge_chroma / MAGIC_THRESHOLD_COEFF);
         local_thresh = new_thresh;
       }
+
       if (out[(size_t)v*width*ch +t*ch +3] > local_thresh)
       {
         float atot=0, btot=0;
