@@ -187,25 +187,36 @@
 
         <listitem><para>
           The vendor specific OpenCL implementation comes as a library
-          <filename>libnvidia-opencl.so.1</filename> (which is a symbolic link to
-          <filename>libnvidia-opencl.so.331.89</filename>). It needs to talk to the vendor
+          <filename>libnvidia-opencl.so.1</filename> (which in our case is a symbolic link to
+          <filename>libnvidia-opencl.so.331.89</filename>).
+        </para></listitem>
+
+        <listitem><para>
+          <filename>libnvidia-opencl.so.1</filename> needs to talk to the vendor
           specific kernel modules <filename>nvidia</filename> and
           <filename>nvidia_uvm</filename> via device special files
           <filename>/dev/nvidia0</filename>, <filename>/dev/nvidiactl</filename>, and
-          <filename>/dev/nvidia-uvm</filename>. A user account which wants to have OpenCL
-          support in darktable needs to have read-write access to these device special files.
+          <filename>/dev/nvidia-uvm</filename>.
         </para></listitem>
 
       </itemizedlist>
     </para>
 
     <para>
-      On system startup the needed required special files (/dev/nvidia*) need to be created. If
+      At system startup the required device special files (/dev/nvidia*) need to be created. If
       this does not happen on your system by default, the easiest way to set them up and make
       sure all modules are loaded is installing the <filename>nvidia-modprobe</filename> package
       (which, at the time of this writing, is only available for <quote>utopic</quote>, but
       works well with <quote>trusty</quote> and <quote>Mint 17</quote>). You can grab it at
       <ulink url="http://packages.ubuntu.com/utopic/nvidia-modprobe">this site</ulink>.
+    </para>
+
+    <para>
+      A user account which wants to make use of OpenCL from within darktable needs to have read-write access 
+      to NVIDIA's device special files. On some systems these files allow world read-write access by
+      default, which avoids permission issues but might be debatable in terms of system security.
+      Other systems restrict the access to a user group, e.g. <quote>video</quote>. In that case
+      your user account has to be member of that group.
     </para>
 
     <para>
@@ -268,8 +279,7 @@
     </para>
 
     <para>
-      The list of NVIDIA related kernel modules as reported by <filename>lsmod | egrep
-      nvidia</filename> is:
+      The list of NVIDIA related kernel modules as reported by <filename>lsmod</filename> is:
 <programlisting>nvidia
 nvidia_uvm
 </programlisting>
@@ -277,11 +287,14 @@ nvidia_uvm
 
     <para>
       The list of NVIDIA related device special files (<filename>ls -l /dev/nvidia*</filename>)
-      should read somethink like:
-<programlisting>crw-rw-rw- 1 root root 195, 0 Jul 28 21:13 /dev/nvidia0
+      should read like:
+<programlisting>crw-rw-rw- 1 root root 195,   0 Jul 28 21:13 /dev/nvidia0
 crw-rw-rw- 1 root root 195, 255 Jul 28 21:13 /dev/nvidiactl
-crw-rw-rw- 1 root root 250, 0 Jul 28 21:13 /dev/nvidia-uvm 
+crw-rw-rw- 1 root root 250,   0 Jul 28 21:13 /dev/nvidia-uvm 
 </programlisting>
+
+      Beware that the major/minor numbers (e.g. 250/0 for <filename>/dev/nvidia-uvm</filename> in
+      this example) may vary depending on your system.
     </para>
 
   </sect2>
