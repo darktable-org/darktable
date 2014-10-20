@@ -13,13 +13,11 @@
   </indexterm>
 
   <indexterm>
-    <primary>fringe</primary>
-    <secondary>removal</secondary>
+    <primary>defringe</primary>
   </indexterm>
 
   <indexterm>
     <primary>purple fringing</primary>
-    <secondary>removal</secondary>
   </indexterm>
 
   <sect4>
@@ -33,7 +31,7 @@
         <tbody>
           <row>
             <entry>
-              This module is designed to remove purple or any other color of fringing, often resulting from Longitudinal Chromatic
+              This module is designed to remove purple or any other color of fringing which often results from Longitudinal Chromatic
 	      Abberations (LCA), also known as Axial Chromatic Abberations.
             </entry>
             <entry>
@@ -51,8 +49,8 @@
     <title>Usage</title>
 
     <para>
-      This module helps removing fringe by taking the color from less-saturated neighboring pixels into
-      account to rebuild the color of the edge.
+      This module helps removing fringe via edge-detection. Where pixels are detected as fringe, it rebuilds the color from
+      lower-saturated neighboring pixels.
     </para>
 
     <sect5>
@@ -70,21 +68,30 @@
     <sect5>
       <title>edge detection radius</title>
       <para>
-        Set the spatial extent of the gaussian blur used for an edge detection that uses the difference of gaussian-blurred and original image as an indicator for edges (a special case of the <quote>difference of gaussians</quote> edge detection).
+        Set the spatial extent of the gaussian blur used for an edge detection that uses the difference of gaussian-blurred and
+	original image as an indicator for edges (a special case of the <quote>difference of gaussians</quote> edge detection).
+	Try increasing this value if you either want a stronger detection of the fringes or the thickness of the fringe edges is
+	too high.
       </para>
     </sect5>
 
     <sect5>
       <title>threshold</title>
       <para>
-        Sets the threshold over which the edge of a pixel has to be to count it as a <quote>fringe</quote> of which the color will be rebuild from neighboring pixels.
+        Sets the threshold over which the edge of a pixel is counted as a <quote>fringe</quote> of which the color will be
+	rebuild from neighboring pixels. Try lowering this value if not enough fringe is detected and try increasing this
+	value if too much pixels are desaturated. Usually you also want to play around with the edge detection radius additionally.
       </para>
     </sect5>
 
     <sect5>
       <title>strength</title>
       <para>
-	Sets the strength of weighing neighboring non-fringing pixels over fringing pixels when rebuilding color.
+	Sets the strength of weighing neighboring non-fringing pixels over fringing pixels when rebuilding color. This is more
+	a finetuning parameter. Try to increase it if you see some fringes getting desaturated, but not enough. Lower it only
+	if you do not find another way to keep unwanted regions of your pictures getting desaturated. You can try to do that
+	by experimenting with <quote>edge detection radius</quote> and <quote>threshold</quote> or do parametric
+	blending by the right choice of <quote>C</quote> and/or <quote>h</quote>.
       </para>
     </sect5>
 
