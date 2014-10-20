@@ -84,17 +84,6 @@
       </para>
     </sect5>
 
-    <sect5>
-      <title>strength</title>
-      <para>
-	Sets the strength of weighing neighboring non-fringing pixels over fringing pixels when rebuilding color. This is more
-	a finetuning parameter. Try to increase it if you see some fringes getting desaturated, but not enough. Lower it only
-	if you do not find another way to keep unwanted regions of your pictures getting desaturated. You can try to do that
-	by experimenting with <quote>edge detection radius</quote> and <quote>threshold</quote> or do parametric
-	blending by the right choice of <quote>C</quote> and/or <quote>h</quote>.
-      </para>
-    </sect5>
-
   </sect4>
 
 </sect3>
