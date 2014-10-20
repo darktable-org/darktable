@@ -1332,6 +1332,23 @@ _init_8(
 
   if(res)
   {
+    //try to generate mip from larger mip
+    for(int k=size+1; k<=DT_MIPMAP_3; k++)
+    {
+      dt_mipmap_buffer_t tmp;
+      dt_mipmap_cache_read_get(darktable.mipmap_cache, &tmp, imgid, k, DT_MIPMAP_TESTLOCK);
+      if(tmp.buf == 0)
+        continue;
+      dt_print(DT_DEBUG_CACHE, "[_init_8] generate mip %d for %s from level %d\n", size, filename, k);
+      // downsample
+      dt_iop_flip_and_zoom_8(tmp.buf, tmp.width, tmp.height, buf, wd, ht, ORIENTATION_NONE , width, height);
+      dt_mipmap_cache_read_release(darktable.mipmap_cache, &tmp);
+      res = 0;
+    }
+  }
+
+  if(res)
+  {
     // try the real thing: rawspeed + pixelpipe
     dt_imageio_module_format_t format;
     _dummy_data_t dat;
