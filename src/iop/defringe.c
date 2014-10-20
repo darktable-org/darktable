@@ -200,13 +200,11 @@ void process (struct dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece, voi
   }
   const int sampleidx_small = sampleidx_avg-1;
 
-  // smaller area for artifact filter
   const int small_radius = MAX(radius, 3);
-  const int local_radius = 24 + radius*4;
+  const int avg_radius = 24 + radius*4;
 
   const int samples_small = fib[sampleidx_small];
   const int samples_avg = fib[sampleidx_avg];
-  const int samples_artifact = samples_avg;
 
   // precompute all required fibonacci lattices:
   if ((xy_avg = malloc(2 * sizeof(int) * samples_avg)))
@@ -215,7 +213,7 @@ void process (struct dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece, voi
     for (int u=0; u < samples_avg; u++)
     {
       int dx,dy;
-      fib_latt(&dx,&dy,local_radius,u,sampleidx_avg);
+      fib_latt(&dx,&dy,avg_radius,u,sampleidx_avg);
       *tmp++ = dx;
       *tmp++ = dy;
     }
@@ -230,23 +228,6 @@ void process (struct dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece, voi
   {
     tmp = xy_small;
     for (int u=0; u < samples_small; u++)
-    {
-      int dx,dy;
-      fib_latt(&dx,&dy,small_radius,u,sampleidx_small);
-      *tmp++ = dx;
-      *tmp++ = dy;
-    }
-  }
-  else
-  {
-    fprintf(stderr, "Error allocating memory for fibonacci lattice in: defringe module\n");
-    goto ERROR_EXIT;
-  }
-
-  if ((xy_artifact = malloc(2 * sizeof(int) * samples_artifact)))
-  {
-    tmp = xy_artifact;
-    for (int u=0; u < samples_artifact; u++)
     {
       int dx,dy;
       fib_latt(&dx,&dy,small_radius,u,sampleidx_small);
@@ -317,12 +298,20 @@ void process (struct dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece, voi
           int y = MAX(0,MIN(height-1,v+dy));
           local_avg += out[(size_t)y*width*ch + x*ch +3];
         }
-        local_avg /= (float)samples_avg;
-        avg_edge_chroma = local_avg;
+        avg_edge_chroma = fmax(0.01f, (float)local_avg / samples_avg);
         local_thresh = fmax(0.1f, 4.0 * d->thresh * avg_edge_chroma / MAGIC_THRESHOLD_COEFF);
       }
 
-      if (out[(size_t)v*width*ch +t*ch +3] > local_thresh)
+      if (out[(size_t)v*width*ch +t*ch +3] > local_thresh
+          // reduces artifacts ("region growing by 1 pixel"):
+          || out[(size_t)MAX(0,(v-1))*width*ch +MAX(0,(t-1))*ch +3] > local_thresh
+          || out[(size_t)MAX(0,(v-1))*width*ch +t*ch +3] > local_thresh
+          || out[(size_t)MAX(0,(v-1))*width*ch +MIN(width-1,(t+1))*ch +3] > local_thresh
+          || out[(size_t)v*width*ch +MAX(0,(t-1))*ch +3] > local_thresh
+          || out[(size_t)v*width*ch +MIN(width-1,(t+1))*ch +3] > local_thresh
+          || out[(size_t)MIN(height-1,(v+1))*width*ch +MAX(0,(t-1))*ch +3] > local_thresh
+          || out[(size_t)MIN(height-1,(v+1))*width*ch +t*ch +3] > local_thresh
+          || out[(size_t)MIN(height-1,(v+1))*width*ch +MIN(width-1,(t+1))*ch +3] > local_thresh)
       {
         float atot=0, btot=0;
         float norm=0;
@@ -356,42 +345,6 @@ void process (struct dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece, voi
         out[(size_t)v*width*ch + t*ch +1] = a;
         out[(size_t)v*width*ch + t*ch +2] = b;
       }
-      // "artifact reduction filter": iterate also over neighbours of pixel over threshold
-      // reducing artifacts could still be better, especially for fringe with a thickness of more than 2 pixels
-      else if ( out[(size_t)MAX(0,(v-1))*width*ch +MAX(0,(t-1))*ch +3] > local_thresh
-                || out[(size_t)MAX(0,(v-1))*width*ch +t*ch +3] > local_thresh
-                || out[(size_t)MAX(0,(v-1))*width*ch +MIN(width-1,(t+1))*ch +3] > local_thresh
-                || out[(size_t)v*width*ch +MAX(0,(t-1))*ch +3] > local_thresh
-                || out[(size_t)v*width*ch +MIN(width-1,(t+1))*ch +3] > local_thresh
-                || out[(size_t)MIN(height-1,(v+1))*width*ch +MAX(0,(t-1))*ch +3] > local_thresh
-                || out[(size_t)MIN(height-1,(v+1))*width*ch +t*ch +3] > local_thresh
-                || out[(size_t)MIN(height-1,(v+1))*width*ch +MIN(width-1,(t+1))*ch +3] > local_thresh )
-      {
-        float atot=0, btot=0;
-        float norm=0;
-        float weight;
-        // dup'ed code from above:
-        const int *tmp = xy_artifact;
-        for (int u=0; u < samples_artifact; u++)
-        {
-          int dx = *tmp++;
-          int dy = *tmp++;
-          int x = MAX(0,MIN(width-1,t+dx));
-          int y = MAX(0,MIN(height-1,v+dy));
-          // inverse chroma weighted average of neigbouring pixels inside window
-          // also taking average edge chromaticity into account (either global or local average)
-          weight = 1.0/(out[(size_t)y*width*ch + x*ch +3] + avg_edge_chroma);
-          atot += weight * in[(size_t)y*width*ch + x*ch +1];
-          btot += weight * in[(size_t)y*width*ch + x*ch +2];
-          norm += weight;
-        }
-        double a = (atot/norm); // *balance + in[v*width*ch + t*ch +1]*(1.0-balance);
-        double b = (btot/norm); // *balance + in[v*width*ch + t*ch +2]*(1.0-balance);
-        //if (a < -128.0 || a > 127.0) CLIP(a,-128.0,127.0);
-        //if (b < -128.0 || b > 127.0) CLIP(b,-128.0,127.0);
-        out[(size_t)v*width*ch + t*ch +1] = a;
-        out[(size_t)v*width*ch + t*ch +2] = b;
-        }
       else
       {
         out[(size_t)v*width*ch + t*ch +1] = in[(size_t)v*width*ch + t*ch +1];
