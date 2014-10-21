@@ -385,7 +385,7 @@ restart:
   dt_pthread_mutex_unlock(&dev->pipe_mutex);
 }
 
-void dt_dev_reload_image(dt_develop_t *dev, const uint32_t imgid)
+static inline void _dt_dev_load_raw(dt_develop_t *dev, const uint32_t imgid)
 {
   // first load the raw, to make sure dt_image_t will contain all and correct data.
   dt_mipmap_buffer_t buf;
@@ -398,6 +398,11 @@ void dt_dev_reload_image(dt_develop_t *dev, const uint32_t imgid)
   const dt_image_t *image = dt_image_cache_read_get(darktable.image_cache, imgid);
   dev->image_storage = *image;
   dt_image_cache_read_release(darktable.image_cache, image);
+}
+
+void dt_dev_reload_image(dt_develop_t *dev, const uint32_t imgid)
+{
+  _dt_dev_load_raw(dev, imgid);
   dev->image_force_reload = dev->image_loading = dev->preview_loading = 1;
 
   dev->pipe->changed |= DT_DEV_PIPE_SYNCH;
@@ -436,18 +441,7 @@ float dt_dev_get_zoom_scale(dt_develop_t *dev, dt_dev_zoom_t zoom, int closeup_f
 
 void dt_dev_load_image(dt_develop_t *dev, const uint32_t imgid)
 {
-  // first get full raw buffer once, to make sure dt_image_t will have all the info
-  // rawspeed supplies us with:
-  dt_mipmap_buffer_t buf;
-  dt_times_t start;
-  dt_get_times(&start);
-  dt_mipmap_cache_read_get(darktable.mipmap_cache, &buf, imgid, DT_MIPMAP_FULL, DT_MIPMAP_BLOCKING);
-  dt_mipmap_cache_read_release(darktable.mipmap_cache, &buf);
-  dt_show_times(&start, "[dev]", "to load the image.");
-
-  const dt_image_t *image = dt_image_cache_read_get(darktable.image_cache, imgid);
-  dev->image_storage = *image;
-  dt_image_cache_read_release(darktable.image_cache, image);
+  _dt_dev_load_raw(dev, imgid);
 
   if(dev->pipe)
   {
