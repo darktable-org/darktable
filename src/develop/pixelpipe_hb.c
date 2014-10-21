@@ -161,6 +161,7 @@ void dt_dev_pixelpipe_set_input(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, flo
       modules = g_list_next(modules);
     }
   }
+  dt_pthread_mutex_unlock(&dev->history_mutex);
 
   pipe->iwidth  = width;
   pipe->iheight = height;
@@ -168,7 +169,6 @@ void dt_dev_pixelpipe_set_input(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, flo
   pipe->iscale = iscale;
   pipe->input = input;
   pipe->image = dev->image_storage;
-  dt_pthread_mutex_unlock(&dev->history_mutex);
 }
 
 void dt_dev_pixelpipe_cleanup(dt_dev_pixelpipe_t *pipe)

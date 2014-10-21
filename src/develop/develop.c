@@ -396,15 +396,12 @@ restart:
 
 void dt_dev_reload_image(dt_develop_t *dev, const uint32_t imgid)
 {
-  // shield image_storage by history mutex, pipelines might overwrite it asynchronously.
-  dt_pthread_mutex_lock(&dev->history_mutex);
   const dt_image_t *image = dt_image_cache_read_get(darktable.image_cache, imgid);
   dev->image_storage = *image;
   dt_image_cache_read_release(darktable.image_cache, image);
   dev->image_force_reload = dev->image_loading = dev->preview_loading = 1;
   dev->pipe->changed |= DT_DEV_PIPE_SYNCH;
   dt_dev_invalidate(dev); // only invalidate image, preview will follow once it's loaded.
-  dt_pthread_mutex_unlock(&dev->history_mutex);
 }
 
 float dt_dev_get_zoom_scale(dt_develop_t *dev, dt_dev_zoom_t zoom, int closeup_factor, int preview)
@@ -439,11 +436,9 @@ float dt_dev_get_zoom_scale(dt_develop_t *dev, dt_dev_zoom_t zoom, int closeup_f
 
 void dt_dev_load_image(dt_develop_t *dev, const uint32_t imgid)
 {
-  dt_pthread_mutex_lock(&dev->history_mutex);
   const dt_image_t *image = dt_image_cache_read_get(darktable.image_cache, imgid);
   dev->image_storage = *image;
   dt_image_cache_read_release(darktable.image_cache, image);
-  dt_pthread_mutex_unlock(&dev->history_mutex);
   if(dev->pipe)
   {
     dev->pipe->processed_width  = 0;
