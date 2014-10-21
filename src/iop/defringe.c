@@ -44,7 +44,6 @@ typedef struct dt_iop_defringe_params_t
   float radius;
   float thresh;
   dt_iop_defringe_mode_t op_mode;
-  float strength;
 }
 dt_iop_defringe_params_t;
 
@@ -56,7 +55,6 @@ typedef struct dt_iop_defringe_gui_data_t
   GtkWidget *mode_select;
   GtkWidget *radius_scale;
   GtkWidget *thresh_scale;
-  GtkWidget *strength_scale;
 }
 dt_iop_defringe_gui_data_t;
 
@@ -116,7 +114,7 @@ static inline
 void fib_latt(int * const x, int * const y, float radius, int step, int idx)
 {
   // idx < 1 because division by zero is also a problem in the following line
-  if (idx >= sizeof(fib)/sizeof(float) || idx < 1)
+  if (idx >= sizeof(fib)/sizeof(float)-1 || idx < 1)
   {
     *x = 0;
     *y = 0;
@@ -155,7 +153,6 @@ void process (struct dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece, voi
   const int ch = piece->colors;
 
   const int radius = ceil(2.0*ceilf(sigma));
-  const float base_strength = fmax(0.1f, d->strength);
 
   // save the fibonacci lattices in them later
   int * xy_avg = NULL;
@@ -185,7 +182,7 @@ void process (struct dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece, voi
   // Pre-Compute Fibonacci Lattices
   int *tmp;
 
-  int samples_wish = radius*radius*0.8;
+  int samples_wish = radius*radius;
   int sampleidx_avg;
   // select samples by fibonacci number
   if (samples_wish > 89) {
@@ -203,13 +200,11 @@ void process (struct dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece, voi
   }
   const int sampleidx_small = sampleidx_avg-1;
 
-  // smaller area for artifact filter
-  const int radius_artifact_filter = radius/2;
-  const int local_radius = radius*10.0;
+  const int small_radius = MAX(radius, 3);
+  const int avg_radius = 24 + radius*4;
 
   const int samples_small = fib[sampleidx_small];
   const int samples_avg = fib[sampleidx_avg];
-  const int samples_artifact = samples_avg;
 
   // precompute all required fibonacci lattices:
   if ((xy_avg = malloc(2 * sizeof(int) * samples_avg)))
@@ -218,7 +213,7 @@ void process (struct dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece, voi
     for (int u=0; u < samples_avg; u++)
     {
       int dx,dy;
-      fib_latt(&dx,&dy,local_radius,u,sampleidx_avg);
+      fib_latt(&dx,&dy,avg_radius,u,sampleidx_avg);
       *tmp++ = dx;
       *tmp++ = dy;
     }
@@ -235,24 +230,7 @@ void process (struct dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece, voi
     for (int u=0; u < samples_small; u++)
     {
       int dx,dy;
-      fib_latt(&dx,&dy,radius,u,sampleidx_small);
-      *tmp++ = dx;
-      *tmp++ = dy;
-    }
-  }
-  else
-  {
-    fprintf(stderr, "Error allocating memory for fibonacci lattice in: defringe module\n");
-    goto ERROR_EXIT;
-  }
-
-  if ((xy_artifact = malloc(2 * sizeof(int) * samples_artifact)))
-  {
-    tmp = xy_artifact;
-    for (int u=0; u < samples_artifact; u++)
-    {
-      int dx,dy;
-      fib_latt(&dx,&dy,radius_artifact_filter,u,sampleidx_small);
+      fib_latt(&dx,&dy,small_radius,u,sampleidx_small);
       *tmp++ = dx;
       *tmp++ = dy;
     }
@@ -278,9 +256,9 @@ void process (struct dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece, voi
       float edge = (a*a+b*b); //range up to 2*(256)^2 -> approx. 0 to 131072
 
       // save local edge chroma in out[.. +3] , this is later compared with threshold
-      out[(size_t)v*width*ch + t*ch +3] = edge * base_strength * base_strength;
+      out[(size_t)v*width*ch + t*ch +3] = edge;
       // the average chroma of the edge-layer in the roi
-      if (MODE_GLOBAL_AVERAGE == d->op_mode) avg_edge_chroma += edge * base_strength;
+      if (MODE_GLOBAL_AVERAGE == d->op_mode) avg_edge_chroma += edge;
     }
   }
 
@@ -288,7 +266,7 @@ void process (struct dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece, voi
   if (MODE_GLOBAL_AVERAGE == d->op_mode)
   {
     avg_edge_chroma = avg_edge_chroma / (width * height) + 10.0*FLT_EPSILON;
-    thresh = fmax(0.1f, 8.0 * d->thresh * avg_edge_chroma / MAGIC_THRESHOLD_COEFF);
+    thresh = fmax(0.1f, 4.0 * d->thresh * avg_edge_chroma / MAGIC_THRESHOLD_COEFF);
   }
   else
   {
@@ -320,12 +298,20 @@ void process (struct dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece, voi
           int y = MAX(0,MIN(height-1,v+dy));
           local_avg += out[(size_t)y*width*ch + x*ch +3];
         }
-        local_avg /= (float)samples_avg*2.0;
-        avg_edge_chroma = local_avg;
-        float new_thresh = 8.0 * d->thresh * avg_edge_chroma / MAGIC_THRESHOLD_COEFF;
-        local_thresh = new_thresh;
+        avg_edge_chroma = fmax(0.01f, (float)local_avg / samples_avg);
+        local_thresh = fmax(0.1f, 4.0 * d->thresh * avg_edge_chroma / MAGIC_THRESHOLD_COEFF);
       }
-      if (out[(size_t)v*width*ch +t*ch +3] > local_thresh)
+
+      if (out[(size_t)v*width*ch +t*ch +3] > local_thresh
+          // reduces artifacts ("region growing by 1 pixel"):
+          || out[(size_t)MAX(0,(v-1))*width*ch +MAX(0,(t-1))*ch +3] > local_thresh
+          || out[(size_t)MAX(0,(v-1))*width*ch +t*ch +3] > local_thresh
+          || out[(size_t)MAX(0,(v-1))*width*ch +MIN(width-1,(t+1))*ch +3] > local_thresh
+          || out[(size_t)v*width*ch +MAX(0,(t-1))*ch +3] > local_thresh
+          || out[(size_t)v*width*ch +MIN(width-1,(t+1))*ch +3] > local_thresh
+          || out[(size_t)MIN(height-1,(v+1))*width*ch +MAX(0,(t-1))*ch +3] > local_thresh
+          || out[(size_t)MIN(height-1,(v+1))*width*ch +t*ch +3] > local_thresh
+          || out[(size_t)MIN(height-1,(v+1))*width*ch +MIN(width-1,(t+1))*ch +3] > local_thresh)
       {
         float atot=0, btot=0;
         float norm=0;
@@ -359,42 +345,6 @@ void process (struct dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece, voi
         out[(size_t)v*width*ch + t*ch +1] = a;
         out[(size_t)v*width*ch + t*ch +2] = b;
       }
-      // "artifact reduction filter": iterate also over neighbours of pixel over threshold
-      // reducing artifacts could still be better, especially for fringe with a thickness of more than 2 pixels
-      else if ( out[(size_t)MAX(0,(v-1))*width*ch +MAX(0,(t-1))*ch +3] > thresh
-                || out[(size_t)MAX(0,(v-1))*width*ch +t*ch +3] > thresh
-                || out[(size_t)MAX(0,(v-1))*width*ch +MIN(width-1,(t+1))*ch +3] > thresh
-                || out[(size_t)v*width*ch +MAX(0,(t-1))*ch +3] > thresh
-                || out[(size_t)v*width*ch +MIN(width-1,(t+1))*ch +3] > thresh
-                || out[(size_t)MIN(height-1,(v+1))*width*ch +MAX(0,(t-1))*ch +3] > thresh
-                || out[(size_t)MIN(height-1,(v+1))*width*ch +t*ch +3] > thresh
-                || out[(size_t)MIN(height-1,(v+1))*width*ch +MIN(width-1,(t+1))*ch +3] > thresh )
-      {
-        float atot=0, btot=0;
-        float norm=0;
-        float weight;
-        // dup'ed code from above:
-        const int *tmp = xy_artifact;
-        for (int u=0; u < samples_artifact; u++)
-        {
-          int dx = *tmp++;
-          int dy = *tmp++;
-          int x = MAX(0,MIN(width-1,t+dx));
-          int y = MAX(0,MIN(height-1,v+dy));
-          // inverse chroma weighted average of neigbouring pixels inside window
-          // also taking average edge chromaticity into account (either global or local average)
-          weight = 1.0/(out[(size_t)y*width*ch + x*ch +3] + avg_edge_chroma);
-          atot += weight * in[(size_t)y*width*ch + x*ch +1];
-          btot += weight * in[(size_t)y*width*ch + x*ch +2];
-          norm += weight;
-        }
-        double a = (atot/norm); // *balance + in[v*width*ch + t*ch +1]*(1.0-balance);
-        double b = (btot/norm); // *balance + in[v*width*ch + t*ch +2]*(1.0-balance);
-        //if (a < -128.0 || a > 127.0) CLIP(a,-128.0,127.0);
-        //if (b < -128.0 || b > 127.0) CLIP(b,-128.0,127.0);
-        out[(size_t)v*width*ch + t*ch +1] = a;
-        out[(size_t)v*width*ch + t*ch +2] = b;
-        }
       else
       {
         out[(size_t)v*width*ch + t*ch +1] = in[(size_t)v*width*ch + t*ch +1];
@@ -422,8 +372,7 @@ void reload_defaults(dt_iop_module_t *module)
 {
   module->default_enabled = 0;
   ((dt_iop_defringe_params_t *)module->default_params)->radius = 4.0;
-  ((dt_iop_defringe_params_t *)module->default_params)->thresh = 10;
-  ((dt_iop_defringe_params_t *)module->default_params)->strength = 1.0;
+  ((dt_iop_defringe_params_t *)module->default_params)->thresh = 20.0;
   ((dt_iop_defringe_params_t *)module->default_params)->op_mode = MODE_GLOBAL_AVERAGE;
   memcpy(module->params, module->default_params, sizeof(dt_iop_defringe_params_t));
 }
@@ -465,15 +414,6 @@ thresh_slider_callback (GtkWidget *w, dt_iop_module_t *module)
 }
 
 static void
-strength_slider_callback (GtkWidget *w, dt_iop_module_t *module)
-{
-  if(darktable.gui->reset) return;
-  dt_iop_defringe_params_t *p = (dt_iop_defringe_params_t *)module->params;
-  p->strength = dt_bauhaus_slider_get(w);
-  dt_dev_add_history_item(darktable.develop, module, TRUE);
-}
-
-static void
 mode_callback (GtkWidget *w, dt_iop_module_t *module)
 {
   dt_iop_defringe_params_t *p = (dt_iop_defringe_params_t *)module->params;
@@ -503,29 +443,21 @@ void gui_init (dt_iop_module_t *module)
   g->radius_scale = dt_bauhaus_slider_new_with_range(module, 0.5, 20.0, 0.1, p->radius, 1);
   dt_bauhaus_widget_set_label(g->radius_scale, NULL, _("edge detection radius"));
 
-  g->thresh_scale = dt_bauhaus_slider_new_with_range(module, 1.0, 128.0, 0.1, p->thresh, 1);
+  g->thresh_scale = dt_bauhaus_slider_new_with_range(module, 0.5, 128.0, 0.1, p->thresh, 1);
   dt_bauhaus_widget_set_label(g->thresh_scale, NULL, _("threshold"));
-
-  g->strength_scale = dt_bauhaus_slider_new_with_range(module, 0.1, 2.0, 0.1, p->strength, 1);
-  dt_bauhaus_widget_set_label(g->strength_scale, NULL, _("strength"));
 
   gtk_box_pack_start(GTK_BOX(module->widget), GTK_WIDGET(g->radius_scale), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(module->widget), GTK_WIDGET(g->thresh_scale), TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(module->widget), GTK_WIDGET(g->strength_scale), TRUE, TRUE, 0);
 
   g_object_set(G_OBJECT(g->radius_scale), "tooltip-text",
                _("radius for detecting fringe"), (char *)NULL);
   g_object_set(G_OBJECT(g->thresh_scale), "tooltip-text",
                _("threshold for defringe, higher values mean less defringing"), (char *)NULL);
-  g_object_set(G_OBJECT(g->thresh_scale), "tooltip-text",
-               _("strength, will affect how strong edges are biased"), (char *)NULL);
 
   g_signal_connect(G_OBJECT(g->radius_scale), "value-changed",
                    G_CALLBACK(radius_slider_callback), module);
   g_signal_connect(G_OBJECT(g->thresh_scale), "value-changed",
                    G_CALLBACK(thresh_slider_callback), module);
-  g_signal_connect(G_OBJECT(g->strength_scale), "value-changed",
-                   G_CALLBACK(strength_slider_callback), module);
 }
 
 void gui_update (dt_iop_module_t *module)
@@ -535,7 +467,6 @@ void gui_update (dt_iop_module_t *module)
   dt_bauhaus_combobox_set(g->mode_select, p->op_mode);
   dt_bauhaus_slider_set(g->radius_scale, p->radius);
   dt_bauhaus_slider_set(g->thresh_scale, p->thresh);
-  dt_bauhaus_slider_set(g->strength_scale, p->strength);
 }
 
 void gui_cleanup (dt_iop_module_t *module)
