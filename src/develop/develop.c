@@ -385,6 +385,23 @@ restart:
   dt_pthread_mutex_unlock(&dev->pipe_mutex);
 }
 
+// gui thread function: call reload defaults on the modules.
+static inline void _dt_dev_reload_defaults(dt_develop_t *dev)
+{
+  dt_pthread_mutex_lock(&dev->history_mutex);
+  /* Update module configs in case raw parsing has brought in new settings
+     (e.g., blackpoint/whitepoint, pixel_aspect_ratio, etc) */
+  GList *modules = dev->iop;
+  while(modules)
+  {
+    dt_iop_module_t *module = (dt_iop_module_t *)(modules->data);
+    dt_iop_reload_defaults(module);
+    modules = g_list_next(modules);
+  }
+  dt_pthread_mutex_unlock(&dev->history_mutex);
+}
+
+// load the raw and get the new image struct, blocking in gui thread
 static inline void _dt_dev_load_raw(dt_develop_t *dev, const uint32_t imgid)
 {
   // first load the raw, to make sure dt_image_t will contain all and correct data.
@@ -459,6 +476,7 @@ void dt_dev_load_image(dt_develop_t *dev, const uint32_t imgid)
   dev->form_visible = NULL;
 
   dt_dev_read_history(dev);
+  _dt_dev_reload_defaults(dev);
 
   dev->first_load = 0;
 }
