@@ -42,6 +42,21 @@ void dt_dev_pixelpipe_init(dt_dev_pixelpipe_t *pipe)
 
 void dt_dev_pixelpipe_set_input(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, float *input, int width, int height)
 {
+  // get a fresh dt_image_t now that we know all the loading is done
+  const dt_image_t *img = dt_image_cache_read_get(darktable.image_cache, dev->image_storage.id);
+  dev->image_storage = *img;
+  dt_image_cache_read_release(darktable.image_cache, img);
+
+  /* Update module configs in case raw parsing has brought in new settings
+     (e.g., blackpoint/whitepoint, pixel_aspect_ratio, etc) */
+  GList *modules = dev->iop;
+  while(modules)
+  {
+    dt_iop_module_t *module = (dt_iop_module_t *)(modules->data);
+    dt_iop_reload_defaults(module);
+    modules = g_list_next(modules);
+  }
+
   pipe->changed = DT_DEV_PIPE_UNCHANGED;
   pipe->iwidth = width;
   pipe->iheight = height;
