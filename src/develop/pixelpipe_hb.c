@@ -143,12 +143,12 @@ int dt_dev_pixelpipe_init_cached(dt_dev_pixelpipe_t *pipe, size_t size, int32_t 
 void dt_dev_pixelpipe_set_input(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, float *input, int width, int height, float iscale)
 {
   dt_pthread_mutex_lock(&dev->history_mutex);
-  if(dev->image_storage.id != dev->last_read_imgid)
-  { // We only do this once for each image
+  if (dev->image_storage.id != dev->last_read_imgid) {
+    // We only do this once for each image
+    dev->last_read_imgid = dev->image_storage.id;
     // get a fresh dt_image_t now that we know all the loading is done
     const dt_image_t *img = dt_image_cache_read_get(darktable.image_cache, dev->image_storage.id);
     dev->image_storage = *img;
-    dev->last_read_imgid = dev->image_storage.id;
     dt_image_cache_read_release(darktable.image_cache, img);
 
     /* Update module configs in case raw parsing has brought in new settings
