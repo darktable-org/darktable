@@ -29,7 +29,7 @@
 
 #define DARKTABLE_KEYRING	PACKAGE_NAME
 
-#define GFOREACH(item, list) for(GList *__glist = list; __glist && (item = __glist->data, true); __glist = __glist->next)
+#define GFOREACH(item, list) for(GList *__glist = list; __glist && (item = __glist->data, TRUE); __glist = __glist->next)
 
 #define EMPTY_STRING(string) !*(string)
 
