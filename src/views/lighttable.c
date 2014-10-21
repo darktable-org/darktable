@@ -826,6 +826,8 @@ after_drawing:
     }
   }
 
+  lib->offset_changed = FALSE;
+
   free(query_ids);
   //oldpan = pan;
   if(darktable.unmuted & DT_DEBUG_CACHE)
