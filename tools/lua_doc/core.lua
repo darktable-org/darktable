@@ -488,6 +488,7 @@ function M.all_children(node)
 	function M.set_text(node,text)
 		if node._luadoc_text then
 			io.stderr:write("warning, double documentation for "..node:get_name(true).."\n")
+			io.stderr:write("was\n"..node._luadoc_text.."\nnew\n"..text.."\n")
 		end
 		node._luadoc_text = text
 		for k,v in ipairs(node._luadoc_parents) do

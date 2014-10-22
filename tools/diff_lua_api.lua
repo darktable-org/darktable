@@ -97,7 +97,7 @@ function dump_node(node,prefix)
     return tostring(node)
   elseif known[node] then
     return build_name(node.__parent)
-  else
+  elseif verbose== "nodes" then
     known[node] = true
     local result="{\n"
     for k,v in sorted_pairs(node) do
@@ -107,6 +107,8 @@ function dump_node(node,prefix)
     end
     result = result ..prefix.."}"
     return result
+  else
+    return build_name(node.__parent)
   end
 end
 

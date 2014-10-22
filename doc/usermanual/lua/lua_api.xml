@@ -1169,7 +1169,7 @@ end</programlisting>
     <tbody><row>
     <entry>Attributes:</entry>
     <entry><itemizedlist>
-<listitem><para><emphasis>container : </emphasis>DT_UI_CONTAINER_PANEL_RIGHT_CENTER</para></listitem>
+<listitem><para><emphasis>container : </emphasis>DT_UI_CONTAINER_PANEL_LEFT_CENTER</para></listitem>
 <listitem><para><emphasis><link linkend="attributes_has_tostring">has_tostring</link></emphasis></para></listitem>
 <listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_lib_module_t">types.dt_lib_module_t</link></para></listitem>
 <listitem><para><emphasis>position : </emphasis>500</para></listitem>
@@ -3027,27 +3027,6 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
 </indexterm>
 <para>This section documents types that are specific to darktable's Lua API.</para>
 
-<section status="final" id="types_dt_imageio_module_storage_data_email">
-<title>types.dt_imageio_module_storage_data_email</title>
-<indexterm>
-<primary>Lua API</primary>
-<secondary>dt_imageio_module_storage_data_email</secondary>
-</indexterm>
-<synopsis>dt_type</synopsis>
-<para>An object containing parameters to export to email.</para>
-<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
-    <colspec colwidth="2*"/>
-    <colspec colwidth="8*"/>
-    <tbody><row>
-    <entry>Attributes:</entry>
-    <entry><itemizedlist>
-<listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_imageio_module_storage_t">types.dt_imageio_module_storage_t</link></para></listitem>
-</itemizedlist>
-</entry>
-    </row></tbody>
-    </tgroup></informaltable>
-</section>
-
 <section status="final" id="types_dt_lua_image_t">
 <title>types.dt_lua_image_t</title>
 <indexterm>
@@ -4593,6 +4572,27 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
 
 </section>
 
+<section status="final" id="types_dt_imageio_module_storage_data_email">
+<title>types.dt_imageio_module_storage_data_email</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>dt_imageio_module_storage_data_email</secondary>
+</indexterm>
+<synopsis>dt_type</synopsis>
+<para>An object containing parameters to export to email.</para>
+<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
+    <colspec colwidth="2*"/>
+    <colspec colwidth="8*"/>
+    <tbody><row>
+    <entry>Attributes:</entry>
+    <entry><itemizedlist>
+<listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_imageio_module_storage_t">types.dt_imageio_module_storage_t</link></para></listitem>
+</itemizedlist>
+</entry>
+    </row></tbody>
+    </tgroup></informaltable>
+</section>
+
 <section status="final" id="types_dt_imageio_module_storage_data_flickr">
 <title>types.dt_imageio_module_storage_data_flickr</title>
 <indexterm>
@@ -5272,7 +5272,7 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
 <secondary>views</secondary>
 </indexterm>
 <synopsis>table</synopsis>
-<para>A table of all teh views that display this widget</para>
+<para>A table of all the views that display this widget</para>
 
 </section>
 

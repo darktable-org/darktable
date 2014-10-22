@@ -58,8 +58,6 @@ local function remove_all_children(node)
 end
 -- prevent some objects to appear at the wrong end of the tree
 remove_all_children(types.dt_lib_module_t.views)
-io.stderr:write("warning, avoid problems with picasa/facebook\n")
-types.dt_imageio_module_storage_data_email:set_text([[TBSL undocumented, force first]])
 
 ----------------------
 --  REANAMINGS      --
@@ -68,7 +66,13 @@ types.dt_imageio_module_storage_data_email:set_text([[TBSL undocumented, force f
 ----------------------
 --  TOPLEVEL        --
 ----------------------
-doc.toplevel:set_text([[To access the darktable specific functions you must load the darktable environement:]]..
+local prefix
+if real_darktable.configuration.api_version_suffix == "" then
+  prefix = [[This documentation is for the *developement* version of darktable. for the stable version, please visit the user manual]]..para()
+else
+  prefix = ""
+end
+doc.toplevel:set_text(prefix..[[To access the darktable specific functions you must load the darktable environement:]]..
 code([[darktable = require "darktable"]])..
 [[All functions and data are accessed through the darktable module.]]..para()..
 [[This documentation for API version ]]..real_darktable.configuration.api_version_string..[[.]])
@@ -609,7 +613,7 @@ darktable.debug.type:set_text([[Similar to the system function type() but it wil
 	types.dt_lib_module_t.expandable:set_text([[True if the lib can be expanded/retracted]]);
 	types.dt_lib_module_t.expanded:set_text([[True if the lib is expanded]]);
 	types.dt_lib_module_t.position:set_text([[A value deciding the position of the lib within its container]])
-	types.dt_lib_module_t.views:set_text([[A table of all teh views that display this widget]])
+	types.dt_lib_module_t.views:set_text([[A table of all the views that display this widget]])
 	types.dt_lib_module_t.reset:set_text([[A function to reset the lib to its default values]]..para()..
 	[[This function will do nothing if the lib is not visible or can't be reset]])
 	types.dt_lib_module_t.reset:add_parameter("self",types.dt_lib_module_t,[[The lib to reset]]):set_attribute("is_self",true)
@@ -743,7 +747,7 @@ darktable.debug.type:set_text([[Similar to the system function type() but it wil
 	[[A callback that is yielding allows other Lua code to run.]]..startlist()..
 	listel("wait_ms: one extra parameter; the execution will pause for that many miliseconds; yield returns nothing;")..
 	listel("file_readable: an opened file from a call to the OS library; will return when the file is readable; returns nothing;")..
-	listel([[* run_command: a command to be run by "sh -c"; will return when the command terminates; returns the return code of the execution.]])..
+	listel([[run_command: a command to be run by "sh -c"; will return when the command terminates; returns the return code of the execution.]])..
 endlist())
 system.coroutine.yield:add_parameter("type",types.yield_type,[[The type of yield.]])
 system.coroutine.yield:add_parameter("extra","variable",[[An extra parameter: integer for "wait_ms", open file for "file_readable", string for "run_command".]])
