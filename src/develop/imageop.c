@@ -1184,7 +1184,6 @@ int dt_iop_load_module(dt_iop_module_t *module, dt_iop_module_so_t *module_so, d
   }
   module->data = module_so->data;
   module->so = module_so;
-  dt_iop_reload_defaults(module);
   return 0;
 }
 
