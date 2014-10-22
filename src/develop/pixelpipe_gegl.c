@@ -16,7 +16,6 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 #include "develop/pixelpipe.h"
-#include "common/image_cache.h"
 #include <assert.h>
 
 void dt_dev_pixelpipe_init(dt_dev_pixelpipe_t *pipe)

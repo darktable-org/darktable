@@ -275,15 +275,6 @@ void dt_dev_process_image_job(dt_develop_t *dev)
   dt_mipmap_cache_read_get(darktable.mipmap_cache, &buf, dev->image_storage.id, DT_MIPMAP_FULL, DT_MIPMAP_BLOCKING);
   dt_show_times(&start, "[dev]", "to load the image.");
 
-  // copy over image now that width and height are sure to be correct.
-  // this seems to be necessary (even though it's done done in _set_input(), too) in
-  // case the loading fails?
-  const dt_image_t *img = dt_image_cache_read_get(darktable.image_cache, dev->image_storage.id);
-  dev->image_storage = *img;
-  // but don't lock the real thing, as that would avoid any writers to change stuff.
-  // (such as raw loading or star rating changes)
-  dt_image_cache_read_release(darktable.image_cache, img);
-
   // failed to load raw?
   if(!buf.buf)
   {
@@ -394,17 +385,45 @@ restart:
   dt_pthread_mutex_unlock(&dev->pipe_mutex);
 }
 
-void dt_dev_reload_image(dt_develop_t *dev, const uint32_t imgid)
+// gui thread function: call reload defaults on the modules.
+static inline void _dt_dev_reload_defaults(dt_develop_t *dev)
 {
-  // shield image_storage by history mutex, pipelines might overwrite it asynchronously.
   dt_pthread_mutex_lock(&dev->history_mutex);
+  /* Update module configs in case raw parsing has brought in new settings
+     (e.g., blackpoint/whitepoint, pixel_aspect_ratio, etc) */
+  GList *modules = dev->iop;
+  while(modules)
+  {
+    dt_iop_module_t *module = (dt_iop_module_t *)(modules->data);
+    dt_iop_reload_defaults(module);
+    modules = g_list_next(modules);
+  }
+  dt_pthread_mutex_unlock(&dev->history_mutex);
+}
+
+// load the raw and get the new image struct, blocking in gui thread
+static inline void _dt_dev_load_raw(dt_develop_t *dev, const uint32_t imgid)
+{
+  // first load the raw, to make sure dt_image_t will contain all and correct data.
+  dt_mipmap_buffer_t buf;
+  dt_times_t start;
+  dt_get_times(&start);
+  dt_mipmap_cache_read_get(darktable.mipmap_cache, &buf, imgid, DT_MIPMAP_FULL, DT_MIPMAP_BLOCKING);
+  dt_mipmap_cache_read_release(darktable.mipmap_cache, &buf);
+  dt_show_times(&start, "[dev]", "to load the image.");
+
   const dt_image_t *image = dt_image_cache_read_get(darktable.image_cache, imgid);
   dev->image_storage = *image;
   dt_image_cache_read_release(darktable.image_cache, image);
+}
+
+void dt_dev_reload_image(dt_develop_t *dev, const uint32_t imgid)
+{
+  _dt_dev_load_raw(dev, imgid);
   dev->image_force_reload = dev->image_loading = dev->preview_loading = 1;
+
   dev->pipe->changed |= DT_DEV_PIPE_SYNCH;
   dt_dev_invalidate(dev); // only invalidate image, preview will follow once it's loaded.
-  dt_pthread_mutex_unlock(&dev->history_mutex);
 }
 
 float dt_dev_get_zoom_scale(dt_develop_t *dev, dt_dev_zoom_t zoom, int closeup_factor, int preview)
@@ -439,11 +458,8 @@ float dt_dev_get_zoom_scale(dt_develop_t *dev, dt_dev_zoom_t zoom, int closeup_f
 
 void dt_dev_load_image(dt_develop_t *dev, const uint32_t imgid)
 {
-  dt_pthread_mutex_lock(&dev->history_mutex);
-  const dt_image_t *image = dt_image_cache_read_get(darktable.image_cache, imgid);
-  dev->image_storage = *image;
-  dt_image_cache_read_release(darktable.image_cache, image);
-  dt_pthread_mutex_unlock(&dev->history_mutex);
+  _dt_dev_load_raw(dev, imgid);
+
   if(dev->pipe)
   {
     dev->pipe->processed_width  = 0;
@@ -460,6 +476,7 @@ void dt_dev_load_image(dt_develop_t *dev, const uint32_t imgid)
   dev->form_visible = NULL;
 
   dt_dev_read_history(dev);
+  _dt_dev_reload_defaults(dev);
 
   dev->first_load = 0;
 }
@@ -736,6 +753,9 @@ void dt_dev_pop_history_items(dt_develop_t *dev, int32_t cnt)
   while(modules)
   {
     dt_iop_module_t *module = (dt_iop_module_t *)(modules->data);
+    // this call seems very wasteful (will reload whitebalance from file every time
+    // the user clicks on the history stack..), but makes the colorin bug go away
+    // when switching images via filmstrip.
     dt_iop_reload_defaults(module);
     dt_iop_gui_update(module);
     modules = g_list_next(modules);

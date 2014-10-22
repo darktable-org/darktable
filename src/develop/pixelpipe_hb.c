@@ -24,7 +24,6 @@
 #include "control/signal.h"
 #include "common/opencl.h"
 #include "common/imageio.h"
-#include "common/image_cache.h"
 #include "libs/lib.h"
 #include "libs/colorpicker.h"
 #include "iop/colorout.h"
@@ -142,33 +141,12 @@ int dt_dev_pixelpipe_init_cached(dt_dev_pixelpipe_t *pipe, size_t size, int32_t 
 
 void dt_dev_pixelpipe_set_input(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, float *input, int width, int height, float iscale)
 {
-  dt_pthread_mutex_lock(&dev->history_mutex);
-  if(dev->image_storage.id != dev->last_read_imgid)
-  { // We only do this once for each image
-    // get a fresh dt_image_t now that we know all the loading is done
-    const dt_image_t *img = dt_image_cache_read_get(darktable.image_cache, dev->image_storage.id);
-    dev->image_storage = *img;
-    dev->last_read_imgid = dev->image_storage.id;
-    dt_image_cache_read_release(darktable.image_cache, img);
-
-    /* Update module configs in case raw parsing has brought in new settings
-       (e.g., blackpoint/whitepoint, pixel_aspect_ratio, etc) */
-    GList *modules = dev->iop;
-    while(modules)
-    {
-      dt_iop_module_t *module = (dt_iop_module_t *)(modules->data);
-      dt_iop_reload_defaults(module);
-      modules = g_list_next(modules);
-    }
-  }
-
   pipe->iwidth  = width;
   pipe->iheight = height;
   pipe->iflipped = 0;
   pipe->iscale = iscale;
   pipe->input = input;
   pipe->image = dev->image_storage;
-  dt_pthread_mutex_unlock(&dev->history_mutex);
 }
 
 void dt_dev_pixelpipe_cleanup(dt_dev_pixelpipe_t *pipe)
