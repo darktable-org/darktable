@@ -1207,6 +1207,7 @@ GList *dt_iop_load_modules(dt_develop_t *dev)
     res = g_list_insert_sorted(res, module, sort_plugins);
     module->data = module_so->data;
     module->so = module_so;
+    dt_iop_reload_defaults(module);
     iop = g_list_next(iop);
   }
 
