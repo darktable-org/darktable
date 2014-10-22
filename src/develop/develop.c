@@ -753,9 +753,6 @@ void dt_dev_pop_history_items(dt_develop_t *dev, int32_t cnt)
   while(modules)
   {
     dt_iop_module_t *module = (dt_iop_module_t *)(modules->data);
-    // this call seems very wasteful (will reload whitebalance from file every time
-    // the user clicks on the history stack..), but makes the colorin bug go away
-    // when switching images via filmstrip.
     dt_iop_reload_defaults(module);
     dt_iop_gui_update(module);
     modules = g_list_next(modules);
