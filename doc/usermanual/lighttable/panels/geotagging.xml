@@ -3,7 +3,7 @@
 		<!ENTITY % darktable_dtd SYSTEM "../../dtd/darktable.dtd">
 		%darktable_dtd;
 		]>
-<sect2 status="draft" id="geotagging">
+<sect2 status="final" id="geotagging">
 
   <title>Geotagging</title>
 

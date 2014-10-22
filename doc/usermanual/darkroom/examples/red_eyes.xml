@@ -3,7 +3,7 @@
 		<!ENTITY % darktable_dtd SYSTEM "../../dtd/darktable.dtd">
 		%darktable_dtd;
 		]>
-<sect2 status="draft" id="red_eyes">
+<sect2 status="final" id="red_eyes">
 
   <title>Removal of red-eye effect</title>
 
@@ -11,7 +11,7 @@
     <primary>red-eye removal</primary>
   </indexterm>
 
-  <sect3 status="draft">
+  <sect3 status="final">
 
     <title>Overview</title>
 
@@ -44,7 +44,7 @@
 
   </sect3>
 
-  <sect3 status="draft">
+  <sect3 status="final">
 
     <title>Masking</title>
 
@@ -125,7 +125,7 @@
 
   </sect3>
 
-  <sect3 status="draft">
+  <sect3 status="final">
 
     <title>Desaturation</title>
 
