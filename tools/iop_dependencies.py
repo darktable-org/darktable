@@ -85,7 +85,7 @@ def add_edges(gr):
   # very linear:
   gr.add_edge(('basecurve', 'lens'))
   gr.add_edge(('basecurve', 'exposure'))
-  
+
   # fix mad sensor designs: NIKON D1X have rectangular pixels
   gr.add_edge(('scalepixels', 'demosaic'))
   # fix mad sensor designs: some Fuji have their Bayer pattern rotated by -45deg
@@ -103,13 +103,14 @@ def add_edges(gr):
   gr.add_edge(('flip', 'rotatepixels'))
   gr.add_edge(('flip', 'lens'))
   gr.add_edge(('flip', 'spots'))
+  gr.add_edge(('flip', 'liquify'))
   # plus, it confuses crop/rotate, vignetting and graduated density
   gr.add_edge(('clipping', 'flip'))
   gr.add_edge(('graduatednd', 'flip'))
   gr.add_edge(('vignette', 'flip'))
   # gives the ability to change the space of shadow recovery fusion.
   # maybe this has to go the other way round, let's see what experience shows!
-  
+
   # this evil hack for nikon crap profiles needs to come
   # as late as possible before the input profile:
   gr.add_edge(('profile_gamma', 'exposure'))
@@ -119,8 +120,8 @@ def add_edges(gr):
   gr.add_edge(('profile_gamma', 'lens'))
   gr.add_edge(('profile_gamma', 'bilateral'))
   gr.add_edge(('profile_gamma', 'denoiseprofile'))
-  
-  # these need Lab (between color in/out): 
+
+  # these need Lab (between color in/out):
   gr.add_edge(('colorout', 'bloom'))
   gr.add_edge(('colorout', 'nlmeans'))
   gr.add_edge(('colorout', 'colortransfer'))
@@ -204,7 +205,10 @@ def add_edges(gr):
   gr.add_edge(('lens', 'spots'))
   gr.add_edge(('borders', 'spots'))
   gr.add_edge(('clipping', 'spots'))
-  
+
+  # liquify immediately after spot removal
+  gr.add_edge(('liquify', 'spots'))
+
   # want to do powerful color magic before monochroming it:
   gr.add_edge(('monochrome', 'colorzones'))
   # want to change contrast in monochrome images:
@@ -213,7 +217,7 @@ def add_edges(gr):
   gr.add_edge(('levels', 'monochrome'))
   gr.add_edge(('relight', 'monochrome'))
   gr.add_edge(('colisa', 'monochrome'))
-  
+
   # want to splittone evenly, even when changing contrast:
   gr.add_edge(('colorcorrection', 'zonesystem'))
   gr.add_edge(('colorcorrection', 'tonecurve'))
@@ -221,7 +225,7 @@ def add_edges(gr):
   gr.add_edge(('colorcorrection', 'relight'))
   # want to split-tone monochrome images:
   gr.add_edge(('colorcorrection', 'monochrome'))
-  
+
   # want to enhance detail/local contrast/sharpen denoised images:
   gr.add_edge(('bilat', 'nlmeans'))
   gr.add_edge(('atrous', 'nlmeans'))
@@ -234,12 +238,12 @@ def add_edges(gr):
   gr.add_edge(('levels', 'nlmeans'))
   gr.add_edge(('relight', 'nlmeans'))
   gr.add_edge(('colorzones', 'nlmeans'))
-  
+
   # don't sharpen grain:
   gr.add_edge(('grain', 'sharpen'))
   gr.add_edge(('grain', 'atrous'))
   gr.add_edge(('grain', 'highpass'))
-  
+
   # output profile (sRGB) between gamma and colorout
   gr.add_edge(('gamma', 'channelmixer'))
   gr.add_edge(('gamma', 'clahe'))
@@ -260,7 +264,7 @@ def add_edges(gr):
   gr.add_edge(('watermark', 'colorout'))
   gr.add_edge(('overexposed', 'colorout'))
   gr.add_edge(('dither', 'colorout'))
-  
+
   # borders should not change shape/color:
   gr.add_edge(('borders', 'colorout'))
   gr.add_edge(('borders', 'vignette'))
@@ -291,21 +295,21 @@ def add_edges(gr):
 
   # want dithering very late
   gr.add_edge(('dither', 'watermark'))
-  
+
   # want to sharpen after geometric transformations:
   gr.add_edge(('sharpen', 'clipping'))
   gr.add_edge(('sharpen', 'lens'))
-  
+
   # don't bloom away sharpness:
   gr.add_edge(('sharpen', 'bloom'))
-  
+
   # lensfun wants an uncropped buffer:
   gr.add_edge(('clipping', 'lens'))
-  
+
   # want to splittone vignette and b/w
   gr.add_edge(('splittoning', 'vignette'))
   gr.add_edge(('splittoning', 'channelmixer'))
-  
+
   # want to change exposure/basecurve after tone mapping
   gr.add_edge(('exposure', 'tonemap'))
   gr.add_edge(('basecurve', 'tonemap'))
@@ -323,7 +327,7 @@ def add_edges(gr):
   gr.add_edge(('shadhi', 'globaltonemap'))
   gr.add_edge(('zonesystem', 'globaltonemap'))
   gr.add_edge(('bilat', 'globaltonemap'))
-  
+
   # want to fine-tune stuff after injection of color transfer:
   gr.add_edge(('atrous', 'colormapping'))
   gr.add_edge(('colorzones', 'colormapping'))
@@ -339,11 +343,11 @@ def add_edges(gr):
   gr.add_edge(('highpass', 'colormapping'))
   gr.add_edge(('lowlight', 'colormapping'))
   gr.add_edge(('bloom', 'colormapping'))
-  
+
   # colorize first in Lab pipe
   gr.add_edge(('colortransfer', 'colorize'))
   gr.add_edge(('colormapping', 'colortransfer'))
-  
+
   # defringe before color manipulations (colorbalance is sufficient) and before equalizer
   gr.add_edge(('colorbalance', 'defringe'))
   gr.add_edge(('equalizer', 'defringe'))
@@ -433,6 +437,7 @@ gr.add_nodes([
 'hotpixels',
 'lens',
 'levels',
+'liquify',
 'lowpass',
 'lowlight',
 'monochrome',
