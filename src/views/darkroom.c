@@ -583,6 +583,7 @@ dt_dev_change_image(dt_develop_t *dev, const uint32_t imgid)
     if (module->multi_priority == mp_base) //if the module is the "base" instance, we keep it
     {
       module->multi_priority = 0;
+      dt_iop_reload_defaults(module);
       dt_iop_gui_update(module);
     }
     else  //else we delete it and remove it from the panel
@@ -619,6 +620,7 @@ dt_dev_change_image(dt_develop_t *dev, const uint32_t imgid)
       if (!dt_iop_is_hidden(module))
       {
         module->gui_init(module);
+        dt_iop_reload_defaults(module);
         //we search the base iop corresponding
         GList *mods = g_list_first(dev->iop);
         dt_iop_module_t *base = NULL;
