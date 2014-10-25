@@ -545,7 +545,7 @@ mat3mul (float *dst, const float *const m1, const float *const m2)
 
 void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
-  dt_iop_colorin_params_t *p = (dt_iop_colorin_params_t *)p1;
+  const dt_iop_colorin_params_t *p = (dt_iop_colorin_params_t *)p1;
   dt_iop_colorin_data_t *d = (dt_iop_colorin_data_t *)piece->data;
 
   if(d->input) cmsCloseProfile(d->input);
@@ -599,49 +599,51 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
   char filename[PATH_MAX];
   dt_loc_get_datadir(datadir, sizeof(datadir));
 
-  if(!strcmp(p->iccprofile, "Lab"))
+  char iccprofile[DT_IOP_COLOR_ICC_LEN];
+  snprintf(iccprofile, sizeof(iccprofile), "%s", p->iccprofile);
+  if(!strcmp(iccprofile, "Lab"))
   {
     piece->enabled = 0;
     return;
   }
   piece->enabled = 1;
 
-  if(!strcmp(p->iccprofile, "darktable"))
+  if(!strcmp(iccprofile, "darktable"))
   {
     char makermodel[1024];
     dt_colorspaces_get_makermodel(makermodel, sizeof(makermodel), pipe->image.exif_maker, pipe->image.exif_model);
     d->input = dt_colorspaces_create_darktable_profile(makermodel);
-    if(!d->input) snprintf(p->iccprofile, sizeof(p->iccprofile), "eprofile");
+    if(!d->input) snprintf(iccprofile, sizeof(iccprofile), "eprofile");
   }
-  if(!strcmp(p->iccprofile, "vendor"))
+  if(!strcmp(iccprofile, "vendor"))
   {
     char makermodel[1024];
     dt_colorspaces_get_makermodel(makermodel, sizeof(makermodel), pipe->image.exif_maker, pipe->image.exif_model);
     d->input = dt_colorspaces_create_vendor_profile(makermodel);
-    if(!d->input) snprintf(p->iccprofile, sizeof(p->iccprofile), "eprofile");
+    if(!d->input) snprintf(iccprofile, sizeof(iccprofile), "eprofile");
   }
-  if(!strcmp(p->iccprofile, "alternate"))
+  if(!strcmp(iccprofile, "alternate"))
   {
     char makermodel[1024];
     dt_colorspaces_get_makermodel(makermodel, sizeof(makermodel), pipe->image.exif_maker, pipe->image.exif_model);
     d->input = dt_colorspaces_create_alternate_profile(makermodel);
-    if(!d->input) snprintf(p->iccprofile, sizeof(p->iccprofile), "eprofile");
+    if(!d->input) snprintf(iccprofile, sizeof(iccprofile), "eprofile");
   }
-  if(!strcmp(p->iccprofile, "eprofile"))
+  if(!strcmp(iccprofile, "eprofile"))
   {
     // embedded color profile
     const dt_image_t *cimg = dt_image_cache_read_get(darktable.image_cache, pipe->image.id);
-    if(cimg == NULL || cimg->profile == NULL) snprintf(p->iccprofile, sizeof(p->iccprofile), "ematrix");
+    if(cimg == NULL || cimg->profile == NULL) snprintf(iccprofile, sizeof(iccprofile), "ematrix");
     else d->input = cmsOpenProfileFromMem(cimg->profile, cimg->profile_size);
     dt_image_cache_read_release(darktable.image_cache, cimg);
   }
-  if(!strcmp(p->iccprofile, "ematrix"))
+  if(!strcmp(iccprofile, "ematrix"))
   {
     // embedded matrix, hopefully D65
-    if(isnan(pipe->image.d65_color_matrix[0])) snprintf(p->iccprofile, sizeof(p->iccprofile), "cmatrix");
+    if(isnan(pipe->image.d65_color_matrix[0])) snprintf(iccprofile, sizeof(iccprofile), "cmatrix");
     else d->input = dt_colorspaces_create_xyzimatrix_profile((float (*)[3])pipe->image.d65_color_matrix);
   }
-  if(!strcmp(p->iccprofile, "cmatrix"))
+  if(!strcmp(iccprofile, "cmatrix"))
   {
     // color matrix
     char makermodel[1024];
@@ -656,42 +658,42 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
         fprintf(stderr, "[colorin] `%s' color matrix not found!\n", makermodel);
         dt_control_log(_("`%s' color matrix not found!"), makermodel);
       }
-      snprintf(p->iccprofile, sizeof(p->iccprofile), "linear_rec709_rgb");
+      snprintf(iccprofile, sizeof(iccprofile), "linear_rec709_rgb");
     }
     else d->input = dt_colorspaces_create_xyzimatrix_profile((float (*)[3])cam_xyz);
   }
 
-  if(!strcmp(p->iccprofile, "sRGB"))
+  if(!strcmp(iccprofile, "sRGB"))
   {
     d->input = dt_colorspaces_create_srgb_profile();
   }
-  else if(!strcmp(p->iccprofile, "infrared"))
+  else if(!strcmp(iccprofile, "infrared"))
   {
     d->input = dt_colorspaces_create_linear_infrared_profile();
   }
-  else if(!strcmp(p->iccprofile, "XYZ"))
+  else if(!strcmp(iccprofile, "XYZ"))
   {
     d->input = dt_colorspaces_create_xyz_profile();
   }
-  else if(!strcmp(p->iccprofile, "adobergb"))
+  else if(!strcmp(iccprofile, "adobergb"))
   {
     d->input = dt_colorspaces_create_adobergb_profile();
   }
-  else if(!strcmp(p->iccprofile, "linear_rec709_rgb") || !strcmp(p->iccprofile, "linear_rgb"))
+  else if(!strcmp(iccprofile, "linear_rec709_rgb") || !strcmp(iccprofile, "linear_rgb"))
   {
     d->input = dt_colorspaces_create_linear_rec709_rgb_profile();
   }
-  else if(!strcmp(p->iccprofile, "linear_rec2020_rgb"))
+  else if(!strcmp(iccprofile, "linear_rec2020_rgb"))
   {
     d->input = dt_colorspaces_create_linear_rec2020_rgb_profile();
   }
   else if(!d->input)
   {
-    dt_colorspaces_find_profile(filename, sizeof(filename), p->iccprofile, "in");
+    dt_colorspaces_find_profile(filename, sizeof(filename), iccprofile, "in");
     d->input = cmsOpenProfileFromFile(filename, "r");
   }
 
-  if(!d->input && strcmp(p->iccprofile, "sRGB"))
+  if(!d->input && strcmp(iccprofile, "sRGB"))
   {
     // use linear_rec709_rgb as fallback for missing non-sRGB profiles:
     d->input = dt_colorspaces_create_linear_rec709_rgb_profile();
@@ -764,7 +766,7 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
     if(d->input) dt_colorspaces_cleanup_profile(d->input);
     if(d->nrgb) dt_colorspaces_cleanup_profile(d->nrgb);
     d->nrgb = NULL;
-    snprintf(p->iccprofile, sizeof(p->iccprofile), "linear_rec709_rgb");
+    snprintf(iccprofile, sizeof(iccprofile), "linear_rec709_rgb");
     d->input = dt_colorspaces_create_linear_rec709_rgb_profile();
     if(dt_colorspaces_get_matrix_from_input_profile (d->input, d->cmatrix, d->lut[0], d->lut[1], d->lut[2], LUT_SAMPLES))
     {
