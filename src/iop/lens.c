@@ -1645,7 +1645,7 @@ static void lens_set (dt_iop_module_t *self, const lfLens *lens)
     ffi--;
   }
   if (lens->MaxFocal == 0 || fli < 0)
-    fli = sizeof (focal_values) / sizeof (gdouble) - 1;
+    fli = sizeof (focal_values) / sizeof (gdouble) - 2;
   if (focal_values [fli+1] < lens->MaxFocal)
   {
     focal_values [fli + 1] = lens->MaxFocal;
