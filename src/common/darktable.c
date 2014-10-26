@@ -85,6 +85,13 @@
 #  include <omp.h>
 #endif
 
+#ifdef __linux__
+#include <sys/prctl.h>
+#ifndef PR_SET_PTRACER
+#define PR_SET_PTRACER 0x59616d61
+#endif
+#endif
+
 darktable_t darktable;
 const char dt_supported_extensions[] = "3fr,arw,bay,bmq,cap,cine,cr2,crw,cs1,dc2,dcr,dng,erf,fff,exr,ia,iiq,jpeg,jpg,k25,kc2,kdc,mdc,mef,mos,mrw,nef,nrw,orf,pef,pfm,pxn,qtk,raf,raw,rdc,rw2,rwl,sr2,srf,srw,sti,tif,tiff,x3f,png"
 #ifdef HAVE_OPENJPEG
@@ -163,6 +170,10 @@ void _dt_sigsegv_handler(int param)
   {
     if(pid)
     {
+#ifdef __linux__
+      // Allow the child to ptrace us
+      prctl(PR_SET_PTRACER, pid, 0, 0, 0);
+#endif
       waitpid(pid, NULL, 0);
       g_printerr("backtrace written to %s\n", name_used);
     }
