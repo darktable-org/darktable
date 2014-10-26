@@ -490,6 +490,17 @@ int dt_load_from_string(const gchar* image_to_load, gboolean open_image_in_dr);
 /** define for max path/filename length */
 #define DT_MAX_FILENAME_LEN 256
 
+#ifndef PATH_MAX
+/*
+ * from /usr/include/linux/limits.h (Linux 3.16.5)
+ * Some systems might not define it (e.g. Hurd)
+ *
+ * We do NOT depend on any specific value of this env variable.
+ * If you want constant value across all systems, use DT_MAX_PATH_FOR_PARAMS!
+ */
+#define PATH_MAX 4096
+#endif
+
 /*
  * ONLY TO BE USED FOR PARAMS!!! (e.g. dt_imageio_disk_t)
  *
