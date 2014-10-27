@@ -195,6 +195,7 @@ void dt_image_full_path(const int imgid, char *pathname, size_t pathname_len, gb
 static void _image_local_copy_full_path(const int imgid, char *pathname, size_t pathname_len)
 {
   sqlite3_stmt *stmt;
+
   *pathname='\0';
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
                               "SELECT folder || '/' || filename FROM images, film_rolls "
@@ -212,8 +213,16 @@ static void _image_local_copy_full_path(const int imgid, char *pathname, size_t 
     char *c = filename + strlen(filename);
     while(*c != '.' && c > filename) c--;
 
-    // cache filename format: <cachedir>/imf-<id>-<MD5>.<ext>
+    // cache filename old format: <cachedir>/img-<id>-<MD5>.<ext>
+    // for upward compatibility we check for the old name, if found we return it
     snprintf(pathname, pathname_len, "%s/img-%d-%s%s", cachedir, imgid, md5_filename, c);
+
+    // if it does not exist, we return the new naming
+    if (!g_file_test(pathname, G_FILE_TEST_EXISTS))
+    {
+      // cache filename format: <cachedir>/img-<MD5>.<ext>
+      snprintf(pathname, pathname_len, "%s/img-%s%s", cachedir, md5_filename, c);
+    }
 
     g_free(md5_filename);
   }
@@ -1265,16 +1274,32 @@ void dt_image_local_copy_set(const int32_t imgid)
 
     g_object_unref(dest);
     g_object_unref(src);
-
-    // update cache
-    const dt_image_t *cimg = dt_image_cache_read_get(darktable.image_cache, imgid);
-    dt_image_t *img = dt_image_cache_write_get(darktable.image_cache, cimg);
-    img->flags |= DT_IMAGE_LOCAL_COPY;
-    dt_image_cache_write_release(darktable.image_cache, img, DT_IMAGE_CACHE_RELAXED);
-    dt_image_cache_read_release(darktable.image_cache, img);
-
-    dt_control_queue_redraw_center();
   }
+
+  // update cache local copy flags, do this even if the local copy already exists as we need to set the flags for duplicate
+  const dt_image_t *cimg = dt_image_cache_read_get(darktable.image_cache, imgid);
+  dt_image_t *img = dt_image_cache_write_get(darktable.image_cache, cimg);
+  img->flags |= DT_IMAGE_LOCAL_COPY;
+  dt_image_cache_write_release(darktable.image_cache, img, DT_IMAGE_CACHE_RELAXED);
+  dt_image_cache_read_release(darktable.image_cache, img);
+
+  dt_control_queue_redraw_center();
+}
+
+static int _nb_other_local_copy_for(const int32_t imgid)
+{
+  sqlite3_stmt *stmt;
+  int result = 1;
+
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                              "SELECT COUNT(*) FROM images WHERE id!=?1 AND flags&?2=?2 AND film_id=(SELECT film_id FROM images WHERE id=?1) AND filename=(SELECT filename FROM images WHERE id=?1);", -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, DT_IMAGE_LOCAL_COPY);
+  if(sqlite3_step(stmt) == SQLITE_ROW)
+    result = sqlite3_column_int(stmt, 0);
+  sqlite3_finalize(stmt);
+
+  return result;
 }
 
 int dt_image_local_copy_reset(const int32_t imgid)
@@ -1312,11 +1337,16 @@ int dt_image_local_copy_reset(const int32_t imgid)
 
     dt_image_write_sidecar_file(imgid);
 
-    // delete image from cache directory
-    g_file_delete(dest, NULL, NULL);
+    // delete image from cache directory only if there is no other local cache image referencing it
+    // for example duplicates are all referencing the same base picture.
+
+    if (_nb_other_local_copy_for(imgid) == 0)
+      g_file_delete(dest, NULL, NULL);
+
     g_object_unref(dest);
 
     // delete xmp if any
+    dt_image_path_append_version(imgid, destpath, sizeof(destpath));
     g_strlcat(destpath, ".xmp", sizeof(destpath));
     dest = g_file_new_for_path(destpath);
 
@@ -1324,7 +1354,7 @@ int dt_image_local_copy_reset(const int32_t imgid)
       g_file_delete(dest, NULL, NULL);
     g_object_unref(dest);
 
-    // update cache
+    // update cache, remove local copy flags
     const dt_image_t *cimg = dt_image_cache_read_get(darktable.image_cache, imgid);
     dt_image_t *img = dt_image_cache_write_get(darktable.image_cache, cimg);
     img->flags &= ~DT_IMAGE_LOCAL_COPY;
