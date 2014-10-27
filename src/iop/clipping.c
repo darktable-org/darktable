@@ -752,8 +752,8 @@ void modify_roi_in(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *
   }
 
   // sanity check.
-  const int scwidth = (piece->pipe->iflipped ? piece->pipe->iheight : piece->pipe->iwidth)*so;
-  const int scheight = (piece->pipe->iflipped ? piece->pipe->iwidth : piece->pipe->iheight)*so;
+  const int scwidth = piece->buf_in.width * so;
+  const int scheight = piece->buf_in.height * so;
   roi_in->x = CLAMP(roi_in->x, 0, scwidth);
   roi_in->y = CLAMP(roi_in->y, 0, scheight);
   roi_in->width = CLAMP(roi_in->width, 1, scwidth - roi_in->x);
