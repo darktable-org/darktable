@@ -242,8 +242,6 @@ void modify_roi_out(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t 
     roi_out->width  = roi_in->height;
     roi_out->height = roi_in->width;
   }
-
-  piece->pipe->iflipped = d->orientation & ORIENTATION_SWAP_XY;
 }
 
 // 2nd pass: which roi would this operation need as input to fill the given output region?
