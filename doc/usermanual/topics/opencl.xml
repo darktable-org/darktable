@@ -649,8 +649,9 @@ crw-rw-rw- 1 root root 250,   0 Jul 28 21:13 /dev/nvidia-uvm
             darktable to use a special kind of intermediate buffer for host-device data
             transfers. On some devices this can speed up exporting of large files by a factor of
             2 to 3. NVIDIA devices and drivers seem to have a more efficient memory transfer
-            technique even for arbitrary memory regions. They may deliver better performance if
-            opencl_use_pinned_memory is left at its default FALSE.
+            technique even for arbitrary memory regions. As they may not show any performance gain
+            and even may produce garbled output, opencl_use_pinned_memory should be left 
+            at its default FALSE for those devices.
           </para></listitem>
 
         </varlistentry>
