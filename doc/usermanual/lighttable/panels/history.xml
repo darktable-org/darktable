@@ -74,9 +74,15 @@
       <title>overwrite/append</title>
 
       <para>
-        Describes how a new history stack behaves when pasted on an image that already has a
+        This setting defines how a new history stack behaves when pasted on an image that already has a
         history stack. <quote>Overwrite</quote> will delete the previous history stack, whereas
         <quote>append</quote> will concatenate the two history stacks.
+      </para>
+
+      <para>
+        <emphasis>Caution: only in <quote>append</quote> mode you keep the option to later reconstruct your existing
+        history stack whereas in <quote>overwrite</quote> mode your previous edit gets irrevocably lost. Beware,  
+        the setting of this parameter remains effective when you quit darktable.</emphasis>
       </para>
 
     </sect4>

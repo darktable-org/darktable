@@ -41,14 +41,16 @@ off_t dt_util_get_file_size(const char *filename);
 /** returns true if dirname is empty */
 gboolean dt_util_is_dir_empty(const char *dirname);
 
-static inline int is_it_xmas(void)
+
+typedef enum dt_logo_season_t
 {
-  time_t now;
-  time(&now);
-  struct tm lt;
-  localtime_r(&now, &lt);
-  return (lt.tm_mon == 11 && lt.tm_mday >= 24);
-}
+  DT_LOGO_SEASON_NONE = 0,
+  DT_LOGO_SEASON_HALLOWEEN = 1,
+  DT_LOGO_SEASON_XMAS = 2,
+} dt_logo_season_t;
+
+/** returns the dt logo season to use right now */
+dt_logo_season_t get_logo_season(void);
 
 #endif
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

@@ -93,7 +93,13 @@ void gui_init(dt_lib_module_t *self)
                     G_CALLBACK (_lib_darktable_button_press_callback), self);
 
   /* create a cairo surface of dt icon */
-  const char *logo = is_it_xmas()?"%s/pixmaps/idbutton-2.%s":"%s/pixmaps/idbutton.%s"; // don't you dare to tell anyone
+  char *logo;
+  dt_logo_season_t season = get_logo_season();
+  if(season != DT_LOGO_SEASON_NONE)
+    logo = g_strdup_printf("%%s/pixmaps/idbutton-%d.%%s", (int)season);
+  else
+    logo = g_strdup("%s/pixmaps/idbutton.%s");
+
   dt_loc_get_datadir(datadir, sizeof(datadir));
   snprintf(filename, sizeof(filename), logo, datadir, "svg");
 
@@ -186,6 +192,8 @@ png_fallback:
   }
 
 done:
+  g_free(logo);
+
   d->image_width = d->image?cairo_image_surface_get_width(d->image):0;
   d->image_height = d->image?cairo_image_surface_get_height(d->image):0;
 
@@ -269,7 +277,14 @@ static void _lib_darktable_show_about_dialog()
   gtk_about_dialog_set_copyright(GTK_ABOUT_DIALOG(dialog), "copyright (c) the authors 2009-2014");
   gtk_about_dialog_set_comments(GTK_ABOUT_DIALOG(dialog), _("organize and develop images from digital cameras"));
   gtk_about_dialog_set_website(GTK_ABOUT_DIALOG(dialog), "http://www.darktable.org/");
-  gtk_about_dialog_set_logo_icon_name(GTK_ABOUT_DIALOG(dialog), is_it_xmas()?"darktable-2":"darktable");
+  dt_logo_season_t season = get_logo_season();
+  char *icon;
+  if(season != DT_LOGO_SEASON_NONE)
+    icon = g_strdup_printf("darktable-%d", (int)season);
+  else
+    icon = g_strdup("darktable");
+  gtk_about_dialog_set_logo_icon_name(GTK_ABOUT_DIALOG(dialog), icon);
+  g_free(icon);
   const char *authors[] =
   {
     _("* developers *"),

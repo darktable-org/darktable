@@ -1581,7 +1581,7 @@ static void lens_set (dt_iop_module_t *self, const lfLens *lens)
   maker = lf_mlstr_get (lens->Maker);
   model = lf_mlstr_get (lens->Model);
 
-  g_strlcpy(p->lens, model, sizeof(p->lens));
+  g_strlcpy(p->lens, lens->Model, sizeof(p->lens));
 
   if (model)
   {
@@ -2204,6 +2204,7 @@ void gui_update(struct dt_iop_module_t *self)
 
   dt_iop_lensfun_global_data_t *gd = (dt_iop_lensfun_global_data_t *)self->data;
   lfDatabase *dt_iop_lensfun_db = (lfDatabase *)gd->db;
+  // these are the wrong (untranslated) strings in general but that's ok, they will be overwritten further down
   gtk_button_set_label(g->camera_model, p->camera);
   gtk_button_set_label(g->lens_model, p->lens);
   gtk_label_set_ellipsize(GTK_LABEL(gtk_bin_get_child(GTK_BIN(g->camera_model))), PANGO_ELLIPSIZE_END);
@@ -2247,8 +2248,7 @@ void gui_update(struct dt_iop_module_t *self)
   if(g->camera && p->lens[0])
   {
     char make [200], model [200];
-    const gchar *txt = gtk_button_get_label(GTK_BUTTON(g->lens_model));
-    parse_maker_model (txt, make, sizeof (make), model, sizeof (model));
+    parse_maker_model (p->lens, make, sizeof (make), model, sizeof (model));
     dt_pthread_mutex_lock(&darktable.plugin_threadsafe);
     const lfLens **lenslist = lf_db_find_lenses_hd (dt_iop_lensfun_db, g->camera,
                               make [0] ? make : NULL,
