@@ -507,9 +507,16 @@ void gui_init(struct dt_iop_module_t *self)
 
   char filename[PATH_MAX];
   char datadir[PATH_MAX];
-  const char *logo = is_it_xmas()?"%s/pixmaps/idbutton-2.svg":"%s/pixmaps/idbutton.svg";
+  char *logo;
+  dt_logo_season_t season = get_logo_season();
+  if(season != DT_LOGO_SEASON_NONE)
+    logo = g_strdup_printf("%%s/pixmaps/idbutton-%d.svg", (int)season);
+  else
+    logo = g_strdup("%s/pixmaps/idbutton.svg");
+
   dt_loc_get_datadir(datadir, sizeof(datadir));
   snprintf(filename, sizeof(filename), logo, datadir);
+  g_free(logo);
   RsvgHandle *svg = rsvg_handle_new_from_file(filename, NULL);
   if(svg)
   {

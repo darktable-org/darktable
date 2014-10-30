@@ -294,6 +294,20 @@ gboolean dt_util_is_dir_empty(const char *dirname)
     return FALSE;
 }
 
+// days are in [1..31], months are in [0..11], see "man localtime"
+dt_logo_season_t get_logo_season(void)
+{
+  time_t now;
+  time(&now);
+  struct tm lt;
+  localtime_r(&now, &lt);
+  if( (lt.tm_mon == 9 && lt.tm_mday == 31) || (lt.tm_mon == 10 && lt.tm_mday == 1))
+    return DT_LOGO_SEASON_HALLOWEEN;
+  if(lt.tm_mon == 11 && lt.tm_mday >= 24)
+    return DT_LOGO_SEASON_XMAS;
+  return DT_LOGO_SEASON_NONE;
+}
+
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;
