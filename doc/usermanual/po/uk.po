@@ -5,7 +5,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable\n"
 "POT-Creation-Date: 2014-10-28 13:56+0200\n"
-"PO-Revision-Date: 2014-10-27 19:27+0200\n"
+"PO-Revision-Date: 2014-10-30 19:58+0200\n"
 "Last-Translator: Serhii Marchuk <serhii.marchuk@gmail.com>\n"
 "Language-Team: Ukrainian\n"
 "Language: uk_UA\n"
@@ -915,10 +915,15 @@ msgid ""
 "allowing the center area to occupy all available space. Pressing "
 "<emphasis>TAB</emphasis> again brings you back to the previous view."
 msgstr ""
+"При натисканні клавіші <emphasis>TAB</emphasis> всі панелі сховаються, "
+"дозволяючи центральній зоні, зайняти весь доступний простір. Слфдуюче "
+"натискання <emphasis>TAB</emphasis> поверне вас до попереднього виду."
 
 #: /home/mars/sources/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:798(para)
 msgid "Fullscreen view can be toggled by pressing <emphasis>F11</emphasis>."
 msgstr ""
+"Перехід в повноекранний режим здійснюється натисканням <emphasis>F11</"
+"emphasis>."
 
 #: /home/mars/sources/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:802(para)
 msgid ""
@@ -926,17 +931,20 @@ msgid ""
 "<emphasis>F8</emphasis> and darktable's lightness by using <emphasis>F9</"
 "emphasis> and <emphasis>F10</emphasis>."
 msgstr ""
+"Контраст darktable можна змінити за допомогою <emphasis>F7</emphasis> та "
+"<emphasis>F8</emphasis>, а освітленість darktable за допомогою <emphasis>F9</"
+"emphasis> та <emphasis>F10</emphasis>."
 
 #: /home/mars/sources/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:812(title)
 #: /home/mars/sources/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:7156(title)
 msgid "Filmstrip"
-msgstr ""
+msgstr "Діафільм"
 
 #: /home/mars/sources/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:815(primary)
 #: /home/mars/sources/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:7160(secondary)
 #: /home/mars/sources/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:18230(secondary)
 msgid "filmstrip"
-msgstr ""
+msgstr "діафільм"
 
 #: /home/mars/sources/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:818(para)
 msgid ""
@@ -949,10 +957,19 @@ msgid ""
 "double clicking the thumbnail in the filmstrip. You can also rate the images "
 "as you do in lighttable, copy/paste history stack, etc."
 msgstr ""
+"Діафільм в нижній частині інтерфейсу користувача показує ті ж світлини, що й "
+"lighttable, з врахуванням впливу фільтрів та порядку сортування. Він "
+"вмикається і вимикається за допомогою комбінації клавіш <emphasis>ctrl-f</"
+"emphasis>. Ви можете переміщатися уздовж діафільму шляхом прокрутки за "
+"допомогою колеса миші. Діафільм дозволяє взаємодіяти із зображеннями в той "
+"час як ви не в lighttable. Наприклад, ви можете, при роботі із світлиною в "
+"режимі darkroom, перейти на інше зображення, двічі клікнувши на мініатюру. "
+"Також ви можете оцінити зображення, як і в lighttable, скопіювати історію "
+"роботи з зображенням і т.п."
 
 #: /home/mars/sources/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:836(title)
 msgid "Preferences"
-msgstr ""
+msgstr "Налаштування"
 
 #: /home/mars/sources/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:838(para)
 msgid ""
@@ -960,6 +977,9 @@ msgid ""
 "\"1\" width=\"2%\" align=\"center\"/> located in the upper panel allows you "
 "to define various parameters which control darktable's behavior."
 msgstr ""
+"Кнопка <inlinegraphic fileref=\"images/darkroom_preferences.png\" scalefit="
+"\"1\" width=\"2%\" align=\"center\"/> розташований на верхній панелі та "
+"дозволяє змінити різні налаштування роботи darktable."
 
 #: /home/mars/sources/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:845(para)
 msgid ""
@@ -968,14 +988,18 @@ msgid ""
 "tip. All configuration parameters are explained in <xref linkend="
 "\"preferences_chapter\"/>."
 msgstr ""
+"Налаштування не потребують додаткового роз'яснення. Якщо вам потрібна "
+"додаткова інформація, наведіть курсор миші на напис або поле входу, щоб "
+"з'явилась підказка. Всі параметри конфігурації описані в <xref linkend="
+"\"preferences_chapter\"/>."
 
 #: /home/mars/sources/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:857(title)
 msgid "darktable basic workflow"
-msgstr ""
+msgstr "основна послідовність виконання дій в darktable "
 
 #: /home/mars/sources/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:860(primary)
 msgid "basic workflow"
-msgstr ""
+msgstr "основна послідовність виконання дій"
 
 #: /home/mars/sources/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:863(para)
 msgid ""
@@ -984,10 +1008,14 @@ msgid ""
 "the basic steps of a raw development workflow and how to export the final "
 "result."
 msgstr ""
+"В цьому розділі описується типова послідовність дій в darktable, який "
+"початківці можуть взяти в якості відправної точки. Ми опишемо, як "
+"імпортувати зображення в darktable, основні етапи процесу обробки RAW, та "
+"експорт кінцевого результату."
 
 #: /home/mars/sources/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:871(title)
 msgid "Importing images"
-msgstr ""
+msgstr "Імпорт світлин"
 
 #: /home/mars/sources/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:873(para)
 msgid ""
@@ -996,10 +1024,14 @@ msgid ""
 "can either import from the filesystem or, if darktable supports your camera "
 "model, directly from camera."
 msgstr ""
+"Почнемо з darktable, спочатку потрібно імпортувати світлини. Модуль імпорту "
+"в лівій частині lighttable (<xref linkend=\"import\"/>). Ви можете або "
+"імпортувати з файлової системи або, якщо darktable підтримує вашу модель "
+"камери, прямо з камери."
 
 #: /home/mars/sources/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:881(title)
 msgid "Importing images from filesystem"
-msgstr ""
+msgstr "Імпорт світлин з файлової системи"
 
 #: /home/mars/sources/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:883(para)
 msgid ""
@@ -1007,10 +1039,13 @@ msgid ""
 "darktable will analyse its content, detect images that are already imported "
 "and only import new images."
 msgstr ""
+"При імпорті з диска, ви можете імпортувати або одну світлину або теку. "
+"darktable аналізує її вміст теки, виявить зображення, які вже імпортовано та "
+"добавить лише нові зображення."
 
 #: /home/mars/sources/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:893(title)
 msgid "Importing from camera"
-msgstr ""
+msgstr "Імпорт з камери"
 
 #: /home/mars/sources/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:895(para)
 msgid ""
@@ -1021,6 +1056,12 @@ msgid ""
 "button. Your camera will then appear in the same pane with additional "
 "choices: <emphasis>import</emphasis> and <emphasis>tethering</emphasis>."
 msgstr ""
+"Підключіть камеру до свого компютера. Якщо ваш дистрибутив намагається "
+"автоматично монтувати її, виберіть опцію, щоб перервати операцію монтування. "
+"В іншому випадку камера буде заблокована і не доступні з darktable. Якщо ви "
+"не бачите свою камеру на панелі імпорту, натисніть кнопку <quote>scan for "
+"devices</quote>. Камера з'явиться в тій же панелі з додатковими варіантами: "
+"<emphasis>import</emphasis> і <emphasis>tethering</emphasis>."
 
 #: /home/mars/sources/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:910(title)
 msgid "Basic development steps"
