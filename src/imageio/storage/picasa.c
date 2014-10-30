@@ -469,8 +469,7 @@ error:
  */
 static const gchar *picasa_create_album(PicasaContext *ctx, gchar *name, gchar *summary, PicasaAlbumPrivacyPolicy privacy)
 {
-  _buffer_t buffer;
-  memset(&buffer,0,sizeof(_buffer_t));
+  _buffer_t buffer = { 0 };
 
   gchar *photo_id=NULL;
   gchar *private = NULL;
@@ -567,8 +566,7 @@ static const gchar *picasa_create_album(PicasaContext *ctx, gchar *name, gchar *
  */
 static const gchar *picasa_upload_photo_to_album(PicasaContext *ctx, gchar *albumid, gchar *fname, gchar *title, gchar *summary, const int imgid)
 {
-  _buffer_t buffer;
-  memset(&buffer,0,sizeof(_buffer_t));
+  _buffer_t buffer = { 0 };
   gchar *photo_id=NULL;
 
   char uri[4096]= {0};
@@ -645,8 +643,8 @@ static const gchar *picasa_upload_photo_to_album(PicasaContext *ctx, gchar *albu
     // and use picasa photo update api to add keywords to the photo...
 
     // Build the keywords content string
-    gchar *keywords = NULL;
-    keywords = dt_tag_get_list(imgid, ",");
+    GList *keywords_list = dt_tag_get_list(imgid);
+    gchar *keywords      = dt_util_glist_to_str(",", keywords_list);
 
     xmlDocPtr doc;
     xmlNodePtr entryNode;
@@ -712,8 +710,7 @@ static const gchar *picasa_upload_photo_to_album(PicasaContext *ctx, gchar *albu
       headers = curl_slist_append(headers,"GData-Version: 2");
       headers = curl_slist_append(headers, authHeader);
 
-      _buffer_t response;
-      memset(&response,0,sizeof(_buffer_t));
+      _buffer_t response = { 0 };
 
       // Setup data to send..
       _buffer_t writebuffer;
@@ -747,6 +744,8 @@ static const gchar *picasa_upload_photo_to_album(PicasaContext *ctx, gchar *albu
     }
 
     xmlFreeDoc(doc);
+    g_free(keywords);
+    g_list_free_full(keywords_list, g_free);
   }
   return photo_id;
 }
@@ -942,6 +941,7 @@ static GSList *load_account_info()
 
   GHashTable *table = dt_pwstorage_get("picasa2");
   g_hash_table_foreach(table, (GHFunc) load_account_info_fill, &accountlist);
+  g_hash_table_destroy(table);
   return accountlist;
 }
 
@@ -977,7 +977,7 @@ static void save_account_info(dt_storage_picasa_gui_data_t *ui, PicasaAccountInf
   g_object_unref(builder);
 
   GHashTable *table = dt_pwstorage_get("picasa2");
-  g_hash_table_insert(table, accountinfo->id, data);
+  g_hash_table_insert(table, g_strdup(accountinfo->id), data);
   dt_pwstorage_set("picasa2", table);
 
   g_hash_table_destroy(table);

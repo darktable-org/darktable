@@ -198,7 +198,7 @@ int dt_iop_load_module_so(dt_iop_module_so_t *module, const char *libname, const
 {
   g_strlcpy(module->op, op, 20);
   module->data = NULL;
-  module->module = g_module_open(libname, G_MODULE_BIND_LAZY);
+  module->module = g_module_open(libname, G_MODULE_BIND_LAZY | G_MODULE_BIND_LOCAL);
   if(!module->module) goto error;
   int (*version)();
   if(!g_module_symbol(module->module, "dt_module_dt_version", (gpointer)&(version))) goto error;
@@ -2623,7 +2623,7 @@ dt_iop_get_localized_name(const gchar * op)
       do
       {
         dt_iop_module_so_t * module = (dt_iop_module_so_t *)iop->data;
-        g_hash_table_insert(module_names, module->op, _(module->name()));
+        g_hash_table_insert(module_names, module->op, g_strdup(module->name()));
       }
       while((iop=g_list_next(iop)) != NULL);
     }

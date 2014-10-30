@@ -4,7 +4,7 @@
 		<!ENTITY % darktable_dtd SYSTEM "../dtd/darktable.dtd">
 		%darktable_dtd;
 		]>
-<chapter status="draft" id="slideshow_chapter">
+<chapter status="final" id="slideshow_chapter">
 
   <chapterinfo>
     <keywordset>
@@ -33,7 +33,7 @@
     </screenshot>
   </para>
 
-  <sect1 status="draft">
+  <sect1 status="final">
 
     <title>Overview</title>
 
@@ -53,7 +53,7 @@
 
   </sect1>
 
-  <sect1 status="draft">
+  <sect1 status="final">
 
     <title>Usage</title>
 

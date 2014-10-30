@@ -39,10 +39,10 @@ DT_MODULE_INTROSPECTION(3, dt_iop_demosaic_params_t)
 
 typedef struct dt_iop_demosaic_params_t
 {
-  uint32_t green_eq;
+  /*dt_iop_demosaic_greeneq_t*/ uint32_t green_eq;
   float median_thrs;
   uint32_t color_smoothing;
-  uint32_t demosaicing_method;
+  /*dt_iop_demosaic_method_t*/ uint32_t demosaicing_method;
   uint32_t yet_unused_data_specific_to_demosaicing_method;
 }
 dt_iop_demosaic_params_t;
@@ -151,7 +151,7 @@ legacy_params (dt_iop_module_t *self, const void *const old_params, const int ol
     n->green_eq = o->green_eq;
     n->median_thrs = o->median_thrs;
     n->color_smoothing = 0;
-    n->demosaicing_method = 0;
+    n->demosaicing_method = DT_IOP_DEMOSAIC_PPG;
     n->yet_unused_data_specific_to_demosaicing_method = 0;
     return 0;
   }
@@ -1956,7 +1956,7 @@ void init(dt_iop_module_t *module)
   module->params = malloc(sizeof(dt_iop_demosaic_params_t));
   module->default_params = malloc(sizeof(dt_iop_demosaic_params_t));
   module->default_enabled = 1;
-  module->priority = 140; // module order created by iop_dependencies.py, do not edit!
+  module->priority = 133; // module order created by iop_dependencies.py, do not edit!
   module->hide_enable_button = 1;
   module->params_size = sizeof(dt_iop_demosaic_params_t);
   module->gui_data = NULL;
@@ -2019,9 +2019,8 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *params, dt_de
   if(d->filters == 9u)
     piece->process_cl_ready = 0;
 
-  // Demosaic modes AMAZE and VNG4 not implemented in OpenCL yet.
-  if((d->demosaicing_method != DT_IOP_DEMOSAIC_AMAZE) ||
-     (d->demosaicing_method != DT_IOP_DEMOSAIC_VNG4))
+  // Only demosaic mode PPG implemented in OpenCL currently
+  if(d->demosaicing_method != DT_IOP_DEMOSAIC_PPG)
     piece->process_cl_ready = 0;
 
   // OpenCL can not (yet) green-equilibrate over full image.
@@ -2072,10 +2071,20 @@ void reload_defaults(dt_iop_module_t *module)
 {
   dt_iop_demosaic_params_t tmp = (dt_iop_demosaic_params_t)
   {
-    0, 0.0f,0,0,0
+    .green_eq = DT_IOP_GREEN_EQ_NO,
+    .median_thrs = 0.0f,
+    .color_smoothing = 0,
+    .demosaicing_method = DT_IOP_DEMOSAIC_PPG,
+    .yet_unused_data_specific_to_demosaicing_method = 0
   };
+
+  // we might be called from presets update infrastructure => there is no image
+  if(!module->dev) goto end;
+
   if (module->dev->image_storage.filters == 9u)
     tmp.demosaicing_method = DT_IOP_DEMOSAIC_VNG;
+
+end:
   memcpy(module->params, &tmp, sizeof(dt_iop_demosaic_params_t));
   memcpy(module->default_params, &tmp, sizeof(dt_iop_demosaic_params_t));
 }

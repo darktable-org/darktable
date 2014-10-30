@@ -216,6 +216,40 @@ dt_imageio_open_png(
   return DT_IMAGEIO_OK;
 }
 
+int dt_imageio_png_read_profile(const char *filename, uint8_t **out)
+{
+  dt_imageio_png_t image;
+  png_charp name;
+  int compression_type;
+  png_uint_32 proflen;
+
+#if PNG_LIBPNG_VER >= 10500 /* 1.5.0 */
+  png_bytep profile;
+#else
+  png_charp profile;
+#endif
+
+  if(!(filename && *filename && out)) return 0;
+
+  if(read_header(filename, &image) != 0) return DT_IMAGEIO_FILE_CORRUPTED;
+
+#ifdef PNG_iCCP_SUPPORTED
+  if(png_get_valid(image.png_ptr, image.info_ptr, PNG_INFO_iCCP) != 0 &&
+      png_get_iCCP(image.png_ptr, image.info_ptr, &name, &compression_type,
+                   &profile, &proflen) != 0)
+  {
+    *out = (uint8_t*)malloc(proflen);
+    memcpy(*out, profile, proflen);
+  }
+  else
+#endif
+    proflen = 0;
+
+  png_destroy_read_struct(&image.png_ptr, NULL, NULL);
+  fclose(image.f);
+
+  return proflen;
+}
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

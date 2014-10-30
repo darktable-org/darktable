@@ -90,10 +90,8 @@ dt_collection_free (const dt_collection_t *collection)
   dt_control_signal_disconnect(darktable.signals, G_CALLBACK(_dt_collection_recount_callback_1), (gpointer)collection);
   dt_control_signal_disconnect(darktable.signals, G_CALLBACK(_dt_collection_recount_callback_2), (gpointer)collection);
 
-  if (collection->query)
-    g_free (collection->query);
-  if (collection->where_ext)
-    g_free (collection->where_ext);
+  g_free(collection->query);
+  g_free(collection->where_ext);
   g_free ((dt_collection_t *)collection);
 }
 
@@ -245,8 +243,7 @@ void
 dt_collection_set_extended_where(const dt_collection_t *collection,gchar *extended_where)
 {
   /* free extended where if already exists */
-  if (collection->where_ext)
-    g_free (collection->where_ext);
+  g_free(collection->where_ext);
 
   /* set new from parameter */
   ((dt_collection_t *)collection)->where_ext = g_strdup(extended_where);
@@ -392,8 +389,7 @@ _dt_collection_store (const dt_collection_t *collection, gchar *query)
   }
 
   /* store query in context */
-  if (collection->query)
-    g_free (collection->query);
+  g_free(collection->query);
 
   ((dt_collection_t *)collection)->query = g_strdup(query);
 

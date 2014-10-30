@@ -35,7 +35,7 @@
 #include <errno.h>
 
 // whenever _create_schema() gets changed you HAVE to bump this version and add an update path to _upgrade_schema_step()!
-#define CURRENT_DATABASE_VERSION 6
+#define CURRENT_DATABASE_VERSION 7
 
 typedef struct dt_database_t
 {
@@ -492,6 +492,57 @@ static int _upgrade_schema_step(dt_database_t *db, int version)
 
     sqlite3_exec(db->handle, "COMMIT", NULL, NULL, NULL);
     new_version = 6;
+  }
+  else if(version == 6)
+  {
+    // some ancient tables can have the styleid column of style_items be called style_id. fix that.
+    sqlite3_exec(db->handle, "BEGIN TRANSACTION", NULL, NULL, NULL);
+
+    if(sqlite3_exec(db->handle, "SELECT style_id FROM style_items", NULL, NULL, NULL) == SQLITE_OK)
+    {
+      if(sqlite3_exec(db->handle, "ALTER TABLE style_items RENAME TO tmp_style_items", NULL, NULL, NULL) != SQLITE_OK)
+      {
+        fprintf(stderr, "[init] can't rename table style_items\n");
+        fprintf(stderr, "[init]   %s\n", sqlite3_errmsg(db->handle));
+        sqlite3_exec(db->handle, "ROLLBACK TRANSACTION", NULL, NULL, NULL);
+        return version;
+      }
+
+      if(sqlite3_exec(db->handle, "CREATE TABLE style_items (styleid INTEGER, num INTEGER, module INTEGER, "
+                                  "operation VARCHAR(256), op_params BLOB, enabled INTEGER, "
+                                  "blendop_params BLOB, blendop_version INTEGER, multi_priority INTEGER, multi_name VARCHAR(256))",
+                                  NULL, NULL, NULL) != SQLITE_OK)
+      {
+        fprintf(stderr, "[init] can't create new style_items table\n");
+        fprintf(stderr, "[init]   %s\n", sqlite3_errmsg(db->handle));
+        sqlite3_exec(db->handle, "ROLLBACK TRANSACTION", NULL, NULL, NULL);
+        return version;
+      }
+
+      if(sqlite3_exec(db->handle, "INSERT INTO style_items (styleid, num, module, operation, op_params, enabled,"
+                                  "                         blendop_params, blendop_version, multi_priority, multi_name)"
+                                  "                  SELECT style_id, num, module, operation, op_params, enabled,"
+                                  "                         blendop_params, blendop_version, multi_priority, multi_name"
+                                  "                  FROM   tmp_style_items",
+                                  NULL, NULL, NULL) != SQLITE_OK)
+      {
+        fprintf(stderr, "[init] can't populate style_items table from tmp_style_items\n");
+        fprintf(stderr, "[init]   %s\n", sqlite3_errmsg(db->handle));
+        sqlite3_exec(db->handle, "ROLLBACK TRANSACTION", NULL, NULL, NULL);
+        return version;
+      }
+
+      if(sqlite3_exec(db->handle, "DROP TABLE tmp_style_items", NULL, NULL, NULL) != SQLITE_OK)
+      {
+        fprintf(stderr, "[init] can't delete table tmp_style_items\n");
+        fprintf(stderr, "[init]   %s\n", sqlite3_errmsg(db->handle));
+        sqlite3_exec(db->handle, "ROLLBACK TRANSACTION", NULL, NULL, NULL);
+        return version;
+      }
+    }
+
+    sqlite3_exec(db->handle, "COMMIT", NULL, NULL, NULL);
+    new_version = 7;
   }// maybe in the future, see commented out code elsewhere
 //   else if(version == XXX)
 //   {

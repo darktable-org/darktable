@@ -44,7 +44,10 @@ RawImage CrwDecoder::decodeRawInternal() {
   uint32 width = sensorInfo->getShortArray()[1];
   uint32 height = sensorInfo->getShortArray()[2];
 
-  uint32 dec_table = mRootIFD->getEntryRecursive(CIFF_DECODERTABLE)->getInt();
+  CiffEntry *decTable = mRootIFD->getEntryRecursive(CIFF_DECODERTABLE);
+  if (!decTable)
+    ThrowRDE("CRW: Couldn't find decoder table");
+  uint32 dec_table = decTable->getInt();
   if (dec_table > 2)
     ThrowRDE("CRW: Unknown decoder table %d", dec_table);
 
@@ -197,33 +200,13 @@ void CrwDecoder::initHuffTables (uint32 table, ushort16 *huff[2])
   huff[1] = makeDecoder(second_tree[table]);
 }
 
-uint32 CrwDecoder::getbithuff (ByteStream &input, int nbits, ushort16 *huff)
+uint32 CrwDecoder::getbithuff (BitPumpJPEG &pump, int nbits, ushort16 *huff)
 {
-  static unsigned bitbuf=0;
-  static int vbits=0, reset=0;
-  uint32 c;
-
-  if (nbits > 25) return 0;
-  if (nbits < 0)
-    return bitbuf = vbits = reset = 0;
-  if (nbits == 0 || vbits < 0) return 0;
-  // The <1000 comparison is spurious and will always return true as the value 
-  // is a byte converted to uint32. It used to be != EOF in dcraw when using fgetc
-  // but doesn't make sense with getByte as that will throw an exception instead
-  while (!reset && vbits < nbits && (c = ((uint32)input.getByte())) < 1000 &&
-    !(reset = 1 && c == 0xff && ((uint32) input.getByte()))) {
-    bitbuf = (bitbuf << 8) + (uchar8) c;
-    vbits += 8;
-  }
-  c = bitbuf << (32-vbits) >> (32-nbits);
-  if (huff) {
-    vbits -= huff[c] >> 8;
-    c = (uchar8) huff[c];
-  } else
-    vbits -= nbits;
-  if (vbits < 0)
-    ThrowRDE("CRW: Asking for bits we don't have");
-  return c;
+  uint32 c = pump.peekBits(nbits);
+  // Skip bits given by the high order bits of the huff table
+  pump.getBitsSafe(huff[c] >> 8);
+  // Return the lower order bits
+  return (uchar8) huff[c];
 }
 
 void CrwDecoder::decodeRaw(bool lowbits, uint32 dec_table, uint32 width, uint32 height)
@@ -235,7 +218,7 @@ void CrwDecoder::decodeRaw(bool lowbits, uint32 dec_table, uint32 width, uint32 
   initHuffTables (dec_table, huff);
   uint32 offset = 540 + lowbits*height*width/4;
   ByteStream input(mFile->getData(offset), mFile->getSize() - offset);
-  getbithuff(input, -1, NULL);
+  BitPumpJPEG pump(mFile->getData(offset),mFile->getSize() - offset);
 
   for (uint32 row=0; row < height; row+=8) {
     ushort16 *dest = (ushort16*) & mRaw->getData()[row*width*2];
@@ -243,13 +226,13 @@ void CrwDecoder::decodeRaw(bool lowbits, uint32 dec_table, uint32 width, uint32 
     for (block=0; block < nblocks; block++) {
       memset (diffbuf, 0, sizeof diffbuf);
       for (uint32 i=0; i < 64; i++ ) {
-        leaf = getbithuff(input, *huff[i > 0], huff[i > 0]+1);
+        leaf = getbithuff(pump, *huff[i > 0], huff[i > 0]+1);
         if (leaf == 0 && i) break;
         if (leaf == 0xff) continue;
         i  += leaf >> 4;
         len = leaf & 15;
         if (len == 0) continue;
-        diff = getbithuff(input, len, NULL);
+        diff = pump.getBitsSafe(len);
         if ((diff & (1 << (len-1))) == 0)
           diff -= (1 << len) - 1;
         if (i < 64) diffbuf[i] = diff;

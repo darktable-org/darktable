@@ -3,7 +3,7 @@
 		<!ENTITY % darktable_dtd SYSTEM "../../../dtd/darktable.dtd">
 		%darktable_dtd;
 		]>
-<sect3 status="draft" id="orientation">
+<sect3 status="final" id="orientation">
 
   <title>Orientation</title>
 
@@ -27,7 +27,7 @@
         <tbody>
           <row>
             <entry>
-              This module allows to modify the orientation of an image. By default it is active for all images
+              This module allows the user to modify the orientation of an image. By default it is active for all images
               and receives its standard settings from the camera's orientation flag stored in the EXIF data.
             </entry>
             <entry>

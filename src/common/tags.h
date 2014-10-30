@@ -58,14 +58,16 @@ void dt_tag_detach(guint tagid,gint imgid);
 /** detach tags from images that matches name, it is valid to use % to match tag */
 void dt_tag_detach_by_string(const char *name, gint imgid);
 
-/** retrieves a list of tags of specified imgid \param[out] result a list of dt_tag_t. */
-uint32_t dt_tag_get_attached(gint imgid,GList **result);
+/** retrieves a list of tags of specified imgid \param[out] result a list of dt_tag_t, sorted by tag. */
+uint32_t dt_tag_get_attached(gint imgid,GList **result, gboolean ignore_dt_tags);
 
-/** get a string of tags, all serialized, and separated with separator */
-gchar* dt_tag_get_list(gint imgid, const gchar *separator);
+/** get a list of tags, call dt_util_glist_to_str() to make it into a string.
+ *  the difference to dt_tag_get_attached() is that this one splits at '|' and filters out the "darktable|" tags. */
+GList* dt_tag_get_list(gint imgid);
 
-/** get a string of only hierarchical tags, all serialized, and separated with separator */
-gchar *dt_tag_get_hierarchical(gint imgid, const gchar *separator);
+/** get a flat list of only hierarchical tags, call dt_util_glist_to_str() to make it into a string.
+ *  the difference to dt_tag_get_attached() is that this one filters out the "darktable|" tags. */
+GList *dt_tag_get_hierarchical(gint imgid);
 
 /** retrieves a list of suggested tags matching keyword. \param[in] keyword the keyword to search \param[out] result a pointer to list populated with result. \return the count \note the limit of result is decided by conf value "xxx" */
 uint32_t dt_tag_get_suggestions(const gchar *keyword, GList **result);

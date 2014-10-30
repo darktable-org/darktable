@@ -38,7 +38,6 @@ public:
   virtual ~CiffIFD(void);
   vector<CiffIFD*> mSubIFD;
   map<CiffTag, CiffEntry*> mEntry;
-  int getNextIFD() {return nextIFD;}
   vector<CiffIFD*> getIFDsWithTag(CiffTag tag);
   CiffEntry* getEntry(CiffTag tag);
   bool hasEntry(CiffTag tag);
@@ -48,10 +47,8 @@ public:
   CiffEntry* getEntryRecursiveWhere(CiffTag tag, string isValue);
   vector<CiffIFD*> getIFDsWithTagWhere(CiffTag tag, string isValue);
   vector<CiffIFD*> getIFDsWithTagWhere(CiffTag tag, uint32 isValue);
-  Endianness endian;
   FileMap* getFileMap() {return mFile;};
 protected:
-  int nextIFD;
   FileMap *mFile;
 };
 

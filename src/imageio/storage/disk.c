@@ -36,7 +36,7 @@
 #include <glib.h>
 #include <glib/gstdio.h>
 
-DT_MODULE(1)
+DT_MODULE(2)
 
 // gui data
 typedef struct disk_t
@@ -49,9 +49,9 @@ disk_t;
 // saved params
 typedef struct dt_imageio_disk_t
 {
-  char filename[1024];
-  dt_variables_params_t *vp;
+  char filename[DT_MAX_PATH_FOR_PARAMS];
   gboolean overwrite;
+  dt_variables_params_t *vp;
 }
 dt_imageio_disk_t;
 
@@ -60,6 +60,32 @@ const char*
 name (const struct dt_imageio_module_storage_t *self)
 {
   return _("file on disk");
+}
+
+void *
+legacy_params(dt_imageio_module_storage_t *self,
+              const void *const old_params, const size_t old_params_size, const int old_version,
+              const int new_version, size_t *new_size)
+{
+  if(old_version == 1 && new_version == 2)
+  {
+    typedef struct dt_imageio_disk_v1_t
+    {
+      char filename[1024];
+      dt_variables_params_t *vp;
+      gboolean overwrite;
+    }
+    dt_imageio_disk_v1_t;
+
+    dt_imageio_disk_t *n = (dt_imageio_disk_t *)malloc(sizeof(dt_imageio_disk_t));
+    dt_imageio_disk_v1_t *o = (dt_imageio_disk_v1_t *)old_params;
+
+    g_strlcpy(n->filename, o->filename, sizeof(n->filename));
+
+    *new_size = self->params_size(self);
+    return n;
+  }
+  return NULL;
 }
 
 static void
@@ -297,10 +323,10 @@ get_params(dt_imageio_module_storage_t *self)
   g_strlcpy(d->filename, text, sizeof(d->filename));
   g_free(text);
 
+  d->overwrite = dt_conf_get_bool("plugins/imageio/storage/disk/overwrite");
+
   d->vp = NULL;
   dt_variables_params_init(&d->vp);
-
-  d->overwrite = dt_conf_get_bool("plugins/imageio/storage/disk/overwrite");
 
   return d;
 }

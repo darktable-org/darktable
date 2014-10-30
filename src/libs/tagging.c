@@ -66,12 +66,19 @@ name ()
 
 uint32_t views()
 {
-  return DT_VIEW_LIGHTTABLE | DT_VIEW_MAP | DT_VIEW_TETHERING;
+  uint32_t v = DT_VIEW_LIGHTTABLE | DT_VIEW_MAP | DT_VIEW_TETHERING;
+  if(dt_conf_get_bool("plugins/darkroom/tagging/visible"))
+    v |= DT_VIEW_DARKROOM;
+  return v;
 }
 
 uint32_t container()
 {
-  return DT_UI_CONTAINER_PANEL_RIGHT_CENTER;
+  const dt_view_t *cv = dt_view_manager_get_current_view(darktable.view_manager);
+  if(cv->view((dt_view_t*)cv) == DT_VIEW_DARKROOM)
+    return DT_UI_CONTAINER_PANEL_LEFT_CENTER;
+  else
+    return DT_UI_CONTAINER_PANEL_RIGHT_CENTER;
 }
 
 void init_key_accels(dt_lib_module_t *self)
@@ -105,7 +112,7 @@ update (dt_lib_module_t *self, int which)
   {
     int imgsel = dt_control_get_mouse_over_id();
     d->imgsel = imgsel;
-    count = dt_tag_get_attached(imgsel,&tags);
+    count = dt_tag_get_attached(imgsel,&tags, FALSE);
   }
   else // related tags of typed text
     count = dt_tag_get_suggestions(d->keyword,&tags);

@@ -108,7 +108,7 @@ static int current_view_cb(lua_State *L)
     dt_ctl_switch_mode_to(i);
   }
   const dt_view_t* current_view = dt_view_manager_get_current_view(darktable.view_manager);
-  dt_lua_module_push_entry(L,"view",current_view->module_name);
+  dt_lua_module_entry_push(L,"view",current_view->module_name);
   return 1;
 }
 
@@ -248,26 +248,32 @@ int dt_lua_init_gui(lua_State * L)
 
     lua_pushcfunction(L,selection_cb);
     lua_pushcclosure(L,dt_lua_type_member_common,1);
-    dt_lua_type_register_const_typeid(L,type_id,"selection");
+    dt_lua_type_register_const_type(L,type_id,"selection");
     lua_pushcfunction(L,hovered_cb);
-    dt_lua_type_register_const_typeid(L,type_id,"hovered");
+    dt_lua_type_register_const_type(L,type_id,"hovered");
     lua_pushcfunction(L,act_on_cb);
-    dt_lua_type_register_const_typeid(L,type_id,"action_images");
+    dt_lua_type_register_const_type(L,type_id,"action_images");
     lua_pushcfunction(L,current_view_cb);
     lua_pushcclosure(L,dt_lua_type_member_common,1);
-    dt_lua_type_register_const_typeid(L,type_id,"current_view");
+    dt_lua_type_register_const_type(L,type_id,"current_view");
     lua_pushcfunction(L, lua_create_job);
     lua_pushcclosure(L, dt_lua_type_member_common, 1);
-    dt_lua_type_register_const_typeid(L, type_id, "create_job");
+    dt_lua_type_register_const_type(L, type_id, "create_job");
+    dt_lua_module_push(L,"lib");
+    lua_pushcclosure(L, dt_lua_type_member_common, 1);
+    dt_lua_type_register_const_type(L, type_id, "libs");
+    dt_lua_module_push(L,"view");
+    lua_pushcclosure(L, dt_lua_type_member_common, 1);
+    dt_lua_type_register_const_type(L, type_id, "views");
 
 
 
     // create a type describing a job object
-    int job_typeid = dt_lua_init_gpointer_type(L, dt_lua_backgroundjob_t);
+    int job_type = dt_lua_init_gpointer_type(L, dt_lua_backgroundjob_t);
     lua_pushcfunction(L, lua_job_progress);
-    dt_lua_type_register_typeid(L, job_typeid, "percent");
+    dt_lua_type_register_type(L, job_type, "percent");
     lua_pushcfunction(L, lua_job_valid);
-    dt_lua_type_register_typeid(L, job_typeid, "valid");
+    dt_lua_type_register_type(L, job_type, "valid");
   }
   return 0;
 }

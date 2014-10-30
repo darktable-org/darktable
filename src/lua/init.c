@@ -53,12 +53,13 @@ static int dt_luacleanup(lua_State*L)
 
 static lua_CFunction early_init_funcs[] =
 {
-  dt_lua_init_types,
-  dt_lua_init_modules,
-  dt_lua_init_format,
-  dt_lua_init_storage,
-  dt_lua_init_lib,
-  dt_lua_init_view,
+  dt_lua_init_early_types,
+  dt_lua_init_early_events,
+  dt_lua_init_early_modules,
+  dt_lua_init_early_format,
+  dt_lua_init_early_storage,
+  dt_lua_init_early_lib,
+  dt_lua_init_early_view,
   NULL
 };
 
@@ -76,7 +77,7 @@ void dt_lua_init_early(lua_State*L)
   darktable.lua_state.ending = false;
   dt_lua_init_lock();
   luaL_openlibs(darktable.lua_state.state);
-  luaA_open();
+  luaA_open(L);
   dt_lua_push_darktable_lib(L);
   // set the metatable
   lua_getmetatable(L,-1);
@@ -135,9 +136,10 @@ static lua_CFunction init_funcs[] =
   dt_lua_init_gui,
   dt_lua_init_luastorages,
   dt_lua_init_tags,
-  dt_lua_init_events,
   dt_lua_init_film,
   dt_lua_init_call,
+  dt_lua_init_view,
+  dt_lua_init_events,
   NULL
 };
 
@@ -162,6 +164,8 @@ void dt_lua_init(lua_State*L,const char *lua_command)
     (*cur_type)(L);
     cur_type++;
   }
+  assert(lua_gettop(L) ==0); // if you are here, you have probably added an initialisation function that is not stack clean
+
   // build the table containing the configuration info
 
   lua_getglobal(L,"package");
@@ -250,11 +254,11 @@ int luaopen_darktable(lua_State *L) {
 
 void dt_lua_finalize() 
 {
+  luaA_close(darktable.lua_state.state);
   if(!darktable.lua_state.ending) {
     darktable.lua_state.ending = true;
     lua_close(darktable.lua_state.state);
   }
-  luaA_close();
   darktable.lua_state.state = NULL;
 }
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

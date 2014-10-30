@@ -1,31 +1,26 @@
-#include <stdio.h>
-#include <stdlib.h>
-
-#include "lua.h"
-#include "lualib.h"
-#include "lauxlib.h"
-#include "lautoc.h"
+#include "../lautoc.h"
 
 typedef struct {
   char* name;
   int num_wings;
 } birdie;
 
-static birdie test_birdie;
-static birdie* get_instance_ptr(lua_State* L) {
+birdie test_birdie;
+
+birdie* get_instance_ptr(lua_State* L) {
   return &test_birdie;
 }
 
-static int birdie_index(lua_State* L) {
+int birdie_index(lua_State* L) {
   const char* membername = lua_tostring(L, -1);
   birdie* self = get_instance_ptr(L);
-  return luaA_struct_push_member_name(L, birdie, self, membername);
+  return luaA_struct_push_member_name(L, birdie, membername, self);
 }
 
-static int birdie_newindex(lua_State* L) {
+int birdie_newindex(lua_State* L) {
   const char* membername = lua_tostring(L, -2);
   birdie* self = get_instance_ptr(L);
-  luaA_struct_to_member_name(L, birdie, self, membername, -1);
+  luaA_struct_to_member_name(L, birdie, membername, self, -1);
   return 0;
 }
 
@@ -36,17 +31,14 @@ int main(int argc, char **argv) {
   
   lua_State* L = luaL_newstate();
   luaL_openlibs(L);
-  luaA_open();
+  luaA_open(L);
   
   luaA_struct(L, birdie);
   luaA_struct_member(L, birdie, name, char*);
   luaA_struct_member(L, birdie, num_wings, int);
   
-  lua_pushcfunction(L, birdie_index);
-  lua_setglobal(L, "birdie_index");
-  
-  lua_pushcfunction(L, birdie_newindex);
-  lua_setglobal(L, "birdie_newindex");
+  lua_register(L, "birdie_index", birdie_index);
+  lua_register(L, "birdie_newindex", birdie_newindex);
   
   luaL_dostring(L, ""
     "Birdie = {}\n"
@@ -62,10 +54,11 @@ int main(int argc, char **argv) {
     "bird = Birdie()\n"
     "print(bird.name)\n"
     "print(bird.num_wings)\n"
-    "\n"
-    );
+    "bird.num_wings = 3\n"
+    "print(bird.num_wings)\n"
+    "\n");
   
-  luaA_close();
+  luaA_close(L);
   lua_close(L);
   
   return 0;

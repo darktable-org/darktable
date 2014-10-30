@@ -242,7 +242,7 @@ void init(dt_iop_module_t *module)
   module->default_params          = malloc(sizeof(dt_iop_overexposed_t));
   module->hide_enable_button      = 1;
   module->default_enabled         = 1;
-  module->priority = 929; // module order created by iop_dependencies.py, do not edit!
+  module->priority = 933; // module order created by iop_dependencies.py, do not edit!
   module->params_size             = sizeof(dt_iop_overexposed_t);
   module->gui_data                = NULL;
 }

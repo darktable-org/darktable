@@ -60,8 +60,6 @@ typedef	enum {
 class CiffEntry
 {
 public:
-  CiffEntry();
-  CiffEntry(CiffTag tag, CiffDataType type, uint32 count, const uchar8* data = NULL);
   CiffEntry(FileMap* f, uint32 value_data, uint32 offset);
   virtual ~CiffEntry(void);
   virtual uint32 getInt();

@@ -79,7 +79,7 @@ typedef struct dt_mipmap_cache_one_t
   // due to aspect ratio)
   uint32_t max_width, max_height;
   // size of an element inside buf
-  uint32_t buffer_size;
+  size_t buffer_size;
   // 1) no memory fragmentation:
   //    - fixed slots with fixed size (could waste a few bytes for extreme
   //      aspect ratios)

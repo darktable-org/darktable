@@ -323,7 +323,7 @@ dt_styles_create_from_style (const char *name, const char *newname, const char *
       DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
     }
     else
-      DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "insert into style_items (styleid,num,module,operation,op_params,enabled,blendop_params,blendop_version,multi_priority,multi_name) select ?1, num,module,operation,op_params,enabled,blendop_params,blendop_version,multi_priority,multi_name from style_items where style_id=?2", -1, &stmt, NULL);
+      DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "insert into style_items (styleid,num,module,operation,op_params,enabled,blendop_params,blendop_version,multi_priority,multi_name) select ?1, num,module,operation,op_params,enabled,blendop_params,blendop_version,multi_priority,multi_name from style_items where styleid=?2", -1, &stmt, NULL);
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, id);
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, oldid);
     sqlite3_step (stmt);
@@ -654,18 +654,18 @@ dt_styles_get_item_list_as_string(const char *name)
   if (items)
   {
     GList* names = NULL;
-    unsigned int count = 0;
     do
     {
       dt_style_item_t *item=(dt_style_item_t *)items->data;
       names = g_list_append(names, g_strdup(item->name));
       g_free(item->name);
       g_free(item);
-      count++;
     }
     while ((items=g_list_next(items)));
 
-    return dt_util_glist_to_str("\n", names, count);
+    char *result = dt_util_glist_to_str("\n", names);
+    g_list_free_full(names, g_free);
+    return result;
   }
   return NULL;
 }

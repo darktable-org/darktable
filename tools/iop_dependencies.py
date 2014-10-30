@@ -84,10 +84,21 @@ def add_edges(gr):
   gr.add_edge(('basecurve', 'lens'))
   gr.add_edge(('basecurve', 'exposure'))
   
+  # fix mad sensor designs: NIKON D1X have rectangular pixels
+  gr.add_edge(('scalepixels', 'demosaic'))
+  # fix mad sensor designs: some Fuji have their Bayer pattern rotated by -45deg
+  gr.add_edge(('rotatepixels', 'demosaic'))
+
+  # there is no cameras that have non-square pixels AND rotated Bayer pattern
+  # at the same time, but IMO it makes more sense to scale after rotating.
+  gr.add_edge(('scalepixels', 'rotatepixels'))
+
   # flip is a distortion plugin, and as such has to go after spot removal
   # and lens correction, which depend on original input buffers.
   # and after buffer has been downscaled/demosaiced
   gr.add_edge(('flip', 'demosaic'))
+  gr.add_edge(('flip', 'scalepixels'))
+  gr.add_edge(('flip', 'rotatepixels'))
   gr.add_edge(('flip', 'lens'))
   gr.add_edge(('flip', 'spots'))
   # plus, it confuses crop/rotate, vignetting and graduated density
@@ -130,6 +141,7 @@ def add_edges(gr):
   gr.add_edge(('colorout', 'colorcontrast'))
   gr.add_edge(('colorout', 'colorize'))
   gr.add_edge(('colorout', 'colisa'))
+  gr.add_edge(('colorout', 'defringe'))
   gr.add_edge(('bloom', 'colorin'))
   gr.add_edge(('nlmeans', 'colorin'))
   gr.add_edge(('colortransfer', 'colorin'))
@@ -152,10 +164,13 @@ def add_edges(gr):
   gr.add_edge(('colorcontrast', 'colorin'))
   gr.add_edge(('colorize', 'colorin'))
   gr.add_edge(('colisa', 'colorin'))
+  gr.add_edge(('defringe', 'colorin'))
   
   # spot removal works on demosaiced data
   # and needs to be before geometric distortions:
   gr.add_edge(('spots', 'demosaic'))
+  gr.add_edge(('scalepixels', 'spots'))
+  gr.add_edge(('rotatepixels', 'spots'))
   gr.add_edge(('lens', 'spots'))
   gr.add_edge(('borders', 'spots'))
   gr.add_edge(('clipping', 'spots'))
@@ -284,6 +299,10 @@ def add_edges(gr):
   # colorize first in Lab pipe
   gr.add_edge(('colortransfer', 'colorize'))
   gr.add_edge(('colormapping', 'colortransfer'))
+  
+  # defringe before color manipulations (colorbalance is sufficient) and before equalizer
+  gr.add_edge(('colorbalance', 'defringe'))
+  gr.add_edge(('equalizer', 'defringe'))
 
   # levels come after tone curve
   gr.add_edge(('levels', 'tonecurve'))
@@ -352,6 +371,7 @@ gr.add_nodes([
 'colormapping',
 'colorzones',
 'colorcontrast',
+'defringe',
 'demosaic',
 'denoiseprofile',
 'dither',
@@ -376,6 +396,8 @@ gr.add_nodes([
 'profile_gamma',
 'rawdenoise',
 'relight',
+'scalepixels',
+'rotatepixels',
 'shadhi',
 'sharpen',
 'soften',

@@ -3,7 +3,7 @@
 		<!ENTITY % darktable_dtd SYSTEM "../../dtd/darktable.dtd">
 		%darktable_dtd;
 		]>
-<sect2 status="draft" id="red_eyes">
+<sect2 status="final" id="red_eyes">
 
   <title>Removal of red-eye effect</title>
 
@@ -11,7 +11,7 @@
     <primary>red-eye removal</primary>
   </indexterm>
 
-  <sect3 status="draft">
+  <sect3 status="final">
 
     <title>Overview</title>
 
@@ -44,7 +44,7 @@
 
   </sect3>
 
-  <sect3 status="draft">
+  <sect3 status="final">
 
     <title>Masking</title>
 
@@ -90,7 +90,7 @@
                 </para>
 
                 <para>
-                  Alternatively you can us an elliptical mask. See <xref linkend="drawn_mask"/>
+                  Alternatively you can us an elliptical shape. See <xref linkend="drawn_mask"/>
                   for further details.
                 </para></listitem>
 
@@ -125,7 +125,7 @@
 
   </sect3>
 
-  <sect3 status="draft">
+  <sect3 status="final">
 
     <title>Desaturation</title>
 
@@ -165,7 +165,7 @@
 
                 <para>
                   You are free to experiment what gives you the most realistic pupil, but this
-                  is a good starting point. Another proposal is 10/60/30. The sum of the three
+                  is a good starting point. Another proposal is 0.10/0.60/0.30. The sum of the three
                   values should be 1.
                 </para></listitem>
 

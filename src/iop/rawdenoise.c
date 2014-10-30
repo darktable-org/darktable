@@ -383,15 +383,21 @@ void reload_defaults(dt_iop_module_t *module)
   // init defaults:
   dt_iop_rawdenoise_params_t tmp = (dt_iop_rawdenoise_params_t)
   {
-    0.01
+    .threshold = 0.01
   };
-  memcpy(module->params, &tmp, sizeof(dt_iop_rawdenoise_params_t));
-  memcpy(module->default_params, &tmp, sizeof(dt_iop_rawdenoise_params_t));
+
+  // we might be called from presets update infrastructure => there is no image
+  if(!module->dev) goto end;
 
   // can't be switched on for non-raw images:
   if(dt_image_is_raw(&module->dev->image_storage)) module->hide_enable_button = 0;
   else module->hide_enable_button = 1;
   module->default_enabled = 0;
+
+end:
+  memcpy(module->params, &tmp, sizeof(dt_iop_rawdenoise_params_t));
+  memcpy(module->default_params, &tmp, sizeof(dt_iop_rawdenoise_params_t));
+
 }
 
 void init(dt_iop_module_t *module)
@@ -402,7 +408,7 @@ void init(dt_iop_module_t *module)
   module->default_enabled = 0;
 
   // raw denoise must come just before demosaicing.
-  module->priority = 122; // module order created by iop_dependencies.py, do not edit!
+  module->priority = 116; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_rawdenoise_params_t);
   module->gui_data = NULL;
 }

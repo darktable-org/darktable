@@ -16,6 +16,7 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#ifndef __APPLE__
 // strings and compute model versions vim-macro converted from http://developer.nvidia.com/cuda/cuda-gpus 2012/09/18.
 // we're not really interested in updates, this is merely used to detect which gpus don't support sm_20
 // (and we hope newer gpus will all do that)
@@ -201,6 +202,7 @@ static const char *nvidia_gpus[] =
   "GeForce GTS 350M","1.2",
   "GeForce GT 335M","1.2",
   "GeForce GT 330M","1.2",
+  "GeForce GT 320M","1.2",
   "GeForce GT 325M","1.2",
   "GeForce GT 240M","1.2",
   "GeForce G210M","1.2",
@@ -243,6 +245,7 @@ static const char *nvidia_gpus[] =
   "ION","1.0",
   NULL, NULL
 };
+#endif
 
 int dt_nvidia_gpu_supports_sm_20(const char *model)
 {

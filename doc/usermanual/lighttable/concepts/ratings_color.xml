@@ -24,11 +24,12 @@
   <para>
     You can give a rating from zero to five stars to an image. The quality criteria which lead
     to a rating are fully up to you. Whenever you import images, each image receives a default
-    rating which you can define in core options (see <xref linkend="core_options"/>). You can
+    rating which you can define in GUI options (see <xref linkend="gui_options"/>). You can
     later revise the rating at any time. You can also mark an image as <quote>rejected</quote>
     by pressing the
     <inlinegraphic fileref="&icon_lighttable_reject;" scalefit="1" width="2%" align="center"/>
-    icon or typing the <emphasis>r</emphasis> key.
+    icon or typing the <emphasis>r</emphasis> key. This will remove all stars. You can reverse 
+    the rejection by applying a new star rating.
   </para>
 
   <para>

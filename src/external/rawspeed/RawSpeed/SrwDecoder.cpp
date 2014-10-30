@@ -228,13 +228,11 @@ void SrwDecoder::decodeCompressed2( TiffIFD* raw, int bits)
     for(int32 c = 0; c < (1024 >> (tab[i] >> 8)); c++)
       huff[++n] = tab[i];
 
-  ByteStream input(mFile->getData(offset), mFile->getSize());
-  getbithuff(input, -1, NULL);
-
+  BitPumpMSB pump(mFile->getData(offset),mFile->getSize() - offset);
   for (uint32 y = 0; y < height; y++) {
     ushort16* img = (ushort16*)mRaw->getData(0, y);
     for (uint32 x = 0; x < width; x++) {
-      int32 diff = ljpegDiff(input, huff);
+      int32 diff = ljpegDiff(pump, huff);
       if (x < 2)
         hpred[x] = vpred[y & 1][x] += diff;
       else
@@ -246,49 +244,27 @@ void SrwDecoder::decodeCompressed2( TiffIFD* raw, int bits)
   }
 }
 
-int32 SrwDecoder::ljpegDiff (ByteStream &input, ushort16 *huff)
+int32 SrwDecoder::ljpegDiff (BitPumpMSB &pump, ushort16 *huff)
 {
   int32 len, diff;
 
-  len = getbithuff(input, *huff, huff+1);
+  len = getbithuff(pump, *huff, huff+1);
   if (len == 16)
     return -32768;
-  diff = getbithuff(input, len, NULL);
-  if ((diff & (1 << (len-1))) == 0)
+  diff = pump.getBitsSafe(len);
+  if (len && (diff & (1 << (len-1))) == 0)
     diff -= (1 << len) - 1;
   return diff;
 }
 
-uint32 SrwDecoder::getbithuff (ByteStream &input, int nbits, ushort16 *huff)
+uint32 SrwDecoder::getbithuff (BitPumpMSB &pump, int nbits, ushort16 *huff)
 {
-  static unsigned bitbuf=0;
-  static int vbits=0, reset=0;
-  uint32 c;
-
-  if (nbits > 25) return 0;
-  if (nbits < 0)
-    return bitbuf = vbits = reset = 0;
-  if (nbits == 0 || vbits < 0) return 0;
-  // The <1000 comparison is spurious and will always return true as the value 
-  // is a byte converted to uint32. It used to be != EOF in dcraw when using fgetc
-  // but doesn't make sense with getByte as that will throw an exception instead
-  while (!reset && vbits < nbits && (c = ((uint32)input.getByte())) < 1000 &&
-    !(reset = 0 && c == 0xff && ((uint32) input.getByte()))) {
-    bitbuf = (bitbuf << 8) + (uchar8) c;
-    vbits += 8;
-  }
-  c = bitbuf << (32-vbits) >> (32-nbits);
-  if (huff) {
-    vbits -= huff[c] >> 8;
-    c = (uchar8) huff[c];
-  } else
-    vbits -= nbits;
-  if (vbits < 0)
-    ThrowRDE("CRW: Asking for bits we don't have");
-  return c;
+  uint32 c = pump.peekBits(nbits);
+  // Skip bits given by the high order bits of the huff table
+  pump.getBitsSafe(huff[c] >> 8);
+  // Return the lower order bits
+  return (uchar8) huff[c];
 }
-
-
 
 void SrwDecoder::checkSupportInternal(CameraMetaData *meta) {
   vector<TiffIFD*> data = mRootIFD->getIFDsWithTag(MODEL);

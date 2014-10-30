@@ -35,7 +35,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-DT_MODULE(1)
+DT_MODULE(2)
 
 // gui data
 typedef struct latex_t
@@ -48,9 +48,9 @@ latex_t;
 // saved params
 typedef struct dt_imageio_latex_t
 {
-  char filename[1024];
+  char filename[DT_MAX_PATH_FOR_PARAMS];
   char title[1024];
-  char cached_dirname[1024]; // expanded during first img store, not stored in param struct.
+  char cached_dirname[DT_MAX_PATH_FOR_PARAMS]; // expanded during first img store, not stored in param struct.
   dt_variables_params_t *vp;
   GList *l;
 }
@@ -69,6 +69,36 @@ const char*
 name (const struct dt_imageio_module_storage_t *self)
 {
   return _("LaTeX book template");
+}
+
+void *
+legacy_params(dt_imageio_module_storage_t *self,
+              const void *const old_params, const size_t old_params_size, const int old_version,
+              const int new_version, size_t *new_size)
+{
+  if(old_version == 1 && new_version == 2)
+  {
+    typedef struct dt_imageio_latex_v1_t
+    {
+      char filename[1024];
+      char title[1024];
+      char cached_dirname[1024]; // expanded during first img store, not stored in param struct.
+      dt_variables_params_t *vp;
+      GList *l;
+    }
+    dt_imageio_latex_v1_t;
+
+    dt_imageio_latex_t *n = (dt_imageio_latex_t *)malloc(sizeof(dt_imageio_latex_t));
+    dt_imageio_latex_v1_t *o = (dt_imageio_latex_v1_t *)old_params;
+
+    g_strlcpy(n->filename, o->filename, sizeof(n->filename));
+    g_strlcpy(n->title, o->title, sizeof(n->title));
+    g_strlcpy(n->cached_dirname, o->cached_dirname, sizeof(n->cached_dirname));
+
+    *new_size = self->params_size(self);
+    return n;
+  }
+  return NULL;
 }
 
 static void
@@ -293,8 +323,7 @@ store (dt_imageio_module_storage_t *self, dt_imageio_module_data_t *sdata, const
       description = res_desc->data;
     }
 
-    unsigned int count = 0;
-    res_subj = dt_metadata_get(imgid, "Xmp.dc.subject", &count);
+    res_subj = dt_metadata_get(imgid, "Xmp.dc.subject", NULL);
     if(res_subj)
     {
       // don't show the internal tags (darktable|...)
@@ -307,15 +336,15 @@ store (dt_imageio_module_storage_t *self, dt_imageio_module_data_t *sdata, const
         {
           g_free(iter->data);
           res_subj = g_list_delete_link(res_subj, iter);
-          count--;
         }
         iter = next;
       }
-      tags = dt_util_glist_to_str(", ", res_subj, count);
+      tags = dt_util_glist_to_str(", ", res_subj);
+      g_list_free_full(res_subj, g_free);
     }
 #endif
 
-    char relfilename[256];
+    char relfilename[PATH_MAX];
     c = filename + strlen(filename);
     for(; c>filename && *c != '/' ; c--);
     if(*c == '/') c++;
@@ -434,7 +463,7 @@ finalize_store(dt_imageio_module_storage_t *self, dt_imageio_module_data_t *dd)
 size_t
 params_size(dt_imageio_module_storage_t *self)
 {
-  return sizeof(dt_imageio_latex_t) - 2*sizeof(void *) - 1024;
+  return sizeof(dt_imageio_latex_t) - 2*sizeof(void *) - DT_MAX_PATH_FOR_PARAMS;
 }
 
 void init(dt_imageio_module_storage_t *self)

@@ -196,6 +196,7 @@ dt_gtkentry_get_default_path_compl_list ()
     { "FILE_FOLDER", N_("$(FILE_FOLDER) - folder containing the input image") },
     { "FILE_NAME", N_("$(FILE_NAME) - basename of the input image") },
     { "FILE_EXTENSION", N_("$(FILE_EXTENSION) - extension of the input image") },
+    { "VERSION", N_("$(VERSION) - duplicate version") },
     { "SEQUENCE", N_("$(SEQUENCE) - sequence number") },
     { "YEAR", N_("$(YEAR) - year") },
     { "MONTH", N_("$(MONTH) - month") },

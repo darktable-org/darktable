@@ -369,13 +369,6 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
   dt_iop_temperature_data_t *d = (dt_iop_temperature_data_t *)piece->data;
   for(int k=0; k<3; k++) d->coeffs[k]  = p->coeffs[k];
 
-  /*
-   * since `x * 1.0f == x` (multiplication is pointless),
-   * disable piece (out = in)
-   */
-  if(1.0f == p->coeffs[0] && 1.0f == p->coeffs[1] && 1.0f == p->coeffs[2])
-    piece->enabled = 0;
-
   // x-trans images not implemented in OpenCL yet
   if(pipe->image.filters == 9u)
     piece->process_cl_ready = 0;
@@ -446,22 +439,31 @@ void gui_update (struct dt_iop_module_t *self)
 
 void reload_defaults(dt_iop_module_t *module)
 {
-  // raw images need wb (to convert from uint16_t to float):
-  if(dt_image_is_raw(&module->dev->image_storage))
-  {
-    module->default_enabled = 1;
-  }
-  else module->default_enabled = 0;
   dt_iop_temperature_params_t tmp = (dt_iop_temperature_params_t)
   {
-    5000.0, {1.0, 1.0, 1.0}
+    .temp_out = 5000.0,
+    .coeffs = {1.0, 1.0, 1.0}
   };
+
+  // we might be called from presets update infrastructure => there is no image
+  if(!module->dev) goto end;
+
+  // raw images need wb:
+  module->default_enabled = dt_image_is_raw(&module->dev->image_storage) &&
+                            !module->dev->image_storage.pre_applied_wb;
 
   // get white balance coefficients, as shot
   char filename[PATH_MAX];
   int ret=0;
+
   /* check if file is raw / hdr */
-  if(dt_image_is_raw(&module->dev->image_storage))
+  if(dt_image_is_raw(&module->dev->image_storage) &&
+      /*
+       * ugly nikon hack: d810 sraws have WB pre-applied,
+       * but it is still stored inside.
+       * once we move WB coeffs reading into RS, this can be deleted.
+       */
+      !module->dev->image_storage.pre_applied_wb)
   {
     gboolean from_cache = TRUE;
     dt_image_full_path(module->dev->image_storage.id, filename, sizeof(filename), &from_cache);
@@ -552,6 +554,7 @@ void reload_defaults(dt_iop_module_t *module)
     libraw_close(raw);
   }
 
+end:
   memcpy(module->params, &tmp, sizeof(dt_iop_temperature_params_t));
   memcpy(module->default_params, &tmp, sizeof(dt_iop_temperature_params_t));
 }
@@ -569,7 +572,7 @@ void init (dt_iop_module_t *module)
 {
   module->params = malloc(sizeof(dt_iop_temperature_params_t));
   module->default_params = malloc(sizeof(dt_iop_temperature_params_t));
-  module->priority = 52; // module order created by iop_dependencies.py, do not edit!
+  module->priority = 50; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_temperature_params_t);
   module->gui_data = NULL;
 }

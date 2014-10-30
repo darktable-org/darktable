@@ -53,14 +53,14 @@ struct dt_mipmap_buffer_dsc
 {
   uint32_t width;
   uint32_t height;
-  uint32_t size;
+  size_t size;
   uint32_t flags;
   /* NB: sizeof must be a multiple of 4*sizeof(float) */
-}  __attribute__((packed));
+} __attribute__((packed,aligned(16)));
 
 // last resort mem alloc for dead images. sizeof(dt_mipmap_buffer_dsc) + dead image pixels (8x8)
 // __m128 type for sse alignment.
-static __m128 dt_mipmap_cache_static_dead_image[1 + 64];
+static __m128 dt_mipmap_cache_static_dead_image[sizeof(struct dt_mipmap_buffer_dsc)/sizeof(__m128) + 64];
 
 static inline void
 dead_image_8(dt_mipmap_buffer_t *buf)
@@ -415,8 +415,8 @@ dt_mipmap_cache_deserialize(dt_mipmap_cache_t *cache)
 
   while(!feof(f))
   {
-    int level = 0;
-    rd = fread(&level, sizeof(int), 1, f);
+    dt_mipmap_size_t level = 0;
+    rd = fread(&level, sizeof(dt_mipmap_size_t), 1, f);
     if (rd != 1 || level > mip) break;
 
     int32_t key = 0;
@@ -485,7 +485,7 @@ static void _init_f(float   *buf, uint32_t *width, uint32_t *height, const uint3
 static void _init_8(uint8_t *buf, uint32_t *width, uint32_t *height, const uint32_t imgid, const dt_mipmap_size_t size);
 
 static int32_t
-scratchmem_allocate(void *data, const uint32_t key, int32_t *cost, void **buf)
+scratchmem_allocate(void *data, const uint32_t key, size_t *cost, void **buf)
 {
   dt_mipmap_cache_one_t *c = (dt_mipmap_cache_one_t *)data;
   // slot is exactly aligned with encapsulated cache's position and already allocated
@@ -494,7 +494,7 @@ scratchmem_allocate(void *data, const uint32_t key, int32_t *cost, void **buf)
 }
 
 int32_t
-dt_mipmap_cache_allocate(void *data, const uint32_t key, int32_t *cost, void **buf)
+dt_mipmap_cache_allocate(void *data, const uint32_t key, size_t *cost, void **buf)
 {
   dt_mipmap_cache_one_t *c = (dt_mipmap_cache_one_t *)data;
   // slot is exactly aligned with encapsulated cache's position and already allocated
@@ -533,8 +533,7 @@ dt_mipmap_cache_alloc(dt_image_t *img, dt_mipmap_size_t size, dt_mipmap_cache_al
   int32_t wd = img->width;
   int32_t ht = img->height;
   int32_t bpp = img->bpp;
-  const uint32_t buffer_size =
-    ((wd*ht*bpp) + sizeof(**dsc));
+  const size_t buffer_size = (((size_t)wd*ht*bpp) + sizeof(**dsc));
 
   // buf might have been alloc'ed before,
   // so only check size and re-alloc if necessary:
@@ -566,7 +565,7 @@ dt_mipmap_cache_alloc(dt_image_t *img, dt_mipmap_size_t size, dt_mipmap_cache_al
 
 // callback for the cache backend to initialize payload pointers
 int32_t
-dt_mipmap_cache_allocate_dynamic(void *data, const uint32_t key, int32_t *cost, void **buf)
+dt_mipmap_cache_allocate_dynamic(void *data, const uint32_t key, size_t *cost, void **buf)
 {
   dt_mipmap_cache_one_t *cache = (dt_mipmap_cache_one_t *)data;
   // for full image buffers
@@ -708,7 +707,7 @@ void dt_mipmap_cache_init(dt_mipmap_cache_t *cache)
     const int width  = cache->mip[k].max_width;
     const int height = cache->mip[k].max_height;
     // header + adjusted for dxt compression:
-    cache->mip[k].buffer_size = 4*sizeof(uint32_t) + compressed_buffer_size(cache->compression_type, width, height);
+    cache->mip[k].buffer_size = sizeof(struct dt_mipmap_buffer_dsc) + compressed_buffer_size(cache->compression_type, width, height);
     cache->mip[k].size = k;
     // level of parallelism also gives minimum size (which is twice that)
     // is rounded to a power of two by the cache anyways, we might as well.
@@ -763,7 +762,7 @@ void dt_mipmap_cache_init(dt_mipmap_cache_t *cache)
                                  dt_mipmap_cache_allocate_dynamic, &cache->mip[DT_MIPMAP_F]);
   dt_cache_set_cleanup_callback(&cache->mip[DT_MIPMAP_F].cache,
                                 dt_mipmap_cache_deallocate_dynamic, &cache->mip[DT_MIPMAP_F]);
-  cache->mip[DT_MIPMAP_F].buffer_size = 4*sizeof(uint32_t) +
+  cache->mip[DT_MIPMAP_F].buffer_size = sizeof(struct dt_mipmap_buffer_dsc) +
                                         4*sizeof(float) * cache->mip[DT_MIPMAP_F].max_width * cache->mip[DT_MIPMAP_F].max_height;
   cache->mip[DT_MIPMAP_F].size = DT_MIPMAP_F;
   cache->mip[DT_MIPMAP_F].buf = NULL;

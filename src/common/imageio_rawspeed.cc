@@ -147,6 +147,7 @@ dt_imageio_open_rawspeed(
     m.reset();
 
     img->filters = 0u;
+    img->pre_applied_wb = r->preAppliedWB;
     if( !r->isCFA )
     {
       dt_imageio_retval_t ret = dt_imageio_open_rawspeed_sraw(img, r, a);
@@ -187,6 +188,9 @@ dt_imageio_open_rawspeed(
     /* needed in exposure iop for Deflicker */
     img->raw_black_level = r->blackLevel;
     img->raw_white_point = r->whitePoint;
+
+    img->fuji_rotation_pos = r->fujiRotationPos;
+    img->pixel_aspect_ratio = (float)r->pixelAspectRatio;
 
     void *buf = dt_mipmap_cache_alloc(img, DT_MIPMAP_FULL, a);
     if(!buf)
@@ -250,7 +254,7 @@ dt_imageio_open_rawspeed_sraw(dt_image_t *img, RawImage r, dt_mipmap_cache_alloc
   const float scale = (float)(white - black);
 
 #ifdef _OPENMP
-  #pragma omp parallel for default(none) schedule(static)
+  #pragma omp parallel for default(none) schedule(static) shared(raw_width, raw_height, raw_img, img, dimUncropped, cropTL, buf, black)
 #endif
   for(size_t row = 0; row < raw_height; row++)
   {
@@ -268,7 +272,7 @@ dt_imageio_open_rawspeed_sraw(dt_image_t *img, RawImage r, dt_mipmap_cache_alloc
            * we need to copy data from only channel to each of 3 channels
            */
 
-          out[k] = (((float)(*in)) - black) / scale;
+          out[k] = MAX(0.0f, (((float)(*in)) - black) / scale);
         }
         else
         {
@@ -277,7 +281,7 @@ dt_imageio_open_rawspeed_sraw(dt_image_t *img, RawImage r, dt_mipmap_cache_alloc
            * just copy 3 ch to 3 ch
            */
 
-          out[k] = (((float)(in[k])) - black) / scale;
+          out[k] = MAX(0.0f, (((float)(in[k])) - black) / scale);
         }
       }
     }

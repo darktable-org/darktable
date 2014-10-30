@@ -138,7 +138,7 @@ int write_image (dt_imageio_module_data_t *d_tmp, const char *filename, const vo
   TIFFSetField(tif, TIFFTAG_PHOTOMETRIC, (uint16_t)PHOTOMETRIC_RGB);
   TIFFSetField(tif, TIFFTAG_PLANARCONFIG, (uint16_t)PLANARCONFIG_CONTIG);
   TIFFSetField(tif, TIFFTAG_ROWSPERSTRIP, (uint32_t)DT_TIFFIO_STRIPE);
-  TIFFSetField(tif, TIFFTAG_SAMPLESPERPIXEL, (uint16_t)3);
+  TIFFSetField(tif, TIFFTAG_ORIENTATION, (uint16_t)ORIENTATION_TOPLEFT);
 
   int resolution = dt_conf_get_int("metadata/resolution");
   if (resolution > 0)
@@ -161,17 +161,15 @@ int write_image (dt_imageio_module_data_t *d_tmp, const char *filename, const vo
 
   if (d->bpp == 32)
   {
-    float* in = (float*)in_void;
     float* wdata = rowdata;
 
     for (int y = 0; y < d->height; y++)
     {
-      for (int x = 0; x < d->width; x++)
+      float* in = (float*)in_void + (size_t)4*y*d->width;
+
+      for (int x = 0; x < d->width; x++, in+=4, wdata+=3)
       {
-        wdata[0] = in[x * 4 + 0];
-        wdata[1] = in[x * 4 + 1];
-        wdata[2] = in[x * 4 + 2];
-        wdata += 3;
+        memcpy(wdata, in, 3*sizeof(float));
       }
 
       if ((uintptr_t)wdata - (uintptr_t)rowdata == (uintptr_t)stripesize)
@@ -179,8 +177,6 @@ int write_image (dt_imageio_module_data_t *d_tmp, const char *filename, const vo
         TIFFWriteEncodedStrip(tif, stripe++, rowdata, (size_t)(rowsize * DT_TIFFIO_STRIPE));
         wdata = rowdata;
       }
-
-      in += d->width * 4;
     }
     if ((uintptr_t)wdata - (uintptr_t)rowdata != (uintptr_t)stripesize)
     {
@@ -189,17 +185,14 @@ int write_image (dt_imageio_module_data_t *d_tmp, const char *filename, const vo
   }
   else if (d->bpp == 16)
   {
-    uint16_t* in = (uint16_t*)in_void;
     uint16_t* wdata = rowdata;
-
     for (int y = 0; y < d->height; y++)
     {
-      for(int x=0; x<d->width; x++)
+      uint16_t* in = (uint16_t*)in_void + (size_t)4*y*d->width;
+
+      for(int x = 0; x < d->width; x++, in+=4, wdata+=3)
       {
-        wdata[0] = in[4*x + 0];
-        wdata[1] = in[4*x + 1];
-        wdata[2] = in[4*x + 2];
-        wdata += 3;
+        memcpy(wdata, in, 3*sizeof(uint16_t));
       }
 
       if((uintptr_t)wdata - (uintptr_t)rowdata == (uintptr_t)stripesize)
@@ -207,8 +200,6 @@ int write_image (dt_imageio_module_data_t *d_tmp, const char *filename, const vo
         TIFFWriteEncodedStrip(tif, stripe++, rowdata, (size_t)(rowsize * DT_TIFFIO_STRIPE));
         wdata = rowdata;
       }
-
-      in += d->width*4;
     }
     if ((uintptr_t)wdata - (uintptr_t)rowdata != (uintptr_t)stripesize)
     {
@@ -217,17 +208,15 @@ int write_image (dt_imageio_module_data_t *d_tmp, const char *filename, const vo
   }
   else
   {
-    uint8_t* in = (uint8_t*)in_void;
     uint8_t* wdata = rowdata;
 
     for (int y = 0; y < d->height; y++)
     {
-      for(int x=0; x<d->width; x++)
+      uint8_t* in = (uint8_t*)in_void + (size_t)4*y*d->width;
+
+      for(int x = 0; x < d->width; x++, in+=4, wdata+=3)
       {
-        wdata[0] = in[4*x + 0];
-        wdata[1] = in[4*x + 1];
-        wdata[2] = in[4*x + 2];
-        wdata += 3;
+        memcpy(wdata, in, 3*sizeof(uint8_t));
       }
 
       if((uintptr_t)wdata - (uintptr_t)rowdata == (uintptr_t)stripesize)
@@ -235,8 +224,6 @@ int write_image (dt_imageio_module_data_t *d_tmp, const char *filename, const vo
         TIFFWriteEncodedStrip(tif, stripe++, rowdata, (size_t)(rowsize * DT_TIFFIO_STRIPE));
         wdata = rowdata;
       }
-
-      in += d->width*4;
     }
     if((uintptr_t)wdata - (uintptr_t)rowdata != (uintptr_t)stripesize)
     {

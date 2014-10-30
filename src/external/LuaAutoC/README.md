@@ -1,268 +1,333 @@
-Lua AutoC
-=========
+LuaAutoC
+========
 
-Version 0.9
+Automagically use C Functions and Structs with the Lua API
 
-Introduction
-------------
-
-Lua AutoC automatically wraps C functions and structs at runtime so that they can be called from the Lua/C API.
-
-* Don't fancy the idea of hand wrapping every function and struct in your codebase?
-* Don't like the look of the monster that is SWIG?
-* Want a way for developers to register extra functionality at runtime?
-
-Lua AutoC is here to help.
-
-Background
-----------
-
-Lua AutoC is based upon my library [PyAutoC](https://github.com/orangeduck/PyAutoC) which provides similar functionality but for the Python/C API. It is largely just a renaming of what I did there, but some of it has been adapted to better fit the semantics of the Lua API. Most notably rather than using PyObjects and reference counting the functions are designed for pushing to and inspecting the Lua stack.
-
-Although I love Python this version of the library is probably more useful. Python already has a huge array of tools for interacting with C code. This library is also better suited to embedding, which Python somewhat frowns upon over extending, but Lua has a very strong culture of.
-
-
-Basic Usage 1
--------------
+Version 2.0.1
 
 ```c
-#include <stdio.h>
-
-#include "lua.h"
-#include "lauxlib.h"
 #include "lautoc.h"
 
-static float add_numbers(int first, float second) {
-  return first + second;
+int fib(int n) {
+  if (n == 0) { return 1; }
+  if (n == 1) { return 1; }
+  return fib(n-1) + fib(n-2);
 }
 
-int main(int argc, char **argv) {
+int main(int argc, char** argv) {
   
+  /* Init Lua & LuaAutoC */
   lua_State* L = luaL_newstate();
-  luaA_open();
+  luaA_open(L);
   
-  luaA_function(L, add_numbers, float, 2, int, float);
+  /* Register `fib` function */
+  luaA_function(L, fib, int, int);
   
-  lua_pushnumber(L, 6.13);
-  lua_pushinteger(L, 5);
-  luaA_call(L, add_numbers);
+  /* Push integer onto stack and call `fib` */
+  lua_pushinteger(L, 25);
+  luaA_call(L, fib);
   
-  printf("Result: %f\n", lua_tonumber(L, -1));
-  
-  lua_settop(L, 0);
-  
-  luaA_close();
-  lua_close(L);
-  
-  return 0;
-}
-```
-
-Lua AutoC calls reside under the `luaA_*` namespace. This is to make it look seamless alongside Lua code, not because it is affiliated with official Lua development.
-
-In this example Lua AutoC will call `add_numbers` with the Lua values on the stack. It will then push the return value as a Lua object back onto the stack. It will not pop the argument values off the stack. This is all done with no editing of the original function or codebase.
-
-	
-Basic Usage 2
--------------
-
-```c
-#include <stdio.h>
-
-#include "lua.h"
-#include "lauxlib.h"
-#include "lautoc.h"
-
-typedef struct {
-  float x, y, z;
-} vector3;
-
-int main(int argc, char **argv) {
-	
-  lua_State* L = luaL_newstate();
-  luaA_open();
-	
-  luaA_struct(L, vector3);
-  luaA_struct_member(L, vector3, x, float);
-  luaA_struct_member(L, vector3, y, float);
-  luaA_struct_member(L, vector3, z, float);
-  
-  vector3 position = {1.0f, 2.11f, 3.16f};
-  
-  luaA_struct_push_member(L, vector3, &position, y);
-  
-  printf("Y: %f\n", lua_tonumber(L, -1));
-  
+  /* Print result & pop */
+  printf("Result: %i\n", (int)lua_tointeger(L, -1));
   lua_pop(L, 1);
   
-  luaA_close();
+  luaA_close(L);
   lua_close(L);
-	
+  
   return 0;
 }
 ```
-	
-Structs work similarly to their functional counterparts. They can be accessed at runtime and do automatic conversion of types. They provide the ability to push members onto the stack, and also to take objects off and store them in members.
- 
 
-Type Conversions
-----------------
+Features
+--------
 
-To call functions or access struct members which have non-primitive types it is possible to register your own conversion functions.
+* Friendly API.
+* Easy to integrate (1 source file, 2 headers).
+* Existing code is unaffected.
+* Flexible, Extensible and Powerful.
+* Provides dynamic runtime reflection.
+
+
+Usage
+-----
+
+### Functions
+
+At its most basic, LuaAutoC can be used to automatically call C functions from the Lua API. Lua stack arguments are automatically popped and converted to C types, the function is executed, and the return value is then converted back to a Lua type and placed on top the stack. First the function must be registered with `luaA_function`, and then at any point later it can be called with `luaA_call`.
+
+```c
+#include "lautoc.h"
+
+float power(float val, int pow) {
+  float x = 1.0;
+  for(int i = 0; i < pow; i++) {
+    x = x * val;
+  }
+  return x;
+}
+
+int main(int argc, char **argv) {
+  
+  lua_State* L = luaL_newstate();
+  luaA_open(L);
+  
+  luaA_function(L, power, float, float, int);
+  
+  lua_pushnumber(L, 4.2);
+  lua_pushinteger(L, 3);
+  luaA_call(L, power);
+  
+  printf("Result: %f\n", lua_tonumber(L, -1));
+  lua_pop(L, 1);
+  
+  luaA_close(L);
+  lua_close(L);
+  
+  return 0;
+}
+```
+
+### Structs
+
+LuaAutoC also provides functions to deal with structs. Their members can be pushed onto or read from the stack, with automatic conversion of types between Lua and C provided.
 
 ```c
 typedef struct {
-  int x, y;
+  float x, y, z;
+} vec3;
+```
+
+As with functions first they need to be registered.
+
+```c
+luaA_struct(L, vec3);
+luaA_struct_member(L, vec3, x, float);
+luaA_struct_member(L, vec3, y, float);
+luaA_struct_member(L, vec3, z, float);
+```
+
+And then they can be used with the Lua API.
+
+```c
+vec3 pos = {1.0f, 2.11f, 3.16f};
+
+luaA_struct_push_member(L, vec3, x, &pos);
+printf("x: %f\n", lua_tonumber(L, -1));
+lua_pop(L, 1);
+
+lua_pushnumber(L, 0.0);
+luaA_struct_to_member(L, vec3, x, &pos, -1);
+lua_pop(L, 1);
+
+luaA_struct_push_member(L, vec3, x, &pos);
+printf("x: %f\n", lua_tonumber(L, -1));
+lua_pop(L, 1);
+```
+
+### Conversion
+
+To use LuaAutoC with non-native types it is possible to register your own conversion functions.
+
+```c
+typedef struct {
+  int fst, snd;
 } pair;
 
 static int luaA_push_pair(lua_State* L, luaA_Type t, const void* c_in) {
   pair* p = (pair*)c_in;
-  lua_pushinteger(L, p->x);
-  lua_pushinteger(L, p->y);
+  lua_pushinteger(L, p->fst);
+  lua_pushinteger(L, p->snd);
   return 2;
 }
 
 static void luaA_to_pair(lua_State* L, luaA_Type t, void* c_out, int index) {
   pair* p = (pair*)c_out;
-  p->y = lua_tointeger(L, index);
-  p->x = lua_tointeger(L, index-1);
+  p->snd = lua_tointeger(L, index);
+  p->fst = lua_tointeger(L, index-1);
 }
-
-luaA_conversion(pair, luaA_push_pair, luaA_to_pair);
 ```
 
-Now it is possible to call any functions with `pair` as an argument or return type and Lua AutoC will handle any conversions automatically. You can also use the registered functions directly in your code in a fairly convenient and natural way using the `luaA_push` and `luaA_to` macros.
+These are registered with `luaA_conversion`.
+
+```c
+luaA_conversion(L, pair, luaA_push_pair, luaA_to_pair);
+```
+
+And are then automatically used in the calling of functions, or in the conversion of structs and their members. Registered conversions are also available directly for manipulation of the Lua stack using `luaA_push` and `luaA_to`. For example to push a pair onto the stack...
 
 ```c
 pair p = {1, 2};
 luaA_push(L, pair, &p);
 ```
 
-Alternatively, when you register structs with LuaAutoC, if no conversion functions are known, it will attempt to automatically convert them. This is very useful but a few words of warning. Firstly be careful with circular references. The conversion is recursive and given the chance will happily run forever! Secondly be careful of pointer types such as `char*`. For example an automatic conversion may assign a struct a new pointer value to a string on the Lua Stack likely to be garbage collected once the call is over. The actual wanted behaviour, of copying the value of the Lua string into the existing allocated memory, wont be performed by default!
+Essentially registering a conversion is all that is required to make that type available from the whole of LuaAutoC.
+
+But who wants to write a bunch of conversion functions? When structs are registered with LuaAutoC, if no conversion functions are registered, automatic conversion to a Lua table is performed. So in reality writing conversions is a rare thing!
 
 ```c
 typedef struct {
   int id;
-  char male;
-  float coolness;
-} person_details;
-
-luaA_struct(L, person_details);
-luaA_struct_member(L, person_details, id, int);
-luaA_struct_member(L, person_details, male, char);
-luaA_struct_member(L, person_details, coolness, float);
-
-person_details my_details = {0, 1, 125212.213};
-
-luaA_push(L, person_details, &my_details);
-
-lua_getfield(L, -1, "id");
-printf("Id: %i\n", (int)lua_tointeger(L, -1));
-lua_pop(L, 1);
-
-lua_getfield(L, -1, "male");
-printf("Male: %s\n", (bool)lua_toboolean(L, -1) ? "true" : "false");
-lua_pop(L, 1);
-
-lua_pop(L, 1);
+  int legs;
+  float height;
+} table;
 ```
-
-Using C headers
----------------
-
-I've included a basic Lua script which will autogenerate Lua AutoC code for structs and functions from C headers. Overall it gets the job done but it is fairly basic, not a C parser, and wont cover all situations, so expect to have to do some cleaning up for complicated headers.
-
-```
-$ lua autogen.lua ../Corange/include/assets/sound.h
-
-luaA_struct(sound);
-luaA_struct_member(sound, data, char*);
-luaA_struct_member(sound, length, int);
-
-luaA_function(wav_load_file, sound*, 1, char*);
-luaA_function_void(sound_delete, 1, sound*);
-```
-
-Extended Usage 1
-----------------
-
-You can use Lua AutoC to very quickly and easily create Lua C modules for a bunch of functions such as might be done via SWIG or similar.
 
 ```c
-#include <stdio.h>
-#include <stdlib.h>
+luaA_struct(L, table);
+luaA_struct_member(L, table, id, int);
+luaA_struct_member(L, table, legs, int);
+luaA_struct_member(L, table, height, float);
+```
 
-#include "lua.h"
-#include "lauxlib.h"
-#include "lautoc.h"
+```c
+table t = {0, 4, 0.72};
 
-static float add_numbers(int first, float second) {
-  return first + second;
+luaA_push(L, table, &t);
+
+lua_getfield(L, -1, "legs");
+printf("legs: %i\n", (int)lua_tointeger(L, -1));
+lua_pop(L, 1);
+
+lua_getfield(L, -1, "height");
+printf("height: %f\n", lua_tonumber(L, -1));
+lua_pop(L, 1);
+
+lua_pop(L, 1);
+```
+
+This is very useful, but a few words of warning.
+
+* Be careful with circular references. The conversion is recursive and given the chance will happily run forever!
+* Be careful of pointer types such as `char*`. An automatic conversion may just assign a new pointer and might not do the intended behaviour, of copying the contents pointed to. This can sometimes screw up the garbage collector.
+
+### Enums
+
+Enums can be used too. They are transformed into string, value mappings.
+
+Again they need to be registered. Multiple strings can be registered for a single value, and any matching Lua string will be transformed into the C value. But if a value has multiple strings, the last registered string will be used when transforming from C to Lua.
+
+```c
+typedef enum {
+  DIAMONDS,
+  HEARTS,
+  CLUBS,
+  SPADES,
+  INVALID = -1
+} cards;
+```
+
+```c
+luaA_enum(L, cards);
+luaA_enum_value(L, cards, DIAMONDS);
+luaA_enum_value(L, cards, HEARTS);
+luaA_enum_value(L, cards, CLUBS);
+luaA_enum_value(L, cards, SPADES);
+luaA_enum_value(L, cards, INVALID);
+```
+
+```c
+cards cval = SPADES;
+const char* lval = "SPADES";
+
+luaA_push(L, cards, &cval);
+printf("%i pushed as %s\n", cval, lua_tostring(L, -1));
+lua_pop(L, 1);
+
+lua_pushstring(L, lval);
+luaA_to(L, cards, &cval, -1);
+printf("%s read back as %i\n", lval, cval); 
+lua_pop(L, 1);
+```
+
+### Quick & Dirty Interface
+
+Because LuaAutoC stores meta-information and registered functions and types, this lets you call C functions just by providing a string of their name. Using this it is really easy to make a quick and dirty interface to your C library, which can later be extended and wrapped nicely on the Lua side of things.
+
+Given some set of functions.
+
+```c
+/* Hello Module Begin */
+
+void hello_world(void) {
+  puts("Hello World!");
 }
 
-static void hello_world(char* person) {
-  printf("Hello %s!", person);
+void hello_repeat(int times) {
+  for (int i = 0; i < times; i++) {
+    hello_world();
+  }
 }
 
-static int c_call(lua_State* L) {
+void hello_person(const char* person) {
+  printf("Hello %s!\n", person);
+}
+
+int hello_subcount(const char* greeting) {
+  int count = 0;
+  const char *tmp = greeting;
+  while((tmp = strstr(tmp, "hello"))) {
+    count++; tmp++;
+  }
+  return count;
+}
+
+/* Hello Module End */
+```
+
+We can create a Lua function that takes some function name as a string, and some other arguments, and calls the matching C function with that name.
+
+```c
+int C(lua_State* L) {
   return luaA_call_name(L, lua_tostring(L, 1));
-}
-
-int main(int argc, char **argv) {
-	
-  lua_State* L = luaL_newstate();
-  luaA_open();
-  
-  luaA_function(L, add_numbers, float, 2, int, float);
-  luaA_function_void(L, hello_world, 1, char*);
-  
-  lua_pushcfunction(L, c_call);
-  lua_setglobal(L, "c_call");
-  
-  luaL_dostring(L, "c_call(\"add_numbers\", 1, 5.2)");
-  luaL_dostring(L, "c_call(\"hello_world\", \"Daniel\")");
-  
-  luaA_close();
-  lua_close(L);
-	
-  return 0;
 }
 ```
 
-Once you have this basic interface of `c_call` it is easy to integrate more complicated and transparent APIs with some more complicated Lua using metatables and other tools.
+We then just need to register those functions, and also register the `C` function to be avaliable from Lua.
 
+```c
+luaA_function(L, hello_world, void);
+luaA_function(L, hello_repeat, void, int);
+luaA_function(L, hello_person, void, const char*);
+luaA_function(L, hello_subcount, int, const char*);
 
-Runtime?
---------
+lua_register(L, "C", C);
+```
 
-Many developers like to wrap their libraries externally before compile time using programs such as SWIG. This approach has many benefits but can be somewhat brittle and lacking in control. Lua AutoC takes a different approach by storing type information and doing conversions, and anything else required, at runtime. As well as being a more controlled approach this also allows for some interesting options for dynamic behaviour.
+And now we can call our C functions from Lua easily!
 
-When normally building a Lua/C extension it is typical to put all accessible functions statically declared in a methods table and then to compile. If a developer wants to add more functions to the Lua bindings he must add more methods to the table. Using Lua AutoC, users and developers can register new functions, structs and type conversions as the program is running, without going through the methods table and Lua API. This means developers can use and extend your Lua API using some really simple methods and without ever touching the Lua stack!
+```c
+luaL_dostring(L,
+  "C('hello_world')\n"
+  "C('hello_person', 'Daniel')\n"
+  "C('hello_repeat', C('hello_subcount', 'hello hello'))\n"
+);
+```
 
-It also means that the job of wrapping is much easier - you can use strings and dynamic elements directly from Lua to do much of the job for you. For example...
+### Advanced Interface
 
-
-Extended Usage 2
-----------------
-
-Lua AutoC is perfect for automatically wrapping existing C structs as Lua tables. By overriding `__index` and `__newindex` using a metatable we can easily make a Lua object that behaves as if it were a C struct.
+Using LuaAutoC it is easy to wrap pointers to structs so that they act like object instances. All we need to do is set `__index` and `__newindex` in the metatable.
 
 ```lua
 Birdie = {}
 setmetatable(Birdie, Birdie)
+
 function Birdie.__call()
   local self = {}
   setmetatable(self, Birdie)
   return self
 end
+
 Birdie.__index = birdie_index
 Birdie.__newindex = birdie_newindex
+
 bird = Birdie()
 print(bird.name)
 print(bird.num_wings)
+bird.num_wings = 3
+print(bird.num_wings)
 ```
 
-Where `birdie_index` and `birdie_newindex` are functions defined using the C API as shown below. Or alternatively developers can define the whole metatable in C and hide the `birdie_newindex` and `birdie_index` functions altogether.
+Now we just define `birdie_index` and `birdie_newindex` in the C API as shown below. Alternatively developers can define the whole metatable in C and hide the `birdie_newindex` and `birdie_index` functions altogether.
 
 ```c
 typedef struct {
@@ -270,44 +335,42 @@ typedef struct {
   int num_wings;
 } birdie;
 
-static int birdie_index(lua_State* L) {
+int birdie_index(lua_State* L) {
   const char* membername = lua_tostring(L, -1);
   birdie* self = get_instance_ptr(L);
-  return luaA_struct_push_member_name(L, birdie, self, membername);
+  return luaA_struct_push_member_name(L, birdie, membername, self);
 }
 
-static int birdie_newindex(lua_State* L) {
+int birdie_newindex(lua_State* L) {
   const char* membername = lua_tostring(L, -2);
   birdie* self = get_instance_ptr(L);
-  luaA_struct_to_member_name(L, birdie, self, membername, -1);
+  luaA_struct_to_member_name(L, birdie, membername, self, -1);
   return 0;
 }
-  
+```
+
+```c
 luaA_struct(L, birdie);
 luaA_struct_member(L, birdie, name, char*);
 luaA_struct_member(L, birdie, num_wings, int);
 
-lua_pushcfunction(L, birdie_index);
-lua_setglobal(L, "birdie_index");
-
-lua_pushcfunction(L, birdie_newindex);
-lua_setglobal(L, "birdie_newindex");
+lua_register(L, "birdie_index", birdie_index);
+lua_register(L, "birdie_newindex", birdie_newindex);
 ```
 
-A lot less work than writing a bunch of getters and setters!
+This is a great way to avoid having to write a bunch of getters and setters!
 
-The `get_instance_ptr` function is left for the user to implement and there are lots of options. The idea is that somehow the Lua table/instance should tell you how to get a pointer to the actual struct instance in C which it represents. One good option is to store C pointers in the Lua instance.
+The `get_instance_ptr` function is left for the user to implement and there are lots of options. The idea is that somehow the Lua table/instance should tell you how to get a pointer to the actual struct instance in C which it represents. A good option is to store C pointers in the Lua table.
 
-For fun why not try also making the Lua metatable allocation and deallocation functions call some C functions which allocate and decallocate the structure you are emulating, storing some data to let you identify the instance later. It is also easy to extend the above technique so that, as well as members, the class is able to look up and execute methods!
+It is also possible to make the Lua metatable allocation and deallocation functions call some C functions which allocate and decallocate the structure you are emulating, storing the instance pointer to let you identify it later! Not only that. It isn't difficult to make methods available too!
 
-The true power of Lua AutoC comes if you look a level deeper. If you use `luaA_struct_push_member_name_typeid` or `luaA_truct_to_member_name_typeid` you can even generalize the above code to work for arbitrary structs/classes/types which can be added to.
+The true power of Lua AutoC comes if you look a level deeper. If you use `luaA_struct_push_member_name_type` or `luaA_truct_to_member_name_type` you can even generalize the above code to work for arbitrary structs/classes/types. Then when other developers create new structs and types, they can register them with your system to make them trivial to access from Lua.
 
-For this to work you need to get a `luaA_Type` value. This can be found by feeding a string into `luaA_type_find` which will lookup a string and see if a type has been registered with the same name. This means that if you give it a string of a previously registered data type E.G `"birdie"`, it will return a matching id. One trick I like it to use is to feed into it the name of the instance's metatable. This means that I can create a new Lua object with defined `__index` and `__newindex` it will automatically act like the corresponding C struct with the same name.
+For this to work you need to get a `luaA_Type` value. This can be found by feeding a string into `luaA_type_find` which will lookup a string and see if a type has been registered with the same name. This means that if you give it a string of a previously registered data type E.G `"birdie"`, it will return a matching id. One trick is to feed it with the name of the instance's metatable. This means it is possible to create a new Lua object with defined `__index` and `__newindex`, it will automatically act like the corresponding C struct of the same name.
 
-Managing Behaviour
-------------------
+### Managing Behaviour
 
-Often in C, the same types can have different meanings. For example an `int*` could either mean that a function wants an array of integers or that it outputs some integer. We can change the behaviour of Lua AutoC without changing the function signature by using typedefs and new conversion functions. Then on function registration you just use the newly defined type rather than the old one. Providing the types are true aliases there wont be any problems with converting types or breaking the artificial stack.
+Often in C, the same types can have different meanings. For example an `int*` could either mean that a function wants an array of integers or that it outputs some integer. We can change the behaviour of Lua AutoC without changing the function signature by using typedefs and new conversion functions. Then on function registration you just use the newly defined type rather than the old one. Providing the types are true aliases there wont be any problems with converting types.
 
 ```c
 static void print_int_list(int* list, int num_ints) {
@@ -330,55 +393,37 @@ static void luaA_to_int_list(lau_State* L, luaA_Type t, void* c_out, int index) 
 
 luaA_conversion_to(int_list, luaA_to_int_list);
 
-luaA_function_void(print_int_list, 2, int_list, int);
+luaA_function(print_int_list, void, int_list, int);
 ```
 
 As you can probably see, automatic wrapping and type conversion becomes hard when memory management and pointers are involved.
 
-Using Enums
-------------
 
-Enums are transformed into string - value mappings. To handle enums you need to first register them, then register the different values mapped to by the strings. For each string you can declare independently if it is case-sensitive or not. You can also register multiple strings for a single enum value. Any matching lua string will be transformed into the enum value, but the first correct value will be used when transforming from C to Lua.
+Headers
+-------
 
-```c
-#include <stdio.h>
-
-#include "lua.h"
-#include "lauxlib.h"
-#include "lautoc.h"
-
-typedef enum {
-  case_sensitive,
-  case_insensitive,
-  not_contiguous = 45,
-} enum_val;
-
-int main(int argc, char **argv) {
-	
-  lua_State* L = luaL_newstate();
-  luaA_open();
-	
-  luaA_enum(L, enum_val);
-  luaA_enum_value(L, enum_val, case_sensitive, true);
-  luaA_enum_value(L, enum_val, case_insensitive, false);
-  luaA_enum_value(L, enum_val, not_contiguous, false);
-  luaA_enum_value_name(L, enum_val, case_sensitive, "alias_sensitive", true);
-
-  enum_val test_enum = not_contiguous;
-  luaA_push(L, enum_val, &test_enum);
-  printf("not_contiguous pushed as %s\n", lua_tostring(L,-1));
-
-  lua_pushstring(L, "alias_sensitive");
-  luaA_to(L, enum_val, &test_enum, -1);
-  printf("alias_sensitive read back as %d\n", test_enum); 
-
-  luaA_close();
-  lua_close(L);
-	
-  return 0;
-}
+It isn't any fun writing out all the registration functions, so I've included a basic Lua script which will auto-generate LuaAutoC code for structs and functions from C header files. In general it works pretty well, but it is fairly basic, not a C parser, and wont cover all situations, so expect to have to do some cleaning up for complicated headers.
 
 ```
+$ lua lautoc.lua ../Corange/include/assets/sound.h
+
+luaA_struct(sound);
+luaA_struct_member(sound, data, char*);
+luaA_struct_member(sound, length, int);
+
+luaA_function(wav_load_file, sound*, char*);
+luaA_function(sound_delete, void, sound*);
+```
+
+Internals
+---------
+
+LuaAutoC works by storing meta-information about C types, structs, and functions in the Lua registry.
+
+This allows it to automatically do conversions at runtime. In my opinion this is a far better approach than compile-time wrapping such as is available from programs such as SWIG. Because all the type information is stored in the Lua registry this allows for the use reflection techniques to ensure you build a Lua API that really does match the concepts of your C program. In essence LuaAutoC lets you build a powerful and complex API on the C side of things.
+
+It also means that LuaAutoC is completely un-intrusive, and can be used without touching your original codebase. There is no marking it up or wrapping to be done. Finally, because it is a runtime system, it can be changed, adapted and extended by other developers. You can actually provide functions for developers to use that _generate_ new bindings for their functions, types, or structs, without them having to know a thing about Lua!
+
 
 FAQ
 ---
@@ -387,22 +432,20 @@ FAQ
 
   They work the same way as structs. All the `luaA_struct` functions should be fine to use on them. Like in C though, accessing them "incorrectly" in Lua will result in the raw data being interpreted differently. Lua AutoC doesn't do any clever checking for you.  
 
-* Does this work on Linux/Mac/Windows?
-  
-  On Linux, yes. On Mac, probably but I don't have one to test on. On Windows, yes under MinGW or Cygwin. The binaries and headers will also link and compile under Visual Studio (in C++ mode).
-  
-  I've done some experiments getting Lua AutoC to _compile_ under Visual Studio and the port is fairly simple but there are a couple of annoying aspects. If someone is interested I'll be more than happy to share my developments but for now I would rather keep the code in the repo clean.
+* Function Pointer Casts?
 
-* Can this work with C99?
+  LuaAutoC casts function pointers to `void*` so that they can be used in the Lua ecosystem. For this reason it may not work on a platform that disallows these sorts of casts.
   
-  By standard Lua AutoC makes uses of nested functions which are a GNU99 specific thing. These are not strictly required and as such Lua AutoC can be compiled to C99 standard. To do this functions must be "declared" outside of the program, and then "registered" in the runtime. This basically just means having to use `luaA_function` twice. See `demo_c99.c` for a clear example.
+* Nested Functions?
   
-* Is Lua AutoC slow?
+  By standard LuaAutoC makes uses of nested functions. Almost all compilers support these, but if not LuaAutoC can still be used. Instead functions must be "declared" outside of the program, and then "registered" in the runtime. See `example_unnested.c` for a clear example.
   
-  For most uses Lua AutoC has to lookup runtime information in a hashtable. For calling functions it has to duplicate some of the process involved in managing the stack. Perhaps for a very large codebase with many calls there might be some overhead in performance and memory but for any normal sized one, this is minimal. If you are concerned about performance you can still wrap your functions manually but perhaps if you are using a scripting language like Lua it isn't much bother.
+* Is LuaAutoC slow?
+  
+  The short answer is no. For most uses LuaAutoC has to lookup runtime information in the Lua registry, and for calling functions it has to duplicate some of the process involved in managing the stack, but for any normal codebase this overhead is minimal. If you are concerned about performance you can still wrap your functions manually, but perhaps if you are using a scripting language like Lua it wont be worth it anyway.
 
-* Is this just macro hacks? Can I really use it with my production code?
+* Is this just macro hacks? Can I really use it in production code?
 
-  There are certainly some macro tricks going on, but the backbone code is very simple - they are just there to save you typing. I use my similar library PyAutoC to wrap my game engine Corange (~10000 LOC, ~1000 functions) without any issues. If you are worried send me an email and I'll explain the internals so that you can decide for yourself. I've also written a short blog post on the nitty details [here](http://theorangeduck.com/page/autoc-tools).
+  There are certainly some macro tricks going on, but the backbone code is very simple. The macros just save typing. I know that it has been used successfully in production in [darktable](https://github.com/darktable-org/darktable) and probably elsewhere. Even so, if you are worried send me an email and I'll explain the internals so that you can decide for yourself. I've also written a short blog post about it [here](http://theorangeduck.com/page/autoc-tools).
   
   

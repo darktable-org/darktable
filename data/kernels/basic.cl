@@ -237,7 +237,7 @@ kernel void
 colorin_unbound (read_only image2d_t in, write_only image2d_t out, const int width, const int height,
                  global float *cmat, global float *lmat, 
                  read_only image2d_t lutr, read_only image2d_t lutg, read_only image2d_t lutb,
-                 const int map_blues, global float *a)
+                 const int blue_mapping, global float *a)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
@@ -251,23 +251,26 @@ colorin_unbound (read_only image2d_t in, write_only image2d_t out, const int wid
   cam[1] = lookup_unbounded(lutg, pixel.y, a+3);
   cam[2] = lookup_unbounded(lutb, pixel.z, a+6);
 
-
-  const float YY = cam[0]+cam[1]+cam[2];
-  if(map_blues && YY > 0.0f)
+  if(blue_mapping)
   {
-    // manual gamut mapping. these values cause trouble when converting back from Lab to sRGB:
-    const float zz = cam[2]/YY;
-    // lower amount and higher bound_z make the effect smaller.
-    // the effect is weakened the darker input values are, saturating at bound_Y
-    const float bound_z = 0.5f, bound_Y = 0.8f;
-    const float amount = 0.11f;
-    if (zz > bound_z)
+    const float YY = cam[0] + cam[1] + cam[2];
+    if(YY > 0.0f)
     {
-      const float t = (zz - bound_z)/(1.0f-bound_z) * fmin(1.0f, YY/bound_Y);
-      cam[1] += t*amount;
-      cam[2] -= t*amount;
+      // manual gamut mapping. these values cause trouble when converting back from Lab to sRGB:
+      const float zz = cam[2] / YY;
+      // lower amount and higher bound_z make the effect smaller.
+      // the effect is weakened the darker input values are, saturating at bound_Y
+      const float bound_z = 0.5f, bound_Y = 0.8f;
+      const float amount = 0.11f;
+      if (zz > bound_z)
+      {
+        const float t = (zz - bound_z) / (1.0f - bound_z) * fmin(1.0f, YY / bound_Y);
+        cam[1] += t * amount;
+        cam[2] -= t * amount;
+      }
     }
   }
+
   // now convert camera to XYZ using the color matrix
   for(int j=0;j<3;j++)
   {
@@ -284,7 +287,7 @@ kernel void
 colorin_clipping (read_only image2d_t in, write_only image2d_t out, const int width, const int height,
                   global float *cmat, global float *lmat, 
                   read_only image2d_t lutr, read_only image2d_t lutg, read_only image2d_t lutb,
-                  const int map_blues, global float *a)
+                  const int blue_mapping, global float *a)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
@@ -298,23 +301,26 @@ colorin_clipping (read_only image2d_t in, write_only image2d_t out, const int wi
   cam[1] = lookup_unbounded(lutg, pixel.y, a+3);
   cam[2] = lookup_unbounded(lutb, pixel.z, a+6);
 
-
-  const float YY = cam[0]+cam[1]+cam[2];
-  if(map_blues && YY > 0.0f)
+  if(blue_mapping)
   {
-    // manual gamut mapping. these values cause trouble when converting back from Lab to sRGB:
-    const float zz = cam[2]/YY;
-    // lower amount and higher bound_z make the effect smaller.
-    // the effect is weakened the darker input values are, saturating at bound_Y
-    const float bound_z = 0.5f, bound_Y = 0.8f;
-    const float amount = 0.11f;
-    if (zz > bound_z)
+    const float YY = cam[0] + cam[1] + cam[2];
+    if(YY > 0.0f)
     {
-      const float t = (zz - bound_z)/(1.0f-bound_z) * fmin(1.0f, YY/bound_Y);
-      cam[1] += t*amount;
-      cam[2] -= t*amount;
+      // manual gamut mapping. these values cause trouble when converting back from Lab to sRGB:
+      const float zz = cam[2] / YY;
+      // lower amount and higher bound_z make the effect smaller.
+      // the effect is weakened the darker input values are, saturating at bound_Y
+      const float bound_z = 0.5f, bound_Y = 0.8f;
+      const float amount = 0.11f;
+      if (zz > bound_z)
+      {
+        const float t = (zz - bound_z) / (1.0f - bound_z) * fmin(1.0f, YY / bound_Y);
+        cam[1] += t * amount;
+        cam[2] -= t * amount;
+      }
     }
   }
+
   // convert camera to RGB using the first color matrix
   for(int j=0;j<3;j++)
   {
@@ -592,9 +598,9 @@ clip_rotate_bicubic(read_only image2d_t in, write_only image2d_t out, const int 
 
     float wx = interpolation_func_bicubic((float)i - po.x);
     float wy = interpolation_func_bicubic((float)j - po.y);
-    float w = (i < 0 || j < 0 || i >= in_width || j >= in_height) ? 0.0f : wx * wy;
+    float w = wx * wy;
 
-    pixel += read_imagef(in, sampleri, (int2)(i, j)) * w;
+    pixel += read_imagef(in, samplerc, (int2)(i, j)) * w;
     weight += w;
   }
 
@@ -653,9 +659,9 @@ clip_rotate_lanczos2(read_only image2d_t in, write_only image2d_t out, const int
 
     float wx = interpolation_func_lanczos(2, (float)i - po.x);
     float wy = interpolation_func_lanczos(2, (float)j - po.y);
-    float w = (i < 0 || j < 0 || i >= in_width || j >= in_height) ? 0.0f : wx * wy;
+    float w = wx * wy;
 
-    pixel += read_imagef(in, sampleri, (int2)(i, j)) * w;
+    pixel += read_imagef(in, samplerc, (int2)(i, j)) * w;
     weight += w;
   }
 
@@ -701,8 +707,8 @@ clip_rotate_lanczos3(read_only image2d_t in, write_only image2d_t out, const int
   po.x -= roi_in.x ;
   po.y -= roi_in.y ;
 
-  int tx = po.x;
-  int ty = po.y;
+  int tx = (int)po.x;
+  int ty = (int)po.y;
 
   float4 pixel = (float4)0.0f;
   float weight = 0.0f;
@@ -715,9 +721,9 @@ clip_rotate_lanczos3(read_only image2d_t in, write_only image2d_t out, const int
 
     float wx = interpolation_func_lanczos(3, (float)i - po.x);
     float wy = interpolation_func_lanczos(3, (float)j - po.y);
-    float w = (i < 0 || j < 0 || i >= in_width || j >= in_height) ? 0.0f : wx * wy;
+    float w = wx * wy;
 
-    pixel += read_imagef(in, sampleri, (int2)(i, j)) * w;
+    pixel += read_imagef(in, samplerc, (int2)(i, j)) * w;
     weight += w;
   }
 
@@ -760,8 +766,6 @@ lens_distort_bilinear (read_only image2d_t in, write_only image2d_t out, const i
   write_imagef (out, (int2)(x, y), pixel); 
 }
 
-
-
 /* kernels for the lens plugin: bicubic interpolation */
 kernel void
 lens_distort_bicubic (read_only image2d_t in, write_only image2d_t out, const int width, const int height,
@@ -801,7 +805,7 @@ lens_distort_bicubic (read_only image2d_t in, write_only image2d_t out, const in
     float wy = interpolation_func_bicubic((float)j - ry);
     float w = (i < 0 || j < 0 || i >= iwidth || j >= iheight) ? 0.0f : wx * wy;
 
-    sum += read_imagef(in, sampleri, (int2)(i, j)).x * w;
+    sum += read_imagef(in, samplerc, (int2)(i, j)).x * w;
     weight += w;
   }
   pixel.x = sum/weight;
@@ -825,7 +829,7 @@ lens_distort_bicubic (read_only image2d_t in, write_only image2d_t out, const in
     float wy = interpolation_func_bicubic((float)j - ry);
     float w = (i < 0 || j < 0 || i >= iwidth || j >= iheight) ? 0.0f : wx * wy;
 
-    sum2 += read_imagef(in, sampleri, (int2)(i, j)).yw * w;
+    sum2 += read_imagef(in, samplerc, (int2)(i, j)).yw * w;
     weight += w;
   }
   pixel.yw = sum2/weight;
@@ -849,7 +853,7 @@ lens_distort_bicubic (read_only image2d_t in, write_only image2d_t out, const in
     float wy = interpolation_func_bicubic((float)j - ry);
     float w = (i < 0 || j < 0 || i >= iwidth || j >= iheight) ? 0.0f : wx * wy;
 
-    sum += read_imagef(in, sampleri, (int2)(i, j)).z * w;
+    sum += read_imagef(in, samplerc, (int2)(i, j)).z * w;
     weight += w;
   }
   pixel.z = sum/weight;
@@ -899,7 +903,7 @@ lens_distort_lanczos2 (read_only image2d_t in, write_only image2d_t out, const i
     float wy = interpolation_func_lanczos(2, (float)j - ry);
     float w = (i < 0 || j < 0 || i >= iwidth || j >= iheight) ? 0.0f : wx * wy;
 
-    sum += read_imagef(in, sampleri, (int2)(i, j)).x * w;
+    sum += read_imagef(in, samplerc, (int2)(i, j)).x * w;
     weight += w;
   }
   pixel.x = sum/weight;
@@ -923,7 +927,7 @@ lens_distort_lanczos2 (read_only image2d_t in, write_only image2d_t out, const i
     float wy = interpolation_func_lanczos(2, (float)j - ry);
     float w = (i < 0 || j < 0 || i >= iwidth || j >= iheight) ? 0.0f : wx * wy;
 
-    sum2 += read_imagef(in, sampleri, (int2)(i, j)).yw * w;
+    sum2 += read_imagef(in, samplerc, (int2)(i, j)).yw * w;
     weight += w;
   }
   pixel.yw = sum2/weight;
@@ -947,7 +951,7 @@ lens_distort_lanczos2 (read_only image2d_t in, write_only image2d_t out, const i
     float wy = interpolation_func_lanczos(2, (float)j - ry);
     float w = (i < 0 || j < 0 || i >= iwidth || j >= iheight) ? 0.0f : wx * wy;
 
-    sum += read_imagef(in, sampleri, (int2)(i, j)).z * w;
+    sum += read_imagef(in, samplerc, (int2)(i, j)).z * w;
     weight += w;
   }
   pixel.z = sum/weight;
@@ -997,7 +1001,7 @@ lens_distort_lanczos3 (read_only image2d_t in, write_only image2d_t out, const i
     float wy = interpolation_func_lanczos(3, (float)j - ry);
     float w = (i < 0 || j < 0 || i >= iwidth || j >= iheight) ? 0.0f : wx * wy;
 
-    sum += read_imagef(in, sampleri, (int2)(i, j)).x * w;
+    sum += read_imagef(in, samplerc, (int2)(i, j)).x * w;
     weight += w;
   }
   pixel.x = sum/weight;
@@ -1021,7 +1025,7 @@ lens_distort_lanczos3 (read_only image2d_t in, write_only image2d_t out, const i
     float wy = interpolation_func_lanczos(3, (float)j - ry);
     float w = (i < 0 || j < 0 || i >= iwidth || j >= iheight) ? 0.0f : wx * wy;
 
-    sum2 += read_imagef(in, sampleri, (int2)(i, j)).yw * w;
+    sum2 += read_imagef(in, samplerc, (int2)(i, j)).yw * w;
     weight += w;
   }
   pixel.yw = sum2/weight;
@@ -1045,7 +1049,7 @@ lens_distort_lanczos3 (read_only image2d_t in, write_only image2d_t out, const i
     float wy = interpolation_func_lanczos(3, (float)j - ry);
     float w = (i < 0 || j < 0 || i >= iwidth || j >= iheight) ? 0.0f : wx * wy;
 
-    sum += read_imagef(in, sampleri, (int2)(i, j)).z * w;
+    sum += read_imagef(in, samplerc, (int2)(i, j)).z * w;
     weight += w;
   }
   pixel.z = sum/weight;

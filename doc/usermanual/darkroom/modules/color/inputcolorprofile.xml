@@ -89,7 +89,7 @@
       <para>
         If your input image is a low dynamic range file like JPEG, or a raw in DNG format, it
         might already contain an embedded ICC profile which darktable will use as a default. You
-        can always overrule darktable and select a different profile or select <quote>embedded
+        can always overrule darktable and select a different profile. Select <quote>embedded
         icc profile</quote> to restore the default.
       </para>
     </sect5>

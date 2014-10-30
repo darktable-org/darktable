@@ -3,7 +3,7 @@
 		<!ENTITY % darktable_dtd SYSTEM "../../../dtd/darktable.dtd">
 		%darktable_dtd;
 		]>
-<sect3 status="draft">
+<sect3 status="final">
 
   <title>Color balance</title>
 
@@ -64,13 +64,13 @@
     </para>
 
     <para>
-      The lift parameter adjusts the left axis intercept of the line&nbsp;&ndash; the intercept
-      can be shifted from its default zero value to negative or positive values. The gamma
-      parameter modifies the line shape&nbsp;&ndash; the default shape is linear and can be
-      turned into a convex curve with increased or into a concave curve with lowered gamma
-      values. Finally, the gain parameter defines the steepness of the curve&nbsp;&ndash; by
-      default the curve runs diagonally, higher values lead to a steeper curve and lower values
-      to a flatter one.
+      The lift parameter adjusts the left axis intercept of the line&nbsp;&ndash; this point can
+      be shifted from its default location with zero abscissa to points with negative or
+      positive ones. The gamma parameter modifies the line shape&nbsp;&ndash; the default shape
+      is linear and can be turned into a convex curve with increased or into a concave curve
+      with lowered gamma values. Finally, the gain parameter defines the steepness of the
+      curve&nbsp;&ndash; by default the curve runs diagonally, higher values lead to a steeper
+      curve and lower values to a flatter one.
     </para>
 
     <para>
@@ -82,7 +82,7 @@
     <sect5>
       <title>lift</title>
       <para>
-        Increases the value of dark colors with individual sliders for each RGB color and with a
+        Adjusts the value of dark colors with individual sliders for each RGB color and with a
         <quote>factor</quote> slider acting on all three colors at once.
       </para>
     </sect5>

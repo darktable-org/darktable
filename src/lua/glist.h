@@ -24,12 +24,12 @@
 
 
 // handle list of data who's elementes are type_name* (!!not type_name casted)
-#define dt_lua_push_glist(L,list, type_name) dt_lua_push_glist_typeid(L,list,luaA_type_id(type_name))
-void dt_lua_push_glist_typeid(lua_State *L,GList * list, luaA_Type elt_type);
+#define dt_lua_push_glist(L,list, type_name) dt_lua_push_glist_type(L,list,luaA_type_id(type_name))
+void dt_lua_push_glist_type(lua_State *L,GList * list, luaA_Type elt_type);
 
 // return a malloced list who's elements are malloced type_name*
-#define dt_lua_to_glist(L, type_name,index) dt_lua_to_glist_typeid(L,luaA_type_id(type_name),index)
-GList* dt_lua_to_glist_typeid(lua_State *L, luaA_Type elt_type,int index);
+#define dt_lua_to_glist(L, type_name,index) dt_lua_to_glist_type(L,luaA_type_id(type_name),index)
+GList* dt_lua_to_glist_type(lua_State *L, luaA_Type elt_type,int index);
 
 
 

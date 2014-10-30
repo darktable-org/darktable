@@ -20,6 +20,10 @@
 
   <xi:include href="lenscorrection.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
 
+  <xi:include href="scalepixels.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
+
+  <xi:include href="rotatepixels.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
+
   <xi:include href="spotremoval.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
 
   <xi:include href="rawdenoise.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
@@ -29,5 +33,7 @@
   <xi:include href="hotpixels.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
 
   <xi:include href="chromatic.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
+
+  <xi:include href="defringe.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
 
 </sect2>

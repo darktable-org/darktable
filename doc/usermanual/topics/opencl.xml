@@ -151,6 +151,154 @@
 
   </sect2>
 
+  <sect2 status="draft">
+
+    <title>Setting up OpenCL on your system</title>
+
+    <para>
+      The huge diversity of systems and the marked differences between OpenCL vendors and driver
+      versions makes it impossible to give an comprehensive overview of how to setup OpenCL. We
+      only can give you an example, in this case for NVIDIA driver version 331.89 on Ubuntu
+      14.04. We hope that this will serve you as a first impression and will help to solve
+      possible problems of your specific setup.
+    </para>
+
+    <para>
+      The principle OpenCL function flow is like this:
+    </para>
+
+    <para>
+      darktable -> libOpenCL.so -> libnvidia-opencl.so.1 -> kernel driver module(s) -> GPU
+    </para>
+
+    <para>
+      <itemizedlist>
+
+        <listitem><para>
+          darktable dynamically links <filename>libOpenCL.so</filename>, a system library which
+          must be accessible to the system's dynamic loader (<filename>ld.so</filename>).
+        </para></listitem>
+
+        <listitem><para>
+          <filename>libOpenCL.so</filename> will read the vendor specific information file
+          (<filename>/etc/OpenCL/vendors/nvidia.icd</filename>) to find the library which
+          contains the vendor specific OpenCL implementation.
+        </para></listitem>
+
+        <listitem><para>
+          The vendor specific OpenCL implementation comes as a library
+          <filename>libnvidia-opencl.so.1</filename> (which in our case is a symbolic link to
+          <filename>libnvidia-opencl.so.331.89</filename>).
+        </para></listitem>
+
+        <listitem><para>
+          <filename>libnvidia-opencl.so.1</filename> needs to talk to the vendor
+          specific kernel modules <filename>nvidia</filename> and
+          <filename>nvidia_uvm</filename> via device special files
+          <filename>/dev/nvidia0</filename>, <filename>/dev/nvidiactl</filename>, and
+          <filename>/dev/nvidia-uvm</filename>.
+        </para></listitem>
+
+      </itemizedlist>
+    </para>
+
+    <para>
+      At system startup the required device special files (/dev/nvidia*) need to be created. If
+      this does not happen on your system by default, the easiest way to set them up and make
+      sure all modules are loaded is installing the <filename>nvidia-modprobe</filename> package
+      (which, at the time of this writing, is only available for <quote>utopic</quote>, but
+      works well with <quote>trusty</quote> and <quote>Mint 17</quote>). You can grab it at
+      <ulink url="http://packages.ubuntu.com/utopic/nvidia-modprobe">this site</ulink>.
+    </para>
+
+    <para>
+      A user account which wants to make use of OpenCL from within darktable needs to have read-write access 
+      to NVIDIA's device special files. On some systems these files allow world read-write access by
+      default, which avoids permission issues but might be debatable in terms of system security.
+      Other systems restrict the access to a user group, e.g. <quote>video</quote>. In that case
+      your user account has to be member of that group.
+    </para>
+
+    <para>
+      To summarise, the packages which needed to be installed in this specific case were:
+      <itemizedlist>
+
+        <listitem><para>
+          nvidia-331 (331.89-0ubuntu1~xedgers14.04.2)
+        </para></listitem>
+
+        <listitem><para>
+          nvidia-331-dev (331.89-0ubuntu1~xedgers14.04.2)
+        </para></listitem>
+
+        <listitem><para>
+          nvidia-331-uvm (331.89-0ubuntu1~xedgers14.04.2)
+        </para></listitem>
+
+        <listitem><para>
+          nvidia-libopencl1-331 (331.89-0ubuntu1~xedgers14.04.2)
+        </para></listitem>
+
+        <listitem><para>
+          nvidia-modprobe (340.24-1)
+        </para></listitem>
+
+        <listitem><para>
+          nvidia-opencl-dev:amd64 (5.5.22-3ubuntu1)
+        </para></listitem>
+
+        <listitem><para>
+          nvidia-opencl-icd-331 (331.89-0ubuntu1~xedgers14.04.2)
+        </para></listitem>
+
+        <listitem><para>
+          nvidia-settings (340.24-0ubuntu1~xedgers14.04.1)
+        </para></listitem>
+
+        <listitem><para>
+          nvidia-settings-304 (340.24-0ubuntu1~xedgers14.04.1)
+        </para></listitem>
+
+        <listitem><para>
+          nvidia-libopencl1-331 (331.89-0ubuntu1~xedgers14.04.2)
+        </para></listitem>
+
+        <listitem><para>
+          nvidia-opencl-dev:amd64 (5.5.22-3ubuntu1)
+        </para></listitem>
+
+        <listitem><para>
+          nvidia-opencl-icd-331 (331.89-0ubuntu1~xedgers14.04.2)
+        </para></listitem>
+
+        <listitem><para>
+          opencl-headers (1.2-2013.10.23-1)
+        </para></listitem>
+
+      </itemizedlist>
+    </para>
+
+    <para>
+      The list of NVIDIA related kernel modules as reported by <filename>lsmod</filename> is:
+<programlisting>nvidia
+nvidia_uvm
+</programlisting>
+    </para>
+
+    <para>
+      The list of NVIDIA related device special files (<filename>ls -l /dev/nvidia*</filename>)
+      should read like:
+<programlisting>crw-rw-rw- 1 root root 195,   0 Jul 28 21:13 /dev/nvidia0
+crw-rw-rw- 1 root root 195, 255 Jul 28 21:13 /dev/nvidiactl
+crw-rw-rw- 1 root root 250,   0 Jul 28 21:13 /dev/nvidia-uvm 
+</programlisting>
+
+      Beware that the major/minor numbers (e.g. 250/0 for <filename>/dev/nvidia-uvm</filename> in
+      this example) may vary depending on your system.
+    </para>
+
+  </sect2>
+
   <sect2 status="final">
 
     <title>Possible problems and solutions</title>
@@ -501,8 +649,9 @@
             darktable to use a special kind of intermediate buffer for host-device data
             transfers. On some devices this can speed up exporting of large files by a factor of
             2 to 3. NVIDIA devices and drivers seem to have a more efficient memory transfer
-            technique even for arbitrary memory regions. They may deliver better performance if
-            opencl_use_pinned_memory is left at its default FALSE.
+            technique even for arbitrary memory regions. As they may not show any performance gain
+            and even may produce garbled output, opencl_use_pinned_memory should be left 
+            at its default FALSE for those devices.
           </para></listitem>
 
         </varlistentry>

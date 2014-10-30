@@ -310,7 +310,7 @@ static int autotype_newindex(lua_State *L)
 
 static int full_pushfunc(lua_State *L, luaA_Type type_id, const void *cin)
 {
-  size_t type_size= luaA_type_size(type_id);
+  size_t type_size= luaA_typesize(L,type_id);
   void* udata = lua_newuserdata(L,type_size);
   lua_newtable(L);
   lua_setuservalue(L,-2);
@@ -319,7 +319,7 @@ static int full_pushfunc(lua_State *L, luaA_Type type_id, const void *cin)
   } else {
     memset(udata,0,type_size);
   }
-  luaL_setmetatable(L,luaA_type_name(type_id));
+  luaL_setmetatable(L,luaA_typename(L,type_id));
 
   if (luaL_getmetafield(L, -1, "__init")) {
     lua_pushvalue(L, -2);// the new alocated object
@@ -331,13 +331,13 @@ static int full_pushfunc(lua_State *L, luaA_Type type_id, const void *cin)
 
 static void full_tofunc(lua_State*L, luaA_Type type_id, void* cout, int index)
 {
-  void * udata = luaL_checkudata(L,index,luaA_type_name(type_id));
-  memcpy(cout,udata,luaA_type_size(type_id));
+  void * udata = luaL_checkudata(L,index,luaA_typename(L,type_id));
+  memcpy(cout,udata,luaA_typesize(L,type_id));
 }
 
 static int int_pushfunc(lua_State *L, luaA_Type type_id, const void *cin)
 {
-  luaL_getmetatable(L,luaA_type_name(type_id));
+  luaL_getmetatable(L,luaA_typename(L,type_id));
   luaL_getsubtable(L,-1,"__values");
   int singleton = *(int*)cin;
   lua_pushnumber(L,singleton);
@@ -346,7 +346,7 @@ static int int_pushfunc(lua_State *L, luaA_Type type_id, const void *cin)
     lua_pop(L,1);
     int* udata = lua_newuserdata(L,sizeof(int));
     *udata = singleton;
-    luaL_setmetatable(L,luaA_type_name(type_id));
+    luaL_setmetatable(L,luaA_typename(L,type_id));
     lua_pushinteger(L,singleton);
     // warning : no uservalue
     lua_pushvalue(L,-2);
@@ -365,13 +365,13 @@ static int int_pushfunc(lua_State *L, luaA_Type type_id, const void *cin)
 
 static void int_tofunc(lua_State*L, luaA_Type type_id, void* cout, int index)
 {
-  void * udata = luaL_checkudata(L,index,luaA_type_name(type_id));
+  void * udata = luaL_checkudata(L,index,luaA_typename(L,type_id));
   memcpy(cout,udata,sizeof(int));
 }
 
 static int gpointer_pushfunc(lua_State *L, luaA_Type type_id, const void *cin)
 {
-  luaL_getmetatable(L,luaA_type_name(type_id));
+  luaL_getmetatable(L,luaA_typename(L,type_id));
   luaL_getsubtable(L,-1,"__values");
   gpointer singleton = *(gpointer*)cin;
   lua_pushlightuserdata(L,singleton);
@@ -382,7 +382,7 @@ static int gpointer_pushfunc(lua_State *L, luaA_Type type_id, const void *cin)
     lua_newtable(L);
     lua_setuservalue(L,-2);
     *udata = singleton;
-    luaL_setmetatable(L,luaA_type_name(type_id));
+    luaL_setmetatable(L,luaA_typename(L,type_id));
     lua_pushlightuserdata(L,singleton);
     lua_pushvalue(L,-2);
     lua_settable(L,-4);
@@ -400,7 +400,7 @@ static int gpointer_pushfunc(lua_State *L, luaA_Type type_id, const void *cin)
 
 static void gpointer_tofunc(lua_State*L, luaA_Type type_id, void* cout, int index)
 {
-  void * udata = luaL_checkudata(L,index,luaA_type_name(type_id));
+  void * udata = luaL_checkudata(L,index,luaA_typename(L,type_id));
   memcpy(cout,udata,sizeof(gpointer));
 }
 
@@ -408,9 +408,9 @@ static void gpointer_tofunc(lua_State*L, luaA_Type type_id, void* cout, int inde
 /*****************/
 /* TYPE CREATION */
 /*****************/
-void dt_lua_type_register_typeid(lua_State* L,luaA_Type type_id,const char* name)
+void dt_lua_type_register_type(lua_State* L,luaA_Type type_id,const char* name)
 {
-  luaL_getmetatable(L,luaA_type_name(type_id)); // gets the metatable since it's supposed to exist
+  luaL_getmetatable(L,luaA_typename(L,type_id)); // gets the metatable since it's supposed to exist
   luaL_getsubtable(L,-1,"__get");
   lua_pushvalue(L,-3);
   lua_setfield(L,-2,name);
@@ -422,9 +422,9 @@ void dt_lua_type_register_typeid(lua_State* L,luaA_Type type_id,const char* name
   lua_pop(L,3);
 }
 
-void dt_lua_type_register_const_typeid(lua_State* L,luaA_Type type_id,const char* name)
+void dt_lua_type_register_const_type(lua_State* L,luaA_Type type_id,const char* name)
 {
-  luaL_getmetatable(L,luaA_type_name(type_id)); // gets the metatable since it's supposed to exist
+  luaL_getmetatable(L,luaA_typename(L,type_id)); // gets the metatable since it's supposed to exist
 
   luaL_getsubtable(L,-1,"__get");
   lua_pushvalue(L,-3);
@@ -432,9 +432,9 @@ void dt_lua_type_register_const_typeid(lua_State* L,luaA_Type type_id,const char
   lua_pop(L,3);
 }
 
-void dt_lua_type_register_number_const_typeid(lua_State* L,luaA_Type type_id)
+void dt_lua_type_register_number_const_type(lua_State* L,luaA_Type type_id)
 {
-  luaL_getmetatable(L,luaA_type_name(type_id)); // gets the metatable since it's supposed to exist
+  luaL_getmetatable(L,luaA_typename(L,type_id)); // gets the metatable since it's supposed to exist
 
   lua_pushvalue(L,-2);
   lua_setfield(L,-2,"__number_index");
@@ -452,9 +452,9 @@ void dt_lua_type_register_number_const_typeid(lua_State* L,luaA_Type type_id)
 
   lua_pop(L,3);
 }
-void dt_lua_type_register_number_typeid(lua_State* L,luaA_Type type_id)
+void dt_lua_type_register_number_type(lua_State* L,luaA_Type type_id)
 {
-  luaL_getmetatable(L,luaA_type_name(type_id)); // gets the metatable since it's supposed to exist
+  luaL_getmetatable(L,luaA_typename(L,type_id)); // gets the metatable since it's supposed to exist
 
   lua_pushvalue(L,-2);
   lua_setfield(L,-2,"__number_index");
@@ -484,27 +484,31 @@ int dt_lua_type_member_luaautoc(lua_State *L)
   lua_pop(L,1);
   void * object = lua_touserdata(L,1);
   if(lua_gettop(L) != 3) {
-    luaA_struct_push_member_name_typeid(L,my_type,object,member_name);
+    luaA_struct_push_member_name_type(L,my_type,member_name,object);
     return 1;
   } else {
-    luaA_struct_to_member_name_typeid(L,my_type,object,member_name,3);
+    luaA_struct_to_member_name_type(L,my_type,member_name,object,3);
     return 0;
   }
 
 }
 
-void dt_lua_type_register_struct_typeid(lua_State* L,luaA_Type type_id)
+void dt_lua_type_register_struct_type(lua_State* L,luaA_Type type_id)
 {
-  const char* member_name = luaA_struct_next_member_name_typeid(L,type_id,LUAA_INVALID_MEMBER_NAME);
+  const char* member_name = luaA_struct_next_member_name_type(L,type_id,LUAA_INVALID_MEMBER_NAME);
   while(member_name != LUAA_INVALID_MEMBER_NAME)
   {
     lua_pushvalue(L,-1);
-    if(luaA_type_has_to_func(luaA_struct_typeof_member_name_typeid(L, type_id, member_name))) {
-      dt_lua_type_register_typeid(L,type_id,member_name);
+    luaA_Type member_type = luaA_struct_typeof_member_name_type(L, type_id, member_name);
+    if(luaA_conversion_to_registered_type(L,member_type) ||
+        luaA_struct_registered_type(L,member_type)||
+        luaA_enum_registered_type(L,member_type)
+        ) {
+      dt_lua_type_register_type(L,type_id,member_name);
     } else {
-      dt_lua_type_register_const_typeid(L,type_id,member_name);
+      dt_lua_type_register_const_type(L,type_id,member_name);
     }
-    member_name = luaA_struct_next_member_name_typeid(L,type_id,member_name);
+    member_name = luaA_struct_next_member_name_type(L,type_id,member_name);
 
   }
   lua_pop(L,1);
@@ -521,10 +525,10 @@ int dt_lua_type_member_common(lua_State* L)
   return 1;
 }
 
-void dt_lua_type_register_parent_typeid(lua_State* L,luaA_Type type_id,luaA_Type parent_type_id)
+void dt_lua_type_register_parent_type(lua_State* L,luaA_Type type_id,luaA_Type parent_type_id)
 {
-  luaL_getmetatable(L,luaA_type_name(type_id)); // gets the metatable since it's supposed to exist
-  luaL_getmetatable(L,luaA_type_name(parent_type_id)); // gets the metatable since it's supposed to exist
+  luaL_getmetatable(L,luaA_typename(L,type_id)); // gets the metatable since it's supposed to exist
+  luaL_getmetatable(L,luaA_typename(L,parent_type_id)); // gets the metatable since it's supposed to exist
   
   lua_pushvalue(L,-1);
   lua_setfield(L,-3,"__luaA_ParentMetatable");
@@ -559,9 +563,9 @@ void dt_lua_type_register_parent_typeid(lua_State* L,luaA_Type type_id,luaA_Type
 
 static void init_metatable(lua_State* L, luaA_Type type_id)
 {
-  luaL_newmetatable(L,luaA_type_name(type_id));
+  luaL_newmetatable(L,luaA_typename(L,type_id));
 
-  lua_pushstring(L,luaA_type_name(type_id));
+  lua_pushstring(L,luaA_typename(L,type_id));
   lua_setfield(L,-2,"__luaA_TypeName");
 
   lua_pushnumber(L,type_id);
@@ -592,11 +596,11 @@ static void init_metatable(lua_State* L, luaA_Type type_id)
 }
 
 
-luaA_Type dt_lua_init_type_typeid(lua_State* L, luaA_Type type_id)
+luaA_Type dt_lua_init_type_type(lua_State* L, luaA_Type type_id)
 {
   init_metatable(L,type_id);
   lua_pop(L,1);
-  luaA_conversion_typeid(type_id,full_pushfunc,full_tofunc);
+  luaA_conversion_type(L,type_id,full_pushfunc,full_tofunc);
   return type_id;
 }
 
@@ -605,7 +609,7 @@ luaA_Type dt_lua_init_singleton(lua_State* L, const char* unique_name,void *data
   char tmp_name[1024];
   snprintf(tmp_name,sizeof(tmp_name),"dt_lua_singleton_%s",unique_name);
 
-  luaA_Type type_id = luaA_type_add(tmp_name,sizeof(void*));
+  luaA_Type type_id = luaA_type_add(L,tmp_name,sizeof(void*));
   init_metatable(L,type_id);
 
   void** udata = lua_newuserdata(L,sizeof(void*));
@@ -678,7 +682,7 @@ luaA_Type dt_lua_init_wrapped_singleton(lua_State* L,lua_CFunction pusher, lua_C
   return result;
 }
 
-luaA_Type dt_lua_init_int_type_typeid(lua_State* L, luaA_Type type_id)
+luaA_Type dt_lua_init_int_type_type(lua_State* L, luaA_Type type_id)
 {
   init_metatable(L,type_id);
   lua_newtable(L);
@@ -690,12 +694,12 @@ luaA_Type dt_lua_init_int_type_typeid(lua_State* L, luaA_Type type_id)
 
   lua_setfield(L,-2,"__values");
   lua_pop(L,1);
-  luaA_conversion_typeid(type_id,int_pushfunc,int_tofunc);
+  luaA_conversion_type(L,type_id,int_pushfunc,int_tofunc);
   return type_id;
 }
 
 
-luaA_Type dt_lua_init_gpointer_type_typeid(lua_State* L, luaA_Type type_id)
+luaA_Type dt_lua_init_gpointer_type_type(lua_State* L, luaA_Type type_id)
 {
   init_metatable(L,type_id);
   lua_newtable(L);
@@ -707,25 +711,25 @@ luaA_Type dt_lua_init_gpointer_type_typeid(lua_State* L, luaA_Type type_id)
 
   lua_setfield(L,-2,"__values");
   lua_pop(L,1);
-  luaA_conversion_typeid(type_id,gpointer_pushfunc,gpointer_tofunc);
+  luaA_conversion_type(L,type_id,gpointer_pushfunc,gpointer_tofunc);
   return type_id;
 }
 
 
-gboolean dt_lua_isa_typeid(lua_State *L, int index, luaA_Type type_id)
+gboolean dt_lua_isa_type(lua_State *L, int index, luaA_Type type_id)
 {
   if(!luaL_getmetafield(L,index,"__luaA_Type")) return false;
-  int obj_typeid = luaL_checkinteger(L,-1);
+  int obj_type = luaL_checkinteger(L,-1);
   lua_pop(L,1);
-  return dt_lua_typeisa_typeid(L,obj_typeid,type_id);
+  return dt_lua_typeisa_type(L,obj_type,type_id);
 
 
 }
 
-gboolean dt_lua_typeisa_typeid(lua_State *L, luaA_Type obj_type, luaA_Type type_id)
+gboolean dt_lua_typeisa_type(lua_State *L, luaA_Type obj_type, luaA_Type type_id)
 {
   if(obj_type == type_id) return true;
-  luaL_getmetatable(L,luaA_type_name(obj_type));
+  luaL_getmetatable(L,luaA_typename(L,obj_type));
   lua_getfield(L,-1,"__luaA_ParentMetatable");
   if(lua_isnil(L,-1)) {
     lua_pop(L,2);
@@ -733,37 +737,37 @@ gboolean dt_lua_typeisa_typeid(lua_State *L, luaA_Type obj_type, luaA_Type type_
 
   }
   lua_getfield(L,-1,"__luaA_Type");
-  int parent_typeid = luaL_checkinteger(L,-1);
+  int parent_type = luaL_checkinteger(L,-1);
   lua_pop(L,3);
-  return dt_lua_typeisa_typeid(L,parent_typeid,type_id);
+  return dt_lua_typeisa_type(L,parent_type,type_id);
 
 }
 
-int dt_lua_init_types(lua_State *L)
+int dt_lua_init_early_types(lua_State *L)
 {
-  luaA_conversion(char_20,push_char_array,to_char20);
-  luaA_conversion_push(const char_20,push_char_array);
-  luaA_conversion(char_32,push_char_array,to_char32);
-  luaA_conversion_push(const char_32,push_char_array);
-  luaA_conversion(char_52,push_char_array,to_char52);
-  luaA_conversion_push(const char_52,push_char_array);
-  luaA_conversion(char_64,push_char_array,to_char64);
-  luaA_conversion_push(const char_64,push_char_array);
-  luaA_conversion(char_128,push_char_array,to_char128);
-  luaA_conversion_push(const char_128,push_char_array);
-  luaA_conversion(char_512,push_char_array,to_char512);
-  luaA_conversion_push(const char_512,push_char_array);
-  luaA_conversion(char_1024,push_char_array,to_char1024);
-  luaA_conversion_push(const char_1024,push_char_array);
-  luaA_conversion(char_filename_length,push_char_array,to_charfilename_length);
-  luaA_conversion_push(const char_filename_length,push_char_array);
-  luaA_conversion(char_path_length,push_char_array,to_charpath_length);
-  luaA_conversion_push(const char_path_length,push_char_array);
-  luaA_conversion(int32_t,luaA_push_int, luaA_to_int);
-  luaA_conversion_push(const int32_t,luaA_push_int);
-  luaA_conversion_push(const_string,luaA_push_const_char_ptr);
-  luaA_conversion(protected_double,push_protected_double, luaA_to_double);
-  luaA_conversion(progress_double,push_progress_double, to_progress_double);
+  luaA_conversion(L,char_20,push_char_array,to_char20);
+  luaA_conversion_push(L,const char_20,push_char_array);
+  luaA_conversion(L,char_32,push_char_array,to_char32);
+  luaA_conversion_push(L,const char_32,push_char_array);
+  luaA_conversion(L,char_52,push_char_array,to_char52);
+  luaA_conversion_push(L,const char_52,push_char_array);
+  luaA_conversion(L,char_64,push_char_array,to_char64);
+  luaA_conversion_push(L,const char_64,push_char_array);
+  luaA_conversion(L,char_128,push_char_array,to_char128);
+  luaA_conversion_push(L,const char_128,push_char_array);
+  luaA_conversion(L,char_512,push_char_array,to_char512);
+  luaA_conversion_push(L,const char_512,push_char_array);
+  luaA_conversion(L,char_1024,push_char_array,to_char1024);
+  luaA_conversion_push(L,const char_1024,push_char_array);
+  luaA_conversion(L,char_filename_length,push_char_array,to_charfilename_length);
+  luaA_conversion_push(L,const char_filename_length,push_char_array);
+  luaA_conversion(L,char_path_length,push_char_array,to_charpath_length);
+  luaA_conversion_push(L,const char_path_length,push_char_array);
+  luaA_conversion(L,int32_t,luaA_push_int, luaA_to_int);
+  luaA_conversion_push(L,const int32_t,luaA_push_int);
+  luaA_conversion_push(L,const_string,luaA_push_const_char_ptr);
+  luaA_conversion(L,protected_double,push_protected_double, luaA_to_double);
+  luaA_conversion(L,progress_double,push_progress_double, to_progress_double);
 
 
   return 0;

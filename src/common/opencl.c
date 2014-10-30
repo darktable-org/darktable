@@ -491,8 +491,8 @@ void dt_opencl_cleanup(dt_opencl_t *cl)
         }
         dt_opencl_events_reset(i);
 
-        if(cl->dev[i].eventlist) free(cl->dev[i].eventlist);
-        if(cl->dev[i].eventtags) free(cl->dev[i].eventtags);
+        free(cl->dev[i].eventlist);
+        free(cl->dev[i].eventtags);
       }
     }
     free(cl->dev_priority_image);

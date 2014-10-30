@@ -108,6 +108,14 @@
             </row>
             <row>
               <entry>
+                $(VERSION)
+              </entry>
+              <entry>
+                the duplicate version (see <xref linkend="sidecar_files"/>) 
+              </entry>
+            </row>
+            <row>
+              <entry>
                 $(SEQUENCE)
               </entry>
               <entry>
@@ -288,9 +296,17 @@
       <title>file format</title>
 
       <para>
-        darktable can export to various file formats. For some of them you need to define the
-        desired bit depth of the exported image. If you export to a JPEG file you can define an
-        output quality. Higher values will lead to larger file sizes.
+        darktable can export to various file formats. Depending on the output format you can
+        define additional parameters. For some formats you need to decide on the desired bit
+        depth and the compression method, respectively.
+      </para>
+
+      <para>
+        For some export formats like JPEG you can define an output quality. Higher values will
+        lead to larger file sizes. The default quality <quote>95</quote> is a good setting for
+        very high quality exports, e.g. for archiving or printing purposes. If you need a good
+        compromise between size and quality, e.g. for online image display or uploads, you
+        should consider a value of <quote>90</quote> instead.
       </para>
 
       <para>
