@@ -4,7 +4,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "POT-Creation-Date: 2014-10-24 22:30+0200\n"
-"PO-Revision-Date: 2014-10-24 22:33+0100\n"
+"PO-Revision-Date: 2014-10-29 10:59+0100\n"
 "Last-Translator: Michel Leblond <michel.leblond62@gmail.com>\n"
 "Language-Team: Jean-Luc Coulon, Victor Lamoine, Michel Leblond\n"
 "Language: fr\n"
@@ -1170,7 +1170,7 @@ msgstr ""
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:893(title)
 msgid "Importing from camera"
-msgstr "Importer depuis l’appareil photo"
+msgstr "Importer depuis le boîtier"
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:895(para)
 msgid ""
@@ -2875,7 +2875,7 @@ msgstr "importer un fichier"
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:2186(primary)
 msgid "camera import"
-msgstr "importer depuis un appareil photo"
+msgstr "importer depuis le boîtier"
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:2197(quote)
 msgid "folder"
@@ -3050,11 +3050,11 @@ msgstr "Importer depuis un appareil photo connecté"
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:2287(quote)
 msgid "import from camera"
-msgstr "importer depuis un appareil photo"
+msgstr "importer depuis le boîtier"
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:2288(quote)
 msgid "tethered shoot"
-msgstr "prise de vue en mode capture"
+msgstr "commander le boîtier"
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:2282(entry)
 msgid ""
@@ -3074,7 +3074,7 @@ msgstr ""
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:2300(title)
 msgid "Import from camera"
-msgstr "Importer depuis un appareil photo"
+msgstr "Importer depuis le boîtier"
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:2302(para)
 msgid ""
@@ -3098,7 +3098,7 @@ msgstr ""
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:2317(title)
 msgid "Tethered shoot"
-msgstr "Prise de vue en mode capture"
+msgstr "Commander le boîtier"
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:2319(para)
 msgid ""
@@ -5047,7 +5047,7 @@ msgstr ""
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:4077(title)
 msgid "intent"
-msgstr "épreuvage"
+msgstr "rendu"
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:4079(para)
 msgid ""
@@ -5055,10 +5055,10 @@ msgid ""
 "with out-of-gamut colors. See <xref linkend=\"output_color_profile\"/> for a "
 "more detailed description of the available options."
 msgstr ""
-"Cette option vous permet de définir l’épreuvage, c’est-à-dire la manière "
-"dont darktable va prendre en charge les couleurs qui se trouvent hors gamut. "
-"Voir <xref linkend=\"output_color_profile\"/> pour une description plus "
-"détaillée des options disponibles."
+"Cette option vous permet de définir le rendu, c’est-à-dire la manière dont "
+"darktable va prendre en charge les couleurs qui se trouvent hors gamut. Voir "
+"<xref linkend=\"output_color_profile\"/> pour une description plus détaillée "
+"des options disponibles."
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:4089(title)
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:10405(title)
@@ -6188,7 +6188,7 @@ msgstr "Petits détails"
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:12994(secondary)
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:12998(primary)
 msgid "highpass"
-msgstr "passe haut"
+msgstr "filtre passe haut"
 
 #: /home/michel/Logiciels/darktable_VL/build/doc/usermanual/po/darktable-usermanual_profiled.xml:4890(entry)
 msgid ""
