@@ -5,7 +5,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable\n"
 "POT-Creation-Date: 2014-10-28 13:54+0200\n"
-"PO-Revision-Date: 2014-10-30 19:59+0200\n"
+"PO-Revision-Date: 2014-10-31 19:24+0200\n"
 "Last-Translator: Serhii Marchuk <serhii.marchuk@gmail.com>\n"
 "Language-Team: Russian\n"
 "Language: ru_RU\n"
@@ -1077,13 +1077,14 @@ msgstr ""
 
 #: /home/mars/sources/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:914(title)
 msgid "Introduction"
-msgstr ""
+msgstr "Введение"
 
 #: /home/mars/sources/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:916(para)
 msgid ""
 "This section will guide you through the basics of developing an image in the "
 "darkroom view."
 msgstr ""
+"Этот раздел проведет вас через основы работы в изображениями в окне darkroom."
 
 #: /home/mars/sources/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:921(para)
 msgid ""
@@ -1092,6 +1093,10 @@ msgid ""
 "adjustments for an image are made, where an arsenal of modules are at hand "
 "to help you reach your goal."
 msgstr ""
+"Для начала, откройте изображение в режиме darkroom, дважды щелкнув на "
+"миниатюру изображения на lighttable. Режим darkroom, это место где "
+"осуществляться действия над изображением, где под рукой арсенал модулей, "
+"чтобы помочь вам достичь вашей цели."
 
 #: /home/mars/sources/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:927(para)
 msgid ""
@@ -1100,6 +1105,10 @@ msgid ""
 "The history is stored in a database and in an XMP sidecar file for the "
 "specific image."
 msgstr ""
+"Каждое изменение сделанное при работе с изображением отображается на панели "
+"<link linkend=\"history\"><emphasis>История изменений</emphasis></link>. "
+"История хранится в базе данных, и в сопроводительном XMP файле для "
+"конкретного изображения."
 
 #: /home/mars/sources/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:933(para)
 msgid ""
@@ -1109,6 +1118,11 @@ msgid ""
 "have one. <indexterm significance=\"normal\"><primary>save button</primary></"
 "indexterm>"
 msgstr ""
+"Все изменения сохраняются автоматически. Вы можете спокойно покинуть режим "
+"фотолаборатории или закрыть darktable и вернуться позже, в любое время, "
+"чтобы продолжить свою работу. Поэтому в darktable не нужна кнопка "
+"<quote>Сохранить</quote>, и она не имеет ни одной. <indexterm significance="
+"\"normal\"><primary>кнопка сохранения</primary></indexterm>"
 
 #: /home/mars/sources/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:942(para)
 msgid ""
@@ -1120,6 +1134,13 @@ msgid ""
 "redundant changes will be discarded. When you think you are done and are "
 "happy with what you have done, just compress the history stack."
 msgstr ""
+"На левой панели в режиме darkroom располагаеться <link linkend=\"history"
+"\"><emphasis>история изменений</emphasis></link>, где отображено каждое "
+"изменение снизу вверх, внесенное в изображение. Вы можете выбрать любую "
+"точку в этой истории, чтобы посмотреть, как выглядело изображение в этот "
+"момент, для сравнения. История может быть сжата: она будет оптимизирована и "
+"избыточные изменения будут удалены. Когда вы думаете, что закончили и "
+"довольны тем, что вы сделали, просто сожмите историю изменений."
 
 #: /home/mars/sources/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:951(para)
 msgid ""
@@ -1133,6 +1154,14 @@ msgid ""
 "of the right panel, by clicking a module until a star is displayed in front "
 "of the icon."
 msgstr ""
+"darktable поставляется с набором модулей, организованы в группы. Эти группы "
+"модулей доступны через кнопки быстрого перехода на правой панели, прямо под "
+"гистограммой. Есть также две специальные группы модулей, <quote>активные</"
+"quote> и <quote>избранные</quote>, модули задействованы в работе с текущим "
+"изображением, и модули выбран в качестве избранных, соответственно. Отметить "
+"модуль как избранный можно в <emphasis>Список модулей</emphasis> (<xref "
+"linkend=\"more_modules\"/>), в нижней части правой панели, нажав на звезду "
+"перед иконкой модуля."
 
 #: /home/mars/sources/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:966(title)
 #: /home/mars/sources/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:8295(title)

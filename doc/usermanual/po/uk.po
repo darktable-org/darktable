@@ -5,7 +5,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable\n"
 "POT-Creation-Date: 2014-10-28 13:56+0200\n"
-"PO-Revision-Date: 2014-10-30 19:58+0200\n"
+"PO-Revision-Date: 2014-10-31 19:24+0200\n"
 "Last-Translator: Serhii Marchuk <serhii.marchuk@gmail.com>\n"
 "Language-Team: Ukrainian\n"
 "Language: uk_UA\n"
@@ -1069,13 +1069,14 @@ msgstr ""
 
 #: /home/mars/sources/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:914(title)
 msgid "Introduction"
-msgstr ""
+msgstr "Вступ"
 
 #: /home/mars/sources/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:916(para)
 msgid ""
 "This section will guide you through the basics of developing an image in the "
 "darkroom view."
 msgstr ""
+"Цей розділ проведе вас через основи роботи зі світлинами у вікні darkroom."
 
 #: /home/mars/sources/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:921(para)
 msgid ""
@@ -1084,6 +1085,10 @@ msgid ""
 "adjustments for an image are made, where an arsenal of modules are at hand "
 "to help you reach your goal."
 msgstr ""
+"Для початку, відкрийте світлину в режимі darkroom, двічі клікнувши на "
+"мініатюру зображення на lighttable. Режим darkroom, це місце де фактично "
+"відбувається робота над зображенням, де під рукою арсенал модулів, щоб "
+"допомогти вам досягти вашої мети."
 
 #: /home/mars/sources/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:927(para)
 msgid ""
@@ -1092,6 +1097,9 @@ msgid ""
 "The history is stored in a database and in an XMP sidecar file for the "
 "specific image."
 msgstr ""
+"Кожна зміна зроблено при роботі із зображенням відображається на панелі "
+"<link linkend=\"history\"><emphasis>Історія змін</emphasis></link>. Історія "
+"зберігається в базі даних, і до файлів XMP для конкретного зображення."
 
 #: /home/mars/sources/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:933(para)
 msgid ""
@@ -1101,6 +1109,11 @@ msgid ""
 "have one. <indexterm significance=\"normal\"><primary>save button</primary></"
 "indexterm>"
 msgstr ""
+"Всі зміни зберігаються автоматично. Ви можете спокійно залишити режим "
+"darkroom або покинути darktable в будь-який час і повернутися пізніше, щоб "
+"продовжити свою роботу. Тому в darktable не потрібна кнопка <quote>зберегти</"
+"quote>, і віна не має жодної. <indexterm significance=\"normal"
+"\"><primary>кнопка збереження</primary></indexterm>"
 
 #: /home/mars/sources/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:942(para)
 msgid ""
@@ -1112,6 +1125,13 @@ msgid ""
 "redundant changes will be discarded. When you think you are done and are "
 "happy with what you have done, just compress the history stack."
 msgstr ""
+"На лівій панелі в режимі darkroom розташована <link linkend=\"history"
+"\"><emphasis>істрія змін</emphasis></link>, показуючи всі зміни знизу вверх, "
+"внесені в зображення. Ви можете вибрати точку в цій історії, щоб побачити, "
+"як зображення вигляділо в цей момент, для порівняння. Історію можна "
+"стиснути: її буде оптимізовано, а надлишкові зміни будуть втрачені. Коли ви "
+"вважаєте, що закінчили і задоволені своєю роботою, просто стисніть історію "
+"змін."
 
 #: /home/mars/sources/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:951(para)
 msgid ""
@@ -1125,6 +1145,14 @@ msgid ""
 "of the right panel, by clicking a module until a star is displayed in front "
 "of the icon."
 msgstr ""
+"darktable поставляється з набором модулів, організованих в групи. Ці групи "
+"модулів доступні через кнопки швидкого переходу на правій панелі, прямо під "
+"гістограмою. Є також дві спеціальні групи модулів, <quote>активні</quote> та "
+"<quote>улюблені</quote>, де показано модулі затіяні в роботі над поточним "
+"зображенням, та модулі вибрані як улюблені, відповідно. Помітити модуль як "
+"улюблений можна в <emphasis>список модулів</emphasis> (<xref linkend="
+"\"more_modules\"/>), в нижній частині правої панелі, натиснувши на зірку "
+"перед іконкою модуля."
 
 #: /home/mars/sources/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:966(title)
 #: /home/mars/sources/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:8295(title)
