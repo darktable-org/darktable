@@ -5260,6 +5260,18 @@
 		<Crop x="0" y="0" width="-64" height="0"/>
 		<Sensor black="257" white="4094"/>
 	</Camera>
+	<Camera make="FUJIFILM" model="X30">
+		<CFA2 width="6" height="6">
+			<ColorRow y="0">GBGGRG</ColorRow>
+			<ColorRow y="1">RGRBGB</ColorRow>
+			<ColorRow y="2">GBGGRG</ColorRow>
+			<ColorRow y="3">GRGGBG</ColorRow>
+			<ColorRow y="4">BGBRGR</ColorRow>
+			<ColorRow y="5">GRGGBG</ColorRow>
+		</CFA2>
+		<Crop x="0" y="0" width="-64" height="0"/>
+		<Sensor black="257" white="4094"/>
+	</Camera>
 	<Camera make="FUJIFILM" model="X100S">
 		<CFA2 width="6" height="6">
 			<ColorRow y="0">RBGBRG</ColorRow>
