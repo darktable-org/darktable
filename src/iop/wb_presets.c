@@ -5629,6 +5629,17 @@ const wb_data wb_preset[] =
   { "SONY", "DSC-RX100M2", DaylightFluorescent, 0, { 2.890625, 1, 1.796875, 0 } },
   { "SONY", "DSC-RX100M2", Flash, 0,		{ 3.17578125, 1, 1.59765625, 0 } },
 
+  { "SONY", "DSC-RX100M3", Daylight, 0,		{ 2.390625, 1, 1.78515625, 0 } },
+  { "SONY", "DSC-RX100M3", Shade, 0,		{ 2.83203125, 1, 1.48046875, 0 } },
+  { "SONY", "DSC-RX100M3", Cloudy, 0,		{ 2.578125, 1, 1.640625, 0 } },
+  { "SONY", "DSC-RX100M3", Incandescent, 0,	{ 1.48828125, 1, 3.109375, 0 } },
+  { "SONY", "DSC-RX100M3", WarmWhiteFluorescent, 0, { 1.734375, 1, 3.015625, 0 } },
+  { "SONY", "DSC-RX100M3", CoolWhiteFluorescent, 0, { 2.22265625, 1, 2.4765625, 0 } },
+  { "SONY", "DSC-RX100M3", DayWhiteFluorescent, 0, { 2.27734375, 1, 1.796875, 0 } },
+  { "SONY", "DSC-RX100M3", DaylightFluorescent, 0, { 2.53125, 1, 1.6015625, 0 } },
+  { "SONY", "DSC-RX100M3", Flash, 0,		{ 2.76171875, 1, 1.515625, 0 } },
+  { "SONY", "DSC-RX100M3", "5500K", 0,		{ 2.44140625, 1, 1.7421875, 0 } },
+
   { "SONY", "DSLR-A100", Daylight, -3,		{ 1.601562, 1, 2.101562, 0 } },
   { "SONY", "DSLR-A100", Daylight, 0,		{ 1.746094, 1, 1.843750, 0 } },
   { "SONY", "DSLR-A100", Daylight, 3,		{ 1.914062, 1, 1.628906, 0 } },
@@ -6218,6 +6229,18 @@ const wb_data wb_preset[] =
   { "SONY", "ILCE-7", DaylightFluorescent, 0,	{ 2.57812500, 1, 1.38281250, 0 } },
   { "SONY", "ILCE-7", Flash, 0,			{ 2.64843750, 1, 1.32421875, 0 } },
   { "SONY", "ILCE-7", "5500K", 0,		{ 2.21484375, 1, 1.40625000, 0 } },
+
+  // firmware ILCE-7R (A7R) Ver 1.0.1
+  { "SONY", "ILCE-7R", Daylight, 0,		{ 2.5078125, 1, 1.4921875, 0 } },
+  { "SONY", "ILCE-7R", Shade, 0,		{ 2.96484375, 1, 1.2265625, 0 } },
+  { "SONY", "ILCE-7R", Cloudy, 0,		{ 2.69921875, 1, 1.3671875, 0 } },
+  { "SONY", "ILCE-7R", Incandescent, 0,	{ 1.56640625, 1, 2.6953125, 0 } },
+  { "SONY", "ILCE-7R", WarmWhiteFluorescent, 0,{ 1.80859375, 1, 2.6796875, 0 } },
+  { "SONY", "ILCE-7R", CoolWhiteFluorescent, 0,{ 2.35546875, 1, 2.1640625, 0 } },
+  { "SONY", "ILCE-7R", DayWhiteFluorescent, 0,	{ 2.40625, 1, 1.6171875, 0 } },
+  { "SONY", "ILCE-7R", DaylightFluorescent, 0,	{ 2.68359375, 1, 1.40625, 0 } },
+  { "SONY", "ILCE-7R", Flash, 0,		{ 2.75, 1, 1.34375, 0 } },
+  { "SONY", "ILCE-7R", "5500K", 0,		{ 2.55859375, 1, 1.45703125, 0 } },
 
   { "SONY", "SLT-A37", Daylight, 0,		{ 2.6641, 1, 1.5156, 0 } },
   { "SONY", "SLT-A37", Shade, 0,		{ 3.1836, 1, 1.2539, 0 } },
