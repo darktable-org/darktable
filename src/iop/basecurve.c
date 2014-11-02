@@ -97,8 +97,8 @@ legacy_params (dt_iop_module_t *self, const void *const old_params, const int ol
 
 static const char natural[] = N_("natural");
 static const char dark_contrast[] = N_("dark contrast");
-static const char canon_eos[] = N_("canon EOS like");
-static const char canon_eos_alt[] = N_("canon EOS like alternate");
+static const char canon_eos[] = N_("canon eos like");
+static const char canon_eos_alt[] = N_("canon eos like alternate");
 static const char nikon[] = N_("nikon like");
 static const char nikon_alt[] = N_("nikon like alternate");
 static const char sony_alpha[] = N_("sony alpha like");
