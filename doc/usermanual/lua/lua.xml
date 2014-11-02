@@ -41,9 +41,9 @@
     <title>Lua usage</title>
 
     <para>
-      Lua can be used to define actions which darktable will perform whenever a specified
-      event is triggered. One example might be calling an external application during file
-      export in order to apply additional processing steps outside of darktable.
+      Lua can be used to define actions which darktable will perform whenever a specified event
+      is triggered. One example might be calling an external application during file export in
+      order to apply additional processing steps outside of darktable.
     </para>
 
     <para>
@@ -86,52 +86,101 @@
 
       <para>
         This is the only time darktable will run Lua scripts by itself. The script can register
-        callbacks to perform actions on various darktable events. This callback mechanism is 
-        the primary way to trigger lua actions. 
+        callbacks to perform actions on various darktable events. This callback mechanism is the
+        primary way to trigger lua actions.
       </para>
 
     </sect2>
 
     <sect2 id="lua_hello_world">
+
       <title>A simple lua example</title>
+
       <para>
-        Let's start with a simple example. We will print some code in the console. 
-	Create a file called <emphasis>luarc</emphasis> in darktable's configuration directory (usually <command>~/.config/darktable/</command>) and add the following line in it:
+        Let's start with a simple example. We will print some code on the console. Create a file
+        called <emphasis>luarc</emphasis> in darktable's configuration directory (usually
+        <command>~/.config/darktable/</command>) and add the following line to it:
       </para>
-      <programlisting language="lua">print("Hello World !")</programlisting>
+
+<programlisting language="lua">print("Hello World !")</programlisting>
+
       <para>
-        Start darktable and you will see the sencence <emphasis>Hello World !</emphasis> printed on the console. Nothing fancy but it's a start... 
+        Start darktable and you will see the sencence <emphasis>Hello World !</emphasis> printed
+        on the console. Nothing fancy but it's a start...
       </para>
+
       <para>
-        At this point, there is nothing specific to darktable in the script. We simply use the standard <code>print</code> function to print a string. That's nice and all, but we can do better than that. 
-	To access the darktable API you first need to <code>require</code> it and save the returned object in a variable. Once this is done you can access the darktable API as subfields of the returned object. All of this is documented in <xref linkend="darktable"/>
+        At this point, there is nothing specific to darktable in the script. We simply use the
+        standard
+        <code>print</code>
+        function to print a string. That's nice and all, but we can do better than that. To
+        access the darktable API you first need to
+        <code>require</code>
+        it and save the returned object in a variable. Once this is done you can access the
+        darktable API as subfields of the returned object. All of this is documented in
+        <xref linkend="darktable"/>.
       </para>
-      <programlisting language="lua">local darktable = require "darktable"
-darktable.print_error("Hello World !") </programlisting>
+
+<programlisting language="lua">local darktable = require "darktable"
+darktable.print_error("Hello World !")</programlisting>
+
       <para>
-        Run the script... And nothing happens. The function <link linkend="darktable_print_error"><code>darktable.print_error</code></link> is just like print but will only print the message if you have enabled lua traces with <command>-d lua</command> on the command line. This is the recommanded way to do traces in a darktable lua script.
+        Run the script ... and nothing happens. The function
+        <link linkend="darktable_print_error">
+        <code>darktable.print_error</code>
+        </link> is just like print but will only print the message if you have enabled lua
+        traces with <command>-d lua</command> on the command line. This is the recommended way
+        to do traces in a darktable lua script.
       </para>
+
     </sect2>
+
     <sect2 id="lua_print_images">
+
       <title>Printing labeled images</title>
+
       <para>
-        This first example showed us the very basics of lua and allowed us to check that everything was working properly. Lets do something a little more complex. Let's try to print the list of images that have a red label attached to them. But first of all, what is an image?
+        This first example showed us the very basics of lua and allowed us to check that
+        everything is working properly. Let's do something a little bit more complex. Let's try to
+        print the list of images that have a red label attached to them. But first of all, what
+        is an image?
       </para>
-      <programlisting language="lua">
+
+<programlisting language="lua">
 local darktable = require "darktable"
 local debug = require "darktable.debug"
-print(darktable.debug.dump(darktable.database[1]))
-      </programlisting>
+print(darktable.debug.dump(darktable.database[1]))</programlisting>
+
       <para>
-        Running the code above will produce a lot of output. We will look at it in a moment, but first let's look at the code itself.
+        Running the code above will produce a lot of output. We will look at it in a moment, but
+        first let's look at the code itself.
       </para>
+
       <para>
-        We know about requiring <link linkend="darktable"><code>darktable.</code></link> Here, we need to separately require <link linkend="darktable_debug"><code>darktable.debug</code></link> which is an optional section of the API that provides helper functions to help debug lua scripts. 
+        We know about requiring <link linkend="darktable"><code>darktable</code></link>. 
+        Here, we need to separately require <link linkend="darktable_debug">
+        <code>darktable.debug</code>
+        </link> which is an optional section of the API that provides helper functions to help
+        debug lua scripts.
       </para>
+
       <para>
-      <link linkend="darktable_database"><code>darktable.database</code></link> is a table provided by the API that contains all images in the database (currently visible or not, duplicate or not...). Each entry in the database is an image object. Image objects are complex objects that allow you to manipulate your image in various ways. (It is all documented in <xref linkend="types_dt_lua_image_t"/>). To display our images, we use <link linkend="darktable_debug_dump"><code>darktble.debug.dump</code></link> which is a function that will take anything as it's parameter and recursively dump it's content. Since images are complex objects that indirectly reference other complex objects, the resulting output is huge. Below is a cutdown example of the output.
-    </para>
-    <literallayout><code>
+        <link linkend="darktable_database">
+        <code>darktable.database</code>
+        </link> is a table provided by the API that contains all images in the database
+        (currently visible or not, duplicate or not...). Each entry in the database is an image
+        object. Image objects are complex objects that allow you to manipulate your image in
+        various ways (it is all documented in <xref linkend="types_dt_lua_image_t"/>). To
+        display our images, we use <link linkend="darktable_debug_dump">
+        <code>darktble.debug.dump</code>
+        </link> which is a function that will take anything as its parameter and recursively
+        dump its content. Since images are complex objects that indirectly reference other
+        complex objects, the resulting output is huge. Below is a cut down example of the output.
+      </para>
+
+      <literallayout>
+
+        <code>
 toplevel (userdata,dt_lua_image_t) : /images/100.JPG
    publisher (string) : ""
    path (string) : "/images"
@@ -184,34 +233,74 @@ toplevel (userdata,dt_lua_image_t) : /images/100.JPG
    local_copy (boolean) : false
    copy (function): toplevel.film.2.copy
    group_leader (userdata,dt_lua_image_t): .toplevel
-   </code> </literallayout>
-   <para>
-     As we can see, an image have a large number of fields which provide all sort of information about it. We are interested in the red label (documented in <xref linkend="types_dt_lua_image_t_red"/>) This field is a boolean, and the documentation tells us that it can be written. We now just need to find all images with that field and print them out.
-   </para>
-   <programlisting language="lua">
+   </code>
+
+      </literallayout>
+
+      <para>
+        As we can see, an image has a large number of fields which provide all sort of
+        information about it. We are interested in the red label (documented in
+        <xref linkend="types_dt_lua_image_t_red"/>). This field is a boolean, and the
+        documentation tells us that it can be written. We now just need to find all images with
+        that field and print them out.
+      </para>
+
+<programlisting language="lua">
 darktable = require "darktable"
 for _,v in ipairs(darktable.database) do
   if v.red then
     print(tostring(v))
   end
-end
-    </programlisting>
-    <para>
-      This code should be quite simple to understand at this point, but it contains a few interesting points about lua that are worth highlighting
-      <itemizedlist>
-        <listitem><para> <code>ipairs</code> is a standard lua function that will iterate through all numeric index of a table. We use it here because <link linkend="darktable_database"><code>darktable.database</code></link> has non-numeric indices which are functions to manipulate the database itself (adding or deleting images, for example).</para></listitem>
-        <listitem><para> Iterating through a table will return both the key and the value used. It is conventional in lua to use a variable named <code>_</code> to store values that we don't care about</para></listitem>
-        <listitem><para> note tha we use the standard lua function <code>tostring</code> here and not the darktable specific <link linkend="darktable_debug_dump"><code>darktable.debug.dump</code></link>. The standard function will return a name for the object whereas the debug function will print the content. The debug function would be too verbose here. Once again, it is a great debug tool but should not be used for anything else.</para></listitem>
+end</programlisting>
 
-      </itemizedlist>
-    </para>
-    </sect2>
-    <sect2 id="lua_simple_shortcut">
-      <title>Adding a simple shortcut</title>
       <para>
-        So far, all our scripts have done things during startup. This is of limited use and doesn't allow us to react to real user actions. To do more advanced things we need to register a function that will be called on a given event. The most common event to react to is a keyboard shortcut
+        This code should be quite simple to understand at this point, but it contains a few
+        interesting aspects about lua that are worth highlighting:
+        <itemizedlist>
+
+          <listitem><para>
+            <code>ipairs</code>
+            is a standard lua function that will iterate through all numeric indices of a table.
+            We use it here because <link linkend="darktable_database">
+            <code>darktable.database</code>
+            </link> has non-numeric indices which are functions to manipulate the database
+            itself (adding or deleting images, for example).
+          </para></listitem>
+
+          <listitem><para>
+            Iterating through a table will return both the key and the value used. It is
+            conventional in lua to use a variable named
+            <quote><code>_</code></quote>
+            to store values that we don't care about.
+          </para></listitem>
+
+          <listitem><para>
+            Note tha we use the standard lua function
+            <code>tostring</code>
+            here and not the darktable specific <link linkend="darktable_debug_dump">
+            <code>darktable.debug.dump</code>
+            </link>. The standard function will return a name for the object whereas the debug
+            function will print the content. The debug function would be too verbose here. Once
+            again, it is a great debug tool but should not be used for anything else.
+          </para></listitem>
+
+        </itemizedlist>
       </para>
-      <programlisting language="lua">
+
+    </sect2>
+
+    <sect2 id="lua_simple_shortcut">
+
+      <title>Adding a simple shortcut</title>
+
+      <para>
+        So far, all our scripts have done things during startup. This is of limited use and
+        doesn't allow us to react to real user actions. To do more advanced things we need to
+        register a function that will be called on a given event. The most common event to react
+        to is a keyboard shortcut.
+      </para>
+
+<programlisting language="lua">
 darktable = require "darktable"
 
 local function hello_shortcut(event, shortcut)
@@ -222,19 +311,42 @@ end
 darktable.register_event("shortcut",hello_shortcut,
        "A shortcut that print its parameters")
       </programlisting>
+
       <para>
-        Now start darktable, go to <code> preferences => shortcut => lua => A shortcut that print its parameters </code> assign a shortcut and try it. You should have a nice message printed on the screen.
+        Now start darktable, go to
+        <code> preferences => shortcut => lua => A shortcut that print its parameters </code>
+        assign a shortcut and try it. You should have a nice message printed on the screen.
       </para>
+
       <para>
-        Let's look at the code in details. We first define a function with two parameters. These parameters are strings (this is documented in <xref linkend="events_shortcut_callback"/>). The first one is the type of event that is triggered (<code>"shortcut"</code>) and the second one is what shortcut specifically (<code>"A shortcut that print its parameters"</code>). The function itself calls <link linkend="darktable_print"><code>darktable.print</code></link> that will print the message as an overlay in the main window.
+        Let's look at the code in details. We first define a function with two parameters. These
+        parameters are strings (this is documented in
+        <xref linkend="events_shortcut_callback"/>). The first one is the type of event that is
+        triggered (
+        <code>"shortcut"</code>
+        ) and the second one is what shortcut specifically (
+        <code>"A shortcut that print its parameters"</code>
+        ). The function itself calls <link linkend="darktable_print">
+        <code>darktable.print</code>
+        </link> that will print the message as an overlay in the main window.
       </para>
+
       <para>
-        Once that function is defined, we register it as a shortcut callback. To do that we call <link linkend="darktable_register_event"><code>darktable.register_event</code></link> which is a generic function for all types of events. We tell it that we are registering a shortcut event, then we give the callback to call and last, we give the string to use to describe the shortcut in the preference window
+        Once that function is defined, we register it as a shortcut callback. To do that we call
+        <link linkend="darktable_register_event">
+        <code>darktable.register_event</code>
+        </link> which is a generic function for all types of events. We tell it that we are
+        registering a shortcut event, then we give the callback to call and last, we give the
+        string to use to describe the shortcut in the preference window.
       </para>
-      <para> 
-        Let's try a shortcut a little more interactive. This one will look at the images the user is currently interested in (selected our moused-over) and will increase their rating.
+
+      <para>
+        Let's try a shortcut a little more interactive. This one will look at the images the
+        user is currently interested in (selected our moused-over) and will increase their
+        rating.
       </para>
-      <programlisting language="lua">
+
+<programlisting language="lua">
 darktable = require "darktable"
 
 darktable.register_event("shortcut",function(event,shortcut)
@@ -244,25 +356,60 @@ darktable.register_event("shortcut",function(event,shortcut)
     end
   end,"Increase the rating of an image")
       </programlisting>
+
       <para>
-        At this point, most of this code should be self explanatory. Just a couple of notes
-      <itemizedlist>
-        <listitem><para>Instead of declaring a function and referencing it, we declare it directly in the call to <code>darktable.register_event</code> this is strictly equivalent but slightly more compact</para></listitem>
-        <listitem><para> <link linkend="types_dt_lua_image_t_rating"><code>image.rating</code></link> is a field of any image that gives its rating (between 0 and 5 stars, -1 means rejected)</para></listitem> 
-        <listitem><para> <link linkend="darktable_gui_action_images"><code>darktable.gui.action_images</code></link> is a table containing all the images of interest. Darktable will act on selected images if any image is seleced, and on the image under the mouse if no image is selected. This function allows to easily follow darktable's UI logic in lua.</para></listitem>
-      </itemizedlist>
-      If you select an image and press your shortcut a couple of time, it will work correctly at first but when you have reached five stars, darktable will start showing the following error on the console
-      <literallayout><code><![CDATA[
+        At this point, most of this code should be self explanatory. Just a couple of notes:
+        <itemizedlist>
+
+          <listitem><para>
+            Instead of declaring a function and referencing it, we declare it directly in the
+            call to
+            <code>darktable.register_event</code>
+            this is strictly equivalent but slightly more compact.
+          </para></listitem>
+
+          <listitem><para>
+            <link linkend="types_dt_lua_image_t_rating">
+            <code>image.rating</code>
+            </link> is a field of any image that gives its rating (between 0 and 5 stars, -1
+            means rejected).
+          </para></listitem>
+
+          <listitem><para>
+            <link linkend="darktable_gui_action_images">
+            <code>darktable.gui.action_images</code>
+            </link> is a table containing all the images of interest. Darktable will act on
+            selected images if any image is seleced, and on the image under the mouse if no
+            image is selected. This function allows to easily follow darktable's UI logic in
+            lua.
+          </para></listitem>
+
+        </itemizedlist>
+        If you select an image and press your shortcut a couple of time, it will work correctly
+        at first but when you have reached five stars, darktable will start showing the
+        following error on the console:
+        <literallayout>
+
+          <code>
+
+<![CDATA[
 LUA ERROR : rating too high : 6
 stack traceback:
 	[C]: in ?
 	[C]: in function '__newindex'
   ./configdir/luarc:10: in function <./configdir/luarc:7>
       LUA ERROR : rating too high : 6
-  ]]> </code></literallayout>
-  This is lua's way of reporting errors. We have attempted to set a rating of 6 to an image, but a rating can only go as high as 5. It would be trivial to add a check, but let's go the complicated way and catch the error instead.
-  </para>
-      <programlisting language="lua">
+  ]]>
+
+          </code>
+
+        </literallayout>
+        This is lua's way of reporting errors. We have attempted to set a rating of 6 to an
+        image, but a rating can only go as high as 5. It would be trivial to add a check, but
+        let's go the complicated way and catch the error instead.
+      </para>
+
+<programlisting language="lua">
 darktable.register_event("shortcut",function(event,shortcut)
     local images = darktable.gui.action_images
     for _,v in pairs(images) do
@@ -276,18 +423,28 @@ darktable.register_event("shortcut",function(event,shortcut)
     end
 end,"Increase the rating of an image")
       </programlisting>
-      <code>pcall</code> will run it's first argument an catch any exception thrown by it. If there is no exception it will return <code>true</code> plus any result returned by the function, if there is an exception it will return <code>false</code> and the error message of the exception. We simply test these results and print them on the console...
+
+      <code>pcall</code> will run its first argument and catch any exception thrown by it. If there is no exception it will return <code>true</code> plus any result returned by the function; if there is an exception it will return <code>false</code> and the error message of the exception. We simply test these results and print them on the console...
 
     </sect2>
+
     <sect2 id="lua_storage_example">
 
       <title>Exporting images with Lua</title>
+
       <para>
-	 we have learned to use lua to adapt darktable to our particular workflow, let's look at how to use lua to easily export images. Darktable can easily export images to quite a few online services but their are always more. If you are able to upload an image to a service via the commandline then you can use lua to integrate it into darktable's user interface. 
+        We have learned to use lua to adapt darktable to our particular workflow, let's look at
+        how to use lua to easily export images. Darktable can easily export images to quite a
+        few online services but there are always more. If you are able to upload an image to a
+        service via the command line then you can use lua to integrate it into darktable's user
+        interface.
       </para>
+
       <para>
-	 In this next example we will use lua to export via <command>scp</command>. A new storage will appear in darktable's UI which will export images to a remote target via ssh's copy mechanism.
-      <programlisting language="lua">
+        In this next example we will use lua to export via <command>scp</command>. A new storage
+        will appear in darktable's UI which will export images to a remote target via ssh's copy
+        mechanism.
+<programlisting language="lua">
 darktable = require "darktable"
 
 darktable.preferences.register("scp_export","export_path",
@@ -304,30 +461,68 @@ darktable.register_storage("scp_export","Export via scp",
     end
 end)
       </programlisting>
-      <code><link linkend="darktable_preferences_register">darktable.preferences.register</link></code> will add a new preference to darktable's preference menu. <code>scp_export</code> and <code>export_path</code> allow us to uniquely identify our preference. These fields are reused when we read the value of the preference. The <code>string</code> field tells the lua engine that the preference is a string. It could also be an integer, a filename or any of the types detailed in <xref linkend="types_lua_pref_type"/>. We then have the label for the preference in the preference menu, the tooltip when hovering over the value and a default value.
+        <code><link linkend="darktable_preferences_register">darktable.preferences.register</link>
+
+        </code>
+        will add a new preference to darktable's preference menu.
+        <code>scp_export</code>
+        and
+        <code>export_path</code>
+        allow us to uniquely identify our preference. These fields are reused when we read the
+        value of the preference. The
+        <code>string</code>
+        field tells the lua engine that the preference is a string. It could also be an integer,
+        a filename or any of the types detailed in <xref linkend="types_lua_pref_type"/>. We
+        then have the label for the preference in the preference menu, the tooltip when hovering
+        over the value and a default value.
       </para>
+
       <para>
-	      <code><link linkend="darktable_register_storage">darktable.register_storage</link></code> is the call that actually registers a new storage. The first argument is a name for the storage, the second is the label that will be displayed in the UI and last is a function to call on each image. This function has a lot of parameters, but <code>filename</code> is the only one we use in this example. It contains the name of a temporary file where the image was exported by darktable's engine.
+        <code><link linkend="darktable_register_storage">darktable.register_storage</link>
+
+        </code>
+        is the call that actually registers a new storage. The first argument is a name for the
+        storage, the second is the label that will be displayed in the UI and last is a function
+        to call on each image. This function has a lot of parameters, but
+        <code>filename</code>
+        is the only one we use in this example. It contains the name of a temporary file where
+        the image was exported by darktable's engine.
       </para>
+
       <para>
-	This code will work but it has a couple of limitations. This is just a simple example after all
-      <itemizedlist>
-	      <listitem>We use preferences to configure the target path. It would be nicer to add an element to the export UI in darktable but the lua interface doesn't support this yet. Stay tuned...</listitem>
-	      <listitem>We check the returned value of scp. That command might fail, in particular if the user has not correctly set the preference.</listitem>
-	      <listitem>This script can't read input from the user. The remote scp must use password-less copy. Reading input from the user is doable but beyond the scope of this example</listitem>
-	      <listitem>There is no message displayed once the example is done, only the progressbar on the lower left side tells the user that the job is done</listitem>
-	      <listitem>We use <code><link linkend="system_coroutine_yield">coroutine.yield</link></code> to call an external program. The normal <code>os.execute</code> would block other lua codes from happening.</listitem>
-      </itemizedlist>
+        This code will work but it has a couple of limitations. This is just a simple example
+        after all:
+        <itemizedlist>
+
+          <listitem>We use preferences to configure the target path. It would be nicer to add an element to the export UI in darktable but the lua interface doesn't support this yet. Stay tuned...</listitem>
+
+          <listitem>We check the returned value of scp. That command might fail, in particular if the user has not correctly set the preference.</listitem>
+
+          <listitem>This script can't read input from the user. The remote scp must use password-less copy. Reading input from the user is doable but beyond the scope of this example.</listitem>
+
+          <listitem>There is no message displayed once the example is done, only the progressbar on the lower left side tells the user that the job is done.</listitem>
+
+          <listitem>We use <code><link linkend="system_coroutine_yield">coroutine.yield</link>
+
+          </code> to call an external program. The normal <code>os.execute</code> would block other lua codes from happening.</listitem>
+
+        </itemizedlist>
       </para>
+
     </sect2>
+
     <sect2 id="lua_sharint_scripts">
 
       <title>Sharing scripts</title>
 
       <para>
-	      So far, our lua code was in <emphasis>luarc</emphasis>. That's a good way to develop your script but not very practical for distribution. We need to make this into a proper lua module. To do that, we save the code in a separate file (<command>scp-storage.lua</command> in our case) 
+        So far, our lua code was in <emphasis>luarc</emphasis>. That's a good way to develop
+        your script but not very practical for distribution. We need to make this into a proper
+        lua module. To do that, we save the code in a separate file
+        (<command>scp-storage.lua</command> in our case):
       </para>
-      <programlisting language="lua">
+
+<programlisting language="lua">
 --[[
 SCP STORAGE
 a simple storage to export images via scp
@@ -370,17 +565,32 @@ darktable.register_storage("scp_export","Export via scp",
 end)
 
       </programlisting>
-      <para>
-        Darktable will look for scripts (following the normal lua rules) in the standard directories plus <code>$CONFIGDIR/lua/?.lua</code>. So our script can be called by simply adding <code>require "scp-storage"</code> in the <emphasis>luarc</emphasis> file. A couple of extra notes...
-      </para>
-      <itemizedlist>
-	      <listitem>The function <code><link linkend="darktable_configuration_check_version">darktable.configuration.check_version</link></code> will check compatibility for you. the <code>...</code> will turn into your script's name and <code>{2,0,0}</code> is the API version you have tested your script with. You can add multiple API versions if you update your script for multiple versions of darktable</listitem>
-	      <listitem>Make sure to declare all your functions as <code>local</code> to not polute the general namespace</listitem>
-	      <listitem>Make sure you do not leave debug prints in your code. <link linkend="darktable_print_error"><code>darktable.print_error</code></link> in particular allows you to leave debug prints in your final code without disturbing the console</listitem>
-	      <listitem>You are free to choose any license for your script but scripts that are uploaded on darktable's website need to be GPLv2.  </listitem>
-      </itemizedlist>
-      Once you have filled all the fields, checked your code, you can upload it to our script page <link linkend="http://darktable.org/redmine/projects/darktable/wiki/LuaScripts">here</link>
 
+      <para>
+        Darktable will look for scripts (following the normal lua rules) in the standard
+        directories plus
+        <code>$CONFIGDIR/lua/?.lua</code>
+        . So our script can be called by simply adding
+        <code>require "scp-storage"</code>
+        in the <emphasis>luarc</emphasis> file. A couple of extra notes...
+      </para>
+
+      <itemizedlist>
+
+        <listitem>The function <code><link linkend="darktable_configuration_check_version">darktable.configuration.check_version</link>
+
+        </code> will check compatibility for you. the <code>...</code> will turn into your script's name and <code>{2,0,0}</code> is the API version you have tested your script with. You can add multiple API versions if you update your script for multiple versions of darktable.</listitem>
+
+        <listitem>Make sure to declare all your functions as <code>local</code> to not pollute the general namespace.</listitem>
+
+        <listitem>Make sure you do not leave debug prints in your code. <link linkend="darktable_print_error">
+
+        <code>darktable.print_error</code></link> in particular allows you to leave debug prints in your final code without disturbing the console.</listitem>
+
+        <listitem>You are free to choose any license for your script but scripts that are uploaded on darktable's website need to be GPLv2.  </listitem>
+
+      </itemizedlist>
+      Once you have filled all the fields, checked your code, you can upload it to our script page <ulink url="http://darktable.org/redmine/projects/darktable/wiki/LuaScripts">here</ulink>.
 
     </sect2>
 
@@ -390,7 +600,7 @@ end)
 
       <para>
         It is possible to send a lua command to darktable via its DBus interface. The method
-        <emphasis> org.darktable.service.Remote.Lua</emphasis> takes a single string parameter
+        <emphasis>org.darktable.service.Remote.Lua</emphasis> takes a single string parameter
         which is interpreted as a lua command. The command will be executed in the current lua
         context and should return either <emphasis>nil</emphasis> or a string. The result will
         be passed back as the result of the DBus method.
@@ -398,8 +608,8 @@ end)
 
       <para>
         If the Lua call results in an error, the DBus method call will return an error
-        <emphasis> org.darktable.Error.LuaError</emphasis> with the lua error message as the
-        message attached to the DBus error
+        <emphasis>org.darktable.Error.LuaError</emphasis> with the lua error message as the
+        message attached to the DBus error.
       </para>
 
     </sect2>
@@ -407,8 +617,10 @@ end)
     <sect2 id="lua_lib">
 
       <title>Using Darktable from a lua script</title>
+
       <para>
-	      <emphasis>Warning : This feature is very experimental. It is known that everything doesn't work in library mode. Carefull testing is highly recommanded </emphasis>
+        <emphasis>Warning: This feature is very experimental. It is known that several elements
+        don't work in library mode yet. Careful testing is highly recommended.</emphasis>
       </para>
 
       <para>
@@ -418,7 +630,7 @@ end)
       </para>
 
       <para>
-        As an example, the following program will print the list of all images in your library.
+        As an example, the following program will print the list of all images in your library:
 <programlisting language="lua">#!/usr/bin/env lua
 package = require "package"
 package.cpath=package.cpath..";./lib/darktable/lib?.so"
@@ -440,7 +652,7 @@ end
       </para>
 
       <para>
-        Note the thid line that points to the location of the
+        Note the third line that points to the location of the
         <filename>libdarktable.so</filename> file.
       </para>
 
@@ -452,7 +664,7 @@ end
         <function>:memory:</function>
         parameter to
         <function>--library</function>
-        is usefull here if you don't want to work on your personal library
+        is usefull here if you don't want to work on your personal library.
       </para>
 
     </sect2>
