@@ -88,6 +88,7 @@ static int on_screen_member(lua_State*L) {
   return 1;
 }
 
+#if 0
 static int position_member(lua_State*L) {
   dt_lib_module_t * module = *(dt_lib_module_t**)lua_touserdata(L,1);
   lua_pushinteger(L,module->position());
@@ -102,6 +103,7 @@ static int container_member(lua_State*L) {
   return 1;
 }
 
+
 static int views_member(lua_State*L) {
   dt_lib_module_t * module = *(dt_lib_module_t**)lua_touserdata(L,1);
   int i;
@@ -115,6 +117,7 @@ static int views_member(lua_State*L) {
   return 1;
 }
 
+#endif
 static int lib_reset(lua_State * L)
 {
   dt_lib_module_t * module = *(dt_lib_module_t**)lua_touserdata(L,1);
@@ -145,6 +148,7 @@ void dt_lua_lib_register(lua_State* L,dt_lib_module_t* module)
 int dt_lua_init_early_lib(lua_State *L)
 {
 
+#if 0
   luaA_enum(L,dt_ui_container_t);
   luaA_enum_value(L,dt_ui_container_t,DT_UI_CONTAINER_PANEL_LEFT_TOP);
   luaA_enum_value(L,dt_ui_container_t,DT_UI_CONTAINER_PANEL_LEFT_CENTER);
@@ -162,6 +166,7 @@ int dt_lua_init_early_lib(lua_State *L)
   luaA_enum_value(L,dt_ui_container_t,DT_UI_CONTAINER_PANEL_CENTER_BOTTOM_CENTER);
   luaA_enum_value(L,dt_ui_container_t,DT_UI_CONTAINER_PANEL_CENTER_BOTTOM_RIGHT);
   luaA_enum_value(L,dt_ui_container_t,DT_UI_CONTAINER_PANEL_BOTTOM);
+#endif
 
   dt_lua_init_type(L,dt_lib_module_t);
   lua_pushcfunction(L,lib_reset);
@@ -177,14 +182,16 @@ int dt_lua_init_early_lib(lua_State *L)
   dt_lua_type_register_const(L,dt_lib_module_t,"expandable");
   lua_pushcfunction(L,expanded_member);
   dt_lua_type_register(L,dt_lib_module_t,"expanded");
+#if 0
   lua_pushcfunction(L,position_member);
   dt_lua_type_register_const(L,dt_lib_module_t,"position");
-  lua_pushcfunction(L,visible_member);
-  dt_lua_type_register(L,dt_lib_module_t,"visible");
   lua_pushcfunction(L,container_member);
   dt_lua_type_register_const(L,dt_lib_module_t,"container");
   lua_pushcfunction(L,views_member);
   dt_lua_type_register_const(L,dt_lib_module_t,"views");
+#endif
+  lua_pushcfunction(L,visible_member);
+  dt_lua_type_register(L,dt_lib_module_t,"visible");
   lua_pushcfunction(L,on_screen_member);
   dt_lua_type_register_const(L,dt_lib_module_t,"on_screen");
 
