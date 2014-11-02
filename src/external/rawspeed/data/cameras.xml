@@ -4155,7 +4155,7 @@
 			<Color x="1" y="1">BLUE</Color>
 		</CFA>
 		<Crop x="4" y="0" width="-36" height="0"/>
-		<Sensor black="1" white="16253"/>
+		<Sensor black="1" white="15868"/>
 	</Camera>
 	<Camera make="PENTAX" model="PENTAX K-5" decoder_version="2">
 		<CFA width="2" height="2">
