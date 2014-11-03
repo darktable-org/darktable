@@ -36,7 +36,7 @@
     </screenshot>
   </para>
 
-  <sect1 id="lua_usage">
+  <section id="lua_usage">
 
     <title>Lua usage</title>
 
@@ -59,7 +59,7 @@
       <ulink url="http://www.lua.org/manual/5.2/manual.html">Lua reference manual</ulink>.
     </para>
 
-    <sect2 id="lua_basic_principles">
+    <section id="lua_basic_principles">
 
       <title>Basic principles</title>
 
@@ -90,9 +90,9 @@
         primary way to trigger lua actions.
       </para>
 
-    </sect2>
+    </section>
 
-    <sect2 id="lua_hello_world">
+    <section id="lua_hello_world">
 
       <title>A simple lua example</title>
 
@@ -137,9 +137,9 @@ darktable.print_error("Hello World !")</programlisting>
         to do traces in a darktable lua script.
       </para>
 
-    </sect2>
+    </section>
 
-    <sect2 id="lua_print_images">
+    <section id="lua_print_images">
 
       <title>Printing labeled images</title>
 
@@ -299,9 +299,9 @@ end</programlisting>
         </itemizedlist>
       </para>
 
-    </sect2>
+    </section>
 
-    <sect2 id="lua_simple_shortcut">
+    <section id="lua_simple_shortcut">
 
       <title>Adding a simple shortcut</title>
 
@@ -461,9 +461,9 @@ end,"Increase the rating of an image")</programlisting>
         the console...
       </para>
 
-    </sect2>
+    </section>
 
-    <sect2 id="lua_storage_example">
+    <section id="lua_storage_example">
 
       <title>Exporting images with Lua</title>
 
@@ -568,9 +568,9 @@ end)</programlisting>
         </itemizedlist>
       </para>
 
-    </sect2>
+    </section>
 
-    <sect2 id="lua_sharint_scripts">
+    <section id="lua_sharint_scripts">
 
       <title>Sharing scripts</title>
 
@@ -672,9 +672,9 @@ end)</programlisting>
         <ulink url="http://darktable.org/redmine/projects/darktable/wiki/LuaScripts">here</ulink>.
       </para>
 
-    </sect2>
+    </section>
 
-    <sect2 id="lua_dbus">
+    <section id="lua_dbus">
 
       <title>Calling Lua from DBus</title>
 
@@ -692,9 +692,9 @@ end)</programlisting>
         message attached to the DBus error.
       </para>
 
-    </sect2>
+    </section>
 
-    <sect2 id="lua_lib">
+    <section id="lua_lib">
 
       <title>Using Darktable from a lua script</title>
 
@@ -750,9 +750,9 @@ end
         is usefull here if you don't want to work on your personal library.
       </para>
 
-    </sect2>
+    </section>
 
-  </sect1>
+  </section>
 
 <!-- Lua Api -->
 
