@@ -77,6 +77,7 @@ src/iop/colormapping.c
 src/iop/colorout.c
 src/iop/colortransfer.c
 src/iop/colorzones.c
+src/iop/defringe.c
 src/iop/demosaic.c
 src/iop/denoiseprofile.c
 src/iop/dither.c
@@ -101,6 +102,8 @@ src/iop/overexposed.c
 src/iop/profile_gamma.c
 src/iop/rawdenoise.c
 src/iop/relight.c
+src/iop/rotatepixels.c
+src/iop/scalepixels.c
 src/iop/shadhi.c
 src/iop/sharpen.c
 src/iop/soften.c
