@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 1.3\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2014-10-27 21:44+0100\n"
-"PO-Revision-Date: 2014-10-27 21:47+0100\n"
+"POT-Creation-Date: 2014-11-02 20:10+0100\n"
+"PO-Revision-Date: 2014-11-02 20:11+0100\n"
 "Last-Translator: Pascal Obry <pascal@obry.net>\n"
 "Language-Team: \n"
 "Language: fr_FR\n"
@@ -1854,7 +1854,7 @@ msgid "tiling failed for module '%s'. output might be garbled."
 msgstr ""
 "tuilage impossible pour le module '%s'. la sortie est probablement corrompue."
 
-#: ../src/develop/pixelpipe_hb.c:2255
+#: ../src/develop/pixelpipe_hb.c:2254
 msgid ""
 "darktable discovered problems with your OpenCL setup; disabling OpenCL for "
 "this session!"
@@ -3129,16 +3129,16 @@ msgid "make effect stronger or weaker"
 msgstr "rend l'effet plus fort ou plus faible"
 
 #: ../src/iop/basecurve.c:98
-msgid "dark contrast"
-msgstr "contraste sombre"
+msgid "natural"
+msgstr "naturelle"
 
 #: ../src/iop/basecurve.c:99
-msgid "canon EOS like"
-msgstr "similaire canon EOS"
+msgid "canon eos like"
+msgstr "similaire canon eos"
 
 #: ../src/iop/basecurve.c:100
-msgid "canon EOS like alternate"
-msgstr "alternative à similaire canon EOS"
+msgid "canon eos like alternate"
+msgstr "alternative à similaire canon eos"
 
 #: ../src/iop/basecurve.c:101
 msgid "nikon like"
@@ -3196,37 +3196,29 @@ msgstr "similaire fujifilm"
 msgid "nokia like"
 msgstr "similaire nokia"
 
-#: ../src/iop/basecurve.c:115
-msgid "fotogenetic (point & shoot)"
-msgstr "fotogenetic (point & shoot)"
-
-#: ../src/iop/basecurve.c:116
-msgid "fotogenetic (EV3)"
-msgstr "fotogenetic (EV3)"
-
-#: ../src/iop/basecurve.c:206
+#: ../src/iop/basecurve.c:202
 msgid "base curve"
 msgstr "courbe de base"
 
-#: ../src/iop/basecurve.c:769
+#: ../src/iop/basecurve.c:765
 msgid "abscissa: input, ordinate: output. works on RGB channels"
 msgstr "abscisse : entrée, ordonnée : sortie. fonctionne sur les canaux RVB"
 
-#: ../src/iop/basecurve.c:775 ../src/iop/lens.c:2147
+#: ../src/iop/basecurve.c:771 ../src/iop/lens.c:2147
 #: ../src/iop/vignette.c:1194 ../src/iop/watermark.c:1114
 msgid "scale"
 msgstr "échelle"
 
-#: ../src/iop/basecurve.c:776 ../src/iop/profile_gamma.c:337
+#: ../src/iop/basecurve.c:772 ../src/iop/profile_gamma.c:337
 #: ../src/iop/tonecurve.c:418
 msgid "linear"
 msgstr "linéaire"
 
-#: ../src/iop/basecurve.c:777
+#: ../src/iop/basecurve.c:773
 msgid "logarithmic"
 msgstr "logarithmique"
 
-#: ../src/iop/basecurve.c:778
+#: ../src/iop/basecurve.c:774
 msgid ""
 "scale to use in the graph. use logarithmic scale for more precise control "
 "near the blacks"
@@ -4744,58 +4736,58 @@ msgstr "CE calculée: "
 msgid "what exposure correction have actually been used"
 msgstr "la correction d'exposition utilisée "
 
-#: ../src/iop/flip.c:371 ../src/iop/flip.c:372
+#: ../src/iop/flip.c:376 ../src/iop/flip.c:377
 msgid "autodetect"
 msgstr "détection automatique"
 
-#: ../src/iop/flip.c:375
+#: ../src/iop/flip.c:380
 msgid "no rotation"
 msgstr "pas de rotation"
 
-#: ../src/iop/flip.c:378
+#: ../src/iop/flip.c:383
 msgid "flip horizontally"
 msgstr "retourne l'image horizontalement"
 
-#: ../src/iop/flip.c:380
+#: ../src/iop/flip.c:385
 msgid "flip vertically"
 msgstr "retourne l'image verticalement"
 
-#: ../src/iop/flip.c:382
+#: ../src/iop/flip.c:387
 msgid "rotate by -90 degrees"
 msgstr "rotation de -90 degrés"
 
-#: ../src/iop/flip.c:384
+#: ../src/iop/flip.c:389
 msgid "rotate by  90 degrees"
 msgstr "rotation de 90 degrés"
 
-#: ../src/iop/flip.c:386
+#: ../src/iop/flip.c:391
 msgid "rotate by 180 degrees"
 msgstr "rotation de 180 degrés"
 
-#: ../src/iop/flip.c:503 ../src/iop/watermark.c:1117
+#: ../src/iop/flip.c:508 ../src/iop/watermark.c:1117
 msgid "rotate"
 msgstr "rotation"
 
-#: ../src/iop/flip.c:508
+#: ../src/iop/flip.c:513
 msgid "rotate 90 degrees CCW"
 msgstr ""
 "tourne les images de 90 degrés\n"
 "(sens anti-horaire)"
 
-#: ../src/iop/flip.c:514
+#: ../src/iop/flip.c:519
 msgid "rotate 90 degrees CW"
 msgstr ""
 "tourne les images de 90 degrés\n"
 "(sens horaire)"
 
-#: ../src/iop/flip.c:526 ../src/libs/live_view.c:169
+#: ../src/iop/flip.c:531 ../src/libs/live_view.c:169
 msgctxt "accel"
 msgid "rotate 90 degrees CCW"
 msgstr ""
 "tourne les images de 90 degrés\n"
 "(sens anti-horaire)"
 
-#: ../src/iop/flip.c:528 ../src/libs/live_view.c:170
+#: ../src/iop/flip.c:533 ../src/libs/live_view.c:170
 msgctxt "accel"
 msgid "rotate 90 degrees CW"
 msgstr ""
@@ -8159,31 +8151,31 @@ msgstr ""
 msgid "darktable"
 msgstr "darktable"
 
-#: ../src/libs/tools/darktable.c:270
+#: ../src/libs/tools/darktable.c:278
 msgid "organize and develop images from digital cameras"
 msgstr "Organiser et développer les images d'un boîtier numérique"
 
-#: ../src/libs/tools/darktable.c:275
+#: ../src/libs/tools/darktable.c:290
 msgid "* developers *"
 msgstr "* développeurs *"
 
-#: ../src/libs/tools/darktable.c:281
+#: ../src/libs/tools/darktable.c:296
 msgid "* ubuntu packaging, color management, video tutorials *"
 msgstr "* paquetage Ubuntu, gestion de la couleur, tutoriels vidéos *"
 
-#: ../src/libs/tools/darktable.c:284
+#: ../src/libs/tools/darktable.c:299
 msgid "* OpenCL pipeline: *"
 msgstr "* OpenCL "
 
-#: ../src/libs/tools/darktable.c:287
+#: ../src/libs/tools/darktable.c:302
 msgid "* networking, battle testing, translation expert *"
 msgstr "* réseautage, testeur intensif, expert traduction *"
 
-#: ../src/libs/tools/darktable.c:290
+#: ../src/libs/tools/darktable.c:305
 msgid "* contributors *"
 msgstr "* contributeurs *"
 
-#: ../src/libs/tools/darktable.c:365
+#: ../src/libs/tools/darktable.c:380
 msgid "translator-credits"
 msgstr ""
 "Pascal Obry\n"
@@ -8899,6 +8891,15 @@ msgstr "photo"
 #: ../src/imageio/format/webp.c:316
 msgid "graphic"
 msgstr "graphique"
+
+#~ msgid "dark contrast"
+#~ msgstr "contraste sombre"
+
+#~ msgid "fotogenetic (point & shoot)"
+#~ msgstr "fotogenetic (point & shoot)"
+
+#~ msgid "fotogenetic (EV3)"
+#~ msgstr "fotogenetic (EV3)"
 
 #~ msgid "magic lantern defaults"
 #~ msgstr "défauts de magic lantern"

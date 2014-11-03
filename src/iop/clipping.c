@@ -752,12 +752,12 @@ void modify_roi_in(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *
   }
 
   // sanity check.
-  const int scwidth = (piece->pipe->iflipped ? piece->pipe->iheight : piece->pipe->iwidth)*so;
-  const int scheight = (piece->pipe->iflipped ? piece->pipe->iwidth : piece->pipe->iheight)*so;
-  roi_in->x = CLAMP(roi_in->x, 0, scwidth);
-  roi_in->y = CLAMP(roi_in->y, 0, scheight);
-  roi_in->width = CLAMP(roi_in->width, 1, scwidth - roi_in->x);
-  roi_in->height = CLAMP(roi_in->height, 1, scheight - roi_in->y);
+  const float scwidth = piece->buf_in.width * so,
+              scheight = piece->buf_in.height * so;
+  roi_in->x = CLAMP(roi_in->x, 0, (int) floorf(scwidth));
+  roi_in->y = CLAMP(roi_in->y, 0, (int) floorf(scheight));
+  roi_in->width = CLAMP(roi_in->width, 1, (int) ceilf(scwidth) - roi_in->x);
+  roi_in->height = CLAMP(roi_in->height, 1, (int) ceilf(scheight) - roi_in->y);
 }
 
 // 3rd (final) pass: you get this input region (may be different from what was requested above),

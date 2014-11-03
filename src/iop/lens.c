@@ -372,8 +372,8 @@ process (dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void * cons
     return;
   }
 
-  const float orig_w = roi_in->scale*piece->iwidth,
-              orig_h = roi_in->scale*piece->iheight;
+  const float orig_w = roi_in->scale*piece->buf_in.width,
+              orig_h = roi_in->scale*piece->buf_in.height;
   dt_pthread_mutex_lock(&darktable.plugin_threadsafe);
   lfModifier *modifier = lf_modifier_new(d->lens, d->crop, orig_w, orig_h);
 
@@ -565,8 +565,8 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
   const size_t tmpbuflen = d->inverse ? (size_t)oheight*owidth*2*3*sizeof(float) : MAX((size_t)oheight*owidth*2*3, (size_t)iheight*iwidth*ch)*sizeof(float);
   const unsigned int pixelformat = ch == 3 ? LF_CR_3 (RED, GREEN, BLUE) : LF_CR_4 (RED, GREEN, BLUE, UNKNOWN);
 
-  const float orig_w = roi_in->scale*piece->iwidth,
-              orig_h = roi_in->scale*piece->iheight;
+  const float orig_w = roi_in->scale*piece->buf_in.width,
+              orig_h = roi_in->scale*piece->buf_in.height;
 
   size_t origin[] = { 0, 0, 0};
   size_t iregion[] = { iwidth, iheight, 1};
@@ -808,7 +808,7 @@ int distort_transform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, floa
 
   if(!d->lens || !d->lens->Maker || d->crop <= 0.0f) return 0;
 
-  const float orig_w = piece->iwidth, orig_h = piece->iheight;
+  const float orig_w = piece->buf_in.width, orig_h = piece->buf_in.height;
   lfModifier *modifier = lf_modifier_new(d->lens, d->crop, orig_w, orig_h);
 
   int modflags = lf_modifier_initialize(
@@ -837,7 +837,7 @@ int distort_backtransform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, 
   dt_iop_lensfun_data_t *d = (dt_iop_lensfun_data_t *)piece->data;
   if(!d->lens || !d->lens->Maker || d->crop <= 0.0f) return 0;
 
-  const float orig_w = piece->iwidth, orig_h = piece->iheight;
+  const float orig_w = piece->buf_in.width, orig_h = piece->buf_in.height;
   lfModifier *modifier = lf_modifier_new(d->lens, d->crop, orig_w, orig_h);
 
   int modflags = lf_modifier_initialize(
@@ -874,8 +874,8 @@ void modify_roi_in(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *
 
   if(!d->lens || !d->lens->Maker || d->crop <= 0.0f) return;
 
-  const float orig_w = roi_in->scale*piece->iwidth,
-              orig_h = roi_in->scale*piece->iheight;
+  const float orig_w = roi_in->scale*piece->buf_in.width,
+              orig_h = roi_in->scale*piece->buf_in.height;
   lfModifier *modifier = lf_modifier_new(d->lens, d->crop, orig_w, orig_h);
 
   float xm = INFINITY, xM = - INFINITY, ym = INFINITY, yM = - INFINITY;

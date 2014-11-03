@@ -242,8 +242,6 @@ void modify_roi_out(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t 
     roi_out->width  = roi_in->height;
     roi_out->height = roi_in->width;
   }
-
-  piece->pipe->iflipped = d->orientation & ORIENTATION_SWAP_XY;
 }
 
 // 2nd pass: which roi would this operation need as input to fill the given output region?
@@ -272,6 +270,13 @@ void modify_roi_in(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *
   // to convert valid points to widths, we need to add one
   roi_in->width  = aabb_in[2]-aabb_in[0]+1;
   roi_in->height = aabb_in[3]-aabb_in[1]+1;
+
+  // sanity check.
+  float w = piece->buf_in.width * roi_out->scale, h = piece->buf_in.height * roi_out->scale;
+  roi_in->x = CLAMP(roi_in->x, 0, (int) floorf(w));
+  roi_in->y = CLAMP(roi_in->y, 0, (int) floorf(h));
+  roi_in->width = CLAMP(roi_in->width, 1, (int) ceilf(w) - roi_in->x);
+  roi_in->height = CLAMP(roi_in->height, 1, (int) ceilf(h) - roi_in->y);
 }
 
 // 3rd (final) pass: you get this input region (may be different from what was requested above),
