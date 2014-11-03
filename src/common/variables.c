@@ -214,7 +214,7 @@ gboolean _variable_get_value(dt_variables_params_t *params, gchar *variable,gcha
       }
       while((res=g_list_next(res)) != NULL);
       char* str = dt_util_glist_to_str(",", labels);
-      g_list_free_full(labels, g_free);
+      g_list_free(labels);
       snprintf(value, value_len,  "%s", str);
       g_free(str);
     }
