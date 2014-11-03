@@ -103,7 +103,7 @@ src/iop/profile_gamma.c
 src/iop/rawdenoise.c
 src/iop/relight.c
 src/iop/rotatepixels.c
-src/iop/scalepixels/c
+src/iop/scalepixels.c
 src/iop/shadhi.c
 src/iop/sharpen.c
 src/iop/soften.c
