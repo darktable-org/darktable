@@ -24,8 +24,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 1.3\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2014-11-03 00:14+0100\n"
-"PO-Revision-Date: 2014-11-03 00:22+0100\n"
+"POT-Creation-Date: 2014-11-04 09:00+0100\n"
+"PO-Revision-Date: 2014-11-04 09:17+0100\n"
 "Last-Translator: Richard Levitte <richard@levitte.org>\n"
 "Language-Team: \n"
 "Language: sv\n"
@@ -3124,7 +3124,6 @@ msgid "canon eos like"
 msgstr "liknande canon eos"
 
 #: ../src/iop/basecurve.c:100
-#, fuzzy
 msgid "canon eos like alternate"
 msgstr "alternativt liknande canon eos"
 
@@ -3302,7 +3301,8 @@ msgstr "storlek"
 msgid "the size of bloom"
 msgstr "överstrålningens storlek"
 
-#: ../src/iop/bloom.c:543 ../src/iop/hotpixels.c:413 ../src/iop/sharpen.c:598
+#: ../src/iop/bloom.c:543 ../src/iop/defringe.c:447 ../src/iop/hotpixels.c:413
+#: ../src/iop/sharpen.c:598
 msgid "threshold"
 msgstr "tröskel"
 
@@ -4378,6 +4378,57 @@ msgstr "urval av"
 msgid "choose selection criterion, will be the abscissa in the graph"
 msgstr "välj urvalskriterium, kommer att vara x-axel i grafen"
 
+#: ../src/iop/defringe.c:70
+msgid "defringe"
+msgstr "överstrålningsutfyllnad"
+
+#: ../src/iop/defringe.c:435
+msgid "operation mode"
+msgstr "operationstyp"
+
+#: ../src/iop/defringe.c:436
+msgid "region average (fast)"
+msgstr "medel över område (snabbt)"
+
+#. 0
+#: ../src/iop/defringe.c:437
+msgid "local average (slow)"
+msgstr "lokalt medel (långsamt)"
+
+#. 1
+#: ../src/iop/defringe.c:438
+msgid "static threshold (fast)"
+msgstr "fast tröskelnivå (snabbt)"
+
+#. 2
+#: ../src/iop/defringe.c:439
+msgid ""
+"method for color protection:\n"
+" - region average: fast, might show slightly wrong previews in high "
+"magnification; might sometimes protect saturation too much or too low in "
+"comparison to local average\n"
+" - local average: slower, might protect saturation better than global "
+"average by using near pixels as color reference, so it can still allow for "
+"more desaturation where required\n"
+" - static: fast, only uses the threshold as a static limit"
+msgstr ""
+"metod för strålningsutfyllnad:\n"
+" - medel över område: snabbt, kan visa felaktig förhandsvisning i stark förstoring; kan ibland skydda mättnaden för mycket eller för lite jämfört med lokalt medel\n"
+" - lokalt medel: långsammare, kan skydda mättnaden bättre än medel över område genom att använda närliggande pixlar som färgreferens, och kan därmed tillåta med avmättnad där det behövs\n"
+" - fast tröskelvärde: snabbt, använder enbart tröskelvärdet som gränsvärde"
+
+#: ../src/iop/defringe.c:444
+msgid "edge detection radius"
+msgstr "radie för upptäckt av kanter"
+
+#: ../src/iop/defringe.c:453
+msgid "radius for detecting fringe"
+msgstr "radie för upptäckt av överstrålning"
+
+#: ../src/iop/defringe.c:455
+msgid "threshold for defringe, higher values mean less defringing"
+msgstr "tröskelvärde för utfyllnad, högre värden innebär mindre utfyllnad"
+
 #: ../src/iop/demosaic.c:117
 msgid "demosaic"
 msgstr "demosaic"
@@ -4385,7 +4436,7 @@ msgstr "demosaic"
 #: ../src/iop/demosaic.c:134
 msgctxt "accel"
 msgid "edge threshold"
-msgstr "kant tröskel"
+msgstr "kanttröskel"
 
 #: ../src/iop/demosaic.c:2178 ../src/iop/demosaic.c:2186
 #: ../src/iop/dither.c:564 ../src/iop/highlights.c:711
@@ -5583,6 +5634,40 @@ msgstr "välj centrum värde för fyllnadsljuset"
 #: ../src/iop/relight.c:425
 msgid "toggle tool for picking median lightness in image"
 msgstr "slå på/av användning av verktygen för val av medel ljushet i bilden"
+
+#: ../src/iop/rotatepixels.c:76
+msgctxt "modulename"
+msgid "rotate pixels"
+msgstr "rotera pixlar"
+
+#: ../src/iop/rotatepixels.c:403
+msgid "automatic pixel rotation"
+msgstr "automatisk pixelrotation"
+
+#: ../src/iop/rotatepixels.c:405
+msgid ""
+"automatic pixel rotation\n"
+"only works for the sensors that need it."
+msgstr ""
+"automatisk pixelrotation\n"
+"fungerar bara för sensorer som behöver det."
+
+#: ../src/iop/scalepixels.c:53
+msgctxt "modulename"
+msgid "scale pixels"
+msgstr "skala om pixlar"
+
+#: ../src/iop/scalepixels.c:313
+msgid "automatic pixel scaling"
+msgstr "automatisk skalning av pixlar"
+
+#: ../src/iop/scalepixels.c:315
+msgid ""
+"automatic pixel scaling\n"
+"only works for the sensors that need it."
+msgstr ""
+"automatiskt skalning av pixlar\n"
+"fungerar bara för sensorer som behöver det."
 
 #: ../src/iop/shadhi.c:155
 msgid "shadows and highlights"
@@ -9819,9 +9904,6 @@ msgstr "grafik"
 #~ "ändra kontrasten av bilden utifrån kurvan, för vardera enskild färg kanal "
 #~ "(röd/grön/blå) "
 
-#~ msgid "ask before deleting images"
-#~ msgstr "fråga innan en bild raderas"
-
 #~ msgid "image cache file"
 #~ msgstr "bild cache fil"
 
@@ -10013,9 +10095,6 @@ msgstr "grafik"
 
 #~ msgid "accelerator"
 #~ msgstr "snabbtangent"
-
-#~ msgid "stuck pixels"
-#~ msgstr "fastnade pixlar"
 
 #~ msgid "strength of stuck pixel correction threshold"
 #~ msgstr "styrka på tröskelvärde för korrigering av fastnade pixlar"
