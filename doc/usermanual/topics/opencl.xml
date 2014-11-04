@@ -280,6 +280,9 @@
 
     <para>
       The list of NVIDIA related kernel modules as reported by <filename>lsmod</filename> is:
+    </para>
+
+    <para>
 <programlisting>nvidia
 nvidia_uvm
 </programlisting>
@@ -288,11 +291,16 @@ nvidia_uvm
     <para>
       The list of NVIDIA related device special files (<filename>ls -l /dev/nvidia*</filename>)
       should read like:
+    </para>
+
+    <para>
 <programlisting>crw-rw-rw- 1 root root 195,   0 Jul 28 21:13 /dev/nvidia0
 crw-rw-rw- 1 root root 195, 255 Jul 28 21:13 /dev/nvidiactl
 crw-rw-rw- 1 root root 250,   0 Jul 28 21:13 /dev/nvidia-uvm 
 </programlisting>
+    </para>
 
+    <para>
       Beware that the major/minor numbers (e.g. 250/0 for <filename>/dev/nvidia-uvm</filename> in
       this example) may vary depending on your system.
     </para>
