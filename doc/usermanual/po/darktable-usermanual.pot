@@ -1,7 +1,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2014-11-04 11:46+0100\n"
+"POT-Creation-Date: 2014-11-04 17:47+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -5926,7 +5926,7 @@ msgid "operation mode"
 msgstr ""
 
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:11917(para)
-msgid "Set the operation mode for detecting fringes. <quote>region average</quote> is usually computed fast but might show slightly wrong previews in high magnification. It might also protect the wrong regions of color too much or too low in comparison to local averaging. <quote>local average</quote> is slower because it computes local color references for every pixel, which might protect color better than global average and allow for rebuilding color where actually required. The <quote>static</quote> method does not use a color reference but directly uses the threshold as given by the user."
+msgid "Set the operation mode for detecting fringes. <quote>global average</quote> is usually computed fast but might show slightly wrong previews in high magnification. It might also protect the wrong regions of color too much or too low in comparison to local averaging. <quote>local average</quote> is slower because it computes local color references for every pixel, which might protect color better than global average and allow for rebuilding color where actually required. The <quote>static</quote> method does not use a color reference but directly uses the threshold as given by the user."
 msgstr ""
 
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:11928(title)
