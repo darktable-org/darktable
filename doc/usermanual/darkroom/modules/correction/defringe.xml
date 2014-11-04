@@ -57,7 +57,7 @@
       <title>operation mode</title>
       <para>
         Set the operation mode for detecting fringes.
-	<quote>region average</quote> is usually computed fast but might show slightly wrong previews in high magnification.
+	<quote>global average</quote> is usually computed fast but might show slightly wrong previews in high magnification.
 	It might also protect the wrong regions of color too much or too low in comparison to local averaging.
 	<quote>local average</quote> is slower because it computes local color references for every pixel, which might protect
 	color better than global average and allow for rebuilding color where actually required.

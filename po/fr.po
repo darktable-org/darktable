@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 1.3\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2014-11-02 20:10+0100\n"
-"PO-Revision-Date: 2014-11-02 20:11+0100\n"
+"POT-Creation-Date: 2014-11-04 14:23+0100\n"
+"PO-Revision-Date: 2014-11-04 14:57+0100\n"
 "Last-Translator: Pascal Obry <pascal@obry.net>\n"
 "Language-Team: \n"
 "Language: fr_FR\n"
@@ -929,6 +929,15 @@ msgstr "image '%s\" non disponible"
 msgid "cannot find the style '%s' to apply during export."
 msgstr "impossible de trouver le style «%s» à appliquer pendant l'exportation."
 
+#: ../src/common/import_session.c:289
+#, fuzzy
+msgid ""
+"couldn't expand to a unique filename for session, please check your import "
+"session settings."
+msgstr ""
+"impossible d'affecter un nom unique lors de l'importation. vérifier les "
+"réglages d'importation."
+
 #. preset name                   maker    model            iso    a a a                                 b b b
 #: ../src/common/noiseprofiles.h:37
 msgid "generic poissonian"
@@ -1289,6 +1298,17 @@ msgstr "décalage horaire ajouté à %d image(s)"
 #, c-format
 msgid "importing image %s"
 msgstr "importation de l'image %s"
+
+#. printf("%s: scale %f/%f %d\n", self->op, roi_out->scale, roi_in->scale, roi_out->scale == roi_in->scale);
+#. printf("xoffs %d, yoffs %d, out %d, %d, in %d, %d\n", xoffs, yoffs, roi_out->width, roi_out->height, roi_in->width, roi_in->height);
+#: ../src/develop/blend.c:1930 ../src/develop/blend.c:2245
+#, c-format
+msgid "skipped blending in module '%s': roi's do not match"
+msgstr "fusion ignorée dans le module «%s»: paramètres incompatibles"
+
+#: ../src/develop/blend.c:2047 ../src/develop/blend.c:2291
+msgid "could not allocate buffer for blending"
+msgstr "impossible d'allouer la mémoire pour la fusion"
 
 #: ../src/develop/blend_gui.c:945
 msgid "sliders for L channel"
@@ -1714,17 +1734,6 @@ msgid "temporarily switch off blend mask. only for module in focus"
 msgstr ""
 "désactive temporairement le masque de fusion. uniquement pour le module actif"
 
-#. printf("%s: scale %f/%f %d\n", self->op, roi_out->scale, roi_in->scale, roi_out->scale == roi_in->scale);
-#. printf("xoffs %d, yoffs %d, out %d, %d, in %d, %d\n", xoffs, yoffs, roi_out->width, roi_out->height, roi_in->width, roi_in->height);
-#: ../src/develop/blend.c:1930 ../src/develop/blend.c:2245
-#, c-format
-msgid "skipped blending in module '%s': roi's do not match"
-msgstr "fusion ignorée dans le module «%s»: paramètres incompatibles"
-
-#: ../src/develop/blend.c:2047 ../src/develop/blend.c:2291
-msgid "could not allocate buffer for blending"
-msgstr "impossible d'allouer la mémoire pour la fusion"
-
 #: ../src/develop/develop.c:1002
 #, c-format
 msgid "%s: module `%s' version mismatch: %d != %d"
@@ -1848,11 +1857,95 @@ msgid_plural "%s have been imported"
 msgstr[0] "%s a été importé"
 msgstr[1] "%s ont été importés"
 
-#: ../src/develop/tiling.c:807 ../src/develop/tiling.c:1105
-#, c-format
-msgid "tiling failed for module '%s'. output might be garbled."
+#: ../src/develop/masks/masks.c:41
+msgid "ctrl+click to add a sharp node"
+msgstr "ctrl-clic pour ajouter un nœud aïgu"
+
+#: ../src/develop/masks/masks.c:42
+msgid "ctrl+click to switch between smooth/sharp node"
+msgstr "ctrl-clic pour basculer entre un nœud courbe et aigu"
+
+#: ../src/develop/masks/masks.c:43
+msgid "right-click to reset feather value"
+msgstr "clic-droit pour réinitialiser le dégradé"
+
+#: ../src/develop/masks/masks.c:44
+msgid "ctrl+click to add a node"
+msgstr "ctrl-clic pour ajouter un point"
+
+#: ../src/develop/masks/masks.c:45 ../src/develop/masks/masks.c:49
+#: ../src/develop/masks/masks.c:55
+msgid "ctrl+scroll to set shape opacity"
+msgstr "ctrl-défiler pour modifier l'opacité de la forme"
+
+#: ../src/develop/masks/masks.c:50
+msgid "move to rotate shape"
+msgstr "déplacer pour faire pivoter"
+
+#: ../src/develop/masks/masks.c:54
+msgid "ctrl+click to rotate"
+msgstr "ctrl-clic pour pivoter"
+
+#: ../src/develop/masks/masks.c:59
+msgid ""
+"scroll to set brush size, shift+scroll to set hardness, ctrl+scroll to set "
+"opacity"
 msgstr ""
-"tuilage impossible pour le module '%s'. la sortie est probablement corrompue."
+"défiler pour change la taille du pinceau, shift+défiler pour changer la "
+"dureté, ctrl+défiler pour changer l'opacité"
+
+#: ../src/develop/masks/masks.c:60
+msgid "scroll to set brush size"
+msgstr "défiler pour modifier la taille du pinceau"
+
+#: ../src/develop/masks/masks.c:61
+msgid "scroll to set hardness, ctrl+scroll to set shape opacity"
+msgstr ""
+"défiler pour changer la dureté, ctrl+défiler pour modifier l'opacité de la "
+"forme"
+
+#: ../src/develop/masks/masks.c:163
+#, c-format
+msgid "circle #%d"
+msgstr "cercle #%d"
+
+#: ../src/develop/masks/masks.c:164
+#, c-format
+msgid "path #%d"
+msgstr "chemin #%d"
+
+#: ../src/develop/masks/masks.c:165
+#, c-format
+msgid "gradient #%d"
+msgstr "dégradé #%d"
+
+#: ../src/develop/masks/masks.c:166
+#, c-format
+msgid "ellipse #%d"
+msgstr "ellipse #%d"
+
+#: ../src/develop/masks/masks.c:167
+#, c-format
+msgid "brush #%d"
+msgstr "pinceau #%d"
+
+#: ../src/develop/masks/masks.c:218
+#, c-format
+msgid "copy of %s"
+msgstr "copie de %s"
+
+#: ../src/develop/masks/masks.c:718
+#, c-format
+msgid "%s: mask version mismatch: %d != %d"
+msgstr "%s: version non cohérente du masque: %d != %d"
+
+#: ../src/develop/masks/masks.c:1408 ../src/libs/masks.c:948
+msgid "add existing shape"
+msgstr "ajouter un masque existant"
+
+#: ../src/develop/masks/masks.c:1435
+msgid "use same shapes as"
+msgstr "utiliser les mêmes masques que"
 
 #: ../src/develop/pixelpipe_hb.c:2254
 msgid ""
@@ -1861,6 +1954,12 @@ msgid ""
 msgstr ""
 "darktable a rencontré des problèmes avec la configuration OpenCL qui sera "
 "désactivé pour cette session!"
+
+#: ../src/develop/tiling.c:807 ../src/develop/tiling.c:1105
+#, c-format
+msgid "tiling failed for module '%s'. output might be garbled."
+msgstr ""
+"tuilage impossible pour le module '%s'. la sortie est probablement corrompue."
 
 #: ../src/dtgtk/resetlabel.c:61
 msgid "double-click to reset"
@@ -2219,6 +2318,24 @@ msgstr "$(DESKTOP) - dossier 'bureau'"
 msgid "$(TITLE) - title from metadata"
 msgstr "$(TITLE) - titre des metadonnées"
 
+#: ../src/gui/hist_dialog.c:150
+msgid "select parts"
+msgstr "sélectionner les modules à copier"
+
+#: ../src/gui/hist_dialog.c:181 ../src/gui/styles_dialog.c:361
+#: ../src/gui/styles_dialog.c:374
+msgid "include"
+msgstr "inclure"
+
+#: ../src/gui/hist_dialog.c:192 ../src/gui/styles_dialog.c:403
+#: ../src/gui/styles_dialog.c:410
+msgid "item"
+msgstr "élément"
+
+#: ../src/gui/hist_dialog.c:228
+msgid "can't copy history out of unaltered image"
+msgstr "impossible de copier le développement d'une image non développée"
+
 #: ../src/gui/preferences.c:224
 msgid "darktable preferences"
 msgstr "préférences"
@@ -2527,31 +2644,13 @@ msgstr "entrer un nom pour le style"
 msgid "enter a description for the new style, this description is searchable"
 msgstr "entrer une description pour le nouveau style (recherche)"
 
-#: ../src/gui/styles_dialog.c:361 ../src/gui/styles_dialog.c:374
-#: ../src/gui/hist_dialog.c:181
-msgid "include"
-msgstr "inclure"
-
 #: ../src/gui/styles_dialog.c:391
 msgid "update"
 msgstr "modifier"
 
-#: ../src/gui/styles_dialog.c:403 ../src/gui/styles_dialog.c:410
-#: ../src/gui/hist_dialog.c:192
-msgid "item"
-msgstr "élément"
-
 #: ../src/gui/styles_dialog.c:509
 msgid "can't create style out of unaltered image"
 msgstr "impossible de créer un style depuis une image non développée"
-
-#: ../src/gui/hist_dialog.c:150
-msgid "select parts"
-msgstr "sélectionner les modules à copier"
-
-#: ../src/gui/hist_dialog.c:228
-msgid "can't copy history out of unaltered image"
-msgstr "impossible de copier le développement d'une image non développée"
 
 #: ../src/imageio/format/copy.c:145 ../src/libs/copy_history.c:253
 #: ../src/libs/image.c:161
@@ -2615,7 +2714,7 @@ msgid "J2K"
 msgstr "J2K"
 
 #: ../src/imageio/format/j2k.c:623 ../src/imageio/format/jpeg.c:546
-#: ../src/libs/camera.c:573 ../src/imageio/format/webp.c:293
+#: ../src/imageio/format/webp.c:293 ../src/libs/camera.c:573
 msgid "quality"
 msgstr "qualité"
 
@@ -2690,6 +2789,58 @@ msgstr "deflate avec prédiction"
 #: ../src/imageio/format/tiff.c:421
 msgid "deflate with predictor (float)"
 msgstr "deflate avec prédiction (flottant)"
+
+#: ../src/imageio/format/webp.c:243
+msgid "WebP (8-bit)"
+msgstr "WebP (8-bits)"
+
+#: ../src/imageio/format/webp.c:276
+msgid "compression type"
+msgstr "type de compression"
+
+#: ../src/imageio/format/webp.c:281
+msgid "lossy"
+msgstr "avec perte"
+
+#: ../src/imageio/format/webp.c:286
+msgid "lossless"
+msgstr "sans perte"
+
+#: ../src/imageio/format/webp.c:296
+msgid "applies only to lossy setting"
+msgstr "uniquement pour la compression avec perte"
+
+#: ../src/imageio/format/webp.c:304
+msgid "image hint"
+msgstr "type d'image"
+
+#: ../src/imageio/format/webp.c:305
+msgid ""
+"image characteristics hint for the underlying encoder.\n"
+"picture : digital picture, like portrait, inner shot\n"
+"photo   : outdoor photograph, with natural lighting\n"
+"graphic : discrete tone image (graph, map-tile etc)"
+msgstr ""
+"description de l'image pour l'encodeur.\n"
+"image: photographie d'intérieur, portrait\n"
+"photo: photographie d'extérieur, avec lumière naturelle\n"
+" graphique: image avec des couleurs uniformes (schéma, etc)"
+
+#: ../src/imageio/format/webp.c:313
+msgid "default"
+msgstr "défaut"
+
+#: ../src/imageio/format/webp.c:314
+msgid "picture"
+msgstr "image"
+
+#: ../src/imageio/format/webp.c:315
+msgid "photo"
+msgstr "photo"
+
+#: ../src/imageio/format/webp.c:316
+msgid "graphic"
+msgstr "graphique"
 
 #: ../src/imageio/storage/disk.c:62
 msgid "file on disk"
@@ -3320,7 +3471,8 @@ msgstr "taille"
 msgid "the size of bloom"
 msgstr "taille de la lumière d'arrière-plan"
 
-#: ../src/iop/bloom.c:543 ../src/iop/hotpixels.c:413 ../src/iop/sharpen.c:598
+#: ../src/iop/bloom.c:543 ../src/iop/defringe.c:447 ../src/iop/hotpixels.c:413
+#: ../src/iop/sharpen.c:598
 msgid "threshold"
 msgstr "seuil"
 
@@ -3545,14 +3697,17 @@ msgstr "aberrations chromatiques"
 
 #: ../src/iop/cacorrect.c:1291
 msgid "automatic chromatic aberration correction"
-msgstr "correction automatique des aberrations chromatiques"
+msgstr ""
+"correction automatique des\n"
+"aberrations chromatiques"
 
 #: ../src/iop/cacorrect.c:1293
 msgid ""
 "automatic chromatic aberration correction\n"
 "disabled for non-Bayer sensors"
 msgstr ""
-"correction automatique des aberrations chromatiques\n"
+"correction automatique des\n"
+"aberrations chromatiques\n"
 "uniquement pour les capteur de Bayer"
 
 #: ../src/iop/cacorrect.c:1295
@@ -3560,8 +3715,9 @@ msgid ""
 "automatic chromatic aberration correction\n"
 "only works for raw images."
 msgstr ""
-"correction automatique des aberrations\n"
-"chromatiques uniquement pour les images raw"
+"correction automatique des\n"
+"aberrations chromatiques\n"
+"uniquement pour les images raw"
 
 #: ../src/iop/channelmixer.c:117
 msgid "channel mixer"
@@ -4406,6 +4562,63 @@ msgstr "sélection par"
 #: ../src/iop/colorzones.c:1072
 msgid "choose selection criterion, will be the abscissa in the graph"
 msgstr "critère de sélection; correspond à l’abscisse du graphique"
+
+#: ../src/iop/defringe.c:70
+msgid "defringe"
+msgstr "suppression de la frange"
+
+#: ../src/iop/defringe.c:435
+msgid "operation mode"
+msgstr "mode opératoire"
+
+#: ../src/iop/defringe.c:436
+msgid "region average (fast)"
+msgstr "moyenne région (rapide)"
+
+#. 0
+#: ../src/iop/defringe.c:437
+msgid "local average (slow)"
+msgstr "moyenne locale (lent)"
+
+#. 1
+#: ../src/iop/defringe.c:438
+msgid "static threshold (fast)"
+msgstr "seuil statique (rapide)"
+
+#. 2
+#: ../src/iop/defringe.c:439
+msgid ""
+"method for color protection:\n"
+" - region average: fast, might show slightly wrong previews in high "
+"magnification; might sometimes protect saturation too much or too low in "
+"comparison to local average\n"
+" - local average: slower, might protect saturation better than global "
+"average by using near pixels as color reference, so it can still allow for "
+"more desaturation where required\n"
+" - static: fast, only uses the threshold as a static limit"
+msgstr ""
+"méthode pour la protection des couleurs:\n"
+"- moyenne région: rapide, peut afficher une mauvaise pré-visualisation avec "
+"un zoom important, peut quelque fois protéger trop ou pas assez comparé à la "
+"moyenne locale\n"
+"- moyenne locale: lent,  peut mieux protéger la saturation que la moyenne "
+"globale en utilisant les pixels adjacents comme référence, ainsi il peut "
+"permettre plus de désaturation ou c'est nécessaire\n"
+"- statique: rapide, utilise seulement le seuil comme limite statique"
+
+#: ../src/iop/defringe.c:444
+msgid "edge detection radius"
+msgstr "rayon détection contours"
+
+#: ../src/iop/defringe.c:453
+msgid "radius for detecting fringe"
+msgstr "rayon pour la détection de la frange"
+
+#: ../src/iop/defringe.c:455
+msgid "threshold for defringe, higher values mean less defringing"
+msgstr ""
+"seuil pour la détection de la frange, valeurs plus grandes pour moins de "
+"suppression de la frange"
 
 #: ../src/iop/demosaic.c:117
 msgid "demosaic"
@@ -5293,6 +5506,11 @@ msgstr "corrections effectuées :"
 msgid "which corrections have actually been done"
 msgstr "corrections réellement effectuées"
 
+#: ../src/iop/letsgofloat.c:48
+msgctxt "modulename"
+msgid "let's go float!"
+msgstr "let's go float!"
+
 #: ../src/iop/levels.c:121
 msgid "levels"
 msgstr "niveaux"
@@ -5621,6 +5839,40 @@ msgstr ""
 "activer/désactiver pour\n"
 "récupérer la lumière moyenne\n"
 " d'une zone de l'image"
+
+#: ../src/iop/rotatepixels.c:76
+msgctxt "modulename"
+msgid "rotate pixels"
+msgstr "rotation des pixels"
+
+#: ../src/iop/rotatepixels.c:403
+msgid "automatic pixel rotation"
+msgstr "rotation automatique des pixels"
+
+#: ../src/iop/rotatepixels.c:405
+msgid ""
+"automatic pixel rotation\n"
+"only works for the sensors that need it."
+msgstr ""
+"rotation automatique des pixels\n"
+"seulement pour les capteurs le nécessitant."
+
+#: ../src/iop/scalepixels.c:53
+msgctxt "modulename"
+msgid "scale pixels"
+msgstr "mise à l'échelle des pixels"
+
+#: ../src/iop/scalepixels.c:313
+msgid "automatic pixel scaling"
+msgstr "mise à l'échelle automatique des pixels"
+
+#: ../src/iop/scalepixels.c:315
+msgid ""
+"automatic pixel scaling\n"
+"only works for the sensors that need it."
+msgstr ""
+"mise à l'échelle automatique des pixels\n"
+"seulement pour les capteurs le nécessitant."
 
 #: ../src/iop/shadhi.c:155
 msgid "shadows and highlights"
@@ -7543,6 +7795,59 @@ msgid "select the source of the map. some entries might not work"
 msgstr ""
 "sélectionne l'origine de la carte. certaines peuvent ne pas fonctionner"
 
+#: ../src/libs/masks.c:54
+msgid "mask manager"
+msgstr "gestion des masques"
+
+#: ../src/libs/masks.c:256
+#, c-format
+msgid "group #%d"
+msgstr "groupe #%d"
+
+#: ../src/libs/masks.c:1018
+msgid "duplicate this shape"
+msgstr "dupliquer cette forme"
+
+#: ../src/libs/masks.c:1022
+msgid "delete this shape"
+msgstr "supprimer cette forme"
+
+#: ../src/libs/masks.c:1028
+msgid "remove from group"
+msgstr "enlever du groupe"
+
+#: ../src/libs/masks.c:1036
+msgid "group the forms"
+msgstr "grouper les formes"
+
+#: ../src/libs/masks.c:1045
+msgid "use inversed shape"
+msgstr "inverser la forme"
+
+#: ../src/libs/masks.c:1051
+msgid "mode : union"
+msgstr "mode : union"
+
+#: ../src/libs/masks.c:1054
+msgid "mode : intersection"
+msgstr "mode : intersection"
+
+#: ../src/libs/masks.c:1057
+msgid "mode : difference"
+msgstr "mode : différence"
+
+#: ../src/libs/masks.c:1060
+msgid "mode : exclusion"
+msgstr "mode : exclusion"
+
+#: ../src/libs/masks.c:1074
+msgid "cleanup unused shapes"
+msgstr "supprimer les formes non utilisées"
+
+#: ../src/libs/masks.c:1495
+msgid "created shapes"
+msgstr "formes existantes"
+
 #: ../src/libs/metadata.c:56
 msgid "metadata editor"
 msgstr "éditeur de métadonnées"
@@ -8430,6 +8735,23 @@ msgstr "changer de vue"
 msgid "view toolbox"
 msgstr "afficher la boîte à outils"
 
+#: ../src/lua/preferences.c:543
+msgid "lua options"
+msgstr "options lua"
+
+#: ../src/lua/preferences.c:581
+msgid "Select a directory"
+msgstr "sélectionner un répertoire"
+
+#: ../src/lua/preferences.c:592
+msgid "Select a file"
+msgstr "sélectionner un fichier"
+
+#: ../src/lua/preferences.c:634
+#, c-format
+msgid "double click to reset to `%f'"
+msgstr "double-cliquer pour réinitialiser «%f»"
+
 #: ../src/views/darkroom.c:83
 msgid "darkroom"
 msgstr "chambre noire"
@@ -8680,218 +9002,6 @@ msgstr "nouvelle session initiée «%s»"
 msgid "no camera with tethering support available for use..."
 msgstr "aucun boîtier disponible pour la capture..."
 
-#: ../src/develop/masks/masks.c:41
-msgid "ctrl+click to add a sharp node"
-msgstr "ctrl-clic pour ajouter un nœud aïgu"
-
-#: ../src/develop/masks/masks.c:42
-msgid "ctrl+click to switch between smooth/sharp node"
-msgstr "ctrl-clic pour basculer entre un nœud courbe et aigu"
-
-#: ../src/develop/masks/masks.c:43
-msgid "right-click to reset feather value"
-msgstr "clic-droit pour réinitialiser le dégradé"
-
-#: ../src/develop/masks/masks.c:44
-msgid "ctrl+click to add a node"
-msgstr "ctrl-clic pour ajouter un point"
-
-#: ../src/develop/masks/masks.c:45 ../src/develop/masks/masks.c:49
-#: ../src/develop/masks/masks.c:55
-msgid "ctrl+scroll to set shape opacity"
-msgstr "ctrl-défiler pour modifier l'opacité de la forme"
-
-#: ../src/develop/masks/masks.c:50
-msgid "move to rotate shape"
-msgstr "déplacer pour faire pivoter"
-
-#: ../src/develop/masks/masks.c:54
-msgid "ctrl+click to rotate"
-msgstr "ctrl-clic pour pivoter"
-
-#: ../src/develop/masks/masks.c:59
-msgid ""
-"scroll to set brush size, shift+scroll to set hardness, ctrl+scroll to set "
-"opacity"
-msgstr ""
-"défiler pour change la taille du pinceau, shift+défiler pour changer la "
-"dureté, ctrl+défiler pour changer l'opacité"
-
-#: ../src/develop/masks/masks.c:60
-msgid "scroll to set brush size"
-msgstr "défiler pour modifier la taille du pinceau"
-
-#: ../src/develop/masks/masks.c:61
-msgid "scroll to set hardness, ctrl+scroll to set shape opacity"
-msgstr ""
-"défiler pour changer la dureté, ctrl+défiler pour modifier l'opacité de la "
-"forme"
-
-#: ../src/develop/masks/masks.c:163
-#, c-format
-msgid "circle #%d"
-msgstr "cercle #%d"
-
-#: ../src/develop/masks/masks.c:164
-#, c-format
-msgid "path #%d"
-msgstr "chemin #%d"
-
-#: ../src/develop/masks/masks.c:165
-#, c-format
-msgid "gradient #%d"
-msgstr "dégradé #%d"
-
-#: ../src/develop/masks/masks.c:166
-#, c-format
-msgid "ellipse #%d"
-msgstr "ellipse #%d"
-
-#: ../src/develop/masks/masks.c:167
-#, c-format
-msgid "brush #%d"
-msgstr "pinceau #%d"
-
-#: ../src/develop/masks/masks.c:218
-#, c-format
-msgid "copy of %s"
-msgstr "copie de %s"
-
-#: ../src/develop/masks/masks.c:718
-#, c-format
-msgid "%s: mask version mismatch: %d != %d"
-msgstr "%s: version non cohérente du masque: %d != %d"
-
-#: ../src/develop/masks/masks.c:1408 ../src/libs/masks.c:948
-msgid "add existing shape"
-msgstr "ajouter un masque existant"
-
-#: ../src/develop/masks/masks.c:1435
-msgid "use same shapes as"
-msgstr "utiliser les mêmes masques que"
-
-#: ../src/libs/masks.c:54
-msgid "mask manager"
-msgstr "gestion des masques"
-
-#: ../src/libs/masks.c:256
-#, c-format
-msgid "group #%d"
-msgstr "groupe #%d"
-
-#: ../src/libs/masks.c:1018
-msgid "duplicate this shape"
-msgstr "dupliquer cette forme"
-
-#: ../src/libs/masks.c:1022
-msgid "delete this shape"
-msgstr "supprimer cette forme"
-
-#: ../src/libs/masks.c:1028
-msgid "remove from group"
-msgstr "enlever du groupe"
-
-#: ../src/libs/masks.c:1036
-msgid "group the forms"
-msgstr "grouper les formes"
-
-#: ../src/libs/masks.c:1045
-msgid "use inversed shape"
-msgstr "inverser la forme"
-
-#: ../src/libs/masks.c:1051
-msgid "mode : union"
-msgstr "mode : union"
-
-#: ../src/libs/masks.c:1054
-msgid "mode : intersection"
-msgstr "mode : intersection"
-
-#: ../src/libs/masks.c:1057
-msgid "mode : difference"
-msgstr "mode : différence"
-
-#: ../src/libs/masks.c:1060
-msgid "mode : exclusion"
-msgstr "mode : exclusion"
-
-#: ../src/libs/masks.c:1074
-msgid "cleanup unused shapes"
-msgstr "supprimer les formes non utilisées"
-
-#: ../src/libs/masks.c:1495
-msgid "created shapes"
-msgstr "formes existantes"
-
-#: ../src/lua/preferences.c:543
-msgid "lua options"
-msgstr "options lua"
-
-#: ../src/lua/preferences.c:581
-msgid "Select a directory"
-msgstr "sélectionner un répertoire"
-
-#: ../src/lua/preferences.c:592
-msgid "Select a file"
-msgstr "sélectionner un fichier"
-
-#: ../src/lua/preferences.c:634
-#, c-format
-msgid "double click to reset to `%f'"
-msgstr "double-cliquer pour réinitialiser «%f»"
-
-#: ../src/imageio/format/webp.c:243
-msgid "WebP (8-bit)"
-msgstr "WebP (8-bits)"
-
-#: ../src/imageio/format/webp.c:276
-msgid "compression type"
-msgstr "type de compression"
-
-#: ../src/imageio/format/webp.c:281
-msgid "lossy"
-msgstr "avec perte"
-
-#: ../src/imageio/format/webp.c:286
-msgid "lossless"
-msgstr "sans perte"
-
-#: ../src/imageio/format/webp.c:296
-msgid "applies only to lossy setting"
-msgstr "uniquement pour la compression avec perte"
-
-#: ../src/imageio/format/webp.c:304
-msgid "image hint"
-msgstr "type d'image"
-
-#: ../src/imageio/format/webp.c:305
-msgid ""
-"image characteristics hint for the underlying encoder.\n"
-"picture : digital picture, like portrait, inner shot\n"
-"photo   : outdoor photograph, with natural lighting\n"
-"graphic : discrete tone image (graph, map-tile etc)"
-msgstr ""
-"description de l'image pour l'encodeur.\n"
-"image: photographie d'intérieur, portrait\n"
-"photo: photographie d'extérieur, avec lumière naturelle\n"
-" graphique: image avec des couleurs uniformes (schéma, etc)"
-
-#: ../src/imageio/format/webp.c:313
-msgid "default"
-msgstr "défaut"
-
-#: ../src/imageio/format/webp.c:314
-msgid "picture"
-msgstr "image"
-
-#: ../src/imageio/format/webp.c:315
-msgid "photo"
-msgstr "photo"
-
-#: ../src/imageio/format/webp.c:316
-msgid "graphic"
-msgstr "graphique"
-
 #~ msgid "dark contrast"
 #~ msgstr "contraste sombre"
 
@@ -9008,13 +9118,6 @@ msgstr "graphique"
 #~ msgctxt "accel"
 #~ msgid "expose statuses"
 #~ msgstr "afficher états"
-
-#~ msgid ""
-#~ "couldn't expand to a unique filename for import, please check your import "
-#~ "settings."
-#~ msgstr ""
-#~ "impossible d'affecter un nom unique lors de l'importation. vérifier les "
-#~ "réglages d'importation."
 
 #~ msgid "failed to create import path `%s', import aborted."
 #~ msgstr ""
@@ -10040,9 +10143,6 @@ msgstr "graphique"
 #~ msgstr ""
 #~ "abscisse : entrée, ordonnée : sortie \n"
 #~ "fonctionne sur le canal L"
-
-#~ msgid "ask before deleting images"
-#~ msgstr "demander avant de supprimer des images"
 
 #~ msgid "how many threads to use in background"
 #~ msgstr "combien de fils utiliser en tâche de fond"

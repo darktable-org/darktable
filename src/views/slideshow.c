@@ -330,7 +330,7 @@ int try_enter(dt_view_t *self)
   if (dt_collection_get_count (darktable.collection) != 0) {
     return 0;
   } else {
-    dt_control_log(_("No images in collection."));
+    dt_control_log(_("there are no images in this collection"));
     return 1;
   }
 }

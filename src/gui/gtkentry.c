@@ -177,7 +177,7 @@ dt_gtkentry_setup_completion(GtkEntry *entry, const dt_gtkentry_completion_spec 
   {
     gtk_list_store_append(model, &iter);
     gtk_list_store_set(model, &iter, COMPL_VARNAME, l->varname,
-                       COMPL_DESCRIPTION, gettext(l->description), -1);
+                       COMPL_DESCRIPTION, _(l->description), -1);
   }
   gtk_entry_completion_set_model(completion, GTK_TREE_MODEL(model));
   gtk_entry_completion_set_match_func(completion, on_match_func, NULL, NULL);
@@ -243,7 +243,7 @@ dt_gtkentry_build_completion_tooltip_text (const gchar *header,
 
   for(p = compl_list; p->description != NULL; p++)
   {
-    g_strlcat(tt, p->description, tt_size);
+    g_strlcat(tt, _(p->description), tt_size);
     g_strlcat(tt, "\n", tt_size);
   }
 

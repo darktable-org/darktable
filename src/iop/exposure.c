@@ -989,6 +989,7 @@ void gui_init(struct dt_iop_module_t *self)
   g->vbox_deflicker = GTK_WIDGET(gtk_vbox_new(FALSE, DT_BAUHAUS_SPACE));
 
   g->deflicker_percentile = dt_bauhaus_slider_new_with_range(self, 0, 100, .01, p->deflicker_percentile, 3);
+  // FIXME: this needs a better tooltip!
   g_object_set(G_OBJECT(g->deflicker_percentile), "tooltip-text", _("percentile"), (char *)NULL);
   dt_bauhaus_slider_set_format(g->deflicker_percentile,"%.2f%%");
   dt_bauhaus_widget_set_label(g->deflicker_percentile, NULL, _("percentile"));
@@ -1018,7 +1019,7 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(hbox1), GTK_WIDGET(label), FALSE, FALSE, 0);
 
   g->deflicker_used_EC = GTK_LABEL(gtk_label_new("")); // This gets filled in by process
-  g_object_set(GTK_OBJECT(g->deflicker_used_EC), "tooltip-text", _("what exposure correction have actually been used"), (char *)NULL);
+  g_object_set(GTK_OBJECT(g->deflicker_used_EC), "tooltip-text", _("what exposure correction has actually been used"), (char *)NULL);
   gtk_box_pack_start(GTK_BOX(hbox1), GTK_WIDGET(g->deflicker_used_EC), FALSE, FALSE, 0);
   g->deflicker_computed_exposure = NAN;
 
