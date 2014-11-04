@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2014-11-04 19:15+0100\n"
-"PO-Revision-Date: 2014-11-04 19:24+0100\n"
+"PO-Revision-Date: 2014-11-04 19:34+0100\n"
 "Last-Translator: Ger Siemerink <g.siemerink@gmail.com>\n"
 "Language-Team: Ger Siemerink <g.siemerink@gmail.com>\n"
 "Language: nl_NL\n"
@@ -4544,7 +4544,7 @@ msgstr "rand verwijderen"
 
 #: ../src/iop/defringe.c:435
 msgid "operation mode"
-msgstr "bedieningsmodus"
+msgstr "methode"
 
 #: ../src/iop/defringe.c:436
 msgid "global average (fast)"
