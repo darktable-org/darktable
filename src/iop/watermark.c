@@ -202,7 +202,7 @@ void init_key_accels(dt_iop_module_so_t *self)
   dt_accel_register_iop(self, FALSE, NC_("accel", "refresh"), 0, 0);
   dt_accel_register_slider_iop(self, FALSE, NC_("accel", "opacity"));
   dt_accel_register_slider_iop(self, FALSE, NC_("accel", "scale"));
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "rotate"));
+  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "rotation"));
   dt_accel_register_slider_iop(self, FALSE, NC_("accel", "x offset"));
   dt_accel_register_slider_iop(self, FALSE, NC_("accel", "y offset"));
 }
@@ -217,7 +217,7 @@ void connect_key_accels(dt_iop_module_t *self)
                               GTK_WIDGET(g->scale1));
   dt_accel_connect_slider_iop(self, "scale",
                               GTK_WIDGET(g->scale2));
-  dt_accel_connect_slider_iop(self, "rotate",
+  dt_accel_connect_slider_iop(self, "rotation",
                               GTK_WIDGET(g->rotate));
   dt_accel_connect_slider_iop(self, "x offset",
                               GTK_WIDGET(g->scale3));
@@ -1114,7 +1114,7 @@ void gui_init(struct dt_iop_module_t *self)
   dt_bauhaus_widget_set_label(g->scale2, NULL, _("scale"));
   g->rotate = dt_bauhaus_slider_new_with_range(self, -180.0, 180.0, 1.0, p->rotate, 2);
   dt_bauhaus_slider_set_format(g->rotate, "%.02f°");
-  dt_bauhaus_widget_set_label(g->rotate, NULL, _("rotate"));
+  dt_bauhaus_widget_set_label(g->rotate, NULL, _("rotation"));
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->scale1), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->scale2), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->rotate), TRUE, TRUE, 0);

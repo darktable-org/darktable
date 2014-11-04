@@ -433,10 +433,10 @@ void gui_init (dt_iop_module_t *module)
   g->mode_select = dt_bauhaus_combobox_new(module);
   gtk_box_pack_start(GTK_BOX(module->widget), g->mode_select, TRUE, TRUE, 0);
   dt_bauhaus_widget_set_label(g->mode_select, NULL, _("operation mode"));
-  dt_bauhaus_combobox_add(g->mode_select, _("region average (fast)")); // 0
+  dt_bauhaus_combobox_add(g->mode_select, _("global average (fast)")); // 0
   dt_bauhaus_combobox_add(g->mode_select, _("local average (slow)")); // 1
   dt_bauhaus_combobox_add(g->mode_select, _("static threshold (fast)")); // 2
-  g_object_set (GTK_OBJECT(g->mode_select), "tooltip-text", _("method for color protection:\n - region average: fast, might show slightly wrong previews in high magnification; might sometimes protect saturation too much or too low in comparison to local average\n - local average: slower, might protect saturation better than global average by using near pixels as color reference, so it can still allow for more desaturation where required\n - static: fast, only uses the threshold as a static limit"), (char *)NULL);
+  g_object_set (GTK_OBJECT(g->mode_select), "tooltip-text", _("method for color protection:\n - global average: fast, might show slightly wrong previews in high magnification; might sometimes protect saturation too much or too low in comparison to local average\n - local average: slower, might protect saturation better than global average by using near pixels as color reference, so it can still allow for more desaturation where required\n - static: fast, only uses the threshold as a static limit"), (char *)NULL);
   g_signal_connect (G_OBJECT (g->mode_select), "value-changed", G_CALLBACK (mode_callback), module);
 
   /* radius and threshold sliders */
