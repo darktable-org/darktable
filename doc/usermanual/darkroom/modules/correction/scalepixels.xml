@@ -3,7 +3,7 @@
 		<!ENTITY % darktable_dtd SYSTEM "../../../dtd/darktable.dtd">
 		%darktable_dtd;
 		]>
-<sect3 status="draft" id="scale_pixels">
+<sect3 status="final" id="scale_pixels">
 
   <title>Scale pixels</title>
 
