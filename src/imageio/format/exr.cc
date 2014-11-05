@@ -259,7 +259,7 @@ extern "C"
     gtk_box_pack_start(GTK_BOX(self->widget), hbox, TRUE, TRUE, 0);
 
     GtkWidget *label = gtk_label_new(_("compression mode"));
-    gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.0);
+    gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
     gtk_box_pack_start(GTK_BOX(hbox), label, TRUE, TRUE, 0);
 
     GtkComboBoxText *combo = GTK_COMBO_BOX_TEXT(gtk_combo_box_text_new());

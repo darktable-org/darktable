@@ -263,7 +263,7 @@
                 In this example a hardware GND filter (Hitech ND0.6, soft edge) helped to
                 prevent over-exposure in the sky and tree tops, while at the same time getting a
                 well exposed image of the ground. A rather disturbing element is the decay of
-                lightness in the tree trunks from bottom to top.
+                brightness in the tree trunks from bottom to top.
               </entry>
               <entry>
                 <graphic fileref="darkroom/modules/images/graduatedneutraldensity_ex4.png" scalefit="1" width="90%" align="center" />
@@ -272,9 +272,9 @@
             <row>
               <entry>
                 darktable's graduated density filter together with the parametric mask feature
-                (see <xref linkend="parametric_mask"/>) comes in handy. We can add a lightness
+                (see <xref linkend="parametric_mask"/>) comes in handy. We can add a brightness
                 gradient that is just inverted in relation to the hardware filter. As we only
-                want to compensate the unnatural decay of lightness in the tree trunks, we
+                want to compensate the unnatural decay of brightness in the tree trunks, we
                 combine the module with a suited blend mask.
               </entry>
               <entry>

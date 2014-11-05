@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2014-10-27 20:51+0100\n"
-"PO-Revision-Date: 2014-10-27 20:53+0100\n"
+"POT-Creation-Date: 2014-11-04 19:15+0100\n"
+"PO-Revision-Date: 2014-11-04 19:34+0100\n"
 "Last-Translator: Ger Siemerink <g.siemerink@gmail.com>\n"
 "Language-Team: Ger Siemerink <g.siemerink@gmail.com>\n"
 "Language: nl_NL\n"
@@ -639,8 +639,12 @@ msgid "gnome keyring"
 msgstr "gnome keyring"
 
 #: ../build/src/preferences_gen.h:2371
-msgid "the storage backend for password storage: none, kwallet, gnome keyring"
-msgstr "de opslag voor wachtwoordopslag: geen, kwallet, gnome keyring "
+msgid ""
+"the storage backend for password storage: auto, none, libsecret, kwallet, "
+"gnome keyring"
+msgstr ""
+"de opslag voor wachtwoordopslag: auto, geen, libsecret, kwallet, gnome "
+"keyring "
 
 #: ../build/src/preferences_gen.h:2378
 msgid "look for updated xmp files on startup"
@@ -924,6 +928,14 @@ msgstr "afbeelding `%s' is niet beschikbaar"
 #, c-format
 msgid "cannot find the style '%s' to apply during export."
 msgstr "toe te passen stijl '%s'  bij het exporteren is niet gevonden"
+
+#: ../src/common/import_session.c:289
+msgid ""
+"couldn't expand to a unique filename for session, please check your import "
+"session settings."
+msgstr ""
+"uitbreiding naar unieke bestandsnaam voor deze sessie is mislukt, controleer "
+"uw importeer instellingen"
 
 #. preset name                   maker    model            iso    a a a                                 b b b
 #: ../src/common/noiseprofiles.h:37
@@ -1216,6 +1228,7 @@ msgstr "afbeelding(en) verwijderen"
 #: ../src/imageio/storage/disk.c:164 ../src/imageio/storage/gallery.c:109
 #: ../src/imageio/storage/gallery.c:203 ../src/imageio/storage/latex.c:109
 #: ../src/imageio/storage/latex.c:203 ../src/libs/styles.c:240
+#: ../src/lua/preferences.c:581
 msgid "select directory"
 msgstr "selecteer map"
 
@@ -1276,6 +1289,17 @@ msgstr "tijdsverschil toegepast aan %d afbeelding(en)"
 #, c-format
 msgid "importing image %s"
 msgstr "importeren afbeelding %s"
+
+#. printf("%s: scale %f/%f %d\n", self->op, roi_out->scale, roi_in->scale, roi_out->scale == roi_in->scale);
+#. printf("xoffs %d, yoffs %d, out %d, %d, in %d, %d\n", xoffs, yoffs, roi_out->width, roi_out->height, roi_in->width, roi_in->height);
+#: ../src/develop/blend.c:1930 ../src/develop/blend.c:2245
+#, c-format
+msgid "skipped blending in module '%s': roi's do not match"
+msgstr "mengen in module '%s' overgeslagen: roi's komen niet overeen"
+
+#: ../src/develop/blend.c:2047 ../src/develop/blend.c:2291
+msgid "could not allocate buffer for blending"
+msgstr "toewijzen buffer t.g.v. mengen mislukt"
 
 #: ../src/develop/blend_gui.c:945
 msgid "sliders for L channel"
@@ -1700,17 +1724,6 @@ msgstr ""
 "masker menging tijdelijk uitzetten\n"
 "geldt alleen voor de module nu in beeld"
 
-#. printf("%s: scale %f/%f %d\n", self->op, roi_out->scale, roi_in->scale, roi_out->scale == roi_in->scale);
-#. printf("xoffs %d, yoffs %d, out %d, %d, in %d, %d\n", xoffs, yoffs, roi_out->width, roi_out->height, roi_in->width, roi_in->height);
-#: ../src/develop/blend.c:1930 ../src/develop/blend.c:2245
-#, c-format
-msgid "skipped blending in module '%s': roi's do not match"
-msgstr "mengen in module '%s' overgeslagen: roi's komen niet overeen"
-
-#: ../src/develop/blend.c:2047 ../src/develop/blend.c:2291
-msgid "could not allocate buffer for blending"
-msgstr "toewijzen buffer t.g.v. mengen mislukt"
-
 #: ../src/develop/develop.c:1002
 #, c-format
 msgid "%s: module `%s' version mismatch: %d != %d"
@@ -1832,18 +1845,106 @@ msgid_plural "%s have been imported"
 msgstr[0] "%s is geïmporteerd"
 msgstr[1] "%s zijn geïmporteerd"
 
-#: ../src/develop/tiling.c:807 ../src/develop/tiling.c:1105
-#, c-format
-msgid "tiling failed for module '%s'. output might be garbled."
-msgstr "tiling voor module '% s' mislukt, de uitvoer is nu mogelijk verminkt"
+#: ../src/develop/masks/masks.c:41
+msgid "ctrl+click to add a sharp node"
+msgstr "ctrl+klik: toevoegen scherp knooppunt"
 
-#: ../src/develop/pixelpipe_hb.c:2255
+#: ../src/develop/masks/masks.c:42
+msgid "ctrl+click to switch between smooth/sharp node"
+msgstr " ctrl+klik schakelt tussen glade/scherpe knooppunten"
+
+#: ../src/develop/masks/masks.c:43
+msgid "right-click to reset feather value"
+msgstr "klik rechtermuisknop om feather waarde te resetten"
+
+#: ../src/develop/masks/masks.c:44
+msgid "ctrl+click to add a node"
+msgstr " ctrl+klik voegt knooppunt toe "
+
+#: ../src/develop/masks/masks.c:45 ../src/develop/masks/masks.c:49
+#: ../src/develop/masks/masks.c:55
+msgid "ctrl+scroll to set shape opacity"
+msgstr "ctrl+scroll: bepaald dekking door vorm"
+
+#: ../src/develop/masks/masks.c:50
+msgid "move to rotate shape"
+msgstr "verplaats om de vorm te draaien"
+
+#: ../src/develop/masks/masks.c:54
+msgid "ctrl+click to rotate"
+msgstr " ctrl+klik om te draaien "
+
+#: ../src/develop/masks/masks.c:59
+msgid ""
+"scroll to set brush size, shift+scroll to set hardness, ctrl+scroll to set "
+"opacity"
+msgstr ""
+"scroll bepaald penseel afmeting, shift+scroll bepaald hardheid, ctrl+scroll "
+"bepaald dekking"
+
+#: ../src/develop/masks/masks.c:60
+msgid "scroll to set brush size"
+msgstr "bepaal penseel dikte door te scrollen "
+
+#: ../src/develop/masks/masks.c:61
+msgid "scroll to set hardness, ctrl+scroll to set shape opacity"
+msgstr "scrollen bepaalt hardheid, ctrl+scroll bepaalt dekking door vorm"
+
+#: ../src/develop/masks/masks.c:163
+#, c-format
+msgid "circle #%d"
+msgstr "cirkel  #%d"
+
+#: ../src/develop/masks/masks.c:164
+#, c-format
+msgid "path #%d"
+msgstr "pad #%d"
+
+#: ../src/develop/masks/masks.c:165
+#, c-format
+msgid "gradient #%d"
+msgstr "kleurverloop #%d"
+
+#: ../src/develop/masks/masks.c:166
+#, c-format
+msgid "ellipse #%d"
+msgstr "ellips #%d"
+
+#: ../src/develop/masks/masks.c:167
+#, c-format
+msgid "brush #%d"
+msgstr "penseel #%d"
+
+#: ../src/develop/masks/masks.c:218
+#, c-format
+msgid "copy of %s"
+msgstr "kopie van %s"
+
+#: ../src/develop/masks/masks.c:718
+#, c-format
+msgid "%s: mask version mismatch: %d != %d"
+msgstr "%s: masker versie komt niet overeen: %d != %d"
+
+#: ../src/develop/masks/masks.c:1408 ../src/libs/masks.c:948
+msgid "add existing shape"
+msgstr "bestaande vorm toevoegen"
+
+#: ../src/develop/masks/masks.c:1435
+msgid "use same shapes as"
+msgstr "gebruik dezelfde vorm als"
+
+#: ../src/develop/pixelpipe_hb.c:2254
 msgid ""
 "darktable discovered problems with your OpenCL setup; disabling OpenCL for "
 "this session!"
 msgstr ""
 "darktable ontdekte problemen met de OpenCL setup; voor deze sessie wordt "
 "OpenCL gedeactiveerd!"
+
+#: ../src/develop/tiling.c:807 ../src/develop/tiling.c:1105
+#, c-format
+msgid "tiling failed for module '%s'. output might be garbled."
+msgstr "tiling voor module '% s' mislukt, de uitvoer is nu mogelijk verminkt"
 
 #: ../src/dtgtk/resetlabel.c:61
 msgid "double-click to reset"
@@ -2203,6 +2304,24 @@ msgstr "$(DESKTOP) - Bureaublad"
 msgid "$(TITLE) - title from metadata"
 msgstr "$(TITLE) - titel volgens metadata"
 
+#: ../src/gui/hist_dialog.c:150
+msgid "select parts"
+msgstr "selecteer delen"
+
+#: ../src/gui/hist_dialog.c:181 ../src/gui/styles_dialog.c:361
+#: ../src/gui/styles_dialog.c:374
+msgid "include"
+msgstr "voeg toe"
+
+#: ../src/gui/hist_dialog.c:192 ../src/gui/styles_dialog.c:403
+#: ../src/gui/styles_dialog.c:410
+msgid "item"
+msgstr "item"
+
+#: ../src/gui/hist_dialog.c:228
+msgid "can't copy history out of unaltered image"
+msgstr "kopiëren vanuit niet gewijzigde afbeelding lukt niet"
+
 #: ../src/gui/preferences.c:224
 msgid "darktable preferences"
 msgstr "darktable voorkeuren"
@@ -2512,31 +2631,13 @@ msgstr ""
 "geef een omschrijving voor deze nieuwe stijl, deze omschrijving kan later "
 "worden opgezocht"
 
-#: ../src/gui/styles_dialog.c:361 ../src/gui/styles_dialog.c:374
-#: ../src/gui/hist_dialog.c:181
-msgid "include"
-msgstr "voeg toe"
-
 #: ../src/gui/styles_dialog.c:391
 msgid "update"
 msgstr "update"
 
-#: ../src/gui/styles_dialog.c:403 ../src/gui/styles_dialog.c:410
-#: ../src/gui/hist_dialog.c:192
-msgid "item"
-msgstr "item"
-
 #: ../src/gui/styles_dialog.c:509
 msgid "can't create style out of unaltered image"
 msgstr "kan geen stijl maken van niet gewijzigde afbeelding"
-
-#: ../src/gui/hist_dialog.c:150
-msgid "select parts"
-msgstr "selecteer delen"
-
-#: ../src/gui/hist_dialog.c:228
-msgid "can't copy history out of unaltered image"
-msgstr "kopiëren vanuit niet gewijzigde afbeelding lukt niet"
 
 #: ../src/imageio/format/copy.c:145 ../src/libs/copy_history.c:253
 #: ../src/libs/image.c:161
@@ -2598,7 +2699,7 @@ msgid "J2K"
 msgstr "J2K"
 
 #: ../src/imageio/format/j2k.c:623 ../src/imageio/format/jpeg.c:546
-#: ../src/libs/camera.c:573 ../src/imageio/format/webp.c:293
+#: ../src/imageio/format/webp.c:293 ../src/libs/camera.c:573
 msgid "quality"
 msgstr "kwaliteit"
 
@@ -2673,6 +2774,58 @@ msgstr "voorspellende deflatie"
 #: ../src/imageio/format/tiff.c:421
 msgid "deflate with predictor (float)"
 msgstr "voorspellende deflatie  (float)"
+
+#: ../src/imageio/format/webp.c:243
+msgid "WebP (8-bit)"
+msgstr "WebP (8-bit)"
+
+#: ../src/imageio/format/webp.c:276
+msgid "compression type"
+msgstr "compressie type"
+
+#: ../src/imageio/format/webp.c:281
+msgid "lossy"
+msgstr "met verlies"
+
+#: ../src/imageio/format/webp.c:286
+msgid "lossless"
+msgstr "verliesloos"
+
+#: ../src/imageio/format/webp.c:296
+msgid "applies only to lossy setting"
+msgstr "geldt alleen voor verlieshebbende instellingen"
+
+#: ../src/imageio/format/webp.c:304
+msgid "image hint"
+msgstr "afbeeldings Hint"
+
+#: ../src/imageio/format/webp.c:305
+msgid ""
+"image characteristics hint for the underlying encoder.\n"
+"picture : digital picture, like portrait, inner shot\n"
+"photo   : outdoor photograph, with natural lighting\n"
+"graphic : discrete tone image (graph, map-tile etc)"
+msgstr ""
+"beeldkenmerken hints voor de onderliggende encoder\n"
+"afbeelding: digtale afbeelding, zoals portrait, binnen opname\n"
+"foto: buiten opname, met natuurlijk licht\n"
+"plaatje: aparte afbeelding curve (grafiek, kaart-tegels etc)    "
+
+#: ../src/imageio/format/webp.c:313
+msgid "default"
+msgstr "standaard"
+
+#: ../src/imageio/format/webp.c:314
+msgid "picture"
+msgstr "afbeelding"
+
+#: ../src/imageio/format/webp.c:315
+msgid "photo"
+msgstr "foto"
+
+#: ../src/imageio/format/webp.c:316
+msgid "graphic"
+msgstr "grafisch"
 
 #: ../src/imageio/storage/disk.c:62
 msgid "file on disk"
@@ -3112,15 +3265,15 @@ msgid "make effect stronger or weaker"
 msgstr "effect versterken/afzwakken"
 
 #: ../src/iop/basecurve.c:98
-msgid "dark contrast"
-msgstr "donker contrast"
+msgid "natural"
+msgstr "natuurlijk"
 
 #: ../src/iop/basecurve.c:99
-msgid "canon EOS like"
+msgid "canon eos like"
 msgstr "gelijk aan canon EOS"
 
 #: ../src/iop/basecurve.c:100
-msgid "canon EOS like alternate"
+msgid "canon eos like alternate"
 msgstr "gelijk aan canon EOS; alternatief"
 
 #: ../src/iop/basecurve.c:101
@@ -3179,37 +3332,29 @@ msgstr "gelijk aan fujifilm"
 msgid "nokia like"
 msgstr "gelijk aan nokia"
 
-#: ../src/iop/basecurve.c:115
-msgid "fotogenetic (point & shoot)"
-msgstr "fotogenetic - point and shoot v4.1"
-
-#: ../src/iop/basecurve.c:116
-msgid "fotogenetic (EV3)"
-msgstr "fotogenetic (EV3)"
-
-#: ../src/iop/basecurve.c:206
+#: ../src/iop/basecurve.c:202
 msgid "base curve"
 msgstr "basis curve"
 
-#: ../src/iop/basecurve.c:769
+#: ../src/iop/basecurve.c:765
 msgid "abscissa: input, ordinate: output. works on RGB channels"
 msgstr "abscis: invoer, coördineer: uitvoer beïnvloedt de RGB kanalen"
 
-#: ../src/iop/basecurve.c:775 ../src/iop/lens.c:2147
+#: ../src/iop/basecurve.c:771 ../src/iop/lens.c:2147
 #: ../src/iop/vignette.c:1194 ../src/iop/watermark.c:1114
 msgid "scale"
 msgstr "schaal"
 
-#: ../src/iop/basecurve.c:776 ../src/iop/profile_gamma.c:337
+#: ../src/iop/basecurve.c:772 ../src/iop/profile_gamma.c:337
 #: ../src/iop/tonecurve.c:418
 msgid "linear"
 msgstr "lineair"
 
-#: ../src/iop/basecurve.c:777
+#: ../src/iop/basecurve.c:773
 msgid "logarithmic"
 msgstr "logaritmisch"
 
-#: ../src/iop/basecurve.c:778
+#: ../src/iop/basecurve.c:774
 msgid ""
 "scale to use in the graph. use logarithmic scale for more precise control "
 "near the blacks"
@@ -3305,7 +3450,8 @@ msgstr "afmeting"
 msgid "the size of bloom"
 msgstr "mate van glans"
 
-#: ../src/iop/bloom.c:543 ../src/iop/hotpixels.c:413 ../src/iop/sharpen.c:598
+#: ../src/iop/bloom.c:543 ../src/iop/defringe.c:447 ../src/iop/hotpixels.c:413
+#: ../src/iop/sharpen.c:598
 msgid "threshold"
 msgstr "drempel"
 
@@ -4392,6 +4538,62 @@ msgstr "selecteer op"
 msgid "choose selection criterion, will be the abscissa in the graph"
 msgstr "kies selectie criteria, dat is dan de abscis van de grafiek"
 
+#: ../src/iop/defringe.c:70
+msgid "defringe"
+msgstr "rand verwijderen"
+
+#: ../src/iop/defringe.c:435
+msgid "operation mode"
+msgstr "methode"
+
+#: ../src/iop/defringe.c:436
+msgid "global average (fast)"
+msgstr "globaal gemiddelde (snel)"
+
+#. 0
+#: ../src/iop/defringe.c:437
+msgid "local average (slow)"
+msgstr "lokaal gemiddelde"
+
+#. 1
+#: ../src/iop/defringe.c:438
+msgid "static threshold (fast)"
+msgstr "vaste drempel (snel)"
+
+#. 2
+#: ../src/iop/defringe.c:439
+msgid ""
+"method for color protection:\n"
+" - global average: fast, might show slightly wrong previews in high "
+"magnification; might sometimes protect saturation too much or too low in "
+"comparison to local average\n"
+" - local average: slower, might protect saturation better than global "
+"average by using near pixels as color reference, so it can still allow for "
+"more desaturation where required\n"
+" - static: fast, only uses the threshold as a static limit"
+msgstr ""
+"methode van kleur bescherming:\n"
+"- globaal gemiddelde: snel, kan bij hoge vergrotingen wat verkeerde "
+"voorafbeeldingen geven; soms worden verzadigingen teveel of te laag "
+"beschermd in vergelijking met lokaal gemiddelde\n"
+"- lokaal gemiddelde: langzamer, beschermt verzadigingen mogelijk beter dan "
+"algemeen gemiddelde door het gebruik van buurt pixels als kleurreferentie, "
+"zodoende kan het meer verzadigen waar nodig\n"
+"- vaste drempel: snel, gebruikt alleen de drempel als vaste limiet"
+
+#: ../src/iop/defringe.c:444
+msgid "edge detection radius"
+msgstr "rand opsporingsstraal"
+
+#: ../src/iop/defringe.c:453
+msgid "radius for detecting fringe"
+msgstr "straal voor het opsporen van randverwijdering"
+
+#: ../src/iop/defringe.c:455
+msgid "threshold for defringe, higher values mean less defringing"
+msgstr ""
+"drempel voor rand verwijderen, hogere waarden betekent minder verwijderen"
+
 #: ../src/iop/demosaic.c:117
 msgid "demosaic"
 msgstr "demosaic"
@@ -4692,81 +4894,82 @@ msgstr "aanpassen belichtingscorrectie (EV)"
 msgid "percentage of bright values clipped out"
 msgstr "percentage uitgeclipte hooglichten  "
 
-#: ../src/iop/exposure.c:992 ../src/iop/exposure.c:994
+#. FIXME: this needs a better tooltip!
+#: ../src/iop/exposure.c:993 ../src/iop/exposure.c:995
 msgid "percentile"
 msgstr "percentiel"
 
-#: ../src/iop/exposure.c:998 ../src/iop/exposure.c:1000
+#: ../src/iop/exposure.c:999 ../src/iop/exposure.c:1001
 msgid "target level"
 msgstr "doel niveau"
 
-#: ../src/iop/exposure.c:1004
+#: ../src/iop/exposure.c:1005
 msgid "histogram of"
 msgstr "histogram van"
 
-#: ../src/iop/exposure.c:1006
+#: ../src/iop/exposure.c:1007
 msgid "pre-processed image"
 msgstr "voorbereide  afbeeldingen"
 
-#: ../src/iop/exposure.c:1009
+#: ../src/iop/exposure.c:1010
 msgid "source raw data"
 msgstr "bron ruwe data"
 
-#: ../src/iop/exposure.c:1017
+#: ../src/iop/exposure.c:1018
 msgid "computed EC: "
 msgstr "berekende EC: "
 
 #. This gets filled in by process
-#: ../src/iop/exposure.c:1021
-msgid "what exposure correction have actually been used"
-msgstr "de actuel gebruikte belichtingscorrectie"
+#: ../src/iop/exposure.c:1022
+msgid "what exposure correction has actually been used"
+msgstr "welke belichtingscorrectie nu is gebruikt"
 
-#: ../src/iop/flip.c:371 ../src/iop/flip.c:372
+#: ../src/iop/flip.c:376 ../src/iop/flip.c:377
 msgid "autodetect"
 msgstr "automatisch"
 
-#: ../src/iop/flip.c:375
+#: ../src/iop/flip.c:380
 msgid "no rotation"
 msgstr "geen draaiing"
 
-#: ../src/iop/flip.c:378
+#: ../src/iop/flip.c:383
 msgid "flip horizontally"
 msgstr "horizontaal spiegelen"
 
-#: ../src/iop/flip.c:380
+#: ../src/iop/flip.c:385
 msgid "flip vertically"
 msgstr "verticaal spiegelen"
 
-#: ../src/iop/flip.c:382
+#: ../src/iop/flip.c:387
 msgid "rotate by -90 degrees"
 msgstr "roteer -90 graden"
 
-#: ../src/iop/flip.c:384
+#: ../src/iop/flip.c:389
 msgid "rotate by  90 degrees"
 msgstr "roteer 90 graden"
 
-#: ../src/iop/flip.c:386
+#: ../src/iop/flip.c:391
 msgid "rotate by 180 degrees"
 msgstr "roteer 180 graden"
 
-#: ../src/iop/flip.c:503 ../src/iop/watermark.c:1117
+#: ../src/iop/flip.c:508
 msgid "rotate"
 msgstr "draai"
 
-#: ../src/iop/flip.c:508
+#: ../src/iop/flip.c:513
 msgid "rotate 90 degrees CCW"
 msgstr "draai 90 graden tegen de klok richting in"
 
-#: ../src/iop/flip.c:514
+#: ../src/iop/flip.c:519
 msgid "rotate 90 degrees CW"
 msgstr "draai 90 graden met de klok richting mee"
 
-#: ../src/iop/flip.c:526 ../src/libs/live_view.c:169
+#: ../src/iop/flip.c:531 ../src/libs/live_view.c:169
 msgctxt "accel"
 msgid "rotate 90 degrees CCW"
 msgstr "draai 90 graden tegen de klok richting in"
 
-#: ../src/iop/flip.c:528 ../src/libs/live_view.c:170
+#: ../src/iop/flip.c:533 ../src/libs/live_view.c:170
 msgctxt "accel"
 msgid "rotate 90 degrees CW"
 msgstr "draai 90 graden met de klok richting mee"
@@ -4895,7 +5098,7 @@ msgstr ""
 "compressie  voor gradering:\n"
 "0% = zacht, 100% = hard"
 
-#: ../src/iop/graduatednd.c:1046
+#: ../src/iop/graduatednd.c:1046 ../src/iop/watermark.c:1117
 msgid "rotation"
 msgstr "draaiing"
 
@@ -5270,6 +5473,11 @@ msgstr "uitgevoerde correcties:"
 msgid "which corrections have actually been done"
 msgstr "welke correcties zijn tot nu toe uitgevoerd"
 
+#: ../src/iop/letsgofloat.c:48
+msgctxt "modulename"
+msgid "let's go float!"
+msgstr "laten we gaan zweven!"
+
 #: ../src/iop/levels.c:121
 msgid "levels"
 msgstr "niveaus"
@@ -5595,6 +5803,40 @@ msgid "toggle tool for picking median lightness in image"
 msgstr ""
 "schakel gereedschap voor vaststellen van de mediaan helderheid in een "
 "afbeelding"
+
+#: ../src/iop/rotatepixels.c:76
+msgctxt "modulename"
+msgid "rotate pixels"
+msgstr "draai pixels"
+
+#: ../src/iop/rotatepixels.c:403
+msgid "automatic pixel rotation"
+msgstr "pixels automatische draaien"
+
+#: ../src/iop/rotatepixels.c:405
+msgid ""
+"automatic pixel rotation\n"
+"only works for the sensors that need it."
+msgstr ""
+"pixels automatisch draaien\n"
+"werkt alleen voor sensors die dat nodig hebben"
+
+#: ../src/iop/scalepixels.c:53
+msgctxt "modulename"
+msgid "scale pixels"
+msgstr "schaal pixels"
+
+#: ../src/iop/scalepixels.c:313
+msgid "automatic pixel scaling"
+msgstr "pixels automatisch schalen"
+
+#: ../src/iop/scalepixels.c:315
+msgid ""
+"automatic pixel scaling\n"
+"only works for the sensors that need it."
+msgstr ""
+"pixels automatisch schalen\n"
+"werkt alleen voor sensors die dat nodig hebben"
 
 #: ../src/iop/shadhi.c:155
 msgid "shadows and highlights"
@@ -6115,8 +6357,8 @@ msgstr "dekking"
 
 #: ../src/iop/watermark.c:205
 msgctxt "accel"
-msgid "rotate"
-msgstr "draai"
+msgid "rotation"
+msgstr "draaiing"
 
 #: ../src/iop/watermark.c:206
 msgctxt "accel"
@@ -7491,6 +7733,59 @@ msgstr "kaart aanbieder"
 msgid "select the source of the map. some entries might not work"
 msgstr "kies een kaart aanbieder, mogelijk werkt niet alle data"
 
+#: ../src/libs/masks.c:54
+msgid "mask manager"
+msgstr "maskers manager"
+
+#: ../src/libs/masks.c:256
+#, c-format
+msgid "group #%d"
+msgstr "groep #%d"
+
+#: ../src/libs/masks.c:1018
+msgid "duplicate this shape"
+msgstr "dupliceer vorm"
+
+#: ../src/libs/masks.c:1022
+msgid "delete this shape"
+msgstr "verwijder vorm"
+
+#: ../src/libs/masks.c:1028
+msgid "remove from group"
+msgstr "verwijder van groep"
+
+#: ../src/libs/masks.c:1036
+msgid "group the forms"
+msgstr "groepeer vormen"
+
+#: ../src/libs/masks.c:1045
+msgid "use inversed shape"
+msgstr "gebruik geïnverteerde vorm"
+
+#: ../src/libs/masks.c:1051
+msgid "mode : union"
+msgstr "wijze: aaneenvoeging"
+
+#: ../src/libs/masks.c:1054
+msgid "mode : intersection"
+msgstr "wijze: doorsnede"
+
+#: ../src/libs/masks.c:1057
+msgid "mode : difference"
+msgstr "wijze: verschil"
+
+#: ../src/libs/masks.c:1060
+msgid "mode : exclusion"
+msgstr "wijze: uitsluiten"
+
+#: ../src/libs/masks.c:1074
+msgid "cleanup unused shapes"
+msgstr "opruimen niet gebruikte vormen"
+
+#: ../src/libs/masks.c:1495
+msgid "created shapes"
+msgstr "gecreëerde vormen"
+
 #: ../src/libs/metadata.c:56
 msgid "metadata editor"
 msgstr "metadata editor"
@@ -8065,31 +8360,31 @@ msgstr "van geselecteerde afbeelding(en) kleurlabel(s) verwijderen"
 msgid "darktable"
 msgstr "darktable"
 
-#: ../src/libs/tools/darktable.c:270
+#: ../src/libs/tools/darktable.c:278
 msgid "organize and develop images from digital cameras"
 msgstr "organiseer en ontwikkel afbeeldingen van digitale camera's"
 
-#: ../src/libs/tools/darktable.c:275
+#: ../src/libs/tools/darktable.c:290
 msgid "* developers *"
 msgstr "* ontwikkelaars *"
 
-#: ../src/libs/tools/darktable.c:281
+#: ../src/libs/tools/darktable.c:296
 msgid "* ubuntu packaging, color management, video tutorials *"
 msgstr "* Ubuntu installatie pakketten, kleur management, video oefeningen *"
 
-#: ../src/libs/tools/darktable.c:284
+#: ../src/libs/tools/darktable.c:299
 msgid "* OpenCL pipeline: *"
 msgstr "* OpenCL pijplijn: *"
 
-#: ../src/libs/tools/darktable.c:287
+#: ../src/libs/tools/darktable.c:302
 msgid "* networking, battle testing, translation expert *"
 msgstr "* netwerken, battle testing, vertaal expert *"
 
-#: ../src/libs/tools/darktable.c:290
+#: ../src/libs/tools/darktable.c:305
 msgid "* contributors *"
 msgstr "* met dank aan *"
 
-#: ../src/libs/tools/darktable.c:365
+#: ../src/libs/tools/darktable.c:380
 msgid "translator-credits"
 msgstr ""
 "Ger Siemerink\n"
@@ -8343,6 +8638,19 @@ msgstr "scherm wisselaar"
 msgid "view toolbox"
 msgstr "bekijk toolbox"
 
+#: ../src/lua/preferences.c:543
+msgid "lua options"
+msgstr "lua opties"
+
+#: ../src/lua/preferences.c:592
+msgid "select file"
+msgstr "selecteer bestand"
+
+#: ../src/lua/preferences.c:634
+#, c-format
+msgid "double click to reset to `%f'"
+msgstr "dubbelklik om te resetten naar `%f'"
+
 #: ../src/views/darkroom.c:83
 msgid "darkroom"
 msgstr "ontwikkelen"
@@ -8449,7 +8757,7 @@ msgctxt "accel"
 msgid "overexposed"
 msgstr "overbelicht"
 
-#: ../src/views/lighttable.c:508
+#: ../src/views/lighttable.c:508 ../src/views/slideshow.c:333
 msgid "there are no images in this collection"
 msgstr "er bevinden zich geen afbeeldingen in deze catalogus"
 
@@ -8570,10 +8878,6 @@ msgstr ""
 msgid "slideshow"
 msgstr "presentatie"
 
-#: ../src/views/slideshow.c:333
-msgid "No images in collection."
-msgstr "in deze catalogus bevinden zich geen afbeeldingen"
-
 #: ../src/views/slideshow.c:506
 msgctxt "accel"
 msgid "start and stop"
@@ -8592,215 +8896,24 @@ msgstr "nieuwe sessie gestart-'%s'"
 msgid "no camera with tethering support available for use..."
 msgstr "geen tethering ondersteunde camera aanwezig"
 
-#: ../src/develop/masks/masks.c:41
-msgid "ctrl+click to add a sharp node"
-msgstr "ctrl+klik: toevoegen scherp knooppunt"
+#~ msgctxt "accel"
+#~ msgid "rotate"
+#~ msgstr "draai"
 
-#: ../src/develop/masks/masks.c:42
-msgid "ctrl+click to switch between smooth/sharp node"
-msgstr " ctrl+klik schakelt tussen glade/scherpe knooppunten"
+#~ msgid "No images in collection."
+#~ msgstr "in deze catalogus bevinden zich geen afbeeldingen"
 
-#: ../src/develop/masks/masks.c:43
-msgid "right-click to reset feather value"
-msgstr "klik rechtermuisknop om feather waarde te resetten"
+#~ msgid "Select a directory"
+#~ msgstr "selecteer map"
 
-#: ../src/develop/masks/masks.c:44
-msgid "ctrl+click to add a node"
-msgstr " ctrl+klik voegt knooppunt toe "
+#~ msgid "dark contrast"
+#~ msgstr "donker contrast"
 
-#: ../src/develop/masks/masks.c:45 ../src/develop/masks/masks.c:49
-#: ../src/develop/masks/masks.c:55
-msgid "ctrl+scroll to set shape opacity"
-msgstr "ctrl+scroll: bepaald dekking door vorm"
+#~ msgid "fotogenetic (point & shoot)"
+#~ msgstr "fotogenetic - point and shoot v4.1"
 
-#: ../src/develop/masks/masks.c:50
-msgid "move to rotate shape"
-msgstr "verplaats om de vorm te draaien"
-
-#: ../src/develop/masks/masks.c:54
-msgid "ctrl+click to rotate"
-msgstr " ctrl+klik om te draaien "
-
-#: ../src/develop/masks/masks.c:59
-msgid ""
-"scroll to set brush size, shift+scroll to set hardness, ctrl+scroll to set "
-"opacity"
-msgstr ""
-"scroll bepaald penseel afmeting, shift+scroll bepaald hardheid, ctrl+scroll "
-"bepaald dekking"
-
-#: ../src/develop/masks/masks.c:60
-msgid "scroll to set brush size"
-msgstr "bepaal penseel dikte door te scrollen "
-
-#: ../src/develop/masks/masks.c:61
-msgid "scroll to set hardness, ctrl+scroll to set shape opacity"
-msgstr "scrollen bepaalt hardheid, ctrl+scroll bepaalt dekking door vorm"
-
-#: ../src/develop/masks/masks.c:163
-#, c-format
-msgid "circle #%d"
-msgstr "cirkel  #%d"
-
-#: ../src/develop/masks/masks.c:164
-#, c-format
-msgid "path #%d"
-msgstr "pad #%d"
-
-#: ../src/develop/masks/masks.c:165
-#, c-format
-msgid "gradient #%d"
-msgstr "kleurverloop #%d"
-
-#: ../src/develop/masks/masks.c:166
-#, c-format
-msgid "ellipse #%d"
-msgstr "ellips #%d"
-
-#: ../src/develop/masks/masks.c:167
-#, c-format
-msgid "brush #%d"
-msgstr "penseel #%d"
-
-#: ../src/develop/masks/masks.c:218
-#, c-format
-msgid "copy of %s"
-msgstr "kopie van %s"
-
-#: ../src/develop/masks/masks.c:718
-#, c-format
-msgid "%s: mask version mismatch: %d != %d"
-msgstr "%s: masker versie komt niet overeen: %d != %d"
-
-#: ../src/develop/masks/masks.c:1408 ../src/libs/masks.c:948
-msgid "add existing shape"
-msgstr "bestaande vorm toevoegen"
-
-#: ../src/develop/masks/masks.c:1435
-msgid "use same shapes as"
-msgstr "gebruik dezelfde vorm als"
-
-#: ../src/libs/masks.c:54
-msgid "mask manager"
-msgstr "maskers manager"
-
-#: ../src/libs/masks.c:256
-#, c-format
-msgid "group #%d"
-msgstr "groep #%d"
-
-#: ../src/libs/masks.c:1018
-msgid "duplicate this shape"
-msgstr "dupliceer vorm"
-
-#: ../src/libs/masks.c:1022
-msgid "delete this shape"
-msgstr "verwijder vorm"
-
-#: ../src/libs/masks.c:1028
-msgid "remove from group"
-msgstr "verwijder van groep"
-
-#: ../src/libs/masks.c:1036
-msgid "group the forms"
-msgstr "groepeer vormen"
-
-#: ../src/libs/masks.c:1045
-msgid "use inversed shape"
-msgstr "gebruik geïnverteerde vorm"
-
-#: ../src/libs/masks.c:1051
-msgid "mode : union"
-msgstr "wijze: aaneenvoeging"
-
-#: ../src/libs/masks.c:1054
-msgid "mode : intersection"
-msgstr "wijze: doorsnede"
-
-#: ../src/libs/masks.c:1057
-msgid "mode : difference"
-msgstr "wijze: verschil"
-
-#: ../src/libs/masks.c:1060
-msgid "mode : exclusion"
-msgstr "wijze: uitsluiten"
-
-#: ../src/libs/masks.c:1074
-msgid "cleanup unused shapes"
-msgstr "opruimen niet gebruikte vormen"
-
-#: ../src/libs/masks.c:1495
-msgid "created shapes"
-msgstr "gecreëerde vormen"
-
-#: ../src/lua/preferences.c:543
-msgid "lua options"
-msgstr "lua opties"
-
-#: ../src/lua/preferences.c:581
-msgid "Select a directory"
-msgstr "selecteer map"
-
-#: ../src/lua/preferences.c:592
-msgid "Select a file"
-msgstr "selecteer bestand"
-
-#: ../src/lua/preferences.c:634
-#, c-format
-msgid "double click to reset to `%f'"
-msgstr "dubbelklik om te resetten naar `%f'"
-
-#: ../src/imageio/format/webp.c:243
-msgid "WebP (8-bit)"
-msgstr "WebP (8-bit)"
-
-#: ../src/imageio/format/webp.c:276
-msgid "compression type"
-msgstr "compressie type"
-
-#: ../src/imageio/format/webp.c:281
-msgid "lossy"
-msgstr "met verlies"
-
-#: ../src/imageio/format/webp.c:286
-msgid "lossless"
-msgstr "verliesloos"
-
-#: ../src/imageio/format/webp.c:296
-msgid "applies only to lossy setting"
-msgstr "geldt alleen voor verlieshebbende instellingen"
-
-#: ../src/imageio/format/webp.c:304
-msgid "image hint"
-msgstr "afbeeldings Hint"
-
-#: ../src/imageio/format/webp.c:305
-msgid ""
-"image characteristics hint for the underlying encoder.\n"
-"picture : digital picture, like portrait, inner shot\n"
-"photo   : outdoor photograph, with natural lighting\n"
-"graphic : discrete tone image (graph, map-tile etc)"
-msgstr ""
-"beeldkenmerken hints voor de onderliggende encoder\n"
-"afbeelding: digtale afbeelding, zoals portrait, binnen opname\n"
-"foto: buiten opname, met natuurlijk licht\n"
-"plaatje: aparte afbeelding curve (grafiek, kaart-tegels etc)    "
-
-#: ../src/imageio/format/webp.c:313
-msgid "default"
-msgstr "standaard"
-
-#: ../src/imageio/format/webp.c:314
-msgid "picture"
-msgstr "afbeelding"
-
-#: ../src/imageio/format/webp.c:315
-msgid "photo"
-msgstr "foto"
-
-#: ../src/imageio/format/webp.c:316
-msgid "graphic"
-msgstr "grafisch"
+#~ msgid "fotogenetic (EV3)"
+#~ msgstr "fotogenetic (EV3)"
 
 #~ msgid "magic lantern defaults"
 #~ msgstr "magic lantern standaard"
@@ -8893,13 +9006,6 @@ msgstr "grafisch"
 #~ msgctxt "accel"
 #~ msgid "expose statuses"
 #~ msgstr "belichtings statussen"
-
-#~ msgid ""
-#~ "couldn't expand to a unique filename for import, please check your import "
-#~ "settings."
-#~ msgstr ""
-#~ "uitbreiden naar unieke bestandsnaam bij het importeren is mislukt, "
-#~ "controleer uw instellingen"
 
 #~ msgid "failed to create import path `%s', import aborted."
 #~ msgstr "aanmaak importeer pad %s mislukt, importeren afgebroken"
@@ -9431,10 +9537,6 @@ msgstr "grafisch"
 #~ msgstr "roteren v"
 
 #~ msgctxt "accel"
-#~ msgid "rotation"
-#~ msgstr "draaiing"
-
-#~ msgctxt "accel"
 #~ msgid "split"
 #~ msgstr "splitsen"
 
@@ -9852,9 +9954,6 @@ msgstr "grafisch"
 #~ "bepaal het contrast van de afbeelding in overeenstemming met een curve; "
 #~ "apart voor elk RGB kanaal "
 
-#~ msgid "ask before deleting images"
-#~ msgstr "voordat afbeeldingen worden verwijderd eerst vragen"
-
 #~ msgid "image cache file"
 #~ msgstr "bufferbestand van de afbeelding"
 
@@ -10078,9 +10177,6 @@ msgstr "grafisch"
 
 #~ msgid "accelerator"
 #~ msgstr "sneltoets"
-
-#~ msgid "stuck pixels"
-#~ msgstr "dode pixels"
 
 #~ msgid "strength of stuck pixel correction threshold"
 #~ msgstr "drempelwaarde voordat pixels worden hersteld"

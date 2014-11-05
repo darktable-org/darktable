@@ -1234,7 +1234,7 @@
     </type>
     <default>auto</default>
     <shortdescription>password storage backend to use</shortdescription>
-    <longdescription>the storage backend for password storage: none, kwallet, gnome keyring</longdescription>
+    <longdescription>the storage backend for password storage: auto, none, libsecret, kwallet, gnome keyring</longdescription>
   </dtconfig>
   <dtconfig>
     <name>plugins/lighttable/export/iccprofile</name>

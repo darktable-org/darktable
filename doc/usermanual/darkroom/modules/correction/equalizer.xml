@@ -63,7 +63,7 @@
     <para>
       Each frequence band can be tweaked independently. In particular, you can adjust contrast
       boost and denoise threshold splines for both lightness and chromaticity, as well as the
-      sharpness of the wavelet basis on each frequency scale.
+      acuteness (<quote>edge</quote>) of the wavelet basis on each frequency scale.
     </para>
 
     <informaltable frame="none">
@@ -134,7 +134,7 @@
         <tbody>
           <row>
             <entry>
-              This screen shows the effect of the sharpen parameter. It is here pulled down to
+              This screen shows the effect of the edge parameter. It is here pulled down to
               zero for all bands. This is effectively a regular à trous wavelet, without edge
               detection, and results in the characteristic halos around sharp edges in the
               image.
@@ -166,9 +166,9 @@
     </informaltable>
 
     <para>
-      Note that the sharpness parameter only affects the wavelet basis, not the image directly.
+      Note that the edge parameter only affects the wavelet basis, not the image directly.
       You will have to change some denoise/contrast boost parameters to see an effect following
-      adjustments to the sharpness parameter.
+      adjustments to the edge parameter.
     </para>
 
     <para>
