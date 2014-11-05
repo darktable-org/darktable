@@ -24,8 +24,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 1.3\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2014-11-04 09:00+0100\n"
-"PO-Revision-Date: 2014-11-04 09:17+0100\n"
+"POT-Creation-Date: 2014-11-04 22:44+0100\n"
+"PO-Revision-Date: 2014-11-04 22:51+0100\n"
 "Last-Translator: Richard Levitte <richard@levitte.org>\n"
 "Language-Team: \n"
 "Language: sv\n"
@@ -652,8 +652,10 @@ msgid "gnome keyring"
 msgstr "gnome nyckelring"
 
 #: ../build/src/preferences_gen.h:2371
-msgid "the storage backend for password storage: none, kwallet, gnome keyring"
-msgstr "metod att lagring av lösenord: ingen, kwallet, gnome keyring"
+msgid ""
+"the storage backend for password storage: auto, none, libsecret, kwallet, "
+"gnome keyring"
+msgstr "metod att lagring av lösenord: auto, ingen, libsecret, kwallet, gnome keyring"
 
 #: ../build/src/preferences_gen.h:2378
 msgid "look for updated xmp files on startup"
@@ -933,6 +935,12 @@ msgstr "bild `%s' är inte tillgänglig"
 #, c-format
 msgid "cannot find the style '%s' to apply during export."
 msgstr "kan inte finna stilen '%s' att applicera under export."
+
+#: ../src/common/import_session.c:289
+msgid ""
+"couldn't expand to a unique filename for session, please check your import "
+"session settings."
+msgstr "kunde inte bygga ett unikt filnamn för sessionen, var god kolla dina import-inställningar."
 
 #. preset name                   maker    model            iso    a a a                                 b b b
 #: ../src/common/noiseprofiles.h:37
@@ -1224,6 +1232,7 @@ msgstr "radera bilder?"
 #: ../src/imageio/storage/disk.c:164 ../src/imageio/storage/gallery.c:109
 #: ../src/imageio/storage/gallery.c:203 ../src/imageio/storage/latex.c:109
 #: ../src/imageio/storage/latex.c:203 ../src/libs/styles.c:240
+#: ../src/lua/preferences.c:581
 msgid "select directory"
 msgstr "välj katalog"
 
@@ -1285,6 +1294,17 @@ msgstr "la till tidsförskjutning på %d bild(er)"
 #, c-format
 msgid "importing image %s"
 msgstr "importerar bild %s"
+
+#. printf("%s: scale %f/%f %d\n", self->op, roi_out->scale, roi_in->scale, roi_out->scale == roi_in->scale);
+#. printf("xoffs %d, yoffs %d, out %d, %d, in %d, %d\n", xoffs, yoffs, roi_out->width, roi_out->height, roi_in->width, roi_in->height);
+#: ../src/develop/blend.c:1930 ../src/develop/blend.c:2245
+#, c-format
+msgid "skipped blending in module '%s': roi's do not match"
+msgstr "struntade i blandning i modul '%s': roi:er stämmer inte"
+
+#: ../src/develop/blend.c:2047 ../src/develop/blend.c:2291
+msgid "could not allocate buffer for blending"
+msgstr "kunde inte tilldela buffert för blandning"
 
 #: ../src/develop/blend_gui.c:945
 msgid "sliders for L channel"
@@ -1705,17 +1725,6 @@ msgstr "visningsmask"
 msgid "temporarily switch off blend mask. only for module in focus"
 msgstr "stäng av markeringen tillfälligtvis.  enbart för den aktiva modulen."
 
-#. printf("%s: scale %f/%f %d\n", self->op, roi_out->scale, roi_in->scale, roi_out->scale == roi_in->scale);
-#. printf("xoffs %d, yoffs %d, out %d, %d, in %d, %d\n", xoffs, yoffs, roi_out->width, roi_out->height, roi_in->width, roi_in->height);
-#: ../src/develop/blend.c:1930 ../src/develop/blend.c:2245
-#, c-format
-msgid "skipped blending in module '%s': roi's do not match"
-msgstr "struntade i blandning i modul '%s': roi:er stämmer inte"
-
-#: ../src/develop/blend.c:2047 ../src/develop/blend.c:2291
-msgid "could not allocate buffer for blending"
-msgstr "kunde inte tilldela buffert för blandning"
-
 #: ../src/develop/develop.c:1002
 #, c-format
 msgid "%s: module `%s' version mismatch: %d != %d"
@@ -1837,10 +1846,95 @@ msgid_plural "%s have been imported"
 msgstr[0] "%s har importerats"
 msgstr[1] "%s har importerats"
 
-#: ../src/develop/tiling.c:807 ../src/develop/tiling.c:1105
+#: ../src/develop/masks/masks.c:41
+msgid "ctrl+click to add a sharp node"
+msgstr "ctrl+klick för att lägga till en skarp nod"
+
+#: ../src/develop/masks/masks.c:42
+msgid "ctrl+click to switch between smooth/sharp node"
+msgstr "ctrl+klick för att växla mellan kurv/skarp nod"
+
+#: ../src/develop/masks/masks.c:43
+msgid "right-click to reset feather value"
+msgstr "höger-klicka för att återställa fjädringsvärdet"
+
+#: ../src/develop/masks/masks.c:44
+msgid "ctrl+click to add a node"
+msgstr "ctrl+klick för att lägga till en nod"
+
+#: ../src/develop/masks/masks.c:45 ../src/develop/masks/masks.c:49
+#: ../src/develop/masks/masks.c:55
+msgid "ctrl+scroll to set shape opacity"
+msgstr "ctrl+scroll för att ställa in formens genomskinlighet"
+
+#: ../src/develop/masks/masks.c:50
+msgid "move to rotate shape"
+msgstr "flytta för att rotera formen"
+
+#: ../src/develop/masks/masks.c:54
+msgid "ctrl+click to rotate"
+msgstr "ctrl+klick för att rotera"
+
+#: ../src/develop/masks/masks.c:59
+msgid ""
+"scroll to set brush size, shift+scroll to set hardness, ctrl+scroll to set "
+"opacity"
+msgstr ""
+"scroll för att ställa in penselns storlek, shift+scroll för att ställa in "
+"dess hårdhet, ctrl+scroll för att ställa in dess ogenomskinlighet"
+
+#: ../src/develop/masks/masks.c:60
+msgid "scroll to set brush size"
+msgstr "scroll för att ställa in penselns storlek"
+
+#: ../src/develop/masks/masks.c:61
+msgid "scroll to set hardness, ctrl+scroll to set shape opacity"
+msgstr ""
+"scroll för att ställa in hårdhet, ctrl+scroll för att ställa in formens "
+"ogenomskinlighet"
+
+#: ../src/develop/masks/masks.c:163
 #, c-format
-msgid "tiling failed for module '%s'. output might be garbled."
-msgstr "tiling misslyckades i modul '%s'. resultatet kan vara förvanskat."
+msgid "circle #%d"
+msgstr "cirkelform #%d"
+
+#: ../src/develop/masks/masks.c:164
+#, c-format
+msgid "path #%d"
+msgstr "slinga #%d"
+
+#: ../src/develop/masks/masks.c:165
+#, c-format
+msgid "gradient #%d"
+msgstr "gradient #%d"
+
+#: ../src/develop/masks/masks.c:166
+#, c-format
+msgid "ellipse #%d"
+msgstr "ellips #%d"
+
+#: ../src/develop/masks/masks.c:167
+#, c-format
+msgid "brush #%d"
+msgstr "pensel #%d"
+
+#: ../src/develop/masks/masks.c:218
+#, c-format
+msgid "copy of %s"
+msgstr "kopia av %"
+
+#: ../src/develop/masks/masks.c:718
+#, c-format
+msgid "%s: mask version mismatch: %d != %d"
+msgstr "%s: maskering skiljer i version: %d != %d"
+
+#: ../src/develop/masks/masks.c:1408 ../src/libs/masks.c:948
+msgid "add existing shape"
+msgstr "lägg till existerande form"
+
+#: ../src/develop/masks/masks.c:1435
+msgid "use same shapes as"
+msgstr "använd samma form som"
 
 #: ../src/develop/pixelpipe_hb.c:2254
 msgid ""
@@ -1849,6 +1943,11 @@ msgid ""
 msgstr ""
 "darktable upptäckte problem med dina OpenCL-inställningar; slå av OpenCL för "
 "nästa session!"
+
+#: ../src/develop/tiling.c:807 ../src/develop/tiling.c:1105
+#, c-format
+msgid "tiling failed for module '%s'. output might be garbled."
+msgstr "tiling misslyckades i modul '%s'. resultatet kan vara förvanskat."
 
 #: ../src/dtgtk/resetlabel.c:61
 msgid "double-click to reset"
@@ -2205,6 +2304,24 @@ msgstr "$(DESKTOP) - skrivbordet"
 msgid "$(TITLE) - title from metadata"
 msgstr "$(TITLE) - titel från metadata"
 
+#: ../src/gui/hist_dialog.c:150
+msgid "select parts"
+msgstr "välj delar"
+
+#: ../src/gui/hist_dialog.c:181 ../src/gui/styles_dialog.c:361
+#: ../src/gui/styles_dialog.c:374
+msgid "include"
+msgstr "inkludera"
+
+#: ../src/gui/hist_dialog.c:192 ../src/gui/styles_dialog.c:403
+#: ../src/gui/styles_dialog.c:410
+msgid "item"
+msgstr "post"
+
+#: ../src/gui/hist_dialog.c:228
+msgid "can't copy history out of unaltered image"
+msgstr "kan inte kopiera historik från en orörd bild"
+
 #: ../src/gui/preferences.c:224
 msgid "darktable preferences"
 msgstr "darktable inställningar"
@@ -2512,31 +2629,13 @@ msgstr "ange ett namn för stilen"
 msgid "enter a description for the new style, this description is searchable"
 msgstr "ange en beskrivning av den nya stilen, denna beskrivning är sökbar"
 
-#: ../src/gui/styles_dialog.c:361 ../src/gui/styles_dialog.c:374
-#: ../src/gui/hist_dialog.c:181
-msgid "include"
-msgstr "inkludera"
-
 #: ../src/gui/styles_dialog.c:391
 msgid "update"
 msgstr "uppdatera"
 
-#: ../src/gui/styles_dialog.c:403 ../src/gui/styles_dialog.c:410
-#: ../src/gui/hist_dialog.c:192
-msgid "item"
-msgstr "post"
-
 #: ../src/gui/styles_dialog.c:509
 msgid "can't create style out of unaltered image"
 msgstr "kan inte skapa en stil utifrån en orörd bild"
-
-#: ../src/gui/hist_dialog.c:150
-msgid "select parts"
-msgstr "välj delar"
-
-#: ../src/gui/hist_dialog.c:228
-msgid "can't copy history out of unaltered image"
-msgstr "kan inte kopiera historik från en orörd bild"
 
 #: ../src/imageio/format/copy.c:145 ../src/libs/copy_history.c:253
 #: ../src/libs/image.c:161
@@ -2600,7 +2699,7 @@ msgid "J2K"
 msgstr "J2K"
 
 #: ../src/imageio/format/j2k.c:623 ../src/imageio/format/jpeg.c:546
-#: ../src/libs/camera.c:573 ../src/imageio/format/webp.c:293
+#: ../src/imageio/format/webp.c:293 ../src/libs/camera.c:573
 msgid "quality"
 msgstr "kvalitet"
 
@@ -2675,6 +2774,59 @@ msgstr "komprimera med framförhållning"
 #: ../src/imageio/format/tiff.c:421
 msgid "deflate with predictor (float)"
 msgstr "komprimera med framförhållning (flyttal)"
+
+#: ../src/imageio/format/webp.c:243
+msgid "WebP (8-bit)"
+msgstr "WebP (8-bit)"
+
+#: ../src/imageio/format/webp.c:276
+msgid "compression type"
+msgstr "komprimeringstyp"
+
+#: ../src/imageio/format/webp.c:281
+msgid "lossy"
+msgstr "destruktiv"
+
+#: ../src/imageio/format/webp.c:286
+msgid "lossless"
+msgstr "icke-destruktiv"
+
+#: ../src/imageio/format/webp.c:296
+msgid "applies only to lossy setting"
+msgstr "enbart för destruktiv komprimering"
+
+# THESE WEBP STRINGS NEED REWRITING!  They are really not comprehensible in any sane way, and they get even worse when trying to traduce them to swedish.  /Richard Levitte
+#: ../src/imageio/format/webp.c:304
+msgid "image hint"
+msgstr "bild-karaktär"
+
+#: ../src/imageio/format/webp.c:305
+msgid ""
+"image characteristics hint for the underlying encoder.\n"
+"picture : digital picture, like portrait, inner shot\n"
+"photo   : outdoor photograph, with natural lighting\n"
+"graphic : discrete tone image (graph, map-tile etc)"
+msgstr ""
+"ledtråd om bildens karaktär till den underliggande bildkodaren.\n"
+"bild   : typiskt porträtt, inomhusbild\n"
+"foto   : utomhusbild, med naturligt ljus\n"
+"grafik : bild med diskreta toner (graf, kartruta, etc)"
+
+#: ../src/imageio/format/webp.c:313
+msgid "default"
+msgstr "standard"
+
+#: ../src/imageio/format/webp.c:314
+msgid "picture"
+msgstr "bild"
+
+#: ../src/imageio/format/webp.c:315
+msgid "photo"
+msgstr "foto"
+
+#: ../src/imageio/format/webp.c:316
+msgid "graphic"
+msgstr "grafik"
 
 #: ../src/imageio/storage/disk.c:62
 msgid "file on disk"
@@ -4387,8 +4539,8 @@ msgid "operation mode"
 msgstr "operationstyp"
 
 #: ../src/iop/defringe.c:436
-msgid "region average (fast)"
-msgstr "medel över område (snabbt)"
+msgid "global average (fast)"
+msgstr "globalt medel (snabbt)"
 
 #. 0
 #: ../src/iop/defringe.c:437
@@ -4404,7 +4556,7 @@ msgstr "fast tröskelnivå (snabbt)"
 #: ../src/iop/defringe.c:439
 msgid ""
 "method for color protection:\n"
-" - region average: fast, might show slightly wrong previews in high "
+" - global average: fast, might show slightly wrong previews in high "
 "magnification; might sometimes protect saturation too much or too low in "
 "comparison to local average\n"
 " - local average: slower, might protect saturation better than global "
@@ -4413,8 +4565,8 @@ msgid ""
 " - static: fast, only uses the threshold as a static limit"
 msgstr ""
 "metod för strålningsutfyllnad:\n"
-" - medel över område: snabbt, kan visa felaktig förhandsvisning i stark förstoring; kan ibland skydda mättnaden för mycket eller för lite jämfört med lokalt medel\n"
-" - lokalt medel: långsammare, kan skydda mättnaden bättre än medel över område genom att använda närliggande pixlar som färgreferens, och kan därmed tillåta med avmättnad där det behövs\n"
+" - globalt medel: snabbt, kan visa felaktig förhandsvisning i stark förstoring; kan ibland skydda mättnaden för mycket eller för lite jämfört med lokalt medel\n"
+" - lokalt medel: långsammare, kan skydda mättnaden bättre än globalt medel genom att använda närliggande pixlar som färgreferens, och kan därmed tillåta med avmättnad där det behövs\n"
 " - fast tröskelvärde: snabbt, använder enbart tröskelvärdet som gränsvärde"
 
 #: ../src/iop/defringe.c:444
@@ -4733,34 +4885,35 @@ msgstr ""
 "procentdel av ljusa värden\n"
 "som kapas bort"
 
-#: ../src/iop/exposure.c:992 ../src/iop/exposure.c:994
+#. FIXME: this needs a better tooltip!
+#: ../src/iop/exposure.c:993 ../src/iop/exposure.c:995
 msgid "percentile"
 msgstr "percentil"
 
-#: ../src/iop/exposure.c:998 ../src/iop/exposure.c:1000
+#: ../src/iop/exposure.c:999 ../src/iop/exposure.c:1001
 msgid "target level"
 msgstr "målnivå"
 
-#: ../src/iop/exposure.c:1004
+#: ../src/iop/exposure.c:1005
 msgid "histogram of"
 msgstr "histogram för"
 
-#: ../src/iop/exposure.c:1006
+#: ../src/iop/exposure.c:1007
 msgid "pre-processed image"
 msgstr "förprocessad bild"
 
-#: ../src/iop/exposure.c:1009
+#: ../src/iop/exposure.c:1010
 msgid "source raw data"
 msgstr "källans rådata"
 
-#: ../src/iop/exposure.c:1017
+#: ../src/iop/exposure.c:1018
 msgid "computed EC: "
 msgstr "beräknad EK: "
 
 #. This gets filled in by process
-#: ../src/iop/exposure.c:1021
-msgid "what exposure correction have actually been used"
-msgstr "vilken exponeringskorrigering som faktiskt har gjorts"
+#: ../src/iop/exposure.c:1022
+msgid "what exposure correction has actually been used"
+msgstr "vilken exponeringskorrigering som faktiskt användes"
 
 #: ../src/iop/flip.c:376 ../src/iop/flip.c:377
 msgid "autodetect"
@@ -4790,7 +4943,7 @@ msgstr "rotera 90 grader medurs"
 msgid "rotate by 180 degrees"
 msgstr "rotera 180 grader"
 
-#: ../src/iop/flip.c:508 ../src/iop/watermark.c:1117
+#: ../src/iop/flip.c:508
 msgid "rotate"
 msgstr "rotera"
 
@@ -4936,7 +5089,7 @@ msgstr ""
 "komprimering av gradering\n"
 "0% = mjuk, 100% = hård"
 
-#: ../src/iop/graduatednd.c:1046
+#: ../src/iop/graduatednd.c:1046 ../src/iop/watermark.c:1117
 msgid "rotation"
 msgstr "rotation"
 
@@ -5312,6 +5465,11 @@ msgstr "gjorda korrigeringar: "
 #: ../src/iop/lens.c:2182
 msgid "which corrections have actually been done"
 msgstr "vilka korrigeringar som faktiskt har gjorts"
+
+#: ../src/iop/letsgofloat.c:48
+msgctxt "modulename"
+msgid "let's go float!"
+msgstr "let's go float!"
 
 #: ../src/iop/levels.c:121
 msgid "levels"
@@ -6184,8 +6342,8 @@ msgstr "ogenomskinlighet"
 
 #: ../src/iop/watermark.c:205
 msgctxt "accel"
-msgid "rotate"
-msgstr "rotera"
+msgid "rotation"
+msgstr "rotation"
 
 #: ../src/iop/watermark.c:206
 msgctxt "accel"
@@ -7543,6 +7701,59 @@ msgstr "källa för karta"
 msgid "select the source of the map. some entries might not work"
 msgstr "välj källan för kartan. en del angivelser kanske inte fungerar"
 
+#: ../src/libs/masks.c:54
+msgid "mask manager"
+msgstr "markeringshanterare"
+
+#: ../src/libs/masks.c:256
+#, c-format
+msgid "group #%d"
+msgstr "grupp #%d"
+
+#: ../src/libs/masks.c:1018
+msgid "duplicate this shape"
+msgstr "duplicera denna form"
+
+#: ../src/libs/masks.c:1022
+msgid "delete this shape"
+msgstr "ta bort denna form"
+
+#: ../src/libs/masks.c:1028
+msgid "remove from group"
+msgstr "ta bort från grupp"
+
+#: ../src/libs/masks.c:1036
+msgid "group the forms"
+msgstr "gruppera formerna"
+
+#: ../src/libs/masks.c:1045
+msgid "use inversed shape"
+msgstr "använd omvänd form"
+
+#: ../src/libs/masks.c:1051
+msgid "mode : union"
+msgstr "läge : hopslagning"
+
+#: ../src/libs/masks.c:1054
+msgid "mode : intersection"
+msgstr "läge : skärning"
+
+#: ../src/libs/masks.c:1057
+msgid "mode : difference"
+msgstr "läge : skillnad"
+
+#: ../src/libs/masks.c:1060
+msgid "mode : exclusion"
+msgstr "läge : uteslutning"
+
+#: ../src/libs/masks.c:1074
+msgid "cleanup unused shapes"
+msgstr "städa bort oanvända former"
+
+#: ../src/libs/masks.c:1495
+msgid "created shapes"
+msgstr "skapa former"
+
 #: ../src/libs/metadata.c:56
 msgid "metadata editor"
 msgstr "redigerare för metadata"
@@ -8399,6 +8610,19 @@ msgstr "vyväljare"
 msgid "view toolbox"
 msgstr "vy verktygslåda"
 
+#: ../src/lua/preferences.c:543
+msgid "lua options"
+msgstr "lua-inställningar"
+
+#: ../src/lua/preferences.c:592
+msgid "select file"
+msgstr "välj fil"
+
+#: ../src/lua/preferences.c:634
+#, c-format
+msgid "double click to reset to `%f'"
+msgstr "dubbelklicka för att återställa till `%f'"
+
 #: ../src/views/darkroom.c:83
 msgid "darkroom"
 msgstr "mörkrum"
@@ -8505,7 +8729,7 @@ msgctxt "accel"
 msgid "overexposed"
 msgstr "överexponerad"
 
-#: ../src/views/lighttable.c:508
+#: ../src/views/lighttable.c:508 ../src/views/slideshow.c:333
 msgid "there are no images in this collection"
 msgstr "det finns inga bilder i den här samlingen"
 
@@ -8627,10 +8851,6 @@ msgstr ""
 msgid "slideshow"
 msgstr "bildspel"
 
-#: ../src/views/slideshow.c:333
-msgid "No images in collection."
-msgstr "inga bilder i samlingen."
-
 #: ../src/views/slideshow.c:506
 msgctxt "accel"
 msgid "start and stop"
@@ -8649,218 +8869,15 @@ msgstr "ny session skapad '%s'"
 msgid "no camera with tethering support available for use..."
 msgstr "ingen kamera ansluten som stödjer tjudrad fångst för användning..."
 
-#: ../src/develop/masks/masks.c:41
-msgid "ctrl+click to add a sharp node"
-msgstr "ctrl+klick för att lägga till en skarp nod"
+#~ msgctxt "accel"
+#~ msgid "rotate"
+#~ msgstr "rotera"
 
-#: ../src/develop/masks/masks.c:42
-msgid "ctrl+click to switch between smooth/sharp node"
-msgstr "ctrl+klick för att växla mellan kurv/skarp nod"
+#~ msgid "No images in collection."
+#~ msgstr "inga bilder i samlingen."
 
-#: ../src/develop/masks/masks.c:43
-msgid "right-click to reset feather value"
-msgstr "höger-klicka för att återställa fjädringsvärdet"
-
-#: ../src/develop/masks/masks.c:44
-msgid "ctrl+click to add a node"
-msgstr "ctrl+klick för att lägga till en nod"
-
-#: ../src/develop/masks/masks.c:45 ../src/develop/masks/masks.c:49
-#: ../src/develop/masks/masks.c:55
-msgid "ctrl+scroll to set shape opacity"
-msgstr "ctrl+scroll för att ställa in formens genomskinlighet"
-
-#: ../src/develop/masks/masks.c:50
-msgid "move to rotate shape"
-msgstr "flytta för att rotera formen"
-
-#: ../src/develop/masks/masks.c:54
-msgid "ctrl+click to rotate"
-msgstr "ctrl+klick för att rotera"
-
-#: ../src/develop/masks/masks.c:59
-msgid ""
-"scroll to set brush size, shift+scroll to set hardness, ctrl+scroll to set "
-"opacity"
-msgstr ""
-"scroll för att ställa in penselns storlek, shift+scroll för att ställa in "
-"dess hårdhet, ctrl+scroll för att ställa in dess ogenomskinlighet"
-
-#: ../src/develop/masks/masks.c:60
-msgid "scroll to set brush size"
-msgstr "scroll för att ställa in penselns storlek"
-
-#: ../src/develop/masks/masks.c:61
-msgid "scroll to set hardness, ctrl+scroll to set shape opacity"
-msgstr ""
-"scroll för att ställa in hårdhet, ctrl+scroll för att ställa in formens "
-"ogenomskinlighet"
-
-#: ../src/develop/masks/masks.c:163
-#, c-format
-msgid "circle #%d"
-msgstr "cirkelform #%d"
-
-#: ../src/develop/masks/masks.c:164
-#, c-format
-msgid "path #%d"
-msgstr "slinga #%d"
-
-#: ../src/develop/masks/masks.c:165
-#, c-format
-msgid "gradient #%d"
-msgstr "gradient #%d"
-
-#: ../src/develop/masks/masks.c:166
-#, c-format
-msgid "ellipse #%d"
-msgstr "ellips #%d"
-
-#: ../src/develop/masks/masks.c:167
-#, c-format
-msgid "brush #%d"
-msgstr "pensel #%d"
-
-#: ../src/develop/masks/masks.c:218
-#, c-format
-msgid "copy of %s"
-msgstr "kopia av %"
-
-#: ../src/develop/masks/masks.c:718
-#, c-format
-msgid "%s: mask version mismatch: %d != %d"
-msgstr "%s: maskering skiljer i version: %d != %d"
-
-#: ../src/develop/masks/masks.c:1408 ../src/libs/masks.c:948
-msgid "add existing shape"
-msgstr "lägg till existerande form"
-
-#: ../src/develop/masks/masks.c:1435
-msgid "use same shapes as"
-msgstr "använd samma form som"
-
-#: ../src/libs/masks.c:54
-msgid "mask manager"
-msgstr "markeringshanterare"
-
-#: ../src/libs/masks.c:256
-#, c-format
-msgid "group #%d"
-msgstr "grupp #%d"
-
-#: ../src/libs/masks.c:1018
-msgid "duplicate this shape"
-msgstr "duplicera denna form"
-
-#: ../src/libs/masks.c:1022
-msgid "delete this shape"
-msgstr "ta bort denna form"
-
-#: ../src/libs/masks.c:1028
-msgid "remove from group"
-msgstr "ta bort från grupp"
-
-#: ../src/libs/masks.c:1036
-msgid "group the forms"
-msgstr "gruppera formerna"
-
-#: ../src/libs/masks.c:1045
-msgid "use inversed shape"
-msgstr "använd omvänd form"
-
-#: ../src/libs/masks.c:1051
-msgid "mode : union"
-msgstr "läge : hopslagning"
-
-#: ../src/libs/masks.c:1054
-msgid "mode : intersection"
-msgstr "läge : skärning"
-
-#: ../src/libs/masks.c:1057
-msgid "mode : difference"
-msgstr "läge : skillnad"
-
-#: ../src/libs/masks.c:1060
-msgid "mode : exclusion"
-msgstr "läge : uteslutning"
-
-#: ../src/libs/masks.c:1074
-msgid "cleanup unused shapes"
-msgstr "städa bort oanvända former"
-
-#: ../src/libs/masks.c:1495
-msgid "created shapes"
-msgstr "skapa former"
-
-#: ../src/lua/preferences.c:543
-msgid "lua options"
-msgstr "lua-inställningar"
-
-#: ../src/lua/preferences.c:581
-msgid "Select a directory"
-msgstr "välj en katalog"
-
-#: ../src/lua/preferences.c:592
-msgid "Select a file"
-msgstr "välj en fil"
-
-#: ../src/lua/preferences.c:634
-#, c-format
-msgid "double click to reset to `%f'"
-msgstr "dubbelklicka för att återställa till `%f'"
-
-#: ../src/imageio/format/webp.c:243
-msgid "WebP (8-bit)"
-msgstr "WebP (8-bit)"
-
-#: ../src/imageio/format/webp.c:276
-msgid "compression type"
-msgstr "komprimeringstyp"
-
-#: ../src/imageio/format/webp.c:281
-msgid "lossy"
-msgstr "destruktiv"
-
-#: ../src/imageio/format/webp.c:286
-msgid "lossless"
-msgstr "icke-destruktiv"
-
-#: ../src/imageio/format/webp.c:296
-msgid "applies only to lossy setting"
-msgstr "enbart för destruktiv komprimering"
-
-# THESE WEBP STRINGS NEED REWRITING!  They are really not comprehensible in any sane way, and they get even worse when trying to traduce them to swedish.  /Richard Levitte
-#: ../src/imageio/format/webp.c:304
-msgid "image hint"
-msgstr "bild-karaktär"
-
-#: ../src/imageio/format/webp.c:305
-msgid ""
-"image characteristics hint for the underlying encoder.\n"
-"picture : digital picture, like portrait, inner shot\n"
-"photo   : outdoor photograph, with natural lighting\n"
-"graphic : discrete tone image (graph, map-tile etc)"
-msgstr ""
-"ledtråd om bildens karaktär till den underliggande bildkodaren.\n"
-"bild   : typiskt porträtt, inomhusbild\n"
-"foto   : utomhusbild, med naturligt ljus\n"
-"grafik : bild med diskreta toner (graf, kartruta, etc)"
-
-#: ../src/imageio/format/webp.c:313
-msgid "default"
-msgstr "standard"
-
-#: ../src/imageio/format/webp.c:314
-msgid "picture"
-msgstr "bild"
-
-#: ../src/imageio/format/webp.c:315
-msgid "photo"
-msgstr "foto"
-
-#: ../src/imageio/format/webp.c:316
-msgid "graphic"
-msgstr "grafik"
+#~ msgid "Select a directory"
+#~ msgstr "välj en katalog"
 
 #~ msgid "dark contrast"
 #~ msgstr "mörk kontrast"
@@ -8975,13 +8992,6 @@ msgstr "grafik"
 #~ msgstr ""
 #~ "visa på var bilden är i fokus i fullskärmsförhandsvisning i ljusbordet "
 #~ "('z'-läge).  rött för mycket skarpt, blått för aningen mindre skarpt."
-
-#~ msgid ""
-#~ "couldn't expand to a unique filename for import, please check your import "
-#~ "settings."
-#~ msgstr ""
-#~ "kunde inte bygga ett unikt filnamn för import, var god kolla dina import-"
-#~ "inställningar."
 
 #~ msgid "failed to create import path `%s', import aborted."
 #~ msgstr ""
@@ -9535,10 +9545,6 @@ msgstr "grafik"
 #~ msgctxt "accel"
 #~ msgid "keystone v"
 #~ msgstr "perspektivkorr v"
-
-#~ msgctxt "accel"
-#~ msgid "rotation"
-#~ msgstr "rotation"
 
 #~ msgctxt "accel"
 #~ msgid "split"
