@@ -1309,14 +1309,14 @@ apply_box_aspect(dt_iop_module_t *self, _grab_region_t grab)
       clip_x = clip_x + clip_w - (target_w + clip_w)*.5;
       clip_w = (target_w + clip_w)*.5;
     }
-    else if(grab & (GRAB_LEFT & GRAB_RIGHT)) // dragged either x or w (1 4)
+    else if(grab & GRAB_HORIZONTAL) // dragged either x or w (1 4)
     {
       // change h and move y, h equally
       const double off = target_h - clip_h;
       clip_h = clip_h + off;
       clip_y = clip_y - .5*off;
     }
-    else if(grab & (GRAB_TOP & GRAB_BOTTOM)) // dragged either y or h (2 8)
+    else if(grab & GRAB_VERTICAL) // dragged either y or h (2 8)
     {
       // change w and move x, w equally
       const double off = target_w - clip_w;
