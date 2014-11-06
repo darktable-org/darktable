@@ -121,10 +121,10 @@ gchar *dt_tag_get_name(const guint tagid)
 
 void dt_tag_reorganize(const gchar *source, const gchar *dest)
 {
+  sqlite3_stmt *stmt;
 
   if (!strcmp(source,dest)) return;
 
-  char query[1024];
   gchar *tag = g_strrstr(source,"|");
 
   if (!tag)
@@ -136,11 +136,18 @@ void dt_tag_reorganize(const gchar *source, const gchar *dest)
     dest++;
   }
 
-  g_snprintf(query,sizeof(query),
-             "UPDATE tags SET name=REPLACE(name,'%s','%s%s') WHERE name LIKE '%s%%'",
-             source, dest, tag, source);
+  gchar *new_expr = g_strconcat(dest, tag, NULL);
+  gchar *source_expr = g_strconcat(source, "%", NULL);
 
-  DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), query, NULL, NULL, NULL);
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+           "UPDATE tags SET name=REPLACE(name,?1,?2) WHERE name LIKE ?3", -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, source, -1, SQLITE_TRANSIENT);
+  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 2, new_expr, -1, SQLITE_TRANSIENT);
+  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 3, source_expr, -1, SQLITE_TRANSIENT);
+  sqlite3_step(stmt);
+  sqlite3_finalize(stmt);
+  g_free(source_expr);
+  g_free(new_expr);
 
   /* raise signal of tags change to refresh keywords module */
   //dt_control_signal_raise(darktable.signals, DT_SIGNAL_TAG_CHANGED);
