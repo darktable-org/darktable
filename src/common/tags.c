@@ -259,12 +259,14 @@ void dt_tag_detach(guint tagid,gint imgid)
 
 void dt_tag_detach_by_string(const char *name, gint imgid)
 {
-  char query[2048]= {0};
-  g_snprintf(query, sizeof(query),
+  sqlite3_stmt *stmt;
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
              "DELETE FROM tagged_images WHERE tagid IN (SELECT id FROM "
-             "tags WHERE name LIKE '%s') AND imgid = %d;", name, imgid);
-  DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), query,
-                        NULL, NULL, NULL);
+             "tags WHERE name LIKE ?1) AND imgid = ?2;", -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, name, -1, SQLITE_TRANSIENT);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, imgid);
+  sqlite3_step(stmt);
+  sqlite3_finalize(stmt);
 }
 
 
