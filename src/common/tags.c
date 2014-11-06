@@ -405,7 +405,6 @@ GList *dt_tag_get_hierarchical(gint imgid)
 uint32_t dt_tag_get_suggestions(const gchar *keyword, GList **result)
 {
   sqlite3_stmt *stmt;
-  char query[1024];
   /*
    * Earlier versions of this function used a large collation of selects
    * and joins, resulting in multi-*second* timings for sqlite3_exec().
@@ -420,13 +419,16 @@ uint32_t dt_tag_get_suggestions(const gchar *keyword, GList **result)
   if (keyword == 0)
     return 0;
 
+  gchar *keyword_expr = g_strdup_printf("%%%s%%", keyword);
+
   /* SELECT T.id FROM tags T WHERE T.name LIKE '%%%s%%';  --> into temp table */
-  memset(query, 0, sizeof(query));
-  snprintf(query, sizeof(query),
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
            "INSERT INTO memory.tagq (id) SELECT id FROM tags T WHERE "
-           "T.name LIKE '%%%s%%' ", keyword);
-  DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), query,
-                        NULL, NULL, NULL);
+           "T.name LIKE ?1", -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, keyword_expr, -1, SQLITE_TRANSIENT);
+  sqlite3_step(stmt);
+  sqlite3_finalize(stmt);
+  g_free(keyword_expr);
 
   /*
    * SELECT TXT.id2 FROM tagxtag TXT WHERE TXT.id1 IN (temp table)
