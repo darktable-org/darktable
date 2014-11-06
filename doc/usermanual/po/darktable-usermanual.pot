@@ -1,7 +1,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2014-11-05 21:27+0100\n"
+"POT-Creation-Date: 2014-11-06 20:33+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -18,7 +18,7 @@ msgid "The owner of the darktable project is Johannes Hanika. Main developers ar
 msgstr ""
 
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:15(para)
-msgid "darktable has been developed with major contribution by Aldric Renaudin, Alexandre Prokoudine, Ammon Riley, Andrew Toskin, Andrey Kaminsky, Antony Dovgal, Artur de Sousa Rocha, Brian Teague, Bruce Guenter, Cherrot Luo, Christian Himpel, Christian Tellefsen, Dan Torop, David Bremner, Dennis Gnad, Dimitrios Psychogios, Eckhart Pedersen, Edouard Gomez, Frédéric Grollier, Gaspard Jankowiak, Ger Siemerink, Gianluigi Calcaterra, Guilherme Brondani Torri, Igor Kuzmin, Ivan Tarozzi, James C. McPherson, Jean-Sébastien Pédron, Jérémy Rosen, Jesper Pedersen, Jochen Schröder, Johanes Schneider, José Carlos Casimiro, Jose Carlos Garcia Sogo, Josep Vicenç Moragues Pastor, Kaminsky Andrey, Kanstantsin Shautsou, Karl Mikaelsson, Loic Guibert, Mauro Bartoccelli, Michal Babej, Michel Leblond, Mikko Ruohola, Milan Knížek, Moritz Lipp, Olivier Tribout, Pascal Obry, Pedro Côrte-Real, Petr Styblo, Richard Hughes, Richard Levitte, Richard Wonka, Robert Bieber, Roman Lebedev, Rostyslav Pidgornyi, Sergey Pavlov, Simon Spannagel, Stuart Henderson, Tatica Leandro, Thomas Pryds, Victor Lamoine, Wolfgang Goetz, Wyatt Olson and many others."
+msgid "darktable has been developed with major contribution by Aldric Renaudin, Alexandre Prokoudine, Ammon Riley, Andrew Toskin, Andrey Kaminsky, Antony Dovgal, Artur de Sousa Rocha, Brian Teague, Bruce Guenter, Cherrot Luo, Christian Himpel, Christian Tellefsen, Dan Torop, David Bremner, Dennis Gnad, Dimitrios Psychogios, Eckhart Pedersen, Edouard Gomez, Frédéric Grollier, Gaspard Jankowiak, Ger Siemerink, Gianluigi Calcaterra, Guilherme Brondani Torri, Igor Kuzmin, Ivan Tarozzi, James C. McPherson, Jean-Sébastien Pédron, Jérémy Rosen, Jesper Pedersen, Jochen Schröder, Johanes Schneider, José Carlos Casimiro, Jose Carlos Garcia Sogo, Josep Vicenç Moragues Pastor, Kaminsky Andrey, Kanstantsin Shautsou, Karl Mikaelsson, Loic Guibert, Marcel Laubach, Mauro Bartoccelli, Michal Babej, Michel Leblond, Mikko Ruohola, Milan Knížek, Moritz Lipp, Olivier Tribout, Pascal Obry, Pedro Côrte-Real, Petr Styblo, Richard Hughes, Richard Levitte, Richard Wonka, Robert Bieber, Roman Lebedev, Rostyslav Pidgornyi, Sergey Pavlov, Simon Spannagel, Stuart Henderson, Tatica Leandro, Thomas Pryds, Victor Lamoine, Wolfgang Goetz, Wyatt Olson and many others."
 msgstr ""
 
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:32(para)
