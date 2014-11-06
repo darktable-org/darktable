@@ -1199,6 +1199,8 @@ demosaic_ppg(float *out, const float *in, dt_iop_roi_t *roi_out, const dt_iop_ro
   const int offX = 3; //MAX(0, 3 - (roi_in->width  - (roi_out->x + roi_out->width)));
   const int offY = 3; //MAX(0, 3 - (roi_in->height - (roi_out->y + roi_out->height)));
 
+  assert(roi_in->width == roi_out->width);
+  assert(roi_in->height == roi_out->height);
   // border interpolate
   float sum[8];
   for (int j=0; j < roi_out->height; j++) for (int i=0; i < roi_out->width; i++)
@@ -1516,10 +1518,10 @@ process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, v
           (piece->pipe->type == DT_DEV_PIXELPIPE_EXPORT))              // we assume you always want that for exports.
   {
     // demosaic and then clip and zoom
-    // roo.x = roi_out->x / global_scale;
-    // roo.y = roi_out->y / global_scale;
-    roo.width  = roi_out->width / roi_out->scale;
-    roo.height = roi_out->height / roi_out->scale;
+    // we demosaic at 1:1 the size of input roi, so make sure
+    // we fit these bounds exactly, to avoid crashes..
+    roo.width  = roi_in->width;
+    roo.height = roi_in->height;
     roo.scale = 1.0f;
 
     float *tmp = (float *)dt_alloc_align(16, (size_t)roo.width*roo.height*4*sizeof(float));
