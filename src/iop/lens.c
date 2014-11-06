@@ -1079,7 +1079,7 @@ void reload_defaults(dt_iop_module_t *module)
   char *new_lens = _lens_sanitize(img->exif_lens);
   g_strlcpy(tmp.lens, new_lens, sizeof(tmp.lens));
   free(new_lens);
-  g_strlcpy(tmp.camera, img->exif_model, sizeof(tmp.lens));
+  g_strlcpy(tmp.camera, img->exif_model, sizeof(tmp.camera));
   tmp.crop     = img->exif_crop;
   tmp.aperture = img->exif_aperture;
   tmp.focal    = img->exif_focal_length;
