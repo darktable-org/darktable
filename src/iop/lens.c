@@ -1112,8 +1112,19 @@ void reload_defaults(dt_iop_module_t *module)
     dt_pthread_mutex_unlock(&darktable.plugin_threadsafe);
     if(cam)
     {
+      dt_pthread_mutex_lock(&darktable.plugin_threadsafe);
+      const lfLens **lens = lf_db_find_lenses_hd(gd->db, cam[0], NULL,
+                                                 tmp.lens, LF_SEARCH_SORT_AND_UNIQUIFY);
+      dt_pthread_mutex_unlock(&darktable.plugin_threadsafe);
+      if(lens)
+      {
+        tmp.target_geom = lens[0]->Type;
+        lf_free(lens);
+      }
+
       tmp.crop = cam[0]->CropFactor;
       tmp.scale = get_autoscale(module, &tmp, cam[0]);
+
       lf_free(cam);
     }
   }
