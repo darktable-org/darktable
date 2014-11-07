@@ -3,7 +3,7 @@
 		<!ENTITY % darktable_dtd SYSTEM "../../dtd/darktable.dtd">
 		%darktable_dtd;
 		]>
-<sect2 status="draft" id="pixelpipe">
+<sect2 status="final" id="pixelpipe">
 
   <title>Pixelpipe, module order, and history stack</title>
 
@@ -12,7 +12,7 @@
   </indexterm>
 
   <indexterm>
-    <primary>module order</primary>
+    <primary>module processing order</primary>
   </indexterm>
 
   <indexterm>
@@ -64,11 +64,29 @@
 
   <para>
     Whenever you activate or deactivate a module or go back to a module and change the
-    parameters, this adds an item on top of the <quote>history stack</quote>. The history stack
-    records your workflow in the order in which you made changes to the pipeline. It allows you
-    to go back to an earlier stage of development if needed. The history stack represents your
-    personal workflow and is not to be confused with the sequence in which modules are applied
-    in the pixelpipe (see above). For more details on the history stack see
+    parameters, this adds an item on top of the <quote>history stack</quote>.
+  </para>
+
+  <para>
+    For example, when working on a raw file, the history stack on the left panel might say that
+    you first enabled <link linkend="denoise_bilateral"><emphasis>bilateral
+    filtering</emphasis></link>, then disabled <link linkend="base_curve"><emphasis>base
+    curve</emphasis></link>, then adjusted <link linkend="whitebalance"><emphasis>white
+    balance</emphasis></link>. But at any time, the processing took the RAW image, adjusted
+    <link linkend="whitebalance"><emphasis>white balance</emphasis></link> on it, then
+    <link linkend="demosaic"><emphasis>demosaic</emphasis></link>, then
+    <link
+      linkend="base_curve"><emphasis>base curve</emphasis></link> (if enabled), then
+    <link
+      linkend="denoise_bilateral"><emphasis>bilateral filtering</emphasis></link> (if
+    enabled), as shown bottom to top on the right panel.
+  </para>
+
+  <para>
+    The history stack records your workflow in the order in which you made changes to the
+    pipeline. It allows you to go back to an earlier stage of development if needed. The history
+    stack represents your personal workflow and is not to be confused with the sequence in which
+    modules are applied in the pixelpipe (see above). For more details on the history stack see
     <xref linkend="history"/>.
   </para>
 

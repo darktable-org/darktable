@@ -121,10 +121,10 @@ gchar *dt_tag_get_name(const guint tagid)
 
 void dt_tag_reorganize(const gchar *source, const gchar *dest)
 {
+  sqlite3_stmt *stmt;
 
   if (!strcmp(source,dest)) return;
 
-  char query[1024];
   gchar *tag = g_strrstr(source,"|");
 
   if (!tag)
@@ -136,11 +136,18 @@ void dt_tag_reorganize(const gchar *source, const gchar *dest)
     dest++;
   }
 
-  g_snprintf(query,sizeof(query),
-             "UPDATE tags SET name=REPLACE(name,'%s','%s%s') WHERE name LIKE '%s%%'",
-             source, dest, tag, source);
+  gchar *new_expr = g_strconcat(dest, tag, NULL);
+  gchar *source_expr = g_strconcat(source, "%", NULL);
 
-  DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), query, NULL, NULL, NULL);
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+           "UPDATE tags SET name=REPLACE(name,?1,?2) WHERE name LIKE ?3", -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, source, -1, SQLITE_TRANSIENT);
+  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 2, new_expr, -1, SQLITE_TRANSIENT);
+  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 3, source_expr, -1, SQLITE_TRANSIENT);
+  sqlite3_step(stmt);
+  sqlite3_finalize(stmt);
+  g_free(source_expr);
+  g_free(new_expr);
 
   /* raise signal of tags change to refresh keywords module */
   //dt_control_signal_raise(darktable.signals, DT_SIGNAL_TAG_CHANGED);
@@ -259,12 +266,14 @@ void dt_tag_detach(guint tagid,gint imgid)
 
 void dt_tag_detach_by_string(const char *name, gint imgid)
 {
-  char query[2048]= {0};
-  g_snprintf(query, sizeof(query),
+  sqlite3_stmt *stmt;
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
              "DELETE FROM tagged_images WHERE tagid IN (SELECT id FROM "
-             "tags WHERE name LIKE '%s') AND imgid = %d;", name, imgid);
-  DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), query,
-                        NULL, NULL, NULL);
+             "tags WHERE name LIKE ?1) AND imgid = ?2;", -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, name, -1, SQLITE_TRANSIENT);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, imgid);
+  sqlite3_step(stmt);
+  sqlite3_finalize(stmt);
 }
 
 
@@ -403,7 +412,6 @@ GList *dt_tag_get_hierarchical(gint imgid)
 uint32_t dt_tag_get_suggestions(const gchar *keyword, GList **result)
 {
   sqlite3_stmt *stmt;
-  char query[1024];
   /*
    * Earlier versions of this function used a large collation of selects
    * and joins, resulting in multi-*second* timings for sqlite3_exec().
@@ -418,13 +426,16 @@ uint32_t dt_tag_get_suggestions(const gchar *keyword, GList **result)
   if (keyword == 0)
     return 0;
 
+  gchar *keyword_expr = g_strdup_printf("%%%s%%", keyword);
+
   /* SELECT T.id FROM tags T WHERE T.name LIKE '%%%s%%';  --> into temp table */
-  memset(query, 0, sizeof(query));
-  snprintf(query, sizeof(query),
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
            "INSERT INTO memory.tagq (id) SELECT id FROM tags T WHERE "
-           "T.name LIKE '%%%s%%' ", keyword);
-  DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), query,
-                        NULL, NULL, NULL);
+           "T.name LIKE ?1", -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, keyword_expr, -1, SQLITE_TRANSIENT);
+  sqlite3_step(stmt);
+  sqlite3_finalize(stmt);
+  g_free(keyword_expr);
 
   /*
    * SELECT TXT.id2 FROM tagxtag TXT WHERE TXT.id1 IN (temp table)

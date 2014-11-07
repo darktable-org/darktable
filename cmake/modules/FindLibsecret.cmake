@@ -31,6 +31,13 @@
 
 find_package(PkgConfig)
 pkg_check_modules(LIBSECRET libsecret-1)
+foreach(i ${LIBSECRET_LIBRARIES})
+	find_library(_libsecret_LIBRARY NAMES ${i} HINTS ${LIBSECRET_LIBRARY_DIRS})
+	LIST(APPEND LIBSECRET_LIBRARY ${_libsecret_LIBRARY})
+	unset(_libsecret_LIBRARY CACHE)
+endforeach(i)
+set(LIBSECRET_LIBRARIES ${LIBSECRET_LIBRARY})
+unset(LIBSECRET_LIBRARY CACHE)
 
 set(VERSION_OK TRUE)
 if (LIBSECRET_VERSION)
