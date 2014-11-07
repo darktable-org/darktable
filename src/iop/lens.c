@@ -1118,7 +1118,34 @@ void reload_defaults(dt_iop_module_t *module)
       dt_pthread_mutex_unlock(&darktable.plugin_threadsafe);
       if(lens)
       {
-        tmp.target_geom = lens[0]->Type;
+        int lens_i = 0;
+
+        /*
+         * Current SVN lensfun lets you test for a fixed-lens camera by looking
+         * at the zeroth character in the mount's name:
+         * If it is a lower case letter, it is a fixed-lens camera.
+         */
+        if(!tmp.lens[0] && islower(cam[0]->Mount[0]))
+        {
+          /*
+           * no lens info in EXIF, and this is fixed-lens camera,
+           * let's find shortest lens model in the list of possible lenses
+           */
+          size_t min_model_len = SIZE_MAX;
+          for(int i = 0; lens[i]; i++)
+          {
+            if(strlen(lens[i]->Model) < min_model_len)
+            {
+              min_model_len = strlen(lens[i]->Model);
+              lens_i = i;
+            }
+          }
+
+          // and set lens to it
+          g_strlcpy(tmp.lens, lens[lens_i]->Model, sizeof(tmp.lens));
+        }
+
+        tmp.target_geom = lens[lens_i]->Type;
         lf_free(lens);
       }
 
