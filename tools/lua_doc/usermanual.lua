@@ -13,7 +13,7 @@ node_to_string = function(node,name)
 end
 
 code = function(text) 
-  return "\n\n<programlisting language=\"lua\">"..text.."</programlisting>\n\n"
+  return "</para>\n\n<para><programlisting language=\"lua\">"..text.."</programlisting></para>\n\n<para>"
 end
 
 startlist = function() return "<itemizedlist>\n" end
