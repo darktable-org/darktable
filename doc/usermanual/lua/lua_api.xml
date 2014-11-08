@@ -2022,7 +2022,7 @@ end</programlisting></para>
 <secondary>check_version</secondary>
 </indexterm>
 <synopsis>function( 
-	<emphasis><link linkend="darktable_configuration_check_version_module name">module name</link></emphasis> : string, 
+	<emphasis><link linkend="darktable_configuration_check_version_module_name">module_name</link></emphasis> : string, 
 	<emphasis><link linkend="darktable_configuration_check_version____">...</link></emphasis> : table...
 )</synopsis>
 <para>Check that a module is compatible with the running version of darktable</para>
@@ -2035,7 +2035,7 @@ end</programlisting></para>
 <para>(the ... here will automatically expand to your module name if used at the top of your script</para>
 
 <variablelist>
-<varlistentry id="darktable_configuration_check_version_module name"><term>module name</term><listitem>
+<varlistentry id="darktable_configuration_check_version_module_name"><term>module_name</term><listitem>
 <synopsis>string</synopsis>
 <para>The name of the module to report on error</para>
 

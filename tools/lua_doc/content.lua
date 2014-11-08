@@ -225,7 +225,7 @@ darktable.configuration.api_version_string:set_text([[The version description of
 darktable.configuration.check_version:set_text([[Check that a module is compatible with the running version of darktable]]..para().."Add the following line at the top of your module : "..
 code("darktable.configuration.check(...,{M,m,p},{M2,m2,p2})").."To document that your module has been tested with API version M.m.p and M2.m2.p2."..para()..
 "This will raise an error if the user is running a released version of DT and a warning if he is running a developement version"..para().."(the ... here will automatically expand to your module name if used at the top of your script")
-darktable.configuration.check_version:add_parameter("module name","string","The name of the module to report on error")
+darktable.configuration.check_version:add_parameter("module_name","string","The name of the module to report on error")
 darktable.configuration.check_version:add_parameter("...","table...","Tables of API versions that are known to work with the scrip")
 
 
