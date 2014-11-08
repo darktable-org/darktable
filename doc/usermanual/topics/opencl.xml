@@ -192,11 +192,10 @@
         </para></listitem>
 
         <listitem><para>
-          <filename>libnvidia-opencl.so.1</filename> needs to talk to the vendor
-          specific kernel modules <filename>nvidia</filename> and
-          <filename>nvidia_uvm</filename> via device special files
-          <filename>/dev/nvidia0</filename>, <filename>/dev/nvidiactl</filename>, and
-          <filename>/dev/nvidia-uvm</filename>.
+          <filename>libnvidia-opencl.so.1</filename> needs to talk to the vendor specific kernel
+          modules <filename>nvidia</filename> and <filename>nvidia_uvm</filename> via device
+          special files <filename>/dev/nvidia0</filename>, <filename>/dev/nvidiactl</filename>,
+          and <filename>/dev/nvidia-uvm</filename>.
         </para></listitem>
 
       </itemizedlist>
@@ -212,11 +211,11 @@
     </para>
 
     <para>
-      A user account which wants to make use of OpenCL from within darktable needs to have read-write access 
-      to NVIDIA's device special files. On some systems these files allow world read-write access by
-      default, which avoids permission issues but might be debatable in terms of system security.
-      Other systems restrict the access to a user group, e.g. <quote>video</quote>. In that case
-      your user account has to be member of that group.
+      A user account which wants to make use of OpenCL from within darktable needs to have
+      read-write access to NVIDIA's device special files. On some systems these files allow
+      world read-write access by default, which avoids permission issues but might be debatable
+      in terms of system security. Other systems restrict the access to a user group, e.g.
+      <quote>video</quote>. In that case your user account has to be member of that group.
     </para>
 
     <para>
@@ -301,8 +300,8 @@ crw-rw-rw- 1 root root 250,   0 Jul 28 21:13 /dev/nvidia-uvm
     </para>
 
     <para>
-      Beware that the major/minor numbers (e.g. 250/0 for <filename>/dev/nvidia-uvm</filename> in
-      this example) may vary depending on your system.
+      Beware that the major/minor numbers (e.g. 250/0 for <filename>/dev/nvidia-uvm</filename>
+      in this example) may vary depending on your system.
     </para>
 
   </sect2>
@@ -346,47 +345,51 @@ crw-rw-rw- 1 root root 250,   0 Jul 28 21:13 /dev/nvidia-uvm
       Here are a few cases observed in the past:
     </para>
 
-    <para>
-      darktable might tell you that no OpenCL aware graphics card is detected or that the
-      available memory on your GPU is too low and the device is discarded. In that case you
-      might need to buy a new card, if you really want OpenCL support.
-    </para>
+    <itemizedlist>
 
-    <para>
-      darktable might find your libOpenCL.so but then tell you that it couldn't get a platform.
-      NVIDIA drivers will often give error code -1001 in that case. This happens because
-      libOpenCL.so is only a wrapper library. For the real work further libraries&nbsp;&ndash;
-      specific to vendor, device and driver&nbsp;&ndash; need to be loaded. This failed for some
-      reason. There is a structure of files in /etc/OpenCL on your system that libOpenCL.so
-      consults to find these libraries. Check if you find something fishy in there and try to
-      fix it. Often the needed libraries cannot be found by your system's dynamic loader. Giving
-      full path names might help.
-    </para>
+      <listitem><para>
+        darktable might tell you that no OpenCL aware graphics card is detected or that the
+        available memory on your GPU is too low and the device is discarded. In that case you
+        might need to buy a new card, if you really want OpenCL support.
+      </para></listitem>
 
-    <para>
-      darktable might also tell you that a context could not be created. This often indicates a
-      version mismatch between (loaded) graphics driver and libOpenCL. Check if you have
-      left-over kernel modules or graphics libraries of an older install and take appropriate
-      action. In doubt, make a clean reinstall of your graphics driver. Sometimes, immediately
-      after a driver update, the loaded kernel driver does not match the newly installed
-      libraries: reboot your system in that case.
-    </para>
+      <listitem><para>
+        darktable might find your libOpenCL.so but then tell you that it couldn't get a
+        platform. NVIDIA drivers will often give error code -1001 in that case. This happens
+        because libOpenCL.so is only a wrapper library. For the real work further
+        libraries&nbsp;&ndash; specific to vendor, device and driver&nbsp;&ndash; need to be
+        loaded. This failed for some reason. There is a structure of files in /etc/OpenCL on
+        your system that libOpenCL.so consults to find these libraries. Check if you find
+        something fishy in there and try to fix it. Often the needed libraries cannot be found
+        by your system's dynamic loader. Giving full path names might help.
+      </para></listitem>
 
-    <para>
-      darktable might crash in very rare cases directly during startup. This can happen if your
-      OpenCL setup is completely broken or if driver/library contains a severe bug. If you
-      can’t fix it, you can still use darktable with option <quote>--disable-opencl</quote>,
-      which will skip the entire OpenCL initialization step.
-    </para>
+      <listitem><para>
+        darktable might also tell you that a context could not be created. This often indicates
+        a version mismatch between (loaded) graphics driver and libOpenCL. Check if you have
+        left-over kernel modules or graphics libraries of an older install and take appropriate
+        action. In doubt, make a clean reinstall of your graphics driver. Sometimes, immediately
+        after a driver update, the loaded kernel driver does not match the newly installed
+        libraries: reboot your system in that case.
+      </para></listitem>
 
-    <para>
-      darktable might fail to compile its OpenCL source files at run-time. In that case you will
-      get a number of error messages looking like typical compiler errors. This could indicate
-      an incompatibility between your OpenCL implementation and our interpretation of the
-      standard. In that case visit us at darktable-devel@sourceforge.net and report the problem.
-      Chances are good that we can help you. Please also report if you see significant
-      differences between CPU and GPU processing of an image!
-    </para>
+      <listitem><para>
+        darktable might crash in very rare cases directly during startup. This can happen if
+        your OpenCL setup is completely broken or if driver/library contains a severe bug. If
+        you can’t fix it, you can still use darktable with option
+        <quote>--disable-opencl</quote>, which will skip the entire OpenCL initialization step.
+      </para></listitem>
+
+      <listitem><para>
+        darktable might fail to compile its OpenCL source files at run-time. In that case you
+        will get a number of error messages looking like typical compiler errors. This could
+        indicate an incompatibility between your OpenCL implementation and our interpretation of
+        the standard. In that case visit us at darktable-devel@sourceforge.net and report the
+        problem. Chances are good that we can help you. Please also report if you see
+        significant differences between CPU and GPU processing of an image!
+      </para></listitem>
+
+    </itemizedlist>
 
     <para>
       There also exists a few on-CPU implementations of OpenCL. These come as drivers provided
@@ -657,9 +660,9 @@ crw-rw-rw- 1 root root 250,   0 Jul 28 21:13 /dev/nvidia-uvm
             darktable to use a special kind of intermediate buffer for host-device data
             transfers. On some devices this can speed up exporting of large files by a factor of
             2 to 3. NVIDIA devices and drivers seem to have a more efficient memory transfer
-            technique even for arbitrary memory regions. As they may not show any performance gain
-            and even may produce garbled output, opencl_use_pinned_memory should be left 
-            at its default FALSE for those devices.
+            technique even for arbitrary memory regions. As they may not show any performance
+            gain and even may produce garbled output, opencl_use_pinned_memory should be left at
+            its default FALSE for those devices.
           </para></listitem>
 
         </varlistentry>
