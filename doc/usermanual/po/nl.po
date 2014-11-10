@@ -3,16 +3,15 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2014-11-10 19:24+0100\n"
-"PO-Revision-Date: 2011-04-03 13:50+0100\n"
+"PO-Revision-Date: 2014-11-10 19:50+0100\n"
 "Last-Translator: Ger Siemerink <g.siemerink@gmail.com>\n"
 "Language-Team: Ger Siemerink <g.siemerink@gmail.com>\n"
-"Language: \n"
+"Language: nl_NL\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Poedit-Language: Dutch\n"
-"X-Poedit-Country: NETHERLANDS\n"
-"Plural-Forms: nplurals=2; plural=(n != 1)\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"X-Generator: Poedit 1.5.4\n"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:4(title)
 #, fuzzy
@@ -25,6 +24,9 @@ msgid ""
 "Johannes Hanika, Henrik Andersson, Tobias Ellinghaus, Pascal de Bruijn and "
 "Ulrich Pegelow."
 msgstr ""
+"De eigenaar van het darktable projekt is Johannes Hanika. Hoofdontwikkelaars "
+"zijn Johannes Hanika, Henrik Andersson, Tobias Ellinghaus, Pascal de Bruijn "
+"en Ulrich Pegalow."
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:15(para)
 msgid ""
@@ -120,7 +122,7 @@ msgstr "2010-2011"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:73(holder)
 msgid "Ulrich Pegelow"
-msgstr ""
+msgstr "Ulrich Pegelow"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:77(year)
 #, fuzzy
@@ -129,7 +131,7 @@ msgstr "2010-2011"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:78(holder)
 msgid "Jérémy Rosen"
-msgstr ""
+msgstr "Jérémy Rosen"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:85(title)
 #, fuzzy
@@ -1483,9 +1485,8 @@ msgid ""
 msgstr ""
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1419(emphasis)
-#, fuzzy
 msgid "ctrl-z"
-msgstr "ctrl-alt-e"
+msgstr "ctrl-z"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1418(entry)
 msgid ""
@@ -6873,7 +6874,6 @@ msgid ""
 msgstr ""
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:7331(title)
-#, fuzzy
 msgid "angle"
 msgstr "hoek"
 
@@ -6994,9 +6994,8 @@ msgid "this option constrains the ratio to be 1"
 msgstr "de optie dwingt tot een verhouding van 1"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:7481(title)
-#, fuzzy
 msgid "guides"
-msgstr "Hulplijnen"
+msgstr "hulplijnen"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:7482(para)
 msgid ""
@@ -7043,15 +7042,13 @@ msgid ""
 msgstr ""
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:7571(title)
-#, fuzzy
 msgid "Shadows and Highlights"
-msgstr "Schaduw en hooglichten kleuren"
+msgstr "schaduw en hooglichten"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:7575(secondary)
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:7579(primary)
-#, fuzzy
 msgid "shadows and highlights"
-msgstr "Schaduw en hooglichten kleuren"
+msgstr "schaduw en hooglichten"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:7584(secondary)
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:10718(secondary)
@@ -7672,9 +7669,8 @@ msgid ""
 msgstr ""
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:8385(title)
-#, fuzzy
 msgid "temperature"
-msgstr "temperaturen"
+msgstr "temperatuur"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:8386(para)
 msgid ""
@@ -8110,9 +8106,8 @@ msgstr "Local contrast 2"
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:10703(primary)
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:10708(secondary)
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:10713(see)
-#, fuzzy
 msgid "equalizer"
-msgstr "Equalizer"
+msgstr "equalizer"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:9027(entry)
 msgid ""
@@ -8307,9 +8302,8 @@ msgstr "Velvia"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:9290(secondary)
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:9294(primary)
-#, fuzzy
 msgid "velvia"
-msgstr "Velvia"
+msgstr "velvia"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:9307(entry)
 #, fuzzy
@@ -8860,9 +8854,8 @@ msgstr "Monochrome"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:10057(secondary)
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:10061(primary)
-#, fuzzy
 msgid "monochrome"
-msgstr "Monochrome"
+msgstr "monochroom"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:10084(entry)
 msgid ""
@@ -9554,9 +9547,8 @@ msgstr "Bepaal de omvang voor de module"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:11131(title)
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:21029(secondary)
-#, fuzzy
 msgid "red"
-msgstr "Rood"
+msgstr "rood"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:11132(para)
 msgid "Blur intensity for red channel."
@@ -9564,9 +9556,8 @@ msgstr ""
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:11138(title)
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:21059(secondary)
-#, fuzzy
 msgid "green"
-msgstr "Groen"
+msgstr "groen"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:11139(para)
 msgid "Blur intensity for green channel."
@@ -9610,9 +9601,8 @@ msgstr ""
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:11205(title)
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:19364(secondary)
-#, fuzzy
 msgid "camera"
-msgstr "Camera's"
+msgstr "camera"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:11206(para)
 msgid ""
@@ -9897,16 +9887,14 @@ msgid ""
 msgstr ""
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:11603(title)
-#, fuzzy
 msgid "Dithering"
-msgstr "Tehtering"
+msgstr "Dithering"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:11607(secondary)
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:11611(primary)
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:12805(title)
-#, fuzzy
 msgid "dithering"
-msgstr "Tehtering"
+msgstr "dithering"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:11633(entry)
 msgid ""
@@ -10062,9 +10050,8 @@ msgstr "Cromatische aberraties"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:11843(secondary)
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:11847(primary)
-#, fuzzy
 msgid "chromatic aberration"
-msgstr "Cromatische aberraties"
+msgstr "cromatische aberraties"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:11861(entry)
 msgid "This module allows you to correct chromatic aberrations."
@@ -10173,9 +10160,8 @@ msgstr "Watermerk"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:12006(secondary)
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:12010(primary)
-#, fuzzy
 msgid "watermark"
-msgstr "Watermerk"
+msgstr "watermerk"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:12026(emphasis)
 msgid "Inkscape"
@@ -16959,9 +16945,8 @@ msgstr ""
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:18986(secondary)
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:22817(secondary)
-#, fuzzy
 msgid "select"
-msgstr "Selecteer"
+msgstr "selecteer"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:18988(para)
 msgid "The buttons that allow to quickly change the selection"
@@ -17053,9 +17038,8 @@ msgid "darktable.gui.libs.session"
 msgstr ""
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:19154(secondary)
-#, fuzzy
 msgid "session"
-msgstr "compressie"
+msgstr "sessie"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:19156(para)
 msgid "The session UI when tethering"
@@ -17638,15 +17622,13 @@ msgstr ""
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:19794(link)
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:19839(term)
-#, fuzzy
 msgid "min"
-msgstr "mix"
+msgstr "min"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:19795(link)
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:19845(term)
-#, fuzzy
 msgid "max"
-msgstr "mix"
+msgstr "max"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:19796(link)
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:19851(term)
@@ -18772,7 +18754,7 @@ msgstr ""
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:21077(secondary)
 msgid "purple"
-msgstr ""
+msgstr "paars"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:21083(title)
 msgid "types.dt_lua_image_t.reset"
@@ -18780,9 +18762,8 @@ msgstr ""
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:21086(secondary)
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:22666(secondary)
-#, fuzzy
 msgid "reset"
-msgstr "Voorkeuren"
+msgstr "reset"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:21088(synopsis)
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:21108(synopsis)
@@ -19205,11 +19186,11 @@ msgstr ""
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:21651(title)
 msgid "types.dt_imageio_module_format_data_webp.quality"
-msgstr ""
+msgstr "types.dt_imageio_module_format_data_webp.quality"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:21672(title)
 msgid "types.dt_imageio_module_format_data_webp.comp_type"
-msgstr ""
+msgstr "types.dt_imageio_module_format_data_webp.comp_type"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:21675(secondary)
 msgid "comp_type"
@@ -19246,32 +19227,32 @@ msgstr "Bepaal de omvang voor de module"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:21716(title)
 msgid "types.dt_imageio_module_format_data_j2k"
-msgstr ""
+msgstr "types.dt_imageio_module_format_data_j2k"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:21719(secondary)
 msgid "dt_imageio_module_format_data_j2k"
-msgstr ""
+msgstr "dt_imageio_module_format_data_j2k"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:21722(para)
 msgid "Type object describing parameters to export to jpeg2000."
-msgstr ""
+msgstr "Type object describing parameters to export to jpeg2000."
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:21735(title)
 msgid "types.dt_imageio_module_format_data_j2k.quality"
-msgstr ""
+msgstr "types.dt_imageio_module_format_data_j2k.quality"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:21756(title)
 msgid "types.dt_imageio_module_format_data_j2k.bpp"
-msgstr ""
+msgstr "types.dt_imageio_module_format_data_j2k.bpp"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:21777(title)
 msgid "types.dt_imageio_module_format_data_j2k.format"
-msgstr ""
+msgstr "types.dt_imageio_module_format_data_j2k.format"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:21782(link)
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:22903(title)
 msgid "types.dt_imageio_j2k_format_t"
-msgstr ""
+msgstr "types.dt_imageio_j2k_format_t"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:21783(para)
 msgid "The format to use."
@@ -19279,12 +19260,12 @@ msgstr ""
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:21798(title)
 msgid "types.dt_imageio_module_format_data_j2k.preset"
-msgstr ""
+msgstr "types.dt_imageio_module_format_data_j2k.preset"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:21803(link)
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:22929(title)
 msgid "types.dt_imageio_j2k_preset_t"
-msgstr ""
+msgstr "types.dt_imageio_j2k_preset_t"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:21804(para)
 msgid "The preset to use."
@@ -19292,7 +19273,7 @@ msgstr ""
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:21824(secondary)
 msgid "dt_imageio_module_storage_t"
-msgstr ""
+msgstr "dt_imageio_module_storage_t"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:21827(para)
 msgid "A virtual type representing all storage types."
@@ -19304,11 +19285,11 @@ msgstr ""
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:21851(title)
 msgid "types.dt_imageio_module_storage_t.name"
-msgstr ""
+msgstr "types.dt_imageio_module_storage_t.name"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:21872(title)
 msgid "types.dt_imageio_module_storage_t.width"
-msgstr ""
+msgstr "types.dt_imageio_module_storage_t.width"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:21878(para)
 msgid "The currently selected width for the plugin."
@@ -19316,7 +19297,7 @@ msgstr ""
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:21893(title)
 msgid "types.dt_imageio_module_storage_t.height"
-msgstr ""
+msgstr "types.dt_imageio_module_storage_t.height"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:21899(para)
 msgid "The currently selected height for the plugin."
@@ -19324,7 +19305,7 @@ msgstr ""
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:21914(title)
 msgid "types.dt_imageio_module_storage_t.recommended_width"
-msgstr ""
+msgstr "types.dt_imageio_module_storage_t.recommended_width"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:21917(secondary)
 msgid "recommended_width"
@@ -19336,7 +19317,7 @@ msgstr ""
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:21935(title)
 msgid "types.dt_imageio_module_storage_t.recommended_height"
-msgstr ""
+msgstr "types.dt_imageio_module_storage_t.recommended_height"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:21938(secondary)
 msgid "recommended_height"
@@ -19348,7 +19329,7 @@ msgstr ""
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:21956(title)
 msgid "types.dt_imageio_module_storage_t.supports_format"
-msgstr ""
+msgstr "types.dt_imageio_module_storage_t.supports_format"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:21959(secondary)
 msgid "supports_format"
@@ -19359,6 +19340,8 @@ msgid ""
 "self:function( <emphasis><placeholder-1/></emphasis> : <placeholder-2/> ) : "
 "boolean"
 msgstr ""
+"self:function( <emphasis><placeholder-1/></emphasis> : <placeholder-2/> ) : "
+"boolean"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:21964(para)
 msgid "Checks if a format is supported by this storage."
@@ -19549,7 +19532,7 @@ msgstr ""
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:22352(synopsis)
 msgid "Boolean"
-msgstr ""
+msgstr "Boolean"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:22353(para)
 msgid "Force removal, even if the film is not empty."
@@ -19928,7 +19911,7 @@ msgstr ""
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:23023(emphasis)
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:23054(emphasis)
 msgid "values :"
-msgstr ""
+msgstr "waarden:"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:22862(para)
 msgid "hint_default"
@@ -19956,7 +19939,7 @@ msgstr ""
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:22890(para)
 msgid "left"
-msgstr ""
+msgstr "links"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:22891(para)
 #, fuzzy
@@ -19965,27 +19948,27 @@ msgstr "hoogte"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:22892(para)
 msgid "top"
-msgstr ""
+msgstr "boven"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:22893(para)
 msgid "bottom"
-msgstr ""
+msgstr "onder"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:22906(secondary)
 msgid "dt_imageio_j2k_format_t"
-msgstr ""
+msgstr "dt_imageio_j2k_format_t"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:22909(para)
 msgid "J2K format type"
-msgstr ""
+msgstr "J2K format type"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:22919(para)
 msgid "jp2"
-msgstr ""
+msgstr "jp2"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:22932(secondary)
 msgid "dt_imageio_j2k_preset_t"
-msgstr ""
+msgstr "dt_imageio_j2k_preset_t"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:22935(para)
 msgid "J2K preset type"
@@ -19993,15 +19976,15 @@ msgstr ""
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:22945(para)
 msgid "cinema2k_24"
-msgstr ""
+msgstr "cinema2k_24"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:22946(para)
 msgid "cinema2k_48"
-msgstr ""
+msgstr "cinema2k_48"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:22947(para)
 msgid "cinema4k_24"
-msgstr ""
+msgstr "cinema4k_24"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:22957(title)
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:23524(link)
@@ -20031,7 +20014,7 @@ msgstr ""
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:22987(secondary)
 msgid "comp_type_t"
-msgstr ""
+msgstr "comp_type_t"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:22990(para)
 #, fuzzy
@@ -20040,15 +20023,15 @@ msgstr "Stel de compressie in op nul"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:22999(para)
 msgid "webp_lossy"
-msgstr ""
+msgstr "webp_lossy"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:23000(para)
 msgid "webp_lossless"
-msgstr ""
+msgstr "webp_lossless"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:23013(secondary)
 msgid "lua_pref_type"
-msgstr ""
+msgstr "lua_pref_type"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:23016(para)
 msgid "The type of value to save in a preference"
@@ -20082,27 +20065,27 @@ msgstr "profiel"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:23058(para)
 msgid "zips"
-msgstr ""
+msgstr "zips"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:23059(para)
 msgid "zip"
-msgstr ""
+msgstr "zip"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:23060(para)
 msgid "piz"
-msgstr ""
+msgstr "piz"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:23061(para)
 msgid "pxr24"
-msgstr ""
+msgstr "pxr24"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:23062(para)
 msgid "b44"
-msgstr ""
+msgstr "b44"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:23063(para)
 msgid "b44a"
-msgstr ""
+msgstr "b44a"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:23075(title)
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:23078(secondary)
@@ -20246,7 +20229,7 @@ msgstr ""
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:23226(link)
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:23237(term)
 msgid "shortcut"
-msgstr ""
+msgstr "snelkoppelin"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:23210(para)
 msgid ""
@@ -20542,7 +20525,7 @@ msgstr ""
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:23572(keyword)
 msgid "topics"
-msgstr ""
+msgstr "thema's"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:23573(keyword)
 #, fuzzy
@@ -20551,7 +20534,7 @@ msgstr "Verhouding"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:23577(title)
 msgid "Special topics"
-msgstr ""
+msgstr "speciale thema's"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:23579(para)
 msgid ""
@@ -20563,9 +20546,8 @@ msgid ""
 msgstr ""
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:23589(screeninfo)
-#, fuzzy
 msgid "The darktable blog"
-msgstr "Darktable"
+msgstr " de darktable blog"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:23600(title)
 #, fuzzy
@@ -20665,7 +20647,7 @@ msgstr ""
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:23684(title)
 msgid "Further limitations"
-msgstr ""
+msgstr "Verdere beperkingen"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:23686(para)
 msgid ""
@@ -20686,11 +20668,11 @@ msgstr ""
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:23704(title)
 msgid "Setting up darktable on 32-bit systems"
-msgstr ""
+msgstr "Het instellen van Darktable op 32-bits systemen"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:23708(secondary)
 msgid "32-bit systems"
-msgstr ""
+msgstr "32-bit systemen"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:23712(primary)
 msgid "tiling"
@@ -20782,7 +20764,7 @@ msgstr ""
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:23815(secondary)
 msgid "64-bit systems"
-msgstr ""
+msgstr "64-bit systemen"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:23818(para)
 msgid ""
@@ -20856,7 +20838,7 @@ msgstr "Darktable"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:23884(primary)
 msgid "OpenCL"
-msgstr ""
+msgstr "OpenCL"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:23888(primary)
 msgid "GPU computing"
@@ -20916,7 +20898,7 @@ msgstr ""
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:23940(title)
 msgid "How OpenCL works"
-msgstr ""
+msgstr "Hoe OpenCL werkt"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:23942(para)
 msgid ""
@@ -21094,46 +21076,46 @@ msgstr ""
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24098(para)
 msgid "nvidia-331 (331.89-0ubuntu1~xedgers14.04.2)"
-msgstr ""
+msgstr "nvidia-331 (331.89-0ubuntu1~xedgers14.04.2)"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24102(para)
 msgid "nvidia-331-dev (331.89-0ubuntu1~xedgers14.04.2)"
-msgstr ""
+msgstr "nvidia-331-dev (331.89-0ubuntu1~xedgers14.04.2)"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24106(para)
 msgid "nvidia-331-uvm (331.89-0ubuntu1~xedgers14.04.2)"
-msgstr ""
+msgstr "nvidia-331-uvm (331.89-0ubuntu1~xedgers14.04.2)"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24110(para)
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24134(para)
 msgid "nvidia-libopencl1-331 (331.89-0ubuntu1~xedgers14.04.2)"
-msgstr ""
+msgstr "nvidia-libopencl1-331 (331.89-0ubuntu1~xedgers14.04.2)"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24114(para)
 msgid "nvidia-modprobe (340.24-1)"
-msgstr ""
+msgstr "nvidia-modprobe (340.24-1)"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24118(para)
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24138(para)
 msgid "nvidia-opencl-dev:amd64 (5.5.22-3ubuntu1)"
-msgstr ""
+msgstr "nvidia-opencl-dev:amd64 (5.5.22-3ubuntu1)"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24122(para)
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24142(para)
 msgid "nvidia-opencl-icd-331 (331.89-0ubuntu1~xedgers14.04.2)"
-msgstr ""
+msgstr "nvidia-opencl-icd-331 (331.89-0ubuntu1~xedgers14.04.2)"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24126(para)
 msgid "nvidia-settings (340.24-0ubuntu1~xedgers14.04.1)"
-msgstr ""
+msgstr "nvidia-settings (340.24-0ubuntu1~xedgers14.04.1)"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24130(para)
 msgid "nvidia-settings-304 (340.24-0ubuntu1~xedgers14.04.1)"
-msgstr ""
+msgstr "nvidia-settings-304 (340.24-0ubuntu1~xedgers14.04.1)"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24146(para)
 msgid "opencl-headers (1.2-2013.10.23-1)"
-msgstr ""
+msgstr "opencl-headers (1.2-2013.10.23-1)"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24094(para)
 msgid ""
@@ -21572,7 +21554,7 @@ msgstr ""
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24588(programlisting)
 msgid "a,b,c.../k,l,m.../o,p,q.../x,y,z..."
-msgstr ""
+msgstr "a,b,c.../k,l,m.../o,p,q.../x,y,z..."
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24592(para)
 msgid ""
@@ -21620,7 +21602,7 @@ msgstr ""
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24630(programlisting)
 msgid "*/!0,*/*/*"
-msgstr ""
+msgstr "*/!0,*/*/*"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24634(para)
 msgid ""
@@ -21728,7 +21710,7 @@ msgstr ""
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24738(title)
 msgid "Index"
-msgstr ""
+msgstr "index"
 
 #~ msgid "Henrik"
 #~ msgstr "Henrik"
