@@ -7,11 +7,11 @@
   <indexterm>
   <primary>Lua API</primary>
   </indexterm>
-  <para>To access the darktable specific functions you must load the darktable environement:
+  <para>To access the darktable specific functions you must load the darktable environment:</para>
 
-<programlisting language="lua">darktable = require "darktable"</programlisting>
+<para><programlisting language="lua">darktable = require "darktable"</programlisting></para>
 
-All functions and data are accessed through the darktable module.</para>
+<para>All functions and data are accessed through the darktable module.</para>
 <para>This documentation for API version 2.0.0-dev.</para>
 
 <section status="final" id="darktable">
@@ -786,17 +786,17 @@ All functions and data are accessed through the darktable module.</para>
 <para>This table allows to reference all lib objects</para>
 <para>lib are the graphical blocks within each view.</para>
 <para>To quickly figure out what lib is what, you can use the following code which will make a given lib blink.</para>
-<para>
+<para></para>
 
-<programlisting language="lua">local tested_module="global_toolbox"
+<para><programlisting language="lua">local tested_module="global_toolbox"
 dt.gui.libs[tested_module].visible=false
 coroutine.yield("wait_ms",2000)
 while true do
 	dt.gui.libs[tested_module].visible = not dt.gui.libs[tested_module].visible
 	coroutine.yield("wait_ms",2000)
-end</programlisting>
+end</programlisting></para>
 
-</para>
+<para></para>
 
 <section status="final" id="darktable_gui_libs_snapshots">
 <title>darktable.gui.libs.snapshots</title>
@@ -811,15 +811,8 @@ end</programlisting>
     <tbody><row>
     <entry>Attributes:</entry>
     <entry><itemizedlist>
-<listitem><para><emphasis>container : </emphasis>DT_UI_CONTAINER_PANEL_LEFT_CENTER</para></listitem>
 <listitem><para><emphasis><link linkend="attributes_has_tostring">has_tostring</link></emphasis></para></listitem>
 <listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_lib_module_t">types.dt_lib_module_t</link></para></listitem>
-<listitem><para><emphasis>position : </emphasis>1000</para></listitem>
-<listitem><para><emphasis>views : </emphasis></para>
-<para><itemizedlist>
-<listitem><para><link linkend="darktable_gui_views_darkroom">darktable.gui.views.darkroom</link></para></listitem>
-</itemizedlist>
-</para></listitem>
 </itemizedlist>
 </entry>
     </row></tbody>
@@ -928,15 +921,8 @@ end</programlisting>
     <tbody><row>
     <entry>Attributes:</entry>
     <entry><itemizedlist>
-<listitem><para><emphasis>container : </emphasis>DT_UI_CONTAINER_PANEL_RIGHT_CENTER</para></listitem>
 <listitem><para><emphasis><link linkend="attributes_has_tostring">has_tostring</link></emphasis></para></listitem>
 <listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_lib_module_t">types.dt_lib_module_t</link></para></listitem>
-<listitem><para><emphasis>position : </emphasis>599</para></listitem>
-<listitem><para><emphasis>views : </emphasis></para>
-<para><itemizedlist>
-<listitem><para><link linkend="darktable_gui_views_lighttable">darktable.gui.views.lighttable</link></para></listitem>
-</itemizedlist>
-</para></listitem>
 </itemizedlist>
 </entry>
     </row></tbody>
@@ -956,19 +942,8 @@ end</programlisting>
     <tbody><row>
     <entry>Attributes:</entry>
     <entry><itemizedlist>
-<listitem><para><emphasis>container : </emphasis>DT_UI_CONTAINER_PANEL_LEFT_CENTER</para></listitem>
 <listitem><para><emphasis><link linkend="attributes_has_tostring">has_tostring</link></emphasis></para></listitem>
 <listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_lib_module_t">types.dt_lib_module_t</link></para></listitem>
-<listitem><para><emphasis>position : </emphasis>299</para></listitem>
-<listitem><para><emphasis>views : </emphasis></para>
-<para><itemizedlist>
-<listitem><para><link linkend="darktable_gui_views_lighttable">darktable.gui.views.lighttable</link></para></listitem>
-<listitem><para><link linkend="darktable_gui_views_darkroom">darktable.gui.views.darkroom</link></para></listitem>
-<listitem><para><link linkend="darktable_gui_views_tethering">darktable.gui.views.tethering</link></para></listitem>
-<listitem><para><link linkend="darktable_gui_views_map">darktable.gui.views.map</link></para></listitem>
-<listitem><para><link linkend="darktable_gui_views_slideshow">darktable.gui.views.slideshow</link></para></listitem>
-</itemizedlist>
-</para></listitem>
 </itemizedlist>
 </entry>
     </row></tbody>
@@ -988,16 +963,8 @@ end</programlisting>
     <tbody><row>
     <entry>Attributes:</entry>
     <entry><itemizedlist>
-<listitem><para><emphasis>container : </emphasis>DT_UI_CONTAINER_PANEL_RIGHT_CENTER</para></listitem>
 <listitem><para><emphasis><link linkend="attributes_has_tostring">has_tostring</link></emphasis></para></listitem>
 <listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_lib_module_t">types.dt_lib_module_t</link></para></listitem>
-<listitem><para><emphasis>position : </emphasis>510</para></listitem>
-<listitem><para><emphasis>views : </emphasis></para>
-<para><itemizedlist>
-<listitem><para><link linkend="darktable_gui_views_lighttable">darktable.gui.views.lighttable</link></para></listitem>
-<listitem><para><link linkend="darktable_gui_views_tethering">darktable.gui.views.tethering</link></para></listitem>
-</itemizedlist>
-</para></listitem>
 </itemizedlist>
 </entry>
     </row></tbody>
@@ -1017,17 +984,8 @@ end</programlisting>
     <tbody><row>
     <entry>Attributes:</entry>
     <entry><itemizedlist>
-<listitem><para><emphasis>container : </emphasis>DT_UI_CONTAINER_PANEL_TOP_CENTER</para></listitem>
 <listitem><para><emphasis><link linkend="attributes_has_tostring">has_tostring</link></emphasis></para></listitem>
 <listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_lib_module_t">types.dt_lib_module_t</link></para></listitem>
-<listitem><para><emphasis>position : </emphasis>1</para></listitem>
-<listitem><para><emphasis>views : </emphasis></para>
-<para><itemizedlist>
-<listitem><para><link linkend="darktable_gui_views_lighttable">darktable.gui.views.lighttable</link></para></listitem>
-<listitem><para><link linkend="darktable_gui_views_darkroom">darktable.gui.views.darkroom</link></para></listitem>
-<listitem><para><link linkend="darktable_gui_views_tethering">darktable.gui.views.tethering</link></para></listitem>
-</itemizedlist>
-</para></listitem>
 </itemizedlist>
 </entry>
     </row></tbody>
@@ -1047,15 +1005,8 @@ end</programlisting>
     <tbody><row>
     <entry>Attributes:</entry>
     <entry><itemizedlist>
-<listitem><para><emphasis>container : </emphasis>DT_UI_CONTAINER_PANEL_RIGHT_BOTTOM</para></listitem>
 <listitem><para><emphasis><link linkend="attributes_has_tostring">has_tostring</link></emphasis></para></listitem>
 <listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_lib_module_t">types.dt_lib_module_t</link></para></listitem>
-<listitem><para><emphasis>position : </emphasis>1</para></listitem>
-<listitem><para><emphasis>views : </emphasis></para>
-<para><itemizedlist>
-<listitem><para><link linkend="darktable_gui_views_darkroom">darktable.gui.views.darkroom</link></para></listitem>
-</itemizedlist>
-</para></listitem>
 </itemizedlist>
 </entry>
     </row></tbody>
@@ -1075,17 +1026,8 @@ end</programlisting>
     <tbody><row>
     <entry>Attributes:</entry>
     <entry><itemizedlist>
-<listitem><para><emphasis>container : </emphasis>DT_UI_CONTAINER_PANEL_BOTTOM</para></listitem>
 <listitem><para><emphasis><link linkend="attributes_has_tostring">has_tostring</link></emphasis></para></listitem>
 <listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_lib_module_t">types.dt_lib_module_t</link></para></listitem>
-<listitem><para><emphasis>position : </emphasis>1001</para></listitem>
-<listitem><para><emphasis>views : </emphasis></para>
-<para><itemizedlist>
-<listitem><para><link linkend="darktable_gui_views_darkroom">darktable.gui.views.darkroom</link></para></listitem>
-<listitem><para><link linkend="darktable_gui_views_tethering">darktable.gui.views.tethering</link></para></listitem>
-<listitem><para><link linkend="darktable_gui_views_map">darktable.gui.views.map</link></para></listitem>
-</itemizedlist>
-</para></listitem>
 </itemizedlist>
 </entry>
     </row></tbody>
@@ -1105,19 +1047,8 @@ end</programlisting>
     <tbody><row>
     <entry>Attributes:</entry>
     <entry><itemizedlist>
-<listitem><para><emphasis>container : </emphasis>DT_UI_CONTAINER_PANEL_TOP_RIGHT</para></listitem>
 <listitem><para><emphasis><link linkend="attributes_has_tostring">has_tostring</link></emphasis></para></listitem>
 <listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_lib_module_t">types.dt_lib_module_t</link></para></listitem>
-<listitem><para><emphasis>position : </emphasis>1001</para></listitem>
-<listitem><para><emphasis>views : </emphasis></para>
-<para><itemizedlist>
-<listitem><para><link linkend="darktable_gui_views_lighttable">darktable.gui.views.lighttable</link></para></listitem>
-<listitem><para><link linkend="darktable_gui_views_darkroom">darktable.gui.views.darkroom</link></para></listitem>
-<listitem><para><link linkend="darktable_gui_views_tethering">darktable.gui.views.tethering</link></para></listitem>
-<listitem><para><link linkend="darktable_gui_views_map">darktable.gui.views.map</link></para></listitem>
-<listitem><para><link linkend="darktable_gui_views_slideshow">darktable.gui.views.slideshow</link></para></listitem>
-</itemizedlist>
-</para></listitem>
 </itemizedlist>
 </entry>
     </row></tbody>
@@ -1137,19 +1068,8 @@ end</programlisting>
     <tbody><row>
     <entry>Attributes:</entry>
     <entry><itemizedlist>
-<listitem><para><emphasis>container : </emphasis>DT_UI_CONTAINER_PANEL_TOP_LEFT</para></listitem>
 <listitem><para><emphasis><link linkend="attributes_has_tostring">has_tostring</link></emphasis></para></listitem>
 <listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_lib_module_t">types.dt_lib_module_t</link></para></listitem>
-<listitem><para><emphasis>position : </emphasis>1001</para></listitem>
-<listitem><para><emphasis>views : </emphasis></para>
-<para><itemizedlist>
-<listitem><para><link linkend="darktable_gui_views_lighttable">darktable.gui.views.lighttable</link></para></listitem>
-<listitem><para><link linkend="darktable_gui_views_darkroom">darktable.gui.views.darkroom</link></para></listitem>
-<listitem><para><link linkend="darktable_gui_views_tethering">darktable.gui.views.tethering</link></para></listitem>
-<listitem><para><link linkend="darktable_gui_views_map">darktable.gui.views.map</link></para></listitem>
-<listitem><para><link linkend="darktable_gui_views_slideshow">darktable.gui.views.slideshow</link></para></listitem>
-</itemizedlist>
-</para></listitem>
 </itemizedlist>
 </entry>
     </row></tbody>
@@ -1169,18 +1089,8 @@ end</programlisting>
     <tbody><row>
     <entry>Attributes:</entry>
     <entry><itemizedlist>
-<listitem><para><emphasis>container : </emphasis>DT_UI_CONTAINER_PANEL_LEFT_CENTER</para></listitem>
 <listitem><para><emphasis><link linkend="attributes_has_tostring">has_tostring</link></emphasis></para></listitem>
 <listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_lib_module_t">types.dt_lib_module_t</link></para></listitem>
-<listitem><para><emphasis>position : </emphasis>500</para></listitem>
-<listitem><para><emphasis>views : </emphasis></para>
-<para><itemizedlist>
-<listitem><para><link linkend="darktable_gui_views_lighttable">darktable.gui.views.lighttable</link></para></listitem>
-<listitem><para><link linkend="darktable_gui_views_darkroom">darktable.gui.views.darkroom</link></para></listitem>
-<listitem><para><link linkend="darktable_gui_views_tethering">darktable.gui.views.tethering</link></para></listitem>
-<listitem><para><link linkend="darktable_gui_views_map">darktable.gui.views.map</link></para></listitem>
-</itemizedlist>
-</para></listitem>
 </itemizedlist>
 </entry>
     </row></tbody>
@@ -1200,15 +1110,8 @@ end</programlisting>
     <tbody><row>
     <entry>Attributes:</entry>
     <entry><itemizedlist>
-<listitem><para><emphasis>container : </emphasis>DT_UI_CONTAINER_PANEL_RIGHT_CENTER</para></listitem>
 <listitem><para><emphasis><link linkend="attributes_has_tostring">has_tostring</link></emphasis></para></listitem>
 <listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_lib_module_t">types.dt_lib_module_t</link></para></listitem>
-<listitem><para><emphasis>position : </emphasis>450</para></listitem>
-<listitem><para><emphasis>views : </emphasis></para>
-<para><itemizedlist>
-<listitem><para><link linkend="darktable_gui_views_lighttable">darktable.gui.views.lighttable</link></para></listitem>
-</itemizedlist>
-</para></listitem>
 </itemizedlist>
 </entry>
     </row></tbody>
@@ -1228,16 +1131,8 @@ end</programlisting>
     <tbody><row>
     <entry>Attributes:</entry>
     <entry><itemizedlist>
-<listitem><para><emphasis>container : </emphasis>DT_UI_CONTAINER_PANEL_LEFT_CENTER</para></listitem>
 <listitem><para><emphasis><link linkend="attributes_has_tostring">has_tostring</link></emphasis></para></listitem>
 <listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_lib_module_t">types.dt_lib_module_t</link></para></listitem>
-<listitem><para><emphasis>position : </emphasis>350</para></listitem>
-<listitem><para><emphasis>views : </emphasis></para>
-<para><itemizedlist>
-<listitem><para><link linkend="darktable_gui_views_lighttable">darktable.gui.views.lighttable</link></para></listitem>
-<listitem><para><link linkend="darktable_gui_views_map">darktable.gui.views.map</link></para></listitem>
-</itemizedlist>
-</para></listitem>
 </itemizedlist>
 </entry>
     </row></tbody>
@@ -1257,18 +1152,8 @@ end</programlisting>
     <tbody><row>
     <entry>Attributes:</entry>
     <entry><itemizedlist>
-<listitem><para><emphasis>container : </emphasis>DT_UI_CONTAINER_PANEL_CENTER_TOP_RIGHT</para></listitem>
 <listitem><para><emphasis><link linkend="attributes_has_tostring">has_tostring</link></emphasis></para></listitem>
 <listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_lib_module_t">types.dt_lib_module_t</link></para></listitem>
-<listitem><para><emphasis>position : </emphasis>1001</para></listitem>
-<listitem><para><emphasis>views : </emphasis></para>
-<para><itemizedlist>
-<listitem><para><link linkend="darktable_gui_views_lighttable">darktable.gui.views.lighttable</link></para></listitem>
-<listitem><para><link linkend="darktable_gui_views_darkroom">darktable.gui.views.darkroom</link></para></listitem>
-<listitem><para><link linkend="darktable_gui_views_tethering">darktable.gui.views.tethering</link></para></listitem>
-<listitem><para><link linkend="darktable_gui_views_map">darktable.gui.views.map</link></para></listitem>
-</itemizedlist>
-</para></listitem>
 </itemizedlist>
 </entry>
     </row></tbody>
@@ -1330,19 +1215,8 @@ end</programlisting>
     <tbody><row>
     <entry>Attributes:</entry>
     <entry><itemizedlist>
-<listitem><para><emphasis>container : </emphasis>DT_UI_CONTAINER_PANEL_CENTER_TOP_CENTER</para></listitem>
 <listitem><para><emphasis><link linkend="attributes_has_tostring">has_tostring</link></emphasis></para></listitem>
 <listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_lib_module_t">types.dt_lib_module_t</link></para></listitem>
-<listitem><para><emphasis>position : </emphasis>1001</para></listitem>
-<listitem><para><emphasis>views : </emphasis></para>
-<para><itemizedlist>
-<listitem><para><link linkend="darktable_gui_views_lighttable">darktable.gui.views.lighttable</link></para></listitem>
-<listitem><para><link linkend="darktable_gui_views_darkroom">darktable.gui.views.darkroom</link></para></listitem>
-<listitem><para><link linkend="darktable_gui_views_tethering">darktable.gui.views.tethering</link></para></listitem>
-<listitem><para><link linkend="darktable_gui_views_map">darktable.gui.views.map</link></para></listitem>
-<listitem><para><link linkend="darktable_gui_views_slideshow">darktable.gui.views.slideshow</link></para></listitem>
-</itemizedlist>
-</para></listitem>
 </itemizedlist>
 </entry>
     </row></tbody>
@@ -1362,15 +1236,8 @@ end</programlisting>
     <tbody><row>
     <entry>Attributes:</entry>
     <entry><itemizedlist>
-<listitem><para><emphasis>container : </emphasis>DT_UI_CONTAINER_PANEL_LEFT_CENTER</para></listitem>
 <listitem><para><emphasis><link linkend="attributes_has_tostring">has_tostring</link></emphasis></para></listitem>
 <listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_lib_module_t">types.dt_lib_module_t</link></para></listitem>
-<listitem><para><emphasis>position : </emphasis>999</para></listitem>
-<listitem><para><emphasis>views : </emphasis></para>
-<para><itemizedlist>
-<listitem><para><link linkend="darktable_gui_views_lighttable">darktable.gui.views.lighttable</link></para></listitem>
-</itemizedlist>
-</para></listitem>
 </itemizedlist>
 </entry>
     </row></tbody>
@@ -1390,16 +1257,8 @@ end</programlisting>
     <tbody><row>
     <entry>Attributes:</entry>
     <entry><itemizedlist>
-<listitem><para><emphasis>container : </emphasis>DT_UI_CONTAINER_PANEL_CENTER_BOTTOM_LEFT</para></listitem>
 <listitem><para><emphasis><link linkend="attributes_has_tostring">has_tostring</link></emphasis></para></listitem>
 <listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_lib_module_t">types.dt_lib_module_t</link></para></listitem>
-<listitem><para><emphasis>position : </emphasis>1002</para></listitem>
-<listitem><para><emphasis>views : </emphasis></para>
-<para><itemizedlist>
-<listitem><para><link linkend="darktable_gui_views_lighttable">darktable.gui.views.lighttable</link></para></listitem>
-<listitem><para><link linkend="darktable_gui_views_tethering">darktable.gui.views.tethering</link></para></listitem>
-</itemizedlist>
-</para></listitem>
 </itemizedlist>
 </entry>
     </row></tbody>
@@ -1419,15 +1278,8 @@ end</programlisting>
     <tbody><row>
     <entry>Attributes:</entry>
     <entry><itemizedlist>
-<listitem><para><emphasis>container : </emphasis>DT_UI_CONTAINER_PANEL_RIGHT_CENTER</para></listitem>
 <listitem><para><emphasis><link linkend="attributes_has_tostring">has_tostring</link></emphasis></para></listitem>
 <listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_lib_module_t">types.dt_lib_module_t</link></para></listitem>
-<listitem><para><emphasis>position : </emphasis>800</para></listitem>
-<listitem><para><emphasis>views : </emphasis></para>
-<para><itemizedlist>
-<listitem><para><link linkend="darktable_gui_views_lighttable">darktable.gui.views.lighttable</link></para></listitem>
-</itemizedlist>
-</para></listitem>
 </itemizedlist>
 </entry>
     </row></tbody>
@@ -1447,16 +1299,8 @@ end</programlisting>
     <tbody><row>
     <entry>Attributes:</entry>
     <entry><itemizedlist>
-<listitem><para><emphasis>container : </emphasis>DT_UI_CONTAINER_PANEL_LEFT_CENTER</para></listitem>
 <listitem><para><emphasis><link linkend="attributes_has_tostring">has_tostring</link></emphasis></para></listitem>
 <listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_lib_module_t">types.dt_lib_module_t</link></para></listitem>
-<listitem><para><emphasis>position : </emphasis>400</para></listitem>
-<listitem><para><emphasis>views : </emphasis></para>
-<para><itemizedlist>
-<listitem><para><link linkend="darktable_gui_views_lighttable">darktable.gui.views.lighttable</link></para></listitem>
-<listitem><para><link linkend="darktable_gui_views_map">darktable.gui.views.map</link></para></listitem>
-</itemizedlist>
-</para></listitem>
 </itemizedlist>
 </entry>
     </row></tbody>
@@ -1476,16 +1320,8 @@ end</programlisting>
     <tbody><row>
     <entry>Attributes:</entry>
     <entry><itemizedlist>
-<listitem><para><emphasis>container : </emphasis>DT_UI_CONTAINER_PANEL_CENTER_BOTTOM_LEFT</para></listitem>
 <listitem><para><emphasis><link linkend="attributes_has_tostring">has_tostring</link></emphasis></para></listitem>
 <listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_lib_module_t">types.dt_lib_module_t</link></para></listitem>
-<listitem><para><emphasis>position : </emphasis>1001</para></listitem>
-<listitem><para><emphasis>views : </emphasis></para>
-<para><itemizedlist>
-<listitem><para><link linkend="darktable_gui_views_lighttable">darktable.gui.views.lighttable</link></para></listitem>
-<listitem><para><link linkend="darktable_gui_views_tethering">darktable.gui.views.tethering</link></para></listitem>
-</itemizedlist>
-</para></listitem>
 </itemizedlist>
 </entry>
     </row></tbody>
@@ -1505,15 +1341,8 @@ end</programlisting>
     <tbody><row>
     <entry>Attributes:</entry>
     <entry><itemizedlist>
-<listitem><para><emphasis>container : </emphasis>DT_UI_CONTAINER_PANEL_CENTER_BOTTOM_CENTER</para></listitem>
 <listitem><para><emphasis><link linkend="attributes_has_tostring">has_tostring</link></emphasis></para></listitem>
 <listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_lib_module_t">types.dt_lib_module_t</link></para></listitem>
-<listitem><para><emphasis>position : </emphasis>1001</para></listitem>
-<listitem><para><emphasis>views : </emphasis></para>
-<para><itemizedlist>
-<listitem><para><link linkend="darktable_gui_views_lighttable">darktable.gui.views.lighttable</link></para></listitem>
-</itemizedlist>
-</para></listitem>
 </itemizedlist>
 </entry>
     </row></tbody>
@@ -1533,15 +1362,8 @@ end</programlisting>
     <tbody><row>
     <entry>Attributes:</entry>
     <entry><itemizedlist>
-<listitem><para><emphasis>container : </emphasis>DT_UI_CONTAINER_PANEL_RIGHT_CENTER</para></listitem>
 <listitem><para><emphasis><link linkend="attributes_has_tostring">has_tostring</link></emphasis></para></listitem>
 <listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_lib_module_t">types.dt_lib_module_t</link></para></listitem>
-<listitem><para><emphasis>position : </emphasis>600</para></listitem>
-<listitem><para><emphasis>views : </emphasis></para>
-<para><itemizedlist>
-<listitem><para><link linkend="darktable_gui_views_lighttable">darktable.gui.views.lighttable</link></para></listitem>
-</itemizedlist>
-</para></listitem>
 </itemizedlist>
 </entry>
     </row></tbody>
@@ -1561,15 +1383,8 @@ end</programlisting>
     <tbody><row>
     <entry>Attributes:</entry>
     <entry><itemizedlist>
-<listitem><para><emphasis>container : </emphasis>DT_UI_CONTAINER_PANEL_RIGHT_CENTER</para></listitem>
 <listitem><para><emphasis><link linkend="attributes_has_tostring">has_tostring</link></emphasis></para></listitem>
 <listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_lib_module_t">types.dt_lib_module_t</link></para></listitem>
-<listitem><para><emphasis>position : </emphasis>700</para></listitem>
-<listitem><para><emphasis>views : </emphasis></para>
-<para><itemizedlist>
-<listitem><para><link linkend="darktable_gui_views_lighttable">darktable.gui.views.lighttable</link></para></listitem>
-</itemizedlist>
-</para></listitem>
 </itemizedlist>
 </entry>
     </row></tbody>
@@ -1589,15 +1404,8 @@ end</programlisting>
     <tbody><row>
     <entry>Attributes:</entry>
     <entry><itemizedlist>
-<listitem><para><emphasis>container : </emphasis>DT_UI_CONTAINER_PANEL_RIGHT_TOP</para></listitem>
 <listitem><para><emphasis><link linkend="attributes_has_tostring">has_tostring</link></emphasis></para></listitem>
 <listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_lib_module_t">types.dt_lib_module_t</link></para></listitem>
-<listitem><para><emphasis>position : </emphasis>999</para></listitem>
-<listitem><para><emphasis>views : </emphasis></para>
-<para><itemizedlist>
-<listitem><para><link linkend="darktable_gui_views_darkroom">darktable.gui.views.darkroom</link></para></listitem>
-</itemizedlist>
-</para></listitem>
 </itemizedlist>
 </entry>
     </row></tbody>
@@ -1617,17 +1425,8 @@ end</programlisting>
     <tbody><row>
     <entry>Attributes:</entry>
     <entry><itemizedlist>
-<listitem><para><emphasis>container : </emphasis>DT_UI_CONTAINER_PANEL_CENTER_BOTTOM_RIGHT</para></listitem>
 <listitem><para><emphasis><link linkend="attributes_has_tostring">has_tostring</link></emphasis></para></listitem>
 <listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_lib_module_t">types.dt_lib_module_t</link></para></listitem>
-<listitem><para><emphasis>position : </emphasis>100</para></listitem>
-<listitem><para><emphasis>views : </emphasis></para>
-<para><itemizedlist>
-<listitem><para><link linkend="darktable_gui_views_lighttable">darktable.gui.views.lighttable</link></para></listitem>
-<listitem><para><link linkend="darktable_gui_views_darkroom">darktable.gui.views.darkroom</link></para></listitem>
-<listitem><para><link linkend="darktable_gui_views_tethering">darktable.gui.views.tethering</link></para></listitem>
-</itemizedlist>
-</para></listitem>
 </itemizedlist>
 </entry>
     </row></tbody>
@@ -1647,15 +1446,8 @@ end</programlisting>
     <tbody><row>
     <entry>Attributes:</entry>
     <entry><itemizedlist>
-<listitem><para><emphasis>container : </emphasis>DT_UI_CONTAINER_PANEL_RIGHT_CENTER</para></listitem>
 <listitem><para><emphasis><link linkend="attributes_has_tostring">has_tostring</link></emphasis></para></listitem>
 <listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_lib_module_t">types.dt_lib_module_t</link></para></listitem>
-<listitem><para><emphasis>position : </emphasis>999</para></listitem>
-<listitem><para><emphasis>views : </emphasis></para>
-<para><itemizedlist>
-<listitem><para><link linkend="darktable_gui_views_tethering">darktable.gui.views.tethering</link></para></listitem>
-</itemizedlist>
-</para></listitem>
 </itemizedlist>
 </entry>
     </row></tbody>
@@ -1675,16 +1467,8 @@ end</programlisting>
     <tbody><row>
     <entry>Attributes:</entry>
     <entry><itemizedlist>
-<listitem><para><emphasis>container : </emphasis>DT_UI_CONTAINER_PANEL_RIGHT_TOP</para></listitem>
 <listitem><para><emphasis><link linkend="attributes_has_tostring">has_tostring</link></emphasis></para></listitem>
 <listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_lib_module_t">types.dt_lib_module_t</link></para></listitem>
-<listitem><para><emphasis>position : </emphasis>1001</para></listitem>
-<listitem><para><emphasis>views : </emphasis></para>
-<para><itemizedlist>
-<listitem><para><link linkend="darktable_gui_views_darkroom">darktable.gui.views.darkroom</link></para></listitem>
-<listitem><para><link linkend="darktable_gui_views_tethering">darktable.gui.views.tethering</link></para></listitem>
-</itemizedlist>
-</para></listitem>
 </itemizedlist>
 </entry>
     </row></tbody>
@@ -1704,15 +1488,8 @@ end</programlisting>
     <tbody><row>
     <entry>Attributes:</entry>
     <entry><itemizedlist>
-<listitem><para><emphasis>container : </emphasis>DT_UI_CONTAINER_PANEL_RIGHT_CENTER</para></listitem>
 <listitem><para><emphasis><link linkend="attributes_has_tostring">has_tostring</link></emphasis></para></listitem>
 <listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_lib_module_t">types.dt_lib_module_t</link></para></listitem>
-<listitem><para><emphasis>position : </emphasis>0</para></listitem>
-<listitem><para><emphasis>views : </emphasis></para>
-<para><itemizedlist>
-<listitem><para><link linkend="darktable_gui_views_lighttable">darktable.gui.views.lighttable</link></para></listitem>
-</itemizedlist>
-</para></listitem>
 </itemizedlist>
 </entry>
     </row></tbody>
@@ -1732,15 +1509,8 @@ end</programlisting>
     <tbody><row>
     <entry>Attributes:</entry>
     <entry><itemizedlist>
-<listitem><para><emphasis>container : </emphasis>DT_UI_CONTAINER_PANEL_LEFT_CENTER</para></listitem>
 <listitem><para><emphasis><link linkend="attributes_has_tostring">has_tostring</link></emphasis></para></listitem>
 <listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_lib_module_t">types.dt_lib_module_t</link></para></listitem>
-<listitem><para><emphasis>position : </emphasis>900</para></listitem>
-<listitem><para><emphasis>views : </emphasis></para>
-<para><itemizedlist>
-<listitem><para><link linkend="darktable_gui_views_darkroom">darktable.gui.views.darkroom</link></para></listitem>
-</itemizedlist>
-</para></listitem>
 </itemizedlist>
 </entry>
     </row></tbody>
@@ -1760,15 +1530,8 @@ end</programlisting>
     <tbody><row>
     <entry>Attributes:</entry>
     <entry><itemizedlist>
-<listitem><para><emphasis>container : </emphasis>DT_UI_CONTAINER_PANEL_LEFT_CENTER</para></listitem>
 <listitem><para><emphasis><link linkend="attributes_has_tostring">has_tostring</link></emphasis></para></listitem>
 <listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_lib_module_t">types.dt_lib_module_t</link></para></listitem>
-<listitem><para><emphasis>position : </emphasis>800</para></listitem>
-<listitem><para><emphasis>views : </emphasis></para>
-<para><itemizedlist>
-<listitem><para><link linkend="darktable_gui_views_darkroom">darktable.gui.views.darkroom</link></para></listitem>
-</itemizedlist>
-</para></listitem>
 </itemizedlist>
 </entry>
     </row></tbody>
@@ -1788,15 +1551,8 @@ end</programlisting>
     <tbody><row>
     <entry>Attributes:</entry>
     <entry><itemizedlist>
-<listitem><para><emphasis>container : </emphasis>DT_UI_CONTAINER_PANEL_LEFT_TOP</para></listitem>
 <listitem><para><emphasis><link linkend="attributes_has_tostring">has_tostring</link></emphasis></para></listitem>
 <listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_lib_module_t">types.dt_lib_module_t</link></para></listitem>
-<listitem><para><emphasis>position : </emphasis>1001</para></listitem>
-<listitem><para><emphasis>views : </emphasis></para>
-<para><itemizedlist>
-<listitem><para><link linkend="darktable_gui_views_darkroom">darktable.gui.views.darkroom</link></para></listitem>
-</itemizedlist>
-</para></listitem>
 </itemizedlist>
 </entry>
     </row></tbody>
@@ -1816,15 +1572,8 @@ end</programlisting>
     <tbody><row>
     <entry>Attributes:</entry>
     <entry><itemizedlist>
-<listitem><para><emphasis>container : </emphasis>DT_UI_CONTAINER_PANEL_LEFT_CENTER</para></listitem>
 <listitem><para><emphasis><link linkend="attributes_has_tostring">has_tostring</link></emphasis></para></listitem>
 <listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_lib_module_t">types.dt_lib_module_t</link></para></listitem>
-<listitem><para><emphasis>position : </emphasis>10</para></listitem>
-<listitem><para><emphasis>views : </emphasis></para>
-<para><itemizedlist>
-<listitem><para><link linkend="darktable_gui_views_darkroom">darktable.gui.views.darkroom</link></para></listitem>
-</itemizedlist>
-</para></listitem>
 </itemizedlist>
 </entry>
     </row></tbody>
@@ -1844,17 +1593,8 @@ end</programlisting>
     <tbody><row>
     <entry>Attributes:</entry>
     <entry><itemizedlist>
-<listitem><para><emphasis>container : </emphasis>DT_UI_CONTAINER_PANEL_CENTER_BOTTOM_LEFT</para></listitem>
 <listitem><para><emphasis><link linkend="attributes_has_tostring">has_tostring</link></emphasis></para></listitem>
 <listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_lib_module_t">types.dt_lib_module_t</link></para></listitem>
-<listitem><para><emphasis>position : </emphasis>100</para></listitem>
-<listitem><para><emphasis>views : </emphasis></para>
-<para><itemizedlist>
-<listitem><para><link linkend="darktable_gui_views_lighttable">darktable.gui.views.lighttable</link></para></listitem>
-<listitem><para><link linkend="darktable_gui_views_darkroom">darktable.gui.views.darkroom</link></para></listitem>
-<listitem><para><link linkend="darktable_gui_views_tethering">darktable.gui.views.tethering</link></para></listitem>
-</itemizedlist>
-</para></listitem>
 </itemizedlist>
 </entry>
     </row></tbody>
@@ -1874,15 +1614,8 @@ end</programlisting>
     <tbody><row>
     <entry>Attributes:</entry>
     <entry><itemizedlist>
-<listitem><para><emphasis>container : </emphasis>DT_UI_CONTAINER_PANEL_RIGHT_CENTER</para></listitem>
 <listitem><para><emphasis><link linkend="attributes_has_tostring">has_tostring</link></emphasis></para></listitem>
 <listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_lib_module_t">types.dt_lib_module_t</link></para></listitem>
-<listitem><para><emphasis>position : </emphasis>998</para></listitem>
-<listitem><para><emphasis>views : </emphasis></para>
-<para><itemizedlist>
-<listitem><para><link linkend="darktable_gui_views_tethering">darktable.gui.views.tethering</link></para></listitem>
-</itemizedlist>
-</para></listitem>
 </itemizedlist>
 </entry>
     </row></tbody>
@@ -1902,15 +1635,8 @@ end</programlisting>
     <tbody><row>
     <entry>Attributes:</entry>
     <entry><itemizedlist>
-<listitem><para><emphasis>container : </emphasis>DT_UI_CONTAINER_PANEL_RIGHT_CENTER</para></listitem>
 <listitem><para><emphasis><link linkend="attributes_has_tostring">has_tostring</link></emphasis></para></listitem>
 <listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_lib_module_t">types.dt_lib_module_t</link></para></listitem>
-<listitem><para><emphasis>position : </emphasis>990</para></listitem>
-<listitem><para><emphasis>views : </emphasis></para>
-<para><itemizedlist>
-<listitem><para><link linkend="darktable_gui_views_map">darktable.gui.views.map</link></para></listitem>
-</itemizedlist>
-</para></listitem>
 </itemizedlist>
 </entry>
     </row></tbody>
@@ -1930,15 +1656,8 @@ end</programlisting>
     <tbody><row>
     <entry>Attributes:</entry>
     <entry><itemizedlist>
-<listitem><para><emphasis>container : </emphasis>DT_UI_CONTAINER_PANEL_RIGHT_CENTER</para></listitem>
 <listitem><para><emphasis><link linkend="attributes_has_tostring">has_tostring</link></emphasis></para></listitem>
 <listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_lib_module_t">types.dt_lib_module_t</link></para></listitem>
-<listitem><para><emphasis>position : </emphasis>997</para></listitem>
-<listitem><para><emphasis>views : </emphasis></para>
-<para><itemizedlist>
-<listitem><para><link linkend="darktable_gui_views_tethering">darktable.gui.views.tethering</link></para></listitem>
-</itemizedlist>
-</para></listitem>
 </itemizedlist>
 </entry>
     </row></tbody>
@@ -1958,15 +1677,8 @@ end</programlisting>
     <tbody><row>
     <entry>Attributes:</entry>
     <entry><itemizedlist>
-<listitem><para><emphasis>container : </emphasis>DT_UI_CONTAINER_PANEL_RIGHT_CENTER</para></listitem>
 <listitem><para><emphasis><link linkend="attributes_has_tostring">has_tostring</link></emphasis></para></listitem>
 <listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_lib_module_t">types.dt_lib_module_t</link></para></listitem>
-<listitem><para><emphasis>position : </emphasis>999</para></listitem>
-<listitem><para><emphasis>views : </emphasis></para>
-<para><itemizedlist>
-<listitem><para><link linkend="darktable_gui_views_map">darktable.gui.views.map</link></para></listitem>
-</itemizedlist>
-</para></listitem>
 </itemizedlist>
 </entry>
     </row></tbody>
@@ -1986,18 +1698,8 @@ end</programlisting>
     <tbody><row>
     <entry>Attributes:</entry>
     <entry><itemizedlist>
-<listitem><para><emphasis>container : </emphasis>DT_UI_CONTAINER_PANEL_LEFT_BOTTOM</para></listitem>
 <listitem><para><emphasis><link linkend="attributes_has_tostring">has_tostring</link></emphasis></para></listitem>
 <listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_lib_module_t">types.dt_lib_module_t</link></para></listitem>
-<listitem><para><emphasis>position : </emphasis>1</para></listitem>
-<listitem><para><emphasis>views : </emphasis></para>
-<para><itemizedlist>
-<listitem><para><link linkend="darktable_gui_views_lighttable">darktable.gui.views.lighttable</link></para></listitem>
-<listitem><para><link linkend="darktable_gui_views_darkroom">darktable.gui.views.darkroom</link></para></listitem>
-<listitem><para><link linkend="darktable_gui_views_tethering">darktable.gui.views.tethering</link></para></listitem>
-<listitem><para><link linkend="darktable_gui_views_map">darktable.gui.views.map</link></para></listitem>
-</itemizedlist>
-</para></listitem>
 </itemizedlist>
 </entry>
     </row></tbody>
@@ -2320,20 +2022,20 @@ end</programlisting>
 <secondary>check_version</secondary>
 </indexterm>
 <synopsis>function( 
-	<emphasis><link linkend="darktable_configuration_check_version_module name">module name</link></emphasis> : string, 
+	<emphasis><link linkend="darktable_configuration_check_version_module_name">module_name</link></emphasis> : string, 
 	<emphasis><link linkend="darktable_configuration_check_version____">...</link></emphasis> : table...
 )</synopsis>
 <para>Check that a module is compatible with the running version of darktable</para>
-<para>Add the following line at the top of your module : 
+<para>Add the following line at the top of your module : </para>
 
-<programlisting language="lua">darktable.configuration.check(...,{M,m,p},{M2,m2,p2})</programlisting>
+<para><programlisting language="lua">darktable.configuration.check(...,{M,m,p},{M2,m2,p2})</programlisting></para>
 
-To document that your module has been tested with API version M.m.p and M2.m2.p2.</para>
+<para>To document that your module has been tested with API version M.m.p and M2.m2.p2.</para>
 <para>This will raise an error if the user is running a released version of DT and a warning if he is running a developement version</para>
 <para>(the ... here will automatically expand to your module name if used at the top of your script</para>
 
 <variablelist>
-<varlistentry id="darktable_configuration_check_version_module name"><term>module name</term><listitem>
+<varlistentry id="darktable_configuration_check_version_module_name"><term>module_name</term><listitem>
 <synopsis>string</synopsis>
 <para>The name of the module to report on error</para>
 
@@ -5211,17 +4913,6 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
     </tgroup></informaltable>
 </section>
 
-<section status="final" id="types_dt_lib_module_t_container">
-<title>types.dt_lib_module_t.container</title>
-<indexterm>
-<primary>Lua API</primary>
-<secondary>container</secondary>
-</indexterm>
-<synopsis><link linkend="types_dt_ui_container_t">types.dt_ui_container_t</link></synopsis>
-<para>The location of the lib in the darktable UI</para>
-
-</section>
-
 <section status="final" id="types_dt_lib_module_t_expandable">
 <title>types.dt_lib_module_t.expandable</title>
 <indexterm>
@@ -5252,28 +4943,6 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
 </entry>
     </row></tbody>
     </tgroup></informaltable>
-</section>
-
-<section status="final" id="types_dt_lib_module_t_position">
-<title>types.dt_lib_module_t.position</title>
-<indexterm>
-<primary>Lua API</primary>
-<secondary>position</secondary>
-</indexterm>
-<synopsis>number</synopsis>
-<para>A value deciding the position of the lib within its container</para>
-
-</section>
-
-<section status="final" id="types_dt_lib_module_t_views">
-<title>types.dt_lib_module_t.views</title>
-<indexterm>
-<primary>Lua API</primary>
-<secondary>views</secondary>
-</indexterm>
-<synopsis>table</synopsis>
-<para>A table of all the views that display this widget</para>
-
 </section>
 
 <section status="final" id="types_dt_lib_module_t_reset">
@@ -5480,46 +5149,6 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
 <listitem><para>hint_picture</para></listitem>
 <listitem><para>hint_photo</para></listitem>
 <listitem><para>hint_graphic</para></listitem>
-</itemizedlist>
-</para></listitem>
-</itemizedlist>
-</entry>
-    </row></tbody>
-    </tgroup></informaltable>
-</section>
-
-<section status="final" id="types_dt_ui_container_t">
-<title>types.dt_ui_container_t</title>
-<indexterm>
-<primary>Lua API</primary>
-<secondary>dt_ui_container_t</secondary>
-</indexterm>
-<synopsis>enum</synopsis>
-<para>A place in the darktable UI where a lib can be placed</para>
-<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
-    <colspec colwidth="2*"/>
-    <colspec colwidth="8*"/>
-    <tbody><row>
-    <entry>Attributes:</entry>
-    <entry><itemizedlist>
-<listitem><para><emphasis>values : </emphasis></para>
-<para><itemizedlist>
-<listitem><para>DT_UI_CONTAINER_PANEL_LEFT_TOP</para></listitem>
-<listitem><para>DT_UI_CONTAINER_PANEL_LEFT_CENTER</para></listitem>
-<listitem><para>DT_UI_CONTAINER_PANEL_LEFT_BOTTOM</para></listitem>
-<listitem><para>DT_UI_CONTAINER_PANEL_RIGHT_TOP</para></listitem>
-<listitem><para>DT_UI_CONTAINER_PANEL_RIGHT_CENTER</para></listitem>
-<listitem><para>DT_UI_CONTAINER_PANEL_RIGHT_BOTTOM</para></listitem>
-<listitem><para>DT_UI_CONTAINER_PANEL_TOP_LEFT</para></listitem>
-<listitem><para>DT_UI_CONTAINER_PANEL_TOP_CENTER</para></listitem>
-<listitem><para>DT_UI_CONTAINER_PANEL_TOP_RIGHT</para></listitem>
-<listitem><para>DT_UI_CONTAINER_PANEL_CENTER_TOP_LEFT</para></listitem>
-<listitem><para>DT_UI_CONTAINER_PANEL_CENTER_TOP_CENTER</para></listitem>
-<listitem><para>DT_UI_CONTAINER_PANEL_CENTER_TOP_RIGHT</para></listitem>
-<listitem><para>DT_UI_CONTAINER_PANEL_CENTER_BOTTOM_LEFT</para></listitem>
-<listitem><para>DT_UI_CONTAINER_PANEL_CENTER_BOTTOM_CENTER</para></listitem>
-<listitem><para>DT_UI_CONTAINER_PANEL_CENTER_BOTTOM_RIGHT</para></listitem>
-<listitem><para>DT_UI_CONTAINER_PANEL_BOTTOM</para></listitem>
 </itemizedlist>
 </para></listitem>
 </itemizedlist>
@@ -6185,7 +5814,7 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
 <para>A callback that is yielding allows other Lua code to run.<itemizedlist>
 <listitem><para>wait_ms: one extra parameter; the execution will pause for that many miliseconds; yield returns nothing;</para></listitem>
 <listitem><para>file_readable: an opened file from a call to the OS library; will return when the file is readable; returns nothing;</para></listitem>
-<listitem><para>* run_command: a command to be run by "sh -c"; will return when the command terminates; returns the return code of the execution.</para></listitem>
+<listitem><para>run_command: a command to be run by "sh -c"; will return when the command terminates; returns the return code of the execution.</para></listitem>
 </itemizedlist>
 </para>
 

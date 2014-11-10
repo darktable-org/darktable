@@ -162,38 +162,11 @@ gui_init (dt_imageio_module_storage_t *self)
   d->entry = GTK_ENTRY(widget);
   dt_gui_key_accel_block_on_focus_connect(GTK_WIDGET (d->entry));
 
-  dt_gtkentry_completion_spec compl_list[] =
-  {
-    { "ROLL_NAME", _("$(ROLL_NAME) - roll of the input image") },
-    { "FILE_FOLDER", _("$(FILE_FOLDER) - folder containing the input image") },
-    { "FILE_NAME", _("$(FILE_NAME) - basename of the input image") },
-    { "FILE_EXTENSION", _("$(FILE_EXTENSION) - extension of the input image") },
-    { "SEQUENCE", _("$(SEQUENCE) - sequence number") },
-    { "YEAR", _("$(YEAR) - year") },
-    { "MONTH", _("$(MONTH) - month") },
-    { "DAY", _("$(DAY) - day") },
-    { "HOUR", _("$(HOUR) - hour") },
-    { "MINUTE", _("$(MINUTE) - minute") },
-    { "SECOND", _("$(SECOND) - second") },
-    { "EXIF_YEAR", _("$(EXIF_YEAR) - EXIF year") },
-    { "EXIF_MONTH", _("$(EXIF_MONTH) - EXIF month") },
-    { "EXIF_DAY", _("$(EXIF_DAY) - EXIF day") },
-    { "EXIF_HOUR", _("$(EXIF_HOUR) - EXIF hour") },
-    { "EXIF_MINUTE", _("$(EXIF_MINUTE) - EXIF minute") },
-    { "EXIF_SECOND", _("$(EXIF_SECOND) - EXIF second") },
-    { "STARS", _("$(STARS) - star rating") },
-    { "LABELS", _("$(LABELS) - colorlabels") },
-    { "PICTURES_FOLDER", _("$(PICTURES_FOLDER) - pictures folder") },
-    { "HOME", _("$(HOME) - home folder") },
-    { "DESKTOP", _("$(DESKTOP) - desktop folder") },
-    { NULL, NULL }
-  };
-
-  dt_gtkentry_setup_completion(GTK_ENTRY(widget), compl_list);
+  dt_gtkentry_setup_completion(GTK_ENTRY(widget), dt_gtkentry_get_default_path_compl_list());
 
   char *tooltip_text = dt_gtkentry_build_completion_tooltip_text (
                          _("enter the path where to put exported images\nrecognized variables:"),
-                         compl_list);
+                         dt_gtkentry_get_default_path_compl_list());
   g_object_set(G_OBJECT(widget), "tooltip-text", tooltip_text, (char *)NULL);
   g_signal_connect(G_OBJECT(widget), "changed", G_CALLBACK(entry_changed_callback), self);
   g_free(tooltip_text);

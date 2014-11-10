@@ -233,21 +233,19 @@ gchar *
 dt_gtkentry_build_completion_tooltip_text (const gchar *header,
     const dt_gtkentry_completion_spec *compl_list)
 {
-  const unsigned int tooltip_len = 1024;
-  gchar *tt = g_malloc0_n(tooltip_len, sizeof(gchar));
-  gsize tt_size = sizeof(gchar)*tooltip_len;
-  dt_gtkentry_completion_spec const *p;
+  size_t array_len = 0;
+  for(dt_gtkentry_completion_spec const *p = compl_list; p->description != NULL; p++)
+    array_len++;
+  const gchar * lines[array_len+2];
+  const gchar **l = lines;
+  *l++ = header;
 
-  g_strlcat(tt, header, tt_size);
-  g_strlcat(tt, "\n", tt_size);
+  for(dt_gtkentry_completion_spec const *p = compl_list; p->description != NULL; p++, l++)
+    *l = _(p->description);
 
-  for(p = compl_list; p->description != NULL; p++)
-  {
-    g_strlcat(tt, _(p->description), tt_size);
-    g_strlcat(tt, "\n", tt_size);
-  }
+  *l = NULL;
 
-  return tt;
+  return g_strjoinv("\n", (gchar**)lines);
 }
 
 

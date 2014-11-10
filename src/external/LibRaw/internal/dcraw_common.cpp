@@ -4732,10 +4732,12 @@ void CLASS parse_makernote (int base, int uptag)
     if (get2() != 42) goto quit;
     offset = get4();
     fseek (ifp, offset-8, SEEK_CUR);
-  } else if (!strcmp (buf,"OLYMPUS")) {
+  } else if (!strcmp (buf,"OLYMPUS") ||
+             !strcmp (buf,"PENTAX ")) {
     base = ftell(ifp)-10;
     fseek (ifp, -2, SEEK_CUR);
-    order = get2();  get2();
+    order = get2();
+    if (buf[0] == 'O') get2();
   } else if (!strncmp (buf,"SONY",4) ||
 	     !strcmp  (buf,"Panasonic")) {
     goto nf;
