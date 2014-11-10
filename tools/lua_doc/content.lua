@@ -72,7 +72,7 @@ if real_darktable.configuration.api_version_suffix == "" then
 else
   prefix = ""
 end
-doc.toplevel:set_text(prefix..[[To access the darktable specific functions you must load the darktable environement:]]..
+doc.toplevel:set_text(prefix..[[To access the darktable specific functions you must load the darktable environment:]]..
 code([[darktable = require "darktable"]])..
 [[All functions and data are accessed through the darktable module.]]..para()..
 [[This documentation for API version ]]..real_darktable.configuration.api_version_string..[[.]])
