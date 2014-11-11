@@ -26,32 +26,36 @@
       the pixelpipe. Here are a few use cases.
     </para>
 
-    <para>
-      Most of our modules are highly versatile and depending on parameters can deliver quite
-      varying effects. For example the <emphasis>fill light</emphasis> module
-      (<xref linkend="fill_light"/>) allows local modification of lightness based on pixel
-      values. You might want to do two lightness corrections in your image at the same
-      time&nbsp;&ndash; one for dark tones and another one for lighter tones.
-    </para>
+    <itemizedlist>
 
-    <para>
-      You might want to apply a denoising module like <emphasis>denoise (profile)</emphasis>
-      (<xref linkend="denoise_profiled"/>) with two different parameter sets. One to do luma
-      denoising and another set of parameters to do chroma denoising. You could do so by
-      generating two instances and use the first one only on luma by selecting blend mode
-      <quote>lightness</quote> and use the second one just for chroma by selecting blend mode
-      <quote>color</quote> (see <xref linkend="blending_operators"/>).
-    </para>
+      <listitem><para>
+        Most of our modules are highly versatile and depending on parameters can deliver quite
+        varying effects. For example the <emphasis>fill light</emphasis> module
+        (<xref linkend="fill_light"/>) allows local modification of lightness based on pixel
+        values. You might want to do two lightness corrections in your image at the same
+        time&nbsp;&ndash; one for dark tones and another one for lighter tones.
+      </para></listitem>
 
-    <para>
-      In an even more elaborate case you could have a module act on different parts of your
-      image. As an example you might want to apply a certain gradation curve with module
-      <emphasis>tone curve</emphasis> (<xref linkend="tone_curve"/>) to your complete image and
-      have a second curve being applied specifically to skin tones. All of the controls offered
-      by <emphasis>drawn masks</emphasis> (<xref linkend="drawn_mask"/>) and
-      <emphasis>parametric masks</emphasis> (<xref linkend="parametric_mask"/>) may be used to
-      select those parts of an image where each of the module instances are applied.
-    </para>
+      <listitem><para>
+        You might want to apply a denoising module like <emphasis>denoise (profile)</emphasis>
+        (<xref linkend="denoise_profiled"/>) with two different parameter sets. One to do luma
+        denoising and another set of parameters to do chroma denoising. You could do so by
+        generating two instances and use the first one only on luma by selecting blend mode
+        <quote>lightness</quote> and use the second one just for chroma by selecting blend mode
+        <quote>color</quote> (see <xref linkend="blending_operators"/>).
+      </para></listitem>
+
+      <listitem><para>
+        In an even more elaborate case you could have a module act on different parts of your
+        image. As an example you might want to apply a certain gradation curve with module
+        <emphasis>tone curve</emphasis> (<xref linkend="tone_curve"/>) to your complete image
+        and have a second curve being applied specifically to skin tones. All of the controls
+        offered by <emphasis>drawn masks</emphasis> (<xref linkend="drawn_mask"/>) and
+        <emphasis>parametric masks</emphasis> (<xref linkend="parametric_mask"/>) may be used to
+        select those parts of an image where each of the module instances are applied.
+      </para></listitem>
+
+    </itemizedlist>
 
     <para>
       Please be aware that of course each instance also adds to the workload of your pixelpipe.
