@@ -140,14 +140,16 @@
     </para>
 
     <para>
-      Many thanks to all contributors to this user manual. Special thanks for proof reading,
-      style improvement, constructive criticism, and valuable contributions go to Colin Adams,
-      Mark Garrow, Simon Harhues, István Kovács, Michel Leblond, Rudolf Martin, Ammon Riley, Rob Z. Smith,
-      Andrew Toskin, and David Vincent-Jones.
+      Translations of this manual to local languages are brought to you by Federico Bruni,
+      Victor Lamoine, and Michel Leblond.
     </para>
 
-<!-- <para>For the course of this documentation the arrow keys on your keyboard are referenced as with arrow symbols: &uarr;&larr;&darr;&rarr;.
-		</para>  -->
+    <para>
+      Many thanks to all contributors to this user manual. Special thanks for proof reading,
+      style improvement, constructive criticism, and valuable contributions go to Colin Adams,
+      Mark Garrow, Simon Harhues, István Kovács, Michel Leblond, Rudolf Martin, Ammon Riley,
+      Rob Z. Smith, Andrew Toskin, and David Vincent-Jones.
+    </para>
 
   </preface>
 
