@@ -108,26 +108,26 @@ _dt_history_cleanup_multi_instance(int imgid, int minnum)
   }
 
   // and we update the history items
-  char req[4096] = "update history set multi_priority = case num ";
+  char *req = NULL;
+  req = dt_util_dstrcat(req,"%s", "update history set multi_priority = case num ");
   items = g_list_first(hitems);
   while(items)
   {
     _history_item_t *hi = (_history_item_t *)(items->data);
     if (hi->mi != hi->new_mi)
     {
-      char v[256];
-      snprintf (v, sizeof(v), "when %d then %d ", hi->num, hi->new_mi);
-      g_strlcat(req, v, sizeof(req));
+      req = dt_util_dstrcat(req, "when %d then %d ", hi->num, hi->new_mi);
     }
     items = g_list_next(items);
   }
-  g_strlcat(req, "else multi_priority end where imgid=?1 and num>=?2", sizeof(req));
+  req = dt_util_dstrcat(req, "%s", "else multi_priority end where imgid=?1 and num>=?2");
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), req, -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, minnum);
   sqlite3_step (stmt);
   sqlite3_finalize (stmt);
 
+  g_free(req);
   g_list_free_full(hitems, free);
 }
 
