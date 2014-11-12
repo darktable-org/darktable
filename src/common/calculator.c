@@ -19,6 +19,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
+#include <glib.h>
 
 typedef enum token_types_t
 {
@@ -62,24 +63,7 @@ typedef struct parser_state_t
 
 static float read_number(parser_state_t *self)
 {
-  float integer = 0.0f, fractional = 0.0f, fractional_div = 1.0f;
-  while(*self->p && *self->p >= '0' && *self->p <= '9')
-  {
-    integer = integer * 10 + (*self->p) - '0';
-    self->p++;
-  }
-  if(*self->p == '.' || *self->p == ',')
-  {
-    self->p++;
-    while(*self->p && *self->p >= '0' && *self->p <= '9')
-    {
-      fractional = fractional * 10 + (*self->p) - '0';
-      fractional_div *= 10;
-      self->p++;
-    }
-  }
-
-  return integer + fractional / fractional_div;
+  return g_ascii_strtod(self->p, &self->p);
 }
 
 static token_t * get_token(parser_state_t *self)
