@@ -74,7 +74,7 @@ _dt_history_cleanup_multi_instance(int imgid, int minnum)
   {
     _history_item_t *hi = (_history_item_t *)calloc(1, sizeof(_history_item_t));
     hi->num = sqlite3_column_int(stmt, 0);
-    snprintf(hi->op,1024,"%s",sqlite3_column_text(stmt, 1));
+    snprintf(hi->op,sizeof(hi->op),"%s",sqlite3_column_text(stmt, 1));
     hi->mi = sqlite3_column_int(stmt, 2);
     hi->new_mi = -5; //means : not changed atm
     hitems = g_list_append(hitems,hi);
@@ -91,7 +91,7 @@ _dt_history_cleanup_multi_instance(int imgid, int minnum)
     _history_item_t *hi = (_history_item_t *)(items->data);
     if (strcmp(op,hi->op) != 0)
     {
-      strncpy(op,hi->op,1024);
+      strncpy(op,hi->op,sizeof(op));
       c_mi = 0;
     }
     if (hi->mi != c_mi) nb_change++;
