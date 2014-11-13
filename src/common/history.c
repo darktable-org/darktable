@@ -46,21 +46,89 @@ remove_preset_flag(const int imgid)
 static void
 _dt_history_cleanup_multi_instance(int imgid, int minnum)
 {
-  sqlite3_stmt *stmt;
-
-  /* let's clean-up the history multi-instance. What we want to do is have a unique multi_priority value for each iop.
+  /* as we let the user decide which history item to copy, we can end with some gaps in multi-instance numbering.
+     for ex., if user decide to not copy the 2nd instance of a module which as 3 instances.
+     let's clean-up the history multi-instance. What we want to do is have a unique multi_priority value for each iop.
      Furthermore this value must start to 0 and increment one by one for each multi-instance of the same module. On
      SQLite there is no notion of ROW_NUMBER, so we use rather resource consuming SQL statement, but as an history has
      never a huge number of items that's not a real issue.
 
      We only do this for the given imgid and only for num>minnum, that is we only handle new history items just copied.
   */
+  typedef struct _history_item_t
+  {
+    int num;
+    char op[1024];
+    int mi;
+    int new_mi;
+  }
+  _history_item_t;
 
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "update history set multi_priority=(select COUNT(0)-1 from history hst2 where hst2.num<=history.num and hst2.num>=?2 and hst2.operation=history.operation and hst2.imgid=?1) where imgid=?1 and num>=?2", -1, &stmt, NULL);
+  // we first reload all the newly added history item
+  sqlite3_stmt *stmt;
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select num, operation, multi_priority from history where imgid=?1 and num>=?2 order by operation, multi_priority", -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, minnum);
+  GList *hitems = NULL;
+  while(sqlite3_step(stmt) == SQLITE_ROW)
+  {
+    _history_item_t *hi = (_history_item_t *)calloc(1, sizeof(_history_item_t));
+    hi->num = sqlite3_column_int(stmt, 0);
+    snprintf(hi->op,sizeof(hi->op),"%s",sqlite3_column_text(stmt, 1));
+    hi->mi = sqlite3_column_int(stmt, 2);
+    hi->new_mi = -5; //means : not changed atm
+    hitems = g_list_append(hitems,hi);
+  }
+  sqlite3_finalize (stmt);
+
+  // then we change the multi-priority to be sure to have a correct numbering
+  char op[1024] = "";
+  int c_mi = 0;
+  int nb_change = 0;
+  GList *items = g_list_first(hitems);
+  while(items)
+  {
+    _history_item_t *hi = (_history_item_t *)(items->data);
+    if (strcmp(op,hi->op) != 0)
+    {
+      strncpy(op,hi->op,sizeof(op));
+      c_mi = 0;
+    }
+    if (hi->mi != c_mi) nb_change++;
+    hi->new_mi = c_mi;
+    c_mi++;
+    items = g_list_next(items);
+  }
+
+  if (nb_change == 0)
+  {
+    // everything is ok, nothing to change
+    g_list_free_full(hitems, free);
+    return;
+  }
+
+  // and we update the history items
+  char *req = NULL;
+  req = dt_util_dstrcat(req,"%s", "update history set multi_priority = case num ");
+  items = g_list_first(hitems);
+  while(items)
+  {
+    _history_item_t *hi = (_history_item_t *)(items->data);
+    if (hi->mi != hi->new_mi)
+    {
+      req = dt_util_dstrcat(req, "when %d then %d ", hi->num, hi->new_mi);
+    }
+    items = g_list_next(items);
+  }
+  req = dt_util_dstrcat(req, "%s", "else multi_priority end where imgid=?1 and num>=?2");
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), req, -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, minnum);
   sqlite3_step (stmt);
   sqlite3_finalize (stmt);
+
+  g_free(req);
+  g_list_free_full(hitems, free);
 }
 
 void dt_history_delete_on_image(int32_t imgid)
