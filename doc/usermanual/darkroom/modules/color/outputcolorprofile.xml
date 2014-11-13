@@ -133,7 +133,23 @@
     <sect5>
       <title>output profile</title>
       <para>
-        Sets the color profile for output/export.
+        Sets the color profile for output/export, causing darktable to render colors with this
+        profile. darktable embeds the profile data into the output file if supported 
+        by the file format&nbsp;&ndash; this allows other applications reading the file to 
+        correctly interpret its colors.
+      </para>
+
+      <para>
+        Some file formats&nbsp;&ndash; namely PNG&nbsp;&ndash; do not support embedded profiles 
+        by their specification. However, there is an established de-facto standard to embed
+        profiles which darktable adheres to. Beware that some applications might fail to correctly 
+        handle those profiles and render colors incorrectly.
+      </para>
+
+      <para>
+        As not all applications, e.g. image viewers, are aware of color profiles, a general recommendation 
+        is to stick to <emphasis>sRGB</emphasis> as the default output profile. You should only deviate from 
+        <emphasis>sRGB</emphasis> if this is really required and if you know what you are doing.
       </para>
     </sect5>
 
