@@ -578,7 +578,7 @@ void init_tab_lua (GtkWidget *dialog, GtkWidget *tab)
         g_signal_connect(G_OBJECT(dialog), "response", G_CALLBACK(response_callback_enum), cur_elt);
         break;
       case pref_dir:
-        cur_elt->widget = gtk_file_chooser_button_new(_("Select a directory"),GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER);
+        cur_elt->widget = gtk_file_chooser_button_new(_("select directory"),GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER);
         gtk_file_chooser_button_set_width_chars (GTK_FILE_CHOOSER_BUTTON(cur_elt->widget),20);
         gchar *str = dt_conf_get_string(pref_name);
         gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(cur_elt->widget), str);
@@ -589,7 +589,7 @@ void init_tab_lua (GtkWidget *dialog, GtkWidget *tab)
         g_signal_connect(G_OBJECT(dialog), "response", G_CALLBACK(response_callback_dir), cur_elt);
         break;
       case pref_file:
-        cur_elt->widget = gtk_file_chooser_button_new(_("Select a file"),GTK_FILE_CHOOSER_ACTION_OPEN);
+        cur_elt->widget = gtk_file_chooser_button_new(_("select file"),GTK_FILE_CHOOSER_ACTION_OPEN);
         gtk_file_chooser_button_set_width_chars (GTK_FILE_CHOOSER_BUTTON(cur_elt->widget),20);
         str = dt_conf_get_string(pref_name);
         gtk_file_chooser_set_filename(GTK_FILE_CHOOSER(cur_elt->widget), str);

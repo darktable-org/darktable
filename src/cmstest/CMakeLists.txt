@@ -12,14 +12,13 @@ include_directories(SYSTEM ${GObject_INCLUDE_DIRS})
 target_link_libraries(darktable-cmstest ${GObject_LIBRARIES})
 add_definitions(${GObject_DEFINITIONS})
 
-# TODO: Add a proper XRandR test, too?
 find_package(X11)
-if(X11_FOUND)
-  include_directories(SYSTEM ${X11_INCLUDE_DIRS})
-  target_link_libraries(darktable-cmstest ${X11_LIBRARIES} Xrandr)
+if(X11_FOUND AND X11_Xrandr_FOUND)
+  include_directories(SYSTEM ${X11_INCLUDE_DIRS} ${X11_Xrandr_INCLUDE_PATH})
+  target_link_libraries(darktable-cmstest ${X11_LIBRARIES} ${X11_Xrandr_LIB})
   add_definitions(${X11_DEFINITIONS})
   add_definitions("-DHAVE_X11")
-endif(X11_FOUND)
+endif(X11_FOUND AND X11_Xrandr_FOUND)
 
 if(COLORD_FOUND AND NOT ${COLORD_VERSION} VERSION_LESS "0.1.32")
   message(STATUS "building darktable-cmstest with colord support. nice.")

@@ -57,7 +57,7 @@ local function remove_all_children(node)
 	end
 end
 -- prevent some objects to appear at the wrong end of the tree
-remove_all_children(types.dt_lib_module_t.views)
+--remove_all_children(types.dt_lib_module_t.views)
 
 ----------------------
 --  REANAMINGS      --
@@ -72,7 +72,7 @@ if real_darktable.configuration.api_version_suffix == "" then
 else
   prefix = ""
 end
-doc.toplevel:set_text(prefix..[[To access the darktable specific functions you must load the darktable environement:]]..
+doc.toplevel:set_text(prefix..[[To access the darktable specific functions you must load the darktable environment:]]..
 code([[darktable = require "darktable"]])..
 [[All functions and data are accessed through the darktable module.]]..para()..
 [[This documentation for API version ]]..real_darktable.configuration.api_version_string..[[.]])
@@ -225,7 +225,7 @@ darktable.configuration.api_version_string:set_text([[The version description of
 darktable.configuration.check_version:set_text([[Check that a module is compatible with the running version of darktable]]..para().."Add the following line at the top of your module : "..
 code("darktable.configuration.check(...,{M,m,p},{M2,m2,p2})").."To document that your module has been tested with API version M.m.p and M2.m2.p2."..para()..
 "This will raise an error if the user is running a released version of DT and a warning if he is running a developement version"..para().."(the ... here will automatically expand to your module name if used at the top of your script")
-darktable.configuration.check_version:add_parameter("module name","string","The name of the module to report on error")
+darktable.configuration.check_version:add_parameter("module_name","string","The name of the module to report on error")
 darktable.configuration.check_version:add_parameter("...","table...","Tables of API versions that are known to work with the scrip")
 
 
@@ -356,6 +356,7 @@ darktable.gui.views.lighttable:set_text([[The lighttable view]])
 darktable.gui.views.tethering:set_text([[The tethering view]])
 darktable.gui.views.slideshow:set_text([[The slideshow view]])
 
+--[[
 for k, v in darktable.gui.libs:unskiped_children() do
 	local real_node = real_darktable.gui.libs[k]
 	v:set_attribute("position",real_node.position);
@@ -366,6 +367,7 @@ for k, v in darktable.gui.libs:unskiped_children() do
 	end
 	v:set_attribute("views",matching_views);
 end
+]]
 darktable.gui.libs:set_text([[This table allows to reference all lib objects]]..para()..
 [[lib are the graphical blocks within each view.]]..para()..
 [[To quickly figure out what lib is what, you can use the following code which will make a given lib blink.]]..para()..
@@ -609,11 +611,11 @@ darktable.debug.type:set_text([[Similar to the system function type() but it wil
 	types.dt_lib_module_t.visible:set_text([[Allow to make a lib module completely invisible to the user.]]..para()..
 	[[Note that if the module is invisible the user will have no way to restore it without lua]])
 	types.dt_lib_module_t.visible:set_attribute("implicit_yield",true)
-	types.dt_lib_module_t.container:set_text([[The location of the lib in the darktable UI]]):set_reported_type(types.dt_ui_container_t)
+	--types.dt_lib_module_t.container:set_text([[The location of the lib in the darktable UI]]):set_reported_type(types.dt_ui_container_t)
 	types.dt_lib_module_t.expandable:set_text([[True if the lib can be expanded/retracted]]);
 	types.dt_lib_module_t.expanded:set_text([[True if the lib is expanded]]);
-	types.dt_lib_module_t.position:set_text([[A value deciding the position of the lib within its container]])
-	types.dt_lib_module_t.views:set_text([[A table of all the views that display this widget]])
+	--types.dt_lib_module_t.position:set_text([[A value deciding the position of the lib within its container]])
+	--types.dt_lib_module_t.views:set_text([[A table of all the views that display this widget]])
 	types.dt_lib_module_t.reset:set_text([[A function to reset the lib to its default values]]..para()..
 	[[This function will do nothing if the lib is not visible or can't be reset]])
 	types.dt_lib_module_t.reset:add_parameter("self",types.dt_lib_module_t,[[The lib to reset]]):set_attribute("is_self",true)
@@ -636,7 +638,7 @@ darktable.debug.type:set_text([[Similar to the system function type() but it wil
 	types.dt_lua_snapshot_t.name:set_text([[The name of the snapshot, as seen in the UI]])
 
 	types.hint_t:set_text([[a hint on the way to encode a webp image]])
-	types.dt_ui_container_t:set_text([[A place in the darktable UI where a lib can be placed]])
+	--types.dt_ui_container_t:set_text([[A place in the darktable UI where a lib can be placed]])
 	types.snapshot_direction_t:set_text([[Which part of the main window is occupied by a snapshot]])
 	types.dt_imageio_j2k_format_t:set_text([[J2K format type]])
 	types.dt_imageio_j2k_preset_t:set_text([[J2K preset type]])
@@ -728,9 +730,9 @@ darktable.debug.type:set_text([[Similar to the system function type() but it wil
 	attributes.has_tostring:set_text([[This object has a specific reimplementation of the "tostring" method that allows pretty-printing it.]])
 	attributes.implicit_yield:set_text([[This call will release the Lua lock while executing, thus allowing other Lua callbacks to run.]])
 	attributes.parent:set_text([[This object inherits some methods from another object. You can call the methods from the parent on the child object]])
-	attributes.views:set_skiped();
-	attributes.position:set_skiped();
-	attributes.container:set_skiped();
+	--attributes.views:set_skiped();
+	--attributes.position:set_skiped();
+	--attributes.container:set_skiped();
 	attributes.values:set_skiped();
 
 	----------------------

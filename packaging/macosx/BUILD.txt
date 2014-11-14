@@ -7,10 +7,14 @@ How to make disk image with darktable application bundle (64 bit Intel only):
      macosx_deployment_target 10.6
      cxx_stdlib libstdc++
     (practice showed that support for versions older than 10.6 isn't viable)
-    To have working OpenMP (at least partly, only for C source files) you will also need gcc46:
-     sudo port install gcc46
+    and this line to /opt/local/etc/macports/variant.conf:
+     +llvm34
+    To have working OpenMP (at least partly, only for C source files) you will also need gcc48:
+     sudo port install gcc48
     Configure darktable with this command instead of just "cmake ..":
-     CC=gcc-mp-4.6 cmake .. -DCMAKE_OSX_DEPLOYMENT_TARGET=10.6
+     CC=gcc-mp-4.8 cmake .. -DCMAKE_OSX_DEPLOYMENT_TARGET=10.6
+    If you are building on OS X 10.10 Yosemite also add this argument to the command above:
+     -DCMAKE_OSX_SYSROOT=/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.9.sdk
 
 2). Download, patch and install gtk-mac-bundler (assuming darktable was cloned into ~/src directory):
      $ cd ~/src
@@ -30,3 +34,6 @@ How to make disk image with darktable application bundle (64 bit Intel only):
 4). Now preparation is done, run image creating script, it should create darktable-<VERSION>.dmg in current (packaging/macosx) directory:
      $ cd ~/src/darktable/packaging/macosx
      $ ./make-app-bundle
+    If you have an Apple Developer ID Application certificate and want to produce signed app then replace the previous command with this one:
+     $ CODECERT="Developer ID Application" ./make-app-bundle
+    You may have to provide more specific name for a certificate if you have several matching in your keychain.

@@ -4718,6 +4718,12 @@ const wb_data wb_preset[] =
   { "Panasonic", "DMC-LX5", Flash, 0,		{ 2.0760, 1, 1.6388, 0 } },
   { "Panasonic", "DMC-LX5", Incandescent, 0,	{ 1.2243, 1, 2.5741, 0 } },
 
+  { "LEICA", "D-LUX 6", Daylight, 0,		{ 1.992453, 1, 1.750943, 0 } },
+  { "LEICA", "D-LUX 6", Cloudy, 0,		{ 2.143396, 1, 1.603774, 0 } },
+  { "LEICA", "D-LUX 6", Shade, 0,		{ 2.286792, 1, 1.498113, 0 } },
+  { "LEICA", "D-LUX 6", Flash, 0,		{ 2.219697, 1, 1.659091, 0 } },
+  { "LEICA", "D-LUX 6", Incandescent, 0,	{ 1.335849, 1, 2.762264, 0 } },
+
   /* It seems that the *ist D WB settings are not really presets. */
   { "PENTAX", "*ist D", Daylight, 0,		{ 1.460938, 1, 1.019531, 0 } },
   { "PENTAX", "*ist D", Shade, 0,		{ 1.734375, 1, 1.000000, 0 } },
@@ -6229,6 +6235,18 @@ const wb_data wb_preset[] =
   { "SONY", "ILCE-7", DaylightFluorescent, 0,	{ 2.57812500, 1, 1.38281250, 0 } },
   { "SONY", "ILCE-7", Flash, 0,			{ 2.64843750, 1, 1.32421875, 0 } },
   { "SONY", "ILCE-7", "5500K", 0,		{ 2.21484375, 1, 1.40625000, 0 } },
+
+  // firmware ILCE-7R (A7R) Ver 1.0.1
+  { "SONY", "ILCE-7R", Daylight, 0,		{ 2.5078125, 1, 1.4921875, 0 } },
+  { "SONY", "ILCE-7R", Shade, 0,		{ 2.96484375, 1, 1.2265625, 0 } },
+  { "SONY", "ILCE-7R", Cloudy, 0,		{ 2.69921875, 1, 1.3671875, 0 } },
+  { "SONY", "ILCE-7R", Incandescent, 0,	{ 1.56640625, 1, 2.6953125, 0 } },
+  { "SONY", "ILCE-7R", WarmWhiteFluorescent, 0,{ 1.80859375, 1, 2.6796875, 0 } },
+  { "SONY", "ILCE-7R", CoolWhiteFluorescent, 0,{ 2.35546875, 1, 2.1640625, 0 } },
+  { "SONY", "ILCE-7R", DayWhiteFluorescent, 0,	{ 2.40625, 1, 1.6171875, 0 } },
+  { "SONY", "ILCE-7R", DaylightFluorescent, 0,	{ 2.68359375, 1, 1.40625, 0 } },
+  { "SONY", "ILCE-7R", Flash, 0,		{ 2.75, 1, 1.34375, 0 } },
+  { "SONY", "ILCE-7R", "5500K", 0,		{ 2.55859375, 1, 1.45703125, 0 } },
 
   { "SONY", "SLT-A37", Daylight, 0,		{ 2.6641, 1, 1.5156, 0 } },
   { "SONY", "SLT-A37", Shade, 0,		{ 3.1836, 1, 1.2539, 0 } },

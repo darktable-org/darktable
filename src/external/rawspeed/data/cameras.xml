@@ -4067,6 +4067,72 @@
 			<Hint name="zero_is_bad" value=""/>
 		</Hints>
 	</Camera>
+	<!-- LEICA D-LUX 6 is the same camera as Panasonic DMC-LX7 -->
+	<Camera make="LEICA" model = "D-LUX 6">
+		<CFA width="2" height="2">
+			<Color x="0" y="0">GREEN</Color>
+			<Color x="1" y="0">RED</Color>
+			<Color x="0" y="1">BLUE</Color>
+			<Color x="1" y="1">GREEN</Color>
+		</CFA>
+		<Crop x="0" y="0" width="-34" height="0"/>
+		<Sensor black="150" white="3971"/>
+		<Hints>
+			<Hint name="zero_is_bad" value=""/>
+		</Hints>
+	</Camera>
+	<Camera make="LEICA" model = "D-LUX 6" mode="4:3">
+		<CFA width="2" height="2">
+			<Color x="0" y="0">GREEN</Color>
+			<Color x="1" y="0">RED</Color>
+			<Color x="0" y="1">BLUE</Color>
+			<Color x="1" y="1">GREEN</Color>
+		</CFA>
+		<Crop x="0" y="0" width="-34" height="0"/>
+		<Sensor black="150" white="3971"/>
+		<Hints>
+			<Hint name="zero_is_bad" value=""/>
+		</Hints>
+	</Camera>
+	<Camera make="LEICA" model = "D-LUX 6" mode="3:2">
+		<CFA width="2" height="2">
+			<Color x="0" y="0">GREEN</Color>
+			<Color x="1" y="0">RED</Color>
+			<Color x="0" y="1">BLUE</Color>
+			<Color x="1" y="1">GREEN</Color>
+		</CFA>
+		<Crop x="0" y="0" width="-128" height="0"/>
+		<Sensor black="150" white="3971"/>
+		<Hints>
+			<Hint name="zero_is_bad" value=""/>
+		</Hints>
+	</Camera>
+	<Camera make="LEICA" model = "D-LUX 6" mode="16:9">
+		<CFA width="2" height="2">
+			<Color x="0" y="0">GREEN</Color>
+			<Color x="1" y="0">RED</Color>
+			<Color x="0" y="1">BLUE</Color>
+			<Color x="1" y="1">GREEN</Color>
+		</CFA>
+		<Crop x="0" y="0" width="-160" height="0"/>
+		<Sensor black="150" white="3971"/>
+		<Hints>
+			<Hint name="zero_is_bad" value=""/>
+		</Hints>
+	</Camera>
+	<Camera make="LEICA" model = "D-LUX 6" mode="1:1">
+		<CFA width="2" height="2">
+			<Color x="0" y="0">GREEN</Color>
+			<Color x="1" y="0">RED</Color>
+			<Color x="0" y="1">BLUE</Color>
+			<Color x="1" y="1">GREEN</Color>
+		</CFA>
+		<Crop x="0" y="0" width="-48" height="0"/>
+		<Sensor black="150" white="3971"/>
+		<Hints>
+			<Hint name="zero_is_bad" value=""/>
+		</Hints>
+	</Camera>
 	<Camera make="PENTAX Corporation" model="PENTAX K100D">
 		<CFA width="2" height="2">
 			<Color x="0" y="0">RED</Color>
@@ -4146,6 +4212,16 @@
 		</CFA>
 		<Crop x="0" y="0" width="3880" height="2604"/>
 		<Sensor black="0" white="4095"/>
+	</Camera>
+	<Camera make="RICOH IMAGING COMPANY, LTD." model="PENTAX K-3">
+		<CFA width="2" height="2">
+			<Color x="0" y="0">RED</Color>
+			<Color x="1" y="0">GREEN</Color>
+			<Color x="0" y="1">GREEN</Color>
+			<Color x="1" y="1">BLUE</Color>
+		</CFA>
+		<Crop x="4" y="0" width="-36" height="0"/>
+		<Sensor black="1" white="15868"/>
 	</Camera>
 	<Camera make="PENTAX" model="PENTAX K-5" decoder_version="2">
 		<CFA width="2" height="2">
@@ -5164,6 +5240,26 @@
 			<Hint name="jpeg32_bitorder" value=""/>
 		</Hints>
 	</Camera>
+	<Camera make="FUJIFILM" model="FinePix HS20EXR">
+		<CFA width="2" height="2">
+			<Color x="0" y="0">RED</Color>
+			<Color x="1" y="0">GREEN</Color>
+			<Color x="0" y="1">GREEN</Color>
+			<Color x="1" y="1">BLUE</Color>
+		</CFA>
+		<Crop x="34" y="0" width="-32" height="0"/>
+		<Sensor black="256" white="3900"/>
+	</Camera>
+	<Camera make="FUJIFILM" model="FinePix HS30EXR">
+		<CFA width="2" height="2">
+			<Color x="0" y="0">RED</Color>
+			<Color x="1" y="0">GREEN</Color>
+			<Color x="0" y="1">GREEN</Color>
+			<Color x="1" y="1">BLUE</Color>
+		</CFA>
+		<Crop x="34" y="0" width="-32" height="0"/>
+		<Sensor black="258" white="3900"/>
+	</Camera>
 	<Camera make="FUJIFILM" model="FinePix X100">
 		<CFA width="2" height="2">
 			<Color x="0" y="0">BLUE</Color>
@@ -5229,6 +5325,18 @@
 		<Sensor black="256" white="4094"/>
 	</Camera>
 	<Camera make="FUJIFILM" model="X20">
+		<CFA2 width="6" height="6">
+			<ColorRow y="0">GBGGRG</ColorRow>
+			<ColorRow y="1">RGRBGB</ColorRow>
+			<ColorRow y="2">GBGGRG</ColorRow>
+			<ColorRow y="3">GRGGBG</ColorRow>
+			<ColorRow y="4">BGBRGR</ColorRow>
+			<ColorRow y="5">GRGGBG</ColorRow>
+		</CFA2>
+		<Crop x="0" y="0" width="-64" height="0"/>
+		<Sensor black="257" white="4094"/>
+	</Camera>
+	<Camera make="FUJIFILM" model="X30">
 		<CFA2 width="6" height="6">
 			<ColorRow y="0">GBGGRG</ColorRow>
 			<ColorRow y="1">RGRBGB</ColorRow>

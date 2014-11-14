@@ -85,8 +85,6 @@ typedef struct dt_dev_pixelpipe_t
   float *input;
   // width and height of input buffer
   int iwidth, iheight;
-  // is image flipped?
-  int iflipped;
   // input actually just downscaled buffer? iscale*iwidth = actual width
   float iscale;
   // dimensions of processed buffer

@@ -95,9 +95,9 @@ legacy_params (dt_iop_module_t *self, const void *const old_params, const int ol
   return 1;
 }
 
-static const char dark_contrast[] = N_("dark contrast");
-static const char canon_eos[] = N_("canon EOS like");
-static const char canon_eos_alt[] = N_("canon EOS like alternate");
+static const char natural[] = N_("natural");
+static const char canon_eos[] = N_("canon eos like");
+static const char canon_eos_alt[] = N_("canon eos like alternate");
 static const char nikon[] = N_("nikon like");
 static const char nikon_alt[] = N_("nikon like alternate");
 static const char sony_alpha[] = N_("sony alpha like");
@@ -112,8 +112,6 @@ static const char konica_minolta[] = N_("konica minolta like");
 static const char samsung[] = N_("samsung like");
 static const char fujifilm[] = N_("fujifilm like");
 static const char nokia[] = N_("nokia like");
-static const char fotogenetic_v41[] = N_("fotogenetic (point & shoot)");
-static const char fotogenetic_v42[] = N_("fotogenetic (EV3)");
 
 typedef struct basecurve_preset_t
 {
@@ -144,7 +142,7 @@ static const basecurve_preset_t basecurve_presets[] =
 
   {"Nikon D800", "NIKON", "D800", 0, 51200, {{{{0.000000, 0.000000}, {0.001773, 0.001936}, {0.009671, 0.009693}, {0.016754, 0.020617}, {0.024884, 0.037309}, {0.048174, 0.107768}, {0.056932, 0.139532}, {0.085504, 0.233303}, {0.130378, 0.349747}, {0.155476, 0.405445}, {0.175245, 0.445918}, {0.217657, 0.516873}, {0.308475, 0.668608}, {0.375381, 0.754058}, {0.459858, 0.839909}, {0.509567, 0.881543}, {0.654394, 0.960877}, {0.783380, 0.999161}, {0.859310, 1.000000}, {1.000000, 1.000000}}}, {20}, {m}}, 0, 1},
 
-  {dark_contrast, "", "", 0, 51200,                        {{{{0.000000, 0.000000},{0.072581, 0.040000},{0.157258, 0.138710},{0.491935, 0.491935},{0.758065, 0.758065},{1.000000, 1.000000}}}, {6}, {m}}, 0, 0},
+  {natural, "", "", 0, 51200,                              {{{{0.000000, 0.000000},{0.040000, 0.025000},{0.500000, 0.750000},{1.000000, 1.000000}}}, {4}, {m}}, 0, 1},
   {canon_eos, "Canon", "", 0, 51200,                       {{{{0.000000, 0.000000},{0.028226, 0.029677},{0.120968, 0.232258},{0.459677, 0.747581},{0.858871, 0.967742},{1.000000, 1.000000}}}, {6}, {m}}, 1, 0},
   {canon_eos_alt, "Canon", "EOS 5D Mark", 0, 51200,        {{{{0.000000, 0.000000},{0.026210, 0.029677},{0.108871, 0.232258},{0.350806, 0.747581},{0.669355, 0.967742},{1.000000, 1.000000}}}, {6}, {m}}, 1, 0},
   {nikon, "NIKON", "", 0, 51200,                           {{{{0.000000, 0.000000},{0.036290, 0.036532},{0.120968, 0.228226},{0.459677, 0.759678},{0.858871, 0.983468},{1.000000, 1.000000}}}, {6}, {m}}, 1, 0},
@@ -161,8 +159,6 @@ static const basecurve_preset_t basecurve_presets[] =
   {samsung, "SAMSUNG", "", 0, 51200,                       {{{{0.000000, 0.000000},{0.040323, 0.029677},{0.133065, 0.232258},{0.447581, 0.747581},{0.842742, 0.967742},{1.000000, 1.000000}}}, {6}, {m}}, 1, 0},
   {fujifilm, "FUJIFILM", "", 0, 51200,                     {{{{0.000000, 0.000000},{0.028226, 0.029677},{0.104839, 0.232258},{0.387097, 0.747581},{0.754032, 0.967742},{1.000000, 1.000000}}}, {6}, {m}}, 1, 0},
   {nokia, "Nokia", "", 0, 51200,                           {{{{0.000000, 0.000000},{0.041825, 0.020161},{0.117871, 0.153226},{0.319392, 0.500000},{0.638783, 0.842742},{1.000000, 1.000000}}}, {6}, {m}}, 1, 0},
-  {fotogenetic_v41, "", "", 0, 51200,                      {{{{0.000000, 0.000000},{0.087879, 0.125252},{0.175758, 0.250505},{0.353535, 0.501010},{0.612658, 0.749495},{1.000000, 0.876573}}}, {6}, {m}}, 0, 0},
-  {fotogenetic_v42, "", "", 0, 51200,                      {{{{0.000000, 0.000000},{0.100943, 0.125252},{0.201886, 0.250505},{0.301010, 0.377778},{0.404040, 0.503030},{1.000000, 0.876768}}}, {6}, {m}}, 0, 0}
 };
 #undef m
 static const int basecurve_presets_cnt = sizeof(basecurve_presets)/sizeof(basecurve_preset_t);
