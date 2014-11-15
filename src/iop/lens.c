@@ -1112,8 +1112,64 @@ void reload_defaults(dt_iop_module_t *module)
     dt_pthread_mutex_unlock(&darktable.plugin_threadsafe);
     if(cam)
     {
+      dt_pthread_mutex_lock(&darktable.plugin_threadsafe);
+      const lfLens **lens = lf_db_find_lenses_hd(gd->db, cam[0], NULL,
+                                                 tmp.lens, LF_SEARCH_SORT_AND_UNIQUIFY);
+      dt_pthread_mutex_unlock(&darktable.plugin_threadsafe);
+
+      if(!lens && islower(cam[0]->Mount[0]))
+      {
+        /*
+         * This is a fixed-lens camera, and LF returned no lens.
+         * (reasons: lens is "(65535)" or lens is correct lens name,
+         *  but LF have it as "fixed lens")
+         *
+         * Let's unset lens name and re-run lens query
+         */
+        g_strlcpy(tmp.lens, "", sizeof(tmp.lens));
+
+        dt_pthread_mutex_lock(&darktable.plugin_threadsafe);
+        lens = lf_db_find_lenses_hd(gd->db, cam[0], NULL,
+                                    tmp.lens, LF_SEARCH_SORT_AND_UNIQUIFY);
+        dt_pthread_mutex_unlock(&darktable.plugin_threadsafe);
+      }
+
+      if(lens)
+      {
+        int lens_i = 0;
+
+        /*
+         * Current SVN lensfun lets you test for a fixed-lens camera by looking
+         * at the zeroth character in the mount's name:
+         * If it is a lower case letter, it is a fixed-lens camera.
+         */
+        if(!tmp.lens[0] && islower(cam[0]->Mount[0]))
+        {
+          /*
+           * no lens info in EXIF, and this is fixed-lens camera,
+           * let's find shortest lens model in the list of possible lenses
+           */
+          size_t min_model_len = SIZE_MAX;
+          for(int i = 0; lens[i]; i++)
+          {
+            if(strlen(lens[i]->Model) < min_model_len)
+            {
+              min_model_len = strlen(lens[i]->Model);
+              lens_i = i;
+            }
+          }
+
+          // and set lens to it
+          g_strlcpy(tmp.lens, lens[lens_i]->Model, sizeof(tmp.lens));
+        }
+
+        tmp.target_geom = lens[lens_i]->Type;
+        lf_free(lens);
+      }
+
       tmp.crop = cam[0]->CropFactor;
       tmp.scale = get_autoscale(module, &tmp, cam[0]);
+
       lf_free(cam);
     }
   }
