@@ -195,7 +195,8 @@ static void _lib_history_change_callback(gpointer instance, gpointer user_data)
     gchar *label;
     if(!hitem->multi_name[0] || strcmp(hitem->multi_name, "0") == 0)
       label = g_strdup_printf("%s", hitem->module->name());
-    else label = g_strdup_printf("%s %s", hitem->module->name(), hitem->multi_name);
+    else
+      label = g_strdup_printf("%s %s", hitem->module->name(), hitem->multi_name);
 
     GtkWidget *widget =_lib_history_create_button(self,num,label,hitem->enabled);
     g_free(label);
