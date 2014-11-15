@@ -169,21 +169,20 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   const int width = roi_out->width;
   const int height = roi_out->height;
 
-  guchar *in_buffer = NULL, *out_buffer = NULL;
   if( self->dev->gui_attached && piece->pipe->type == DT_DEV_PIXELPIPE_PREVIEW )
   {
     g = (dt_iop_zonesystem_gui_data_t *)self->gui_data;
     dt_pthread_mutex_lock(&g->lock);
-    if(g->in_preview_buffer)
-      g_free (g->in_preview_buffer);
-    if(g->out_preview_buffer)
-      g_free (g->out_preview_buffer);
-
-    in_buffer = g->in_preview_buffer = g_malloc_n((size_t)width*height, sizeof(guchar));
-    out_buffer = g->out_preview_buffer = g_malloc_n((size_t)width*height, sizeof(guchar));
-    g->preview_width = width;
-    g->preview_height = height;
-
+    if(g->in_preview_buffer == NULL || g->out_preview_buffer == NULL ||
+       g->preview_width != width || g->preview_height != height)
+    {
+      g_free(g->in_preview_buffer);
+      g_free(g->out_preview_buffer);
+      g->in_preview_buffer = g_malloc_n((size_t)width*height, sizeof(guchar));
+      g->out_preview_buffer = g_malloc_n((size_t)width*height, sizeof(guchar));
+      g->preview_width = width;
+      g->preview_height = height;
+    }
     dt_pthread_mutex_unlock(&g->lock);
   }
 
@@ -231,7 +230,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
 
 
   /* if gui and have buffer lets gaussblur and fill buffer with zone indexes */
-  if( self->dev->gui_attached && g && in_buffer && out_buffer)
+  if( self->dev->gui_attached && g && g->in_preview_buffer && g->out_preview_buffer)
   {
 
     float Lmax[] = { 100.0f };
@@ -258,11 +257,11 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
       /* create zonemap preview for input */
       dt_pthread_mutex_lock(&g->lock);
 #ifdef _OPENMP
-      #pragma omp parallel for default(none) shared(tmp,in_buffer) schedule(static)
+      #pragma omp parallel for default(none) shared(tmp,g) schedule(static)
 #endif
       for (size_t k=0; k<(size_t)width*height; k++)
       {
-        in_buffer[k] = CLAMPS(tmp[k]*(size-1)/100.0f, 0, size-2);
+        g->in_preview_buffer[k] = CLAMPS(tmp[k]*(size-1)/100.0f, 0, size-2);
       }
       dt_pthread_mutex_unlock(&g->lock);
 
@@ -279,11 +278,11 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
       /* create zonemap preview for output */
       dt_pthread_mutex_lock(&g->lock);
 #ifdef _OPENMP
-      #pragma omp parallel for default(none) shared(tmp,out_buffer) schedule(static)
+      #pragma omp parallel for default(none) shared(tmp,g) schedule(static)
 #endif
       for (size_t k=0; k<(size_t)width*height; k++)
       {
-        out_buffer[k] = CLAMPS(tmp[k]*(size-1)/100.0f, 0, size-2);
+        g->out_preview_buffer[k] = CLAMPS(tmp[k]*(size-1)/100.0f, 0, size-2);
       }
       dt_pthread_mutex_unlock(&g->lock);
     }
