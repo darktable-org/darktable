@@ -322,8 +322,10 @@ float dt_calculator_solve(float x, const char *formula)
     return NAN;
 
   float result;
+  gchar *dotformula = g_strdup(formula);
   parser_state_t *self = (parser_state_t*)malloc(sizeof(parser_state_t));
-  self->p = formula;
+
+  self->p = g_strdelimit(dotformula, ",", '.');
   self->x = x;
 
   self->token = get_token(self);
@@ -372,6 +374,7 @@ float dt_calculator_solve(float x, const char *formula)
 end:
   free(self->token);
   free(self);
+  g_free(dotformula);
 
   return result;
 }
