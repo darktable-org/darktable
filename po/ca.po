@@ -8,8 +8,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 0.6.1~rc\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2014-11-14 21:15+0100\n"
-"PO-Revision-Date: 2014-11-14 22:50+0100\n"
+"POT-Creation-Date: 2014-11-15 14:30+0100\n"
+"PO-Revision-Date: 2014-11-15 23:19+0100\n"
 "Last-Translator: Josep V. Moragues <josepvm@arrakis.es>\n"
 "Language-Team: Catalan\n"
 "Language: ca\n"
@@ -867,14 +867,14 @@ msgstr ""
 #: ../src/common/history.c:347 ../src/common/history.c:348
 #: ../src/common/history.c:364 ../src/common/styles.c:633
 #: ../src/common/styles.c:635 ../src/develop/blend_gui.c:1691
-#: ../src/develop/develop.c:1185 ../src/libs/live_view.c:412
+#: ../src/develop/develop.c:1188 ../src/libs/live_view.c:412
 msgid "on"
 msgstr "actiu"
 
 #: ../src/common/history.c:347 ../src/common/history.c:348
 #: ../src/common/history.c:364 ../src/common/styles.c:633
 #: ../src/common/styles.c:635 ../src/develop/blend_gui.c:1539
-#: ../src/develop/blend_gui.c:1688 ../src/develop/develop.c:1185
+#: ../src/develop/blend_gui.c:1688 ../src/develop/develop.c:1188
 #: ../src/imageio/format/exr.cc:267 ../src/imageio/format/j2k.c:637
 #: ../src/iop/colorin.c:1260 ../src/iop/demosaic.c:2203
 #: ../src/iop/vignette.c:1188 ../src/libs/history.c:154
@@ -1309,11 +1309,11 @@ msgstr "s'està important la imatge %s"
 #: ../src/develop/blend.c:1930 ../src/develop/blend.c:2245
 #, c-format
 msgid "skipped blending in module '%s': roi's do not match"
-msgstr ""
+msgstr "no s'ha fet la mescla al mòdul '%s', els valors roi no encaixen"
 
 #: ../src/develop/blend.c:2047 ../src/develop/blend.c:2291
 msgid "could not allocate buffer for blending"
-msgstr ""
+msgstr "no s'ha pogut reservar la memòria per la mescla"
 
 #: ../src/develop/blend_gui.c:945
 msgid "sliders for L channel"
@@ -1398,6 +1398,10 @@ msgid ""
 "* range defined by lower markers: do not blend at all\n"
 "* range between adjacent upper/lower markers: blend gradually"
 msgstr ""
+"ajustament basat en l'entrada rebuda per aquest mòdul:\n"
+"* rang per sobre dels marcadors superiors: mescla completa\n"
+"* rang per sota dels marcadors inferiors: sense mesclar\n"
+"* rang entre els marcadors superiors/inferiors adjacents: mescla gradual"
 
 #: ../src/develop/blend_gui.c:953
 msgid ""
@@ -1406,19 +1410,23 @@ msgid ""
 "* range defined by lower markers: do not blend at all\n"
 "* range between adjacent upper/lower markers: blend gradually"
 msgstr ""
+"ajustament basat en la sortida sense mesclar d'aquest mòdul:\n"
+"* rang per sobre dels marcadors superiors: mescla completa\n"
+"* rang per sota dels marcadors inferiors: sense mesclar\n"
+"* rang entre els marcadors superiors/inferiors adjacents: mescla gradual"
 
 #: ../src/develop/blend_gui.c:1073 ../src/iop/colorzones.c:1047
 #: ../src/iop/tonecurve.c:741
 msgid "pick GUI color from image"
-msgstr ""
+msgstr "pren el color pel GUI de la imatge"
 
 #: ../src/develop/blend_gui.c:1077
 msgid "reset blend mask settings"
-msgstr ""
+msgstr "reinicia ajustaments de la màscara de mescla"
 
 #: ../src/develop/blend_gui.c:1080
 msgid "invert all channel's polarities"
-msgstr ""
+msgstr "inverteix la polaritat de tots els canals"
 
 #: ../src/develop/blend_gui.c:1091 ../src/develop/blend_gui.c:1094
 msgid "toggle polarity. best seen by enabling 'display mask'"
@@ -1440,12 +1448,12 @@ msgstr "feu doble clic per tornar a valor inicial"
 #, c-format
 msgid "%d shape used"
 msgid_plural "%d shapes used"
-msgstr[0] ""
-msgstr[1] ""
+msgstr[0] "%d forma emprada"
+msgstr[1] "%d formes emprades"
 
 #: ../src/develop/blend_gui.c:1191 ../src/develop/blend_gui.c:1237
 msgid "no mask used"
-msgstr ""
+msgstr "cap màscara"
 
 #: ../src/develop/blend_gui.c:1236 ../src/develop/blend_gui.c:1537
 #: ../src/develop/blend_gui.c:1571 ../src/develop/blend_gui.c:1656
@@ -1495,12 +1503,12 @@ msgstr "afegeix pinzell"
 #: ../src/develop/blend_gui.c:1503 ../src/libs/live_view.c:383
 msgctxt "blendmode"
 msgid "normal"
-msgstr "mormal"
+msgstr "normal"
 
 #: ../src/develop/blend_gui.c:1504
 msgctxt "blendmode"
 msgid "normal bounded"
-msgstr ""
+msgstr "normal limitat"
 
 #: ../src/develop/blend_gui.c:1505 ../src/libs/live_view.c:392
 msgctxt "blendmode"
@@ -1515,12 +1523,12 @@ msgstr "enfosqueix"
 #: ../src/develop/blend_gui.c:1507 ../src/libs/live_view.c:388
 msgctxt "blendmode"
 msgid "multiply"
-msgstr ""
+msgstr "multiplica"
 
 #: ../src/develop/blend_gui.c:1508
 msgctxt "blendmode"
 msgid "average"
-msgstr ""
+msgstr "mitjana"
 
 #: ../src/develop/blend_gui.c:1509
 msgctxt "blendmode"
@@ -1530,12 +1538,12 @@ msgstr "addició"
 #: ../src/develop/blend_gui.c:1510
 msgctxt "blendmode"
 msgid "subtract"
-msgstr ""
+msgstr "sostreu"
 
 #: ../src/develop/blend_gui.c:1511 ../src/libs/live_view.c:397
 msgctxt "blendmode"
 msgid "difference"
-msgstr ""
+msgstr "diferència"
 
 #: ../src/develop/blend_gui.c:1512 ../src/libs/live_view.c:389
 msgctxt "blendmode"
@@ -1545,7 +1553,7 @@ msgstr "trama (screen)"
 #: ../src/develop/blend_gui.c:1513 ../src/libs/live_view.c:390
 msgctxt "blendmode"
 msgid "overlay"
-msgstr ""
+msgstr "sobreposa (overlay)"
 
 #: ../src/develop/blend_gui.c:1514
 msgctxt "blendmode"
@@ -1585,7 +1593,7 @@ msgstr "chroma"
 #: ../src/develop/blend_gui.c:1521
 msgctxt "blendmode"
 msgid "hue"
-msgstr ""
+msgstr "to (hue)"
 
 #: ../src/develop/blend_gui.c:1522
 msgctxt "blendmode"
@@ -1595,7 +1603,7 @@ msgstr "color"
 #: ../src/develop/blend_gui.c:1523
 msgctxt "blendmode"
 msgid "coloradjustment"
-msgstr ""
+msgstr "ajustament de color"
 
 #: ../src/develop/blend_gui.c:1524
 msgctxt "blendmode"
@@ -1621,22 +1629,22 @@ msgstr "color HSV"
 #: ../src/develop/blend_gui.c:1530
 msgctxt "blendmode"
 msgid "difference (deprecated)"
-msgstr ""
+msgstr "diferència (obsolet)"
 
 #: ../src/develop/blend_gui.c:1531
 msgctxt "blendmode"
 msgid "inverse (deprecated)"
-msgstr ""
+msgstr "invers (obsolet)"
 
 #: ../src/develop/blend_gui.c:1532
 msgctxt "blendmode"
 msgid "normal (deprecated)"
-msgstr ""
+msgstr "normal (obsolet)"
 
 #: ../src/develop/blend_gui.c:1533
 msgctxt "blendmode"
 msgid "unbounded (deprecated)"
-msgstr ""
+msgstr "unbounded (obsolet)"
 
 #: ../src/develop/blend_gui.c:1542
 msgid "uniformly"
@@ -1644,37 +1652,39 @@ msgstr "uniformement"
 
 #: ../src/develop/blend_gui.c:1553
 msgid "parametric mask"
-msgstr ""
+msgstr "màscara paramètrica"
 
 #: ../src/develop/blend_gui.c:1559
 msgid "drawn & parametric mask"
-msgstr ""
+msgstr "màscares dibuixada i paramètrica"
 
 #: ../src/develop/blend_gui.c:1564
 msgid ""
 "activate blending: uniformly, with drawn mask, with parametric mask, or "
 "combination of both"
 msgstr ""
+"activa la mescla: uniforme, amb màscara dibuixada, màscara paramètrica o "
+"combinació d'ambdues"
 
 #: ../src/develop/blend_gui.c:1571
 msgid "blend mode"
-msgstr ""
+msgstr "mode de mescla"
 
 #: ../src/develop/blend_gui.c:1572
 msgid "choose blending mode"
-msgstr ""
+msgstr "tria el mode de mescla"
 
 #: ../src/develop/blend_gui.c:1656 ../src/iop/watermark.c:1111
 msgid "opacity"
-msgstr ""
+msgstr "opacitat"
 
 #: ../src/develop/blend_gui.c:1659
 msgid "set the opacity of the blending"
-msgstr ""
+msgstr "opacitat de la mescla"
 
 #: ../src/develop/blend_gui.c:1665
 msgid "combine masks"
-msgstr ""
+msgstr "combina màscares"
 
 #: ../src/develop/blend_gui.c:1667
 msgid "exclusive"
@@ -1682,21 +1692,23 @@ msgstr "exclusiu"
 
 #: ../src/develop/blend_gui.c:1670
 msgid "inclusive"
-msgstr ""
+msgstr "inclusiu"
 
 #: ../src/develop/blend_gui.c:1673
 msgid "exclusive & inverted"
-msgstr ""
+msgstr "exclusiu i invertit"
 
 #: ../src/develop/blend_gui.c:1676
 msgid "inclusive & inverted"
-msgstr ""
+msgstr "inclusiu i invertit"
 
 #: ../src/develop/blend_gui.c:1680
 msgid ""
 "how to combine individual drawn mask and different channels of parametric "
 "mask"
 msgstr ""
+"Com es combinen les màscares dibuixades individuals i els diferents canals "
+"de la màscara paramètrica"
 
 #: ../src/develop/blend_gui.c:1686
 msgid "invert mask"
@@ -1704,15 +1716,15 @@ msgstr "inverteix màscara"
 
 #: ../src/develop/blend_gui.c:1695
 msgid "apply mask in normal or inverted mode"
-msgstr ""
+msgstr "aplica màscara en mode normal o invertit"
 
 #: ../src/develop/blend_gui.c:1702
 msgid "mask blur"
-msgstr ""
+msgstr "difuminat de la màscara"
 
 #: ../src/develop/blend_gui.c:1704
 msgid "radius for gaussian blur of blend mask"
-msgstr ""
+msgstr "radi pel desenfoc gaussià de la màscara de mescla"
 
 #: ../src/develop/blend_gui.c:1710
 msgid "display mask"
@@ -1720,9 +1732,9 @@ msgstr "mostra la màscara"
 
 #: ../src/develop/blend_gui.c:1717
 msgid "temporarily switch off blend mask. only for module in focus"
-msgstr ""
+msgstr "desactiva temporalment la màscara de mescla. només pel mòdul ressaltat"
 
-#: ../src/develop/develop.c:1002
+#: ../src/develop/develop.c:1005
 #, c-format
 msgid "%s: module `%s' version mismatch: %d != %d"
 msgstr "%s: la versió del mòdul '%s' no coincideix: %d != %d"
@@ -1749,17 +1761,17 @@ msgstr "mou avall"
 msgid "delete"
 msgstr "elimina"
 
-#: ../src/develop/imageop.c:838 ../src/develop/imageop.c:1728
+#: ../src/develop/imageop.c:838 ../src/develop/imageop.c:1735
 #, c-format
 msgid "%s is switched on"
 msgstr "%s està activat"
 
-#: ../src/develop/imageop.c:838 ../src/develop/imageop.c:1728
+#: ../src/develop/imageop.c:838 ../src/develop/imageop.c:1735
 #, c-format
 msgid "%s is switched off"
 msgstr "%s està desactivat"
 
-#: ../src/develop/imageop.c:1117 ../src/gui/accelerators.c:760
+#: ../src/develop/imageop.c:1123 ../src/gui/accelerators.c:760
 #: ../src/gui/accelerators.c:840 ../src/gui/accelerators.c:1007
 #: ../src/gui/accelerators.c:1032 ../src/gui/presets.c:182
 #: ../src/gui/presets.c:284 ../src/gui/presets.c:625
@@ -1768,41 +1780,41 @@ msgstr "%s està desactivat"
 msgid "preset"
 msgstr "predefinit"
 
-#: ../src/develop/imageop.c:1159
+#: ../src/develop/imageop.c:1165
 msgctxt "accel"
 msgid "fusion"
 msgstr "fusió"
 
 #. Adding the optional show accelerator to the table (blank)
-#: ../src/develop/imageop.c:1164
+#: ../src/develop/imageop.c:1170
 msgctxt "accel"
 msgid "show module"
-msgstr ""
+msgstr "mostra el mòdul"
 
-#: ../src/develop/imageop.c:1165
+#: ../src/develop/imageop.c:1171
 msgctxt "accel"
 msgid "enable module"
-msgstr ""
+msgstr "habilita el mòdul"
 
-#: ../src/develop/imageop.c:1168 ../src/libs/lib.c:549
+#: ../src/develop/imageop.c:1174 ../src/libs/lib.c:549
 msgctxt "accel"
 msgid "reset module parameters"
-msgstr ""
+msgstr "reinicia paràmetres del mòdul"
 
-#: ../src/develop/imageop.c:1170 ../src/libs/lib.c:554
+#: ../src/develop/imageop.c:1176 ../src/libs/lib.c:554
 msgctxt "accel"
 msgid "show preset menu"
-msgstr ""
+msgstr "mostra el menú de predefinits"
 
-#: ../src/develop/imageop.c:1697
+#: ../src/develop/imageop.c:1704
 msgid "multiple instances actions"
-msgstr ""
+msgstr "accions d'instàncies múltiples"
 
-#: ../src/develop/imageop.c:1706 ../src/libs/lib.c:919
+#: ../src/develop/imageop.c:1713 ../src/libs/lib.c:919
 msgid "reset parameters"
-msgstr ""
+msgstr "reinicia paràmetres"
 
-#: ../src/develop/imageop.c:1715 ../src/gui/preferences.c:408
+#: ../src/develop/imageop.c:1722 ../src/gui/preferences.c:408
 #: ../src/libs/lib.c:932
 msgid "presets"
 msgstr "predefinits"
@@ -1820,7 +1832,7 @@ msgstr ""
 
 #: ../src/develop/lightroom.c:1440 ../src/libs/import.c:530
 msgid "tags"
-msgstr ""
+msgstr "etiquetes"
 
 #: ../src/develop/lightroom.c:1449 ../src/libs/tools/filter.c:148
 msgid "rating"
@@ -1996,7 +2008,7 @@ msgstr ""
 
 #: ../src/gui/accelerators.c:824 ../src/libs/lib.c:372
 msgid "deleting preset for obsolete module"
-msgstr ""
+msgstr "esborrant predefinit per mòdul obsolet"
 
 #: ../src/gui/camera_import_dialog.c:182
 msgid "store value as default"
@@ -2028,7 +2040,7 @@ msgstr ""
 #. jobcode
 #: ../src/gui/camera_import_dialog.c:230 ../src/libs/session.c:103
 msgid "jobcode"
-msgstr ""
+msgstr "treball"
 
 #: ../src/gui/camera_import_dialog.c:242
 msgid "thumbnail"
@@ -2291,7 +2303,7 @@ msgstr "no es pot copiar historial d'una imatge no modificada"
 
 #: ../src/gui/preferences.c:224
 msgid "darktable preferences"
-msgstr ""
+msgstr "preferències del darktable"
 
 #: ../src/gui/preferences.c:226
 msgid "close"
@@ -2428,17 +2440,19 @@ msgstr ""
 
 #: ../src/gui/preferences.c:1336 ../src/gui/presets.c:398
 msgid "auto apply this preset to matching images"
-msgstr ""
+msgstr "auto aplica aquest predefinit per imatges concordants"
 
 #: ../src/gui/preferences.c:1338 ../src/gui/presets.c:400
 msgid "only show this preset for matching images"
-msgstr ""
+msgstr "mostra aquest predefinit només per imatges concordants"
 
 #: ../src/gui/preferences.c:1339 ../src/gui/presets.c:401
 msgid ""
 "be very careful with this option. this might be the last time you see your "
 "preset."
 msgstr ""
+"aneu amb compte amb aquesta opció, aquest pot ser el darrer cop que veieu el "
+"vostre predefinit"
 
 #: ../src/gui/preferences.c:1351 ../src/gui/presets.c:416
 #, no-c-format
@@ -3846,7 +3860,7 @@ msgstr "graella"
 #. TODO: make the number of lines configurable with a slider?
 #: ../src/iop/clipping.c:1792 ../src/libs/live_view.c:332
 msgid "rules of thirds"
-msgstr ""
+msgstr "regla dels terços"
 
 #: ../src/iop/clipping.c:1793
 msgid "metering"
@@ -3859,11 +3873,11 @@ msgstr "perspectiva"
 #. TODO: make the number of lines configurable with a slider?
 #: ../src/iop/clipping.c:1795 ../src/libs/live_view.c:333
 msgid "diagonal method"
-msgstr ""
+msgstr "mètode de les diagonals"
 
 #: ../src/iop/clipping.c:1796 ../src/libs/live_view.c:334
 msgid "harmonious triangles"
-msgstr ""
+msgstr "triangles harmònics"
 
 #: ../src/iop/clipping.c:1797 ../src/libs/live_view.c:335
 msgid "golden mean"
@@ -3871,7 +3885,7 @@ msgstr "secció àuria"
 
 #: ../src/iop/clipping.c:1803 ../src/libs/live_view.c:336
 msgid "display guide lines to help compose your photograph"
-msgstr ""
+msgstr "mostra guies per ajudar-vos a composar la foto"
 
 #: ../src/iop/clipping.c:1810 ../src/libs/live_view.c:343
 msgid "horizontally"
@@ -4643,11 +4657,11 @@ msgstr "mida de plantilla"
 
 #: ../src/iop/denoiseprofile.c:1729
 msgid "non-local means"
-msgstr "mitjans no locals"
+msgstr "mitjana no local"
 
 #: ../src/iop/denoiseprofile.c:1730
 msgid "wavelets"
-msgstr ""
+msgstr "ondetes (wavelets)"
 
 #: ../src/iop/denoiseprofile.c:1731
 msgid "profile used for variance stabilization"
@@ -4658,6 +4672,9 @@ msgid ""
 "method used in the denoising core. non-local means works best for "
 "`lightness' blending, wavelets work best for `color' blending"
 msgstr ""
+"mètode emprat en eliminar soroll. La mitjana no local funciona millor amb "
+"mescla per lluminositat, la transformada d'ondeta (wavelet) funciona millor "
+"amb mescla per color"
 
 #: ../src/iop/denoiseprofile.c:1733
 msgid "radius of the patches to match. increase for more sharpness"
@@ -6437,7 +6454,7 @@ msgstr ""
 
 #: ../src/libs/camera.c:218
 msgid "connection with camera lost, exiting tethering mode"
-msgstr ""
+msgstr "perduda connexió amb la càmera, sortint del mode tethering"
 
 #: ../src/libs/camera.c:339
 msgid "battery"
@@ -6466,11 +6483,11 @@ msgstr "quantitat"
 
 #: ../src/libs/camera.c:412
 msgid "brackets"
-msgstr ""
+msgstr "exp. escalonades"
 
 #: ../src/libs/camera.c:413
 msgid "bkt. steps"
-msgstr ""
+msgstr "num. passos d'esc."
 
 #: ../src/libs/camera.c:449
 msgid "capture image(s)"
@@ -6478,15 +6495,15 @@ msgstr "captura imatges"
 
 #: ../src/libs/camera.c:452
 msgid "toggle delayed capture mode"
-msgstr ""
+msgstr "mode de captura retardat"
 
 #: ../src/libs/camera.c:453
 msgid "toggle sequenced capture mode"
-msgstr ""
+msgstr "mode de captura en seqüència"
 
 #: ../src/libs/camera.c:454
 msgid "toggle bracketed capture mode"
-msgstr ""
+msgstr "mode d'exposicions escalonades"
 
 #: ../src/libs/camera.c:455
 msgid "the count of seconds before actually doing a capture"
@@ -6498,12 +6515,17 @@ msgid ""
 "you can use this in conjunction with delayed mode to create stop-motion "
 "sequences."
 msgstr ""
+"nombre d'imatges a capturar en una seqüència,\n"
+"podeu emprar-ho en combinació amb el mode retardat per crear seqüències stop-"
+"motion"
 
 #: ../src/libs/camera.c:457
 msgid ""
 "the amount of brackets on each side of centered shoot, amount of images = "
 "(brackets*2)+1."
 msgstr ""
+"Nombre d'exposicions escalonades a cada banda de l'exposició central. El "
+"total d'imatges serà = (aquest valor * 2) + 1"
 
 #: ../src/libs/camera.c:458
 msgid ""
@@ -6511,6 +6533,10 @@ msgid ""
 "steps per stop\n"
 "with other words, 3 steps is 1EV exposure step between brackets."
 msgstr ""
+"nombre de passos intermedis a aplicar entre fotos escalonades. El valor dels "
+"passos intermedis es configura a la càmera,\n"
+"normalment són 3 per cada pas sencer d'exposició, es a dir, si posem 3 "
+"passos intermedis obtenim un canvi de 1EV a cada foto dins la sèrie."
 
 #: ../src/libs/camera.c:472
 msgid "properties"
@@ -6526,15 +6552,15 @@ msgstr "tipus d'enfocament"
 
 #: ../src/libs/camera.c:534
 msgid "shutterspeed2"
-msgstr ""
+msgstr "velocitat d'obturació 2"
 
 #: ../src/libs/camera.c:543
 msgid "shutterspeed"
-msgstr ""
+msgstr "velocitat d'obturació"
 
 #: ../src/libs/camera.c:563
 msgid "WB"
-msgstr ""
+msgstr "Balanç de blancs"
 
 #. user specified properties
 #: ../src/libs/camera.c:633
@@ -6543,7 +6569,7 @@ msgstr "propietats addicionals"
 
 #: ../src/libs/camera.c:637
 msgid "label"
-msgstr ""
+msgstr "etiqueta"
 
 #: ../src/libs/camera.c:643
 msgid "property"
@@ -6551,7 +6577,7 @@ msgstr "propietats"
 
 #: ../src/libs/camera.c:655
 msgid "add user property"
-msgstr ""
+msgstr "afegeix propietat d'usuari"
 
 #: ../src/libs/collect.c:116
 msgid "collect images"
@@ -7064,27 +7090,27 @@ msgstr ""
 
 #: ../src/libs/histogram.c:487
 msgid "click to hide red channel"
-msgstr ""
+msgstr "feu clic per amagar el canal vermell"
 
 #: ../src/libs/histogram.c:487
 msgid "click to show red channel"
-msgstr ""
+msgstr "feu clic per mostrar el canal vermell"
 
 #: ../src/libs/histogram.c:492
 msgid "click to hide green channel"
-msgstr ""
+msgstr "feu clic per amagar el canal verd"
 
 #: ../src/libs/histogram.c:492
 msgid "click to show green channel"
-msgstr ""
+msgstr "feu clic per mostrar el canal verd"
 
 #: ../src/libs/histogram.c:497
 msgid "click to hide blue channel"
-msgstr ""
+msgstr "feu clic per amagar el canal blau"
 
 #: ../src/libs/histogram.c:497
 msgid "click to show blue channel"
-msgstr ""
+msgstr "feu clic per mostrar el canal blau"
 
 #: ../src/libs/histogram.c:502
 msgid ""
@@ -7097,12 +7123,12 @@ msgstr ""
 #: ../src/libs/history.c:75
 msgctxt "accel"
 msgid "create style from history"
-msgstr ""
+msgstr "crea estil a partir de l'historial"
 
 #: ../src/libs/history.c:77
 msgctxt "accel"
 msgid "apply style from popup menu"
-msgstr ""
+msgstr "aplica estil des del menú emergent"
 
 #: ../src/libs/history.c:79
 msgctxt "accel"
@@ -7119,7 +7145,7 @@ msgstr "creeu un historial mínim que produeixi la mateixa imatge"
 
 #: ../src/libs/history.c:115
 msgid "create a style from the current history stack"
-msgstr ""
+msgstr "crea un estil a partir de l'actual pila de l'historial"
 
 #: ../src/libs/history.c:183 ../src/libs/snapshots.c:366
 msgid "original"
@@ -7155,7 +7181,7 @@ msgstr "crea HDR"
 
 #: ../src/libs/image.c:175
 msgid "create a high dynamic range image from selected shots"
-msgstr ""
+msgstr "crea una imatge d'alt rang dinàmic a partir de les fotos seleccionades"
 
 #: ../src/libs/image.c:177
 msgid "duplicate"
@@ -7276,7 +7302,7 @@ msgstr "importa de la càmera"
 #: ../src/libs/import.c:110
 msgctxt "accel"
 msgid "tethered shoot"
-msgstr ""
+msgstr "fotografia en mode tethering"
 
 #: ../src/libs/import.c:111
 msgctxt "accel"
@@ -7295,7 +7321,7 @@ msgstr "escaneja els dispositius"
 
 #: ../src/libs/import.c:198
 msgid "scan for newly attached devices"
-msgstr ""
+msgstr "cerca nous dispositius connectats"
 
 #: ../src/libs/import.c:225
 #, c-format
@@ -7308,7 +7334,7 @@ msgstr "importa de la càmera"
 
 #: ../src/libs/import.c:239
 msgid "tethered shoot"
-msgstr ""
+msgstr "fotografia en mode tethering"
 
 #. No supported devices is detected lets notice user..
 #: ../src/libs/import.c:261
@@ -7323,7 +7349,7 @@ msgstr "opcions d'importació"
 #. recursive opening.
 #: ../src/libs/import.c:400
 msgid "import directories recursively"
-msgstr ""
+msgstr "importa directoris de forma recursiva"
 
 #: ../src/libs/import.c:401
 msgid ""
@@ -7378,12 +7404,12 @@ msgstr "edita '%s'"
 
 #: ../src/libs/live_view.c:141
 msgid "live view"
-msgstr ""
+msgstr "vista en temps real"
 
 #: ../src/libs/live_view.c:168
 msgctxt "accel"
 msgid "toggle live view"
-msgstr ""
+msgstr "vista en temps real"
 
 #: ../src/libs/live_view.c:171
 msgctxt "accel"
@@ -7393,30 +7419,30 @@ msgstr ""
 #: ../src/libs/live_view.c:172
 msgctxt "accel"
 msgid "move focus point in (big steps)"
-msgstr ""
+msgstr "acosta el punt d'enfocament (passos llargs)"
 
 #: ../src/libs/live_view.c:173
 msgctxt "accel"
 msgid "move focus point in (small steps)"
-msgstr ""
+msgstr "acosta el punt d'enfocament (passos petits)"
 
 #: ../src/libs/live_view.c:174
 msgctxt "accel"
 msgid "move focus point out (small steps)"
-msgstr ""
+msgstr "allunya el punt d'enfocament (passos petits)"
 
 #: ../src/libs/live_view.c:175
 msgctxt "accel"
 msgid "move focus point out (big steps)"
-msgstr ""
+msgstr "allunya el punt d'enfocament (passos llargs)"
 
 #: ../src/libs/live_view.c:291
 msgid "toggle live view"
-msgstr ""
+msgstr "vista en temps real"
 
 #: ../src/libs/live_view.c:292
 msgid "zoom live view"
-msgstr ""
+msgstr "zoom de vista en temps real"
 
 #: ../src/libs/live_view.c:293
 msgid "rotate 90 degrees ccw"
@@ -7428,27 +7454,27 @@ msgstr "gira 90 graus en sentit horari"
 
 #: ../src/libs/live_view.c:295
 msgid "flip live view horizontally"
-msgstr ""
+msgstr "inverteix horitzontalment vista en temps real "
 
 #: ../src/libs/live_view.c:316
 msgid "move focus point in (big steps)"
-msgstr ""
+msgstr "acosta el punt d'enfocament (passos llargs)"
 
 #: ../src/libs/live_view.c:317
 msgid "move focus point in (small steps)"
-msgstr ""
+msgstr "acosta el punt d'enfocament (passos petits)"
 
 #: ../src/libs/live_view.c:318
 msgid "move focus point out (small steps)"
-msgstr ""
+msgstr "allunya el punt d'enfocament (passos petits)"
 
 #: ../src/libs/live_view.c:319
 msgid "move focus point out (big steps)"
-msgstr ""
+msgstr "allunya el punt d'enfocament (passos llargs)"
 
 #: ../src/libs/live_view.c:359
 msgid "overlay"
-msgstr ""
+msgstr "sobreposa"
 
 #: ../src/libs/live_view.c:361
 msgid "selected image"
@@ -7460,7 +7486,7 @@ msgstr "identificador"
 
 #: ../src/libs/live_view.c:363
 msgid "overlay another image over the live view"
-msgstr ""
+msgstr "sobreposa una altra imatge sobre la vista en temps real"
 
 #: ../src/libs/live_view.c:368 ../src/libs/metadata_view.c:84
 msgid "image id"
@@ -7468,11 +7494,11 @@ msgstr "identificador de la imatge"
 
 #: ../src/libs/live_view.c:372
 msgid "enter image id of the overlay manually"
-msgstr ""
+msgstr "entreu manualment identificador de la imatge a sobreposar"
 
 #: ../src/libs/live_view.c:382
 msgid "overlay mode"
-msgstr ""
+msgstr "mode de superposició"
 
 #: ../src/libs/live_view.c:384
 msgctxt "blendmode"
@@ -7482,7 +7508,7 @@ msgstr "xor"
 #: ../src/libs/live_view.c:385
 msgctxt "blendmode"
 msgid "add"
-msgstr ""
+msgstr "addició"
 
 #: ../src/libs/live_view.c:386
 msgctxt "blendmode"
@@ -7517,7 +7543,7 @@ msgstr "exclusió"
 #: ../src/libs/live_view.c:399
 msgctxt "blendmode"
 msgid "HSL hue"
-msgstr ""
+msgstr "to (hue) HSL"
 
 #: ../src/libs/live_view.c:400
 msgctxt "blendmode"
@@ -7532,11 +7558,11 @@ msgstr "color HSL"
 #: ../src/libs/live_view.c:402
 msgctxt "blendmode"
 msgid "HSL luminosity"
-msgstr ""
+msgstr "Lluminositat HSL"
 
 #: ../src/libs/live_view.c:404
 msgid "mode of the overlay"
-msgstr ""
+msgstr "mode de sobreposició"
 
 #: ../src/libs/live_view.c:410
 msgid "split line"
@@ -8098,6 +8124,8 @@ msgid ""
 "attached tags,\n"
 "doubleclick to detach"
 msgstr ""
+"etiquetes adjuntades,\n"
+"feu doble clic per treure-les"
 
 #: ../src/libs/tagging.c:435
 msgid "attach"
@@ -8109,11 +8137,11 @@ msgstr ""
 
 #: ../src/libs/tagging.c:442
 msgid "detach"
-msgstr ""
+msgstr "treu"
 
 #: ../src/libs/tagging.c:444
 msgid "detach tag from all selected images"
-msgstr ""
+msgstr "treu etiqueta de totes les imatges seleccionades"
 
 #: ../src/libs/tagging.c:457
 msgid "enter tag name"
@@ -8714,7 +8742,7 @@ msgstr ""
 
 #: ../src/views/tethering.c:90
 msgid "tethering"
-msgstr ""
+msgstr "tethering"
 
 #: ../src/views/tethering.c:175
 #, c-format
@@ -8723,7 +8751,7 @@ msgstr "s'ha iniciat una sessió nova '%s'"
 
 #: ../src/views/tethering.c:280
 msgid "no camera with tethering support available for use..."
-msgstr ""
+msgstr "no es troba cap càmera amb suport per tethering"
 
 #~ msgid "dark contrast"
 #~ msgstr "contrast fosc"
