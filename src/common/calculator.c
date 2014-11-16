@@ -54,7 +54,7 @@ typedef struct token_t
 
 typedef struct parser_state_t
 {
-  const char *p;
+  char *p;
   float x;
   token_t *token;
 } parser_state_t;
