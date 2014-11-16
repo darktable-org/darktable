@@ -37,6 +37,7 @@
 #ifdef HAVE_GPHOTO2
 #include "common/camera_control.h"
 #endif
+#include "common/cpuid.h"
 #include "common/film.h"
 #include "common/grealpath.h"
 #include "common/image.h"
@@ -407,33 +408,7 @@ int dt_init(int argc, char *argv[], const int init_gui,lua_State *L)
     //NOTE: _may_i_use_cpu_feature() looks better, but only avaliable in ICC
     sse3_supported = __builtin_cpu_supports("sse3");
   #else
-    // Check SSE3 support "manually"
-    // (see http://stackoverflow.com/questions/6121792/how-to-check-if-a-cpu-supports-the-sse3-instruction-set)
-
-    int cpu_info[4] = {-1};
-
-    __asm__ __volatile__ (
-            "cpuid":
-            "=a" (cpu_info[0]),
-            "=b" (cpu_info[1]),
-            "=c" (cpu_info[2]),
-            "=d" (cpu_info[3]):
-            "a" (0), "c" (0)
-    );
-
-    if (cpu_info[0] >= 0x00000001)
-    {
-      __asm__ __volatile__ (
-              "cpuid":
-              "=a" (cpu_info[0]),
-              "=b" (cpu_info[1]),
-              "=c" (cpu_info[2]),
-              "=d" (cpu_info[3]):
-              "a" (0x00000001), "c" (0)
-      );
-
-      sse3_supported  = (cpu_info[2] & ((int)1 << 0)) != 0;
-    }
+    sse3_supported = dt_detect_cpu_features() & CPU_FLAG_SSE3;
   #endif
     if (!sse3_supported)
     {
