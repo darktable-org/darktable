@@ -328,7 +328,7 @@ static void _update_collected_images(dt_view_t *self)
   // note that this adjustement is needed as for a memory table the rowid doesn't start to 1 after the DELETE above,
   // but rowid is incremented each time we INSERT.
 
-  lib->full_preview_rowid += (min_after - min_before - 1);
+  lib->full_preview_rowid += (min_after - min_before);
 
   /* if we have a statment lets clean it */
   if(lib->statements.main_query)
