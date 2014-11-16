@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 1.3\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2014-11-08 21:40+0100\n"
-"PO-Revision-Date: 2014-11-08 21:44+0100\n"
+"POT-Creation-Date: 2014-11-16 17:38+0100\n"
+"PO-Revision-Date: 2014-11-16 17:42+0100\n"
 "Last-Translator: Pascal Obry <pascal@obry.net>\n"
 "Language-Team: \n"
 "Language: fr_FR\n"
@@ -810,27 +810,27 @@ msgid_plural "%d images of %d in current collection are selected"
 msgstr[0] "%d image sur %d de la collection courante est sélectionnée"
 msgstr[1] "%d images sur %d de la collection courante sont sélectionnées"
 
-#: ../src/common/darktable.c:314
+#: ../src/common/darktable.c:315
 #, c-format
 msgid "found strange path `%s'"
 msgstr "chemin étrange «%s»"
 
-#: ../src/common/darktable.c:332
+#: ../src/common/darktable.c:333
 #, c-format
 msgid "error loading directory `%s'"
 msgstr "erreur de chargement du dossier «%s»"
 
-#: ../src/common/darktable.c:352
+#: ../src/common/darktable.c:353
 #, c-format
 msgid "file `%s' has unknown format!"
 msgstr "le fichier «%s» possède un format inconnu !"
 
-#: ../src/common/darktable.c:366 ../src/libs/import.c:733
+#: ../src/common/darktable.c:367 ../src/libs/import.c:733
 #, c-format
 msgid "error loading file `%s'"
 msgstr "erreur de chargement du fichier «%s»"
 
-#: ../src/common/darktable.c:641
+#: ../src/common/darktable.c:616
 #, c-format
 msgid "ERROR : invalid temporary directory : %s\n"
 msgstr "ERREUR : répertoire temporaire invalide : %s\n"
@@ -853,23 +853,23 @@ msgstr ""
 "impossible de supprimer un film comprenant des copies locales dont les "
 "originaux ne sont pas accessibles"
 
-#: ../src/common/history.c:150
+#: ../src/common/history.c:218
 msgid "you need to copy history from an image before you paste it onto another"
 msgstr ""
 "il est nécessaire de copier le développement d'une image avant de le coller "
 "sur une autre"
 
-#: ../src/common/history.c:279 ../src/common/history.c:280
-#: ../src/common/history.c:296 ../src/common/styles.c:633
+#: ../src/common/history.c:347 ../src/common/history.c:348
+#: ../src/common/history.c:364 ../src/common/styles.c:633
 #: ../src/common/styles.c:635 ../src/develop/blend_gui.c:1691
-#: ../src/develop/develop.c:1185 ../src/libs/live_view.c:412
+#: ../src/develop/develop.c:1192 ../src/libs/live_view.c:412
 msgid "on"
 msgstr "activé(e)"
 
-#: ../src/common/history.c:279 ../src/common/history.c:280
-#: ../src/common/history.c:296 ../src/common/styles.c:633
+#: ../src/common/history.c:347 ../src/common/history.c:348
+#: ../src/common/history.c:364 ../src/common/styles.c:633
 #: ../src/common/styles.c:635 ../src/develop/blend_gui.c:1539
-#: ../src/develop/blend_gui.c:1688 ../src/develop/develop.c:1185
+#: ../src/develop/blend_gui.c:1688 ../src/develop/develop.c:1192
 #: ../src/imageio/format/exr.cc:267 ../src/imageio/format/j2k.c:637
 #: ../src/iop/colorin.c:1260 ../src/iop/demosaic.c:2203
 #: ../src/iop/vignette.c:1188 ../src/libs/history.c:154
@@ -1007,7 +1007,7 @@ msgstr "le style «%s» a été importé"
 #: ../src/common/variables.c:223 ../src/common/variables.c:237
 #: ../src/iop/clipping.c:1496 ../src/iop/clipping.c:1729
 #: ../src/iop/clipping.c:1747 ../src/iop/clipping.c:1790
-#: ../src/iop/clipping.c:1809 ../src/iop/lens.c:1996 ../src/libs/export.c:640
+#: ../src/iop/clipping.c:1809 ../src/iop/lens.c:2052 ../src/libs/export.c:640
 #: ../src/libs/live_view.c:330 ../src/libs/live_view.c:342
 #: ../src/libs/live_view.c:360
 msgid "none"
@@ -1235,8 +1235,8 @@ msgstr "supprimer les images ?"
 #: ../src/control/jobs/control_jobs.c:1114
 #: ../src/control/jobs/control_jobs.c:1170 ../src/imageio/storage/disk.c:96
 #: ../src/imageio/storage/disk.c:164 ../src/imageio/storage/gallery.c:109
-#: ../src/imageio/storage/gallery.c:203 ../src/imageio/storage/latex.c:109
-#: ../src/imageio/storage/latex.c:203 ../src/libs/styles.c:240
+#: ../src/imageio/storage/gallery.c:176 ../src/imageio/storage/latex.c:109
+#: ../src/imageio/storage/latex.c:176 ../src/libs/styles.c:240
 #: ../src/lua/preferences.c:581
 msgid "select directory"
 msgstr "sélectionner répertoire"
@@ -1737,7 +1737,7 @@ msgid "temporarily switch off blend mask. only for module in focus"
 msgstr ""
 "désactive temporairement le masque de fusion. uniquement pour le module actif"
 
-#: ../src/develop/develop.c:1002
+#: ../src/develop/develop.c:1009
 #, c-format
 msgid "%s: module `%s' version mismatch: %d != %d"
 msgstr "%s: module «%s» version non cohérente: %d != %d"
@@ -1766,17 +1766,17 @@ msgstr "descendre"
 msgid "delete"
 msgstr "supprimer"
 
-#: ../src/develop/imageop.c:838 ../src/develop/imageop.c:1728
+#: ../src/develop/imageop.c:838 ../src/develop/imageop.c:1735
 #, c-format
 msgid "%s is switched on"
 msgstr "%s est activé"
 
-#: ../src/develop/imageop.c:838 ../src/develop/imageop.c:1728
+#: ../src/develop/imageop.c:838 ../src/develop/imageop.c:1735
 #, c-format
 msgid "%s is switched off"
 msgstr "%s est désactivé"
 
-#: ../src/develop/imageop.c:1117 ../src/gui/accelerators.c:760
+#: ../src/develop/imageop.c:1123 ../src/gui/accelerators.c:760
 #: ../src/gui/accelerators.c:840 ../src/gui/accelerators.c:1007
 #: ../src/gui/accelerators.c:1032 ../src/gui/presets.c:182
 #: ../src/gui/presets.c:284 ../src/gui/presets.c:625
@@ -1785,41 +1785,41 @@ msgstr "%s est désactivé"
 msgid "preset"
 msgstr "pré-réglage"
 
-#: ../src/develop/imageop.c:1159
+#: ../src/develop/imageop.c:1165
 msgctxt "accel"
 msgid "fusion"
 msgstr "fusion"
 
 #. Adding the optional show accelerator to the table (blank)
-#: ../src/develop/imageop.c:1164
+#: ../src/develop/imageop.c:1170
 msgctxt "accel"
 msgid "show module"
 msgstr "afficher le module"
 
-#: ../src/develop/imageop.c:1165
+#: ../src/develop/imageop.c:1171
 msgctxt "accel"
 msgid "enable module"
 msgstr "activer le module"
 
-#: ../src/develop/imageop.c:1168 ../src/libs/lib.c:549
+#: ../src/develop/imageop.c:1174 ../src/libs/lib.c:549
 msgctxt "accel"
 msgid "reset module parameters"
 msgstr "réinitialiser les paramètres"
 
-#: ../src/develop/imageop.c:1170 ../src/libs/lib.c:554
+#: ../src/develop/imageop.c:1176 ../src/libs/lib.c:554
 msgctxt "accel"
 msgid "show preset menu"
 msgstr "afficher le menu des pré-réglages"
 
-#: ../src/develop/imageop.c:1697
+#: ../src/develop/imageop.c:1704
 msgid "multiple instances actions"
 msgstr "instances multiples"
 
-#: ../src/develop/imageop.c:1706 ../src/libs/lib.c:919
+#: ../src/develop/imageop.c:1713 ../src/libs/lib.c:919
 msgid "reset parameters"
 msgstr "réinitialiser les paramètres"
 
-#: ../src/develop/imageop.c:1715 ../src/gui/preferences.c:408
+#: ../src/develop/imageop.c:1722 ../src/gui/preferences.c:408
 #: ../src/libs/lib.c:932
 msgid "presets"
 msgstr "pré-réglages"
@@ -2199,23 +2199,19 @@ msgctxt "accel"
 msgid "switch view"
 msgstr "changer de vue"
 
-#: ../src/gui/gtkentry.c:195 ../src/imageio/storage/gallery.c:167
-#: ../src/imageio/storage/latex.c:167
+#: ../src/gui/gtkentry.c:195
 msgid "$(ROLL_NAME) - roll of the input image"
 msgstr "$(ROLL_NAME) - nom du dossier"
 
-#: ../src/gui/gtkentry.c:196 ../src/imageio/storage/gallery.c:168
-#: ../src/imageio/storage/latex.c:168
+#: ../src/gui/gtkentry.c:196
 msgid "$(FILE_FOLDER) - folder containing the input image"
 msgstr "$(FILE_FOLDER) - chemin du dossier de l'image d'origine"
 
-#: ../src/gui/gtkentry.c:197 ../src/imageio/storage/gallery.c:169
-#: ../src/imageio/storage/latex.c:169
+#: ../src/gui/gtkentry.c:197
 msgid "$(FILE_NAME) - basename of the input image"
 msgstr "$(FILE_NAME) - nom de base de l'image d'origine"
 
-#: ../src/gui/gtkentry.c:198 ../src/imageio/storage/gallery.c:170
-#: ../src/imageio/storage/latex.c:170
+#: ../src/gui/gtkentry.c:198
 msgid "$(FILE_EXTENSION) - extension of the input image"
 msgstr "$(FILE_EXTENSION) - extension du fichier image d'origine"
 
@@ -2223,68 +2219,55 @@ msgstr "$(FILE_EXTENSION) - extension du fichier image d'origine"
 msgid "$(VERSION) - duplicate version"
 msgstr "$(VERSION) - version copie virtuelle"
 
-#: ../src/gui/gtkentry.c:200 ../src/imageio/storage/gallery.c:171
-#: ../src/imageio/storage/latex.c:171
+#: ../src/gui/gtkentry.c:200
 msgid "$(SEQUENCE) - sequence number"
 msgstr "$(SEQUENCE) - nombre séquentiel"
 
-#: ../src/gui/gtkentry.c:201 ../src/imageio/storage/gallery.c:172
-#: ../src/imageio/storage/latex.c:172
+#: ../src/gui/gtkentry.c:201
 msgid "$(YEAR) - year"
 msgstr "$(YEAR) - année"
 
-#: ../src/gui/gtkentry.c:202 ../src/imageio/storage/gallery.c:173
-#: ../src/imageio/storage/latex.c:173
+#: ../src/gui/gtkentry.c:202
 msgid "$(MONTH) - month"
 msgstr "$(MONTH) - mois"
 
-#: ../src/gui/gtkentry.c:203 ../src/imageio/storage/gallery.c:174
-#: ../src/imageio/storage/latex.c:174
+#: ../src/gui/gtkentry.c:203
 msgid "$(DAY) - day"
 msgstr "$(DAY) - jour"
 
-#: ../src/gui/gtkentry.c:204 ../src/imageio/storage/gallery.c:175
-#: ../src/imageio/storage/latex.c:175
+#: ../src/gui/gtkentry.c:204
 msgid "$(HOUR) - hour"
 msgstr "$(HOUR) - heure"
 
-#: ../src/gui/gtkentry.c:205 ../src/imageio/storage/gallery.c:176
-#: ../src/imageio/storage/latex.c:176
+#: ../src/gui/gtkentry.c:205
 msgid "$(MINUTE) - minute"
 msgstr "$(MINUTE) - minutes"
 
-#: ../src/gui/gtkentry.c:206 ../src/imageio/storage/gallery.c:177
-#: ../src/imageio/storage/latex.c:177
+#: ../src/gui/gtkentry.c:206
 msgid "$(SECOND) - second"
 msgstr "$(SECOND) - secondes"
 
-#: ../src/gui/gtkentry.c:207 ../src/imageio/storage/gallery.c:178
-#: ../src/imageio/storage/latex.c:178
+#: ../src/gui/gtkentry.c:207
 msgid "$(EXIF_YEAR) - EXIF year"
 msgstr "$(EXIF_YEAR) - année EXIF"
 
-#: ../src/gui/gtkentry.c:208 ../src/imageio/storage/gallery.c:179
-#: ../src/imageio/storage/latex.c:179
+#: ../src/gui/gtkentry.c:208
 msgid "$(EXIF_MONTH) - EXIF month"
 msgstr "$(EXIF_MONTH) - mois EXIF"
 
-#: ../src/gui/gtkentry.c:209 ../src/imageio/storage/gallery.c:180
-#: ../src/imageio/storage/latex.c:180
+#: ../src/gui/gtkentry.c:209
 msgid "$(EXIF_DAY) - EXIF day"
 msgstr "$(EXIF_DAY) - jour EXIF"
 
-#: ../src/gui/gtkentry.c:210 ../src/imageio/storage/gallery.c:181
-#: ../src/imageio/storage/latex.c:181
+#: ../src/gui/gtkentry.c:210
 msgid "$(EXIF_HOUR) - EXIF hour"
 msgstr "$(EXIF_HOUR) - heure EXIF"
 
-#: ../src/gui/gtkentry.c:211 ../src/imageio/storage/gallery.c:182
-#: ../src/imageio/storage/latex.c:182
+#: ../src/gui/gtkentry.c:211
 msgid "$(EXIF_MINUTE) - EXIF minute"
 msgstr "$(EXIF_MINUTE) - minutes EXIF"
 
-#: ../src/gui/gtkentry.c:212 ../src/imageio/storage/gallery.c:183
-#: ../src/imageio/storage/latex.c:183
+#: ../src/gui/gtkentry.c:212
 msgid "$(EXIF_SECOND) - EXIF second"
 msgstr "$(EXIF_SECOND) - secondes EXIF "
 
@@ -2292,28 +2275,23 @@ msgstr "$(EXIF_SECOND) - secondes EXIF "
 msgid "$(EXIF_ISO) - ISO value"
 msgstr "$(EXIF_ISO) - valeur ISO"
 
-#: ../src/gui/gtkentry.c:214 ../src/imageio/storage/gallery.c:184
-#: ../src/imageio/storage/latex.c:184
+#: ../src/gui/gtkentry.c:214
 msgid "$(STARS) - star rating"
 msgstr "$(STARS) - étoiles"
 
-#: ../src/gui/gtkentry.c:215 ../src/imageio/storage/gallery.c:185
-#: ../src/imageio/storage/latex.c:185
+#: ../src/gui/gtkentry.c:215
 msgid "$(LABELS) - colorlabels"
 msgstr "$(LABELS) - labels de couleur"
 
-#: ../src/gui/gtkentry.c:216 ../src/imageio/storage/gallery.c:186
-#: ../src/imageio/storage/latex.c:186
+#: ../src/gui/gtkentry.c:216
 msgid "$(PICTURES_FOLDER) - pictures folder"
 msgstr "$(PICTURES_FOLDER) - fichier 'images'"
 
-#: ../src/gui/gtkentry.c:217 ../src/imageio/storage/gallery.c:187
-#: ../src/imageio/storage/latex.c:187
+#: ../src/gui/gtkentry.c:217
 msgid "$(HOME) - home folder"
 msgstr "$(HOME) - dossier personnel"
 
-#: ../src/gui/gtkentry.c:218 ../src/imageio/storage/gallery.c:188
-#: ../src/imageio/storage/latex.c:188
+#: ../src/gui/gtkentry.c:218
 msgid "$(DESKTOP) - desktop folder"
 msgstr "$(DESKTOP) - dossier 'bureau'"
 
@@ -2355,6 +2333,7 @@ msgstr "module"
 msgid "name"
 msgstr "nom"
 
+#. _md_labels[md_internal_flags] = _("flags");
 #. exif
 #: ../src/gui/preferences.c:442 ../src/gui/preferences.c:1352
 #: ../src/gui/presets.c:417 ../src/libs/metadata_view.c:94
@@ -2579,7 +2558,7 @@ msgstr "remplacer ce pré-réglage ?"
 msgid "normal images"
 msgstr "images normales"
 
-#: ../src/gui/presets.c:357 ../src/libs/metadata_view.c:262
+#: ../src/gui/presets.c:357
 msgid "raw"
 msgstr "raw"
 
@@ -2849,8 +2828,8 @@ msgstr "graphique"
 msgid "file on disk"
 msgstr "fichier sur le disque"
 
-#: ../src/imageio/storage/disk.c:154 ../src/imageio/storage/gallery.c:195
-#: ../src/imageio/storage/latex.c:195
+#: ../src/imageio/storage/disk.c:154 ../src/imageio/storage/gallery.c:168
+#: ../src/imageio/storage/latex.c:168
 msgid ""
 "enter the path where to put exported images\n"
 "recognized variables:"
@@ -2862,8 +2841,8 @@ msgstr ""
 msgid "overwrite"
 msgstr "écraser"
 
-#: ../src/imageio/storage/disk.c:252 ../src/imageio/storage/gallery.c:296
-#: ../src/imageio/storage/latex.c:292
+#: ../src/imageio/storage/disk.c:252 ../src/imageio/storage/gallery.c:269
+#: ../src/imageio/storage/latex.c:265
 #, c-format
 msgid "could not create directory `%s'!"
 msgstr "impossible de créer le répertoire %s !"
@@ -2875,14 +2854,14 @@ msgstr "impossible d'écrire dans le répertoire %s !"
 
 #: ../src/imageio/storage/disk.c:293 ../src/imageio/storage/email.c:143
 #: ../src/imageio/storage/facebook.c:1202 ../src/imageio/storage/flickr.c:672
-#: ../src/imageio/storage/gallery.c:369 ../src/imageio/storage/gallery.c:388
+#: ../src/imageio/storage/gallery.c:342 ../src/imageio/storage/gallery.c:361
 #: ../src/imageio/storage/picasa.c:1456
 #, c-format
 msgid "could not export to file `%s'!"
 msgstr "impossible d'exporter le fichier %s !"
 
 #: ../src/imageio/storage/disk.c:300 ../src/imageio/storage/email.c:152
-#: ../src/imageio/storage/gallery.c:398 ../src/imageio/storage/latex.c:380
+#: ../src/imageio/storage/gallery.c:371 ../src/imageio/storage/latex.c:353
 #, c-format
 msgid "%d/%d exported to `%s%s'"
 msgstr "%d/%d exportée(s) vers '%s%s'"
@@ -2974,7 +2953,7 @@ msgstr "album web facebook"
 #. create labels
 #. xmp
 #: ../src/imageio/storage/facebook.c:1029 ../src/imageio/storage/flickr.c:482
-#: ../src/imageio/storage/gallery.c:209 ../src/imageio/storage/latex.c:209
+#: ../src/imageio/storage/gallery.c:182 ../src/imageio/storage/latex.c:182
 #: ../src/imageio/storage/picasa.c:1316 ../src/libs/collect.h:38
 #: ../src/libs/metadata.c:328 ../src/libs/metadata_view.c:107
 msgid "title"
@@ -3130,7 +3109,7 @@ msgstr "%d/%d exportée(s) vers album web flickr"
 msgid "website gallery"
 msgstr "galerie web"
 
-#: ../src/imageio/storage/gallery.c:215
+#: ../src/imageio/storage/gallery.c:188
 msgid "enter the title of the website"
 msgstr "entrer un nom pour le site"
 
@@ -3139,7 +3118,7 @@ msgid "LaTeX book template"
 msgstr "modèle de livre LaTeX"
 
 #. TODO: support title, author, subject, keywords (collect tags?)
-#: ../src/imageio/storage/latex.c:216
+#: ../src/imageio/storage/latex.c:189
 msgid "enter the title of the book"
 msgstr "entrer le titre du livre"
 
@@ -3189,13 +3168,14 @@ msgctxt "accel"
 msgid "mix"
 msgstr "fusion"
 
-#: ../src/iop/atrous.c:784 ../src/iop/atrous.c:1134 ../src/iop/atrous.c:1138
+#: ../src/iop/atrous.c:784
+msgctxt "eq_preset"
 msgid "coarse"
 msgstr "global"
 
 #: ../src/iop/atrous.c:798
-msgid "denoise sharpen"
-msgstr "réduction du bruit, accentuation"
+msgid "denoise & sharpen"
+msgstr "réduction du bruit & accentuation"
 
 #: ../src/iop/atrous.c:812
 msgctxt "atrous"
@@ -3217,6 +3197,10 @@ msgstr "lumière d'arrière-plan"
 #: ../src/iop/atrous.c:869
 msgid "clarity"
 msgstr "clarté"
+
+#: ../src/iop/atrous.c:1134 ../src/iop/atrous.c:1138
+msgid "coarse"
+msgstr "global"
 
 #: ../src/iop/atrous.c:1140 ../src/iop/atrous.c:1144
 msgid "fine"
@@ -3350,29 +3334,29 @@ msgstr "similaire fujifilm"
 msgid "nokia like"
 msgstr "similaire nokia"
 
-#: ../src/iop/basecurve.c:202
+#: ../src/iop/basecurve.c:204
 msgid "base curve"
 msgstr "courbe de base"
 
-#: ../src/iop/basecurve.c:765
+#: ../src/iop/basecurve.c:767
 msgid "abscissa: input, ordinate: output. works on RGB channels"
 msgstr "abscisse : entrée, ordonnée : sortie. fonctionne sur les canaux RVB"
 
-#: ../src/iop/basecurve.c:771 ../src/iop/lens.c:2147
+#: ../src/iop/basecurve.c:773 ../src/iop/lens.c:2203
 #: ../src/iop/vignette.c:1194 ../src/iop/watermark.c:1114
 msgid "scale"
 msgstr "échelle"
 
-#: ../src/iop/basecurve.c:772 ../src/iop/profile_gamma.c:337
+#: ../src/iop/basecurve.c:774 ../src/iop/profile_gamma.c:337
 #: ../src/iop/tonecurve.c:418
 msgid "linear"
 msgstr "linéaire"
 
-#: ../src/iop/basecurve.c:773
+#: ../src/iop/basecurve.c:775
 msgid "logarithmic"
 msgstr "logarithmique"
 
-#: ../src/iop/basecurve.c:774
+#: ../src/iop/basecurve.c:776
 msgid ""
 "scale to use in the graph. use logarithmic scale for more precise control "
 "near the blacks"
@@ -3987,7 +3971,7 @@ msgstr "sections de spirale d'or"
 msgid "golden spiral"
 msgstr "spirale d'or"
 
-#: ../src/iop/clipping.c:1822 ../src/iop/lens.c:2002
+#: ../src/iop/clipping.c:1822 ../src/iop/lens.c:2058
 #: ../src/libs/live_view.c:354 ../src/libs/tools/filter.c:121
 msgid "all"
 msgstr "tout"
@@ -4746,7 +4730,7 @@ msgid "interpolated from ISO %d and %d"
 msgstr "interpolé depuis ISO %d et %d"
 
 #: ../src/iop/denoiseprofile.c:1725 ../src/iop/exposure.c:945
-#: ../src/iop/lens.c:2156 ../src/iop/levels.c:546
+#: ../src/iop/lens.c:2212 ../src/iop/levels.c:546
 msgid "mode"
 msgstr "mode"
 
@@ -5326,7 +5310,7 @@ msgctxt "accel"
 msgid "select corrections"
 msgstr "sélectionne les corrections"
 
-#: ../src/iop/lens.c:1314
+#: ../src/iop/lens.c:1370
 #, c-format
 msgid ""
 "maker:\t\t%s\n"
@@ -5339,15 +5323,15 @@ msgstr ""
 "monture :\t\t%s\n"
 " facteur de recadrage :\t%.1f"
 
-#: ../src/iop/lens.c:1560
+#: ../src/iop/lens.c:1616
 msgid "camera/lens not found - please select manually"
 msgstr "boîtier/objectif introuvable  > sélection manuelle"
 
-#: ../src/iop/lens.c:1562
+#: ../src/iop/lens.c:1618
 msgid "try to locate your camera/lens in the above two menus"
 msgstr "trouver votre boîtier/objectif dans les menus ci-dessus"
 
-#: ../src/iop/lens.c:1617
+#: ../src/iop/lens.c:1673
 #, c-format
 msgid ""
 "maker:\t\t%s\n"
@@ -5366,147 +5350,147 @@ msgstr ""
 "type:\t\t%s\n"
 "montures:\t\t%s"
 
-#: ../src/iop/lens.c:1662
+#: ../src/iop/lens.c:1718
 msgid "mm"
 msgstr "mm"
 
-#: ../src/iop/lens.c:1663
+#: ../src/iop/lens.c:1719
 msgid "focal length (mm)"
 msgstr "longeur focale (mm)"
 
-#: ../src/iop/lens.c:1689
+#: ../src/iop/lens.c:1745
 msgid "f/"
 msgstr "f/"
 
-#: ../src/iop/lens.c:1690
+#: ../src/iop/lens.c:1746
 msgid "f-number (aperture)"
 msgstr "ouverture"
 
-#: ../src/iop/lens.c:1705
+#: ../src/iop/lens.c:1761
 msgid "d"
 msgstr "d"
 
-#: ../src/iop/lens.c:1706
+#: ../src/iop/lens.c:1762
 msgid "distance to subject"
 msgstr "distance au sujet"
 
-#: ../src/iop/lens.c:2008
+#: ../src/iop/lens.c:2064
 msgid "distortion & TCA"
 msgstr "distorsion et chromatisme"
 
-#: ../src/iop/lens.c:2014
+#: ../src/iop/lens.c:2070
 msgid "distortion & vignetting"
 msgstr "distorsion et vignettage"
 
-#: ../src/iop/lens.c:2020
+#: ../src/iop/lens.c:2076
 msgid "TCA & vignetting"
 msgstr "chromatisme et vignettage"
 
-#: ../src/iop/lens.c:2026
+#: ../src/iop/lens.c:2082
 msgid "only distortion"
 msgstr "distorsion seulement"
 
-#: ../src/iop/lens.c:2032
+#: ../src/iop/lens.c:2088
 msgid "only TCA"
 msgstr "chromatisme seulement"
 
-#: ../src/iop/lens.c:2038
+#: ../src/iop/lens.c:2094
 msgid "only vignetting"
 msgstr "vignettage seulement"
 
-#: ../src/iop/lens.c:2061
+#: ../src/iop/lens.c:2117
 msgid "find camera"
 msgstr "boîtier"
 
-#: ../src/iop/lens.c:2078
+#: ../src/iop/lens.c:2134
 msgid "find lens"
 msgstr "objectif"
 
-#: ../src/iop/lens.c:2110
+#: ../src/iop/lens.c:2166
 msgid "corrections"
 msgstr "corrections"
 
-#: ../src/iop/lens.c:2112
+#: ../src/iop/lens.c:2168
 msgid "which corrections to apply"
 msgstr "sélectionne les types de correction à effectuer"
 
-#: ../src/iop/lens.c:2127
+#: ../src/iop/lens.c:2183
 msgid "geometry"
 msgstr "géométrie"
 
-#: ../src/iop/lens.c:2129
+#: ../src/iop/lens.c:2185
 msgid "target geometry"
 msgstr "géométrie des images (distorsion)"
 
-#: ../src/iop/lens.c:2130
+#: ../src/iop/lens.c:2186
 msgid "rectilinear"
 msgstr "rectilinéaire"
 
-#: ../src/iop/lens.c:2131
+#: ../src/iop/lens.c:2187
 msgid "fish-eye"
 msgstr "fisheye"
 
-#: ../src/iop/lens.c:2132
+#: ../src/iop/lens.c:2188
 msgid "panoramic"
 msgstr "panoramique"
 
-#: ../src/iop/lens.c:2133
+#: ../src/iop/lens.c:2189
 msgid "equirectangular"
 msgstr "equi-rectangulaire"
 
-#: ../src/iop/lens.c:2135
+#: ../src/iop/lens.c:2191
 msgid "orthographic"
 msgstr "orthographique"
 
-#: ../src/iop/lens.c:2136
+#: ../src/iop/lens.c:2192
 msgid "stereographic"
 msgstr "stéréographique"
 
-#: ../src/iop/lens.c:2137
+#: ../src/iop/lens.c:2193
 msgid "equisolid angle"
 msgstr "angle solide constant"
 
-#: ../src/iop/lens.c:2138
+#: ../src/iop/lens.c:2194
 msgid "thoby fish-eye"
 msgstr "fisheye"
 
-#: ../src/iop/lens.c:2146
+#: ../src/iop/lens.c:2202
 msgid "auto scale"
 msgstr "échelle auto"
 
-#: ../src/iop/lens.c:2158
+#: ../src/iop/lens.c:2214
 msgid "correct distortions or apply them"
 msgstr "corrige ou applique des distorsions"
 
-#: ../src/iop/lens.c:2159
+#: ../src/iop/lens.c:2215
 msgid "correct"
 msgstr "retouche"
 
-#: ../src/iop/lens.c:2160
+#: ../src/iop/lens.c:2216
 msgid "distort"
 msgstr "déforme"
 
-#: ../src/iop/lens.c:2167
+#: ../src/iop/lens.c:2223
 msgid "Transversal Chromatic Aberration red"
 msgstr "Aberrations Chromatiques Transversales rouge"
 
-#: ../src/iop/lens.c:2168
+#: ../src/iop/lens.c:2224
 msgid "TCA red"
 msgstr "AC rouge"
 
-#: ../src/iop/lens.c:2173
+#: ../src/iop/lens.c:2229
 msgid "Transversal Chromatic Aberration blue"
 msgstr "Aberrations Chromatiques Transversales bleu"
 
-#: ../src/iop/lens.c:2174
+#: ../src/iop/lens.c:2230
 msgid "TCA blue"
 msgstr "bleu"
 
-#: ../src/iop/lens.c:2181
+#: ../src/iop/lens.c:2237
 msgid "corrections done: "
 msgstr "corrections effectuées :"
 
-#: ../src/iop/lens.c:2182
+#: ../src/iop/lens.c:2238
 msgid "which corrections have actually been done"
 msgstr "corrections réellement effectuées"
 
@@ -6570,7 +6554,7 @@ msgstr "BdB automatique"
 msgid "zone system"
 msgstr "zones"
 
-#: ../src/iop/zonesystem.c:482
+#: ../src/iop/zonesystem.c:481
 msgid ""
 "lightness zones\n"
 "use mouse scrollwheel to change the number of zones\n"
@@ -7972,13 +7956,9 @@ msgstr "version"
 msgid "full path"
 msgstr "chemin complet"
 
-#: ../src/libs/metadata_view.c:89 ../src/libs/metadata_view.c:267
+#: ../src/libs/metadata_view.c:89
 msgid "local copy"
 msgstr "copie locale"
-
-#: ../src/libs/metadata_view.c:90
-msgid "flags"
-msgstr "états"
 
 #: ../src/libs/metadata_view.c:100
 msgid "focus distance"
@@ -8017,53 +7997,6 @@ msgid ""
 msgstr ""
 "double-cliquer pour aller à la pellicule\n"
 "%s"
-
-#: ../src/libs/metadata_view.c:259
-msgid "unused"
-msgstr "non utilisé"
-
-#: ../src/libs/metadata_view.c:260
-msgid "unused/deprecated"
-msgstr "non utilisé/déprécié"
-
-#: ../src/libs/metadata_view.c:261
-msgid "ldr"
-msgstr "ldr"
-
-#: ../src/libs/metadata_view.c:263
-msgid "hdr"
-msgstr "hdr"
-
-#: ../src/libs/metadata_view.c:264
-msgid "marked for deletion"
-msgstr "marqué pour suppression"
-
-#: ../src/libs/metadata_view.c:265
-msgid "auto-applying presets applied"
-msgstr "pré-réglage automatique appliqué"
-
-#: ../src/libs/metadata_view.c:266
-msgid "legacy flag. set for all new images"
-msgstr "ancien état. positionné pour toutes nouvelles images"
-
-#: ../src/libs/metadata_view.c:268
-msgid "has .txt"
-msgstr "a .txt"
-
-#: ../src/libs/metadata_view.c:269
-msgid "has .wav"
-msgstr "a .wav"
-
-#: ../src/libs/metadata_view.c:281
-msgid "image rejected"
-msgstr "image rejetée"
-
-#: ../src/libs/metadata_view.c:286
-#, c-format
-msgid "image has %d star"
-msgid_plural "image has %d stars"
-msgstr[0] "l'image a %d étoile"
-msgstr[1] "l'image a %d étoiles"
 
 #: ../src/libs/metadata_view.c:560
 msgctxt "accel"
@@ -8997,6 +8930,44 @@ msgstr "nouvelle session initiée «%s»"
 #: ../src/views/tethering.c:280
 msgid "no camera with tethering support available for use..."
 msgstr "aucun boîtier disponible pour la capture..."
+
+#~ msgid "flags"
+#~ msgstr "états"
+
+#~ msgid "unused"
+#~ msgstr "non utilisé"
+
+#~ msgid "unused/deprecated"
+#~ msgstr "non utilisé/déprécié"
+
+#~ msgid "ldr"
+#~ msgstr "ldr"
+
+#~ msgid "hdr"
+#~ msgstr "hdr"
+
+#~ msgid "marked for deletion"
+#~ msgstr "marqué pour suppression"
+
+#~ msgid "auto-applying presets applied"
+#~ msgstr "pré-réglage automatique appliqué"
+
+#~ msgid "legacy flag. set for all new images"
+#~ msgstr "ancien état. positionné pour toutes nouvelles images"
+
+#~ msgid "has .txt"
+#~ msgstr "a .txt"
+
+#~ msgid "has .wav"
+#~ msgstr "a .wav"
+
+#~ msgid "image rejected"
+#~ msgstr "image rejetée"
+
+#~ msgid "image has %d star"
+#~ msgid_plural "image has %d stars"
+#~ msgstr[0] "l'image a %d étoile"
+#~ msgstr[1] "l'image a %d étoiles"
 
 #~ msgctxt "accel"
 #~ msgid "rotate"
