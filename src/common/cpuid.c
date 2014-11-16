@@ -70,7 +70,7 @@ dt_cpu_flags_t dt_detect_cpu_features()
 
   g_static_mutex_lock(&lock);
 #endif
-  if(cpuflags == (guint) - 1)
+  if(cpuflags == (dt_cpu_flags_t)-1)
   {
     cpuflags = 0;
 
