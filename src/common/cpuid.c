@@ -15,11 +15,12 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 
-    Taken from LensFun library,
+    Original sources:
+    LensFun library,
     original file lensfun/libs/lensfun/cpuid.cpp, licensed under LGPL-3
         Copyright (C) 2010 by Andrew Zabolotny
     which was taken from RawStudio,
-    original file rawstudio/librawstudio/rs-utils.c, licensed under GPL-3
+    original file rawstudio/librawstudio/rs-utils.c, licensed under GPL-2+
         Copyright (C) 2006-2011 Anders Brander <anders@brander.dk>,
         Anders Kvist <akv@lnxbx.dk> and Klaus Post <klauspost@gmail.com>
  */
