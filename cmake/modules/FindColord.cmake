@@ -2,10 +2,10 @@ SET(COLORD_FIND_REQUIRED ${Colord_FIND_REQUIRED})
 
 include(Prebuilt)
 
-if (CMAKE_SYSTEM_NAME STREQUAL "Linux")
+if (PKG_CONFIG_FOUND)
   include(FindPkgConfig)
   pkg_check_modules(COLORD colord)
-endif (CMAKE_SYSTEM_NAME STREQUAL "Linux")
+endif (PKG_CONFIG_FOUND)
 
 if (COLORD_FOUND)
   set(COLORD ON CACHE BOOL "Build with libcolord support.")
