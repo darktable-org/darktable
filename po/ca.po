@@ -9,7 +9,7 @@ msgstr ""
 "Project-Id-Version: darktable 0.6.1~rc\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2014-11-15 14:30+0100\n"
-"PO-Revision-Date: 2014-11-16 22:59+0100\n"
+"PO-Revision-Date: 2014-11-16 23:20+0100\n"
 "Last-Translator: Josep V. Moragues <josepvm@arrakis.es>\n"
 "Language-Team: Catalan\n"
 "Language: ca\n"
@@ -1821,7 +1821,7 @@ msgstr "predefinits"
 
 #: ../src/develop/lightroom.c:406
 msgid "cannot find lightroom XMP!"
-msgstr "no s'ha pogut trobar XMP de lighroom"
+msgstr "no s'ha pogut trobar XMP de lightroom"
 
 #: ../src/develop/lightroom.c:438 ../src/develop/lightroom.c:460
 #: ../src/develop/lightroom.c:480 ../src/develop/lightroom.c:490
@@ -3670,27 +3670,31 @@ msgstr "agafa el color de la línia del marc des de la imatge"
 #. make sure you put all your translatable strings into _() !
 #: ../src/iop/cacorrect.c:57
 msgid "chromatic aberrations"
-msgstr ""
+msgstr "aberracions cromàtiques"
 
 #: ../src/iop/cacorrect.c:1291
 msgid "automatic chromatic aberration correction"
-msgstr ""
+msgstr "correcció automàtica d'aberració cromàtica"
 
 #: ../src/iop/cacorrect.c:1293
 msgid ""
 "automatic chromatic aberration correction\n"
 "disabled for non-Bayer sensors"
 msgstr ""
+"correcció automàtica d'aberració cromàtica\n"
+"desactivada per sensors que no són tipus Bayer"
 
 #: ../src/iop/cacorrect.c:1295
 msgid ""
 "automatic chromatic aberration correction\n"
 "only works for raw images."
 msgstr ""
+"la correcció automàtica d'aberració cromàtica\n"
+"només funciona per imatges raw."
 
 #: ../src/iop/channelmixer.c:117
 msgid "channel mixer"
-msgstr ""
+msgstr "mesclador de canals"
 
 #: ../src/iop/channelmixer.c:457
 msgid "destination"
@@ -3716,7 +3720,7 @@ msgstr "saturació"
 #: ../src/iop/channelmixer.c:460 ../src/iop/colorize.c:480
 #: ../src/iop/colorzones.c:1036 ../src/iop/colorzones.c:1075
 msgid "lightness"
-msgstr ""
+msgstr "lluminositat"
 
 #: ../src/iop/channelmixer.c:464
 msgctxt "channelmixer"
@@ -3725,15 +3729,15 @@ msgstr "gris"
 
 #: ../src/iop/channelmixer.c:472
 msgid "amount of red channel in the output channel"
-msgstr ""
+msgstr "porció del canal vermell al canal de sortida"
 
 #: ../src/iop/channelmixer.c:479
 msgid "amount of green channel in the output channel"
-msgstr ""
+msgstr "porció del canal verd al canal de sortida"
 
 #: ../src/iop/channelmixer.c:486
 msgid "amount of blue channel in the output channel"
-msgstr ""
+msgstr "porció del canal blau al canal de sortida"
 
 #: ../src/iop/channelmixer.c:504
 msgid "swap R and B"
@@ -6112,7 +6116,7 @@ msgstr ""
 
 #: ../src/iop/tonemap.cc:79
 msgid "tone mapping"
-msgstr ""
+msgstr "mapejat de tons"
 
 #: ../src/iop/tonemap.cc:98
 msgctxt "accel"
