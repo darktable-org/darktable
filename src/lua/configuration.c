@@ -35,7 +35,7 @@
 /* bugfixes that should not change anything to the API */
 #define API_VERSION_PATCH  0
 /* suffix for unstable version */
-#define API_VERSION_SUFFIX "dev"
+#define API_VERSION_SUFFIX ""
 
 static int check_version(lua_State*L)
 {
