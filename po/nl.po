@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2014-11-17 19:49+0100\n"
-"PO-Revision-Date: 2014-11-17 20:02+0100\n"
+"PO-Revision-Date: 2014-11-17 20:44+0100\n"
 "Last-Translator: Ger Siemerink <g.siemerink@gmail.com>\n"
 "Language-Team: Ger Siemerink <g.siemerink@gmail.com>\n"
 "Language: nl_NL\n"
@@ -3777,7 +3777,7 @@ msgstr "sterkte van het effect"
 
 #: ../src/iop/clipping.c:315
 msgid "crop and rotate"
-msgstr "uitsnijden en rechttrekken"
+msgstr "uitsnijden en roteren"
 
 #: ../src/iop/clipping.c:1397
 msgid "invalid ratio format. it should be \"number:number\""
