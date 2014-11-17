@@ -729,6 +729,11 @@ void dt_dev_pop_history_items(dt_develop_t *dev, int32_t cnt)
     memcpy(hist->module->blend_params, hist->blend_params, sizeof(dt_develop_blend_params_t));
 
     hist->module->enabled = hist->enabled;
+    if (hist->multi_name)
+      snprintf(hist->module->multi_name, sizeof(hist->module->multi_name), "%s", hist->multi_name);
+    else
+      memset(hist->module->multi_name, 0, sizeof(hist->module->multi_name));
+
     history = g_list_next(history);
   }
   // update all gui modules
@@ -921,8 +926,10 @@ void dt_dev_read_history(dt_develop_t *dev)
         if (module->multi_priority == multi_priority)
         {
           hist->module = module;
-          if(multi_name && strcmp(module->multi_name, multi_name))
+          if(multi_name)
             snprintf(module->multi_name, sizeof(module->multi_name), "%s", multi_name);
+          else
+            memset(module->multi_name, 0, sizeof(module->multi_name));
           break;
         }
         else if (multi_priority > 0)

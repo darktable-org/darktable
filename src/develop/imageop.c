@@ -909,6 +909,12 @@ void dt_iop_gui_update_header(dt_iop_module_t *module)
   _iop_gui_update_header(module);
 }
 
+static void _iop_gui_update_label(dt_iop_module_t *module)
+{
+  if (!module->header) return;
+  GtkWidget *lab = g_list_nth_data(gtk_container_get_children(GTK_CONTAINER(module->header)),5);
+  _iop_panel_label(lab, module);
+}
 
 void dt_iop_reload_defaults(dt_iop_module_t *module)
 {
@@ -1301,6 +1307,7 @@ void dt_iop_gui_update(dt_iop_module_t *module)
     module->gui_update(module);
     dt_iop_gui_update_blending(module);
     dt_iop_gui_update_expanded(module);
+    _iop_gui_update_label(module);
     if(module->off) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(module->off), module->enabled);
   }
   darktable.gui->reset = reset;

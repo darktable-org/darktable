@@ -781,7 +781,7 @@ void init_presets (dt_iop_module_so_t *self)
     p.y[atrous_Lt][k] = 0.0f;
     p.y[atrous_ct][k] = 0.0f;
   }
-  dt_gui_presets_add_generic(_("coarse"), self->op, self->version(), &p, sizeof(p), 1);
+  dt_gui_presets_add_generic(C_("eq_preset", "coarse"), self->op, self->version(), &p, sizeof(p), 1);
   for(int k=0; k<BANDS; k++)
   {
     p.x[atrous_L][k] = k/(BANDS-1.0);
@@ -795,7 +795,7 @@ void init_presets (dt_iop_module_so_t *self)
     p.y[atrous_Lt][k] = .2f*k/(float)BANDS;
     p.y[atrous_ct][k] = .3f*k/(float)BANDS;
   }
-  dt_gui_presets_add_generic(_("denoise sharpen"), self->op, self->version(), &p, sizeof(p), 1);
+  dt_gui_presets_add_generic(_("denoise & sharpen"), self->op, self->version(), &p, sizeof(p), 1);
   for(int k=0; k<BANDS; k++)
   {
     p.x[atrous_L][k] = k/(BANDS-1.0);
