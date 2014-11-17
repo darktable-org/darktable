@@ -1,9 +1,9 @@
 include(Prebuilt)
 
-if (CMAKE_SYSTEM_NAME STREQUAL "Linux")
+if (PKG_CONFIG_FOUND)
   include(FindPkgConfig)
   pkg_check_modules(VTE vte)
-endif (CMAKE_SYSTEM_NAME STREQUAL "Linux")
+endif (PKG_CONFIG_FOUND)
 
 if (VTE_FOUND)
   set(VTE ON CACHE BOOL "Build with VTE support.")

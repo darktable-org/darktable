@@ -1,9 +1,9 @@
 include(Prebuilt)
 
-if (CMAKE_SYSTEM_NAME STREQUAL "Linux")
+if (PKG_CONFIG_FOUND)
   include(FindPkgConfig)
   pkg_check_modules(DBUSGLIB REQUIRED dbus-glib-1)
-endif (CMAKE_SYSTEM_NAME STREQUAL "Linux")
+endif (PKG_CONFIG_FOUND)
 
 if (DBUSGLIB_FOUND)
   set(DBUSGLIB ON CACHE BOOL "Build with dbus-glib message bus support.")
