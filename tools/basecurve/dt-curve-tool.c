@@ -773,6 +773,7 @@ main(int argc, char** argv)
   hist_base = hist;
   hist_tone = hist + 3*CURVE_RESOLUTION;
 
+#if 0
   // read saved state if any
   f = fopen(opt.filename_state, "rb");
   if (f)
@@ -787,12 +788,13 @@ main(int argc, char** argv)
   {
     goto fit;
   }
+#endif
 
   // read the raw PPM file
   raw_buff = read_ppm16(opt.filename_raw, &raw_width, &raw_height);
   if(!raw_buff)
   {
-    fprintf(stderr, "error: failed reading the raw file data\n");
+    fprintf(stderr, "error: failed reading the raw file data `%s'\n", opt.filename_raw);
     goto exit;
   }
 
@@ -948,6 +950,7 @@ main(int argc, char** argv)
   free(jpeg_buff_f);
   jpeg_buff_f = NULL;
 
+#if 0
   /* ------------------------------------------------------------------------
    * Write save state w/ the gathered data
    * ----------------------------------------------------------------------*/
@@ -980,6 +983,7 @@ main(int argc, char** argv)
   }
 
 fit:;
+#endif
 
   char maker[32];
   char model[32];
