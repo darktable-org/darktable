@@ -37,13 +37,17 @@ hdiutil create -srcfolder package -volname "${PROGN}" -fs HFS+ \
 device=$(hdiutil attach -readwrite -noverify -noautoopen "pack.temp.dmg" | \
          egrep '^/dev/' | sed 1q | awk '{print $1}')
 
-sleep 1
+echo '
+ tell application "Finder"
+	tell disk "'${PROGN}'"
+		open
+	end tell
+ end tell
+' | osascript
 
 echo '
  tell application "Finder"
 	tell disk "'${PROGN}'"
-		close
-		open
 		set current view of container window to icon view
 		set toolbar visible of container window to false
 		set statusbar visible of container window to false
