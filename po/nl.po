@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2014-11-17 19:49+0100\n"
-"PO-Revision-Date: 2014-11-17 19:53+0100\n"
+"PO-Revision-Date: 2014-11-17 20:02+0100\n"
 "Last-Translator: Ger Siemerink <g.siemerink@gmail.com>\n"
 "Language-Team: Ger Siemerink <g.siemerink@gmail.com>\n"
 "Language: nl_NL\n"
@@ -4572,7 +4572,7 @@ msgstr "rand opsporingsstraal"
 
 #: ../src/iop/defringe.c:453
 msgid "radius for detecting fringe"
-msgstr "straal voor het opsporen van randverwijdering"
+msgstr "straal voor het opsporen van de franje"
 
 #: ../src/iop/defringe.c:455
 msgid "threshold for defringe, higher values mean less defringing"
