@@ -9,7 +9,7 @@ msgstr ""
 "Project-Id-Version: darktable 0.6.1~rc\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2014-11-15 14:30+0100\n"
-"PO-Revision-Date: 2014-11-16 23:20+0100\n"
+"PO-Revision-Date: 2014-11-17 23:26+0100\n"
 "Last-Translator: Josep V. Moragues <josepvm@arrakis.es>\n"
 "Language-Team: Catalan\n"
 "Language: ca\n"
@@ -3531,7 +3531,7 @@ msgstr "16:9"
 
 #: ../src/iop/borders.c:976 ../src/iop/clipping.c:1768
 msgid "golden cut"
-msgstr "secció àurea"
+msgstr "secció àuria"
 
 #: ../src/iop/borders.c:977 ../src/iop/clipping.c:1770
 msgid "3:2"
@@ -3793,25 +3793,25 @@ msgstr "escapça i gira"
 
 #: ../src/iop/clipping.c:1397
 msgid "invalid ratio format. it should be \"number:number\""
-msgstr ""
+msgstr "ralació de format invàlida. Hauria de ser \"número:número\" "
 
 #: ../src/iop/clipping.c:1497 ../src/iop/clipping.c:1731
 #: ../src/iop/clipping.c:1748
 msgid "vertical"
-msgstr ""
+msgstr "vertical"
 
 #: ../src/iop/clipping.c:1498 ../src/iop/clipping.c:1730
 #: ../src/iop/clipping.c:1749
 msgid "horizontal"
-msgstr ""
+msgstr "horitzontal"
 
 #: ../src/iop/clipping.c:1499 ../src/iop/clipping.c:1750
 msgid "full"
-msgstr ""
+msgstr "complet"
 
 #: ../src/iop/clipping.c:1500
 msgid "old system"
-msgstr ""
+msgstr "sistema antic"
 
 #: ../src/iop/clipping.c:1501
 msgid "correction applied"
@@ -3820,16 +3820,16 @@ msgstr "correcció aplicada"
 #: ../src/iop/clipping.c:1728 ../src/iop/clipping.c:1808
 #: ../src/libs/live_view.c:341
 msgid "flip"
-msgstr ""
+msgstr "capgira"
 
 #: ../src/iop/clipping.c:1732 ../src/iop/clipping.c:1812
 #: ../src/libs/live_view.c:345
 msgid "both"
-msgstr ""
+msgstr "tots dos"
 
 #: ../src/iop/clipping.c:1734
 msgid "mirror image horizontally and/or vertically"
-msgstr ""
+msgstr "inverteix imatge horitzontalment i/o verticalment"
 
 #: ../src/iop/clipping.c:1739
 msgid "angle"
@@ -3837,15 +3837,15 @@ msgstr "angle"
 
 #: ../src/iop/clipping.c:1742
 msgid "right-click and drag a line on the image to drag a straight line"
-msgstr ""
+msgstr "feu clic dret i arrossegueu una línia per dibuixar una línia recta"
 
 #: ../src/iop/clipping.c:1746
 msgid "keystone"
-msgstr ""
+msgstr "correcció de perspectiva"
 
 #: ../src/iop/clipping.c:1751
 msgid "set perspective correction for your image"
-msgstr ""
+msgstr "ajusta la correcció de perspectiva per la imatge"
 
 #: ../src/iop/clipping.c:1756
 msgid "automatic cropping"
@@ -3861,7 +3861,7 @@ msgstr "sí"
 
 #: ../src/iop/clipping.c:1759
 msgid "automatically crop to avoid black edges"
-msgstr ""
+msgstr "escapça automàticament evitant vores negres"
 
 #: ../src/iop/clipping.c:1766
 msgid "free"
@@ -3889,7 +3889,7 @@ msgstr "10:8 a la impressió"
 
 #: ../src/iop/clipping.c:1783
 msgid "set the aspect ratio (w:h)"
-msgstr ""
+msgstr "relació d'aspecte (ample:alt)"
 
 #: ../src/iop/clipping.c:1789 ../src/libs/live_view.c:329
 msgid "guides"
@@ -3906,7 +3906,7 @@ msgstr "regla dels terços"
 
 #: ../src/iop/clipping.c:1793
 msgid "metering"
-msgstr ""
+msgstr "mesura"
 
 #: ../src/iop/clipping.c:1794
 msgid "perspective"
@@ -3931,31 +3931,31 @@ msgstr "mostra guies per ajudar-vos a composar la foto"
 
 #: ../src/iop/clipping.c:1810 ../src/libs/live_view.c:343
 msgid "horizontally"
-msgstr ""
+msgstr "horitzontalment"
 
 #: ../src/iop/clipping.c:1811 ../src/libs/live_view.c:344
 msgid "vertically"
-msgstr ""
+msgstr "verticalment"
 
 #: ../src/iop/clipping.c:1813 ../src/libs/live_view.c:346
 msgid "flip guides"
-msgstr "guies per invertir"
+msgstr "guies per capgirar"
 
 #: ../src/iop/clipping.c:1818 ../src/libs/live_view.c:350
 msgid "extra"
-msgstr ""
+msgstr "extra"
 
 #: ../src/iop/clipping.c:1819 ../src/libs/live_view.c:351
 msgid "golden sections"
-msgstr ""
+msgstr "secció àuria"
 
 #: ../src/iop/clipping.c:1820 ../src/libs/live_view.c:352
 msgid "golden spiral sections"
-msgstr ""
+msgstr "seccions d'espiral àuria "
 
 #: ../src/iop/clipping.c:1821 ../src/libs/live_view.c:353
 msgid "golden spiral"
-msgstr ""
+msgstr "espiral àuria"
 
 #: ../src/iop/clipping.c:1822 ../src/iop/lens.c:2002
 #: ../src/libs/live_view.c:354 ../src/libs/tools/filter.c:121
@@ -3964,12 +3964,12 @@ msgstr "totes"
 
 #: ../src/iop/clipping.c:1823 ../src/libs/live_view.c:355
 msgid "show some extra guides"
-msgstr ""
+msgstr "mostra algunes guies extres"
 
 #: ../src/iop/clipping.c:2854
 msgctxt "accel"
 msgid "commit"
-msgstr ""
+msgstr "commit"
 
 #: ../src/iop/clipping.c:2856
 msgctxt "accel"
@@ -4011,7 +4011,7 @@ msgstr "ajustament de brillantor"
 
 #: ../src/iop/colisa.c:392
 msgid "color saturation adjustment"
-msgstr ""
+msgstr "ajusta la saturació de color"
 
 #: ../src/iop/colorbalance.c:87
 msgid "color balance"
@@ -4022,74 +4022,74 @@ msgstr "balanç de color"
 #: ../src/iop/colorbalance.c:641 ../src/iop/colorbalance.c:650
 #: ../src/iop/colorbalance.c:659
 msgid "lift"
-msgstr ""
+msgstr "elevació"
 
 #: ../src/iop/colorbalance.c:631
 msgid "factor of lift"
-msgstr ""
+msgstr "factor de l'elevació"
 
 #: ../src/iop/colorbalance.c:632 ../src/iop/colorbalance.c:670
 #: ../src/iop/colorbalance.c:708
 msgid "factor"
-msgstr ""
+msgstr "factor"
 
 #: ../src/iop/colorbalance.c:640
 msgid "factor of red for lift"
-msgstr ""
+msgstr "factor del vermell per l'elevació"
 
 #: ../src/iop/colorbalance.c:649
 msgid "factor of green for lift"
-msgstr ""
+msgstr "factor del verd per l'elevació"
 
 #: ../src/iop/colorbalance.c:658
 msgid "factor of blue for lift"
-msgstr ""
+msgstr "factor del blau per l'elevació"
 
 #. gamma
 #: ../src/iop/colorbalance.c:664 ../src/iop/colorbalance.c:670
 #: ../src/iop/colorbalance.c:679 ../src/iop/colorbalance.c:688
 #: ../src/iop/colorbalance.c:697 ../src/iop/profile_gamma.c:338
 msgid "gamma"
-msgstr ""
+msgstr "gamma"
 
 #: ../src/iop/colorbalance.c:669
 msgid "factor of gamma"
-msgstr ""
+msgstr "factor de la gamma"
 
 #: ../src/iop/colorbalance.c:678
 msgid "factor of red for gamma"
-msgstr ""
+msgstr "factor del vermell per la gamma"
 
 #: ../src/iop/colorbalance.c:687
 msgid "factor of green for gamma"
-msgstr ""
+msgstr "factor del verd per la gamma"
 
 #: ../src/iop/colorbalance.c:696
 msgid "factor of blue for gamma"
-msgstr ""
+msgstr "factor del blau per la gamma\""
 
 #. gain
 #: ../src/iop/colorbalance.c:702 ../src/iop/colorbalance.c:708
 #: ../src/iop/colorbalance.c:717 ../src/iop/colorbalance.c:726
 #: ../src/iop/colorbalance.c:735
 msgid "gain"
-msgstr ""
+msgstr "guany"
 
 #: ../src/iop/colorbalance.c:707
 msgid "factor of gain"
-msgstr ""
+msgstr "factor del guany"
 
 #: ../src/iop/colorbalance.c:716
 msgid "factor of red for gain"
-msgstr ""
+msgstr "factor del vermell pel guany"
 
 #: ../src/iop/colorbalance.c:725
 msgid "factor of green for gain"
-msgstr ""
+msgstr "factor del verd pel guany"
 
 #: ../src/iop/colorbalance.c:734
 msgid "factor of blue for gain"
-msgstr ""
+msgstr "factor del blau pel guany"
 
 #: ../src/iop/colorcontrast.c:89
 msgid "color contrast"
@@ -4098,7 +4098,7 @@ msgstr "contrast de color"
 #: ../src/iop/colorcontrast.c:125
 msgctxt "accel"
 msgid "green vs magenta"
-msgstr ""
+msgstr "verd vs. magenta"
 
 #: ../src/iop/colorcontrast.c:126
 msgctxt "accel"
@@ -4107,11 +4107,11 @@ msgstr "blau vs. groc"
 
 #: ../src/iop/colorcontrast.c:360
 msgid "green vs magenta"
-msgstr ""
+msgstr "verd vs. magenta"
 
 #: ../src/iop/colorcontrast.c:363
 msgid "steepness of the a* curve in Lab"
-msgstr ""
+msgstr "pendent de la corba a* a Lab"
 
 #: ../src/iop/colorcontrast.c:370
 msgid "blue vs yellow"
@@ -4119,7 +4119,7 @@ msgstr "blau vs. groc"
 
 #: ../src/iop/colorcontrast.c:373
 msgid "steepness of the b* curve in Lab"
-msgstr ""
+msgstr "pendent de la corba b* a Lab"
 
 #: ../src/iop/colorcorrection.c:72
 msgid "color correction"
@@ -4142,10 +4142,13 @@ msgid ""
 "drag the line for split toning. bright means highlights, dark means shadows. "
 "use mouse wheel to change saturation."
 msgstr ""
+"arrosegueu la línia per aplicar split toning. Brillant significa altes "
+"llums, fosc significa ombres. empreu la roda del ratolí per canviar la "
+"saturació."
 
 #: ../src/iop/colorcorrection.c:288
 msgid "set the global saturation"
-msgstr ""
+msgstr "ajusta la saturació global"
 
 #: ../src/iop/colorin.c:103
 msgid "input color profile"
@@ -4154,15 +4157,15 @@ msgstr "perfil de color de l'entrada"
 #: ../src/iop/colorin.c:659
 #, c-format
 msgid "`%s' color matrix not found!"
-msgstr ""
+msgstr "no s'ha trobat la matriu de color`%s'"
 
 #: ../src/iop/colorin.c:708
 msgid "input profile could not be generated!"
-msgstr ""
+msgstr "no s'ha pogut generar el perfil d'entrada"
 
 #: ../src/iop/colorin.c:765
 msgid "unsupported input profile has been replaced by linear Rec709 RGB!"
-msgstr ""
+msgstr "el perfil d'entrada no suportat s'ha substituït per Rec709 RGB lineal"
 
 #: ../src/iop/colorin.c:1076 ../src/iop/colorin.c:1110
 msgid "embedded ICC profile"
@@ -4246,7 +4249,7 @@ msgstr "sRGB"
 
 #: ../src/iop/colorin.c:1266
 msgid "confine Lab values to gamut of RGB color space"
-msgstr ""
+msgstr "confinar els valors Lab dins del gamut de l'espai de color RGB"
 
 #: ../src/iop/colorize.c:86
 msgid "colorize"
@@ -4260,7 +4263,7 @@ msgstr "lluminositat"
 #: ../src/iop/colorize.c:122
 msgctxt "accel"
 msgid "source mix"
-msgstr ""
+msgstr "mescla d'origen"
 
 #: ../src/iop/colorize.c:293 ../src/iop/splittoning.c:426
 msgid "select tone color"
@@ -4272,45 +4275,45 @@ msgstr "seleccioneu el to de color"
 
 #: ../src/iop/colorize.c:473
 msgid "select the saturation shadow tone"
-msgstr ""
+msgstr "trieu la saturació de la coloració per les ombres"
 
 #: ../src/iop/colorize.c:485
 msgid "source mix"
-msgstr ""
+msgstr "mescla d'origen"
 
 #: ../src/iop/colorize.c:489
 msgid "lightness of color"
-msgstr ""
+msgstr "lluminositat del color"
 
 #: ../src/iop/colorize.c:490
 msgid "mix value of source lightness"
-msgstr ""
+msgstr "valor de mescla de la lluminositat d'origen"
 
 #: ../src/iop/colormapping.c:149
 msgid "color mapping"
-msgstr "mapa de color"
+msgstr "mapatge de color"
 
 #: ../src/iop/colormapping.c:168
 msgctxt "accel"
 msgid "acquire as source"
-msgstr ""
+msgstr "obté com a font"
 
 #: ../src/iop/colormapping.c:169
 msgctxt "accel"
 msgid "acquire as target"
-msgstr ""
+msgstr "obté com a destinació"
 
 #: ../src/iop/colormapping.c:1058
 msgid "source clusters:"
-msgstr ""
+msgstr "clusters d'origen"
 
 #: ../src/iop/colormapping.c:1068
 msgid "target clusters:"
-msgstr ""
+msgstr "clusters de destinació"
 
 #: ../src/iop/colormapping.c:1082
 msgid "acquire as source"
-msgstr ""
+msgstr "obté com a font"
 
 #: ../src/iop/colormapping.c:1084
 msgid "analyze this image as a source image"
@@ -4318,7 +4321,7 @@ msgstr "analitza aquesta imatge com a imatge font"
 
 #: ../src/iop/colormapping.c:1088
 msgid "acquire as target"
-msgstr ""
+msgstr "obté com a destinació"
 
 #: ../src/iop/colormapping.c:1090
 msgid "analyze this image as a target image"
@@ -4326,11 +4329,13 @@ msgstr "analitza aquesta imatge com a imatge de destinació"
 
 #: ../src/iop/colormapping.c:1095
 msgid "number of clusters"
-msgstr ""
+msgstr "nombre de clusters"
 
 #: ../src/iop/colormapping.c:1097
 msgid "number of clusters to find in image. value change resets all clusters"
 msgstr ""
+"nombre de clusters a trobar dins la imatge. canviar el valor reinicia tots "
+"els clusters"
 
 #: ../src/iop/colormapping.c:1102
 msgid "color dominance"
@@ -4341,6 +4346,8 @@ msgid ""
 "how clusters are mapped. low values: based on color proximity, high values: "
 "based on color dominance"
 msgstr ""
+"com es fa el mapatge dels clusters. valors baixos: basant-se en la "
+"proximitat del color, valors alts: basant-se en la dominant de color "
 
 #: ../src/iop/colormapping.c:1109
 msgid "histogram equalization"
@@ -4348,7 +4355,7 @@ msgstr "equalitzat de l'histograma"
 
 #: ../src/iop/colormapping.c:1110
 msgid "level of histogram equalization"
-msgstr ""
+msgstr "nivell d'equalització de l'histograma"
 
 #: ../src/iop/colorout.c:86
 msgid "output color profile"
@@ -4356,19 +4363,19 @@ msgstr "perfil de color de la sortida"
 
 #: ../src/iop/colorout.c:651
 msgid "unsupported output profile has been replaced by sRGB!"
-msgstr ""
+msgstr "el perfil de sortida no suportat ha estat substituït per sRGB"
 
 #: ../src/iop/colorout.c:792
 msgid "gamut check"
-msgstr ""
+msgstr "comprovació de gamut"
 
 #: ../src/iop/colorout.c:792
 msgid "soft proof"
-msgstr ""
+msgstr "soft proof"
 
 #: ../src/iop/colorout.c:910
 msgid "output intent"
-msgstr ""
+msgstr "prova de sortida"
 
 # FIXME
 #: ../src/iop/colorout.c:911 ../src/iop/colorout.c:918
@@ -4379,7 +4386,7 @@ msgstr "perceptiu"
 #: ../src/iop/colorout.c:912 ../src/iop/colorout.c:919
 #: ../src/libs/export.c:541
 msgid "relative colorimetric"
-msgstr ""
+msgstr "mètrica de color relativa"
 
 #: ../src/iop/colorout.c:913 ../src/iop/colorout.c:920
 #: ../src/libs/export.c:542
@@ -4390,11 +4397,11 @@ msgstr "saturació"
 #: ../src/iop/colorout.c:914 ../src/iop/colorout.c:921
 #: ../src/libs/export.c:543
 msgid "absolute colorimetric"
-msgstr ""
+msgstr "mètrica de color absoluta"
 
 #: ../src/iop/colorout.c:916
 msgid "display intent"
-msgstr ""
+msgstr "prova de pantalla"
 
 #: ../src/iop/colorout.c:934
 msgid "output profile"
@@ -4406,7 +4413,7 @@ msgstr "perfil de simulació (softproof)"
 
 #: ../src/iop/colorout.c:936
 msgid "display profile"
-msgstr ""
+msgstr "perfil de pantalla"
 
 #. the system display profile is only suitable for display purposes
 #: ../src/iop/colorout.c:947
@@ -4420,7 +4427,7 @@ msgstr "sRGB (per a web)"
 
 #: ../src/iop/colorout.c:983
 msgid "rendering intent"
-msgstr ""
+msgstr "prova de renderitzat"
 
 #: ../src/iop/colorout.c:984
 #, c-format
@@ -4440,12 +4447,12 @@ msgstr "perfils ICC de simulació (softproof) a %s/color/out or %s/color/out"
 #: ../src/iop/colorout.c:1026
 msgctxt "accel"
 msgid "toggle softproofing"
-msgstr ""
+msgstr "softproof"
 
 #: ../src/iop/colorout.c:1029
 msgctxt "accel"
 msgid "toggle gamutcheck"
-msgstr ""
+msgstr "comprova gamut"
 
 #: ../src/iop/colortransfer.c:105
 msgid "color transfer"
@@ -4467,10 +4474,13 @@ msgid ""
 "and is only here so you can switch it off\n"
 "and move to the new color mapping module."
 msgstr ""
+"aquest mòdul serà eliminat en el futur\n"
+"i és aquí només perquè pugueu desactivar-lo\n"
+"i fer servir el nou mòdul de mapatge de color."
 
 #: ../src/iop/colortransfer.c:674
 msgid "number of clusters to find in image"
-msgstr ""
+msgstr "nombre de clusters a trobar dins la imatge"
 
 #: ../src/iop/colortransfer.c:678
 msgid "acquire"
@@ -4905,11 +4915,11 @@ msgstr "sense girar"
 
 #: ../src/iop/flip.c:383
 msgid "flip horizontally"
-msgstr ""
+msgstr "capgira horitzontalment"
 
 #: ../src/iop/flip.c:385
 msgid "flip vertically"
-msgstr ""
+msgstr "capgira verticalment"
 
 #: ../src/iop/flip.c:387
 msgid "rotate by -90 degrees"
@@ -4952,7 +4962,7 @@ msgstr "gamma"
 
 #: ../src/iop/globaltonemap.c:101
 msgid "global tonemap"
-msgstr "mapejat de tons global"
+msgstr "mapatge de tons global"
 
 #: ../src/iop/globaltonemap.c:620
 msgid "operator"
@@ -4960,7 +4970,7 @@ msgstr "operador"
 
 #: ../src/iop/globaltonemap.c:626
 msgid "the global tonemap operator"
-msgstr "operador de mapa de tons global"
+msgstr "operador de mapatge de tons global"
 
 #: ../src/iop/globaltonemap.c:633
 msgid "bias"
@@ -4971,8 +4981,8 @@ msgid ""
 "the bias for tonemapper controls the linearity, the higher the more details "
 "in blacks"
 msgstr ""
-"la correcció (bias) pel mapa de tons controla la linealitat, com més gran, "
-"més detalls a les ombres"
+"la correcció (bias) pel mapatge de tons controla la linealitat, com més "
+"gran, més detalls a les ombres"
 
 #: ../src/iop/globaltonemap.c:642
 msgid "target"
@@ -4980,7 +4990,7 @@ msgstr "brillantor"
 
 #: ../src/iop/globaltonemap.c:643
 msgid "the target light for tonemapper specified as cd/m2"
-msgstr "la brillantor desitjada pel mapa de tons, en cd/m2"
+msgstr "la brillantor desitjada pel mapatge de tons, en cd/m2"
 
 #: ../src/iop/graduatednd.c:69
 msgid "neutral gray ND2 (soft)"
@@ -6116,7 +6126,7 @@ msgstr ""
 
 #: ../src/iop/tonemap.cc:79
 msgid "tone mapping"
-msgstr "mapejat de tons"
+msgstr "mapatge de tons"
 
 #: ../src/iop/tonemap.cc:98
 msgctxt "accel"
@@ -7456,7 +7466,7 @@ msgstr "vista en temps real"
 #: ../src/libs/live_view.c:171
 msgctxt "accel"
 msgid "flip horizontally"
-msgstr ""
+msgstr "capgira horitzontalment"
 
 #: ../src/libs/live_view.c:172
 msgctxt "accel"
@@ -7496,7 +7506,7 @@ msgstr "gira 90 graus en sentit horari"
 
 #: ../src/libs/live_view.c:295
 msgid "flip live view horizontally"
-msgstr "inverteix horitzontalment vista en temps real "
+msgstr "capgira horitzontalment vista en temps real "
 
 #: ../src/libs/live_view.c:316
 msgid "move focus point in (big steps)"
