@@ -1,9 +1,14 @@
 include(Prebuilt)
+include(LibFindMacros)
 
-if (CMAKE_SYSTEM_NAME STREQUAL "Linux")
-  include(FindPkgConfig)
-  pkg_check_modules(DBUSGLIB REQUIRED dbus-glib-1)
-endif (CMAKE_SYSTEM_NAME STREQUAL "Linux")
+libfind_pkg_check_modules(DBUSGLIB dbus-glib-1)
+foreach(i ${DBUSGLIB_LIBRARIES})
+  find_library(_dbusglib_LIBRARY NAMES ${i} HINTS ${DBUSGLIB_LIBRARY_DIRS})
+  list(APPEND DBUSGLIB_LIBRARY ${_dbusglib_LIBRARY})
+  unset(_dbusglib_LIBRARY CACHE)
+endforeach(i)
+set(DBUSGLIB_LIBRARIES ${DBUSGLIB_LIBRARY})
+unset(DBUSGLIB_LIBRARY CACHE)
 
 if (DBUSGLIB_FOUND)
   set(DBUSGLIB ON CACHE BOOL "Build with dbus-glib message bus support.")
