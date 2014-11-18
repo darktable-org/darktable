@@ -733,14 +733,16 @@ static void apply_preset(dt_iop_module_t *self)
         dt_lib_colorpicker_set_area(darktable.lib, 0.99);
 
       break;
-    default:
+    default: // camera WB presets
+    {
+      char makermodel[1024];
+      char *model = makermodel;
+      dt_colorspaces_get_makermodel_split(makermodel, sizeof(makermodel), &model,
+                                          self->dev->image_storage.exif_maker,
+                                          self->dev->image_storage.exif_model);
+
       for(int i = g->preset_num[pos]; i < wb_preset_count; i++)
       {
-        char makermodel[1024];
-        char *model = makermodel;
-        dt_colorspaces_get_makermodel_split(makermodel, sizeof(makermodel), &model,
-                                            self->dev->image_storage.exif_maker,
-                                            self->dev->image_storage.exif_model);
         if(!strcmp(wb_preset[i].make, makermodel) && !strcmp(wb_preset[i].model, model)
            && wb_preset[i].tuning == tune)
         {
@@ -748,7 +750,8 @@ static void apply_preset(dt_iop_module_t *self)
           break;
         }
       }
-      break;
+    }
+    break;
   }
   if(self->off) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(self->off), 1);
   gui_update_from_coeffs(self);
