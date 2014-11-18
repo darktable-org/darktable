@@ -24,8 +24,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 1.3\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2014-11-17 10:38+0100\n"
-"PO-Revision-Date: 2014-11-17 11:29+0100\n"
+"POT-Creation-Date: 2014-11-18 17:42+0100\n"
+"PO-Revision-Date: 2014-11-18 18:27+0100\n"
 "Last-Translator: Richard Levitte <richard@levitte.org>\n"
 "Language-Team: \n"
 "Language: sv\n"
@@ -203,7 +203,7 @@ msgstr "visa filmrulle"
 
 #: ../build/src/preferences_gen.h:1605
 msgid "enable the filmstrip in darkroom, tethering and map modes."
-msgstr "aktivera visning av filmrulle i mörkrums-, tjudrar samt kartläge."
+msgstr "aktivera visning av filmrulle i mörkrums-, tjudrings- samt kartläge."
 
 #: ../build/src/preferences_gen.h:1612
 msgid "maximum width of image drawing area"
@@ -897,7 +897,7 @@ msgstr "kan inte skapa lokal kopia när originalfilen inte går att nå."
 msgid "cannot create local copy."
 msgstr "kan inte skapa lokal kopia."
 
-#: ../src/common/image.c:1319 ../src/control/jobs/control_jobs.c:526
+#: ../src/common/image.c:1319 ../src/control/jobs/control_jobs.c:536
 msgid "cannot remove local copy when the original file is not accessible."
 msgstr "kan inte ta bort lokal kopia när originalfilen inte går att nå."
 
@@ -1086,127 +1086,127 @@ msgid_plural "importing %d images from camera"
 msgstr[0] "importerar %d bild från kamera"
 msgstr[1] "importerar %d bilder från kamera"
 
-#: ../src/control/jobs/control_jobs.c:115
+#: ../src/control/jobs/control_jobs.c:119
 msgid "failed to create film roll for destination directory, aborting move.."
 msgstr ""
 "misslyckades med att skapa filmrulle för målkatalogen, avbryter flytten.."
 
-#: ../src/control/jobs/control_jobs.c:218
+#: ../src/control/jobs/control_jobs.c:228
 #, c-format
 msgid "merging %d image"
 msgid_plural "merging %d images"
 msgstr[0] "slår samman %d bild"
 msgstr[1] "slår samman %d bilder"
 
-#: ../src/control/jobs/control_jobs.c:241
+#: ../src/control/jobs/control_jobs.c:251
 msgid "exposure bracketing only works on Bayer raw images"
 msgstr "exponeringstegning fungerar endast med råbilder av Bayer-slag"
 
-#: ../src/control/jobs/control_jobs.c:250 ../src/iop/exposure.c:234
+#: ../src/control/jobs/control_jobs.c:260 ../src/iop/exposure.c:234
 #, c-format
 msgid "failed to get raw buffer from image `%s'"
 msgstr "misslyckades med att läsa råbuffer från bild `%s'"
 
-#: ../src/control/jobs/control_jobs.c:267
+#: ../src/control/jobs/control_jobs.c:277
 msgid "images have to be of same size!"
 msgstr "bilderna måste ha samma storlek!"
 
-#: ../src/control/jobs/control_jobs.c:378
+#: ../src/control/jobs/control_jobs.c:388
 #, c-format
 msgid "wrote merged HDR `%s'"
 msgstr "sparade ihopslagen HDR bild `%s'"
 
-#: ../src/control/jobs/control_jobs.c:405
+#: ../src/control/jobs/control_jobs.c:415
 #, c-format
 msgid "duplicating %d image"
 msgid_plural "duplicating %d images"
 msgstr[0] "duplicerar %d bild"
 msgstr[1] "duplicerar %d bilder"
 
-#: ../src/control/jobs/control_jobs.c:432
+#: ../src/control/jobs/control_jobs.c:442
 #, c-format
 msgid "flipping %d image"
 msgid_plural "flipping %d images"
 msgstr[0] "vänd %d bild"
 msgstr[1] "vänd %d bilder"
 
-#: ../src/control/jobs/control_jobs.c:503
+#: ../src/control/jobs/control_jobs.c:513
 #, c-format
 msgid "removing %d image"
 msgid_plural "removing %d images"
 msgstr[0] "tar bort %d bild"
 msgstr[1] "tar bort %d bilder"
 
-#: ../src/control/jobs/control_jobs.c:577
+#: ../src/control/jobs/control_jobs.c:587
 #, c-format
 msgid "deleting %d image"
 msgid_plural "deleting %d images"
 msgstr[0] "raderar %d bild"
 msgstr[1] "raderar %d bilder"
 
-#: ../src/control/jobs/control_jobs.c:716
+#: ../src/control/jobs/control_jobs.c:726
 msgid "failed to parse GPX file"
 msgstr "lyckades inte tolka GPX-filen"
 
-#: ../src/control/jobs/control_jobs.c:783
+#: ../src/control/jobs/control_jobs.c:793
 #, c-format
 msgid "applied matched GPX location onto %d image(s)"
 msgstr "applicerar tillhörande GPX-läge på %d bild(er)"
 
-#: ../src/control/jobs/control_jobs.c:808
+#: ../src/control/jobs/control_jobs.c:818
 #, c-format
 msgid "moving %d image"
 msgstr "flyttar %d bild"
 
-#: ../src/control/jobs/control_jobs.c:808
+#: ../src/control/jobs/control_jobs.c:818
 #, c-format
 msgid "moving %d images"
 msgstr "flyttar %d bilder"
 
-#: ../src/control/jobs/control_jobs.c:814
+#: ../src/control/jobs/control_jobs.c:824
 #, c-format
 msgid "copying %d image"
 msgstr "kopierar %d bild"
 
-#: ../src/control/jobs/control_jobs.c:814
+#: ../src/control/jobs/control_jobs.c:824
 #, c-format
 msgid "copying %d images"
 msgstr "kopierar %d bilder"
 
-#: ../src/control/jobs/control_jobs.c:829
+#: ../src/control/jobs/control_jobs.c:839
 #, c-format
 msgid "creating local copy of %d image"
 msgid_plural "creating local copies of %d images"
 msgstr[0] "skapa lokala kopia för %d bild"
 msgstr[1] "skapa lokala kopior för %d bilder"
 
-#: ../src/control/jobs/control_jobs.c:831
+#: ../src/control/jobs/control_jobs.c:841
 #, c-format
 msgid "removing local copy of %d image"
 msgid_plural "removing local copies of %d images"
 msgstr[0] "ta bort %d bilds lokala kopia"
 msgstr[1] "ta bort %d bilders lokala kopior"
 
-#: ../src/control/jobs/control_jobs.c:900
+#: ../src/control/jobs/control_jobs.c:910
 #, c-format
 msgid "exporting %d image.."
 msgid_plural "exporting %d images.."
 msgstr[0] "exporterar %d bild..."
 msgstr[1] "exporterar %d bilder..."
 
-#: ../src/control/jobs/control_jobs.c:902
+#: ../src/control/jobs/control_jobs.c:912
 #, c-format
 msgid "exporting %d image to %s"
 msgid_plural "exporting %d images to %s"
 msgstr[0] "exporterar %d bild till %s"
 msgstr[1] "exporterar %d bilder till %s"
 
-#: ../src/control/jobs/control_jobs.c:967 ../src/views/darkroom.c:461
+#: ../src/control/jobs/control_jobs.c:977 ../src/views/darkroom.c:461
 #, c-format
 msgid "image `%s' is currently unavailable"
 msgstr "`%s' är inte tillgänglig"
 
-#: ../src/control/jobs/control_jobs.c:1066
+#: ../src/control/jobs/control_jobs.c:1077
 #, c-format
 msgid "do you really want to remove %d selected image from the collection?"
 msgid_plural ""
@@ -1214,11 +1214,11 @@ msgid_plural ""
 msgstr[0] "vill du verkligen ta bort %d vald bild från samlingen?"
 msgstr[1] "vill du verkligen ta bort %d valda bilder från samlingen?"
 
-#: ../src/control/jobs/control_jobs.c:1069
+#: ../src/control/jobs/control_jobs.c:1080
 msgid "remove images?"
 msgstr "ta bort bilder?"
 
-#: ../src/control/jobs/control_jobs.c:1093
+#: ../src/control/jobs/control_jobs.c:1109
 #, c-format
 msgid "do you really want to physically delete %d selected image from disk?"
 msgid_plural ""
@@ -1226,12 +1226,12 @@ msgid_plural ""
 msgstr[0] "vill du verkligen radera %d vald bilder fysiskt från disk?"
 msgstr[1] "vill du verkligen radera %d valda bilder fysiskt från disk?"
 
-#: ../src/control/jobs/control_jobs.c:1096
+#: ../src/control/jobs/control_jobs.c:1112
 msgid "delete images?"
 msgstr "radera bilder?"
 
-#: ../src/control/jobs/control_jobs.c:1114
-#: ../src/control/jobs/control_jobs.c:1170 ../src/imageio/storage/disk.c:96
+#: ../src/control/jobs/control_jobs.c:1135
+#: ../src/control/jobs/control_jobs.c:1190 ../src/imageio/storage/disk.c:96
 #: ../src/imageio/storage/disk.c:164 ../src/imageio/storage/gallery.c:109
 #: ../src/imageio/storage/gallery.c:176 ../src/imageio/storage/latex.c:109
 #: ../src/imageio/storage/latex.c:176 ../src/libs/styles.c:240
@@ -1239,7 +1239,7 @@ msgstr "radera bilder?"
 msgid "select directory"
 msgstr "välj katalog"
 
-#: ../src/control/jobs/control_jobs.c:1137
+#: ../src/control/jobs/control_jobs.c:1158
 #, c-format
 msgid ""
 "do you really want to physically move the %d selected image to %s?\n"
@@ -1254,13 +1254,13 @@ msgstr[1] ""
 "vill du verkligen flytta de %d valda bilderna fysiskt till %s?\n"
 "(alla ej valda kopior kommer att flyttas med)"
 
-#: ../src/control/jobs/control_jobs.c:1141
+#: ../src/control/jobs/control_jobs.c:1162
 msgid "move image?"
 msgid_plural "move images?"
 msgstr[0] "flytta bild?"
 msgstr[1] "flytta bilder?"
 
-#: ../src/control/jobs/control_jobs.c:1193
+#: ../src/control/jobs/control_jobs.c:1213
 #, c-format
 msgid "do you really want to physically copy the %d selected image to %s?"
 msgid_plural "do you really want to physically copy %d selected images to %s?"
@@ -1268,27 +1268,27 @@ msgstr[0] "vill du verkligen kopiera den %d valda bilden fysiskt till %s?"
 msgstr[1] ""
 "vill du verkligen kopiera de %d valda bilderna fysiskt från till %s?"
 
-#: ../src/control/jobs/control_jobs.c:1196
+#: ../src/control/jobs/control_jobs.c:1216
 msgid "copy image?"
 msgid_plural "copy images?"
 msgstr[0] "kopiera bild?"
 msgstr[1] "kopiera bilder?"
 
-#: ../src/control/jobs/control_jobs.c:1255
+#: ../src/control/jobs/control_jobs.c:1270
 #, c-format
 msgid "failed to get parameters from storage module `%s', aborting export.."
 msgstr ""
 "misslyckades att hämta parametrar från lagringsmodul `%s', avbryter "
 "exporten.."
 
-#: ../src/control/jobs/control_jobs.c:1294
+#: ../src/control/jobs/control_jobs.c:1309
 #, c-format
 msgid "adding time offset to %d image"
 msgid_plural "adding time offset to %d images"
 msgstr[0] "lägger till tidsförskjutning på %d bild"
 msgstr[1] "lägger till tidsförskjutning på %d bilder"
 
-#: ../src/control/jobs/control_jobs.c:1314
+#: ../src/control/jobs/control_jobs.c:1329
 #, c-format
 msgid "added time offset to %d image(s)"
 msgstr "la till tidsförskjutning på %d bild(er)"
@@ -2680,7 +2680,7 @@ msgstr "jp2"
 msgid "J2K"
 msgstr "J2K"
 
-#: ../src/imageio/format/j2k.c:623 ../src/imageio/format/jpeg.c:546
+#: ../src/imageio/format/j2k.c:623 ../src/imageio/format/jpeg.c:562
 #: ../src/imageio/format/webp.c:293 ../src/libs/camera.c:573
 msgid "quality"
 msgstr "kvalitet"
@@ -2701,7 +2701,7 @@ msgstr "Cinema2K, 48 bilder/s"
 msgid "Cinema4K, 24FPS"
 msgstr "Cinema4K, 24 bilder/s"
 
-#: ../src/imageio/format/jpeg.c:526
+#: ../src/imageio/format/jpeg.c:542
 msgid "JPEG (8-bit)"
 msgstr "JPEG (8-bit)"
 
@@ -6537,7 +6537,7 @@ msgstr "visa inställning i centrervyn"
 
 #: ../src/libs/camera.c:218
 msgid "connection with camera lost, exiting tethering mode"
-msgstr "anslutningen med kameran avbruten, avslutar tjudrat läge"
+msgstr "anslutningen med kameran avbruten, avslutar tjudringsläge"
 
 #: ../src/libs/camera.c:339
 msgid "battery"
@@ -8798,7 +8798,7 @@ msgstr "start och stopp"
 
 #: ../src/views/tethering.c:90
 msgid "tethering"
-msgstr "tjudrad"
+msgstr "tjudring"
 
 #: ../src/views/tethering.c:175
 #, c-format
@@ -8807,7 +8807,7 @@ msgstr "ny session skapad '%s'"
 
 #: ../src/views/tethering.c:280
 msgid "no camera with tethering support available for use..."
-msgstr "ingen kamera ansluten som stödjer tjudrad fångst för användning..."
+msgstr "ingen kamera som stödjer tjudring finns tillgänglig..."
 
 #~ msgid "flags"
 #~ msgstr "status"
