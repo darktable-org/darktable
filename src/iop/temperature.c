@@ -39,6 +39,7 @@ DT_MODULE_INTROSPECTION(2, dt_iop_temperature_params_t)
 
 #define DT_IOP_LOWEST_TEMPERATURE 2000
 #define DT_IOP_HIGHEST_TEMPERATURE 23000
+#define DT_IOP_NUM_OF_STD_TEMP_PRESETS 2
 
 typedef struct dt_iop_temperature_params_t
 {
@@ -394,7 +395,8 @@ void gui_update(struct dt_iop_module_t *self)
   dt_bauhaus_combobox_clear(g->presets);
   dt_bauhaus_combobox_add(g->presets, _("camera white balance"));
   dt_bauhaus_combobox_add(g->presets, _("spot white balance"));
-  g->preset_cnt = 2;
+  g->preset_cnt = DT_IOP_NUM_OF_STD_TEMP_PRESETS;
+
   const char *wb_name = NULL;
   char makermodel[1024];
   char *model = makermodel;
@@ -734,7 +736,7 @@ static void presets_changed(GtkWidget *widget, gpointer user_data)
   apply_preset(self);
   const int pos = dt_bauhaus_combobox_get(widget);
   dt_iop_temperature_gui_data_t *g = (dt_iop_temperature_gui_data_t *)self->gui_data;
-  gtk_widget_set_sensitive(g->finetune, pos >= 2);
+  gtk_widget_set_sensitive(g->finetune, pos >= DT_IOP_NUM_OF_STD_TEMP_PRESETS);
 }
 
 static void finetune_changed(GtkWidget *widget, gpointer user_data)
