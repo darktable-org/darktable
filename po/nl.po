@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2014-11-17 19:49+0100\n"
-"PO-Revision-Date: 2014-11-17 20:44+0100\n"
+"PO-Revision-Date: 2014-11-18 11:57+0100\n"
 "Last-Translator: Ger Siemerink <g.siemerink@gmail.com>\n"
 "Language-Team: Ger Siemerink <g.siemerink@gmail.com>\n"
 "Language: nl_NL\n"
@@ -1633,7 +1633,7 @@ msgstr "normaal (verouderd)"
 #: ../src/develop/blend_gui.c:1533
 msgctxt "blendmode"
 msgid "unbounded (deprecated)"
-msgstr "ongebonden (verouderd)"
+msgstr "onbegrensd (verouderd)"
 
 #: ../src/develop/blend_gui.c:1542
 msgid "uniformly"
@@ -2268,15 +2268,15 @@ msgstr "$(LABELS) - kleurlabels"
 
 #: ../src/gui/gtkentry.c:216
 msgid "$(PICTURES_FOLDER) - pictures folder"
-msgstr "$(PICTURES_FOLDER) - map afbeeldingen"
+msgstr "$(PICTURES_FOLDER) - afbeeldingsmap"
 
 #: ../src/gui/gtkentry.c:217
 msgid "$(HOME) - home folder"
-msgstr "$(HOME) - map 'gebruiker'"
+msgstr "$(HOME) - persoonlijk map"
 
 #: ../src/gui/gtkentry.c:218
 msgid "$(DESKTOP) - desktop folder"
-msgstr "$(DESKTOP) - Bureaublad"
+msgstr "$(DESKTOP) - bureaublad"
 
 #: ../src/gui/gtkentry.c:219
 msgid "$(TITLE) - title from metadata"
@@ -3151,7 +3151,6 @@ msgid "mix"
 msgstr "aanmaak"
 
 #: ../src/iop/atrous.c:784
-#, fuzzy
 msgctxt "eq_preset"
 msgid "coarse"
 msgstr "grof"
