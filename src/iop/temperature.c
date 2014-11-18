@@ -416,8 +416,7 @@ void gui_update(struct dt_iop_module_t *self)
       }
     }
 
-  if(fabsf(p->coeffs[0] - fp->coeffs[0]) + fabsf(p->coeffs[1] - fp->coeffs[1])
-     + fabsf(p->coeffs[2] - fp->coeffs[2]) < 0.01)
+  if(memcmp(p->coeffs, fp->coeffs, 3 * sizeof(float)) == 0)
     dt_bauhaus_combobox_set(g->presets, 0);
   else
     dt_bauhaus_combobox_set(g->presets, -1);
