@@ -62,6 +62,17 @@ parse_args()
     done
 }
 
+check_tools()
+{
+    for _tool in convert dcraw exiftool ; do
+        _tpath="$(which $_tool)"
+        if [ ! -f "$_tpath" ] || [ ! -x "$_tpath" ] ; then
+            printf "error: '%s' not found.\n" "$_tool"
+            exit 1
+        fi
+    done
+}
+
 setup_sources()
 {
     _raw="$1"
@@ -125,6 +136,9 @@ generate_ppm_jpeg()
 #############################################################################
 # Script starts here
 #############################################################################
+
+# check tools availability
+check_tools
 
 # parse arguments
 parse_args $@
