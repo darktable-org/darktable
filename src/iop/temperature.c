@@ -741,10 +741,13 @@ static void apply_preset(dt_iop_module_t *self)
                                           self->dev->image_storage.exif_maker,
                                           self->dev->image_storage.exif_model);
 
-      for(int i = g->preset_num[pos]; i < wb_preset_count; i++)
+      // look through all variants of this preset, with different tuning
+      for(int i = g->preset_num[pos];
+          !strcmp(wb_preset[i].make, makermodel) && !strcmp(wb_preset[i].model, model)
+              && !strcmp(wb_preset[i].name, wb_preset[g->preset_num[pos]].name);
+          i++)
       {
-        if(!strcmp(wb_preset[i].make, makermodel) && !strcmp(wb_preset[i].model, model)
-           && wb_preset[i].tuning == tune)
+        if(wb_preset[i].tuning == tune)
         {
           for(int k = 0; k < 3; k++) p->coeffs[k] = wb_preset[i].channel[k];
           break;
