@@ -9,7 +9,7 @@ msgstr ""
 "Project-Id-Version: darktable 0.6.1~rc\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2014-11-15 14:30+0100\n"
-"PO-Revision-Date: 2014-11-17 23:26+0100\n"
+"PO-Revision-Date: 2014-11-18 11:31+0100\n"
 "Last-Translator: Josep V. Moragues <josepvm@arrakis.es>\n"
 "Language-Team: Catalan\n"
 "Language: ca\n"
@@ -4496,7 +4496,7 @@ msgstr "aplica"
 
 #: ../src/iop/colortransfer.c:685
 msgid "apply previously analyzed image look to this image"
-msgstr ""
+msgstr "aplica a aquesta imatge l'aspecte de la imatge abans analitzada "
 
 #: ../src/iop/colorzones.c:120
 msgid "color zones"
@@ -4528,7 +4528,7 @@ msgstr "selecciona segons"
 
 #: ../src/iop/colorzones.c:1072
 msgid "choose selection criterion, will be the abscissa in the graph"
-msgstr ""
+msgstr "trieu el criteri de selecció, serà la abscissa de la gràfica"
 
 #: ../src/iop/defringe.c:70
 msgid "defringe"
@@ -4550,7 +4550,7 @@ msgstr "mitjana local (lent)"
 #. 1
 #: ../src/iop/defringe.c:438
 msgid "static threshold (fast)"
-msgstr ""
+msgstr "llindar estàtic (ràpid)"
 
 #. 2
 #: ../src/iop/defringe.c:439
@@ -4564,6 +4564,14 @@ msgid ""
 "more desaturation where required\n"
 " - static: fast, only uses the threshold as a static limit"
 msgstr ""
+"mètode de protecció del color:\n"
+"- mitjana global: ràpid, la previsualització podria ser poc acurada en grans "
+"ampliacions; pot ser que protegeixi poc o massa la saturació, si es compara "
+"amb la mitjana local\n"
+"- mitjana local: més lent, pot protegir millor la saturació fent servir els "
+"píxels propers com a referència de color, permetent més dessaturació quan "
+"calgui\n"
+"- estàtic: ràpid, només fa servir el llindar com a límit estàtic"
 
 #: ../src/iop/defringe.c:444
 msgid "edge detection radius"
@@ -4627,6 +4635,9 @@ msgid ""
 "set to 0.0 to switch off.\n"
 "set to 1.0 to ignore edges."
 msgstr ""
+"llindar per mitjana sensible a les vores.\n"
+"ajusteu a 0.0 per desactivar-lo.\n"
+"ajusteu a 1.0 per ignorar les vores."
 
 #: ../src/iop/demosaic.c:2197
 msgid "edge threshold"
@@ -4717,7 +4728,7 @@ msgstr "ondetes (wavelets)"
 
 #: ../src/iop/denoiseprofile.c:1731
 msgid "profile used for variance stabilization"
-msgstr ""
+msgstr "perfil emprat per estabilitzar la variància"
 
 #: ../src/iop/denoiseprofile.c:1732
 msgid ""
@@ -4731,6 +4742,7 @@ msgstr ""
 #: ../src/iop/denoiseprofile.c:1733
 msgid "radius of the patches to match. increase for more sharpness"
 msgstr ""
+"radi de les mostres a encaixar. Incrementeu-lo per resultats més nítids"
 
 #: ../src/iop/denoiseprofile.c:1734
 msgid "finetune denoising strength"
@@ -4738,16 +4750,16 @@ msgstr "ajust fi d'intensitat del filtre de soroll"
 
 #: ../src/iop/dither.c:97 ../src/iop/vignette.c:1202
 msgid "dithering"
-msgstr ""
+msgstr "tramat (dithering)"
 
 #. add the preset.
 #: ../src/iop/dither.c:123
 msgid "dither"
-msgstr ""
+msgstr "trama"
 
 #: ../src/iop/dither.c:558
 msgid "random"
-msgstr ""
+msgstr "aleatori"
 
 #: ../src/iop/dither.c:559
 msgid "floyd-steinberg 1-bit B&W"
@@ -4775,11 +4787,11 @@ msgstr "radi pel pas de difuminat"
 
 #: ../src/iop/dither.c:580
 msgid "the gradient range where to apply random dither"
-msgstr ""
+msgstr "rang del degradat on aplicar trama aleatòria"
 
 #: ../src/iop/dither.c:581
 msgid "gradient range"
-msgstr ""
+msgstr "rang de degradat"
 
 #: ../src/iop/dither.c:588
 msgid "damping level of random dither"
@@ -4898,12 +4910,12 @@ msgstr ""
 
 #: ../src/iop/exposure.c:1018
 msgid "computed EC: "
-msgstr ""
+msgstr "Corr. exp. calculada:"
 
 #. This gets filled in by process
 #: ../src/iop/exposure.c:1022
 msgid "what exposure correction has actually been used"
-msgstr ""
+msgstr "la correcció d'exposició aplicada efectivament"
 
 #: ../src/iop/flip.c:376 ../src/iop/flip.c:377
 msgid "autodetect"
@@ -5118,11 +5130,11 @@ msgstr "reconstrucció d'altes llums"
 
 #: ../src/iop/highlights.c:712
 msgid "clip highlights"
-msgstr ""
+msgstr "retalla altes llums"
 
 #: ../src/iop/highlights.c:713
 msgid "reconstruct in LCh"
-msgstr ""
+msgstr "reconstrueix en LCh"
 
 #: ../src/iop/highlights.c:714
 msgid "reconstruct color"
@@ -5137,6 +5149,8 @@ msgid ""
 "manually adjust the clipping threshold against magenta highlights (you "
 "shouldn't ever need to touch this)"
 msgstr ""
+"ajusta manualment el llindar de tall, per prevenir tonalitats magenta a les "
+"altes llums (no hauria de ser necessari tocar això)"
 
 #: ../src/iop/highlights.c:720
 msgid "clipping threshold"
@@ -5663,13 +5677,13 @@ msgstr ""
 
 #: ../src/iop/monochrome.c:558
 msgid "how much to keep highlights"
-msgstr ""
+msgstr "grau de preservació d'altes llums"
 
 #. Highlights
 #: ../src/iop/monochrome.c:559 ../src/iop/shadhi.c:749
 #: ../src/iop/splittoning.c:614
 msgid "highlights"
-msgstr ""
+msgstr "altes llums"
 
 #: ../src/iop/nlmeans.c:81
 msgid "denoise (non-local means)"
@@ -5687,7 +5701,7 @@ msgstr "crominància"
 
 #: ../src/iop/nlmeans.c:721
 msgid "radius of the patches to match"
-msgstr ""
+msgstr "radi de les mostres a encaixar"
 
 #: ../src/iop/nlmeans.c:723
 msgid "how much to smooth brightness"
@@ -5806,7 +5820,7 @@ msgstr ""
 
 #: ../src/iop/shadhi.c:155
 msgid "shadows and highlights"
-msgstr ""
+msgstr "llums i ombres"
 
 #: ../src/iop/shadhi.c:229
 msgctxt "accel"
@@ -5840,15 +5854,15 @@ msgstr "ombres"
 
 #: ../src/iop/shadhi.c:751 ../src/iop/splittoning.c:631
 msgid "compress"
-msgstr "comprimeix"
+msgstr "compressió"
 
 #: ../src/iop/shadhi.c:752
 msgid "shadows color adjustment"
-msgstr ""
+msgstr "ajusta color d¡ombres"
 
 #: ../src/iop/shadhi.c:753
 msgid "highlights color adjustment"
-msgstr ""
+msgstr "ajusta color de llums"
 
 #: ../src/iop/shadhi.c:769
 msgid "correct shadows"
@@ -5860,25 +5874,27 @@ msgstr "corregeix altes llums"
 
 #: ../src/iop/shadhi.c:771 ../src/iop/tonemap.cc:316
 msgid "spatial extent"
-msgstr ""
+msgstr "extensió espacial"
 
 #: ../src/iop/shadhi.c:772
 msgid "filter to use for softening. bilateral avoids halos"
-msgstr ""
+msgstr "filtre emprat per suavitzar. bilateral evita halos"
 
 #: ../src/iop/shadhi.c:773
 msgid ""
 "compress the effect on shadows/highlights and\n"
 "preserve midtones"
 msgstr ""
+"comprimeix l'efecte en llums/ombres i\n"
+"preserva els tons mitjos"
 
 #: ../src/iop/shadhi.c:774
 msgid "adjust saturation of shadows"
-msgstr ""
+msgstr "ajusta saturació d'ombres"
 
 #: ../src/iop/shadhi.c:775
 msgid "adjust saturation of highlights"
-msgstr ""
+msgstr "ajusta saturació d'altes llums"
 
 #: ../src/iop/sharpen.c:72
 msgctxt "sharpen"
@@ -5899,7 +5915,7 @@ msgstr "quantitat"
 
 #: ../src/iop/sharpen.c:591
 msgid "spatial extent of the unblurring"
-msgstr ""
+msgstr "extensió espacial del des-difuminat"
 
 #: ../src/iop/sharpen.c:594
 msgid "strength of the sharpen"
@@ -5907,15 +5923,15 @@ msgstr "intensitat de l'efecte enfoc"
 
 #: ../src/iop/sharpen.c:597
 msgid "threshold to activate sharpen"
-msgstr ""
+msgstr "llindar per activar l'enfocament"
 
 #: ../src/iop/soften.c:88
 msgid "soften"
-msgstr ""
+msgstr "suavitza"
 
 #: ../src/iop/soften.c:565
 msgid "the size of blur"
-msgstr ""
+msgstr "mida del difuminat"
 
 #: ../src/iop/soften.c:573
 msgid "the saturation of blur"
@@ -5923,7 +5939,7 @@ msgstr "saturació del difuminat"
 
 #: ../src/iop/soften.c:581
 msgid "the brightness of blur"
-msgstr ""
+msgstr "brillantor del difuminat"
 
 #: ../src/iop/soften.c:590
 msgid "the mix of effect"
@@ -5931,7 +5947,7 @@ msgstr "barreja de l'efecte"
 
 #: ../src/iop/splittoning.c:85
 msgid "split toning"
-msgstr ""
+msgstr "split toning"
 
 #: ../src/iop/splittoning.c:101
 msgctxt "accel"
@@ -5978,7 +5994,7 @@ msgstr "platinotípia autèntica"
 #. compress : 0
 #: ../src/iop/splittoning.c:160
 msgid "chocolate brown"
-msgstr ""
+msgstr "color xocolata"
 
 #: ../src/iop/splittoning.c:588
 msgid "select the saturation tone"
@@ -5990,13 +6006,15 @@ msgstr "balanç"
 
 #: ../src/iop/splittoning.c:635
 msgid "the balance of center of splittoning"
-msgstr ""
+msgstr "balanç del centre del split toning"
 
 #: ../src/iop/splittoning.c:636
 msgid ""
 "compress the effect on highlights/shadows and\n"
 "preserve midtones"
 msgstr ""
+"comprimeix l'efecte en llums/ombres i\n"
+"preserva els tons mitjos"
 
 #: ../src/iop/spots.c:54
 msgid "spot removal"
@@ -6166,7 +6184,7 @@ msgstr ""
 
 #: ../src/iop/velvia.c:357
 msgid "how much to spare highlights and shadows"
-msgstr ""
+msgstr "grau de preservació de llums i ombres "
 
 #: ../src/iop/vibrance.c:69 ../src/iop/vibrance.c:256
 msgid "vibrance"
