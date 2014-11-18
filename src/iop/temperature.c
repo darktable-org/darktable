@@ -723,7 +723,7 @@ static void apply_preset(dt_iop_module_t *self)
     case 0: // camera wb
       for(int k = 0; k < 3; k++) p->coeffs[k] = fp->coeffs[k];
       break;
-    case 1: // spot wb, exposure callback will set p->coeffs.
+    case 1: // spot wb, expose callback will set p->coeffs.
       for(int k = 0; k < 3; k++) p->coeffs[k] = fp->coeffs[k];
       dt_iop_request_focus(self);
       self->request_color_pick = DT_REQUEST_COLORPICK_MODULE;
