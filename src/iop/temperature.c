@@ -756,7 +756,7 @@ presets_changed (GtkWidget *widget, gpointer user_data)
   apply_preset(self);
   const int pos = dt_bauhaus_combobox_get(widget);
   dt_iop_temperature_gui_data_t *g = (dt_iop_temperature_gui_data_t *)self->gui_data;
-  gtk_widget_set_sensitive(g->finetune, pos > 2);
+  gtk_widget_set_sensitive(g->finetune, pos >= 2);
 }
 
 static void

@@ -75,18 +75,22 @@ static void dt_control_image_enumerator_job_film_init(dt_control_image_enumerato
 /* enumerator of selected images */
 static void dt_control_image_enumerator_job_selected_init(dt_control_image_enumerator_t *t)
 {
-  GList *list = NULL;
+  t->index = 0;
   int imgid = dt_view_get_image_to_act_on();
 
-  if(imgid < 0) {
+  if(imgid < 0)
     /* get sorted list of selected images */
     t->index = dt_collection_get_selected(darktable.collection, -1);
-  }
-  else {
+  else
     /* Create a list with only one image */
-    list = g_list_append (list, GINT_TO_POINTER(imgid));
-    t->index = list;
-  }
+    t->index = g_list_append (t->index, GINT_TO_POINTER(imgid));
+}
+
+static void dt_control_image_enumerator_job_selected_cleanup(dt_control_image_enumerator_t *t)
+{
+  while(t->index)
+    t->index = g_list_delete_link(t->index, t->index);
+  g_list_free(t->index);
 }
 
 static int32_t _generic_dt_control_fileop_images_job_run(dt_job_t *job,
@@ -151,6 +155,12 @@ static dt_job_t * dt_control_generic_images_job_create(dt_job_execute_callback e
   params->flag = flag;
   params->data = data;
   return job;
+}
+
+static void dt_control_generic_images_job_cleanup(dt_job_t *job)
+{
+  dt_control_image_enumerator_job_selected_cleanup(dt_control_job_get_params(job));
+  dt_control_job_dispose(job);
 }
 
 static int32_t dt_control_write_sidecar_files_job_run(dt_job_t *job)
@@ -1049,13 +1059,14 @@ void dt_control_flip_images(const int32_t cw)
 
 void dt_control_remove_images()
 {
+  // get all selected images now, to avoid the set changing during ui interaction
+  dt_job_t *job = dt_control_generic_images_job_create(&dt_control_remove_images_job_run, "remove images", 0, NULL);
   if(dt_conf_get_bool("ask_before_remove"))
   {
     GtkWidget *dialog;
     GtkWidget *win = dt_ui_main_window(darktable.gui->ui);
 
     int number = dt_collection_get_selected_count(darktable.collection);
-
     // Do not show the dialog if no image is selected:
     if(number == 0) return;
 
@@ -1069,20 +1080,25 @@ void dt_control_remove_images()
     gtk_window_set_title(GTK_WINDOW(dialog), _("remove images?"));
     gint res = gtk_dialog_run(GTK_DIALOG(dialog));
     gtk_widget_destroy(dialog);
-    if(res != GTK_RESPONSE_YES) return;
+    if(res != GTK_RESPONSE_YES)
+    {
+      dt_control_generic_images_job_cleanup(job);
+      return;
+    }
   }
-  dt_control_add_job(darktable.control, DT_JOB_QUEUE_USER_FG, dt_control_generic_images_job_create(&dt_control_remove_images_job_run, "remove images", 0, NULL));
+  dt_control_add_job(darktable.control, DT_JOB_QUEUE_USER_FG, job);
 }
 
 void dt_control_delete_images()
 {
+  // first get all selected images, to avoid the set changing during ui interaction
+  dt_job_t *job = dt_control_generic_images_job_create(&dt_control_delete_images_job_run, "delete images", 0, NULL);
   if(dt_conf_get_bool("ask_before_delete"))
   {
     GtkWidget *dialog;
     GtkWidget *win = dt_ui_main_window(darktable.gui->ui);
 
     int number = dt_collection_get_selected_count(darktable.collection);
-
     // Do not show the dialog if no image is selected:
     if(number == 0) return;
 
@@ -1096,9 +1112,13 @@ void dt_control_delete_images()
     gtk_window_set_title(GTK_WINDOW(dialog), _("delete images?"));
     gint res = gtk_dialog_run(GTK_DIALOG(dialog));
     gtk_widget_destroy(dialog);
-    if(res != GTK_RESPONSE_YES) return;
+    if(res != GTK_RESPONSE_YES)
+    {
+      dt_control_generic_images_job_cleanup(job);
+      return;
+    }
   }
-  dt_control_add_job(darktable.control, DT_JOB_QUEUE_USER_FG, dt_control_generic_images_job_create(&dt_control_delete_images_job_run, "delete images", 0, NULL));
+  dt_control_add_job(darktable.control, DT_JOB_QUEUE_USER_FG, job);
 }
 
 void dt_control_move_images()
@@ -1110,6 +1130,7 @@ void dt_control_move_images()
 
   // Do not show the dialog if no image is selected:
   if(number == 0) return;
+  dt_job_t *job = dt_control_generic_images_job_create(&dt_control_move_images_job_run, "move images", 0, dir);
 
   GtkWidget *filechooser = gtk_file_chooser_dialog_new (_("select directory"),
                            GTK_WINDOW (win),
@@ -1147,14 +1168,12 @@ void dt_control_move_images()
       goto abort;
   }
 
-  dt_control_add_job(darktable.control, DT_JOB_QUEUE_USER_FG,
-                     dt_control_generic_images_job_create(&dt_control_move_images_job_run, "move images", 0, dir)
-                    );
+  dt_control_add_job(darktable.control, DT_JOB_QUEUE_USER_FG, job);
   return;
 
 abort:
   g_free(dir);
-  return;
+  dt_control_generic_images_job_cleanup(job);
 }
 
 void dt_control_copy_images()
@@ -1166,6 +1185,7 @@ void dt_control_copy_images()
 
   // Do not show the dialog if no image is selected:
   if(number == 0) return;
+  dt_job_t *job = dt_control_generic_images_job_create(&dt_control_copy_images_job_run, "copy images", 0, dir);
 
   GtkWidget *filechooser = gtk_file_chooser_dialog_new (_("select directory"),
                            GTK_WINDOW (win),
@@ -1202,15 +1222,12 @@ void dt_control_copy_images()
       goto abort;
   }
 
-  dt_control_add_job(darktable.control, DT_JOB_QUEUE_USER_FG,
-                     dt_control_generic_images_job_create(&dt_control_copy_images_job_run, "copy images", 0, dir)
-                    );
-
+  dt_control_add_job(darktable.control, DT_JOB_QUEUE_USER_FG, job);
   return;
 
 abort:
   g_free(dir);
-  return;
+  dt_control_generic_images_job_cleanup(job);
 }
 
 void dt_control_set_local_copy_images()
@@ -1218,7 +1235,6 @@ void dt_control_set_local_copy_images()
   dt_control_add_job(darktable.control, DT_JOB_QUEUE_USER_FG,
                      dt_control_generic_images_job_create(&dt_control_local_copy_images_job_run, "local copy images", 1, NULL)
                     );
-  return;
 }
 
 void dt_control_reset_local_copy_images()
@@ -1226,7 +1242,6 @@ void dt_control_reset_local_copy_images()
   dt_control_add_job(darktable.control, DT_JOB_QUEUE_USER_FG,
                      dt_control_generic_images_job_create(&dt_control_local_copy_images_job_run, "local copy images", 0, NULL)
                     );
-  return;
 }
 
 void dt_control_export(GList *imgid_list, int max_width, int max_height, int format_index, int storage_index, gboolean high_quality, char *style)
