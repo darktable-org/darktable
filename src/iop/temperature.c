@@ -188,6 +188,22 @@ static void convert_rgb_to_k(float rgb[3], float *temp, float *tint)
   if(*tint > 2.5f) *tint = 2.5f;
 }
 
+/*
+ * interpolate values from p1 and p2 into out.
+ */
+void dt_wb_preset_interpolate(const wb_data *const p1, // the smaller tuning
+                              const wb_data *const p2, // the larger tuning (can't be == p1)
+                              wb_data *out)            // has tuning initialized
+{
+  // stupid linear interpolation.
+  // to be confirmed.
+  const double t = CLAMP((double)(out->tuning - p1->tuning) / (double)(p2->tuning - p1->tuning), 0.0, 1.0);
+  for(int k = 0; k < 3; k++)
+  {
+    out->channel[k] = (1.0 - t) * p1->channel[k] + t * p2->channel[k];
+  }
+}
+
 static int FC(const int row, const int col, const unsigned int filters)
 {
   return filters >> (((row << 1 & 14) + (col & 1)) << 1) & 3;
@@ -741,6 +757,7 @@ static void apply_preset(dt_iop_module_t *self)
                                           self->dev->image_storage.exif_maker,
                                           self->dev->image_storage.exif_model);
 
+      gboolean found = FALSE;
       // look through all variants of this preset, with different tuning
       for(int i = g->preset_num[pos];
           !strcmp(wb_preset[i].make, makermodel) && !strcmp(wb_preset[i].model, model)
@@ -749,9 +766,42 @@ static void apply_preset(dt_iop_module_t *self)
       {
         if(wb_preset[i].tuning == tune)
         {
+          // got exact match!
           for(int k = 0; k < 3; k++) p->coeffs[k] = wb_preset[i].channel[k];
+          found = TRUE;
           break;
         }
+      }
+
+      if(!found)
+      {
+        // ok, we haven't found exact match, need to interpolate
+
+        // let's find 2 most closest tunings with needed_tuning in-between
+        int min_id = INT_MIN, max_id = INT_MIN;
+
+        // look through all variants of this preset, with different tuning, starting from second entry (if
+        // any)
+        int i = g->preset_num[pos] + 1;
+        while(!strcmp(wb_preset[i].make, makermodel) && !strcmp(wb_preset[i].model, model)
+              && !strcmp(wb_preset[i].name, wb_preset[g->preset_num[pos]].name))
+        {
+          if(wb_preset[i - 1].tuning < tune && wb_preset[i].tuning > tune)
+          {
+            min_id = i - 1;
+            max_id = i;
+            break;
+          }
+
+          i++;
+        }
+
+        // have we found enough good data?
+        if(min_id == INT_MIN || max_id == INT_MIN || min_id == max_id) break; // hysteresis
+
+        wb_data interpolated = {.tuning = tune };
+        dt_wb_preset_interpolate(&wb_preset[min_id], &wb_preset[max_id], &interpolated);
+        for(int k = 0; k < 3; k++) p->coeffs[k] = interpolated.channel[k];
       }
     }
     break;
