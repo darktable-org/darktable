@@ -177,7 +177,7 @@ dt_gtkentry_setup_completion(GtkEntry *entry, const dt_gtkentry_completion_spec 
   {
     gtk_list_store_append(model, &iter);
     gtk_list_store_set(model, &iter, COMPL_VARNAME, l->varname,
-                       COMPL_DESCRIPTION, gettext(l->description), -1);
+                       COMPL_DESCRIPTION, _(l->description), -1);
   }
   gtk_entry_completion_set_model(completion, GTK_TREE_MODEL(model));
   gtk_entry_completion_set_match_func(completion, on_match_func, NULL, NULL);
@@ -196,6 +196,7 @@ dt_gtkentry_get_default_path_compl_list ()
     { "FILE_FOLDER", N_("$(FILE_FOLDER) - folder containing the input image") },
     { "FILE_NAME", N_("$(FILE_NAME) - basename of the input image") },
     { "FILE_EXTENSION", N_("$(FILE_EXTENSION) - extension of the input image") },
+    { "VERSION", N_("$(VERSION) - duplicate version") },
     { "SEQUENCE", N_("$(SEQUENCE) - sequence number") },
     { "YEAR", N_("$(YEAR) - year") },
     { "MONTH", N_("$(MONTH) - month") },
@@ -215,6 +216,7 @@ dt_gtkentry_get_default_path_compl_list ()
     { "PICTURES_FOLDER", N_("$(PICTURES_FOLDER) - pictures folder") },
     { "HOME", N_("$(HOME) - home folder") },
     { "DESKTOP", N_("$(DESKTOP) - desktop folder") },
+    { "TITLE", N_("$(TITLE) - title from metadata") },
     { NULL, NULL }
   };
 
@@ -231,21 +233,19 @@ gchar *
 dt_gtkentry_build_completion_tooltip_text (const gchar *header,
     const dt_gtkentry_completion_spec *compl_list)
 {
-  const unsigned int tooltip_len = 1024;
-  gchar *tt = g_malloc0_n(tooltip_len, sizeof(gchar));
-  gsize tt_size = sizeof(gchar)*tooltip_len;
-  dt_gtkentry_completion_spec const *p;
+  size_t array_len = 0;
+  for(dt_gtkentry_completion_spec const *p = compl_list; p->description != NULL; p++)
+    array_len++;
+  const gchar * lines[array_len+2];
+  const gchar **l = lines;
+  *l++ = header;
 
-  g_strlcat(tt, header, tt_size);
-  g_strlcat(tt, "\n", tt_size);
+  for(dt_gtkentry_completion_spec const *p = compl_list; p->description != NULL; p++, l++)
+    *l = _(p->description);
 
-  for(p = compl_list; p->description != NULL; p++)
-  {
-    g_strlcat(tt, p->description, tt_size);
-    g_strlcat(tt, "\n", tt_size);
-  }
+  *l = NULL;
 
-  return tt;
+  return g_strjoinv("\n", (gchar**)lines);
 }
 
 

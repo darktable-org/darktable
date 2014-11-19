@@ -36,7 +36,7 @@
 
 DT_MODULE_INTROSPECTION(2, dt_iop_monochrome_params_t)
 
-#define DT_COLORCORRECTION_INSET 5
+#define DT_COLORCORRECTION_INSET DT_PIXEL_APPLY_DPI(5)
 #define DT_COLORCORRECTION_MAX 40.
 #define PANEL_WIDTH 256.0f
 
@@ -337,7 +337,7 @@ void init(dt_iop_module_t *module)
   module->params = malloc(sizeof(dt_iop_monochrome_params_t));
   module->default_params = malloc(sizeof(dt_iop_monochrome_params_t));
   module->default_enabled = 0;
-  module->priority = 596; // module order created by iop_dependencies.py, do not edit!
+  module->priority = 616; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_monochrome_params_t);
   module->gui_data = NULL;
   dt_iop_monochrome_params_t tmp = (dt_iop_monochrome_params_t)
@@ -358,14 +358,14 @@ void cleanup(dt_iop_module_t *module)
 
 void init_pipe (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
-  piece->data = malloc(sizeof(dt_iop_monochrome_data_t));
-  memset(piece->data,0,sizeof(dt_iop_monochrome_data_t));
+  piece->data = calloc(1, sizeof(dt_iop_monochrome_data_t));
   self->commit_params(self, self->default_params, pipe, piece);
 }
 
 void cleanup_pipe (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
   free(piece->data);
+  piece->data = NULL;
 }
 
 static gboolean
@@ -386,6 +386,7 @@ dt_iop_monochrome_expose(GtkWidget *widget, GdkEventExpose *event, gpointer user
   cairo_paint(cr);
 
   cairo_translate(cr, inset, inset);
+  cairo_set_antialias(cr,CAIRO_ANTIALIAS_NONE);
   width -= 2*inset;
   height -= 2*inset;
   // clip region to inside:
@@ -408,10 +409,12 @@ dt_iop_monochrome_expose(GtkWidget *widget, GdkEventExpose *event, gpointer user
       Lab.L *= f*f; // exaggerate filter a little
       cmsDoTransform(g->xform, &Lab, rgb, 1);
       cairo_set_source_rgb (cr, rgb[0], rgb[1], rgb[2]);
-      cairo_rectangle(cr, width*i/(float)cells, height*j/(float)cells, width/(float)cells-1, height/(float)cells-1);
+      cairo_rectangle(cr, width*i/(float)cells, height*j/(float)cells, width/(float)cells-DT_PIXEL_APPLY_DPI(1), height/(float)cells-DT_PIXEL_APPLY_DPI(1));
       cairo_fill(cr);
     }
+  cairo_set_antialias(cr,CAIRO_ANTIALIAS_DEFAULT);
   cairo_set_source_rgb(cr, .7, .7, .7);
+  cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(2.0));
   const float x = p->a * width/PANEL_WIDTH + width * .5f, y = p->b * height/PANEL_WIDTH + height* .5f;
   cairo_arc(cr, x, y, width*.22f*p->size, 0, 2.0*M_PI);
   cairo_stroke(cr);
@@ -532,11 +535,9 @@ void gui_init(struct dt_iop_module_t *self)
 
   self->widget = gtk_vbox_new(FALSE, DT_BAUHAUS_SPACE);
   g->area = GTK_DRAWING_AREA(gtk_drawing_area_new());
-  // GtkWidget *asp = gtk_aspect_frame_new(NULL, 0.5, 0.5, 1.0, TRUE);
-  // gtk_box_pack_start(GTK_BOX(self->widget), asp, TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->area), TRUE, TRUE, 0);
-  // gtk_container_add(GTK_CONTAINER(asp), GTK_WIDGET(g->area));
-  gtk_widget_set_size_request(GTK_WIDGET(g->area), 0, 258);
+  int panel_width = dt_conf_get_int("panel_width") * 0.95;
+  gtk_widget_set_size_request(GTK_WIDGET(g->area), 0, panel_width);
   g_object_set(G_OBJECT(g->area), "tooltip-text", _("drag and scroll mouse wheel to adjust the virtual color filter"), (char *)NULL);
 
   gtk_widget_add_events(GTK_WIDGET(g->area), GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK | GDK_LEAVE_NOTIFY_MASK);

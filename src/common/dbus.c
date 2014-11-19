@@ -23,6 +23,9 @@
 
 #include <gio/gio.h>
 
+#ifdef USE_LUA
+#include "lua/call.h"
+#endif
 
 typedef struct dt_dbus_t
 {
@@ -42,11 +45,41 @@ static const gchar introspection_xml[] =
   "      <arg type='s' name='FileName' direction='in'/>"
   "      <arg type='i' name='id' direction='out' />"
   "    </method>"
+#ifdef USE_LUA
+  "    <method name='Lua'>"
+  "      <arg type='s' name='Command' direction='in'/>"
+  "      <arg type='s' name='Result' direction='out' />"
+  "    </method>"
+#endif
   "    <property type='s' name='DataDir' access='read'/>"
   "    <property type='s' name='ConfigDir' access='read'/>"
+  "    <property type='b' name='LuaEnabled' access='read'/>"
   "  </interface>"
   "</node>";
 
+
+#ifdef USE_LUA
+  static int32_t dbus_callback_job(dt_job_t *job) {
+    GDBusMethodInvocation *invocation = dt_control_job_get_params(job);
+    lua_State * L = darktable.lua_state.state;
+    GVariant * parameters = g_dbus_method_invocation_get_parameters(invocation);
+    const gchar *command;
+    g_variant_get(parameters, "(&s)", &command);
+    int result = dt_lua_dostring(L,command,0,1);
+    if(result == LUA_OK) {
+      if(lua_isnil(L,-1)) {
+        g_dbus_method_invocation_return_value(invocation, g_variant_new("(s)", ""));
+      } else {
+        const char* result = luaL_checkstring(L,-1);
+        g_dbus_method_invocation_return_value(invocation, g_variant_new("(s)", result));
+      }
+    } else {
+      const char* msg = luaL_checkstring(L,-1);
+      g_dbus_method_invocation_return_dbus_error(invocation, "org.darktable.Error.LuaError", msg);
+    }
+    return 0;
+  }
+#endif
 
 static void
 _handle_method_call(GDBusConnection       *connection,
@@ -70,6 +103,18 @@ _handle_method_call(GDBusConnection       *connection,
     int32_t id = dt_load_from_string(filename, TRUE);
     g_dbus_method_invocation_return_value(invocation, g_variant_new("(i)", id));
   }
+#ifdef USE_LUA
+  else if(!g_strcmp0(method_name, "Lua"))
+  {
+    dt_job_t *job = dt_control_job_create(&dbus_callback_job, "lua: on dbus");
+    if(job)
+    {
+      dt_control_job_set_params(job, invocation);
+      dt_control_add_job(darktable.control, DT_JOB_QUEUE_USER_BG, job);
+      // we don't finish the invocation, the async task will do this for us
+    }
+  }
+#endif
 }
 
 // TODO: expose the conf? partly? completely?
@@ -88,15 +133,23 @@ _handle_get_property(GDBusConnection  *connection,
   ret = NULL;
   if(!g_strcmp0(property_name, "DataDir"))
   {
-    gchar datadir[DT_MAX_PATH_LEN];
-    dt_loc_get_datadir(datadir, DT_MAX_PATH_LEN);
+    gchar datadir[PATH_MAX];
+    dt_loc_get_datadir(datadir, sizeof(datadir));
     ret = g_variant_new_string(datadir);
   }
   else if(!g_strcmp0(property_name, "ConfigDir"))
   {
-    gchar configdir[DT_MAX_PATH_LEN];
-    dt_loc_get_user_config_dir(configdir, DT_MAX_PATH_LEN);
+    gchar configdir[PATH_MAX];
+    dt_loc_get_user_config_dir(configdir, sizeof(configdir));
     ret = g_variant_new_string(configdir);
+  }
+  else if(!g_strcmp0(property_name, "LuaEnabled"))
+  {
+#ifdef USE_LUA
+    ret = g_variant_new_boolean(TRUE);
+#else
+    ret = g_variant_new_boolean(FALSE);
+#endif
   }
   return ret;
 }
@@ -152,9 +205,8 @@ static void _on_name_lost(GDBusConnection *connection, const gchar *name, gpoint
 
 struct dt_dbus_t *dt_dbus_init()
 {
-  dt_dbus_t *dbus = (dt_dbus_t *)g_malloc(sizeof(dt_dbus_t));
+  dt_dbus_t *dbus = (dt_dbus_t *)g_malloc0(sizeof(dt_dbus_t));
   if(!dbus) return NULL;
-  memset(dbus, 0, sizeof(dt_dbus_t));
 
   dbus->introspection_data = g_dbus_node_info_new_for_xml(introspection_xml, NULL);
 

@@ -4732,10 +4732,12 @@ void CLASS parse_makernote (int base, int uptag)
     if (get2() != 42) goto quit;
     offset = get4();
     fseek (ifp, offset-8, SEEK_CUR);
-  } else if (!strcmp (buf,"OLYMPUS")) {
+  } else if (!strcmp (buf,"OLYMPUS") ||
+             !strcmp (buf,"PENTAX ")) {
     base = ftell(ifp)-10;
     fseek (ifp, -2, SEEK_CUR);
-    order = get2();  get2();
+    order = get2();
+    if (buf[0] == 'O') get2();
   } else if (!strncmp (buf,"SONY",4) ||
 	     !strcmp  (buf,"Panasonic")) {
     goto nf;
@@ -5543,6 +5545,15 @@ int CLASS parse_tiff_ifd (int base)
 #ifdef LIBRAW_LIBRARY_BUILD
         color_flags.rgb_cam_state = LIBRAW_COLORSTATE_LOADED;
 #endif
+        break;
+      case 40976:
+	strip_offset = get4();
+	switch (tiff_ifd[ifd].comp) {
+    /* These are wrong, should be samsung_load_raw and samsung2_load_raw, we
+       just have this here to enable just enough parsing to get the whitebalance */
+	  case 32770: load_raw = &CLASS packed_load_raw;  break;
+	  case 32772: load_raw = &CLASS packed_load_raw;
+	}
 	break;
       case 46275:			/* Imacon tags */
 	strcpy (make, "Imacon");
@@ -5943,9 +5954,9 @@ void CLASS apply_tiff()
 #endif
     }
   if (!dng_version)
-    if ( (tiff_samples == 3 && tiff_ifd[raw].bytes &&
-	  tiff_bps != 14 && tiff_bps != 2048 && tiff_compress != 32770)
-      || (tiff_bps == 8 && !strstr(make,"KODAK") && !strstr(make,"Kodak") &&
+    if ( (tiff_samples == 3 && tiff_ifd[raw].bytes && tiff_bps != 14 &&
+	  (tiff_compress & -16) != 32768)
+      || (tiff_bps == 8 && !strcasestr(make,"Kodak") &&
 	  !strstr(model2,"DEBUG RAW")))
       is_raw = 0;
   for (i=0; i < tiff_nifds; i++)
@@ -8335,11 +8346,19 @@ cp_e2500:
       height = width - 1;
       if (~fuji_width & 1) filters = 0x49494949;
     }
+    // Darktable's temperature iop uses LibRaw to retrieve camera
+    // white balance. Both X-Trans & Bayer RAF files stores this with
+    // the same tag, so it's OK to handle X-Pro1 and other X-Trans
+    // files in that case. Note that this is LibRaw 0.14.7 which won't
+    // handle the actual raw data. 2014 vintage RawSpeed or LibRaw
+    // 0.16.0 can.
+#if 0
     if (!strcmp(model,"X-Pro1")) {
       left_margin = 0;
       filters = 2;
       is_raw = 0; /* Not supported! */
     }
+#endif
   } else if (!strcmp(model,"RD175")) {
     height = 986;
     width = 1534;

@@ -20,10 +20,12 @@
 
 #include <inttypes.h>
 #include "control/control.h"
+#include "common/imageio_module.h"
 
 typedef struct dt_control_export_t
 {
   int max_width, max_height, format_index, storage_index;
+  dt_imageio_module_data_t *sdata; // needed since the gui thread resets things like overwrite once the export is dispatched, but we have to keep that information
   gboolean high_quality;
   char style[128];
 } dt_control_export_t;
@@ -36,44 +38,9 @@ typedef struct dt_control_image_enumerator_t
 }
 dt_control_image_enumerator_t;
 
-int32_t dt_control_write_sidecar_files_job_run(dt_job_t *job);
-void dt_control_write_sidecar_files_job_init(dt_job_t *job);
-
-
-void dt_control_duplicate_images_job_init(dt_job_t *job);
-int32_t dt_control_duplicate_images_job_run(dt_job_t *job);
-
-void dt_control_flip_images_job_init(dt_job_t *job, const int32_t cw);
-int32_t dt_control_flip_images_job_run(dt_job_t *job);
-
-void dt_control_image_enumerator_job_film_init(dt_control_image_enumerator_t *t, int32_t filmid);
-void dt_control_image_enumerator_job_selected_init(dt_control_image_enumerator_t *t);
-
-int32_t dt_control_remove_images_job_run(dt_job_t *job);
-void dt_control_remove_images_job_init(dt_job_t *job);
-
-int32_t dt_control_move_images_job_run(dt_job_t *job);
-void dt_control_move_images_job_init(dt_job_t *job);
-
-int32_t dt_control_copy_images_job_run(dt_job_t *job);
-void dt_control_copy_images_job_init(dt_job_t *job);
-
-int32_t dt_control_local_copy_images_job_run(dt_job_t *job);
-void dt_control_local_copy_images_job_init(dt_job_t *job);
-
-void dt_control_delete_images_job_init(dt_job_t *job);
-int32_t dt_control_delete_images_job_run(dt_job_t *job);
-
-
-#if GLIB_CHECK_VERSION (2, 26, 0)
 void dt_control_gpx_apply(const gchar *filename, int32_t filmid, const gchar *tz);
-void dt_control_gpx_apply_job_init(dt_job_t *job, const gchar *filename, int32_t filmid, const gchar *tz);
-int32_t dt_control_gpx_apply_job_run(dt_job_t *job);
 
 void dt_control_time_offset(const long int offset, int imgid);
-void dt_control_time_offset_job_init(dt_job_t *job, const long int offset, int imgid);
-int32_t dt_control_time_offset_job_run(dt_job_t *job);
-#endif
 
 void dt_control_write_sidecar_files();
 void dt_control_delete_images();
@@ -86,9 +53,6 @@ void dt_control_set_local_copy_images();
 void dt_control_reset_local_copy_images();
 void dt_control_export(GList *imgid_list,int max_width, int max_height, int format_index, int storage_index, gboolean high_quality,char *style);
 void dt_control_merge_hdr();
-
-void dt_control_gpx_apply(const gchar *filename, int32_t filmid, const gchar *tz);
-void dt_control_time_offset(const long int offset, int imgid);
 
 void dt_control_seed_denoise();
 void dt_control_denoise();

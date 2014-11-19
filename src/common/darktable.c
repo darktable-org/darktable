@@ -37,6 +37,7 @@
 #ifdef HAVE_GPHOTO2
 #include "common/camera_control.h"
 #endif
+#include "common/cpuid.h"
 #include "common/film.h"
 #include "common/grealpath.h"
 #include "common/image.h"
@@ -85,6 +86,13 @@
 #  include <omp.h>
 #endif
 
+#ifdef __linux__
+#include <sys/prctl.h>
+#ifndef PR_SET_PTRACER
+#define PR_SET_PTRACER 0x59616d61
+#endif
+#endif
+
 darktable_t darktable;
 const char dt_supported_extensions[] = "3fr,arw,bay,bmq,cap,cine,cr2,crw,cs1,dc2,dcr,dng,erf,fff,exr,ia,iiq,jpeg,jpg,k25,kc2,kdc,mdc,mef,mos,mrw,nef,nrw,orf,pef,pfm,pxn,qtk,raf,raw,rdc,rw2,rwl,sr2,srf,srw,sti,tif,tiff,x3f,png"
 #ifdef HAVE_OPENJPEG
@@ -108,6 +116,9 @@ static int usage(const char *argv0)
   printf(" [--configdir <user config directory>]");
   printf(" [--cachedir <user cache directory>]");
   printf(" [--localedir <locale directory>]");
+#ifdef USE_LUA
+  printf(" [--luacmd <lua command>]");
+#endif
   printf(" [--conf <key>=<value>]");
   printf("\n");
   return 1;
@@ -141,7 +152,7 @@ void _dt_sigsegv_handler(int param)
   gchar *name_used;
   int fout;
   gboolean delete_file = FALSE;
-  char datadir[DT_MAX_PATH_LEN];
+  char datadir[PATH_MAX];
 
   if((fout = g_file_open_tmp("darktable_bt_XXXXXX.txt", &name_used, NULL)) == -1)
     fout = STDOUT_FILENO; // just print everything to stdout
@@ -151,7 +162,7 @@ void _dt_sigsegv_handler(int param)
   if(fout != STDOUT_FILENO)
     close(fout);
 
-  dt_loc_get_datadir(datadir, DT_MAX_PATH_LEN);
+  dt_loc_get_datadir(datadir, sizeof(datadir));
   gchar *pid_arg = g_strdup_printf("%d", (int)getpid());
   gchar *comm_arg = g_strdup_printf("%s/gdb_commands", datadir);
   gchar *log_arg = g_strdup_printf("set logging on %s", name_used);
@@ -160,6 +171,10 @@ void _dt_sigsegv_handler(int param)
   {
     if(pid)
     {
+#ifdef __linux__
+      // Allow the child to ptrace us
+      prctl(PR_SET_PTRACER, pid, 0, 0, 0);
+#endif
       waitpid(pid, NULL, 0);
       g_printerr("backtrace written to %s\n", name_used);
     }
@@ -213,13 +228,13 @@ gboolean dt_supported_image(const gchar *filename)
 
 static void strip_semicolons_from_keymap(const char* path)
 {
-  char pathtmp[DT_MAX_PATH_LEN];
+  char pathtmp[PATH_MAX];
   FILE *fin = fopen(path, "r");
   FILE *fout;
   int i;
   int c = '\0';
 
-  snprintf(pathtmp, DT_MAX_PATH_LEN, "%s_tmp", path);
+  snprintf(pathtmp, sizeof(pathtmp), "%s_tmp", path);
   fout = fopen(pathtmp, "w");
 
   // First ignoring the first three lines
@@ -356,7 +371,7 @@ int dt_load_from_string(const gchar* input, gboolean open_image_in_dr)
   return id;
 }
 
-int dt_init(int argc, char *argv[], const int init_gui)
+int dt_init(int argc, char *argv[], const int init_gui,lua_State *L)
 {
 #ifndef __WIN32__
   if(getuid() == 0 || geteuid() == 0)
@@ -369,10 +384,38 @@ int dt_init(int argc, char *argv[], const int init_gui)
   _dt_sigsegv_old_handler = signal(SIGSEGV,&_dt_sigsegv_handler);
 #endif
 
-#ifndef __SSE2__
-  fprintf(stderr, "[dt_init] unfortunately we depend on SSE2 instructions at this time.\n");
-  fprintf(stderr, "[dt_init] please contribute a backport patch (or buy a newer processor).\n");
-  return 1;
+#ifndef __GNUC_PREREQ
+  // on OSX, gcc-4.6 and clang chokes if this is not here.
+  #if defined __GNUC__ && defined __GNUC_MINOR__
+  # define __GNUC_PREREQ(maj, min) \
+  ((__GNUC__ << 16) + __GNUC_MINOR__ >= ((maj) << 16) + (min))
+  #else
+  # define __GNUC_PREREQ(maj, min) 0
+  #endif
+#endif
+#ifndef __has_builtin
+// http://clang.llvm.org/docs/LanguageExtensions.html#feature-checking-macros
+  #define __has_builtin(x) false
+#endif
+
+#ifndef __SSE3__
+  #error "Unfortunately we depend on SSE3 instructions at this time."
+  #error "Please contribute a backport patch (or buy a newer processor)."
+#else
+  int sse3_supported = 0;
+
+  #if (__GNUC_PREREQ(4,8) || __has_builtin(__builtin_cpu_supports))
+    //NOTE: _may_i_use_cpu_feature() looks better, but only avaliable in ICC
+    sse3_supported = __builtin_cpu_supports("sse3");
+  #else
+    sse3_supported = dt_detect_cpu_features() & CPU_FLAG_SSE3;
+  #endif
+    if (!sse3_supported)
+    {
+      fprintf(stderr, "[dt_init] unfortunately we depend on SSE3 instructions at this time.\n");
+      fprintf(stderr, "[dt_init] please contribute a backport patch (or buy a newer processor).\n");
+      return 1;
+    }
 #endif
 
 #ifdef M_MMAP_THRESHOLD
@@ -404,7 +447,14 @@ int dt_init(int argc, char *argv[], const int init_gui)
         new_xdg_data_dirs = g_strjoin(":", DARKTABLE_SHAREDIR, xdg_data_dirs, NULL);
     }
     else
-      new_xdg_data_dirs = g_strdup(DARKTABLE_SHAREDIR);
+    {
+      // see http://standards.freedesktop.org/basedir-spec/latest/ar01s03.html for a reason to use those as a default
+      if(!g_strcmp0(DARKTABLE_SHAREDIR, "/usr/local/share") || !g_strcmp0(DARKTABLE_SHAREDIR, "/usr/local/share/") ||
+         !g_strcmp0(DARKTABLE_SHAREDIR, "/usr/share") || !g_strcmp0(DARKTABLE_SHAREDIR, "/usr/share/"))
+        new_xdg_data_dirs = g_strdup("/usr/local/share/:/usr/share/");
+      else
+        new_xdg_data_dirs = g_strdup_printf("%s:/usr/local/share/:/usr/share/", DARKTABLE_SHAREDIR);
+    }
 
     if(set_env)
       g_setenv("XDG_DATA_DIRS", new_xdg_data_dirs, 1);
@@ -430,6 +480,10 @@ int dt_init(int argc, char *argv[], const int init_gui)
   char *configdir_from_command = NULL;
   char *cachedir_from_command = NULL;
 
+#ifdef USE_LUA
+  char *lua_command = NULL;
+#endif
+
   darktable.num_openmp_threads = 1;
 #ifdef _OPENMP
   darktable.num_openmp_threads = omp_get_num_procs();
@@ -450,7 +504,13 @@ int dt_init(int argc, char *argv[], const int init_gui)
       }
       else if(!strcmp(argv[k], "--version"))
       {
-        printf("this is "PACKAGE_STRING"\ncopyright (c) 2009-2014 johannes hanika\n"PACKAGE_BUGREPORT"\n");
+        printf("this is "PACKAGE_STRING"\ncopyright (c) 2009-2014 johannes hanika\n"PACKAGE_BUGREPORT"\n"
+#ifdef _OPENMP
+        "OpenMP support enabled\n"
+#else
+        "OpenMP support disabled\n"
+#endif
+        );
         return 1;
       }
       else if(!strcmp(argv[k], "--library"))
@@ -511,7 +571,8 @@ int dt_init(int argc, char *argv[], const int init_gui)
       else if(!strcmp(argv[k], "--conf"))
       {
         gchar *keyval = g_strdup(argv[++k]), *c = keyval;
-        while(*c != '=' && c < keyval + strlen(keyval)) c++;
+        gchar *end = keyval + strlen(keyval);
+        while(*c != '=' && c < end) c++;
         if(*c == '=' && *(c+1) != '\0')
         {
           *c++ = '\0';
@@ -521,6 +582,14 @@ int dt_init(int argc, char *argv[], const int init_gui)
           config_override = g_slist_append(config_override, entry);
         }
         g_free(keyval);
+      }
+      else if(!strcmp(argv[k], "--luacmd"))
+      {
+#ifdef USE_LUA
+        lua_command = argv[++k];
+#else
+        ++k;
+#endif
       }
     }
 #ifndef MAC_INTEGRATION
@@ -561,27 +630,26 @@ int dt_init(int argc, char *argv[], const int init_gui)
   // dt_check_cpu(argc,argv);
 
 #ifdef HAVE_GEGL
-  char geglpath[DT_MAX_PATH_LEN];
-  char datadir[DT_MAX_PATH_LEN];
-  dt_loc_get_datadir(datadir, DT_MAX_PATH_LEN);
-  snprintf(geglpath, DT_MAX_PATH_LEN, "%s/gegl:/usr/lib/gegl-0.0", datadir);
+  char geglpath[PATH_MAX];
+  char datadir[PATH_MAX];
+  dt_loc_get_datadir(datadir, sizeof(datadir));
+  snprintf(geglpath, sizeof(geglpath), "%s/gegl:/usr/lib/gegl-0.0", datadir);
   (void)setenv("GEGL_PATH", geglpath, 1);
   gegl_init(&argc, &argv);
 #endif
 #ifdef USE_LUA
-  dt_lua_init_early(NULL);
+  dt_lua_init_early(L);
 #endif
 
   // thread-safe init:
   dt_exif_init();
-  char datadir[DT_MAX_PATH_LEN];
-  dt_loc_get_user_config_dir (datadir,DT_MAX_PATH_LEN);
-  char filename[DT_MAX_PATH_LEN];
-  snprintf(filename, DT_MAX_PATH_LEN, "%s/darktablerc", datadir);
+  char datadir[PATH_MAX];
+  dt_loc_get_user_config_dir (datadir, sizeof(datadir));
+  char filename[PATH_MAX];
+  snprintf(filename, sizeof(filename), "%s/darktablerc", datadir);
 
   // initialize the config backend. this needs to be done first...
-  darktable.conf = (dt_conf_t *)malloc(sizeof(dt_conf_t));
-  memset(darktable.conf, 0, sizeof(dt_conf_t));
+  darktable.conf = (dt_conf_t *)calloc(1, sizeof(dt_conf_t));
   dt_conf_init(darktable.conf, filename, config_override);
   g_slist_free_full(config_override, g_free);
 
@@ -667,15 +735,11 @@ int dt_init(int argc, char *argv[], const int init_gui)
   darktable.thumbnail_height /= 16;
   darktable.thumbnail_height *= 16;
 
-  // Initialize the password storage engine
-  darktable.pwstorage=dt_pwstorage_new();
-
   // FIXME: move there into dt_database_t
   dt_pthread_mutex_init(&(darktable.db_insert), NULL);
   dt_pthread_mutex_init(&(darktable.plugin_threadsafe), NULL);
   dt_pthread_mutex_init(&(darktable.capabilities_threadsafe), NULL);
-  darktable.control = (dt_control_t *)malloc(sizeof(dt_control_t));
-  memset(darktable.control, 0, sizeof(dt_control_t));
+  darktable.control = (dt_control_t *)calloc(1, sizeof(dt_control_t));
   if(init_gui)
   {
     dt_control_init(darktable.control);
@@ -699,33 +763,31 @@ int dt_init(int argc, char *argv[], const int init_gui)
   /* capabilities set to NULL */
   darktable.capabilities = NULL;
 
+  // Initialize the password storage engine
+  darktable.pwstorage=dt_pwstorage_new();
+
 #ifdef HAVE_GRAPHICSMAGICK
   /* GraphicsMagick init */
   InitializeMagick(darktable.progname);
 #endif
 
-  darktable.opencl = (dt_opencl_t *)malloc(sizeof(dt_opencl_t));
-  memset(darktable.opencl, 0, sizeof(dt_opencl_t));
+  darktable.opencl = (dt_opencl_t *)calloc(1, sizeof(dt_opencl_t));
 #ifdef HAVE_OPENCL
   dt_opencl_init(darktable.opencl, argc, argv);
 #endif
 
-  darktable.blendop = (dt_blendop_t *)malloc(sizeof(dt_blendop_t));
-  memset(darktable.blendop, 0, sizeof(dt_blendop_t));
+  darktable.blendop = (dt_blendop_t *)calloc(1, sizeof(dt_blendop_t));
   dt_develop_blend_init(darktable.blendop);
 
-  darktable.points = (dt_points_t *)malloc(sizeof(dt_points_t));
-  memset(darktable.points, 0, sizeof(dt_points_t));
+  darktable.points = (dt_points_t *)calloc(1, sizeof(dt_points_t));
   dt_points_init(darktable.points, dt_get_num_threads());
 
   // must come before mipmap_cache, because that one will need to access
   // image dimensions stored in here:
-  darktable.image_cache = (dt_image_cache_t *)malloc(sizeof(dt_image_cache_t));
-  memset(darktable.image_cache, 0, sizeof(dt_image_cache_t));
+  darktable.image_cache = (dt_image_cache_t *)calloc(1, sizeof(dt_image_cache_t));
   dt_image_cache_init(darktable.image_cache);
 
-  darktable.mipmap_cache = (dt_mipmap_cache_t *)malloc(sizeof(dt_mipmap_cache_t));
-  memset(darktable.mipmap_cache, 0, sizeof(dt_mipmap_cache_t));
+  darktable.mipmap_cache = (dt_mipmap_cache_t *)calloc(1, sizeof(dt_mipmap_cache_t));
   dt_mipmap_cache_init(darktable.mipmap_cache);
 
   // The GUI must be initialized before the views, because the init()
@@ -734,46 +796,43 @@ int dt_init(int argc, char *argv[], const int init_gui)
 
   if(init_gui)
   {
-    darktable.gui = (dt_gui_gtk_t *)malloc(sizeof(dt_gui_gtk_t));
-    memset(darktable.gui,0,sizeof(dt_gui_gtk_t));
+    darktable.gui = (dt_gui_gtk_t *)calloc(1, sizeof(dt_gui_gtk_t));
     if(dt_gui_gtk_init(darktable.gui, argc, argv)) return 1;
     dt_bauhaus_init();
   }
   else darktable.gui = NULL;
 
-  darktable.view_manager = (dt_view_manager_t *)malloc(sizeof(dt_view_manager_t));
-  memset(darktable.view_manager, 0, sizeof(dt_view_manager_t));
+  darktable.view_manager = (dt_view_manager_t *)calloc(1, sizeof(dt_view_manager_t));
   dt_view_manager_init(darktable.view_manager);
+
+  darktable.imageio = (dt_imageio_t *)calloc(1, sizeof(dt_imageio_t));
+  dt_imageio_init(darktable.imageio);
 
   // load the darkroom mode plugins once:
   dt_iop_load_modules_so();
 
   if(init_gui)
   {
-    darktable.lib = (dt_lib_t *)malloc(sizeof(dt_lib_t));
-    memset(darktable.lib, 0, sizeof(dt_lib_t));
+    darktable.lib = (dt_lib_t *)calloc(1, sizeof(dt_lib_t));
     dt_lib_init(darktable.lib);
 
     dt_control_load_config(darktable.control);
   }
-  darktable.imageio = (dt_imageio_t *)malloc(sizeof(dt_imageio_t));
-  memset(darktable.imageio, 0, sizeof(dt_imageio_t));
-  dt_imageio_init(darktable.imageio);
 
   if(init_gui)
   {
     // Loading the keybindings
-    char keyfile[DT_MAX_PATH_LEN];
+    char keyfile[PATH_MAX];
 
     // First dump the default keymapping
-    snprintf(keyfile, DT_MAX_PATH_LEN, "%s/keyboardrc_default", datadir);
+    snprintf(keyfile, sizeof(keyfile), "%s/keyboardrc_default", datadir);
     gtk_accel_map_save(keyfile);
 
     // Removing extraneous semi-colons from the default keymap
     strip_semicolons_from_keymap(keyfile);
 
     // Then load any modified keys if available
-    snprintf(keyfile, DT_MAX_PATH_LEN, "%s/keyboardrc", datadir);
+    snprintf(keyfile, sizeof(keyfile), "%s/keyboardrc", datadir);
     if(g_file_test(keyfile, G_FILE_TEST_EXISTS))
       gtk_accel_map_load(keyfile);
     else
@@ -821,7 +880,7 @@ int dt_init(int argc, char *argv[], const int init_gui)
 
   /* init lua last, since it's user made stuff it must be in the real environment */
 #ifdef USE_LUA
-  dt_lua_init(darktable.lua_state.state,init_gui);
+  dt_lua_init(darktable.lua_state.state,lua_command);
 #endif
 
   // last but not least construct the popup that asks the user about images whose xmp files are newer than the db entry
@@ -947,6 +1006,11 @@ void dt_free_align(void *mem)
 }
 #endif
 
+inline gboolean dt_is_aligned(const void *pointer, size_t byte_count)
+{
+  return (uintptr_t)pointer % byte_count == 0;
+}
+
 void dt_show_times(const dt_times_t *start, const char *prefix, const char *suffix, ...)
 {
   dt_times_t end;
@@ -981,7 +1045,7 @@ void dt_configure_defaults()
   {
     fprintf(stderr, "[defaults] setting high quality defaults\n");
     dt_conf_set_int("worker_threads", 8);
-    dt_conf_set_int("cache_memory", 1u<<30);
+    dt_conf_set_int64("cache_memory", 1u<<30);
     dt_conf_set_int("plugins/lighttable/thumbnail_width", 1300);
     dt_conf_set_int("plugins/lighttable/thumbnail_height", 1000);
     dt_conf_set_bool("plugins/lighttable/low_quality_thumbnails", FALSE);
@@ -990,7 +1054,7 @@ void dt_configure_defaults()
   {
     fprintf(stderr, "[defaults] setting very conservative defaults\n");
     dt_conf_set_int("worker_threads", 1);
-    dt_conf_set_int("cache_memory", 200u<<20);
+    dt_conf_set_int64("cache_memory", 200u<<20);
     dt_conf_set_int("host_memory_limit", 500);
     dt_conf_set_int("singlebuffer_limit", 8);
     dt_conf_set_int("plugins/lighttable/thumbnail_width", 800);

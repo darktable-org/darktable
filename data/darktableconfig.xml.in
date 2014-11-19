@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<!DOCTYPE dtconfiglist SYSTEM "file://${CMAKE_CURRENT_SOURCE_DIR}/darktableconfig.dtd">
+<!DOCTYPE dtconfiglist SYSTEM "darktableconfig.dtd">
 <dtconfiglist>
   <dtconfig>
     <name>bauhaus/scale</name>
@@ -24,7 +24,7 @@
   </dtconfig>
   <dtconfig prefs="core">
     <name>cache_memory</name>
-    <type factor="(1.0 / (1024.0 * 1024.0))" min="0">int64</type>
+    <type factor="(1.0 / (1024.0 * 1024.0))" min="(1024 * 1024 * 100)">int64</type>
     <default>(1024 * 1024 * 512)</default>
     <shortdescription>memory in megabytes to use for mipmap cache</shortdescription>
     <longdescription>this controls how much memory is going to be used for thumbnails and other buffers (needs a restart).</longdescription>
@@ -52,7 +52,7 @@
   </dtconfig>
   <dtconfig prefs="core">
     <name>singlebuffer_limit</name>
-    <type min="2">int</type>
+    <type min="2" max="64">int</type>
     <default>16</default>
     <shortdescription>minimum amount of memory (in MB) for a single buffer in tiling</shortdescription>
     <longdescription>if set to a positive, non-zero value this variable defines the minimum amount of memory (in MB) that tiling should take for a single image buffer. has precedence over heuristics based on host_memory_limit (needs a restart).</longdescription>
@@ -526,6 +526,19 @@
     <shortdescription>pen pressure control for brush masks</shortdescription>
     <longdescription>off - pressure reading ignored, hardness/opacity/brush size - pressure reading controls specified attribute, absolute/relative - pressure reading is taken directly as attribute value or multiplied with pre-defined setting.</longdescription>
   </dtconfig>
+  <dtconfig prefs="gui">
+    <name>brush_smoothing</name>
+    <type>
+      <enum>
+        <option>low</option>
+        <option>medium</option>
+        <option>high</option>
+      </enum>
+    </type>
+    <default>medium</default>
+    <shortdescription>smoothing of brush strokes</shortdescription>
+    <longdescription>sets level for smoothing of brush strokes. stronger smoothing leads to less nodes and easier editing but with lower control of accuracy.</longdescription>
+  </dtconfig>
   <dtconfig>
     <name>database_cache_quality</name>
     <type>int</type>
@@ -950,6 +963,13 @@
     <shortdescription/>
     <longdescription/>
   </dtconfig>
+  <dtconfig>
+    <name>plugins/darkroom/tagging/visible</name>
+    <type>bool</type>
+    <default>true</default>
+    <shortdescription/>
+    <longdescription/>
+  </dtconfig>
   <dtconfig prefs="gui">
     <name>plugins/lighttable/tagging/ask_before_delete_tag</name>
     <type>bool</type>
@@ -965,11 +985,18 @@
     <longdescription/>
   </dtconfig>
   <dtconfig prefs="gui">
+    <name>plugins/map/filter_images_drawn</name>
+    <type>bool</type>
+    <default>FALSE</default>
+    <shortdescription>only draw images on map that are currently collected and filtered</shortdescription>
+    <longdescription>use the current filter settings to select the geotagged images drawn on the map, i.e. limit the images drawn to the current filmstrip. this limits the number of images drawn and thus reduces the time needed to draw the images.</longdescription>
+  </dtconfig>
+  <dtconfig prefs="gui">
     <name>plugins/map/max_images_drawn</name>
     <type>int</type>
     <default>100</default>
     <shortdescription>maximum number of images drawn on map</shortdescription>
-    <longdescription>the maximum number of geotagged images drawn on the map. increasing this number can slow drawing of the map down (needs a restart).</longdescription>
+    <longdescription>the maximum number of geotagged images drawn on the map. increasing this number can slow drawing of the map down.</longdescription>
   </dtconfig>
   <dtconfig prefs="gui">
     <name>plugins/lighttable/metadata_view/pretty_location</name>
@@ -1087,7 +1114,7 @@
     </type>
     <default>at most PPG (reasonable)</default>
     <shortdescription>demosaicing for zoomed out darkroom mode</shortdescription>
-    <longdescription>interpolation when not viewing 1:1 in darkroom mode: bilinear is fastest, but not as sharp. middle ground is using PPG + interpolation modes specified below, full will use exactly the settings for full-size export.</longdescription>
+    <longdescription>interpolation when not viewing 1:1 in darkroom mode: bilinear is fastest, but not as sharp. middle ground is using PPG + interpolation modes specified below, full will use exactly the settings for full-size export. X-Trans sensors use VNG rather than PPG as middle ground.</longdescription>
   </dtconfig>
   <dtconfig prefs="core">
     <name>plugins/lighttable/export/pixel_interpolator</name>
@@ -1198,14 +1225,16 @@
     <name>plugins/pwstorage/pwstorage_backend</name>
     <type>
       <enum>
+        <option>auto</option>
         <option>none</option>
-        <option>kwallet</option>
-        <option>gnome keyring</option>
+        <option capability="libsecret">libsecret</option>
+        <option capability="kwallet">kwallet</option>
+        <option capability="gnome-keyring">gnome keyring</option>
       </enum>
     </type>
-    <default>none</default>
+    <default>auto</default>
     <shortdescription>password storage backend to use</shortdescription>
-    <longdescription>the storage backend for password storage: none, kwallet, gnome keyring</longdescription>
+    <longdescription>the storage backend for password storage: auto, none, libsecret, kwallet, gnome keyring</longdescription>
   </dtconfig>
   <dtconfig>
     <name>plugins/lighttable/export/iccprofile</name>
@@ -1232,20 +1261,6 @@
     <name>plugins/darkroom/active</name>
     <type>string</type>
     <default/>
-    <shortdescription/>
-    <longdescription/>
-  </dtconfig>
-  <dtconfig>
-    <name>plugins/darkroom/anlfyeni/visible</name>
-    <type>bool</type>
-    <default>false</default>
-    <shortdescription/>
-    <longdescription/>
-  </dtconfig>
-  <dtconfig>
-    <name>plugins/darkroom/anlfyeni/expanded</name>
-    <type>bool</type>
-    <default>false</default>
     <shortdescription/>
     <longdescription/>
   </dtconfig>
@@ -1510,20 +1525,6 @@
   </dtconfig>
   <dtconfig>
     <name>plugins/darkroom/demosaic/expanded</name>
-    <type>bool</type>
-    <default>false</default>
-    <shortdescription/>
-    <longdescription/>
-  </dtconfig>
-  <dtconfig>
-    <name>plugins/darkroom/densitycurve/visible</name>
-    <type>bool</type>
-    <default>false</default>
-    <shortdescription/>
-    <longdescription/>
-  </dtconfig>
-  <dtconfig>
-    <name>plugins/darkroom/densitycurve/expanded</name>
     <type>bool</type>
     <default>false</default>
     <shortdescription/>
@@ -1846,20 +1847,6 @@
   </dtconfig>
   <dtconfig>
     <name>plugins/darkroom/sharpen/expanded</name>
-    <type>bool</type>
-    <default>false</default>
-    <shortdescription/>
-    <longdescription/>
-  </dtconfig>
-  <dtconfig>
-    <name>plugins/darkroom/shrecovery/visible</name>
-    <type>bool</type>
-    <default>false</default>
-    <shortdescription/>
-    <longdescription/>
-  </dtconfig>
-  <dtconfig>
-    <name>plugins/darkroom/shrecovery/expanded</name>
     <type>bool</type>
     <default>false</default>
     <shortdescription/>
@@ -2248,6 +2235,13 @@
     <shortdescription>method to use for getting the display profile</shortdescription>
     <longdescription>this option allows to force a specific means of getting the current display profile. this is useful when one alternative gives wrong results</longdescription>
   </dtconfig>
+  <dtconfig>
+    <name>metadata/resolution</name>
+    <type>int</type>
+    <default>300</default>
+    <shortdescription/>
+    <longdescription/>
+  </dtconfig>
   <dtconfig prefs="core">
     <name>run_crawler_on_start</name>
     <type>bool</type>
@@ -2261,5 +2255,12 @@
     <default>aplay</default>
     <shortdescription>executable for playing audio files</shortdescription>
     <longdescription>this external program is used to play audio files some cameras record to keep notes for images</longdescription>
+  </dtconfig>
+  <dtconfig>
+    <name>screen_dpi_overwrite</name>
+    <type>float</type>
+    <default>-1.0</default>
+    <shortdescription>overwrite the screen's dpi setting</shortdescription>
+    <longdescription>if this value is > 0.0 then it is used as the screen's dpi setting which is used to scale the gui</longdescription>
   </dtconfig>
 </dtconfiglist>

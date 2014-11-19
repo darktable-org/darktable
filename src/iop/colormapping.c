@@ -58,13 +58,15 @@ DT_MODULE_INTROSPECTION(1, dt_iop_colormapping_params_t)
 #define HISTN (1<<11)
 #define MAXN 5
 
-#define NEUTRAL          0
-#define HAS_SOURCE       1
-#define HAS_TARGET       2
-#define ACQUIRE          4
-#define GET_SOURCE       8
-#define GET_TARGET      16
-
+typedef enum dt_iop_colormapping_flags_t
+{
+  NEUTRAL    = 0,
+  HAS_SOURCE = 1<<0,
+  HAS_TARGET = 1<<1,
+  ACQUIRE    = 1<<2,
+  GET_SOURCE = 1<<3,
+  GET_TARGET = 1<<4
+} dt_iop_colormapping_flags_t;
 
 typedef struct dt_iop_colormapping_flowback_t
 {
@@ -80,7 +82,7 @@ dt_iop_colormapping_flowback_t;
 
 typedef struct dt_iop_colormapping_params_t
 {
-  int flag;
+  dt_iop_colormapping_flags_t flag;
   // number of gaussians used.
   int n;
 
@@ -572,8 +574,7 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
   if(self->dev->gui_attached && g && piece->pipe->type == DT_DEV_PIXELPIPE_PREVIEW && (data->flag & ACQUIRE))
   {
     dt_pthread_mutex_lock(&g->lock);
-    if(g->buffer)
-      free (g->buffer);
+    free(g->buffer);
 
     g->buffer = malloc (width*height*ch*sizeof(float));
     g->width = width;
@@ -799,6 +800,7 @@ void
 cleanup_pipe (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
   free(piece->data);
+  piece->data = NULL;
 }
 
 void
@@ -818,7 +820,7 @@ init(dt_iop_module_t *module)
   module->params = malloc(sizeof(dt_iop_colormapping_params_t));
   module->default_params = malloc(sizeof(dt_iop_colormapping_params_t));
   module->default_enabled = 0;
-  module->priority = 438; // module order created by iop_dependencies.py, do not edit!
+  module->priority = 466; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_colormapping_params_t);
   module->gui_data = NULL;
 }
@@ -855,22 +857,18 @@ cleanup_global(dt_iop_module_so_t *module)
 void
 reload_defaults(dt_iop_module_t *module)
 {
+  dt_iop_colormapping_params_t tmp = (dt_iop_colormapping_params_t)
+  {
+    .flag = NEUTRAL,
+    .n = 3,
+    .dominance = 100.0f,
+    .equalization = 50.0f
+  };
+
+  // we might be called from presets update infrastructure => there is no image
+  if(!module->dev) goto end;
+
   dt_iop_colormapping_gui_data_t *g = (dt_iop_colormapping_gui_data_t *)module->gui_data;
-
-  dt_iop_colormapping_params_t tmp;
-  tmp.flag = NEUTRAL;
-  tmp.n = 3;
-  tmp.dominance = 100.0f;
-  tmp.equalization = 50.0f;
-  memset(tmp.source_ihist, 0, sizeof(float)*HISTN);
-  memset(tmp.source_mean, 0, sizeof(float)*MAXN*2);
-  memset(tmp.source_var, 0,  sizeof(float)*MAXN*2);
-  memset(tmp.source_weight, 0, sizeof(float)*MAXN);
-  memset(tmp.target_hist, 0, sizeof(int)*HISTN);
-  memset(tmp.target_mean, 0, sizeof(float)*MAXN*2);
-  memset(tmp.target_var, 0,  sizeof(float)*MAXN*2);
-  memset(tmp.target_weight, 0, sizeof(float)*MAXN);
-
   if(module->dev->gui_attached && g && g->flowback_set)
   {
     memcpy(tmp.source_ihist, g->flowback.hist, sizeof(float)*HISTN);
@@ -880,10 +878,11 @@ reload_defaults(dt_iop_module_t *module)
     tmp.n = g->flowback.n;
     tmp.flag = HAS_SOURCE;
   }
+  module->default_enabled = 0;
 
+end:
   memcpy(module->default_params, &tmp, sizeof(dt_iop_colormapping_params_t));
   memcpy(module->params, &tmp, sizeof(dt_iop_colormapping_params_t));
-  module->default_enabled = 0;
 }
 
 
@@ -922,7 +921,7 @@ cluster_preview_expose (GtkWidget *widget, GdkEventExpose *event, dt_iop_module_
   height -= 2*inset;
 
 
-  const float sep = 2.0;
+  const float sep = DT_PIXEL_APPLY_DPI(2.0);
   const float qwd = (width-(p->n-1)*sep)/(float)p->n;
   for(int cl=0; cl<p->n; cl++)
   {
@@ -938,7 +937,7 @@ cluster_preview_expose (GtkWidget *widget, GdkEventExpose *event, dt_iop_module_
         Lab.L = 53.390011;
         cmsDoTransform(g->xform, &Lab, rgb, 1);
         cairo_set_source_rgb (cr, rgb[0], rgb[1], rgb[2]);
-        cairo_rectangle(cr, qwd*(i+1)/3.0, height*(j+1)/3.0, qwd/3.0-.5, height/3.0-.5);
+        cairo_rectangle(cr, qwd*(i+1)/3.0, height*(j+1)/3.0, qwd/3.0-DT_PIXEL_APPLY_DPI(.5), height/3.0-DT_PIXEL_APPLY_DPI(.5));
         cairo_fill(cr);
       }
     cairo_translate (cr, qwd + sep, 0);
@@ -1053,13 +1052,15 @@ gui_init(struct dt_iop_module_t *self)
 
   self->widget = GTK_WIDGET(gtk_vbox_new(FALSE, DT_BAUHAUS_SPACE));
 
+  int panel_width = dt_conf_get_int("panel_width") * 0.95;
+
   GtkHBox *hbox1 = GTK_HBOX(gtk_hbox_new(FALSE, 0));
   GtkWidget *source = gtk_label_new(_("source clusters:"));
   gtk_box_pack_start(GTK_BOX(hbox1), GTK_WIDGET(source), FALSE, FALSE, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(hbox1), TRUE, TRUE, 0);
 
   g->source_area = gtk_drawing_area_new();
-  gtk_widget_set_size_request(g->source_area, 300, 100);
+  gtk_widget_set_size_request(g->source_area, panel_width, panel_width / 3);
   gtk_box_pack_start(GTK_BOX(self->widget), g->source_area, TRUE, TRUE, 0);
   g_signal_connect (G_OBJECT (g->source_area), "expose-event", G_CALLBACK (cluster_preview_expose), self);
 
@@ -1069,7 +1070,7 @@ gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(hbox2), TRUE, TRUE, 0);
 
   g->target_area = gtk_drawing_area_new();
-  gtk_widget_set_size_request(g->target_area, 300, 100);
+  gtk_widget_set_size_request(g->target_area, panel_width, panel_width / 3);
   gtk_box_pack_start(GTK_BOX(self->widget), g->target_area, TRUE, TRUE, 0);
   g_signal_connect (G_OBJECT (g->target_area), "expose-event", G_CALLBACK (cluster_preview_expose), self);
 
@@ -1128,7 +1129,7 @@ gui_cleanup(struct dt_iop_module_t *self)
   dt_colorspaces_cleanup_profile(g->hLab);
   cmsDeleteTransform(g->xform);
   dt_pthread_mutex_destroy(&g->lock);
-  if(g->buffer) free(g->buffer);
+  free(g->buffer);
   free(self->gui_data);
   self->gui_data = NULL;
 }

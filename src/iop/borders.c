@@ -535,6 +535,7 @@ void init_pipe (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_p
 void cleanup_pipe (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
   free(piece->data);
+  piece->data = NULL;
 }
 
 void init_presets (dt_iop_module_so_t *self)
@@ -554,10 +555,10 @@ request_pick_toggled(GtkToggleButton *togglebutton, dt_iop_module_t *self)
 {
   if(darktable.gui->reset) return;
 
-  self->request_color_pick = (gtk_toggle_button_get_active(togglebutton) ? 1 : 0);
+  self->request_color_pick = (gtk_toggle_button_get_active(togglebutton) ? DT_REQUEST_COLORPICK_MODULE : DT_REQUEST_COLORPICK_OFF);
 
   /* use point sample */
-  if (self->request_color_pick)
+  if (self->request_color_pick != DT_REQUEST_COLORPICK_OFF)
   {
     dt_lib_colorpicker_set_point(darktable.lib, 0.5, 0.5);
     dt_dev_reprocess_all(self->dev);
@@ -590,7 +591,7 @@ borders_expose (GtkWidget *widget, GdkEventExpose *event, dt_iop_module_t *self)
 {
   if(darktable.gui->reset) return FALSE;
   if(self->picked_output_color_max[0] < 0) return FALSE;
-  if(!self->request_color_pick) return FALSE;
+  if(self->request_color_pick == DT_REQUEST_COLORPICK_OFF) return FALSE;
   dt_iop_borders_gui_data_t *g = (dt_iop_borders_gui_data_t *)self->gui_data;
   dt_iop_borders_params_t *p = (dt_iop_borders_params_t *)self->params;
 
@@ -646,8 +647,9 @@ aspect_changed (GtkWidget *combo, dt_iop_module_t *self)
     if(text)
     {
       const char *c = text;
-      while(*c != ':' && *c != '/' && c < text + strlen(text)) c++;
-      if(c < text + strlen(text) - 1)
+      const char *end = text + strlen(text);
+      while(*c != ':' && *c != '/' && c < end) c++;
+      if(c < end - 1)
       {
         // *c = '\0'; // not needed, atof will stop there.
         c++;
@@ -686,8 +688,9 @@ position_h_changed (GtkWidget *combo, dt_iop_module_t *self)
     if(text)
     {
       const char *c = text;
-      while(*c != ':' && *c != '/' && c < text + strlen(text)) c++;
-      if(c < text + strlen(text) - 1)
+      const char *end = text + strlen(text);
+      while(*c != ':' && *c != '/' && c < end) c++;
+      if(c < end - 1)
       {
         // *c = '\0'; // not needed, atof will stop there.
         c++;
@@ -723,8 +726,9 @@ position_v_changed (GtkWidget *combo, dt_iop_module_t *self)
     if(text)
     {
       const char *c = text;
-      while(*c != ':' && *c != '/' && c < text + strlen(text)) c++;
-      if(c < text + strlen(text) - 1)
+      const char *end = text + strlen(text);
+      while(*c != ':' && *c != '/' && c < end) c++;
+      if(c < end - 1)
       {
         // *c = '\0'; // not needed, atof will stop there.
         c++;
@@ -884,16 +888,7 @@ void gui_update(struct dt_iop_module_t *self)
   }
   if(k == DT_IOP_BORDERS_ASPECT_COUNT)
   {
-    if (p->aspect_text)
-    {
-      dt_bauhaus_combobox_set_text(g->aspect, p->aspect_text);
-    }
-    else
-    {
-      char text[128];
-      snprintf(text, sizeof(text), "%.3f:1", p->aspect);
-      dt_bauhaus_combobox_set_text(g->aspect, text);
-    }
+    dt_bauhaus_combobox_set_text(g->aspect, p->aspect_text);
     dt_bauhaus_combobox_set(g->aspect, -1);
   }
 
@@ -911,16 +906,7 @@ void gui_update(struct dt_iop_module_t *self)
   }
   if(k == DT_IOP_BORDERS_POSITION_H_COUNT)
   {
-    if (p->pos_h_text)
-    {
-      dt_bauhaus_combobox_set_text(g->pos_h, p->pos_h_text);
-    }
-    else
-    {
-      char text[128];
-      snprintf(text, sizeof(text), "%.3f:1", p->pos_h);
-      dt_bauhaus_combobox_set_text(g->pos_h, text);
-    }
+    dt_bauhaus_combobox_set_text(g->pos_h, p->pos_h_text);
     dt_bauhaus_combobox_set(g->pos_h, -1);
   }
 
@@ -935,16 +921,7 @@ void gui_update(struct dt_iop_module_t *self)
   }
   if(k == DT_IOP_BORDERS_POSITION_V_COUNT)
   {
-    if (p->pos_v_text)
-    {
-      dt_bauhaus_combobox_set_text(g->pos_v, p->pos_v_text);
-    }
-    else
-    {
-      char text[128];
-      snprintf(text, sizeof(text), "%.3f:1", p->pos_v);
-      dt_bauhaus_combobox_set_text(g->pos_v, text);
-    }
+    dt_bauhaus_combobox_set_text(g->pos_v, p->pos_v_text);
     dt_bauhaus_combobox_set(g->pos_v, -1);
   }
 
@@ -975,7 +952,7 @@ void init(dt_iop_module_t *module)
   module->default_enabled = 0;
   module->params_size = sizeof(dt_iop_borders_params_t);
   module->gui_data = NULL;
-  module->priority = 947; // module order created by iop_dependencies.py, do not edit!
+  module->priority = 950; // module order created by iop_dependencies.py, do not edit!
 }
 
 void cleanup(dt_iop_module_t *module)
@@ -1111,12 +1088,12 @@ void gui_init(struct dt_iop_module_t *self)
 
   GtkWidget *box = gtk_hbox_new(FALSE, 0);
   g->colorpick = DTGTK_BUTTON(dtgtk_button_new(dtgtk_cairo_paint_color, CPF_IGNORE_FG_STATE | CPF_STYLE_FLAT));
-  gtk_widget_set_size_request(GTK_WIDGET(g->colorpick), 24, 24);
+  gtk_widget_set_size_request(GTK_WIDGET(g->colorpick), DT_PIXEL_APPLY_DPI(24), DT_PIXEL_APPLY_DPI(24));
   GtkWidget *label = dtgtk_reset_label_new (_("border color"), self, &p->color, 3*sizeof(float));
   g_signal_connect (G_OBJECT (g->colorpick), "clicked", G_CALLBACK (colorpick_callback), self);
   g->border_picker = GTK_TOGGLE_BUTTON(dtgtk_togglebutton_new(dtgtk_cairo_paint_colorpicker, CPF_STYLE_FLAT));
   g_object_set(G_OBJECT(g->border_picker), "tooltip-text", _("pick border color from image"), (char *)NULL);
-  gtk_widget_set_size_request(GTK_WIDGET(g->border_picker), 24, 24);
+  gtk_widget_set_size_request(GTK_WIDGET(g->border_picker), DT_PIXEL_APPLY_DPI(24), DT_PIXEL_APPLY_DPI(24));
   g_signal_connect(G_OBJECT(g->border_picker), "toggled", G_CALLBACK(request_pick_toggled_border), self);
 
   gtk_box_pack_start(GTK_BOX(box), label, TRUE, TRUE, 0);
@@ -1126,12 +1103,12 @@ void gui_init(struct dt_iop_module_t *self)
 
   box = gtk_hbox_new(FALSE, 0);
   g->frame_colorpick = DTGTK_BUTTON(dtgtk_button_new(dtgtk_cairo_paint_color, CPF_IGNORE_FG_STATE | CPF_STYLE_FLAT));
-  gtk_widget_set_size_request(GTK_WIDGET(g->frame_colorpick), 24, 24);
+  gtk_widget_set_size_request(GTK_WIDGET(g->frame_colorpick), DT_PIXEL_APPLY_DPI(24), DT_PIXEL_APPLY_DPI(24));
   label = dtgtk_reset_label_new (_("frame line color"), self, &p->color, 3*sizeof(float));
   g_signal_connect (G_OBJECT (g->frame_colorpick), "clicked", G_CALLBACK (frame_colorpick_callback), self);
   g->frame_picker = GTK_TOGGLE_BUTTON(dtgtk_togglebutton_new(dtgtk_cairo_paint_colorpicker, CPF_STYLE_FLAT));
   g_object_set(G_OBJECT(g->frame_picker), "tooltip-text", _("pick frame line color from image"), (char *)NULL);
-  gtk_widget_set_size_request(GTK_WIDGET(g->frame_picker), 24, 24);
+  gtk_widget_set_size_request(GTK_WIDGET(g->frame_picker), DT_PIXEL_APPLY_DPI(24), DT_PIXEL_APPLY_DPI(24));
   g_signal_connect(G_OBJECT(g->frame_picker), "toggled", G_CALLBACK(request_pick_toggled_frame), self);
 
   gtk_box_pack_start(GTK_BOX(box), label, TRUE, TRUE, 0);

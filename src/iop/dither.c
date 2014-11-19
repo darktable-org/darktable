@@ -493,6 +493,7 @@ void init_pipe (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_p
 void cleanup_pipe (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
   free(piece->data);
+  piece->data = NULL;
 }
 
 
@@ -524,7 +525,7 @@ void init(dt_iop_module_t *module)
   module->params = malloc(sizeof(dt_iop_dither_params_t));
   module->default_params = malloc(sizeof(dt_iop_dither_params_t));
   module->default_enabled = 0;
-  module->priority = 982; // module order created by iop_dependencies.py, do not edit!
+  module->priority = 983; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_dither_params_t);
   module->gui_data = NULL;
   dt_iop_dither_params_t tmp = (dt_iop_dither_params_t)

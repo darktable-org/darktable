@@ -69,14 +69,14 @@ int position()
 void gui_init(dt_lib_module_t *self)
 {
   /* initialize ui widgets */
-  dt_lib_tool_preferences_t *d = (dt_lib_tool_preferences_t *)g_malloc(sizeof(dt_lib_tool_preferences_t));
+  dt_lib_tool_preferences_t *d = (dt_lib_tool_preferences_t *)g_malloc0(sizeof(dt_lib_tool_preferences_t));
   self->data = (void *)d;
 
   self->widget = gtk_hbox_new(FALSE,2);
 
   /* create the grouping button */
   d->grouping_button = dtgtk_togglebutton_new(dtgtk_cairo_paint_grouping, CPF_STYLE_FLAT);
-  gtk_widget_set_size_request(d->grouping_button, 18,18);
+  gtk_widget_set_size_request(d->grouping_button, DT_PIXEL_APPLY_DPI(18), DT_PIXEL_APPLY_DPI(18));
   gtk_box_pack_start(GTK_BOX(self->widget), d->grouping_button, FALSE, FALSE, 2);
   if(darktable.gui->grouping)
     g_object_set(G_OBJECT(d->grouping_button), "tooltip-text", _("expand grouped images"), (char *)NULL);
@@ -89,7 +89,7 @@ void gui_init(dt_lib_module_t *self)
 
   /* create the "show/hide overlays" button */
   d->overlays_button = dtgtk_togglebutton_new(dtgtk_cairo_paint_overlays, CPF_STYLE_FLAT);
-  gtk_widget_set_size_request(d->overlays_button, 18,18);
+  gtk_widget_set_size_request(d->overlays_button, DT_PIXEL_APPLY_DPI(18), DT_PIXEL_APPLY_DPI(18));
   gtk_box_pack_start(GTK_BOX(self->widget), d->overlays_button, FALSE, FALSE, 2);
   if(darktable.gui->show_overlays)
     g_object_set(G_OBJECT(d->overlays_button), "tooltip-text", _("hide image overlays"), (char *)NULL);
@@ -102,7 +102,7 @@ void gui_init(dt_lib_module_t *self)
 
   /* create the preference button */
   d->preferences_button = dtgtk_button_new(dtgtk_cairo_paint_preferences, CPF_STYLE_FLAT);
-  gtk_widget_set_size_request(d->preferences_button, 18,18);
+  gtk_widget_set_size_request(d->preferences_button, DT_PIXEL_APPLY_DPI(18), DT_PIXEL_APPLY_DPI(18));
   gtk_box_pack_end(GTK_BOX(self->widget), d->preferences_button, FALSE, FALSE, 2);
   g_object_set(G_OBJECT(d->preferences_button), "tooltip-text", _("show global preferences"),
                (char *)NULL);
@@ -117,6 +117,27 @@ void gui_cleanup(dt_lib_module_t *self)
   self->data = NULL;
 }
 
+#ifdef USE_LUA
+
+typedef struct {
+  gboolean toggle;
+  gchar *event_name;
+} button_clicked_callback_data_t;
+
+static int32_t _button_clicked_callback_job(dt_job_t *job) {
+  gboolean has_lock = dt_lua_lock();
+  button_clicked_callback_data_t *t = dt_control_job_get_params(job);
+  lua_pushboolean(darktable.lua_state.state, t->toggle);
+  dt_lua_event_trigger(darktable.lua_state.state, t->event_name, 1);
+  g_free(t->event_name);
+  free(t);
+  dt_lua_unlock(has_lock);
+
+  return 0;
+}
+
+#endif // USE_LUA
+
 void _lib_preferences_button_clicked (GtkWidget *widget, gpointer user_data)
 {
   dt_gui_preferences_show();
@@ -124,6 +145,7 @@ void _lib_preferences_button_clicked (GtkWidget *widget, gpointer user_data)
 
 static void _lib_filter_grouping_button_clicked (GtkWidget *widget, gpointer user_data)
 {
+
   darktable.gui->grouping = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget));
   if(darktable.gui->grouping)
     g_object_set(G_OBJECT(widget), "tooltip-text", _("expand grouped images"), (char *)NULL);
@@ -132,6 +154,27 @@ static void _lib_filter_grouping_button_clicked (GtkWidget *widget, gpointer use
   dt_conf_set_bool("ui_last/grouping", darktable.gui->grouping);
   darktable.gui->expanded_group_id = -1;
   dt_collection_update_query(darktable.collection);
+
+#ifdef USE_LUA
+
+  dt_job_t *job = dt_control_job_create(&_button_clicked_callback_job, "lua: grouping button toggled");
+  if(job)
+  {
+    button_clicked_callback_data_t *t = (button_clicked_callback_data_t*) calloc(1, sizeof(button_clicked_callback_data_t));
+    if(!t)
+    {
+      dt_control_job_dispose(job);
+    }
+    else
+    {
+      dt_control_job_set_params(job, t);
+      t->toggle = darktable.gui->grouping;
+      t->event_name = g_strdup("global_toolbox-grouping_toggle");
+      dt_control_add_job(darktable.control, DT_JOB_QUEUE_USER_FG, job);
+    }
+  }
+
+#endif // USE_LUA
 }
 
 static void _lib_overlays_button_clicked (GtkWidget *widget, gpointer user_data)
@@ -143,6 +186,27 @@ static void _lib_overlays_button_clicked (GtkWidget *widget, gpointer user_data)
     g_object_set(G_OBJECT(widget), "tooltip-text", _("show image overlays"), (char *)NULL);
   dt_conf_set_bool("lighttable/ui/expose_statuses", darktable.gui->show_overlays);
   dt_control_signal_raise(darktable.signals, DT_SIGNAL_COLLECTION_CHANGED);
+
+#ifdef USE_LUA
+
+  dt_job_t *job = dt_control_job_create(&_button_clicked_callback_job, "lua: overlay button toggled");
+  if(job)
+  {
+    button_clicked_callback_data_t *t = (button_clicked_callback_data_t*) calloc(1, sizeof(button_clicked_callback_data_t));
+    if(!t)
+    {
+      dt_control_job_dispose(job);
+    }
+    else
+    {
+      dt_control_job_set_params(job, t);
+      t->toggle = darktable.gui->show_overlays;
+      t->event_name = g_strdup("global_toolbox-overlay_toggle");
+      dt_control_add_job(darktable.control, DT_JOB_QUEUE_USER_FG, job);
+    }
+  }
+
+#endif // USE_LUA
 }
 
 void init_key_accels(dt_lib_module_t *self)
@@ -160,6 +224,68 @@ void connect_key_accels(dt_lib_module_t *self)
   dt_accel_connect_button_lib(self, "preferences", d->preferences_button);
   dt_accel_connect_button_lib(self, "show overlays", d->overlays_button);
 }
+
+#ifdef USE_LUA
+
+static int grouping_member(lua_State *L)
+{
+  dt_lib_module_t *self = *(dt_lib_module_t**)lua_touserdata(L, 1);
+  dt_lib_tool_preferences_t *d = (dt_lib_tool_preferences_t *)self->data;
+  dt_lua_lib_check_error(L, self);
+  if(lua_gettop(L) != 3) {
+    lua_pushboolean(L, darktable.gui->grouping);
+    return 1;
+  } else {
+    gboolean value = lua_toboolean(L, 3);
+    if(darktable.gui->grouping != value) {
+      dt_lua_unlock(TRUE);
+      gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->grouping_button), value);
+      dt_lua_lock();
+    }
+  }
+  return 0;
+}
+
+static int show_overlays_member(lua_State *L)
+{
+  dt_lib_module_t *self = *(dt_lib_module_t**)lua_touserdata(L, 1);
+  dt_lib_tool_preferences_t *d = (dt_lib_tool_preferences_t *)self->data;
+  dt_lua_lib_check_error(L, self);
+  if(lua_gettop(L) != 3) {
+    lua_pushboolean(L, darktable.gui->show_overlays);
+    return 1;
+  } else {
+    gboolean value = lua_toboolean(L, 3);
+    if(darktable.gui->show_overlays != value) {
+      dt_lua_unlock(TRUE);
+      gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->overlays_button), value);
+      dt_lua_lock();
+    }
+  }
+  return 0;
+}
+
+void init(struct dt_lib_module_t *self)
+{
+  lua_State *L = darktable.lua_state.state;
+  int my_type = dt_lua_module_entry_get_type(L, "lib", self->plugin_name);
+
+  lua_pushcfunction(L, grouping_member);
+  dt_lua_type_register_type(L, my_type, "grouping");
+  lua_pushcfunction(L, show_overlays_member);
+  dt_lua_type_register_type(L, my_type, "show_overlays");
+
+  lua_pushcfunction(L,dt_lua_event_multiinstance_register);
+  lua_pushcfunction(L,dt_lua_event_multiinstance_trigger);
+  dt_lua_event_add(L,"global_toolbox-grouping_toggle");
+
+  lua_pushcfunction(L,dt_lua_event_multiinstance_register);
+  lua_pushcfunction(L,dt_lua_event_multiinstance_trigger);
+  dt_lua_event_add(L,"global_toolbox-overlay_toggle");
+
+}
+
+#endif //USE_LUA
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

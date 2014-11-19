@@ -2,6 +2,7 @@
     This file is part of darktable,
     copyright (c) 2009--2010 johannes hanika.
     copyright (c) 2011 henrik andersson.
+    copyright (c) 2014 LebedevRI.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -20,6 +21,13 @@
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
+
+#include <stdlib.h>
+#include <stdio.h>
+#include <png.h>
+#include <inttypes.h>
+#include <zlib.h>
+
 #include "common/darktable.h"
 #include "common/imageio_module.h"
 #include "common/imageio.h"
@@ -27,11 +35,6 @@
 #include "control/conf.h"
 #include "dtgtk/slider.h"
 #include "common/imageio_format.h"
-#include <stdlib.h>
-#include <stdio.h>
-#include <png.h>
-#include <inttypes.h>
-#include <zlib.h>
 
 DT_MODULE(1)
 
@@ -123,11 +126,10 @@ static void PNGwriteRawProfile(png_struct *ping,
 }
 
 int
-write_image (dt_imageio_module_data_t *p_tmp, const char *filename, const void *in_void, void *exif, int exif_len, int imgid)
+write_image (dt_imageio_module_data_t *p_tmp, const char *filename, const void *ivoid, void *exif, int exif_len, int imgid)
 {
   dt_imageio_png_t*p=(dt_imageio_png_t*)p_tmp;
   const int width = p->width, height = p->height;
-  const uint8_t *in = (uint8_t *)in_void;
   FILE *f = fopen(filename, "wb");
   if (!f) return 1;
 
@@ -152,7 +154,7 @@ write_image (dt_imageio_module_data_t *p_tmp, const char *filename, const void *
   if (setjmp(png_jmpbuf(png_ptr)))
   {
     fclose(f);
-    png_destroy_write_struct(&png_ptr, NULL);
+    png_destroy_write_struct(&png_ptr, &info_ptr);
     return 1;
   }
 
@@ -169,37 +171,61 @@ write_image (dt_imageio_module_data_t *p_tmp, const char *filename, const void *
                p->bpp, PNG_COLOR_TYPE_RGB, PNG_INTERLACE_NONE,
                PNG_COMPRESSION_TYPE_DEFAULT, PNG_FILTER_TYPE_DEFAULT);
 
+  // metadata has to be written before the pixels
+
+  // embed icc profile
+  if(imgid > 0)
+  {
+    cmsHPROFILE out_profile = dt_colorspaces_create_output_profile(imgid);
+    uint32_t len = 0;
+    cmsSaveProfileToMem(out_profile, 0, &len);
+    if(len > 0)
+    {
+      char buf[len], name[512] = { 0 };
+      cmsSaveProfileToMem(out_profile, buf, &len);
+      dt_colorspaces_get_profile_name(out_profile, "en", "US", name, sizeof(name));
+
+      png_set_iCCP(png_ptr, info_ptr, *name?name:"icc", 0,
+#if (PNG_LIBPNG_VER < 10500)
+                   (png_charp)buf,
+#else
+                   (png_const_bytep)buf,
+#endif
+                   len);
+    }
+    dt_colorspaces_cleanup_profile(out_profile);
+  }
+
+  // write exif data
+  PNGwriteRawProfile(png_ptr, info_ptr, "exif", exif, exif_len);
+
   png_write_info(png_ptr, info_ptr);
 
-  // png_bytep row_pointer = (png_bytep) in;
-  png_byte row[6*width];
-  // unsigned long rowbytes = png_get_rowbytes(png_ptr, info_ptr);
+  /*
+   * Get rid of filler (OR ALPHA) bytes, pack XRGB/RGBX/ARGB/RGBA into
+   * RGB (4 channels -> 3 channels). The second parameter is not used.
+   */
+  png_set_filler(png_ptr, 0, PNG_FILLER_AFTER);
+
+  png_bytep *row_pointers = malloc(height * sizeof(png_bytep));
 
   if(p->bpp > 8)
   {
-    for (int y = 0; y < height; y++)
-    {
-      for(int x=0; x<width; x++) for(int k=0; k<3; k++)
-        {
-          uint16_t pix = ((uint16_t *)in)[(size_t)4*width*y + 4*x + k];
-          uint16_t swapped = (0xff00 & (pix<<8)) | (pix>>8);
-          ((uint16_t *)row)[3*x+k] = swapped;
-        }
-      png_write_row(png_ptr, row);
-    }
+    /* swap bytes of 16 bit files to most significant bit first */
+    png_set_swap(png_ptr);
+
+    for (unsigned i = 0; i < height; i++)
+      row_pointers[i] = (png_bytep)((uint16_t *)ivoid + (size_t)4 * i * width);
   }
   else
   {
-    for (int y = 0; y < height; y++)
-    {
-      for(int x=0; x<width; x++) for(int k=0; k<3; k++) row[3*x+k] = in[(size_t)4*width*y + 4*x + k];
-      png_write_row(png_ptr, row);
-    }
+    for (unsigned i = 0; i < height; i++)
+      row_pointers[i] = (uint8_t *)ivoid + (size_t)4 * i * width;
   }
 
-  PNGwriteRawProfile(png_ptr, info_ptr, "exif", exif, exif_len);
+  png_write_image (png_ptr, row_pointers);
 
-  // TODO: embed icc profile!
+  free(row_pointers);
 
   png_write_end(png_ptr, info_ptr);
   png_destroy_write_struct(&png_ptr, &info_ptr);
@@ -214,10 +240,10 @@ int read_header(const char *filename, dt_imageio_module_data_t *p_tmp)
 
   if(!png->f) return 1;
 
-  const unsigned int NUM_BYTES_CHECK = 8;
+  const size_t NUM_BYTES_CHECK = 8;
   png_byte dat[NUM_BYTES_CHECK];
 
-  int cnt = fread(dat, 1, NUM_BYTES_CHECK, png->f);
+  size_t cnt = fread(dat, 1, NUM_BYTES_CHECK, png->f);
 
   if (cnt != NUM_BYTES_CHECK || png_sig_cmp(dat, (png_size_t) 0, NUM_BYTES_CHECK))
   {
@@ -339,8 +365,7 @@ params_size(dt_imageio_module_format_t *self)
 void*
 get_params(dt_imageio_module_format_t *self)
 {
-  dt_imageio_png_t *d = (dt_imageio_png_t *)malloc(sizeof(dt_imageio_png_t));
-  memset(d, 0, sizeof(dt_imageio_png_t));
+  dt_imageio_png_t *d = (dt_imageio_png_t *)calloc(1, sizeof(dt_imageio_png_t));
   d->bpp = dt_conf_get_int("plugins/imageio/format/png/bpp");
   if(d->bpp < 12) d->bpp = 8;
   else            d->bpp = 16;

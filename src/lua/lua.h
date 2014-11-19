@@ -65,6 +65,9 @@ typedef struct {
 
 } dt_lua_state_t;
 
+
+void dt_lua_redraw_screen();
+
 #else
 /* defines to easily have a few lua types when lua is not available */
 typedef int lua_State ;

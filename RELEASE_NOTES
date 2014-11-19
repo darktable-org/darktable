@@ -10,3 +10,235 @@ Stuff that belongs in here:
 The release team should empty this file after each release.
 ==========================================================================================
 
+TODO: decide if we want to keep the slider in scalepixels iop ? i think we should.
+
+TODO: probably remove auto loading of gpx files during import.
+
+
+
+these are the preliminary release candidate release notes:
+
+new features:
+- input colour gamut mapping
+- slideshow
+- better basecurve tool to create basecurves from raw/jpg pairs
+- soft boundaries in sliders (right click and type 8 in exposure compensation for example)
+- support huge images (> 32 bit pixel index)
+- pwstorage libsecret
+- new defringe image operation
+- automatic levels
+- big exr export speedup (multicore support)
+- color conversion speedup (openmp for lcms2 case)
+- tiff read/write rewritten, works on 32-bit float now
+- embedded icc profile support for png/tiff (read/write)
+- lens iop presets are copy/pastable between different images
+
+internal improvements:
+- module parameter introspection
+- clang/address-sanitizer/etc compiler warnings fixed
+- flip iop used for raw auto-orientation (simplifies code)
+- libraw not used any more for a lot of file formats (faster loading via rawspeed now)
+
+bug fixes:
+- hdr bracketing fixes
+- masks cleanup and bugfixes
+- correct lens detection for compact cameras
+
+and of course also:
+- updated usermanual
+- lots of performance improvements and code cleanup
+
+please give this some testing and let us know in #darktable or on the darktable-devel mailing list if there are remaining issues with it.
+
+and as always, thanks to our great community and all the contributors for making this possible! enjoy the release!
+
+p.s. new cameras supported!
+
+- initial support for x-trans sensors
+
+new noise profiles:
+
+- canon eos 700d
+- canon eos rebel sl1
+- dmc-gh3
+- dmc-gm1
+- dmc-gx7
+- dmc-lx5
+- dsc-rx100m2
+- dsc-rx100m2
+- dsc-rx100m2
+- e-m10
+- e-pl2
+- fuji x-e2
+- fuji x-t1
+- fuji x100s
+- ilce-6000
+- ilce-7
+- ilce-7r
+- ilce-6r
+- nex-5r
+- nikon d40
+- nikon d5300
+- nikon d610
+- nikon d750
+- nikon d810
+- olympus e-m10
+- panasonic dmc-gh3
+- panasonic dmc-gx7
+- pentax k100d super
+
+new cameras in rawspeed:
+
+- Canon Canon EOS 300D DIGITAL
+- Canon Canon EOS D30
+- Canon Canon EOS D60
+- Canon Canon EOS 10D
+- Canon Canon PowerShot Pro1
+- Canon Canon PowerShot G1
+- Canon Canon PowerShot G2
+- Canon Canon PowerShot G3
+- Canon Canon PowerShot G5
+- Canon Canon PowerShot G6
+- Canon Canon PowerShot G1 X Mark II
+- Canon Canon PowerShot S30
+- Canon Canon PowerShot S40
+- Canon Canon PowerShot S45
+- Canon Canon PowerShot S50
+- Canon Canon PowerShot S60
+- Canon Canon PowerShot S70
+- Canon Canon PowerShot S120
+- Canon PowerShot S3 IS
+- Canon PowerShot A610
+- Canon PowerShot A620
+- Canon PowerShot A640
+- Canon PowerShot A650
+- Canon PowerShot A720 IS
+- NIKON CORPORATION NIKON D1X
+- NIKON CORPORATION NIKON D750 mode
+- NIKON CORPORATION NIKON D750 mode
+- NIKON CORPORATION NIKON D7000
+- NIKON CORPORATION NIKON D7100
+- NIKON CORPORATION NIKON D800 mode
+- NIKON CORPORATION NIKON D800 mode
+- NIKON CORPORATION NIKON D810 mode
+- NIKON CORPORATION NIKON D810 mode
+- NIKON CORPORATION NIKON D810 mode
+- NIKON CORPORATION NIKON D810 mode
+- NIKON CORPORATION NIKON D810 mode
+- NIKON CORPORATION NIKON D4S mode
+- NIKON CORPORATION NIKON D4S mode
+- NIKON CORPORATION NIKON D4S mode
+- NIKON CORPORATION NIKON D4S mode
+- NIKON CORPORATION NIKON D4S
+- NIKON CORPORATION NIKON 1 J4 decoder_version
+- OLYMPUS OPTICAL CO.,LTD C5050Z
+- OLYMPUS CORPORATION C5060WZ
+- OLYMPUS IMAGING CORP. E-PL6
+- OLYMPUS IMAGING CORP. E-PL7 supported
+- Panasonic model = DMC-GH1 mode
+- Panasonic model = DMC-GF3 mode
+- Panasonic model = DMC-GF3 mode
+- Panasonic model = DMC-GF3 mode
+- Panasonic model = DMC-FZ70
+- LEICA DIGILUX 2 decoder_version
+- LEICA DIGILUX 2 mode
+- LEICA D-LUX 3 decoder_version
+- LEICA D-LUX 3 mode
+- LEICA V-LUX 1 decoder_version
+- LEICA V-LUX 1 mode
+- Panasonic DMC-L10 decoder_version
+- Panasonic DMC-L10 mode
+- Panasonic DMC-FZ30 decoder_version
+- Panasonic DMC-FZ30 mode
+- Panasonic DMC-FZ50 decoder_version
+- Panasonic model = DMC-FZ50 mode 
+- Panasonic DMC-FZ8 decoder_version
+- Panasonic DMC-FZ8 mode
+- Panasonic DMC-FZ18 decoder_version
+- Panasonic DMC-FZ18 mode
+- Panasonic DMC-L1 decoder_version
+- Panasonic DMC-L1 mode
+- Panasonic DMC-LX2 decoder_version
+- Panasonic DMC-LX2 mode
+- LEICA model = D-LUX 6
+- LEICA model = D-LUX 6 mode
+- LEICA model = D-LUX 6 mode
+- LEICA model = D-LUX 6 mode
+- LEICA model = D-LUX 6 mode
+- PENTAX Corporation PENTAX K100D Super
+- PENTAX Corporation PENTAX *ist D
+- RICOH IMAGING COMPANY, LTD. PENTAX K-3
+- PENTAX PENTAX K-5 decoder_version
+- SAMSUNG NX5
+- SAMSUNG NX3000
+- SAMSUNG EK-GN120 decoder_version
+- SONY DSC-RX100M3
+- SONY DSLR-A100 decoder_version
+- SONY ILCE-5000 supported
+- SONY ILCE-5100
+- SONY ILCE-6000 supported
+- SONY ILCE-7S supported
+- SONY ILCA-77M2
+- FUJIFILM FinePix S6000fd
+- FUJIFILM FinePix S200EXR
+- FUJIFILM FinePix F700
+- FUJIFILM FinePix F900EXR
+- FUJIFILM FinePix E550
+- FUJIFILM IS-1
+- FUJIFILM FinePix S3Pro
+- FUJIFILM FinePix S5Pro
+- FUJIFILM FinePix S5600
+- FUJIFILM FinePix E900
+- FUJIFILM FinePixS2Pro
+- FUJIFILM FinePix S5000
+- FUJIFILM FinePix S5200
+- FUJIFILM FinePix S5500
+- FUJIFILM FinePix S6500fd
+- FUJIFILM FinePix S9500
+- FUJIFILM FinePix S9600
+- FUJIFILM FinePix S9600fd
+- FUJIFILM FinePix HS10 HS11
+- FUJIFILM FinePix HS20EXR
+- FUJIFILM FinePix HS30EXR
+- FUJIFILM FinePix X100
+- FUJIFILM X10
+- FUJIFILM X-S1
+- FUJIFILM X-Pro1
+- FUJIFILM XF1
+- FUJIFILM X-E1
+- FUJIFILM X20
+- FUJIFILM X30
+- FUJIFILM X100S
+- FUJIFILM X-M1
+- FUJIFILM X-A1
+- FUJIFILM XQ1
+- FUJIFILM X-E2
+- FUJIFILM X-T1
+- MINOLTA DYNAX 5D
+- MINOLTA DYNAX 7D
+- MINOLTA DIMAGE A1
+- MINOLTA DIMAGE A2
+- MINOLTA DIMAGE A200
+- MINOLTA DIMAGE 5
+- MINOLTA DIMAGE 7
+- MINOLTA DIMAGE 7I
+- MINOLTA DIMAGE 7HI
+- SONY DSC-R1
+- Mamiya-OP Co.,Ltd. MAMIYA ZD
+- Creo/Leaf Leaf Aptus 22(LF3779     )/Hasselblad H1
+- Leaf Leaf Aptus 75(LI400146   )/Large Format
+- Leaf Credo 40
+- Leaf Credo 60
+- Leaf Credo 80
+- Leaf Leaf Aptus-II 5(LI300059   )/Mamiya 645 AFD
+- Leaf Leaf Aptus-II 8(LI300247   )/Mamiya 645 AFD
+- Leaf Leaf AFi-II 7(BT12701    )/Leaf AFi
+- Leaf Leaf Aptus-II 10(LI300019   )/Phase One 645DF
+- Leaf Leaf Aptus-II 10R(           )/Large Format
+- Leaf Leaf Aptus-II 12(LI301306   )/Phase One 645DF/645AF
+- Kodak DCS Pro SLR/n
+- EASTMAN KODAK COMPANY KODAK P880 ZOOM DIGITAL CAMERA
+- SEIKO EPSON CORP. R-D1
+- Hasselblad Hasselblad 500 mech.
+- Hasselblad Hasselblad H3D
+

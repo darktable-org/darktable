@@ -4,7 +4,7 @@
 /*
     RawSpeed - RAW file decoder.
 
-    Copyright (C) 2009 Klaus Post
+    Copyright (C) 2009-2014 Klaus Post
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Lesser General Public
@@ -52,6 +52,11 @@ void RawImageDataU16::calculateBlackAreas() {
     /* Make sure area sizes are multiple of two, 
        so we have the same amount of pixels for each CFA group */
     area.size = area.size - (area.size&1);
+
+    /* If offset is negative (relative to right or bottom border) calculate
+       the offset from the left or top border */
+    if(area.offset < 0)
+      area.offset += area.isVertical ? uncropped_dim.x : uncropped_dim.y;
 
     /* Process horizontal area */
     if (!area.isVertical) {
@@ -133,7 +138,7 @@ void RawImageDataU16::scaleBlackWhite() {
       blackLevel = b;
     if (whitePoint >= 65536)
       whitePoint = m;
-    printf("Rawspeed, ISO:%d, Estimated black:%d, Estimated white: %d\n", isoSpeed, blackLevel, whitePoint);
+    writeLog(DEBUG_PRIO_INFO, "ISO:%d, Estimated black:%d, Estimated white: %d\n", isoSpeed, blackLevel, whitePoint);
   }
 
   /* Skip, if not needed */
@@ -144,8 +149,6 @@ void RawImageDataU16::scaleBlackWhite() {
   if (blackLevelSeparate[0] < 0)
     calculateBlackAreas();
 
-//  printf("ISO:%d, black[0]:%d, white: %d\n", isoSpeed, blackLevelSeparate[0], whitePoint);
-//  printf("black[1]:%d, black[2]:%d, black[3]:%d\n", blackLevelSeparate[1], blackLevelSeparate[2], blackLevelSeparate[3]);
   startWorker(RawImageWorker::SCALE_VALUES, true);
 }
 
@@ -209,11 +212,20 @@ void RawImageDataU16::scaleValues(int start_y, int end_y) {
     sse_full_scale_fp = _mm_set1_epi32(full_scale_fp|(full_scale_fp<<16));
     sse_half_scale_fp = _mm_set1_epi32(half_scale_fp >> 4);
 
-    rand_mul = _mm_set1_epi32(0x4d9f1d32);
+    if (mDitherScale) {
+      rand_mul = _mm_set1_epi32(0x4d9f1d32);
+    } else {
+      rand_mul = _mm_set1_epi32(0);
+    }
     rand_mask = _mm_set1_epi32(0x00ff00ff);  // 8 random bits
 
     for (int y = start_y; y < end_y; y++) {
-      __m128i sserandom = _mm_set_epi32(dim.x*1676+y*18000, dim.x*2342+y*34311, dim.x*4272+y*12123, dim.x*1234+y*23464);
+      __m128i sserandom;
+      if (mDitherScale) {
+          sserandom = _mm_set_epi32(dim.x*1676+y*18000, dim.x*2342+y*34311, dim.x*4272+y*12123, dim.x*1234+y*23464);
+      } else {
+        sserandom = _mm_setzero_si128();
+      }
       __m128i* pixel = (__m128i*) & data[(mOffset.y+y)*pitch];
       __m128i ssescale, ssesub;
       if (((y+mOffset.y)&1) == 0) { 
@@ -286,8 +298,13 @@ void RawImageDataU16::scaleValues(int start_y, int end_y) {
       int *mul_local = &mul[2*(y&1)];
       int *sub_local = &sub[2*(y&1)];
       for (int x = 0 ; x < gw; x++) {
-        v = 18000 *(v & 65535) + (v >> 16);
-        int rand = half_scale_fp - (full_scale_fp * (v&2047));
+        int rand;
+        if (mDitherScale) {
+          v = 18000 *(v & 65535) + (v >> 16);
+          rand = half_scale_fp - (full_scale_fp * (v&2047));
+        } else {
+          rand = 0;
+        }
         pixel[x] = clampbits(((pixel[x] - sub_local[x&1]) * mul_local[x&1] + 8192 + rand) >> 14, 16);
       }
     }
@@ -323,8 +340,13 @@ void RawImageDataU16::scaleValues(int start_y, int end_y) {
     int *mul_local = &mul[2*(y&1)];
     int *sub_local = &sub[2*(y&1)];
     for (int x = 0 ; x < gw; x++) {
-      v = 18000 *(v & 65535) + (v >> 16);
-      int rand = half_scale_fp - (full_scale_fp * (v&2047));
+      int rand;
+      if (mDitherScale) {
+        v = 18000 *(v & 65535) + (v >> 16);
+        rand = half_scale_fp - (full_scale_fp * (v&2047));
+      } else {
+        rand = 0;
+      }
       pixel[x] = clampbits(((pixel[x] - sub_local[x&1]) * mul_local[x&1] + 8192 + rand) >> 14, 16);
     }
   }

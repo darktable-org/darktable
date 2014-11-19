@@ -54,7 +54,7 @@ int main(int argc, char *arg[])
   bind_textdomain_codeset (GETTEXT_PACKAGE, "UTF-8");
   textdomain (GETTEXT_PACKAGE);
 
-  gtk_init (&argc, &arg);
+  gtk_init_check(&argc, &arg);
 
   // parse command line arguments
   char *image_filename = NULL;
@@ -140,6 +140,8 @@ int main(int argc, char *arg[])
   m_arg[m_argc++] = "darktable-cli";
   m_arg[m_argc++] = "--library";
   m_arg[m_argc++] = ":memory:";
+  m_arg[m_argc++] = "--conf";
+  m_arg[m_argc++] = "write_sidecar_files=FALSE";
   for(; k < argc; k++) m_arg[m_argc++] = arg[k];
   m_arg[m_argc] = NULL;
 
@@ -162,7 +164,7 @@ int main(int argc, char *arg[])
   }
 
   // init dt without gui:
-  if(dt_init(m_argc, m_arg, 0)) exit(1);
+  if(dt_init(m_argc, m_arg, 0,NULL)) exit(1);
 
   dt_film_t film;
   int id = 0;
@@ -209,6 +211,9 @@ int main(int argc, char *arg[])
   if(!strcmp(ext, "jpg"))
     ext = "jpeg";
 
+  if(!strcmp(ext, "tif"))
+    ext = "tiff";
+
   // init the export data structures
   dt_imageio_module_format_t *format;
   dt_imageio_module_storage_t *storage;
@@ -229,7 +234,7 @@ int main(int argc, char *arg[])
   }
 
   // and now for the really ugly hacks. don't tell your children about this one or they won't sleep at night any longer ...
-  g_strlcpy((char*)sdata, output_filename, DT_MAX_PATH_LEN);
+  g_strlcpy((char*)sdata, output_filename, DT_MAX_PATH_FOR_PARAMS);
   // all is good now, the last line didn't happen.
 
   format = dt_imageio_get_format_by_name(ext);
@@ -271,7 +276,7 @@ int main(int argc, char *arg[])
   }
   //TODO: add a callback to set the bpp without going through the config
 
-  storage->store(storage,sdata, id, format, fdata, 1, 1, high_quality);
+  storage->store(storage, sdata, id, format, fdata, 1, 1, high_quality);
 
   // cleanup time
   if(storage->finalize_store) storage->finalize_store(storage, sdata);

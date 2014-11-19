@@ -27,8 +27,9 @@
       <tbody>
         <row>
           <entry>
-            The current view in lighttable is called a collection. With this panel you can
-            manage the collection by filtering with different criteria.
+            The current view in lighttable is called a collection. The <emphasis>collect
+            images</emphasis> panel lets you narrow down the list of visible images to just the
+            ones you want to work with.
           </entry>
           <entry>
             <graphic fileref="lighttable/images/panel_collectimages.png" scalefit="1" width="80%" align="center" />
@@ -39,14 +40,14 @@
   </informaltable>
 
   <para>
-    All images imported into darktable are kept in a database with various attributes describing
-    each image. A collection is defined by applying certain filtering rules to these attributes
-    which leads to a subset of your images being displayed in the lighttable view.
+    Information about all images imported into darktable are kept in a database, with various
+    attributes describing each image. You define a collection by applying certain filtering
+    rules to these attributes, creating a subset of images to display in the lighttable view.
   </para>
 
   <para>
-    The default collection is based on the film roll attribute - it displays all images of the
-    last imported film roll or any other film roll chosen.
+    The default collection is based on the film roll attribute&nbsp;&ndash; it displays all
+    images of the last imported film roll or any other film roll chosen.
   </para>
 
   <sect3>
@@ -90,7 +91,7 @@
                 </entry>
                 <entry>
                   <para>
-                    the EXIF string describing the camera
+                    the EXIF data entry describing the camera make and model
                   </para>
                 </entry>
               </row>
@@ -111,7 +112,7 @@
                 </entry>
                 <entry>
                   <para>
-                    the date when the photo was taken in the format
+                    the date when the photo was taken, in the format
                     <emphasis>YYYY:MM:DD</emphasis>
                   </para>
                 </entry>
@@ -122,8 +123,8 @@
                 </entry>
                 <entry>
                   <para>
-                    the time (date and time of day) when the photo was taken in the format
-                    <emphasis>YYYY:MM:DD hh:mm:ss</emphasis>
+                    the time (date <emphasis>and</emphasis> time of day) when the photo was
+                    taken, in the format <emphasis>YYYY:MM:DD hh:mm:ss</emphasis>
                   </para>
                 </entry>
               </row>
@@ -133,7 +134,7 @@
                 </entry>
                 <entry>
                   <para>
-                    a boolean field stating if the image's history stack has been altered or not
+                    choose images whose history stacks have been altered or not altered
                   </para>
                 </entry>
               </row>
@@ -155,7 +156,7 @@
                 </entry>
                 <entry>
                   <para>
-                    the title string as defined in the image's metadata
+                    the title, as listed in the image's metadata <quote>title</quote> field
                   </para>
                 </entry>
               </row>
@@ -165,7 +166,8 @@
                 </entry>
                 <entry>
                   <para>
-                    the description string as defined in the image's metadata
+                    the description, as listed in the image's metadata
+                    <quote>description</quote> field
                   </para>
                 </entry>
               </row>
@@ -175,7 +177,7 @@
                 </entry>
                 <entry>
                   <para>
-                    the creator string as defined in the image's metadata
+                    the creator, as listed in the image's metadata <quote>creator</quote> field
                   </para>
                 </entry>
               </row>
@@ -185,7 +187,8 @@
                 </entry>
                 <entry>
                   <para>
-                    the publisher string as defined in the image's metadata
+                    the publisher, as listed in the image's metadata <quote>publisher</quote>
+                    field
                   </para>
                 </entry>
               </row>
@@ -195,7 +198,8 @@
                 </entry>
                 <entry>
                   <para>
-                    the copyrights string as defined in the image's metadata
+                    the copyrights statement, as written in the image's metadata
+                    <quote>rights</quote> field
                   </para>
                 </entry>
               </row>
@@ -205,7 +209,7 @@
                 </entry>
                 <entry>
                   <para>
-                    the EXIF string describing the lens
+                    the EXIF data entry describing the lens
                   </para>
                 </entry>
               </row>
@@ -215,7 +219,7 @@
                 </entry>
                 <entry>
                   <para>
-                    the ISO value as derived from EXIF data
+                    the ISO value, as derived from EXIF data
                   </para>
                 </entry>
               </row>
@@ -225,7 +229,7 @@
                 </entry>
                 <entry>
                   <para>
-                    the aperture value as derived from EXIF data
+                    the aperture value, as derived from EXIF data
                   </para>
                 </entry>
               </row>
@@ -251,28 +255,30 @@
       <title>search rules</title>
 
       <para>
-        In the text field to the right of the attribute you supply a pattern. The pattern is
-        compared against all database entries of the selected attribute. A match is detected if
-        the pattern is a substring of the image's attribute. You may use <quote>%</quote> as
-        wildcard character. The collection gets limited to those images where the query matches.
-        Leaving the text field empty matches all images.
+        In the text field to the right of the attribute, you write a pattern. The pattern is
+        compared against all database entries with the selected attribute. This search detects a
+        match if the images' attribute contains the pattern in its full text. You may use
+        <quote>%</quote> as wildcard character. The collection gets limited to those images
+        where the query matches. Leaving the text field empty matches all images for that
+        attribute.
       </para>
 
       <para>
-        The table below the search rule will show all matching database entries of the query you
-        are currently working on. The table gets updated continuously as you type. You may
-        scroll through the list and select the data of your choice by double-clicking.
+        The box below the search rule will list all matching database entries of the query you
+        are currently working on. This list gets updated continuously as you type. You may also
+        choose sorting criteria by scrolling through the list and double-clicking.
       </para>
 
       <para>
-        Clicking on the triangle button right to the text field opens a drop-down menu with
-        options to finetune your collection by adding further rules:
+        Clicking on the triangle button to the right of the text field opens a drop-down menu
+        with options to finetune your current collection by adding further rules, or removing
+        them:
       </para>
 
       <sect5>
         <title>clear this rule</title>
         <para>
-          Removes this rule - or resets to default if this is the only rule defined.
+          Removes this rule&nbsp;&ndash; or resets to default if this is the only rule defined.
         </para>
       </sect5>
 

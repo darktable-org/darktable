@@ -4,7 +4,7 @@
 /*
 RawSpeed - RAW file decoder.
 
-Copyright (C) 2009 Klaus Post
+Copyright (C) 2009-2014 Klaus Post
 
 This library is free software; you can redistribute it and/or
 modify it under the terms of the GNU Lesser General Public
@@ -50,6 +50,11 @@ namespace RawSpeed {
       /* Make sure area sizes are multiple of two, 
       so we have the same amount of pixels for each CFA group */
       area.size = area.size - (area.size&1);
+
+      /* If offset is negative (relative to right or bottom border) calculate
+         the offset from the left or top border */
+      if(area.offset < 0)
+        area.offset += area.isVertical ? uncropped_dim.x : uncropped_dim.y;
 
       /* Process horizontal area */
       if (!area.isVertical) {
@@ -120,7 +125,7 @@ namespace RawSpeed {
         blackLevel = (int)b;
       if (whitePoint == 65536)
         whitePoint = (int)m;
-      printf("Estimated black:%d, Estimated white: %d\n", blackLevel, whitePoint);
+      writeLog(DEBUG_PRIO_INFO, "Estimated black:%d, Estimated white: %d\n", blackLevel, whitePoint);
     }
 
     /* If filter has not set separate blacklevel, compute or fetch it */

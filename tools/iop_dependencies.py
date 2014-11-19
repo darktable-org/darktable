@@ -37,9 +37,9 @@ def add_edges(gr):
   gr.add_edge(('colorout', 'colorin'))
   # camera input color profile:
   gr.add_edge(('colorin', 'demosaic'))
-  
-  # these work on mosaic data:
-  gr.add_edge(('demosaic', 'rawspeed'))
+
+  # these work on float mosaic data:
+  gr.add_edge(('demosaic', 'letsgofloat'))
   # handle highlights correctly:
   # we want highlights as early as possible, to avoid
   # pink highlights in plugins (happens only before highlight clipping)
@@ -59,12 +59,18 @@ def add_edges(gr):
   gr.add_edge(('rawdenoise', 'highlights'))
   gr.add_edge(('hotpixels', 'highlights'))
   gr.add_edge(('cacorrect', 'highlights'))
-  
+
+  # we want float pixels:
+  gr.add_edge(('temperature', 'letsgofloat'))
+
   # and of course rawspeed needs to give us the pixels first:
-  gr.add_edge(('temperature', 'rawspeed'))
+  gr.add_edge(('letsgofloat', 'rawspeed'))
 
   # inversion should be really early in the pipe
   gr.add_edge(('temperature', 'invert'))
+
+  # but after uint16 -> float conversio
+  gr.add_edge(('invert', 'letsgofloat'))
 
   # these need to be in camera color space (linear input rgb):
   gr.add_edge(('colorin', 'exposure'))
@@ -73,16 +79,26 @@ def add_edges(gr):
   gr.add_edge(('colorin', 'basecurve'))
   gr.add_edge(('colorin', 'lens'))
   gr.add_edge(('colorin', 'profile_gamma'))
-  gr.add_edge(('colorin', 'shrecovery'))
 
   # very linear:
   gr.add_edge(('basecurve', 'lens'))
   gr.add_edge(('basecurve', 'exposure'))
   
+  # fix mad sensor designs: NIKON D1X have rectangular pixels
+  gr.add_edge(('scalepixels', 'demosaic'))
+  # fix mad sensor designs: some Fuji have their Bayer pattern rotated by -45deg
+  gr.add_edge(('rotatepixels', 'demosaic'))
+
+  # there is no cameras that have non-square pixels AND rotated Bayer pattern
+  # at the same time, but IMO it makes more sense to scale after rotating.
+  gr.add_edge(('scalepixels', 'rotatepixels'))
+
   # flip is a distortion plugin, and as such has to go after spot removal
   # and lens correction, which depend on original input buffers.
   # and after buffer has been downscaled/demosaiced
   gr.add_edge(('flip', 'demosaic'))
+  gr.add_edge(('flip', 'scalepixels'))
+  gr.add_edge(('flip', 'rotatepixels'))
   gr.add_edge(('flip', 'lens'))
   gr.add_edge(('flip', 'spots'))
   # plus, it confuses crop/rotate, vignetting and graduated density
@@ -91,7 +107,6 @@ def add_edges(gr):
   gr.add_edge(('vignette', 'flip'))
   # gives the ability to change the space of shadow recovery fusion.
   # maybe this has to go the other way round, let's see what experience shows!
-  gr.add_edge(('shrecovery', 'basecurve'))
   
   # this evil hack for nikon crap profiles needs to come
   # as late as possible before the input profile:
@@ -100,7 +115,6 @@ def add_edges(gr):
   gr.add_edge(('profile_gamma', 'graduatednd'))
   gr.add_edge(('profile_gamma', 'basecurve'))
   gr.add_edge(('profile_gamma', 'lens'))
-  gr.add_edge(('profile_gamma', 'shrecovery'))
   gr.add_edge(('profile_gamma', 'bilateral'))
   gr.add_edge(('profile_gamma', 'denoiseprofile'))
   
@@ -121,13 +135,13 @@ def add_edges(gr):
   gr.add_edge(('colorout', 'colorcorrection'))
   gr.add_edge(('colorout', 'sharpen'))
   gr.add_edge(('colorout', 'grain'))
-  gr.add_edge(('colorout', 'anlfyeni'))
   gr.add_edge(('colorout', 'lowpass'))
   gr.add_edge(('colorout', 'shadhi'))
   gr.add_edge(('colorout', 'highpass'))
   gr.add_edge(('colorout', 'colorcontrast'))
   gr.add_edge(('colorout', 'colorize'))
   gr.add_edge(('colorout', 'colisa'))
+  gr.add_edge(('colorout', 'defringe'))
   gr.add_edge(('bloom', 'colorin'))
   gr.add_edge(('nlmeans', 'colorin'))
   gr.add_edge(('colortransfer', 'colorin'))
@@ -144,17 +158,19 @@ def add_edges(gr):
   gr.add_edge(('colorcorrection', 'colorin'))
   gr.add_edge(('sharpen', 'colorin'))
   gr.add_edge(('grain', 'colorin'))
-  gr.add_edge(('anlfyeni', 'colorin'))
   gr.add_edge(('lowpass', 'colorin'))
   gr.add_edge(('shadhi', 'colorin'))
   gr.add_edge(('highpass', 'colorin'))
   gr.add_edge(('colorcontrast', 'colorin'))
   gr.add_edge(('colorize', 'colorin'))
   gr.add_edge(('colisa', 'colorin'))
+  gr.add_edge(('defringe', 'colorin'))
   
   # spot removal works on demosaiced data
   # and needs to be before geometric distortions:
   gr.add_edge(('spots', 'demosaic'))
+  gr.add_edge(('scalepixels', 'spots'))
+  gr.add_edge(('rotatepixels', 'spots'))
   gr.add_edge(('lens', 'spots'))
   gr.add_edge(('borders', 'spots'))
   gr.add_edge(('clipping', 'spots'))
@@ -180,7 +196,6 @@ def add_edges(gr):
   gr.add_edge(('bilat', 'nlmeans'))
   gr.add_edge(('atrous', 'nlmeans'))
   gr.add_edge(('sharpen', 'nlmeans'))
-  gr.add_edge(('anlfyeni', 'nlmeans'))
   gr.add_edge(('lowpass', 'nlmeans'))
   gr.add_edge(('shadhi', 'nlmeans'))
   gr.add_edge(('highpass', 'nlmeans'))
@@ -192,7 +207,6 @@ def add_edges(gr):
   
   # don't sharpen grain:
   gr.add_edge(('grain', 'sharpen'))
-  gr.add_edge(('grain', 'anlfyeni'))
   gr.add_edge(('grain', 'atrous'))
   gr.add_edge(('grain', 'highpass'))
   
@@ -279,13 +293,16 @@ def add_edges(gr):
   gr.add_edge(('lowpass', 'colormapping'))
   gr.add_edge(('shadhi', 'colormapping'))
   gr.add_edge(('highpass', 'colormapping'))
-  gr.add_edge(('anlfyeni', 'colormapping'))
   gr.add_edge(('lowlight', 'colormapping'))
   gr.add_edge(('bloom', 'colormapping'))
   
   # colorize first in Lab pipe
   gr.add_edge(('colortransfer', 'colorize'))
   gr.add_edge(('colormapping', 'colortransfer'))
+  
+  # defringe before color manipulations (colorbalance is sufficient) and before equalizer
+  gr.add_edge(('colorbalance', 'defringe'))
+  gr.add_edge(('equalizer', 'defringe'))
 
   # levels come after tone curve
   gr.add_edge(('levels', 'tonecurve'))
@@ -333,7 +350,6 @@ def add_edges(gr):
 
 gr = digraph()
 gr.add_nodes([
-'anlfyeni', # deprecated
 'atrous',
 'basecurve',
 'bilateral',
@@ -344,6 +360,7 @@ gr.add_nodes([
 'channelmixer',
 'clahe', # deprecated
 'clipping',
+'letsgofloat',
 'colisa',
 'colorbalance',
 'colorcorrection',
@@ -354,6 +371,7 @@ gr.add_nodes([
 'colormapping',
 'colorzones',
 'colorcontrast',
+'defringe',
 'demosaic',
 'denoiseprofile',
 'dither',
@@ -378,9 +396,10 @@ gr.add_nodes([
 'profile_gamma',
 'rawdenoise',
 'relight',
+'scalepixels',
+'rotatepixels',
 'shadhi',
 'sharpen',
-'shrecovery',
 'soften',
 'splittoning',
 'spots',

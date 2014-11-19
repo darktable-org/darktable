@@ -489,8 +489,7 @@ void init_pipe (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_p
   // create part of the gegl pipeline
   piece->data = NULL;
 #else
-  piece->data = malloc(sizeof(dt_iop_splittoning_data_t));
-  memset(piece->data,0,sizeof(dt_iop_splittoning_data_t));
+  piece->data = calloc(1, sizeof(dt_iop_splittoning_data_t));
   self->commit_params(self, self->default_params, pipe, piece);
 #endif
 }
@@ -503,6 +502,7 @@ void cleanup_pipe (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_de
   // no free necessary, no data is alloc'ed
 #else
   free(piece->data);
+  piece->data = NULL;
 #endif
 }
 
@@ -532,7 +532,7 @@ void init(dt_iop_module_t *module)
   module->params = malloc(sizeof(dt_iop_splittoning_params_t));
   module->default_params = malloc(sizeof(dt_iop_splittoning_params_t));
   module->default_enabled = 0;
-  module->priority = 894; // module order created by iop_dependencies.py, do not edit!
+  module->priority = 900; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_splittoning_params_t);
   module->gui_data = NULL;
   dt_iop_splittoning_params_t tmp = (dt_iop_splittoning_params_t)
@@ -564,7 +564,7 @@ gui_init_tab(
   // color button
   GtkDarktableButton* color;
   *ppcolor = color = DTGTK_BUTTON(dtgtk_button_new(dtgtk_cairo_paint_color,CPF_IGNORE_FG_STATE|CPF_STYLE_FLAT|CPF_DO_NOT_USE_BORDER));
-  gtk_widget_set_size_request(GTK_WIDGET(color),32,32);
+  gtk_widget_set_size_request(GTK_WIDGET(color), DT_PIXEL_APPLY_DPI(32), DT_PIXEL_APPLY_DPI(32));
 
   // hue slider
   GtkWidget* hue;

@@ -6,6 +6,7 @@
 #include "BitPumpJPEG.h" // Includes bytestream
 #include "RawImage.h"
 #include "BitPumpMSB.h"
+#include "BitPumpMSB16.h"
 #include "BitPumpMSB32.h"
 #include "BitPumpPlain.h"
 #include "CameraMetaData.h"
@@ -14,7 +15,8 @@
 /* 
     RawSpeed - RAW file decoder.
 
-    Copyright (C) 2009 Klaus Post
+    Copyright (C) 2009-2014 Klaus Post
+    Copyright (C) 2014 Pedro Côrte-Real
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Lesser General Public
@@ -115,8 +117,11 @@ public:
   /* Only enable if you are sure that is what you want */
   bool uncorrectedRawValues;
 
+  /* Should Fuji images be rotated? */
+  bool fujiRotate;
+
   /* Vector of objects that will be destroyed alongside the decoder */
-  vector<void*> ownedObjects;
+  vector<FileMap*> ownedObjects;
 
   /* Retrieve the main RAW chunk */
   /* Returns NULL if unknown */
@@ -161,8 +166,41 @@ protected:
   /* order: Order of the bits - see Common.h for possibilities. */
   void readUncompressedRaw(ByteStream &input, iPoint2D& size, iPoint2D& offset, int inputPitch, int bitPerPixel, BitOrder order);
 
+  /* Read 8bit RGB data */
+  void Decode8BitRGB(ByteStream &input, uint32 w, uint32 h);
+
   /* Faster version for unpacking 12 bit LSB data */
   void Decode12BitRaw(ByteStream &input, uint32 w, uint32 h);
+
+  /* Faster version for unpacking 12 bit LSB data with a control byte every 10 pixels */
+  void Decode12BitRawWithControl(ByteStream &input, uint32 w, uint32 h);
+
+  /* Faster version for unpacking 12 bit MSB data with a control byte every 10 pixels */
+  void Decode12BitRawBEWithControl(ByteStream &input, uint32 w, uint32 h);
+
+  /* Faster version for unpacking 12 bit MSB data */
+  void Decode12BitRawBE(ByteStream &input, uint32 w, uint32 h);
+
+  /* Faster version for unpacking 12 bit MSB data with interlaced lines */
+  void Decode12BitRawBEInterlaced(ByteStream &input, uint32 w, uint32 h);
+
+  /* Faster version for reading unpacked 12 bit MSB data */
+  void Decode12BitRawBEunpacked(ByteStream &input, uint32 w, uint32 h);
+
+  /* Faster version for reading unpacked 12 bit MSB data that is left aligned (needs >> 4 shift) */
+  void Decode12BitRawBEunpackedLeftAligned(ByteStream &input, uint32 w, uint32 h);
+  
+  /* Faster version for reading unpacked 14 bit MSB data */
+  void Decode14BitRawBEunpacked(ByteStream &input, uint32 w, uint32 h);
+
+  /* Faster version for reading unpacked 16 bit LSB data */
+  void Decode16BitRawUnpacked(ByteStream &input, uint32 w, uint32 h);
+
+  /* Faster version for reading unpacked 16 bit MSB data */
+  void Decode16BitRawBEunpacked(ByteStream &input, uint32 w, uint32 h);
+
+  /* Faster version for reading unpacked 12 bit LSB data */
+  void Decode12BitRawUnpacked(ByteStream &input, uint32 w, uint32 h);
 
   /* Generic decompressor for uncompressed images */
   /* order: Order of the bits - see Common.h for possibilities. */

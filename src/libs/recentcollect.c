@@ -122,17 +122,17 @@ pretty_print(char *buf, char *out, size_t outsize)
       if(k > 0) switch(mode)
         {
           case DT_LIB_COLLECT_MODE_AND:
-            c = snprintf(out, outsize, _(" and "));
+            c = snprintf(out, outsize, "%s", _(" and "));
             out += c;
             outsize -= c;
             break;
           case DT_LIB_COLLECT_MODE_OR:
-            c = snprintf(out, outsize, _(" or "));
+            c = snprintf(out, outsize, "%s", _(" or "));
             out += c;
             outsize -= c;
             break;
           default: //case DT_LIB_COLLECT_MODE_AND_NOT:
-            c = snprintf(out, outsize, _(" but not "));
+            c = snprintf(out, outsize, "%s", _(" but not "));
             out += c;
             outsize -= c;
             break;
@@ -320,8 +320,7 @@ gui_reset (dt_lib_module_t *self)
 void
 gui_init (dt_lib_module_t *self)
 {
-  dt_lib_recentcollect_t *d = (dt_lib_recentcollect_t *)malloc(sizeof(dt_lib_recentcollect_t));
-  memset(d,0,sizeof(dt_lib_recentcollect_t));
+  dt_lib_recentcollect_t *d = (dt_lib_recentcollect_t *)calloc(1, sizeof(dt_lib_recentcollect_t));
   self->data = (void *)d;
   self->widget = gtk_vbox_new(FALSE, 0);
   d->inited = 0;

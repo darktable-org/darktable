@@ -206,7 +206,7 @@ CA_correct(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const fl
   const int height = roi_in->height;
   memcpy(out, in2, width*height*sizeof(float));
   const float *const in = out;
-  const uint32_t filters = dt_image_flipped_filter(&piece->pipe->image);
+  const uint32_t filters = dt_image_filter(&piece->pipe->image);
   //const float clip_pt = fminf(piece->pipe->processed_maximum[0], fminf(piece->pipe->processed_maximum[1], piece->pipe->processed_maximum[2]));
   const int TS = (width > 2024 && height > 2024) ? 256 : 64;
 
@@ -303,9 +303,8 @@ CA_correct(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const fl
 
   /* assign working space; this would not be necessary
    if the algorithm is part of the larger pre-interpolation processing */
-  buffer = (char *) malloc(11*sizeof(float)*TS*TS);
+  buffer = (char *)calloc(11*TS*TS, sizeof(float));
   //merror(buffer,"CA_correct()");
-  memset(buffer,0,11*sizeof(float)*TS*TS);
 
   // rgb array
   rgb         = (float (*)[3])		buffer;
@@ -334,9 +333,8 @@ CA_correct(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const fl
   //float blockshifts[1000][3][2]; //fixed memory allocation
   //float blockwt[1000]; //fixed memory allocation
 
-  buffer1 = (char *) malloc(vblsz*hblsz*(3*2+1)*sizeof(float));
+  buffer1 = (char *)calloc(vblsz*hblsz*(3*2+1), sizeof(float));
   //merror(buffer1,"CA_correct()");
-  memset(buffer1,0,vblsz*hblsz*(3*2+1)*sizeof(float));
   // block CA shifts
   blockwt		= (float (*))			(buffer1);
   blockshifts	= (float (*)[3][2])		(buffer1+(vblsz*hblsz*sizeof(float)));
@@ -402,7 +400,7 @@ CA_correct(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const fl
             c = FC(rr,cc,filters);
             indx=row*width+col;
             indx1=rr*TS+cc;
-            rgb[indx1][c] = in[row*width + col];//(rawData[row][col])/65535.0f;
+            rgb[indx1][c] = in[indx];//(rawData[row][col])/65535.0f;
             //rgb[indx1][c] = image[indx][c]/65535.0f;//for dcraw implementation
           }
 
@@ -1222,15 +1220,20 @@ void reload_defaults(dt_iop_module_t *module)
   // init defaults:
   dt_iop_cacorrect_params_t tmp = (dt_iop_cacorrect_params_t)
   {
-    50
+    .keep = 50
   };
-  memcpy(module->params, &tmp, sizeof(dt_iop_cacorrect_params_t));
-  memcpy(module->default_params, &tmp, sizeof(dt_iop_cacorrect_params_t));
 
-  // can't be switched on for non-raw images:
-  if(dt_image_is_raw(&module->dev->image_storage)) module->hide_enable_button = 0;
+  // we might be called from presets update infrastructure => there is no image
+  if(!module->dev) goto end;
+
+  // can't be switched on for non-raw or x-trans images:
+  if(dt_image_is_raw(&module->dev->image_storage) && (module->dev->image_storage.filters != 9u)) module->hide_enable_button = 0;
   else module->hide_enable_button = 1;
   module->default_enabled = 0;
+
+end:
+  memcpy(module->params, &tmp, sizeof(dt_iop_cacorrect_params_t));
+  memcpy(module->default_params, &tmp, sizeof(dt_iop_cacorrect_params_t));
 }
 
 /** init, cleanup, commit to pipeline */
@@ -1245,7 +1248,7 @@ void init(dt_iop_module_t *module)
   module->default_enabled = 0;
 
   // we come just before demosaicing.
-  module->priority = 70; // module order created by iop_dependencies.py, do not edit!
+  module->priority = 83; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_cacorrect_params_t);
   module->gui_data = NULL;
 }
@@ -1278,12 +1281,16 @@ void init_pipe     (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_d
 void cleanup_pipe  (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
   free(piece->data);
+  piece->data = NULL;
 }
 
 void gui_update    (dt_iop_module_t *self)
 {
   if(dt_image_is_raw(&self->dev->image_storage))
-    gtk_label_set_text(GTK_LABEL(self->widget), _("automatic chromatic aberration correction"));
+    if(self->dev->image_storage.filters != 9u)
+      gtk_label_set_text(GTK_LABEL(self->widget), _("automatic chromatic aberration correction"));
+    else
+      gtk_label_set_text(GTK_LABEL(self->widget), _("automatic chromatic aberration correction\ndisabled for non-Bayer sensors"));
   else
     gtk_label_set_text(GTK_LABEL(self->widget), _("automatic chromatic aberration correction\nonly works for raw images."));
 }

@@ -74,10 +74,8 @@ static void *_fswatch_thread(void *data)
   dt_fswatch_t *fswatch=(dt_fswatch_t *)data;
   uint32_t res=0;
   uint32_t event_hdr_size=sizeof(inotify_event_t);
-  inotify_event_t *event_hdr=g_malloc(sizeof(inotify_event_t));
-  memset (event_hdr,0,event_hdr_size);
-  char *name=g_malloc(2048);
-  memset (name,0, 2048);
+  inotify_event_t *event_hdr = g_malloc0(sizeof(inotify_event_t));
+  char *name = g_malloc0(2048);
   dt_print(DT_DEBUG_FSWATCH,"[fswatch_thread] Starting thread of context %p\n", data);
   while(1)
   {
@@ -150,8 +148,7 @@ static void *_fswatch_thread(void *data)
 
 const dt_fswatch_t* dt_fswatch_new()
 {
-  dt_fswatch_t *fswatch=g_malloc(sizeof(dt_fswatch_t));
-  memset (fswatch, 0, sizeof(dt_fswatch_t));
+  dt_fswatch_t *fswatch = g_malloc0(sizeof(dt_fswatch_t));
   if((fswatch->inotify_fd=inotify_init())==-1)
   {
     g_free(fswatch);
@@ -183,7 +180,7 @@ void dt_fswatch_destroy(const dt_fswatch_t *fswatch)
 
 void dt_fswatch_add(const dt_fswatch_t * fswatch,dt_fswatch_type_t type, void *data)
 {
-  char filename[DT_MAX_PATH_LEN];
+  char filename[PATH_MAX];
   uint32_t mask=0;
   dt_fswatch_t *ctx=(dt_fswatch_t *)fswatch;
   filename[0] = '\0';
@@ -192,7 +189,7 @@ void dt_fswatch_add(const dt_fswatch_t * fswatch,dt_fswatch_type_t type, void *d
   {
     case DT_FSWATCH_IMAGE:
       mask=IN_ALL_EVENTS;
-      dt_image_full_path(((dt_image_t *)data)->id, filename, DT_MAX_PATH_LEN);
+      dt_image_full_path(((dt_image_t *)data)->id, filename, sizeof(filename));
       break;
     case DT_FSWATCH_CURVE_DIRECTORY:
       break;

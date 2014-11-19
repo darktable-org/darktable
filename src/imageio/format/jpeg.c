@@ -285,7 +285,7 @@ read_icc_profile (j_decompress_ptr cinfo,
     return FALSE;		/* found only empty markers? */
 
   /* Allocate space for assembled data */
-  icc_data = (JOCTET *) malloc(total_length * sizeof(JOCTET));
+  icc_data = (JOCTET *) calloc(total_length, sizeof(JOCTET));
   if (icc_data == NULL)
     return FALSE;		/* oops, out of memory */
 
@@ -354,6 +354,22 @@ write_image (dt_imageio_module_data_t *jpg_tmp, const char *filename, const void
   if(jpg->quality < 60) jpg->cinfo.smoothing_factor = 40;
   if(jpg->quality < 40) jpg->cinfo.smoothing_factor = 60;
   jpg->cinfo.optimize_coding = 1;
+
+  // according to specs density_unit = 0, X_density = 1, Y_density = 1 should be fine and valid since it describes an image with unknown unit and square pixels.
+  // however, some applications (like the Telekom cloud thingy) seem to be confused by that, so let's set these calues to the same as stored in exiv :/
+  int resolution = dt_conf_get_int("metadata/resolution");
+  if(resolution > 0)
+  {
+    jpg->cinfo.density_unit = 1;
+    jpg->cinfo.X_density = resolution;
+    jpg->cinfo.Y_density = resolution;
+  }
+  else
+  {
+    jpg->cinfo.density_unit = 0;
+    jpg->cinfo.X_density = 1;
+    jpg->cinfo.Y_density = 1;
+  }
 
   jpeg_start_compress(&(jpg->cinfo), TRUE);
 
@@ -456,8 +472,7 @@ void*
 get_params(dt_imageio_module_format_t *self)
 {
   // adjust this if more params are stored (subsampling etc)
-  dt_imageio_jpeg_t *d = (dt_imageio_jpeg_t *)malloc(sizeof(dt_imageio_jpeg_t));
-  memset(d,0,sizeof(dt_imageio_jpeg_t));
+  dt_imageio_jpeg_t *d = (dt_imageio_jpeg_t *)calloc(1, sizeof(dt_imageio_jpeg_t));
   d->quality = dt_conf_get_int("plugins/imageio/format/jpeg/quality");
   if(d->quality <= 0 || d->quality > 100) d->quality = 100;
   return d;

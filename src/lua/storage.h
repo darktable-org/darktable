@@ -25,12 +25,12 @@ struct dt_imageio_module_storage_t;
 
 
 #define dt_lua_register_storage(L,storage,type_name) \
-  dt_lua_register_storage_typeid(L,storage,luaA_type_find(#type_name))
-void dt_lua_register_storage_typeid(lua_State* L, struct dt_imageio_module_storage_t* module,luaA_Type type_id);
+  dt_lua_register_storage_type(L,storage,luaA_type_find(#type_name))
+void dt_lua_register_storage_type(lua_State* L, struct dt_imageio_module_storage_t* module,luaA_Type type_id);
 
 
 
-int dt_lua_init_storage(lua_State *L);
+int dt_lua_init_early_storage(lua_State *L);
 
 #endif
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

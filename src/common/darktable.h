@@ -77,6 +77,10 @@ typedef	unsigned int	u_int;
 #define omp_get_thread_num() 0
 #endif
 
+#ifndef _RELEASE
+#include "common/poison.h"
+#endif
+
 #define DT_MODULE_VERSION 8   // version of dt's module interface
 
 // every module has to define this:
@@ -146,27 +150,23 @@ struct dt_undo_t;
 typedef enum dt_debug_thread_t
 {
   // powers of two, masking
-  DT_DEBUG_CACHE = 1,
-  DT_DEBUG_CONTROL = 2,
-  DT_DEBUG_DEV = 4,
-  DT_DEBUG_FSWATCH = 8,
-  DT_DEBUG_PERF = 16,
-  DT_DEBUG_CAMCTL = 32,
-  DT_DEBUG_PWSTORAGE = 64,
-  DT_DEBUG_OPENCL = 128,
-  DT_DEBUG_SQL = 256,
-  DT_DEBUG_MEMORY = 512,
-  DT_DEBUG_LIGHTTABLE = 1024,
-  DT_DEBUG_NAN = 2048,
-  DT_DEBUG_MASKS = 4096,
-  DT_DEBUG_LUA = 8192,
-  DT_DEBUG_INPUT = 16384
+  DT_DEBUG_CACHE      = 1<<0,
+  DT_DEBUG_CONTROL    = 1<<1,
+  DT_DEBUG_DEV        = 1<<2,
+  DT_DEBUG_FSWATCH    = 1<<3,
+  DT_DEBUG_PERF       = 1<<4,
+  DT_DEBUG_CAMCTL     = 1<<5,
+  DT_DEBUG_PWSTORAGE  = 1<<6,
+  DT_DEBUG_OPENCL     = 1<<7,
+  DT_DEBUG_SQL        = 1<<8,
+  DT_DEBUG_MEMORY     = 1<<9,
+  DT_DEBUG_LIGHTTABLE = 1<<10,
+  DT_DEBUG_NAN        = 1<<11,
+  DT_DEBUG_MASKS      = 1<<12,
+  DT_DEBUG_LUA        = 1<<13,
+  DT_DEBUG_INPUT      = 1<<14
 }
 dt_debug_thread_t;
-
-#define DT_CPU_FLAG_SSE    1
-#define DT_CPU_FLAG_SSE2   2
-#define DT_CPU_FLAG_SSE3   4
 
 typedef struct darktable_t
 {
@@ -223,7 +223,7 @@ dt_times_t;
 extern darktable_t darktable;
 extern const char dt_supported_extensions[];
 
-int dt_init(int argc, char *argv[], const int init_gui);
+int dt_init(int argc, char *argv[], const int init_gui,lua_State*L);
 void dt_cleanup();
 void dt_print(dt_debug_thread_t thread, const char *msg, ...);
 void dt_gettime_t(char *datetime, size_t datetime_len, time_t t);
@@ -234,6 +234,7 @@ void *dt_alloc_align(size_t alignment, size_t size);
 #else
   #define dt_free_align(A) free(A)
 #endif
+gboolean dt_is_aligned(const void *pointer, size_t byte_count);
 int dt_capabilities_check(char *capability);
 void dt_capabilities_add(char *capability);
 void dt_capabilities_remove(char *capability);
@@ -488,8 +489,25 @@ int dt_load_from_string(const gchar* image_to_load, gboolean open_image_in_dr);
 
 /** define for max path/filename length */
 #define DT_MAX_FILENAME_LEN 256
-// TODO: separate into path/filename and store 256 for filename
-#define DT_MAX_PATH_LEN 1024
+
+#ifndef PATH_MAX
+/*
+ * from /usr/include/linux/limits.h (Linux 3.16.5)
+ * Some systems might not define it (e.g. Hurd)
+ *
+ * We do NOT depend on any specific value of this env variable.
+ * If you want constant value across all systems, use DT_MAX_PATH_FOR_PARAMS!
+ */
+#define PATH_MAX 4096
+#endif
+
+/*
+ * ONLY TO BE USED FOR PARAMS!!! (e.g. dt_imageio_disk_t)
+ *
+ * WARNING: this should *NEVER* be changed, as it will break params,
+ *          created with previous DT_MAX_PATH_FOR_PARAMS.
+ */
+#define DT_MAX_PATH_FOR_PARAMS 4096
 
 #endif
 

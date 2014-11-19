@@ -1,3 +1,8 @@
+<!DOCTYPE sect3 PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
+               "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd" [
+		<!ENTITY % darktable_dtd SYSTEM "../../../dtd/darktable.dtd">
+		%darktable_dtd;
+		]>
 <sect3 status="final" id="shadows_and_highlights">
 
   <title>Shadows and Highlights</title>
@@ -9,6 +14,11 @@
 
   <indexterm>
     <primary>shadows and highlights</primary>
+  </indexterm>
+
+  <indexterm>
+    <primary>artifact mitigation</primary>
+    <secondary>halos</secondary>
   </indexterm>
 
   <sect4>
@@ -92,8 +102,8 @@
         This slider controls the color saturation adjustment made to shadows; high values cause
         saturation enhancements on lightened shadows; low values cause desaturation on lightened
         shadows. It is normally safe to leave this at its default of 100%. This gives a natural
-        saturation boost on shadows - similar to the one you would also expect in nature if
-        shadows would receive more light.
+        saturation boost on shadows&nbsp;&ndash; similar to the one you would also expect in
+        nature if shadows would receive more light.
       </para>
     </sect5>
 

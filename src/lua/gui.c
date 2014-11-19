@@ -24,6 +24,7 @@
 #include "lua/gui.h"
 #include "lua/image.h"
 #include "lua/types.h"
+#include "lua/call.h"
 
 /***********************************************************************
   Creating the images global variable
@@ -101,50 +102,179 @@ static int current_view_cb(lua_State *L)
   {
     luaL_argcheck(L,dt_lua_isa(L,1,dt_view_t),1,"dt_view_t expected");
     dt_view_t * module = *(dt_view_t**)lua_touserdata(L,1);
-    printf("switch to %d\n",module->view(module));
     int i = 0;
     while(i< darktable.view_manager->num_views && module != &darktable.view_manager->view[i]) i++;
     if(i == darktable.view_manager->num_views) return luaL_error(L,"should never happen : %s %d\n",__FILE__,__LINE__);
     dt_ctl_switch_mode_to(i);
   }
   const dt_view_t* current_view = dt_view_manager_get_current_view(darktable.view_manager);
-  dt_lua_module_push_entry(L,"view",current_view->module_name);
+  dt_lua_module_entry_push(L,"view",current_view->module_name);
   return 1;
 }
+
+
+
+typedef dt_progress_t* dt_lua_backgroundjob_t;
+
+static int32_t lua_job_canceled_job(dt_job_t *job)
+{
+  dt_progress_t *progress = dt_control_job_get_params(job);
+  lua_State * L = darktable.lua_state.state;
+  gboolean has_lock = dt_lua_lock();
+  luaA_push(L, dt_lua_backgroundjob_t, &progress);
+  lua_getuservalue(L, -1);
+  lua_getfield(L, -1, "cancel_callback");
+  lua_pushvalue(L, -3);
+  dt_lua_do_chunk(L, 1, 0);
+  lua_pop(L, 2);
+  dt_lua_unlock(has_lock);
+  return 0;
+}
+
+static void lua_job_cancelled(dt_progress_t *progress, gpointer user_data)
+{
+  dt_job_t *job = dt_control_job_create(&lua_job_canceled_job, "lua: on background cancel");
+  if(!job) return;
+  dt_control_job_set_params(job, progress);
+  dt_control_add_job(darktable.control, DT_JOB_QUEUE_SYSTEM_BG, job);
+}
+
+static int lua_create_job(lua_State *L)
+{
+  const char * message = luaL_checkstring(L, 1);
+  gboolean has_progress_bar = lua_toboolean(L, 2);
+  int cancellable = FALSE;
+  if(!lua_isnoneornil(L,3))
+  {
+    luaL_checktype(L, 3, LUA_TFUNCTION);
+    cancellable = TRUE;
+  }
+  dt_lua_unlock(false);
+  dt_progress_t *progress = dt_control_progress_create(darktable.control, has_progress_bar, message);
+  if(cancellable)
+  {
+    dt_control_progress_make_cancellable(darktable.control, progress, lua_job_cancelled, progress);
+  }
+  dt_lua_lock();
+  luaA_push(L, dt_lua_backgroundjob_t, &progress);
+  if(cancellable)
+  {
+    lua_getuservalue(L, -1);
+    lua_pushvalue(L, 3);
+    lua_setfield(L, -2, "cancel_callback");
+    lua_pop(L, 1);
+  }
+  return 1;
+}
+
+static int lua_job_progress(lua_State *L)
+{
+  dt_progress_t *progress;
+  luaA_to(L, dt_lua_backgroundjob_t, &progress, 1);
+  dt_lua_unlock(false);
+  gboolean i_own_lock = dt_control_gdk_lock();
+  dt_pthread_mutex_lock(&darktable.control->progress_system.mutex);
+  GList *iter = g_list_find(darktable.control->progress_system.list, progress);
+  dt_pthread_mutex_unlock(&darktable.control->progress_system.mutex);
+  if(i_own_lock) dt_control_gdk_unlock();
+  dt_lua_lock();
+  if(!iter) luaL_error(L,"Accessing an invalid job");
+  if(lua_isnone(L, 3))
+  {
+    dt_lua_unlock(false);
+    double result = dt_control_progress_get_progress(progress);
+    dt_lua_lock();
+    if(!dt_control_progress_has_progress_bar(progress))
+      lua_pushnil(L);
+    else
+      lua_pushnumber(L, result);
+    return 1;
+  }
+  else
+  {
+    double value;
+    luaA_to(L,progress_double,&value,3);
+    dt_lua_unlock(false);
+    dt_control_progress_set_progress(darktable.control, progress, value);
+    dt_lua_lock();
+    return 0;
+  }
+}
+
+static int lua_job_valid(lua_State*L)
+{
+  dt_progress_t *progress;
+  luaA_to(L, dt_lua_backgroundjob_t, &progress, 1);
+  if(lua_isnone(L, 3))
+  {
+    dt_lua_unlock(false);
+    gboolean i_own_lock = dt_control_gdk_lock();
+    dt_pthread_mutex_lock(&darktable.control->progress_system.mutex);
+    GList *iter = g_list_find(darktable.control->progress_system.list, progress);
+    dt_pthread_mutex_unlock(&darktable.control->progress_system.mutex);
+    if(i_own_lock) dt_control_gdk_unlock();
+    dt_lua_lock();
+
+    if(iter)
+      lua_pushboolean(L, true);
+    else
+      lua_pushboolean(L, false);
+
+    return 1;
+  }
+  else
+  {
+    int validity = lua_toboolean(L, 3);
+    if(validity)
+      return luaL_argerror(L, 3, "a job can not be made valid");
+    dt_lua_unlock(false);
+    dt_control_progress_destroy(darktable.control, progress);
+    dt_lua_lock();
+    return 0;
+  }
+}
+
+
 
 int dt_lua_init_gui(lua_State * L)
 {
 
-  /* images */
-  dt_lua_push_darktable_lib(L);
-  luaA_Type type_id = dt_lua_init_singleton(L,"gui_lib",NULL);
-  lua_setfield(L,-2,"gui");
-  lua_pop(L,1);
+  if(darktable.gui != NULL) {
+    /* images */
+    dt_lua_push_darktable_lib(L);
+    luaA_Type type_id = dt_lua_init_singleton(L,"gui_lib",NULL);
+    lua_setfield(L,-2,"gui");
+    lua_pop(L,1);
 
-  luaA_enum(L,dt_ui_container_t);
-  luaA_enum_value(L,dt_ui_container_t,DT_UI_CONTAINER_PANEL_LEFT_TOP,false);
-  luaA_enum_value(L,dt_ui_container_t,DT_UI_CONTAINER_PANEL_LEFT_CENTER,false);
-  luaA_enum_value(L,dt_ui_container_t,DT_UI_CONTAINER_PANEL_LEFT_BOTTOM,false);
-  luaA_enum_value(L,dt_ui_container_t,DT_UI_CONTAINER_PANEL_RIGHT_TOP,false);
-  luaA_enum_value(L,dt_ui_container_t,DT_UI_CONTAINER_PANEL_RIGHT_CENTER,false);
-  luaA_enum_value(L,dt_ui_container_t,DT_UI_CONTAINER_PANEL_RIGHT_BOTTOM,false);
-  luaA_enum_value(L,dt_ui_container_t,DT_UI_CONTAINER_PANEL_TOP_LEFT,false);
-  luaA_enum_value(L,dt_ui_container_t,DT_UI_CONTAINER_PANEL_TOP_CENTER,false);
-  luaA_enum_value(L,dt_ui_container_t,DT_UI_CONTAINER_PANEL_TOP_RIGHT,false);
-  luaA_enum_value(L,dt_ui_container_t,DT_UI_CONTAINER_PANEL_CENTER_TOP_LEFT,false);
-  luaA_enum_value(L,dt_ui_container_t,DT_UI_CONTAINER_PANEL_CENTER_TOP_CENTER,false);
-  luaA_enum_value(L,dt_ui_container_t,DT_UI_CONTAINER_PANEL_CENTER_TOP_RIGHT,false);
-  luaA_enum_value(L,dt_ui_container_t,DT_UI_CONTAINER_PANEL_CENTER_BOTTOM_LEFT,false);
-  luaA_enum_value(L,dt_ui_container_t,DT_UI_CONTAINER_PANEL_CENTER_BOTTOM_CENTER,false);
-  luaA_enum_value(L,dt_ui_container_t,DT_UI_CONTAINER_PANEL_CENTER_BOTTOM_RIGHT,false);
-  luaA_enum_value(L,dt_ui_container_t,DT_UI_CONTAINER_PANEL_BOTTOM,false);
+    lua_pushcfunction(L,selection_cb);
+    lua_pushcclosure(L,dt_lua_type_member_common,1);
+    dt_lua_type_register_const_type(L,type_id,"selection");
+    lua_pushcfunction(L,hovered_cb);
+    dt_lua_type_register_const_type(L,type_id,"hovered");
+    lua_pushcfunction(L,act_on_cb);
+    dt_lua_type_register_const_type(L,type_id,"action_images");
+    lua_pushcfunction(L,current_view_cb);
+    lua_pushcclosure(L,dt_lua_type_member_common,1);
+    dt_lua_type_register_const_type(L,type_id,"current_view");
+    lua_pushcfunction(L, lua_create_job);
+    lua_pushcclosure(L, dt_lua_type_member_common, 1);
+    dt_lua_type_register_const_type(L, type_id, "create_job");
+    dt_lua_module_push(L,"lib");
+    lua_pushcclosure(L, dt_lua_type_member_common, 1);
+    dt_lua_type_register_const_type(L, type_id, "libs");
+    dt_lua_module_push(L,"view");
+    lua_pushcclosure(L, dt_lua_type_member_common, 1);
+    dt_lua_type_register_const_type(L, type_id, "views");
 
-  lua_pushcfunction(L,selection_cb);
-  dt_lua_register_type_callback_stack_typeid(L,type_id,"selection");
-  dt_lua_register_type_callback_typeid(L,type_id,hovered_cb,NULL,"hovered",NULL);
-  dt_lua_register_type_callback_typeid(L,type_id,act_on_cb,NULL,"action_images",NULL);
-  lua_pushcfunction(L,current_view_cb);
-  dt_lua_register_type_callback_stack_typeid(L,type_id,"current_view");
+
+
+    // create a type describing a job object
+    int job_type = dt_lua_init_gpointer_type(L, dt_lua_backgroundjob_t);
+    lua_pushcfunction(L, lua_job_progress);
+    dt_lua_type_register_type(L, job_type, "percent");
+    lua_pushcfunction(L, lua_job_valid);
+    dt_lua_type_register_type(L, job_type, "valid");
+  }
   return 0;
 }
 

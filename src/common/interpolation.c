@@ -530,7 +530,7 @@ static const struct dt_interpolation dt_interpolator[] =
  * @param norm [out] Kernel norm
  * @param first [out] first input sample index used
  * @param t [in] Interpolated coordinate */
-static inline void
+static inline void __attribute__((__unused__))
 compute_upsampling_kernel(
   const struct dt_interpolation* itor,
   float* kernel,
@@ -642,7 +642,7 @@ compute_upsampling_kernel_sse(
  * @param first [out] index of the first sample for which the kernel is to be applied
  * @param outoinratio [in] "out samples" over "in samples" ratio
  * @param xout [in] Output coordinate */
-static inline void
+static inline void __attribute__((__unused__))
 compute_downsampling_kernel(
   const struct dt_interpolation* itor,
   int* taps,

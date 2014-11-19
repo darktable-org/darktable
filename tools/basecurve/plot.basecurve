@@ -1,0 +1,20 @@
+set term pdf
+set output 'basecurve.pdf'
+set size square
+set xlabel 'raw brightness'
+set ylabel 'jpg brightness'
+set y2label 'sample count'
+set logscale y2
+set title "measured data"
+plot 'basecurve.dat' u ($0/65535.0):1 w l t 'red', \
+     '' u ($0/65535):2 w l t 'green', \
+     '' u ($0/65535):3 w l t 'blue', \
+     '' u ($0/65535):4 w l t 'average', \
+     '' u ($0/65535):5 w l t 'red count' axes x1y2, \
+     '' u ($0/65535):6 w l t 'green count' axes x1y2, \
+     '' u ($0/65535):7 w l t 'blue count' axes x1y2
+set title "spline fit"
+# set logscale xy
+plot 'basecurve.dat' u ($0/65535):2 w l lt 2 t 'green', 'basecurve.fit.dat' u 1:2 w l lt 1 t 'fit'
+
+

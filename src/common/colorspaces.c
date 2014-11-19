@@ -289,71 +289,11 @@ dt_colorspaces_create_adobergb_profile(void)
   cmsWriteTag(hAdobeRGB, cmsSigBlueColorantTag, (void*) &Colorants.Blue);
 
   cmsWriteTag(hAdobeRGB, cmsSigRedTRCTag, (void*) transferFunction);
-  cmsLinkTag(hAdobeRGB, cmsSigGreenTRCTag, cmsSigRedTRCTag );
-  cmsLinkTag(hAdobeRGB, cmsSigBlueTRCTag, cmsSigRedTRCTag );
+  cmsWriteTag(hAdobeRGB, cmsSigGreenTRCTag, (void*) transferFunction);
+  cmsWriteTag(hAdobeRGB, cmsSigBlueTRCTag, (void*) transferFunction);
 
   return hAdobeRGB;
 }
-
-// Create the ICC virtual profile for adobe rgb space
-cmsHPROFILE
-dt_colorspaces_create_betargb_profile(void)
-{
-  cmsHPROFILE  hBetaRGB;
-
-  cmsCIEXYZTRIPLE Colorants =
-  {
-    {0.6712537, 0.3032726, 0.0000000},
-    {0.1745834, 0.6637861, 0.0407010},
-    {0.1183829, 0.0329413, 0.7845090}
-  };
-
-  cmsCIEXYZ black = { 0, 0, 0 };
-  cmsCIEXYZ D65 = { 0.95045, 1, 1.08905 };
-  cmsToneCurve* transferFunction;
-
-  transferFunction = cmsBuildGamma(NULL, 2.2);
-
-  hBetaRGB = cmsCreateProfilePlaceholder(0);
-
-  cmsSetProfileVersion(hBetaRGB, 2.1);
-
-  cmsMLU *mlu0 = cmsMLUalloc(NULL, 1);
-  cmsMLUsetASCII(mlu0, "en", "US", "Public Domain");
-  cmsMLU *mlu1 = cmsMLUalloc(NULL, 1);
-  cmsMLUsetASCII(mlu1, "en", "US", "Beta RGB (compatible)");
-  cmsMLU *mlu2 = cmsMLUalloc(NULL, 1);
-  cmsMLUsetASCII(mlu2, "en", "US", "darktable");
-  cmsMLU *mlu3 = cmsMLUalloc(NULL, 1);
-  cmsMLUsetASCII(mlu3, "en", "US", "Beta RGB");
-  // this will only be displayed when the embedded profile is read by for example GIMP
-  cmsWriteTag(hBetaRGB, cmsSigCopyrightTag,          mlu0);
-  cmsWriteTag(hBetaRGB, cmsSigProfileDescriptionTag, mlu1);
-  cmsWriteTag(hBetaRGB, cmsSigDeviceMfgDescTag,      mlu2);
-  cmsWriteTag(hBetaRGB, cmsSigDeviceModelDescTag,    mlu3);
-  cmsMLUfree(mlu0);
-  cmsMLUfree(mlu1);
-  cmsMLUfree(mlu2);
-  cmsMLUfree(mlu3);
-
-  cmsSetDeviceClass(hBetaRGB, cmsSigDisplayClass);
-  cmsSetColorSpace(hBetaRGB, cmsSigRgbData);
-  cmsSetPCS(hBetaRGB, cmsSigXYZData);
-
-  cmsWriteTag(hBetaRGB, cmsSigMediaWhitePointTag, &D65);
-  cmsWriteTag(hBetaRGB, cmsSigMediaBlackPointTag, &black);
-
-  cmsWriteTag(hBetaRGB, cmsSigRedColorantTag, (void*) &Colorants.Red);
-  cmsWriteTag(hBetaRGB, cmsSigGreenColorantTag, (void*) &Colorants.Green);
-  cmsWriteTag(hBetaRGB, cmsSigBlueColorantTag, (void*) &Colorants.Blue);
-
-  cmsWriteTag(hBetaRGB, cmsSigRedTRCTag, (void*) transferFunction);
-  cmsLinkTag(hBetaRGB, cmsSigGreenTRCTag, cmsSigRedTRCTag );
-  cmsLinkTag(hBetaRGB, cmsSigBlueTRCTag, cmsSigRedTRCTag );
-
-  return hBetaRGB;
-}
-
 
 static cmsToneCurve*
 build_linear_gamma(void)
@@ -700,41 +640,119 @@ dt_colorspaces_create_xyz_profile(void)
 }
 
 cmsHPROFILE
-dt_colorspaces_create_linear_rgb_profile(void)
+dt_colorspaces_create_linear_rec709_rgb_profile(void)
 {
-  cmsCIExyY       D65;
-  cmsCIExyYTRIPLE Rec709Primaries =
+  cmsHPROFILE  hRec709RGB;
+
+  cmsCIEXYZTRIPLE Colorants =
   {
-    {0.6400, 0.3300, 1.0},
-    {0.3000, 0.6000, 1.0},
-    {0.1500, 0.0600, 1.0}
+    {0.436066, 0.222488, 0.013916},
+    {0.385147, 0.716873, 0.097076},
+    {0.143066, 0.060608, 0.714096}
   };
-  cmsToneCurve *Gamma[3];
-  cmsHPROFILE  hsRGB;
 
-  cmsWhitePointFromTemp(&D65, 6504.0);
-  Gamma[0] = Gamma[1] = Gamma[2] = build_linear_gamma();
+  cmsCIEXYZ black = { 0, 0, 0 };
+  cmsCIEXYZ D65 = { 0.95045, 1, 1.08905 };
+  cmsToneCurve* transferFunction;
 
-  hsRGB = cmsCreateRGBProfile(&D65, &Rec709Primaries, Gamma);
-  cmsFreeToneCurve(Gamma[0]);
-  if (hsRGB == NULL) return NULL;
+  transferFunction = build_linear_gamma();
 
-  cmsSetProfileVersion(hsRGB, 2.1);
+  hRec709RGB = cmsCreateProfilePlaceholder(0);
+
+  cmsSetProfileVersion(hRec709RGB, 2.1);
+
   cmsMLU *mlu0 = cmsMLUalloc(NULL, 1);
-  cmsMLUsetASCII(mlu0, "en", "US", "(dt internal)");
+  cmsMLUsetASCII(mlu0, "en", "US", "Public Domain");
   cmsMLU *mlu1 = cmsMLUalloc(NULL, 1);
-  cmsMLUsetASCII(mlu1, "en", "US", "linear rec709 rgb");
+  cmsMLUsetASCII(mlu1, "en", "US", "Linear Rec709 RGB");
   cmsMLU *mlu2 = cmsMLUalloc(NULL, 1);
-  cmsMLUsetASCII(mlu2, "en", "US", "Darktable linear Rec709 RGB");
-  cmsWriteTag(hsRGB, cmsSigDeviceMfgDescTag,   mlu0);
-  cmsWriteTag(hsRGB, cmsSigDeviceModelDescTag, mlu1);
+  cmsMLUsetASCII(mlu2, "en", "US", "Darktable");
+  cmsMLU *mlu3 = cmsMLUalloc(NULL, 1);
+  cmsMLUsetASCII(mlu3, "en", "US", "Linear Rec709 RGB");
   // this will only be displayed when the embedded profile is read by for example GIMP
-  cmsWriteTag(hsRGB, cmsSigProfileDescriptionTag, mlu2);
+  cmsWriteTag(hRec709RGB, cmsSigCopyrightTag,          mlu0);
+  cmsWriteTag(hRec709RGB, cmsSigProfileDescriptionTag, mlu1);
+  cmsWriteTag(hRec709RGB, cmsSigDeviceMfgDescTag,      mlu2);
+  cmsWriteTag(hRec709RGB, cmsSigDeviceModelDescTag,    mlu3);
   cmsMLUfree(mlu0);
   cmsMLUfree(mlu1);
   cmsMLUfree(mlu2);
+  cmsMLUfree(mlu3);
 
-  return hsRGB;
+  cmsSetDeviceClass(hRec709RGB, cmsSigDisplayClass);
+  cmsSetColorSpace(hRec709RGB, cmsSigRgbData);
+  cmsSetPCS(hRec709RGB, cmsSigXYZData);
+
+  cmsWriteTag(hRec709RGB, cmsSigMediaWhitePointTag, &D65);
+  cmsWriteTag(hRec709RGB, cmsSigMediaBlackPointTag, &black);
+
+  cmsWriteTag(hRec709RGB, cmsSigRedColorantTag, (void*) &Colorants.Red);
+  cmsWriteTag(hRec709RGB, cmsSigGreenColorantTag, (void*) &Colorants.Green);
+  cmsWriteTag(hRec709RGB, cmsSigBlueColorantTag, (void*) &Colorants.Blue);
+
+  cmsWriteTag(hRec709RGB, cmsSigRedTRCTag, (void*) transferFunction);
+  cmsWriteTag(hRec709RGB, cmsSigGreenTRCTag, (void*) transferFunction);
+  cmsWriteTag(hRec709RGB, cmsSigBlueTRCTag, (void*) transferFunction);
+
+  return hRec709RGB;
+}
+
+cmsHPROFILE
+dt_colorspaces_create_linear_rec2020_rgb_profile(void)
+{
+  cmsHPROFILE  hRec2020RGB;
+
+  cmsCIEXYZTRIPLE Colorants =
+  {
+    {0.673492, 0.279037, -0.001938},
+    {0.165665, 0.675354,  0.029984},
+    {0.125046, 0.045609,  0.796860}
+  };
+
+  cmsCIEXYZ black = { 0, 0, 0 };
+  cmsCIEXYZ D65 = { 0.95045, 1, 1.08905 };
+  cmsToneCurve* transferFunction;
+
+  transferFunction = build_linear_gamma();
+
+  hRec2020RGB = cmsCreateProfilePlaceholder(0);
+
+  cmsSetProfileVersion(hRec2020RGB, 2.1);
+
+  cmsMLU *mlu0 = cmsMLUalloc(NULL, 1);
+  cmsMLUsetASCII(mlu0, "en", "US", "Public Domain");
+  cmsMLU *mlu1 = cmsMLUalloc(NULL, 1);
+  cmsMLUsetASCII(mlu1, "en", "US", "Linear Rec2020 RGB");
+  cmsMLU *mlu2 = cmsMLUalloc(NULL, 1);
+  cmsMLUsetASCII(mlu2, "en", "US", "Darktable");
+  cmsMLU *mlu3 = cmsMLUalloc(NULL, 1);
+  cmsMLUsetASCII(mlu3, "en", "US", "Linear Rec2020 RGB");
+  // this will only be displayed when the embedded profile is read by for example GIMP
+  cmsWriteTag(hRec2020RGB, cmsSigCopyrightTag,          mlu0);
+  cmsWriteTag(hRec2020RGB, cmsSigProfileDescriptionTag, mlu1);
+  cmsWriteTag(hRec2020RGB, cmsSigDeviceMfgDescTag,      mlu2);
+  cmsWriteTag(hRec2020RGB, cmsSigDeviceModelDescTag,    mlu3);
+  cmsMLUfree(mlu0);
+  cmsMLUfree(mlu1);
+  cmsMLUfree(mlu2);
+  cmsMLUfree(mlu3);
+
+  cmsSetDeviceClass(hRec2020RGB, cmsSigDisplayClass);
+  cmsSetColorSpace(hRec2020RGB, cmsSigRgbData);
+  cmsSetPCS(hRec2020RGB, cmsSigXYZData);
+
+  cmsWriteTag(hRec2020RGB, cmsSigMediaWhitePointTag, &D65);
+  cmsWriteTag(hRec2020RGB, cmsSigMediaBlackPointTag, &black);
+
+  cmsWriteTag(hRec2020RGB, cmsSigRedColorantTag, (void*) &Colorants.Red);
+  cmsWriteTag(hRec2020RGB, cmsSigGreenColorantTag, (void*) &Colorants.Green);
+  cmsWriteTag(hRec2020RGB, cmsSigBlueColorantTag, (void*) &Colorants.Blue);
+
+  cmsWriteTag(hRec2020RGB, cmsSigRedTRCTag, (void*) transferFunction);
+  cmsWriteTag(hRec2020RGB, cmsSigGreenTRCTag, (void*) transferFunction);
+  cmsWriteTag(hRec2020RGB, cmsSigBlueTRCTag, (void*) transferFunction);
+
+  return hRec2020RGB;
 }
 
 cmsHPROFILE
@@ -779,12 +797,12 @@ dt_colorspaces_create_linear_infrared_profile(void)
 int
 dt_colorspaces_find_profile(char *filename, size_t filename_len, const char *profile, const char *inout)
 {
-  char datadir[DT_MAX_PATH_LEN];
-  dt_loc_get_user_config_dir(datadir, DT_MAX_PATH_LEN);
+  char datadir[PATH_MAX];
+  dt_loc_get_user_config_dir(datadir, sizeof(datadir));
   snprintf(filename, filename_len, "%s/color/%s/%s", datadir, inout, profile);
   if(!g_file_test(filename, G_FILE_TEST_IS_REGULAR))
   {
-    dt_loc_get_datadir(datadir, DT_MAX_PATH_LEN);
+    dt_loc_get_datadir(datadir, sizeof(datadir));
     snprintf(filename, filename_len, "%s/color/%s/%s", datadir, inout, profile);
     if(!g_file_test(filename, G_FILE_TEST_IS_REGULAR)) return 1;
   }
@@ -811,7 +829,7 @@ dt_colorspaces_create_output_profile(const int imgid)
     }
   }
 
-  char profile[1024];
+  char profile[PATH_MAX];
   profile[0] = '\0';
   // db lookup colorout params, and dt_conf_() for override
   gchar *overprofile = dt_conf_get_string("plugins/lighttable/export/iccprofile");
@@ -844,8 +862,10 @@ dt_colorspaces_create_output_profile(const int imgid)
 
   if(!strcmp(profile, "sRGB"))
     output = dt_colorspaces_create_srgb_profile();
-  else if(!strcmp(profile, "linear_rgb"))
-    output = dt_colorspaces_create_linear_rgb_profile();
+  else if(!strcmp(profile, "linear_rec709_rgb") || !strcmp(profile, "linear_rgb"))
+    output = dt_colorspaces_create_linear_rec709_rgb_profile();
+  else if(!strcmp(profile, "linear_rec2020_rgb"))
+    output = dt_colorspaces_create_linear_rec2020_rgb_profile();
   else if(!strcmp(profile, "XYZ"))
     output = dt_colorspaces_create_xyz_profile();
   else if(!strcmp(profile, "adobergb"))
@@ -860,8 +880,8 @@ dt_colorspaces_create_output_profile(const int imgid)
   else
   {
     // else: load file name
-    char filename[DT_MAX_PATH_LEN];
-    dt_colorspaces_find_profile(filename, DT_MAX_PATH_LEN, profile, "out");
+    char filename[PATH_MAX];
+    dt_colorspaces_find_profile(filename, sizeof(filename), profile, "out");
     output = cmsOpenProfileFromFile(filename, "r");
   }
   if(!output) output = dt_colorspaces_create_srgb_profile();
@@ -958,7 +978,8 @@ dt_colorspaces_get_makermodel(char *makermodel, size_t makermodel_len, const cha
   c = maker;
   d = model;
   int match = 1;
-  while(*c != ' ' && c < maker + strlen(maker)) if(*(c++) != *(d++))
+  const char* end = maker + strlen(maker);
+  while(*c != ' ' && c < end) if(*(c++) != *(d++))
     {
       match = 0;
       break;
@@ -966,21 +987,27 @@ dt_colorspaces_get_makermodel(char *makermodel, size_t makermodel_len, const cha
   if(match)
   {
     snprintf(makermodel, makermodel_len, "%s", model);
-  }
-  else
-  {
+  } else if (!strcmp(maker, "KONICA MINOLTA") &&
+             (!strncmp(model, "MAXXUM",6) || 
+              !strncmp(model, "DYNAX", 5) || 
+              !strncmp(model, "ALPHA", 5))) {
+    // Use the dcraw name name for the Konica Minolta 5D/7D (without Konica)
+    int numoffset = !strncmp(model, "MAXXUM", 6) ? 7 : 6;
+    snprintf(makermodel, makermodel_len, "MINOLTA DYNAX %s", model+numoffset);
+  } else if (!strncmp(maker, "Konica Minolta", 14) || !strncmp(maker, "KONICA MINOLTA", 14)) {
+    // Identify Konica Minolta cameras as just Minolta internally
+    snprintf(makermodel, makermodel_len, "Minolta %s", model);
+  } else {
     // else need to append first word of the maker:
     c = maker;
     d = model;
-    for(e=makermodel; c<maker+strlen(maker) && *c != ' '; c++,e++) *e = *c;
+    const char* end = maker+strlen(maker);
+    for(e=makermodel; c<end && *c != ' '; c++,e++) *e = *c;
     // separate with space
     *(e++) = ' ';
     // and continue with model.
-    // replace MAXXUM with DYNAX for wb presets.
-    if(!strcmp(maker, "MINOLTA") && !strncmp(model, "MAXXUM", 6))
-      snprintf(e, makermodel_len - (d-maker), "DYNAX %s", model+7);
     // need FinePix gone from some fuji cameras to match dcraws description:
-    else if(!strncmp(model, "FinePix", 7))
+    if(!strncmp(model, "FinePix", 7))
       snprintf(e, makermodel_len - (d-maker), "%s", model + 8);
     else snprintf(e, makermodel_len - (d-maker), "%s", model);
   }
@@ -995,7 +1022,8 @@ dt_colorspaces_get_makermodel_split(char *makermodel, size_t makermodel_len, cha
 {
   dt_colorspaces_get_makermodel(makermodel, makermodel_len, maker, model);
   *modelo = makermodel;
-  for(; **modelo != ' ' && *modelo < makermodel + strlen(makermodel); (*modelo)++);
+  const char *end = makermodel + strlen(makermodel);
+  for(; **modelo != ' ' && *modelo < end; (*modelo)++);
   **modelo = '\0';
   (*modelo)++;
 }
@@ -1012,7 +1040,7 @@ dt_colorspaces_get_profile_name(cmsHPROFILE p, const char *language, const char 
   if(size == 0)
     goto error;
 
-  buf = (char*)malloc(sizeof(char) * (size + 1));
+  buf = (char*)calloc(size + 1, sizeof(char));
   size = cmsGetProfileInfoASCII(p, cmsInfoDescription, language, country, buf, size);
   if(size == 0)
     goto error;
@@ -1022,7 +1050,7 @@ dt_colorspaces_get_profile_name(cmsHPROFILE p, const char *language, const char 
     g_strlcpy(name, buf, len); // better a little weird than totally borked
   else
   {
-    wbuf = (wchar_t*)malloc(sizeof(wchar_t) * (size + 1));
+    wbuf = (wchar_t*)calloc(size + 1, sizeof(wchar_t));
     size = cmsGetProfileInfo(p, cmsInfoDescription, language, country, wbuf, sizeof(wchar_t) * size);
     if(size == 0)
       goto error;

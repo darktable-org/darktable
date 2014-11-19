@@ -468,47 +468,42 @@ process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoi
   }
   else
   {
-    float *in  = (float*)ivoid;
-    float *out = (float*)ovoid;
-    const int rowsize=roi_out->width * 3;
     //fprintf(stderr,"Using xform codepath\n");
-
+    const __m128 outofgamutpixel = _mm_set_ps(0.0f, 1.0f, 1.0f, 0.0f);
 #ifdef _OPENMP
-    #pragma omp parallel for schedule(static) default(none) shared(out, roi_out, in)
+    #pragma omp parallel for schedule(static) default(none) shared(ivoid, ovoid, roi_out)
 #endif
     for (int k=0; k<roi_out->height; k++)
     {
-      float Lab[rowsize];
-      float rgb[rowsize];
+      const float *in = ((float *)ivoid) + (size_t)ch*k*roi_out->width;
+      float *out = ((float *)ovoid) + (size_t)ch*k*roi_out->width;
 
-      const size_t m = (size_t)k*roi_out->width*ch;
-      for (int l=0; l<roi_out->width; l++)
+      if(!gamutcheck)
       {
-        int li=3*l,ii=ch*l;
-        Lab[li+0] = in[m+ii+0];
-        Lab[li+1] = in[m+ii+1];
-        Lab[li+2] = in[m+ii+2];
-      }
-
-      cmsDoTransform (d->xform, Lab, rgb, roi_out->width);
-
-      for (int l=0; l<roi_out->width; l++)
-      {
-        int oi=ch*l, ri=3*l;
-        if(gamutcheck && (rgb[ri+0] < 0.0f || rgb[ri+1] < 0.0f || rgb[ri+2] < 0.0f))
+        cmsDoTransform(d->xform, in, out, roi_out->width);
+      } else {
+        void *rgb = dt_alloc_align(16, 4*sizeof(float)*roi_out->width);
+        cmsDoTransform(d->xform, in, rgb, roi_out->width);
+        float *rgbptr = (float *)rgb;
+        for (int j=0; j<roi_out->width; j++,rgbptr+=4,out+=4)
         {
-          out[m+oi+0] = 0.0f;
-          out[m+oi+1] = 1.0f;
-          out[m+oi+2] = 1.0f;
+          const __m128 pixel = _mm_load_ps(rgbptr);
+          __m128 ingamut = _mm_cmplt_ps(pixel, _mm_set_ps(-FLT_MAX,
+							   0.0f,
+							   0.0f,
+							   0.0f));
+
+          ingamut = _mm_or_ps(_mm_unpacklo_ps(ingamut, ingamut), _mm_unpackhi_ps(ingamut, ingamut));
+          ingamut = _mm_or_ps(_mm_unpacklo_ps(ingamut, ingamut), _mm_unpackhi_ps(ingamut, ingamut));
+
+          const __m128 result = _mm_or_ps(_mm_and_ps(ingamut, outofgamutpixel),
+                                          _mm_andnot_ps(ingamut, pixel));
+          _mm_stream_ps(out, result);
         }
-        else
-        {
-          out[m+oi+0] = rgb[ri+0];
-          out[m+oi+1] = rgb[ri+1];
-          out[m+oi+2] = rgb[ri+2];
-        }
+        dt_free_align(rgb);
       }
     }
+    _mm_sfence();
   }
 
   if(piece->pipe->mask_display)
@@ -523,9 +518,13 @@ static cmsHPROFILE _create_profile(gchar *iccprofile)
     // default: sRGB
     profile = dt_colorspaces_create_srgb_profile();
   }
-  else if(!strcmp(iccprofile, "linear_rgb"))
+  else if(!strcmp(iccprofile, "linear_rec709_rgb") || !strcmp(iccprofile, "linear_rgb"))
   {
-    profile = dt_colorspaces_create_linear_rgb_profile();
+    profile = dt_colorspaces_create_linear_rec709_rgb_profile();
+  }
+  else if(!strcmp(iccprofile, "linear_rec2020_rgb"))
+  {
+    profile = dt_colorspaces_create_linear_rec2020_rgb_profile();
   }
   else if(!strcmp(iccprofile, "adobergb"))
   {
@@ -542,8 +541,8 @@ static cmsHPROFILE _create_profile(gchar *iccprofile)
   else
   {
     // else: load file name
-    char filename[DT_MAX_PATH_LEN];
-    dt_colorspaces_find_profile(filename, DT_MAX_PATH_LEN, iccprofile, "out");
+    char filename[PATH_MAX];
+    dt_colorspaces_find_profile(filename, sizeof(filename), iccprofile, "out");
     profile = cmsOpenProfileFromFile(filename, "r");
   }
 
@@ -560,7 +559,7 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
   dt_iop_colorout_data_t *d = (dt_iop_colorout_data_t *)piece->data;
   gchar *overprofile = dt_conf_get_string("plugins/lighttable/export/iccprofile");
   const int overintent = dt_conf_get_int("plugins/lighttable/export/iccintent");
-  const int high_quality_processing = dt_conf_get_bool("plugins/lighttable/export/force_lcms2");
+  const int force_lcms2 = dt_conf_get_bool("plugins/lighttable/export/force_lcms2");
   gchar *outprofile=NULL;
   int outintent = 0;
 
@@ -579,10 +578,10 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
     dt_iop_colorout_gui_data_t *g = (dt_iop_colorout_gui_data_t *)self->gui_data;
     g->softproof_enabled = p->softproof_enabled;
   }
-  if (d->xform)
+  if(d->xform)
   {
     cmsDeleteTransform(d->xform);
-    d->xform = 0;
+    d->xform = NULL;
   }
   d->cmatrix[0] = NAN;
   d->lut[0][0] = -1.0f;
@@ -631,15 +630,15 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
 
 
   /* get matrix from profile, if softproofing or high quality exporting always go xform codepath */
-  if (d->softproof_enabled || high_quality_processing ||
+  if (d->softproof_enabled || force_lcms2 ||
       dt_colorspaces_get_matrix_from_output_profile (d->output, d->cmatrix, d->lut[0], d->lut[1], d->lut[2], LUT_SAMPLES))
   {
     d->cmatrix[0] = NAN;
     piece->process_cl_ready = 0;
     d->xform = cmsCreateProofingTransform(d->Lab,
-                                          TYPE_Lab_FLT,
+                                          TYPE_LabA_FLT,
                                           d->output,
-                                          TYPE_RGB_FLT,
+                                          TYPE_RGBA_FLT,
                                           d->softproof,
                                           outintent,
                                           INTENT_RELATIVE_COLORIMETRIC,
@@ -659,9 +658,9 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
       piece->process_cl_ready = 0;
 
       d->xform = cmsCreateProofingTransform(d->Lab,
-                                            TYPE_Lab_FLT,
+                                            TYPE_LabA_FLT,
                                             d->output,
-                                            TYPE_RGB_FLT,
+                                            TYPE_RGBA_FLT,
                                             d->softproof,
                                             outintent,
                                             INTENT_RELATIVE_COLORIMETRIC,
@@ -700,7 +699,7 @@ void init_pipe (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_p
   dt_iop_colorout_data_t *d = (dt_iop_colorout_data_t *)piece->data;
   d->softproof_enabled = 0;
   d->softproof = d->output = NULL;
-  d->xform = 0;
+  d->xform = NULL;
   d->Lab = dt_colorspaces_create_lab_profile();
   self->commit_params(self, self->default_params, pipe, piece);
 }
@@ -710,13 +709,14 @@ void cleanup_pipe (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_de
   dt_iop_colorout_data_t *d = (dt_iop_colorout_data_t *)piece->data;
   if(d->output) dt_colorspaces_cleanup_profile(d->output);
   dt_colorspaces_cleanup_profile(d->Lab);
-  if (d->xform)
+  if(d->xform)
   {
     cmsDeleteTransform(d->xform);
-    d->xform = 0;
+    d->xform = NULL;
   }
 
   free(piece->data);
+  piece->data = NULL;
 }
 
 void gui_update(struct dt_iop_module_t *self)
@@ -765,7 +765,7 @@ void init(dt_iop_module_t *module)
   module->default_params = malloc(sizeof(dt_iop_colorout_params_t));
   module->params_size = sizeof(dt_iop_colorout_params_t);
   module->gui_data = NULL;
-  module->priority = 807; // module order created by iop_dependencies.py, do not edit!
+  module->priority = 816; // module order created by iop_dependencies.py, do not edit!
   module->hide_enable_button = 1;
   module->default_enabled = 1;
   dt_iop_colorout_params_t tmp = (dt_iop_colorout_params_t)
@@ -804,8 +804,8 @@ void gui_post_expose (struct dt_iop_module_t *self, cairo_t *cr, int32_t width, 
     cairo_stroke(cr);
   }
 
-  const int high_quality_processing = dt_conf_get_bool("plugins/lighttable/export/force_lcms2");
-  if (high_quality_processing)
+  const int force_lcms2 = dt_conf_get_bool("plugins/lighttable/export/force_lcms2");
+  if (force_lcms2)
   {
     gtk_widget_set_no_show_all(g->cbox1, FALSE);
     gtk_widget_set_visible(g->cbox1, TRUE);
@@ -823,10 +823,9 @@ void gui_post_expose (struct dt_iop_module_t *self, cairo_t *cr, int32_t width, 
 
 void gui_init(struct dt_iop_module_t *self)
 {
-  const int high_quality_processing = dt_conf_get_bool("plugins/lighttable/export/force_lcms2");
+  const int force_lcms2 = dt_conf_get_bool("plugins/lighttable/export/force_lcms2");
 
-  self->gui_data = malloc(sizeof(dt_iop_colorout_gui_data_t));
-  memset(self->gui_data,0,sizeof(dt_iop_colorout_gui_data_t));
+  self->gui_data = calloc(1, sizeof(dt_iop_colorout_gui_data_t));
   dt_iop_colorout_gui_data_t *g = (dt_iop_colorout_gui_data_t *)self->gui_data;
 
   g->profiles = NULL;
@@ -860,16 +859,23 @@ void gui_init(struct dt_iop_module_t *self)
   display_pos = prof->display_pos = 3;
   g->profiles = g_list_append(g->profiles, prof);
 
+  prof = (dt_iop_color_profile_t *)g_malloc0(sizeof(dt_iop_color_profile_t));
+  g_strlcpy(prof->filename, "linear_rec2020_rgb", sizeof(prof->filename));
+  g_strlcpy(prof->name, "linear_rec2020_rgb", sizeof(prof->name));
+  pos = prof->pos = 3;
+  display_pos = prof->display_pos = 4;
+  g->profiles = g_list_append(g->profiles, prof);
+
   // read {conf,data}dir/color/out/*.icc
-  char datadir[DT_MAX_PATH_LEN];
-  char confdir[DT_MAX_PATH_LEN];
-  char dirname[DT_MAX_PATH_LEN];
-  char filename[DT_MAX_PATH_LEN];
-  dt_loc_get_user_config_dir(confdir, DT_MAX_PATH_LEN);
-  dt_loc_get_datadir(datadir, DT_MAX_PATH_LEN);
-  snprintf(dirname, DT_MAX_PATH_LEN, "%s/color/out", confdir);
+  char datadir[PATH_MAX];
+  char confdir[PATH_MAX];
+  char dirname[PATH_MAX];
+  char filename[PATH_MAX];
+  dt_loc_get_user_config_dir(confdir, sizeof(confdir));
+  dt_loc_get_datadir(datadir, sizeof(datadir));
+  snprintf(dirname, sizeof(dirname), "%s/color/out", confdir);
   if(!g_file_test(dirname, G_FILE_TEST_IS_DIR))
-    snprintf(dirname, DT_MAX_PATH_LEN, "%s/color/out", datadir);
+    snprintf(dirname, sizeof(dirname), "%s/color/out", datadir);
   cmsHPROFILE tmpprof;
   const gchar *d_name;
   GDir *dir = g_dir_open(dirname, 0, NULL);
@@ -877,7 +883,7 @@ void gui_init(struct dt_iop_module_t *self)
   {
     while((d_name = g_dir_read_name(dir)))
     {
-      snprintf(filename, DT_MAX_PATH_LEN, "%s/%s", dirname, d_name);
+      snprintf(filename, sizeof(filename), "%s/%s", dirname, d_name);
       tmpprof = cmsOpenProfileFromFile(filename, "r");
       if(tmpprof)
       {
@@ -914,7 +920,7 @@ void gui_init(struct dt_iop_module_t *self)
   dt_bauhaus_combobox_add(g->cbox4, C_("rendering intent", "saturation"));
   dt_bauhaus_combobox_add(g->cbox4, _("absolute colorimetric"));
 
-  if (!high_quality_processing)
+  if (!force_lcms2)
   {
     gtk_widget_set_no_show_all(g->cbox1, TRUE);
     gtk_widget_set_visible(g->cbox1, FALSE);
@@ -940,11 +946,17 @@ void gui_init(struct dt_iop_module_t *self)
       // the system display profile is only suitable for display purposes
       dt_bauhaus_combobox_add(g->cbox3, _("system display profile"));
     }
-    else if(!strcmp(prof->name, "linear_rgb"))
+    else if(!strcmp(prof->name, "linear_rec709_rgb") || !strcmp(prof->name, "linear_rgb"))
     {
       dt_bauhaus_combobox_add(g->cbox2, _("linear Rec709 RGB"));
       dt_bauhaus_combobox_add(g->cbox3, _("linear Rec709 RGB"));
       dt_bauhaus_combobox_add(g->cbox5, _("linear Rec709 RGB"));
+    }
+    else if(!strcmp(prof->name, "linear_rec2020_rgb"))
+    {
+      dt_bauhaus_combobox_add(g->cbox2, _("linear Rec2020 RGB"));
+      dt_bauhaus_combobox_add(g->cbox3, _("linear Rec2020 RGB"));
+      dt_bauhaus_combobox_add(g->cbox5, _("linear Rec2020 RGB"));
     }
     else if(!strcmp(prof->name, "sRGB"))
     {

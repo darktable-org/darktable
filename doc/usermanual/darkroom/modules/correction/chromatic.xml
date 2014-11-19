@@ -1,3 +1,8 @@
+<!DOCTYPE sect3 PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
+               "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd" [
+		<!ENTITY % darktable_dtd SYSTEM "../../../dtd/darktable.dtd">
+		%darktable_dtd;
+		]>
 <sect3 status="final" id="chromatic_aberrations">
 
   <title>Chromatic aberrations</title>
@@ -50,6 +55,11 @@
       your photograph as input in darktable's pixelpipe. As a consequence, chromatic aberrations
       do not get corrected properly in the center view. This limitation only applies to
       interactive work, not to file export.
+    </para>
+
+    <para>
+      This module currently only works for images recorded with a Bayer sensor (which is the
+      sensor used in the majority of cameras).
     </para>
 
   </sect4>

@@ -1,8 +1,8 @@
 #!/bin/sh
 
 #
-# Usage: purge_unused_tags [-d]
-#        -d  do the purge, otherwise only display unused tags
+# Usage: purge_unused_tags [-p]
+#        -p  do the purge, otherwise only display unused tags
 #
 
 DBFILE=~/.config/darktable/library.db
@@ -11,14 +11,13 @@ DBFILE=~/.config/darktable/library.db
 Q1C="SELECT name FROM tags WHERE id NOT IN (SELECT tagid FROM tagged_images);"
 Q1="DELETE FROM tags WHERE id NOT IN (SELECT tagid FROM tagged_images);"
 
-# tagxtag for missing tags
-Q2="DELETE FROM tagxtag WHERE id1 NOT IN (SELECT id FROM TAGS) OR id2 NOT IN (SELECT id FROM tags);"
-
 if [ "$1" = "-p" ]; then
     echo Purging tags...
     echo "$Q1C" | sqlite3 $DBFILE
     echo "$Q1" | sqlite3 $DBFILE
-    echo "$Q2" | sqlite3 $DBFILE
 else
     echo "$Q1C" | sqlite3 $DBFILE
+    echo
+    echo to really purge from the database call:
+    echo $0 -p
 fi

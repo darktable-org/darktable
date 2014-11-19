@@ -54,7 +54,7 @@ dt_gmodule_t *dt_gmodule_open(const char *library)
     name = g_strdup(library);
   }
 
-  gmodule = g_module_open(name, G_MODULE_BIND_LAZY);
+  gmodule = g_module_open(name, G_MODULE_BIND_LAZY | G_MODULE_BIND_LOCAL);
 
   if (gmodule != NULL)
   {

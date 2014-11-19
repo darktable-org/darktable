@@ -132,8 +132,7 @@ dt_lib_camera_property_t *_lib_property_add_new(dt_lib_camera_t * lib, const gch
       // We got a value for property lets construct the gui for the property and add values
       int i=0;
       const char *current_value = dt_camctl_camera_get_property(darktable.camctl, NULL, propertyname);
-      dt_lib_camera_property_t *prop = malloc(sizeof(dt_lib_camera_property_t));
-      memset(prop,0,sizeof(dt_lib_camera_property_t));
+      dt_lib_camera_property_t *prop = calloc(1, sizeof(dt_lib_camera_property_t));
       prop->name=label;
       prop->property_name=propertyname;
       prop->label = GTK_LABEL(gtk_label_new(label));
@@ -229,12 +228,10 @@ _capture_button_clicked(GtkWidget *widget, gpointer user_data)
   uint32_t count = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(lib->gui.tb2))==TRUE?(uint32_t)gtk_spin_button_get_value(GTK_SPIN_BUTTON(lib->gui.sb2)):1;
   uint32_t brackets = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(lib->gui.tb3))==TRUE?(uint32_t)gtk_spin_button_get_value(GTK_SPIN_BUTTON(lib->gui.sb3)):0;
   uint32_t steps = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(lib->gui.tb3))==TRUE?(uint32_t)gtk_spin_button_get_value(GTK_SPIN_BUTTON(lib->gui.sb4)):0;
-  dt_job_t j;
 
   /* create a capture background job */
   jobcode = dt_view_tethering_get_job_code(darktable.view_manager);
-  dt_camera_capture_job_init(&j, jobcode, delay, count, brackets, steps);
-  dt_control_add_job(darktable.control, &j);
+  dt_control_add_job(darktable.control, DT_JOB_QUEUE_USER_FG, dt_camera_capture_job_create(jobcode, delay, count, brackets, steps));
 }
 
 
@@ -280,7 +277,8 @@ _add_property_button_clicked (GtkWidget *widget, gpointer user_data)
       gchar key[256]= {"plugins/capture/tethering/properties/"};
       g_strlcat(key, label, sizeof(key));
       gchar *p = key;
-      while( p++<key+strlen(key) ) if(*p==' ') *p='_';
+      const char *end = key + strlen(key);
+      while( p++ < end ) if(*p==' ') *p='_';
       dt_conf_set_string(key,property);
 
       /* clean entries */
@@ -389,13 +387,11 @@ void
 gui_init (dt_lib_module_t *self)
 {
   self->widget = gtk_vbox_new(FALSE, 5);
-  self->data = malloc(sizeof(dt_lib_camera_t));
-  memset(self->data,0,sizeof(dt_lib_camera_t));
+  self->data = calloc(1, sizeof(dt_lib_camera_t));
 
   // Setup lib data
   dt_lib_camera_t *lib=self->data;
-  lib->data.listener = malloc(sizeof(dt_camctl_listener_t));
-  memset(lib->data.listener,0,sizeof(dt_camctl_listener_t));
+  lib->data.listener = calloc(1, sizeof(dt_camctl_listener_t));
   lib->data.listener->data=lib;
   lib->data.listener->camera_error=_camera_error_callback;
   lib->data.listener->camera_property_value_changed=_camera_property_value_changed;
@@ -607,7 +603,8 @@ gui_init (dt_lib_module_t *self)
 
         /* get the label from key */
         char *p=entry->key;
-        while (p++<entry->key+strlen(entry->key)) if (*p=='_') *p=' ';
+        const char *end = entry->key + strlen(entry->key);
+        while (p++ < end) if (*p=='_') *p=' ';
 
         if ((prop = _lib_property_add_new (lib, entry->key,entry->value )) != NULL)
         {

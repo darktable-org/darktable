@@ -1,7 +1,8 @@
 /*
     RawSpeed - RAW file decoder.
 
-    Copyright (C) 2009 Klaus Post
+    Copyright (C) 2009-2014 Klaus Post
+    Copyright (C) 2014 Pedro Côrte-Real
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Lesser General Public
@@ -43,6 +44,7 @@ public:
 protected:
   void DecodeARW(ByteStream &input, uint32 w, uint32 h);
   void DecodeARW2(ByteStream &input, uint32 w, uint32 h, uint32 bpp);
+  void DecodeSR2(TiffIFD* raw);
   TiffIFD *mRootIFD;
   uint32 curve[0x4001];
   ByteStream *in;

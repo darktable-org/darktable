@@ -28,6 +28,8 @@
 #include "develop/pixelpipe.h"
 #include "common/opencl.h"
 
+#define DEVELOP_MASKS_VERSION (2)
+
 /**forms types */
 typedef enum dt_masks_type_t
 {
@@ -232,6 +234,21 @@ int dt_masks_get_mask(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece, dt
 int dt_masks_get_mask_roi(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece, dt_masks_form_t *form, const dt_iop_roi_t *roi, float *buffer);
 int dt_masks_group_render(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece, dt_masks_form_t *form, float **buffer, int *roi, float scale);
 int dt_masks_group_render_roi(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece, dt_masks_form_t *form, const dt_iop_roi_t *roi, float *buffer);
+
+// returns current masks version
+int dt_masks_version(void);
+
+// update masks from older versions
+int dt_masks_legacy_params(dt_develop_t *dev, void *params, const int old_version, const int new_version);
+/*
+ * TODO:
+ *
+ * int
+ * dt_masks_legacy_params(
+ *   dt_develop_t *dev,
+ *   const void *const old_params, const int old_version,
+ *   void *new_params,             const int new_version);
+ */
 
 /** we create a completely new form. */
 dt_masks_form_t *dt_masks_create(dt_masks_type_t type);

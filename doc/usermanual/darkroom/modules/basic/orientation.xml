@@ -1,0 +1,56 @@
+<!DOCTYPE sect3 PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
+               "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd" [
+		<!ENTITY % darktable_dtd SYSTEM "../../../dtd/darktable.dtd">
+		%darktable_dtd;
+		]>
+<sect3 status="final" id="orientation">
+
+  <title>Orientation</title>
+
+  <indexterm>
+    <primary>modules</primary>
+    <secondary>orientation</secondary>
+  </indexterm>
+
+  <indexterm>
+    <primary>orientation</primary>
+  </indexterm>
+
+  <sect4>
+
+    <title>Overview</title>
+
+    <informaltable frame="none">
+      <tgroup cols="2" colsep="0" rowsep="0">
+        <colspec colwidth="6*"/>
+        <colspec colwidth="4*"/>
+        <tbody>
+          <row>
+            <entry>
+              This module allows the user to modify the orientation of an image. By default it is active for all images
+              and receives its standard settings from the camera's orientation flag stored in the EXIF data.
+            </entry>
+            <entry>
+              <graphic fileref="darkroom/modules/images/orientation.png" scalefit="1" width="80%" align="center" />
+            </entry>
+          </row>
+        </tbody>
+      </tgroup>
+    </informaltable>
+
+  </sect4>
+
+  <sect4>
+
+    <title>Usage</title>
+
+    <sect5>
+      <title>rotate</title>
+      <para>
+        Clicking on one of the buttons causes a counter-clockwise or clockwise rotation in steps of 90 degrees.
+      </para>
+    </sect5>
+
+  </sect4>
+
+</sect3>

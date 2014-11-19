@@ -265,7 +265,7 @@ void init(dt_iop_module_t *module)
   // our module is disabled by default
   module->default_enabled = 0;
   // we are pretty late in the pipe:
-  module->priority = 789; // module order created by iop_dependencies.py, do not edit!
+  module->priority = 800; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_colorcontrast_params_t);
   module->gui_data = NULL;
   // init defaults:
@@ -308,6 +308,7 @@ void init_pipe     (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_d
 void cleanup_pipe  (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
   free(piece->data);
+  piece->data = NULL;
 }
 
 /** put your local callbacks here, be sure to make them static so they won't be visible outside this file! */

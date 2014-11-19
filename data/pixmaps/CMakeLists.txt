@@ -13,8 +13,8 @@ endforeach(pixmap_size)
 #
 # Install plugin pixmaps
 #
-FILE(GLOB DARKROOM_PLUGIN_PIXMAPS "plugins/darkroom/*.png")
+FILE(GLOB DARKROOM_PLUGIN_PIXMAPS "plugins/darkroom/*.png" "plugins/darkroom/*.svg")
 install(FILES ${DARKROOM_PLUGIN_PIXMAPS} DESTINATION ${SHARE_INSTALL}/darktable/pixmaps/plugins/darkroom )
 
-FILE(GLOB OTHER_PIXMAPS "*.png")
+FILE(GLOB OTHER_PIXMAPS "*.png" "*.svg")
 install(FILES ${OTHER_PIXMAPS} DESTINATION ${SHARE_INSTALL}/darktable/pixmaps )

@@ -568,7 +568,7 @@ static int dt_gradient_get_points(dt_develop_t *dev, float x, float y, float rot
   }
 
   //buffer allocations
-  *points = malloc(2*(l+3)*sizeof(float));
+  *points = calloc(2*(l+3), sizeof(float));
   if(*points == NULL) return 0;
   *points_count = l+3;
 
@@ -821,13 +821,12 @@ static int dt_gradient_get_mask(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t 
   }
 
   //we allocate the buffer
-  *buffer = malloc(w*h*sizeof(float));
+  *buffer = calloc(w*h, sizeof(float));
   if(*buffer == NULL)
   {
     free(points);
     return 0;
   }
-  memset(*buffer,0,w*h*sizeof(float));
 
   //we fill the mask buffer by interpolation
 #ifdef _OPENMP

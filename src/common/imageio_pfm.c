@@ -68,7 +68,7 @@ dt_imageio_retval_t dt_imageio_open_pfm(dt_image_t *img, const char *filename, d
           buf[4*(img->width*j + i) + 1] =
             buf[4*(img->width*j + i) + 0];
       }
-  float *line = (float *)malloc(sizeof(float)*4*img->width);
+  float *line = (float *)calloc(4*img->width, sizeof(float));
   for(size_t j=0; j < img->height/2; j++)
   {
     memcpy(line,

@@ -1,10 +1,15 @@
+<!DOCTYPE sect3 PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
+               "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd" [
+		<!ENTITY % darktable_dtd SYSTEM "../../../dtd/darktable.dtd">
+		%darktable_dtd;
+		]>
 <sect3 status="final" id="denoise_bilateral">
 
-  <title>Denoise - bilateral</title>
+  <title>Denoise&nbsp;&ndash; bilateral</title>
 
   <indexterm>
     <primary>modules</primary>
-    <secondary>denoise - bilateral</secondary>
+    <secondary>denoise&nbsp;&ndash; bilateral</secondary>
   </indexterm>
 
   <indexterm>
@@ -45,7 +50,7 @@
     <para>
       This module reduces noise in your image but preserves sharp edges. This is accomplished by
       averaging pixels with their neighbors, taking into account not only the geometric distance
-      but also the distance on the range scale, i.e. differences in color intensities. As
+      but also the distance on the range scale, i.e. differences in the RGB values. As
       denoising is a resource hungry process, it slows down pixelpipe processing significantly;
       consider to activate this module late in your workflow.
     </para>

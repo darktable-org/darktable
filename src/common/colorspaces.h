@@ -28,16 +28,16 @@ cmsHPROFILE dt_colorspaces_create_lab_profile();
 cmsHPROFILE dt_colorspaces_create_srgb_profile(void);
 
 /** create the ICC virtual profile for linear rec709 rgb space. */
-cmsHPROFILE dt_colorspaces_create_linear_rgb_profile(void);
+cmsHPROFILE dt_colorspaces_create_linear_rec709_rgb_profile(void);
+
+/** create the ICC virtual profile for linear rec2020 rgb space. */
+cmsHPROFILE dt_colorspaces_create_linear_rec2020_rgb_profile(void);
 
 /** create the ICC virtual profile for linear infrared bgr space. */
 cmsHPROFILE dt_colorspaces_create_linear_infrared_profile(void);
 
 /** create the ICC virtual profile for adobe rgb space. */
 cmsHPROFILE dt_colorspaces_create_adobergb_profile(void);
-
-/** create the ICC virtual profile for Beta RGB space. */
-cmsHPROFILE dt_colorspaces_create_betargb_profile(void);
 
 /** create a ICC virtual profile for XYZ. */
 cmsHPROFILE dt_colorspaces_create_xyz_profile(void);

@@ -28,7 +28,9 @@
 #include "libraw/libraw.h"
 #include "control/control.h"
 #include "control/conf.h"
+#ifdef HAVE_GPHOTO2
 #include "control/jobs/camera_jobs.h"
+#endif
 #include "dtgtk/label.h"
 #include "dtgtk/button.h"
 #include "gui/accelerators.h"
@@ -142,18 +144,24 @@ static void _lib_import_scan_devices_callback(GtkButton *button,gpointer data)
 /* show import from camera dialog */
 static void _lib_import_from_camera_callback(GtkButton *button,gpointer data)
 {
-  dt_camera_import_dialog_param_t *params=(dt_camera_import_dialog_param_t *)g_malloc(sizeof(dt_camera_import_dialog_param_t));
-  memset( params, 0, sizeof(dt_camera_import_dialog_param_t));
+  dt_camera_import_dialog_param_t *params=(dt_camera_import_dialog_param_t *)g_malloc0(sizeof(dt_camera_import_dialog_param_t));
   params->camera = (dt_camera_t*)data;
 
   dt_camera_import_dialog_new(params);
   if( params->result )
   {
     /* initialize a import job and put it on queue.... */
-    dt_job_t j;
-    dt_camera_import_job_init(&j, params->jobcode,params->result,params->camera,params->time_override);
-    dt_control_add_job(darktable.control, &j);
+    dt_control_add_job(darktable.control,
+                       DT_JOB_QUEUE_USER_BG,
+                       dt_camera_import_job_create(params->jobcode,
+                                                   params->result,
+                                                   params->camera,
+                                                   params->time_override
+                                                  )
+                      );
   }
+  g_free(params->jobcode);
+  g_list_free(params->result);
   g_free(params);
 }
 
@@ -208,7 +216,7 @@ void _lib_import_ui_devices_update(dt_lib_module_t *self)
       gtk_box_pack_start (GTK_BOX (d->devices),label,TRUE,TRUE,0);
 
       /* set camera summary if available */
-      if( camera->summary.text !=NULL && strlen(camera->summary.text) >0 )
+      if(*camera->summary.text)
       {
         g_object_set(G_OBJECT(label), "tooltip-text", camera->summary.text, (char *)NULL);
       }
@@ -425,7 +433,7 @@ static GtkWidget* _lib_import_get_extra_widget(dt_lib_import_metadata_t *data, g
   gtk_box_pack_start(GTK_BOX (extra), alignment, FALSE, FALSE, 0);
 
   creator = gtk_entry_new();
-  gtk_widget_set_size_request(creator, 300, -1);
+  gtk_widget_set_size_request(creator, DT_PIXEL_APPLY_DPI(300), -1);
   gchar *str = dt_conf_get_string("ui_last/import_last_creator");
   gtk_entry_set_text(GTK_ENTRY(creator), str);
   g_free(str);
@@ -822,8 +830,7 @@ static void _lib_import_folder_callback(GtkWidget *widget,gpointer user_data)
 void gui_init(dt_lib_module_t *self)
 {
   /* initialize ui widgets */
-  dt_lib_import_t *d = (dt_lib_import_t *)g_malloc(sizeof(dt_lib_import_t));
-  memset(d,0,sizeof(dt_lib_import_t));
+  dt_lib_import_t *d = (dt_lib_import_t *)g_malloc0(sizeof(dt_lib_import_t));
   self->data = (void *)d;
   self->widget = gtk_vbox_new(FALSE, 5);
 

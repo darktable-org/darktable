@@ -26,6 +26,7 @@
 #include "common/darktable.h"
 #include "common/file_location.h"
 
+#include <inttypes.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <strings.h>
@@ -35,7 +36,7 @@
 typedef struct dt_conf_t
 {
   dt_pthread_mutex_t mutex;
-  char filename[DT_MAX_PATH_LEN];
+  char filename[PATH_MAX];
   GHashTable *table;
   GHashTable *defaults;
   GHashTable *override_entries;
@@ -75,8 +76,7 @@ static inline char *dt_conf_get_var(const char *name)
   }
 
   // still no luck? insert garbage:
-  char *garbage = (char *)g_malloc(sizeof(int32_t));
-  memset(garbage, 0, sizeof(int32_t));
+  char *garbage = (char *)g_malloc0(sizeof(int32_t));
   g_hash_table_insert(darktable.conf->table, g_strdup(name), garbage);
   return garbage;
 }
@@ -213,7 +213,7 @@ static inline void dt_conf_init(dt_conf_t *cf, const char *filename, GSList *ove
     // TODO: read default darktablerc into ->defaults and other into ->table!
     if(!i)
     {
-      snprintf(darktable.conf->filename, DT_MAX_PATH_LEN, "%s", filename);
+      snprintf(darktable.conf->filename, sizeof(darktable.conf->filename), "%s", filename);
       f = fopen(filename, "rb");
       if(!f)
       {
@@ -224,19 +224,22 @@ static inline void dt_conf_init(dt_conf_t *cf, const char *filename, GSList *ove
     }
     if(i)
     {
-      char buf[DT_MAX_PATH_LEN], defaultrc[DT_MAX_PATH_LEN];
-      dt_loc_get_datadir(buf, DT_MAX_PATH_LEN);
-      snprintf(defaultrc, DT_MAX_PATH_LEN, "%s/darktablerc", buf);
+      char buf[PATH_MAX], defaultrc[PATH_MAX];
+      dt_loc_get_datadir(buf, sizeof(buf));
+      snprintf(defaultrc, sizeof(defaultrc), "%s/darktablerc", buf);
       f = fopen(defaultrc, "rb");
     }
     if(!f) return;
     while(!feof(f))
     {
-      read = fscanf(f, "%[^\n]\n", line);
+      gchar *line_pattern = g_strdup_printf("%%%zu[^\n]\n", sizeof(line)-1);
+      read = fscanf(f, line_pattern, line);
+      g_free(line_pattern);
       if(read > 0)
       {
         char *c = line;
-        while(*c != '=' && c < line + strlen(line)) c++;
+        char *end = line + strlen(line);
+        while(*c != '=' && c < end) c++;
         if(*c == '=')
         {
           *c = '\0';

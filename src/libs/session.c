@@ -86,8 +86,7 @@ void
 gui_init (dt_lib_module_t *self)
 {
   self->widget = gtk_vbox_new(TRUE, 5);
-  self->data = malloc(sizeof(dt_lib_session_t));
-  memset(self->data,0,sizeof(dt_lib_session_t));
+  self->data = calloc(1, sizeof(dt_lib_session_t));
 
   // Setup lib data
   dt_lib_session_t *lib=self->data;

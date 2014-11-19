@@ -18,23 +18,24 @@
 #ifndef DARKTABLE_DEVELOP_H
 #define DARKTABLE_DEVELOP_H
 
+#include <inttypes.h>
+#include <cairo.h>
+#include <glib.h>
+#include <stdint.h>
+
 #include "common/darktable.h"
 #include "common/dtpthread.h"
 #include "control/settings.h"
 #include "develop/imageop.h"
 #include "common/image.h"
 
-#include <inttypes.h>
-#include <cairo.h>
-#include <glib.h>
-
 struct dt_iop_module_t;
-struct dt_iop_params_t;
+
 typedef struct dt_dev_history_item_t
 {
   struct dt_iop_module_t *module; // pointer to image operation module
   int32_t enabled;                // switched respective module on/off
-  struct dt_iop_params_t *params; // parameters for this operation
+  dt_iop_params_t *params; // parameters for this operation
   struct dt_develop_blend_params_t *blend_params;
   int multi_priority;
   char multi_name[128];
@@ -57,6 +58,15 @@ typedef enum dt_dev_histogram_type_t
   DT_DEV_HISTOGRAM_N // needs to be the last one
 } dt_dev_histogram_type_t;
 
+typedef enum dt_dev_pixelpipe_status_t
+{
+  DT_DEV_PIXELPIPE_DIRTY = 0,		// history stack changed or image new
+  DT_DEV_PIXELPIPE_RUNNING = 1,		// pixelpipe is running
+  DT_DEV_PIXELPIPE_VALID = 2,		// pixelpipe has finished; valid result
+  DT_DEV_PIXELPIPE_INVALID = 3		// pixelpipe has finished; invalid result
+}
+dt_dev_pixelpipe_status_t;
+
 extern const gchar* dt_dev_histogram_type_names[];
 
 struct dt_dev_pixelpipe_t;
@@ -65,9 +75,9 @@ typedef struct dt_develop_t
   int32_t gui_attached; // != 0 if the gui should be notified of changes in hist stack and modules should be gui_init'ed.
   int32_t gui_leaving;  // set if everything is scheduled to shut down.
   int32_t gui_synch; // set by the render threads if gui_update should be called in the modules.
-  int32_t image_loading, image_dirty, first_load;
-  int32_t image_force_reload;
-  int32_t preview_loading, preview_dirty, preview_input_changed;
+  int32_t image_loading, first_load, image_force_reload;
+  int32_t preview_loading, preview_input_changed;
+  dt_dev_pixelpipe_status_t image_status, preview_status;
   uint32_t timestamp;
   uint32_t average_delay;
   uint32_t preview_average_delay;
@@ -100,8 +110,8 @@ typedef struct dt_develop_t
   GList *iop;
 
   // histogram for display.
-  float *histogram, *histogram_pre_tonecurve, *histogram_pre_levels;
-  float histogram_max, histogram_pre_tonecurve_max, histogram_pre_levels_max;
+  uint32_t *histogram, *histogram_pre_tonecurve, *histogram_pre_levels;
+  uint32_t histogram_max, histogram_pre_tonecurve_max, histogram_pre_levels_max;
   uint32_t *histogram_waveform, histogram_waveform_width, histogram_waveform_height, histogram_waveform_stride;
   // we should process the waveform histogram in the correct size to make it not look like crap. since this requires gui knowledge we need this mutex
 //   dt_pthread_mutex_t histogram_waveform_mutex;
@@ -276,6 +286,9 @@ void dt_dev_module_remove(dt_develop_t *dev, struct dt_iop_module_t *module);
 void dt_dev_module_update_multishow(dt_develop_t *dev, struct dt_iop_module_t *module);
 /** same, but for all modules */
 void dt_dev_modules_update_multishow(dt_develop_t *dev);
+/** generates item multi-instance name */
+gchar *dt_history_item_get_name(struct dt_iop_module_t *module);
+gchar *dt_history_item_get_name_html(struct dt_iop_module_t *module);
 
 /*
  * distort functions

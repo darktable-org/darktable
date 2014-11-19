@@ -457,7 +457,7 @@ void init(dt_iop_module_t *module)
   // our module is disabled by default
   // by default:
   module->default_enabled = 0;
-  module->priority = 192; // module order created by iop_dependencies.py, do not edit!
+  module->priority = 200; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_spots_params_t);
   module->gui_data = NULL;
   // init defaults:
@@ -513,6 +513,7 @@ void init_pipe (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_p
 void cleanup_pipe (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
   free(piece->data);
+  piece->data = NULL;
 }
 
 /** gui callbacks, these are needed. */
@@ -542,7 +543,7 @@ void gui_update (dt_iop_module_t *self)
 
 void gui_init (dt_iop_module_t *self)
 {
-  const int bs = 14;
+  const int bs = DT_PIXEL_APPLY_DPI(14);
   self->gui_data = malloc(sizeof(dt_iop_spots_gui_data_t));
   dt_iop_spots_gui_data_t *g = (dt_iop_spots_gui_data_t *)self->gui_data;
 

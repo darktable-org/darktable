@@ -2,13 +2,7 @@ cmake_minimum_required(VERSION 2.6)
 
 
 set(LUAAUTOC_SOURCES
-	"src/lautoc.c"
-	"src/lautoc_call.c"
-	"src/lautoc_enum.c"
-	"src/lautoc_hashtable.c"
-	"src/lautoc_stack.c"
-	"src/lautoc_struct.c"
-	"src/lautoc_type.c"
+	"lautoc.c"
 	)
 
 #

@@ -62,7 +62,10 @@ static gboolean _lib_modulegroups_test(dt_lib_module_t *self, uint32_t group, ui
 static void _lib_modulegroups_switch_group(dt_lib_module_t *self, dt_iop_module_t *module);
 
 /* hook up with viewmanager view change to initialize modulegroup */
-static void _lib_modulegroups_viewchanged_callback(gpointer instance, gpointer data);
+static void _lib_modulegroups_viewchanged_callback(gpointer instance, 
+    dt_view_t* old_view,
+    dt_view_t* new_view,
+    gpointer data);
 
 const char* name()
 {
@@ -94,9 +97,8 @@ int position()
 void gui_init(dt_lib_module_t *self)
 {
   /* initialize ui widgets */
-  dt_lib_modulegroups_t *d = (dt_lib_modulegroups_t *)g_malloc(sizeof(dt_lib_modulegroups_t));
+  dt_lib_modulegroups_t *d = (dt_lib_modulegroups_t *)g_malloc0(sizeof(dt_lib_modulegroups_t));
   self->data = (void *)d;
-  memset(d,0,sizeof(dt_lib_modulegroups_t));
 
   self->widget = gtk_hbox_new(TRUE,2);
 
@@ -143,7 +145,7 @@ void gui_init(dt_lib_module_t *self)
   /*
    * layout button row
    */
-  int iconsize = 28;
+  int iconsize = DT_PIXEL_APPLY_DPI(28);
   GtkWidget *br = self->widget;
   for (int k=0; k<DT_MODULEGROUP_SIZE; k++)
   {
@@ -184,7 +186,10 @@ void gui_cleanup(dt_lib_module_t *self)
   self->data = NULL;
 }
 
-static void _lib_modulegroups_viewchanged_callback(gpointer instance, gpointer data)
+static void _lib_modulegroups_viewchanged_callback(gpointer instance, 
+    dt_view_t* old_view,
+    dt_view_t* new_view,
+    gpointer data)
 {
 }
 

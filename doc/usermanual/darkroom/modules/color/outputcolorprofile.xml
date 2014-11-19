@@ -1,3 +1,8 @@
+<!DOCTYPE sect3 PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
+               "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd" [
+		<!ENTITY % darktable_dtd SYSTEM "../../../dtd/darktable.dtd">
+		%darktable_dtd;
+		]>
 <sect3 status="final" id="output_color_profile">
 
   <title>Output color profile</title>
@@ -128,7 +133,23 @@
     <sect5>
       <title>output profile</title>
       <para>
-        Sets the color profile for output/export.
+        Sets the color profile for output/export, causing darktable to render colors with this
+        profile. darktable embeds the profile data into the output file if supported 
+        by the file format&nbsp;&ndash; this allows other applications reading the file to 
+        correctly interpret its colors.
+      </para>
+
+      <para>
+        Some file formats&nbsp;&ndash; namely PNG&nbsp;&ndash; do not support embedded profiles 
+        by their specification. However, there is an established de-facto standard to embed
+        profiles which darktable adheres to. Beware that some applications might fail to correctly 
+        handle those profiles and render colors incorrectly.
+      </para>
+
+      <para>
+        As not all applications, e.g. image viewers, are aware of color profiles, a general recommendation 
+        is to stick to <emphasis>sRGB</emphasis> as the default output profile. You should only deviate from 
+        <emphasis>sRGB</emphasis> if this is really required and if you know what you are doing.
       </para>
     </sect5>
 
@@ -148,12 +169,12 @@
       <para>
         <emphasis>softproof</emphasis> allows you to preview your image rendered using a printer
         profile so as to see how colors will end up on the final print and is toggled on and off
-        by pressing <quote>s</quote>.
+        by pressing <emphasis>ctrl-s</emphasis>.
       </para>
       <para>
         Likewise <emphasis>gamut check</emphasis> is toggled on and off by pressing
-        <quote>g</quote>; this function highlights in cyan all pixels out of gamut with respect
-        to the selected softproof profile.
+        <emphasis>ctrl-g</emphasis>; this function highlights in cyan all pixels out of gamut
+        with respect to the selected softproof profile.
       </para>
       <para>
         <emphasis>softproof</emphasis> and <emphasis>gamut check</emphasis> are mutually
@@ -162,9 +183,9 @@
       </para>
       <para>
         Tip: at other times it may not be obvious if the <emphasis>softproof</emphasis> mode is
-        still active or not. If in doubt press <quote>g</quote>, which will switch to
+        still active or not. If in doubt press <emphasis>ctrl-g</emphasis>, which will switch to
         <emphasis>gamut check</emphasis> and be clearly distinguishable by cyan marked pixels.
-        Press <quote>g</quote> again and you are back to normal display mode.
+        Press <emphasis>ctrl-g</emphasis> again and you are back to normal display mode.
       </para>
     </sect5>
 

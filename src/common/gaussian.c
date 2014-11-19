@@ -127,8 +127,8 @@ dt_gaussian_init(
   g->sigma = sigma;
   g->order = order;
   g->buf = NULL;
-  g->max = (float *)malloc(channels * sizeof(float));
-  g->min = (float *)malloc(channels * sizeof(float));
+  g->max = (float *)calloc(channels, sizeof(float));
+  g->min = (float *)calloc(channels, sizeof(float));
 
   if(!g->min || !g->max) goto error;
 
@@ -544,8 +544,8 @@ dt_gaussian_init_cl(
   g->order = order;
   g->dev_temp1 = NULL;
   g->dev_temp2 = NULL;
-  g->max = (float *)malloc(channels * sizeof(float));
-  g->min = (float *)malloc(channels * sizeof(float));
+  g->max = (float *)calloc(channels, sizeof(float));
+  g->min = (float *)calloc(channels, sizeof(float));
 
   if(!g->min || !g->max) goto error;
 

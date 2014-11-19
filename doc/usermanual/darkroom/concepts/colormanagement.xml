@@ -1,0 +1,222 @@
+<!DOCTYPE sect2 PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
+               "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd" [
+		<!ENTITY % darktable_dtd SYSTEM "../../dtd/darktable.dtd">
+		%darktable_dtd;
+		]>
+<sect2 status="final" id="color_management">
+
+  <title>Color management</title>
+
+  <indexterm>
+    <primary>color management</primary>
+  </indexterm>
+
+  <para>
+    The darkroom employs a fully color managed workflow:
+    <itemizedlist>
+
+      <listitem><para>
+        Input color specifications are taken from embedded or user supplied ICC profiles
+        or&nbsp;&ndash; in case of raw files&nbsp;&ndash; alternatively from a library of camera
+        specific color matrices.
+      </para></listitem>
+
+      <listitem><para>
+        darktable automatically reads the display profile of your monitor (if properly
+        configured) for an accurate color rendition on screen. Multi-screen setups are fully
+        supported as long as a system service like <emphasis>colord</emphasis> is in place and
+        properly set up to inform darktable about the correct monitor profile.
+      </para></listitem>
+
+      <listitem><para>
+        Output files can be encoded in one of darktable's built-in profiles, like
+        <ulink url="http://en.wikipedia.org/wiki/SRGB">sRGB</ulink> or
+        <ulink url="http://en.wikipedia.org/wiki/Adobergb">AdobeRGB (compatible)</ulink>, or
+        into any other output color space that the user supplies to darktable as an ICC profile.
+      </para></listitem>
+
+    </itemizedlist>
+  </para>
+
+  <para>
+    To investigate your display profile configuration you can call the
+    <filename>darktable-cmstest</filename> binary which prints out useful information like
+    profile name per monitor and tells you if the system is correctly configured.
+  </para>
+
+  <sect3 status="final" id="darktable_color_spaces">
+
+    <title>darktable's color spaces</title>
+
+    <indexterm>
+      <primary>color spaces</primary>
+    </indexterm>
+
+    <para>
+      darktable's input images are either RGB files (like JPEGs or TIFFs) or pre-demosaiced
+      camera raws&nbsp;&ndash; both represent colors by a combination of red, green and blue.
+      Most part of our modules act in the
+      <ulink url="http://en.wikipedia.org/wiki/Lab_color_space">CIELAB color space</ulink>
+      (often just called <quote>Lab</quote>) which describes color as a combination of lightness
+      data (L) and a point in the a-b color plane. The final output of the image processing
+      pipeline is once again in RGB, either shaped for the monitor display or the output file.
+    </para>
+
+    <para>
+      This process implies that the pixelpipe has two color conversion steps:
+      <link linkend="input_color_profile"><emphasis>input color profile</emphasis></link> and
+      <link linkend="output_color_profile"><emphasis>output color profile</emphasis></link>. In
+      addition there is the <link linkend="demosaic"><emphasis>demosaic</emphasis></link> step
+      for raw images, where the colors of each pixel are reconstructed by interpolation.
+    </para>
+
+    <para>
+      Each module has a fixed position in the pixelpipe which tells you which color space the
+      module lives in:
+    </para>
+
+    <para>
+      <informaltable frame="none" width="80%">
+        <tgroup cols="3" colsep="0" rowsep="0">
+          <colspec colwidth="3.5*"/>
+          <colspec colwidth="0.5*"/>
+          <colspec colwidth="6*"/>
+          <tbody>
+            <row>
+              <entry>
+                up to <emphasis>demosaic</emphasis>
+              </entry>
+              <entry></entry>
+              <entry>
+                Image is in raw data format with only latent colors. Each pixel carries
+                lightness and color information for only one base color. Please mind that some
+                of the modules in this part can also act on non-RAW input images in RGB format
+                with full information on all three color channels.
+              </entry>
+            </row>
+            <row>
+              <entry>
+                between <emphasis>demosaic</emphasis> and <emphasis>input color
+                profile</emphasis>
+              </entry>
+              <entry></entry>
+              <entry>
+                Image is in RGB format within the color space of the specific camera or input
+                file.
+              </entry>
+            </row>
+            <row>
+              <entry>
+                between <emphasis>input color profile</emphasis> and <emphasis>output color
+                profile</emphasis>
+              </entry>
+              <entry></entry>
+              <entry>
+                Image is in Lab format. This is a very huge universal color space which covers
+                all colors visible to the human eye (and even more). As darktable processes
+                images in 4x32-bit floating point buffers, we can handle the Lab color space
+                without risking banding or tonal breaks.
+              </entry>
+            </row>
+            <row>
+              <entry>
+                after <emphasis>output color profile</emphasis>
+              </entry>
+              <entry></entry>
+              <entry>
+                Image is in RGB format as defined by the selected display or output ICC profile.
+              </entry>
+            </row>
+          </tbody>
+        </tgroup>
+      </informaltable>
+    </para>
+
+  </sect3>
+
+  <sect3 status="final" id="unbounded_colors">
+
+    <title>Unbounded colors</title>
+
+    <indexterm>
+      <primary>unbounded colors</primary>
+    </indexterm>
+
+    <para>
+      Theoretically the individual components of color data are confined to certain mininum and
+      maximum levels. As an example the intensity of an individual red, green or blue color
+      channel in RGB can be anything in the range between 0% and 100% (or between 0.0 and 1.0).
+      Likewise the L channel in Lab can be anything between 0 (pure black) and 100 (pure white).
+    </para>
+
+    <para>
+      In practice sometimes the image processing steps in darktable's modules can lead to values
+      which lie outside of these confined ranges. In fact even the well established color
+      matrices, which convert from camera RGB to Lab, may sometimes produce pixels with negative
+      L values.
+    </para>
+
+    <para>
+      Pixels with these kind of values are said to have <quote>unbounded colors</quote>. One
+      could <emphasis>clamp</emphasis> (i.e. confine) those values to the allowed range at every
+      processing step. However, it has been found that it is much preferred and less prone to
+      artifacts to not clamp in-between unbounded colors, but treat them just like any other
+      color data.
+    </para>
+
+    <para>
+      In darktable there is no technical requirement for clamping; due to the fact that we are
+      using floating point arithmetics for all processing steps, unbounded values can be passed
+      along like any other value until the final color conversion module makes sure that they
+      are transferred into the most reasonable color within the selected output color space.
+      Therefore darktable avoids clamping as far as the underlying algorithms allow.
+    </para>
+
+  </sect3>
+
+  <sect3 status="final" id="possible_color_artifacts">
+
+    <title>Possible color artifacts</title>
+
+    <indexterm>
+      <primary>artifact mitigation</primary>
+      <secondary>blue light sources</secondary>
+    </indexterm>
+
+    <indexterm>
+      <primary>artifact mitigation</primary>
+      <secondary>black pixels</secondary>
+    </indexterm>
+
+    <indexterm>
+      <primary>gamut clipping</primary>
+    </indexterm>
+
+    <para>
+      That said there are some infrequent situations which still can lead to problematic results
+      unless the user takes some action. Some modules in Lab color space, like
+      <link linkend="levels"><emphasis>levels</emphasis></link> and
+      <link linkend="monochrome"><emphasis>monochrome</emphasis></link>, need to rely on the
+      fact that the L channels carries all lightness information and the a and b channels purely
+      represent chroma and hue. Unbounded colors with negative L values are especially
+      problematic to these modules and can lead to black pixel artifacts.
+    </para>
+
+    <para>
+      It has been found that highly saturated blue light sources in the image frame are hot
+      candidates for pixels with negative L values. If you are engaged in stage photography you
+      should pay close attention to image areas like that.
+    </para>
+
+    <para>
+      In order to mitigate that issue the <emphasis>input color profile</emphasis> module (see
+      <xref linkend="input_color_profile"/>) has a <emphasis>gamut clipping</emphasis> option.
+      It is off by default but can be activated in case you observe artifacts. Depending on the
+      settings, colors get confined to one of the offered RGB gamuts. In effect black pixel
+      artifacts are prevented at the costs of losing some color dynamics. See
+      <xref linkend="input_color_profile"/> for an example.
+    </para>
+
+  </sect3>
+
+</sect2>

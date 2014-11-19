@@ -1,10 +1,26 @@
 #include "StdAfx.h"
 #include "TiffParser.h"
+#include "DngDecoder.h"
+#include "Cr2Decoder.h"
+#include "ArwDecoder.h"
+#include "PefDecoder.h"
+#include "NefDecoder.h"
+#include "OrfDecoder.h"
+#include "RafDecoder.h"
+#include "Rw2Decoder.h"
+#include "SrwDecoder.h"
+#include "MefDecoder.h"
+#include "MosDecoder.h"
+#include "DcrDecoder.h"
+#include "KdcDecoder.h"
+#include "ErfDecoder.h"
+#include "ThreefrDecoder.h"
 
 /*
     RawSpeed - RAW file decoder.
 
-    Copyright (C) 2009 Klaus Post
+    Copyright (C) 2009-2014 Klaus Post
+    Copyright (C) 2014 Pedro Côrte-Real
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Lesser General Public
@@ -51,12 +67,13 @@ void TiffParser::parseData() {
   const unsigned char* data = mInput->getData(0);
   if (mInput->getSize() < 16)
     throw TiffParserException("Not a TIFF file (size too small)");
+
   if (data[0] != 0x49 || data[1] != 0x49) {
     tiff_endian = big;
     if (data[0] != 0x4D || data[1] != 0x4D)
       throw TiffParserException("Not a TIFF file (ID)");
 
-    if (data[3] != 42)
+    if (data[3] != 42 && data[2] != 0x4f) // ORF sometimes has 0x4f, Lovely!
       throw TiffParserException("Not a TIFF file (magic 42)");
   } else {
     tiff_endian = little;
@@ -120,6 +137,10 @@ RawDecoder* TiffParser::getDecoder() {
         mRootIFD = NULL;
         return new Cr2Decoder(root, mInput);
       }
+      if (!make.compare("FUJIFILM")) {
+        mRootIFD = NULL;
+        return new RafDecoder(root, mInput);
+      }
       if (!make.compare("NIKON CORPORATION")) {
         mRootIFD = NULL;
         return new NefDecoder(root, mInput);
@@ -128,7 +149,9 @@ RawDecoder* TiffParser::getDecoder() {
         mRootIFD = NULL;
         return new NefDecoder(root, mInput);
       }
-      if (!make.compare("OLYMPUS IMAGING CORP.")) {
+      if (!make.compare("OLYMPUS IMAGING CORP.") ||
+          !make.compare("OLYMPUS CORPORATION") ||
+          !make.compare("OLYMPUS OPTICAL CO.,LTD") ) {
         mRootIFD = NULL;
         return new OrfDecoder(root, mInput);
       }
@@ -136,7 +159,7 @@ RawDecoder* TiffParser::getDecoder() {
         mRootIFD = NULL;
         return new ArwDecoder(root, mInput);
       }
-      if (!make.compare("PENTAX Corporation")) {
+      if (!make.compare("PENTAX Corporation") || !make.compare("RICOH IMAGING COMPANY, LTD.")) {
         mRootIFD = NULL;
         return new PefDecoder(root, mInput);
       }
@@ -152,10 +175,63 @@ RawDecoder* TiffParser::getDecoder() {
         mRootIFD = NULL;
         return new SrwDecoder(root, mInput);
       }
+      if (!make.compare("Mamiya-OP Co.,Ltd.")) {
+        mRootIFD = NULL;
+        return new MefDecoder(root, mInput);
+      }
+      if (!make.compare("Kodak")) {
+        mRootIFD = NULL;
+        return new DcrDecoder(root, mInput);
+      }
+      if (!make.compare("EASTMAN KODAK COMPANY")) {
+        mRootIFD = NULL;
+        return new KdcDecoder(root, mInput);
+      }
+      if (!make.compare("SEIKO EPSON CORP.")) {
+        mRootIFD = NULL;
+        return new ErfDecoder(root, mInput);
+      }
+      if (!make.compare("Hasselblad")) {
+        mRootIFD = NULL;
+        return new ThreefrDecoder(root, mInput);
+      }
+      if (!make.compare("Leaf")) {
+        mRootIFD = NULL;
+        return new MosDecoder(root, mInput);
+      }
     }
   }
+
+  // Last ditch effort to identify Leaf cameras that don't have a Tiff Make set
+  potentials = mRootIFD->getIFDsWithTag(SOFTWARE);
+  if (!potentials.empty()) {
+    string software = potentials[0]->getEntry(SOFTWARE)->getString();
+    TrimSpaces(software);
+    if (!software.compare("Camera Library")) {
+      mRootIFD = NULL;
+      return new MosDecoder(root, mInput);
+    }
+  }
+
   throw TiffParserException("No decoder found. Sorry.");
   return NULL;
+}
+
+void TiffParser::MergeIFD( TiffParser* other_tiff)
+{
+  if (!other_tiff || !other_tiff->mRootIFD || other_tiff->mRootIFD->mSubIFD.empty())
+    return;
+
+  TiffIFD *other_root = other_tiff->mRootIFD;
+  for (vector<TiffIFD*>::iterator i = other_root->mSubIFD.begin(); i != other_root->mSubIFD.end(); ++i) {
+    mRootIFD->mSubIFD.push_back(*i);
+  }
+
+  for (map<TiffTag, TiffEntry*>::iterator i = other_root->mEntry.begin(); i != other_root->mEntry.end(); ++i) {    
+    mRootIFD->mEntry[(*i).first] = (*i).second;
+  }
+  other_root->mSubIFD.clear();
+  other_root->mEntry.clear();
 }
 
 } // namespace RawSpeed

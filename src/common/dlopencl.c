@@ -26,23 +26,32 @@
 #include <stdlib.h>
 #include <assert.h>
 #include <string.h>
+#include <signal.h>
+
+#if defined(WIN32)
+static const char *ocllib[] = { "OpenCL", NULL };
+#elif defined(__APPLE__)
+static const char *ocllib[] = { "/System/Library/Frameworks/OpenCL.framework/Versions/Current/OpenCL", NULL };
+#else
+static const char *ocllib[] = { "libOpenCL", "libOpenCL.so", "libOpenCL.so.1", NULL };
+#endif
 
 
 /* only for debugging: default noop function for all unassigned function pointers */
 void dt_dlopencl_noop(void)
 {
   /* we should normally never get here */
-  fprintf(stderr, "dt_dlopencl error: unsupported function call\n");
-  assert(FALSE);
+  fprintf(stderr, "dt_dlopencl internal error: unsupported function call\n");
+  raise(SIGABRT);
 }
 
 
 /* dynamically load OpenCL library and bind needed symbols */
-int dt_dlopencl_init(const char *name, dt_dlopencl_t **ocl)
+const char *dt_dlopencl_init(const char *name, dt_dlopencl_t **ocl)
 {
   dt_gmodule_t *module = NULL;
   dt_dlopencl_t *d;
-  const char *library;
+  const char *library = NULL;
   int success;
   int k;
 
@@ -52,18 +61,38 @@ int dt_dlopencl_init(const char *name, dt_dlopencl_t **ocl)
   if (!success)
   {
     *ocl = NULL;
-    return FALSE;
+    return NULL;
   }
 
-  /* try to load library */
-  library = (name == NULL || name[0] == '\0') ? DT_OPENCL_LIBRARY : name;
-  module = dt_gmodule_open(library);
+  /* try to load library. if a name is given check only that library - else iterate over default names. */
+  if (name != NULL && name[0] != '\0')
+  {
+    library = name;
+    module = dt_gmodule_open(library);
+    if (module == NULL)
+      dt_print(DT_DEBUG_OPENCL, "[opencl_init] could not find opencl runtime library '%s'\n", library);
+    else
+      dt_print(DT_DEBUG_OPENCL, "[opencl_init] found opencl runtime library '%s'\n", library);
+  }
+  else
+  {
+    const char **iter = ocllib;
+    while(*iter && (module == NULL))
+    {
+      library = *iter;
+      module = dt_gmodule_open(library);
+      if (module == NULL)
+        dt_print(DT_DEBUG_OPENCL, "[opencl_init] could not find opencl runtime library '%s'\n", library);
+      else
+        dt_print(DT_DEBUG_OPENCL, "[opencl_init] found opencl runtime library '%s'\n", library);
+      iter++;
+    }
+  }
 
   if (module == NULL)
   {
-    dt_print(DT_DEBUG_OPENCL, "[opencl_init] could not find opencl runtime library '%s'\n", library);
     *ocl = NULL;
-    return FALSE;
+    return NULL;
   }
   else
   {
@@ -75,20 +104,19 @@ int dt_dlopencl_init(const char *name, dt_dlopencl_t **ocl)
     {
       free(module);
       *ocl = NULL;
-      return FALSE;
+      return NULL;
     }
 
-    d->symbols = (dt_dlopencl_symbols_t *)malloc(sizeof(dt_dlopencl_symbols_t));
+    d->symbols = (dt_dlopencl_symbols_t *)calloc(1, sizeof(dt_dlopencl_symbols_t));
 
     if (d->symbols == NULL)
     {
       free(d);
       free(module);
       *ocl = NULL;
-      return FALSE;
+      return NULL;
     }
 
-    memset(d->symbols, 0, sizeof(dt_dlopencl_symbols_t));
     d->library = module->library;
 
     /* assign noop function as a default to each function pointer */
@@ -152,9 +180,10 @@ int dt_dlopencl_init(const char *name, dt_dlopencl_t **ocl)
   {
     free(d->symbols);
     free(d);
+    return NULL;
   }
 
-  return success;
+  return library;
 }
 
 #endif

@@ -108,8 +108,7 @@ position ()
 void
 gui_init (dt_lib_module_t *self)
 {
-  self->data = malloc(sizeof(dt_lib_location_t));
-  memset(self->data, 0, sizeof(dt_lib_location_t));
+  self->data = calloc(1, sizeof(dt_lib_location_t));
   dt_lib_location_t *lib = self->data;
 
   self->widget = gtk_vbox_new(FALSE, 5);
@@ -178,8 +177,7 @@ static size_t _lib_location_curl_write_data(void *buffer, size_t size, size_t nm
 {
   dt_lib_location_t *lib = (dt_lib_location_t *)userp;
 
-  char *newdata = g_malloc(lib->response_size + nmemb + 1);
-  memset(newdata,0, lib->response_size + nmemb + 1);
+  char *newdata = g_malloc0(lib->response_size + nmemb + 1);
   if( lib->response != NULL )
     memcpy(newdata, lib->response, lib->response_size);
   memcpy(newdata + lib->response_size, buffer, nmemb);
@@ -273,19 +271,15 @@ static gboolean _lib_location_search(gpointer user_data)
   /* get escaped search text */
   text = g_uri_escape_string(gtk_entry_get_text(lib->search), NULL, FALSE);
 
-  if (!text || strlen(text) < 1)
+  if (!(text && *text))
     goto bail_out;
 
   /* clean up previous results before adding new */
-  if (lib->response)
-    g_free(lib->response);
+  g_free(lib->response);
   lib->response = NULL;
   lib->response_size = 0;
 
-  if (lib->places)
-  {
-    g_list_free_full(lib->places, g_free);
-  }
+  g_list_free_full(lib->places, g_free);
   lib->places = NULL;
 
   gtk_container_foreach(GTK_CONTAINER(lib->result),(GtkCallback)gtk_widget_destroy,NULL);
@@ -339,11 +333,8 @@ bail_out:
   if (curl)
     curl_easy_cleanup(curl);
 
-  if (text)
-    g_free(text);
-
-  if (query)
-    g_free(query);
+  g_free(text);
+  g_free(query);
 
   if (ctx)
     g_markup_parse_context_free(ctx);
@@ -394,8 +385,9 @@ static void _lib_location_parser_start_element(GMarkupParseContext *cxt,
     return;
 
   /* create new place */
-  _lib_location_result_t *place = g_malloc(sizeof(_lib_location_result_t));
-  memset(place, 0, sizeof(_lib_location_result_t));
+  _lib_location_result_t *place = g_malloc0(sizeof(_lib_location_result_t));
+  if(!place) return;
+
   place->lon = NAN;
   place->lat = NAN;
 
@@ -407,8 +399,10 @@ static void _lib_location_parser_start_element(GMarkupParseContext *cxt,
     while (*aname)
     {
       if (strcmp(*aname, "display_name") == 0)
+      {
         place->name = g_strdup(*avalue);
-      else if (strcmp(*aname, "lon") == 0)
+        if(!(place->name)) goto bail_out;
+      } else if (strcmp(*aname, "lon") == 0)
         place->lon = g_strtod(*avalue, NULL);
       else if (strcmp(*aname, "lat") == 0)
         place->lat = g_strtod(*avalue, NULL);
@@ -443,10 +437,6 @@ static void _lib_location_parser_start_element(GMarkupParseContext *cxt,
   return;
 
 bail_out:
-  if (place && place->name)
-    g_free(place->name);
-
-  if (place)
-    g_free(place);
-
+  g_free(place->name);
+  g_free(place);
 }

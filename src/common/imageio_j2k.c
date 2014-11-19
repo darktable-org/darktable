@@ -96,7 +96,7 @@ dt_imageio_retval_t dt_imageio_open_j2k(dt_image_t *img, const char *filename, d
   opj_image_t *image = NULL;
   FILE *fsrc = NULL;
   unsigned char *src = NULL;
-  int file_length;
+  size_t file_length;
   opj_dinfo_t* dinfo = NULL;      /* handle to a decompressor */
   opj_cio_t *cio = NULL;
   OPJ_CODEC_FORMAT codec;
@@ -120,7 +120,7 @@ dt_imageio_retval_t dt_imageio_open_j2k(dt_image_t *img, const char *filename, d
   file_length = ftell(fsrc);
   fseek(fsrc, 0, SEEK_SET);
   src = (unsigned char *) malloc(file_length);
-  if(fread(src, 1, file_length, fsrc) != (size_t)file_length)
+  if(fread(src, 1, file_length, fsrc) != file_length)
   {
     free(src);
     fclose(fsrc);
@@ -325,7 +325,7 @@ int dt_imageio_j2k_read_profile(const char *filename, uint8_t **out)
   file_length = ftell(fsrc);
   fseek(fsrc, 0, SEEK_SET);
   src = (unsigned char *) malloc(file_length);
-  if(fread(src, 1, file_length, fsrc) != (size_t)file_length)
+  if(fread(src, 1, file_length, fsrc) != file_length)
   {
     free(src);
     fclose(fsrc);
@@ -462,9 +462,9 @@ static void sycc444_to_rgb(opj_image_t *img)
   cb = img->comps[1].data;
   cr = img->comps[2].data;
 
-  d0 = r = (int*)malloc(sizeof(int) * max);
-  d1 = g = (int*)malloc(sizeof(int) * max);
-  d2 = b = (int*)malloc(sizeof(int) * max);
+  d0 = r = (int*)calloc(max, sizeof(int));
+  d1 = g = (int*)calloc(max, sizeof(int));
+  d2 = b = (int*)calloc(max, sizeof(int));
 
   for(i = 0; i < max; ++i)
   {
@@ -504,9 +504,9 @@ static void sycc422_to_rgb(opj_image_t *img)
   cb = img->comps[1].data;
   cr = img->comps[2].data;
 
-  d0 = r = (int*)malloc(sizeof(int) * max);
-  d1 = g = (int*)malloc(sizeof(int) * max);
-  d2 = b = (int*)malloc(sizeof(int) * max);
+  d0 = r = (int*)calloc(max, sizeof(int));
+  d1 = g = (int*)calloc(max, sizeof(int));
+  d2 = b = (int*)calloc(max, sizeof(int));
 
   for(i=0; i < maxh; ++i)
   {
@@ -564,9 +564,9 @@ static void sycc420_to_rgb(opj_image_t *img)
   cb = img->comps[1].data;
   cr = img->comps[2].data;
 
-  d0 = r = (int*)malloc(sizeof(int) * max);
-  d1 = g = (int*)malloc(sizeof(int) * max);
-  d2 = b = (int*)malloc(sizeof(int) * max);
+  d0 = r = (int*)calloc(max, sizeof(int));
+  d1 = g = (int*)calloc(max, sizeof(int));
+  d2 = b = (int*)calloc(max, sizeof(int));
 
   for(i=0; i < maxh; i += 2)
   {

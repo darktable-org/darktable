@@ -55,8 +55,7 @@ void _selection_update_collection(gpointer instance, gpointer user_data)
 
 const dt_selection_t * dt_selection_new()
 {
-  dt_selection_t *s = g_malloc(sizeof(dt_selection_t));
-  memset(s, 0, sizeof(dt_selection_t));
+  dt_selection_t *s = g_malloc0(sizeof(dt_selection_t));
 
   /* initialize the collection copy */
   _selection_update_collection(NULL, (gpointer)s);

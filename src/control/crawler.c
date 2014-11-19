@@ -79,11 +79,11 @@ GList * dt_control_crawler_run()
     if(look_for_xmp)
     {
       // construct the xmp filename for this image
-      gchar xmp_path[DT_MAX_PATH_LEN];
-      g_strlcpy(xmp_path, image_path, DT_MAX_PATH_LEN);
-      dt_image_path_append_version_no_db(version, xmp_path, DT_MAX_PATH_LEN);
+      gchar xmp_path[PATH_MAX];
+      g_strlcpy(xmp_path, image_path, sizeof(xmp_path));
+      dt_image_path_append_version_no_db(version, xmp_path, sizeof(xmp_path));
       size_t len = strlen(xmp_path);
-      if(len + 4 >= DT_MAX_PATH_LEN) continue;
+      if(len + 4 >= PATH_MAX) continue;
       xmp_path[len++] = '.';
       xmp_path[len++] = 'x';
       xmp_path[len++] = 'm';
@@ -370,7 +370,7 @@ void dt_control_crawler_show_image_list(GList *images)
                                  GTK_DIALOG_DESTROY_WITH_PARENT|GTK_DIALOG_MODAL,
                                  GTK_STOCK_CLOSE, GTK_RESPONSE_CLOSE,
                                  NULL);
-  gtk_widget_set_size_request(dialog, -1, 400);
+  gtk_widget_set_size_request(dialog, -1, DT_PIXEL_APPLY_DPI(400));
   gtk_window_set_transient_for(GTK_WINDOW(dialog), GTK_WINDOW(win));
   GtkWidget *content_area = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
 

@@ -35,7 +35,7 @@
 
 DT_MODULE_INTROSPECTION(1, dt_iop_colorcorrection_params_t)
 
-#define DT_COLORCORRECTION_INSET 5
+#define DT_COLORCORRECTION_INSET DT_PIXEL_APPLY_DPI(5)
 #define DT_COLORCORRECTION_MAX 40.
 
 typedef struct dt_iop_colorcorrection_params_t
@@ -211,6 +211,7 @@ void init_pipe (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_p
 void cleanup_pipe (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
   free(piece->data);
+  piece->data = NULL;
 }
 
 void gui_update(struct dt_iop_module_t *self)
@@ -228,7 +229,7 @@ void init(dt_iop_module_t *module)
   module->params = malloc(sizeof(dt_iop_colorcorrection_params_t));
   module->default_params = malloc(sizeof(dt_iop_colorcorrection_params_t));
   module->default_enabled = 0;
-  module->priority = 684; // module order created by iop_dependencies.py, do not edit!
+  module->priority = 716; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_colorcorrection_params_t);
   module->gui_data = NULL;
   dt_iop_colorcorrection_params_t tmp = (dt_iop_colorcorrection_params_t)
@@ -263,10 +264,9 @@ void gui_init(struct dt_iop_module_t *self)
 
   self->widget = gtk_vbox_new(FALSE, DT_BAUHAUS_SPACE);
   g->area = GTK_DRAWING_AREA(gtk_drawing_area_new());
-  GtkWidget *asp = gtk_aspect_frame_new(NULL, 0.5, 0.5, 1.0, TRUE);
-  gtk_box_pack_start(GTK_BOX(self->widget), asp, TRUE, TRUE, 0);
-  gtk_container_add(GTK_CONTAINER(asp), GTK_WIDGET(g->area));
-  gtk_widget_set_size_request(GTK_WIDGET(g->area), 258, 258);
+  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->area), TRUE, TRUE, 0);
+  int size = dt_conf_get_int("panel_width") * 0.95;
+  gtk_widget_set_size_request(GTK_WIDGET(g->area), size, size);
   g_object_set (GTK_OBJECT(g->area), "tooltip-text", _("drag the line for split toning. "
                 "bright means highlights, dark means shadows. "
                 "use mouse wheel to change saturation."), (char *)NULL);
@@ -334,6 +334,7 @@ dt_iop_colorcorrection_expose(GtkWidget *widget, GdkEventExpose *event, gpointer
   cairo_paint(cr);
 
   cairo_translate(cr, inset, inset);
+  cairo_set_antialias(cr,CAIRO_ANTIALIAS_NONE);
   width -= 2*inset;
   height -= 2*inset;
   // flip y:
@@ -353,15 +354,16 @@ dt_iop_colorcorrection_expose(GtkWidget *widget, GdkEventExpose *event, gpointer
       cmsDoTransform(g->xform, &Lab, rgb, 1);
       // dt_iop_Lab_to_sRGB(Lab, rgb, 0, 0, 1.0, 1, 1);
       cairo_set_source_rgb (cr, rgb[0], rgb[1], rgb[2]);
-      cairo_rectangle(cr, width*i/(float)cells, height*j/(float)cells, width/(float)cells-1, height/(float)cells-1);
+      cairo_rectangle(cr, width*i/(float)cells, height*j/(float)cells, width/(float)cells-DT_PIXEL_APPLY_DPI(1), height/(float)cells-DT_PIXEL_APPLY_DPI(1));
       cairo_fill(cr);
     }
+  cairo_set_antialias(cr,CAIRO_ANTIALIAS_DEFAULT);
   float loa, hia, lob, hib;
   loa = .5f*(width + width*p->loa/(float)DT_COLORCORRECTION_MAX);
   hia = .5f*(width + width*p->hia/(float)DT_COLORCORRECTION_MAX);
   lob = .5f*(height + height*p->lob/(float)DT_COLORCORRECTION_MAX);
   hib = .5f*(height + height*p->hib/(float)DT_COLORCORRECTION_MAX);
-  cairo_set_line_width(cr, 2.);
+  cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(2.));
   cairo_set_source_rgb(cr, 0.6, 0.6, 0.6);
   cairo_move_to(cr, loa, lob);
   cairo_line_to(cr, hia, hib);
@@ -369,16 +371,16 @@ dt_iop_colorcorrection_expose(GtkWidget *widget, GdkEventExpose *event, gpointer
 
   cairo_set_source_rgb(cr, 0.1, 0.1, 0.1);
   if(g->selected == 1)
-    cairo_arc(cr, loa, lob, 5, 0, 2.*M_PI);
+    cairo_arc(cr, loa, lob, DT_PIXEL_APPLY_DPI(5), 0, 2.*M_PI);
   else
-    cairo_arc(cr, loa, lob, 3, 0, 2.*M_PI);
+    cairo_arc(cr, loa, lob, DT_PIXEL_APPLY_DPI(3), 0, 2.*M_PI);
   cairo_fill(cr);
 
   cairo_set_source_rgb(cr, 0.9, 0.9, 0.9);
   if(g->selected == 2)
-    cairo_arc(cr, hia, hib, 5, 0, 2.*M_PI);
+    cairo_arc(cr, hia, hib, DT_PIXEL_APPLY_DPI(5), 0, 2.*M_PI);
   else
-    cairo_arc(cr, hia, hib, 3, 0, 2.*M_PI);
+    cairo_arc(cr, hia, hib, DT_PIXEL_APPLY_DPI(3), 0, 2.*M_PI);
   cairo_fill(cr);
 
   cairo_destroy(cr);
@@ -422,7 +424,7 @@ dt_iop_colorcorrection_motion_notify(GtkWidget *widget, GdkEventMotion *event, g
   else
   {
     g->selected = 0;
-    const float thrs = 5.0f;
+    const float thrs = DT_PIXEL_APPLY_DPI(5.0f);
     const float distlo = (p->loa-ma)*(p->loa-ma) + (p->lob-mb)*(p->lob-mb);
     const float disthi = (p->hia-ma)*(p->hia-ma) + (p->hib-mb)*(p->hib-mb);
     if(distlo < thrs*thrs && distlo < disthi) g->selected = 1;

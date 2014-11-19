@@ -198,7 +198,7 @@ int dt_iop_load_module_so(dt_iop_module_so_t *module, const char *libname, const
 {
   g_strlcpy(module->op, op, 20);
   module->data = NULL;
-  module->module = g_module_open(libname, G_MODULE_BIND_LAZY);
+  module->module = g_module_open(libname, G_MODULE_BIND_LAZY | G_MODULE_BIND_LOCAL);
   if(!module->module) goto error;
   int (*version)();
   if(!g_module_symbol(module->module, "dt_module_dt_version", (gpointer)&(version))) goto error;
@@ -290,12 +290,13 @@ dt_iop_load_module_by_so(dt_iop_module_t *module, dt_iop_module_so_t *so, dt_dev
   module->off = NULL;
   module->priority = 0;
   module->hide_enable_button = 0;
-  module->request_color_pick = 0;
-  module->request_histogram = 0;
-  module->histogram_bins_count = 64;
-  module->histogram_step_raw = 3;
-  module->histogram_step_rgb = 4;
-  module->histogram_step_lab = 4;
+  module->request_color_pick = DT_REQUEST_COLORPICK_OFF;
+  module->request_histogram = DT_REQUEST_ONLY_IN_GUI;
+  module->request_histogram_source = DT_DEV_PIXELPIPE_PREVIEW;
+  module->histogram_params.roi = NULL;
+  module->histogram_params.bins_count = 64;
+  module->histogram_stats.bins_count = 0;
+  module->histogram_stats.pixels = 0;
   module->multi_priority = 0;
   for(int k=0; k<3; k++)
   {
@@ -386,14 +387,14 @@ dt_iop_load_module_by_so(dt_iop_module_t *module, dt_iop_module_so_t *so, dt_dev
     dt_iop_gui_set_state(module,state);
   }
 
+  module->data = so->data;
+
   // now init the instance:
   module->init(module);
 
   /* initialize blendop params and default values */
-  module->blend_params=g_malloc(sizeof(dt_develop_blend_params_t));
-  module->default_blendop_params=g_malloc(sizeof(dt_develop_blend_params_t));
-  memset(module->blend_params, 0, sizeof(dt_develop_blend_params_t));
-  memset(module->default_blendop_params, 0, sizeof(dt_develop_blend_params_t));
+  module->blend_params = g_malloc0(sizeof(dt_develop_blend_params_t));
+  module->default_blendop_params = g_malloc0(sizeof(dt_develop_blend_params_t));
   memcpy(module->default_blendop_params, &_default_blendop_params, sizeof(dt_develop_blend_params_t));
   memcpy(module->blend_params, &_default_blendop_params, sizeof(dt_develop_blend_params_t));
 
@@ -414,8 +415,7 @@ dt_iop_load_module_by_so(dt_iop_module_t *module, dt_iop_module_so_t *so, dt_dev
 void dt_iop_init_pipe(struct dt_iop_module_t *module, struct dt_dev_pixelpipe_t *pipe, struct dt_dev_pixelpipe_iop_t *piece)
 {
   module->init_pipe(module, pipe, piece);
-  piece->blendop_data = malloc(sizeof(dt_develop_blend_params_t));
-  memset(piece->blendop_data, 0, sizeof(dt_develop_blend_params_t));
+  piece->blendop_data = calloc(1, sizeof(dt_develop_blend_params_t));
   /// FIXME: Commit params is already done in module
   dt_iop_commit_params(module, module->default_params, module->default_blendop_params, pipe, piece);
 }
@@ -700,6 +700,7 @@ dt_iop_gui_duplicate(dt_iop_module_t *base, gboolean copy_params)
   if (!dt_iop_is_hidden(module))
   {
     module->gui_init(module);
+    dt_iop_reload_defaults(module); // some modules like profiled denoise update the gui in reload_defaults
     if(copy_params)
     {
       memcpy(module->params, base->params, module->params_size);
@@ -713,8 +714,6 @@ dt_iop_gui_duplicate(dt_iop_module_t *base, gboolean copy_params)
         }
       }
     }
-    else
-      dt_iop_reload_defaults(module);
 
     //we save the new instance creation but keep it disabled
     dt_dev_add_history_item(module->dev, module, FALSE);
@@ -835,7 +834,9 @@ dt_iop_gui_off_callback(GtkToggleButton *togglebutton, gpointer user_data)
     dt_dev_add_history_item(module->dev, module, FALSE);
   }
   char tooltip[512];
-  snprintf(tooltip, sizeof(tooltip), module->enabled ? _("%s is switched on") : _("%s is switched off"), module->name());
+  gchar *module_label = dt_history_item_get_name(module);
+  snprintf(tooltip, sizeof(tooltip), module->enabled ? _("%s is switched on") : _("%s is switched off"), module_label);
+  g_free(module_label);
   g_object_set(G_OBJECT(togglebutton), "tooltip-text", tooltip, (char *)NULL);
 }
 
@@ -874,14 +875,10 @@ gboolean dt_iop_shown_in_group(dt_iop_module_t *module, uint32_t group)
 
 static void _iop_panel_label(GtkWidget *lab, dt_iop_module_t *module)
 {
-  char label[128];
-  // if multi_name is emptry or "0"
-  if(!module->multi_name[0] || strcmp(module->multi_name,"0") == 0)
-    g_snprintf(label,sizeof(label),"<span size=\"larger\">%s</span>  ",module->name());
-  else
-    g_snprintf(label,sizeof(label),"<span size=\"larger\">%s</span> %s",module->name(),module->multi_name);
   gtk_widget_set_name(lab, "panel_label");
-  gtk_label_set_markup(GTK_LABEL(lab),label);
+  gchar *label = dt_history_item_get_name_html(module);
+  gtk_label_set_markup(GTK_LABEL(lab), label);
+  g_free(label);
 }
 
 static void _iop_gui_update_header(dt_iop_module_t *module)
@@ -912,6 +909,12 @@ void dt_iop_gui_update_header(dt_iop_module_t *module)
   _iop_gui_update_header(module);
 }
 
+static void _iop_gui_update_label(dt_iop_module_t *module)
+{
+  if (!module->header) return;
+  GtkWidget *lab = g_list_nth_data(gtk_container_get_children(GTK_CONTAINER(module->header)),5);
+  _iop_panel_label(lab, module);
+}
 
 void dt_iop_reload_defaults(dt_iop_module_t *module)
 {
@@ -921,6 +924,16 @@ void dt_iop_reload_defaults(dt_iop_module_t *module)
 
   if(module->header)
     _iop_gui_update_header(module);
+}
+
+void dt_iop_cleanup_histogram(gpointer data, gpointer user_data)
+{
+  dt_iop_module_t *module = (dt_iop_module_t *)data;
+
+  free(module->histogram);
+  module->histogram = NULL;
+  module->histogram_stats.bins_count = 0;
+  module->histogram_stats.pixels = 0;
 }
 
 static void
@@ -935,7 +948,7 @@ init_presets(dt_iop_module_so_t *module_so)
 
   sqlite3_stmt *stmt;
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select name, op_version, op_params, blendop_version, blendop_params from presets where operation = ?1", -1, &stmt, NULL);
-  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, module_so->op, strlen(module_so->op), SQLITE_TRANSIENT);
+  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, module_so->op, -1, SQLITE_TRANSIENT);
 
   while(sqlite3_step(stmt) == SQLITE_ROW)
   {
@@ -955,7 +968,7 @@ init_presets(dt_iop_module_so_t *module_so)
 
       sqlite3_stmt *stmt2;
       DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select module from history where operation = ?1 and op_params = ?2", -1, &stmt2, NULL);
-      DT_DEBUG_SQLITE3_BIND_TEXT( stmt2, 1, module_so->op, strlen(module_so->op), SQLITE_TRANSIENT );
+      DT_DEBUG_SQLITE3_BIND_TEXT( stmt2, 1, module_so->op, -1, SQLITE_TRANSIENT );
       DT_DEBUG_SQLITE3_BIND_BLOB( stmt2, 2, old_params, old_params_size, SQLITE_TRANSIENT );
 
       if( sqlite3_step(stmt2) == SQLITE_ROW)
@@ -977,8 +990,8 @@ init_presets(dt_iop_module_so_t *module_so)
 
       DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "update presets set op_version=?1 where operation=?2 and name=?3", -1, &stmt2, NULL);
       DT_DEBUG_SQLITE3_BIND_INT( stmt2, 1, old_params_version );
-      DT_DEBUG_SQLITE3_BIND_TEXT( stmt2, 2, module_so->op, strlen(module_so->op), SQLITE_TRANSIENT );
-      DT_DEBUG_SQLITE3_BIND_TEXT( stmt2, 3, name, strlen(name), SQLITE_TRANSIENT );
+      DT_DEBUG_SQLITE3_BIND_TEXT( stmt2, 2, module_so->op, -1, SQLITE_TRANSIENT );
+      DT_DEBUG_SQLITE3_BIND_TEXT( stmt2, 3, name, -1, SQLITE_TRANSIENT );
 
       sqlite3_step(stmt2);
       sqlite3_finalize(stmt2);
@@ -990,8 +1003,7 @@ init_presets(dt_iop_module_so_t *module_so)
 
       // we need a dt_iop_module_t for legacy_params()
       dt_iop_module_t *module;
-      module = (dt_iop_module_t *)malloc(sizeof(dt_iop_module_t));
-      memset(module, 0, sizeof(dt_iop_module_t));
+      module = (dt_iop_module_t *)calloc(1, sizeof(dt_iop_module_t));
       if( dt_iop_load_module_by_so(module, module_so, NULL) )
       {
         free(module);
@@ -1005,10 +1017,13 @@ init_presets(dt_iop_module_so_t *module_so)
         free(module);
         continue;
       }
-      module->reload_defaults(module);
+
+      // we call reload_defaults() in case the module defines it
+      if(module->reload_defaults)
+        module->reload_defaults(module);
+
       int32_t new_params_size = module->params_size;
-      void *new_params = malloc(new_params_size);
-      memset(new_params, 0, new_params_size);
+      void *new_params = calloc(1, new_params_size);
 
       // convert the old params to new
       if( module->legacy_params(module, old_params, old_params_version, new_params, module_version ) )
@@ -1026,8 +1041,8 @@ init_presets(dt_iop_module_so_t *module_so)
                                   "where operation=?3 and name=?4", -1, &stmt2, NULL);
       DT_DEBUG_SQLITE3_BIND_INT(stmt2, 1, module->version());
       DT_DEBUG_SQLITE3_BIND_BLOB(stmt2, 2, new_params, new_params_size, SQLITE_TRANSIENT);
-      DT_DEBUG_SQLITE3_BIND_TEXT(stmt2, 3, module->op, strlen(module_so->op), SQLITE_TRANSIENT);
-      DT_DEBUG_SQLITE3_BIND_TEXT(stmt2, 4, name, strlen(name), SQLITE_TRANSIENT);
+      DT_DEBUG_SQLITE3_BIND_TEXT(stmt2, 3, module->op, -1, SQLITE_TRANSIENT);
+      DT_DEBUG_SQLITE3_BIND_TEXT(stmt2, 4, name, -1, SQLITE_TRANSIENT);
 
       sqlite3_step(stmt2);
       sqlite3_finalize(stmt2);
@@ -1047,15 +1062,13 @@ init_presets(dt_iop_module_so_t *module_so)
 
       // we need a dt_iop_module_t for dt_develop_blend_legacy_params()
       dt_iop_module_t *module;
-      module = (dt_iop_module_t *)malloc(sizeof(dt_iop_module_t));
-      memset(module, 0, sizeof(dt_iop_module_t));
+      module = (dt_iop_module_t *)calloc(1, sizeof(dt_iop_module_t));
       if( dt_iop_load_module_by_so(module, module_so, NULL) )
       {
         free(module);
         continue;
       }
 
-      module->init(module);
       if(module->params_size == 0)
       {
         dt_iop_cleanup_module(module);
@@ -1081,8 +1094,8 @@ init_presets(dt_iop_module_so_t *module_so)
                                   "where operation=?3 and name=?4", -1, &stmt2, NULL);
       DT_DEBUG_SQLITE3_BIND_INT(stmt2, 1, dt_develop_blend_version() );
       DT_DEBUG_SQLITE3_BIND_BLOB(stmt2, 2, new_blend_params, sizeof(dt_develop_blend_params_t), SQLITE_TRANSIENT);
-      DT_DEBUG_SQLITE3_BIND_TEXT(stmt2, 3, module->op, strlen(module_so->op), SQLITE_TRANSIENT);
-      DT_DEBUG_SQLITE3_BIND_TEXT(stmt2, 4, name, strlen(name), SQLITE_TRANSIENT);
+      DT_DEBUG_SQLITE3_BIND_TEXT(stmt2, 3, module->op, -1, SQLITE_TRANSIENT);
+      DT_DEBUG_SQLITE3_BIND_TEXT(stmt2, 4, name, -1, SQLITE_TRANSIENT);
 
       sqlite3_step(stmt2);
       sqlite3_finalize(stmt2);
@@ -1103,7 +1116,7 @@ static void init_key_accels(dt_iop_module_so_t *module)
   /** load shortcuts for presets **/
   sqlite3_stmt *stmt;
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select name from presets where operation=?1 order by writeprotect desc, rowid", -1, &stmt, NULL);
-  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, module->op, strlen(module->op), SQLITE_TRANSIENT);
+  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, module->op, -1, SQLITE_TRANSIENT);
   while(sqlite3_step(stmt) == SQLITE_ROW)
   {
     char path[1024];
@@ -1119,7 +1132,7 @@ void dt_iop_load_modules_so()
   GList *res = NULL;
   dt_iop_module_so_t *module;
   darktable.iop = NULL;
-  char plugindir[1024], op[20];
+  char plugindir[PATH_MAX], op[20];
   const gchar *d_name;
   dt_loc_get_plugindir(plugindir, sizeof(plugindir));
   g_strlcat(plugindir, "/plugins", sizeof(plugindir));
@@ -1134,8 +1147,7 @@ void dt_iop_load_modules_so()
     if(!g_str_has_suffix(d_name, SHARED_MODULE_SUFFIX)) continue;
     strncpy(op, d_name+name_offset, strlen(d_name)-name_end);
     op[strlen(d_name)-name_end] = '\0';
-    module = (dt_iop_module_so_t *)malloc(sizeof(dt_iop_module_so_t));
-    memset(module,0,sizeof(dt_iop_module_so_t));
+    module = (dt_iop_module_so_t *)calloc(1, sizeof(dt_iop_module_so_t));
     gchar *libname = g_module_build_path(plugindir, (const gchar *)op);
     if(dt_iop_load_module_so(module, libname, op))
     {
@@ -1192,8 +1204,7 @@ GList *dt_iop_load_modules(dt_develop_t *dev)
   while(iop)
   {
     module_so = (dt_iop_module_so_t *)iop->data;
-    module    = (dt_iop_module_t *)malloc(sizeof(dt_iop_module_t));
-    memset(module,0,sizeof(dt_iop_module_t));
+    module    = (dt_iop_module_t *)calloc(1, sizeof(dt_iop_module_t));
     if(dt_iop_load_module_by_so(module, module_so, dev))
     {
       free(module);
@@ -1223,21 +1234,12 @@ void dt_iop_cleanup_module(dt_iop_module_t *module)
 
   free(module->default_params);
   module->default_params = NULL;
-  if (module->blend_params != NULL)
-  {
-    free(module->blend_params);
-    module->blend_params = NULL;
-  }
-  if (module->default_blendop_params != NULL)
-  {
-    free(module->default_blendop_params);
-    module->default_blendop_params = NULL;
-  }
-  if (module->histogram != NULL)
-  {
-    free(module->histogram);
-    module->histogram = NULL;
-  }
+  free(module->blend_params);
+  module->blend_params = NULL;
+  free(module->default_blendop_params);
+  module->default_blendop_params = NULL;
+  free(module->histogram);
+  module->histogram = NULL;
 }
 
 void dt_iop_unload_modules_so()
@@ -1305,6 +1307,7 @@ void dt_iop_gui_update(dt_iop_module_t *module)
     module->gui_update(module);
     dt_iop_gui_update_blending(module);
     dt_iop_gui_update_expanded(module);
+    _iop_gui_update_label(module);
     if(module->off) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(module->off), module->enabled);
   }
   darktable.gui->reset = reset;
@@ -1634,7 +1637,7 @@ _iop_plugin_header_button_press(GtkWidget *w, GdkEventButton *e, gpointer user_d
 
 GtkWidget *dt_iop_gui_get_expander(dt_iop_module_t *module)
 {
-  int bs = 12;
+  int bs = DT_PIXEL_APPLY_DPI(12);
   char tooltip[512];
   GtkWidget *expander = gtk_vbox_new(FALSE, 3);
   GtkWidget *header_evb = gtk_event_box_new();
@@ -1728,7 +1731,9 @@ GtkWidget *dt_iop_gui_get_expander(dt_iop_module_t *module)
   /* add enabled button */
   hw[idx] = dtgtk_togglebutton_new(dtgtk_cairo_paint_switch, CPF_STYLE_FLAT|CPF_DO_NOT_USE_BORDER);
   gtk_widget_set_no_show_all(hw[idx],TRUE);
-  snprintf(tooltip, sizeof(tooltip), module->enabled ? _("%s is switched on") : _("%s is switched off"), module->name());
+  gchar *module_label = dt_history_item_get_name(module);
+  snprintf(tooltip, sizeof(tooltip), module->enabled ? _("%s is switched on") : _("%s is switched off"), module_label);
+  g_free(module_label);
   g_object_set(G_OBJECT(hw[idx]), "tooltip-text", tooltip, (char *)NULL);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(hw[idx]), module->enabled);
   g_signal_connect (G_OBJECT (hw[idx]), "toggled",
@@ -1805,30 +1810,30 @@ dt_iop_flip_and_zoom_8(
   uint8_t *out,
   int32_t ow,
   int32_t oh,
-  const int32_t orientation,
+  const dt_image_orientation_t orientation,
   uint32_t *width,
   uint32_t *height)
 {
   // init strides:
-  const uint32_t iwd = (orientation & 4) ? ih : iw;
-  const uint32_t iht = (orientation & 4) ? iw : ih;
+  const uint32_t iwd = (orientation & ORIENTATION_SWAP_XY) ? ih : iw;
+  const uint32_t iht = (orientation & ORIENTATION_SWAP_XY) ? iw : ih;
   const float scale = fmaxf(iwd/(float)ow, iht/(float)oh);
   const uint32_t wd = *width  = MIN(ow, iwd/scale);
   const uint32_t ht = *height = MIN(oh, iht/scale);
   const int bpp = 4; // bytes per pixel
   int32_t ii = 0, jj = 0;
   int32_t si = 1, sj = iw;
-  if(orientation & 2)
+  if(orientation & ORIENTATION_FLIP_X)
   {
     jj = ih - jj - 1;
     sj = -sj;
   }
-  if(orientation & 1)
+  if(orientation & ORIENTATION_FLIP_Y)
   {
     ii = iw - ii - 1;
     si = -si;
   }
-  if(orientation & 4)
+  if(orientation & ORIENTATION_SWAP_XY)
   {
     int t = sj;
     sj = si;
@@ -2296,6 +2301,140 @@ dt_iop_clip_and_zoom_demosaic_half_size_f(
 }
 #endif
 
+static uint8_t
+FCxtrans(size_t row, size_t col,
+         const dt_iop_roi_t *const roi,
+         const uint8_t (*const xtrans)[6])
+{
+  return xtrans[(row+roi->y) % 6][(col+roi->x) % 6];
+}
+
+/**
+ * downscales and clips a Fujifilm X-Trans mosaiced buffer (in) to the given region of interest (r_*)
+ * and writes it to out in float4 format.
+ */
+void
+dt_iop_clip_and_zoom_demosaic_third_size_xtrans(
+  float *out,
+  const uint16_t *const in,
+  const dt_iop_roi_t *const roi_out,
+  const dt_iop_roi_t *const roi_in,
+  const int32_t out_stride,
+  const int32_t in_stride,
+  const uint8_t (*const xtrans)[6])
+{
+  const float px_footprint = 1.f/roi_out->scale;
+  const int samples = round(px_footprint/3);
+
+#ifdef _OPENMP
+  #pragma omp parallel for default(none) shared(out) schedule(static)
+#endif
+  for(int y=0; y<roi_out->height; y++)
+  {
+    float *outc = out + (size_t)4*(out_stride*y);
+
+    int py = floorf((y + roi_out->y)*px_footprint);
+    py = MIN(roi_in->height-4, py);
+    int maxj = MIN(roi_in->height-3, py+3*samples);
+
+    float fx = roi_out->x*px_footprint;
+    for(int x=0; x<roi_out->width; x++, fx += px_footprint)
+    {
+      int px = floorf(fx);
+      px = MIN(roi_in->width-4, px);
+      int maxi = MIN(roi_in->width-3, px+3*samples);
+
+      uint16_t pc = 0;
+      for (int ii=0; ii < 3; ++ii)
+        for (int jj=0; jj < 3; ++jj)
+          pc = MAX(pc,in[px+ii + in_stride*(py + jj)]);
+
+      uint8_t num[3] = {0};
+      uint32_t sum[3] = {0};
+
+      for(int j=py; j<=maxj; j+=3)
+        for(int i=px; i<=maxi; i+=3)
+        {
+          uint16_t lcl_max = 0;
+          for (int ii=0; ii < 3; ++ii)
+            for (int jj=0; jj < 3; ++jj)
+              lcl_max = MAX(lcl_max,in[i + ii + in_stride*(j + jj)]);
+
+          if (!((pc >= 60000) ^ (lcl_max >= 60000)))
+          {
+            for (int ii=0; ii < 3; ++ii)
+              for (int jj=0; jj < 3; ++jj)
+              {
+                const uint8_t c = FCxtrans(j+jj, i+ii, roi_in, xtrans);
+                sum[c] += in[i+ii + in_stride*(j + jj)];
+                num[c]++;
+              }
+          }
+        }
+
+      outc[0] = sum[0] / 65535.0f / num[0];
+      outc[1] = sum[1] / 65535.0f / num[1];
+      outc[2] = sum[2] / 65535.0f / num[2];
+      outc += 4;
+    }
+  }
+}
+
+void
+dt_iop_clip_and_zoom_demosaic_third_size_xtrans_f(
+  float *out,
+  const float *const in,
+  const dt_iop_roi_t *const roi_out,
+  const dt_iop_roi_t *const roi_in,
+  const int32_t out_stride,
+  const int32_t in_stride,
+  const uint8_t (*const xtrans)[6])
+{
+  const float px_footprint = 1.f/roi_out->scale;
+  const int samples = MAX(1, (int) floorf(px_footprint/3));
+
+  // A slightly different algorithm than
+  // dt_iop_clip_and_zoom_demosaic_half_size_f() which aligns to 2x2
+  // Bayer grid and hence most pull additional data from all edges
+  // which don't align with CFA. Instead align to a 3x3 pattern (which
+  // is semi-regular in X-Trans CFA). If instead had aligned the
+  // samples to the full 6x6 X-Trans CFA, wouldn't need to perform a
+  // CFA lookup, but then would only work at 1/6 scale or less. This
+  // code doesn't worry about fractional pixel offset of top/left of
+  // pattern nor oversampling by non-integer number of samples.
+
+#ifdef _OPENMP
+  #pragma omp parallel for default(none) shared(out) schedule(static)
+#endif
+  for(int y=0; y<roi_out->height; y++)
+  {
+    float *outc = out + 4*(out_stride*y);
+    const int py = CLAMPS((int) round((y + roi_out->y - 0.5f)*px_footprint), 0, roi_in->height-3);
+    const int ymax = MIN(roi_in->height-3, py+3*samples);
+
+    for(int x=0; x<roi_out->width; x++, outc += 4)
+    {
+      float col[3] = {0.0f};
+      int num = 0;
+      const int px = CLAMPS((int) round((x + roi_out->x - 0.5f)*px_footprint), 0, roi_in->width-3);
+      const int xmax = MIN(roi_in->width-3, px+3*samples);
+      for(int yy=py; yy<=ymax; yy+=3)
+        for(int xx=px; xx<=xmax; xx+=3)
+        {
+          for (int j=0; j<3; ++j)
+            for (int i=0; i<3; ++i)
+              col[FCxtrans(yy+j, xx+i, roi_in, xtrans)] += in[xx+i + in_stride*(yy+j)];
+          num++;
+        }
+
+      // X-Trans RGB weighting averages to 2:5:2 for each 3x3 cell
+      outc[0] = col[0]/(num*2);
+      outc[1] = col[1]/(num*5);
+      outc[2] = col[2]/(num*2);
+    }
+  }
+}
+
 void dt_iop_RGB_to_YCbCr(const float *rgb, float *yuv)
 {
   yuv[0] =  0.299*rgb[0] + 0.587*rgb[1] + 0.114*rgb[2];
@@ -2469,7 +2608,7 @@ void dt_iop_connect_common_accels(dt_iop_module_t *module)
   sqlite3_stmt *stmt;
   // don't know for which image. show all we got:
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select name from presets where operation=?1 order by writeprotect desc, rowid", -1, &stmt, NULL);
-  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, module->op, strlen(module->op), SQLITE_TRANSIENT);
+  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, module->op, -1, SQLITE_TRANSIENT);
   while(sqlite3_step(stmt) == SQLITE_ROW)
   {
     dt_accel_connect_preset_iop(module,(char *)sqlite3_column_text(stmt, 0));
@@ -2491,7 +2630,7 @@ dt_iop_get_localized_name(const gchar * op)
       do
       {
         dt_iop_module_so_t * module = (dt_iop_module_so_t *)iop->data;
-        g_hash_table_insert(module_names, module->op, _(module->name()));
+        g_hash_table_insert(module_names, module->op, g_strdup(module->name()));
       }
       while((iop=g_list_next(iop)) != NULL);
     }

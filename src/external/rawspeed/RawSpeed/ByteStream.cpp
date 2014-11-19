@@ -3,7 +3,7 @@
 /*
     RawSpeed - RAW file decoder.
 
-    Copyright (C) 2009 Klaus Post
+    Copyright (C) 2009-2014 Klaus Post
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Lesser General Public
@@ -86,7 +86,7 @@ void ByteStream::setAbsoluteOffset(uint32 offset) {
 
 void ByteStream::skipToMarker() {
   int c = 0;
-  while (!(buffer[off] == 0xFF && buffer[off+1] != 0)) {
+  while (!(buffer[off] == 0xFF && buffer[off+1] != 0 && buffer[off+1] != 0xFF)) {
     off++;
     c++;
     if (off >= size)
@@ -97,12 +97,13 @@ void ByteStream::skipToMarker() {
 
 float ByteStream::getFloat()
 {
-  uchar8 temp[4];
   if (off + 4 > size)
     ThrowIOE("getFloat: Out of buffer read");
+  float temp_f;
+  uchar8 *temp = (uchar8 *)&temp_f;
   for (int i = 0; i < 4; i++)
     temp[i] = buffer[off+i];
-  return *(float*)temp;
+  return temp_f;
 }
 
 void ByteStream::popOffset()

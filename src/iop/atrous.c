@@ -32,7 +32,7 @@
 // SSE4 actually not used yet.
 // #include <smmintrin.h>
 
-#define INSET 5
+#define INSET DT_PIXEL_APPLY_DPI(5)
 #define INFL .3f
 
 
@@ -145,7 +145,7 @@ static const __m128 femo ALIGNED(16) = VEC4(0x00adf880u);
 static const __m128 ooo1 ALIGNED(16) = {0.f, 0.f, 0.f, 1.f};
 
 /* SSE intrinsics version of dt_fast_expf defined in darktable.h */
-static __m128  inline
+static inline __m128
 dt_fast_expf_sse(const __m128 x)
 {
   __m128  f = _mm_add_ps(fone, _mm_mul_ps(x, femo)); // f(n) = i1 + x(n)*(i2-i1)
@@ -164,7 +164,7 @@ dt_fast_expf_sse(const __m128 x)
  * wc = exp(-sharpen*(SQR(c1[1] - c2[1]) + SQR(c1[2] - c2[2]))
  *    = exp(-s*(d2+d3)) (as noted in code comments below)
  */
-static __m128  inline
+static inline __m128
 weight_sse(const __m128 *c1, const __m128 *c2, const float sharpen)
 {
   const __m128 vsharpen = _mm_set1_ps(-sharpen);  // (-s, -s, -s, -s)
@@ -674,7 +674,7 @@ void init(dt_iop_module_t *module)
   module->params = malloc(sizeof(dt_iop_atrous_params_t));
   module->default_params = malloc(sizeof(dt_iop_atrous_params_t));
   module->default_enabled = 0;
-  module->priority = 526; // module order created by iop_dependencies.py, do not edit!
+  module->priority = 550; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_atrous_params_t);
   module->gui_data = NULL;
   dt_iop_atrous_params_t tmp;
@@ -759,6 +759,7 @@ void cleanup_pipe  (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_d
   dt_iop_atrous_data_t *d = (dt_iop_atrous_data_t *)(piece->data);
   for(int ch=0; ch<atrous_none; ch++) dt_draw_curve_destroy(d->curve[ch]);
   free(piece->data);
+  piece->data = NULL;
 }
 
 void init_presets (dt_iop_module_so_t *self)
@@ -780,21 +781,7 @@ void init_presets (dt_iop_module_so_t *self)
     p.y[atrous_Lt][k] = 0.0f;
     p.y[atrous_ct][k] = 0.0f;
   }
-  dt_gui_presets_add_generic(_("enhance coarse"), self->op, self->version(), &p, sizeof(p), 1);
-  for(int k=0; k<BANDS; k++)
-  {
-    p.x[atrous_L][k] = k/(BANDS-1.0);
-    p.x[atrous_c][k] = k/(BANDS-1.0);
-    p.x[atrous_s][k] = k/(BANDS-1.0);
-    p.y[atrous_L][k] = .5f+.5f*k/(float)BANDS;
-    p.y[atrous_c][k] = .5f;
-    p.y[atrous_s][k] = .5f;
-    p.x[atrous_Lt][k] = k/(BANDS-1.0);
-    p.x[atrous_ct][k] = k/(BANDS-1.0);
-    p.y[atrous_Lt][k] = .4f*k/(float)BANDS;
-    p.y[atrous_ct][k] = .6f*k/(float)BANDS;
-  }
-  dt_gui_presets_add_generic(_("sharpen and denoise (strong)"), self->op, self->version(), &p, sizeof(p), 1);
+  dt_gui_presets_add_generic(C_("eq_preset", "coarse"), self->op, self->version(), &p, sizeof(p), 1);
   for(int k=0; k<BANDS; k++)
   {
     p.x[atrous_L][k] = k/(BANDS-1.0);
@@ -808,21 +795,7 @@ void init_presets (dt_iop_module_so_t *self)
     p.y[atrous_Lt][k] = .2f*k/(float)BANDS;
     p.y[atrous_ct][k] = .3f*k/(float)BANDS;
   }
-  dt_gui_presets_add_generic(_("sharpen and denoise"), self->op, self->version(), &p, sizeof(p), 1);
-  for(int k=0; k<BANDS; k++)
-  {
-    p.x[atrous_L][k] = k/(BANDS-1.0);
-    p.x[atrous_c][k] = k/(BANDS-1.0);
-    p.x[atrous_s][k] = k/(BANDS-1.0);
-    p.y[atrous_L][k] = .5f+.5f*k/(float)BANDS;
-    p.y[atrous_c][k] = .5f;
-    p.y[atrous_s][k] = .5f;
-    p.x[atrous_Lt][k] = k/(BANDS-1.0);
-    p.x[atrous_ct][k] = k/(BANDS-1.0);
-    p.y[atrous_Lt][k] = 0.0f;
-    p.y[atrous_ct][k] = 0.0f;
-  }
-  dt_gui_presets_add_generic(_("sharpen (strong)"), self->op, self->version(), &p, sizeof(p), 1);
+  dt_gui_presets_add_generic(_("denoise & sharpen"), self->op, self->version(), &p, sizeof(p), 1);
   for(int k=0; k<BANDS; k++)
   {
     p.x[atrous_L][k] = k/(BANDS-1.0);
@@ -850,21 +823,7 @@ void init_presets (dt_iop_module_so_t *self)
     p.y[atrous_Lt][k] = .0f;
     p.y[atrous_ct][k] = fmaxf(0.0f, (.60f*k/(float)BANDS) - 0.30f);
   }
-  dt_gui_presets_add_generic(_("chroma denoise"), self->op, self->version(), &p, sizeof(p), 1);
-  for(int k=0; k<BANDS; k++)
-  {
-    p.x[atrous_L][k] = k/(BANDS-1.0);
-    p.x[atrous_c][k] = k/(BANDS-1.0);
-    p.x[atrous_s][k] = k/(BANDS-1.0);
-    p.y[atrous_L][k] = .5f;
-    p.y[atrous_c][k] = .5f;
-    p.y[atrous_s][k] = .0f;
-    p.x[atrous_Lt][k] = k/(BANDS-1.0);
-    p.x[atrous_ct][k] = k/(BANDS-1.0);
-    p.y[atrous_Lt][k] = fmaxf(0.0f, (.30f*k/(float)BANDS) - 0.15f);
-    p.y[atrous_ct][k] = .30f*k/(float)BANDS;
-  }
-  dt_gui_presets_add_generic(_("denoise (subtle)"), self->op, self->version(), &p, sizeof(p), 1);
+  dt_gui_presets_add_generic(_("denoise chroma"), self->op, self->version(), &p, sizeof(p), 1);
   for(int k=0; k<BANDS; k++)
   {
     p.x[atrous_L][k] = k/(BANDS-1.0);
@@ -884,22 +843,6 @@ void init_presets (dt_iop_module_so_t *self)
     p.x[atrous_L][k] = k/(BANDS-1.0);
     p.x[atrous_c][k] = k/(BANDS-1.0);
     p.x[atrous_s][k] = k/(BANDS-1.0);
-    p.y[atrous_L][k] = .5f;//-.4f*k/(float)BANDS;
-    p.y[atrous_c][k] = .5f;//fmaxf(0.0f, .5f-.6f*k/(float)BANDS);
-    p.y[atrous_s][k] = .5f;
-    p.x[atrous_Lt][k] = k/(BANDS-1.0);
-    p.x[atrous_ct][k] = k/(BANDS-1.0);
-    p.y[atrous_Lt][k] = .4f*k/(float)BANDS;
-    p.y[atrous_ct][k] = fminf(.5f, .8f*k/(float)BANDS);
-  }
-  p.y[atrous_s][BANDS-1] = 0.0f;
-  p.y[atrous_s][BANDS-2] = 0.42f;
-  dt_gui_presets_add_generic(_("denoise (strong)"), self->op, self->version(), &p, sizeof(p), 1);
-  for(int k=0; k<BANDS; k++)
-  {
-    p.x[atrous_L][k] = k/(BANDS-1.0);
-    p.x[atrous_c][k] = k/(BANDS-1.0);
-    p.x[atrous_s][k] = k/(BANDS-1.0);
     p.y[atrous_L][k] = fminf(.5f, .3f + .35f * k/(BANDS-1.0));
     p.y[atrous_c][k] = .5f;
     p.y[atrous_s][k] = .0f;
@@ -910,20 +853,6 @@ void init_presets (dt_iop_module_so_t *self)
   }
   p.y[atrous_L][0] = .5f;
   dt_gui_presets_add_generic(_("bloom"), self->op, self->version(), &p, sizeof(p), 1);
-  for(int k=0; k<BANDS; k++)
-  {
-    p.x[atrous_L][k] = k/(BANDS-1.0);
-    p.x[atrous_c][k] = k/(BANDS-1.0);
-    p.x[atrous_s][k] = k/(BANDS-1.0);
-    p.y[atrous_L][k] = 0.55f;
-    p.y[atrous_c][k] = .5f;
-    p.y[atrous_s][k] = .0f;
-    p.x[atrous_Lt][k] = k/(BANDS-1.0);
-    p.x[atrous_ct][k] = k/(BANDS-1.0);
-    p.y[atrous_Lt][k] = 0.0f;
-    p.y[atrous_ct][k] = 0.0f;
-  }
-  dt_gui_presets_add_generic(_("clarity (subtle)"), self->op, self->version(), &p, sizeof(p), 1);
   for(int k=0; k<BANDS; k++)
   {
     p.x[atrous_L][k] = k/(BANDS-1.0);
@@ -1018,7 +947,7 @@ area_expose(GtkWidget *widget, GdkEventExpose *event, gpointer user_data)
   width -= 2*inset;
   height -= 2*inset;
 
-  cairo_set_line_width(cr, 1.0);
+  cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(1.0));
   cairo_set_source_rgb (cr, .1, .1, .1);
   cairo_rectangle(cr, 0, 0, width, height);
   cairo_stroke(cr);
@@ -1043,14 +972,14 @@ area_expose(GtkWidget *widget, GdkEventExpose *event, gpointer user_data)
   }
 
   // draw grid
-  cairo_set_line_width(cr, .4);
+  cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(.4));
   cairo_set_source_rgb (cr, .1, .1, .1);
   dt_draw_grid(cr, 8, 0, 0, width, height);
 
   cairo_save(cr);
 
   // draw selected cursor
-  cairo_set_line_width(cr, 1.);
+  cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(1.));
   cairo_translate(cr, 0, height);
 
   // draw frequency histogram in bg.
@@ -1060,7 +989,6 @@ area_expose(GtkWidget *widget, GdkEventExpose *event, gpointer user_data)
     cairo_save(cr);
     for(int k=1; k<c->num_samples; k+=2)
     {
-      cairo_set_line_width(cr, 1.f);
       cairo_set_source_rgba(cr, .2, .2, .2, 0.3);
       cairo_move_to(cr, width*c->sample[k-1], 0.0f);
       cairo_line_to(cr, width*c->sample[k-1], -height);
@@ -1081,7 +1009,7 @@ area_expose(GtkWidget *widget, GdkEventExpose *event, gpointer user_data)
   if(c->band_max > 0)
   {
     cairo_save(cr);
-    cairo_scale(cr, width/(BANDS-1.0), -(height-5)/c->band_max);
+    cairo_scale(cr, width/(BANDS-1.0), -(height-DT_PIXEL_APPLY_DPI(5))/c->band_max);
     cairo_set_source_rgba(cr, .2, .2, .2, 0.5);
     cairo_move_to(cr, 0, 0);
     for(int k=0; k<BANDS; k++) cairo_line_to(cr, k, c->band_hist[k]);
@@ -1094,7 +1022,7 @@ area_expose(GtkWidget *widget, GdkEventExpose *event, gpointer user_data)
 
   // cairo_set_operator(cr, CAIRO_OPERATOR_ADD);
   cairo_set_operator(cr, CAIRO_OPERATOR_OVER);
-  cairo_set_line_width(cr, 2.);
+  cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(2.));
   for(int i=0; i<=atrous_s; i++)
   {
     // draw curves, selected last.
@@ -1147,10 +1075,10 @@ area_expose(GtkWidget *widget, GdkEventExpose *event, gpointer user_data)
     cairo_save(cr);
     if(ch != ch2) cairo_set_source_rgb(cr, 0.1, 0.1, 0.1);
     else          cairo_set_source_rgb(cr, 0.7, 0.7, 0.7);
-    cairo_set_line_width(cr, 1.);
+    cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(1.));
     for(int k=0; k<BANDS; k++)
     {
-      cairo_arc(cr, width*p.x[ch2][k], - height*p.y[ch2][k], 3.0, 0.0, 2.0*M_PI);
+      cairo_arc(cr, width*p.x[ch2][k], - height*p.y[ch2][k], DT_PIXEL_APPLY_DPI(3.0), 0.0, 2.0*M_PI);
       if(c->x_move == k) cairo_fill(cr);
       else               cairo_stroke(cr);
     }
@@ -1180,12 +1108,12 @@ area_expose(GtkWidget *widget, GdkEventExpose *event, gpointer user_data)
   cairo_set_operator(cr, CAIRO_OPERATOR_SOURCE);
 
   // draw x positions
-  cairo_set_line_width(cr, 1.);
+  cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(1.));
   cairo_set_source_rgb(cr, 0.6, 0.6, 0.6);
-  const float arrw = 7.0f;
+  const float arrw = DT_PIXEL_APPLY_DPI(7.0f);
   for(int k=1; k<BANDS-1; k++)
   {
-    cairo_move_to(cr, width*p.x[ch][k], inset-1);
+    cairo_move_to(cr, width*p.x[ch][k], inset-DT_PIXEL_APPLY_DPI(1));
     cairo_rel_line_to(cr, -arrw*.5f, 0);
     cairo_rel_line_to(cr, arrw*.5f, -arrw);
     cairo_rel_line_to(cr, arrw*.5f, arrw);
@@ -1434,8 +1362,8 @@ void gui_init (struct dt_iop_module_t *self)
   g_object_set(G_OBJECT(gtk_notebook_get_tab_label(c->channel_tabs, gtk_notebook_get_nth_page(c->channel_tabs, -1))), "tooltip-text", _("change lightness at each feature size"), NULL);
   gtk_notebook_append_page(GTK_NOTEBOOK(c->channel_tabs), GTK_WIDGET(gtk_hbox_new(FALSE,0)), gtk_label_new(_("chroma")));
   g_object_set(G_OBJECT(gtk_notebook_get_tab_label(c->channel_tabs, gtk_notebook_get_nth_page(c->channel_tabs, -1))), "tooltip-text", _("change color saturation at each feature size"), NULL);
-  gtk_notebook_append_page(GTK_NOTEBOOK(c->channel_tabs), GTK_WIDGET(gtk_hbox_new(FALSE,0)), gtk_label_new(_("sharpness")));
-  g_object_set(G_OBJECT(gtk_notebook_get_tab_label(c->channel_tabs, gtk_notebook_get_nth_page(c->channel_tabs, -1))), "tooltip-text", _("sharpness of edges at each feature size"), NULL);
+  gtk_notebook_append_page(GTK_NOTEBOOK(c->channel_tabs), GTK_WIDGET(gtk_hbox_new(FALSE,0)), gtk_label_new(_("edges")));
+  g_object_set(G_OBJECT(gtk_notebook_get_tab_label(c->channel_tabs, gtk_notebook_get_nth_page(c->channel_tabs, -1))), "tooltip-text", _("change edge halos at each feature size\nonly changes results of luma and chroma tabs"), NULL);
 
   gtk_widget_show_all(GTK_WIDGET(gtk_notebook_get_nth_page(c->channel_tabs, c->channel)));
   gtk_notebook_set_current_page(GTK_NOTEBOOK(c->channel_tabs), c->channel);
@@ -1450,7 +1378,8 @@ void gui_init (struct dt_iop_module_t *self)
   // graph
   c->area = GTK_DRAWING_AREA(gtk_drawing_area_new());
   gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(c->area), TRUE, TRUE, 0);
-  gtk_widget_set_size_request(GTK_WIDGET(c->area), 195, 195);
+  int size = dt_conf_get_int("panel_width") * 0.95;
+  gtk_widget_set_size_request(GTK_WIDGET(c->area), size, 0.75*size);
 
   gtk_widget_add_events(GTK_WIDGET(c->area), GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK | GDK_LEAVE_NOTIFY_MASK);
   g_signal_connect (G_OBJECT (c->area), "expose-event",

@@ -3,13 +3,12 @@
 
 #include "ColorFilterArray.h"
 #include "CameraSensorInfo.h"
-#include <libxml/parser.h>
 #include "BlackArea.h"
 #include "CameraMetadataException.h"
 /* 
     RawSpeed - RAW file decoder.
 
-    Copyright (C) 2009 Klaus Post
+    Copyright (C) 2009-2014 Klaus Post
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Lesser General Public
@@ -30,12 +29,13 @@
 
 namespace RawSpeed {
 
+
 class Camera
 {
 public:
-  Camera(xmlDocPtr doc, xmlNodePtr cur);
+  Camera(pugi::xml_node &camera);
   Camera(const Camera* camera, uint32 alias_num);
-  void parseCameraChild(xmlDocPtr doc, xmlNodePtr cur);
+  void parseCameraChild( pugi::xml_node &node );
   const CameraSensorInfo* getSensorInfo(int iso);
   virtual ~Camera(void);
   string make;
@@ -50,16 +50,13 @@ public:
   vector<CameraSensorInfo> sensorInfo;
   int decoderVersion;
   map<string,string> hints;
-private:
-  int StringToInt(const xmlChar *in, const xmlChar *tag, const char* attribute);
-  int getAttributeAsInt( xmlNodePtr cur , const xmlChar *tag, const char* attribute);
 protected:
-  void parseCFA( xmlDocPtr doc, xmlNodePtr cur );
-  void parseAlias( xmlDocPtr doc, xmlNodePtr cur );
-  void parseHint( xmlDocPtr doc, xmlNodePtr cur );
-  void parseBlackAreas( xmlDocPtr doc, xmlNodePtr cur );
-  void parseSensorInfo( xmlDocPtr doc, xmlNodePtr cur );
-  vector<int> MultipleStringToInt(const xmlChar *in, const xmlChar *tag, const char* attribute);
+  void parseCFA( pugi::xml_node &node );
+  void parseAlias( pugi::xml_node &node );
+  void parseHint( pugi::xml_node &node );
+  void parseBlackAreas( pugi::xml_node &node );
+  void parseSensorInfo( pugi::xml_node &node );
+  vector<int> MultipleStringToInt(const char *in, const char *tag, const char* attribute);
 };
 
 } // namespace RawSpeed

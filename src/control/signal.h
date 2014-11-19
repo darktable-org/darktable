@@ -39,13 +39,15 @@ typedef enum dt_signal_t
   */
   DT_SIGNAL_CONTROL_REDRAW_ALL,
 
-  /** \brief This signal is raid when dt_control_queue_redraw_center() is called.
+  /** \brief This signal is raised when dt_control_queue_redraw_center() is called.
     no param, no returned value
    */
   DT_SIGNAL_CONTROL_REDRAW_CENTER,
 
   /** \brief This signal is raised by viewmanager when a view has changed.
-    no param, no returned value
+    1 : dt_view_t * the old view
+    2 : dt_view_t * the new (current) view
+    no returned value
    */
   DT_SIGNAL_VIEWMANAGER_VIEW_CHANGED,
 
@@ -141,6 +143,12 @@ typedef enum dt_signal_t
     no return
     */
   DT_SIGNAL_IMAGEIO_STORAGE_CHANGE,
+
+  /** \brief This signal is raised after preferences have been changed
+    1 dt_view_t* : the view
+    no return
+    */
+  DT_SIGNAL_PREFERENCES_CHANGE,
 
   /* do not touch !*/
   DT_SIGNAL_COUNT

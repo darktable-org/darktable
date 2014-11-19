@@ -145,8 +145,8 @@ void expose(dt_view_t *self, cairo_t *cri, int32_t width_i, int32_t height_i, in
     dev->gui_synch = 0;
   }
 
-  if(dev->image_dirty || dev->pipe->input_timestamp < dev->preview_pipe->input_timestamp) dt_dev_process_image(dev);
-  if(dev->preview_dirty || dev->pipe->input_timestamp > dev->preview_pipe->input_timestamp) dt_dev_process_preview(dev);
+  if(dev->image_status == DT_DEV_PIXELPIPE_DIRTY || dev->image_status == DT_DEV_PIXELPIPE_INVALID || dev->pipe->input_timestamp < dev->preview_pipe->input_timestamp) dt_dev_process_image(dev);
+  if(dev->preview_status == DT_DEV_PIXELPIPE_DIRTY || dev->preview_status == DT_DEV_PIXELPIPE_INVALID || dev->pipe->input_timestamp > dev->preview_pipe->input_timestamp) dt_dev_process_preview(dev);
 
   dt_pthread_mutex_t *mutex = NULL;
   int wd, ht, stride, closeup;
@@ -181,7 +181,7 @@ void expose(dt_view_t *self, cairo_t *cri, int32_t width_i, int32_t height_i, in
     dt_view_set_scrollbar(self, zx+.5-boxw*.5, 1.0, boxw, zy+.5-boxh*.5, 1.0, boxh);
   }
 
-  if(!dev->image_dirty && dev->pipe->input_timestamp >= dev->preview_pipe->input_timestamp)
+  if((dev->image_status == DT_DEV_PIXELPIPE_VALID) && dev->pipe->input_timestamp >= dev->preview_pipe->input_timestamp)
   {
     // draw image
     roi_hash_old = roi_hash;
@@ -196,14 +196,8 @@ void expose(dt_view_t *self, cairo_t *cri, int32_t width_i, int32_t height_i, in
     cairo_translate(cr, .5f*(width-wd), .5f*(height-ht));
     if(closeup)
     {
-      const float closeup_scale = 2.0;
-      cairo_scale(cr, closeup_scale, closeup_scale);
-      float boxw = 1, boxh = 1, zx0 = zoom_x, zy0 = zoom_y, zx1 = zoom_x, zy1 = zoom_y, zxm = -1.0, zym = -1.0;
-      dt_dev_check_zoom_bounds(dev, &zx0, &zy0, zoom, 0, &boxw, &boxh);
-      dt_dev_check_zoom_bounds(dev, &zx1, &zy1, zoom, 1, &boxw, &boxh);
-      dt_dev_check_zoom_bounds(dev, &zxm, &zym, zoom, 1, &boxw, &boxh);
-      const float fx = 1.0 - fmaxf(0.0, (zx0 - zx1)/(zx0 - zxm)), fy = 1.0 - fmaxf(0.0, (zy0 - zy1)/(zy0 - zym));
-      cairo_translate(cr, -wd/(2.0*closeup_scale) * fx, -ht/(2.0*closeup_scale) * fy);
+      cairo_scale(cr, 2.0, 2.0);
+      cairo_translate(cr, -.25f*wd, -.25f*ht);
     }
     cairo_rectangle(cr, 0, 0, wd, ht);
     cairo_set_source_surface (cr, surface, 0, 0);
@@ -216,7 +210,7 @@ void expose(dt_view_t *self, cairo_t *cri, int32_t width_i, int32_t height_i, in
     dt_pthread_mutex_unlock(mutex);
     image_surface_imgid = dev->image_storage.id;
   }
-  else if(!dev->preview_dirty && (roi_hash != roi_hash_old))
+  else if((dev->preview_status == DT_DEV_PIXELPIPE_VALID) && (roi_hash != roi_hash_old))
   {
     // draw preview
     roi_hash_old = roi_hash;
@@ -254,7 +248,7 @@ void expose(dt_view_t *self, cairo_t *cri, int32_t width_i, int32_t height_i, in
   }
 
   /* check if we should create a snapshot of view */
-  if(darktable.develop->proxy.snapshot.request)
+  if(darktable.develop->proxy.snapshot.request && !darktable.develop->image_loading)
   {
     /* reset the request */
     darktable.develop->proxy.snapshot.request = FALSE;
@@ -347,7 +341,7 @@ void expose(dt_view_t *self, cairo_t *cri, int32_t width_i, int32_t height_i, in
   }
 
   // execute module callback hook.
-  if(dev->gui_module && dev->gui_module->request_color_pick)
+  if(dev->gui_module && dev->gui_module->request_color_pick != DT_REQUEST_COLORPICK_OFF)
   {
     float wd = dev->preview_pipe->backbuf_width;
     float ht = dev->preview_pipe->backbuf_height;
@@ -459,9 +453,9 @@ int try_enter(dt_view_t *self)
   const dt_image_t *img = dt_image_cache_read_get(darktable.image_cache, selected);
   // get image and check if it has been deleted from disk first!
 
-  char imgfilename[DT_MAX_PATH_LEN];
+  char imgfilename[PATH_MAX];
   gboolean from_cache = TRUE;
-  dt_image_full_path(img->id, imgfilename, DT_MAX_PATH_LEN, &from_cache);
+  dt_image_full_path(img->id, imgfilename, sizeof(imgfilename), &from_cache);
   if(!g_file_test(imgfilename, G_FILE_TEST_IS_REGULAR))
   {
     dt_control_log(_("image `%s' is currently unavailable"), img->filename);
@@ -546,8 +540,7 @@ dt_dev_change_image(dt_develop_t *dev, const uint32_t imgid)
   //cleanup visible masks
   if (!dev->form_gui)
   {
-    dev->form_gui = (dt_masks_form_gui_t *) malloc(sizeof(dt_masks_form_gui_t));
-    memset(dev->form_gui,0,sizeof(dt_masks_form_gui_t));
+    dev->form_gui = (dt_masks_form_gui_t *)calloc(1, sizeof(dt_masks_form_gui_t));
   }
   dt_masks_init_form_gui(dev);
   dev->form_visible = NULL;
@@ -700,6 +693,9 @@ dt_dev_change_image(dt_develop_t *dev, const uint32_t imgid)
   /* last set the group to update visibility of iop modules for new pipe */
   dt_dev_modulegroups_set(dev,dt_conf_get_int("plugins/darkroom/groups"));
 
+  /* cleanup histograms */
+  g_list_foreach(dev->iop, (GFunc)dt_iop_cleanup_histogram, (gpointer)NULL);
+
   // make signals work again, but only after focus event,
   // to avoid crop/rotate for example to add another history item.
   darktable.gui->reset = 0;
@@ -770,6 +766,8 @@ dt_dev_jump_image(dt_develop_t *dev, int diff)
       if (!dev->image_loading)
       {
         dt_view_filmstrip_scroll_to_image(darktable.view_manager, imgid, FALSE);
+        // record the imgid to display when going back to lighttable
+        dt_view_lighttable_set_position(darktable.view_manager, dt_collection_image_offset(imgid));
         dt_dev_change_image(dev, imgid);
       }
 
@@ -790,10 +788,15 @@ zoom_key_accel(GtkAccelGroup *accel_group,
   {
     case 1:
       zoom = dt_control_get_dev_zoom();
+      zoom_x = dt_control_get_dev_zoom_x();
+      zoom_y = dt_control_get_dev_zoom_y();
       closeup = dt_control_get_dev_closeup();
       if(zoom == DT_ZOOM_1) closeup ^= 1;
-      dt_control_set_dev_closeup(closeup);
+      dt_dev_check_zoom_bounds(dev, &zoom_x, &zoom_y, DT_ZOOM_1, closeup, NULL, NULL);
       dt_control_set_dev_zoom(DT_ZOOM_1);
+      dt_control_set_dev_zoom_x(zoom_x);
+      dt_control_set_dev_zoom_y(zoom_y);
+      dt_control_set_dev_closeup(closeup);
       dt_dev_invalidate(dev);
       break;
     case 2:
@@ -922,7 +925,7 @@ static void _darkroom_ui_apply_style_popupmenu(GtkWidget *w, gpointer user_data)
       char* items_string = dt_styles_get_item_list_as_string(style->name);
       gchar* tooltip = NULL;
 
-      if((style->description) && strlen(style->description))
+      if(style->description && *style->description)
       {
         tooltip = g_strconcat("<b>", style->description, "</b>\n", items_string, NULL);
       }
@@ -1078,8 +1081,7 @@ void enter(dt_view_t *self)
   dt_develop_t *dev = (dt_develop_t *)self->data;
   if (!dev->form_gui)
   {
-    dev->form_gui = (dt_masks_form_gui_t *) malloc(sizeof(dt_masks_form_gui_t));
-    memset(dev->form_gui,0,sizeof(dt_masks_form_gui_t));
+    dev->form_gui = (dt_masks_form_gui_t *)calloc(1, sizeof(dt_masks_form_gui_t));
   }
   dt_masks_init_form_gui(dev);
   dev->form_visible = NULL;
@@ -1410,7 +1412,8 @@ void mouse_moved(dt_view_t *self, double x, double y, double pressure, int which
   int handled = 0;
   x += offx;
   y += offy;
-  if(dev->gui_module && dev->gui_module->request_color_pick &&
+  if(dev->gui_module && 
+      dev->gui_module->request_color_pick != DT_REQUEST_COLORPICK_OFF &&
       ctl->button_down &&
       ctl->button_down_which == 1)
   {
@@ -1500,7 +1503,7 @@ int button_pressed(dt_view_t *self, double x, double y, double pressure, int whi
   if(height_i > capht) y += (capht-height_i)*.5f;
 
   int handled = 0;
-  if(dev->gui_module && dev->gui_module->request_color_pick && which == 1)
+  if(dev->gui_module && dev->gui_module->request_color_pick != DT_REQUEST_COLORPICK_OFF && which == 1)
   {
     float zoom_x, zoom_y;
     dt_dev_get_pointer_zoom_pos(dev, x, y, &zoom_x, &zoom_y);
@@ -1636,19 +1639,14 @@ void scrolled(dt_view_t *self, double x, double y, int up, int state)
   dt_control_set_dev_zoom_scale(scale);
   if (fabsf(scale-1.0f) < 0.001f)       zoom = DT_ZOOM_1;
   if (fabsf(scale - fitscale) < 0.001f) zoom = DT_ZOOM_FIT;
-  if(zoom != DT_ZOOM_1)
-  {
-    zoom_x -= mouse_off_x/(procw*scale);
-    zoom_y -= mouse_off_y/(proch*scale);
-  }
+  zoom_x -= mouse_off_x/(procw*scale);
+  zoom_y -= mouse_off_y/(proch*scale);
   dt_dev_check_zoom_bounds(dev, &zoom_x, &zoom_y, zoom, closeup, NULL, NULL);
   dt_control_set_dev_zoom(zoom);
   dt_control_set_dev_closeup(closeup);
-  if(zoom != DT_ZOOM_1)
-  {
-    dt_control_set_dev_zoom_x(zoom_x);
-    dt_control_set_dev_zoom_y(zoom_y);
-  }
+  dt_control_set_dev_zoom_x(zoom_x);
+  dt_control_set_dev_zoom_y(zoom_y);
+
   dt_dev_invalidate(dev);
 
   dt_control_queue_redraw();

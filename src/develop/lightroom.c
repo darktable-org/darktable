@@ -1,7 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2009--2011 johannes hanika.
-    copyright (c) 2011--2012 henrik andersson.
+    copyright (c) 2013--2014 pascal obry.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -364,9 +363,7 @@ static float lr2dt_clarity(float value)
 static void dt_add_hist (int imgid, char *operation, dt_iop_params_t *params, int params_size, char *imported, size_t imported_len, int version, int *import_count)
 {
   int32_t num = 0;
-  dt_develop_blend_params_t blend_params;
-
-  memset(&blend_params, 0, sizeof(dt_develop_blend_params_t));
+  dt_develop_blend_params_t blend_params = { 0 };
 
   //  get current num if any
   sqlite3_stmt *stmt;
@@ -383,7 +380,7 @@ static void dt_add_hist (int imgid, char *operation, dt_iop_params_t *params, in
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, num);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 3, version);
-  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 4, operation, strlen(operation), SQLITE_TRANSIENT);
+  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 4, operation, -1, SQLITE_TRANSIENT);
   DT_DEBUG_SQLITE3_BIND_BLOB(stmt, 5, params, params_size, SQLITE_TRANSIENT);
   DT_DEBUG_SQLITE3_BIND_BLOB(stmt, 6, &blend_params, sizeof(dt_develop_blend_params_t), SQLITE_TRANSIENT);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 7, LRDT_BLEND_VERSION);
@@ -1113,9 +1110,32 @@ void dt_lightroom_import (int imgid, dt_develop_t *dev, gboolean iauto)
     pc.kxc = pc.kxb = 0.8f;
     pc.kya = pc.kyb = 0.2f;
     pc.kyc = pc.kyd = 0.8f;
+    float tmp;
 
     if (has_crop)
     {
+      // adjust crop data according to the rotation
+
+      switch (dev->image_storage.orientation)
+      {
+         case 5: // portrait - counter-clockwise
+           tmp = pc.ch;
+           pc.ch = 1.0 - pc.cx;
+           pc.cx = pc.cy;
+           pc.cy = 1.0 - pc.cw;
+           pc.cw = tmp;
+           break;
+         case 6: // portrait - clockwise
+           tmp = pc.ch;
+           pc.ch = pc.cw;
+           pc.cw = 1.0 - pc.cy;
+           pc.cy = pc.cx;
+           pc.cx = 1.0 - tmp;
+           break;
+         default:
+           break;
+      }
+
       if (pc.angle != 0)
       {
         const float rangle = -pc.angle * (3.141592 / 180);

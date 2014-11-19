@@ -22,6 +22,20 @@
 #include "config.h"
 #endif
 
+#include <memory>
+#include <stdio.h>
+#include <inttypes.h>
+#include <string.h>
+#include <assert.h>
+
+#include <OpenEXR/ImfFrameBuffer.h>
+#include <OpenEXR/ImfTestFile.h>
+#include <OpenEXR/ImfInputFile.h>
+#include <OpenEXR/ImfTiledInputFile.h>
+#include <OpenEXR/ImfChannelList.h>
+#include <OpenEXR/ImfStandardAttributes.h>
+#include <OpenEXR/ImfThreading.h>
+
 extern "C"
 {
 #include "common/imageio_exr.h"
@@ -32,26 +46,21 @@ extern "C"
 #include "common/colorspaces.h"
 #include "control/conf.h"
 }
-
 #include "common/imageio_exr.hh"
-#include <memory>
-#include <stdio.h>
-#include <inttypes.h>
-#include <string.h>
-#include <assert.h>
-#include <OpenEXR/ImfFrameBuffer.h>
-#include <OpenEXR/ImfTestFile.h>
-#include <OpenEXR/ImfInputFile.h>
-#include <OpenEXR/ImfTiledInputFile.h>
-#include <OpenEXR/ImfChannelList.h>
-#include <OpenEXR/ImfStandardAttributes.h>
-
 
 dt_imageio_retval_t dt_imageio_open_exr (dt_image_t *img, const char *filename, dt_mipmap_cache_allocator_t a)
 {
   bool isTiled=false;
+
+  Imf::setGlobalThreadCount(dt_get_num_threads());
+
+#ifdef __APPLE__
   std::auto_ptr<Imf::TiledInputFile> fileTiled;
   std::auto_ptr<Imf::InputFile> file;
+#else
+  std::unique_ptr<Imf::TiledInputFile> fileTiled;
+  std::unique_ptr<Imf::InputFile> file;
+#endif
   const Imf::Header *header=NULL;
   Imath::Box2i dw;
   Imf::FrameBuffer frameBuffer;
@@ -67,14 +76,24 @@ dt_imageio_retval_t dt_imageio_open_exr (dt_image_t *img, const char *filename, 
   {
     if(isTiled)
     {
+#ifdef __APPLE__
       std::auto_ptr<Imf::TiledInputFile> temp(new Imf::TiledInputFile(filename));
       fileTiled = temp;
+#else
+      std::unique_ptr<Imf::TiledInputFile> temp(new Imf::TiledInputFile(filename));
+      fileTiled = std::move(temp);
+#endif
       header = &(fileTiled->header());
     }
     else
     {
+#ifdef __APPLE__
       std::auto_ptr<Imf::InputFile> temp(new Imf::InputFile(filename));
       file = temp;
+#else
+      std::unique_ptr<Imf::InputFile> temp(new Imf::InputFile(filename));
+      file = std::move(temp);
+#endif
       header = &(file->header());
     }
   }
@@ -124,8 +143,8 @@ dt_imageio_retval_t dt_imageio_open_exr (dt_image_t *img, const char *filename, 
     return DT_IMAGEIO_CACHE_FULL;
   }
 
-  for (int i=0; i < img->width * img->height * 4; i++)
-    buf[i] = 0.0;
+  //FIXME: is this really needed?
+  memset(buf, 0, 4*img->width*img->height*sizeof(float));
 
   /* setup framebuffer */
   xstride = sizeof(float) * 4;

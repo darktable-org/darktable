@@ -20,7 +20,9 @@
 #include "config.h"
 #endif
 #include <stdlib.h>
+#include <xmmintrin.h>
 #include <cairo.h>
+
 #include "develop/develop.h"
 #include "develop/imageop.h"
 #include "control/control.h"
@@ -106,58 +108,59 @@ legacy_params (dt_iop_module_t *self, const void *const old_params, const int ol
 //   dt_accel_connect_slider_iop(self, "color scheme", GTK_WIDGET(g->colorscheme));
 // }
 
-void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, void *o, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
+void
+process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void * const ivoid, void *ovoid, const dt_iop_roi_t *roi_in, const dt_iop_roi_t * const roi_out)
 {
   dt_develop_t *dev = self->dev;
 
   const int ch = piece->colors;
 
-  // FIXME: turn off the module instead?
-  if(!dev->overexposed.enabled || !dev->gui_attached)
-  {
-    memcpy(o, i, (size_t)roi_out->width*roi_out->height*sizeof(float)*ch);
-    return;
-  }
+  const __m128 upper = _mm_set_ps(FLT_MAX,
+                                  dev->overexposed.upper / 100.0f,
+                                  dev->overexposed.upper / 100.0f,
+                                  dev->overexposed.upper / 100.0f);
+  const __m128 lower = _mm_set_ps(FLT_MAX,
+                                  dev->overexposed.lower / 100.0f,
+                                  dev->overexposed.lower / 100.0f,
+                                  dev->overexposed.lower / 100.0f);
 
-  const float lower  = dev->overexposed.lower / 100.0;
-  const float upper  = dev->overexposed.upper / 100.0;
   const int colorscheme = dev->overexposed.colorscheme;
-
-  const float *upper_color  = dt_iop_overexposed_colors[colorscheme][0];
-  const float *lower_color = dt_iop_overexposed_colors[colorscheme][1];
-
-  float *in    = (float *)i;
-  float *out   = (float *)o;
+  const __m128 upper_color = _mm_load_ps(dt_iop_overexposed_colors[colorscheme][0]);
+  const __m128 lower_color = _mm_load_ps(dt_iop_overexposed_colors[colorscheme][1]);
 
 #ifdef _OPENMP
-  #pragma omp parallel for default(none) shared(roi_out, in, out, upper_color, lower_color) schedule(static)
+  #pragma omp parallel for default(none) shared(ovoid) schedule(static)
 #endif
-  for(size_t k=0; k<(size_t)roi_out->width*roi_out->height; k++)
+  for(int k=0; k<roi_out->height; k++)
   {
-    float *inp = in + ch*k;
-    float *outp = out + ch*k;
-    if(inp[0] >= upper || inp[1] >= upper || inp[2] >= upper)
-    {
-      outp[0] = upper_color[0];
-      outp[1] = upper_color[1];
-      outp[2] = upper_color[2];
-    }
-    else if(inp[0] <= lower && inp[1] <= lower && inp[2] <= lower)
-    {
-      outp[0] = lower_color[0];
-      outp[1] = lower_color[1];
-      outp[2] = lower_color[2];
-    }
-    else
-    {
-      // TODO: memcpy()?
-      outp[0] = inp[0];
-      outp[1] = inp[1];
-      outp[2] = inp[2];
-    }
+    const float *in = ((float *)ivoid) + (size_t)ch*k*roi_out->width;
+    float *out = ((float *)ovoid) + (size_t)ch*k*roi_out->width;
 
-    outp[3] = inp[3];
+    for (int j=0; j<roi_out->width; j++,in+=4,out+=4)
+    {
+      const __m128 pixel = _mm_load_ps(in);
+
+      __m128 isoe = _mm_cmpge_ps(pixel, upper);
+      isoe = _mm_or_ps(_mm_unpacklo_ps(isoe, isoe), _mm_unpackhi_ps(isoe, isoe));
+      isoe = _mm_or_ps(_mm_unpacklo_ps(isoe, isoe), _mm_unpackhi_ps(isoe, isoe));
+
+      __m128 isue = _mm_cmple_ps(pixel, lower);
+      isue = _mm_and_ps(_mm_unpacklo_ps(isue, isue), _mm_unpackhi_ps(isue, isue));
+      isue = _mm_and_ps(_mm_unpacklo_ps(isue, isue), _mm_unpackhi_ps(isue, isue));
+
+      __m128 result = _mm_or_ps(_mm_andnot_ps(isoe, pixel),
+                                _mm_and_ps(isoe, upper_color));
+
+      result = _mm_or_ps(_mm_andnot_ps(isue, result),
+                         _mm_and_ps(isue, lower_color));
+
+      _mm_stream_ps(out, result);
+    }
   }
+  _mm_sfence();
+
+  if(piece->pipe->mask_display)
+    dt_iop_alpha_copy(ivoid, ovoid, roi_out->width, roi_out->height);
 }
 
 #ifdef HAVE_OPENCL
@@ -179,15 +182,6 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
 
   const float *upper_color  = dt_iop_overexposed_colors[colorscheme][0];
   const float *lower_color = dt_iop_overexposed_colors[colorscheme][1];
-
-  if(!dev->overexposed.enabled || !dev->gui_attached)
-  {
-    size_t origin[] = { 0, 0, 0};
-    size_t region[] = { width, height, 1};
-    err = dt_opencl_enqueue_copy_image(devid, dev_in, dev_out, origin, origin, region);
-    if (err != CL_SUCCESS) goto error;
-    return TRUE;
-  }
 
   size_t sizes[2] = { ROUNDUPWD(width), ROUNDUPHT(height) };
   dt_opencl_set_kernel_arg(devid, gd->kernel_overexposed, 0, sizeof(cl_mem), &dev_in);
@@ -228,7 +222,9 @@ void cleanup_global(dt_iop_module_so_t *module)
 
 void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
-  if(pipe->type != DT_DEV_PIXELPIPE_FULL) piece->enabled = 0;
+  if(pipe->type != DT_DEV_PIXELPIPE_FULL ||
+      !self->dev->overexposed.enabled || !self->dev->gui_attached)
+    piece->enabled = 0;
 }
 
 void init_pipe (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
@@ -246,7 +242,7 @@ void init(dt_iop_module_t *module)
   module->default_params          = malloc(sizeof(dt_iop_overexposed_t));
   module->hide_enable_button      = 1;
   module->default_enabled         = 1;
-  module->priority = 929; // module order created by iop_dependencies.py, do not edit!
+  module->priority = 933; // module order created by iop_dependencies.py, do not edit!
   module->params_size             = sizeof(dt_iop_overexposed_t);
   module->gui_data                = NULL;
 }

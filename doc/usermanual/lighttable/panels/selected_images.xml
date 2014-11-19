@@ -1,3 +1,8 @@
+<!DOCTYPE sect2 PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
+               "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd" [
+		<!ENTITY % darktable_dtd SYSTEM "../../dtd/darktable.dtd">
+		%darktable_dtd;
+		]>
 <sect2 status="final" id="selected_images">
 
   <title>Selected image(s)</title>
@@ -104,8 +109,8 @@
       <para>
         Physically copy selected images (parent file plus accompanying XMP sidecar file) to
         another filesystem folder. If an image with the given name already exists in the target
-        folder it does not get overwritten - instead a new duplicate with the given history
-        stack is generated.
+        folder it does not get overwritten&nbsp;&ndash; instead a new duplicate with the given
+        history stack is generated.
       </para>
 
     </sect4>
@@ -124,7 +129,8 @@
         been taken on a sturdy tripod. You can also generate HDRs with programs like
         <ulink url="http://qtpfsgui.sourceforge.net/"><emphasis>Luminance
         HDR</emphasis></ulink>, and later import them into darktable for further processing (see
-        <xref linkend="supported_file_formats"/>).
+        <xref linkend="supported_file_formats"/>). Note that darktable cannot currently create
+        HDR files from images made with non-Bayer (e.g. Fujifilm X-Trans) sensors.
       </para>
 
     </sect4>
@@ -151,14 +157,16 @@
 
       <para>
         Perform a counter-clockwise or clockwise rotation on selected images. The third button
-        resets the image rotation to the value in the EXIF data.
+        resets the image rotation to the value in the EXIF data. This feature is directly linked
+        to the orientation module (see <xref linkend="orientation"/>)&nbsp;&ndash; adjustments
+        are converted into history stack items of that module.      
       </para>
 
     </sect4>
 
     <sect4>
 
-      <title>cache locally</title>
+      <title>copy locally</title>
 
       <indexterm>
         <primary>local copies</primary>
@@ -174,12 +182,13 @@
 
     <sect4>
 
-      <title>reset cache</title>
+      <title>resync local copy</title>
 
       <para>
-        This action will synchronize back the XMP sidecars if needed and will remove the local
-        copies. Note that if a local copy has been modified and the external storage is not
-        accessible the local copy won't be deleted (see <xref linkend="local_copies"/>).
+        This action will synchronize the XMP sidecars of the temporary local copy and the copy
+        in external storage, if needed, and will remove the local copies. Note that if a local
+        copy has been modified and the external storage is not accessible the local copy won't
+        be deleted (see <xref linkend="local_copies"/>).
       </para>
 
     </sect4>

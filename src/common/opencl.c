@@ -119,7 +119,6 @@ void dt_opencl_init(dt_opencl_t *cl, const int argc, char *argv[])
 
   // look for explicit definition of opencl_runtime library in preferences
   char *library = dt_conf_get_string("opencl_library");
-  dt_print(DT_DEBUG_OPENCL, "[opencl_init] trying to load opencl library: '%s'\n", library && library[0] != '\0' ? library : "<system default>");
 
   // dynamically load opencl runtime
   if(!dt_dlopencl_init(library, &cl->dlocl))
@@ -306,32 +305,32 @@ void dt_opencl_init(dt_opencl_t *cl, const int argc, char *argv[])
       goto finally;
     }
 
-    char dtcache[DT_MAX_PATH_LEN];
-    char cachedir[DT_MAX_PATH_LEN];
+    char dtcache[PATH_MAX];
+    char cachedir[PATH_MAX];
     char devname[1024];
     double tstart, tend, tdiff;
-    dt_loc_get_user_cache_dir(dtcache, DT_MAX_PATH_LEN);
+    dt_loc_get_user_cache_dir(dtcache, sizeof(dtcache));
 
     int len = strlen(infostr);
     int j=0;
     // remove non-alphanumeric chars from device name
     for (int i=0; i < len; i++) if (isalnum(infostr[i])) devname[j++]=infostr[i];
     devname[j] = 0;
-    snprintf(cachedir, DT_MAX_PATH_LEN, "%s/cached_kernels_for_%s", dtcache, devname);
+    snprintf(cachedir, sizeof(cachedir), "%s/cached_kernels_for_%s", dtcache, devname);
     if (g_mkdir_with_parents(cachedir, 0700) == -1)
     {
       dt_print(DT_DEBUG_OPENCL, "[opencl_init] failed to create directory `%s'!\n", cachedir);
       goto finally;
     }
 
-    char dtpath[DT_MAX_PATH_LEN];
-    char filename[DT_MAX_PATH_LEN];
-    char confentry[DT_MAX_PATH_LEN];
-    char binname[DT_MAX_PATH_LEN];
-    dt_loc_get_datadir(dtpath, DT_MAX_PATH_LEN);
-    snprintf(filename, DT_MAX_PATH_LEN, "%s/kernels/programs.conf", dtpath);
-    char kerneldir[DT_MAX_PATH_LEN];
-    snprintf(kerneldir, DT_MAX_PATH_LEN, "%s/kernels", dtpath);
+    char dtpath[PATH_MAX];
+    char filename[PATH_MAX];
+    char confentry[PATH_MAX];
+    char binname[PATH_MAX];
+    dt_loc_get_datadir(dtpath, sizeof(dtpath));
+    snprintf(filename, sizeof(filename), "%s/kernels/programs.conf", dtpath);
+    char kerneldir[PATH_MAX];
+    snprintf(kerneldir, sizeof(kerneldir), "%s/kernels", dtpath);
 
 
     // now load all darktable cl kernels.
@@ -344,10 +343,13 @@ void dt_opencl_init(dt_opencl_t *cl, const int argc, char *argv[])
       while(!feof(f))
       {
         int prog = -1;
-        int rd = fscanf(f, "%[^\n]\n", confentry);
+        gchar *confline_pattern = g_strdup_printf("%%%zu[^\n]\n", sizeof(confentry)-1);
+        int rd = fscanf(f, confline_pattern, confentry);
+        g_free(confline_pattern);
         if(rd != 1) continue;
         // remove comments:
-        for(size_t pos=0; pos<strlen(confentry); pos++)
+        size_t end = strlen(confentry);
+        for(size_t pos=0; pos<end; pos++)
           if(confentry[pos] == '#')
           {
             confentry[pos] = '\0';
@@ -378,8 +380,8 @@ void dt_opencl_init(dt_opencl_t *cl, const int argc, char *argv[])
           continue;
         }
 
-        snprintf(filename, DT_MAX_PATH_LEN, "%s/kernels/%s", dtpath, programname);
-        snprintf(binname, DT_MAX_PATH_LEN, "%s/%s.bin", cachedir, programname);
+        snprintf(filename, sizeof(filename), "%s/kernels/%s", dtpath, programname);
+        snprintf(binname, sizeof(binname), "%s/%s.bin", cachedir, programname);
         dt_print(DT_DEBUG_OPENCL, "[opencl_init] compiling program `%s' ..\n", programname);
         int loaded_cached;
         char md5sum[33];
@@ -488,8 +490,8 @@ void dt_opencl_cleanup(dt_opencl_t *cl)
         }
         dt_opencl_events_reset(i);
 
-        if(cl->dev[i].eventlist) free(cl->dev[i].eventlist);
-        if(cl->dev[i].eventtags) free(cl->dev[i].eventtags);
+        free(cl->dev[i].eventlist);
+        free(cl->dev[i].eventtags);
       }
     }
     free(cl->dev_priority_image);
@@ -576,7 +578,7 @@ static int _device_by_cname(const char *name)
   char tmp[2048] = { 0 };
   int result = -1;
 
-  _ascii_str_canonical(name, tmp, 2048);
+  _ascii_str_canonical(name, tmp, sizeof(tmp));
 
   for(int i=0; i < devs; i++)
   {
@@ -744,7 +746,7 @@ static void dt_opencl_priorities_parse(dt_opencl_t *cl, const char *configstr)
   int len = 0;
 
   // first get rid of all invalid characters
-  while(*configstr != '\0' && len < 2048)
+  while(*configstr != '\0' && len < sizeof(tmp)-1)
   {
     int n = strcspn(configstr, "/!,*0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ");
     configstr += n;
@@ -900,14 +902,14 @@ int dt_opencl_load_program(const int dev, const int prog, const char *filename, 
 
   file[filesize] = '\0';
 
-  char linkedfile[1024];
+  char linkedfile[PATH_MAX];
   ssize_t linkedfile_len = 0;
 
   FILE *cached = fopen_stat(binname, &cachedstat);
   if (cached)
   {
 
-    if ((linkedfile_len=readlink(binname, linkedfile, 1023)) > 0)
+    if ((linkedfile_len=readlink(binname, linkedfile, sizeof(linkedfile)-1)) > 0)
     {
       linkedfile[linkedfile_len] = '\0';
 
@@ -917,7 +919,7 @@ int dt_opencl_load_program(const int dev, const int prog, const char *filename, 
         size_t cached_filesize = cachedstat.st_size;
 
         unsigned char *cached_content = (unsigned char *)malloc(cached_filesize+1);
-        int rd = fread(cached_content, sizeof(char), cached_filesize, cached);
+        size_t rd = fread(cached_content, sizeof(char), cached_filesize, cached);
         if (rd != cached_filesize)
         {
           dt_print(DT_DEBUG_OPENCL, "[opencl_load_program] could not read all of file `%s'!\n", binname);
@@ -948,7 +950,7 @@ int dt_opencl_load_program(const int dev, const int prog, const char *filename, 
     // try to remove cached binary & link
     if (linkedfile_len>0)
     {
-      char link_dest[1024];
+      char link_dest[PATH_MAX];
       snprintf(link_dest, sizeof(link_dest), "%s/%s", cachedir, linkedfile);
       unlink(link_dest);
     }
@@ -1057,7 +1059,7 @@ int dt_opencl_build_program(const int dev, const int prog, const char* binname, 
         if (cl->dev[dev].devid == devices[i])
         {
           // save opencl compiled binary as md5sum-named file
-          char link_dest[1024];
+          char link_dest[PATH_MAX];
           snprintf(link_dest, sizeof(link_dest), "%s/%s", cachedir, md5sum);
           FILE* f = fopen(link_dest, "w+");
           if(!f) goto ret;
@@ -1066,10 +1068,10 @@ int dt_opencl_build_program(const int dev, const int prog, const char* binname, 
           fclose(f);
 
           // create link (e.g. basic.cl.bin -> f1430102c53867c162bb60af6c163328)
-          char cwd[1024];
+          char cwd[PATH_MAX];
           if (!getcwd(cwd, sizeof(cwd))) goto ret;
           if (chdir(cachedir)!=0) goto ret;
-          char dup[1024];
+          char dup[PATH_MAX];
           g_strlcpy(dup, binname, sizeof(dup));
           char* bname = basename(dup);
           if (symlink(md5sum, bname)!=0) goto ret;
@@ -1521,7 +1523,7 @@ int dt_opencl_image_fits_device(const int devid, const size_t width, const size_
   /* first time run */
   if(headroom < 0.0f)
   {
-    headroom = (float)dt_conf_get_int("opencl_memory_headroom")*1024*1024;
+    headroom = dt_conf_get_float("opencl_memory_headroom")*1024.0f*1024.0f;
 
     /* don't let the user play games with us */
     headroom = fmin((float)darktable.opencl->dev[devid].max_global_mem, fmax(headroom, 0.0f));
@@ -1635,8 +1637,8 @@ cl_event *dt_opencl_events_get_slot(const int devid, const char *tag)
   if (*eventlist == NULL)
   {
     int newevents = DT_OPENCL_EVENTLISTSIZE;
-    *eventlist = malloc(newevents*sizeof(cl_event));
-    *eventtags = malloc(newevents*sizeof(dt_opencl_eventtag_t));
+    *eventlist = calloc(newevents, sizeof(cl_event));
+    *eventtags = calloc(newevents, sizeof(dt_opencl_eventtag_t));
     if (!*eventlist || !*eventtags)
     {
       free(*eventlist);
@@ -1645,7 +1647,6 @@ cl_event *dt_opencl_events_get_slot(const int devid, const char *tag)
       *eventtags=NULL;
       return NULL;
     }
-    memset(*eventtags, 0, newevents*sizeof(dt_opencl_eventtag_t));
     *maxevents = newevents;
   }
 
@@ -1676,15 +1677,14 @@ cl_event *dt_opencl_events_get_slot(const int devid, const char *tag)
   if (*numevents == *maxevents)
   {
     int newevents = *maxevents + DT_OPENCL_EVENTLISTSIZE;
-    cl_event *neweventlist = malloc(newevents*sizeof(cl_event));
-    dt_opencl_eventtag_t *neweventtags = malloc(newevents*sizeof(dt_opencl_eventtag_t));
+    cl_event *neweventlist = calloc(newevents, sizeof(cl_event));
+    dt_opencl_eventtag_t *neweventtags = calloc(newevents, sizeof(dt_opencl_eventtag_t));
     if (!neweventlist || !neweventtags)
     {
       free(neweventlist);
       free(neweventtags);
       return NULL;
     }
-    memset(neweventtags, 0, newevents*sizeof(dt_opencl_eventtag_t));
     memcpy(neweventlist, *eventlist, *maxevents*sizeof(cl_event));
     memcpy(neweventtags, *eventtags, *maxevents*sizeof(dt_opencl_eventtag_t));
     free(*eventlist);

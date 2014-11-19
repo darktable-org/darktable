@@ -23,6 +23,8 @@
 #include <math.h>
 #include <assert.h>
 #include <string.h>
+#include <stdint.h>
+
 #include "develop/develop.h"
 #include "develop/imageop.h"
 #include "control/control.h"
@@ -33,7 +35,7 @@
 #include "common/opencl.h"
 #include "libs/colorpicker.h"
 
-#define DT_GUI_CURVE_EDITOR_INSET 1
+#define DT_GUI_CURVE_EDITOR_INSET DT_PIXEL_APPLY_DPI(1)
 #define DT_GUI_CURVE_INFL .3f
 
 #define DT_IOP_TONECURVE_RES 64
@@ -317,43 +319,60 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
       out[0] = (L_in < xm_L) ? d->table[ch_L][CLAMP((int)(L_in*0xfffful), 0, 0xffff)] :
                 dt_iop_eval_exp(d->unbounded_coeffs_L, L_in);
 
-      if (autoscale_ab == 0 && unbound_ab == 0)
+      if(autoscale_ab == 0)
       {
-        // old style handling of a/b curves: only lut lookup with clamping
         const float a_in = (in[1] + 128.0f) / 256.0f;
         const float b_in = (in[2] + 128.0f) / 256.0f;
-        out[1] = d->table[ch_a][CLAMP((int)(a_in*0xfffful), 0, 0xffff)];
-        out[2] = d->table[ch_b][CLAMP((int)(b_in*0xfffful), 0, 0xffff)];
-      }
-      if (autoscale_ab == 0 && unbound_ab == 1)
-      {
-        // new style handling of a/b curves: lut lookup with two-sided extrapolation;
-        // mind the x-axis reversal for the left-handed side
-        const float a_in = (in[1] + 128.0f) / 256.0f;
-        const float b_in = (in[2] + 128.0f) / 256.0f;
-        out[1] = (a_in > xm_ar) ? dt_iop_eval_exp(d->unbounded_coeffs_ab, a_in) : 
-                ((a_in < xm_al) ? dt_iop_eval_exp(d->unbounded_coeffs_ab+3, 1.0f - a_in) :
-                 d->table[ch_a][CLAMP((int)(a_in*0xfffful), 0, 0xffff)]);
-        out[2] = (b_in > xm_br) ? dt_iop_eval_exp(d->unbounded_coeffs_ab+6, b_in) : 
-                ((b_in < xm_bl) ? dt_iop_eval_exp(d->unbounded_coeffs_ab+9, 1.0f - b_in) :
-                 d->table[ch_b][CLAMP((int)(b_in*0xfffful), 0, 0xffff)]);
-      }
-      // in Lab: correct compressed Luminance for saturation:
-      else if(L_in > 0.01f)
-      {
-        out[1] = in[1] * out[0]/in[0];
-        out[2] = in[2] * out[0]/in[0];
+
+        if(unbound_ab == 0)
+        {
+          // old style handling of a/b curves: only lut lookup with clamping
+          out[1] = d->table[ch_a][CLAMP((int)(a_in*0xfffful), 0, 0xffff)];
+          out[2] = d->table[ch_b][CLAMP((int)(b_in*0xfffful), 0, 0xffff)];
+        }
+        else
+        {
+          // new style handling of a/b curves: lut lookup with two-sided extrapolation;
+          // mind the x-axis reversal for the left-handed side
+          out[1] = (a_in > xm_ar) ? dt_iop_eval_exp(d->unbounded_coeffs_ab, a_in) : 
+                  ((a_in < xm_al) ? dt_iop_eval_exp(d->unbounded_coeffs_ab+3, 1.0f - a_in) :
+                   d->table[ch_a][CLAMP((int)(a_in*0xfffful), 0, 0xffff)]);
+          out[2] = (b_in > xm_br) ? dt_iop_eval_exp(d->unbounded_coeffs_ab+6, b_in) : 
+                  ((b_in < xm_bl) ? dt_iop_eval_exp(d->unbounded_coeffs_ab+9, 1.0f - b_in) :
+                   d->table[ch_b][CLAMP((int)(b_in*0xfffful), 0, 0xffff)]);
+        }
       }
       else
       {
-        out[1] = in[1] * low_approximation;
-        out[2] = in[2] * low_approximation;
+        // in Lab: correct compressed Luminance for saturation:
+        if(L_in > 0.01f)
+        {
+          out[1] = in[1] * out[0]/in[0];
+          out[2] = in[2] * out[0]/in[0];
+        }
+        else
+        {
+          out[1] = in[1] * low_approximation;
+          out[2] = in[2] * low_approximation;
+        }
       }
 
       out[3] = in[3];
     }
   }
 }
+
+static const struct
+{
+  const char* name;
+  struct dt_iop_tonecurve_params_t preset;
+}
+presets_from_basecurve[] =
+{
+    // This is where you can paste the line provided by dt-curve-tool
+    // Here is a valid example for you to compare
+    //{"NIKON D7000 from source", {{{{0.000000, 0.006116}, {0.000296, 0.006028}, {0.002370, 0.007261}, {0.008000, 0.007445}, {0.018963, 0.010777}, {0.037037, 0.020175}, {0.064000, 0.035687}, {0.101630, 0.067279}, {0.151704, 0.134889}, {0.216000, 0.246140}, {0.296296, 0.405786}, {0.394370, 0.576875}, {0.512000, 0.724585}, {0.650963, 0.851117}, {0.813037, 0.957309}, {1.000000, 0.986196}, },{{0.000000, 0.000000}, {0.062500, 0.062500}, {0.125000, 0.125000}, {0.187500, 0.187500}, {0.250000, 0.250000}, {0.312500, 0.312500}, {0.375000, 0.375000}, {0.437500, 0.437500}, {0.500000, 0.500000}, {0.562500, 0.562500}, {0.625000, 0.625000}, {0.687500, 0.687500}, {0.750000, 0.750000}, {0.812500, 0.812500}, {0.875000, 0.875000}, {0.937500, 0.937500}, },{{0.000000, 0.000000}, {0.062500, 0.062500}, {0.125000, 0.125000}, {0.187500, 0.187500}, {0.250000, 0.250000}, {0.312500, 0.312500}, {0.375000, 0.375000}, {0.437500, 0.437500}, {0.500000, 0.500000}, {0.562500, 0.562500}, {0.625000, 0.625000}, {0.687500, 0.687500}, {0.750000, 0.750000}, {0.812500, 0.812500}, {0.875000, 0.875000}, {0.937500, 0.937500}, },}, {16, 16, 16}, {2, 2, 2}, 0, 0, 0}},
+};
 
 void init_presets (dt_iop_module_so_t *self)
 {
@@ -417,6 +436,12 @@ void init_presets (dt_iop_module_so_t *self)
   for(int k=1; k<5; k++) p.tonecurve[ch_L][k].x = powf(p.tonecurve[ch_L][k].x, 2.2f);
   for(int k=1; k<5; k++) p.tonecurve[ch_L][k].y = powf(p.tonecurve[ch_L][k].y, 2.2f);
   dt_gui_presets_add_generic(_("high contrast"), self->op, self->version(), &p, sizeof(p), 1);
+
+  //uncomment this once presets_from_basecurve will contain something!
+//   for (int k=0; k<sizeof(presets_from_basecurve)/sizeof(presets_from_basecurve[0]); k++)
+//   {
+//     dt_gui_presets_add_generic(presets_from_basecurve[k].name, self->op, self->version(), &presets_from_basecurve[k].preset, sizeof(p), 1);
+//   }
 }
 
 void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
@@ -527,6 +552,7 @@ void cleanup_pipe (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_de
   dt_iop_tonecurve_data_t *d = (dt_iop_tonecurve_data_t *)(piece->data);
   for (int ch=0; ch<ch_max; ch++) dt_draw_curve_destroy(d->curve[ch]);
   free(piece->data);
+  piece->data = NULL;
 }
 
 void gui_update(struct dt_iop_module_t *self)
@@ -544,8 +570,8 @@ void init(dt_iop_module_t *module)
   module->params = malloc(sizeof(dt_iop_tonecurve_params_t));
   module->default_params = malloc(sizeof(dt_iop_tonecurve_params_t));
   module->default_enabled = 0;
-  module->request_histogram = 1;
-  module->priority = 631; // module order created by iop_dependencies.py, do not edit!
+  module->request_histogram |= (DT_REQUEST_ON);
+  module->priority = 666; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_tonecurve_params_t);
   module->gui_data = NULL;
   dt_iop_tonecurve_params_t tmp = (dt_iop_tonecurve_params_t)
@@ -635,10 +661,10 @@ pick_toggled(GtkToggleButton *togglebutton, dt_iop_module_t *self)
 {
   if(darktable.gui->reset) return;
 
-  self->request_color_pick = (gtk_toggle_button_get_active(togglebutton) ? 1 : 0);
+  self->request_color_pick = (gtk_toggle_button_get_active(togglebutton) ? DT_REQUEST_COLORPICK_MODULE : DT_REQUEST_COLORPICK_OFF);
 
   /* set the area sample size */
-  if (self->request_color_pick)
+  if (self->request_color_pick != DT_REQUEST_COLORPICK_OFF)
   {
     dt_lib_colorpicker_set_point(darktable.lib, 0.5, 0.5);
     dt_dev_reprocess_all(self->dev);
@@ -726,11 +752,9 @@ void gui_init(struct dt_iop_module_t *self)
                    G_CALLBACK (tab_switch), self);
 
   c->area = GTK_DRAWING_AREA(gtk_drawing_area_new());
-  //GtkWidget *asp = gtk_aspect_frame_new(NULL, 0.5, 0.5, 1.0, FALSE);//TRUE);
   gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(c->area), TRUE, TRUE, 0);
-  // gtk_box_pack_start(GTK_BOX(vbox), asp, TRUE, TRUE, 0);
-  // gtk_container_add(GTK_CONTAINER(asp), GTK_WIDGET(c->area));
-  gtk_widget_set_size_request(GTK_WIDGET(c->area), 0, 258);
+  const int panel_width = dt_conf_get_int("panel_width") * 0.95;
+  gtk_widget_set_size_request(GTK_WIDGET(c->area), 0, panel_width);
   g_object_set (GTK_OBJECT(c->area), "tooltip-text", _("double click to reset curve"), (char *)NULL);
 
   gtk_widget_add_events(GTK_WIDGET(c->area), GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK | GDK_LEAVE_NOTIFY_MASK);
@@ -753,8 +777,8 @@ void gui_init(struct dt_iop_module_t *self)
 
   c->autoscale_ab = dt_bauhaus_combobox_new(self);
   dt_bauhaus_widget_set_label(c->autoscale_ab, NULL, _("scale chroma"));
-  dt_bauhaus_combobox_add(c->autoscale_ab, _("auto"));
-  dt_bauhaus_combobox_add(c->autoscale_ab, _("manual"));
+  dt_bauhaus_combobox_add(c->autoscale_ab, _("automatic"));
+  dt_bauhaus_combobox_add(c->autoscale_ab, C_("scale", "manual"));
   gtk_box_pack_start(GTK_BOX(self->widget), c->autoscale_ab, TRUE, TRUE, 0);
   g_object_set (GTK_OBJECT(c->autoscale_ab), "tooltip-text", _("if set to auto, a and b curves have no effect and are not displayed. chroma values (a and b) of each pixel are then adjusted based on L curve data."), (char *)NULL);
   g_signal_connect(G_OBJECT(c->autoscale_ab), "value-changed", G_CALLBACK(autoscale_ab_callback), self);
@@ -879,7 +903,7 @@ static gboolean dt_iop_tonecurve_expose(GtkWidget *widget, GdkEventExpose *event
     cairo_fill(cr);
   }
 #else
-  cairo_set_line_width(cr, 1.0);
+  cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(1.0));
   cairo_set_source_rgb (cr, .1, .1, .1);
   cairo_rectangle(cr, 0, 0, width, height);
   cairo_stroke(cr);
@@ -907,7 +931,7 @@ static gboolean dt_iop_tonecurve_expose(GtkWidget *widget, GdkEventExpose *event
   }
 
   // draw grid
-  cairo_set_line_width(cr, .4);
+  cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(.4));
   cairo_set_source_rgb (cr, .1, .1, .1);
   dt_draw_grid(cr, 4, 0, 0, width, height);
 
@@ -915,24 +939,25 @@ static gboolean dt_iop_tonecurve_expose(GtkWidget *widget, GdkEventExpose *event
   if (autoscale_ab && ch != ch_L) goto finally;
 
   // draw nodes positions
-  cairo_set_line_width(cr, 1.);
+  cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(1.));
   cairo_set_source_rgb(cr, 0.6, 0.6, 0.6);
   cairo_translate(cr, 0, height);
 
   for(int k=0; k<nodes; k++)
   {
-    cairo_arc(cr, tonecurve[k].x*width, -tonecurve[k].y*height, 3, 0, 2.*M_PI);
+    cairo_arc(cr, tonecurve[k].x*width, -tonecurve[k].y*height, DT_PIXEL_APPLY_DPI(3), 0, 2.*M_PI);
     cairo_stroke(cr);
   }
 
   // draw selected cursor
-  cairo_set_line_width(cr, 1.);
+  cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(1.));
 
   // draw histogram in background
   // only if module is enabled
   if (self->enabled)
   {
-    float *hist, hist_max;
+    uint32_t *hist;
+    float hist_max;
     float *raw_mean, *raw_min, *raw_max;
     float *raw_mean_output;
     float picker_mean[3], picker_min[3], picker_max[3];
@@ -945,16 +970,16 @@ static gboolean dt_iop_tonecurve_expose(GtkWidget *widget, GdkEventExpose *event
 
     hist = self->histogram;
     hist_max = dev->histogram_type == DT_DEV_HISTOGRAM_LINEAR?self->histogram_max[ch]:logf(1.0 + self->histogram_max[ch]);
-    if(hist && hist_max > 0)
+    if(hist && hist_max > 0.0f)
     {
       cairo_save(cr);
-      cairo_scale(cr, width/63.0, -(height-5)/(float)hist_max);
+      cairo_scale(cr, width/63.0, -(height-DT_PIXEL_APPLY_DPI(5))/hist_max);
       cairo_set_source_rgba(cr, .2, .2, .2, 0.5);
       dt_draw_histogram_8(cr, hist, ch, dev->histogram_type == DT_DEV_HISTOGRAM_WAVEFORM?DT_DEV_HISTOGRAM_LOGARITHMIC:dev->histogram_type); // TODO: make draw handle waveform histograms
       cairo_restore(cr);
     }
 
-    if(self->request_color_pick)
+    if(self->request_color_pick != DT_REQUEST_COLORPICK_OFF)
     {
       // the global live samples ...
       GSList *samples = darktable.lib->proxy.colorpicker.live_samples;
@@ -997,7 +1022,7 @@ static gboolean dt_iop_tonecurve_expose(GtkWidget *widget, GdkEventExpose *event
 
         cairo_set_source_rgb(cr, 0.1, 0.1, 0.1);
         cairo_select_font_face (cr, "sans-serif", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_BOLD);
-        cairo_set_font_size (cr, 0.06*height);
+        cairo_set_font_size (cr, DT_PIXEL_APPLY_DPI(0.06)*height);
         cairo_move_to (cr, 0.02f*width, -0.94*height);
         cairo_show_text(cr, text);
         cairo_stroke(cr);
@@ -1008,12 +1033,12 @@ static gboolean dt_iop_tonecurve_expose(GtkWidget *widget, GdkEventExpose *event
   if(c->selected >= 0)
   {
     cairo_set_source_rgb(cr, .9, .9, .9);
-    cairo_arc(cr, tonecurve[c->selected].x*width, -tonecurve[c->selected].y*height, 4, 0, 2.*M_PI);
+    cairo_arc(cr, tonecurve[c->selected].x*width, -tonecurve[c->selected].y*height, DT_PIXEL_APPLY_DPI(4), 0, 2.*M_PI);
     cairo_stroke(cr);
   }
 
   // draw curve
-  cairo_set_line_width(cr, 2.);
+  cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(2.));
   cairo_set_source_rgb(cr, .9, .9, .9);
   // cairo_set_line_cap  (cr, CAIRO_LINE_CAP_SQUARE);
   cairo_move_to(cr, 0, -height*c->draw_ys[0]);

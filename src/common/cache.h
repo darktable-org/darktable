@@ -45,7 +45,7 @@ typedef struct dt_cache_t
   // allocate should return != 0 if a write lock on alloc is needed.
   // this might be useful for cases where the allocation takes a lot of time and you don't want
   // the hashtable spinlocks to block and wait for it.
-  int32_t (*allocate)(void *userdata, const uint32_t key, int32_t *cost, void **payload);
+  int32_t (*allocate)(void *userdata, const uint32_t key, size_t *cost, void **payload);
   void    (*cleanup) (void *userdata, const uint32_t key, void *payload);
   void *allocate_data;
   void *cleanup_data;
@@ -64,7 +64,7 @@ void dt_cache_static_allocation(dt_cache_t *cache, uint8_t *buf, const uint32_t 
 static inline void
 dt_cache_set_allocate_callback(
   dt_cache_t *cache,
-  int32_t (*allocate)(void*, const uint32_t, int32_t*, void**),
+  int32_t (*allocate)(void*, const uint32_t, size_t*, void**),
   void *allocate_data)
 {
   cache->allocate = allocate;
@@ -115,7 +115,7 @@ void dt_cache_print(dt_cache_t *cache);
 void dt_cache_print_locked(dt_cache_t *cache);
 
 // replace data pointer, cleanup has to be done by the user.
-void dt_cache_realloc(dt_cache_t *cache, const uint32_t key, const int32_t cost, void *data);
+void dt_cache_realloc(dt_cache_t *cache, const uint32_t key, const size_t cost, void *data);
 
 // iterate over all currently contained data blocks.
 // not thread safe! only use this for init/cleanup!

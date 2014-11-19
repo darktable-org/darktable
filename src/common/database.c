@@ -35,7 +35,7 @@
 #include <errno.h>
 
 // whenever _create_schema() gets changed you HAVE to bump this version and add an update path to _upgrade_schema_step()!
-#define CURRENT_DATABASE_VERSION 5
+#define CURRENT_DATABASE_VERSION 7
 
 typedef struct dt_database_t
 {
@@ -477,7 +477,73 @@ static int _upgrade_schema_step(dt_database_t *db, int version)
     sqlite3_exec(db->handle, "COMMIT", NULL, NULL, NULL);
     new_version = 5;
   }
-// maybe in the future, see commented out code elsewhere
+  else if(version == 5)
+  {
+    sqlite3_exec(db->handle, "BEGIN TRANSACTION", NULL, NULL, NULL);
+
+    if(sqlite3_exec(db->handle,
+                      "CREATE INDEX images_filename_index ON images (filename)", NULL, NULL, NULL) != SQLITE_OK)
+    {
+      fprintf(stderr, "[init] can't create index on image filename\n");
+      fprintf(stderr, "[init]   %s\n", sqlite3_errmsg(db->handle));
+      sqlite3_exec(db->handle, "ROLLBACK TRANSACTION", NULL, NULL, NULL);
+      return version;
+    }
+
+    sqlite3_exec(db->handle, "COMMIT", NULL, NULL, NULL);
+    new_version = 6;
+  }
+  else if(version == 6)
+  {
+    // some ancient tables can have the styleid column of style_items be called style_id. fix that.
+    sqlite3_exec(db->handle, "BEGIN TRANSACTION", NULL, NULL, NULL);
+
+    if(sqlite3_exec(db->handle, "SELECT style_id FROM style_items", NULL, NULL, NULL) == SQLITE_OK)
+    {
+      if(sqlite3_exec(db->handle, "ALTER TABLE style_items RENAME TO tmp_style_items", NULL, NULL, NULL) != SQLITE_OK)
+      {
+        fprintf(stderr, "[init] can't rename table style_items\n");
+        fprintf(stderr, "[init]   %s\n", sqlite3_errmsg(db->handle));
+        sqlite3_exec(db->handle, "ROLLBACK TRANSACTION", NULL, NULL, NULL);
+        return version;
+      }
+
+      if(sqlite3_exec(db->handle, "CREATE TABLE style_items (styleid INTEGER, num INTEGER, module INTEGER, "
+                                  "operation VARCHAR(256), op_params BLOB, enabled INTEGER, "
+                                  "blendop_params BLOB, blendop_version INTEGER, multi_priority INTEGER, multi_name VARCHAR(256))",
+                                  NULL, NULL, NULL) != SQLITE_OK)
+      {
+        fprintf(stderr, "[init] can't create new style_items table\n");
+        fprintf(stderr, "[init]   %s\n", sqlite3_errmsg(db->handle));
+        sqlite3_exec(db->handle, "ROLLBACK TRANSACTION", NULL, NULL, NULL);
+        return version;
+      }
+
+      if(sqlite3_exec(db->handle, "INSERT INTO style_items (styleid, num, module, operation, op_params, enabled,"
+                                  "                         blendop_params, blendop_version, multi_priority, multi_name)"
+                                  "                  SELECT style_id, num, module, operation, op_params, enabled,"
+                                  "                         blendop_params, blendop_version, multi_priority, multi_name"
+                                  "                  FROM   tmp_style_items",
+                                  NULL, NULL, NULL) != SQLITE_OK)
+      {
+        fprintf(stderr, "[init] can't populate style_items table from tmp_style_items\n");
+        fprintf(stderr, "[init]   %s\n", sqlite3_errmsg(db->handle));
+        sqlite3_exec(db->handle, "ROLLBACK TRANSACTION", NULL, NULL, NULL);
+        return version;
+      }
+
+      if(sqlite3_exec(db->handle, "DROP TABLE tmp_style_items", NULL, NULL, NULL) != SQLITE_OK)
+      {
+        fprintf(stderr, "[init] can't delete table tmp_style_items\n");
+        fprintf(stderr, "[init]   %s\n", sqlite3_errmsg(db->handle));
+        sqlite3_exec(db->handle, "ROLLBACK TRANSACTION", NULL, NULL, NULL);
+        return version;
+      }
+    }
+
+    sqlite3_exec(db->handle, "COMMIT", NULL, NULL, NULL);
+    new_version = 7;
+  }// maybe in the future, see commented out code elsewhere
 //   else if(version == XXX)
 //   {
 //     sqlite3_exec(db->handle, "ALTER TABLE film_rolls ADD COLUMN external_drive VARCHAR(1024)", NULL, NULL, NULL);
@@ -544,6 +610,8 @@ static void _create_schema(dt_database_t *db)
                         "CREATE INDEX images_group_id_index ON images (group_id)", NULL, NULL, NULL);
   DT_DEBUG_SQLITE3_EXEC(db->handle,
                         "CREATE INDEX images_film_id_index ON images (film_id)", NULL, NULL, NULL);
+  DT_DEBUG_SQLITE3_EXEC(db->handle,
+                        "CREATE INDEX images_filename_index ON images (filename)", NULL, NULL, NULL);
   ////////////////////////////// selected_images
   DT_DEBUG_SQLITE3_EXEC(db->handle,
                         "CREATE TABLE selected_images (imgid INTEGER PRIMARY KEY)", NULL, NULL, NULL);
@@ -646,21 +714,21 @@ dt_database_t *dt_database_init(char *alternative)
 
   /* lets construct the db filename  */
   gchar * dbname = NULL;
-  gchar dbfilename[DT_MAX_PATH_LEN] = {0};
-  gchar datadir[DT_MAX_PATH_LEN] = {0};
+  gchar dbfilename[PATH_MAX] = {0};
+  gchar datadir[PATH_MAX] = {0};
 
-  dt_loc_get_user_config_dir(datadir, DT_MAX_PATH_LEN);
+  dt_loc_get_user_config_dir(datadir, sizeof(datadir));
 
   if ( alternative == NULL )
   {
     dbname = dt_conf_get_string ("database");
-    if(!dbname)               snprintf(dbfilename, DT_MAX_PATH_LEN, "%s/library.db", datadir);
-    else if(dbname[0] != '/') snprintf(dbfilename, DT_MAX_PATH_LEN, "%s/%s", datadir, dbname);
-    else                      snprintf(dbfilename, DT_MAX_PATH_LEN, "%s", dbname);
+    if(!dbname)               snprintf(dbfilename, sizeof(dbfilename), "%s/library.db", datadir);
+    else if(dbname[0] != '/') snprintf(dbfilename, sizeof(dbfilename), "%s/%s", datadir, dbname);
+    else                      snprintf(dbfilename, sizeof(dbfilename), "%s", dbname);
   }
   else
   {
-    snprintf(dbfilename, DT_MAX_PATH_LEN, "%s", alternative);
+    snprintf(dbfilename, sizeof(dbfilename), "%s", alternative);
 
     GFile *galternative = g_file_new_for_path(alternative);
     dbname = g_file_get_basename (galternative);
@@ -668,8 +736,7 @@ dt_database_t *dt_database_init(char *alternative)
   }
 
   /* create database */
-  dt_database_t *db = (dt_database_t *)g_malloc(sizeof(dt_database_t));
-  memset(db,0,sizeof(dt_database_t));
+  dt_database_t *db = (dt_database_t *)g_malloc0(sizeof(dt_database_t));
   db->dbfilename = g_strdup(dbfilename);
   db->is_new_database = FALSE;
   db->lock_acquired = FALSE;
@@ -902,21 +969,21 @@ const gchar *dt_database_get_path(const struct dt_database_t *db)
 
 static void _database_migrate_to_xdg_structure()
 {
-  gchar dbfilename[DT_MAX_PATH_LEN]= {0};
+  gchar dbfilename[PATH_MAX]= {0};
   gchar *conf_db = dt_conf_get_string("database");
 
-  gchar datadir[DT_MAX_PATH_LEN] = {0};
-  dt_loc_get_datadir(datadir, DT_MAX_PATH_LEN);
+  gchar datadir[PATH_MAX] = {0};
+  dt_loc_get_datadir(datadir, sizeof(datadir));
 
   if (conf_db && conf_db[0] != '/')
   {
     char *homedir = getenv ("HOME");
-    snprintf (dbfilename,DT_MAX_PATH_LEN,"%s/%s", homedir, conf_db);
+    snprintf (dbfilename, sizeof(dbfilename), "%s/%s", homedir, conf_db);
     if (g_file_test (dbfilename, G_FILE_TEST_EXISTS))
     {
       fprintf(stderr, "[init] moving database into new XDG directory structure\n");
-      char destdbname[DT_MAX_PATH_LEN]= {0};
-      snprintf(destdbname,DT_MAX_PATH_LEN,"%s/%s",datadir,"library.db");
+      char destdbname[PATH_MAX]= {0};
+      snprintf(destdbname, sizeof(dbfilename), "%s/%s", datadir, "library.db");
       if(!g_file_test (destdbname,G_FILE_TEST_EXISTS))
       {
         rename(dbfilename,destdbname);
@@ -934,17 +1001,17 @@ static void _database_delete_mipmaps_files()
   /* This migration is intended to be run only from 0.9.x to new cache in 1.0 */
 
   // Directory
-  char cachedir[DT_MAX_PATH_LEN], mipmapfilename[DT_MAX_PATH_LEN];
+  char cachedir[PATH_MAX], mipmapfilename[PATH_MAX];
   dt_loc_get_user_cache_dir(cachedir, sizeof(cachedir));
 
-  snprintf(mipmapfilename, DT_MAX_PATH_LEN, "%s/mipmaps", cachedir);
+  snprintf(mipmapfilename, sizeof(mipmapfilename), "%s/mipmaps", cachedir);
 
   if(access(mipmapfilename, F_OK) != -1)
   {
     fprintf(stderr, "[mipmap_cache] dropping old version file: %s\n", mipmapfilename);
     unlink(mipmapfilename);
 
-    snprintf(mipmapfilename, DT_MAX_PATH_LEN, "%s/mipmaps.fallback", cachedir);
+    snprintf(mipmapfilename, sizeof(mipmapfilename), "%s/mipmaps.fallback", cachedir);
 
     if(access(mipmapfilename, F_OK) != -1)
       unlink(mipmapfilename);

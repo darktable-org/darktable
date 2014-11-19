@@ -7,7 +7,7 @@
 /* 
     RawSpeed - RAW file decoder.
 
-    Copyright (C) 2009 Klaus Post
+    Copyright (C) 2009-2014 Klaus Post
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Lesser General Public
@@ -62,7 +62,8 @@ public:
   uchar8* getData();
   uchar8* getData(uint32 x, uint32 y);    // Not super fast, but safe. Don't use per pixel.
   uchar8* getDataUncropped(uint32 x, uint32 y);
-  virtual void subFrame( iRectangle2D cropped );
+  virtual void subFrame(iRectangle2D cropped );
+  virtual void clearArea(iRectangle2D area, uchar8 value = 0);
   iPoint2D getUncroppedDim();
   iPoint2D getCropOffset();
   virtual void scaleBlackWhite() = 0;
@@ -95,6 +96,19 @@ public:
   pthread_mutex_t mBadPixelMutex;   // Mutex for above, must be used if more than 1 thread is accessing vector
   uchar8 *mBadPixelMap;
   uint32 mBadPixelMapPitch;
+  bool mDitherScale;           // Should upscaling be done with dither to minimize banding?
+
+  // How many pixels far down the left edge and far up the right edge the image 
+  // corners are when the image is rotated 45 degrees in Fuji rotated sensors.
+  uint32 fujiRotationPos;
+
+  // Aspect ratio of the pixels, usually 1 but some cameras need scaling
+  // <1 means the image needs to be stretched vertically, (0.5 means 2x)
+  // >1 means the image needs to be stretched horizontally (2 mean 2x)
+  double pixelAspectRatio;
+
+  // If the image already has WB corrected (used for Nikon sNEF files)
+  bool preAppliedWB;
 
 protected:
   RawImageType dataType;
@@ -166,7 +180,7 @@ inline RawImage RawImage::create(RawImageType type)  {
     case TYPE_FLOAT32:
       return new RawImageDataFloat();
     default:
-      printf("RawImage::create: Unknown Image type!\n");
+      writeLog(DEBUG_PRIO_ERROR, "RawImage::create: Unknown Image type!\n");
   }
   return NULL; 
 }
@@ -177,7 +191,7 @@ inline RawImage RawImage::create(iPoint2D dim, RawImageType type, uint32 compone
     case TYPE_USHORT16:
       return new RawImageDataU16(dim, componentsPerPixel);
     default:
-      printf("RawImage::create: Unknown Image type!\n");
+      writeLog(DEBUG_PRIO_ERROR, "RawImage::create: Unknown Image type!\n");
   }
   return NULL; 
 }

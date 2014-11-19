@@ -32,6 +32,8 @@
 #include "common/imageio_j2k.h"
 #endif
 #include "common/imageio_jpeg.h"
+#include "common/imageio_tiff.h"
+#include "common/imageio_png.h"
 #include "external/adobe_coeff.c"
 #include <xmmintrin.h>
 #include <stdlib.h>
@@ -39,8 +41,7 @@
 #include <assert.h>
 #include <string.h>
 
-
-DT_MODULE_INTROSPECTION(2, dt_iop_colorin_params_t)
+DT_MODULE_INTROSPECTION(3, dt_iop_colorin_params_t)
 
 static void update_profile_list(dt_iop_module_t *self);
 
@@ -49,23 +50,17 @@ typedef enum dt_iop_color_normalize_t
   DT_NORMALIZE_OFF,
   DT_NORMALIZE_SRGB,
   DT_NORMALIZE_ADOBE_RGB,
-  DT_NORMALIZE_LINEAR_RGB,
-  DT_NORMALIZE_BETA_RGB
+  DT_NORMALIZE_LINEAR_REC709_RGB,
+  DT_NORMALIZE_LINEAR_REC2020_RGB
 }
 dt_iop_color_normalize_t;
-
-typedef struct dt_iop_colorin_params1_t
-{
-  char iccprofile[DT_IOP_COLOR_ICC_LEN];
-  dt_iop_color_intent_t intent;
-}
-dt_iop_colorin_params1_t;
 
 typedef struct dt_iop_colorin_params_t
 {
   char iccprofile[DT_IOP_COLOR_ICC_LEN];
   dt_iop_color_intent_t intent;
   int normalize;
+  int blue_mapping;
 }
 dt_iop_colorin_params_t;
 
@@ -97,6 +92,7 @@ typedef struct dt_iop_colorin_data_t
   float nmatrix[9];
   float lmatrix[9];
   float unbounded_coeffs[3][3];       // approximation for extrapolation of shaper curves
+  int blue_mapping;
 }
 dt_iop_colorin_data_t;
 
@@ -122,14 +118,41 @@ flags ()
 int
 legacy_params (dt_iop_module_t *self, const void *const old_params, const int old_version, void *new_params, const int new_version)
 {
-  if (old_version == 1 && new_version == 2)
+  if (old_version == 1 && new_version == 3)
   {
-    const dt_iop_colorin_params1_t *old = old_params;
-    dt_iop_colorin_params_t *new = new_params;
+    typedef struct dt_iop_colorin_params_v1_t
+    {
+      char iccprofile[DT_IOP_COLOR_ICC_LEN];
+      dt_iop_color_intent_t intent;
+    }
+    dt_iop_colorin_params_v1_t;
+
+    const dt_iop_colorin_params_v1_t *old = (dt_iop_colorin_params_v1_t *)old_params;
+    dt_iop_colorin_params_t *new = (dt_iop_colorin_params_t *)new_params;
 
     g_strlcpy(new->iccprofile, old->iccprofile, DT_IOP_COLOR_ICC_LEN);
     new->intent = old->intent;
     new->normalize = 0;
+    new->blue_mapping = 1;
+    return 0;
+  }
+  if (old_version == 2 && new_version == 3)
+  {
+    typedef struct dt_iop_colorin_params_v2_t
+    {
+      char iccprofile[DT_IOP_COLOR_ICC_LEN];
+      dt_iop_color_intent_t intent;
+      int normalize;
+    }
+    dt_iop_colorin_params_v2_t;
+
+    const dt_iop_colorin_params_v2_t *old = (dt_iop_colorin_params_v2_t *)old_params;
+    dt_iop_colorin_params_t *new = (dt_iop_colorin_params_t *)new_params;
+
+    g_strlcpy(new->iccprofile, old->iccprofile, DT_IOP_COLOR_ICC_LEN);
+    new->intent = old->intent;
+    new->normalize = old->normalize;
+    new->blue_mapping = 1;
     return 0;
   }
   return 1;
@@ -249,7 +272,8 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
   }
 
   cl_int err = -999;
-  const int map_blues = piece->pipe->image.flags & DT_IMAGE_RAW;
+  const int blue_mapping = d->blue_mapping &&
+                           piece->pipe->image.flags & DT_IMAGE_RAW;
   const int devid = piece->pipe->devid;
   const int width = roi_in->width;
   const int height = roi_in->height;
@@ -276,7 +300,7 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
   dt_opencl_set_kernel_arg(devid, kernel, 6, sizeof(cl_mem), (void *)&dev_r);
   dt_opencl_set_kernel_arg(devid, kernel, 7, sizeof(cl_mem), (void *)&dev_g);
   dt_opencl_set_kernel_arg(devid, kernel, 8, sizeof(cl_mem), (void *)&dev_b);
-  dt_opencl_set_kernel_arg(devid, kernel, 9, sizeof(cl_int), (void *)&map_blues);
+  dt_opencl_set_kernel_arg(devid, kernel, 9, sizeof(cl_int), (void *)&blue_mapping);
   dt_opencl_set_kernel_arg(devid, kernel, 10, sizeof(cl_mem), (void *)&dev_coeffs);
   err = dt_opencl_enqueue_kernel_2d(devid, kernel, sizes);
   if(err != CL_SUCCESS) goto error;
@@ -330,21 +354,23 @@ dt_XYZ_to_Lab_SSE(const __m128 XYZ)
   return _mm_mul_ps(coef,_mm_sub_ps(_mm_shuffle_ps(f,f,_MM_SHUFFLE(3,1,0,1)),_mm_shuffle_ps(f,f,_MM_SHUFFLE(3,2,1,3))));
 }
 
-void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, void *o, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
+void
+process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoid, void *ovoid, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
 {
   const dt_iop_colorin_data_t *const d = (dt_iop_colorin_data_t *)piece->data;
-  const float *const cmat = d->cmatrix;
-  const float *const nmat = d->nmatrix;
-  const float *const lmat = d->lmatrix;
-  float *in  = (float *)i;
-  float *out = (float *)o;
   const int ch = piece->colors;
-  const int map_blues = piece->pipe->image.flags & DT_IMAGE_RAW;
   const int clipping = (d->nrgb != NULL);
+  const int blue_mapping = d->blue_mapping &&
+                           piece->pipe->image.flags & DT_IMAGE_RAW;
 
-  if(!isnan(cmat[0]))
+  if(!isnan(d->cmatrix[0]))
   {
     // only color matrix. use our optimized fast path!
+    const float *const cmat = d->cmatrix;
+    const float *const nmat = d->nmatrix;
+    const float *const lmat = d->lmatrix;
+    float *in  = (float *)ivoid;
+    float *out = (float *)ovoid;
 #ifdef _OPENMP
     #pragma omp parallel for default(none) shared(roi_in,roi_out, out, in) schedule(static)
 #endif
@@ -377,23 +403,26 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
                                            : dt_iop_eval_exp(d->unbounded_coeffs[i], buf_in[i]))
                                             : buf_in[i];
 
-        const float YY = cam[0]+cam[1]+cam[2];
-        if(map_blues && YY > 0.0f)
+        if(blue_mapping)
         {
-          // manual gamut mapping. these values cause trouble when converting back from Lab to sRGB.
-          // deeply saturated blues turn into purple fringes, so dampen them before conversion.
-          // this is off for non-raw images, which don't seem to have this problem.
-          // might be caused by too loose clipping bounds during highlight clipping?
-          const float zz = cam[2]/YY;
-          // lower amount and higher bound_z make the effect smaller.
-          // the effect is weakened the darker input values are, saturating at bound_Y
-          const float bound_z = 0.5f, bound_Y = 0.8f;
-          const float amount = 0.11f;
-          if (zz > bound_z)
+          const float YY = cam[0] + cam[1] + cam[2];
+          if(YY > 0.0f)
           {
-            const float t = (zz - bound_z)/(1.0f-bound_z) * fminf(1.0f, YY/bound_Y);
-            cam[1] += t*amount;
-            cam[2] -= t*amount;
+            // manual gamut mapping. these values cause trouble when converting back from Lab to sRGB.
+            // deeply saturated blues turn into purple fringes, so dampen them before conversion.
+            // this is off for non-raw images, which don't seem to have this problem.
+            // might be caused by too loose clipping bounds during highlight clipping?
+            const float zz = cam[2] / YY;
+            // lower amount and higher bound_z make the effect smaller.
+            // the effect is weakened the darker input values are, saturating at bound_Y
+            const float bound_z = 0.5f, bound_Y = 0.8f;
+            const float amount = 0.11f;
+            if (zz > bound_z)
+            {
+              const float t = (zz - bound_z) / (1.0f - bound_z) * fminf(1.0f, YY / bound_Y);
+              cam[1] += t * amount;
+              cam[2] -= t * amount;
+            }
           }
         }
 
@@ -423,63 +452,81 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   else
   {
     // use general lcms2 fallback
-    int rowsize=roi_out->width*3;
-    float cam[rowsize];
-    float rgb[rowsize];
-    float Lab[rowsize];
-
-    // FIXME: for some unapparent reason even this breaks lcms2 :(
-#if 0//def _OPENMP
-    #pragma omp parallel for default(none) shared(roi_out, out, in, d, cam, Lab, rowsize) schedule(static)
+#ifdef _OPENMP
+    #pragma omp parallel for schedule(static) default(none) shared(ivoid, ovoid, roi_out)
 #endif
     for(int k=0; k<roi_out->height; k++)
     {
-      const size_t m = (size_t)k*roi_out->width*ch;
+      const float *in = ((float *)ivoid) + (size_t)ch*k*roi_out->width;
+      float *out = ((float *)ovoid) + (size_t)ch*k*roi_out->width;
 
-      for (int l=0; l<roi_out->width; l++)
+      void *cam = NULL;
+      const void *input = NULL;
+      if(blue_mapping)
       {
-        int ci=3*l, ii=ch*l;
-
-        cam[ci+0] = in[m+ii+0];
-        cam[ci+1] = in[m+ii+1];
-        cam[ci+2] = in[m+ii+2];
-
-        const float YY = cam[ci+0]+cam[ci+1]+cam[ci+2];
-        const float zz = cam[ci+2]/YY;
-        const float bound_z = 0.5f, bound_Y = 0.5f;
-        const float amount = 0.11f;
-        if (zz > bound_z)
+        input = cam = dt_alloc_align(16, 4 * sizeof(float) * roi_out->width);
+        float *camptr = (float *)cam;
+        for (int j = 0; j < roi_out->width; j++, in += 4, camptr += 4)
         {
-          const float t = (zz - bound_z)/(1.0f-bound_z) * fminf(1.0, YY/bound_Y);
-          cam[ci+1] += t*amount;
-          cam[ci+2] -= t*amount;
+          camptr[0] = in[0];
+          camptr[1] = in[1];
+          camptr[2] = in[2];
+
+          const float YY = camptr[0] + camptr[1] + camptr[2];
+          const float zz = camptr[2] / YY;
+          const float bound_z = 0.5f, bound_Y = 0.5f;
+          const float amount = 0.11f;
+          if (zz > bound_z)
+          {
+            const float t = (zz - bound_z) / (1.0f - bound_z) * fminf(1.0, YY / bound_Y);
+            camptr[1] += t * amount;
+            camptr[2] -= t * amount;
+          }
         }
-      }
-      // convert to (L,a/L,b/L) to be able to change L without changing saturation.
-      // lcms is not thread safe, so work on one copy for each thread :(
-      if(!d->nrgb)
-      {
-        cmsDoTransform (d->xform_cam_Lab[dt_get_thread_num()], cam, Lab, roi_out->width);
       }
       else
       {
-        cmsDoTransform (d->xform_cam_nrgb[dt_get_thread_num()], cam, rgb, roi_out->width);
-        for(int l=0; l<rowsize; l++) rgb[l] = CLAMP(rgb[l], 0.0f, 1.0f);
-        cmsDoTransform (d->xform_nrgb_Lab[dt_get_thread_num()], rgb, Lab, roi_out->width);
+        input = in;
       }
 
-      for (int l=0; l<roi_out->width; l++)
+      // convert to (L,a/L,b/L) to be able to change L without changing saturation.
+      if(!d->nrgb)
       {
-        int li=3*l, oi=ch*l;
-        out[m+oi+0] = Lab[li+0];
-        out[m+oi+1] = Lab[li+1];
-        out[m+oi+2] = Lab[li+2];
+        cmsDoTransform(d->xform_cam_Lab, input, out, roi_out->width);
+
+        if(blue_mapping)
+        {
+          dt_free_align(cam);
+          cam = NULL;
+        }
+      } else {
+        void *rgb = dt_alloc_align(16, 4*sizeof(float)*roi_out->width);
+        cmsDoTransform(d->xform_cam_nrgb, input, rgb, roi_out->width);
+
+        if(blue_mapping)
+        {
+          dt_free_align(cam);
+          cam = NULL;
+        }
+
+        float *rgbptr = (float *)rgb;
+        for (int j=0; j<roi_out->width; j++,rgbptr+=4)
+        {
+          const __m128 min = _mm_setzero_ps();
+          const __m128 max = _mm_set1_ps(1.0f);
+          const __m128 input = _mm_load_ps(rgbptr);
+          const __m128 result = _mm_max_ps(_mm_min_ps(input, max), min);
+          _mm_store_ps(rgbptr, result);
+        }
+
+        cmsDoTransform(d->xform_nrgb_Lab, rgb, out, roi_out->width);
+        dt_free_align(rgb);
       }
     }
   }
 
   if(piece->pipe->mask_display)
-    dt_iop_alpha_copy(i, o, roi_out->width, roi_out->height);
+    dt_iop_alpha_copy(ivoid, ovoid, roi_out->width, roi_out->height);
 }
 
 static void
@@ -498,14 +545,15 @@ mat3mul (float *dst, const float *const m1, const float *const m2)
 
 void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
-  dt_iop_colorin_params_t *p = (dt_iop_colorin_params_t *)p1;
+  const dt_iop_colorin_params_t *p = (dt_iop_colorin_params_t *)p1;
   dt_iop_colorin_data_t *d = (dt_iop_colorin_data_t *)piece->data;
 
-  const int num_threads = dt_get_num_threads();
   if(d->input) cmsCloseProfile(d->input);
   d->input = NULL;
   if(d->nrgb) cmsCloseProfile(d->nrgb);
   d->nrgb = NULL;
+
+  d->blue_mapping = p->blue_mapping;
 
   switch(p->normalize)
   {
@@ -515,119 +563,140 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
     case DT_NORMALIZE_ADOBE_RGB:
       d->nrgb = dt_colorspaces_create_adobergb_profile();
       break;
-    case DT_NORMALIZE_LINEAR_RGB:
-      d->nrgb = dt_colorspaces_create_linear_rgb_profile();
+    case DT_NORMALIZE_LINEAR_REC709_RGB:
+      d->nrgb = dt_colorspaces_create_linear_rec709_rgb_profile();
       break;
-    case DT_NORMALIZE_BETA_RGB:
-      d->nrgb = dt_colorspaces_create_betargb_profile();
+    case DT_NORMALIZE_LINEAR_REC2020_RGB:
+      d->nrgb = dt_colorspaces_create_linear_rec2020_rgb_profile();
       break;
     case DT_NORMALIZE_OFF:
     default:
       d->nrgb = NULL;
   }
 
-  for(int t=0; t<num_threads; t++)
+  if(d->xform_cam_Lab)
   {
-    if(d->xform_cam_Lab[t]) cmsDeleteTransform(d->xform_cam_Lab[t]);
-    if(d->xform_cam_nrgb[t]) cmsDeleteTransform(d->xform_cam_nrgb[t]);
-    if(d->xform_nrgb_Lab[t]) cmsDeleteTransform(d->xform_nrgb_Lab[t]);
-    d->xform_cam_Lab[t] = NULL;
-    d->xform_cam_nrgb[t] = NULL;
-    d->xform_nrgb_Lab[t] = NULL;
+    cmsDeleteTransform(d->xform_cam_Lab);
+    d->xform_cam_Lab = NULL;
   }
+  if(d->xform_cam_nrgb)
+  {
+    cmsDeleteTransform(d->xform_cam_nrgb);
+    d->xform_cam_nrgb = NULL;
+  }
+  if(d->xform_nrgb_Lab)
+  {
+    cmsDeleteTransform(d->xform_nrgb_Lab);
+    d->xform_nrgb_Lab = NULL;
+  }
+
   d->cmatrix[0] = d->nmatrix[0] = d->lmatrix[0] = NAN;
   d->lut[0][0] = -1.0f;
   d->lut[1][0] = -1.0f;
   d->lut[2][0] = -1.0f;
   piece->process_cl_ready = 1;
-  char datadir[DT_MAX_PATH_LEN];
-  char filename[DT_MAX_PATH_LEN];
-  dt_loc_get_datadir(datadir, DT_MAX_PATH_LEN);
+  char datadir[PATH_MAX];
+  char filename[PATH_MAX];
+  dt_loc_get_datadir(datadir, sizeof(datadir));
 
-  if(!strcmp(p->iccprofile, "Lab"))
+  char iccprofile[DT_IOP_COLOR_ICC_LEN];
+  snprintf(iccprofile, sizeof(iccprofile), "%s", p->iccprofile);
+  if(!strcmp(iccprofile, "Lab"))
   {
     piece->enabled = 0;
     return;
   }
   piece->enabled = 1;
 
-  if(!strcmp(p->iccprofile, "darktable"))
+  if(!strcmp(iccprofile, "darktable"))
   {
     char makermodel[1024];
     dt_colorspaces_get_makermodel(makermodel, sizeof(makermodel), pipe->image.exif_maker, pipe->image.exif_model);
     d->input = dt_colorspaces_create_darktable_profile(makermodel);
-    if(!d->input) snprintf(p->iccprofile, sizeof(p->iccprofile), "eprofile");
+    if(!d->input) snprintf(iccprofile, sizeof(iccprofile), "eprofile");
   }
-  if(!strcmp(p->iccprofile, "vendor"))
+  if(!strcmp(iccprofile, "vendor"))
   {
     char makermodel[1024];
     dt_colorspaces_get_makermodel(makermodel, sizeof(makermodel), pipe->image.exif_maker, pipe->image.exif_model);
     d->input = dt_colorspaces_create_vendor_profile(makermodel);
-    if(!d->input) snprintf(p->iccprofile, sizeof(p->iccprofile), "eprofile");
+    if(!d->input) snprintf(iccprofile, sizeof(iccprofile), "eprofile");
   }
-  if(!strcmp(p->iccprofile, "alternate"))
+  if(!strcmp(iccprofile, "alternate"))
   {
     char makermodel[1024];
     dt_colorspaces_get_makermodel(makermodel, sizeof(makermodel), pipe->image.exif_maker, pipe->image.exif_model);
     d->input = dt_colorspaces_create_alternate_profile(makermodel);
-    if(!d->input) snprintf(p->iccprofile, sizeof(p->iccprofile), "eprofile");
+    if(!d->input) snprintf(iccprofile, sizeof(iccprofile), "eprofile");
   }
-  if(!strcmp(p->iccprofile, "eprofile"))
+  if(!strcmp(iccprofile, "eprofile"))
   {
     // embedded color profile
     const dt_image_t *cimg = dt_image_cache_read_get(darktable.image_cache, pipe->image.id);
-    if(cimg == NULL || cimg->profile == NULL) snprintf(p->iccprofile, sizeof(p->iccprofile), "ematrix");
+    if(cimg == NULL || cimg->profile == NULL) snprintf(iccprofile, sizeof(iccprofile), "ematrix");
     else d->input = cmsOpenProfileFromMem(cimg->profile, cimg->profile_size);
     dt_image_cache_read_release(darktable.image_cache, cimg);
   }
-  if(!strcmp(p->iccprofile, "ematrix"))
+  if(!strcmp(iccprofile, "ematrix"))
   {
     // embedded matrix, hopefully D65
-    if(isnan(pipe->image.d65_color_matrix[0])) snprintf(p->iccprofile, sizeof(p->iccprofile), "cmatrix");
+    if(isnan(pipe->image.d65_color_matrix[0])) snprintf(iccprofile, sizeof(iccprofile), "cmatrix");
     else d->input = dt_colorspaces_create_xyzimatrix_profile((float (*)[3])pipe->image.d65_color_matrix);
   }
-  if(!strcmp(p->iccprofile, "cmatrix"))
+  if(!strcmp(iccprofile, "cmatrix"))
   {
     // color matrix
     char makermodel[1024];
     dt_colorspaces_get_makermodel(makermodel, sizeof(makermodel), pipe->image.exif_maker, pipe->image.exif_model);
     float cam_xyz[12];
     cam_xyz[0] = NAN;
-    dt_dcraw_adobe_coeff(makermodel, "", (float (*)[12])cam_xyz);
-    if(isnan(cam_xyz[0])) snprintf(p->iccprofile, sizeof(p->iccprofile), "linear_rgb");
+    dt_dcraw_adobe_coeff(makermodel, (float (*)[12])cam_xyz);
+    if(isnan(cam_xyz[0]))
+    {
+      if(dt_image_is_raw(&pipe->image))
+      {
+        fprintf(stderr, "[colorin] `%s' color matrix not found!\n", makermodel);
+        dt_control_log(_("`%s' color matrix not found!"), makermodel);
+      }
+      snprintf(iccprofile, sizeof(iccprofile), "linear_rec709_rgb");
+    }
     else d->input = dt_colorspaces_create_xyzimatrix_profile((float (*)[3])cam_xyz);
   }
 
-  if(!strcmp(p->iccprofile, "sRGB"))
+  if(!strcmp(iccprofile, "sRGB"))
   {
     d->input = dt_colorspaces_create_srgb_profile();
   }
-  else if(!strcmp(p->iccprofile, "infrared"))
+  else if(!strcmp(iccprofile, "infrared"))
   {
     d->input = dt_colorspaces_create_linear_infrared_profile();
   }
-  else if(!strcmp(p->iccprofile, "XYZ"))
+  else if(!strcmp(iccprofile, "XYZ"))
   {
     d->input = dt_colorspaces_create_xyz_profile();
   }
-  else if(!strcmp(p->iccprofile, "adobergb"))
+  else if(!strcmp(iccprofile, "adobergb"))
   {
     d->input = dt_colorspaces_create_adobergb_profile();
   }
-  else if(!strcmp(p->iccprofile, "linear_rgb"))
+  else if(!strcmp(iccprofile, "linear_rec709_rgb") || !strcmp(iccprofile, "linear_rgb"))
   {
-    d->input = dt_colorspaces_create_linear_rgb_profile();
+    d->input = dt_colorspaces_create_linear_rec709_rgb_profile();
+  }
+  else if(!strcmp(iccprofile, "linear_rec2020_rgb"))
+  {
+    d->input = dt_colorspaces_create_linear_rec2020_rgb_profile();
   }
   else if(!d->input)
   {
-    dt_colorspaces_find_profile(filename, DT_MAX_PATH_LEN, p->iccprofile, "in");
+    dt_colorspaces_find_profile(filename, sizeof(filename), iccprofile, "in");
     d->input = cmsOpenProfileFromFile(filename, "r");
   }
 
-  if(!d->input && strcmp(p->iccprofile, "sRGB"))
+  if(!d->input && strcmp(iccprofile, "sRGB"))
   {
-    // use linear_rgb as fallback for missing non-sRGB profiles:
-    d->input = dt_colorspaces_create_linear_rgb_profile();
+    // use linear_rec709_rgb as fallback for missing non-sRGB profiles:
+    d->input = dt_colorspaces_create_linear_rec709_rgb_profile();
   }
 
   // final resort: sRGB
@@ -649,12 +718,9 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
     {
       piece->process_cl_ready = 0;
       d->cmatrix[0] = NAN;
-      for(int t=0; t<num_threads; t++)
-      {
-        d->xform_cam_Lab[t] = cmsCreateTransform(d->input, TYPE_RGB_FLT, d->Lab, TYPE_Lab_FLT, p->intent, 0);
-        d->xform_cam_nrgb[t] = cmsCreateTransform(d->input, TYPE_RGB_FLT, d->nrgb, TYPE_RGB_FLT, p->intent, 0);
-        d->xform_nrgb_Lab[t] = cmsCreateTransform(d->nrgb, TYPE_RGB_FLT, d->Lab, TYPE_Lab_FLT, p->intent, 0);
-      }
+      d->xform_cam_Lab = cmsCreateTransform(d->input, TYPE_RGBA_FLT, d->Lab, TYPE_LabA_FLT, p->intent, 0);
+      d->xform_cam_nrgb = cmsCreateTransform(d->input, TYPE_RGBA_FLT, d->nrgb, TYPE_RGBA_FLT, p->intent, 0);
+      d->xform_nrgb_Lab = cmsCreateTransform(d->nrgb, TYPE_RGBA_FLT, d->Lab, TYPE_LabA_FLT, p->intent, 0);
     }
     else
     {
@@ -672,39 +738,41 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
     {
       piece->process_cl_ready = 0;
       d->cmatrix[0] = NAN;
-      for(int t=0; t<num_threads; t++)
-        d->xform_cam_Lab[t] = cmsCreateTransform(d->input, TYPE_RGB_FLT, d->Lab, TYPE_Lab_FLT, p->intent, 0);
+      d->xform_cam_Lab = cmsCreateTransform(d->input, TYPE_RGBA_FLT, d->Lab, TYPE_LabA_FLT, p->intent, 0);
     }
   }
 
   // we might have failed generating the clipping transformations, check that:
-  if(d->nrgb && ((!d->xform_cam_nrgb[0] && isnan(d->nmatrix[0])) || (!d->xform_nrgb_Lab[0] && isnan(d->lmatrix[0]))))
+  if(d->nrgb && ((!d->xform_cam_nrgb && isnan(d->nmatrix[0])) || (!d->xform_nrgb_Lab && isnan(d->lmatrix[0]))))
   {
-    for(int t=0; t<dt_get_num_threads(); t++)
+    if(d->xform_cam_nrgb)
     {
-      if(d->xform_cam_nrgb[t]) cmsDeleteTransform(d->xform_cam_nrgb[t]);
-      if(d->xform_nrgb_Lab[t]) cmsDeleteTransform(d->xform_nrgb_Lab[t]);
-      d->xform_cam_nrgb[t] = NULL;
-      d->xform_nrgb_Lab[t] = NULL;
+      cmsDeleteTransform(d->xform_cam_nrgb);
+      d->xform_cam_nrgb = NULL;
+    }
+    if(d->xform_nrgb_Lab)
+    {
+      cmsDeleteTransform(d->xform_nrgb_Lab);
+      d->xform_nrgb_Lab = NULL;
     }
     dt_colorspaces_cleanup_profile(d->nrgb);
     d->nrgb = NULL;
   }
 
   // user selected a non-supported output profile, check that:
-  if(!d->xform_cam_Lab[0] && isnan(d->cmatrix[0]))
+  if(!d->xform_cam_Lab && isnan(d->cmatrix[0]))
   {
     dt_control_log(_("unsupported input profile has been replaced by linear Rec709 RGB!"));
     if(d->input) dt_colorspaces_cleanup_profile(d->input);
     if(d->nrgb) dt_colorspaces_cleanup_profile(d->nrgb);
     d->nrgb = NULL;
-    d->input = dt_colorspaces_create_linear_rgb_profile();
+    snprintf(iccprofile, sizeof(iccprofile), "linear_rec709_rgb");
+    d->input = dt_colorspaces_create_linear_rec709_rgb_profile();
     if(dt_colorspaces_get_matrix_from_input_profile (d->input, d->cmatrix, d->lut[0], d->lut[1], d->lut[2], LUT_SAMPLES))
     {
       piece->process_cl_ready = 0;
       d->cmatrix[0] = NAN;
-      for(int t=0; t<num_threads; t++) // WHY??? original code : d->xform[t] = cmsCreateTransform(d->Lab, TYPE_RGB_FLT, d->input, TYPE_Lab_FLT, p->intent, 0);
-        d->xform_cam_Lab[t] = cmsCreateTransform(d->input, TYPE_RGB_FLT, d->Lab, TYPE_Lab_FLT, p->intent, 0);
+      d->xform_cam_Lab = cmsCreateTransform(d->input, TYPE_RGBA_FLT, d->Lab, TYPE_LabA_FLT, p->intent, 0);
     }
   }
 
@@ -735,10 +803,9 @@ void init_pipe (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_p
   dt_iop_colorin_data_t *d = (dt_iop_colorin_data_t *)piece->data;
   d->input = NULL;
   d->nrgb = NULL;
-  d->xform_cam_Lab = (cmsHTRANSFORM *)malloc(sizeof(cmsHTRANSFORM)*dt_get_num_threads());
-  d->xform_cam_nrgb = (cmsHTRANSFORM *)malloc(sizeof(cmsHTRANSFORM)*dt_get_num_threads());
-  d->xform_nrgb_Lab = (cmsHTRANSFORM *)malloc(sizeof(cmsHTRANSFORM)*dt_get_num_threads());
-  for(int t=0; t<dt_get_num_threads(); t++) d->xform_cam_Lab[t] = d->xform_cam_nrgb[t] = d->xform_nrgb_Lab[t] = NULL;
+  d->xform_cam_Lab = NULL;
+  d->xform_cam_nrgb = NULL;
+  d->xform_nrgb_Lab = NULL;
   d->Lab = dt_colorspaces_create_lab_profile();
   self->commit_params(self, self->default_params, pipe, piece);
 }
@@ -749,16 +816,24 @@ void cleanup_pipe (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_de
   if(d->input) dt_colorspaces_cleanup_profile(d->input);
   dt_colorspaces_cleanup_profile(d->Lab);
   if (d->nrgb) dt_colorspaces_cleanup_profile(d->nrgb);
-  for(int t=0; t<dt_get_num_threads(); t++)
+  if(d->xform_cam_Lab)
   {
-    if(d->xform_cam_Lab[t]) cmsDeleteTransform(d->xform_cam_Lab[t]);
-    if(d->xform_cam_nrgb[t]) cmsDeleteTransform(d->xform_cam_nrgb[t]);
-    if(d->xform_nrgb_Lab[t]) cmsDeleteTransform(d->xform_nrgb_Lab[t]);
+    cmsDeleteTransform(d->xform_cam_Lab);
+    d->xform_cam_Lab = NULL;
   }
-  free(d->xform_cam_Lab);
-  free(d->xform_cam_nrgb);
-  free(d->xform_nrgb_Lab);
+  if(d->xform_cam_nrgb)
+  {
+    cmsDeleteTransform(d->xform_cam_nrgb);
+    d->xform_cam_nrgb = NULL;
+  }
+  if(d->xform_nrgb_Lab)
+  {
+    cmsDeleteTransform(d->xform_nrgb_Lab);
+    d->xform_nrgb_Lab = NULL;
+  }
+
   free(piece->data);
+  piece->data = NULL;
 }
 
 void gui_update(struct dt_iop_module_t *self)
@@ -802,15 +877,26 @@ void gui_update(struct dt_iop_module_t *self)
 // FIXME: update the gui when we add/remove the eprofile or ematrix
 void reload_defaults(dt_iop_module_t *module)
 {
+  dt_iop_colorin_params_t tmp = (dt_iop_colorin_params_t)
+  {
+    .iccprofile = "darktable",
+    .intent = DT_INTENT_PERCEPTUAL,
+    .normalize = DT_NORMALIZE_OFF,
+    .blue_mapping = 0
+  };
+
+  // we might be called from presets update infrastructure => there is no image
+  if(!module || !module->dev) goto end;
+
   gboolean use_eprofile = FALSE;
   // some file formats like jpeg can have an embedded color profile
-  // currently we only support jpeg
+  // currently we only support jpeg, j2k, tiff and png
   const dt_image_t *cimg = dt_image_cache_read_get(darktable.image_cache, module->dev->image_storage.id);
   if(!cimg->profile)
   {
-    char filename[DT_MAX_PATH_LEN];
+    char filename[PATH_MAX];
     gboolean from_cache = TRUE;
-    dt_image_full_path(cimg->id, filename, DT_MAX_PATH_LEN, &from_cache);
+    dt_image_full_path(cimg->id, filename, sizeof(filename), &from_cache);
     const gchar *cc = filename + strlen(filename);
     for(; *cc!='.'&&cc>filename; cc--);
     gchar *ext = g_ascii_strdown(cc+1, -1);
@@ -834,21 +920,32 @@ void reload_defaults(dt_iop_module_t *module)
       dt_image_cache_write_release(darktable.image_cache, img, DT_IMAGE_CACHE_RELAXED);
     }
 #endif
+    else if(!strcmp(ext, "tif") || !strcmp(ext, "tiff"))
+    {
+      dt_image_t *img = dt_image_cache_write_get(darktable.image_cache, cimg);
+      img->profile_size = dt_imageio_tiff_read_profile(filename, &img->profile);
+      use_eprofile = (img->profile_size > 0);
+      dt_image_cache_write_release(darktable.image_cache, img, DT_IMAGE_CACHE_RELAXED);
+    }
+    else if(!strcmp(ext, "png"))
+    {
+      dt_image_t *img = dt_image_cache_write_get(darktable.image_cache, cimg);
+      img->profile_size = dt_imageio_png_read_profile(filename, &img->profile);
+      use_eprofile = (img->profile_size > 0);
+      dt_image_cache_write_release(darktable.image_cache, img, DT_IMAGE_CACHE_RELAXED);
+    }
     g_free(ext);
   }
   else
     use_eprofile = TRUE; // the image has a profile assigned
   dt_image_cache_read_release(darktable.image_cache, cimg);
 
-  dt_iop_colorin_params_t tmp = (dt_iop_colorin_params_t)
-  {
-    "darktable", DT_INTENT_PERCEPTUAL, DT_NORMALIZE_OFF
-  };
-
   if(use_eprofile) g_strlcpy(tmp.iccprofile, "eprofile", sizeof(tmp.iccprofile));
   else if(module->dev->image_storage.colorspace == DT_IMAGE_COLORSPACE_SRGB) g_strlcpy(tmp.iccprofile, "sRGB", sizeof(tmp.iccprofile));
   else if(module->dev->image_storage.colorspace == DT_IMAGE_COLORSPACE_ADOBE_RGB) g_strlcpy(tmp.iccprofile, "adobergb", sizeof(tmp.iccprofile));
   else if(dt_image_is_ldr(&module->dev->image_storage)) g_strlcpy(tmp.iccprofile, "sRGB", sizeof(tmp.iccprofile));
+
+end:
   memcpy(module->params, &tmp, sizeof(dt_iop_colorin_params_t));
   memcpy(module->default_params, &tmp, sizeof(dt_iop_colorin_params_t));
 }
@@ -860,7 +957,7 @@ void init(dt_iop_module_t *module)
   module->default_params = malloc(sizeof(dt_iop_colorin_params_t));
   module->params_size = sizeof(dt_iop_colorin_params_t);
   module->gui_data = NULL;
-  module->priority = 333; // module order created by iop_dependencies.py, do not edit!
+  module->priority = 350; // module order created by iop_dependencies.py, do not edit!
   module->hide_enable_button = 1;
   module->default_enabled = 1;
 }
@@ -889,7 +986,7 @@ static void update_profile_list(dt_iop_module_t *self)
   dt_iop_color_profile_t *prof;
   int pos = -1;
   // some file formats like jpeg can have an embedded color profile
-  // currently we only support jpeg
+  // currently we only support jpeg, j2k, tiff and png
   const dt_image_t *cimg = dt_image_cache_read_get(darktable.image_cache, self->dev->image_storage.id);
   if(cimg->profile)
   {
@@ -914,7 +1011,7 @@ static void update_profile_list(dt_iop_module_t *self)
   dt_colorspaces_get_makermodel(makermodel, sizeof(makermodel), self->dev->image_storage.exif_maker, self->dev->image_storage.exif_model);
   float cam_xyz[12];
   cam_xyz[0] = NAN;
-  dt_dcraw_adobe_coeff(makermodel, "", (float (*)[12])cam_xyz);
+  dt_dcraw_adobe_coeff(makermodel, (float (*)[12])cam_xyz);
   if(!isnan(cam_xyz[0]))
   {
     prof = (dt_iop_color_profile_t *)g_malloc0(sizeof(dt_iop_color_profile_t));
@@ -991,8 +1088,10 @@ static void update_profile_list(dt_iop_module_t *self)
       dt_bauhaus_combobox_add(g->cbox2, _("sRGB (e.g. JPG)"));
     else if(!strcmp(prof->name, "adobergb"))
       dt_bauhaus_combobox_add(g->cbox2, _("Adobe RGB (compatible)"));
-    else if(!strcmp(prof->name, "linear_rgb"))
+    else if(!strcmp(prof->name, "linear_rec709_rgb") || !strcmp(prof->name, "linear_rgb"))
       dt_bauhaus_combobox_add(g->cbox2, _("linear Rec709 RGB"));
+    else if(!strcmp(prof->name, "linear_rec2020_rgb"))
+      dt_bauhaus_combobox_add(g->cbox2, _("linear Rec2020 RGB"));
     else if(!strcmp(prof->name, "infrared"))
       dt_bauhaus_combobox_add(g->cbox2, _("linear infrared BGR"));
     else if(!strcmp(prof->name, "XYZ"))
@@ -1023,8 +1122,10 @@ static void update_profile_list(dt_iop_module_t *self)
       dt_bauhaus_combobox_add(g->cbox2, _("sRGB (e.g. JPG)"));
     else if(!strcmp(prof->name, "adobergb"))
       dt_bauhaus_combobox_add(g->cbox2, _("Adobe RGB (compatible)"));
-    else if(!strcmp(prof->name, "linear_rgb"))
+    else if(!strcmp(prof->name, "linear_rec709_rgb") || !strcmp(prof->name, "linear_rgb"))
       dt_bauhaus_combobox_add(g->cbox2, _("linear Rec709 RGB"));
+    else if(!strcmp(prof->name, "linear_rec2020_rgb"))
+      dt_bauhaus_combobox_add(g->cbox2, _("linear Rec2020 RGB"));
     else if(!strcmp(prof->name, "infrared"))
       dt_bauhaus_combobox_add(g->cbox2, _("linear infrared BGR"));
     else if(!strcmp(prof->name, "XYZ"))
@@ -1049,10 +1150,17 @@ void gui_init(struct dt_iop_module_t *self)
   // the profiles that are available for every image
   int pos = -1;
 
+  // add linear Rec2020 RGB profile:
+  prof = (dt_iop_color_profile_t *)g_malloc0(sizeof(dt_iop_color_profile_t));
+  g_strlcpy(prof->filename, "linear_rec2020_rgb", sizeof(prof->filename));
+  g_strlcpy(prof->name, "linear_rec2020_rgb", sizeof(prof->name));
+  g->global_profiles = g_list_append(g->global_profiles, prof);
+  prof->pos = ++pos;
+
   // add linear Rec709 RGB profile:
   prof = (dt_iop_color_profile_t *)g_malloc0(sizeof(dt_iop_color_profile_t));
-  g_strlcpy(prof->filename, "linear_rgb", sizeof(prof->filename));
-  g_strlcpy(prof->name, "linear_rgb", sizeof(prof->name));
+  g_strlcpy(prof->filename, "linear_rec709_rgb", sizeof(prof->filename));
+  g_strlcpy(prof->name, "linear_rec709_rgb", sizeof(prof->name));
   g->global_profiles = g_list_append(g->global_profiles, prof);
   prof->pos = ++pos;
 
@@ -1092,15 +1200,15 @@ void gui_init(struct dt_iop_module_t *self)
   prof->pos = ++pos;
 
   // read {userconfig,datadir}/color/in/*.icc, in this order.
-  char datadir[DT_MAX_PATH_LEN];
-  char confdir[DT_MAX_PATH_LEN];
-  char dirname[DT_MAX_PATH_LEN];
-  char filename[DT_MAX_PATH_LEN];
-  dt_loc_get_user_config_dir(confdir, DT_MAX_PATH_LEN);
-  dt_loc_get_datadir(datadir, DT_MAX_PATH_LEN);
-  snprintf(dirname, DT_MAX_PATH_LEN, "%s/color/in", confdir);
+  char datadir[PATH_MAX];
+  char confdir[PATH_MAX];
+  char dirname[PATH_MAX];
+  char filename[PATH_MAX];
+  dt_loc_get_user_config_dir(confdir, sizeof(confdir));
+  dt_loc_get_datadir(datadir, sizeof(datadir));
+  snprintf(dirname, sizeof(dirname), "%s/color/in", confdir);
   if(!g_file_test(dirname, G_FILE_TEST_IS_DIR))
-    snprintf(dirname, DT_MAX_PATH_LEN, "%s/color/in", datadir);
+    snprintf(dirname, sizeof(dirname), "%s/color/in", datadir);
   cmsHPROFILE tmpprof;
   const gchar *d_name;
   GDir *dir = g_dir_open(dirname, 0, NULL);
@@ -1108,8 +1216,8 @@ void gui_init(struct dt_iop_module_t *self)
   {
     while((d_name = g_dir_read_name(dir)))
     {
-      if(!strcmp(d_name, "linear_rgb")) continue;
-      snprintf(filename, DT_MAX_PATH_LEN, "%s/%s", dirname, d_name);
+      if(!strcmp(d_name, "linear_rec709_rgb") || !strcmp(d_name, "linear_rgb")) continue;
+      snprintf(filename, sizeof(filename), "%s/%s", dirname, d_name);
       tmpprof = cmsOpenProfileFromFile(filename, "r");
       if(tmpprof)
       {
@@ -1153,7 +1261,7 @@ void gui_init(struct dt_iop_module_t *self)
   dt_bauhaus_combobox_add(g->cbox3, _("sRGB"));
   dt_bauhaus_combobox_add(g->cbox3, _("Adobe RGB (compatible)"));
   dt_bauhaus_combobox_add(g->cbox3, _("linear Rec709 RGB"));
-  dt_bauhaus_combobox_add(g->cbox3, _("Beta RGB (compatible)"));
+  dt_bauhaus_combobox_add(g->cbox3, _("linear Rec2020 RGB"));
 
   g_object_set(G_OBJECT(g->cbox3), "tooltip-text", _("confine Lab values to gamut of RGB color space"), (char *)NULL);
 

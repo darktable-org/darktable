@@ -20,15 +20,9 @@
 
 #include <inttypes.h>
 #include "control/control.h"
+#include "common/film.h"
 
-typedef struct dt_film_import1_t
-{
-  dt_film_t *film;
-}
-dt_film_import1_t;
-
-int32_t dt_film_import1_run(dt_job_t *job);
-void dt_film_import1_init(dt_job_t *job, dt_film_t *film);
+dt_job_t * dt_film_import1_create(dt_film_t *film);
 
 #endif
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

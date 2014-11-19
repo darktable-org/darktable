@@ -90,15 +90,15 @@ static const char* const EncoderError[] = {
 void init(dt_imageio_module_format_t *self) {
 #ifdef USE_LUA
   luaA_enum(darktable.lua_state.state,comp_type_t);
-  luaA_enum_value(darktable.lua_state.state,comp_type_t,webp_lossy,false);
-  luaA_enum_value(darktable.lua_state.state,comp_type_t,webp_lossless,false);
+  luaA_enum_value(darktable.lua_state.state,comp_type_t,webp_lossy);
+  luaA_enum_value(darktable.lua_state.state,comp_type_t,webp_lossless);
   dt_lua_register_module_member(darktable.lua_state.state,self,dt_imageio_webp_t,comp_type,comp_type_t);
   dt_lua_register_module_member(darktable.lua_state.state,self,dt_imageio_webp_t,quality,int);
   luaA_enum(darktable.lua_state.state,hint_t);
-  luaA_enum_value(darktable.lua_state.state,hint_t,hint_default,false);
-  luaA_enum_value(darktable.lua_state.state,hint_t,hint_picture,false);
-  luaA_enum_value(darktable.lua_state.state,hint_t,hint_photo,false);
-  luaA_enum_value(darktable.lua_state.state,hint_t,hint_graphic,false);
+  luaA_enum_value(darktable.lua_state.state,hint_t,hint_default);
+  luaA_enum_value(darktable.lua_state.state,hint_t,hint_picture);
+  luaA_enum_value(darktable.lua_state.state,hint_t,hint_photo);
+  luaA_enum_value(darktable.lua_state.state,hint_t,hint_graphic);
   dt_lua_register_module_member(darktable.lua_state.state,self,dt_imageio_webp_t,hint,hint_t);
 #endif
 }
@@ -128,7 +128,7 @@ write_image (dt_imageio_module_data_t *webp, const char *filename, const void *i
   //TODO(jinxos): these values should be adjusted as needed and ideally determined at runtime.
   config.segments = 4;
   config.partition_limit = 70;
-  
+
   WebPPicture pic;
   if (!WebPPictureInit(&pic)) goto Error;
   pic.width = webp_data->width;
@@ -138,9 +138,9 @@ write_image (dt_imageio_module_data_t *webp, const char *filename, const void *i
     goto Error;
   } else {
     pic.writer = FileWriter;
-    pic.custom_ptr = out;  
+    pic.custom_ptr = out;
   }
-  
+
   WebPPictureImportRGBX(&pic, (const uint8_t*) in_tmp, webp_data->width*4);
   if (!config.lossless) {
     WebPPictureARGBToYUVA(&pic, WEBP_YUV420A);
@@ -179,8 +179,7 @@ params_size(dt_imageio_module_format_t *self)
 void*
 get_params(dt_imageio_module_format_t *self)
 {
-  dt_imageio_webp_t *d = (dt_imageio_webp_t *)malloc(sizeof(dt_imageio_webp_t));
-  memset(d, 0, sizeof(dt_imageio_webp_t));
+  dt_imageio_webp_t *d = (dt_imageio_webp_t *)calloc(1, sizeof(dt_imageio_webp_t));
   d->comp_type = dt_conf_get_int("plugins/imageio/format/webp/comp_type");
   if(d->comp_type == webp_lossy) d->quality = dt_conf_get_int("plugins/imageio/format/webp/quality");
   else                           d->quality = 100;
@@ -272,7 +271,7 @@ void gui_init (dt_imageio_module_format_t *self)
   int comp_type = dt_conf_get_int("plugins/imageio/format/webp/comp_type");
   int quality = dt_conf_get_int("plugins/imageio/format/webp/quality");
   int hint = dt_conf_get_int("plugins/imageio/format/webp/hint");
-  
+
   self->widget = gtk_vbox_new(TRUE, 5);
   GtkWidget *comp_type_label = gtk_label_new(_("compression type"));
   gtk_misc_set_alignment(GTK_MISC(comp_type_label), 0.0, 0.5);

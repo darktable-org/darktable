@@ -79,7 +79,7 @@ static void _update_picker_output(dt_lib_module_t *self)
   {
     darktable.gui->reset = 1;
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(data->picker_button),
-                                 module->request_color_pick);
+                                 module->request_color_pick != DT_REQUEST_COLORPICK_OFF);
     darktable.gui->reset = 0;
 
     int input_color = dt_conf_get_int("ui_last/colorpicker_model");
@@ -134,7 +134,7 @@ static void _picker_button_toggled (GtkToggleButton *button, gpointer p)
   if(module)
   {
     dt_iop_request_focus(module);
-    module->request_color_pick = gtk_toggle_button_get_active(button);
+    module->request_color_pick = gtk_toggle_button_get_active(button) ? DT_REQUEST_COLORPICK_MODULE : DT_REQUEST_COLORPICK_OFF;
     dt_dev_invalidate_from_gui(darktable.develop);
   }
   else
@@ -312,7 +312,7 @@ static void _add_sample(GtkButton *widget, gpointer self)
                      TRUE, TRUE, 0);
 
   sample->output_button = dtgtk_button_new(NULL, CPF_STYLE_BOX);
-  gtk_widget_set_size_request(sample->output_button, 40, -1);
+  gtk_widget_set_size_request(sample->output_button, DT_PIXEL_APPLY_DPI(40), -1);
   gtk_widget_set_events(sample->output_button,
                         GDK_ENTER_NOTIFY_MASK | GDK_LEAVE_NOTIFY_MASK);
   gtk_widget_set_tooltip_text(sample->output_button,
@@ -332,7 +332,7 @@ static void _add_sample(GtkButton *widget, gpointer self)
   gtk_box_pack_start(GTK_BOX(sample->container), sample->output_label,
                      TRUE, TRUE, 0);
 
-  sample->delete_button = gtk_button_new_from_stock(GTK_STOCK_REMOVE);
+  sample->delete_button = gtk_button_new_with_label(_("remove"));
   gtk_box_pack_start(GTK_BOX(sample->container), sample->delete_button,
                      FALSE, FALSE, 0);
 
@@ -442,10 +442,8 @@ void gui_init(dt_lib_module_t *self)
   GtkWidget *samples_options_row = gtk_hbox_new(FALSE, 2);
 
   // Initializing self data structure
-  dt_lib_colorpicker_t *data =
-    (dt_lib_colorpicker_t*)malloc(sizeof(dt_lib_colorpicker_t));
+  dt_lib_colorpicker_t *data = (dt_lib_colorpicker_t*)calloc(1, sizeof(dt_lib_colorpicker_t));
   self->data = (void*)data;
-  memset(data, 0, sizeof(dt_lib_colorpicker_t));
 
   // Initializing proxy functions and data
   darktable.lib->proxy.colorpicker.module = self;
@@ -485,7 +483,7 @@ void gui_init(dt_lib_module_t *self)
 
   // The output button
   data->output_button = dtgtk_button_new(NULL, CPF_STYLE_BOX);
-  gtk_widget_set_size_request(data->output_button, 100, 100);
+  gtk_widget_set_size_request(data->output_button, DT_PIXEL_APPLY_DPI(100), DT_PIXEL_APPLY_DPI(100));
   gtk_widget_set_sensitive(data->output_button, FALSE);
   gtk_box_pack_start(GTK_BOX(output_row), data->output_button, FALSE, FALSE, 0);
 
@@ -499,7 +497,7 @@ void gui_init(dt_lib_module_t *self)
                             _("area"));
   gtk_combo_box_set_active(GTK_COMBO_BOX(data->size_selector),
                            dt_conf_get_int("ui_last/colorpicker_size"));
-  gtk_widget_set_size_request(data->size_selector, 30, -1);
+  gtk_widget_set_size_request(data->size_selector, DT_PIXEL_APPLY_DPI(30), -1);
   gtk_box_pack_start(GTK_BOX(picker_subrow), data->size_selector,
                      TRUE, TRUE, 0);
 
@@ -508,7 +506,7 @@ void gui_init(dt_lib_module_t *self)
 
   data->picker_button = dtgtk_togglebutton_new(dtgtk_cairo_paint_colorpicker,
                         CPF_STYLE_BOX);
-  gtk_widget_set_size_request(data->picker_button, 50, -1);
+  gtk_widget_set_size_request(data->picker_button, DT_PIXEL_APPLY_DPI(50), -1);
   gtk_box_pack_start(GTK_BOX(picker_subrow), data->picker_button,
                      FALSE, FALSE, 0);
 
@@ -549,7 +547,7 @@ void gui_init(dt_lib_module_t *self)
 
   data->output_label = gtk_label_new("");
   gtk_label_set_justify(GTK_LABEL(data->output_label), GTK_JUSTIFY_CENTER);
-  gtk_widget_set_size_request(data->output_label, 80, -1);
+  gtk_widget_set_size_request(data->output_label, DT_PIXEL_APPLY_DPI(80), -1);
   gtk_box_pack_start(GTK_BOX(output_options), data->output_label,
                      FALSE, FALSE, 0);
 
@@ -598,7 +596,7 @@ void gui_init(dt_lib_module_t *self)
   g_signal_connect(G_OBJECT(data->samples_mode_selector), "changed",
                    G_CALLBACK(_samples_mode_changed), self);
 
-  data->add_sample_button = gtk_button_new_from_stock(GTK_STOCK_ADD);
+  data->add_sample_button = gtk_button_new_with_label(_("add"));
   gtk_widget_set_sensitive(data->add_sample_button, FALSE);
   gtk_box_pack_start(GTK_BOX(samples_options_row), data->add_sample_button,
                      FALSE, FALSE, 0);

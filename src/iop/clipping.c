@@ -101,6 +101,23 @@ typedef struct dt_iop_clipping_params_t
 }
 dt_iop_clipping_params_t;
 
+typedef enum _grab_region_t
+{
+  GRAB_CENTER       = 0,                                               // 0
+  GRAB_LEFT         = 1 << 0,                                          // 1
+  GRAB_TOP          = 1 << 1,                                          // 2
+  GRAB_RIGHT        = 1 << 2,                                          // 4
+  GRAB_BOTTOM       = 1 << 3,                                          // 8
+  GRAB_TOP_LEFT     = GRAB_TOP | GRAB_LEFT,                            // 3
+  GRAB_TOP_RIGHT    = GRAB_TOP | GRAB_RIGHT,                           // 6
+  GRAB_BOTTOM_RIGHT = GRAB_BOTTOM | GRAB_RIGHT,                        // 12
+  GRAB_BOTTOM_LEFT  = GRAB_BOTTOM | GRAB_LEFT,                         // 9
+  GRAB_HORIZONTAL   = GRAB_LEFT | GRAB_RIGHT,                          // 5
+  GRAB_VERTICAL     = GRAB_TOP | GRAB_BOTTOM,                          // 10
+  GRAB_ALL          = GRAB_LEFT | GRAB_TOP | GRAB_RIGHT | GRAB_BOTTOM, // 15
+  GRAB_NONE         = 1 << 4                                           // 16
+} _grab_region_t;
+
 /* calculate the aspect ratios for current image */
 static void keystone_type_populate(struct dt_iop_module_t *self,gboolean with_applied,int select);
 
@@ -752,12 +769,12 @@ void modify_roi_in(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *
   }
 
   // sanity check.
-  const int scwidth = (piece->pipe->iflipped ? piece->pipe->iheight : piece->pipe->iwidth)*so;
-  const int scheight = (piece->pipe->iflipped ? piece->pipe->iwidth : piece->pipe->iheight)*so;
-  roi_in->x = CLAMP(roi_in->x, 0, scwidth);
-  roi_in->y = CLAMP(roi_in->y, 0, scheight);
-  roi_in->width = CLAMP(roi_in->width, 1, scwidth - roi_in->x);
-  roi_in->height = CLAMP(roi_in->height, 1, scheight - roi_in->y);
+  const float scwidth = piece->buf_in.width * so,
+              scheight = piece->buf_in.height * so;
+  roi_in->x = CLAMP(roi_in->x, 0, (int) floorf(scwidth));
+  roi_in->y = CLAMP(roi_in->y, 0, (int) floorf(scheight));
+  roi_in->width = CLAMP(roi_in->width, 1, (int) ceilf(scwidth) - roi_in->x);
+  roi_in->height = CLAMP(roi_in->height, 1, (int) ceilf(scheight) - roi_in->y);
 }
 
 // 3rd (final) pass: you get this input region (may be different from what was requested above),
@@ -1197,11 +1214,15 @@ void init_pipe (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_p
 void cleanup_pipe (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
   free(piece->data);
+  piece->data = NULL;
 }
 
 static float _ratio_get_aspect(dt_iop_module_t *self)
 {
   dt_iop_clipping_params_t *p = (dt_iop_clipping_params_t *)self->params;
+
+  int iwd, iht;
+  dt_dev_get_processed_size(darktable.develop, &iwd, &iht);
 
   // if we do not have yet computed the aspect ratio, let's do it now
   if (p->ratio_d == -2 && p->ratio_n == -2)
@@ -1210,9 +1231,9 @@ static float _ratio_get_aspect(dt_iop_module_t *self)
     else
     {
       const struct dt_interpolation* interpolation = dt_interpolation_new(DT_INTERPOLATION_USERPREF);
-      float whratio = ((float)(self->dev->image_storage.width - 2 * interpolation->width) * (fabsf(p->cw) - p->cx)) /
-                      ((float)(self->dev->image_storage.height - 2 * interpolation->width) * (fabsf(p->ch) - p->cy));
-      float ri = self->dev->image_storage.width / (float)self->dev->image_storage.height;
+      float whratio = ((float)(iwd - 2 * interpolation->width) * (fabsf(p->cw) - p->cx)) /
+                      ((float)(iht - 2 * interpolation->width) * (fabsf(p->ch) - p->cy));
+      float ri = (float)iwd / (float)iht;
 
       float prec = 0.0003f;
       if (fabsf(whratio-3.0f/2.0f)<prec) p->ratio_d=3, p->ratio_n=2;
@@ -1234,14 +1255,14 @@ static float _ratio_get_aspect(dt_iop_module_t *self)
 
   if (p->ratio_d==0 && p->ratio_n==0) return -1.0f;
   float d=1.0f, n=1.0f;
-  if (p->ratio_n==0) d=copysign(self->dev->image_storage.width,p->ratio_d), n=self->dev->image_storage.height;
+  if (p->ratio_n==0) d=copysign(iwd, p->ratio_d), n=iht;
   else d=p->ratio_d, n=p->ratio_n;
 
   if (d<0) return -n/d;
   else return d/n;
 }
 static void
-apply_box_aspect(dt_iop_module_t *self, int grab)
+apply_box_aspect(dt_iop_module_t *self, _grab_region_t grab)
 {
   dt_iop_clipping_gui_data_t *g = (dt_iop_clipping_gui_data_t *)self->gui_data;
   int iwd, iht;
@@ -1263,7 +1284,7 @@ apply_box_aspect(dt_iop_module_t *self, int grab)
     // first fix aspect ratio:
 
     // corners: move two adjacent
-    if     (grab == 1+2)
+    if(grab == GRAB_TOP_LEFT)
     {
       // move x y
       clip_x = clip_x + clip_w - (target_w + clip_w)*.5;
@@ -1271,31 +1292,31 @@ apply_box_aspect(dt_iop_module_t *self, int grab)
       clip_w = (target_w + clip_w)*.5;
       clip_h = (target_h + clip_h)*.5;
     }
-    else if(grab == 2+4) // move y w
+    else if(grab == GRAB_TOP_RIGHT) // move y w
     {
       clip_y = clip_y + clip_h - (target_h + clip_h)*.5;
       clip_w = (target_w + clip_w)*.5;
       clip_h = (target_h + clip_h)*.5;
     }
-    else if(grab == 4+8) // move w h
+    else if(grab == GRAB_BOTTOM_RIGHT) // move w h
     {
       clip_w = (target_w + clip_w)*.5;
       clip_h = (target_h + clip_h)*.5;
     }
-    else if(grab == 8+1) // move h x
+    else if(grab == GRAB_BOTTOM_LEFT) // move h x
     {
       clip_h = (target_h + clip_h)*.5;
       clip_x = clip_x + clip_w - (target_w + clip_w)*.5;
       clip_w = (target_w + clip_w)*.5;
     }
-    else if(grab & 5) // dragged either x or w (1 4)
+    else if(grab & GRAB_HORIZONTAL) // dragged either x or w (1 4)
     {
       // change h and move y, h equally
       const double off = target_h - clip_h;
       clip_h = clip_h + off;
       clip_y = clip_y - .5*off;
     }
-    else if(grab & 10) // dragged either y or h (2 8)
+    else if(grab & GRAB_VERTICAL) // dragged either y or h (2 8)
     {
       // change w and move x, w equally
       const double off = target_w - clip_w;
@@ -1310,7 +1331,7 @@ apply_box_aspect(dt_iop_module_t *self, int grab)
       clip_h *= (clip_w + clip_x - g->clip_max_x)/clip_w;
       clip_w  =  clip_w + clip_x - g->clip_max_x;
       clip_x  = g->clip_max_x;
-      if (grab & 2) clip_y += prev_clip_h - clip_h;
+      if (grab & GRAB_TOP) clip_y += prev_clip_h - clip_h;
     }
     if(clip_y < g->clip_max_y)
     {
@@ -1318,21 +1339,21 @@ apply_box_aspect(dt_iop_module_t *self, int grab)
       clip_w *= (clip_h + clip_y - g->clip_max_y)/clip_h;
       clip_h  =  clip_h + clip_y - g->clip_max_y;
       clip_y  =  g->clip_max_y;
-      if (grab & 1) clip_x += prev_clip_w - clip_w;
+      if (grab & GRAB_LEFT) clip_x += prev_clip_w - clip_w;
     }
     if(clip_x + clip_w > g->clip_max_x + g->clip_max_w)
     {
       double prev_clip_h = clip_h;
       clip_h *= (g->clip_max_x + g->clip_max_w - clip_x)/clip_w;
       clip_w  =  g->clip_max_x + g->clip_max_w - clip_x;
-      if (grab & 2) clip_y += prev_clip_h - clip_h;
+      if (grab & GRAB_TOP) clip_y += prev_clip_h - clip_h;
     }
     if(clip_y + clip_h > g->clip_max_y + g->clip_max_h)
     {
       double prev_clip_w = clip_w;
       clip_w *= (g->clip_max_y + g->clip_max_h - clip_y)/clip_h;
       clip_h  =  g->clip_max_y + g->clip_max_h - clip_y;
-      if (grab & 1) clip_x += prev_clip_w - clip_w;
+      if (grab & GRAB_LEFT) clip_x += prev_clip_w - clip_w;
     }
     g->clip_x = clip_x;
     g->clip_y = clip_y;
@@ -1363,8 +1384,9 @@ static void aspect_presets_changed (GtkWidget *combo, dt_iop_module_t *self)
     if(text)
     {
       const char *c = text;
-      while(*c != ':' && *c != '/' && c < text + strlen(text)) c++;
-      if(c < text + strlen(text) - 1)
+      const char *end = text + strlen(text);
+      while(*c != ':' && *c != '/' && c < end) c++;
+      if(c < end - 1)
       {
         c++;
         int dd = atoi(text);
@@ -1407,7 +1429,7 @@ static void aspect_presets_changed (GtkWidget *combo, dt_iop_module_t *self)
     dt_conf_set_int("plugins/darkroom/clipping/ratio_d", abs(p->ratio_d));
     dt_conf_set_int("plugins/darkroom/clipping/ratio_n", p->ratio_n);
     if(self->dt->gui->reset) return;
-    apply_box_aspect(self, 5);
+    apply_box_aspect(self, GRAB_HORIZONTAL);
     dt_control_queue_redraw_center();
   }
 }
@@ -1580,7 +1602,7 @@ void init(dt_iop_module_t *module)
   module->default_enabled = 0;
   module->params_size = sizeof(dt_iop_clipping_params_t);
   module->gui_data = NULL;
-  module->priority = 385; // module order created by iop_dependencies.py, do not edit!
+  module->priority = 416; // module order created by iop_dependencies.py, do not edit!
 }
 
 void cleanup(dt_iop_module_t *module)
@@ -1615,7 +1637,7 @@ key_swap_callback(GtkAccelGroup *accel_group, GObject *acceleratable,
   dt_iop_module_t *self = (dt_iop_module_t *)d;
   dt_iop_clipping_params_t   *p = (dt_iop_clipping_params_t   *)self->params;
   p->ratio_d = -p->ratio_d;
-  apply_box_aspect(self, 5);
+  apply_box_aspect(self, GRAB_HORIZONTAL);
   dt_control_queue_redraw_center();
 }
 
@@ -1814,14 +1836,19 @@ void gui_cleanup(struct dt_iop_module_t *self)
   self->gui_data = NULL;
 }
 
-static int
+static _grab_region_t
 get_grab (float pzx, float pzy, dt_iop_clipping_gui_data_t *g, const float border, const float wd, const float ht)
 {
-  int grab = 0;
-  if(pzx >= g->clip_x && pzx*wd < g->clip_x*wd + border) grab |= 1; // left border
-  if(pzy >= g->clip_y && pzy*ht < g->clip_y*ht + border) grab |= 2; // top border
-  if(pzx <= g->clip_x+g->clip_w && pzx*wd > (g->clip_w+g->clip_x)*wd - border) grab |= 4; // right border
-  if(pzy <= g->clip_y+g->clip_h && pzy*ht > (g->clip_h+g->clip_y)*ht - border) grab |= 8; // bottom border
+  _grab_region_t grab = GRAB_NONE;
+  if(!(pzx < g->clip_x || pzx > g->clip_x + g->clip_w || pzy < g->clip_y || pzy > g->clip_y + g->clip_h))
+  {
+    // we are inside the crop box
+    grab = GRAB_CENTER;
+    if(pzx >= g->clip_x && pzx*wd < g->clip_x*wd + border) grab |= GRAB_LEFT; // left border
+    if(pzy >= g->clip_y && pzy*ht < g->clip_y*ht + border) grab |= GRAB_TOP; // top border
+    if(pzx <= g->clip_x+g->clip_w && pzx*wd > (g->clip_w+g->clip_x)*wd - border) grab |= GRAB_RIGHT; // right border
+    if(pzy <= g->clip_y+g->clip_h && pzy*ht > (g->clip_h+g->clip_y)*ht - border) grab |= GRAB_BOTTOM; // bottom border
+  }
   return grab;
 }
 
@@ -1843,12 +1870,12 @@ void gui_draw_sym(cairo_t *cr, float x, float y, gboolean active)
 {
   cairo_text_extents_t extents;
   cairo_select_font_face(cr, "sans-serif", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_BOLD);
-  cairo_set_font_size(cr, 16);
+  cairo_set_font_size(cr, DT_PIXEL_APPLY_DPI(16));
   //VERIF : is there any pb to use such special char here ?
   cairo_text_extents (cr, "ꝏ", &extents);
   cairo_set_source_rgba(cr, .5,.5,.5, .7);
-  gui_draw_rounded_rectangle(cr,extents.width+4,extents.height+8,x-extents.width/2.0f-2,y-extents.height/2.0f-4);
-  cairo_move_to(cr,x-extents.width/2.0f-1,y+extents.height/2.0f-1);
+  gui_draw_rounded_rectangle(cr,extents.width+DT_PIXEL_APPLY_DPI(4),extents.height+DT_PIXEL_APPLY_DPI(8),x-extents.width/2.0f-DT_PIXEL_APPLY_DPI(2),y-extents.height/2.0f-DT_PIXEL_APPLY_DPI(4));
+  cairo_move_to(cr,x-extents.width/2.0f-DT_PIXEL_APPLY_DPI(1),y+extents.height/2.0f-DT_PIXEL_APPLY_DPI(1));
   if (active) cairo_set_source_rgba(cr, 1.0,0.0,0.0, .9);
   else cairo_set_source_rgba(cr, .2,.2,.2, .9);
   cairo_show_text(cr, "ꝏ");
@@ -1866,7 +1893,7 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
   g->old_width = g->old_height = -1;
 
   //reapply box aspect to be sure that the ratio has not been modified by the keystone transform
-  apply_box_aspect(self,5);
+  apply_box_aspect(self,GRAB_HORIZONTAL);
 
   float wd = dev->preview_pipe->backbuf_width;
   float ht = dev->preview_pipe->backbuf_height;
@@ -1880,7 +1907,7 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
   cairo_scale(cr, zoom_scale, zoom_scale);
   cairo_translate(cr, -.5f*wd-zoom_x*wd, -.5f*ht-zoom_y*ht);
 
-  double dashes = 5.0/zoom_scale;
+  double dashes = DT_PIXEL_APPLY_DPI(5.0)/zoom_scale;
 
   // draw cropping window
   float pzx, pzy;
@@ -1916,7 +1943,7 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
             (float)procw * g->clip_w, (float)proch * g->clip_h);
     cairo_select_font_face(cr, "sans-serif", CAIRO_FONT_SLANT_NORMAL,
                            CAIRO_FONT_WEIGHT_BOLD);
-    cairo_set_font_size(cr, 16);
+    cairo_set_font_size(cr, DT_PIXEL_APPLY_DPI(16));
 
     cairo_text_extents (cr, dimensions, &extents);
     cairo_move_to(cr, (g->clip_x + g->clip_w / 2) * wd - extents.width * .5f, (g->clip_y + g->clip_h/2) * ht);
@@ -1938,7 +1965,7 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
   cairo_save(cr);
   cairo_rectangle (cr, left, top, cwidth, cheight);
   cairo_clip(cr);
-  cairo_set_line_width(cr, 1.0/zoom_scale);
+  cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(1.0)/zoom_scale);
   cairo_set_source_rgb(cr, .8, .8, .8);
 
   // draw guides
@@ -2058,15 +2085,15 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
   }
   cairo_restore(cr);
 
-  cairo_set_line_width(cr, 2.0/zoom_scale);
+  cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(2.0)/zoom_scale);
   cairo_set_source_rgb(cr, .3, .3, .3);
-  const int border = 30.0/zoom_scale;
+  const int border = DT_PIXEL_APPLY_DPI(30.0)/zoom_scale;
   if(g->straightening)
   {
     float bzx = g->button_down_zoom_x + .5f, bzy = g->button_down_zoom_y + .5f;
-    cairo_arc (cr, bzx*wd, bzy*ht, 3, 0, 2.0*M_PI);
+    cairo_arc (cr, bzx*wd, bzy*ht, DT_PIXEL_APPLY_DPI(3), 0, 2.0*M_PI);
     cairo_stroke (cr);
-    cairo_arc (cr, pzx*wd, pzy*ht, 3, 0, 2.0*M_PI);
+    cairo_arc (cr, pzx*wd, pzy*ht, DT_PIXEL_APPLY_DPI(3), 0, 2.0*M_PI);
     cairo_stroke (cr);
     cairo_move_to (cr, bzx*wd, bzy*ht);
     cairo_line_to (cr, pzx*wd, pzy*ht);
@@ -2090,21 +2117,21 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
     cairo_set_source_rgb(cr, .7, .7, .7);
     cairo_select_font_face(cr, "sans-serif", CAIRO_FONT_SLANT_NORMAL,
                            CAIRO_FONT_WEIGHT_BOLD);
-    cairo_set_font_size(cr, 16);
-    cairo_move_to (cr, pzx*wd + 20, pzy*ht);
+    cairo_set_font_size(cr, DT_PIXEL_APPLY_DPI(16));
+    cairo_move_to (cr, pzx*wd + DT_PIXEL_APPLY_DPI(20), pzy*ht);
     cairo_show_text(cr, view_angle);
   }
   else if (g->k_show != 1)
   {
-    int grab = g->cropping ? g->cropping : get_grab (pzx, pzy, g, border, wd, ht);
-    if(grab == 1)  cairo_rectangle (cr, g->clip_x*wd, g->clip_y*ht, border, g->clip_h*ht);
-    if(grab == 2)  cairo_rectangle (cr, g->clip_x*wd, g->clip_y*ht, g->clip_w*wd, border);
-    if(grab == 3)  cairo_rectangle (cr, g->clip_x*wd, g->clip_y*ht, border, border);
-    if(grab == 4)  cairo_rectangle (cr, (g->clip_x+g->clip_w)*wd-border, g->clip_y*ht, border, g->clip_h*ht);
-    if(grab == 8)  cairo_rectangle (cr, g->clip_x*wd, (g->clip_y+g->clip_h)*ht-border, g->clip_w*wd, border);
-    if(grab == 12) cairo_rectangle (cr, (g->clip_x+g->clip_w)*wd-border, (g->clip_y+g->clip_h)*ht-border, border, border);
-    if(grab == 6)  cairo_rectangle (cr, (g->clip_x+g->clip_w)*wd-border, g->clip_y*ht, border, border);
-    if(grab == 9)  cairo_rectangle (cr, g->clip_x*wd, (g->clip_y+g->clip_h)*ht-border, border, border);
+    _grab_region_t grab = g->cropping ? g->cropping : get_grab (pzx, pzy, g, border, wd, ht);
+    if(grab == GRAB_LEFT)         cairo_rectangle (cr, g->clip_x*wd, g->clip_y*ht, border, g->clip_h*ht);
+    if(grab == GRAB_TOP)          cairo_rectangle (cr, g->clip_x*wd, g->clip_y*ht, g->clip_w*wd, border);
+    if(grab == GRAB_TOP_LEFT)     cairo_rectangle (cr, g->clip_x*wd, g->clip_y*ht, border, border);
+    if(grab == GRAB_RIGHT)        cairo_rectangle (cr, (g->clip_x+g->clip_w)*wd-border, g->clip_y*ht, border, g->clip_h*ht);
+    if(grab == GRAB_BOTTOM)       cairo_rectangle (cr, g->clip_x*wd, (g->clip_y+g->clip_h)*ht-border, g->clip_w*wd, border);
+    if(grab == GRAB_BOTTOM_RIGHT) cairo_rectangle (cr, (g->clip_x+g->clip_w)*wd-border, (g->clip_y+g->clip_h)*ht-border, border, border);
+    if(grab == GRAB_TOP_RIGHT)    cairo_rectangle (cr, (g->clip_x+g->clip_w)*wd-border, g->clip_y*ht, border, border);
+    if(grab == GRAB_BOTTOM_LEFT)  cairo_rectangle (cr, g->clip_x*wd, (g->clip_y+g->clip_h)*ht-border, border, border);
     cairo_stroke (cr);
   }
 
@@ -2145,7 +2172,7 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
         cairo_line_to(cr,wd,h2r);
         cairo_stroke(cr);
         //redraw selected one
-        cairo_set_line_width(cr, 4.0/zoom_scale);
+        cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(4.0)/zoom_scale);
         if (g->k_selected_segment == 0)
         {
           cairo_move_to(cr,pts[0],pts[1]);
@@ -2187,7 +2214,7 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
         cairo_line_to(cr,wd,h2r);
         cairo_stroke(cr);
         //redraw selected one
-        cairo_set_line_width(cr, 4.0/zoom_scale);
+        cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(4.0)/zoom_scale);
         if (g->k_selected_segment == 1)
         {
           cairo_move_to(cr,pts[4],pts[5]);
@@ -2217,7 +2244,7 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
         cairo_line_to(cr,v2b,ht);
         cairo_stroke(cr);
         //redraw selected one
-        cairo_set_line_width(cr, 4.0/zoom_scale);
+        cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(4.0)/zoom_scale);
         if (g->k_selected_segment == 0)
         {
           cairo_move_to(cr,pts[0],pts[1]);
@@ -2235,61 +2262,61 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
       //draw the points
       if (g->k_selected == 0) //point 1
       {
-        cairo_set_line_width(cr, 4.0/zoom_scale);
+        cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(4.0)/zoom_scale);
         cairo_set_source_rgba(cr, 1.0, 0, 0, .8);
       }
       else
       {
-        cairo_set_line_width(cr, 2.0/zoom_scale);
+        cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(2.0)/zoom_scale);
         cairo_set_source_rgba(cr, 1.0, 0, 0, .5);
       }
-      cairo_arc (cr, pts[0], pts[1], 5.0/zoom_scale, 0, 2.0*M_PI);
+      cairo_arc (cr, pts[0], pts[1], DT_PIXEL_APPLY_DPI(5.0)/zoom_scale, 0, 2.0*M_PI);
       cairo_stroke (cr);
       if (g->k_selected == 1) //point 2
       {
-        cairo_set_line_width(cr, 4.0/zoom_scale);
+        cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(4.0)/zoom_scale);
         cairo_set_source_rgba(cr, 1.0, 0, 0, .8);
       }
       else
       {
-        cairo_set_line_width(cr, 2.0/zoom_scale);
+        cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(2.0)/zoom_scale);
         cairo_set_source_rgba(cr, 1.0, 0, 0, .5);
       }
-      cairo_arc (cr, pts[2], pts[3], 5.0/zoom_scale, 0, 2.0*M_PI);
+      cairo_arc (cr, pts[2], pts[3], DT_PIXEL_APPLY_DPI(5.0)/zoom_scale, 0, 2.0*M_PI);
       cairo_stroke (cr);
       if (g->k_selected == 2) //point 3
       {
-        cairo_set_line_width(cr, 4.0/zoom_scale);
+        cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(4.0)/zoom_scale);
         cairo_set_source_rgba(cr, 1.0, 0, 0, .8);
       }
       else
       {
-        cairo_set_line_width(cr, 2.0/zoom_scale);
+        cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(2.0)/zoom_scale);
         cairo_set_source_rgba(cr, 1.0, 0, 0, .5);
       }
-      cairo_arc (cr, pts[4], pts[5], 5.0/zoom_scale, 0, 2.0*M_PI);
+      cairo_arc (cr, pts[4], pts[5], DT_PIXEL_APPLY_DPI(5.0)/zoom_scale, 0, 2.0*M_PI);
       cairo_stroke (cr);
       if (g->k_selected == 3) //point 4
       {
-        cairo_set_line_width(cr, 4.0/zoom_scale);
+        cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(4.0)/zoom_scale);
         cairo_set_source_rgba(cr, 1.0, 0, 0, .8);
       }
       else
       {
-        cairo_set_line_width(cr, 2.0/zoom_scale);
+        cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(2.0)/zoom_scale);
         cairo_set_source_rgba(cr, 1.0, 0, 0, .5);
       }
-      cairo_arc (cr, pts[6], pts[7], 5.0/zoom_scale, 0, 2.0*M_PI);
+      cairo_arc (cr, pts[6], pts[7], DT_PIXEL_APPLY_DPI(5.0)/zoom_scale, 0, 2.0*M_PI);
       cairo_stroke (cr);
 
       //draw the apply "button"
       cairo_text_extents_t extents;
       cairo_select_font_face(cr, "sans-serif", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_BOLD);
-      cairo_set_font_size(cr, 16);
+      cairo_set_font_size(cr, DT_PIXEL_APPLY_DPI(16));
       cairo_text_extents (cr, "ok", &extents);
       int c[2] = {(MIN(pts[4],pts[2])+MAX(pts[0],pts[6]))/2.0f, (MIN(pts[5],pts[7])+MAX(pts[1],pts[3]))/2.0f};
       cairo_set_source_rgba(cr, .5,.5,.5, .9);
-      gui_draw_rounded_rectangle(cr,extents.width+8,extents.height+12,c[0]-extents.width/2.0f-4,c[1]-extents.height/2.0f-6);
+      gui_draw_rounded_rectangle(cr,extents.width+DT_PIXEL_APPLY_DPI(8),extents.height+DT_PIXEL_APPLY_DPI(12),c[0]-extents.width/2.0f-DT_PIXEL_APPLY_DPI(4),c[1]-extents.height/2.0f-DT_PIXEL_APPLY_DPI(6));
       cairo_move_to(cr,c[0]-extents.width/2.0f,c[1]+extents.height/2.0f);
       cairo_set_source_rgba(cr, .2,.2,.2, .9);
       cairo_show_text(cr, "ok");
@@ -2354,7 +2381,7 @@ int mouse_moved(struct dt_iop_module_t *self, double x, double y, double pressur
   pzy += 0.5f;
   static int old_grab = -1;
   _iop_clipping_set_max_clip(self);
-  int grab = get_grab (pzx, pzy, g, 30.0/zoom_scale, wd, ht);
+  _grab_region_t grab = get_grab (pzx, pzy, g, DT_PIXEL_APPLY_DPI(30.0)/zoom_scale, wd, ht);
 
   if(darktable.control->button_down && darktable.control->button_down_which == 3 && g->k_show != 1)
   {
@@ -2453,26 +2480,26 @@ int mouse_moved(struct dt_iop_module_t *self, double x, double y, double pressur
     g->applied = 0;
     // first mouse button, adjust cropping frame, but what do we do?
     float bzx = g->button_down_zoom_x + .5f, bzy = g->button_down_zoom_y + .5f;
-    if(!g->cropping && !g->straightening && g->k_show != 1)
+    if(g->cropping == GRAB_CENTER && !g->straightening && g->k_show != 1)
     {
       g->cropping = grab;
-      if(!grab)
+      if(grab == GRAB_CENTER)
       {
-        g->cropping = 15;
+        g->cropping = GRAB_ALL;
         g->handle_x = g->clip_x;
         g->handle_y = g->clip_y;
       }
-      if(grab & 1) g->handle_x = bzx-g->clip_x;
-      if(grab & 2) g->handle_y = bzy-g->clip_y;
-      if(grab & 4) g->handle_x = bzx-(g->clip_w + g->clip_x);
-      if(grab & 8) g->handle_y = bzy-(g->clip_h + g->clip_y);
+      if(grab & GRAB_LEFT)   g->handle_x = bzx-g->clip_x;
+      if(grab & GRAB_TOP)    g->handle_y = bzy-g->clip_y;
+      if(grab & GRAB_RIGHT)  g->handle_x = bzx-(g->clip_w + g->clip_x);
+      if(grab & GRAB_BOTTOM) g->handle_y = bzy-(g->clip_h + g->clip_y);
       if(!grab && darktable.control->button_down_which == 3) g->straightening = 1;
     }
     if(!g->straightening && darktable.control->button_down_which == 1 && g->k_show != 1)
     {
       grab = g->cropping;
 
-      if(grab == 15)
+      if(grab == GRAB_ALL)
       {
         /* moving the crop window */
         g->clip_x = fminf(g->clip_max_w + g->clip_max_x - g->clip_w, fmaxf(g->clip_max_x, g->handle_x + pzx - bzx));
@@ -2489,10 +2516,10 @@ int mouse_moved(struct dt_iop_module_t *self, double x, double y, double pressur
           float xx = 0.0;
           float yy = 0.0;
 
-          if (grab & 1 || grab & 4)
-            xx = (grab & 1) ? (pzx-bzx) : (bzx-pzx);
-          if (grab & 2 || grab & 8)
-            yy = (grab & 2) ? (pzy-bzy) : (bzy-pzy);
+          if (grab & GRAB_LEFT || grab & GRAB_RIGHT)
+            xx = (grab & GRAB_LEFT) ? (pzx-bzx) : (bzx-pzx);
+          if (grab & GRAB_TOP || grab & GRAB_BOTTOM)
+            yy = (grab & GRAB_TOP) ? (pzy-bzy) : (bzy-pzy);
 
           length = (fabs(xx) > fabs(yy)) ? xx : yy;
 
@@ -2509,20 +2536,20 @@ int mouse_moved(struct dt_iop_module_t *self, double x, double y, double pressur
         else
         {
 
-          if(grab & 1)
+          if(grab & GRAB_LEFT)
           {
             const float old_clip_x = g->clip_x;
             g->clip_x = fmaxf(g->clip_max_x, pzx - g->handle_x);
             g->clip_w = fmaxf(0.1, old_clip_x + g->clip_w - g->clip_x);
           }
-          if(grab & 2)
+          if(grab & GRAB_TOP)
           {
             const float old_clip_y = g->clip_y;
             g->clip_y = fmaxf(g->clip_max_y, pzy - g->handle_y);
             g->clip_h = fmaxf(0.1, old_clip_y + g->clip_h - g->clip_y);
           }
-          if(grab & 4) g->clip_w = fmaxf(0.1, fminf(g->clip_max_w + g->clip_max_x, pzx - g->clip_x - g->handle_x));
-          if(grab & 8) g->clip_h = fmaxf(0.1, fminf(g->clip_max_h + g->clip_max_y, pzy - g->clip_y - g->handle_y));
+          if(grab & GRAB_RIGHT) g->clip_w = fmaxf(0.1, fminf(g->clip_max_w + g->clip_max_x, pzx - g->clip_x - g->handle_x));
+          if(grab & GRAB_BOTTOM) g->clip_h = fmaxf(0.1, fminf(g->clip_max_h + g->clip_max_y, pzy - g->clip_y - g->handle_y));
         }
 
         if(g->clip_x + g->clip_w > g->clip_max_w + g->clip_max_x) g->clip_w = g->clip_max_w + g->clip_max_x - g->clip_x;
@@ -2554,14 +2581,15 @@ int mouse_moved(struct dt_iop_module_t *self, double x, double y, double pressur
     if(old_grab != grab)
     {
       // change mouse pointer
-      if     (grab == 1)  dt_control_change_cursor(GDK_LEFT_SIDE);
-      else if(grab == 2)  dt_control_change_cursor(GDK_TOP_SIDE);
-      else if(grab == 4)  dt_control_change_cursor(GDK_RIGHT_SIDE);
-      else if(grab == 8)  dt_control_change_cursor(GDK_BOTTOM_SIDE);
-      else if(grab == 3)  dt_control_change_cursor(GDK_TOP_LEFT_CORNER);
-      else if(grab == 6)  dt_control_change_cursor(GDK_TOP_RIGHT_CORNER);
-      else if(grab == 12) dt_control_change_cursor(GDK_BOTTOM_RIGHT_CORNER);
-      else if(grab == 9)  dt_control_change_cursor(GDK_BOTTOM_LEFT_CORNER);
+      if     (grab == GRAB_LEFT)         dt_control_change_cursor(GDK_LEFT_SIDE);
+      else if(grab == GRAB_TOP)          dt_control_change_cursor(GDK_TOP_SIDE);
+      else if(grab == GRAB_RIGHT)        dt_control_change_cursor(GDK_RIGHT_SIDE);
+      else if(grab == GRAB_BOTTOM)       dt_control_change_cursor(GDK_BOTTOM_SIDE);
+      else if(grab == GRAB_TOP_LEFT)     dt_control_change_cursor(GDK_TOP_LEFT_CORNER);
+      else if(grab == GRAB_TOP_RIGHT)    dt_control_change_cursor(GDK_TOP_RIGHT_CORNER);
+      else if(grab == GRAB_BOTTOM_RIGHT) dt_control_change_cursor(GDK_BOTTOM_RIGHT_CORNER);
+      else if(grab == GRAB_BOTTOM_LEFT)  dt_control_change_cursor(GDK_BOTTOM_LEFT_CORNER);
+      else if(grab == GRAB_NONE)         dt_control_change_cursor(GDK_LEFT_PTR);
     }
     dt_control_queue_redraw_center();
   }
@@ -2571,7 +2599,7 @@ int mouse_moved(struct dt_iop_module_t *self, double x, double y, double pressur
     if(old_grab != grab) dt_control_change_cursor(GDK_FLEUR);
     g->straightening = g->cropping = 0;
     //or maybe keystone
-    float ext = 0.005f / zoom_scale;
+    float ext = DT_PIXEL_APPLY_DPI(0.005f) / zoom_scale;
     if (g->k_show == 1 && g->k_drag == FALSE)
     {
       float pts[2] = {pzx*wd,pzy*ht};
@@ -2723,7 +2751,7 @@ int button_pressed(struct dt_iop_module_t *self, double x, double y, double pres
     
         float xx=pzx*self->dev->preview_pipe->backbuf_width, yy=pzy*self->dev->preview_pipe->backbuf_height;
         float c[2] = {(MIN(pts[4],pts[2])+MAX(pts[0],pts[6]))/2.0f, (MIN(pts[5],pts[7])+MAX(pts[1],pts[3]))/2.0f};
-        float ext = 10.0/(zoom_scale);
+        float ext = DT_PIXEL_APPLY_DPI(10.0)/(zoom_scale);
         //Apply button
         if (xx>c[0]-ext && xx<c[0]+ext && yy>c[1]-ext && yy<c[1]+ext)
         {

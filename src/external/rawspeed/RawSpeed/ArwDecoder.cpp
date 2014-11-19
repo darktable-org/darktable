@@ -3,7 +3,8 @@
 /*
     RawSpeed - RAW file decoder.
 
-    Copyright (C) 2009 Klaus Post
+    Copyright (C) 2009-2014 Klaus Post
+    Copyright (C) 2014 Pedro Côrte-Real
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Lesser General Public
@@ -27,6 +28,7 @@ namespace RawSpeed {
 ArwDecoder::ArwDecoder(TiffIFD *rootIFD, FileMap* file) :
     RawDecoder(file), mRootIFD(rootIFD) {
   mShiftDownScale = 0;
+  decoderVersion = 1;
 }
 
 ArwDecoder::~ArwDecoder(void) {
@@ -38,11 +40,47 @@ ArwDecoder::~ArwDecoder(void) {
 RawImage ArwDecoder::decodeRawInternal() {
   vector<TiffIFD*> data = mRootIFD->getIFDsWithTag(STRIPOFFSETS);
 
-  if (data.empty())
-    ThrowRDE("ARW Decoder: No image data found");
+  if (data.empty()) {
+    TiffEntry *model = mRootIFD->getEntryRecursive(MODEL);
+
+    if (model && model->getString() == "DSLR-A100") {
+      // We've caught the elusive A100 in the wild, a transitional format
+      // between the simple sanity of the MRW custom format and the wordly
+      // wonderfullness of the Tiff-based ARW format, let's shoot from the hip
+      uint32 off = mRootIFD->getEntryRecursive(SUBIFDS)->getInt();
+      uint32 width = 3881;
+      uint32 height = 2608;
+
+      mRaw->dim = iPoint2D(width, height);
+      mRaw->createData();
+      // FIXME: there may be a better way to set the total max size;
+      ByteStream input(mFile->getData(off),mFile->getSize()-off);
+
+      try {
+        DecodeARW(input, width, height);
+      } catch (IOException &e) {
+        mRaw->setError(e.what());
+        // Let's ignore it, it may have delivered somewhat useful data.
+      }
+
+      return mRaw;
+    } else {
+      ThrowRDE("ARW Decoder: No image data found");
+    }
+  }
 
   TiffIFD* raw = data[0];
   int compression = raw->getEntry(COMPRESSION)->getInt();
+  if (1 == compression) {
+    // This is probably the SR2 format, let's pass it on
+    try {
+      DecodeSR2(raw);
+    } catch (IOException &e) {
+      mRaw->setError(e.what());
+    }
+
+    return mRaw;
+  }
   if (32767 != compression)
     ThrowRDE("ARW Decoder: Unsupported compression");
 
@@ -118,6 +156,19 @@ RawImage ArwDecoder::decodeRawInternal() {
   return mRaw;
 }
 
+void ArwDecoder::DecodeSR2(TiffIFD* raw) {
+  uint32 width = raw->getEntry(IMAGEWIDTH)->getInt();
+  uint32 height = raw->getEntry(IMAGELENGTH)->getInt();
+  uint32 off = raw->getEntry(STRIPOFFSETS)->getInt();
+  uint32 c2 = raw->getEntry(STRIPBYTECOUNTS)->getInt();
+
+  mRaw->dim = iPoint2D(width, height);
+  mRaw->createData();
+  ByteStream input(mFile->getData(off), c2);
+
+  Decode14BitRawBEunpacked(input, width, height);
+}
+
 void ArwDecoder::DecodeARW(ByteStream &input, uint32 w, uint32 h) {
   BitPumpMSB bits(&input);
   uchar8* data = mRaw->getData();
@@ -134,7 +185,7 @@ void ArwDecoder::DecodeARW(ByteStream &input, uint32 w, uint32 h) {
       if (len == 4)
         while (len < 17 && !bits.getBitNoFill()) len++;
       int diff = bits.getBits(len);
-      if ((diff & (1 << (len - 1))) == 0)
+      if (len && (diff & (1 << (len - 1))) == 0)
         diff -= (1 << len) - 1;
       sum += diff;
       _ASSERTE(!(sum >> 12));
@@ -191,7 +242,7 @@ void ArwDecoder::decodeMetaDataInternal(CameraMetaData *meta) {
   //Default
   int iso = 0;
 
-  mRaw->cfa.setCFA(CFA_RED, CFA_GREEN, CFA_GREEN2, CFA_BLUE);
+  mRaw->cfa.setCFA(iPoint2D(2,2), CFA_RED, CFA_GREEN, CFA_GREEN2, CFA_BLUE);
   vector<TiffIFD*> data = mRootIFD->getIFDsWithTag(MODEL);
 
   if (data.empty())

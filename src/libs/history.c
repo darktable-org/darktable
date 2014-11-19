@@ -94,9 +94,8 @@ void connect_key_accels(dt_lib_module_t *self)
 void gui_init(dt_lib_module_t *self)
 {
   /* initialize ui widgets */
-  dt_lib_history_t *d = (dt_lib_history_t *)g_malloc(sizeof(dt_lib_history_t));
+  dt_lib_history_t *d = (dt_lib_history_t *)g_malloc0(sizeof(dt_lib_history_t));
   self->data = (void *)d;
-  memset(d,0,sizeof(dt_lib_history_t));
 
   self->widget =  gtk_vbox_new (FALSE,2);
   d->history_box = gtk_vbox_new(FALSE,0);
@@ -111,7 +110,7 @@ void gui_init(dt_lib_module_t *self)
 
   /* add toolbar button for creating style */
   GtkWidget *hbutton2 = dtgtk_button_new (dtgtk_cairo_paint_styles,0);
-  //gtk_widget_set_size_request (hbutton,24,-1);
+  //gtk_widget_set_size_request (hbutton, DT_PIXEL_APPLY_DPI(24), -1);
   g_signal_connect (G_OBJECT (hbutton2), "clicked", G_CALLBACK (_lib_history_create_style_button_clicked_callback),NULL);
   g_object_set (G_OBJECT (hbutton2), "tooltip-text", _("create a style from the current history stack"), (char *)NULL);
   d->create_button = hbutton2;
@@ -189,17 +188,18 @@ static void _lib_history_change_callback(gpointer instance, gpointer user_data)
 
   /* iterate over history items and add them to list*/
   GList *history = g_list_first(darktable.develop->history);
-  char label[512];
   while (history)
   {
     dt_dev_history_item_t *hitem = (dt_dev_history_item_t *)(history->data);
 
-    /* create a history button and add to box */
-    if(hitem->module->multi_name && strcmp(hitem->module->multi_name,"0") == 0)
-      snprintf(label, sizeof(label), "%s", hitem->module->name());
+    gchar *label;
+    if(!hitem->multi_name[0] || strcmp(hitem->multi_name, "0") == 0)
+      label = g_strdup_printf("%s", hitem->module->name());
     else
-      snprintf(label, sizeof(label), "%s %s", hitem->module->name(), hitem->module->multi_name);
+      label = g_strdup_printf("%s %s", hitem->module->name(), hitem->multi_name);
+
     GtkWidget *widget =_lib_history_create_button(self,num,label,hitem->enabled);
+    g_free(label);
 
     gtk_box_pack_start(GTK_BOX(d->history_box),widget,TRUE,TRUE,0);
     gtk_box_reorder_child(GTK_BOX(d->history_box),widget,0);

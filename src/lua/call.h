@@ -18,18 +18,24 @@
 #ifndef DT_LUA_CALL_H
 #define DT_LUA_CALL_H
 
-
-/** runs a command in the DT lua environement, command in any valid lua string */
-int dt_lua_dostring(lua_State *L,const char* command);
-
-/** executes a CFunction through dt_lua_do_chunk, no parameter, no result */
-int dt_lua_protect_call(lua_State *L,lua_CFunction func);
-
-/** runs the content of a file */
-int dt_lua_dofile(lua_State *L,const char* filename);
-
-/** directly run a lua chunk */
+/* naming conventions
+ * doxxx : runs the xxx with pcall conventions (pops args from stack,put result on stack, returns an error code)
+     * file : takes a file name and runs it
+     * chunk : function is on the stack below the args
+     * string : runs a string as a command
+ * doxxx_silent : same but errors go to dt_console_log and nil is put as a result on the stack
+ * doxxx_raise : same but a lua error is raised
+ */
 int dt_lua_do_chunk(lua_State *L,int nargs,int nresults);
+int dt_lua_do_chunk_silent(lua_State *L,int nargs, int nresults);
+int dt_lua_do_chunk_raise(lua_State *L,int nargs, int nresults);
+
+int dt_lua_dostring(lua_State *L,const char* command,int nargs,int nresults);
+int dt_lua_dostring_silent(lua_State *L,const char* command,int nargs,int nresults);
+
+int dt_lua_dofile_silent(lua_State *L,const char* filename,int nargs,int nresults);
+
+
 
 
 int dt_lua_init_call(lua_State *L);

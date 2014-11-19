@@ -51,7 +51,7 @@
               of whether the image has already been altered in darkroom. Also, when the mouse
               hovers over an image frame, image information (EXIF data, metadata) is shown in
               the <link linkend="image_information"><emphasis>image
-              information</emphasis></link> panel in the bottom left.
+              information</emphasis></link> panel at the bottom left.
             </entry>
             <entry>
               <graphic fileref="images/lighttable_thumb.png" scalefit="1" width="80%" align="center" />
@@ -119,19 +119,43 @@
                 fully zoom into the image while the key is pressed
               </entry>
             </row>
+            <row>
+              <entry>
+                <emphasis>ctrl-z</emphasis>
+              </entry>
+              <entry>
+                fully zoom into the image and show areas in focus
+              </entry>
+            </row>
           </tbody>
         </tgroup>
       </informaltable>
     </para>
 
+    <indexterm>
+      <primary>overlay</primary>
+    </indexterm>
+
     <para>
-      At the bottom you have an option to choose between zoomable lighttable view or filemanager
-      view of the thumbnails. In zoomable lighttable view, scroll with your mouse wheel to zoom
-      in and out. Moving the mouse while <emphasis>pressing the left mouse button</emphasis>
-      allows you to navigate through your collection. In filemanager view, you can can change
-      the number of images in each row, using the slider next to the filemanager option, or by
-      using <emphasis>ctrl-(mouse wheel)</emphasis>. Use your mouse wheel to navigate through
-      your collection.
+      The overlay button
+      <inlinegraphic fileref="&icon_general_overlay;" scalefit="1" width="2%" align="center" />
+      located in the upper panel activates the permanent display of star ratings and
+      image-changed indicator
+      <inlinegraphic fileref="images/lighttable_thumb_icon_altered.png" scalefit="1" width="3mm"/>
+      on all thumbnails. By default these overlays are only visible on the thumbnail under the
+      mouse cursor. An overlay button is also available in the other views where it affects the
+      filmstrip accordingly (see <xref linkend="filmstrip_overview"/> and
+      <xref linkend="darkroom_filmstrip"/>).
+    </para>
+
+    <para>
+      In the bottom panel you have an option to choose between zoomable lighttable view or
+      filemanager view of the thumbnails. In zoomable lighttable view, scroll with your mouse
+      wheel to zoom in and out. Moving the mouse while <emphasis>pressing the left mouse
+      button</emphasis> allows you to navigate through your collection. In filemanager view, you
+      can can change the number of images in each row, using the slider next to the filemanager
+      option, or by using <emphasis>ctrl-(mouse wheel)</emphasis>. Use your mouse wheel to
+      navigate through your collection.
     </para>
 
     <para>
@@ -148,22 +172,30 @@
       the zoomable lighttable view.
     </para>
 
+    <para>
+      While holding down the <emphasis>z</emphasis> key a fully zoomed preview of the image
+      under the mouse cursor is displayed. You can use this feature for a quick inspection of
+      image quality while rating and selecting images.
+    </para>
+
     <indexterm>
       <primary>focus detection</primary>
     </indexterm>
 
     <para>
-      While holding down the <emphasis>z</emphasis> key a fully zoomed preview of the image
-      under the mouse cursor is displayed. You can use this feature for a quick inspection of
-      image quality while rating and selecting images. If the corresponding option in
-      <emphasis>gui options</emphasis> (see <xref linkend="gui_options"/>) is enabled darktable
-      automatically analyses images for focus regions. Areas of high sharpness are indicated by
-      a red border - the higher the color intensity the better the sharpness. In case that no
-      area of high sharpness is detected darktable indicates areas of moderate sharpness with a
-      blue border. For this tool to work the input image needs to hold an embedded JPEG
-      thumbnail which is the case for most RAW files. Sometimes pressing <emphasis>z</emphasis>
-      may not reveal an immediate effect - in that case please click into the center area and
-      press <emphasis>z</emphasis> again.
+      Holding down the <emphasis>ctlr-z</emphasis> key fully zooms into the image and
+      additionally activates an analysis for focus regions. Areas of high sharpness are
+      indicated by a red border&nbsp;&ndash; the higher the color intensity the better the
+      sharpness. In case that no area of <emphasis>high</emphasis> sharpness is detected
+      darktable indicates areas of <emphasis>moderate</emphasis> sharpness with a blue border.
+      For this tool to work the input image needs to hold an embedded JPEG thumbnail which is
+      the case for most RAW files.
+    </para>
+
+    <para>
+      Sometimes pressing <emphasis>z</emphasis> or <emphasis>ctrl-z</emphasis> may not reveal an
+      immediate effect&nbsp;&ndash; in that case please click into the center area and press the
+      corresponding key again.
     </para>
 
     <informaltable frame="none">
@@ -173,9 +205,9 @@
         <tbody>
           <row>
             <entry>
-              Fully zoomed-in image view while holding down the <emphasis>z</emphasis> key with
-              indication of the areas in focus. Focus detection is based on an embedded JPEG
-              thumbnail of the original RAW file independent of further processing steps within
+              Fully zoomed-in image view while holding down the <emphasis>ctrl-z</emphasis> key
+              with indication of the areas in focus. Focus detection is based on an embedded
+              JPEG thumbnail of the original RAW file independent of any processing steps within
               darktable.
             </entry>
             <entry>

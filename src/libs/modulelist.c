@@ -31,9 +31,9 @@
 
 DT_MODULE(1)
 
-#define DT_MODULE_LIST_SPACING 2
+#define DT_MODULE_LIST_SPACING DT_PIXEL_APPLY_DPI(2)
 
-#define ICON_SIZE 20
+#define ICON_SIZE DT_PIXEL_APPLY_DPI(20)
 typedef struct dt_lib_modulelist_t
 {
   GtkTreeView *tree;
@@ -75,14 +75,13 @@ int position()
 void gui_init(dt_lib_module_t *self)
 {
   /* initialize ui widgets */
-  dt_lib_modulelist_t *d = (dt_lib_modulelist_t *)g_malloc(sizeof(dt_lib_modulelist_t));
-  memset(d,0,sizeof(dt_lib_modulelist_t));
+  dt_lib_modulelist_t *d = (dt_lib_modulelist_t *)g_malloc0(sizeof(dt_lib_modulelist_t));
   self->data = (void *)d;
   self->widget = gtk_scrolled_window_new(NULL, NULL); //GTK_ADJUSTMENT(gtk_adjustment_new(200, 100, 200, 10, 100, 100))
-  gtk_widget_set_size_request(self->widget, -1, 208);
+  gtk_widget_set_size_request(self->widget, -1, DT_PIXEL_APPLY_DPI(208));
   gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(self->widget), GTK_POLICY_AUTOMATIC, GTK_POLICY_ALWAYS);
   d->tree = GTK_TREE_VIEW(gtk_tree_view_new());
-  gtk_widget_set_size_request(GTK_WIDGET(d->tree), 50, -1);
+  gtk_widget_set_size_request(GTK_WIDGET(d->tree), DT_PIXEL_APPLY_DPI(50), -1);
   gtk_container_add(GTK_CONTAINER(self->widget), GTK_WIDGET(d->tree));
 
   /* connect to signal for darktable.develop initialization */
@@ -144,6 +143,23 @@ static void text_renderer_function (GtkTreeViewColumn *col,
   g_object_set(renderer,"text",module->name(),NULL);
   g_object_set(renderer,"cell-background-set",module->state != dt_iop_state_HIDDEN,NULL);
 }
+
+static GdkPixbuf * load_image(const char* filename)
+{
+  GError *error = NULL;
+  if(!g_file_test(filename, G_FILE_TEST_IS_REGULAR))
+    return NULL;
+
+  GdkPixbuf *pixbuf = gdk_pixbuf_new_from_file_at_size(filename, ICON_SIZE, ICON_SIZE, &error);
+  if(!pixbuf)
+  {
+    fprintf(stderr, "error loading file `%s': %s\n", filename, error->message);
+    g_error_free(error);
+  }
+  return pixbuf;
+}
+
+static const uint8_t fallback_pixel[4] = {0, 0, 0, 0};
 
 static void _lib_modulelist_populate_callback(gpointer instance, gpointer user_data)
 {
@@ -216,19 +232,37 @@ static void _lib_modulelist_populate_callback(gpointer instance, gpointer user_d
   /* go thru list of iop modules and add them to the list */
   GList *modules = g_list_last(darktable.develop->iop);
 
+  char datadir[PATH_MAX];
+  dt_loc_get_datadir(datadir, sizeof(datadir));
+
   while(modules)
   {
     dt_iop_module_t *module = (dt_iop_module_t *)(modules->data);
     if(!dt_iop_is_hidden(module) && !(module->flags() & IOP_FLAGS_DEPRECATED) && module->multi_priority==0)
     {
-      char filename[DT_MAX_PATH_LEN], datadir[DT_MAX_PATH_LEN];
-      dt_loc_get_datadir(datadir, DT_MAX_PATH_LEN);
-      snprintf(filename, DT_MAX_PATH_LEN, "%s/pixmaps/plugins/darkroom/%s.png", datadir, module->op);
-      if(!g_file_test(filename, G_FILE_TEST_IS_REGULAR))
-        snprintf(filename, DT_MAX_PATH_LEN, "%s/pixmaps/plugins/darkroom/template.png", datadir);
+      GdkPixbuf *pixbuf;
+      char filename[PATH_MAX];
 
+      snprintf(filename, sizeof(filename), "%s/pixmaps/plugins/darkroom/%s.svg", datadir, module->op);
+      pixbuf = load_image(filename);
+      if(pixbuf) goto end;
 
-      GdkPixbuf *pixbuf = gdk_pixbuf_new_from_file(filename,NULL);
+      snprintf(filename, sizeof(filename), "%s/pixmaps/plugins/darkroom/%s.png", datadir, module->op);
+      pixbuf = load_image(filename);
+      if(pixbuf) goto end;
+
+      snprintf(filename, sizeof(filename), "%s/pixmaps/plugins/darkroom/template.svg", datadir);
+      pixbuf = load_image(filename);
+      if(pixbuf) goto end;
+
+      snprintf(filename, sizeof(filename), "%s/pixmaps/plugins/darkroom/template.png", datadir);
+      pixbuf = load_image(filename);
+      if(pixbuf) goto end;
+
+      // wow, we could neither load the SVG nor the PNG files. something is fucked up.
+      pixbuf = gdk_pixbuf_new_from_data(fallback_pixel, GDK_COLORSPACE_RGB, TRUE, 8, 1, 1, 4, NULL, NULL);
+
+end:
       gtk_list_store_append (store, &iter);
       gtk_list_store_set (store, &iter,
                           COL_IMAGE, pixbuf,

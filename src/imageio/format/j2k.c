@@ -115,15 +115,15 @@ void init(dt_imageio_module_format_t *self)
 #ifdef USE_LUA
   dt_lua_register_module_member(darktable.lua_state.state,self,dt_imageio_j2k_t,bpp,int);
   luaA_enum(darktable.lua_state.state,dt_imageio_j2k_format_t);
-  luaA_enum_value_name(darktable.lua_state.state,dt_imageio_j2k_format_t,J2K_CFMT,"j2k",false);
-  luaA_enum_value_name(darktable.lua_state.state,dt_imageio_j2k_format_t,J2K_CFMT,"jp2",false);
+  luaA_enum_value_name(darktable.lua_state.state,dt_imageio_j2k_format_t,J2K_CFMT,"j2k");
+  luaA_enum_value_name(darktable.lua_state.state,dt_imageio_j2k_format_t,JP2_CFMT,"jp2");
   dt_lua_register_module_member(darktable.lua_state.state,self,dt_imageio_j2k_t,format,dt_imageio_j2k_format_t);
   dt_lua_register_module_member(darktable.lua_state.state,self,dt_imageio_j2k_t,quality,int);
   luaA_enum(darktable.lua_state.state,dt_imageio_j2k_preset_t);
-  luaA_enum_value_name(darktable.lua_state.state,dt_imageio_j2k_preset_t,DT_J2K_PRESET_OFF,"off",false);
-  luaA_enum_value_name(darktable.lua_state.state,dt_imageio_j2k_preset_t,DT_J2K_PRESET_CINEMA2K_24,"cinema2k_24",false);
-  luaA_enum_value_name(darktable.lua_state.state,dt_imageio_j2k_preset_t,DT_J2K_PRESET_CINEMA2K_48,"cinema2k_48",false);
-  luaA_enum_value_name(darktable.lua_state.state,dt_imageio_j2k_preset_t,DT_J2K_PRESET_CINEMA4K_24,"cinema4k_24",false);
+  luaA_enum_value_name(darktable.lua_state.state,dt_imageio_j2k_preset_t,DT_J2K_PRESET_OFF,"off");
+  luaA_enum_value_name(darktable.lua_state.state,dt_imageio_j2k_preset_t,DT_J2K_PRESET_CINEMA2K_24,"cinema2k_24");
+  luaA_enum_value_name(darktable.lua_state.state,dt_imageio_j2k_preset_t,DT_J2K_PRESET_CINEMA2K_48,"cinema2k_48");
+  luaA_enum_value_name(darktable.lua_state.state,dt_imageio_j2k_preset_t,DT_J2K_PRESET_CINEMA4K_24,"cinema4k_24");
   dt_lua_register_module_member(darktable.lua_state.state,self,dt_imageio_j2k_t,preset,dt_imageio_j2k_preset_t);
 #endif
 }
@@ -259,7 +259,6 @@ static void cinema_setup_encoder(opj_cparameters_t *parameters,opj_image_t *imag
     case CINEMA4K_24:
       for(i=0; i<parameters->tcp_numlayers; i++)
       {
-        temp_rate = 0;
         if(rates[i] == 0)
         {
           parameters->tcp_rates[0] = ((float) (image->numcomps * image->comps[0].w * image->comps[0].h * image->comps[0].prec)) /
@@ -286,7 +285,6 @@ static void cinema_setup_encoder(opj_cparameters_t *parameters,opj_image_t *imag
     case CINEMA2K_48:
       for(i=0; i<parameters->tcp_numlayers; i++)
       {
-        temp_rate = 0;
         if(rates[i] == 0)
         {
           parameters->tcp_rates[0] = ((float) (image->numcomps * image->comps[0].w * image->comps[0].h * image->comps[0].prec))/
@@ -347,11 +345,11 @@ int write_image (dt_imageio_module_data_t *j2k_tmp, const char *filename, const 
   parameters.cp_rsiz = STD_RSIZ;
 
   parameters.cod_format = j2k->format;
-  parameters.cp_cinema = j2k->preset;
+  parameters.cp_cinema = (OPJ_CINEMA_MODE)j2k->preset;
 
   if(parameters.cp_cinema)
   {
-    rates = (float*)malloc(parameters.tcp_numlayers * sizeof(float));
+    rates = (float*)calloc(parameters.tcp_numlayers, sizeof(float));
     for(int i=0; i< parameters.tcp_numlayers; i++)
     {
       rates[i] = parameters.tcp_rates[i];
@@ -503,7 +501,7 @@ int write_image (dt_imageio_module_data_t *j2k_tmp, const char *filename, const 
 
   /* free user parameters structure */
   g_free(parameters.cp_comment);
-  if(parameters.cp_matrice) free(parameters.cp_matrice);
+  free(parameters.cp_matrice);
 
   return ((rc == 1) ? 0 : 1);
 }
@@ -517,8 +515,7 @@ params_size(dt_imageio_module_format_t *self)
 void*
 get_params(dt_imageio_module_format_t *self)
 {
-  dt_imageio_j2k_t *d = (dt_imageio_j2k_t *)malloc(sizeof(dt_imageio_j2k_t));
-  memset(d, 0, sizeof(dt_imageio_j2k_t));
+  dt_imageio_j2k_t *d = (dt_imageio_j2k_t *)calloc(1, sizeof(dt_imageio_j2k_t));
   d->bpp = 16; // can be 8, 12 or 16
   d->format = dt_conf_get_int("plugins/imageio/format/j2k/format");
   d->preset = dt_conf_get_int("plugins/imageio/format/j2k/preset");

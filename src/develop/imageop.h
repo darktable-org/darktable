@@ -20,15 +20,18 @@
 #ifndef DT_DEVELOP_IMAGEOP_H
 #define DT_DEVELOP_IMAGEOP_H
 
+#include <gmodule.h>
+#include <gtk/gtk.h>
+#include <sched.h>
+#include <stdint.h>
+
 #include "common/darktable.h"
 #include "common/introspection.h"
 #include "common/opencl.h"
 #include "control/settings.h"
 #include "develop/pixelpipe.h"
 #include "dtgtk/togglebutton.h"
-#include <gmodule.h>
-#include <gtk/gtk.h>
-#include <sched.h>
+
 struct dt_develop_t;
 struct dt_dev_pixelpipe_t;
 struct dt_dev_pixelpipe_iop_t;
@@ -94,14 +97,50 @@ typedef enum dt_iop_module_state_t
 
 }
 dt_iop_module_state_t;
-typedef struct dt_iop_params_t
-{
-  int keep;
-}
-dt_iop_params_t;
+
 typedef void dt_iop_gui_data_t;
 typedef void dt_iop_data_t;
 typedef void dt_iop_global_data_t;
+
+//params to be used to collect histogram
+typedef struct dt_dev_histogram_collection_params_t
+{
+  /** histogram_collect: if NULL, correct is set; else should be set manually */
+  const struct dt_iop_roi_t *roi;
+  /** count of histogram bins. */
+  uint32_t bins_count;
+}
+dt_dev_histogram_collection_params_t;
+
+//params used to collect histogram during last histogram capture
+typedef struct dt_dev_histogram_stats_t
+{
+  /** count of histogram bins. */
+  uint32_t bins_count;
+  /** count of pixels sampled during histogram capture. */
+  uint32_t pixels;
+  /** count of channels: 1 for RAW, 3 for rgb/Lab. */
+  uint32_t ch;
+}
+dt_dev_histogram_stats_t;
+
+/** when to collect histogram */
+typedef enum dt_dev_request_flags_t
+{
+  DT_REQUEST_NONE         = 0,
+  DT_REQUEST_ON           = 1<<0,
+  DT_REQUEST_ONLY_IN_GUI  = 1<<1
+}
+dt_dev_request_flags_t;
+
+/** color picker request */
+typedef enum dt_dev_request_colorpick_flags_t
+{
+  DT_REQUEST_COLORPICK_OFF    = 0,            // off
+  DT_REQUEST_COLORPICK_MODULE = 1<<0,         // requested by module (should take precedence)
+  DT_REQUEST_COLORPICK_BLEND  = 1<<1          // requested by parametric blending gui
+}
+dt_dev_request_colorpick_flags_t;
 
 /** part of the module which only contains the cached dlopen stuff. */
 struct dt_iop_module_so_t;
@@ -164,7 +203,7 @@ typedef struct dt_iop_module_so_t
   void (*original_init)        (struct dt_iop_module_t *self);
   void (*cleanup)              (struct dt_iop_module_t *self);
   void (*init_pipe)            (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_t *pipe, struct dt_dev_pixelpipe_iop_t *piece);
-  void (*commit_params)        (struct dt_iop_module_t *self, struct dt_iop_params_t *params, struct dt_dev_pixelpipe_t *pipe, struct dt_dev_pixelpipe_iop_t *piece);
+  void (*commit_params)        (struct dt_iop_module_t *self, dt_iop_params_t *params, struct dt_dev_pixelpipe_t *pipe, struct dt_dev_pixelpipe_iop_t *piece);
   void (*reload_defaults)      (struct dt_iop_module_t *self);
   void (*cleanup_pipe)         (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_t *pipe, struct dt_dev_pixelpipe_iop_t *piece);
   void (*modify_roi_in)        (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, const struct dt_iop_roi_t *roi_out, struct dt_iop_roi_t *roi_in);
@@ -201,18 +240,16 @@ typedef struct dt_iop_module_t
   int32_t priority;
   /** module sets this if the enable checkbox should be hidden. */
   int32_t hide_enable_button;
-  /** set to 1 if you want an input color picked during next eval. gui mode only. */
-  int32_t request_color_pick;
-  /** set to 1 if you want an input histogram generated during next eval. gui mode only. */
-  int32_t request_histogram;
-  /** count of histogram bins. 64 by default. gui mode only. */
-  int32_t histogram_bins_count;
-  /** histogram step for iop_cs_RAW */
-  int32_t histogram_step_raw;
-  /** histogram step for iop_cs_rgb. */
-  int32_t histogram_step_rgb;
-  /** histogram step for iop_cs_Lab. */
-  int32_t histogram_step_lab;
+  /** set to DT_REQUEST_COLORPICK_MODULE if you want an input color picked during next eval. gui mode only. */
+  dt_dev_request_colorpick_flags_t request_color_pick;
+  /** (bitwise) set if you want an histogram generated during next eval */
+  dt_dev_request_flags_t request_histogram;
+  /** set to source for histogram */
+  dt_dev_pixelpipe_type_t request_histogram_source;
+  /** set histogram generation params */
+  dt_dev_histogram_collection_params_t histogram_params;
+  /** stats of captured histogram */
+  dt_dev_histogram_stats_t histogram_stats;
   /** set to 1 if you want the mask to be transferred into alpha channel during next eval. gui mode only. */
   int32_t request_mask_display;
   /** set to 1 if you want the blendif mask to be suppressed in the module in focus. gui mode only. */
@@ -226,9 +263,9 @@ typedef struct dt_iop_module_t
   /** place to store the picked color of module output (before blending). */
   float picked_output_color[3], picked_output_color_min[3], picked_output_color_max[3];
   /** pointer to pre-module histogram data; if available: histogram_bins_count bins with 4 channels each */
-  float *histogram;
+  uint32_t *histogram;
   /** maximum levels in histogram, one per channel */
-  float histogram_max[4];
+  uint32_t histogram_max[4];
   /** reference for dlopened libs. */
   darktable_t *dt;
   /** the module is used in this develop module. */
@@ -328,7 +365,7 @@ typedef struct dt_iop_module_t
   void (*init_pipe)       (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_t *pipe, struct dt_dev_pixelpipe_iop_t *piece);
   /** this resets the params to factory defaults. used at the beginning of each history synch. */
   /** this commits (a mutex will be locked to synch gegl/gui) the given history params to the gegl pipe piece. */
-  void (*commit_params)   (struct dt_iop_module_t *self, struct dt_iop_params_t *params, struct dt_dev_pixelpipe_t *pipe, struct dt_dev_pixelpipe_iop_t *piece);
+  void (*commit_params)   (struct dt_iop_module_t *self, dt_iop_params_t *params, struct dt_dev_pixelpipe_t *pipe, struct dt_dev_pixelpipe_iop_t *piece);
   /** this is the chance to update default parameters, after the full raw is loaded. */
   void (*reload_defaults) (struct dt_iop_module_t *self);
   /** this destroys all (gegl etc) resources needed by the piece of the pipeline. */
@@ -404,7 +441,7 @@ void dt_iop_gui_set_state(dt_iop_module_t *module,dt_iop_module_state_t state);
 void dt_iop_gui_update_header(dt_iop_module_t *module);
 
 /** commits params and updates piece hash. */
-void dt_iop_commit_params(dt_iop_module_t *module, struct dt_iop_params_t *params, struct dt_develop_blend_params_t * blendop_params, struct dt_dev_pixelpipe_t *pipe, struct dt_dev_pixelpipe_iop_t *piece);
+void dt_iop_commit_params(dt_iop_module_t *module, dt_iop_params_t *params, struct dt_develop_blend_params_t * blendop_params, struct dt_dev_pixelpipe_t *pipe, struct dt_dev_pixelpipe_iop_t *piece);
 /** creates a label widget for the expander, with callback to enable/disable this module. */
 GtkWidget *dt_iop_gui_get_expander(dt_iop_module_t *module);
 /** get the widget of plugin ui in expander */
@@ -418,6 +455,12 @@ void dt_iop_request_focus(dt_iop_module_t *module);
 void dt_iop_load_default_params(dt_iop_module_t *module);
 /** reloads certain gui/param defaults when the image was switched. */
 void dt_iop_reload_defaults(dt_iop_module_t *module);
+
+/*
+ * must be called in dt_dev_change_image() to fix wrong histogram in levels
+ * just after switching images and before full redraw
+ */
+void dt_iop_cleanup_histogram(gpointer data, gpointer user_data);
 
 /** let plugins have breakpoints: */
 int dt_iop_breakpoint(struct dt_develop_t *dev, struct dt_dev_pixelpipe_t *pipe);
@@ -438,7 +481,7 @@ dt_iop_colorspace_type_t;
 dt_iop_colorspace_type_t dt_iop_module_colorspace(const dt_iop_module_t *module);
 
 /** flip according to orientation bits, also zoom to given size. */
-void dt_iop_flip_and_zoom_8( const uint8_t *in, int32_t iw, int32_t ih, uint8_t *out, int32_t ow, int32_t oh, const int32_t orientation, uint32_t *width, uint32_t *height);
+void dt_iop_flip_and_zoom_8( const uint8_t *in, int32_t iw, int32_t ih, uint8_t *out, int32_t ow, int32_t oh, const dt_image_orientation_t orientation, uint32_t *width, uint32_t *height);
 
 /** for homebrew pixel pipe: zoom pixel array. */
 void dt_iop_clip_and_zoom(float *out, const float *const in, const struct dt_iop_roi_t *const roi_out, const struct dt_iop_roi_t * const roi_in, const int32_t out_stride, const int32_t in_stride);
@@ -467,6 +510,27 @@ dt_iop_clip_and_zoom_demosaic_half_size_f(
   const int32_t in_stride,
   const uint32_t filters,
   const float clip);
+
+/** x-trans sensor downscaling */
+void
+dt_iop_clip_and_zoom_demosaic_third_size_xtrans(
+  float *out,
+  const uint16_t *const in,
+  const struct dt_iop_roi_t *const roi_out,
+  const struct dt_iop_roi_t *const roi_in,
+  const int32_t out_stride,
+  const int32_t in_stride,
+  const uint8_t (*const xtrans)[6]);
+
+void
+dt_iop_clip_and_zoom_demosaic_third_size_xtrans_f(
+  float *out,
+  const float *const in,
+  const struct dt_iop_roi_t *const roi_out,
+  const struct dt_iop_roi_t *const roi_in,
+  const int32_t out_stride,
+  const int32_t in_stride,
+  const uint8_t (*const xtrans)[6]);
 
 /** as dt_iop_clip_and_zoom, but for rgba 8-bit channels. */
 void dt_iop_clip_and_zoom_8(const uint8_t *i, int32_t ix, int32_t iy, int32_t iw, int32_t ih, int32_t ibw, int32_t ibh,

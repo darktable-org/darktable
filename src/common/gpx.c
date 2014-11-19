@@ -26,6 +26,15 @@ typedef struct _gpx_track_point_t
   GTimeVal time;
 } _gpx_track_point_t;
 
+/* GPX XML parser */
+typedef enum _gpx_parser_element_t
+{
+  GPX_PARSER_ELEMENT_NONE  = 0,
+  GPX_PARSER_ELEMENT_TRKPT = 1<<0,
+  GPX_PARSER_ELEMENT_TIME  = 1<<1,
+  GPX_PARSER_ELEMENT_ELE   = 1<<2
+} _gpx_parser_element_t;
+
 typedef struct dt_gpx_t
 {
   /* the list of track records parsed */
@@ -33,18 +42,10 @@ typedef struct dt_gpx_t
 
   /* currently parsed track point */
   _gpx_track_point_t *current_track_point;
-  uint32_t current_parser_element;
+  _gpx_parser_element_t current_parser_element;
   gboolean invalid_track_point;
 
 } dt_gpx_t;
-
-
-
-/* GPX XML parser */
-#define GPX_PARSER_ELEMENT_TRKPT   1
-#define GPX_PARSER_ELEMENT_TIME    2
-#define GPX_PARSER_ELEMENT_ELE     4
-
 
 static void _gpx_parser_start_element(GMarkupParseContext *ctx,
                                       const gchar *element_name, const gchar **attribute_names,
@@ -87,8 +88,7 @@ dt_gpx_t *dt_gpx_new(const gchar *filename)
     goto error;
 
   /* allocate new dt_gpx_t context */
-  gpx = g_malloc(sizeof(dt_gpx_t));
-  memset(gpx, 0, sizeof(dt_gpx_t));
+  gpx = g_malloc0(sizeof(dt_gpx_t));
 
   /* initialize the parser and start parse gpx xml data */
   ctx = g_markup_parse_context_new(&_gpx_parser, 0, gpx, NULL);
@@ -113,8 +113,7 @@ error:
   if (ctx)
     g_markup_parse_context_free(ctx);
 
-  if (gpx)
-    g_free(gpx);
+  g_free(gpx);
 
   if(gpxmf)
     g_mapped_file_unref(gpxmf);
@@ -198,8 +197,7 @@ void _gpx_parser_start_element(GMarkupParseContext *ctx,
 
     if (*attribute_name)
     {
-      gpx->current_track_point = g_malloc(sizeof(_gpx_track_point_t));
-      memset(gpx->current_track_point, 0, sizeof(_gpx_track_point_t));
+      gpx->current_track_point = g_malloc0(sizeof(_gpx_track_point_t));
 
       /* initialize with NAN for validation check */
       gpx->current_track_point->longitude = NAN;
@@ -271,7 +269,7 @@ void _gpx_parser_end_element (GMarkupParseContext *context, const gchar *element
   }
 
   /* clear current parser element */
-  gpx->current_parser_element = 0;
+  gpx->current_parser_element = GPX_PARSER_ELEMENT_NONE;
 
 }
 

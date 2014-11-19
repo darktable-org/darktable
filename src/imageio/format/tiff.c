@@ -137,11 +137,16 @@ int write_image (dt_imageio_module_data_t *d_tmp, const char *filename, const vo
   TIFFSetField(tif, TIFFTAG_IMAGELENGTH, (uint32_t)d->height);
   TIFFSetField(tif, TIFFTAG_PHOTOMETRIC, (uint16_t)PHOTOMETRIC_RGB);
   TIFFSetField(tif, TIFFTAG_PLANARCONFIG, (uint16_t)PLANARCONFIG_CONTIG);
-  TIFFSetField(tif, TIFFTAG_RESOLUTIONUNIT, (uint16_t)RESUNIT_INCH);
   TIFFSetField(tif, TIFFTAG_ROWSPERSTRIP, (uint32_t)DT_TIFFIO_STRIPE);
-  TIFFSetField(tif, TIFFTAG_SAMPLESPERPIXEL, (uint16_t)3);
-  TIFFSetField(tif, TIFFTAG_XRESOLUTION, 300.f);
-  TIFFSetField(tif, TIFFTAG_YRESOLUTION, 300.f);
+  TIFFSetField(tif, TIFFTAG_ORIENTATION, (uint16_t)ORIENTATION_TOPLEFT);
+
+  int resolution = dt_conf_get_int("metadata/resolution");
+  if (resolution > 0)
+  {
+    TIFFSetField(tif, TIFFTAG_XRESOLUTION, (float)resolution);
+    TIFFSetField(tif, TIFFTAG_YRESOLUTION, (float)resolution);
+    TIFFSetField(tif, TIFFTAG_RESOLUTIONUNIT, (uint16_t)RESUNIT_INCH);
+  }
 
   rowsize = (d->width*3) * d->bpp / 8;
   stripesize = rowsize * DT_TIFFIO_STRIPE;
@@ -156,17 +161,15 @@ int write_image (dt_imageio_module_data_t *d_tmp, const char *filename, const vo
 
   if (d->bpp == 32)
   {
-    float* in = (float*)in_void;
     float* wdata = rowdata;
 
     for (int y = 0; y < d->height; y++)
     {
-      for (int x = 0; x < d->width; x++)
+      float* in = (float*)in_void + (size_t)4*y*d->width;
+
+      for (int x = 0; x < d->width; x++, in+=4, wdata+=3)
       {
-        wdata[0] = in[x * 4 + 0];
-        wdata[1] = in[x * 4 + 1];
-        wdata[2] = in[x * 4 + 2];
-        wdata += 3;
+        memcpy(wdata, in, 3*sizeof(float));
       }
 
       if ((uintptr_t)wdata - (uintptr_t)rowdata == (uintptr_t)stripesize)
@@ -174,28 +177,22 @@ int write_image (dt_imageio_module_data_t *d_tmp, const char *filename, const vo
         TIFFWriteEncodedStrip(tif, stripe++, rowdata, (size_t)(rowsize * DT_TIFFIO_STRIPE));
         wdata = rowdata;
       }
-
-      in += d->width * 4;
     }
     if ((uintptr_t)wdata - (uintptr_t)rowdata != (uintptr_t)stripesize)
     {
       TIFFWriteEncodedStrip(tif, stripe++, rowdata, (size_t)((uintptr_t)wdata - (uintptr_t)rowdata));
-      wdata = rowdata;
     }
   }
   else if (d->bpp == 16)
   {
-    uint16_t* in = (uint16_t*)in_void;
     uint16_t* wdata = rowdata;
-
     for (int y = 0; y < d->height; y++)
     {
-      for(int x=0; x<d->width; x++)
+      uint16_t* in = (uint16_t*)in_void + (size_t)4*y*d->width;
+
+      for(int x = 0; x < d->width; x++, in+=4, wdata+=3)
       {
-        wdata[0] = in[4*x + 0];
-        wdata[1] = in[4*x + 1];
-        wdata[2] = in[4*x + 2];
-        wdata += 3;
+        memcpy(wdata, in, 3*sizeof(uint16_t));
       }
 
       if((uintptr_t)wdata - (uintptr_t)rowdata == (uintptr_t)stripesize)
@@ -203,8 +200,6 @@ int write_image (dt_imageio_module_data_t *d_tmp, const char *filename, const vo
         TIFFWriteEncodedStrip(tif, stripe++, rowdata, (size_t)(rowsize * DT_TIFFIO_STRIPE));
         wdata = rowdata;
       }
-
-      in += d->width*4;
     }
     if ((uintptr_t)wdata - (uintptr_t)rowdata != (uintptr_t)stripesize)
     {
@@ -213,17 +208,15 @@ int write_image (dt_imageio_module_data_t *d_tmp, const char *filename, const vo
   }
   else
   {
-    uint8_t* in = (uint8_t*)in_void;
     uint8_t* wdata = rowdata;
 
     for (int y = 0; y < d->height; y++)
     {
-      for(int x=0; x<d->width; x++)
+      uint8_t* in = (uint8_t*)in_void + (size_t)4*y*d->width;
+
+      for(int x = 0; x < d->width; x++, in+=4, wdata+=3)
       {
-        wdata[0] = in[4*x + 0];
-        wdata[1] = in[4*x + 1];
-        wdata[2] = in[4*x + 2];
-        wdata += 3;
+        memcpy(wdata, in, 3*sizeof(uint8_t));
       }
 
       if((uintptr_t)wdata - (uintptr_t)rowdata == (uintptr_t)stripesize)
@@ -231,8 +224,6 @@ int write_image (dt_imageio_module_data_t *d_tmp, const char *filename, const vo
         TIFFWriteEncodedStrip(tif, stripe++, rowdata, (size_t)(rowsize * DT_TIFFIO_STRIPE));
         wdata = rowdata;
       }
-
-      in += d->width*4;
     }
     if((uintptr_t)wdata - (uintptr_t)rowdata != (uintptr_t)stripesize)
     {
@@ -256,16 +247,10 @@ exit:
     // Until we get symbolic error status codes, if rc is 1, return 0
     rc = (rc == 1) ? 0 : 1;
   }
-  if (profile)
-  {
-    free(profile);
-    profile = NULL;
-  }
-  if (rowdata)
-  {
-    free(rowdata);
-    rowdata = NULL;
-  }
+  free(profile);
+  profile = NULL;
+  free(rowdata);
+  rowdata = NULL;
 
   return rc;
 }
@@ -298,8 +283,7 @@ params_size(dt_imageio_module_format_t *self)
 void*
 get_params(dt_imageio_module_format_t *self)
 {
-  dt_imageio_tiff_t *d = (dt_imageio_tiff_t *)malloc(sizeof(dt_imageio_tiff_t));
-  memset(d, 0, sizeof(dt_imageio_tiff_t));
+  dt_imageio_tiff_t *d = (dt_imageio_tiff_t *)calloc(1, sizeof(dt_imageio_tiff_t));
   d->bpp = dt_conf_get_int("plugins/imageio/format/tiff/bpp");
   if (d->bpp == 16) d->bpp = 16;
   else if(d->bpp == 32) d->bpp = 32;

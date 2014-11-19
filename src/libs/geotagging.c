@@ -393,8 +393,8 @@ _lib_geotagging_show_offset_window(GtkWidget *widget, dt_lib_module_t *self)
   g_signal_connect(d->floating_window_entry, "key-press-event", G_CALLBACK(_lib_geotagging_floating_key_press), self);
 
   GtkWidget *hbox = gtk_hbox_new(TRUE, 5);
-  GtkWidget *cancel_button = gtk_button_new_from_stock(GTK_STOCK_CANCEL);
-  GtkWidget *ok_button = gtk_button_new_from_stock(GTK_STOCK_OK);
+  GtkWidget *cancel_button = gtk_button_new_with_label(_("cancel"));
+  GtkWidget *ok_button = gtk_button_new_with_label(_("ok"));
 
   gtk_box_pack_start(GTK_BOX(hbox), cancel_button, TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(hbox), ok_button, TRUE, TRUE, 0);

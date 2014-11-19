@@ -126,8 +126,7 @@ gboolean film_strip_key_accel(GtkAccelGroup *accel_group,
 
 void init(dt_view_t *self)
 {
-  self->data = malloc(sizeof(dt_capture_t));
-  memset(self->data,0,sizeof(dt_capture_t));
+  self->data = calloc(1, sizeof(dt_capture_t));
 
   /* prefetch next few from first selected image on. */
   dt_view_filmstrip_prefetch();
@@ -282,7 +281,7 @@ int try_enter(dt_view_t *self)
   return 1;
 }
 
-static void _capture_mipamps_updated_signal_callback(gpointer instance, gpointer user_data)
+static void _capture_mipmaps_updated_signal_callback(gpointer instance, gpointer user_data)
 {
   dt_control_queue_redraw_center();
 }
@@ -294,7 +293,7 @@ void enter(dt_view_t *self)
 
   /* connect signal for mipmap update for a redraw */
   dt_control_signal_connect(darktable.signals, DT_SIGNAL_DEVELOP_MIPMAP_UPDATED,
-                            G_CALLBACK(_capture_mipamps_updated_signal_callback),
+                            G_CALLBACK(_capture_mipmaps_updated_signal_callback),
                             (gpointer)self);
 
 

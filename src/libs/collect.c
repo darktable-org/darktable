@@ -475,7 +475,7 @@ void view_popup_menu_onSearchFilmroll (GtkWidget *menuitem, gpointer userdata)
 
         sqlite3_stmt *stmt2;
         DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt2, NULL);
-        DT_DEBUG_SQLITE3_BIND_TEXT(stmt2, 1, final, strlen(final), SQLITE_STATIC);
+        DT_DEBUG_SQLITE3_BIND_TEXT(stmt2, 1, final, -1, SQLITE_STATIC);
         DT_DEBUG_SQLITE3_BIND_INT(stmt2, 2, id);
         sqlite3_step(stmt2);
         sqlite3_finalize(stmt2);
@@ -1144,11 +1144,11 @@ static void tags_view (dt_lib_collect_rule_t *dr)
           }
 
           /* lets add new keyword and assign current */
-          if (!found && strlen(pch[j])>0)
-          {         
+          if (!found && pch[j] && *pch[j])
+          {
             gchar *pth2 = NULL;
             pth2 = dt_util_dstrcat(pth2, "");
-    
+
             for (int i=0; i <= level; i++)
             {
               pth2 = dt_util_dstrcat(pth2, "%s|", pch[i]);
@@ -1247,6 +1247,22 @@ list_view (dt_lib_collect_rule_t *dr)
                           DT_LIB_COLLECT_COL_TEXT,_("not altered"),
                           DT_LIB_COLLECT_COL_ID, 1,
                           DT_LIB_COLLECT_COL_TOOLTIP,_("not altered"),
+                          -1);
+      goto entry_key_press_exit;
+      break;
+
+    case DT_COLLECTION_PROP_GEOTAGGING: // Geotagging, 2 hardcoded alternatives
+      gtk_list_store_append(GTK_LIST_STORE(listmodel), &iter);
+      gtk_list_store_set (GTK_LIST_STORE(listmodel), &iter,
+                          DT_LIB_COLLECT_COL_TEXT,_("tagged"),
+                          DT_LIB_COLLECT_COL_ID, 0,
+                          DT_LIB_COLLECT_COL_TOOLTIP,_("tagged"),
+                          -1);
+      gtk_list_store_append(GTK_LIST_STORE(listmodel), &iter);
+      gtk_list_store_set (GTK_LIST_STORE(listmodel), &iter,
+                          DT_LIB_COLLECT_COL_TEXT,_("not tagged"),
+                          DT_LIB_COLLECT_COL_ID, 1,
+                          DT_LIB_COLLECT_COL_TOOLTIP,_("not tagged"),
                           -1);
       goto entry_key_press_exit;
       break;
@@ -1372,13 +1388,24 @@ list_view (dt_lib_collect_rule_t *dr)
       folder = dt_image_film_roll_name(folder);
     }
     gchar *value =  (gchar *)sqlite3_column_text(stmt, 0);
-    gchar *escaped_text = g_markup_escape_text(value, strlen(value));
+
+    // replace invalid utf8 characters if any
+    gchar *text = g_strdup(value);
+    gchar *ptr = text;
+    while(!g_utf8_validate(ptr, -1, (const gchar **)&ptr)) ptr[0] = '?';
+
+    gchar *escaped_text = g_markup_escape_text(text, -1);
+
+
     gtk_list_store_set (GTK_LIST_STORE(listmodel), &iter,
                         DT_LIB_COLLECT_COL_TEXT, folder,
                         DT_LIB_COLLECT_COL_ID, sqlite3_column_int(stmt, 1),
                         DT_LIB_COLLECT_COL_TOOLTIP, escaped_text,
                         DT_LIB_COLLECT_COL_PATH, value,
                         -1);
+    g_free(text);
+    g_free(escaped_text);
+
   }
   sqlite3_finalize(stmt);
 
@@ -1437,7 +1464,7 @@ create_folders_gui (dt_lib_collect_rule_t *dr)
       for (guint i=0; i<d->trees->len; i++)
       {
         tree = GTK_TREE_VIEW(g_ptr_array_index (d->trees, i));
-        g_ptr_array_free(d->trees, TRUE);
+        g_ptr_array_free(d->trees, TRUE); // FIXME: this looks strange, should that be s/d->trees/tree/ ?
       }
       d->trees = NULL;
     }
@@ -1475,7 +1502,7 @@ create_folders_gui (dt_lib_collect_rule_t *dr)
       }
       else
       {
-        label = gtk_label_new (g_ascii_strdown(mount_name, strlen(mount_name)));
+        label = gtk_label_new (g_ascii_strdown(mount_name, -1));
       }
       g_ptr_array_add(d->labels, (gpointer) label);
       gtk_box_pack_start(d->box, GTK_WIDGET(label), FALSE, FALSE, 0);
@@ -2002,13 +2029,11 @@ popup_button_callback(GtkWidget *widget, GdkEventButton *event, dt_lib_collect_r
 void
 gui_init (dt_lib_module_t *self)
 {
-  dt_lib_collect_t *d = (dt_lib_collect_t *)malloc(sizeof(dt_lib_collect_t));
-
-  memset(d, 0, sizeof(dt_lib_collect_t));
+  dt_lib_collect_t *d = (dt_lib_collect_t *)calloc(1, sizeof(dt_lib_collect_t));
 
   self->data = (void *)d;
   self->widget = gtk_vbox_new(FALSE, 5);
-  gtk_widget_set_size_request(self->widget, 100, -1);
+//   gtk_widget_set_size_request(self->widget, 100, -1);
   d->active_rule = 0;
   d->params = (dt_lib_collect_params_t*)malloc(sizeof(dt_lib_collect_params_t));
 
@@ -2046,7 +2071,7 @@ gui_init (dt_lib_module_t *self)
     gtk_widget_set_events(w, GDK_BUTTON_PRESS_MASK);
     g_signal_connect(G_OBJECT(w), "button-press-event", G_CALLBACK(popup_button_callback), d->rule + i);
     gtk_box_pack_start(box, w, FALSE, FALSE, 0);
-    gtk_widget_set_size_request(w, 13, 13);
+    gtk_widget_set_size_request(w, DT_PIXEL_APPLY_DPI(13), DT_PIXEL_APPLY_DPI(13));
   }
 
   GtkWidget *sw = gtk_scrolled_window_new(NULL, NULL);
@@ -2055,7 +2080,7 @@ gui_init (dt_lib_module_t *self)
   GtkTreeView  *view = GTK_TREE_VIEW(gtk_tree_view_new());
   d->view = view;
   gtk_tree_view_set_headers_visible(view, FALSE);
-  gtk_widget_set_size_request(GTK_WIDGET(view), -1, 300);
+  gtk_widget_set_size_request(GTK_WIDGET(view), -1, DT_PIXEL_APPLY_DPI(300));
   gtk_container_add(GTK_CONTAINER(sw), GTK_WIDGET(view));
   g_signal_connect(G_OBJECT (view), "row-activated", G_CALLBACK (row_activated), d);
 
@@ -2080,7 +2105,7 @@ gui_init (dt_lib_module_t *self)
   d->sw2 = GTK_SCROLLED_WINDOW (sw2);
   gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(sw2), GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
   gtk_scrolled_window_add_with_viewport(GTK_SCROLLED_WINDOW(sw2), GTK_WIDGET(d->box));
-  gtk_widget_set_size_request(GTK_WIDGET(sw2), -1, 300);
+  gtk_widget_set_size_request(GTK_WIDGET(sw2), -1, DT_PIXEL_APPLY_DPI(300));
 
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(sw2), TRUE, TRUE, 0);
 

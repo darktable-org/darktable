@@ -132,7 +132,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   // printf("level range in %d %d: %f %f, cap: %d\n", 1, d->num_levels, l1, lm, numl_cap);
 
   // TODO: fixed alloc for data piece at capped resolution?
-  float **tmp = (float **)malloc((size_t)sizeof(float *)*numl_cap);
+  float **tmp = (float **)calloc(numl_cap, sizeof(float *));
   for(int k=1; k<numl_cap; k++)
   {
     const int wd = (int)(1 + (width>>(k-1))), ht = (int)(1 + (height>>(k-1)));
@@ -256,6 +256,7 @@ void cleanup_pipe (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_de
   dt_iop_equalizer_data_t *d = (dt_iop_equalizer_data_t *)(piece->data);
   for(int ch=0; ch<3; ch++) dt_draw_curve_destroy(d->curve[ch]);
   free(piece->data);
+  piece->data = NULL;
 }
 
 void gui_update(struct dt_iop_module_t *self)
@@ -269,7 +270,7 @@ void init(dt_iop_module_t *module)
   module->params = malloc(sizeof(dt_iop_equalizer_params_t));
   module->default_params = malloc(sizeof(dt_iop_equalizer_params_t));
   module->default_enabled = 0; // we're a rather slow and rare op.
-  module->priority = 350; // module order created by iop_dependencies.py, do not edit!
+  module->priority = 383; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_equalizer_params_t);
   module->gui_data = NULL;
   dt_iop_equalizer_params_t tmp;

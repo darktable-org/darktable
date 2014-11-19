@@ -8,7 +8,7 @@
 /* 
     RawSpeed - RAW file decoder.
 
-    Copyright (C) 2009 Klaus Post
+    Copyright (C) 2009-2014 Klaus Post
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Lesser General Public
@@ -34,6 +34,7 @@ class TiffIFD
 {
 public:
   TiffIFD();
+  TiffIFD(FileMap* f);
   TiffIFD(FileMap* f, uint32 offset);
   virtual ~TiffIFD(void);
   vector<TiffIFD*> mSubIFD;
@@ -46,9 +47,15 @@ public:
   TiffEntry* getEntryRecursive(TiffTag tag);
   TiffIFD* parseDngPrivateData(TiffEntry *t);
   TiffIFD* parseMakerNote(FileMap *f, uint32 offset, Endianness parent_end);
+  TiffEntry* getEntryRecursiveWhere(TiffTag tag, uint32 isValue);
+  TiffEntry* getEntryRecursiveWhere(TiffTag tag, string isValue);
+  vector<TiffIFD*> getIFDsWithTagWhere(TiffTag tag, string isValue);
+  vector<TiffIFD*> getIFDsWithTagWhere(TiffTag tag, uint32 isValue);
   Endianness endian;
+  FileMap* getFileMap() {return mFile;};
 protected:
   int nextIFD;
+  FileMap *mFile;
 };
 
 inline bool isTiffSameAsHost(const ushort16* tifftag) {

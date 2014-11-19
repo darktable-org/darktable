@@ -1,3 +1,8 @@
+<!DOCTYPE sect3 PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
+               "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd" [
+		<!ENTITY % darktable_dtd SYSTEM "../../../dtd/darktable.dtd">
+		%darktable_dtd;
+		]>
 <sect3 status="final" id="exposure">
 
   <title>Exposure</title>
@@ -10,6 +15,16 @@
   <indexterm>
     <primary>exposure</primary>
   </indexterm>
+
+<!--
+  <indexterm>
+    <primary>time-lapse photography</primary>
+  </indexterm>
+
+  <indexterm>
+    <primary>deflicker</primary>
+  </indexterm>
+-->
 
   <sect4>
 
@@ -50,8 +65,9 @@
 
     <para>
       This module is responsible for one of the most basic steps in each raw image development.
-      An exposure adjustment value allows you - within certain limits - to correct for under- or
-      overexposure. A shift by 1EV is equivalent to a change of exposure time by a factor of 2.
+      An exposure adjustment value allows you&nbsp;&ndash; within certain limits&nbsp;&ndash; to
+      correct for under- or overexposure. A shift by 1EV is equivalent to a change of exposure
+      time by a factor of 2.
     </para>
 
     <para>
@@ -63,7 +79,8 @@
 
     <para>
       Negative exposure corrections will make the image darker. Given the nature of digital
-      images this can not correct for blown out highlights (see also
+      images this can not correct for fully blown out highlights but allows to reconstruct data
+      in case that only some of the RGB channels are clipped (see also
       <xref linkend="highlight_reconstruction"/>).
     </para>
 
@@ -77,9 +94,51 @@
       come later in pixelpipe.
     </para>
 
+<!--
+    <para>
+      The exposure module has two modes of operation.
+    </para>
+
+    <para>
+      In <quote>manual</quote> mode you directly define the value for exposure correction that
+      you want to apply to your image.
+    </para>
+
+    <para>
+      In <quote>automatic</quote> mode darktable analyses the histogram of your image. You
+      select a reference point within the histogram as a <emphasis>percentile</emphasis> and
+      define a <emphasis>target level</emphasis>&nbsp;&ndash; darktable automatically calculates
+      the exposure compensation that is needed to shift the selected position to that target
+      value. The computed exposure compensation value is displayed in the module's GUI for your
+      information.
+    </para>
+
+    <para>
+      The <quote>automatic</quote> mode has a black level adjustment that works as in manual
+      mode.
+    </para>
+
+    <para>
+      Automatic adjustment is only available for raw images. A typical use case is deflickering
+      of <ulink url="http://en.wikipedia.org/wiki/Time-lapse_photography"><emphasis>time-lapse
+      photographs</emphasis></ulink>. You apply an automatic exposure correction with the same
+      set of parameters to all images of the series&nbsp;&ndash; differences in lighting get
+      compensated so that the final video sequence does not show any flickering.
+    </para>
+-->
+
+    <sect5>
+      <title>mode</title>
+      <para>
+        Defines the mode of operation. Currently darktable only supports <quote>manual</quote> operation.
+        Future versions of darktable will additionally allow automatic exposure correction.
+      </para>
+    </sect5>
+
     <sect5>
       <title>black</title>
       <para>
+<!--        Adjust the black level in both <quote>manual</quote> and <quote>automatic</quote> mode.-->
         Adjust the black level.
       </para>
     </sect5>
@@ -87,6 +146,7 @@
     <sect5>
       <title>exposure</title>
       <para>
+<!--        Adjust the exposure correction [EV] (only available in <quote>manual</quote> mode).-->
         Adjust the exposure correction [EV].
       </para>
     </sect5>
@@ -94,12 +154,51 @@
     <sect5>
       <title>auto</title>
       <para>
-        Calculate a correct exposition for the rectangular view appearing in the centre of the
-        image. You can draw your own selection using your mouse. An adjustment slider right to
-        the auto exposure checkbox lets you define what percentage of bright values are to be
-        clipped out in the calculation.
+        Activating this checkbox makes darktable calculate a correct exposure for the
+        rectangular view appearing in the centre of the image. You can draw your own selection
+        using your mouse. An adjustment slider to the right of the auto exposure checkbox lets
+        you define what percentage of bright values are to be clipped out in the calculation.
+<!--        This feature is not to be confused with the <quote>automatic</quote> mode of the
+        exposure module and is only available in <quote>manual</quote> mode.-->
       </para>
     </sect5>
+
+<!--
+    <sect5>
+      <title>percentile</title>
+      <para>
+        Defines a location in the histogram for automatic exposure correction. A percentile of
+        50% denotes a position in the histogram where 50% of pixel values are below and 50% of
+        pixel values are above. For more details see
+        <ulink url="http://en.wikipedia.org/wiki/Percentile"><emphasis>percentile</emphasis>
+        </ulink>. Only available in <quote>automatic</quote> mode.
+      </para>
+    </sect5>
+
+    <sect5>
+      <title>target level</title>
+      <para>
+        Defines the target level for automatic exposure correction in terms of [EV] relative to
+        the white point of the camera. The white point is camera specific and defines the
+        highest lightness value that the camera sensor can detect. Only available in
+        <quote>automatic</quote> mode.
+      </para>
+    </sect5>
+
+    <sect5>
+      <title>histogram of</title>
+      <para>
+        Defines what image data to take as a histogram for the <quote>automatic</quote> exposure
+        correction&nbsp;&ndash; either <quote>pre-processed image</quote> which is the input
+        that the exposure module receives with some modules like <emphasis>demosaic</emphasis>
+        and <emphasis>white balance</emphasis> already applied, or <quote>source raw
+        data</quote> which is the unprocessed data of your raw file. Note that this option does
+        not relate to the histogram you see in the <emphasis>histogram</emphasis> panel (see
+        <xref linkend="histogram"/>)&nbsp;&ndash; the latter representing the final result of
+        the pixelpipe with <emphasis>all</emphasis> the active modules being applied.
+      </para>
+    </sect5>
+-->
 
   </sect4>
 

@@ -66,27 +66,27 @@ void init_presets (dt_iop_module_so_t *self)
 {
   DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "begin", NULL, NULL, NULL);
 
-  dt_gui_presets_add_generic(_("neutral grey ND2 (soft)"), self->op, self->version(), &(dt_iop_graduatednd_params_t)
+  dt_gui_presets_add_generic(_("neutral gray ND2 (soft)"), self->op, self->version(), &(dt_iop_graduatednd_params_t)
   {
     1,0,0,50,0,0
   } , sizeof(dt_iop_graduatednd_params_t), 1);
-  dt_gui_presets_add_generic(_("neutral grey ND4 (soft)"), self->op, self->version(), &(dt_iop_graduatednd_params_t)
+  dt_gui_presets_add_generic(_("neutral gray ND4 (soft)"), self->op, self->version(), &(dt_iop_graduatednd_params_t)
   {
     2,0,0,50,0,0
   } , sizeof(dt_iop_graduatednd_params_t), 1);
-  dt_gui_presets_add_generic(_("neutral grey ND8 (soft)"), self->op, self->version(), &(dt_iop_graduatednd_params_t)
+  dt_gui_presets_add_generic(_("neutral gray ND8 (soft)"), self->op, self->version(), &(dt_iop_graduatednd_params_t)
   {
     3,0,0,50,0,0
   } , sizeof(dt_iop_graduatednd_params_t), 1);
-  dt_gui_presets_add_generic(_("neutral grey ND2 (hard)"), self->op, self->version(), &(dt_iop_graduatednd_params_t)
+  dt_gui_presets_add_generic(_("neutral gray ND2 (hard)"), self->op, self->version(), &(dt_iop_graduatednd_params_t)
   {
     1,75,0,50,0,0
   } , sizeof(dt_iop_graduatednd_params_t), 1);
-  dt_gui_presets_add_generic(_("neutral grey ND4 (hard)"), self->op, self->version(), &(dt_iop_graduatednd_params_t)
+  dt_gui_presets_add_generic(_("neutral gray ND4 (hard)"), self->op, self->version(), &(dt_iop_graduatednd_params_t)
   {
     2,75,0,50,0,0
   } , sizeof(dt_iop_graduatednd_params_t), 1);
-  dt_gui_presets_add_generic(_("neutral grey ND8 (hard)"), self->op, self->version(), &(dt_iop_graduatednd_params_t)
+  dt_gui_presets_add_generic(_("neutral gray ND8 (hard)"), self->op, self->version(), &(dt_iop_graduatednd_params_t)
   {
     3,75,0,50,0,0
   } , sizeof(dt_iop_graduatednd_params_t), 1);
@@ -432,16 +432,16 @@ gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, int32_
   float xa = g->xa*wd, xb = g->xb*wd, ya = g->ya*ht, yb = g->yb*ht;
   //the lines
   cairo_set_line_cap(cr,CAIRO_LINE_CAP_ROUND);
-  if(g->selected == 3 || g->dragging == 3) cairo_set_line_width(cr, 5.0/zoom_scale);
-  else                           cairo_set_line_width(cr, 3.0/zoom_scale);
+  if(g->selected == 3 || g->dragging == 3) cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(5.0)/zoom_scale);
+  else                           cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(3.0)/zoom_scale);
   cairo_set_source_rgba(cr, .3, .3, .3, .8);
 
   cairo_move_to(cr,xa,ya);
   cairo_line_to(cr,xb,yb);
   cairo_stroke(cr);
 
-  if(g->selected == 3 || g->dragging == 3) cairo_set_line_width(cr, 2.0/zoom_scale);
-  else                           cairo_set_line_width(cr, 1.0/zoom_scale);
+  if(g->selected == 3 || g->dragging == 3) cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(2.0)/zoom_scale);
+  else                           cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(1.0)/zoom_scale);
   cairo_set_source_rgba(cr, .8, .8, .8, .8);
   cairo_move_to(cr,xa,ya);
   cairo_line_to(cr,xb,yb);
@@ -461,7 +461,7 @@ gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, int32_
   cairo_line_to(cr,x1,y1);
   cairo_line_to(cr,x2,y2);
   cairo_close_path(cr);
-  cairo_set_line_width(cr, 1.0/zoom_scale);
+  cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(1.0)/zoom_scale);
   if(g->selected == 1 || g->dragging == 1) cairo_set_source_rgba(cr, .8, .8, .8, 1.0);
   else                           cairo_set_source_rgba(cr, .8, .8, .8, .5);
   cairo_fill_preserve(cr);
@@ -479,7 +479,7 @@ gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, int32_
   cairo_line_to(cr,x1,y1);
   cairo_line_to(cr,x2,y2);
   cairo_close_path(cr);
-  cairo_set_line_width(cr, 1.0/zoom_scale);
+  cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(1.0)/zoom_scale);
   if(g->selected == 2 || g->dragging == 2) cairo_set_source_rgba(cr, .8, .8, .8, 1.0);
   else                           cairo_set_source_rgba(cr, .8, .8, .8, .5);
   cairo_fill_preserve(cr);
@@ -529,7 +529,7 @@ mouse_moved(struct dt_iop_module_t *self, double x, double y, double pressure, i
   else
   {
     g->selected = 0;
-    const float ext = 0.02f / zoom_scale;
+    const float ext = DT_PIXEL_APPLY_DPI(0.02f) / zoom_scale;
     //are we near extermity ?
     if (pzy>g->ya-ext && pzy<g->ya+ext && pzx>g->xa-ext && pzx<g->xa+ext)
     {
@@ -916,8 +916,7 @@ void init_pipe (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_p
   // create part of the gegl pipeline
   piece->data = NULL;
 #else
-  piece->data = malloc(sizeof(dt_iop_graduatednd_data_t));
-  memset(piece->data,0,sizeof(dt_iop_graduatednd_data_t));
+  piece->data = calloc(1, sizeof(dt_iop_graduatednd_data_t));
   self->commit_params(self, self->default_params, pipe, piece);
 #endif
 }
@@ -930,6 +929,7 @@ void cleanup_pipe (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_de
   // no free necessary, no data is alloc'ed
 #else
   free(piece->data);
+  piece->data = NULL;
 #endif
 }
 
@@ -966,7 +966,7 @@ void init(dt_iop_module_t *module)
   module->params = malloc(sizeof(dt_iop_graduatednd_params_t));
   module->default_params = malloc(sizeof(dt_iop_graduatednd_params_t));
   module->default_enabled = 0;
-  module->priority = 245; // module order created by iop_dependencies.py, do not edit!
+  module->priority = 283; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_graduatednd_params_t);
   module->gui_data = NULL;
   dt_iop_graduatednd_params_t tmp = (dt_iop_graduatednd_params_t)

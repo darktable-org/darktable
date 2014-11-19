@@ -1,3 +1,8 @@
+<!DOCTYPE sect3 PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
+               "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd" [
+		<!ENTITY % darktable_dtd SYSTEM "../../../dtd/darktable.dtd">
+		%darktable_dtd;
+		]>
 <sect3 status="final" id="input_color_profile">
 
   <title>Input color profile</title>
@@ -14,6 +19,20 @@
   <indexterm>
     <primary>color management</primary>
     <secondary>input color profile</secondary>
+  </indexterm>
+
+  <indexterm>
+    <primary>artifact mitigation</primary>
+    <secondary>blue light sources</secondary>
+  </indexterm>
+
+  <indexterm>
+    <primary>artifact mitigation</primary>
+    <secondary>black pixels</secondary>
+  </indexterm>
+
+  <indexterm>
+    <primary>gamut clipping</primary>
   </indexterm>
 
   <sect4>
@@ -45,6 +64,12 @@
 
     <title>Usage</title>
 
+    <para>
+      In this module you define the input color profile, i.e. how colors of your input image are
+      to be interpreted. You also have an option to have colors confined to a certain gamut in
+      order to mitigate some (infrequent) color artifacts.
+    </para>
+
     <sect5>
       <title>profile</title>
       <para>
@@ -64,10 +89,64 @@
       <para>
         If your input image is a low dynamic range file like JPEG, or a raw in DNG format, it
         might already contain an embedded ICC profile which darktable will use as a default. You
-        can always overrule darktable and select a different profile or select <quote>embedded
+        can always overrule darktable and select a different profile. Select <quote>embedded
         icc profile</quote> to restore the default.
       </para>
     </sect5>
+
+    <sect5>
+      <title>gamut clipping</title>
+      <para>
+        This combobox lets you activate a color clipping mechanism. In most cases you can leave
+        it at its default <quote>off</quote> state. However, if your image shows some specific
+        features like highly saturated blue light sources, gamut clipping might be useful to
+        avoid black pixel artifacts. See <xref linkend="possible_color_artifacts"/> for more
+        background information.
+      </para>
+      <para>
+        You can select from a list of RGB profiles. Input colors with a saturation that exceeds
+        the permissible range of the selected profile get clipped to a maximum value.
+        <quote>linear Rec2020 RGB</quote> and <quote>Adobe RGB (compatible)</quote> allow for a
+        broader range of unclipped colors, while <quote>sRGB</quote> and <quote>linear Rec709
+        RGB</quote> produce a tighter clipping. You should select the profile that prevents
+        artifacts while still maintaining highest color dynamics.
+      </para>
+    </sect5>
+
+  </sect4>
+
+  <sect4>
+
+    <title>Examples</title>
+
+    <para>
+      <informaltable frame="none">
+        <tgroup cols="2" colsep="0" rowsep="0">
+          <colspec colwidth="4*"/>
+          <colspec colwidth="6*"/>
+          <tbody>
+            <row>
+              <entry>
+                <graphic fileref="darkroom/modules/images/inputcolorprofile_ex1.png" scalefit="1" width="90%" align="center" />
+              </entry>
+              <entry>
+                Close-up of a blue light source (LED) with gamut clipping off. The activated
+                levels module produces a ring of black pixel artifacts.
+              </entry>
+            </row>
+            <row>
+              <entry>
+                <graphic fileref="darkroom/modules/images/inputcolorprofile_ex2.png" scalefit="1" width="90%" align="center" />
+              </entry>
+              <entry>
+                The same image and processing with gamut clipping set to <quote>linear Rec2020
+                RGB </quote>.
+              </entry>
+            </row>
+          </tbody>
+        </tgroup>
+      </informaltable>
+    </para>
 
   </sect4>
 

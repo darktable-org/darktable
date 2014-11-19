@@ -111,11 +111,11 @@ int dt_view_load_module(dt_view_t *view, const char *module)
   view->vscroll_pos = view->hscroll_pos = 0.0;
   view->height = view->width = 100; // set to non-insane defaults before first expose/configure.
   g_strlcpy(view->module_name, module, sizeof(view->module_name));
-  char plugindir[1024];
+  char plugindir[PATH_MAX];
   dt_loc_get_plugindir(plugindir, sizeof(plugindir));
   g_strlcat(plugindir, "/views", sizeof(plugindir));
   gchar *libname = g_module_build_path(plugindir, (const gchar *)module);
-  view->module = g_module_open(libname, G_MODULE_BIND_LAZY);
+  view->module = g_module_open(libname, G_MODULE_BIND_LAZY | G_MODULE_BIND_LOCAL);
   if(!view->module)
   {
     fprintf(stderr, "[view_load_module] could not open %s (%s)!\n", libname, g_module_error());
@@ -187,17 +187,17 @@ int dt_view_manager_switch (dt_view_manager_t *vm, int k)
 
   // destroy old module list
   int error = 0;
-  dt_view_t *v = vm->view + vm->current_view;
 
   /*  clear the undo list, for now we do this inconditionally. At some point we will probably want to clear only part
       of the undo list. This should probably done with a view proxy routine returning the type of undo to remove. */
   dt_undo_clear(darktable.undo, DT_UNDO_ALL);
 
   /* Special case when entering nothing (just before leaving dt) */
-  if ( k==DT_MODE_NONE )
+  if (k==DT_MODE_NONE && vm->current_view >= 0)
   {
     /* leave the current view*/
-    if(vm->current_view >= 0 && v->leave) v->leave(v);
+    dt_view_t *v = vm->view + vm->current_view;
+    if(v->leave) v->leave(v);
 
     /* iterator plugins and cleanup plugins in current view */
     GList *plugins = g_list_last(darktable.lib->plugins);
@@ -206,14 +206,16 @@ int dt_view_manager_switch (dt_view_manager_t *vm, int k)
       dt_lib_module_t *plugin = (dt_lib_module_t *)(plugins->data);
 
       if (!plugin->views)
-        fprintf(stderr,"module %s doesn't have views flags\n",plugin->name());
-
+      {
+        fprintf(stderr, "module %s doesn't have views flags\n", plugin->name());
+      } else
       /* does this module belong to current view ?*/
-      if (plugin->views() & v->view(v) )
+      if (plugin->views() & v->view(v))
       {
         plugin->gui_cleanup(plugin);
         dt_accel_disconnect_list(plugin->accel_closures);
         plugin->accel_closures = NULL;
+        plugin->widget = NULL;
       }
 
       /* get next plugin */
@@ -230,6 +232,8 @@ int dt_view_manager_switch (dt_view_manager_t *vm, int k)
 
   int newv = vm->current_view;
   if (k < vm->num_views) newv = k;
+
+  if(newv < 0) return 1;
   dt_view_t *nv = vm->view + newv;
 
   if (nv->try_enter)
@@ -238,6 +242,7 @@ int dt_view_manager_switch (dt_view_manager_t *vm, int k)
   if (!error)
   {
     GList *plugins;
+    dt_view_t *v = vm->view + vm->current_view;
 
     /* cleanup current view before initialization of new  */
     if (vm->current_view >=0)
@@ -267,6 +272,7 @@ int dt_view_manager_switch (dt_view_manager_t *vm, int k)
           plugin->gui_cleanup(plugin);
           dt_accel_disconnect_list(plugin->accel_closures);
           plugin->accel_closures = NULL;
+          plugin->widget = NULL;
         }
 
         /* get next plugin */
@@ -367,21 +373,21 @@ int dt_view_manager_switch (dt_view_manager_t *vm, int k)
       nv->connect_key_accels(nv);
 
     /* raise view changed signal */
-    dt_control_signal_raise(darktable.signals, DT_SIGNAL_VIEWMANAGER_VIEW_CHANGED);
+    dt_control_signal_raise(darktable.signals, DT_SIGNAL_VIEWMANAGER_VIEW_CHANGED,v,nv);
 
     /* add endmarkers to left and right center containers */
     GtkWidget *endmarker = gtk_drawing_area_new();
     dt_ui_container_add_widget(darktable.gui->ui, DT_UI_CONTAINER_PANEL_LEFT_CENTER, endmarker);
     g_signal_connect (G_OBJECT (endmarker), "expose-event",
                       G_CALLBACK (dt_control_expose_endmarker), 0);
-    gtk_widget_set_size_request(endmarker, -1, 50);
+    gtk_widget_set_size_request(endmarker, -1, DT_PIXEL_APPLY_DPI(50));
     gtk_widget_show(endmarker);
 
     endmarker = gtk_drawing_area_new();
     dt_ui_container_add_widget(darktable.gui->ui, DT_UI_CONTAINER_PANEL_RIGHT_CENTER, endmarker);
     g_signal_connect (G_OBJECT (endmarker), "expose-event",
                       G_CALLBACK (dt_control_expose_endmarker), GINT_TO_POINTER(1));
-    gtk_widget_set_size_request(endmarker, -1, 50);
+    gtk_widget_set_size_request(endmarker, -1, DT_PIXEL_APPLY_DPI(50));
     gtk_widget_show(endmarker);
   }
 
@@ -770,13 +776,13 @@ dt_view_image_expose(
 
   const dt_image_t *img = dt_image_cache_read_testget(darktable.image_cache, imgid);
 
-  if(selected == 1)
+  if(selected == 1 && zoom != 1) // If zoom == 1 there is no need to set colors here
   {
     outlinecol = 0.4;
     bgcol = 0.6;
     fontcol = 0.5;
   }
-  if(imgsel == imgid)
+  if(imgsel == imgid || zoom == 1)
   {
     bgcol = 0.8;  // mouse over
     fontcol = 0.7;
@@ -858,12 +864,12 @@ dt_view_image_expose(
 
   // draw centered and fitted:
   cairo_save(cr);
-  cairo_translate(cr, width/2.0, height/2.0f);
+  cairo_translate(cr, width/2.0, height/2.0);
   cairo_scale(cr, scale, scale);
 
   if(buf.buf)
   {
-    cairo_translate(cr, -.5f*buf.width, -.5f*buf.height);
+    cairo_translate(cr, -0.5*buf.width, -0.5*buf.height);
     cairo_set_source_surface (cr, surface, 0, 0);
     // set filter no nearest:
     // in skull mode, we want to see big pixels.
@@ -878,11 +884,12 @@ dt_view_image_expose(
     cairo_rectangle(cr, 0, 0, buf.width, buf.height);
   }
 
+
   // border around image
-  const float border = zoom == 1 ? 16/scale : 2/scale;
   cairo_set_source_rgb(cr, bordercol, bordercol, bordercol);
-  if(buf.buf && selected)
+  if(buf.buf && (selected || zoom == 1))
   {
+    const float border = zoom == 1 ? 16/scale : 2/scale;
     cairo_set_line_width(cr, 1./scale);
     if(zoom == 1)
     {
@@ -914,7 +921,7 @@ dt_view_image_expose(
   }
   else if(buf.buf)
   {
-    cairo_set_line_width(cr, 1);
+    cairo_set_line_width(cr, 0.5/scale);
     cairo_stroke(cr);
   }
   cairo_restore(cr);
@@ -922,8 +929,9 @@ dt_view_image_expose(
   if(buf.buf)
     dt_mipmap_cache_read_release(darktable.mipmap_cache, &buf);
 
+  cairo_save(cr);
   const float fscale = fminf(width, height);
-  if(imgsel == imgid || full_preview || darktable.gui->show_overlays)
+  if(imgsel == imgid || full_preview || darktable.gui->show_overlays || zoom == 1)
   {
     if (width > DECORATION_SIZE_LIMIT)
     {
@@ -958,7 +966,8 @@ dt_view_image_expose(
           {
             dt_view_star(cr, x, y, r1, r2);
             // Only draw hovering effects in stars for the hovered image
-            if((imgsel == imgid) && ((px - x)*(px - x) + (py - y)*(py - y) < r1*r1))
+            //printf ("Image selected: %d - Image processed: %d\n", imgsel, imgid);
+            if((imgsel == imgid || zoom == 1) && ((px - x)*(px - x) + (py - y)*(py - y) < r1*r1))
             {
               *image_over = DT_VIEW_STAR_1 + k;
               cairo_fill(cr);
@@ -982,7 +991,7 @@ dt_view_image_expose(
         cairo_set_source_rgb(cr, 1., 0., 0.);
 
       // Only draw hovering effects in stars for the hovered image
-      if((imgsel == imgid) && ((px - x)*(px - x) + (py - y)*(py - y) < r1*r1))
+      if((imgsel == imgid || zoom == 1) && ((px - x)*(px - x) + (py - y)*(py - y) < r1*r1))
       {
         *image_over = DT_VIEW_REJECT; //mouse sensitive
         cairo_new_sub_path(cr);
@@ -1092,6 +1101,7 @@ dt_view_image_expose(
       }
     }
   }
+  cairo_restore(cr);
 
   // kill all paths, in case img was not loaded yet, or is blocked:
   cairo_new_path(cr);
@@ -1178,7 +1188,9 @@ dt_view_image_expose(
         int k = 0;
         while(!feof(f))
         {
-          int read = fscanf(f, "%2048[^\n]", line);
+          gchar *line_pattern = g_strdup_printf("%%%zu[^\n]", sizeof(line)-1);
+          int read = fscanf(f, line_pattern, line);
+          g_free(line_pattern);
           if(read != 1) break;
           fgetc(f); // munch \n
 

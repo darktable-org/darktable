@@ -303,7 +303,11 @@ red_callback(GtkWidget *slider, gpointer user_data)
   if(self->dt->gui->reset) return;
   dt_iop_channelmixer_params_t *p = (dt_iop_channelmixer_params_t *)self->params;
   dt_iop_channelmixer_gui_data_t *g = (dt_iop_channelmixer_gui_data_t *)self->gui_data;
-  p->red[ dt_bauhaus_combobox_get( g->combo1 ) ]= dt_bauhaus_slider_get(slider);
+  int combo1_index = dt_bauhaus_combobox_get(g->combo1);
+  if(combo1_index >= 0)
+  {
+    p->red[combo1_index]= dt_bauhaus_slider_get(slider);
+  }
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
@@ -314,7 +318,11 @@ green_callback(GtkWidget *slider, gpointer user_data)
   if(self->dt->gui->reset) return;
   dt_iop_channelmixer_params_t *p = (dt_iop_channelmixer_params_t *)self->params;
   dt_iop_channelmixer_gui_data_t *g = (dt_iop_channelmixer_gui_data_t *)self->gui_data;
-  p->green[ dt_bauhaus_combobox_get( g->combo1 ) ]= dt_bauhaus_slider_get(slider);
+  int combo1_index = dt_bauhaus_combobox_get(g->combo1);
+  if(combo1_index >= 0)
+  {
+    p->green[combo1_index]= dt_bauhaus_slider_get(slider);
+  }
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
@@ -326,7 +334,11 @@ blue_callback(GtkWidget *slider, gpointer user_data)
   if(self->dt->gui->reset) return;
   dt_iop_channelmixer_params_t *p = (dt_iop_channelmixer_params_t *)self->params;
   dt_iop_channelmixer_gui_data_t *g = (dt_iop_channelmixer_gui_data_t *)self->gui_data;
-  p->blue[ dt_bauhaus_combobox_get( g->combo1 ) ]= dt_bauhaus_slider_get(slider);
+  int combo1_index = dt_bauhaus_combobox_get(g->combo1);
+  if(combo1_index >= 0)
+  {
+    p->blue[combo1_index]= dt_bauhaus_slider_get(slider);
+  }
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
@@ -339,9 +351,13 @@ output_callback(GtkComboBox *combo, gpointer user_data)
   dt_iop_channelmixer_gui_data_t *g = (dt_iop_channelmixer_gui_data_t *)self->gui_data;
 
   // p->output_channel= gtk_combo_box_get_active(combo);
-  dt_bauhaus_slider_set( g->scale1, p->red[ dt_bauhaus_combobox_get( g->combo1 ) ] );
-  dt_bauhaus_slider_set( g->scale2, p->green[ dt_bauhaus_combobox_get( g->combo1 ) ] );
-  dt_bauhaus_slider_set( g->scale3, p->blue[ dt_bauhaus_combobox_get( g->combo1 ) ] );
+  int combo1_index = dt_bauhaus_combobox_get( g->combo1 );
+  if(combo1_index >= 0)
+  {
+    dt_bauhaus_slider_set(g->scale1, p->red[combo1_index]);
+    dt_bauhaus_slider_set(g->scale2, p->green[combo1_index]);
+    dt_bauhaus_slider_set(g->scale3, p->blue[combo1_index]);
+  }
   //dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
@@ -369,8 +385,7 @@ void init_pipe (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_p
   // create part of the gegl pipeline
   piece->data = NULL;
 #else
-  piece->data = malloc(sizeof(dt_iop_channelmixer_data_t));
-  memset(piece->data,0,sizeof(dt_iop_channelmixer_data_t));
+  piece->data = calloc(1, sizeof(dt_iop_channelmixer_data_t));
   self->commit_params(self, self->default_params, pipe, piece);
 #endif
 }
@@ -383,6 +398,7 @@ void cleanup_pipe (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_de
   // no free necessary, no data is alloc'ed
 #else
   free(piece->data);
+  piece->data = NULL;
 #endif
 }
 
@@ -392,9 +408,14 @@ void gui_update(struct dt_iop_module_t *self)
   dt_iop_channelmixer_gui_data_t *g = (dt_iop_channelmixer_gui_data_t *)self->gui_data;
   dt_iop_channelmixer_params_t *p = (dt_iop_channelmixer_params_t *)module->params;
 // gtk_combo_box_set_active(g->combo1, p->output_channel);
-  dt_bauhaus_slider_set(g->scale1, p->red[ dt_bauhaus_combobox_get( g->combo1 ) ] );
-  dt_bauhaus_slider_set(g->scale2, p->green[ dt_bauhaus_combobox_get( g->combo1 ) ] );
-  dt_bauhaus_slider_set(g->scale3, p->blue[ dt_bauhaus_combobox_get( g->combo1 ) ] );
+
+  int combo1_index = dt_bauhaus_combobox_get(g->combo1);
+  if(combo1_index >= 0)
+  {
+    dt_bauhaus_slider_set(g->scale1, p->red[combo1_index]);
+    dt_bauhaus_slider_set(g->scale2, p->green[combo1_index]);
+    dt_bauhaus_slider_set(g->scale3, p->blue[combo1_index]);
+  }
 }
 
 void init(dt_iop_module_t *module)
@@ -402,7 +423,7 @@ void init(dt_iop_module_t *module)
   module->params = malloc(sizeof(dt_iop_channelmixer_params_t));
   module->default_params = malloc(sizeof(dt_iop_channelmixer_params_t));
   module->default_enabled = 0;
-  module->priority = 824; // module order created by iop_dependencies.py, do not edit!
+  module->priority = 833; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_channelmixer_params_t);
   module->gui_data = NULL;
   dt_iop_channelmixer_params_t tmp = (dt_iop_channelmixer_params_t)
@@ -440,7 +461,7 @@ void gui_init(struct dt_iop_module_t *self)
   dt_bauhaus_combobox_add(g->combo1,_("red"));
   dt_bauhaus_combobox_add(g->combo1,_("green"));
   dt_bauhaus_combobox_add(g->combo1,_("blue"));
-  dt_bauhaus_combobox_add(g->combo1,_("gray"));
+  dt_bauhaus_combobox_add(g->combo1,C_("channelmixer", "gray"));
   dt_bauhaus_combobox_set(g->combo1, CHANNEL_RED );
 
   g_signal_connect (G_OBJECT (g->combo1), "value-changed",

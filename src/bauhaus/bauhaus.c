@@ -30,8 +30,13 @@
 // define this to get boxes instead of arrow indicators, more like our previous version was:
 // #define DT_BAUHAUS_OLD
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wunused-function"
+//to be removed when we will depend on glib-2.38+
+//see https://bugzilla.gnome.org/show_bug.cgi?id=723899
 // new type dt_bauhaus_widget_t, gtk functions start with dt_bh (so they don't collide with ours), we inherit from drawing area
 G_DEFINE_TYPE (DtBauhausWidget, dt_bh, GTK_TYPE_DRAWING_AREA)
+#pragma GCC diagnostic pop
 
 // fwd declare
 static gboolean
@@ -610,8 +615,7 @@ guess_font_size()
 void
 dt_bauhaus_init()
 {
-  darktable.bauhaus = (dt_bauhaus_t *)malloc(sizeof(dt_bauhaus_t));
-  memset(darktable.bauhaus, 0, sizeof(dt_bauhaus_t));
+  darktable.bauhaus = (dt_bauhaus_t *)calloc(1, sizeof(dt_bauhaus_t));
   darktable.bauhaus->keys_cnt = 0;
   darktable.bauhaus->current = NULL;
   darktable.bauhaus->popup_area = gtk_drawing_area_new();
@@ -677,7 +681,7 @@ dt_bauhaus_init()
   // we need.
   dt_gui_key_accel_block_on_focus_connect(darktable.bauhaus->popup_area);
 
-  gtk_widget_set_size_request(darktable.bauhaus->popup_area, 300, 300);
+  gtk_widget_set_size_request(darktable.bauhaus->popup_area, DT_PIXEL_APPLY_DPI(300), DT_PIXEL_APPLY_DPI(300));
   gtk_window_set_resizable(GTK_WINDOW(darktable.bauhaus->popup_window), FALSE);
   gtk_window_set_default_size(GTK_WINDOW(darktable.bauhaus->popup_window), 260, 260);
   // gtk_window_set_modal(GTK_WINDOW(c->popup_window), TRUE);
@@ -768,7 +772,7 @@ dt_bauhaus_widget_init(dt_bauhaus_widget_t* w, dt_iop_module_t *self)
   w->quad_paint  = 0;
   w->quad_toggle = 0;
   w->combo_populate = NULL;
-  gtk_widget_set_size_request(GTK_WIDGET(w), 260, get_line_height());
+  gtk_widget_set_size_request(GTK_WIDGET(w), DT_PIXEL_APPLY_DPI(260), get_line_height());
 
   gtk_widget_add_events(GTK_WIDGET(w),
                         GDK_POINTER_MOTION_MASK |

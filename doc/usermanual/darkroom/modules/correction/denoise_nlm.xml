@@ -1,10 +1,15 @@
+<!DOCTYPE sect3 PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
+               "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd" [
+		<!ENTITY % darktable_dtd SYSTEM "../../../dtd/darktable.dtd">
+		%darktable_dtd;
+		]>
 <sect3 status="final" id="denoise_non_local_means">
 
-  <title>Denoise - Non local means</title>
+  <title>Denoise&nbsp;&ndash; Non local means</title>
 
   <indexterm>
     <primary>modules</primary>
-    <secondary>denoise - non local means</secondary>
+    <secondary>denoise&nbsp;&ndash; non local means</secondary>
   </indexterm>
 
   <indexterm>
@@ -41,11 +46,11 @@
 
     <para>
       This module reduces noise in your image but preserves structures. This is accomplished by
-      averaging a pixel with other pixels in the image. The weight of averaging depends on the
-      similarity of the surrounding pixel's neighborhood with the neighborhood of the one pixel
-      to be denoised. A patch with a certain size is used to measure that similarity. As
-      denoising is a resource hungry process, it slows down pixelpipe processing significantly;
-      consider activating this module late in your workflow.
+      averaging each pixel with some surrounding pixels in the image. The weight of such a pixel
+      in the averaging process depends on the similarity of its neighborhood with the
+      neighborhood of the one pixel to be denoised. A patch with a certain size is used to
+      measure that similarity. As denoising is a resource hungry process, it slows down
+      pixelpipe processing significantly; consider activating this module late in your workflow.
     </para>
 
     <sect5>

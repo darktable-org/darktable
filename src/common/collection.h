@@ -60,6 +60,7 @@ dt_collection_filter_t;
 
 typedef enum dt_collection_sort_t
 {
+  DT_COLLECTION_SORT_NONE = -1,
   DT_COLLECTION_SORT_FILENAME = 0,
   DT_COLLECTION_SORT_DATETIME,
   DT_COLLECTION_SORT_RATING,
@@ -86,7 +87,8 @@ typedef enum dt_collection_properties_t
   DT_COLLECTION_PROP_LENS,
   DT_COLLECTION_PROP_ISO,
   DT_COLLECTION_PROP_APERTURE,
-  DT_COLLECTION_PROP_FILENAME
+  DT_COLLECTION_PROP_FILENAME,
+  DT_COLLECTION_PROP_GEOTAGGING
 }
 dt_collection_properties_t;
 

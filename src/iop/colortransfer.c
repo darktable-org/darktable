@@ -427,7 +427,7 @@ acquire_button_pressed (GtkButton *button, dt_iop_module_t *self)
   if(darktable.gui->reset) return;
   // request color pick
   // needed to trigger expose events:
-  self->request_color_pick = 1;
+  self->request_color_pick = DT_REQUEST_COLORPICK_MODULE;
   self->color_picker_box[0] = self->color_picker_box[1] = 0.0f;
   self->color_picker_box[2] = self->color_picker_box[3] = 1.0f;
   self->color_picker_point[0] = self->color_picker_point[1] = 0.5f;
@@ -458,7 +458,7 @@ expose (GtkWidget *widget, GdkEventExpose *event, dt_iop_module_t *self)
   if(p->flag == ACQUIRED)
   {
     // clear the color picking request if we got the cluster data
-    self->request_color_pick = 0;
+    self->request_color_pick = DT_REQUEST_COLORPICK_OFF;
     p->flag = NEUTRAL;
     dt_dev_add_history_item(darktable.develop, self, TRUE);
   }
@@ -468,7 +468,7 @@ expose (GtkWidget *widget, GdkEventExpose *event, dt_iop_module_t *self)
     // toggle a commit_params
     p->flag = ACQUIRE3;
     dt_dev_add_history_item(darktable.develop, self, TRUE);
-    self->request_color_pick = 0;
+    self->request_color_pick = DT_REQUEST_COLORPICK_OFF;
   }
   return FALSE;
 }
@@ -536,6 +536,7 @@ void cleanup_pipe (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_de
   // no free necessary, no data is alloc'ed
 #else
   free(piece->data);
+  piece->data = NULL;
 #endif
 }
 
@@ -557,7 +558,7 @@ void init(dt_iop_module_t *module)
   module->params = malloc(sizeof(dt_iop_colortransfer_params_t));
   module->default_params = malloc(sizeof(dt_iop_colortransfer_params_t));
   module->default_enabled = 0;
-  module->priority = 421; // module order created by iop_dependencies.py, do not edit!
+  module->priority = 450; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_colortransfer_params_t);
   module->gui_data = NULL;
   dt_iop_colortransfer_params_t tmp;

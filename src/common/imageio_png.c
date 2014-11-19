@@ -15,14 +15,6 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
-#include "common/darktable.h"
-#include "imageio.h"
-#include "imageio_tiff.h"
-#include "develop/develop.h"
-#include "common/exif.h"
-#include "common/colorspaces.h"
-#include "control/conf.h"
-
 #include <memory.h>
 #include <stdio.h>
 #include <png.h>
@@ -30,6 +22,13 @@
 #include <strings.h>
 #include <assert.h>
 
+#include "common/darktable.h"
+#include "imageio.h"
+#include "imageio_tiff.h"
+#include "develop/develop.h"
+#include "common/exif.h"
+#include "common/colorspaces.h"
+#include "control/conf.h"
 
 typedef struct dt_imageio_png_t
 {
@@ -50,10 +49,10 @@ int read_header(const char *filename, dt_imageio_png_t *png)
 
   if(!png->f) return 1;
 
-  const unsigned int NUM_BYTES_CHECK = 8;
+  const size_t NUM_BYTES_CHECK = 8;
   png_byte dat[NUM_BYTES_CHECK];
 
-  int cnt = fread(dat, 1, NUM_BYTES_CHECK, png->f);
+  size_t cnt = fread(dat, 1, NUM_BYTES_CHECK, png->f);
 
   if (cnt != NUM_BYTES_CHECK || png_sig_cmp(dat, (png_size_t) 0, NUM_BYTES_CHECK))
   {
@@ -217,6 +216,40 @@ dt_imageio_open_png(
   return DT_IMAGEIO_OK;
 }
 
+int dt_imageio_png_read_profile(const char *filename, uint8_t **out)
+{
+  dt_imageio_png_t image;
+  png_charp name;
+  int compression_type;
+  png_uint_32 proflen;
+
+#if PNG_LIBPNG_VER >= 10500 /* 1.5.0 */
+  png_bytep profile;
+#else
+  png_charp profile;
+#endif
+
+  if(!(filename && *filename && out)) return 0;
+
+  if(read_header(filename, &image) != 0) return DT_IMAGEIO_FILE_CORRUPTED;
+
+#ifdef PNG_iCCP_SUPPORTED
+  if(png_get_valid(image.png_ptr, image.info_ptr, PNG_INFO_iCCP) != 0 &&
+      png_get_iCCP(image.png_ptr, image.info_ptr, &name, &compression_type,
+                   &profile, &proflen) != 0)
+  {
+    *out = (uint8_t*)malloc(proflen);
+    memcpy(*out, profile, proflen);
+  }
+  else
+#endif
+    proflen = 0;
+
+  png_destroy_read_struct(&image.png_ptr, NULL, NULL);
+  fclose(image.f);
+
+  return proflen;
+}
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

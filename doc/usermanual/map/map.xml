@@ -23,7 +23,7 @@
 
       <screeninfo>The map view</screeninfo>
 
-      <graphic fileref="map/images/map_view.png" scalefit="1" width="80%"></graphic>
+      <graphic fileref="images/map_view.png" scalefit="1" width="80%"></graphic>
 
     </screenshot>
   </para>

@@ -5,7 +5,7 @@
 /*
     RawSpeed - RAW file decoder.
 
-    Copyright (C) 2009 Klaus Post
+    Copyright (C) 2009-2014 Klaus Post
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Lesser General Public
@@ -133,11 +133,7 @@ RawImage DngDecoder::decodeRawInternal() {
             }
       */
       iPoint2D cfaSize(pDim[1], pDim[0]);
-      if (pDim[0] != 2)
-        ThrowRDE("DNG Decoder: Unsupported CFA configuration.");
-      if (pDim[1] != 2)
-        ThrowRDE("DNG Decoder: Unsupported CFA configuration.");
-
+      mRaw->cfa.setSize(cfaSize);
       if (cfaSize.area() != raw->getEntry(CFAPATTERN)->count)
         ThrowRDE("DNG Decoder: CFA pattern dimension and pattern count does not match: %d.");
 
@@ -152,6 +148,14 @@ RawImage DngDecoder::decodeRawInternal() {
               c2 = CFA_GREEN; break;
             case 2:
               c2 = CFA_BLUE; break;
+            case 3:
+              c2 = CFA_CYAN; break;
+            case 4:
+              c2 = CFA_MAGENTA; break;
+            case 5:
+              c2 = CFA_YELLOW; break;
+            case 6:
+              c2 = CFA_WHITE; break;
             default:
               c2 = CFA_UNKNOWN;
               ThrowRDE("DNG Decoder: Unsupported CFA Color.");
@@ -373,9 +377,9 @@ RawImage DngDecoder::decodeRawInternal() {
       ThrowRDE("DNG Decoder: No positive crop area");
 
     mRaw->subFrame(cropped);
-    if (cropped.pos.x %2 == 1)
+    if (mRaw->isCFA && cropped.pos.x %2 == 1)
       mRaw->cfa.shiftLeft();
-    if (cropped.pos.y %2 == 1)
+    if (mRaw->isCFA && cropped.pos.y %2 == 1)
       mRaw->cfa.shiftDown();
   }
   if (mRaw->dim.area() <= 0)

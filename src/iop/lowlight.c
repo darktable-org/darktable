@@ -37,7 +37,7 @@
 
 DT_MODULE_INTROSPECTION(1, dt_iop_lowlight_params_t)
 
-#define DT_IOP_LOWLIGHT_INSET 5
+#define DT_IOP_LOWLIGHT_INSET DT_PIXEL_APPLY_DPI(5)
 #define DT_IOP_LOWLIGHT_RES 64
 #define DT_IOP_LOWLIGHT_BANDS 6
 #define DT_IOP_LOWLIGHT_LUT_RES 0x10000
@@ -273,6 +273,7 @@ void cleanup_pipe (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_de
   dt_iop_lowlight_data_t *d = (dt_iop_lowlight_data_t *)(piece->data);
   dt_draw_curve_destroy(d->curve);
   free(piece->data);
+  piece->data = NULL;
 }
 
 void gui_update(struct dt_iop_module_t *self)
@@ -288,7 +289,7 @@ void init(dt_iop_module_t *module)
   module->params = malloc(sizeof(dt_iop_lowlight_params_t));
   module->default_params = malloc(sizeof(dt_iop_lowlight_params_t));
   module->default_enabled = 0; // we're a rather slow and rare op.
-  module->priority = 578; // module order created by iop_dependencies.py, do not edit!
+  module->priority = 600; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_lowlight_params_t);
   module->gui_data = NULL;
   dt_iop_lowlight_params_t tmp;
@@ -506,7 +507,7 @@ lowlight_expose(GtkWidget *widget, GdkEventExpose *event, gpointer user_data)
   width -= 2*inset;
   height -= 2*inset;
 
-  cairo_set_line_width(cr, 1.0);
+  cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(1.0));
   cairo_set_source_rgb (cr, .1, .1, .1);
   cairo_rectangle(cr, 0, 0, width, height);
   cairo_stroke(cr);
@@ -516,7 +517,7 @@ lowlight_expose(GtkWidget *widget, GdkEventExpose *event, gpointer user_data)
   cairo_fill(cr);
 
   // draw grid
-  cairo_set_line_width(cr, .4);
+  cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(.4));
   cairo_set_source_rgb (cr, .1, .1, .1);
   dt_draw_grid(cr, 8, 0, 0, width, height);
 
@@ -544,11 +545,11 @@ lowlight_expose(GtkWidget *widget, GdkEventExpose *event, gpointer user_data)
 
   // draw x positions
   cairo_set_source_rgb(cr, 0.6, 0.6, 0.6);
-  cairo_set_line_width(cr, 1.);
-  const float arrw = 7.0f;
+  cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(1.));
+  const float arrw = DT_PIXEL_APPLY_DPI(7.0f);
   for(int k=0; k<DT_IOP_LOWLIGHT_BANDS; k++)
   {
-    cairo_move_to(cr, width*p.transition_x[k], height+inset-1);
+    cairo_move_to(cr, width*p.transition_x[k], height+inset-DT_PIXEL_APPLY_DPI(1));
     cairo_rel_line_to(cr, -arrw*.5f, 0);
     cairo_rel_line_to(cr, arrw*.5f, -arrw);
     cairo_rel_line_to(cr, arrw*.5f, arrw);
@@ -562,7 +563,7 @@ lowlight_expose(GtkWidget *widget, GdkEventExpose *event, gpointer user_data)
 
   // cairo_set_operator(cr, CAIRO_OPERATOR_ADD);
   //cairo_set_operator(cr, CAIRO_OPERATOR_OVER);
-  cairo_set_line_width(cr, 2.);
+  cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(2.));
   cairo_set_source_rgba(cr, .7, .7, .7, 1.0);
 
   p = *(dt_iop_lowlight_params_t *)self->params;
@@ -577,10 +578,10 @@ lowlight_expose(GtkWidget *widget, GdkEventExpose *event, gpointer user_data)
 
   // draw dots on knots
   cairo_set_source_rgb(cr, 0.7, 0.7, 0.7);
-  cairo_set_line_width(cr, 1.);
+  cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(1.));
   for(int k=0; k<DT_IOP_LOWLIGHT_BANDS; k++)
   {
-    cairo_arc(cr, width*p.transition_x[k], - height*p.transition_y[k], 3.0, 0.0, 2.0*M_PI);
+    cairo_arc(cr, width*p.transition_x[k], - height*p.transition_y[k], DT_PIXEL_APPLY_DPI(3.0), 0.0, 2.0*M_PI);
     if(c->x_move == k) cairo_fill(cr);
     else               cairo_stroke(cr);
   }
@@ -799,8 +800,9 @@ void gui_init(struct dt_iop_module_t *self)
 
   self->widget = gtk_vbox_new(FALSE, DT_BAUHAUS_SPACE);
 
+  int panel_width = dt_conf_get_int("panel_width") * 0.95;
   c->area = GTK_DRAWING_AREA(gtk_drawing_area_new());
-  gtk_widget_set_size_request(GTK_WIDGET(c->area), 195, 195);
+  gtk_widget_set_size_request(GTK_WIDGET(c->area), panel_width, panel_width*0.75);
 
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(c->area),FALSE, FALSE, 0);
 

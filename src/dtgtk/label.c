@@ -17,7 +17,10 @@
 */
 
 #include <string.h>
+#include "common/darktable.h"
+#include "gui/gtk.h"
 #include "label.h"
+#include "bauhaus/bauhaus.h"
 
 static void _label_class_init(GtkDarktableLabelClass *klass);
 static void _label_init(GtkDarktableLabel *slider);
@@ -49,7 +52,7 @@ static void  _label_size_request(GtkWidget *widget,GtkRequisition *requisition)
   g_return_if_fail(DTGTK_IS_LABEL(widget));
   g_return_if_fail(requisition != NULL);
   requisition->width = -1;
-  requisition->height = 17;
+  requisition->height = DT_PIXEL_APPLY_DPI(17);
 }
 
 /*static void _label_size_allocate(GtkWidget *widget, GtkAllocation *allocation)
@@ -86,11 +89,6 @@ static gboolean _label_expose(GtkWidget *widget, GdkEventExpose *event)
   g_return_val_if_fail(widget != NULL, FALSE);
   g_return_val_if_fail(DTGTK_IS_LABEL(widget), FALSE);
   g_return_val_if_fail(event != NULL, FALSE);
-  GtkStyle *style=gtk_rc_get_style_by_paths(gtk_settings_get_default(), NULL,"GtkButton", GTK_TYPE_BUTTON);
-  if(!style) style = gtk_rc_get_style(widget);
-  // uninitialized?
-  if(style->depth == -1) return FALSE;
-  int state = gtk_widget_get_state(widget);
 
   GtkAllocation allocation;
   gtk_widget_get_allocation(widget, &allocation);
@@ -102,10 +100,11 @@ static gboolean _label_expose(GtkWidget *widget, GdkEventExpose *event)
   // Formatting the display of text and draw it...
   PangoLayout *layout;
   layout = gtk_widget_create_pango_layout(widget,NULL);
-  pango_layout_set_font_description(layout,style->font_desc);
+  pango_layout_set_font_description(layout, darktable.bauhaus->pango_font_desc);
+  pango_cairo_context_set_resolution(pango_layout_get_context(layout), darktable.gui->dpi);
   const gchar *text=gtk_label_get_text(GTK_LABEL(widget));
   pango_layout_set_text(layout,text,-1);
-  GdkRectangle t= {x,y,x+width,y+height};
+
   int pw,ph;
   pango_layout_get_pixel_size(layout,&pw,&ph);
 
@@ -115,71 +114,70 @@ static gboolean _label_expose(GtkWidget *widget, GdkEventExpose *event)
   cairo_t *cr;
   cr = gdk_cairo_create(gtk_widget_get_window(widget));
 
-  cairo_set_source_rgba(cr,
-                        /* style->fg[state].red/65535.0,
-                         style->fg[state].green/65535.0,
-                         style->fg[state].blue/65535.0,*/
-                        1,1,1,
-                        0.10
-                       );
+  cairo_set_source_rgba(cr, 1,1,1, 0.10);
 
   cairo_set_antialias(cr,CAIRO_ANTIALIAS_NONE);
 
-  cairo_set_line_width(cr,1.0);
-  cairo_set_line_cap(cr,CAIRO_LINE_CAP_ROUND);
+  cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(1.0));
+//   cairo_set_line_cap(cr,CAIRO_LINE_CAP_ROUND);
   if( DTGTK_LABEL(widget)->flags&DARKTABLE_LABEL_UNDERLINED )
   {
+    // TODO: make DPI aware
     cairo_move_to(cr,x,y+height-2);
     cairo_line_to(cr,x+width,y+height-2);
     cairo_stroke(cr);
   }
   else if( DTGTK_LABEL(widget)->flags&DARKTABLE_LABEL_BACKFILLED )
   {
+    // TODO: make DPI aware
     cairo_rectangle(cr,x,y,width,height);
     cairo_fill(cr);
   }
   else if( DTGTK_LABEL(widget)->flags&DARKTABLE_LABEL_TAB )
   {
-    int rx=x,rw=pw+2;
-    if( DTGTK_LABEL(widget)->flags&DARKTABLE_LABEL_ALIGN_RIGHT ) rx=x+width-pw-8;
-    cairo_rectangle(cr,rx,y,rw+4,height-1);
-    cairo_fill(cr);
+    float rx = x,
+          rw = pw + DT_PIXEL_APPLY_DPI(2);
 
+    // the blocks
     if( DTGTK_LABEL(widget)->flags&DARKTABLE_LABEL_ALIGN_RIGHT )
     {
-      // /|
-      cairo_move_to(cr,x+width-rw-6,y);
-      cairo_line_to(cr,x+width-rw-6-15,y+height-2);
-      cairo_line_to(cr,x+width-rw-6,y+height-2);
-      cairo_fill(cr);
+      rx = x + width - pw - DT_PIXEL_APPLY_DPI(8.0);
 
-      // hline
-      cairo_move_to(cr,x,y+height-1);
-      cairo_line_to(cr,x+width-rw-6,y+height-1);
-      cairo_stroke(cr);
+      cairo_move_to(cr, rx + rw + DT_PIXEL_APPLY_DPI(4.0), y + height - DT_PIXEL_APPLY_DPI(1.0));
+      cairo_line_to(cr, rx + rw + DT_PIXEL_APPLY_DPI(4.0), y);
+      cairo_line_to(cr, rx, y);
+      cairo_line_to(cr, rx - DT_PIXEL_APPLY_DPI(15.0), y + height - DT_PIXEL_APPLY_DPI(1.0));
+      cairo_close_path(cr);
+      cairo_fill(cr);
     }
     else
     {
-      // |
-      cairo_move_to(cr,x+rw+4,y);
-      cairo_line_to(cr,x+rw+4+15,y+height-2);
-      cairo_line_to(cr,x+rw+4,y+height-2);
+      cairo_move_to(cr, rx, y);
+      cairo_line_to(cr, rx + rw + DT_PIXEL_APPLY_DPI(4.0), y);
+      cairo_line_to(cr, rx + rw + DT_PIXEL_APPLY_DPI(4.0 + 15.0), y + height - DT_PIXEL_APPLY_DPI(1.0));
+      cairo_line_to(cr, rx, y + height - DT_PIXEL_APPLY_DPI(1.0));
+      cairo_close_path(cr);
       cairo_fill(cr);
 
-      // hline
-      cairo_move_to(cr,x+rw+4,y+height-1);
-      cairo_line_to(cr,x+width,y+height-1);
-      cairo_stroke(cr);
     }
+
+    // hline
+    cairo_move_to(cr, x, y + height - DT_PIXEL_APPLY_DPI(0.5));
+    cairo_line_to(cr, x + width - DT_PIXEL_APPLY_DPI(2.0), y + height - DT_PIXEL_APPLY_DPI(0.5));
+    cairo_stroke(cr);
   }
-  cairo_set_antialias(cr,CAIRO_ANTIALIAS_DEFAULT);
-  cairo_destroy(cr);
 
   // draw text
-  int lx=x+4, ly=y+((height/2.0)-(ph/2.0));
-  if( DTGTK_LABEL(widget)->flags&DARKTABLE_LABEL_ALIGN_RIGHT ) lx=x+width-pw-6;
+  int lx=x+DT_PIXEL_APPLY_DPI(4), ly=y+((height/2.0)-(ph/2.0));
+  if( DTGTK_LABEL(widget)->flags&DARKTABLE_LABEL_ALIGN_RIGHT ) lx=x+width-pw-DT_PIXEL_APPLY_DPI(6);
   else if( DTGTK_LABEL(widget)->flags&DARKTABLE_LABEL_ALIGN_CENTER ) lx=(width/2.0)-(pw/2.0);
-  gtk_paint_layout(style,gtk_widget_get_window(widget), state,TRUE,&t,widget,"label",lx,ly,layout);
+  cairo_move_to(cr, lx, ly);
+  cairo_set_source_rgba(cr, 1.0, 1.0, 1.0, 0.5);
+  pango_cairo_show_layout(cr, layout);
+  g_object_unref(layout);
+
+  cairo_set_antialias(cr,CAIRO_ANTIALIAS_DEFAULT);
+  cairo_destroy(cr);
 
   return FALSE;
 }

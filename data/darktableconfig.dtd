@@ -13,6 +13,9 @@
 >
 <!ELEMENT enum (option)+>
 <!ELEMENT option (#PCDATA)>
+<!ATTLIST option
+	capability CDATA #IMPLIED
+>
 <!ELEMENT default (#PCDATA)>
 <!ELEMENT shortdescription (#PCDATA)>
 <!ELEMENT longdescription (#PCDATA)>

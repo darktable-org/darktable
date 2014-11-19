@@ -6,7 +6,7 @@
 		]>
 <book lang="en">
 
-  <title>darktable 1.4</title>
+  <title>darktable 1.6</title>
 
   <bookinfo>
 
@@ -18,10 +18,20 @@
       </para>
 
       <para>
-        darktable has been developed with major contribution by Aldric Renaudin, Alexandre Prokoudine,
-        Bruce Guenter, Christian Tellefsen, Edouard Gomez, Ger Siemerink, Igor Kuzmin, James C. McPherson,
-        Jean-Sébastien Pédron, Jérémy Rosen, Jose Carlos Garcia Sogo, Olivier Toulouse, Pascal Obry,
-        Robert Bieber, Simon Spannagel and many others.
+        darktable has been developed with major contribution by Aldric Renaudin, Alexandre
+        Prokoudine, Ammon Riley, Andrew Toskin, Andrey Kaminsky, Antony Dovgal, Artur de Sousa
+        Rocha, Brian Teague, Bruce Guenter, Cherrot Luo, Christian Himpel, Christian Tellefsen,
+        Dan Torop, David Bremner, Dennis Gnad, Dimitrios Psychogios, Eckhart Pedersen, Edouard
+        Gomez, Frédéric Grollier, Gaspard Jankowiak, Ger Siemerink, Gianluigi Calcaterra,
+        Guilherme Brondani Torri, Igor Kuzmin, Ivan Tarozzi, James C. McPherson, Jean-Sébastien
+        Pédron, Jérémy Rosen, Jesper Pedersen, Jochen Schröder, Johanes Schneider, José
+        Carlos Casimiro, Jose Carlos Garcia Sogo, Josep Vicenç Moragues Pastor, Kaminsky
+        Andrey, Kanstantsin Shautsou, Karl Mikaelsson, Loic Guibert, Marcel Laubach, Mauro
+        Bartoccelli, Michal Babej, Michel Leblond, Mikko Ruohola, Milan Knížek, Moritz Lipp,
+        Olivier Tribout, Pascal Obry, Pedro Côrte-Real, Petr Styblo, Richard Hughes, Richard
+        Levitte, Richard Wonka, Robert Bieber, Roman Lebedev, Rostyslav Pidgornyi, Sergey
+        Pavlov, Simon Spannagel, Stuart Henderson, Tatica Leandro, Thomas Pryds, Victor Lamoine,
+        Wolfgang Goetz, Wyatt Olson and many others.
       </para>
 
       <para>
@@ -68,6 +78,11 @@
       <holder>Ulrich Pegelow</holder>
     </copyright>
 
+    <copyright>
+      <year>2013-2014</year>
+      <holder>Jérémy Rosen</holder>
+    </copyright>
+
   </bookinfo>
 
   <preface id="overview">
@@ -102,10 +117,10 @@
                 user manual
               </entry>
               <entry>
-                1.4.1
+                1.6.0
               </entry>
               <entry>
-                January 2014
+                November 2014
               </entry>
             </row>
             <row>
@@ -113,10 +128,10 @@
                 darktable
               </entry>
               <entry>
-                1.4
+                1.6
               </entry>
               <entry>
-                December 2013
+                November 2014
               </entry>
             </row>
           </tbody>
@@ -125,13 +140,16 @@
     </para>
 
     <para>
-      Many thanks to all contributors to this user manual. Special thanks for proof reading,
-      style improvement, and constructive criticism go to Colin Adams, Mark Garrow, Simon
-      Harhues, Ammon Riley, Rob Z. Smith, and David Vincent-Jones.
+      Translations of this manual to local languages are brought to you by Federico Bruni,
+      Victor Lamoine, and Michel Leblond.
     </para>
 
-<!-- <para>For the course of this documentation the arrow keys on your keyboard are referenced as with arrow symbols: &uarr;&larr;&darr;&rarr;.
-		</para>  -->
+    <para>
+      Many thanks to all contributors to this user manual. Special thanks for proof reading,
+      style improvement, constructive criticism, and valuable contributions go to Colin Adams,
+      Mark Garrow, Simon Harhues, István Kovács, Michel Leblond, Rudolf Martin, Ammon Riley,
+      Rob Z. Smith, Andrew Toskin, and David Vincent-Jones.
+    </para>
 
   </preface>
 
@@ -154,6 +172,10 @@
 <!-- Geotagging  Chapter -->
 
   <xi:include href="map/map.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
+
+<!-- Slideshow  Chapter -->
+
+  <xi:include href="slideshow/slideshow.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
 
 <!-- Preferences and Settings Chapter -->
 

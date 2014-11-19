@@ -1,7 +1,7 @@
 /* 
     RawSpeed - RAW file decoder.
 
-    Copyright (C) 2009 Klaus Post
+    Copyright (C) 2009-2014 Klaus Post
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Lesser General Public
@@ -74,6 +74,12 @@ typedef enum Endianness {
   big, little, unknown
 } Endianness;
 
+const int DEBUG_PRIO_ERROR = 0x10;
+const int DEBUG_PRIO_WARNING = 0x100;
+const int DEBUG_PRIO_INFO = 0x1000;
+const int DEBUG_PRIO_EXTRA = 0x10000;
+
+void writeLog(int priority, const char *format, ...);
 
 inline void BitBlt(uchar8* dstp, int dst_pitch, const uchar8* srcp, int src_pitch, int row_size, int height) {
   if (height == 1 || (dst_pitch == src_pitch && src_pitch == row_size)) {
@@ -186,6 +192,7 @@ inline vector<string> split_string(string input, char c = ' ') {
 typedef enum {
   BitOrder_Plain,  /* Memory order */
   BitOrder_Jpeg,   /* Input is added to stack byte by byte, and output is lifted from top */
+  BitOrder_Jpeg16, /* Same as above, but 16 bits at the time */
   BitOrder_Jpeg32, /* Same as above, but 32 bits at the time */
 } BitOrder;
 

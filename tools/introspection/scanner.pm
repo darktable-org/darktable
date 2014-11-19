@@ -123,6 +123,14 @@ our $O_RIGHTCURLY = $i++; push(@O_readable, '}');
 our $O_LEFTSQUARE = $i++; push(@O_readable, '[');
 our $O_RIGHTSQUARE = $i++; push(@O_readable, ']');
 our $O_EQUAL = $i++; push(@O_readable, '=');
+our $O_PLUS = $i++; push(@O_readable, '+');
+our $O_MINUS = $i++; push(@O_readable, '-');
+our $O_LESS = $i++; push(@O_readable, '<');
+our $O_LESSLESS = $i++; push(@O_readable, '<<');
+our $O_GREATER = $i++; push(@O_readable, '>');
+our $O_GREATERGREATER = $i++; push(@O_readable, '>>');
+our $O_PERCENT = $i++; push(@O_readable, '%');
+our $O_CIRCUMFLEX = $i++; push(@O_readable, '^');
 
 sub read_file
 {
@@ -287,6 +295,36 @@ sub read_token
     elsif($c eq "]") { shift(@code); return ($lineno, $file, $T_OPERATOR, $O_RIGHTSQUARE); }
     elsif($c eq ":") { shift(@code); return ($lineno, $file, $T_OPERATOR, $O_COLON); }
     elsif($c eq "=") { shift(@code); return ($lineno, $file, $T_OPERATOR, $O_EQUAL); }
+    elsif($c eq "+") { shift(@code); return ($lineno, $file, $T_OPERATOR, $O_PLUS); }
+    elsif($c eq "-") { shift(@code); return ($lineno, $file, $T_OPERATOR, $O_MINUS); }
+    elsif($c eq "<")
+    {
+      shift(@code);
+      if($code[0] eq "<")
+      {
+        shift(@code);
+        return ($lineno, $file, $T_OPERATOR, $O_LESSLESS);
+      }
+      else
+      {
+        return ($lineno, $file, $T_OPERATOR, $O_LESS);
+      }
+    }
+    elsif($c eq ">")
+    {
+      shift(@code);
+      if($code[0] eq ">")
+      {
+        shift(@code);
+        return ($lineno, $file, $T_OPERATOR, $O_GREATERGREATER);
+      }
+      else
+      {
+        return ($lineno, $file, $T_OPERATOR, $O_GREATER);
+      }
+    }
+    elsif($c eq "%") { shift(@code); return ($lineno, $file, $T_OPERATOR, $O_PERCENT); }
+    elsif($c eq "^") { shift(@code); return ($lineno, $file, $T_OPERATOR, $O_CIRCUMFLEX); }
     elsif($c =~ /^[0-9]$/)
     {
       my $number = read_number();

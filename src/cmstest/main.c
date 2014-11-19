@@ -72,7 +72,7 @@ char* get_profile_description(unsigned char *data, long data_size)
   if(size == 0)
     goto error;
 
-  buf = (char*)malloc(sizeof(char) * (size + 1));
+  buf = (char*)calloc(size + 1, sizeof(char));
   size = cmsGetProfileInfoASCII(p, cmsInfoDescription, "en", "US", buf, size);
   if(size == 0)
     goto error;
@@ -82,7 +82,7 @@ char* get_profile_description(unsigned char *data, long data_size)
     result = g_strdup(buf); // better a little weird than totally borked
   else
   {
-    wbuf = (wchar_t*)malloc(sizeof(wchar_t) * (size + 1));
+    wbuf = (wchar_t*)calloc(size + 1, sizeof(wchar_t));
     size = cmsGetProfileInfo(p, cmsInfoDescription, "en", "US", wbuf, sizeof(wchar_t) * size);
     if(size == 0)
       goto error;
@@ -310,9 +310,9 @@ int main(int argc, char *arg[])
     printf("\n%s", monitor_name);
     if(message)
       printf("\t%s", message);
-    printf("\n\tX atom\t%s\t%ld bytes\n\t\t%s\n", x_atom_name, monitor->x_atom_length, x_atom_description);
+    printf("\n\tX atom:\t%s (%ld bytes)\n\t\tdescription: %s\n", x_atom_name, monitor->x_atom_length, x_atom_description);
 #ifdef HAVE_COLORD
-    printf("\tcolord\t%s\n\t\t%s\n", colord_filename, colord_description);
+    printf("\tcolord:\t\"%s\"\n\t\tdescription: %s\n", colord_filename, colord_description);
 #endif
 
     g_free(x_atom_description);
@@ -332,6 +332,7 @@ int main(int argc, char *arg[])
       printf(" - some monitors reported different profiles\n");
     if(any_unprofiled_monitor)
       printf(" - some monitors lacked a profile\n");
+    printf("You may experience inconsistent color rendition between color managed applications\n");
   }
   else
     printf("\nYour system seems to be correctly configured\n");

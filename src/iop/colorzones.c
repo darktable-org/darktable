@@ -37,7 +37,7 @@
 
 DT_MODULE_INTROSPECTION(3, dt_iop_colorzones_params_t)
 
-#define DT_IOP_COLORZONES_INSET 5
+#define DT_IOP_COLORZONES_INSET DT_PIXEL_APPLY_DPI(5)
 #define DT_IOP_COLORZONES_CURVE_INFL .3f
 #define DT_IOP_COLORZONES_RES 64
 #define DT_IOP_COLORZONES_LUT_RES 0x10000
@@ -370,6 +370,7 @@ void cleanup_pipe (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_de
   dt_iop_colorzones_data_t *d = (dt_iop_colorzones_data_t *)(piece->data);
   for(int ch=0; ch<3; ch++) dt_draw_curve_destroy(d->curve[ch]);
   free(piece->data);
+  piece->data = NULL;
 }
 
 void gui_update(struct dt_iop_module_t *self)
@@ -386,7 +387,7 @@ void init(dt_iop_module_t *module)
   module->params = malloc(sizeof(dt_iop_colorzones_params_t));
   module->default_params = malloc(sizeof(dt_iop_colorzones_params_t));
   module->default_enabled = 0; // we're a rather slow and rare op.
-  module->priority = 561; // module order created by iop_dependencies.py, do not edit!
+  module->priority = 583; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_colorzones_params_t);
   module->gui_data = NULL;
   dt_iop_colorzones_params_t tmp;
@@ -594,7 +595,7 @@ colorzones_expose(GtkWidget *widget, GdkEventExpose *event, gpointer user_data)
   width -= 2*inset;
   height -= 2*inset;
 
-  cairo_set_line_width(cr, 1.0);
+  cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(1.0));
   cairo_set_source_rgb (cr, .1, .1, .1);
   cairo_rectangle(cr, 0, 0, width, height);
   cairo_stroke(cr);
@@ -640,6 +641,9 @@ colorzones_expose(GtkWidget *widget, GdkEventExpose *event, gpointer user_data)
     self->picked_color[1] =  0.0f;
     self->picked_color[2] = -5.0f;
   }
+
+  cairo_set_antialias(cr,CAIRO_ANTIALIAS_NONE);
+
   const float pickC = sqrtf(self->picked_color[1]*self->picked_color[1] + self->picked_color[2]*self->picked_color[2]);
   const int cellsi = 16, cellsj = 9;
   for(int j=0; j<cellsj; j++) for(int i=0; i<cellsi; i++)
@@ -697,9 +701,11 @@ colorzones_expose(GtkWidget *widget, GdkEventExpose *event, gpointer user_data)
       Lab.b *= Lab.L/L0 * clip2;
       cmsDoTransform(c->xform, &Lab, rgb, 1);
       cairo_set_source_rgb (cr, rgb[0], rgb[1], rgb[2]);
-      cairo_rectangle(cr, width*i/(float)cellsi, height*j/(float)cellsj, width/(float)cellsi-1, height/(float)cellsj-1);
+      cairo_rectangle(cr, width*i/(float)cellsi, height*j/(float)cellsj, width/(float)cellsi-DT_PIXEL_APPLY_DPI(1), height/(float)cellsj-DT_PIXEL_APPLY_DPI(1));
       cairo_fill(cr);
     }
+
+  cairo_set_antialias(cr,CAIRO_ANTIALIAS_DEFAULT);
 
   if(self->picked_color_max[0] >= 0.0f)
   {
@@ -721,7 +727,7 @@ colorzones_expose(GtkWidget *widget, GdkEventExpose *event, gpointer user_data)
     cairo_save(cr);
     cairo_set_source_rgb(cr, 1.0, 1.0, 1.0);
     cairo_set_operator(cr, CAIRO_OPERATOR_XOR);
-    cairo_set_line_width(cr, 2.);
+    cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(2.));
     cairo_move_to(cr, width*picked_i, 0.0);
     cairo_line_to(cr, width*picked_i, height);
     cairo_stroke(cr);
@@ -730,11 +736,11 @@ colorzones_expose(GtkWidget *widget, GdkEventExpose *event, gpointer user_data)
 
   // draw x positions
   cairo_set_source_rgb(cr, 0.6, 0.6, 0.6);
-  cairo_set_line_width(cr, 1.);
-  const float arrw = 7.0f;
+  cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(1.));
+  const float arrw = DT_PIXEL_APPLY_DPI(7.0f);
   for(int k=0; k<DT_IOP_COLORZONES_BANDS; k++)
   {
-    cairo_move_to(cr, width*p.equalizer_x[c->channel][k], height+inset-1);
+    cairo_move_to(cr, width*p.equalizer_x[c->channel][k], height+inset-DT_PIXEL_APPLY_DPI(1));
     cairo_rel_line_to(cr, -arrw*.5f, 0);
     cairo_rel_line_to(cr, arrw*.5f, -arrw);
     cairo_rel_line_to(cr, arrw*.5f, arrw);
@@ -748,7 +754,7 @@ colorzones_expose(GtkWidget *widget, GdkEventExpose *event, gpointer user_data)
 
   // cairo_set_operator(cr, CAIRO_OPERATOR_ADD);
   cairo_set_operator(cr, CAIRO_OPERATOR_OVER);
-  cairo_set_line_width(cr, 2.);
+  cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(2.));
   for(int i=0; i<3; i++)
   {
     // draw curves, selected last.
@@ -774,10 +780,10 @@ colorzones_expose(GtkWidget *widget, GdkEventExpose *event, gpointer user_data)
 
   // draw dots on knots
   cairo_set_source_rgb(cr, 0.7, 0.7, 0.7);
-  cairo_set_line_width(cr, 1.);
+  cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(1.));
   for(int k=0; k<DT_IOP_COLORZONES_BANDS; k++)
   {
-    cairo_arc(cr, width*p.equalizer_x[c->channel][k], - height*p.equalizer_y[c->channel][k], 3.0, 0.0, 2.0*M_PI);
+    cairo_arc(cr, width*p.equalizer_x[c->channel][k], - height*p.equalizer_y[c->channel][k], DT_PIXEL_APPLY_DPI(3.0), 0.0, 2.0*M_PI);
     if(c->x_move == k) cairo_fill(cr);
     else               cairo_stroke(cr);
   }
@@ -975,10 +981,10 @@ request_pick_toggled(GtkToggleButton *togglebutton, dt_iop_module_t *self)
 {
   if(darktable.gui->reset) return;
 
-  self->request_color_pick = (gtk_toggle_button_get_active(togglebutton) ? 1 : 0);
+  self->request_color_pick = (gtk_toggle_button_get_active(togglebutton) ? DT_REQUEST_COLORPICK_MODULE : DT_REQUEST_COLORPICK_OFF);
 
   /* set the area sample size */
-  if (self->request_color_pick)
+  if (self->request_color_pick != DT_REQUEST_COLORPICK_OFF)
   {
     dt_lib_colorpicker_set_point(darktable.lib, 0.5, 0.5);
     dt_dev_reprocess_all(self->dev);
@@ -1047,10 +1053,11 @@ void gui_init(struct dt_iop_module_t *self)
                    G_CALLBACK (colorzones_tab_switch), self);
 
   // the nice graph
+  const int panel_width = dt_conf_get_int("panel_width") * 0.95;
   c->area = GTK_DRAWING_AREA(gtk_drawing_area_new());
   gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(c->area), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(vbox), TRUE, TRUE, 5);
-  gtk_widget_set_size_request(GTK_WIDGET(c->area), 195, 195);
+  gtk_widget_set_size_request(GTK_WIDGET(c->area), -1, panel_width * (9.0 / 16.0));
 
   c->strength = dt_bauhaus_slider_new_with_range(self,-200, 200.0, 10.0, p->strength, 1);
   dt_bauhaus_slider_set_format(c->strength,"%.01f%%");

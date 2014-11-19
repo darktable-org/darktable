@@ -45,23 +45,47 @@
     <title>Usage</title>
 
     <para>
-      The horizontal axis represent the different values you can modify. The vertical axis shows
-      the changes you can achieve.
-    </para>
-
-    <para>
-      For both horizontal and vertical axes you can work on lightness, saturation or hue. A
-      color picker is activated by pressing
-      <inlinegraphic fileref="&icon_module_picker;" scalefit="1" width="2%" align="center" />
-      and will show the picked values in the diagram.
+      The horizontal axis represents the range of values you can work on. The vertical axis shows
+      the modifications you can apply by designing a curve. For both horizontal and vertical axes you 
+      can work on lightness, saturation or hue. 
     </para>
 
     <para>
       You can click on any of the eight nodes on the curve and drag to adjust it vertically. A
       circle indicates how strong adjacent nodes will be affected. Use the scroll wheel of your
       mouse to change the circle diameter. You can also use the eight controlpoints (triangles
-      which define the vertical value of the nodes) at bottom to adjust the curve.
+      which define the vertical value of the nodes) at the bottom to adjust the curve.
     </para>
+
+    <para>
+      A color picker is activated by pressing
+      <inlinegraphic fileref="&icon_module_picker;" scalefit="1" width="2%" align="center" />
+      and will show the picked values in the diagram.
+    </para>
+
+    <sect5>
+      <title>tabbed controls</title>
+      <para>
+        You can define curves for each of the three channels <quote>lightness</quote>,
+        <quote>saturation</quote>, and <quote>hue</quote> individually.
+      </para>
+    </sect5>
+
+    <sect5>
+      <title>select by</title>
+      <para>
+        Defines the horizontal axis, i.e. the range of values you work on. You can chose between
+        <quote>lightness</quote>, <quote>saturation</quote>, and <quote>hue</quote> (default). Changing
+        this parameter resets any defined curve to a straight horizontal line.
+      </para>
+    </sect5>
+
+    <sect5>
+      <title>mix</title>
+      <para>
+        Use this parameter to tune the strength of the overall effect.
+      </para>
+    </sect5>
 
   </sect4>
 

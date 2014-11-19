@@ -22,10 +22,11 @@
       <tbody>
         <row>
           <entry>
-            The navigation panel displays a full preview of your image with a rectangle showing
-            the currently visible zoom area. Drag the rectangle around to pan the zoomed-in
-            view. The current zoom scale is displayed to the right of the preview image. Click
-            on that figure for a quick access to some common zoom levels.
+            On the top left hand side the navigation panel displays a full preview of your image
+            with a rectangle showing the currently visible zoom area in the central panel. Drag
+            the rectangle around to pan the zoomed-in view. The current zoom scale is displayed
+            to the right of the preview image. Click on that figure for a quick access to some
+            common zoom levels.
           </entry>
           <entry>
             <graphic fileref="darkroom/images/panel_navigation.png" scalefit="1" width="80%" align="center" />

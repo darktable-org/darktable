@@ -20,6 +20,7 @@ Options:
     --configdir <user config directory>
     --cachedir <user cache directory>
     --localedir <locale directory>
+    --luacmd <lua command>
     --conf <key>=<value>
     --help        
     --version
@@ -144,6 +145,13 @@ thumbnail caches in parallel - one for each library file.
 The place where darktable finds its language specific text strings.
 The default place depends on your installation. Typical places are
 C</opt/darktable/share/locale/> and C</usr/share/locale/>.
+
+=item B<< --luacmd <lua command> >>
+
+A string containing lua commands to execute after lua initialization. These
+commands will be run after your C<luarc> file.
+
+If lua is not compiled in, this option will be accepted but won't do anything
 
 =item B<< --conf <key>=<value> >>
 

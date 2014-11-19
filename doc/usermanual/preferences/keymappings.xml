@@ -197,6 +197,14 @@
       </row>
       <row>
         <entry>
+          &lt;darktable&gt;/views/lighttable/preview with focus detection
+        </entry>
+        <entry>
+          &lt;Primary&gt;z
+        </entry>
+      </row>
+      <row>
+        <entry>
           &lt;darktable&gt;/views/lighttable/rate 1
         </entry>
         <entry>
@@ -672,7 +680,7 @@
           &lt;darktable&gt;/image operations/colorout/toggle gamutcheck
         </entry>
         <entry>
-          g
+          &lt;Primary&gt;g
         </entry>
       </row>
       <row>
@@ -680,7 +688,7 @@
           &lt;darktable&gt;/image operations/colorout/toggle softproofing
         </entry>
         <entry>
-          s
+          &lt;Primary&gt;s
         </entry>
       </row>
       <row>

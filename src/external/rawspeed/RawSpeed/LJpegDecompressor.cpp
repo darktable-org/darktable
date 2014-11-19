@@ -5,7 +5,7 @@
 /*
     RawSpeed - RAW file decoder.
 
-    Copyright (C) 2009 Klaus Post
+    Copyright (C) 2009-2014 Klaus Post
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Lesser General Public
@@ -215,8 +215,8 @@ void LJpegDecompressor::parseSOF(SOFInfo* sof) {
   if (sof->prec > 16)
     ThrowRDE("LJpegDecompressor: More than 16 bits per channel is not supported.");
 
-  if (sof->cps > 4 || sof->cps < 2)
-    ThrowRDE("LJpegDecompressor: Only from 2 to 4 components are supported.");
+  if (sof->cps > 4 || sof->cps < 1)
+    ThrowRDE("LJpegDecompressor: Only from 1 to 4 components are supported.");
 
   if (headerLength != 8 + sof->cps*3)
     ThrowRDE("LJpegDecompressor: Header size mismatch.");

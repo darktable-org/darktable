@@ -870,10 +870,10 @@ static int dt_ellipse_get_points(dt_develop_t *dev, float xx, float yy, float ra
   //how many points do we need? we only take every nth point and rely on interpolation (only affecting GUI anyhow)
   const int n = 10;
   const float lambda = (a - b)/(a + b);
-  const int l = (int) ((M_PI*(a + b) * (1.0f + (3.0f * lambda*lambda)/(10.0f + sqrtf(4.0f - 3.0f * lambda*lambda)))) / n);
+  const int l = MAX(100, (int) ((M_PI*(a + b) * (1.0f + (3.0f * lambda*lambda)/(10.0f + sqrtf(4.0f - 3.0f * lambda*lambda)))) / n));
 
   //buffer allocations
-  *points = malloc(2*(l+5)*sizeof(float));
+  *points = calloc(2*(l+5), sizeof(float));
   *points_count = l+5;
 
   //now we set the points
@@ -940,7 +940,7 @@ static int dt_ellipse_get_source_area(dt_iop_module_t *module, dt_dev_pixelpipe_
   const int l = (int) (M_PI*(a + b) * (1.0f + (3.0f * lambda*lambda)/(10.0f + sqrtf(4.0f - 3.0f * lambda*lambda))));
 
   //buffer allocations
-  float *points = malloc(2*(l+5)*sizeof(float));
+  float *points = calloc(2*(l+5), sizeof(float));
 
   //now we set the points
   const float x = points[0] = ellipse->center[0]*wd;
@@ -1023,7 +1023,7 @@ static int dt_ellipse_get_area(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *
   const int l = (int) (M_PI*(a + b) * (1.0f + (3.0f * lambda*lambda)/(10.0f + sqrtf(4.0f - 3.0f * lambda*lambda))));
 
   //buffer allocations
-  float *points = malloc(2*(l+5)*sizeof(float));
+  float *points = calloc(2*(l+5), sizeof(float));
 
   //now we set the points
   const float x = points[0] = ellipse->center[0]*wd;
@@ -1111,9 +1111,8 @@ static int dt_ellipse_get_mask(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *
   start2 = dt_get_wtime();
 
   //we allocate the buffer
-  *buffer = malloc(w*h*sizeof(float));
-  memset(*buffer,0,w*h*sizeof(float));
-  
+  *buffer = calloc(w*h, sizeof(float));
+
   //we populate the buffer
   const int wi = piece->pipe->iwidth, hi=piece->pipe->iheight;
   const float center[2] = {ellipse->center[0]*wi, ellipse->center[1]*hi};

@@ -84,9 +84,8 @@ int position()
 void gui_init(dt_lib_module_t *self)
 {
   /* initialize ui widgets */
-  dt_lib_tool_lighttable_t *d = (dt_lib_tool_lighttable_t *)g_malloc(sizeof(dt_lib_tool_lighttable_t));
+  dt_lib_tool_lighttable_t *d = (dt_lib_tool_lighttable_t *)g_malloc0(sizeof(dt_lib_tool_lighttable_t));
   self->data = (void *)d;
-  memset(d,0,sizeof(dt_lib_tool_lighttable_t));
 
   self->widget = gtk_hbox_new(FALSE,2);
 
@@ -108,7 +107,7 @@ void gui_init(dt_lib_module_t *self)
 
   /* create horizontal zoom slider */
   d->zoom = gtk_hscale_new_with_range(1, 21, 1);
-  gtk_widget_set_size_request (GTK_WIDGET(d->zoom), 140, -1);
+  gtk_widget_set_size_request (GTK_WIDGET(d->zoom), DT_PIXEL_APPLY_DPI(140), -1);
   gtk_scale_set_draw_value(GTK_SCALE(d->zoom), FALSE);
   gtk_box_pack_start(GTK_BOX(self->widget), d->zoom, TRUE, TRUE, 0);
 

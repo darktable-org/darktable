@@ -1,0 +1,242 @@
+<!DOCTYPE sect2 PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
+               "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd" [
+		<!ENTITY % darktable_dtd SYSTEM "../../dtd/darktable.dtd">
+		%darktable_dtd;
+		]>
+<sect2 status="final" id="red_eyes">
+
+  <title>Removal of red-eye effect</title>
+
+  <indexterm>
+    <primary>red-eye removal</primary>
+  </indexterm>
+
+  <sect3 status="final">
+
+    <title>Overview</title>
+
+    <informaltable frame="none">
+      <tgroup cols="2" colsep="0" rowsep="0">
+        <colspec colwidth="6*"/>
+        <colspec colwidth="4*"/>
+        <tbody>
+          <row>
+            <entry>
+              <para>
+                The red-eye effect in photography is the common appearance of red pupils in
+                color photographs of eyes. It occurs when using a photographic flash very close
+                to the camera lens (as with most cameras with build-in flash), in ambient low
+                light.
+              </para>
+
+              <para>
+                We use the channel mixer module to reduce the red color of the pupil. To limit
+                the processing to the pupils we have to apply two masks.
+              </para>
+            </entry>
+            <entry>
+              <graphic fileref="darkroom/examples/images/red_eyes_01.png" scalefit="1" width="80%" align="center" />
+            </entry>
+          </row>
+        </tbody>
+      </tgroup>
+    </informaltable>
+
+  </sect3>
+
+  <sect3 status="final">
+
+    <title>Masking</title>
+
+    <informaltable frame="none">
+      <tgroup cols="2" colsep="0" rowsep="0">
+        <colspec colnum="1" colname="col1" colwidth="6*"/>
+        <colspec colnum="2" colname="col2" colwidth="4*"/>
+        <tbody>
+          <row>
+            <entry morerows="1">
+              <orderedlist>
+
+                <listitem><para>
+                  Enable the channel mixer module (see <xref linkend="channel_mixer"/>).
+                </para></listitem>
+
+                <listitem><para>
+                  Activate blending
+                </para>
+
+                <para>
+                  Modules with blending support exhibit an additional combobox
+                  <quote>blend</quote> at the bottom of their GUI. Blending is activated with
+                  this combobox. Set value to <quote>drawn mask</quote>. Additional controls are
+                  displayed which allow you to draw a mask.
+                </para></listitem>
+
+                <listitem><para>
+                  Masking the pupil
+                </para>
+
+                <para>
+                  Clicking the
+                  <inlinegraphic fileref="&shape_circle;" scalefit="1" width="4%" align="center"/>
+                  symbol adds a circle shape.
+                </para>
+
+                <para>
+                  Click into the canvas to place the circle. Left-click and drag the circle to
+                  the position of the first pupil. Use the scroll-wheel of your mouse while in
+                  the circle to change the diameter. Scroll within the circle border to minimize
+                  the width of the gradual decay.
+                </para>
+
+                <para>
+                  Alternatively you can us an elliptical shape. See <xref linkend="drawn_mask"/>
+                  for further details.
+                </para></listitem>
+
+                <listitem><para>
+                  Repeat step 3.
+                </para>
+
+                <para>
+                  Clicking the
+                  <inlinegraphic fileref="&shape_circle;" scalefit="1" width="4%" align="center"/>
+                  symbol adds another circle shape.
+                </para>
+
+                <para>
+                  Mark the second pupil.
+                </para></listitem>
+
+              </orderedlist>
+            </entry>
+            <entry>
+              <graphic fileref="darkroom/examples/images/red_eyes_02.png" scalefit="1" width="80%" align="center" />
+            </entry>
+          </row>
+          <row>
+            <entry colname="col2">
+              <graphic fileref="darkroom/examples/images/red_eyes_03.png" scalefit="1" width="80%" align="center" />
+            </entry>
+          </row>
+        </tbody>
+      </tgroup>
+    </informaltable>
+
+  </sect3>
+
+  <sect3 status="final">
+
+    <title>Desaturation</title>
+
+    <informaltable frame="none">
+      <tgroup cols="2" colsep="0" rowsep="0">
+        <colspec colnum="1" colname="col1" colwidth="6*"/>
+        <colspec colnum="2" colname="col2" colwidth="4*"/>
+        <tbody>
+          <row>
+            <entry morerows="1">
+              <orderedlist>
+
+                <listitem><para>
+                  Approach - Modifying the output channel <quote>red</quote>.
+                </para>
+
+                <orderedlist>
+
+                  <listitem><para>
+                    Set output channel <quote>destination</quote> to <quote>red</quote>
+                    (default)
+                  </para></listitem>
+
+                  <listitem><para>
+                    Set red color value to 0.00
+                  </para></listitem>
+
+                  <listitem><para>
+                    Set green color value to 0.50
+                  </para></listitem>
+
+                  <listitem><para>
+                    Set blue color value to 0.50
+                  </para></listitem>
+
+                </orderedlist>
+
+                <para>
+                  You are free to experiment what gives you the most realistic pupil, but this
+                  is a good starting point. Another proposal is 0.10/0.60/0.30. The sum of the three
+                  values should be 1.
+                </para></listitem>
+
+              </orderedlist>
+            </entry>
+            <entry>
+              <graphic fileref="darkroom/examples/images/red_eyes_04.png" scalefit="1" width="80%" align="center" />
+            </entry>
+          </row>
+          <row>
+            <entry colname="col2">
+              <graphic fileref="darkroom/examples/images/red_eyes_05.png" scalefit="1" width="80%" align="center" />
+            </entry>
+          </row>
+        </tbody>
+      </tgroup>
+    </informaltable>
+
+    <informaltable frame="none">
+      <tgroup cols="2" colsep="0" rowsep="0">
+        <colspec colnum="1" colname="col1" colwidth="6*"/>
+        <colspec colnum="2" colname="col2" colwidth="4*"/>
+        <tbody>
+          <row>
+            <entry morerows="1">
+              <orderedlist continuation="continues">
+
+                <listitem><para>
+                  Approach - Modifying the output channel <quote>gray</quote>.
+                </para>
+
+                <orderedlist>
+
+                  <listitem><para>
+                    Set output channel <quote>destination</quote> to <quote>gray</quote>
+                  </para></listitem>
+
+                  <listitem><para>
+                    Set red color value to 0.24
+                  </para></listitem>
+
+                  <listitem><para>
+                    Set green color value to 0.68
+                  </para></listitem>
+
+                  <listitem><para>
+                    Set blue color value to 0.08
+                  </para></listitem>
+
+                </orderedlist>
+
+                <para>
+                  You are free to experiment what gives you the most realistic pupil, but this
+                  is a good starting point. The sum of the three values should be 1.
+                </para></listitem>
+
+              </orderedlist>
+            </entry>
+            <entry>
+              <graphic fileref="darkroom/examples/images/red_eyes_06.png" scalefit="1" width="80%" align="center" />
+            </entry>
+          </row>
+          <row>
+            <entry colname="col2">
+              <graphic fileref="darkroom/examples/images/red_eyes_07.png" scalefit="1" width="80%" align="center" />
+            </entry>
+          </row>
+        </tbody>
+      </tgroup>
+    </informaltable>
+
+  </sect3>
+
+</sect2>

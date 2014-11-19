@@ -1,3 +1,8 @@
+<!DOCTYPE sect1 PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
+               "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd" [
+		<!ENTITY % darktable_dtd SYSTEM "../dtd/darktable.dtd">
+		%darktable_dtd;
+		]>
 <sect1 status="final" id="gui_options">
 
   <title>GUI options</title>
@@ -103,14 +108,6 @@
     Initial star rating (from 0 to 5) for all images when importing a film roll (default 1).
   </para>
 
-  <bridgehead renderas="sect4">indicate focus regions</bridgehead>
-
-  <para>
-    If enabled an overlay indicating image sharpness is displayed in full screen preview in
-    lighttable mode (<quote>z</quote>-option, see <xref linkend="lighttable_overview"/>). Very
-    sharp areas are indicated in red; slightly less sharp areas in blue (default off).
-  </para>
-
   <bridgehead renderas="sect4">enable filmstrip</bridgehead>
 
   <para>
@@ -120,15 +117,15 @@
   <bridgehead renderas="sect4">maximum width of image drawing area</bridgehead>
 
   <para>
-    Maximum width of the image drawing area in darkroom mode - adjust to your screen. Needs a
-    restart and will invalidate current thumbnail caches (default 1300).
+    Maximum width of the image drawing area in darkroom mode&nbsp;&ndash; adjust to your screen.
+    Needs a restart and will invalidate current thumbnail caches (default 1300).
   </para>
 
   <bridgehead renderas="sect4">maximum height of image drawing area</bridgehead>
 
   <para>
-    Maximum height of the image drawing area in darkroom mode - adjust to your screen. Needs a
-    restart and will invalidate current thumbnail caches (default 1000).
+    Maximum height of the image drawing area in darkroom mode&nbsp;&ndash; adjust to your
+    screen. Needs a restart and will invalidate current thumbnail caches (default 1000).
   </para>
 
   <bridgehead renderas="sect4">compression of thumbnail images</bridgehead>
@@ -150,10 +147,25 @@
     (default off).
   </para>
 
+  <bridgehead renderas="sect4">smoothing of brush strokes</bridgehead>
+
+  <para>
+    Sets the level for smoothing of brush strokes. Stronger smoothing leads to less nodes and
+    easier editing at the expense of lower accuracy.
+  </para>
+
   <bridgehead renderas="sect4">ask before deleting a tag</bridgehead>
 
   <para>
     Always ask user before deleting a tag from an image (default on).
+  </para>
+
+  <bridgehead renderas="sect4">only draw images on map that are currently collected and filtered</bridgehead>
+
+  <para>
+    Use the current filter settings to select the geotagged images drawn in the map view. This
+    limits the images drawn to those currently shown in the filmstrip and thus reduces the time
+    needed (default off).
   </para>
 
   <bridgehead renderas="sect4">maximum number of images drawn on map</bridgehead>
@@ -190,10 +202,18 @@
     <emphasis>shift+click</emphasis> (default on).
   </para>
 
+  <bridgehead renderas="sect4">do high quality processing for slideshow</bridgehead>
+
+  <para>
+    Controls how images are processed for the slideshow view. It this option is enabled, the
+    image will first be processed in full resolution, and downscaled at the very end. This can
+    result in better quality sometimes, but will always be slower (default on).
+  </para>
+
   <bridgehead renderas="sect4">method to use for getting the display profile</bridgehead>
 
   <para>
-    This option allows to force a specific means of getting the current display profile in the
+    This option allows to force a specific way of getting the current display profile in the
     output color profile module (see <xref linkend="output_color_profile"/>). In the default
     setting <quote>all</quote> darktable will either query the X display server's xatom or the
     <emphasis>colord</emphasis> system service. You can set this option to <quote>xatom</quote>

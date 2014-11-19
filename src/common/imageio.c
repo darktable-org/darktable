@@ -124,7 +124,7 @@ libraw_fail:
 }
 
 void
-dt_imageio_flip_buffers(char *out, const char *in, const size_t bpp, const int wd, const int ht, const int fwd, const int fht, const int stride, const int orientation)
+dt_imageio_flip_buffers(char *out, const char *in, const size_t bpp, const int wd, const int ht, const int fwd, const int fht, const int stride, const dt_image_orientation_t orientation)
 {
   if(!orientation)
   {
@@ -136,17 +136,17 @@ dt_imageio_flip_buffers(char *out, const char *in, const size_t bpp, const int w
   }
   int ii = 0, jj = 0;
   int si = bpp, sj = wd*bpp;
-  if(orientation & 4)
+  if(orientation & ORIENTATION_SWAP_XY)
   {
     sj = bpp;
     si = ht*bpp;
   }
-  if(orientation & 2)
+  if(orientation & ORIENTATION_FLIP_X)
   {
     jj = (int)fht - jj - 1;
     sj = -sj;
   }
-  if(orientation & 1)
+  if(orientation & ORIENTATION_FLIP_Y)
   {
     ii = (int)fwd - ii - 1;
     si = -si;
@@ -168,7 +168,7 @@ dt_imageio_flip_buffers(char *out, const char *in, const size_t bpp, const int w
 }
 
 void
-dt_imageio_flip_buffers_ui16_to_float(float *out, const uint16_t *in, const float black, const float white, const int ch, const int wd, const int ht, const int fwd, const int fht, const int stride, const int orientation)
+dt_imageio_flip_buffers_ui16_to_float(float *out, const uint16_t *in, const float black, const float white, const int ch, const int wd, const int ht, const int fwd, const int fht, const int stride, const dt_image_orientation_t orientation)
 {
   const float scale = 1.0f/(white - black);
   if(!orientation)
@@ -181,17 +181,17 @@ dt_imageio_flip_buffers_ui16_to_float(float *out, const uint16_t *in, const floa
   }
   int ii = 0, jj = 0;
   int si = 4, sj = wd*4;
-  if(orientation & 4)
+  if(orientation & ORIENTATION_SWAP_XY)
   {
     sj = 4;
     si = ht*4;
   }
-  if(orientation & 2)
+  if(orientation & ORIENTATION_FLIP_X)
   {
     jj = (int)fht - jj - 1;
     sj = -sj;
   }
-  if(orientation & 1)
+  if(orientation & ORIENTATION_FLIP_Y)
   {
     ii = (int)fwd - ii - 1;
     si = -si;
@@ -213,7 +213,7 @@ dt_imageio_flip_buffers_ui16_to_float(float *out, const uint16_t *in, const floa
 }
 
 void
-dt_imageio_flip_buffers_ui8_to_float(float *out, const uint8_t *in, const float black, const float white, const int ch, const int wd, const int ht, const int fwd, const int fht, const int stride, const int orientation)
+dt_imageio_flip_buffers_ui8_to_float(float *out, const uint8_t *in, const float black, const float white, const int ch, const int wd, const int ht, const int fwd, const int fht, const int stride, const dt_image_orientation_t orientation)
 {
   const float scale = 1.0f/(white - black);
   if(!orientation)
@@ -226,17 +226,17 @@ dt_imageio_flip_buffers_ui8_to_float(float *out, const uint8_t *in, const float 
   }
   int ii = 0, jj = 0;
   int si = 4, sj = wd*4;
-  if(orientation & 4)
+  if(orientation & ORIENTATION_SWAP_XY)
   {
     sj = 4;
     si = ht*4;
   }
-  if(orientation & 2)
+  if(orientation & ORIENTATION_FLIP_X)
   {
     jj = (int)fht - jj - 1;
     sj = -sj;
   }
-  if(orientation & 1)
+  if(orientation & ORIENTATION_FLIP_Y)
   {
     ii = (int)fwd - ii - 1;
     si = -si;
@@ -257,10 +257,10 @@ dt_imageio_flip_buffers_ui8_to_float(float *out, const uint8_t *in, const float 
   }
 }
 
-size_t dt_imageio_write_pos(int i, int j, int wd, int ht, float fwd, float fht, int orientation)
+size_t dt_imageio_write_pos(int i, int j, int wd, int ht, float fwd, float fht, dt_image_orientation_t orientation)
 {
   int ii = i, jj = j, w = wd, fw = fwd, fh = fht;
-  if(orientation & 4)
+  if(orientation & ORIENTATION_SWAP_XY)
   {
     w = ht;
     ii = j;
@@ -268,8 +268,8 @@ size_t dt_imageio_write_pos(int i, int j, int wd, int ht, float fwd, float fht, 
     fw = fht;
     fh = fwd;
   }
-  if(orientation & 2) ii = (int)fw - ii - 1;
-  if(orientation & 1) jj = (int)fh - jj - 1;
+  if(orientation & ORIENTATION_FLIP_X) ii = (int)fw - ii - 1;
+  if(orientation & ORIENTATION_FLIP_Y) jj = (int)fh - jj - 1;
   return (size_t)jj*w + ii;
 }
 
@@ -293,14 +293,13 @@ dt_imageio_open_hdr(
 return_label:
   if(ret == DT_IMAGEIO_OK)
   {
-    img->filters = 0;
+    img->filters = 0u;
     img->flags &= ~DT_IMAGE_LDR;
     img->flags &= ~DT_IMAGE_RAW;
     img->flags |=  DT_IMAGE_HDR;
   }
   return ret;
 }
-
 
 // most common modern raw files are handled by rawspeed, which accidentally
 // may go through LibRaw, since it may break history stacks because of different
@@ -309,7 +308,7 @@ return_label:
 static gboolean
 _blacklisted_ext(const gchar *filename)
 {
-  const char *extensions_blacklist[] = { "dng", "cr2", "nef", "nrw", "orf", "rw2", "pef", "srw", "arw", NULL };
+  const char *extensions_blacklist[] = { "dng", "cr2", "nef", "nrw", "orf", "rw2", "rwl", "pef", "srw", "arw", "raf", "mrw", "raw", "sr2", "mef", "mos", "dcr", "erf", "3fr", "crw", NULL };
   gboolean supported = TRUE;
   char *ext = g_strrstr(filename, ".");
   if(!ext) return FALSE;
@@ -323,35 +322,6 @@ _blacklisted_ext(const gchar *filename)
   return supported;
 }
 
-// we do not support non-Bayer raw images; make sure we skip those in order
-// to prevent LibRaw from crashing
-static gboolean 
-_blacklisted_raw(const gchar *maker, const gchar *model)
-{
-  typedef struct blacklist_t {
-    const gchar *maker;
-    const gchar *model;
-  } blacklist_t;
-
-  blacklist_t blacklist[] = { { "fujifilm",                        "x-pro1" },
-                              { "fujifilm",                        "x-e1"   },
-                              { "fujifilm",                        "x-e2"   },
-                              { "fujifilm",                        "x-m1"   },
-                              { NULL,                              NULL     } };
-
-  gboolean blacklisted = FALSE;
-
-  for(blacklist_t *i = blacklist; i->maker != NULL; i++)
-    if(!g_ascii_strncasecmp(maker, i->maker, strlen(i->maker)) &&
-       !g_ascii_strncasecmp(model, i->model, strlen(i->model)))
-    {
-      blacklisted = TRUE;
-      break;
-    }
-  return blacklisted;
-}
-
-
 // open a raw file, libraw path:
 dt_imageio_retval_t
 dt_imageio_open_raw(
@@ -359,12 +329,10 @@ dt_imageio_open_raw(
   const char  *filename,
   dt_mipmap_cache_allocator_t a)
 {
-  if(!_blacklisted_ext(filename)) fprintf(stderr,"[imageio] '%s' blacklisted extension passed to libraw\n", filename);
+  if(!_blacklisted_ext(filename)) return DT_IMAGEIO_FILE_CORRUPTED;
 
   if(!img->exif_inited)
     (void) dt_exif_read(img, filename);
-
-  if(_blacklisted_raw(img->exif_maker, img->exif_model)) return DT_IMAGEIO_FILE_CORRUPTED;
 
   int ret;
   libraw_data_t *raw = libraw_init(0);
@@ -379,7 +347,7 @@ dt_imageio_open_raw(
   raw->params.document_mode = 2; // color scaling (clip,wb,max) and black point, but no demosaic
   raw->params.output_color = 0;
   raw->params.output_bps = 16;
-  raw->params.user_flip = -1; // -1 means: use orientation from raw
+  raw->params.user_flip = 0; // -1: use orientation from raw; 0: do not rotate
   raw->params.gamm[0] = 1.0;
   raw->params.gamm[1] = 1.0;
   // raw->params.user_qual = img->raw_params.demosaic_method; // 3: AHD, 2: PPG, 1: VNG
@@ -416,8 +384,8 @@ dt_imageio_open_raw(
   // filters seem only ever to take a useful value after unpack/process
   img->filters = raw->idata.filters;
   img->bpp = img->filters ? sizeof(uint16_t) : 4*sizeof(float);
-  img->width  = (img->orientation & 4) ? raw->sizes.height : raw->sizes.width;
-  img->height = (img->orientation & 4) ? raw->sizes.width  : raw->sizes.height;
+  img->width  = raw->sizes.width;
+  img->height = raw->sizes.height;
 #if 0 // disabled libraw exif data. it's inconsistent with exiv2, we don't want that.
   img->exif_iso = raw->other.iso_speed;
   img->exif_exposure = raw->other.shutter;
@@ -507,7 +475,7 @@ gboolean dt_imageio_is_ldr(const char *filename)
   if (fin)
   {
     /* read block from file */
-    int s = fread(block,16,1,fin);
+    size_t s = fread(block,16,1,fin);
     fclose(fin);
 
     /* compare magic's */
@@ -554,7 +522,7 @@ dt_imageio_open_ldr(
   ret = dt_imageio_open_tiff(img, filename, a);
   if(ret == DT_IMAGEIO_OK || ret == DT_IMAGEIO_CACHE_FULL)
   {
-    img->filters = 0;
+    img->filters = 0u;
     img->flags &= ~DT_IMAGE_RAW;
     img->flags &= ~DT_IMAGE_HDR;
     img->flags |= DT_IMAGE_LDR;
@@ -564,7 +532,7 @@ dt_imageio_open_ldr(
   ret = dt_imageio_open_png(img, filename, a);
   if(ret == DT_IMAGEIO_OK || ret == DT_IMAGEIO_CACHE_FULL)
   {
-    img->filters = 0;
+    img->filters = 0u;
     img->flags &= ~DT_IMAGE_RAW;
     img->flags &= ~DT_IMAGE_HDR;
     img->flags |= DT_IMAGE_LDR;
@@ -575,7 +543,7 @@ dt_imageio_open_ldr(
   ret = dt_imageio_open_j2k(img, filename, a);
   if(ret == DT_IMAGEIO_OK || ret == DT_IMAGEIO_CACHE_FULL)
   {
-    img->filters = 0;
+    img->filters = 0u;
     img->flags &= ~DT_IMAGE_RAW;
     img->flags &= ~DT_IMAGE_HDR;
     img->flags |= DT_IMAGE_LDR;
@@ -586,7 +554,7 @@ dt_imageio_open_ldr(
   ret = dt_imageio_open_jpeg(img, filename, a);
   if(ret == DT_IMAGEIO_OK || ret == DT_IMAGEIO_CACHE_FULL)
   {
-    img->filters = 0;
+    img->filters = 0u;
     img->flags &= ~DT_IMAGE_RAW;
     img->flags &= ~DT_IMAGE_HDR;
     img->flags |= DT_IMAGE_LDR;
@@ -665,7 +633,7 @@ int dt_imageio_export_with_flags(
   res = thumbnail_export ? dt_dev_pixelpipe_init_thumbnail(&pipe, wd, ht) : dt_dev_pixelpipe_init_export(&pipe, wd, ht, format->levels(format_params));
   if(!res)
   {
-    dt_control_log(_("failed to allocate memory for %s, please lower the threads used for export or buy more memory."), thumbnail_export ? _("thumbnail export") : _("export"));
+    dt_control_log(_("failed to allocate memory for %s, please lower the threads used for export or buy more memory."), thumbnail_export ? C_("noun", "thumbnail export") : C_("noun", "export"));
     dt_dev_cleanup(&dev);
     dt_mipmap_cache_read_release(darktable.mipmap_cache, &buf);
     return 1;
@@ -716,6 +684,15 @@ int dt_imageio_export_with_flags(
           h->module = m;
           h->multi_priority = 1;
           g_strlcpy(h->multi_name, "", sizeof(h->multi_name));
+
+          if(m->legacy_params && (s->module_version != m->version()))
+          {
+            void *new_params = malloc(m->params_size);
+            m->legacy_params (m, h->params, s->module_version, new_params, labs(m->version()));
+
+            free (h->params);
+            h->params = new_params;
+          }
 
           dev.history_end++;
           dev.history = g_list_append(dev.history, h);
@@ -893,7 +870,7 @@ int dt_imageio_export_with_flags(
   {
     int length;
     uint8_t exif_profile[65535]; // C++ alloc'ed buffer is uncool, so we waste some bits here.
-    char pathname[1024];
+    char pathname[PATH_MAX];
     gboolean from_cache = TRUE;
     dt_image_full_path(imgid, pathname, sizeof(pathname), &from_cache);
     // last param is dng mode, it's false here
@@ -925,24 +902,33 @@ int dt_imageio_export_with_flags(
 }
 
 
+// fallback read method in case file could not be opened yet.
+// use GraphicsMagick (if supported) to read exotic LDRs
+dt_imageio_retval_t
+dt_imageio_open_exotic(
+  dt_image_t *img,
+  const char *filename,
+  dt_mipmap_cache_allocator_t a)
+{
+#ifdef HAVE_GRAPHICSMAGICK
+  dt_imageio_retval_t ret = dt_imageio_open_gm(img, filename, a);
+  if(ret == DT_IMAGEIO_OK || ret == DT_IMAGEIO_CACHE_FULL)
+  {
+    img->filters = 0u;
+    img->flags &= ~DT_IMAGE_RAW;
+    img->flags &= ~DT_IMAGE_HDR;
+    img->flags |= DT_IMAGE_LDR;
+    return ret;
+  }
+#endif
+
+  return DT_IMAGEIO_FILE_CORRUPTED;
+}
+
+
 // =================================================
 //   combined reading
 // =================================================
-
-static inline int
-has_ldr_extension(const char *filename)
-{
-  // TODO: this is a bad, lazy hack to avoid me coding a true libmagic fix here!
-  int ret = 0;
-  const char *cc = filename + strlen(filename);
-  for(; *cc!='.'&&cc>filename; cc--);
-  gchar *ext = g_ascii_strdown(cc+1, -1);
-  if(!strcmp(ext, "jpg") || !strcmp(ext, "jpeg") ||
-      !strcmp(ext, "tif") || !strcmp(ext, "tiff"))
-    ret = 1;
-  g_free(ext);
-  return ret;
-}
 
 dt_imageio_retval_t
 dt_imageio_open(
@@ -972,13 +958,9 @@ dt_imageio_open(
   if(ret != DT_IMAGEIO_OK && ret != DT_IMAGEIO_CACHE_FULL)
     ret = dt_imageio_open_raw(img, filename, a);
 
-#ifdef HAVE_GRAPHICSMAGICK
+  /* fallback that tries to open file via GraphicsMagick */
   if(ret != DT_IMAGEIO_OK && ret != DT_IMAGEIO_CACHE_FULL)
-    ret = dt_imageio_open_gm(img, filename, a);
-#else
-  if(ret != DT_IMAGEIO_OK && ret != DT_IMAGEIO_CACHE_FULL)
-    ret = dt_imageio_open_ldr(img, filename, a);
-#endif
+    ret = dt_imageio_open_exotic(img, filename, a);
 
   return ret;
 }

@@ -25,6 +25,9 @@
 
 #define DT_GUI_IOP_MODULE_CONTROL_SPACING 2
 
+/* helper macro that applies the DPI transformation to fixed pixel values. input should be defaulting to 96 DPI */
+#define DT_PIXEL_APPLY_DPI(value) (value * darktable.gui->dpi_factor)
+
 typedef enum dt_gui_view_switch_t
 {
   DT_GUI_VIEW_SWITCH_TO_TETHERING = 1,
@@ -72,10 +75,10 @@ typedef struct dt_gui_gtk_t
 
   gboolean show_overlays;
 
-  double dpi;
+  double dpi, dpi_factor;
 
   // store which gtkrc we loaded:
-  char gtkrc[DT_MAX_PATH_LEN];
+  char gtkrc[PATH_MAX];
 }
 dt_gui_gtk_t;
 
@@ -188,7 +191,7 @@ void dt_ui_container_focus_widget(struct dt_ui_t *ui, const dt_ui_container_t c,
 /** \brief removes all child widgets from container */
 void dt_ui_container_clear(struct dt_ui_t *ui, const dt_ui_container_t c);
 /** \brief shows/hide a panel */
-void dt_ui_panel_show(struct dt_ui_t *ui,const dt_ui_panel_t, gboolean show);
+void dt_ui_panel_show(struct dt_ui_t *ui,const dt_ui_panel_t, gboolean show, gboolean write);
 /** show or hide outermost borders with expand arrows */
 void dt_ui_border_show(struct dt_ui_t *ui, gboolean show);
 /** \brief restore saved state of panel visibility for current view */

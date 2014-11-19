@@ -1,7 +1,7 @@
 /* 
     RawSpeed - RAW file decoder.
 
-    Copyright (C) 2009 Klaus Post
+    Copyright (C) 2009-2014 Klaus Post
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Lesser General Public
@@ -28,14 +28,7 @@
 #include "TiffIFDBE.h"
 #include "TiffParserException.h"
 #include "RawDecoder.h"
-#include "DngDecoder.h"
-#include "Cr2Decoder.h"
-#include "ArwDecoder.h"
-#include "PefDecoder.h"
-#include "NefDecoder.h"
-#include "OrfDecoder.h"
-#include "Rw2Decoder.h"
-#include "SrwDecoder.h"
+
 
 namespace RawSpeed {
 
@@ -48,7 +41,10 @@ public:
   virtual void parseData();
   virtual RawDecoder* getDecoder();
   Endianness tiff_endian;
+  /* Returns the Root IFD - this object still retains ownership */
   TiffIFD* RootIFD() const { return mRootIFD; }
+  /* Merges root of other TIFF into this - clears the root of the other */
+  void MergeIFD(TiffParser* other_tiff);
   RawSpeed::Endianness getHostEndian() const { return host_endian; }
 protected:
   FileMap *mInput;

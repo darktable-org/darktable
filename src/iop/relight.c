@@ -219,10 +219,10 @@ picker_callback (GtkDarktableToggleButton *button, gpointer user_data)
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(darktable.gui->reset) return;
 
-  self->request_color_pick = (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON (button)) ? 1 : 0);
+  self->request_color_pick = (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON (button)) ? DT_REQUEST_COLORPICK_MODULE : DT_REQUEST_COLORPICK_OFF);
 
   /* set the area sample size*/
-  if (self->request_color_pick)
+  if (self->request_color_pick != DT_REQUEST_COLORPICK_OFF)
   {
     dt_lib_colorpicker_set_point(darktable.lib, 0.5, 0.5);
     dt_dev_reprocess_all(self->dev);
@@ -288,8 +288,7 @@ void init_pipe (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_p
   // create part of the gegl pipeline
   piece->data = NULL;
 #else
-  piece->data = malloc(sizeof(dt_iop_relight_data_t));
-  memset(piece->data,0,sizeof(dt_iop_relight_data_t));
+  piece->data = calloc(1, sizeof(dt_iop_relight_data_t));
   self->commit_params(self, self->default_params, pipe, piece);
 #endif
 }
@@ -302,6 +301,7 @@ void cleanup_pipe (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_de
   // no free necessary, no data is alloc'ed
 #else
   free(piece->data);
+  piece->data = NULL;
 #endif
 }
 
@@ -321,7 +321,7 @@ void init(dt_iop_module_t *module)
   module->params = malloc(sizeof(dt_iop_relight_params_t));
   module->default_params = malloc(sizeof(dt_iop_relight_params_t));
   module->default_enabled = 0;
-  module->priority = 666; // module order created by iop_dependencies.py, do not edit!
+  module->priority = 700; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_relight_params_t);
   module->gui_data = NULL;
   dt_iop_relight_params_t tmp = (dt_iop_relight_params_t)
@@ -349,7 +349,7 @@ expose (GtkWidget *widget, GdkEventExpose *event, dt_iop_module_t *self)
 
   float mean, min, max;
 
-  if(self->request_color_pick && self->picked_color_max[0] >= 0.0f)
+  if(self->request_color_pick != DT_REQUEST_COLORPICK_OFF && self->picked_color_max[0] >= 0.0f)
   {
     mean = fmin(fmax(self->picked_color[0] / 100.0f, 0.0f), 1.0f);
     min = fmin(fmax(self->picked_color_min[0] / 100.0f, 0.0f), 1.0f);
@@ -408,7 +408,7 @@ void gui_init(struct dt_iop_module_t *self)
   g_signal_connect (G_OBJECT (g->gslider1), "value-changed",
                     G_CALLBACK (center_callback), self);
   g->tbutton1 = DTGTK_TOGGLEBUTTON (dtgtk_togglebutton_new (dtgtk_cairo_paint_colorpicker, CPF_STYLE_FLAT));
-  gtk_widget_set_size_request(GTK_WIDGET(g->tbutton1),22,22);
+  gtk_widget_set_size_request(GTK_WIDGET(g->tbutton1), DT_PIXEL_APPLY_DPI(22), DT_PIXEL_APPLY_DPI(22));
 
   g_signal_connect (G_OBJECT (g->tbutton1), "toggled",
                     G_CALLBACK (picker_callback), self);
@@ -428,7 +428,7 @@ void gui_init(struct dt_iop_module_t *self)
 
 void gui_cleanup(struct dt_iop_module_t *self)
 {
-  self->request_color_pick = 0;
+  self->request_color_pick = DT_REQUEST_COLORPICK_OFF;
   free(self->gui_data);
   self->gui_data = NULL;
 }

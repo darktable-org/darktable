@@ -19,6 +19,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
+#include <glib.h>
 
 typedef enum token_types_t
 {
@@ -53,7 +54,7 @@ typedef struct token_t
 
 typedef struct parser_state_t
 {
-  const char *p;
+  char *p;
   float x;
   token_t *token;
 } parser_state_t;
@@ -62,24 +63,7 @@ typedef struct parser_state_t
 
 static float read_number(parser_state_t *self)
 {
-  float integer = 0.0f, fractional = 0.0f, fractional_div = 1.0f;
-  while(*self->p && *self->p >= '0' && *self->p <= '9')
-  {
-    integer = integer * 10 + (*self->p) - '0';
-    self->p++;
-  }
-  if(*self->p == '.' || *self->p == ',')
-  {
-    self->p++;
-    while(*self->p && *self->p >= '0' && *self->p <= '9')
-    {
-      fractional = fractional * 10 + (*self->p) - '0';
-      fractional_div *= 10;
-      self->p++;
-    }
-  }
-
-  return integer + fractional / fractional_div;
+  return g_ascii_strtod(self->p, &self->p);
 }
 
 static token_t * get_token(parser_state_t *self)
@@ -175,7 +159,8 @@ static token_t * get_token(parser_state_t *self)
         return token;
       }
       default:
-        printf("error: %c\n", *self->p);
+        // people complained about the messages when "TRUE" was fed to the calculator
+//         printf("error: %c\n", *self->p);
         break;
     }
   }
@@ -337,8 +322,10 @@ float dt_calculator_solve(float x, const char *formula)
     return NAN;
 
   float result;
+  gchar *dotformula = g_strdup(formula);
   parser_state_t *self = (parser_state_t*)malloc(sizeof(parser_state_t));
-  self->p = formula;
+
+  self->p = g_strdelimit(dotformula, ",", '.');
   self->x = x;
 
   self->token = get_token(self);
@@ -387,6 +374,7 @@ float dt_calculator_solve(float x, const char *formula)
 end:
   free(self->token);
   free(self);
+  g_free(dotformula);
 
   return result;
 }

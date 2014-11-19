@@ -320,22 +320,22 @@ sub parse_direct_declarator
 
 sub parse_array
 {
-  my $size;
+  my $size = "";
+  my $depth = 0;
+  my $space = "";
   if(!isleftsquare(@token)) { print_error "expecting '[', found '".token2string(@token)."'"; return; }
 
   advance_token();
 
-  if(isinteger(@token) || isid(@token))
+  while(!(isrightsquare(@token) && $depth == 0))
   {
-    $size = $token[$P_VALUE];
+    $depth++ if(isleftsquare(@token));
+    $depth-- if(isrightsquare(@token));
+    $size .= $space.token2string(@token);
+    $space = " ";
     advance_token();
   }
-  else
-  {
-    print_error "expecting an integer literal or an identifier, found '".token2string(@token).
-                "'. other means to specify an array size are not supported yet. please change your code or file a bug report!";
-    return;
-  }
+
   if(!isrightsquare(@token)) { print_error "expecting ']', found '".token2string(@token)."'"; return; }
 
   advance_token();
