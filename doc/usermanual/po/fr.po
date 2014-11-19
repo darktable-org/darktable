@@ -4,7 +4,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "POT-Creation-Date: 2014-11-14 23:40+0100\n"
-"PO-Revision-Date: 2014-11-18 22:37+0100\n"
+"PO-Revision-Date: 2014-11-19 17:04+0100\n"
 "Last-Translator: Michel Leblond <michel.leblond62@gmail.com>\n"
 "Language-Team: Jean-Luc Coulon, Victor Lamoine, Michel Leblond\n"
 "Language: fr\n"
@@ -13,7 +13,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
 "X-Generator: Poedit 1.5.4\n"
-"X-Poedit-Bookmarks: 1676,1480,-1,416,182,458,465,290,-1,729\n"
+"X-Poedit-Bookmarks: 2169,1480,-1,416,182,458,465,290,-1,1846\n"
 
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:4(title)
 msgid "darktable 1.6"
@@ -86,8 +86,8 @@ msgid ""
 msgstr ""
 "darktable est distribué dans l’espoir qu’il sera utile mais SANS AUCUNE "
 "GARANTIE, sans même les garanties implicites de COMMERCIABILITÉ et de "
-"CONFORMITÉ à une utilisation particulière. Voir la Licence Publique GNU pour "
-"plus de détails."
+"CONFORMITÉ à une utilisation particulière. Voyez la Licence Publique GNU "
+"pour plus de détails."
 
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:44(para)
 msgid ""
@@ -916,7 +916,7 @@ msgid ""
 msgstr ""
 "Tous les paramètres de la ligne de commandes suivant <quote>--core</quote> "
 "sont passés au noyau de darktable et manipulés comme des paramètres "
-"standards. Voir <xref linkend=\"darktable_commandline_parameters\"/> pour "
+"standards. Voyez <xref linkend=\"darktable_commandline_parameters\"/> pour "
 "une description détaillée."
 
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:534(para)
@@ -983,7 +983,7 @@ msgstr ""
 "La table lumineuse est l’endroit où vous organisez les images et les "
 "pellicules. C’est dans cette vue que vous évaluez les images, que vous leur "
 "ajoutez des mots-clés et des labels de couleur et que, entre autres actions, "
-"vous les exportez. (Voir <xref linkend=\"lighttable_chapter\"/>)."
+"vous les exportez. (Voyez <xref linkend=\"lighttable_chapter\"/>)."
 
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:749(title)
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:4172(title)
@@ -3060,7 +3060,7 @@ msgid ""
 "\"metadata_editor\"/> for more details."
 msgstr ""
 "Vous pouvez aussi appliquer certaines métadonnées lors de l’importation ; "
-"voir <xref linkend=\"metadata_editor\"/> pour davantage d’informations."
+"voyez <xref linkend=\"metadata_editor\"/> pour davantage d’informations."
 
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:2277(para)
 msgid ""
@@ -3847,7 +3847,7 @@ msgid ""
 "will delete the file(s) without further question! This is irreversible, and "
 "will also erase your development work of these images."
 msgstr ""
-"Supprime physiquement du système de fichiers les images sélectionnées. Voir "
+"Supprime physiquement du système de fichiers les images sélectionnées. Voyez "
 "aussi l’option des préférences <quote>demander avant de supprimer des "
 "images</quote> (<xref linkend=\"gui_options\"/>). Si cette option de "
 "configuration n’est pas active, darktable supprimera les fichiers sans "
@@ -5113,9 +5113,9 @@ msgid ""
 "more detailed description of the available options."
 msgstr ""
 "Cette option vous permet de définir le rendu, c’est-à-dire la manière dont "
-"darktable va prendre en charge les couleurs qui se trouvent hors gamut. Voir "
-"<xref linkend=\"output_color_profile\"/> pour une description plus détaillée "
-"des options disponibles."
+"darktable va prendre en charge les couleurs qui se trouvent hors gamut. "
+"Voyez <xref linkend=\"output_color_profile\"/> pour une description plus "
+"détaillée des options disponibles."
 
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:4112(title)
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:10464(title)
@@ -6085,7 +6085,7 @@ msgstr ""
 "dessinez un élément de masque, par exemple un cercle, l'intérieur du cercle "
 "aura l’opacité maximum, il sera entouré d’une zone de transition ou bordure "
 "dont l'opacité décroît progressivement et le reste de l’image aura une "
-"opacité de 0%. Différentes formes graphiques peuvent être utilisées. Voir "
+"opacité de 0%. Différentes formes graphiques peuvent être utilisées. Voyez "
 "<xref linkend=\"drawn_mask\"/> pour davantage d’informations."
 
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:4818(title)
@@ -6106,7 +6106,7 @@ msgstr ""
 "contrôles supplémentaires sont affichés qui vous permettent d’ajuster "
 "l’opacité pixel par pixel suivant les valeurs des pixels. Dans des "
 "précédentes versions de darktable ceci s’appelait <quote>fusion "
-"conditionnelle</quote>. Voir <xref linkend=\"parametric_mask\"/> pour "
+"conditionnelle</quote>. Voyez <xref linkend=\"parametric_mask\"/> pour "
 "davantage d’informations."
 
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:4828(title)
@@ -6120,7 +6120,7 @@ msgid ""
 "use this combination."
 msgstr ""
 "Cette option combine les masques dessiné et paramétrique et affiche le jeu "
-"complet des contrôles des deux modes. Voir <xref linkend=\"combined_masks\"/"
+"complet des contrôles des deux modes. Voyez <xref linkend=\"combined_masks\"/"
 "> afin d’apprendre comment utiliser au mieux cette combinaison."
 
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:4840(title)
@@ -6718,7 +6718,7 @@ msgid ""
 msgstr ""
 "Si vous avez une tablette graphique avec un stylet sensible à la pression, "
 "darktable peut appliquer la pression enregistrée à certains attributs du "
-"trait de pinceau. Voir <xref linkend=\"gui_options\"/> pour davantage "
+"trait de pinceau. Voyez <xref linkend=\"gui_options\"/> pour davantage "
 "d’informations."
 
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:5294(para)
@@ -6742,7 +6742,7 @@ msgid ""
 "documentation on <emphasis>path</emphasis> below for more details."
 msgstr ""
 "Les nœuds et les segments d’un coup de pinceau peuvent être modifiés de "
-"manière individuelle. Voir la documentation sur les <emphasis>chemins</"
+"manière individuelle. Voyez la documentation sur les <emphasis>chemins</"
 "emphasis> ci-dessous pour davantage d’informations."
 
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:5307(para)
@@ -7968,7 +7968,7 @@ msgstr ""
 "mais peut être activée si vous constatez des artefacts. Selon la "
 "configuration les couleurs restent confinées dans l'un des gamuts RVB "
 "disponibles. En fait les artefacts du pixel noir sont évités au prix d'une "
-"certaine perte de la dynamique de couleur. Voir <xref linkend="
+"certaine perte de la dynamique de couleur. Voyez <xref linkend="
 "\"input_color_profile\"/> pour un exemple."
 
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:6289(title)
@@ -8723,7 +8723,7 @@ msgid ""
 "(see <xref linkend=\"correction_group\"/>)."
 msgstr ""
 "Modules pour améliorer l’image. Par exemple réduction du bruit,  aberrations "
-"chromatiques, etc. (Voir <xref linkend=\"correction_group\"/>)."
+"chromatiques, etc. (Voyez <xref linkend=\"correction_group\"/>)."
 
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:7007(entry)
 msgid "Effect"
@@ -10268,7 +10268,7 @@ msgstr ""
 
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:8506(title)
 msgid "color of film material"
-msgstr "couleur du film"
+msgstr "couleur du matériau du film"
 
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:8507(para)
 msgid ""
@@ -11460,7 +11460,7 @@ msgstr "rendu (écran)"
 msgid ""
 "Sets the rendering intent for your display. See above for available options."
 msgstr ""
-"Définit l’objectif de rendu pour votre écran. Voir ci-dessus pour les "
+"Définit l’objectif de rendu pour votre écran. Voyez ci-dessus pour les "
 "options disponibles."
 
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:9860(title)
@@ -14544,7 +14544,7 @@ msgid ""
 "\"/>)."
 msgstr ""
 "Plusieurs paramètres contrôlent l’effet de ce module. On peut obtenir bien "
-"plus de flexibilité en appliquant une fusion et des masques (voir <xref "
+"plus de flexibilité en appliquant une fusion et des masques (voyez <xref "
 "linkend=\"blending\"/>)."
 
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:13552(para)
@@ -15381,7 +15381,7 @@ msgstr ""
 
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:14502(title)
 msgid "Masking"
-msgstr "masques"
+msgstr "Masques"
 
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:14513(para)
 msgid ""
@@ -16238,7 +16238,7 @@ msgstr ""
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:15405(screeninfo)
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:18495(para)
 msgid "The slideshow view"
-msgstr "La vue diaporama"
+msgstr "Vue diaporama"
 
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:15416(para)
 msgid ""
@@ -16618,7 +16618,7 @@ msgid ""
 "defined default value (default off)."
 msgstr ""
 "Contrôle la manière dont la lecture de la pression d’une tablette graphique "
-"impacte les coups de pinceau nouvellement créés (voir <xref linkend="
+"impacte les coups de pinceau nouvellement créés (voyez <xref linkend="
 "\"drawn_mask\"/>). Vous pouvez contrôler la largeur de la brosse, sa dureté "
 "et son opacité. Le contrôle <quote>dureté (absolue)</quote> signifie que la "
 "lecture de pression définit directement l’attribut avec une valeur comprise "
@@ -18124,7 +18124,7 @@ msgid ""
 msgstr ""
 "darktable utilise Lua version 5.2. La description des principes et de la "
 "syntaxe de Lua n'entre pas dans le cadre de ce manuel utilisateur. Pour une "
-"introduction détaillée voir le <ulink url=\"http://www.lua.org/manual/5.2/"
+"introduction détaillée voyez le <ulink url=\"http://www.lua.org/manual/5.2/"
 "manual.html\">Manuel de référence de Lua</ulink>."
 
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:17043(title)
@@ -18551,7 +18551,7 @@ msgid ""
 "of notes: <placeholder-1/>"
 msgstr ""
 "À ce stade, la plupart de ce code doit être compréhensible en soi. Juste "
-"quelques de notes : <placeholder-1/>"
+"quelques notes : <placeholder-1/>"
 
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:17385(para)
 msgid ""
@@ -19930,7 +19930,7 @@ msgid ""
 msgstr ""
 "Une table Lua vide destinée à accueillir les données supplémentaires. Cette "
 "table est commune à tous les appels des fonctions  initialize, store et "
-"finalize lors d’une série d’exportation."
+"finalize lors d’une série d’exportations."
 
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:17933(link)
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:17945(term)
@@ -19970,7 +19970,7 @@ msgid ""
 msgstr ""
 "Une table Lua vide pour stocker les données supplémentaires. Cette table est "
 "commune à tous les appels des fonctions store et finalize dans une série "
-"d’exportation donnée."
+"d’exportations donnée."
 
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:17961(synopsis)
 msgid ""
@@ -20166,29 +20166,31 @@ msgstr ""
 
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:18076(para)
 msgid "Creates a new empty film"
-msgstr "Crée un nouveau film vide."
+msgstr "Crée une nouvelle pellicule vide."
 
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:18077(para)
 msgid ""
 "see <link linkend=\"darktable_database_import\">darktable.database.import</"
 "link> to import a directory with all its images and to add images to a film"
 msgstr ""
-"Voir <link linkend=\"darktable_database_import\">darktable.database.import</"
+"Voyez <link linkend=\"darktable_database_import\">darktable.database.import</"
 "link> pour importer un répertoire avec toutes ses images et pour ajouter des "
-"images à un film."
+"images à une pellicule."
 
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:18082(para)
 msgid ""
 "The directory that the new film will represent. The directory must exist"
 msgstr ""
-"Le répertoire que le nouveau film représentera. Le répertoire doit exister."
+"Le répertoire que la nouvelle pellicule représentera. Le répertoire doit "
+"exister."
 
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:18088(para)
 msgid ""
 "The newly created film, or the existing film if the directory is already "
 "imported"
 msgstr ""
-"Le nouveau film créé ou le film existant si le répertoire a déjà été importé."
+"La nouvelle pellicule créée ou la pellicule existante si le répertoire a "
+"déjà été importé."
 
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:18097(title)
 msgid "darktable.films.delete"
@@ -20199,7 +20201,7 @@ msgid ""
 "see <link linkend=\"types_dt_lua_film_t_delete\">types.dt_lua_film_t.delete</"
 "link>"
 msgstr ""
-"Voir <link linkend=\"types_dt_lua_film_t_delete\">types.dt_lua_film_t."
+"Voyez <link linkend=\"types_dt_lua_film_t_delete\">types.dt_lua_film_t."
 "delete</link>"
 
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:18108(title)
@@ -20615,7 +20617,7 @@ msgstr "Permettre de modifier la vue courante."
 
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:18267(para)
 msgid "The view to switch to. If empty the current view is unchanged"
-msgstr "La vue vers laquelle basculer. Si vide la vue courante est inchangée."
+msgstr "La vue vers laquelle basculer. Si vide, la vue courante est inchangée."
 
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:18273(para)
 msgid "the current view"
@@ -21530,7 +21532,7 @@ msgstr "colorpicker"
 
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:19258(para)
 msgid "The colorpicker menu"
-msgstr "Le menu pipette à couleur."
+msgstr "Le menu pipette à couleurs."
 
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:19274(title)
 msgid "darktable.gui.libs.navigation"
@@ -21578,7 +21580,7 @@ msgstr "map_settings"
 
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:19363(para)
 msgid "The map setting window"
-msgstr "la fenêtre de réglage de la carte."
+msgstr "La fenêtre de réglage de la carte."
 
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:19379(title)
 msgid "darktable.gui.libs.camera"
@@ -22532,7 +22534,7 @@ msgid ""
 msgstr ""
 "Le nom de fichier ou le répertoire d'importation des images. NOTE : si les "
 "images sont configurées dans les préférences pour être importées "
-"récursivement seulement la pellicule de premier niveau est renvoyée (celui "
+"récursivement, seulement la pellicule de premier niveau est renvoyée (celui "
 "dont le chemin a été donné en paramètre). NOTE2 : si le paramètre est un "
 "répertoire, l’appel est non bloquant ; l’objet pellicule ne possédera pas "
 "encore les images nouvellement importées. Utilisez un filtrage post-"
@@ -22556,7 +22558,7 @@ msgstr "move_image"
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:23302(link)
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:23313(term)
 msgid "film"
-msgstr "film"
+msgstr "pellicule"
 
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:20265(para)
 msgid "Physically moves an image (and all its duplicates) to another film."
@@ -22642,7 +22644,7 @@ msgid ""
 "see <link linkend=\"types_dt_lua_image_t_delete\">types.dt_lua_image_t."
 "delete</link>"
 msgstr ""
-"Voir <link linkend=\"types_dt_lua_image_t_delete\">types.dt_lua_image_t."
+"Voyez <link linkend=\"types_dt_lua_image_t_delete\">types.dt_lua_image_t."
 "delete</link>"
 
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:20335(title)
@@ -22668,7 +22670,7 @@ msgstr "darktable.debug.dump"
 
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:20350(secondary)
 msgid "dump"
-msgstr "dump"
+msgstr "afficher tout le contenu"
 
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:20353(link)
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:20362(term)
@@ -22722,8 +22724,8 @@ msgid ""
 "A table of object,string pairs. Any object in that table will not be dumped, "
 "the string will be printed instead."
 msgstr ""
-"La table de l'objet, des paires de chaînes de caractères. Tout objet de "
-"cette table ne sera pas <quote>dumpé</quote>, mais à la place la chaîne de "
+"La table de l'objet, des paires de chaînes de caractères. Le contenu de tout "
+"objet de cette table ne sera pas listé, mais à la place la chaîne de "
 "caractères sera affichée."
 
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:20377(para)
@@ -22731,7 +22733,7 @@ msgid ""
 "defaults to <link linkend=\"darktable_debug_known\">darktable.debug.known</"
 "link> if not set"
 msgstr ""
-"mis par défaut à <link linkend=\"darktable_debug_known\">darktable.debug."
+"Mis par défaut à <link linkend=\"darktable_debug_known\">darktable.debug."
 "known</link> si non défini."
 
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:20383(para)
@@ -22750,8 +22752,8 @@ msgid ""
 "Initialized to false; set it to true to also dump information about "
 "metatables."
 msgstr ""
-"Initialisé à faux ; définissez-le à vrai afin de <quote>dumper</quote>vider "
-"aussi les informations concernant les méta-tables."
+"Initialisé à faux ; définissez-le à vrai afin de lister aussi toutes les "
+"informations concernant les méta-tables."
 
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:20403(title)
 msgid "darktable.debug.max_depth"
@@ -22764,8 +22766,8 @@ msgstr "max_depth"
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:20409(para)
 msgid "Initialized to 10; The maximum depth to recursively dump content."
 msgstr ""
-"Initialisé à 10 ; la profondeur maximale pour <quote>dumper</quote> "
-"récursivement le contenu."
+"Initialisé à 10 ; la profondeur maximale pour afficher récursivement le "
+"contenu."
 
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:20414(title)
 msgid "darktable.debug.known"
@@ -22806,7 +22808,7 @@ msgstr "Une chaîne de caractères décrivant le type de l’objet."
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:20457(title)
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:20460(secondary)
 msgid "types"
-msgstr "types"
+msgstr "Types"
 
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:20462(para)
 msgid "This section documents types that are specific to darktable's Lua API."
@@ -22855,11 +22857,11 @@ msgid ""
 "immediately change it in darktable and will be reflected on any copy of that "
 "image object you may have kept."
 msgstr ""
-"Les objets image représente une image dans la base de données. Ceci est "
+"Les objets image représentent une image dans la base de données. Ceci est "
 "sensiblement différent d'un fichier sur disque puisqu'une image peut avoir "
 "plusieurs développements. Remarquez que ceci est l’objet image réel, la "
 "modification de la valeur d’un champ va immédiatement le changer dans "
-"darktable et sera répercuté sur toutes les copies de cet objet image que "
+"darktable et sera répercutée sur toutes les copies de cet objet image que "
 "vous pourriez avoir conservées."
 
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:20486(title)
@@ -22875,7 +22877,7 @@ msgstr "attach_tag"
 msgid ""
 "see <link linkend=\"darktable_tags_attach\">darktable.tags.attach</link>"
 msgstr ""
-"Voir <link linkend=\"darktable_tags_attach\">darktable.tags.attach</link>."
+"Voyez <link linkend=\"darktable_tags_attach\">darktable.tags.attach</link>."
 
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:20495(title)
 msgid "types.dt_lua_image_t.detach_tag"
@@ -22890,7 +22892,7 @@ msgstr "detach_tag"
 msgid ""
 "see <link linkend=\"darktable_tags_detach\">darktable.tags.detach</link>"
 msgstr ""
-"Voir <link linkend=\"darktable_tags_detach\">darktable.tags.detach</link>."
+"Voyez <link linkend=\"darktable_tags_detach\">darktable.tags.detach</link>."
 
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:20504(title)
 msgid "types.dt_lua_image_t.get_tags"
@@ -22900,7 +22902,7 @@ msgstr "types.dt_lua_image_t.get_tags"
 msgid ""
 "see <link linkend=\"darktable_tags_get_tags\">darktable.tags.get_tags</link>"
 msgstr ""
-"Voir <link linkend=\"darktable_tags_get_tags\">darktable.tags.get_tags</"
+"Voyez <link linkend=\"darktable_tags_get_tags\">darktable.tags.get_tags</"
 "link>."
 
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:20513(title)
@@ -22915,7 +22917,7 @@ msgstr "create_style"
 msgid ""
 "see <link linkend=\"darktable_styles_create\">darktable.styles.create</link>"
 msgstr ""
-"Voir <link linkend=\"darktable_styles_create\">darktable.styles.create</"
+"Voyez <link linkend=\"darktable_styles_create\">darktable.styles.create</"
 "link>."
 
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:20522(title)
@@ -22931,7 +22933,7 @@ msgstr "apply_style"
 msgid ""
 "see <link linkend=\"darktable_styles_apply\">darktable.styles.apply</link>"
 msgstr ""
-"Voir <link linkend=\"darktable_styles_apply\">darktable.styles.apply</link>."
+"Voyez <link linkend=\"darktable_styles_apply\">darktable.styles.apply</link>."
 
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:20531(title)
 msgid "types.dt_lua_image_t.duplicate"
@@ -22942,7 +22944,7 @@ msgid ""
 "see <link linkend=\"darktable_database_duplicate\">darktable.database."
 "duplicate</link>"
 msgstr ""
-"Voir <link linkend=\"darktable_database_duplicate\">darktable.database."
+"Voyez <link linkend=\"darktable_database_duplicate\">darktable.database."
 "duplicate</link>."
 
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:20540(title)
@@ -22955,7 +22957,7 @@ msgid ""
 "see <link linkend=\"darktable_database_move_image\">darktable.database."
 "move_image</link>"
 msgstr ""
-"Voir <link linkend=\"darktable_database_move_image\">darktable.database."
+"Voyez <link linkend=\"darktable_database_move_image\">darktable.database."
 "move_image</link>."
 
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:20549(title)
@@ -22968,7 +22970,7 @@ msgid ""
 "see <link linkend=\"darktable_database_copy_image\">darktable.database."
 "copy_image</link>"
 msgstr ""
-"Voir <link linkend=\"darktable_database_copy_image\">darktable.database."
+"Voyez <link linkend=\"darktable_database_copy_image\">darktable.database."
 "copy_image</link>."
 
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:20558(title)
@@ -23292,7 +23294,7 @@ msgid ""
 "see <link linkend=\"types_dt_lua_image_t_red\">types.dt_lua_image_t.red</"
 "link>"
 msgstr ""
-"Voir <link linkend=\"types_dt_lua_image_t_red\">types.dt_lua_image_t.red</"
+"Voyez <link linkend=\"types_dt_lua_image_t_red\">types.dt_lua_image_t.red</"
 "link>"
 
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:21074(title)
@@ -23414,7 +23416,7 @@ msgstr "Utiliser cette image comme représentant de son groupe."
 
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:21180(para)
 msgid "The image we want as the leader."
-msgstr "L'image que vous voulons utiliser comme représentant."
+msgstr "L'image que nous voulons utiliser comme représentant."
 
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:21188(title)
 msgid "types.dt_lua_image_t.get_group_members"
@@ -23782,7 +23784,8 @@ msgid ""
 "The overall quality to use; can be one of \"webp_lossy\" or \"webp_lossless"
 "\"."
 msgstr ""
-"La qualité globale à utiliser ; soit \"webp_lossy\", soit  \"webp_lossless\"."
+"La qualité globale à utiliser ; soit \"webp_lossy\" (avec perte), soit  "
+"\"webp_lossless\" (sans perte)."
 
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:21711(title)
 msgid "types.dt_imageio_module_format_data_webp.hint"
@@ -24132,7 +24135,8 @@ msgstr "types.dt_style_t.delete"
 msgid ""
 "see <link linkend=\"darktable_styles_delete\">darktable.styles.delete</link>"
 msgstr ""
-"Voir <link linkend=\"darktable_styles_delete\">darktable.styles.delete</link>"
+"Voyez <link linkend=\"darktable_styles_delete\">darktable.styles.delete</"
+"link>"
 
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:22409(title)
 msgid "types.dt_style_t.duplicate"
@@ -24143,7 +24147,7 @@ msgid ""
 "see <link linkend=\"darktable_styles_duplicate\">darktable.styles.duplicate</"
 "link>"
 msgstr ""
-"Voir <link linkend=\"darktable_styles_duplicate\">darktable.styles."
+"Voyez <link linkend=\"darktable_styles_duplicate\">darktable.styles."
 "duplicate</link>"
 
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:22418(title)
@@ -24158,7 +24162,8 @@ msgstr "types.dt_style_t.export"
 msgid ""
 "see <link linkend=\"darktable_styles_export\">darktable.styles.export</link>"
 msgstr ""
-"Voir <link linkend=\"darktable_styles_export\">darktable.styles.export</link>"
+"Voyez <link linkend=\"darktable_styles_export\">darktable.styles.export</"
+"link>"
 
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:22436(title)
 msgid "types.dt_style_t.name"
@@ -24233,7 +24238,7 @@ msgstr "types.dt_lua_tag_t.delete"
 msgid ""
 "see <link linkend=\"darktable_tags_delete\">darktable.tags.delete</link>"
 msgstr ""
-"Voir <link linkend=\"darktable_tags_delete\">darktable.tags.delete</link>"
+"Voyez <link linkend=\"darktable_tags_delete\">darktable.tags.delete</link>"
 
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:22542(title)
 msgid "types.dt_lua_tag_t.attach"
@@ -24890,9 +24895,9 @@ msgid ""
 "image callbacks have already been triggered). This event can be registered "
 "multiple times."
 msgstr ""
-"Cet événement est déclenché lorsque l’importation d’un film est terminée "
-"(toutes les fonctions de rappel post-import-image ont déjà été déclenchées). "
-"Cet événement peut être déclaré plusieurs fois."
+"Cet événement est déclenché lorsque l’importation d’une pellicule est "
+"terminée (toutes les fonctions de rappel post-import-image ont déjà été "
+"déclenchées). Cet événement peut être déclaré plusieurs fois."
 
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:23295(title)
 msgid "events.post-import-film.callback"
@@ -25132,7 +25137,7 @@ msgid ""
 "when the file is readable; returns nothing;"
 msgstr ""
 "file_readable : fichier ouvert depuis la bibliothèque de l’OS ; retournera "
-"lorsque le ficher peut être lu ; ne retourne rien ;"
+"lorsque le fichier peut être lu ; ne retourne rien ;"
 
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:23549(para)
 msgid ""
@@ -25146,8 +25151,8 @@ msgstr ""
 msgid ""
 "A callback that is yielding allows other Lua code to run.<placeholder-1/>"
 msgstr ""
-"Une fonction de rappel effectuant la suspension d'exécution. Elle permet à "
-"un autre code Lua de s'exécuter.<placeholder-1/>"
+"Une fonction de rappel effectuant la suspension d'exécution permet à un "
+"autre code Lua de s'exécuter.<placeholder-1/>"
 
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:23556(para)
 msgid "The type of yield."
@@ -25345,8 +25350,8 @@ msgstr ""
 "d’allouer 5 fois 300Mo de mémoire à la fois et la libère ensuite, cette "
 "mémoire devrait ensuite être disponible pour une grosse allocation de 1.5Go. "
 "Cependant, ceci n'est pas souvent le cas. L’allocateur de mémoire du système "
-"ne voit plus cette zone comme un bloc de contigu de 1.5Go mais comme une "
-"suite de zones de 300Mo. S’il ne reste plus d’autre zone libre de 1.5Go "
+"ne voit plus cette zone comme un bloc contigu de 1.5Go mais comme une suite "
+"de zones de 300Mo. S’il ne reste plus d’autre zone libre de 1.5Go "
 "disponible, il y aura un échec d’allocation. Lors du fonctionnement d’un "
 "programme, ce mécanisme va de plus en plus enlever de plus gros blocs de "
 "mémoire au profit de plus petits. dartable 1.0 a introduit un mécanisme de "
@@ -25410,8 +25415,8 @@ msgid ""
 msgstr ""
 "Comme nous avons pu le voir, les systèmes 32-bits sont des environnements "
 "difficiles pour darktable. De nombreux utilisateurs continuent cependant à "
-"utiliser darktable avec succès sur de tels système, si les exigences de base "
-"en termes de mémoire totale système et les éléments mentionnés dans les "
+"utiliser darktable avec succès sur de tels systèmes, si les exigences de "
+"base en termes de mémoire totale système et les éléments mentionnés dans les "
 "paragraphes ci-dessus sont traités correctement."
 
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:23739(para)
@@ -25529,7 +25534,7 @@ msgstr ""
 "bits et semblera, à première vue, une régression par rapport au style de "
 "cache de la version 0.9.3. Dans le long terme cependant, c'est toute la "
 "mémoire qui sera allouée aux miniatures. Donc, une fois que nous aurons "
-"réussi à récupérer cette partie, nous allons, pour les longues session, "
+"réussi à récupérer cette partie, nous allons, pour les longues sessions, "
 "soulager beaucoup la pression due à la fragmentation."
 
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:23756(para)
@@ -25726,12 +25731,12 @@ msgid ""
 msgstr ""
 "C'est ici qu’OpenCL arrive. OpenCL nous permet de tirer avantage de l’énorme "
 "puissance des cartes graphiques modernes. Dans les jeux modernes, la demande "
-"des joueurs de mondes 3D très détaillés ont favorisé le développement des "
+"des joueurs en mondes 3D très détaillés a favorisé le développement des "
 "GPU.  Afin de répondre à cette demande, ATI, NVIDIA and Co ont mis une "
 "énorme puissance de traitement dans leurs GPU. On obtient ainsi des cartes "
-"graphiques modernes avec des GPU hautement parallélisés permettant de "
+"graphiques modernes avec des GPU hautement parallélisées permettant de "
 "calculer rapidement, avec des fréquences d’images élevées, les surfaces et "
-"les textures ."
+"les textures."
 
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:23946(para)
 msgid ""
@@ -25743,7 +25748,7 @@ msgid ""
 msgstr ""
 "Vous n'êtes pas un joueur et vous ne tirez pas parti de cette puissance ? Et "
 "bien vous pouvez l’utiliser au moins dans darktable ! Pour les tâches "
-"demandant des calculs fortement parallélisé en virgule flottante, les GPU "
+"demandant des calculs fortement parallélisés en virgule flottante, les GPU "
 "modernes sont bien plus rapides que les CPU. Ceci est particulièrement vrai "
 "lorsque vous souhaitez répéter quelques étapes de traitement sur des "
 "millions d’éléments.  Cas typique d’utilisation : traitement d’images "
@@ -26221,7 +26226,7 @@ msgstr ""
 "d’erreur 1001 (<quote>error code -1001</quote>) dans ce cas. Ceci arrive "
 "parce que libOpenCL n'est qu'un encapsuleur de bibliothèque. Les vraies "
 "bibliothèques - spécifiques au fabricant, au périphérique et au pilote – "
-"doivent être chargés. Ceci a échoué pour une raison quelconque. Il y a une "
+"doivent être chargées. Ceci a échoué pour une raison quelconque. Il y a une "
 "structure de fichiers dans /etc/OpenCL sur votre système que libOpenCL.so "
 "consulte pour rechercher ces bibliothèques. Vérifiez que vous n'avez pas "
 "quelque chose de louche par là et essayez de le corriger. Souvent, les "
@@ -26242,7 +26247,7 @@ msgstr ""
 "indique souvent qu'il y a une incompatibilité de version entre le pilote "
 "graphique (chargé) et libOpenCL. Vérifiez que vous n'avez pas laissé de "
 "modules du noyau ou de bibliothèques graphiques provenant d’une installation "
-"plus ancienne et prenez les appropriées. En cas de doute, faites une "
+"plus ancienne et prenez les mesures appropriées. En cas de doute, faites une "
 "réinstallation propre de votre pilote graphique. Quelquefois, immédiatement "
 "après une mise à jour de pilote, le module du noyau ne correspond pas aux "
 "bibliothèques nouvellement installées. Dans ce cas, redémarrez votre système."
@@ -26485,7 +26490,7 @@ msgstr ""
 "obtiendrez le temps total et le temps de chacun des noyaux OpenCL. La valeur "
 "la plus fiable est le temps passé dans le pipeline graphique. Veuillez noter "
 "que les temps indiqués pour chaque module individuel sont imprécis lorsque "
-"le pipeline graphique OpenCL tourne de manière asynchrone (voir "
+"le pipeline graphique OpenCL tourne de manière asynchrone (voyez "
 "opencl_async_pixelpipe ci-dessous)."
 
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24427(para)
@@ -26502,7 +26507,7 @@ msgstr ""
 "données discontinu augmentera le temps de traitement total. Ceci est "
 "particulièrement important pour les petits tampons d’images que nous devons "
 "gérer rapidement lors du travail interactif. Ils peuvent être traités "
-"rapidement par un GPU rapide. Cependant, même les interruption courtes du "
+"rapidement par un GPU rapide. Cependant, même les interruptions courtes du "
 "pipeline graphique deviendront rapidement un goulet d’étranglement."
 
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24435(para)
