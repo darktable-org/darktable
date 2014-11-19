@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2014-11-17 20:53+0100\n"
-"PO-Revision-Date: 2014-11-18 11:57+0100\n"
+"PO-Revision-Date: 2014-11-19 20:19+0100\n"
 "Last-Translator: Ger Siemerink <g.siemerink@gmail.com>\n"
 "Language-Team: Ger Siemerink <g.siemerink@gmail.com>\n"
 "Language: nl_NL\n"
@@ -47,7 +47,7 @@ msgid ""
 "Pavlov, Simon Spannagel, Stuart Henderson, Tatica Leandro, Thomas Pryds, "
 "Victor Lamoine, Wolfgang Goetz, Wyatt Olson and many others."
 msgstr ""
-"darktable is ontwikkeld met belangrijke bijdragen door Aldric Renaudin, "
+"darktable is ontwikkeld met belangrijke bijdragen van Aldric Renaudin, "
 "Alexandre Prokoudine, Ammon Riley, Andrew Toskin, Andrey Kaminsky, Antony "
 "Dovgal, Artur de Sousa Rocha, Brian Teague, Bruce Guenter, Cherrot Luo, "
 "Christian Himpel, Christian Tellefsen, Dan Torop, David Bremner, Dennis "
@@ -10531,9 +10531,8 @@ msgstr ""
 "te maken van een algemene kleurenkeuze venster."
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:12639(title)
-#, fuzzy
 msgid "balance"
-msgstr "Balans"
+msgstr "balans"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:12640(para)
 #, fuzzy
@@ -10586,9 +10585,8 @@ msgstr "Vignettering"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:12701(secondary)
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:12705(primary)
-#, fuzzy
 msgid "vignetting"
-msgstr "Vignettering"
+msgstr "vignetting"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:12723(entry)
 msgid ""
@@ -10667,9 +10665,8 @@ msgid ""
 msgstr ""
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:12807(title)
-#, fuzzy
 msgid "automatic ratio"
-msgstr "Cromatische aberraties"
+msgstr "automatische verhoudingen"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:12808(para)
 msgid ""
@@ -10708,9 +10705,8 @@ msgstr "Soften"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:12869(secondary)
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:12873(primary)
-#, fuzzy
 msgid "soften"
-msgstr "Soften"
+msgstr "soften"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:12886(entry)
 msgid ""
@@ -10786,9 +10782,8 @@ msgstr "Korrel"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:12996(secondary)
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:13000(primary)
-#, fuzzy
 msgid "grain"
-msgstr "Korrel"
+msgstr "korrel"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:13013(entry)
 msgid "This module is an artistic feature which simulates the grain of a film."
@@ -10934,9 +10929,8 @@ msgstr ""
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:13267(secondary)
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:13271(primary)
-#, fuzzy
 msgid "lowlight"
-msgstr "Lichtopvulling"
+msgstr "lowlight"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:13285(para)
 msgid ""
@@ -11000,9 +10994,8 @@ msgstr "Glans"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:13404(secondary)
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:13408(primary)
-#, fuzzy
 msgid "bloom"
-msgstr "Glans"
+msgstr "glans"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:13421(entry)
 msgid ""
@@ -11041,15 +11034,13 @@ msgid ""
 msgstr ""
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:13507(title)
-#, fuzzy
 msgid "Colorize"
-msgstr "Kleur zones"
+msgstr "Inkleuren"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:13511(secondary)
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:13515(primary)
-#, fuzzy
 msgid "colorize"
-msgstr "Kleur zones"
+msgstr "inkleuren"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:13528(entry)
 msgid ""
@@ -11088,15 +11079,13 @@ msgid ""
 msgstr ""
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:13585(title)
-#, fuzzy
 msgid "Color mapping"
-msgstr "Toonmapping"
+msgstr "Kleurenkaart"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:13589(secondary)
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:13593(primary)
-#, fuzzy
 msgid "color mapping"
-msgstr "kleuren vervagen"
+msgstr "kleurenkaart"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:13606(entry)
 msgid ""
@@ -11169,9 +11158,8 @@ msgstr ""
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:13677(title)
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:13732(quote)
-#, fuzzy
 msgid "color dominance"
-msgstr "Voeg een kleur toon toe"
+msgstr "kleurdominantie"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:13678(para)
 msgid ""
@@ -11215,15 +11203,13 @@ msgid ""
 msgstr ""
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:13747(title)
-#, fuzzy
 msgid "Graduated Density"
-msgstr "neutraal grijsfilter"
+msgstr "Grijsverloopfilter"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:13751(secondary)
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:13755(primary)
-#, fuzzy
 msgid "graduated density"
-msgstr "neutraal grijsfilter"
+msgstr "grijsverloopfilter"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:13773(entry)
 msgid ""
@@ -11284,9 +11270,8 @@ msgstr ""
 "Bepaal de verzadiging om daarmee een bepaalde kleurzweem toe te voegen."
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:13916(title)
-#, fuzzy
 msgid "position"
-msgstr "Applicatie"
+msgstr "positie"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:13924(entry)
 msgid ""
@@ -11819,9 +11804,8 @@ msgid "Mark the second pupil."
 msgstr "Markeer de tweede pupil."
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:14583(title)
-#, fuzzy
 msgid "Desaturation"
-msgstr "verzadiging"
+msgstr "Verzadiging"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:14594(para)
 msgid "Approach - Modifying the output channel <quote>red</quote>."
@@ -11833,19 +11817,16 @@ msgid ""
 msgstr ""
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:14605(para)
-#, fuzzy
 msgid "Set red color value to 0.00"
-msgstr "Kies voor het blauwe en rode kanaal de waarde 0.150"
+msgstr "Zet rode waarde op 0.00"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:14609(para)
-#, fuzzy
 msgid "Set green color value to 0.50"
-msgstr "Kies voor het groene en rode kanaal de waarde 0.150"
+msgstr "Zet groene kleurwaarde op 0.50"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:14613(para)
-#, fuzzy
 msgid "Set blue color value to 0.50"
-msgstr "Kies voor het blauwe en rode kanaal de waarde 0.150"
+msgstr "Zet blauwe kleurwaarde op 0.50"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:14619(para)
 msgid ""
@@ -11863,19 +11844,16 @@ msgid "Set output channel <quote>destination</quote> to <quote>gray</quote>"
 msgstr ""
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:14659(para)
-#, fuzzy
 msgid "Set red color value to 0.24"
-msgstr "Kies voor het blauwe en rode kanaal de waarde 0.150"
+msgstr "Zet rode kleurwaarde op 0.24"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:14663(para)
-#, fuzzy
 msgid "Set green color value to 0.68"
-msgstr "Kies voor het groene en rode kanaal de waarde 0.150"
+msgstr "Zet groene kleurwaarde op 0.68"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:14667(para)
-#, fuzzy
 msgid "Set blue color value to 0.08"
-msgstr "Kies voor het blauwe en rode kanaal de waarde 0.150"
+msgstr "Zet blauwe kleurwaarde op 0.08"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:14673(para)
 msgid ""
@@ -11885,17 +11863,15 @@ msgstr ""
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:14707(keyword)
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:18472(secondary)
-#, fuzzy
 msgid "tethering"
-msgstr "Tehtering"
+msgstr "tethering"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:14715(primary)
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:14823(primary)
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:14863(primary)
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:14896(primary)
-#, fuzzy
 msgid "tethering view"
-msgstr "Tehtering"
+msgstr "tethering weergave"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:14718(para)
 msgid ""
@@ -11905,9 +11881,8 @@ msgstr ""
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:14726(screeninfo)
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:18474(para)
-#, fuzzy
 msgid "The tethering view"
-msgstr "Tehtering"
+msgstr "De tethering weergave"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:14737(para)
 msgid ""
@@ -11967,9 +11942,8 @@ msgid ""
 msgstr ""
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:14810(title)
-#, fuzzy
 msgid "Tethering panels"
-msgstr "Tehtering"
+msgstr "Tethering panelen"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:14812(para)
 msgid ""
@@ -11978,14 +11952,12 @@ msgid ""
 msgstr ""
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:14820(title)
-#, fuzzy
 msgid "Session"
-msgstr "compressie"
+msgstr "Sessie"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:14824(secondary)
-#, fuzzy
 msgid "sessions"
-msgstr "compressie"
+msgstr "sessies"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:14835(para)
 msgid ""
@@ -12002,14 +11974,12 @@ msgid ""
 msgstr ""
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:14860(title)
-#, fuzzy
 msgid "Live view"
-msgstr "overzicht"
+msgstr "Live view"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:14864(secondary)
-#, fuzzy
 msgid "live view"
-msgstr "overzicht"
+msgstr "live view"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:14875(para)
 msgid ""
@@ -12018,9 +11988,8 @@ msgid ""
 msgstr ""
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:14893(title)
-#, fuzzy
 msgid "Camera settings"
-msgstr "Camera's"
+msgstr "Camera instellingen"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:14897(secondary)
 msgid "camera settings"
@@ -12067,9 +12036,8 @@ msgid ""
 msgstr ""
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:14963(title)
-#, fuzzy
 msgid "Capturing a timelapse"
-msgstr "Creëer een nieuwe voorkeur"
+msgstr "Vastleggen van een timelapse"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:14965(para)
 msgid ""
@@ -12214,9 +12182,8 @@ msgstr ""
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:15117(keyword)
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:18836(secondary)
-#, fuzzy
 msgid "geotagging"
-msgstr "Labelen"
+msgstr "geotagging"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:15118(keyword)
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:18346(secondary)
@@ -12226,20 +12193,17 @@ msgstr "kaart"
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:15126(primary)
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:15281(primary)
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:15321(primary)
-#, fuzzy
 msgid "map view"
-msgstr "Weergave"
+msgstr "bekijk kaart"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:15129(para)
-#, fuzzy
 msgid "The Map view is were you geotag your images."
-msgstr "In de Darkroom weergaven kunt u afbeeldingen ontwikkelen..."
+msgstr "Bij het kaart bekijken kun je afbeeldingen geotaggen."
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:15136(screeninfo)
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:18348(para)
-#, fuzzy
 msgid "The map view"
-msgstr "De Darkroom (Doka) weergave"
+msgstr "De kaart bekijken"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:15147(para)
 msgid ""
@@ -12318,9 +12282,8 @@ msgid ""
 msgstr ""
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:15231(title)
-#, fuzzy
 msgid "Map panels"
-msgstr "Panelen"
+msgstr "Kaart panelen"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:15233(para)
 msgid ""
@@ -12356,9 +12319,8 @@ msgid "Find location"
 msgstr "keer selectie om"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:15282(secondary)
-#, fuzzy
 msgid "find location"
-msgstr "keer selectie om"
+msgstr "vind locatie"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:15293(para)
 msgid ""
@@ -12479,25 +12441,21 @@ msgstr ""
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:15501(keyword)
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:19791(secondary)
-#, fuzzy
 msgid "preferences"
-msgstr "Voorkeuren"
+msgstr "voorkeuren"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:15502(keyword)
-#, fuzzy
 msgid "settings"
-msgstr "Vignettering"
+msgstr "instellingen"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:15503(keyword)
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:19624(secondary)
-#, fuzzy
 msgid "configuration"
-msgstr "verzadiging"
+msgstr "configuratie"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:15504(keyword)
-#, fuzzy
 msgid "options"
-msgstr "draaiing"
+msgstr "opties"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:15505(keyword)
 msgid "accelerators"
@@ -12594,20 +12552,20 @@ msgid "ask before moving images from film roll folder"
 msgstr "vraag eerst voordat afbeeldingen worden verplaatst"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:15575(para)
-#, fuzzy
 msgid "Always ask the user before any image file is moved (default on)."
 msgstr ""
-"Vraag altijd eerst aan de gebruiker voordat een afbeelding wordt verwijderd."
+"Vraag altijd eerst de gebruiker voordat een afbeeldingsbestand wordt "
+"verplaatst  (standaard aan)"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:15579(bridgehead)
 msgid "ask before copying images to new film roll folder"
 msgstr ""
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:15581(para)
-#, fuzzy
 msgid "Always ask the user before any image file is copied (default on)."
 msgstr ""
-"Vraag altijd eerst aan de gebruiker voordat een afbeelding wordt verwijderd."
+"Vraag altijd eerst de gebruiker voordat een afbeeldingsbestand wordt "
+"gekopieerd (standaard aan)"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:15585(bridgehead)
 msgid "number of folder levels to show in lists"
@@ -12690,9 +12648,8 @@ msgid ""
 msgstr ""
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:15639(bridgehead)
-#, fuzzy
 msgid "enable filmstrip"
-msgstr "Serie"
+msgstr "toon filmstrip"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:15641(para)
 msgid ""
@@ -12759,20 +12716,18 @@ msgid ""
 msgstr ""
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:15685(bridgehead)
-#, fuzzy
 msgid "ask before deleting a tag"
-msgstr "vraag eerst voordat afbeeldingen worden verwijderd"
+msgstr "vraag om bevestiging voordat een label wordt verwijderd"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:15687(para)
-#, fuzzy
 msgid "Always ask user before deleting a tag from an image (default on)."
 msgstr ""
-"Vraag altijd eerst aan de gebruiker voordat een afbeelding wordt verwijderd."
+"Vraag altijd eerst de gebruiker voordat een afbeeldingstag  wordt verwijderd "
+"(standaard aan)"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:15691(bridgehead)
-#, fuzzy
 msgid "only draw images on map that are currently collected and filtered"
-msgstr "Selecteer alle nog niet geselecteerde afbeeldingen."
+msgstr "toon op de kaart alleen de nu verzamelde en gefilterde afbeeldingen"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:15693(para)
 msgid ""
@@ -12858,14 +12813,12 @@ msgid ""
 msgstr ""
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:15758(title)
-#, fuzzy
 msgid "Core options"
-msgstr "meer plugins"
+msgstr "Algemene instellingen"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:15762(secondary)
-#, fuzzy
 msgid "core options"
-msgstr "meer plugins"
+msgstr "algemene instellingen"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:15765(para)
 msgid "These options control some of the internals of darktable."
@@ -12925,9 +12878,8 @@ msgid ""
 msgstr ""
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:15804(bridgehead)
-#, fuzzy
 msgid "write sidecar file for each image"
-msgstr "schrijf xmp"
+msgstr "schrijf voor elke afbeelding een xmp bestand"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:15806(para)
 msgid ""
@@ -13555,9 +13507,8 @@ msgid "&lt;darktable&gt;/views/lighttable/scroll right"
 msgstr ""
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:16457(entry)
-#, fuzzy
 msgid "Right"
-msgstr "hoogte"
+msgstr "Rechts"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:16462(entry)
 msgid "&lt;darktable&gt;/views/lighttable/scroll up"
@@ -13786,9 +13737,8 @@ msgid "&lt;darktable&gt;/modules/image/remove from collection"
 msgstr ""
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:16753(entry)
-#, fuzzy
 msgid "Delete"
-msgstr "verwijder"
+msgstr "Verwijderen"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:16758(entry)
 msgid "&lt;darktable&gt;/modules/lighttable_mode/zoom max"
@@ -13979,9 +13929,8 @@ msgid ""
 msgstr ""
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:16964(bridgehead)
-#, fuzzy
 msgid "aperture"
-msgstr "temperaturen"
+msgstr "diafragma"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:16966(para)
 msgid ""
@@ -13991,9 +13940,8 @@ msgid ""
 msgstr ""
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:16972(bridgehead)
-#, fuzzy
 msgid "focal length"
-msgstr "kracht van vermindering"
+msgstr "brandpuntsafstand"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:16974(para)
 msgid ""
@@ -14959,9 +14907,8 @@ msgid ""
 msgstr ""
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:17758(title)
-#, fuzzy
 msgid "darktable.print"
-msgstr "Darktable"
+msgstr "darktable.print"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:17761(secondary)
 msgid "print"
@@ -14971,9 +14918,8 @@ msgstr ""
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:17769(term)
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:17785(link)
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:17790(term)
-#, fuzzy
 msgid "message"
-msgstr "Gebruik"
+msgstr "boodschap"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:17763(synopsis)
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:17784(synopsis)
@@ -15069,18 +15015,16 @@ msgstr ""
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:23256(synopsis)
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:23274(synopsis)
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:23308(synopsis)
-#, fuzzy
 msgid "string"
-msgstr "Tehtering"
+msgstr "string"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:17771(para)
 msgid "The string to display which should be a single line."
 msgstr ""
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:17779(title)
-#, fuzzy
 msgid "darktable.print_error"
-msgstr "Darktable"
+msgstr "darktable.print_error"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:17782(secondary)
 msgid "print_error"
@@ -15163,9 +15107,8 @@ msgstr ""
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:17827(synopsis)
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:23561(synopsis)
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:23567(synopsis)
-#, fuzzy
 msgid "variable"
-msgstr "Darktable"
+msgstr "variabele"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:17828(para)
 msgid ""
@@ -15214,15 +15157,13 @@ msgstr ""
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:22607(secondary)
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:22738(secondary)
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:22855(secondary)
-#, fuzzy
 msgid "name"
-msgstr "bestandsnaam"
+msgstr "naam"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:17844(link)
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:17865(term)
-#, fuzzy
 msgid "store"
-msgstr "Geschiedenis"
+msgstr "opslaan"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:17845(link)
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:17930(term)
@@ -15369,9 +15310,8 @@ msgstr ""
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:21991(term)
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:23119(link)
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:23143(term)
-#, fuzzy
 msgid "format"
-msgstr "uniformiteit"
+msgstr "formaat"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:17869(link)
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:17892(link)
@@ -15474,9 +15414,8 @@ msgstr ""
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:17951(term)
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:17997(link)
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:18027(term)
-#, fuzzy
 msgid "extra_data"
-msgstr "Metadata"
+msgstr "extra_data"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:17866(synopsis)
 msgid ""
@@ -15515,9 +15454,8 @@ msgstr ""
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:17904(synopsis)
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:17910(synopsis)
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:23045(para)
-#, fuzzy
 msgid "integer"
-msgstr "intensie"
+msgstr "integer"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:17905(para)
 msgid "The number of the image out of the export series."
@@ -15569,9 +15507,8 @@ msgstr ""
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:20340(synopsis)
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:20375(synopsis)
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:20419(synopsis)
-#, fuzzy
 msgid "table"
-msgstr "Darktable"
+msgstr "tabel"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:17923(para)
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:18029(para)
@@ -15582,9 +15519,8 @@ msgstr ""
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:17933(link)
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:17945(term)
-#, fuzzy
 msgid "image_table"
-msgstr "Lighttable"
+msgstr "afbeelding_tabel"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:17931(synopsis)
 msgid ""
@@ -15669,9 +15605,8 @@ msgstr ""
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:17995(link)
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:18015(term)
-#, fuzzy
 msgid "images"
-msgstr "afbeelding"
+msgstr "afbeeldingen"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:17992(synopsis)
 msgid ""
@@ -15723,9 +15658,8 @@ msgid ""
 msgstr ""
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:18049(title)
-#, fuzzy
 msgid "darktable.films"
-msgstr "Darktable"
+msgstr "darktable.films"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:18052(secondary)
 msgid "films"
@@ -15736,9 +15670,8 @@ msgid "A table containing all the film objects in the database."
 msgstr ""
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:18057(title)
-#, fuzzy
 msgid "darktable.films.#"
-msgstr "Darktable"
+msgstr "darktable.films.#"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:18060(secondary)
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:18598(secondary)
@@ -15771,18 +15704,16 @@ msgid "Each film has a numeric entry in the database."
 msgstr ""
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:18068(title)
-#, fuzzy
 msgid "darktable.films.new"
-msgstr "Darktable"
+msgstr "darktable.films.new"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:18074(link)
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:18080(term)
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:20151(link)
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:20163(term)
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:23048(para)
-#, fuzzy
 msgid "directory"
-msgstr "Geschiedenis"
+msgstr "map"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:18073(synopsis)
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:18113(synopsis)
@@ -15825,14 +15756,12 @@ msgid ""
 msgstr ""
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:18108(title)
-#, fuzzy
 msgid "darktable.new_format"
-msgstr "Darktable"
+msgstr "darktable.new_format"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:18111(secondary)
-#, fuzzy
 msgid "new_format"
-msgstr "uniformiteit"
+msgstr "new_format"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:18114(link)
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:18119(term)
@@ -15897,9 +15826,8 @@ msgid "The newly created object. Exact type depends on the type passed"
 msgstr ""
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:18147(title)
-#, fuzzy
 msgid "darktable.new_storage"
-msgstr "Darktable"
+msgstr "darktable.new_storage"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:18150(secondary)
 msgid "new_storage"
@@ -15945,9 +15873,8 @@ msgid ""
 msgstr ""
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:18184(title)
-#, fuzzy
 msgid "darktable.gui"
-msgstr "Darktable"
+msgstr "darktable.gui"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:18187(secondary)
 msgid "gui"
@@ -15970,9 +15897,8 @@ msgid "darktable.gui.action_images"
 msgstr ""
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:18196(secondary)
-#, fuzzy
 msgid "action_images"
-msgstr "Importeren afbeeldingen"
+msgstr "action_images"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:18199(para)
 msgid ""
@@ -15995,14 +15921,12 @@ msgid ""
 msgstr ""
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:18206(title)
-#, fuzzy
 msgid "darktable.gui.hovered"
-msgstr "Darktable"
+msgstr "darktable.gui.hovered"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:18209(secondary)
-#, fuzzy
 msgid "hovered"
-msgstr "overzicht"
+msgstr "zweefde"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:18211(para)
 msgid "The image under the cursor or nil if no image is hovered."
@@ -16015,9 +15939,8 @@ msgstr ""
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:18219(secondary)
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:18222(link)
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:18237(term)
-#, fuzzy
 msgid "selection"
-msgstr "selecteer niets"
+msgstr "selectie"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:18221(synopsis)
 msgid ""
@@ -16223,9 +16146,8 @@ msgid "The view to switch to. If empty the current view is unchanged"
 msgstr ""
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:18273(para)
-#, fuzzy
 msgid "the current view"
-msgstr "De Darkroom (Doka) weergave"
+msgstr "de huidige weergave"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:18282(title)
 msgid "darktable.gui.create_job"
@@ -16242,9 +16164,8 @@ msgstr ""
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:18289(link)
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:18301(term)
-#, fuzzy
 msgid "percentage"
-msgstr "middelpunt"
+msgstr "percentage"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:18290(link)
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:18307(term)
@@ -16312,14 +16233,12 @@ msgid "The newly created job object"
 msgstr ""
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:18335(title)
-#, fuzzy
 msgid "darktable.gui.views"
-msgstr "Darktable"
+msgstr "darktable.gui.views"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:18338(secondary)
-#, fuzzy
 msgid "views"
-msgstr "Weergave"
+msgstr "weergaven"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:18340(para)
 msgid "The different views in darktable"
@@ -16705,9 +16624,8 @@ msgid "darktable.gui.libs.snapshots.ratio"
 msgstr ""
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:18556(secondary)
-#, fuzzy
 msgid "ratio"
-msgstr "draaiing"
+msgstr "verhouding"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:18559(para)
 msgid ""
@@ -16804,9 +16722,8 @@ msgid "darktable.gui.libs.metadata_view"
 msgstr ""
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:18668(secondary)
-#, fuzzy
 msgid "metadata_view"
-msgstr "Metadata"
+msgstr "metadata_weergave"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:18670(para)
 msgid "The widget displaying metadata about the current image"
@@ -16817,9 +16734,8 @@ msgid "darktable.gui.libs.metadata"
 msgstr ""
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:18689(secondary)
-#, fuzzy
 msgid "metadata"
-msgstr "Metadata"
+msgstr "metadata"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:18691(para)
 msgid ""
@@ -16831,9 +16747,8 @@ msgid "darktable.gui.libs.hinter"
 msgstr ""
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:18710(secondary)
-#, fuzzy
 msgid "hinter"
-msgstr "intensie"
+msgstr "hinter"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:18712(para)
 msgid ""
@@ -16879,9 +16794,8 @@ msgid "darktable.gui.libs.darktable_label"
 msgstr ""
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:18794(secondary)
-#, fuzzy
 msgid "darktable_label"
-msgstr "Darktable"
+msgstr "darktable_label"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:18796(para)
 msgid "The darktable logo in the upper left corner"
@@ -16997,9 +16911,8 @@ msgid "darktable.gui.libs.collect"
 msgstr ""
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:19025(secondary)
-#, fuzzy
 msgid "collect"
-msgstr "Selecteer"
+msgstr "ophalen"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:19027(para)
 msgid "The collection UI element that allows to filter images by collection"
@@ -17018,9 +16931,8 @@ msgid "darktable.gui.libs.lighttable_mode"
 msgstr ""
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:19067(secondary)
-#, fuzzy
 msgid "lighttable_mode"
-msgstr "Lighttable"
+msgstr "bibliotheek_modus"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:19069(para)
 msgid "The navigation and zoom level UI in lighttable"
@@ -17031,9 +16943,8 @@ msgid "darktable.gui.libs.copy_history"
 msgstr ""
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:19088(secondary)
-#, fuzzy
 msgid "copy_history"
-msgstr "Geschiedenis"
+msgstr "kopieer_geschiedenis"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:19090(para)
 msgid "The UI element that manipulates history"
@@ -17052,9 +16963,8 @@ msgid "darktable.gui.libs.modulegroups"
 msgstr ""
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:19130(secondary)
-#, fuzzy
 msgid "modulegroups"
-msgstr "Modulen"
+msgstr "moduul groepen"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:19132(para)
 msgid "The icons describing the different iop groups"
@@ -17106,9 +17016,8 @@ msgid "darktable.gui.libs.history"
 msgstr ""
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:19235(secondary)
-#, fuzzy
 msgid "history"
-msgstr "Geschiedenis"
+msgstr "geschiedenis"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:19237(para)
 msgid "The history manipulation menu"
@@ -17155,9 +17064,8 @@ msgid "darktable.gui.libs.live_view"
 msgstr ""
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:19340(secondary)
-#, fuzzy
 msgid "live_view"
-msgstr "overzicht"
+msgstr "live_view"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:19342(para)
 msgid "The liveview window"
@@ -17180,9 +17088,8 @@ msgid "darktable.gui.libs.camera"
 msgstr ""
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:19384(para)
-#, fuzzy
 msgid "The camera selection UI"
-msgstr "keer selectie om"
+msgstr "De cameraselectie UI"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:19400(title)
 msgid "darktable.gui.libs.location"
@@ -17191,9 +17098,8 @@ msgstr ""
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:19403(secondary)
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:20234(link)
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:20239(term)
-#, fuzzy
 msgid "location"
-msgstr "draaiing"
+msgstr "locatie"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:19405(para)
 msgid "The location ui"
@@ -17212,18 +17118,16 @@ msgid "The window displaying the currently running jobs"
 msgstr ""
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:19446(title)
-#, fuzzy
 msgid "darktable.tags"
-msgstr "Darktable"
+msgstr "darktable.tags"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:19451(para)
 msgid "Allows access to all existing tags."
 msgstr ""
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:19454(title)
-#, fuzzy
 msgid "darktable.tags.#"
-msgstr "Darktable"
+msgstr "darktable.tags.#"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:19459(link)
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:19493(link)
@@ -17247,9 +17151,8 @@ msgid ""
 msgstr ""
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:19465(title)
-#, fuzzy
 msgid "darktable.tags.create"
-msgstr "Darktable"
+msgstr "darktable.tags.create"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:19473(para)
 msgid ""
@@ -17261,9 +17164,8 @@ msgid "The name of the new tag."
 msgstr ""
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:19486(title)
-#, fuzzy
 msgid "darktable.tags.find"
-msgstr "Darktable"
+msgstr "darktable.tags.find"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:19489(secondary)
 msgid "find"
@@ -17282,9 +17184,8 @@ msgid "The tag object or nil."
 msgstr ""
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:19514(title)
-#, fuzzy
 msgid "darktable.tags.delete"
-msgstr "Darktable"
+msgstr "darktable.tags.delete"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:19520(link)
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:19525(term)
@@ -17304,9 +17205,8 @@ msgid "The tag to be deleted."
 msgstr ""
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:19535(title)
-#, fuzzy
 msgid "darktable.tags.attach"
-msgstr "Darktable"
+msgstr "darktable.tags.attach"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:19540(synopsis)
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:19568(synopsis)
@@ -17331,9 +17231,8 @@ msgid "The image to attach the tag to."
 msgstr ""
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:19563(title)
-#, fuzzy
 msgid "darktable.tags.detach"
-msgstr "Darktable"
+msgstr "darktable.tags.detach"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:19572(para)
 msgid ""
@@ -17534,9 +17433,8 @@ msgstr ""
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:19757(link)
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:19770(term)
-#, fuzzy
 msgid "module_name"
-msgstr "bestandsnaam"
+msgstr "module_naam"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:19756(synopsis)
 msgid ""
@@ -17587,9 +17485,8 @@ msgid "Tables of API versions that are known to work with the scrip"
 msgstr ""
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:19788(title)
-#, fuzzy
 msgid "darktable.preferences"
-msgstr "Voorkeuren"
+msgstr "darktable.preferences"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:19794(para)
 msgid ""
@@ -17792,9 +17689,8 @@ msgstr ""
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:19912(para)
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:19955(para)
-#, fuzzy
 msgid "The type of the preference."
-msgstr "Bepaal de sterkte van het effect"
+msgstr "Het type voorkeur."
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:19918(para)
 msgid "The value of the preference."
@@ -17826,19 +17722,16 @@ msgid "The value to set the preference to."
 msgstr ""
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:19971(title)
-#, fuzzy
 msgid "darktable.styles"
-msgstr "Darktable"
+msgstr "darktable.styles"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:19976(para)
-#, fuzzy
 msgid "This pseudo table allows you to access and manipulate styles."
-msgstr "Met deze module kun je het ingaande profiel wijzigen."
+msgstr "Met deze pseudo tabel krijgt u toegang en kunt u stijlen manipuleren."
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:19979(title)
-#, fuzzy
 msgid "darktable.styles.#"
-msgstr "Darktable"
+msgstr "darktable.styles.#"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:19984(link)
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:19999(link)
@@ -17875,9 +17768,8 @@ msgid ""
 msgstr ""
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:20000(para)
-#, fuzzy
 msgid "Create a new style based on an image."
-msgstr "Creëer een nieuw label voor deze lijst"
+msgstr "Creëer een nieuwe stijl gebaseerd op een afbeelding."
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:20005(para)
 msgid "The image to create the style from."
@@ -17909,14 +17801,12 @@ msgid "the style to delete"
 msgstr ""
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:20053(title)
-#, fuzzy
 msgid "darktable.styles.duplicate"
-msgstr "creëer een kloon"
+msgstr "darktable.styles.duplicate"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:20063(para)
-#, fuzzy
 msgid "Create a new style based on an existing style."
-msgstr "Creëer een nieuw label voor deze lijst"
+msgstr "Creëer een nieuwe stijl gebaseerd op een bestaande stijl."
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:20068(para)
 msgid "The style to base the new style on."
@@ -17986,14 +17876,12 @@ msgid "Is overwriting an existing file allowed"
 msgstr ""
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:20181(title)
-#, fuzzy
 msgid "darktable.database"
-msgstr "Darktable"
+msgstr "darktable.database"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:20184(secondary)
-#, fuzzy
 msgid "database"
-msgstr "database bestand"
+msgstr "database"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:20186(para)
 msgid ""
@@ -18004,9 +17892,8 @@ msgid ""
 msgstr ""
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:20189(title)
-#, fuzzy
 msgid "darktable.database.#"
-msgstr "Darktable"
+msgstr "darktable.database.#"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:20195(para)
 msgid ""
@@ -18015,9 +17902,8 @@ msgid ""
 msgstr ""
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:20200(title)
-#, fuzzy
 msgid "darktable.database.duplicate"
-msgstr "creëer een kloon"
+msgstr "darktable.database.duplicate"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:20205(synopsis)
 msgid ""
@@ -18030,9 +17916,8 @@ msgid "Creates a duplicate of an image and returns it."
 msgstr ""
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:20213(para)
-#, fuzzy
 msgid "the image to duplicate"
-msgstr "creëer een kloon"
+msgstr "de afbeelding om te dupliceren"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:20219(para)
 msgid ""
@@ -18064,9 +17949,8 @@ msgstr ""
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:20259(secondary)
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:22284(secondary)
-#, fuzzy
 msgid "move_image"
-msgstr "afbeelding"
+msgstr "verplaats_afbeelding"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:20263(link)
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:20276(term)
@@ -18107,9 +17991,8 @@ msgstr ""
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:20289(secondary)
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:22293(secondary)
-#, fuzzy
 msgid "copy_image"
-msgstr "afbeelding"
+msgstr "kopieer_afbeelding"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:20291(synopsis)
 msgid ""
@@ -18142,9 +18025,8 @@ msgid "The film to copy to"
 msgstr ""
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:20315(para)
-#, fuzzy
 msgid "The new image"
-msgstr "selecteer geen afbeelding"
+msgstr "De nieuwe afbeelding"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:20324(title)
 msgid "darktable.database.delete"
@@ -18157,9 +18039,8 @@ msgid ""
 msgstr ""
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:20335(title)
-#, fuzzy
 msgid "darktable.debug"
-msgstr "Darktable"
+msgstr "darktable.debug"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:20338(secondary)
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:20395(secondary)
@@ -18173,9 +18054,8 @@ msgid ""
 msgstr ""
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:20347(title)
-#, fuzzy
 msgid "darktable.debug.dump"
-msgstr "Darktable"
+msgstr "darktable.debug.dump"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:20350(secondary)
 msgid "dump"
@@ -18239,9 +18119,8 @@ msgid ""
 msgstr ""
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:20392(title)
-#, fuzzy
 msgid "darktable.debug.debug"
-msgstr "Darktable"
+msgstr "darktable.debug.debug"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:20398(para)
 msgid ""
@@ -18262,9 +18141,8 @@ msgid "Initialized to 10; The maximum depth to recursively dump content."
 msgstr ""
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:20414(title)
-#, fuzzy
 msgid "darktable.debug.known"
-msgstr "Darktable"
+msgstr "darktable.debug.known"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:20420(para)
 msgid ""
@@ -18273,9 +18151,8 @@ msgid ""
 msgstr ""
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:20425(title)
-#, fuzzy
 msgid "darktable.debug.type"
-msgstr "Darktable"
+msgstr "darktable.debug.type"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:20430(synopsis)
 msgid "function( <emphasis><placeholder-1/></emphasis> : anything ) : string"
@@ -18292,9 +18169,8 @@ msgid "The object whos type must be reported."
 msgstr ""
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:20444(para)
-#, fuzzy
 msgid "A string describing the type of the object."
-msgstr "Dit deel verduidelijkt de lay-out van de gebruikersinterface."
+msgstr "Een string die het type onderwerp omschrijft."
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:20457(title)
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:20460(secondary)
@@ -18353,9 +18229,8 @@ msgid "types.dt_lua_image_t.attach_tag"
 msgstr ""
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:20489(secondary)
-#, fuzzy
 msgid "attach_tag"
-msgstr "koppel"
+msgstr "verbindt_tag"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:20491(para)
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:22547(para)
@@ -18368,9 +18243,8 @@ msgid "types.dt_lua_image_t.detach_tag"
 msgstr ""
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:20498(secondary)
-#, fuzzy
 msgid "detach_tag"
-msgstr "ontkoppel"
+msgstr "ontbindt_tag"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:20500(para)
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:22556(para)
@@ -18405,9 +18279,8 @@ msgid "types.dt_lua_image_t.apply_style"
 msgstr ""
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:20525(secondary)
-#, fuzzy
 msgid "apply_style"
-msgstr "toepassen"
+msgstr "toepassen_stijl"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:20527(para)
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:22423(para)
@@ -18491,9 +18364,8 @@ msgid "types.dt_lua_image_t.duplicate_index"
 msgstr ""
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:20605(secondary)
-#, fuzzy
 msgid "duplicate_index"
-msgstr "klonen"
+msgstr "dupliceer_index"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:20608(para)
 msgid ""
@@ -18546,9 +18418,8 @@ msgid "types.dt_lua_image_t.exif_maker"
 msgstr ""
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:20721(secondary)
-#, fuzzy
 msgid "exif_maker"
-msgstr "fabrikant"
+msgstr "exif_fabrikant"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:20724(para)
 msgid "The maker exif data."
@@ -18559,9 +18430,8 @@ msgid "types.dt_lua_image_t.exif_model"
 msgstr ""
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:20742(secondary)
-#, fuzzy
 msgid "exif_model"
-msgstr "type"
+msgstr "exif_model"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:20745(para)
 msgid "The camera model used."
@@ -18572,23 +18442,20 @@ msgid "types.dt_lua_image_t.exif_lens"
 msgstr ""
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:20763(secondary)
-#, fuzzy
 msgid "exif_lens"
-msgstr "lens"
+msgstr "exif_lens"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:20766(para)
-#, fuzzy
 msgid "The id string of the lens used."
-msgstr "Bepaal de sterkte van het effect"
+msgstr "De id string van de gebruikte lens"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:20781(title)
 msgid "types.dt_lua_image_t.exif_aperture"
 msgstr ""
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:20784(secondary)
-#, fuzzy
 msgid "exif_aperture"
-msgstr "temperaturen"
+msgstr "exif_diafragma"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:20787(para)
 msgid "The aperture saved in the exif data."
@@ -18599,9 +18466,8 @@ msgid "types.dt_lua_image_t.exif_exposure"
 msgstr ""
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:20805(secondary)
-#, fuzzy
 msgid "exif_exposure"
-msgstr "belichting"
+msgstr "exif_belichting"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:20808(para)
 msgid "The exposure time of the image."
@@ -18652,9 +18518,8 @@ msgid "exif_focus_distance"
 msgstr ""
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:20892(para)
-#, fuzzy
 msgid "The distance of the subject."
-msgstr "Bepaal de sterkte van het effect"
+msgstr "De afstand van het onderwerp"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:20907(title)
 msgid "types.dt_lua_image_t.exif_crop"
@@ -18738,18 +18603,16 @@ msgid "height"
 msgstr "hoogte"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:21018(para)
-#, fuzzy
 msgid "The height of the image."
-msgstr "De Lighttable weergave"
+msgstr "De hoogte van de afbeelding"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:21023(title)
 msgid "types.dt_lua_image_t.rating"
 msgstr ""
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:21026(secondary)
-#, fuzzy
 msgid "rating"
-msgstr "verzadiging"
+msgstr "waardering"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:21029(para)
 msgid "The rating of the image (-1 for rejected)."
@@ -19022,9 +18885,8 @@ msgid "types.dt_imageio_module_format_t.max_width"
 msgstr ""
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:21327(secondary)
-#, fuzzy
 msgid "max_width"
-msgstr "breedte"
+msgstr "max_breedte"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:21330(para)
 msgid "The max width allowed for the format (0 = unlimited)."
@@ -19035,9 +18897,8 @@ msgid "types.dt_imageio_module_format_t.max_height"
 msgstr ""
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:21348(secondary)
-#, fuzzy
 msgid "max_height"
-msgstr "hoogte"
+msgstr "max_hoogte"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:21351(para)
 msgid "The max height allowed for the format (0 = unlimited)."
@@ -19048,9 +18909,8 @@ msgid "types.dt_imageio_module_format_t.write_image"
 msgstr ""
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:21369(secondary)
-#, fuzzy
 msgid "write_image"
-msgstr "afbeelding"
+msgstr "schrijf_afbeelding"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:21371(synopsis)
 msgid ""
@@ -19190,9 +19050,8 @@ msgstr ""
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:21609(secondary)
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:21672(secondary)
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:21756(secondary)
-#, fuzzy
 msgid "quality"
-msgstr "Equalizer"
+msgstr "qualiteit"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:21612(para)
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:21675(para)
@@ -19261,9 +19120,8 @@ msgid "types.hint_t"
 msgstr ""
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:21717(para)
-#, fuzzy
 msgid "A hint on the overall content of the image."
-msgstr "Bepaal de omvang voor de module"
+msgstr "Een aanwijzing over de de algehele inhoud van het beeld."
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:21734(title)
 msgid "types.dt_imageio_module_format_data_j2k"
@@ -19820,14 +19678,12 @@ msgid "True if the lib is currently visible on the screen"
 msgstr ""
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:22718(secondary)
-#, fuzzy
 msgid "dt_view_t"
-msgstr "Weergave"
+msgstr "dt_view_t"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:22721(para)
-#, fuzzy
 msgid "A darktable view"
-msgstr "Darktable"
+msgstr "Een darktable weergave"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:22724(title)
 msgid "types.dt_view_t.id"
@@ -19858,9 +19714,8 @@ msgid "types.dt_lua_backgroundjob_t.percent"
 msgstr ""
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:22760(secondary)
-#, fuzzy
 msgid "percent"
-msgstr "middelpunt"
+msgstr "percentage"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:22763(para)
 msgid ""
@@ -19982,9 +19837,8 @@ msgid "left"
 msgstr "links"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:22909(para)
-#, fuzzy
 msgid "right"
-msgstr "hoogte"
+msgstr "recht"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:22910(para)
 msgid "top"
@@ -20057,9 +19911,8 @@ msgid "comp_type_t"
 msgstr "comp_type_t"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:23008(para)
-#, fuzzy
 msgid "Type of compression for webp"
-msgstr "Stel de compressie in op nul"
+msgstr "Compressietype voor webp"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:23017(para)
 msgid "webp_lossy"
@@ -20082,9 +19935,8 @@ msgid "bool"
 msgstr ""
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:23047(para)
-#, fuzzy
 msgid "file"
-msgstr "profiel"
+msgstr "bestand"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:23059(title)
 msgid "types.dt_imageio_exr_compression_t"
@@ -20099,9 +19951,8 @@ msgid "undocumented types.dt_imageio_exr_compression_t"
 msgstr ""
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:23075(para)
-#, fuzzy
 msgid "rle"
-msgstr "profiel"
+msgstr "rle"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:23076(para)
 msgid "zips"
@@ -20192,9 +20043,8 @@ msgstr ""
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:23133(para)
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:23202(para)
-#, fuzzy
 msgid "The image object that has been exported."
-msgstr "Selecteer alle nog niet bewerkte afbeeldingen."
+msgstr "Het afbeeldingsobject dat is geëxporteerd. "
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:23139(para)
 msgid "The name of the file that is the result of the image being processed."
@@ -20236,9 +20086,8 @@ msgid "events.post-import-image"
 msgstr ""
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:23174(secondary)
-#, fuzzy
 msgid "post-import-image"
-msgstr "Importeren afbeeldingen"
+msgstr "na-invoer-afbeelding"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:23177(para)
 msgid ""
@@ -20308,9 +20157,8 @@ msgid "events.post-import-film"
 msgstr ""
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:23288(secondary)
-#, fuzzy
 msgid "post-import-film"
-msgstr "importeer serie"
+msgstr "na-invoer-map"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:23291(para)
 msgid ""
@@ -20351,15 +20199,13 @@ msgstr ""
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:23350(link)
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:23356(term)
-#, fuzzy
 msgid "old_view"
-msgstr "Weergave"
+msgstr "oude_weergave"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:23351(link)
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:23362(term)
-#, fuzzy
 msgid "new_view"
-msgstr "Weergave"
+msgstr "nieuwe_Weergave"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:23358(para)
 msgid "The view that we just left"
@@ -20483,9 +20329,8 @@ msgstr ""
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:23520(title)
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:23523(secondary)
-#, fuzzy
 msgid "system"
-msgstr "Zone systeem"
+msgstr "systeem"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:23525(para)
 msgid "This section documents changes to system functions."
@@ -20568,9 +20413,8 @@ msgid "topics"
 msgstr "thema's"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:23591(keyword)
-#, fuzzy
 msgid "special"
-msgstr "Verhouding"
+msgstr "speciaal"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:23595(title)
 msgid "Special topics"
@@ -20590,9 +20434,8 @@ msgid "The darktable blog"
 msgstr " de darktable blog"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:23618(title)
-#, fuzzy
 msgid "darktable and memory"
-msgstr "Darktable"
+msgstr "darktable en geheugen"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:23621(primary)
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:23725(primary)
@@ -20872,9 +20715,8 @@ msgid ""
 msgstr ""
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:23899(title)
-#, fuzzy
 msgid "darktable and OpenCL"
-msgstr "Darktable"
+msgstr "darktable en OpenCL"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:23902(primary)
 msgid "OpenCL"
@@ -21220,9 +21062,8 @@ msgid ""
 msgstr ""
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24222(programlisting)
-#, fuzzy
 msgid "darktable -d opencl"
-msgstr "Darktable"
+msgstr "darktable -d opencl"
 
 #: /home/ger/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24226(para)
 msgid ""
