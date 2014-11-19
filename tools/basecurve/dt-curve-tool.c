@@ -524,7 +524,11 @@ print_usage(
   const char* name)
 {
   fprintf(stderr,
-    "usage: %s [OPTIONS] <inputraw.ppm (16-bit)> <inputjpg.ppm (8-bit)>\n"
+    "first pass, accumulate statistics (can be repeated to cover all tonal range):\n"
+    "%s [OPTIONS] <inputraw.ppm (16-bit)> <inputjpg.ppm (8-bit)>\n"
+    "\n"
+    "second pass, compute the curves:\n"
+    " %s -z [OPTIONS]\n"
     "\n"
     "OPTIONS:\n"
     " -n <integer>    Number of nodes for the curve\n"
@@ -544,7 +548,7 @@ print_usage(
     "\n"
     "first do a pass over a few images to accumulate data in the save state file, and then\n"
     "compute the fit curve using option -z\n",
-    name);
+    name, name);
 }
 
 static void
@@ -773,7 +777,6 @@ main(int argc, char** argv)
   hist_base = hist;
   hist_tone = hist + 3*CURVE_RESOLUTION;
 
-#if 0
   // read saved state if any
   f = fopen(opt.filename_state, "rb");
   if (f)
@@ -788,7 +791,6 @@ main(int argc, char** argv)
   {
     goto fit;
   }
-#endif
 
   // read the raw PPM file
   raw_buff = read_ppm16(opt.filename_raw, &raw_width, &raw_height);
@@ -950,7 +952,6 @@ main(int argc, char** argv)
   free(jpeg_buff_f);
   jpeg_buff_f = NULL;
 
-#if 0
   /* ------------------------------------------------------------------------
    * Write save state w/ the gathered data
    * ----------------------------------------------------------------------*/
@@ -983,7 +984,6 @@ main(int argc, char** argv)
   }
 
 fit:;
-#endif
 
   char maker[32];
   char model[32];
