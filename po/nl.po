@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2014-11-17 19:49+0100\n"
-"PO-Revision-Date: 2014-11-19 20:19+0100\n"
+"PO-Revision-Date: 2014-11-19 20:29+0100\n"
 "Last-Translator: Ger Siemerink <g.siemerink@gmail.com>\n"
 "Language-Team: Ger Siemerink <g.siemerink@gmail.com>\n"
 "Language: nl_NL\n"
@@ -2361,7 +2361,7 @@ msgstr "diafragma"
 #: ../src/gui/presets.c:481 ../src/libs/camera.c:524
 #: ../src/libs/metadata_view.c:99
 msgid "focal length"
-msgstr "brandpuntsafstand (mm)"
+msgstr "brandpuntsafstand"
 
 #: ../src/gui/preferences.c:491 ../src/iop/borders.c:1054
 #: ../src/iop/exposure.c:977 ../src/iop/levels.c:579
