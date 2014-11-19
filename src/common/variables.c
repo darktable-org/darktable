@@ -169,6 +169,7 @@ gboolean _variable_get_value(dt_variables_params_t *params, gchar *variable,gcha
   else if( g_strcmp0(variable,"$(EXIF_ISO)") == 0 && (got_value=TRUE) )   		sprintf(value,"%d", exif_iso);
   else if( g_strcmp0(variable,"$(ID)") == 0 && (got_value=TRUE) ) sprintf(value,"%d", params->imgid);
   else if( g_strcmp0(variable,"$(JOBCODE)") == 0 && (got_value=TRUE) )   sprintf(value,"%s",params->jobcode);
+  else if( g_strcmp0(variable,"$(VERSION)") == 0 && (got_value=TRUE) ) snprintf(value, value_len, "%d", version);
   else if( g_strcmp0(variable,"$(ROLL_NAME)") == 0 && params->filename && (got_value=TRUE) )
   {
     gchar* dirname = g_path_get_dirname(params->filename);
