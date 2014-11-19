@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2014-11-17 19:49+0100\n"
-"PO-Revision-Date: 2014-11-18 11:57+0100\n"
+"PO-Revision-Date: 2014-11-19 20:19+0100\n"
 "Last-Translator: Ger Siemerink <g.siemerink@gmail.com>\n"
 "Language-Team: Ger Siemerink <g.siemerink@gmail.com>\n"
 "Language: nl_NL\n"
@@ -118,7 +118,7 @@ msgstr "vraag om bevestiging voordat afbeeldingen uit mappen worden gehaald"
 #: ../build/src/preferences_gen.h:1408
 msgid "always ask the user before any image file is moved."
 msgstr ""
-"vraag altijd eerst de gebruiker voordat een afbeelding wordt verwijderd"
+"vraag altijd eerst de gebruiker voordat een afbeelding wordt verplaatst"
 
 #: ../build/src/preferences_gen.h:1415
 msgid "ask before copying images to new film roll folder"
@@ -319,7 +319,7 @@ msgstr "vraag om bevestiging voordat een label wordt verwijderd"
 
 #: ../build/src/preferences_gen.h:1819
 msgid "only draw images on map that are currently collected and filtered"
-msgstr "toon alleen de nu verzamelde en gefilterde afbeeldingen op de kaart"
+msgstr "toon op de kaart alleen de nu verzamelde en gefilterde afbeeldingen"
 
 #: ../build/src/preferences_gen.h:1831
 msgid ""
@@ -467,7 +467,7 @@ msgstr ""
 
 #: ../build/src/preferences_gen.h:2112
 msgid "write sidecar file for each image"
-msgstr "schrijf voor elke afbeelding een xmp bestand "
+msgstr "schrijf voor elke afbeelding een xmp bestand"
 
 #: ../build/src/preferences_gen.h:2124
 msgid ""
