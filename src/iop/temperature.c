@@ -397,6 +397,10 @@ void gui_update(struct dt_iop_module_t *self)
   dt_bauhaus_combobox_add(g->presets, _("spot white balance"));
   g->preset_cnt = DT_IOP_NUM_OF_STD_TEMP_PRESETS;
 
+  dt_bauhaus_combobox_set(g->presets, -1);
+  dt_bauhaus_slider_set(g->finetune, 0);
+  gtk_widget_set_sensitive(g->finetune, 0);
+
   const char *wb_name = NULL;
   char makermodel[1024];
   char *model = makermodel;
@@ -421,9 +425,30 @@ void gui_update(struct dt_iop_module_t *self)
   if(memcmp(p->coeffs, fp->coeffs, 3 * sizeof(float)) == 0)
     dt_bauhaus_combobox_set(g->presets, 0);
   else
-    dt_bauhaus_combobox_set(g->presets, -1);
-  dt_bauhaus_slider_set(g->finetune, 0);
-  gtk_widget_set_sensitive(g->finetune, 0);
+  {
+    // look through all added presets
+    for(int j = DT_IOP_NUM_OF_STD_TEMP_PRESETS; j < g->preset_cnt; j++)
+    {
+      // look through all variants of this preset, with different tuning
+      for(int i = g->preset_num[j];
+          !strcmp(wb_preset[i].make, makermodel) && !strcmp(wb_preset[i].model, model)
+              && !strcmp(wb_preset[i].name, wb_preset[g->preset_num[j]].name);
+          i++)
+      {
+        float coeffs[3];
+        for(int k = 0; k < 3; k++) coeffs[k] = wb_preset[i].channel[k];
+
+        if(memcmp(coeffs, p->coeffs, 3 * sizeof(float)) == 0)
+        {
+          // got exact match!
+          dt_bauhaus_combobox_set(g->presets, j);
+          gtk_widget_set_sensitive(g->finetune, 1);
+          dt_bauhaus_slider_set(g->finetune, wb_preset[i].tuning);
+          break;
+        }
+      }
+    }
+  }
 }
 
 void reload_defaults(dt_iop_module_t *module)
