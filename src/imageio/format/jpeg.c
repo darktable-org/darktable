@@ -355,6 +355,22 @@ write_image (dt_imageio_module_data_t *jpg_tmp, const char *filename, const void
   if(jpg->quality < 40) jpg->cinfo.smoothing_factor = 60;
   jpg->cinfo.optimize_coding = 1;
 
+  // according to specs density_unit = 0, X_density = 1, Y_density = 1 should be fine and valid since it describes an image with unknown unit and square pixels.
+  // however, some applications (like the Telekom cloud thingy) seem to be confused by that, so let's set these calues to the same as stored in exiv :/
+  int resolution = dt_conf_get_int("metadata/resolution");
+  if(resolution > 0)
+  {
+    jpg->cinfo.density_unit = 1;
+    jpg->cinfo.X_density = resolution;
+    jpg->cinfo.Y_density = resolution;
+  }
+  else
+  {
+    jpg->cinfo.density_unit = 0;
+    jpg->cinfo.X_density = 1;
+    jpg->cinfo.Y_density = 1;
+  }
+
   jpeg_start_compress(&(jpg->cinfo), TRUE);
 
   if(imgid > 0)
