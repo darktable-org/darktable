@@ -366,7 +366,7 @@ static inline int _blend_colorspace_channels(dt_iop_colorspace_type_t cst)
   switch(cst)
   {
     case iop_cs_RAW:
-      return 4;
+      return 1;
 
     case iop_cs_Lab:
     default:
