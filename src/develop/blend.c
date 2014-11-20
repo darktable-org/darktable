@@ -400,13 +400,13 @@ static inline void _blend_Lab_rescale(const float *i, float *o)
 
 
 /* generate blend mask */
-static void _blend_make_mask(dt_iop_colorspace_type_t cst, const unsigned int blendif, const float *blendif_parameters, const unsigned int mask_mode, const unsigned int mask_combine,
-                             const float gopacity, const float *a, const float *b, float *mask, size_t stride)
+static void _blend_make_mask(const _blend_buffer_desc_t *bd, const unsigned int blendif, const float *blendif_parameters, const unsigned int mask_mode, const unsigned int mask_combine,
+                             const float gopacity, const float *a, const float *b, float *mask)
 {
-  for(size_t i=0, j=0; j<stride; i++, j+=4)
+  for(size_t i=0, j=0; j<bd->stride; i++, j+=bd->ch)
   {
     float form = mask[i];
-    float conditional = _blendif_factor(cst, &a[j], &b[j], blendif, blendif_parameters, mask_mode, mask_combine);
+    float conditional = _blendif_factor(bd->cst, &a[j], &b[j], blendif, blendif_parameters, mask_mode, mask_combine);
     float opacity = (mask_combine & DEVELOP_COMBINE_INCL) ? 1.0f - (1.0f - form) * (1.0f - conditional) : form * conditional ;
     opacity = (mask_combine & DEVELOP_COMBINE_INV) ? 1.0f - opacity : opacity;
     mask[i] = opacity*gopacity;
@@ -2131,11 +2131,16 @@ void dt_develop_blend_process (struct dt_iop_module_t *self, struct dt_dev_pixel
     {
       size_t iindex = ((size_t)(y + yoffs) * iwidth + xoffs)*ch;
       size_t oindex = (size_t)y * roi_out->width*ch;
-      size_t stride = (size_t)roi_out->width*ch;
+      _blend_buffer_desc_t bd =
+      {
+        .cst    = cst,
+        .stride = (size_t)roi_out->width*ch,
+        .ch     = ch
+      };
       float *in = (float *)i + iindex;
       float *out = (float *)o + oindex;
       float *m = (float *)mask + y * roi_out->width;
-      _blend_make_mask(cst, d->blendif, d->blendif_parameters, d->mask_mode, d->mask_combine, opacity, in, out, m, stride);
+      _blend_make_mask(&bd, d->blendif, d->blendif_parameters, d->mask_mode, d->mask_combine, opacity, in, out, m);
     }
 
 
