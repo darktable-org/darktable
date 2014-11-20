@@ -832,7 +832,7 @@ void dt_camctl_import(const dt_camctl_t *c,const dt_camera_t *cam,GList *images)
 
       CameraFile* camfile;
       uint8_t* data;
-      unsigned long size;
+      size_t size;
       
       gp_file_new(&camfile);
       gp_camera_file_get(cam->gpcam, folder, filename, GP_FILE_TYPE_NORMAL, camfile, NULL);
