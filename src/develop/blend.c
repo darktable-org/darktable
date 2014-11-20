@@ -1905,7 +1905,7 @@ static void _blend_HSV_color(dt_iop_colorspace_type_t cst,const float *a, float 
 
 void dt_develop_blend_process (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, void *i, void *o, const struct dt_iop_roi_t *roi_in, const struct dt_iop_roi_t *roi_out)
 {
-  int ch = piece->colors;
+  const int ch = piece->colors;
   _blend_row_func *blend = NULL;
   dt_develop_blend_params_t *d = (dt_develop_blend_params_t *)piece->blendop_data;
 
@@ -2034,12 +2034,6 @@ void dt_develop_blend_process (struct dt_iop_module_t *self, struct dt_dev_pixel
   /* get channel max values depending on colorspace */
   const dt_iop_colorspace_type_t cst = dt_iop_module_colorspace(self);
 
-  /* correct bpp per pixel for raw
-     \TODO actually invest why channels per pixel is 4 in raw..
-  */
-  if(cst==iop_cs_RAW)
-    ch = 1;
-
   /* allocate space for blend mask */
   float *mask = dt_alloc_align(64, (size_t)roi_out->width*roi_out->height*sizeof(float));
   if(!mask)
@@ -2120,9 +2114,9 @@ void dt_develop_blend_process (struct dt_iop_module_t *self, struct dt_dev_pixel
   
 #ifdef _OPENMP
 #if !defined(__SUNOS__) && !defined(__NetBSD__) && !defined(__WIN32__)
-    #pragma omp parallel for default(none) shared(i,roi_out,o,mask,blend,d,stderr,ch)
+    #pragma omp parallel for default(none) shared(i,roi_out,o,mask,blend,d,stderr)
 #else
-    #pragma omp parallel for shared(i,roi_out,o,mask,blend,d,ch)
+    #pragma omp parallel for shared(i,roi_out,o,mask,blend,d)
 #endif
 #endif
     for (size_t y=0; y<roi_out->height; y++)
@@ -2184,9 +2178,9 @@ void dt_develop_blend_process (struct dt_iop_module_t *self, struct dt_dev_pixel
   /* now apply blending with per-pixel opacity value as defined in mask */
 #ifdef _OPENMP
 #if !defined(__SUNOS__) && !defined(__WIN32__)
-  #pragma omp parallel for default(none) shared(i,roi_out,o,mask,blend,stderr,ch)
+  #pragma omp parallel for default(none) shared(i,roi_out,o,mask,blend,stderr)
 #else
-  #pragma omp parallel for shared(i,roi_out,o,mask,blend,ch)
+  #pragma omp parallel for shared(i,roi_out,o,mask,blend)
 #endif
 #endif
   for (size_t y=0; y<roi_out->height; y++)
