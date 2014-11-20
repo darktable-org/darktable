@@ -9,7 +9,7 @@ msgstr ""
 "Project-Id-Version: darktable 0.6.1~rc\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2014-11-20 15:04+0100\n"
-"PO-Revision-Date: 2014-11-20 16:07+0100\n"
+"PO-Revision-Date: 2014-11-21 00:17+0100\n"
 "Last-Translator: Josep V. Moragues <josepvm@arrakis.es>\n"
 "Language-Team: Catalan\n"
 "Language: ca\n"
@@ -5228,23 +5228,23 @@ msgstr "inverteix"
 #: ../src/iop/invert.c:79
 msgctxt "accel"
 msgid "pick color of film material from image"
-msgstr ""
+msgstr "pren de la imatge el color del suport"
 
 #: ../src/iop/invert.c:163
 msgid "select color of film material"
-msgstr ""
+msgstr "tria color del suport de film"
 
 #: ../src/iop/invert.c:447
 msgid "color of film material"
-msgstr ""
+msgstr "color del suport de film"
 
 #: ../src/iop/invert.c:478
 msgid "pick color of film material from image"
-msgstr ""
+msgstr "pren de la imatge el color del suport"
 
 #: ../src/iop/lens.c:146
 msgid "lens correction"
-msgstr ""
+msgstr "correcció de l'òptica"
 
 #: ../src/iop/lens.c:168 ../src/iop/vignette.c:176 ../src/iop/watermark.c:204
 msgctxt "accel"
@@ -5254,12 +5254,12 @@ msgstr "escala"
 #: ../src/iop/lens.c:169
 msgctxt "accel"
 msgid "TCA R"
-msgstr ""
+msgstr "TCA verm."
 
 #: ../src/iop/lens.c:170
 msgctxt "accel"
 msgid "TCA B"
-msgstr ""
+msgstr "TCA blau"
 
 #: ../src/iop/lens.c:172
 msgctxt "accel"
@@ -5299,14 +5299,18 @@ msgid ""
 "mount:\t\t%s\n"
 "crop factor:\t%.1f"
 msgstr ""
+"fabricant:\t\t%s\n"
+"model:\t\t%s%s\n"
+"montura:\t\t%s\n"
+"factor de retall:\t%.1f"
 
 #: ../src/iop/lens.c:1616
 msgid "camera/lens not found - please select manually"
-msgstr ""
+msgstr "càmera/objectiu no identificat - trieu-lo manualment"
 
 #: ../src/iop/lens.c:1618
 msgid "try to locate your camera/lens in the above two menus"
-msgstr ""
+msgstr "cerqueu càmera/objectiu en els dos menús a sobre"
 
 #: ../src/iop/lens.c:1673
 #, c-format
@@ -5341,7 +5345,7 @@ msgstr "f/"
 
 #: ../src/iop/lens.c:1746
 msgid "f-number (aperture)"
-msgstr ""
+msgstr "num. f (obertura)"
 
 #: ../src/iop/lens.c:1761
 msgid "d"
@@ -5349,11 +5353,11 @@ msgstr "d"
 
 #: ../src/iop/lens.c:1762
 msgid "distance to subject"
-msgstr ""
+msgstr "distància al subjecte"
 
 #: ../src/iop/lens.c:2064
 msgid "distortion & TCA"
-msgstr ""
+msgstr "distorsió i TCA"
 
 #: ../src/iop/lens.c:2070
 msgid "distortion & vignetting"
@@ -5365,11 +5369,11 @@ msgstr "TCA i vinyetatge"
 
 #: ../src/iop/lens.c:2082
 msgid "only distortion"
-msgstr ""
+msgstr "només distorsió"
 
 #: ../src/iop/lens.c:2088
 msgid "only TCA"
-msgstr ""
+msgstr "només TCA"
 
 #: ../src/iop/lens.c:2094
 msgid "only vignetting"
@@ -5389,7 +5393,7 @@ msgstr "correccions"
 
 #: ../src/iop/lens.c:2168
 msgid "which corrections to apply"
-msgstr ""
+msgstr "correccions a aplicar"
 
 #: ../src/iop/lens.c:2183
 msgid "geometry"
@@ -5397,7 +5401,7 @@ msgstr "geometria"
 
 #: ../src/iop/lens.c:2185
 msgid "target geometry"
-msgstr ""
+msgstr "geometria final"
 
 #: ../src/iop/lens.c:2186
 msgid "rectilinear"
@@ -5405,7 +5409,7 @@ msgstr "rectilínia"
 
 #: ../src/iop/lens.c:2187
 msgid "fish-eye"
-msgstr ""
+msgstr "ull de peix"
 
 #: ../src/iop/lens.c:2188
 msgid "panoramic"
@@ -5413,23 +5417,23 @@ msgstr "panoràmica"
 
 #: ../src/iop/lens.c:2189
 msgid "equirectangular"
-msgstr ""
+msgstr "equirectangular"
 
 #: ../src/iop/lens.c:2191
 msgid "orthographic"
-msgstr ""
+msgstr "ortogràfica"
 
 #: ../src/iop/lens.c:2192
 msgid "stereographic"
-msgstr ""
+msgstr "estereogràfica"
 
 #: ../src/iop/lens.c:2193
 msgid "equisolid angle"
-msgstr ""
+msgstr "angle equisòlid"
 
 #: ../src/iop/lens.c:2194
 msgid "thoby fish-eye"
-msgstr ""
+msgstr "ull de peix Thoby"
 
 #: ../src/iop/lens.c:2202
 msgid "auto scale"
@@ -5437,7 +5441,7 @@ msgstr "auto escala"
 
 #: ../src/iop/lens.c:2214
 msgid "correct distortions or apply them"
-msgstr ""
+msgstr "corregeix distorsions o aplica-les"
 
 #: ../src/iop/lens.c:2215
 msgid "correct"
@@ -5449,15 +5453,15 @@ msgstr "distorsiona"
 
 #: ../src/iop/lens.c:2223
 msgid "Transversal Chromatic Aberration red"
-msgstr ""
+msgstr "Aberració Cromàtica Transversal (TCA) vermell"
 
 #: ../src/iop/lens.c:2224
 msgid "TCA red"
-msgstr ""
+msgstr "TCA vermell"
 
 #: ../src/iop/lens.c:2229
 msgid "Transversal Chromatic Aberration blue"
-msgstr ""
+msgstr "Aberració Cromàtica Transversal (TCA) blau"
 
 #: ../src/iop/lens.c:2230
 msgid "TCA blue"
@@ -5469,16 +5473,16 @@ msgstr "correccions aplicades:"
 
 #: ../src/iop/lens.c:2238
 msgid "which corrections have actually been done"
-msgstr ""
+msgstr "correccions efectivament aplicades"
 
 #: ../src/iop/letsgofloat.c:48
 msgctxt "modulename"
 msgid "let's go float!"
-msgstr ""
+msgstr "let's go float!"
 
 #: ../src/iop/levels.c:121
 msgid "levels"
-msgstr ""
+msgstr "nivells"
 
 #: ../src/iop/levels.c:551 ../src/iop/tonecurve.c:780
 #: ../src/iop/vignette.c:1185
@@ -5489,30 +5493,32 @@ msgstr "automàtic"
 msgid ""
 "drag handles to set black, gray, and white points.  operates on L channel."
 msgstr ""
+"arrossega els indicadors lliscants per fixar els llindars de negre, gris i "
+"blanc. Opera al canal L"
 
 #: ../src/iop/levels.c:580
 msgid "apply auto levels"
-msgstr ""
+msgstr "aplica nivells automàtics"
 
 #: ../src/iop/levels.c:584
 msgid "pick black point from image"
-msgstr ""
+msgstr "pren de la imatge el llindar de negre"
 
 #: ../src/iop/levels.c:588
 msgid "pick medium gray point from image"
-msgstr ""
+msgstr "pren de la imatge el nivell de gris mitjà"
 
 #: ../src/iop/levels.c:592
 msgid "pick white point from image"
-msgstr ""
+msgstr "pren de la imatge el llindar de blanc"
 
 #: ../src/iop/levels.c:620
 msgid "black percentile"
-msgstr ""
+msgstr "percentil de negre"
 
 #: ../src/iop/levels.c:625
 msgid "gray percentile"
-msgstr ""
+msgstr "percentil de gris"
 
 #: ../src/iop/levels.c:627
 msgid "gray"
@@ -5524,16 +5530,16 @@ msgstr "percentil de blanc"
 
 #: ../src/iop/levels.c:632
 msgid "white"
-msgstr ""
+msgstr "blanc"
 
 #: ../src/iop/lowlight.c:87
 msgid "lowlight vision"
-msgstr ""
+msgstr "visió en llum feble"
 
 #: ../src/iop/lowlight.c:104
 msgctxt "accel"
 msgid "blue shift"
-msgstr ""
+msgstr "desplaçament al blau"
 
 #. Column 1 - "make" of the camera.
 #. * Column 2 - "model" (use the "make" and "model" as provided by DCRaw).
@@ -5553,15 +5559,15 @@ msgstr "Llum del dia"
 
 #: ../src/iop/lowlight.c:349
 msgid "indoor bright"
-msgstr ""
+msgstr "interiors brillant"
 
 #: ../src/iop/lowlight.c:366
 msgid "indoor dim"
-msgstr ""
+msgstr "interiors llum tènue"
 
 #: ../src/iop/lowlight.c:383
 msgid "indoor dark"
-msgstr ""
+msgstr "interiors fosc"
 
 #: ../src/iop/lowlight.c:400
 msgid "twilight"
@@ -5569,15 +5575,15 @@ msgstr "llum crepuscular"
 
 #: ../src/iop/lowlight.c:417
 msgid "night street lit"
-msgstr ""
+msgstr "carrer il·luminat de nit"
 
 #: ../src/iop/lowlight.c:434
 msgid "night street"
-msgstr ""
+msgstr "carrer de nit"
 
 #: ../src/iop/lowlight.c:451
 msgid "night street dark"
-msgstr ""
+msgstr "carrer fosc de nit"
 
 #: ../src/iop/lowlight.c:469
 msgid "night"
@@ -5585,7 +5591,7 @@ msgstr "nocturna"
 
 #: ../src/iop/lowlight.c:619 ../src/iop/lowlight.c:623
 msgid "dark"
-msgstr ""
+msgstr "fosc"
 
 #: ../src/iop/lowlight.c:626 ../src/iop/lowlight.c:630
 msgid "bright"
@@ -5593,23 +5599,23 @@ msgstr "brillant"
 
 #: ../src/iop/lowlight.c:633 ../src/iop/lowlight.c:635
 msgid "day vision"
-msgstr ""
+msgstr "visió diürna"
 
 #: ../src/iop/lowlight.c:637 ../src/iop/lowlight.c:639
 msgid "night vision"
-msgstr ""
+msgstr "visió nocturna"
 
 #: ../src/iop/lowlight.c:824
 msgid "blue shift"
-msgstr ""
+msgstr "desplaçament al blau"
 
 #: ../src/iop/lowlight.c:826
 msgid "blueness in shadows"
-msgstr ""
+msgstr "dominant blava a les ombres"
 
 #: ../src/iop/lowpass.c:118
 msgid "lowpass"
-msgstr ""
+msgstr "passabaix"
 
 #: ../src/iop/lowpass.c:594
 msgid "local contrast mask"
@@ -5621,19 +5627,19 @@ msgstr "ordre del filtre"
 
 #: ../src/iop/lowpass.c:633
 msgid "0th order"
-msgstr ""
+msgstr "ordre 0"
 
 #: ../src/iop/lowpass.c:634
 msgid "1st order"
-msgstr ""
+msgstr "1er ordre"
 
 #: ../src/iop/lowpass.c:635
 msgid "2nd order"
-msgstr ""
+msgstr "2on ordre"
 
 #: ../src/iop/lowpass.c:636
 msgid "filter order of gaussian blur"
-msgstr ""
+msgstr "ordre del filtre de desenfoc gaussià"
 
 #: ../src/iop/lowpass.c:647
 msgctxt "lowpass"
@@ -5642,11 +5648,11 @@ msgstr "brillantor"
 
 #: ../src/iop/lowpass.c:651 ../src/iop/shadhi.c:741
 msgid "soften with"
-msgstr ""
+msgstr "suavitza amb"
 
 #: ../src/iop/lowpass.c:652 ../src/iop/shadhi.c:742
 msgid "gaussian"
-msgstr ""
+msgstr "gaussià"
 
 #: ../src/iop/lowpass.c:653 ../src/iop/shadhi.c:743
 msgid "bilateral filter"
@@ -5654,23 +5660,23 @@ msgstr "filtre bilateral"
 
 #: ../src/iop/lowpass.c:660
 msgid "radius of gaussian/bilateral blur"
-msgstr ""
+msgstr "radi del filtre gaussià/bilateral"
 
 #: ../src/iop/lowpass.c:661
 msgid "contrast of lowpass filter"
-msgstr ""
+msgstr "contrast del filtre passabaix"
 
 #: ../src/iop/lowpass.c:662
 msgid "brightness adjustment of lowpass filter"
-msgstr ""
+msgstr "ajustament de brillantor del filtre passabaix"
 
 #: ../src/iop/lowpass.c:663
 msgid "color saturation of lowpass filter"
-msgstr ""
+msgstr "saturació de color del filtre passabaix"
 
 #: ../src/iop/lowpass.c:664
 msgid "which filter to use for blurring"
-msgstr ""
+msgstr "filtre a emprar pel difuminat"
 
 #: ../src/iop/monochrome.c:75
 msgid "monochrome"
@@ -5678,11 +5684,13 @@ msgstr "monocrom"
 
 #: ../src/iop/monochrome.c:112
 msgid "red filter"
-msgstr ""
+msgstr "filtre vermell"
 
 #: ../src/iop/monochrome.c:541
 msgid "drag and scroll mouse wheel to adjust the virtual color filter"
 msgstr ""
+"arrossegueu i feu scroll amb la roda del ratolí per ajustar el filtre de "
+"color virtual"
 
 #: ../src/iop/monochrome.c:558
 msgid "how much to keep highlights"
@@ -5701,7 +5709,7 @@ msgstr "treu soroll (mitjana no local)"
 #: ../src/iop/nlmeans.c:114
 msgctxt "accel"
 msgid "luma"
-msgstr ""
+msgstr "luma"
 
 #: ../src/iop/nlmeans.c:115
 msgctxt "accel"
@@ -5714,11 +5722,11 @@ msgstr "radi de les mostres a encaixar"
 
 #: ../src/iop/nlmeans.c:723
 msgid "how much to smooth brightness"
-msgstr ""
+msgstr "grau de suavitzat de la lluminositat"
 
 #: ../src/iop/nlmeans.c:724
 msgid "how much to smooth colors"
-msgstr ""
+msgstr "grau de suavitzat dels colors"
 
 #: ../src/iop/overexposed.c:72
 msgid "overexposed"
@@ -5726,7 +5734,7 @@ msgstr "sobreexposat"
 
 #: ../src/iop/profile_gamma.c:65
 msgid "unbreak input profile"
-msgstr ""
+msgstr "repara perfil d'entrada (unbreak i.p.)"
 
 #: ../src/iop/profile_gamma.c:81
 msgctxt "accel"
@@ -5736,7 +5744,7 @@ msgstr "lineal"
 #: ../src/iop/profile_gamma.c:82
 msgctxt "accel"
 msgid "gamma"
-msgstr ""
+msgstr "gamma"
 
 #: ../src/iop/profile_gamma.c:343
 msgid "linear part"
@@ -5744,7 +5752,7 @@ msgstr "part lineal"
 
 #: ../src/iop/profile_gamma.c:344
 msgid "gamma exponential factor"
-msgstr ""
+msgstr "factor exponencial de gamma"
 
 #: ../src/iop/rawdenoise.c:60
 msgid "raw denoise"
@@ -5761,15 +5769,15 @@ msgstr "llindar de soroll"
 
 #: ../src/iop/relight.c:56
 msgid "fill-light 0.25EV with 4 zones"
-msgstr ""
+msgstr "aclareix 0,25 EV amb 4 zones"
 
 #: ../src/iop/relight.c:60
 msgid "fill-shadow -0.25EV with 4 zones"
-msgstr ""
+msgstr "enfosqueix -0,25EV amb 4 zones"
 
 #: ../src/iop/relight.c:94
 msgid "fill light"
-msgstr ""
+msgstr "llum de reemplenat"
 
 #: ../src/iop/relight.c:111
 msgctxt "accel"
@@ -5778,7 +5786,7 @@ msgstr "amplada"
 
 #: ../src/iop/relight.c:385
 msgid "the fill-light in EV"
-msgstr ""
+msgstr "nivell de llum en EV a reomplir"
 
 #: ../src/iop/relight.c:391 ../src/libs/metadata_view.c:103
 msgid "width"
@@ -5787,15 +5795,15 @@ msgstr "amplada"
 #: ../src/iop/relight.c:393
 #, no-c-format
 msgid "width of fill-light area defined in zones"
-msgstr ""
+msgstr "amplada de la part a reomplir de llum definida en zones"
 
 #: ../src/iop/relight.c:407
 msgid "select the center of fill-light"
-msgstr ""
+msgstr "tria el centre del reemplenat amb llum"
 
 #: ../src/iop/relight.c:425
 msgid "toggle tool for picking median lightness in image"
-msgstr ""
+msgstr "pren lluminositat mitjana a partir de la imatge"
 
 #: ../src/iop/rotatepixels.c:76
 msgctxt "modulename"
@@ -5811,6 +5819,8 @@ msgid ""
 "automatic pixel rotation\n"
 "only works for the sensors that need it."
 msgstr ""
+"rotació automàtica de píxels\n"
+"només funciona amb sensors que ho requereixen"
 
 #: ../src/iop/scalepixels.c:53
 msgctxt "modulename"
@@ -5826,6 +5836,8 @@ msgid ""
 "automatic pixel scaling\n"
 "only works for the sensors that need it."
 msgstr ""
+"escalat automàtic de píxels\n"
+"només funciona amb sensors que ho requereixen"
 
 #: ../src/iop/shadhi.c:155
 msgid "shadows and highlights"
@@ -5961,12 +5973,12 @@ msgstr "split toning"
 #: ../src/iop/splittoning.c:101
 msgctxt "accel"
 msgid "pick primary color"
-msgstr ""
+msgstr "pren el color primari"
 
 #: ../src/iop/splittoning.c:103
 msgctxt "accel"
 msgid "pick secondary color"
-msgstr ""
+msgstr "pren el color secundari"
 
 #: ../src/iop/splittoning.c:106
 msgctxt "accel"
@@ -6027,11 +6039,11 @@ msgstr ""
 
 #: ../src/iop/spots.c:54
 msgid "spot removal"
-msgstr ""
+msgstr "elimina punts"
 
 #: ../src/iop/spots.c:552
 msgid "number of strokes:"
-msgstr ""
+msgstr "nombre de traçades:"
 
 #: ../src/iop/spots.c:555
 msgid ""
@@ -6039,6 +6051,11 @@ msgid ""
 "use the mouse wheel to adjust size.\n"
 "right click to remove a shape."
 msgstr ""
+"féu clic en una forma i marqueu sobre la imatge.\n"
+"veureu un punt de destí i un d'origen de la còpia\n"
+"podeu moure tots dos punts arrossegant.\n"
+"empreu la roda del ratolí per variar la mida dels punts o la vora.\n"
+"clic dret per eliminar una forma."
 
 #: ../src/iop/temperature.c:77
 msgctxt "modulename"
@@ -6061,11 +6078,11 @@ msgstr "balanç de blanc de la càmera"
 
 #: ../src/iop/temperature.c:411
 msgid "spot white balance"
-msgstr ""
+msgstr "balanç a partir de selecció"
 
 #: ../src/iop/temperature.c:508
 msgid "failed to read camera white balance information!"
-msgstr ""
+msgstr "no s'ha pogut llegir balanç de blancs de la càmera"
 
 #: ../src/iop/temperature.c:785
 msgid "tint"
@@ -6081,12 +6098,12 @@ msgstr "tria el balanç de blancs predefinit de la càmera"
 
 #: ../src/iop/temperature.c:804
 msgid "finetune"
-msgstr ""
+msgstr "ajustament fi"
 
 #: ../src/iop/temperature.c:805
 #, c-format
 msgid "%.0f mired"
-msgstr ""
+msgstr "%.0f mired"
 
 #: ../src/iop/temperature.c:809
 msgid "fine tune white balance preset"
@@ -6094,7 +6111,7 @@ msgstr "ajustament fi del balanç de blancs predefinit"
 
 #: ../src/iop/tonecurve.c:145
 msgid "tone curve"
-msgstr ""
+msgstr "corba de tons"
 
 #: ../src/iop/tonecurve.c:414
 msgid "low contrast"
@@ -6110,27 +6127,27 @@ msgstr "contrast alt"
 
 #: ../src/iop/tonecurve.c:728
 msgid "  L  "
-msgstr ""
+msgstr "  L  "
 
 #: ../src/iop/tonecurve.c:729
 msgid "tonecurve for L channel"
-msgstr ""
+msgstr "corba pel canal L"
 
 #: ../src/iop/tonecurve.c:730
 msgid "  a  "
-msgstr ""
+msgstr "  a  "
 
 #: ../src/iop/tonecurve.c:731
 msgid "tonecurve for a channel"
-msgstr ""
+msgstr "corba pel canal a"
 
 #: ../src/iop/tonecurve.c:732
 msgid "  b  "
-msgstr ""
+msgstr "  b  "
 
 #: ../src/iop/tonecurve.c:733
 msgid "tonecurve for b channel"
-msgstr ""
+msgstr "corba pel canal b"
 
 #: ../src/iop/tonecurve.c:758
 msgid "double click to reset curve"
@@ -6138,18 +6155,21 @@ msgstr "feu doble clic per reiniciar la corba"
 
 #: ../src/iop/tonecurve.c:779
 msgid "scale chroma"
-msgstr ""
+msgstr "escalat de chroma"
 
 #: ../src/iop/tonecurve.c:781
 msgctxt "scale"
 msgid "manual"
-msgstr ""
+msgstr "manual"
 
 #: ../src/iop/tonecurve.c:783
 msgid ""
 "if set to auto, a and b curves have no effect and are not displayed. chroma "
 "values (a and b) of each pixel are then adjusted based on L curve data."
 msgstr ""
+"si es posa en auto, les corbes a i b no fan cap efecte i no es mostren. Els "
+"valors de chroma (a i b) de cada píxel s'ajusten segons les dades de la "
+"corba L"
 
 #: ../src/iop/tonemap.cc:79
 msgid "tone mapping"
@@ -6163,7 +6183,7 @@ msgstr "compressió de contrast"
 #: ../src/iop/tonemap.cc:99
 msgctxt "accel"
 msgid "spatial extent"
-msgstr ""
+msgstr "extensió espacial"
 
 #: ../src/iop/tonemap.cc:309
 msgid "contrast compression"
@@ -6171,7 +6191,7 @@ msgstr "compressió de contrast"
 
 #: ../src/iop/velvia.c:84
 msgid "velvia"
-msgstr ""
+msgstr "velvia"
 
 #: ../src/iop/velvia.c:101 ../src/iop/vibrance.c:86
 msgctxt "accel"
@@ -6181,7 +6201,7 @@ msgstr "vivesa (vibrance)"
 #: ../src/iop/velvia.c:102
 msgctxt "accel"
 msgid "mid-tones bias"
-msgstr ""
+msgstr "correcció de tons mitjans"
 
 #: ../src/iop/velvia.c:347
 msgid "the strength of saturation boost"
@@ -6189,7 +6209,7 @@ msgstr "la intensitat de l'augment de saturació"
 
 #: ../src/iop/velvia.c:353
 msgid "mid-tones bias"
-msgstr ""
+msgstr "correcció de tons mitjans"
 
 #: ../src/iop/velvia.c:357
 msgid "how much to spare highlights and shadows"
@@ -6197,11 +6217,11 @@ msgstr "grau de preservació de llums i ombres "
 
 #: ../src/iop/vibrance.c:69 ../src/iop/vibrance.c:256
 msgid "vibrance"
-msgstr ""
+msgstr "vivesa (vibrance)"
 
 #: ../src/iop/vibrance.c:258
 msgid "the amount of vibrance"
-msgstr ""
+msgstr "grau de vivesa"
 
 #: ../src/iop/vignette.c:160
 msgid "vignetting"
@@ -6215,35 +6235,35 @@ msgstr "força de la transició"
 #: ../src/iop/vignette.c:180
 msgctxt "accel"
 msgid "horizontal center"
-msgstr ""
+msgstr "centre horitzontal"
 
 #: ../src/iop/vignette.c:181
 msgctxt "accel"
 msgid "vertical center"
-msgstr ""
+msgstr "centre vertical"
 
 #: ../src/iop/vignette.c:182
 msgctxt "accel"
 msgid "shape"
-msgstr ""
+msgstr "forma"
 
 #: ../src/iop/vignette.c:183
 msgctxt "accel"
 msgid "width-height ratio"
-msgstr ""
+msgstr "relació ample-alt"
 
 #: ../src/iop/vignette.c:184
 msgctxt "accel"
 msgid "dithering"
-msgstr ""
+msgstr "tramat (dithering)"
 
 #: ../src/iop/vignette.c:1108
 msgid "lomo"
-msgstr ""
+msgstr "lomo"
 
 #: ../src/iop/vignette.c:1175
 msgid "automatic ratio"
-msgstr ""
+msgstr "relació auto"
 
 #: ../src/iop/vignette.c:1189
 msgid "8-bit output"
@@ -6255,31 +6275,31 @@ msgstr "sortida de 16 bits"
 
 #: ../src/iop/vignette.c:1195
 msgid "fall-off strength"
-msgstr "força de la transició del degradat"
+msgstr "força de la transició"
 
 #: ../src/iop/vignette.c:1198
 msgid "horizontal center"
-msgstr ""
+msgstr "centre horitzontal"
 
 #: ../src/iop/vignette.c:1199
 msgid "vertical center"
-msgstr ""
+msgstr "centre vertical"
 
 #: ../src/iop/vignette.c:1200
 msgid "shape"
-msgstr ""
+msgstr "forma"
 
 #: ../src/iop/vignette.c:1201
 msgid "width/height ratio"
-msgstr ""
+msgstr "relació ample/alt"
 
 #: ../src/iop/vignette.c:1221
 msgid "the radii scale of vignette for start of fall-off"
-msgstr ""
+msgstr "escala del radi de vinyetatge per l'inici del degradat"
 
 #: ../src/iop/vignette.c:1222
 msgid "the radii scale of vignette for end of fall-off"
-msgstr ""
+msgstr "escala del radi de vinyetatge pel final del degradat"
 
 #: ../src/iop/vignette.c:1223
 msgid "strength of effect on brightness"
@@ -6291,11 +6311,11 @@ msgstr "intensitat de l'efecte en la saturació"
 
 #: ../src/iop/vignette.c:1225
 msgid "horizontal offset of center of the effect"
-msgstr ""
+msgstr "decalatge horitzontal del centre de l'efecte "
 
 #: ../src/iop/vignette.c:1226
 msgid "vertical offset of center of the effect"
-msgstr ""
+msgstr "decalatge vertical del centre de l'efecte"
 
 #: ../src/iop/vignette.c:1227
 msgid ""
@@ -6304,32 +6324,36 @@ msgid ""
 "1 produces a circle or ellipse\n"
 "2 produces a diamond"
 msgstr ""
+"factor de forma\n"
+"0 pordueix un rectangle\n"
+"1 produeix un cercle o el·lipse\n"
+"2 produeix forma de diamant"
 
 #: ../src/iop/vignette.c:1228
 msgid "enable to have the ratio automatically follow the image size"
-msgstr ""
+msgstr "activeu-ho perquè la relació s'adapti sola a la mida de la imatge"
 
 #: ../src/iop/vignette.c:1229
 msgid "width-to-height ratio"
-msgstr ""
+msgstr "relació ample/alt"
 
 #: ../src/iop/vignette.c:1230
 msgid "add some level of random noise to prevent banding"
-msgstr ""
+msgstr "afegeix soroll aleatori per evitar aparició de bandes"
 
 #: ../src/iop/watermark.c:181
 msgid "watermark"
-msgstr ""
+msgstr "marca d'aigua"
 
 #: ../src/iop/watermark.c:202
 msgctxt "accel"
 msgid "refresh"
-msgstr ""
+msgstr "refresca"
 
 #: ../src/iop/watermark.c:203
 msgctxt "accel"
 msgid "opacity"
-msgstr ""
+msgstr "opacitat"
 
 #: ../src/iop/watermark.c:205
 msgctxt "accel"
@@ -6339,20 +6363,20 @@ msgstr "gir"
 #: ../src/iop/watermark.c:206
 msgctxt "accel"
 msgid "x offset"
-msgstr ""
+msgstr "decalatge x"
 
 #: ../src/iop/watermark.c:207
 msgctxt "accel"
 msgid "y offset"
-msgstr ""
+msgstr "decalatge y"
 
 #: ../src/iop/watermark.c:1096
 msgid "marker"
-msgstr ""
+msgstr "plantilla"
 
 #: ../src/iop/watermark.c:1097
 msgid "alignment"
-msgstr ""
+msgstr "alineació"
 
 #: ../src/iop/watermark.c:1123
 msgctxt "size"
@@ -6373,28 +6397,28 @@ msgstr "escala segons"
 
 #: ../src/iop/watermark.c:1129
 msgid "size is relative to"
-msgstr ""
+msgstr "la mida és en relació a"
 
 #: ../src/iop/watermark.c:1148
 msgid "x offset"
-msgstr ""
+msgstr "decalatge x"
 
 #: ../src/iop/watermark.c:1151
 msgid "y offset"
-msgstr ""
+msgstr "decalatge y"
 
 #. Let's add some tooltips and hook up some signals...
 #: ../src/iop/watermark.c:1157
 msgid "the opacity of the watermark"
-msgstr ""
+msgstr "l'opacitat de la marca d'aigua"
 
 #: ../src/iop/watermark.c:1158
 msgid "the scale of the watermark"
-msgstr ""
+msgstr "l'escala de la marca d'aigua"
 
 #: ../src/iop/watermark.c:1159
 msgid "the rotation of the watermark"
-msgstr "orientació de la marca d'aigua"
+msgstr "l'orientació de la marca d'aigua"
 
 #. Probably same as above:
 #: ../src/iop/wb_presets.c:47
