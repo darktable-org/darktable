@@ -677,7 +677,9 @@ _folder_tree ()
     char *value;
     GtkTreeIter current, iter;
     GtkTreePath *root;
-    char **pch = g_strsplit((char *)sqlite3_column_text(stmt, 0), "/", -1);
+    char *folder = (char*)sqlite3_column_text(stmt, 0);
+    if(folder == NULL) continue; // safeguard against degenerated db entries
+    char **pch = g_strsplit(folder, "/", -1);
 #if 0
     char *external = g_strdup((char *)sqlite3_column_text(stmt, 1));
 
