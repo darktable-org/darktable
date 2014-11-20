@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2014-11-17 19:49+0100\n"
-"PO-Revision-Date: 2014-11-19 20:29+0100\n"
+"PO-Revision-Date: 2014-11-20 21:23+0100\n"
 "Last-Translator: Ger Siemerink <g.siemerink@gmail.com>\n"
 "Language-Team: Ger Siemerink <g.siemerink@gmail.com>\n"
 "Language: nl_NL\n"
@@ -6024,7 +6024,7 @@ msgstr ""
 
 #: ../src/iop/spots.c:54
 msgid "spot removal"
-msgstr "spots verwijderen"
+msgstr "vlekken verwijderen"
 
 #: ../src/iop/spots.c:552
 msgid "number of strokes:"
