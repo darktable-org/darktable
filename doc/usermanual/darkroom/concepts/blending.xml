@@ -28,8 +28,8 @@
       Each blend mode is further controlled by a parameter called opacity, which can have a
       value between 0% and 100% and defines how input and output image contribute to the final
       result. Typically an opacity value of 0% gives as a result an image that is identical to
-      the input image&nbsp;&ndash; the module remains without effect. An opacity value of 100% delivers the
-      maximum effect of the module with the blend mode chosen.
+      the input image&nbsp;&ndash; the module remains without effect. An opacity value of 100%
+      delivers the maximum effect of the module with the blend mode chosen.
     </para>
 
     <para>
@@ -84,9 +84,9 @@
       <sect5>
         <title>uniformily</title>
         <para>
-          reprocessing takes place with the chosen blend mode and opacity value&nbsp;&ndash; the same for
-          all pixels. Additional controls to select blend mode and opacity value are displayed.
-          The default blend mode is <quote>normal</quote> with an opacity of 100%.
+          reprocessing takes place with the chosen blend mode and opacity value&nbsp;&ndash; the
+          same for all pixels. Additional controls to select blend mode and opacity value are
+          displayed. The default blend mode is <quote>normal</quote> with an opacity of 100%.
         </para>
       </sect5>
 
@@ -162,8 +162,8 @@
         <para>
           Blurring the mask creates a softer transition between blended and unblended parts of
           an image and avoids artifacts. The mask blur slider controls the radius of a gaussian
-          blur applied to the final blend mask. The higher the radius, the stronger the blur -
-          or set to 0 for an unblurred mask.
+          blur applied to the final blend mask. The higher the radius, the stronger the
+          blur&nbsp;&ndash; or set to 0 for an unblurred mask.
         </para>
       </sect5>
 
@@ -173,9 +173,9 @@
           Sometimes it is useful to visualize the module's effect without the mask taking
           action. You can do so by clicking on the
           <inlinegraphic fileref="&icon_module_eye;" scalefit="1" width="2%" align="center"/>
-          symbol, which will temporarily deactivate the mask&nbsp;&ndash; the selected blend mode and
-          opacity remain in effect. Switch this button on and off to see if the mask is acting
-          on the image as intended.
+          symbol, which will temporarily deactivate the mask&nbsp;&ndash; the selected blend
+          mode and opacity remain in effect. Switch this button on and off to see if the mask is
+          acting on the image as intended.
         </para>
       </sect5>
 

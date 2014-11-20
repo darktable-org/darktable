@@ -349,7 +349,7 @@
     <sect5>
       <title>opacity</title>
       <para>
-        Set the opacity of the render of watermark.
+        Set the opacity of the watermark's rendering.
       </para>
     </sect5>
 
@@ -357,6 +357,23 @@
       <title>scale</title>
       <para>
         Scale the watermark pixel-independently.
+      </para>
+    </sect5>
+
+    <sect5>
+      <title>rotate</title>
+      <para>
+        Set the rotation angle of the watermark.
+      </para>
+    </sect5>
+
+    <sect5>
+      <title>scale on</title>
+      <para>
+        Defines the reference for the scale parameter. The default setting <quote>image</quote>
+        scales the watermark relative to the horizontal image size. Alternatively you can scale
+        the watermark relative to the <quote>larger border</quote> and <quote>smaller border</quote>,
+        respectively.
       </para>
     </sect5>
 
@@ -370,14 +387,14 @@
     <sect5>
       <title>x offset</title>
       <para>
-        Pixel-independent offset relative to the choice of alignment on x-axis.
+        Pixel-independent offset relative to the choice of alignment on the x-axis.
       </para>
     </sect5>
 
     <sect5>
       <title>y offset</title>
       <para>
-        Pixel-independent offset relative to the choice of alignment on y-axis.
+        Pixel-independent offset relative to the choice of alignment on the y-axis.
       </para>
     </sect5>
 

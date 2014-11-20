@@ -33,6 +33,8 @@ typedef enum dt_dev_pixelpipe_type_t
 }
 dt_dev_pixelpipe_type_t;
 
+typedef void dt_iop_params_t;
+
 #ifdef HAVE_GEGL
 #include "develop/pixelpipe_gegl.h"
 #else

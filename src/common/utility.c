@@ -41,7 +41,7 @@ gchar *dt_util_dstrcat(gchar *str,const gchar *format, ... )
   va_list args;
   gchar *ns;
   va_start(args, format);
-  int clen = str ? strlen(str) : 0;
+  size_t clen = str ? strlen(str) : 0;
   int alen = g_vsnprintf(NULL, 0, format, args);
   int nsize = alen + clen + 1;
 
@@ -108,16 +108,17 @@ gchar* dt_util_str_replace(const gchar* string, const gchar* pattern, const gcha
   return nstring;
 }
 
-gchar* dt_util_glist_to_str(const gchar* separator, GList * items, const unsigned int count)
+gchar* dt_util_glist_to_str(const gchar* separator, GList * items)
 {
-  if(count == 0)
+  if(items == NULL)
     return NULL;
 
+  const unsigned int count = g_list_length(items);
   gchar *result = NULL;
 
   // add the entries to an char* array
   items = g_list_first(items);
-  gchar** strings = g_malloc_n(count+1, sizeof(gchar *));
+  gchar** strings = g_malloc0_n(count+1, sizeof(gchar *));
   if(items != NULL)
   {
     int i = 0;
@@ -126,32 +127,49 @@ gchar* dt_util_glist_to_str(const gchar* separator, GList * items, const unsigne
       strings[i++] = items->data;
     }
     while((items=g_list_next(items)) != NULL);
-    strings[i] = NULL;
   }
 
   // join them into a single string
   result = g_strjoinv(separator, strings);
 
-  // free the GList and the array
-  items = g_list_first(items);
-  if(items != NULL)
-  {
-    do
-    {
-      g_free(items->data);
-    }
-    while((items=g_list_next(items)) != NULL);
-  }
-  g_list_free(items);
-  if(strings != NULL)
-    g_free(strings);
+  // free the array
+  g_free(strings);
 
   return result;
 }
 
+GList* dt_util_glist_uniq(GList * items)
+{
+  if(!items) return NULL;
+
+  gchar *last = NULL;
+  GList *last_item = NULL;
+
+  items = g_list_sort(items, (GCompareFunc)g_strcmp0);
+  GList *iter = items;
+  while(iter)
+  {
+    gchar *value = (gchar*)iter->data;
+    if(!g_strcmp0(last, value))
+    {
+      g_free(value);
+      items = g_list_delete_link(items, iter);
+      iter = last_item;
+    }
+    else
+    {
+      last = value;
+      last_item = iter;
+    }
+    iter = g_list_next(iter);
+  }
+  return items;
+}
+
+
 gchar* dt_util_fix_path(const gchar* path)
 {
-  if (path == NULL || strlen(path) == 0)
+  if (path == NULL || *path == '\0')
   {
     return NULL;
   }
@@ -161,7 +179,7 @@ gchar* dt_util_fix_path(const gchar* path)
   /* check if path has a prepended tilde */
   if (path[0] == '~')
   {
-    int len    = strlen(path);
+    size_t len = strlen(path);
     char* user = NULL;
     int off    = 1;
 
@@ -274,6 +292,20 @@ gboolean dt_util_is_dir_empty(const char *dirname)
     return TRUE;
   else
     return FALSE;
+}
+
+// days are in [1..31], months are in [0..11], see "man localtime"
+dt_logo_season_t get_logo_season(void)
+{
+  time_t now;
+  time(&now);
+  struct tm lt;
+  localtime_r(&now, &lt);
+  if( (lt.tm_mon == 9 && lt.tm_mday == 31) || (lt.tm_mon == 10 && lt.tm_mday == 1))
+    return DT_LOGO_SEASON_HALLOWEEN;
+  if(lt.tm_mon == 11 && lt.tm_mday >= 24)
+    return DT_LOGO_SEASON_XMAS;
+  return DT_LOGO_SEASON_NONE;
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

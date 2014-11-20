@@ -1,0 +1,94 @@
+<!DOCTYPE sect3 PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
+               "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd" [
+		<!ENTITY % darktable_dtd SYSTEM "../../../dtd/darktable.dtd">
+		%darktable_dtd;
+		]>
+<sect3 status="final" id="defringe">
+
+  <title>Defringe</title>
+
+  <indexterm>
+    <primary>modules</primary>
+    <secondary>defringe</secondary>
+  </indexterm>
+
+  <indexterm>
+    <primary>defringe</primary>
+  </indexterm>
+
+  <indexterm>
+    <primary>purple fringing</primary>
+  </indexterm>
+
+  <sect4>
+
+    <title>Overview</title>
+
+    <informaltable frame="none">
+      <tgroup cols="2" colsep="0" rowsep="0">
+        <colspec colwidth="6*"/>
+        <colspec colwidth="4*"/>
+        <tbody>
+          <row>
+            <entry>
+              This module is designed to remove purple or any other color of fringing which
+              often results from Longitudinal Chromatic Abberations (LCA), also known as Axial
+              Chromatic Abberations.
+            </entry>
+            <entry>
+              <graphic fileref="darkroom/modules/images/defringe.png" scalefit="1" width="80%" align="center" />
+            </entry>
+          </row>
+        </tbody>
+      </tgroup>
+    </informaltable>
+
+  </sect4>
+
+  <sect4>
+
+    <title>Usage</title>
+
+    <para>
+      This module helps removing fringe via edge-detection. Where pixels are detected as a
+      fringe, it rebuilds the color from lower-saturated neighboring pixels.
+    </para>
+
+    <sect5>
+      <title>operation mode</title>
+      <para>
+        Set the operation mode for detecting fringes. <quote>global average</quote> is usually
+        the fastest but might show slightly incorrect previews in high magnification. It might
+        also protect the wrong regions of color too much or too little by comparison with local
+        averaging. <quote>local average</quote> is slower because it computes local color
+        references for every pixel, which might protect color better than global average and
+        allows for rebuilding color where actually required. The <quote>static</quote> method
+        does not use a color reference but directly uses the threshold as given by the user.
+      </para>
+    </sect5>
+
+    <sect5>
+      <title>edge detection radius</title>
+      <para>
+        Set the spatial extent of the gaussian blur used for an edge detection. The algorithm
+        uses the difference of gaussian-blurred and original image as an indicator for edges (a
+        special case of the <quote>difference of gaussians</quote> edge detection). Try
+        increasing this value if you either want a stronger detection of the fringes or the
+        thickness of the fringe edges is too high.
+      </para>
+    </sect5>
+
+    <sect5>
+      <title>threshold</title>
+      <para>
+        Sets the threshold over which the edge of a pixel is counted as a <quote>fringe</quote>.
+        The colors of the affected pixels will be rebuild from neighboring pixels. Try lowering
+        this value if there is not enough fringe detected and try increasing this value if too
+        many pixels are desaturated. You may additionally want to play around with the edge
+        detection radius.
+      </para>
+    </sect5>
+
+  </sect4>
+
+</sect3>

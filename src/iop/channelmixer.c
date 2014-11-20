@@ -423,7 +423,7 @@ void init(dt_iop_module_t *module)
   module->params = malloc(sizeof(dt_iop_channelmixer_params_t));
   module->default_params = malloc(sizeof(dt_iop_channelmixer_params_t));
   module->default_enabled = 0;
-  module->priority = 824; // module order created by iop_dependencies.py, do not edit!
+  module->priority = 833; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_channelmixer_params_t);
   module->gui_data = NULL;
   dt_iop_channelmixer_params_t tmp = (dt_iop_channelmixer_params_t)
@@ -461,7 +461,7 @@ void gui_init(struct dt_iop_module_t *self)
   dt_bauhaus_combobox_add(g->combo1,_("red"));
   dt_bauhaus_combobox_add(g->combo1,_("green"));
   dt_bauhaus_combobox_add(g->combo1,_("blue"));
-  dt_bauhaus_combobox_add(g->combo1,_("gray"));
+  dt_bauhaus_combobox_add(g->combo1,C_("channelmixer", "gray"));
   dt_bauhaus_combobox_set(g->combo1, CHANNEL_RED );
 
   g_signal_connect (G_OBJECT (g->combo1), "value-changed",

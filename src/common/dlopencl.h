@@ -27,14 +27,6 @@
 
 #include <CL/cl.h>
 
-#if defined(WIN32)
-#define DT_OPENCL_LIBRARY "OpenCL"
-#elif defined(__APPLE__)
-#define DT_OPENCL_LIBRARY "/System/Library/Frameworks/OpenCL.framework/Versions/Current/OpenCL"
-#else
-#define DT_OPENCL_LIBRARY "libOpenCL"
-#endif
-
 typedef cl_int (* dt_clGetPlatformIDs_t)(cl_uint, cl_platform_id *, cl_uint *);
 typedef cl_int (* dt_clGetPlatformInfo_t)(cl_platform_id, cl_platform_info, size_t, void *, size_t *);
 typedef cl_int (* dt_clGetDeviceIDs_t)(cl_platform_id, cl_device_type, cl_uint, cl_device_id *, cl_uint *);
@@ -201,7 +193,7 @@ dt_dlopencl_t;
 void dt_dlopencl_noop(void);
 
 /* dynamically load OpenCL library and bind needed functions */
-int dt_dlopencl_init(const char *, dt_dlopencl_t **);
+const char * dt_dlopencl_init(const char *, dt_dlopencl_t **);
 
 #endif
 #endif

@@ -263,13 +263,119 @@ static void wavelet_denoise(const float *const in, float *const out, const dt_io
   free(fimg);
 }
 
+static uint8_t
+FCxtrans(const int row, const int col,
+         const dt_iop_roi_t *const roi,
+         uint8_t (*const xtrans)[6])
+{
+  return xtrans[(row+roi->y) % 6][(col+roi->x) % 6];
+}
+
+static void wavelet_denoise_xtrans(const float *const in, float *out, const dt_iop_roi_t *const roi, float threshold, uint8_t (*const xtrans)[6])
+{
+  // note that these constants are the same for X-Trans and Bayer, as
+  // they are proportional to image detail on each channel, not the
+  // sensor pattern
+  static const float noise[] =
+    { 0.8002,0.2735,0.1202,0.0585,0.0291,0.0152,0.0080,0.0044 };
+
+  const int width  = roi->width;
+  const int height = roi->height;
+  const size_t size = (size_t)width*height;
+  float *const fimg = malloc((size_t)size*4 * sizeof(float));
+
+  for (int c=0; c<3; c++)
+  {
+    memset(fimg,0,size*sizeof(float));
+
+#ifdef _OPENMP
+    #pragma omp parallel for default(none) shared(c) schedule(static)
+#endif
+    for (int row=(c!=1); row<height-1; row++)
+    {
+      int col=(c!=1);
+      const float *inp = in + (size_t)row*width + col;
+      float *fimgp = fimg + size + (size_t)row*width + col;
+      for (; col<width-1; col++, inp++, fimgp++)
+        if (FCxtrans(row,col,roi,xtrans) == c)
+        {
+          float d = sqrt(MAX(0, *inp));
+          *fimgp = d;
+          // cheap nearest-neighbor interpolate
+          if (c == 1)
+            fimgp[1] = fimgp[width] = d;
+          else
+          {
+            fimgp[-width-1] = fimgp[-width] = fimgp[-width+1] =
+              fimgp[-1] = fimgp[1] =
+              fimgp[width-1] = fimgp[width] = fimgp[width+1] = d;
+          }
+        }
+    }
+
+    int lastpass;
+
+    for (int lev=0; lev < 5; lev++)
+    {
+      const size_t pass1 = size*((lev & 1)*2 + 1);
+      const size_t pass2 = 2*size;
+      const size_t pass3 = 4*size - pass1;
+
+      // filter horizontally and transpose
+#ifdef _OPENMP
+      #pragma omp parallel for default(none) shared(lev) schedule(static)
+#endif
+      for (int col=0; col < width; col++)
+        hat_transform(fimg+pass2+(size_t)col*height, fimg+pass1+col, width, height, 1 << lev);
+      // filter vertically and transpose back
+#ifdef _OPENMP
+      #pragma omp parallel for default(none) shared(lev) schedule(static)
+#endif
+      for (int row=0; row < height; row++)
+        hat_transform(fimg+pass3+(size_t)row*width, fimg+pass2+row, height, width, 1 << lev);
+
+      const float thold = threshold * noise[lev];
+#ifdef _OPENMP
+      #pragma omp parallel for default(none) shared(lev)
+#endif
+      for (size_t i=0; i < size; i++)
+      {
+        float *fimgp = fimg + i;
+        const float diff = fimgp[pass1] - fimgp[pass3];
+        fimgp[0] += copysignf(fmaxf(fabsf(diff) - thold,0.0f),diff);
+      }
+
+      lastpass = pass3;
+    }
+
+#ifdef _OPENMP
+    #pragma omp parallel for default(none) shared(c, lastpass, out) schedule(static)
+#endif
+    for (int row=0; row<height; row++)
+    {
+      const float *fimgp = fimg + (size_t)row*width;
+      float *outp = out + (size_t)row*width;
+      for (int col = 0; col<width; col++, outp++, fimgp++)
+        if (FCxtrans(row,col,roi,xtrans) == c)
+        {
+          float d = fimgp[0] + fimgp[lastpass];
+          *outp = d * d;
+        }
+    }
+  }
+
+  free(fimg);
+}
+
 void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoid, void *ovoid, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
 {
   dt_iop_rawdenoise_data_t *d = (dt_iop_rawdenoise_data_t *)piece->data;
-  if (d->threshold > 0.0)
-    wavelet_denoise(ivoid, ovoid, roi_in, d->threshold, dt_image_flipped_filter(&piece->pipe->image));
+
+  uint32_t filters = dt_image_filter(&piece->pipe->image);
+  if (filters != 9u)
+    wavelet_denoise(ivoid, ovoid, roi_in, d->threshold, filters);
   else
-    memcpy(ovoid, ivoid, (size_t)roi_out->width * roi_out->height * sizeof(float));
+    wavelet_denoise_xtrans(ivoid, ovoid, roi_in, d->threshold, self->dev->image_storage.xtrans);
 }
 
 void reload_defaults(dt_iop_module_t *module)
@@ -277,15 +383,21 @@ void reload_defaults(dt_iop_module_t *module)
   // init defaults:
   dt_iop_rawdenoise_params_t tmp = (dt_iop_rawdenoise_params_t)
   {
-    0.01
+    .threshold = 0.01
   };
-  memcpy(module->params, &tmp, sizeof(dt_iop_rawdenoise_params_t));
-  memcpy(module->default_params, &tmp, sizeof(dt_iop_rawdenoise_params_t));
+
+  // we might be called from presets update infrastructure => there is no image
+  if(!module->dev) goto end;
 
   // can't be switched on for non-raw images:
   if(dt_image_is_raw(&module->dev->image_storage)) module->hide_enable_button = 0;
   else module->hide_enable_button = 1;
   module->default_enabled = 0;
+
+end:
+  memcpy(module->params, &tmp, sizeof(dt_iop_rawdenoise_params_t));
+  memcpy(module->default_params, &tmp, sizeof(dt_iop_rawdenoise_params_t));
+
 }
 
 void init(dt_iop_module_t *module)
@@ -296,7 +408,7 @@ void init(dt_iop_module_t *module)
   module->default_enabled = 0;
 
   // raw denoise must come just before demosaicing.
-  module->priority = 105; // module order created by iop_dependencies.py, do not edit!
+  module->priority = 116; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_rawdenoise_params_t);
   module->gui_data = NULL;
 }
@@ -315,9 +427,11 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *params, dt_de
 {
   dt_iop_rawdenoise_params_t *p = (dt_iop_rawdenoise_params_t *)params;
   dt_iop_rawdenoise_data_t *d = (dt_iop_rawdenoise_data_t *)piece->data;
-  if (!(pipe->image.flags & DT_IMAGE_RAW) || dt_dev_pixelpipe_uses_downsampled_input(pipe))
-    piece->enabled = 0;
+
   d->threshold = p->threshold;
+
+  if (!(pipe->image.flags & DT_IMAGE_RAW) || dt_dev_pixelpipe_uses_downsampled_input(pipe) || !(d->threshold > 0.0f))
+    piece->enabled = 0;
 }
 
 void init_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)

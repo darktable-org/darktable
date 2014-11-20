@@ -2374,10 +2374,8 @@ static int dt_brush_get_source_area(dt_iop_module_t *module, dt_dev_pixelpipe_io
   int points_count,border_count;
   if (!_brush_get_points_border(module->dev,form,module->priority,piece->pipe,&points,&points_count,&border,&border_count,NULL,NULL,1))
   {
-    if(points)
-      free(points);
-    if(border)
-      free(border);
+    free(points);
+    free(border);
     return 0;
   }
 
@@ -2424,10 +2422,8 @@ static int dt_brush_get_area(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *pi
   int points_count,border_count;
   if (!_brush_get_points_border(module->dev,form,module->priority,piece->pipe,&points,&points_count,&border,&border_count,NULL,NULL,0))
   {
-    if(points)
-      free(points);
-    if(border)
-      free(border);
+    free(points);
+    free(border);
     return 0;
   }
 
@@ -2501,12 +2497,9 @@ static int dt_brush_get_mask(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *pi
   int points_count,border_count,payload_count;
   if (!_brush_get_points_border(module->dev,form,module->priority,piece->pipe,&points,&points_count,&border,&border_count,&payload,&payload_count,0))
   {
-    if(points)
-      free(points);
-    if(border)
-      free(border);
-    if(payload)
-      free(payload);
+    free(points);
+    free(border);
+    free(payload);
     return 0;
   }
 
@@ -2630,12 +2623,9 @@ static int dt_brush_get_mask_roi(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t
   int points_count, border_count, payload_count;
   if (!_brush_get_points_border(module->dev,form,module->priority,piece->pipe,&points,&points_count,&border,&border_count,&payload,&payload_count,0))
   {
-    if(points)
-      free(points);
-    if(border)
-      free(border);
-    if(payload)
-      free(payload);
+    free(points);
+    free(border);
+    free(payload);
     return 0;
   }
 

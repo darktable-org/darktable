@@ -113,10 +113,10 @@ _gcw_store_callback (GtkDarktableButton *button, gpointer user_data)
   _camera_gconf_widget_t *gcw=(_camera_gconf_widget_t*)user_data;
   gchar *configstring=g_object_get_data(G_OBJECT(gcw->widget),"gconf:string");
   const gchar *newvalue=gtk_entry_get_text( GTK_ENTRY( gcw->entry ));
-  if(newvalue && strlen(newvalue) > 0 )
+  if(newvalue && *newvalue)
   {
     dt_conf_set_string(configstring,newvalue);
-    if(gcw->value) g_free(gcw->value);
+    g_free(gcw->value);
     gcw->value=g_strdup(newvalue);
   }
 }
@@ -130,8 +130,7 @@ _gcw_reset_callback (GtkDarktableButton *button, gpointer user_data)
   if(value)
   {
     gtk_entry_set_text( GTK_ENTRY( gcw->entry ), value);
-    if(gcw->value)
-      g_free(gcw->value);
+    g_free(gcw->value);
     gcw->value = value;
   }
 }
@@ -141,8 +140,7 @@ static void
 _entry_text_changed(_camera_gconf_widget_t *gcw,GtkEntryBuffer *entrybuffer)
 {
   const gchar *value=gtk_entry_buffer_get_text(entrybuffer);
-  if(gcw->value)
-    g_free(gcw->value);
+  g_free(gcw->value);
   gcw->value=g_strdup(value);
 
 }
@@ -174,8 +172,7 @@ static _camera_gconf_widget_t *_camera_import_gconf_widget(_camera_import_dialog
   if(value)
   {
     gtk_entry_set_text( GTK_ENTRY( gcw->entry ), value);
-    if(gcw->value)
-      g_free(gcw->value);
+    g_free(gcw->value);
     gcw->value = value;
   }
 
@@ -395,9 +392,9 @@ static void _control_status(dt_camctl_status_t status,void *user_data)
   }
 }
 
-static void _preview_job_state_changed(dt_job_t *job,int state)
+static void _preview_job_state_changed(dt_job_t *job, dt_job_state_t state)
 {
-  _camera_import_dialog_t *data=(_camera_import_dialog_t*)job->user_data;
+  _camera_import_dialog_t *data = dt_camera_previews_job_get_data(job);
   /* store job reference if needed for cancellation */
   if(  state == DT_JOB_STATE_RUNNING )
     data->preview_job = job;
@@ -452,10 +449,12 @@ static void _camera_import_dialog_run(_camera_import_dialog_t *data)
     listener.control_status=_control_status;
     listener.camera_storage_image_filename=_camera_storage_image_filename;
 
-    dt_job_t job;
-    dt_camera_get_previews_job_init(&job,data->params->camera, &listener, CAMCTL_IMAGE_PREVIEW_DATA);
-    dt_control_job_set_state_callback(&job,_preview_job_state_changed,data);
-    dt_control_add_job(darktable.control, &job);
+    dt_job_t *job = dt_camera_get_previews_job_create(data->params->camera, &listener, CAMCTL_IMAGE_PREVIEW_DATA, data);
+    if(job)
+    {
+      dt_control_job_set_state_callback(job,_preview_job_state_changed);
+      dt_control_add_job(darktable.control, DT_JOB_QUEUE_SYSTEM_FG, job);
+    }
   }
   else
     return;
@@ -473,8 +472,7 @@ static void _camera_import_dialog_run(_camera_import_dialog_t *data)
       all_good=TRUE;
       GtkTreeSelection *selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(gtk_bin_get_child(GTK_BIN(data->import.treeview))));
       // Now build up result from store into GList **result
-      if(data->params->result)
-        g_list_free(data->params->result);
+      g_list_free(data->params->result);
       data->params->result=NULL;
       GtkTreeModel *model=GTK_TREE_MODEL(data->store);
       GList *sp= gtk_tree_selection_get_selected_rows(selection,&model);

@@ -19,34 +19,34 @@
 #include "control/jobs/develop_jobs.h"
 #include "control/jobs/control_jobs.h"
 
-int32_t dt_dev_process_preview_job_run(dt_job_t *job)
+static int32_t dt_dev_process_preview_job_run(dt_job_t *job)
 {
-  dt_dev_process_t *t = (dt_dev_process_t *)job->param;
-  dt_dev_process_preview_job(t->dev);
+  dt_develop_t *dev = dt_control_job_get_params(job);
+  dt_dev_process_preview_job(dev);
   return 0;
 }
 
-void dt_dev_process_preview_job_init(dt_job_t *job, dt_develop_t *dev)
+dt_job_t * dt_dev_process_preview_job_create(dt_develop_t *dev)
 {
-  dt_control_job_init(job, "develop process preview");
-  job->execute = &dt_dev_process_preview_job_run;
-  dt_dev_process_t *t = (dt_dev_process_t *)job->param;
-  t->dev = dev;
+  dt_job_t *job = dt_control_job_create(&dt_dev_process_preview_job_run, "develop process preview");
+  if(!job) return NULL;
+  dt_control_job_set_params(job, dev);
+  return job;
 }
 
-int32_t dt_dev_process_image_job_run(dt_job_t *job)
+static int32_t dt_dev_process_image_job_run(dt_job_t *job)
 {
-  dt_dev_process_t *t = (dt_dev_process_t *)job->param;
-  dt_dev_process_image_job(t->dev);
+  dt_develop_t *dev = dt_control_job_get_params(job);
+  dt_dev_process_image_job(dev);
   return 0;
 }
 
-void dt_dev_process_image_job_init(dt_job_t *job, dt_develop_t *dev)
+dt_job_t * dt_dev_process_image_job_create(dt_develop_t *dev)
 {
-  dt_control_job_init(job, "develop process image");
-  job->execute = &dt_dev_process_image_job_run;
-  dt_dev_process_t *t = (dt_dev_process_t *)job->param;
-  t->dev = dev;
+  dt_job_t *job = dt_control_job_create(&dt_dev_process_image_job_run, "develop process image");
+  if(!job) return NULL;
+  dt_control_job_set_params(job, dev);
+  return job;
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

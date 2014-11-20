@@ -674,7 +674,7 @@ void init(dt_iop_module_t *module)
   module->params = malloc(sizeof(dt_iop_atrous_params_t));
   module->default_params = malloc(sizeof(dt_iop_atrous_params_t));
   module->default_enabled = 0;
-  module->priority = 526; // module order created by iop_dependencies.py, do not edit!
+  module->priority = 550; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_atrous_params_t);
   module->gui_data = NULL;
   dt_iop_atrous_params_t tmp;
@@ -781,21 +781,7 @@ void init_presets (dt_iop_module_so_t *self)
     p.y[atrous_Lt][k] = 0.0f;
     p.y[atrous_ct][k] = 0.0f;
   }
-  dt_gui_presets_add_generic(_("enhance coarse"), self->op, self->version(), &p, sizeof(p), 1);
-  for(int k=0; k<BANDS; k++)
-  {
-    p.x[atrous_L][k] = k/(BANDS-1.0);
-    p.x[atrous_c][k] = k/(BANDS-1.0);
-    p.x[atrous_s][k] = k/(BANDS-1.0);
-    p.y[atrous_L][k] = .5f+.5f*k/(float)BANDS;
-    p.y[atrous_c][k] = .5f;
-    p.y[atrous_s][k] = .5f;
-    p.x[atrous_Lt][k] = k/(BANDS-1.0);
-    p.x[atrous_ct][k] = k/(BANDS-1.0);
-    p.y[atrous_Lt][k] = .4f*k/(float)BANDS;
-    p.y[atrous_ct][k] = .6f*k/(float)BANDS;
-  }
-  dt_gui_presets_add_generic(_("sharpen and denoise (strong)"), self->op, self->version(), &p, sizeof(p), 1);
+  dt_gui_presets_add_generic(C_("eq_preset", "coarse"), self->op, self->version(), &p, sizeof(p), 1);
   for(int k=0; k<BANDS; k++)
   {
     p.x[atrous_L][k] = k/(BANDS-1.0);
@@ -809,21 +795,7 @@ void init_presets (dt_iop_module_so_t *self)
     p.y[atrous_Lt][k] = .2f*k/(float)BANDS;
     p.y[atrous_ct][k] = .3f*k/(float)BANDS;
   }
-  dt_gui_presets_add_generic(_("sharpen and denoise"), self->op, self->version(), &p, sizeof(p), 1);
-  for(int k=0; k<BANDS; k++)
-  {
-    p.x[atrous_L][k] = k/(BANDS-1.0);
-    p.x[atrous_c][k] = k/(BANDS-1.0);
-    p.x[atrous_s][k] = k/(BANDS-1.0);
-    p.y[atrous_L][k] = .5f+.5f*k/(float)BANDS;
-    p.y[atrous_c][k] = .5f;
-    p.y[atrous_s][k] = .5f;
-    p.x[atrous_Lt][k] = k/(BANDS-1.0);
-    p.x[atrous_ct][k] = k/(BANDS-1.0);
-    p.y[atrous_Lt][k] = 0.0f;
-    p.y[atrous_ct][k] = 0.0f;
-  }
-  dt_gui_presets_add_generic(_("sharpen (strong)"), self->op, self->version(), &p, sizeof(p), 1);
+  dt_gui_presets_add_generic(_("denoise & sharpen"), self->op, self->version(), &p, sizeof(p), 1);
   for(int k=0; k<BANDS; k++)
   {
     p.x[atrous_L][k] = k/(BANDS-1.0);
@@ -851,21 +823,7 @@ void init_presets (dt_iop_module_so_t *self)
     p.y[atrous_Lt][k] = .0f;
     p.y[atrous_ct][k] = fmaxf(0.0f, (.60f*k/(float)BANDS) - 0.30f);
   }
-  dt_gui_presets_add_generic(_("chroma denoise"), self->op, self->version(), &p, sizeof(p), 1);
-  for(int k=0; k<BANDS; k++)
-  {
-    p.x[atrous_L][k] = k/(BANDS-1.0);
-    p.x[atrous_c][k] = k/(BANDS-1.0);
-    p.x[atrous_s][k] = k/(BANDS-1.0);
-    p.y[atrous_L][k] = .5f;
-    p.y[atrous_c][k] = .5f;
-    p.y[atrous_s][k] = .0f;
-    p.x[atrous_Lt][k] = k/(BANDS-1.0);
-    p.x[atrous_ct][k] = k/(BANDS-1.0);
-    p.y[atrous_Lt][k] = fmaxf(0.0f, (.30f*k/(float)BANDS) - 0.15f);
-    p.y[atrous_ct][k] = .30f*k/(float)BANDS;
-  }
-  dt_gui_presets_add_generic(_("denoise (subtle)"), self->op, self->version(), &p, sizeof(p), 1);
+  dt_gui_presets_add_generic(_("denoise chroma"), self->op, self->version(), &p, sizeof(p), 1);
   for(int k=0; k<BANDS; k++)
   {
     p.x[atrous_L][k] = k/(BANDS-1.0);
@@ -885,22 +843,6 @@ void init_presets (dt_iop_module_so_t *self)
     p.x[atrous_L][k] = k/(BANDS-1.0);
     p.x[atrous_c][k] = k/(BANDS-1.0);
     p.x[atrous_s][k] = k/(BANDS-1.0);
-    p.y[atrous_L][k] = .5f;//-.4f*k/(float)BANDS;
-    p.y[atrous_c][k] = .5f;//fmaxf(0.0f, .5f-.6f*k/(float)BANDS);
-    p.y[atrous_s][k] = .5f;
-    p.x[atrous_Lt][k] = k/(BANDS-1.0);
-    p.x[atrous_ct][k] = k/(BANDS-1.0);
-    p.y[atrous_Lt][k] = .4f*k/(float)BANDS;
-    p.y[atrous_ct][k] = fminf(.5f, .8f*k/(float)BANDS);
-  }
-  p.y[atrous_s][BANDS-1] = 0.0f;
-  p.y[atrous_s][BANDS-2] = 0.42f;
-  dt_gui_presets_add_generic(_("denoise (strong)"), self->op, self->version(), &p, sizeof(p), 1);
-  for(int k=0; k<BANDS; k++)
-  {
-    p.x[atrous_L][k] = k/(BANDS-1.0);
-    p.x[atrous_c][k] = k/(BANDS-1.0);
-    p.x[atrous_s][k] = k/(BANDS-1.0);
     p.y[atrous_L][k] = fminf(.5f, .3f + .35f * k/(BANDS-1.0));
     p.y[atrous_c][k] = .5f;
     p.y[atrous_s][k] = .0f;
@@ -911,20 +853,6 @@ void init_presets (dt_iop_module_so_t *self)
   }
   p.y[atrous_L][0] = .5f;
   dt_gui_presets_add_generic(_("bloom"), self->op, self->version(), &p, sizeof(p), 1);
-  for(int k=0; k<BANDS; k++)
-  {
-    p.x[atrous_L][k] = k/(BANDS-1.0);
-    p.x[atrous_c][k] = k/(BANDS-1.0);
-    p.x[atrous_s][k] = k/(BANDS-1.0);
-    p.y[atrous_L][k] = 0.55f;
-    p.y[atrous_c][k] = .5f;
-    p.y[atrous_s][k] = .0f;
-    p.x[atrous_Lt][k] = k/(BANDS-1.0);
-    p.x[atrous_ct][k] = k/(BANDS-1.0);
-    p.y[atrous_Lt][k] = 0.0f;
-    p.y[atrous_ct][k] = 0.0f;
-  }
-  dt_gui_presets_add_generic(_("clarity (subtle)"), self->op, self->version(), &p, sizeof(p), 1);
   for(int k=0; k<BANDS; k++)
   {
     p.x[atrous_L][k] = k/(BANDS-1.0);
@@ -1434,8 +1362,8 @@ void gui_init (struct dt_iop_module_t *self)
   g_object_set(G_OBJECT(gtk_notebook_get_tab_label(c->channel_tabs, gtk_notebook_get_nth_page(c->channel_tabs, -1))), "tooltip-text", _("change lightness at each feature size"), NULL);
   gtk_notebook_append_page(GTK_NOTEBOOK(c->channel_tabs), GTK_WIDGET(gtk_hbox_new(FALSE,0)), gtk_label_new(_("chroma")));
   g_object_set(G_OBJECT(gtk_notebook_get_tab_label(c->channel_tabs, gtk_notebook_get_nth_page(c->channel_tabs, -1))), "tooltip-text", _("change color saturation at each feature size"), NULL);
-  gtk_notebook_append_page(GTK_NOTEBOOK(c->channel_tabs), GTK_WIDGET(gtk_hbox_new(FALSE,0)), gtk_label_new(_("sharpness")));
-  g_object_set(G_OBJECT(gtk_notebook_get_tab_label(c->channel_tabs, gtk_notebook_get_nth_page(c->channel_tabs, -1))), "tooltip-text", _("sharpness of edges at each feature size"), NULL);
+  gtk_notebook_append_page(GTK_NOTEBOOK(c->channel_tabs), GTK_WIDGET(gtk_hbox_new(FALSE,0)), gtk_label_new(_("edges")));
+  g_object_set(G_OBJECT(gtk_notebook_get_tab_label(c->channel_tabs, gtk_notebook_get_nth_page(c->channel_tabs, -1))), "tooltip-text", _("change edge halos at each feature size\nonly changes results of luma and chroma tabs"), NULL);
 
   gtk_widget_show_all(GTK_WIDGET(gtk_notebook_get_nth_page(c->channel_tabs, c->channel)));
   gtk_notebook_set_current_page(GTK_NOTEBOOK(c->channel_tabs), c->channel);

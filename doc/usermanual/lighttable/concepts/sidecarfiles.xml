@@ -22,23 +22,25 @@
 
   <para>
     darktable is a non-destructive image editor. This means that darktable opens images
-    read-only. Any newly added metadata, tags, and parameters of image operations (the 
+    read-only. Any newly added metadata, tags, and parameters of image operations (the
     <quote>history stack</quote>) are stored in separate <emphasis>.xmp</emphasis> files,
     so-called sidecars, allowing you to store information about the images as well as the full
-    editing history without touching the original RAW files. When you import an image into darktable
-    for the first time, an XMP file with default settings is generated automatically.
+    editing history without touching the original RAW files. When you import an image into
+    darktable for the first time, an XMP file with default settings is generated automatically.
   </para>
 
   <para>
-    For a given source image, multiple editing versions, called duplicates, can co-exist, sharing the same
-    input (RAW) data but each having their own metadata, tags and history stack.
-    Each duplicate is represented by a separate XMP sidecar file with a filename constructed in
-    the form <quote>&lt;basename&gt;<emphasis>_nn</emphasis>.&lt;extension&gt;.xmp</quote>,
-    where <emphasis>nn</emphasis> represents the (minimum two-digit) version number of that
-    edit. Information for the initial edit&nbsp;&ndash; the <quote>duplicate</quote> with version number zero
-   &nbsp;&ndash; is stored in the sidecar file <quote>&lt;basename&gt;.&lt;extension&gt;.xmp</quote>. The version number of a
-    duplicate is displayed in the image information panel in each of darktable's views (see an
-    example in <xref linkend="image_information"/>).
+    For a given source image, multiple editing versions, called duplicates, can co-exist,
+    sharing the same input (RAW) data but each having their own metadata, tags and history
+    stack. Each duplicate is represented by a separate XMP sidecar file with a filename
+    constructed in the form
+    <quote>&lt;basename&gt;<emphasis>_nn</emphasis>.&lt;extension&gt;.xmp</quote>, where
+    <emphasis>nn</emphasis> represents the (minimum two-digit) version number of that edit.
+    Information for the initial edit&nbsp;&ndash; the <quote>duplicate</quote> with version
+    number zero &nbsp;&ndash; is stored in the sidecar file
+    <quote>&lt;basename&gt;.&lt;extension&gt;.xmp</quote>. The version number of a duplicate is
+    displayed in the image information panel in each of darktable's views (see an example in
+    <xref linkend="image_information"/>).
   </para>
 
   <para>
@@ -54,6 +56,15 @@
     later time by re-importing it (see <xref linkend="import"/>). In the latter case the
     database gets updated with data that darktable finds in the sidecar files belonging to that
     image.
+  </para>
+
+  <para>
+    Once an image has been imported into darktable the database entries take precedence over the
+    XMP file. Subsequent changes to the XMP file by any other software are not visible to
+    darktable&nbsp;&ndash; any changes get overwritten the next time darktable synchronizes the
+    file. This behavior can be changed in the preferences dialog (see
+    <xref linkend="core_options"/>). On request darktable looks for updated XMP files at startup
+    and offers a choice whether to update the database or overwrite the XMP file.
   </para>
 
 </sect2>

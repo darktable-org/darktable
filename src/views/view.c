@@ -115,7 +115,7 @@ int dt_view_load_module(dt_view_t *view, const char *module)
   dt_loc_get_plugindir(plugindir, sizeof(plugindir));
   g_strlcat(plugindir, "/views", sizeof(plugindir));
   gchar *libname = g_module_build_path(plugindir, (const gchar *)module);
-  view->module = g_module_open(libname, G_MODULE_BIND_LAZY);
+  view->module = g_module_open(libname, G_MODULE_BIND_LAZY | G_MODULE_BIND_LOCAL);
   if(!view->module)
   {
     fprintf(stderr, "[view_load_module] could not open %s (%s)!\n", libname, g_module_error());
@@ -215,6 +215,7 @@ int dt_view_manager_switch (dt_view_manager_t *vm, int k)
         plugin->gui_cleanup(plugin);
         dt_accel_disconnect_list(plugin->accel_closures);
         plugin->accel_closures = NULL;
+        plugin->widget = NULL;
       }
 
       /* get next plugin */
@@ -241,12 +242,12 @@ int dt_view_manager_switch (dt_view_manager_t *vm, int k)
   if (!error)
   {
     GList *plugins;
+    dt_view_t *v = vm->view + vm->current_view;
 
     /* cleanup current view before initialization of new  */
     if (vm->current_view >=0)
     {
       /* leave current view */
-      dt_view_t *v = vm->view + vm->current_view;
       if(v->leave) v->leave(v);
       dt_accel_disconnect_list(v->accel_closures);
       v->accel_closures = NULL;
@@ -271,6 +272,7 @@ int dt_view_manager_switch (dt_view_manager_t *vm, int k)
           plugin->gui_cleanup(plugin);
           dt_accel_disconnect_list(plugin->accel_closures);
           plugin->accel_closures = NULL;
+          plugin->widget = NULL;
         }
 
         /* get next plugin */
@@ -371,7 +373,7 @@ int dt_view_manager_switch (dt_view_manager_t *vm, int k)
       nv->connect_key_accels(nv);
 
     /* raise view changed signal */
-    dt_control_signal_raise(darktable.signals, DT_SIGNAL_VIEWMANAGER_VIEW_CHANGED);
+    dt_control_signal_raise(darktable.signals, DT_SIGNAL_VIEWMANAGER_VIEW_CHANGED,v,nv);
 
     /* add endmarkers to left and right center containers */
     GtkWidget *endmarker = gtk_drawing_area_new();

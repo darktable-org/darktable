@@ -89,6 +89,7 @@ typedef struct dt_library_t
   float zoom_x, zoom_y;
   dt_view_image_over_t image_over;
   int full_preview;
+  int full_preview_sticky;
   int32_t full_preview_id;
   int32_t full_preview_rowid;
   int display_focus;
@@ -97,7 +98,8 @@ typedef struct dt_library_t
   int images_in_row;
 
   uint8_t *full_res_thumb;
-  int32_t full_res_thumb_id, full_res_thumb_wd, full_res_thumb_ht, full_res_thumb_orientation;
+  int32_t full_res_thumb_id, full_res_thumb_wd, full_res_thumb_ht;
+  dt_image_orientation_t full_res_thumb_orientation;
   dt_focus_cluster_t full_res_focus[49];
 
   int32_t last_mouse_over_id;
@@ -326,7 +328,7 @@ static void _update_collected_images(dt_view_t *self)
   // note that this adjustement is needed as for a memory table the rowid doesn't start to 1 after the DELETE above,
   // but rowid is incremented each time we INSERT.
 
-  lib->full_preview_rowid += (min_after - min_before - 1);
+  lib->full_preview_rowid += (min_after - min_before);
 
   /* if we have a statment lets clean it */
   if(lib->statements.main_query)
@@ -705,7 +707,7 @@ escape_image_loop:
         {
           int neighbour_group = -1;
           // top border
-          if(row > 0)
+          if(row > 0 && ((current_image - iir) >= 0))
           {
             int _id = query_ids[current_image - iir];
             if(_id > 0)
@@ -722,7 +724,7 @@ escape_image_loop:
           }
           // left border
           neighbour_group = -1;
-          if(col > 0)
+          if(col > 0 && current_image > 0)
           {
             int _id = query_ids[current_image-1];
             if(_id > 0)
@@ -824,8 +826,9 @@ after_drawing:
     }
   }
 
-  if(query_ids)
-    free(query_ids);
+  lib->offset_changed = FALSE;
+
+  free(query_ids);
   //oldpan = pan;
   if(darktable.unmuted & DT_DEBUG_CACHE)
     dt_mipmap_cache_print(darktable.mipmap_cache);
@@ -1043,7 +1046,7 @@ expose_zoomable (dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, in
         id = sqlite3_column_int(lib->statements.main_query, 0);
 
         // set mouse over id
-        if((zoom == 1 && mouse_over_id < 0) || ((!pan || track) && seli == col && selj == row))
+        if((zoom == 1 && mouse_over_id < 0) || ((!pan || track) && seli == col && selj == row && pointerx > 0 && pointerx < width && pointery > 0 && pointery < height))
         {
           mouse_over_id = id;
           dt_control_set_mouse_over_id(mouse_over_id);
@@ -1162,11 +1165,8 @@ void expose_full_preview(dt_view_t *self, cairo_t *cr, int32_t width, int32_t he
       gboolean from_cache = FALSE;
       char filename[2048];
       dt_image_full_path(lib->full_preview_id, filename, sizeof(filename), &from_cache);
-      if(lib->full_res_thumb)
-      {
-        free(lib->full_res_thumb);
-        lib->full_res_thumb = 0; 
-      }
+      free(lib->full_res_thumb);
+      lib->full_res_thumb = NULL;
       if(!dt_imageio_large_thumbnail(
           filename,
           &lib->full_res_thumb,
@@ -1193,7 +1193,7 @@ void expose_full_preview(dt_view_t *self, cairo_t *cr, int32_t width, int32_t he
     cairo_surface_t *surface = cairo_image_surface_create_for_data (lib->full_res_thumb, CAIRO_FORMAT_RGB24, lib->full_res_thumb_wd, lib->full_res_thumb_ht, stride);
     cairo_save(cr);
     int wd = lib->full_res_thumb_wd, ht = lib->full_res_thumb_ht;
-    if(lib->full_res_thumb_orientation & 4)
+    if(lib->full_res_thumb_orientation & ORIENTATION_SWAP_XY)
       wd = lib->full_res_thumb_ht, ht = lib->full_res_thumb_wd;
     if(pointerx >= 0 && pointery >= 0)
     { // avoid jumps in case mouse leaves drawing area
@@ -1203,17 +1203,17 @@ void expose_full_preview(dt_view_t *self, cairo_t *cr, int32_t width, int32_t he
     const float tx = -(wd - width ) * CLAMP(pointerx_c/(float)width,  0.0f, 1.0f),
                 ty = -(ht - height) * CLAMP(pointery_c/(float)height, 0.0f, 1.0f);
     cairo_translate(cr, tx, ty);
-    if(lib->full_res_thumb_orientation & 4)
+    if(lib->full_res_thumb_orientation & ORIENTATION_SWAP_XY)
     {
       cairo_matrix_t m = (cairo_matrix_t){0.0, 1.0, 1.0, 0.0, 0.0, 0.0};
       cairo_transform(cr, &m);
     }
-    if(lib->full_res_thumb_orientation & 2)
+    if(lib->full_res_thumb_orientation & ORIENTATION_FLIP_X)
     {
       cairo_scale(cr, 1, -1);
       cairo_translate(cr, 0, -lib->full_res_thumb_ht-1);
     }
-    if(lib->full_res_thumb_orientation & 1)
+    if(lib->full_res_thumb_orientation & ORIENTATION_FLIP_Y)
     {
       cairo_scale(cr, -1, 1);
       cairo_translate(cr, -lib->full_res_thumb_wd-1, 0);
@@ -1251,7 +1251,6 @@ void expose_full_preview(dt_view_t *self, cairo_t *cr, int32_t width, int32_t he
         lib->full_preview_id,
         lib->full_res_thumb_wd,
         lib->full_res_thumb_ht,
-        lib->full_res_thumb_orientation,
         lib->full_res_focus, frows, fcols);
 }
 
@@ -1397,7 +1396,7 @@ star_key_accel_callback(GtkAccelGroup *accel_group, GObject *acceleratable,
   return TRUE;
 }
 
-static void _lighttable_mipamps_updated_signal_callback(gpointer instance, gpointer user_data)
+static void _lighttable_mipmaps_updated_signal_callback(gpointer instance, gpointer user_data)
 {
   dt_control_queue_redraw_center();
 }
@@ -1434,7 +1433,7 @@ void enter(dt_view_t *self)
 
   /* connect to signals */
   dt_control_signal_connect(darktable.signals, DT_SIGNAL_DEVELOP_MIPMAP_UPDATED,
-                            G_CALLBACK(_lighttable_mipamps_updated_signal_callback),
+                            G_CALLBACK(_lighttable_mipmaps_updated_signal_callback),
                             (gpointer)self);
 
   gtk_widget_grab_focus(dt_ui_center(darktable.gui->ui));
@@ -1444,6 +1443,16 @@ void enter(dt_view_t *self)
   lib->button = 0;
   lib->pan = 0;
   dt_collection_hint_message(darktable.collection);
+  
+  // hide panel if we are in full preview mode
+  if(lib->full_preview_id !=-1)
+  {
+    dt_ui_panel_show(darktable.gui->ui, DT_UI_PANEL_LEFT, FALSE, FALSE);
+    dt_ui_panel_show(darktable.gui->ui, DT_UI_PANEL_RIGHT, FALSE, FALSE);
+    dt_ui_panel_show(darktable.gui->ui, DT_UI_PANEL_CENTER_BOTTOM, FALSE, FALSE);
+    dt_ui_panel_show(darktable.gui->ui, DT_UI_PANEL_CENTER_TOP, FALSE, FALSE);
+    dt_ui_panel_show(darktable.gui->ui, DT_UI_PANEL_TOP, FALSE, FALSE);
+  }
 }
 
 void dt_lib_remove_child(GtkWidget *widget, gpointer data)
@@ -1456,12 +1465,22 @@ void leave(dt_view_t *self)
   gtk_drag_dest_unset(dt_ui_center(darktable.gui->ui));
 
   /* disconnect from signals */
-  dt_control_signal_disconnect(darktable.signals, G_CALLBACK(_lighttable_mipamps_updated_signal_callback), (gpointer)self);
+  dt_control_signal_disconnect(darktable.signals, G_CALLBACK(_lighttable_mipmaps_updated_signal_callback), (gpointer)self);
 
   // clear some state variables
   dt_library_t *lib = (dt_library_t *)self->data;
   lib->button = 0;
   lib->pan = 0;
+  
+  // exit preview mode if non-sticky
+  if(lib->full_preview_id !=-1 && lib->full_preview_sticky==0)
+  {
+    lib->full_preview_id = -1;
+    lib->full_preview_rowid = -1;
+    dt_control_set_mouse_over_id(-1);
+    lib->full_preview = 0;
+    lib->display_focus = 0;
+  }
 }
 
 void reset(dt_view_t *self)
@@ -1720,8 +1739,8 @@ int key_released(dt_view_t *self, guint key, guint state)
   if(!darktable.control->key_accelerators_on)
     return 0;
 
-  if((key == accels->lighttable_preview.accel_key || key == accels->lighttable_preview_display_focus.accel_key)
-      && (state == accels->lighttable_preview.accel_mods || state == accels->lighttable_preview_display_focus.accel_mods)
+  if(((key == accels->lighttable_preview.accel_key && state == accels->lighttable_preview.accel_mods)
+      || (key == accels->lighttable_preview_display_focus.accel_key && state == accels->lighttable_preview_display_focus.accel_mods))
       && lib->full_preview_id !=-1)
   {
 
@@ -1729,11 +1748,11 @@ int key_released(dt_view_t *self, guint key, guint state)
     lib->full_preview_rowid = -1;
     dt_control_set_mouse_over_id(-1);
 
-    dt_ui_panel_show(darktable.gui->ui, DT_UI_PANEL_LEFT,   ( lib->full_preview & 1));
-    dt_ui_panel_show(darktable.gui->ui, DT_UI_PANEL_RIGHT,  ( lib->full_preview & 2));
-    dt_ui_panel_show(darktable.gui->ui, DT_UI_PANEL_CENTER_BOTTOM, ( lib->full_preview & 4));
-    dt_ui_panel_show(darktable.gui->ui, DT_UI_PANEL_CENTER_TOP,    ( lib->full_preview & 8));
-    dt_ui_panel_show(darktable.gui->ui, DT_UI_PANEL_TOP,    ( lib->full_preview & 16));
+    dt_ui_panel_show(darktable.gui->ui, DT_UI_PANEL_LEFT,   ( lib->full_preview & 1), FALSE);
+    dt_ui_panel_show(darktable.gui->ui, DT_UI_PANEL_RIGHT,  ( lib->full_preview & 2), FALSE);
+    dt_ui_panel_show(darktable.gui->ui, DT_UI_PANEL_CENTER_BOTTOM, ( lib->full_preview & 4), FALSE);
+    dt_ui_panel_show(darktable.gui->ui, DT_UI_PANEL_CENTER_TOP,    ( lib->full_preview & 8), FALSE);
+    dt_ui_panel_show(darktable.gui->ui, DT_UI_PANEL_TOP,    ( lib->full_preview & 16), FALSE);
 
     lib->full_preview = 0;
     lib->display_focus = 0;
@@ -1754,12 +1773,43 @@ int key_pressed(dt_view_t *self, guint key, guint state)
 
   const int layout = dt_conf_get_int("plugins/lighttable/layout");
 
-  if((key == accels->lighttable_preview.accel_key || key == accels->lighttable_preview_display_focus.accel_key)
-      && (state == accels->lighttable_preview.accel_mods || state == accels->lighttable_preview_display_focus.accel_mods))
+  if (lib->full_preview_id !=-1
+      && ((key == accels->lighttable_preview_sticky_exit.accel_key && state == accels->lighttable_preview_sticky_exit.accel_mods)
+          || (key == accels->lighttable_preview_sticky.accel_key && state == accels->lighttable_preview_sticky.accel_mods)
+          || (key == accels->lighttable_preview_sticky_focus.accel_key && state == accels->lighttable_preview_sticky_focus.accel_mods)))
+  {
+    lib->full_preview_id = -1;
+    lib->full_preview_rowid = -1;
+    dt_control_set_mouse_over_id(-1);
+
+    dt_ui_panel_show(darktable.gui->ui, DT_UI_PANEL_LEFT,   ( lib->full_preview & 1), FALSE);
+    dt_ui_panel_show(darktable.gui->ui, DT_UI_PANEL_RIGHT,  ( lib->full_preview & 2), FALSE);
+    dt_ui_panel_show(darktable.gui->ui, DT_UI_PANEL_CENTER_BOTTOM, ( lib->full_preview & 4), FALSE);
+    dt_ui_panel_show(darktable.gui->ui, DT_UI_PANEL_CENTER_TOP,    ( lib->full_preview & 8), FALSE);
+    dt_ui_panel_show(darktable.gui->ui, DT_UI_PANEL_TOP,    ( lib->full_preview & 16), FALSE);
+
+    lib->full_preview = 0;
+    lib->display_focus = 0;
+    return 1;
+  }
+  
+  if ((key == accels->lighttable_preview.accel_key && state == accels->lighttable_preview.accel_mods)
+      || (key == accels->lighttable_preview_display_focus.accel_key && state == accels->lighttable_preview_display_focus.accel_mods)
+      || (key == accels->lighttable_preview_sticky.accel_key && state == accels->lighttable_preview_sticky.accel_mods)
+      || (key == accels->lighttable_preview_sticky_focus.accel_key && state == accels->lighttable_preview_sticky_focus.accel_mods))
   {
     int32_t mouse_over_id = dt_control_get_mouse_over_id();
     if(lib->full_preview_id == -1 && mouse_over_id != -1 )
     {
+      if ((key == accels->lighttable_preview.accel_key && state == accels->lighttable_preview.accel_mods)
+          || (key == accels->lighttable_preview_display_focus.accel_key && state == accels->lighttable_preview_display_focus.accel_mods))
+      {
+        lib->full_preview_sticky = 0;
+      }
+      else
+      {
+        lib->full_preview_sticky = 1;
+      }
       // encode panel visibility into full_preview
       lib->full_preview = 0;
       lib->full_preview_id = mouse_over_id;
@@ -1779,18 +1829,20 @@ int key_pressed(dt_view_t *self, guint key, guint state)
 
       // let's hide some gui components
       lib->full_preview |= (dt_ui_panel_visible(darktable.gui->ui, DT_UI_PANEL_LEFT)&1) << 0;
-      dt_ui_panel_show(darktable.gui->ui, DT_UI_PANEL_LEFT, FALSE);
+      dt_ui_panel_show(darktable.gui->ui, DT_UI_PANEL_LEFT, FALSE, FALSE);
       lib->full_preview |= (dt_ui_panel_visible(darktable.gui->ui, DT_UI_PANEL_RIGHT)&1) << 1;
-      dt_ui_panel_show(darktable.gui->ui, DT_UI_PANEL_RIGHT, FALSE);
+      dt_ui_panel_show(darktable.gui->ui, DT_UI_PANEL_RIGHT, FALSE, FALSE);
       lib->full_preview |= (dt_ui_panel_visible(darktable.gui->ui, DT_UI_PANEL_CENTER_BOTTOM)&1) << 2;
-      dt_ui_panel_show(darktable.gui->ui, DT_UI_PANEL_CENTER_BOTTOM, FALSE);
+      dt_ui_panel_show(darktable.gui->ui, DT_UI_PANEL_CENTER_BOTTOM, FALSE, FALSE);
       lib->full_preview |= (dt_ui_panel_visible(darktable.gui->ui, DT_UI_PANEL_CENTER_TOP)&1) << 3;
-      dt_ui_panel_show(darktable.gui->ui, DT_UI_PANEL_CENTER_TOP, FALSE);
+      dt_ui_panel_show(darktable.gui->ui, DT_UI_PANEL_CENTER_TOP, FALSE, FALSE);
       lib->full_preview |= (dt_ui_panel_visible(darktable.gui->ui, DT_UI_PANEL_TOP)&1) << 4;
-      dt_ui_panel_show(darktable.gui->ui, DT_UI_PANEL_TOP, FALSE);
+      dt_ui_panel_show(darktable.gui->ui, DT_UI_PANEL_TOP, FALSE, FALSE);
 
       // preview with focus detection
-      if (state == accels->lighttable_preview_display_focus.accel_mods) {
+      if ((key == accels->lighttable_preview_display_focus.accel_key && state == accels->lighttable_preview_display_focus.accel_mods)
+          || (key == accels->lighttable_preview_sticky_focus.accel_key && state == accels->lighttable_preview_sticky_focus.accel_mods))
+      {
         lib->display_focus = 1;
       }
 
@@ -1921,6 +1973,9 @@ void init_key_accels(dt_view_t *self)
   // Preview key
   dt_accel_register_view(self, NC_("accel", "preview"), GDK_KEY_z, 0);
   dt_accel_register_view(self, NC_("accel", "preview with focus detection"), GDK_KEY_z, GDK_CONTROL_MASK);
+  dt_accel_register_view(self, NC_("accel", "sticky preview"), 0, 0);
+  dt_accel_register_view(self, NC_("accel", "sticky preview with focus detection"), 0, 0);
+  dt_accel_register_view(self, NC_("accel", "exit sticky preview"), 0, 0);
 }
 
 void connect_key_accels(dt_view_t *self)

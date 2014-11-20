@@ -9,6 +9,7 @@
     RawSpeed - RAW file decoder.
 
     Copyright (C) 2013 Klaus Post
+    Copyright (C) 2014 Pedro Côrte-Real
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Lesser General Public
@@ -42,10 +43,8 @@ public:
   virtual TiffIFD* getRootIFD() {return mRootIFD;}
 protected:
   virtual void decodeThreaded(RawDecoderThread* t);
-  iPoint2D final_size;
-  uchar8 alt_layout;
-  uint32 fuji_width;
   void DecodeRaf();
+  bool alt_layout;
 };
 
 } // namespace RawSpeed

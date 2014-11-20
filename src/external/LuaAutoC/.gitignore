@@ -1,16 +1,20 @@
 *~
+*.o
 
 /config.mk
 /obj
 
 /lib*.a
 /lib*.so
-/demos/demo_convert
-/demos/demo_embed
-/demos/demo_func
-/demos/demo_struct
-/demos/demo_mod
+/examples/example_basic
+/examples/example_enum
+/examples/example_convert
+/examples/example_embed
+/examples/example_func
+/examples/example_struct
+/examples/example_mod
+/examples/example_unnested
 
 /*.lib
 /*.dll
-/demos/*.exe
+/examples/*.exe

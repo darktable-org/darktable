@@ -34,11 +34,12 @@
 #include "dtgtk/resetlabel.h"
 #include "dtgtk/togglebutton.h"
 #include "gui/accelerators.h"
+#include "gui/presets.h"
 #include "gui/gtk.h"
 #include <gtk/gtk.h>
 #include <inttypes.h>
 
-DT_MODULE_INTROSPECTION(3, dt_iop_vignette_params_t)
+DT_MODULE_INTROSPECTION(4, dt_iop_vignette_params_t)
 
 #define CLIP(x) ((x<0)?0.0:(x>1.0)?1.0:x)
 #define TEA_ROUNDS 8
@@ -88,7 +89,7 @@ typedef struct dt_iop_vignette_params2_t
 }
 dt_iop_vignette_params2_t;
 
-typedef struct dt_iop_vignette_params_t
+typedef struct dt_iop_vignette_params3_t
 {
   float scale;			// 0 - 100 Inner radius, percent of largest image dimension
   float falloff_scale;		// 0 - 100 Radius for falloff -- outer radius = inner radius + falloff_scale
@@ -100,7 +101,23 @@ typedef struct dt_iop_vignette_params_t
   float shape;
   int dithering;                // if and how to perform dithering
 }
+dt_iop_vignette_params3_t;
+
+typedef struct dt_iop_vignette_params_t
+{
+  float scale;			// 0 - 100 Inner radius, percent of largest image dimension
+  float falloff_scale;		// 0 - 100 Radius for falloff -- outer radius = inner radius + falloff_scale
+  float brightness;		// -1 - 1 Strength of brightness reduction
+  float saturation;		// -1 - 1 Strength of saturation reduction
+  dt_iop_vector_2d_t center;	// Center of vignette
+  gboolean autoratio;		//
+  float whratio;		// 0-1 = width/height ratio, 1-2 = height/width ratio + 1
+  float shape;
+  int dithering;                // if and how to perform dithering
+  gboolean unbound;        // whether the values should be clipped
+}
 dt_iop_vignette_params_t;
+
 
 typedef struct dt_iop_vignette_gui_data_t
 {
@@ -128,6 +145,7 @@ typedef struct dt_iop_vignette_data_t
   float whratio;
   float shape;
   int dithering;
+  gboolean unbound;
 }
 dt_iop_vignette_data_t;
 
@@ -193,7 +211,7 @@ void connect_key_accels(dt_iop_module_t *self)
 int
 legacy_params (dt_iop_module_t *self, const void *const old_params, const int old_version, void *new_params, const int new_version)
 {
-  if (old_version == 1 && new_version == 3)
+  if (old_version == 1 && new_version == 4)
   {
     const dt_iop_vignette_params1_t *old = old_params;
     dt_iop_vignette_params_t *new = new_params;
@@ -211,9 +229,10 @@ legacy_params (dt_iop_module_t *self, const void *const old_params, const int ol
     new->whratio= 1.0;
     new->shape= 1.0;
     new->dithering= DITHER_OFF;
+    new->unbound = FALSE;
     return 0;
   }
-  if (old_version == 2 && new_version == 3)
+  if (old_version == 2 && new_version == 4)
   {
     const dt_iop_vignette_params2_t *old = old_params;
     dt_iop_vignette_params_t *new = new_params;
@@ -227,8 +246,27 @@ legacy_params (dt_iop_module_t *self, const void *const old_params, const int ol
     new->whratio= old->whratio;
     new->shape= old->shape;
     new->dithering= DITHER_OFF;
+    new->unbound = FALSE;
     return 0;
   }
+  if (old_version == 3 && new_version == 4)
+  {
+    const dt_iop_vignette_params3_t *old = old_params;
+    dt_iop_vignette_params_t *new = new_params;
+    new->scale = old->scale;
+    new->falloff_scale = old->falloff_scale;
+    new->brightness= old->brightness;
+    new->saturation= old->saturation;
+    new->center.x= old->center.x;
+    new->center.y= old->center.y;
+    new->autoratio= old->autoratio;
+    new->whratio= old->whratio;
+    new->shape= old->shape;
+    new->dithering= old->dithering;
+    new->unbound = FALSE;
+    return 0;
+  }
+
   return 1;
 }
 
@@ -643,6 +681,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   const dt_iop_vignette_data_t *data = (dt_iop_vignette_data_t *)piece->data;
   const dt_iop_roi_t *buf_in = &piece->buf_in;
   const int ch = piece->colors;
+  const gboolean unbound = data->unbound;
 
   /* Center coordinates of buf_in, these should not consider buf_in->{x,y}! */
   const dt_iop_vector_2d_t buf_center =
@@ -765,17 +804,26 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
       {
         // Then apply falloff vignette
         float falloff=(data->brightness<0)?(1.0+(weight*data->brightness)):(weight*data->brightness);
-        col0=CLIP( ((data->brightness<0)? col0*falloff+dith : col0+falloff+dith) );
-        col1=CLIP( ((data->brightness<0)? col1*falloff+dith : col1+falloff+dith) );
-        col2=CLIP( ((data->brightness<0)? col2*falloff+dith : col2+falloff+dith) );
+        col0 = data->brightness < 0 ? col0*falloff+dith : col0+falloff+dith;
+        col1 = data->brightness < 0 ? col1*falloff+dith : col1+falloff+dith;
+        col2 = data->brightness < 0 ? col2*falloff+dith : col2+falloff+dith;
+
+        col0 = unbound ? col0 : CLIP( col0 );
+        col1 = unbound ? col1 : CLIP( col1 );
+        col2 = unbound ? col2 : CLIP( col2 );
 
         // apply saturation
         float mv=(col0+col1+col2)/3.0;
         float wss=weight*data->saturation;
-        col0=CLIP( col0-((mv-col0)* wss) );
-        col1=CLIP( col1-((mv-col1)* wss) );
-        col2=CLIP( col2-((mv-col2)* wss) );
+        col0 = col0-((mv-col0)* wss);
+        col1 = col1-((mv-col1)* wss);
+        col2 = col2-((mv-col2)* wss);
+
+        col0 = unbound ? col0 : CLIP( col0 );
+        col1 = unbound ? col1 : CLIP( col1 );
+        col2 = unbound ? col2 : CLIP( col2 );
       }
+
       out[0]=col0;
       out[1]=col1;
       out[2]=col2;
@@ -877,6 +925,7 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
   float expt[2] = { exp1, exp2 };
   float brightness = data->brightness;
   float saturation = data->saturation;
+  int unbound = data->unbound;
 
   size_t sizes[2] = { ROUNDUPWD(width), ROUNDUPHT(height) };
 
@@ -892,6 +941,7 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
   dt_opencl_set_kernel_arg(devid, gd->kernel_vignette, 9, sizeof(float), &brightness);
   dt_opencl_set_kernel_arg(devid, gd->kernel_vignette, 10, sizeof(float), &saturation);
   dt_opencl_set_kernel_arg(devid, gd->kernel_vignette, 11, sizeof(float), &dither);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_vignette, 12, sizeof(int), &unbound);
   err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_vignette, sizes);
   if(err != CL_SUCCESS) goto error;
 
@@ -1037,6 +1087,26 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
   d->whratio=p->whratio;
   d->shape=p->shape;
   d->dithering=p->dithering;
+  d->unbound = p->unbound;
+}
+
+void init_presets (dt_iop_module_so_t *self)
+{
+  DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "begin", NULL, NULL, NULL);
+  dt_iop_vignette_params_t p;
+  p.scale = 40.0f;
+  p.falloff_scale = 100.0f;
+  p.brightness = -1.0f;
+  p.saturation = 0.5f;
+  p.center.x = 0.0f;
+  p.center.y = 0.0f;
+  p.autoratio = FALSE;
+  p.whratio = 1.0f;
+  p.shape = 1.0f;
+  p.dithering = 0;
+  p.unbound = TRUE;
+  dt_gui_presets_add_generic(_("lomo"), self->op, self->version(), &p, sizeof(p), 1);
+  DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "commit", NULL, NULL, NULL);
 }
 
 void init_pipe (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
@@ -1074,12 +1144,12 @@ void init(dt_iop_module_t *module)
   module->params = malloc(sizeof(dt_iop_vignette_params_t));
   module->default_params = malloc(sizeof(dt_iop_vignette_params_t));
   module->default_enabled = 0;
-  module->priority = 877; // module order created by iop_dependencies.py, do not edit!
+  module->priority = 883; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_vignette_params_t);
   module->gui_data = NULL;
   dt_iop_vignette_params_t tmp = (dt_iop_vignette_params_t)
   {
-    80,50,-0.5,-0.5, {0,0}, FALSE, 1.0, 1.0, DITHER_OFF
+    80,50,-0.5,-0.5, {0,0}, FALSE, 1.0, 1.0, DITHER_OFF, TRUE
   };
   memcpy(module->params, &tmp, sizeof(dt_iop_vignette_params_t));
   memcpy(module->default_params, &tmp, sizeof(dt_iop_vignette_params_t));

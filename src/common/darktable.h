@@ -223,7 +223,7 @@ dt_times_t;
 extern darktable_t darktable;
 extern const char dt_supported_extensions[];
 
-int dt_init(int argc, char *argv[], const int init_gui);
+int dt_init(int argc, char *argv[], const int init_gui,lua_State*L);
 void dt_cleanup();
 void dt_print(dt_debug_thread_t thread, const char *msg, ...);
 void dt_gettime_t(char *datetime, size_t datetime_len, time_t t);
@@ -489,6 +489,25 @@ int dt_load_from_string(const gchar* image_to_load, gboolean open_image_in_dr);
 
 /** define for max path/filename length */
 #define DT_MAX_FILENAME_LEN 256
+
+#ifndef PATH_MAX
+/*
+ * from /usr/include/linux/limits.h (Linux 3.16.5)
+ * Some systems might not define it (e.g. Hurd)
+ *
+ * We do NOT depend on any specific value of this env variable.
+ * If you want constant value across all systems, use DT_MAX_PATH_FOR_PARAMS!
+ */
+#define PATH_MAX 4096
+#endif
+
+/*
+ * ONLY TO BE USED FOR PARAMS!!! (e.g. dt_imageio_disk_t)
+ *
+ * WARNING: this should *NEVER* be changed, as it will break params,
+ *          created with previous DT_MAX_PATH_FOR_PARAMS.
+ */
+#define DT_MAX_PATH_FOR_PARAMS 4096
 
 #endif
 

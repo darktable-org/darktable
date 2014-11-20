@@ -113,8 +113,7 @@ error:
   if (ctx)
     g_markup_parse_context_free(ctx);
 
-  if (gpx)
-    g_free(gpx);
+  g_free(gpx);
 
   if(gpxmf)
     g_mapped_file_unref(gpxmf);

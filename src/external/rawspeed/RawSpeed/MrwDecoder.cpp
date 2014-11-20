@@ -3,7 +3,8 @@
 /*
     RawSpeed - RAW file decoder.
 
-    Copyright (C) 2009 Klaus Post
+    Copyright (C) 2009-2014 Klaus Post
+    Copyright (C) 2014 Pedro Côrte-Real
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Lesser General Public
@@ -33,6 +34,9 @@ MrwDecoder::~MrwDecoder(void) {
 }
 
 int MrwDecoder::isMRW(FileMap* input) {
+  if (input->getSize() < 30) {
+    return false;
+  }
   const uchar8* data = input->getData(0);
   return data[0] == 0x00 && data[1] == 0x4D && data[2] == 0x52 && data[3] == 0x4D;
 }

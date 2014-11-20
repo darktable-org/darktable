@@ -587,7 +587,7 @@ static gboolean combobox_separator(GtkTreeModel *model,GtkTreeIter *iter,gpointe
   gchar *v=NULL;
   if (G_VALUE_HOLDS_STRING (&value))
   {
-    if( (v=(gchar *)g_value_get_string (&value))!=NULL && strlen(v) == 0 ) return TRUE;
+    if( (v=(gchar *)g_value_get_string (&value))!=NULL && *v == '\0' ) return TRUE;
   }
   return FALSE;
 }
@@ -700,6 +700,7 @@ static GSList *load_account_info()
 
   GHashTable *table = dt_pwstorage_get("facebook");
   g_hash_table_foreach(table, (GHFunc) load_account_info_fill, &accountlist);
+  g_hash_table_destroy(table);
   return accountlist;
 }
 
@@ -730,7 +731,7 @@ static void save_account_info(dt_storage_facebook_gui_data_t *ui, FBAccountInfo 
   g_object_unref(builder);
 
   GHashTable *table = dt_pwstorage_get("facebook");
-  g_hash_table_insert(table, accountinfo->id, data);
+  g_hash_table_insert(table, g_strdup(accountinfo->id), data);
   dt_pwstorage_set("facebook", table);
 
   g_hash_table_destroy(table);
@@ -850,15 +851,8 @@ static gboolean ui_authenticate(dt_storage_facebook_gui_data_t *ui)
   GtkTreeModel *accountModel = gtk_combo_box_get_model(ui->comboBox_username);
   gtk_tree_model_get(accountModel, &iter, 1, &uiselectedaccounttoken, -1);
 
-  if (ctx->token != NULL)
-  {
-    g_free(ctx->token);
-    ctx->token = NULL;
-  }
-  if (uiselectedaccounttoken != NULL)
-  {
-    ctx->token = g_strdup(uiselectedaccounttoken);
-  }
+  g_free(ctx->token);
+  ctx->token = g_strdup(uiselectedaccounttoken);
   //check selected token if we already have one
   if (ctx->token != NULL && !fb_test_auth_token(ctx))
   {
@@ -873,56 +867,52 @@ static gboolean ui_authenticate(dt_storage_facebook_gui_data_t *ui)
   }
 
   if (ctx->token == NULL)
-  {
     return FALSE;
-  }
-  else
+
+  if (mustsaveaccount)
   {
-    if (mustsaveaccount)
+    FBAccountInfo *accountinfo = fb_get_account_info(ui->facebook_api);
+    g_return_val_if_fail(accountinfo != NULL, FALSE);
+    save_account_info(ui, accountinfo);
+
+    //add account to user list and select it
+    GtkListStore *model =  GTK_LIST_STORE(gtk_combo_box_get_model(ui->comboBox_username));
+    GtkTreeIter iter;
+    gboolean r;
+    gchar *uid;
+
+    gboolean updated = FALSE;
+
+    for (r = gtk_tree_model_get_iter_first (GTK_TREE_MODEL(model), &iter);
+         r == TRUE;
+         r = gtk_tree_model_iter_next (GTK_TREE_MODEL(model), &iter))
     {
-      FBAccountInfo *accountinfo = fb_get_account_info(ui->facebook_api);
-      g_return_val_if_fail(accountinfo != NULL, FALSE);
-      save_account_info(ui, accountinfo);
+      gtk_tree_model_get (GTK_TREE_MODEL(model), &iter, COMBO_USER_MODEL_ID_COL, &uid, -1);
 
-      //add account to user list and select it
-      GtkListStore *model =  GTK_LIST_STORE(gtk_combo_box_get_model(ui->comboBox_username));
-      GtkTreeIter iter;
-      gboolean r;
-      gchar *uid;
-
-      gboolean updated = FALSE;
-
-      for (r = gtk_tree_model_get_iter_first (GTK_TREE_MODEL(model), &iter);
-           r == TRUE;
-           r = gtk_tree_model_iter_next (GTK_TREE_MODEL(model), &iter))
+      if (g_strcmp0(uid, accountinfo->id) == 0)
       {
-        gtk_tree_model_get (GTK_TREE_MODEL(model), &iter, COMBO_USER_MODEL_ID_COL, &uid, -1);
-
-        if (g_strcmp0(uid, accountinfo->id) == 0)
-        {
-          gtk_list_store_set(model, &iter, COMBO_USER_MODEL_NAME_COL, accountinfo->username,
-                             COMBO_USER_MODEL_TOKEN_COL, accountinfo->token,
-                             -1);
-          updated = TRUE;
-          break;
-        }
-      }
-
-      if (!updated)
-      {
-        gtk_list_store_append(model, &iter);
         gtk_list_store_set(model, &iter, COMBO_USER_MODEL_NAME_COL, accountinfo->username,
                            COMBO_USER_MODEL_TOKEN_COL, accountinfo->token,
-                           COMBO_USER_MODEL_ID_COL, accountinfo->id, -1);
+                           -1);
+        updated = TRUE;
+        break;
       }
-      gtk_combo_box_set_active_iter(ui->comboBox_username, &iter);
-      //we have to re-set the current token here since ui_combo_username_changed is called
-      //on gtk_combo_box_set_active_iter (and thus is resetting the active token)
-      ctx->token = g_strdup(accountinfo->token);
-      fb_account_info_destroy(accountinfo);
     }
-    return TRUE;
+
+    if (!updated)
+    {
+      gtk_list_store_append(model, &iter);
+      gtk_list_store_set(model, &iter, COMBO_USER_MODEL_NAME_COL, accountinfo->username,
+                         COMBO_USER_MODEL_TOKEN_COL, accountinfo->token,
+                         COMBO_USER_MODEL_ID_COL, accountinfo->id, -1);
+    }
+    gtk_combo_box_set_active_iter(ui->comboBox_username, &iter);
+    //we have to re-set the current token here since ui_combo_username_changed is called
+    //on gtk_combo_box_set_active_iter (and thus is resetting the active token)
+    ctx->token = g_strdup(accountinfo->token);
+    fb_account_info_destroy(accountinfo);
   }
+  return TRUE;
 }
 
 
@@ -981,8 +971,7 @@ static void ui_combo_username_changed(GtkComboBox *combo, struct dt_storage_face
   gtk_tree_model_get( model, &iter, 1, &token, -1);//get the selected token
   ui->connected = FALSE;
   gtk_button_set_label(ui->button_login, _("login"));
-  if (ui->facebook_api->token != NULL)
-    g_free(ui->facebook_api->token);
+  g_free(ui->facebook_api->token);
   ui->facebook_api->token = NULL;
   ui_reset_albums_creation(ui);
 }
@@ -1018,6 +1007,13 @@ static void ui_combo_album_changed(GtkComboBox *combo, gpointer data)
 const char *name(const struct dt_imageio_module_storage_t *self)
 {
   return _("facebook webalbum");
+}
+
+int recommended_dimension(struct dt_imageio_module_storage_t *self, uint32_t *width, uint32_t *height)
+{
+  *width=FB_IMAGE_MAX_SIZE;
+  *height=FB_IMAGE_MAX_SIZE;
+  return 1;
 }
 
 /* construct widget above */
@@ -1269,6 +1265,7 @@ void init(dt_imageio_module_storage_t *self)
 void *get_params(struct dt_imageio_module_storage_t *self)
 {
   dt_storage_facebook_gui_data_t *ui = (dt_storage_facebook_gui_data_t*)self->gui_data;
+  if(!ui) return NULL; // gui not initialized, CLI mode
   if(ui->facebook_api == NULL || ui->facebook_api->token == NULL)
   {
     return NULL;

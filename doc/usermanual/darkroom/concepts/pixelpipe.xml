@@ -1,0 +1,93 @@
+<!DOCTYPE sect2 PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
+               "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd" [
+		<!ENTITY % darktable_dtd SYSTEM "../../dtd/darktable.dtd">
+		%darktable_dtd;
+		]>
+<sect2 status="final" id="pixelpipe">
+
+  <title>Pixelpipe, module order, and history stack</title>
+
+  <indexterm>
+    <primary>pixelpipe</primary>
+  </indexterm>
+
+  <indexterm>
+    <primary>module processing order</primary>
+  </indexterm>
+
+  <indexterm>
+    <primary>history stack</primary>
+  </indexterm>
+
+  <para>
+    darktable processes images&nbsp;&ndash; from input to output&nbsp;&ndash; in a so called
+    <quote>pixelpipe</quote>. Within the pixelpipe image processing consists of consecutive
+    operations which are implemented as <quote>modules</quote>.
+  </para>
+
+  <para>
+    Modules are applied in a fixed order. This differentiates darktable, as a non-destructive
+    image editor, from classical image manipulation programs like The Gimp. As module order is
+    fixed, you are free to activate, deactivate or change the parameters of a module at
+    arbitrary points in time; the order of activation in your workflow does not have any impact
+    on the outcome.
+  </para>
+
+  <para>
+    Users frequently ask why the module order is fixed and if there are plans to change that
+    restriction. There are several reasons why darktable works in the way described:
+    <itemizedlist>
+
+      <listitem><para>
+        The sequence of modules has been selected with great care in order go give highest
+        output quality. Changes to the sequence would generally worsen the result rather than
+        improving it.
+      </para></listitem>
+
+      <listitem><para>
+        Certain image processing steps just don't make sense if they are shifted in the
+        pixelpipe. To mention just a few: highlight reconstruction needs to be done on raw data
+        before demosaicing and the demosaic step needs to be performed before any input color
+        profile can be applied.
+      </para></listitem>
+
+      <listitem><para>
+        Most of darktable's modules are designed to work within a specific color model (see
+        <xref linkend="color_management"/> for more details). Full flexibility would require
+        modules to support different parallel algorithms depending on the color space they are
+        working in&nbsp;&ndash; this would drastically increase complexity.
+      </para></listitem>
+
+    </itemizedlist>
+    That said, the fixed sequence of modules is not likely to change in the near future.
+  </para>
+
+  <para>
+    Whenever you activate or deactivate a module or go back to a module and change the
+    parameters, this adds an item on top of the <quote>history stack</quote>.
+  </para>
+
+  <para>
+    For example, when working on a raw file, the history stack on the left panel might say that
+    you first enabled <link linkend="denoise_bilateral"><emphasis>bilateral
+    filtering</emphasis></link>, then disabled <link linkend="base_curve"><emphasis>base
+    curve</emphasis></link>, then adjusted <link linkend="whitebalance"><emphasis>white
+    balance</emphasis></link>. But at any time, the processing took the RAW image, adjusted
+    <link linkend="whitebalance"><emphasis>white balance</emphasis></link> on it, then
+    <link linkend="demosaic"><emphasis>demosaic</emphasis></link>, then
+    <link
+      linkend="base_curve"><emphasis>base curve</emphasis></link> (if enabled), then
+    <link
+      linkend="denoise_bilateral"><emphasis>bilateral filtering</emphasis></link> (if
+    enabled), as shown bottom to top on the right panel.
+  </para>
+
+  <para>
+    The history stack records your workflow in the order in which you made changes to the
+    pipeline. It allows you to go back to an earlier stage of development if needed. The history
+    stack represents your personal workflow and is not to be confused with the sequence in which
+    modules are applied in the pixelpipe (see above). For more details on the history stack see
+    <xref linkend="history"/>.
+  </para>
+
+</sect2>

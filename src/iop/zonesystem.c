@@ -169,21 +169,20 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   const int width = roi_out->width;
   const int height = roi_out->height;
 
-  guchar *in_buffer = NULL, *out_buffer = NULL;
   if( self->dev->gui_attached && piece->pipe->type == DT_DEV_PIXELPIPE_PREVIEW )
   {
     g = (dt_iop_zonesystem_gui_data_t *)self->gui_data;
     dt_pthread_mutex_lock(&g->lock);
-    if(g->in_preview_buffer)
-      g_free (g->in_preview_buffer);
-    if(g->out_preview_buffer)
-      g_free (g->out_preview_buffer);
-
-    in_buffer = g->in_preview_buffer = g_malloc_n((size_t)width*height, sizeof(guchar));
-    out_buffer = g->out_preview_buffer = g_malloc_n((size_t)width*height, sizeof(guchar));
-    g->preview_width = width;
-    g->preview_height = height;
-
+    if(g->in_preview_buffer == NULL || g->out_preview_buffer == NULL ||
+       g->preview_width != width || g->preview_height != height)
+    {
+      g_free(g->in_preview_buffer);
+      g_free(g->out_preview_buffer);
+      g->in_preview_buffer = g_malloc_n((size_t)width*height, sizeof(guchar));
+      g->out_preview_buffer = g_malloc_n((size_t)width*height, sizeof(guchar));
+      g->preview_width = width;
+      g->preview_height = height;
+    }
     dt_pthread_mutex_unlock(&g->lock);
   }
 
@@ -231,7 +230,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
 
 
   /* if gui and have buffer lets gaussblur and fill buffer with zone indexes */
-  if( self->dev->gui_attached && g && in_buffer && out_buffer)
+  if( self->dev->gui_attached && g && g->in_preview_buffer && g->out_preview_buffer)
   {
 
     float Lmax[] = { 100.0f };
@@ -258,11 +257,11 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
       /* create zonemap preview for input */
       dt_pthread_mutex_lock(&g->lock);
 #ifdef _OPENMP
-      #pragma omp parallel for default(none) shared(tmp,in_buffer) schedule(static)
+      #pragma omp parallel for default(none) shared(tmp,g) schedule(static)
 #endif
       for (size_t k=0; k<(size_t)width*height; k++)
       {
-        in_buffer[k] = CLAMPS(tmp[k]*(size-1)/100.0f, 0, size-2);
+        g->in_preview_buffer[k] = CLAMPS(tmp[k]*(size-1)/100.0f, 0, size-2);
       }
       dt_pthread_mutex_unlock(&g->lock);
 
@@ -279,16 +278,16 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
       /* create zonemap preview for output */
       dt_pthread_mutex_lock(&g->lock);
 #ifdef _OPENMP
-      #pragma omp parallel for default(none) shared(tmp,out_buffer) schedule(static)
+      #pragma omp parallel for default(none) shared(tmp,g) schedule(static)
 #endif
       for (size_t k=0; k<(size_t)width*height; k++)
       {
-        out_buffer[k] = CLAMPS(tmp[k]*(size-1)/100.0f, 0, size-2);
+        g->out_preview_buffer[k] = CLAMPS(tmp[k]*(size-1)/100.0f, 0, size-2);
       }
       dt_pthread_mutex_unlock(&g->lock);
     }
 
-    if (tmp) g_free(tmp);
+    g_free(tmp);
     if (gauss) dt_gaussian_free(gauss);
   }
 }
@@ -417,7 +416,7 @@ void init(dt_iop_module_t *module)
   module->params = malloc(sizeof(dt_iop_zonesystem_params_t));
   module->default_params = malloc(sizeof(dt_iop_zonesystem_params_t));
   module->default_enabled = 0;
-  module->priority = 614; // module order created by iop_dependencies.py, do not edit!
+  module->priority = 650; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_zonesystem_params_t);
   module->gui_data = NULL;
   dt_iop_zonesystem_params_t tmp = (dt_iop_zonesystem_params_t)
@@ -507,9 +506,16 @@ void gui_init(struct dt_iop_module_t *self)
 
   char filename[PATH_MAX];
   char datadir[PATH_MAX];
-  const char *logo = is_it_xmas()?"%s/pixmaps/idbutton-2.svg":"%s/pixmaps/idbutton.svg";
+  char *logo;
+  dt_logo_season_t season = get_logo_season();
+  if(season != DT_LOGO_SEASON_NONE)
+    logo = g_strdup_printf("%%s/pixmaps/idbutton-%d.svg", (int)season);
+  else
+    logo = g_strdup("%s/pixmaps/idbutton.svg");
+
   dt_loc_get_datadir(datadir, sizeof(datadir));
   snprintf(filename, sizeof(filename), logo, datadir);
+  g_free(logo);
   RsvgHandle *svg = rsvg_handle_new_from_file(filename, NULL);
   if(svg)
   {
@@ -555,8 +561,8 @@ void gui_cleanup(struct dt_iop_module_t *self)
                                self);
 
   dt_iop_zonesystem_gui_data_t *g = (dt_iop_zonesystem_gui_data_t *)self->gui_data;
-  if(g->in_preview_buffer) g_free (g->in_preview_buffer);
-  if(g->out_preview_buffer) g_free (g->out_preview_buffer);
+  g_free (g->in_preview_buffer);
+  g_free (g->out_preview_buffer);
   if(g->image) cairo_surface_destroy(g->image);
   free(g->image_buffer);
   dt_pthread_mutex_destroy(&g->lock);

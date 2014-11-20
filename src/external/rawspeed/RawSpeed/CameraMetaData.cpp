@@ -3,7 +3,7 @@
 /*
     RawSpeed - RAW file decoder.
 
-    Copyright (C) 2009 Klaus Post
+    Copyright (C) 2009-2014 Klaus Post
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Lesser General Public
@@ -36,7 +36,6 @@ CameraMetaData::CameraMetaData(const char *docname) {
       result.description(), doc.child("node").attribute("attr").value());
   }
   xml_node cameras = doc.child("Cameras");
-
 
   for (xml_node camera = cameras.child("Camera"); camera; camera = camera.next_sibling("Camera")) {
     Camera *cam = new Camera(camera);
@@ -73,10 +72,12 @@ bool CameraMetaData::hasCamera(string make, string model, string mode) {
 void CameraMetaData::addCamera( Camera* cam )
 {
   string id = string(cam->make).append(cam->model).append(cam->mode);
-  if (cameras.end() != cameras.find(id))
+  if (cameras.end() != cameras.find(id)) {
     writeLog(DEBUG_PRIO_WARNING, "CameraMetaData: Duplicate entry found for camera: %s %s, Skipping!\n", cam->make.c_str(), cam->model.c_str());
-  else
+    delete(cam);
+  } else {
     cameras[id] = cam;
+  }
 }
 
 void CameraMetaData::disableMake( string make )

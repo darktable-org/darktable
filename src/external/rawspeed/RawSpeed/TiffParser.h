@@ -1,7 +1,7 @@
 /* 
     RawSpeed - RAW file decoder.
 
-    Copyright (C) 2009 Klaus Post
+    Copyright (C) 2009-2014 Klaus Post
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Lesser General Public
@@ -28,15 +28,7 @@
 #include "TiffIFDBE.h"
 #include "TiffParserException.h"
 #include "RawDecoder.h"
-#include "DngDecoder.h"
-#include "Cr2Decoder.h"
-#include "ArwDecoder.h"
-#include "PefDecoder.h"
-#include "NefDecoder.h"
-#include "OrfDecoder.h"
-#include "RafDecoder.h"
-#include "Rw2Decoder.h"
-#include "SrwDecoder.h"
+
 
 namespace RawSpeed {
 

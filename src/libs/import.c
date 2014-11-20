@@ -28,7 +28,9 @@
 #include "libraw/libraw.h"
 #include "control/control.h"
 #include "control/conf.h"
+#ifdef HAVE_GPHOTO2
 #include "control/jobs/camera_jobs.h"
+#endif
 #include "dtgtk/label.h"
 #include "dtgtk/button.h"
 #include "gui/accelerators.h"
@@ -149,9 +151,14 @@ static void _lib_import_from_camera_callback(GtkButton *button,gpointer data)
   if( params->result )
   {
     /* initialize a import job and put it on queue.... */
-    dt_job_t j;
-    dt_camera_import_job_init(&j, params->jobcode,params->result,params->camera,params->time_override);
-    dt_control_add_job(darktable.control, &j);
+    dt_control_add_job(darktable.control,
+                       DT_JOB_QUEUE_USER_BG,
+                       dt_camera_import_job_create(params->jobcode,
+                                                   params->result,
+                                                   params->camera,
+                                                   params->time_override
+                                                  )
+                      );
   }
   g_free(params->jobcode);
   g_list_free(params->result);

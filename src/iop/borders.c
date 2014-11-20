@@ -647,8 +647,9 @@ aspect_changed (GtkWidget *combo, dt_iop_module_t *self)
     if(text)
     {
       const char *c = text;
-      while(*c != ':' && *c != '/' && c < text + strlen(text)) c++;
-      if(c < text + strlen(text) - 1)
+      const char *end = text + strlen(text);
+      while(*c != ':' && *c != '/' && c < end) c++;
+      if(c < end - 1)
       {
         // *c = '\0'; // not needed, atof will stop there.
         c++;
@@ -687,8 +688,9 @@ position_h_changed (GtkWidget *combo, dt_iop_module_t *self)
     if(text)
     {
       const char *c = text;
-      while(*c != ':' && *c != '/' && c < text + strlen(text)) c++;
-      if(c < text + strlen(text) - 1)
+      const char *end = text + strlen(text);
+      while(*c != ':' && *c != '/' && c < end) c++;
+      if(c < end - 1)
       {
         // *c = '\0'; // not needed, atof will stop there.
         c++;
@@ -724,8 +726,9 @@ position_v_changed (GtkWidget *combo, dt_iop_module_t *self)
     if(text)
     {
       const char *c = text;
-      while(*c != ':' && *c != '/' && c < text + strlen(text)) c++;
-      if(c < text + strlen(text) - 1)
+      const char *end = text + strlen(text);
+      while(*c != ':' && *c != '/' && c < end) c++;
+      if(c < end - 1)
       {
         // *c = '\0'; // not needed, atof will stop there.
         c++;
@@ -949,7 +952,7 @@ void init(dt_iop_module_t *module)
   module->default_enabled = 0;
   module->params_size = sizeof(dt_iop_borders_params_t);
   module->gui_data = NULL;
-  module->priority = 947; // module order created by iop_dependencies.py, do not edit!
+  module->priority = 950; // module order created by iop_dependencies.py, do not edit!
 }
 
 void cleanup(dt_iop_module_t *module)

@@ -51,14 +51,47 @@
 
     <title>Usage</title>
 
+    <para>
+      You can choose between three methods for highlight recontruction.
+    </para>
+
+    <para>
+      <quote>Clip highlights</quote> analyses each pixel having at least one channel clipped.
+      Then it sets all channels to the minimum value found among the channels. Effectively this
+      converts all clipped highlights to neutral grey tones. This method is most useful in cases
+      where clipped highlights occur in non-colored areas like clouds in the sky.
+    </para>
+
+    <para>
+      <quote>Reconstruct in LCh</quote> analyses each pixel having at least one channel clipped
+      and transforms the information in LCh color space to linearly mix the channels. This
+      method is not able to reconstruct any color information&nbsp;&ndash; the reconstructed
+      highlights will all be neutral grey. This works fairly well with a high-contrast base
+      curve (such as most manufacturers apply to their jpg), which renders highlights
+      desaturated. This method is a good option on naturally desaturated things such as clouds.
+    </para>
+
+    <para>
+      <quote>Reconstruct color</quote> uses an algorithm that transfers color information from
+      the unclipped surroundings into the clipped highlights. This method works very well on
+      areas with homogeneous colors and is especially useful on skin tones with smoothly fading
+      highlights. It fails in certain cases where it produces maze-like artifacts at highlights
+      behind high-contrast edges, such as fine, well-exposed structures in front of overexposed
+      background (for instance ship masts or flags in front of the blown-out sky).
+    </para>
+
+    <para>
+      Tip: for highlight reconstruction to be effective you need to apply a negative EV
+      correction in the exposure module (see <xref linkend="exposure"/>). If you want to avoid a
+      general darkening of your image you can use darktable's mask feature in that module to
+      limit the EV correction to only the highlights (see <xref linkend="drawn_mask"/> and
+      <xref linkend="parametric_mask"/>).
+    </para>
+
     <sect5>
       <title>method</title>
       <para>
-        You can choose between two methods: clipping highlight or reconstructing in LCh.
-        Clipping highlight analyses each pixel having at least one channel clipped. Then it sets
-        all channels to the minimum value found among the channels. Reconstruct in LCh analyses
-        each pixel having at least one channel clipped and transforms the information in LCh
-        color space to linearly mix the channels.
+        Choose the method for highlight reconstruction.
       </para>
     </sect5>
 

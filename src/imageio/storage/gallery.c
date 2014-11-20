@@ -35,7 +35,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-DT_MODULE(1)
+DT_MODULE(2)
 
 // gui data
 typedef struct gallery_t
@@ -48,9 +48,9 @@ gallery_t;
 // saved params
 typedef struct dt_imageio_gallery_t
 {
-  char filename[1024];
+  char filename[DT_MAX_PATH_FOR_PARAMS];
   char title[1024];
-  char cached_dirname[1024]; // expanded during first img store, not stored in param struct.
+  char cached_dirname[DT_MAX_PATH_FOR_PARAMS]; // expanded during first img store, not stored in param struct.
   dt_variables_params_t *vp;
   GList *l;
 }
@@ -69,6 +69,36 @@ const char*
 name (const struct dt_imageio_module_storage_t *self)
 {
   return _("website gallery");
+}
+
+void *
+legacy_params(dt_imageio_module_storage_t *self,
+              const void *const old_params, const size_t old_params_size, const int old_version,
+              const int new_version, size_t *new_size)
+{
+  if(old_version == 1 && new_version == 2)
+  {
+    typedef struct dt_imageio_gallery_v1_t
+    {
+      char filename[1024];
+      char title[1024];
+      char cached_dirname[1024]; // expanded during first img store, not stored in param struct.
+      dt_variables_params_t *vp;
+      GList *l;
+    }
+    dt_imageio_gallery_v1_t;
+
+    dt_imageio_gallery_t *n = (dt_imageio_gallery_t *)malloc(sizeof(dt_imageio_gallery_t));
+    dt_imageio_gallery_v1_t *o = (dt_imageio_gallery_v1_t *)old_params;
+
+    g_strlcpy(n->filename, o->filename, sizeof(n->filename));
+    g_strlcpy(n->title, o->title, sizeof(n->title));
+    g_strlcpy(n->cached_dirname, o->cached_dirname, sizeof(n->cached_dirname));
+
+    *new_size = self->params_size(self);
+    return n;
+  }
+  return NULL;
 }
 
 static void
@@ -101,6 +131,16 @@ button_clicked (GtkWidget *widget, dt_imageio_module_storage_t *self)
   gtk_widget_destroy (filechooser);
 }
 
+static void entry_changed_callback(GtkEntry *entry, gpointer user_data)
+{
+  dt_conf_set_string("plugins/imageio/storage/gallery/file_directory", gtk_entry_get_text(entry));
+}
+
+static void title_changed_callback(GtkEntry *entry, gpointer user_data)
+{
+  dt_conf_set_string("plugins/imageio/storage/gallery/title", gtk_entry_get_text(entry));
+}
+
 void
 gui_init (dt_imageio_module_storage_t *self)
 {
@@ -122,39 +162,13 @@ gui_init (dt_imageio_module_storage_t *self)
   d->entry = GTK_ENTRY(widget);
   dt_gui_key_accel_block_on_focus_connect (GTK_WIDGET (d->entry));
 
-  dt_gtkentry_completion_spec compl_list[] =
-  {
-    { "ROLL_NAME", _("$(ROLL_NAME) - roll of the input image") },
-    { "FILE_FOLDER", _("$(FILE_FOLDER) - folder containing the input image") },
-    { "FILE_NAME", _("$(FILE_NAME) - basename of the input image") },
-    { "FILE_EXTENSION", _("$(FILE_EXTENSION) - extension of the input image") },
-    { "SEQUENCE", _("$(SEQUENCE) - sequence number") },
-    { "YEAR", _("$(YEAR) - year") },
-    { "MONTH", _("$(MONTH) - month") },
-    { "DAY", _("$(DAY) - day") },
-    { "HOUR", _("$(HOUR) - hour") },
-    { "MINUTE", _("$(MINUTE) - minute") },
-    { "SECOND", _("$(SECOND) - second") },
-    { "EXIF_YEAR", _("$(EXIF_YEAR) - EXIF year") },
-    { "EXIF_MONTH", _("$(EXIF_MONTH) - EXIF month") },
-    { "EXIF_DAY", _("$(EXIF_DAY) - EXIF day") },
-    { "EXIF_HOUR", _("$(EXIF_HOUR) - EXIF hour") },
-    { "EXIF_MINUTE", _("$(EXIF_MINUTE) - EXIF minute") },
-    { "EXIF_SECOND", _("$(EXIF_SECOND) - EXIF second") },
-    { "STARS", _("$(STARS) - star rating") },
-    { "LABELS", _("$(LABELS) - colorlabels") },
-    { "PICTURES_FOLDER", _("$(PICTURES_FOLDER) - pictures folder") },
-    { "HOME", _("$(HOME) - home folder") },
-    { "DESKTOP", _("$(DESKTOP) - desktop folder") },
-    { NULL, NULL }
-  };
-
-  dt_gtkentry_setup_completion(GTK_ENTRY(widget), compl_list);
+  dt_gtkentry_setup_completion(GTK_ENTRY(widget), dt_gtkentry_get_default_path_compl_list());
 
   char *tooltip_text = dt_gtkentry_build_completion_tooltip_text (
                          _("enter the path where to put exported images\nrecognized variables:"),
-                         compl_list);
+                         dt_gtkentry_get_default_path_compl_list());
   g_object_set(G_OBJECT(widget), "tooltip-text", tooltip_text, (char *)NULL);
+  g_signal_connect(G_OBJECT(widget), "changed", G_CALLBACK(entry_changed_callback), self);
   g_free(tooltip_text);
 
   widget = dtgtk_button_new(dtgtk_cairo_paint_directory, 0);
@@ -178,6 +192,7 @@ gui_init (dt_imageio_module_storage_t *self)
     gtk_entry_set_text(GTK_ENTRY(d->title_entry), dir);
     g_free(dir);
   }
+  g_signal_connect(G_OBJECT(d->title_entry), "changed", G_CALLBACK(title_changed_callback), self);
 }
 
 void
@@ -283,7 +298,7 @@ store (dt_imageio_module_storage_t *self, dt_imageio_module_data_t *sdata, const
       description = res_desc->data;
     }
 
-    char relfilename[256], relthumbfilename[256];
+    char relfilename[PATH_MAX], relthumbfilename[PATH_MAX];
     c = filename + strlen(filename);
     for(; c>filename && *c != '/' ; c--);
     if(*c == '/') c++;
@@ -295,7 +310,7 @@ store (dt_imageio_module_storage_t *self, dt_imageio_module_data_t *sdata, const
     if(c <= relthumbfilename) c = relthumbfilename + strlen(relthumbfilename);
     sprintf(c, "-thumb.%s", ext);
 
-    char subfilename[PATH_MAX], relsubfilename[256];
+    char subfilename[PATH_MAX], relsubfilename[PATH_MAX];
     snprintf(subfilename, sizeof(subfilename), "%s", d->cached_dirname);
     char* sc = subfilename + strlen(subfilename);
     sprintf(sc, "/img_%d.html", num);
@@ -307,10 +322,10 @@ store (dt_imageio_module_storage_t *self, dt_imageio_module_data_t *sdata, const
              "      <h1>%s</h1>\n"
              "      %s</div>\n", title?title:relfilename, description?description:"&nbsp;", relfilename, relthumbfilename, num, title?title:"&nbsp;", description?description:"&nbsp;");
 
-    char next[256];
+    char next[PATH_MAX];
     snprintf(next, sizeof(next), "img_%d.html", (num)%total+1);
 
-    char prev[256];
+    char prev[PATH_MAX];
     snprintf(prev, sizeof(prev), "img_%d.html", (num==1)?total:num-1);
 
     pair->pos = num;
@@ -495,7 +510,7 @@ finalize_store(dt_imageio_module_storage_t *self, dt_imageio_module_data_t *dd)
 size_t
 params_size(dt_imageio_module_storage_t *self)
 {
-  return sizeof(dt_imageio_gallery_t) - 2*sizeof(void *) - 1024;
+  return sizeof(dt_imageio_gallery_t) - 2*sizeof(void *) - DT_MAX_PATH_FOR_PARAMS;
 }
 
 void init(dt_imageio_module_storage_t *self)
@@ -510,16 +525,18 @@ void*
 get_params(dt_imageio_module_storage_t *self)
 {
   dt_imageio_gallery_t *d = (dt_imageio_gallery_t *)calloc(1, sizeof(dt_imageio_gallery_t));
-  gallery_t *g = (gallery_t *)self->gui_data;
   d->vp = NULL;
   d->l = NULL;
   dt_variables_params_init(&d->vp);
-  const char *text = gtk_entry_get_text(GTK_ENTRY(g->entry));
+
+  char *text = dt_conf_get_string("plugins/imageio/storage/gallery/file_directory");
   g_strlcpy(d->filename, text, sizeof(d->filename));
-  dt_conf_set_string("plugins/imageio/storage/gallery/file_directory", d->filename);
-  text = gtk_entry_get_text(GTK_ENTRY(g->title_entry));
+  g_free(text);
+
+  text = dt_conf_get_string("plugins/imageio/storage/gallery/title");
   g_strlcpy(d->title, text, sizeof(d->title));
-  dt_conf_set_string("plugins/imageio/storage/gallery/title", d->title);
+  g_free(text);
+
   return d;
 }
 

@@ -143,7 +143,6 @@ void dt_dev_pixelpipe_set_input(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, flo
 {
   pipe->iwidth  = width;
   pipe->iheight = height;
-  pipe->iflipped = 0;
   pipe->iscale = iscale;
   pipe->input = input;
   pipe->image = dev->image_storage;
@@ -319,22 +318,17 @@ static void
 histogram_collect(dt_iop_module_t *module, const void *pixel, const dt_iop_roi_t *roi,
                   uint32_t **histogram, uint32_t *histogram_max)
 {
-  dt_dev_histogram_params_t *histogram_params = (dt_dev_histogram_params_t*)malloc(sizeof(dt_dev_histogram_params_t));
-  memcpy(histogram_params, &module->histogram_params, sizeof(dt_dev_histogram_params_t));
+  dt_dev_histogram_collection_params_t histogram_params;
+  memcpy(&histogram_params, &module->histogram_params, sizeof(dt_dev_histogram_collection_params_t));
 
   //if the current module does did not specified its own ROI, use the full ROI
-  if(histogram_params->roi == NULL)
-    histogram_params->roi = roi;
+  if(histogram_params.roi == NULL)
+    histogram_params.roi = roi;
 
   const dt_iop_colorspace_type_t cst = dt_iop_module_colorspace(module);
 
-  dt_histogram_helper(histogram_params, cst, pixel, histogram);
-  dt_histogram_max_helper(histogram_params, cst, histogram, histogram_max);
-
-  module->histogram_bins_count = histogram_params->bins_count;
-  module->histogram_pixels = (roi->width - roi->x) * (roi->height - roi->y);
-
-  free(histogram_params);
+  dt_histogram_helper(&histogram_params, &module->histogram_stats, cst, pixel, histogram);
+  dt_histogram_max_helper(&module->histogram_stats, cst, histogram, histogram_max);
 }
 
 #ifdef HAVE_OPENCL
@@ -364,22 +358,18 @@ histogram_collect_cl(int devid, dt_iop_module_t *module, cl_mem img, const dt_io
     return;
   }
 
-  dt_dev_histogram_params_t *histogram_params = (dt_dev_histogram_params_t*)malloc(sizeof(dt_dev_histogram_params_t));
-  memcpy(histogram_params, &module->histogram_params, sizeof(dt_dev_histogram_params_t));
+  dt_dev_histogram_collection_params_t histogram_params;
+  memcpy(&histogram_params, &module->histogram_params, sizeof(dt_dev_histogram_collection_params_t));
 
   //if the current module does did not specified its own ROI, use the full ROI
-  if(histogram_params->roi == NULL)
-    histogram_params->roi = roi;
+  if(histogram_params.roi == NULL)
+    histogram_params.roi = roi;
 
   const dt_iop_colorspace_type_t cst = dt_iop_module_colorspace(module);
 
-  dt_histogram_helper(histogram_params, cst, pixel, histogram);
-  dt_histogram_max_helper(histogram_params, cst, histogram, histogram_max);
+  dt_histogram_helper(&histogram_params, &module->histogram_stats, cst, pixel, histogram);
+  dt_histogram_max_helper(&module->histogram_stats, cst, histogram, histogram_max);
 
-  module->histogram_bins_count = histogram_params->bins_count;
-  module->histogram_pixels = (roi->width - roi->x) * (roi->height - roi->y);
-
-  free(histogram_params);
   if(tmpbuf) dt_free_align(tmpbuf);
 }
 #endif
@@ -1625,12 +1615,12 @@ dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, void *
     char histogram_log[32] = "";
     if(!(pixelpipe_flow & PIXELPIPE_FLOW_HISTOGRAM_NONE))
     {
-      snprintf(histogram_log, sizeof(histogram_log), ", collecting histogram on %s",
+      snprintf(histogram_log, sizeof(histogram_log), ", collected histogram on %s",
                (pixelpipe_flow & PIXELPIPE_FLOW_HISTOGRAM_ON_GPU ? "GPU" : pixelpipe_flow & PIXELPIPE_FLOW_HISTOGRAM_ON_CPU ? "CPU" : ""));
     }
 
     gchar *module_label = dt_history_item_get_name(module);
-    dt_show_times(&start, "[dev_pixelpipe]", "processing `%s' on %s%s%s, blending on %s [%s]", module_label,
+    dt_show_times(&start, "[dev_pixelpipe]", "processed `%s' on %s%s%s, blended on %s [%s]", module_label,
                   pixelpipe_flow & PIXELPIPE_FLOW_PROCESSED_ON_GPU ? "GPU" : pixelpipe_flow & PIXELPIPE_FLOW_PROCESSED_ON_CPU ? "CPU" : "",
                   pixelpipe_flow & PIXELPIPE_FLOW_PROCESSED_WITH_TILING ? " with tiling" : "",
                   (!(pixelpipe_flow & PIXELPIPE_FLOW_HISTOGRAM_NONE) && (module->request_histogram & DT_REQUEST_ON)) ? histogram_log : "",

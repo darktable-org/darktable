@@ -4,7 +4,7 @@
 /*
     RawSpeed - RAW file decoder.
 
-    Copyright (C) 2009 Klaus Post
+    Copyright (C) 2009-2014 Klaus Post
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Lesser General Public
@@ -61,6 +61,7 @@ TiffEntry::TiffEntry(TiffTag _tag, TiffDataType _type, uint32 _count, const ucha
   tag = _tag;
   type = _type;
   count = _count;
+  data_offset = -1; // Set nonsense value in case someone tries to use it
   if (NULL == _data) {
     uint32 bytesize = _count << datashifts[_type];
     own_data = new uchar8[bytesize];
@@ -157,7 +158,7 @@ string TiffEntry::getString() {
     memcpy(own_data, data, count);
     own_data[count-1] = 0;  // Ensure string is not larger than count defines
   }
-  return string((const char*)&data[0]);
+  return string((const char*)&own_data[0]);
 }
 
 bool TiffEntry::isString() {
@@ -230,7 +231,7 @@ std::string TiffEntry::getValueAsString()
     }
   }
   string ret(temp_string);
-  delete temp_string;
+  delete [] temp_string;
   return ret;
 }
 

@@ -19,6 +19,7 @@
 #include <stddef.h>
 #include <stdint.h>
 #include <xmmintrin.h>
+#include <stdlib.h>
 #include <assert.h>
 
 #include "common/darktable.h"
@@ -28,7 +29,7 @@
 //------------------------------------------------------------------------------
 
 static void inline
-histogram_helper_cs_RAW_helper_process_pixel_float(const dt_dev_histogram_params_t *histogram_params,
+histogram_helper_cs_RAW_helper_process_pixel_float(const dt_dev_histogram_collection_params_t * const histogram_params,
                                                    const float *pixel, uint32_t *histogram)
 {
   const uint32_t V = CLAMP((float)(histogram_params->bins_count) * *pixel, 0, histogram_params->bins_count - 1);
@@ -36,7 +37,7 @@ histogram_helper_cs_RAW_helper_process_pixel_float(const dt_dev_histogram_params
 }
 
 static void inline
-histogram_helper_cs_RAW(const dt_dev_histogram_params_t *histogram_params,
+histogram_helper_cs_RAW(const dt_dev_histogram_collection_params_t * const histogram_params,
                         const void *pixel, uint32_t *histogram, int j)
 {
   const dt_iop_roi_t *roi = histogram_params->roi;
@@ -50,7 +51,7 @@ histogram_helper_cs_RAW(const dt_dev_histogram_params_t *histogram_params,
 //------------------------------------------------------------------------------
 
 static void inline
-histogram_helper_cs_RAW_helper_process_pixel_uint16(const dt_dev_histogram_params_t *histogram_params,
+histogram_helper_cs_RAW_helper_process_pixel_uint16(const dt_dev_histogram_collection_params_t * const histogram_params,
                                                     const uint16_t *pixel, uint32_t *histogram)
 {
   const uint32_t V = CLAMP((float)(histogram_params->bins_count) / (float)UINT16_MAX * *pixel, 0, histogram_params->bins_count - 1);
@@ -58,7 +59,7 @@ histogram_helper_cs_RAW_helper_process_pixel_uint16(const dt_dev_histogram_param
 }
 
 static void inline
-histogram_helper_cs_RAW_helper_process_pixel_si128(const dt_dev_histogram_params_t *histogram_params,
+histogram_helper_cs_RAW_helper_process_pixel_si128(const dt_dev_histogram_collection_params_t * const histogram_params,
                                                    const __m128i *pixel, uint32_t *histogram)
 {
   const float scale = (float)(histogram_params->bins_count) / (float)UINT16_MAX;
@@ -94,7 +95,7 @@ histogram_helper_cs_RAW_helper_process_pixel_si128(const dt_dev_histogram_params
 }
 
 void inline
-dt_histogram_helper_cs_RAW_uint16(const dt_dev_histogram_params_t *histogram_params,
+dt_histogram_helper_cs_RAW_uint16(const dt_dev_histogram_collection_params_t * const histogram_params,
                                   const void *pixel, uint32_t *histogram, int j)
 {
   const dt_iop_roi_t *roi = histogram_params->roi;
@@ -119,7 +120,7 @@ dt_histogram_helper_cs_RAW_uint16(const dt_dev_histogram_params_t *histogram_par
 //------------------------------------------------------------------------------
 
 static void inline __attribute__((__unused__))
-histogram_helper_cs_rgb_helper_process_pixel_float(const dt_dev_histogram_params_t *histogram_params,
+histogram_helper_cs_rgb_helper_process_pixel_float(const dt_dev_histogram_collection_params_t * const histogram_params,
                                                    const float *pixel, uint32_t *histogram)
 {
   const float Rv = pixel[0];
@@ -134,7 +135,7 @@ histogram_helper_cs_rgb_helper_process_pixel_float(const dt_dev_histogram_params
 }
 
 static void inline
-histogram_helper_cs_rgb_helper_process_pixel_m128(const dt_dev_histogram_params_t *histogram_params,
+histogram_helper_cs_rgb_helper_process_pixel_m128(const dt_dev_histogram_collection_params_t * const histogram_params,
                                                   const float *pixel, uint32_t *histogram)
 {
   const float fscale = (float)(histogram_params->bins_count);
@@ -161,7 +162,7 @@ histogram_helper_cs_rgb_helper_process_pixel_m128(const dt_dev_histogram_params_
 }
 
 static void inline
-histogram_helper_cs_rgb(const dt_dev_histogram_params_t *histogram_params,
+histogram_helper_cs_rgb(const dt_dev_histogram_collection_params_t * const histogram_params,
                         const void *pixel, uint32_t *histogram, int j)
 {
   const dt_iop_roi_t *roi = histogram_params->roi;
@@ -175,7 +176,7 @@ histogram_helper_cs_rgb(const dt_dev_histogram_params_t *histogram_params,
 //------------------------------------------------------------------------------
 
 static void inline __attribute__((__unused__))
-histogram_helper_cs_Lab_helper_process_pixel_float(const dt_dev_histogram_params_t *histogram_params,
+histogram_helper_cs_Lab_helper_process_pixel_float(const dt_dev_histogram_collection_params_t * const histogram_params,
                                                    const float *pixel, uint32_t *histogram)
 {
   const float Lv = pixel[0];
@@ -190,7 +191,7 @@ histogram_helper_cs_Lab_helper_process_pixel_float(const dt_dev_histogram_params
 }
 
 static void inline
-histogram_helper_cs_Lab_helper_process_pixel_m128(const dt_dev_histogram_params_t *histogram_params,
+histogram_helper_cs_Lab_helper_process_pixel_m128(const dt_dev_histogram_collection_params_t * const histogram_params,
                                                   const float *pixel, uint32_t *histogram)
 {
   const float fscale = (float)(histogram_params->bins_count);
@@ -219,7 +220,7 @@ histogram_helper_cs_Lab_helper_process_pixel_m128(const dt_dev_histogram_params_
 }
 
 static void inline
-histogram_helper_cs_Lab(const dt_dev_histogram_params_t *histogram_params,
+histogram_helper_cs_Lab(const dt_dev_histogram_collection_params_t * const histogram_params,
                         const void *pixel, uint32_t *histogram, int j)
 {
   const dt_iop_roi_t *roi = histogram_params->roi;
@@ -233,20 +234,20 @@ histogram_helper_cs_Lab(const dt_dev_histogram_params_t *histogram_params,
 //==============================================================================
 
 void
-dt_histogram_worker(const dt_dev_histogram_params_t *histogram_params,
-                    const void *pixel, uint32_t **histogram, dt_worker Worker)
+dt_histogram_worker(const dt_dev_histogram_collection_params_t * const histogram_params,
+                    dt_dev_histogram_stats_t *histogram_stats,
+                    const void * const pixel, uint32_t **histogram, const dt_worker Worker)
 {
   const int nthreads = omp_get_max_threads();
 
   const size_t bins_total = histogram_params->bins_count * 4;
   const size_t buf_size = bins_total * sizeof(uint32_t);
-  void *partial_hists = dt_alloc_align(16, buf_size * nthreads);
-  memset (partial_hists, 0, buf_size * nthreads);
+  void *partial_hists = calloc(nthreads, buf_size);
 
-  const dt_iop_roi_t *roi = histogram_params->roi;
+  const dt_iop_roi_t * const roi = histogram_params->roi;
 
 #ifdef _OPENMP
-  #pragma omp parallel for schedule(static) default(none) shared(roi,Worker,histogram_params,pixel,partial_hists)
+  #pragma omp parallel for schedule(static) default(none) shared(partial_hists)
 #endif
   for(int j = roi->y; j < roi->height; j++)
   {
@@ -255,9 +256,9 @@ dt_histogram_worker(const dt_dev_histogram_params_t *histogram_params,
   }
 
 #ifdef _OPENMP
-  *histogram = dt_alloc_align(16, buf_size);
+  *histogram = realloc(*histogram, buf_size);
+  memset(*histogram, 0, buf_size);
   uint32_t *hist = *histogram;
-  memset (hist, 0, buf_size);
 
   #pragma omp parallel for schedule(static) default(none) shared(hist,partial_hists)
   for(size_t k = 0; k < bins_total; k++)
@@ -268,37 +269,45 @@ dt_histogram_worker(const dt_dev_histogram_params_t *histogram_params,
       hist[k] += thread_hist[k];
     }
   }
-  free(partial_hists);
 #else
-  *histogram = partial_hists;
+  *histogram = realloc(*histogram, buf_size);
+  memmove(*histogram, partial_hists, buf_size);
 #endif
+  free(partial_hists);
+
+  histogram_stats->bins_count = histogram_params->bins_count;
+  histogram_stats->pixels = (roi->width - roi->x) * (roi->height - roi->y);
 }
 
 //------------------------------------------------------------------------------
 
 void
-dt_histogram_helper(const dt_dev_histogram_params_t *histogram_params,
+dt_histogram_helper(const dt_dev_histogram_collection_params_t * const histogram_params,
+                    dt_dev_histogram_stats_t *histogram_stats,
                     dt_iop_colorspace_type_t cst, const void *pixel, uint32_t **histogram)
 {
   switch(cst)
   {
     case iop_cs_RAW:
-      dt_histogram_worker(histogram_params, pixel, histogram, histogram_helper_cs_RAW);
+      dt_histogram_worker(histogram_params, histogram_stats, pixel, histogram, histogram_helper_cs_RAW);
+      histogram_stats->ch = 1u;
       break;
 
     case iop_cs_rgb:
-      dt_histogram_worker(histogram_params, pixel, histogram, histogram_helper_cs_rgb);
+      dt_histogram_worker(histogram_params, histogram_stats, pixel, histogram, histogram_helper_cs_rgb);
+      histogram_stats->ch = 3u;
       break;
 
     case iop_cs_Lab:
     default:
-      dt_histogram_worker(histogram_params, pixel, histogram, histogram_helper_cs_Lab);
+      dt_histogram_worker(histogram_params, histogram_stats, pixel, histogram, histogram_helper_cs_Lab);
+      histogram_stats->ch = 3u;
       break;
   }
 }
 
 void
-dt_histogram_max_helper(const dt_dev_histogram_params_t *histogram_params,
+dt_histogram_max_helper(const dt_dev_histogram_stats_t * const histogram_stats,
                         dt_iop_colorspace_type_t cst, uint32_t **histogram, uint32_t *histogram_max)
 {
   if(*histogram == NULL)
@@ -308,32 +317,32 @@ dt_histogram_max_helper(const dt_dev_histogram_params_t *histogram_params,
   switch(cst)
   {
     case iop_cs_RAW:
-      for(int k = 0; k < 4 * histogram_params->bins_count; k += 4)
+      for(int k = 0; k < 4 * histogram_stats->bins_count; k += 4)
         histogram_max[0] = histogram_max[0] > hist[k] ? histogram_max[0] : hist[k];
       break;
 
     case iop_cs_rgb:
       // don't count <= 0 pixels
-      for(int k = 4; k < 4 * histogram_params->bins_count; k += 4)
+      for(int k = 4; k < 4 * histogram_stats->bins_count; k += 4)
         histogram_max[0] = histogram_max[0] > hist[k] ? histogram_max[0] : hist[k];
-      for(int k = 5; k < 4 * histogram_params->bins_count; k += 4)
+      for(int k = 5; k < 4 * histogram_stats->bins_count; k += 4)
         histogram_max[1] = histogram_max[1] > hist[k] ? histogram_max[1] : hist[k];
-      for(int k = 6; k < 4 * histogram_params->bins_count; k += 4)
+      for(int k = 6; k < 4 * histogram_stats->bins_count; k += 4)
         histogram_max[2] = histogram_max[2] > hist[k] ? histogram_max[2] : hist[k];
-      for(int k = 7; k < 4 * histogram_params->bins_count; k += 4)
+      for(int k = 7; k < 4 * histogram_stats->bins_count; k += 4)
         histogram_max[3] = histogram_max[3] > hist[k] ? histogram_max[3] : hist[k];
       break;
 
     case iop_cs_Lab:
     default:
       // don't count <= 0 pixels in L
-      for(int k = 4; k < 4 * histogram_params->bins_count; k += 4)
+      for(int k = 4; k < 4 * histogram_stats->bins_count; k += 4)
         histogram_max[0] = histogram_max[0] > hist[k] ? histogram_max[0] : hist[k];
 
       // don't count <= -128 and >= +128 pixels in a and b
-      for(int k = 5; k < 4 * (histogram_params->bins_count - 1); k += 4)
+      for(int k = 5; k < 4 * (histogram_stats->bins_count - 1); k += 4)
         histogram_max[1] = histogram_max[1] > hist[k] ? histogram_max[1] : hist[k];
-      for(int k = 6; k < 4 * (histogram_params->bins_count - 1); k += 4)
+      for(int k = 6; k < 4 * (histogram_stats->bins_count - 1); k += 4)
         histogram_max[2] = histogram_max[2] > hist[k] ? histogram_max[2] : hist[k];
       break;
   }

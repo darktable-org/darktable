@@ -72,8 +72,9 @@
       You leave edit mode by clicking on the
       <inlinegraphic fileref="&shape_edit;" scalefit="1" width="2%" align="center"/>
       symbol. You can at any time go back to edit mode and do further adjustments by clicking
-      the edit symbol again. In edit mode you can also remove a shape by right-clicking on it -
-      the shape is removed from the current mask but it's still in the list of defined shapes.
+      the edit symbol again. In edit mode you can also remove a shape by right-clicking on
+      it&nbsp;&ndash; the shape is removed from the current mask but it's still in the list of
+      defined shapes.
     </para>
 
     <para>
@@ -133,8 +134,8 @@
         On lifting the tablet pen or releasing the left mouse button the drawn figure is
         converted into a number of connected nodes which define the shape. A configuration
         option (see <xref linkend="gui_options"/>) controls how much smoothing is applied. A
-        higher level of smoothing leads to less nodes&nbsp;&ndash; this eases subsequent editing at the
-        expense of a lower initial accuracy.
+        higher level of smoothing leads to less nodes&nbsp;&ndash; this eases subsequent editing
+        at the expense of a lower initial accuracy.
       </para>
 
       <para>
@@ -189,8 +190,8 @@
         Click into the canvas to place the circle. Left-click and drag the circle to a different
         position if needed. Use the scroll-wheel of your mouse while in the circle to change the
         diameter; scroll within the circle border to adjust the width of the gradual decay. With
-        <emphasis>ctrl+scroll</emphasis> you can adjust the opacity of the circle&nbsp;&ndash; this is best
-        observed with the mask displayed by pressing the
+        <emphasis>ctrl+scroll</emphasis> you can adjust the opacity of the circle&nbsp;&ndash;
+        this is best observed with the mask displayed by pressing the
         <inlinegraphic fileref="&icon_module_mask;" scalefit="1" width="2%" align="center"/>
         button.
       </para>
@@ -294,12 +295,13 @@
       </para>
 
       <para>
-        The size of the complete shape can be modified by scrolling&nbsp;&ndash; analogeous to the circle
-        shape. The same holds true for the width of the border, i.e. the area with a gradual
-        opacity decay. Single nodes as well as path segments can be moved by mouse dragging. If
-        a node is selected by clicking on it, a further control point appears&nbsp;&ndash; you can move it
-        around to modify the curvature of the line. Dragging one of the control points on the
-        border adjusts the border width just in that part of the shape.
+        The size of the complete shape can be modified by scrolling&nbsp;&ndash; analogeous to
+        the circle shape. The same holds true for the width of the border, i.e. the area with a
+        gradual opacity decay. Single nodes as well as path segments can be moved by mouse
+        dragging. If a node is selected by clicking on it, a further control point
+        appears&nbsp;&ndash; you can move it around to modify the curvature of the line.
+        Dragging one of the control points on the border adjusts the border width just in that
+        part of the shape.
       </para>
 
       <para>
@@ -410,8 +412,8 @@
         and
         <inlinegraphic fileref="&icon_module_minus;" scalefit="1" width="2%" align="center"/>
         , respectively) allows the user to toggle between the normal and the inverted state of
-        the drawn mask, i.e. the opacity values get inverted&nbsp;&ndash; 100% becomes 0% and vice versa.
-        You need this feature when combining drawn and parametric masks (see
+        the drawn mask, i.e. the opacity values get inverted&nbsp;&ndash; 100% becomes 0% and
+        vice versa. You need this feature when combining drawn and parametric masks (see
         <xref linkend="combined_masks"/>).
       </para>
 
@@ -425,8 +427,8 @@
         More functionality to control the interaction of multiple shapes within a mask can be
         found in the mask manager panel (see <xref linkend="mask_manager"/>). Here you can give
         individual names to your shapes which will help you to keep track of your shapes. You
-        can also select individual shapes for editing&nbsp;&ndash; a helpful feature if your masks happens
-        to contain several shapes with overlapping control elements.
+        can also select individual shapes for editing&nbsp;&ndash; a helpful feature if your
+        masks happens to contain several shapes with overlapping control elements.
       </para>
 
     </sect4>

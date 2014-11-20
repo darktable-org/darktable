@@ -332,7 +332,7 @@ static void _add_sample(GtkButton *widget, gpointer self)
   gtk_box_pack_start(GTK_BOX(sample->container), sample->output_label,
                      TRUE, TRUE, 0);
 
-  sample->delete_button = gtk_button_new_from_stock(GTK_STOCK_REMOVE);
+  sample->delete_button = gtk_button_new_with_label(_("remove"));
   gtk_box_pack_start(GTK_BOX(sample->container), sample->delete_button,
                      FALSE, FALSE, 0);
 
@@ -596,7 +596,7 @@ void gui_init(dt_lib_module_t *self)
   g_signal_connect(G_OBJECT(data->samples_mode_selector), "changed",
                    G_CALLBACK(_samples_mode_changed), self);
 
-  data->add_sample_button = gtk_button_new_from_stock(GTK_STOCK_ADD);
+  data->add_sample_button = gtk_button_new_with_label(_("add"));
   gtk_widget_set_sensitive(data->add_sample_button, FALSE);
   gtk_box_pack_start(GTK_BOX(samples_options_row), data->add_sample_button,
                      FALSE, FALSE, 0);

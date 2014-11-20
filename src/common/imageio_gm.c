@@ -61,11 +61,10 @@ dt_imageio_open_gm(
   dt_mipmap_cache_allocator_t a)
 {
   int err = DT_IMAGEIO_FILE_CORRUPTED;
-  float *buf = NULL;
   ExceptionInfo exception;
   Image *image = NULL;
   ImageInfo *image_info = NULL;
-  uint32_t width, height, orientation;
+  uint32_t width, height;
 
   if(!_supported_image(filename)) return DT_IMAGEIO_FILE_CORRUPTED;
 
@@ -91,18 +90,9 @@ dt_imageio_open_gm(
 
   width = image->columns;
   height = image->rows;
-  orientation = image->orientation;
 
-  if(orientation & 4)
-  {
-    img->width = height;
-    img->height = width;
-  }
-  else
-  {
-    img->width = width;
-    img->height = height;
-  }
+  img->width = width;
+  img->height = height;
 
   img->bpp = 4*sizeof(float);
 
@@ -114,15 +104,10 @@ dt_imageio_open_gm(
     goto error;
   }
 
-  buf = (float *)dt_alloc_align(16, width*img->bpp);
-  if(!buf) goto error;
-
-  const int ht2 = orientation & 4 ? img->width  : img->height; // pretend unrotated, rotate in write_pos
-  const int wd2 = orientation & 4 ? img->height : img->width;
-
   for (uint32_t row = 0; row < height; row++)
   {
-    int ret = DispatchImage(image, 0, row, width, 1, "RGBP", FloatPixel, (void *)buf, &exception);
+    float *bufprt = mipbuf + (size_t)4*row*img->width;
+    int ret = DispatchImage(image, 0, row, width, 1, "RGBP", FloatPixel, bufprt, &exception);
     if (exception.severity != UndefinedException)
       CatchException(&exception);
     if(ret != MagickPass)
@@ -131,17 +116,13 @@ dt_imageio_open_gm(
       err = DT_IMAGEIO_FILE_CORRUPTED;
       goto error;
     }
-
-    for(uint32_t i=0; i<width; i++)
-      for(int k=0; k<4; k++) mipbuf[4*dt_imageio_write_pos(i, row, wd2, ht2, wd2, ht2, orientation) + k] = buf[4*i + k];
   }
 
-  if(buf) dt_free_align(buf);
   if(image) DestroyImage(image);
   if(image_info) DestroyImageInfo(image_info);
   DestroyExceptionInfo(&exception);
 
-  img->filters = 0;
+  img->filters = 0u;
   img->flags &= ~DT_IMAGE_RAW;
   img->flags &= ~DT_IMAGE_HDR;
   img->flags |= DT_IMAGE_LDR;
@@ -149,7 +130,6 @@ dt_imageio_open_gm(
   return DT_IMAGEIO_OK;
 
 error:
-  if(buf) dt_free_align(buf);
   if(image) DestroyImage(image);
   if(image_info) DestroyImageInfo(image_info);
   DestroyExceptionInfo(&exception);

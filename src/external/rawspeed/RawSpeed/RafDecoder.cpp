@@ -5,6 +5,7 @@
     RawSpeed - RAW file decoder.
 
     Copyright (C) 2009-2014 Klaus Post
+    Copyright (C) 2014 Pedro Côrte-Real
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Lesser General Public
@@ -26,7 +27,8 @@ namespace RawSpeed {
 
 RafDecoder::RafDecoder(TiffIFD *rootIFD, FileMap* file) :
     RawDecoder(file), mRootIFD(rootIFD) {
-      decoderVersion = 1;
+  decoderVersion = 1;
+  alt_layout = FALSE;
 }
 RafDecoder::~RafDecoder(void) {
   if (mRootIFD)
@@ -35,7 +37,6 @@ RafDecoder::~RafDecoder(void) {
 }
 
 RawImage RafDecoder::decodeRawInternal() {
-
   vector<TiffIFD*> data = mRootIFD->getIFDsWithTag(FUJI_STRIPOFFSETS);
 
   if (data.empty())
@@ -46,68 +47,29 @@ RawImage RafDecoder::decodeRawInternal() {
   uint32 height = 0;
   uint32 width = 0;
 
-  alt_layout = hints.find("set_alt_layout") == hints.end();
-  fuji_width = hints.find("set_fuji_width") == hints.end();
-
   if (raw->hasEntry(FUJI_RAWIMAGEFULLHEIGHT)) {
     height = raw->getEntry(FUJI_RAWIMAGEFULLHEIGHT)->getInt();
     width = raw->getEntry(FUJI_RAWIMAGEFULLWIDTH)->getInt();
-  } else if (raw->hasEntry((TiffTag)0x100)) {
-    TiffEntry *e = raw->getEntry((TiffTag)0x100);
+  } else if (raw->hasEntry(IMAGEWIDTH)) {
+    TiffEntry *e = raw->getEntry(IMAGEWIDTH);
     if (e->count < 2)
       ThrowRDE("Fuji decoder: Size array too small");
     const ushort16 *size = e->getShortArray();
     height = size[0];
     width = size[1];
   } 
-  if (raw->hasEntry((TiffTag)0x130)) {
-    TiffEntry *e = raw->getEntry((TiffTag)0x130);
+  if (raw->hasEntry(FUJI_LAYOUT)) {
+    TiffEntry *e = raw->getEntry(FUJI_LAYOUT);
     if (e->count < 2)
       ThrowRDE("Fuji decoder: Layout array too small");
     const uchar8 *layout = e->getData();
-    alt_layout = layout[0] >> 7;
-    fuji_width = !(layout[1] & 8);
+    alt_layout = !(layout[0] >> 7);
   }
-  if (raw->hasEntry((TiffTag)0x121)) {
-    TiffEntry *e = raw->getEntry((TiffTag)0x121);
-    if (e->count < 2)
-      ThrowRDE("Fuji decoder: Size array too small");
-
-    const ushort16 *size = e->getShortArray();
-
-    final_size = iPoint2D(size[1], size[0]);
-    if (final_size.x == 4284)
-      final_size.x += 3;
-  }
-  if (raw->hasEntry((TiffTag)0xc000)) {
-    TiffEntry *e = raw->getEntry((TiffTag)0xc000);
-    if (e->count < 2)
-      ThrowRDE("Fuji decoder: Size array too small");
-    const uint32 *size = e->getIntArray();
-
-    int index = 0;
-    final_size.x = size[index++];
-    if (final_size.x > 10000  && e->count > 2)
-      final_size.x  = size[index++];
-    final_size.y = size[index++];
-  }
-
-  final_size.x >>= alt_layout;
-  final_size.y <<= alt_layout;
-
-  fuji_width = final_size.x >> (alt_layout ? 0 : 1);
-  final_size.x = (final_size.y >> alt_layout) + fuji_width;
-  final_size.y = final_size.x - 1;
 
   if (width <= 0 ||  height <= 0)
     ThrowRDE("RAF decoder: Unable to locate image size");
 
   TiffEntry *offsets = raw->getEntry(FUJI_STRIPOFFSETS);
-  //TiffEntry *counts = raw->getEntry(FUJI_STRIPBYTECOUNTS);
-
-  int bps = 16;
-  if (raw->hasEntry(FUJI_BITSPERSAMPLE))    
-    bps = raw->getEntry(FUJI_BITSPERSAMPLE)->getInt();
 
   if (offsets->count != 1)
     ThrowRDE("RAF Decoder: Multiple Strips found: %u", offsets->count);
@@ -116,12 +78,32 @@ RawImage RafDecoder::decodeRawInternal() {
   if (!mFile->isValid(off))
     ThrowRDE("RAF RAW Decoder: Invalid image data offset, cannot decode.");
 
-  mRaw->dim = iPoint2D(width, height);
-  mRaw->createData();
-  ByteStream input_start(mFile->getData(off), mFile->getSize() - off);
-  iPoint2D pos(0, 0);
-  readUncompressedRaw(input_start, mRaw->dim,pos, width*bps/8, bps, BitOrder_Plain);
+  int bps = 16;
+  if (raw->hasEntry(FUJI_BITSPERSAMPLE))
+    bps = raw->getEntry(FUJI_BITSPERSAMPLE)->getInt();
+  // x-trans sensors report 14bpp, but data isn't packed so read as 16bpp
+  if (bps == 14) bps = 16;
 
+  // Some fuji SuperCCD cameras include a second raw image next to the first one
+  // that is identical but darker to the first. The two combined can produce
+  // a higher dynamic range image. Right now we're ignoring it.
+  bool double_width = hints.find("double_width_unpacked") != hints.end();
+
+  mRaw->dim = iPoint2D(width*(double_width ? 2 : 1), height);
+  mRaw->createData();
+  ByteStream input(mFile->getData(off), mFile->getSize() - off);
+  iPoint2D pos(0, 0);
+
+  if (double_width) {
+    Decode16BitRawUnpacked(input, width*2, height);
+  } else if (mRootIFD->endian == big) {
+    Decode16BitRawBEunpacked(input, width, height);
+  } else {
+    if (hints.find("jpeg32_bitorder") != hints.end())
+      readUncompressedRaw(input, mRaw->dim, pos, width*bps/8, bps, BitOrder_Jpeg32);
+    else
+      readUncompressedRaw(input, mRaw->dim, pos, width*bps/8, bps, BitOrder_Plain);
+  }
   return mRaw;
 }
 
@@ -155,19 +137,26 @@ void RafDecoder::decodeMetaDataInternal(CameraMetaData *meta) {
   if (mRootIFD->hasEntryRecursive(ISOSPEEDRATINGS))
     iso = mRootIFD->getEntryRecursive(ISOSPEEDRATINGS)->getInt();
   mRaw->isoSpeed = iso;
-  /* We fetch data ourselves */
+
+  // This is where we'd normally call setMetaData but since we may still need
+  // to rotate the image for SuperCCD cameras we do everything ourselves
   TrimSpaces(make);
   TrimSpaces(model);
   Camera *cam = meta->getCamera(make, model, "");
+  if (!cam)
+    ThrowRDE("RAF Meta Decoder: Couldn't find camera");
 
   iPoint2D new_size(mRaw->dim);
   iPoint2D crop_offset = iPoint2D(0,0);
-  if (cam && applyCrop) {
+  if (applyCrop) {
     new_size = cam->cropSize;
     crop_offset = cam->cropPos;
+    bool double_width = hints.find("double_width_unpacked") != hints.end();
     // If crop size is negative, use relative cropping
     if (new_size.x <= 0)
-      new_size.x = mRaw->dim.x - cam->cropPos.x + new_size.x;
+      new_size.x = mRaw->dim.x / (double_width ? 2 : 1) - cam->cropPos.x + new_size.x;
+    else
+      new_size.x /= (double_width ? 2 : 1);
 
     if (new_size.y <= 0)
       new_size.y = mRaw->dim.y - cam->cropPos.y + new_size.y;
@@ -178,24 +167,41 @@ void RafDecoder::decodeMetaDataInternal(CameraMetaData *meta) {
 
   // Rotate 45 degrees - could be multithreaded.
   if (rotate && !this->uncorrectedRawValues) {
+    // Calculate the 45 degree rotated size;
+    uint32 rotatedsize;
+    uint32 rotationPos;
+    if (alt_layout) {
+      rotatedsize = new_size.y+new_size.x/2;
+      rotationPos = new_size.x/2 - 1;
+    }
+    else {
+      rotatedsize = new_size.x+new_size.y/2;
+      rotationPos = new_size.x - 1;
+    }
+
+    iPoint2D final_size(rotatedsize, rotatedsize-1);
     RawImage rotated = RawImage::create(final_size, TYPE_USHORT16, 1);
     rotated->clearArea(iRectangle2D(iPoint2D(0,0), rotated->dim));
-    uint32 max_x = fuji_width << (alt_layout ? 0 : 1);
-    int r,c;
+    rotated->fujiRotationPos = rotationPos;
+
     int dest_pitch = (int)rotated->pitch / 2;
     ushort16 *dst = (ushort16*)rotated->getData(0,0);
+
     for (int y = 0; y < new_size.y; y++) {
       ushort16 *src = (ushort16*)mRaw->getData(crop_offset.x, crop_offset.y + y);
-      for (uint32 x = 0; x < max_x; x++) {
-        if (alt_layout) {
-          r = fuji_width - 1 - x + (y >> 1);
-          c = x + ((y+1) >> 1);
+      for (int x = 0; x < new_size.x; x++) {
+        int h, w;
+        if (alt_layout) { // Swapped x and y
+          h = rotatedsize - (new_size.y + 1 - y + (x >> 1));
+          w = ((x+1) >> 1) + y;
         } else {
-          r = fuji_width - 1 + y - (x >> 1);
-          c = y + ((x+1) >> 1);
+          h = new_size.x - 1 - x + (y >> 1);
+          w = ((y+1) >> 1) + x;
         }
-        if (r < rotated->dim.y && c < rotated->dim.y)
-          dst[c + r * dest_pitch] = src[x];
+        if (h < rotated->dim.y && w < rotated->dim.x)
+          dst[w + h * dest_pitch] = src[x];
+        else
+          ThrowRDE("RAF Decoder: Trying to write out of bounds");
       }
     }
     mRaw = rotated;
@@ -203,17 +209,11 @@ void RafDecoder::decodeMetaDataInternal(CameraMetaData *meta) {
     mRaw->subFrame(iRectangle2D(crop_offset, new_size));
   }
 
-  mRaw->cfa.setCFA(iPoint2D(2,2), CFA_GREEN, CFA_BLUE, CFA_RED, CFA_GREEN);
-  mRaw->isCFA = true;
-  if (cam) {
-    const CameraSensorInfo *sensor = cam->getSensorInfo(iso);
-    mRaw->blackLevel = sensor->mBlackLevel;
-    mRaw->whitePoint = sensor->mWhiteLevel;
-    mRaw->blackAreas = cam->blackAreas;
-    mRaw->cfa = cam->cfa;
-  }
-  if (rotate)
-    mRaw->fujiWidth = fuji_width;
+  const CameraSensorInfo *sensor = cam->getSensorInfo(iso);
+  mRaw->blackLevel = sensor->mBlackLevel;
+  mRaw->whitePoint = sensor->mWhiteLevel;
+  mRaw->blackAreas = cam->blackAreas;
+  mRaw->cfa = cam->cfa;
 }
 
 

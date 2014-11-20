@@ -1,0 +1,56 @@
+<!DOCTYPE sect3 PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
+               "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd" [
+		<!ENTITY % darktable_dtd SYSTEM "../../../dtd/darktable.dtd">
+		%darktable_dtd;
+		]>
+<sect3 status="final" id="scale_pixels">
+
+  <title>Scale pixels</title>
+
+  <indexterm>
+    <primary>modules</primary>
+    <secondary>scale pixels</secondary>
+  </indexterm>
+
+  <indexterm>
+    <primary>scale pixels</primary>
+  </indexterm>
+
+  <sect4>
+
+    <title>Overview</title>
+
+    <informaltable frame="none">
+      <tgroup cols="2" colsep="0" rowsep="0">
+        <colspec colwidth="6*"/>
+        <colspec colwidth="4*"/>
+        <tbody>
+          <row>
+            <entry>
+              Some cameras like the Nikon D1X have rectangular instead of the usual square
+              sensor cells. Without correction this would lead to distorted images. This module
+              applies the needed scaling.
+            </entry>
+            <entry>
+              <graphic fileref="darkroom/modules/images/scalepixels.png" scalefit="1" width="80%" align="center" />
+            </entry>
+          </row>
+        </tbody>
+      </tgroup>
+    </informaltable>
+
+  </sect4>
+
+  <sect4>
+
+    <title>Usage</title>
+
+    <para>
+      darktable detects images that need correction by their EXIF data and automatically
+      activates this module. For other images the module always remains disabled. The modules
+      has no parameters.
+    </para>
+
+  </sect4>
+
+</sect3>

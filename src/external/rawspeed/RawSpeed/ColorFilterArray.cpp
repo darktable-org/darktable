@@ -3,7 +3,7 @@
 /*
     RawSpeed - RAW file decoder.
 
-    Copyright (C) 2009 Klaus Post
+    Copyright (C) 2009-2014 Klaus Post
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Lesser General Public
@@ -47,7 +47,6 @@ ColorFilterArray::ColorFilterArray( const ColorFilterArray& other )
 
 ColorFilterArray& ColorFilterArray::operator=(const ColorFilterArray& other ) 
 {
-  cfa = NULL;
   setSize(other.size);
   if (cfa)
     memcpy(cfa, other.cfa, size.area()*sizeof(CFAColor));
@@ -100,6 +99,9 @@ void ColorFilterArray::setCFA( iPoint2D in_size, ... )
 }
 
 void ColorFilterArray::shiftLeft(int n) {
+  if (!size.x) {
+    ThrowRDE("ColorFilterArray:shiftLeft: No CFA size set (or set to zero)");
+  }
   writeLog(DEBUG_PRIO_EXTRA, "Shift left:%d\n", n);
   int shift = n % size.x;
   if (0 == shift)
@@ -115,6 +117,9 @@ void ColorFilterArray::shiftLeft(int n) {
 }
 
 void ColorFilterArray::shiftDown(int n) {
+  if (!size.y) {
+    ThrowRDE("ColorFilterArray:shiftDown: No CFA size set (or set to zero)");
+  }
   writeLog(DEBUG_PRIO_EXTRA, "Shift down:%d\n", n);
   int shift = n % size.y;
   if (0 == shift)
@@ -130,9 +135,15 @@ void ColorFilterArray::shiftDown(int n) {
   delete[] tmp;
 }
 
-// FIXME:
 std::string ColorFilterArray::asString() {
-  return string("");
+  string dst = string("");
+  for (int y = 0; y < size.y; y++) {
+    for (int x = 0; x < size.x; x++) {
+      dst += colorToString(getColorAt(x,y));
+      dst += (x == size.x - 1) ? "\n" : ",";
+    }
+  }
+  return dst;
 }
 
 
@@ -172,6 +183,10 @@ void ColorFilterArray::setColorAt(iPoint2D pos, CFAColor c) {
 
 RawSpeed::uint32 ColorFilterArray::getDcrawFilter()
 {
+  //dcraw magic
+  if (size.x == 6 && size.y == 6) 
+    return 9;
+
   if (size.x > 8 || size.y > 2 || 0 == cfa)
     return 1;
 

@@ -117,15 +117,15 @@
   <bridgehead renderas="sect4">maximum width of image drawing area</bridgehead>
 
   <para>
-    Maximum width of the image drawing area in darkroom mode&nbsp;&ndash; adjust to your screen. Needs a
-    restart and will invalidate current thumbnail caches (default 1300).
+    Maximum width of the image drawing area in darkroom mode&nbsp;&ndash; adjust to your screen.
+    Needs a restart and will invalidate current thumbnail caches (default 1300).
   </para>
 
   <bridgehead renderas="sect4">maximum height of image drawing area</bridgehead>
 
   <para>
-    Maximum height of the image drawing area in darkroom mode&nbsp;&ndash; adjust to your screen. Needs a
-    restart and will invalidate current thumbnail caches (default 1000).
+    Maximum height of the image drawing area in darkroom mode&nbsp;&ndash; adjust to your
+    screen. Needs a restart and will invalidate current thumbnail caches (default 1000).
   </para>
 
   <bridgehead renderas="sect4">compression of thumbnail images</bridgehead>
@@ -158,6 +158,14 @@
 
   <para>
     Always ask user before deleting a tag from an image (default on).
+  </para>
+
+  <bridgehead renderas="sect4">only draw images on map that are currently collected and filtered</bridgehead>
+
+  <para>
+    Use the current filter settings to select the geotagged images drawn in the map view. This
+    limits the images drawn to those currently shown in the filmstrip and thus reduces the time
+    needed (default off).
   </para>
 
   <bridgehead renderas="sect4">maximum number of images drawn on map</bridgehead>
@@ -197,9 +205,9 @@
   <bridgehead renderas="sect4">do high quality processing for slideshow</bridgehead>
 
   <para>
-    Controls how images are processed for the slideshow view. It this option is enabled, the image will 
-    first be processed in full resolution, and downscaled at the very end. This can result in better quality 
-    sometimes, but will always be slower (default on).
+    Controls how images are processed for the slideshow view. It this option is enabled, the
+    image will first be processed in full resolution, and downscaled at the very end. This can
+    result in better quality sometimes, but will always be slower (default on).
   </para>
 
   <bridgehead renderas="sect4">method to use for getting the display profile</bridgehead>

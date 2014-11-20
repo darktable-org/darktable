@@ -4,7 +4,7 @@
 /*
     RawSpeed - RAW file decoder.
 
-    Copyright (C) 2009 Klaus Post
+    Copyright (C) 2009-2014 Klaus Post
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Lesser General Public
@@ -43,10 +43,8 @@ __inline void BitPumpJPEG::init() {
   fill();
 }
 
-void BitPumpJPEG::fill()
+void BitPumpJPEG::_fill()
 {
-  if (mLeft >=24)
-    return;
   // Fill in 96 bits
   int* b = (int*)current_buffer;
   if ((off + 12) >= size) {
@@ -123,7 +121,7 @@ void BitPumpJPEG::setAbsoluteOffset(unsigned int offset) {
 
   mLeft = 0;
   off = offset;
-  fill();
+  _fill();
 }
 
 

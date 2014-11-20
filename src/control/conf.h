@@ -26,6 +26,7 @@
 #include "common/darktable.h"
 #include "common/file_location.h"
 
+#include <inttypes.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <strings.h>
@@ -237,7 +238,8 @@ static inline void dt_conf_init(dt_conf_t *cf, const char *filename, GSList *ove
       if(read > 0)
       {
         char *c = line;
-        while(*c != '=' && c < line + strlen(line)) c++;
+        char *end = line + strlen(line);
+        while(*c != '=' && c < end) c++;
         if(*c == '=')
         {
           *c = '\0';

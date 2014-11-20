@@ -7,7 +7,8 @@
 /*
     RawSpeed - RAW file decoder.
 
-    Copyright (C) 2009 Klaus Post
+    Copyright (C) 2009-2014 Klaus Post
+    Copyright (C) 2014 Pedro Côrte-Real
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Lesser General Public
@@ -55,7 +56,13 @@ RawImage OrfDecoder::decodeRawInternal() {
   TiffEntry *counts = raw->getEntry(STRIPBYTECOUNTS);
 
   if (offsets->count != 1) {
-    ThrowRDE("ORF Decoder: Multiple Strips found: %u", offsets->count);
+    // We're in an old-school ORF file, decode it separately
+    try {
+      decodeOldORF(raw);
+    } catch (IOException &e) {
+       mRaw->setError(e.what());
+    }
+    return mRaw;
   }
   if (counts->count != offsets->count) {
     ThrowRDE("ORF Decoder: Byte count number does not match strip size: count:%u, strips:%u ", counts->count, offsets->count);
@@ -88,7 +95,12 @@ RawImage OrfDecoder::decodeRawInternal() {
     if (oly->type == TIFF_UNDEFINED)
       ThrowRDE("ORF Decoder: Unsupported compression");
   } catch (TiffParserException) {
-    ThrowRDE("ORF Decoder: Unable to parse makernote");
+    // We're probably in an old packed ORF, try to decode it like that
+    uint32 off = offsets->getInt();
+    uint32 size = mFile->getSize() - off;
+    ByteStream input(mFile->getData(off), size);
+    Decode12BitRawWithControl(input, width, height);
+    return mRaw;
   }
 
   // We add 3 bytes slack, since the bitpump might be a few bytes ahead.
@@ -110,6 +122,32 @@ RawImage OrfDecoder::decodeRawInternal() {
 
   return mRaw;
 }
+
+void OrfDecoder::decodeOldORF(TiffIFD* raw) {
+  uint32 width = raw->getEntry(IMAGEWIDTH)->getInt();
+  uint32 height = raw->getEntry(IMAGELENGTH)->getInt();
+  uint32 off = raw->getEntry(STRIPOFFSETS)->getInt();
+
+  if (!mFile->isValid(off))
+      ThrowRDE("ORF Decoder: Invalid image data offset, cannot decode.");
+
+  mRaw->dim = iPoint2D(width, height);
+  mRaw->createData();
+  uint32 size = mFile->getSize() - off;
+  ByteStream input(mFile->getData(off), size);
+
+  if (size >= width*height*2) { // We're in an unpacked raw
+    if (raw->endian == little)
+      Decode12BitRawUnpacked(input, width, height);
+    else
+      Decode12BitRawBEunpackedLeftAligned(input, width, height);
+  } else if (size >= width*height*3/2) { // We're in one of those weird interlaced packed raws
+      Decode12BitRawBEInterlaced(input, width, height);
+  } else {
+    ThrowRDE("ORF Decoder: Don't know how to handle the encoding in this file\n");
+  }
+}
+
 /* This is probably the slowest decoder of them all.
  * I cannot see any way to effectively speed up the prediction
  * phase, which is by far the slowest part of this algorithm.
@@ -118,7 +156,7 @@ RawImage OrfDecoder::decodeRawInternal() {
  */
 
 void OrfDecoder::decodeCompressed(ByteStream& s, uint32 w, uint32 h) {
-  int nbits, sign, low, high, i, left0, up, nw0, left1, nw1;
+  int nbits, sign, low, high, i, left0, nw0, left1, nw1;
   int acarry0[3], acarry1[3], pred, diff;
 
   uchar8* data = mRaw->getData();
@@ -131,7 +169,7 @@ void OrfDecoder::decodeCompressed(ByteStream& s, uint32 w, uint32 h) {
     for (high = 0; high < 12; high++)
       if ((b>>(11-high))&1)
         break;
-      bittable[i] = high;
+      bittable[i] = min(12,high);
   }
   left0 = nw0 = left1 = nw1 = 0;
 
@@ -154,11 +192,14 @@ void OrfDecoder::decodeCompressed(ByteStream& s, uint32 w, uint32 h) {
       sign = (b >> 14) * -1;
       low  = (b >> 12) & 3;
       high = bittable[b&4095];
-      // Skip bits used above.
-      bits.skipBitsNoFill(min(12+3, high + 1 + 3));
 
-      if (high == 12)
+      // Skip bytes used above or read bits
+      if (high == 12) {
+        bits.skipBitsNoFill(15);
         high = bits.getBits(16 - nbits) >> 1;
+      } else {
+        bits.skipBitsNoFill(high + 1 + 3);
+      }
 
       acarry0[0] = (high << nbits) | bits.getBits(nbits);
       diff = (acarry0[0] ^ sign) + acarry0[1];
@@ -178,7 +219,9 @@ void OrfDecoder::decodeCompressed(ByteStream& s, uint32 w, uint32 h) {
         // Set predictor
         left0 = dest[x];
       } else {
-        up  = dest[-pitch+((int)x)];
+        // Have local variables for values used several tiles
+        // (having a "ushort16 *dst_up" that caches dest[-pitch+((int)x)] is actually slower, probably stack spill or aliasing)
+        int up  = dest[-pitch+((int)x)];
         int leftMinusNw = left0 - nw0;
         int upMinusNw = up - nw0;
         // Check if sign is different, and one is not zero
@@ -198,7 +241,6 @@ void OrfDecoder::decodeCompressed(ByteStream& s, uint32 w, uint32 h) {
       
       // ODD PIXELS
       x += 1;
-      bits.checkPos();
       bits.fill();
       i = 2 * (acarry1[2] < 3);
       for (nbits = 2 + i; (ushort16) acarry1[0] >> (nbits + i); nbits++);
@@ -206,11 +248,14 @@ void OrfDecoder::decodeCompressed(ByteStream& s, uint32 w, uint32 h) {
       sign = (b >> 14) * -1;
       low  = (b >> 12) & 3;
       high = bittable[b&4095];
-      // Skip bits used above.
-      bits.skipBitsNoFill(min(12+3, high + 1 + 3));
 
-      if (high == 12)
+      // Skip bytes used above or read bits
+      if (high == 12) {
+        bits.skipBitsNoFill(15);
         high = bits.getBits(16 - nbits) >> 1;
+      } else {
+        bits.skipBitsNoFill(high + 1 + 3);
+      }
 
       acarry1[0] = (high << nbits) | bits.getBits(nbits);
       diff = (acarry1[0] ^ sign) + acarry1[1];
@@ -226,11 +271,9 @@ void OrfDecoder::decodeCompressed(ByteStream& s, uint32 w, uint32 h) {
           pred = dest[-pitch+((int)x)];
           nw1 = pred;
         }
-        dest[x] = pred + ((diff << 2) | low);
-        // Set predictor
-        left1 = dest[x];
+        dest[x] = left1 = pred + ((diff << 2) | low);
       } else {
-        up  = dest[-pitch+((int)x)];
+        int up  = dest[-pitch+((int)x)];
         int leftMinusNw = left1 - nw1;
         int upMinusNw = up - nw1;
 
@@ -243,13 +286,10 @@ void OrfDecoder::decodeCompressed(ByteStream& s, uint32 w, uint32 h) {
         } else 
           pred = other_abs(leftMinusNw) > other_abs(upMinusNw) ? left1 : up;
 
-        dest[x] = pred + ((diff << 2) | low);
-
-        // Set predictors
-        left1 = dest[x];
+        dest[x] = left1 = pred + ((diff << 2) | low);
         nw1 = up;
       }
-	  border = y_border;
+	    border = y_border;
     }
   }
 }

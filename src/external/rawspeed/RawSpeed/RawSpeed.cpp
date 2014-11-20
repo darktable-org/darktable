@@ -4,7 +4,7 @@
 /* 
 RawSpeed - RAW file decoder.
 
-Copyright (C) 2009 Klaus Post
+Copyright (C) 2009-2014 Klaus Post
 
 This library is free software; you can redistribute it and/or
 modify it under the terms of the GNU Lesser General Public
@@ -96,7 +96,7 @@ void OpenFileID(FileReader f, CameraMetaData *meta) {
   }
 }
 // Open file, or test corrupt file
-#if 1
+#if 0
 // Open file and save as tiff
 void OpenFile(FileReader f, CameraMetaData *meta) {
   RawDecoder *d = 0;
@@ -204,7 +204,7 @@ void OpenFile(FileReader f, CameraMetaData *meta) {
     printf("Could not open image:%s\n", e.what());
     return;
   }
-  srand(0xC01ACAFA);  // Hardcoded seed for re-producability (on the same platform)
+  srand(0xC01ACAB1);  // Hardcoded seed for re-producability (on the same platform)
 
   int tests = 100;
   // Try 50 permutations
@@ -243,7 +243,7 @@ void OpenFile(FileReader f, CameraMetaData *meta) {
       delete d;
     d = 0;
   }
-  srand(0x88C0C088);  // Hardcoded seed for re-producability (on the same platform)
+  srand(0x88C0C01A);  // Hardcoded seed for re-producability (on the same platform)
   wprintf(L"Performing truncation tests\n");
   tests=100;
   for (int i = 0 ; i < tests; i++) {  
@@ -296,6 +296,45 @@ int wmain(int argc, _TCHAR* argv[])
       //    CameraMetaData meta();
 
       CameraMetaData meta("..\\data\\cameras.xml");
+/*      OpenFile(FileReader(L"..\\testimg\\Minolta_DiMAGE_5.mrw"),&meta);
+        OpenFile(FileReader(L"..\\testimg\\Minolta_DiMAGE_7HI.mrw"),&meta);
+        OpenFile(FileReader(L"..\\testimg\\Minolta_DiMAGE_7i.mrw"),&meta);
+        OpenFile(FileReader(L"..\\testimg\\Minolta_DiMAGE_A1.mrw"),&meta);
+        OpenFile(FileReader(L"..\\testimg\\Minolta_DiMAGE_A2.mrw"),&meta);
+        OpenFile(FileReader(L"..\\testimg\\Minolta_Dynax_5D.mrw"),&meta);
+        OpenFile(FileReader(L"..\\testimg\\Minolta_Dynax_7D.mrw"),&meta);
+        OpenFile(FileReader(L"..\\testimg\\RAW_MINOLTA_5D.MRW"),&meta);
+        OpenFile(FileReader(L"..\\testimg\\RAW_MINOLTA_A2.MRW"),&meta);
+        OpenFile(FileReader(L"..\\testimg\\Panasonic_DMC_L10.raw"),&meta);
+        OpenFile(FileReader(L"..\\testimg\\Panasonic_DMC_LX2.raw"),&meta);
+        OpenFile(FileReader(L"..\\testimg\\Panasonic_FZ18.raw"),&meta);
+        OpenFile(FileReader(L"..\\testimg\\Panasonic_FZ18-2.raw"),&meta);
+        OpenFile(FileReader(L"..\\testimg\\Panasonic_FZ18-3.raw"),&meta);
+        OpenFile(FileReader(L"..\\testimg\\Panasonic_FZ18-4.raw"),&meta);
+        OpenFile(FileReader(L"..\\testimg\\Panasonic_FZ18-5.raw"),&meta);
+        OpenFile(FileReader(L"..\\testimg\\Panasonic_FZ18-6.raw"),&meta);
+        OpenFile(FileReader(L"..\\testimg\\Panasonic_FZ30.raw"),&meta);
+        OpenFile(FileReader(L"..\\testimg\\Panasonic_FZ50.raw"),&meta);
+        OpenFile(FileReader(L"..\\testimg\\Panasonic_FZ50_2.raw"),&meta);
+        OpenFile(FileReader(L"..\\testimg\\Panasonic_FZ8.raw"),&meta);
+        OpenFile(FileReader(L"..\\testimg\\Panasonic_FZ8-2.raw"),&meta);
+        OpenFile(FileReader(L"..\\testimg\\Panasonic_L1.raw"),&meta);
+        OpenFile(FileReader(L"..\\testimg\\Panasonic_LX2.RAW"),&meta);
+        OpenFile(FileReader(L"..\\testimg\\RAW_LEICA_DLUX3.RAW"),&meta);
+        OpenFile(FileReader(L"..\\testimg\\RAW_LEICA_VLUX1.RAW"),&meta);
+        OpenFile(FileReader(L"..\\testimg\\RAW_LEICA_DIGILUX2_SRGB.RAW"),&meta);
+        OpenFile(FileReader(L"..\\testimg\\RAW_PANASONIC_G1.RW2"),&meta);
+        OpenFile(FileReader(L"..\\testimg\\RAW_PANASONIC_DMCL10.RAW"),&meta);
+        OpenFile(FileReader(L"..\\testimg\\RAW_PANASONIC_LX2.RAW"),&meta);
+        OpenFile(FileReader(L"..\\testimg\\RAW_PANASONIC_LUMIX_L1.RAW"),&meta);
+        OpenFile(FileReader(L"..\\testimg\\RAW_PANASONIC_FZ30_SRGB.RAW"),&meta);
+        OpenFile(FileReader(L"..\\testimg\\RAW_PANASONIC_LUMIX_FZ18.RAW"),&meta);
+        OpenFile(FileReader(L"..\\testimg\\RAW_PANASONIC_FZ28.RW2"),&meta);
+        OpenFile(FileReader(L"..\\testimg\\RAW_PANASONIC_FZ8.RAW"),&meta);
+        OpenFile(FileReader(L"..\\testimg\\RAW_MINOLTA_A1.MRW"),&meta);
+        OpenFile(FileReader(L"..\\testimg\\RAW_MINOLTA_7D_SRGB.MRW"),&meta);
+        OpenFile(FileReader(L"..\\testimg\\RAW_MINOLTA_DIMAGE_7I.MRW"),&meta);
+        OpenFile(FileReader(L"..\\testimg\\RAW_MINOLTA_DIMAGE_7HI.MRW"),&meta);
       OpenFile(FileReader(L"..\\testimg\\Pentax-K3-IMGP0202.PEF"),&meta);
       OpenFile(FileReader(L"..\\testimg\\Pentax_K20D.pef"),&meta);
       OpenFile(FileReader(L"..\\testimg\\Pentax_K10D.pef"),&meta);
@@ -328,7 +367,7 @@ int wmain(int argc, _TCHAR* argv[])
    //   OpenFile(FileReader(L"..\\testimg\\IMG_6792.CR2"),&meta);
     //  OpenFile(FileReader(L"..\\testimg\\dng\\Frame000320.dng"),&meta);
 
-/*      OpenFileID(FileReader(L"..\\testimg\\Panasonic-LF1hSLI12800.RW2"),&meta);
+      OpenFileID(FileReader(L"..\\testimg\\Panasonic-LF1hSLI12800.RW2"),&meta);
       OpenFileID(FileReader(L"z:\\5d3-raw\\RWH_1228.CR2"),&meta);
       OpenFileID(FileReader(L"z:\\5d3-raw\\RWH_1229.CR2"),&meta);
       OpenFileID(FileReader(L"z:\\5d3-raw\\RWH_1230.CR2"),&meta);
@@ -683,7 +722,7 @@ int wmain(int argc, _TCHAR* argv[])
       OpenFile(FileReader(L"..\\testimg\\bench\\fujifilm_x_e1_20.raf"),&meta);
 
       OpenFile(FileReader(L"..\\testimg\\fujifilm_finepix_x100_02.raf"),&meta);
-/*      OpenFile(FileReader(L"..\\testimg\\Olympus-E-P5-EP5LL256003.ORF"),&meta);
+      OpenFile(FileReader(L"..\\testimg\\Olympus-E-P5-EP5LL256003.ORF"),&meta);
         OpenFile(FileReader(L"..\\testimg\\Olympus-E-P5-EP5LL128003.ORF"),&meta);
         OpenFile(FileReader(L"..\\testimg\\Olympus-E-P5-EP5LL064003.ORF"),&meta);
         OpenFile(FileReader(L"..\\testimg\\Olympus-E-P5-EP5hVFAI00200.ORF"),&meta);
@@ -801,8 +840,8 @@ int wmain(int argc, _TCHAR* argv[])
         OpenFile(FileReader(L"..\\testimg\\Panasonic-GF6hSLI00800NR1.RW2"),&meta);
         OpenFile(FileReader(L"..\\testimg\\Panasonic-GF6hSLI00400NR1.RW2"),&meta);
         OpenFile(FileReader(L"..\\testimg\\Panasonic-GF6hSLI00160NR1.RW2"),&meta);
-//      OpenFile(FileReader(L"..\\testimg\\Canon EOS 5D Mark III-L50A0070.CR2"),&meta);
-//        OpenFile(FileReader(L"..\\testimg\\Canon EOS 5D Mark III-L50A0071.CR2"),&meta);
+      OpenFile(FileReader(L"..\\testimg\\Canon EOS 5D Mark III-L50A0070.CR2"),&meta);
+        OpenFile(FileReader(L"..\\testimg\\Canon EOS 5D Mark III-L50A0071.CR2"),&meta);
       OpenFile(FileReader(L"..\\testimg\\Samsung_NX300hSLI00100NR0.SRW"),&meta);
       OpenFile(FileReader(L"..\\testimg\\Canon_EOS_Mk2-ISO100_sRAW2.CR2"),&meta);
         OpenFile(FileReader(L"..\\testimg\\Canon EOS 6D-mRaw-IMG_0774.CR2"),&meta);
@@ -1186,7 +1225,7 @@ int wmain(int argc, _TCHAR* argv[])
       OpenFile(FileReader(L"..\\testimg\\lossy_dng\\Canon_EOS_500D-2_small.dng"),&meta);
       OpenFile(FileReader(L"..\\testimg\\lossy_dng\\Bug538_2035_7D-mRAW_small.dng"),&meta);
       OpenFile(FileReader(L"..\\testimg\\lossy_dng\\Sony_DSLR-A100-8.dng"),&meta);
-
+/*
       OpenFile(FileReader(L"..\\testimg\\1diso\\_MG_0008.CR2"),&meta);
       OpenFile(FileReader(L"..\\testimg\\1diso\\_MG_0009.CR2"),&meta);
       OpenFile(FileReader(L"..\\testimg\\1diso\\_MG_0010.CR2"),&meta);
@@ -1231,7 +1270,7 @@ int wmain(int argc, _TCHAR* argv[])
       OpenFile(FileReader(L"..\\testimg\\5diso\\IMG_8801.CR2"),&meta);
       OpenFile(FileReader(L"..\\testimg\\5diso\\IMG_8800.CR2"),&meta);
       OpenFile(FileReader(L"..\\testimg\\5diso\\IMG_8799.CR2"),&meta);
-
+*/
       OpenFile(FileReader(L"..\\testimg\\IT8-1055-sRAW.cr2"),&meta);
       OpenFile(FileReader(L"..\\testimg\\Panasonic_GF5-LL128003.RW2"),&meta);
       OpenFile(FileReader(L"..\\testimg\\Panasonic_GF5-LL064007.RW2"),&meta);
@@ -1666,6 +1705,7 @@ int wmain(int argc, _TCHAR* argv[])
       OpenFile(FileReader(L"..\\testimg\\Phase One H25 Capture One PRO 5.2.1 TIF-001.TIF"),&meta);
       OpenFile(FileReader(L"..\\testimg\\Phase One H25 Capture One PRO 6.0.1 IIQ-001.IIQ"),&meta);
       OpenFile(FileReader(L"..\\testimg\\Phase One H25 Capture One PRO 6.0.1 TIF-001.TIF"),&meta);
+/*
       OpenFile(FileReader(L"..\\testimg\\dng\\_DSC5230.dng"),&meta);
       OpenFile(FileReader(L"..\\testimg\\Nikon_D5100-dsc_0081.NEF"),&meta);
       OpenFile(FileReader(L"..\\testimg\\Nikon_D5100-dsc_0064.NEF"),&meta);
@@ -1836,7 +1876,7 @@ int wmain(int argc, _TCHAR* argv[])
       OpenFile(FileReader(L"..\\testimg\\dng\\uncompressed2.dng"),&meta);
       OpenFile(FileReader(L"..\\testimg\\dng\\uncompressed3.dng"),&meta);
 
-
+*/
       OpenFile(FileReader(L"..\\testimg\\camera_dngs\\Pentax-K200DFARI0100.DNG"),&meta);
       OpenFile(FileReader(L"..\\testimg\\camera_dngs\\Pentax-K200DFARI1600.DNG"),&meta);
       OpenFile(FileReader(L"..\\testimg\\camera_dngs\\Pentax-K20DFARI0100_43MM.DNG"),&meta);
@@ -2149,7 +2189,7 @@ int wmain(int argc, _TCHAR* argv[])
       OpenFile(FileReader(L"..\\testimg\\nikon_d300s_03.nef"),&meta);
       OpenFile(FileReader(L"..\\testimg\\nikon_d300s_06.nef"),&meta);
       OpenFile(FileReader(L"..\\testimg\\Nikon-D3XFARI0100.NEF"),&meta);
-
+/*
       OpenFile(FileReader(L"z:\\converted-dngs\\_D2K0101.dng"),&meta);
       OpenFile(FileReader(L"z:\\converted-dngs\\_DSC0937.dng"),&meta);
       OpenFile(FileReader(L"z:\\converted-dngs\\_DSC0981.dng"),&meta);

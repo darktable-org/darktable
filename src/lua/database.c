@@ -16,6 +16,7 @@
    along with darktable.  If not, see <http://www.gnu.org/licenses/>.
  */
 #include "lua/database.h"
+#include "lua/events.h"
 #include "lua/image.h"
 #include "lua/film.h"
 #include "lua/types.h"
@@ -24,6 +25,7 @@
 #include "common/grealpath.h"
 #include "common/image.h"
 #include "common/film.h"
+#include "control/control.h"
 #include <errno.h>
 
 /***********************************************************************
@@ -149,9 +151,12 @@ static int database_len(lua_State*L)
   return 1;
 }
 
-static int database_index(lua_State*L)
+static int number_member(lua_State*L)
 {
   int index = luaL_checkinteger(L,-1);
+  if(index < 1) {
+    return luaL_error(L,"incorrect index in database");
+  }
   sqlite3_stmt *stmt = NULL;
   char query[1024];
   snprintf(query, sizeof(query), "select images.id from images order by images.id limit 1 offset %d", index-1);
@@ -170,6 +175,45 @@ static int database_index(lua_State*L)
   return 1;
 }
 
+static void on_film_imported(gpointer instance,uint32_t id, gpointer user_data){
+  gboolean has_lock = dt_lua_lock();
+  luaA_push(darktable.lua_state.state,dt_lua_film_t,&id);
+  dt_lua_event_trigger(darktable.lua_state.state,"post-import-film",1);
+  dt_lua_unlock(has_lock);
+}
+
+typedef struct {
+  uint32_t imgid;
+} on_image_imported_callback_data_t;
+
+
+static int32_t on_image_imported_callback_job(dt_job_t *job) {
+  gboolean has_lock = dt_lua_lock();
+  on_image_imported_callback_data_t *t = dt_control_job_get_params(job);
+  luaA_push(darktable.lua_state.state,dt_lua_image_t,&t->imgid);
+  dt_lua_event_trigger(darktable.lua_state.state,"post-import-image",1);
+  free(t); // i am not sure if the free() may happen before the dt_lua_event_trigger as a pointer to the imgid inside of it is pushed to the lua stack
+  dt_lua_unlock(has_lock);
+  return 0;
+}
+
+static void on_image_imported(gpointer instance,uint32_t id, gpointer user_data){
+  dt_job_t *job = dt_control_job_create(&on_image_imported_callback_job, "lua: on image imported");
+  if(job)
+  {
+    on_image_imported_callback_data_t *t = (on_image_imported_callback_data_t*)calloc(1, sizeof(on_image_imported_callback_data_t));
+    if(!t)
+    {
+      dt_control_job_dispose(job);
+    }
+    else
+    {
+      dt_control_job_set_params(job, t);
+      t->imgid = id;
+      dt_control_add_job(darktable.control, DT_JOB_QUEUE_USER_FG, job);
+    }
+  }
+}
 int dt_lua_init_database(lua_State * L)
 {
 
@@ -179,18 +223,34 @@ int dt_lua_init_database(lua_State * L)
   lua_setfield(L,-2,"database");
   lua_pop(L,1);
 
-  dt_lua_register_type_callback_number_typeid(L,type_id,database_index,NULL,database_len);
+  lua_pushcfunction(L,database_len);
+  lua_pushcfunction(L,number_member);
+  dt_lua_type_register_number_const_type(L,type_id);
   lua_pushcfunction(L,dt_lua_duplicate_image);
-  dt_lua_register_type_callback_stack_typeid(L,type_id,"duplicate");
+  lua_pushcclosure(L,dt_lua_type_member_common,1);
+  dt_lua_type_register_const_type(L,type_id,"duplicate");
   lua_pushcfunction(L,dt_lua_delete_image);
-  dt_lua_register_type_callback_stack_typeid(L,type_id,"delete");
+  lua_pushcclosure(L,dt_lua_type_member_common,1);
+  dt_lua_type_register_const_type(L,type_id,"delete");
   lua_pushcfunction(L,import_images);
-  dt_lua_register_type_callback_stack_typeid(L,type_id,"import");
+  lua_pushcclosure(L,dt_lua_type_member_common,1);
+  dt_lua_type_register_const_type(L,type_id,"import");
   lua_pushcfunction(L,dt_lua_move_image);
-  dt_lua_register_type_callback_stack_typeid(L,type_id,"move_image");
+  lua_pushcclosure(L,dt_lua_type_member_common,1);
+  dt_lua_type_register_const_type(L,type_id,"move_image");
   lua_pushcfunction(L,dt_lua_copy_image);
-  dt_lua_register_type_callback_stack_typeid(L,type_id,"copy_image");
+  lua_pushcclosure(L,dt_lua_type_member_common,1);
+  dt_lua_type_register_const_type(L,type_id,"copy_image");
 
+  lua_pushcfunction(L,dt_lua_event_multiinstance_register);
+  lua_pushcfunction(L,dt_lua_event_multiinstance_trigger);
+  dt_lua_event_add(L,"post-import-film");
+  dt_control_signal_connect(darktable.signals,DT_SIGNAL_FILMROLLS_IMPORTED,G_CALLBACK(on_film_imported),NULL);
+
+  lua_pushcfunction(L,dt_lua_event_multiinstance_register);
+  lua_pushcfunction(L,dt_lua_event_multiinstance_trigger);
+  dt_lua_event_add(L,"post-import-image");
+  dt_control_signal_connect(darktable.signals,DT_SIGNAL_IMAGE_IMPORT,G_CALLBACK(on_image_imported),NULL);
   return 0;
 }
 

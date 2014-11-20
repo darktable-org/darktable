@@ -121,6 +121,8 @@ gboolean _variable_get_value(dt_variables_params_t *params, gchar *variable,gcha
   /* image exif time */
   gboolean have_exif_tm = FALSE;
   int exif_iso = 100;
+  int version = 0;
+  int stars = 0;
   struct tm exif_tm= {0};
   if (params->imgid)
   {
@@ -140,6 +142,10 @@ gboolean _variable_get_value(dt_variables_params_t *params, gchar *variable,gcha
       have_exif_tm = TRUE;
     }
     exif_iso = img->exif_iso;
+    version = img->version;
+    stars = (img->flags & 0x7);
+    if(stars == 6) stars = -1;
+
     dt_image_cache_read_release(darktable.image_cache, img);
   }
   else if (params->data->exif_time) {
@@ -147,22 +153,23 @@ gboolean _variable_get_value(dt_variables_params_t *params, gchar *variable,gcha
       have_exif_tm = TRUE;
   }
 
-  if( g_strcmp0(variable,"$(YEAR)") == 0 && (got_value=TRUE) )  sprintf(value,"%.4d",tim.tm_year+1900);
-  else if( g_strcmp0(variable,"$(MONTH)") == 0&& (got_value=TRUE)  )   sprintf(value,"%.2d",tim.tm_mon+1);
-  else if( g_strcmp0(variable,"$(DAY)") == 0 && (got_value=TRUE) )   sprintf(value,"%.2d",tim.tm_mday);
-  else if( g_strcmp0(variable,"$(HOUR)") == 0 && (got_value=TRUE) )  sprintf(value,"%.2d",tim.tm_hour);
-  else if( g_strcmp0(variable,"$(MINUTE)") == 0 && (got_value=TRUE) )   sprintf(value,"%.2d",tim.tm_min);
-  else if( g_strcmp0(variable,"$(SECOND)") == 0 && (got_value=TRUE) )   sprintf(value,"%.2d",tim.tm_sec);
+  if( g_strcmp0(variable,"$(YEAR)") == 0 && (got_value=TRUE) )  snprintf(value, value_len, "%.4d",tim.tm_year+1900);
+  else if( g_strcmp0(variable,"$(MONTH)") == 0&& (got_value=TRUE)  )   snprintf(value, value_len, "%.2d",tim.tm_mon+1);
+  else if( g_strcmp0(variable,"$(DAY)") == 0 && (got_value=TRUE) )   snprintf(value, value_len, "%.2d",tim.tm_mday);
+  else if( g_strcmp0(variable,"$(HOUR)") == 0 && (got_value=TRUE) )  snprintf(value, value_len, "%.2d",tim.tm_hour);
+  else if( g_strcmp0(variable,"$(MINUTE)") == 0 && (got_value=TRUE) )   snprintf(value, value_len, "%.2d",tim.tm_min);
+  else if( g_strcmp0(variable,"$(SECOND)") == 0 && (got_value=TRUE) )   snprintf(value, value_len, "%.2d",tim.tm_sec);
 
-  else if( g_strcmp0(variable,"$(EXIF_YEAR)") == 0 && (got_value=TRUE)  )   			sprintf(value,"%.4d", (have_exif_tm?exif_tm.tm_year:tim.tm_year)+1900);
-  else if( g_strcmp0(variable,"$(EXIF_MONTH)") == 0 && (got_value=TRUE)  )  		sprintf(value,"%.2d", (have_exif_tm?exif_tm.tm_mon:tim.tm_mon)+1);
-  else if( g_strcmp0(variable,"$(EXIF_DAY)") == 0 && (got_value=TRUE) )  			sprintf(value,"%.2d", (have_exif_tm?exif_tm.tm_mday:tim.tm_mday));
-  else if( g_strcmp0(variable,"$(EXIF_HOUR)") == 0 && (got_value=TRUE) )  			sprintf(value,"%.2d", (have_exif_tm?exif_tm.tm_hour:tim.tm_hour));
-  else if( g_strcmp0(variable,"$(EXIF_MINUTE)") == 0 && (got_value=TRUE) )   		sprintf(value,"%.2d", (have_exif_tm?exif_tm.tm_min:tim.tm_min));
-  else if( g_strcmp0(variable,"$(EXIF_SECOND)") == 0 && (got_value=TRUE) )   		sprintf(value,"%.2d", (have_exif_tm?exif_tm.tm_sec:tim.tm_sec));
-  else if( g_strcmp0(variable,"$(EXIF_ISO)") == 0 && (got_value=TRUE) )   		sprintf(value,"%d", exif_iso);
-  else if( g_strcmp0(variable,"$(ID)") == 0 && (got_value=TRUE) ) sprintf(value,"%d", params->imgid);
-  else if( g_strcmp0(variable,"$(JOBCODE)") == 0 && (got_value=TRUE) )   sprintf(value,"%s",params->jobcode);
+  else if( g_strcmp0(variable,"$(EXIF_YEAR)") == 0 && (got_value=TRUE)  )   			snprintf(value, value_len, "%.4d", (have_exif_tm?exif_tm.tm_year:tim.tm_year)+1900);
+  else if( g_strcmp0(variable,"$(EXIF_MONTH)") == 0 && (got_value=TRUE)  )  		snprintf(value, value_len, "%.2d", (have_exif_tm?exif_tm.tm_mon:tim.tm_mon)+1);
+  else if( g_strcmp0(variable,"$(EXIF_DAY)") == 0 && (got_value=TRUE) )  			snprintf(value, value_len, "%.2d", (have_exif_tm?exif_tm.tm_mday:tim.tm_mday));
+  else if( g_strcmp0(variable,"$(EXIF_HOUR)") == 0 && (got_value=TRUE) )  			snprintf(value, value_len, "%.2d", (have_exif_tm?exif_tm.tm_hour:tim.tm_hour));
+  else if( g_strcmp0(variable,"$(EXIF_MINUTE)") == 0 && (got_value=TRUE) )   		snprintf(value, value_len, "%.2d", (have_exif_tm?exif_tm.tm_min:tim.tm_min));
+  else if( g_strcmp0(variable,"$(EXIF_SECOND)") == 0 && (got_value=TRUE) )   		snprintf(value, value_len, "%.2d", (have_exif_tm?exif_tm.tm_sec:tim.tm_sec));
+  else if( g_strcmp0(variable,"$(EXIF_ISO)") == 0 && (got_value=TRUE) )   		snprintf(value, value_len, "%d", exif_iso);
+  else if( g_strcmp0(variable,"$(ID)") == 0 && (got_value=TRUE) ) snprintf(value, value_len, "%d", params->imgid);
+  else if( g_strcmp0(variable,"$(VERSION)") == 0 && (got_value=TRUE) ) snprintf(value, value_len, "%d", version);
+  else if( g_strcmp0(variable,"$(JOBCODE)") == 0 && (got_value=TRUE) )   snprintf(value, value_len, "%s",params->jobcode);
   else if( g_strcmp0(variable,"$(ROLL_NAME)") == 0 && params->filename && (got_value=TRUE) )
   {
     gchar* dirname = g_path_get_dirname(params->filename);
@@ -198,35 +205,11 @@ gboolean _variable_get_value(dt_variables_params_t *params, gchar *variable,gcha
   else if( g_strcmp0(variable,"$(PICTURES_FOLDER)") == 0 && (got_value=TRUE) )   snprintf(value, value_len, "%s",pictures_folder);
   else if( g_strcmp0(variable,"$(DESKTOP_FOLDER)") == 0 && (got_value=TRUE) )   snprintf(value, value_len, "%s",g_get_user_special_dir(G_USER_DIRECTORY_DESKTOP)); // undocumented : backward compatibility
   else if( g_strcmp0(variable,"$(DESKTOP)") == 0 && (got_value=TRUE) )   snprintf(value, value_len, "%s",g_get_user_special_dir(G_USER_DIRECTORY_DESKTOP));
-#if 0
-  else if( g_strcmp0(variable,"$(VC)") == 0 && (got_value=TRUE) )
-  {
-    sqlite3_stmt *stmt;
-    DT_DEBUG_SQLITE3_PREPARE_V2(darktable.db, "select id from images where filename=?1", &stmt, NULL);
-    DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, params->filename);
-    while(sqlite3_step(stmt) == SQLITE_ROW)
-    {
-      if(sqlite3_column_int(stmt) == )
-      {
-      }
-    }
-    sqlite3_finalize(stmt);
-    snprintf(value, value_len, "%s",g_get_user_special_dir(G_USER_DIRECTORY_DESKTOP));
-  }
-#endif
-  else if( g_strcmp0(variable,"$(STARS)") == 0 && (got_value=TRUE) )
-  {
-    const dt_image_t *img = dt_image_cache_read_get(darktable.image_cache, params->imgid);
-    int stars = (img->flags & 0x7);
-    dt_image_cache_read_release(darktable.image_cache, img);
-    if(stars == 6) stars = -1;
-    snprintf(value, value_len, "%d",stars);
-  }
+  else if( g_strcmp0(variable,"$(STARS)") == 0 && (got_value=TRUE) ) snprintf(value, value_len, "%d",stars);
   else if( g_strcmp0(variable,"$(LABELS)") == 0 && (got_value=TRUE) )
   {
     //TODO: currently we concatenate all the color labels with a ',' as a separator. Maybe it's better to only use the first/last label?
-    unsigned int count = 0;
-    GList *res = dt_metadata_get(params->imgid, "Xmp.darktable.colorlabels", &count);
+    GList *res = dt_metadata_get(params->imgid, "Xmp.darktable.colorlabels", NULL);
     res = g_list_first(res);
     if(res != NULL)
     {
@@ -236,7 +219,8 @@ gboolean _variable_get_value(dt_variables_params_t *params, gchar *variable,gcha
         labels = g_list_append(labels, (char *)(_(dt_colorlabels_to_string(GPOINTER_TO_INT(res->data)))));
       }
       while((res=g_list_next(res)) != NULL);
-      char* str = dt_util_glist_to_str(",", labels, count);
+      char* str = dt_util_glist_to_str(",", labels);
+      g_list_free(labels);
       snprintf(value, value_len,  "%s", str);
       g_free(str);
     }
@@ -248,8 +232,7 @@ gboolean _variable_get_value(dt_variables_params_t *params, gchar *variable,gcha
   }
   else if( g_strcmp0(variable,"$(TITLE)") == 0 && params->filename && (got_value=TRUE) )
   {
-    unsigned int count = 0;
-    GList *res = dt_metadata_get(params->imgid, "Xmp.dc.title", &count);
+    GList *res = dt_metadata_get(params->imgid, "Xmp.dc.title", NULL);
     res = g_list_first(res);
     if(res != NULL)
     {
@@ -304,8 +287,7 @@ gboolean dt_variables_expand(dt_variables_params_t *params, gchar *string, gbool
   gchar *token=NULL;
 
   // Let's free previous expanded result if any...
-  if( params->data->result )
-    g_free(  params->data->result );
+  g_free(  params->data->result );
 
   if(iterate)
     params->data->sequence++;

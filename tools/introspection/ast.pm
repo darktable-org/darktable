@@ -909,14 +909,14 @@ sub get_introspection_code
   {
     my $subtype = $type;
     my $depth = $dimensions;
-    foreach(reverse @dimension_list)
+    foreach(@dimension_list) # TODO: use a normal for loop ...
     {
       $depth--;
       $inner_varname = $varname.("[0]"x$depth);
       my $array_type_name = $type_name.("[]"x($dimensions - $depth));
       $field_name = $self->{declaration}->{id}.("[0]"x$depth);
       $header = "DT_INTROSPECTION_TYPE_ARRAY, (char*)\"$array_type_name\", (char*)\"$inner_varname\", (char*)\"$field_name\", (char*)\"$description\", sizeof((($params_type*)NULL)->$inner_varname), G_STRUCT_OFFSET($params_type, $varname), NULL";
-      $specific = "/*count*/ $_, /*type*/ $subtype, /*field*/ &introspection_linear[".($linearisation_pos-1)."]";
+      $specific = "/*count*/ G_N_ELEMENTS((($params_type*)NULL)->$inner_varname), /*type*/ $subtype, /*field*/ &introspection_linear[".($linearisation_pos-1)."]";
       $linear_line = ".Array = {\n    { $header },\n    $specific\n  }";
       $self->add_to_linear($inner_varname, $linear_line);
       $subtype = "DT_INTROSPECTION_TYPE_ARRAY";

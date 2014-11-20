@@ -32,7 +32,7 @@
     <title>Procedure</title>
 
     <para>
-      This procedure uses tone curve, channel mixer and splittoning modules.
+      This procedure uses monochrome, channel mixer and splittoning modules.
     </para>
 
     <orderedlist>
@@ -72,21 +72,21 @@
         </para></listitem>
 
         <listitem><para>
-          Select red channel destination and set red color value to 0.7
+          Select the red channel destination and set the red color value to 0.7
         </para></listitem>
 
         <listitem><para>
-          Select green channel destination and red color value to 1.15
+          Select the green channel destination and set the green color value to 1.15
         </para></listitem>
 
         <listitem><para>
-          Select blue channel destination and red color value to 1.15
+          Select the blue channel destination and set the blue color value to 1.15
         </para></listitem>
 
       </orderedlist>
 
       <para>
-        As you notice we mix blue and green color to get a cyan tone, we substract 0.3 from red
+        As you notice we mix blue and green color to get a cyan tone, we substract 0.3 from the red
         channel and add them to blue and green.
       </para></listitem>
 
@@ -95,7 +95,7 @@
       </para>
 
       <para>
-        The result of previous step does also add a color cast on highlight that we actually
+        The result of the previous step does also add a color cast on highlights that we actually
         want to have white for a prettier result. We also want to add some blue color cast to
         the shadows in order to emphasis them. Module <emphasis>splittoning</emphasis>
         (<xref linkend="splittoning"/>) can accomplish this.
@@ -112,7 +112,7 @@
         </para></listitem>
 
         <listitem><para>
-          Set highlights saturation to zero, to remove saturation on highlights.
+          Set highlights saturation to zero, to remove saturation on highlights
         </para></listitem>
 
         <listitem><para>

@@ -214,7 +214,7 @@ gui_init (dt_lib_module_t *self)
 
   button = gtk_button_new_with_label(_("resync local copy"));
   d->uncache_button = button;
-  g_object_set(G_OBJECT(button), "tooltip-text", _("synchronize the image XMP and remove the local copy"), (char *)NULL);
+  g_object_set(G_OBJECT(button), "tooltip-text", _("synchronize the image's XMP and remove the local copy"), (char *)NULL);
   gtk_box_pack_start(hbox, button, TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(button_clicked), GINT_TO_POINTER(13));
 

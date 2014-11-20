@@ -83,6 +83,7 @@ public:
 protected:
   void readDirectory();
   string getId();
+  void freeObjects();
   ByteStream *bytes;
   X3fDecoder *decoder;
   FileMap* mFile;

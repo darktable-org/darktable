@@ -117,6 +117,23 @@
     <quote>kwallet</quote>, <quote>gnome keyring</quote> (default none).
   </para>
 
+  <bridgehead renderas="sect4">look for updated xmp files on startup</bridgehead>
+
+  <para>
+    Check file modification times of all XMP files on startup to find out if any got updated in
+    the meantime by some other software. If updated XMP files are found a menu opens for the
+    user to decide which of the XMP files to be reloaded&nbsp;&ndash; replacing darktable's
+    database entries by the XMP file contents&nbsp;&ndash; and which of the XMP files to be
+    overwritten by darktable's database (default off).
+  </para>
+
+  <bridgehead renderas="sect4">executable for playing audio files</bridgehead>
+
+  <para>
+    Defines an external program which is used in the lighttable view to play audio files that
+    some cameras record to keep notes for images (default <quote>aplay</quote>).
+  </para>
+
 <!--
 <bridgehead renderas="sect4">run indexer</bridgehead>
 <para>This will index images in background, so you can search them by similarity (default off).</para>

@@ -23,21 +23,13 @@
 
 #include <inttypes.h>
 
-typedef struct dt_dev_process_t
-{
-  dt_develop_t *dev;
-}
-dt_dev_process_t;
-
 /** process preview */
-int32_t dt_dev_process_preview_job_run(dt_job_t *job);
-void dt_dev_process_preview_job_init(dt_job_t *job, dt_develop_t *dev);
+dt_job_t * dt_dev_process_preview_job_create(dt_develop_t *dev);
 
 /** process image */
-int32_t dt_dev_process_image_job_run(dt_job_t *job);
-void dt_dev_process_image_job_init(dt_job_t *job, dt_develop_t *dev);
+dt_job_t * dt_dev_process_image_job_create(dt_develop_t *dev);
 
-void dt_dev_export_init(dt_job_t *job);
+dt_job_t * dt_dev_export_create();
 
 #endif
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

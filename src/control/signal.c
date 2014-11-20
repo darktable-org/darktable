@@ -44,6 +44,7 @@ typedef struct dt_signal_description
 
 static GType uint_arg[] = {G_TYPE_UINT};
 static GType pointer_arg[] = {G_TYPE_POINTER};
+static GType pointer_2arg[] = {G_TYPE_POINTER, G_TYPE_POINTER};
 static GType image_export_arg[] = {G_TYPE_UINT,G_TYPE_STRING,G_TYPE_POINTER,G_TYPE_POINTER,G_TYPE_POINTER,G_TYPE_POINTER};
 
 
@@ -56,7 +57,7 @@ static dt_signal_description _signal_description[DT_SIGNAL_COUNT] =
   {"dt-control-redraw-all",NULL,NULL,G_TYPE_NONE,g_cclosure_marshal_VOID__VOID,0,NULL},                   // DT_SIGNAL_CONTROL_REDRAW_ALL
   {"dt-control-redraw-center",NULL,NULL,G_TYPE_NONE,g_cclosure_marshal_VOID__VOID,0,NULL},                // DT_SIGNAL_CONTROL_REDRAW_CENTER
 
-  {"dt-viewmanager-view-changed",NULL,NULL,G_TYPE_NONE,g_cclosure_marshal_VOID__VOID,0,NULL},             // DT_SIGNAL_VIEWMANAGER_VIEW_CHANGED
+  {"dt-viewmanager-view-changed",NULL,NULL,G_TYPE_NONE,g_cclosure_marshal_generic,2,pointer_2arg},             // DT_SIGNAL_VIEWMANAGER_VIEW_CHANGED
   {"dt-viewmanager-filmstrip-activate",NULL,NULL,G_TYPE_NONE,g_cclosure_marshal_VOID__VOID,0,NULL},       // DT_SIGNAL_VIEWMANAGER_FILMSTRIP_ACTIVATE
 
   {"dt-collection-changed",NULL,NULL,G_TYPE_NONE,g_cclosure_marshal_VOID__VOID,0,NULL},                   // DT_SIGNAL_COLLECTION_CHANGED

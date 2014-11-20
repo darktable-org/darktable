@@ -97,7 +97,7 @@
     </para></listitem>
 
     <listitem><para>
-      darktable comes with 50 image operation modules which cover everything from basic
+      darktable comes with more than 50 image operation modules which cover everything from basic
       operations, tonal value changes, color manipulation, correction of common image defects to
       artistic effects.
     </para></listitem>
@@ -132,7 +132,7 @@
 
   </itemizedlist>
 
-  <sect1 status="draft" id="program_invocation">
+  <sect1 status="final" id="program_invocation">
 
     <title>Program invocation</title>
 
@@ -146,17 +146,13 @@
 
     <para>
       darktable comes with two binaries: the standard GUI variant which is started by calling
-      <filename>darktable</filename>
-      and a command line interface variant which is started by calling
-      <filename>darktable-cli</filename>
-      .
+      <filename>darktable</filename> and a command line interface variant which is started by
+      calling <filename>darktable-cli</filename> .
     </para>
 
-    <sect2 status="draft" id="darktable_commandline_parameters">
+    <sect2 status="final" id="darktable_commandline_parameters">
 
-      <title>
-
-        <filename>darktable</filename> binary</title>
+      <title><filename>darktable</filename> binary</title>
 
       <para>
         This binary starts darktable with its GUI and full functionality; it is the standard way
@@ -164,14 +160,14 @@
       </para>
 
       <para>
-        <filename>darktable</filename>
-        is called with the following command line parameters:
+        <filename>darktable</filename> is called with the following command line parameters:
       </para>
 
 <synopsis>darktable [-d {all,cache,camctl,control,dev,fswatch,
                input,lighttable,masks,memory,nan,opencl,
                perf,pwstorage,sql}]
           [IMG_1234.{RAW,..}|image_folder/] 
+          [--version]
           [--disable-opencl] 
           [--library &lt;library file&gt;] 
           [--datadir &lt;data directory&gt;] 
@@ -180,6 +176,7 @@
           [--configdir &lt;user config directory&gt;]
           [--cachedir &lt;user cache directory&gt;]
           [--localedir &lt;locale directory&gt;]
+          [--luacmd &lt;lua command&gt;]
           [--conf &lt;key&gt;=&lt;value&gt;]</synopsis>
 
       <para>
@@ -215,6 +212,17 @@
 
           <varlistentry>
 
+            <term>--version</term>
+
+            <listitem><para>
+              This option causes darktable to print its version number, a copyright notice, some
+              other useful information, and then terminate.
+            </para></listitem>
+
+          </varlistentry>
+
+          <varlistentry>
+
             <term>--disable-opencl</term>
 
             <listitem><para>
@@ -236,8 +244,8 @@
               location, e.g. if you want to do some experiments without compromising your
               original library.db. If the database file does not exist, darktable creates it for
               you. You may also give <quote>:memory:</quote> as a library file in which case the
-              database is kept in system memory&nbsp;&ndash; all changes are discarded when darktable
-              terminates.
+              database is kept in system memory&nbsp;&ndash; all changes are discarded when
+              darktable terminates.
             </para></listitem>
 
           </varlistentry>
@@ -318,14 +326,29 @@
 
           <varlistentry>
 
+            <term>--luacmd &lt;lua command&gt;</term>
+
+            <listitem><para>
+              A string containing lua commands to execute after lua initialization. These
+              commands will be run after your <quote>luarc</quote> file.
+            </para>
+
+            <para>
+              If lua is not compiled in, this option will be accepted but won't do anything
+            </para></listitem>
+
+          </varlistentry>
+
+          <varlistentry>
+
             <term>--conf &lt;key&gt;=&lt;value&gt;</term>
 
             <listitem><para>
               darktable supports a rich set of configuration parameters which the user defines
-              in <quote>darktablerc</quote>&nbsp;&ndash; darktable's configuration file in the user config
-              directory. You may temporarily overwrite individual settings on the command line
-              with this option&nbsp;&ndash; however, these settings will not be stored in
-              <quote>darktablerc</quote>.
+              in <quote>darktablerc</quote>&nbsp;&ndash; darktable's configuration file in the
+              user config directory. You may temporarily overwrite individual settings on the
+              command line with this option&nbsp;&ndash; however, these settings will not be
+              stored in <quote>darktablerc</quote>.
             </para></listitem>
 
           </varlistentry>
@@ -335,11 +358,9 @@
 
     </sect2>
 
-    <sect2 status="draft" id="darktable_cli_commandline_parameters">
+    <sect2 status="final" id="darktable_cli_commandline_parameters">
 
-      <title>
-
-        <filename>darktable-cli</filename> binary</title>
+      <title><filename>darktable-cli</filename> binary</title>
 
       <indexterm>
         <primary>darktable-cli</primary>
@@ -351,8 +372,7 @@
       </para>
 
       <para>
-        <filename>darktable-cli</filename>
-        is called with the following command line parameters:
+        <filename>darktable-cli</filename> is called with the following command line parameters:
       </para>
 
 <synopsis>darktable-cli &lt;input file&gt;
@@ -514,8 +534,8 @@
       <para>
         darktable consists of several views or modes. There are five available views as
         described in this section. You can switch between views by clicking the view name at the
-        top of the right panel&nbsp;&ndash; the active view is highlighted&nbsp;&ndash; or by using one of the key
-        accelerators:
+        top of the right panel&nbsp;&ndash; the active view is highlighted&nbsp;&ndash; or by
+        using one of the key accelerators:
         <informaltable frame="none" width="60%">
           <tgroup cols="2" colsep="0" rowsep="0">
             <colspec colwidth='1*'/>
@@ -612,13 +632,13 @@
 
       </sect3>
 
-      <sect3 status="draft">
+      <sect3 status="final">
 
         <title>Slideshow</title>
 
         <para>
-          This view shows images as a slideshow, processing them on-the-fly
-          (see <xref linkend="slideshow_chapter"/>).
+          This view shows images as a slideshow, processing them on-the-fly (see
+          <xref linkend="slideshow_chapter"/>).
         </para>
 
       </sect3>
@@ -852,9 +872,9 @@
           module offers an almost <quote>single-click</quote> solution to fight noise. From a
           user perspective the effect only depends on camera type and ISO value, both derived
           from EXIF data. All other settings are taken from a database of noise profiles that
-          the darktable team has collected&nbsp;&ndash; now covering already over 100 popular camera
-          models. In addition you have several other options in darktable to reduce noise. There
-          is <link linkend="raw_denoise"><emphasis>raw denoise</emphasis></link>,
+          the darktable team has collected&nbsp;&ndash; now covering already over 100 popular
+          camera models. In addition you have several other options in darktable to reduce
+          noise. There is <link linkend="raw_denoise"><emphasis>raw denoise</emphasis></link>,
           <link linkend="denoise_bilateral"><emphasis>denoising based on bilateral
           filter</emphasis></link>, <link linkend="denoise_non_local_means"> <emphasis>denoising
           based on non-local means</emphasis></link>, and
@@ -962,10 +982,11 @@
           adjust overall color saturation. The <link linkend="color_zones"><emphasis>color
           zones</emphasis></link> module offers a much finer control to adjust saturation, or
           lightness, and even hue, in user defined zones. darktable's
-          <link linkend="tone_curve"><emphasis>tone curve</emphasis></link> module&nbsp;&ndash; in addition
-          to the classical adjustment of tonal values&nbsp;&ndash; gives you fine control over the colors
-          in an image. Finally, if you intend to convert an image into black &amp; white, a good
-          starting point, with an easy to use and intuitive user interface, is offered by the
+          <link linkend="tone_curve"><emphasis>tone curve</emphasis></link> module&nbsp;&ndash;
+          in addition to the classical adjustment of tonal values&nbsp;&ndash; gives you fine
+          control over the colors in an image. Finally, if you intend to convert an image into
+          black &amp; white, a good starting point, with an easy to use and intuitive user
+          interface, is offered by the
           <link linkend="monochrome"><emphasis>monochrome</emphasis></link> module.
           Alternatively, you might consider using darktable's
           <link linkend="channel_mixer"><emphasis>channel mixer</emphasis></link>.
@@ -988,7 +1009,7 @@
 
       </sect3>
 
-      <sect3 status="draft">
+      <sect3 status="final">
 
         <title>Artistic effects</title>
 
@@ -1030,9 +1051,9 @@
       <para>
         The export is modularized into <emphasis>storage</emphasis> and
         <emphasis>format</emphasis>. darktable ships with several storage modules such as
-        <emphasis>save on disk</emphasis>, various webalbums, a LaTeX photo book template
-        and more. Format modules are the actual image formats such as JPEG,
-        PNG, TIFF, OpenEXR and more.
+        <emphasis>save on disk</emphasis>, various webalbums, a LaTeX photo book template and
+        more. Format modules are the actual image formats such as JPEG, PNG, TIFF, OpenEXR and
+        more.
       </para>
 
       <para>

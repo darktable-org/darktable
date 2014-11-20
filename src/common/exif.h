@@ -49,7 +49,7 @@ extern "C"
   int dt_exif_xmp_read (dt_image_t * img, const char* filename, const int history_only);
 
   /** load exif thumbnail (these are like 160x120) */
-  int dt_exif_thumbnail (const char *filename, uint8_t *out, uint32_t width, uint32_t height, int orientation, uint32_t *wd, uint32_t *ht);
+  int dt_exif_thumbnail (const char *filename, uint8_t *out, uint32_t width, uint32_t height, dt_image_orientation_t orientation, uint32_t *wd, uint32_t *ht);
 
 
   /** thread safe init and cleanup. */

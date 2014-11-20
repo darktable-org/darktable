@@ -94,12 +94,12 @@
     <para>
       All shapes ever defined for the current image are kept in the list unless you remove them
       explicitly. If you have worked a lot with shapes on one image, this list can get quite
-      long. All settings&nbsp;&ndash; with all defined shapes&nbsp;&ndash; are part of the XMP tags of an image and
-      are included in exported files. If the list of shapes is very long the needed space to
-      store all shapes might exceed the given limits of certain file formats, like JPEG. In that
-      case storing the XMP tags might fail during export. This is normally not a problem -
-      however, you can no longer rely on the exported file to contain your full history stack
-      (see <xref linkend="export_selected"/>).
+      long. All settings&nbsp;&ndash; with all defined shapes&nbsp;&ndash; are part of the XMP
+      tags of an image and are included in exported files. If the list of shapes is very long
+      the needed space to store all shapes might exceed the given limits of certain file
+      formats, like JPEG. In that case storing the XMP tags might fail during export. This is
+      normally not a problem&nbsp;&ndash; however, you can no longer rely on the exported file
+      to contain your full history stack (see <xref linkend="export_selected"/>).
     </para>
 
   </sect3>

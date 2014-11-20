@@ -3,7 +3,7 @@
 		<!ENTITY % darktable_dtd SYSTEM "../../dtd/darktable.dtd">
 		%darktable_dtd;
 		]>
-<sect2 status="draft" id="color_management">
+<sect2 status="final" id="color_management">
 
   <title>Color management</title>
 
@@ -16,8 +16,9 @@
     <itemizedlist>
 
       <listitem><para>
-        Input color specifications are taken from embedded or user supplied ICC profiles or&nbsp;&ndash; in
-        case of raw files&nbsp;&ndash; alternatively from a library of camera specific color matrices.
+        Input color specifications are taken from embedded or user supplied ICC profiles
+        or&nbsp;&ndash; in case of raw files&nbsp;&ndash; alternatively from a library of camera
+        specific color matrices.
       </para></listitem>
 
       <listitem><para>
@@ -37,7 +38,13 @@
     </itemizedlist>
   </para>
 
-  <sect3 status="draft" id="darktable_color_spaces">
+  <para>
+    To investigate your display profile configuration you can call the
+    <filename>darktable-cmstest</filename> binary which prints out useful information like
+    profile name per monitor and tells you if the system is correctly configured.
+  </para>
+
+  <sect3 status="final" id="darktable_color_spaces">
 
     <title>darktable's color spaces</title>
 
@@ -47,12 +54,12 @@
 
     <para>
       darktable's input images are either RGB files (like JPEGs or TIFFs) or pre-demosaiced
-      camera raws&nbsp;&ndash; both represent colors by a combination of red, green and blue. Most part of
-      our modules act in the <ulink url="http://en.wikipedia.org/wiki/Lab_color_space">CIELAB
-      color space</ulink> (often just called <quote>Lab</quote>) which describes color as a
-      combination of lightness data (L) and a point in the a-b color plane. The final output of
-      the image processing pipeline is once again in RGB, either shaped for the monitor display
-      or the output file.
+      camera raws&nbsp;&ndash; both represent colors by a combination of red, green and blue.
+      Most part of our modules act in the
+      <ulink url="http://en.wikipedia.org/wiki/Lab_color_space">CIELAB color space</ulink>
+      (often just called <quote>Lab</quote>) which describes color as a combination of lightness
+      data (L) and a point in the a-b color plane. The final output of the image processing
+      pipeline is once again in RGB, either shaped for the monitor display or the output file.
     </para>
 
     <para>
@@ -127,7 +134,7 @@
 
   </sect3>
 
-  <sect3 status="draft" id="unbounded_colors">
+  <sect3 status="final" id="unbounded_colors">
 
     <title>Unbounded colors</title>
 
@@ -153,21 +160,21 @@
       Pixels with these kind of values are said to have <quote>unbounded colors</quote>. One
       could <emphasis>clamp</emphasis> (i.e. confine) those values to the allowed range at every
       processing step. However, it has been found that it is much preferred and less prone to
-      artifacts to not clamp in-between unbounded colors but treat them just like any other
+      artifacts to not clamp in-between unbounded colors, but treat them just like any other
       color data.
     </para>
 
     <para>
       In darktable there is no technical requirement for clamping; due to the fact that we are
-      using floating point arithmetics for all processing steps unbounded values can be passed
-      along like any other value until the final color conversion module makes sure they are
-      transferred into the most reasonable color within the selected output color space.
+      using floating point arithmetics for all processing steps, unbounded values can be passed
+      along like any other value until the final color conversion module makes sure that they
+      are transferred into the most reasonable color within the selected output color space.
       Therefore darktable avoids clamping as far as the underlying algorithms allow.
     </para>
 
   </sect3>
 
-  <sect3 status="draft" id="possible_color_artifacts">
+  <sect3 status="final" id="possible_color_artifacts">
 
     <title>Possible color artifacts</title>
 
@@ -205,7 +212,7 @@
       In order to mitigate that issue the <emphasis>input color profile</emphasis> module (see
       <xref linkend="input_color_profile"/>) has a <emphasis>gamut clipping</emphasis> option.
       It is off by default but can be activated in case you observe artifacts. Depending on the
-      settings colors get confined to one of the offered RGB gamuts. In effect black pixel
+      settings, colors get confined to one of the offered RGB gamuts. In effect black pixel
       artifacts are prevented at the costs of losing some color dynamics. See
       <xref linkend="input_color_profile"/> for an example.
     </para>

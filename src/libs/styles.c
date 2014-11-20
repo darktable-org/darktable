@@ -125,9 +125,9 @@ static void _gui_styles_update_view( dt_lib_styles_t *d)
       char* items_string = dt_styles_get_item_list_as_string (style->name);
       gchar* tooltip = NULL;
 
-      if((style->description) && strlen (style->description))
+      if(style->description && *style->description)
       {
-        tooltip = g_strconcat("<b>", g_markup_escape_text(style->description,strlen(style->description)), "</b>\n", items_string, NULL);
+        tooltip = g_strconcat("<b>", g_markup_escape_text(style->description, -1), "</b>\n", items_string, NULL);
       }
       else
       {

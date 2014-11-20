@@ -44,41 +44,48 @@
 // closed on GC of the dt lib, usually when the lua interpreter closes
 static int dt_luacleanup(lua_State*L)
 {
-  /* TBSL : redo when DT is a lua lib
-  const int init_gui = (darktable.gui != NULL);
-  if(!init_gui)
-    dt_cleanup();
-    */
+  if(darktable.lua_state.ending) return 0;
+  darktable.lua_state.ending = true;
+  dt_cleanup();
   return 0;
 }
 
 
 static lua_CFunction early_init_funcs[] =
 {
-  dt_lua_init_types,
-  dt_lua_init_modules,
-  dt_lua_init_format,
-  dt_lua_init_storage,
-  dt_lua_init_lib,
-  dt_lua_init_view,
+  dt_lua_init_early_types,
+  dt_lua_init_early_events,
+  dt_lua_init_early_modules,
+  dt_lua_init_early_format,
+  dt_lua_init_early_storage,
+  dt_lua_init_early_lib,
+  dt_lua_init_early_view,
   NULL
 };
 
+static int dt_call_after_load(lua_State *L)
+{
+  return luaL_error(L,"Attempt to initialize DT twice");
+}
+
 void dt_lua_init_early(lua_State*L)
 {
-  if(!L)
+  if(!L) {
     L= luaL_newstate();
+  }
   darktable.lua_state.state= L;
   darktable.lua_state.ending = false;
   dt_lua_init_lock();
   luaL_openlibs(darktable.lua_state.state);
-  luaA_open();
+  luaA_open(L);
   dt_lua_push_darktable_lib(L);
   // set the metatable
-  lua_newtable(L);
+  lua_getmetatable(L,-1);
+  lua_pushcfunction(L,dt_call_after_load);
+  lua_setfield(L,-2,"__call");
   lua_pushcfunction(L,dt_luacleanup);
   lua_setfield(L,-2,"__gc");
-  lua_setmetatable(L,-2);
+  lua_pop(L,1);
 
   lua_pop(L,1);
 
@@ -91,18 +98,27 @@ void dt_lua_init_early(lua_State*L)
 
 }
 
-static int32_t run_early_script(struct dt_job_t *job) {
+static int32_t run_early_script(dt_job_t *job)
+{
   char tmp_path[PATH_MAX];
   lua_State *L = darktable.lua_state.state;
   gboolean has_lock = dt_lua_lock();
   // run global init script
   dt_loc_get_datadir(tmp_path, sizeof(tmp_path));
   g_strlcat(tmp_path, "/luarc", sizeof(tmp_path));
-  dt_lua_dofile(L,tmp_path);
-  // run user init script
-  dt_loc_get_user_config_dir(tmp_path, sizeof(tmp_path));
-  g_strlcat(tmp_path, "/luarc", sizeof(tmp_path));
-  dt_lua_dofile(L,tmp_path);
+  dt_lua_dofile_silent(L,tmp_path,0,0);
+  if(darktable.gui != NULL)
+  {
+    // run user init script
+    dt_loc_get_user_config_dir(tmp_path, sizeof(tmp_path));
+    g_strlcat(tmp_path, "/luarc", sizeof(tmp_path));
+    dt_lua_dofile_silent(L,tmp_path,0,0);
+  }
+  char *lua_command = dt_control_job_get_params(job);
+  if(lua_command)
+    dt_lua_dostring_silent(L, lua_command, 0, 0);
+  free(lua_command);
+  dt_lua_redraw_screen();
   dt_lua_unlock(has_lock);
   return 0;
 }
@@ -120,14 +136,15 @@ static lua_CFunction init_funcs[] =
   dt_lua_init_gui,
   dt_lua_init_luastorages,
   dt_lua_init_tags,
-  dt_lua_init_events,
   dt_lua_init_film,
   dt_lua_init_call,
+  dt_lua_init_view,
+  dt_lua_init_events,
   NULL
 };
 
 
-void dt_lua_init(lua_State*L,const int init_gui)
+void dt_lua_init(lua_State*L,const char *lua_command)
 {
   /*
      Note to reviewers
@@ -147,6 +164,8 @@ void dt_lua_init(lua_State*L,const int init_gui)
     (*cur_type)(L);
     cur_type++;
   }
+  assert(lua_gettop(L) ==0); // if you are here, you have probably added an initialisation function that is not stack clean
+
   // build the table containing the configuration info
 
   lua_getglobal(L,"package");
@@ -172,26 +191,75 @@ void dt_lua_init(lua_State*L,const int init_gui)
 
 
 
-  if(init_gui)
+  dt_job_t *job = dt_control_job_create(&run_early_script, "lua: run initial script");
+  dt_control_job_set_params(job, g_strdup(lua_command));
+  if(darktable.gui)
   {
-    dt_job_t job;
-    dt_control_job_init(&job, "lua: run initial script");
-    job.execute = &run_early_script;
-    dt_control_add_job(darktable.control, &job);
+    dt_control_add_job(darktable.control, DT_JOB_QUEUE_USER_BG, job);
+  }
+  else
+  {
+    run_early_script(job);
+    dt_control_job_dispose(job);
   }
 
 }
 
 
+/*
+   Note to proofreaders
+   argv is a char*[]
+   lua strings are const char*
+   gtk takes argv and modifies it to remove gtk specific parts
+
+   so we need to copy (strdup) parameters from lua
+   but because gtk might do crazy stuff, we keep a copy of our original argv to be able to free() it
+   */
+static int load_from_lua(lua_State *L) 
+{
+  if(darktable.lua_state.state) {
+    luaL_error(L,"Attempt to load darktable multiple time.");
+  }
+  int argc =lua_gettop(L);
+
+  char **argv=calloc(argc+1,sizeof(char*)); 
+  char *argv_copy[argc+1]; 
+  argv[0] =strdup("lua");
+  argv_copy[0] = argv[0];
+  for(int i = 1 ; i < argc ; i++) {
+    argv[i] = strdup(luaL_checkstring(L,i+1));
+    argv_copy[i] = argv[i];
+  }
+  lua_pop(L,lua_gettop(L));
+  argv[argc] = NULL;
+  argv_copy[argc] = NULL;
+  gtk_init(&argc,&argv);
+  dt_init(argc,argv,false,L);
+  for(int i = 0 ; i < argc ; i++) {
+    free(argv_copy[i]);
+  }
+  free(argv);
+  dt_lua_push_darktable_lib(L);
+  return 1;
+}
+// function used by the lua interpreter to load darktable
+int luaopen_darktable(lua_State *L) {
+  dt_lua_push_darktable_lib(L);
+  lua_getmetatable(L,-1);
+  lua_pushcfunction(L,load_from_lua);
+  lua_setfield(L,-2,"__call");
+  lua_pop(L,1);
+  return 1;
+}
+
 void dt_lua_finalize() 
 {
-  darktable.lua_state.ending = true;
-  if(darktable.lua_state.state)
-  {
+  luaA_close(darktable.lua_state.state);
+  if(!darktable.lua_state.ending) {
+    darktable.lua_state.ending = true;
     lua_close(darktable.lua_state.state);
-    luaA_close();
-    darktable.lua_state.state = NULL;
   }
+  darktable.lua_state.state = NULL;
 }
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

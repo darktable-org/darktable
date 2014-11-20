@@ -44,9 +44,10 @@
     <para>
       Compared to traditional splittoning our module has more parameters to influence its
       behavior. We have parameter <quote>balance</quote>, which offsets the 50% gray level in
-      your image&nbsp;&ndash; at your choice&nbsp;&ndash; more to the shadows or more to the highlights. Additionally,
-      with parameter <quote>compression</quote> you can compress toning in the shadows and
-      highlights and leave a gap in the mid-tones, which remain untouched by the effect.
+      your image&nbsp;&ndash; at your choice&nbsp;&ndash; more to the shadows or more to the
+      highlights. Additionally, with parameter <quote>compression</quote> you can compress
+      toning in the shadows and highlights and leave a gap in the mid-tones, which remain
+      untouched by the effect.
     </para>
 
     <para>

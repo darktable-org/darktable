@@ -4,7 +4,7 @@
 /* 
     RawSpeed - RAW file decoder.
 
-    Copyright (C) 2009 Klaus Post
+    Copyright (C) 2009-2014 Klaus Post
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Lesser General Public
@@ -29,7 +29,7 @@ class BlackArea
 public:
   BlackArea(int offset, int size, bool isVertical);
   virtual ~BlackArea(void);
-  uint32 offset; // Offset in bayer pixels.
+  int32 offset; // Offset in bayer pixels.
   uint32 size;   // Size in bayer pixels.
   bool isVertical;  // Otherwise horizontal
 };

@@ -107,16 +107,16 @@ static int store_wrapper(struct dt_imageio_module_storage_t *self,struct dt_imag
     return 1;
   }
 
-  luaA_push_typeid(L,self->parameter_lua_type,self_data);
+  luaA_push_type(L,self->parameter_lua_type,self_data);
   luaA_push(L,dt_lua_image_t,&imgid);
-  luaA_push_typeid(L,format->parameter_lua_type,fdata);
+  luaA_push_type(L,format->parameter_lua_type,fdata);
   lua_pushstring(L,complete_name);
   lua_pushnumber(L,num);
   lua_pushnumber(L,total);
   lua_pushboolean(L,high_quality);
   lua_pushlightuserdata(L,self_data);
   lua_gettable(L,LUA_REGISTRYINDEX);
-  dt_lua_do_chunk(L,8,1);
+  dt_lua_do_chunk_silent(L,8,1);
   int result = lua_toboolean(L,-1);
   lua_pop(L,3);
   dt_lua_unlock(has_lock);
@@ -139,8 +139,8 @@ static void initialize_store_wrapper (struct dt_imageio_module_storage_t *self, 
     return;
   }
 
-  luaA_push_typeid(L,self->parameter_lua_type,data);
-  luaA_push_typeid(L,format->parameter_lua_type,fdata);
+  luaA_push_type(L,self->parameter_lua_type,data);
+  luaA_push_type(L,format->parameter_lua_type,fdata);
 
   GList* imgids =*images;
   lua_newtable(L);
@@ -161,7 +161,7 @@ static void initialize_store_wrapper (struct dt_imageio_module_storage_t *self, 
   lua_pushlightuserdata(L,data);
   lua_gettable(L,LUA_REGISTRYINDEX);
 
-  dt_lua_do_chunk(L,5,1);
+  dt_lua_do_chunk_silent(L,5,1);
   if(!lua_isnoneornil(L,-1)) {
     luaL_checktype(L,-1,LUA_TTABLE);
     g_list_free(*images);
@@ -194,7 +194,7 @@ static void finalize_store_wrapper (struct dt_imageio_module_storage_t *self, dt
     return;
   }
 
-  luaA_push_typeid(L,self->parameter_lua_type,data);
+  luaA_push_type(L,self->parameter_lua_type,data);
 
   lua_storage_t *d = (lua_storage_t*) data;
   GList* imgids =d->imgids;
@@ -217,7 +217,7 @@ static void finalize_store_wrapper (struct dt_imageio_module_storage_t *self, dt
   lua_pushlightuserdata(L,data);
   lua_gettable(L,LUA_REGISTRYINDEX);
 
-  dt_lua_do_chunk(L,3,0);
+  dt_lua_do_chunk_silent(L,3,0);
   lua_pop(L,2);
   dt_lua_unlock(has_lock);
 }
@@ -238,9 +238,10 @@ typedef struct {
   lua_storage_t* data;
 } free_param_wrapper_data;
 
-static int32_t free_param_wrapper_job(struct dt_job_t *job) 
+static int32_t free_param_wrapper_job(dt_job_t *job)
 {
-  lua_storage_t *d = ((free_param_wrapper_data*) job->param)->data;
+  free_param_wrapper_data *params = dt_control_job_get_params(job);
+  lua_storage_t *d = params->data;
   g_list_free(d->imgids);
   g_list_free_full(d->file_names,free);
   if(d->data_created) {
@@ -251,22 +252,32 @@ static int32_t free_param_wrapper_job(struct dt_job_t *job)
     dt_lua_unlock(has_lock);
   }
   free(d);
+  free(params);
   return 0;
 }
 
 
 static void  free_params_wrapper  (struct dt_imageio_module_storage_t *self, dt_imageio_module_data_t *data)
 {
-  dt_job_t job;
-  dt_control_job_init(&job, "lua: destroy storage param");
-  job.execute = &free_param_wrapper_job;
-  free_param_wrapper_data *t = (free_param_wrapper_data*)job.param;
+  dt_job_t *job = dt_control_job_create(&free_param_wrapper_job, "lua: destroy storage param");
+  if(!job) return;
+  free_param_wrapper_data *t = (free_param_wrapper_data*)calloc(1, sizeof(free_param_wrapper_data));
+  if(!t)
+  {
+    dt_control_job_dispose(job);
+    return;
+  }
+  dt_control_job_set_params(job, t);
   t->data = (lua_storage_t*)data;
-  dt_control_add_job(darktable.control, &job);
+  dt_control_add_job(darktable.control, DT_JOB_QUEUE_SYSTEM_FG, job);
 }
 
 static int   set_params_wrapper   (struct dt_imageio_module_storage_t *self, const void *params, const int size)
 {
+  return 0;
+}
+
+static int version_wrapper() {
   return 0;
 }
 
@@ -293,6 +304,7 @@ static dt_imageio_module_storage_t ref_storage =
   .set_params = set_params_wrapper,
   .export_dispatched = empty_wrapper,
   .parameter_lua_type = LUAA_INVALID_TYPE,
+  .version = version_wrapper,
 
 };
 
@@ -358,10 +370,10 @@ static int register_storage(lua_State *L)
 
   char tmp[1024];
   snprintf(tmp,sizeof(tmp),"dt_imageio_module_data_pseudo_%s",storage->plugin_name);
-  luaA_Type type_id = luaA_type_add(tmp,storage->params_size(storage));
-  storage->parameter_lua_type = dt_lua_init_type_typeid(darktable.lua_state.state,type_id);
-  luaA_struct_typeid(darktable.lua_state.state,type_id);
-  dt_lua_register_storage_typeid(darktable.lua_state.state,storage,type_id);
+  luaA_Type type_id = luaA_type_add(L,tmp,storage->params_size(storage));
+  storage->parameter_lua_type = dt_lua_init_type_type(darktable.lua_state.state,type_id);
+  luaA_struct_type(darktable.lua_state.state,type_id);
+  dt_lua_register_storage_type(darktable.lua_state.state,storage,type_id);
 
 
 
@@ -374,11 +386,11 @@ static int register_storage(lua_State *L)
       dt_imageio_module_format_t *format = (dt_imageio_module_format_t *)it->data;
       dt_imageio_module_data_t *sdata = storage->get_params(storage);
       dt_imageio_module_data_t *fdata = format->get_params(format);
-      luaA_push_typeid(L,storage->parameter_lua_type,sdata);
-      luaA_push_typeid(L,format->parameter_lua_type,fdata);
+      luaA_push_type(L,storage->parameter_lua_type,sdata);
+      luaA_push_type(L,format->parameter_lua_type,fdata);
       format->free_params(format,fdata);
       storage->free_params(storage,sdata);
-      dt_lua_do_chunk(L,2,1);
+      dt_lua_do_chunk_silent(L,2,1);
       int result = lua_toboolean(L,-1);
       lua_pop(L,1);
       if(result) {

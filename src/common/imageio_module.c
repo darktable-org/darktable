@@ -69,7 +69,7 @@ dt_imageio_load_module_format (dt_imageio_module_format_t *module, const char *l
   module->widget = NULL;
   module->parameter_lua_type = LUAA_INVALID_TYPE;
   g_strlcpy(module->plugin_name, plugin_name, sizeof(module->plugin_name));
-  module->module = g_module_open(libname, G_MODULE_BIND_LAZY);
+  module->module = g_module_open(libname, G_MODULE_BIND_LAZY | G_MODULE_BIND_LOCAL);
   if(!module->module) goto error;
   int (*version)();
   if(!g_module_symbol(module->module, "dt_module_dt_version", (gpointer)&(version))) goto error;
@@ -78,13 +78,14 @@ dt_imageio_load_module_format (dt_imageio_module_format_t *module, const char *l
     fprintf(stderr, "[imageio_load_module] `%s' is compiled for another version of dt (module %d (%s) != dt %d (%s)) !\n", libname, abs(version()), version() < 0 ? "debug" : "opt", abs(dt_version()), dt_version() < 0 ? "debug" : "opt");
     goto error;
   }
+  if(!g_module_symbol(module->module, "dt_module_mod_version",        (gpointer)&(module->version)))                      goto error;
   if(!g_module_symbol(module->module, "name",                         (gpointer)&(module->name)))                         goto error;
   if(!g_module_symbol(module->module, "init",                         (gpointer)&(module->init)))                         goto error;
   if(!g_module_symbol(module->module, "cleanup",                      (gpointer)&(module->cleanup)))                      goto error;
   if(!g_module_symbol(module->module, "gui_reset",                    (gpointer)&(module->gui_reset)))                    goto error;
   if(darktable.gui)
   {
-    if(!g_module_symbol(module->module, "gui_init",                     (gpointer)&(module->gui_init)))                     goto error;
+    if(!g_module_symbol(module->module, "gui_init",                   (gpointer)&(module->gui_init)))                     goto error;
   }
   else
   {
@@ -95,7 +96,8 @@ dt_imageio_load_module_format (dt_imageio_module_format_t *module, const char *l
   if(!g_module_symbol(module->module, "mime",                         (gpointer)&(module->mime)))                         goto error;
   if(!g_module_symbol(module->module, "extension",                    (gpointer)&(module->extension)))                    goto error;
   if(!g_module_symbol(module->module, "dimension",                    (gpointer)&(module->dimension)))                    module->dimension = _default_format_dimension;
-  if(!g_module_symbol(module->module, "params_size",                   (gpointer)&(module->params_size)))                   goto error;
+  if(!g_module_symbol(module->module, "legacy_params",                (gpointer)&(module->legacy_params)))                module->legacy_params = NULL;
+  if(!g_module_symbol(module->module, "params_size",                  (gpointer)&(module->params_size)))                  goto error;
   if(!g_module_symbol(module->module, "get_params",                   (gpointer)&(module->get_params)))                   goto error;
   if(!g_module_symbol(module->module, "free_params",                  (gpointer)&(module->free_params)))                  goto error;
   if(!g_module_symbol(module->module, "set_params",                   (gpointer)&(module->set_params)))                   goto error;
@@ -109,14 +111,15 @@ dt_imageio_load_module_format (dt_imageio_module_format_t *module, const char *l
   {
     char pseudo_type_name[1024];
     snprintf(pseudo_type_name,sizeof(pseudo_type_name),"dt_imageio_module_format_data_%s",module->plugin_name);
-    luaA_Type my_type = luaA_type_add(pseudo_type_name,module->params_size(module));
-    module->parameter_lua_type = dt_lua_init_type_typeid(darktable.lua_state.state,my_type);
-    luaA_struct_typeid(darktable.lua_state.state,my_type);
-    dt_lua_register_format_typeid(darktable.lua_state.state,module,my_type);
+    luaA_Type my_type = luaA_type_add(darktable.lua_state.state,pseudo_type_name,module->params_size(module));
+    module->parameter_lua_type = dt_lua_init_type_type(darktable.lua_state.state,my_type);
+    luaA_struct_type(darktable.lua_state.state,my_type);
+    dt_lua_register_format_type(darktable.lua_state.state,module,my_type);
 #endif
     module->init(module);
 #ifdef USE_LUA
-    dt_lua_register_type_callback_type_typeid(darktable.lua_state.state,my_type,NULL,NULL,my_type);
+    lua_pushcfunction(darktable.lua_state.state,dt_lua_type_member_luaautoc);
+    dt_lua_type_register_struct_type(darktable.lua_state.state,my_type);
   }
 #endif
 
@@ -188,7 +191,7 @@ dt_imageio_load_module_storage (dt_imageio_module_storage_t *module, const char 
   module->widget = NULL;
   module->parameter_lua_type = LUAA_INVALID_TYPE;
   g_strlcpy(module->plugin_name, plugin_name, sizeof(module->plugin_name));
-  module->module = g_module_open(libname, G_MODULE_BIND_LAZY);
+  module->module = g_module_open(libname, G_MODULE_BIND_LAZY | G_MODULE_BIND_LOCAL);
   if(!module->module) goto error;
   int (*version)();
   if(!g_module_symbol(module->module, "dt_module_dt_version", (gpointer)&(version))) goto error;
@@ -197,11 +200,12 @@ dt_imageio_load_module_storage (dt_imageio_module_storage_t *module, const char 
     fprintf(stderr, "[imageio_load_module] `%s' is compiled for another version of dt (module %d (%s) != dt %d (%s)) !\n", libname, abs(version()), version() < 0 ? "debug" : "opt", abs(dt_version()), dt_version() < 0 ? "debug" : "opt");
     goto error;
   }
+  if(!g_module_symbol(module->module, "dt_module_mod_version",  (gpointer)&(module->version)))                goto error;
   if(!g_module_symbol(module->module, "name",                   (gpointer)&(module->name)))                   goto error;
   if(!g_module_symbol(module->module, "gui_reset",              (gpointer)&(module->gui_reset)))              goto error;
   if(darktable.gui)
   {
-    if(!g_module_symbol(module->module, "gui_init",               (gpointer)&(module->gui_init)))             goto error;
+    if(!g_module_symbol(module->module, "gui_init",             (gpointer)&(module->gui_init)))               goto error;
   }
   else
   {
@@ -211,10 +215,11 @@ dt_imageio_load_module_storage (dt_imageio_module_storage_t *module, const char 
   if(!g_module_symbol(module->module, "init",                   (gpointer)&(module->init)))                   goto error;
 
   if(!g_module_symbol(module->module, "store",                  (gpointer)&(module->store)))                  goto error;
-  if(!g_module_symbol(module->module, "params_size",             (gpointer)&(module->params_size)))           goto error;
+  if(!g_module_symbol(module->module, "legacy_params",          (gpointer)&(module->legacy_params)))          module->legacy_params = NULL;
+  if(!g_module_symbol(module->module, "params_size",            (gpointer)&(module->params_size)))            goto error;
   if(!g_module_symbol(module->module, "get_params",             (gpointer)&(module->get_params)))             goto error;
   if(!g_module_symbol(module->module, "free_params",            (gpointer)&(module->free_params)))            goto error;
-  if(!g_module_symbol(module->module, "initialize_store",         (gpointer)&(module->initialize_store)))     module->initialize_store = NULL;
+  if(!g_module_symbol(module->module, "initialize_store",       (gpointer)&(module->initialize_store)))       module->initialize_store = NULL;
   if(!g_module_symbol(module->module, "finalize_store",         (gpointer)&(module->finalize_store)))         module->finalize_store = NULL;
   if(!g_module_symbol(module->module, "set_params",             (gpointer)&(module->set_params)))             goto error;
 
@@ -226,14 +231,15 @@ dt_imageio_load_module_storage (dt_imageio_module_storage_t *module, const char 
   {
     char pseudo_type_name[1024];
     snprintf(pseudo_type_name,sizeof(pseudo_type_name),"dt_imageio_module_storage_data_%s",module->plugin_name);
-    luaA_Type my_type = luaA_type_add(pseudo_type_name,module->params_size(module));
-    module->parameter_lua_type = dt_lua_init_type_typeid(darktable.lua_state.state,my_type);
-    luaA_struct_typeid(darktable.lua_state.state,my_type);
-    dt_lua_register_storage_typeid(darktable.lua_state.state,module,my_type);
+    luaA_Type my_type = luaA_type_add(darktable.lua_state.state,pseudo_type_name,module->params_size(module));
+    module->parameter_lua_type = dt_lua_init_type_type(darktable.lua_state.state,my_type);
+    luaA_struct_type(darktable.lua_state.state,my_type);
+    dt_lua_register_storage_type(darktable.lua_state.state,module,my_type);
 #endif
   module->init(module);
 #ifdef USE_LUA
-    dt_lua_register_type_callback_type_typeid(darktable.lua_state.state,my_type,NULL,NULL,my_type);
+    lua_pushcfunction(darktable.lua_state.state,dt_lua_type_member_luaautoc);
+    dt_lua_type_register_struct_type(darktable.lua_state.state,my_type);
   }
 #endif
 

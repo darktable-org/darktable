@@ -27,8 +27,9 @@
       <tbody>
         <row>
           <entry>
-            The current view in lighttable is called a collection. The <emphasis>collect images</emphasis>
-            panel lets you narrow down the list of visible images to just the ones you want to work with.
+            The current view in lighttable is called a collection. The <emphasis>collect
+            images</emphasis> panel lets you narrow down the list of visible images to just the
+            ones you want to work with.
           </entry>
           <entry>
             <graphic fileref="lighttable/images/panel_collectimages.png" scalefit="1" width="80%" align="center" />
@@ -39,14 +40,14 @@
   </informaltable>
 
   <para>
-    Information about all images imported into darktable are kept in a database, with various attributes describing
-    each image. You define a collection by applying certain filtering rules to these attributes, creating a subset
-    of images to display in the lighttable view.
+    Information about all images imported into darktable are kept in a database, with various
+    attributes describing each image. You define a collection by applying certain filtering
+    rules to these attributes, creating a subset of images to display in the lighttable view.
   </para>
 
   <para>
-    The default collection is based on the film roll attribute&nbsp;&ndash; it displays all images of the
-    last imported film roll or any other film roll chosen.
+    The default collection is based on the film roll attribute&nbsp;&ndash; it displays all
+    images of the last imported film roll or any other film roll chosen.
   </para>
 
   <sect3>
@@ -122,8 +123,8 @@
                 </entry>
                 <entry>
                   <para>
-                    the time (date <emphasis>and</emphasis> time of day) when the photo was taken,
-                    in the format <emphasis>YYYY:MM:DD hh:mm:ss</emphasis>
+                    the time (date <emphasis>and</emphasis> time of day) when the photo was
+                    taken, in the format <emphasis>YYYY:MM:DD hh:mm:ss</emphasis>
                   </para>
                 </entry>
               </row>
@@ -165,7 +166,8 @@
                 </entry>
                 <entry>
                   <para>
-                    the description, as listed in the image's metadata <quote>description</quote> field
+                    the description, as listed in the image's metadata
+                    <quote>description</quote> field
                   </para>
                 </entry>
               </row>
@@ -185,7 +187,8 @@
                 </entry>
                 <entry>
                   <para>
-                    the publisher, as listed in the image's metadata <quote>publisher</quote> field
+                    the publisher, as listed in the image's metadata <quote>publisher</quote>
+                    field
                   </para>
                 </entry>
               </row>
@@ -195,7 +198,8 @@
                 </entry>
                 <entry>
                   <para>
-                    the copyrights statement, as written in the image's metadata <quote>rights</quote> field
+                    the copyrights statement, as written in the image's metadata
+                    <quote>rights</quote> field
                   </para>
                 </entry>
               </row>
@@ -252,10 +256,11 @@
 
       <para>
         In the text field to the right of the attribute, you write a pattern. The pattern is
-        compared against all database entries with the selected attribute. This search detects a match if
-        the images' attribute contains the pattern in its full text. You may use <quote>%</quote> as
-        wildcard character. The collection gets limited to those images where the query matches.
-        Leaving the text field empty matches all images for that attribute.
+        compared against all database entries with the selected attribute. This search detects a
+        match if the images' attribute contains the pattern in its full text. You may use
+        <quote>%</quote> as wildcard character. The collection gets limited to those images
+        where the query matches. Leaving the text field empty matches all images for that
+        attribute.
       </para>
 
       <para>
@@ -265,8 +270,9 @@
       </para>
 
       <para>
-        Clicking on the triangle button to the right of the text field opens a drop-down menu with
-        options to finetune your current collection by adding further rules, or removing them:
+        Clicking on the triangle button to the right of the text field opens a drop-down menu
+        with options to finetune your current collection by adding further rules, or removing
+        them:
       </para>
 
       <sect5>

@@ -2,15 +2,18 @@
 #include "RawParser.h"
 #include "TiffParserException.h"
 #include "TiffParser.h"
+#include "CiffParserException.h"
+#include "CiffParser.h"
 #include "X3fParser.h"
 #include "ByteStreamSwap.h"
 #include "TiffEntryBE.h"
 #include "MrwDecoder.h"
+#include "NakedDecoder.h"
 
 /*
     RawSpeed - RAW file decoder.
 
-    Copyright (C) 2009 Klaus Post
+    Copyright (C) 2009-2014 Klaus Post
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Lesser General Public
@@ -134,8 +137,23 @@ RawDecoder* RawParser::getDecoder() {
   } catch (RawDecoderException) {
   }
 
-  // TIFF image could not be decoded, so no further options for now.
-  throw RawDecoderException("No decoder found. Sorry.");
+  // CIFF images
+  try {
+    CiffParser p(mInput);
+    p.parseData();
+    return p.getDecoder();
+  } catch (CiffParserException &e) {
+  }
+
+  // File could not be decoded, so do one last ditch effort based on file size
+  if (NakedDecoder::couldBeNakedRaw(mInput)) {
+    try {
+      return new NakedDecoder(mInput);
+    } catch (RawDecoderException) {
+    }
+  }
+
+  ThrowRDE("No decoder found. Sorry.");
   return NULL;
 }
 

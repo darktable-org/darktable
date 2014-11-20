@@ -144,6 +144,23 @@ static void text_renderer_function (GtkTreeViewColumn *col,
   g_object_set(renderer,"cell-background-set",module->state != dt_iop_state_HIDDEN,NULL);
 }
 
+static GdkPixbuf * load_image(const char* filename)
+{
+  GError *error = NULL;
+  if(!g_file_test(filename, G_FILE_TEST_IS_REGULAR))
+    return NULL;
+
+  GdkPixbuf *pixbuf = gdk_pixbuf_new_from_file_at_size(filename, ICON_SIZE, ICON_SIZE, &error);
+  if(!pixbuf)
+  {
+    fprintf(stderr, "error loading file `%s': %s\n", filename, error->message);
+    g_error_free(error);
+  }
+  return pixbuf;
+}
+
+static const uint8_t fallback_pixel[4] = {0, 0, 0, 0};
+
 static void _lib_modulelist_populate_callback(gpointer instance, gpointer user_data)
 {
   dt_lib_module_t *self = (dt_lib_module_t *)user_data;
@@ -215,21 +232,37 @@ static void _lib_modulelist_populate_callback(gpointer instance, gpointer user_d
   /* go thru list of iop modules and add them to the list */
   GList *modules = g_list_last(darktable.develop->iop);
 
+  char datadir[PATH_MAX];
+  dt_loc_get_datadir(datadir, sizeof(datadir));
+
   while(modules)
   {
     dt_iop_module_t *module = (dt_iop_module_t *)(modules->data);
     if(!dt_iop_is_hidden(module) && !(module->flags() & IOP_FLAGS_DEPRECATED) && module->multi_priority==0)
     {
-      char filename[PATH_MAX], datadir[PATH_MAX];
-      dt_loc_get_datadir(datadir, sizeof(datadir));
+      GdkPixbuf *pixbuf;
+      char filename[PATH_MAX];
+
       snprintf(filename, sizeof(filename), "%s/pixmaps/plugins/darkroom/%s.svg", datadir, module->op);
-      if(!g_file_test(filename, G_FILE_TEST_IS_REGULAR))
-        snprintf(filename, sizeof(filename), "%s/pixmaps/plugins/darkroom/%s.png", datadir, module->op);
-      if(!g_file_test(filename, G_FILE_TEST_IS_REGULAR))
-        snprintf(filename, sizeof(filename), "%s/pixmaps/plugins/darkroom/template.png", datadir);
+      pixbuf = load_image(filename);
+      if(pixbuf) goto end;
 
+      snprintf(filename, sizeof(filename), "%s/pixmaps/plugins/darkroom/%s.png", datadir, module->op);
+      pixbuf = load_image(filename);
+      if(pixbuf) goto end;
 
-      GdkPixbuf *pixbuf = gdk_pixbuf_new_from_file_at_size(filename, ICON_SIZE, ICON_SIZE, NULL);
+      snprintf(filename, sizeof(filename), "%s/pixmaps/plugins/darkroom/template.svg", datadir);
+      pixbuf = load_image(filename);
+      if(pixbuf) goto end;
+
+      snprintf(filename, sizeof(filename), "%s/pixmaps/plugins/darkroom/template.png", datadir);
+      pixbuf = load_image(filename);
+      if(pixbuf) goto end;
+
+      // wow, we could neither load the SVG nor the PNG files. something is fucked up.
+      pixbuf = gdk_pixbuf_new_from_data(fallback_pixel, GDK_COLORSPACE_RGB, TRUE, 8, 1, 1, 4, NULL, NULL);
+
+end:
       gtk_list_store_append (store, &iter);
       gtk_list_store_set (store, &iter,
                           COL_IMAGE, pixbuf,

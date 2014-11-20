@@ -3,8 +3,8 @@ msgstr ""
 "Project-Id-Version: DarkTable 0.9.2\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2014-04-11 10:44-0430\n"
-"PO-Revision-Date: 2014-04-11 11:06-0400\n"
-"Last-Translator: tatica <tatadbb@gmail.com>\n"
+"PO-Revision-Date: 2014-11-17 23:37+0100\n"
+"Last-Translator: Jose Carlos Garcia Sogo <jcsogo@gmail.com>\n"
 "Language-Team: \n"
 "Language: es_ES\n"
 "MIME-Version: 1.0\n"
@@ -37,7 +37,7 @@ msgstr "(necesita reinicarse)"
 
 #: ../build/src/preferences_gen.h:1273
 msgid "don't use embedded preview JPEG but half-size raw"
-msgstr "no use previsualización jpeg incrustada, sino raw de tamaño medio"
+msgstr "no use previsualización JPEG incrustada, sino raw de tamaño medio"
 
 #: ../build/src/preferences_gen.h:1282 ../build/src/preferences_gen.h:1301
 #: ../build/src/preferences_gen.h:1320 ../build/src/preferences_gen.h:1339
@@ -74,9 +74,8 @@ msgid ""
 "check this option to not use the embedded JPEG from the raw file but process "
 "the raw data. this is slower but gives you color managed thumbnails."
 msgstr ""
-"active esta opción para no usar el JPEG embedido del archivo raw, sino "
-"procese la información. esto es más lento, pero proporciona miniaturas con "
-"control de color."
+"active esta opción para no usar el JPEG embedido del archivo raw. esto es "
+"más lento, pero proporciona miniaturas con control de color."
 
 #: ../build/src/preferences_gen.h:1292
 msgid "ask before removing images from database"
@@ -104,7 +103,7 @@ msgstr "preguntar antes de eliminar imágenes del disco"
 
 #: ../build/src/preferences_gen.h:1323
 msgid "always ask the user before any image file is deleted."
-msgstr "siempre preguntar al usuario antes de borrar cualquier imagen."
+msgstr "siempre preguntar antes de borrar imágenes."
 
 #: ../build/src/preferences_gen.h:1330
 msgid "ask before moving images from film roll folder"
@@ -112,7 +111,7 @@ msgstr "preguntar antes de mover imágenes desde la carpeta de la sesión"
 
 #: ../build/src/preferences_gen.h:1342
 msgid "always ask the user before any image file is moved."
-msgstr "siempre preguntar al usuario antes de que cualquier imagen sea movida."
+msgstr "siempre preguntar antes de mover imágenes."
 
 #: ../build/src/preferences_gen.h:1349
 msgid "ask before copying images to new film roll folder"
@@ -120,8 +119,7 @@ msgstr "preguntar antes de copiar imágenes a una nueva carpeta de sesión"
 
 #: ../build/src/preferences_gen.h:1361
 msgid "always ask the user before any image file is copied."
-msgstr ""
-"siempre preguntar al usuario antes de que cualquier imagen sea copiada."
+msgstr "siempre preguntar antes de copiar imágenes."
 
 #: ../build/src/preferences_gen.h:1368
 msgid "number of folder levels to show in lists"
@@ -149,7 +147,7 @@ msgstr ""
 
 #: ../build/src/preferences_gen.h:1411
 msgid "recursive directory traversal when importing filmrolls"
-msgstr "importar directorios recursivos de sesiones"
+msgstr "importar directorios de sesiones de forma recursiva"
 
 #: ../build/src/preferences_gen.h:1429
 msgid "creator to be applied when importing"
@@ -364,7 +362,7 @@ msgid ""
 msgstr ""
 "esta opción le permite forzar un significado específico para el perfil "
 "actual del monitor. esto es útil cuando una de las alternativas da un "
-"resultado erroneo"
+"resultado erróneo"
 
 #: ../build/src/preferences_gen.h:1869
 msgid "core options"
@@ -628,31 +626,31 @@ msgstr "opciones de la sesión"
 
 #: ../build/src/preferences_gen.h:2279
 msgid "base directory naming pattern"
-msgstr "directorio base para patron de nombrado"
+msgstr "directorio base para patrón de nombres"
 
 #: ../build/src/preferences_gen.h:2291 ../build/src/preferences_gen.h:2310
 msgid "part of full import path for an import session"
-msgstr "parte de la ruta completa de importación para importar una sesión"
+msgstr "parte de la ruta completa para importar una sesión"
 
 #: ../build/src/preferences_gen.h:2298
 msgid "sub directory naming pattern"
-msgstr "sub directorio de patron de nombrado"
+msgstr "sub directorio de patrón de nombres"
 
 #: ../build/src/preferences_gen.h:2317
 msgid "file naming pattern"
-msgstr "patron de nombrado de archivos"
+msgstr "patrón para nombrar archivos"
 
 #: ../build/src/preferences_gen.h:2329
 msgid "file naming pattern used for a import session"
-msgstr "archivo de patrón de nombrado utilizado para importar una sesión"
+msgstr "archivo de patrón de nombres utilizado para importar una sesión"
 
 #: ../data/darktable.desktop.in.h:1
 msgid "Virtual Lighttable and Darkroom"
-msgstr "Mesa de luz y Cuarto oscuro Virtual"
+msgstr "Mesa de Luz y Cuarto Oscuro Virtuales"
 
 #: ../data/darktable.desktop.in.h:2
 msgid "Organize and develop images from digital cameras"
-msgstr "organizar y revelar imágenes de cámaras digitales"
+msgstr "Organizar y revelar imágenes de cámaras digitales"
 
 #. TRANSLATORS: Search terms to find this application. Do NOT translate or localize the semicolons! The list MUST also end with a semicolon!
 #: ../data/darktable.desktop.in.h:4
@@ -7994,12 +7992,12 @@ msgstr "colapsar imágenes agrupadas"
 #: ../src/libs/tools/global_toolbox.c:95
 #: ../src/libs/tools/global_toolbox.c:141
 msgid "hide image overlays"
-msgstr "esconder imagenes solapadas"
+msgstr "esconder información superpuesta"
 
 #: ../src/libs/tools/global_toolbox.c:97
 #: ../src/libs/tools/global_toolbox.c:143
 msgid "show image overlays"
-msgstr "mostrar imagenes solapadas"
+msgstr "mostrar información superpuesta"
 
 #: ../src/libs/tools/global_toolbox.c:107
 msgid "show global preferences"
@@ -8018,7 +8016,7 @@ msgstr "preferencias"
 #: ../src/libs/tools/global_toolbox.c:152
 msgctxt "accel"
 msgid "show overlays"
-msgstr "mostrar solapadas"
+msgstr "mostrar info superpuesta"
 
 #: ../src/libs/tools/hinter.c:42
 msgid "hinter"
@@ -8055,7 +8053,7 @@ msgstr "zoom mínimo"
 
 #: ../src/libs/tools/module_toolbox.c:36
 msgid "module toolbox"
-msgstr "module toolbox"
+msgstr "lista de módulos"
 
 #: ../src/libs/tools/ratings.c:50
 msgid "ratings"
@@ -8067,7 +8065,7 @@ msgstr "cambiar vista"
 
 #: ../src/libs/tools/view_toolbox.c:36
 msgid "view toolbox"
-msgstr "view toolbox"
+msgstr "ver lista de módulos"
 
 #: ../src/views/darkroom.c:83
 msgid "darkroom"

@@ -158,6 +158,8 @@ process_next_image(dt_slideshow_t *d)
   // get random image id from sql
   int32_t id = 0;
   const int32_t cnt = dt_collection_get_count (darktable.collection);
+  if (!cnt)
+    return 1;
   dt_pthread_mutex_lock(&d->lock);
   d->back_num = d->front_num + d->step;
   int32_t ran = d->back_num;
@@ -197,16 +199,17 @@ process_next_image(dt_slideshow_t *d)
 
 static int32_t process_job_run(dt_job_t *job)
 {
-  dt_slideshow_t *d = *(dt_slideshow_t **)job->param;
+  dt_slideshow_t *d = dt_control_job_get_params(job);
   process_next_image(d);
   return 0;
 }
 
-static void process_job_init(dt_job_t *job, dt_slideshow_t *d)
+static dt_job_t * process_job_create(dt_slideshow_t *d)
 {
-  dt_control_job_init(job, "process slideshow image");
-  job->execute = process_job_run;
-  *((dt_slideshow_t **)job->param) = d;
+  dt_job_t *job = dt_control_job_create(&process_job_run, "process slideshow image");
+  if(!job) return NULL;
+  dt_control_job_set_params(job, d);
+  return job;
 }
 
 static gboolean auto_advance(gpointer user_data)
@@ -280,9 +283,7 @@ static void _step_state(dt_slideshow_t *d, dt_slideshow_event_t event)
       // if(event == s_blended)
       {
         // start bgjob
-        dt_job_t job;
-        process_job_init(&job, d);
-        dt_control_add_job(darktable.control, &job);
+        dt_control_add_job(darktable.control, DT_JOB_QUEUE_SYSTEM_FG, process_job_create(d));
         d->state = s_prefetching;
       }
       break;
@@ -323,14 +324,25 @@ void cleanup(dt_view_t *self)
   free(self->data);
 }
 
+int try_enter(dt_view_t *self)
+{
+  /* verify that there are images to display */
+  if (dt_collection_get_count (darktable.collection) != 0) {
+    return 0;
+  } else {
+    dt_control_log(_("there are no images in this collection"));
+    return 1;
+  }
+}
+
 void enter(dt_view_t *self)
 {
   dt_slideshow_t *d = (dt_slideshow_t*)self->data;
 
-  dt_ui_panel_show(darktable.gui->ui, DT_UI_PANEL_LEFT, FALSE);
-  dt_ui_panel_show(darktable.gui->ui, DT_UI_PANEL_RIGHT, FALSE);
-  dt_ui_panel_show(darktable.gui->ui, DT_UI_PANEL_TOP, FALSE);
-  dt_ui_panel_show(darktable.gui->ui, DT_UI_PANEL_BOTTOM, FALSE);
+  dt_ui_panel_show(darktable.gui->ui, DT_UI_PANEL_LEFT, FALSE, TRUE);
+  dt_ui_panel_show(darktable.gui->ui, DT_UI_PANEL_RIGHT, FALSE, TRUE);
+  dt_ui_panel_show(darktable.gui->ui, DT_UI_PANEL_TOP, FALSE, TRUE);
+  dt_ui_panel_show(darktable.gui->ui, DT_UI_PANEL_BOTTOM, FALSE, TRUE);
   // also hide arrows
   dt_ui_border_show(darktable.gui->ui, FALSE);
 

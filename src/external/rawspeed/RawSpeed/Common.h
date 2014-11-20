@@ -1,7 +1,7 @@
 /* 
     RawSpeed - RAW file decoder.
 
-    Copyright (C) 2009 Klaus Post
+    Copyright (C) 2009-2014 Klaus Post
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Lesser General Public
@@ -192,6 +192,7 @@ inline vector<string> split_string(string input, char c = ' ') {
 typedef enum {
   BitOrder_Plain,  /* Memory order */
   BitOrder_Jpeg,   /* Input is added to stack byte by byte, and output is lifted from top */
+  BitOrder_Jpeg16, /* Same as above, but 16 bits at the time */
   BitOrder_Jpeg32, /* Same as above, but 32 bits at the time */
 } BitOrder;
 

@@ -81,12 +81,8 @@ if(USE_GEO)
 	add_library(map_settings MODULE "map_settings.c")
 	set(MODULES ${MODULES} location map_settings)
 
-	if(Glib_PKGCONF_VERSION VERSION_EQUAL  "2.26.0" OR Glib_PKGCONF_VERSION VERSION_GREATER "2.26.0")
-		add_library(geotagging MODULE "geotagging.c")
-		set(MODULES ${MODULES} geotagging)
-	else()
-		message(STATUS "glib version ${Glib_PKGCONF_VERSION} found. you need at least 2.26.0 to compile the geotagging module.")
-	endif()
+	add_library(geotagging MODULE "geotagging.c")
+	set(MODULES ${MODULES} geotagging)
 endif(USE_GEO)
 
 # Add libs references

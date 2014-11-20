@@ -56,15 +56,21 @@
     <title>Usage</title>
 
     <para>
-      The levels tool shows a histogram of the image, and displays three bars with handles.
-      Dragging the handles modifies the tones in the image. Those bars control the black, middle
-      gray and white points.
+      The levels tool offers two modes of operation: <quote>manual</quote> and
+      <quote>automatic</quote>.
     </para>
 
     <para>
-      You can move the black and white bars to match the left and right border of the histogram,
-      which will make the output image span the full available tonal range. A previously flat
-      looking image will get more contrast and pop.
+      In <quote>manual</quote> mode the levels tool shows a histogram of the image, and displays
+      three bars with handles. Dragging the handles modifies the tones in the image. Those bars
+      control the black, middle gray and white points in absolute values of image lightness (the
+      L value from Lab).
+    </para>
+
+    <para>
+      You can move the black and white bars to match the left and right borders of the
+      histogram, which will make the output image span the full available tonal range. A
+      previously flat looking image will get more contrast and pop.
     </para>
 
     <para>
@@ -86,10 +92,51 @@
     </para>
 
     <para>
-      Under certain conditions, especially highly saturated blue sources in the frame, this
-      module may produce black pixel artifacts. See the <emphasis>gamut clipping</emphasis>
-      option (<xref linkend="input_color_profile"/>) on how to mitigate this issue.
+      In <quote>automatic</quote> mode the module automatically analyses the histogram of the
+      image, detects the left and right histogram borders, and lets you define the black point,
+      the gray point and the white point in terms of
+      <ulink url="http://en.wikipedia.org/wiki/Percentile">
+      <emphasis>percentiles</emphasis></ulink> relative to these borders.
     </para>
+
+    <para>
+      Tip: Under certain conditions, especially highly saturated blue light sources in the
+      frame, the levels module may produce black pixel artifacts. See the <emphasis>gamut
+      clipping</emphasis> option (<xref linkend="input_color_profile"/>) on how to mitigate this
+      issue.
+    </para>
+
+    <sect5>
+      <title>mode</title>
+      <para>
+        Set the mode of operation of this module. Defaults to <quote>manual</quote>.
+      </para>
+    </sect5>
+
+    <sect5>
+      <title>black</title>
+      <para>
+        Sets the black point in percentiles relative to the left border of the histogram (only
+        <quote>automatic</quote> mode).
+      </para>
+    </sect5>
+
+    <sect5>
+      <title>gray</title>
+      <para>
+        Sets the gray point in percentiles relative to the left and right borders of the
+        histogram <emphasis>after</emphasis> having applied the black point and white point
+        corrections (only <quote>automatic</quote> mode).
+      </para>
+    </sect5>
+
+    <sect5>
+      <title>white</title>
+      <para>
+        Sets the white point in percentiles relative to the right border of the histogram (only
+        <quote>automatic</quote> mode).
+      </para>
+    </sect5>
 
   </sect4>
 

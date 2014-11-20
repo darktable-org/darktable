@@ -90,10 +90,8 @@ dt_collection_free (const dt_collection_t *collection)
   dt_control_signal_disconnect(darktable.signals, G_CALLBACK(_dt_collection_recount_callback_1), (gpointer)collection);
   dt_control_signal_disconnect(darktable.signals, G_CALLBACK(_dt_collection_recount_callback_2), (gpointer)collection);
 
-  if (collection->query)
-    g_free (collection->query);
-  if (collection->where_ext)
-    g_free (collection->where_ext);
+  g_free(collection->query);
+  g_free(collection->where_ext);
   g_free ((dt_collection_t *)collection);
 }
 
@@ -172,8 +170,7 @@ dt_collection_update (const dt_collection_t *collection)
   result = _dt_collection_store(collection, query);
 
   /* free memory used */
-  if (sq)
-    g_free(sq);
+  g_free(sq);
   g_free(wq);
   g_free(selq);
   g_free (query);
@@ -246,8 +243,7 @@ void
 dt_collection_set_extended_where(const dt_collection_t *collection,gchar *extended_where)
 {
   /* free extended where if already exists */
-  if (collection->where_ext)
-    g_free (collection->where_ext);
+  g_free(collection->where_ext);
 
   /* set new from parameter */
   ((dt_collection_t *)collection)->where_ext = g_strdup(extended_where);
@@ -393,8 +389,7 @@ _dt_collection_store (const dt_collection_t *collection, gchar *query)
   }
 
   /* store query in context */
-  if (collection->query)
-    g_free (collection->query);
+  g_free(collection->query);
 
   ((dt_collection_t *)collection)->query = g_strdup(query);
 
@@ -477,8 +472,7 @@ GList *dt_collection_get_selected (const dt_collection_t *collection, int limit)
 
 
   /* free allocated strings */
-  if (sq)
-    g_free(sq);
+  g_free(sq);
 
   g_free(query);
 
@@ -529,7 +523,7 @@ get_query_string(const dt_collection_properties_t property, const gchar *escaped
   switch(property)
   {
     case DT_COLLECTION_PROP_FILMROLL: // film roll
-      if (strlen(escaped_text) == 0)
+      if (!(escaped_text && *escaped_text))
         snprintf(query, query_len, "(film_id in (select id from film_rolls where folder like '%s%%'))", escaped_text);
       else
         snprintf(query, query_len, "(film_id in (select id from film_rolls where folder like '%s'))", escaped_text);
@@ -542,7 +536,7 @@ get_query_string(const dt_collection_properties_t property, const gchar *escaped
     case DT_COLLECTION_PROP_COLORLABEL: // colorlabel
     {
       int color = 0;
-      if(strlen(escaped_text)==0 || strcmp(escaped_text, "%")==0) snprintf(query, query_len, "(id in (select imgid from color_labels where color IS NOT NULL))");
+      if(!(escaped_text && *escaped_text) || strcmp(escaped_text, "%")==0) snprintf(query, query_len, "(id in (select imgid from color_labels where color IS NOT NULL))");
       else
       {
         if     (strcmp(escaped_text,_("red")   )==0) color=0;

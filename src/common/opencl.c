@@ -119,7 +119,6 @@ void dt_opencl_init(dt_opencl_t *cl, const int argc, char *argv[])
 
   // look for explicit definition of opencl_runtime library in preferences
   char *library = dt_conf_get_string("opencl_library");
-  dt_print(DT_DEBUG_OPENCL, "[opencl_init] trying to load opencl library: '%s'\n", library && library[0] != '\0' ? library : "<system default>");
 
   // dynamically load opencl runtime
   if(!dt_dlopencl_init(library, &cl->dlocl))
@@ -349,7 +348,8 @@ void dt_opencl_init(dt_opencl_t *cl, const int argc, char *argv[])
         g_free(confline_pattern);
         if(rd != 1) continue;
         // remove comments:
-        for(size_t pos=0; pos<strlen(confentry); pos++)
+        size_t end = strlen(confentry);
+        for(size_t pos=0; pos<end; pos++)
           if(confentry[pos] == '#')
           {
             confentry[pos] = '\0';
@@ -490,8 +490,8 @@ void dt_opencl_cleanup(dt_opencl_t *cl)
         }
         dt_opencl_events_reset(i);
 
-        if(cl->dev[i].eventlist) free(cl->dev[i].eventlist);
-        if(cl->dev[i].eventtags) free(cl->dev[i].eventtags);
+        free(cl->dev[i].eventlist);
+        free(cl->dev[i].eventtags);
       }
     }
     free(cl->dev_priority_image);

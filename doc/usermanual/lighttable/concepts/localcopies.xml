@@ -13,20 +13,20 @@
   </indexterm>
 
   <para>
-    Many users have huge image collections which they store on extra hard drives in their desktop computer,
-    or on an external storage medium like a RAID NAS, etc. So it is a common use case to develop some images while
-    travelling using a notebook and then later synchronize them to the original storage medium. But copying
-    images manually from the main storage to the notebook and back is cumbersome and prone to errors.
+    Many users have huge image collections which they store on extra hard drives in their
+    desktop computer, or on an external storage medium like a RAID NAS, etc. So it is a common
+    use case to develop some images while travelling using a notebook and then later synchronize
+    them to the original storage medium. But copying images manually from the main storage to
+    the notebook and back is cumbersome and prone to errors.
   </para>
 
   <para>
     The <quote>local copies</quote> feature of darktable has been designed to directly support
     those use cases. You can create local copies of selected pictures on your computer's local
-    drive. This local copy is then used when the original image file is not accessible.
-    At a later point, when connected again with your main storage medium, you can synchronize
-    the XMP sidecar files, deleting the local copy of your input image. These operations
-    can be found in the <emphasis>selected images</emphasis> panel (see
-    <xref linkend="selected_images"/>).
+    drive. This local copy is then used when the original image file is not accessible. At a
+    later point, when connected again with your main storage medium, you can synchronize the XMP
+    sidecar files, deleting the local copy of your input image. These operations can be found in
+    the <emphasis>selected images</emphasis> panel (see <xref linkend="selected_images"/>).
   </para>
 
   <para>

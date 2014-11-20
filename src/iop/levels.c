@@ -35,7 +35,6 @@
 #include "common/colorspaces.h"
 #include "bauhaus/bauhaus.h"
 #include "common/opencl.h"
-#include "libs/colorpicker.h"
 
 #define DT_GUI_CURVE_EDITOR_INSET DT_PIXEL_APPLY_DPI(5)
 #define DT_GUI_CURVE_INFL .3f
@@ -191,7 +190,7 @@ static void dt_iop_levels_compute_levels_automatic(dt_iop_module_t *self, dt_dev
 
   if(self->histogram == NULL) return;
 
-  uint32_t total = self->histogram_pixels;
+  uint32_t total = self->histogram_stats.pixels;
 
   float thr[3];
   for(int k=0; k < 3; k++)
@@ -202,7 +201,7 @@ static void dt_iop_levels_compute_levels_automatic(dt_iop_module_t *self, dt_dev
 
   // find min and max levels
   uint32_t n = 0;
-  for(uint32_t i=0; i < self->histogram_bins_count; i++)
+  for(uint32_t i=0; i < self->histogram_stats.bins_count; i++)
   {
     n += self->histogram[4*i];
 
@@ -210,14 +209,15 @@ static void dt_iop_levels_compute_levels_automatic(dt_iop_module_t *self, dt_dev
     {
       if (isnan(d->levels[k]) && (n >= thr[k]))
       {
-        d->levels[k] = (float)i / (float)(self->histogram_bins_count-1);
+        d->levels[k] = (float)i / (float)(self->histogram_stats.bins_count-1);
       }
     }
   }
 
   // compute middle level from min and max levels
   float center = d->percentiles[1] / 100.0f;
-  d->levels[1] = (1.0f-center)*d->levels[0] + center*d->levels[2];
+  if(!isnan(d->levels[0]) && !isnan(d->levels[2]))
+    d->levels[1] = (1.0f-center)*d->levels[0] + center*d->levels[2];
 }
 
 static void compute_lut(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece)
@@ -237,6 +237,10 @@ static void compute_lut(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece)
   }
 }
 
+/*
+ * WARNING: unlike commit_params, which is thread safe wrt gui thread and
+ * pipes, this function lives in the pipeline thread, and NOT thread safe!
+ */
 static void commit_params_late(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece)
 {
   dt_iop_levels_data_t *d = (dt_iop_levels_data_t *)piece->data;
@@ -371,7 +375,12 @@ void commit_params (dt_iop_module_t *self, dt_iop_params_t *p1,
   self->request_histogram_source  =  (DT_DEV_PIXELPIPE_PREVIEW);
   self->histogram_params.bins_count = 64;
 
-  gboolean histogram_is_good = ((self->histogram_bins_count == 16384)
+  if(self->dev->gui_attached)
+  {
+    g->reprocess_on_next_expose = FALSE;
+  }
+
+  gboolean histogram_is_good = ((self->histogram_stats.bins_count == 16384)
                                 && (self->histogram != NULL));
 
   if(p->mode == LEVELS_MODE_AUTOMATIC)
@@ -382,25 +391,30 @@ void commit_params (dt_iop_module_t *self, dt_iop_params_t *p1,
     d->percentiles[1] = p->percentiles[1];
     d->percentiles[2] = p->percentiles[2];
 
+    gboolean failed = !histogram_is_good;
+
     if(self->dev->gui_attached && histogram_is_good)
     {
       /*
        * if in GUI, user might zoomed main view => we would get histogram of
        * only part of image, so if in GUI we must always use histogram of
-       * preview pipe, wich is always full-size and have biggest size
+       * preview pipe, which is always full-size and have biggest size
        */
-      d->mode = p->mode;
+      d->mode = LEVELS_MODE_AUTOMATIC;
       commit_params_late(self, piece);
       d->mode = LEVELS_MODE_MANUAL;
+
+      if(isnan(d->levels[0]) || isnan(d->levels[1]) || isnan(d->levels[2]))
+        failed = TRUE;
     }
-    else
+    else if(failed || !(self->dev->gui_attached && histogram_is_good))
     {
-      d->mode = p->mode;
+      d->mode = LEVELS_MODE_AUTOMATIC;
       //commit_params_late() will compute LUT later
       self->request_histogram        &= ~(DT_REQUEST_ONLY_IN_GUI);
       self->request_histogram_source  =  (DT_DEV_PIXELPIPE_ANY);
 
-      if(self->dev->gui_attached && !histogram_is_good)
+      if(failed && self->dev->gui_attached)
       {
         /*
          * but sadly we do not yet have a histogram to do so, so this time we
@@ -413,21 +427,11 @@ void commit_params (dt_iop_module_t *self, dt_iop_params_t *p1,
   }
   else
   {
-    d->mode = p->mode;
+    d->mode = LEVELS_MODE_MANUAL;
     d->levels[0] = p->levels[0];
     d->levels[1] = p->levels[1];
     d->levels[2] = p->levels[2];
     compute_lut(self, piece);
-  }
-
-  /*
-   * FIXME: for some reason first "g->reprocess_on_next_expose = TRUE;"
-   * does not catch all cases
-   */
-  if(self->dev->gui_attached &&
-      (isnan(d->levels[0]) || isnan(d->levels[1]) || isnan(d->levels[2])))
-  {
-    g->reprocess_on_next_expose = TRUE;
   }
 }
 
@@ -541,7 +545,7 @@ void gui_init(dt_iop_module_t *self)
   c->mode = dt_bauhaus_combobox_new(self);
   dt_bauhaus_widget_set_label(c->mode, NULL, _("mode"));
 
-  dt_bauhaus_combobox_add(c->mode, _("manual"));
+  dt_bauhaus_combobox_add(c->mode, C_("mode", "manual"));
   c->modes = g_list_append(c->modes, GUINT_TO_POINTER(LEVELS_MODE_MANUAL));
 
   dt_bauhaus_combobox_add(c->mode, _("automatic"));
@@ -556,7 +560,7 @@ void gui_init(dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(c->vbox_manual), GTK_WIDGET(c->area), TRUE, TRUE, 0);
 
   gtk_widget_set_size_request(GTK_WIDGET(c->area), panel_width, panel_width * (9.0 / 16.0));
-  g_object_set (GTK_OBJECT(c->area), "tooltip-text", _("drag handles to set black, grey, and white points.  operates on L channel."), (char *)NULL);
+  g_object_set (GTK_OBJECT(c->area), "tooltip-text", _("drag handles to set black, gray, and white points.  operates on L channel."), (char *)NULL);
 
   gtk_widget_add_events(GTK_WIDGET(c->area), GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK | GDK_LEAVE_NOTIFY_MASK);
   g_signal_connect (G_OBJECT (c->area), "expose-event",
@@ -577,15 +581,15 @@ void gui_init(dt_iop_module_t *self)
   gtk_widget_set_size_request(autobutton, DT_PIXEL_APPLY_DPI(70), DT_PIXEL_APPLY_DPI(24));
 
   GtkWidget *blackpick = dtgtk_togglebutton_new(dtgtk_cairo_paint_colorpicker, CPF_STYLE_FLAT);
-  g_object_set(G_OBJECT(blackpick), "tooltip-text", _("pick blackpoint from image"), (char *)NULL);
+  g_object_set(G_OBJECT(blackpick), "tooltip-text", _("pick black point from image"), (char *)NULL);
   gtk_widget_set_size_request(blackpick, DT_PIXEL_APPLY_DPI(24), DT_PIXEL_APPLY_DPI(24));
 
   GtkWidget *greypick = dtgtk_togglebutton_new(dtgtk_cairo_paint_colorpicker, CPF_STYLE_FLAT);
-  g_object_set(G_OBJECT(greypick), "tooltip-text", _("pick medium greypoint from image"), (char *)NULL);
+  g_object_set(G_OBJECT(greypick), "tooltip-text", _("pick medium gray point from image"), (char *)NULL);
   gtk_widget_set_size_request(greypick, DT_PIXEL_APPLY_DPI(24), DT_PIXEL_APPLY_DPI(24));
 
   GtkWidget *whitepick = dtgtk_togglebutton_new(dtgtk_cairo_paint_colorpicker, CPF_STYLE_FLAT);
-  g_object_set(G_OBJECT(whitepick), "tooltip-text", _("pick whitepoint from image"), (char *)NULL);
+  g_object_set(G_OBJECT(whitepick), "tooltip-text", _("pick white point from image"), (char *)NULL);
   gtk_widget_set_size_request(whitepick, DT_PIXEL_APPLY_DPI(24), DT_PIXEL_APPLY_DPI(24));
 
   GdkColor col;
@@ -618,9 +622,9 @@ void gui_init(dt_iop_module_t *self)
   dt_bauhaus_widget_set_label(c->percentile_black, NULL, _("black"));
 
   c->percentile_grey = dt_bauhaus_slider_new_with_range(self, 0.0f, 100.0f, .1f, p->percentiles[1], 3);
-  g_object_set(G_OBJECT(c->percentile_grey), "tooltip-text", _("grey percentile"), (char *)NULL);
+  g_object_set(G_OBJECT(c->percentile_grey), "tooltip-text", _("gray percentile"), (char *)NULL);
   dt_bauhaus_slider_set_format(c->percentile_grey,"%.1f%%");
-  dt_bauhaus_widget_set_label(c->percentile_grey, NULL, _("grey"));
+  dt_bauhaus_widget_set_label(c->percentile_grey, NULL, _("gray"));
 
   c->percentile_white = dt_bauhaus_slider_new_with_range(self, 0.0f, 100.0f, .1f, p->percentiles[2], 3);
   g_object_set(G_OBJECT(c->percentile_white), "tooltip-text", _("white percentile"), (char *)NULL);
@@ -869,7 +873,7 @@ static gboolean dt_iop_levels_vbox_automatic_expose(GtkWidget *widget, GdkEventE
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_levels_gui_data_t *g = (dt_iop_levels_gui_data_t *)self->gui_data;
 
-  if(g->reprocess_on_next_expose)
+  if(self->enabled && g->reprocess_on_next_expose)
   {
     g->reprocess_on_next_expose = FALSE;
     //FIXME: or just use dev->pipe->changed |= DT_DEV_PIPE_SYNCH; ?

@@ -90,15 +90,15 @@ static const char* const EncoderError[] = {
 void init(dt_imageio_module_format_t *self) {
 #ifdef USE_LUA
   luaA_enum(darktable.lua_state.state,comp_type_t);
-  luaA_enum_value(darktable.lua_state.state,comp_type_t,webp_lossy,false);
-  luaA_enum_value(darktable.lua_state.state,comp_type_t,webp_lossless,false);
+  luaA_enum_value(darktable.lua_state.state,comp_type_t,webp_lossy);
+  luaA_enum_value(darktable.lua_state.state,comp_type_t,webp_lossless);
   dt_lua_register_module_member(darktable.lua_state.state,self,dt_imageio_webp_t,comp_type,comp_type_t);
   dt_lua_register_module_member(darktable.lua_state.state,self,dt_imageio_webp_t,quality,int);
   luaA_enum(darktable.lua_state.state,hint_t);
-  luaA_enum_value(darktable.lua_state.state,hint_t,hint_default,false);
-  luaA_enum_value(darktable.lua_state.state,hint_t,hint_picture,false);
-  luaA_enum_value(darktable.lua_state.state,hint_t,hint_photo,false);
-  luaA_enum_value(darktable.lua_state.state,hint_t,hint_graphic,false);
+  luaA_enum_value(darktable.lua_state.state,hint_t,hint_default);
+  luaA_enum_value(darktable.lua_state.state,hint_t,hint_picture);
+  luaA_enum_value(darktable.lua_state.state,hint_t,hint_photo);
+  luaA_enum_value(darktable.lua_state.state,hint_t,hint_graphic);
   dt_lua_register_module_member(darktable.lua_state.state,self,dt_imageio_webp_t,hint,hint_t);
 #endif
 }

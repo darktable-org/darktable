@@ -82,8 +82,9 @@
       that it hands over to a hardware specific OpenCL compiler at run-time. This way the
       application can use OpenCL on different GPU architectures (even at the same time). All
       hardware <quote>secrets</quote> are hidden in this compiler and are normally not visible
-      to the user (or the application). The compiled OpenCL code is loaded onto your GPU and -
-      with certain API calls&nbsp;&ndash; it is ready to do calculations for you.
+      to the user (or the application). The compiled OpenCL code is loaded onto your GPU
+      and&nbsp;&ndash; with certain API calls&nbsp;&ndash; it is ready to do calculations for
+      you.
     </para>
 
   </sect2>
@@ -102,14 +103,14 @@
     </para>
 
     <para>
-      When darktable starts, it will first try to find and load libOpenCL.so and – on success
-      – check if the available graphics card comes with OpenCL support. A sufficient amount of
-      graphics memory (1GB+) needs to be available to take advantage of the GPU. If that is OK,
-      darktable tries to setup its OpenCL environment: a processing context needs to be
-      initialized, a calculation pipeline to be started, OpenCL source code files (extension is
-      .cl) need to be read and compiled and the included routines (called OpenCL kernels) need
-      to be prepared for darktablele’s modules. If all that is done, the preparation is
-      finished.
+      When darktable starts, it will first try to find and load libOpenCL.so and&nbsp;&ndash; on
+      success&nbsp;&ndash; check if the available graphics card comes with OpenCL support. A
+      sufficient amount of graphics memory (1GB+) needs to be available to take advantage of the
+      GPU. If that is OK, darktable tries to setup its OpenCL environment: a processing context
+      needs to be initialized, a calculation pipeline to be started, OpenCL source code files
+      (extension is .cl) need to be read and compiled and the included routines (called OpenCL
+      kernels) need to be prepared for darktablele’s modules. If all that is done, the
+      preparation is finished.
     </para>
 
     <para>
@@ -146,6 +147,161 @@
       processing. Except of rounding errors, the results are designed to be identical. If, for
       some reasons, darktable fails to properly finish a GPU calculation, it will normally
       notice and automatically (and transparently) fall back to CPU processing.
+    </para>
+
+  </sect2>
+
+  <sect2 status="final">
+
+    <title>Setting up OpenCL on your system</title>
+
+    <para>
+      The huge diversity of systems and the marked differences between OpenCL vendors and driver
+      versions makes it impossible to give an comprehensive overview of how to setup OpenCL. We
+      only can give you an example, in this case for NVIDIA driver version 331.89 on Ubuntu
+      14.04. We hope that this will serve you as a first impression and will help to solve
+      possible problems of your specific setup.
+    </para>
+
+    <para>
+      The principle OpenCL function flow is like this:
+    </para>
+
+    <para>
+      darktable -> libOpenCL.so -> libnvidia-opencl.so.1 -> kernel driver module(s) -> GPU
+    </para>
+
+    <para>
+      <itemizedlist>
+
+        <listitem><para>
+          darktable dynamically links <filename>libOpenCL.so</filename>, a system library which
+          must be accessible to the system's dynamic loader (<filename>ld.so</filename>).
+        </para></listitem>
+
+        <listitem><para>
+          <filename>libOpenCL.so</filename> will read the vendor specific information file
+          (<filename>/etc/OpenCL/vendors/nvidia.icd</filename>) to find the library which
+          contains the vendor specific OpenCL implementation.
+        </para></listitem>
+
+        <listitem><para>
+          The vendor specific OpenCL implementation comes as a library
+          <filename>libnvidia-opencl.so.1</filename> (which in our case is a symbolic link to
+          <filename>libnvidia-opencl.so.331.89</filename>).
+        </para></listitem>
+
+        <listitem><para>
+          <filename>libnvidia-opencl.so.1</filename> needs to talk to the vendor specific kernel
+          modules <filename>nvidia</filename> and <filename>nvidia_uvm</filename> via device
+          special files <filename>/dev/nvidia0</filename>, <filename>/dev/nvidiactl</filename>,
+          and <filename>/dev/nvidia-uvm</filename>.
+        </para></listitem>
+
+      </itemizedlist>
+    </para>
+
+    <para>
+      At system startup the required device special files (/dev/nvidia*) need to be created. If
+      this does not happen on your system by default, the easiest way to set them up and make
+      sure all modules are loaded is installing the <filename>nvidia-modprobe</filename> package
+      (which, at the time of this writing, is only available for <quote>utopic</quote>, but
+      works well with <quote>trusty</quote> and <quote>Mint 17</quote>). You can grab it at
+      <ulink url="http://packages.ubuntu.com/utopic/nvidia-modprobe">this site</ulink>.
+    </para>
+
+    <para>
+      A user account which wants to make use of OpenCL from within darktable needs to have
+      read-write access to NVIDIA's device special files. On some systems these files allow
+      world read-write access by default, which avoids permission issues but might be debatable
+      in terms of system security. Other systems restrict the access to a user group, e.g.
+      <quote>video</quote>. In that case your user account has to be member of that group.
+    </para>
+
+    <para>
+      To summarise, the packages which needed to be installed in this specific case were:
+      <itemizedlist>
+
+        <listitem><para>
+          nvidia-331 (331.89-0ubuntu1~xedgers14.04.2)
+        </para></listitem>
+
+        <listitem><para>
+          nvidia-331-dev (331.89-0ubuntu1~xedgers14.04.2)
+        </para></listitem>
+
+        <listitem><para>
+          nvidia-331-uvm (331.89-0ubuntu1~xedgers14.04.2)
+        </para></listitem>
+
+        <listitem><para>
+          nvidia-libopencl1-331 (331.89-0ubuntu1~xedgers14.04.2)
+        </para></listitem>
+
+        <listitem><para>
+          nvidia-modprobe (340.24-1)
+        </para></listitem>
+
+        <listitem><para>
+          nvidia-opencl-dev:amd64 (5.5.22-3ubuntu1)
+        </para></listitem>
+
+        <listitem><para>
+          nvidia-opencl-icd-331 (331.89-0ubuntu1~xedgers14.04.2)
+        </para></listitem>
+
+        <listitem><para>
+          nvidia-settings (340.24-0ubuntu1~xedgers14.04.1)
+        </para></listitem>
+
+        <listitem><para>
+          nvidia-settings-304 (340.24-0ubuntu1~xedgers14.04.1)
+        </para></listitem>
+
+        <listitem><para>
+          nvidia-libopencl1-331 (331.89-0ubuntu1~xedgers14.04.2)
+        </para></listitem>
+
+        <listitem><para>
+          nvidia-opencl-dev:amd64 (5.5.22-3ubuntu1)
+        </para></listitem>
+
+        <listitem><para>
+          nvidia-opencl-icd-331 (331.89-0ubuntu1~xedgers14.04.2)
+        </para></listitem>
+
+        <listitem><para>
+          opencl-headers (1.2-2013.10.23-1)
+        </para></listitem>
+
+      </itemizedlist>
+    </para>
+
+    <para>
+      The list of NVIDIA related kernel modules as reported by <filename>lsmod</filename> is:
+    </para>
+
+    <para>
+<programlisting>nvidia
+nvidia_uvm
+</programlisting>
+    </para>
+
+    <para>
+      The list of NVIDIA related device special files (<filename>ls -l /dev/nvidia*</filename>)
+      should read like:
+    </para>
+
+    <para>
+<programlisting>crw-rw-rw- 1 root root 195,   0 Jul 28 21:13 /dev/nvidia0
+crw-rw-rw- 1 root root 195, 255 Jul 28 21:13 /dev/nvidiactl
+crw-rw-rw- 1 root root 250,   0 Jul 28 21:13 /dev/nvidia-uvm 
+</programlisting>
+    </para>
+
+    <para>
+      Beware that the major/minor numbers (e.g. 250/0 for <filename>/dev/nvidia-uvm</filename>
+      in this example) may vary depending on your system.
     </para>
 
   </sect2>
@@ -189,47 +345,51 @@
       Here are a few cases observed in the past:
     </para>
 
-    <para>
-      darktable might tell you that no OpenCL aware graphics card is detected or that the
-      available memory on your GPU is too low and the device is discarded. In that case you
-      might need to buy a new card, if you really want OpenCL support.
-    </para>
+    <itemizedlist>
 
-    <para>
-      darktable might find your libOpenCL.so but then tell you that it couldn't get a platform.
-      NVIDIA drivers will often give error code -1001 in that case. This happens because
-      libOpenCL.so is only a wrapper library. For the real work further libraries&nbsp;&ndash; specific to
-      vendor, device and driver&nbsp;&ndash; need to be loaded. This failed for some reason. There is a
-      structure of files in /etc/OpenCL on your system that libOpenCL.so consults to find these
-      libraries. Check if you find something fishy in there and try to fix it. Often the needed
-      libraries cannot be found by your system's dynamic loader. Giving full path names might
-      help.
-    </para>
+      <listitem><para>
+        darktable might tell you that no OpenCL aware graphics card is detected or that the
+        available memory on your GPU is too low and the device is discarded. In that case you
+        might need to buy a new card, if you really want OpenCL support.
+      </para></listitem>
 
-    <para>
-      darktable might also tell you that a context could not be created. This often indicates a
-      version mismatch between (loaded) graphics driver and libOpenCL. Check if you have
-      left-over kernel modules or graphics libraries of an older install and take appropriate
-      action. In doubt, make a clean reinstall of your graphics driver. Sometimes, immediately
-      after a driver update, the loaded kernel driver does not match the newly installed
-      libraries: reboot your system in that case.
-    </para>
+      <listitem><para>
+        darktable might find your libOpenCL.so but then tell you that it couldn't get a
+        platform. NVIDIA drivers will often give error code -1001 in that case. This happens
+        because libOpenCL.so is only a wrapper library. For the real work further
+        libraries&nbsp;&ndash; specific to vendor, device and driver&nbsp;&ndash; need to be
+        loaded. This failed for some reason. There is a structure of files in /etc/OpenCL on
+        your system that libOpenCL.so consults to find these libraries. Check if you find
+        something fishy in there and try to fix it. Often the needed libraries cannot be found
+        by your system's dynamic loader. Giving full path names might help.
+      </para></listitem>
 
-    <para>
-      darktable might crash in very rare cases directly during startup. This can happen if your
-      OpenCL setup is completely broken or if driver/library contains a severe bug. If you
-      can’t fix it, you can still use darktable with option <quote>--disable-opencl</quote>,
-      which will skip the entire OpenCL initialization step.
-    </para>
+      <listitem><para>
+        darktable might also tell you that a context could not be created. This often indicates
+        a version mismatch between (loaded) graphics driver and libOpenCL. Check if you have
+        left-over kernel modules or graphics libraries of an older install and take appropriate
+        action. In doubt, make a clean reinstall of your graphics driver. Sometimes, immediately
+        after a driver update, the loaded kernel driver does not match the newly installed
+        libraries: reboot your system in that case.
+      </para></listitem>
 
-    <para>
-      darktable might fail to compile its OpenCL source files at run-time. In that case you will
-      get a number of error messages looking like typical compiler errors. This could indicate
-      an incompatibility between your OpenCL implementation and our interpretation of the
-      standard. In that case visit us at darktable-devel@sourceforge.net and report the problem.
-      Chances are good that we can help you. Please also report if you see significant
-      differences between CPU and GPU processing of an image!
-    </para>
+      <listitem><para>
+        darktable might crash in very rare cases directly during startup. This can happen if
+        your OpenCL setup is completely broken or if driver/library contains a severe bug. If
+        you can’t fix it, you can still use darktable with option
+        <quote>--disable-opencl</quote>, which will skip the entire OpenCL initialization step.
+      </para></listitem>
+
+      <listitem><para>
+        darktable might fail to compile its OpenCL source files at run-time. In that case you
+        will get a number of error messages looking like typical compiler errors. This could
+        indicate an incompatibility between your OpenCL implementation and our interpretation of
+        the standard. In that case visit us at darktable-devel@sourceforge.net and report the
+        problem. Chances are good that we can help you. Please also report if you see
+        significant differences between CPU and GPU processing of an image!
+      </para></listitem>
+
+    </itemizedlist>
 
     <para>
       There also exists a few on-CPU implementations of OpenCL. These come as drivers provided
@@ -366,11 +526,11 @@
     </para>
 
     <para>
-      After each reprocessing of pixelpipe&nbsp;&ndash; caused by module parameter change, zooming,
-      panning, etc.&nbsp;&ndash; you will get the total time and the time spent in each of our OpenCL
-      kernels. The most reliable value is the total time spent in pixelpipe. Please note that
-      the timings given for each individual module are unreliable when running the OpenCL
-      pixelpipe asynchronously (see opencl_async_pixelpipe below).
+      After each reprocessing of pixelpipe&nbsp;&ndash; caused by module parameter change,
+      zooming, panning, etc.&nbsp;&ndash; you will get the total time and the time spent in each
+      of our OpenCL kernels. The most reliable value is the total time spent in pixelpipe.
+      Please note that the timings given for each individual module are unreliable when running
+      the OpenCL pixelpipe asynchronously (see opencl_async_pixelpipe below).
     </para>
 
     <para>
@@ -500,8 +660,9 @@
             darktable to use a special kind of intermediate buffer for host-device data
             transfers. On some devices this can speed up exporting of large files by a factor of
             2 to 3. NVIDIA devices and drivers seem to have a more efficient memory transfer
-            technique even for arbitrary memory regions. They may deliver better performance if
-            opencl_use_pinned_memory is left at its default FALSE.
+            technique even for arbitrary memory regions. As they may not show any performance
+            gain and even may produce garbled output, opencl_use_pinned_memory should be left at
+            its default FALSE for those devices.
           </para></listitem>
 
         </varlistentry>
@@ -523,15 +684,15 @@
 
     <para>
       It is important to understand how darktable uses OpenCL devices. Each processing sequence
-      of an image&nbsp;&ndash; to convert an input to the final output using a certain history stack&nbsp;&ndash; is
-      run in a so called pixelpipe. There are four different types of pixelpipe in darktable.
-      One type is responsible to process the center image view (or full view) in darkroom mode,
-      another pixelpipe processes the preview image (navigation window) top left in darkroom
-      mode. Of each of these two pixelpipe there can be one at a time&nbsp;&ndash; with the full and the
-      preview pixelpipe running in parallel. In addition there can be multiple parallel
-      pixelpipes doing file exports and there can be multiple parallel pixelpipes generating
-      thumbnails. If an OpenCL device is available darktable dynamically allocates it to one
-      specific pixelpipe for one run and releases it afterwards.
+      of an image&nbsp;&ndash; to convert an input to the final output using a certain history
+      stack&nbsp;&ndash; is run in a so called pixelpipe. There are four different types of
+      pixelpipe in darktable. One type is responsible to process the center image view (or full
+      view) in darkroom mode, another pixelpipe processes the preview image (navigation window)
+      top left in darkroom mode. Of each of these two pixelpipe there can be one at a
+      time&nbsp;&ndash; with the full and the preview pixelpipe running in parallel. In addition
+      there can be multiple parallel pixelpipes doing file exports and there can be multiple
+      parallel pixelpipes generating thumbnails. If an OpenCL device is available darktable
+      dynamically allocates it to one specific pixelpipe for one run and releases it afterwards.
     </para>
 
     <para>
@@ -570,8 +731,9 @@
       receive number <quote>0</quote>. All further devices are numbered consecutively. This
       number together with the device name is displayed when you start darktable with
       <quote>darktable -d opencl</quote>. You can specify a device either by number or by name
-      (upper/lower case and whitespace do not matter). If you have more than one device&nbsp;&ndash; all
-      with the same name&nbsp;&ndash; you need to use the device numbers in order to differentiate them.
+      (upper/lower case and whitespace do not matter). If you have more than one
+      device&nbsp;&ndash; all with the same name&nbsp;&ndash; you need to use the device numbers
+      in order to differentiate them.
     </para>
 
     <para>

@@ -230,16 +230,11 @@ static void write_metadata(dt_lib_module_t *self)
   if(publisher != NULL && (d->multi_publisher == FALSE || gtk_combo_box_get_active(GTK_COMBO_BOX(d->publisher)) != 0))
     dt_metadata_set(mouse_over_id, "Xmp.dc.publisher", publisher);
 
-  if(title != NULL)
-    g_free(title);
-  if(description != NULL)
-    g_free(description);
-  if(rights != NULL)
-    g_free(rights);
-  if(creator != NULL)
-    g_free(creator);
-  if(publisher != NULL)
-    g_free(publisher);
+  g_free(title);
+  g_free(description);
+  g_free(rights);
+  g_free(creator);
+  g_free(publisher);
 
   dt_image_synch_xmp(mouse_over_id);
   update(self, FALSE);

@@ -271,19 +271,15 @@ static gboolean _lib_location_search(gpointer user_data)
   /* get escaped search text */
   text = g_uri_escape_string(gtk_entry_get_text(lib->search), NULL, FALSE);
 
-  if (!text || strlen(text) < 1)
+  if (!(text && *text))
     goto bail_out;
 
   /* clean up previous results before adding new */
-  if (lib->response)
-    g_free(lib->response);
+  g_free(lib->response);
   lib->response = NULL;
   lib->response_size = 0;
 
-  if (lib->places)
-  {
-    g_list_free_full(lib->places, g_free);
-  }
+  g_list_free_full(lib->places, g_free);
   lib->places = NULL;
 
   gtk_container_foreach(GTK_CONTAINER(lib->result),(GtkCallback)gtk_widget_destroy,NULL);
@@ -337,11 +333,8 @@ bail_out:
   if (curl)
     curl_easy_cleanup(curl);
 
-  if (text)
-    g_free(text);
-
-  if (query)
-    g_free(query);
+  g_free(text);
+  g_free(query);
 
   if (ctx)
     g_markup_parse_context_free(ctx);
@@ -444,8 +437,6 @@ static void _lib_location_parser_start_element(GMarkupParseContext *cxt,
   return;
 
 bail_out:
-  if (place->name)
-    g_free(place->name);
-
+  g_free(place->name);
   g_free(place);
 }

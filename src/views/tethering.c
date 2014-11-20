@@ -281,7 +281,7 @@ int try_enter(dt_view_t *self)
   return 1;
 }
 
-static void _capture_mipamps_updated_signal_callback(gpointer instance, gpointer user_data)
+static void _capture_mipmaps_updated_signal_callback(gpointer instance, gpointer user_data)
 {
   dt_control_queue_redraw_center();
 }
@@ -293,7 +293,7 @@ void enter(dt_view_t *self)
 
   /* connect signal for mipmap update for a redraw */
   dt_control_signal_connect(darktable.signals, DT_SIGNAL_DEVELOP_MIPMAP_UPDATED,
-                            G_CALLBACK(_capture_mipamps_updated_signal_callback),
+                            G_CALLBACK(_capture_mipmaps_updated_signal_callback),
                             (gpointer)self);
 
 
