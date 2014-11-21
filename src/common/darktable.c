@@ -673,6 +673,7 @@ int dt_init(int argc, char *argv[], const int init_gui,lua_State *L)
     // send the images to the other instance via dbus
     if(images_to_load)
     {
+      fprintf(stderr, "trying to open the images in the running instance\n");
       GSList *p = images_to_load;
 
       // get a connection!
