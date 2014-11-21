@@ -197,7 +197,7 @@ void dt_dev_pixelpipe_create_nodes(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev)
     {
       dt_dev_pixelpipe_iop_t *piece = (dt_dev_pixelpipe_iop_t *)malloc(sizeof(dt_dev_pixelpipe_iop_t));
       piece->enabled = module->enabled;
-      piece->colors  = 4;
+      piece->colors  = ((dt_iop_module_colorspace(module) == iop_cs_RAW) && (!dt_dev_pixelpipe_uses_downsampled_input(pipe) && (pipe->image.flags & DT_IMAGE_RAW))) ? 1 : 4;
       piece->iscale  = pipe->iscale;
       piece->iwidth  = pipe->iwidth;
       piece->iheight = pipe->iheight;
