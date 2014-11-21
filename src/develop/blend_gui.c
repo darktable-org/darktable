@@ -329,6 +329,24 @@ _blendop_masks_mode_callback (GtkWidget *combo, dt_iop_gui_blend_data_t *data)
       gtk_widget_hide(GTK_WIDGET(data->masks_combine_combo));
     }
 
+    /*
+     * if this iop is operating in raw space, it has only 1 channel per pixel,
+     * thus there is no alpha channel where we would normally store mask
+     * that would get displayed if following button have been pressed.
+     *
+     * TODO: revisit if/once there semi-raw iops (e.g temperature) with blending
+     */
+    if(dt_iop_module_colorspace(data->module) == iop_cs_RAW)
+    {
+      data->module->request_mask_display = 0;
+      gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(data->showmask), 0);
+      gtk_widget_hide(GTK_WIDGET(data->showmask));
+    }
+    else
+    {
+      gtk_widget_show(GTK_WIDGET(data->showmask));
+    }
+
     gtk_widget_show(GTK_WIDGET(data->bottom_box));
   }
   else
@@ -1393,6 +1411,24 @@ void dt_iop_gui_update_blending(dt_iop_module_t *module)
     {
       gtk_widget_show(GTK_WIDGET(bd->masks_invert_combo));
       gtk_widget_hide(GTK_WIDGET(bd->masks_combine_combo));
+    }
+
+    /*
+     * if this iop is operating in raw space, it has only 1 channel per pixel,
+     * thus there is no alpha channel where we would normally store mask
+     * that would get displayed if following button have been pressed.
+     *
+     * TODO: revisit if/once there semi-raw iops (e.g temperature) with blending
+     */
+    if(dt_iop_module_colorspace(module) == iop_cs_RAW)
+    {
+      module->request_mask_display = 0;
+      gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(bd->showmask), 0);
+      gtk_widget_hide(GTK_WIDGET(bd->showmask));
+    }
+    else
+    {
+      gtk_widget_show(GTK_WIDGET(bd->showmask));
     }
 
     gtk_widget_show(GTK_WIDGET(bd->bottom_box));
