@@ -829,13 +829,8 @@ static void dt_exif_apply_global_overwrites(dt_image_t *img)
   }
 }
 
-//TODO: can this blob also contain xmp and iptc data?
-int dt_exif_read_from_blob(dt_image_t *img, uint8_t *blob, const int size)
+int _dt_exif_read(dt_image_t* img, Exiv2::Image::AutoPtr& image)
 {
-  try
-  {
-    Exiv2::Image::AutoPtr image;
-    image = Exiv2::ImageFactory::open(blob, size);
     assert(image.get() != 0);
     image->readMetadata();
     bool res = true;
@@ -867,6 +862,16 @@ int dt_exif_read_from_blob(dt_image_t *img, uint8_t *blob, const int size)
     img->width = image->pixelWidth();
 
     return res?0:1;
+}
+
+//TODO: can this blob also contain xmp and iptc data?
+int dt_exif_read_from_blob(dt_image_t *img, uint8_t *blob, const int size)
+{
+  try
+  {
+    Exiv2::Image::AutoPtr image;
+    image = Exiv2::ImageFactory::open(blob, size);
+    return _dt_exif_read(img, image);
   }
   catch (Exiv2::AnyError& e)
   {
@@ -894,37 +899,7 @@ int dt_exif_read(dt_image_t *img, const char* path)
   {
     Exiv2::Image::AutoPtr image;
     image = Exiv2::ImageFactory::open(path);
-    assert(image.get() != 0);
-    image->readMetadata();
-    bool res = true;
-
-    // EXIF metadata
-    Exiv2::ExifData &exifData = image->exifData();
-    if(!exifData.empty())
-      res = dt_exif_read_exif_data(img, exifData);
-    else
-      img->exif_inited = 1;
-
-    // these get overwritten by IPTC and XMP. is that how it should work?
-    dt_exif_apply_global_overwrites(img);
-
-    // IPTC metadata.
-    Exiv2::IptcData &iptcData = image->iptcData();
-    if(!iptcData.empty())
-      res = dt_exif_read_iptc_data(img, iptcData) && res;
-
-    // XMP metadata
-    Exiv2::XmpData &xmpData = image->xmpData();
-    if(!xmpData.empty())
-      res = dt_exif_read_xmp_data(img, xmpData, false, true) && res;
-
-    // Initialize size - don't wait for full raw to be loaded to get this
-    // information. If use_embedded_thumbnail is set, it will take a
-    // change in development history to have this information
-    img->height = image->pixelHeight();
-    img->width = image->pixelWidth();
-
-    return res?0:1;
+    return _dt_exif_read(img, image);
   }
   catch (Exiv2::AnyError& e)
   {
