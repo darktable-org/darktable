@@ -9,7 +9,7 @@ msgstr ""
 "Project-Id-Version: darktable 0.6.1~rc\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2014-11-20 15:04+0100\n"
-"PO-Revision-Date: 2014-11-21 00:17+0100\n"
+"PO-Revision-Date: 2014-11-21 23:58+0100\n"
 "Last-Translator: Josep V. Moragues <josepvm@arrakis.es>\n"
 "Language-Team: Catalan\n"
 "Language: ca\n"
@@ -6496,11 +6496,11 @@ msgstr "flaix"
 #. For Olympus with no real "Flash" preset:
 #: ../src/iop/wb_presets.c:70
 msgid "flash (auto mode)"
-msgstr ""
+msgstr "flash (mode auto)"
 
 #: ../src/iop/wb_presets.c:71
 msgid "evening sun"
-msgstr ""
+msgstr "sol vespertí"
 
 #: ../src/iop/wb_presets.c:72
 msgid "underwater"
@@ -6512,11 +6512,11 @@ msgstr "Blanc i negre"
 
 #: ../src/iop/wb_presets.c:75
 msgid "spot WB"
-msgstr ""
+msgstr "Balanç blancs puntual"
 
 #: ../src/iop/wb_presets.c:76
 msgid "manual WB"
-msgstr ""
+msgstr "balanç de blancs manual"
 
 #: ../src/iop/wb_presets.c:77
 msgid "camera WB"
@@ -6528,7 +6528,7 @@ msgstr "balanç de blancs auto"
 
 #: ../src/iop/zonesystem.c:108
 msgid "zone system"
-msgstr ""
+msgstr "sistema de zones"
 
 #: ../src/iop/zonesystem.c:481
 msgid ""
@@ -6537,10 +6537,14 @@ msgid ""
 "left-click on a border to create a marker\n"
 "right-click on a marker to delete it"
 msgstr ""
+"zones de lluminositat\n"
+"roda del ratolí per canviar el nombre de zones\n"
+"clic esquerre en una vora per crear un marcador\n"
+"clic dret en un marcador per eliminar-lo"
 
 #: ../src/libs/backgroundjobs.c:48
 msgid "background jobs"
-msgstr ""
+msgstr "treballs en segon pla"
 
 #: ../src/libs/camera.c:79
 msgid "camera settings"
@@ -6553,7 +6557,7 @@ msgstr "captura imatge(s)"
 
 #: ../src/libs/camera.c:143
 msgid "toggle view property in center view"
-msgstr ""
+msgstr "permuta veure propietats a la vista central"
 
 #: ../src/libs/camera.c:218
 msgid "connection with camera lost, exiting tethering mode"
@@ -6701,7 +6705,7 @@ msgstr "cerca rodet..."
 
 #: ../src/libs/collect.c:549
 msgid "sync..."
-msgstr ""
+msgstr "sincronitza"
 
 #: ../src/libs/collect.c:555
 msgid "remove..."
@@ -6709,7 +6713,7 @@ msgstr "suprimeix..."
 
 #: ../src/libs/collect.c:1060
 msgid "uncategorized"
-msgstr ""
+msgstr "sense categoritzar"
 
 #: ../src/libs/collect.c:1249 ../src/libs/collect.c:1251
 msgid "not altered"
@@ -6721,20 +6725,20 @@ msgstr "sense etiquetar"
 
 #: ../src/libs/collect.c:1503
 msgid "local HDD"
-msgstr ""
+msgstr "disc dur local"
 
 #: ../src/libs/collect.c:1588 ../src/libs/collect.c:1602
 #: ../src/libs/collect.c:1992
 msgid "clear this rule"
-msgstr ""
+msgstr "treu aquesta regla"
 
 #: ../src/libs/collect.c:1593
 msgid "clear this rule or add new rules"
-msgstr ""
+msgstr "treu aquesta regla i afegeix noves regles"
 
 #: ../src/libs/collect.c:1998
 msgid "narrow down search"
-msgstr ""
+msgstr "restringeix més la recerca"
 
 #: ../src/libs/collect.c:2002
 msgid "add more images"
@@ -6746,15 +6750,15 @@ msgstr "exclou imatges"
 
 #: ../src/libs/collect.c:2012
 msgid "change to: and"
-msgstr ""
+msgstr "canvia a: and"
 
 #: ../src/libs/collect.c:2016
 msgid "change to: or"
-msgstr ""
+msgstr "canvia a: or"
 
 #: ../src/libs/collect.c:2020
 msgid "change to: except"
-msgstr ""
+msgstr "canvia a: except "
 
 #: ../src/libs/collect.c:2065
 #, no-c-format
@@ -6801,7 +6805,7 @@ msgstr "autor"
 #: ../src/libs/collect.h:41 ../src/libs/import.c:518
 #: ../src/libs/metadata.c:367
 msgid "publisher"
-msgstr ""
+msgstr "editor"
 
 #: ../src/libs/collect.h:42 ../src/libs/import.c:524
 #: ../src/libs/metadata.c:380
@@ -6820,11 +6824,11 @@ msgstr "pren mostra de color"
 #: ../src/libs/colorpicker.c:61
 msgctxt "accel"
 msgid "add sample"
-msgstr ""
+msgstr "afegeix mostra"
 
 #: ../src/libs/colorpicker.c:319
 msgid "hover to highlight sample on canvas, click to lock sample"
-msgstr ""
+msgstr "moveu-vos a una mostra d'altes llums, clic per fixar mostra"
 
 #: ../src/libs/colorpicker.c:335 ../src/libs/image.c:140
 msgid "remove"
@@ -6832,19 +6836,19 @@ msgstr "suprimeix"
 
 #: ../src/libs/colorpicker.c:439
 msgid "live samples"
-msgstr ""
+msgstr "mostres"
 
 #: ../src/libs/colorpicker.c:495
 msgid "point"
-msgstr ""
+msgstr "punt"
 
 #: ../src/libs/colorpicker.c:497
 msgid "area"
-msgstr ""
+msgstr "àrea"
 
 #: ../src/libs/colorpicker.c:520 ../src/libs/colorpicker.c:572
 msgid "mean"
-msgstr ""
+msgstr "mitjana"
 
 #: ../src/libs/colorpicker.c:522 ../src/libs/colorpicker.c:574
 msgid "min"
@@ -6852,23 +6856,23 @@ msgstr "min"
 
 #: ../src/libs/colorpicker.c:524 ../src/libs/colorpicker.c:576
 msgid "max"
-msgstr ""
+msgstr "max"
 
 #: ../src/libs/colorpicker.c:537 ../src/libs/colorpicker.c:588
 msgid "RGB"
-msgstr ""
+msgstr "RGB"
 
 #: ../src/libs/colorpicker.c:555
 msgid "restrict histogram to selection"
-msgstr ""
+msgstr "restringeix histograma a selecció"
 
 #: ../src/libs/colorpicker.c:599
 msgid "add"
-msgstr ""
+msgstr "afegeix"
 
 #: ../src/libs/colorpicker.c:612
 msgid "display sample areas on image"
-msgstr ""
+msgstr "ensenya mostres a la imatge"
 
 #: ../src/libs/copy_history.c:50
 msgid "history stack"
@@ -6876,7 +6880,7 @@ msgstr "pila de l'historial"
 
 #: ../src/libs/copy_history.c:73
 msgid "open sidecar file"
-msgstr ""
+msgstr "abre arxiu XMP"
 
 #: ../src/libs/copy_history.c:83
 msgid "XMP sidecar files"
@@ -6958,13 +6962,15 @@ msgstr "com gestionar l'historial existent"
 
 #: ../src/libs/copy_history.c:292
 msgid "load sidecar file"
-msgstr ""
+msgstr "carrega arxiu XMP"
 
 #: ../src/libs/copy_history.c:294
 msgid ""
 "open an XMP sidecar file\n"
 "and apply it to selected images"
 msgstr ""
+"obre un arxiu sidecar XMP\n"
+"i aplica'l a les imatges seleccionades"
 
 #: ../src/libs/copy_history.c:297
 msgid "write sidecar files"
@@ -6972,7 +6978,7 @@ msgstr "escriu els fitxers XMP"
 
 #: ../src/libs/copy_history.c:299
 msgid "write history stack and tags to XMP sidecar files"
-msgstr ""
+msgstr "escriu la pila de l'historial i les etiquetes al XMP"
 
 #: ../src/libs/copy_history.c:337
 msgctxt "accel"
@@ -7015,7 +7021,7 @@ msgstr "exporta les seleccionades"
 
 #: ../src/libs/export.c:472
 msgid "target storage"
-msgstr ""
+msgstr "desar a"
 
 #: ../src/libs/export.c:493
 msgid "file format"
@@ -7059,12 +7065,12 @@ msgstr "x"
 
 #: ../src/libs/export.c:535
 msgid "intent"
-msgstr ""
+msgstr "prova"
 
 #. gtk_table_attach(GTK_TABLE(self->widget), GTK_WIDGET(d->profile), 1, 2, 9, 10, GTK_EXPAND|GTK_FILL, 0, 0, 0);
 #: ../src/libs/export.c:539 ../src/libs/export.c:617
 msgid "image settings"
-msgstr ""
+msgstr "definit a la imatge"
 
 #: ../src/libs/export.c:627
 #, c-format
@@ -7078,11 +7084,11 @@ msgstr "estil"
 
 #: ../src/libs/export.c:650
 msgid "temporary style to append while exporting"
-msgstr ""
+msgstr "estil temporal a afegir en exportar"
 
 #: ../src/libs/export.c:668
 msgid "export with current settings (ctrl-e)"
-msgstr ""
+msgstr "exporta amb valors actual (ctrl-e)"
 
 #. enable shortcut to export with current export settings:
 #: ../src/libs/export.c:1078 ../src/libs/styles.c:69
@@ -7109,24 +7115,33 @@ msgid ""
 "rm <file>\t\t\tdelete <file>\n"
 "rmdir <dir>\t\t\tdelete empty directory"
 msgstr ""
+"ls\t\t\t\t\tmostra contingut del directori\n"
+"cd <dir>\t\t\tcanvia al directori\n"
+"mkdir <dir>\t\t\tcrea directori\n"
+"mv <src> <dst>\tmou <src> a <dst>\n"
+"cp <src> <dst>\t\tcopia <src> a <dst>\n"
+"rm <file>\t\t\telimina <file>\n"
+"rmdir <dir>\t\t\telimina directori buit"
 
 #: ../src/libs/geotagging.c:389
 msgid ""
 "enter the time shown on the selected picture\n"
 "format: hh:mm:ss"
 msgstr ""
+"introduïu hora de la foto seleccionada\n"
+"format: hh:mm:ss"
 
 #: ../src/libs/geotagging.c:397
 msgid "ok"
-msgstr ""
+msgstr "ok"
 
 #: ../src/libs/geotagging.c:437
 msgid "open GPX file"
-msgstr ""
+msgstr "obre arxiu GPS"
 
 #: ../src/libs/geotagging.c:454
 msgid "GPS data exchange format"
-msgstr ""
+msgstr "format d'intercanvi dades GPS"
 
 #: ../src/libs/geotagging.c:464
 msgid "camera time zone"
@@ -7137,6 +7152,8 @@ msgid ""
 "most cameras don't store the time zone in EXIF. give the correct time zone "
 "so the GPX data can be correctly matched"
 msgstr ""
+"la majoria de càmeres no escriuen a EXIF la zona horària, entreu la "
+"corrrecta, perquè les dades GPX coincideixin bé "
 
 #: ../src/libs/geotagging.c:587
 msgid "time offset"
@@ -7161,11 +7178,11 @@ msgstr "aplica decalatge horari a les imatges seleccionades"
 #. gpx
 #: ../src/libs/geotagging.c:620
 msgid "apply GPX track file"
-msgstr ""
+msgstr "aplica arxiu de track GPX"
 
 #: ../src/libs/geotagging.c:621
 msgid "parses a GPX file and updates location of selected images"
-msgstr ""
+msgstr "analitza el GPX i actualitza la localització de les imatges triades"
 
 #: ../src/libs/histogram.c:56
 msgid "histogram"
