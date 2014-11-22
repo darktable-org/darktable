@@ -9,7 +9,7 @@ msgstr ""
 "Project-Id-Version: darktable 0.6.1~rc\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2014-11-20 15:04+0100\n"
-"PO-Revision-Date: 2014-11-21 23:58+0100\n"
+"PO-Revision-Date: 2014-11-22 11:13+0100\n"
 "Last-Translator: Josep V. Moragues <josepvm@arrakis.es>\n"
 "Language-Team: Catalan\n"
 "Language: ca\n"
@@ -794,7 +794,7 @@ msgstr "blau"
 #: ../src/common/collection.c:546 ../src/libs/collect.c:1299
 #: ../src/libs/collect.c:1301
 msgid "purple"
-msgstr "porpra"
+msgstr "magenta"
 
 #. history
 #: ../src/common/collection.c:553 ../src/libs/collect.c:1243
@@ -5047,7 +5047,7 @@ msgstr "groc ND2 (transició suau)"
 
 #: ../src/iop/graduatednd.c:101
 msgid "purple ND2 (soft)"
-msgstr "porpra ND2 (transició suau)"
+msgstr "magenta ND2 (transició suau)"
 
 #: ../src/iop/graduatednd.c:105
 msgid "green ND2 (soft)"
@@ -6750,15 +6750,15 @@ msgstr "exclou imatges"
 
 #: ../src/libs/collect.c:2012
 msgid "change to: and"
-msgstr "canvia a: and"
+msgstr "canvia a: i"
 
 #: ../src/libs/collect.c:2016
 msgid "change to: or"
-msgstr "canvia a: or"
+msgstr "canvia a: o"
 
 #: ../src/libs/collect.c:2020
 msgid "change to: except"
-msgstr "canvia a: except "
+msgstr "canvia a: excepte "
 
 #: ../src/libs/collect.c:2065
 #, no-c-format
@@ -7198,15 +7198,15 @@ msgstr ""
 
 #: ../src/libs/histogram.c:472
 msgid "set histogram mode to linear"
-msgstr ""
+msgstr "canvia l'histograma a mode lineal"
 
 #: ../src/libs/histogram.c:475
 msgid "set histogram mode to waveform"
-msgstr ""
+msgstr "canvia l'histograma a mode forma d'ona"
 
 #: ../src/libs/histogram.c:478
 msgid "set histogram mode to logarithmic"
-msgstr ""
+msgstr "canvia l'histograma a mode logarítmic"
 
 #: ../src/libs/histogram.c:487
 msgid "click to hide red channel"
@@ -7478,15 +7478,15 @@ msgstr "importa subdirectoris recursivament, cada directori en un nou rodet."
 
 #: ../src/libs/import.c:415
 msgid "apply metadata on import"
-msgstr ""
+msgstr "aplica metadades en importar"
 
 #: ../src/libs/import.c:416
 msgid "apply some metadata to all newly imported images."
-msgstr ""
+msgstr "aplica algunes metadades a totes les noves imatges importades"
 
 #: ../src/libs/import.c:453
 msgid "comma separated list of tags"
-msgstr ""
+msgstr "llista d'etiquetes separades per comes"
 
 #: ../src/libs/import.c:669
 msgid "import image"
@@ -7494,7 +7494,7 @@ msgstr "importa una imatge"
 
 #: ../src/libs/import.c:697
 msgid "supported images"
-msgstr ""
+msgstr "imatges suportades"
 
 #: ../src/libs/import.c:747
 msgid "file has unknown format!"
@@ -7502,7 +7502,7 @@ msgstr "format de fitxer desconegut!"
 
 #: ../src/libs/import.c:765
 msgid "import film"
-msgstr ""
+msgstr "importa rodet"
 
 #: ../src/libs/import.c:841
 msgid "select one or more images to import"
@@ -7686,11 +7686,11 @@ msgstr "mode de sobreposició"
 
 #: ../src/libs/live_view.c:410
 msgid "split line"
-msgstr ""
+msgstr "vista dividida"
 
 #: ../src/libs/live_view.c:413
 msgid "only draw part of the overlay"
-msgstr ""
+msgstr "dibuixa només part de la superposició"
 
 #: ../src/libs/location.c:80
 msgid "find location"
@@ -7706,15 +7706,15 @@ msgstr "mostra OSD"
 
 #: ../src/libs/map_settings.c:93
 msgid "toggle the visibility of the map overlays"
-msgstr ""
+msgstr "permuta la visibilitat d'elements sobreposats al mapa"
 
 #: ../src/libs/map_settings.c:101
 msgid "map source"
-msgstr "font del mapa"
+msgstr "servei de mapes"
 
 #: ../src/libs/map_settings.c:107
 msgid "select the source of the map. some entries might not work"
-msgstr ""
+msgstr "trieu un servidor de mapes. algunes entrades poden no funcionar"
 
 #: ../src/libs/masks.c:54
 msgid "mask manager"
@@ -7739,15 +7739,15 @@ msgstr "treu del grup"
 
 #: ../src/libs/masks.c:1036
 msgid "group the forms"
-msgstr ""
+msgstr "agrupa les formes"
 
 #: ../src/libs/masks.c:1045
 msgid "use inversed shape"
-msgstr ""
+msgstr "empra la forma invertida"
 
 #: ../src/libs/masks.c:1051
 msgid "mode : union"
-msgstr ""
+msgstr "mode; unió"
 
 #: ../src/libs/masks.c:1054
 msgid "mode : intersection"
@@ -7755,7 +7755,7 @@ msgstr "mode: intersecció"
 
 #: ../src/libs/masks.c:1057
 msgid "mode : difference"
-msgstr ""
+msgstr "mode: diferència"
 
 #: ../src/libs/masks.c:1060
 msgid "mode : exclusion"
@@ -7775,7 +7775,7 @@ msgstr "editor de metadades"
 
 #: ../src/libs/metadata.c:90
 msgid "<leave unchanged>"
-msgstr ""
+msgstr "<deixar sense canvis>"
 
 #: ../src/libs/metadata.c:299
 msgctxt "accel"
@@ -7797,59 +7797,59 @@ msgstr "escriu metadades per les imatges seleccionades"
 #. <title>\0<description>\0<rights>\0<creator>\0<publisher>
 #: ../src/libs/metadata.c:448
 msgid "CC BY"
-msgstr ""
+msgstr "CC BY"
 
 #: ../src/libs/metadata.c:448
 msgid "Creative Commons Attribution (CC BY)"
-msgstr ""
+msgstr "Creative Commons Attribution (CC BY)"
 
 #: ../src/libs/metadata.c:449
 msgid "CC BY-SA"
-msgstr ""
+msgstr "CC BY-SA"
 
 #: ../src/libs/metadata.c:449
 msgid "Creative Commons Attribution-ShareAlike (CC BY-SA)"
-msgstr ""
+msgstr "Creative Commons Attribution-ShareAlike (CC BY-SA)"
 
 #: ../src/libs/metadata.c:450
 msgid "CC BY-ND"
-msgstr ""
+msgstr "CC BY-ND"
 
 #: ../src/libs/metadata.c:450
 msgid "Creative Commons Attribution-NoDerivs (CC BY-ND)"
-msgstr ""
+msgstr "Creative Commons Attribution-NoDerivs (CC BY-ND)"
 
 #: ../src/libs/metadata.c:451
 msgid "CC BY-NC"
-msgstr ""
+msgstr "CC BY-NC"
 
 #: ../src/libs/metadata.c:451
 msgid "Creative Commons Attribution-NonCommercial (CC BY-NC)"
-msgstr ""
+msgstr "Creative Commons Attribution-NonCommercial (CC BY-NC)"
 
 #: ../src/libs/metadata.c:452
 msgid "CC BY-NC-SA"
-msgstr ""
+msgstr "CC BY-NC-SA"
 
 #: ../src/libs/metadata.c:452
 msgid "Creative Commons Attribution-NonCommercial-ShareAlike (CC BY-NC-SA)"
-msgstr ""
+msgstr "Creative Commons Attribution-NonCommercial-ShareAlike (CC BY-NC-SA)"
 
 #: ../src/libs/metadata.c:453
 msgid "CC BY-NC-ND"
-msgstr ""
+msgstr "CC BY-NC-ND"
 
 #: ../src/libs/metadata.c:453
 msgid "Creative Commons Attribution-NonCommercial-NoDerivs (CC BY-NC-ND)"
-msgstr ""
+msgstr "Creative Commons Attribution-NonCommercial-NoDerivs (CC BY-NC-ND)"
 
 #: ../src/libs/metadata.c:454
 msgid "all rights reserved"
-msgstr ""
+msgstr "tots els drets reservats"
 
 #: ../src/libs/metadata.c:454
 msgid "all rights reserved."
-msgstr ""
+msgstr "tots els drets reservats"
 
 #. internal
 #: ../src/libs/metadata_view.c:83
@@ -7866,7 +7866,7 @@ msgstr "versió"
 
 #: ../src/libs/metadata_view.c:88
 msgid "full path"
-msgstr ""
+msgstr "ruta completa"
 
 #: ../src/libs/metadata_view.c:89
 msgid "local copy"
@@ -7891,11 +7891,11 @@ msgstr "drets d'autor"
 #. geotagging
 #: ../src/libs/metadata_view.c:112
 msgid "latitude"
-msgstr ""
+msgstr "latitud"
 
 #: ../src/libs/metadata_view.c:113
 msgid "longitude"
-msgstr ""
+msgstr "longitud"
 
 #: ../src/libs/metadata_view.c:125
 msgid "image information"
@@ -7957,7 +7957,7 @@ msgstr "navegació"
 
 #: ../src/libs/navigation.c:427
 msgid "small"
-msgstr ""
+msgstr "mida reduïda"
 
 #: ../src/libs/navigation.c:431
 msgid "fit to screen"
@@ -7965,11 +7965,11 @@ msgstr "ajusta a la pantalla"
 
 #: ../src/libs/navigation.c:435
 msgid "100%"
-msgstr ""
+msgstr "100%"
 
 #: ../src/libs/navigation.c:439
 msgid "200%"
-msgstr ""
+msgstr "200%"
 
 #: ../src/libs/recentcollect.c:54
 msgid "recently used collections"
@@ -7978,20 +7978,20 @@ msgstr "col·leccions d'ús recent"
 #: ../src/libs/recentcollect.c:90
 msgctxt "accel"
 msgid "jump back to previous collection"
-msgstr ""
+msgstr "torna a la col·lecció anterior"
 
 #: ../src/libs/recentcollect.c:125
 msgid " and "
-msgstr ""
+msgstr " i "
 
 #: ../src/libs/recentcollect.c:130
 msgid " or "
-msgstr ""
+msgstr " o "
 
 #. case DT_LIB_COLLECT_MODE_AND_NOT:
 #: ../src/libs/recentcollect.c:135
 msgid " but not "
-msgstr ""
+msgstr " però no "
 
 #: ../src/libs/select.c:98
 msgid "select all images in current collection (ctrl-a)"
@@ -8031,13 +8031,15 @@ msgstr ""
 
 #: ../src/libs/select.c:126
 msgid "select untouched"
-msgstr ""
+msgstr "tria les no modificades"
 
 #: ../src/libs/select.c:128
 msgid ""
 "select untouched images in\n"
 "current collection"
 msgstr ""
+"tria les imatges no modificades\n"
+"de la col·lecció actual"
 
 #: ../src/libs/session.c:48
 msgid "session"
@@ -8067,10 +8069,12 @@ msgid ""
 "take snapshot to compare with another image or the same image at another "
 "stage of development"
 msgstr ""
+"pren instantània per comparar-la amb una altra versió de la imatge en un "
+"estat de processat diferent"
 
 #: ../src/libs/snapshots.c:374
 msgid "unknown"
-msgstr ""
+msgstr "desconegut"
 
 #: ../src/libs/styles.c:47
 msgid "styles"
@@ -8112,7 +8116,7 @@ msgstr "crea duplicat"
 
 #: ../src/libs/styles.c:373
 msgid "creates a duplicate of the image before applying style"
-msgstr ""
+msgstr "crea un duplicat de la imatge abans d'aplicar-li l'estil"
 
 #: ../src/libs/styles.c:383
 msgid "create styles from history stack of selected images"
@@ -8139,7 +8143,7 @@ msgstr "importa"
 
 #: ../src/libs/styles.c:403
 msgid "import style from a style file"
-msgstr ""
+msgstr "importa estil d'un fitxer d'estil"
 
 #: ../src/libs/styles.c:410
 msgid "export the selected style into a style file"
@@ -8202,7 +8206,7 @@ msgstr "adjunta"
 
 #: ../src/libs/tagging.c:437
 msgid "attach tag to all selected images"
-msgstr ""
+msgstr "aplica etiqueta a totes les imatges seleccionades"
 
 #: ../src/libs/tagging.c:442
 msgid "detach"
@@ -8282,12 +8286,12 @@ msgid ""
 "toggle purple label\n"
 "of selected images (f5)"
 msgstr ""
-"commuta l'etiqueta porpra de les\n"
+"commuta l'etiqueta magenta de les\n"
 "imatges seleccionades (f5)"
 
 #: ../src/libs/tools/colorlabels.c:73
 msgid "clear all labels of selected images"
-msgstr ""
+msgstr "treu totes les etiquetes de les imatges seleccionades"
 
 #: ../src/libs/tools/darktable.c:55
 msgid "darktable"
@@ -8307,7 +8311,7 @@ msgstr "* empaquetament ubuntu, gestió del color, videotutorials *"
 
 #: ../src/libs/tools/darktable.c:299
 msgid "* OpenCL pipeline: *"
-msgstr ""
+msgstr "* processat OpenCL: *"
 
 #: ../src/libs/tools/darktable.c:302
 msgid "* networking, battle testing, translation expert *"
@@ -8319,11 +8323,11 @@ msgstr "* col·laboradors *"
 
 #: ../src/libs/tools/darktable.c:380
 msgid "translator-credits"
-msgstr ""
+msgstr "translator-credits"
 
 #: ../src/libs/tools/filmstrip.c:135
 msgid "filmstrip"
-msgstr ""
+msgstr "tira de pel·lícula"
 
 #. setup rating key accelerators
 #. Initializing accelerators
@@ -8341,27 +8345,27 @@ msgstr "puntua 1"
 #: ../src/libs/tools/filmstrip.c:163 ../src/views/lighttable.c:1936
 msgctxt "accel"
 msgid "rate 2"
-msgstr ""
+msgstr "puntua 2"
 
 #: ../src/libs/tools/filmstrip.c:164 ../src/views/lighttable.c:1937
 msgctxt "accel"
 msgid "rate 3"
-msgstr ""
+msgstr "puntua 3"
 
 #: ../src/libs/tools/filmstrip.c:165 ../src/views/lighttable.c:1938
 msgctxt "accel"
 msgid "rate 4"
-msgstr ""
+msgstr "puntua 4"
 
 #: ../src/libs/tools/filmstrip.c:166 ../src/views/lighttable.c:1939
 msgctxt "accel"
 msgid "rate 5"
-msgstr ""
+msgstr "puntua 5"
 
 #: ../src/libs/tools/filmstrip.c:167 ../src/views/lighttable.c:1940
 msgctxt "accel"
 msgid "rate reject"
-msgstr ""
+msgstr "puntua com a rebutjada"
 
 #. setup history key accelerators
 #: ../src/libs/tools/filmstrip.c:171
@@ -8419,7 +8423,7 @@ msgstr "color blau"
 #: ../src/libs/tools/filmstrip.c:191 ../src/views/lighttable.c:1957
 msgctxt "accel"
 msgid "color purple"
-msgstr "color porpra"
+msgstr "color magenta"
 
 #. setup selection accelerators
 #. selection accels
@@ -8476,7 +8480,7 @@ msgstr "ordena segons"
 
 #: ../src/libs/tools/global_toolbox.c:46
 msgid "preferences"
-msgstr ""
+msgstr "preferències"
 
 #: ../src/libs/tools/global_toolbox.c:82
 #: ../src/libs/tools/global_toolbox.c:151
@@ -8500,7 +8504,7 @@ msgstr "mostra elements superposats a la imatge"
 
 #: ../src/libs/tools/global_toolbox.c:107
 msgid "show global preferences"
-msgstr ""
+msgstr "mostra preferències globals"
 
 #: ../src/libs/tools/global_toolbox.c:214
 msgctxt "accel"
@@ -8510,7 +8514,7 @@ msgstr "agrupament"
 #: ../src/libs/tools/global_toolbox.c:215
 msgctxt "accel"
 msgid "preferences"
-msgstr ""
+msgstr "preferències"
 
 #: ../src/libs/tools/global_toolbox.c:216
 msgctxt "accel"
@@ -8519,7 +8523,7 @@ msgstr "mostra elements superposats"
 
 #: ../src/libs/tools/hinter.c:42
 msgid "hinter"
-msgstr ""
+msgstr "ajudes"
 
 #: ../src/libs/tools/lighttable.c:61 ../src/views/lighttable.c:138
 msgid "lighttable"
@@ -8533,26 +8537,26 @@ msgstr "taula de llum amb zoom"
 #: ../src/libs/tools/lighttable.c:137
 msgctxt "accel"
 msgid "zoom max"
-msgstr ""
+msgstr "zoom màxim"
 
 #: ../src/libs/tools/lighttable.c:139
 msgctxt "accel"
 msgid "zoom in"
-msgstr ""
+msgstr "augmenta zoom"
 
 #: ../src/libs/tools/lighttable.c:141
 msgctxt "accel"
 msgid "zoom out"
-msgstr ""
+msgstr "redueix zoom"
 
 #: ../src/libs/tools/lighttable.c:143
 msgctxt "accel"
 msgid "zoom min"
-msgstr ""
+msgstr "zoom mínim"
 
 #: ../src/libs/tools/module_toolbox.c:36
 msgid "module toolbox"
-msgstr ""
+msgstr "caixa d'eines de mòdul"
 
 #: ../src/libs/tools/ratings.c:50
 msgid "ratings"
@@ -8560,11 +8564,11 @@ msgstr "puntuacions"
 
 #: ../src/libs/tools/viewswitcher.c:49
 msgid "viewswitcher"
-msgstr ""
+msgstr "canviador de vista"
 
 #: ../src/libs/tools/view_toolbox.c:36
 msgid "view toolbox"
-msgstr ""
+msgstr "caixa d'eines de vista"
 
 #: ../src/lua/preferences.c:543
 msgid "lua options"
@@ -8590,11 +8594,11 @@ msgstr "no s'han trobat predefinits de l'usuari pels mòduls favorits"
 #: ../src/views/darkroom.c:902
 #, c-format
 msgid "applied style `%s' on current image"
-msgstr ""
+msgstr "aplicat l'estil `%s' a la imatge"
 
 #: ../src/views/darkroom.c:960
 msgid "no styles have been created yet"
-msgstr ""
+msgstr "encara no s'ha creat cap estil"
 
 #: ../src/views/darkroom.c:1110
 msgid "quick access to presets of your favorites"
@@ -8602,13 +8606,15 @@ msgstr "accés ràpid als predefinits dels vostres favorits"
 
 #: ../src/views/darkroom.c:1122
 msgid "quick access for applying any of your styles"
-msgstr ""
+msgstr "accés ràpid per aplicar qualsevol dels vostres estils"
 
 #: ../src/views/darkroom.c:1130
 msgid ""
 "toggle over/under exposed indication\n"
 "right click for options"
 msgstr ""
+"permuta indicador de sobre/subexposició\n"
+"clic dret per més opcions"
 
 #: ../src/views/darkroom.c:1174
 msgid "color scheme"
@@ -8616,15 +8622,15 @@ msgstr "esquema de color"
 
 #: ../src/views/darkroom.c:1176
 msgid "red & blue"
-msgstr ""
+msgstr "vermell i blau"
 
 #: ../src/views/darkroom.c:1177
 msgid "purple & green"
-msgstr ""
+msgstr "violeta i verd"
 
 #: ../src/views/darkroom.c:1179
 msgid "select colors to indicate over/under exposure"
-msgstr ""
+msgstr "trieu colors per indicar sobre/subexposició"
 
 #: ../src/views/darkroom.c:1189
 msgid "lower threshold"
@@ -8632,7 +8638,7 @@ msgstr "llindar inferior"
 
 #: ../src/views/darkroom.c:1190
 msgid "threshold of what shall be considered underexposed"
-msgstr ""
+msgstr "llindar del que s'ha de considerar subexposat"
 
 #: ../src/views/darkroom.c:1199
 msgid "upper threshold"
@@ -8640,7 +8646,7 @@ msgstr "llindar superior"
 
 #: ../src/views/darkroom.c:1200
 msgid "threshold of what shall be considered overexposed"
-msgstr ""
+msgstr "llindar del que s'ha de considerar sobreexposat"
 
 #. Film strip shortcuts
 #. Setup key accelerators in capture view...
@@ -8648,23 +8654,23 @@ msgstr ""
 #: ../src/views/tethering.c:386
 msgctxt "accel"
 msgid "toggle film strip"
-msgstr ""
+msgstr "permuta la cinta de pel·licula"
 
 #. Zoom shortcuts
 #: ../src/views/darkroom.c:1703
 msgctxt "accel"
 msgid "zoom close-up"
-msgstr ""
+msgstr "zoom proper (100%)"
 
 #: ../src/views/darkroom.c:1705
 msgctxt "accel"
 msgid "zoom fill"
-msgstr ""
+msgstr "zoom ampli"
 
 #: ../src/views/darkroom.c:1707
 msgctxt "accel"
 msgid "zoom fit"
-msgstr ""
+msgstr "zoom ajustat"
 
 #. Shortcut to skip images
 #: ../src/views/darkroom.c:1715
@@ -8689,19 +8695,19 @@ msgstr "no hi ha imatges a la col·lecció"
 
 #: ../src/views/lighttable.c:510
 msgid "if you have not imported any images yet"
-msgstr ""
+msgstr "encara no heu importat cap imatge"
 
 #: ../src/views/lighttable.c:512
 msgid "you can do so in the import module"
-msgstr ""
+msgstr "podeu fer-ho en el mòdul d'importació"
 
 #: ../src/views/lighttable.c:519
 msgid "try to relax the filter settings in the top panel"
-msgstr ""
+msgstr "proveu de relaxar els valors del filtre al panell superior"
 
 #: ../src/views/lighttable.c:526
 msgid "or add images in the collection module in the left panel"
-msgstr ""
+msgstr "o afegiu imatges amb el mòdul de col·lecció al panell esquerre"
 
 #. Navigation keys
 #: ../src/views/lighttable.c:1943
@@ -8717,7 +8723,7 @@ msgstr "navega avall"
 #: ../src/views/lighttable.c:1947
 msgctxt "accel"
 msgid "navigate page up"
-msgstr ""
+msgstr "navegueu una pàgina amunt"
 
 #: ../src/views/lighttable.c:1949
 msgctxt "accel"
@@ -8728,17 +8734,17 @@ msgstr "navega pàgina avall"
 #: ../src/views/lighttable.c:1960
 msgctxt "accel"
 msgid "scroll up"
-msgstr ""
+msgstr "desplaceu-vos amunt"
 
 #: ../src/views/lighttable.c:1962
 msgctxt "accel"
 msgid "scroll down"
-msgstr ""
+msgstr "desplaceu-vos avall"
 
 #: ../src/views/lighttable.c:1964
 msgctxt "accel"
 msgid "scroll left"
-msgstr ""
+msgstr "desplaceu-vos a l'esquerra"
 
 #: ../src/views/lighttable.c:1966
 msgctxt "accel"
@@ -8748,23 +8754,23 @@ msgstr "desplaçament a la dreta"
 #: ../src/views/lighttable.c:1968
 msgctxt "accel"
 msgid "scroll center"
-msgstr ""
+msgstr "desplaceu-vos al centre"
 
 #: ../src/views/lighttable.c:1970
 msgctxt "accel"
 msgid "realign images to grid"
-msgstr ""
+msgstr "alinear imatges amb la graella"
 
 #. Preview key
 #: ../src/views/lighttable.c:1974
 msgctxt "accel"
 msgid "preview"
-msgstr ""
+msgstr "vista prèvia"
 
 #: ../src/views/lighttable.c:1975
 msgctxt "accel"
 msgid "preview with focus detection"
-msgstr ""
+msgstr "vista prèvia amb detecció d'enfoc"
 
 #: ../src/views/lighttable.c:1976
 msgctxt "accel"
@@ -8788,12 +8794,12 @@ msgstr "mapa"
 #: ../src/views/map.c:698
 msgctxt "accel"
 msgid "undo"
-msgstr ""
+msgstr "desfer"
 
 #: ../src/views/map.c:699
 msgctxt "accel"
 msgid "redo"
-msgstr ""
+msgstr "refer"
 
 #: ../src/views/slideshow.c:170
 msgid "end of images. press any key to return to lighttable mode"
@@ -8807,7 +8813,7 @@ msgstr "projecció"
 #: ../src/views/slideshow.c:506
 msgctxt "accel"
 msgid "start and stop"
-msgstr ""
+msgstr "comença i atura"
 
 #: ../src/views/tethering.c:90
 msgid "tethering"
