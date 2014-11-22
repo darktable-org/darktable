@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2014-11-22 09:21+0100\n"
-"PO-Revision-Date: 2014-11-22 13:33+0100\n"
+"PO-Revision-Date: 2014-11-22 13:44+0100\n"
 "Last-Translator: Ger Siemerink <g.siemerink@gmail.com>\n"
 "Language-Team: Ger Siemerink <g.siemerink@gmail.com>\n"
 "Language: nl_NL\n"
@@ -1660,7 +1660,7 @@ msgstr "overvloei wijze"
 
 #: ../src/develop/blend_gui.c:1608
 msgid "choose blending mode"
-msgstr "kies wijze van overvloei"
+msgstr "kies wijze van overvloeien"
 
 #: ../src/develop/blend_gui.c:1692 ../src/iop/watermark.c:1111
 msgid "opacity"
