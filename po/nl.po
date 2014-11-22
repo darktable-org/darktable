@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2014-11-17 19:49+0100\n"
-"PO-Revision-Date: 2014-11-20 21:23+0100\n"
+"POT-Creation-Date: 2014-11-22 09:21+0100\n"
+"PO-Revision-Date: 2014-11-22 13:33+0100\n"
 "Last-Translator: Ger Siemerink <g.siemerink@gmail.com>\n"
 "Language-Team: Ger Siemerink <g.siemerink@gmail.com>\n"
 "Language: nl_NL\n"
@@ -756,13 +756,13 @@ msgstr ""
 #: ../src/iop/bilateral.cc:348 ../src/iop/channelmixer.c:461
 #: ../src/iop/channelmixer.c:473 ../src/iop/colorbalance.c:641
 #: ../src/iop/colorbalance.c:679 ../src/iop/colorbalance.c:717
-#: ../src/iop/temperature.c:787 ../src/libs/collect.c:1273
-#: ../src/libs/collect.c:1275
+#: ../src/iop/temperature.c:787 ../src/libs/collect.c:1275
+#: ../src/libs/collect.c:1277
 msgid "red"
 msgstr "rood"
 
 #: ../src/common/collection.c:543 ../src/develop/lightroom.c:980
-#: ../src/libs/collect.c:1279 ../src/libs/collect.c:1281
+#: ../src/libs/collect.c:1281 ../src/libs/collect.c:1283
 msgid "yellow"
 msgstr "geel"
 
@@ -770,8 +770,8 @@ msgstr "geel"
 #: ../src/iop/bilateral.cc:349 ../src/iop/channelmixer.c:462
 #: ../src/iop/channelmixer.c:480 ../src/iop/colorbalance.c:650
 #: ../src/iop/colorbalance.c:688 ../src/iop/colorbalance.c:726
-#: ../src/iop/temperature.c:788 ../src/libs/collect.c:1285
-#: ../src/libs/collect.c:1287
+#: ../src/iop/temperature.c:788 ../src/libs/collect.c:1287
+#: ../src/libs/collect.c:1289
 msgid "green"
 msgstr "groen"
 
@@ -779,25 +779,25 @@ msgstr "groen"
 #: ../src/iop/bilateral.cc:350 ../src/iop/channelmixer.c:463
 #: ../src/iop/channelmixer.c:487 ../src/iop/colorbalance.c:659
 #: ../src/iop/colorbalance.c:697 ../src/iop/colorbalance.c:735
-#: ../src/iop/temperature.c:789 ../src/libs/collect.c:1291
-#: ../src/libs/collect.c:1293
+#: ../src/iop/temperature.c:789 ../src/libs/collect.c:1293
+#: ../src/libs/collect.c:1295
 msgid "blue"
 msgstr "blauw"
 
-#: ../src/common/collection.c:546 ../src/libs/collect.c:1297
-#: ../src/libs/collect.c:1299
+#: ../src/common/collection.c:546 ../src/libs/collect.c:1299
+#: ../src/libs/collect.c:1301
 msgid "purple"
 msgstr "paars"
 
 #. history
-#: ../src/common/collection.c:553 ../src/libs/collect.c:1241
-#: ../src/libs/collect.c:1243
+#: ../src/common/collection.c:553 ../src/libs/collect.c:1243
+#: ../src/libs/collect.c:1245
 msgid "altered"
 msgstr "aangepast"
 
 #. geotagging
-#: ../src/common/collection.c:557 ../src/libs/collect.c:1257
-#: ../src/libs/collect.c:1259
+#: ../src/common/collection.c:557 ../src/libs/collect.c:1259
+#: ../src/libs/collect.c:1261
 msgid "tagged"
 msgstr "gelabeld"
 
@@ -859,15 +859,15 @@ msgstr ""
 
 #: ../src/common/history.c:347 ../src/common/history.c:348
 #: ../src/common/history.c:364 ../src/common/styles.c:633
-#: ../src/common/styles.c:635 ../src/develop/blend_gui.c:1691
-#: ../src/develop/develop.c:1192 ../src/libs/live_view.c:412
+#: ../src/common/styles.c:635 ../src/develop/blend_gui.c:1727
+#: ../src/develop/develop.c:1189 ../src/libs/live_view.c:412
 msgid "on"
 msgstr "aan"
 
 #: ../src/common/history.c:347 ../src/common/history.c:348
 #: ../src/common/history.c:364 ../src/common/styles.c:633
-#: ../src/common/styles.c:635 ../src/develop/blend_gui.c:1539
-#: ../src/develop/blend_gui.c:1688 ../src/develop/develop.c:1192
+#: ../src/common/styles.c:635 ../src/develop/blend_gui.c:1575
+#: ../src/develop/blend_gui.c:1724 ../src/develop/develop.c:1189
 #: ../src/imageio/format/exr.cc:267 ../src/imageio/format/j2k.c:637
 #: ../src/iop/colorin.c:1260 ../src/iop/demosaic.c:2203
 #: ../src/iop/vignette.c:1188 ../src/libs/history.c:154
@@ -881,13 +881,13 @@ msgstr "verweesde afbeelding"
 
 #: ../src/common/image.c:1255
 msgid "cannot create local copy when the original file is not accessible."
-msgstr "aanmaak lokale kopie lukt alleen als het orgineel toegankelijk is "
+msgstr "aanmaak lokale kopie lukt alleen als het origineel toegankelijk is "
 
 #: ../src/common/image.c:1269
 msgid "cannot create local copy."
 msgstr "aanmaak lokale kopie mislukt"
 
-#: ../src/common/image.c:1319 ../src/control/jobs/control_jobs.c:526
+#: ../src/common/image.c:1319 ../src/control/jobs/control_jobs.c:536
 msgid "cannot remove local copy when the original file is not accessible."
 msgstr ""
 "verwijderen van lokale kopie is niet mogelijk wanneer het origineel niet "
@@ -1017,7 +1017,7 @@ msgstr "bezig..."
 #: ../src/control/control.c:637
 #, c-format
 msgid "switch to %s mode"
-msgstr "schakel over op %s mode"
+msgstr "schakel over op %s wijze"
 
 #: ../src/control/crawler.c:341 ../src/libs/select.c:36
 msgid "select"
@@ -1078,126 +1078,126 @@ msgid_plural "importing %d images from camera"
 msgstr[0] "importeer %d afbeelding van de camera"
 msgstr[1] "importeren %d afbeeldingen vanaf de camera"
 
-#: ../src/control/jobs/control_jobs.c:115
+#: ../src/control/jobs/control_jobs.c:119
 msgid "failed to create film roll for destination directory, aborting move.."
 msgstr "aanmaak map voor uitvoer mislukt, verplaatsing afgebroken"
 
-#: ../src/control/jobs/control_jobs.c:218
+#: ../src/control/jobs/control_jobs.c:228
 #, c-format
 msgid "merging %d image"
 msgid_plural "merging %d images"
 msgstr[0] "samenvoegen %d afbeelding"
 msgstr[1] "samenvoegen %d afbeeldingen"
 
-#: ../src/control/jobs/control_jobs.c:241
+#: ../src/control/jobs/control_jobs.c:251
 msgid "exposure bracketing only works on Bayer raw images"
 msgstr "belichtings bracketing werkt alleen voor Bayer raw afbeeldingen"
 
-#: ../src/control/jobs/control_jobs.c:250 ../src/iop/exposure.c:234
+#: ../src/control/jobs/control_jobs.c:260 ../src/iop/exposure.c:234
 #, c-format
 msgid "failed to get raw buffer from image `%s'"
 msgstr "invoer raw buffer van afbeelding `%s' is mislukt"
 
-#: ../src/control/jobs/control_jobs.c:267
+#: ../src/control/jobs/control_jobs.c:277
 msgid "images have to be of same size!"
 msgstr "afbeelding moeten van dezelfde afmeting zijn!"
 
-#: ../src/control/jobs/control_jobs.c:378
+#: ../src/control/jobs/control_jobs.c:388
 #, c-format
 msgid "wrote merged HDR `%s'"
 msgstr "HDR `%s' is opgeslagen"
 
-#: ../src/control/jobs/control_jobs.c:405
+#: ../src/control/jobs/control_jobs.c:415
 #, c-format
 msgid "duplicating %d image"
 msgid_plural "duplicating %d images"
 msgstr[0] "kloon %d afbeelding"
 msgstr[1] "klonen %d afbeeldingen"
 
-#: ../src/control/jobs/control_jobs.c:432
+#: ../src/control/jobs/control_jobs.c:442
 #, c-format
 msgid "flipping %d image"
 msgid_plural "flipping %d images"
 msgstr[0] "spiegel %d afbeelding"
 msgstr[1] "spiegel %d afbeeldingen"
 
-#: ../src/control/jobs/control_jobs.c:503
+#: ../src/control/jobs/control_jobs.c:513
 #, c-format
 msgid "removing %d image"
 msgid_plural "removing %d images"
 msgstr[0] "verplaats %d afbeelding"
 msgstr[1] "verplaatsen %d afbeeldingen"
 
-#: ../src/control/jobs/control_jobs.c:577
+#: ../src/control/jobs/control_jobs.c:587
 #, c-format
 msgid "deleting %d image"
 msgid_plural "deleting %d images"
 msgstr[0] "verwijder %d afbeelding"
 msgstr[1] "verwijderen %d afbeeldingen"
 
-#: ../src/control/jobs/control_jobs.c:716
+#: ../src/control/jobs/control_jobs.c:726
 msgid "failed to parse GPX file"
 msgstr "parsen GPX bestand mislukt"
 
-#: ../src/control/jobs/control_jobs.c:783
+#: ../src/control/jobs/control_jobs.c:793
 #, c-format
 msgid "applied matched GPX location onto %d image(s)"
 msgstr "overeenkomstige GPX locatie toegepast op %d afbeelding(en)"
 
-#: ../src/control/jobs/control_jobs.c:808
+#: ../src/control/jobs/control_jobs.c:818
 #, c-format
 msgid "moving %d image"
 msgstr "verplaats %d afbeelding"
 
-#: ../src/control/jobs/control_jobs.c:808
+#: ../src/control/jobs/control_jobs.c:818
 #, c-format
 msgid "moving %d images"
 msgstr "verplaats %d afbeeldingen"
 
-#: ../src/control/jobs/control_jobs.c:814
+#: ../src/control/jobs/control_jobs.c:824
 #, c-format
 msgid "copying %d image"
 msgstr "kopieer %d afbeelding"
 
-#: ../src/control/jobs/control_jobs.c:814
+#: ../src/control/jobs/control_jobs.c:824
 #, c-format
 msgid "copying %d images"
 msgstr "kopieer %d afbeeldingen"
 
-#: ../src/control/jobs/control_jobs.c:829
+#: ../src/control/jobs/control_jobs.c:839
 #, c-format
 msgid "creating local copy of %d image"
 msgid_plural "creating local copies of %d images"
 msgstr[0] "maakt lokale kopie van %d afbeelding"
 msgstr[1] "maakt lokale kopieën van %d afbeeldingen"
 
-#: ../src/control/jobs/control_jobs.c:831
+#: ../src/control/jobs/control_jobs.c:841
 #, c-format
 msgid "removing local copy of %d image"
 msgid_plural "removing local copies of %d images"
 msgstr[0] "verwijder de lokale kopie van een afbeelding"
 msgstr[1] "verwijder lokale kopieën van %d afbeeldingen"
 
-#: ../src/control/jobs/control_jobs.c:900
+#: ../src/control/jobs/control_jobs.c:910
 #, c-format
 msgid "exporting %d image.."
 msgid_plural "exporting %d images.."
 msgstr[0] "exporteer %d afbeelding"
 msgstr[1] "exporteren %d afbeeldingen"
 
-#: ../src/control/jobs/control_jobs.c:902
+#: ../src/control/jobs/control_jobs.c:912
 #, c-format
 msgid "exporting %d image to %s"
 msgid_plural "exporting %d images to %s"
 msgstr[0] "exporteer %d afbeelding naar %s"
 msgstr[1] "exporteren %d afbeeldingen naar %s"
 
-#: ../src/control/jobs/control_jobs.c:967 ../src/views/darkroom.c:461
+#: ../src/control/jobs/control_jobs.c:977 ../src/views/darkroom.c:461
 #, c-format
 msgid "image `%s' is currently unavailable"
 msgstr "afbeelding `%s' is op dit moment niet beschikbaar"
 
-#: ../src/control/jobs/control_jobs.c:1066
+#: ../src/control/jobs/control_jobs.c:1077
 #, c-format
 msgid "do you really want to remove %d selected image from the collection?"
 msgid_plural ""
@@ -1205,11 +1205,11 @@ msgid_plural ""
 msgstr[0] "Weet u zeker dat u %d geselecteerde afbeeldingen wilt uitschrijven?"
 msgstr[1] "Weet u zeker dat u %d geselecteerde afbeeldingen wilt uitschrijven?"
 
-#: ../src/control/jobs/control_jobs.c:1069
+#: ../src/control/jobs/control_jobs.c:1080
 msgid "remove images?"
 msgstr "afbeeldingen verplaatsen?"
 
-#: ../src/control/jobs/control_jobs.c:1093
+#: ../src/control/jobs/control_jobs.c:1109
 #, c-format
 msgid "do you really want to physically delete %d selected image from disk?"
 msgid_plural ""
@@ -1219,12 +1219,12 @@ msgstr[0] ""
 msgstr[1] ""
 "wilt u echt  %d geselecteerde afbeeldingen fysiek van de schijf verwijderen?"
 
-#: ../src/control/jobs/control_jobs.c:1096
+#: ../src/control/jobs/control_jobs.c:1112
 msgid "delete images?"
 msgstr "afbeelding(en) verwijderen"
 
-#: ../src/control/jobs/control_jobs.c:1114
-#: ../src/control/jobs/control_jobs.c:1170 ../src/imageio/storage/disk.c:96
+#: ../src/control/jobs/control_jobs.c:1135
+#: ../src/control/jobs/control_jobs.c:1193 ../src/imageio/storage/disk.c:96
 #: ../src/imageio/storage/disk.c:164 ../src/imageio/storage/gallery.c:109
 #: ../src/imageio/storage/gallery.c:176 ../src/imageio/storage/latex.c:109
 #: ../src/imageio/storage/latex.c:176 ../src/libs/styles.c:240
@@ -1232,7 +1232,7 @@ msgstr "afbeelding(en) verwijderen"
 msgid "select directory"
 msgstr "selecteer map"
 
-#: ../src/control/jobs/control_jobs.c:1137
+#: ../src/control/jobs/control_jobs.c:1161
 #, c-format
 msgid ""
 "do you really want to physically move the %d selected image to %s?\n"
@@ -1247,40 +1247,40 @@ msgstr[1] ""
 "wilt u de %d geselecteerde afbeeldingen verplaatsen naar %s?\n"
 "(alle niet geselecteerde afbeeldingen worden niet meegenomen)"
 
-#: ../src/control/jobs/control_jobs.c:1141
+#: ../src/control/jobs/control_jobs.c:1165
 msgid "move image?"
 msgid_plural "move images?"
 msgstr[0] "afbeelding verplaatsen?"
 msgstr[1] "afbeeldingen verplaatsen?"
 
-#: ../src/control/jobs/control_jobs.c:1193
+#: ../src/control/jobs/control_jobs.c:1219
 #, c-format
 msgid "do you really want to physically copy the %d selected image to %s?"
 msgid_plural "do you really want to physically copy %d selected images to %s?"
 msgstr[0] "wilt u de %d geselecteerde afbeelding kopiëren naar %s?"
 msgstr[1] "wilt u de %d geselecteerde afbeeldingen kopiëren naar %s?"
 
-#: ../src/control/jobs/control_jobs.c:1196
+#: ../src/control/jobs/control_jobs.c:1222
 msgid "copy image?"
 msgid_plural "copy images?"
 msgstr[0] "kopieer afbeelding"
 msgstr[1] "kopieer afbeeldingen"
 
-#: ../src/control/jobs/control_jobs.c:1255
+#: ../src/control/jobs/control_jobs.c:1276
 #, c-format
 msgid "failed to get parameters from storage module `%s', aborting export.."
 msgstr ""
 "het opvragen instellingen van de opslag module `%s' is mislukt, het "
 "exporteren is gestopt"
 
-#: ../src/control/jobs/control_jobs.c:1294
+#: ../src/control/jobs/control_jobs.c:1315
 #, c-format
 msgid "adding time offset to %d image"
 msgid_plural "adding time offset to %d images"
 msgstr[0] "pas tijdsverschil toe op %d afbeelding"
 msgstr[1] "pas tijdsverschil toe op %d afbeeldingen"
 
-#: ../src/control/jobs/control_jobs.c:1314
+#: ../src/control/jobs/control_jobs.c:1335
 #, c-format
 msgid "added time offset to %d image(s)"
 msgstr "tijdsverschil toegepast aan %d afbeelding(en)"
@@ -1292,92 +1292,92 @@ msgstr "importeren afbeelding %s"
 
 #. printf("%s: scale %f/%f %d\n", self->op, roi_out->scale, roi_in->scale, roi_out->scale == roi_in->scale);
 #. printf("xoffs %d, yoffs %d, out %d, %d, in %d, %d\n", xoffs, yoffs, roi_out->width, roi_out->height, roi_in->width, roi_in->height);
-#: ../src/develop/blend.c:1930 ../src/develop/blend.c:2245
+#: ../src/develop/blend.c:1938 ../src/develop/blend.c:2257
 #, c-format
 msgid "skipped blending in module '%s': roi's do not match"
 msgstr "mengen in module '%s' overgeslagen: roi's komen niet overeen"
 
-#: ../src/develop/blend.c:2047 ../src/develop/blend.c:2291
+#: ../src/develop/blend.c:2049 ../src/develop/blend.c:2303
 msgid "could not allocate buffer for blending"
 msgstr "toewijzen buffer t.g.v. mengen mislukt"
 
-#: ../src/develop/blend_gui.c:945
+#: ../src/develop/blend_gui.c:963
 msgid "sliders for L channel"
 msgstr "schuifregelaars voor L kanaal"
 
-#: ../src/develop/blend_gui.c:945
+#: ../src/develop/blend_gui.c:963
 msgid "sliders for a channel"
 msgstr "schuifregelaars voor a kanaal"
 
-#: ../src/develop/blend_gui.c:945
+#: ../src/develop/blend_gui.c:963
 msgid "sliders for b channel"
 msgstr "schuifregelaars voor b kanaal"
 
-#: ../src/develop/blend_gui.c:945
+#: ../src/develop/blend_gui.c:963
 msgid "sliders for chroma channel (of LCh)"
 msgstr "schuifregelaars voor kleurwaarde (van LCh)"
 
-#: ../src/develop/blend_gui.c:945
+#: ../src/develop/blend_gui.c:963
 msgid "sliders for hue channel (of LCh)"
 msgstr "schuifregelaars voor tint (van LCh)"
 
-#: ../src/develop/blend_gui.c:946
+#: ../src/develop/blend_gui.c:964
 msgid " g "
 msgstr " g "
 
-#: ../src/develop/blend_gui.c:946
+#: ../src/develop/blend_gui.c:964
 msgid " R "
 msgstr " R "
 
-#: ../src/develop/blend_gui.c:946
+#: ../src/develop/blend_gui.c:964
 msgid " G "
 msgstr " G "
 
-#: ../src/develop/blend_gui.c:946
+#: ../src/develop/blend_gui.c:964
 msgid " B "
 msgstr " B "
 
-#: ../src/develop/blend_gui.c:946
+#: ../src/develop/blend_gui.c:964
 msgid " H "
 msgstr " H "
 
-#: ../src/develop/blend_gui.c:946
+#: ../src/develop/blend_gui.c:964
 msgid " S "
 msgstr " S "
 
-#: ../src/develop/blend_gui.c:946
+#: ../src/develop/blend_gui.c:964
 msgid " L "
 msgstr " L "
 
-#: ../src/develop/blend_gui.c:947
+#: ../src/develop/blend_gui.c:965
 msgid "sliders for gray value"
 msgstr "schuifregelaars voor grijs waarde"
 
-#: ../src/develop/blend_gui.c:947
+#: ../src/develop/blend_gui.c:965
 msgid "sliders for red channel"
 msgstr "schuifregelaars voor rood kanaal"
 
-#: ../src/develop/blend_gui.c:947
+#: ../src/develop/blend_gui.c:965
 msgid "sliders for green channel"
 msgstr "schuifregelaars voor groen kanaal"
 
-#: ../src/develop/blend_gui.c:947
+#: ../src/develop/blend_gui.c:965
 msgid "sliders for blue channel"
 msgstr "schuifregelaars voor blauw kanaal"
 
-#: ../src/develop/blend_gui.c:948
+#: ../src/develop/blend_gui.c:966
 msgid "sliders for hue channel (of HSL)"
 msgstr "schuifregelaars voor tint (van HSL)"
 
-#: ../src/develop/blend_gui.c:948
+#: ../src/develop/blend_gui.c:966
 msgid "sliders for chroma channel (of HSL)"
 msgstr "schuifregelaars voor kleurwaarde (van HSL)"
 
-#: ../src/develop/blend_gui.c:948
+#: ../src/develop/blend_gui.c:966
 msgid "sliders for value channel (of HSL)"
 msgstr "schuifregelaars voor value kanaal (van HSL)"
 
-#: ../src/develop/blend_gui.c:951
+#: ../src/develop/blend_gui.c:969
 msgid ""
 "adjustment based on input received by this module:\n"
 "* range defined by upper markers: blend fully\n"
@@ -1390,7 +1390,7 @@ msgstr ""
 "* gebied tussen de aangrenzende gebieden van bovenste/onderste markeringen: "
 "gedeeltelijk mengen"
 
-#: ../src/develop/blend_gui.c:953
+#: ../src/develop/blend_gui.c:971
 msgid ""
 "adjustment based on unblended output of this module:\n"
 "* range defined by upper markers: blend fully\n"
@@ -1403,294 +1403,294 @@ msgstr ""
 "* gebied tussen de aangrenzende gebieden van bovenste/onderste markeringen: "
 "gedeeltelijk mengen"
 
-#: ../src/develop/blend_gui.c:1073 ../src/iop/colorzones.c:1047
+#: ../src/develop/blend_gui.c:1091 ../src/iop/colorzones.c:1047
 #: ../src/iop/tonecurve.c:741
 msgid "pick GUI color from image"
 msgstr "neem GUI kleur van afbeelding"
 
-#: ../src/develop/blend_gui.c:1077
+#: ../src/develop/blend_gui.c:1095
 msgid "reset blend mask settings"
 msgstr "herstel instellingen voor mengen masker"
 
-#: ../src/develop/blend_gui.c:1080
+#: ../src/develop/blend_gui.c:1098
 msgid "invert all channel's polarities"
 msgstr "keer alle kanaal polariteiten om"
 
-#: ../src/develop/blend_gui.c:1091 ../src/develop/blend_gui.c:1094
+#: ../src/develop/blend_gui.c:1109 ../src/develop/blend_gui.c:1112
 msgid "toggle polarity. best seen by enabling 'display mask'"
 msgstr ""
 "masker omkeren, meest duidelijk zichtbaar na inschakeling 'toon masker'"
 
-#: ../src/develop/blend_gui.c:1103
+#: ../src/develop/blend_gui.c:1121
 msgid "output"
 msgstr "output "
 
-#: ../src/develop/blend_gui.c:1114
+#: ../src/develop/blend_gui.c:1132
 msgid "input"
 msgstr "invoer"
 
-#: ../src/develop/blend_gui.c:1125 ../src/develop/blend_gui.c:1126
+#: ../src/develop/blend_gui.c:1143 ../src/develop/blend_gui.c:1144
 msgid "double click to reset"
 msgstr "dubbelklikken is resetten"
 
-#: ../src/develop/blend_gui.c:1186
+#: ../src/develop/blend_gui.c:1204
 #, c-format
 msgid "%d shape used"
 msgid_plural "%d shapes used"
 msgstr[0] "%d vorm gebruikt"
 msgstr[1] "%d vormen gebruikt"
 
-#: ../src/develop/blend_gui.c:1191 ../src/develop/blend_gui.c:1237
+#: ../src/develop/blend_gui.c:1209 ../src/develop/blend_gui.c:1255
 msgid "no mask used"
 msgstr "geen maskers "
 
-#: ../src/develop/blend_gui.c:1236 ../src/develop/blend_gui.c:1537
-#: ../src/develop/blend_gui.c:1571 ../src/develop/blend_gui.c:1656
-#: ../src/develop/blend_gui.c:1665 ../src/develop/blend_gui.c:1686
-#: ../src/develop/blend_gui.c:1702
+#: ../src/develop/blend_gui.c:1254 ../src/develop/blend_gui.c:1573
+#: ../src/develop/blend_gui.c:1607 ../src/develop/blend_gui.c:1692
+#: ../src/develop/blend_gui.c:1701 ../src/develop/blend_gui.c:1722
+#: ../src/develop/blend_gui.c:1738
 msgid "blend"
 msgstr "mengen"
 
-#: ../src/develop/blend_gui.c:1236 ../src/develop/blend_gui.c:1547
+#: ../src/develop/blend_gui.c:1254 ../src/develop/blend_gui.c:1583
 msgid "drawn mask"
 msgstr "vector masker"
 
-#: ../src/develop/blend_gui.c:1245
+#: ../src/develop/blend_gui.c:1263
 msgid "show and edit mask elements"
 msgstr "toon en bewerk masker"
 
-#: ../src/develop/blend_gui.c:1251
+#: ../src/develop/blend_gui.c:1269
 msgid "toggle polarity of drawn mask"
 msgstr "keer getekend masker om"
 
-#: ../src/develop/blend_gui.c:1259 ../src/libs/masks.c:908
+#: ../src/develop/blend_gui.c:1277 ../src/libs/masks.c:908
 #: ../src/libs/masks.c:944 ../src/libs/masks.c:1500
 msgid "add gradient"
 msgstr "kleurverloop toevoegen"
 
-#: ../src/develop/blend_gui.c:1266 ../src/iop/spots.c:559
+#: ../src/develop/blend_gui.c:1284 ../src/iop/spots.c:559
 #: ../src/libs/masks.c:904 ../src/libs/masks.c:940 ../src/libs/masks.c:1507
 msgid "add path"
 msgstr "pad toevoegen"
 
-#: ../src/develop/blend_gui.c:1273 ../src/iop/spots.c:566
+#: ../src/develop/blend_gui.c:1291 ../src/iop/spots.c:566
 #: ../src/libs/masks.c:900 ../src/libs/masks.c:936 ../src/libs/masks.c:1514
 msgid "add ellipse"
 msgstr "ellips toevoegen"
 
-#: ../src/develop/blend_gui.c:1280 ../src/iop/spots.c:573
+#: ../src/develop/blend_gui.c:1298 ../src/iop/spots.c:573
 #: ../src/libs/masks.c:896 ../src/libs/masks.c:932 ../src/libs/masks.c:1521
 msgid "add circle"
 msgstr "cirkel toevoegen"
 
-#: ../src/develop/blend_gui.c:1287 ../src/libs/masks.c:928
+#: ../src/develop/blend_gui.c:1305 ../src/libs/masks.c:928
 #: ../src/libs/masks.c:1528
 msgid "add brush"
 msgstr "penseel toevoegen"
 
 #. * generate a list of all available blend modes
-#: ../src/develop/blend_gui.c:1503 ../src/libs/live_view.c:383
+#: ../src/develop/blend_gui.c:1539 ../src/libs/live_view.c:383
 msgctxt "blendmode"
 msgid "normal"
 msgstr "normaal"
 
-#: ../src/develop/blend_gui.c:1504
+#: ../src/develop/blend_gui.c:1540
 msgctxt "blendmode"
 msgid "normal bounded"
 msgstr "normaal begrensd"
 
-#: ../src/develop/blend_gui.c:1505 ../src/libs/live_view.c:392
+#: ../src/develop/blend_gui.c:1541 ../src/libs/live_view.c:392
 msgctxt "blendmode"
 msgid "lighten"
 msgstr "ophelderen"
 
-#: ../src/develop/blend_gui.c:1506 ../src/libs/live_view.c:391
+#: ../src/develop/blend_gui.c:1542 ../src/libs/live_view.c:391
 msgctxt "blendmode"
 msgid "darken"
 msgstr "verdonkeren"
 
-#: ../src/develop/blend_gui.c:1507 ../src/libs/live_view.c:388
+#: ../src/develop/blend_gui.c:1543 ../src/libs/live_view.c:388
 msgctxt "blendmode"
 msgid "multiply"
 msgstr "vermenigvuldigen"
 
-#: ../src/develop/blend_gui.c:1508
+#: ../src/develop/blend_gui.c:1544
 msgctxt "blendmode"
 msgid "average"
 msgstr "gemiddelde"
 
-#: ../src/develop/blend_gui.c:1509
+#: ../src/develop/blend_gui.c:1545
 msgctxt "blendmode"
 msgid "addition"
 msgstr "toevoeging"
 
-#: ../src/develop/blend_gui.c:1510
+#: ../src/develop/blend_gui.c:1546
 msgctxt "blendmode"
 msgid "subtract"
 msgstr "aftrekken"
 
-#: ../src/develop/blend_gui.c:1511 ../src/libs/live_view.c:397
+#: ../src/develop/blend_gui.c:1547 ../src/libs/live_view.c:397
 msgctxt "blendmode"
 msgid "difference"
 msgstr "verschil"
 
-#: ../src/develop/blend_gui.c:1512 ../src/libs/live_view.c:389
+#: ../src/develop/blend_gui.c:1548 ../src/libs/live_view.c:389
 msgctxt "blendmode"
 msgid "screen"
 msgstr "scherm"
 
-#: ../src/develop/blend_gui.c:1513 ../src/libs/live_view.c:390
+#: ../src/develop/blend_gui.c:1549 ../src/libs/live_view.c:390
 msgctxt "blendmode"
 msgid "overlay"
 msgstr "bedekken"
 
-#: ../src/develop/blend_gui.c:1514
+#: ../src/develop/blend_gui.c:1550
 msgctxt "blendmode"
 msgid "softlight"
 msgstr "zacht licht"
 
-#: ../src/develop/blend_gui.c:1515
+#: ../src/develop/blend_gui.c:1551
 msgctxt "blendmode"
 msgid "hardlight"
 msgstr "hard licht"
 
-#: ../src/develop/blend_gui.c:1516
+#: ../src/develop/blend_gui.c:1552
 msgctxt "blendmode"
 msgid "vividlight"
 msgstr "vividlight"
 
-#: ../src/develop/blend_gui.c:1517
+#: ../src/develop/blend_gui.c:1553
 msgctxt "blendmode"
 msgid "linearlight"
 msgstr "linearlight"
 
-#: ../src/develop/blend_gui.c:1518
+#: ../src/develop/blend_gui.c:1554
 msgctxt "blendmode"
 msgid "pinlight"
 msgstr "pinlight"
 
-#: ../src/develop/blend_gui.c:1519
+#: ../src/develop/blend_gui.c:1555
 msgctxt "blendmode"
 msgid "lightness"
 msgstr "helderheid"
 
-#: ../src/develop/blend_gui.c:1520
+#: ../src/develop/blend_gui.c:1556
 msgctxt "blendmode"
 msgid "chroma"
 msgstr "kleurwaarde"
 
-#: ../src/develop/blend_gui.c:1521
+#: ../src/develop/blend_gui.c:1557
 msgctxt "blendmode"
 msgid "hue"
 msgstr "tint "
 
-#: ../src/develop/blend_gui.c:1522
+#: ../src/develop/blend_gui.c:1558
 msgctxt "blendmode"
 msgid "color"
 msgstr "kleur "
 
-#: ../src/develop/blend_gui.c:1523
+#: ../src/develop/blend_gui.c:1559
 msgctxt "blendmode"
 msgid "coloradjustment"
 msgstr "aanpassen kleur"
 
-#: ../src/develop/blend_gui.c:1524
+#: ../src/develop/blend_gui.c:1560
 msgctxt "blendmode"
 msgid "Lab lightness"
 msgstr "Lab helderheid"
 
-#: ../src/develop/blend_gui.c:1525
+#: ../src/develop/blend_gui.c:1561
 msgctxt "blendmode"
 msgid "Lab color"
 msgstr "Lab kleur"
 
-#: ../src/develop/blend_gui.c:1526
+#: ../src/develop/blend_gui.c:1562
 msgctxt "blendmode"
 msgid "HSV lightness"
 msgstr "HSV helderheid"
 
-#: ../src/develop/blend_gui.c:1527
+#: ../src/develop/blend_gui.c:1563
 msgctxt "blendmode"
 msgid "HSV color"
 msgstr "HSL kleur"
 
 #. * deprecated blend modes: make them available as legacy history stacks might want them
-#: ../src/develop/blend_gui.c:1530
+#: ../src/develop/blend_gui.c:1566
 msgctxt "blendmode"
 msgid "difference (deprecated)"
 msgstr "verschil (verouderd)"
 
-#: ../src/develop/blend_gui.c:1531
+#: ../src/develop/blend_gui.c:1567
 msgctxt "blendmode"
 msgid "inverse (deprecated)"
 msgstr "geïnverteerd (verouderd)"
 
-#: ../src/develop/blend_gui.c:1532
+#: ../src/develop/blend_gui.c:1568
 msgctxt "blendmode"
 msgid "normal (deprecated)"
 msgstr "normaal (verouderd)"
 
-#: ../src/develop/blend_gui.c:1533
+#: ../src/develop/blend_gui.c:1569
 msgctxt "blendmode"
 msgid "unbounded (deprecated)"
 msgstr "onbegrensd (verouderd)"
 
-#: ../src/develop/blend_gui.c:1542
+#: ../src/develop/blend_gui.c:1578
 msgid "uniformly"
 msgstr "geheel"
 
-#: ../src/develop/blend_gui.c:1553
+#: ../src/develop/blend_gui.c:1589
 msgid "parametric mask"
 msgstr "parametrisch masker"
 
-#: ../src/develop/blend_gui.c:1559
+#: ../src/develop/blend_gui.c:1595
 msgid "drawn & parametric mask"
 msgstr "vector & parametrisch masker"
 
-#: ../src/develop/blend_gui.c:1564
+#: ../src/develop/blend_gui.c:1600
 msgid ""
 "activate blending: uniformly, with drawn mask, with parametric mask, or "
 "combination of both"
 msgstr ""
 "activeer mengen; geheel, vector masker, parametrisch masker of in combinatie"
 
-#: ../src/develop/blend_gui.c:1571
+#: ../src/develop/blend_gui.c:1607
 msgid "blend mode"
-msgstr "overvloei modus"
+msgstr "overvloei wijze"
 
-#: ../src/develop/blend_gui.c:1572
+#: ../src/develop/blend_gui.c:1608
 msgid "choose blending mode"
-msgstr "kies overvloei modus"
+msgstr "kies wijze van overvloei"
 
-#: ../src/develop/blend_gui.c:1656 ../src/iop/watermark.c:1111
+#: ../src/develop/blend_gui.c:1692 ../src/iop/watermark.c:1111
 msgid "opacity"
 msgstr "dekking"
 
-#: ../src/develop/blend_gui.c:1659
+#: ../src/develop/blend_gui.c:1695
 msgid "set the opacity of the blending"
 msgstr "bepaal de dekking bij overvloeien"
 
-#: ../src/develop/blend_gui.c:1665
+#: ../src/develop/blend_gui.c:1701
 msgid "combine masks"
 msgstr "combineer maskers"
 
-#: ../src/develop/blend_gui.c:1667
+#: ../src/develop/blend_gui.c:1703
 msgid "exclusive"
 msgstr "exclusief"
 
-#: ../src/develop/blend_gui.c:1670
+#: ../src/develop/blend_gui.c:1706
 msgid "inclusive"
 msgstr "inclusief"
 
-#: ../src/develop/blend_gui.c:1673
+#: ../src/develop/blend_gui.c:1709
 msgid "exclusive & inverted"
 msgstr "exclusief & omgekeerd"
 
-#: ../src/develop/blend_gui.c:1676
+#: ../src/develop/blend_gui.c:1712
 msgid "inclusive & inverted"
 msgstr "inclusief & omgekeerd"
 
-#: ../src/develop/blend_gui.c:1680
+#: ../src/develop/blend_gui.c:1716
 msgid ""
 "how to combine individual drawn mask and different channels of parametric "
 "mask"
@@ -1698,33 +1698,33 @@ msgstr ""
 "hoe te combineren individueel vector masker en verschillende parametrisch "
 "masker kanalen"
 
-#: ../src/develop/blend_gui.c:1686
+#: ../src/develop/blend_gui.c:1722
 msgid "invert mask"
 msgstr "masker omkeren"
 
-#: ../src/develop/blend_gui.c:1695
+#: ../src/develop/blend_gui.c:1731
 msgid "apply mask in normal or inverted mode"
 msgstr "pas het masker in omgekeerde vorm toe"
 
-#: ../src/develop/blend_gui.c:1702
+#: ../src/develop/blend_gui.c:1738
 msgid "mask blur"
 msgstr "doezelen"
 
-#: ../src/develop/blend_gui.c:1704
+#: ../src/develop/blend_gui.c:1740
 msgid "radius for gaussian blur of blend mask"
 msgstr "de te gebruiken straal voor doezelen"
 
-#: ../src/develop/blend_gui.c:1710
+#: ../src/develop/blend_gui.c:1746
 msgid "display mask"
 msgstr "toon masker"
 
-#: ../src/develop/blend_gui.c:1717
+#: ../src/develop/blend_gui.c:1753
 msgid "temporarily switch off blend mask. only for module in focus"
 msgstr ""
 "masker menging tijdelijk uitzetten\n"
 "geldt alleen voor de module nu in beeld"
 
-#: ../src/develop/develop.c:1009
+#: ../src/develop/develop.c:1006
 #, c-format
 msgid "%s: module `%s' version mismatch: %d != %d"
 msgstr "%s: module `%s' versie komt niet overeen: %d != %d"
@@ -2627,7 +2627,9 @@ msgstr "kopiëren"
 msgid ""
 "do a 1:1 copy of the selected files.\n"
 "the global options below do not apply!"
-msgstr "maak clone"
+msgstr ""
+"maak kloon van geselecteerde bestanden\n"
+"de algemene opties hieronder worden niet toegepast!"
 
 #: ../src/imageio/format/exr.cc:240
 msgid "OpenEXR (float)"
@@ -3839,7 +3841,7 @@ msgstr "corrigeer het perspectief van de afbeelding"
 
 #: ../src/iop/clipping.c:1756
 msgid "automatic cropping"
-msgstr "automatisch groeperen"
+msgstr "automatisch uitsnijden"
 
 #: ../src/iop/clipping.c:1757 ../src/libs/metadata_view.c:247
 msgid "no"
@@ -6695,56 +6697,56 @@ msgstr "synchroniseren"
 msgid "remove..."
 msgstr "uitschrijven"
 
-#: ../src/libs/collect.c:1058
+#: ../src/libs/collect.c:1060
 msgid "uncategorized"
 msgstr "ongecatagoriseerd"
 
-#: ../src/libs/collect.c:1247 ../src/libs/collect.c:1249
+#: ../src/libs/collect.c:1249 ../src/libs/collect.c:1251
 msgid "not altered"
 msgstr "niet gewijzigd"
 
-#: ../src/libs/collect.c:1263 ../src/libs/collect.c:1265
+#: ../src/libs/collect.c:1265 ../src/libs/collect.c:1267
 msgid "not tagged"
 msgstr "niet gelabeld"
 
-#: ../src/libs/collect.c:1501
+#: ../src/libs/collect.c:1503
 msgid "local HDD"
 msgstr "lokale HDD"
 
-#: ../src/libs/collect.c:1586 ../src/libs/collect.c:1600
-#: ../src/libs/collect.c:1990
+#: ../src/libs/collect.c:1588 ../src/libs/collect.c:1602
+#: ../src/libs/collect.c:1992
 msgid "clear this rule"
 msgstr "verwijder voorwaarde"
 
-#: ../src/libs/collect.c:1591
+#: ../src/libs/collect.c:1593
 msgid "clear this rule or add new rules"
 msgstr "voorwaarde toevoegen / verwijderen"
 
-#: ../src/libs/collect.c:1996
+#: ../src/libs/collect.c:1998
 msgid "narrow down search"
 msgstr "submappen"
 
-#: ../src/libs/collect.c:2000
+#: ../src/libs/collect.c:2002
 msgid "add more images"
 msgstr "afbeeldingen toevoegen "
 
-#: ../src/libs/collect.c:2004
+#: ../src/libs/collect.c:2006
 msgid "exclude images"
 msgstr "afbeeldingen uitsluiten "
 
-#: ../src/libs/collect.c:2010
+#: ../src/libs/collect.c:2012
 msgid "change to: and"
 msgstr "wijzig in <en>"
 
-#: ../src/libs/collect.c:2014
+#: ../src/libs/collect.c:2016
 msgid "change to: or"
 msgstr "wijzig in <of>"
 
-#: ../src/libs/collect.c:2018
+#: ../src/libs/collect.c:2020
 msgid "change to: except"
 msgstr "wijzig in <en niet>"
 
-#: ../src/libs/collect.c:2063
+#: ../src/libs/collect.c:2065
 #, no-c-format
 msgid "type your query, use `%' as wildcard"
 msgstr "type uw zoekopdracht, gebruik `%' als vervanging"
@@ -6803,7 +6805,7 @@ msgstr "bestandsnaam"
 
 #: ../src/libs/colorpicker.c:36
 msgid "color picker"
-msgstr "kleurenkiezer"
+msgstr "kleur kiezer"
 
 #: ../src/libs/colorpicker.c:61
 msgctxt "accel"
