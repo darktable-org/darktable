@@ -58,6 +58,7 @@ static int default_dimension_wrapper    (struct dt_imageio_module_storage_t *sel
 
 static int store_wrapper(struct dt_imageio_module_storage_t *self,struct dt_imageio_module_data_t *self_data, const int imgid, dt_imageio_module_format_t *format, dt_imageio_module_data_t *fdata, const int num, const int total, const gboolean high_quality)
 {
+
   /* construct a temporary file name */
   char tmpdir[PATH_MAX]= {0};
   gboolean from_cache = FALSE;
@@ -104,7 +105,7 @@ static int store_wrapper(struct dt_imageio_module_storage_t *self,struct dt_imag
     lua_pop(L,3);
     dt_lua_unlock(has_lock);
     g_free(filename);
-    return 1;
+    return 0;
   }
 
   luaA_push_type(L,self->parameter_lua_type,self_data);
