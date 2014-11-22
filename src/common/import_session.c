@@ -220,6 +220,11 @@ dt_import_session_set_time(struct dt_import_session_t *self, time_t time)
   dt_variables_set_time(self->vp, time);
 }
 
+void
+dt_import_session_set_exif_time(struct dt_import_session_t *self, time_t exif_time)
+{
+  dt_variables_set_exif_time(self->vp, exif_time);
+}
 
 void
 dt_import_session_set_filename(struct dt_import_session_t *self, const char *filename)

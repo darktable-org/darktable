@@ -35,6 +35,7 @@ typedef struct dt_variables_data_t
   /** expanded result string */
   gchar *result;
   time_t time;
+  time_t exif_time;
   guint sequence;
 }
 dt_variables_data_t;
@@ -146,6 +147,10 @@ gboolean _variable_get_value(dt_variables_params_t *params, gchar *variable,gcha
 
     dt_image_cache_read_release(darktable.image_cache, img);
   }
+  else if (params->data->exif_time) {
+      localtime_r(&params->data->exif_time, &exif_tm);
+      have_exif_tm = TRUE;
+  }
 
   if( g_strcmp0(variable,"$(YEAR)") == 0 && (got_value=TRUE) )  snprintf(value, value_len, "%.4d",tim->tm_year+1900);
   else if( g_strcmp0(variable,"$(MONTH)") == 0&& (got_value=TRUE)  )   snprintf(value, value_len, "%.2d",tim->tm_mon+1);
@@ -249,6 +254,7 @@ void dt_variables_params_init(dt_variables_params_t **params)
   *params = g_malloc0(sizeof(dt_variables_params_t));
   (*params)->data = g_malloc0(sizeof(dt_variables_data_t));
   (*params)->data->time=time(NULL);
+  (*params)->data->exif_time=0;
   (*params)->sequence = -1;
 }
 
@@ -261,6 +267,11 @@ void dt_variables_params_destroy(dt_variables_params_t *params)
 void dt_variables_set_time(dt_variables_params_t *params, time_t time)
 {
   params->data->time = time;
+}
+
+void dt_variables_set_exif_time(dt_variables_params_t *params, time_t exif_time)
+{
+  params->data->exif_time = exif_time;
 }
 
 gchar *dt_variables_get_result(dt_variables_params_t *params)
