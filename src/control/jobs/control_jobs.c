@@ -157,6 +157,21 @@ static dt_job_t * dt_control_generic_images_job_create(dt_job_execute_callback e
   return job;
 }
 
+static dt_job_t * dt_control_generic_images_job_change_params(dt_job_t *job, int flag, gpointer data)
+{
+  if(!job) return NULL;
+
+  dt_control_image_enumerator_t *params = dt_control_job_get_params(job);
+  if(!params)
+  {
+    dt_control_job_dispose(job);
+    return NULL;
+  }
+  params->flag = flag;
+  params->data = data;
+  return job;
+}
+
 static void dt_control_generic_images_job_cleanup(dt_job_t *job)
 {
   dt_control_image_enumerator_job_selected_cleanup(dt_control_job_get_params(job));
@@ -1130,7 +1145,7 @@ void dt_control_move_images()
 
   // Do not show the dialog if no image is selected:
   if(number == 0) return;
-  dt_job_t *job = dt_control_generic_images_job_create(&dt_control_move_images_job_run, "move images", 0, dir);
+  dt_job_t *job = dt_control_generic_images_job_create(&dt_control_move_images_job_run, "move images", 0, NULL);
 
   GtkWidget *filechooser = gtk_file_chooser_dialog_new (_("select directory"),
                            GTK_WINDOW (win),
@@ -1168,7 +1183,8 @@ void dt_control_move_images()
       goto abort;
   }
 
-  dt_control_add_job(darktable.control, DT_JOB_QUEUE_USER_FG, job);
+  dt_control_add_job(darktable.control, DT_JOB_QUEUE_USER_FG,
+                     dt_control_generic_images_job_change_params(job, 0, dir));
   return;
 
 abort:
@@ -1185,7 +1201,7 @@ void dt_control_copy_images()
 
   // Do not show the dialog if no image is selected:
   if(number == 0) return;
-  dt_job_t *job = dt_control_generic_images_job_create(&dt_control_copy_images_job_run, "copy images", 0, dir);
+  dt_job_t *job = dt_control_generic_images_job_create(&dt_control_copy_images_job_run, "copy images", 0, NULL);
 
   GtkWidget *filechooser = gtk_file_chooser_dialog_new (_("select directory"),
                            GTK_WINDOW (win),
@@ -1222,7 +1238,8 @@ void dt_control_copy_images()
       goto abort;
   }
 
-  dt_control_add_job(darktable.control, DT_JOB_QUEUE_USER_FG, job);
+  dt_control_add_job(darktable.control, DT_JOB_QUEUE_USER_FG,
+                     dt_control_generic_images_job_change_params(job, 0, dir));
   return;
 
 abort:
