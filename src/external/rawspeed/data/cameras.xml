@@ -536,7 +536,7 @@
 		<Sensor black="0" white="44200" iso_list="100 125 160 320 640 1250"/>
 		<Sensor black="0" white="54000"/>
 	</Camera>
-	<Camera make="Canon" model="Canon EOS 7D Mark II">
+	<Camera make="Canon" model="Canon EOS 7D Mark II" supported="no">
 		<CFA width="2" height="2">
 			<Color x="0" y="0">RED</Color>
 			<Color x="1" y="0">GREEN</Color>
