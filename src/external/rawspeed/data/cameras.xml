@@ -3002,6 +3002,16 @@
 			<Hint name="zero_is_bad" value=""/>
 		</Hints>
 	</Camera>
+	<Camera make="Panasonic" model="DMC-GM5" mode="4:3" supported="no">
+		<CFA width="2" height="2">
+			<Color x="0" y="0">BLUE</Color>
+			<Color x="1" y="0">GREEN</Color>
+			<Color x="0" y="1">GREEN</Color>
+			<Color x="1" y="1">RED</Color>
+		</CFA>
+		<Crop x="0" y="0" width="0" height="0"/>
+		<Sensor black="143" white="4095"/>
+	</Camera>
 	<Camera make="Panasonic" model = "DMC-G3">
 		<CFA width="2" height="2">
 			<Color x="0" y="0">GREEN</Color>
