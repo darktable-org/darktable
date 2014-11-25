@@ -85,7 +85,8 @@ typedef enum dt_collection_properties_t
   DT_COLLECTION_PROP_ISO,
   DT_COLLECTION_PROP_APERTURE,
   DT_COLLECTION_PROP_FILENAME,
-  DT_COLLECTION_PROP_GEOTAGGING
+  DT_COLLECTION_PROP_GEOTAGGING,
+  DT_COLLECTION_PROP_FOCAL_LENGTH
 } dt_collection_properties_t;
 
 typedef enum dt_collection_rating_comperator_t

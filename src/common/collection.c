@@ -633,6 +633,10 @@ static void get_query_string(const dt_collection_properties_t property, const gc
       snprintf(query, query_len, "(filename like '%%%s%%')", escaped_text);
       break;
 
+    case DT_COLLECTION_PROP_FOCAL_LENGTH:
+      get_query_string_number_operator("focal_length", escaped_text, query, query_len);
+      break;
+
     default: // day or time
       snprintf(query, query_len, "(datetime_taken like '%%%s%%')", escaped_text);
       break;
