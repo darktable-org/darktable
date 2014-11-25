@@ -1168,6 +1168,23 @@ static void tags_view(dt_lib_collect_rule_t *dr)
   g_object_unref(tagsmodel);
 }
 
+static void
+get_list_property(const char* property, const char* prop_op1, const char* prop_op2, const gchar *escaped_text, char *query, size_t query_len)
+{
+  gchar *operator, *number;
+  dt_collection_split_operator_number(escaped_text, &number, &operator);
+
+  if(operator && number)
+    snprintf(query, query_len, "select distinct %s(%s %s) as %s, 1 from images where %s %s %s order by %s", prop_op1, property, prop_op2, property, property, operator, number, property);
+  else if(number)
+    snprintf(query, query_len, "select distinct %s(%s %s) as %s, 1 from images where %s = %s order by %s", prop_op1, property, prop_op2, property, property, number, property);
+  else
+    snprintf(query, query_len, "select distinct %s(%s %s) as %s, 1 from images where %s like '%%%s%%' order by %s", prop_op1, property, prop_op2, property, property, escaped_text, property);
+
+  g_free(operator);
+  g_free(number);
+}
+
 static void list_view(dt_lib_collect_rule_t *dr)
 {
   // update related list
@@ -1289,51 +1306,12 @@ static void list_view(dt_lib_collect_rule_t *dr)
                "select distinct lens, 1 from images where lens like '%%%s%%' order by lens", escaped_text);
       break;
     case DT_COLLECTION_PROP_ISO: // iso
-    {
-      gchar *operator, *number;
-      dt_collection_split_operator_number(escaped_text, &number, &operator);
-
-      if(operator&& number)
-        snprintf(query, sizeof(query),
-                 "select distinct cast(iso as integer) as iso, 1 from images where iso %s %s order by iso",
-                 operator, number);
-      else if(number)
-        snprintf(query, sizeof(query),
-                 "select distinct cast(iso as integer) as iso, 1 from images where iso = %s order by iso",
-                 number);
-      else
-        snprintf(
-            query, sizeof(query),
-            "select distinct cast(iso as integer) as iso, 1 from images where iso like '%%%s%%' order by iso",
-            escaped_text);
-
-      g_free(operator);
-      g_free(number);
-    }
-    break;
+      get_list_property("iso", "cast", "as integer", escaped_text, query, sizeof(query));
+      break;
 
     case DT_COLLECTION_PROP_APERTURE: // aperture
-    {
-      gchar *operator, *number;
-      dt_collection_split_operator_number(escaped_text, &number, &operator);
-
-      if(operator&& number)
-        snprintf(query, sizeof(query), "select distinct round(aperture,1) as aperture, 1 from images where "
-                                       "aperture %s %s order by aperture",
-                                       operator, number);
-      else if(number)
-        snprintf(query, sizeof(query), "select distinct round(aperture,1) as aperture, 1 from images where "
-                                       "aperture = %s order by aperture",
-                 number);
-      else
-        snprintf(query, sizeof(query), "select distinct round(aperture,1) as aperture, 1 from images where "
-                                       "aperture like '%%%s%%' order by aperture",
-                 escaped_text);
-
-      g_free(operator);
-      g_free(number);
-    }
-    break;
+      get_list_property("aperture", "round", ",1", escaped_text, query, sizeof(query));
+      break;
 
     case DT_COLLECTION_PROP_FILENAME: // filename
       snprintf(query, sizeof(query),
