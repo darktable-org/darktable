@@ -1333,6 +1333,10 @@ static void list_view(dt_lib_collect_rule_t *dr)
       get_list_property("focal_length", "cast", "as integer", escaped_text, query, sizeof(query));
       break;
 
+    case DT_COLLECTION_PROP_FOCUS_DISTANCE: // focal length
+      get_list_property("focus_distance", "round", ",2", escaped_text, query, sizeof(query));
+      break;
+
     default: // time
       snprintf(query, sizeof(query), "SELECT DISTINCT datetime_taken, 1 FROM images WHERE datetime_taken "
                                      "LIKE '%%%s%%' ORDER BY datetime_taken DESC",

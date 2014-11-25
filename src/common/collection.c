@@ -637,6 +637,10 @@ static void get_query_string(const dt_collection_properties_t property, const gc
       get_query_string_number_operator("focal_length", escaped_text, query, query_len);
       break;
 
+    case DT_COLLECTION_PROP_FOCUS_DISTANCE:
+      get_query_string_number_operator("focus_distance", escaped_text, query, query_len);
+      break;
+
     default: // day or time
       snprintf(query, query_len, "(datetime_taken like '%%%s%%')", escaped_text);
       break;
