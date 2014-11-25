@@ -536,6 +536,7 @@
 		<Sensor black="0" white="44200" iso_list="100 125 160 320 640 1250"/>
 		<Sensor black="0" white="54000"/>
 	</Camera>
+        <!-- Adobe's 7DmkII color rendition seems broken in Darktable, any files processed will neither be forward nor backward compatible -->
 	<Camera make="Canon" model="Canon EOS 7D Mark II" supported="no">
 		<CFA width="2" height="2">
 			<Color x="0" y="0">RED</Color>
