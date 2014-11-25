@@ -4654,6 +4654,9 @@
 		</CFA>
 		<Crop x="45" y="25" width="-11" height="-29"/>
 		<Sensor black="0" white="4095"/>
+		<Aliases>
+			<Alias>NX300M</Alias>
+		</Aliases>
 	</Camera>
 	<Camera make="SAMSUNG" model="NX3000">
 		<CFA width="2" height="2">
