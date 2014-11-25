@@ -149,13 +149,13 @@ if(USE_CAMERA_SUPPORT)
   add_definitions(${Gphoto2_DEFINITIONS})
 endif(USE_CAMERA_SUPPORT)
 
-# INotify isn't used anymore as it seems
-find_package(INotify)
-if(INOTIFY_FOUND)
-  include_directories(SYSTEM ${INOTIFY_INCLUDE_DIRS})
-  list(APPEND LIBS ${INOTIFY_LIBRARIES})
-  add_definitions(${INOTIFY_DEFINITIONS})
-endif(INOTIFY_FOUND)
+# # INotify isn't used anymore as it seems
+# find_package(INotify)
+# if(INOTIFY_FOUND)
+#   include_directories(SYSTEM ${INOTIFY_INCLUDE_DIRS})
+#   list(APPEND LIBS ${INOTIFY_LIBRARIES})
+#   add_definitions(${INOTIFY_DEFINITIONS})
+# endif(INOTIFY_FOUND)
 
 if(USE_OPENEXR)
   find_package(OpenEXR)
@@ -310,9 +310,9 @@ endif(APRIL_FOOLS)
 #
 # Add HAVE_xxx defines used by darktable
 #
-if(INOTIFY_FOUND)
-  add_definitions("-DHAVE_INOTIFY")
-endif(INOTIFY_FOUND)
+# if(INOTIFY_FOUND)
+#   add_definitions("-DHAVE_INOTIFY")
+# endif(INOTIFY_FOUND)
 
 if(LENSFUN_FOUND)
   add_definitions("-DHAVE_LENSFUN")
@@ -440,7 +440,7 @@ if(USE_LUA)
   if(LUA52_FOUND)
     message(STATUS "Lua support: Enabled")
     include_directories(SYSTEM ${LUA52_INCLUDE_DIRS})
-    list(APPEND LIBS ${LUA52_LIBRARIES})
+    list(APPEND LIBS ${LUA52_LDFLAGS})
   else()
     if(DONT_USE_INTERNAL_LUA)
       message(STATUS "Lua support: System library not found (to use darktable's version use -DDONT_USE_INTERNAL_LUA=Off)")

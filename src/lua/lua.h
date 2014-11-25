@@ -74,7 +74,9 @@ typedef int lua_State ;
 typedef int (*lua_CFunction)(lua_State *L);
 typedef int luaA_Type;
 #define LUAA_INVALID_TYPE -1
-typedef struct {} dt_lua_state_t;
+typedef struct {
+  int unused; // if this is empty clang++ complains that the struct has size 0 in C and size 1 in C++
+} dt_lua_state_t;
 #endif
 
 

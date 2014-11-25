@@ -25,7 +25,15 @@
 
 #define CLAMP_RANGE(x,y,z)      (CLAMP(x,y,z))
 
-typedef void (_blend_row_func)(dt_iop_colorspace_type_t cst,const float *a, float *b, const float *mask, size_t stride, int flag);
+typedef struct _blend_buffer_desc_t
+{
+  dt_iop_colorspace_type_t cst;
+  size_t stride;
+  size_t ch;
+}
+_blend_buffer_desc_t;
+
+typedef void (_blend_row_func)(const _blend_buffer_desc_t *bd, const float *a, float *b, const float *mask, int flag);
 
 static inline void _RGB_2_HSL(const float *RGB, float *HSL)
 {
@@ -366,7 +374,7 @@ static inline int _blend_colorspace_channels(dt_iop_colorspace_type_t cst)
   switch(cst)
   {
     case iop_cs_RAW:
-      return 4;
+      return 1;
 
     case iop_cs_Lab:
     default:
@@ -392,13 +400,13 @@ static inline void _blend_Lab_rescale(const float *i, float *o)
 
 
 /* generate blend mask */
-static void _blend_make_mask(dt_iop_colorspace_type_t cst, const unsigned int blendif, const float *blendif_parameters, const unsigned int mask_mode, const unsigned int mask_combine,
-                             const float gopacity, const float *a, const float *b, float *mask, size_t stride)
+static void _blend_make_mask(const _blend_buffer_desc_t *bd, const unsigned int blendif, const float *blendif_parameters, const unsigned int mask_mode, const unsigned int mask_combine,
+                             const float gopacity, const float *a, const float *b, float *mask)
 {
-  for(size_t i=0, j=0; j<stride; i++, j+=4)
+  for(size_t i=0, j=0; j<bd->stride; i++, j+=bd->ch)
   {
     float form = mask[i];
-    float conditional = _blendif_factor(cst, &a[j], &b[j], blendif, blendif_parameters, mask_mode, mask_combine);
+    float conditional = _blendif_factor(bd->cst, &a[j], &b[j], blendif, blendif_parameters, mask_mode, mask_combine);
     float opacity = (mask_combine & DEVELOP_COMBINE_INCL) ? 1.0f - (1.0f - form) * (1.0f - conditional) : form * conditional ;
     opacity = (mask_combine & DEVELOP_COMBINE_INV) ? 1.0f - opacity : opacity;
     mask[i] = opacity*gopacity;
@@ -408,19 +416,19 @@ static void _blend_make_mask(dt_iop_colorspace_type_t cst, const unsigned int bl
 
 
 /* normal blend with clamping */
-static void _blend_normal_bounded(dt_iop_colorspace_type_t cst,const float *a, float *b, const float *mask, size_t stride, int flag)
+static void _blend_normal_bounded(const _blend_buffer_desc_t *bd, const float *a, float *b, const float *mask, int flag)
 {
   float ta[3], tb[3];
-  int channels = _blend_colorspace_channels(cst);
+  int channels = _blend_colorspace_channels(bd->cst);
   float max[4]= {0},min[4]= {0};
 
-  _blend_colorspace_channel_range(cst,min,max);
+  _blend_colorspace_channel_range(bd->cst,min,max);
 
-  for(size_t i=0, j=0; j<stride; i++, j+=4)
+  for(size_t i=0, j=0; j<bd->stride; i++, j+=bd->ch)
   {
     float local_opacity = mask[i];
 
-    if(cst==iop_cs_Lab)
+    if(bd->cst==iop_cs_Lab)
     {
       _blend_Lab_scale(&a[j], ta);
       _blend_Lab_scale(&b[j], tb);
@@ -444,24 +452,24 @@ static void _blend_normal_bounded(dt_iop_colorspace_type_t cst,const float *a, f
       for(int k=0; k<channels; k++)
         b[j+k] =  CLAMP_RANGE((a[j+k] * (1.0f - local_opacity)) + b[j+k] * local_opacity, min[k], max[k]);
 
-    if(cst != iop_cs_RAW) b[j+3] = local_opacity;
+    if(bd->cst != iop_cs_RAW) b[j+3] = local_opacity;
   }
 }
 
 /* normal blend without any clamping */
-static void _blend_normal_unbounded(dt_iop_colorspace_type_t cst,const float *a, float *b, const float *mask, size_t stride, int flag)
+static void _blend_normal_unbounded(const _blend_buffer_desc_t *bd, const float *a, float *b, const float *mask, int flag)
 {
   float ta[3], tb[3];
-  int channels = _blend_colorspace_channels(cst);
+  int channels = _blend_colorspace_channels(bd->cst);
   float max[4]= {0},min[4]= {0};
 
-  _blend_colorspace_channel_range(cst,min,max);
+  _blend_colorspace_channel_range(bd->cst,min,max);
 
-  for(size_t i=0, j=0; j<stride; i++, j+=4)
+  for(size_t i=0, j=0; j<bd->stride; i++, j+=bd->ch)
   {
     float local_opacity = mask[i];
 
-    if(cst==iop_cs_Lab)
+    if(bd->cst==iop_cs_Lab)
     {
       _blend_Lab_scale(&a[j], ta);
       _blend_Lab_scale(&b[j], tb);
@@ -485,26 +493,26 @@ static void _blend_normal_unbounded(dt_iop_colorspace_type_t cst,const float *a,
       for(int k=0; k<channels; k++)
         b[j+k] =  (a[j+k] * (1.0f - local_opacity)) + b[j+k] * local_opacity;
 
-    if(cst != iop_cs_RAW) b[j+3] = local_opacity;
+    if(bd->cst != iop_cs_RAW) b[j+3] = local_opacity;
   }
 }
 
 
 
 /* lighten */
-static void _blend_lighten(dt_iop_colorspace_type_t cst,const float *a, float *b, const float *mask, size_t stride, int flag)
+static void _blend_lighten(const _blend_buffer_desc_t *bd, const float *a, float *b, const float *mask, int flag)
 {
-  int channels = _blend_colorspace_channels(cst);
+  int channels = _blend_colorspace_channels(bd->cst);
   float ta[3], tb[3], tbo;
   float max[4]= {0},min[4]= {0};
 
-  _blend_colorspace_channel_range(cst,min,max);
+  _blend_colorspace_channel_range(bd->cst,min,max);
 
-  for(size_t i=0, j=0; j<stride; i++, j+=4)
+  for(size_t i=0, j=0; j<bd->stride; i++, j+=bd->ch)
   {
     float local_opacity = mask[i];
 
-    if(cst==iop_cs_Lab)
+    if(bd->cst==iop_cs_Lab)
     {
       _blend_Lab_scale(&a[j], ta);
       _blend_Lab_scale(&b[j], tb);
@@ -529,24 +537,24 @@ static void _blend_lighten(dt_iop_colorspace_type_t cst,const float *a, float *b
       for(int k=0; k<channels; k++)
         b[j+k] =  CLAMP_RANGE(a[j+k] * (1.0f - local_opacity) + fmax(a[j+k],b[j+k]) * local_opacity, min[k], max[k]);
 
-    if(cst != iop_cs_RAW) b[j+3] = local_opacity;
+    if(bd->cst != iop_cs_RAW) b[j+3] = local_opacity;
   }
 }
 
 /* darken */
-static void _blend_darken(dt_iop_colorspace_type_t cst,const float *a, float *b, const float *mask, size_t stride, int flag)
+static void _blend_darken(const _blend_buffer_desc_t *bd, const float *a, float *b, const float *mask, int flag)
 {
-  int channels = _blend_colorspace_channels(cst);
+  int channels = _blend_colorspace_channels(bd->cst);
   float ta[3], tb[3], tbo;
   float max[4]= {0},min[4]= {0};
 
-  _blend_colorspace_channel_range(cst,min,max);
+  _blend_colorspace_channel_range(bd->cst,min,max);
 
-  for(size_t i=0, j=0; j<stride; i++, j+=4)
+  for(size_t i=0, j=0; j<bd->stride; i++, j+=bd->ch)
   {
     float local_opacity = mask[i];
 
-    if(cst==iop_cs_Lab)
+    if(bd->cst==iop_cs_Lab)
     {
       _blend_Lab_scale(&a[j], ta);
       _blend_Lab_scale(&b[j], tb);
@@ -571,27 +579,27 @@ static void _blend_darken(dt_iop_colorspace_type_t cst,const float *a, float *b,
       for(int k=0; k<channels; k++)
         b[j+k] =  CLAMP_RANGE(a[j+k] * (1.0f - local_opacity) + fmin(a[j+k],b[j+k]) * local_opacity, min[k], max[k]);
 
-    if(cst != iop_cs_RAW) b[j+3] = local_opacity;
+    if(bd->cst != iop_cs_RAW) b[j+3] = local_opacity;
   }
   // return fmin(a,b);
 }
 
 
 /* multiply */
-static void _blend_multiply(dt_iop_colorspace_type_t cst,const float *a, float *b, const float *mask, size_t stride, int flag)
+static void _blend_multiply(const _blend_buffer_desc_t *bd, const float *a, float *b, const float *mask, int flag)
 {
   float ta[3], tb[3];
-  int channels = _blend_colorspace_channels(cst);
+  int channels = _blend_colorspace_channels(bd->cst);
   float max[4]= {0},min[4]= {0};
   float lmin = 0.0, lmax, la, lb;
 
-  _blend_colorspace_channel_range(cst,min,max);
+  _blend_colorspace_channel_range(bd->cst,min,max);
 
-  for(size_t i=0, j=0; j<stride; i++, j+=4)
+  for(size_t i=0, j=0; j<bd->stride; i++, j+=bd->ch)
   {
     float local_opacity = mask[i];
 
-    if(cst==iop_cs_Lab)
+    if(bd->cst==iop_cs_Lab)
     {
       _blend_Lab_scale(&a[j], ta);
       _blend_Lab_scale(&b[j], tb);
@@ -632,7 +640,7 @@ static void _blend_multiply(dt_iop_colorspace_type_t cst,const float *a, float *
         b[j+k] = CLAMP_RANGE( ((a[j+k] * (1.0f - local_opacity)) + ((a[j+k] * b[j+k]) * local_opacity)), min[k], max[k]);
       }
 
-    if(cst != iop_cs_RAW) b[j+3] = local_opacity;
+    if(bd->cst != iop_cs_RAW) b[j+3] = local_opacity;
   }
 
 
@@ -641,19 +649,19 @@ static void _blend_multiply(dt_iop_colorspace_type_t cst,const float *a, float *
 
 
 /* average */
-static void _blend_average(dt_iop_colorspace_type_t cst,const float *a, float *b, const float *mask, size_t stride, int flag)
+static void _blend_average(const _blend_buffer_desc_t *bd, const float *a, float *b, const float *mask, int flag)
 {
   float ta[3], tb[3];
-  int channels = _blend_colorspace_channels(cst);
+  int channels = _blend_colorspace_channels(bd->cst);
   float max[4]= {0},min[4]= {0};
 
-  _blend_colorspace_channel_range(cst,min,max);
+  _blend_colorspace_channel_range(bd->cst,min,max);
 
-  for(size_t i=0, j=0; j<stride; i++, j+=4)
+  for(size_t i=0, j=0; j<bd->stride; i++, j+=bd->ch)
   {
     float local_opacity = mask[i];
 
-    if(cst==iop_cs_Lab)
+    if(bd->cst==iop_cs_Lab)
     {
       _blend_Lab_scale(&a[j], ta);
       _blend_Lab_scale(&b[j], tb);
@@ -677,25 +685,25 @@ static void _blend_average(dt_iop_colorspace_type_t cst,const float *a, float *b
       for(int k=0; k<channels; k++)
         b[j+k] =  CLAMP_RANGE(a[j+k] * (1.0f - local_opacity) + (a[j+k] + b[j+k])/2.0f * local_opacity, min[k], max[k]);
 
-    if(cst != iop_cs_RAW) b[j+3] = local_opacity;
+    if(bd->cst != iop_cs_RAW) b[j+3] = local_opacity;
   }
   // return (a+b)/2.0;
 }
 
 
 /* add */
-static void _blend_add(dt_iop_colorspace_type_t cst,const float *a, float *b, const float *mask, size_t stride, int flag)
+static void _blend_add(const _blend_buffer_desc_t *bd, const float *a, float *b, const float *mask, int flag)
 {
   float ta[3], tb[3];
-  int channels = _blend_colorspace_channels(cst);
+  int channels = _blend_colorspace_channels(bd->cst);
   float max[4]= {0},min[4]= {0};
-  _blend_colorspace_channel_range(cst,min,max);
+  _blend_colorspace_channel_range(bd->cst,min,max);
 
-  for(size_t i=0, j=0; j<stride; i++, j+=4)
+  for(size_t i=0, j=0; j<bd->stride; i++, j+=bd->ch)
   {
     float local_opacity = mask[i];
 
-    if(cst==iop_cs_Lab)
+    if(bd->cst==iop_cs_Lab)
     {
       _blend_Lab_scale(&a[j], ta);
       _blend_Lab_scale(&b[j], tb);
@@ -719,7 +727,7 @@ static void _blend_add(dt_iop_colorspace_type_t cst,const float *a, float *b, co
       for(int k=0; k<channels; k++)
         b[j+k] =  CLAMP_RANGE( (a[j+k] * (1.0f - local_opacity)) + ( ((a[j+k] + b[j+k])) * local_opacity), min[k], max[k]);
 
-    if(cst != iop_cs_RAW) b[j+3] = local_opacity;
+    if(bd->cst != iop_cs_RAW) b[j+3] = local_opacity;
   }
   /*
   float max,min;
@@ -730,18 +738,18 @@ static void _blend_add(dt_iop_colorspace_type_t cst,const float *a, float *b, co
 
 
 /* substract */
-static void _blend_substract(dt_iop_colorspace_type_t cst,const float *a, float *b, const float *mask, size_t stride, int flag)
+static void _blend_substract(const _blend_buffer_desc_t *bd, const float *a, float *b, const float *mask, int flag)
 {
   float ta[3], tb[3];
-  int channels = _blend_colorspace_channels(cst);
+  int channels = _blend_colorspace_channels(bd->cst);
   float max[4]= {0},min[4]= {0};
-  _blend_colorspace_channel_range(cst,min,max);
+  _blend_colorspace_channel_range(bd->cst,min,max);
 
-  for(size_t i=0, j=0; j<stride; i++, j+=4)
+  for(size_t i=0, j=0; j<bd->stride; i++, j+=bd->ch)
   {
     float local_opacity = mask[i];
 
-    if(cst==iop_cs_Lab)
+    if(bd->cst==iop_cs_Lab)
     {
       _blend_Lab_scale(&a[j], ta);
       _blend_Lab_scale(&b[j], tb);
@@ -765,7 +773,7 @@ static void _blend_substract(dt_iop_colorspace_type_t cst,const float *a, float 
       for(int k=0; k<channels; k++)
         b[j+k] =  CLAMP_RANGE( ((a[j+k] * (1.0f - local_opacity)) + ( ((b[j+k] + a[j+k]) - (fabs(min[k]+max[k]))) * local_opacity)), min[k], max[k]);
 
-    if(cst != iop_cs_RAW) b[j+3] = local_opacity;
+    if(bd->cst != iop_cs_RAW) b[j+3] = local_opacity;
   }
   /*
   float max,min;
@@ -776,20 +784,20 @@ static void _blend_substract(dt_iop_colorspace_type_t cst,const float *a, float 
 
 
 /* difference (deprecated) */
-static void _blend_difference(dt_iop_colorspace_type_t cst,const float *a, float *b, const float *mask, size_t stride, int flag)
+static void _blend_difference(const _blend_buffer_desc_t *bd, const float *a, float *b, const float *mask, int flag)
 {
   float ta[3], tb[3];
-  int channels = _blend_colorspace_channels(cst);
+  int channels = _blend_colorspace_channels(bd->cst);
   float max[4]= {0},min[4]= {0};
   float lmin = 0.0, lmax, la, lb;
 
-  _blend_colorspace_channel_range(cst,min,max);
+  _blend_colorspace_channel_range(bd->cst,min,max);
 
-  for(size_t i=0, j=0; j<stride; i++, j+=4)
+  for(size_t i=0, j=0; j<bd->stride; i++, j+=bd->ch)
   {
     float local_opacity = mask[i];
 
-    if(cst==iop_cs_Lab)
+    if(bd->cst==iop_cs_Lab)
     {
       _blend_Lab_scale(&a[j], ta);
       _blend_Lab_scale(&b[j], tb);
@@ -830,27 +838,27 @@ static void _blend_difference(dt_iop_colorspace_type_t cst,const float *a, float
       }
     }
 
-    if(cst != iop_cs_RAW) b[j+3] = local_opacity;
+    if(bd->cst != iop_cs_RAW) b[j+3] = local_opacity;
   }
   // return fabs(a-b);
 }
 
 
 /* difference 2 (new) */
-static void _blend_difference2(dt_iop_colorspace_type_t cst,const float *a, float *b, const float *mask, size_t stride, int flag)
+static void _blend_difference2(const _blend_buffer_desc_t *bd, const float *a, float *b, const float *mask, int flag)
 {
   float ta[3], tb[3];
-  int channels = _blend_colorspace_channels(cst);
+  int channels = _blend_colorspace_channels(bd->cst);
   float max[4]= {0},min[4]= {0};
   float lmin = 0.0, lmax, la, lb;
 
-  _blend_colorspace_channel_range(cst,min,max);
+  _blend_colorspace_channel_range(bd->cst,min,max);
 
-  for(size_t i=0, j=0; j<stride; i++, j+=4)
+  for(size_t i=0, j=0; j<bd->stride; i++, j+=bd->ch)
   {
     float local_opacity = mask[i];
 
-    if(cst==iop_cs_Lab)
+    if(bd->cst==iop_cs_Lab)
     {
       _blend_Lab_scale(&a[j], ta);
       _blend_Lab_scale(&b[j], tb);
@@ -887,27 +895,27 @@ static void _blend_difference2(dt_iop_colorspace_type_t cst,const float *a, floa
       }
     }
 
-    if(cst != iop_cs_RAW) b[j+3] = local_opacity;
+    if(bd->cst != iop_cs_RAW) b[j+3] = local_opacity;
   }
   // return fabs(a-b);
 }
 
 
 /* screen */
-static void _blend_screen(dt_iop_colorspace_type_t cst,const float *a, float *b, const float *mask, size_t stride, int flag)
+static void _blend_screen(const _blend_buffer_desc_t *bd, const float *a, float *b, const float *mask, int flag)
 {
   float ta[3], tb[3];
-  int channels = _blend_colorspace_channels(cst);
+  int channels = _blend_colorspace_channels(bd->cst);
   float max[4]= {0},min[4]= {0};
   float lmin = 0.0, lmax, la, lb;
 
-  _blend_colorspace_channel_range(cst,min,max);
+  _blend_colorspace_channel_range(bd->cst,min,max);
 
-  for(size_t i=0, j=0; j<stride; i++, j+=4)
+  for(size_t i=0, j=0; j<bd->stride; i++, j+=bd->ch)
   {
     float local_opacity = mask[i];
 
-    if(cst==iop_cs_Lab)
+    if(bd->cst==iop_cs_Lab)
     {
       _blend_Lab_scale(&a[j], ta);
       _blend_Lab_scale(&b[j], tb);
@@ -950,7 +958,7 @@ static void _blend_screen(dt_iop_colorspace_type_t cst,const float *a, float *b,
       }
     }
 
-    if(cst != iop_cs_RAW) b[j+3] = local_opacity;
+    if(bd->cst != iop_cs_RAW) b[j+3] = local_opacity;
   }
   /*
   float max,min;
@@ -960,21 +968,21 @@ static void _blend_screen(dt_iop_colorspace_type_t cst,const float *a, float *b,
 }
 
 /* overlay */
-static void _blend_overlay(dt_iop_colorspace_type_t cst,const float *a, float *b, const float *mask, size_t stride, int flag)
+static void _blend_overlay(const _blend_buffer_desc_t *bd, const float *a, float *b, const float *mask, int flag)
 {
   float ta[3], tb[3];
-  int channels = _blend_colorspace_channels(cst);
+  int channels = _blend_colorspace_channels(bd->cst);
   float max[4]= {0},min[4]= {0};
   float lmin = 0.0, lmax, la, lb, halfmax, doublemax;
 
-  _blend_colorspace_channel_range(cst,min,max);
+  _blend_colorspace_channel_range(bd->cst,min,max);
 
-  for(size_t i=0, j=0; j<stride; i++, j+=4)
+  for(size_t i=0, j=0; j<bd->stride; i++, j+=bd->ch)
   {
     float local_opacity = mask[i];
     float local_opacity2 = local_opacity*local_opacity;
 
-    if(cst==iop_cs_Lab)
+    if(bd->cst==iop_cs_Lab)
     {
       _blend_Lab_scale(&a[j], ta);
       _blend_Lab_scale(&b[j], tb);
@@ -1026,7 +1034,7 @@ static void _blend_overlay(dt_iop_colorspace_type_t cst,const float *a, float *b
       }
     }
 
-    if(cst != iop_cs_RAW) b[j+3] = local_opacity;
+    if(bd->cst != iop_cs_RAW) b[j+3] = local_opacity;
   }
   /*
     float max,min;
@@ -1038,21 +1046,21 @@ static void _blend_overlay(dt_iop_colorspace_type_t cst,const float *a, float *b
 }
 
 /* softlight */
-static void _blend_softlight(dt_iop_colorspace_type_t cst,const float *a, float *b, const float *mask, size_t stride, int flag)
+static void _blend_softlight(const _blend_buffer_desc_t *bd, const float *a, float *b, const float *mask, int flag)
 {
   float ta[3], tb[3];
-  int channels = _blend_colorspace_channels(cst);
+  int channels = _blend_colorspace_channels(bd->cst);
   float max[4]= {0},min[4]= {0};
   float lmin = 0.0, lmax, la, lb, halfmax;
 
-  _blend_colorspace_channel_range(cst,min,max);
+  _blend_colorspace_channel_range(bd->cst,min,max);
 
-  for(size_t i=0, j=0; j<stride; i++, j+=4)
+  for(size_t i=0, j=0; j<bd->stride; i++, j+=bd->ch)
   {
     float local_opacity = mask[i];
     float local_opacity2 = local_opacity*local_opacity;
 
-    if(cst==iop_cs_Lab)
+    if(bd->cst==iop_cs_Lab)
     {
       _blend_Lab_scale(&a[j], ta);
       _blend_Lab_scale(&b[j], tb);
@@ -1101,7 +1109,7 @@ static void _blend_softlight(dt_iop_colorspace_type_t cst,const float *a, float 
       }
     }
 
-    if(cst != iop_cs_RAW) b[j+3] = local_opacity;
+    if(bd->cst != iop_cs_RAW) b[j+3] = local_opacity;
   }
   /*
   float max,min;
@@ -1112,22 +1120,22 @@ static void _blend_softlight(dt_iop_colorspace_type_t cst,const float *a, float 
 }
 
 /* hardlight */
-static void _blend_hardlight(dt_iop_colorspace_type_t cst,const float *a, float *b, const float *mask, size_t stride, int flag)
+static void _blend_hardlight(const _blend_buffer_desc_t *bd, const float *a, float *b, const float *mask, int flag)
 {
   float ta[3], tb[3];
-  int channels = _blend_colorspace_channels(cst);
+  int channels = _blend_colorspace_channels(bd->cst);
   float max[4]= {0},min[4]= {0};
   float lmin = 0.0, lmax, la, lb, halfmax, doublemax;
 
-  _blend_colorspace_channel_range(cst,min,max);
+  _blend_colorspace_channel_range(bd->cst,min,max);
 
-  for(size_t i=0, j=0; j<stride; i++, j+=4)
+  for(size_t i=0, j=0; j<bd->stride; i++, j+=bd->ch)
   {
     float local_opacity = mask[i];
     float local_opacity2 = local_opacity*local_opacity;
 
 
-    if(cst==iop_cs_Lab)
+    if(bd->cst==iop_cs_Lab)
     {
       _blend_Lab_scale(&a[j], ta);
       _blend_Lab_scale(&b[j], tb);
@@ -1179,7 +1187,7 @@ static void _blend_hardlight(dt_iop_colorspace_type_t cst,const float *a, float 
       }
     }
 
-    if(cst != iop_cs_RAW) b[j+3] = local_opacity;
+    if(bd->cst != iop_cs_RAW) b[j+3] = local_opacity;
   }
   /*
   float max,min;
@@ -1192,21 +1200,21 @@ static void _blend_hardlight(dt_iop_colorspace_type_t cst,const float *a, float 
 
 
 /* vividlight */
-static void _blend_vividlight(dt_iop_colorspace_type_t cst,const float *a, float *b, const float *mask, size_t stride, int flag)
+static void _blend_vividlight(const _blend_buffer_desc_t *bd, const float *a, float *b, const float *mask, int flag)
 {
   float ta[3], tb[3];
-  int channels = _blend_colorspace_channels(cst);
+  int channels = _blend_colorspace_channels(bd->cst);
   float max[4]= {0}, min[4]= {0};
   float lmin = 0.0, lmax, la, lb, halfmax, doublemax;
 
-  _blend_colorspace_channel_range(cst,min,max);
+  _blend_colorspace_channel_range(bd->cst,min,max);
 
-  for(size_t i=0, j=0; j<stride; i++, j+=4)
+  for(size_t i=0, j=0; j<bd->stride; i++, j+=bd->ch)
   {
     float local_opacity = mask[i];
     float local_opacity2 = local_opacity*local_opacity;
 
-    if(cst==iop_cs_Lab)
+    if(bd->cst==iop_cs_Lab)
     {
       _blend_Lab_scale(&a[j], ta);
       _blend_Lab_scale(&b[j], tb);
@@ -1257,7 +1265,7 @@ static void _blend_vividlight(dt_iop_colorspace_type_t cst,const float *a, float
       }
     }
 
-    if(cst != iop_cs_RAW) b[j+3] = local_opacity;
+    if(bd->cst != iop_cs_RAW) b[j+3] = local_opacity;
   }
   /*
   float max,min;
@@ -1269,21 +1277,21 @@ static void _blend_vividlight(dt_iop_colorspace_type_t cst,const float *a, float
 }
 
 /* linearlight */
-static void _blend_linearlight(dt_iop_colorspace_type_t cst,const float *a, float *b, const float *mask, size_t stride, int flag)
+static void _blend_linearlight(const _blend_buffer_desc_t *bd, const float *a, float *b, const float *mask, int flag)
 {
   float ta[3], tb[3];
-  int channels = _blend_colorspace_channels(cst);
+  int channels = _blend_colorspace_channels(bd->cst);
   float max[4]= {0},min[4]= {0};
   float lmin = 0.0, lmax, la, lb, doublemax;
 
-  _blend_colorspace_channel_range(cst,min,max);
+  _blend_colorspace_channel_range(bd->cst,min,max);
 
-  for(size_t i=0, j=0; j<stride; i++, j+=4)
+  for(size_t i=0, j=0; j<bd->stride; i++, j+=bd->ch)
   {
     float local_opacity = mask[i];
     float local_opacity2 = local_opacity*local_opacity;
 
-    if(cst==iop_cs_Lab)
+    if(bd->cst==iop_cs_Lab)
     {
       _blend_Lab_scale(&a[j], ta);
       _blend_Lab_scale(&b[j], tb);
@@ -1328,7 +1336,7 @@ static void _blend_linearlight(dt_iop_colorspace_type_t cst,const float *a, floa
       }
     }
 
-    if(cst != iop_cs_RAW) b[j+3] = local_opacity;
+    if(bd->cst != iop_cs_RAW) b[j+3] = local_opacity;
   }
   /*
   float max,min;
@@ -1340,22 +1348,22 @@ static void _blend_linearlight(dt_iop_colorspace_type_t cst,const float *a, floa
 }
 
 /* pinlight */
-static void _blend_pinlight(dt_iop_colorspace_type_t cst,const float *a, float *b, const float *mask, size_t stride, int flag)
+static void _blend_pinlight(const _blend_buffer_desc_t *bd, const float *a, float *b, const float *mask, int flag)
 {
   float ta[3], tb[3];
-  int channels = _blend_colorspace_channels(cst);
+  int channels = _blend_colorspace_channels(bd->cst);
   float max[4]= {0},min[4]= {0};
   float lmin = 0.0, lmax, la, lb, halfmax, doublemax;
 
-  _blend_colorspace_channel_range(cst,min,max);
+  _blend_colorspace_channel_range(bd->cst,min,max);
 
-  for(size_t i=0, j=0; j<stride; i++, j+=4)
+  for(size_t i=0, j=0; j<bd->stride; i++, j+=bd->ch)
   {
     float local_opacity = mask[i];
     float local_opacity2 = local_opacity*local_opacity;
 
 
-    if(cst==iop_cs_Lab)
+    if(bd->cst==iop_cs_Lab)
     {
       _blend_Lab_scale(&a[j], ta);
       _blend_Lab_scale(&b[j], tb);
@@ -1390,7 +1398,7 @@ static void _blend_pinlight(dt_iop_colorspace_type_t cst,const float *a, float *
       }
     }
 
-    if(cst != iop_cs_RAW) b[j+3] = local_opacity;
+    if(bd->cst != iop_cs_RAW) b[j+3] = local_opacity;
   }
   /*
   float max,min;
@@ -1403,22 +1411,22 @@ static void _blend_pinlight(dt_iop_colorspace_type_t cst,const float *a, float *
 
 
 /* lightness blend */
-static void _blend_lightness(dt_iop_colorspace_type_t cst,const float *a, float *b, const float *mask, size_t stride, int flag)
+static void _blend_lightness(const _blend_buffer_desc_t *bd, const float *a, float *b, const float *mask, int flag)
 {
   float ta[3], tb[3];
   float tta[3], ttb[3];
-  int channels = _blend_colorspace_channels(cst);
+  int channels = _blend_colorspace_channels(bd->cst);
 
   float max[4]= {0},min[4]= {0};
 
-  _blend_colorspace_channel_range(cst,min,max);
+  _blend_colorspace_channel_range(bd->cst,min,max);
 
 
-  for(size_t i=0, j=0; j<stride; i++, j+=4)
+  for(size_t i=0, j=0; j<bd->stride; i++, j+=bd->ch)
   {
     float local_opacity = mask[i];
 
-    if(cst==iop_cs_Lab)
+    if(bd->cst==iop_cs_Lab)
     {
       _blend_Lab_scale(&a[j], ta);
       _blend_Lab_scale(&b[j], tb);
@@ -1430,7 +1438,7 @@ static void _blend_lightness(dt_iop_colorspace_type_t cst,const float *a, float 
 
       _blend_Lab_rescale(tb, &b[j]);
     }
-    else if(cst==iop_cs_rgb)
+    else if(bd->cst==iop_cs_rgb)
     {
       _PX_COPY(&a[j], ta);
 
@@ -1451,26 +1459,26 @@ static void _blend_lightness(dt_iop_colorspace_type_t cst,const float *a, float 
       for(int k=0; k<channels; k++)
         b[j+k] =  CLAMP_RANGE(a[j+k], min[k], max[k]);		// Noop for Raw
 
-    if(cst != iop_cs_RAW) b[j+3] = local_opacity;
+    if(bd->cst != iop_cs_RAW) b[j+3] = local_opacity;
   }
 }
 
 
 /* chroma blend */
-static void _blend_chroma(dt_iop_colorspace_type_t cst,const float *a, float *b, const float *mask, size_t stride, int flag)
+static void _blend_chroma(const _blend_buffer_desc_t *bd, const float *a, float *b, const float *mask, int flag)
 {
   float ta[3], tb[3];
   float tta[3], ttb[3];
-  int channels = _blend_colorspace_channels(cst);
+  int channels = _blend_colorspace_channels(bd->cst);
 
   float max[4]= {0},min[4]= {0};
-  _blend_colorspace_channel_range(cst,min,max);
+  _blend_colorspace_channel_range(bd->cst,min,max);
 
-  for(size_t i=0, j=0; j<stride; i++, j+=4)
+  for(size_t i=0, j=0; j<bd->stride; i++, j+=bd->ch)
   {
     float local_opacity = mask[i];
 
-    if(cst==iop_cs_Lab)
+    if(bd->cst==iop_cs_Lab)
     {
       _blend_Lab_scale(&a[j], ta);
       _CLAMP_XYZ(ta, min, max);
@@ -1488,7 +1496,7 @@ static void _blend_chroma(dt_iop_colorspace_type_t cst,const float *a, float *b,
       _CLAMP_XYZ(tb, min, max);
       _blend_Lab_rescale(tb, &b[j]);
     }
-    else if(cst==iop_cs_rgb)
+    else if(bd->cst==iop_cs_rgb)
     {
       _PX_COPY(&a[j], ta);
 
@@ -1509,26 +1517,26 @@ static void _blend_chroma(dt_iop_colorspace_type_t cst,const float *a, float *b,
       for(int k=0; k<channels; k++)
         b[j+k] =  CLAMP_RANGE(a[j+k], min[k], max[k]);		// Noop for Raw
 
-    if(cst != iop_cs_RAW) b[j+3] = local_opacity;
+    if(bd->cst != iop_cs_RAW) b[j+3] = local_opacity;
   }
 }
 
 
 /* hue blend */
-static void _blend_hue(dt_iop_colorspace_type_t cst,const float *a, float *b, const float *mask, size_t stride, int flag)
+static void _blend_hue(const _blend_buffer_desc_t *bd, const float *a, float *b, const float *mask, int flag)
 {
   float ta[3], tb[3];
   float tta[3], ttb[3];
-  int channels = _blend_colorspace_channels(cst);
+  int channels = _blend_colorspace_channels(bd->cst);
 
   float max[4]= {0},min[4]= {0};
-  _blend_colorspace_channel_range(cst,min,max);
+  _blend_colorspace_channel_range(bd->cst,min,max);
 
-  for(size_t i=0, j=0; j<stride; i++, j+=4)
+  for(size_t i=0, j=0; j<bd->stride; i++, j+=bd->ch)
   {
     float local_opacity = mask[i];
 
-    if(cst==iop_cs_Lab)
+    if(bd->cst==iop_cs_Lab)
     {
       _blend_Lab_scale(&a[j], ta);
       _CLAMP_XYZ(ta, min, max);
@@ -1549,7 +1557,7 @@ static void _blend_hue(dt_iop_colorspace_type_t cst,const float *a, float *b, co
       _CLAMP_XYZ(tb, min, max);
       _blend_Lab_rescale(tb, &b[j]);
     }
-    else if(cst==iop_cs_rgb)
+    else if(bd->cst==iop_cs_rgb)
     {
       _PX_COPY(&a[j], ta);
 
@@ -1573,26 +1581,26 @@ static void _blend_hue(dt_iop_colorspace_type_t cst,const float *a, float *b, co
       for(int k=0; k<channels; k++)
         b[j+k] =  CLAMP_RANGE(a[j+k], min[k], max[k]);		// Noop for Raw
 
-    if(cst != iop_cs_RAW) b[j+3] = local_opacity;
+    if(bd->cst != iop_cs_RAW) b[j+3] = local_opacity;
   }
 }
 
 
 /* color blend; blend hue and chroma, but not lightness */
-static void _blend_color(dt_iop_colorspace_type_t cst,const float *a, float *b, const float *mask, size_t stride, int flag)
+static void _blend_color(const _blend_buffer_desc_t *bd, const float *a, float *b, const float *mask, int flag)
 {
   float ta[3], tb[3];
   float tta[3], ttb[3];
-  int channels = _blend_colorspace_channels(cst);
+  int channels = _blend_colorspace_channels(bd->cst);
 
   float max[4]= {0},min[4]= {0};
-  _blend_colorspace_channel_range(cst,min,max);
+  _blend_colorspace_channel_range(bd->cst,min,max);
 
-  for(size_t i=0, j=0; j<stride; i++, j+=4)
+  for(size_t i=0, j=0; j<bd->stride; i++, j+=bd->ch)
   {
     float local_opacity = mask[i];
 
-    if(cst==iop_cs_Lab)
+    if(bd->cst==iop_cs_Lab)
     {
       _blend_Lab_scale(&a[j], ta);
       _CLAMP_XYZ(ta, min, max);
@@ -1614,7 +1622,7 @@ static void _blend_color(dt_iop_colorspace_type_t cst,const float *a, float *b, 
       _CLAMP_XYZ(tb, min, max);
       _blend_Lab_rescale(tb, &b[j]);
     }
-    else if(cst==iop_cs_rgb)
+    else if(bd->cst==iop_cs_rgb)
     {
       _PX_COPY(&a[j], ta);
 
@@ -1639,25 +1647,25 @@ static void _blend_color(dt_iop_colorspace_type_t cst,const float *a, float *b, 
       for(int k=0; k<channels; k++)
         b[j+k] =  CLAMP_RANGE(a[j+k], min[k], max[k]);		// Noop for Raw
 
-    if(cst != iop_cs_RAW) b[j+3] = local_opacity;
+    if(bd->cst != iop_cs_RAW) b[j+3] = local_opacity;
   }
 }
 
 /* color adjustment; blend hue and chroma; take lightness from module output */
-static void _blend_coloradjust(dt_iop_colorspace_type_t cst,const float *a, float *b, const float *mask, size_t stride, int flag)
+static void _blend_coloradjust(const _blend_buffer_desc_t *bd, const float *a, float *b, const float *mask, int flag)
 {
   float ta[3], tb[3];
   float tta[3], ttb[3];
-  int channels = _blend_colorspace_channels(cst);
+  int channels = _blend_colorspace_channels(bd->cst);
 
   float max[4]= {0},min[4]= {0};
-  _blend_colorspace_channel_range(cst,min,max);
+  _blend_colorspace_channel_range(bd->cst,min,max);
 
-  for(size_t i=0, j=0; j<stride; i++, j+=4)
+  for(size_t i=0, j=0; j<bd->stride; i++, j+=bd->ch)
   {
     float local_opacity = mask[i];
 
-    if(cst==iop_cs_Lab)
+    if(bd->cst==iop_cs_Lab)
     {
       _blend_Lab_scale(&a[j], ta);
       _CLAMP_XYZ(ta, min, max);
@@ -1679,7 +1687,7 @@ static void _blend_coloradjust(dt_iop_colorspace_type_t cst,const float *a, floa
       _CLAMP_XYZ(tb, min, max);
       _blend_Lab_rescale(tb, &b[j]);
     }
-    else if(cst==iop_cs_rgb)
+    else if(bd->cst==iop_cs_rgb)
     {
       _PX_COPY(&a[j], ta);
 
@@ -1704,26 +1712,26 @@ static void _blend_coloradjust(dt_iop_colorspace_type_t cst,const float *a, floa
       for(int k=0; k<channels; k++)
         b[j+k] =  CLAMP_RANGE(a[j+k], min[k], max[k]);		// Noop for Raw
 
-    if(cst != iop_cs_RAW) b[j+3] = local_opacity;
+    if(bd->cst != iop_cs_RAW) b[j+3] = local_opacity;
   }
 }
 
 
 /* inverse blend */
-static void _blend_inverse(dt_iop_colorspace_type_t cst,const float *a, float *b, const float *mask, size_t stride, int flag)
+static void _blend_inverse(const _blend_buffer_desc_t *bd, const float *a, float *b, const float *mask, int flag)
 {
   float ta[3], tb[3];
-  int channels = _blend_colorspace_channels(cst);
+  int channels = _blend_colorspace_channels(bd->cst);
 
   float max[4]= {0},min[4]= {0};
-  _blend_colorspace_channel_range(cst,min,max);
+  _blend_colorspace_channel_range(bd->cst,min,max);
 
 
-  for(size_t i=0, j=0; j<stride; i++, j+=4)
+  for(size_t i=0, j=0; j<bd->stride; i++, j+=bd->ch)
   {
     float local_opacity = 1.0f - mask[i];
 
-    if(cst==iop_cs_Lab)
+    if(bd->cst==iop_cs_Lab)
     {
       _blend_Lab_scale(&a[j], ta);
       _blend_Lab_scale(&b[j], tb);
@@ -1747,25 +1755,25 @@ static void _blend_inverse(dt_iop_colorspace_type_t cst,const float *a, float *b
       for(int k=0; k<channels; k++)
         b[j+k] =  CLAMP_RANGE((a[j+k] * (1.0f - local_opacity)) + b[j+k] * local_opacity, min[k], max[k]);
 
-    if(cst != iop_cs_RAW) b[j+3] = local_opacity;
+    if(bd->cst != iop_cs_RAW) b[j+3] = local_opacity;
   }
 }
 
 
 /* blend only lightness in Lab color space without any clamping (a noop for other color spaces) */
-static void _blend_Lab_lightness(dt_iop_colorspace_type_t cst,const float *a, float *b, const float *mask, size_t stride, int flag)
+static void _blend_Lab_lightness(const _blend_buffer_desc_t *bd, const float *a, float *b, const float *mask, int flag)
 {
   float ta[3], tb[3];
-  int channels = _blend_colorspace_channels(cst);
+  int channels = _blend_colorspace_channels(bd->cst);
   float max[4]= {0},min[4]= {0};
 
-  _blend_colorspace_channel_range(cst,min,max);
+  _blend_colorspace_channel_range(bd->cst,min,max);
 
-  for(size_t i=0, j=0; j<stride; i++, j+=4)
+  for(size_t i=0, j=0; j<bd->stride; i++, j+=bd->ch)
   {
     float local_opacity = mask[i];
 
-    if(cst==iop_cs_Lab)
+    if(bd->cst==iop_cs_Lab)
     {
       _blend_Lab_scale(&a[j], ta);
       _blend_Lab_scale(&b[j], tb);
@@ -1780,25 +1788,25 @@ static void _blend_Lab_lightness(dt_iop_colorspace_type_t cst,const float *a, fl
       for(int k=0; k<channels; k++)
         b[j+k] =  a[j+k];		// Noop for RGB and RAW without clamping
 
-    if(cst != iop_cs_RAW) b[j+3] = local_opacity;
+    if(bd->cst != iop_cs_RAW) b[j+3] = local_opacity;
   }
 }
 
 
 /* blend only color in Lab color space without any clamping (a noop for other color spaces) */
-static void _blend_Lab_color(dt_iop_colorspace_type_t cst,const float *a, float *b, const float *mask, size_t stride, int flag)
+static void _blend_Lab_color(const _blend_buffer_desc_t *bd, const float *a, float *b, const float *mask, int flag)
 {
   float ta[3], tb[3];
-  int channels = _blend_colorspace_channels(cst);
+  int channels = _blend_colorspace_channels(bd->cst);
   float max[4]= {0},min[4]= {0};
 
-  _blend_colorspace_channel_range(cst,min,max);
+  _blend_colorspace_channel_range(bd->cst,min,max);
 
-  for(size_t i=0, j=0; j<stride; i++, j+=4)
+  for(size_t i=0, j=0; j<bd->stride; i++, j+=bd->ch)
   {
     float local_opacity = mask[i];
 
-    if(cst==iop_cs_Lab)
+    if(bd->cst==iop_cs_Lab)
     {
       _blend_Lab_scale(&a[j], ta);
       _blend_Lab_scale(&b[j], tb);
@@ -1820,21 +1828,21 @@ static void _blend_Lab_color(dt_iop_colorspace_type_t cst,const float *a, float 
         b[j+k] =  a[j+k];		// Noop for RGB and RAW without clamping
 
 
-    if(cst != iop_cs_RAW) b[j+3] = local_opacity;
+    if(bd->cst != iop_cs_RAW) b[j+3] = local_opacity;
   }
 }
 
 /* blend only lightness in HSV color space without any clamping (a noop for other color spaces) */
-static void _blend_HSV_lightness(dt_iop_colorspace_type_t cst,const float *a, float *b, const float *mask, size_t stride, int flag)
+static void _blend_HSV_lightness(const _blend_buffer_desc_t *bd, const float *a, float *b, const float *mask, int flag)
 {
   float ta[3], tb[3];
-  int channels = _blend_colorspace_channels(cst);
+  int channels = _blend_colorspace_channels(bd->cst);
 
-  for(size_t i=0, j=0; j<stride; i++, j+=4)
+  for(size_t i=0, j=0; j<bd->stride; i++, j+=bd->ch)
   {
     float local_opacity = mask[i];
 
-    if(cst==iop_cs_rgb)
+    if(bd->cst==iop_cs_rgb)
     {
       _RGB_2_HSV(&a[j], ta);
       _RGB_2_HSV(&b[j], tb);
@@ -1852,22 +1860,22 @@ static void _blend_HSV_lightness(dt_iop_colorspace_type_t cst,const float *a, fl
       for(int k=0; k<channels; k++)
         b[j+k] =  a[j+k];		// Noop for Lab and RAW without clamping
 
-    if(cst != iop_cs_RAW) b[j+3] = local_opacity;
+    if(bd->cst != iop_cs_RAW) b[j+3] = local_opacity;
   }
 }
 
 
 /* blend only color in HSV color space without any clamping (a noop for other color spaces) */
-static void _blend_HSV_color(dt_iop_colorspace_type_t cst,const float *a, float *b, const float *mask, size_t stride, int flag)
+static void _blend_HSV_color(const _blend_buffer_desc_t *bd, const float *a, float *b, const float *mask, int flag)
 {
   float ta[3], tb[3];
-  int channels = _blend_colorspace_channels(cst);
+  int channels = _blend_colorspace_channels(bd->cst);
 
-  for(size_t i=0, j=0; j<stride; i++, j+=4)
+  for(size_t i=0, j=0; j<bd->stride; i++, j+=bd->ch)
   {
     float local_opacity = mask[i];
 
-    if(cst==iop_cs_rgb)
+    if(bd->cst==iop_cs_rgb)
     {
       _RGB_2_HSV(&a[j], ta);
       _RGB_2_HSV(&b[j], tb);
@@ -1897,7 +1905,7 @@ static void _blend_HSV_color(dt_iop_colorspace_type_t cst,const float *a, float 
         b[j+k] =  a[j+k];		// Noop for Lab and RAW without clamping
 
 
-    if(cst != iop_cs_RAW) b[j+3] = local_opacity;
+    if(bd->cst != iop_cs_RAW) b[j+3] = local_opacity;
   }
 }
 
@@ -1905,7 +1913,7 @@ static void _blend_HSV_color(dt_iop_colorspace_type_t cst,const float *a, float 
 
 void dt_develop_blend_process (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, void *i, void *o, const struct dt_iop_roi_t *roi_in, const struct dt_iop_roi_t *roi_out)
 {
-  int ch = piece->colors;
+  const int ch = piece->colors;
   _blend_row_func *blend = NULL;
   dt_develop_blend_params_t *d = (dt_develop_blend_params_t *)piece->blendop_data;
 
@@ -2034,12 +2042,6 @@ void dt_develop_blend_process (struct dt_iop_module_t *self, struct dt_dev_pixel
   /* get channel max values depending on colorspace */
   const dt_iop_colorspace_type_t cst = dt_iop_module_colorspace(self);
 
-  /* correct bpp per pixel for raw
-     \TODO actually invest why channels per pixel is 4 in raw..
-  */
-  if(cst==iop_cs_RAW)
-    ch = 1;
-
   /* allocate space for blend mask */
   float *mask = dt_alloc_align(64, (size_t)roi_out->width*roi_out->height*sizeof(float));
   if(!mask)
@@ -2120,20 +2122,25 @@ void dt_develop_blend_process (struct dt_iop_module_t *self, struct dt_dev_pixel
   
 #ifdef _OPENMP
 #if !defined(__SUNOS__) && !defined(__NetBSD__) && !defined(__WIN32__)
-    #pragma omp parallel for default(none) shared(i,roi_out,o,mask,blend,d,stderr,ch)
+    #pragma omp parallel for default(none) shared(i,roi_out,o,mask,blend,d,stderr)
 #else
-    #pragma omp parallel for shared(i,roi_out,o,mask,blend,d,ch)
+    #pragma omp parallel for shared(i,roi_out,o,mask,blend,d)
 #endif
 #endif
     for (size_t y=0; y<roi_out->height; y++)
     {
       size_t iindex = ((size_t)(y + yoffs) * iwidth + xoffs)*ch;
       size_t oindex = (size_t)y * roi_out->width*ch;
-      size_t stride = (size_t)roi_out->width*ch;
+      _blend_buffer_desc_t bd =
+      {
+        .cst    = cst,
+        .stride = (size_t)roi_out->width*ch,
+        .ch     = ch
+      };
       float *in = (float *)i + iindex;
       float *out = (float *)o + oindex;
       float *m = (float *)mask + y * roi_out->width;
-      _blend_make_mask(cst, d->blendif, d->blendif_parameters, d->mask_mode, d->mask_combine, opacity, in, out, m, stride);
+      _blend_make_mask(&bd, d->blendif, d->blendif_parameters, d->mask_mode, d->mask_combine, opacity, in, out, m);
     }
 
 
@@ -2184,23 +2191,28 @@ void dt_develop_blend_process (struct dt_iop_module_t *self, struct dt_dev_pixel
   /* now apply blending with per-pixel opacity value as defined in mask */
 #ifdef _OPENMP
 #if !defined(__SUNOS__) && !defined(__WIN32__)
-  #pragma omp parallel for default(none) shared(i,roi_out,o,mask,blend,stderr,ch)
+  #pragma omp parallel for default(none) shared(i,roi_out,o,mask,blend,stderr)
 #else
-  #pragma omp parallel for shared(i,roi_out,o,mask,blend,ch)
+  #pragma omp parallel for shared(i,roi_out,o,mask,blend)
 #endif
 #endif
   for (size_t y=0; y<roi_out->height; y++)
   {
     size_t iindex = ((size_t)(y + yoffs) * iwidth + xoffs)*ch;
     size_t oindex = (size_t)y * roi_out->width*ch;
-    size_t stride = (size_t)roi_out->width*ch;
+    _blend_buffer_desc_t bd =
+    {
+      .cst    = cst,
+      .stride = (size_t)roi_out->width*ch,
+      .ch     = ch
+    };
     float *in = (float *)i + iindex;
     float *out = (float *)o + oindex;
     float *m = (float *)mask + y * roi_out->width;
-    blend(cst, in, out, m, stride, blendflag);
+    blend(&bd, in, out, m, blendflag);
 
     if(mask_display && cst != iop_cs_RAW)
-      for(size_t j=0; j<stride; j+=4)
+      for(size_t j=0; j<bd.stride; j+=4)
         out[j+3] = in[j+3];
   }
 

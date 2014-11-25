@@ -51,6 +51,7 @@ static int protected_to_userdata(lua_State*L) {
 
 static int protected_to_string(lua_State*L) {
   luaL_checkstring(L,1);
+  // we return our first argument unchanged
   return 1;
 }
 
@@ -137,7 +138,7 @@ int dt_lua_do_chunk(lua_State *L,int nargs,int nresults)
                 dt_lua_unlock(false);
                 int result = system(command);
                 dt_lua_lock();
-                lua_pushinteger(L,result);
+                lua_pushinteger(new_thread,result);
                 thread_result = lua_resume(new_thread,L,1);
                 break;
               }

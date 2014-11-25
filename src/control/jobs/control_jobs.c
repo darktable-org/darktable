@@ -1149,6 +1149,9 @@ void dt_control_move_images()
   if(!dir || !g_file_test(dir, G_FILE_TEST_IS_DIR))
     goto abort;
 
+  // ugly, but we need to set this after constructing the job:
+  ((dt_control_image_enumerator_t *)dt_control_job_get_params(job))->data = dir;
+
   if(dt_conf_get_bool("ask_before_move"))
   {
     GtkWidget *dialog = gtk_message_dialog_new(GTK_WINDOW(win),
@@ -1203,6 +1206,9 @@ void dt_control_copy_images()
 
   if(!dir || !g_file_test(dir, G_FILE_TEST_IS_DIR))
     goto abort;
+
+  // ugly, but we need to set this after constructing the job:
+  ((dt_control_image_enumerator_t *)dt_control_job_get_params(job))->data = dir;
 
   if(dt_conf_get_bool("ask_before_copy"))
   {

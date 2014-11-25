@@ -32,6 +32,19 @@ new features:
 - tiff read/write rewritten, works on 32-bit float now
 - embedded icc profile support for png/tiff (read/write)
 - lens iop presets are copy/pastable between different images
+- it is now possible to copy, move, reset and delete images via lua
+- it is possible to handle progress bars via lua
+- limited manipulation of libs an views UI via lua
+- it is possible to import and export styles via lua
+- it is possible to trigger lua when the grouping mode changes
+- it is possible to trigger lua when the overlay mode changes
+- it is possible to trigger lua when the active view changes
+- it is possible to manipulate snapshots via lua
+- lua can now handle more types of preferences, including enums, directories and file names
+- lua API is now versionned, darktable.configuration.check_version can be used to check for version incompatibilities
+
+lua API incompatibilities
+- darktable.modules has been removed, use darktable.new_format and darktable.new_storage to access the constructors
 
 internal improvements:
 - module parameter introspection

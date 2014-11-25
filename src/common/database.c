@@ -35,7 +35,7 @@
 #include <errno.h>
 
 // whenever _create_schema() gets changed you HAVE to bump this version and add an update path to _upgrade_schema_step()!
-#define CURRENT_DATABASE_VERSION 7
+#define CURRENT_DATABASE_VERSION 8
 
 typedef struct dt_database_t
 {
@@ -543,6 +543,53 @@ static int _upgrade_schema_step(dt_database_t *db, int version)
 
     sqlite3_exec(db->handle, "COMMIT", NULL, NULL, NULL);
     new_version = 7;
+  }
+  else if(version == 7)
+  {
+    // make sure that we have no film rolls with a NULL folder
+    sqlite3_exec(db->handle, "BEGIN TRANSACTION", NULL, NULL, NULL);
+
+    if(sqlite3_exec(db->handle, "ALTER TABLE film_rolls RENAME TO tmp_film_rolls", NULL, NULL, NULL) != SQLITE_OK)
+    {
+      fprintf(stderr, "[init] can't rename table film_rolls\n");
+      fprintf(stderr, "[init]   %s\n", sqlite3_errmsg(db->handle));
+      sqlite3_exec(db->handle, "ROLLBACK TRANSACTION", NULL, NULL, NULL);
+      return version;
+    }
+
+    if(sqlite3_exec(db->handle, "CREATE TABLE film_rolls "
+                                "(id INTEGER PRIMARY KEY, datetime_accessed CHAR(20), "
+                                "folder VARCHAR(1024) NOT NULL)",
+                    NULL, NULL, NULL) != SQLITE_OK)
+    {
+      fprintf(stderr, "[init] can't create new film_rolls table\n");
+      fprintf(stderr, "[init]   %s\n", sqlite3_errmsg(db->handle));
+      sqlite3_exec(db->handle, "ROLLBACK TRANSACTION", NULL, NULL, NULL);
+      return version;
+    }
+
+    if(sqlite3_exec(db->handle, "INSERT INTO film_rolls (id, datetime_accessed, folder) "
+                                "SELECT id, datetime_accessed, folder "
+                                "FROM   tmp_film_rolls "
+                                "WHERE  folder IS NOT NULL",
+      NULL, NULL, NULL) != SQLITE_OK)
+    {
+      fprintf(stderr, "[init] can't populate film_rolls table from tmp_film_rolls\n");
+      fprintf(stderr, "[init]   %s\n", sqlite3_errmsg(db->handle));
+      sqlite3_exec(db->handle, "ROLLBACK TRANSACTION", NULL, NULL, NULL);
+      return version;
+    }
+
+    if(sqlite3_exec(db->handle, "DROP TABLE tmp_film_rolls", NULL, NULL, NULL) != SQLITE_OK)
+    {
+      fprintf(stderr, "[init] can't delete table tmp_film_rolls\n");
+      fprintf(stderr, "[init]   %s\n", sqlite3_errmsg(db->handle));
+      sqlite3_exec(db->handle, "ROLLBACK TRANSACTION", NULL, NULL, NULL);
+      return version;
+    }
+
+    sqlite3_exec(db->handle, "COMMIT", NULL, NULL, NULL);
+    new_version = 8;
   }// maybe in the future, see commented out code elsewhere
 //   else if(version == XXX)
 //   {
@@ -590,7 +637,7 @@ static void _create_schema(dt_database_t *db)
                         "CREATE TABLE film_rolls "
                         "(id INTEGER PRIMARY KEY, datetime_accessed CHAR(20), "
 //                        "folder VARCHAR(1024), external_drive VARCHAR(1024))", // FIXME: make sure to bump CURRENT_DATABASE_VERSION and add a case to _upgrade_schema_step when adding this!
-                        "folder VARCHAR(1024))",
+                        "folder VARCHAR(1024) NOT NULL)",
                         NULL, NULL, NULL);
   DT_DEBUG_SQLITE3_EXEC(db->handle,
                         "CREATE INDEX film_rolls_folder_index ON film_rolls (folder)", NULL, NULL, NULL);
