@@ -275,6 +275,9 @@ static dt_profiled_colormatrix_t dt_profiled_colormatrices[] =
   // Robert Park, ColorChecker Passport, strobe, well lit
   { "Panasonic DMC-G2",             { 753250, 303024,  75287}, { 225540, 1036041, -320923}, { 90927, -233749, 1170151}, {837860, 857056, 687210}},
 
+  // Martin Schitter, Wolf Faust IT8, direct sunlight, well lit
+  { "Panasonic DMC-GH4",            { 937286, 310822,  37857}, { 196823, 1184341, -338242}, { 59952, -267319, 1340836}, {703812, 738983, 594162}},
+
   // Robert Park, ColorChecker Passport, strobe, well lit
   { "Panasonic DMC-LX3",            { 779907, 298859,  94101}, { 239655, 1167938, -489197}, { 53589, -371368, 1317261}, {796707, 825119, 668030}},
 
