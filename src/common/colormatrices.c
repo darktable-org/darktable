@@ -292,6 +292,9 @@ static dt_profiled_colormatrix_t dt_profiled_colormatrices[] =
   // Pascal de Bruijn, ColorChecker Classic, direct sunlight, well lit
   { "SAMSUNG NX300",                { 852844, 342072,  35950}, { 201965, 1022202, -298492}, { 37766, -234436, 1215851}, {754166, 791092, 635132}},
 
+  // Copied from NX300
+  { "SAMSUNG NX300M",               { 852844, 342072,  35950}, { 201965, 1022202, -298492}, { 37766, -234436, 1215851}, {754166, 791092, 635132}},
+
   // Pieter de Boer, CMP Digital Target 3, camera strobe, well lit
   { "KODAK EASYSHARE Z1015 IS",     { 716446, 157928, -39536}, { 288498, 1234573, -412460}, { 43045, -337677, 1385773}, {774048, 823563, 644012}},
 
