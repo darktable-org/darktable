@@ -4653,7 +4653,7 @@ const wb_data wb_preset[] =
   { "Panasonic", "DMC-GH3", Incandescent, 0,	{ 1.641509, 1, 2.747170, 0 } },
   { "Panasonic", "DMC-GH3", Flash, 0,		{ 2.369811, 1, 1.694340, 0 } },
 
-  /* Firmware version 1.1 */
+  /* Firmware version 2.0 */
   { "Panasonic", "DMC-GH4", Daylight, 0,	{ 2.390625, 1, 1.855469, 0 } },
   { "Panasonic", "DMC-GH4", Cloudy, 0,		{ 2.531250, 1, 1.718750, 0 } },
   { "Panasonic", "DMC-GH4", Shade, 0,		{ 2.691406, 1, 1.597656, 0 } },
