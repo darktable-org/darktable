@@ -1926,6 +1926,13 @@ const wb_data wb_preset[] =
   { "FUJIFILM", "HS20EXR", CoolWhiteFluorescent, 0, { 1.5625, 1, 2.5714, 0 } },
   { "FUJIFILM", "HS20EXR", Incandescent, 0,	{ 1, 1.0633, 2.9430, 0 } },
 
+  { "FUJIFILM", "HS50EXR", Daylight, 0,			{ 1.589286, 1, 1.892857, 0 } },
+  { "FUJIFILM", "HS50EXR", Cloudy, 0,			{ 1.705357, 1, 1.663690, 0 } },
+  { "FUJIFILM", "HS50EXR", DaylightFluorescent, 0,	{ 1.875000, 1, 1.648810, 0 } },
+  { "FUJIFILM", "HS50EXR", DayWhiteFluorescent, 0,	{ 1.619048, 1, 1.946429, 0 } },
+  { "FUJIFILM", "HS50EXR", WhiteFluorescent, 0,		{ 1.651786, 1, 2.464286, 0 } },
+  { "FUJIFILM", "HS50EXR", Incandescent, 0,		{ 1.041667, 1, 2.601190, 0 } },
+
   { "FUJIFILM", "S100FS", Daylight, 0,		{ 1.702381, 1, 1.845238, 0 } },
   { "FUJIFILM", "S100FS", Shade, 0,		{ 1.830357, 1, 1.601190, 0 } },
   { "FUJIFILM", "S100FS", DaylightFluorescent, 0, { 1.895833, 1, 1.461309, 0 } },
