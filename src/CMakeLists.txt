@@ -233,7 +233,7 @@ endif(USE_OPENJPEG)
 #
 # Detect compile of optional pwstorage backends
 #
-if(USE_LIBSECRET)
+if(USE_LIBSECRET AND JsonGlib_FOUND)
   find_package(Libsecret)
   if(LIBSECRET_FOUND)
     if(LIBSECRET_VERSION VERSION_LESS "0.16")
@@ -250,7 +250,7 @@ if(USE_LIBSECRET)
       add_definitions("-DHAVE_LIBSECRET")
     endif()
   endif(LIBSECRET_FOUND)
-endif(USE_LIBSECRET)
+endif(USE_LIBSECRET AND JsonGlib_FOUND)
 
 if(USE_GNOME_KEYRING)
   find_package(GnomeKeyring)
