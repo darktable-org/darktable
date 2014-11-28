@@ -74,7 +74,8 @@ groups ()
 int
 output_bpp(dt_iop_module_t *module, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
-  return sizeof(float);
+  if(!dt_dev_pixelpipe_uses_downsampled_input(pipe) && (pipe->image.flags & DT_IMAGE_RAW)) return sizeof(float);
+  return 4*sizeof(float);
 }
 
 void init_key_accels(dt_iop_module_so_t *self)
@@ -371,11 +372,25 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *
 {
   dt_iop_rawdenoise_data_t *d = (dt_iop_rawdenoise_data_t *)piece->data;
 
-  uint32_t filters = dt_image_filter(&piece->pipe->image);
-  if (filters != 9u)
-    wavelet_denoise(ivoid, ovoid, roi_in, d->threshold, filters);
+  const int width = roi_in->width;
+  const int height = roi_in->height;
+
+  if (dt_dev_pixelpipe_uses_downsampled_input(piece->pipe))
+  {
+    memcpy(ovoid, ivoid, (size_t)sizeof(float)*4*width*height);
+  }
+  else if (!(d->threshold > 0.0f))
+  {
+    memcpy(ovoid, ivoid, (size_t)sizeof(float)*width*height);
+  }
   else
-    wavelet_denoise_xtrans(ivoid, ovoid, roi_in, d->threshold, self->dev->image_storage.xtrans);
+  {
+    uint32_t filters = dt_image_filter(&piece->pipe->image);
+    if (filters != 9u)
+      wavelet_denoise(ivoid, ovoid, roi_in, d->threshold, filters);
+    else
+      wavelet_denoise_xtrans(ivoid, ovoid, roi_in, d->threshold, self->dev->image_storage.xtrans);
+  }
 }
 
 void reload_defaults(dt_iop_module_t *module)
@@ -430,7 +445,7 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *params, dt_de
 
   d->threshold = p->threshold;
 
-  if (!(pipe->image.flags & DT_IMAGE_RAW) || dt_dev_pixelpipe_uses_downsampled_input(pipe) || !(d->threshold > 0.0f))
+  if (!(pipe->image.flags & DT_IMAGE_RAW))
     piece->enabled = 0;
 }
 
