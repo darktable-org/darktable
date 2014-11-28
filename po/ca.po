@@ -8,8 +8,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 0.6.1~rc\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2014-11-20 15:04+0100\n"
-"PO-Revision-Date: 2014-11-22 11:13+0100\n"
+"POT-Creation-Date: 2014-11-28 09:59+0100\n"
+"PO-Revision-Date: 2014-11-28 10:39+0100\n"
 "Last-Translator: Josep V. Moragues <josepvm@arrakis.es>\n"
 "Language-Team: Catalan\n"
 "Language: ca\n"
@@ -866,15 +866,15 @@ msgstr ""
 
 #: ../src/common/history.c:347 ../src/common/history.c:348
 #: ../src/common/history.c:364 ../src/common/styles.c:633
-#: ../src/common/styles.c:635 ../src/develop/blend_gui.c:1691
-#: ../src/develop/develop.c:1192 ../src/libs/live_view.c:412
+#: ../src/common/styles.c:635 ../src/develop/blend_gui.c:1727
+#: ../src/develop/develop.c:1189 ../src/libs/live_view.c:412
 msgid "on"
 msgstr "actiu"
 
 #: ../src/common/history.c:347 ../src/common/history.c:348
 #: ../src/common/history.c:364 ../src/common/styles.c:633
-#: ../src/common/styles.c:635 ../src/develop/blend_gui.c:1539
-#: ../src/develop/blend_gui.c:1688 ../src/develop/develop.c:1192
+#: ../src/common/styles.c:635 ../src/develop/blend_gui.c:1575
+#: ../src/develop/blend_gui.c:1724 ../src/develop/develop.c:1189
 #: ../src/imageio/format/exr.cc:267 ../src/imageio/format/j2k.c:637
 #: ../src/iop/colorin.c:1260 ../src/iop/demosaic.c:2203
 #: ../src/iop/vignette.c:1188 ../src/libs/history.c:154
@@ -1236,7 +1236,7 @@ msgid "delete images?"
 msgstr "voleu eliminar les imatges?"
 
 #: ../src/control/jobs/control_jobs.c:1135
-#: ../src/control/jobs/control_jobs.c:1190 ../src/imageio/storage/disk.c:96
+#: ../src/control/jobs/control_jobs.c:1193 ../src/imageio/storage/disk.c:96
 #: ../src/imageio/storage/disk.c:164 ../src/imageio/storage/gallery.c:109
 #: ../src/imageio/storage/gallery.c:176 ../src/imageio/storage/latex.c:109
 #: ../src/imageio/storage/latex.c:176 ../src/libs/styles.c:240
@@ -1244,7 +1244,7 @@ msgstr "voleu eliminar les imatges?"
 msgid "select directory"
 msgstr "seleccioneu un directori"
 
-#: ../src/control/jobs/control_jobs.c:1158
+#: ../src/control/jobs/control_jobs.c:1161
 #, c-format
 msgid ""
 "do you really want to physically move the %d selected image to %s?\n"
@@ -1259,13 +1259,13 @@ msgstr[1] ""
 "esteu segur que voleu moure físicament les %d imatges seleccionades a %s?\n"
 "(tots els duplicats no seleccionats seran moguts alhora)"
 
-#: ../src/control/jobs/control_jobs.c:1162
+#: ../src/control/jobs/control_jobs.c:1165
 msgid "move image?"
 msgid_plural "move images?"
 msgstr[0] "voleu moure la imatge?"
 msgstr[1] "voleu moure les imatges?"
 
-#: ../src/control/jobs/control_jobs.c:1213
+#: ../src/control/jobs/control_jobs.c:1219
 #, c-format
 msgid "do you really want to physically copy the %d selected image to %s?"
 msgid_plural "do you really want to physically copy %d selected images to %s?"
@@ -1274,27 +1274,27 @@ msgstr[0] ""
 msgstr[1] ""
 "esteu segur que voleu copiar físicament les %d imatges seleccionades a %s?"
 
-#: ../src/control/jobs/control_jobs.c:1216
+#: ../src/control/jobs/control_jobs.c:1222
 msgid "copy image?"
 msgid_plural "copy images?"
 msgstr[0] "voleu copiar la imatge?"
 msgstr[1] "voleu copiar les imatges?"
 
-#: ../src/control/jobs/control_jobs.c:1270
+#: ../src/control/jobs/control_jobs.c:1276
 #, c-format
 msgid "failed to get parameters from storage module `%s', aborting export.."
 msgstr ""
 "no s'han pogut obtenir paràmetres del mòdul emmagatzematge `%s', avortant "
 "exportació .."
 
-#: ../src/control/jobs/control_jobs.c:1309
+#: ../src/control/jobs/control_jobs.c:1315
 #, c-format
 msgid "adding time offset to %d image"
 msgid_plural "adding time offset to %d images"
 msgstr[0] "aplicant decalatge horari a %d imatge"
 msgstr[1] "aplicant decalatge horari a %d imatges"
 
-#: ../src/control/jobs/control_jobs.c:1329
+#: ../src/control/jobs/control_jobs.c:1335
 #, c-format
 msgid "added time offset to %d image(s)"
 msgstr "aplicat decalatge horari a %d imatge(s)"
@@ -1306,92 +1306,92 @@ msgstr "s'està important la imatge %s"
 
 #. printf("%s: scale %f/%f %d\n", self->op, roi_out->scale, roi_in->scale, roi_out->scale == roi_in->scale);
 #. printf("xoffs %d, yoffs %d, out %d, %d, in %d, %d\n", xoffs, yoffs, roi_out->width, roi_out->height, roi_in->width, roi_in->height);
-#: ../src/develop/blend.c:1930 ../src/develop/blend.c:2245
+#: ../src/develop/blend.c:1938 ../src/develop/blend.c:2257
 #, c-format
 msgid "skipped blending in module '%s': roi's do not match"
 msgstr "no s'ha fet la mescla al mòdul '%s', els valors roi no encaixen"
 
-#: ../src/develop/blend.c:2047 ../src/develop/blend.c:2291
+#: ../src/develop/blend.c:2049 ../src/develop/blend.c:2303
 msgid "could not allocate buffer for blending"
 msgstr "no s'ha pogut reservar la memòria per la mescla"
 
-#: ../src/develop/blend_gui.c:945
+#: ../src/develop/blend_gui.c:963
 msgid "sliders for L channel"
 msgstr "controls lliscants pel canal L"
 
-#: ../src/develop/blend_gui.c:945
+#: ../src/develop/blend_gui.c:963
 msgid "sliders for a channel"
 msgstr "controls lliscants pel canal a"
 
-#: ../src/develop/blend_gui.c:945
+#: ../src/develop/blend_gui.c:963
 msgid "sliders for b channel"
 msgstr "controls lliscants pel canal b"
 
-#: ../src/develop/blend_gui.c:945
+#: ../src/develop/blend_gui.c:963
 msgid "sliders for chroma channel (of LCh)"
 msgstr "controls lliscants pel canal de chroma (de LCh)"
 
-#: ../src/develop/blend_gui.c:945
+#: ../src/develop/blend_gui.c:963
 msgid "sliders for hue channel (of LCh)"
 msgstr "controls lliscants pel canal de to (de LCh)"
 
-#: ../src/develop/blend_gui.c:946
+#: ../src/develop/blend_gui.c:964
 msgid " g "
 msgstr "g"
 
-#: ../src/develop/blend_gui.c:946
+#: ../src/develop/blend_gui.c:964
 msgid " R "
 msgstr "R"
 
-#: ../src/develop/blend_gui.c:946
+#: ../src/develop/blend_gui.c:964
 msgid " G "
 msgstr "G"
 
-#: ../src/develop/blend_gui.c:946
+#: ../src/develop/blend_gui.c:964
 msgid " B "
 msgstr "B"
 
-#: ../src/develop/blend_gui.c:946
+#: ../src/develop/blend_gui.c:964
 msgid " H "
 msgstr "H"
 
-#: ../src/develop/blend_gui.c:946
+#: ../src/develop/blend_gui.c:964
 msgid " S "
 msgstr "S"
 
-#: ../src/develop/blend_gui.c:946
+#: ../src/develop/blend_gui.c:964
 msgid " L "
 msgstr "L"
 
-#: ../src/develop/blend_gui.c:947
+#: ../src/develop/blend_gui.c:965
 msgid "sliders for gray value"
 msgstr "controls lliscants pel valor de gris"
 
-#: ../src/develop/blend_gui.c:947
+#: ../src/develop/blend_gui.c:965
 msgid "sliders for red channel"
 msgstr "controls lliscants pel canal vermell"
 
-#: ../src/develop/blend_gui.c:947
+#: ../src/develop/blend_gui.c:965
 msgid "sliders for green channel"
 msgstr "controls lliscants pel canal verd"
 
-#: ../src/develop/blend_gui.c:947
+#: ../src/develop/blend_gui.c:965
 msgid "sliders for blue channel"
 msgstr "controls lliscants pel canal blau"
 
-#: ../src/develop/blend_gui.c:948
+#: ../src/develop/blend_gui.c:966
 msgid "sliders for hue channel (of HSL)"
 msgstr "controls lliscants pel canal de to (de HSL)"
 
-#: ../src/develop/blend_gui.c:948
+#: ../src/develop/blend_gui.c:966
 msgid "sliders for chroma channel (of HSL)"
 msgstr "controls lliscants pel canal de chroma (de HSL)"
 
-#: ../src/develop/blend_gui.c:948
+#: ../src/develop/blend_gui.c:966
 msgid "sliders for value channel (of HSL)"
 msgstr "controls lliscants pel canal de valor (de HSL)"
 
-#: ../src/develop/blend_gui.c:951
+#: ../src/develop/blend_gui.c:969
 msgid ""
 "adjustment based on input received by this module:\n"
 "* range defined by upper markers: blend fully\n"
@@ -1403,7 +1403,7 @@ msgstr ""
 "* rang per sota dels marcadors inferiors: sense mesclar\n"
 "* rang entre els marcadors superiors/inferiors adjacents: mescla gradual"
 
-#: ../src/develop/blend_gui.c:953
+#: ../src/develop/blend_gui.c:971
 msgid ""
 "adjustment based on unblended output of this module:\n"
 "* range defined by upper markers: blend fully\n"
@@ -1415,250 +1415,250 @@ msgstr ""
 "* rang per sota dels marcadors inferiors: sense mesclar\n"
 "* rang entre els marcadors superiors/inferiors adjacents: mescla gradual"
 
-#: ../src/develop/blend_gui.c:1073 ../src/iop/colorzones.c:1047
+#: ../src/develop/blend_gui.c:1091 ../src/iop/colorzones.c:1047
 #: ../src/iop/tonecurve.c:741
 msgid "pick GUI color from image"
 msgstr "pren el color pel GUI de la imatge"
 
-#: ../src/develop/blend_gui.c:1077
+#: ../src/develop/blend_gui.c:1095
 msgid "reset blend mask settings"
 msgstr "reinicia ajustaments de la màscara de mescla"
 
-#: ../src/develop/blend_gui.c:1080
+#: ../src/develop/blend_gui.c:1098
 msgid "invert all channel's polarities"
 msgstr "inverteix la polaritat de tots els canals"
 
-#: ../src/develop/blend_gui.c:1091 ../src/develop/blend_gui.c:1094
+#: ../src/develop/blend_gui.c:1109 ../src/develop/blend_gui.c:1112
 msgid "toggle polarity. best seen by enabling 'display mask'"
 msgstr "permuta polaritat. S'observa millor activant 'mostra la màscara'"
 
-#: ../src/develop/blend_gui.c:1103
+#: ../src/develop/blend_gui.c:1121
 msgid "output"
 msgstr "sortida"
 
-#: ../src/develop/blend_gui.c:1114
+#: ../src/develop/blend_gui.c:1132
 msgid "input"
 msgstr "entrada"
 
-#: ../src/develop/blend_gui.c:1125 ../src/develop/blend_gui.c:1126
+#: ../src/develop/blend_gui.c:1143 ../src/develop/blend_gui.c:1144
 msgid "double click to reset"
 msgstr "feu doble clic per tornar a valor inicial"
 
-#: ../src/develop/blend_gui.c:1186
+#: ../src/develop/blend_gui.c:1204
 #, c-format
 msgid "%d shape used"
 msgid_plural "%d shapes used"
 msgstr[0] "%d forma emprada"
 msgstr[1] "%d formes emprades"
 
-#: ../src/develop/blend_gui.c:1191 ../src/develop/blend_gui.c:1237
+#: ../src/develop/blend_gui.c:1209 ../src/develop/blend_gui.c:1255
 msgid "no mask used"
 msgstr "cap màscara"
 
-#: ../src/develop/blend_gui.c:1236 ../src/develop/blend_gui.c:1537
-#: ../src/develop/blend_gui.c:1571 ../src/develop/blend_gui.c:1656
-#: ../src/develop/blend_gui.c:1665 ../src/develop/blend_gui.c:1686
-#: ../src/develop/blend_gui.c:1702
+#: ../src/develop/blend_gui.c:1254 ../src/develop/blend_gui.c:1573
+#: ../src/develop/blend_gui.c:1607 ../src/develop/blend_gui.c:1692
+#: ../src/develop/blend_gui.c:1701 ../src/develop/blend_gui.c:1722
+#: ../src/develop/blend_gui.c:1738
 msgid "blend"
 msgstr "mescla"
 
-#: ../src/develop/blend_gui.c:1236 ../src/develop/blend_gui.c:1547
+#: ../src/develop/blend_gui.c:1254 ../src/develop/blend_gui.c:1583
 msgid "drawn mask"
 msgstr "màscara dibuixada"
 
-#: ../src/develop/blend_gui.c:1245
+#: ../src/develop/blend_gui.c:1263
 msgid "show and edit mask elements"
 msgstr "mostra i edita elements de màscara"
 
-#: ../src/develop/blend_gui.c:1251
+#: ../src/develop/blend_gui.c:1269
 msgid "toggle polarity of drawn mask"
 msgstr "inverteix polaritat de la màscara dibuixada"
 
-#: ../src/develop/blend_gui.c:1259 ../src/libs/masks.c:908
+#: ../src/develop/blend_gui.c:1277 ../src/libs/masks.c:908
 #: ../src/libs/masks.c:944 ../src/libs/masks.c:1500
 msgid "add gradient"
 msgstr "afegeix gradient"
 
-#: ../src/develop/blend_gui.c:1266 ../src/iop/spots.c:559
+#: ../src/develop/blend_gui.c:1284 ../src/iop/spots.c:559
 #: ../src/libs/masks.c:904 ../src/libs/masks.c:940 ../src/libs/masks.c:1507
 msgid "add path"
 msgstr "afegeix camí"
 
-#: ../src/develop/blend_gui.c:1273 ../src/iop/spots.c:566
+#: ../src/develop/blend_gui.c:1291 ../src/iop/spots.c:566
 #: ../src/libs/masks.c:900 ../src/libs/masks.c:936 ../src/libs/masks.c:1514
 msgid "add ellipse"
 msgstr "afegeix el·lipse"
 
-#: ../src/develop/blend_gui.c:1280 ../src/iop/spots.c:573
+#: ../src/develop/blend_gui.c:1298 ../src/iop/spots.c:573
 #: ../src/libs/masks.c:896 ../src/libs/masks.c:932 ../src/libs/masks.c:1521
 msgid "add circle"
 msgstr "afegeix cercle"
 
-#: ../src/develop/blend_gui.c:1287 ../src/libs/masks.c:928
+#: ../src/develop/blend_gui.c:1305 ../src/libs/masks.c:928
 #: ../src/libs/masks.c:1528
 msgid "add brush"
 msgstr "afegeix pinzell"
 
 #. * generate a list of all available blend modes
-#: ../src/develop/blend_gui.c:1503 ../src/libs/live_view.c:383
+#: ../src/develop/blend_gui.c:1539 ../src/libs/live_view.c:383
 msgctxt "blendmode"
 msgid "normal"
 msgstr "normal"
 
-#: ../src/develop/blend_gui.c:1504
+#: ../src/develop/blend_gui.c:1540
 msgctxt "blendmode"
 msgid "normal bounded"
 msgstr "normal limitat"
 
-#: ../src/develop/blend_gui.c:1505 ../src/libs/live_view.c:392
+#: ../src/develop/blend_gui.c:1541 ../src/libs/live_view.c:392
 msgctxt "blendmode"
 msgid "lighten"
 msgstr "aclareix"
 
-#: ../src/develop/blend_gui.c:1506 ../src/libs/live_view.c:391
+#: ../src/develop/blend_gui.c:1542 ../src/libs/live_view.c:391
 msgctxt "blendmode"
 msgid "darken"
 msgstr "enfosqueix"
 
-#: ../src/develop/blend_gui.c:1507 ../src/libs/live_view.c:388
+#: ../src/develop/blend_gui.c:1543 ../src/libs/live_view.c:388
 msgctxt "blendmode"
 msgid "multiply"
 msgstr "multiplica"
 
-#: ../src/develop/blend_gui.c:1508
+#: ../src/develop/blend_gui.c:1544
 msgctxt "blendmode"
 msgid "average"
 msgstr "mitjana"
 
-#: ../src/develop/blend_gui.c:1509
+#: ../src/develop/blend_gui.c:1545
 msgctxt "blendmode"
 msgid "addition"
 msgstr "addició"
 
-#: ../src/develop/blend_gui.c:1510
+#: ../src/develop/blend_gui.c:1546
 msgctxt "blendmode"
 msgid "subtract"
 msgstr "sostreu"
 
-#: ../src/develop/blend_gui.c:1511 ../src/libs/live_view.c:397
+#: ../src/develop/blend_gui.c:1547 ../src/libs/live_view.c:397
 msgctxt "blendmode"
 msgid "difference"
 msgstr "diferència"
 
-#: ../src/develop/blend_gui.c:1512 ../src/libs/live_view.c:389
+#: ../src/develop/blend_gui.c:1548 ../src/libs/live_view.c:389
 msgctxt "blendmode"
 msgid "screen"
 msgstr "trama (screen)"
 
-#: ../src/develop/blend_gui.c:1513 ../src/libs/live_view.c:390
+#: ../src/develop/blend_gui.c:1549 ../src/libs/live_view.c:390
 msgctxt "blendmode"
 msgid "overlay"
 msgstr "sobreposa (overlay)"
 
-#: ../src/develop/blend_gui.c:1514
+#: ../src/develop/blend_gui.c:1550
 msgctxt "blendmode"
 msgid "softlight"
 msgstr "llum suau"
 
-#: ../src/develop/blend_gui.c:1515
+#: ../src/develop/blend_gui.c:1551
 msgctxt "blendmode"
 msgid "hardlight"
 msgstr "llum forta"
 
-#: ../src/develop/blend_gui.c:1516
+#: ../src/develop/blend_gui.c:1552
 msgctxt "blendmode"
 msgid "vividlight"
 msgstr "llum vívida"
 
-#: ../src/develop/blend_gui.c:1517
+#: ../src/develop/blend_gui.c:1553
 msgctxt "blendmode"
 msgid "linearlight"
 msgstr "llum lineal"
 
-#: ../src/develop/blend_gui.c:1518
+#: ../src/develop/blend_gui.c:1554
 msgctxt "blendmode"
 msgid "pinlight"
 msgstr "llum focal (pinlight)"
 
-#: ../src/develop/blend_gui.c:1519
+#: ../src/develop/blend_gui.c:1555
 msgctxt "blendmode"
 msgid "lightness"
 msgstr "lluminositat"
 
-#: ../src/develop/blend_gui.c:1520
+#: ../src/develop/blend_gui.c:1556
 msgctxt "blendmode"
 msgid "chroma"
 msgstr "chroma"
 
-#: ../src/develop/blend_gui.c:1521
+#: ../src/develop/blend_gui.c:1557
 msgctxt "blendmode"
 msgid "hue"
 msgstr "to (hue)"
 
-#: ../src/develop/blend_gui.c:1522
+#: ../src/develop/blend_gui.c:1558
 msgctxt "blendmode"
 msgid "color"
 msgstr "color"
 
-#: ../src/develop/blend_gui.c:1523
+#: ../src/develop/blend_gui.c:1559
 msgctxt "blendmode"
 msgid "coloradjustment"
 msgstr "ajustament de color"
 
-#: ../src/develop/blend_gui.c:1524
+#: ../src/develop/blend_gui.c:1560
 msgctxt "blendmode"
 msgid "Lab lightness"
 msgstr "Lluminositat Lab"
 
-#: ../src/develop/blend_gui.c:1525
+#: ../src/develop/blend_gui.c:1561
 msgctxt "blendmode"
 msgid "Lab color"
 msgstr "color Lab"
 
-#: ../src/develop/blend_gui.c:1526
+#: ../src/develop/blend_gui.c:1562
 msgctxt "blendmode"
 msgid "HSV lightness"
 msgstr "Lluminositat HSV "
 
-#: ../src/develop/blend_gui.c:1527
+#: ../src/develop/blend_gui.c:1563
 msgctxt "blendmode"
 msgid "HSV color"
 msgstr "color HSV"
 
 #. * deprecated blend modes: make them available as legacy history stacks might want them
-#: ../src/develop/blend_gui.c:1530
+#: ../src/develop/blend_gui.c:1566
 msgctxt "blendmode"
 msgid "difference (deprecated)"
 msgstr "diferència (obsolet)"
 
-#: ../src/develop/blend_gui.c:1531
+#: ../src/develop/blend_gui.c:1567
 msgctxt "blendmode"
 msgid "inverse (deprecated)"
 msgstr "invers (obsolet)"
 
-#: ../src/develop/blend_gui.c:1532
+#: ../src/develop/blend_gui.c:1568
 msgctxt "blendmode"
 msgid "normal (deprecated)"
 msgstr "normal (obsolet)"
 
-#: ../src/develop/blend_gui.c:1533
+#: ../src/develop/blend_gui.c:1569
 msgctxt "blendmode"
 msgid "unbounded (deprecated)"
 msgstr "unbounded (obsolet)"
 
-#: ../src/develop/blend_gui.c:1542
+#: ../src/develop/blend_gui.c:1578
 msgid "uniformly"
 msgstr "uniformement"
 
-#: ../src/develop/blend_gui.c:1553
+#: ../src/develop/blend_gui.c:1589
 msgid "parametric mask"
 msgstr "màscara paramètrica"
 
-#: ../src/develop/blend_gui.c:1559
+#: ../src/develop/blend_gui.c:1595
 msgid "drawn & parametric mask"
 msgstr "màscares dibuixada i paramètrica"
 
-#: ../src/develop/blend_gui.c:1564
+#: ../src/develop/blend_gui.c:1600
 msgid ""
 "activate blending: uniformly, with drawn mask, with parametric mask, or "
 "combination of both"
@@ -1666,43 +1666,43 @@ msgstr ""
 "activa la mescla: uniforme, amb màscara dibuixada, màscara paramètrica o "
 "combinació d'ambdues"
 
-#: ../src/develop/blend_gui.c:1571
+#: ../src/develop/blend_gui.c:1607
 msgid "blend mode"
 msgstr "mode de mescla"
 
-#: ../src/develop/blend_gui.c:1572
+#: ../src/develop/blend_gui.c:1608
 msgid "choose blending mode"
 msgstr "tria el mode de mescla"
 
-#: ../src/develop/blend_gui.c:1656 ../src/iop/watermark.c:1111
+#: ../src/develop/blend_gui.c:1692 ../src/iop/watermark.c:1111
 msgid "opacity"
 msgstr "opacitat"
 
-#: ../src/develop/blend_gui.c:1659
+#: ../src/develop/blend_gui.c:1695
 msgid "set the opacity of the blending"
 msgstr "opacitat de la mescla"
 
-#: ../src/develop/blend_gui.c:1665
+#: ../src/develop/blend_gui.c:1701
 msgid "combine masks"
 msgstr "combina màscares"
 
-#: ../src/develop/blend_gui.c:1667
+#: ../src/develop/blend_gui.c:1703
 msgid "exclusive"
 msgstr "exclusiu"
 
-#: ../src/develop/blend_gui.c:1670
+#: ../src/develop/blend_gui.c:1706
 msgid "inclusive"
 msgstr "inclusiu"
 
-#: ../src/develop/blend_gui.c:1673
+#: ../src/develop/blend_gui.c:1709
 msgid "exclusive & inverted"
 msgstr "exclusiu i invertit"
 
-#: ../src/develop/blend_gui.c:1676
+#: ../src/develop/blend_gui.c:1712
 msgid "inclusive & inverted"
 msgstr "inclusiu i invertit"
 
-#: ../src/develop/blend_gui.c:1680
+#: ../src/develop/blend_gui.c:1716
 msgid ""
 "how to combine individual drawn mask and different channels of parametric "
 "mask"
@@ -1710,31 +1710,31 @@ msgstr ""
 "Com es combinen les màscares dibuixades individuals i els diferents canals "
 "de la màscara paramètrica"
 
-#: ../src/develop/blend_gui.c:1686
+#: ../src/develop/blend_gui.c:1722
 msgid "invert mask"
 msgstr "inverteix màscara"
 
-#: ../src/develop/blend_gui.c:1695
+#: ../src/develop/blend_gui.c:1731
 msgid "apply mask in normal or inverted mode"
 msgstr "aplica màscara en mode normal o invertit"
 
-#: ../src/develop/blend_gui.c:1702
+#: ../src/develop/blend_gui.c:1738
 msgid "mask blur"
 msgstr "difuminat de la màscara"
 
-#: ../src/develop/blend_gui.c:1704
+#: ../src/develop/blend_gui.c:1740
 msgid "radius for gaussian blur of blend mask"
 msgstr "radi pel desenfoc gaussià de la màscara de mescla"
 
-#: ../src/develop/blend_gui.c:1710
+#: ../src/develop/blend_gui.c:1746
 msgid "display mask"
 msgstr "mostra la màscara"
 
-#: ../src/develop/blend_gui.c:1717
+#: ../src/develop/blend_gui.c:1753
 msgid "temporarily switch off blend mask. only for module in focus"
 msgstr "desactiva temporalment la màscara de mescla. només pel mòdul ressaltat"
 
-#: ../src/develop/develop.c:1009
+#: ../src/develop/develop.c:1006
 #, c-format
 msgid "%s: module `%s' version mismatch: %d != %d"
 msgstr "%s: la versió del mòdul '%s' no coincideix: %d != %d"
@@ -2373,7 +2373,7 @@ msgstr "obertura"
 #: ../src/gui/presets.c:481 ../src/libs/camera.c:524
 #: ../src/libs/metadata_view.c:99
 msgid "focal length"
-msgstr "distància focal"
+msgstr "long. focal"
 
 #: ../src/gui/preferences.c:491 ../src/iop/borders.c:1054
 #: ../src/iop/exposure.c:977 ../src/iop/levels.c:579
@@ -5734,7 +5734,7 @@ msgstr "sobreexposat"
 
 #: ../src/iop/profile_gamma.c:65
 msgid "unbreak input profile"
-msgstr "repara perfil d'entrada (unbreak i.p.)"
+msgstr "repara perfil d'entrada"
 
 #: ../src/iop/profile_gamma.c:81
 msgctxt "accel"
@@ -5920,7 +5920,7 @@ msgstr "ajusta saturació d'altes llums"
 #: ../src/iop/sharpen.c:72
 msgctxt "sharpen"
 msgid "sharpen"
-msgstr "enfoca"
+msgstr "enfoca (sharpen)"
 
 #. add the preset.
 #. restrict to raw images
@@ -6815,7 +6815,7 @@ msgstr "drets"
 #: ../src/libs/collect.h:46 ../src/libs/metadata_view.c:86
 #: ../src/libs/tools/filter.c:146
 msgid "filename"
-msgstr "nom del fitxer"
+msgstr "nom fitxer"
 
 #: ../src/libs/colorpicker.c:36
 msgid "color picker"
@@ -6942,7 +6942,7 @@ msgstr ""
 
 #: ../src/libs/copy_history.c:277
 msgid "paste all"
-msgstr "enganxa-ho tot"
+msgstr "enganxa tot"
 
 #: ../src/libs/copy_history.c:278
 msgid ""
@@ -7610,7 +7610,7 @@ msgstr "sobreposa una altra imatge sobre la vista en temps real"
 
 #: ../src/libs/live_view.c:368 ../src/libs/metadata_view.c:84
 msgid "image id"
-msgstr "identificador de la imatge"
+msgstr "id d'imatge"
 
 #: ../src/libs/live_view.c:372
 msgid "enter image id of the overlay manually"
@@ -7866,7 +7866,7 @@ msgstr "versió"
 
 #: ../src/libs/metadata_view.c:88
 msgid "full path"
-msgstr "ruta completa"
+msgstr "ruta"
 
 #: ../src/libs/metadata_view.c:89
 msgid "local copy"
@@ -7874,7 +7874,7 @@ msgstr "còpia local"
 
 #: ../src/libs/metadata_view.c:100
 msgid "focus distance"
-msgstr "distància d'enfocament"
+msgstr "dist. de focus"
 
 #: ../src/libs/metadata_view.c:102
 msgid "datetime"
@@ -8031,7 +8031,7 @@ msgstr ""
 
 #: ../src/libs/select.c:126
 msgid "select untouched"
-msgstr "tria les no modificades"
+msgstr "tria no modificades"
 
 #: ../src/libs/select.c:128
 msgid ""
