@@ -82,6 +82,12 @@ int output_bpp(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe
     return 4 * sizeof(float);
 }
 
+static int BL(const dt_iop_roi_t *const roi_out, const dt_iop_rawprepare_data_t *const d, const int row,
+              const int col)
+{
+  return ((((row + roi_out->y) & 1) << 1) + ((col + roi_out->x) & 1));
+}
+
 void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid, void *ovoid,
              const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
@@ -96,7 +102,11 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
     {
       const float *in = ((float *)ivoid) + (size_t)roi_in->width * j;
       float *out = ((float *)ovoid) + (size_t)roi_out->width * j;
-      for(int i = 0; i < roi_out->width; i++, in++, out++) *out = MAX(0.0f, (*in - d->sub[0]) / d->div[0]);
+      for(int i = 0; i < roi_out->width; i++, in++, out++)
+      {
+        const int id = BL(roi_out, d, j, i);
+        *out = MAX(0.0f, (*in - d->sub[id]) / d->div[id]);
+      }
     }
   }
   else
