@@ -55,6 +55,7 @@ typedef struct dt_iop_rawprepare_data_t
 typedef struct dt_iop_rawprepare_global_data_t
 {
   int kernel_rawprepare_1f;
+  int kernel_rawprepare_4f;
 } dt_iop_rawprepare_global_data_t;
 
 const char *name()
@@ -214,7 +215,16 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_
   cl_mem dev_div = NULL;
   cl_int err = -999;
 
-  int kernel = gd->kernel_rawprepare_1f;
+  int kernel = -1;
+
+  if(!dt_dev_pixelpipe_uses_downsampled_input(piece->pipe) && dt_image_filter(&piece->pipe->image))
+  {
+    kernel = gd->kernel_rawprepare_1f;
+  }
+  else
+  {
+    kernel = gd->kernel_rawprepare_4f;
+  }
 
   dev_sub = dt_opencl_copy_host_to_device_constant(devid, sizeof(float) * 4, d->sub);
   if(dev_sub == NULL) goto error;
@@ -283,9 +293,6 @@ void commit_params(dt_iop_module_t *self, const dt_iop_params_t *const params, d
   }
 
   if(!dt_image_is_raw(&piece->pipe->image) || piece->pipe->image.bpp == sizeof(float)) piece->enabled = 0;
-
-  if(!(!dt_dev_pixelpipe_uses_downsampled_input(piece->pipe) && dt_image_filter(&piece->pipe->image)))
-    piece->process_cl_ready = 0;
 }
 
 void init_pipe(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
@@ -329,6 +336,7 @@ void init_global(dt_iop_module_so_t *self)
 
   dt_iop_rawprepare_global_data_t *gd = self->data;
   gd->kernel_rawprepare_1f = dt_opencl_create_kernel(program, "rawprepare_1f");
+  gd->kernel_rawprepare_4f = dt_opencl_create_kernel(program, "rawprepare_4f");
 }
 
 void init(dt_iop_module_t *self)
@@ -354,6 +362,7 @@ void cleanup(dt_iop_module_t *self)
 void cleanup_global(dt_iop_module_so_t *self)
 {
   dt_iop_rawprepare_global_data_t *gd = (dt_iop_rawprepare_global_data_t *)self->data;
+  dt_opencl_free_kernel(gd->kernel_rawprepare_4f);
   dt_opencl_free_kernel(gd->kernel_rawprepare_1f);
   free(self->data);
   self->data = NULL;
