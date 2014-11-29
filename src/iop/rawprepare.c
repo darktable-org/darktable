@@ -39,7 +39,11 @@ typedef struct dt_iop_rawprepare_gui_data_t
 {
 } dt_iop_rawprepare_gui_data_t;
 
-typedef struct dt_iop_rawprepare_params_t dt_iop_rawprepare_data_t;
+typedef struct dt_iop_rawprepare_data_t
+{
+  float sub[4];
+  float div[4];
+} dt_iop_rawprepare_data_t;
 
 const char *name()
 {
@@ -83,10 +87,6 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
 {
   const dt_iop_rawprepare_data_t *const d = (dt_iop_rawprepare_data_t *)piece->data;
 
-  const float black = (float)d->raw_black_level_separate[0] / (float)UINT16_MAX;
-  const float white = (float)d->raw_white_point / (float)UINT16_MAX;
-  const float div = (white - black);
-
   if(!dt_dev_pixelpipe_uses_downsampled_input(piece->pipe) && dt_image_filter(&piece->pipe->image))
   { // raw mosaic
 #ifdef _OPENMP
@@ -96,7 +96,7 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
     {
       const float *in = ((float *)ivoid) + (size_t)roi_in->width * j;
       float *out = ((float *)ovoid) + (size_t)roi_out->width * j;
-      for(int i = 0; i < roi_out->width; i++, in++, out++) *out = MAX(0.0f, (*in - black) / div);
+      for(int i = 0; i < roi_out->width; i++, in++, out++) *out = MAX(0.0f, (*in - d->sub[0]) / d->div[0]);
     }
   }
   else
@@ -113,7 +113,7 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
       {
         for(int c = 0; c < 3; c++)
         {
-          out[c] = MAX(0.0f, (in[c] - black) / div);
+          out[c] = MAX(0.0f, (in[c] - d->sub[0]) / d->div[0]);
         }
       }
     }
@@ -123,7 +123,34 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
 void commit_params(dt_iop_module_t *self, const dt_iop_params_t *const params, dt_dev_pixelpipe_t *pipe,
                    dt_dev_pixelpipe_iop_t *piece)
 {
-  memcpy(piece->data, params, sizeof(dt_iop_rawprepare_data_t));
+  const dt_iop_rawprepare_params_t *const p = (dt_iop_rawprepare_params_t *)params;
+  dt_iop_rawprepare_data_t *d = (dt_iop_rawprepare_data_t *)piece->data;
+
+  const float white = (float)p->raw_white_point / (float)UINT16_MAX;
+
+  if(!dt_dev_pixelpipe_uses_downsampled_input(piece->pipe) && dt_image_filter(&piece->pipe->image))
+  {
+    for(int i = 0; i < 4; i++)
+    {
+      d->sub[i] = (float)p->raw_black_level_separate[i] / (float)UINT16_MAX;
+      d->div[i] = (white - d->sub[i]);
+    }
+  }
+  else
+  {
+    float black = 0;
+    for(int i = 0; i < 4; i++)
+    {
+      black += p->raw_black_level_separate[i] / (float)UINT16_MAX;
+    }
+    black /= 4.0f;
+
+    for(int i = 0; i < 4; i++)
+    {
+      d->sub[i] = black;
+      d->div[i] = (white - black);
+    }
+  }
 
   if(!dt_image_is_raw(&piece->pipe->image) || piece->pipe->image.bpp == sizeof(float)) piece->enabled = 0;
 }
