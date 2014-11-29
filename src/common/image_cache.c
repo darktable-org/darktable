@@ -51,6 +51,7 @@ void dt_image_cache_allocate(void *data, dt_cache_entry_t *entry)
     img->film_id = sqlite3_column_int(stmt, 2);
     img->width = sqlite3_column_int(stmt, 3);
     img->height = sqlite3_column_int(stmt, 4);
+    img->crop_x = img->crop_y = img->crop_width = img->crop_height = 0;
     img->filename[0] = img->exif_maker[0] = img->exif_model[0] = img->exif_lens[0]
         = img->exif_datetime_taken[0] = '\0';
     str = (char *)sqlite3_column_text(stmt, 5);

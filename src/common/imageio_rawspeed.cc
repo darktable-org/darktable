@@ -202,12 +202,23 @@ dt_imageio_retval_t dt_imageio_open_rawspeed(dt_image_t *img, const char *filena
       }
     }
 
-    img->width = r->dim.x;
-    img->height = r->dim.y;
+    // dimensions of uncropped image
+    iPoint2D dimUncropped = r->getUncroppedDim();
 
-    /* needed in exposure iop for Deflicker */
-    img->raw_black_level = r->blackLevel;
-    img->raw_white_point = r->whitePoint;
+    // dimensions of cropped image
+    iPoint2D dimCropped = r->dim;
+    img->width = dimCropped.x;
+    img->height = dimCropped.y;
+
+    // crop - Top,Left corner
+    iPoint2D cropTL = r->getCropOffset();
+    img->crop_x = cropTL.x;
+    img->crop_y = cropTL.y;
+
+    // crop - Bottom,Right corner
+    iPoint2D cropBR = dimUncropped - dimCropped - cropTL;
+    img->crop_width = cropBR.x;
+    img->crop_height = cropBR.y;
 
     img->fuji_rotation_pos = r->metadata.fujiRotationPos;
     img->pixel_aspect_ratio = (float)r->metadata.pixelAspectRatio;
@@ -218,8 +229,8 @@ dt_imageio_retval_t dt_imageio_open_rawspeed(dt_image_t *img, const char *filena
     void *buf = dt_mipmap_cache_alloc(mbuf, img);
     if(!buf) return DT_IMAGEIO_CACHE_FULL;
 
-    dt_imageio_flip_buffers((char *)buf, (char *)r->getData(), r->getBpp(), r->dim.x, r->dim.y, r->dim.x,
-                            r->dim.y, r->pitch, ORIENTATION_NONE);
+    dt_imageio_flip_buffers((char *)buf, (char *)r->getData(), r->getBpp(), dimCropped.x, dimCropped.y,
+                            dimCropped.x, dimCropped.y, r->pitch, ORIENTATION_NONE);
   }
   catch(const std::exception &exc)
   {

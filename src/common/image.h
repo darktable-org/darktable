@@ -120,7 +120,11 @@ typedef struct dt_image_t
   char filename[DT_MAX_FILENAME_LEN];
 
   // common stuff
+
+  // to understand this, look at comment for dt_histogram_roi_t
   int32_t width, height;
+  int32_t crop_x, crop_y, crop_width, crop_height;
+
   // used by library
   int32_t num, flags, film_id, id, group_id, version;
 
