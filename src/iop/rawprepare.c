@@ -81,7 +81,11 @@ int output_bpp(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe
 void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid, void *ovoid,
              const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
-  // const dt_iop_rawprepare_data_t * const d = (dt_iop_rawprepare_data_t *)piece->data;
+  const dt_iop_rawprepare_data_t *const d = (dt_iop_rawprepare_data_t *)piece->data;
+
+  const float black = (float)d->raw_black_level_separate[0] / (float)UINT16_MAX;
+  const float white = (float)d->raw_white_point / (float)UINT16_MAX;
+  const float div = (white - black);
 
   if(!dt_dev_pixelpipe_uses_downsampled_input(piece->pipe) && dt_image_filter(&piece->pipe->image))
   { // raw mosaic
@@ -90,9 +94,9 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
 #endif
     for(int j = 0; j < roi_out->height; j++)
     {
-      const float *const in = ((float *)ivoid) + (size_t)roi_in->width * j;
+      const float *in = ((float *)ivoid) + (size_t)roi_in->width * j;
       float *out = ((float *)ovoid) + (size_t)roi_out->width * j;
-      memcpy(out, in, sizeof(float) * roi_out->width);
+      for(int i = 0; i < roi_out->width; i++, in++, out++) *out = MAX(0.0f, (*in - black) / div);
     }
   }
   else
