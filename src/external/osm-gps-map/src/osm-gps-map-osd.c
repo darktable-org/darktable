@@ -1,16 +1,18 @@
-/* osm-gps-map-osd-classic.c
+/* -*- Mode: C; indent-tabs-mode: nil; c-basic-offset: 4; tab-width: 4 -*- */
+/* vim:set et sw=4 ts=4 */
+/*
+ * Copyright (C) 2013 John Stowers <john.stowers@gmail.com>
  *
- * Copyright (C) 2010 John Stowers <john.stowers@gmail.com>
- *
- * This is free software: you can redistribute it and/or modify it
- * under the terms of the GNU General Public License
- * as published by the Free Software Foundation; version 2.
- *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, see <http://www.gnu.org/licenses/>.
  */
@@ -94,7 +96,7 @@ struct _OsmGpsMapOsdPrivate
 };
 
 static void                 osm_gps_map_osd_render       (OsmGpsMapLayer *osd, OsmGpsMap *map);
-static void                 osm_gps_map_osd_draw         (OsmGpsMapLayer *osd, OsmGpsMap *map, GdkDrawable *drawable);
+static void                 osm_gps_map_osd_draw         (OsmGpsMapLayer *osd, OsmGpsMap *map, cairo_t *cr);
 static gboolean             osm_gps_map_osd_busy         (OsmGpsMapLayer *osd);
 static gboolean             osm_gps_map_osd_button_press (OsmGpsMapLayer *osd, OsmGpsMap *map, GdkEventButton *event);
 
@@ -463,9 +465,8 @@ osm_gps_map_osd_render (OsmGpsMapLayer *osd,
 static void
 osm_gps_map_osd_draw (OsmGpsMapLayer *osd,
                               OsmGpsMap *map,
-                              GdkDrawable *drawable)
+                              cairo_t *cr)
 {
-    cairo_t *cr;
     OsmGpsMapOsd *self;
     OsmGpsMapOsdPrivate *priv;
     GtkAllocation allocation;
@@ -476,7 +477,6 @@ osm_gps_map_osd_draw (OsmGpsMapLayer *osd,
     priv = self->priv;
 
     gtk_widget_get_allocation(GTK_WIDGET(map), &allocation);
-    cr = gdk_cairo_create(drawable);
 
     if (priv->show_scale)
         scale_draw(self, &allocation, cr);
@@ -487,7 +487,6 @@ osm_gps_map_osd_draw (OsmGpsMapLayer *osd,
     if (priv->show_zoom || priv->show_dpad)
         controls_draw(self, &allocation, cr);
 
-    cairo_destroy(cr);
 }
 
 static gboolean
@@ -850,6 +849,7 @@ crosshair_draw(OsmGpsMapOsd *self, GtkAllocation *allocation, cairo_t *cr)
 static void
 controls_render(OsmGpsMapOsd *self, OsmGpsMap *map)
 {
+    GdkRGBA fg, bg;
     OsmGpsMapOsdPrivate *priv = self->priv;
     OsdControls_t *controls = self->priv->controls;
 
@@ -858,10 +858,8 @@ controls_render(OsmGpsMapOsd *self, OsmGpsMap *map)
 
     controls->rendered = TRUE;
 
-    GtkStyle *style = gtk_widget_get_style(GTK_WIDGET(map));
-    GdkColor bg = style->bg[GTK_STATE_NORMAL];
-    GdkColor fg = style->fg[GTK_STATE_NORMAL];
-    //GdkColor da = GTK_WIDGET(map)->style->fg[GTK_STATE_INSENSITIVE];
+    gdk_rgba_parse (&fg, "black");
+    gdk_rgba_parse (&bg, "grey80");
 
     /* first fill with transparency */
     g_assert(controls->surface);

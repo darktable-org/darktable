@@ -1,11 +1,13 @@
+/* -*- Mode: C; indent-tabs-mode: nil; c-basic-offset: 4; tab-width: 4 -*- */
 /* vim:set et sw=4 ts=4 */
 /*
- * Copyright (C) 2010 John Stowers <john.stowers@gmail.com>
+ * Copyright (C) 2013 John Stowers <john.stowers@gmail.com>
  *
- * This is free software: you can redistribute it and/or modify it
- * under the terms of the GNU General Public License
- * as published by the Free Software Foundation; version 2.
- *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
@@ -59,6 +61,15 @@ osm_gps_map_point_new_radians(float rlat, float rlon)
     return p;
 }
 
+/**
+ * osm_gps_map_point_get_degrees:
+ * @point: The point ( latitude and longitude in radian )
+ * @lat: (out): latitude in degrees
+ * @lon: (out): longitude in degrees
+ *
+ * Returns the lagitude and longitude in degrees.
+ * of the current window, i.e the top left and bottom right corners.
+ **/
 void
 osm_gps_map_point_get_degrees(OsmGpsMapPoint *point, float *lat, float *lon)
 {
