@@ -138,7 +138,9 @@ void modify_roi_out(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, dt_iop
 
   if(dt_dev_pixelpipe_uses_downsampled_input(piece->pipe))
   {
-    // TODO
+    const float scale = roi_in->scale / piece->iscale;
+    roi_out->width -= roundf((float)x * scale);
+    roi_out->height -= roundf((float)y * scale);
   }
   else
   {
@@ -157,7 +159,9 @@ void modify_roi_in(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const d
 
   if(dt_dev_pixelpipe_uses_downsampled_input(piece->pipe))
   {
-    // TODO
+    const float scale = roi_in->scale / piece->iscale;
+    roi_in->width += roundf((float)x * scale);
+    roi_in->height += roundf((float)y * scale);
   }
   else
   {
@@ -241,6 +245,9 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
   else
   { // pre-downsampled buffer that needs black/white scaling
 
+    const float scale = roi_in->scale / piece->iscale;
+    const int csx = d->x * scale, csy = d->y * scale;
+
     const __m128 sub = _mm_load_ps(d->sub), div = _mm_load_ps(d->div);
 
 #ifdef _OPENMP
@@ -248,7 +255,7 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
 #endif
     for(int j = 0; j < roi_out->height; j++)
     {
-      const float *in = ((float *)ivoid) + (size_t)4 * roi_in->width * j;
+      const float *in = ((float *)ivoid) + (size_t)4 * (roi_in->width * (j + csy) + csx);
       float *out = ((float *)ovoid) + (size_t)4 * roi_out->width * j;
 
       // process aligned pixels with SSE
@@ -362,8 +369,7 @@ void commit_params(dt_iop_module_t *self, const dt_iop_params_t *const params, d
 
   if(!dt_image_is_raw(&piece->pipe->image) || piece->pipe->image.bpp == sizeof(float)) piece->enabled = 0;
 
-  if(!dt_dev_pixelpipe_uses_downsampled_input(piece->pipe) && dt_image_filter(&piece->pipe->image))
-    piece->process_cl_ready = 0;
+  piece->process_cl_ready = 0;
 }
 
 void init_pipe(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
