@@ -134,6 +134,13 @@ dt_imageio_retval_t dt_imageio_open_rawspeed(dt_image_t *img, const char *filena
     d->decodeMetaData(meta);
     RawImage r = d->mRaw;
 
+    r->calculateBlackAreas();
+
+    /* needed in exposure iop for Deflicker */
+    img->raw_black_level = r->blackLevel;
+    for(uint8_t i = 0; i < 4; i++) img->raw_black_level_separate[i] = r->blackLevelSeparate[i];
+    img->raw_white_point = r->whitePoint;
+
     /* free auto pointers on spot */
     d.reset();
     m.reset();
