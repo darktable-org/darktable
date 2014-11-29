@@ -337,6 +337,9 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_
   else
   {
     kernel = gd->kernel_rawprepare_4f;
+    const float scale = roi_in->scale / piece->iscale;
+    cx = d->x * scale;
+    cy = d->y * scale;
   }
 
   dev_sub = dt_opencl_copy_host_to_device_constant(devid, sizeof(float) * 4, d->sub);
@@ -414,9 +417,6 @@ void commit_params(dt_iop_module_t *self, const dt_iop_params_t *const params, d
   }
 
   if(!dt_image_is_raw(&piece->pipe->image) || piece->pipe->image.bpp == sizeof(float)) piece->enabled = 0;
-
-  if(!(!dt_dev_pixelpipe_uses_downsampled_input(piece->pipe) && dt_image_filter(&piece->pipe->image)))
-    piece->process_cl_ready = 0;
 }
 
 void init_pipe(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
