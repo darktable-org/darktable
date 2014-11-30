@@ -1025,7 +1025,7 @@ void gui_init(struct dt_iop_module_t *self)
 
   gtk_box_pack_start(GTK_BOX(g->vbox_deflicker), GTK_WIDGET(hbox1), FALSE, FALSE, 0);
 
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->vbox_deflicker), TRUE, TRUE, 0);
+  // gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->vbox_deflicker), TRUE, TRUE, 0);
 
   g_signal_connect(G_OBJECT(g->mode), "value-changed", G_CALLBACK(mode_callback), self);
   g_signal_connect(G_OBJECT(g->black), "value-changed", G_CALLBACK(black_callback), self);

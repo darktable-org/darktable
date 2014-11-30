@@ -536,8 +536,7 @@
 		<Sensor black="0" white="44200" iso_list="100 125 160 320 640 1250"/>
 		<Sensor black="0" white="54000"/>
 	</Camera>
-        <!-- Adobe's 7DmkII color rendition seems broken in Darktable, any files processed will neither be forward nor backward compatible -->
-	<Camera make="Canon" model="Canon EOS 7D Mark II" supported="no">
+	<Camera make="Canon" model="Canon EOS 7D Mark II">
 		<CFA width="2" height="2">
 			<Color x="0" y="0">RED</Color>
 			<Color x="1" y="0">GREEN</Color>
@@ -5443,6 +5442,16 @@
 		</CFA>
 		<Crop x="34" y="0" width="-32" height="0"/>
 		<Sensor black="258" white="3900"/>
+	</Camera>
+	<Camera make="FUJIFILM" model="FinePix HS50EXR">
+		<CFA width="2" height="2">
+			<Color x="0" y="0">BLUE</Color>
+			<Color x="1" y="0">GREEN</Color>
+			<Color x="0" y="1">GREEN</Color>
+			<Color x="1" y="1">RED</Color>
+		</CFA>
+		<Crop x="0" y="0" width="-64" height="0"/>
+		<Sensor black="256" white="3900"/>
 	</Camera>
 	<Camera make="FUJIFILM" model="FinePix X100">
 		<CFA width="2" height="2">

@@ -1926,6 +1926,13 @@ const wb_data wb_preset[] =
   { "FUJIFILM", "HS20EXR", CoolWhiteFluorescent, 0, { 1.5625, 1, 2.5714, 0 } },
   { "FUJIFILM", "HS20EXR", Incandescent, 0,	{ 1, 1.0633, 2.9430, 0 } },
 
+  { "FUJIFILM", "HS50EXR", Daylight, 0,			{ 1.589286, 1, 1.892857, 0 } },
+  { "FUJIFILM", "HS50EXR", Cloudy, 0,			{ 1.705357, 1, 1.663690, 0 } },
+  { "FUJIFILM", "HS50EXR", DaylightFluorescent, 0,	{ 1.875000, 1, 1.648810, 0 } },
+  { "FUJIFILM", "HS50EXR", DayWhiteFluorescent, 0,	{ 1.619048, 1, 1.946429, 0 } },
+  { "FUJIFILM", "HS50EXR", WhiteFluorescent, 0,		{ 1.651786, 1, 2.464286, 0 } },
+  { "FUJIFILM", "HS50EXR", Incandescent, 0,		{ 1.041667, 1, 2.601190, 0 } },
+
   { "FUJIFILM", "S100FS", Daylight, 0,		{ 1.702381, 1, 1.845238, 0 } },
   { "FUJIFILM", "S100FS", Shade, 0,		{ 1.830357, 1, 1.601190, 0 } },
   { "FUJIFILM", "S100FS", DaylightFluorescent, 0, { 1.895833, 1, 1.461309, 0 } },
@@ -4652,6 +4659,13 @@ const wb_data wb_preset[] =
   { "Panasonic", "DMC-GH3", Shade, 0,		{ 2.607547, 1, 1.615094, 0 } },
   { "Panasonic", "DMC-GH3", Incandescent, 0,	{ 1.641509, 1, 2.747170, 0 } },
   { "Panasonic", "DMC-GH3", Flash, 0,		{ 2.369811, 1, 1.694340, 0 } },
+
+  /* Firmware version 2.0 */
+  { "Panasonic", "DMC-GH4", Daylight, 0,	{ 2.390625, 1, 1.855469, 0 } },
+  { "Panasonic", "DMC-GH4", Cloudy, 0,		{ 2.531250, 1, 1.718750, 0 } },
+  { "Panasonic", "DMC-GH4", Shade, 0,		{ 2.691406, 1, 1.597656, 0 } },
+  { "Panasonic", "DMC-GH4", Incandescent, 0,	{ 1.734375, 1, 2.781250, 0 } },
+  { "Panasonic", "DMC-GH4", Flash, 0,		{ 2.445313, 1, 1.773438, 0 } },
 
   /* Firmware version 1.1 */
   /* -9/+9 fine tuning is -9/+9 in blue-amber and zero in magenta-green */

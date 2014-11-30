@@ -45,7 +45,7 @@ const char* name()
 
 uint32_t views()
 {
-  return DT_LIGHTTABLE_VIEW|DT_CAPTURE_VIEW;
+  return DT_VIEW_LIGHTTABLE|DT_VIEW_TETHERING;
 }
 
 uint32_t container()
@@ -105,7 +105,6 @@ rmdir <dir>\t\t\tdelete empty directory"), (char *)NULL);
 
 void gui_cleanup(dt_lib_module_t *self)
 {
-  darktable.gui->redraw_widgets = g_list_remove(darktable.gui->redraw_widgets, self->widget);
   dt_lib_file_manager_t *d = (dt_lib_file_manager_t*) self->data;
   dt_gui_key_accel_block_on_focus_disconnect(GTK_WIDGET(d->terminal));
   kill(d->pid, SIGKILL);

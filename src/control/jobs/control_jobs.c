@@ -1068,7 +1068,11 @@ void dt_control_remove_images()
 
     int number = dt_collection_get_selected_count(darktable.collection);
     // Do not show the dialog if no image is selected:
-    if(number == 0) return;
+    if(number == 0)
+    {
+      dt_control_generic_images_job_cleanup(job);
+      return;
+    }
 
     dialog = gtk_message_dialog_new(GTK_WINDOW(win),
                                     GTK_DIALOG_DESTROY_WITH_PARENT,
@@ -1100,7 +1104,11 @@ void dt_control_delete_images()
 
     int number = dt_collection_get_selected_count(darktable.collection);
     // Do not show the dialog if no image is selected:
-    if(number == 0) return;
+    if(number == 0)
+    {
+      dt_control_generic_images_job_cleanup(job);
+      return;
+    }
 
     dialog = gtk_message_dialog_new(GTK_WINDOW(win),
                                     GTK_DIALOG_DESTROY_WITH_PARENT,
