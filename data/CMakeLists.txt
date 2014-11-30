@@ -11,11 +11,6 @@ endif(USE_OPENCL)
 #
 set(GTKRC_FONT_SIZE 8)
 set(GTKRC_HEADER_FONT_SIZE 9)
-if(APPLE)
-  # 8 is very tiny on mac
-  set(GTKRC_FONT_SIZE 13)
-  set(GTKRC_HEADER_FONT_SIZE 15)
-endif(APPLE)
 configure_file( ${CMAKE_CURRENT_SOURCE_DIR}/darktable.gtkrc.in ${CMAKE_CURRENT_BINARY_DIR}/darktable.gtkrc )
 
 
