@@ -29,7 +29,7 @@
 # OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-find_package(LibFindMacros)
+include(LibFindMacros)
 libfind_pkg_check_modules(LIBSECRET libsecret-1)
 foreach(i ${LIBSECRET_LIBRARIES})
 	find_library(_libsecret_LIBRARY NAMES ${i} HINTS ${LIBSECRET_LIBRARY_DIRS})
