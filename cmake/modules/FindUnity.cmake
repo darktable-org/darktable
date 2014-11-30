@@ -2,8 +2,8 @@ SET(UNITY_FIND_REQUIRED ${Unity_FIND_REQUIRED})
 
 include(Prebuilt)
 
-include(FindPkgConfig)
-pkg_check_modules(UNITY unity)
+include(LibFindMacros)
+libfind_pkg_check_modules(UNITY unity)
 foreach(i ${UNITY_LIBRARIES})
 	find_library(_unity_LIBRARY NAMES ${i} HINTS ${UNITY_LIBRARY_DIRS})
 	LIST(APPEND UNITY_LIBRARY ${_unity_LIBRARY})
