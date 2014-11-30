@@ -853,7 +853,7 @@ static gboolean dt_iop_levels_area_expose(GtkWidget *widget, GdkEventExpose *eve
       cairo_save(cr);
       cairo_scale(cr, width/63.0, -(height-DT_PIXEL_APPLY_DPI(5))/hist_max);
       cairo_set_source_rgba(cr, .2, .2, .2, 0.5);
-      dt_draw_histogram_8(cr, hist, 0, dev->histogram_type == DT_DEV_HISTOGRAM_WAVEFORM?DT_DEV_HISTOGRAM_LOGARITHMIC:dev->histogram_type); // TODO: make draw handle waveform histograms
+      dt_draw_histogram_8(cr, hist, 0, dev->histogram_type == DT_DEV_HISTOGRAM_LINEAR); // TODO: make draw handle waveform histograms
       cairo_restore(cr);
     }
   }

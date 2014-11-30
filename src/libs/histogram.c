@@ -373,17 +373,17 @@ static gboolean _lib_histogram_expose_callback(GtkWidget *widget, GdkEventExpose
       if(d->red)
       {
         cairo_set_source_rgba(cr, 1., 0., 0., 0.2);
-        dt_draw_histogram_8(cr, hist, 0, dev->histogram_type);
+        dt_draw_histogram_8(cr, hist, 0, dev->histogram_type == DT_DEV_HISTOGRAM_LINEAR);
       }
       if(d->green)
       {
         cairo_set_source_rgba(cr, 0., 1., 0., 0.2);
-        dt_draw_histogram_8(cr, hist, 1, dev->histogram_type);
+        dt_draw_histogram_8(cr, hist, 1, dev->histogram_type == DT_DEV_HISTOGRAM_LINEAR);
       }
       if(d->blue)
       {
         cairo_set_source_rgba(cr, 0., 0., 1., 0.2);
-        dt_draw_histogram_8(cr, hist, 2, dev->histogram_type);
+        dt_draw_histogram_8(cr, hist, 2, dev->histogram_type == DT_DEV_HISTOGRAM_LINEAR);
       }
       cairo_set_operator(cr, CAIRO_OPERATOR_SOURCE);
       // cairo_set_antialias(cr, CAIRO_ANTIALIAS_DEFAULT);
