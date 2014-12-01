@@ -275,6 +275,9 @@ static dt_profiled_colormatrix_t dt_profiled_colormatrices[] =
   // Robert Park, ColorChecker Passport, strobe, well lit
   { "Panasonic DMC-G2",             { 753250, 303024,  75287}, { 225540, 1036041, -320923}, { 90927, -233749, 1170151}, {837860, 857056, 687210}},
 
+  // Martin Schitter, Wolf Faust IT8, direct sunlight, well lit
+  { "Panasonic DMC-GH4",            { 937286, 310822,  37857}, { 196823, 1184341, -338242}, { 59952, -267319, 1340836}, {703812, 738983, 594162}},
+
   // Robert Park, ColorChecker Passport, strobe, well lit
   { "Panasonic DMC-LX3",            { 779907, 298859,  94101}, { 239655, 1167938, -489197}, { 53589, -371368, 1317261}, {796707, 825119, 668030}},
 
@@ -291,6 +294,9 @@ static dt_profiled_colormatrix_t dt_profiled_colormatrices[] =
 
   // Pascal de Bruijn, ColorChecker Classic, direct sunlight, well lit
   { "SAMSUNG NX300",                { 852844, 342072,  35950}, { 201965, 1022202, -298492}, { 37766, -234436, 1215851}, {754166, 791092, 635132}},
+
+  // Copied from NX300
+  { "SAMSUNG NX300M",               { 852844, 342072,  35950}, { 201965, 1022202, -298492}, { 37766, -234436, 1215851}, {754166, 791092, 635132}},
 
   // Pieter de Boer, CMP Digital Target 3, camera strobe, well lit
   { "KODAK EASYSHARE Z1015 IS",     { 716446, 157928, -39536}, { 288498, 1234573, -412460}, { 43045, -337677, 1385773}, {774048, 823563, 644012}},

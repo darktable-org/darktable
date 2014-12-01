@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2014-11-22 09:21+0100\n"
-"PO-Revision-Date: 2014-11-22 13:44+0100\n"
+"PO-Revision-Date: 2014-11-25 20:27+0100\n"
 "Last-Translator: Ger Siemerink <g.siemerink@gmail.com>\n"
 "Language-Team: Ger Siemerink <g.siemerink@gmail.com>\n"
 "Language: nl_NL\n"
@@ -2778,7 +2778,7 @@ msgstr "geldt alleen voor verlieshebbende instellingen"
 
 #: ../src/imageio/format/webp.c:304
 msgid "image hint"
-msgstr "afbeeldings Hint"
+msgstr "afbeeldings hint"
 
 #: ../src/imageio/format/webp.c:305
 msgid ""
@@ -4404,7 +4404,7 @@ msgstr "softproof profiel"
 
 #: ../src/iop/colorout.c:936
 msgid "display profile"
-msgstr "toon profiel"
+msgstr "weergave profiel"
 
 #. the system display profile is only suitable for display purposes
 #: ../src/iop/colorout.c:947
@@ -5143,7 +5143,7 @@ msgid ""
 "manually adjust the clipping threshold against magenta highlights (you "
 "shouldn't ever need to touch this)"
 msgstr ""
-"drempel voor clipping  handmatig bijstellen t.o.v. magenta hooglichten "
+"drempel voor clipping handmatig bijstellen t.o.v. magenta hooglichten "
 "(eigenlijk zou dit niet nodig moeten zijn)"
 
 #: ../src/iop/highlights.c:720
@@ -7980,7 +7980,7 @@ msgstr "vergroot"
 
 #: ../src/libs/recentcollect.c:54
 msgid "recently used collections"
-msgstr "snelle verzameling"
+msgstr "snelle verzamelingen"
 
 #: ../src/libs/recentcollect.c:90
 msgctxt "accel"

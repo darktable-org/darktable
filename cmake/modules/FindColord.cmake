@@ -2,8 +2,8 @@ SET(COLORD_FIND_REQUIRED ${Colord_FIND_REQUIRED})
 
 include(Prebuilt)
 
-include(FindPkgConfig)
-pkg_check_modules(COLORD colord)
+include(LibFindMacros)
+libfind_pkg_check_modules(COLORD colord)
 foreach(i ${COLORD_LIBRARIES})
 	find_library(_colord_LIBRARY NAMES ${i} HINTS ${COLORD_LIBRARY_DIRS})
 	LIST(APPEND COLORD_LIBRARY ${_colord_LIBRARY})

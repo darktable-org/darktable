@@ -30,8 +30,9 @@
 #include <stdint.h>
 #include <glib.h>
 
-#include "common/darktable.h"
-#include "develop/develop.h"
+#ifndef M_PI
+#define M_PI 3.141592654
+#endif
 
 /** wrapper around nikon curve or gegl. */
 typedef struct dt_draw_curve_t
@@ -246,19 +247,12 @@ static inline void dt_draw_histogram_8_log(cairo_t *cr, uint32_t *hist, int32_t 
   cairo_fill(cr);
 }
 
-static inline void dt_draw_histogram_8(cairo_t *cr, uint32_t *hist, int32_t channel, dt_dev_histogram_type_t type)
+static inline void dt_draw_histogram_8(cairo_t *cr, uint32_t *hist, int32_t channel, gboolean linear)
 {
-  switch(type)
-  {
-    case DT_DEV_HISTOGRAM_LOGARITHMIC:
-      dt_draw_histogram_8_log(cr, hist, channel);
-      break;
-    case DT_DEV_HISTOGRAM_LINEAR:
-      dt_draw_histogram_8_linear(cr, hist, channel);
-      break;
-    case DT_DEV_HISTOGRAM_WAVEFORM:
-    default: g_assert_not_reached();
-  }
+  if(linear)
+    dt_draw_histogram_8_linear(cr, hist, channel);
+  else
+    dt_draw_histogram_8_log(cr, hist, channel);
 }
 
 /** transform a data blob from cairo's premultiplied rgba/bgra to GdkPixbuf's un-premultiplied bgra/rgba */

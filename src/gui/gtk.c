@@ -48,6 +48,11 @@
 #ifdef MAC_INTEGRATION
 #   include <gtkosxapplication.h>
 #endif
+#ifdef GDK_WINDOWING_QUARTZ
+#  include <Carbon/Carbon.h>
+#  include <ApplicationServices/ApplicationServices.h>
+#  include <CoreServices/CoreServices.h>
+#endif
 #include <pthread.h>
 
 
@@ -1074,6 +1079,21 @@ static void init_widgets(dt_gui_gtk_t *gui)
   }
   else
   {
+#ifdef GDK_WINDOWING_QUARTZ
+  GdkScreen *screen = gtk_widget_get_screen(widget);
+  if ( screen==NULL )
+    screen = gdk_screen_get_default();
+  int monitor = gdk_screen_get_primary_monitor(screen);
+  CGDirectDisplayID ids[monitor + 1];
+  uint32_t total_ids;
+  CGSize size_in_mm;
+  GdkRectangle size_in_px;
+  if(CGGetOnlineDisplayList(monitor + 1, &ids[0], &total_ids) == kCGErrorSuccess && total_ids == monitor + 1) {
+    size_in_mm = CGDisplayScreenSize(ids[monitor]);
+    gdk_screen_get_monitor_geometry(screen, monitor, &size_in_px);
+    gdk_screen_set_resolution(screen, 25.4 * sqrt(size_in_px.width * size_in_px.width + size_in_px.height * size_in_px.height) / sqrt(size_in_mm.width * size_in_mm.width + size_in_mm.height * size_in_mm.height));
+  }
+#endif
     gui->dpi = gdk_screen_get_resolution(gtk_widget_get_screen(widget));
     if(gui->dpi < 0.0)
     {
