@@ -273,8 +273,8 @@ static gchar * _watermark_get_svgdoc( dt_iop_module_t *self, dt_iop_watermark_da
   gsize length;
 
   gchar *svgdoc=NULL;
-  gchar configdir[PATH_MAX];
-  gchar datadir[PATH_MAX];
+  gchar configdir[PATH_MAX] = { 0 };
+  gchar datadir[PATH_MAX] = { 0 };
   gchar *filename;
   dt_loc_get_datadir(datadir, sizeof(datadir));
   dt_loc_get_user_config_dir(configdir, sizeof(configdir));
@@ -858,9 +858,9 @@ static void refresh_watermarks( dt_iop_module_t *self )
   // check watermarkdir and update combo with entries...
   int count=0;
   const gchar *d_name = NULL;
-  gchar configdir[PATH_MAX];
-  gchar datadir[PATH_MAX];
-  gchar filename[PATH_MAX];
+  gchar configdir[PATH_MAX] = { 0 };
+  gchar datadir[PATH_MAX] = { 0 };
+  gchar filename[PATH_MAX] = { 0 };
   dt_loc_get_datadir(datadir, sizeof(datadir));
   dt_loc_get_user_config_dir(configdir, sizeof(configdir));
   g_strlcat(datadir,"/watermarks", sizeof(datadir));

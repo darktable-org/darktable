@@ -2049,7 +2049,7 @@ int dt_exif_xmp_attach (const int imgid, const char* filename)
 {
   try
   {
-    char input_filename[PATH_MAX];
+    char input_filename[PATH_MAX] = { 0 };
     gboolean from_cache = FALSE;
     dt_image_full_path(imgid, input_filename, sizeof(input_filename), &from_cache);
 
@@ -2082,7 +2082,7 @@ int dt_exif_xmp_attach (const int imgid, const char* filename)
 int dt_exif_xmp_write (const int imgid, const char* filename)
 {
   // refuse to write sidecar for non-existent image:
-  char imgfname[PATH_MAX];
+  char imgfname[PATH_MAX] = { 0 };
   gboolean from_cache = TRUE;
 
   dt_image_full_path(imgid, imgfname, sizeof(imgfname), &from_cache);

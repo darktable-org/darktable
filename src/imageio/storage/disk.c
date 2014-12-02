@@ -109,7 +109,7 @@ button_clicked (GtkWidget *widget, dt_imageio_module_storage_t *self)
   if (gtk_dialog_run (GTK_DIALOG (filechooser)) == GTK_RESPONSE_ACCEPT)
   {
     gchar *dir = gtk_file_chooser_get_filename (GTK_FILE_CHOOSER (filechooser));
-    char composed[PATH_MAX];
+    char composed[PATH_MAX] = { 0 };
     snprintf(composed, sizeof(composed), "%s/$(FILE_NAME)", dir);
     gtk_entry_set_text(GTK_ENTRY(d->entry), composed);
     dt_conf_set_string("plugins/imageio/storage/disk/file_directory", composed);

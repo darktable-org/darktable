@@ -152,7 +152,7 @@ void _dt_sigsegv_handler(int param)
   gchar *name_used;
   int fout;
   gboolean delete_file = FALSE;
-  char datadir[PATH_MAX];
+  char datadir[PATH_MAX] = { 0 };
 
   if((fout = g_file_open_tmp("darktable_bt_XXXXXX.txt", &name_used, NULL)) == -1)
     fout = STDOUT_FILENO; // just print everything to stdout
@@ -228,7 +228,7 @@ gboolean dt_supported_image(const gchar *filename)
 
 static void strip_semicolons_from_keymap(const char* path)
 {
-  char pathtmp[PATH_MAX];
+  char pathtmp[PATH_MAX] = { 0 };
   FILE *fin = fopen(path, "r");
   FILE *fout;
   int i;
@@ -630,8 +630,8 @@ int dt_init(int argc, char *argv[], const int init_gui,lua_State *L)
   // dt_check_cpu(argc,argv);
 
 #ifdef HAVE_GEGL
-  char geglpath[PATH_MAX];
-  char datadir[PATH_MAX];
+  char geglpath[PATH_MAX] = { 0 };
+  char datadir[PATH_MAX] = { 0 };
   dt_loc_get_datadir(datadir, sizeof(datadir));
   snprintf(geglpath, sizeof(geglpath), "%s/gegl:/usr/lib/gegl-0.0", datadir);
   (void)setenv("GEGL_PATH", geglpath, 1);
@@ -643,9 +643,9 @@ int dt_init(int argc, char *argv[], const int init_gui,lua_State *L)
 
   // thread-safe init:
   dt_exif_init();
-  char datadir[PATH_MAX];
+  char datadir[PATH_MAX] = { 0 };
   dt_loc_get_user_config_dir (datadir, sizeof(datadir));
-  char filename[PATH_MAX];
+  char filename[PATH_MAX] = { 0 };
   snprintf(filename, sizeof(filename), "%s/darktablerc", datadir);
 
   // initialize the config backend. this needs to be done first...
@@ -823,7 +823,7 @@ int dt_init(int argc, char *argv[], const int init_gui,lua_State *L)
   if(init_gui)
   {
     // Loading the keybindings
-    char keyfile[PATH_MAX];
+    char keyfile[PATH_MAX] = { 0 };
 
     // First dump the default keymapping
     snprintf(keyfile, sizeof(keyfile), "%s/keyboardrc_default", datadir);

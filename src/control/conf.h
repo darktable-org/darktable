@@ -224,7 +224,7 @@ static inline void dt_conf_init(dt_conf_t *cf, const char *filename, GSList *ove
     }
     if(i)
     {
-      char buf[PATH_MAX], defaultrc[PATH_MAX];
+      char buf[PATH_MAX] = { 0 }, defaultrc[PATH_MAX] = { 0 };
       dt_loc_get_datadir(buf, sizeof(buf));
       snprintf(defaultrc, sizeof(defaultrc), "%s/darktablerc", buf);
       f = fopen(defaultrc, "rb");

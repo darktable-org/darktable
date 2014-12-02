@@ -180,7 +180,7 @@ void dt_fswatch_destroy(const dt_fswatch_t *fswatch)
 
 void dt_fswatch_add(const dt_fswatch_t * fswatch,dt_fswatch_type_t type, void *data)
 {
-  char filename[PATH_MAX];
+  char filename[PATH_MAX] = { 0 };
   uint32_t mask=0;
   dt_fswatch_t *ctx=(dt_fswatch_t *)fswatch;
   filename[0] = '\0';

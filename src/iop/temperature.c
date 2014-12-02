@@ -453,7 +453,7 @@ void reload_defaults(dt_iop_module_t *module)
                             !module->dev->image_storage.pre_applied_wb;
 
   // get white balance coefficients, as shot
-  char filename[PATH_MAX];
+  char filename[PATH_MAX] = { 0 };
   int ret=0;
 
   /* check if file is raw / hdr */

@@ -453,7 +453,7 @@ int try_enter(dt_view_t *self)
   const dt_image_t *img = dt_image_cache_read_get(darktable.image_cache, selected);
   // get image and check if it has been deleted from disk first!
 
-  char imgfilename[PATH_MAX];
+  char imgfilename[PATH_MAX] = { 0 };
   gboolean from_cache = TRUE;
   dt_image_full_path(img->id, imgfilename, sizeof(imgfilename), &from_cache);
   if(!g_file_test(imgfilename, G_FILE_TEST_IS_REGULAR))

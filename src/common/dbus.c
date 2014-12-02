@@ -133,13 +133,13 @@ _handle_get_property(GDBusConnection  *connection,
   ret = NULL;
   if(!g_strcmp0(property_name, "DataDir"))
   {
-    gchar datadir[PATH_MAX];
+    gchar datadir[PATH_MAX] = { 0 };
     dt_loc_get_datadir(datadir, sizeof(datadir));
     ret = g_variant_new_string(datadir);
   }
   else if(!g_strcmp0(property_name, "ConfigDir"))
   {
-    gchar configdir[PATH_MAX];
+    gchar configdir[PATH_MAX] = { 0 };
     dt_loc_get_user_config_dir(configdir, sizeof(configdir));
     ret = g_variant_new_string(configdir);
   }

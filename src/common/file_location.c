@@ -115,7 +115,7 @@ static char* find_install_dir(const char*suffix)
 {
   gchar *curr = g_get_current_dir();
   int contains = 0;
-  char tmp[PATH_MAX];
+  char tmp[PATH_MAX] = { 0 };
   for(int k=0; darktable.progname[k] != 0; k++) if(darktable.progname[k] == '/')
     {
       contains = 1;

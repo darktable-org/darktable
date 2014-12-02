@@ -80,7 +80,7 @@ static int check_version(lua_State*L)
 
 int dt_lua_init_configuration(lua_State*L)
 {
-  char tmp_path[PATH_MAX];
+  char tmp_path[PATH_MAX] = { 0 };
 
   dt_lua_push_darktable_lib(L);
 

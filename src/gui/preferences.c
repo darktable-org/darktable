@@ -963,8 +963,8 @@ static gboolean tree_key_press(GtkWidget *widget, GdkEventKey *event,
   dt_accel_t query;
 
   gchar accel[256];
-  gchar datadir[PATH_MAX];
-  gchar accelpath[PATH_MAX];
+  gchar datadir[PATH_MAX] = { 0 };
+  gchar accelpath[PATH_MAX] = { 0 };
 
   // We can just ignore mod key presses outright
   if(event->is_modifier)
@@ -1108,8 +1108,8 @@ static gboolean tree_key_press_presets(GtkWidget *widget, GdkEventKey *event,
 static void import_export(GtkButton *button, gpointer data)
 {
   GtkWidget *chooser;
-  gchar confdir[PATH_MAX];
-  gchar accelpath[PATH_MAX];
+  gchar confdir[PATH_MAX] = { 0 };
+  gchar accelpath[PATH_MAX] = { 0 };
 
   if(data)
   {
@@ -1189,8 +1189,8 @@ static void restore_defaults(GtkButton *button, gpointer data)
   GList *ops;
   dt_iop_module_so_t *op;
   gchar accelpath[256];
-  gchar dir[PATH_MAX];
-  gchar path[PATH_MAX];
+  gchar dir[PATH_MAX] = { 0 };
+  gchar path[PATH_MAX] = { 0 };
 
   GtkWidget *message = gtk_message_dialog_new(
                          NULL, GTK_DIALOG_MODAL,

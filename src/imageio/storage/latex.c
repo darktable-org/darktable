@@ -122,7 +122,7 @@ button_clicked (GtkWidget *widget, dt_imageio_module_storage_t *self)
   if (gtk_dialog_run (GTK_DIALOG (filechooser)) == GTK_RESPONSE_ACCEPT)
   {
     gchar *dir = gtk_file_chooser_get_filename (GTK_FILE_CHOOSER (filechooser));
-    char composed[PATH_MAX];
+    char composed[PATH_MAX] = { 0 };
     snprintf(composed, sizeof(composed), "%s/$(FILE_NAME)", dir);
     gtk_entry_set_text(GTK_ENTRY(d->entry), composed);
     dt_conf_set_string("plugins/imageio/storage/latex/file_directory", composed);
@@ -317,7 +317,7 @@ store (dt_imageio_module_storage_t *self, dt_imageio_module_data_t *sdata, const
     }
 #endif
 
-    char relfilename[PATH_MAX];
+    char relfilename[PATH_MAX] = { 0 };
     c = filename + strlen(filename);
     for(; c>filename && *c != '/' ; c--);
     if(*c == '/') c++;
@@ -357,7 +357,7 @@ store (dt_imageio_module_storage_t *self, dt_imageio_module_data_t *sdata, const
 static void
 copy_res(const char *src, const char *dst)
 {
-  char share[PATH_MAX];
+  char share[PATH_MAX] = { 0 };
   dt_loc_get_datadir(share, sizeof(share));
   gchar *sourcefile = g_build_filename(share, src, NULL);
   char* content = NULL;
@@ -392,7 +392,7 @@ void
 finalize_store(dt_imageio_module_storage_t *self, dt_imageio_module_data_t *dd)
 {
   dt_imageio_latex_t *d = (dt_imageio_latex_t *)dd;
-  char filename[PATH_MAX];
+  char filename[PATH_MAX] = { 0 };
   snprintf(filename, sizeof(filename), "%s", d->cached_dirname);
   char *c = filename + strlen(filename);
 

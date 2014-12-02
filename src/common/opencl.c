@@ -305,8 +305,8 @@ void dt_opencl_init(dt_opencl_t *cl, const int argc, char *argv[])
       goto finally;
     }
 
-    char dtcache[PATH_MAX];
-    char cachedir[PATH_MAX];
+    char dtcache[PATH_MAX] = { 0 };
+    char cachedir[PATH_MAX] = { 0 };
     char devname[1024];
     double tstart, tend, tdiff;
     dt_loc_get_user_cache_dir(dtcache, sizeof(dtcache));
@@ -323,13 +323,13 @@ void dt_opencl_init(dt_opencl_t *cl, const int argc, char *argv[])
       goto finally;
     }
 
-    char dtpath[PATH_MAX];
-    char filename[PATH_MAX];
-    char confentry[PATH_MAX];
-    char binname[PATH_MAX];
+    char dtpath[PATH_MAX] = { 0 };
+    char filename[PATH_MAX] = { 0 };
+    char confentry[PATH_MAX] = { 0 };
+    char binname[PATH_MAX] = { 0 };
     dt_loc_get_datadir(dtpath, sizeof(dtpath));
     snprintf(filename, sizeof(filename), "%s/kernels/programs.conf", dtpath);
-    char kerneldir[PATH_MAX];
+    char kerneldir[PATH_MAX] = { 0 };
     snprintf(kerneldir, sizeof(kerneldir), "%s/kernels", dtpath);
 
 
@@ -902,7 +902,7 @@ int dt_opencl_load_program(const int dev, const int prog, const char *filename, 
 
   file[filesize] = '\0';
 
-  char linkedfile[PATH_MAX];
+  char linkedfile[PATH_MAX] = { 0 };
   ssize_t linkedfile_len = 0;
 
   FILE *cached = fopen_stat(binname, &cachedstat);
@@ -950,7 +950,7 @@ int dt_opencl_load_program(const int dev, const int prog, const char *filename, 
     // try to remove cached binary & link
     if (linkedfile_len>0)
     {
-      char link_dest[PATH_MAX];
+      char link_dest[PATH_MAX] = { 0 };
       snprintf(link_dest, sizeof(link_dest), "%s/%s", cachedir, linkedfile);
       unlink(link_dest);
     }
@@ -1059,7 +1059,7 @@ int dt_opencl_build_program(const int dev, const int prog, const char* binname, 
         if (cl->dev[dev].devid == devices[i])
         {
           // save opencl compiled binary as md5sum-named file
-          char link_dest[PATH_MAX];
+          char link_dest[PATH_MAX] = { 0 };
           snprintf(link_dest, sizeof(link_dest), "%s/%s", cachedir, md5sum);
           FILE* f = fopen(link_dest, "w+");
           if(!f) goto ret;
@@ -1068,10 +1068,10 @@ int dt_opencl_build_program(const int dev, const int prog, const char* binname, 
           fclose(f);
 
           // create link (e.g. basic.cl.bin -> f1430102c53867c162bb60af6c163328)
-          char cwd[PATH_MAX];
+          char cwd[PATH_MAX] = { 0 };
           if (!getcwd(cwd, sizeof(cwd))) goto ret;
           if (chdir(cachedir)!=0) goto ret;
-          char dup[PATH_MAX];
+          char dup[PATH_MAX] = { 0 };
           g_strlcpy(dup, binname, sizeof(dup));
           char* bname = basename(dup);
           if (symlink(md5sum, bname)!=0) goto ret;

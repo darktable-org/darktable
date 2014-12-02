@@ -393,7 +393,7 @@ static int colorlabel_member(lua_State *L)
 static int image_tostring(lua_State *L)
 {
   const dt_image_t * my_image=checkreadimage(L,-1);
-  char image_name[PATH_MAX];
+  char image_name[PATH_MAX] = { 0 };
   gboolean from_cache = FALSE;
   dt_image_full_path(my_image->id, image_name, sizeof(image_name), &from_cache);
   dt_image_path_append_version(my_image->id, image_name, sizeof(image_name));

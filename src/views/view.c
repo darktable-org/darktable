@@ -111,7 +111,7 @@ int dt_view_load_module(dt_view_t *view, const char *module)
   view->vscroll_pos = view->hscroll_pos = 0.0;
   view->height = view->width = 100; // set to non-insane defaults before first expose/configure.
   g_strlcpy(view->module_name, module, sizeof(view->module_name));
-  char plugindir[PATH_MAX];
+  char plugindir[PATH_MAX] = { 0 };
   dt_loc_get_plugindir(plugindir, sizeof(plugindir));
   g_strlcat(plugindir, "/views", sizeof(plugindir));
   gchar *libname = g_module_build_path(plugindir, (const gchar *)module);

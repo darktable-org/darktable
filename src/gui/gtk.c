@@ -761,7 +761,7 @@ dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[])
   memset(gui,0,sizeof(dt_gui_gtk_t));
 
   // unset gtk rc from kde:
-  char path[PATH_MAX], datadir[PATH_MAX], configdir[PATH_MAX];
+  char path[PATH_MAX] = { 0 }, datadir[PATH_MAX] = { 0 }, configdir[PATH_MAX] = { 0 };
   dt_loc_get_datadir(datadir, sizeof(datadir));
   dt_loc_get_user_config_dir(configdir, sizeof(configdir));
 

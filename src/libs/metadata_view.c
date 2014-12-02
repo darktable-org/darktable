@@ -211,7 +211,7 @@ static void _metadata_view_update_values(dt_lib_module_t *self)
   if(mouse_over_id >= 0)
   {
     char value[512];
-    char pathname[PATH_MAX];
+    char pathname[PATH_MAX] = { 0 };
     const dt_image_t *img = dt_image_cache_read_get(darktable.image_cache, mouse_over_id);
     if(!img) goto fill_minuses;
     if(img->film_id == -1)

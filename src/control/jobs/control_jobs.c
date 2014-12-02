@@ -175,7 +175,7 @@ static int32_t dt_control_write_sidecar_files_job_run(dt_job_t *job)
     gboolean from_cache = FALSE;
     imgid = GPOINTER_TO_INT(t->data);
     const dt_image_t *img = dt_image_cache_read_get(darktable.image_cache, (int32_t)imgid);
-    char dtfilename[PATH_MAX];
+    char dtfilename[PATH_MAX] = { 0 };
     dt_image_full_path(img->id, dtfilename, sizeof(dtfilename), &from_cache);
     dt_image_path_append_version(img->id, dtfilename, sizeof(dtfilename));
     g_strlcat(dtfilename, ".xmp", sizeof(dtfilename));
@@ -372,7 +372,7 @@ static int32_t dt_control_merge_hdr_job_run(dt_job_t *job)
 
   // output hdr as digital negative with exif data.
   uint8_t exif[65535];
-  char pathname[PATH_MAX];
+  char pathname[PATH_MAX] = { 0 };
   gboolean from_cache = TRUE;
   dt_image_full_path(first_imgid, pathname, sizeof(pathname), &from_cache);
   // last param is dng mode
@@ -602,7 +602,7 @@ static int32_t dt_control_delete_images_job_run(dt_job_t *job)
   while(t)
   {
     imgid = GPOINTER_TO_INT(t->data);
-    char filename[PATH_MAX];
+    char filename[PATH_MAX] = { 0 };
     gboolean from_cache = FALSE;
     dt_image_full_path(imgid, filename, sizeof(filename), &from_cache);
 
@@ -623,7 +623,7 @@ static int32_t dt_control_delete_images_job_run(dt_job_t *job)
       // all sidecar files - including left-overs - can be deleted;
       // left-overs can result when previously duplicates have been REMOVED;
       // no need to keep them as the source data file is gone.
-      gchar pattern[PATH_MAX];
+      gchar pattern[PATH_MAX] = { 0 };
 
       // NULL terminated list of glob patterns; should include "" and can be extended if needed
       static const gchar *glob_patterns[] = { "", "_[0-9][0-9]", "_[0-9][0-9][0-9]", "_[0-9][0-9][0-9][0-9]", NULL };
@@ -966,7 +966,7 @@ static int32_t dt_control_export_job_run(dt_job_t *job)
       // make sure the 'exported' tag is set on the image
       dt_tag_attach(etagid, imgid);
       // check if image still exists:
-      char imgfilename[PATH_MAX];
+      char imgfilename[PATH_MAX] = { 0 };
       const dt_image_t *image = dt_image_cache_read_get(darktable.image_cache, (int32_t)imgid);
       if(image)
       {
