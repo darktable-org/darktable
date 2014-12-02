@@ -44,7 +44,9 @@ const char *dt_lib_collect_string[] =
   N_("ISO"),
   N_("aperture"),
   N_("filename"),
-  N_("geotagging")
+  N_("geotagging"),
+  N_("before"),
+  N_("after")
 };
 const int dt_lib_collect_string_cnt = sizeof(dt_lib_collect_string) / sizeof(dt_lib_collect_string[0]);
 
