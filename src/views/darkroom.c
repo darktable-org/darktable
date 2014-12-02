@@ -160,7 +160,7 @@ void expose(dt_view_t *self, cairo_t *cri, int32_t width_i, int32_t height_i, in
     image_surface_width = width;
     image_surface_height = height;
     if(image_surface) cairo_surface_destroy(image_surface);
-    image_surface = cairo_image_surface_create(CAIRO_FORMAT_RGB24, width, height);
+    image_surface = dt_cairo_image_surface_create(CAIRO_FORMAT_RGB24, width, height);
     image_surface_imgid = -1; // invalidate old stuff
   }
   cairo_surface_t *surface;

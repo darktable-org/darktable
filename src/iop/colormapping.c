@@ -907,7 +907,7 @@ static gboolean cluster_preview_expose(GtkWidget *widget, GdkEventExpose *event,
   gtk_widget_get_allocation(widget, &allocation);
   const int inset = 5;
   int width = allocation.width, height = allocation.height;
-  cairo_surface_t *cst = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height);
+  cairo_surface_t *cst = dt_cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height);
   cairo_t *cr = cairo_create(cst);
   cairo_set_source_rgb(cr, .2, .2, .2);
   cairo_paint(cr);

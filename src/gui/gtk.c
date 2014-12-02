@@ -319,7 +319,7 @@ static gboolean expose_borders(GtkWidget *widget, GdkEventExpose *event, gpointe
   GtkAllocation allocation;
   gtk_widget_get_allocation(widget, &allocation);
   float width = allocation.width, height = allocation.height;
-  cairo_surface_t *cst = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height);
+  cairo_surface_t *cst = dt_cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height);
   cairo_t *cr = cairo_create(cst);
   GtkStyle *style = gtk_widget_get_style(dt_ui_center(darktable.gui->ui));
   cairo_set_source_rgb(cr, .5f * style->bg[GTK_STATE_NORMAL].red / 65535.0,
@@ -598,7 +598,7 @@ static gboolean configure(GtkWidget *da, GdkEventConfigure *event, gpointer user
   {
     // create our new pixmap with the correct size.
     cairo_surface_t *tmpsurface
-        = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, event->width, event->height);
+        = dt_cairo_image_surface_create(CAIRO_FORMAT_ARGB32, event->width, event->height);
     // copy the contents of the old pixmap to the new pixmap.  This keeps ugly uninitialized
     // pixmaps from being painted upon resize
     //     int minw = oldw, minh = oldh;
@@ -960,7 +960,7 @@ void dt_gui_gtk_run(dt_gui_gtk_t *gui)
   GtkAllocation allocation;
   gtk_widget_get_allocation(widget, &allocation);
   darktable.gui->surface
-      = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, allocation.width, allocation.height);
+      = dt_cairo_image_surface_create(CAIRO_FORMAT_ARGB32, allocation.width, allocation.height);
   // need to pre-configure views to avoid crash caused by expose-event coming before configure-event
   darktable.control->tabborder = 8;
   int tb = darktable.control->tabborder;
@@ -988,6 +988,7 @@ static void init_widgets(dt_gui_gtk_t *gui)
   gui->ui->main_window = widget;
 
   // get the screen resolution
+  gui->ppd = 1.0;
   float screen_dpi_overwrite = dt_conf_get_float("screen_dpi_overwrite");
   if(screen_dpi_overwrite > 0.0)
   {
@@ -1002,6 +1003,7 @@ static void init_widgets(dt_gui_gtk_t *gui)
 #ifdef GDK_WINDOWING_QUARTZ
     GdkScreen *screen = gtk_widget_get_screen(widget);
     if(screen == NULL) screen = gdk_screen_get_default();
+    gui->ppd = gdk_screen_get_resolution(screen) / 72.0;
     int monitor = gdk_screen_get_primary_monitor(screen);
     CGDirectDisplayID ids[monitor + 1];
     uint32_t total_ids;

@@ -1311,7 +1311,7 @@ static gboolean dt_bauhaus_popup_expose(GtkWidget *widget, GdkEventExpose *event
   GtkAllocation allocation_current;
   gtk_widget_get_allocation(current, &allocation_current);
   int wd = allocation_current.width, ht = allocation_current.height;
-  cairo_surface_t *cst = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height);
+  cairo_surface_t *cst = dt_cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height);
   cairo_t *cr = cairo_create(cst);
 
   // draw same things as original widget, for visual consistency:
@@ -1505,7 +1505,7 @@ static gboolean dt_bauhaus_expose(GtkWidget *widget, GdkEventExpose *event, gpoi
   gtk_widget_get_allocation(widget, &allocation);
   dt_bauhaus_widget_t *w = DT_BAUHAUS_WIDGET(widget);
   const int width = allocation.width, height = allocation.height;
-  cairo_surface_t *cst = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height);
+  cairo_surface_t *cst = dt_cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height);
   cairo_t *cr = cairo_create(cst);
 
   dt_bauhaus_clear(w, cr);

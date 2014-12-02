@@ -253,7 +253,7 @@ static GdkPixbuf *init_pin()
   b = ((thumb_frame_color & 0x0000ff00) >> 8) / 255.0;
   a = ((thumb_frame_color & 0x000000ff) >> 0) / 255.0;
 
-  cairo_surface_t *cst = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, w, h);
+  cairo_surface_t *cst = dt_cairo_image_surface_create(CAIRO_FORMAT_ARGB32, w, h);
   cairo_t *cr = cairo_create(cst);
   cairo_set_source_rgba(cr, r, g, b, a);
   dtgtk_cairo_paint_map_pin(cr, 0, 0, w, h, 0);
