@@ -1921,6 +1921,20 @@ void dt_masks_cleanup_unused(dt_develop_t *dev)
   dt_masks_write_forms(dev);
   free(used);
 }
+
+void dt_masks_sync_clone(dt_develop_t *dev, int formid)
+{
+  sqlite3_stmt *stmt;
+
+  // copy all the clone forms (DT_MASKS_CLONE = 8) from the image having the formid into the current image
+
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "INSERT INTO mask SELECT ?1,formid,form,name,version,points,points_count,source FROM mask WHERE imgid=(SELECT imgid FROM mask WHERE formid=?2) AND form&8==8", -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, dev->image_storage.id);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, formid);
+  sqlite3_step(stmt);
+  sqlite3_finalize (stmt);
+}
+
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

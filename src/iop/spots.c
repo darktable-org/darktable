@@ -23,6 +23,7 @@
 #include "develop/blend.h"
 #include "control/control.h"
 #include "control/conf.h"
+#include "common/debug.h"
 #include "gui/gtk.h"
 #include <gtk/gtk.h>
 #include <stdlib.h>
@@ -116,12 +117,25 @@ static void _resynch_params(struct dt_iop_module_t *self)
   dt_iop_spots_params_t *p = (dt_iop_spots_params_t *)self->params;
   dt_develop_blend_params_t *bp = self->blend_params;
 
+  // get the forms
+  dt_masks_form_t *grp = dt_masks_get_from_id(darktable.develop,bp->mask_id);
+
+  // if we have some masks, check if we need to clone there from another image. This is needed when applying a preset
+  // for example. In this case we indeed get the formid but the mask database table does not contain any information
+  // for the corresponding form.
+
+  if (p->clone_id[0]!=0 && grp==NULL)
+  {
+    dt_masks_sync_clone(self->dev, p->clone_id[0]);
+    dt_masks_read_forms(self->dev);
+    // then re-read the forms
+    grp = dt_masks_get_from_id(darktable.develop,bp->mask_id);
+  }
+
   //we create 2 new buffers
   int nid[64] = {0};
   int nalgo[64] = {2};
 
-  //we go through all forms in blend params
-  dt_masks_form_t *grp = dt_masks_get_from_id(darktable.develop,bp->mask_id);
   if (grp && (grp->type & DT_MASKS_GROUP))
   {
     GList *forms = g_list_first(grp->points);
