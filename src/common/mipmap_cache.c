@@ -220,7 +220,7 @@ dt_mipmap_cache_get_filename(
   char* abspath = NULL;
 
   // Directory
-  char cachedir[PATH_MAX];
+  char cachedir[PATH_MAX] = { 0 };
   dt_loc_get_user_cache_dir(cachedir, sizeof(cachedir));
 
   // Build the mipmap filename
@@ -257,7 +257,7 @@ exit:
 static int
 dt_mipmap_cache_serialize(dt_mipmap_cache_t *cache)
 {
-  gchar dbfilename[PATH_MAX];
+  gchar dbfilename[PATH_MAX] = { 0 };
   if (dt_mipmap_cache_get_filename(dbfilename, sizeof(dbfilename)))
   {
     fprintf(stderr, "[mipmap_cache] could not retrieve cache filename; not serializing\n");
@@ -326,7 +326,7 @@ dt_mipmap_cache_deserialize(dt_mipmap_cache_t *cache)
   FILE *f = NULL;
   int file_width[mip+1], file_height[mip+1];
 
-  gchar dbfilename[PATH_MAX];
+  gchar dbfilename[PATH_MAX] = { 0 };
   if (dt_mipmap_cache_get_filename(dbfilename, sizeof(dbfilename)))
   {
     fprintf(stderr, "[mipmap_cache] could not retrieve cache filename; not deserializing\n");
@@ -914,7 +914,7 @@ dt_mipmap_cache_read_get(
           // dt_image_cache_write_release(darktable.image_cache, img, DT_IMAGE_CACHE_RELAXED);
           dt_image_cache_read_release(darktable.image_cache, cimg);
 
-          char filename[PATH_MAX];
+          char filename[PATH_MAX] = { 0 };
           gboolean from_cache = TRUE;
           dt_image_full_path(buffered_image.id, filename, sizeof(filename), &from_cache);
 

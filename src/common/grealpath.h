@@ -21,7 +21,7 @@ g_realpath (const char *path)
 #ifndef PATH_MAX
 #define PATH_MAX 4096
 #endif
-  char buffer [PATH_MAX];
+  char buffer [PATH_MAX] = { 0 };
   if (realpath(path, buffer))
     return g_strdup(buffer);
   else

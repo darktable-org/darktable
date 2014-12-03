@@ -541,7 +541,7 @@ static cmsHPROFILE _create_profile(gchar *iccprofile)
   else
   {
     // else: load file name
-    char filename[PATH_MAX];
+    char filename[PATH_MAX] = { 0 };
     dt_colorspaces_find_profile(filename, sizeof(filename), iccprofile, "out");
     profile = cmsOpenProfileFromFile(filename, "r");
   }
@@ -867,10 +867,10 @@ void gui_init(struct dt_iop_module_t *self)
   g->profiles = g_list_append(g->profiles, prof);
 
   // read {conf,data}dir/color/out/*.icc
-  char datadir[PATH_MAX];
-  char confdir[PATH_MAX];
-  char dirname[PATH_MAX];
-  char filename[PATH_MAX];
+  char datadir[PATH_MAX] = { 0 };
+  char confdir[PATH_MAX] = { 0 };
+  char dirname[PATH_MAX] = { 0 };
+  char filename[PATH_MAX] = { 0 };
   dt_loc_get_user_config_dir(confdir, sizeof(confdir));
   dt_loc_get_datadir(datadir, sizeof(datadir));
   snprintf(dirname, sizeof(dirname), "%s/color/out", confdir);

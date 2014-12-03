@@ -154,7 +154,7 @@ gboolean dt_image_safe_remove(const int32_t imgid)
   if(!dt_conf_get_bool("write_sidecar_files")) return TRUE;
 
   // check whether the original file is accessible
-  char pathname[PATH_MAX];
+  char pathname[PATH_MAX] = { 0 };
   gboolean from_cache = TRUE;
 
   dt_image_full_path(imgid, pathname, sizeof(pathname), &from_cache);
@@ -203,8 +203,8 @@ static void _image_local_copy_full_path(const int imgid, char *pathname, size_t 
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
   if(sqlite3_step(stmt) == SQLITE_ROW)
   {
-    char filename[PATH_MAX];
-    char cachedir[PATH_MAX];
+    char filename[PATH_MAX] = { 0 };
+    char cachedir[PATH_MAX] = { 0 };
     g_strlcpy(filename, (char *)sqlite3_column_text(stmt, 0), pathname_len);
     char *md5_filename = g_compute_checksum_for_string (G_CHECKSUM_MD5, filename, strlen (filename));
     dt_loc_get_user_cache_dir(cachedir, sizeof(cachedir));
@@ -587,7 +587,7 @@ void dt_image_read_duplicates(const uint32_t id, const char *filename)
   // Search for duplicate's sidecar files and import them if found and not in DB yet
   gchar *imgfname = g_path_get_basename(filename);
   gchar *imgpath = g_path_get_dirname(filename);
-  gchar pattern[PATH_MAX];
+  gchar pattern[PATH_MAX] = { 0 };
 
   // NULL terminated list of glob patterns; should include "" and can be extended if needed
   static const gchar *glob_patterns[] = { "", "_[0-9][0-9]", "_[0-9][0-9][0-9]", "_[0-9][0-9][0-9][0-9]", NULL };
@@ -858,7 +858,7 @@ uint32_t dt_image_import(const int32_t film_id, const char *filename, gboolean o
 
   // read dttags and exif for database queries!
   (void) dt_exif_read(img, filename);
-  char dtfilename[PATH_MAX];
+  char dtfilename[PATH_MAX] = { 0 };
   g_strlcpy(dtfilename, filename, sizeof(dtfilename));
   //dt_image_path_append_version(id, dtfilename, sizeof(dtfilename));
   g_strlcat(dtfilename, ".xmp", sizeof(dtfilename));
@@ -961,8 +961,8 @@ int32_t dt_image_move(const int32_t imgid, const int32_t filmid)
 
   if(newdir)
   {
-    gchar copysrcpath[PATH_MAX];
-    gchar copydestpath[PATH_MAX];
+    gchar copysrcpath[PATH_MAX] = { 0 };
+    gchar copydestpath[PATH_MAX] = { 0 };
     gchar *imgbname = g_path_get_basename(oldimg);
     g_snprintf(newimg, sizeof(newimg), "%s%c%s", newdir, G_DIR_SEPARATOR, imgbname);
     g_free(imgbname);
@@ -992,7 +992,7 @@ int32_t dt_image_move(const int32_t imgid, const int32_t filmid)
       {
         int32_t id = sqlite3_column_int(duplicates_stmt, 0);
         dup_list = g_list_append(dup_list, GINT_TO_POINTER(id));
-        gchar oldxmp[PATH_MAX], newxmp[PATH_MAX];
+        gchar oldxmp[PATH_MAX] = { 0 }, newxmp[PATH_MAX] = { 0 };
         g_strlcpy(oldxmp, oldimg, sizeof(oldxmp));
         g_strlcpy(newxmp, newimg, sizeof(newxmp));
         dt_image_path_append_version(id, oldxmp, sizeof(oldxmp));
@@ -1378,7 +1378,7 @@ void dt_image_write_sidecar_file(int imgid)
   if(imgid > 0 && dt_conf_get_bool("write_sidecar_files"))
   {
     gboolean from_cache = TRUE;
-    char filename[PATH_MAX];
+    char filename[PATH_MAX] = { 0 };
     dt_image_full_path(imgid, filename, sizeof(filename), &from_cache);
     dt_image_path_append_version(imgid, filename, sizeof(filename));
     g_strlcat(filename, ".xmp", sizeof(filename));
@@ -1456,7 +1456,7 @@ void dt_image_local_copy_synch(void)
   {
     const int imgid = sqlite3_column_int(stmt, 0);
     gboolean from_cache = TRUE;
-    char filename[PATH_MAX];
+    char filename[PATH_MAX] = { 0 };
     dt_image_full_path(imgid, filename, sizeof(filename), &from_cache);
 
     if (!from_cache)
@@ -1562,7 +1562,7 @@ char* dt_image_get_audio_path_from_path(const char* image_path)
 char* dt_image_get_audio_path(const int32_t imgid)
 {
   gboolean from_cache = FALSE;
-  char image_path[PATH_MAX];
+  char image_path[PATH_MAX] = { 0 };
   dt_image_full_path(imgid, image_path, sizeof(image_path), &from_cache);
 
   return dt_image_get_audio_path_from_path(image_path);
@@ -1596,7 +1596,7 @@ char* dt_image_get_text_path_from_path(const char* image_path)
 char* dt_image_get_text_path(const int32_t imgid)
 {
   gboolean from_cache = FALSE;
-  char image_path[PATH_MAX];
+  char image_path[PATH_MAX] = { 0 };
   dt_image_full_path(imgid, image_path, sizeof(image_path), &from_cache);
 
   return dt_image_get_text_path_from_path(image_path);

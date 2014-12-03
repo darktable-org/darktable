@@ -643,7 +643,7 @@ dt_lib_load_modules ()
   darktable.lib->plugins = NULL;
   GList *res = NULL;
   dt_lib_module_t *module;
-  char plugindir[PATH_MAX], plugin_name[256];
+  char plugindir[PATH_MAX] = { 0 }, plugin_name[256];
   const gchar *d_name;
   dt_loc_get_plugindir(plugindir, sizeof(plugindir));
   g_strlcat(plugindir, "/plugins/lighttable", sizeof(plugindir));

@@ -122,7 +122,7 @@ button_clicked (GtkWidget *widget, dt_imageio_module_storage_t *self)
   if (gtk_dialog_run (GTK_DIALOG (filechooser)) == GTK_RESPONSE_ACCEPT)
   {
     gchar *dir = gtk_file_chooser_get_filename (GTK_FILE_CHOOSER (filechooser));
-    char composed[PATH_MAX];
+    char composed[PATH_MAX] = { 0 };
     snprintf(composed, sizeof(composed), "%s/$(FILE_NAME)", dir);
     gtk_entry_set_text(GTK_ENTRY(d->entry), composed);
     dt_conf_set_string("plugins/imageio/storage/gallery/file_directory", composed);
@@ -232,7 +232,7 @@ store (dt_imageio_module_storage_t *self, dt_imageio_module_data_t *sdata, const
   dt_pthread_mutex_lock(&darktable.plugin_threadsafe);
   {
 
-    char tmp_dir[PATH_MAX];
+    char tmp_dir[PATH_MAX] = { 0 };
 
     d->vp->filename = dirname;
     d->vp->jobcode = "export";
@@ -298,7 +298,7 @@ store (dt_imageio_module_storage_t *self, dt_imageio_module_data_t *sdata, const
       description = res_desc->data;
     }
 
-    char relfilename[PATH_MAX], relthumbfilename[PATH_MAX];
+    char relfilename[PATH_MAX] = { 0 }, relthumbfilename[PATH_MAX] = { 0 };
     c = filename + strlen(filename);
     for(; c>filename && *c != '/' ; c--);
     if(*c == '/') c++;
@@ -310,7 +310,7 @@ store (dt_imageio_module_storage_t *self, dt_imageio_module_data_t *sdata, const
     if(c <= relthumbfilename) c = relthumbfilename + strlen(relthumbfilename);
     sprintf(c, "-thumb.%s", ext);
 
-    char subfilename[PATH_MAX], relsubfilename[PATH_MAX];
+    char subfilename[PATH_MAX] = { 0 }, relsubfilename[PATH_MAX] = { 0 };
     snprintf(subfilename, sizeof(subfilename), "%s", d->cached_dirname);
     char* sc = subfilename + strlen(subfilename);
     sprintf(sc, "/img_%d.html", num);
@@ -322,10 +322,10 @@ store (dt_imageio_module_storage_t *self, dt_imageio_module_data_t *sdata, const
              "      <h1>%s</h1>\n"
              "      %s</div>\n", title?title:relfilename, description?description:"&nbsp;", relfilename, relthumbfilename, num, title?title:"&nbsp;", description?description:"&nbsp;");
 
-    char next[PATH_MAX];
+    char next[PATH_MAX] = { 0 };
     snprintf(next, sizeof(next), "img_%d.html", (num)%total+1);
 
-    char prev[PATH_MAX];
+    char prev[PATH_MAX] = { 0 };
     snprintf(prev, sizeof(prev), "img_%d.html", (num==1)?total:num-1);
 
     pair->pos = num;
@@ -375,7 +375,7 @@ store (dt_imageio_module_storage_t *self, dt_imageio_module_data_t *sdata, const
 static void
 copy_res(const char *src, const char *dst)
 {
-  char share[PATH_MAX];
+  char share[PATH_MAX] = { 0 };
   dt_loc_get_datadir(share, sizeof(share));
   gchar *sourcefile = g_build_filename(share, src, NULL);
   char* content = NULL;
@@ -410,7 +410,7 @@ void
 finalize_store(dt_imageio_module_storage_t *self, dt_imageio_module_data_t *dd)
 {
   dt_imageio_gallery_t *d = (dt_imageio_gallery_t *)dd;
-  char filename[PATH_MAX];
+  char filename[PATH_MAX] = { 0 };
   snprintf(filename, sizeof(filename), "%s", d->cached_dirname);
   char *c = filename + strlen(filename);
 

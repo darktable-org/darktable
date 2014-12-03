@@ -573,10 +573,10 @@ gui_init (dt_lib_module_t *self)
   d->profiles = g_list_append(d->profiles, prof);
 
   // read datadir/color/out/*.icc
-  char datadir[PATH_MAX];
-  char confdir[PATH_MAX];
-  char dirname[PATH_MAX];
-  char filename[PATH_MAX];
+  char datadir[PATH_MAX] = { 0 };
+  char confdir[PATH_MAX] = { 0 };
+  char dirname[PATH_MAX] = { 0 };
+  char filename[PATH_MAX] = { 0 };
   dt_loc_get_user_config_dir(confdir, sizeof(confdir));
   dt_loc_get_datadir(datadir, sizeof(datadir));
   cmsHPROFILE tmpprof;

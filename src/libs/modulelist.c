@@ -232,7 +232,7 @@ static void _lib_modulelist_populate_callback(gpointer instance, gpointer user_d
   /* go thru list of iop modules and add them to the list */
   GList *modules = g_list_last(darktable.develop->iop);
 
-  char datadir[PATH_MAX];
+  char datadir[PATH_MAX] = { 0 };
   dt_loc_get_datadir(datadir, sizeof(datadir));
 
   while(modules)
@@ -241,7 +241,7 @@ static void _lib_modulelist_populate_callback(gpointer instance, gpointer user_d
     if(!dt_iop_is_hidden(module) && !(module->flags() & IOP_FLAGS_DEPRECATED) && module->multi_priority==0)
     {
       GdkPixbuf *pixbuf;
-      char filename[PATH_MAX];
+      char filename[PATH_MAX] = { 0 };
 
       snprintf(filename, sizeof(filename), "%s/pixmaps/plugins/darkroom/%s.svg", datadir, module->op);
       pixbuf = load_image(filename);

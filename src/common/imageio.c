@@ -870,7 +870,7 @@ int dt_imageio_export_with_flags(
   {
     int length;
     uint8_t exif_profile[65535]; // C++ alloc'ed buffer is uncool, so we waste some bits here.
-    char pathname[PATH_MAX];
+    char pathname[PATH_MAX] = { 0 };
     gboolean from_cache = TRUE;
     dt_image_full_path(imgid, pathname, sizeof(pathname), &from_cache);
     // last param is dng mode, it's false here

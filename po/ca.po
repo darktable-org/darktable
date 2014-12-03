@@ -8,8 +8,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 0.6.1~rc\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2014-11-28 09:59+0100\n"
-"PO-Revision-Date: 2014-11-28 10:39+0100\n"
+"POT-Creation-Date: 2014-12-03 00:26+0100\n"
+"PO-Revision-Date: 2014-12-03 00:27+0100\n"
 "Last-Translator: Josep V. Moragues <josepvm@arrakis.es>\n"
 "Language-Team: Catalan\n"
 "Language: ca\n"
@@ -1206,7 +1206,7 @@ msgstr[1] "s'estan exportant %d imatges a %s"
 msgid "image `%s' is currently unavailable"
 msgstr "la imatge `%s' no està disponible"
 
-#: ../src/control/jobs/control_jobs.c:1077
+#: ../src/control/jobs/control_jobs.c:1081
 #, c-format
 msgid "do you really want to remove %d selected image from the collection?"
 msgid_plural ""
@@ -1216,11 +1216,11 @@ msgstr[0] ""
 msgstr[1] ""
 "esteu segur que voleu treure %d imatges seleccionades de la col·lecció?"
 
-#: ../src/control/jobs/control_jobs.c:1080
+#: ../src/control/jobs/control_jobs.c:1084
 msgid "remove images?"
 msgstr "voleu suprimir les imatges?"
 
-#: ../src/control/jobs/control_jobs.c:1109
+#: ../src/control/jobs/control_jobs.c:1117
 #, c-format
 msgid "do you really want to physically delete %d selected image from disk?"
 msgid_plural ""
@@ -1231,12 +1231,12 @@ msgstr[1] ""
 "esteu segur que voleu eliminar físicament del disc les %d imatges "
 "seleccionades?"
 
-#: ../src/control/jobs/control_jobs.c:1112
+#: ../src/control/jobs/control_jobs.c:1120
 msgid "delete images?"
 msgstr "voleu eliminar les imatges?"
 
-#: ../src/control/jobs/control_jobs.c:1135
-#: ../src/control/jobs/control_jobs.c:1193 ../src/imageio/storage/disk.c:96
+#: ../src/control/jobs/control_jobs.c:1143
+#: ../src/control/jobs/control_jobs.c:1201 ../src/imageio/storage/disk.c:96
 #: ../src/imageio/storage/disk.c:164 ../src/imageio/storage/gallery.c:109
 #: ../src/imageio/storage/gallery.c:176 ../src/imageio/storage/latex.c:109
 #: ../src/imageio/storage/latex.c:176 ../src/libs/styles.c:240
@@ -1244,7 +1244,7 @@ msgstr "voleu eliminar les imatges?"
 msgid "select directory"
 msgstr "seleccioneu un directori"
 
-#: ../src/control/jobs/control_jobs.c:1161
+#: ../src/control/jobs/control_jobs.c:1169
 #, c-format
 msgid ""
 "do you really want to physically move the %d selected image to %s?\n"
@@ -1259,13 +1259,13 @@ msgstr[1] ""
 "esteu segur que voleu moure físicament les %d imatges seleccionades a %s?\n"
 "(tots els duplicats no seleccionats seran moguts alhora)"
 
-#: ../src/control/jobs/control_jobs.c:1165
+#: ../src/control/jobs/control_jobs.c:1173
 msgid "move image?"
 msgid_plural "move images?"
 msgstr[0] "voleu moure la imatge?"
 msgstr[1] "voleu moure les imatges?"
 
-#: ../src/control/jobs/control_jobs.c:1219
+#: ../src/control/jobs/control_jobs.c:1227
 #, c-format
 msgid "do you really want to physically copy the %d selected image to %s?"
 msgid_plural "do you really want to physically copy %d selected images to %s?"
@@ -1274,27 +1274,27 @@ msgstr[0] ""
 msgstr[1] ""
 "esteu segur que voleu copiar físicament les %d imatges seleccionades a %s?"
 
-#: ../src/control/jobs/control_jobs.c:1222
+#: ../src/control/jobs/control_jobs.c:1230
 msgid "copy image?"
 msgid_plural "copy images?"
 msgstr[0] "voleu copiar la imatge?"
 msgstr[1] "voleu copiar les imatges?"
 
-#: ../src/control/jobs/control_jobs.c:1276
+#: ../src/control/jobs/control_jobs.c:1284
 #, c-format
 msgid "failed to get parameters from storage module `%s', aborting export.."
 msgstr ""
 "no s'han pogut obtenir paràmetres del mòdul emmagatzematge `%s', avortant "
 "exportació .."
 
-#: ../src/control/jobs/control_jobs.c:1315
+#: ../src/control/jobs/control_jobs.c:1323
 #, c-format
 msgid "adding time offset to %d image"
 msgid_plural "adding time offset to %d images"
 msgstr[0] "aplicant decalatge horari a %d imatge"
 msgstr[1] "aplicant decalatge horari a %d imatges"
 
-#: ../src/control/jobs/control_jobs.c:1335
+#: ../src/control/jobs/control_jobs.c:1343
 #, c-format
 msgid "added time offset to %d image(s)"
 msgstr "aplicat decalatge horari a %d imatge(s)"
@@ -2113,83 +2113,83 @@ msgid "please use YYYY-MM-DD format for date override"
 msgstr "Feu servir el format AAAA-MM-DD per sobreescriure la data"
 
 #. register keys for view switching
-#: ../src/gui/gtk.c:904
+#: ../src/gui/gtk.c:909
 msgctxt "accel"
 msgid "capture view"
 msgstr "captura vista"
 
-#: ../src/gui/gtk.c:905
+#: ../src/gui/gtk.c:910
 msgctxt "accel"
 msgid "lighttable view"
 msgstr "vista de taula de llum"
 
-#: ../src/gui/gtk.c:906
+#: ../src/gui/gtk.c:911
 msgctxt "accel"
 msgid "darkroom view"
 msgstr "vista de cambra fosca"
 
-#: ../src/gui/gtk.c:907
+#: ../src/gui/gtk.c:912
 msgctxt "accel"
 msgid "map view"
 msgstr "vista de mapa"
 
-#: ../src/gui/gtk.c:908
+#: ../src/gui/gtk.c:913
 msgctxt "accel"
 msgid "slideshow view"
 msgstr "vista de projecció de diapositives"
 
 #. register ctrl-q to quit:
-#: ../src/gui/gtk.c:935
+#: ../src/gui/gtk.c:940
 msgctxt "accel"
 msgid "quit"
 msgstr "surt"
 
 #. Contrast and brightness accelerators
-#: ../src/gui/gtk.c:942
+#: ../src/gui/gtk.c:947
 msgctxt "accel"
 msgid "increase brightness"
 msgstr "augmenta la brillantor"
 
-#: ../src/gui/gtk.c:944
+#: ../src/gui/gtk.c:949
 msgctxt "accel"
 msgid "decrease brightness"
 msgstr "redueix la brillantor"
 
-#: ../src/gui/gtk.c:946
+#: ../src/gui/gtk.c:951
 msgctxt "accel"
 msgid "increase contrast"
 msgstr "augmenta contrast"
 
-#: ../src/gui/gtk.c:948
+#: ../src/gui/gtk.c:953
 msgctxt "accel"
 msgid "decrease contrast"
 msgstr "redueix contrast"
 
 #. Full-screen accelerators
-#: ../src/gui/gtk.c:969
+#: ../src/gui/gtk.c:974
 msgctxt "accel"
 msgid "toggle fullscreen"
 msgstr "permuta mode pantalla completa"
 
-#: ../src/gui/gtk.c:970
+#: ../src/gui/gtk.c:975
 msgctxt "accel"
 msgid "leave fullscreen"
 msgstr "surt de mode pantalla completa"
 
 #. Side-border hide/show
-#: ../src/gui/gtk.c:982
+#: ../src/gui/gtk.c:987
 msgctxt "accel"
 msgid "toggle side borders"
 msgstr "permuta vista vores laterals"
 
 #. toggle view of header
-#: ../src/gui/gtk.c:985
+#: ../src/gui/gtk.c:990
 msgctxt "accel"
 msgid "toggle header"
 msgstr "mostra/amaga capçalera"
 
 #. View-switch
-#: ../src/gui/gtk.c:989
+#: ../src/gui/gtk.c:994
 msgctxt "accel"
 msgid "switch view"
 msgstr "alterna vista"
@@ -3475,7 +3475,7 @@ msgstr "intensitat d'efecte d'enlluernament"
 
 #: ../src/iop/borders.c:166
 msgid "framing"
-msgstr "enmarca"
+msgstr "emmarca"
 
 #: ../src/iop/borders.c:188
 msgctxt "accel"

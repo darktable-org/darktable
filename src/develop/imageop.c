@@ -1132,7 +1132,7 @@ void dt_iop_load_modules_so()
   GList *res = NULL;
   dt_iop_module_so_t *module;
   darktable.iop = NULL;
-  char plugindir[PATH_MAX], op[20];
+  char plugindir[PATH_MAX] = { 0 }, op[20];
   const gchar *d_name;
   dt_loc_get_plugindir(plugindir, sizeof(plugindir));
   g_strlcat(plugindir, "/plugins", sizeof(plugindir));

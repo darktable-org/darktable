@@ -1048,7 +1048,7 @@ static void _database_delete_mipmaps_files()
   /* This migration is intended to be run only from 0.9.x to new cache in 1.0 */
 
   // Directory
-  char cachedir[PATH_MAX], mipmapfilename[PATH_MAX];
+  char cachedir[PATH_MAX] = { 0 }, mipmapfilename[PATH_MAX] = { 0 };
   dt_loc_get_user_cache_dir(cachedir, sizeof(cachedir));
 
   snprintf(mipmapfilename, sizeof(mipmapfilename), "%s/mipmaps", cachedir);

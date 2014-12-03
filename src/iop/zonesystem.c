@@ -504,8 +504,8 @@ void gui_init(struct dt_iop_module_t *self)
   g->image_width = 0;
   g->image_height = 0;
 
-  char filename[PATH_MAX];
-  char datadir[PATH_MAX];
+  char filename[PATH_MAX] = { 0 };
+  char datadir[PATH_MAX] = { 0 };
   char *logo;
   dt_logo_season_t season = get_logo_season();
   if(season != DT_LOGO_SEASON_NONE)

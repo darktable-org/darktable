@@ -595,8 +595,8 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
   d->lut[1][0] = -1.0f;
   d->lut[2][0] = -1.0f;
   piece->process_cl_ready = 1;
-  char datadir[PATH_MAX];
-  char filename[PATH_MAX];
+  char datadir[PATH_MAX] = { 0 };
+  char filename[PATH_MAX] = { 0 };
   dt_loc_get_datadir(datadir, sizeof(datadir));
 
   char iccprofile[DT_IOP_COLOR_ICC_LEN];
@@ -894,7 +894,7 @@ void reload_defaults(dt_iop_module_t *module)
   const dt_image_t *cimg = dt_image_cache_read_get(darktable.image_cache, module->dev->image_storage.id);
   if(!cimg->profile)
   {
-    char filename[PATH_MAX];
+    char filename[PATH_MAX] = { 0 };
     gboolean from_cache = TRUE;
     dt_image_full_path(cimg->id, filename, sizeof(filename), &from_cache);
     const gchar *cc = filename + strlen(filename);
@@ -1200,10 +1200,10 @@ void gui_init(struct dt_iop_module_t *self)
   prof->pos = ++pos;
 
   // read {userconfig,datadir}/color/in/*.icc, in this order.
-  char datadir[PATH_MAX];
-  char confdir[PATH_MAX];
-  char dirname[PATH_MAX];
-  char filename[PATH_MAX];
+  char datadir[PATH_MAX] = { 0 };
+  char confdir[PATH_MAX] = { 0 };
+  char dirname[PATH_MAX] = { 0 };
+  char filename[PATH_MAX] = { 0 };
   dt_loc_get_user_config_dir(confdir, sizeof(confdir));
   dt_loc_get_datadir(datadir, sizeof(datadir));
   snprintf(dirname, sizeof(dirname), "%s/color/in", confdir);

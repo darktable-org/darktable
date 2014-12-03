@@ -100,7 +100,7 @@ void dt_lua_init_early(lua_State*L)
 
 static int32_t run_early_script(dt_job_t *job)
 {
-  char tmp_path[PATH_MAX];
+  char tmp_path[PATH_MAX] = { 0 };
   lua_State *L = darktable.lua_state.state;
   gboolean has_lock = dt_lua_lock();
   // run global init script
@@ -156,7 +156,7 @@ void dt_lua_init(lua_State*L,const char *lua_command)
      held, but this is not a problem because it is very brief, user calls
      are delegated to a secondary job
      */
-  char tmp_path[PATH_MAX];
+  char tmp_path[PATH_MAX] = { 0 };
   // init the lua environment
   lua_CFunction* cur_type = init_funcs;
   while(*cur_type)

@@ -118,7 +118,7 @@ store (dt_imageio_module_storage_t *self, dt_imageio_module_data_t *sdata, const
   char tmpdir[PATH_MAX]= {0};
   dt_loc_get_tmp_dir (tmpdir, sizeof(tmpdir));
 
-  char dirname[PATH_MAX];
+  char dirname[PATH_MAX] = { 0 };
   gboolean from_cache = FALSE;
   dt_image_full_path(imgid, dirname, sizeof(dirname), &from_cache);
   gchar * filename = g_path_get_basename( dirname );
