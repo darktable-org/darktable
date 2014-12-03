@@ -39,11 +39,12 @@
 #include <inttypes.h>
 #include <xmmintrin.h>
 
-#define MAX_RADIUS  32
+#define MAX_RADIUS 32
 #define BOX_ITERATIONS 8
-#define BLOCKSIZE 2048		/* maximum blocksize. must be a power of 2 and will be automatically reduced if needed */
+#define BLOCKSIZE                                                                                            \
+  2048 /* maximum blocksize. must be a power of 2 and will be automatically reduced if needed */
 
-#define CLIP(x) ((x<0)?0.0:(x>1.0)?1.0:x)
+#define CLIP(x) ((x < 0) ? 0.0 : (x > 1.0) ? 1.0 : x)
 #define MM_CLIP_PS(X) (_mm_min_ps(_mm_max_ps((X), _mm_setzero_ps()), _mm_set1_ps(1.0)))
 
 DT_MODULE_INTROSPECTION(1, dt_iop_soften_params_t)
@@ -54,15 +55,13 @@ typedef struct dt_iop_soften_params_t
   float saturation;
   float brightness;
   float amount;
-}
-dt_iop_soften_params_t;
+} dt_iop_soften_params_t;
 
 typedef struct dt_iop_soften_gui_data_t
 {
-  GtkVBox   *vbox1,  *vbox2;
-  GtkWidget *scale1,*scale2,*scale3,*scale4;       // size,saturation,brightness,amount
-}
-dt_iop_soften_gui_data_t;
+  GtkVBox *vbox1, *vbox2;
+  GtkWidget *scale1, *scale2, *scale3, *scale4; // size,saturation,brightness,amount
+} dt_iop_soften_gui_data_t;
 
 typedef struct dt_iop_soften_data_t
 {
@@ -70,8 +69,7 @@ typedef struct dt_iop_soften_data_t
   float saturation;
   float brightness;
   float amount;
-}
-dt_iop_soften_data_t;
+} dt_iop_soften_data_t;
 
 typedef struct dt_iop_soften_global_data_t
 {
@@ -79,8 +77,7 @@ typedef struct dt_iop_soften_global_data_t
   int kernel_soften_hblur;
   int kernel_soften_vblur;
   int kernel_soften_mix;
-}
-dt_iop_soften_global_data_t;
+} dt_iop_soften_global_data_t;
 
 
 const char *name()
@@ -93,8 +90,7 @@ int flags()
   return IOP_FLAGS_INCLUDE_IN_STYLES | IOP_FLAGS_SUPPORTS_BLENDING | IOP_FLAGS_ALLOW_TILING;
 }
 
-int
-groups ()
+int groups()
 {
   return IOP_GROUP_EFFECT;
 }
@@ -109,7 +105,7 @@ void init_key_accels(dt_iop_module_so_t *self)
 
 void connect_key_accels(dt_iop_module_t *self)
 {
-  dt_iop_soften_gui_data_t *g = (dt_iop_soften_gui_data_t*)self->gui_data;
+  dt_iop_soften_gui_data_t *g = (dt_iop_soften_gui_data_t *)self->gui_data;
 
   dt_accel_connect_slider_iop(self, "size", GTK_WIDGET(g->scale1));
   dt_accel_connect_slider_iop(self, "saturation", GTK_WIDGET(g->scale2));
@@ -117,126 +113,123 @@ void connect_key_accels(dt_iop_module_t *self)
   dt_accel_connect_slider_iop(self, "mix", GTK_WIDGET(g->scale4));
 }
 
-void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoid, void *ovoid, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
+void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoid, void *ovoid,
+             const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
 {
   dt_iop_soften_data_t *data = (dt_iop_soften_data_t *)piece->data;
-  float *in  = (float *)ivoid;
+  float *in = (float *)ivoid;
   float *out = (float *)ovoid;
   const int ch = piece->colors;
 
-  const float brightness = 1.0 / exp2f ( -data->brightness );
-  const float saturation = data->saturation/100.0;
-  /* create overexpose image and then blur */
+  const float brightness = 1.0 / exp2f(-data->brightness);
+  const float saturation = data->saturation / 100.0;
+/* create overexpose image and then blur */
 #ifdef _OPENMP
-  #pragma omp parallel for default(none) shared(in,out,roi_out) schedule(static)
+#pragma omp parallel for default(none) shared(in, out, roi_out) schedule(static)
 #endif
-  for(size_t k=0; k<(size_t)roi_out->width*roi_out->height; k++)
+  for(size_t k = 0; k < (size_t)roi_out->width * roi_out->height; k++)
   {
-    size_t index = ch*k;
-    float h,s,l;
-    rgb2hsl(&in[index],&h,&s,&l);
-    s*=saturation;
-    l*=brightness;
-    hsl2rgb(&out[index],h,CLIP(s),CLIP(l));
+    size_t index = ch * k;
+    float h, s, l;
+    rgb2hsl(&in[index], &h, &s, &l);
+    s *= saturation;
+    l *= brightness;
+    hsl2rgb(&out[index], h, CLIP(s), CLIP(l));
   }
 
-  const float w = piece->iwidth*piece->iscale;
-  const float h = piece->iheight*piece->iscale;
-  int mrad = sqrt( w*w + h*h) * 0.01;
-  int rad = mrad*(fmin(100.0,data->size+1)/100.0);
+  const float w = piece->iwidth * piece->iscale;
+  const float h = piece->iheight * piece->iscale;
+  int mrad = sqrt(w * w + h * h) * 0.01;
+  int rad = mrad * (fmin(100.0, data->size + 1) / 100.0);
   const int radius = MIN(mrad, ceilf(rad * roi_in->scale / piece->iscale));
 
   const int size = roi_out->width > roi_out->height ? roi_out->width : roi_out->height;
 
-  for(int iteration=0; iteration<BOX_ITERATIONS; iteration++)
+  for(int iteration = 0; iteration < BOX_ITERATIONS; iteration++)
   {
 #ifdef _OPENMP
-  #pragma omp parallel for default(none) shared(out,roi_out) schedule(static)
+#pragma omp parallel for default(none) shared(out, roi_out) schedule(static)
 #endif
     /* horizontal blur out into out */
-    for(int y=0; y<roi_out->height; y++)
+    for(int y = 0; y < roi_out->height; y++)
     {
       __m128 scanline[size];
       size_t index = (size_t)y * roi_out->width;
       __m128 L = _mm_setzero_ps();
       int hits = 0;
-      for(int x=-radius; x<roi_out->width; x++)
+      for(int x = -radius; x < roi_out->width; x++)
       {
-        int op = x - radius-1;
-        int np = x+radius;
-        if(op>=0)
+        int op = x - radius - 1;
+        int np = x + radius;
+        if(op >= 0)
         {
-          L = _mm_sub_ps(L, _mm_load_ps(&out[(index+op)*ch]));
+          L = _mm_sub_ps(L, _mm_load_ps(&out[(index + op) * ch]));
           hits--;
         }
         if(np < roi_out->width)
         {
-          L =  _mm_add_ps(L, _mm_load_ps(&out[(index+np)*ch]));
+          L = _mm_add_ps(L, _mm_load_ps(&out[(index + np) * ch]));
           hits++;
         }
-        if(x>=0)
-          scanline[x] = _mm_div_ps(L, _mm_set_ps1(hits));
+        if(x >= 0) scanline[x] = _mm_div_ps(L, _mm_set_ps1(hits));
       }
 
-      for (int x=0; x<roi_out->width; x++)
-        _mm_store_ps(&out[(index+x)*ch], scanline[x]);
+      for(int x = 0; x < roi_out->width; x++) _mm_store_ps(&out[(index + x) * ch], scanline[x]);
     }
 
     /* vertical pass on blurlightness */
-    const int opoffs = -(radius+1)*roi_out->width;
+    const int opoffs = -(radius + 1) * roi_out->width;
     const int npoffs = (radius)*roi_out->width;
 #ifdef _OPENMP
-  #pragma omp parallel for default(none) shared(out,roi_out) schedule(static)
+#pragma omp parallel for default(none) shared(out, roi_out) schedule(static)
 #endif
-    for(int x=0; x < roi_out->width; x++)
+    for(int x = 0; x < roi_out->width; x++)
     {
       __m128 scanline[size];
       __m128 L = _mm_setzero_ps();
-      int hits=0;
-      size_t index = (size_t)x - radius*roi_out->width;
-      for(int y=-radius; y<roi_out->height; y++)
+      int hits = 0;
+      size_t index = (size_t)x - radius * roi_out->width;
+      for(int y = -radius; y < roi_out->height; y++)
       {
-        int op=y-radius-1;
-        int np= y + radius;
+        int op = y - radius - 1;
+        int np = y + radius;
 
-        if(op>=0)
+        if(op >= 0)
         {
-          L = _mm_sub_ps(L, _mm_load_ps(&out[(index+opoffs)*ch]));
+          L = _mm_sub_ps(L, _mm_load_ps(&out[(index + opoffs) * ch]));
           hits--;
         }
         if(np < roi_out->height)
         {
-          L = _mm_add_ps(L, _mm_load_ps(&out[(index+npoffs)*ch]));
+          L = _mm_add_ps(L, _mm_load_ps(&out[(index + npoffs) * ch]));
           hits++;
         }
-        if(y>=0)
-          scanline[y] = _mm_div_ps(L, _mm_set_ps1(hits));
+        if(y >= 0) scanline[y] = _mm_div_ps(L, _mm_set_ps1(hits));
         index += roi_out->width;
       }
 
-      for (int y=0; y<roi_out->height; y++)
-        _mm_store_ps(&out[((size_t)y*roi_out->width+x)*ch], scanline[y]);
+      for(int y = 0; y < roi_out->height; y++)
+        _mm_store_ps(&out[((size_t)y * roi_out->width + x) * ch], scanline[y]);
     }
   }
 
 
-  const __m128 amount = _mm_set1_ps(data->amount/100.0);
-  const __m128 amount_1 = _mm_set1_ps(1-(data->amount)/100.0);
+  const __m128 amount = _mm_set1_ps(data->amount / 100.0);
+  const __m128 amount_1 = _mm_set1_ps(1 - (data->amount) / 100.0);
 #ifdef _OPENMP
-  #pragma omp parallel for default(none) shared(roi_out, in, out, data) schedule(static)
+#pragma omp parallel for default(none) shared(roi_out, in, out, data) schedule(static)
 #endif
-  for(size_t k=0; k<(size_t)roi_out->width*roi_out->height; k++)
+  for(size_t k = 0; k < (size_t)roi_out->width * roi_out->height; k++)
   {
-    int index = ch*k;
-    _mm_store_ps(&out[index],
-                 _mm_add_ps(_mm_mul_ps(_mm_load_ps(&in[index]), amount_1),
-                            _mm_mul_ps(MM_CLIP_PS(_mm_load_ps(&out[index])), amount)));
+    int index = ch * k;
+    _mm_store_ps(&out[index], _mm_add_ps(_mm_mul_ps(_mm_load_ps(&in[index]), amount_1),
+                                         _mm_mul_ps(MM_CLIP_PS(_mm_load_ps(&out[index])), amount)));
   }
 }
 
 #ifdef HAVE_OPENCL
-int
-process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
+int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out,
+               const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
 {
   dt_iop_soften_data_t *d = (dt_iop_soften_data_t *)piece->data;
   dt_iop_soften_global_data_t *gd = (dt_iop_soften_global_data_t *)self->data;
@@ -249,19 +242,20 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
   const int width = roi_in->width;
   const int height = roi_in->height;
 
-  const float brightness = 1.0f / exp2f ( -d->brightness );
-  const float saturation = d->saturation/100.0f;
-  const float amount = d->amount/100.0f;
+  const float brightness = 1.0f / exp2f(-d->brightness);
+  const float saturation = d->saturation / 100.0f;
+  const float amount = d->amount / 100.0f;
 
-  const float w = piece->iwidth*piece->iscale;
-  const float h = piece->iheight*piece->iscale;
-  int mrad = sqrt( w*w + h*h) * 0.01f;
+  const float w = piece->iwidth * piece->iscale;
+  const float h = piece->iheight * piece->iscale;
+  int mrad = sqrt(w * w + h * h) * 0.01f;
 
-  int rad = mrad*(fmin(100.0f, d->size+1)/100.0f);
+  int rad = mrad * (fmin(100.0f, d->size + 1) / 100.0f);
   const int radius = MIN(mrad, ceilf(rad * roi_in->scale / piece->iscale));
 
-  /* sigma-radius correlation to match opencl vs. non-opencl. identified by numerical experiments but unproven. ask me if you need details. ulrich */
-  const float sigma = sqrt((radius * (radius + 1) * BOX_ITERATIONS + 2)/3.0f);
+  /* sigma-radius correlation to match opencl vs. non-opencl. identified by numerical experiments but
+   * unproven. ask me if you need details. ulrich */
+  const float sigma = sqrt((radius * (radius + 1) * BOX_ITERATIONS + 2) / 3.0f);
   const int wdh = ceilf(3.0f * sigma);
   const int wd = 2 * wdh + 1;
   float mat[wd];
@@ -269,26 +263,27 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
   float weight = 0.0f;
 
   // init gaussian kernel
-  for(int l=-wdh; l<=wdh; l++) weight += m[l] = expf(- (l*l)/(2.f*sigma*sigma));
-  for(int l=-wdh; l<=wdh; l++) m[l] /= weight;
+  for(int l = -wdh; l <= wdh; l++) weight += m[l] = expf(-(l * l) / (2.f * sigma * sigma));
+  for(int l = -wdh; l <= wdh; l++) m[l] /= weight;
 
   // for(int l=-wdh; l<=wdh; l++) printf("%.6f ", (double)m[l]);
   // printf("\n");
 
 
-  size_t maxsizes[3] = { 0 };        // the maximum dimensions for a work group
-  size_t workgroupsize = 0;          // the maximum number of items in a work group
-  unsigned long localmemsize = 0;    // the maximum amount of local memory we can use
-  size_t kernelworkgroupsize = 0;    // the maximum amount of items in work group for this kernel
+  size_t maxsizes[3] = { 0 };     // the maximum dimensions for a work group
+  size_t workgroupsize = 0;       // the maximum number of items in a work group
+  unsigned long localmemsize = 0; // the maximum amount of local memory we can use
+  size_t kernelworkgroupsize = 0; // the maximum amount of items in work group for this kernel
 
   // make sure blocksize is not too large
   int blocksize = BLOCKSIZE;
-  if(dt_opencl_get_work_group_limits(devid, maxsizes, &workgroupsize, &localmemsize) == CL_SUCCESS &&
-      dt_opencl_get_kernel_work_group_size(devid, gd->kernel_soften_hblur, &kernelworkgroupsize) == CL_SUCCESS)
+  if(dt_opencl_get_work_group_limits(devid, maxsizes, &workgroupsize, &localmemsize) == CL_SUCCESS
+     && dt_opencl_get_kernel_work_group_size(devid, gd->kernel_soften_hblur, &kernelworkgroupsize)
+        == CL_SUCCESS)
   {
     // reduce blocksize step by step until it fits to limits
     while(blocksize > maxsizes[0] || blocksize > maxsizes[1] || blocksize > kernelworkgroupsize
-          || blocksize > workgroupsize || (blocksize+2*wdh)*4*sizeof(float) > localmemsize)
+          || blocksize > workgroupsize || (blocksize + 2 * wdh) * 4 * sizeof(float) > localmemsize)
     {
       if(blocksize == 1) break;
       blocksize >>= 1;
@@ -296,20 +291,20 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
   }
   else
   {
-    blocksize = 1;   // slow but safe
+    blocksize = 1; // slow but safe
   }
 
-  const size_t bwidth = width % blocksize == 0 ? width : (width / blocksize + 1)*blocksize;
-  const size_t bheight = height % blocksize == 0 ? height : (height / blocksize + 1)*blocksize;
+  const size_t bwidth = width % blocksize == 0 ? width : (width / blocksize + 1) * blocksize;
+  const size_t bheight = height % blocksize == 0 ? height : (height / blocksize + 1) * blocksize;
 
   size_t sizes[3];
   size_t local[3];
 
-  dev_tmp = dt_opencl_alloc_device(devid, width, height, 4*sizeof(float));
-  if (dev_tmp == NULL) goto error;
+  dev_tmp = dt_opencl_alloc_device(devid, width, height, 4 * sizeof(float));
+  if(dev_tmp == NULL) goto error;
 
-  dev_m = dt_opencl_copy_host_to_device_constant(devid, (size_t)sizeof(float)*wd, mat);
-  if (dev_m == NULL) goto error;
+  dev_m = dt_opencl_copy_host_to_device_constant(devid, (size_t)sizeof(float) * wd, mat);
+  if(dev_m == NULL) goto error;
 
   /* overexpose image */
   sizes[0] = ROUNDUPWD(width);
@@ -340,7 +335,8 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
     dt_opencl_set_kernel_arg(devid, gd->kernel_soften_hblur, 4, sizeof(int), (void *)&width);
     dt_opencl_set_kernel_arg(devid, gd->kernel_soften_hblur, 5, sizeof(int), (void *)&height);
     dt_opencl_set_kernel_arg(devid, gd->kernel_soften_hblur, 6, sizeof(int), (void *)&blocksize);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_soften_hblur, 7, (blocksize+2*wdh)*4*sizeof(float), NULL);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_soften_hblur, 7, (blocksize + 2 * wdh) * 4 * sizeof(float),
+                             NULL);
     err = dt_opencl_enqueue_kernel_2d_with_local(devid, gd->kernel_soften_hblur, sizes, local);
     if(err != CL_SUCCESS) goto error;
 
@@ -359,7 +355,8 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
     dt_opencl_set_kernel_arg(devid, gd->kernel_soften_vblur, 4, sizeof(int), (void *)&width);
     dt_opencl_set_kernel_arg(devid, gd->kernel_soften_vblur, 5, sizeof(int), (void *)&height);
     dt_opencl_set_kernel_arg(devid, gd->kernel_soften_vblur, 6, sizeof(int), (void *)&blocksize);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_soften_vblur, 7, (blocksize+2*wdh)*4*sizeof(float), NULL);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_soften_vblur, 7, (blocksize + 2 * wdh) * 4 * sizeof(float),
+                             NULL);
     err = dt_opencl_enqueue_kernel_2d_with_local(devid, gd->kernel_soften_vblur, sizes, local);
     if(err != CL_SUCCESS) goto error;
   }
@@ -377,34 +374,37 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
   err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_soften_mix, sizes);
   if(err != CL_SUCCESS) goto error;
 
-  if (dev_m != NULL) dt_opencl_release_mem_object(dev_m);
-  if (dev_tmp != NULL) dt_opencl_release_mem_object(dev_tmp);
+  if(dev_m != NULL) dt_opencl_release_mem_object(dev_m);
+  if(dev_tmp != NULL) dt_opencl_release_mem_object(dev_tmp);
   return TRUE;
 
 error:
-  if (dev_m != NULL) dt_opencl_release_mem_object(dev_m);
-  if (dev_tmp != NULL) dt_opencl_release_mem_object(dev_tmp);
+  if(dev_m != NULL) dt_opencl_release_mem_object(dev_m);
+  if(dev_tmp != NULL) dt_opencl_release_mem_object(dev_tmp);
   dt_print(DT_DEBUG_OPENCL, "[opencl_soften] couldn't enqueue kernel! %d\n", err);
   return FALSE;
 }
 #endif
 
-void tiling_callback (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out, struct dt_develop_tiling_t *tiling)
+void tiling_callback(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece,
+                     const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out,
+                     struct dt_develop_tiling_t *tiling)
 {
   dt_iop_soften_data_t *d = (dt_iop_soften_data_t *)piece->data;
 
-  const float w = piece->iwidth*piece->iscale;
-  const float h = piece->iheight*piece->iscale;
-  int mrad = sqrt( w*w + h*h) * 0.01f;
+  const float w = piece->iwidth * piece->iscale;
+  const float h = piece->iheight * piece->iscale;
+  int mrad = sqrt(w * w + h * h) * 0.01f;
 
-  int rad = mrad*(fmin(100.0f, d->size+1)/100.0f);
+  int rad = mrad * (fmin(100.0f, d->size + 1) / 100.0f);
   const int radius = MIN(mrad, ceilf(rad * roi_in->scale / piece->iscale));
 
-  /* sigma-radius correlation to match opencl vs. non-opencl. identified by numerical experiments but unproven. ask me if you need details. ulrich */
-  const float sigma = sqrt((radius * (radius + 1) * BOX_ITERATIONS + 2)/3.0f);
+  /* sigma-radius correlation to match opencl vs. non-opencl. identified by numerical experiments but
+   * unproven. ask me if you need details. ulrich */
+  const float sigma = sqrt((radius * (radius + 1) * BOX_ITERATIONS + 2) / 3.0f);
   const int wdh = ceilf(3.0f * sigma);
 
-  tiling->factor = 3.0f;   // in + out + tmp
+  tiling->factor = 3.0f; // in + out + tmp
   tiling->maxbuf = 1.0f;
   tiling->overhead = 0;
   tiling->overlap = wdh;
@@ -416,7 +416,8 @@ void tiling_callback (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_
 void init_global(dt_iop_module_so_t *module)
 {
   const int program = 9; // soften.cl, from programs.conf
-  dt_iop_soften_global_data_t *gd = (dt_iop_soften_global_data_t *)malloc(sizeof(dt_iop_soften_global_data_t));
+  dt_iop_soften_global_data_t *gd
+      = (dt_iop_soften_global_data_t *)malloc(sizeof(dt_iop_soften_global_data_t));
   module->data = gd;
   gd->kernel_soften_overexposed = dt_opencl_create_kernel(program, "soften_overexposed");
   gd->kernel_soften_hblur = dt_opencl_create_kernel(program, "soften_hblur");
@@ -436,18 +437,16 @@ void cleanup_global(dt_iop_module_so_t *module)
 }
 
 
-static void
-size_callback (GtkWidget *slider, gpointer user_data)
+static void size_callback(GtkWidget *slider, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(self->dt->gui->reset) return;
   dt_iop_soften_params_t *p = (dt_iop_soften_params_t *)self->params;
-  p->size= dt_bauhaus_slider_get(slider);
+  p->size = dt_bauhaus_slider_get(slider);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
-static void
-saturation_callback (GtkWidget *slider, gpointer user_data)
+static void saturation_callback(GtkWidget *slider, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(self->dt->gui->reset) return;
@@ -456,8 +455,7 @@ saturation_callback (GtkWidget *slider, gpointer user_data)
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
-static void
-brightness_callback (GtkWidget *slider, gpointer user_data)
+static void brightness_callback(GtkWidget *slider, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(self->dt->gui->reset) return;
@@ -466,8 +464,7 @@ brightness_callback (GtkWidget *slider, gpointer user_data)
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
-static void
-amount_callback (GtkWidget *slider, gpointer user_data)
+static void amount_callback(GtkWidget *slider, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(self->dt->gui->reset) return;
@@ -477,22 +474,23 @@ amount_callback (GtkWidget *slider, gpointer user_data)
 }
 
 
-void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
+void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe,
+                   dt_dev_pixelpipe_iop_t *piece)
 {
   dt_iop_soften_params_t *p = (dt_iop_soften_params_t *)p1;
 #ifdef HAVE_GEGL
   fprintf(stderr, "[bloom] TODO: implement gegl version!\n");
-  // pull in new params to gegl
+// pull in new params to gegl
 #else
   dt_iop_soften_data_t *d = (dt_iop_soften_data_t *)piece->data;
-  d->size= p->size;
+  d->size = p->size;
   d->saturation = p->saturation;
   d->brightness = p->brightness;
   d->amount = p->amount;
 #endif
 }
 
-void init_pipe (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
+void init_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
 #ifdef HAVE_GEGL
   // create part of the gegl pipeline
@@ -503,12 +501,12 @@ void init_pipe (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_p
 #endif
 }
 
-void cleanup_pipe (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
+void cleanup_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
 #ifdef HAVE_GEGL
   // clean up everything again.
   (void)gegl_node_remove_child(pipe->gegl, piece->input);
-  // no free necessary, no data is alloc'ed
+// no free necessary, no data is alloc'ed
 #else
   free(piece->data);
   piece->data = NULL;
@@ -534,10 +532,7 @@ void init(dt_iop_module_t *module)
   module->priority = 850; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_soften_params_t);
   module->gui_data = NULL;
-  dt_iop_soften_params_t tmp = (dt_iop_soften_params_t)
-  {
-    50,100.0,0.33,50
-  };
+  dt_iop_soften_params_t tmp = (dt_iop_soften_params_t){ 50, 100.0, 0.33, 50 };
   memcpy(module->params, &tmp, sizeof(dt_iop_soften_params_t));
   memcpy(module->default_params, &tmp, sizeof(dt_iop_soften_params_t));
 }
@@ -559,37 +554,33 @@ void gui_init(struct dt_iop_module_t *self)
   self->widget = gtk_vbox_new(FALSE, DT_BAUHAUS_SPACE);
 
   /* size */
-  g->scale1 = dt_bauhaus_slider_new_with_range(self,0.0, 100.0, 2, p->size, 2);
-  dt_bauhaus_slider_set_format(g->scale1,"%.0f%%");
+  g->scale1 = dt_bauhaus_slider_new_with_range(self, 0.0, 100.0, 2, p->size, 2);
+  dt_bauhaus_slider_set_format(g->scale1, "%.0f%%");
   dt_bauhaus_widget_set_label(g->scale1, NULL, _("size"));
   g_object_set(G_OBJECT(g->scale1), "tooltip-text", _("the size of blur"), (char *)NULL);
-  g_signal_connect (G_OBJECT (g->scale1), "value-changed",
-                    G_CALLBACK (size_callback), self);
+  g_signal_connect(G_OBJECT(g->scale1), "value-changed", G_CALLBACK(size_callback), self);
 
   /* saturation */
-  g->scale2 = dt_bauhaus_slider_new_with_range(self,0.0, 100.0, 2, p->saturation, 2);
-  dt_bauhaus_slider_set_format(g->scale2,"%.0f%%");
+  g->scale2 = dt_bauhaus_slider_new_with_range(self, 0.0, 100.0, 2, p->saturation, 2);
+  dt_bauhaus_slider_set_format(g->scale2, "%.0f%%");
   dt_bauhaus_widget_set_label(g->scale2, NULL, _("saturation"));
   g_object_set(G_OBJECT(g->scale2), "tooltip-text", _("the saturation of blur"), (char *)NULL);
-  g_signal_connect (G_OBJECT (g->scale2), "value-changed",
-                    G_CALLBACK (saturation_callback), self);
+  g_signal_connect(G_OBJECT(g->scale2), "value-changed", G_CALLBACK(saturation_callback), self);
 
   /* brightness */
-  g->scale3 = dt_bauhaus_slider_new_with_range(self,-2.0, 2.0, 0.01, p->brightness, 2);
-  dt_bauhaus_slider_set_format(g->scale3,"%.2fEV");
+  g->scale3 = dt_bauhaus_slider_new_with_range(self, -2.0, 2.0, 0.01, p->brightness, 2);
+  dt_bauhaus_slider_set_format(g->scale3, "%.2fEV");
   dt_bauhaus_widget_set_label(g->scale3, NULL, _("brightness"));
   g_object_set(G_OBJECT(g->scale3), "tooltip-text", _("the brightness of blur"), (char *)NULL);
-  g_signal_connect (G_OBJECT (g->scale3), "value-changed",
-                    G_CALLBACK (brightness_callback), self);
+  g_signal_connect(G_OBJECT(g->scale3), "value-changed", G_CALLBACK(brightness_callback), self);
 
   /* amount */
   // TODO: deprecate this function in favor for blending
-  g->scale4 = dt_bauhaus_slider_new_with_range(self,0.0, 100.0, 2, p->amount, 2);
-  dt_bauhaus_slider_set_format(g->scale4,"%.0f%%");
+  g->scale4 = dt_bauhaus_slider_new_with_range(self, 0.0, 100.0, 2, p->amount, 2);
+  dt_bauhaus_slider_set_format(g->scale4, "%.0f%%");
   dt_bauhaus_widget_set_label(g->scale4, NULL, _("mix"));
   g_object_set(G_OBJECT(g->scale4), "tooltip-text", _("the mix of effect"), (char *)NULL);
-  g_signal_connect (G_OBJECT (g->scale4), "value-changed",
-                    G_CALLBACK (amount_callback), self);
+  g_signal_connect(G_OBJECT(g->scale4), "value-changed", G_CALLBACK(amount_callback), self);
 
 
 
@@ -597,8 +588,6 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->scale2), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->scale3), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->scale4), TRUE, TRUE, 0);
-
-
 }
 
 void gui_cleanup(struct dt_iop_module_t *self)

@@ -31,8 +31,7 @@ DT_MODULE(1)
 typedef struct dt_lib_tool_preferences_t
 {
   GtkWidget *preferences_button, *grouping_button, *overlays_button;
-}
-dt_lib_tool_preferences_t;
+} dt_lib_tool_preferences_t;
 
 /* callback for grouping button */
 static void _lib_filter_grouping_button_clicked(GtkWidget *widget, gpointer user_data);
@@ -41,7 +40,7 @@ static void _lib_preferences_button_clicked(GtkWidget *widget, gpointer user_dat
 /* callback for overlays button */
 static void _lib_overlays_button_clicked(GtkWidget *widget, gpointer user_data);
 
-const char* name()
+const char *name()
 {
   return _("preferences");
 }
@@ -72,7 +71,7 @@ void gui_init(dt_lib_module_t *self)
   dt_lib_tool_preferences_t *d = (dt_lib_tool_preferences_t *)g_malloc0(sizeof(dt_lib_tool_preferences_t));
   self->data = (void *)d;
 
-  self->widget = gtk_hbox_new(FALSE,2);
+  self->widget = gtk_hbox_new(FALSE, 2);
 
   /* create the grouping button */
   d->grouping_button = dtgtk_togglebutton_new(dtgtk_cairo_paint_grouping, CPF_STYLE_FLAT);
@@ -82,9 +81,8 @@ void gui_init(dt_lib_module_t *self)
     g_object_set(G_OBJECT(d->grouping_button), "tooltip-text", _("expand grouped images"), (char *)NULL);
   else
     g_object_set(G_OBJECT(d->grouping_button), "tooltip-text", _("collapse grouped images"), (char *)NULL);
-  g_signal_connect (G_OBJECT (d->grouping_button), "clicked",
-                    G_CALLBACK (_lib_filter_grouping_button_clicked),
-                    NULL);
+  g_signal_connect(G_OBJECT(d->grouping_button), "clicked", G_CALLBACK(_lib_filter_grouping_button_clicked),
+                   NULL);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->grouping_button), darktable.gui->grouping);
 
   /* create the "show/hide overlays" button */
@@ -95,20 +93,16 @@ void gui_init(dt_lib_module_t *self)
     g_object_set(G_OBJECT(d->overlays_button), "tooltip-text", _("hide image overlays"), (char *)NULL);
   else
     g_object_set(G_OBJECT(d->overlays_button), "tooltip-text", _("show image overlays"), (char *)NULL);
-  g_signal_connect (G_OBJECT (d->overlays_button), "clicked",
-                    G_CALLBACK (_lib_overlays_button_clicked),
-                    NULL);
+  g_signal_connect(G_OBJECT(d->overlays_button), "clicked", G_CALLBACK(_lib_overlays_button_clicked), NULL);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->overlays_button), darktable.gui->show_overlays);
 
   /* create the preference button */
   d->preferences_button = dtgtk_button_new(dtgtk_cairo_paint_preferences, CPF_STYLE_FLAT);
   gtk_widget_set_size_request(d->preferences_button, DT_PIXEL_APPLY_DPI(18), DT_PIXEL_APPLY_DPI(18));
   gtk_box_pack_end(GTK_BOX(self->widget), d->preferences_button, FALSE, FALSE, 2);
-  g_object_set(G_OBJECT(d->preferences_button), "tooltip-text", _("show global preferences"),
-               (char *)NULL);
-  g_signal_connect (G_OBJECT (d->preferences_button), "clicked",
-                    G_CALLBACK (_lib_preferences_button_clicked),
-                    NULL);
+  g_object_set(G_OBJECT(d->preferences_button), "tooltip-text", _("show global preferences"), (char *)NULL);
+  g_signal_connect(G_OBJECT(d->preferences_button), "clicked", G_CALLBACK(_lib_preferences_button_clicked),
+                   NULL);
 }
 
 void gui_cleanup(dt_lib_module_t *self)
@@ -119,12 +113,14 @@ void gui_cleanup(dt_lib_module_t *self)
 
 #ifdef USE_LUA
 
-typedef struct {
+typedef struct
+{
   gboolean toggle;
   gchar *event_name;
 } button_clicked_callback_data_t;
 
-static int32_t _button_clicked_callback_job(dt_job_t *job) {
+static int32_t _button_clicked_callback_job(dt_job_t *job)
+{
   gboolean has_lock = dt_lua_lock();
   button_clicked_callback_data_t *t = dt_control_job_get_params(job);
   lua_pushboolean(darktable.lua_state.state, t->toggle);
@@ -138,12 +134,12 @@ static int32_t _button_clicked_callback_job(dt_job_t *job) {
 
 #endif // USE_LUA
 
-void _lib_preferences_button_clicked (GtkWidget *widget, gpointer user_data)
+void _lib_preferences_button_clicked(GtkWidget *widget, gpointer user_data)
 {
   dt_gui_preferences_show();
 }
 
-static void _lib_filter_grouping_button_clicked (GtkWidget *widget, gpointer user_data)
+static void _lib_filter_grouping_button_clicked(GtkWidget *widget, gpointer user_data)
 {
 
   darktable.gui->grouping = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget));
@@ -160,7 +156,8 @@ static void _lib_filter_grouping_button_clicked (GtkWidget *widget, gpointer use
   dt_job_t *job = dt_control_job_create(&_button_clicked_callback_job, "lua: grouping button toggled");
   if(job)
   {
-    button_clicked_callback_data_t *t = (button_clicked_callback_data_t*) calloc(1, sizeof(button_clicked_callback_data_t));
+    button_clicked_callback_data_t *t
+        = (button_clicked_callback_data_t *)calloc(1, sizeof(button_clicked_callback_data_t));
     if(!t)
     {
       dt_control_job_dispose(job);
@@ -177,7 +174,7 @@ static void _lib_filter_grouping_button_clicked (GtkWidget *widget, gpointer use
 #endif // USE_LUA
 }
 
-static void _lib_overlays_button_clicked (GtkWidget *widget, gpointer user_data)
+static void _lib_overlays_button_clicked(GtkWidget *widget, gpointer user_data)
 {
   darktable.gui->show_overlays = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget));
   if(darktable.gui->show_overlays)
@@ -192,7 +189,8 @@ static void _lib_overlays_button_clicked (GtkWidget *widget, gpointer user_data)
   dt_job_t *job = dt_control_job_create(&_button_clicked_callback_job, "lua: overlay button toggled");
   if(job)
   {
-    button_clicked_callback_data_t *t = (button_clicked_callback_data_t*) calloc(1, sizeof(button_clicked_callback_data_t));
+    button_clicked_callback_data_t *t
+        = (button_clicked_callback_data_t *)calloc(1, sizeof(button_clicked_callback_data_t));
     if(!t)
     {
       dt_control_job_dispose(job);
@@ -218,7 +216,7 @@ void init_key_accels(dt_lib_module_t *self)
 
 void connect_key_accels(dt_lib_module_t *self)
 {
-  dt_lib_tool_preferences_t *d = (dt_lib_tool_preferences_t*)self->data;
+  dt_lib_tool_preferences_t *d = (dt_lib_tool_preferences_t *)self->data;
 
   dt_accel_connect_button_lib(self, "grouping", d->grouping_button);
   dt_accel_connect_button_lib(self, "preferences", d->preferences_button);
@@ -229,15 +227,19 @@ void connect_key_accels(dt_lib_module_t *self)
 
 static int grouping_member(lua_State *L)
 {
-  dt_lib_module_t *self = *(dt_lib_module_t**)lua_touserdata(L, 1);
+  dt_lib_module_t *self = *(dt_lib_module_t **)lua_touserdata(L, 1);
   dt_lib_tool_preferences_t *d = (dt_lib_tool_preferences_t *)self->data;
   dt_lua_lib_check_error(L, self);
-  if(lua_gettop(L) != 3) {
+  if(lua_gettop(L) != 3)
+  {
     lua_pushboolean(L, darktable.gui->grouping);
     return 1;
-  } else {
+  }
+  else
+  {
     gboolean value = lua_toboolean(L, 3);
-    if(darktable.gui->grouping != value) {
+    if(darktable.gui->grouping != value)
+    {
       dt_lua_unlock(TRUE);
       gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->grouping_button), value);
       dt_lua_lock();
@@ -248,15 +250,19 @@ static int grouping_member(lua_State *L)
 
 static int show_overlays_member(lua_State *L)
 {
-  dt_lib_module_t *self = *(dt_lib_module_t**)lua_touserdata(L, 1);
+  dt_lib_module_t *self = *(dt_lib_module_t **)lua_touserdata(L, 1);
   dt_lib_tool_preferences_t *d = (dt_lib_tool_preferences_t *)self->data;
   dt_lua_lib_check_error(L, self);
-  if(lua_gettop(L) != 3) {
+  if(lua_gettop(L) != 3)
+  {
     lua_pushboolean(L, darktable.gui->show_overlays);
     return 1;
-  } else {
+  }
+  else
+  {
     gboolean value = lua_toboolean(L, 3);
-    if(darktable.gui->show_overlays != value) {
+    if(darktable.gui->show_overlays != value)
+    {
       dt_lua_unlock(TRUE);
       gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->overlays_button), value);
       dt_lua_lock();
@@ -275,17 +281,16 @@ void init(struct dt_lib_module_t *self)
   lua_pushcfunction(L, show_overlays_member);
   dt_lua_type_register_type(L, my_type, "show_overlays");
 
-  lua_pushcfunction(L,dt_lua_event_multiinstance_register);
-  lua_pushcfunction(L,dt_lua_event_multiinstance_trigger);
-  dt_lua_event_add(L,"global_toolbox-grouping_toggle");
+  lua_pushcfunction(L, dt_lua_event_multiinstance_register);
+  lua_pushcfunction(L, dt_lua_event_multiinstance_trigger);
+  dt_lua_event_add(L, "global_toolbox-grouping_toggle");
 
-  lua_pushcfunction(L,dt_lua_event_multiinstance_register);
-  lua_pushcfunction(L,dt_lua_event_multiinstance_trigger);
-  dt_lua_event_add(L,"global_toolbox-overlay_toggle");
-
+  lua_pushcfunction(L, dt_lua_event_multiinstance_register);
+  lua_pushcfunction(L, dt_lua_event_multiinstance_trigger);
+  dt_lua_event_add(L, "global_toolbox-overlay_toggle");
 }
 
-#endif //USE_LUA
+#endif // USE_LUA
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

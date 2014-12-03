@@ -22,7 +22,7 @@
 
 typedef int dt_lua_image_t; // wrapper for dt_image_t id
 
-int dt_lua_init_image(lua_State * L);
+int dt_lua_init_image(lua_State *L);
 #endif
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

@@ -29,12 +29,11 @@
 /** return value of image io functions. */
 typedef enum dt_imageio_retval_t
 {
-  DT_IMAGEIO_OK = 0,          // all good :)
-  DT_IMAGEIO_FILE_NOT_FOUND,  // file has been lost
-  DT_IMAGEIO_FILE_CORRUPTED,  // file contains garbage
-  DT_IMAGEIO_CACHE_FULL       // dt's caches are full :(
-}
-dt_imageio_retval_t;
+  DT_IMAGEIO_OK = 0,         // all good :)
+  DT_IMAGEIO_FILE_NOT_FOUND, // file has been lost
+  DT_IMAGEIO_FILE_CORRUPTED, // file contains garbage
+  DT_IMAGEIO_CACHE_FULL      // dt's caches are full :(
+} dt_imageio_retval_t;
 
 typedef enum
 {
@@ -48,7 +47,8 @@ typedef enum
   // To reuse : force to 0 in DB loading and force to 0 in DB saving
   // Use it to store a state that doesn't need to go in DB
   DT_IMAGE_THUMBNAIL_DEPRECATED = 16,
-  // set during import if the image is low-dynamic range, i.e. doesn't need demosaic, wb, highlight clipping etc.
+  // set during import if the image is low-dynamic range, i.e. doesn't need demosaic, wb, highlight clipping
+  // etc.
   DT_IMAGE_LDR = 32,
   // set during import if the image is raw data, i.e. it needs demosaicing.
   DT_IMAGE_RAW = 64,
@@ -66,8 +66,7 @@ typedef enum
   DT_IMAGE_HAS_TXT = 4096,
   // image has an associated wav file
   DT_IMAGE_HAS_WAV = 8192
-}
-dt_image_flags_t;
+} dt_image_flags_t;
 
 typedef enum dt_image_colorspace_t
 {
@@ -78,30 +77,27 @@ typedef enum dt_image_colorspace_t
 
 typedef struct dt_image_raw_parameters_t
 {
-  unsigned legacy    : 24;
+  unsigned legacy : 24;
   unsigned user_flip : 8; // +8 = 32 bits.
-}
-dt_image_raw_parameters_t;
+} dt_image_raw_parameters_t;
 
 typedef enum dt_image_orientation_t
 {
-  ORIENTATION_NULL    = -1,    //-1, or autodetect
-  ORIENTATION_NONE    =  0,    // 0
-  ORIENTATION_FLIP_Y  =  1<<0, // 1
-  ORIENTATION_FLIP_X  =  1<<1, // 2
-  ORIENTATION_SWAP_XY =  1<<2, // 4
+  ORIENTATION_NULL = -1,        //-1, or autodetect
+  ORIENTATION_NONE = 0,         // 0
+  ORIENTATION_FLIP_Y = 1 << 0,  // 1
+  ORIENTATION_FLIP_X = 1 << 1,  // 2
+  ORIENTATION_SWAP_XY = 1 << 2, // 4
 
   /* ClockWise rotation == "-"; CounterClockWise rotation == "+" */
-  ORIENTATION_FLIP_HORIZONTALLY = ORIENTATION_FLIP_Y,                       //1
-  ORIENTATION_FLIP_VERTICALLY   = ORIENTATION_FLIP_X,                       //2
-  ORIENTATION_ROTATE_180_DEG    = ORIENTATION_FLIP_Y | ORIENTATION_FLIP_X,  //3
-  ORIENTATION_400   /* ??? */   = ORIENTATION_SWAP_XY,                      //4
-  ORIENTATION_ROTATE_CCW_90_DEG = ORIENTATION_FLIP_Y | ORIENTATION_SWAP_XY, //5
-  ORIENTATION_ROTATE_CW_90_DEG  = ORIENTATION_FLIP_X | ORIENTATION_SWAP_XY, //6
-  ORIENTATION_421   /* ??? */   = ORIENTATION_FLIP_Y | ORIENTATION_FLIP_X
-                                  | ORIENTATION_SWAP_XY                     //7
-}
-dt_image_orientation_t;
+  ORIENTATION_FLIP_HORIZONTALLY = ORIENTATION_FLIP_Y, // 1
+  ORIENTATION_FLIP_VERTICALLY = ORIENTATION_FLIP_X, // 2
+  ORIENTATION_ROTATE_180_DEG = ORIENTATION_FLIP_Y | ORIENTATION_FLIP_X, // 3
+  ORIENTATION_400 /* ??? */ = ORIENTATION_SWAP_XY, // 4
+  ORIENTATION_ROTATE_CCW_90_DEG = ORIENTATION_FLIP_Y | ORIENTATION_SWAP_XY, // 5
+  ORIENTATION_ROTATE_CW_90_DEG = ORIENTATION_FLIP_X | ORIENTATION_SWAP_XY, // 6
+  ORIENTATION_421 /* ??? */ = ORIENTATION_FLIP_Y | ORIENTATION_FLIP_X | ORIENTATION_SWAP_XY // 7
+} dt_image_orientation_t;
 
 // TODO: add color labels and such as cachable
 // __attribute__ ((aligned (128)))
@@ -154,8 +150,7 @@ typedef struct dt_image_t
 
   /* If the image already has WB applied from the start */
   gboolean pre_applied_wb;
-}
-dt_image_t;
+} dt_image_t;
 
 // image buffer operations:
 /** inits basic values to sensible defaults. */
@@ -166,7 +161,8 @@ int dt_image_is_ldr(const dt_image_t *img);
 int dt_image_is_raw(const dt_image_t *img);
 /** returns non-zero if the image contains float data. */
 int dt_image_is_hdr(const dt_image_t *img);
-/** returns the full path name where the image was imported from. from_cache=TRUE check and return local cached filename if any. */
+/** returns the full path name where the image was imported from. from_cache=TRUE check and return local
+ * cached filename if any. */
 void dt_image_full_path(const int imgid, char *pathname, size_t pathname_len, gboolean *from_cache);
 /** returns the full directory of the associated film roll. */
 void dt_image_film_roll_directory(const dt_image_t *img, char *pathname, size_t pathname_len);
@@ -186,8 +182,10 @@ void dt_image_read_duplicates(uint32_t id, const char *filename);
 uint32_t dt_image_import(int32_t film_id, const char *filename, gboolean override_ignore_jpegs);
 /** removes the given image from the database. */
 void dt_image_remove(const int32_t imgid);
-/** duplicates the given image in the database with the duplicate getting the supplied version number. if that version
-    already exists just return the imgid without producing new duplicate. called with newversion -1 a new duplicate
+/** duplicates the given image in the database with the duplicate getting the supplied version number. if that
+   version
+    already exists just return the imgid without producing new duplicate. called with newversion -1 a new
+   duplicate
     is produced with the next free version number. */
 int32_t dt_image_duplicate_with_version(const int32_t imgid, const int32_t newversion);
 /** duplicates the given image in the database. */
@@ -205,8 +203,7 @@ static inline dt_image_orientation_t dt_image_orientation(const dt_image_t *img)
   return img->orientation != ORIENTATION_NULL ? img->orientation : ORIENTATION_NONE;
 }
 /** returns the filter string for the demosaic pattern. */
-static inline uint32_t
-dt_image_filter(const dt_image_t *img)
+static inline uint32_t dt_image_filter(const dt_image_t *img)
 {
   // from the dcraw source code documentation:
   //
@@ -233,13 +230,12 @@ dt_image_filter(const dt_image_t *img)
   // 0x16161616 <-> 0x49494949
   // 0x61616161 <-> 0x94949494
 
-  //NOTE: we do not rotate data until flip IOP
+  // NOTE: we do not rotate data until flip IOP
 
   return img->filters;
 }
 /** return the raw orientation, from jpg orientation. */
-static inline dt_image_orientation_t
-dt_image_orientation_to_flip_bits(const int orient)
+static inline dt_image_orientation_t dt_image_orientation_to_flip_bits(const int orient)
 {
   switch(orient)
   {
@@ -285,11 +281,11 @@ void dt_image_synch_all_xmp(const gchar *pathname);
 void dt_image_add_time_offset(const int imgid, const long int offset);
 
 /** helper function to get the audio file filename that is accompanying the image. g_free() after use */
-char* dt_image_get_audio_path(const int32_t imgid);
-char* dt_image_get_audio_path_from_path(const char* image_path);
+char *dt_image_get_audio_path(const int32_t imgid);
+char *dt_image_get_audio_path_from_path(const char *image_path);
 /** helper function to get the text file filename that is accompanying the image. g_free() after use */
-char* dt_image_get_text_path(const int32_t imgid);
-char* dt_image_get_text_path_from_path(const char* image_path);
+char *dt_image_get_text_path(const int32_t imgid);
+char *dt_image_get_text_path_from_path(const char *image_path);
 
 #endif
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

@@ -27,7 +27,7 @@
 void dt_ratings_apply_to_selection(int rating);
 
 /** apply rating to the specified image */
-void dt_ratings_apply_to_image (int imgid, int rating);
+void dt_ratings_apply_to_image(int imgid, int rating);
 
 #endif
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

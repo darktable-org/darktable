@@ -25,7 +25,7 @@ int dt_lua_tag_attach(lua_State *L);
 int dt_lua_tag_detach(lua_State *L);
 int dt_lua_tag_get_attached(lua_State *L);
 
-int dt_lua_init_tags(lua_State*L);
+int dt_lua_init_tags(lua_State *L);
 #endif
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

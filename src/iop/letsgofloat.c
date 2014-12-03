@@ -34,56 +34,41 @@ DT_MODULE(1)
 typedef struct dt_iop_letsgofloat_params_t
 {
   int keep;
-}
-dt_iop_letsgofloat_params_t;
+} dt_iop_letsgofloat_params_t;
 
 typedef struct dt_iop_letsgofloat_global_data_t
 {
   int kernel_letsgofloat_1ui;
-}
-dt_iop_letsgofloat_global_data_t;
+} dt_iop_letsgofloat_global_data_t;
 
 const char *name()
 {
   return C_("modulename", "let's go float!");
 }
 
-int
-flags()
+int flags()
 {
-  return IOP_FLAGS_ALLOW_TILING | IOP_FLAGS_ONE_INSTANCE |
-         IOP_FLAGS_HIDDEN | IOP_FLAGS_NO_HISTORY_STACK;
+  return IOP_FLAGS_ALLOW_TILING | IOP_FLAGS_ONE_INSTANCE | IOP_FLAGS_HIDDEN | IOP_FLAGS_NO_HISTORY_STACK;
 }
 
-int
-groups()
+int groups()
 {
   return IOP_GROUP_BASIC;
 }
 
-int
-output_bpp(
-  dt_iop_module_t *self,
-  dt_dev_pixelpipe_t *pipe,
-  dt_dev_pixelpipe_iop_t *piece)
+int output_bpp(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
   return sizeof(float);
 }
 
-void
-process(
-  struct dt_iop_module_t *self,
-  dt_dev_pixelpipe_iop_t *piece,
-  const void *const ivoid,
-  void *ovoid,
-  const dt_iop_roi_t *const roi_in,
-  const dt_iop_roi_t *const roi_out)
+void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
+             void *ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
-  const  float divider  = (float)UINT16_MAX;
+  const float divider = (float)UINT16_MAX;
   const __m128 dividers = _mm_set_ps1(divider);
 
 #ifdef _OPENMP
-  #pragma omp parallel for default(none) schedule(static) shared(ovoid)
+#pragma omp parallel for default(none) schedule(static) shared(ovoid)
 #endif
   for(int j = 0; j < roi_out->height; j++)
   {
@@ -94,11 +79,10 @@ process(
     int alignment = ((8 - (j * roi_out->width & (8 - 1))) & (8 - 1));
 
     // process unaligned pixels
-    for ( ; i < alignment ; i++, out++, in++)
-      *out = ((float)(*in)) / divider;
+    for(; i < alignment; i++, out++, in++) *out = ((float)(*in)) / divider;
 
     // process aligned pixels with SSE
-    for( ; i < roi_out->width - (8 - 1); i += 8, in += 8)
+    for(; i < roi_out->width - (8 - 1); i += 8, in += 8)
     {
       const __m128i input = _mm_load_si128((__m128i *)in);
 
@@ -118,20 +102,14 @@ process(
     }
 
     // process the rest
-    for( ; i < roi_out->width; i++, out++, in++)
-      *out = ((float)(*in)) / divider;
+    for(; i < roi_out->width; i++, out++, in++) *out = ((float)(*in)) / divider;
   }
   _mm_sfence();
 }
 
 #ifdef HAVE_OPENCL
-int
-process_cl(
-  struct dt_iop_module_t *self,
-  dt_dev_pixelpipe_iop_t *piece,
-  cl_mem dev_in, cl_mem dev_out,
-  const dt_iop_roi_t *roi_in,
-  const dt_iop_roi_t *roi_out)
+int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out,
+               const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
 {
   dt_iop_letsgofloat_global_data_t *gd = (dt_iop_letsgofloat_global_data_t *)self->data;
 
@@ -141,7 +119,7 @@ process_cl(
   const int width = roi_in->width;
   const int height = roi_in->height;
 
-  size_t sizes[] = { ROUNDUPWD(width), ROUNDUPHT(height), 1};
+  size_t sizes[] = { ROUNDUPWD(width), ROUNDUPHT(height), 1 };
   dt_opencl_set_kernel_arg(devid, gd->kernel_letsgofloat_1ui, 0, sizeof(cl_mem), (void *)&dev_in);
   dt_opencl_set_kernel_arg(devid, gd->kernel_letsgofloat_1ui, 1, sizeof(cl_mem), (void *)&dev_out);
   dt_opencl_set_kernel_arg(devid, gd->kernel_letsgofloat_1ui, 2, sizeof(int), (void *)&width);
@@ -151,29 +129,21 @@ process_cl(
 
   return TRUE;
 
-  error:
+error:
   dt_print(DT_DEBUG_OPENCL, "[opencl_letsgofloat] couldn't enqueue kernel! %d\n", err);
   return FALSE;
 }
 #endif
 
-void
-commit_params(
-  struct dt_iop_module_t *self,
-  dt_iop_params_t *params,
-  dt_dev_pixelpipe_t *pipe,
-  dt_dev_pixelpipe_iop_t *piece)
+void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *params, dt_dev_pixelpipe_t *pipe,
+                   dt_dev_pixelpipe_iop_t *piece)
 {
-  if(!(pipe->image.flags & DT_IMAGE_RAW) ||
-      dt_dev_pixelpipe_uses_downsampled_input(pipe) ||
-      !dt_image_filter(&piece->pipe->image) ||
-      piece->pipe->image.bpp != sizeof(uint16_t))
+  if(!(pipe->image.flags & DT_IMAGE_RAW) || dt_dev_pixelpipe_uses_downsampled_input(pipe)
+     || !dt_image_filter(&piece->pipe->image) || piece->pipe->image.bpp != sizeof(uint16_t))
     piece->enabled = 0;
 }
 
-void
-init_global(
-  dt_iop_module_so_t *self)
+void init_global(dt_iop_module_so_t *self)
 {
   const int program = 2; // basic.cl, from programs.conf
   self->data = malloc(sizeof(dt_iop_letsgofloat_global_data_t));
@@ -182,9 +152,7 @@ init_global(
   gd->kernel_letsgofloat_1ui = dt_opencl_create_kernel(program, "letsgofloat_1ui");
 }
 
-void
-init(
-  dt_iop_module_t *self)
+void init(dt_iop_module_t *self)
 {
   self->params = calloc(1, sizeof(dt_iop_letsgofloat_params_t));
   self->default_params = calloc(1, sizeof(dt_iop_letsgofloat_params_t));
@@ -195,17 +163,13 @@ init(
   self->gui_data = NULL;
 }
 
-void
-cleanup(
-  dt_iop_module_t *self)
+void cleanup(dt_iop_module_t *self)
 {
   free(self->params);
   self->params = NULL;
 }
 
-void
-cleanup_global(
-  dt_iop_module_so_t *self)
+void cleanup_global(dt_iop_module_so_t *self)
 {
   dt_iop_letsgofloat_global_data_t *gd = (dt_iop_letsgofloat_global_data_t *)self->data;
   dt_opencl_free_kernel(gd->kernel_letsgofloat_1ui);

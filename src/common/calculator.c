@@ -27,7 +27,8 @@ typedef enum token_types_t
   T_OPERATOR
 } token_types_t;
 
-typedef enum operators_t {
+typedef enum operators_t
+{
   O_PLUS,
   O_INC,
   O_MINUS,
@@ -66,13 +67,13 @@ static float read_number(parser_state_t *self)
   return g_ascii_strtod(self->p, &self->p);
 }
 
-static token_t * get_token(parser_state_t *self)
+static token_t *get_token(parser_state_t *self)
 {
   if(!self->p) return NULL;
 
-  token_t *token = (token_t*)malloc(sizeof(token_t));
+  token_t *token = (token_t *)malloc(sizeof(token_t));
 
-  for( ; *self->p; self->p++ )
+  for(; *self->p; self->p++)
   {
     switch(*self->p)
     {
@@ -83,12 +84,12 @@ static token_t * get_token(parser_state_t *self)
         if(self->p[1] == '+')
         {
           self->p += 2;
-          token->data.operator = O_INC;
+          token->data.operator= O_INC;
         }
         else
         {
           self->p++;
-          token->data.operator = O_PLUS;
+          token->data.operator= O_PLUS;
         }
         token->type = T_OPERATOR;
         return token;
@@ -96,44 +97,44 @@ static token_t * get_token(parser_state_t *self)
         if(self->p[1] == '-')
         {
           self->p += 2;
-          token->data.operator = O_DEC;
+          token->data.operator= O_DEC;
         }
         else
         {
           self->p++;
-          token->data.operator = O_MINUS;
+          token->data.operator= O_MINUS;
         }
         token->type = T_OPERATOR;
         return token;
       case '*':
         self->p++;
         token->type = T_OPERATOR;
-        token->data.operator = O_MULTIPLY;
+        token->data.operator= O_MULTIPLY;
         return token;
       case '/':
         self->p++;
         token->type = T_OPERATOR;
-        token->data.operator = O_DIVISION;
+        token->data.operator= O_DIVISION;
         return token;
       case '%':
         self->p++;
         token->type = T_OPERATOR;
-        token->data.operator = O_MODULO;
+        token->data.operator= O_MODULO;
         return token;
       case '^':
         self->p++;
         token->type = T_OPERATOR;
-        token->data.operator = O_POWER;
+        token->data.operator= O_POWER;
         return token;
       case '(':
         self->p++;
         token->type = T_OPERATOR;
-        token->data.operator = O_LEFTROUND;
+        token->data.operator= O_LEFTROUND;
         return token;
       case ')':
         self->p++;
         token->type = T_OPERATOR;
-        token->data.operator = O_RIGHTROUND;
+        token->data.operator= O_RIGHTROUND;
         return token;
       case 'x':
       case 'X':
@@ -160,7 +161,7 @@ static token_t * get_token(parser_state_t *self)
       }
       default:
         // people complained about the messages when "TRUE" was fed to the calculator
-//         printf("error: %c\n", *self->p);
+        //         printf("error: %c\n", *self->p);
         break;
     }
   }
@@ -193,18 +194,19 @@ static float parse_additive_expression(parser_state_t *self)
 
   while(self->token && self->token->type == T_OPERATOR)
   {
-    operators_t operator = self->token->data.operator;
+    operators_t operator= self->token->data.operator;
 
-    if(operator != O_PLUS && operator != O_MINUS)
-      return left;
+    if(operator!= O_PLUS &&operator!= O_MINUS) return left;
 
     free(self->token);
     self->token = get_token(self);
 
     right = parse_multiplicative_expression(self);
 
-    if(operator == O_PLUS)       left += right;
-    else if(operator == O_MINUS) left -= right;
+    if(operator== O_PLUS)
+      left += right;
+    else if(operator== O_MINUS)
+      left -= right;
   }
 
   return left;
@@ -220,19 +222,21 @@ static float parse_multiplicative_expression(parser_state_t *self)
 
   while(self->token && self->token->type == T_OPERATOR)
   {
-    operators_t operator = self->token->data.operator;
+    operators_t operator= self->token->data.operator;
 
-    if(operator != O_MULTIPLY && operator != O_DIVISION && operator != O_MODULO)
-      return left;
+    if(operator!= O_MULTIPLY &&operator!= O_DIVISION &&operator!= O_MODULO) return left;
 
     free(self->token);
     self->token = get_token(self);
 
     right = parse_power_expression(self);
 
-    if(operator == O_MULTIPLY)      left *= right;
-    else if(operator == O_DIVISION) left /= right;
-    else if(operator == O_MODULO)   left = fmodf(left, right);
+    if(operator== O_MULTIPLY)
+      left *= right;
+    else if(operator== O_DIVISION)
+      left /= right;
+    else if(operator== O_MODULO)
+      left = fmodf(left, right);
   }
 
   return left;
@@ -248,8 +252,7 @@ static float parse_power_expression(parser_state_t *self)
 
   while(self->token && self->token->type == T_OPERATOR)
   {
-    if(self->token->data.operator != O_POWER)
-      return left;
+    if(self->token->data.operator!= O_POWER) return left;
 
     free(self->token);
     self->token = get_token(self);
@@ -268,14 +271,14 @@ static float parse_unary_expression(parser_state_t *self)
 
   if(self->token->type == T_OPERATOR)
   {
-    if(self->token->data.operator == O_MINUS)
+    if(self->token->data.operator== O_MINUS)
     {
       free(self->token);
       self->token = get_token(self);
 
       return -1.0 * parse_unary_expression(self);
     }
-    if(self->token->data.operator == O_PLUS)
+    if(self->token->data.operator== O_PLUS)
     {
       free(self->token);
       self->token = get_token(self);
@@ -298,13 +301,13 @@ static float parse_primary_expression(parser_state_t *self)
     self->token = get_token(self);
     return result;
   }
-  if(self->token->type == T_OPERATOR && self->token->data.operator == O_LEFTROUND)
+  if(self->token->type == T_OPERATOR && self->token->data.operator== O_LEFTROUND)
   {
     float result;
     free(self->token);
     self->token = get_token(self);
     result = parse_expression(self);
-    if(!self->token || self->token->type != T_OPERATOR || self->token->data.operator != O_RIGHTROUND)
+    if(!self->token || self->token->type != T_OPERATOR || self->token->data.operator!= O_RIGHTROUND)
       return NAN;
     free(self->token);
     self->token = get_token(self);
@@ -318,19 +321,18 @@ static float parse_primary_expression(parser_state_t *self)
 
 float dt_calculator_solve(float x, const char *formula)
 {
-  if(formula == NULL || *formula == '\0')
-    return NAN;
+  if(formula == NULL || *formula == '\0') return NAN;
 
   float result;
   gchar *dotformula = g_strdup(formula);
-  parser_state_t *self = (parser_state_t*)malloc(sizeof(parser_state_t));
+  parser_state_t *self = (parser_state_t *)malloc(sizeof(parser_state_t));
 
   self->p = g_strdelimit(dotformula, ",", '.');
   self->x = x;
 
   self->token = get_token(self);
 
-//   operators_t operator = -1;
+  //   operators_t operator = -1;
   if(self->token && self->token->type == T_OPERATOR)
   {
     switch(self->token->data.operator)
@@ -341,35 +343,35 @@ float dt_calculator_solve(float x, const char *formula)
       case O_DEC:
         result = x - 1.0;
         goto end;
-//       case O_PLUS:
-//       case O_MINUS:
-//       case O_MULTIPLY:
-//       case O_DIVISION:
-//       case O_MODULO:
-//       case O_POWER:
-//         operator = self->token->data.operator;
-//         free(self->token);
-//         self->token = get_token(self);
-//         break;
-      default: break;
+      //       case O_PLUS:
+      //       case O_MINUS:
+      //       case O_MULTIPLY:
+      //       case O_DIVISION:
+      //       case O_MODULO:
+      //       case O_POWER:
+      //         operator = self->token->data.operator;
+      //         free(self->token);
+      //         self->token = get_token(self);
+      //         break;
+      default:
+        break;
     }
   }
 
   result = parse_expression(self);
 
-//   switch(operator)
-//   {
-//     case O_PLUS: result = x + res; break;
-//     case O_MINUS: result = x - res; break;
-//     case O_MULTIPLY: result = x * res; break;
-//     case O_DIVISION: result = x / res; break;
-//     case O_MODULO: result = fmodf(x, res); break;
-//     case O_POWER: result = powf(x, res); break;
-//     default: break;
-//   }
+  //   switch(operator)
+  //   {
+  //     case O_PLUS: result = x + res; break;
+  //     case O_MINUS: result = x - res; break;
+  //     case O_MULTIPLY: result = x * res; break;
+  //     case O_DIVISION: result = x / res; break;
+  //     case O_MODULO: result = fmodf(x, res); break;
+  //     case O_POWER: result = powf(x, res); break;
+  //     default: break;
+  //   }
 
-  if(self->token)
-    result = NAN;
+  if(self->token) result = NAN;
 
 end:
   free(self->token);

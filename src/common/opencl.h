@@ -42,9 +42,9 @@
 #include <CL/cl.h>
 // #pragma GCC diagnostic
 
-#define ROUNDUP(a, n)		((a) % (n) == 0 ? (a) : ((a) / (n) + 1) * (n))
-#define ROUNDUPWD(a)            dt_opencl_roundup(a)
-#define ROUNDUPHT(a)            dt_opencl_roundup(a)
+#define ROUNDUP(a, n) ((a) % (n) == 0 ? (a) : ((a) / (n)+1) * (n))
+#define ROUNDUPWD(a) dt_opencl_roundup(a)
+#define ROUNDUPHT(a) dt_opencl_roundup(a)
 
 
 /**
@@ -55,8 +55,7 @@ typedef struct dt_opencl_eventtag_t
   cl_int retval;
   cl_ulong timelapsed;
   char tag[DT_OPENCL_EVENTNAMELENGTH];
-}
-dt_opencl_eventtag_t;
+} dt_opencl_eventtag_t;
 
 
 /**
@@ -75,9 +74,9 @@ typedef struct dt_opencl_device_t
   cl_ulong max_global_mem;
   cl_ulong used_global_mem;
   cl_program program[DT_OPENCL_MAX_PROGRAMS];
-  cl_kernel  kernel [DT_OPENCL_MAX_KERNELS];
+  cl_kernel kernel[DT_OPENCL_MAX_KERNELS];
   int program_used[DT_OPENCL_MAX_PROGRAMS];
-  int kernel_used [DT_OPENCL_MAX_KERNELS];
+  int kernel_used[DT_OPENCL_MAX_KERNELS];
   cl_event *eventlist;
   dt_opencl_eventtag_t *eventtags;
   int numevents;
@@ -92,8 +91,7 @@ typedef struct dt_opencl_device_t
   const char *name;
   const char *cname;
   cl_int summary;
-}
-dt_opencl_device_t;
+} dt_opencl_device_t;
 
 struct dt_bilateral_cl_global_t;
 /**
@@ -129,8 +127,7 @@ typedef struct dt_opencl_t
 
   // global kernels for interpolation resampling.
   struct dt_interpolation_cl_global_t *interpolation;
-}
-dt_opencl_t;
+} dt_opencl_t;
 
 /** inits the opencl subsystem. */
 void dt_opencl_init(dt_opencl_t *cl, const int argc, char *argv[]);
@@ -151,10 +148,12 @@ int dt_opencl_lock_device(const int pipetype);
 void dt_opencl_unlock_device(const int dev);
 
 /** loads the given .cl file and returns a reference to an internal program. */
-int dt_opencl_load_program(const int dev, const int prog, const char *filename, const char* binname, const char* cachedir, char* md5sum, int* loaded_cached);
+int dt_opencl_load_program(const int dev, const int prog, const char *filename, const char *binname,
+                           const char *cachedir, char *md5sum, int *loaded_cached);
 
 /** builds the given program. */
-int dt_opencl_build_program(const int dev, const int prog, const char* binname, const char* cachedir, char* md5sum, int loaded_cached, const char* kerneldir);
+int dt_opencl_build_program(const int dev, const int prog, const char *binname, const char *cachedir,
+                            char *md5sum, int loaded_cached, const char *kerneldir);
 
 /** inits a kernel. returns the index or -1 if fail. */
 int dt_opencl_create_kernel(const int program, const char *name);
@@ -166,19 +165,22 @@ void dt_opencl_free_kernel(const int kernel);
 int dt_opencl_get_max_work_item_sizes(const int dev, size_t *sizes);
 
 /** return max size per dimension in sizes[3] and max total size in workgroupsize */
-int dt_opencl_get_work_group_limits(const int dev, size_t *sizes, size_t *workgroupsize, unsigned long *localmemsize);
+int dt_opencl_get_work_group_limits(const int dev, size_t *sizes, size_t *workgroupsize,
+                                    unsigned long *localmemsize);
 
 /** return max workgroup size for a specifc kernel */
 int dt_opencl_get_kernel_work_group_size(const int dev, const int kernel, size_t *kernelworkgroupsize);
 
 /** attach arg. */
-int dt_opencl_set_kernel_arg(const int dev, const int kernel, const int num, const size_t size, const void *arg);
+int dt_opencl_set_kernel_arg(const int dev, const int kernel, const int num, const size_t size,
+                             const void *arg);
 
 /** launch kernel! */
 int dt_opencl_enqueue_kernel_2d(const int dev, const int kernel, const size_t *sizes);
 
 /** launch kernel with defined local size! */
-int dt_opencl_enqueue_kernel_2d_with_local(const int dev, const int kernel, const size_t *sizes, const size_t *local);
+int dt_opencl_enqueue_kernel_2d_with_local(const int dev, const int kernel, const size_t *sizes,
+                                           const size_t *local);
 
 /** check if opencl is inited */
 int dt_opencl_is_inited(void);
@@ -193,62 +195,86 @@ void dt_opencl_disable(void);
 int dt_opencl_update_enabled(void);
 
 /** HAVE_OPENCL mode only: copy and alloc buffers. */
-int dt_opencl_copy_device_to_host(const int devid, void *host, void *device, const int width, const int height, const int bpp);
+int dt_opencl_copy_device_to_host(const int devid, void *host, void *device, const int width,
+                                  const int height, const int bpp);
 
-int dt_opencl_read_host_from_device(const int devid, void *host, void *device, const int width, const int height, const int bpp);
+int dt_opencl_read_host_from_device(const int devid, void *host, void *device, const int width,
+                                    const int height, const int bpp);
 
-int dt_opencl_read_host_from_device_rowpitch(const int devid, void *host, void *device, const int width, const int height, const int rowpitch);
+int dt_opencl_read_host_from_device_rowpitch(const int devid, void *host, void *device, const int width,
+                                             const int height, const int rowpitch);
 
-int dt_opencl_read_host_from_device_non_blocking(const int devid, void *host, void *device, const int width, const int height, const int bpp);
+int dt_opencl_read_host_from_device_non_blocking(const int devid, void *host, void *device, const int width,
+                                                 const int height, const int bpp);
 
-int dt_opencl_read_host_from_device_rowpitch_non_blocking(const int devid, void *host, void *device, const int width, const int height, const int rowpitch);
+int dt_opencl_read_host_from_device_rowpitch_non_blocking(const int devid, void *host, void *device,
+                                                          const int width, const int height,
+                                                          const int rowpitch);
 
-int dt_opencl_read_host_from_device_raw(const int devid, void *host, void *device, const size_t *origin, const size_t *region, const int rowpitch, const int blocking);
+int dt_opencl_read_host_from_device_raw(const int devid, void *host, void *device, const size_t *origin,
+                                        const size_t *region, const int rowpitch, const int blocking);
 
-int dt_opencl_write_host_to_device(const int devid, void *host, void *device, const int width, const int height, const int bpp);
+int dt_opencl_write_host_to_device(const int devid, void *host, void *device, const int width,
+                                   const int height, const int bpp);
 
-int dt_opencl_write_host_to_device_rowpitch(const int devid, void *host, void *device, const int width, const int height, const int rowpitch);
+int dt_opencl_write_host_to_device_rowpitch(const int devid, void *host, void *device, const int width,
+                                            const int height, const int rowpitch);
 
-int dt_opencl_write_host_to_device_non_blocking(const int devid, void *host, void *device, const int width, const int height, const int bpp);
+int dt_opencl_write_host_to_device_non_blocking(const int devid, void *host, void *device, const int width,
+                                                const int height, const int bpp);
 
-int dt_opencl_write_host_to_device_rowpitch_non_blocking(const int devid, void *host, void *device, const int width, const int height, const int rowpitch);
+int dt_opencl_write_host_to_device_rowpitch_non_blocking(const int devid, void *host, void *device,
+                                                         const int width, const int height,
+                                                         const int rowpitch);
 
-int dt_opencl_write_host_to_device_raw(const int devid, void *host, void *device, const size_t *origin, const size_t *region, const int rowpitch, const int blocking);
+int dt_opencl_write_host_to_device_raw(const int devid, void *host, void *device, const size_t *origin,
+                                       const size_t *region, const int rowpitch, const int blocking);
 
-void* dt_opencl_copy_host_to_device(const int devid, void *host, const int width, const int height, const int bpp);
+void *dt_opencl_copy_host_to_device(const int devid, void *host, const int width, const int height,
+                                    const int bpp);
 
-void* dt_opencl_copy_host_to_device_rowpitch(const int devid, void *host, const int width, const int height, const int bpp, const int rowpitch);
+void *dt_opencl_copy_host_to_device_rowpitch(const int devid, void *host, const int width, const int height,
+                                             const int bpp, const int rowpitch);
 
-void* dt_opencl_copy_host_to_device_constant(const int devid, const size_t size, void *host);
+void *dt_opencl_copy_host_to_device_constant(const int devid, const size_t size, void *host);
 
-int dt_opencl_enqueue_copy_image(const int devid, cl_mem src, cl_mem dst, size_t *orig_src, size_t *orig_dst, size_t *region);
+int dt_opencl_enqueue_copy_image(const int devid, cl_mem src, cl_mem dst, size_t *orig_src, size_t *orig_dst,
+                                 size_t *region);
 
-void* dt_opencl_alloc_device(const int devid, const int width, const int height, const int bpp);
+void *dt_opencl_alloc_device(const int devid, const int width, const int height, const int bpp);
 
-void* dt_opencl_alloc_device_use_host_pointer(const int devid, const int width, const int height, const int bpp, const int rowpitch, void *host);
+void *dt_opencl_alloc_device_use_host_pointer(const int devid, const int width, const int height,
+                                              const int bpp, const int rowpitch, void *host);
 
-int dt_opencl_enqueue_copy_image_to_buffer(const int devid, cl_mem src_image, cl_mem dst_buffer, size_t *origin, size_t *region, size_t offset);
+int dt_opencl_enqueue_copy_image_to_buffer(const int devid, cl_mem src_image, cl_mem dst_buffer,
+                                           size_t *origin, size_t *region, size_t offset);
 
-int dt_opencl_enqueue_copy_buffer_to_image(const int devid, cl_mem src_buffer, cl_mem dst_image, size_t offset, size_t *origin, size_t *region);
+int dt_opencl_enqueue_copy_buffer_to_image(const int devid, cl_mem src_buffer, cl_mem dst_image,
+                                           size_t offset, size_t *origin, size_t *region);
 
-int dt_opencl_enqueue_copy_buffer_to_buffer(const int devid, cl_mem src_buffer, cl_mem dst_buffer, size_t srcoffset, size_t dstoffset, size_t size);
+int dt_opencl_enqueue_copy_buffer_to_buffer(const int devid, cl_mem src_buffer, cl_mem dst_buffer,
+                                            size_t srcoffset, size_t dstoffset, size_t size);
 
-int dt_opencl_read_buffer_from_device(const int devid, void *host, void *device, const size_t offset, const size_t size, const int blocking);
+int dt_opencl_read_buffer_from_device(const int devid, void *host, void *device, const size_t offset,
+                                      const size_t size, const int blocking);
 
-int dt_opencl_write_buffer_to_device(const int devid, void *host, void *device, const size_t offset, const size_t size, const int blocking);
+int dt_opencl_write_buffer_to_device(const int devid, void *host, void *device, const size_t offset,
+                                     const size_t size, const int blocking);
 
-void* dt_opencl_alloc_device_buffer(const int devid, const size_t size);
+void *dt_opencl_alloc_device_buffer(const int devid, const size_t size);
 
-void* dt_opencl_alloc_device_buffer_with_flags(const int devid, const size_t size, const int flags);
+void *dt_opencl_alloc_device_buffer_with_flags(const int devid, const size_t size, const int flags);
 
 void dt_opencl_release_mem_object(void *mem);
 
-void* dt_opencl_map_buffer(const int devid, cl_mem buffer, const int blocking, const int flags, size_t offset, size_t size);
+void *dt_opencl_map_buffer(const int devid, cl_mem buffer, const int blocking, const int flags, size_t offset,
+                           size_t size);
 
 int dt_opencl_unmap_mem_object(const int devid, cl_mem mem_object, void *mapped_ptr);
 
 /** check if image size fit into limits given by OpenCL runtime */
-int dt_opencl_image_fits_device(const int devid, const size_t width, const size_t height, const unsigned bpp, const float factor, const size_t overhead);
+int dt_opencl_image_fits_device(const int devid, const size_t width, const size_t height, const unsigned bpp,
+                                const float factor, const size_t overhead);
 
 /** round size to a multiple of the value given in config parameter opencl_size_roundup */
 int dt_opencl_roundup(int size);
@@ -292,7 +318,9 @@ static inline void dt_opencl_init(dt_opencl_t *cl, const int argc, char *argv[])
   dt_conf_set_bool("opencl", FALSE);
   dt_print(DT_DEBUG_OPENCL, "[opencl_init] this version of darktable was built without opencl support\n");
 }
-static inline void dt_opencl_cleanup(dt_opencl_t *cl) {}
+static inline void dt_opencl_cleanup(dt_opencl_t *cl)
+{
+}
 static inline int dt_opencl_finish(const int devid)
 {
   return -1;
@@ -305,7 +333,9 @@ static inline int dt_opencl_lock_device(const int dev)
 {
   return -1;
 }
-static inline void dt_opencl_unlock_device(const int dev) {}
+static inline void dt_opencl_unlock_device(const int dev)
+{
+}
 static inline int dt_opencl_load_program(const int dev, const char *filename)
 {
   return -1;
@@ -318,16 +348,20 @@ static inline int dt_opencl_create_kernel(const int program, const char *name)
 {
   return -1;
 }
-static inline void dt_opencl_free_kernel(const int kernel) {}
-static inline int  dt_opencl_get_max_work_item_sizes(const int dev, size_t *sizes)
+static inline void dt_opencl_free_kernel(const int kernel)
+{
+}
+static inline int dt_opencl_get_max_work_item_sizes(const int dev, size_t *sizes)
 {
   return -1;
 }
-static inline int dt_opencl_get_work_group_limits(const int dev, size_t *sizes, size_t *workgroupsize, unsigned long *localmemsize)
+static inline int dt_opencl_get_work_group_limits(const int dev, size_t *sizes, size_t *workgroupsize,
+                                                  unsigned long *localmemsize)
 {
   return -1;
 }
-static inline int dt_opencl_get_kernel_work_group_size(const int dev, const int kernel, size_t *kernelworkgroupsize)
+static inline int dt_opencl_get_kernel_work_group_size(const int dev, const int kernel,
+                                                       size_t *kernelworkgroupsize)
 {
   return -1;
 }
@@ -339,7 +373,8 @@ static inline int dt_opencl_enqueue_kernel_2d(const int dev, const int kernel, c
 {
   return -1;
 }
-static inline int dt_opencl_enqueue_kernel_2d_with_local(const int dev, const int kernel, const size_t *sizes, const size_t *local)
+static inline int dt_opencl_enqueue_kernel_2d_with_local(const int dev, const int kernel, const size_t *sizes,
+                                                         const size_t *local)
 {
   return -1;
 }
@@ -351,12 +386,15 @@ static inline int dt_opencl_is_enabled(void)
 {
   return 0;
 }
-static inline void dt_opencl_disable(void) {}
+static inline void dt_opencl_disable(void)
+{
+}
 static inline int dt_opencl_update_enabled(void)
 {
   return 0;
 }
-static inline int dt_opencl_image_fits_device(const int devid, const size_t width, const size_t height, const unsigned bpp, const float factor, const size_t overhead)
+static inline int dt_opencl_image_fits_device(const int devid, const size_t width, const size_t height,
+                                              const unsigned bpp, const float factor, const size_t overhead)
 {
   return 0;
 }
@@ -364,18 +402,26 @@ static inline int dt_opencl_get_max_global_mem(const int devid)
 {
   return 0;
 }
-static inline void dt_opencl_release_mem_object(void *mem) {}
+static inline void dt_opencl_release_mem_object(void *mem)
+{
+}
 static inline void *dt_opencl_events_get_slot(const int devid, const char *tag)
 {
   return NULL;
 }
-static inline void dt_opencl_events_reset(const int devid) {}
-static inline void dt_opencl_events_wait_for(const int devid) {}
+static inline void dt_opencl_events_reset(const int devid)
+{
+}
+static inline void dt_opencl_events_wait_for(const int devid)
+{
+}
 static inline int dt_opencl_events_flush(const int devid, const int reset)
 {
   return 0;
 }
-static inline void dt_opencl_events_profiling(const int devid, const int aggregated) {}
+static inline void dt_opencl_events_profiling(const int devid, const int aggregated)
+{
+}
 #endif
 
 

@@ -21,22 +21,21 @@
 #include <gtk/gtk.h>
 
 G_BEGIN_DECLS
-#define DTGTK_LABEL(obj) G_TYPE_CHECK_INSTANCE_CAST(obj, dtgtk_label_get_type (), GtkDarktableLabel)
+#define DTGTK_LABEL(obj) G_TYPE_CHECK_INSTANCE_CAST(obj, dtgtk_label_get_type(), GtkDarktableLabel)
 #define DTGTK_LABEL_CLASS(klass) GTK_CHECK_CLASS_CAST(klass, dtgtk_label_get_type(), GtkDarktableLabelClass)
 #define DTGTK_IS_LABEL(obj) G_TYPE_CHECK_INSTANCE_TYPE(obj, dtgtk_label_get_type())
 #define DTGTK_IS_LABEL_CLASS(klass) GTK_CHECK_CLASS_TYPE(obj, dtgtk_label_get_type())
 
 typedef enum _darktable_label_flags
 {
-  DARKTABLE_LABEL_UNDERLINED=1,
-  DARKTABLE_LABEL_BACKFILLED=2,
-  DARKTABLE_LABEL_TAB=4,
-  DARKTABLE_LABEL_ALIGN_LEFT=16,
-  DARKTABLE_LABEL_ALIGN_RIGHT=32,
-  DARKTABLE_LABEL_ALIGN_CENTER=64
+  DARKTABLE_LABEL_UNDERLINED = 1,
+  DARKTABLE_LABEL_BACKFILLED = 2,
+  DARKTABLE_LABEL_TAB = 4,
+  DARKTABLE_LABEL_ALIGN_LEFT = 16,
+  DARKTABLE_LABEL_ALIGN_RIGHT = 32,
+  DARKTABLE_LABEL_ALIGN_CENTER = 64
 
-}
-_darktable_label_flags_t;
+} _darktable_label_flags_t;
 
 typedef struct _GtkDarktableLabel
 {
@@ -49,14 +48,12 @@ typedef struct _GtkDarktableLabelClass
   GtkButtonClass parent_class;
 } GtkDarktableLabelClass;
 
-GType dtgtk_label_get_type (void);
+GType dtgtk_label_get_type(void);
 
 /** Instansiate a new darktable label control passing paint function as content */
-GtkWidget* dtgtk_label_new(const gchar *label,_darktable_label_flags_t flags);
+GtkWidget *dtgtk_label_new(const gchar *label, _darktable_label_flags_t flags);
 /** set the text of the label */
-void dtgtk_label_set_text(GtkDarktableLabel *label,
-                          const gchar *text,
-                          _darktable_label_flags_t flags);
+void dtgtk_label_set_text(GtkDarktableLabel *label, const gchar *text, _darktable_label_flags_t flags);
 G_END_DECLS
 #endif
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

@@ -28,17 +28,17 @@
 
 //------------------------------------------------------------------------------
 
-static void inline
-histogram_helper_cs_RAW_helper_process_pixel_float(const dt_dev_histogram_collection_params_t * const histogram_params,
-                                                   const float *pixel, uint32_t *histogram)
+static void inline histogram_helper_cs_RAW_helper_process_pixel_float(
+    const dt_dev_histogram_collection_params_t *const histogram_params, const float *pixel,
+    uint32_t *histogram)
 {
-  const uint32_t V = CLAMP((float)(histogram_params->bins_count) * *pixel, 0, histogram_params->bins_count - 1);
-  histogram[4 * V] ++;
+  const uint32_t V
+      = CLAMP((float)(histogram_params->bins_count) * *pixel, 0, histogram_params->bins_count - 1);
+  histogram[4 * V]++;
 }
 
-static void inline
-histogram_helper_cs_RAW(const dt_dev_histogram_collection_params_t * const histogram_params,
-                        const void *pixel, uint32_t *histogram, int j)
+static void inline histogram_helper_cs_RAW(const dt_dev_histogram_collection_params_t *const histogram_params,
+                                           const void *pixel, uint32_t *histogram, int j)
 {
   const dt_iop_roi_t *roi = histogram_params->roi;
   const float *input = (float *)pixel + roi->width * j;
@@ -50,17 +50,18 @@ histogram_helper_cs_RAW(const dt_dev_histogram_collection_params_t * const histo
 
 //------------------------------------------------------------------------------
 
-static void inline
-histogram_helper_cs_RAW_helper_process_pixel_uint16(const dt_dev_histogram_collection_params_t * const histogram_params,
-                                                    const uint16_t *pixel, uint32_t *histogram)
+static void inline histogram_helper_cs_RAW_helper_process_pixel_uint16(
+    const dt_dev_histogram_collection_params_t *const histogram_params, const uint16_t *pixel,
+    uint32_t *histogram)
 {
-  const uint32_t V = CLAMP((float)(histogram_params->bins_count) / (float)UINT16_MAX * *pixel, 0, histogram_params->bins_count - 1);
-  histogram[4 * V] ++;
+  const uint32_t V = CLAMP((float)(histogram_params->bins_count) / (float)UINT16_MAX * *pixel, 0,
+                           histogram_params->bins_count - 1);
+  histogram[4 * V]++;
 }
 
-static void inline
-histogram_helper_cs_RAW_helper_process_pixel_si128(const dt_dev_histogram_collection_params_t * const histogram_params,
-                                                   const __m128i *pixel, uint32_t *histogram)
+static void inline histogram_helper_cs_RAW_helper_process_pixel_si128(
+    const dt_dev_histogram_collection_params_t *const histogram_params, const __m128i *pixel,
+    uint32_t *histogram)
 {
   const float scale = (float)(histogram_params->bins_count) / (float)UINT16_MAX;
 
@@ -85,58 +86,57 @@ histogram_helper_cs_RAW_helper_process_pixel_si128(const dt_dev_histogram_collec
   ihi = _mm_cvtps_epi32(fhi);
 
   __m128i values[2] __attribute__((aligned(16)));
-  _mm_store_si128 (&(values[0]), ilo);
-  _mm_store_si128 (&(values[1]), ihi);
+  _mm_store_si128(&(values[0]), ilo);
+  _mm_store_si128(&(values[1]), ihi);
 
   const uint32_t *valuesi = (uint32_t *)(&values);
 
-  for(int k = 0; k < 8; k++)
-    histogram[4 * valuesi[k]] ++;
+  for(int k = 0; k < 8; k++) histogram[4 * valuesi[k]]++;
 }
 
-void inline
-dt_histogram_helper_cs_RAW_uint16(const dt_dev_histogram_collection_params_t * const histogram_params,
-                                  const void *pixel, uint32_t *histogram, int j)
+void inline dt_histogram_helper_cs_RAW_uint16(
+    const dt_dev_histogram_collection_params_t *const histogram_params, const void *pixel,
+    uint32_t *histogram, int j)
 {
   const dt_iop_roi_t *roi = histogram_params->roi;
-  uint16_t *in  = (uint16_t *)pixel + roi->width * j;
+  uint16_t *in = (uint16_t *)pixel + roi->width * j;
 
   int i = roi->x;
-  int alignment = ((8 - (j * roi->width & (8-1))) & (8-1));
+  int alignment = ((8 - (j * roi->width & (8 - 1))) & (8 - 1));
 
   // process unaligned pixels
-  for ( ; i < alignment; i++, in++)
+  for(; i < alignment; i++, in++)
     histogram_helper_cs_RAW_helper_process_pixel_uint16(histogram_params, in, histogram);
 
   // process aligned pixels with SSE
-  for( ; i < roi->width - (8-1); i += 8, in += 8)
-    histogram_helper_cs_RAW_helper_process_pixel_si128(histogram_params, (__m128i*)in, histogram);
+  for(; i < roi->width - (8 - 1); i += 8, in += 8)
+    histogram_helper_cs_RAW_helper_process_pixel_si128(histogram_params, (__m128i *)in, histogram);
 
   // process the rest
-  for( ; i < roi->width; i++, in++)
+  for(; i < roi->width; i++, in++)
     histogram_helper_cs_RAW_helper_process_pixel_uint16(histogram_params, in, histogram);
 }
 
 //------------------------------------------------------------------------------
 
-static void inline __attribute__((__unused__))
-histogram_helper_cs_rgb_helper_process_pixel_float(const dt_dev_histogram_collection_params_t * const histogram_params,
-                                                   const float *pixel, uint32_t *histogram)
+static void inline __attribute__((__unused__)) histogram_helper_cs_rgb_helper_process_pixel_float(
+    const dt_dev_histogram_collection_params_t *const histogram_params, const float *pixel,
+    uint32_t *histogram)
 {
   const float Rv = pixel[0];
   const float Gv = pixel[1];
   const float Bv = pixel[2];
-  const uint32_t R = CLAMP((float)(histogram_params->bins_count) * Rv, 0, histogram_params->bins_count-1);
-  const uint32_t G = CLAMP((float)(histogram_params->bins_count) * Gv, 0, histogram_params->bins_count-1);
-  const uint32_t B = CLAMP((float)(histogram_params->bins_count) * Bv, 0, histogram_params->bins_count-1);
-  histogram[4 * R] ++;
-  histogram[4 * G + 1] ++;
-  histogram[4 * B + 2] ++;
+  const uint32_t R = CLAMP((float)(histogram_params->bins_count) * Rv, 0, histogram_params->bins_count - 1);
+  const uint32_t G = CLAMP((float)(histogram_params->bins_count) * Gv, 0, histogram_params->bins_count - 1);
+  const uint32_t B = CLAMP((float)(histogram_params->bins_count) * Bv, 0, histogram_params->bins_count - 1);
+  histogram[4 * R]++;
+  histogram[4 * G + 1]++;
+  histogram[4 * B + 2]++;
 }
 
-static void inline
-histogram_helper_cs_rgb_helper_process_pixel_m128(const dt_dev_histogram_collection_params_t * const histogram_params,
-                                                  const float *pixel, uint32_t *histogram)
+static void inline histogram_helper_cs_rgb_helper_process_pixel_m128(
+    const dt_dev_histogram_collection_params_t *const histogram_params, const float *pixel,
+    uint32_t *histogram)
 {
   const float fscale = (float)(histogram_params->bins_count);
 
@@ -152,47 +152,49 @@ histogram_helper_cs_rgb_helper_process_pixel_m128(const dt_dev_histogram_collect
   const __m128i indexes = _mm_cvtps_epi32(clamped);
 
   __m128i values __attribute__((aligned(16)));
-  _mm_store_si128 (&values, indexes);
+  _mm_store_si128(&values, indexes);
 
-  const uint32_t *valuesi = (uint32_t*)(&values);
+  const uint32_t *valuesi = (uint32_t *)(&values);
 
-  histogram[4 * valuesi[0]] ++;
-  histogram[4 * valuesi[1] + 1] ++;
-  histogram[4 * valuesi[2] + 2] ++;
+  histogram[4 * valuesi[0]]++;
+  histogram[4 * valuesi[1] + 1]++;
+  histogram[4 * valuesi[2] + 2]++;
 }
 
-static void inline
-histogram_helper_cs_rgb(const dt_dev_histogram_collection_params_t * const histogram_params,
-                        const void *pixel, uint32_t *histogram, int j)
+static void inline histogram_helper_cs_rgb(const dt_dev_histogram_collection_params_t *const histogram_params,
+                                           const void *pixel, uint32_t *histogram, int j)
 {
   const dt_iop_roi_t *roi = histogram_params->roi;
-  float *in  = (float *)pixel + 4 * roi->width * j;
+  float *in = (float *)pixel + 4 * roi->width * j;
 
   // process aligned pixels with SSE
-  for(int i = roi->x ; i < roi->width; i ++, in += 4)
+  for(int i = roi->x; i < roi->width; i++, in += 4)
     histogram_helper_cs_rgb_helper_process_pixel_m128(histogram_params, in, histogram);
 }
 
 //------------------------------------------------------------------------------
 
-static void inline __attribute__((__unused__))
-histogram_helper_cs_Lab_helper_process_pixel_float(const dt_dev_histogram_collection_params_t * const histogram_params,
-                                                   const float *pixel, uint32_t *histogram)
+static void inline __attribute__((__unused__)) histogram_helper_cs_Lab_helper_process_pixel_float(
+    const dt_dev_histogram_collection_params_t *const histogram_params, const float *pixel,
+    uint32_t *histogram)
 {
   const float Lv = pixel[0];
   const float av = pixel[1];
   const float bv = pixel[2];
-  const uint32_t L = CLAMP((float)(histogram_params->bins_count) / 100.0f * (Lv), 0, histogram_params->bins_count-1);
-  const uint32_t a = CLAMP((float)(histogram_params->bins_count) / 256.0f * (av + 128.0f), 0, histogram_params->bins_count-1);
-  const uint32_t b = CLAMP((float)(histogram_params->bins_count) / 256.0f * (bv + 128.0f), 0, histogram_params->bins_count-1);
-  histogram[4 * L] ++;
-  histogram[4 * a + 1] ++;
-  histogram[4 * b + 2] ++;
+  const uint32_t L
+      = CLAMP((float)(histogram_params->bins_count) / 100.0f * (Lv), 0, histogram_params->bins_count - 1);
+  const uint32_t a = CLAMP((float)(histogram_params->bins_count) / 256.0f * (av + 128.0f), 0,
+                           histogram_params->bins_count - 1);
+  const uint32_t b = CLAMP((float)(histogram_params->bins_count) / 256.0f * (bv + 128.0f), 0,
+                           histogram_params->bins_count - 1);
+  histogram[4 * L]++;
+  histogram[4 * a + 1]++;
+  histogram[4 * b + 2]++;
 }
 
-static void inline
-histogram_helper_cs_Lab_helper_process_pixel_m128(const dt_dev_histogram_collection_params_t * const histogram_params,
-                                                  const float *pixel, uint32_t *histogram)
+static void inline histogram_helper_cs_Lab_helper_process_pixel_m128(
+    const dt_dev_histogram_collection_params_t *const histogram_params, const float *pixel,
+    uint32_t *histogram)
 {
   const float fscale = (float)(histogram_params->bins_count);
 
@@ -210,33 +212,31 @@ histogram_helper_cs_Lab_helper_process_pixel_m128(const dt_dev_histogram_collect
   const __m128i indexes = _mm_cvtps_epi32(clamped);
 
   __m128i values __attribute__((aligned(16)));
-  _mm_store_si128 (&values, indexes);
+  _mm_store_si128(&values, indexes);
 
-  const uint32_t *valuesi = (uint32_t*)(&values);
+  const uint32_t *valuesi = (uint32_t *)(&values);
 
-  histogram[4 * valuesi[0]] ++;
-  histogram[4 * valuesi[1] + 1] ++;
-  histogram[4 * valuesi[2] + 2] ++;
+  histogram[4 * valuesi[0]]++;
+  histogram[4 * valuesi[1] + 1]++;
+  histogram[4 * valuesi[2] + 2]++;
 }
 
-static void inline
-histogram_helper_cs_Lab(const dt_dev_histogram_collection_params_t * const histogram_params,
-                        const void *pixel, uint32_t *histogram, int j)
+static void inline histogram_helper_cs_Lab(const dt_dev_histogram_collection_params_t *const histogram_params,
+                                           const void *pixel, uint32_t *histogram, int j)
 {
   const dt_iop_roi_t *roi = histogram_params->roi;
-  float *in  = (float *)pixel + 4 * roi->width * j;
+  float *in = (float *)pixel + 4 * roi->width * j;
 
   // process aligned pixels with SSE
-  for(int i = roi->x ; i < roi->width; i ++, in += 4)
+  for(int i = roi->x; i < roi->width; i++, in += 4)
     histogram_helper_cs_Lab_helper_process_pixel_m128(histogram_params, in, histogram);
 }
 
 //==============================================================================
 
-void
-dt_histogram_worker(const dt_dev_histogram_collection_params_t * const histogram_params,
-                    dt_dev_histogram_stats_t *histogram_stats,
-                    const void * const pixel, uint32_t **histogram, const dt_worker Worker)
+void dt_histogram_worker(const dt_dev_histogram_collection_params_t *const histogram_params,
+                         dt_dev_histogram_stats_t *histogram_stats, const void *const pixel,
+                         uint32_t **histogram, const dt_worker Worker)
 {
   const int nthreads = omp_get_max_threads();
 
@@ -244,10 +244,10 @@ dt_histogram_worker(const dt_dev_histogram_collection_params_t * const histogram
   const size_t buf_size = bins_total * sizeof(uint32_t);
   void *partial_hists = calloc(nthreads, buf_size);
 
-  const dt_iop_roi_t * const roi = histogram_params->roi;
+  const dt_iop_roi_t *const roi = histogram_params->roi;
 
 #ifdef _OPENMP
-  #pragma omp parallel for schedule(static) default(none) shared(partial_hists)
+#pragma omp parallel for schedule(static) default(none) shared(partial_hists)
 #endif
   for(int j = roi->y; j < roi->height; j++)
   {
@@ -260,7 +260,7 @@ dt_histogram_worker(const dt_dev_histogram_collection_params_t * const histogram
   memset(*histogram, 0, buf_size);
   uint32_t *hist = *histogram;
 
-  #pragma omp parallel for schedule(static) default(none) shared(hist,partial_hists)
+#pragma omp parallel for schedule(static) default(none) shared(hist, partial_hists)
   for(size_t k = 0; k < bins_total; k++)
   {
     for(size_t n = 0; n < nthreads; n++)
@@ -281,10 +281,9 @@ dt_histogram_worker(const dt_dev_histogram_collection_params_t * const histogram
 
 //------------------------------------------------------------------------------
 
-void
-dt_histogram_helper(const dt_dev_histogram_collection_params_t * const histogram_params,
-                    dt_dev_histogram_stats_t *histogram_stats,
-                    dt_iop_colorspace_type_t cst, const void *pixel, uint32_t **histogram)
+void dt_histogram_helper(const dt_dev_histogram_collection_params_t *const histogram_params,
+                         dt_dev_histogram_stats_t *histogram_stats, dt_iop_colorspace_type_t cst,
+                         const void *pixel, uint32_t **histogram)
 {
   switch(cst)
   {
@@ -306,12 +305,10 @@ dt_histogram_helper(const dt_dev_histogram_collection_params_t * const histogram
   }
 }
 
-void
-dt_histogram_max_helper(const dt_dev_histogram_stats_t * const histogram_stats,
-                        dt_iop_colorspace_type_t cst, uint32_t **histogram, uint32_t *histogram_max)
+void dt_histogram_max_helper(const dt_dev_histogram_stats_t *const histogram_stats,
+                             dt_iop_colorspace_type_t cst, uint32_t **histogram, uint32_t *histogram_max)
 {
-  if(*histogram == NULL)
-    return;
+  if(*histogram == NULL) return;
   histogram_max[0] = histogram_max[1] = histogram_max[2] = histogram_max[3] = 0;
   uint32_t *hist = *histogram;
   switch(cst)

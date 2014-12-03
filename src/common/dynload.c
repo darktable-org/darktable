@@ -45,7 +45,7 @@ dt_gmodule_t *dt_gmodule_open(const char *library)
   GModule *gmodule;
   char *name;
 
-  if (strchr(library, '/') == NULL)
+  if(strchr(library, '/') == NULL)
   {
     name = g_module_build_path(NULL, library);
   }
@@ -56,7 +56,7 @@ dt_gmodule_t *dt_gmodule_open(const char *library)
 
   gmodule = g_module_open(name, G_MODULE_BIND_LAZY | G_MODULE_BIND_LOCAL);
 
-  if (gmodule != NULL)
+  if(gmodule != NULL)
   {
     module = (dt_gmodule_t *)malloc(sizeof(dt_gmodule_t));
     module->gmodule = gmodule;
@@ -70,7 +70,7 @@ dt_gmodule_t *dt_gmodule_open(const char *library)
 
 
 /* get pointer to symbol */
-int dt_gmodule_symbol(dt_gmodule_t *module, const char *name, void (** pointer)(void))
+int dt_gmodule_symbol(dt_gmodule_t *module, const char *name, void (**pointer)(void))
 {
   int success = g_module_symbol(module->gmodule, name, (gpointer)pointer);
 

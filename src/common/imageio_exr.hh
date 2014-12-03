@@ -48,13 +48,11 @@ namespace IMF_NS
 class Blob
 {
 public:
-  Blob()
-  : size(0)
-  , data((uint8_t*)NULL)
-  {}
+  Blob() : size(0), data((uint8_t *)NULL)
+  {
+  }
 
-  Blob(uint32_t _size, uint8_t* _data)
-  : size(_size)
+  Blob(uint32_t _size, uint8_t *_data) : size(_size)
   {
     uint8_t *tmp_ptr = new uint8_t[_size];
     memcpy(tmp_ptr, _data, _size);
@@ -75,17 +73,17 @@ template <> const char *BlobAttribute::staticTypeName()
 {
   return "blob";
 }
-template <> void BlobAttribute::writeValueTo (OStream &os, int version) const
+template <> void BlobAttribute::writeValueTo(OStream &os, int version) const
 {
-  Xdr::write <StreamIO> (os, _value.size);
-  Xdr::write <StreamIO> (os, (char *)(_value.data.get()),_value.size);
+  Xdr::write<StreamIO>(os, _value.size);
+  Xdr::write<StreamIO>(os, (char *)(_value.data.get()), _value.size);
 }
 
-template <> void BlobAttribute::readValueFrom (IStream &is, int size, int version)
+template <> void BlobAttribute::readValueFrom(IStream &is, int size, int version)
 {
-  Xdr::read <StreamIO> (is, _value.size);
+  Xdr::read<StreamIO>(is, _value.size);
   _value.data.reset(new uint8_t[_value.size]);
-  Xdr::read <StreamIO> (is, (char *)(_value.data.get()), _value.size);
+  Xdr::read<StreamIO>(is, (char *)(_value.data.get()), _value.size);
 }
 }
 

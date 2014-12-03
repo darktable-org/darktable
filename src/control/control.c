@@ -18,7 +18,7 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 #ifdef HAVE_CONFIG_H
-#  include "config.h"
+#include "config.h"
 #endif
 #include "common/darktable.h"
 #include "control/control.h"
@@ -39,9 +39,9 @@
 #endif
 
 #ifdef GDK_WINDOWING_QUARTZ
-#  include <Carbon/Carbon.h>
-#  include <ApplicationServices/ApplicationServices.h>
-#  include <CoreServices/CoreServices.h>
+#include <Carbon/Carbon.h>
+#include <ApplicationServices/ApplicationServices.h>
+#include <CoreServices/CoreServices.h>
 #endif
 
 #include <stdlib.h>
@@ -61,22 +61,25 @@ int dt_control_load_config(dt_control_t *c)
 {
   GtkWidget *widget = dt_ui_main_window(darktable.gui->ui);
   dt_conf_set_int("ui_last/view", DT_MODE_NONE);
-  int width  = dt_conf_get_int("ui_last/window_w");
+  int width = dt_conf_get_int("ui_last/window_w");
   int height = dt_conf_get_int("ui_last/window_h");
 #ifndef __WIN32__
   gint x = dt_conf_get_int("ui_last/window_x");
   gint y = dt_conf_get_int("ui_last/window_y");
-  gtk_window_move(GTK_WINDOW(widget),x,y);
+  gtk_window_move(GTK_WINDOW(widget), x, y);
 #endif
   gtk_window_resize(GTK_WINDOW(widget), width, height);
   int fullscreen = dt_conf_get_bool("ui_last/fullscreen");
-  if(fullscreen) gtk_window_fullscreen  (GTK_WINDOW(widget));
+  if(fullscreen)
+    gtk_window_fullscreen(GTK_WINDOW(widget));
   else
   {
     gtk_window_unfullscreen(GTK_WINDOW(widget));
-    int maximized  = dt_conf_get_bool("ui_last/maximized");
-    if(maximized) gtk_window_maximize(GTK_WINDOW(widget));
-    else          gtk_window_unmaximize(GTK_WINDOW(widget));
+    int maximized = dt_conf_get_bool("ui_last/maximized");
+    if(maximized)
+      gtk_window_maximize(GTK_WINDOW(widget));
+    else
+      gtk_window_unmaximize(GTK_WINDOW(widget));
   }
   return 0;
 }
@@ -89,10 +92,10 @@ int dt_control_write_config(dt_control_t *c)
   gtk_widget_get_allocation(widget, &allocation);
   gint x, y;
   gtk_window_get_position(GTK_WINDOW(widget), &x, &y);
-  dt_conf_set_int ("ui_last/window_x",  x);
-  dt_conf_set_int ("ui_last/window_y",  y);
-  dt_conf_set_int ("ui_last/window_w",  allocation.width);
-  dt_conf_set_int ("ui_last/window_h",  allocation.height);
+  dt_conf_set_int("ui_last/window_x", x);
+  dt_conf_set_int("ui_last/window_y", y);
+  dt_conf_set_int("ui_last/window_w", allocation.width);
+  dt_conf_set_int("ui_last/window_h", allocation.height);
   dt_conf_set_bool("ui_last/maximized",
                    (gdk_window_get_state(gtk_widget_get_window(widget)) & GDK_WINDOW_STATE_MAXIMIZED));
 
@@ -100,8 +103,7 @@ int dt_control_write_config(dt_control_t *c)
 }
 
 #ifdef USE_COLORDGTK
-static void
-dt_ctl_get_display_profile_colord_callback(GObject *source, GAsyncResult *res, gpointer user_data)
+static void dt_ctl_get_display_profile_colord_callback(GObject *source, GAsyncResult *res, gpointer user_data)
 {
   pthread_rwlock_wrlock(&darktable.control->xprofile_lock);
 
@@ -116,32 +118,33 @@ dt_ctl_get_display_profile_colord_callback(GObject *source, GAsyncResult *res, g
     {
       if(g_strcmp0(filename, darktable.control->colord_profile_file))
       {
-        /* the profile has changed (either because the user changed the colord settings or because we are on a different screen now) */
+        /* the profile has changed (either because the user changed the colord settings or because we are on a
+         * different screen now) */
         // update darktable.control->colord_profile_file
         g_free(darktable.control->colord_profile_file);
         darktable.control->colord_profile_file = g_strdup(filename);
         // read the file
         guchar *tmp_data = NULL;
         gsize size;
-        g_file_get_contents(filename, (gchar**)&tmp_data, &size, NULL);
-        profile_changed = size > 0 && (darktable.control->xprofile_size != size || memcmp(darktable.control->xprofile_data, tmp_data, size) != 0);
+        g_file_get_contents(filename, (gchar **)&tmp_data, &size, NULL);
+        profile_changed = size > 0 && (darktable.control->xprofile_size != size
+                                       || memcmp(darktable.control->xprofile_data, tmp_data, size) != 0);
         if(profile_changed)
         {
           g_free(darktable.control->xprofile_data);
           darktable.control->xprofile_data = tmp_data;
           darktable.control->xprofile_size = size;
-          dt_print(DT_DEBUG_CONTROL, "[color profile] colord gave us a new screen profile: '%s' (size: %ld)\n", filename, size);
+          dt_print(DT_DEBUG_CONTROL,
+                   "[color profile] colord gave us a new screen profile: '%s' (size: %ld)\n", filename, size);
         }
       }
     }
   }
-  if(profile)
-    g_object_unref(profile);
+  if(profile) g_object_unref(profile);
   g_object_unref(window);
 
   pthread_rwlock_unlock(&darktable.control->xprofile_lock);
-  if(profile_changed)
-    dt_control_signal_raise(darktable.signals, DT_SIGNAL_CONTROL_PROFILE_CHANGED);
+  if(profile_changed) dt_control_signal_raise(darktable.signals, DT_SIGNAL_CONTROL_PROFILE_CHANGED);
 }
 #endif
 
@@ -153,9 +156,11 @@ void dt_ctl_set_display_profile()
 {
   if(!dt_control_running()) return;
   // make sure that no one gets a broken profile
-  // FIXME: benchmark if the try is really needed when moving/resizing the window. Maybe we can just lock it and block
+  // FIXME: benchmark if the try is really needed when moving/resizing the window. Maybe we can just lock it
+  // and block
   if(pthread_rwlock_trywrlock(&darktable.control->xprofile_lock))
-    return; // we are already updating the profile. Or someone is reading right now. Too bad we can't distinguish that. Whatever ...
+    return; // we are already updating the profile. Or someone is reading right now. Too bad we can't
+            // distinguish that. Whatever ...
 
   GtkWidget *widget = dt_ui_center(darktable.gui->ui);
   guint8 *buffer = NULL;
@@ -183,11 +188,10 @@ void dt_ctl_set_display_profile()
   if(use_xatom)
   {
     GdkScreen *screen = gtk_widget_get_screen(widget);
-    if ( screen==NULL )
-      screen = gdk_screen_get_default();
-    int monitor = gdk_screen_get_monitor_at_window (screen, gtk_widget_get_window(widget));
+    if(screen == NULL) screen = gdk_screen_get_default();
+    int monitor = gdk_screen_get_monitor_at_window(screen, gtk_widget_get_window(widget));
     char *atom_name;
-    if (monitor > 0)
+    if(monitor > 0)
       atom_name = g_strdup_printf("_ICC_PROFILE_%d", monitor);
     else
       atom_name = g_strdup("_ICC_PROFILE");
@@ -196,10 +200,8 @@ void dt_ctl_set_display_profile()
 
     GdkAtom type = GDK_NONE;
     gint format = 0;
-    gdk_property_get(gdk_screen_get_root_window(screen),
-                    gdk_atom_intern(atom_name, FALSE), GDK_NONE,
-                    0, 64 * 1024 * 1024, FALSE,
-                    &type, &format, &buffer_size, &buffer);
+    gdk_property_get(gdk_screen_get_root_window(screen), gdk_atom_intern(atom_name, FALSE), GDK_NONE, 0,
+                     64 * 1024 * 1024, FALSE, &type, &format, &buffer_size, &buffer);
     g_free(atom_name);
   }
 
@@ -215,8 +217,7 @@ void dt_ctl_set_display_profile()
 
 #elif defined GDK_WINDOWING_QUARTZ
   GdkScreen *screen = gtk_widget_get_screen(widget);
-  if ( screen==NULL )
-    screen = gdk_screen_get_default();
+  if(screen == NULL) screen = gdk_screen_get_default();
   int monitor = gdk_screen_get_monitor_at_window(screen, gtk_widget_get_window(widget));
 
   CGDirectDisplayID ids[monitor + 1];
@@ -224,16 +225,16 @@ void dt_ctl_set_display_profile()
   CMProfileRef prof = NULL;
   if(CGGetOnlineDisplayList(monitor + 1, &ids[0], &total_ids) == kCGErrorSuccess && total_ids == monitor + 1)
     CMGetProfileByAVID(ids[monitor], &prof);
-  if ( prof!=NULL )
+  if(prof != NULL)
   {
     CFDataRef data;
     data = CMProfileCopyICCData(NULL, prof);
     CMCloseProfile(prof);
 
-    UInt8 *tmp_buffer = (UInt8 *) g_malloc(CFDataGetLength(data));
+    UInt8 *tmp_buffer = (UInt8 *)g_malloc(CFDataGetLength(data));
     CFDataGetBytes(data, CFRangeMake(0, CFDataGetLength(data)), tmp_buffer);
 
-    buffer = (guint8 *) tmp_buffer;
+    buffer = (guint8 *)tmp_buffer;
     buffer_size = CFDataGetLength(data);
 
     CFRelease(data);
@@ -241,27 +242,28 @@ void dt_ctl_set_display_profile()
   profile_source = g_strdup("osx color profile api");
 #elif defined G_OS_WIN32
   (void)widget;
-  HDC hdc = GetDC (NULL);
-  if ( hdc!=NULL )
+  HDC hdc = GetDC(NULL);
+  if(hdc != NULL)
   {
     DWORD len = 0;
-    GetICMProfile (hdc, &len, NULL);
-    gchar *path = g_new (gchar, len);
+    GetICMProfile(hdc, &len, NULL);
+    gchar *path = g_new(gchar, len);
 
-    if (GetICMProfile (hdc, &len, path))
+    if(GetICMProfile(hdc, &len, path))
     {
       gsize size;
-      g_file_get_contents(path, (gchar**)&buffer, &size, NULL);
+      g_file_get_contents(path, (gchar **)&buffer, &size, NULL);
       buffer_size = size;
     }
-    g_free (path);
-    ReleaseDC (NULL, hdc);
+    g_free(path);
+    ReleaseDC(NULL, hdc);
   }
   profile_source = g_strdup("windows color profile api");
 #endif
 
-  int profile_changed = buffer_size > 0 &&
-                        (darktable.control->xprofile_size != buffer_size || memcmp(darktable.control->xprofile_data, buffer, buffer_size) != 0);
+  int profile_changed = buffer_size > 0
+                        && (darktable.control->xprofile_size != buffer_size
+                            || memcmp(darktable.control->xprofile_data, buffer, buffer_size) != 0);
   if(profile_changed)
   {
     cmsHPROFILE profile = NULL;
@@ -276,11 +278,11 @@ void dt_ctl_set_display_profile()
       dt_colorspaces_get_profile_name(profile, "en", "US", name, sizeof(name));
       cmsCloseProfile(profile);
     }
-    dt_print(DT_DEBUG_CONTROL, "[color profile] we got a new screen profile `%s' from the %s (size: %d)\n", *name?name:"(unknown)", profile_source, buffer_size);
+    dt_print(DT_DEBUG_CONTROL, "[color profile] we got a new screen profile `%s' from the %s (size: %d)\n",
+             *name ? name : "(unknown)", profile_source, buffer_size);
   }
   pthread_rwlock_unlock(&darktable.control->xprofile_lock);
-  if(profile_changed)
-    dt_control_signal_raise(darktable.signals, DT_SIGNAL_CONTROL_PROFILE_CHANGED);
+  if(profile_changed) dt_control_signal_raise(darktable.signals, DT_SIGNAL_CONTROL_PROFILE_CHANGED);
   g_free(profile_source);
 }
 
@@ -329,28 +331,26 @@ void dt_control_key_accelerators_on(struct dt_control_t *s)
 {
   gtk_window_add_accel_group(GTK_WINDOW(dt_ui_main_window(darktable.gui->ui)),
                              darktable.control->accelerators);
-  if(!s->key_accelerators_on)
-    s->key_accelerators_on = 1;
+  if(!s->key_accelerators_on) s->key_accelerators_on = 1;
 }
 
 void dt_control_key_accelerators_off(struct dt_control_t *s)
 {
-  gtk_window_remove_accel_group(
-    GTK_WINDOW(dt_ui_main_window(darktable.gui->ui)),
-    darktable.control->accelerators);
+  gtk_window_remove_accel_group(GTK_WINDOW(dt_ui_main_window(darktable.gui->ui)),
+                                darktable.control->accelerators);
   s->key_accelerators_on = 0;
 }
 
 
 int dt_control_is_key_accelerators_on(struct dt_control_t *s)
 {
-  return  s->key_accelerators_on;
+  return s->key_accelerators_on;
 }
 
 void dt_control_change_cursor(dt_cursor_t curs)
 {
   GtkWidget *widget = dt_ui_main_window(darktable.gui->ui);
-  GdkCursor* cursor = gdk_cursor_new(curs);
+  GdkCursor *cursor = gdk_cursor_new(curs);
   gdk_window_set_cursor(gtk_widget_get_window(widget), cursor);
   gdk_cursor_unref(cursor);
 }
@@ -396,17 +396,17 @@ void dt_control_shutdown(dt_control_t *s)
   /* first wait for kick_on_workers_thread */
   pthread_join(s->kick_on_workers_thread, NULL);
 
-   gdk_threads_leave();
+  gdk_threads_leave();
   int k;
-  for(k=0; k<s->num_threads; k++)
+  for(k = 0; k < s->num_threads; k++)
     // pthread_kill(s->thread[k], 9);
     pthread_join(s->thread[k], NULL);
-  for(k=0; k<DT_CTL_WORKER_RESERVED; k++)
+  for(k = 0; k < DT_CTL_WORKER_RESERVED; k++)
     // pthread_kill(s->thread_res[k], 9);
     pthread_join(s->thread_res[k], NULL);
 
 
-   gdk_threads_enter();
+  gdk_threads_enter();
 }
 
 void dt_control_cleanup(dt_control_t *s)
@@ -420,7 +420,7 @@ void dt_control_cleanup(dt_control_t *s)
   dt_pthread_mutex_destroy(&s->run_mutex);
   dt_pthread_mutex_destroy(&s->progress_system.mutex);
   pthread_rwlock_destroy(&s->xprofile_lock);
-  if (s->accelerator_list)
+  if(s->accelerator_list)
   {
     g_slist_free_full(s->accelerator_list, g_free);
   }
@@ -436,7 +436,7 @@ gboolean dt_control_configure(GtkWidget *da, GdkEventConfigure *event, gpointer 
   darktable.control->tabborder = 8;
   int tb = darktable.control->tabborder;
   // re-configure all components:
-  dt_view_manager_configure(darktable.view_manager, event->width - 2*tb, event->height - 2*tb);
+  dt_view_manager_configure(darktable.view_manager, event->width - 2 * tb, event->height - 2 * tb);
   return TRUE;
 }
 
@@ -444,114 +444,106 @@ void *dt_control_expose(void *voidptr)
 {
   int width, height, pointerx, pointery;
   if(!darktable.gui->surface) return NULL;
-  width  = cairo_image_surface_get_width(darktable.gui->surface);
+  width = cairo_image_surface_get_width(darktable.gui->surface);
   height = cairo_image_surface_get_height(darktable.gui->surface);
   GtkWidget *widget = dt_ui_center(darktable.gui->ui);
   gtk_widget_get_pointer(widget, &pointerx, &pointery);
 
-  //create a gtk-independent surface to draw on
+  // create a gtk-independent surface to draw on
   cairo_surface_t *cst = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height);
   cairo_t *cr = cairo_create(cst);
 
   // TODO: control_expose: only redraw the part not overlapped by temporary control panel show!
   //
-  float tb = 8;//fmaxf(10, width/100.0);
+  float tb = 8; // fmaxf(10, width/100.0);
   darktable.control->tabborder = tb;
   darktable.control->width = width;
   darktable.control->height = height;
 
   GtkStyle *style = gtk_widget_get_style(widget);
-  cairo_set_source_rgb (cr,
-                        style->bg[GTK_STATE_NORMAL].red/65535.0,
-                        style->bg[GTK_STATE_NORMAL].green/65535.0,
-                        style->bg[GTK_STATE_NORMAL].blue/65535.0
-                       );
+  cairo_set_source_rgb(cr, style->bg[GTK_STATE_NORMAL].red / 65535.0,
+                       style->bg[GTK_STATE_NORMAL].green / 65535.0,
+                       style->bg[GTK_STATE_NORMAL].blue / 65535.0);
 
   cairo_set_line_width(cr, tb);
-  cairo_rectangle(cr, tb/2., tb/2., width-tb, height-tb);
+  cairo_rectangle(cr, tb / 2., tb / 2., width - tb, height - tb);
   cairo_stroke(cr);
   cairo_set_line_width(cr, 1.5);
-  cairo_set_source_rgb (cr, .1, .1, .1);
-  cairo_rectangle(cr, tb, tb, width-2*tb, height-2*tb);
+  cairo_set_source_rgb(cr, .1, .1, .1);
+  cairo_rectangle(cr, tb, tb, width - 2 * tb, height - 2 * tb);
   cairo_stroke(cr);
 
   cairo_save(cr);
   cairo_translate(cr, tb, tb);
-  cairo_rectangle(cr, 0, 0, width - 2*tb, height - 2*tb);
+  cairo_rectangle(cr, 0, 0, width - 2 * tb, height - 2 * tb);
   cairo_clip(cr);
   cairo_new_path(cr);
   // draw view
-  dt_view_manager_expose(darktable.view_manager, cr, width-2*tb, height-2*tb,
-                         pointerx-tb, pointery-tb);
+  dt_view_manager_expose(darktable.view_manager, cr, width - 2 * tb, height - 2 * tb, pointerx - tb,
+                         pointery - tb);
   cairo_restore(cr);
 
   // draw status bar, if any
   if(darktable.control->progress < 100.0)
   {
-    tb = fmaxf(20, width/40.0);
+    tb = fmaxf(20, width / 40.0);
     char num[10];
-    cairo_rectangle(cr, width*0.4, height*0.85,
-                    width*0.2*darktable.control->progress/100.0f, tb);
+    cairo_rectangle(cr, width * 0.4, height * 0.85, width * 0.2 * darktable.control->progress / 100.0f, tb);
     cairo_fill(cr);
     cairo_set_source_rgb(cr, 0., 0., 0.);
-    cairo_rectangle(cr, width*0.4, height*0.85, width*0.2, tb);
+    cairo_rectangle(cr, width * 0.4, height * 0.85, width * 0.2, tb);
     cairo_stroke(cr);
     cairo_set_source_rgb(cr, 0.9, 0.9, 0.9);
-    cairo_select_font_face (cr, "sans-serif", CAIRO_FONT_SLANT_NORMAL,
-                            CAIRO_FONT_WEIGHT_BOLD);
-    cairo_set_font_size (cr, tb/3);
-    cairo_move_to (cr, width/2.0-10, height*0.85+2.*tb/3.);
+    cairo_select_font_face(cr, "sans-serif", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_BOLD);
+    cairo_set_font_size(cr, tb / 3);
+    cairo_move_to(cr, width / 2.0 - 10, height * 0.85 + 2. * tb / 3.);
     snprintf(num, sizeof(num), "%d%%", (int)darktable.control->progress);
-    cairo_show_text (cr, num);
+    cairo_show_text(cr, num);
   }
   // draw log message, if any
   dt_pthread_mutex_lock(&darktable.control->log_mutex);
   if(darktable.control->log_ack != darktable.control->log_pos)
   {
-    cairo_select_font_face (cr, "sans-serif", CAIRO_FONT_SLANT_NORMAL,
-                            CAIRO_FONT_WEIGHT_BOLD);
+    cairo_select_font_face(cr, "sans-serif", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_BOLD);
     const float fontsize = 14;
-    cairo_set_font_size (cr, fontsize);
+    cairo_set_font_size(cr, fontsize);
     cairo_text_extents_t ext;
-    cairo_text_extents (cr,
-                        darktable.control->log_message[darktable.control->log_ack], &ext);
-    const float pad = 20.0f, xc = width/2.0;
-    const float yc = height*0.85+10, wd = pad + ext.width*.5f;
+    cairo_text_extents(cr, darktable.control->log_message[darktable.control->log_ack], &ext);
+    const float pad = 20.0f, xc = width / 2.0;
+    const float yc = height * 0.85 + 10, wd = pad + ext.width * .5f;
     float rad = 14;
     cairo_set_line_width(cr, 1.);
-    cairo_move_to( cr, xc-wd,yc+rad);
-    for(int k=0; k<5; k++)
+    cairo_move_to(cr, xc - wd, yc + rad);
+    for(int k = 0; k < 5; k++)
     {
-      cairo_arc (cr, xc-wd, yc, rad, M_PI/2.0, 3.0/2.0*M_PI);
-      cairo_line_to (cr, xc+wd, yc-rad);
-      cairo_arc (cr, xc+wd, yc, rad, 3.0*M_PI/2.0, M_PI/2.0);
-      cairo_line_to (cr, xc-wd, yc+rad);
+      cairo_arc(cr, xc - wd, yc, rad, M_PI / 2.0, 3.0 / 2.0 * M_PI);
+      cairo_line_to(cr, xc + wd, yc - rad);
+      cairo_arc(cr, xc + wd, yc, rad, 3.0 * M_PI / 2.0, M_PI / 2.0);
+      cairo_line_to(cr, xc - wd, yc + rad);
       if(k == 0)
       {
         cairo_set_source_rgb(cr, 0.3, 0.3, 0.3);
-        cairo_fill_preserve (cr);
+        cairo_fill_preserve(cr);
       }
-      cairo_set_source_rgba(cr, 0., 0., 0., 1.0/(1+k));
-      cairo_stroke (cr);
+      cairo_set_source_rgba(cr, 0., 0., 0., 1.0 / (1 + k));
+      cairo_stroke(cr);
       rad += .5f;
     }
     cairo_set_source_rgb(cr, 0.7, 0.7, 0.7);
-    cairo_move_to (cr, xc-wd+.5f*pad, yc + 1./3.*fontsize);
-    cairo_show_text (cr,
-                     darktable.control->log_message[darktable.control->log_ack]);
+    cairo_move_to(cr, xc - wd + .5f * pad, yc + 1. / 3. * fontsize);
+    cairo_show_text(cr, darktable.control->log_message[darktable.control->log_ack]);
   }
   // draw busy indicator
   if(darktable.control->log_busy > 0)
   {
-    cairo_select_font_face (cr, "sans-serif", CAIRO_FONT_SLANT_NORMAL,
-                            CAIRO_FONT_WEIGHT_BOLD);
+    cairo_select_font_face(cr, "sans-serif", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_BOLD);
     const float fontsize = 14;
-    cairo_set_font_size (cr, fontsize);
+    cairo_set_font_size(cr, fontsize);
     cairo_text_extents_t ext;
-    cairo_text_extents (cr, _("working.."), &ext);
-    const float xc = width/2.0, yc = height*0.85-30, wd = ext.width*.5f;
-    cairo_move_to (cr, xc-wd, yc + 1./3.*fontsize);
-    cairo_text_path (cr, _("working.."));
+    cairo_text_extents(cr, _("working.."), &ext);
+    const float xc = width / 2.0, yc = height * 0.85 - 30, wd = ext.width * .5f;
+    cairo_move_to(cr, xc - wd, yc + 1. / 3. * fontsize);
+    cairo_text_path(cr, _("working.."));
     cairo_set_source_rgb(cr, 0.7, 0.7, 0.7);
     cairo_fill_preserve(cr);
     cairo_set_line_width(cr, 0.7);
@@ -563,7 +555,7 @@ void *dt_control_expose(void *voidptr)
   cairo_destroy(cr);
 
   cairo_t *cr_pixmap = cairo_create(darktable.gui->surface);
-  cairo_set_source_surface (cr_pixmap, cst, 0, 0);
+  cairo_set_source_surface(cr_pixmap, cst, 0, 0);
   cairo_paint(cr_pixmap);
   cairo_destroy(cr_pixmap);
 
@@ -582,7 +574,7 @@ gboolean dt_control_expose_endmarker(GtkWidget *widget, GdkEventExpose *event, g
   dt_draw_endmarker(cr, width, height, GPOINTER_TO_INT(user_data));
   cairo_destroy(cr);
   cairo_t *cr_pixmap = gdk_cairo_create(gtk_widget_get_window(widget));
-  cairo_set_source_surface (cr_pixmap, cst, 0, 0);
+  cairo_set_source_surface(cr_pixmap, cst, 0, 0);
   cairo_paint(cr_pixmap);
   cairo_destroy(cr_pixmap);
   cairo_surface_destroy(cst);
@@ -605,8 +597,8 @@ void dt_control_mouse_moved(double x, double y, double pressure, int which)
   float wd = darktable.control->width;
   float ht = darktable.control->height;
 
-  if(x > tb && x < wd-tb && y > tb && y < ht-tb)
-    dt_view_manager_mouse_moved(darktable.view_manager, x-tb, y-tb, pressure, which);
+  if(x > tb && x < wd - tb && y > tb && y < ht - tb)
+    dt_view_manager_mouse_moved(darktable.view_manager, x - tb, y - tb, pressure, which);
 }
 
 void dt_control_button_released(double x, double y, int which, uint32_t state)
@@ -619,7 +611,7 @@ void dt_control_button_released(double x, double y, int which, uint32_t state)
 
   // always do this, to avoid missing some events.
   // if(x > tb && x < wd-tb && y > tb && y < ht-tb)
-  dt_view_manager_button_released(darktable.view_manager, x-tb, y-tb, which, state);
+  dt_view_manager_button_released(darktable.view_manager, x - tb, y - tb, which, state);
 }
 
 void dt_ctl_switch_mode_to(dt_control_gui_mode_t mode)
@@ -634,8 +626,7 @@ void dt_ctl_switch_mode_to(dt_control_gui_mode_t mode)
   g_object_set(G_OBJECT(widget), "tooltip-text", "", (char *)NULL);
 
   char buf[512];
-  snprintf(buf, sizeof(buf) - 1, _("switch to %s mode"),
-           dt_view_manager_name(darktable.view_manager));
+  snprintf(buf, sizeof(buf) - 1, _("switch to %s mode"), dt_view_manager_name(darktable.view_manager));
 
   gboolean i_own_lock = dt_control_gdk_lock();
 
@@ -645,23 +636,25 @@ void dt_ctl_switch_mode_to(dt_control_gui_mode_t mode)
 
   if(error) return;
 
-  dt_conf_set_int ("ui_last/view", mode);
+  dt_conf_set_int("ui_last/view", mode);
 }
 
 void dt_ctl_switch_mode()
 {
   dt_control_gui_mode_t mode = dt_conf_get_int("ui_last/view");
-  if(mode == DT_LIBRARY) mode = DT_DEVELOP;
-  else mode = DT_LIBRARY;
+  if(mode == DT_LIBRARY)
+    mode = DT_DEVELOP;
+  else
+    mode = DT_LIBRARY;
   dt_ctl_switch_mode_to(mode);
 }
 
-static gboolean _dt_ctl_log_message_timeout_callback (gpointer data)
+static gboolean _dt_ctl_log_message_timeout_callback(gpointer data)
 {
   dt_pthread_mutex_lock(&darktable.control->log_mutex);
   if(darktable.control->log_ack != darktable.control->log_pos)
-    darktable.control->log_ack = (darktable.control->log_ack+1)%DT_CTL_LOG_SIZE;
-  darktable.control->log_message_timeout_id=0;
+    darktable.control->log_ack = (darktable.control->log_ack + 1) % DT_CTL_LOG_SIZE;
+  darktable.control->log_message_timeout_id = 0;
   dt_pthread_mutex_unlock(&darktable.control->log_mutex);
   dt_control_queue_redraw_center();
   return FALSE;
@@ -676,45 +669,44 @@ void dt_control_button_pressed(double x, double y, double pressure, int which, i
   darktable.control->button_type = type;
   darktable.control->button_x = x - tb;
   darktable.control->button_y = y - tb;
-  // adding pressure to this data structure is not needed right now. should the need ever arise: here is the place to do it :)
+  // adding pressure to this data structure is not needed right now. should the need ever arise: here is the
+  // place to do it :)
   float wd = darktable.control->width;
   float ht = darktable.control->height;
 
   // ack log message:
   dt_pthread_mutex_lock(&darktable.control->log_mutex);
-  const float /*xc = wd/4.0-20,*/ yc = ht*0.85+10;
+  const float /*xc = wd/4.0-20,*/ yc = ht * 0.85 + 10;
   if(darktable.control->log_ack != darktable.control->log_pos)
     if(which == 1 /*&& x > xc - 10 && x < xc + 10*/ && y > yc - 10 && y < yc + 10)
     {
       if(darktable.control->log_message_timeout_id)
         g_source_remove(darktable.control->log_message_timeout_id);
-      darktable.control->log_ack = (darktable.control->log_ack+1)%DT_CTL_LOG_SIZE;
+      darktable.control->log_ack = (darktable.control->log_ack + 1) % DT_CTL_LOG_SIZE;
       dt_pthread_mutex_unlock(&darktable.control->log_mutex);
       return;
     }
   dt_pthread_mutex_unlock(&darktable.control->log_mutex);
 
-  if(x > tb && x < wd-tb && y > tb && y < ht-tb)
+  if(x > tb && x < wd - tb && y > tb && y < ht - tb)
   {
-    if(!dt_view_manager_button_pressed(darktable.view_manager, x-tb, y-tb, pressure, which, type, state))
+    if(!dt_view_manager_button_pressed(darktable.view_manager, x - tb, y - tb, pressure, which, type, state))
       if(type == GDK_2BUTTON_PRESS && which == 1) dt_ctl_switch_mode();
   }
 }
 
-void dt_control_log(const char* msg, ...)
+void dt_control_log(const char *msg, ...)
 {
   dt_pthread_mutex_lock(&darktable.control->log_mutex);
   va_list ap;
   va_start(ap, msg);
-  vsnprintf(darktable.control->log_message[darktable.control->log_pos],
-            DT_CTL_LOG_MSG_SIZE, msg, ap);
+  vsnprintf(darktable.control->log_message[darktable.control->log_pos], DT_CTL_LOG_MSG_SIZE, msg, ap);
   va_end(ap);
-  if(darktable.control->log_message_timeout_id)
-    g_source_remove(darktable.control->log_message_timeout_id);
+  if(darktable.control->log_message_timeout_id) g_source_remove(darktable.control->log_message_timeout_id);
   darktable.control->log_ack = darktable.control->log_pos;
-  darktable.control->log_pos = (darktable.control->log_pos+1)%DT_CTL_LOG_SIZE;
-  darktable.control->log_message_timeout_id =
-    g_timeout_add(DT_CTL_LOG_TIMEOUT,_dt_ctl_log_message_timeout_callback, NULL);
+  darktable.control->log_pos = (darktable.control->log_pos + 1) % DT_CTL_LOG_SIZE;
+  darktable.control->log_message_timeout_id
+      = g_timeout_add(DT_CTL_LOG_TIMEOUT, _dt_ctl_log_message_timeout_callback, NULL);
   dt_pthread_mutex_unlock(&darktable.control->log_mutex);
   dt_control_queue_redraw_center();
 }
@@ -747,8 +739,7 @@ static __thread gboolean _control_gdk_lock_mine = FALSE;
 gboolean dt_control_gdk_lock()
 {
   /* if current thread equals gui thread do nothing */
-  if(pthread_equal(darktable.control->gui_thread,pthread_self()) != 0)
-    return FALSE;
+  if(pthread_equal(darktable.control->gui_thread, pthread_self()) != 0) return FALSE;
 
   dt_pthread_mutex_lock(&_control_gdk_lock_threads_mutex);
 
@@ -787,10 +778,8 @@ void dt_control_gdk_unlock()
 
 gboolean dt_control_gdk_haslock()
 {
-  if(pthread_equal(darktable.control->gui_thread,pthread_self()) != 0)
-    return TRUE;
+  if(pthread_equal(darktable.control->gui_thread, pthread_self()) != 0) return TRUE;
   return _control_gdk_lock_mine;
-  
 }
 
 void dt_control_queue_redraw()
@@ -811,19 +800,19 @@ void dt_control_queue_redraw_widget(GtkWidget *widget)
 
     gtk_widget_queue_draw(widget);
 
-    if (i_own_lock) dt_control_gdk_unlock();
+    if(i_own_lock) dt_control_gdk_unlock();
   }
 }
 
 
 int dt_control_key_pressed_override(guint key, guint state)
 {
-  dt_control_accels_t* accels = &darktable.control->accels;
+  dt_control_accels_t *accels = &darktable.control->accels;
 
   // TODO: if darkroom mode
   // did a : vim-style command start?
   static GList *autocomplete = NULL;
-  static char   vimkey_input[256];
+  static char vimkey_input[256];
   if(darktable.control->vimkey_cnt)
   {
     guchar unichar = gdk_keyval_to_unicode(key);
@@ -853,8 +842,9 @@ int dt_control_key_pressed_override(guint key, guint state)
     }
     else if(key == GDK_KEY_BackSpace)
     {
-      darktable.control->vimkey_cnt -= (darktable.control->vimkey + darktable.control->vimkey_cnt) -
-                                       g_utf8_prev_char(darktable.control->vimkey + darktable.control->vimkey_cnt);
+      darktable.control->vimkey_cnt
+          -= (darktable.control->vimkey + darktable.control->vimkey_cnt)
+             - g_utf8_prev_char(darktable.control->vimkey + darktable.control->vimkey_cnt);
       darktable.control->vimkey[darktable.control->vimkey_cnt] = 0;
       if(darktable.control->vimkey_cnt == 0)
         dt_control_log_ack_all();
@@ -885,7 +875,8 @@ int dt_control_key_pressed_override(guint key, guint state)
         // pop first.
         // the paths themselves are owned by bauhaus,
         // no free required.
-        snprintf(darktable.control->vimkey, sizeof(darktable.control->vimkey), ":set %s", (char *)autocomplete->data);
+        snprintf(darktable.control->vimkey, sizeof(darktable.control->vimkey), ":set %s",
+                 (char *)autocomplete->data);
         autocomplete = g_list_remove(autocomplete, autocomplete->data);
         darktable.control->vimkey_cnt = strlen(darktable.control->vimkey);
       }
@@ -925,10 +916,9 @@ int dt_control_key_pressed_override(guint key, guint state)
   }
 
   /* check if key accelerators are enabled*/
-  if (darktable.control->key_accelerators_on != 1) return 0;
+  if(darktable.control->key_accelerators_on != 1) return 0;
 
-  if(key == accels->global_sideborders.accel_key &&
-      state == accels->global_sideborders.accel_mods)
+  if(key == accels->global_sideborders.accel_key && state == accels->global_sideborders.accel_mods)
   {
     /* toggle panel viewstate */
     dt_ui_toggle_panels_visibility(darktable.gui->ui);
@@ -938,17 +928,15 @@ int dt_control_key_pressed_override(guint key, guint state)
     gtk_widget_queue_draw(dt_ui_center(darktable.gui->ui));
     return 1;
   }
-  else if(key == accels->global_header.accel_key &&
-          state == accels->global_header.accel_mods)
+  else if(key == accels->global_header.accel_key && state == accels->global_header.accel_mods)
   {
     char key[512];
     const dt_view_t *cv = dt_view_manager_get_current_view(darktable.view_manager);
 
     /* do nothing if in collapse panel state
        TODO: reconsider adding this check to ui api */
-    g_snprintf(key, sizeof(key), "%s/ui/panel_collaps_state",cv->module_name);
-    if (dt_conf_get_int(key))
-      return 0;
+    g_snprintf(key, sizeof(key), "%s/ui/panel_collaps_state", cv->module_name);
+    if(dt_conf_get_int(key)) return 0;
 
     /* toggle the header visibility state */
     g_snprintf(key, sizeof(key), "%s/ui/show_header", cv->module_name);
@@ -965,12 +953,8 @@ int dt_control_key_pressed_override(guint key, guint state)
 
 int dt_control_key_pressed(guint key, guint state)
 {
-  int handled = dt_view_manager_key_pressed(
-                  darktable.view_manager,
-                  key,
-                  state);
-  if(handled)
-    gtk_widget_queue_draw(dt_ui_center(darktable.gui->ui));
+  int handled = dt_view_manager_key_pressed(darktable.view_manager, key, state);
+  if(handled) gtk_widget_queue_draw(dt_ui_center(darktable.gui->ui));
   return handled;
 }
 
@@ -980,7 +964,7 @@ int dt_control_key_released(guint key, guint state)
   // printf("key code pressed: %d\n", which);
 
   int handled = 0;
-  switch (key)
+  switch(key)
   {
     default:
       // propagate to view modules.
@@ -994,8 +978,7 @@ int dt_control_key_released(guint key, guint state)
 
 void dt_control_hinter_message(const struct dt_control_t *s, const char *message)
 {
-  if (s->proxy.hinter.module)
-    return s->proxy.hinter.set_message(s->proxy.hinter.module, message);
+  if(s->proxy.hinter.module) return s->proxy.hinter.set_message(s->proxy.hinter.module, message);
 }
 
 int32_t dt_control_get_mouse_over_id()

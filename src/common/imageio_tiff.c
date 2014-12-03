@@ -30,7 +30,8 @@
 #include <inttypes.h>
 #include <strings.h>
 
-typedef struct tiff_t {
+typedef struct tiff_t
+{
   TIFF *tiff;
   uint32_t width;
   uint32_t height;
@@ -43,22 +44,20 @@ typedef struct tiff_t {
   tdata_t buf;
 } tiff_t;
 
-static inline int
-_read_planar_8(tiff_t *t)
+static inline int _read_planar_8(tiff_t *t)
 {
-  for (uint32_t row = 0; row < t->height; row++)
+  for(uint32_t row = 0; row < t->height; row++)
   {
     uint8_t *in = ((uint8_t *)t->buf);
-    float *out = ((float *)t->mipbuf) + (size_t)4*row*t->width;
+    float *out = ((float *)t->mipbuf) + (size_t)4 * row * t->width;
 
     /* read scanline */
-    if(TIFFReadScanline(t->tiff, in, row, 0) == -1)
-      return -1;
+    if(TIFFReadScanline(t->tiff, in, row, 0) == -1) return -1;
 
-    for (uint32_t i=0; i < t->width; i++, in+=t->spp, out+=4)
+    for(uint32_t i = 0; i < t->width; i++, in += t->spp, out += 4)
     {
       /* set rgb to first sample from scanline */
-      out[0] = ((float)in[0]) * (1.0f/255.0f);
+      out[0] = ((float)in[0]) * (1.0f / 255.0f);
 
       if(t->spp == 1)
       {
@@ -66,8 +65,8 @@ _read_planar_8(tiff_t *t)
       }
       else
       {
-        out[1] = ((float)in[1]) * (1.0f/255.0f);
-        out[2] = ((float)in[2]) * (1.0f/255.0f);
+        out[1] = ((float)in[1]) * (1.0f / 255.0f);
+        out[2] = ((float)in[2]) * (1.0f / 255.0f);
       }
 
       out[3] = 0;
@@ -77,21 +76,19 @@ _read_planar_8(tiff_t *t)
   return 1;
 }
 
-static inline int
-_read_planar_16(tiff_t *t)
+static inline int _read_planar_16(tiff_t *t)
 {
-  for (uint32_t row = 0; row < t->height; row++)
+  for(uint32_t row = 0; row < t->height; row++)
   {
     uint16_t *in = ((uint16_t *)t->buf);
-    float *out = ((float *)t->mipbuf) + (size_t)4*row*t->width;
+    float *out = ((float *)t->mipbuf) + (size_t)4 * row * t->width;
 
     /* read scanline */
-    if(TIFFReadScanline(t->tiff, in, row, 0) == -1)
-      return -1;
+    if(TIFFReadScanline(t->tiff, in, row, 0) == -1) return -1;
 
-    for (uint32_t i=0; i < t->width; i++, in+=t->spp, out+=4)
+    for(uint32_t i = 0; i < t->width; i++, in += t->spp, out += 4)
     {
-      out[0] = ((float)in[0]) * (1.0f/65535.0f);
+      out[0] = ((float)in[0]) * (1.0f / 65535.0f);
 
       if(t->spp == 1)
       {
@@ -99,8 +96,8 @@ _read_planar_16(tiff_t *t)
       }
       else
       {
-        out[1] = ((float)in[1]) * (1.0f/65535.0f);
-        out[2] = ((float)in[2]) * (1.0f/65535.0f);
+        out[1] = ((float)in[1]) * (1.0f / 65535.0f);
+        out[2] = ((float)in[2]) * (1.0f / 65535.0f);
       }
 
       out[3] = 0;
@@ -110,19 +107,17 @@ _read_planar_16(tiff_t *t)
   return 1;
 }
 
-static inline int
-_read_planar_f(tiff_t *t)
+static inline int _read_planar_f(tiff_t *t)
 {
-  for (uint32_t row = 0; row < t->height; row++)
+  for(uint32_t row = 0; row < t->height; row++)
   {
     float *in = ((float *)t->buf);
-    float *out = ((float *)t->mipbuf) + (size_t)4*row*t->width;
+    float *out = ((float *)t->mipbuf) + (size_t)4 * row * t->width;
 
     /* read scanline */
-    if(TIFFReadScanline(t->tiff, in, row, 0) == -1)
-      return -1;
+    if(TIFFReadScanline(t->tiff, in, row, 0) == -1) return -1;
 
-    for (uint32_t i=0; i < t->width; i++, in+=t->spp, out+=4)
+    for(uint32_t i = 0; i < t->width; i++, in += t->spp, out += 4)
     {
       out[0] = in[0];
 
@@ -143,18 +138,14 @@ _read_planar_f(tiff_t *t)
   return 1;
 }
 
-dt_imageio_retval_t
-dt_imageio_open_tiff(
-  dt_image_t *img,
-  const char *filename,
-  dt_mipmap_cache_allocator_t a)
+dt_imageio_retval_t dt_imageio_open_tiff(dt_image_t *img, const char *filename, dt_mipmap_cache_allocator_t a)
 {
   const char *ext = filename + strlen(filename);
   while(*ext != '.' && ext > filename) ext--;
-  if(strncmp(ext, ".tif", 4) && strncmp(ext, ".TIF", 4) && strncmp(ext, ".tiff", 5) && strncmp(ext, ".TIFF", 5))
+  if(strncmp(ext, ".tif", 4) && strncmp(ext, ".TIF", 4) && strncmp(ext, ".tiff", 5)
+     && strncmp(ext, ".TIFF", 5))
     return DT_IMAGEIO_FILE_CORRUPTED;
-  if(!img->exif_inited)
-    (void) dt_exif_read(img, filename);
+  if(!img->exif_inited) (void)dt_exif_read(img, filename);
 
   tiff_t t;
   uint16_t config;
@@ -171,8 +162,7 @@ dt_imageio_open_tiff(
   TIFFGetField(t.tiff, TIFFTAG_PLANARCONFIG, &config);
   t.scanlinesize = TIFFScanlineSize(t.tiff);
 
-  fprintf(stderr, "[tiff_open] %dx%d %dbpp, %d samples per pixel.\n",
-          t.width, t.height, t.bpp, t.spp);
+  fprintf(stderr, "[tiff_open] %dx%d %dbpp, %d samples per pixel.\n", t.width, t.height, t.bpp, t.spp);
 
   // we only support 8/16 and 32 bits per pixel formats.
   if(t.bpp != 8 && t.bpp != 16 && t.bpp != 32)
@@ -182,7 +172,7 @@ dt_imageio_open_tiff(
   }
 
   /* we only support 1,3 or 4 samples per pixel */
-  if (t.spp != 1 && t.spp != 3 && t.spp != 4)
+  if(t.spp != 1 && t.spp != 3 && t.spp != 4)
   {
     TIFFClose(t.tiff);
     return DT_IMAGEIO_FILE_CORRUPTED;
@@ -192,7 +182,7 @@ dt_imageio_open_tiff(
   t.image->width = t.width;
   t.image->height = t.height;
 
-  t.image->bpp = 4*sizeof(float);
+  t.image->bpp = 4 * sizeof(float);
 
   t.mipbuf = (float *)dt_mipmap_cache_alloc(t.image, DT_MIPMAP_FULL, a);
   if(!t.mipbuf)
@@ -203,7 +193,7 @@ dt_imageio_open_tiff(
   }
 
   /* dont depend on planar config if spp == 1 */
-  if (t.spp > 1 && config != PLANARCONFIG_CONTIG)
+  if(t.spp > 1 && config != PLANARCONFIG_CONTIG)
   {
     fprintf(stderr, "[tiff_open] warning: planar config other than contig is not supported.\n");
     TIFFClose(t.tiff);
@@ -218,9 +208,12 @@ dt_imageio_open_tiff(
 
   int ok = 1;
 
-  if      (t.bpp == 8  && t.sampleformat == SAMPLEFORMAT_UINT   && config == PLANARCONFIG_CONTIG) ok = _read_planar_8(&t);
-  else if (t.bpp == 16 && t.sampleformat == SAMPLEFORMAT_UINT   && config == PLANARCONFIG_CONTIG) ok = _read_planar_16(&t);
-  else if (t.bpp == 32 && t.sampleformat == SAMPLEFORMAT_IEEEFP && config == PLANARCONFIG_CONTIG) ok = _read_planar_f(&t);
+  if(t.bpp == 8 && t.sampleformat == SAMPLEFORMAT_UINT && config == PLANARCONFIG_CONTIG)
+    ok = _read_planar_8(&t);
+  else if(t.bpp == 16 && t.sampleformat == SAMPLEFORMAT_UINT && config == PLANARCONFIG_CONTIG)
+    ok = _read_planar_16(&t);
+  else if(t.bpp == 32 && t.sampleformat == SAMPLEFORMAT_IEEEFP && config == PLANARCONFIG_CONTIG)
+    ok = _read_planar_f(&t);
   else
   {
     fprintf(stderr, "[tiff_open] error: Not an supported tiff image format.");
@@ -245,7 +238,7 @@ int dt_imageio_tiff_read_profile(const char *filename, uint8_t **out)
 
   if(TIFFGetField(tiff, TIFFTAG_ICCPROFILE, &profile_len, &profile))
   {
-    *out = (uint8_t*)malloc(profile_len);
+    *out = (uint8_t *)malloc(profile_len);
     memcpy(*out, profile, profile_len);
   }
   else

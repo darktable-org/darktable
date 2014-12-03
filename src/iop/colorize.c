@@ -43,8 +43,7 @@ typedef struct dt_iop_colorize_params1_t
   float saturation;
   float source_lightness_mix;
   float lightness;
-}
-dt_iop_colorize_params1_t;
+} dt_iop_colorize_params1_t;
 
 typedef struct dt_iop_colorize_params_t
 {
@@ -53,17 +52,15 @@ typedef struct dt_iop_colorize_params_t
   float source_lightness_mix;
   float lightness;
   int version;
-}
-dt_iop_colorize_params_t;
+} dt_iop_colorize_params_t;
 
 
 
 typedef struct dt_iop_colorize_gui_data_t
 {
-  GtkWidget *scale1,*scale2;       					//  lightness, source_lightnessmix
-  GtkWidget *gslider1,*gslider2;		//hue, saturation
-}
-dt_iop_colorize_gui_data_t;
+  GtkWidget *scale1, *scale2; //  lightness, source_lightnessmix
+  GtkWidget *gslider1, *gslider2; // hue, saturation
+} dt_iop_colorize_gui_data_t;
 
 typedef struct dt_iop_colorize_data_t
 {
@@ -71,14 +68,12 @@ typedef struct dt_iop_colorize_data_t
   float a;
   float b;
   float mix;
-}
-dt_iop_colorize_data_t;
+} dt_iop_colorize_data_t;
 
 typedef struct dt_iop_colorize_global_data_t
 {
   int kernel_colorize;
-}
-dt_iop_colorize_global_data_t;
+} dt_iop_colorize_global_data_t;
 
 
 const char *name()
@@ -91,16 +86,15 @@ int flags()
   return IOP_FLAGS_INCLUDE_IN_STYLES | IOP_FLAGS_SUPPORTS_BLENDING | IOP_FLAGS_ALLOW_TILING;
 }
 
-int
-groups ()
+int groups()
 {
   return IOP_GROUP_EFFECT;
 }
 
-int
-legacy_params (dt_iop_module_t *self, const void *const old_params, const int old_version, void *new_params, const int new_version)
+int legacy_params(dt_iop_module_t *self, const void *const old_params, const int old_version,
+                  void *new_params, const int new_version)
 {
-  if (old_version == 1 && new_version == 2)
+  if(old_version == 1 && new_version == 2)
   {
     const dt_iop_colorize_params1_t *old = old_params;
     dt_iop_colorize_params_t *new = new_params;
@@ -124,13 +118,14 @@ void init_key_accels(dt_iop_module_so_t *self)
 
 void connect_key_accels(dt_iop_module_t *self)
 {
-  dt_iop_colorize_gui_data_t *g = (dt_iop_colorize_gui_data_t*)self->gui_data;
+  dt_iop_colorize_gui_data_t *g = (dt_iop_colorize_gui_data_t *)self->gui_data;
 
   dt_accel_connect_slider_iop(self, "lightness", GTK_WIDGET(g->scale1));
   dt_accel_connect_slider_iop(self, "source mix", GTK_WIDGET(g->scale2));
 }
 
-void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoid, void *ovoid, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
+void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoid, void *ovoid,
+             const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
 {
   float *in, *out;
   dt_iop_colorize_data_t *d = (dt_iop_colorize_data_t *)piece->data;
@@ -140,32 +135,32 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   const float a = d->a;
   const float b = d->b;
   const float mix = d->mix;
-  const float Lmlmix = L - (mix*100.0f)/2.0f;
+  const float Lmlmix = L - (mix * 100.0f) / 2.0f;
 
 #ifdef _OPENMP
-  #pragma omp parallel for default(none) shared(ivoid,ovoid,roi_out) private(in,out) schedule(static)
+#pragma omp parallel for default(none) shared(ivoid, ovoid, roi_out) private(in, out) schedule(static)
 #endif
-  for(int k=0; k<roi_out->height; k++)
+  for(int k = 0; k < roi_out->height; k++)
   {
 
-    int stride = ch*roi_out->width;
+    int stride = ch * roi_out->width;
 
-    in = (float *)ivoid + (size_t)k*stride;
-    out = (float *)ovoid + (size_t)k*stride;
+    in = (float *)ivoid + (size_t)k * stride;
+    out = (float *)ovoid + (size_t)k * stride;
 
-    for(int l=0; l < stride; l+=ch)
+    for(int l = 0; l < stride; l += ch)
     {
-      out[l+0] = Lmlmix + in[l+0]*mix;
-      out[l+1] = a;
-      out[l+2] = b;
-      out[l+3] = in[l+3];
+      out[l + 0] = Lmlmix + in[l + 0] * mix;
+      out[l + 1] = a;
+      out[l + 2] = b;
+      out[l + 3] = in[l + 3];
     }
   }
 }
 
 #ifdef HAVE_OPENCL
-int
-process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
+int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out,
+               const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
 {
   dt_iop_colorize_data_t *data = (dt_iop_colorize_data_t *)piece->data;
   dt_iop_colorize_global_data_t *gd = (dt_iop_colorize_global_data_t *)self->data;
@@ -180,7 +175,7 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
   const float b = data->b;
   const float mix = data->mix;
 
-  size_t sizes[] = { ROUNDUPWD(width), ROUNDUPHT(height), 1};
+  size_t sizes[] = { ROUNDUPWD(width), ROUNDUPHT(height), 1 };
 
   dt_opencl_set_kernel_arg(devid, gd->kernel_colorize, 0, sizeof(cl_mem), (void *)&dev_in);
   dt_opencl_set_kernel_arg(devid, gd->kernel_colorize, 1, sizeof(cl_mem), (void *)&dev_out);
@@ -203,7 +198,8 @@ error:
 void init_global(dt_iop_module_so_t *module)
 {
   const int program = 8; // extended.cl, from programs.conf
-  dt_iop_colorize_global_data_t *gd = (dt_iop_colorize_global_data_t *)malloc(sizeof(dt_iop_colorize_global_data_t));
+  dt_iop_colorize_global_data_t *gd
+      = (dt_iop_colorize_global_data_t *)malloc(sizeof(dt_iop_colorize_global_data_t));
   module->data = gd;
   gd->kernel_colorize = dt_opencl_create_kernel(program, "colorize");
 }
@@ -216,18 +212,14 @@ void cleanup_global(dt_iop_module_so_t *module)
   module->data = NULL;
 }
 
-static inline void
-update_saturation_slider_end_color(
-  GtkWidget* slider,
-  float hue)
+static inline void update_saturation_slider_end_color(GtkWidget *slider, float hue)
 {
   float rgb[3];
   hsl2rgb(rgb, hue, 1.0, 0.5);
   dt_bauhaus_slider_set_stop(slider, 1.0, rgb[0], rgb[1], rgb[2]);
 }
 
-static void
-lightness_callback (GtkWidget *slider, gpointer user_data)
+static void lightness_callback(GtkWidget *slider, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(self->dt->gui->reset) return;
@@ -236,8 +228,7 @@ lightness_callback (GtkWidget *slider, gpointer user_data)
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
-static void
-source_lightness_mix_callback (GtkWidget *slider, gpointer user_data)
+static void source_lightness_mix_callback(GtkWidget *slider, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(self->dt->gui->reset) return;
@@ -246,15 +237,14 @@ source_lightness_mix_callback (GtkWidget *slider, gpointer user_data)
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
-static void
-hue_callback(GtkWidget *slider, gpointer user_data)
+static void hue_callback(GtkWidget *slider, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_colorize_params_t *p = (dt_iop_colorize_params_t *)self->params;
   dt_iop_colorize_gui_data_t *g = (dt_iop_colorize_gui_data_t *)self->gui_data;
 
   const float hue = dt_bauhaus_slider_get(g->gslider1);
-  //fprintf(stderr," hue: %f, saturation: %f\n",hue,dtgtk_gradient_slider_get_value(g->gslider2));
+  // fprintf(stderr," hue: %f, saturation: %f\n",hue,dtgtk_gradient_slider_get_value(g->gslider2));
 
   update_saturation_slider_end_color(g->gslider2, p->hue);
 
@@ -264,8 +254,7 @@ hue_callback(GtkWidget *slider, gpointer user_data)
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
-static void
-saturation_callback(GtkWidget *slider, gpointer user_data)
+static void saturation_callback(GtkWidget *slider, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_colorize_params_t *p = (dt_iop_colorize_params_t *)self->params;
@@ -330,18 +319,19 @@ colorpick_callback (GtkDarktableButton *button, gpointer user_data)
 }
 #endif
 
-void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
+void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe,
+                   dt_dev_pixelpipe_iop_t *piece)
 {
   dt_iop_colorize_params_t *p = (dt_iop_colorize_params_t *)p1;
 #ifdef HAVE_GEGL
   fprintf(stderr, "[splittoning] TODO: implement gegl version!\n");
-  // pull in new params to gegl
+// pull in new params to gegl
 #else
   dt_iop_colorize_data_t *d = (dt_iop_colorize_data_t *)piece->data;
 
   /* create Lab */
-  float rgb[3]= {0}, XYZ[3]= {0}, Lab[3]= {0};
-  hsl2rgb(rgb,p->hue, p->saturation, p->lightness/100.0);
+  float rgb[3] = { 0 }, XYZ[3] = { 0 }, Lab[3] = { 0 };
+  hsl2rgb(rgb, p->hue, p->saturation, p->lightness / 100.0);
 
   if(p->version == 1)
   {
@@ -352,23 +342,24 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
   }
   else
   {
-    // this fits better. conversion matrix from sRGB to XYZ@D50 - which is what dt_XYZ_to_Lab() expects as input
+    // this fits better. conversion matrix from sRGB to XYZ@D50 - which is what dt_XYZ_to_Lab() expects as
+    // input
     XYZ[0] = (rgb[0] * 0.4360747f) + (rgb[1] * 0.3850649f) + (rgb[2] * 0.1430804f);
     XYZ[1] = (rgb[0] * 0.2225045f) + (rgb[1] * 0.7168786f) + (rgb[2] * 0.0606169f);
     XYZ[2] = (rgb[0] * 0.0139322f) + (rgb[1] * 0.0971045f) + (rgb[2] * 0.7141733f);
   }
 
-  dt_XYZ_to_Lab(XYZ,Lab);
+  dt_XYZ_to_Lab(XYZ, Lab);
 
   /* a/b components */
   d->L = Lab[0];
   d->a = Lab[1];
   d->b = Lab[2];
-  d->mix = p->source_lightness_mix/100.0f;
+  d->mix = p->source_lightness_mix / 100.0f;
 #endif
 }
 
-void init_pipe (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
+void init_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
 #ifdef HAVE_GEGL
   // create part of the gegl pipeline
@@ -379,12 +370,12 @@ void init_pipe (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_p
 #endif
 }
 
-void cleanup_pipe (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
+void cleanup_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
 #ifdef HAVE_GEGL
   // clean up everything again.
   (void)gegl_node_remove_child(pipe->gegl, piece->input);
-  // no free necessary, no data is alloc'ed
+// no free necessary, no data is alloc'ed
 #else
   free(piece->data);
   piece->data = NULL;
@@ -425,10 +416,7 @@ void init(dt_iop_module_t *module)
   module->priority = 433; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_colorize_params_t);
   module->gui_data = NULL;
-  dt_iop_colorize_params_t tmp = (dt_iop_colorize_params_t)
-  {
-    0, 0.5, 50, 50, module->version()
-  };
+  dt_iop_colorize_params_t tmp = (dt_iop_colorize_params_t){ 0, 0.5, 50, 50, module->version() };
   memcpy(module->params, &tmp, sizeof(dt_iop_colorize_params_t));
   memcpy(module->default_params, &tmp, sizeof(dt_iop_colorize_params_t));
 }
@@ -475,7 +463,7 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), g->gslider2, TRUE, TRUE, 0);
 
   // Additional paramters
-  g->scale1 = dt_bauhaus_slider_new_with_range(self, 0.0, 100.0, 0.1, p->lightness*100.0, 2);
+  g->scale1 = dt_bauhaus_slider_new_with_range(self, 0.0, 100.0, 0.1, p->lightness * 100.0, 2);
   dt_bauhaus_slider_set_format(g->scale1, "%.2f%%");
   dt_bauhaus_widget_set_label(g->scale1, NULL, _("lightness"));
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->scale1), TRUE, TRUE, 0);
@@ -489,14 +477,10 @@ void gui_init(struct dt_iop_module_t *self)
   g_object_set(G_OBJECT(g->scale1), "tooltip-text", _("lightness of color"), (char *)NULL);
   g_object_set(G_OBJECT(g->scale2), "tooltip-text", _("mix value of source lightness"), (char *)NULL);
 
-  g_signal_connect (G_OBJECT (g->gslider1), "value-changed",
-                    G_CALLBACK (hue_callback), self);
-  g_signal_connect (G_OBJECT (g->gslider2), "value-changed",
-                    G_CALLBACK (saturation_callback), self);
-  g_signal_connect (G_OBJECT (g->scale1), "value-changed",
-                    G_CALLBACK (lightness_callback), self);
-  g_signal_connect (G_OBJECT (g->scale2), "value-changed",
-                    G_CALLBACK (source_lightness_mix_callback), self);
+  g_signal_connect(G_OBJECT(g->gslider1), "value-changed", G_CALLBACK(hue_callback), self);
+  g_signal_connect(G_OBJECT(g->gslider2), "value-changed", G_CALLBACK(saturation_callback), self);
+  g_signal_connect(G_OBJECT(g->scale1), "value-changed", G_CALLBACK(lightness_callback), self);
+  g_signal_connect(G_OBJECT(g->scale2), "value-changed", G_CALLBACK(source_lightness_mix_callback), self);
 }
 
 void gui_cleanup(struct dt_iop_module_t *self)

@@ -19,14 +19,14 @@
 #ifndef DT_IMAGEIO_RAWSPEED_H
 #define DT_IMAGEIO_RAWSPEED_H
 #ifdef __cplusplus
-extern "C"
-{
+extern "C" {
 #endif
 
 #include "common/image.h"
 #include "common/mipmap_cache.h"
 
-  dt_imageio_retval_t dt_imageio_open_rawspeed(dt_image_t *img, const char *filename, dt_mipmap_cache_allocator_t a);
+dt_imageio_retval_t dt_imageio_open_rawspeed(dt_image_t *img, const char *filename,
+                                             dt_mipmap_cache_allocator_t a);
 
 #ifdef __cplusplus
 }

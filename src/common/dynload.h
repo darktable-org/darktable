@@ -32,8 +32,7 @@ typedef struct dt_gmodule_t
 {
   GModule *gmodule;
   char *library;
-}
-dt_gmodule_t;
+} dt_gmodule_t;
 
 
 /* check if gmodules is supported on this platform */

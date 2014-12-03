@@ -40,27 +40,26 @@ typedef struct dt_imageio_tiff_t
   int bpp;
   int compress;
   TIFF *handle;
-}
-dt_imageio_tiff_t;
+} dt_imageio_tiff_t;
 
 typedef struct dt_imageio_tiff_gui_t
 {
   GtkComboBox *bpp;
   GtkComboBox *compress;
-}
-dt_imageio_tiff_gui_t;
+} dt_imageio_tiff_gui_t;
 
 
-int write_image (dt_imageio_module_data_t *d_tmp, const char *filename, const void *in_void, void *exif, int exif_len, int imgid)
+int write_image(dt_imageio_module_data_t *d_tmp, const char *filename, const void *in_void, void *exif,
+                int exif_len, int imgid)
 {
-  dt_imageio_tiff_t *d=(dt_imageio_tiff_t*)d_tmp;
+  dt_imageio_tiff_t *d = (dt_imageio_tiff_t *)d_tmp;
 
-  uint8_t* profile = NULL;
+  uint8_t *profile = NULL;
   uint32_t profile_len = 0;
 
-  TIFF* tif = NULL;
+  TIFF *tif = NULL;
 
-  void* rowdata = NULL;
+  void *rowdata = NULL;
   uint32_t rowsize = 0;
   uint32_t stripesize = 0;
   uint32_t stripe = 0;
@@ -71,10 +70,10 @@ int write_image (dt_imageio_module_data_t *d_tmp, const char *filename, const vo
   {
     cmsHPROFILE out_profile = dt_colorspaces_create_output_profile(imgid);
     cmsSaveProfileToMem(out_profile, 0, &profile_len);
-    if (profile_len > 0)
+    if(profile_len > 0)
     {
       profile = malloc(profile_len);
-      if (!profile)
+      if(!profile)
       {
         rc = 1;
         goto exit;
@@ -85,8 +84,8 @@ int write_image (dt_imageio_module_data_t *d_tmp, const char *filename, const vo
   }
 
   // Create little endian tiff image
-  tif = TIFFOpen(filename,"wl");
-  if (!tif)
+  tif = TIFFOpen(filename, "wl");
+  if(!tif)
   {
     rc = 1;
     goto exit;
@@ -99,22 +98,22 @@ int write_image (dt_imageio_module_data_t *d_tmp, const char *filename, const vo
   // "write the official compression code (0x0008)."
   // http://www.awaresystems.be/imaging/tiff/tifftags/compression.html
   // http://www.awaresystems.be/imaging/tiff/tifftags/predictor.html
-  if (d->compress == 1)
+  if(d->compress == 1)
   {
     TIFFSetField(tif, TIFFTAG_COMPRESSION, (uint16_t)COMPRESSION_ADOBE_DEFLATE);
     TIFFSetField(tif, TIFFTAG_PREDICTOR, (uint16_t)1);
     TIFFSetField(tif, TIFFTAG_ZIPQUALITY, (uint16_t)9);
   }
-  else if (d->compress == 2)
+  else if(d->compress == 2)
   {
     TIFFSetField(tif, TIFFTAG_COMPRESSION, (uint16_t)COMPRESSION_ADOBE_DEFLATE);
     TIFFSetField(tif, TIFFTAG_PREDICTOR, (uint16_t)2);
     TIFFSetField(tif, TIFFTAG_ZIPQUALITY, (uint16_t)9);
   }
-  else if (d->compress == 3)
+  else if(d->compress == 3)
   {
     TIFFSetField(tif, TIFFTAG_COMPRESSION, (uint16_t)COMPRESSION_ADOBE_DEFLATE);
-    if (d->bpp == 32)
+    if(d->bpp == 32)
       TIFFSetField(tif, TIFFTAG_PREDICTOR, (uint16_t)3);
     else
       TIFFSetField(tif, TIFFTAG_PREDICTOR, (uint16_t)2);
@@ -126,7 +125,7 @@ int write_image (dt_imageio_module_data_t *d_tmp, const char *filename, const vo
   }
 
   TIFFSetField(tif, TIFFTAG_FILLORDER, (uint16_t)FILLORDER_MSB2LSB);
-  if (profile != NULL)
+  if(profile != NULL)
   {
     TIFFSetField(tif, TIFFTAG_ICCPROFILE, (uint32_t)profile_len, profile);
   }
@@ -141,58 +140,35 @@ int write_image (dt_imageio_module_data_t *d_tmp, const char *filename, const vo
   TIFFSetField(tif, TIFFTAG_ORIENTATION, (uint16_t)ORIENTATION_TOPLEFT);
 
   int resolution = dt_conf_get_int("metadata/resolution");
-  if (resolution > 0)
+  if(resolution > 0)
   {
     TIFFSetField(tif, TIFFTAG_XRESOLUTION, (float)resolution);
     TIFFSetField(tif, TIFFTAG_YRESOLUTION, (float)resolution);
     TIFFSetField(tif, TIFFTAG_RESOLUTIONUNIT, (uint16_t)RESUNIT_INCH);
   }
 
-  rowsize = (d->width*3) * d->bpp / 8;
+  rowsize = (d->width * 3) * d->bpp / 8;
   stripesize = rowsize * DT_TIFFIO_STRIPE;
   stripe = 0;
 
   rowdata = malloc(stripesize);
-  if (!rowdata)
+  if(!rowdata)
   {
     rc = 1;
     goto exit;
   }
 
-  if (d->bpp == 32)
+  if(d->bpp == 32)
   {
-    float* wdata = rowdata;
+    float *wdata = rowdata;
 
-    for (int y = 0; y < d->height; y++)
+    for(int y = 0; y < d->height; y++)
     {
-      float* in = (float*)in_void + (size_t)4*y*d->width;
+      float *in = (float *)in_void + (size_t)4 * y * d->width;
 
-      for (int x = 0; x < d->width; x++, in+=4, wdata+=3)
+      for(int x = 0; x < d->width; x++, in += 4, wdata += 3)
       {
-        memcpy(wdata, in, 3*sizeof(float));
-      }
-
-      if ((uintptr_t)wdata - (uintptr_t)rowdata == (uintptr_t)stripesize)
-      {
-        TIFFWriteEncodedStrip(tif, stripe++, rowdata, (size_t)(rowsize * DT_TIFFIO_STRIPE));
-        wdata = rowdata;
-      }
-    }
-    if ((uintptr_t)wdata - (uintptr_t)rowdata != (uintptr_t)stripesize)
-    {
-      TIFFWriteEncodedStrip(tif, stripe++, rowdata, (size_t)((uintptr_t)wdata - (uintptr_t)rowdata));
-    }
-  }
-  else if (d->bpp == 16)
-  {
-    uint16_t* wdata = rowdata;
-    for (int y = 0; y < d->height; y++)
-    {
-      uint16_t* in = (uint16_t*)in_void + (size_t)4*y*d->width;
-
-      for(int x = 0; x < d->width; x++, in+=4, wdata+=3)
-      {
-        memcpy(wdata, in, 3*sizeof(uint16_t));
+        memcpy(wdata, in, 3 * sizeof(float));
       }
 
       if((uintptr_t)wdata - (uintptr_t)rowdata == (uintptr_t)stripesize)
@@ -201,22 +177,45 @@ int write_image (dt_imageio_module_data_t *d_tmp, const char *filename, const vo
         wdata = rowdata;
       }
     }
-    if ((uintptr_t)wdata - (uintptr_t)rowdata != (uintptr_t)stripesize)
+    if((uintptr_t)wdata - (uintptr_t)rowdata != (uintptr_t)stripesize)
+    {
+      TIFFWriteEncodedStrip(tif, stripe++, rowdata, (size_t)((uintptr_t)wdata - (uintptr_t)rowdata));
+    }
+  }
+  else if(d->bpp == 16)
+  {
+    uint16_t *wdata = rowdata;
+    for(int y = 0; y < d->height; y++)
+    {
+      uint16_t *in = (uint16_t *)in_void + (size_t)4 * y * d->width;
+
+      for(int x = 0; x < d->width; x++, in += 4, wdata += 3)
+      {
+        memcpy(wdata, in, 3 * sizeof(uint16_t));
+      }
+
+      if((uintptr_t)wdata - (uintptr_t)rowdata == (uintptr_t)stripesize)
+      {
+        TIFFWriteEncodedStrip(tif, stripe++, rowdata, (size_t)(rowsize * DT_TIFFIO_STRIPE));
+        wdata = rowdata;
+      }
+    }
+    if((uintptr_t)wdata - (uintptr_t)rowdata != (uintptr_t)stripesize)
     {
       TIFFWriteEncodedStrip(tif, stripe, rowdata, (size_t)((uintptr_t)wdata - (uintptr_t)rowdata));
     }
   }
   else
   {
-    uint8_t* wdata = rowdata;
+    uint8_t *wdata = rowdata;
 
-    for (int y = 0; y < d->height; y++)
+    for(int y = 0; y < d->height; y++)
     {
-      uint8_t* in = (uint8_t*)in_void + (size_t)4*y*d->width;
+      uint8_t *in = (uint8_t *)in_void + (size_t)4 * y * d->width;
 
-      for(int x = 0; x < d->width; x++, in+=4, wdata+=3)
+      for(int x = 0; x < d->width; x++, in += 4, wdata += 3)
       {
-        memcpy(wdata, in, 3*sizeof(uint8_t));
+        memcpy(wdata, in, 3 * sizeof(uint8_t));
       }
 
       if((uintptr_t)wdata - (uintptr_t)rowdata == (uintptr_t)stripesize)
@@ -236,14 +235,14 @@ int write_image (dt_imageio_module_data_t *d_tmp, const char *filename, const vo
 
 exit:
   // close the file before adding exif data
-  if (tif)
+  if(tif)
   {
     TIFFClose(tif);
     tif = NULL;
   }
   if(!rc && exif)
   {
-    rc = dt_exif_write_blob(exif,exif_len,filename);
+    rc = dt_exif_write_blob(exif, exif_len, filename);
     // Until we get symbolic error status codes, if rc is 1, return 0
     rc = (rc == 1) ? 0 : 1;
   }
@@ -274,40 +273,39 @@ int dt_imageio_tiff_read(dt_imageio_tiff_t *tiff, uint8_t *out)
 }
 #endif
 
-size_t
-params_size(dt_imageio_module_format_t *self)
+size_t params_size(dt_imageio_module_format_t *self)
 {
-  return sizeof(dt_imageio_tiff_t) - sizeof(TIFF*);
+  return sizeof(dt_imageio_tiff_t) - sizeof(TIFF *);
 }
 
-void*
-get_params(dt_imageio_module_format_t *self)
+void *get_params(dt_imageio_module_format_t *self)
 {
   dt_imageio_tiff_t *d = (dt_imageio_tiff_t *)calloc(1, sizeof(dt_imageio_tiff_t));
   d->bpp = dt_conf_get_int("plugins/imageio/format/tiff/bpp");
-  if (d->bpp == 16) d->bpp = 16;
-  else if(d->bpp == 32) d->bpp = 32;
-  else d->bpp = 8;
+  if(d->bpp == 16)
+    d->bpp = 16;
+  else if(d->bpp == 32)
+    d->bpp = 32;
+  else
+    d->bpp = 8;
   d->compress = dt_conf_get_int("plugins/imageio/format/tiff/compress");
   return d;
 }
 
-void
-free_params(dt_imageio_module_format_t *self, dt_imageio_module_data_t *params)
+void free_params(dt_imageio_module_format_t *self, dt_imageio_module_data_t *params)
 {
   free(params);
 }
 
-int
-set_params(dt_imageio_module_format_t *self, const void *params, const int size)
+int set_params(dt_imageio_module_format_t *self, const void *params, const int size)
 {
   if(size != self->params_size(self)) return 1;
   dt_imageio_tiff_t *d = (dt_imageio_tiff_t *)params;
   dt_imageio_tiff_gui_t *g = (dt_imageio_tiff_gui_t *)self->gui_data;
 
-  if (d->bpp == 16)
+  if(d->bpp == 16)
     gtk_combo_box_set_active(g->bpp, 1);
-  else if (d->bpp == 32)
+  else if(d->bpp == 32)
     gtk_combo_box_set_active(g->bpp, 2);
   else // (d->bpp == 8)
     gtk_combo_box_set_active(g->bpp, 0);
@@ -319,61 +317,56 @@ set_params(dt_imageio_module_format_t *self, const void *params, const int size)
 
 int bpp(dt_imageio_module_data_t *p)
 {
-  return ((dt_imageio_tiff_t*)p)->bpp;
+  return ((dt_imageio_tiff_t *)p)->bpp;
 }
 
 int compress(dt_imageio_module_data_t *p)
 {
-  return ((dt_imageio_tiff_t*)p)->compress;
+  return ((dt_imageio_tiff_t *)p)->compress;
 }
 
 int levels(dt_imageio_module_data_t *p)
 {
   int ret = IMAGEIO_RGB;
 
-  if (((dt_imageio_tiff_t*)p)->bpp == 8)
+  if(((dt_imageio_tiff_t *)p)->bpp == 8)
     ret |= IMAGEIO_INT8;
-  else if (((dt_imageio_tiff_t*)p)->bpp == 16)
+  else if(((dt_imageio_tiff_t *)p)->bpp == 16)
     ret |= IMAGEIO_INT16;
-  else if (((dt_imageio_tiff_t*)p)->bpp == 32)
+  else if(((dt_imageio_tiff_t *)p)->bpp == 32)
     ret |= IMAGEIO_FLOAT;
 
   return ret;
 }
 
-const char*
-mime(dt_imageio_module_data_t *data)
+const char *mime(dt_imageio_module_data_t *data)
 {
   return "image/tiff";
 }
 
-const char*
-extension(dt_imageio_module_data_t *data)
+const char *extension(dt_imageio_module_data_t *data)
 {
   return "tif";
 }
 
-const char*
-name ()
+const char *name()
 {
   return _("TIFF (8/16/32-bit)");
 }
 
-static void
-bpp_combobox_changed(GtkComboBox *widget, gpointer user_data)
+static void bpp_combobox_changed(GtkComboBox *widget, gpointer user_data)
 {
   int bpp = gtk_combo_box_get_active(widget);
 
-  if (bpp == 1)
+  if(bpp == 1)
     dt_conf_set_int("plugins/imageio/format/tiff/bpp", 16);
-  else if (bpp == 2)
+  else if(bpp == 2)
     dt_conf_set_int("plugins/imageio/format/tiff/bpp", 32);
   else // (bpp == 0)
     dt_conf_set_int("plugins/imageio/format/tiff/bpp", 8);
 }
 
-static void
-compress_combobox_changed(GtkComboBox *widget, gpointer user_data)
+static void compress_combobox_changed(GtkComboBox *widget, gpointer user_data)
 {
   int compress = gtk_combo_box_get_active(widget);
   dt_conf_set_int("plugins/imageio/format/tiff/compress", compress);
@@ -382,19 +375,21 @@ compress_combobox_changed(GtkComboBox *widget, gpointer user_data)
 void init(dt_imageio_module_format_t *self)
 {
 #ifdef USE_LUA
-  dt_lua_register_module_member(darktable.lua_state.state,self,dt_imageio_tiff_t,bpp,int);
+  dt_lua_register_module_member(darktable.lua_state.state, self, dt_imageio_tiff_t, bpp, int);
 #endif
 }
-void cleanup(dt_imageio_module_format_t *self) {}
+void cleanup(dt_imageio_module_format_t *self)
+{
+}
 
 // TODO: some quality/compression stuff?
-void gui_init (dt_imageio_module_format_t *self)
+void gui_init(dt_imageio_module_format_t *self)
 {
   dt_imageio_tiff_gui_t *gui = (dt_imageio_tiff_gui_t *)malloc(sizeof(dt_imageio_tiff_gui_t));
   self->gui_data = (void *)gui;
 
   int bpp = dt_conf_get_int("plugins/imageio/format/tiff/bpp");
-  
+
   int compress = dt_conf_get_int("plugins/imageio/format/tiff/compress");
 
   self->widget = gtk_vbox_new(TRUE, 5);
@@ -404,9 +399,9 @@ void gui_init (dt_imageio_module_format_t *self)
   gtk_combo_box_text_append_text(bpp_combo, _("8 bit"));
   gtk_combo_box_text_append_text(bpp_combo, _("16 bit"));
   gtk_combo_box_text_append_text(bpp_combo, _("32 bit (float)"));
-  if (bpp == 16)
+  if(bpp == 16)
     gtk_combo_box_set_active(GTK_COMBO_BOX(bpp_combo), 1);
-  else if (bpp == 32)
+  else if(bpp == 32)
     gtk_combo_box_set_active(GTK_COMBO_BOX(bpp_combo), 2);
   else // (bpp == 8)
     gtk_combo_box_set_active(GTK_COMBO_BOX(bpp_combo), 0);
@@ -424,12 +419,12 @@ void gui_init (dt_imageio_module_format_t *self)
   g_signal_connect(G_OBJECT(compress_combo), "changed", G_CALLBACK(compress_combobox_changed), NULL);
 }
 
-void gui_cleanup (dt_imageio_module_format_t *self)
+void gui_cleanup(dt_imageio_module_format_t *self)
 {
   free(self->gui_data);
 }
 
-void gui_reset   (dt_imageio_module_format_t *self)
+void gui_reset(dt_imageio_module_format_t *self)
 {
   // TODO: reset to conf? reset to factory defaults?
 }

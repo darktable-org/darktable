@@ -47,49 +47,53 @@ typedef struct dt_style_item_t
   dt_develop_blend_params_t *blendop_params;
 } dt_style_item_t;
 
-/** creates a new style from specified image, items are the history stack number of items to include in style */
-gboolean dt_styles_create_from_image (const char *name,const char *description,int32_t imgid,GList *items);
+/** creates a new style from specified image, items are the history stack number of items to include in style
+ */
+gboolean dt_styles_create_from_image(const char *name, const char *description, int32_t imgid, GList *items);
 
 /** creates styles from selection */
 void dt_styles_create_from_selection(void);
 
 /** creates a new style from specified style, items are the style number of items to include in style */
-void dt_styles_create_from_style (const char *name, const char *newname, const char *description, GList *filter, int imgid, GList *update);
+void dt_styles_create_from_style(const char *name, const char *newname, const char *description,
+                                 GList *filter, int imgid, GList *update);
 
 /** update a style */
-void dt_styles_update (const char *name, const char *newname, const char *description, GList *filter, int imgid, GList *update);
+void dt_styles_update(const char *name, const char *newname, const char *description, GList *filter,
+                      int imgid, GList *update);
 
 /** applies the style to selection of images */
-void dt_styles_apply_to_selection (const char *name,gboolean duplicate);
+void dt_styles_apply_to_selection(const char *name, gboolean duplicate);
 
 /** applies the style to image by imgid*/
-void dt_styles_apply_to_image (const char *name,gboolean dulpicate,int32_t imgid);
+void dt_styles_apply_to_image(const char *name, gboolean dulpicate, int32_t imgid);
 
 /** delete a style by name */
-void dt_styles_delete_by_name (const char *name);
+void dt_styles_delete_by_name(const char *name);
 
 /** get a style object by name, the object needs to be freed by the caller */
-dt_style_t *dt_styles_get_by_name (const char *name);
+dt_style_t *dt_styles_get_by_name(const char *name);
 
 /** check if style exists by name*/
-gboolean dt_styles_exists (const char *name);
+gboolean dt_styles_exists(const char *name);
 
 /** get a list of styles based on filter string */
-GList *dt_styles_get_list (const char *filter);
+GList *dt_styles_get_list(const char *filter);
 
 /** get a list of items for a named style
-    if imgid != -1, then styles from the corresponding image are also reported if they are not already part of the style
+    if imgid != -1, then styles from the corresponding image are also reported if they are not already part of
+   the style
 */
-GList *dt_styles_get_item_list (const char *name, gboolean params, int imgid);
+GList *dt_styles_get_item_list(const char *name, gboolean params, int imgid);
 
 /** get list of items for a named style as a nice string */
 char *dt_styles_get_item_list_as_string(const char *name);
 
 /** get a description of a named style */
-gchar *dt_styles_get_description (const char *name);
+gchar *dt_styles_get_description(const char *name);
 
 /** save style to file */
-void dt_styles_save_to_file(const char *style_name,const char *filedir,gboolean overwrite);
+void dt_styles_save_to_file(const char *style_name, const char *filedir, gboolean overwrite);
 
 /** load style from file */
 void dt_styles_import_from_file(const char *style_path);

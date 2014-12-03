@@ -19,19 +19,25 @@
 #ifndef DTGTK_GRADIENT_SLIDER_H
 #define DTGTK_GRADIENT_SLIDER_H
 
-#define GRADIENT_SLIDER_MAX_POSITIONS     10
+#define GRADIENT_SLIDER_MAX_POSITIONS 10
 
 #include <gtk/gtk.h>
 #include "paint.h"
 G_BEGIN_DECLS
-#define DTGTK_GRADIENT_SLIDER(obj) G_TYPE_CHECK_INSTANCE_CAST(obj, dtgtk_gradient_slider_get_type (), GtkDarktableGradientSlider)
-#define DTGTK_GRADIENT_SLIDER_CLASS(klass) GTK_CHECK_CLASS_CAST(klass, dtgtk_gradient_slider_get_type(), GtkDarktableGradientSliderClass)
+#define DTGTK_GRADIENT_SLIDER(obj)                                                                           \
+  G_TYPE_CHECK_INSTANCE_CAST(obj, dtgtk_gradient_slider_get_type(), GtkDarktableGradientSlider)
+#define DTGTK_GRADIENT_SLIDER_CLASS(klass)                                                                   \
+  GTK_CHECK_CLASS_CAST(klass, dtgtk_gradient_slider_get_type(), GtkDarktableGradientSliderClass)
 #define DTGTK_IS_GRADIENT_SLIDER(obj) G_TYPE_CHECK_INSTANCE_TYPE(obj, dtgtk_gradient_slider_get_type())
 #define DTGTK_IS_GRADIENT_SLIDER_CLASS(klass) GTK_CHECK_CLASS_TYPE(obj, dtgtk_gradient_slider_get_type())
-#define DTGTK_GRADIENT_SLIDER_MULTIVALUE(obj) G_TYPE_CHECK_INSTANCE_CAST(obj, dtgtk_gradient_slider_multivalue_get_type (), GtkDarktableGradientSlider)
-#define DTGTK_GRADIENT_SLIDER_MULTIVALUE_CLASS(klass) GTK_CHECK_CLASS_CAST(klass, dtgtk_gradient_slider_multivalue_get_type(), GtkDarktableGradientSliderClass)
-#define DTGTK_IS_GRADIENT_SLIDER_MULTIVALUE(obj) G_TYPE_CHECK_INSTANCE_TYPE(obj, dtgtk_gradient_slider_multivalue_get_type())
-#define DTGTK_IS_GRADIENT_SLIDER_MULTIVALUE_CLASS(klass) GTK_CHECK_CLASS_TYPE(obj, dtgtk_gradient_slider_multivalue_get_type())
+#define DTGTK_GRADIENT_SLIDER_MULTIVALUE(obj)                                                                \
+  G_TYPE_CHECK_INSTANCE_CAST(obj, dtgtk_gradient_slider_multivalue_get_type(), GtkDarktableGradientSlider)
+#define DTGTK_GRADIENT_SLIDER_MULTIVALUE_CLASS(klass)                                                        \
+  GTK_CHECK_CLASS_CAST(klass, dtgtk_gradient_slider_multivalue_get_type(), GtkDarktableGradientSliderClass)
+#define DTGTK_IS_GRADIENT_SLIDER_MULTIVALUE(obj)                                                             \
+  G_TYPE_CHECK_INSTANCE_TYPE(obj, dtgtk_gradient_slider_multivalue_get_type())
+#define DTGTK_IS_GRADIENT_SLIDER_MULTIVALUE_CLASS(klass)                                                     \
+  GTK_CHECK_CLASS_TYPE(obj, dtgtk_gradient_slider_multivalue_get_type())
 
 enum
 {
@@ -43,34 +49,33 @@ enum _gradient_slider_direction
 {
   MOVE_LEFT = 0,
   MOVE_RIGHT = 1
-}
-_gradient_slider_direction;
+} _gradient_slider_direction;
 
 
 /** bitfields for marker: bit-0 open/filled, bit-1 lower off/on, bit-2 upper off/on, bit-3 size small/big */
 enum
 {
-  GRADIENT_SLIDER_MARKER_DOUBLE_OPEN       = 0x06,
-  GRADIENT_SLIDER_MARKER_DOUBLE_FILLED     = 0x07,
-  GRADIENT_SLIDER_MARKER_UPPER_OPEN        = 0x04,
-  GRADIENT_SLIDER_MARKER_UPPER_FILLED      = 0x05,
-  GRADIENT_SLIDER_MARKER_LOWER_OPEN        = 0x02,
-  GRADIENT_SLIDER_MARKER_LOWER_FILLED      = 0x03,
+  GRADIENT_SLIDER_MARKER_DOUBLE_OPEN = 0x06,
+  GRADIENT_SLIDER_MARKER_DOUBLE_FILLED = 0x07,
+  GRADIENT_SLIDER_MARKER_UPPER_OPEN = 0x04,
+  GRADIENT_SLIDER_MARKER_UPPER_FILLED = 0x05,
+  GRADIENT_SLIDER_MARKER_LOWER_OPEN = 0x02,
+  GRADIENT_SLIDER_MARKER_LOWER_FILLED = 0x03,
 
-  GRADIENT_SLIDER_MARKER_DOUBLE_OPEN_BIG   = 0x0e,
+  GRADIENT_SLIDER_MARKER_DOUBLE_OPEN_BIG = 0x0e,
   GRADIENT_SLIDER_MARKER_DOUBLE_FILLED_BIG = 0x0f,
-  GRADIENT_SLIDER_MARKER_UPPER_OPEN_BIG    = 0x0c,
-  GRADIENT_SLIDER_MARKER_UPPER_FILLED_BIG  = 0x0d,
-  GRADIENT_SLIDER_MARKER_LOWER_OPEN_BIG    = 0x0a,
-  GRADIENT_SLIDER_MARKER_LOWER_FILLED_BIG  = 0x0b
+  GRADIENT_SLIDER_MARKER_UPPER_OPEN_BIG = 0x0c,
+  GRADIENT_SLIDER_MARKER_UPPER_FILLED_BIG = 0x0d,
+  GRADIENT_SLIDER_MARKER_LOWER_OPEN_BIG = 0x0a,
+  GRADIENT_SLIDER_MARKER_LOWER_FILLED_BIG = 0x0b
 };
 
 enum
 {
-  GRADIENT_SLIDER_MARGINS_DEFAULT          = 6,
-  GRADIENT_SLIDER_MARGINS_ZERO             = 0,
-  GRADIENT_SLIDER_MARGINS_SMALL            = 2,
-  GRADIENT_SLIDER_MARGINS_BIG              = 6
+  GRADIENT_SLIDER_MARGINS_DEFAULT = 6,
+  GRADIENT_SLIDER_MARGINS_ZERO = 0,
+  GRADIENT_SLIDER_MARGINS_SMALL = 2,
+  GRADIENT_SLIDER_MARGINS_BIG = 6
 };
 
 
@@ -105,76 +110,80 @@ typedef struct _gradient_slider_stop_t
 {
   gdouble position;
   GdkColor color;
-}
-_gradient_slider_stop_t;
+} _gradient_slider_stop_t;
 
 
-GType dtgtk_gradient_slider_get_type (void);
-GType dtgtk_gradient_slider_multivalue_get_type (void);
+GType dtgtk_gradient_slider_get_type(void);
+GType dtgtk_gradient_slider_multivalue_get_type(void);
 
 /** Instansiate a new darktable gradient slider control */
-GtkWidget* dtgtk_gradient_slider_new();
-GtkWidget* dtgtk_gradient_slider_new_with_color(GdkColor start,GdkColor end);
+GtkWidget *dtgtk_gradient_slider_new();
+GtkWidget *dtgtk_gradient_slider_new_with_color(GdkColor start, GdkColor end);
 
 /** Set a color at specified stop */
-void dtgtk_gradient_slider_set_stop(GtkDarktableGradientSlider *gslider,gfloat position,GdkColor color);
+void dtgtk_gradient_slider_set_stop(GtkDarktableGradientSlider *gslider, gfloat position, GdkColor color);
 
 /** Clear all stops */
 void dtgtk_gradient_slider_multivalue_clear_stops(GtkDarktableGradientSlider *gslider);
 
 /** Get the slider value 0 - 1.0*/
 gdouble dtgtk_gradient_slider_get_value(GtkDarktableGradientSlider *gslider);
-void dtgtk_gradient_slider_set_value(GtkDarktableGradientSlider *gslider,gdouble value);
+void dtgtk_gradient_slider_set_value(GtkDarktableGradientSlider *gslider, gdouble value);
 gboolean dtgtk_gradient_slider_is_dragging(GtkDarktableGradientSlider *gslider);
 
 /** Set the slider marker */
-void dtgtk_gradient_slider_set_marker(GtkDarktableGradientSlider *gslider,gint mark);
+void dtgtk_gradient_slider_set_marker(GtkDarktableGradientSlider *gslider, gint mark);
 
 /** Set the slider reset value */
-void dtgtk_gradient_slider_set_resetvalue(GtkDarktableGradientSlider *gslider,gdouble value);
+void dtgtk_gradient_slider_set_resetvalue(GtkDarktableGradientSlider *gslider, gdouble value);
 
 /** Set a picker */
-void dtgtk_gradient_slider_set_picker(GtkDarktableGradientSlider *gslider,gdouble value);
-void dtgtk_gradient_slider_set_picker_meanminmax(GtkDarktableGradientSlider *gslider,gdouble mean, gdouble min, gdouble max);
+void dtgtk_gradient_slider_set_picker(GtkDarktableGradientSlider *gslider, gdouble value);
+void dtgtk_gradient_slider_set_picker_meanminmax(GtkDarktableGradientSlider *gslider, gdouble mean,
+                                                 gdouble min, gdouble max);
 
 /** Set left/right margins */
-void dtgtk_gradient_slider_set_margins(GtkDarktableGradientSlider *gslider,gint value);
+void dtgtk_gradient_slider_set_margins(GtkDarktableGradientSlider *gslider, gint value);
 
 /** set increment for scroll action */
-void dtgtk_gradient_slider_set_increment(GtkDarktableGradientSlider *gslider,gdouble value);
+void dtgtk_gradient_slider_set_increment(GtkDarktableGradientSlider *gslider, gdouble value);
 
 
 /** Instansiate a new darktable gradient slider multivalue control */
-GtkWidget* dtgtk_gradient_slider_multivalue_new(gint positions);
-GtkWidget* dtgtk_gradient_slider_multivalue_new_with_color(GdkColor start,GdkColor end, gint positions);
+GtkWidget *dtgtk_gradient_slider_multivalue_new(gint positions);
+GtkWidget *dtgtk_gradient_slider_multivalue_new_with_color(GdkColor start, GdkColor end, gint positions);
 
 /** Set a color at specified stop for multivalue control */
-void dtgtk_gradient_slider_multivalue_set_stop(GtkDarktableGradientSlider *gslider,gfloat position,GdkColor color);
+void dtgtk_gradient_slider_multivalue_set_stop(GtkDarktableGradientSlider *gslider, gfloat position,
+                                               GdkColor color);
 
 /** Get the slider value 0 - 1.0 for multivalue control */
 gdouble dtgtk_gradient_slider_multivalue_get_value(GtkDarktableGradientSlider *gslider, gint position);
 void dtgtk_gradient_slider_multivalue_get_values(GtkDarktableGradientSlider *gslider, gdouble *values);
-void dtgtk_gradient_slider_multivalue_set_value(GtkDarktableGradientSlider *gslider,gdouble value, gint position);
-void dtgtk_gradient_slider_multivalue_set_values(GtkDarktableGradientSlider *gslider,gdouble *values);
+void dtgtk_gradient_slider_multivalue_set_value(GtkDarktableGradientSlider *gslider, gdouble value,
+                                                gint position);
+void dtgtk_gradient_slider_multivalue_set_values(GtkDarktableGradientSlider *gslider, gdouble *values);
 gboolean dtgtk_gradient_slider_multivalue_is_dragging(GtkDarktableGradientSlider *gslider);
 
 /** Set the slider markers for multivalue control */
-void dtgtk_gradient_slider_multivalue_set_marker(GtkDarktableGradientSlider *gslider,gint mark, gint pos);
-void dtgtk_gradient_slider_multivalue_set_markers(GtkDarktableGradientSlider *gslider,gint *markers);
+void dtgtk_gradient_slider_multivalue_set_marker(GtkDarktableGradientSlider *gslider, gint mark, gint pos);
+void dtgtk_gradient_slider_multivalue_set_markers(GtkDarktableGradientSlider *gslider, gint *markers);
 
 /** Set the slider reset values for multivalue control */
-void dtgtk_gradient_slider_multivalue_set_resetvalue(GtkDarktableGradientSlider *gslider,gdouble value, gint pos);
-void dtgtk_gradient_slider_multivalue_set_resetvalues(GtkDarktableGradientSlider *gslider,gdouble *values);
+void dtgtk_gradient_slider_multivalue_set_resetvalue(GtkDarktableGradientSlider *gslider, gdouble value,
+                                                     gint pos);
+void dtgtk_gradient_slider_multivalue_set_resetvalues(GtkDarktableGradientSlider *gslider, gdouble *values);
 
 /** Set a picker for multivalue control */
-void dtgtk_gradient_slider_multivalue_set_picker(GtkDarktableGradientSlider *gslider,gdouble value);
-void dtgtk_gradient_slider_multivalue_set_picker_meanminmax(GtkDarktableGradientSlider *gslider,gdouble mean, gdouble min, gdouble max);
+void dtgtk_gradient_slider_multivalue_set_picker(GtkDarktableGradientSlider *gslider, gdouble value);
+void dtgtk_gradient_slider_multivalue_set_picker_meanminmax(GtkDarktableGradientSlider *gslider, gdouble mean,
+                                                            gdouble min, gdouble max);
 
 /** Set left/right margins */
-void dtgtk_gradient_slider_multivalue_set_margins(GtkDarktableGradientSlider *gslider,gint value);
+void dtgtk_gradient_slider_multivalue_set_margins(GtkDarktableGradientSlider *gslider, gint value);
 
 /** set increment for scroll action */
-void dtgtk_gradient_slider_multivalue_set_increment(GtkDarktableGradientSlider *gslider,gdouble value);
+void dtgtk_gradient_slider_multivalue_set_increment(GtkDarktableGradientSlider *gslider, gdouble value);
 
 
 G_END_DECLS

@@ -27,13 +27,12 @@ DT_MODULE(1)
 typedef struct dt_lib_colorlabels_t
 {
   char *tooltips[6];
-}
-dt_lib_colorlabels_t;
+} dt_lib_colorlabels_t;
 
 /* callback when a colorlabel button is clicked */
 static void _lib_colorlabels_button_clicked_callback(GtkWidget *w, gpointer user_data);
 
-const char* name()
+const char *name()
 {
   return _("colorlabels");
 }
@@ -73,17 +72,17 @@ void gui_init(dt_lib_module_t *self)
   d->tooltips[5] = _("clear all labels of selected images");
 
   /* create buttons */
-  self->widget = gtk_hbox_new(FALSE,0);
+  self->widget = gtk_hbox_new(FALSE, 0);
   GtkWidget *button;
   for(int k = 0; k < 6; k++)
   {
-    button = dtgtk_button_new(dtgtk_cairo_paint_label, (k|8|CPF_BG_TRANSPARENT|CPF_DO_NOT_USE_BORDER));
+    button = dtgtk_button_new(dtgtk_cairo_paint_label, (k | 8 | CPF_BG_TRANSPARENT | CPF_DO_NOT_USE_BORDER));
     gtk_widget_set_size_request(button, DT_PIXEL_APPLY_DPI(16), DT_PIXEL_APPLY_DPI(16));
-    g_object_set(G_OBJECT(button), "tooltip-text", d->tooltips[k], (gchar*)NULL);
+    g_object_set(G_OBJECT(button), "tooltip-text", d->tooltips[k], (gchar *)NULL);
     gtk_box_pack_start(GTK_BOX(self->widget), button, TRUE, TRUE, 0);
-    g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(_lib_colorlabels_button_clicked_callback), GINT_TO_POINTER(k));
+    g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(_lib_colorlabels_button_clicked_callback),
+                     GINT_TO_POINTER(k));
   }
-
 }
 
 void gui_cleanup(dt_lib_module_t *self)
@@ -92,9 +91,9 @@ void gui_cleanup(dt_lib_module_t *self)
   self->data = NULL;
 }
 
-static void _lib_colorlabels_button_clicked_callback(GtkWidget *w,gpointer user_data)
+static void _lib_colorlabels_button_clicked_callback(GtkWidget *w, gpointer user_data)
 {
-  dt_colorlabels_key_accel_callback(NULL, NULL, 0,0, user_data);
+  dt_colorlabels_key_accel_callback(NULL, NULL, 0, 0, user_data);
   dt_control_queue_redraw_center();
 }
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

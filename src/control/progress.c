@@ -20,10 +20,10 @@
 #include "control/control.h"
 
 #ifdef HAVE_UNITY
-#  include <unity/unity/unity.h>
+#include <unity/unity/unity.h>
 #endif
 #ifdef MAC_INTEGRATION
-#   include <gtkosxapplication.h>
+#include <gtkosxapplication.h>
 #endif
 
 typedef struct _dt_progress_t
@@ -32,11 +32,11 @@ typedef struct _dt_progress_t
   gchar *message;
   gboolean has_progress_bar;
   dt_pthread_mutex_t mutex;
-  void * gui_data;
+  void *gui_data;
 
   // cancel callback and its data
   dt_progress_cancel_callback_t cancel;
-  void * cancel_data;
+  void *cancel_data;
 
 #ifdef HAVE_UNITY
   UnityLauncherEntry *darktable_launcher;
@@ -45,10 +45,11 @@ typedef struct _dt_progress_t
 } _dt_progress_t;
 
 
-dt_progress_t * dt_control_progress_create(dt_control_t *control, gboolean has_progress_bar, const gchar *message)
+dt_progress_t *dt_control_progress_create(dt_control_t *control, gboolean has_progress_bar,
+                                          const gchar *message)
 {
   // create the object
-  _dt_progress_t *progress = (_dt_progress_t*)calloc(1, sizeof(_dt_progress_t));
+  _dt_progress_t *progress = (_dt_progress_t *)calloc(1, sizeof(_dt_progress_t));
   dt_pthread_mutex_init(&(progress->mutex), NULL);
 
   // fill it with values
@@ -63,7 +64,8 @@ dt_progress_t * dt_control_progress_create(dt_control_t *control, gboolean has_p
 
   // tell the gui
   if(control->progress_system.proxy.module != NULL)
-    progress->gui_data = control->progress_system.proxy.added(control->progress_system.proxy.module, has_progress_bar, message);
+    progress->gui_data = control->progress_system.proxy.added(control->progress_system.proxy.module,
+                                                              has_progress_bar, message);
 
   dt_pthread_mutex_unlock(&control->progress_system.mutex);
 
@@ -115,7 +117,8 @@ void dt_control_progress_destroy(dt_control_t *control, dt_progress_t *progress)
   free(progress);
 }
 
-void dt_control_progress_make_cancellable(struct dt_control_t *control, dt_progress_t *progress, dt_progress_cancel_callback_t cancel, void *data)
+void dt_control_progress_make_cancellable(struct dt_control_t *control, dt_progress_t *progress,
+                                          dt_progress_cancel_callback_t cancel, void *data)
 {
   // set the value
   dt_pthread_mutex_lock(&progress->mutex);
@@ -126,13 +129,14 @@ void dt_control_progress_make_cancellable(struct dt_control_t *control, dt_progr
   // tell the gui
   dt_pthread_mutex_lock(&control->progress_system.mutex);
   if(control->progress_system.proxy.module != NULL)
-    control->progress_system.proxy.cancellable(control->progress_system.proxy.module, progress->gui_data, progress);
+    control->progress_system.proxy.cancellable(control->progress_system.proxy.module, progress->gui_data,
+                                               progress);
   dt_pthread_mutex_unlock(&control->progress_system.mutex);
 }
 
-static void dt_control_progress_cancel_callback(dt_progress_t *progress, void * data)
+static void dt_control_progress_cancel_callback(dt_progress_t *progress, void *data)
 {
-  dt_control_job_cancel((dt_job_t*)data);
+  dt_control_job_cancel((dt_job_t *)data);
 }
 
 void dt_control_progress_attach_job(dt_control_t *control, dt_progress_t *progress, dt_job_t *job)
@@ -174,7 +178,6 @@ void dt_control_progress_set_progress(dt_control_t *control, dt_progress_t *prog
   if(progress->has_progress_bar)
     unity_launcher_entry_set_progress(progress->darktable_launcher, CLAMP(value, 0, 1.0));
 #endif
-
 }
 
 double dt_control_progress_get_progress(dt_progress_t *progress)
@@ -185,7 +188,7 @@ double dt_control_progress_get_progress(dt_progress_t *progress)
   return res;
 }
 
-const gchar * dt_control_progress_get_message(dt_progress_t *progress)
+const gchar *dt_control_progress_get_message(dt_progress_t *progress)
 {
   dt_pthread_mutex_lock(&progress->mutex);
   const gchar *res = progress->message;
@@ -193,14 +196,14 @@ const gchar * dt_control_progress_get_message(dt_progress_t *progress)
   return res;
 }
 
-void dt_control_progress_set_gui_data(dt_progress_t *progress, void * data)
+void dt_control_progress_set_gui_data(dt_progress_t *progress, void *data)
 {
   dt_pthread_mutex_lock(&progress->mutex);
   progress->gui_data = data;
   dt_pthread_mutex_unlock(&progress->mutex);
 }
 
-void * dt_control_progress_get_gui_data(dt_progress_t *progress)
+void *dt_control_progress_get_gui_data(dt_progress_t *progress)
 {
   dt_pthread_mutex_lock(&progress->mutex);
   void *res = progress->gui_data;

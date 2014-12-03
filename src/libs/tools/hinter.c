@@ -31,13 +31,12 @@ DT_MODULE(1)
 typedef struct dt_lib_hinter_t
 {
   GtkWidget *label;
-}
-dt_lib_hinter_t;
+} dt_lib_hinter_t;
 
 
 static void _lib_hinter_set_message(dt_lib_module_t *self, const char *message);
 
-const char* name()
+const char *name()
 {
   return _("hinter");
 }

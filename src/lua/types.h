@@ -26,18 +26,19 @@
 /**
   these defines can be used with luaA_struct_member to have checks on read added
   */
-typedef char* char_20;
-typedef char* char_32;
-typedef char* char_52;
-typedef char* char_64;
-typedef char* char_128;
-typedef char* char_512;
-typedef char* char_1024;
-typedef char* char_filename_length;
-typedef char* char_path_length;
-typedef const char * const_string; // string that has no push function
-typedef double protected_double; // like double, but NAN is mapped to nil
-typedef double progress_double; // a double in [0.0,1.0] any value out of bound will be silently converted to the bound both at push and pull time
+typedef char *char_20;
+typedef char *char_32;
+typedef char *char_52;
+typedef char *char_64;
+typedef char *char_128;
+typedef char *char_512;
+typedef char *char_1024;
+typedef char *char_filename_length;
+typedef char *char_path_length;
+typedef const char *const_string; // string that has no push function
+typedef double protected_double;  // like double, but NAN is mapped to nil
+typedef double progress_double; // a double in [0.0,1.0] any value out of bound will be silently converted to
+                                // the bound both at push and pull time
 
 
 
@@ -45,7 +46,8 @@ typedef double progress_double; // a double in [0.0,1.0] any value out of bound 
   register a C type to the dt-lua subsystem
 
   the type can be converted to/from C using the usual luaA functions.
-  the type becomes a full userdata (i.e malloc+memcpy then pushed on the lua stack, released when not referenced in lua)
+  the type becomes a full userdata (i.e malloc+memcpy then pushed on the lua stack, released when not
+ referenced in lua)
   you can use luaL_checkudata to get and check the data from the stack
 
   the following metamethods are defined for the type
@@ -59,9 +61,8 @@ typedef double progress_double; // a double in [0.0,1.0] any value out of bound 
  * __set : empty table, contains setters, similar API to __newindex
 
    */
-#define dt_lua_init_type(L,type_name) \
-  dt_lua_init_type_type(L,luaA_type(L,type_name))
-luaA_Type dt_lua_init_type_type(lua_State* L,luaA_Type type_id);
+#define dt_lua_init_type(L, type_name) dt_lua_init_type_type(L, luaA_type(L, type_name))
+luaA_Type dt_lua_init_type_type(lua_State *L, luaA_Type type_id);
 
 
 
@@ -69,46 +70,46 @@ luaA_Type dt_lua_init_type_type(lua_State* L,luaA_Type type_id);
 /* MEMBER REGISTRATION FUNCTIONS */
 /*********************************/
 /// register a read-only member, the member function is poped from the stack
-#define dt_lua_type_register_const(L,type_name,name) \
-  dt_lua_type_register_const_type(L,luaA_type_find(L,#type_name),name)
-void dt_lua_type_register_const_type(lua_State* L,luaA_Type type_id,const char* name);
+#define dt_lua_type_register_const(L, type_name, name)                                                       \
+  dt_lua_type_register_const_type(L, luaA_type_find(L, #type_name), name)
+void dt_lua_type_register_const_type(lua_State *L, luaA_Type type_id, const char *name);
 
 /// register a read-write member, the member function is poped from the stack
-#define dt_lua_type_register(L,type_name,name) \
-  dt_lua_type_register_type(L,luaA_type_find(L,#type_name),name)
-void dt_lua_type_register_type(lua_State* L,luaA_Type type_id,const char* name);
+#define dt_lua_type_register(L, type_name, name)                                                             \
+  dt_lua_type_register_type(L, luaA_type_find(L, #type_name), name)
+void dt_lua_type_register_type(lua_State *L, luaA_Type type_id, const char *name);
 
 /// register a function for all fields of luaautoc struct, the member function is poped from the stack
 /// detects red-only vs read-write automatically
-#define dt_lua_type_register_struct(L,type_name) \
-  dt_lua_type_register_struct_type(L,luaA_type_find(L,#type_name))
-void dt_lua_type_register_struct_type(lua_State* L,luaA_Type type_id);
+#define dt_lua_type_register_struct(L, type_name)                                                            \
+  dt_lua_type_register_struct_type(L, luaA_type_find(L, #type_name))
+void dt_lua_type_register_struct_type(lua_State *L, luaA_Type type_id);
 
 // register a function for number index
 // first push the len function (can be nil)
 // then push the member function
-#define dt_lua_type_register_number(L,type_name) \
-  dt_lua_type_register_number_type(L,luaA_type_find(L,#type_name))
-void dt_lua_type_register_number_type(lua_State* L,luaA_Type type_id);
-#define dt_lua_type_register_number_const(L,type_name) \
-  dt_lua_type_register_number_const_type(L,luaA_type_find(L,#type_name))
-void dt_lua_type_register_number_const_type(lua_State* L,luaA_Type type_id);
+#define dt_lua_type_register_number(L, type_name)                                                            \
+  dt_lua_type_register_number_type(L, luaA_type_find(L, #type_name))
+void dt_lua_type_register_number_type(lua_State *L, luaA_Type type_id);
+#define dt_lua_type_register_number_const(L, type_name)                                                      \
+  dt_lua_type_register_number_const_type(L, luaA_type_find(L, #type_name))
+void dt_lua_type_register_number_const_type(lua_State *L, luaA_Type type_id);
 
 /// register a type as a parent type
 /// the type will reuse all functions from the parent (overwriting its own if any)
 /// inheritence will be marked in __luaA_ParentMetatable
 /// YOU WANT TO REGISTER THIS BEFORE ANY OTHER MEMBER
-#define dt_lua_type_register_parent(L,type_name,parent_type_name) \
-  dt_lua_type_register_parent_type(L,luaA_type_find(L,#type_name),luaA_type_find(L,#parent_type_name))
-void dt_lua_type_register_parent_type(lua_State* L,luaA_Type type_id,luaA_Type parent_type_id);
+#define dt_lua_type_register_parent(L, type_name, parent_type_name)                                          \
+  dt_lua_type_register_parent_type(L, luaA_type_find(L, #type_name), luaA_type_find(L, #parent_type_name))
+void dt_lua_type_register_parent_type(lua_State *L, luaA_Type type_id, luaA_Type parent_type_id);
 
 /********************/
 /* MEMBER FUNCTIONS */
 /********************/
 /// member function for common members. The common member must be the only upvalue of the function
-int dt_lua_type_member_common(lua_State*L);
+int dt_lua_type_member_common(lua_State *L);
 /// member function for luaautoc struct, will use luaautoc to push/pull content
-int dt_lua_type_member_luaautoc(lua_State*L);
+int dt_lua_type_member_luaautoc(lua_State *L);
 
 /***********/
 /* HELPERS */
@@ -117,16 +118,14 @@ int dt_lua_type_member_luaautoc(lua_State*L);
 /**
   * similar to dt_lua_init_type but creates a type for int or gpointer singletons
   * the type must match and will guarentee a singleton per value
-  * i.e if you push the same int twice, you will push the same lua object 
+  * i.e if you push the same int twice, you will push the same lua object
   * not recreate a different one each time
   * the singleton objects will still correctly be garbage collected
   */
-#define dt_lua_init_int_type(L,type_name) \
-  dt_lua_init_int_type_type(L,luaA_type(L,type_name))
-luaA_Type dt_lua_init_int_type_type(lua_State* L,luaA_Type type_id);
-#define dt_lua_init_gpointer_type(L,type_name) \
-  dt_lua_init_gpointer_type_type(L,luaA_type(L,type_name))
-luaA_Type dt_lua_init_gpointer_type_type(lua_State* L,luaA_Type type_id);
+#define dt_lua_init_int_type(L, type_name) dt_lua_init_int_type_type(L, luaA_type(L, type_name))
+luaA_Type dt_lua_init_int_type_type(lua_State *L, luaA_Type type_id);
+#define dt_lua_init_gpointer_type(L, type_name) dt_lua_init_gpointer_type_type(L, luaA_type(L, type_name))
+luaA_Type dt_lua_init_gpointer_type_type(lua_State *L, luaA_Type type_id);
 
 /**
  * similar to dt_lua_init_type but creates a singleton type
@@ -134,22 +133,22 @@ luaA_Type dt_lua_init_gpointer_type_type(lua_State* L,luaA_Type type_id);
  * returns the associated luaA_Type so it can be decorated
  * push the single instance of the object on the stack
  */
-luaA_Type dt_lua_init_singleton(lua_State* L,const char * unique_name,void* data);
+luaA_Type dt_lua_init_singleton(lua_State *L, const char *unique_name, void *data);
 
 /**
  * similar to dt_lua_init_singleton but the singleton has push and pop functions to save/restor
  * the lua object called on
  */
-luaA_Type dt_lua_init_wrapped_singleton(lua_State* L, lua_CFunction pusher, lua_CFunction getter, const char* unique_name,void *data);
+luaA_Type dt_lua_init_wrapped_singleton(lua_State *L, lua_CFunction pusher, lua_CFunction getter,
+                                        const char *unique_name, void *data);
 
 
 int dt_lua_init_early_types(lua_State *L);
 
-#define dt_lua_isa(L,index,type) \
-  dt_lua_isa_type(L,index,luaA_type(L,type))
+#define dt_lua_isa(L, index, type) dt_lua_isa_type(L, index, luaA_type(L, type))
 
-gboolean dt_lua_isa_type(lua_State*L,int index, luaA_Type type_id);
-gboolean dt_lua_typeisa_type(lua_State*L,luaA_Type obj_type, luaA_Type type_id);
+gboolean dt_lua_isa_type(lua_State *L, int index, luaA_Type type_id);
+gboolean dt_lua_typeisa_type(lua_State *L, luaA_Type obj_type, luaA_Type type_id);
 
 
 #endif

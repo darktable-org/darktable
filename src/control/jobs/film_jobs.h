@@ -22,7 +22,7 @@
 #include "control/control.h"
 #include "common/film.h"
 
-dt_job_t * dt_film_import1_create(dt_film_t *film);
+dt_job_t *dt_film_import1_create(dt_film_t *film);
 
 #endif
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

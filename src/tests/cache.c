@@ -30,11 +30,10 @@
 #include <stdio.h>
 #include <assert.h>
 #ifdef _OPENMP
-#  include <omp.h>
+#include <omp.h>
 #endif
 
-int32_t
-alloc_dummy(void *data, const uint32_t key, int32_t *cost, void **buf)
+int32_t alloc_dummy(void *data, const uint32_t key, int32_t *cost, void **buf)
 {
   *cost = 1; // also the default
   *buf = (void *)(long int)key;
@@ -51,20 +50,21 @@ int main(int argc, char *arg[])
   dt_cache_set_allocate_callback(&cache, alloc_dummy, NULL);
 
 #ifdef _OPENMP
-  #  pragma omp parallel for default(none) schedule(guided) shared(cache, stderr) num_threads(16)
+#pragma omp parallel for default(none) schedule(guided) shared(cache, stderr) num_threads(16)
 #endif
-  for(int k=0; k<100000; k++)
+  for(int k = 0; k < 100000; k++)
   {
     void *data = (void *)(long int)k;
-    const int size = 0;//dt_cache_size(&cache);
+    const int size = 0; // dt_cache_size(&cache);
     const int con1 = dt_cache_contains(&cache, k);
     const int val1 = (int)(long int)dt_cache_read_get(&cache, k);
     const int val2 = (int)(long int)dt_cache_read_get(&cache, k);
-    // fprintf(stderr, "\rinserted number %d, size %d, value %d - %d, contains %d - %d", k, size, val1, val2, con1, con2);
+    // fprintf(stderr, "\rinserted number %d, size %d, value %d - %d, contains %d - %d", k, size, val1, val2,
+    // con1, con2);
     const int con2 = dt_cache_contains(&cache, k);
-    assert (con1 == 0);
-    assert (con2 == 1);
-    assert (val2 == k);
+    assert(con1 == 0);
+    assert(con2 == 1);
+    assert(val2 == k);
     dt_cache_read_release(&cache, k);
     dt_cache_read_release(&cache, k);
   }
@@ -73,7 +73,7 @@ int main(int argc, char *arg[])
   fprintf(stderr, "[passed] inserting 100000 entries concurrently\n");
 
   const int size = dt_cache_size(&cache);
-  const int lru_cnt   = lru_check_consistency(&cache);
+  const int lru_cnt = lru_check_consistency(&cache);
   const int lru_cnt_r = lru_check_consistency_reverse(&cache);
   // fprintf(stderr, "lru list contains %d|%d/%d entries\n", lru_cnt, lru_cnt_r, size);
   assert(size == lru_cnt);
@@ -93,20 +93,21 @@ int main(int argc, char *arg[])
     dt_cache_set_allocate_callback(&cache2, alloc_dummy, NULL);
 
 #ifdef _OPENMP
-    #  pragma omp parallel for default(none) schedule(guided) shared(cache2, stderr) num_threads(16)
+#pragma omp parallel for default(none) schedule(guided) shared(cache2, stderr) num_threads(16)
 #endif
-    for(int k=0; k<100000; k++)
+    for(int k = 0; k < 100000; k++)
     {
       void *data = (void *)(long int)k;
-      const int size = 0;//dt_cache_size(&cache);
+      const int size = 0; // dt_cache_size(&cache);
       const int con1 = dt_cache_contains(&cache2, k);
       const int val1 = (int)(long int)dt_cache_read_get(&cache2, k);
       const int val2 = (int)(long int)dt_cache_read_get(&cache2, k);
-      // fprintf(stderr, "\rinserted number %d, size %d, value %d - %d, contains %d - %d", k, size, val1, val2, con1, con2);
+      // fprintf(stderr, "\rinserted number %d, size %d, value %d - %d, contains %d - %d", k, size, val1,
+      // val2, con1, con2);
       const int con2 = dt_cache_contains(&cache2, k);
-      assert (con1 == 0);
-      assert (con2 == 1);
-      assert (val2 == k);
+      assert(con1 == 0);
+      assert(con2 == 1);
+      assert(val2 == k);
       dt_cache_read_release(&cache2, k);
       dt_cache_read_release(&cache2, k);
     }
@@ -115,7 +116,7 @@ int main(int argc, char *arg[])
     fprintf(stderr, "[passed] inserting 100000 entries concurrently\n");
 
     const int size = dt_cache_size(&cache2);
-    const int lru_cnt   = lru_check_consistency(&cache2);
+    const int lru_cnt = lru_check_consistency(&cache2);
     const int lru_cnt_r = lru_check_consistency_reverse(&cache2);
     // fprintf(stderr, "lru list contains %d|%d/%d entries\n", lru_cnt, lru_cnt_r, size);
     assert(size == lru_cnt);

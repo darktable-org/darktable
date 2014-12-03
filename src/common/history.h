@@ -23,12 +23,12 @@
 #include <inttypes.h>
 
 /** copy history from imgid and pasts on dest_imgid, merge or overwrite... */
-int dt_history_copy_and_paste_on_image(int32_t imgid, int32_t dest_imgid, gboolean merge,GList *ops);
+int dt_history_copy_and_paste_on_image(int32_t imgid, int32_t dest_imgid, gboolean merge, GList *ops);
 
 void dt_history_delete_on_image(int32_t imgid);
 
 /** copy history from imgid and pasts on selected images, merge or overwrite... */
-int dt_history_copy_and_paste_on_selection(int32_t imgid, gboolean merge,GList *ops);
+int dt_history_copy_and_paste_on_selection(int32_t imgid, gboolean merge, GList *ops);
 
 /** load a dt file and applies to selected images */
 int dt_history_load_and_apply_on_selection(gchar *filename);

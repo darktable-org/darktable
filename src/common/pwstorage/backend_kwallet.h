@@ -24,24 +24,25 @@
 typedef struct backend_kwallet_context_t
 {
   // Connection to the DBus session bus.
-//   DBusGConnection* connection;
+  //   DBusGConnection* connection;
   GDBusConnection *connection;
 
   // Proxy to the kwallet DBus service.
   GDBusProxy *proxy;
 
   // The name of the wallet we've opened. Set during init_kwallet().
-  gchar* wallet_name;
+  gchar *wallet_name;
 } backend_kwallet_context_t;
 
 /** Initializes a new kwallet backend context. */
-const backend_kwallet_context_t* dt_pwstorage_kwallet_new();
+const backend_kwallet_context_t *dt_pwstorage_kwallet_new();
 /** Cleanup and destroy kwallet backend context. */
 void dt_pwstorage_kwallet_destroy(const backend_kwallet_context_t *context);
 /** Store (key,value) pairs. */
-gboolean dt_pwstorage_kwallet_set(const backend_kwallet_context_t *context, const gchar* slot, GHashTable* table);
+gboolean dt_pwstorage_kwallet_set(const backend_kwallet_context_t *context, const gchar *slot,
+                                  GHashTable *table);
 /** Load (key,value) pairs. */
-GHashTable* dt_pwstorage_kwallet_get(const backend_kwallet_context_t *context, const gchar* slot);
+GHashTable *dt_pwstorage_kwallet_get(const backend_kwallet_context_t *context, const gchar *slot);
 
 #endif
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

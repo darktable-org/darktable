@@ -23,7 +23,7 @@
 
 
 struct dt_view_t;
-void dt_lua_register_view(lua_State* L,struct dt_view_t* self);
+void dt_lua_register_view(lua_State *L, struct dt_view_t *self);
 
 
 

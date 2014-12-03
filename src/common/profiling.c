@@ -18,24 +18,25 @@
 
 #include "common/profiling.h"
 
-dt_timer_t *dt_timer_start_with_name (const char *file,const char *function,const char *description)
+dt_timer_t *dt_timer_start_with_name(const char *file, const char *function, const char *description)
 {
-  dt_timer_t *t=g_malloc (sizeof(dt_timer_t));
+  dt_timer_t *t = g_malloc(sizeof(dt_timer_t));
   t->file = file;
   t->function = function;
-  t->timer = g_timer_new ();
+  t->timer = g_timer_new();
   t->description = description;
   return t;
 }
 
-void dt_timer_stop_with_name (dt_timer_t *t)
+void dt_timer_stop_with_name(dt_timer_t *t)
 {
-  g_assert ( t != NULL );
-  g_timer_stop (t->timer);
-  gulong ms=0;
-  fprintf (stderr,"Timer %s in function %s took %.3f seconds to execute.\n",t->description,t->function,g_timer_elapsed (t->timer,&ms));
-  g_timer_destroy (t->timer);
-  g_free (t);
+  g_assert(t != NULL);
+  g_timer_stop(t->timer);
+  gulong ms = 0;
+  fprintf(stderr, "Timer %s in function %s took %.3f seconds to execute.\n", t->description, t->function,
+          g_timer_elapsed(t->timer, &ms));
+  g_timer_destroy(t->timer);
+  g_free(t);
 }
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

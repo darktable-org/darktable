@@ -31,18 +31,17 @@ typedef enum pw_storage_backend_t
 typedef struct dt_pwstorage_t
 {
   pw_storage_backend_t pw_storage_backend;
-  void* backend_context;
-}
-dt_pwstorage_t;
+  void *backend_context;
+} dt_pwstorage_t;
 
 /** Initializes a new pwstorage context. */
-const dt_pwstorage_t* dt_pwstorage_new();
+const dt_pwstorage_t *dt_pwstorage_new();
 /** Cleanup and destroy pwstorage context. \remarks After this point pointer at pwstorage is invalid. */
 void dt_pwstorage_destroy(const dt_pwstorage_t *pwstorage);
 /** Store (key,value) pairs. */
-gboolean dt_pwstorage_set(const gchar* slot, GHashTable* table);
+gboolean dt_pwstorage_set(const gchar *slot, GHashTable *table);
 /** Load (key,value) pairs. */
-GHashTable* dt_pwstorage_get(const gchar* slot);
+GHashTable *dt_pwstorage_get(const gchar *slot);
 
 #endif
 
