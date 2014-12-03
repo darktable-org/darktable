@@ -28,21 +28,19 @@
 // constants fit to the ones from lcms.h:
 typedef enum dt_iop_color_intent_t
 {
-  DT_INTENT_PERCEPTUAL             = INTENT_PERCEPTUAL,            // 0
-  DT_INTENT_RELATIVE_COLORIMETRIC  = INTENT_RELATIVE_COLORIMETRIC, // 1
-  DT_INTENT_SATURATION             = INTENT_SATURATION,            // 2
-  DT_INTENT_ABSOLUTE_COLORIMETRIC  = INTENT_ABSOLUTE_COLORIMETRIC  // 3
-}
-dt_iop_color_intent_t;
+  DT_INTENT_PERCEPTUAL = INTENT_PERCEPTUAL,                       // 0
+  DT_INTENT_RELATIVE_COLORIMETRIC = INTENT_RELATIVE_COLORIMETRIC, // 1
+  DT_INTENT_SATURATION = INTENT_SATURATION,                       // 2
+  DT_INTENT_ABSOLUTE_COLORIMETRIC = INTENT_ABSOLUTE_COLORIMETRIC  // 3
+} dt_iop_color_intent_t;
 
 typedef struct dt_iop_color_profile_t
 {
   char filename[512]; // icc file name
   char name[512];     // product name
-  int  pos;           // position in combo box
-  int  display_pos;   // position in display combo box
-}
-dt_iop_color_profile_t;
+  int pos;            // position in combo box
+  int display_pos;    // position in display combo box
+} dt_iop_color_profile_t;
 
 #endif
 

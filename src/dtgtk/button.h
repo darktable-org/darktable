@@ -21,16 +21,16 @@
 #include <gtk/gtk.h>
 #include "paint.h"
 G_BEGIN_DECLS
-#define DTGTK_BUTTON(obj) G_TYPE_CHECK_INSTANCE_CAST(obj, dtgtk_button_get_type (), GtkDarktableButton)
-#define DTGTK_BUTTON_CLASS(klass) GTK_CHECK_CLASS_CAST(klass, dtgtk_button_get_type(), GtkDarktableButtonClass)
+#define DTGTK_BUTTON(obj) G_TYPE_CHECK_INSTANCE_CAST(obj, dtgtk_button_get_type(), GtkDarktableButton)
+#define DTGTK_BUTTON_CLASS(klass)                                                                            \
+  GTK_CHECK_CLASS_CAST(klass, dtgtk_button_get_type(), GtkDarktableButtonClass)
 #define DTGTK_IS_BUTTON(obj) G_TYPE_CHECK_INSTANCE_TYPE(obj, dtgtk_button_get_type())
 #define DTGTK_IS_BUTTON_CLASS(klass) GTK_CHECK_CLASS_TYPE(obj, dtgtk_button_get_type())
 
 typedef enum _darktable_button_flags
 {
-  DARKTABLE_BUTTON_SHOW_LABEL				= 1
-}
-_darktable_button_flags_t;
+  DARKTABLE_BUTTON_SHOW_LABEL = 1
+} _darktable_button_flags_t;
 
 typedef struct _GtkDarktableButton
 {
@@ -44,15 +44,13 @@ typedef struct _GtkDarktableButtonClass
   GtkButtonClass parent_class;
 } GtkDarktableButtonClass;
 
-GType dtgtk_button_get_type (void);
+GType dtgtk_button_get_type(void);
 
 /** Instansiate a new darktable button control passing paint function as content */
-GtkWidget* dtgtk_button_new(DTGTKCairoPaintIconFunc paint, gint paintflags);
-GtkWidget* dtgtk_button_new_with_label(const gchar *label, DTGTKCairoPaintIconFunc paint, gint paintflags);
+GtkWidget *dtgtk_button_new(DTGTKCairoPaintIconFunc paint, gint paintflags);
+GtkWidget *dtgtk_button_new_with_label(const gchar *label, DTGTKCairoPaintIconFunc paint, gint paintflags);
 /** set the paint function for a button */
-void dtgtk_button_set_paint(GtkDarktableButton *button,
-                            DTGTKCairoPaintIconFunc paint,
-                            gint paintflags);
+void dtgtk_button_set_paint(GtkDarktableButton *button, DTGTKCairoPaintIconFunc paint, gint paintflags);
 G_END_DECLS
 #endif
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

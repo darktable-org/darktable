@@ -48,7 +48,7 @@
 
 DT_MODULE_INTROSPECTION(1, dt_iop_colortransfer_params_t)
 
-#define HISTN (1<<11)
+#define HISTN (1 << 11)
 #define MAXN 5
 
 typedef enum dt_iop_colortransfer_flag_t
@@ -59,8 +59,7 @@ typedef enum dt_iop_colortransfer_flag_t
   ACQUIRED = 3,
   APPLY = 4,
   NEUTRAL = 5
-}
-dt_iop_colortransfer_flag_t;
+} dt_iop_colortransfer_flag_t;
 
 typedef struct dt_iop_colortransfer_params_t
 {
@@ -69,11 +68,10 @@ typedef struct dt_iop_colortransfer_params_t
   float hist[HISTN];
   // n-means (max 5?) with mean/variance
   float mean[MAXN][2];
-  float var [MAXN][2];
+  float var[MAXN][2];
   // number of gaussians used.
   int n;
-}
-dt_iop_colortransfer_params_t;
+} dt_iop_colortransfer_params_t;
 
 typedef struct dt_iop_colortransfer_gui_data_t
 {
@@ -86,8 +84,7 @@ typedef struct dt_iop_colortransfer_gui_data_t
   cmsHPROFILE hsRGB;
   cmsHPROFILE hLab;
   cmsHTRANSFORM xform;
-}
-dt_iop_colortransfer_gui_data_t;
+} dt_iop_colortransfer_gui_data_t;
 
 typedef struct dt_iop_colortransfer_data_t
 {
@@ -95,23 +92,21 @@ typedef struct dt_iop_colortransfer_data_t
   dt_iop_colortransfer_flag_t flag;
   float hist[HISTN];
   float mean[MAXN][2];
-  float var [MAXN][2];
+  float var[MAXN][2];
   int n;
-}
-dt_iop_colortransfer_data_t;
+} dt_iop_colortransfer_data_t;
 
 const char *name()
 {
   return _("color transfer");
 }
 
-int
-groups ()
+int groups()
 {
   return IOP_GROUP_COLOR;
 }
 
-int flags ()
+int flags()
 {
   return IOP_FLAGS_DEPRECATED | IOP_FLAGS_ONE_INSTANCE | IOP_FLAGS_PREVIEW_NON_OPENCL;
 }
@@ -133,27 +128,27 @@ void connect_key_accels(dt_iop_module_t *self)
 }
 #endif
 
-static void
-capture_histogram(const float *col, const dt_iop_roi_t *roi, int *hist)
+static void capture_histogram(const float *col, const dt_iop_roi_t *roi, int *hist)
 {
   // build separate histogram
-  memset(hist,0, HISTN*sizeof(int));
-  for(int k=0; k<roi->height; k++) for(int i=0; i<roi->width; i++)
+  memset(hist, 0, HISTN * sizeof(int));
+  for(int k = 0; k < roi->height; k++)
+    for(int i = 0; i < roi->width; i++)
     {
-      const int bin = CLAMP(HISTN*col[3*(k*roi->width+i)+0]/100.0, 0, HISTN-1);
+      const int bin = CLAMP(HISTN * col[3 * (k * roi->width + i) + 0] / 100.0, 0, HISTN - 1);
       hist[bin]++;
     }
 
   // accumulated start distribution of G1 G2
-  for(int k=1; k<HISTN; k++) hist[k] += hist[k-1];
-  for(int k=0; k<HISTN; k++) hist[k] = (int)CLAMP(hist[k]*(HISTN/(float)hist[HISTN-1]), 0, HISTN-1);
+  for(int k = 1; k < HISTN; k++) hist[k] += hist[k - 1];
+  for(int k = 0; k < HISTN; k++)
+    hist[k] = (int)CLAMP(hist[k] * (HISTN / (float)hist[HISTN - 1]), 0, HISTN - 1);
   // for(int i=0;i<100;i++) printf("#[%d] %d \n", i, hist[(int)CLAMP(HISTN*i/100.0, 0, HISTN-1)]);
 }
 
-static void
-invert_histogram(const int *hist, float *inv_hist)
+static void invert_histogram(const int *hist, float *inv_hist)
 {
-  // invert non-normalised accumulated hist
+// invert non-normalised accumulated hist
 #if 0
   int last = 0;
   for(int i=0; i<HISTN; i++) for(int k=last; k<HISTN; k++)
@@ -165,32 +160,34 @@ invert_histogram(const int *hist, float *inv_hist)
       }
 #else
   int last = 31;
-  for(int i=0; i<=last; i++) inv_hist[i] = 100.0*i/(float)HISTN;
-  for(int i=last+1; i<HISTN; i++) for(int k=last; k<HISTN; k++)
+  for(int i = 0; i <= last; i++) inv_hist[i] = 100.0 * i / (float)HISTN;
+  for(int i = last + 1; i < HISTN; i++)
+    for(int k = last; k < HISTN; k++)
       if(hist[k] >= i)
       {
         last = k;
-        inv_hist[i] = 100.0*k/(float)HISTN;
+        inv_hist[i] = 100.0 * k / (float)HISTN;
         break;
       }
 #endif
 
   // printf("inv histogram debug:\n");
   // for(int i=0;i<100;i++) printf("%d => %f\n", i, inv_hist[hist[(int)CLAMP(HISTN*i/100.0, 0, HISTN-1)]]);
-  // for(int i=0;i<100;i++) printf("[%d] %f => %f\n", i, hist[(int)CLAMP(HISTN*i/100.0, 0, HISTN-1)]/(float)HISTN, inv_hist[(int)CLAMP(HISTN*i/100.0, 0, HISTN-1)]);
+  // for(int i=0;i<100;i++) printf("[%d] %f => %f\n", i, hist[(int)CLAMP(HISTN*i/100.0, 0,
+  // HISTN-1)]/(float)HISTN, inv_hist[(int)CLAMP(HISTN*i/100.0, 0, HISTN-1)]);
 }
 
-static void
-get_cluster_mapping(const int n, float mi[n][2], float mo[n][2], int mapio[n])
+static void get_cluster_mapping(const int n, float mi[n][2], float mo[n][2], int mapio[n])
 {
-  for(int ki=0; ki<n; ki++)
+  for(int ki = 0; ki < n; ki++)
   {
     // for each input cluster
     float mdist = FLT_MAX;
-    for(int ko=0; ko<n; ko++)
+    for(int ko = 0; ko < n; ko++)
     {
       // find the best target cluster (the same could be used more than once)
-      const float dist = (mo[ko][0]-mi[ki][0])*(mo[ko][0]-mi[ki][0])+(mo[ko][1]-mi[ki][1])*(mo[ko][1]-mi[ki][1]);
+      const float dist = (mo[ko][0] - mi[ki][0]) * (mo[ko][0] - mi[ki][0])
+                         + (mo[ko][1] - mi[ki][1]) * (mo[ko][1] - mi[ki][1]);
       if(dist < mdist)
       {
         mdist = dist;
@@ -200,31 +197,33 @@ get_cluster_mapping(const int n, float mi[n][2], float mo[n][2], int mapio[n])
   }
 }
 
-static void
-get_clusters(const float *col, const int n, float mean[n][2], float *weight)
+static void get_clusters(const float *col, const int n, float mean[n][2], float *weight)
 {
   float Mdist = 0.0f, mdist = FLT_MAX;
-  for(int k=0; k<n; k++)
+  for(int k = 0; k < n; k++)
   {
-    const float dist = (col[1]-mean[k][0])*(col[1]-mean[k][0]) + (col[2]-mean[k][1])*(col[2]-mean[k][1]);
+    const float dist = (col[1] - mean[k][0]) * (col[1] - mean[k][0])
+                       + (col[2] - mean[k][1]) * (col[2] - mean[k][1]);
     weight[k] = dist;
     if(dist < mdist) mdist = dist;
     if(dist > Mdist) Mdist = dist;
   }
-  if(Mdist-mdist > 0) for(int k=0; k<n; k++) weight[k] = (weight[k] - mdist)/(Mdist-mdist);
+  if(Mdist - mdist > 0)
+    for(int k = 0; k < n; k++) weight[k] = (weight[k] - mdist) / (Mdist - mdist);
   float sum = 0.0f;
-  for(int k=0; k<n; k++) sum += weight[k];
-  if(sum > 0) for(int k=0; k<n; k++) weight[k] /= sum;
+  for(int k = 0; k < n; k++) sum += weight[k];
+  if(sum > 0)
+    for(int k = 0; k < n; k++) weight[k] /= sum;
 }
 
-static int
-get_cluster(const float *col, const int n, float mean[n][2])
+static int get_cluster(const float *col, const int n, float mean[n][2])
 {
   float mdist = FLT_MAX;
   int cluster = 0;
-  for(int k=0; k<n; k++)
+  for(int k = 0; k < n; k++)
   {
-    const float dist = (col[1]-mean[k][0])*(col[1]-mean[k][0]) + (col[2]-mean[k][1])*(col[2]-mean[k][1]);
+    const float dist = (col[1] - mean[k][0]) * (col[1] - mean[k][0])
+                       + (col[2] - mean[k][1]) * (col[2] - mean[k][1]);
     if(dist < mdist)
     {
       mdist = dist;
@@ -234,78 +233,79 @@ get_cluster(const float *col, const int n, float mean[n][2])
   return cluster;
 }
 
-static void
-kmeans(const float *col, const dt_iop_roi_t *roi, const int n, float mean_out[n][2], float var_out[n][2])
+static void kmeans(const float *col, const dt_iop_roi_t *roi, const int n, float mean_out[n][2],
+                   float var_out[n][2])
 {
   // TODO: check params here:
-  const int nit = 10; // number of iterations
-  const int samples = roi->width*roi->height * 0.2; // samples: only a fraction of the buffer.
+  const int nit = 10;                                 // number of iterations
+  const int samples = roi->width * roi->height * 0.2; // samples: only a fraction of the buffer.
 
   float mean[n][2], var[n][2];
   int cnt[n];
 
   // init n clusters for a, b channels at random
-  for(int k=0; k<n; k++)
+  for(int k = 0; k < n; k++)
   {
-    mean_out[k][0] = 20.0f-40.0f*dt_points_get();
-    mean_out[k][1] = 20.0f-40.0f*dt_points_get();
+    mean_out[k][0] = 20.0f - 40.0f * dt_points_get();
+    mean_out[k][1] = 20.0f - 40.0f * dt_points_get();
     var_out[k][0] = var_out[k][1] = 0.0f;
     mean[k][0] = mean[k][1] = var[k][0] = var[k][1] = 0.0f;
   }
-  for(int it=0; it<nit; it++)
+  for(int it = 0; it < nit; it++)
   {
-    for(int k=0; k<n; k++) cnt[k] = 0;
-    // randomly sample col positions inside roi
+    for(int k = 0; k < n; k++) cnt[k] = 0;
+// randomly sample col positions inside roi
 #ifdef _OPENMP
-    #pragma omp parallel for default(none) schedule(static) shared(roi,col,var,mean,mean_out,cnt)
+#pragma omp parallel for default(none) schedule(static) shared(roi, col, var, mean, mean_out, cnt)
 #endif
-    for(int s=0; s<samples; s++)
+    for(int s = 0; s < samples; s++)
     {
-      const int j = dt_points_get()*roi->height, i = dt_points_get()*roi->width;
+      const int j = dt_points_get() * roi->height, i = dt_points_get() * roi->width;
       // for each sample: determine cluster, update new mean, update var
-      for(int k=0; k<n; k++)
+      for(int k = 0; k < n; k++)
       {
-        const float L = col[3*(roi->width*j+i)];
-        const float Lab[3] = {L, col[3*(roi->width*j + i)+1], col[3*(roi->width*j + i)+2]};
+        const float L = col[3 * (roi->width * j + i)];
+        const float Lab[3] = { L, col[3 * (roi->width * j + i) + 1], col[3 * (roi->width * j + i) + 2] };
         // determine dist to mean_out
         const int c = get_cluster(Lab, n, mean_out);
 #ifdef _OPENMP
-        #pragma omp atomic
+#pragma omp atomic
 #endif
         cnt[c]++;
-        // update mean, var
+// update mean, var
 #ifdef _OPENMP
-        #pragma omp atomic
+#pragma omp atomic
 #endif
-        var[c][0]  += Lab[1]*Lab[1];
+        var[c][0] += Lab[1] * Lab[1];
 #ifdef _OPENMP
-        #pragma omp atomic
+#pragma omp atomic
 #endif
-        var[c][1]  += Lab[2]*Lab[2];
+        var[c][1] += Lab[2] * Lab[2];
 #ifdef _OPENMP
-        #pragma omp atomic
+#pragma omp atomic
 #endif
         mean[c][0] += Lab[1];
 #ifdef _OPENMP
-        #pragma omp atomic
+#pragma omp atomic
 #endif
         mean[c][1] += Lab[2];
       }
     }
     // swap old/new means
-    for(int k=0; k<n; k++)
+    for(int k = 0; k < n; k++)
     {
-      if(cnt [k] == 0) continue;
-      mean_out[k][0] = mean[k][0]/cnt[k];
-      mean_out[k][1] = mean[k][1]/cnt[k];
-      var_out[k][0] = var[k][0]/cnt[k] - mean_out[k][0]*mean_out[k][0];
-      var_out[k][1] = var[k][1]/cnt[k] - mean_out[k][1]*mean_out[k][1];
+      if(cnt[k] == 0) continue;
+      mean_out[k][0] = mean[k][0] / cnt[k];
+      mean_out[k][1] = mean[k][1] / cnt[k];
+      var_out[k][0] = var[k][0] / cnt[k] - mean_out[k][0] * mean_out[k][0];
+      var_out[k][1] = var[k][1] / cnt[k] - mean_out[k][1] * mean_out[k][1];
       mean[k][0] = mean[k][1] = var[k][0] = var[k][1] = 0.0f;
     }
     // printf("it %d  %d means:\n", it, n);
-    // for(int k=0;k<n;k++) printf("%f %f -- var %f %f\n", mean_out[k][0], mean_out[k][1], var_out[k][0], var_out[k][1]);
+    // for(int k=0;k<n;k++) printf("%f %f -- var %f %f\n", mean_out[k][0], mean_out[k][1], var_out[k][0],
+    // var_out[k][1]);
   }
-  for(int k=0; k<n; k++)
+  for(int k = 0; k < n; k++)
   {
     // we actually want the std deviation.
     var_out[k][0] = sqrtf(var_out[k][0]);
@@ -313,11 +313,12 @@ kmeans(const float *col, const dt_iop_roi_t *roi, const int n, float mean_out[n]
   }
 }
 
-void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoid, void *ovoid, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
+void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoid, void *ovoid,
+             const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
 {
   // FIXME: this returns nan!!
   dt_iop_colortransfer_data_t *data = (dt_iop_colortransfer_data_t *)piece->data;
-  float *in  = (float *)ivoid;
+  float *in = (float *)ivoid;
   float *out = (float *)ovoid;
   const int ch = piece->colors;
 
@@ -340,7 +341,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
       dt_iop_colortransfer_params_t *p = (dt_iop_colortransfer_params_t *)self->params;
       p->flag = ACQUIRE2;
     }
-    memcpy(out, in, (size_t)sizeof(float)*ch*roi_out->width*roi_out->height);
+    memcpy(out, in, (size_t)sizeof(float) * ch * roi_out->width * roi_out->height);
   }
   else if(data->flag == APPLY)
   {
@@ -348,17 +349,17 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
     int hist[HISTN];
     capture_histogram(in, roi_in, hist);
 #ifdef _OPENMP
-    #pragma omp parallel for default(none) schedule(static) shared(roi_out,data,in,out,hist)
+#pragma omp parallel for default(none) schedule(static) shared(roi_out, data, in, out, hist)
 #endif
-    for(int k=0; k<roi_out->height; k++)
+    for(int k = 0; k < roi_out->height; k++)
     {
-      size_t j = (size_t)ch*roi_out->width*k;
-      for(int i=0; i<roi_out->width; i++)
+      size_t j = (size_t)ch * roi_out->width * k;
+      for(int i = 0; i < roi_out->width; i++)
       {
         // L: match histogram
-        out[j] = data->hist[hist[(int)CLAMP(HISTN*in[j]/100.0, 0, HISTN-1)]];
+        out[j] = data->hist[hist[(int)CLAMP(HISTN * in[j] / 100.0, 0, HISTN - 1)]];
         out[j] = CLAMP(out[j], 0, 100);
-        j+=ch;
+        j += ch;
       }
     }
 
@@ -370,40 +371,42 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
     int mapio[data->n];
     get_cluster_mapping(data->n, mean, data->mean, mapio);
 
-    // for all pixels: find input cluster, transfer to mapped target cluster
+// for all pixels: find input cluster, transfer to mapped target cluster
 #ifdef _OPENMP
-    #pragma omp parallel for default(none) schedule(static) shared(roi_out,data,mean,var,mapio,in,out)
+#pragma omp parallel for default(none) schedule(static) shared(roi_out, data, mean, var, mapio, in, out)
 #endif
-    for(int k=0; k<roi_out->height; k++)
+    for(int k = 0; k < roi_out->height; k++)
     {
       float weight[MAXN];
-      size_t j = (size_t)ch*roi_out->width*k;
-      for(int i=0; i<roi_out->width; i++)
+      size_t j = (size_t)ch * roi_out->width * k;
+      for(int i = 0; i < roi_out->width; i++)
       {
         const float L = in[j];
-        const float Lab[3] = {L, in[j+1], in[j+2]};
-        // a, b: subtract mean, scale nvar/var, add nmean
-#if 0   // single cluster, gives color banding
+        const float Lab[3] = { L, in[j + 1], in[j + 2] };
+// a, b: subtract mean, scale nvar/var, add nmean
+#if 0 // single cluster, gives color banding
         const int ki = get_cluster(in + j, data->n, mean);
         out[j+1] = 100.0/out[j] * ((Lab[1] - mean[ki][0])*data->var[mapio[ki]][0]/var[ki][0] + data->mean[mapio[ki]][0]);
         out[j+2] = 100.0/out[j] * ((Lab[2] - mean[ki][1])*data->var[mapio[ki]][1]/var[ki][1] + data->mean[mapio[ki]][1]);
-#else   // fuzzy weighting
-        get_clusters(in+j, data->n, mean, weight);
-        out[j+1] = out[j+2] = 0.0f;
-        for(int c=0; c<data->n; c++)
+#else // fuzzy weighting
+        get_clusters(in + j, data->n, mean, weight);
+        out[j + 1] = out[j + 2] = 0.0f;
+        for(int c = 0; c < data->n; c++)
         {
-          out[j+1] += weight[c] * ((Lab[1] - mean[c][0])*data->var[mapio[c]][0]/var[c][0] + data->mean[mapio[c]][0]);
-          out[j+2] += weight[c] * ((Lab[2] - mean[c][1])*data->var[mapio[c]][1]/var[c][1] + data->mean[mapio[c]][1]);
+          out[j + 1] += weight[c] * ((Lab[1] - mean[c][0]) * data->var[mapio[c]][0] / var[c][0]
+                                     + data->mean[mapio[c]][0]);
+          out[j + 2] += weight[c] * ((Lab[2] - mean[c][1]) * data->var[mapio[c]][1] / var[c][1]
+                                     + data->mean[mapio[c]][1]);
         }
 #endif
-        out[j+3] = in[j+3];
-        j+=ch;
+        out[j + 3] = in[j + 3];
+        j += ch;
       }
     }
   }
   else
   {
-    memcpy(out, in, (size_t)sizeof(float)*ch*roi_out->width*roi_out->height);
+    memcpy(out, in, (size_t)sizeof(float) * ch * roi_out->width * roi_out->height);
   }
 }
 
@@ -515,7 +518,7 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
 }
 #endif
 
-void init_pipe (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
+void init_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
 #ifdef HAVE_GEGL
   // create part of the gegl pipeline
@@ -528,12 +531,12 @@ void init_pipe (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_p
 #endif
 }
 
-void cleanup_pipe (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
+void cleanup_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
 #ifdef HAVE_GEGL
   // clean up everything again.
   (void)gegl_node_remove_child(pipe->gegl, piece->input);
-  // no free necessary, no data is alloc'ed
+// no free necessary, no data is alloc'ed
 #else
   free(piece->data);
   piece->data = NULL;
@@ -563,9 +566,9 @@ void init(dt_iop_module_t *module)
   module->gui_data = NULL;
   dt_iop_colortransfer_params_t tmp;
   tmp.flag = NEUTRAL;
-  memset(tmp.hist, 0, sizeof(float)*HISTN);
-  memset(tmp.mean, 0, sizeof(float)*MAXN*2);
-  memset(tmp.var, 0,  sizeof(float)*MAXN*2);
+  memset(tmp.hist, 0, sizeof(float) * HISTN);
+  memset(tmp.mean, 0, sizeof(float) * MAXN * 2);
+  memset(tmp.var, 0, sizeof(float) * MAXN * 2);
   tmp.n = 3;
   memcpy(module->params, &tmp, sizeof(dt_iop_colortransfer_params_t));
   memcpy(module->default_params, &tmp, sizeof(dt_iop_colortransfer_params_t));
@@ -645,7 +648,8 @@ void gui_init(struct dt_iop_module_t *self)
 {
 
   self->gui_data = malloc(sizeof(dt_iop_colortransfer_gui_data_t));
-  self->widget = gtk_label_new(_("this module will be removed in the future\nand is only here so you can switch it off\nand move to the new color mapping module."));
+  self->widget = gtk_label_new(_("this module will be removed in the future\nand is only here so you can "
+                                 "switch it off\nand move to the new color mapping module."));
   gtk_misc_set_alignment(GTK_MISC(self->widget), 0.0f, 0.5f);
 
 #if 0
@@ -697,10 +701,10 @@ void gui_init(struct dt_iop_module_t *self)
 
 void gui_cleanup(struct dt_iop_module_t *self)
 {
-//  dt_iop_colortransfer_gui_data_t *g = (dt_iop_colortransfer_gui_data_t *)self->gui_data;
-//  dt_colorspaces_cleanup_profile(g->hsRGB);
-//  dt_colorspaces_cleanup_profile(g->hLab);
-//  cmsDeleteTransform(g->xform);
+  //  dt_iop_colortransfer_gui_data_t *g = (dt_iop_colortransfer_gui_data_t *)self->gui_data;
+  //  dt_colorspaces_cleanup_profile(g->hsRGB);
+  //  dt_colorspaces_cleanup_profile(g->hLab);
+  //  cmsDeleteTransform(g->xform);
   free(self->gui_data);
   self->gui_data = NULL;
 }

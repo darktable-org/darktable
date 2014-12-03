@@ -75,25 +75,32 @@ void dt_XYZ_to_Lab(const float *XYZ, float *Lab);
 /** uses D50 white point. */
 void dt_Lab_to_XYZ(const float *Lab, float *XYZ);
 
-/** extracts tonecurves and color matrix prof to XYZ from a given input profile, returns 0 on success (curves and matrix are inverted for input) */
-int dt_colorspaces_get_matrix_from_input_profile (cmsHPROFILE prof, float *matrix, float *lutr, float *lutg, float* lutb, const int lutsize);
+/** extracts tonecurves and color matrix prof to XYZ from a given input profile, returns 0 on success (curves
+ * and matrix are inverted for input) */
+int dt_colorspaces_get_matrix_from_input_profile(cmsHPROFILE prof, float *matrix, float *lutr, float *lutg,
+                                                 float *lutb, const int lutsize);
 
 /** extracts tonecurves and color matrix prof to XYZ from a given output profile, returns 0 on success. */
-int dt_colorspaces_get_matrix_from_output_profile (cmsHPROFILE prof, float *matrix, float *lutr, float *lutg, float* lutb, const int lutsize);
+int dt_colorspaces_get_matrix_from_output_profile(cmsHPROFILE prof, float *matrix, float *lutr, float *lutg,
+                                                  float *lutb, const int lutsize);
 
 /** get normalized exif name. */
-void dt_colorspaces_get_makermodel(char *makermodel, size_t makermodel_len, const char *const maker, const char *const model);
-void dt_colorspaces_get_makermodel_split(char *makermodel, size_t makermodel_len, char **modelo, const char *const maker, const char *const model);
+void dt_colorspaces_get_makermodel(char *makermodel, size_t makermodel_len, const char *const maker,
+                                   const char *const model);
+void dt_colorspaces_get_makermodel_split(char *makermodel, size_t makermodel_len, char **modelo,
+                                         const char *const maker, const char *const model);
 
-/** searches for the given profile name in the user config dir ~/.config/darktable/color/<inout> and /usr/share/darktable/.. */
+/** searches for the given profile name in the user config dir ~/.config/darktable/color/<inout> and
+ * /usr/share/darktable/.. */
 int dt_colorspaces_find_profile(char *filename, size_t filename_len, const char *profile, const char *inout);
 
 /** wrapper to get the name from a color profile. this tries to handle character encodings. */
-void dt_colorspaces_get_profile_name(cmsHPROFILE p, const char *language, const char *country, char *name, size_t len);
+void dt_colorspaces_get_profile_name(cmsHPROFILE p, const char *language, const char *country, char *name,
+                                     size_t len);
 
 /** common functions to change between colorspaces, used in iop modules */
-void rgb2hsl(const float rgb[3],float *h,float *s,float *l);
-void hsl2rgb(float rgb[3],float h,float s,float l);
+void rgb2hsl(const float rgb[3], float *h, float *s, float *l);
+void hsl2rgb(float rgb[3], float h, float s, float l);
 
 #endif
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

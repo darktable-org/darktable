@@ -28,16 +28,16 @@
 
 typedef enum dt_imageio_levels_t
 {
-  IMAGEIO_INT8         = 0x0,
-  IMAGEIO_INT12        = 0x1,
-  IMAGEIO_INT16        = 0x2,
-  IMAGEIO_INT32        = 0x3,
-  IMAGEIO_FLOAT        = 0x4,
-  IMAGEIO_BW           = 0x5,
-  IMAGEIO_PREC_MASK    = 0xFF,
+  IMAGEIO_INT8 = 0x0,
+  IMAGEIO_INT12 = 0x1,
+  IMAGEIO_INT16 = 0x2,
+  IMAGEIO_INT32 = 0x3,
+  IMAGEIO_FLOAT = 0x4,
+  IMAGEIO_BW = 0x5,
+  IMAGEIO_PREC_MASK = 0xFF,
 
-  IMAGEIO_RGB          = 0x100,
-  IMAGEIO_GRAY         = 0x200,
+  IMAGEIO_RGB = 0x100,
+  IMAGEIO_GRAY = 0x200,
   IMAGEIO_CHANNEL_MASK = 0xFF00
 } dt_imageio_levels_t;
 
@@ -51,56 +51,45 @@ dt_imageio_retval_t dt_imageio_open_ldr(dt_image_t *img, const char *filename, d
 // try both, first libraw.
 dt_imageio_retval_t dt_imageio_open(dt_image_t *img, const char *filename, dt_mipmap_cache_allocator_t a);
 // tries to open the files not opened by the other routines using GraphicsMagick (if supported)
-dt_imageio_retval_t dt_imageio_open_exotic(dt_image_t *img, const char *filename, dt_mipmap_cache_allocator_t a);
+dt_imageio_retval_t dt_imageio_open_exotic(dt_image_t *img, const char *filename,
+                                           dt_mipmap_cache_allocator_t a);
 
 struct dt_imageio_module_format_t;
 struct dt_imageio_module_data_t;
-int
-dt_imageio_export(
-  const uint32_t imgid,
-  const char *filename,
-  struct dt_imageio_module_format_t *format,
-  struct dt_imageio_module_data_t *format_params,
-  const gboolean high_quality,
-  const gboolean copy_metadata,
-  dt_imageio_module_storage_t *storage,
-  dt_imageio_module_data_t   *storage_params);
+int dt_imageio_export(const uint32_t imgid, const char *filename, struct dt_imageio_module_format_t *format,
+                      struct dt_imageio_module_data_t *format_params, const gboolean high_quality,
+                      const gboolean copy_metadata, dt_imageio_module_storage_t *storage,
+                      dt_imageio_module_data_t *storage_params);
 
-int
-dt_imageio_export_with_flags(
-  const uint32_t                     imgid,
-  const char                        *filename,
-  struct dt_imageio_module_format_t *format,
-  struct dt_imageio_module_data_t   *format_params,
-  const int32_t                      ignore_exif,
-  const int32_t                      display_byteorder,
-  const gboolean                     high_quality,
-  const int32_t                      thumbnail_export,
-  const char                        *filter,
-  const gboolean                     copy_metadata,
-  dt_imageio_module_storage_t       *storage,
-  dt_imageio_module_data_t          *storage_params);
+int dt_imageio_export_with_flags(const uint32_t imgid, const char *filename,
+                                 struct dt_imageio_module_format_t *format,
+                                 struct dt_imageio_module_data_t *format_params, const int32_t ignore_exif,
+                                 const int32_t display_byteorder, const gboolean high_quality,
+                                 const int32_t thumbnail_export, const char *filter,
+                                 const gboolean copy_metadata, dt_imageio_module_storage_t *storage,
+                                 dt_imageio_module_data_t *storage_params);
 
-size_t dt_imageio_write_pos(int i, int j, int wd, int ht, float fwd, float fht, dt_image_orientation_t orientation);
+size_t dt_imageio_write_pos(int i, int j, int wd, int ht, float fwd, float fht,
+                            dt_image_orientation_t orientation);
 
 // general, efficient buffer flipping function using memcopies
-void
-dt_imageio_flip_buffers(
-  char *out,
-  const char *in,
-  const size_t bpp,         // bytes per pixel
-  const int wd,
-  const int ht,
-  const int fwd,
-  const int fht,
-  const int stride,
-  const dt_image_orientation_t orientation);
+void dt_imageio_flip_buffers(char *out, const char *in,
+                             const size_t bpp, // bytes per pixel
+                             const int wd, const int ht, const int fwd, const int fht, const int stride,
+                             const dt_image_orientation_t orientation);
 
-void dt_imageio_flip_buffers_ui16_to_float(float *out, const uint16_t *in, const float black, const float white, const int ch, const int wd, const int ht, const int fwd, const int fht, const int stride, const dt_image_orientation_t orientation);
-void dt_imageio_flip_buffers_ui8_to_float(float *out, const uint8_t *in, const float black, const float white, const int ch, const int wd, const int ht, const int fwd, const int fht, const int stride, const dt_image_orientation_t orientation);
+void dt_imageio_flip_buffers_ui16_to_float(float *out, const uint16_t *in, const float black,
+                                           const float white, const int ch, const int wd, const int ht,
+                                           const int fwd, const int fht, const int stride,
+                                           const dt_image_orientation_t orientation);
+void dt_imageio_flip_buffers_ui8_to_float(float *out, const uint8_t *in, const float black, const float white,
+                                          const int ch, const int wd, const int ht, const int fwd,
+                                          const int fht, const int stride,
+                                          const dt_image_orientation_t orientation);
 
 // allocate buffer and return 0 on success along with largest jpg thumbnail from raw.
-int dt_imageio_large_thumbnail(const char *filename, uint8_t **buffer, int32_t *width, int32_t *height, dt_image_orientation_t *orientation);
+int dt_imageio_large_thumbnail(const char *filename, uint8_t **buffer, int32_t *width, int32_t *height,
+                               dt_image_orientation_t *orientation);
 #endif
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

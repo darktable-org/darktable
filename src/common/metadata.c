@@ -21,7 +21,7 @@
 
 #include <stdlib.h>
 
-static void dt_metadata_set_xmp(int id, const char* key, const char* value)
+static void dt_metadata_set_xmp(int id, const char *key, const char *value)
 {
   sqlite3_stmt *stmt;
 
@@ -33,7 +33,8 @@ static void dt_metadata_set_xmp(int id, const char* key, const char* value)
   {
     DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
                                 "delete from meta_data where id in (select imgid from selected_images) "
-                                "and key = ?1", -1, &stmt, NULL);
+                                "and key = ?1",
+                                -1, &stmt, NULL);
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, keyid);
     sqlite3_step(stmt);
     sqlite3_finalize(stmt);
@@ -42,7 +43,8 @@ static void dt_metadata_set_xmp(int id, const char* key, const char* value)
     {
       DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
                                   "insert into meta_data (id, key, value) select imgid, ?1, ?2 from "
-                                  "selected_images", -1, &stmt, NULL);
+                                  "selected_images",
+                                  -1, &stmt, NULL);
       DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, keyid);
       DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 2, value, -1, SQLITE_TRANSIENT);
       sqlite3_step(stmt);
@@ -61,7 +63,8 @@ static void dt_metadata_set_xmp(int id, const char* key, const char* value)
     if(value != NULL && value[0] != '\0')
     {
       DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                                  "insert into meta_data (id, key, value) values (?1, ?2, ?3)", -1, &stmt, NULL);
+                                  "insert into meta_data (id, key, value) values (?1, ?2, ?3)", -1, &stmt,
+                                  NULL);
       DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, id);
       DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, keyid);
       DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 3, value, -1, SQLITE_TRANSIENT);
@@ -71,9 +74,11 @@ static void dt_metadata_set_xmp(int id, const char* key, const char* value)
   }
 }
 
-static void dt_metadata_set_exif(int id, const char* key, const char* value) {} //TODO Is this useful at all?
+static void dt_metadata_set_exif(int id, const char *key, const char *value)
+{
+} // TODO Is this useful at all?
 
-static GList* dt_metadata_get_xmp(int id, const char* key, uint32_t* count)
+static GList *dt_metadata_get_xmp(int id, const char *key, uint32_t *count)
 {
   GList *result = NULL;
   sqlite3_stmt *stmt;
@@ -87,14 +92,14 @@ static GList* dt_metadata_get_xmp(int id, const char* key, uint32_t* count)
     {
       if(id == -1)
       {
-        DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                                    "select flags from images where id in "
-                                    "(select imgid from selected_images)", -1, &stmt, NULL);
+        DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select flags from images where id in "
+                                                                   "(select imgid from selected_images)",
+                                    -1, &stmt, NULL);
       }
-      else     // single image under mouse cursor
+      else // single image under mouse cursor
       {
-        DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                                    "select flags from images where id = ?1", -1, &stmt, NULL);
+        DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select flags from images where id = ?1",
+                                    -1, &stmt, NULL);
         DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, id);
       }
       while(sqlite3_step(stmt) == SQLITE_ROW)
@@ -113,9 +118,10 @@ static GList* dt_metadata_get_xmp(int id, const char* key, uint32_t* count)
         DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
                                     "select name from tags join tagged_images on "
                                     "tagged_images.tagid = tags.id where imgid in "
-                                    "(select imgid from selected_images)", -1, &stmt, NULL);
+                                    "(select imgid from selected_images)",
+                                    -1, &stmt, NULL);
       }
-      else     // single image under mouse cursor
+      else // single image under mouse cursor
       {
         DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
                                     "select name from tags join tagged_images on "
@@ -126,8 +132,7 @@ static GList* dt_metadata_get_xmp(int id, const char* key, uint32_t* count)
       while(sqlite3_step(stmt) == SQLITE_ROW)
       {
         local_count++;
-        result = g_list_append(result,
-                               g_strdup((char *)sqlite3_column_text(stmt, 0)));
+        result = g_list_append(result, g_strdup((char *)sqlite3_column_text(stmt, 0)));
       }
       sqlite3_finalize(stmt);
     }
@@ -137,13 +142,14 @@ static GList* dt_metadata_get_xmp(int id, const char* key, uint32_t* count)
       {
         DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
                                     "select color from color_labels where imgid in "
-                                    "(select imgid from selected_images)", -1, &stmt, NULL);
+                                    "(select imgid from selected_images)",
+                                    -1, &stmt, NULL);
       }
-      else     // single image under mouse cursor
+      else // single image under mouse cursor
       {
         DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                                    "select color from color_labels where imgid=?1 order by color",
-                                    -1, &stmt, NULL);
+                                    "select color from color_labels where imgid=?1 order by color", -1, &stmt,
+                                    NULL);
         DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, id);
       }
       while(sqlite3_step(stmt) == SQLITE_ROW)
@@ -153,8 +159,7 @@ static GList* dt_metadata_get_xmp(int id, const char* key, uint32_t* count)
       }
       sqlite3_finalize(stmt);
     }
-    if(count != NULL)
-      *count = local_count;
+    if(count != NULL) *count = local_count;
     return result;
   }
 
@@ -167,11 +172,11 @@ static GList* dt_metadata_get_xmp(int id, const char* key, uint32_t* count)
                                 -1, &stmt, NULL);
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, keyid);
   }
-  else     // single image under mouse cursor
+  else // single image under mouse cursor
   {
     DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                                "select value from meta_data where id = ?1 and key = ?2 order by value",
-                                -1, &stmt, NULL);
+                                "select value from meta_data where id = ?1 and key = ?2 order by value", -1,
+                                &stmt, NULL);
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, id);
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, keyid);
   }
@@ -181,23 +186,22 @@ static GList* dt_metadata_get_xmp(int id, const char* key, uint32_t* count)
     result = g_list_append(result, g_strdup((char *)sqlite3_column_text(stmt, 0)));
   }
   sqlite3_finalize(stmt);
-  if(count != NULL)
-    *count = local_count;
+  if(count != NULL) *count = local_count;
   return result;
 }
 
 /*
-	Dear Mister Dijkstra,
-	I hereby make a formal apology for using goto statements in the following
-	function. While I am fully aware that I will rot in the deepest hells for
-	this ultimate sin and that I'm not worth to be called a "programmer" from
-	now on, I have one excuse to bring up: I never did so before, and this way
-	the code gets a lot smaller and less repetitive. And since you are dead
-	while I am not (yet) I will stick with my gotos.
-	See you in hell
-	houz
+  Dear Mister Dijkstra,
+  I hereby make a formal apology for using goto statements in the following
+  function. While I am fully aware that I will rot in the deepest hells for
+  this ultimate sin and that I'm not worth to be called a "programmer" from
+  now on, I have one excuse to bring up: I never did so before, and this way
+  the code gets a lot smaller and less repetitive. And since you are dead
+  while I am not (yet) I will stick with my gotos.
+  See you in hell
+  houz
 */
-static GList* dt_metadata_get_exif(int id, const char* key, uint32_t* count)
+static GList *dt_metadata_get_exif(int id, const char *key, uint32_t *count)
 {
   GList *result = NULL;
   sqlite3_stmt *stmt;
@@ -208,14 +212,14 @@ static GList* dt_metadata_get_exif(int id, const char* key, uint32_t* count)
   {
     if(id == -1)
     {
-      DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                                  "select exposure from images where id in "
-                                  "(select imgid from selected_images)", -1, &stmt, NULL);
+      DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select exposure from images where id in "
+                                                                 "(select imgid from selected_images)",
+                                  -1, &stmt, NULL);
     }
-    else     // single image under mouse cursor
+    else // single image under mouse cursor
     {
-      DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                                  "select exposure from images where id = ?1", -1, &stmt, NULL);
+      DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select exposure from images where id = ?1",
+                                  -1, &stmt, NULL);
       DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, id);
     }
   }
@@ -223,14 +227,14 @@ static GList* dt_metadata_get_exif(int id, const char* key, uint32_t* count)
   {
     if(id == -1)
     {
-      DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                                  "select aperture from images where id in "
-                                  "(select imgid from selected_images)", -1, &stmt, NULL);
+      DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select aperture from images where id in "
+                                                                 "(select imgid from selected_images)",
+                                  -1, &stmt, NULL);
     }
-    else     // single image under mouse cursor
+    else // single image under mouse cursor
     {
-      DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                                  "select aperture from images where id = ?1", -1, &stmt, NULL);
+      DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select aperture from images where id = ?1",
+                                  -1, &stmt, NULL);
       DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, id);
     }
   }
@@ -242,10 +246,10 @@ static GList* dt_metadata_get_exif(int id, const char* key, uint32_t* count)
                                   "select iso from images where id in (select imgid from selected_images)",
                                   -1, &stmt, NULL);
     }
-    else     // single image under mouse cursor
+    else // single image under mouse cursor
     {
-      DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                                  "select iso from images where id = ?1", -1, &stmt, NULL);
+      DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select iso from images where id = ?1", -1,
+                                  &stmt, NULL);
       DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, id);
     }
   }
@@ -255,9 +259,10 @@ static GList* dt_metadata_get_exif(int id, const char* key, uint32_t* count)
     {
       DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
                                   "select focal_length from images where id in "
-                                  "(select imgid from selected_images)", -1, &stmt, NULL);
+                                  "(select imgid from selected_images)",
+                                  -1, &stmt, NULL);
     }
-    else     // single image under mouse cursor
+    else // single image under mouse cursor
     {
       DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
                                   "select focal_length from images where id = ?1", -1, &stmt, NULL);
@@ -274,9 +279,10 @@ static GList* dt_metadata_get_exif(int id, const char* key, uint32_t* count)
       {
         DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
                                     "select datetime_taken from images where id in "
-                                    "(select imgid from selected_images)", -1, &stmt, NULL);
+                                    "(select imgid from selected_images)",
+                                    -1, &stmt, NULL);
       }
-      else     // single image under mouse cursor
+      else // single image under mouse cursor
       {
         DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
                                     "select datetime_taken from images where id = ?1", -1, &stmt, NULL);
@@ -287,14 +293,14 @@ static GList* dt_metadata_get_exif(int id, const char* key, uint32_t* count)
     {
       if(id == -1)
       {
-        DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                                    "select maker from images where id in "
-                                    "(select imgid from selected_images)", -1, &stmt, NULL);
+        DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select maker from images where id in "
+                                                                   "(select imgid from selected_images)",
+                                    -1, &stmt, NULL);
       }
-      else     // single image under mouse cursor
+      else // single image under mouse cursor
       {
-        DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                                    "select maker from images where id = ?1", -1, &stmt, NULL);
+        DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select maker from images where id = ?1",
+                                    -1, &stmt, NULL);
         DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, id);
       }
     }
@@ -302,14 +308,14 @@ static GList* dt_metadata_get_exif(int id, const char* key, uint32_t* count)
     {
       if(id == -1)
       {
-        DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                                    "select model from images where id in "
-                                    "(select imgid from selected_images)", -1, &stmt, NULL);
+        DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select model from images where id in "
+                                                                   "(select imgid from selected_images)",
+                                    -1, &stmt, NULL);
       }
-      else     // single image under mouse cursor
+      else // single image under mouse cursor
       {
-        DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                                    "select model from images where id = ?1", -1, &stmt, NULL);
+        DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select model from images where id = ?1",
+                                    -1, &stmt, NULL);
         DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, id);
       }
     }
@@ -330,20 +336,19 @@ static GList* dt_metadata_get_exif(int id, const char* key, uint32_t* count)
   while(sqlite3_step(stmt) == SQLITE_ROW)
   {
     local_count++;
-    double *tmp = (double*)malloc(sizeof(double));
+    double *tmp = (double *)malloc(sizeof(double));
     *tmp = sqlite3_column_double(stmt, 0);
     result = g_list_append(result, tmp);
   }
   sqlite3_finalize(stmt);
 
 END:
-  if(count != NULL)
-    *count = local_count;
+  if(count != NULL) *count = local_count;
   return result;
 }
 
 // for everything which doesn't fit anywhere else (our made up stuff)
-static GList* dt_metadata_get_dt(int id, const char* key, uint32_t* count)
+static GList *dt_metadata_get_dt(int id, const char *key, uint32_t *count)
 {
   GList *result = NULL;
   sqlite3_stmt *stmt;
@@ -353,14 +358,14 @@ static GList* dt_metadata_get_dt(int id, const char* key, uint32_t* count)
   {
     if(id == -1)
     {
-      DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                                  "select lens from images where id in "
-                                  "(select imgid from selected_images)", -1, &stmt, NULL);
+      DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select lens from images where id in "
+                                                                 "(select imgid from selected_images)",
+                                  -1, &stmt, NULL);
     }
-    else     // single image under mouse cursor
+    else // single image under mouse cursor
     {
-      DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                                  "select lens from images where id = ?1", -1, &stmt, NULL);
+      DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select lens from images where id = ?1", -1,
+                                  &stmt, NULL);
       DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, id);
     }
     while(sqlite3_step(stmt) == SQLITE_ROW)
@@ -380,12 +385,11 @@ static GList* dt_metadata_get_dt(int id, const char* key, uint32_t* count)
     result = g_list_append(result, g_strdup(PACKAGE_VERSION));
     local_count = 1;
   }
-  if(count != NULL)
-    *count = local_count;
+  if(count != NULL) *count = local_count;
   return result;
 }
 
-void dt_metadata_set(int id, const char* key, const char* value)
+void dt_metadata_set(int id, const char *key, const char *value)
 {
   if(strncmp(key, "Xmp.", 4) == 0)
     dt_metadata_set_xmp(id, key, value);
@@ -393,14 +397,11 @@ void dt_metadata_set(int id, const char* key, const char* value)
     dt_metadata_set_exif(id, key, value);
 }
 
-GList* dt_metadata_get(int id, const char* key, uint32_t* count)
+GList *dt_metadata_get(int id, const char *key, uint32_t *count)
 {
-  if(strncmp(key, "Xmp.", 4) == 0)
-    return dt_metadata_get_xmp(id, key, count);
-  if(strncmp(key, "Exif.", 5) == 0)
-    return dt_metadata_get_exif(id, key, count);
-  if(strncmp(key, "darktable.", 10) == 0)
-    return dt_metadata_get_dt(id, key, count);
+  if(strncmp(key, "Xmp.", 4) == 0) return dt_metadata_get_xmp(id, key, count);
+  if(strncmp(key, "Exif.", 5) == 0) return dt_metadata_get_exif(id, key, count);
+  if(strncmp(key, "darktable.", 10) == 0) return dt_metadata_get_dt(id, key, count);
   return NULL;
 }
 
@@ -409,15 +410,15 @@ void dt_metadata_clear(int id)
 {
   if(id == -1)
   {
-    DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db),
-                          "delete from meta_data where id in "
-                          "(select imgid from selected_images)", NULL, NULL, NULL);
+    DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "delete from meta_data where id in "
+                                                         "(select imgid from selected_images)",
+                          NULL, NULL, NULL);
   }
   else
   {
     sqlite3_stmt *stmt;
-    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                                "delete from meta_data where id = ?1", -1, &stmt, NULL);
+    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "delete from meta_data where id = ?1", -1,
+                                &stmt, NULL);
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, id);
     sqlite3_step(stmt);
     sqlite3_finalize(stmt);

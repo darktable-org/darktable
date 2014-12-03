@@ -37,13 +37,15 @@ typedef struct dt_lib_backgroundjob_element_t
 } dt_lib_backgroundjob_element_t;
 
 /* proxy functions */
-static void * _lib_backgroundjobs_added(dt_lib_module_t *self, gboolean has_progress_bar, const gchar *message);
-static void   _lib_backgroundjobs_destroyed(dt_lib_module_t * self, dt_lib_backgroundjob_element_t * instance);
-static void   _lib_backgroundjobs_cancellable(dt_lib_module_t * self, dt_lib_backgroundjob_element_t * instance, dt_progress_t * progress);
-static void   _lib_backgroundjobs_updated(dt_lib_module_t * self, dt_lib_backgroundjob_element_t * instance, double value);
+static void *_lib_backgroundjobs_added(dt_lib_module_t *self, gboolean has_progress_bar, const gchar *message);
+static void _lib_backgroundjobs_destroyed(dt_lib_module_t *self, dt_lib_backgroundjob_element_t *instance);
+static void _lib_backgroundjobs_cancellable(dt_lib_module_t *self, dt_lib_backgroundjob_element_t *instance,
+                                            dt_progress_t *progress);
+static void _lib_backgroundjobs_updated(dt_lib_module_t *self, dt_lib_backgroundjob_element_t *instance,
+                                        double value);
 
 
-const char* name()
+const char *name()
 {
   return _("background jobs");
 }
@@ -84,23 +86,23 @@ void gui_init(dt_lib_module_t *self)
   darktable.control->progress_system.proxy.cancellable = _lib_backgroundjobs_cancellable;
   darktable.control->progress_system.proxy.updated = _lib_backgroundjobs_updated;
 
-  // iterate over darktable.control->progress_system.list and add everything that is already there and update its gui_data!
+  // iterate over darktable.control->progress_system.list and add everything that is already there and update
+  // its gui_data!
   GList *iter = darktable.control->progress_system.list;
   while(iter)
   {
-    dt_progress_t * progress = (dt_progress_t*)iter->data;
-    void * gui_data = dt_control_progress_get_gui_data(progress);
+    dt_progress_t *progress = (dt_progress_t *)iter->data;
+    void *gui_data = dt_control_progress_get_gui_data(progress);
     free(gui_data);
-    gui_data = _lib_backgroundjobs_added(self, dt_control_progress_has_progress_bar(progress), dt_control_progress_get_message(progress));
+    gui_data = _lib_backgroundjobs_added(self, dt_control_progress_has_progress_bar(progress),
+                                         dt_control_progress_get_message(progress));
     dt_control_progress_set_gui_data(progress, gui_data);
-    if(dt_control_progress_cancellable(progress))
-      _lib_backgroundjobs_cancellable(self, gui_data, progress);
+    if(dt_control_progress_cancellable(progress)) _lib_backgroundjobs_cancellable(self, gui_data, progress);
     _lib_backgroundjobs_updated(self, gui_data, dt_control_progress_get_progress(progress));
     iter = g_list_next(iter);
   }
 
   dt_pthread_mutex_unlock(&darktable.control->progress_system.mutex);
-
 }
 
 void gui_cleanup(dt_lib_module_t *self)
@@ -117,10 +119,11 @@ void gui_cleanup(dt_lib_module_t *self)
 
 /** the proxy functions */
 
-static void * _lib_backgroundjobs_added(dt_lib_module_t *self, gboolean has_progress_bar, const gchar *message)
+static void *_lib_backgroundjobs_added(dt_lib_module_t *self, gboolean has_progress_bar, const gchar *message)
 {
   // add a new gui thingy
-  dt_lib_backgroundjob_element_t *instance = (dt_lib_backgroundjob_element_t*)calloc(1, sizeof(dt_lib_backgroundjob_element_t));
+  dt_lib_backgroundjob_element_t *instance
+      = (dt_lib_backgroundjob_element_t *)calloc(1, sizeof(dt_lib_backgroundjob_element_t));
   if(!instance) return NULL;
 
   /* lets make this threadsafe */
@@ -129,23 +132,23 @@ static void * _lib_backgroundjobs_added(dt_lib_module_t *self, gboolean has_prog
   instance->widget = gtk_event_box_new();
 
   /* initialize the ui elements for job */
-  gtk_widget_set_name (GTK_WIDGET (instance->widget), "background_job_eventbox");
-  GtkBox *vbox = GTK_BOX (gtk_vbox_new (FALSE,0));
-  instance->hbox = gtk_hbox_new (FALSE,0);
-  gtk_container_set_border_width (GTK_CONTAINER(vbox),2);
-  gtk_container_add (GTK_CONTAINER(instance->widget), GTK_WIDGET(vbox));
+  gtk_widget_set_name(GTK_WIDGET(instance->widget), "background_job_eventbox");
+  GtkBox *vbox = GTK_BOX(gtk_vbox_new(FALSE, 0));
+  instance->hbox = gtk_hbox_new(FALSE, 0);
+  gtk_container_set_border_width(GTK_CONTAINER(vbox), 2);
+  gtk_container_add(GTK_CONTAINER(instance->widget), GTK_WIDGET(vbox));
 
   /* add job label */
   GtkWidget *label = gtk_label_new(message);
   gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
-  gtk_box_pack_start( GTK_BOX( instance->hbox ), GTK_WIDGET(label), TRUE, TRUE, 0);
-  gtk_box_pack_start( GTK_BOX( vbox ), GTK_WIDGET(instance->hbox), TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(instance->hbox), GTK_WIDGET(label), TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(instance->hbox), TRUE, TRUE, 0);
 
   /* use progressbar ? */
   if(has_progress_bar)
   {
     instance->progressbar = gtk_progress_bar_new();
-    gtk_box_pack_start( GTK_BOX( vbox ), instance->progressbar, TRUE, FALSE, 2);
+    gtk_box_pack_start(GTK_BOX(vbox), instance->progressbar, TRUE, FALSE, 2);
   }
 
   /* lets show jobbox if its hidden */
@@ -160,7 +163,7 @@ static void * _lib_backgroundjobs_added(dt_lib_module_t *self, gboolean has_prog
   return instance;
 }
 
-static void _lib_backgroundjobs_destroyed(dt_lib_module_t * self, dt_lib_backgroundjob_element_t * instance)
+static void _lib_backgroundjobs_destroyed(dt_lib_module_t *self, dt_lib_backgroundjob_element_t *instance)
 {
   // remove the gui that is pointed to in instance
   gboolean i_own_lock = dt_control_gdk_lock();
@@ -186,23 +189,26 @@ static void _lib_backgroundjobs_cancel_callback_new(GtkWidget *w, gpointer user_
   dt_control_progress_cancel(darktable.control, progress);
 }
 
-static void _lib_backgroundjobs_cancellable(dt_lib_module_t * self, dt_lib_backgroundjob_element_t * instance, dt_progress_t * progress)
+static void _lib_backgroundjobs_cancellable(dt_lib_module_t *self, dt_lib_backgroundjob_element_t *instance,
+                                            dt_progress_t *progress)
 {
-  // add a cancel button to the gui. when clicked we want dt_control_progress_cancel(darktable.control, progress); to be called
+  // add a cancel button to the gui. when clicked we want dt_control_progress_cancel(darktable.control,
+  // progress); to be called
   if(!darktable.control->running) return;
   gboolean i_own_lock = dt_control_gdk_lock();
 
   GtkBox *hbox = GTK_BOX(instance->hbox);
-  GtkWidget *button = dtgtk_button_new(dtgtk_cairo_paint_cancel,CPF_STYLE_FLAT);
+  GtkWidget *button = dtgtk_button_new(dtgtk_cairo_paint_cancel, CPF_STYLE_FLAT);
   gtk_widget_set_size_request(button, DT_PIXEL_APPLY_DPI(17), DT_PIXEL_APPLY_DPI(17));
-  g_signal_connect(G_OBJECT (button), "clicked", G_CALLBACK(_lib_backgroundjobs_cancel_callback_new), progress);
+  g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(_lib_backgroundjobs_cancel_callback_new), progress);
   gtk_box_pack_start(hbox, GTK_WIDGET(button), FALSE, FALSE, 0);
   gtk_widget_show_all(button);
 
   if(i_own_lock) dt_control_gdk_unlock();
 }
 
-static void _lib_backgroundjobs_updated(dt_lib_module_t * self, dt_lib_backgroundjob_element_t * instance, double value)
+static void _lib_backgroundjobs_updated(dt_lib_module_t *self, dt_lib_backgroundjob_element_t *instance,
+                                        double value)
 {
   // update the progress bar
   if(!darktable.control->running) return;

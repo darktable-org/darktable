@@ -25,11 +25,11 @@ typedef struct backend_gkeyring_context_t
 } backend_gkeyring_context_t;
 
 /** Initializes a new kwallet backend context. */
-const backend_gkeyring_context_t* dt_pwstorage_gkeyring_new ();
+const backend_gkeyring_context_t *dt_pwstorage_gkeyring_new();
 /** Store (key,value) pairs. */
-gboolean dt_pwstorage_gkeyring_set (const gchar* slot, GHashTable* table);
+gboolean dt_pwstorage_gkeyring_set(const gchar *slot, GHashTable *table);
 /** Load (key,value) pairs. */
-GHashTable* dt_pwstorage_gkeyring_get (const gchar* slot);
+GHashTable *dt_pwstorage_gkeyring_get(const gchar *slot);
 
 #endif
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

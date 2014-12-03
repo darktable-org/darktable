@@ -23,42 +23,45 @@
 
 /** wrapper around exiv2, C++ */
 #ifdef __cplusplus
-extern "C"
-{
+extern "C" {
 #endif
 
-  /** read metadata from file with full path name, XMP data trumps IPTC data trumps EXIF data, store to image struct. returns 0 on success. */
-  int dt_exif_read(dt_image_t *img, const char* path);
+/** read metadata from file with full path name, XMP data trumps IPTC data trumps EXIF data, store to image
+ * struct. returns 0 on success. */
+int dt_exif_read(dt_image_t *img, const char *path);
 
-  /** read exif data to image struct from given data blob, wherever you got it from. */
-  int dt_exif_read_from_blob(dt_image_t *img, uint8_t *blob, const int size);
+/** read exif data to image struct from given data blob, wherever you got it from. */
+int dt_exif_read_from_blob(dt_image_t *img, uint8_t *blob, const int size);
 
-  /** write exif to blob, return length in bytes. blob needs to be as large at 65535 bytes. sRGB should be true if sRGB colorspace is used as output. */
-  int dt_exif_read_blob(uint8_t *blob, const char* path, const int imgid, const int sRGB, const int out_width, const int out_height, const int dng_mode);
+/** write exif to blob, return length in bytes. blob needs to be as large at 65535 bytes. sRGB should be true
+ * if sRGB colorspace is used as output. */
+int dt_exif_read_blob(uint8_t *blob, const char *path, const int imgid, const int sRGB, const int out_width,
+                      const int out_height, const int dng_mode);
 
-  /** write blob to file exif. merges with existing exif information.*/
-  int dt_exif_write_blob(uint8_t *blob, uint32_t size, const char* path);
+/** write blob to file exif. merges with existing exif information.*/
+int dt_exif_write_blob(uint8_t *blob, uint32_t size, const char *path);
 
-  /** write xmp sidecar file. */
-  int dt_exif_xmp_write (const int imgid, const char* filename);
+/** write xmp sidecar file. */
+int dt_exif_xmp_write(const int imgid, const char *filename);
 
-  /** write xmp packet inside an image. */
-  int dt_exif_xmp_attach (const int imgid, const char* filename);
+/** write xmp packet inside an image. */
+int dt_exif_xmp_attach(const int imgid, const char *filename);
 
-  /** read xmp sidecar file. */
-  int dt_exif_xmp_read (dt_image_t * img, const char* filename, const int history_only);
+/** read xmp sidecar file. */
+int dt_exif_xmp_read(dt_image_t *img, const char *filename, const int history_only);
 
-  /** load exif thumbnail (these are like 160x120) */
-  int dt_exif_thumbnail (const char *filename, uint8_t *out, uint32_t width, uint32_t height, dt_image_orientation_t orientation, uint32_t *wd, uint32_t *ht);
+/** load exif thumbnail (these are like 160x120) */
+int dt_exif_thumbnail(const char *filename, uint8_t *out, uint32_t width, uint32_t height,
+                      dt_image_orientation_t orientation, uint32_t *wd, uint32_t *ht);
 
 
-  /** thread safe init and cleanup. */
-  void dt_exif_init();
-  void dt_exif_cleanup();
+/** thread safe init and cleanup. */
+void dt_exif_init();
+void dt_exif_cleanup();
 
-  /** encode / decode op params */
-  char *dt_exif_xmp_encode (const unsigned char *input, const int len, int *output_len);
-  unsigned char *dt_exif_xmp_decode (const char *input, const int len, int *output_len);
+/** encode / decode op params */
+char *dt_exif_xmp_encode(const unsigned char *input, const int len, int *output_len);
+unsigned char *dt_exif_xmp_decode(const char *input, const int len, int *output_len);
 
 #ifdef __cplusplus
 }

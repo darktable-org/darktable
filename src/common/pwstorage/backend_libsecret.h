@@ -28,8 +28,8 @@
 
 typedef struct backend_libsecret_context_t
 {
-  SecretService* secret_service;
-  SecretCollection* secret_collection;
+  SecretService *secret_service;
+  SecretCollection *secret_collection;
 } backend_libsecret_context_t;
 
 /**
@@ -37,7 +37,7 @@ typedef struct backend_libsecret_context_t
  *
  * @return The libsecret context
  */
-const backend_libsecret_context_t* dt_pwstorage_libsecret_new();
+const backend_libsecret_context_t *dt_pwstorage_libsecret_new();
 
 /**
  * Destroys the libsecret backend context.
@@ -55,8 +55,8 @@ void dt_pwstorage_libsecret_destroy(const backend_libsecret_context_t *context);
  *
  * @return TRUE If function succeeded, otherwise FALSE
  */
-gboolean dt_pwstorage_libsecret_set(const backend_libsecret_context_t* context,
-    const gchar* slot, GHashTable* attributes);
+gboolean dt_pwstorage_libsecret_set(const backend_libsecret_context_t *context, const gchar *slot,
+                                    GHashTable *attributes);
 
 /**
  * Loads (key, value) pairs
@@ -66,8 +66,7 @@ gboolean dt_pwstorage_libsecret_set(const backend_libsecret_context_t* context,
  *
  * @return table List of (key,value) pairs
  */
-GHashTable* dt_pwstorage_libsecret_get(const backend_libsecret_context_t*
-    context, const gchar* slot);
+GHashTable *dt_pwstorage_libsecret_get(const backend_libsecret_context_t *context, const gchar *slot);
 
 #endif // __BACKEND_LIBSECRET_H__
 

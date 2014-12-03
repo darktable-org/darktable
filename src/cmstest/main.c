@@ -17,7 +17,7 @@
 */
 
 #ifdef HAVE_CONFIG_H
-#  include "config.h"
+#include "config.h"
 #endif
 
 #include <stdlib.h>
@@ -28,12 +28,12 @@
 #include <lcms2.h>
 
 #ifdef HAVE_X11
-  #include <X11/Xlib.h>
-  #include <X11/Xatom.h>
-  #include <X11/extensions/Xrandr.h>
-  #ifdef HAVE_COLORD
-    #include <colord.h>
-  #endif // HAVE_COLORD
+#include <X11/Xlib.h>
+#include <X11/Xatom.h>
+#include <X11/extensions/Xrandr.h>
+#ifdef HAVE_COLORD
+#include <colord.h>
+#endif // HAVE_COLORD
 #endif // HAVE_X11
 
 #ifdef HAVE_X11
@@ -55,7 +55,7 @@ typedef struct monitor_t
 #endif
 } monitor_t;
 
-char* get_profile_description(unsigned char *data, long data_size)
+char *get_profile_description(unsigned char *data, long data_size)
 {
   cmsUInt32Number size;
   gchar *buf = NULL;
@@ -69,26 +69,22 @@ char* get_profile_description(unsigned char *data, long data_size)
   if(!p) return NULL;
 
   size = cmsGetProfileInfoASCII(p, cmsInfoDescription, "en", "US", NULL, 0);
-  if(size == 0)
-    goto error;
+  if(size == 0) goto error;
 
-  buf = (char*)calloc(size + 1, sizeof(char));
+  buf = (char *)calloc(size + 1, sizeof(char));
   size = cmsGetProfileInfoASCII(p, cmsInfoDescription, "en", "US", buf, size);
-  if(size == 0)
-    goto error;
+  if(size == 0) goto error;
 
   // most unix like systems should work with this, but at least Windows doesn't
   if(sizeof(wchar_t) != 4 || g_utf8_validate(buf, -1, NULL))
     result = g_strdup(buf); // better a little weird than totally borked
   else
   {
-    wbuf = (wchar_t*)calloc(size + 1, sizeof(wchar_t));
+    wbuf = (wchar_t *)calloc(size + 1, sizeof(wchar_t));
     size = cmsGetProfileInfo(p, cmsInfoDescription, "en", "US", wbuf, sizeof(wchar_t) * size);
-    if(size == 0)
-      goto error;
-    utf8 = g_ucs4_to_utf8((gunichar*)wbuf, -1, NULL, NULL, NULL);
-    if(!utf8)
-      goto error;
+    if(size == 0) goto error;
+    utf8 = g_ucs4_to_utf8((gunichar *)wbuf, -1, NULL, NULL, NULL);
+    if(!utf8) goto error;
     result = g_strdup(utf8);
   }
 
@@ -99,8 +95,7 @@ char* get_profile_description(unsigned char *data, long data_size)
   return result;
 
 error:
-  if(buf)
-    result = g_strdup(buf); // better a little weird than totally borked
+  if(buf) result = g_strdup(buf); // better a little weird than totally borked
   free(buf);
   free(wbuf);
   g_free(utf8);
@@ -111,7 +106,7 @@ error:
 
 int main(int argc, char *arg[])
 {
-  printf("darktable-cmstest version "PACKAGE_VERSION"\n");
+  printf("darktable-cmstest version " PACKAGE_VERSION "\n");
 #ifndef HAVE_X11
   printf("this executable doesn't do anything for non-X11 systems currently\n");
   return EXIT_FAILURE;
@@ -119,7 +114,7 @@ int main(int argc, char *arg[])
 
 #ifdef HAVE_COLORD
   printf("this executable was built with colord support enabled\n");
-#else // HAVE_COLORD
+#else  // HAVE_COLORD
   printf("this executable was built without colord support\n");
 #endif // HAVE_COLORD
 
@@ -159,20 +154,22 @@ int main(int argc, char *arg[])
       // only handle those that are attached though
       if(info->connection != RR_Disconnected)
       {
-        monitor_t *monitor = (monitor_t*)calloc(1, sizeof(monitor_t));
+        monitor_t *monitor = (monitor_t *)calloc(1, sizeof(monitor_t));
         // we also want the edid data
-//         Atom edid_atom = XInternAtom(dpy, "EDID", False), actual_type;
-//         int actual_format;
-//         unsigned long nitems, bytes_after;
-//         unsigned char *prop;
-//         int res = XRRGetOutputProperty (dpy, rsrc->outputs[i], edid_atom, 0, G_MAXLONG, FALSE, FALSE, XA_INTEGER, &actual_type, &actual_format, &nitems, &bytes_after, &prop);
-//         if(res == Success && actual_type == XA_INTEGER && actual_format == 8 && nitems != 0)
-//         {
-//           printf("EDID for %s has size %lu\n", monitor->name, nitems);
-//           // TODO: parse the edid blob in prop. since that is really ugly code I left it out for now.
-//         }
-//         if(prop)
-//           XFree(prop);
+        //         Atom edid_atom = XInternAtom(dpy, "EDID", False), actual_type;
+        //         int actual_format;
+        //         unsigned long nitems, bytes_after;
+        //         unsigned char *prop;
+        //         int res = XRRGetOutputProperty (dpy, rsrc->outputs[i], edid_atom, 0, G_MAXLONG, FALSE,
+        //         FALSE, XA_INTEGER, &actual_type, &actual_format, &nitems, &bytes_after, &prop);
+        //         if(res == Success && actual_type == XA_INTEGER && actual_format == 8 && nitems != 0)
+        //         {
+        //           printf("EDID for %s has size %lu\n", monitor->name, nitems);
+        //           // TODO: parse the edid blob in prop. since that is really ugly code I left it out for
+        //           now.
+        //         }
+        //         if(prop)
+        //           XFree(prop);
 
         monitor->scr = scr;
         monitor->root = root;
@@ -192,17 +189,19 @@ int main(int argc, char *arg[])
   GList *iter = g_list_first(monitor_list);
   while(iter)
   {
-    monitor_t *monitor = (monitor_t*)iter->data;
-    if(monitor->xid == 0) monitor->x_atom_name = g_strdup("_ICC_PROFILE");
-    else                  monitor->x_atom_name = g_strdup_printf("_ICC_PROFILE_%d", monitor->xid);
+    monitor_t *monitor = (monitor_t *)iter->data;
+    if(monitor->xid == 0)
+      monitor->x_atom_name = g_strdup("_ICC_PROFILE");
+    else
+      monitor->x_atom_name = g_strdup_printf("_ICC_PROFILE_%d", monitor->xid);
 
     Atom atom = XInternAtom(dpy, monitor->x_atom_name, FALSE), actual_type;
     int actual_format;
     unsigned long nitems, bytes_after;
     unsigned char *prop;
 
-    int res = XGetWindowProperty(dpy, monitor->root, atom, 0, G_MAXLONG, FALSE, XA_CARDINAL,
-                                 &actual_type, &actual_format, &nitems, &bytes_after, &prop);
+    int res = XGetWindowProperty(dpy, monitor->root, atom, 0, G_MAXLONG, FALSE, XA_CARDINAL, &actual_type,
+                                 &actual_format, &nitems, &bytes_after, &prop);
 
     if(res == Success && actual_type == XA_CARDINAL && actual_format == 8)
     {
@@ -222,34 +221,34 @@ int main(int argc, char *arg[])
   {
     fprintf(stderr, "error connecting to colord\n");
   }
-  else while(iter)
-  {
-    monitor_t *monitor = (monitor_t*)iter->data;
-
-    CdDevice *device = cd_client_find_device_by_property_sync(client, CD_DEVICE_METADATA_XRANDR_NAME, monitor->name, NULL, NULL);
-    if(device && cd_device_connect_sync(device, NULL, NULL))
+  else
+    while(iter)
     {
-      CdProfile *profile = cd_device_get_default_profile(device);
-      if(profile)
+      monitor_t *monitor = (monitor_t *)iter->data;
+
+      CdDevice *device = cd_client_find_device_by_property_sync(client, CD_DEVICE_METADATA_XRANDR_NAME,
+                                                                monitor->name, NULL, NULL);
+      if(device && cd_device_connect_sync(device, NULL, NULL))
       {
-        if(cd_profile_connect_sync(profile, NULL, NULL))
+        CdProfile *profile = cd_device_get_default_profile(device);
+        if(profile)
         {
-          CdIcc *icc = cd_profile_load_icc(profile, CD_ICC_LOAD_FLAGS_FALLBACK_MD5, NULL, NULL);
-          if(icc)
+          if(cd_profile_connect_sync(profile, NULL, NULL))
           {
-            monitor->colord_filename = g_strdup(cd_icc_get_filename(icc));
-            g_object_unref(icc);
+            CdIcc *icc = cd_profile_load_icc(profile, CD_ICC_LOAD_FLAGS_FALLBACK_MD5, NULL, NULL);
+            if(icc)
+            {
+              monitor->colord_filename = g_strdup(cd_icc_get_filename(icc));
+              g_object_unref(icc);
+            }
           }
+          g_object_unref(profile);
         }
-        g_object_unref(profile);
       }
+      if(device) g_object_unref(device);
+      iter = g_list_next(iter);
     }
-    if(device)
-      g_object_unref(device);
-    iter = g_list_next(iter);
-  }
-  if(client)
-    g_object_unref(client);
+  if(client) g_object_unref(client);
 #endif // HAVE_COLORD
 
 
@@ -258,13 +257,13 @@ int main(int argc, char *arg[])
   iter = g_list_first(monitor_list);
   while(iter)
   {
-    monitor_t *monitor = (monitor_t*)iter->data;
+    monitor_t *monitor = (monitor_t *)iter->data;
     char *message = NULL;
 
-    char *monitor_name = monitor->name?monitor->name:"(unknown)";
-    char *x_atom_name = monitor->x_atom_name?monitor->x_atom_name:"(not found)";
+    char *monitor_name = monitor->name ? monitor->name : "(unknown)";
+    char *x_atom_name = monitor->x_atom_name ? monitor->x_atom_name : "(not found)";
     char *tmp = get_profile_description(monitor->x_atom_data, monitor->x_atom_length);
-    char *x_atom_description = tmp?tmp:g_strdup("(none)");
+    char *x_atom_description = tmp ? tmp : g_strdup("(none)");
 
 #ifndef HAVE_COLORD
     if(monitor->x_atom_length == 0)
@@ -273,8 +272,10 @@ int main(int argc, char *arg[])
       any_unprofiled_monitor = TRUE;
     }
 #else // HAVE_COLORD
-    char *colord_filename = monitor->colord_filename?monitor->colord_filename:"(none)", *colord_description;
-    if(monitor->colord_filename == NULL || g_file_test(monitor->colord_filename, G_FILE_TEST_IS_REGULAR) == FALSE)
+    char *colord_filename = monitor->colord_filename ? monitor->colord_filename : "(none)",
+         *colord_description;
+    if(monitor->colord_filename == NULL
+       || g_file_test(monitor->colord_filename, G_FILE_TEST_IS_REGULAR) == FALSE)
     {
       colord_description = g_strdup("(file not found)");
       if(monitor->x_atom_length > 0)
@@ -292,15 +293,15 @@ int main(int argc, char *arg[])
     {
       unsigned char *tmp_data = NULL;
       size_t size = 0;
-      g_file_get_contents(monitor->colord_filename, (gchar**)&tmp_data, &size, NULL);
-      gboolean profiles_equal = (size == monitor->x_atom_length && (size == 0 || memcmp(monitor->x_atom_data, tmp_data, size) == 0));
-      if(!profiles_equal)
-        any_profile_mismatch = TRUE;
-      if(size == 0 && monitor->x_atom_length == 0)
-        any_unprofiled_monitor = TRUE;
-      message = profiles_equal?"the X atom and colord returned the same profile":"the X atom and colord returned different profiles";
+      g_file_get_contents(monitor->colord_filename, (gchar **)&tmp_data, &size, NULL);
+      gboolean profiles_equal = (size == monitor->x_atom_length
+                                 && (size == 0 || memcmp(monitor->x_atom_data, tmp_data, size) == 0));
+      if(!profiles_equal) any_profile_mismatch = TRUE;
+      if(size == 0 && monitor->x_atom_length == 0) any_unprofiled_monitor = TRUE;
+      message = profiles_equal ? "the X atom and colord returned the same profile"
+                               : "the X atom and colord returned different profiles";
       char *tmp = get_profile_description(tmp_data, size);
-      colord_description = tmp?tmp:g_strdup("(none)");
+      colord_description = tmp ? tmp : g_strdup("(none)");
       g_free(tmp_data);
     }
 #endif
@@ -308,9 +309,9 @@ int main(int argc, char *arg[])
 
     // print it
     printf("\n%s", monitor_name);
-    if(message)
-      printf("\t%s", message);
-    printf("\n\tX atom:\t%s (%ld bytes)\n\t\tdescription: %s\n", x_atom_name, monitor->x_atom_length, x_atom_description);
+    if(message) printf("\t%s", message);
+    printf("\n\tX atom:\t%s (%ld bytes)\n\t\tdescription: %s\n", x_atom_name, monitor->x_atom_length,
+           x_atom_description);
 #ifdef HAVE_COLORD
     printf("\tcolord:\t\"%s\"\n\t\tdescription: %s\n", colord_filename, colord_description);
 #endif
@@ -328,10 +329,8 @@ int main(int argc, char *arg[])
   if(any_profile_mismatch || any_unprofiled_monitor)
   {
     printf("\nBetter check your system setup\n");
-    if(any_profile_mismatch)
-      printf(" - some monitors reported different profiles\n");
-    if(any_unprofiled_monitor)
-      printf(" - some monitors lacked a profile\n");
+    if(any_profile_mismatch) printf(" - some monitors reported different profiles\n");
+    if(any_unprofiled_monitor) printf(" - some monitors lacked a profile\n");
     printf("You may experience inconsistent color rendition between color managed applications\n");
   }
   else
@@ -343,7 +342,7 @@ int main(int argc, char *arg[])
   iter = g_list_first(monitor_list);
   while(iter)
   {
-    monitor_t *monitor = (monitor_t*)iter->data;
+    monitor_t *monitor = (monitor_t *)iter->data;
     g_free(monitor->name);
     g_free(monitor->x_atom_name);
     XFree(monitor->x_atom_data);

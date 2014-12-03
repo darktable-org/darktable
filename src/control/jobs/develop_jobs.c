@@ -26,7 +26,7 @@ static int32_t dt_dev_process_preview_job_run(dt_job_t *job)
   return 0;
 }
 
-dt_job_t * dt_dev_process_preview_job_create(dt_develop_t *dev)
+dt_job_t *dt_dev_process_preview_job_create(dt_develop_t *dev)
 {
   dt_job_t *job = dt_control_job_create(&dt_dev_process_preview_job_run, "develop process preview");
   if(!job) return NULL;
@@ -41,7 +41,7 @@ static int32_t dt_dev_process_image_job_run(dt_job_t *job)
   return 0;
 }
 
-dt_job_t * dt_dev_process_image_job_create(dt_develop_t *dev)
+dt_job_t *dt_dev_process_image_job_create(dt_develop_t *dev)
 {
   dt_job_t *job = dt_control_job_create(&dt_dev_process_image_job_run, "develop process image");
   if(!job) return NULL;

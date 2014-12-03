@@ -30,29 +30,28 @@
 #include "common/darktable.h"
 #include "cpuid.h"
 
-#if defined (__i386__) || defined (__x86_64__)
+#if defined(__i386__) || defined(__x86_64__)
 
 #ifdef __x86_64__
-#  define R_AX  "rax"
-#  define R_BX  "rbx"
-#  define R_CX  "rcx"
-#  define R_DX  "rdx"
+#define R_AX "rax"
+#define R_BX "rbx"
+#define R_CX "rcx"
+#define R_DX "rdx"
 #else
-#  define R_AX  "eax"
-#  define R_BX  "ebx"
-#  define R_CX  "ecx"
-#  define R_DX  "edx"
+#define R_AX "eax"
+#define R_BX "ebx"
+#define R_CX "ecx"
+#define R_DX "edx"
 #endif
 
 dt_cpu_flags_t dt_detect_cpu_features()
 {
 #define cpuid(cmd) \
-  __asm volatile ( \
-                   "push %%"R_BX"\n" \
-                   "cpuid\n" \
-                   "pop %%"R_BX"\n" \
-                 : "=a" (ax), "=c" (cx),  "=d" (dx) \
-                     : "0" (cmd))
+  __asm volatile("push %%" R_BX "\n"                                                                         \
+                 "cpuid\n"                                                                                   \
+                 "pop %%" R_BX "\n"                                                                          \
+                 : "=a"(ax), "=c"(cx), "=d"(dx)                                                              \
+                 : "0"(cmd))
 
 #ifdef __x86_64__
   guint64 ax, cx, dx, tmp;
@@ -61,7 +60,7 @@ dt_cpu_flags_t dt_detect_cpu_features()
 #endif
 
   static dt_cpu_flags_t cpuflags = -1;
-#if defined(GLIB_CHECK_VERSION) && GLIB_CHECK_VERSION(2,32,0)
+#if defined(GLIB_CHECK_VERSION) && GLIB_CHECK_VERSION(2, 32, 0)
   static GMutex lock;
 
   g_mutex_lock(&lock);
@@ -75,19 +74,18 @@ dt_cpu_flags_t dt_detect_cpu_features()
     cpuflags = 0;
 
     /* Test cpuid presence by checking bit 21 of eflags */
-    __asm volatile(
-      "pushf\n"
-      "pop     %0\n"
-      "mov     %0, %1\n"
-      "xor     $0x00200000, %0\n"
-      "push    %0\n"
-      "popf\n"
-      "pushf\n"
-      "pop     %0\n"
-      "cmp     %0, %1\n"
-      "setne   %%al\n"
-      "movzb   %%al, %0\n"
-  : "=r"(ax), "=r"(tmp));
+    __asm volatile("pushf\n"
+                   "pop     %0\n"
+                   "mov     %0, %1\n"
+                   "xor     $0x00200000, %0\n"
+                   "push    %0\n"
+                   "popf\n"
+                   "pushf\n"
+                   "pop     %0\n"
+                   "cmp     %0, %1\n"
+                   "setne   %%al\n"
+                   "movzb   %%al, %0\n"
+                   : "=r"(ax), "=r"(tmp));
 
     if(ax)
     {
@@ -99,23 +97,15 @@ dt_cpu_flags_t dt_detect_cpu_features()
         /* Request for standard features */
         cpuid(0x00000001);
 
-        if(dx & 0x00800000)
-          cpuflags |= CPU_FLAG_MMX;
-        if(dx & 0x02000000)
-          cpuflags |= CPU_FLAG_SSE;
-        if(dx & 0x04000000)
-          cpuflags |= CPU_FLAG_SSE2;
-        if(dx & 0x00008000)
-          cpuflags |= CPU_FLAG_CMOV;
+        if(dx & 0x00800000) cpuflags |= CPU_FLAG_MMX;
+        if(dx & 0x02000000) cpuflags |= CPU_FLAG_SSE;
+        if(dx & 0x04000000) cpuflags |= CPU_FLAG_SSE2;
+        if(dx & 0x00008000) cpuflags |= CPU_FLAG_CMOV;
 
-        if(cx & 0x00000001)
-          cpuflags |= CPU_FLAG_SSE3;
-        if(cx & 0x00000200)
-          cpuflags |= CPU_FLAG_SSSE3;
-        if(cx & 0x00040000)
-          cpuflags |= CPU_FLAG_SSE4_1;
-        if(cx & 0x00080000)
-          cpuflags |= CPU_FLAG_SSE4_2;
+        if(cx & 0x00000001) cpuflags |= CPU_FLAG_SSE3;
+        if(cx & 0x00000200) cpuflags |= CPU_FLAG_SSSE3;
+        if(cx & 0x00040000) cpuflags |= CPU_FLAG_SSE4_1;
+        if(cx & 0x00080000) cpuflags |= CPU_FLAG_SSE4_2;
       }
 
       /* Are there extensions? */
@@ -126,16 +116,13 @@ dt_cpu_flags_t dt_detect_cpu_features()
         /* Ask extensions */
         cpuid(0x80000001);
 
-        if(dx & 0x80000000)
-          cpuflags |= CPU_FLAG_3DNOW;
-        if(dx & 0x40000000)
-          cpuflags |= CPU_FLAG_3DNOW_EXT;
-        if(dx & 0x00400000)
-          cpuflags |= CPU_FLAG_AMD_ISSE;
+        if(dx & 0x80000000) cpuflags |= CPU_FLAG_3DNOW;
+        if(dx & 0x40000000) cpuflags |= CPU_FLAG_3DNOW_EXT;
+        if(dx & 0x00400000) cpuflags |= CPU_FLAG_AMD_ISSE;
       }
     }
   }
-#if defined(GLIB_CHECK_VERSION) && GLIB_CHECK_VERSION(2,32,0)
+#if defined(GLIB_CHECK_VERSION) && GLIB_CHECK_VERSION(2, 32, 0)
   g_mutex_unlock(&lock);
 #else
   g_static_mutex_unlock(&lock);
@@ -144,7 +131,7 @@ dt_cpu_flags_t dt_detect_cpu_features()
 #if 0
   if(darktable.unmuted & DT_DEBUG_PERF)
   {
-#define report(a, x) dt_print(DT_DEBUG_PERF, "CPU Feature: "a" = %d\n", !!(cpuflags&x));
+#define report(a, x) dt_print(DT_DEBUG_PERF, "CPU Feature: " a " = %d\n", !!(cpuflags & x));
     report("MMX", CPU_FLAG_MMX);
     report("SSE", CPU_FLAG_SSE);
     report("CMOV", CPU_FLAG_CMOV);

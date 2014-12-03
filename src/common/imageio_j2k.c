@@ -35,8 +35,8 @@
 #define JP2_CFMT 1
 #define JPT_CFMT 2
 
-static char JP2_HEAD[] = {0x0, 0x0, 0x0, 0x0C, 0x6A, 0x50, 0x20, 0x20, 0x0D, 0x0A, 0x87, 0x0A};
-static char J2K_HEAD[] = {0xFF, 0x4F, 0xFF, 0x51, 0x00};
+static char JP2_HEAD[] = { 0x0, 0x0, 0x0, 0x0C, 0x6A, 0x50, 0x20, 0x20, 0x0D, 0x0A, 0x87, 0x0A };
+static char J2K_HEAD[] = { 0xFF, 0x4F, 0xFF, 0x51, 0x00 };
 // there seems to be no JPIP/JPT magic string, so we can't load it ...
 
 static void color_sycc_to_rgb(opj_image_t *img);
@@ -46,7 +46,7 @@ sample error callback expecting a FILE* client object
 */
 static void error_callback(const char *msg, void *client_data)
 {
-  FILE *stream = (FILE*)client_data;
+  FILE *stream = (FILE *)client_data;
   fprintf(stream, "[j2k_open] Error: %s", msg);
 }
 /**
@@ -69,15 +69,14 @@ sample debug callback expecting no client object
 static int get_file_format(const char *filename)
 {
   unsigned int i;
-  static const char *extension[] = {"j2k", "jp2", "jpt", "j2c", "jpc"};
+  static const char *extension[] = { "j2k", "jp2", "jpt", "j2c", "jpc" };
   static const int format[] = { J2K_CFMT, JP2_CFMT, JPT_CFMT, J2K_CFMT, J2K_CFMT };
-  char * ext = strrchr(filename, '.');
-  if (ext == NULL)
-    return -1;
+  char *ext = strrchr(filename, '.');
+  if(ext == NULL) return -1;
   ext++;
   if(ext)
   {
-    for(i = 0; i < sizeof(format)/sizeof(*format); i++)
+    for(i = 0; i < sizeof(format) / sizeof(*format); i++)
     {
       if(strncasecmp(ext, extension[i], 3) == 0)
       {
@@ -91,13 +90,13 @@ static int get_file_format(const char *filename)
 
 dt_imageio_retval_t dt_imageio_open_j2k(dt_image_t *img, const char *filename, dt_mipmap_cache_allocator_t a)
 {
-  opj_dparameters_t parameters;   /* decompression parameters */
-  opj_event_mgr_t event_mgr;      /* event manager */
+  opj_dparameters_t parameters; /* decompression parameters */
+  opj_event_mgr_t event_mgr;    /* event manager */
   opj_image_t *image = NULL;
   FILE *fsrc = NULL;
   unsigned char *src = NULL;
   size_t file_length;
-  opj_dinfo_t* dinfo = NULL;      /* handle to a decompressor */
+  opj_dinfo_t *dinfo = NULL; /* handle to a decompressor */
   opj_cio_t *cio = NULL;
   OPJ_CODEC_FORMAT codec;
   int ret = DT_IMAGEIO_FILE_CORRUPTED;
@@ -105,8 +104,7 @@ dt_imageio_retval_t dt_imageio_open_j2k(dt_image_t *img, const char *filename, d
   int file_format = get_file_format(filename);
   if(file_format == -1) return DT_IMAGEIO_FILE_CORRUPTED;
 
-  if(!img->exif_inited)
-    (void) dt_exif_read(img, filename);
+  if(!img->exif_inited) (void)dt_exif_read(img, filename);
 
   /* read the input file and put it in memory */
   /* ---------------------------------------- */
@@ -119,7 +117,7 @@ dt_imageio_retval_t dt_imageio_open_j2k(dt_image_t *img, const char *filename, d
   fseek(fsrc, 0, SEEK_END);
   file_length = ftell(fsrc);
   fseek(fsrc, 0, SEEK_SET);
-  src = (unsigned char *) malloc(file_length);
+  src = (unsigned char *)malloc(file_length);
   if(fread(src, 1, file_length, fsrc) != file_length)
   {
     free(src);
@@ -147,19 +145,19 @@ dt_imageio_retval_t dt_imageio_open_j2k(dt_image_t *img, const char *filename, d
   /* configure the event callbacks (not required) */
   memset(&event_mgr, 0, sizeof(opj_event_mgr_t));
   event_mgr.error_handler = error_callback;
-//   event_mgr.warning_handler = warning_callback;
-//   event_mgr.info_handler = info_callback;
+  //   event_mgr.warning_handler = warning_callback;
+  //   event_mgr.info_handler = info_callback;
 
   /* set decoding parameters to default values */
   opj_set_default_decoder_parameters(&parameters);
 
   /* decode the code-stream */
   /* ---------------------- */
-  if(file_format == J2K_CFMT)        /* JPEG-2000 codestream */
+  if(file_format == J2K_CFMT) /* JPEG-2000 codestream */
     codec = CODEC_J2K;
-  else if(file_format == JP2_CFMT)   /* JPEG 2000 compressed image data */
+  else if(file_format == JP2_CFMT) /* JPEG 2000 compressed image data */
     codec = CODEC_JP2;
-  else if(file_format == JPT_CFMT)   /* JPEG 2000, JPIP */
+  else if(file_format == JPT_CFMT) /* JPEG 2000, JPIP */
     codec = CODEC_JPT;
   else
   {
@@ -200,8 +198,8 @@ dt_imageio_retval_t dt_imageio_open_j2k(dt_image_t *img, const char *filename, d
     color_sycc_to_rgb(image);
   }
 
-  //FIXME: openjpeg didn't have support for icc profiles before version 1.5
-  // this needs some #ifdef magic and proper implementation
+// FIXME: openjpeg didn't have support for icc profiles before version 1.5
+// this needs some #ifdef magic and proper implementation
 #ifdef HAVE_OPENJPEG_ICC
   if(image->icc_profile_buf)
   {
@@ -217,11 +215,11 @@ dt_imageio_retval_t dt_imageio_open_j2k(dt_image_t *img, const char *filename, d
 
   /* create output image */
   /* ------------------- */
-  long signed_offsets[4] = {0, 0, 0, 0};
-  int float_divs[4] = {1, 1, 1, 1};
+  long signed_offsets[4] = { 0, 0, 0, 0 };
+  int float_divs[4] = { 1, 1, 1, 1 };
 
   // some sanity checks
-  if(image->numcomps == 0 || image->x1 == 0  || image->y1 == 0)
+  if(image->numcomps == 0 || image->x1 == 0 || image->y1 == 0)
   {
     fprintf(stderr, "[j2k_open] Error: invalid raw image parameters in `%s'\n", filename);
     ret = DT_IMAGEIO_FILE_CORRUPTED;
@@ -238,7 +236,8 @@ dt_imageio_retval_t dt_imageio_open_j2k(dt_image_t *img, const char *filename, d
     }
     if(image->comps[i].prec > 16)
     {
-      fprintf(stderr,"[j2k_open] Error: precision %d is larger than 16 in `%s'\n", image->comps[1].prec, filename);
+      fprintf(stderr, "[j2k_open] Error: precision %d is larger than 16 in `%s'\n", image->comps[1].prec,
+              filename);
       ret = DT_IMAGEIO_FILE_CORRUPTED;
       goto end_of_the_world;
     }
@@ -246,7 +245,7 @@ dt_imageio_retval_t dt_imageio_open_j2k(dt_image_t *img, const char *filename, d
 
   img->width = image->x1;
   img->height = image->y1;
-  img->bpp = 4*sizeof(float);
+  img->bpp = 4 * sizeof(float);
 
   float *buf = (float *)dt_mipmap_cache_alloc(img, DT_MIPMAP_FULL, a);
   if(!buf)
@@ -262,8 +261,7 @@ dt_imageio_retval_t dt_imageio_open_j2k(dt_image_t *img, const char *filename, d
   {
     i--;
 
-    if(image->comps[i].sgnd)
-      signed_offsets[i] =  1 << (image->comps[i].prec - 1);
+    if(image->comps[i].sgnd) signed_offsets[i] = 1 << (image->comps[i].prec - 1);
 
     float_divs[i] = (1 << image->comps[i].prec) - 1;
   }
@@ -277,20 +275,21 @@ dt_imageio_retval_t dt_imageio_open_j2k(dt_image_t *img, const char *filename, d
   if(image->numcomps < 3) // 1, 2 => grayscale
   {
     for(size_t i = 0; i < (size_t)img->width * img->height; i++)
-      buf[i*4 + 0] = buf[i*4 + 1] = buf[i*4 + 2] = (float)(image->comps[0].data[i] + signed_offsets[0]) / float_divs[0];
+      buf[i * 4 + 0] = buf[i * 4 + 1] = buf[i * 4 + 2] = (float)(image->comps[0].data[i] + signed_offsets[0])
+                                                         / float_divs[0];
   }
   else // 3, 4 => rgb
   {
     for(size_t i = 0; i < (size_t)img->width * img->height; i++)
-      for(int k = 0; k < 3; k++) buf[i*4 + k] = (float)(image->comps[k].data[i] + signed_offsets[k]) / float_divs[k];
+      for(int k = 0; k < 3; k++)
+        buf[i * 4 + k] = (float)(image->comps[k].data[i] + signed_offsets[k]) / float_divs[k];
   }
 
   ret = DT_IMAGEIO_OK;
 
 end_of_the_world:
   /* free remaining structures */
-  if(dinfo)
-    opj_destroy_decompress(dinfo);
+  if(dinfo) opj_destroy_decompress(dinfo);
 
   /* free image data structure */
   opj_image_destroy(image);
@@ -301,12 +300,12 @@ end_of_the_world:
 int dt_imageio_j2k_read_profile(const char *filename, uint8_t **out)
 {
 #ifdef HAVE_OPENJPEG_ICC
-  opj_dparameters_t parameters;   /* decompression parameters */
+  opj_dparameters_t parameters; /* decompression parameters */
   opj_image_t *image = NULL;
   FILE *fsrc = NULL;
   unsigned char *src = NULL;
   size_t file_length;
-  opj_dinfo_t* dinfo = NULL;      /* handle to a decompressor */
+  opj_dinfo_t *dinfo = NULL; /* handle to a decompressor */
   opj_cio_t *cio = NULL;
   OPJ_CODEC_FORMAT codec;
   gboolean res = FALSE;
@@ -324,7 +323,7 @@ int dt_imageio_j2k_read_profile(const char *filename, uint8_t **out)
   fseek(fsrc, 0, SEEK_END);
   file_length = ftell(fsrc);
   fseek(fsrc, 0, SEEK_SET);
-  src = (unsigned char *) malloc(file_length);
+  src = (unsigned char *)malloc(file_length);
   if(fread(src, 1, file_length, fsrc) != file_length)
   {
     free(src);
@@ -392,13 +391,12 @@ int dt_imageio_j2k_read_profile(const char *filename, uint8_t **out)
 
 another_end_of_the_world:
   /* free remaining structures */
-  if(dinfo)
-    opj_destroy_decompress(dinfo);
+  if(dinfo) opj_destroy_decompress(dinfo);
 
   /* free image data structure */
   opj_image_destroy(image);
 
-  return res?length:0;
+  return res ? length : 0;
 #else
   return 0;
 #endif
@@ -420,26 +418,31 @@ G: 1.00003  -0.344125      -0.714128     :Cb - 2^(prec - 1)
 B: 0.999823  1.77204       -8.04142e-06  :Cr - 2^(prec - 1)
 
 -----------------------------------------------------------*/
-static void sycc_to_rgb(int offset, int upb, int y, int cb, int cr,
-                        int *out_r, int *out_g, int *out_b)
+static void sycc_to_rgb(int offset, int upb, int y, int cb, int cr, int *out_r, int *out_g, int *out_b)
 {
   int r, g, b;
 
   cb -= offset;
   cr -= offset;
   r = y + (int)(1.402 * (float)cr);
-  if(r < 0) r = 0;
-  else if(r > upb) r = upb;
+  if(r < 0)
+    r = 0;
+  else if(r > upb)
+    r = upb;
   *out_r = r;
 
   g = y - (int)(0.344 * (float)cb + 0.714 * (float)cr);
-  if(g < 0) g = 0;
-  else if(g > upb) g = upb;
+  if(g < 0)
+    g = 0;
+  else if(g > upb)
+    g = upb;
   *out_g = g;
 
   b = y + (int)(1.772 * (float)cb);
-  if(b < 0) b = 0;
-  else if(b > upb) b = upb;
+  if(b < 0)
+    b = 0;
+  else if(b > upb)
+    b = upb;
   *out_b = b;
 }
 
@@ -451,8 +454,8 @@ static void sycc444_to_rgb(opj_image_t *img)
   int i, offset, upb;
 
   i = img->comps[0].prec;
-  offset = 1<<(i - 1);
-  upb = (1<<i)-1;
+  offset = 1 << (i - 1);
+  upb = (1 << i) - 1;
 
   maxw = img->comps[0].w;
   maxh = img->comps[0].h;
@@ -462,9 +465,9 @@ static void sycc444_to_rgb(opj_image_t *img)
   cb = img->comps[1].data;
   cr = img->comps[2].data;
 
-  d0 = r = (int*)calloc(max, sizeof(int));
-  d1 = g = (int*)calloc(max, sizeof(int));
-  d2 = b = (int*)calloc(max, sizeof(int));
+  d0 = r = (int *)calloc(max, sizeof(int));
+  d1 = g = (int *)calloc(max, sizeof(int));
+  d2 = b = (int *)calloc(max, sizeof(int));
 
   for(i = 0; i < max; ++i)
   {
@@ -482,7 +485,7 @@ static void sycc444_to_rgb(opj_image_t *img)
   img->comps[1].data = d1;
   free(img->comps[2].data);
   img->comps[2].data = d2;
-}/* sycc444_to_rgb() */
+} /* sycc444_to_rgb() */
 
 static void sycc422_to_rgb(opj_image_t *img)
 {
@@ -493,8 +496,8 @@ static void sycc422_to_rgb(opj_image_t *img)
   int i, j;
 
   i = img->comps[0].prec;
-  offset = 1<<(i - 1);
-  upb = (1<<i)-1;
+  offset = 1 << (i - 1);
+  upb = (1 << i) - 1;
 
   maxw = img->comps[0].w;
   maxh = img->comps[0].h;
@@ -504,13 +507,13 @@ static void sycc422_to_rgb(opj_image_t *img)
   cb = img->comps[1].data;
   cr = img->comps[2].data;
 
-  d0 = r = (int*)calloc(max, sizeof(int));
-  d1 = g = (int*)calloc(max, sizeof(int));
-  d2 = b = (int*)calloc(max, sizeof(int));
+  d0 = r = (int *)calloc(max, sizeof(int));
+  d1 = g = (int *)calloc(max, sizeof(int));
+  d2 = b = (int *)calloc(max, sizeof(int));
 
-  for(i=0; i < maxh; ++i)
+  for(i = 0; i < maxh; ++i)
   {
-    for(j=0; j < maxw; j += 2)
+    for(j = 0; j < maxw; j += 2)
     {
       sycc_to_rgb(offset, upb, *y, *cb, *cr, r, g, b);
       ++y;
@@ -542,7 +545,7 @@ static void sycc422_to_rgb(opj_image_t *img)
   img->comps[2].dx = img->comps[0].dx;
   img->comps[1].dy = img->comps[0].dy;
   img->comps[2].dy = img->comps[0].dy;
-}/* sycc422_to_rgb() */
+} /* sycc422_to_rgb() */
 
 static void sycc420_to_rgb(opj_image_t *img)
 {
@@ -553,8 +556,8 @@ static void sycc420_to_rgb(opj_image_t *img)
   int i, j;
 
   i = img->comps[0].prec;
-  offset = 1<<(i - 1);
-  upb = (1<<i)-1;
+  offset = 1 << (i - 1);
+  upb = (1 << i) - 1;
 
   maxw = img->comps[0].w;
   maxh = img->comps[0].h;
@@ -564,18 +567,18 @@ static void sycc420_to_rgb(opj_image_t *img)
   cb = img->comps[1].data;
   cr = img->comps[2].data;
 
-  d0 = r = (int*)calloc(max, sizeof(int));
-  d1 = g = (int*)calloc(max, sizeof(int));
-  d2 = b = (int*)calloc(max, sizeof(int));
+  d0 = r = (int *)calloc(max, sizeof(int));
+  d1 = g = (int *)calloc(max, sizeof(int));
+  d2 = b = (int *)calloc(max, sizeof(int));
 
-  for(i=0; i < maxh; i += 2)
+  for(i = 0; i < maxh; i += 2)
   {
     ny = y + maxw;
     nr = r + maxw;
     ng = g + maxw;
     nb = b + maxw;
 
-    for(j=0; j < maxw;  j += 2)
+    for(j = 0; j < maxw; j += 2)
     {
       sycc_to_rgb(offset, upb, *y, *cb, *cr, r, g, b);
       ++y;
@@ -623,7 +626,7 @@ static void sycc420_to_rgb(opj_image_t *img)
   img->comps[2].dx = img->comps[0].dx;
   img->comps[1].dy = img->comps[0].dy;
   img->comps[2].dy = img->comps[0].dy;
-}/* sycc420_to_rgb() */
+} /* sycc420_to_rgb() */
 
 static void color_sycc_to_rgb(opj_image_t *img)
 {
@@ -633,40 +636,30 @@ static void color_sycc_to_rgb(opj_image_t *img)
     return;
   }
 
-  if((img->comps[0].dx == 1)
-      && (img->comps[1].dx == 2)
-      && (img->comps[2].dx == 2)
-      && (img->comps[0].dy == 1)
-      && (img->comps[1].dy == 2)
-      && (img->comps[2].dy == 2))/* horizontal and vertical sub-sample */
+  if((img->comps[0].dx == 1) && (img->comps[1].dx == 2) && (img->comps[2].dx == 2) && (img->comps[0].dy == 1)
+     && (img->comps[1].dy == 2) && (img->comps[2].dy == 2)) /* horizontal and vertical sub-sample */
   {
     sycc420_to_rgb(img);
   }
-  else if((img->comps[0].dx == 1)
-          && (img->comps[1].dx == 2)
-          && (img->comps[2].dx == 2)
-          && (img->comps[0].dy == 1)
-          && (img->comps[1].dy == 1)
-          && (img->comps[2].dy == 1))/* horizontal sub-sample only */
+  else if((img->comps[0].dx == 1) && (img->comps[1].dx == 2) && (img->comps[2].dx == 2)
+          && (img->comps[0].dy == 1) && (img->comps[1].dy == 1)
+          && (img->comps[2].dy == 1)) /* horizontal sub-sample only */
   {
     sycc422_to_rgb(img);
   }
-  else if((img->comps[0].dx == 1)
-          && (img->comps[1].dx == 1)
-          && (img->comps[2].dx == 1)
-          && (img->comps[0].dy == 1)
-          && (img->comps[1].dy == 1)
-          && (img->comps[2].dy == 1))/* no sub-sample */
+  else if((img->comps[0].dx == 1) && (img->comps[1].dx == 1) && (img->comps[2].dx == 1)
+          && (img->comps[0].dy == 1) && (img->comps[1].dy == 1)
+          && (img->comps[2].dy == 1)) /* no sub-sample */
   {
     sycc444_to_rgb(img);
   }
   else
   {
-    fprintf(stderr,"%s:%d:color_sycc_to_rgb\n\tCAN NOT CONVERT\n", __FILE__,__LINE__);
+    fprintf(stderr, "%s:%d:color_sycc_to_rgb\n\tCAN NOT CONVERT\n", __FILE__, __LINE__);
     return;
   }
   img->color_space = CLRSPC_SRGB;
-}/* color_sycc_to_rgb() */
+} /* color_sycc_to_rgb() */
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

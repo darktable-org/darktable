@@ -40,16 +40,16 @@ EXPECTED STACK
   * 1 : the table filled by the registration function
   * ... : extra parameters passed when the event was triggered
 */
-void dt_lua_event_add(lua_State *L,const char* evt_name);
+void dt_lua_event_add(lua_State *L, const char *evt_name);
 
 
 /**
   Trigger an event that has been previously added
   * event : the id the the event was registered under
-  * nargs : the number of significant items on the stack. 
+  * nargs : the number of significant items on the stack.
     these items will be passed as extra parameters to the event's callback
   */
-void dt_lua_event_trigger(lua_State*L,const char*event,int nargs);
+void dt_lua_event_trigger(lua_State *L, const char *event, int nargs);
 
 
 /////////////////////
@@ -60,7 +60,7 @@ void dt_lua_event_trigger(lua_State*L,const char*event,int nargs);
 
 /**
   MULTIINSTANCE EVENT
-  an event that can be registered (by the lua side) multiple times. 
+  an event that can be registered (by the lua side) multiple times.
   All callbacks will be called when the event is triggered
 
   the register function does not expect any extra parameter from the lua side
@@ -68,22 +68,21 @@ void dt_lua_event_trigger(lua_State*L,const char*event,int nargs);
   the trigger will pass the arguments as is to the lua callback
 
   */
-int dt_lua_event_multiinstance_register(lua_State* L);
-int dt_lua_event_multiinstance_trigger(lua_State * L);
+int dt_lua_event_multiinstance_register(lua_State *L);
+int dt_lua_event_multiinstance_trigger(lua_State *L);
 
 
 /**
   KEYED EVENT
-  an event that is registered with a string key. 
+  an event that is registered with a string key.
   It can be registered only once per key.
-  
+
   the register function wants one extra parameter from lua : the key to register with
 
   the trigger function wants the bottom most arg to be the key to trigger
   */
-int dt_lua_event_keyed_register(lua_State* L);
-int dt_lua_event_keyed_trigger(lua_State * L);
-
+int dt_lua_event_keyed_register(lua_State *L);
+int dt_lua_event_keyed_trigger(lua_State *L);
 
 
 

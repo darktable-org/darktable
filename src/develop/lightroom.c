@@ -52,40 +52,35 @@ typedef struct dt_iop_clipping_params_t
   float kxa, kya, kxb, kyb, kxc, kyc, kxd, kyd;
   int k_type, k_sym;
   int k_apply, crop_auto;
-}
-dt_iop_clipping_params_t;
+} dt_iop_clipping_params_t;
 
 #define LRDT_FLIP_VERSION 1
 typedef struct dt_iop_flip_params_t
 {
   int32_t orientation;
-}
-dt_iop_flip_params_t;
+} dt_iop_flip_params_t;
 
 #define LRDT_EXPOSURE_VERSION 2
 typedef struct dt_iop_exposure_params_t
 {
   float black, exposure, gain;
-}
-dt_iop_exposure_params_t;
+} dt_iop_exposure_params_t;
 
 #define LRDT_GRAIN_VERSION 1
 typedef enum _dt_iop_grain_channel_t
 {
-  DT_GRAIN_CHANNEL_HUE=0,
+  DT_GRAIN_CHANNEL_HUE = 0,
   DT_GRAIN_CHANNEL_SATURATION,
   DT_GRAIN_CHANNEL_LIGHTNESS,
   DT_GRAIN_CHANNEL_RGB
-}
-_dt_iop_grain_channel_t;
+} _dt_iop_grain_channel_t;
 
 typedef struct dt_iop_grain_params_t
 {
   _dt_iop_grain_channel_t channel;
   float scale;
   float strength;
-}
-dt_iop_grain_params_t;
+} dt_iop_grain_params_t;
 
 typedef enum dt_iop_dither_t
 {
@@ -103,17 +98,16 @@ typedef struct dt_iop_fvector_2d_t
 #define LRDT_VIGNETTE_VERSION 3
 typedef struct dt_iop_vignette_params_t
 {
-  float scale;			// 0 - 100 Inner radius, percent of largest image dimension
-  float falloff_scale;		// 0 - 100 Radius for falloff -- outer radius = inner radius + falloff_scale
-  float brightness;		// -1 - 1 Strength of brightness reduction
-  float saturation;		// -1 - 1 Strength of saturation reduction
-  dt_iop_vector_2d_t center;	// Center of vignette
-  gboolean autoratio;		//
-  float whratio;		// 0-1 = width/height ratio, 1-2 = height/width ratio + 1
+  float scale;               // 0 - 100 Inner radius, percent of largest image dimension
+  float falloff_scale;       // 0 - 100 Radius for falloff -- outer radius = inner radius + falloff_scale
+  float brightness;          // -1 - 1 Strength of brightness reduction
+  float saturation;          // -1 - 1 Strength of saturation reduction
+  dt_iop_vector_2d_t center; // Center of vignette
+  gboolean autoratio;        //
+  float whratio;             // 0-1 = width/height ratio, 1-2 = height/width ratio + 1
   float shape;
-  int dithering;                // if and how to perform dithering
-}
-dt_iop_vignette_params_t;
+  int dithering; // if and how to perform dithering
+} dt_iop_vignette_params_t;
 
 #define LRDT_SPOTS_VERSION 1
 #define MAX_SPOTS 32
@@ -125,43 +119,39 @@ typedef struct spot_t
   // position to clone from
   float xc, yc;
   float radius;
-}
-spot_t;
+} spot_t;
 
 typedef struct dt_iop_spots_params_t
 {
   int num_spots;
   spot_t spot[MAX_SPOTS];
-}
-dt_iop_spots_params_t;
+} dt_iop_spots_params_t;
 
 #define LRDT_TONECURVE_VERSION 3
 #define DT_IOP_TONECURVE_MAXNODES 20
 typedef enum tonecurve_channel_t
 {
-  ch_L    = 0,
-  ch_a    = 1,
-  ch_b    = 2,
-  ch_max  = 3
-}
-tonecurve_channel_t;
+  ch_L = 0,
+  ch_a = 1,
+  ch_b = 2,
+  ch_max = 3
+} tonecurve_channel_t;
 
 typedef struct dt_iop_tonecurve_node_t
 {
   float x;
   float y;
-}
-dt_iop_tonecurve_node_t;
+} dt_iop_tonecurve_node_t;
 
 typedef struct dt_iop_tonecurve_params_t
 {
-  dt_iop_tonecurve_node_t tonecurve[3][DT_IOP_TONECURVE_MAXNODES];  // three curves (L, a, b) with max number of nodes
+  dt_iop_tonecurve_node_t tonecurve[3][DT_IOP_TONECURVE_MAXNODES]; // three curves (L, a, b) with max number
+                                                                   // of nodes
   int tonecurve_nodes[3];
   int tonecurve_type[3];
   int tonecurve_autoscale_ab;
   int tonecurve_preset;
-}
-dt_iop_tonecurve_params_t;
+} dt_iop_tonecurve_params_t;
 
 #define LRDT_COLORZONES_VERSION 2
 #define DT_IOP_COLORZONES_BANDS 8
@@ -171,15 +161,13 @@ typedef enum dt_iop_colorzones_channel_t
   DT_IOP_COLORZONES_L = 0,
   DT_IOP_COLORZONES_C = 1,
   DT_IOP_COLORZONES_h = 2
-}
-dt_iop_colorzones_channel_t;
+} dt_iop_colorzones_channel_t;
 
 typedef struct dt_iop_colorzones_params_t
 {
   int32_t channel;
   float equalizer_x[3][DT_IOP_COLORZONES_BANDS], equalizer_y[3][DT_IOP_COLORZONES_BANDS];
-}
-dt_iop_colorzones_params_t;
+} dt_iop_colorzones_params_t;
 
 #define LRDT_SPLITTONING_VERSION 1
 typedef struct dt_iop_splittoning_params_t
@@ -188,10 +176,9 @@ typedef struct dt_iop_splittoning_params_t
   float shadow_saturation;
   float highlight_hue;
   float highlight_saturation;
-  float balance;						// center luminance of gradient
-  float compress;						// Compress range
-}
-dt_iop_splittoning_params_t;
+  float balance;  // center luminance of gradient
+  float compress; // Compress range
+} dt_iop_splittoning_params_t;
 
 #define LRDT_BILAT_VERSION 1
 typedef struct dt_iop_bilat_params_t
@@ -199,8 +186,7 @@ typedef struct dt_iop_bilat_params_t
   float sigma_r;
   float sigma_s;
   float detail;
-}
-dt_iop_bilat_params_t;
+} dt_iop_bilat_params_t;
 
 
 #define LRDT_COLORIN_VERSION 1
@@ -208,25 +194,24 @@ dt_iop_bilat_params_t;
 
 typedef enum dt_iop_color_intent_t
 {
-  DT_INTENT_PERCEPTUAL             = INTENT_PERCEPTUAL,            // 0
-  DT_INTENT_RELATIVE_COLORIMETRIC  = INTENT_RELATIVE_COLORIMETRIC, // 1
-  DT_INTENT_SATURATION             = INTENT_SATURATION,            // 2
-  DT_INTENT_ABSOLUTE_COLORIMETRIC  = INTENT_ABSOLUTE_COLORIMETRIC  // 3
-}
-dt_iop_color_intent_t;
+  DT_INTENT_PERCEPTUAL = INTENT_PERCEPTUAL,                       // 0
+  DT_INTENT_RELATIVE_COLORIMETRIC = INTENT_RELATIVE_COLORIMETRIC, // 1
+  DT_INTENT_SATURATION = INTENT_SATURATION,                       // 2
+  DT_INTENT_ABSOLUTE_COLORIMETRIC = INTENT_ABSOLUTE_COLORIMETRIC  // 3
+} dt_iop_color_intent_t;
 
 typedef struct dt_iop_colorin_params_t
 {
   char iccprofile[DT_IOP_COLOR_ICC_LEN];
   dt_iop_color_intent_t intent;
-}
-dt_iop_colorin_params_t;
+} dt_iop_colorin_params_t;
 
 //
 // end of iop structs
 //
 
-// the blend params for Lr import, not used in this mode (mode=0), as for iop generate the blend params for the
+// the blend params for Lr import, not used in this mode (mode=0), as for iop generate the blend params for
+// the
 // version specified above.
 
 #define LRDT_BLEND_VERSION 4
@@ -245,9 +230,8 @@ typedef struct dt_develop_blend_params_t
   /** blur radius */
   float radius;
   /** blendif parameters */
-  float blendif_parameters[4*DEVELOP_BLENDIF_SIZE];
-}
-dt_develop_blend_params_t;
+  float blendif_parameters[4 * DEVELOP_BLENDIF_SIZE];
+} dt_develop_blend_params_t;
 
 //
 // end of blend_params
@@ -265,109 +249,103 @@ char *dt_get_lightroom_xmp(int imgid)
   gboolean from_cache = TRUE;
 
   // Get full pathname
-  dt_image_full_path (imgid, pathname, DT_MAX_FILENAME_LEN, &from_cache);
+  dt_image_full_path(imgid, pathname, DT_MAX_FILENAME_LEN, &from_cache);
 
   // Look for extension
   char *pos = strrchr(pathname, '.');
 
-  if (pos==NULL)
+  if(pos == NULL)
   {
     return NULL;
   }
 
   // If found, replace extension with xmp
-  strncpy(pos+1, "xmp", 4);
+  strncpy(pos + 1, "xmp", 4);
 
-  if (!stat(pathname, &buf))
+  if(!stat(pathname, &buf))
     return g_strdup(pathname);
   else
     return NULL;
 }
 
-static float get_interpolate (lr2dt_t lr2dt_table[], float value)
+static float get_interpolate(lr2dt_t lr2dt_table[], float value)
 {
-  int k=0;
+  int k = 0;
 
-  while (lr2dt_table[k+1].lr < value) k++;
+  while(lr2dt_table[k + 1].lr < value) k++;
 
-  return lr2dt_table[k].dt +
-         ((value - lr2dt_table[k].lr)
-          / (lr2dt_table[k+1].lr - lr2dt_table[k].lr))
-         * (lr2dt_table[k+1].dt - lr2dt_table[k].dt);
+  return lr2dt_table[k].dt
+         + ((value - lr2dt_table[k].lr) / (lr2dt_table[k + 1].lr - lr2dt_table[k].lr))
+           * (lr2dt_table[k + 1].dt - lr2dt_table[k].dt);
 }
 
 static float lr2dt_blacks(float value)
 {
-  lr2dt_t lr2dt_blacks_table[] =
-  {{-100, 0.020}, {-50, 0.005}, {0, 0}, {50, -0.005}, {100, -0.010}};
+  lr2dt_t lr2dt_blacks_table[]
+      = { { -100, 0.020 }, { -50, 0.005 }, { 0, 0 }, { 50, -0.005 }, { 100, -0.010 } };
 
-  return get_interpolate (lr2dt_blacks_table, value);
+  return get_interpolate(lr2dt_blacks_table, value);
 }
 
 static float lr2dt_exposure(float value)
 {
-  lr2dt_t lr2dt_exposure_table[] =
-  {{-5, -4.5}, {0, 0}, {5, 4.5}};
+  lr2dt_t lr2dt_exposure_table[] = { { -5, -4.5 }, { 0, 0 }, { 5, 4.5 } };
 
-  return get_interpolate (lr2dt_exposure_table, value);
+  return get_interpolate(lr2dt_exposure_table, value);
 }
 
 static float lr2dt_vignette_gain(float value)
 {
-  lr2dt_t lr2dt_vignette_table[] =
-  {{-100, -1}, {-50, -0.7}, {0, 0}, {50, 0.5}, {100, 1}};
+  lr2dt_t lr2dt_vignette_table[] = { { -100, -1 }, { -50, -0.7 }, { 0, 0 }, { 50, 0.5 }, { 100, 1 } };
 
-  return get_interpolate (lr2dt_vignette_table, value);
+  return get_interpolate(lr2dt_vignette_table, value);
 }
 
 static float lr2dt_vignette_midpoint(float value)
 {
-  lr2dt_t lr2dt_vignette_table[] =
-  {{0, 74}, {4, 75}, {25, 85}, {50, 100}, {100, 100}};
+  lr2dt_t lr2dt_vignette_table[] = { { 0, 74 }, { 4, 75 }, { 25, 85 }, { 50, 100 }, { 100, 100 } };
 
-  return get_interpolate (lr2dt_vignette_table, value);
+  return get_interpolate(lr2dt_vignette_table, value);
 }
 
 static float lr2dt_grain_amount(float value)
 {
-  lr2dt_t lr2dt_grain_table[] =
-  {{0, 0}, {25, 20}, {50, 40}, {100, 80}};
+  lr2dt_t lr2dt_grain_table[] = { { 0, 0 }, { 25, 20 }, { 50, 40 }, { 100, 80 } };
 
-  return get_interpolate (lr2dt_grain_table, value);
+  return get_interpolate(lr2dt_grain_table, value);
 }
 
 static float lr2dt_grain_frequency(float value)
 {
-  lr2dt_t lr2dt_grain_table[] =
-  {{0, 100}, {50, 100}, {75, 400}, {100, 800}};
+  lr2dt_t lr2dt_grain_table[] = { { 0, 100 }, { 50, 100 }, { 75, 400 }, { 100, 800 } };
 
-  return get_interpolate (lr2dt_grain_table, value) / 53.3;
+  return get_interpolate(lr2dt_grain_table, value) / 53.3;
 }
 
 static float lr2dt_splittoning_balance(float value)
 {
-  lr2dt_t lr2dt_splittoning_table[] =
-  {{-100, 100}, {0, 0}, {100, 0}};
+  lr2dt_t lr2dt_splittoning_table[] = { { -100, 100 }, { 0, 0 }, { 100, 0 } };
 
-  return get_interpolate (lr2dt_splittoning_table, value);
+  return get_interpolate(lr2dt_splittoning_table, value);
 }
 
 static float lr2dt_clarity(float value)
 {
-  lr2dt_t lr2dt_clarity_table[] =
-  {{-100, -.650}, {0, 0}, {100, .650}};
+  lr2dt_t lr2dt_clarity_table[] = { { -100, -.650 }, { 0, 0 }, { 100, .650 } };
 
-  return get_interpolate (lr2dt_clarity_table, value);
+  return get_interpolate(lr2dt_clarity_table, value);
 }
 
-static void dt_add_hist (int imgid, char *operation, dt_iop_params_t *params, int params_size, char *imported, size_t imported_len, int version, int *import_count)
+static void dt_add_hist(int imgid, char *operation, dt_iop_params_t *params, int params_size, char *imported,
+                        size_t imported_len, int version, int *import_count)
 {
   int32_t num = 0;
   dt_develop_blend_params_t blend_params = { 0 };
 
   //  get current num if any
   sqlite3_stmt *stmt;
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select count(num) from history where imgid = ?1", -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                              "select count(num) from history where imgid = ?1", -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
   if(sqlite3_step(stmt) == SQLITE_ROW)
   {
@@ -376,7 +354,10 @@ static void dt_add_hist (int imgid, char *operation, dt_iop_params_t *params, in
   sqlite3_finalize(stmt);
 
   // add new history info
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "insert into history (imgid, num, module, operation, op_params, enabled, blendop_params, blendop_version) values (?1, ?2, ?3, ?4, ?5, 1, ?6, ?7)", -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                              "insert into history (imgid, num, module, operation, op_params, enabled, "
+                              "blendop_params, blendop_version) values (?1, ?2, ?3, ?4, ?5, 1, ?6, ?7)",
+                              -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, num);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 3, version);
@@ -385,25 +366,25 @@ static void dt_add_hist (int imgid, char *operation, dt_iop_params_t *params, in
   DT_DEBUG_SQLITE3_BIND_BLOB(stmt, 6, &blend_params, sizeof(dt_develop_blend_params_t), SQLITE_TRANSIENT);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 7, LRDT_BLEND_VERSION);
 
-  sqlite3_step (stmt);
-  sqlite3_finalize (stmt);
+  sqlite3_step(stmt);
+  sqlite3_finalize(stmt);
 
-  if (imported[0]) g_strlcat(imported, ", ", imported_len);
+  if(imported[0]) g_strlcat(imported, ", ", imported_len);
   g_strlcat(imported, dt_iop_get_localized_name(operation), imported_len);
   (*import_count)++;
 }
 
-void dt_lightroom_import (int imgid, dt_develop_t *dev, gboolean iauto)
+void dt_lightroom_import(int imgid, dt_develop_t *dev, gboolean iauto)
 {
   gboolean refresh_needed = FALSE;
-  char imported[256] = {0};
+  char imported[256] = { 0 };
 
   // Get full pathname
   char *pathname = dt_get_lightroom_xmp(imgid);
 
-  if (!pathname)
+  if(!pathname)
   {
-    if (!iauto) dt_control_log(_("cannot find lightroom XMP!"));
+    if(!iauto) dt_control_log(_("cannot find lightroom XMP!"));
     return;
   }
 
@@ -416,7 +397,7 @@ void dt_lightroom_import (int imgid, dt_develop_t *dev, gboolean iauto)
 
   doc = xmlParseEntity(pathname);
 
-  if (doc == NULL)
+  if(doc == NULL)
   {
     g_free(pathname);
     return;
@@ -426,16 +407,16 @@ void dt_lightroom_import (int imgid, dt_develop_t *dev, gboolean iauto)
 
   entryNode = xmlDocGetRootElement(doc);
 
-  if (entryNode == NULL)
+  if(entryNode == NULL)
   {
     g_free(pathname);
     xmlFreeDoc(doc);
     return;
   }
 
-  if (xmlStrcmp(entryNode->name, (const xmlChar *)"xmpmeta"))
+  if(xmlStrcmp(entryNode->name, (const xmlChar *)"xmpmeta"))
   {
-    if (!iauto) dt_control_log(_("`%s' not a lightroom XMP!"), pathname);
+    if(!iauto) dt_control_log(_("`%s' not a lightroom XMP!"), pathname);
     g_free(pathname);
     return;
   }
@@ -444,7 +425,7 @@ void dt_lightroom_import (int imgid, dt_develop_t *dev, gboolean iauto)
 
   xmlXPathContextPtr xpathCtx = xmlXPathNewContext(doc);
 
-  if (xpathCtx == NULL)
+  if(xpathCtx == NULL)
   {
     g_free(pathname);
     xmlFreeDoc(doc);
@@ -455,9 +436,9 @@ void dt_lightroom_import (int imgid, dt_develop_t *dev, gboolean iauto)
 
   xmlXPathObjectPtr xpathObj = xmlXPathEvalExpression((const xmlChar *)"//@stEvt:softwareAgent", xpathCtx);
 
-  if (xpathObj == NULL)
+  if(xpathObj == NULL)
   {
-    if (!iauto) dt_control_log(_("`%s' not a lightroom XMP!"), pathname);
+    if(!iauto) dt_control_log(_("`%s' not a lightroom XMP!"), pathname);
     xmlXPathFreeContext(xpathCtx);
     g_free(pathname);
     xmlFreeDoc(doc);
@@ -466,18 +447,18 @@ void dt_lightroom_import (int imgid, dt_develop_t *dev, gboolean iauto)
 
   xmlNodeSetPtr xnodes = xpathObj->nodesetval;
 
-  if (xnodes != NULL && xnodes->nodeNr > 0)
+  if(xnodes != NULL && xnodes->nodeNr > 0)
   {
     xmlNodePtr xnode = xnodes->nodeTab[0];
     xmlChar *value = xmlNodeListGetString(doc, xnode->xmlChildrenNode, 1);
 
-    if (!strstr((char *)value,"Lightroom"))
+    if(!strstr((char *)value, "Lightroom"))
     {
       xmlXPathFreeContext(xpathCtx);
       xmlXPathFreeObject(xpathObj);
       xmlFreeDoc(doc);
       xmlFree(value);
-      if (!iauto) dt_control_log(_("`%s' not a lightroom XMP!"), pathname);
+      if(!iauto) dt_control_log(_("`%s' not a lightroom XMP!"), pathname);
       g_free(pathname);
       return;
     }
@@ -487,7 +468,7 @@ void dt_lightroom_import (int imgid, dt_develop_t *dev, gboolean iauto)
   {
     xmlXPathFreeObject(xpathObj);
     xmlXPathFreeContext(xpathCtx);
-    if (!iauto) dt_control_log(_("`%s' not a lightroom XMP!"), pathname);
+    if(!iauto) dt_control_log(_("`%s' not a lightroom XMP!"), pathname);
     g_free(pathname);
     return;
   }
@@ -497,18 +478,14 @@ void dt_lightroom_import (int imgid, dt_develop_t *dev, gboolean iauto)
 
   // Go safely to Description node
 
-  if (entryNode)
-    entryNode = entryNode->xmlChildrenNode;
-  if (entryNode)
-    entryNode = entryNode->next;
-  if (entryNode)
-    entryNode = entryNode->xmlChildrenNode;
-  if (entryNode)
-    entryNode = entryNode->next;
+  if(entryNode) entryNode = entryNode->xmlChildrenNode;
+  if(entryNode) entryNode = entryNode->next;
+  if(entryNode) entryNode = entryNode->xmlChildrenNode;
+  if(entryNode) entryNode = entryNode->next;
 
-  if (!entryNode || xmlStrcmp(entryNode->name, (const xmlChar *)"Description"))
+  if(!entryNode || xmlStrcmp(entryNode->name, (const xmlChar *)"Description"))
   {
-    if (!iauto) dt_control_log(_("`%s' not a lightroom XMP!"), pathname);
+    if(!iauto) dt_control_log(_("`%s' not a lightroom XMP!"), pathname);
     g_free(pathname);
     return;
   }
@@ -551,8 +528,8 @@ void dt_lightroom_import (int imgid, dt_develop_t *dev, gboolean iauto)
 #define MAX_PTS 20
   dt_iop_tonecurve_params_t ptc;
   memset(&ptc, 0, sizeof(ptc));
-  int ptc_value[4] = {0, 0, 0, 0};
-  float ptc_split[3] = {0.0, 0.0, 0.0};
+  int ptc_value[4] = { 0, 0, 0, 0 };
+  float ptc_split[3] = { 0.0, 0.0, 0.0 };
   lr_curve_kind_t curve_kind = linear;
   int curve_pts[MAX_PTS][2];
   int n_pts = 0;
@@ -588,400 +565,368 @@ void dt_lightroom_import (int imgid, dt_develop_t *dev, gboolean iauto)
   int iwidth = 0, iheight = 0;     // image width / height
   int orientation = 1;
 
-  xmlAttr* attribute = entryNode->properties;
+  xmlAttr *attribute = entryNode->properties;
 
   while(attribute && attribute->name && attribute->children)
   {
-    xmlChar* value = xmlNodeListGetString(entryNode->doc, attribute->children, 1);
-    if (!xmlStrcmp(attribute->name, (const xmlChar *) "CropTop"))
+    xmlChar *value = xmlNodeListGetString(entryNode->doc, attribute->children, 1);
+    if(!xmlStrcmp(attribute->name, (const xmlChar *)"CropTop"))
       pc.cy = g_ascii_strtod((char *)value, NULL);
-    else if (!xmlStrcmp(attribute->name, (const xmlChar *) "CropRight"))
+    else if(!xmlStrcmp(attribute->name, (const xmlChar *)"CropRight"))
       pc.cw = g_ascii_strtod((char *)value, NULL);
-    else if (!xmlStrcmp(attribute->name, (const xmlChar *) "CropLeft"))
+    else if(!xmlStrcmp(attribute->name, (const xmlChar *)"CropLeft"))
       pc.cx = g_ascii_strtod((char *)value, NULL);
-    else if (!xmlStrcmp(attribute->name, (const xmlChar *) "CropBottom"))
+    else if(!xmlStrcmp(attribute->name, (const xmlChar *)"CropBottom"))
       pc.ch = g_ascii_strtod((char *)value, NULL);
-    else if (!xmlStrcmp(attribute->name, (const xmlChar *) "CropAngle"))
+    else if(!xmlStrcmp(attribute->name, (const xmlChar *)"CropAngle"))
       pc.angle = -g_ascii_strtod((char *)value, NULL);
-    else if (!xmlStrcmp(attribute->name, (const xmlChar *) "ImageWidth"))
+    else if(!xmlStrcmp(attribute->name, (const xmlChar *)"ImageWidth"))
       iwidth = atoi((char *)value);
-    else if (!xmlStrcmp(attribute->name, (const xmlChar *) "ImageLength"))
+    else if(!xmlStrcmp(attribute->name, (const xmlChar *)"ImageLength"))
       iheight = atoi((char *)value);
-    else if (!xmlStrcmp(attribute->name, (const xmlChar *) "Orientation"))
+    else if(!xmlStrcmp(attribute->name, (const xmlChar *)"Orientation"))
     {
       orientation = atoi((char *)value);
-      if (dev!=NULL &&
-          ((dev->image_storage.orientation == 6 && orientation != 6)
-           || (dev->image_storage.orientation == 5 && orientation != 8)
-           || (dev->image_storage.orientation == 0 && orientation != 1))) has_flip = TRUE;
+      if(dev != NULL && ((dev->image_storage.orientation == 6 && orientation != 6)
+                         || (dev->image_storage.orientation == 5 && orientation != 8)
+                         || (dev->image_storage.orientation == 0 && orientation != 1)))
+        has_flip = TRUE;
     }
-    else if (!xmlStrcmp(attribute->name, (const xmlChar *) "HasCrop"))
+    else if(!xmlStrcmp(attribute->name, (const xmlChar *)"HasCrop"))
     {
-      if (!xmlStrcmp(value, (const xmlChar *)"True"))
-        has_crop = TRUE;
+      if(!xmlStrcmp(value, (const xmlChar *)"True")) has_crop = TRUE;
     }
-    else if (!xmlStrcmp(attribute->name, (const xmlChar *) "Blacks2012"))
+    else if(!xmlStrcmp(attribute->name, (const xmlChar *)"Blacks2012"))
     {
       int v = atoi((char *)value);
-      if (v != 0)
+      if(v != 0)
       {
         has_exposure = TRUE;
         pe.black = lr2dt_blacks((float)v);
       }
     }
-    else if (!xmlStrcmp(attribute->name, (const xmlChar *) "Exposure2012"))
+    else if(!xmlStrcmp(attribute->name, (const xmlChar *)"Exposure2012"))
     {
       float v = g_ascii_strtod((char *)value, NULL);
-      if (v != 0.0)
+      if(v != 0.0)
       {
         has_exposure = TRUE;
         pe.exposure = lr2dt_exposure(v);
       }
     }
-    else if (!xmlStrcmp(attribute->name, (const xmlChar *) "PostCropVignetteAmount"))
+    else if(!xmlStrcmp(attribute->name, (const xmlChar *)"PostCropVignetteAmount"))
     {
       int v = atoi((char *)value);
-      if (v != 0)
+      if(v != 0)
       {
         has_vignette = TRUE;
         pv.brightness = lr2dt_vignette_gain((float)v);
       }
     }
-    else if (!xmlStrcmp(attribute->name, (const xmlChar *) "PostCropVignetteMidpoint"))
+    else if(!xmlStrcmp(attribute->name, (const xmlChar *)"PostCropVignetteMidpoint"))
     {
       int v = atoi((char *)value);
       pv.scale = lr2dt_vignette_midpoint((float)v);
     }
-    else if (!xmlStrcmp(attribute->name, (const xmlChar *) "PostCropVignetteStyle"))
+    else if(!xmlStrcmp(attribute->name, (const xmlChar *)"PostCropVignetteStyle"))
     {
       int v = atoi((char *)value);
-      if (v == 1) // Highlight Priority
+      if(v == 1) // Highlight Priority
         pv.saturation = -0.300;
       else // Color Priority & Paint Overlay
         pv.saturation = -0.200;
     }
-    else if (!xmlStrcmp(attribute->name, (const xmlChar *) "PostCropVignetteFeather"))
+    else if(!xmlStrcmp(attribute->name, (const xmlChar *)"PostCropVignetteFeather"))
     {
       int v = atoi((char *)value);
-      if (v != 0)
-        pv.falloff_scale = (float)v;
+      if(v != 0) pv.falloff_scale = (float)v;
     }
-    else if (!xmlStrcmp(attribute->name, (const xmlChar *) "PostCropVignetteRoundness"))
+    else if(!xmlStrcmp(attribute->name, (const xmlChar *)"PostCropVignetteRoundness"))
     {
       int v = atoi((char *)value);
       crop_roundness = (float)v;
     }
-    else if (!xmlStrcmp(attribute->name, (const xmlChar *) "GrainAmount"))
+    else if(!xmlStrcmp(attribute->name, (const xmlChar *)"GrainAmount"))
     {
       int v = atoi((char *)value);
-      if (v != 0)
+      if(v != 0)
       {
         has_grain = TRUE;
         pg.strength = lr2dt_grain_amount((float)v);
       }
     }
-    else if (!xmlStrcmp(attribute->name, (const xmlChar *) "GrainFrequency"))
+    else if(!xmlStrcmp(attribute->name, (const xmlChar *)"GrainFrequency"))
     {
       int v = atoi((char *)value);
-      if (v != 0)
-        pg.scale = lr2dt_grain_frequency((float)v);
+      if(v != 0) pg.scale = lr2dt_grain_frequency((float)v);
     }
-    else if (!xmlStrcmp(attribute->name, (const xmlChar *) "ParametricShadows"))
+    else if(!xmlStrcmp(attribute->name, (const xmlChar *)"ParametricShadows"))
     {
       ptc_value[0] = atoi((char *)value);
     }
-    else if (!xmlStrcmp(attribute->name, (const xmlChar *) "ParametricDarks"))
+    else if(!xmlStrcmp(attribute->name, (const xmlChar *)"ParametricDarks"))
     {
       ptc_value[1] = atoi((char *)value);
     }
-    else if (!xmlStrcmp(attribute->name, (const xmlChar *) "ParametricLights"))
+    else if(!xmlStrcmp(attribute->name, (const xmlChar *)"ParametricLights"))
     {
       ptc_value[2] = atoi((char *)value);
     }
-    else if (!xmlStrcmp(attribute->name, (const xmlChar *) "ParametricHighlights"))
+    else if(!xmlStrcmp(attribute->name, (const xmlChar *)"ParametricHighlights"))
     {
       ptc_value[3] = atoi((char *)value);
     }
-    else if (!xmlStrcmp(attribute->name, (const xmlChar *) "ParametricShadowSplit"))
+    else if(!xmlStrcmp(attribute->name, (const xmlChar *)"ParametricShadowSplit"))
     {
       ptc_split[0] = g_ascii_strtod((char *)value, NULL) / 100.0;
     }
-    else if (!xmlStrcmp(attribute->name, (const xmlChar *) "ParametricMidtoneSplit"))
+    else if(!xmlStrcmp(attribute->name, (const xmlChar *)"ParametricMidtoneSplit"))
     {
       ptc_split[1] = g_ascii_strtod((char *)value, NULL) / 100.0;
     }
-    else if (!xmlStrcmp(attribute->name, (const xmlChar *) "ParametricHighlightSplit"))
+    else if(!xmlStrcmp(attribute->name, (const xmlChar *)"ParametricHighlightSplit"))
     {
       ptc_split[2] = g_ascii_strtod((char *)value, NULL) / 100.0;
     }
-    else if (!xmlStrcmp(attribute->name, (const xmlChar *) "ToneCurveName2012"))
+    else if(!xmlStrcmp(attribute->name, (const xmlChar *)"ToneCurveName2012"))
     {
-      if (!xmlStrcmp(value, (const xmlChar *)"Linear"))
+      if(!xmlStrcmp(value, (const xmlChar *)"Linear"))
         curve_kind = linear;
-      else if (!xmlStrcmp(value, (const xmlChar *)"Medium Contrast"))
+      else if(!xmlStrcmp(value, (const xmlChar *)"Medium Contrast"))
         curve_kind = medium_contrast;
-      else if (!xmlStrcmp(value, (const xmlChar *)"Strong Contrast"))
+      else if(!xmlStrcmp(value, (const xmlChar *)"Strong Contrast"))
         curve_kind = medium_contrast;
-      else if (!xmlStrcmp(value, (const xmlChar *)"Custom"))
+      else if(!xmlStrcmp(value, (const xmlChar *)"Custom"))
         curve_kind = custom;
     }
-    else if (!xmlStrcmp(attribute->name, (const xmlChar *) "SaturationAdjustmentRed"))
+    else if(!xmlStrcmp(attribute->name, (const xmlChar *)"SaturationAdjustmentRed"))
     {
       int v = atoi((char *)value);
-      if (v!=0)
-        has_colorzones = TRUE;
+      if(v != 0) has_colorzones = TRUE;
       pcz.equalizer_y[1][0] = 0.5 + (float)v / 200.0;
     }
-    else if (!xmlStrcmp(attribute->name, (const xmlChar *) "SaturationAdjustmentOrange"))
+    else if(!xmlStrcmp(attribute->name, (const xmlChar *)"SaturationAdjustmentOrange"))
     {
       int v = atoi((char *)value);
-      if (v!=0)
-        has_colorzones = TRUE;
+      if(v != 0) has_colorzones = TRUE;
       pcz.equalizer_y[1][1] = 0.5 + (float)v / 200.0;
     }
-    else if (!xmlStrcmp(attribute->name, (const xmlChar *) "SaturationAdjustmentYellow"))
+    else if(!xmlStrcmp(attribute->name, (const xmlChar *)"SaturationAdjustmentYellow"))
     {
       int v = atoi((char *)value);
-      if (v!=0)
-        has_colorzones = TRUE;
+      if(v != 0) has_colorzones = TRUE;
       pcz.equalizer_y[1][2] = 0.5 + (float)v / 200.0;
     }
-    else if (!xmlStrcmp(attribute->name, (const xmlChar *) "SaturationAdjustmentGreen"))
+    else if(!xmlStrcmp(attribute->name, (const xmlChar *)"SaturationAdjustmentGreen"))
     {
       int v = atoi((char *)value);
-      if (v!=0)
-        has_colorzones = TRUE;
+      if(v != 0) has_colorzones = TRUE;
       pcz.equalizer_y[1][3] = 0.5 + (float)v / 200.0;
     }
-    else if (!xmlStrcmp(attribute->name, (const xmlChar *) "SaturationAdjustmentAqua"))
+    else if(!xmlStrcmp(attribute->name, (const xmlChar *)"SaturationAdjustmentAqua"))
     {
       int v = atoi((char *)value);
-      if (v!=0)
-        has_colorzones = TRUE;
+      if(v != 0) has_colorzones = TRUE;
       pcz.equalizer_y[1][4] = 0.5 + (float)v / 200.0;
     }
-    else if (!xmlStrcmp(attribute->name, (const xmlChar *) "SaturationAdjustmentBlue"))
+    else if(!xmlStrcmp(attribute->name, (const xmlChar *)"SaturationAdjustmentBlue"))
     {
       int v = atoi((char *)value);
-      if (v!=0)
-        has_colorzones = TRUE;
+      if(v != 0) has_colorzones = TRUE;
       pcz.equalizer_y[1][5] = 0.5 + (float)v / 200.0;
     }
-    else if (!xmlStrcmp(attribute->name, (const xmlChar *) "SaturationAdjustmentPurple"))
+    else if(!xmlStrcmp(attribute->name, (const xmlChar *)"SaturationAdjustmentPurple"))
     {
       int v = atoi((char *)value);
-      if (v!=0)
-        has_colorzones = TRUE;
+      if(v != 0) has_colorzones = TRUE;
       pcz.equalizer_y[1][6] = 0.5 + (float)v / 200.0;
     }
-    else if (!xmlStrcmp(attribute->name, (const xmlChar *) "SaturationAdjustmentMagenta"))
+    else if(!xmlStrcmp(attribute->name, (const xmlChar *)"SaturationAdjustmentMagenta"))
     {
       int v = atoi((char *)value);
-      if (v!=0)
-        has_colorzones = TRUE;
+      if(v != 0) has_colorzones = TRUE;
       pcz.equalizer_y[1][7] = 0.5 + (float)v / 200.0;
     }
-    else if (!xmlStrcmp(attribute->name, (const xmlChar *) "LuminanceAdjustmentRed"))
+    else if(!xmlStrcmp(attribute->name, (const xmlChar *)"LuminanceAdjustmentRed"))
     {
       int v = atoi((char *)value);
-      if (v!=0)
-        has_colorzones = TRUE;
+      if(v != 0) has_colorzones = TRUE;
       pcz.equalizer_y[0][0] = 0.5 + lfactor * (float)v / 200.0;
     }
-    else if (!xmlStrcmp(attribute->name, (const xmlChar *) "LuminanceAdjustmentOrange"))
+    else if(!xmlStrcmp(attribute->name, (const xmlChar *)"LuminanceAdjustmentOrange"))
     {
       int v = atoi((char *)value);
-      if (v!=0)
-        has_colorzones = TRUE;
+      if(v != 0) has_colorzones = TRUE;
       pcz.equalizer_y[0][1] = 0.5 + lfactor * (float)v / 200.0;
     }
-    else if (!xmlStrcmp(attribute->name, (const xmlChar *) "LuminanceAdjustmentYellow"))
+    else if(!xmlStrcmp(attribute->name, (const xmlChar *)"LuminanceAdjustmentYellow"))
     {
       int v = atoi((char *)value);
-      if (v!=0)
-        has_colorzones = TRUE;
+      if(v != 0) has_colorzones = TRUE;
       pcz.equalizer_y[0][2] = 0.5 + lfactor * (float)v / 200.0;
     }
-    else if (!xmlStrcmp(attribute->name, (const xmlChar *) "LuminanceAdjustmentGreen"))
+    else if(!xmlStrcmp(attribute->name, (const xmlChar *)"LuminanceAdjustmentGreen"))
     {
       int v = atoi((char *)value);
-      if (v!=0)
-        has_colorzones = TRUE;
+      if(v != 0) has_colorzones = TRUE;
       pcz.equalizer_y[0][3] = 0.5 + lfactor * (float)v / 200.0;
     }
-    else if (!xmlStrcmp(attribute->name, (const xmlChar *) "LuminanceAdjustmentAqua"))
+    else if(!xmlStrcmp(attribute->name, (const xmlChar *)"LuminanceAdjustmentAqua"))
     {
       int v = atoi((char *)value);
-      if (v!=0)
-        has_colorzones = TRUE;
+      if(v != 0) has_colorzones = TRUE;
       pcz.equalizer_y[0][4] = 0.5 + lfactor * (float)v / 200.0;
     }
-    else if (!xmlStrcmp(attribute->name, (const xmlChar *) "LuminanceAdjustmentBlue"))
+    else if(!xmlStrcmp(attribute->name, (const xmlChar *)"LuminanceAdjustmentBlue"))
     {
       int v = atoi((char *)value);
-      if (v!=0)
-        has_colorzones = TRUE;
+      if(v != 0) has_colorzones = TRUE;
       pcz.equalizer_y[0][5] = 0.5 + lfactor * (float)v / 200.0;
     }
-    else if (!xmlStrcmp(attribute->name, (const xmlChar *) "LuminanceAdjustmentPurple"))
+    else if(!xmlStrcmp(attribute->name, (const xmlChar *)"LuminanceAdjustmentPurple"))
     {
       int v = atoi((char *)value);
-      if (v!=0)
-        has_colorzones = TRUE;
+      if(v != 0) has_colorzones = TRUE;
       pcz.equalizer_y[0][6] = 0.5 + lfactor * (float)v / 200.0;
     }
-    else if (!xmlStrcmp(attribute->name, (const xmlChar *) "LuminanceAdjustmentMagenta"))
+    else if(!xmlStrcmp(attribute->name, (const xmlChar *)"LuminanceAdjustmentMagenta"))
     {
       int v = atoi((char *)value);
-      if (v!=0)
-        has_colorzones = TRUE;
+      if(v != 0) has_colorzones = TRUE;
       pcz.equalizer_y[0][7] = 0.5 + lfactor * (float)v / 200.0;
     }
-    else if (!xmlStrcmp(attribute->name, (const xmlChar *) "HueAdjustmentRed"))
+    else if(!xmlStrcmp(attribute->name, (const xmlChar *)"HueAdjustmentRed"))
     {
       int v = atoi((char *)value);
-      if (v!=0)
-        has_colorzones = TRUE;
+      if(v != 0) has_colorzones = TRUE;
       pcz.equalizer_y[2][0] = 0.5 + hfactor * (float)v / 200.0;
     }
-    else if (!xmlStrcmp(attribute->name, (const xmlChar *) "HueAdjustmentOrange"))
+    else if(!xmlStrcmp(attribute->name, (const xmlChar *)"HueAdjustmentOrange"))
     {
       int v = atoi((char *)value);
-      if (v!=0)
-        has_colorzones = TRUE;
+      if(v != 0) has_colorzones = TRUE;
       pcz.equalizer_y[2][1] = 0.5 + hfactor * (float)v / 200.0;
     }
-    else if (!xmlStrcmp(attribute->name, (const xmlChar *) "HueAdjustmentYellow"))
+    else if(!xmlStrcmp(attribute->name, (const xmlChar *)"HueAdjustmentYellow"))
     {
       int v = atoi((char *)value);
-      if (v!=0)
-        has_colorzones = TRUE;
+      if(v != 0) has_colorzones = TRUE;
       pcz.equalizer_y[2][2] = 0.5 + hfactor * (float)v / 200.0;
     }
-    else if (!xmlStrcmp(attribute->name, (const xmlChar *) "HueAdjustmentGreen"))
+    else if(!xmlStrcmp(attribute->name, (const xmlChar *)"HueAdjustmentGreen"))
     {
       int v = atoi((char *)value);
-      if (v!=0)
-        has_colorzones = TRUE;
+      if(v != 0) has_colorzones = TRUE;
       pcz.equalizer_y[2][3] = 0.5 + hfactor * (float)v / 200.0;
     }
-    else if (!xmlStrcmp(attribute->name, (const xmlChar *) "HueAdjustmentAqua"))
+    else if(!xmlStrcmp(attribute->name, (const xmlChar *)"HueAdjustmentAqua"))
     {
       int v = atoi((char *)value);
-      if (v!=0)
-        has_colorzones = TRUE;
+      if(v != 0) has_colorzones = TRUE;
       pcz.equalizer_y[2][4] = 0.5 + hfactor * (float)v / 200.0;
     }
-    else if (!xmlStrcmp(attribute->name, (const xmlChar *) "HueAdjustmentBlue"))
+    else if(!xmlStrcmp(attribute->name, (const xmlChar *)"HueAdjustmentBlue"))
     {
       int v = atoi((char *)value);
-      if (v!=0)
-        has_colorzones = TRUE;
+      if(v != 0) has_colorzones = TRUE;
       pcz.equalizer_y[2][5] = 0.5 + hfactor * (float)v / 200.0;
     }
-    else if (!xmlStrcmp(attribute->name, (const xmlChar *) "HueAdjustmentPurple"))
+    else if(!xmlStrcmp(attribute->name, (const xmlChar *)"HueAdjustmentPurple"))
     {
       int v = atoi((char *)value);
-      if (v!=0)
-        has_colorzones = TRUE;
+      if(v != 0) has_colorzones = TRUE;
       pcz.equalizer_y[2][6] = 0.5 + hfactor * (float)v / 200.0;
     }
-    else if (!xmlStrcmp(attribute->name, (const xmlChar *) "HueAdjustmentMagenta"))
+    else if(!xmlStrcmp(attribute->name, (const xmlChar *)"HueAdjustmentMagenta"))
     {
       int v = atoi((char *)value);
-      if (v!=0)
-        has_colorzones = TRUE;
+      if(v != 0) has_colorzones = TRUE;
       pcz.equalizer_y[2][7] = 0.5 + hfactor * (float)v / 200.0;
     }
-    else if (!xmlStrcmp(attribute->name, (const xmlChar *) "SplitToningShawowHue"))
+    else if(!xmlStrcmp(attribute->name, (const xmlChar *)"SplitToningShawowHue"))
     {
       int v = atoi((char *)value);
-      if (v!=0)
-        has_splittoning = TRUE;
+      if(v != 0) has_splittoning = TRUE;
       pst.shadow_hue = (float)v / 255.0;
     }
-    else if (!xmlStrcmp(attribute->name, (const xmlChar *) "SplitToningShawowSaturation"))
+    else if(!xmlStrcmp(attribute->name, (const xmlChar *)"SplitToningShawowSaturation"))
     {
       int v = atoi((char *)value);
-      if (v!=0)
-        has_splittoning = TRUE;
+      if(v != 0) has_splittoning = TRUE;
       pst.shadow_saturation = (float)v / 100.0;
     }
-    else if (!xmlStrcmp(attribute->name, (const xmlChar *) "SplitToningHighlightHue"))
+    else if(!xmlStrcmp(attribute->name, (const xmlChar *)"SplitToningHighlightHue"))
     {
       int v = atoi((char *)value);
-      if (v!=0)
-        has_splittoning = TRUE;
+      if(v != 0) has_splittoning = TRUE;
       pst.highlight_hue = (float)v / 255.0;
     }
-    else if (!xmlStrcmp(attribute->name, (const xmlChar *) "SplitToningHighlightSaturation"))
+    else if(!xmlStrcmp(attribute->name, (const xmlChar *)"SplitToningHighlightSaturation"))
     {
       int v = atoi((char *)value);
-      if (v!=0)
-        has_splittoning = TRUE;
+      if(v != 0) has_splittoning = TRUE;
       pst.highlight_saturation = (float)v / 100.0;
     }
-    else if (!xmlStrcmp(attribute->name, (const xmlChar *) "SplitToningBalance"))
+    else if(!xmlStrcmp(attribute->name, (const xmlChar *)"SplitToningBalance"))
     {
       float v = g_ascii_strtod((char *)value, NULL);
       pst.balance = lr2dt_splittoning_balance(v);
     }
-    else if (!xmlStrcmp(attribute->name, (const xmlChar *) "Clarity2012"))
+    else if(!xmlStrcmp(attribute->name, (const xmlChar *)"Clarity2012"))
     {
       int v = atoi((char *)value);
-      if (v!=0)
+      if(v != 0)
       {
         has_bilat = TRUE;
         pbl.detail = lr2dt_clarity((float)v);
       }
     }
-    else if (!xmlStrcmp(attribute->name, (const xmlChar *) "Rating"))
+    else if(!xmlStrcmp(attribute->name, (const xmlChar *)"Rating"))
     {
       int v = atoi((char *)value);
-      if (v!=0)
+      if(v != 0)
       {
         rating = v;
         has_rating = TRUE;
       }
     }
-    else if (!xmlStrcmp(attribute->name, (const xmlChar *) "GPSLatitude"))
+    else if(!xmlStrcmp(attribute->name, (const xmlChar *)"GPSLatitude"))
     {
       int deg;
       double msec;
       char d;
 
-      if (sscanf((const char *)value, "%d,%lf%c", &deg, &msec, &d))
+      if(sscanf((const char *)value, "%d,%lf%c", &deg, &msec, &d))
       {
         lat = deg + msec / 60.0;
-        if (d == 'S') lat = -lat;
+        if(d == 'S') lat = -lat;
         has_gps = TRUE;
       }
     }
-    else if (!xmlStrcmp(attribute->name, (const xmlChar *) "GPSLongitude"))
+    else if(!xmlStrcmp(attribute->name, (const xmlChar *)"GPSLongitude"))
     {
       int deg;
       double msec;
       char d;
 
-      if (sscanf((const char *)value, "%d,%lf%c", &deg, &msec, &d))
+      if(sscanf((const char *)value, "%d,%lf%c", &deg, &msec, &d))
       {
         lon = deg + msec / 60.0;
-        if (d == 'W') lon = -lon;
+        if(d == 'W') lon = -lon;
         has_gps = TRUE;
       }
     }
-    else if (!xmlStrcmp(attribute->name, (const xmlChar *) "Label"))
+    else if(!xmlStrcmp(attribute->name, (const xmlChar *)"Label"))
     {
-      for(int i=0; value[i]; i++)
-        value[i] = tolower(value[i]);
+      for(int i = 0; value[i]; i++) value[i] = tolower(value[i]);
 
-      if (!strcmp((char *)value, _("red")))
+      if(!strcmp((char *)value, _("red")))
         color = 0;
-      else if (!strcmp((char *)value, _("yellow")))
+      else if(!strcmp((char *)value, _("yellow")))
         color = 1;
-      else if (!strcmp((char *)value, _("green")))
+      else if(!strcmp((char *)value, _("green")))
         color = 2;
-      else if (!strcmp((char *)value, _("blue")))
+      else if(!strcmp((char *)value, _("blue")))
         color = 3;
       else
         // just an else here to catch all other cases as on lightroom one can
@@ -999,13 +944,12 @@ void dt_lightroom_import (int imgid, dt_develop_t *dev, gboolean iauto)
   //  Look for tags (subject/Bag/* and RetouchInfo/seq/*)
 
   entryNode = entryNode->xmlChildrenNode;
-  if (entryNode) entryNode = entryNode->next;
+  if(entryNode) entryNode = entryNode->next;
 
-  while (entryNode)
+  while(entryNode)
   {
-    if (dev == NULL
-        && (!xmlStrcmp(entryNode->name, (const xmlChar *) "subject")
-            ||!xmlStrcmp(entryNode->name, (const xmlChar *) "hierarchicalSubject")))
+    if(dev == NULL && (!xmlStrcmp(entryNode->name, (const xmlChar *)"subject")
+                       || !xmlStrcmp(entryNode->name, (const xmlChar *)"hierarchicalSubject")))
     {
       xmlNodePtr tagNode = entryNode;
 
@@ -1014,15 +958,14 @@ void dt_lightroom_import (int imgid, dt_develop_t *dev, gboolean iauto)
       tagNode = tagNode->xmlChildrenNode;
       tagNode = tagNode->next;
 
-      while (tagNode)
+      while(tagNode)
       {
-        if (!xmlStrcmp(tagNode->name, (const xmlChar *) "li"))
+        if(!xmlStrcmp(tagNode->name, (const xmlChar *)"li"))
         {
-          xmlChar *value= xmlNodeListGetString(doc, tagNode->xmlChildrenNode, 1);
+          xmlChar *value = xmlNodeListGetString(doc, tagNode->xmlChildrenNode, 1);
           guint tagid = 0;
 
-          if (!dt_tag_exists((char *)value, &tagid))
-            dt_tag_new((char *)value, &tagid);
+          if(!dt_tag_exists((char *)value, &tagid)) dt_tag_new((char *)value, &tagid);
 
           dt_tag_attach(tagid, imgid);
           has_tags = TRUE;
@@ -1031,7 +974,7 @@ void dt_lightroom_import (int imgid, dt_develop_t *dev, gboolean iauto)
         tagNode = tagNode->next;
       }
     }
-    else if (dev != NULL && !xmlStrcmp(entryNode->name, (const xmlChar *) "RetouchInfo"))
+    else if(dev != NULL && !xmlStrcmp(entryNode->name, (const xmlChar *)"RetouchInfo"))
     {
       xmlNodePtr riNode = entryNode;
 
@@ -1040,24 +983,26 @@ void dt_lightroom_import (int imgid, dt_develop_t *dev, gboolean iauto)
       riNode = riNode->xmlChildrenNode;
       riNode = riNode->next;
 
-      while (riNode)
+      while(riNode)
       {
-        if (!xmlStrcmp(riNode->name, (const xmlChar *) "li"))
+        if(!xmlStrcmp(riNode->name, (const xmlChar *)"li"))
         {
-          xmlChar *value= xmlNodeListGetString(doc, riNode->xmlChildrenNode, 1);
+          xmlChar *value = xmlNodeListGetString(doc, riNode->xmlChildrenNode, 1);
           spot_t *p = &ps.spot[ps.num_spots];
-          if (sscanf((const char *)value, "centerX = %f, centerY = %f, radius = %f, sourceState = %*[a-zA-Z], sourceX = %f, sourceY = %f", &(p->x), &(p->y), &(p->radius), &(p->xc), &(p->yc)))
+          if(sscanf((const char *)value, "centerX = %f, centerY = %f, radius = %f, sourceState = %*[a-zA-Z], "
+                                         "sourceX = %f, sourceY = %f",
+                    &(p->x), &(p->y), &(p->radius), &(p->xc), &(p->yc)))
           {
             ps.num_spots++;
             has_spots = TRUE;
           }
           xmlFree(value);
         }
-        if (ps.num_spots == MAX_SPOTS) break;
+        if(ps.num_spots == MAX_SPOTS) break;
         riNode = riNode->next;
       }
     }
-    else if (dev != NULL && !xmlStrcmp(entryNode->name, (const xmlChar *) "ToneCurvePV2012"))
+    else if(dev != NULL && !xmlStrcmp(entryNode->name, (const xmlChar *)"ToneCurvePV2012"))
     {
       xmlNodePtr tcNode = entryNode;
 
@@ -1066,17 +1011,16 @@ void dt_lightroom_import (int imgid, dt_develop_t *dev, gboolean iauto)
       tcNode = tcNode->xmlChildrenNode;
       tcNode = tcNode->next;
 
-      while (tcNode)
+      while(tcNode)
       {
-        if (!xmlStrcmp(tcNode->name, (const xmlChar *) "li"))
+        if(!xmlStrcmp(tcNode->name, (const xmlChar *)"li"))
         {
-          xmlChar *value= xmlNodeListGetString(doc, tcNode->xmlChildrenNode, 1);
+          xmlChar *value = xmlNodeListGetString(doc, tcNode->xmlChildrenNode, 1);
 
-          if (sscanf((const char *)value, "%d, %d", &(curve_pts[n_pts][0]), &(curve_pts[n_pts][1])))
-            n_pts++;
+          if(sscanf((const char *)value, "%d, %d", &(curve_pts[n_pts][0]), &(curve_pts[n_pts][1]))) n_pts++;
           xmlFree(value);
         }
-        if (n_pts == MAX_PTS) break;
+        if(n_pts == MAX_PTS) break;
         tcNode = tcNode->next;
       }
     }
@@ -1087,19 +1031,17 @@ void dt_lightroom_import (int imgid, dt_develop_t *dev, gboolean iauto)
 
   //  Integrates into the history all the imported iop
 
-  if (dev != NULL && dt_image_is_raw(&dev->image_storage))
+  if(dev != NULL && dt_image_is_raw(&dev->image_storage))
   {
     // set colorin to cmatrix which is the default from Adobe (so closer to what Lightroom does)
-    dt_iop_colorin_params_t pci = (dt_iop_colorin_params_t)
-    {
-      "cmatrix", DT_INTENT_PERCEPTUAL
-    };
+    dt_iop_colorin_params_t pci = (dt_iop_colorin_params_t){ "cmatrix", DT_INTENT_PERCEPTUAL };
 
-    dt_add_hist (imgid, "colorin", (dt_iop_params_t *)&pci, sizeof(dt_iop_colorin_params_t), imported, sizeof(imported), LRDT_COLORIN_VERSION, &n_import);
-    refresh_needed=TRUE;
+    dt_add_hist(imgid, "colorin", (dt_iop_params_t *)&pci, sizeof(dt_iop_colorin_params_t), imported,
+                sizeof(imported), LRDT_COLORIN_VERSION, &n_import);
+    refresh_needed = TRUE;
   }
 
-  if (dev != NULL && has_crop)
+  if(dev != NULL && has_crop)
   {
     pc.k_sym = 0;
     pc.k_apply = 0;
@@ -1112,31 +1054,31 @@ void dt_lightroom_import (int imgid, dt_develop_t *dev, gboolean iauto)
     pc.kyc = pc.kyd = 0.8f;
     float tmp;
 
-    if (has_crop)
+    if(has_crop)
     {
       // adjust crop data according to the rotation
 
-      switch (dev->image_storage.orientation)
+      switch(dev->image_storage.orientation)
       {
-         case 5: // portrait - counter-clockwise
-           tmp = pc.ch;
-           pc.ch = 1.0 - pc.cx;
-           pc.cx = pc.cy;
-           pc.cy = 1.0 - pc.cw;
-           pc.cw = tmp;
-           break;
-         case 6: // portrait - clockwise
-           tmp = pc.ch;
-           pc.ch = pc.cw;
-           pc.cw = 1.0 - pc.cy;
-           pc.cy = pc.cx;
-           pc.cx = 1.0 - tmp;
-           break;
-         default:
-           break;
+        case 5: // portrait - counter-clockwise
+          tmp = pc.ch;
+          pc.ch = 1.0 - pc.cx;
+          pc.cx = pc.cy;
+          pc.cy = 1.0 - pc.cw;
+          pc.cw = tmp;
+          break;
+        case 6: // portrait - clockwise
+          tmp = pc.ch;
+          pc.ch = pc.cw;
+          pc.cw = 1.0 - pc.cy;
+          pc.cy = pc.cx;
+          pc.cx = 1.0 - tmp;
+          break;
+        default:
+          break;
       }
 
-      if (pc.angle != 0)
+      if(pc.angle != 0)
       {
         const float rangle = -pc.angle * (3.141592 / 180);
         float x, y;
@@ -1165,17 +1107,18 @@ void dt_lightroom_import (int imgid, dt_develop_t *dev, gboolean iauto)
 
     fratio = (pc.cw - pc.cx) / (pc.ch - pc.cy);
 
-    dt_add_hist (imgid, "clipping", (dt_iop_params_t *)&pc, sizeof(dt_iop_clipping_params_t), imported, sizeof(imported), LRDT_CLIPPING_VERSION, &n_import);
-    refresh_needed=TRUE;
+    dt_add_hist(imgid, "clipping", (dt_iop_params_t *)&pc, sizeof(dt_iop_clipping_params_t), imported,
+                sizeof(imported), LRDT_CLIPPING_VERSION, &n_import);
+    refresh_needed = TRUE;
   }
 
-  if (dev != NULL && has_flip)
+  if(dev != NULL && has_flip)
   {
     pf.orientation = 0;
 
-    if (dev->image_storage.orientation == 5)
+    if(dev->image_storage.orientation == 5)
       // portrait
-      switch (orientation)
+      switch(orientation)
       {
         case 8:
           pf.orientation = 0;
@@ -1190,7 +1133,7 @@ void dt_lightroom_import (int imgid, dt_develop_t *dev, gboolean iauto)
           pf.orientation = 6;
           break;
 
-          // with horizontal flip
+        // with horizontal flip
         case 7:
           pf.orientation = 1;
           break;
@@ -1205,9 +1148,9 @@ void dt_lightroom_import (int imgid, dt_develop_t *dev, gboolean iauto)
           break;
       }
 
-    else if (dev->image_storage.orientation == 6)
+    else if(dev->image_storage.orientation == 6)
       // portrait
-      switch (orientation)
+      switch(orientation)
       {
         case 8:
           pf.orientation = 3;
@@ -1222,7 +1165,7 @@ void dt_lightroom_import (int imgid, dt_develop_t *dev, gboolean iauto)
           pf.orientation = 5;
           break;
 
-          // with horizontal flip
+        // with horizontal flip
         case 7:
           pf.orientation = 2;
           break;
@@ -1239,7 +1182,7 @@ void dt_lightroom_import (int imgid, dt_develop_t *dev, gboolean iauto)
 
     else
       // landscape
-      switch (orientation)
+      switch(orientation)
       {
         case 8:
           pf.orientation = 5;
@@ -1254,7 +1197,7 @@ void dt_lightroom_import (int imgid, dt_develop_t *dev, gboolean iauto)
           pf.orientation = 0;
           break;
 
-          // with horizontal flip
+        // with horizontal flip
         case 7:
           pf.orientation = 7;
           break;
@@ -1269,25 +1212,28 @@ void dt_lightroom_import (int imgid, dt_develop_t *dev, gboolean iauto)
           break;
       }
 
-    dt_add_hist (imgid, "flip", (dt_iop_params_t *)&pf, sizeof(dt_iop_flip_params_t), imported, sizeof(imported), LRDT_FLIP_VERSION, &n_import);
-    refresh_needed=TRUE;
+    dt_add_hist(imgid, "flip", (dt_iop_params_t *)&pf, sizeof(dt_iop_flip_params_t), imported,
+                sizeof(imported), LRDT_FLIP_VERSION, &n_import);
+    refresh_needed = TRUE;
   }
 
-  if (dev != NULL && has_exposure)
+  if(dev != NULL && has_exposure)
   {
-    dt_add_hist (imgid, "exposure", (dt_iop_params_t *)&pe, sizeof(dt_iop_exposure_params_t), imported, sizeof(imported), LRDT_EXPOSURE_VERSION, &n_import);
-    refresh_needed=TRUE;
+    dt_add_hist(imgid, "exposure", (dt_iop_params_t *)&pe, sizeof(dt_iop_exposure_params_t), imported,
+                sizeof(imported), LRDT_EXPOSURE_VERSION, &n_import);
+    refresh_needed = TRUE;
   }
 
-  if (dev != NULL && has_grain)
+  if(dev != NULL && has_grain)
   {
     pg.channel = 0;
 
-    dt_add_hist (imgid, "grain", (dt_iop_params_t *)&pg, sizeof(dt_iop_grain_params_t), imported, sizeof(imported), LRDT_GRAIN_VERSION, &n_import);
-    refresh_needed=TRUE;
+    dt_add_hist(imgid, "grain", (dt_iop_params_t *)&pg, sizeof(dt_iop_grain_params_t), imported,
+                sizeof(imported), LRDT_GRAIN_VERSION, &n_import);
+    refresh_needed = TRUE;
   }
 
-  if (dev != NULL && has_vignette)
+  if(dev != NULL && has_vignette)
   {
     const float base_ratio = 1.325 / 1.5;
 
@@ -1299,18 +1245,17 @@ void dt_lightroom_import (int imgid, dt_develop_t *dev, gboolean iauto)
 
     // defensive code, should not happen, but just in case future Lr version
     // has not ImageWidth/ImageLength XML tag.
-    if (iwidth == 0 || iheight == 0)
+    if(iwidth == 0 || iheight == 0)
       pv.whratio = base_ratio;
     else
       pv.whratio = base_ratio * ((float)iwidth / (float)iheight);
 
-    if (has_crop)
-      pv.whratio = pv.whratio * fratio;
+    if(has_crop) pv.whratio = pv.whratio * fratio;
 
     //  Adjust scale and ratio based on the roundness. On Lightroom changing
     //  the roundness change the width and the height of the vignette.
 
-    if (crop_roundness > 0)
+    if(crop_roundness > 0)
     {
       float newratio = pv.whratio - (pv.whratio - 1) * (crop_roundness / 100.0);
       float dscale = (1 - (newratio / pv.whratio)) / 2.0;
@@ -1319,29 +1264,31 @@ void dt_lightroom_import (int imgid, dt_develop_t *dev, gboolean iauto)
       pv.whratio = newratio;
     }
 
-    dt_add_hist (imgid, "vignette", (dt_iop_params_t *)&pv, sizeof(dt_iop_vignette_params_t), imported, sizeof(imported), LRDT_VIGNETTE_VERSION, &n_import);
-    refresh_needed=TRUE;
+    dt_add_hist(imgid, "vignette", (dt_iop_params_t *)&pv, sizeof(dt_iop_vignette_params_t), imported,
+                sizeof(imported), LRDT_VIGNETTE_VERSION, &n_import);
+    refresh_needed = TRUE;
   }
 
-  if (dev != NULL && has_spots)
+  if(dev != NULL && has_spots)
   {
     // Check for orientation, rotate when in portrait mode
-    if (orientation > 4)
-      for (int k=0; k<ps.num_spots; k++)
+    if(orientation > 4)
+      for(int k = 0; k < ps.num_spots; k++)
       {
         float tmp = ps.spot[k].y;
-        ps.spot[k].y  = 1.0 - ps.spot[k].x;
+        ps.spot[k].y = 1.0 - ps.spot[k].x;
         ps.spot[k].x = tmp;
         tmp = ps.spot[k].yc;
-        ps.spot[k].yc  = 1.0 - ps.spot[k].xc;
+        ps.spot[k].yc = 1.0 - ps.spot[k].xc;
         ps.spot[k].xc = tmp;
       }
 
-    dt_add_hist (imgid, "spots", (dt_iop_params_t *)&ps, sizeof(dt_iop_spots_params_t), imported, sizeof(imported), LRDT_SPOTS_VERSION, &n_import);
-    refresh_needed=TRUE;
+    dt_add_hist(imgid, "spots", (dt_iop_params_t *)&ps, sizeof(dt_iop_spots_params_t), imported,
+                sizeof(imported), LRDT_SPOTS_VERSION, &n_import);
+    refresh_needed = TRUE;
   }
 
-  if (curve_kind != linear || ptc_value[0] != 0 || ptc_value[1] != 0 || ptc_value[2] != 0 || ptc_value[3] != 0)
+  if(curve_kind != linear || ptc_value[0] != 0 || ptc_value[1] != 0 || ptc_value[2] != 0 || ptc_value[3] != 0)
   {
     ptc.tonecurve_nodes[ch_L] = 6;
     ptc.tonecurve_nodes[ch_a] = 7;
@@ -1352,17 +1299,17 @@ void dt_lightroom_import (int imgid, dt_develop_t *dev, gboolean iauto)
     ptc.tonecurve_autoscale_ab = 1;
     ptc.tonecurve_preset = 0;
 
-    float linear_ab[7] = {0.0, 0.08, 0.3, 0.5, 0.7, 0.92, 1.0};
+    float linear_ab[7] = { 0.0, 0.08, 0.3, 0.5, 0.7, 0.92, 1.0 };
 
     // linear a, b curves
-    for(int k=0; k<7; k++) ptc.tonecurve[ch_a][k].x = linear_ab[k];
-    for(int k=0; k<7; k++) ptc.tonecurve[ch_a][k].y = linear_ab[k];
-    for(int k=0; k<7; k++) ptc.tonecurve[ch_b][k].x = linear_ab[k];
-    for(int k=0; k<7; k++) ptc.tonecurve[ch_b][k].y = linear_ab[k];
+    for(int k = 0; k < 7; k++) ptc.tonecurve[ch_a][k].x = linear_ab[k];
+    for(int k = 0; k < 7; k++) ptc.tonecurve[ch_a][k].y = linear_ab[k];
+    for(int k = 0; k < 7; k++) ptc.tonecurve[ch_b][k].x = linear_ab[k];
+    for(int k = 0; k < 7; k++) ptc.tonecurve[ch_b][k].y = linear_ab[k];
 
     // Set the base tonecurve
 
-    if (curve_kind == linear)
+    if(curve_kind == linear)
     {
       ptc.tonecurve[ch_L][0].x = 0.0;
       ptc.tonecurve[ch_L][0].y = 0.0;
@@ -1379,14 +1326,14 @@ void dt_lightroom_import (int imgid, dt_develop_t *dev, gboolean iauto)
     }
     else
     {
-      for (int k=0; k<6; k++)
+      for(int k = 0; k < 6; k++)
       {
         ptc.tonecurve[ch_L][k].x = curve_pts[k][0] / 255.0;
         ptc.tonecurve[ch_L][k].y = curve_pts[k][1] / 255.0;
       }
     }
 
-    if (curve_kind != custom)
+    if(curve_kind != custom)
     {
       // set shadows/darks/lights/highlight adjustments
 
@@ -1395,75 +1342,78 @@ void dt_lightroom_import (int imgid, dt_develop_t *dev, gboolean iauto)
       ptc.tonecurve[ch_L][3].y += ptc.tonecurve[ch_L][1].y * ((float)ptc_value[2] / 100.0);
       ptc.tonecurve[ch_L][4].y += ptc.tonecurve[ch_L][1].y * ((float)ptc_value[3] / 100.0);
 
-      if (ptc.tonecurve[ch_L][1].y > ptc.tonecurve[ch_L][2].y)
+      if(ptc.tonecurve[ch_L][1].y > ptc.tonecurve[ch_L][2].y)
         ptc.tonecurve[ch_L][1].y = ptc.tonecurve[ch_L][2].y;
-      if (ptc.tonecurve[ch_L][3].y > ptc.tonecurve[ch_L][4].y)
+      if(ptc.tonecurve[ch_L][3].y > ptc.tonecurve[ch_L][4].y)
         ptc.tonecurve[ch_L][4].y = ptc.tonecurve[ch_L][3].y;
     }
 
-    dt_add_hist (imgid, "tonecurve",  (dt_iop_params_t *)&ptc, sizeof(dt_iop_tonecurve_params_t), imported, sizeof(imported), LRDT_TONECURVE_VERSION, &n_import);
-    refresh_needed=TRUE;
+    dt_add_hist(imgid, "tonecurve", (dt_iop_params_t *)&ptc, sizeof(dt_iop_tonecurve_params_t), imported,
+                sizeof(imported), LRDT_TONECURVE_VERSION, &n_import);
+    refresh_needed = TRUE;
   }
 
-  if (dev != NULL && has_colorzones)
+  if(dev != NULL && has_colorzones)
   {
     pcz.channel = DT_IOP_COLORZONES_h;
 
-    for (int i=0; i<3; i++)
-      for (int k=0; k<8; k++)
-        pcz.equalizer_x[i][k] = k/(DT_IOP_COLORZONES_BANDS-1.0);
+    for(int i = 0; i < 3; i++)
+      for(int k = 0; k < 8; k++) pcz.equalizer_x[i][k] = k / (DT_IOP_COLORZONES_BANDS - 1.0);
 
-    dt_add_hist (imgid, "colorzones", (dt_iop_params_t *)&pcz, sizeof(dt_iop_colorzones_params_t), imported, sizeof(imported), LRDT_COLORZONES_VERSION, &n_import);
-    refresh_needed=TRUE;
+    dt_add_hist(imgid, "colorzones", (dt_iop_params_t *)&pcz, sizeof(dt_iop_colorzones_params_t), imported,
+                sizeof(imported), LRDT_COLORZONES_VERSION, &n_import);
+    refresh_needed = TRUE;
   }
 
-  if (dev != NULL && has_splittoning)
+  if(dev != NULL && has_splittoning)
   {
     pst.compress = 50.0;
 
-    dt_add_hist (imgid, "splittoning", (dt_iop_params_t *)&pst, sizeof(dt_iop_splittoning_params_t), imported, sizeof(imported), LRDT_SPLITTONING_VERSION, &n_import);
-    refresh_needed=TRUE;
+    dt_add_hist(imgid, "splittoning", (dt_iop_params_t *)&pst, sizeof(dt_iop_splittoning_params_t), imported,
+                sizeof(imported), LRDT_SPLITTONING_VERSION, &n_import);
+    refresh_needed = TRUE;
   }
 
-  if (dev != NULL && has_bilat)
+  if(dev != NULL && has_bilat)
   {
     pbl.sigma_r = 100.0;
     pbl.sigma_s = 100.0;
 
-    dt_add_hist (imgid, "bilat", (dt_iop_params_t *)&pbl, sizeof(dt_iop_bilat_params_t), imported, sizeof(imported), LRDT_BILAT_VERSION, &n_import);
-    refresh_needed=TRUE;
+    dt_add_hist(imgid, "bilat", (dt_iop_params_t *)&pbl, sizeof(dt_iop_bilat_params_t), imported,
+                sizeof(imported), LRDT_BILAT_VERSION, &n_import);
+    refresh_needed = TRUE;
   }
 
-  if (has_tags)
+  if(has_tags)
   {
-    if (imported[0]) g_strlcat(imported, ", ", sizeof(imported));
+    if(imported[0]) g_strlcat(imported, ", ", sizeof(imported));
     g_strlcat(imported, _("tags"), sizeof(imported));
     n_import++;
   }
 
-  if (dev == NULL && has_rating)
+  if(dev == NULL && has_rating)
   {
     dt_ratings_apply_to_image(imgid, rating);
 
-    if (imported[0]) g_strlcat(imported, ", ", sizeof(imported));
+    if(imported[0]) g_strlcat(imported, ", ", sizeof(imported));
     g_strlcat(imported, _("rating"), sizeof(imported));
     n_import++;
   }
 
-  if (dev == NULL && has_gps)
+  if(dev == NULL && has_gps)
   {
     dt_image_set_location(imgid, lon, lat);
 
-    if (imported[0]) g_strlcat(imported, ", ", sizeof(imported));
+    if(imported[0]) g_strlcat(imported, ", ", sizeof(imported));
     g_strlcat(imported, _("geotagging"), sizeof(imported));
     n_import++;
   }
 
-  if (dev == NULL && has_colorlabel)
+  if(dev == NULL && has_colorlabel)
   {
     dt_colorlabels_set_label(imgid, color);
 
-    if (imported[0]) g_strlcat(imported, ", ", sizeof(imported));
+    if(imported[0]) g_strlcat(imported, ", ", sizeof(imported));
     g_strlcat(imported, _("color label"), sizeof(imported));
     n_import++;
   }
@@ -1472,19 +1422,18 @@ void dt_lightroom_import (int imgid, dt_develop_t *dev, gboolean iauto)
   {
     char message[512];
 
-    g_snprintf
-    (message, sizeof(message),
-     ngettext("%s has been imported", "%s have been imported", n_import), imported);
+    g_snprintf(message, sizeof(message), ngettext("%s has been imported", "%s have been imported", n_import),
+               imported);
     dt_control_log(message);
 
-    if (!iauto)
+    if(!iauto)
     {
       /* signal history changed */
       dt_dev_reload_history_items(dev);
       dt_dev_modulegroups_set(darktable.develop, dt_dev_modulegroups_get(darktable.develop));
       /* update xmp file */
       dt_image_synch_xmp(imgid);
-      dt_control_signal_raise(darktable.signals,DT_SIGNAL_DEVELOP_HISTORY_CHANGE);
+      dt_control_signal_raise(darktable.signals, DT_SIGNAL_DEVELOP_HISTORY_CHANGE);
     }
   }
 }

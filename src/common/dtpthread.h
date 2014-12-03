@@ -34,7 +34,7 @@ static inline double dt_pthread_get_wtime()
 {
   struct timeval time;
   gettimeofday(&time, NULL);
-  return time.tv_sec - 1290608000 + (1.0/1000000.0)*time.tv_usec;
+  return time.tv_sec - 1290608000 + (1.0 / 1000000.0) * time.tv_usec;
 }
 
 
@@ -50,33 +50,35 @@ typedef struct dt_pthread_mutex_t
   double top_locked_sum[TOPN];
   char top_wait_name[TOPN][256];
   double top_wait_sum[TOPN];
-}
-dt_pthread_mutex_t;
+} dt_pthread_mutex_t;
 
-static inline int
-dt_pthread_mutex_destroy(dt_pthread_mutex_t *mutex)
+static inline int dt_pthread_mutex_destroy(dt_pthread_mutex_t *mutex)
 {
   const int ret = pthread_mutex_destroy(&(mutex->mutex));
 
-  //printf("\n[mutex] stats for mutex `%s':\n", mutex->name);
-  //printf("[mutex] total time locked: %.3f secs\n", mutex->time_sum_locked);
-  //printf("[mutex] total wait time  : %.3f secs\n", mutex->time_sum_wait);
-  //printf("[mutex] top %d lockers   :\n", TOPN);
-  //for(int k=0; k<TOPN; k++) printf("[mutex]  %.3f secs : `%s'\n", mutex->top_locked_sum[k], mutex->top_locked_name[k]);
-  //printf("[mutex] top %d waiters   :\n", TOPN);
-  //for(int k=0; k<TOPN; k++) printf("[mutex]  %.3f secs : `%s'\n", mutex->top_wait_sum[k], mutex->top_wait_name[k]);
+  // printf("\n[mutex] stats for mutex `%s':\n", mutex->name);
+  // printf("[mutex] total time locked: %.3f secs\n", mutex->time_sum_locked);
+  // printf("[mutex] total wait time  : %.3f secs\n", mutex->time_sum_wait);
+  // printf("[mutex] top %d lockers   :\n", TOPN);
+  // for(int k=0; k<TOPN; k++) printf("[mutex]  %.3f secs : `%s'\n", mutex->top_locked_sum[k],
+  // mutex->top_locked_name[k]);
+  // printf("[mutex] top %d waiters   :\n", TOPN);
+  // for(int k=0; k<TOPN; k++) printf("[mutex]  %.3f secs : `%s'\n", mutex->top_wait_sum[k],
+  // mutex->top_wait_name[k]);
 
   return ret;
 }
 
 #define dt_pthread_mutex_init(A, B) dt_pthread_mutex_init_with_caller(A, B, __FILE__, __LINE__, __FUNCTION__)
-static inline int
-dt_pthread_mutex_init_with_caller(dt_pthread_mutex_t *mutex, const pthread_mutexattr_t *attr, const char *file, const int line, const char *function)
+static inline int dt_pthread_mutex_init_with_caller(dt_pthread_mutex_t *mutex,
+                                                    const pthread_mutexattr_t *attr, const char *file,
+                                                    const int line, const char *function)
 {
   memset(mutex, 0x0, sizeof(dt_pthread_mutex_t));
   snprintf(mutex->name, 256, "%s:%d (%s)", file, line, function);
 #if defined(__OpenBSD__)
-  if (attr == NULL) {
+  if(attr == NULL)
+  {
     pthread_mutexattr_t a;
     pthread_mutexattr_init(&a);
     pthread_mutexattr_settype(&a, PTHREAD_MUTEX_NORMAL);
@@ -90,8 +92,8 @@ dt_pthread_mutex_init_with_caller(dt_pthread_mutex_t *mutex, const pthread_mutex
 }
 
 #define dt_pthread_mutex_lock(A) dt_pthread_mutex_lock_with_caller(A, __FILE__, __LINE__, __FUNCTION__)
-static inline int
-dt_pthread_mutex_lock_with_caller(dt_pthread_mutex_t *mutex, const char *file, const int line, const char *function)
+static inline int dt_pthread_mutex_lock_with_caller(dt_pthread_mutex_t *mutex, const char *file,
+                                                    const int line, const char *function)
 {
   const double t0 = dt_pthread_get_wtime();
   const int ret = pthread_mutex_lock(&(mutex->mutex));
@@ -101,7 +103,7 @@ dt_pthread_mutex_lock_with_caller(dt_pthread_mutex_t *mutex, const char *file, c
   char name[256];
   snprintf(name, sizeof(name), "%s:%d (%s)", file, line, function);
   int min_wait_slot = 0;
-  for(int k=0; k<TOPN; k++)
+  for(int k = 0; k < TOPN; k++)
   {
     if(mutex->top_wait_sum[k] < mutex->top_wait_sum[min_wait_slot]) min_wait_slot = k;
     if(!strncmp(name, mutex->top_wait_name[k], 256))
@@ -116,8 +118,8 @@ dt_pthread_mutex_lock_with_caller(dt_pthread_mutex_t *mutex, const char *file, c
 }
 
 #define dt_pthread_mutex_trylock(A) dt_pthread_mutex_trylock_with_caller(A, __FILE__, __LINE__, __FUNCTION__)
-static inline int
-dt_pthread_mutex_trylock_with_caller(dt_pthread_mutex_t *mutex, const char *file, const int line, const char *function)
+static inline int dt_pthread_mutex_trylock_with_caller(dt_pthread_mutex_t *mutex, const char *file,
+                                                       const int line, const char *function)
 {
   const double t0 = dt_pthread_get_wtime();
   const int ret = pthread_mutex_trylock(&(mutex->mutex));
@@ -128,7 +130,7 @@ dt_pthread_mutex_trylock_with_caller(dt_pthread_mutex_t *mutex, const char *file
   char name[256];
   snprintf(name, sizeof(name), "%s:%d (%s)", file, line, function);
   int min_wait_slot = 0;
-  for(int k=0; k<TOPN; k++)
+  for(int k = 0; k < TOPN; k++)
   {
     if(mutex->top_wait_sum[k] < mutex->top_wait_sum[min_wait_slot]) min_wait_slot = k;
     if(!strncmp(name, mutex->top_wait_name[k], 256))
@@ -143,8 +145,8 @@ dt_pthread_mutex_trylock_with_caller(dt_pthread_mutex_t *mutex, const char *file
 }
 
 #define dt_pthread_mutex_unlock(A) dt_pthread_mutex_unlock_with_caller(A, __FILE__, __LINE__, __FUNCTION__)
-static inline int
-dt_pthread_mutex_unlock_with_caller(dt_pthread_mutex_t *mutex, const char *file, const int line, const char *function)
+static inline int dt_pthread_mutex_unlock_with_caller(dt_pthread_mutex_t *mutex, const char *file,
+                                                      const int line, const char *function)
 {
   const double t0 = dt_pthread_get_wtime();
   const double locked = t0 - mutex->time_locked;
@@ -153,7 +155,7 @@ dt_pthread_mutex_unlock_with_caller(dt_pthread_mutex_t *mutex, const char *file,
   char name[256];
   snprintf(name, sizeof(name), "%s:%d (%s)", file, line, function);
   int min_locked_slot = 0;
-  for(int k=0; k<TOPN; k++)
+  for(int k = 0; k < TOPN; k++)
   {
     if(mutex->top_locked_sum[k] < mutex->top_locked_sum[min_locked_slot]) min_locked_slot = k;
     if(!strncmp(name, mutex->top_locked_name[k], 256))
@@ -174,8 +176,7 @@ dt_pthread_mutex_unlock_with_caller(dt_pthread_mutex_t *mutex, const char *file,
   return ret;
 }
 
-static inline int
-dt_pthread_cond_wait(pthread_cond_t *cond, dt_pthread_mutex_t *mutex)
+static inline int dt_pthread_cond_wait(pthread_cond_t *cond, dt_pthread_mutex_t *mutex)
 {
   return pthread_cond_wait(cond, &(mutex->mutex));
 }

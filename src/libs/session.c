@@ -24,14 +24,14 @@
 
 DT_MODULE(1)
 
-typedef  struct dt_lib_session_t
+typedef struct dt_lib_session_t
 {
   /** Gui part of the module */
   struct
   {
-    GtkLabel *label1;                           // Jobcode
-    GtkEntry *entry1;                         // Jobcode
-    GtkButton *button1;                     // create new
+    GtkLabel *label1;   // Jobcode
+    GtkEntry *entry1;   // Jobcode
+    GtkButton *button1; // create new
   } gui;
 
   /** Data part of the module */
@@ -39,11 +39,9 @@ typedef  struct dt_lib_session_t
   {
 
   } data;
-}
-dt_lib_session_t;
+} dt_lib_session_t;
 
-const char*
-name ()
+const char *name()
 {
   return _("session");
 }
@@ -59,37 +57,33 @@ uint32_t container()
 }
 
 
-void
-gui_reset (dt_lib_module_t *self)
+void gui_reset(dt_lib_module_t *self)
 {
 }
 
-int
-position ()
+int position()
 {
   return 999;
 }
 
-static void
-create_callback(GtkButton *button, gpointer user_data)
+static void create_callback(GtkButton *button, gpointer user_data)
 {
-  dt_lib_module_t *self=(dt_lib_module_t *)user_data;
-  dt_lib_session_t *lib=self->data;
+  dt_lib_module_t *self = (dt_lib_module_t *)user_data;
+  dt_lib_session_t *lib = self->data;
 
-  dt_conf_set_string("plugins/session/jobcode", gtk_entry_get_text(lib->gui.entry1) );
+  dt_conf_set_string("plugins/session/jobcode", gtk_entry_get_text(lib->gui.entry1));
 #ifdef HAVE_GPHOTO2
-  dt_view_tethering_set_job_code(darktable.view_manager, gtk_entry_get_text( lib->gui.entry1 ) );
+  dt_view_tethering_set_job_code(darktable.view_manager, gtk_entry_get_text(lib->gui.entry1));
 #endif
 }
 
-void
-gui_init (dt_lib_module_t *self)
+void gui_init(dt_lib_module_t *self)
 {
   self->widget = gtk_vbox_new(TRUE, 5);
   self->data = calloc(1, sizeof(dt_lib_session_t));
 
   // Setup lib data
-  dt_lib_session_t *lib=self->data;
+  dt_lib_session_t *lib = self->data;
 
   // Setup gui
   self->widget = gtk_vbox_new(FALSE, 5);
@@ -101,35 +95,32 @@ gui_init (dt_lib_module_t *self)
   vbox2 = GTK_BOX(gtk_vbox_new(TRUE, 5));
 
   lib->gui.label1 = GTK_LABEL(gtk_label_new(_("jobcode")));
-  gtk_misc_set_alignment(GTK_MISC(lib->gui.label1 ), 0.0, 0.5);
+  gtk_misc_set_alignment(GTK_MISC(lib->gui.label1), 0.0, 0.5);
   gtk_box_pack_start(vbox1, GTK_WIDGET(lib->gui.label1), TRUE, TRUE, 0);
 
   lib->gui.entry1 = GTK_ENTRY(gtk_entry_new());
-  dt_gui_key_accel_block_on_focus_connect (GTK_WIDGET (lib->gui.entry1));
+  dt_gui_key_accel_block_on_focus_connect(GTK_WIDGET(lib->gui.entry1));
   gtk_box_pack_start(vbox2, GTK_WIDGET(lib->gui.entry1), TRUE, TRUE, 0);
 
-  lib->gui.button1 = GTK_BUTTON(gtk_button_new_with_label( _("create") ));
+  lib->gui.button1 = GTK_BUTTON(gtk_button_new_with_label(_("create")));
   gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(vbox1), FALSE, FALSE, 0);
   gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(vbox2), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(hbox), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(lib->gui.button1), TRUE, TRUE, 0);
 
-  g_signal_connect (G_OBJECT (lib->gui.button1), "clicked",
-                    G_CALLBACK (create_callback), self);
+  g_signal_connect(G_OBJECT(lib->gui.button1), "clicked", G_CALLBACK(create_callback), self);
 
   gchar *str = dt_conf_get_string("plugins/session/jobcode");
-  gtk_entry_set_text(lib->gui.entry1, str );
+  gtk_entry_set_text(lib->gui.entry1, str);
   g_free(str);
-
 }
 
-void
-gui_cleanup (dt_lib_module_t *self)
+void gui_cleanup(dt_lib_module_t *self)
 {
   // Setup lib data
-  dt_lib_session_t *lib=self->data;
+  dt_lib_session_t *lib = self->data;
 
-  dt_gui_key_accel_block_on_focus_disconnect (GTK_WIDGET (lib->gui.entry1));
+  dt_gui_key_accel_block_on_focus_disconnect(GTK_WIDGET(lib->gui.entry1));
   g_free(self->data);
   self->data = NULL;
 }

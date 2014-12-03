@@ -27,10 +27,10 @@ typedef struct dt_gui_hist_dialog_t
 
 /** shows a dialog for creating a new style, w if not null is a widget to
     change the sensitive state depending on the dialog response.  */
-int dt_gui_hist_dialog_new (dt_gui_hist_dialog_t *d, int imgid, gboolean iscopy);
+int dt_gui_hist_dialog_new(dt_gui_hist_dialog_t *d, int imgid, gboolean iscopy);
 
 /** must be called to initialize the structure. */
-void dt_gui_hist_dialog_init (dt_gui_hist_dialog_t *d);
+void dt_gui_hist_dialog_init(dt_gui_hist_dialog_t *d);
 
 #endif
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

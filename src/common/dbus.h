@@ -25,7 +25,8 @@ struct dt_dbus_t *dt_dbus_init();
 /** closes down database and frees memory */
 void dt_dbus_destroy(const struct dt_dbus_t *);
 
-/** have we managed to get the dbus name? when not, then there is already another instance of darktable running */
+/** have we managed to get the dbus name? when not, then there is already another instance of darktable
+ * running */
 gboolean dt_dbus_connected(const struct dt_dbus_t *);
 
 #endif // __DBUS_H__

@@ -29,8 +29,7 @@ typedef struct dt_fswatch_t
   dt_pthread_mutex_t mutex;
   pthread_t thread;
   GList *items;
-}
-dt_fswatch_t;
+} dt_fswatch_t;
 
 /** Types of filesystem watches. */
 typedef enum dt_fswatch_type_t
@@ -39,17 +38,16 @@ typedef enum dt_fswatch_type_t
   DT_FSWATCH_IMAGE = 0,
   /** watch is on directory for curves files << Just an test  */
   DT_FSWATCH_CURVE_DIRECTORY,
-}
-dt_fswatch_type_t;
+} dt_fswatch_type_t;
 
 /** initializes a new fswatch context. */
-const dt_fswatch_t* dt_fswatch_new();
+const dt_fswatch_t *dt_fswatch_new();
 /** cleanup and destroy fswatch context. \remarks After this point pointer at fswatch is invalid.*/
 void dt_fswatch_destroy(const dt_fswatch_t *fswatch);
 /** adds an watch of type and assign data. */
 void dt_fswatch_add(const dt_fswatch_t *fswatch, dt_fswatch_type_t type, void *data);
 /** removes an watch of type and assigned data. */
-void dt_fswatch_remove(const dt_fswatch_t * fswatch, dt_fswatch_type_t type, void *data);
+void dt_fswatch_remove(const dt_fswatch_t *fswatch, dt_fswatch_type_t type, void *data);
 
 #endif
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

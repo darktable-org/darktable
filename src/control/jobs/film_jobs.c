@@ -23,8 +23,7 @@
 typedef struct dt_film_import1_t
 {
   dt_film_t *film;
-}
-dt_film_import1_t;
+} dt_film_import1_t;
 
 static int32_t dt_film_import1_run(dt_job_t *job)
 {
@@ -46,11 +45,11 @@ static int32_t dt_film_import1_run(dt_job_t *job)
   return 0;
 }
 
-dt_job_t * dt_film_import1_create(dt_film_t *film)
+dt_job_t *dt_film_import1_create(dt_film_t *film)
 {
   dt_job_t *job = dt_control_job_create(&dt_film_import1_run, "cache load raw images for preview");
   if(!job) return NULL;
-  dt_film_import1_t *params = (dt_film_import1_t*)calloc(1, sizeof(dt_film_import1_t));
+  dt_film_import1_t *params = (dt_film_import1_t *)calloc(1, sizeof(dt_film_import1_t));
   if(!params)
   {
     dt_control_job_dispose(job);

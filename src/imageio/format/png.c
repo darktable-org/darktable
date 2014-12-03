@@ -47,14 +47,12 @@ typedef struct dt_imageio_png_t
   FILE *f;
   png_structp png_ptr;
   png_infop info_ptr;
-}
-dt_imageio_png_t;
+} dt_imageio_png_t;
 
 typedef struct dt_imageio_png_gui_t
 {
   GtkToggleButton *b8, *b16;
-}
-dt_imageio_png_gui_t;
+} dt_imageio_png_gui_t;
 
 /* Write EXIF data to PNG file.
  * Code copied from DigiKam's libs/dimg/loaders/pngloader.cpp.
@@ -66,9 +64,8 @@ dt_imageio_png_gui_t;
  * for making useful code much more readable and discoverable ;)
  */
 
-static void PNGwriteRawProfile(png_struct *ping,
-                               png_info *ping_info, char *profile_type, guint8 *profile_data,
-                               png_uint_32 length)
+static void PNGwriteRawProfile(png_struct *ping, png_info *ping_info, char *profile_type,
+                               guint8 *profile_data, png_uint_32 length)
 {
   png_textp text;
   long i;
@@ -76,11 +73,10 @@ static void PNGwriteRawProfile(png_struct *ping,
   png_charp dp;
   png_uint_32 allocated_length, description_length;
 
-  const guint8 hex[16] =
-  {'0','1','2','3','4','5','6','7','8','9','a','b','c','d','e','f'};
+  const guint8 hex[16] = { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f' };
   text = png_malloc(ping, sizeof(png_text));
   description_length = strlen(profile_type);
-  allocated_length = length*2 + (length >> 5) + 20 + description_length;
+  allocated_length = length * 2 + (length >> 5) + 20 + description_length;
 
   text[0].text = png_malloc(ping, allocated_length);
   text[0].key = png_malloc(ping, 80);
@@ -91,67 +87,65 @@ static void PNGwriteRawProfile(png_struct *ping,
 
   sp = profile_data;
   dp = text[0].text;
-  *dp++='\n';
+  *dp++ = '\n';
 
   g_strlcpy(dp, profile_type, allocated_length);
 
   dp += description_length;
-  *dp++='\n';
-  *dp='\0';
+  *dp++ = '\n';
+  *dp = '\0';
 
-  g_snprintf(dp, allocated_length-strlen(text[0].text), "%8lu ", (unsigned long int)length);
+  g_snprintf(dp, allocated_length - strlen(text[0].text), "%8lu ", (unsigned long int)length);
 
   dp += 8;
 
-  for (i=0; i < (long) length; i++)
+  for(i = 0; i < (long)length; i++)
   {
-    if (i%36 == 0)
-      *dp++='\n';
+    if(i % 36 == 0) *dp++ = '\n';
 
     *(dp++) = hex[((*sp >> 4) & 0x0f)];
-    *(dp++) = hex[((*sp++ ) & 0x0f)];
+    *(dp++) = hex[((*sp++) & 0x0f)];
   }
 
-  *dp++='\n';
-  *dp='\0';
-  text[0].text_length = (dp-text[0].text);
+  *dp++ = '\n';
+  *dp = '\0';
+  text[0].text_length = (dp - text[0].text);
   text[0].compression = -1;
 
-  if (text[0].text_length <= allocated_length)
-    png_set_text(ping, ping_info,text, 1);
+  if(text[0].text_length <= allocated_length) png_set_text(ping, ping_info, text, 1);
 
   png_free(ping, text[0].text);
   png_free(ping, text[0].key);
   png_free(ping, text);
 }
 
-int
-write_image (dt_imageio_module_data_t *p_tmp, const char *filename, const void *ivoid, void *exif, int exif_len, int imgid)
+int write_image(dt_imageio_module_data_t *p_tmp, const char *filename, const void *ivoid, void *exif,
+                int exif_len, int imgid)
 {
-  dt_imageio_png_t*p=(dt_imageio_png_t*)p_tmp;
+  dt_imageio_png_t *p = (dt_imageio_png_t *)p_tmp;
   const int width = p->width, height = p->height;
   FILE *f = fopen(filename, "wb");
-  if (!f) return 1;
+  if(!f) return 1;
 
   png_structp png_ptr;
   png_infop info_ptr;
 
   png_ptr = png_create_write_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
-  if (!png_ptr)
+  if(!png_ptr)
   {
     fclose(f);
     return 1;
   }
 
   info_ptr = png_create_info_struct(png_ptr);
-  if (!info_ptr)
+  if(!info_ptr)
   {
     fclose(f);
     png_destroy_write_struct(&png_ptr, NULL);
     return 1;
   }
 
-  if (setjmp(png_jmpbuf(png_ptr)))
+  if(setjmp(png_jmpbuf(png_ptr)))
   {
     fclose(f);
     png_destroy_write_struct(&png_ptr, &info_ptr);
@@ -167,8 +161,7 @@ write_image (dt_imageio_module_data_t *p_tmp, const char *filename, const void *
   png_set_compression_method(png_ptr, 8);
   png_set_compression_buffer_size(png_ptr, 8192);
 
-  png_set_IHDR(png_ptr, info_ptr, width, height,
-               p->bpp, PNG_COLOR_TYPE_RGB, PNG_INTERLACE_NONE,
+  png_set_IHDR(png_ptr, info_ptr, width, height, p->bpp, PNG_COLOR_TYPE_RGB, PNG_INTERLACE_NONE,
                PNG_COMPRESSION_TYPE_DEFAULT, PNG_FILTER_TYPE_DEFAULT);
 
   // metadata has to be written before the pixels
@@ -185,8 +178,8 @@ write_image (dt_imageio_module_data_t *p_tmp, const char *filename, const void *
       cmsSaveProfileToMem(out_profile, buf, &len);
       dt_colorspaces_get_profile_name(out_profile, "en", "US", name, sizeof(name));
 
-      png_set_iCCP(png_ptr, info_ptr, *name?name:"icc", 0,
-#if (PNG_LIBPNG_VER < 10500)
+      png_set_iCCP(png_ptr, info_ptr, *name ? name : "icc", 0,
+#if(PNG_LIBPNG_VER < 10500)
                    (png_charp)buf,
 #else
                    (png_const_bytep)buf,
@@ -214,16 +207,15 @@ write_image (dt_imageio_module_data_t *p_tmp, const char *filename, const void *
     /* swap bytes of 16 bit files to most significant bit first */
     png_set_swap(png_ptr);
 
-    for (unsigned i = 0; i < height; i++)
+    for(unsigned i = 0; i < height; i++)
       row_pointers[i] = (png_bytep)((uint16_t *)ivoid + (size_t)4 * i * width);
   }
   else
   {
-    for (unsigned i = 0; i < height; i++)
-      row_pointers[i] = (uint8_t *)ivoid + (size_t)4 * i * width;
+    for(unsigned i = 0; i < height; i++) row_pointers[i] = (uint8_t *)ivoid + (size_t)4 * i * width;
   }
 
-  png_write_image (png_ptr, row_pointers);
+  png_write_image(png_ptr, row_pointers);
 
   free(row_pointers);
 
@@ -235,7 +227,7 @@ write_image (dt_imageio_module_data_t *p_tmp, const char *filename, const void *
 
 int read_header(const char *filename, dt_imageio_module_data_t *p_tmp)
 {
-  dt_imageio_png_t*png=(dt_imageio_png_t*)p_tmp;
+  dt_imageio_png_t *png = (dt_imageio_png_t *)p_tmp;
   png->f = fopen(filename, "rb");
 
   if(!png->f) return 1;
@@ -245,7 +237,7 @@ int read_header(const char *filename, dt_imageio_module_data_t *p_tmp)
 
   size_t cnt = fread(dat, 1, NUM_BYTES_CHECK, png->f);
 
-  if (cnt != NUM_BYTES_CHECK || png_sig_cmp(dat, (png_size_t) 0, NUM_BYTES_CHECK))
+  if(cnt != NUM_BYTES_CHECK || png_sig_cmp(dat, (png_size_t)0, NUM_BYTES_CHECK))
   {
     fclose(png->f);
     return 1;
@@ -253,21 +245,21 @@ int read_header(const char *filename, dt_imageio_module_data_t *p_tmp)
 
   png->png_ptr = png_create_read_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
 
-  if (!png->png_ptr)
+  if(!png->png_ptr)
   {
     fclose(png->f);
     return 1;
   }
 
   png->info_ptr = png_create_info_struct(png->png_ptr);
-  if (!png->info_ptr)
+  if(!png->info_ptr)
   {
     fclose(png->f);
     png_destroy_read_struct(&png->png_ptr, NULL, NULL);
     return 1;
   }
 
-  if (setjmp(png_jmpbuf(png->png_ptr)))
+  if(setjmp(png_jmpbuf(png->png_ptr)))
   {
     fclose(png->f);
     png_destroy_read_struct(&png->png_ptr, NULL, NULL);
@@ -288,23 +280,20 @@ int read_header(const char *filename, dt_imageio_module_data_t *p_tmp)
   // image input transformations
 
   // palette => rgb
-  if (color_type == PNG_COLOR_TYPE_PALETTE)
-    png_set_palette_to_rgb(png->png_ptr);
+  if(color_type == PNG_COLOR_TYPE_PALETTE) png_set_palette_to_rgb(png->png_ptr);
 
   // 1, 2, 4 bit => 8 bit
-  if (color_type == PNG_COLOR_TYPE_GRAY && bit_depth < 8)
-    png_set_expand_gray_1_2_4_to_8(png->png_ptr);
+  if(color_type == PNG_COLOR_TYPE_GRAY && bit_depth < 8) png_set_expand_gray_1_2_4_to_8(png->png_ptr);
 
   // strip alpha channel
-  if (color_type & PNG_COLOR_MASK_ALPHA)
-    png_set_strip_alpha(png->png_ptr);
+  if(color_type & PNG_COLOR_MASK_ALPHA) png_set_strip_alpha(png->png_ptr);
 
   // grayscale => rgb
-  if (color_type == PNG_COLOR_TYPE_GRAY || color_type == PNG_COLOR_TYPE_GRAY_ALPHA)
+  if(color_type == PNG_COLOR_TYPE_GRAY || color_type == PNG_COLOR_TYPE_GRAY_ALPHA)
     png_set_gray_to_rgb(png->png_ptr);
 
   // png->bytespp = 3*bit_depth/8;
-  png->width  = png_get_image_width(png->png_ptr, png->info_ptr);
+  png->width = png_get_image_width(png->png_ptr, png->info_ptr);
   png->height = png_get_image_height(png->png_ptr, png->info_ptr);
 
   return 0;
@@ -328,10 +317,10 @@ int dt_imageio_png_read_assure_8(dt_imageio_png_t *png)
 }
 #endif
 
-int read_image (dt_imageio_module_data_t *p_tmp, uint8_t *out)
+int read_image(dt_imageio_module_data_t *p_tmp, uint8_t *out)
 {
-  dt_imageio_png_t*png=(dt_imageio_png_t*)p_tmp;
-  if (setjmp(png_jmpbuf(png->png_ptr)))
+  dt_imageio_png_t *png = (dt_imageio_png_t *)p_tmp;
+  if(setjmp(png_jmpbuf(png->png_ptr)))
   {
     fclose(png->f);
     png_destroy_read_struct(&png->png_ptr, NULL, NULL);
@@ -340,10 +329,10 @@ int read_image (dt_imageio_module_data_t *p_tmp, uint8_t *out)
   // reflect changes
   png_read_update_info(png->png_ptr, png->info_ptr);
 
-  png_bytep row_pointer = (png_bytep) out;
+  png_bytep row_pointer = (png_bytep)out;
   unsigned long rowbytes = png_get_rowbytes(png->png_ptr, png->info_ptr);
 
-  for (int y = 0; y < png->height; y++)
+  for(int y = 0; y < png->height; y++)
   {
     png_read_row(png->png_ptr, row_pointer, NULL);
     row_pointer += rowbytes;
@@ -356,36 +345,36 @@ int read_image (dt_imageio_module_data_t *p_tmp, uint8_t *out)
   return 0;
 }
 
-size_t
-params_size(dt_imageio_module_format_t *self)
+size_t params_size(dt_imageio_module_format_t *self)
 {
   return sizeof(dt_imageio_module_data_t) + sizeof(int);
 }
 
-void*
-get_params(dt_imageio_module_format_t *self)
+void *get_params(dt_imageio_module_format_t *self)
 {
   dt_imageio_png_t *d = (dt_imageio_png_t *)calloc(1, sizeof(dt_imageio_png_t));
   d->bpp = dt_conf_get_int("plugins/imageio/format/png/bpp");
-  if(d->bpp < 12) d->bpp = 8;
-  else            d->bpp = 16;
+  if(d->bpp < 12)
+    d->bpp = 8;
+  else
+    d->bpp = 16;
   return d;
 }
 
-void
-free_params(dt_imageio_module_format_t *self, dt_imageio_module_data_t *params)
+void free_params(dt_imageio_module_format_t *self, dt_imageio_module_data_t *params)
 {
   free(params);
 }
 
-int
-set_params(dt_imageio_module_format_t *self, const void *params, const int size)
+int set_params(dt_imageio_module_format_t *self, const void *params, const int size)
 {
   if(size != self->params_size(self)) return 1;
   dt_imageio_png_t *d = (dt_imageio_png_t *)params;
   dt_imageio_png_gui_t *g = (dt_imageio_png_gui_t *)self->gui_data;
-  if(d->bpp < 12) gtk_toggle_button_set_active(g->b8, TRUE);
-  else            gtk_toggle_button_set_active(g->b16, TRUE);
+  if(d->bpp < 12)
+    gtk_toggle_button_set_active(g->b8, TRUE);
+  else
+    gtk_toggle_button_set_active(g->b16, TRUE);
   dt_conf_set_int("plugins/imageio/format/png/bpp", d->bpp);
   return 0;
 }
@@ -400,26 +389,22 @@ int levels(dt_imageio_module_data_t *p)
   return IMAGEIO_RGB | (((dt_imageio_png_t *)p)->bpp == 8 ? IMAGEIO_INT8 : IMAGEIO_INT16);
 }
 
-const char*
-mime(dt_imageio_module_data_t *data)
+const char *mime(dt_imageio_module_data_t *data)
 {
   return "image/png";
 }
 
-const char*
-extension(dt_imageio_module_data_t *data)
+const char *extension(dt_imageio_module_data_t *data)
 {
   return "png";
 }
 
-const char*
-name ()
+const char *name()
 {
   return _("PNG (8/16-bit)");
 }
 
-static void
-radiobutton_changed (GtkRadioButton *radiobutton, gpointer user_data)
+static void radiobutton_changed(GtkRadioButton *radiobutton, gpointer user_data)
 {
   int bpp = GPOINTER_TO_INT(user_data);
   if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(radiobutton)))
@@ -429,14 +414,16 @@ radiobutton_changed (GtkRadioButton *radiobutton, gpointer user_data)
 void init(dt_imageio_module_format_t *self)
 {
 #ifdef USE_LUA
-  luaA_struct(darktable.lua_state.state,dt_imageio_png_t);
-  dt_lua_register_module_member(darktable.lua_state.state,self,dt_imageio_png_t,bpp,int);
+  luaA_struct(darktable.lua_state.state, dt_imageio_png_t);
+  dt_lua_register_module_member(darktable.lua_state.state, self, dt_imageio_png_t, bpp, int);
 #endif
 }
-void cleanup(dt_imageio_module_format_t *self) {}
+void cleanup(dt_imageio_module_format_t *self)
+{
+}
 
 // TODO: some quality/compression stuff?
-void gui_init (dt_imageio_module_format_t *self)
+void gui_init(dt_imageio_module_format_t *self)
 {
   dt_imageio_png_gui_t *gui = (dt_imageio_png_gui_t *)malloc(sizeof(dt_imageio_png_gui_t));
   self->gui_data = (void *)gui;
@@ -454,12 +441,14 @@ void gui_init (dt_imageio_module_format_t *self)
   if(bpp >= 12) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(radiobutton), TRUE);
 }
 
-void gui_cleanup (dt_imageio_module_format_t *self)
+void gui_cleanup(dt_imageio_module_format_t *self)
 {
   free(self->gui_data);
 }
 
-void gui_reset (dt_imageio_module_format_t *self) {}
+void gui_reset(dt_imageio_module_format_t *self)
+{
+}
 
 int flags(dt_imageio_module_data_t *data)
 {

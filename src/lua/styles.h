@@ -27,15 +27,15 @@
   takes an image, a name, an optional description and creates a style. returns the new style object
   used by dt_lua_image_t
   */
-int dt_lua_style_create_from_image(lua_State*L);
+int dt_lua_style_create_from_image(lua_State *L);
 
 /**
   (-2,0)
   takes an image and a style in any order, apply the style to the image
   */
-int dt_lua_style_apply(lua_State*L);
+int dt_lua_style_apply(lua_State *L);
 
-int dt_lua_init_styles(lua_State * L);
+int dt_lua_init_styles(lua_State *L);
 
 #endif
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

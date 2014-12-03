@@ -30,8 +30,7 @@ typedef enum dt_dev_zoom_t
   DT_ZOOM_FILL = 1,
   DT_ZOOM_1 = 2,
   DT_ZOOM_FREE = 3
-}
-dt_dev_zoom_t;
+} dt_dev_zoom_t;
 
 typedef char dt_dev_operation_t[20];
 
@@ -40,9 +39,8 @@ typedef char dt_dev_operation_t[20];
 typedef union dt_dev_operation_params_t
 {
   int32_t i[DEV_NUM_OP_PARAMS];
-  float   f[DEV_NUM_OP_PARAMS];
-}
-dt_dev_operation_params_t;
+  float f[DEV_NUM_OP_PARAMS];
+} dt_dev_operation_params_t;
 
 typedef enum dt_lib_filter_t
 {
@@ -54,8 +52,7 @@ typedef enum dt_lib_filter_t
   DT_LIB_FILTER_STAR_4 = 5,
   DT_LIB_FILTER_STAR_5 = 6,
   DT_LIB_FILTER_REJECT = 7
-}
-dt_lib_filter_t;
+} dt_lib_filter_t;
 
 #endif
 

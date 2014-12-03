@@ -23,12 +23,12 @@
 #include "common/debug.h"
 
 
-static int tag_name(lua_State*L)
+static int tag_name(lua_State *L)
 {
   dt_lua_tag_t tagid1;
-  luaA_to(L,dt_lua_tag_t,&tagid1,-2);
-  gchar * name = dt_tag_get_name(tagid1);
-  lua_pushstring(L,name);
+  luaA_to(L, dt_lua_tag_t, &tagid1, -2);
+  gchar *name = dt_tag_get_name(tagid1);
+  lua_pushstring(L, name);
   free(name);
   return 1;
 }
@@ -36,107 +36,109 @@ static int tag_name(lua_State*L)
 static int tag_tostring(lua_State *L)
 {
   dt_lua_tag_t tagid1;
-  luaA_to(L,dt_lua_tag_t,&tagid1,-1);
-  gchar * name = dt_tag_get_name(tagid1);
-  lua_pushstring(L,name);
+  luaA_to(L, dt_lua_tag_t, &tagid1, -1);
+  gchar *name = dt_tag_get_name(tagid1);
+  lua_pushstring(L, name);
   free(name);
   return 1;
 }
 
-static int tag_length(lua_State *L) {
+static int tag_length(lua_State *L)
+{
   dt_lua_tag_t tagid;
-  luaA_to(L,dt_lua_tag_t,&tagid,-1);
+  luaA_to(L, dt_lua_tag_t, &tagid, -1);
   sqlite3_stmt *stmt;
-  int rv, count=-1;
+  int rv, count = -1;
 
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
                               "SELECT count() FROM tagged_images WHERE tagid=?1", -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, tagid);
   rv = sqlite3_step(stmt);
-  if( rv != SQLITE_ROW)
-    return luaL_error(L,"unknown SQL error");
-  count = sqlite3_column_int(stmt,0);
-  lua_pushnumber(L,count);
+  if(rv != SQLITE_ROW) return luaL_error(L, "unknown SQL error");
+  count = sqlite3_column_int(stmt, 0);
+  lua_pushnumber(L, count);
   sqlite3_finalize(stmt);
   return 1;
 }
-static int tag_index(lua_State *L) 
+static int tag_index(lua_State *L)
 {
   dt_lua_tag_t tagid;
-  luaA_to(L,dt_lua_tag_t,&tagid,-2);
-  int index = luaL_checkinteger(L,-1);
-  if(index < 1) {
-    return luaL_error(L,"incorrect index in database");
+  luaA_to(L, dt_lua_tag_t, &tagid, -2);
+  int index = luaL_checkinteger(L, -1);
+  if(index < 1)
+  {
+    return luaL_error(L, "incorrect index in database");
   }
   sqlite3_stmt *stmt = NULL;
   char query[1024];
-  snprintf(query,sizeof(query),"select imgid from tagged_images WHERE tagid=?1 order by imgid limit 1 offset %d",index -1);
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),query, -1, &stmt, NULL);
+  snprintf(query, sizeof(query),
+           "select imgid from tagged_images WHERE tagid=?1 order by imgid limit 1 offset %d", index - 1);
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, tagid);
   if(sqlite3_step(stmt) == SQLITE_ROW)
   {
     int imgid = sqlite3_column_int(stmt, 0);
-    luaA_push(L,dt_lua_image_t,&imgid);
+    luaA_push(L, dt_lua_image_t, &imgid);
   }
   else
   {
     sqlite3_finalize(stmt);
-    luaL_error(L,"incorrect index in database");
+    luaL_error(L, "incorrect index in database");
   }
   return 1;
 }
 
 
-static int tag_lib_length(lua_State *L) {
+static int tag_lib_length(lua_State *L)
+{
   sqlite3_stmt *stmt;
-  int rv, count=-1;
+  int rv, count = -1;
 
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                              "SELECT count() FROM tags", -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "SELECT count() FROM tags", -1, &stmt, NULL);
   rv = sqlite3_step(stmt);
-  if( rv != SQLITE_ROW)
-    return luaL_error(L,"unknown SQL error");
-  count = sqlite3_column_int(stmt,0);
-  lua_pushnumber(L,count);
+  if(rv != SQLITE_ROW) return luaL_error(L, "unknown SQL error");
+  count = sqlite3_column_int(stmt, 0);
+  lua_pushnumber(L, count);
   sqlite3_finalize(stmt);
   return 1;
 }
-static int tag_lib_index(lua_State *L) 
+static int tag_lib_index(lua_State *L)
 {
-  int index = luaL_checkinteger(L,-1);
+  int index = luaL_checkinteger(L, -1);
   sqlite3_stmt *stmt = NULL;
   char query[1024];
-  snprintf(query,sizeof(query),"SELECT id from tags order by id limit 1 offset %d",index -1);
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),query, -1, &stmt, NULL);
+  snprintf(query, sizeof(query), "SELECT id from tags order by id limit 1 offset %d", index - 1);
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
   if(sqlite3_step(stmt) == SQLITE_ROW)
   {
     int tagid = sqlite3_column_int(stmt, 0);
-    luaA_push(L,dt_lua_tag_t,&tagid);
+    luaA_push(L, dt_lua_tag_t, &tagid);
   }
   else
   {
     sqlite3_finalize(stmt);
-    luaL_error(L,"incorrect index in database");
+    luaL_error(L, "incorrect index in database");
   }
   return 1;
 }
 
 static int tag_lib_create(lua_State *L)
 {
-  const char * name = luaL_checkstring(L,1);
+  const char *name = luaL_checkstring(L, 1);
   dt_lua_tag_t tagid;
-  if(!dt_tag_new_from_gui(name,&tagid)) {
-    return luaL_error(L,"error creating tag %s\n",name);
+  if(!dt_tag_new_from_gui(name, &tagid))
+  {
+    return luaL_error(L, "error creating tag %s\n", name);
   }
-  luaA_push(L,dt_lua_tag_t,&tagid);
+  luaA_push(L, dt_lua_tag_t, &tagid);
   return 1;
 }
 
 static int tag_delete(lua_State *L)
 {
   dt_lua_tag_t tagid;
-  luaA_to(L,dt_lua_tag_t,&tagid,-1);
-  dt_tag_remove(tagid,true);
+  luaA_to(L, dt_lua_tag_t, &tagid, -1);
+  dt_tag_remove(tagid, true);
   return 0;
 }
 
@@ -145,14 +147,17 @@ int dt_lua_tag_attach(lua_State *L)
 {
   dt_lua_image_t imgid = -1;
   dt_lua_tag_t tagid = 0;
-  if(luaL_testudata(L,1,"dt_lua_image_t")) {
-    luaA_to(L,dt_lua_image_t,&imgid,1);
-    luaA_to(L,dt_lua_tag_t,&tagid,2);
-  } else {
-    luaA_to(L,dt_lua_tag_t,&tagid,1);
-    luaA_to(L,dt_lua_image_t,&imgid,2);
+  if(luaL_testudata(L, 1, "dt_lua_image_t"))
+  {
+    luaA_to(L, dt_lua_image_t, &imgid, 1);
+    luaA_to(L, dt_lua_tag_t, &tagid, 2);
   }
-  dt_tag_attach(tagid,imgid);
+  else
+  {
+    luaA_to(L, dt_lua_tag_t, &tagid, 1);
+    luaA_to(L, dt_lua_image_t, &imgid, 2);
+  }
+  dt_tag_attach(tagid, imgid);
   return 0;
 }
 
@@ -160,44 +165,49 @@ int dt_lua_tag_detach(lua_State *L)
 {
   dt_lua_image_t imgid;
   dt_lua_tag_t tagid;
-  if(luaL_testudata(L,1,"dt_lua_image_t")) {
-    luaA_to(L,dt_lua_image_t,&imgid,1);
-    luaA_to(L,dt_lua_tag_t,&tagid,2);
-  } else {
-    luaA_to(L,dt_lua_tag_t,&tagid,1);
-    luaA_to(L,dt_lua_image_t,&imgid,2);
+  if(luaL_testudata(L, 1, "dt_lua_image_t"))
+  {
+    luaA_to(L, dt_lua_image_t, &imgid, 1);
+    luaA_to(L, dt_lua_tag_t, &tagid, 2);
   }
-  dt_tag_detach(tagid,imgid);
+  else
+  {
+    luaA_to(L, dt_lua_tag_t, &tagid, 1);
+    luaA_to(L, dt_lua_image_t, &imgid, 2);
+  }
+  dt_tag_detach(tagid, imgid);
   return 0;
 }
 
 static int tag_lib_find(lua_State *L)
 {
-  const char * name = luaL_checkstring(L,1);
+  const char *name = luaL_checkstring(L, 1);
   dt_lua_tag_t tagid;
-  if(!dt_tag_exists(name,&tagid)) {
+  if(!dt_tag_exists(name, &tagid))
+  {
     lua_pushnil(L);
     return 1;
   }
-  luaA_push(L,dt_lua_tag_t,&tagid);
+  luaA_push(L, dt_lua_tag_t, &tagid);
   return 1;
 }
 
 int dt_lua_tag_get_attached(lua_State *L)
 {
   dt_lua_image_t imgid;
-  luaA_to(L,dt_lua_image_t,&imgid,1);
+  luaA_to(L, dt_lua_image_t, &imgid, 1);
   sqlite3_stmt *stmt;
 
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                              "SELECT tagid FROM tagged_images WHERE imgid=?1", -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "SELECT tagid FROM tagged_images WHERE imgid=?1",
+                              -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
   int rv = sqlite3_step(stmt);
   lua_newtable(L);
-  while(rv == SQLITE_ROW) {
+  while(rv == SQLITE_ROW)
+  {
     int tagid = sqlite3_column_int(stmt, 0);
-    luaA_push(L,dt_lua_tag_t,&tagid);
-    luaL_ref(L,-2);
+    luaA_push(L, dt_lua_tag_t, &tagid);
+    luaL_ref(L, -2);
     rv = sqlite3_step(stmt);
   }
   sqlite3_finalize(stmt);
@@ -205,55 +215,55 @@ int dt_lua_tag_get_attached(lua_State *L)
 }
 
 
-int dt_lua_init_tags(lua_State*L)
+int dt_lua_init_tags(lua_State *L)
 {
-  dt_lua_init_int_type(L,dt_lua_tag_t);
-  lua_pushcfunction(L,tag_length);
-  lua_pushcfunction(L,tag_index);
-  dt_lua_type_register_number_const(L,dt_lua_tag_t);
-  lua_pushcfunction(L,tag_name);
-  dt_lua_type_register_const(L,dt_lua_tag_t,"name");
-  lua_pushcfunction(L,tag_delete);
-  lua_pushcclosure(L,dt_lua_type_member_common,1);
-  dt_lua_type_register_const(L,dt_lua_tag_t,"delete");
-  lua_pushcfunction(L,dt_lua_tag_attach);
-  lua_pushcclosure(L,dt_lua_type_member_common,1);
-  dt_lua_type_register_const(L,dt_lua_tag_t,"attach");
-  lua_pushcfunction(L,dt_lua_tag_detach);
-  lua_pushcclosure(L,dt_lua_type_member_common,1);
-  dt_lua_type_register_const(L,dt_lua_tag_t,"detach");
-  luaL_getmetatable(L,"dt_lua_tag_t");
-  lua_pushcfunction(L,tag_tostring);
-  lua_setfield(L,-2,"__tostring");
-  lua_pop(L,1);
+  dt_lua_init_int_type(L, dt_lua_tag_t);
+  lua_pushcfunction(L, tag_length);
+  lua_pushcfunction(L, tag_index);
+  dt_lua_type_register_number_const(L, dt_lua_tag_t);
+  lua_pushcfunction(L, tag_name);
+  dt_lua_type_register_const(L, dt_lua_tag_t, "name");
+  lua_pushcfunction(L, tag_delete);
+  lua_pushcclosure(L, dt_lua_type_member_common, 1);
+  dt_lua_type_register_const(L, dt_lua_tag_t, "delete");
+  lua_pushcfunction(L, dt_lua_tag_attach);
+  lua_pushcclosure(L, dt_lua_type_member_common, 1);
+  dt_lua_type_register_const(L, dt_lua_tag_t, "attach");
+  lua_pushcfunction(L, dt_lua_tag_detach);
+  lua_pushcclosure(L, dt_lua_type_member_common, 1);
+  dt_lua_type_register_const(L, dt_lua_tag_t, "detach");
+  luaL_getmetatable(L, "dt_lua_tag_t");
+  lua_pushcfunction(L, tag_tostring);
+  lua_setfield(L, -2, "__tostring");
+  lua_pop(L, 1);
 
   /* tags */
   dt_lua_push_darktable_lib(L);
-  luaA_Type type_id = dt_lua_init_singleton(L,"tag_table",NULL);
-  lua_setfield(L,-2,"tags");
-  lua_pop(L,1);
+  luaA_Type type_id = dt_lua_init_singleton(L, "tag_table", NULL);
+  lua_setfield(L, -2, "tags");
+  lua_pop(L, 1);
 
-  lua_pushcfunction(L,tag_lib_length);
-  lua_pushcfunction(L,tag_lib_index);
-  dt_lua_type_register_number_const_type(L,type_id);
-  lua_pushcfunction(L,tag_lib_create);
-  lua_pushcclosure(L,dt_lua_type_member_common,1);
-  dt_lua_type_register_const_type(L,type_id,"create");
-  lua_pushcfunction(L,tag_lib_find);
-  lua_pushcclosure(L,dt_lua_type_member_common,1);
-  dt_lua_type_register_const_type(L,type_id,"find");
-  lua_pushcfunction(L,tag_delete);
-  lua_pushcclosure(L,dt_lua_type_member_common,1);
-  dt_lua_type_register_const_type(L,type_id,"delete");
-  lua_pushcfunction(L,dt_lua_tag_attach);
-  lua_pushcclosure(L,dt_lua_type_member_common,1);
-  dt_lua_type_register_const_type(L,type_id,"attach");
-  lua_pushcfunction(L,dt_lua_tag_detach);
-  lua_pushcclosure(L,dt_lua_type_member_common,1);
-  dt_lua_type_register_const_type(L,type_id,"detach");
-  lua_pushcfunction(L,dt_lua_tag_get_attached);
-  lua_pushcclosure(L,dt_lua_type_member_common,1);
-  dt_lua_type_register_const_type(L,type_id,"get_tags");
+  lua_pushcfunction(L, tag_lib_length);
+  lua_pushcfunction(L, tag_lib_index);
+  dt_lua_type_register_number_const_type(L, type_id);
+  lua_pushcfunction(L, tag_lib_create);
+  lua_pushcclosure(L, dt_lua_type_member_common, 1);
+  dt_lua_type_register_const_type(L, type_id, "create");
+  lua_pushcfunction(L, tag_lib_find);
+  lua_pushcclosure(L, dt_lua_type_member_common, 1);
+  dt_lua_type_register_const_type(L, type_id, "find");
+  lua_pushcfunction(L, tag_delete);
+  lua_pushcclosure(L, dt_lua_type_member_common, 1);
+  dt_lua_type_register_const_type(L, type_id, "delete");
+  lua_pushcfunction(L, dt_lua_tag_attach);
+  lua_pushcclosure(L, dt_lua_type_member_common, 1);
+  dt_lua_type_register_const_type(L, type_id, "attach");
+  lua_pushcfunction(L, dt_lua_tag_detach);
+  lua_pushcclosure(L, dt_lua_type_member_common, 1);
+  dt_lua_type_register_const_type(L, type_id, "detach");
+  lua_pushcfunction(L, dt_lua_tag_get_attached);
+  lua_pushcclosure(L, dt_lua_type_member_common, 1);
+  dt_lua_type_register_const_type(L, type_id, "get_tags");
 
 
   return 0;

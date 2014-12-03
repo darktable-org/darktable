@@ -25,7 +25,8 @@
 
 #define DT_GUI_IOP_MODULE_CONTROL_SPACING 2
 
-/* helper macro that applies the DPI transformation to fixed pixel values. input should be defaulting to 96 DPI */
+/* helper macro that applies the DPI transformation to fixed pixel values. input should be defaulting to 96
+ * DPI */
 #define DT_PIXEL_APPLY_DPI(value) (value * darktable.gui->dpi_factor)
 
 typedef enum dt_gui_view_switch_t
@@ -35,8 +36,7 @@ typedef enum dt_gui_view_switch_t
   DT_GUI_VIEW_SWITCH_TO_DARKROOM,
   DT_GUI_VIEW_SWITCH_TO_MAP,
   DT_GUI_VIEW_SWITCH_TO_SLIDESHOW
-}
-dt_gui_view_switch_to_t;
+} dt_gui_view_switch_to_t;
 
 typedef struct dt_gui_widgets_t
 {
@@ -48,11 +48,10 @@ typedef struct dt_gui_widgets_t
   GtkWidget *top_border;
 
   /* left panel */
-  GtkTable *panel_left;                 // panel table 3 rows, top,center,bottom and file on center
+  GtkTable *panel_left; // panel table 3 rows, top,center,bottom and file on center
   GtkTable *panel_right;
 
-}
-dt_gui_widgets_t;
+} dt_gui_widgets_t;
 
 typedef struct dt_gui_gtk_t
 {
@@ -79,8 +78,7 @@ typedef struct dt_gui_gtk_t
 
   // store which gtkrc we loaded:
   char gtkrc[PATH_MAX];
-}
-dt_gui_gtk_t;
+} dt_gui_gtk_t;
 
 int dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[]);
 void dt_gui_gtk_run(dt_gui_gtk_t *gui);
@@ -149,8 +147,7 @@ typedef enum dt_ui_container_t
 
   /* Count of containers */
   DT_UI_CONTAINER_SIZE
-}
-dt_ui_container_t;
+} dt_ui_container_t;
 
 typedef enum dt_ui_panel_t
 {
@@ -191,7 +188,7 @@ void dt_ui_container_focus_widget(struct dt_ui_t *ui, const dt_ui_container_t c,
 /** \brief removes all child widgets from container */
 void dt_ui_container_clear(struct dt_ui_t *ui, const dt_ui_container_t c);
 /** \brief shows/hide a panel */
-void dt_ui_panel_show(struct dt_ui_t *ui,const dt_ui_panel_t, gboolean show, gboolean write);
+void dt_ui_panel_show(struct dt_ui_t *ui, const dt_ui_panel_t, gboolean show, gboolean write);
 /** show or hide outermost borders with expand arrows */
 void dt_ui_border_show(struct dt_ui_t *ui, gboolean show);
 /** \brief restore saved state of panel visibility for current view */
@@ -199,7 +196,7 @@ void dt_ui_restore_panels(struct dt_ui_t *ui);
 /** \brief toggle view of panels eg. collaps/expands to previous view state */
 void dt_ui_toggle_panels_visibility(struct dt_ui_t *ui);
 /** \brief get visible state of panel */
-gboolean dt_ui_panel_visible(struct dt_ui_t *ui,const dt_ui_panel_t);
+gboolean dt_ui_panel_visible(struct dt_ui_t *ui, const dt_ui_panel_t);
 /** \brief get the center drawable widget */
 GtkWidget *dt_ui_center(struct dt_ui_t *ui);
 /** \brief get the main window widget */

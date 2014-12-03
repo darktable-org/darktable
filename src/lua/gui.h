@@ -20,7 +20,7 @@
 #include "lua/lua.h"
 
 
-int dt_lua_init_gui(lua_State * L);
+int dt_lua_init_gui(lua_State *L);
 
 #endif
 

@@ -40,12 +40,15 @@ dt_imageio_retval_t dt_imageio_open_pfm(dt_image_t *img, const char *filename, d
   if(!f) return DT_IMAGEIO_FILE_CORRUPTED;
   int ret = 0;
   int cols = 3;
-  char head[2] = {'X', 'X'};
-  ret = fscanf(f, "%c%c\n", head, head+1);
+  char head[2] = { 'X', 'X' };
+  ret = fscanf(f, "%c%c\n", head, head + 1);
   if(ret != 2 || head[0] != 'P') goto error_corrupt;
-  if(head[1] == 'F') cols = 3;
-  else if(head[1] == 'f') cols = 1;
-  else goto error_corrupt;
+  if(head[1] == 'F')
+    cols = 3;
+  else if(head[1] == 'f')
+    cols = 1;
+  else
+    goto error_corrupt;
   ret = fscanf(f, "%d %d\n%*[^\n]", &img->width, &img->height);
   if(ret != 2) goto error_corrupt;
   ret = fread(&ret, sizeof(char), 1, f);
@@ -57,29 +60,25 @@ dt_imageio_retval_t dt_imageio_open_pfm(dt_image_t *img, const char *filename, d
 
   if(cols == 3)
   {
-    ret = fread(buf, 3*sizeof(float), (size_t)img->width*img->height, f);
-    for(size_t i=(size_t)img->width*img->height; i>0; i--) for(int c=0; c<3; c++) buf[4*(i-1)+c] = fmaxf(0.0f, fminf(FLT_MAX, buf[3*(i-1)+c]));
+    ret = fread(buf, 3 * sizeof(float), (size_t)img->width * img->height, f);
+    for(size_t i = (size_t)img->width * img->height; i > 0; i--)
+      for(int c = 0; c < 3; c++) buf[4 * (i - 1) + c] = fmaxf(0.0f, fminf(FLT_MAX, buf[3 * (i - 1) + c]));
   }
-  else for(size_t j=0; j < img->height; j++)
-      for(size_t i=0; i < img->width; i++)
+  else
+    for(size_t j = 0; j < img->height; j++)
+      for(size_t i = 0; i < img->width; i++)
       {
-        ret = fread(buf + 4*(img->width*j + i), sizeof(float), 1, f);
-        buf[4*(img->width*j + i) + 2] =
-          buf[4*(img->width*j + i) + 1] =
-            buf[4*(img->width*j + i) + 0];
+        ret = fread(buf + 4 * (img->width * j + i), sizeof(float), 1, f);
+        buf[4 * (img->width * j + i) + 2] = buf[4 * (img->width * j + i) + 1]
+            = buf[4 * (img->width * j + i) + 0];
       }
-  float *line = (float *)calloc(4*img->width, sizeof(float));
-  for(size_t j=0; j < img->height/2; j++)
+  float *line = (float *)calloc(4 * img->width, sizeof(float));
+  for(size_t j = 0; j < img->height / 2; j++)
   {
-    memcpy(line,
-           buf + img->width*j*4,
-           4*sizeof(float)*img->width);
-    memcpy(buf + img->width*j*4,
-           buf + img->width*(img->height-1-j)*4,
-           4*sizeof(float)*img->width);
-    memcpy(buf + img->width*(img->height-1-j)*4,
-           line,
-           4*sizeof(float)*img->width);
+    memcpy(line, buf + img->width * j * 4, 4 * sizeof(float) * img->width);
+    memcpy(buf + img->width * j * 4, buf + img->width * (img->height - 1 - j) * 4,
+           4 * sizeof(float) * img->width);
+    memcpy(buf + img->width * (img->height - 1 - j) * 4, line, 4 * sizeof(float) * img->width);
   }
   free(line);
   fclose(f);

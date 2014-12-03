@@ -26,8 +26,7 @@
 
 #include <sqlite3.h>
 
-int32_t
-dt_image_cache_allocate(void *data, const uint32_t key, size_t *cost, void **buf)
+int32_t dt_image_cache_allocate(void *data, const uint32_t key, size_t *cost, void **buf)
 {
   dt_image_cache_t *c = (dt_image_cache_t *)data;
   const uint32_t hash = key; // == image id
@@ -38,29 +37,31 @@ dt_image_cache_allocate(void *data, const uint32_t key, size_t *cost, void **buf
   // load stuff from db and store in cache:
   char *str;
   sqlite3_stmt *stmt;
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                              "SELECT id, group_id, film_id, width, height, filename, maker, model, lens, exposure, "
-                              "aperture, iso, focal_length, datetime_taken, flags, crop, orientation, focus_distance, "
-                              "raw_parameters, longitude, latitude, color_matrix, colorspace, version, raw_black, raw_maximum FROM images WHERE id = ?1",
-                              -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_PREPARE_V2(
+      dt_database_get(darktable.db),
+      "SELECT id, group_id, film_id, width, height, filename, maker, model, lens, exposure, "
+      "aperture, iso, focal_length, datetime_taken, flags, crop, orientation, focus_distance, "
+      "raw_parameters, longitude, latitude, color_matrix, colorspace, version, raw_black, raw_maximum FROM "
+      "images WHERE id = ?1",
+      -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, key);
   if(sqlite3_step(stmt) == SQLITE_ROW)
   {
-    img->id      = sqlite3_column_int(stmt, 0);
+    img->id = sqlite3_column_int(stmt, 0);
     img->group_id = sqlite3_column_int(stmt, 1);
     img->film_id = sqlite3_column_int(stmt, 2);
-    img->width   = sqlite3_column_int(stmt, 3);
-    img->height  = sqlite3_column_int(stmt, 4);
-    img->filename[0] = img->exif_maker[0] = img->exif_model[0] = img->exif_lens[0] =
-        img->exif_datetime_taken[0] = '\0';
+    img->width = sqlite3_column_int(stmt, 3);
+    img->height = sqlite3_column_int(stmt, 4);
+    img->filename[0] = img->exif_maker[0] = img->exif_model[0] = img->exif_lens[0]
+        = img->exif_datetime_taken[0] = '\0';
     str = (char *)sqlite3_column_text(stmt, 5);
-    if(str) g_strlcpy(img->filename,   str, sizeof(img->filename));
+    if(str) g_strlcpy(img->filename, str, sizeof(img->filename));
     str = (char *)sqlite3_column_text(stmt, 6);
     if(str) g_strlcpy(img->exif_maker, str, sizeof(img->exif_maker));
     str = (char *)sqlite3_column_text(stmt, 7);
     if(str) g_strlcpy(img->exif_model, str, sizeof(img->exif_model));
     str = (char *)sqlite3_column_text(stmt, 8);
-    if(str) g_strlcpy(img->exif_lens,  str, sizeof(img->exif_lens));
+    if(str) g_strlcpy(img->exif_lens, str, sizeof(img->exif_lens));
     img->exif_exposure = sqlite3_column_double(stmt, 9);
     img->exif_aperture = sqlite3_column_double(stmt, 10);
     img->exif_iso = sqlite3_column_double(stmt, 11);
@@ -70,7 +71,7 @@ dt_image_cache_allocate(void *data, const uint32_t key, size_t *cost, void **buf
     img->flags = sqlite3_column_int(stmt, 14);
     img->exif_crop = sqlite3_column_double(stmt, 15);
     img->orientation = sqlite3_column_int(stmt, 16);
-    img->exif_focus_distance = sqlite3_column_double(stmt,17);
+    img->exif_focus_distance = sqlite3_column_double(stmt, 17);
     if(img->exif_focus_distance >= 0 && img->orientation >= 0) img->exif_inited = 1;
     uint32_t tmp = sqlite3_column_int(stmt, 18);
     memcpy(&img->legacy_flip, &tmp, sizeof(dt_image_raw_parameters_t));
@@ -97,13 +98,13 @@ dt_image_cache_allocate(void *data, const uint32_t key, size_t *cost, void **buf
 
     // buffer size?
     if(img->flags & DT_IMAGE_LDR)
-      img->bpp = 4*sizeof(float);
+      img->bpp = 4 * sizeof(float);
     else if(img->flags & DT_IMAGE_HDR)
     {
       if(img->flags & DT_IMAGE_RAW)
         img->bpp = sizeof(float);
       else
-        img->bpp = 4*sizeof(float);
+        img->bpp = 4 * sizeof(float);
     }
     else // raw
       img->bpp = sizeof(uint16_t);
@@ -111,7 +112,8 @@ dt_image_cache_allocate(void *data, const uint32_t key, size_t *cost, void **buf
   else
   {
     img->id = -1;
-    fprintf(stderr, "[image_cache_allocate] failed to open image %d from database: %s\n", key, sqlite3_errmsg(dt_database_get(darktable.db)));
+    fprintf(stderr, "[image_cache_allocate] failed to open image %d from database: %s\n", key,
+            sqlite3_errmsg(dt_database_get(darktable.db)));
   }
   sqlite3_finalize(stmt);
 
@@ -119,8 +121,7 @@ dt_image_cache_allocate(void *data, const uint32_t key, size_t *cost, void **buf
   return 0; // no write lock required, we inited it all right here.
 }
 
-void
-dt_image_cache_deallocate(void *data, const uint32_t key, void *payload)
+void dt_image_cache_deallocate(void *data, const uint32_t key, void *payload)
 {
   // don't free. memory is only allocated once.
   dt_image_t *img = (dt_image_t *)payload;
@@ -136,8 +137,7 @@ dt_image_cache_deallocate(void *data, const uint32_t key, void *payload)
   dt_image_init(img);
 }
 
-void
-dt_image_cache_init(dt_image_cache_t *cache)
+void dt_image_cache_init(dt_image_cache_t *cache)
 {
   // the image cache does no serialization.
   // (unsafe. data should be in db/xmp, not in any other additional cache,
@@ -145,28 +145,27 @@ dt_image_cache_init(dt_image_cache_t *cache)
   // TODO: actually an independent conf var?
   //       too large: dangerous and wasteful?
   //       can we get away with a fixed size?
-  const uint32_t max_mem = 50*1024*1024;
-  uint32_t num = (uint32_t)(1.5f*max_mem/sizeof(dt_image_t));
+  const uint32_t max_mem = 50 * 1024 * 1024;
+  uint32_t num = (uint32_t)(1.5f * max_mem / sizeof(dt_image_t));
   dt_cache_init(&cache->cache, num, 16, 64, max_mem);
-  dt_cache_set_allocate_callback(&cache->cache, &dt_image_cache_allocate,   cache);
-  dt_cache_set_cleanup_callback (&cache->cache, &dt_image_cache_deallocate, cache);
+  dt_cache_set_allocate_callback(&cache->cache, &dt_image_cache_allocate, cache);
+  dt_cache_set_cleanup_callback(&cache->cache, &dt_image_cache_deallocate, cache);
 
   // might have been rounded to power of two:
   num = dt_cache_capacity(&cache->cache);
-  cache->images = dt_alloc_align(64, sizeof(dt_image_t)*num);
-  memset(cache->images, 0, sizeof(dt_image_t)*num);
+  cache->images = dt_alloc_align(64, sizeof(dt_image_t) * num);
+  memset(cache->images, 0, sizeof(dt_image_t) * num);
   dt_print(DT_DEBUG_CACHE, "[image_cache] has %d entries\n", num);
   // initialize first image as empty data:
   dt_image_init(cache->images);
-  for(uint32_t k=1; k<num; k++)
+  for(uint32_t k = 1; k < num; k++)
   {
     // optimized initialization (avoid accessing conf):
     memcpy(cache->images + k, cache->images, sizeof(dt_image_t));
   }
 }
 
-void
-dt_image_cache_cleanup(dt_image_cache_t *cache)
+void dt_image_cache_cleanup(dt_image_cache_t *cache)
 {
   dt_cache_cleanup(&cache->cache);
   dt_free_align(cache->images);
@@ -174,34 +173,25 @@ dt_image_cache_cleanup(dt_image_cache_t *cache)
 
 void dt_image_cache_print(dt_image_cache_t *cache)
 {
-  printf("[image cache] fill %.2f/%.2f MB (%.2f%%)\n", cache->cache.cost/(1024.0*1024.0),
-         cache->cache.cost_quota/(1024.0*1024.0),
-         (float)cache->cache.cost/(float)cache->cache.cost_quota);
+  printf("[image cache] fill %.2f/%.2f MB (%.2f%%)\n", cache->cache.cost / (1024.0 * 1024.0),
+         cache->cache.cost_quota / (1024.0 * 1024.0),
+         (float)cache->cache.cost / (float)cache->cache.cost_quota);
 }
 
-const dt_image_t*
-dt_image_cache_read_get(
-  dt_image_cache_t *cache,
-  const uint32_t imgid)
+const dt_image_t *dt_image_cache_read_get(dt_image_cache_t *cache, const uint32_t imgid)
 {
   if(imgid <= 0) return NULL;
   return (const dt_image_t *)dt_cache_read_get(&cache->cache, imgid);
 }
 
-const dt_image_t*
-dt_image_cache_read_testget(
-  dt_image_cache_t *cache,
-  const uint32_t imgid)
+const dt_image_t *dt_image_cache_read_testget(dt_image_cache_t *cache, const uint32_t imgid)
 {
   if(imgid <= 0) return NULL;
   return (const dt_image_t *)dt_cache_read_testget(&cache->cache, imgid);
 }
 
 // drops the read lock on an image struct
-void
-dt_image_cache_read_release(
-  dt_image_cache_t *cache,
-  const dt_image_t *img)
+void dt_image_cache_read_release(dt_image_cache_t *cache, const dt_image_t *img)
 {
   if(!img || img->id <= 0) return;
   // just force the dt_image_t struct to make sure it has been locked before.
@@ -211,10 +201,7 @@ dt_image_cache_read_release(
 // augments the already acquired read lock on an image to write the struct.
 // blocks until all readers have stepped back from this image (all but one,
 // which is assumed to be this thread)
-dt_image_t*
-dt_image_cache_write_get(
-  dt_image_cache_t *cache,
-  const dt_image_t *img)
+dt_image_t *dt_image_cache_write_get(dt_image_cache_t *cache, const dt_image_t *img)
 {
   if(!img) return NULL;
   // just force the dt_image_t struct to make sure it has been locked for reading before.
@@ -225,25 +212,24 @@ dt_image_cache_write_get(
 // drops the write privileges on an image struct.
 // this triggers a write-through to sql, and if the setting
 // is present, also to xmp sidecar files (safe setting).
-void
-dt_image_cache_write_release(
-  dt_image_cache_t *cache,
-  dt_image_t *img,
-  dt_image_cache_write_mode_t mode)
+void dt_image_cache_write_release(dt_image_cache_t *cache, dt_image_t *img, dt_image_cache_write_mode_t mode)
 {
   if(img->id <= 0) return;
   sqlite3_stmt *stmt;
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                              "UPDATE images SET width = ?1, height = ?2, maker = ?3, model = ?4, "
-                              "lens = ?5, exposure = ?6, aperture = ?7, iso = ?8, focal_length = ?9, "
-                              "focus_distance = ?10, film_id = ?11, datetime_taken = ?12, flags = ?13, "
-                              "crop = ?14, orientation = ?15, raw_parameters = ?16, group_id = ?17, longitude = ?18, "
-                              "latitude = ?19, color_matrix = ?20, colorspace = ?21, raw_black = ?22, raw_maximum = ?23 WHERE id = ?24", -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_PREPARE_V2(
+      dt_database_get(darktable.db),
+      "UPDATE images SET width = ?1, height = ?2, maker = ?3, model = ?4, "
+      "lens = ?5, exposure = ?6, aperture = ?7, iso = ?8, focal_length = ?9, "
+      "focus_distance = ?10, film_id = ?11, datetime_taken = ?12, flags = ?13, "
+      "crop = ?14, orientation = ?15, raw_parameters = ?16, group_id = ?17, longitude = ?18, "
+      "latitude = ?19, color_matrix = ?20, colorspace = ?21, raw_black = ?22, raw_maximum = ?23 WHERE id = "
+      "?24",
+      -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, img->width);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, img->height);
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 3, img->exif_maker, -1, SQLITE_STATIC);
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 4, img->exif_model, -1, SQLITE_STATIC);
-  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 5, img->exif_lens,  -1,  SQLITE_STATIC);
+  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 5, img->exif_lens, -1, SQLITE_STATIC);
   DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 6, img->exif_exposure);
   DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 7, img->exif_aperture);
   DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 8, img->exif_iso);
@@ -254,7 +240,7 @@ dt_image_cache_write_release(
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 13, img->flags);
   DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 14, img->exif_crop);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 15, img->orientation);
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 16, *(uint32_t*)(&img->legacy_flip));
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 16, *(uint32_t *)(&img->legacy_flip));
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 17, img->group_id);
   DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 18, img->longitude);
   DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 19, img->latitude);
@@ -264,7 +250,7 @@ dt_image_cache_write_release(
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 23, img->raw_white_point);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 24, img->id);
   int rc = sqlite3_step(stmt);
-  if (rc != SQLITE_DONE) fprintf(stderr, "[image_cache_write_release] sqlite3 error %d\n", rc);
+  if(rc != SQLITE_DONE) fprintf(stderr, "[image_cache_write_release] sqlite3 error %d\n", rc);
   sqlite3_finalize(stmt);
 
   // TODO: make this work in relaxed mode, too.
@@ -279,10 +265,7 @@ dt_image_cache_write_release(
 
 
 // remove the image from the cache
-void
-dt_image_cache_remove(
-  dt_image_cache_t *cache,
-  const uint32_t imgid)
+void dt_image_cache_remove(dt_image_cache_t *cache, const uint32_t imgid)
 {
   dt_cache_remove(&cache->cache, imgid);
 }

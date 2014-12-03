@@ -42,17 +42,18 @@
 #include <inttypes.h>
 #include <libintl.h>
 
-static void
-usage(const char* progname)
+static void usage(const char *progname)
 {
-  fprintf(stderr, "usage: %s <input file> [<xmp file>] <output file> [--width <max width>,--height <max height>,--bpp <bpp>,--hq <0|1|true|false>,--verbose] [--core <darktable options>]\n", progname);
+  fprintf(stderr, "usage: %s <input file> [<xmp file>] <output file> [--width <max width>,--height <max "
+                  "height>,--bpp <bpp>,--hq <0|1|true|false>,--verbose] [--core <darktable options>]\n",
+          progname);
 }
 
 int main(int argc, char *arg[])
 {
-  bindtextdomain (GETTEXT_PACKAGE, DARKTABLE_LOCALEDIR);
-  bind_textdomain_codeset (GETTEXT_PACKAGE, "UTF-8");
-  textdomain (GETTEXT_PACKAGE);
+  bindtextdomain(GETTEXT_PACKAGE, DARKTABLE_LOCALEDIR);
+  bind_textdomain_codeset(GETTEXT_PACKAGE, "UTF-8");
+  textdomain(GETTEXT_PACKAGE);
 
   gtk_init_check(&argc, &arg);
 
@@ -65,7 +66,7 @@ int main(int argc, char *arg[])
   gboolean verbose = FALSE, high_quality = TRUE;
 
   int k;
-  for(k=1; k<argc; k++)
+  for(k = 1; k < argc; k++)
   {
     if(arg[k][0] == '-')
     {
@@ -93,7 +94,8 @@ int main(int argc, char *arg[])
       {
         k++;
         bpp = MAX(atoi(arg[k]), 0);
-        fprintf(stderr, "%s %d\n", _("TODO: sorry, due to API restrictions we currently cannot set the BPP to"), bpp);
+        fprintf(stderr, "%s %d\n",
+                _("TODO: sorry, due to API restrictions we currently cannot set the BPP to"), bpp);
       }
       else if(!strcmp(arg[k], "--hq"))
       {
@@ -121,7 +123,6 @@ int main(int argc, char *arg[])
         k++;
         break;
       }
-
     }
     else
     {
@@ -164,7 +165,7 @@ int main(int argc, char *arg[])
   }
 
   // init dt without gui:
-  if(dt_init(m_argc, m_arg, 0,NULL)) exit(1);
+  if(dt_init(m_argc, m_arg, 0, NULL)) exit(1);
 
   dt_film_t film;
   int id = 0;
@@ -208,11 +209,9 @@ int main(int argc, char *arg[])
   *ext = '\0';
   ext++;
 
-  if(!strcmp(ext, "jpg"))
-    ext = "jpeg";
+  if(!strcmp(ext, "jpg")) ext = "jpeg";
 
-  if(!strcmp(ext, "tif"))
-    ext = "tiff";
+  if(!strcmp(ext, "tif")) ext = "tiff";
 
   // init the export data structures
   dt_imageio_module_format_t *format;
@@ -222,7 +221,9 @@ int main(int argc, char *arg[])
   storage = dt_imageio_get_storage_by_name("disk"); // only exporting to disk makes sense
   if(storage == NULL)
   {
-    fprintf(stderr, "%s\n", _("cannot find disk storage module. please check your installation, something seems to be broken."));
+    fprintf(
+        stderr, "%s\n",
+        _("cannot find disk storage module. please check your installation, something seems to be broken."));
     exit(1);
   }
 
@@ -233,8 +234,9 @@ int main(int argc, char *arg[])
     exit(1);
   }
 
-  // and now for the really ugly hacks. don't tell your children about this one or they won't sleep at night any longer ...
-  g_strlcpy((char*)sdata, output_filename, DT_MAX_PATH_FOR_PARAMS);
+  // and now for the really ugly hacks. don't tell your children about this one or they won't sleep at night
+  // any longer ...
+  g_strlcpy((char *)sdata, output_filename, DT_MAX_PATH_FOR_PARAMS);
   // all is good now, the last line didn't happen.
 
   format = dt_imageio_get_format_by_name(ext);
@@ -252,29 +254,34 @@ int main(int argc, char *arg[])
     exit(1);
   }
 
-  uint32_t w,h,fw,fh,sw,sh;
-  fw=fh=sw=sh=0;
+  uint32_t w, h, fw, fh, sw, sh;
+  fw = fh = sw = sh = 0;
   storage->dimension(storage, &sw, &sh);
   format->dimension(format, &fw, &fh);
 
-  if( sw==0 || fw==0) w=sw>fw?sw:fw;
-  else w=sw<fw?sw:fw;
+  if(sw == 0 || fw == 0)
+    w = sw > fw ? sw : fw;
+  else
+    w = sw < fw ? sw : fw;
 
-  if( sh==0 || fh==0) h=sh>fh?sh:fh;
-  else h=sh<fh?sh:fh;
+  if(sh == 0 || fh == 0)
+    h = sh > fh ? sh : fh;
+  else
+    h = sh < fh ? sh : fh;
 
-  fdata->max_width  = width;
+  fdata->max_width = width;
   fdata->max_height = height;
-  fdata->max_width = (w!=0 && fdata->max_width >w)?w:fdata->max_width;
-  fdata->max_height = (h!=0 && fdata->max_height >h)?h:fdata->max_height;
+  fdata->max_width = (w != 0 && fdata->max_width > w) ? w : fdata->max_width;
+  fdata->max_height = (h != 0 && fdata->max_height > h) ? h : fdata->max_height;
   fdata->style[0] = '\0';
 
-  if(storage->initialize_store) {
-    GList *single_image= g_list_append(NULL,GINT_TO_POINTER(id));
-    storage->initialize_store(storage, sdata,format,fdata,&single_image, high_quality);
+  if(storage->initialize_store)
+  {
+    GList *single_image = g_list_append(NULL, GINT_TO_POINTER(id));
+    storage->initialize_store(storage, sdata, format, fdata, &single_image, high_quality);
     g_list_free(single_image);
   }
-  //TODO: add a callback to set the bpp without going through the config
+  // TODO: add a callback to set the bpp without going through the config
 
   storage->store(storage, sdata, id, format, fdata, 1, 1, high_quality);
 
