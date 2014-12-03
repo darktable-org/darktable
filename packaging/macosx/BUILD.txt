@@ -24,7 +24,13 @@ How to make disk image with darktable application bundle (64 bit Intel only):
      $ patch -p1 < ../darktable/packaging/macosx/gtk-mac-bundler-0.6.1.patch
      $ make install
 
-3). You will need to rebuild gtk2 with 'bundle' variant:
+3). You will need to rebuild gtk2 with 'bundle' variant and a patch for HiDPI support:
+     $ mkdir -p ~/ports/gnome
+     $ cp -R /opt/local/var/macports/sources/rsync.macports.org/release/tarballs/ports/gnome/gtk2 ~/ports/gnome/
+     $ curl -o ~/ports/gnome/gtk2/files/use-nsscreen-backingscalefactor-hidpi.diff https://raw.github.com/darktable-org/darktable/master/packaging/macosx/use-nsscreen-backingscalefactor-hidpi.diff
+    then add use-nsscreen-backingscalefactor-hidpi.diff to patchfiles line in ~/ports/gnome/gtk2/Portfile and run
+     $ portindex ~/ports
+    Add "file:///Users/<username>/ports" (change <username> to your actual login) to /opt/local/etc/macports/sources.conf before [default] line and rebuild gtk2:
      $ sudo port install gtk2 +bundle
     The problem is that with this flag gtk2 works reliably only when included in bundle, so if you need working system gtk2 you will need to revert this change
     after you're done with bundle creation. To do that you can just run this command:
