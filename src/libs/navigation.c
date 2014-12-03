@@ -397,6 +397,7 @@ static void _zoom_preset_change(int val)
   dt_control_set_dev_zoom_x(zoom_x);
   dt_control_set_dev_zoom_y(zoom_y);
   dt_dev_invalidate(dev);
+  dt_control_queue_redraw();
 }
 
 static void _zoom_preset_mini(GtkButton *button, gpointer user_data)
