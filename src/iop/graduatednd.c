@@ -538,7 +538,7 @@ int mouse_moved(struct dt_iop_module_t *self, double x, double y, double pressur
   }
 
   dt_control_queue_redraw_center();
-  return 0;
+  return 1;
 }
 
 int button_pressed(struct dt_iop_module_t *self, double x, double y, double pressure, int which, int type,
