@@ -81,6 +81,7 @@ typedef struct dt_gui_gtk_t
   char gtkrc[PATH_MAX];
 } dt_gui_gtk_t;
 
+#if (CAIRO_VERSION >= CAIRO_VERSION_ENCODE(1, 14, 0))
 inline cairo_surface_t *dt_cairo_image_surface_create(cairo_format_t format, int width, int height) {
   cairo_surface_t *cst = cairo_image_surface_create(format, width * darktable.gui->ppd, height * darktable.gui->ppd);
   cairo_surface_set_device_scale(cst, darktable.gui->ppd, darktable.gui->ppd);
@@ -100,6 +101,12 @@ inline int dt_cairo_image_surface_get_width(cairo_surface_t *surface) {
 inline int dt_cairo_image_surface_get_height(cairo_surface_t *surface) {
   return cairo_image_surface_get_height(surface) / darktable.gui->ppd;
 }
+#else
+#define dt_cairo_image_surface_create cairo_image_surface_create
+#define dt_cairo_image_surface_create_for_data cairo_image_surface_create_for_data
+#define dt_cairo_image_surface_get_width cairo_image_surface_get_width
+#define dt_cairo_image_surface_get_height cairo_image_surface_get_height
+#endif
 
 int dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[]);
 void dt_gui_gtk_run(dt_gui_gtk_t *gui);

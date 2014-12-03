@@ -987,8 +987,34 @@ static void init_widgets(dt_gui_gtk_t *gui)
   widget = gtk_window_new(GTK_WINDOW_TOPLEVEL);
   gui->ui->main_window = widget;
 
-  // get the screen resolution
+  // check if in HiDPI mode
+#if (CAIRO_VERSION >= CAIRO_VERSION_ENCODE(1, 14, 0))
+  float screen_ppd_overwrite = dt_conf_get_float("screen_ppd_overwrite");
+  if(screen_ppd_overwrite > 0.0)
+  {
+    gui->ppd = screen_ppd_overwrite;
+    dt_print(DT_DEBUG_CONTROL, "[HiDPI] setting ppd to %f as specified in the configuration file\n", screen_ppd_overwrite);
+  }
+  else
+  {
+#ifdef GDK_WINDOWING_QUARTZ
+    // only works if GTK includes this change: https://gist.github.com/zwaldowski/3388768
+    gui->ppd = gdk_screen_get_resolution(gtk_widget_get_screen(widget)) / 72.0;
+    if(gui->ppd < 0.0)
+    {
+      gui->ppd = 1.0;
+      dt_print(DT_DEBUG_CONTROL, "[HiDPI] can't detect screen settings, switching off\n", gui->ppd);
+    }
+    else
+      dt_print(DT_DEBUG_CONTROL, "[HiDPI] setting ppd to %f\n", gui->ppd);
+#else
+    gui->ppd = 1.0;
+#endif
+  }
+#else
   gui->ppd = 1.0;
+#endif
+  // get the screen resolution
   float screen_dpi_overwrite = dt_conf_get_float("screen_dpi_overwrite");
   if(screen_dpi_overwrite > 0.0)
   {
@@ -1003,7 +1029,6 @@ static void init_widgets(dt_gui_gtk_t *gui)
 #ifdef GDK_WINDOWING_QUARTZ
     GdkScreen *screen = gtk_widget_get_screen(widget);
     if(screen == NULL) screen = gdk_screen_get_default();
-    gui->ppd = gdk_screen_get_resolution(screen) / 72.0;
     int monitor = gdk_screen_get_primary_monitor(screen);
     CGDirectDisplayID ids[monitor + 1];
     uint32_t total_ids;
