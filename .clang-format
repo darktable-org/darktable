@@ -29,7 +29,7 @@ PenaltyBreakFirstLessLess: 120
 PenaltyExcessCharacter: 50
 PenaltyReturnTypeOnItsOwnLine: 60
 PointerBindsToType: false
-SpaceAfterCStyleCast: true
+SpaceAfterCStyleCast: false
 SpacesBeforeTrailingComments: 1
 Cpp11BracedListStyle: false
 Standard:        Cpp03
