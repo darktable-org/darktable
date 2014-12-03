@@ -353,8 +353,8 @@ void enter(dt_view_t *self)
   GdkRectangle rect;
   gdk_screen_get_monitor_geometry(screen, monitor, &rect);
   dt_pthread_mutex_lock(&d->lock);
-  d->width = rect.width;
-  d->height = rect.height;
+  d->width = rect.width * darktable.gui->ppd;
+  d->height = rect.height * darktable.gui->ppd;
   d->buf1 = dt_alloc_align(64, sizeof(uint32_t) * d->width * d->height);
   d->buf2 = dt_alloc_align(64, sizeof(uint32_t) * d->width * d->height);
   d->front = d->buf1;
@@ -420,14 +420,14 @@ void expose(dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, int32_t
     cairo_restore(cr); // pop control
     cairo_reset_clip(cr);
     cairo_save(cr);
-    cairo_translate(cr, (d->width - d->front_width) * .5f, (d->height - d->front_height) * .5f);
+    cairo_translate(cr, (d->width - d->front_width) * .5f / darktable.gui->ppd, (d->height - d->front_height) * .5f / darktable.gui->ppd);
     cairo_surface_t *surface = NULL;
     const int32_t stride = cairo_format_stride_for_width(CAIRO_FORMAT_RGB24, d->front_width);
-    surface = cairo_image_surface_create_for_data((uint8_t *)d->front, CAIRO_FORMAT_RGB24, d->front_width,
+    surface = dt_cairo_image_surface_create_for_data((uint8_t *)d->front, CAIRO_FORMAT_RGB24, d->front_width,
                                                   d->front_height, stride);
     cairo_set_source_surface(cr, surface, 0, 0);
     cairo_pattern_set_filter(cairo_get_source(cr), CAIRO_FILTER_NEAREST);
-    cairo_rectangle(cr, 0, 0, d->front_width, d->front_height);
+    cairo_rectangle(cr, 0, 0, d->front_width/darktable.gui->ppd, d->front_height/darktable.gui->ppd);
     cairo_fill(cr);
     cairo_surface_destroy(surface);
     cairo_restore(cr);
