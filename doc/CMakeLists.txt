@@ -62,5 +62,9 @@ add_custom_target(darktablerc.html ALL DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/darkt
 
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/darktablerc.html DESTINATION ${SHARE_INSTALL}/doc/darktable/)
 
-
-add_subdirectory(usermanual)
+# we remove the usermanual from the release tarball as it adds an extra 77 MB which people don't need in general
+if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/usermanual)
+  add_subdirectory(usermanual)
+else(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/usermanual)
+  message(WARNING "the sources of the usermanual are missing so you won't be able to generate it. if this is a release tarball then that's normal.\nplease grab them from github if you want to work on the manual.")
+endif(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/usermanual)
