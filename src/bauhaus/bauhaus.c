@@ -58,13 +58,11 @@ static int get_line_height()
   return darktable.bauhaus->scale * darktable.bauhaus->line_height;
 }
 
-#ifndef DT_BAUHAUS_OLD
 static float get_marker_size()
 {
   // will be fraction of the height, so doesn't depend on scale itself.
   return darktable.bauhaus->marker_size;
 }
-#endif
 
 // TODO: remove / make use of the pango font size / X height
 static float get_label_font_size()
@@ -1016,7 +1014,6 @@ void dt_bauhaus_slider_set_stop(GtkWidget *widget, float stop, float r, float g,
 }
 
 
-#ifndef DT_BAUHAUS_OLD
 static void draw_equilateral_triangle(cairo_t *cr, float radius)
 {
   const float sin = 0.866025404 * radius;
@@ -1026,7 +1023,6 @@ static void draw_equilateral_triangle(cairo_t *cr, float radius)
   cairo_line_to(cr, sin, -cos);
   cairo_line_to(cr, 0.0, radius);
 }
-#endif
 
 static void dt_bauhaus_draw_indicator(dt_bauhaus_widget_t *w, float pos, cairo_t *cr)
 {
