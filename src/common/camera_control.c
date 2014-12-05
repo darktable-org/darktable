@@ -550,6 +550,9 @@ dt_camctl_t *dt_camctl_new()
   dt_pthread_mutex_init(&camctl->lock, NULL);
   dt_pthread_mutex_init(&camctl->listeners_lock, NULL);
 
+  // TODO: make this asynchronous
+//   dt_camctl_detect_cameras(camctl);
+
   return camctl;
 }
 

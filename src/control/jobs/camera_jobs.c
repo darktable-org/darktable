@@ -36,9 +36,6 @@ typedef struct dt_camera_shared_t
 typedef struct dt_camera_capture_t
 {
   dt_camera_shared_t shared;
-  int32_t total;
-  pthread_mutex_t mutex;
-  pthread_cond_t done;
 
   /** delay between each capture, 0 no delay */
   uint32_t delay;
@@ -79,49 +76,6 @@ void *dt_camera_previews_job_get_data(const dt_job_t *job)
   return params->data;
 }
 
-
-/** Both import and capture jobs uses this */
-static const char *_camera_request_image_filename(const dt_camera_t *camera, const char *filename, void *data)
-{
-  const gchar *file;
-  struct dt_camera_shared_t *shared;
-  shared = (dt_camera_shared_t *)data;
-
-  /* update import session with orginal filename so that $(FILE_EXTENSION)
-     and alikes can be expanded. */
-  dt_import_session_set_filename(shared->session, filename);
-  file = dt_import_session_filename(shared->session, FALSE);
-
-  if(file == NULL) return NULL;
-
-  return g_strdup(file);
-}
-
-/** Both import and capture jobs uses this */
-static const char *_camera_request_image_path(const dt_camera_t *camera, void *data)
-{
-  struct dt_camera_shared_t *shared;
-  shared = (struct dt_camera_shared_t *)data;
-  return dt_import_session_path(shared->session, FALSE);
-}
-
-void _camera_capture_image_downloaded(const dt_camera_t *camera, const char *filename, void *data)
-{
-  dt_camera_capture_t *t;
-
-  t = (dt_camera_capture_t *)data;
-
-  /* create an import job of downloaded image */
-  dt_control_add_job(darktable.control, DT_JOB_QUEUE_USER_BG,
-                     dt_image_import_job_create(dt_import_session_film_id(t->shared.session), filename));
-  if(--t->total == 0)
-  {
-    pthread_mutex_lock(&t->mutex);
-    pthread_cond_broadcast(&t->done);
-    pthread_mutex_unlock(&t->mutex);
-  }
-}
-
 static int32_t dt_camera_capture_job_run(dt_job_t *job)
 {
   dt_camera_capture_t *params = dt_control_job_get_params(job);
@@ -129,20 +83,8 @@ static int32_t dt_camera_capture_job_run(dt_job_t *job)
   char message[512] = { 0 };
   double fraction = 0;
 
-  total = params->total = params->brackets ? params->count * params->brackets : params->count;
+  total = params->brackets ? params->count * params->brackets : params->count;
   snprintf(message, sizeof(message), ngettext("capturing %d image", "capturing %d images", total), total);
-
-  pthread_mutex_init(&params->mutex, NULL);
-  pthread_cond_init(&params->done, NULL);
-
-  // register listener
-  dt_camctl_listener_t *listener;
-  listener = g_malloc0(sizeof(dt_camctl_listener_t));
-  listener->data = params;
-  listener->image_downloaded = _camera_capture_image_downloaded;
-  listener->request_image_path = _camera_request_image_path;
-  listener->request_image_filename = _camera_request_image_filename;
-  dt_camctl_register_listener(darktable.camctl, listener);
 
   /* try to get exp program mode for nikon */
   char *expprogram = (char *)dt_camctl_camera_get_property(darktable.camctl, NULL, "expprogram");
@@ -175,14 +117,6 @@ static int32_t dt_camera_capture_job_run(dt_job_t *job)
     if(params->brackets)
     {
       dt_control_log(_("please set your camera to manual mode first!"));
-      pthread_mutex_lock(&params->mutex);
-      pthread_cond_wait(&params->done, &params->mutex);
-      pthread_mutex_unlock(&params->mutex);
-      pthread_mutex_destroy(&params->mutex);
-      pthread_cond_destroy(&params->done);
-      dt_import_session_destroy(params->shared.session);
-      dt_camctl_unregister_listener(darktable.camctl, listener);
-      g_free(listener);
       free(params);
       return 1;
     }
@@ -237,18 +171,8 @@ static int32_t dt_camera_capture_job_run(dt_job_t *job)
     }
   }
 
-  /* wait for last image capture before exiting job */
-  pthread_mutex_lock(&params->mutex);
-  pthread_cond_wait(&params->done, &params->mutex);
-  pthread_mutex_unlock(&params->mutex);
-  pthread_mutex_destroy(&params->mutex);
-  pthread_cond_destroy(&params->done);
-
   /* cleanup */
   dt_control_progress_destroy(darktable.control, progress);
-  dt_import_session_destroy(params->shared.session);
-  dt_camctl_unregister_listener(darktable.camctl, listener);
-  g_free(listener);
 
   // free values
   if(values)
@@ -332,6 +256,29 @@ void _camera_import_image_downloaded(const dt_camera_t *camera, const char *file
   dt_control_progress_set_progress(darktable.control, t->progress, t->fraction);
 
   t->import_count++;
+}
+
+static const char *_camera_request_image_filename(const dt_camera_t *camera, const char *filename, void *data)
+{
+  const gchar *file;
+  struct dt_camera_shared_t *shared;
+  shared = (dt_camera_shared_t *)data;
+
+  /* update import session with orginal filename so that $(FILE_EXTENSION)
+   *     and alikes can be expanded. */
+  dt_import_session_set_filename(shared->session, filename);
+  file = dt_import_session_filename(shared->session, FALSE);
+
+  if(file == NULL) return NULL;
+
+  return g_strdup(file);
+}
+
+static const char *_camera_request_image_path(const dt_camera_t *camera, void *data)
+{
+  struct dt_camera_shared_t *shared;
+  shared = (struct dt_camera_shared_t *)data;
+  return dt_import_session_path(shared->session, FALSE);
 }
 
 static int32_t dt_camera_import_job_run(dt_job_t *job)

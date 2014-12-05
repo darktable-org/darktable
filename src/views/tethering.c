@@ -72,6 +72,9 @@ typedef struct dt_capture_t
 
   struct dt_import_session_t *session;
 
+  /** default listener taking care of downloading & importing images */
+  dt_camctl_listener_t *listener;
+
   /** Cursor position for dragging the zoomed live view */
   double live_view_zoom_cursor_x, live_view_zoom_cursor_y;
 
@@ -99,18 +102,7 @@ static void _view_capture_filmstrip_activate_callback(gpointer instance, gpointe
   if(dt_view_filmstrip_get_activated_imgid(darktable.view_manager) >= 0) dt_control_queue_redraw_center();
 }
 
-void capture_view_switch_key_accel(void *p)
-{
-  // dt_view_t *self=(dt_view_t*)p;
-  // dt_capture_t *lib=(dt_capture_t*)self->data;
-  dt_control_gui_mode_t oldmode = dt_conf_get_int("ui_last/view");
-  if(oldmode == DT_CAPTURE)
-    dt_ctl_switch_mode_to(DT_LIBRARY);
-  else
-    dt_ctl_switch_mode_to(DT_CAPTURE);
-}
-
-gboolean film_strip_key_accel(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
+static gboolean film_strip_key_accel(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
                               GdkModifierType modifier, gpointer data)
 {
   dt_lib_module_t *m = darktable.view_manager->proxy.filmstrip.module;
@@ -140,29 +132,14 @@ void cleanup(dt_view_t *self)
 }
 
 
-uint32_t _capture_view_get_selected_imgid(const dt_view_t *view)
+static uint32_t _capture_view_get_selected_imgid(const dt_view_t *view)
 {
   g_assert(view != NULL);
   dt_capture_t *cv = (dt_capture_t *)view->data;
   return cv->image_id;
 }
 
-
-const gchar *_capture_view_get_session_path(const dt_view_t *view)
-{
-  g_assert(view != NULL);
-  dt_capture_t *cv = (dt_capture_t *)view->data;
-  return dt_import_session_path(cv->session, TRUE);
-}
-
-const gchar *_capture_view_get_session_filename(const dt_view_t *view, const char *filename)
-{
-  g_assert(view != NULL);
-  dt_capture_t *cv = (dt_capture_t *)view->data;
-  return dt_import_session_filename(cv->session, FALSE);
-}
-
-void _capture_view_set_jobcode(const dt_view_t *view, const char *name)
+static void _capture_view_set_jobcode(const dt_view_t *view, const char *name)
 {
   g_assert(view != NULL);
   dt_capture_t *cv = (dt_capture_t *)view->data;
@@ -171,7 +148,7 @@ void _capture_view_set_jobcode(const dt_view_t *view, const char *name)
   dt_control_log(_("new session initiated '%s'"), name);
 }
 
-const char *_capture_view_get_jobcode(const dt_view_t *view)
+static const char *_capture_view_get_jobcode(const dt_view_t *view)
 {
   g_assert(view != NULL);
   dt_capture_t *cv = (dt_capture_t *)view->data;
@@ -185,7 +162,7 @@ void configure(dt_view_t *self, int wd, int ht)
 
 #define MARGIN 20
 #define BAR_HEIGHT 18 /* see libs/camera.c */
-void _expose_tethered_mode(dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, int32_t pointerx,
+static void _expose_tethered_mode(dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, int32_t pointerx,
                            int32_t pointery)
 {
   dt_capture_t *lib = (dt_capture_t *)self->data;
@@ -280,6 +257,37 @@ static void _capture_mipmaps_updated_signal_callback(gpointer instance, gpointer
 }
 
 
+/** callbacks to deal with images taken in tethering mode */
+static const char *_camera_request_image_filename(const dt_camera_t *camera, const char *filename, void *data)
+{
+  struct dt_capture_t *lib = (dt_capture_t *)data;
+
+  /* update import session with orginal filename so that $(FILE_EXTENSION)
+   *     and alikes can be expanded. */
+  dt_import_session_set_filename(lib->session, filename);
+  const gchar *file = dt_import_session_filename(lib->session, FALSE);
+
+  if(file == NULL) return NULL;
+
+  return g_strdup(file);
+}
+
+static const char *_camera_request_image_path(const dt_camera_t *camera, void *data)
+{
+  struct dt_capture_t *lib = (dt_capture_t *)data;
+  return dt_import_session_path(lib->session, FALSE);
+}
+
+static void _camera_capture_image_downloaded(const dt_camera_t *camera, const char *filename, void *data)
+{
+  dt_capture_t *lib = (dt_capture_t *)data;
+
+  /* create an import job of downloaded image */
+  dt_control_add_job(darktable.control, DT_JOB_QUEUE_USER_BG,
+                     dt_image_import_job_create(dt_import_session_film_id(lib->session), filename));
+}
+
+
 void enter(dt_view_t *self)
 {
   dt_capture_t *lib = (dt_capture_t *)self->data;
@@ -305,6 +313,14 @@ void enter(dt_view_t *self)
     _capture_view_set_jobcode(self, tmp);
     g_free(tmp);
   }
+
+  // register listener
+  lib->listener = g_malloc0(sizeof(dt_camctl_listener_t));
+  lib->listener->data = lib;
+  lib->listener->image_downloaded = _camera_capture_image_downloaded;
+  lib->listener->request_image_path = _camera_request_image_path;
+  lib->listener->request_image_filename = _camera_request_image_filename;
+  dt_camctl_register_listener(darktable.camctl, lib->listener);
 }
 
 void dt_lib_remove_child(GtkWidget *widget, gpointer data)
@@ -315,6 +331,10 @@ void dt_lib_remove_child(GtkWidget *widget, gpointer data)
 void leave(dt_view_t *self)
 {
   dt_capture_t *cv = (dt_capture_t *)self->data;
+
+  dt_camctl_unregister_listener(darktable.camctl, cv->listener);
+  g_free(cv->listener);
+  cv->listener = NULL;
 
   /* destroy session, will cleanup empty film roll */
   dt_import_session_destroy(cv->session);
