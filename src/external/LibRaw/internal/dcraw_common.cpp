@@ -21,7 +21,6 @@ it under the terms of the one of three licenses as you choose:
    for more information
 */
 
-#define _GNU_SOURCE
 #include <math.h>
 #define CLASS LibRaw::
 #include "libraw/libraw_types.h"
