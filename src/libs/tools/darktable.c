@@ -39,18 +39,18 @@ typedef struct dt_lib_darktable_t
   cairo_surface_t *image;
   guint8 *image_buffer;
   int image_width, image_height;
-}
-dt_lib_darktable_t;
+} dt_lib_darktable_t;
 
 
 /* expose function for darktable module */
 static gboolean _lib_darktable_expose_callback(GtkWidget *widget, GdkEventExpose *event, gpointer user_data);
 /* button press callback */
-static gboolean _lib_darktable_button_press_callback(GtkWidget *widget, GdkEventButton *event, gpointer user_data);
+static gboolean _lib_darktable_button_press_callback(GtkWidget *widget, GdkEventButton *event,
+                                                     gpointer user_data);
 /* show the about dialog */
 static void _lib_darktable_show_about_dialog();
 
-const char* name()
+const char *name()
 {
   return _("darktable");
 }
@@ -77,8 +77,8 @@ int position()
 
 void gui_init(dt_lib_module_t *self)
 {
-  char filename[PATH_MAX];
-  char datadir[PATH_MAX];
+  char filename[PATH_MAX] = { 0 };
+  char datadir[PATH_MAX] = { 0 };
   /* initialize ui widgets */
   dt_lib_darktable_t *d = (dt_lib_darktable_t *)g_malloc0(sizeof(dt_lib_darktable_t));
   self->data = (void *)d;
@@ -87,10 +87,9 @@ void gui_init(dt_lib_module_t *self)
   self->widget = gtk_event_box_new();
 
   /* connect callbacks */
-  g_signal_connect (G_OBJECT (self->widget), "expose-event",
-                    G_CALLBACK (_lib_darktable_expose_callback), self);
-  g_signal_connect (G_OBJECT (self->widget), "button-press-event",
-                    G_CALLBACK (_lib_darktable_button_press_callback), self);
+  g_signal_connect(G_OBJECT(self->widget), "expose-event", G_CALLBACK(_lib_darktable_expose_callback), self);
+  g_signal_connect(G_OBJECT(self->widget), "button-press-event",
+                   G_CALLBACK(_lib_darktable_button_press_callback), self);
 
   /* create a cairo surface of dt icon */
   char *logo;
@@ -106,10 +105,12 @@ void gui_init(dt_lib_module_t *self)
   // first we try the SVG
   {
     GError *error = NULL;
-    RsvgHandle *svg = rsvg_handle_new_from_file(filename,&error);
+    RsvgHandle *svg = rsvg_handle_new_from_file(filename, &error);
     if(!svg || error)
     {
-      fprintf(stderr, "warning: can't load darktable logo from SVG file `%s', falling back to PNG version\n%s\n", filename, error->message);
+      fprintf(stderr,
+              "warning: can't load darktable logo from SVG file `%s', falling back to PNG version\n%s\n",
+              filename, error->message);
       g_error_free(error);
       error = NULL;
       goto png_fallback;
@@ -119,26 +120,27 @@ void gui_init(dt_lib_module_t *self)
     cairo_t *cr;
 
     RsvgDimensionData dimension;
-    rsvg_handle_get_dimensions(svg,&dimension);
+    rsvg_handle_get_dimensions(svg, &dimension);
 
-    int width  = DT_PIXEL_APPLY_DPI(dimension.width),
-        height = DT_PIXEL_APPLY_DPI(dimension.height);
-    int stride = cairo_format_stride_for_width (CAIRO_FORMAT_ARGB32, width);
+    int width = DT_PIXEL_APPLY_DPI(dimension.width), height = DT_PIXEL_APPLY_DPI(dimension.height);
+    int stride = cairo_format_stride_for_width(CAIRO_FORMAT_ARGB32, width);
 
     d->image_buffer = (guint8 *)calloc(stride * height, sizeof(guint8));
-    surface = cairo_image_surface_create_for_data(d->image_buffer, CAIRO_FORMAT_ARGB32, width, height, stride);
+    surface
+        = cairo_image_surface_create_for_data(d->image_buffer, CAIRO_FORMAT_ARGB32, width, height, stride);
     if(cairo_surface_status(surface) != CAIRO_STATUS_SUCCESS)
     {
       free(d->image_buffer);
       d->image_buffer = NULL;
       g_object_unref(svg);
-      fprintf(stderr, "warning: can't load darktable logo from SVG file `%s', falling back to PNG version\n", filename);
+      fprintf(stderr, "warning: can't load darktable logo from SVG file `%s', falling back to PNG version\n",
+              filename);
       goto png_fallback;
     }
 
     cr = cairo_create(surface);
     cairo_scale(cr, darktable.gui->dpi_factor, darktable.gui->dpi_factor);
-    rsvg_handle_render_cairo(svg,cr);
+    rsvg_handle_render_cairo(svg, cr);
     cairo_surface_flush(surface);
 
     d->image = surface;
@@ -161,16 +163,16 @@ png_fallback:
       d->image = NULL;
       goto done;
     }
-    int png_width  = cairo_image_surface_get_width(surface),
+    int png_width = cairo_image_surface_get_width(surface),
         png_height = cairo_image_surface_get_height(surface);
 
     // blow up the PNG. Ugly, but at least it has the correct size afterwards :-/
-    int width = DT_PIXEL_APPLY_DPI(png_width),
-        height = DT_PIXEL_APPLY_DPI(png_height);
-    int stride = cairo_format_stride_for_width (CAIRO_FORMAT_ARGB32, width);
+    int width = DT_PIXEL_APPLY_DPI(png_width), height = DT_PIXEL_APPLY_DPI(png_height);
+    int stride = cairo_format_stride_for_width(CAIRO_FORMAT_ARGB32, width);
 
     d->image_buffer = (guint8 *)calloc(stride * height, sizeof(guint8));
-    d->image = cairo_image_surface_create_for_data(d->image_buffer, CAIRO_FORMAT_ARGB32, width, height, stride);
+    d->image
+        = cairo_image_surface_create_for_data(d->image_buffer, CAIRO_FORMAT_ARGB32, width, height, stride);
     if(cairo_surface_status(d->image) != CAIRO_STATUS_SUCCESS)
     {
       free(d->image_buffer);
@@ -194,11 +196,12 @@ png_fallback:
 done:
   g_free(logo);
 
-  d->image_width = d->image?cairo_image_surface_get_width(d->image):0;
-  d->image_height = d->image?cairo_image_surface_get_height(d->image):0;
+  d->image_width = d->image ? cairo_image_surface_get_width(d->image) : 0;
+  d->image_height = d->image ? cairo_image_surface_get_height(d->image) : 0;
 
   /* set size of drawing area */
-  gtk_widget_set_size_request(self->widget, d->image_width + (int)DT_PIXEL_APPLY_DPI(180), d->image_height + (int)DT_PIXEL_APPLY_DPI(8));
+  gtk_widget_set_size_request(self->widget, d->image_width + (int)DT_PIXEL_APPLY_DPI(180),
+                              d->image_height + (int)DT_PIXEL_APPLY_DPI(8));
 }
 
 void gui_cleanup(dt_lib_module_t *self)
@@ -218,51 +221,54 @@ static gboolean _lib_darktable_expose_callback(GtkWidget *widget, GdkEventExpose
   dt_lib_darktable_t *d = (dt_lib_darktable_t *)self->data;
 
   /* get the current style */
-  GtkStyle *style=gtk_rc_get_style_by_paths(gtk_settings_get_default(), NULL,"GtkWidget", GTK_TYPE_WIDGET);
+  GtkStyle *style = gtk_rc_get_style_by_paths(gtk_settings_get_default(), NULL, "GtkWidget", GTK_TYPE_WIDGET);
   if(!style) style = gtk_rc_get_style(widget);
 
   cairo_t *cr = gdk_cairo_create(gtk_widget_get_window(widget));
 
   /* fill background */
-  cairo_set_source_rgb(cr, style->bg[0].red/65535.0, style->bg[0].green/65535.0, style->bg[0].blue/65535.0);
+  cairo_set_source_rgb(cr, style->bg[0].red / 65535.0, style->bg[0].green / 65535.0,
+                       style->bg[0].blue / 65535.0);
   cairo_paint(cr);
 
   /* paint icon image */
   if(d->image)
   {
     cairo_set_source_surface(cr, d->image, 0, (int)DT_PIXEL_APPLY_DPI(7));
-    cairo_rectangle(cr,0,0,d->image_width + (int)DT_PIXEL_APPLY_DPI(8), d->image_height + (int)DT_PIXEL_APPLY_DPI(8));
+    cairo_rectangle(cr, 0, 0, d->image_width + (int)DT_PIXEL_APPLY_DPI(8),
+                    d->image_height + (int)DT_PIXEL_APPLY_DPI(8));
     cairo_fill(cr);
   }
 
   /* create a pango layout and print fancy  name/version string */
   PangoLayout *layout;
-  layout = gtk_widget_create_pango_layout (widget,NULL);
-  pango_font_description_set_weight (style->font_desc, PANGO_WEIGHT_BOLD);
-  pango_font_description_set_absolute_size (style->font_desc, DT_PIXEL_APPLY_DPI(25) * PANGO_SCALE);
-  pango_layout_set_font_description (layout,style->font_desc);
+  layout = gtk_widget_create_pango_layout(widget, NULL);
+  pango_font_description_set_weight(style->font_desc, PANGO_WEIGHT_BOLD);
+  pango_font_description_set_absolute_size(style->font_desc, DT_PIXEL_APPLY_DPI(25) * PANGO_SCALE);
+  pango_layout_set_font_description(layout, style->font_desc);
 
-  pango_layout_set_text (layout,PACKAGE_NAME,-1);
+  pango_layout_set_text(layout, PACKAGE_NAME, -1);
   cairo_set_source_rgba(cr, 1.0, 1.0, 1.0, 0.5);
-  cairo_move_to (cr, d->image_width + DT_PIXEL_APPLY_DPI(2.0), DT_PIXEL_APPLY_DPI(5.0));
-  pango_cairo_show_layout (cr, layout);
+  cairo_move_to(cr, d->image_width + DT_PIXEL_APPLY_DPI(2.0), DT_PIXEL_APPLY_DPI(5.0));
+  pango_cairo_show_layout(cr, layout);
 
   /* print version */
-  pango_font_description_set_absolute_size (style->font_desc, DT_PIXEL_APPLY_DPI(10) * PANGO_SCALE);
-  pango_layout_set_font_description (layout,style->font_desc);
-  pango_layout_set_text (layout,PACKAGE_VERSION,-1);
-  cairo_move_to (cr, d->image_width + DT_PIXEL_APPLY_DPI(4.0), DT_PIXEL_APPLY_DPI(30.0));
+  pango_font_description_set_absolute_size(style->font_desc, DT_PIXEL_APPLY_DPI(10) * PANGO_SCALE);
+  pango_layout_set_font_description(layout, style->font_desc);
+  pango_layout_set_text(layout, PACKAGE_VERSION, -1);
+  cairo_move_to(cr, d->image_width + DT_PIXEL_APPLY_DPI(4.0), DT_PIXEL_APPLY_DPI(30.0));
   cairo_set_source_rgba(cr, 1.0, 1.0, 1.0, 0.3);
-  pango_cairo_show_layout (cr, layout);
+  pango_cairo_show_layout(cr, layout);
 
   /* cleanup */
-  g_object_unref (layout);
+  g_object_unref(layout);
   cairo_destroy(cr);
 
   return TRUE;
 }
 
-static gboolean _lib_darktable_button_press_callback(GtkWidget *widget, GdkEventButton *event, gpointer user_data)
+static gboolean _lib_darktable_button_press_callback(GtkWidget *widget, GdkEventButton *event,
+                                                     gpointer user_data)
 {
   /* show about box */
   _lib_darktable_show_about_dialog();
@@ -275,7 +281,8 @@ static void _lib_darktable_show_about_dialog()
   gtk_about_dialog_set_program_name(GTK_ABOUT_DIALOG(dialog), PACKAGE_NAME);
   gtk_about_dialog_set_version(GTK_ABOUT_DIALOG(dialog), PACKAGE_VERSION);
   gtk_about_dialog_set_copyright(GTK_ABOUT_DIALOG(dialog), "copyright (c) the authors 2009-2014");
-  gtk_about_dialog_set_comments(GTK_ABOUT_DIALOG(dialog), _("organize and develop images from digital cameras"));
+  gtk_about_dialog_set_comments(GTK_ABOUT_DIALOG(dialog),
+                                _("organize and develop images from digital cameras"));
   gtk_about_dialog_set_website(GTK_ABOUT_DIALOG(dialog), "http://www.darktable.org/");
   dt_logo_season_t season = get_logo_season();
   char *icon;
@@ -285,103 +292,31 @@ static void _lib_darktable_show_about_dialog()
     icon = g_strdup("darktable");
   gtk_about_dialog_set_logo_icon_name(GTK_ABOUT_DIALOG(dialog), icon);
   g_free(icon);
-  const char *authors[] =
-  {
-    _("* developers *"),
-    "Henrik Andersson",
-    "Johannes Hanika",
-    "Tobias Ellinghaus",
-    "Ulrich Pegelow",
-    "",
-    _("* ubuntu packaging, color management, video tutorials *"),
-    "Pascal de Bruijn",
-    "",
-    _("* OpenCL pipeline: *"),
-    "Ulrich Pegelow",
-    "",
-    _("* networking, battle testing, translation expert *"),
-    "Alexandre Prokoudine",
-    "",
-    _("* contributors *"),
-    "Aldric Renaudin",
-    "Alexandre Prokoudine",
-    "Alexey Dokuchaev",
-    "Ammon Riley",
-    "Anton Keks",
-    "Antony Dovgal",
-    "Ari Makela",
-    "Benjamin Cahill",
-    "Brian Teague",
-    "Bruce Guenter",
-    "Cherrot Luo",
-    "Chris Mason",
-    "Christian Tellefsen",
-    "David Morel",
-    "Denis Cheremisov",
-    "Dennis Gnad",
-    "Diego Segura",
-    "Dimitrios Psychogios",
-    "Eckhart Pedersen",
-    "Edouard Gomez",
-    "Edward Herr",
-    "František Šidák",
-    "Gaspard Jankowiak",
-    "Ger Siemerink",
-    "Gianluigi Calcaterra",
-    "Guilherme Brondani Torri",
-    "Ivan Tarozzi",
-    "James C. McPherson",
-    "Jan Kundrát",
-    "Jean-Sébastien Pédron",
-    "Jérémy Rosen",
-    "Jesper Pedersen",
-    "Joao Trindade",
-    "Jon Leighton",
-    "Jose Carlos Garcia Sogo",
-    "Josef Wells",
-    "Julian J. M",
-    "Mattias Eriksson",
-    "Michal Babej",
-    "Michał Prędotka",
-    "Moritz Lipp",
-    "Olivier Tribout",
-    "Pascal de Bruijn",
-    "Pascal Obry",
-    "parafin",
-    "Petr Styblo",
-    "Pierre Le Magourou",
-    "Richard Levitte",
-    "Richard Tollerton",
-    "Robert Bieber",
-    "Roland Riegel",
-    "Roman Lebedev",
-    "Rostyslav Pidgornyi",
-    "Sergey Pavlov",
-    "Simon Harhues",
-    "Simon Spannagel",
-    "Stuart Henderson",
-    "Terry Jeffress",
-    "Tim Harder",
-    "Togan Muftuoglu",
-    "Tom Vanderpoel",
-    "Ulrich Pegelow",
-    "Wolfgang Goetz",
-    "Wolfgang Kuehnel",
-    "Yari Adan",
-    "hal",
-    "jan",
-    "maigl",
-    "tuxuser",
-    "And all those of you that made previous releases possible",
-    NULL
-  };
+  const char *authors[]
+      = { _("* developers *"), "Henrik Andersson", "Johannes Hanika", "Tobias Ellinghaus", "Ulrich Pegelow",
+          "", _("* ubuntu packaging, color management, video tutorials *"), "Pascal de Bruijn", "",
+          _("* OpenCL pipeline: *"), "Ulrich Pegelow", "",
+          _("* networking, battle testing, translation expert *"), "Alexandre Prokoudine", "",
+          _("* contributors *"), "Aldric Renaudin", "Alexandre Prokoudine", "Alexey Dokuchaev", "Ammon Riley",
+          "Anton Keks", "Antony Dovgal", "Ari Makela", "Benjamin Cahill", "Brian Teague", "Bruce Guenter",
+          "Cherrot Luo", "Chris Mason", "Christian Tellefsen", "David Morel", "Denis Cheremisov",
+          "Dennis Gnad", "Diego Segura", "Dimitrios Psychogios", "Eckhart Pedersen", "Edouard Gomez",
+          "Edward Herr", "František Šidák", "Gaspard Jankowiak", "Ger Siemerink", "Gianluigi Calcaterra",
+          "Guilherme Brondani Torri", "Ivan Tarozzi", "James C. McPherson", "Jan Kundrát",
+          "Jean-Sébastien Pédron", "Jérémy Rosen", "Jesper Pedersen", "Joao Trindade", "Jon Leighton",
+          "Jose Carlos Garcia Sogo", "Josef Wells", "Julian J. M", "Mattias Eriksson", "Michal Babej",
+          "Michał Prędotka", "Moritz Lipp", "Olivier Tribout", "Pascal de Bruijn", "Pascal Obry", "parafin",
+          "Petr Styblo", "Pierre Le Magourou", "Richard Levitte", "Richard Tollerton", "Robert Bieber",
+          "Roland Riegel", "Roman Lebedev", "Rostyslav Pidgornyi", "Sergey Pavlov", "Simon Harhues",
+          "Simon Spannagel", "Stuart Henderson", "Terry Jeffress", "Tim Harder", "Togan Muftuoglu",
+          "Tom Vanderpoel", "Ulrich Pegelow", "Wolfgang Goetz", "Wolfgang Kuehnel", "Yari Adan", "hal", "jan",
+          "maigl", "tuxuser", "And all those of you that made previous releases possible", NULL };
   gtk_about_dialog_set_authors(GTK_ABOUT_DIALOG(dialog), authors);
 
   gtk_about_dialog_set_translator_credits(GTK_ABOUT_DIALOG(dialog), _("translator-credits"));
   gtk_window_set_transient_for(GTK_WINDOW(dialog), GTK_WINDOW(dt_ui_main_window(darktable.gui->ui)));
-  gtk_dialog_run(GTK_DIALOG (dialog));
+  gtk_dialog_run(GTK_DIALOG(dialog));
   gtk_widget_destroy(dialog);
-
 }
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

@@ -25,10 +25,10 @@
    When called from lightable : dev == NULL, in this case only the tags are imported
    When called from darkroom  : dev != NULL, in this case only develop data are imported
 */
-void dt_lightroom_import (int imgid, dt_develop_t *dev, gboolean iauto);
+void dt_lightroom_import(int imgid, dt_develop_t *dev, gboolean iauto);
 
 /* returns NULL if not found, or g_strdup'ed pathname, the caller should g_free it. */
-char *dt_get_lightroom_xmp (int imgid);
+char *dt_get_lightroom_xmp(int imgid);
 
 #endif
 

@@ -64,8 +64,7 @@ typedef struct dt_lib_t
     } colorpicker;
 
   } proxy;
-}
-dt_lib_t;
+} dt_lib_t;
 
 typedef struct dt_lib_module_t
 {
@@ -83,52 +82,55 @@ typedef struct dt_lib_module_t
   GtkWidget *expander;
 
   /** version */
-  int (*version)          ();
+  int (*version)();
   /** get name of the module, to be translated. */
-  const char* (*name)     ();
+  const char *(*name)();
   /** get the views which the module should be loaded in. */
-  uint32_t (*views)       ();
+  uint32_t (*views)();
   /** get the container which the module should be placed in */
-  uint32_t (*container)   ();
+  uint32_t (*container)();
   /** check if module should use a expander or not, default implementation
       will make the module expandable and storing the expanding state,
       if not the module will always be shown without the expander. */
-  int (*expandable) ();
+  int (*expandable)();
 
   /** constructor */
-  void (*init)            (struct dt_lib_module_t *self);
+  void (*init)(struct dt_lib_module_t *self);
   /** callback methods for gui. */
   /** construct widget. */
-  void (*gui_init)        (struct dt_lib_module_t *self);
+  void (*gui_init)(struct dt_lib_module_t *self);
   /** destroy widget. */
-  void (*gui_cleanup)     (struct dt_lib_module_t *self);
+  void (*gui_cleanup)(struct dt_lib_module_t *self);
   /** reset to defaults. */
-  void (*gui_reset)       (struct dt_lib_module_t *self);
+  void (*gui_reset)(struct dt_lib_module_t *self);
 
   /** optional event callbacks for big center widget. */
   /** optional method called after lighttable expose. */
-  void  (*gui_post_expose)    (struct dt_lib_module_t *self, cairo_t *cr, int32_t width, int32_t height, int32_t pointerx, int32_t pointery);
-  int   (*mouse_leave)        (struct dt_lib_module_t *self);
-  int   (*mouse_moved)        (struct dt_lib_module_t *self, double x, double y, double pressure, int which);
-  int   (*button_released)    (struct dt_lib_module_t *self, double x, double y, int which, uint32_t state);
-  int   (*button_pressed)     (struct dt_lib_module_t *self, double x, double y, double pressure, int which, int type, uint32_t state);
-  int   (*scrolled)           (struct dt_lib_module_t *self, double x, double y, int up);
-  void  (*configure)          (struct dt_lib_module_t *self, int width, int height);
-  int   (*position)           ();
+  void (*gui_post_expose)(struct dt_lib_module_t *self, cairo_t *cr, int32_t width, int32_t height,
+                          int32_t pointerx, int32_t pointery);
+  int (*mouse_leave)(struct dt_lib_module_t *self);
+  int (*mouse_moved)(struct dt_lib_module_t *self, double x, double y, double pressure, int which);
+  int (*button_released)(struct dt_lib_module_t *self, double x, double y, int which, uint32_t state);
+  int (*button_pressed)(struct dt_lib_module_t *self, double x, double y, double pressure, int which,
+                        int type, uint32_t state);
+  int (*scrolled)(struct dt_lib_module_t *self, double x, double y, int up);
+  void (*configure)(struct dt_lib_module_t *self, int width, int height);
+  int (*position)();
   /** implement these three if you want customizable presets to be stored in db. */
-  void* (*legacy_params)      (struct dt_lib_module_t *self, const void *const old_params, const size_t old_params_size, const int old_version, const int new_version, size_t *new_size);
-  void* (*get_params)         (struct dt_lib_module_t *self, int *size);
-  int   (*set_params)         (struct dt_lib_module_t *self, const void *params, int size);
-  void  (*init_presets)       (struct dt_lib_module_t *self);
+  void *(*legacy_params)(struct dt_lib_module_t *self, const void *const old_params,
+                         const size_t old_params_size, const int old_version, const int new_version,
+                         size_t *new_size);
+  void *(*get_params)(struct dt_lib_module_t *self, int *size);
+  int (*set_params)(struct dt_lib_module_t *self, const void *params, int size);
+  void (*init_presets)(struct dt_lib_module_t *self);
   /** Optional callbacks for keyboard accelerators */
-  void  (*init_key_accels)    (struct dt_lib_module_t *self);
-  void  (*connect_key_accels) (struct dt_lib_module_t *self);
+  void (*init_key_accels)(struct dt_lib_module_t *self);
+  void (*connect_key_accels)(struct dt_lib_module_t *self);
 
   GSList *accel_closures;
   GtkWidget *reset_button;
   GtkWidget *presets_button;
-}
-dt_lib_module_t;
+} dt_lib_module_t;
 
 void dt_lib_init(dt_lib_t *lib);
 void dt_lib_cleanup(dt_lib_t *lib);
@@ -153,12 +155,13 @@ gboolean dt_lib_is_visible(dt_lib_module_t *module);
 void dt_lib_set_visible(dt_lib_module_t *module, gboolean visible);
 
 /** returns the localized plugin name for a given plugin_name. must not be freed. */
-gchar *dt_lib_get_localized_name(const gchar * plugin_name);
+gchar *dt_lib_get_localized_name(const gchar *plugin_name);
 
 /** preset stuff for lib */
 
 /** add or replace a preset for this operation. */
-void dt_lib_presets_add(const char *name, const char *plugin_name, const int32_t version, const void *params, const int32_t params_size);
+void dt_lib_presets_add(const char *name, const char *plugin_name, const int32_t version, const void *params,
+                        const int32_t params_size);
 
 /*
  * Proxy functions

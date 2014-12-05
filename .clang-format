@@ -4,39 +4,46 @@ ConstructorInitializerIndentWidth: 2
 AlignEscapedNewlinesLeft: false
 AlignTrailingComments: true
 AllowAllParametersOfDeclarationOnNextLine: true
+AllowShortBlocksOnASingleLine: false # otherwise the braces behind if(...) get moved up
+AllowShortFunctionsOnASingleLine: false # change to SFS_Emtpy once it is supported
 AllowShortIfStatementsOnASingleLine: true
 AllowShortLoopsOnASingleLine: true
 AlwaysBreakTemplateDeclarations: false
 AlwaysBreakBeforeMultilineStrings: false
-BreakBeforeBinaryOperators: false
-BreakConstructorInitializersBeforeComma: false
+BreakBeforeBinaryOperators: true
+BreakBeforeTernaryOperators: true
+BreakConstructorInitializersBeforeComma: true
 BinPackParameters: true
 ColumnLimit:     110   # needed for the modelines
-ConstructorInitializerAllOnOneLineOrOnePerLine: false
-DerivePointerBinding: true
+ConstructorInitializerAllOnOneLineOrOnePerLine: true
+DerivePointerBinding: false
 #ExperimentalAutoDetectBinPacking: false
 IndentCaseLabels: true
+Language: Cpp
 MaxEmptyLinesToKeep: 3
 NamespaceIndentation: None
 ObjCSpaceBeforeProtocolList: true
 PenaltyBreakComment: 60
 PenaltyBreakString: 1000
 PenaltyBreakFirstLessLess: 120
-PenaltyExcessCharacter: 500
+PenaltyExcessCharacter: 50
 PenaltyReturnTypeOnItsOwnLine: 60
 PointerBindsToType: false
+SpaceAfterCStyleCast: false
 SpacesBeforeTrailingComments: 1
 Cpp11BracedListStyle: false
 Standard:        Cpp03
 IndentWidth:     2
 TabWidth:        2
-UseTab:          false
+UseTab:          Never
 BreakBeforeBraces: Allman
 IndentFunctionDeclarationAfterType: false
 SpacesInParentheses: false
 SpaceInEmptyParentheses: false
 SpacesInCStyleCastParentheses: false
 SpaceAfterControlStatementKeyword: false
-#SpaceBeforeAssignmentOperators: true
+SpaceBeforeAssignmentOperators: true
+SpaceBeforeParens: Never
+SpacesInSquareBrackets: false
 ...
 

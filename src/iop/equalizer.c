@@ -46,20 +46,18 @@ DT_MODULE_INTROSPECTION(1, dt_iop_equalizer_params_t)
 typedef struct dt_iop_equalizer_params_t
 {
   float equalizer_x[3][DT_IOP_EQUALIZER_BANDS], equalizer_y[3][DT_IOP_EQUALIZER_BANDS];
-}
-dt_iop_equalizer_params_t;
+} dt_iop_equalizer_params_t;
 
 typedef enum dt_iop_equalizer_channel_t
 {
   DT_IOP_EQUALIZER_L = 0,
   DT_IOP_EQUALIZER_a = 1,
   DT_IOP_EQUALIZER_b = 2
-}
-dt_iop_equalizer_channel_t;
+} dt_iop_equalizer_channel_t;
 
 typedef struct dt_iop_equalizer_gui_data_t
 {
-  dt_draw_curve_t *minmax_curve;        // curve for gui to draw
+  dt_draw_curve_t *minmax_curve; // curve for gui to draw
   GtkHBox *hbox;
   GtkDrawingArea *area;
   GtkComboBox *presets;
@@ -75,15 +73,13 @@ typedef struct dt_iop_equalizer_gui_data_t
   float draw_max_xs[DT_IOP_EQUALIZER_RES], draw_max_ys[DT_IOP_EQUALIZER_RES];
   float band_hist[DT_IOP_EQUALIZER_BANDS];
   float band_max;
-}
-dt_iop_equalizer_gui_data_t;
+} dt_iop_equalizer_gui_data_t;
 
 typedef struct dt_iop_equalizer_data_t
 {
   dt_draw_curve_t *curve[3];
   int num_levels;
-}
-dt_iop_equalizer_data_t;
+} dt_iop_equalizer_data_t;
 
 
 const char *name()
@@ -92,8 +88,7 @@ const char *name()
 }
 
 
-int
-groups ()
+int groups()
 {
   return IOP_GROUP_CORRECT;
 }
@@ -105,14 +100,15 @@ int flags()
 
 
 
-void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, void *o, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
+void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, void *o,
+             const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
 {
   float *in = (float *)i;
   float *out = (float *)o;
   const int chs = piece->colors;
   const int width = roi_in->width, height = roi_in->height;
   const float scale = roi_in->scale;
-  memcpy(out, in, (size_t)chs*sizeof(float)*width*height);
+  memcpy(out, in, (size_t)chs * sizeof(float) * width * height);
 #if 1
   // printf("thread %d starting equalizer", (int)pthread_self());
   // if(piece->iscale != 1.0) printf(" for preview\n");
@@ -121,25 +117,25 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   // dt_iop_equalizer_gui_data_t *c = (dt_iop_equalizer_gui_data_t *)self->gui_data;
 
   // 1 pixel in this buffer represents 1.0/scale pixels in original image:
-  const float l1 = 1.0f + dt_log2f(piece->iscale/scale);                          // finest level
+  const float l1 = 1.0f + dt_log2f(piece->iscale / scale); // finest level
   float lm = 0;
-  for(int k=MIN(width,height)*piece->iscale/scale; k; k>>=1) lm++; // coarsest level
+  for(int k = MIN(width, height) * piece->iscale / scale; k; k >>= 1) lm++; // coarsest level
   lm = MIN(DT_IOP_EQUALIZER_MAX_LEVEL, l1 + lm);
   // level 1 => full resolution
   int numl = 0;
-  for(int k=MIN(width,height); k; k>>=1) numl++;
-  const int numl_cap = MIN(DT_IOP_EQUALIZER_MAX_LEVEL-l1+1.5, numl);
+  for(int k = MIN(width, height); k; k >>= 1) numl++;
+  const int numl_cap = MIN(DT_IOP_EQUALIZER_MAX_LEVEL - l1 + 1.5, numl);
   // printf("level range in %d %d: %f %f, cap: %d\n", 1, d->num_levels, l1, lm, numl_cap);
 
   // TODO: fixed alloc for data piece at capped resolution?
   float **tmp = (float **)calloc(numl_cap, sizeof(float *));
-  for(int k=1; k<numl_cap; k++)
+  for(int k = 1; k < numl_cap; k++)
   {
-    const int wd = (int)(1 + (width>>(k-1))), ht = (int)(1 + (height>>(k-1)));
-    tmp[k] = (float *)malloc((size_t)sizeof(float)*wd*ht);
+    const int wd = (int)(1 + (width >> (k - 1))), ht = (int)(1 + (height >> (k - 1)));
+    tmp[k] = (float *)malloc((size_t)sizeof(float) * wd * ht);
   }
 
-  for(int level=1; level<numl_cap; level++) dt_iop_equalizer_wtf(out, tmp, level, width, height);
+  for(int level = 1; level < numl_cap; level++) dt_iop_equalizer_wtf(out, tmp, level, width, height);
 
 #if 0
   // printf("transformed\n");
@@ -175,86 +171,99 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
 #endif
   // printf("histogrammed\n");
 
-  for(int l=1; l<numl_cap; l++)
+  for(int l = 1; l < numl_cap; l++)
   {
-    const float lv = (lm-l1)*(l-1)/(float)(numl_cap-1) + l1; // appr level in real image.
+    const float lv = (lm - l1) * (l - 1) / (float)(numl_cap - 1) + l1; // appr level in real image.
     const float band = CLAMP((1.0 - lv / d->num_levels), 0, 1.0);
-    for(int ch=0; ch<3; ch++)
+    for(int ch = 0; ch < 3; ch++)
     {
       // coefficients in range [0, 2], 1 being neutral.
-      const float coeff = 2*dt_draw_curve_calc_value(d->curve[ch==0?0:1], band);
-      const int step = 1<<l;
+      const float coeff = 2 * dt_draw_curve_calc_value(d->curve[ch == 0 ? 0 : 1], band);
+      const int step = 1 << l;
 #if 1 // scale coefficients
-      for(int j=0; j<height; j+=step)      for(int i=step/2; i<width; i+=step) out[(size_t)chs*width*j + chs*i + ch] *= coeff;
-      for(int j=step/2; j<height; j+=step) for(int i=0; i<width; i+=step)      out[(size_t)chs*width*j + chs*i + ch] *= coeff;
-      for(int j=step/2; j<height; j+=step) for(int i=step/2; i<width; i+=step) out[(size_t)chs*width*j + chs*i + ch] *= coeff*coeff;
+      for(int j = 0; j < height; j += step)
+        for(int i = step / 2; i < width; i += step) out[(size_t)chs * width * j + chs * i + ch] *= coeff;
+      for(int j = step / 2; j < height; j += step)
+        for(int i = 0; i < width; i += step) out[(size_t)chs * width * j + chs * i + ch] *= coeff;
+      for(int j = step / 2; j < height; j += step)
+        for(int i = step / 2; i < width; i += step)
+          out[(size_t)chs * width * j + chs * i + ch] *= coeff * coeff;
 #else // soft-thresholding (shrinkage)
-#define wshrink (copysignf(fmaxf(0.0f, fabsf(out[(size_t)chs*width*j + chs*i + ch]) - (1.0-coeff)), out[(size_t)chs*width*j + chs*i + ch]))
-      for(int j=0; j<height; j+=step)      for(int i=step/2; i<width; i+=step) out[(size_t)chs*width*j + chs*i + ch] = wshrink;
-      for(int j=step/2; j<height; j+=step) for(int i=0; i<width; i+=step)      out[(size_t)chs*width*j + chs*i + ch] = wshrink;
-      for(int j=step/2; j<height; j+=step) for(int i=step/2; i<width; i+=step) out[(size_t)chs*width*j + chs*i + ch] = wshrink;
+#define wshrink                                                                                              \
+  (copysignf(fmaxf(0.0f, fabsf(out[(size_t)chs * width * j + chs * i + ch]) - (1.0 - coeff)),                \
+             out[(size_t)chs * width * j + chs * i + ch]))
+      for(int j = 0; j < height; j += step)
+        for(int i = step / 2; i < width; i += step) out[(size_t)chs * width * j + chs * i + ch] = wshrink;
+      for(int j = step / 2; j < height; j += step)
+        for(int i = 0; i < width; i += step) out[(size_t)chs * width * j + chs * i + ch] = wshrink;
+      for(int j = step / 2; j < height; j += step)
+        for(int i = step / 2; i < width; i += step) out[(size_t)chs * width * j + chs * i + ch] = wshrink;
 #undef wshrink
 #endif
     }
   }
   // printf("applied\n");
-  for(int level=numl_cap-1; level>0; level--) dt_iop_equalizer_iwtf(out, tmp, level, width, height);
+  for(int level = numl_cap - 1; level > 0; level--) dt_iop_equalizer_iwtf(out, tmp, level, width, height);
 
-  for(int k=1; k<numl_cap; k++) free(tmp[k]);
+  for(int k = 1; k < numl_cap; k++) free(tmp[k]);
   free(tmp);
-  // printf("thread %d finished equalizer", (int)pthread_self());
-  // if(piece->iscale != 1.0) printf(" for preview\n");
-  // else printf("\n");
+// printf("thread %d finished equalizer", (int)pthread_self());
+// if(piece->iscale != 1.0) printf(" for preview\n");
+// else printf("\n");
 #endif
 }
 
-void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
+void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe,
+                   dt_dev_pixelpipe_iop_t *piece)
 {
   // pull in new params to gegl
   dt_iop_equalizer_data_t *d = (dt_iop_equalizer_data_t *)(piece->data);
   dt_iop_equalizer_params_t *p = (dt_iop_equalizer_params_t *)p1;
 #ifdef HAVE_GEGL
-  // TODO
+// TODO
 #else
-  for(int ch=0; ch<3; ch++) for(int k=0; k<DT_IOP_EQUALIZER_BANDS; k++)
+  for(int ch = 0; ch < 3; ch++)
+    for(int k = 0; k < DT_IOP_EQUALIZER_BANDS; k++)
       dt_draw_curve_set_point(d->curve[ch], k, p->equalizer_x[ch][k], p->equalizer_y[ch][k]);
   int l = 0;
-  for(int k=(int)MIN(pipe->iwidth*pipe->iscale,pipe->iheight*pipe->iscale); k; k>>=1) l++;
+  for(int k = (int)MIN(pipe->iwidth * pipe->iscale, pipe->iheight * pipe->iscale); k; k >>= 1) l++;
   d->num_levels = MIN(DT_IOP_EQUALIZER_MAX_LEVEL, l);
 #endif
 }
 
-void init_pipe (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
+void init_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
   // create part of the gegl pipeline
   dt_iop_equalizer_data_t *d = (dt_iop_equalizer_data_t *)malloc(sizeof(dt_iop_equalizer_data_t));
   dt_iop_equalizer_params_t *default_params = (dt_iop_equalizer_params_t *)self->default_params;
   piece->data = (void *)d;
-  for(int ch=0; ch<3; ch++)
+  for(int ch = 0; ch < 3; ch++)
   {
     d->curve[ch] = dt_draw_curve_new(0.0, 1.0, CATMULL_ROM);
-    for(int k=0; k<DT_IOP_EQUALIZER_BANDS; k++)
-      (void)dt_draw_curve_add_point(d->curve[ch], default_params->equalizer_x[ch][k], default_params->equalizer_y[ch][k]);
+    for(int k = 0; k < DT_IOP_EQUALIZER_BANDS; k++)
+      (void)dt_draw_curve_add_point(d->curve[ch], default_params->equalizer_x[ch][k],
+                                    default_params->equalizer_y[ch][k]);
   }
   int l = 0;
-  for(int k=(int)MIN(pipe->iwidth*pipe->iscale,pipe->iheight*pipe->iscale); k; k>>=1) l++;
+  for(int k = (int)MIN(pipe->iwidth * pipe->iscale, pipe->iheight * pipe->iscale); k; k >>= 1) l++;
   d->num_levels = MIN(DT_IOP_EQUALIZER_MAX_LEVEL, l);
 #ifdef HAVE_GEGL
 #error "gegl version not implemented!"
-  piece->input = piece->output = gegl_node_new_child(pipe->gegl, "operation", "gegl:dt-contrast-curve", "sampling-points", 65535, "curve", d->curve[0], NULL);
+  piece->input = piece->output = gegl_node_new_child(pipe->gegl, "operation", "gegl:dt-contrast-curve",
+                                                     "sampling-points", 65535, "curve", d->curve[0], NULL);
   d->num_levels = 1;
 #endif
 }
 
-void cleanup_pipe (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
+void cleanup_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
-  // clean up everything again.
+// clean up everything again.
 #ifdef HAVE_GEGL
 #error "gegl version not implemented!"
-  // (void)gegl_node_remove_child(pipe->gegl, piece->input);
+// (void)gegl_node_remove_child(pipe->gegl, piece->input);
 #endif
   dt_iop_equalizer_data_t *d = (dt_iop_equalizer_data_t *)(piece->data);
-  for(int ch=0; ch<3; ch++) dt_draw_curve_destroy(d->curve[ch]);
+  for(int ch = 0; ch < 3; ch++) dt_draw_curve_destroy(d->curve[ch]);
   free(piece->data);
   piece->data = NULL;
 }
@@ -270,14 +279,15 @@ void init(dt_iop_module_t *module)
   module->params = malloc(sizeof(dt_iop_equalizer_params_t));
   module->default_params = malloc(sizeof(dt_iop_equalizer_params_t));
   module->default_enabled = 0; // we're a rather slow and rare op.
-  module->priority = 383; // module order created by iop_dependencies.py, do not edit!
+  module->priority = 383;      // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_equalizer_params_t);
   module->gui_data = NULL;
   dt_iop_equalizer_params_t tmp;
-  for(int ch=0; ch<3; ch++)
+  for(int ch = 0; ch < 3; ch++)
   {
-    for(int k=0; k<DT_IOP_EQUALIZER_BANDS; k++) tmp.equalizer_x[ch][k] = k/(float)(DT_IOP_EQUALIZER_BANDS-1);
-    for(int k=0; k<DT_IOP_EQUALIZER_BANDS; k++) tmp.equalizer_y[ch][k] = 0.5f;
+    for(int k = 0; k < DT_IOP_EQUALIZER_BANDS; k++)
+      tmp.equalizer_x[ch][k] = k / (float)(DT_IOP_EQUALIZER_BANDS - 1);
+    for(int k = 0; k < DT_IOP_EQUALIZER_BANDS; k++) tmp.equalizer_y[ch][k] = 0.5f;
   }
   memcpy(module->params, &tmp, sizeof(dt_iop_equalizer_params_t));
   memcpy(module->default_params, &tmp, sizeof(dt_iop_equalizer_params_t));
@@ -350,7 +360,8 @@ void init_presets (dt_iop_module_so_t *self)
 void gui_init(struct dt_iop_module_t *self)
 {
   self->gui_data = malloc(sizeof(dt_iop_equalizer_gui_data_t));
-  self->widget = gtk_label_new(_("this module will be removed in the future\nand is only here so you can switch it off\nand move to the new equalizer."));
+  self->widget = gtk_label_new(_("this module will be removed in the future\nand is only here so you can "
+                                 "switch it off\nand move to the new equalizer."));
   gtk_misc_set_alignment(GTK_MISC(self->widget), 0.0f, 0.5f);
 
 #if 0

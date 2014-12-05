@@ -38,30 +38,26 @@ typedef struct dt_iop_bilat_params_t
   float sigma_r;
   float sigma_s;
   float detail;
-}
-dt_iop_bilat_params_t;
+} dt_iop_bilat_params_t;
 
 typedef struct dt_iop_bilat_data_t
 {
   float sigma_r;
   float sigma_s;
   float detail;
-}
-dt_iop_bilat_data_t;
+} dt_iop_bilat_data_t;
 
 typedef struct dt_iop_bilat_gui_data_t
 {
   GtkWidget *spatial;
   GtkWidget *range;
   GtkWidget *detail;
-}
-dt_iop_bilat_gui_data_t;
+} dt_iop_bilat_gui_data_t;
 
 typedef struct dt_iop_bilat_global_data_t
 {
   // we don't need it for this example (as for most dt plugins)
-}
-dt_iop_bilat_global_data_t;
+} dt_iop_bilat_global_data_t;
 
 // this returns a translatable name
 const char *name()
@@ -70,39 +66,38 @@ const char *name()
 }
 
 // some additional flags (self explanatory i think):
-int
-flags()
+int flags()
 {
   return IOP_FLAGS_INCLUDE_IN_STYLES | IOP_FLAGS_SUPPORTS_BLENDING | IOP_FLAGS_ALLOW_TILING;
 }
 
 // where does it appear in the gui?
-int
-groups()
+int groups()
 {
   return IOP_GROUP_TONE;
 }
 
 #ifdef HAVE_OPENCL
-int
-process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
+int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out,
+               const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
 {
   dt_iop_bilat_data_t *d = (dt_iop_bilat_data_t *)piece->data;
   // the total scale is composed of scale before input to the pipeline (iscale),
   // and the scale of the roi.
-  const float scale = piece->iscale/roi_in->scale;
+  const float scale = piece->iscale / roi_in->scale;
   const float sigma_r = d->sigma_r; // does not depend on scale
   const float sigma_s = d->sigma_s / scale;
   cl_int err = -666;
 
-  dt_bilateral_cl_t *b = dt_bilateral_init_cl(piece->pipe->devid, roi_in->width, roi_in->height, sigma_s, sigma_r);
+  dt_bilateral_cl_t *b
+      = dt_bilateral_init_cl(piece->pipe->devid, roi_in->width, roi_in->height, sigma_s, sigma_r);
   if(!b) goto error;
   err = dt_bilateral_splat_cl(b, dev_in);
-  if (err != CL_SUCCESS) goto error;
+  if(err != CL_SUCCESS) goto error;
   err = dt_bilateral_blur_cl(b);
-  if (err != CL_SUCCESS) goto error;
+  if(err != CL_SUCCESS) goto error;
   err = dt_bilateral_slice_cl(b, dev_in, dev_out, d->detail);
-  if (err != CL_SUCCESS) goto error;
+  if(err != CL_SUCCESS) goto error;
   dt_bilateral_free_cl(b);
   return TRUE;
 error:
@@ -113,12 +108,14 @@ error:
 #endif
 
 
-void tiling_callback  (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out, struct dt_develop_tiling_t *tiling)
+void tiling_callback(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece,
+                     const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out,
+                     struct dt_develop_tiling_t *tiling)
 {
   dt_iop_bilat_data_t *d = (dt_iop_bilat_data_t *)piece->data;
   // the total scale is composed of scale before input to the pipeline (iscale),
   // and the scale of the roi.
-  const float scale = piece->iscale/roi_in->scale;
+  const float scale = piece->iscale / roi_in->scale;
   const float sigma_r = d->sigma_r;
   const float sigma_s = d->sigma_s / scale;
 
@@ -126,19 +123,20 @@ void tiling_callback  (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop
   const int height = roi_in->height;
   const int channels = piece->colors;
 
-  const size_t basebuffer = width*height*channels*sizeof(float);
+  const size_t basebuffer = width * height * channels * sizeof(float);
 
-  tiling->factor = 2.0f + (float)dt_bilateral_memory_use(width,height,sigma_s,sigma_r)/basebuffer;
-  tiling->maxbuf = fmax(1.0f, (float)dt_bilateral_singlebuffer_size(width,height,sigma_s,sigma_r)/basebuffer);
+  tiling->factor = 2.0f + (float)dt_bilateral_memory_use(width, height, sigma_s, sigma_r) / basebuffer;
+  tiling->maxbuf
+      = fmax(1.0f, (float)dt_bilateral_singlebuffer_size(width, height, sigma_s, sigma_r) / basebuffer);
   tiling->overhead = 0;
-  tiling->overlap = ceilf(4*sigma_s);
+  tiling->overlap = ceilf(4 * sigma_s);
   tiling->xalign = 1;
   tiling->yalign = 1;
   return;
 }
 
-void
-commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
+void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe,
+                   dt_dev_pixelpipe_iop_t *piece)
 {
   dt_iop_bilat_params_t *p = (dt_iop_bilat_params_t *)p1;
   dt_iop_bilat_data_t *d = (dt_iop_bilat_data_t *)piece->data;
@@ -153,14 +151,14 @@ commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpi
 }
 
 
-void init_pipe (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
+void init_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
   piece->data = calloc(1, sizeof(dt_iop_bilat_data_t));
   self->commit_params(self, self->default_params, pipe, piece);
 }
 
 
-void cleanup_pipe (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
+void cleanup_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
   free(piece->data);
   piece->data = NULL;
@@ -168,14 +166,15 @@ void cleanup_pipe (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_de
 
 
 /** process, all real work is done here. */
-void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, void *o, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
+void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, void *o,
+             const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
 {
   // this is called for preview and full pipe separately, each with its own pixelpipe piece.
   // get our data struct:
   dt_iop_bilat_data_t *d = (dt_iop_bilat_data_t *)piece->data;
   // the total scale is composed of scale before input to the pipeline (iscale),
   // and the scale of the roi.
-  const float scale = piece->iscale/roi_in->scale;
+  const float scale = piece->iscale / roi_in->scale;
   const float sigma_r = d->sigma_r; // does not depend on scale
   const float sigma_s = d->sigma_s / scale;
 
@@ -202,10 +201,7 @@ void init(dt_iop_module_t *module)
   module->params_size = sizeof(dt_iop_bilat_params_t);
   module->gui_data = NULL;
   // init defaults:
-  dt_iop_bilat_params_t tmp = (dt_iop_bilat_params_t)
-  {
-    20, 50, 0.2
-  };
+  dt_iop_bilat_params_t tmp = (dt_iop_bilat_params_t){ 20, 50, 0.2 };
 
   memcpy(module->params, &tmp, sizeof(dt_iop_bilat_params_t));
   memcpy(module->default_params, &tmp, sizeof(dt_iop_bilat_params_t));
@@ -221,24 +217,21 @@ void cleanup(dt_iop_module_t *module)
   module->data = NULL;
 }
 
-static void
-spatial_callback(GtkWidget *w, dt_iop_module_t *self)
+static void spatial_callback(GtkWidget *w, dt_iop_module_t *self)
 {
   dt_iop_bilat_params_t *p = (dt_iop_bilat_params_t *)self->params;
   p->sigma_s = dt_bauhaus_slider_get(w);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
-static void
-range_callback(GtkWidget *w, dt_iop_module_t *self)
+static void range_callback(GtkWidget *w, dt_iop_module_t *self)
 {
   dt_iop_bilat_params_t *p = (dt_iop_bilat_params_t *)self->params;
   p->sigma_r = dt_bauhaus_slider_get(w);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
-static void
-detail_callback(GtkWidget *w, dt_iop_module_t *self)
+static void detail_callback(GtkWidget *w, dt_iop_module_t *self)
 {
   dt_iop_bilat_params_t *p = (dt_iop_bilat_params_t *)self->params;
   p->detail = dt_bauhaus_slider_get(w);
@@ -252,8 +245,8 @@ void gui_update(dt_iop_module_t *self)
   dt_iop_bilat_gui_data_t *g = (dt_iop_bilat_gui_data_t *)self->gui_data;
   dt_iop_bilat_params_t *p = (dt_iop_bilat_params_t *)self->params;
   dt_bauhaus_slider_set(g->spatial, p->sigma_s);
-  dt_bauhaus_slider_set(g->range,   p->sigma_r);
-  dt_bauhaus_slider_set(g->detail,  p->detail);
+  dt_bauhaus_slider_set(g->range, p->sigma_r);
+  dt_bauhaus_slider_set(g->detail, p->detail);
 }
 
 void gui_init(dt_iop_module_t *self)
@@ -275,9 +268,9 @@ void gui_init(dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), g->detail, TRUE, TRUE, 0);
   dt_bauhaus_widget_set_label(g->detail, NULL, _("detail"));
 
-  g_signal_connect (G_OBJECT (g->spatial), "value-changed", G_CALLBACK (spatial_callback), self);
-  g_signal_connect (G_OBJECT (g->range),   "value-changed", G_CALLBACK (range_callback), self);
-  g_signal_connect (G_OBJECT (g->detail),  "value-changed", G_CALLBACK (detail_callback), self);
+  g_signal_connect(G_OBJECT(g->spatial), "value-changed", G_CALLBACK(spatial_callback), self);
+  g_signal_connect(G_OBJECT(g->range), "value-changed", G_CALLBACK(range_callback), self);
+  g_signal_connect(G_OBJECT(g->detail), "value-changed", G_CALLBACK(detail_callback), self);
 }
 
 void gui_cleanup(dt_iop_module_t *self)

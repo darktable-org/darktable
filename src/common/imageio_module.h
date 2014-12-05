@@ -32,7 +32,7 @@
 
 
 /** Flag for the format modules */
-#define FORMAT_FLAGS_SUPPORT_XMP   1
+#define FORMAT_FLAGS_SUPPORT_XMP 1
 
 /**
  * defines the plugin structure for image import and export.
@@ -52,8 +52,7 @@ typedef struct dt_imageio_module_data_t
   int max_width, max_height;
   int width, height;
   char style[128];
-}
-dt_imageio_module_data_t;
+} dt_imageio_module_data_t;
 
 struct dt_imageio_module_format_t;
 /* responsible for image encoding, such as jpg,png,etc */
@@ -71,41 +70,44 @@ typedef struct dt_imageio_module_format_t
 
   // gui and management:
   /** version */
-  int (*version)      ();
+  int (*version)();
   /* get translated module name */
-  const char* (*name) ();
+  const char *(*name)();
   /* construct widget above */
-  void (*gui_init)    (struct dt_imageio_module_format_t *self);
+  void (*gui_init)(struct dt_imageio_module_format_t *self);
   /* destroy resources */
-  void (*gui_cleanup) (struct dt_imageio_module_format_t *self);
+  void (*gui_cleanup)(struct dt_imageio_module_format_t *self);
   /* reset options to defaults */
-  void (*gui_reset)   (struct dt_imageio_module_format_t *self);
+  void (*gui_reset)(struct dt_imageio_module_format_t *self);
 
   /* construct widget above */
-  void (*init)       (struct dt_imageio_module_format_t *self);
+  void (*init)(struct dt_imageio_module_format_t *self);
   /* construct widget above */
-  void (*cleanup)    (struct dt_imageio_module_format_t *self);
+  void (*cleanup)(struct dt_imageio_module_format_t *self);
 
   /* gets the current export parameters from gui/conf and stores in this struct for later use. */
-  void* (*legacy_params) (struct dt_imageio_module_format_t *self, const void *const old_params, const size_t old_params_size, const int old_version, const int new_version, size_t *new_size);
-  size_t (*params_size)  (struct dt_imageio_module_format_t *self);
-  void* (*get_params)    (struct dt_imageio_module_format_t *self);
-  void  (*free_params)   (struct dt_imageio_module_format_t *self, dt_imageio_module_data_t *data);
+  void *(*legacy_params)(struct dt_imageio_module_format_t *self, const void *const old_params,
+                         const size_t old_params_size, const int old_version, const int new_version,
+                         size_t *new_size);
+  size_t (*params_size)(struct dt_imageio_module_format_t *self);
+  void *(*get_params)(struct dt_imageio_module_format_t *self);
+  void (*free_params)(struct dt_imageio_module_format_t *self, dt_imageio_module_data_t *data);
   /* resets the gui to the paramters as given here. return != 0 on fail. */
-  int   (*set_params)    (struct dt_imageio_module_format_t *self, const void *params, const int size);
+  int (*set_params)(struct dt_imageio_module_format_t *self, const void *params, const int size);
 
   /* returns the mime type of the exported image. */
-  const char* (*mime)      (dt_imageio_module_data_t *data);
+  const char *(*mime)(dt_imageio_module_data_t *data);
   /* this extension (plus dot) is appended to the exported filename. */
-  const char* (*extension) (dt_imageio_module_data_t *data);
+  const char *(*extension)(dt_imageio_module_data_t *data);
   /* get storage max supported image dimension, return 0 if no dimension restrictions exists. */
-  int (*dimension)    (struct dt_imageio_module_format_t *self, uint32_t *width, uint32_t *height);
+  int (*dimension)(struct dt_imageio_module_format_t *self, uint32_t *width, uint32_t *height);
 
   // writing functions:
   /* bits per pixel and color channel we want to write: 8: char x3, 16: uint16_t x3, 32: float x3. */
   int (*bpp)(dt_imageio_module_data_t *data);
   /* write to file, with exif if not NULL, and icc profile if supported. */
-  int (*write_image)(dt_imageio_module_data_t *data, const char *filename, const void *in, void *exif, int exif_len, int imgid);
+  int (*write_image)(dt_imageio_module_data_t *data, const char *filename, const void *in, void *exif,
+                     int exif_len, int imgid);
   /* flag that describes the available precision/levels of output format. mainly used for dithering. */
   int (*levels)(dt_imageio_module_data_t *data);
 
@@ -115,8 +117,7 @@ typedef struct dt_imageio_module_format_t
   int (*read_image)(dt_imageio_module_data_t *data, uint8_t *out);
   luaA_Type parameter_lua_type;
 
-}
-dt_imageio_module_format_t;
+} dt_imageio_module_format_t;
 
 
 /* responsible for image storage, such as flickr, harddisk, etc */
@@ -134,44 +135,49 @@ typedef struct dt_imageio_module_storage_t
 
   // gui and management:
   /** version */
-  int (*version)      ();
+  int (*version)();
   /* get translated module name */
-  const char* (*name) (const struct dt_imageio_module_storage_t *self);
+  const char *(*name)(const struct dt_imageio_module_storage_t *self);
   /* construct widget above */
-  void (*gui_init)    (struct dt_imageio_module_storage_t *self);
+  void (*gui_init)(struct dt_imageio_module_storage_t *self);
   /* destroy resources */
-  void (*gui_cleanup) (struct dt_imageio_module_storage_t *self);
+  void (*gui_cleanup)(struct dt_imageio_module_storage_t *self);
   /* reset options to defaults */
-  void (*gui_reset)   (struct dt_imageio_module_storage_t *self);
+  void (*gui_reset)(struct dt_imageio_module_storage_t *self);
   /* allow the module to initialize itself */
-  void (*init)    (struct dt_imageio_module_storage_t *self);
+  void (*init)(struct dt_imageio_module_storage_t *self);
   /* try and see if this format is supported? */
-  int (*supported)    (struct dt_imageio_module_storage_t *self, struct dt_imageio_module_format_t *format);
+  int (*supported)(struct dt_imageio_module_storage_t *self, struct dt_imageio_module_format_t *format);
   /* get storage max supported image dimension, return 0 if no dimension restrictions exists. */
-  int (*dimension)    (struct dt_imageio_module_storage_t *self, uint32_t *width, uint32_t *height);
+  int (*dimension)(struct dt_imageio_module_storage_t *self, uint32_t *width, uint32_t *height);
   /* get storage recommended image dimension, return 0 if no recommendation exists. */
-  int (*recommended_dimension)    (struct dt_imageio_module_storage_t *self, uint32_t *width, uint32_t *height);
+  int (*recommended_dimension)(struct dt_imageio_module_storage_t *self, uint32_t *width, uint32_t *height);
 
-  /* called once at the beginning (before exporting image), if implemented 
+  /* called once at the beginning (before exporting image), if implemented
      * can change the list of exported images (including a NULL list)
    */
-  void (*initialize_store) (struct dt_imageio_module_storage_t *self, dt_imageio_module_data_t *data, dt_imageio_module_format_t *format, dt_imageio_module_data_t *fdata, GList **images, const gboolean high_quality);
+  void (*initialize_store)(struct dt_imageio_module_storage_t *self, dt_imageio_module_data_t *data,
+                           dt_imageio_module_format_t *format, dt_imageio_module_data_t *fdata,
+                           GList **images, const gboolean high_quality);
   /* this actually does the work */
-  int (*store)(struct dt_imageio_module_storage_t *self,struct dt_imageio_module_data_t *self_data, const int imgid, dt_imageio_module_format_t *format, dt_imageio_module_data_t *fdata, const int num, const int total, const gboolean high_quality);
+  int (*store)(struct dt_imageio_module_storage_t *self, struct dt_imageio_module_data_t *self_data,
+               const int imgid, dt_imageio_module_format_t *format, dt_imageio_module_data_t *fdata,
+               const int num, const int total, const gboolean high_quality);
   /* called once at the end (after exporting all images), if implemented. */
-  void (*finalize_store) (struct dt_imageio_module_storage_t *self, dt_imageio_module_data_t *data);
+  void (*finalize_store)(struct dt_imageio_module_storage_t *self, dt_imageio_module_data_t *data);
 
-  void* (*legacy_params) (struct dt_imageio_module_storage_t *self, const void *const old_params, const size_t old_params_size, const int old_version, const int new_version, size_t *new_size);
-  size_t (*params_size)  (struct dt_imageio_module_storage_t *self);
-  void* (*get_params)    (struct dt_imageio_module_storage_t *self);
-  void  (*free_params)   (struct dt_imageio_module_storage_t *self, dt_imageio_module_data_t *data);
-  int   (*set_params)    (struct dt_imageio_module_storage_t *self, const void *params, const int size);
+  void *(*legacy_params)(struct dt_imageio_module_storage_t *self, const void *const old_params,
+                         const size_t old_params_size, const int old_version, const int new_version,
+                         size_t *new_size);
+  size_t (*params_size)(struct dt_imageio_module_storage_t *self);
+  void *(*get_params)(struct dt_imageio_module_storage_t *self);
+  void (*free_params)(struct dt_imageio_module_storage_t *self, dt_imageio_module_data_t *data);
+  int (*set_params)(struct dt_imageio_module_storage_t *self, const void *params, const int size);
 
-  void  (*export_dispatched) (struct dt_imageio_module_storage_t *self);
+  void (*export_dispatched)(struct dt_imageio_module_storage_t *self);
 
   luaA_Type parameter_lua_type;
-}
-dt_imageio_module_storage_t;
+} dt_imageio_module_storage_t;
 
 
 /* main struct */
@@ -179,11 +185,10 @@ typedef struct dt_imageio_t
 {
   GList *plugins_format;
   GList *plugins_storage;
-}
-dt_imageio_t;
+} dt_imageio_t;
 
 /* load all modules */
-void dt_imageio_init   (dt_imageio_t *iio);
+void dt_imageio_init(dt_imageio_t *iio);
 /* cleanup */
 void dt_imageio_cleanup(dt_imageio_t *iio);
 
@@ -200,11 +205,11 @@ dt_imageio_module_storage_t *dt_imageio_get_storage_by_name(const char *name);
 /* get by index */
 dt_imageio_module_format_t *dt_imageio_get_format_by_index(int index);
 dt_imageio_module_storage_t *dt_imageio_get_storage_by_index(int index);
-int dt_imageio_get_index_of_format(dt_imageio_module_format_t* format);
-int dt_imageio_get_index_of_storage(dt_imageio_module_storage_t* storage);
+int dt_imageio_get_index_of_format(dt_imageio_module_format_t *format);
+int dt_imageio_get_index_of_storage(dt_imageio_module_storage_t *storage);
 
 /* add a module into the known module list */
-void dt_imageio_insert_storage(dt_imageio_module_storage_t* storage);
+void dt_imageio_insert_storage(dt_imageio_module_storage_t *storage);
 #endif
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

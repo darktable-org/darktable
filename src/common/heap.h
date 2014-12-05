@@ -27,15 +27,14 @@ typedef struct heap_t
   uint32_t size;
   uint32_t end;
   uint64_t *keys;
-  float    *vals;
-}
-heap_t;
+  float *vals;
+} heap_t;
 
 heap_t *heap_init(uint32_t size)
 {
   heap_t *h = (heap_t *)malloc(sizeof(heap_t));
-  h->keys = (uint64_t *)malloc(sizeof(uint64_t)*size);
-  h->vals = (float    *)malloc(sizeof(float)   *size);
+  h->keys = (uint64_t *)malloc(sizeof(uint64_t) * size);
+  h->vals = (float *)malloc(sizeof(float) * size);
   h->size = size;
   h->end = 0;
   return h;
@@ -60,12 +59,12 @@ int heap_full(heap_t *h)
 
 static uint32_t heap_parent(uint32_t i)
 {
-  return (i-1)/2;
+  return (i - 1) / 2;
 }
 
 static uint32_t heap_child(uint32_t i, uint32_t right)
 {
-  return 2*i + 1 + right;
+  return 2 * i + 1 + right;
 }
 
 static void heap_swap(heap_t *h, uint32_t i, uint32_t j)
@@ -122,7 +121,8 @@ void heap_remove(heap_t *h, uint64_t *key, float *val)
       heap_swap(h, largest, pos);
       pos = largest;
     }
-    else break;
+    else
+      break;
   }
 }
 

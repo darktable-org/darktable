@@ -25,8 +25,7 @@ typedef struct dt_image_load_t
 {
   int32_t imgid;
   dt_mipmap_size_t mip;
-}
-dt_image_load_t;
+} dt_image_load_t;
 
 static int32_t dt_image_load_job_run(dt_job_t *job)
 {
@@ -34,21 +33,15 @@ static int32_t dt_image_load_job_run(dt_job_t *job)
 
   // hook back into mipmap_cache:
   dt_mipmap_buffer_t buf;
-  dt_mipmap_cache_read_get(
-    darktable.mipmap_cache,
-    &buf,
-    params->imgid,
-    params->mip,
-    DT_MIPMAP_BLOCKING);
+  dt_mipmap_cache_read_get(darktable.mipmap_cache, &buf, params->imgid, params->mip, DT_MIPMAP_BLOCKING);
 
   // drop read lock, as this is only speculative async loading.
-  if(buf.buf)
-    dt_mipmap_cache_read_release(darktable.mipmap_cache, &buf);
+  if(buf.buf) dt_mipmap_cache_read_release(darktable.mipmap_cache, &buf);
   free(params);
   return 0;
 }
 
-dt_job_t * dt_image_load_job_create(int32_t id, dt_mipmap_size_t mip)
+dt_job_t *dt_image_load_job_create(int32_t id, dt_mipmap_size_t mip)
 {
   dt_job_t *job = dt_control_job_create(&dt_image_load_job_run, "load image %d mip %d", id, mip);
   if(!job) return NULL;
@@ -68,8 +61,7 @@ typedef struct dt_image_import_t
 {
   uint32_t film_id;
   const char *filename;
-}
-dt_image_import_t;
+} dt_image_import_t;
 
 static int32_t dt_image_import_job_run(dt_job_t *job)
 {
@@ -96,7 +88,7 @@ static int32_t dt_image_import_job_run(dt_job_t *job)
   return 0;
 }
 
-dt_job_t * dt_image_import_job_create(uint32_t filmid, const char *filename)
+dt_job_t *dt_image_import_job_create(uint32_t filmid, const char *filename)
 {
   dt_image_import_t *params;
   dt_job_t *job = dt_control_job_create(&dt_image_import_job_run, "import image");

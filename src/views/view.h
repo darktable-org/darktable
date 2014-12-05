@@ -50,7 +50,8 @@ enum dt_view_type_flags_t
   DT_VIEW_SLIDESHOW = 16,
 };
 
-#define DT_VIEW_ALL (DT_VIEW_LIGHTTABLE | DT_VIEW_DARKROOM | DT_VIEW_TETHERING | DT_VIEW_MAP | DT_VIEW_SLIDESHOW)
+#define DT_VIEW_ALL                                                                                          \
+  (DT_VIEW_LIGHTTABLE | DT_VIEW_DARKROOM | DT_VIEW_TETHERING | DT_VIEW_MAP | DT_VIEW_SLIDESHOW)
 
 /**
  * main dt view module (as lighttable or darkroom)
@@ -68,35 +69,37 @@ typedef struct dt_view_t
   // scroll bar control
   float vscroll_size, vscroll_viewport_size, vscroll_pos;
   float hscroll_size, hscroll_viewport_size, hscroll_pos;
-  const char *(*name)     (struct dt_view_t *self); // get translatable name
-  uint32_t (*view)        (const struct dt_view_t *self); // get the view type
-  void (*init)            (struct dt_view_t *self); // init *data
-  void (*cleanup)         (struct dt_view_t *self); // cleanup *data
-  void (*expose)          (struct dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, int32_t pointerx, int32_t pointery); // expose the module (gtk callback)
-  int  (*try_enter)       (struct dt_view_t *self); // test if enter can succeed.
-  void (*enter)           (struct dt_view_t *self); // mode entered, this module got focus. return non-null on failure.
-  void (*leave)           (struct dt_view_t *self); // mode left (is called after the new try_enter has succeded).
-  void (*reset)           (struct dt_view_t *self); // reset default appearance
+  const char *(*name)(struct dt_view_t *self);    // get translatable name
+  uint32_t (*view)(const struct dt_view_t *self); // get the view type
+  void (*init)(struct dt_view_t *self);           // init *data
+  void (*cleanup)(struct dt_view_t *self);        // cleanup *data
+  void (*expose)(struct dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, int32_t pointerx,
+                 int32_t pointery);         // expose the module (gtk callback)
+  int (*try_enter)(struct dt_view_t *self); // test if enter can succeed.
+  void (*enter)(struct dt_view_t *self); // mode entered, this module got focus. return non-null on failure.
+  void (*leave)(struct dt_view_t *self); // mode left (is called after the new try_enter has succeded).
+  void (*reset)(struct dt_view_t *self); // reset default appearance
 
   // event callbacks:
-  int  (*mouse_enter)     (struct dt_view_t *self);
-  int  (*mouse_leave)     (struct dt_view_t *self);
-  int  (*mouse_moved)     (struct dt_view_t *self, double x, double y, double pressure, int which);
-  int  (*button_released) (struct dt_view_t *self, double x, double y, int which, uint32_t state);
-  int  (*button_pressed)  (struct dt_view_t *self, double x, double y, double pressure, int which, int type, uint32_t state);
-  int  (*key_pressed)     (struct dt_view_t *self, guint key, guint state);
-  int  (*key_released)    (struct dt_view_t *self, guint key, guint state);
-  void (*configure)       (struct dt_view_t *self, int width, int height);
-  void (*scrolled)        (struct dt_view_t *self, double x, double y, int up, int state); // mouse scrolled in view
-  void (*border_scrolled) (struct dt_view_t *self, double x, double y, int which, int up); // mouse scrolled on left/right/top/bottom border (which 0123).
+  int (*mouse_enter)(struct dt_view_t *self);
+  int (*mouse_leave)(struct dt_view_t *self);
+  int (*mouse_moved)(struct dt_view_t *self, double x, double y, double pressure, int which);
+  int (*button_released)(struct dt_view_t *self, double x, double y, int which, uint32_t state);
+  int (*button_pressed)(struct dt_view_t *self, double x, double y, double pressure, int which, int type,
+                        uint32_t state);
+  int (*key_pressed)(struct dt_view_t *self, guint key, guint state);
+  int (*key_released)(struct dt_view_t *self, guint key, guint state);
+  void (*configure)(struct dt_view_t *self, int width, int height);
+  void (*scrolled)(struct dt_view_t *self, double x, double y, int up, int state); // mouse scrolled in view
+  void (*border_scrolled)(struct dt_view_t *self, double x, double y, int which,
+                          int up); // mouse scrolled on left/right/top/bottom border (which 0123).
 
   // keyboard accel callbacks
   void (*init_key_accels)(struct dt_view_t *self);
   void (*connect_key_accels)(struct dt_view_t *self);
 
   GSList *accel_closures;
-}
-dt_view_t;
+} dt_view_t;
 
 typedef enum dt_view_image_over_t
 {
@@ -107,27 +110,17 @@ typedef enum dt_view_image_over_t
   DT_VIEW_STAR_4 = 4,
   DT_VIEW_STAR_5 = 5,
   DT_VIEW_REJECT = 6,
-  DT_VIEW_GROUP  = 7,
-  DT_VIEW_AUDIO  = 8
-}
-dt_view_image_over_t;
+  DT_VIEW_GROUP = 7,
+  DT_VIEW_AUDIO = 8
+} dt_view_image_over_t;
 
 /** returns -1 if the action has to be applied to the selection,
     or the imgid otherwise */
 int32_t dt_view_get_image_to_act_on();
 
 /** expose an image, set image over flags. */
-void
-dt_view_image_expose(
-  dt_view_image_over_t *image_over,
-  uint32_t index,
-  cairo_t *cr,
-  int32_t width,
-  int32_t height,
-  int32_t zoom,
-  int32_t px,
-  int32_t py,
-  gboolean full_preview);
+void dt_view_image_expose(dt_view_image_over_t *image_over, uint32_t index, cairo_t *cr, int32_t width,
+                          int32_t height, int32_t zoom, int32_t px, int32_t py, gboolean full_preview);
 
 /** Set the selection bit to a given value for the specified image */
 void dt_view_set_selection(int imgid, int value);
@@ -175,14 +168,14 @@ typedef struct dt_view_manager_t
     struct
     {
       struct dt_lib_module_t *module;
-      void (*add)(struct dt_lib_module_t *,GtkWidget *);
+      void (*add)(struct dt_lib_module_t *, GtkWidget *);
     } view_toolbox;
 
     /* module toolbox proxy object */
     struct
     {
       struct dt_lib_module_t *module;
-      void (*add)(struct dt_lib_module_t *,GtkWidget *);
+      void (*add)(struct dt_lib_module_t *, GtkWidget *);
     } module_toolbox;
 
     /* filter toolbox proxy object */
@@ -237,7 +230,7 @@ typedef struct dt_view_manager_t
     } more_module;
 
 
-    /* map view proxy object */
+/* map view proxy object */
 #ifdef HAVE_MAP
     struct
     {
@@ -251,39 +244,40 @@ typedef struct dt_view_manager_t
   } proxy;
 
 
-}
-dt_view_manager_t;
+} dt_view_manager_t;
 
 void dt_view_manager_init(dt_view_manager_t *vm);
 void dt_view_manager_cleanup(dt_view_manager_t *vm);
 
 /** return translated name. */
-const char *dt_view_manager_name (dt_view_manager_t *vm);
+const char *dt_view_manager_name(dt_view_manager_t *vm);
 /** switch to this module. returns non-null if the module fails to change. */
 int dt_view_manager_switch(dt_view_manager_t *vm, int k);
 /** expose current module. */
-void dt_view_manager_expose(dt_view_manager_t *vm, cairo_t *cr, int32_t width, int32_t height, int32_t pointerx, int32_t pointery);
+void dt_view_manager_expose(dt_view_manager_t *vm, cairo_t *cr, int32_t width, int32_t height,
+                            int32_t pointerx, int32_t pointery);
 /** reset current view. */
 void dt_view_manager_reset(dt_view_manager_t *vm);
 /** get current view of the view manager. */
 const dt_view_t *dt_view_manager_get_current_view(dt_view_manager_t *vm);
 
-void dt_view_manager_mouse_enter     (dt_view_manager_t *vm);
-void dt_view_manager_mouse_leave     (dt_view_manager_t *vm);
-void dt_view_manager_mouse_moved     (dt_view_manager_t *vm, double x, double y, double pressure, int which);
-int dt_view_manager_button_released  (dt_view_manager_t *vm, double x, double y, int which, uint32_t state);
-int dt_view_manager_button_pressed   (dt_view_manager_t *vm, double x, double y, double pressure, int which, int type, uint32_t state);
-int dt_view_manager_key_pressed      (dt_view_manager_t *vm, guint key, guint state);
-int dt_view_manager_key_released     (dt_view_manager_t *vm, guint key, guint state);
-void dt_view_manager_configure       (dt_view_manager_t *vm, int width, int height);
-void dt_view_manager_scrolled        (dt_view_manager_t *vm, double x, double y, int up, int state);
-void dt_view_manager_border_scrolled (dt_view_manager_t *vm, double x, double y, int which, int up);
+void dt_view_manager_mouse_enter(dt_view_manager_t *vm);
+void dt_view_manager_mouse_leave(dt_view_manager_t *vm);
+void dt_view_manager_mouse_moved(dt_view_manager_t *vm, double x, double y, double pressure, int which);
+int dt_view_manager_button_released(dt_view_manager_t *vm, double x, double y, int which, uint32_t state);
+int dt_view_manager_button_pressed(dt_view_manager_t *vm, double x, double y, double pressure, int which,
+                                   int type, uint32_t state);
+int dt_view_manager_key_pressed(dt_view_manager_t *vm, guint key, guint state);
+int dt_view_manager_key_released(dt_view_manager_t *vm, guint key, guint state);
+void dt_view_manager_configure(dt_view_manager_t *vm, int width, int height);
+void dt_view_manager_scrolled(dt_view_manager_t *vm, double x, double y, int up, int state);
+void dt_view_manager_border_scrolled(dt_view_manager_t *vm, double x, double y, int which, int up);
 
 /** add widget to the current view toolbox */
-void dt_view_manager_view_toolbox_add(dt_view_manager_t *vm,GtkWidget *tool);
+void dt_view_manager_view_toolbox_add(dt_view_manager_t *vm, GtkWidget *tool);
 
 /** add widget to the current module toolbox */
-void dt_view_manager_module_toolbox_add(dt_view_manager_t *vm,GtkWidget *tool);
+void dt_view_manager_module_toolbox_add(dt_view_manager_t *vm, GtkWidget *tool);
 
 /** load module to view managers list, if still space. return slot number on success. */
 int dt_view_manager_load_module(dt_view_manager_t *vm, const char *mod);
@@ -292,7 +286,8 @@ int dt_view_load_module(dt_view_t *view, const char *module);
 /** unload, cleanup */
 void dt_view_unload_module(dt_view_t *view);
 /** set scrollbar positions, gui method. */
-void dt_view_set_scrollbar(dt_view_t *view, float hpos, float hsize, float hwinsize, float vpos, float vsize, float vwinsize);
+void dt_view_set_scrollbar(dt_view_t *view, float hpos, float hsize, float hwinsize, float vpos, float vsize,
+                           float vwinsize);
 
 /*
  * Tethering View PROXY
@@ -333,7 +328,7 @@ void dt_view_lighttable_set_position(dt_view_manager_t *vm, uint32_t pos);
 uint32_t dt_view_lighttable_get_position(dt_view_manager_t *vm);
 
 /** set active image */
-void dt_view_filmstrip_set_active_image(dt_view_manager_t *vm,int iid);
+void dt_view_filmstrip_set_active_image(dt_view_manager_t *vm, int iid);
 /** prefetch the next few images in film strip, from selected on.
     TODO: move to control ?
 */

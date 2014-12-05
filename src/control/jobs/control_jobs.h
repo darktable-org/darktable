@@ -25,7 +25,8 @@
 typedef struct dt_control_export_t
 {
   int max_width, max_height, format_index, storage_index;
-  dt_imageio_module_data_t *sdata; // needed since the gui thread resets things like overwrite once the export is dispatched, but we have to keep that information
+  dt_imageio_module_data_t *sdata; // needed since the gui thread resets things like overwrite once the export
+                                   // is dispatched, but we have to keep that information
   gboolean high_quality;
   char style[128];
 } dt_control_export_t;
@@ -35,8 +36,7 @@ typedef struct dt_control_image_enumerator_t
   GList *index;
   int flag;
   gpointer data;
-}
-dt_control_image_enumerator_t;
+} dt_control_image_enumerator_t;
 
 void dt_control_gpx_apply(const gchar *filename, int32_t filmid, const gchar *tz);
 
@@ -51,7 +51,8 @@ void dt_control_move_images();
 void dt_control_copy_images();
 void dt_control_set_local_copy_images();
 void dt_control_reset_local_copy_images();
-void dt_control_export(GList *imgid_list,int max_width, int max_height, int format_index, int storage_index, gboolean high_quality,char *style);
+void dt_control_export(GList *imgid_list, int max_width, int max_height, int format_index, int storage_index,
+                       gboolean high_quality, char *style);
 void dt_control_merge_hdr();
 
 void dt_control_seed_denoise();

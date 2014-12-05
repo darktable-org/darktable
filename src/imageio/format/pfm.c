@@ -28,29 +28,32 @@
 
 DT_MODULE(1)
 
-int write_image (dt_imageio_module_data_t *data, const char *filename, const void *ivoid, void *exif, int exif_len, int imgid)
+int write_image(dt_imageio_module_data_t *data, const char *filename, const void *ivoid, void *exif,
+                int exif_len, int imgid)
 {
-  const dt_imageio_module_data_t * const pfm = data;
+  const dt_imageio_module_data_t *const pfm = data;
   int status = 0;
   FILE *f = fopen(filename, "wb");
   if(f)
   {
-    //INFO: per-line fwrite call seems to perform best. LebedevRI, 18.04.2014
+    // INFO: per-line fwrite call seems to perform best. LebedevRI, 18.04.2014
     (void)fprintf(f, "PF\n%d %d\n-1.0\n", pfm->width, pfm->height);
-    void *buf_line = dt_alloc_align(16, 3*sizeof(float)*pfm->width);
-    for(int j=0; j<pfm->height; j++)
+    void *buf_line = dt_alloc_align(16, 3 * sizeof(float) * pfm->width);
+    for(int j = 0; j < pfm->height; j++)
     {
-      //NOTE: pfm has rows in reverse order
-      const int row_in = pfm->height-1 - j;
-      const float *in = (const float *)ivoid + 4*(size_t)pfm->width*row_in;
+      // NOTE: pfm has rows in reverse order
+      const int row_in = pfm->height - 1 - j;
+      const float *in = (const float *)ivoid + 4 * (size_t)pfm->width * row_in;
       float *out = (float *)buf_line;
-      for(int i = 0; i < pfm->width; i++, in+=4, out+=3)
+      for(int i = 0; i < pfm->width; i++, in += 4, out += 3)
       {
-        memcpy(out, in, 3*sizeof(float));
+        memcpy(out, in, 3 * sizeof(float));
       }
-      int cnt = fwrite(buf_line, 3*sizeof(float), pfm->width, f);
-      if(cnt != pfm->width) status = 1;
-      else status = 0;
+      int cnt = fwrite(buf_line, 3 * sizeof(float), pfm->width, f);
+      if(cnt != pfm->width)
+        status = 1;
+      else
+        status = 0;
     }
     dt_free_align(buf_line);
     buf_line = NULL;
@@ -59,27 +62,23 @@ int write_image (dt_imageio_module_data_t *data, const char *filename, const voi
   return status;
 }
 
-size_t
-params_size(dt_imageio_module_format_t *self)
+size_t params_size(dt_imageio_module_format_t *self)
 {
   return sizeof(dt_imageio_module_data_t);
 }
 
-void*
-get_params(dt_imageio_module_format_t *self)
+void *get_params(dt_imageio_module_format_t *self)
 {
   dt_imageio_module_data_t *d = (dt_imageio_module_data_t *)calloc(1, sizeof(dt_imageio_module_data_t));
   return d;
 }
 
-void
-free_params(dt_imageio_module_format_t *self, dt_imageio_module_data_t *params)
+void free_params(dt_imageio_module_format_t *self, dt_imageio_module_data_t *params)
 {
   free(params);
 }
 
-int
-set_params(dt_imageio_module_format_t *self, const void* params, int size)
+int set_params(dt_imageio_module_format_t *self, const void *params, int size)
 {
   if(size != params_size(self)) return 1;
   return 0;
@@ -95,29 +94,36 @@ int levels(dt_imageio_module_data_t *p)
   return IMAGEIO_RGB | IMAGEIO_FLOAT;
 }
 
-const char*
-mime(dt_imageio_module_data_t *data)
+const char *mime(dt_imageio_module_data_t *data)
 {
   return "image/x-portable-floatmap";
 }
 
-const char*
-extension(dt_imageio_module_data_t *data)
+const char *extension(dt_imageio_module_data_t *data)
 {
   return "pfm";
 }
 
-const char*
-name ()
+const char *name()
 {
   return _("PFM (float)");
 }
 
-void init(dt_imageio_module_format_t *self) {}
-void cleanup(dt_imageio_module_format_t *self) {}
-void gui_init    (dt_imageio_module_format_t *self) {}
-void gui_cleanup (dt_imageio_module_format_t *self) {}
-void gui_reset   (dt_imageio_module_format_t *self) {}
+void init(dt_imageio_module_format_t *self)
+{
+}
+void cleanup(dt_imageio_module_format_t *self)
+{
+}
+void gui_init(dt_imageio_module_format_t *self)
+{
+}
+void gui_cleanup(dt_imageio_module_format_t *self)
+{
+}
+void gui_reset(dt_imageio_module_format_t *self)
+{
+}
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

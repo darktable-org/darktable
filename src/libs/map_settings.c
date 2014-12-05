@@ -31,8 +31,7 @@
 
 DT_MODULE(1)
 
-const char*
-name ()
+const char *name()
 {
   return _("map settings");
 }
@@ -52,8 +51,7 @@ typedef struct dt_lib_map_settings_t
   GtkWidget *show_osd_checkbutton, *map_source_dropdown;
 } dt_lib_map_settings_t;
 
-int
-position ()
+int position()
 {
   return 990;
 }
@@ -70,7 +68,9 @@ static void _map_source_changed(GtkWidget *widget, gpointer data)
   if(gtk_combo_box_get_active_iter(GTK_COMBO_BOX(widget), &iter) == TRUE)
   {
     GtkTreeModel *model = gtk_combo_box_get_model(GTK_COMBO_BOX(widget));
-    GValue value = {0,};
+    GValue value = {
+      0,
+    };
     OsmGpsMapSource_t map_source;
 
     gtk_tree_model_get_value(model, &iter, 1, &value);
@@ -80,21 +80,21 @@ static void _map_source_changed(GtkWidget *widget, gpointer data)
   }
 }
 
-void
-gui_init (dt_lib_module_t *self)
+void gui_init(dt_lib_module_t *self)
 {
-  dt_lib_map_settings_t *d = (dt_lib_map_settings_t*)malloc(sizeof(dt_lib_map_settings_t));
+  dt_lib_map_settings_t *d = (dt_lib_map_settings_t *)malloc(sizeof(dt_lib_map_settings_t));
   self->data = d;
   self->widget = gtk_vbox_new(TRUE, 5);
   GtkBox *hbox;
   GtkWidget *label;
 
   d->show_osd_checkbutton = gtk_check_button_new_with_label(_("show OSD"));
-  g_object_set(G_OBJECT(d->show_osd_checkbutton), "tooltip-text", _("toggle the visibility of the map overlays"), (char *)NULL);
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->show_osd_checkbutton), dt_conf_get_bool("plugins/map/show_map_osd"));
+  g_object_set(G_OBJECT(d->show_osd_checkbutton), "tooltip-text",
+               _("toggle the visibility of the map overlays"), (char *)NULL);
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->show_osd_checkbutton),
+                               dt_conf_get_bool("plugins/map/show_map_osd"));
   gtk_box_pack_start(GTK_BOX(self->widget), d->show_osd_checkbutton, TRUE, TRUE, 0);
-  g_signal_connect(G_OBJECT(d->show_osd_checkbutton), "toggled",
-                   G_CALLBACK(_show_osd_toggled), NULL);
+  g_signal_connect(G_OBJECT(d->show_osd_checkbutton), "toggled", G_CALLBACK(_show_osd_toggled), NULL);
 
   hbox = GTK_BOX(gtk_hbox_new(FALSE, 5));
 
@@ -104,13 +104,14 @@ gui_init (dt_lib_module_t *self)
 
   GtkListStore *model = gtk_list_store_new(2, G_TYPE_STRING, G_TYPE_INT);
   d->map_source_dropdown = gtk_combo_box_new_with_model(GTK_TREE_MODEL(model));
-  g_object_set(G_OBJECT(d->map_source_dropdown), "tooltip-text", _("select the source of the map. some entries might not work"), (char *)NULL);
+  g_object_set(G_OBJECT(d->map_source_dropdown), "tooltip-text",
+               _("select the source of the map. some entries might not work"), (char *)NULL);
   GtkCellRenderer *renderer = gtk_cell_renderer_text_new();
   gtk_cell_layout_pack_start(GTK_CELL_LAYOUT(d->map_source_dropdown), renderer, FALSE);
   gtk_cell_layout_set_attributes(GTK_CELL_LAYOUT(d->map_source_dropdown), renderer, "text", 0, NULL);
 
-  gchar* map_source = dt_conf_get_string("plugins/map/map_source");
-  int selection = OSM_GPS_MAP_SOURCE_OPENSTREETMAP-1, entry = 0;
+  gchar *map_source = dt_conf_get_string("plugins/map/map_source");
+  int selection = OSM_GPS_MAP_SOURCE_OPENSTREETMAP - 1, entry = 0;
   GtkTreeIter iter;
   for(int i = 1; i < OSM_GPS_MAP_SOURCE_LAST; i++)
   {
@@ -118,16 +119,14 @@ gui_init (dt_lib_module_t *self)
     {
       const gchar *name = osm_gps_map_source_get_friendly_name(i);
       gtk_list_store_append(model, &iter);
-      gtk_list_store_set (model, &iter, 0, name, 1, i, -1);
-      if(!g_strcmp0(name, map_source))
-        selection = entry;
+      gtk_list_store_set(model, &iter, 0, name, 1, i, -1);
+      if(!g_strcmp0(name, map_source)) selection = entry;
       entry++;
     }
   }
   gtk_combo_box_set_active(GTK_COMBO_BOX(d->map_source_dropdown), selection);
   gtk_box_pack_start(hbox, d->map_source_dropdown, TRUE, TRUE, 0);
-  g_signal_connect (G_OBJECT (d->map_source_dropdown), "changed",
-                    G_CALLBACK (_map_source_changed), NULL);
+  g_signal_connect(G_OBJECT(d->map_source_dropdown), "changed", G_CALLBACK(_map_source_changed), NULL);
 
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(hbox), TRUE, TRUE, 0);
 
@@ -135,8 +134,7 @@ gui_init (dt_lib_module_t *self)
   g_free(map_source);
 }
 
-void
-gui_cleanup (dt_lib_module_t *self)
+void gui_cleanup(dt_lib_module_t *self)
 {
 }
 

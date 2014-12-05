@@ -23,15 +23,14 @@
 DT_MODULE(1)
 
 /* proxy function, to add a widget to toolbox */
-static void _lib_view_toolbox_add(dt_lib_module_t *self,GtkWidget *widget);
+static void _lib_view_toolbox_add(dt_lib_module_t *self, GtkWidget *widget);
 
 typedef struct dt_lib_view_toolbox_t
 {
   GtkWidget *container;
-}
-dt_lib_view_toolbox_t;
+} dt_lib_view_toolbox_t;
 
-const char* name()
+const char *name()
 {
   return _("view toolbox");
 }
@@ -63,7 +62,7 @@ void gui_init(dt_lib_module_t *self)
   self->data = (void *)d;
 
   /* the toolbar container */
-  d->container = self->widget = gtk_hbox_new(FALSE,10);
+  d->container = self->widget = gtk_hbox_new(FALSE, 10);
 
   /* setup proxy */
   darktable.view_manager->proxy.view_toolbox.module = self;
@@ -77,7 +76,7 @@ void gui_cleanup(dt_lib_module_t *self)
 }
 
 
-static void _lib_view_toolbox_add(dt_lib_module_t *self,GtkWidget *widget)
+static void _lib_view_toolbox_add(dt_lib_module_t *self, GtkWidget *widget)
 {
   dt_lib_view_toolbox_t *d = (dt_lib_view_toolbox_t *)self->data;
   gtk_box_pack_start(GTK_BOX(d->container), widget, TRUE, FALSE, 0);

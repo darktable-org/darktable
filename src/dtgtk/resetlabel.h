@@ -22,8 +22,10 @@
 #include <gtk/gtk.h>
 
 G_BEGIN_DECLS
-#define DTGTK_RESET_LABEL(obj) G_TYPE_CHECK_INSTANCE_CAST(obj, dtgtk_reset_label_get_type(), GtkDarktableResetLabel)
-#define DTGTK_RESET_LABEL_CLASS(klass) GTK_CHECK_CLASS_CAST(klass, dtgtk_reset_label_get_type(), GtkDarktableButtonClass)
+#define DTGTK_RESET_LABEL(obj)                                                                               \
+  G_TYPE_CHECK_INSTANCE_CAST(obj, dtgtk_reset_label_get_type(), GtkDarktableResetLabel)
+#define DTGTK_RESET_LABEL_CLASS(klass)                                                                       \
+  GTK_CHECK_CLASS_CAST(klass, dtgtk_reset_label_get_type(), GtkDarktableButtonClass)
 #define DTGTK_IS_RESET_LABEL(obj) G_TYPE_CHECK_INSTANCE_TYPE(obj, dtgtk_reset_label_get_type())
 #define DTGTK_IS_RESET_LABEL_CLASS(klass) GTK_CHECK_CLASS_TYPE(obj, dtgtk_reset_label_get_type())
 
@@ -34,19 +36,17 @@ typedef struct _GtkDarktableResetLabel
   dt_iop_module_t *module;
   int offset; // offset in params to reset
   int size;   // size of param to reset
-}
-GtkDarktableResetLabel;
+} GtkDarktableResetLabel;
 
 typedef struct _GtkDarktableResetLabelClass
 {
   GtkEventBoxClass parent_class;
-}
-GtkDarktableResetLabelClass;
+} GtkDarktableResetLabelClass;
 
-GType dtgtk_reset_label_get_type (void);
+GType dtgtk_reset_label_get_type(void);
 
 /** instantiate a new darktable reset label for the given module and param. */
-GtkWidget* dtgtk_reset_label_new(const gchar *label, dt_iop_module_t *module, void *param, int param_size);
+GtkWidget *dtgtk_reset_label_new(const gchar *label, dt_iop_module_t *module, void *param, int param_size);
 /** Sets the text within the GtkResetLabel widget. It overwrites any text that was there before. */
 void dtgtk_reset_label_set_text(GtkDarktableResetLabel *label, const gchar *str);
 

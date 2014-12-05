@@ -25,12 +25,12 @@ typedef struct dt_undo_item_t
   dt_view_t *view;
   dt_undo_type_t type;
   dt_undo_data_t *data;
-  void (*undo) (dt_view_t *view, dt_undo_type_t type, dt_undo_data_t *data);
+  void (*undo)(dt_view_t *view, dt_undo_type_t type, dt_undo_data_t *data);
 } dt_undo_item_t;
 
 dt_undo_t *dt_undo_init(void)
 {
-  dt_undo_t * udata = malloc(sizeof (dt_undo_t));
+  dt_undo_t *udata = malloc(sizeof(dt_undo_t));
   udata->undo_list = NULL;
   udata->redo_list = NULL;
   dt_pthread_mutex_init(&udata->mutex, NULL);
@@ -43,9 +43,10 @@ void dt_undo_cleanup(dt_undo_t *self)
   dt_pthread_mutex_destroy(&self->mutex);
 }
 
-void dt_undo_record(dt_undo_t *self, dt_view_t *view, dt_undo_type_t type, dt_undo_data_t *data, void (*undo) (dt_view_t *view, dt_undo_type_t type, dt_undo_data_t *item))
+void dt_undo_record(dt_undo_t *self, dt_view_t *view, dt_undo_type_t type, dt_undo_data_t *data,
+                    void (*undo)(dt_view_t *view, dt_undo_type_t type, dt_undo_data_t *item))
 {
-  dt_undo_item_t *item = g_malloc(sizeof (dt_undo_item_t));
+  dt_undo_item_t *item = g_malloc(sizeof(dt_undo_item_t));
 
   item->view = view;
   item->type = type;
@@ -56,7 +57,7 @@ void dt_undo_record(dt_undo_t *self, dt_view_t *view, dt_undo_type_t type, dt_un
   self->undo_list = g_list_prepend(self->undo_list, (gpointer)item);
 
   // recording an undo data invalidate all the redo
-  g_list_free_full(self->redo_list,&g_free);
+  g_list_free_full(self->redo_list, &g_free);
   self->redo_list = NULL;
   dt_pthread_mutex_unlock(&self->mutex);
 }
@@ -68,10 +69,10 @@ void dt_undo_do_redo(dt_undo_t *self, uint32_t filter)
 
   // check for first item that is matching the given pattern
 
-  while (l)
+  while(l)
   {
-    dt_undo_item_t *item = (dt_undo_item_t*)l->data;
-    if (item->type & filter)
+    dt_undo_item_t *item = (dt_undo_item_t *)l->data;
+    if(item->type & filter)
     {
       //  first remove element from _redo_list
       self->redo_list = g_list_remove(self->redo_list, item);
@@ -83,7 +84,7 @@ void dt_undo_do_redo(dt_undo_t *self, uint32_t filter)
       self->undo_list = g_list_prepend(self->undo_list, item);
       break;
     }
-    l=g_list_next(l);
+    l = g_list_next(l);
   };
   dt_pthread_mutex_unlock(&self->mutex);
 }
@@ -95,10 +96,10 @@ void dt_undo_do_undo(dt_undo_t *self, uint32_t filter)
 
   // check for first item that is matching the given pattern
 
-  while (l)
+  while(l)
   {
-    dt_undo_item_t *item = (dt_undo_item_t*)l->data;
-    if (item->type & filter)
+    dt_undo_item_t *item = (dt_undo_item_t *)l->data;
+    if(item->type & filter)
     {
       //  first remove element from _undo_list
       self->undo_list = g_list_remove(self->undo_list, item);
@@ -111,7 +112,7 @@ void dt_undo_do_undo(dt_undo_t *self, uint32_t filter)
       self->redo_list = g_list_prepend(self->redo_list, item);
       break;
     }
-    l=g_list_next(l);
+    l = g_list_next(l);
   };
   dt_pthread_mutex_unlock(&self->mutex);
 }
@@ -122,16 +123,16 @@ static void dt_undo_clear_list(GList **list, uint32_t filter)
 
   // check for first item that is matching the given pattern
 
-  while (l)
+  while(l)
   {
-    dt_undo_item_t *item = (dt_undo_item_t*)l->data;
-    if (item->type & filter)
+    dt_undo_item_t *item = (dt_undo_item_t *)l->data;
+    if(item->type & filter)
     {
       //  remove this element
       g_free(item->data);
       *list = g_list_remove(*list, item);
     }
-    l=g_list_next(l);
+    l = g_list_next(l);
   };
 }
 

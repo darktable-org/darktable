@@ -33,20 +33,19 @@
 struct dt_iop_module_t;
 typedef struct dt_dev_pixelpipe_iop_t
 {
-  GeglNode *input, *output; // gegl input and output nodes
-  struct dt_iop_module_t *module;  // the module in the dev operation stack
-  void *data;               // to be used by the module for more nodes
-}
-dt_dev_pixelpipe_iop_t;
+  GeglNode *input, *output;       // gegl input and output nodes
+  struct dt_iop_module_t *module; // the module in the dev operation stack
+  void *data;                     // to be used by the module for more nodes
+} dt_dev_pixelpipe_iop_t;
 
 typedef enum dt_dev_pixelpipe_change_t
 {
-  DT_DEV_PIPE_UNCHANGED   = 0,  // no event
-  DT_DEV_PIPE_TOP_CHANGED = 1,  // only params of top element changed
-  DT_DEV_PIPE_REMOVE      = 2,  // possibly elements of the pipe have to be removed
-  DT_DEV_PIPE_SYNCH       = 3   // all nodes up to end need to be synched, but no removal of module pieces is necessary
-}
-dt_dev_pixelpipe_change_t;
+  DT_DEV_PIPE_UNCHANGED = 0,   // no event
+  DT_DEV_PIPE_TOP_CHANGED = 1, // only params of top element changed
+  DT_DEV_PIPE_REMOVE = 2,      // possibly elements of the pipe have to be removed
+  DT_DEV_PIPE_SYNCH
+  = 3 // all nodes up to end need to be synched, but no removal of module pieces is necessary
+} dt_dev_pixelpipe_change_t;
 
 /**
  * this encapsulates the gegl pixel pipeline.
@@ -76,20 +75,21 @@ typedef struct dt_dev_pixelpipe_t
   int backbuf_size;
   // working?
   int processing;
-}
-dt_dev_pixelpipe_t;
+} dt_dev_pixelpipe_t;
 
 struct dt_develop_t;
 
 // inits the pixelpipe with plain passthrough input/output and empty input
 void dt_dev_pixelpipe_init(dt_dev_pixelpipe_t *pipe);
 // constructs a new input gegl_buffer from given RGB float array
-void dt_dev_pixelpipe_set_input(dt_dev_pixelpipe_t *pipe, struct dt_develop_t *dev, float *input, int width, int height);
+void dt_dev_pixelpipe_set_input(dt_dev_pixelpipe_t *pipe, struct dt_develop_t *dev, float *input, int width,
+                                int height);
 
 // destroys all allocated data.
 void dt_dev_pixelpipe_cleanup(dt_dev_pixelpipe_t *pipe);
 
-// wrapper for cleanup_nodes, create_nodes, synch_all and synch_top, decides upon changed event which one to take on. also locks dev->history_mutex.
+// wrapper for cleanup_nodes, create_nodes, synch_all and synch_top, decides upon changed event which one to
+// take on. also locks dev->history_mutex.
 void dt_dev_pixelpipe_change(dt_dev_pixelpipe_t *pipe, struct dt_develop_t *dev);
 // cleanup all gegl nodes except clean input/output
 void dt_dev_pixelpipe_cleanup_nodes(dt_dev_pixelpipe_t *pipe);
@@ -101,7 +101,8 @@ void dt_dev_pixelpipe_synch_all(dt_dev_pixelpipe_t *pipe, struct dt_develop_t *d
 void dt_dev_pixelpipe_synch_top(dt_dev_pixelpipe_t *pipe, struct dt_develop_t *dev);
 
 // process region of interest of pixels. returns 1 if pipe was altered during processing.
-int dt_dev_pixelpipe_process(dt_dev_pixelpipe_t *pipe, struct dt_develop_t *dev, int x, int y, int width, int height, float scale);
+int dt_dev_pixelpipe_process(dt_dev_pixelpipe_t *pipe, struct dt_develop_t *dev, int x, int y, int width,
+                             int height, float scale);
 
 // TODO: future application: remove/add modules from list, load from disk, user programmable etc
 // TODO: add n-th module in dev list to gegl pipeline

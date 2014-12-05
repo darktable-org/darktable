@@ -19,22 +19,22 @@
 #define DT_LUA_CALL_H
 
 /* naming conventions
- * doxxx : runs the xxx with pcall conventions (pops args from stack,put result on stack, returns an error code)
+ * doxxx : runs the xxx with pcall conventions (pops args from stack,put result on stack, returns an error
+ * code)
      * file : takes a file name and runs it
      * chunk : function is on the stack below the args
      * string : runs a string as a command
  * doxxx_silent : same but errors go to dt_console_log and nil is put as a result on the stack
  * doxxx_raise : same but a lua error is raised
  */
-int dt_lua_do_chunk(lua_State *L,int nargs,int nresults);
-int dt_lua_do_chunk_silent(lua_State *L,int nargs, int nresults);
-int dt_lua_do_chunk_raise(lua_State *L,int nargs, int nresults);
+int dt_lua_do_chunk(lua_State *L, int nargs, int nresults);
+int dt_lua_do_chunk_silent(lua_State *L, int nargs, int nresults);
+int dt_lua_do_chunk_raise(lua_State *L, int nargs, int nresults);
 
-int dt_lua_dostring(lua_State *L,const char* command,int nargs,int nresults);
-int dt_lua_dostring_silent(lua_State *L,const char* command,int nargs,int nresults);
+int dt_lua_dostring(lua_State *L, const char *command, int nargs, int nresults);
+int dt_lua_dostring_silent(lua_State *L, const char *command, int nargs, int nresults);
 
-int dt_lua_dofile_silent(lua_State *L,const char* filename,int nargs,int nresults);
-
+int dt_lua_dofile_silent(lua_State *L, const char *filename, int nargs, int nresults);
 
 
 

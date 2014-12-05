@@ -37,23 +37,20 @@ DT_MODULE_INTROSPECTION(1, dt_iop_invert_params_t)
 typedef struct dt_iop_invert_params_t
 {
   float color[3]; // color of film material
-}
-dt_iop_invert_params_t;
+} dt_iop_invert_params_t;
 
 typedef struct dt_iop_invert_gui_data_t
 {
-  GtkDarktableButton     *colorpicker;
+  GtkDarktableButton *colorpicker;
   GtkDarktableResetLabel *label;
-  GtkHBox                *pickerbuttons;
-}
-dt_iop_invert_gui_data_t;
+  GtkHBox *pickerbuttons;
+} dt_iop_invert_gui_data_t;
 
 typedef struct dt_iop_invert_global_data_t
 {
   int kernel_invert_1f;
   int kernel_invert_4f;
-}
-dt_iop_invert_global_data_t;
+} dt_iop_invert_global_data_t;
 
 typedef struct dt_iop_invert_params_t dt_iop_invert_data_t;
 
@@ -62,45 +59,41 @@ const char *name()
   return _("invert");
 }
 
-int
-groups ()
+int groups()
 {
   return IOP_GROUP_BASIC;
 }
 
-int flags ()
+int flags()
 {
   return IOP_FLAGS_ONE_INSTANCE;
 }
 
 void init_key_accels(dt_iop_module_so_t *self)
 {
-  dt_accel_register_iop(self, FALSE,
-                        NC_("accel", "pick color of film material from image"),
-                        0, 0);
+  dt_accel_register_iop(self, FALSE, NC_("accel", "pick color of film material from image"), 0, 0);
 }
 
 void connect_key_accels(dt_iop_module_t *self)
 {
-  dt_iop_invert_gui_data_t *g = (dt_iop_invert_gui_data_t*)self->gui_data;
+  dt_iop_invert_gui_data_t *g = (dt_iop_invert_gui_data_t *)self->gui_data;
 
-  dt_accel_connect_button_iop(self, "pick color of film material from image",
-                              GTK_WIDGET(g->colorpicker));
+  dt_accel_connect_button_iop(self, "pick color of film material from image", GTK_WIDGET(g->colorpicker));
 }
 
-int
-output_bpp(dt_iop_module_t *module, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
+int output_bpp(dt_iop_module_t *module, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
-  if(!dt_dev_pixelpipe_uses_downsampled_input(pipe) && (pipe->image.flags & DT_IMAGE_RAW)) return sizeof(float);
-  return 4*sizeof(float);
+  if(!dt_dev_pixelpipe_uses_downsampled_input(pipe) && (pipe->image.flags & DT_IMAGE_RAW))
+    return sizeof(float);
+  return 4 * sizeof(float);
 }
 
-static void
-request_pick_toggled(GtkToggleButton *togglebutton, dt_iop_module_t *self)
+static void request_pick_toggled(GtkToggleButton *togglebutton, dt_iop_module_t *self)
 {
   if(darktable.gui->reset) return;
 
-  self->request_color_pick = (gtk_toggle_button_get_active(togglebutton) ? DT_REQUEST_COLORPICK_MODULE : DT_REQUEST_COLORPICK_OFF);
+  self->request_color_pick
+      = (gtk_toggle_button_get_active(togglebutton) ? DT_REQUEST_COLORPICK_MODULE : DT_REQUEST_COLORPICK_OFF);
 
   if(self->request_color_pick != DT_REQUEST_COLORPICK_OFF)
   {
@@ -114,8 +107,7 @@ request_pick_toggled(GtkToggleButton *togglebutton, dt_iop_module_t *self)
   dt_iop_request_focus(self);
 }
 
-static gboolean
-expose (GtkWidget *widget, GdkEventExpose *event, dt_iop_module_t *self)
+static gboolean expose(GtkWidget *widget, GdkEventExpose *event, dt_iop_module_t *self)
 {
   if(darktable.gui->reset) return FALSE;
   if(self->picked_color_max[0] < 0.0f) return FALSE;
@@ -123,9 +115,9 @@ expose (GtkWidget *widget, GdkEventExpose *event, dt_iop_module_t *self)
   dt_iop_invert_gui_data_t *g = (dt_iop_invert_gui_data_t *)self->gui_data;
   dt_iop_invert_params_t *p = (dt_iop_invert_params_t *)self->params;
 
-  if(fabsf(p->color[0] - self->picked_color[0]) < 0.0001f &&
-      fabsf(p->color[1] - self->picked_color[1]) < 0.0001f &&
-      fabsf(p->color[2] - self->picked_color[2]) < 0.0001f)
+  if(fabsf(p->color[0] - self->picked_color[0]) < 0.0001f
+     && fabsf(p->color[1] - self->picked_color[1]) < 0.0001f
+     && fabsf(p->color[2] - self->picked_color[2]) < 0.0001f)
   {
     // interrupt infinite loops
     return FALSE;
@@ -135,88 +127,83 @@ expose (GtkWidget *widget, GdkEventExpose *event, dt_iop_module_t *self)
   p->color[1] = self->picked_color[1];
   p->color[2] = self->picked_color[2];
   GdkColor c;
-  c.red   = p->color[0]*65535.0;
-  c.green = p->color[1]*65535.0;
-  c.blue  = p->color[2]*65535.0;
+  c.red = p->color[0] * 65535.0;
+  c.green = p->color[1] * 65535.0;
+  c.blue = p->color[2] * 65535.0;
   gtk_widget_modify_fg(GTK_WIDGET(g->colorpicker), GTK_STATE_NORMAL, &c);
 
   dt_dev_add_history_item(darktable.develop, self, TRUE);
   return FALSE;
 }
 
-static void
-colorpick_button_callback(GtkButton *button, GtkColorSelectionDialog *csd)
+static void colorpick_button_callback(GtkButton *button, GtkColorSelectionDialog *csd)
 {
   GtkWidget *okButton = 0;
   g_object_get(G_OBJECT(csd), "ok-button", &okButton, NULL);
 
-  gtk_dialog_response(GTK_DIALOG(csd), (GTK_WIDGET(button)==okButton)?GTK_RESPONSE_ACCEPT:0);
+  gtk_dialog_response(GTK_DIALOG(csd), (GTK_WIDGET(button) == okButton) ? GTK_RESPONSE_ACCEPT : 0);
 }
 
-static void
-colorpicker_callback (GtkDarktableButton *button, dt_iop_module_t *self)
+static void colorpicker_callback(GtkDarktableButton *button, dt_iop_module_t *self)
 {
   if(self->dt->gui->reset) return;
   dt_iop_invert_gui_data_t *g = (dt_iop_invert_gui_data_t *)self->gui_data;
   dt_iop_invert_params_t *p = (dt_iop_invert_params_t *)self->params;
 
-  GtkColorSelectionDialog  *csd = GTK_COLOR_SELECTION_DIALOG(gtk_color_selection_dialog_new(_("select color of film material")));
+  GtkColorSelectionDialog *csd
+      = GTK_COLOR_SELECTION_DIALOG(gtk_color_selection_dialog_new(_("select color of film material")));
   gtk_window_set_transient_for(GTK_WINDOW(csd), GTK_WINDOW(dt_ui_main_window(darktable.gui->ui)));
 
   GtkWidget *okButton, *cancelButton = 0;
   g_object_get(G_OBJECT(csd), "ok-button", &okButton, NULL);
   g_object_get(G_OBJECT(csd), "cancel-button", &cancelButton, NULL);
 
-  g_signal_connect (G_OBJECT (okButton), "clicked",
-                    G_CALLBACK (colorpick_button_callback), csd);
-  g_signal_connect (G_OBJECT (cancelButton), "clicked",
-                    G_CALLBACK (colorpick_button_callback), csd);
+  g_signal_connect(G_OBJECT(okButton), "clicked", G_CALLBACK(colorpick_button_callback), csd);
+  g_signal_connect(G_OBJECT(cancelButton), "clicked", G_CALLBACK(colorpick_button_callback), csd);
 
   GtkColorSelection *cs = GTK_COLOR_SELECTION(gtk_color_selection_dialog_get_color_selection(csd));
   GdkColor c;
-  c.red   = 65535 * p->color[0];
+  c.red = 65535 * p->color[0];
   c.green = 65535 * p->color[1];
-  c.blue  = 65535 * p->color[2];
+  c.blue = 65535 * p->color[2];
   gtk_color_selection_set_current_color(cs, &c);
   if(gtk_dialog_run(GTK_DIALOG(csd)) == GTK_RESPONSE_ACCEPT)
   {
     gtk_color_selection_get_current_color(cs, &c);
-    p->color[0] = c.red  /65535.0;
-    p->color[1] = c.green/65535.0;
-    p->color[2] = c.blue /65535.0;
+    p->color[0] = c.red / 65535.0;
+    p->color[1] = c.green / 65535.0;
+    p->color[2] = c.blue / 65535.0;
     gtk_widget_modify_fg(GTK_WIDGET(g->colorpicker), GTK_STATE_NORMAL, &c);
   }
   gtk_widget_destroy(GTK_WIDGET(csd));
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
-static int
-FC(const int row, const int col, const unsigned int filters)
+static int FC(const int row, const int col, const unsigned int filters)
 {
   return filters >> (((row << 1 & 14) + (col & 1)) << 1) & 3;
 }
 
-static uint8_t
-FCxtrans(const int row, const int col,
-         const dt_iop_roi_t *const roi,
-         uint8_t (*const xtrans)[6])
+static uint8_t FCxtrans(const int row, const int col, const dt_iop_roi_t *const roi,
+                        uint8_t (*const xtrans)[6])
 {
-  return xtrans[(row+roi->y) % 6][(col+roi->x) % 6];
+  return xtrans[(row + roi->y) % 6][(col + roi->x) % 6];
 }
 
-void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoid, void *ovoid, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
+void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoid, void *ovoid,
+             const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
 {
   dt_iop_invert_data_t *d = (dt_iop_invert_data_t *)piece->data;
 
   const float *const m = piece->pipe->processed_maximum;
 
-  const float film_rgb[3] = {d->color[0], d->color[1], d->color[2]};
-  const float film_rgb_f[3] = {d->color[0] * m[0], d->color[1] * m[1], d->color[2] * m[2]};
+  const float film_rgb[3] = { d->color[0], d->color[1], d->color[2] };
+  const float film_rgb_f[3] = { d->color[0] * m[0], d->color[1] * m[1], d->color[2] * m[2] };
 
-  //FIXME: it could be wise to make this a NOP when picking colors. not sure about that though.
-//   if(self->request_color_pick){
+  // FIXME: it could be wise to make this a NOP when picking colors. not sure about that though.
+  //   if(self->request_color_pick){
   // do nothing
-//   }
+  //   }
 
   const int filters = dt_image_filter(&piece->pipe->image);
   uint8_t (*const xtrans)[6] = self->dev->image_storage.xtrans;
@@ -224,18 +211,17 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   if(!dt_dev_pixelpipe_uses_downsampled_input(piece->pipe) && (filters == 9u))
   { // xtrans float mosaiced
 #ifdef _OPENMP
-    #pragma omp parallel for default(none) shared(roi_out, ivoid, ovoid) schedule(static)
+#pragma omp parallel for default(none) shared(roi_out, ivoid, ovoid) schedule(static)
 #endif
-    for(int j=0; j<roi_out->height; j++)
+    for(int j = 0; j < roi_out->height; j++)
     {
-      const float *in = ((float *)ivoid) + (size_t)j*roi_out->width;
-      float *out = ((float *)ovoid) + (size_t)j*roi_out->width;
-      for(int i=0; i<roi_out->width; i++,out++,in++)
-        *out = CLAMP(film_rgb_f[FCxtrans(j,i,roi_out,xtrans)] - *in, 0.0f, 1.0f);
+      const float *in = ((float *)ivoid) + (size_t)j * roi_out->width;
+      float *out = ((float *)ovoid) + (size_t)j * roi_out->width;
+      for(int i = 0; i < roi_out->width; i++, out++, in++)
+        *out = CLAMP(film_rgb_f[FCxtrans(j, i, roi_out, xtrans)] - *in, 0.0f, 1.0f);
     }
 
-    for(int k=0; k<3; k++)
-      piece->pipe->processed_maximum[k] = 1.0f;
+    for(int k = 0; k < 3; k++) piece->pipe->processed_maximum[k] = 1.0f;
   }
   else if(!dt_dev_pixelpipe_uses_downsampled_input(piece->pipe) && filters)
   { // bayer float mosaiced
@@ -244,27 +230,27 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
     const __m128 val_max = _mm_set1_ps(1.0f);
 
 #ifdef _OPENMP
-    #pragma omp parallel for default(none) shared(roi_out, ivoid, ovoid) schedule(static)
+#pragma omp parallel for default(none) shared(roi_out, ivoid, ovoid) schedule(static)
 #endif
-    for(int j=0; j<roi_out->height; j++)
+    for(int j = 0; j < roi_out->height; j++)
     {
-      const float *in = ((float*)ivoid) + (size_t)j*roi_out->width;
-      float *out = ((float*)ovoid) + (size_t)j*roi_out->width;
+      const float *in = ((float *)ivoid) + (size_t)j * roi_out->width;
+      float *out = ((float *)ovoid) + (size_t)j * roi_out->width;
 
       int i = 0;
       int alignment = ((4 - (j * roi_out->width & (4 - 1))) & (4 - 1));
 
       // process unaligned pixels
-      for ( ; i < alignment ; i++, out++, in++)
-        *out = CLAMP(film_rgb_f[FC(j+roi_out->y, i+roi_out->x, filters)] - *in, 0.0f, 1.0f);
+      for(; i < alignment; i++, out++, in++)
+        *out = CLAMP(film_rgb_f[FC(j + roi_out->y, i + roi_out->x, filters)] - *in, 0.0f, 1.0f);
 
-      const __m128 film = _mm_set_ps(film_rgb_f[FC(j+roi_out->y, roi_out->x+i+3, filters)],
-                                     film_rgb_f[FC(j+roi_out->y, roi_out->x+i+2, filters)],
-                                     film_rgb_f[FC(j+roi_out->y, roi_out->x+i+1, filters)],
-                                     film_rgb_f[FC(j+roi_out->y, roi_out->x+i  , filters)]);
+      const __m128 film = _mm_set_ps(film_rgb_f[FC(j + roi_out->y, roi_out->x + i + 3, filters)],
+                                     film_rgb_f[FC(j + roi_out->y, roi_out->x + i + 2, filters)],
+                                     film_rgb_f[FC(j + roi_out->y, roi_out->x + i + 1, filters)],
+                                     film_rgb_f[FC(j + roi_out->y, roi_out->x + i, filters)]);
 
       // process aligned pixels with SSE
-      for( ; i < roi_out->width - (4-1); i+=4,in+=4,out+=4)
+      for(; i < roi_out->width - (4 - 1); i += 4, in += 4, out += 4)
       {
         const __m128 input = _mm_load_ps(in);
         const __m128 subtracted = _mm_sub_ps(film, input);
@@ -272,31 +258,27 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
       }
 
       // process the rest
-      for( ; i<roi_out->width; i++,out++,in++)
-        *out = CLAMP(film_rgb_f[FC(j+roi_out->y, i+roi_out->x, filters)] - *in, 0.0f, 1.0f);
+      for(; i < roi_out->width; i++, out++, in++)
+        *out = CLAMP(film_rgb_f[FC(j + roi_out->y, i + roi_out->x, filters)] - *in, 0.0f, 1.0f);
     }
     _mm_sfence();
 
-    for(int k=0; k<3; k++)
-      piece->pipe->processed_maximum[k] = 1.0f;
+    for(int k = 0; k < 3; k++) piece->pipe->processed_maximum[k] = 1.0f;
   }
   else
   { // non-mosaiced
     const int ch = piece->colors;
 
-    const __m128 film = _mm_set_ps(1.0f,
-                                   film_rgb[2],
-                                   film_rgb[1],
-                                   film_rgb[0]);
+    const __m128 film = _mm_set_ps(1.0f, film_rgb[2], film_rgb[1], film_rgb[0]);
 
 #ifdef _OPENMP
-    #pragma omp parallel for default(none) shared(roi_out, ivoid, ovoid) schedule(static)
+#pragma omp parallel for default(none) shared(roi_out, ivoid, ovoid) schedule(static)
 #endif
-    for(int k=0; k<roi_out->height; k++)
+    for(int k = 0; k < roi_out->height; k++)
     {
-      const float *in = ((float*)ivoid) + (size_t)ch*k*roi_out->width;
-      float *out = ((float*)ovoid) + (size_t)ch*k*roi_out->width;
-      for (int j=0; j<roi_out->width; j++,in+=ch,out+=ch)
+      const float *in = ((float *)ivoid) + (size_t)ch * k * roi_out->width;
+      float *out = ((float *)ovoid) + (size_t)ch * k * roi_out->width;
+      for(int j = 0; j < roi_out->width; j++, in += ch, out += ch)
       {
         const __m128 input = _mm_load_ps(in);
         const __m128 subtracted = _mm_sub_ps(film, input);
@@ -305,14 +287,13 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
     }
     _mm_sfence();
 
-    if(piece->pipe->mask_display)
-      dt_iop_alpha_copy(ivoid, ovoid, roi_out->width, roi_out->height);
+    if(piece->pipe->mask_display) dt_iop_alpha_copy(ivoid, ovoid, roi_out->width, roi_out->height);
   }
 }
 
 #ifdef HAVE_OPENCL
-int
-process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
+int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out,
+               const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
 {
   dt_iop_invert_data_t *d = (dt_iop_invert_data_t *)piece->data;
   dt_iop_invert_global_data_t *gd = (dt_iop_invert_global_data_t *)self->data;
@@ -332,13 +313,13 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
     kernel = gd->kernel_invert_4f;
   }
 
-  dev_color = dt_opencl_copy_host_to_device_constant(devid, sizeof(float)*3, d->color);
-  if (dev_color == NULL) goto error;
+  dev_color = dt_opencl_copy_host_to_device_constant(devid, sizeof(float) * 3, d->color);
+  if(dev_color == NULL) goto error;
 
   const int width = roi_in->width;
   const int height = roi_in->height;
 
-  size_t sizes[] = { ROUNDUPWD(width), ROUNDUPHT(height), 1};
+  size_t sizes[] = { ROUNDUPWD(width), ROUNDUPHT(height), 1 };
   dt_opencl_set_kernel_arg(devid, kernel, 0, sizeof(cl_mem), (void *)&dev_in);
   dt_opencl_set_kernel_arg(devid, kernel, 1, sizeof(cl_mem), (void *)&dev_out);
   dt_opencl_set_kernel_arg(devid, kernel, 2, sizeof(int), (void *)&width);
@@ -351,12 +332,11 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
   if(err != CL_SUCCESS) goto error;
 
   dt_opencl_release_mem_object(dev_color);
-  for(int k=0; k<3; k++)
-    piece->pipe->processed_maximum[k] = 1.0f;
+  for(int k = 0; k < 3; k++) piece->pipe->processed_maximum[k] = 1.0f;
   return TRUE;
 
-  error:
-  if (dev_color != NULL) dt_opencl_release_mem_object(dev_color);
+error:
+  if(dev_color != NULL) dt_opencl_release_mem_object(dev_color);
   dt_print(DT_DEBUG_OPENCL, "[opencl_invert] couldn't enqueue kernel! %d\n", err);
   return FALSE;
 }
@@ -364,12 +344,7 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
 
 void reload_defaults(dt_iop_module_t *self)
 {
-  dt_iop_invert_params_t tmp = (dt_iop_invert_params_t)
-  {
-    {
-      1.0f, 1.0f, 1.0f
-    }
-  };
+  dt_iop_invert_params_t tmp = (dt_iop_invert_params_t){ { 1.0f, 1.0f, 1.0f } };
   memcpy(self->params, &tmp, sizeof(dt_iop_invert_params_t));
   memcpy(self->default_params, &tmp, sizeof(dt_iop_invert_params_t));
 
@@ -413,15 +388,15 @@ void cleanup_global(dt_iop_module_so_t *module)
   module->data = NULL;
 }
 
-void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *params, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
+void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *params, dt_dev_pixelpipe_t *pipe,
+                   dt_dev_pixelpipe_iop_t *piece)
 {
   dt_iop_invert_params_t *p = (dt_iop_invert_params_t *)params;
   dt_iop_invert_data_t *d = (dt_iop_invert_data_t *)piece->data;
   memcpy(d, p, sizeof(dt_iop_invert_params_t));
 
   // x-trans images not implemented in OpenCL yet
-  if(pipe->image.filters == 9u)
-    piece->process_cl_ready = 0;
+  if(pipe->image.filters == 9u) piece->process_cl_ready = 0;
 }
 
 void init_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
@@ -430,7 +405,7 @@ void init_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pi
   self->commit_params(self, self->default_params, pipe, piece);
 }
 
-void cleanup_pipe  (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
+void cleanup_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
   g_free(piece->data);
   piece->data = NULL;
@@ -447,9 +422,9 @@ void gui_update(dt_iop_module_t *self)
   dtgtk_reset_label_set_text(g->label, _("color of film material"));
 
   GdkColor c;
-  c.red   = p->color[0]*65535.0;
-  c.green = p->color[1]*65535.0;
-  c.blue  = p->color[2]*65535.0;
+  c.red = p->color[0] * 65535.0;
+  c.green = p->color[1] * 65535.0;
+  c.blue = p->color[2] * 65535.0;
   gtk_widget_modify_fg(GTK_WIDGET(g->colorpicker), GTK_STATE_NORMAL, &c);
 }
 
@@ -463,15 +438,16 @@ void gui_init(dt_iop_module_t *self)
 
   GtkWidget *tb;
 
-  g->label = DTGTK_RESET_LABEL(dtgtk_reset_label_new ("", self, &p->color, 3*sizeof(float)));
+  g->label = DTGTK_RESET_LABEL(dtgtk_reset_label_new("", self, &p->color, 3 * sizeof(float)));
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->label), TRUE, TRUE, 0);
 
   g->pickerbuttons = GTK_HBOX(gtk_hbox_new(FALSE, 5));
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->pickerbuttons), TRUE, TRUE, 0);
 
-  g->colorpicker = DTGTK_BUTTON(dtgtk_button_new(dtgtk_cairo_paint_color, CPF_IGNORE_FG_STATE|CPF_STYLE_FLAT|CPF_DO_NOT_USE_BORDER));
+  g->colorpicker = DTGTK_BUTTON(dtgtk_button_new(dtgtk_cairo_paint_color, CPF_IGNORE_FG_STATE | CPF_STYLE_FLAT
+                                                                          | CPF_DO_NOT_USE_BORDER));
   gtk_widget_set_size_request(GTK_WIDGET(g->colorpicker), DT_PIXEL_APPLY_DPI(75), DT_PIXEL_APPLY_DPI(24));
-  g_signal_connect (G_OBJECT (g->colorpicker), "clicked", G_CALLBACK (colorpicker_callback), self);
+  g_signal_connect(G_OBJECT(g->colorpicker), "clicked", G_CALLBACK(colorpicker_callback), self);
   gtk_box_pack_start(GTK_BOX(g->pickerbuttons), GTK_WIDGET(g->colorpicker), TRUE, TRUE, 0);
 
   tb = dtgtk_togglebutton_new(dtgtk_cairo_paint_colorpicker, CPF_STYLE_FLAT);
@@ -480,10 +456,10 @@ void gui_init(dt_iop_module_t *self)
   g_signal_connect(G_OBJECT(tb), "toggled", G_CALLBACK(request_pick_toggled), self);
   gtk_box_pack_start(GTK_BOX(g->pickerbuttons), tb, TRUE, TRUE, 5);
 
-  g_signal_connect (G_OBJECT(self->widget), "expose-event", G_CALLBACK(expose), self);
+  g_signal_connect(G_OBJECT(self->widget), "expose-event", G_CALLBACK(expose), self);
 }
 
-void gui_cleanup  (dt_iop_module_t *self)
+void gui_cleanup(dt_iop_module_t *self)
 {
   g_free(self->gui_data);
   self->gui_data = NULL;

@@ -15,7 +15,7 @@
 #pragma GCC poison vsprintf // use vsnprintf
 #pragma GCC poison strcpy   // use g_strncpy
 //#pragma GCC poison strncpy  // use g_strncpy
-#pragma GCC poison strcat   // use g_strncat
-#pragma GCC poison strncat  // use g_strncat
+#pragma GCC poison strcat  // use g_strncat
+#pragma GCC poison strncat // use g_strncat
 #endif
 #endif

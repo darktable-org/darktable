@@ -14,15 +14,14 @@
  * this should be a) filled in for win32 and b) put in glib...
  */
 
-static inline gchar*
-g_realpath (const char *path)
+static inline gchar *g_realpath(const char *path)
 {
 #ifndef _WIN32
 #ifndef PATH_MAX
 #define PATH_MAX 4096
 #endif
-  char buffer [PATH_MAX];
-  if (realpath(path, buffer))
+  char buffer[PATH_MAX] = { 0 };
+  if(realpath(path, buffer))
     return g_strdup(buffer);
   else
     return NULL;
@@ -33,7 +32,7 @@ g_realpath (const char *path)
 
   rc = GetFullPathNameA(path, 1, &dummy, NULL);
 
-  if (rc == 0)
+  if(rc == 0)
   {
     /* Weird failure, so just return the input path as such */
     return g_strdup(path);
@@ -44,7 +43,7 @@ g_realpath (const char *path)
 
   rc = GetFullPathNameA(path, len, buffer, NULL);
 
-  if (rc == 0 || rc > len)
+  if(rc == 0 || rc > len)
   {
     /* Weird failure again */
     g_free(buffer);

@@ -23,10 +23,10 @@
 #include <gtk/gtk.h>
 
 /** returns the users home directory */
-gchar* dt_loc_get_home_dir(const gchar* user);
+gchar *dt_loc_get_home_dir(const gchar *user);
 
 /** init systemwide data dir */
-void dt_loc_init_datadir(const char* datadir);
+void dt_loc_init_datadir(const char *datadir);
 /** get the plugin dir */
 void dt_loc_init_plugindir(const char *plugindir);
 /** get user local dir */

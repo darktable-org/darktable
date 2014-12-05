@@ -35,35 +35,27 @@ typedef struct dt_iop_rotatepixels_params_t
 {
   uint32_t rx, ry;
   float angle;
-}
-dt_iop_rotatepixels_params_t;
+} dt_iop_rotatepixels_params_t;
 
 typedef struct dt_iop_rotatepixels_data_t
 {
   uint32_t rx, ry; // rotation center
   float m[4];      // rotation matrix
-}
-dt_iop_rotatepixels_data_t;
+} dt_iop_rotatepixels_data_t;
 
-static void
-mul_mat_vec_2(
-  const float *m, const float *p, float *o)
+static void mul_mat_vec_2(const float *m, const float *p, float *o)
 {
-  o[0] = p[0]*m[0] + p[1]*m[1];
-  o[1] = p[0]*m[2] + p[1]*m[3];
+  o[0] = p[0] * m[0] + p[1] * m[1];
+  o[1] = p[0] * m[2] + p[1] * m[3];
 }
 
 // helper to count corners in for loops:
-static void
-get_corner(
-  const float *aabb, const int i, float *p)
+static void get_corner(const float *aabb, const int i, float *p)
 {
-  for(int k=0; k<2; k++) p[k] = aabb[2*((i>>k)&1) + k];
+  for(int k = 0; k < 2; k++) p[k] = aabb[2 * ((i >> k) & 1) + k];
 }
 
-static void
-adjust_aabb(
-  const float *p, float *aabb)
+static void adjust_aabb(const float *p, float *aabb)
 {
   aabb[0] = fminf(aabb[0], p[0]);
   aabb[1] = fminf(aabb[1], p[1]);
@@ -76,43 +68,33 @@ const char *name()
   return C_("modulename", "rotate pixels");
 }
 
-int
-flags()
+int flags()
 {
-  return IOP_FLAGS_ALLOW_TILING | IOP_FLAGS_TILING_FULL_ROI |
-         IOP_FLAGS_ONE_INSTANCE;
+  return IOP_FLAGS_ALLOW_TILING | IOP_FLAGS_TILING_FULL_ROI | IOP_FLAGS_ONE_INSTANCE;
 }
 
-int
-groups()
+int groups()
 {
   return IOP_GROUP_CORRECT;
 }
 
-int
-operation_tags()
+int operation_tags()
 {
   return IOP_TAG_DISTORT;
 }
 
-static void
-transform(
-  const dt_dev_pixelpipe_iop_t *const piece,
-  const float scale, const float *const x, float *o)
+static void transform(const dt_dev_pixelpipe_iop_t *const piece, const float scale, const float *const x,
+                      float *o)
 {
   dt_iop_rotatepixels_data_t *d = (dt_iop_rotatepixels_data_t *)piece->data;
 
-  float pi[2] = {x[0] - d->rx * scale,
-                 x[1] - d->ry * scale
-                };
+  float pi[2] = { x[0] - d->rx * scale, x[1] - d->ry * scale };
 
   mul_mat_vec_2(d->m, pi, o);
 }
 
-static void
-backtransform(
-  const dt_dev_pixelpipe_iop_t *const piece,
-  const float scale, const float *const x, float *o)
+static void backtransform(const dt_dev_pixelpipe_iop_t *const piece, const float scale, const float *const x,
+                          float *o)
 {
   dt_iop_rotatepixels_data_t *d = (dt_iop_rotatepixels_data_t *)piece->data;
 
@@ -123,47 +105,42 @@ backtransform(
   o[1] += d->ry * scale;
 }
 
-int
-distort_transform(
-  dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
-  float *points, size_t points_count)
+int distort_transform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, float *points, size_t points_count)
 {
   const float scale = piece->buf_in.scale / piece->iscale;
 
-  for (size_t i=0; i<points_count*2; i+=2)
+  for(size_t i = 0; i < points_count * 2; i += 2)
   {
     float pi[2], po[2];
 
     pi[0] = points[i];
-    pi[1] = points[i+1];
+    pi[1] = points[i + 1];
 
     transform(piece, scale, pi, po);
 
-    points[i]   = po[0];
-    points[i+1] = po[1];
+    points[i] = po[0];
+    points[i + 1] = po[1];
   }
 
   return 1;
 }
 
-int
-distort_backtransform(
-  dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
-  float *points, size_t points_count)
+int distort_backtransform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, float *points,
+                          size_t points_count)
 {
   const float scale = piece->buf_in.scale / piece->iscale;
 
-  for (size_t i=0; i<points_count*2; i+=2)
+  for(size_t i = 0; i < points_count * 2; i += 2)
   {
     float pi[2], po[2];
 
     pi[0] = points[i];
-    pi[1] = points[i+1];
+    pi[1] = points[i + 1];
 
     backtransform(piece, scale, pi, po);
 
-    points[i]   = po[0];
-    points[i+1] = po[1];
+    points[i] = po[0];
+    points[i + 1] = po[1];
   }
 
   return 1;
@@ -171,10 +148,8 @@ distort_backtransform(
 
 // 1st pass: how large would the output be, given this input roi?
 // this is always called with the full buffer before processing.
-void
-modify_roi_out(
-  dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
-  dt_iop_roi_t *roi_out, const dt_iop_roi_t *const roi_in)
+void modify_roi_out(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, dt_iop_roi_t *roi_out,
+                    const dt_iop_roi_t *const roi_in)
 {
   dt_iop_rotatepixels_data_t *d = (dt_iop_rotatepixels_data_t *)piece->data;
 
@@ -200,45 +175,33 @@ modify_roi_out(
    *        -------
    */
 
-  const float scale = roi_in->scale / piece->iscale,
-              T     = d->ry * scale;
+  const float scale = roi_in->scale / piece->iscale, T = d->ry * scale;
 
-  const float y = sqrtf(2.0f * T * T),
-              x = sqrtf(2.0f * (roi_in->width - T) * (roi_in->width - T));
+  const float y = sqrtf(2.0f * T * T), x = sqrtf(2.0f * (roi_in->width - T) * (roi_in->width - T));
 
-  const struct dt_interpolation* interpolation = dt_interpolation_new(DT_INTERPOLATION_USERPREF);
+  const struct dt_interpolation *interpolation = dt_interpolation_new(DT_INTERPOLATION_USERPREF);
   const float IW = interpolation->width * scale;
 
-  roi_out->width  = y - IW;
+  roi_out->width = y - IW;
   roi_out->height = x - IW;
 
-  roi_out->width  = MAX(0, roi_out->width  & ~1);
+  roi_out->width = MAX(0, roi_out->width & ~1);
   roi_out->height = MAX(0, roi_out->height & ~1);
 }
 
 // 2nd pass: which roi would this operation need as input to fill the given output region?
-void
-modify_roi_in(
-  dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
-  const dt_iop_roi_t *const roi_out, dt_iop_roi_t *roi_in)
+void modify_roi_in(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const dt_iop_roi_t *const roi_out,
+                   dt_iop_roi_t *roi_in)
 {
   *roi_in = *roi_out;
 
   const float scale = roi_in->scale / piece->iscale;
 
-  float aabb[4] =
-  {
-    roi_out->x,                  roi_out->y,
-    roi_out->x + roi_out->width, roi_out->y + roi_out->height
-  };
+  float aabb[4] = { roi_out->x, roi_out->y, roi_out->x + roi_out->width, roi_out->y + roi_out->height };
 
-  float aabb_in[4] =
-  {
-     INFINITY,  INFINITY,
-    -INFINITY, -INFINITY
-  };
+  float aabb_in[4] = { INFINITY, INFINITY, -INFINITY, -INFINITY };
 
-  for(int c=0; c<4; c++)
+  for(int c = 0; c < 4; c++)
   {
     float p[2], o[2];
 
@@ -251,45 +214,39 @@ modify_roi_in(
     adjust_aabb(o, aabb_in);
   }
 
-  const struct dt_interpolation* interpolation = dt_interpolation_new(DT_INTERPOLATION_USERPREF);
+  const struct dt_interpolation *interpolation = dt_interpolation_new(DT_INTERPOLATION_USERPREF);
   const float IW = interpolation->width * scale;
 
   // adjust roi_in to minimally needed region
-  roi_in->x      = aabb_in[0] - IW;
-  roi_in->y      = aabb_in[1] - IW;
-  roi_in->width  = aabb_in[2] - roi_in->x + IW;
+  roi_in->x = aabb_in[0] - IW;
+  roi_in->y = aabb_in[1] - IW;
+  roi_in->width = aabb_in[2] - roi_in->x + IW;
   roi_in->height = aabb_in[3] - roi_in->y + IW;
 }
 
 // 3rd (final) pass: you get this input region (may be different from what was requested above),
 // do your best to fill the output region!
-void
-process(
-  dt_iop_module_t *self,
-  const dt_dev_pixelpipe_iop_t *const piece,
-  const void *const ivoid,
-  void *ovoid,
-  const dt_iop_roi_t *const roi_in,
-  const dt_iop_roi_t *const roi_out)
+void process(dt_iop_module_t *self, const dt_dev_pixelpipe_iop_t *const piece, const void *const ivoid,
+             void *ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
   const int ch = piece->colors;
-  const int ch_width = ch*roi_in->width;
+  const int ch_width = ch * roi_in->width;
 
   const float scale = roi_in->scale / piece->iscale;
 
   assert(ch == 4);
 
-  const struct dt_interpolation* interpolation = dt_interpolation_new(DT_INTERPOLATION_USERPREF);
+  const struct dt_interpolation *interpolation = dt_interpolation_new(DT_INTERPOLATION_USERPREF);
 
 #ifdef _OPENMP
-  #pragma omp parallel for schedule(static) default(none) shared(ovoid,interpolation)
+#pragma omp parallel for schedule(static) default(none) shared(ovoid, interpolation)
 #endif
   // (slow) point-by-point transformation.
   // TODO: optimize with scanlines and linear steps between?
-  for(int j=0; j<roi_out->height; j++)
+  for(int j = 0; j < roi_out->height; j++)
   {
-    float *out = ((float *)ovoid)+(size_t)ch*j*roi_out->width;
-    for(int i=0; i<roi_out->width; i++,out+=ch)
+    float *out = ((float *)ovoid) + (size_t)ch * j * roi_out->width;
+    for(int i = 0; i < roi_out->width; i++, out += ch)
     {
       float pi[2], po[2];
 
@@ -301,24 +258,16 @@ process(
       po[0] -= roi_in->x;
       po[1] -= roi_in->y;
 
-      dt_interpolation_compute_pixel4c(
-        interpolation,
-        (float *)ivoid, out,
-        po[0], po[1],
-        roi_in->width, roi_in->height,
-        ch_width);
+      dt_interpolation_compute_pixel4c(interpolation, (float *)ivoid, out, po[0], po[1], roi_in->width,
+                                       roi_in->height, ch_width);
     }
   }
 }
 
-void
-tiling_callback(
-  dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
-  const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out,
-  dt_develop_tiling_t *tiling)
+void tiling_callback(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const dt_iop_roi_t *const roi_in,
+                     const dt_iop_roi_t *const roi_out, dt_develop_tiling_t *tiling)
 {
-  float ioratio = ((float)roi_out->width * roi_out->height) /
-                  ((float)roi_in->width * roi_in->height);
+  float ioratio = ((float)roi_out->width * roi_out->height) / ((float)roi_in->width * roi_in->height);
 
   tiling->factor = 1.0f + ioratio; // in + out, no temp
   tiling->maxbuf = 1.0f;
@@ -329,10 +278,8 @@ tiling_callback(
   return;
 }
 
-void
-commit_params(
-  dt_iop_module_t *self, dt_iop_params_t *p1,
-  dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
+void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe,
+                   dt_dev_pixelpipe_iop_t *piece)
 {
   dt_iop_rotatepixels_params_t *p = (dt_iop_rotatepixels_params_t *)p1;
   dt_iop_rotatepixels_data_t *d = (dt_iop_rotatepixels_data_t *)piece->data;
@@ -340,52 +287,38 @@ commit_params(
   d->rx = p->rx;
   d->ry = p->ry;
 
-  const float angle = p->angle * M_PI/180.0f;
+  const float angle = p->angle * M_PI / 180.0f;
 
   float rt[] = { cosf(angle), sinf(angle), -sinf(angle), cosf(angle) };
-  for(int k=0; k<4; k++) d->m[k] = rt[k];
+  for(int k = 0; k < 4; k++) d->m[k] = rt[k];
 
   // this should not be used for normal images
   // (i.e. for those, when this iop is off by default)
-  if((d->rx == 0u) && (d->ry == 0u))
-    piece->enabled = 0;
+  if((d->rx == 0u) && (d->ry == 0u)) piece->enabled = 0;
 }
 
-void
-init_pipe(
-  dt_iop_module_t *self,
-  dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
+void init_pipe(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
   piece->data = calloc(1, sizeof(dt_iop_rotatepixels_data_t));
   self->commit_params(self, self->default_params, pipe, piece);
 }
 
-void
-cleanup_pipe(
-  dt_iop_module_t *self,
-  dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
+void cleanup_pipe(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
   free(piece->data);
   piece->data = NULL;
 }
 
-void
-reload_defaults(
-  dt_iop_module_t *self)
+void reload_defaults(dt_iop_module_t *self)
 {
   dt_iop_rotatepixels_params_t tmp = { 0 };
 
   // we might be called from presets update infrastructure => there is no image
   if(!self || !self->dev) goto end;
 
-  const dt_image_t * const image = &(self->dev->image_storage);
+  const dt_image_t *const image = &(self->dev->image_storage);
 
-  tmp = (dt_iop_rotatepixels_params_t)
-  {
-    .rx = 0u,
-    .ry = image->fuji_rotation_pos,
-    .angle = -45.0f
-  };
+  tmp = (dt_iop_rotatepixels_params_t){ .rx = 0u, .ry = image->fuji_rotation_pos, .angle = -45.0f };
 
   self->default_enabled = ((tmp.rx != 0u) || (tmp.ry != 0u));
 
@@ -402,12 +335,11 @@ void gui_update(dt_iop_module_t *self)
   if(self->default_enabled)
     gtk_label_set_text(GTK_LABEL(self->widget), _("automatic pixel rotation"));
   else
-    gtk_label_set_text(GTK_LABEL(self->widget), _("automatic pixel rotation\nonly works for the sensors that need it."));
+    gtk_label_set_text(GTK_LABEL(self->widget),
+                       _("automatic pixel rotation\nonly works for the sensors that need it."));
 }
 
-void
-init(
-  dt_iop_module_t *self)
+void init(dt_iop_module_t *self)
 {
   self->params = calloc(1, sizeof(dt_iop_rotatepixels_params_t));
   self->default_params = calloc(1, sizeof(dt_iop_rotatepixels_params_t));
@@ -416,25 +348,19 @@ init(
   self->priority = 216; // module order created by iop_dependencies.py, do not edit!
 }
 
-void
-cleanup(
-  dt_iop_module_t *self)
+void cleanup(dt_iop_module_t *self)
 {
   free(self->params);
   self->params = NULL;
 }
 
-void
-gui_init(
-  dt_iop_module_t *self)
+void gui_init(dt_iop_module_t *self)
 {
   self->widget = gtk_label_new("");
   gtk_misc_set_alignment(GTK_MISC(self->widget), 0.0, 0.5);
 }
 
-void
-gui_cleanup(
-  dt_iop_module_t *self)
+void gui_cleanup(dt_iop_module_t *self)
 {
   free(self->gui_data);
   self->gui_data = NULL;

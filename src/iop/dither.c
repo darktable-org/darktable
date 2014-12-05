@@ -38,12 +38,12 @@
 #include <inttypes.h>
 #include <xmmintrin.h>
 
-#define CLIP(x) ((x<0)?0.0:(x>1.0)?1.0:x)
+#define CLIP(x) ((x < 0) ? 0.0 : (x > 1.0) ? 1.0 : x)
 #define TEA_ROUNDS 8
 
 DT_MODULE_INTROSPECTION(1, dt_iop_dither_params_t)
 
-typedef __m128 (_find_nearest_color)(float *val, const float f, const float rf);
+typedef __m128(_find_nearest_color)(float *val, const float f, const float rf);
 
 typedef enum dt_iop_dither_type_t
 {
@@ -59,15 +59,14 @@ typedef enum dt_iop_dither_type_t
 typedef struct dt_iop_dither_params_t
 {
   int dither_type;
-  int palette;        // reserved for future extensions
+  int palette; // reserved for future extensions
   struct
   {
-    float radius;     // reserved for future extensions
-    float range[4];   // reserved for future extensions
+    float radius;   // reserved for future extensions
+    float range[4]; // reserved for future extensions
     float damping;
   } random;
-}
-dt_iop_dither_params_t;
+} dt_iop_dither_params_t;
 
 typedef struct dt_iop_dither_gui_data_t
 {
@@ -77,8 +76,7 @@ typedef struct dt_iop_dither_gui_data_t
   GtkWidget *range;
   GtkWidget *range_label;
   GtkWidget *damping;
-}
-dt_iop_dither_gui_data_t;
+} dt_iop_dither_gui_data_t;
 
 typedef struct dt_iop_dither_data_t
 {
@@ -89,8 +87,7 @@ typedef struct dt_iop_dither_data_t
     float range[4];
     float damping;
   } random;
-}
-dt_iop_dither_data_t;
+} dt_iop_dither_data_t;
 
 const char *name()
 {
@@ -98,47 +95,42 @@ const char *name()
 }
 
 
-int
-groups ()
+int groups()
 {
   return IOP_GROUP_CORRECT;
 }
 
-int
-flags ()
+int flags()
 {
   return IOP_FLAGS_ONE_INSTANCE;
 }
 
 
-void init_presets (dt_iop_module_so_t *self)
+void init_presets(dt_iop_module_so_t *self)
 {
   DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "begin", NULL, NULL, NULL);
 
-  dt_iop_dither_params_t tmp = (dt_iop_dither_params_t)
-  {
-    DITHER_FSAUTO, 0, { 0.0f, { 0.0f, 0.0f, 1.0f, 1.0f }, -200.0f }
-  };
+  dt_iop_dither_params_t tmp
+      = (dt_iop_dither_params_t){ DITHER_FSAUTO, 0, { 0.0f, { 0.0f, 0.0f, 1.0f, 1.0f }, -200.0f } };
   // add the preset.
   dt_gui_presets_add_generic(_("dither"), self->op, self->version(), &tmp, sizeof(dt_iop_dither_params_t), 1);
   // make it auto-apply for all images:
-  //dt_gui_presets_update_autoapply(_("dither"), self->op, self->version(), 1);
+  // dt_gui_presets_update_autoapply(_("dither"), self->op, self->version(), 1);
 
   DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "commit", NULL, NULL, NULL);
 }
 
 
 // dither pixel into gray, with f=levels-1 and rf=1/f, return err=old-new
-static __m128
-_find_nearest_color_n_levels_gray(float *val, const float f, const float rf)
+static __m128 _find_nearest_color_n_levels_gray(float *val, const float f, const float rf)
 {
   __m128 err;
   __m128 new;
 
-  const float in = 0.30f*val[0] + 0.59f*val[1] + 0.11f*val[2];                                // RGB -> GRAY
+  const float in = 0.30f * val[0] + 0.59f * val[1] + 0.11f * val[2]; // RGB -> GRAY
 
   float tmp = in * f;
-  int itmp  = floorf(tmp);
+  int itmp = floorf(tmp);
 
   new = _mm_set1_ps(tmp - itmp > 0.5f ? (float)(itmp + 1) * rf : (float)itmp * rf);
   err = _mm_sub_ps(_mm_load_ps(val), new);
@@ -148,14 +140,17 @@ _find_nearest_color_n_levels_gray(float *val, const float f, const float rf)
 }
 
 // dither pixel into RGB, with f=levels-1 and rf=1/f, return err=old-new
-static __m128
-_find_nearest_color_n_levels_rgb(float *val, const float f, const float rf)
+static __m128 _find_nearest_color_n_levels_rgb(float *val, const float f, const float rf)
 {
-  __m128 old  = _mm_load_ps(val);
-  __m128 tmp  = _mm_mul_ps(old, _mm_set1_ps(f));                                               // old * f
-  __m128 itmp = _mm_cvtepi32_ps(_mm_cvtps_epi32(tmp));                                         // floor(tmp)
-  __m128 new  = _mm_mul_ps(_mm_add_ps(itmp, _mm_and_ps(_mm_cmpgt_ps(_mm_sub_ps(tmp, itmp),     // (tmp - itmp > 0.5f ? itmp + 1 : itmp) * rf
-                                      _mm_set1_ps(0.5f)), _mm_set1_ps(1.0f))), _mm_set1_ps(rf));
+  __m128 old = _mm_load_ps(val);
+  __m128 tmp = _mm_mul_ps(old, _mm_set1_ps(f));        // old * f
+  __m128 itmp = _mm_cvtepi32_ps(_mm_cvtps_epi32(tmp)); // floor(tmp)
+  __m128 new = _mm_mul_ps(
+      _mm_add_ps(itmp,
+                 _mm_and_ps(_mm_cmpgt_ps(_mm_sub_ps(tmp, itmp), // (tmp - itmp > 0.5f ? itmp + 1 : itmp) * rf
+                                         _mm_set1_ps(0.5f)),
+                            _mm_set1_ps(1.0f))),
+      _mm_set1_ps(rf));
 
   _mm_store_ps(val, new);
 
@@ -163,14 +158,13 @@ _find_nearest_color_n_levels_rgb(float *val, const float f, const float rf)
 }
 
 
-static inline void
-_diffuse_error(float *val, const __m128 err, const float factor)
+static inline void _diffuse_error(float *val, const __m128 err, const float factor)
 {
-  _mm_store_ps(val, _mm_add_ps(_mm_load_ps(val), _mm_mul_ps(err, _mm_set1_ps(factor))));       // *val += err * factor
+  _mm_store_ps(val,
+               _mm_add_ps(_mm_load_ps(val), _mm_mul_ps(err, _mm_set1_ps(factor)))); // *val += err * factor
 }
 
-static inline float
-clipnan(const float x)
+static inline float clipnan(const float x)
 {
   float r;
 
@@ -182,29 +176,30 @@ clipnan(const float x)
   return r;
 }
 
-void process_floyd_steinberg (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoid, void *ovoid, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
+void process_floyd_steinberg(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoid,
+                             void *ovoid, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
 {
   dt_iop_dither_data_t *data = (dt_iop_dither_data_t *)piece->data;
 
   const int width = roi_in->width;
   const int height = roi_in->height;
   const int ch = piece->colors;
-  const float scale = roi_in->scale/piece->iscale;
-  const int l1 = floorf(1.0f + dt_log2f(1.0f/scale));
+  const float scale = roi_in->scale / piece->iscale;
+  const int l1 = floorf(1.0f + dt_log2f(1.0f / scale));
 
   _find_nearest_color *nearest_color = NULL;
   unsigned int levels = 1;
-  int bds = (piece->pipe->type != DT_DEV_PIXELPIPE_EXPORT) ? l1*l1 : 1;
+  int bds = (piece->pipe->type != DT_DEV_PIXELPIPE_EXPORT) ? l1 * l1 : 1;
 
   switch(data->dither_type)
   {
     case DITHER_FS1BIT:
       nearest_color = _find_nearest_color_n_levels_gray;
-      levels = MAX(2, MIN(bds+1, 256));
+      levels = MAX(2, MIN(bds + 1, 256));
       break;
     case DITHER_FS4BIT_GRAY:
       nearest_color = _find_nearest_color_n_levels_gray;
-      levels = MAX(16, MIN(15*bds+1, 256));
+      levels = MAX(16, MIN(15 * bds + 1, 256));
       break;
     case DITHER_FS8BIT:
       nearest_color = _find_nearest_color_n_levels_rgb;
@@ -252,13 +247,13 @@ void process_floyd_steinberg (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop
   }
 
 #ifdef _OPENMP
-  #pragma omp parallel for default(none) shared(ivoid, ovoid) schedule(static)
+#pragma omp parallel for default(none) shared(ivoid, ovoid) schedule(static)
 #endif
-  for(int j=0; j<height; j++)
+  for(int j = 0; j < height; j++)
   {
-    const float *in = (const float *)ivoid + (size_t)ch*width*j;
-    float *out = (float *)ovoid + (size_t)ch*width*j;
-    for(int i=0; i<width; i++, in+=ch, out+=ch)
+    const float *in = (const float *)ivoid + (size_t)ch * width * j;
+    float *out = (float *)ovoid + (size_t)ch * width * j;
+    for(int i = 0; i < width; i++, in += ch, out += ch)
     {
       out[0] = clipnan(in[0]);
       out[1] = clipnan(in[1]);
@@ -269,85 +264,81 @@ void process_floyd_steinberg (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop
   if(nearest_color == NULL) return;
 
   const float f = levels - 1;
-  const float rf = 1.0/f;
+  const float rf = 1.0 / f;
   __m128 err;
 
   // dither without error diffusion on very tiny images
   if(width < 3 || height < 3)
   {
-    for(int j=0; j<height; j++)
+    for(int j = 0; j < height; j++)
     {
-      float *out = ((float *)ovoid) + (size_t)ch*j*width;
-      for(int i=0; i<width; i++)
-        (void)nearest_color(out+ch*i, f, rf);
+      float *out = ((float *)ovoid) + (size_t)ch * j * width;
+      for(int i = 0; i < width; i++) (void)nearest_color(out + ch * i, f, rf);
     }
 
-    if(piece->pipe->mask_display)
-      dt_iop_alpha_copy(ivoid, ovoid, roi_out->width, roi_out->height);
+    if(piece->pipe->mask_display) dt_iop_alpha_copy(ivoid, ovoid, roi_out->width, roi_out->height);
     return;
   }
 
   // floyd-steinberg dithering follows here
 
   // first height-1 rows
-  for(int j=0; j<height-1; j++)
+  for(int j = 0; j < height - 1; j++)
   {
-    float *out = ((float *)ovoid) + (size_t)ch*j*width;
+    float *out = ((float *)ovoid) + (size_t)ch * j * width;
 
     // first column
     err = nearest_color(out, f, rf);
-    _diffuse_error(out+ch, err, 7.0f/16.0f);
-    _diffuse_error(out+ch*width, err, 5.0f/16.0f);
-    _diffuse_error(out+ch*(width+1), err, 1.0f/16.0f);
+    _diffuse_error(out + ch, err, 7.0f / 16.0f);
+    _diffuse_error(out + ch * width, err, 5.0f / 16.0f);
+    _diffuse_error(out + ch * (width + 1), err, 1.0f / 16.0f);
 
 
     // main part of image
-    for(int i=1; i<width-1; i++)
+    for(int i = 1; i < width - 1; i++)
     {
-      err = nearest_color(out+ch*i, f, rf);
-      _diffuse_error(out+ch*(i+1), err, 7.0f/16.0f);
-      _diffuse_error(out+ch*(i-1)+ch*width, err, 3.0f/16.0f);
-      _diffuse_error(out+ch*i+ch*width, err, 5.0f/16.0f);
-      _diffuse_error(out+ch*(i+1)+ch*width, err, 1.0f/16.0f);
+      err = nearest_color(out + ch * i, f, rf);
+      _diffuse_error(out + ch * (i + 1), err, 7.0f / 16.0f);
+      _diffuse_error(out + ch * (i - 1) + ch * width, err, 3.0f / 16.0f);
+      _diffuse_error(out + ch * i + ch * width, err, 5.0f / 16.0f);
+      _diffuse_error(out + ch * (i + 1) + ch * width, err, 1.0f / 16.0f);
     }
 
     // last column
-    err = nearest_color(out+ch*(width-1), f, rf);
-    _diffuse_error(out+ch*(width-2)+ch*width, err, 3.0f/16.0f);
-    _diffuse_error(out+ch*(width-1)+ch*width, err, 5.0f/16.0f);
+    err = nearest_color(out + ch * (width - 1), f, rf);
+    _diffuse_error(out + ch * (width - 2) + ch * width, err, 3.0f / 16.0f);
+    _diffuse_error(out + ch * (width - 1) + ch * width, err, 5.0f / 16.0f);
   }
 
   // last row
   do
   {
-    float *out = ((float *)ovoid) + (size_t)ch*(height-1)*width;
+    float *out = ((float *)ovoid) + (size_t)ch * (height - 1) * width;
 
     // lower left pixel
     err = nearest_color(out, f, rf);
-    _diffuse_error(out+ch, err, 7.0f/16.0f);
+    _diffuse_error(out + ch, err, 7.0f / 16.0f);
 
     // main part of last row
-    for(int i=1; i<width-1; i++)
+    for(int i = 1; i < width - 1; i++)
     {
-      err = nearest_color(out+ch*i, f, rf);
-      _diffuse_error(out+ch*(i+1), err, 7.0f/16.0f);
+      err = nearest_color(out + ch * i, f, rf);
+      _diffuse_error(out + ch * (i + 1), err, 7.0f / 16.0f);
     }
 
     // lower right pixel
-    (void)nearest_color(out+ch*(width-1), f, rf);
+    (void)nearest_color(out + ch * (width - 1), f, rf);
 
-  }
-  while(0);
+  } while(0);
 
   // copy alpha channel if needed
-  if(piece->pipe->mask_display)
-    dt_iop_alpha_copy(ivoid, ovoid, roi_out->width, roi_out->height);
+  if(piece->pipe->mask_display) dt_iop_alpha_copy(ivoid, ovoid, roi_out->width, roi_out->height);
 }
 
 
 void encrypt_tea(unsigned int *arg)
 {
-  const unsigned int key[] = {0xa341316c, 0xc8013ea4, 0xad90777d, 0x7e95761e};
+  const unsigned int key[] = { 0xa341316c, 0xc8013ea4, 0xad90777d, 0x7e95761e };
   unsigned int v0 = arg[0], v1 = arg[1];
   unsigned int sum = 0;
   unsigned int delta = 0x9e3779b9;
@@ -366,11 +357,12 @@ float tpdf(unsigned int urandom)
 {
   float frandom = (float)urandom / 0xFFFFFFFFu;
 
-  return (frandom < 0.5f ? (sqrtf(2.0f*frandom) - 1.0f) : (1.0f - sqrtf(2.0f*(1.0f - frandom))));
+  return (frandom < 0.5f ? (sqrtf(2.0f * frandom) - 1.0f) : (1.0f - sqrtf(2.0f * (1.0f - frandom))));
 }
 
 
-void process_random (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoid, void *ovoid, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
+void process_random(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoid, void *ovoid,
+                    const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
 {
   dt_iop_dither_data_t *data = (dt_iop_dither_data_t *)piece->data;
 
@@ -378,22 +370,22 @@ void process_random (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece
   const int height = roi_in->height;
   const int ch = piece->colors;
 
-  const float dither = powf(2.0f, data->random.damping/10.0f);
+  const float dither = powf(2.0f, data->random.damping / 10.0f);
 
-  unsigned int tea_states[2*dt_get_num_threads()];
-  memset(tea_states, 0, 2*dt_get_num_threads()*sizeof(unsigned int));
+  unsigned int tea_states[2 * dt_get_num_threads()];
+  memset(tea_states, 0, 2 * dt_get_num_threads() * sizeof(unsigned int));
 
 #ifdef _OPENMP
-  #pragma omp parallel for default(none) shared(roi_out, ivoid, ovoid, tea_states) schedule(static)
+#pragma omp parallel for default(none) shared(roi_out, ivoid, ovoid, tea_states) schedule(static)
 #endif
-  for(int j=0; j<height; j++)
+  for(int j = 0; j < height; j++)
   {
-    const size_t k = (size_t)ch*width*j;
+    const size_t k = (size_t)ch * width * j;
     const float *in = (const float *)ivoid + k;
     float *out = (float *)ovoid + k;
     unsigned int *tea_state = tea_states + 2 * dt_get_thread_num();
     tea_state[0] = j * height + dt_get_thread_num();
-    for(int i=0; i<width; i++, in+=ch, out+=ch)
+    for(int i = 0; i < width; i++, in += ch, out += ch)
     {
       encrypt_tea(tea_state);
       float dith = dither * tpdf(tea_state[0]);
@@ -404,12 +396,12 @@ void process_random (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece
     }
   }
 
-  if(piece->pipe->mask_display)
-    dt_iop_alpha_copy(ivoid, ovoid, width, height);
+  if(piece->pipe->mask_display) dt_iop_alpha_copy(ivoid, ovoid, width, height);
 }
 
 
-void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoid, void *ovoid, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
+void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoid, void *ovoid,
+             const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
 {
   dt_iop_dither_data_t *data = (dt_iop_dither_data_t *)piece->data;
 
@@ -419,8 +411,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
     process_floyd_steinberg(self, piece, ivoid, ovoid, roi_in, roi_out);
 }
 
-static void
-method_callback (GtkWidget *widget, gpointer user_data)
+static void method_callback(GtkWidget *widget, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(self->dt->gui->reset) return;
@@ -448,8 +439,7 @@ radius_callback (GtkWidget *slider, gpointer user_data)
 }
 #endif
 
-static void
-damping_callback (GtkWidget *slider, gpointer user_data)
+static void damping_callback(GtkWidget *slider, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(self->dt->gui->reset) return;
@@ -473,7 +463,8 @@ range_callback (GtkWidget *slider, gpointer user_data)
 }
 #endif
 
-void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
+void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe,
+                   dt_dev_pixelpipe_iop_t *piece)
 {
   dt_iop_dither_params_t *p = (dt_iop_dither_params_t *)p1;
   dt_iop_dither_data_t *d = (dt_iop_dither_data_t *)piece->data;
@@ -484,13 +475,13 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
   d->random.damping = p->random.damping;
 }
 
-void init_pipe (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
+void init_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
   piece->data = malloc(sizeof(dt_iop_dither_data_t));
   self->commit_params(self, self->default_params, pipe, piece);
 }
 
-void cleanup_pipe (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
+void cleanup_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
   free(piece->data);
   piece->data = NULL;
@@ -528,10 +519,8 @@ void init(dt_iop_module_t *module)
   module->priority = 983; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_dither_params_t);
   module->gui_data = NULL;
-  dt_iop_dither_params_t tmp = (dt_iop_dither_params_t)
-  {
-    DITHER_FSAUTO, 0, { 0.0f, { 0.0f, 0.0f, 1.0f, 1.0f }, -200.0f }
-  };
+  dt_iop_dither_params_t tmp
+      = (dt_iop_dither_params_t){ DITHER_FSAUTO, 0, { 0.0f, { 0.0f, 0.0f, 1.0f, 1.0f }, -200.0f } };
   memcpy(module->params, &tmp, sizeof(dt_iop_dither_params_t));
   memcpy(module->default_params, &tmp, sizeof(dt_iop_dither_params_t));
 }
@@ -585,9 +574,9 @@ void gui_init(struct dt_iop_module_t *self)
 #endif
 
   g->damping = dt_bauhaus_slider_new_with_range(self, -200.0, 0.0, 1.0, p->random.damping, 3);
-  g_object_set (GTK_OBJECT(g->damping), "tooltip-text", _("damping level of random dither"), (char *)NULL);
+  g_object_set(GTK_OBJECT(g->damping), "tooltip-text", _("damping level of random dither"), (char *)NULL);
   dt_bauhaus_widget_set_label(g->damping, NULL, _("damping"));
-  dt_bauhaus_slider_set_format(g->damping,"%.0fdB");
+  dt_bauhaus_slider_set_format(g->damping, "%.0fdB");
 
 #if 0
   gtk_box_pack_start(GTK_BOX(g->random), g->radius, TRUE, TRUE, 0);
@@ -599,16 +588,14 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), g->dither_type, TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), g->random, TRUE, TRUE, 0);
 
-  g_signal_connect (G_OBJECT (g->dither_type), "value-changed",
-                    G_CALLBACK (method_callback), self);
+  g_signal_connect(G_OBJECT(g->dither_type), "value-changed", G_CALLBACK(method_callback), self);
 #if 0
   g_signal_connect (G_OBJECT (g->radius), "value-changed",
                     G_CALLBACK (radius_callback), self);
   g_signal_connect (G_OBJECT (g->range), "value-changed",
                     G_CALLBACK (range_callback), self);
 #endif
-  g_signal_connect (G_OBJECT (g->damping), "value-changed",
-                    G_CALLBACK (damping_callback), self);
+  g_signal_connect(G_OBJECT(g->damping), "value-changed", G_CALLBACK(damping_callback), self);
 }
 
 void gui_cleanup(struct dt_iop_module_t *self)

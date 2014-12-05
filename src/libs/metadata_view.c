@@ -39,14 +39,14 @@ DT_MODULE(1)
 enum
 {
   /* internal */
-  md_internal_filmroll=0,
+  md_internal_filmroll = 0,
   md_internal_imgid,
   md_internal_groupid,
   md_internal_filename,
   md_internal_version,
   md_internal_fullpath,
   md_internal_local_copy,
-//   md_internal_flags,
+  //   md_internal_flags,
 
   /* exif */
   md_exif_model,
@@ -87,7 +87,7 @@ static void _lib_metatdata_view_init_labels()
   _md_labels[md_internal_version] = _("version");
   _md_labels[md_internal_fullpath] = _("full path");
   _md_labels[md_internal_local_copy] = _("local copy");
-//   _md_labels[md_internal_flags] = _("flags");
+  //   _md_labels[md_internal_flags] = _("flags");
 
 
   /* exif */
@@ -117,10 +117,9 @@ static void _lib_metatdata_view_init_labels()
 typedef struct dt_lib_metadata_view_t
 {
   GtkLabel *metadata[md_size];
-}
-dt_lib_metadata_view_t;
+} dt_lib_metadata_view_t;
 
-const char* name()
+const char *name()
 {
   return _("image information");
 }
@@ -148,8 +147,7 @@ Strings which are already in valid UTF-8 are retained.
 static void _filter_non_printable(char *string, size_t length)
 {
   /* explicitly tell the validator to ignore the trailing nulls, otherwise this fails */
-  if (g_utf8_validate(string, -1, 0))
-    return;
+  if(g_utf8_validate(string, -1, 0)) return;
 
   unsigned char *str = (unsigned char *)string;
   int n = 0;
@@ -191,19 +189,19 @@ static void _metadata_view_update_values(dt_lib_module_t *self)
   dt_lib_metadata_view_t *d = (dt_lib_metadata_view_t *)self->data;
   int32_t mouse_over_id = dt_control_get_mouse_over_id();
 
-  if (mouse_over_id == -1)
+  if(mouse_over_id == -1)
   {
     const dt_view_t *cv = dt_view_manager_get_current_view(darktable.view_manager);
-    if(cv->view((dt_view_t*)cv) == DT_VIEW_DARKROOM)
+    if(cv->view((dt_view_t *)cv) == DT_VIEW_DARKROOM)
     {
       mouse_over_id = darktable.develop->image_storage.id;
     }
     else
     {
       sqlite3_stmt *stmt;
-      DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select imgid from selected_images limit 1", -1, &stmt, NULL);
-      if(sqlite3_step(stmt) == SQLITE_ROW)
-        mouse_over_id = sqlite3_column_int(stmt, 0);
+      DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select imgid from selected_images limit 1",
+                                  -1, &stmt, NULL);
+      if(sqlite3_step(stmt) == SQLITE_ROW) mouse_over_id = sqlite3_column_int(stmt, 0);
       sqlite3_finalize(stmt);
     }
   }
@@ -211,7 +209,7 @@ static void _metadata_view_update_values(dt_lib_module_t *self)
   if(mouse_over_id >= 0)
   {
     char value[512];
-    char pathname[PATH_MAX];
+    char pathname[PATH_MAX] = { 0 };
     const dt_image_t *img = dt_image_cache_read_get(darktable.image_cache, mouse_over_id);
     if(!img) goto fill_minuses;
     if(img->film_id == -1)
@@ -229,148 +227,149 @@ static void _metadata_view_update_values(dt_lib_module_t *self)
     snprintf(tooltip, tp, _("double click to jump to film roll\n%s"), value);
     g_object_set(G_OBJECT(d->metadata[md_internal_filmroll]), "tooltip-text", tooltip, (char *)NULL);
 
-    snprintf(value,sizeof(value),"%d", img->id);
+    snprintf(value, sizeof(value), "%d", img->id);
     _metadata_update_value(d->metadata[md_internal_imgid], value);
 
-    snprintf(value,sizeof(value),"%d", img->group_id);
+    snprintf(value, sizeof(value), "%d", img->group_id);
     _metadata_update_value(d->metadata[md_internal_groupid], value);
 
     _metadata_update_value(d->metadata[md_internal_filename], img->filename);
 
-    snprintf(value,sizeof(value),"%d", img->version);
+    snprintf(value, sizeof(value), "%d", img->version);
     _metadata_update_value(d->metadata[md_internal_version], value);
 
     gboolean from_cache = FALSE;
     dt_image_full_path(img->id, pathname, sizeof(pathname), &from_cache);
     _metadata_update_value(d->metadata[md_internal_fullpath], pathname);
 
-    snprintf(value, sizeof(value), "%s", (img->flags & DT_IMAGE_LOCAL_COPY)?_("yes"):_("no"));
+    snprintf(value, sizeof(value), "%s", (img->flags & DT_IMAGE_LOCAL_COPY) ? _("yes") : _("no"));
     _metadata_update_value(d->metadata[md_internal_local_copy], value);
 
     // TODO: decide if this should be removed for a release. maybe #ifdef'ing to only add it to git compiles?
 
     // the bits of the flags
-//     {
-//       #define EMPTY_FIELD '.'
-//       #define FALSE_FIELD '.'
-//       #define TRUE_FIELD '!'
-//
-//       char *tooltip = NULL;
-//       char *flag_descriptions[] = { N_("unused"),
-//                                     N_("unused/deprecated"),
-//                                     N_("ldr"),
-//                                     N_("raw"),
-//                                     N_("hdr"),
-//                                     N_("marked for deletion"),
-//                                     N_("auto-applying presets applied"),
-//                                     N_("legacy flag. set for all new images"),
-//                                     N_("local copy"),
-//                                     N_("has .txt"),
-//                                     N_("has .wav")
-//       };
-//       char *tooltip_parts[13] = { 0 };
-//       int next_tooltip_part = 0;
-//
-//       memset(value, EMPTY_FIELD, sizeof(value));
-//
-//       int stars = img->flags & 0x7;
-//       char *star_string = NULL;
-//       if(stars == 6)
-//       {
-//         value[0] = 'x';
-//         tooltip_parts[next_tooltip_part++] = _("image rejected");
-//       }
-//       else
-//       {
-//         value[0] = '0' + stars;
-//         tooltip_parts[next_tooltip_part++] = star_string = g_strdup_printf(ngettext("image has %d star", "image has %d stars", stars), stars);
-//       }
-//
-//
-//       if(img->flags & 8)
-//       {
-//         value[1] = TRUE_FIELD;
-//         tooltip_parts[next_tooltip_part++] = _(flag_descriptions[0]);
-//       }
-//       else
-//         value[1] = FALSE_FIELD;
-//
-//       if(img->flags & DT_IMAGE_THUMBNAIL_DEPRECATED)
-//       {
-//         value[2] = TRUE_FIELD;
-//         tooltip_parts[next_tooltip_part++] = _(flag_descriptions[1]);
-//       }
-//       else
-//         value[2] = FALSE_FIELD;
-//
-//       if(img->flags & DT_IMAGE_LDR)
-//       {
-//         value[3] = 'l';
-//         tooltip_parts[next_tooltip_part++] = _(flag_descriptions[2]);
-//       }
-//
-//       if(img->flags & DT_IMAGE_RAW)
-//       {
-//         value[4] = 'r';
-//         tooltip_parts[next_tooltip_part++] = _(flag_descriptions[3]);
-//       }
-//
-//       if(img->flags & DT_IMAGE_HDR)
-//       {
-//         value[5] = 'h';
-//         tooltip_parts[next_tooltip_part++] = _(flag_descriptions[4]);
-//       }
-//
-//       if(img->flags & DT_IMAGE_REMOVE)
-//       {
-//         value[6] = 'd';
-//         tooltip_parts[next_tooltip_part++] = _(flag_descriptions[5]);
-//       }
-//
-//       if(img->flags & DT_IMAGE_AUTO_PRESETS_APPLIED)
-//       {
-//         value[7] = 'a';
-//         tooltip_parts[next_tooltip_part++] = _(flag_descriptions[6]);
-//       }
-//
-//       if(img->flags & DT_IMAGE_NO_LEGACY_PRESETS)
-//       {
-//         value[8] = 'p';
-//         tooltip_parts[next_tooltip_part++] = _(flag_descriptions[7]);
-//       }
-//
-//       if(img->flags & DT_IMAGE_LOCAL_COPY)
-//       {
-//         value[9] = 'c';
-//         tooltip_parts[next_tooltip_part++] = _(flag_descriptions[8]);
-//       }
-//
-//       if(img->flags & DT_IMAGE_HAS_TXT)
-//       {
-//         value[10] = 't';
-//         tooltip_parts[next_tooltip_part++] = _(flag_descriptions[9]);
-//       }
-//
-//       if(img->flags & DT_IMAGE_HAS_WAV)
-//       {
-//         value[11] = 'w';
-//         tooltip_parts[next_tooltip_part++] = _(flag_descriptions[10]);
-//       }
-//
-//       value[12] = '\0';
-//
-//       tooltip = g_strjoinv("\n", tooltip_parts);
-//
-//       _metadata_update_value(d->metadata[md_internal_flags], value);
-//       g_object_set(G_OBJECT(d->metadata[md_internal_flags]), "tooltip-text", tooltip, (char *)NULL);
-//
-//       g_free(star_string);
-//       g_free(tooltip);
-//
-//       #undef EMPTY_FIELD
-//       #undef FALSE_FIELD
-//       #undef TRUE_FIELD
-//     }
+    //     {
+    //       #define EMPTY_FIELD '.'
+    //       #define FALSE_FIELD '.'
+    //       #define TRUE_FIELD '!'
+    //
+    //       char *tooltip = NULL;
+    //       char *flag_descriptions[] = { N_("unused"),
+    //                                     N_("unused/deprecated"),
+    //                                     N_("ldr"),
+    //                                     N_("raw"),
+    //                                     N_("hdr"),
+    //                                     N_("marked for deletion"),
+    //                                     N_("auto-applying presets applied"),
+    //                                     N_("legacy flag. set for all new images"),
+    //                                     N_("local copy"),
+    //                                     N_("has .txt"),
+    //                                     N_("has .wav")
+    //       };
+    //       char *tooltip_parts[13] = { 0 };
+    //       int next_tooltip_part = 0;
+    //
+    //       memset(value, EMPTY_FIELD, sizeof(value));
+    //
+    //       int stars = img->flags & 0x7;
+    //       char *star_string = NULL;
+    //       if(stars == 6)
+    //       {
+    //         value[0] = 'x';
+    //         tooltip_parts[next_tooltip_part++] = _("image rejected");
+    //       }
+    //       else
+    //       {
+    //         value[0] = '0' + stars;
+    //         tooltip_parts[next_tooltip_part++] = star_string = g_strdup_printf(ngettext("image has %d
+    //         star", "image has %d stars", stars), stars);
+    //       }
+    //
+    //
+    //       if(img->flags & 8)
+    //       {
+    //         value[1] = TRUE_FIELD;
+    //         tooltip_parts[next_tooltip_part++] = _(flag_descriptions[0]);
+    //       }
+    //       else
+    //         value[1] = FALSE_FIELD;
+    //
+    //       if(img->flags & DT_IMAGE_THUMBNAIL_DEPRECATED)
+    //       {
+    //         value[2] = TRUE_FIELD;
+    //         tooltip_parts[next_tooltip_part++] = _(flag_descriptions[1]);
+    //       }
+    //       else
+    //         value[2] = FALSE_FIELD;
+    //
+    //       if(img->flags & DT_IMAGE_LDR)
+    //       {
+    //         value[3] = 'l';
+    //         tooltip_parts[next_tooltip_part++] = _(flag_descriptions[2]);
+    //       }
+    //
+    //       if(img->flags & DT_IMAGE_RAW)
+    //       {
+    //         value[4] = 'r';
+    //         tooltip_parts[next_tooltip_part++] = _(flag_descriptions[3]);
+    //       }
+    //
+    //       if(img->flags & DT_IMAGE_HDR)
+    //       {
+    //         value[5] = 'h';
+    //         tooltip_parts[next_tooltip_part++] = _(flag_descriptions[4]);
+    //       }
+    //
+    //       if(img->flags & DT_IMAGE_REMOVE)
+    //       {
+    //         value[6] = 'd';
+    //         tooltip_parts[next_tooltip_part++] = _(flag_descriptions[5]);
+    //       }
+    //
+    //       if(img->flags & DT_IMAGE_AUTO_PRESETS_APPLIED)
+    //       {
+    //         value[7] = 'a';
+    //         tooltip_parts[next_tooltip_part++] = _(flag_descriptions[6]);
+    //       }
+    //
+    //       if(img->flags & DT_IMAGE_NO_LEGACY_PRESETS)
+    //       {
+    //         value[8] = 'p';
+    //         tooltip_parts[next_tooltip_part++] = _(flag_descriptions[7]);
+    //       }
+    //
+    //       if(img->flags & DT_IMAGE_LOCAL_COPY)
+    //       {
+    //         value[9] = 'c';
+    //         tooltip_parts[next_tooltip_part++] = _(flag_descriptions[8]);
+    //       }
+    //
+    //       if(img->flags & DT_IMAGE_HAS_TXT)
+    //       {
+    //         value[10] = 't';
+    //         tooltip_parts[next_tooltip_part++] = _(flag_descriptions[9]);
+    //       }
+    //
+    //       if(img->flags & DT_IMAGE_HAS_WAV)
+    //       {
+    //         value[11] = 'w';
+    //         tooltip_parts[next_tooltip_part++] = _(flag_descriptions[10]);
+    //       }
+    //
+    //       value[12] = '\0';
+    //
+    //       tooltip = g_strjoinv("\n", tooltip_parts);
+    //
+    //       _metadata_update_value(d->metadata[md_internal_flags], value);
+    //       g_object_set(G_OBJECT(d->metadata[md_internal_flags]), "tooltip-text", tooltip, (char *)NULL);
+    //
+    //       g_free(star_string);
+    //       g_free(tooltip);
+    //
+    //       #undef EMPTY_FIELD
+    //       #undef FALSE_FIELD
+    //       #undef TRUE_FIELD
+    //     }
 
     /* EXIF */
     _metadata_update_value_end(d->metadata[md_exif_model], img->exif_model);
@@ -380,14 +379,16 @@ static void _metadata_view_update_values(dt_lib_module_t *self)
     snprintf(value, sizeof(value), "F/%.1f", img->exif_aperture);
     _metadata_update_value(d->metadata[md_exif_aperture], value);
 
-    if(img->exif_exposure <= 0.5) snprintf(value, sizeof(value), "1/%.0f", 1.0/img->exif_exposure);
-    else                          snprintf(value, sizeof(value), "%.1f''", img->exif_exposure);
+    if(img->exif_exposure <= 0.5)
+      snprintf(value, sizeof(value), "1/%.0f", 1.0 / img->exif_exposure);
+    else
+      snprintf(value, sizeof(value), "%.1f''", img->exif_exposure);
     _metadata_update_value(d->metadata[md_exif_exposure], value);
 
     snprintf(value, sizeof(value), "%.0f mm", img->exif_focal_length);
     _metadata_update_value(d->metadata[md_exif_focal_length], value);
 
-    if (isnan(img->exif_focus_distance) || fpclassify(img->exif_focus_distance) == FP_ZERO)
+    if(isnan(img->exif_focus_distance) || fpclassify(img->exif_focus_distance) == FP_ZERO)
     {
       _metadata_update_value(d->metadata[md_exif_focus_distance], NODATA_STRING);
     }
@@ -409,9 +410,9 @@ static void _metadata_view_update_values(dt_lib_module_t *self)
 
     /* XMP */
     GList *res;
-    if((res = dt_metadata_get(img->id, "Xmp.dc.title", NULL))!=NULL)
+    if((res = dt_metadata_get(img->id, "Xmp.dc.title", NULL)) != NULL)
     {
-      snprintf(value, sizeof(value), "%s", (char*)res->data);
+      snprintf(value, sizeof(value), "%s", (char *)res->data);
       _filter_non_printable(value, sizeof(value));
       g_list_free_full(res, &g_free);
     }
@@ -419,9 +420,9 @@ static void _metadata_view_update_values(dt_lib_module_t *self)
       snprintf(value, sizeof(value), NODATA_STRING);
     _metadata_update_value(d->metadata[md_xmp_title], value);
 
-    if((res = dt_metadata_get(img->id, "Xmp.dc.creator", NULL))!=NULL)
+    if((res = dt_metadata_get(img->id, "Xmp.dc.creator", NULL)) != NULL)
     {
-      snprintf(value, sizeof(value), "%s", (char*)res->data);
+      snprintf(value, sizeof(value), "%s", (char *)res->data);
       _filter_non_printable(value, sizeof(value));
       g_list_free_full(res, &g_free);
     }
@@ -429,9 +430,9 @@ static void _metadata_view_update_values(dt_lib_module_t *self)
       snprintf(value, sizeof(value), NODATA_STRING);
     _metadata_update_value(d->metadata[md_xmp_creator], value);
 
-    if((res = dt_metadata_get(img->id, "Xmp.dc.rights", NULL))!=NULL)
+    if((res = dt_metadata_get(img->id, "Xmp.dc.rights", NULL)) != NULL)
     {
-      snprintf(value, sizeof(value), "%s", (char*)res->data);
+      snprintf(value, sizeof(value), "%s", (char *)res->data);
       _filter_non_printable(value, sizeof(value));
       g_list_free_full(res, &g_free);
     }
@@ -457,7 +458,7 @@ static void _metadata_view_update_values(dt_lib_module_t *self)
       else
       {
 #endif
-        gchar NS = img->latitude<0?'S':'N';
+        gchar NS = img->latitude < 0 ? 'S' : 'N';
         snprintf(value, sizeof(value), "%c %09.6f", NS, fabs(img->latitude));
         _metadata_update_value(d->metadata[md_geotagging_lat], value);
 #ifdef HAVE_MAP
@@ -481,7 +482,7 @@ static void _metadata_view_update_values(dt_lib_module_t *self)
       else
       {
 #endif
-        gchar EW = img->longitude<0?'W':'E';
+        gchar EW = img->longitude < 0 ? 'W' : 'E';
         snprintf(value, sizeof(value), "%c %010.6f", EW, fabs(img->longitude));
         _metadata_update_value(d->metadata[md_geotagging_lon], value);
 #ifdef HAVE_MAP
@@ -491,31 +492,26 @@ static void _metadata_view_update_values(dt_lib_module_t *self)
 
     /* release img */
     dt_image_cache_read_release(darktable.image_cache, img);
-
   }
 
   return;
 
-  /* reset */
+/* reset */
 fill_minuses:
-  for(int k=0; k<md_size; k++)
-    _metadata_update_value(d->metadata[k],NODATA_STRING);
-
+  for(int k = 0; k < md_size; k++) _metadata_update_value(d->metadata[k], NODATA_STRING);
 }
 
-static void
-_jump_to()
+static void _jump_to()
 {
   int32_t imgid = dt_control_get_mouse_over_id();
   if(imgid == -1)
   {
     sqlite3_stmt *stmt;
 
-    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                              "select imgid from selected_images", -1, &stmt, NULL);
+    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select imgid from selected_images", -1, &stmt,
+                                NULL);
 
-    if(sqlite3_step(stmt) == SQLITE_ROW)
-      imgid = sqlite3_column_int(stmt, 0);
+    if(sqlite3_step(stmt) == SQLITE_ROW) imgid = sqlite3_column_int(stmt, 0);
     sqlite3_finalize(stmt);
   }
   if(imgid != -1)
@@ -530,35 +526,30 @@ _jump_to()
   }
 }
 
-static gboolean
-_filmroll_clicked(GtkWidget *widget, GdkEventButton *event, gpointer null)
+static gboolean _filmroll_clicked(GtkWidget *widget, GdkEventButton *event, gpointer null)
 {
   if(event->type != GDK_2BUTTON_PRESS) return FALSE;
   _jump_to();
   return TRUE;
 }
 
-static gboolean
-_jump_to_accel(GtkAccelGroup *accel_group, GObject *acceleratable,
-                           guint keyval, GdkModifierType modifier,
-                           gpointer data)
+static gboolean _jump_to_accel(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
+                               GdkModifierType modifier, gpointer data)
 {
   _jump_to();
   return TRUE;
 }
 
 /* calback for the mouse over image change signal */
-static void _mouse_over_image_callback(gpointer instance,gpointer user_data)
+static void _mouse_over_image_callback(gpointer instance, gpointer user_data)
 {
   dt_lib_module_t *self = (dt_lib_module_t *)user_data;
-  if(dt_control_running())
-    _metadata_view_update_values(self);
+  if(dt_control_running()) _metadata_view_update_values(self);
 }
 
 void init_key_accels(dt_lib_module_t *self)
 {
-  dt_accel_register_lib(self, NC_("accel", "jump to film roll"),
-                        GDK_KEY_j, GDK_CONTROL_MASK);
+  dt_accel_register_lib(self, NC_("accel", "jump to film roll"), GDK_KEY_j, GDK_CONTROL_MASK);
 }
 
 void connect_key_accels(dt_lib_module_t *self)
@@ -578,7 +569,7 @@ void gui_init(dt_lib_module_t *self)
 
 
   /* initialize the metadata name/value labels */
-  for (int k = 0; k < md_size; k++)
+  for(int k = 0; k < md_size; k++)
   {
     GtkWidget *evb = gtk_event_box_new();
     gtk_widget_set_name(evb, "brightbg");
@@ -592,12 +583,12 @@ void gui_init(dt_lib_module_t *self)
     }
     gtk_misc_set_alignment(GTK_MISC(name), 0.0, 0.5);
     gtk_misc_set_alignment(GTK_MISC(d->metadata[k]), 0.0, 0.5);
-    gtk_table_attach(GTK_TABLE(self->widget), GTK_WIDGET(name), 0, 1, k, k+1, GTK_FILL, 0, 5, 0);
-    gtk_table_attach(GTK_TABLE(self->widget), evb, 1, 2, k, k+1, GTK_EXPAND|GTK_FILL, 0, 0, 0);
+    gtk_table_attach(GTK_TABLE(self->widget), GTK_WIDGET(name), 0, 1, k, k + 1, GTK_FILL, 0, 5, 0);
+    gtk_table_attach(GTK_TABLE(self->widget), evb, 1, 2, k, k + 1, GTK_EXPAND | GTK_FILL, 0, 0, 0);
   }
 
   /* lets signup for mouse over image change signals */
-  dt_control_signal_connect(darktable.signals,DT_SIGNAL_MOUSE_OVER_IMAGE_CHANGE,
+  dt_control_signal_connect(darktable.signals, DT_SIGNAL_MOUSE_OVER_IMAGE_CHANGE,
                             G_CALLBACK(_mouse_over_image_callback), self);
 
   /* lets signup for develop image changed signals */
@@ -608,13 +599,11 @@ void gui_init(dt_lib_module_t *self)
      image in darkroom when enter */
   dt_control_signal_connect(darktable.signals, DT_SIGNAL_DEVELOP_INITIALIZE,
                             G_CALLBACK(_mouse_over_image_callback), self);
-
 }
 
 void gui_cleanup(dt_lib_module_t *self)
 {
-  dt_control_signal_disconnect(darktable.signals,
-                               G_CALLBACK(_mouse_over_image_callback), self);
+  dt_control_signal_disconnect(darktable.signals, G_CALLBACK(_mouse_over_image_callback), self);
   g_free(self->data);
   self->data = NULL;
 }

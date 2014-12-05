@@ -23,18 +23,18 @@
 #include <gtk/gtk.h>
 
 /** dynamically allocate and concatenate string */
-gchar *dt_util_dstrcat(gchar *str,const gchar *format, ... );
+gchar *dt_util_dstrcat(gchar *str, const gchar *format, ...);
 
 /** replace all occurrences of pattern by substitute. the returned value has to be freed after use. */
-gchar* dt_util_str_replace(const gchar* string, const gchar* pattern, const gchar* substitute);
+gchar *dt_util_str_replace(const gchar *string, const gchar *pattern, const gchar *substitute);
 /** count the number of occurrences of needle in haystack */
-guint dt_util_str_occurence(const gchar *haystack,const gchar *needle);
+guint dt_util_str_occurence(const gchar *haystack, const gchar *needle);
 /** generate a string from the elements of the list, separated by separator. the result has to be freed. */
-gchar* dt_util_glist_to_str(const gchar* separator, GList * items);
+gchar *dt_util_glist_to_str(const gchar *separator, GList *items);
 /** take a list of strings and remove all duplicates. the result will be sorted. */
-GList* dt_util_glist_uniq(GList * items);
+GList *dt_util_glist_uniq(GList *items);
 /** fixes the given path by replacing a possible tilde with the correct home directory */
-gchar* dt_util_fix_path(const gchar* path);
+gchar *dt_util_fix_path(const gchar *path);
 size_t dt_utf8_strlcpy(char *dest, const char *src, size_t n);
 /** get the size of a file in bytes */
 off_t dt_util_get_file_size(const char *filename);

@@ -21,8 +21,10 @@
 #include "paint.h"
 #include <gtk/gtk.h>
 G_BEGIN_DECLS
-#define DTGTK_TOGGLEBUTTON(obj) G_TYPE_CHECK_INSTANCE_CAST(obj, dtgtk_togglebutton_get_type (), GtkDarktableToggleButton)
-#define DTGTK_TOGGLEBUTTON_CLASS(klass) GTK_CHECK_CLASS_CAST(klass, dtgtk_togglebutton_get_type(), GtkDarktableToggleButtonClass)
+#define DTGTK_TOGGLEBUTTON(obj)                                                                              \
+  G_TYPE_CHECK_INSTANCE_CAST(obj, dtgtk_togglebutton_get_type(), GtkDarktableToggleButton)
+#define DTGTK_TOGGLEBUTTON_CLASS(klass)                                                                      \
+  GTK_CHECK_CLASS_CAST(klass, dtgtk_togglebutton_get_type(), GtkDarktableToggleButtonClass)
 #define DTGTK_IS_TOGGLEBUTTON(obj) G_TYPE_CHECK_INSTANCE_TYPE(obj, dtgtk_togglebutton_get_type())
 #define DTGTK_IS_TOGGLEBUTTON_CLASS(klass) GTK_CHECK_CLASS_TYPE(obj, dtgtk_togglebutton_get_type())
 
@@ -38,15 +40,15 @@ typedef struct _GtkDarktableToggleButtonClass
   GtkToggleButtonClass parent_class;
 } GtkDarktableToggleButtonClass;
 
-GType dtgtk_togglebutton_get_type (void);
+GType dtgtk_togglebutton_get_type(void);
 
 /** Instansiate a new darktable toggle button */
-GtkWidget* dtgtk_togglebutton_new (DTGTKCairoPaintIconFunc paint, gint paintflag);
-GtkWidget* dtgtk_togglebutton_new_with_label (const gchar *label,DTGTKCairoPaintIconFunc paint, gint paintflag);
+GtkWidget *dtgtk_togglebutton_new(DTGTKCairoPaintIconFunc paint, gint paintflag);
+GtkWidget *dtgtk_togglebutton_new_with_label(const gchar *label, DTGTKCairoPaintIconFunc paint,
+                                             gint paintflag);
 
 /** Set the paint function and paint flags */
-void dtgtk_togglebutton_set_paint(GtkDarktableToggleButton *button,
-                                  DTGTKCairoPaintIconFunc paint,
+void dtgtk_togglebutton_set_paint(GtkDarktableToggleButton *button, DTGTKCairoPaintIconFunc paint,
                                   gint paintflags);
 G_END_DECLS
 #endif

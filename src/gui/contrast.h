@@ -23,7 +23,7 @@
 #include <glib.h>
 
 /** initializes the userinterface contrast */
-void dt_gui_contrast_init ();
+void dt_gui_contrast_init();
 /** increases the contrast */
 void dt_gui_contrast_increase();
 /** decreases the contrast */

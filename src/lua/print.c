@@ -24,9 +24,9 @@ static int lua_print(lua_State *L)
 {
   const int init_gui = (darktable.gui != NULL);
   if(init_gui)
-    dt_control_log("%s",luaL_checkstring(L,-1));
+    dt_control_log("%s", luaL_checkstring(L, -1));
   else
-    printf("%s\n",luaL_checkstring(L,-1));
+    printf("%s\n", luaL_checkstring(L, -1));
 
   return 0;
 }
@@ -34,25 +34,24 @@ static int lua_print(lua_State *L)
 
 static int lua_print_error(lua_State *L)
 {
-  dt_print(DT_DEBUG_LUA,"LUA ERROR %s\n",luaL_checkstring(L,-1));
+  dt_print(DT_DEBUG_LUA, "LUA ERROR %s\n", luaL_checkstring(L, -1));
   return 0;
 }
 
-int dt_lua_init_print(lua_State*L)
+int dt_lua_init_print(lua_State *L)
 {
   dt_lua_push_darktable_lib(L);
 
-  lua_pushstring(L,"print");
-  lua_pushcfunction(L,&lua_print);
-  lua_settable(L,-3);
+  lua_pushstring(L, "print");
+  lua_pushcfunction(L, &lua_print);
+  lua_settable(L, -3);
 
-  lua_pushstring(L,"print_error");
-  lua_pushcfunction(L,&lua_print_error);
-  lua_settable(L,-3);
+  lua_pushstring(L, "print_error");
+  lua_pushcfunction(L, &lua_print_error);
+  lua_settable(L, -3);
 
-  lua_pop(L,1); //remove the configuration table from the stack
+  lua_pop(L, 1); // remove the configuration table from the stack
   return 0;
-
 }
 
 

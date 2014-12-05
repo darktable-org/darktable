@@ -24,9 +24,9 @@
 struct dt_imageio_module_storage_t;
 
 
-#define dt_lua_register_storage(L,storage,type_name) \
-  dt_lua_register_storage_type(L,storage,luaA_type_find(#type_name))
-void dt_lua_register_storage_type(lua_State* L, struct dt_imageio_module_storage_t* module,luaA_Type type_id);
+#define dt_lua_register_storage(L, storage, type_name)                                                       \
+  dt_lua_register_storage_type(L, storage, luaA_type_find(#type_name))
+void dt_lua_register_storage_type(lua_State *L, struct dt_imageio_module_storage_t *module, luaA_Type type_id);
 
 
 

@@ -29,18 +29,19 @@
 static int path_member(lua_State *L)
 {
   dt_lua_film_t film_id;
-  luaA_to(L,dt_lua_film_t,&film_id,1);
+  luaA_to(L, dt_lua_film_t, &film_id, 1);
   sqlite3_stmt *stmt;
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select folder from film_rolls where id  = ?1", -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select folder from film_rolls where id  = ?1",
+                              -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, film_id);
   if(sqlite3_step(stmt) == SQLITE_ROW)
   {
-    lua_pushstring(L,(char *)sqlite3_column_text(stmt, 0));
+    lua_pushstring(L, (char *)sqlite3_column_text(stmt, 0));
   }
   else
   {
     sqlite3_finalize(stmt);
-    return luaL_error(L,"should never happen");
+    return luaL_error(L, "should never happen");
   }
   sqlite3_finalize(stmt);
   return 1;
@@ -49,8 +50,8 @@ static int path_member(lua_State *L)
 static int id_member(lua_State *L)
 {
   dt_lua_film_t film_id;
-  luaA_to(L,dt_lua_film_t,&film_id,1);
-  lua_pushinteger(L,film_id);
+  luaA_to(L, dt_lua_film_t, &film_id, 1);
+  lua_pushinteger(L, film_id);
   return 1;
 }
 
@@ -58,12 +59,15 @@ static int id_member(lua_State *L)
 static int film_delete(lua_State *L)
 {
   dt_lua_film_t film_id;
-  luaA_to(L,dt_lua_film_t,&film_id,1);
-  gboolean force = lua_toboolean(L,2);
-  if(force || dt_film_is_empty(film_id)) {
+  luaA_to(L, dt_lua_film_t, &film_id, 1);
+  gboolean force = lua_toboolean(L, 2);
+  if(force || dt_film_is_empty(film_id))
+  {
     dt_film_remove(film_id);
-  } else {
-    return luaL_error(L,"Can't delete film, film is not empty");
+  }
+  else
+  {
+    return luaL_error(L, "Can't delete film, film is not empty");
   }
   return 0;
 }
@@ -71,169 +75,185 @@ static int film_delete(lua_State *L)
 static int film_tostring(lua_State *L)
 {
   dt_lua_film_t film_id;
-  luaA_to(L,dt_lua_film_t,&film_id,-1);
+  luaA_to(L, dt_lua_film_t, &film_id, -1);
   sqlite3_stmt *stmt;
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select folder from film_rolls where id  = ?1", -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select folder from film_rolls where id  = ?1",
+                              -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, film_id);
   if(sqlite3_step(stmt) == SQLITE_ROW)
   {
-    lua_pushstring(L,(char *)sqlite3_column_text(stmt, 0));
+    lua_pushstring(L, (char *)sqlite3_column_text(stmt, 0));
   }
   else
   {
     sqlite3_finalize(stmt);
-    return luaL_error(L,"should never happen");
+    return luaL_error(L, "should never happen");
   }
   sqlite3_finalize(stmt);
   return 1;
 }
 
 
-static int film_len(lua_State*L)
+static int film_len(lua_State *L)
 {
   dt_lua_film_t film_id;
-  luaA_to(L,dt_lua_film_t,&film_id,-1);
+  luaA_to(L, dt_lua_film_t, &film_id, -1);
   sqlite3_stmt *stmt = NULL;
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),"select count(*) from images where film_id = ?1  ", -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                              "select count(*) from images where film_id = ?1  ", -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, film_id);
-  if(sqlite3_step(stmt) == SQLITE_ROW) {
-    lua_pushnumber(L,sqlite3_column_int(stmt, 0));
-  }else{
-    lua_pushnumber(L,0);
+  if(sqlite3_step(stmt) == SQLITE_ROW)
+  {
+    lua_pushnumber(L, sqlite3_column_int(stmt, 0));
+  }
+  else
+  {
+    lua_pushnumber(L, 0);
   }
   sqlite3_finalize(stmt);
   return 1;
 }
 
-static int film_getnum(lua_State*L)
+static int film_getnum(lua_State *L)
 {
-  int index = luaL_checkinteger(L,-1);
-  if(index < 1) {
-    return luaL_error(L,"incorrect index in database");
+  int index = luaL_checkinteger(L, -1);
+  if(index < 1)
+  {
+    return luaL_error(L, "incorrect index in database");
   }
   dt_lua_film_t film_id;
-  luaA_to(L,dt_lua_film_t,&film_id,-2);
+  luaA_to(L, dt_lua_film_t, &film_id, -2);
   sqlite3_stmt *stmt = NULL;
   char query[1024];
-  snprintf(query,sizeof(query),"select id from images where film_id = ?1 order by id limit 1 offset %d",index -1);
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),query, -1, &stmt, NULL);
+  snprintf(query, sizeof(query), "select id from images where film_id = ?1 order by id limit 1 offset %d",
+           index - 1);
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, film_id);
   if(sqlite3_step(stmt) == SQLITE_ROW)
   {
     dt_lua_image_t imgid = sqlite3_column_int(stmt, 0);
-    luaA_push(L,dt_lua_image_t,&imgid);
+    luaA_push(L, dt_lua_image_t, &imgid);
     sqlite3_finalize(stmt);
   }
   else
   {
     sqlite3_finalize(stmt);
-    return luaL_error(L,"incorrect index in database");
+    return luaL_error(L, "incorrect index in database");
   }
   return 1;
 }
-static int films_len(lua_State*L)
+static int films_len(lua_State *L)
 {
   sqlite3_stmt *stmt = NULL;
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),"select count(*) from film_rolls ", -1, &stmt, NULL);
-  if(sqlite3_step(stmt) == SQLITE_ROW) {
-    lua_pushnumber(L,sqlite3_column_int(stmt, 0));
-  }else{
-    lua_pushnumber(L,0);
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select count(*) from film_rolls ", -1, &stmt,
+                              NULL);
+  if(sqlite3_step(stmt) == SQLITE_ROW)
+  {
+    lua_pushnumber(L, sqlite3_column_int(stmt, 0));
+  }
+  else
+  {
+    lua_pushnumber(L, 0);
   }
   sqlite3_finalize(stmt);
   return 1;
 }
 
-static int films_index(lua_State*L)
+static int films_index(lua_State *L)
 {
-  int index = luaL_checkinteger(L,-1);
-  if(index < 1) {
-    return luaL_error(L,"incorrect index in database");
+  int index = luaL_checkinteger(L, -1);
+  if(index < 1)
+  {
+    return luaL_error(L, "incorrect index in database");
   }
   sqlite3_stmt *stmt = NULL;
   char query[1024];
-  snprintf(query,sizeof(query),"select id from film_rolls order by id limit 1 offset %d",index -1);
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),query, -1, &stmt, NULL);
+  snprintf(query, sizeof(query), "select id from film_rolls order by id limit 1 offset %d", index - 1);
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
   if(sqlite3_step(stmt) == SQLITE_ROW)
   {
     int film_id = sqlite3_column_int(stmt, 0);
-    luaA_push(L,dt_lua_film_t,&film_id);
+    luaA_push(L, dt_lua_film_t, &film_id);
     sqlite3_finalize(stmt);
   }
   else
   {
     sqlite3_finalize(stmt);
-    return luaL_error(L,"incorrect index in database");
+    return luaL_error(L, "incorrect index in database");
   }
   return 1;
 }
 
 static int films_new(lua_State *L)
 {
-  const char * path = luaL_checkstring(L,-1);
-  char * expanded_path = dt_util_fix_path(path);
-  char * final_path = g_realpath(expanded_path);
+  const char *path = luaL_checkstring(L, -1);
+  char *expanded_path = dt_util_fix_path(path);
+  char *final_path = g_realpath(expanded_path);
   free(expanded_path);
-  if(!final_path) {
-    return luaL_error(L,"Couldn't create film for directory '%s' : %s\n",path,strerror(errno));
+  if(!final_path)
+  {
+    return luaL_error(L, "Couldn't create film for directory '%s' : %s\n", path, strerror(errno));
   }
 
   dt_film_t my_film;
   dt_film_init(&my_film);
-  int film_id = dt_film_new(&my_film,final_path);
+  int film_id = dt_film_new(&my_film, final_path);
   free(final_path);
-  if(film_id) {
-    luaA_push(L,dt_lua_film_t,&film_id);
+  if(film_id)
+  {
+    luaA_push(L, dt_lua_film_t, &film_id);
     return 1;
-  } else {
-    return luaL_error(L,"Couldn't create film for directory %s\n",path);
+  }
+  else
+  {
+    return luaL_error(L, "Couldn't create film for directory %s\n", path);
   }
 }
 ///////////////
 // toplevel and common
 ///////////////
 
-int dt_lua_init_film(lua_State * L)
+int dt_lua_init_film(lua_State *L)
 {
 
-  dt_lua_init_int_type(L,dt_lua_film_t);
-  lua_pushcfunction(L,film_delete);
-  lua_pushcclosure(L,dt_lua_type_member_common,1);
-  dt_lua_type_register_const(L,dt_lua_film_t,"delete");
-  lua_pushcfunction(L,path_member);
-  dt_lua_type_register(L,dt_lua_film_t,"path");
-  lua_pushcfunction(L,id_member);
-  dt_lua_type_register(L,dt_lua_film_t,"id");
+  dt_lua_init_int_type(L, dt_lua_film_t);
+  lua_pushcfunction(L, film_delete);
+  lua_pushcclosure(L, dt_lua_type_member_common, 1);
+  dt_lua_type_register_const(L, dt_lua_film_t, "delete");
+  lua_pushcfunction(L, path_member);
+  dt_lua_type_register(L, dt_lua_film_t, "path");
+  lua_pushcfunction(L, id_member);
+  dt_lua_type_register(L, dt_lua_film_t, "id");
 
-  lua_pushcfunction(L,film_len);
-  lua_pushcfunction(L,film_getnum);
-  dt_lua_type_register_number_const(L,dt_lua_film_t);
-  lua_pushcfunction(L,dt_lua_move_image);
-  lua_pushcclosure(L,dt_lua_type_member_common,1);
-  dt_lua_type_register_const(L,dt_lua_film_t,"move_image");
-  lua_pushcfunction(L,dt_lua_copy_image);
-  lua_pushcclosure(L,dt_lua_type_member_common,1);
-  dt_lua_type_register_const(L,dt_lua_film_t,"copy_image");
-  luaL_getmetatable(L,"dt_lua_film_t");
-  lua_pushcfunction(L,film_tostring);
-  lua_setfield(L,-2,"__tostring");
-  lua_pop(L,1);
+  lua_pushcfunction(L, film_len);
+  lua_pushcfunction(L, film_getnum);
+  dt_lua_type_register_number_const(L, dt_lua_film_t);
+  lua_pushcfunction(L, dt_lua_move_image);
+  lua_pushcclosure(L, dt_lua_type_member_common, 1);
+  dt_lua_type_register_const(L, dt_lua_film_t, "move_image");
+  lua_pushcfunction(L, dt_lua_copy_image);
+  lua_pushcclosure(L, dt_lua_type_member_common, 1);
+  dt_lua_type_register_const(L, dt_lua_film_t, "copy_image");
+  luaL_getmetatable(L, "dt_lua_film_t");
+  lua_pushcfunction(L, film_tostring);
+  lua_setfield(L, -2, "__tostring");
+  lua_pop(L, 1);
 
   /* film table */
   dt_lua_push_darktable_lib(L);
-  luaA_Type type_id = dt_lua_init_singleton(L,"film_database",NULL);
-  lua_setfield(L,-2,"films");
-  lua_pop(L,1);
+  luaA_Type type_id = dt_lua_init_singleton(L, "film_database", NULL);
+  lua_setfield(L, -2, "films");
+  lua_pop(L, 1);
 
-  lua_pushcfunction(L,films_len);
-  lua_pushcfunction(L,films_index);
-  dt_lua_type_register_number_const_type(L,type_id);
-  lua_pushcfunction(L,films_new);
-  lua_pushcclosure(L,dt_lua_type_member_common,1);
-  dt_lua_type_register_const_type(L,type_id,"new");
-  lua_pushcfunction(L,film_delete);
-  lua_pushcclosure(L,dt_lua_type_member_common,1);
-  dt_lua_type_register_const_type(L,type_id,"delete");
+  lua_pushcfunction(L, films_len);
+  lua_pushcfunction(L, films_index);
+  dt_lua_type_register_number_const_type(L, type_id);
+  lua_pushcfunction(L, films_new);
+  lua_pushcclosure(L, dt_lua_type_member_common, 1);
+  dt_lua_type_register_const_type(L, type_id, "new");
+  lua_pushcfunction(L, film_delete);
+  lua_pushcclosure(L, dt_lua_type_member_common, 1);
+  dt_lua_type_register_const_type(L, type_id, "delete");
 
   return 0;
 }

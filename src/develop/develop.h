@@ -35,20 +35,18 @@ typedef struct dt_dev_history_item_t
 {
   struct dt_iop_module_t *module; // pointer to image operation module
   int32_t enabled;                // switched respective module on/off
-  dt_iop_params_t *params; // parameters for this operation
+  dt_iop_params_t *params;        // parameters for this operation
   struct dt_develop_blend_params_t *blend_params;
   int multi_priority;
   char multi_name[128];
-}
-dt_dev_history_item_t;
+} dt_dev_history_item_t;
 
 typedef enum dt_dev_overexposed_colorscheme_t
 {
   DT_DEV_OVEREXPOSED_BLACKWHITE = 0,
   DT_DEV_OVEREXPOSED_REDBLUE = 1,
   DT_DEV_OVEREXPOSED_PURPLEGREEN = 2
-}
-dt_dev_overexposed_colorscheme_t;
+} dt_dev_overexposed_colorscheme_t;
 
 typedef enum dt_dev_histogram_type_t
 {
@@ -60,21 +58,21 @@ typedef enum dt_dev_histogram_type_t
 
 typedef enum dt_dev_pixelpipe_status_t
 {
-  DT_DEV_PIXELPIPE_DIRTY = 0,		// history stack changed or image new
-  DT_DEV_PIXELPIPE_RUNNING = 1,		// pixelpipe is running
-  DT_DEV_PIXELPIPE_VALID = 2,		// pixelpipe has finished; valid result
-  DT_DEV_PIXELPIPE_INVALID = 3		// pixelpipe has finished; invalid result
-}
-dt_dev_pixelpipe_status_t;
+  DT_DEV_PIXELPIPE_DIRTY = 0,   // history stack changed or image new
+  DT_DEV_PIXELPIPE_RUNNING = 1, // pixelpipe is running
+  DT_DEV_PIXELPIPE_VALID = 2,   // pixelpipe has finished; valid result
+  DT_DEV_PIXELPIPE_INVALID = 3  // pixelpipe has finished; invalid result
+} dt_dev_pixelpipe_status_t;
 
-extern const gchar* dt_dev_histogram_type_names[];
+extern const gchar *dt_dev_histogram_type_names[];
 
 struct dt_dev_pixelpipe_t;
 typedef struct dt_develop_t
 {
-  int32_t gui_attached; // != 0 if the gui should be notified of changes in hist stack and modules should be gui_init'ed.
+  int32_t gui_attached; // != 0 if the gui should be notified of changes in hist stack and modules should be
+                        // gui_init'ed.
   int32_t gui_leaving;  // set if everything is scheduled to shut down.
-  int32_t gui_synch; // set by the render threads if gui_update should be called in the modules.
+  int32_t gui_synch;    // set by the render threads if gui_update should be called in the modules.
   int32_t image_loading, first_load, image_force_reload;
   int32_t preview_loading, preview_input_changed;
   dt_dev_pixelpipe_status_t image_status, preview_status;
@@ -82,7 +80,7 @@ typedef struct dt_develop_t
   uint32_t average_delay;
   uint32_t preview_average_delay;
   struct dt_iop_module_t *gui_module; // this module claims gui expose/event callbacks.
-  float preview_downsampling; // < 1.0: optionally downsample preview
+  float preview_downsampling;         // < 1.0: optionally downsample preview
 
   // width, height: dimensions of window
   // capwidth, capheight: actual dimensions of scaled image inside window.
@@ -112,9 +110,11 @@ typedef struct dt_develop_t
   // histogram for display.
   uint32_t *histogram, *histogram_pre_tonecurve, *histogram_pre_levels;
   uint32_t histogram_max, histogram_pre_tonecurve_max, histogram_pre_levels_max;
-  uint32_t *histogram_waveform, histogram_waveform_width, histogram_waveform_height, histogram_waveform_stride;
-  // we should process the waveform histogram in the correct size to make it not look like crap. since this requires gui knowledge we need this mutex
-//   dt_pthread_mutex_t histogram_waveform_mutex;
+  uint32_t *histogram_waveform, histogram_waveform_width, histogram_waveform_height,
+      histogram_waveform_stride;
+  // we should process the waveform histogram in the correct size to make it not look like crap. since this
+  // requires gui knowledge we need this mutex
+  //   dt_pthread_mutex_t histogram_waveform_mutex;
   dt_dev_histogram_type_t histogram_type;
 
   // list of forms iop can use for masks or whatever
@@ -129,12 +129,11 @@ typedef struct dt_develop_t
     struct
     {
       struct dt_iop_module_t *module;
-      void  (*set_white)(struct dt_iop_module_t *exp, const float white);
+      void (*set_white)(struct dt_iop_module_t *exp, const float white);
       float (*get_white)(struct dt_iop_module_t *exp);
-      void  (*set_black)(struct dt_iop_module_t *exp, const float black);
+      void (*set_black)(struct dt_iop_module_t *exp, const float black);
       float (*get_black)(struct dt_iop_module_t *exp);
-    }
-    exposure;
+    } exposure;
 
     // modulegroups plugin hooks
     struct
@@ -148,8 +147,7 @@ typedef struct dt_develop_t
       gboolean (*test)(struct dt_lib_module_t *self, uint32_t group, uint32_t iop_group);
       /* switch to modulegroup */
       void (*switch_group)(struct dt_lib_module_t *self, struct dt_iop_module_t *module);
-    }
-    modulegroups;
+    } modulegroups;
 
     // snapshots plugin hooks
     struct
@@ -158,8 +156,7 @@ typedef struct dt_develop_t
       // should store cairo surface as snapshot to disk using filename.
       gboolean request;
       const gchar *filename;
-    }
-    snapshot;
+    } snapshot;
 
     // masks plugin hooks
     struct
@@ -171,11 +168,9 @@ typedef struct dt_develop_t
       void (*list_update)(struct dt_lib_module_t *self);
       /* selected forms change */
       void (*selection_change)(struct dt_lib_module_t *self, int selectid, int throw_event);
-    }
-    masks;
+    } masks;
 
-  }
-  proxy;
+  } proxy;
 
   // for the overexposure indicator
   struct
@@ -188,10 +183,8 @@ typedef struct dt_develop_t
     dt_dev_overexposed_colorscheme_t colorscheme;
     float lower;
     float upper;
-  }
-  overexposed;
-}
-dt_develop_t;
+  } overexposed;
+} dt_develop_t;
 
 void dt_dev_init(dt_develop_t *dev, int32_t gui_attached);
 void dt_dev_cleanup(dt_develop_t *dev);
@@ -222,13 +215,15 @@ void dt_dev_reprocess_all(dt_develop_t *dev);
 void dt_dev_reprocess_center(dt_develop_t *dev);
 
 void dt_dev_get_processed_size(const dt_develop_t *dev, int *procw, int *proch);
-void dt_dev_check_zoom_bounds(dt_develop_t *dev, float *zoom_x, float *zoom_y, dt_dev_zoom_t zoom, int closeup, float *boxw, float *boxh);
+void dt_dev_check_zoom_bounds(dt_develop_t *dev, float *zoom_x, float *zoom_y, dt_dev_zoom_t zoom,
+                              int closeup, float *boxw, float *boxh);
 float dt_dev_get_zoom_scale(dt_develop_t *dev, dt_dev_zoom_t zoom, int closeup_factor, int mode);
-void dt_dev_get_pointer_zoom_pos(dt_develop_t *dev, const float px, const float py, float *zoom_x, float *zoom_y);
+void dt_dev_get_pointer_zoom_pos(dt_develop_t *dev, const float px, const float py, float *zoom_x,
+                                 float *zoom_y);
 
 
-void dt_dev_configure (dt_develop_t *dev, int wd, int ht);
-void dt_dev_invalidate_from_gui (dt_develop_t *dev);
+void dt_dev_configure(dt_develop_t *dev, int wd, int ht);
+void dt_dev_invalidate_from_gui(dt_develop_t *dev);
 
 /*
  * exposure plugin hook, set the white level
@@ -298,10 +293,13 @@ int dt_dev_distort_transform(dt_develop_t *dev, float *points, size_t points_cou
 /** reverse apply all transforms to the specified points (in preview pipe space) */
 int dt_dev_distort_backtransform(dt_develop_t *dev, float *points, size_t points_count);
 /** same fct, but we can specify iop with priority between pmin and pmax */
-int dt_dev_distort_transform_plus(dt_develop_t *dev, struct dt_dev_pixelpipe_t *pipe, int pmin, int pmax, float *points, size_t points_count);
-int dt_dev_distort_backtransform_plus(dt_develop_t *dev, struct dt_dev_pixelpipe_t *pipe, int pmin, int pmax, float *points, size_t points_count);
+int dt_dev_distort_transform_plus(dt_develop_t *dev, struct dt_dev_pixelpipe_t *pipe, int pmin, int pmax,
+                                  float *points, size_t points_count);
+int dt_dev_distort_backtransform_plus(dt_develop_t *dev, struct dt_dev_pixelpipe_t *pipe, int pmin, int pmax,
+                                      float *points, size_t points_count);
 /** get the iop_pixelpipe instance corresponding to the iop in the given pipe */
-struct dt_dev_pixelpipe_iop_t *dt_dev_distort_get_iop_pipe(dt_develop_t *dev, struct dt_dev_pixelpipe_t *pipe, struct dt_iop_module_t *module);
+struct dt_dev_pixelpipe_iop_t *dt_dev_distort_get_iop_pipe(dt_develop_t *dev, struct dt_dev_pixelpipe_t *pipe,
+                                                           struct dt_iop_module_t *module);
 
 #endif
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

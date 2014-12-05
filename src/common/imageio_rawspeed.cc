@@ -29,8 +29,7 @@
 #include "rawspeed/RawSpeed/CameraMetaData.h"
 #include "rawspeed/RawSpeed/ColorFilterArray.h"
 
-extern "C"
-{
+extern "C" {
 #include "imageio.h"
 #include "common/imageio_rawspeed.h"
 #include "common/exif.h"
@@ -40,8 +39,7 @@ extern "C"
 }
 
 // define this function, it is only declared in rawspeed:
-int
-rawspeed_get_number_of_processor_cores()
+int rawspeed_get_number_of_processor_cores()
 {
 #ifdef _OPENMP
   return omp_get_num_procs();
@@ -61,7 +59,7 @@ scale_black_white(uint16_t *const buf, const uint16_t black, const uint16_t whit
 {
   const float scale = 65535.0f/(white-black);
 #ifdef _OPENMP
-  #pragma omp parallel for default(none) schedule(static)
+#pragma omp parallel for default(none) schedule(static)
 #endif
   for(int j=0; j<height; j++)
   {
@@ -75,14 +73,10 @@ scale_black_white(uint16_t *const buf, const uint16_t black, const uint16_t whit
 }
 #endif
 
-dt_imageio_retval_t
-dt_imageio_open_rawspeed(
-  dt_image_t  *img,
-  const char  *filename,
-  dt_mipmap_cache_allocator_t a)
+dt_imageio_retval_t dt_imageio_open_rawspeed(dt_image_t *img, const char *filename,
+                                             dt_mipmap_cache_allocator_t a)
 {
-  if(!img->exif_inited)
-    (void) dt_exif_read(img, filename);
+  if(!img->exif_inited) (void)dt_exif_read(img, filename);
 
 #ifdef __WIN32__
   const size_t len = strlen(filename) + 1;
@@ -90,7 +84,7 @@ dt_imageio_open_rawspeed(
   mbstowcs(filen, filename, len);
   FileReader f(filen);
 #else
-  char filen[PATH_MAX];
+  char filen[PATH_MAX] = { 0 };
   snprintf(filen, sizeof(filen), "%s", filename);
   FileReader f(filen);
 #endif
@@ -111,7 +105,7 @@ dt_imageio_open_rawspeed(
       dt_pthread_mutex_lock(&darktable.plugin_threadsafe);
       if(meta == NULL)
       {
-        char datadir[PATH_MAX], camfile[PATH_MAX];
+        char datadir[PATH_MAX] = { 0 }, camfile[PATH_MAX] = { 0 };
         dt_loc_get_datadir(datadir, sizeof(datadir));
         snprintf(camfile, sizeof(camfile), "%s/rawspeed/cameras.xml", datadir);
         // never cleaned up (only when dt closes)
@@ -128,13 +122,12 @@ dt_imageio_open_rawspeed(
 
     RawParser t(m.get());
 #ifdef __APPLE__
-  d = auto_ptr<RawDecoder>(t.getDecoder());
+    d = auto_ptr<RawDecoder>(t.getDecoder());
 #else
     d = unique_ptr<RawDecoder>(t.getDecoder());
 #endif
 
-    if(!d.get())
-      return DT_IMAGEIO_FILE_CORRUPTED;
+    if(!d.get()) return DT_IMAGEIO_FILE_CORRUPTED;
 
     d->failOnUnknown = true;
     d->checkSupport(meta);
@@ -148,14 +141,15 @@ dt_imageio_open_rawspeed(
 
     img->filters = 0u;
     img->pre_applied_wb = r->preAppliedWB;
-    if( !r->isCFA )
+    if(!r->isCFA)
     {
       dt_imageio_retval_t ret = dt_imageio_open_rawspeed_sraw(img, r, a);
       return ret;
     }
 
     // only scale colors for sizeof(uint16_t) per pixel, not sizeof(float)
-    // if(r->getDataType() != TYPE_FLOAT32) scale_black_white((uint16_t *)r->getData(), r->blackLevel, r->whitePoint, r->dim.x, r->dim.y, r->pitch/r->getBpp());
+    // if(r->getDataType() != TYPE_FLOAT32) scale_black_white((uint16_t *)r->getData(), r->blackLevel,
+    // r->whitePoint, r->dim.x, r->dim.y, r->pitch/r->getBpp());
     if(r->getDataType() != TYPE_FLOAT32) r->scaleBlackWhite();
     img->bpp = r->getBpp();
     img->filters = r->cfa.getDcrawFilter();
@@ -165,7 +159,7 @@ dt_imageio_open_rawspeed(
       img->flags |= DT_IMAGE_RAW;
       if(r->getDataType() == TYPE_FLOAT32) img->flags |= DT_IMAGE_HDR;
       // special handling for x-trans sensors
-      if (img->filters == 9u)
+      if(img->filters == 9u)
       {
         // get 6x6 CFA offset from top left of cropped image
         // NOTE: This is different from how things are done with Bayer
@@ -176,13 +170,13 @@ dt_imageio_open_rawspeed(
         // hence it is shifted here to align with the top left of the
         // cropped image.
         iPoint2D tl_margin = r->getCropOffset();
-        for (int i=0; i < 6; ++i)
-          for (int j=0; j < 6; ++j)
-            img->xtrans[j][i] = r->cfa.getColorAt((i+tl_margin.x)%6,(j+tl_margin.y)%6);
+        for(int i = 0; i < 6; ++i)
+          for(int j = 0; j < 6; ++j)
+            img->xtrans[j][i] = r->cfa.getColorAt((i + tl_margin.x) % 6, (j + tl_margin.y) % 6);
       }
     }
 
-    img->width  = r->dim.x;
+    img->width = r->dim.x;
     img->height = r->dim.y;
 
     /* needed in exposure iop for Deflicker */
@@ -193,12 +187,12 @@ dt_imageio_open_rawspeed(
     img->pixel_aspect_ratio = (float)r->pixelAspectRatio;
 
     void *buf = dt_mipmap_cache_alloc(img, DT_MIPMAP_FULL, a);
-    if(!buf)
-      return DT_IMAGEIO_CACHE_FULL;
+    if(!buf) return DT_IMAGEIO_CACHE_FULL;
 
-    dt_imageio_flip_buffers((char *)buf, (char *)r->getData(), r->getBpp(), r->dim.x, r->dim.y, r->dim.x, r->dim.y, r->pitch, ORIENTATION_NONE);
+    dt_imageio_flip_buffers((char *)buf, (char *)r->getData(), r->getBpp(), r->dim.x, r->dim.y, r->dim.x,
+                            r->dim.y, r->pitch, ORIENTATION_NONE);
   }
-  catch (const std::exception &exc)
+  catch(const std::exception &exc)
   {
     printf("[rawspeed] %s\n", exc.what());
 
@@ -206,7 +200,7 @@ dt_imageio_open_rawspeed(
      specific ones, consider the file as corrupted */
     return DT_IMAGEIO_FILE_CORRUPTED;
   }
-  catch (...)
+  catch(...)
   {
     printf("Unhandled exception in imageio_rawspeed\n");
     return DT_IMAGEIO_FILE_CORRUPTED;
@@ -215,14 +209,13 @@ dt_imageio_open_rawspeed(
   return DT_IMAGEIO_OK;
 }
 
-dt_imageio_retval_t
-dt_imageio_open_rawspeed_sraw(dt_image_t *img, RawImage r, dt_mipmap_cache_allocator_t a)
+dt_imageio_retval_t dt_imageio_open_rawspeed_sraw(dt_image_t *img, RawImage r, dt_mipmap_cache_allocator_t a)
 {
   // sraw aren't real raw, but not ldr either (need white balance and stuff)
   img->flags &= ~DT_IMAGE_LDR;
   img->flags &= ~DT_IMAGE_RAW;
 
-  img->width  = r->dim.x;
+  img->width = r->dim.x;
   img->height = r->dim.y;
 
   /* needed by Deflicker */
@@ -240,28 +233,29 @@ dt_imageio_open_rawspeed_sraw(dt_image_t *img, RawImage r, dt_mipmap_cache_alloc
   dt_colorspaces_get_makermodel(makermodel, sizeof(makermodel), img->exif_maker, img->exif_model);
 
   // actually we want to store full floats here:
-  img->bpp = 4*sizeof(float);
+  img->bpp = 4 * sizeof(float);
   img->cpp = r->getCpp();
   void *buf = dt_mipmap_cache_alloc(img, DT_MIPMAP_FULL, a);
-  if(!buf)
-    return DT_IMAGEIO_CACHE_FULL;
+  if(!buf) return DT_IMAGEIO_CACHE_FULL;
 
   int black = r->blackLevel;
   int white = r->whitePoint;
 
-  uint16_t* raw_img = (uint16_t*)r->getDataUncropped(0, 0);
+  uint16_t *raw_img = (uint16_t *)r->getDataUncropped(0, 0);
 
   const float scale = (float)(white - black);
 
 #ifdef _OPENMP
-  #pragma omp parallel for default(none) schedule(static) shared(raw_width, raw_height, raw_img, img, dimUncropped, cropTL, buf, black)
+#pragma omp parallel for default(none) schedule(static) shared(raw_width, raw_height, raw_img, img,          \
+                                                               dimUncropped, cropTL, buf, black)
 #endif
   for(size_t row = 0; row < raw_height; row++)
   {
-    const uint16_t *in = ((uint16_t *)raw_img) + (size_t)(img->cpp*(dimUncropped.x*(row+cropTL.y) + cropTL.x));
-    float *out = ((float *)buf) + (size_t)4*row*raw_width;
+    const uint16_t *in = ((uint16_t *)raw_img)
+                         + (size_t)(img->cpp * (dimUncropped.x * (row + cropTL.y) + cropTL.x));
+    float *out = ((float *)buf) + (size_t)4 * row * raw_width;
 
-    for(size_t col = 0; col < raw_width; col++, in+=img->cpp, out+=4)
+    for(size_t col = 0; col < raw_width; col++, in += img->cpp, out += 4)
     {
       for(int k = 0; k < 3; k++)
       {

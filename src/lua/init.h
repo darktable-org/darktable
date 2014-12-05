@@ -20,8 +20,8 @@
 #include <lua/lua.h>
 
 /** initialize lua stuff at DT start time */
-void dt_lua_init(lua_State*L,const char *lua_init_file);
-void dt_lua_init_early(lua_State*L);
+void dt_lua_init(lua_State *L, const char *lua_init_file);
+void dt_lua_init_early(lua_State *L);
 void dt_lua_finalize();
 #endif
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

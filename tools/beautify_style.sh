@@ -1,13 +1,29 @@
-#!/bin/sh
+#!/bin/bash
 
-# this uses astyle to standardize our indentation/braces etc
+# this uses clang-format to standardize our indentation/braces etc
 
-# Sources have changed since this was written. LibRaw and rawspeed are now in src/external, so here is the updated SOURCES line
-SOURCES=$(find src/ -name "*.c" -or -name "*.cc" -or -name "*.h" | grep -v src/external | grep -v gegl-operations)
+# change if your executable is named different
+CLANG_FORMAT=clang-format-3.6
 
-for i in $SOURCES
+
+# add all the files and directories that may not be reformatted, relative to src/
+IGNORE_SET=(
+    external
+    iop/wb_presets.c
+    common/noiseprofiles.h
+    common/colormatrices.c
+)
+
+####################################################################################
+
+function join { local IFS="$1"; shift; echo "$*"; }
+
+IGNORE_SET=(${IGNORE_SET[@]/#/^src/})
+IGNORE_STRING=$(join \| "${IGNORE_SET[@]}")
+
+SOURCES=$(find src | egrep -v ${IGNORE_STRING} | egrep "\.h$|\.hh$|\.c$|\.cc$")
+
+for FILE in $SOURCES
 do
-  astyle --style=bsd --indent=spaces=2 --indent-switches < $i > dreggn.c
-  mv dreggn.c $i
+  ${CLANG_FORMAT} -i $FILE
 done
-

@@ -36,11 +36,9 @@ typedef struct dt_lib_geotagging_t
   GtkWidget *offset_entry;
   GList *timezones;
   GtkWidget *floating_window, *floating_window_ok, *floating_window_cancel, *floating_window_entry;
-}
-dt_lib_geotagging_t;
+} dt_lib_geotagging_t;
 
-const char*
-name ()
+const char *name()
 {
   return _("geotagging");
 }
@@ -56,20 +54,19 @@ uint32_t container()
 }
 
 
-int
-position ()
+int position()
 {
   return 450;
 }
 
 /* try to parse the offset string. returns true if it worked, false otherwise.
- *if seconds != NULL the offset will be put there in seconds or 0 if it failed. always look at the return value before using the seconds value! */
-static gboolean
-_lib_geotagging_parse_offset(const char* str, long int *seconds)
+ *if seconds != NULL the offset will be put there in seconds or 0 if it failed. always look at the return
+ *value before using the seconds value! */
+static gboolean _lib_geotagging_parse_offset(const char *str, long int *seconds)
 {
   const gchar *str_bak = str;
   long int result = 0;
-  int numbers[3] = {0, 0, 0};
+  int numbers[3] = { 0, 0, 0 };
   int fields = 0;
   char sign = '+';
   if(seconds) *seconds = 0;
@@ -88,10 +85,11 @@ _lib_geotagging_parse_offset(const char* str, long int *seconds)
 
   // hh, mm or ss
   if(len < 2) return FALSE;
-  if(!g_ascii_isdigit(str[0]) || !g_ascii_isdigit(str[1])) return FALSE;
+  if(!g_ascii_isdigit(str[0]) || !g_ascii_isdigit(str[1]))
+    return FALSE;
   else
   {
-    numbers[fields++] = 10*(str[0]-'0')+(str[1]-'0');
+    numbers[fields++] = 10 * (str[0] - '0') + (str[1] - '0');
     str += 2;
     len -= 2;
   }
@@ -106,10 +104,11 @@ _lib_geotagging_parse_offset(const char* str, long int *seconds)
 
   // mm or ss
   if(len < 2) return FALSE;
-  if(!g_ascii_isdigit(str[0]) || !g_ascii_isdigit(str[1])) return FALSE;
+  if(!g_ascii_isdigit(str[0]) || !g_ascii_isdigit(str[1]))
+    return FALSE;
   else
   {
-    numbers[fields++] = 10*(str[0]-'0')+(str[1]-'0');
+    numbers[fields++] = 10 * (str[0] - '0') + (str[1] - '0');
     str += 2;
     len -= 2;
   }
@@ -124,10 +123,11 @@ _lib_geotagging_parse_offset(const char* str, long int *seconds)
 
   // ss
   if(len < 2) return FALSE;
-  if(!g_ascii_isdigit(str[0]) || !g_ascii_isdigit(str[1])) return FALSE;
+  if(!g_ascii_isdigit(str[0]) || !g_ascii_isdigit(str[1]))
+    return FALSE;
   else
   {
-    numbers[fields++] = 10*(str[0]-'0')+(str[1]-'0');
+    numbers[fields++] = 10 * (str[0] - '0') + (str[1] - '0');
     str += 2;
     len -= 2;
   }
@@ -147,13 +147,15 @@ parse_success:
         result = numbers[0];
         break;
       case 2: // 0: minutes, 1: seconds
-        result = 60*numbers[0] + numbers[1];
+        result = 60 * numbers[0] + numbers[1];
         break;
       case 3: // 0: hours, 1: minutes, 2: seconds
-        result = 60*60*numbers[0] + 60*numbers[1] + numbers[2];
+        result = 60 * 60 * numbers[0] + 60 * numbers[1] + numbers[2];
         break;
       default: // shouldn't happen
-        fprintf(stderr, "[geotagging] error: something went terribly wrong while parsing the offset, %d fields found in %s\n", fields, str_bak);
+        fprintf(stderr, "[geotagging] error: something went terribly wrong while parsing the offset, %d "
+                        "fields found in %s\n",
+                fields, str_bak);
     }
 
     if(sign == '-') result *= -1;
@@ -163,10 +165,9 @@ parse_success:
   return TRUE;
 }
 
-static gboolean
-_lib_geotagging_offset_key_press(GtkWidget *entry, GdkEventKey *event, dt_lib_module_t *self)
+static gboolean _lib_geotagging_offset_key_press(GtkWidget *entry, GdkEventKey *event, dt_lib_module_t *self)
 {
-  dt_lib_geotagging_t *d = (dt_lib_geotagging_t*)self->data;
+  dt_lib_geotagging_t *d = (dt_lib_geotagging_t *)self->data;
   switch(event->keyval)
   {
     case GDK_KEY_Escape:
@@ -191,7 +192,7 @@ _lib_geotagging_offset_key_press(GtkWidget *entry, GdkEventKey *event, dt_lib_mo
     case GDK_KEY_Return:
     case GDK_KEY_KP_Enter:
     {
-      const gchar* value = gtk_entry_get_text(GTK_ENTRY(d->offset_entry));
+      const gchar *value = gtk_entry_get_text(GTK_ENTRY(d->offset_entry));
       if(_lib_geotagging_parse_offset(value, NULL))
       {
         dt_conf_set_string("plugins/lighttable/geotagging/offset", value);
@@ -248,11 +249,10 @@ _lib_geotagging_offset_key_press(GtkWidget *entry, GdkEventKey *event, dt_lib_mo
   }
 }
 
-static gboolean
-_lib_geotagging_offset_focus_out(GtkWidget *widget, GdkEvent *event, dt_lib_module_t *self)
+static gboolean _lib_geotagging_offset_focus_out(GtkWidget *widget, GdkEvent *event, dt_lib_module_t *self)
 {
-  dt_lib_geotagging_t *d = (dt_lib_geotagging_t*)self->data;
-  const gchar* value = gtk_entry_get_text(GTK_ENTRY(d->offset_entry));
+  dt_lib_geotagging_t *d = (dt_lib_geotagging_t *)self->data;
+  const gchar *value = gtk_entry_get_text(GTK_ENTRY(d->offset_entry));
   if(_lib_geotagging_parse_offset(value, NULL))
     dt_conf_set_string("plugins/lighttable/geotagging/offset", value);
   else
@@ -264,10 +264,9 @@ _lib_geotagging_offset_focus_out(GtkWidget *widget, GdkEvent *event, dt_lib_modu
   return FALSE;
 }
 
-static void
-_lib_geotagging_calculate_offset_callback(GtkWidget *widget, dt_lib_module_t *self)
+static void _lib_geotagging_calculate_offset_callback(GtkWidget *widget, dt_lib_module_t *self)
 {
-  dt_lib_geotagging_t *d = (dt_lib_geotagging_t*)self->data;
+  dt_lib_geotagging_t *d = (dt_lib_geotagging_t *)self->data;
   const gchar *gps_time = gtk_entry_get_text(GTK_ENTRY(d->floating_window_entry));
   if(gps_time)
   {
@@ -275,20 +274,22 @@ _lib_geotagging_calculate_offset_callback(GtkWidget *widget, dt_lib_module_t *se
     if(tokens[0] != '\0' && tokens[1] != '\0' && tokens[2] != '\0')
     {
       if(g_ascii_isdigit(tokens[0][0]) && g_ascii_isdigit(tokens[0][1]) && tokens[0][2] == '\0'
-          && g_ascii_isdigit(tokens[1][0]) && g_ascii_isdigit(tokens[1][1]) && tokens[1][2] == '\0'
-          && g_ascii_isdigit(tokens[2][0]) && g_ascii_isdigit(tokens[2][1]) && tokens[2][2] == '\0')
+         && g_ascii_isdigit(tokens[1][0]) && g_ascii_isdigit(tokens[1][1]) && tokens[1][2] == '\0'
+         && g_ascii_isdigit(tokens[2][0]) && g_ascii_isdigit(tokens[2][1]) && tokens[2][2] == '\0')
       {
         int h, m, s;
-        h = (tokens[0][0] - '0')*10 + tokens[0][1] - '0';
-        m = (tokens[1][0] - '0')*10 + tokens[1][1] - '0';
-        s = (tokens[2][0] - '0')*10 + tokens[2][1] - '0';
+        h = (tokens[0][0] - '0') * 10 + tokens[0][1] - '0';
+        m = (tokens[1][0] - '0') * 10 + tokens[1][1] - '0';
+        s = (tokens[2][0] - '0') * 10 + tokens[2][1] - '0';
         if(h < 24 && m < 60 && s < 60)
         {
           // finally a valid time
           // get imgid
           int32_t imgid = -1;
           sqlite3_stmt *stmt;
-          DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select imgid from selected_images order by imgid asc limit 1", -1, &stmt, NULL);
+          DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                                      "select imgid from selected_images order by imgid asc limit 1", -1,
+                                      &stmt, NULL);
           if(sqlite3_step(stmt) == SQLITE_ROW)
             imgid = sqlite3_column_int(stmt, 0);
           else // no selection is used, use mouse over id
@@ -299,28 +300,27 @@ _lib_geotagging_calculate_offset_callback(GtkWidget *widget, dt_lib_module_t *se
           {
             const dt_image_t *cimg = dt_image_cache_read_get(darktable.image_cache, imgid);
             // get the exif_datetime_taken and parse it
-            gint  year;
-            gint  month;
-            gint  day;
-            gint  hour;
-            gint  minute;
-            gint  second;
+            gint year;
+            gint month;
+            gint day;
+            gint hour;
+            gint minute;
+            gint second;
 
-            if (sscanf(cimg->exif_datetime_taken, "%d:%d:%d %d:%d:%d",
-                       (int*)&year, (int*)&month, (int*)&day,
-                       (int*)&hour,(int*)&minute,(int*)&second) == 6)
+            if(sscanf(cimg->exif_datetime_taken, "%d:%d:%d %d:%d:%d", (int *)&year, (int *)&month,
+                      (int *)&day, (int *)&hour, (int *)&minute, (int *)&second) == 6)
             {
               // calculate the offset
-              long int exif_seconds = hour*60*60 + minute*60 + second;
-              long int gps_seconds = h*60*60 + m*60 + s;
+              long int exif_seconds = hour * 60 * 60 + minute * 60 + second;
+              long int gps_seconds = h * 60 * 60 + m * 60 + s;
               long int offset = gps_seconds - exif_seconds;
               // transform the offset back into a string
-              gchar sign = (offset < 0)?'-':'+';
+              gchar sign = (offset < 0) ? '-' : '+';
               offset = labs(offset);
-              gint offset_h = offset / (60*60);
-              offset -= offset_h*60*60;
+              gint offset_h = offset / (60 * 60);
+              offset -= offset_h * 60 * 60;
               gint offset_m = offset / 60;
-              offset -= offset_m*60;
+              offset -= offset_m * 60;
               gchar *offset_str = g_strdup_printf("%c%02d:%02d:%02ld", sign, offset_h, offset_m, offset);
               // write the offset into d->offset_entry
               gtk_entry_set_text(GTK_ENTRY(d->offset_entry), offset_str);
@@ -337,10 +337,9 @@ _lib_geotagging_calculate_offset_callback(GtkWidget *widget, dt_lib_module_t *se
   gtk_widget_destroy(d->floating_window);
 }
 
-static gboolean
-_lib_geotagging_floating_key_press(GtkWidget *entry, GdkEventKey *event, dt_lib_module_t *self)
+static gboolean _lib_geotagging_floating_key_press(GtkWidget *entry, GdkEventKey *event, dt_lib_module_t *self)
 {
-  dt_lib_geotagging_t *d = (dt_lib_geotagging_t*)self->data;
+  dt_lib_geotagging_t *d = (dt_lib_geotagging_t *)self->data;
   switch(event->keyval)
   {
     case GDK_KEY_Escape:
@@ -357,8 +356,7 @@ _lib_geotagging_floating_key_press(GtkWidget *entry, GdkEventKey *event, dt_lib_
   }
 }
 
-static void
-_lib_geotagging_show_offset_window(GtkWidget *widget, dt_lib_module_t *self)
+static void _lib_geotagging_show_offset_window(GtkWidget *widget, dt_lib_module_t *self)
 {
   dt_lib_geotagging_t *d = self->data;
   gint x, y;
@@ -385,12 +383,15 @@ _lib_geotagging_show_offset_window(GtkWidget *widget, dt_lib_module_t *self)
 
   d->floating_window_entry = gtk_entry_new();
   gtk_widget_add_events(d->floating_window_entry, GDK_FOCUS_CHANGE_MASK);
-  g_signal_connect_swapped(d->floating_window, "focus-out-event", G_CALLBACK(gtk_widget_destroy), d->floating_window);
-  g_object_set(G_OBJECT(d->floating_window_entry), "tooltip-text", _("enter the time shown on the selected picture\nformat: hh:mm:ss"), (char *)NULL);
+  g_signal_connect_swapped(d->floating_window, "focus-out-event", G_CALLBACK(gtk_widget_destroy),
+                           d->floating_window);
+  g_object_set(G_OBJECT(d->floating_window_entry), "tooltip-text",
+               _("enter the time shown on the selected picture\nformat: hh:mm:ss"), (char *)NULL);
 
   gtk_editable_select_region(GTK_EDITABLE(d->floating_window_entry), 0, -1);
   gtk_box_pack_start(GTK_BOX(vbox), d->floating_window_entry, TRUE, TRUE, 0);
-  g_signal_connect(d->floating_window_entry, "key-press-event", G_CALLBACK(_lib_geotagging_floating_key_press), self);
+  g_signal_connect(d->floating_window_entry, "key-press-event",
+                   G_CALLBACK(_lib_geotagging_floating_key_press), self);
 
   GtkWidget *hbox = gtk_hbox_new(TRUE, 5);
   GtkWidget *cancel_button = gtk_button_new_with_label(_("cancel"));
@@ -398,8 +399,10 @@ _lib_geotagging_show_offset_window(GtkWidget *widget, dt_lib_module_t *self)
 
   gtk_box_pack_start(GTK_BOX(hbox), cancel_button, TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(hbox), ok_button, TRUE, TRUE, 0);
-  g_signal_connect_swapped(G_OBJECT(cancel_button), "clicked", G_CALLBACK(gtk_widget_destroy), d->floating_window);
-  g_signal_connect(G_OBJECT(ok_button), "clicked", G_CALLBACK(_lib_geotagging_calculate_offset_callback), self);
+  g_signal_connect_swapped(G_OBJECT(cancel_button), "clicked", G_CALLBACK(gtk_widget_destroy),
+                           d->floating_window);
+  g_signal_connect(G_OBJECT(ok_button), "clicked", G_CALLBACK(_lib_geotagging_calculate_offset_callback),
+                   self);
 
   gtk_box_pack_start(GTK_BOX(vbox), hbox, TRUE, TRUE, 0);
 
@@ -411,7 +414,7 @@ _lib_geotagging_show_offset_window(GtkWidget *widget, dt_lib_module_t *self)
   window_w = gdk_window_get_width(gtk_widget_get_window(d->floating_window));
   window_h = gdk_window_get_height(gtk_widget_get_window(d->floating_window));
 
-  x = px + 0.5*(center_w-window_w);
+  x = px + 0.5 * (center_w - window_w);
   y = py + center_h - 20 - window_h;
   gtk_window_move(GTK_WINDOW(d->floating_window), x, y);
 
@@ -419,32 +422,27 @@ _lib_geotagging_show_offset_window(GtkWidget *widget, dt_lib_module_t *self)
 }
 
 // modify the datetime_taken field in the db/cache
-static void
-_lib_geotagging_apply_offset_callback(GtkWidget *widget, gpointer user_data)
+static void _lib_geotagging_apply_offset_callback(GtkWidget *widget, gpointer user_data)
 {
-  dt_lib_geotagging_t* l = (dt_lib_geotagging_t*)((dt_lib_module_t*)user_data)->data;
+  dt_lib_geotagging_t *l = (dt_lib_geotagging_t *)((dt_lib_module_t *)user_data)->data;
   long int offset = 0;
   _lib_geotagging_parse_offset(gtk_entry_get_text(GTK_ENTRY(l->offset_entry)), &offset);
   dt_control_time_offset(offset, -1);
 }
 
-static void
-_lib_geotagging_gpx_callback(GtkWidget *widget, dt_lib_module_t *self)
+static void _lib_geotagging_gpx_callback(GtkWidget *widget, dt_lib_module_t *self)
 {
-  dt_lib_geotagging_t *d = (dt_lib_geotagging_t*)self->data;
+  dt_lib_geotagging_t *d = (dt_lib_geotagging_t *)self->data;
   /* bring a filechooser to select the gpx file to apply to selection */
   GtkWidget *win = dt_ui_main_window(darktable.gui->ui);
-  GtkWidget *filechooser = gtk_file_chooser_dialog_new(_("open GPX file"),
-                           GTK_WINDOW (win),
-                           GTK_FILE_CHOOSER_ACTION_OPEN,
-                           GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
-                           GTK_STOCK_OPEN, GTK_RESPONSE_ACCEPT,
-                           (char *)NULL);
+  GtkWidget *filechooser = gtk_file_chooser_dialog_new(
+      _("open GPX file"), GTK_WINDOW(win), GTK_FILE_CHOOSER_ACTION_OPEN, GTK_STOCK_CANCEL,
+      GTK_RESPONSE_CANCEL, GTK_STOCK_OPEN, GTK_RESPONSE_ACCEPT, (char *)NULL);
 
   char *last_directory = dt_conf_get_string("ui_last/gpx_last_directory");
   if(last_directory != NULL)
   {
-    gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER (filechooser), last_directory);
+    gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(filechooser), last_directory);
     g_free(last_directory);
   }
 
@@ -462,24 +460,25 @@ _lib_geotagging_gpx_callback(GtkWidget *widget, dt_lib_module_t *self)
   // add time zone selection
   GtkWidget *extra_box = gtk_hbox_new(FALSE, 5);
   GtkWidget *label = gtk_label_new(_("camera time zone"));
-  g_object_set(G_OBJECT(label), "tooltip-text", _("most cameras don't store the time zone in EXIF. give the correct time zone so the GPX data can be correctly matched"), (char *)NULL);
+  g_object_set(G_OBJECT(label), "tooltip-text",
+               _("most cameras don't store the time zone in EXIF. give the correct time zone so the GPX data "
+                 "can be correctly matched"),
+               (char *)NULL);
   GtkWidget *tz_selection = gtk_combo_box_text_new();
   gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(tz_selection), "UTC");
   gtk_combo_box_set_active(GTK_COMBO_BOX(tz_selection), 0);
 
   GList *iter = d->timezones;
   int i = 0;
-  gchar *old_tz= dt_conf_get_string("plugins/lighttable/geotagging/tz");
+  gchar *old_tz = dt_conf_get_string("plugins/lighttable/geotagging/tz");
   if(iter)
   {
     do
     {
       i++;
-      gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(tz_selection), (gchar*)iter->data);
-      if(!strcmp((gchar*)iter->data, old_tz))
-        gtk_combo_box_set_active(GTK_COMBO_BOX(tz_selection), i);
-    }
-    while( (iter = g_list_next(iter)) != NULL);
+      gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(tz_selection), (gchar *)iter->data);
+      if(!strcmp((gchar *)iter->data, old_tz)) gtk_combo_box_set_active(GTK_COMBO_BOX(tz_selection), i);
+    } while((iter = g_list_next(iter)) != NULL);
   }
   g_free(old_tz);
 
@@ -488,12 +487,13 @@ _lib_geotagging_gpx_callback(GtkWidget *widget, dt_lib_module_t *self)
   gtk_widget_show_all(extra_box);
   gtk_file_chooser_set_extra_widget(GTK_FILE_CHOOSER(filechooser), extra_box);
 
-  if(gtk_dialog_run(GTK_DIALOG (filechooser)) == GTK_RESPONSE_ACCEPT)
+  if(gtk_dialog_run(GTK_DIALOG(filechooser)) == GTK_RESPONSE_ACCEPT)
   {
-    dt_conf_set_string("ui_last/gpx_last_directory", gtk_file_chooser_get_current_folder(GTK_FILE_CHOOSER (filechooser)));
+    dt_conf_set_string("ui_last/gpx_last_directory",
+                       gtk_file_chooser_get_current_folder(GTK_FILE_CHOOSER(filechooser)));
     gchar *tz = gtk_combo_box_text_get_active_text(GTK_COMBO_BOX_TEXT(tz_selection));
     dt_conf_set_string("plugins/lighttable/geotagging/tz", tz);
-    gchar *filename = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER (filechooser));
+    gchar *filename = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(filechooser));
     dt_control_gpx_apply(filename, -1, tz);
     g_free(filename);
     g_free(tz);
@@ -501,7 +501,7 @@ _lib_geotagging_gpx_callback(GtkWidget *widget, dt_lib_module_t *self)
 
   gtk_widget_destroy(extra_box);
   gtk_widget_destroy(filechooser);
-//   dt_control_queue_redraw_center();
+  //   dt_control_queue_redraw_center();
 }
 
 // create a list of possible time zones
@@ -512,8 +512,7 @@ _lib_geotagging_gpx_callback(GtkWidget *widget, dt_lib_module_t *self)
 // - apparently on solaris there is no zones.tab. we need to collect the information ourselves like this:
 //   /bin/grep -h ^Zone /usr/share/lib/zoneinfo/src/* | /bin/awk '{print "??\t+9999+99999\t" $2}'
 #define MAX_LINE_LENGTH 256
-static GList *
-_lib_geotagging_get_timezones(void)
+static GList *_lib_geotagging_get_timezones(void)
 {
   GList *tz = NULL;
   FILE *fp;
@@ -542,13 +541,11 @@ _lib_geotagging_get_timezones(void)
   fp = fopen(zone_tab, "r");
   g_free(zone_tab);
 
-  if(!fp)
-    return NULL;
+  if(!fp) return NULL;
 
   while(fgets(line, MAX_LINE_LENGTH, fp))
   {
-    if(line[0] == '#' || line[0] == '\0')
-      continue;
+    if(line[0] == '#' || line[0] == '\0') continue;
     gchar **tokens = g_strsplit(line, "\t", 0);
     gchar *name = g_strdup(tokens[2]);
     g_strfreev(tokens);
@@ -557,9 +554,8 @@ _lib_geotagging_get_timezones(void)
       g_free(name);
       continue;
     }
-    size_t last_char = strlen(name)-1;
-    if(name[last_char] == '\n')
-      name[last_char] = '\0';
+    size_t last_char = strlen(name) - 1;
+    if(name[last_char] == '\n') name[last_char] = '\0';
     tz = g_list_append(tz, name);
   }
 
@@ -572,8 +568,7 @@ _lib_geotagging_get_timezones(void)
 }
 #undef MAX_LINE_LENGTH
 
-void
-gui_init (dt_lib_module_t *self)
+void gui_init(dt_lib_module_t *self)
 {
   dt_lib_geotagging_t *d = (dt_lib_geotagging_t *)malloc(sizeof(dt_lib_geotagging_t));
   self->data = (void *)d;
@@ -594,7 +589,8 @@ gui_init (dt_lib_module_t *self)
   gtk_box_pack_start(hbox, d->offset_entry, TRUE, TRUE, 0);
   g_signal_connect(d->offset_entry, "key-press-event", G_CALLBACK(_lib_geotagging_offset_key_press), self);
   g_signal_connect(d->offset_entry, "focus-out-event", G_CALLBACK(_lib_geotagging_offset_focus_out), self);
-  g_object_set(G_OBJECT(d->offset_entry), "tooltip-text", _("time offset\nformat: [+-]?[[hh:]mm:]ss"), (char *)NULL);
+  g_object_set(G_OBJECT(d->offset_entry), "tooltip-text", _("time offset\nformat: [+-]?[[hh:]mm:]ss"),
+               (char *)NULL);
   gchar *str = dt_conf_get_string("plugins/lighttable/geotagging/offset");
   if(_lib_geotagging_parse_offset(str, NULL))
     gtk_entry_set_text(GTK_ENTRY(d->offset_entry), str);
@@ -618,16 +614,15 @@ gui_init (dt_lib_module_t *self)
 
   /* gpx */
   button = gtk_button_new_with_label(_("apply GPX track file"));
-  g_object_set(G_OBJECT(button), "tooltip-text", _("parses a GPX file and updates location of selected images"), (char *)NULL);
+  g_object_set(G_OBJECT(button), "tooltip-text",
+               _("parses a GPX file and updates location of selected images"), (char *)NULL);
   gtk_box_pack_start(GTK_BOX(self->widget), button, TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(_lib_geotagging_gpx_callback), self);
-
 }
 
-void
-gui_cleanup (dt_lib_module_t *self)
+void gui_cleanup(dt_lib_module_t *self)
 {
-  dt_lib_geotagging_t *d = (dt_lib_geotagging_t*)self->data;
+  dt_lib_geotagging_t *d = (dt_lib_geotagging_t *)self->data;
   dt_gui_key_accel_block_on_focus_disconnect(d->offset_entry);
   g_list_free_full(d->timezones, &g_free);
   d->timezones = NULL;
@@ -637,33 +632,33 @@ gui_cleanup (dt_lib_module_t *self)
 
 void init_key_accels(dt_lib_module_t *self)
 {
-//   dt_accel_register_lib(self, NC_("accel", "remove from collection"),
-//                         GDK_Delete, 0);
-//   dt_accel_register_lib(self, NC_("accel", "delete from disk"), 0, 0);
-//   dt_accel_register_lib(self,
-//                         NC_("accel", "rotate selected images 90 degrees CW"),
-//                         0, 0);
-//   dt_accel_register_lib(self,
-//                         NC_("accel", "rotate selected images 90 degrees CCW"),
-//                         0, 0);
-//   dt_accel_register_lib(self, NC_("accel", "create hdr"), 0, 0);
-//   dt_accel_register_lib(self, NC_("accel", "duplicate"), 0, 0);
-//   dt_accel_register_lib(self, NC_("accel", "reset rotation"), 0, 0);
+  //   dt_accel_register_lib(self, NC_("accel", "remove from collection"),
+  //                         GDK_Delete, 0);
+  //   dt_accel_register_lib(self, NC_("accel", "delete from disk"), 0, 0);
+  //   dt_accel_register_lib(self,
+  //                         NC_("accel", "rotate selected images 90 degrees CW"),
+  //                         0, 0);
+  //   dt_accel_register_lib(self,
+  //                         NC_("accel", "rotate selected images 90 degrees CCW"),
+  //                         0, 0);
+  //   dt_accel_register_lib(self, NC_("accel", "create hdr"), 0, 0);
+  //   dt_accel_register_lib(self, NC_("accel", "duplicate"), 0, 0);
+  //   dt_accel_register_lib(self, NC_("accel", "reset rotation"), 0, 0);
 }
 
 void connect_key_accels(dt_lib_module_t *self)
 {
-//   dt_lib_image_t *d = (dt_lib_image_t*)self->data;
-//
-//   dt_accel_connect_button_lib(self, "remove from collection", d->remove_button);
-//   dt_accel_connect_button_lib(self, "delete from disk", d->delete_button);
-//   dt_accel_connect_button_lib(self, "rotate selected images 90 degrees CW",
-//                               d->rotate_cw_button);
-//   dt_accel_connect_button_lib(self, "rotate selected images 90 degrees CCW",
-//                               d->rotate_ccw_button);
-//   dt_accel_connect_button_lib(self, "create hdr", d->create_hdr_button);
-//   dt_accel_connect_button_lib(self, "duplicate", d->duplicate_button);
-//   dt_accel_connect_button_lib(self, "reset rotation", d->reset_button);
+  //   dt_lib_image_t *d = (dt_lib_image_t*)self->data;
+  //
+  //   dt_accel_connect_button_lib(self, "remove from collection", d->remove_button);
+  //   dt_accel_connect_button_lib(self, "delete from disk", d->delete_button);
+  //   dt_accel_connect_button_lib(self, "rotate selected images 90 degrees CW",
+  //                               d->rotate_cw_button);
+  //   dt_accel_connect_button_lib(self, "rotate selected images 90 degrees CCW",
+  //                               d->rotate_ccw_button);
+  //   dt_accel_connect_button_lib(self, "create hdr", d->create_hdr_button);
+  //   dt_accel_connect_button_lib(self, "duplicate", d->duplicate_button);
+  //   dt_accel_connect_button_lib(self, "reset rotation", d->reset_button);
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
