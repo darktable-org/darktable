@@ -4,11 +4,11 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: darktable 0.9\n"
+"Project-Id-Version: darktable 1.6\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2014-12-05 08:53+0200\n"
 "PO-Revision-Date: 2014-12-05 09:39+0200\n"
-"Last-Translator: Александр Прокудин <alexandre.prokoudine@gmail.com>\n"
+"Last-Translator: Serhii Marchuk <serhii.marchuk@gmail.com>\n"
 "Language-Team: русский <>\n"
 "Language: ru\n"
 "MIME-Version: 1.0\n"
