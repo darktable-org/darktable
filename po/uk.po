@@ -6,7 +6,7 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: darktable 1.5\n"
+"Project-Id-Version: darktable 1.6\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2014-12-05 08:53+0200\n"
 "PO-Revision-Date: 2014-12-05 09:39+0200\n"
