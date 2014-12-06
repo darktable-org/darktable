@@ -49,7 +49,7 @@ extern "C" {
 extern "C" {
 #endif
 
-DT_MODULE(3)
+DT_MODULE(4)
 
 enum dt_imageio_exr_compression_t
 {
@@ -71,6 +71,7 @@ typedef struct dt_imageio_exr_t
   int max_width, max_height;
   int width, height;
   char style[128];
+  gboolean style_append;
   dt_imageio_exr_compression_t compression;
 } dt_imageio_exr_t;
 
@@ -154,20 +155,61 @@ void *legacy_params(dt_imageio_module_format_t *self, const void *const old_para
                     const size_t old_params_size, const int old_version, const int new_version,
                     size_t *new_size)
 {
-  if(old_version == 1 && new_version == 3)
+  if(old_version == 1 && new_version == 4)
   {
     dt_imageio_exr_t *new_params = (dt_imageio_exr_t *)malloc(sizeof(dt_imageio_exr_t));
     memcpy(new_params, old_params, old_params_size);
     new_params->compression = (dt_imageio_exr_compression_t)PIZ_COMPRESSION;
+    new_params->style_append = 0;
     *new_size = self->params_size(self);
     return new_params;
   }
-  if(old_version == 2 && new_version == 3)
+  if(old_version == 2 && new_version == 4)
   {
+    enum dt_imageio_exr_pixeltype_t
+    {
+      UINT   = 0,         // unsigned int (32 bit)
+      HALF   = 1,         // half (16 bit floating point)
+      FLOAT  = 2,         // float (32 bit floating point)
+      NUM_PIXELTYPES      // number of different pixel types
+    }; // copy of Imf::PixelType
+
+    typedef struct dt_imageio_exr_v2_t
+    {
+      int max_width, max_height;
+      int width, height;
+      char style[128];
+      dt_imageio_exr_compression_t compression;
+      dt_imageio_exr_pixeltype_t pixel_type;
+    } dt_imageio_exr_v2_t;
+
+    dt_imageio_exr_v2_t *o = (dt_imageio_exr_v2_t *)old_params;
     dt_imageio_exr_t *new_params = (dt_imageio_exr_t *)malloc(sizeof(dt_imageio_exr_t));
 
     // last param was dropped (pixel type)
+    memcpy(new_params, old_params, sizeof(old_params_size));
+    new_params->style_append = 0;
+    new_params->compression = o->compression;
+
+    *new_size = self->params_size(self);
+    return new_params;
+  }
+  if(old_version == 3 && new_version == 4)
+  {
+    typedef struct dt_imageio_exr_v3_t
+    {
+      int max_width, max_height;
+      int width, height;
+      char style[128];
+      dt_imageio_exr_compression_t compression;
+    } dt_imageio_exr_v3_t;
+
+    dt_imageio_exr_v3_t *o = (dt_imageio_exr_v3_t *)old_params;
+    dt_imageio_exr_t *new_params = (dt_imageio_exr_t *)malloc(sizeof(dt_imageio_exr_t));
+
     memcpy(new_params, old_params, sizeof(dt_imageio_exr_t));
+    new_params->style_append = 0;
+    new_params->compression = o->compression;
 
     *new_size = self->params_size(self);
     return new_params;

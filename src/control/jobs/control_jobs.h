@@ -29,6 +29,7 @@ typedef struct dt_control_export_t
                                    // is dispatched, but we have to keep that information
   gboolean high_quality;
   char style[128];
+  gboolean style_append;
 } dt_control_export_t;
 
 typedef struct dt_control_image_enumerator_t
@@ -52,7 +53,7 @@ void dt_control_copy_images();
 void dt_control_set_local_copy_images();
 void dt_control_reset_local_copy_images();
 void dt_control_export(GList *imgid_list, int max_width, int max_height, int format_index, int storage_index,
-                       gboolean high_quality, char *style);
+                       gboolean high_quality, char *style, gboolean style_append);
 void dt_control_merge_hdr();
 
 void dt_control_seed_denoise();

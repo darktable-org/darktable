@@ -676,13 +676,20 @@ int dt_imageio_export_with_flags(const uint32_t imgid, const char *filename,
         if(strncmp(m->op, s->name, strlen(m->op)) == 0)
         {
           dt_dev_history_item_t *h = malloc(sizeof(dt_dev_history_item_t));
+          dt_iop_module_t *sty_module = m;
+
+          if (format_params->style_append && !(m->flags() & IOP_FLAGS_ONE_INSTANCE))
+          {
+            sty_module = dt_dev_module_duplicate(m->dev, m, 0);
+            if(!sty_module) return 1;
+          }
 
           h->params = s->params;
           h->blend_params = s->blendop_params;
           h->enabled = s->enabled;
-          h->module = m;
+          h->module = sty_module;
           h->multi_priority = 1;
-          g_strlcpy(h->multi_name, "", sizeof(h->multi_name));
+          g_strlcpy(h->multi_name, "<style>", sizeof(h->multi_name));
 
           if(m->legacy_params && (s->module_version != m->version()))
           {

@@ -45,7 +45,7 @@ typedef struct dt_lib_export_t
   GtkComboBox *storage, *format;
   int format_lut[128];
   GtkContainer *storage_box, *format_box;
-  GtkComboBox *profile, *intent, *style;
+  GtkComboBox *profile, *intent, *style, *style_mode;
   GList *profiles;
   GtkButton *export_button;
 } dt_lib_export_t;
@@ -96,6 +96,7 @@ static void export_button_clicked(GtkWidget *widget, gpointer user_data)
   g_free(storage_name);
   gboolean high_quality = dt_conf_get_bool("plugins/lighttable/export/high_quality_processing");
   char *tmp = dt_conf_get_string("plugins/lighttable/export/style");
+  gboolean style_append = dt_conf_get_bool("plugins/lighttable/export/style_append");
   if(tmp)
   {
     g_strlcpy(style, tmp, sizeof(style));
@@ -110,7 +111,7 @@ static void export_button_clicked(GtkWidget *widget, gpointer user_data)
   else
     list = dt_collection_get_selected(darktable.collection, -1);
 
-  dt_control_export(list, max_width, max_height, format_index, storage_index, high_quality, style);
+  dt_control_export(list, max_width, max_height, format_index, storage_index, high_quality, style, style_append);
 }
 
 static void width_changed(GtkSpinButton *spin, gpointer user_data)
@@ -171,6 +172,10 @@ void gui_reset(dt_lib_module_t *self)
   }
   else
     gtk_combo_box_set_active(d->style, 0);
+
+  // style mode to overwrite as it was the initial behavior
+
+  gtk_combo_box_set_active(d->style_mode, 0);
 
   if(!iccfound) gtk_combo_box_set_active(d->profile, 0);
   dt_imageio_module_format_t *mformat = dt_imageio_get_format();
@@ -351,6 +356,14 @@ static void style_changed(GtkComboBox *widget, dt_lib_export_t *d)
     gchar *style = gtk_combo_box_text_get_active_text(GTK_COMBO_BOX_TEXT(d->style));
     dt_conf_set_string("plugins/lighttable/export/style", style);
   }
+}
+
+static void style_mode_changed(GtkComboBox *widget, dt_lib_export_t *d)
+{
+  if(gtk_combo_box_get_active(d->style_mode) == 0)
+    dt_conf_set_bool("plugins/lighttable/export/style_append", FALSE);
+  else
+    dt_conf_set_bool("plugins/lighttable/export/style_append", TRUE);
 }
 
 int position()
@@ -635,7 +648,24 @@ void gui_init(dt_lib_module_t *self)
   }
   gtk_table_attach(GTK_TABLE(self->widget), GTK_WIDGET(d->style), 1, 2, 10, 11, GTK_EXPAND | GTK_FILL, 0, 0,
                    0);
-  g_object_set(G_OBJECT(d->style), "tooltip-text", _("temporary style to append while exporting"),
+  g_object_set(G_OBJECT(d->style), "tooltip-text", _("temporary style to use while exporting"),
+               (char *)NULL);
+
+  //  Add check to control whether the style is to replace or append the current module
+
+  label = gtk_label_new(_("mode"));
+  gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
+  gtk_table_attach(GTK_TABLE(self->widget), label, 0, 1, 11, 12, GTK_EXPAND | GTK_FILL, 0, 0, 0);
+  d->style_mode = GTK_COMBO_BOX(gtk_combo_box_text_new());
+
+  dt_ellipsize_combo(d->style_mode);
+
+  gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(d->style_mode), _("replace history"));
+  gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(d->style_mode), _("append history"));
+
+  gtk_table_attach(GTK_TABLE(self->widget), GTK_WIDGET(d->style_mode), 1, 2, 11, 12, GTK_EXPAND | GTK_FILL, 0, 0,
+                   0);
+  g_object_set(G_OBJECT(d->style_mode), "tooltip-text", _("whether the style is appended to the history or replacing the history"),
                (char *)NULL);
 
   //  Set callback signals
@@ -643,13 +673,14 @@ void gui_init(dt_lib_module_t *self)
   g_signal_connect(G_OBJECT(d->intent), "changed", G_CALLBACK(intent_changed), (gpointer)d);
   g_signal_connect(G_OBJECT(d->profile), "changed", G_CALLBACK(profile_changed), (gpointer)d);
   g_signal_connect(G_OBJECT(d->style), "changed", G_CALLBACK(style_changed), (gpointer)d);
+  g_signal_connect(G_OBJECT(d->style_mode), "changed", G_CALLBACK(style_mode_changed), (gpointer)d);
 
   // Export button
 
   GtkButton *button = GTK_BUTTON(gtk_button_new_with_label(_("export")));
   d->export_button = button;
   g_object_set(G_OBJECT(button), "tooltip-text", _("export with current settings (ctrl-e)"), (char *)NULL);
-  gtk_table_attach(GTK_TABLE(self->widget), GTK_WIDGET(button), 1, 2, 11, 12, GTK_EXPAND | GTK_FILL, 0, 0, 0);
+  gtk_table_attach(GTK_TABLE(self->widget), GTK_WIDGET(button), 1, 2, 12, 13, GTK_EXPAND | GTK_FILL, 0, 0, 0);
 
   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(export_button_clicked), (gpointer)self);
   g_signal_connect(G_OBJECT(d->width), "value-changed", G_CALLBACK(width_changed), NULL);
@@ -926,10 +957,12 @@ void *get_params(dt_lib_module_t *self, int *size)
   int32_t max_height = dt_conf_get_int("plugins/lighttable/export/height");
   gchar *iccprofile = dt_conf_get_string("plugins/lighttable/export/iccprofile");
   gchar *style = dt_conf_get_string("plugins/lighttable/export/style");
+  gboolean style_append = dt_conf_get_bool("plugins/lighttable/export/style_append");
 
   if(fdata)
   {
     g_strlcpy(fdata->style, style, sizeof(fdata->style));
+    fdata->style_append = style_append;
   }
 
   if(!iccprofile)
@@ -1053,6 +1086,9 @@ int set_params(dt_lib_module_t *self, const void *params, int size)
     gtk_combo_box_set_active(d->style, 0);
   else
     _combo_box_set_active_text(d->style, fdata->style);
+
+  gtk_combo_box_set_active(d->style_mode, fdata->style_append?1:0);
+
   buf += fsize;
   const void *sdata = buf;
 
