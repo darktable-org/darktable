@@ -147,17 +147,28 @@ static void _resynch_params(struct dt_iop_module_t *self)
   }
 }
 
-static void _add_path(GtkWidget *widget, GdkEventButton *e, dt_iop_module_t *self)
+
+static void _reset_form_creation(GtkWidget *widget, dt_iop_module_t *self)
 {
-  if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget)))
+  dt_iop_spots_gui_data_t *g = (dt_iop_spots_gui_data_t *)self->gui_data;
+  if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(g->bt_path)) ||
+      gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(g->bt_circle)) ||
+      gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(g->bt_ellipse)))
   {
     // we unset the creation mode
     dt_masks_form_t *form = darktable.develop->form_visible;
     if(form) dt_masks_free_form(form);
     dt_masks_change_form_gui(NULL);
-    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(widget), FALSE);
-    return;
   }
+  if (widget != g->bt_path) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->bt_path), FALSE);
+  if (widget != g->bt_circle) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->bt_circle), FALSE);
+  if (widget != g->bt_ellipse) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->bt_ellipse), FALSE);
+}
+
+static gboolean _add_path(GtkWidget *widget, GdkEventButton *e, dt_iop_module_t *self)
+{
+  _reset_form_creation(widget, self);
+  if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget))) return FALSE;
   // we want to be sure that the iop has focus
   dt_iop_request_focus(self);
   // we create the new form
@@ -166,18 +177,12 @@ static void _add_path(GtkWidget *widget, GdkEventButton *e, dt_iop_module_t *sel
   darktable.develop->form_gui->creation = TRUE;
   darktable.develop->form_gui->creation_module = self;
   dt_control_queue_redraw_center();
+  return FALSE;
 }
-static void _add_circle(GtkWidget *widget, GdkEventButton *e, dt_iop_module_t *self)
+static gboolean _add_circle(GtkWidget *widget, GdkEventButton *e, dt_iop_module_t *self)
 {
-  if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget)))
-  {
-    // we unset the creation mode
-    dt_masks_form_t *form = darktable.develop->form_visible;
-    if(form) dt_masks_free_form(form);
-    dt_masks_change_form_gui(NULL);
-    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(widget), FALSE);
-    return;
-  }
+  _reset_form_creation(widget, self);
+  if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget))) return FALSE;
   // we want to be sure that the iop has focus
   dt_iop_request_focus(self);
   // we create the new form
@@ -186,18 +191,12 @@ static void _add_circle(GtkWidget *widget, GdkEventButton *e, dt_iop_module_t *s
   darktable.develop->form_gui->creation = TRUE;
   darktable.develop->form_gui->creation_module = self;
   dt_control_queue_redraw_center();
+  return FALSE;
 }
-static void _add_ellipse(GtkWidget *widget, GdkEventButton *e, dt_iop_module_t *self)
+static gboolean _add_ellipse(GtkWidget *widget, GdkEventButton *e, dt_iop_module_t *self)
 {
-  if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget)))
-  {
-    // we unset the creation mode
-    dt_masks_form_t *form = darktable.develop->form_visible;
-    if(form) dt_masks_free_form(form);
-    dt_masks_change_form_gui(NULL);
-    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(widget), FALSE);
-    return;
-  }
+  _reset_form_creation(widget, self);
+  if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget))) return FALSE;
   // we want to be sure that the iop has focus
   dt_iop_request_focus(self);
   // we create the new form
@@ -206,6 +205,7 @@ static void _add_ellipse(GtkWidget *widget, GdkEventButton *e, dt_iop_module_t *
   darktable.develop->form_gui->creation = TRUE;
   darktable.develop->form_gui->creation_module = self;
   dt_control_queue_redraw_center();
+  return FALSE;
 }
 
 
@@ -500,7 +500,17 @@ void gui_focus(struct dt_iop_module_t *self, gboolean in)
     }
     else
     {
-      // lost focus, hide all shapes
+      // lost focus, hide all shapes and free if some are in creation
+      if (darktable.develop->form_gui->creation && darktable.develop->form_gui->creation_module == self)
+      {
+        dt_masks_form_t *form = darktable.develop->form_visible;
+        if(form) dt_masks_free_form(form);
+        dt_masks_change_form_gui(NULL);
+      }
+      dt_iop_spots_gui_data_t *g = (dt_iop_spots_gui_data_t *)self->gui_data;
+      gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->bt_path), FALSE);
+      gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->bt_circle), FALSE);
+      gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->bt_ellipse), FALSE);
       dt_masks_set_edit_mode(self, DT_MASKS_EDIT_OFF);
     }
   }
