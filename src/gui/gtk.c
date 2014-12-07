@@ -319,7 +319,7 @@ static gboolean expose_borders(GtkWidget *widget, GdkEventExpose *event, gpointe
   GtkAllocation allocation;
   gtk_widget_get_allocation(widget, &allocation);
   float width = allocation.width, height = allocation.height;
-  cairo_surface_t *cst = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height);
+  cairo_surface_t *cst = dt_cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height);
   cairo_t *cr = cairo_create(cst);
   GtkStyle *style = gtk_widget_get_style(dt_ui_center(darktable.gui->ui));
   cairo_set_source_rgb(cr, .5f * style->bg[GTK_STATE_NORMAL].red / 65535.0,
@@ -598,7 +598,7 @@ static gboolean configure(GtkWidget *da, GdkEventConfigure *event, gpointer user
   {
     // create our new pixmap with the correct size.
     cairo_surface_t *tmpsurface
-        = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, event->width, event->height);
+        = dt_cairo_image_surface_create(CAIRO_FORMAT_ARGB32, event->width, event->height);
     // copy the contents of the old pixmap to the new pixmap.  This keeps ugly uninitialized
     // pixmaps from being painted upon resize
     //     int minw = oldw, minh = oldh;
@@ -960,7 +960,7 @@ void dt_gui_gtk_run(dt_gui_gtk_t *gui)
   GtkAllocation allocation;
   gtk_widget_get_allocation(widget, &allocation);
   darktable.gui->surface
-      = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, allocation.width, allocation.height);
+      = dt_cairo_image_surface_create(CAIRO_FORMAT_ARGB32, allocation.width, allocation.height);
   // need to pre-configure views to avoid crash caused by expose-event coming before configure-event
   darktable.control->tabborder = 8;
   int tb = darktable.control->tabborder;
@@ -987,6 +987,33 @@ static void init_widgets(dt_gui_gtk_t *gui)
   widget = gtk_window_new(GTK_WINDOW_TOPLEVEL);
   gui->ui->main_window = widget;
 
+  // check if in HiDPI mode
+#if (CAIRO_VERSION >= CAIRO_VERSION_ENCODE(1, 14, 0))
+  float screen_ppd_overwrite = dt_conf_get_float("screen_ppd_overwrite");
+  if(screen_ppd_overwrite > 0.0)
+  {
+    gui->ppd = screen_ppd_overwrite;
+    dt_print(DT_DEBUG_CONTROL, "[HiDPI] setting ppd to %f as specified in the configuration file\n", screen_ppd_overwrite);
+  }
+  else
+  {
+#ifdef GDK_WINDOWING_QUARTZ
+    // only works if GTK includes this change: https://gist.github.com/zwaldowski/3388768
+    gui->ppd = gdk_screen_get_resolution(gtk_widget_get_screen(widget)) / 72.0;
+    if(gui->ppd < 0.0)
+    {
+      gui->ppd = 1.0;
+      dt_print(DT_DEBUG_CONTROL, "[HiDPI] can't detect screen settings, switching off\n", gui->ppd);
+    }
+    else
+      dt_print(DT_DEBUG_CONTROL, "[HiDPI] setting ppd to %f\n", gui->ppd);
+#else
+    gui->ppd = 1.0;
+#endif
+  }
+#else
+  gui->ppd = 1.0;
+#endif
   // get the screen resolution
   float screen_dpi_overwrite = dt_conf_get_float("screen_dpi_overwrite");
   if(screen_dpi_overwrite > 0.0)

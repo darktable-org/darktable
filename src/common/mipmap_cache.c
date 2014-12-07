@@ -1058,7 +1058,7 @@ dt_mipmap_size_t dt_mipmap_cache_get_matching_size(const dt_mipmap_cache_t *cach
   for(int k = DT_MIPMAP_0; k < DT_MIPMAP_F; k++)
   {
     // find closest l1 norm:
-    int32_t new_error = cache->mip[k].max_width + cache->mip[k].max_height - width - height;
+    int32_t new_error = cache->mip[k].max_width + cache->mip[k].max_height - width * darktable.gui->ppd - height * darktable.gui->ppd;
     // and allow the first one to be larger in pixel size to override the smaller mip
     if(abs(new_error) < abs(error) || (error < 0 && new_error > 0))
     {

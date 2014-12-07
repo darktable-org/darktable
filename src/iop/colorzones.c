@@ -592,7 +592,7 @@ static gboolean colorzones_expose(GtkWidget *widget, GdkEventExpose *event, gpoi
   gtk_widget_get_allocation(widget, &allocation);
   const int inset = DT_IOP_COLORZONES_INSET;
   int width = allocation.width, height = allocation.height;
-  cairo_surface_t *cst = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height);
+  cairo_surface_t *cst = dt_cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height);
   cairo_t *cr = cairo_create(cst);
   // clear bg, match color of the notebook tabs:
   GtkStyle *style = gtk_widget_get_style(GTK_WIDGET(c->channel_tabs));

@@ -28,6 +28,7 @@
 /* helper macro that applies the DPI transformation to fixed pixel values. input should be defaulting to 96
  * DPI */
 #define DT_PIXEL_APPLY_DPI(value) (value * darktable.gui->dpi_factor)
+#define DT_PIXEL_APPLY_PPI(value) (value * darktable.gui->dpi_factor * darktable.gui->ppd)
 
 typedef enum dt_gui_view_switch_t
 {
@@ -74,11 +75,38 @@ typedef struct dt_gui_gtk_t
 
   gboolean show_overlays;
 
-  double dpi, dpi_factor;
+  double dpi, dpi_factor, ppd;
 
   // store which gtkrc we loaded:
   char gtkrc[PATH_MAX];
 } dt_gui_gtk_t;
+
+#if (CAIRO_VERSION >= CAIRO_VERSION_ENCODE(1, 14, 0))
+inline cairo_surface_t *dt_cairo_image_surface_create(cairo_format_t format, int width, int height) {
+  cairo_surface_t *cst = cairo_image_surface_create(format, width * darktable.gui->ppd, height * darktable.gui->ppd);
+  cairo_surface_set_device_scale(cst, darktable.gui->ppd, darktable.gui->ppd);
+  return cst;
+}
+
+inline cairo_surface_t *dt_cairo_image_surface_create_for_data(unsigned char *data, cairo_format_t format, int width, int height, int stride) {
+  cairo_surface_t *cst = cairo_image_surface_create_for_data(data, format, width, height, stride);
+  cairo_surface_set_device_scale(cst, darktable.gui->ppd, darktable.gui->ppd);
+  return cst;
+}
+
+inline int dt_cairo_image_surface_get_width(cairo_surface_t *surface) {
+  return cairo_image_surface_get_width(surface) / darktable.gui->ppd;
+}
+
+inline int dt_cairo_image_surface_get_height(cairo_surface_t *surface) {
+  return cairo_image_surface_get_height(surface) / darktable.gui->ppd;
+}
+#else
+#define dt_cairo_image_surface_create cairo_image_surface_create
+#define dt_cairo_image_surface_create_for_data cairo_image_surface_create_for_data
+#define dt_cairo_image_surface_get_width cairo_image_surface_get_width
+#define dt_cairo_image_surface_get_height cairo_image_surface_get_height
+#endif
 
 int dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[]);
 void dt_gui_gtk_run(dt_gui_gtk_t *gui);

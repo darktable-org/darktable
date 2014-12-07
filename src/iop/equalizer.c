@@ -453,7 +453,7 @@ static gboolean dt_iop_equalizer_expose(GtkWidget *widget, GdkEventExpose *event
   for(int k=0; k<DT_IOP_EQUALIZER_BANDS; k++) dt_draw_curve_set_point(c->minmax_curve, k, p.equalizer_x[ch][k], p.equalizer_y[ch][k]);
   const int inset = DT_GUI_EQUALIZER_INSET;
   int width = allocation.width, height = allocation.height;
-  cairo_surface_t *cst = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height);
+  cairo_surface_t *cst = dt_cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height);
   cairo_t *cr = cairo_create(cst);
   // clear bg
   cairo_set_source_rgb (cr, .2, .2, .2);

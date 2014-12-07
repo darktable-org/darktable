@@ -539,11 +539,11 @@ void gui_init(struct dt_iop_module_t *self)
     float svg_size = MAX(dimension.width, dimension.height);
     float final_size = panel_width * 0.75;
     float factor = final_size / svg_size;
-    float final_width = dimension.width * factor, final_height = dimension.height * factor;
+    float final_width = dimension.width * factor * darktable.gui->ppd, final_height = dimension.height * factor * darktable.gui->ppd;
     int stride = cairo_format_stride_for_width(CAIRO_FORMAT_ARGB32, final_width);
 
     g->image_buffer = (guint8 *)calloc(stride * final_height, sizeof(guint8));
-    surface = cairo_image_surface_create_for_data(g->image_buffer, CAIRO_FORMAT_ARGB32, final_width,
+    surface = dt_cairo_image_surface_create_for_data(g->image_buffer, CAIRO_FORMAT_ARGB32, final_width,
                                                   final_height, stride);
     if(cairo_surface_status(surface) != CAIRO_STATUS_SUCCESS)
     {
@@ -557,8 +557,8 @@ void gui_init(struct dt_iop_module_t *self)
       rsvg_handle_render_cairo(svg, cr);
       cairo_surface_flush(surface);
       g->image = surface;
-      g->image_width = final_width;
-      g->image_height = final_height;
+      g->image_width = final_width / darktable.gui->ppd;
+      g->image_height = final_height / darktable.gui->ppd;
     }
     g_object_unref(svg);
   }
@@ -591,7 +591,7 @@ static gboolean dt_iop_zonesystem_bar_expose(GtkWidget *widget, GdkEventExpose *
   GtkAllocation allocation;
   gtk_widget_get_allocation(widget, &allocation);
   int width = allocation.width, height = allocation.height;
-  cairo_surface_t *cst = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height);
+  cairo_surface_t *cst = dt_cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height);
   cairo_t *cr = cairo_create(cst);
 
   /* clear background */
@@ -822,7 +822,7 @@ static gboolean dt_iop_zonesystem_preview_expose(GtkWidget *widget, GdkEventExpo
   dt_iop_zonesystem_gui_data_t *g = (dt_iop_zonesystem_gui_data_t *)self->gui_data;
   dt_iop_zonesystem_params_t *p = (dt_iop_zonesystem_params_t *)self->params;
 
-  cairo_surface_t *cst = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height);
+  cairo_surface_t *cst = dt_cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height);
   cairo_t *cr = cairo_create(cst);
 
   /* clear background */

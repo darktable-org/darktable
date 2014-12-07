@@ -160,7 +160,7 @@ void expose(dt_view_t *self, cairo_t *cri, int32_t width_i, int32_t height_i, in
     image_surface_width = width;
     image_surface_height = height;
     if(image_surface) cairo_surface_destroy(image_surface);
-    image_surface = cairo_image_surface_create(CAIRO_FORMAT_RGB24, width, height);
+    image_surface = dt_cairo_image_surface_create(CAIRO_FORMAT_RGB24, width, height);
     image_surface_imgid = -1; // invalidate old stuff
   }
   cairo_surface_t *surface;
@@ -183,7 +183,9 @@ void expose(dt_view_t *self, cairo_t *cri, int32_t width_i, int32_t height_i, in
     wd = dev->pipe->backbuf_width;
     ht = dev->pipe->backbuf_height;
     stride = cairo_format_stride_for_width(CAIRO_FORMAT_RGB24, wd);
-    surface = cairo_image_surface_create_for_data(dev->pipe->backbuf, CAIRO_FORMAT_RGB24, wd, ht, stride);
+    surface = dt_cairo_image_surface_create_for_data(dev->pipe->backbuf, CAIRO_FORMAT_RGB24, wd, ht, stride);
+    wd /= darktable.gui->ppd;
+    ht /= darktable.gui->ppd;
     cairo_set_source_rgb(cr, .2, .2, .2);
     cairo_paint(cr);
     cairo_translate(cr, .5f * (width - wd), .5f * (height - ht));

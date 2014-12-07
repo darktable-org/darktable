@@ -122,12 +122,12 @@ void gui_init(dt_lib_module_t *self)
     RsvgDimensionData dimension;
     rsvg_handle_get_dimensions(svg, &dimension);
 
-    int width = DT_PIXEL_APPLY_DPI(dimension.width), height = DT_PIXEL_APPLY_DPI(dimension.height);
+    int width = DT_PIXEL_APPLY_PPI(dimension.width), height = DT_PIXEL_APPLY_PPI(dimension.height);
     int stride = cairo_format_stride_for_width(CAIRO_FORMAT_ARGB32, width);
 
     d->image_buffer = (guint8 *)calloc(stride * height, sizeof(guint8));
     surface
-        = cairo_image_surface_create_for_data(d->image_buffer, CAIRO_FORMAT_ARGB32, width, height, stride);
+        = dt_cairo_image_surface_create_for_data(d->image_buffer, CAIRO_FORMAT_ARGB32, width, height, stride);
     if(cairo_surface_status(surface) != CAIRO_STATUS_SUCCESS)
     {
       free(d->image_buffer);
@@ -167,12 +167,12 @@ png_fallback:
         png_height = cairo_image_surface_get_height(surface);
 
     // blow up the PNG. Ugly, but at least it has the correct size afterwards :-/
-    int width = DT_PIXEL_APPLY_DPI(png_width), height = DT_PIXEL_APPLY_DPI(png_height);
+    int width = DT_PIXEL_APPLY_PPI(png_width), height = DT_PIXEL_APPLY_PPI(png_height);
     int stride = cairo_format_stride_for_width(CAIRO_FORMAT_ARGB32, width);
 
     d->image_buffer = (guint8 *)calloc(stride * height, sizeof(guint8));
     d->image
-        = cairo_image_surface_create_for_data(d->image_buffer, CAIRO_FORMAT_ARGB32, width, height, stride);
+        = dt_cairo_image_surface_create_for_data(d->image_buffer, CAIRO_FORMAT_ARGB32, width, height, stride);
     if(cairo_surface_status(d->image) != CAIRO_STATUS_SUCCESS)
     {
       free(d->image_buffer);
@@ -196,8 +196,8 @@ png_fallback:
 done:
   g_free(logo);
 
-  d->image_width = d->image ? cairo_image_surface_get_width(d->image) : 0;
-  d->image_height = d->image ? cairo_image_surface_get_height(d->image) : 0;
+  d->image_width = d->image ? dt_cairo_image_surface_get_width(d->image) : 0;
+  d->image_height = d->image ? dt_cairo_image_surface_get_height(d->image) : 0;
 
   /* set size of drawing area */
   gtk_widget_set_size_request(self->widget, d->image_width + (int)DT_PIXEL_APPLY_DPI(180),

@@ -1,0 +1,42 @@
+diff --git gdk/quartz/gdkscreen-quartz.c gdk/quartz/gdkscreen-quartz.c
+index eafaf20..1cf98e2 100644
+--- gdk/quartz/gdkscreen-quartz.c
++++ gdk/quartz/gdkscreen-quartz.c
+@@ -75,8 +75,17 @@ gdk_quartz_screen_init (GdkQuartzScreen *quartz_screen)
+   NSScreen *nsscreen;
+ 
+   nsscreen = [[NSScreen screens] objectAtIndex:0];
+-  gdk_screen_set_resolution (screen,
+-                             72.0 * [nsscreen userSpaceScaleFactor]);
++#if MAC_OS_X_VERSION_MAX_ALLOWED > MAC_OS_X_VERSION_10_7
++  float dpi;
++  if ([nsscreen respondsToSelector: NSSelectorFromString(@"backingScaleFactor")]) {
++    dpi = 72.0 * [[nsscreen valueForKey: @"backingScaleFactor"] floatValue];
++  } else {
++    dpi = 72.0 * [[nsscreen valueForKey: @"userSpaceScaleFactor"] floatValue];
++  }
++#else
++  float dpi = 72.0 * [[nsscreen valueForKey: @"userSpaceScaleFactor"] floatValue];
++#endif
++  gdk_screen_set_resolution (screen, dpi);
+ 
+   gdk_quartz_screen_calculate_layout (quartz_screen);
+ 
+@@ -331,7 +340,16 @@ get_mm_from_pixels (NSScreen *screen, int pixels)
+    * and 25.4 is the number of millimeters per inch.
+    */
+ #if MAC_OS_X_VERSION_MAX_ALLOWED > MAC_OS_X_VERSION_10_3
+-  float dpi = [screen userSpaceScaleFactor] * 72.0;
++#if MAC_OS_X_VERSION_MAX_ALLOWED > MAC_OS_X_VERSION_10_7
++  float dpi;
++  if ([screen respondsToSelector: NSSelectorFromString(@"backingScaleFactor")]) {
++    dpi = 72.0 * [[screen valueForKey: @"backingScaleFactor"] floatValue];
++  } else {
++    dpi = 72.0 * [[screen valueForKey: @"userSpaceScaleFactor"] floatValue];
++  }
++#else
++  float dpi = 72.0 * [[screen valueForKey: @"userSpaceScaleFactor"] floatValue];
++#endif
+ #else
+   float dpi = 96.0 / 72.0;
+ #endif

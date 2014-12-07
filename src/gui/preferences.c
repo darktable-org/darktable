@@ -281,7 +281,7 @@ static void tree_insert_presets(GtkTreeStore *tree_model)
 
   // Create a GdkPixbuf with a cairo drawing.
   // lock
-  cairo_surface_t *lock_cst = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, ICON_SIZE, ICON_SIZE);
+  cairo_surface_t *lock_cst = dt_cairo_image_surface_create(CAIRO_FORMAT_ARGB32, ICON_SIZE, ICON_SIZE);
   cairo_t *lock_cr = cairo_create(lock_cst);
   cairo_set_source_rgb(lock_cr, 0.7, 0.7, 0.7);
   dtgtk_cairo_paint_lock(lock_cr, 0, 0, ICON_SIZE, ICON_SIZE, 0);
@@ -290,7 +290,7 @@ static void tree_insert_presets(GtkTreeStore *tree_model)
   GdkPixbuf *lock_pixbuf = gdk_pixbuf_new_from_data(data, GDK_COLORSPACE_RGB, TRUE, 8, ICON_SIZE, ICON_SIZE,
                                                     cairo_image_surface_get_stride(lock_cst), NULL, NULL);
   // check mark
-  cairo_surface_t *check_cst = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, ICON_SIZE, ICON_SIZE);
+  cairo_surface_t *check_cst = dt_cairo_image_surface_create(CAIRO_FORMAT_ARGB32, ICON_SIZE, ICON_SIZE);
   cairo_t *check_cr = cairo_create(check_cst);
   cairo_set_source_rgb(check_cr, 0.7, 0.7, 0.7);
   dtgtk_cairo_paint_check_mark(check_cr, 0, 0, ICON_SIZE, ICON_SIZE, 0);

@@ -2263,4 +2263,11 @@
     <shortdescription>overwrite the screen's dpi setting</shortdescription>
     <longdescription>if this value is > 0.0 then it is used as the screen's dpi setting which is used to scale the gui</longdescription>
   </dtconfig>
+  <dtconfig>
+    <name>screen_ppd_overwrite</name>
+    <type>float</type>
+    <default>-1.0</default>
+    <shortdescription>overwrite the screen's ppd setting</shortdescription>
+    <longdescription>if this value is > 0.0 then it is used as the screen's ppd setting which is used for HiDPI support</longdescription>
+  </dtconfig>
 </dtconfiglist>

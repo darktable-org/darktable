@@ -126,7 +126,7 @@ static gboolean _lib_ratings_expose_callback(GtkWidget *widget, GdkEventExpose *
   /* get current style */
   GtkStyle *style = gtk_rc_get_style_by_paths(gtk_settings_get_default(), NULL, "GtkWidget", GTK_TYPE_WIDGET);
   if(!style) style = gtk_rc_get_style(widget);
-  cairo_surface_t *cst = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height);
+  cairo_surface_t *cst = dt_cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height);
   cairo_t *cr = cairo_create(cst);
 
   /* fill background */
