@@ -293,11 +293,7 @@ static void _lib_darktable_show_about_dialog()
   gtk_about_dialog_set_logo_icon_name(GTK_ABOUT_DIALOG(dialog), icon);
   g_free(icon);
   const char *authors[]
-      = { _("* developers *"), "Henrik Andersson", "Johannes Hanika", "Tobias Ellinghaus", "Ulrich Pegelow",
-          "", _("* ubuntu packaging, color management, video tutorials *"), "Pascal de Bruijn", "",
-          _("* OpenCL pipeline: *"), "Ulrich Pegelow", "",
-          _("* networking, battle testing, translation expert *"), "Alexandre Prokoudine", "",
-          _("* contributors *"),
+      = { _("* contributors *"),
           "Roman Lebedev", "Pascal de Bruijn", "Tobias Ellinghaus", "Ulrich Pegelow",
           "Pedro Côrte-Real", "Jérémy Rosen", "Pascal Obry", "johannes hanika",
           "michleb", "Dan Torop", "Ger Siemerink", "Edouard Gomez", "Henrik Andersson",
