@@ -34,16 +34,8 @@ hdiutil create -srcfolder package -volname "${PROGN}" -fs HFS+ \
       -fsargs "-c c=64,a=16,e=16" -format UDRW pack.temp.dmg
 
 # mounting image without autoopen to create window style params
-device=$(hdiutil attach -readwrite -noverify -noautoopen "pack.temp.dmg" | \
+device=$(hdiutil attach -readwrite -noverify -autoopen "pack.temp.dmg" | \
          egrep '^/dev/' | sed 1q | awk '{print $1}')
-
-echo '
- tell application "Finder"
-	tell disk "'${PROGN}'"
-		open
-	end tell
- end tell
-' | osascript
 
 echo '
  tell application "Finder"
