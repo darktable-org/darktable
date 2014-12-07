@@ -1,4 +1,4 @@
-# Copyright 1999-2013 Gentoo Foundation
+# Copyright 1999-2014 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
 # $Header: $
 
@@ -36,7 +36,7 @@ CDEPEND="
 	colord? ( x11-misc/colord:0= )
 	flickr? ( media-libs/flickcurl )
 	geo? ( net-libs/libsoup:2.4 )
-	gnome-keyring? ( gnome-base/gnome-keyring )
+	gnome-keyring? ( app-crypt/libsecret )
 	gphoto2? ( media-libs/libgphoto2:= )
 	graphicsmagick? ( media-gfx/graphicsmagick )
 	jpeg2k? ( media-libs/openjpeg:0 )
@@ -76,7 +76,7 @@ src_configure() {
 		$(cmake-utils_use_use colord COLORD)
 		$(cmake-utils_use_use flickr FLICKR)
 		$(cmake-utils_use_use geo GEO)
-		$(cmake-utils_use_use gnome-keyring GNOME_KEYRING)
+		$(cmake-utils_use_use gnome-keyring LIBSECRET)
 		$(cmake-utils_use_use gphoto2 CAMERA_SUPPORT)
 		$(cmake-utils_use_use graphicsmagick GRAPHICSMAGICK)
 		$(cmake-utils_use_use jpeg2k OPENJPEG)
@@ -90,6 +90,7 @@ src_configure() {
 		$(cmake-utils_use_build slideshow SLIDESHOW)
 		$(cmake-utils_use_use web-services GLIBJSON)
 		$(cmake-utils_use_use webp WEBP)
+		-DUSE_GNOME_KEYRING=OFF
 		-DCUSTOM_CFLAGS=ON
 	)
 	cmake-utils_src_configure
