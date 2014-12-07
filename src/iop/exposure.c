@@ -191,7 +191,6 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
   return 1;
 }
 
-/*
 void init_presets (dt_iop_module_so_t *self)
 {
   DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "begin", NULL, NULL, NULL);
@@ -208,7 +207,6 @@ void init_presets (dt_iop_module_so_t *self)
 
   DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "commit", NULL, NULL, NULL);
 }
-*/
 
 static void deflicker_prepare_histogram(dt_iop_module_t *self, uint32_t **histogram,
                                         dt_dev_histogram_stats_t *histogram_stats)
@@ -929,10 +927,8 @@ void gui_init(struct dt_iop_module_t *self)
   dt_bauhaus_combobox_add(g->mode, C_("mode", "manual"));
   g->modes = g_list_append(g->modes, GUINT_TO_POINTER(EXPOSURE_MODE_MANUAL));
 
-  /*
-    dt_bauhaus_combobox_add(g->mode, _("automatic"));
-    g->modes = g_list_append(g->modes, GUINT_TO_POINTER(EXPOSURE_MODE_DEFLICKER));
-  */
+  dt_bauhaus_combobox_add(g->mode, _("automatic"));
+  g->modes = g_list_append(g->modes, GUINT_TO_POINTER(EXPOSURE_MODE_DEFLICKER));
 
   dt_bauhaus_combobox_set_default(g->mode, 0);
   dt_bauhaus_combobox_set(g->mode, g_list_index(g->modes, GUINT_TO_POINTER(p->mode)));
@@ -1013,7 +1009,7 @@ void gui_init(struct dt_iop_module_t *self)
 
   gtk_box_pack_start(GTK_BOX(g->vbox_deflicker), GTK_WIDGET(hbox1), FALSE, FALSE, 0);
 
-  // gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->vbox_deflicker), TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->vbox_deflicker), TRUE, TRUE, 0);
 
   g_signal_connect(G_OBJECT(g->mode), "value-changed", G_CALLBACK(mode_callback), self);
   g_signal_connect(G_OBJECT(g->black), "value-changed", G_CALLBACK(black_callback), self);
