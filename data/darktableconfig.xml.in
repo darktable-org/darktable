@@ -2252,7 +2252,7 @@
   <dtconfig prefs="core">
     <name>plugins/lighttable/audio_player</name>
     <type>string</type>
-    <default>aplay</default>
+    <default>${DEFCONFIG_AUDIOPLAYER}</default>
     <shortdescription>executable for playing audio files</shortdescription>
     <longdescription>this external program is used to play audio files some cameras record to keep notes for images</longdescription>
   </dtconfig>
