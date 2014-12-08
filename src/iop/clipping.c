@@ -1469,8 +1469,6 @@ static void aspect_presets_changed(GtkWidget *combo, dt_iop_module_t *self)
   {
     if(which == RATIO_10_8)
       d = 2445, n = 2032;
-    else if(which == RATIO_10_8)
-      d = 2445, n = 2032;
     else if(which == RATIO_16_10)
       d = 16, n = 10;
     else if(which == RATIO_16_9)
