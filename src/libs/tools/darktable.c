@@ -122,7 +122,8 @@ void gui_init(dt_lib_module_t *self)
     RsvgDimensionData dimension;
     rsvg_handle_get_dimensions(svg, &dimension);
 
-    int width = DT_PIXEL_APPLY_PPI(dimension.width), height = DT_PIXEL_APPLY_PPI(dimension.height);
+    int width = DT_PIXEL_APPLY_DPI(dimension.width) * darktable.gui->ppd,
+        height = DT_PIXEL_APPLY_DPI(dimension.height) * darktable.gui->ppd;
     int stride = cairo_format_stride_for_width(CAIRO_FORMAT_ARGB32, width);
 
     d->image_buffer = (guint8 *)calloc(stride * height, sizeof(guint8));
@@ -167,7 +168,8 @@ png_fallback:
         png_height = cairo_image_surface_get_height(surface);
 
     // blow up the PNG. Ugly, but at least it has the correct size afterwards :-/
-    int width = DT_PIXEL_APPLY_PPI(png_width), height = DT_PIXEL_APPLY_PPI(png_height);
+    int width = DT_PIXEL_APPLY_DPI(png_width) * darktable.gui->ppd,
+        height = DT_PIXEL_APPLY_DPI(png_height) * darktable.gui->ppd;
     int stride = cairo_format_stride_for_width(CAIRO_FORMAT_ARGB32, width);
 
     d->image_buffer = (guint8 *)calloc(stride * height, sizeof(guint8));
