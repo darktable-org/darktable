@@ -1026,6 +1026,13 @@
     <shortdescription>expand a single darkroom module at a time</shortdescription>
     <longdescription>this option toggles the behavior of shift clicking in darkroom mode</longdescription>
   </dtconfig>
+  <dtconfig prefs="gui">
+    <name>plugins/darkroom/ui/border_size</name>
+    <type>int</type>
+    <default>20</default>
+    <shortdescription>border around image in darkroom mode</shortdescription>
+    <longdescription>process the image in darkroom mode with a small border. set to 0 if you don't want any border.</longdescription>
+  </dtconfig>
   <dtconfig>
     <name>ui_last/expander_metadata</name>
     <type>int</type>
