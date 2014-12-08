@@ -442,12 +442,13 @@ void gui_update(struct dt_iop_module_t *self)
     dt_bauhaus_combobox_set(g->presets, 0);
   else
   {
+    gboolean found = FALSE;
     // look through all added presets
-    for(int j = DT_IOP_NUM_OF_STD_TEMP_PRESETS; j < g->preset_cnt; j++)
+    for(int j = DT_IOP_NUM_OF_STD_TEMP_PRESETS; !found && (j < g->preset_cnt); j++)
     {
       // look through all variants of this preset, with different tuning
       for(int i = g->preset_num[j];
-          !strcmp(wb_preset[i].make, makermodel) && !strcmp(wb_preset[i].model, model)
+          !found && !strcmp(wb_preset[i].make, makermodel) && !strcmp(wb_preset[i].model, model)
               && !strcmp(wb_preset[i].name, wb_preset[g->preset_num[j]].name);
           i++)
       {
@@ -460,7 +461,50 @@ void gui_update(struct dt_iop_module_t *self)
           dt_bauhaus_combobox_set(g->presets, j);
           gtk_widget_set_sensitive(g->finetune, 1);
           dt_bauhaus_slider_set(g->finetune, wb_preset[i].tuning);
+          found = TRUE;
           break;
+        }
+      }
+    }
+
+    if(!found)
+    {
+      // ok, we haven't found exact match, maybe this was interpolated?
+
+      // look through all added presets
+      for(int j = DT_IOP_NUM_OF_STD_TEMP_PRESETS; !found && (j < g->preset_cnt); j++)
+      {
+        // look through all variants of this preset, with different tuning
+        int i = g->preset_num[j] + 1;
+        while(!found && !strcmp(wb_preset[i].make, makermodel) && !strcmp(wb_preset[i].model, model)
+              && !strcmp(wb_preset[i].name, wb_preset[g->preset_num[j]].name))
+        {
+          // let's find gaps
+          if(wb_preset[i - 1].tuning + 1 == wb_preset[i].tuning) continue;
+
+          // we have a gap!
+
+          // we do not know what finetuning value was set, we need to bruteforce to find it
+          for(int tune = wb_preset[i - 1].tuning + 1; !found && (tune < wb_preset[i].tuning); tune++)
+          {
+            wb_data interpolated = {.tuning = tune };
+            dt_wb_preset_interpolate(&wb_preset[i - 1], &wb_preset[i], &interpolated);
+
+            float coeffs[3];
+            for(int k = 0; k < 3; k++) coeffs[k] = interpolated.channel[k];
+
+            if(memcmp(coeffs, p->coeffs, 3 * sizeof(float)) == 0)
+            {
+              // got exact match!
+
+              dt_bauhaus_combobox_set(g->presets, j);
+              gtk_widget_set_sensitive(g->finetune, 1);
+              dt_bauhaus_slider_set(g->finetune, tune);
+              found = TRUE;
+              break;
+            }
+          }
+          i++;
         }
       }
     }
