@@ -39,6 +39,7 @@ DT_MODULE_INTROSPECTION(2, dt_iop_temperature_params_t)
 
 #define DT_IOP_LOWEST_TEMPERATURE 2000
 #define DT_IOP_HIGHEST_TEMPERATURE 23000
+#define DT_IOP_NUM_OF_STD_TEMP_PRESETS 2
 
 typedef struct dt_iop_temperature_params_t
 {
@@ -185,6 +186,22 @@ static void convert_rgb_to_k(float rgb[3], float *temp, float *tint)
   *tint = (tmp[1] / tmp[0]) / (rgb[1] / rgb[0]);
   if(*tint < 0.2f) *tint = 0.2f;
   if(*tint > 2.5f) *tint = 2.5f;
+}
+
+/*
+ * interpolate values from p1 and p2 into out.
+ */
+void dt_wb_preset_interpolate(const wb_data *const p1, // the smaller tuning
+                              const wb_data *const p2, // the larger tuning (can't be == p1)
+                              wb_data *out)            // has tuning initialized
+{
+  // stupid linear interpolation.
+  // to be confirmed.
+  const double t = CLAMP((double)(out->tuning - p1->tuning) / (double)(p2->tuning - p1->tuning), 0.0, 1.0);
+  for(int k = 0; k < 3; k++)
+  {
+    out->channel[k] = (1.0 - t) * p1->channel[k] + t * p2->channel[k];
+  }
 }
 
 static int FC(const int row, const int col, const unsigned int filters)
@@ -394,7 +411,12 @@ void gui_update(struct dt_iop_module_t *self)
   dt_bauhaus_combobox_clear(g->presets);
   dt_bauhaus_combobox_add(g->presets, _("camera white balance"));
   dt_bauhaus_combobox_add(g->presets, _("spot white balance"));
-  g->preset_cnt = 2;
+  g->preset_cnt = DT_IOP_NUM_OF_STD_TEMP_PRESETS;
+
+  dt_bauhaus_combobox_set(g->presets, -1);
+  dt_bauhaus_slider_set(g->finetune, 0);
+  gtk_widget_set_sensitive(g->finetune, 0);
+
   const char *wb_name = NULL;
   char makermodel[1024];
   char *model = makermodel;
@@ -416,13 +438,77 @@ void gui_update(struct dt_iop_module_t *self)
       }
     }
 
-  if(fabsf(p->coeffs[0] - fp->coeffs[0]) + fabsf(p->coeffs[1] - fp->coeffs[1])
-     + fabsf(p->coeffs[2] - fp->coeffs[2]) < 0.01)
+  if(memcmp(p->coeffs, fp->coeffs, 3 * sizeof(float)) == 0)
     dt_bauhaus_combobox_set(g->presets, 0);
   else
-    dt_bauhaus_combobox_set(g->presets, -1);
-  dt_bauhaus_slider_set(g->finetune, 0);
-  gtk_widget_set_sensitive(g->finetune, 0);
+  {
+    gboolean found = FALSE;
+    // look through all added presets
+    for(int j = DT_IOP_NUM_OF_STD_TEMP_PRESETS; !found && (j < g->preset_cnt); j++)
+    {
+      // look through all variants of this preset, with different tuning
+      for(int i = g->preset_num[j];
+          !found && !strcmp(wb_preset[i].make, makermodel) && !strcmp(wb_preset[i].model, model)
+              && !strcmp(wb_preset[i].name, wb_preset[g->preset_num[j]].name);
+          i++)
+      {
+        float coeffs[3];
+        for(int k = 0; k < 3; k++) coeffs[k] = wb_preset[i].channel[k];
+
+        if(memcmp(coeffs, p->coeffs, 3 * sizeof(float)) == 0)
+        {
+          // got exact match!
+          dt_bauhaus_combobox_set(g->presets, j);
+          gtk_widget_set_sensitive(g->finetune, 1);
+          dt_bauhaus_slider_set(g->finetune, wb_preset[i].tuning);
+          found = TRUE;
+          break;
+        }
+      }
+    }
+
+    if(!found)
+    {
+      // ok, we haven't found exact match, maybe this was interpolated?
+
+      // look through all added presets
+      for(int j = DT_IOP_NUM_OF_STD_TEMP_PRESETS; !found && (j < g->preset_cnt); j++)
+      {
+        // look through all variants of this preset, with different tuning
+        int i = g->preset_num[j] + 1;
+        while(!found && !strcmp(wb_preset[i].make, makermodel) && !strcmp(wb_preset[i].model, model)
+              && !strcmp(wb_preset[i].name, wb_preset[g->preset_num[j]].name))
+        {
+          // let's find gaps
+          if(wb_preset[i - 1].tuning + 1 == wb_preset[i].tuning) continue;
+
+          // we have a gap!
+
+          // we do not know what finetuning value was set, we need to bruteforce to find it
+          for(int tune = wb_preset[i - 1].tuning + 1; !found && (tune < wb_preset[i].tuning); tune++)
+          {
+            wb_data interpolated = {.tuning = tune };
+            dt_wb_preset_interpolate(&wb_preset[i - 1], &wb_preset[i], &interpolated);
+
+            float coeffs[3];
+            for(int k = 0; k < 3; k++) coeffs[k] = interpolated.channel[k];
+
+            if(memcmp(coeffs, p->coeffs, 3 * sizeof(float)) == 0)
+            {
+              // got exact match!
+
+              dt_bauhaus_combobox_set(g->presets, j);
+              gtk_widget_set_sensitive(g->finetune, 1);
+              dt_bauhaus_slider_set(g->finetune, tune);
+              found = TRUE;
+              break;
+            }
+          }
+          i++;
+        }
+      }
+    }
+  }
 }
 
 void reload_defaults(dt_iop_module_t *module)
@@ -697,7 +783,7 @@ static void apply_preset(dt_iop_module_t *self)
     case 0: // camera wb
       for(int k = 0; k < 3; k++) p->coeffs[k] = fp->coeffs[k];
       break;
-    case 1: // spot wb, exposure callback will set p->coeffs.
+    case 1: // spot wb, expose callback will set p->coeffs.
       for(int k = 0; k < 3; k++) p->coeffs[k] = fp->coeffs[k];
       dt_iop_request_focus(self);
       self->request_color_pick = DT_REQUEST_COLORPICK_MODULE;
@@ -707,22 +793,62 @@ static void apply_preset(dt_iop_module_t *self)
         dt_lib_colorpicker_set_area(darktable.lib, 0.99);
 
       break;
-    default:
-      for(int i = g->preset_num[pos]; i < wb_preset_count; i++)
+    default: // camera WB presets
+    {
+      char makermodel[1024];
+      char *model = makermodel;
+      dt_colorspaces_get_makermodel_split(makermodel, sizeof(makermodel), &model,
+                                          self->dev->image_storage.exif_maker,
+                                          self->dev->image_storage.exif_model);
+
+      gboolean found = FALSE;
+      // look through all variants of this preset, with different tuning
+      for(int i = g->preset_num[pos];
+          !strcmp(wb_preset[i].make, makermodel) && !strcmp(wb_preset[i].model, model)
+              && !strcmp(wb_preset[i].name, wb_preset[g->preset_num[pos]].name);
+          i++)
       {
-        char makermodel[1024];
-        char *model = makermodel;
-        dt_colorspaces_get_makermodel_split(makermodel, sizeof(makermodel), &model,
-                                            self->dev->image_storage.exif_maker,
-                                            self->dev->image_storage.exif_model);
-        if(!strcmp(wb_preset[i].make, makermodel) && !strcmp(wb_preset[i].model, model)
-           && wb_preset[i].tuning == tune)
+        if(wb_preset[i].tuning == tune)
         {
+          // got exact match!
           for(int k = 0; k < 3; k++) p->coeffs[k] = wb_preset[i].channel[k];
+          found = TRUE;
           break;
         }
       }
-      break;
+
+      if(!found)
+      {
+        // ok, we haven't found exact match, need to interpolate
+
+        // let's find 2 most closest tunings with needed_tuning in-between
+        int min_id = INT_MIN, max_id = INT_MIN;
+
+        // look through all variants of this preset, with different tuning, starting from second entry (if
+        // any)
+        int i = g->preset_num[pos] + 1;
+        while(!strcmp(wb_preset[i].make, makermodel) && !strcmp(wb_preset[i].model, model)
+              && !strcmp(wb_preset[i].name, wb_preset[g->preset_num[pos]].name))
+        {
+          if(wb_preset[i - 1].tuning < tune && wb_preset[i].tuning > tune)
+          {
+            min_id = i - 1;
+            max_id = i;
+            break;
+          }
+
+          i++;
+        }
+
+        // have we found enough good data?
+        if(min_id == INT_MIN || max_id == INT_MIN || min_id == max_id) break; // hysteresis
+
+        wb_data interpolated = {.tuning = tune };
+        dt_wb_preset_interpolate(&wb_preset[min_id], &wb_preset[max_id], &interpolated);
+        for(int k = 0; k < 3; k++) p->coeffs[k] = interpolated.channel[k];
+      }
+    }
+    break;
   }
   if(self->off) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(self->off), 1);
   gui_update_from_coeffs(self);
@@ -735,7 +861,7 @@ static void presets_changed(GtkWidget *widget, gpointer user_data)
   apply_preset(self);
   const int pos = dt_bauhaus_combobox_get(widget);
   dt_iop_temperature_gui_data_t *g = (dt_iop_temperature_gui_data_t *)self->gui_data;
-  gtk_widget_set_sensitive(g->finetune, pos >= 2);
+  gtk_widget_set_sensitive(g->finetune, pos >= DT_IOP_NUM_OF_STD_TEMP_PRESETS);
 }
 
 static void finetune_changed(GtkWidget *widget, gpointer user_data)
