@@ -717,8 +717,8 @@ void dt_mipmap_cache_init(dt_mipmap_cache_t *cache)
 
   // full buffer needs dynamic alloc:
   const int full_entries
-      = MAX(2, parallel); // even with one thread you want two buffers. one for dr one for thumbs.
-  int32_t max_mem_bufs = nearest_power_of_two(full_entries);
+      = MAX(2, parallel+1); // even with one thread you want two buffers. one for dr one for thumbs.
+  int32_t max_mem_bufs = 2*nearest_power_of_two(full_entries);
 
   // for this buffer, because it can be very busy during import, we want the minimum
   // number of entries in the hashtable to be 16, but leave the quota as is. the dynamic
