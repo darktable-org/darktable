@@ -47,8 +47,8 @@
   background-color: #343434;
 }
 
-#plugins_vbox_left > * > .GtkTable > * {
-  background-color: #252525;
+#plugins_vbox_left  .GtkTable * {
+  background-color: #ff0000;
   margin:0;
   border:0;
   padding:0;

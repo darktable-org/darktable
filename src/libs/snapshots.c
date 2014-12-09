@@ -21,7 +21,6 @@
 #include "control/control.h"
 #include "control/conf.h"
 #include "develop/develop.h"
-#include "dtgtk/button.h"
 #include "libs/lib.h"
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
@@ -303,7 +302,7 @@ void gui_init(dt_lib_module_t *self)
   for(int k = 0; k < d->size; k++)
   {
     /* create snapshot button */
-    d->snapshot[k].button = dtgtk_togglebutton_new_with_label(wdname, NULL, CPF_STYLE_FLAT);
+    d->snapshot[k].button = gtk_toggle_button_new_with_label(wdname);
     g_signal_connect(G_OBJECT(d->snapshot[k].button), "clicked", G_CALLBACK(_lib_snapshots_toggled_callback),
                      self);
 

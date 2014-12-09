@@ -153,7 +153,7 @@ static GtkWidget *_lib_history_create_button(dt_lib_module_t *self, int num, con
   }
 
   /* create toggle button */
-  widget = dtgtk_togglebutton_new_with_label(numlabel, NULL, CPF_STYLE_FLAT);
+  widget = gtk_toggle_button_new_with_label(numlabel);
   g_object_set_data(G_OBJECT(widget), "history_number", GINT_TO_POINTER(num + 1));
   g_object_set_data(G_OBJECT(widget), "label", (gpointer)g_strdup(label));
 
