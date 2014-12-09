@@ -52,6 +52,9 @@ typedef enum dt_logo_season_t
 /** returns the dt logo season to use right now */
 dt_logo_season_t get_logo_season(void);
 
+gchar *dt_util_latitude_str(float latitude);
+gchar *dt_util_longitude_str(float longitude);
+
 #endif
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

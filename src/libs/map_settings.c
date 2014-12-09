@@ -27,7 +27,7 @@
 #include <gdk/gdkkeysyms.h>
 #include "dtgtk/button.h"
 
-#include "osm-gps-map-source.h"
+#include <osm-gps-map-source.h>
 
 DT_MODULE(1)
 

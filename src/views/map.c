@@ -32,7 +32,7 @@
 #include "gui/accelerators.h"
 #include <gdk/gdkkeysyms.h>
 
-#include "osm-gps-map.h"
+#include <osm-gps-map.h>
 
 DT_MODULE(1)
 

@@ -22,7 +22,7 @@
 
 #include "common/image.h"
 #ifdef HAVE_MAP
-#include "osm-gps-map-source.h"
+#include <osm-gps-map-source.h>
 #endif
 #include <inttypes.h>
 #include <gui/gtk.h>

@@ -27,9 +27,6 @@
 #include "libs/lib.h"
 #include "gui/gtk.h"
 #include "gui/accelerators.h"
-#ifdef HAVE_MAP
-#include "osd-utils.h"
-#endif
 
 #include <sys/param.h>
 #include <gdk/gdkkeysyms.h>
@@ -447,22 +444,18 @@ static void _metadata_view_update_values(dt_lib_module_t *self)
     }
     else
     {
-#ifdef HAVE_MAP
       if(dt_conf_get_bool("plugins/lighttable/metadata_view/pretty_location"))
       {
-        gchar *latitude = osd_latitude_str(img->latitude);
+        gchar *latitude = dt_util_latitude_str(img->latitude);
         _metadata_update_value(d->metadata[md_geotagging_lat], latitude);
         g_free(latitude);
       }
       else
       {
-#endif
         gchar NS = img->latitude < 0 ? 'S' : 'N';
         snprintf(value, sizeof(value), "%c %09.6f", NS, fabs(img->latitude));
         _metadata_update_value(d->metadata[md_geotagging_lat], value);
-#ifdef HAVE_MAP
       }
-#endif
     }
     /* longitude */
     if(isnan(img->longitude))
@@ -471,22 +464,18 @@ static void _metadata_view_update_values(dt_lib_module_t *self)
     }
     else
     {
-#ifdef HAVE_MAP
       if(dt_conf_get_bool("plugins/lighttable/metadata_view/pretty_location"))
       {
-        gchar *longitude = osd_longitude_str(img->longitude);
+        gchar *longitude = dt_util_longitude_str(img->longitude);
         _metadata_update_value(d->metadata[md_geotagging_lon], longitude);
         g_free(longitude);
       }
       else
       {
-#endif
         gchar EW = img->longitude < 0 ? 'W' : 'E';
         snprintf(value, sizeof(value), "%c %010.6f", EW, fabs(img->longitude));
         _metadata_update_value(d->metadata[md_geotagging_lon], value);
-#ifdef HAVE_MAP
       }
-#endif
     }
 
     /* release img */
