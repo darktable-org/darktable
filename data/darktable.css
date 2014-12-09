@@ -34,7 +34,7 @@
   /*border-style: inset;*/
   margin: 1px;
   padding: 2px;
-  background-color: #292929;
+  background-color: #242424;
 }
 #dt-plugin-ui:selected
 {
@@ -43,11 +43,15 @@
   /*border-style: inset;*/
   margin: 1px;
   padding: 2px;
-  background-color: #770000;
+  color: #e2e2e2;
+  background-color: #343434;
 }
 
 #plugins_vbox_left > * > .GtkTable > * {
   background-color: #252525;
+  margin:0;
+  border:0;
+  padding:0;
 }
 
 #header_label,#darktable_label,#view_label {
