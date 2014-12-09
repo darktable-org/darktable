@@ -1077,7 +1077,7 @@ static void dt_bauhaus_clear(dt_bauhaus_widget_t *w, cairo_t *cr)
   }
   else
   {
-    if(gtk_widget_get_state(GTK_WIDGET(w)) == GTK_STATE_SELECTED)
+    if(gtk_widget_get_state_flags(GTK_WIDGET(w)) & GTK_STATE_FLAG_SELECTED)
       set_bg_focus(cr);
     else
       set_bg_normal(cr);

@@ -6,4 +6,59 @@
   font: Sans 8;
   color: #cacaca;
   background-color: #212121;
+  border-color: #111111;
+  margin: 0;
+  padding: 2px;
+  border: 0;
 }
+
+/* bright background */
+#plugins_vbox > .GtkEventBox, #plugins_vbox_left > .GtkEventBox,
+#right > .GtkEventBox, #left > .GtkEventBox, #background_job_eventbox,
+#dt-plugin-ui *
+{
+  background-color: #292929;
+}
+#dt-plugin-ui *:selected
+{
+  background-color: #777777;
+}
+#dt-plugin-ui *:prelight
+{
+  background-color: #555555;
+}
+#dt-plugin-ui
+{
+  border: 2px solid #111111;
+  border-radius: 2px;
+  /*border-style: inset;*/
+  margin: 1px;
+  padding: 2px;
+  background-color: #292929;
+}
+#dt-plugin-ui:selected
+{
+  border: 2px solid #111111;
+  border-radius: 2px;
+  /*border-style: inset;*/
+  margin: 1px;
+  padding: 2px;
+  background-color: #770000;
+}
+
+#plugins_vbox_left > * > .GtkTable > * {
+  background-color: #252525;
+}
+
+#header_label,#darktable_label,#view_label {
+  color: #7f7f7f;
+  background-color: #212121;
+  font: Sans bold 8;
+}
+
+#panel_label {
+  color: white;
+  background-color: #212121;
+  font: Sans bold 8;
+}
+

@@ -992,6 +992,7 @@ GtkWidget *dt_lib_gui_get_expander(dt_lib_module_t *module)
   gtk_container_add(GTK_CONTAINER(pluginui), al);
   gtk_container_add(GTK_CONTAINER(al), module->widget);
   gtk_widget_show_all(module->widget);
+  gtk_widget_set_name(pluginui, "dt-plugin-ui");
   module->expander = expander;
 
   return module->expander;
