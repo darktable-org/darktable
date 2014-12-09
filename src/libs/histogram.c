@@ -126,7 +126,7 @@ void gui_init(dt_lib_module_t *self)
   gtk_widget_add_events(self->widget, GDK_LEAVE_NOTIFY_MASK | GDK_ENTER_NOTIFY_MASK | GDK_POINTER_MOTION_MASK
                                       | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK |
                                       //                         GDK_STRUCTURE_MASK |
-                                      GDK_SCROLL);
+                                      GDK_SCROLL | GDK_SCROLL_MASK);
 
   /* connect callbacks */
   g_object_set(G_OBJECT(self->widget), "tooltip-text", _("drag to change exposure,\ndoubleclick resets"),
