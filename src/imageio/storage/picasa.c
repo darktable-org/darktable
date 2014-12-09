@@ -1492,10 +1492,11 @@ cleanup:
 
 void finalize_store(struct dt_imageio_module_storage_t *self, dt_imageio_module_data_t *data)
 {
-
+  gdk_threads_enter();
   dt_storage_picasa_gui_data_t *ui = (dt_storage_picasa_gui_data_t *)self->gui_data;
   ui_reset_albums_creation(ui);
   ui_refresh_albums(ui);
+  gdk_threads_leave();
 }
 
 

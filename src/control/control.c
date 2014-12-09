@@ -396,7 +396,7 @@ void dt_control_shutdown(dt_control_t *s)
   /* first wait for kick_on_workers_thread */
   pthread_join(s->kick_on_workers_thread, NULL);
 
-
+  gdk_threads_leave();
   int k;
   for(k = 0; k < s->num_threads; k++)
     // pthread_kill(s->thread[k], 9);
@@ -404,6 +404,9 @@ void dt_control_shutdown(dt_control_t *s)
   for(k = 0; k < DT_CTL_WORKER_RESERVED; k++)
     // pthread_kill(s->thread_res[k], 9);
     pthread_join(s->thread_res[k], NULL);
+
+
+  gdk_threads_enter();
 }
 
 void dt_control_cleanup(dt_control_t *s)
@@ -752,6 +755,9 @@ gboolean dt_control_gdk_lock()
   _control_gdk_lock_mine = TRUE;
   dt_pthread_mutex_unlock(&_control_gdk_lock_threads_mutex);
 
+  /* enter gdk critical section */
+  gdk_threads_enter();
+
   return TRUE;
 }
 
@@ -763,6 +769,9 @@ void dt_control_gdk_unlock()
   {
     /* remove lock */
     _control_gdk_lock_mine = FALSE;
+
+    /* leave critical section */
+    gdk_threads_leave();
   }
   dt_pthread_mutex_unlock(&_control_gdk_lock_threads_mutex);
 }

@@ -719,6 +719,10 @@ int dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[])
   if(!g_thread_supported()) g_thread_init(NULL);
 #endif
 
+  gdk_threads_init();
+
+  gdk_threads_enter();
+
   gtk_init(&argc, &argv);
 
 #ifdef MAC_INTEGRATION
@@ -977,6 +981,7 @@ void dt_gui_gtk_run(dt_gui_gtk_t *gui)
 #endif
   /* start the event loop */
   gtk_main();
+  gdk_threads_leave();
 }
 
 static void init_widgets(dt_gui_gtk_t *gui)
