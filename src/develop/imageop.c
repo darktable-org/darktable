@@ -1452,7 +1452,7 @@ static void dt_iop_gui_reset_callback(GtkButton *button, dt_iop_module_t *module
 
 static void _preset_popup_position(GtkMenu *menu, gint *x, gint *y, gboolean *push_in, gpointer data)
 {
-  GtkRequisition requisition;
+  GtkRequisition requisition = { 0 };
   gdk_window_get_origin(gtk_widget_get_window(GTK_WIDGET(data)), x, y);
   gtk_widget_size_request(GTK_WIDGET(menu), &requisition);
 

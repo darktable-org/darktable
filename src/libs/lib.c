@@ -733,7 +733,7 @@ static void _preset_popup_posistion(GtkMenu *menu, gint *x, gint *y, gboolean *p
 {
   gint w;
   gint ww;
-  GtkRequisition requisition;
+  GtkRequisition requisition = { 0 };
 
   w = gdk_window_get_width(gtk_widget_get_window(GTK_WIDGET(data)));
   ww = gdk_window_get_width(gtk_widget_get_window(dt_ui_main_window(darktable.gui->ui)));

@@ -387,7 +387,7 @@ static void _slider_size_request(GtkWidget *widget, GtkRequisition *requisition)
 
 static void _slider_get_preferred_width(GtkWidget *widget, gint *minimal_width, gint *natural_width)
 {
-  GtkRequisition requisition;
+  GtkRequisition requisition = { 0 };
 
   _slider_size_request(widget, &requisition);
 
@@ -396,7 +396,7 @@ static void _slider_get_preferred_width(GtkWidget *widget, gint *minimal_width, 
 
 static void _slider_get_preferred_height(GtkWidget *widget, gint *minimal_height, gint *natural_height)
 {
-  GtkRequisition requisition;
+  GtkRequisition requisition = { 0 };
 
   _slider_size_request(widget, &requisition);
 

@@ -123,7 +123,7 @@ static void _tristatebutton_destroy(GtkObject *object)
 
 static void _tristatebutton_get_preferred_width(GtkWidget *widget, gint *minimal_width, gint *natural_width)
 {
-  GtkRequisition requisition;
+  GtkRequisition requisition = { 0 };
 
   _tristatebutton_size_request(widget, &requisition);
 
@@ -132,7 +132,7 @@ static void _tristatebutton_get_preferred_width(GtkWidget *widget, gint *minimal
 
 static void _tristatebutton_get_preferred_height(GtkWidget *widget, gint *minimal_height, gint *natural_height)
 {
-  GtkRequisition requisition;
+  GtkRequisition requisition = { 0 };
 
   _tristatebutton_size_request(widget, &requisition);
 
