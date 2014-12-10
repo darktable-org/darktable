@@ -74,7 +74,6 @@ FILE(GLOB SOURCE_FILES
   "develop/masks/masks.c"
   "dtgtk/button.c"
   "dtgtk/icon.c"
-  "dtgtk/label.c"
   "dtgtk/gradientslider.c"
   "dtgtk/togglebutton.c"
   "dtgtk/paint.c"

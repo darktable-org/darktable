@@ -25,7 +25,6 @@
 #include "common/debug.h"
 #include "common/opencl.h"
 #include "bauhaus/bauhaus.h"
-#include "dtgtk/label.h"
 #include "dtgtk/resetlabel.h"
 #include "dtgtk/togglebutton.h"
 #include "dtgtk/button.h"

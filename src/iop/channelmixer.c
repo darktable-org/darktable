@@ -25,7 +25,6 @@
 #include "develop/imageop.h"
 #include "control/control.h"
 #include "common/debug.h"
-#include "dtgtk/label.h"
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
 #include "gui/presets.h"
@@ -89,7 +88,7 @@ typedef struct dt_iop_channelmixer_gui_data_t
 {
   GtkBox *vbox;
   GtkWidget *combo1;                      // Output channel
-  GtkDarktableLabel *dtlabel1, *dtlabel2; // output channel, source channels
+  GtkLabel *dtlabel1, *dtlabel2;          // output channel, source channels
   GtkLabel *label1, *label2, *label3;     // red, green, blue
   GtkWidget *scale1, *scale2, *scale3;    // red, green, blue
 } dt_iop_channelmixer_gui_data_t;

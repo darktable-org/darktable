@@ -26,7 +26,6 @@
 #include "libs/lib.h"
 #include "gui/gtk.h"
 #include "dtgtk/icon.h"
-#include "dtgtk/label.h"
 #include "gui/draw.h"
 
 DT_MODULE(1)

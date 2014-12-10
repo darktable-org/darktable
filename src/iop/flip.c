@@ -33,7 +33,6 @@
 #include "common/debug.h"
 #include "common/imageio.h"
 #include "common/opencl.h"
-#include "dtgtk/label.h"
 #include "dtgtk/resetlabel.h"
 #include "dtgtk/button.h"
 #include "gui/accelerators.h"

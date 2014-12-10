@@ -21,7 +21,6 @@
 #include "control/conf.h"
 #include "develop/develop.h"
 #include "develop/imageop.h"
-#include "dtgtk/label.h"
 #include "dtgtk/togglebutton.h"
 #include "dtgtk/button.h"
 #include "gui/accelerators.h"
@@ -403,8 +402,7 @@ void gui_init(dt_lib_module_t *self)
   GtkWidget *output_options = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
   GtkWidget *picker_subrow = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 2);
   GtkWidget *restrict_button;
-  GtkWidget *samples_label
-      = dtgtk_label_new(_("live samples"), DARKTABLE_LABEL_TAB | DARKTABLE_LABEL_ALIGN_RIGHT);
+  GtkWidget *samples_label = gtk_label_new(_("live samples"));
   GtkWidget *samples_options_row = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 2);
 
   // Initializing self data structure

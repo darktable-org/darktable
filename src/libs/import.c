@@ -31,7 +31,6 @@
 #ifdef HAVE_GPHOTO2
 #include "control/jobs/camera_jobs.h"
 #endif
-#include "dtgtk/label.h"
 #include "dtgtk/button.h"
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
@@ -204,8 +203,7 @@ void _lib_import_ui_devices_update(dt_lib_module_t *self)
       count++;
 
       /* add camera label */
-      GtkWidget *label
-          = GTK_WIDGET(dtgtk_label_new(camera->model, DARKTABLE_LABEL_TAB | DARKTABLE_LABEL_ALIGN_LEFT));
+      GtkWidget *label = GTK_WIDGET(gtk_label_new(camera->model));
       gtk_box_pack_start(GTK_BOX(d->devices), label, TRUE, TRUE, 0);
 
       /* set camera summary if available */

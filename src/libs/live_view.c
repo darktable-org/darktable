@@ -30,7 +30,6 @@
 #include "gui/gtk.h"
 #include "gui/draw.h"
 #include "gui/guides.h"
-#include "dtgtk/label.h"
 #include <gdk/gdkkeysyms.h>
 #include "dtgtk/button.h"
 

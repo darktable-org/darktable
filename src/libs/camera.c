@@ -23,7 +23,6 @@
 #include "libs/lib.h"
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
-#include "dtgtk/label.h"
 #include <gdk/gdkkeysyms.h>
 #include "dtgtk/button.h"
 
@@ -403,9 +402,7 @@ void gui_init(dt_lib_module_t *self)
   GtkBox *hbox, *vbox1, *vbox2;
 
   // Camera control
-  gtk_box_pack_start(GTK_BOX(self->widget),
-                     dtgtk_label_new(_("camera control"), DARKTABLE_LABEL_TAB | DARKTABLE_LABEL_ALIGN_RIGHT),
-                     TRUE, TRUE, 5);
+  gtk_box_pack_start(GTK_BOX(self->widget), gtk_label_new(_("camera control")), TRUE, TRUE, 5);
   vbox1 = GTK_BOX(gtk_box_new(GTK_ORIENTATION_VERTICAL, 0));
   vbox2 = GTK_BOX(gtk_box_new(GTK_ORIENTATION_VERTICAL, 0));
 
@@ -484,9 +481,7 @@ void gui_init(dt_lib_module_t *self)
 
   // Camera settings
   dt_lib_camera_property_t *prop;
-  gtk_box_pack_start(GTK_BOX(self->widget),
-                     dtgtk_label_new(_("properties"), DARKTABLE_LABEL_TAB | DARKTABLE_LABEL_ALIGN_RIGHT),
-                     TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(self->widget), gtk_label_new(_("properties")), TRUE, TRUE, 0);
   lib->gui.pvbox1 = GTK_BOX(gtk_box_new(GTK_ORIENTATION_VERTICAL, 0));
   lib->gui.pvbox2 = GTK_BOX(gtk_box_new(GTK_ORIENTATION_VERTICAL, 0));
 
@@ -648,10 +643,7 @@ void gui_init(dt_lib_module_t *self)
                                        G_CALLBACK(_property_choice_callback), lib);
 
   // user specified properties
-  gtk_box_pack_start(
-      GTK_BOX(self->widget),
-      dtgtk_label_new(_("additional properties"), DARKTABLE_LABEL_TAB | DARKTABLE_LABEL_ALIGN_RIGHT), TRUE,
-      TRUE, 5);
+  gtk_box_pack_start(GTK_BOX(self->widget), gtk_label_new(_("additional properties")), TRUE, TRUE, 5);
   vbox1 = GTK_BOX(gtk_box_new(GTK_ORIENTATION_VERTICAL, 0));
   vbox2 = GTK_BOX(gtk_box_new(GTK_ORIENTATION_VERTICAL, 0));
 

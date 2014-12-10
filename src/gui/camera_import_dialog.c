@@ -26,7 +26,6 @@
 #include "common/camera_control.h"
 #include "common/utility.h"
 #include "dtgtk/button.h"
-#include "dtgtk/label.h"
 #include "gui/camera_import_dialog.h"
 
 #include <time.h>
@@ -259,9 +258,7 @@ static void _camera_import_dialog_new(_camera_import_dialog_t *data)
   gtk_container_set_border_width(GTK_CONTAINER(data->settings.page), 5);
 
   // general settings
-  gtk_box_pack_start(GTK_BOX(data->settings.page),
-                     dtgtk_label_new(_("general"), DARKTABLE_LABEL_TAB | DARKTABLE_LABEL_ALIGN_RIGHT), FALSE,
-                     FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(data->settings.page), gtk_label_new(_("general")), FALSE, FALSE, 0);
 
   // ignoring of jpegs. hack while we don't handle raw+jpeg in the same directories.
   data->settings.general.ignore_jpeg = gtk_check_button_new_with_label(_("ignore JPEG files"));

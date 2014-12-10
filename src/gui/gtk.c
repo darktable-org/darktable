@@ -25,7 +25,6 @@
 #include "common/image_cache.h"
 #include "develop/develop.h"
 #include "develop/imageop.h"
-#include "dtgtk/label.h"
 #include "dtgtk/button.h"
 #include "gui/accelerators.h"
 #include "gui/contrast.h"

@@ -17,7 +17,6 @@
 */
 
 #include "dtgtk/button.h"
-#include "dtgtk/label.h"
 #include "gui/gtk.h"
 #include "common/darktable.h"
 #include "common/image.h"

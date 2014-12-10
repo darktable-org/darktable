@@ -26,7 +26,6 @@ http://www.youtube.com/watch?v=JVoUgR6bhBc
 #include "develop/imageop.h"
 #include "bauhaus/bauhaus.h"
 #include "gui/gtk.h"
-#include "dtgtk/label.h"
 #include "common/colorspaces.h"
 #include "common/opencl.h"
 
@@ -571,9 +570,7 @@ void gui_init(dt_iop_module_t *self)
 #endif
 
   /* lift */
-  gtk_box_pack_start(GTK_BOX(self->widget),
-                     GTK_WIDGET(dtgtk_label_new(_("lift"), DARKTABLE_LABEL_TAB | DARKTABLE_LABEL_ALIGN_RIGHT)),
-                     FALSE, FALSE, 5);
+  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(gtk_label_new(_("lift"))), FALSE, FALSE, 5);
 
   g->lift_factor
       = dt_bauhaus_slider_new_with_range(self, -1.0, 1.0, 0.005, p->lift[CHANNEL_FACTOR] - 1.0f, 3);
@@ -612,10 +609,7 @@ void gui_init(dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), g->lift_b, TRUE, TRUE, 0);
 
   /* gamma */
-  gtk_box_pack_start(
-      GTK_BOX(self->widget),
-      GTK_WIDGET(dtgtk_label_new(_("gamma"), DARKTABLE_LABEL_TAB | DARKTABLE_LABEL_ALIGN_RIGHT)), FALSE,
-      FALSE, 5);
+  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(gtk_label_new(_("gamma"))), FALSE, FALSE, 5);
 
   g->gamma_factor
       = dt_bauhaus_slider_new_with_range(self, -1.0, 1.0, 0.005, p->gamma[CHANNEL_FACTOR] - 1.0f, 3);
@@ -654,9 +648,7 @@ void gui_init(dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), g->gamma_b, TRUE, TRUE, 0);
 
   /* gain */
-  gtk_box_pack_start(GTK_BOX(self->widget),
-                     GTK_WIDGET(dtgtk_label_new(_("gain"), DARKTABLE_LABEL_TAB | DARKTABLE_LABEL_ALIGN_RIGHT)),
-                     FALSE, FALSE, 5);
+  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(gtk_label_new(_("gain"))), FALSE, FALSE, 5);
 
   g->gain_factor
       = dt_bauhaus_slider_new_with_range(self, -1.0, 1.0, 0.005, p->gain[CHANNEL_FACTOR] - 1.0f, 3);

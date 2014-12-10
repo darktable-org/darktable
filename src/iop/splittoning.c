@@ -29,7 +29,6 @@
 #include "develop/develop.h"
 #include "develop/imageop.h"
 #include "control/control.h"
-#include "dtgtk/label.h"
 #include "dtgtk/resetlabel.h"
 #include "dtgtk/gradientslider.h"
 #include "dtgtk/button.h"
@@ -526,9 +525,7 @@ void cleanup(dt_iop_module_t *module)
 static inline void gui_init_tab(struct dt_iop_module_t *self, const char *name, GtkDarktableButton **ppcolor,
                                 GtkWidget **pphue, GtkWidget **ppsaturation)
 {
-  gtk_box_pack_start(GTK_BOX(self->widget),
-                     GTK_WIDGET(dtgtk_label_new(name, DARKTABLE_LABEL_TAB | DARKTABLE_LABEL_ALIGN_RIGHT)),
-                     FALSE, FALSE, 5);
+  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(gtk_label_new(name)), FALSE, FALSE, 5);
 
   // color button
   GtkDarktableButton *color;

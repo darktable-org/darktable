@@ -33,7 +33,6 @@
 #include "dtgtk/button.h"
 #include "dtgtk/icon.h"
 #include "dtgtk/gradientslider.h"
-#include "dtgtk/label.h"
 
 #include <strings.h>
 #include <assert.h>
