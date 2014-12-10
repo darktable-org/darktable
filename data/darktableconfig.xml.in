@@ -1006,6 +1006,13 @@
     <longdescription>show a more readable representation of the location in the image information module</longdescription>
   </dtconfig>
   <dtconfig prefs="gui">
+    <name>plugins/lighttable/draw_custom_metadata</name>
+    <type>bool</type>
+    <default>false</default>
+    <shortdescription>overlay txt sidecar over zoomed images</shortdescription>
+    <longdescription>when there is a txt file next to an image it can be shown as an overlay over zoomed images on the lighttable. the txt file either has to be there at import time or the crawler has to be enabled</longdescription>
+  </dtconfig>
+  <dtconfig prefs="gui">
     <name>lighttable/ui/single_module</name>
     <type>bool</type>
     <default>false</default>
