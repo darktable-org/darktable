@@ -44,8 +44,6 @@ GType dtgtk_togglebutton_get_type(void);
 
 /** Instansiate a new darktable toggle button */
 GtkWidget *dtgtk_togglebutton_new(DTGTKCairoPaintIconFunc paint, gint paintflag);
-GtkWidget *dtgtk_togglebutton_new_with_label(const gchar *label, DTGTKCairoPaintIconFunc paint,
-                                             gint paintflag);
 
 /** Set the paint function and paint flags */
 void dtgtk_togglebutton_set_paint(GtkDarktableToggleButton *button, DTGTKCairoPaintIconFunc paint,

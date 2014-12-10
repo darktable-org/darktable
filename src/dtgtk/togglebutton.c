@@ -243,15 +243,6 @@ GtkWidget *dtgtk_togglebutton_new(DTGTKCairoPaintIconFunc paint, gint paintflags
   return (GtkWidget *)button;
 }
 
-
-GtkWidget *dtgtk_togglebutton_new_with_label(const gchar *label, DTGTKCairoPaintIconFunc paint,
-                                             gint paintflags)
-{
-  GtkWidget *button = dtgtk_togglebutton_new(paint, paintflags);
-  gtk_button_set_label(GTK_BUTTON(button), label);
-  return button;
-}
-
 GType dtgtk_togglebutton_get_type()
 {
   static GType dtgtk_togglebutton_type = 0;

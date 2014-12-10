@@ -23,7 +23,6 @@
 #include "develop/develop.h"
 #include "libs/lib.h"
 #include "gui/gtk.h"
-#include "dtgtk/button.h"
 
 DT_MODULE(1)
 
@@ -107,8 +106,7 @@ void gui_init(dt_lib_module_t *self)
   widget = gtk_label_new(_("view"));
   gtk_box_pack_start(GTK_BOX(self->widget), widget, FALSE, FALSE, 4);
 
-  d->comparator = widget = dtgtk_togglebutton_new_with_label(
-      comparators[dt_collection_get_rating_comparator(darktable.collection)], NULL, CPF_STYLE_BOX);
+  d->comparator = widget = gtk_toggle_button_new_with_label(comparators[dt_collection_get_rating_comparator(darktable.collection)]);
   gtk_box_pack_start(GTK_BOX(self->widget), widget, FALSE, FALSE, 4);
   g_signal_connect(G_OBJECT(widget), "toggled", G_CALLBACK(_lib_filter_compare_button_changed),
                    (gpointer)self);
