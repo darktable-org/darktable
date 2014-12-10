@@ -16,11 +16,19 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#import <Foundation/Foundation.h>
+#include <AppKit/AppKit.h>
+#include "osx.h"
 
 float dt_osx_get_ppd()
 {
-  NSLog(@"TODO");
-
-  return 42.23;
+  NSScreen *nsscreen = [NSScreen mainScreen];
+#if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_7
+  if([nsscreen respondsToSelector: NSSelectorFromString(@"backingScaleFactor")]) {
+    return [[nsscreen valueForKey: @"backingScaleFactor"] floatValue];
+  } else {
+    return [[nsscreen valueForKey: @"userSpaceScaleFactor"] floatValue];
+  }
+#else
+  return [[nsscreen valueForKey: @"userSpaceScaleFactor"] floatValue];
+#endif
 }
