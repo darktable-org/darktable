@@ -3,7 +3,7 @@
  */
 
 * {
-  font: Sans 8;
+  font: Sans 10;
   color: #cacaca;
   background-color: #212121;
   border-color: #111111;
@@ -12,10 +12,21 @@
   border: 0;
 }
 
+/*#right, #left, #plugins_vbox,#plugins_vbox_left*/
+.GtkBox
+{
+  margin:0;
+  border:0;
+  padding:0;
+}
 /* bright background */
 #right > .GtkEventBox, #left > .GtkEventBox, #background_job_eventbox,
 #dt-plugin-ui *
 {
+  text-align:left;
+  margin:0;
+  border:0;
+  padding:0;
   background-color: #252525;
 }
 #dt-plugin-ui .GtkBox
@@ -24,6 +35,9 @@
 }
 #dt-plugin-ui *:selected
 {
+  margin:0;
+  border:0;
+  padding:0;
   background-color: #353535;
 }
 #dt-plugin-ui *:prelight
@@ -32,11 +46,12 @@
 }
 #dt-plugin-ui
 {
-  border: 2px solid #111111;
-  border-radius: 2px;
+  border: 1px solid #151515;
+  border-radius: 1px;
+  box-shadow: inset 0 0 1px #151515;
+  margin: 0px;
   /*border-style: inset;*/
-  margin: 1px;
-  padding: 2px;
+  padding: 4px;
   background-color: #252525;
 }
 #dt-plugin-ui:selected
@@ -60,12 +75,17 @@
 #header_label,#darktable_label,#view_label {
   color: #7f7f7f;
   background-color: #212121;
-  font: Sans bold 8;
+  font: Sans 10;
+  margin:0;
+  border:0;
+  padding:0;
 }
 
 #panel_label {
-  color: white;
+  color: #cacaca;
   background-color: #212121;
-  font: Sans bold 8;
+  font: Sans 10;
+  margin:0;
+  border:0;
+  padding:0;
 }
-
