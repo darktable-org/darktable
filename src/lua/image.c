@@ -225,6 +225,28 @@ static int rating_member(lua_State *L)
   }
 }
 
+static int has_txt_member(lua_State *L)
+{
+  if(lua_gettop(L) != 3)
+  {
+    const dt_image_t *my_image = checkreadimage(L, 1);
+    int has_txt = my_image->flags & DT_IMAGE_HAS_TXT;
+    lua_pushboolean(L, has_txt);
+    releasereadimage(L, my_image);
+    return 1;
+  }
+  else
+  {
+    dt_image_t *my_image = checkwriteimage(L, 1);
+    if(lua_toboolean(L, 3))
+      my_image->flags |= DT_IMAGE_HAS_TXT;
+    else
+      my_image->flags &= ~DT_IMAGE_HAS_TXT;
+    releasewriteimage(L, my_image);
+    return 0;
+  }
+}
+
 static int creator_member(lua_State *L)
 {
   if(lua_gettop(L) != 3)
@@ -583,6 +605,8 @@ int dt_lua_init_image(lua_State *L)
   lua_pushcfunction(L, group_leader_member);
   dt_lua_type_register_const(L, dt_lua_image_t, "group_leader");
   // read/write functions
+  lua_pushcfunction(L, has_txt_member);
+  dt_lua_type_register(L, dt_lua_image_t, "has_txt");
   lua_pushcfunction(L, rating_member);
   dt_lua_type_register(L, dt_lua_image_t, "rating");
   lua_pushcfunction(L, creator_member);
