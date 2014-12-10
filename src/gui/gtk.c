@@ -52,6 +52,7 @@
 #include <Carbon/Carbon.h>
 #include <ApplicationServices/ApplicationServices.h>
 #include <CoreServices/CoreServices.h>
+#include "osx/osx.h"
 #endif
 #include <pthread.h>
 
@@ -999,7 +1000,8 @@ static void init_widgets(dt_gui_gtk_t *gui)
   {
 #ifdef GDK_WINDOWING_QUARTZ
     // only works if GTK includes this change: https://gist.github.com/zwaldowski/3388768
-    gui->ppd = gdk_screen_get_resolution(gtk_widget_get_screen(widget)) / 72.0;
+//     gui->ppd = gdk_screen_get_resolution(gtk_widget_get_screen(widget)) / 72.0;
+    gui->ppd = dt_osx_get_ppd();
     if(gui->ppd < 0.0)
     {
       gui->ppd = 1.0;

@@ -96,6 +96,13 @@ FILE(GLOB SOURCE_FILES
   )
 FILE(GLOB HEADER_FILES "*.h" "common/*.h" "external/CL/*.h" "control/*.h" "iop/*.h" "libs/*.h" "views/*.h")
 
+if(APPLE)
+  list(APPEND SOURCE_FILES "osx/osx.m")
+  list(APPEND HEADER_FILES "osx/osx.h")
+  set_source_files_properties(osx/osx.m PROPERTIES LANGUAGE C)
+  # add link flags to the line in the very end (see comment there), for example "-framework Foundation"
+endif(APPLE)
+
 set(SOURCES ${SOURCE_FILES} ${HEADER_FILES})
 
 
@@ -745,7 +752,7 @@ if(NOT WIN32)
 endif(NOT WIN32)
 set_target_properties(darktable PROPERTIES LINKER_LANGUAGE C)
 if(APPLE)
-  set_target_properties(lib_darktable PROPERTIES LINK_FLAGS "-framework Carbon")
+  set_target_properties(lib_darktable PROPERTIES LINK_FLAGS "-framework Carbon") # we need to add whatever the OBJC files need, like Foundation
 endif(APPLE)
 target_link_libraries(darktable ${LIBS})
 install(TARGETS darktable DESTINATION bin)
