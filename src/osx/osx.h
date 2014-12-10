@@ -16,4 +16,12 @@
  *   along with darktable.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 float dt_osx_get_ppd();
+
+#ifdef __cplusplus
+}
+#endif
