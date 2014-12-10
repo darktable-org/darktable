@@ -31,7 +31,6 @@
 #include "gui/draw.h"
 #include "gui/presets.h"
 #include "gui/gtk.h"
-#include "dtgtk/button.h"
 #include "common/colorspaces.h"
 #include "bauhaus/bauhaus.h"
 #include "common/opencl.h"
@@ -558,8 +557,7 @@ void gui_init(dt_iop_module_t *self)
   g_signal_connect(G_OBJECT(c->area), "leave-notify-event", G_CALLBACK(dt_iop_levels_leave_notify), self);
   g_signal_connect(G_OBJECT(c->area), "scroll-event", G_CALLBACK(dt_iop_levels_scroll), self);
 
-  GtkWidget *autobutton
-      = dtgtk_button_new_with_label(_("auto"), NULL, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER);
+  GtkWidget *autobutton = gtk_button_new_with_label(_("auto"));
   g_object_set(G_OBJECT(autobutton), "tooltip-text", _("apply auto levels"), (char *)NULL);
   gtk_widget_set_size_request(autobutton, DT_PIXEL_APPLY_DPI(70), DT_PIXEL_APPLY_DPI(24));
 

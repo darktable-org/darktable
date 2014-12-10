@@ -167,16 +167,6 @@ GtkWidget *dtgtk_button_new(DTGTKCairoPaintIconFunc paint, gint paintflags)
   return (GtkWidget *)button;
 }
 
-GtkWidget *dtgtk_button_new_with_label(const gchar *label, DTGTKCairoPaintIconFunc paint, gint paintflags)
-{
-  GtkWidget *button = dtgtk_button_new(paint, paintflags);
-
-  /* set button label */
-  gtk_button_set_label(GTK_BUTTON(button), label);
-
-  return button;
-}
-
 GType dtgtk_button_get_type()
 {
   static GType dtgtk_button_type = 0;

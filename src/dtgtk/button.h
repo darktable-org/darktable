@@ -48,7 +48,6 @@ GType dtgtk_button_get_type(void);
 
 /** Instansiate a new darktable button control passing paint function as content */
 GtkWidget *dtgtk_button_new(DTGTKCairoPaintIconFunc paint, gint paintflags);
-GtkWidget *dtgtk_button_new_with_label(const gchar *label, DTGTKCairoPaintIconFunc paint, gint paintflags);
 /** set the paint function for a button */
 void dtgtk_button_set_paint(GtkDarktableButton *button, DTGTKCairoPaintIconFunc paint, gint paintflags);
 G_END_DECLS
