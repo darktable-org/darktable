@@ -13,11 +13,14 @@
 }
 
 /* bright background */
-#plugins_vbox > .GtkEventBox, #plugins_vbox_left > .GtkEventBox,
 #right > .GtkEventBox, #left > .GtkEventBox, #background_job_eventbox,
 #dt-plugin-ui *
 {
   background-color: #252525;
+}
+#dt-plugin-ui .GtkBox
+{
+  background-color: rgba(0,0,0,0);
 }
 #dt-plugin-ui *:selected
 {
