@@ -26,7 +26,6 @@
 #include "gui/gtk.h"
 #include "gui/presets.h"
 #include "gui/accelerators.h"
-#include "dtgtk/tristatebutton.h"
 #include <stdlib.h>
 #include <assert.h>
 

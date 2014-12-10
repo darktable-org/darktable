@@ -32,8 +32,6 @@
 #include "gui/presets.h"
 #include "dtgtk/button.h"
 #include "dtgtk/icon.h"
-#include "dtgtk/tristatebutton.h"
-#include "dtgtk/tristatebutton.h"
 #include "dtgtk/gradientslider.h"
 #include "dtgtk/label.h"
 

@@ -25,7 +25,6 @@
 #include "control/control.h"
 #include "control/conf.h"
 #include "dtgtk/button.h"
-#include "dtgtk/tristatebutton.h"
 #include "develop/imageop.h"
 #include "develop/blend.h"
 #include "develop/masks.h"

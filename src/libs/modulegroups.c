@@ -24,7 +24,6 @@
 #include "develop/develop.h"
 #include "libs/lib.h"
 #include "gui/gtk.h"
-#include "dtgtk/tristatebutton.h"
 
 DT_MODULE(1)
 
