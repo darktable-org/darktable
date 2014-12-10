@@ -37,7 +37,6 @@
 #include "gui/gtk.h"
 #include "gui/presets.h"
 #include "dtgtk/resetlabel.h"
-#include "dtgtk/slider.h"
 #include "bauhaus/bauhaus.h"
 #include "develop/pixelpipe.h"
 #include "common/histogram.h"

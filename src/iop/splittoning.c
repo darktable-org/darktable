@@ -31,7 +31,6 @@
 #include "control/control.h"
 #include "dtgtk/label.h"
 #include "dtgtk/resetlabel.h"
-#include "dtgtk/slider.h"
 #include "dtgtk/gradientslider.h"
 #include "dtgtk/button.h"
 #include "gui/accelerators.h"

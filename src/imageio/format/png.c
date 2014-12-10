@@ -33,7 +33,6 @@
 #include "common/imageio.h"
 #include "common/colorspaces.h"
 #include "control/conf.h"
-#include "dtgtk/slider.h"
 #include "common/imageio_format.h"
 
 DT_MODULE(1)

@@ -20,7 +20,6 @@
 #endif
 #include "common/darktable.h"
 #include "develop/imageop.h"
-#include "dtgtk/slider.h"
 #include "gui/gtk.h"
 #include <gtk/gtk.h>
 #include <stdlib.h>

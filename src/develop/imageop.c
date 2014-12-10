@@ -35,7 +35,6 @@
 #include "dtgtk/button.h"
 #include "dtgtk/icon.h"
 #include "dtgtk/tristatebutton.h"
-#include "dtgtk/slider.h"
 #include "dtgtk/gradientslider.h"
 #include "libs/modulegroups.h"
 

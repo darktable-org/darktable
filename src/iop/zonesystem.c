@@ -33,7 +33,6 @@
 #include "control/control.h"
 #include "control/conf.h"
 #include "dtgtk/togglebutton.h"
-#include "dtgtk/slider.h"
 #include "dtgtk/gradientslider.h"
 #include "gui/gtk.h"
 #include "gui/presets.h"

@@ -27,7 +27,6 @@
 #include "control/conf.h"
 #include "control/signal.h"
 #include "gui/gtk.h"
-#include "dtgtk/slider.h"
 #include "dtgtk/label.h"
 #include "libs/lib.h"
 #include "gui/accelerators.h"

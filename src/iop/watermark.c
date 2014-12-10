@@ -26,7 +26,6 @@
 #include "develop/develop.h"
 #include "develop/imageop.h"
 #include "control/control.h"
-#include "dtgtk/slider.h"
 #include "dtgtk/button.h"
 #include "dtgtk/togglebutton.h"
 #include "dtgtk/resetlabel.h"
