@@ -17,15 +17,15 @@
 #right > .GtkEventBox, #left > .GtkEventBox, #background_job_eventbox,
 #dt-plugin-ui *
 {
-  background-color: #292929;
+  background-color: #252525;
 }
 #dt-plugin-ui *:selected
 {
-  background-color: #777777;
+  background-color: #353535;
 }
 #dt-plugin-ui *:prelight
 {
-  background-color: #555555;
+  background-color: #550000;
 }
 #dt-plugin-ui
 {
@@ -34,7 +34,7 @@
   /*border-style: inset;*/
   margin: 1px;
   padding: 2px;
-  background-color: #242424;
+  background-color: #252525;
 }
 #dt-plugin-ui:selected
 {
@@ -44,7 +44,7 @@
   margin: 1px;
   padding: 2px;
   color: #e2e2e2;
-  background-color: #343434;
+  background-color: #353535;
 }
 
 #plugins_vbox_left  .GtkTable * {
