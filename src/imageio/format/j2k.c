@@ -60,8 +60,8 @@
 #include "common/imageio_module.h"
 #include "common/imageio.h"
 #include "control/conf.h"
-#include "dtgtk/slider.h"
 #include "common/imageio_format.h"
+#include "bauhaus/bauhaus.h"
 
 #include <openjpeg.h>
 
@@ -107,7 +107,7 @@ typedef struct dt_imageio_j2k_gui_t
 {
   GtkToggleButton *jp2, *j2k;
   GtkComboBox *preset;
-  GtkDarktableSlider *quality;
+  GtkWidget *quality;
 } dt_imageio_j2k_gui_t;
 
 void init(dt_imageio_module_format_t *self)
@@ -555,7 +555,7 @@ int set_params(dt_imageio_module_format_t *self, const void *params, const int s
   else
     gtk_toggle_button_set_active(g->j2k, TRUE);
   gtk_combo_box_set_active(g->preset, d->preset);
-  dtgtk_slider_set_value(g->quality, d->quality);
+  dt_bauhaus_slider_set(g->quality, d->quality);
   return 0;
 }
 
@@ -602,9 +602,9 @@ static void radiobutton_changed(GtkRadioButton *radiobutton, gpointer user_data)
     dt_conf_set_int("plugins/imageio/format/j2k/format", format);
 }
 
-static void quality_changed(GtkDarktableSlider *slider, gpointer user_data)
+static void quality_changed(GtkWidget *slider, gpointer user_data)
 {
-  int quality = (int)dtgtk_slider_get_value(slider);
+  int quality = (int)dt_bauhaus_slider_get(slider);
   dt_conf_set_int("plugins/imageio/format/j2k/quality", quality);
 }
 
@@ -634,10 +634,10 @@ void gui_init(dt_imageio_module_format_t *self)
                    GINT_TO_POINTER(J2K_CFMT));
   if(format_last == J2K_CFMT) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(radiobutton), TRUE);
 
-  gui->quality = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR, 5, 100, 1, 95, 0));
-  dtgtk_slider_set_label(gui->quality, _("quality"));
-  dtgtk_slider_set_default_value(gui->quality, 95);
-  if(quality_last > 0 && quality_last <= 100) dtgtk_slider_set_value(gui->quality, quality_last);
+  gui->quality = dt_bauhaus_slider_new_with_range(NULL, 5, 100, 1, 95, 0);
+  dt_bauhaus_widget_set_label(gui->quality, NULL, _("quality"));
+  dt_bauhaus_slider_set_default(gui->quality, 95);
+  if(quality_last > 0 && quality_last <= 100) dt_bauhaus_slider_set(gui->quality, quality_last);
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(gui->quality), TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(gui->quality), "value-changed", G_CALLBACK(quality_changed), NULL);
 

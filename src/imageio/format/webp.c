@@ -27,7 +27,7 @@
 #include "common/imageio_module.h"
 #include "common/imageio_format.h"
 #include "control/conf.h"
-#include "dtgtk/slider.h"
+#include "bauhaus/bauhaus.h"
 #include "dtgtk/togglebutton.h"
 
 #include <webp/encode.h>
@@ -64,7 +64,7 @@ typedef struct dt_imageio_webp_gui_data_t
 {
   GtkToggleButton *lossy, *lossless;
   GtkComboBox *preset;
-  GtkDarktableSlider *quality;
+  GtkWidget *quality;
   GtkComboBox *hint_combo;
 } dt_imageio_webp_gui_data_t;
 
@@ -202,7 +202,7 @@ int set_params(dt_imageio_module_format_t *self, const void *params, const int s
     gtk_toggle_button_set_active(g->lossy, TRUE);
   else
     gtk_toggle_button_set_active(g->lossless, TRUE);
-  dtgtk_slider_set_value(g->quality, d->quality);
+  dt_bauhaus_slider_set(g->quality, d->quality);
   gtk_combo_box_set_active(g->hint_combo, d->hint);
   return 0;
 }
@@ -250,9 +250,9 @@ static void radiobutton_changed(GtkRadioButton *radiobutton, gpointer user_data)
     dt_conf_set_int("plugins/imageio/format/webp/comp_type", comp_type);
 }
 
-static void quality_changed(GtkDarktableSlider *slider, gpointer user_data)
+static void quality_changed(GtkWidget *slider, gpointer user_data)
 {
-  int quality = (int)dtgtk_slider_get_value(slider);
+  int quality = (int)dt_bauhaus_slider_get(slider);
   dt_conf_set_int("plugins/imageio/format/webp/quality", quality);
 }
 
@@ -287,12 +287,12 @@ void gui_init(dt_imageio_module_format_t *self)
   g_signal_connect(G_OBJECT(radiobutton), "toggled", G_CALLBACK(radiobutton_changed), (gpointer)webp_lossless);
   if(comp_type == webp_lossless) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(radiobutton), TRUE);
 
-  gui->quality = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR, 5, 100, 1, 95, 0));
-  dtgtk_slider_set_label(gui->quality, _("quality"));
-  dtgtk_slider_set_default_value(gui->quality, 95);
-  dtgtk_slider_set_format_type(gui->quality, DARKTABLE_SLIDER_FORMAT_PERCENT);
+  gui->quality = dt_bauhaus_slider_new_with_range(NULL, 5, 100, 1, 95, 0);
+  dt_bauhaus_widget_set_label(gui->quality, NULL, _("quality"));
+  dt_bauhaus_slider_set_default(gui->quality, 95);
+  dt_bauhaus_slider_set_format(gui->quality, "%.2f%%");
   g_object_set(G_OBJECT(gui->quality), "tooltip-text", _("applies only to lossy setting"), (char *)NULL);
-  if(quality > 0 && quality <= 100) dtgtk_slider_set_value(gui->quality, quality);
+  if(quality > 0 && quality <= 100) dt_bauhaus_slider_set(gui->quality, quality);
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(gui->quality), TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(gui->quality), "value-changed", G_CALLBACK(quality_changed), (gpointer)0);
 
