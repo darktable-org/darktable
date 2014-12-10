@@ -1555,9 +1555,14 @@ int dt_dev_distort_transform_plus(dt_develop_t *dev, dt_dev_pixelpipe_t *pipe, i
 {
   GList *modules = g_list_first(dev->iop);
   GList *pieces = g_list_first(pipe->nodes);
+  dt_pthread_mutex_lock(&pipe->synch_mutex);
   while(modules)
   {
-    if(!pieces) return 0;
+    if(!pieces)
+    {
+      dt_pthread_mutex_unlock(&pipe->synch_mutex);
+      return 0;
+    }
     dt_iop_module_t *module = (dt_iop_module_t *)(modules->data);
     dt_dev_pixelpipe_iop_t *piece = (dt_dev_pixelpipe_iop_t *)(pieces->data);
     if(piece->enabled && module->priority <= pmax && module->priority >= pmin)
@@ -1567,6 +1572,7 @@ int dt_dev_distort_transform_plus(dt_develop_t *dev, dt_dev_pixelpipe_t *pipe, i
     modules = g_list_next(modules);
     pieces = g_list_next(pieces);
   }
+  dt_pthread_mutex_unlock(&pipe->synch_mutex);
   return 1;
 }
 
@@ -1575,9 +1581,14 @@ int dt_dev_distort_backtransform_plus(dt_develop_t *dev, dt_dev_pixelpipe_t *pip
 {
   GList *modules = g_list_last(dev->iop);
   GList *pieces = g_list_last(pipe->nodes);
+  dt_pthread_mutex_lock(&pipe->synch_mutex);
   while(modules)
   {
-    if(!pieces) return 0;
+    if(!pieces)
+    {
+      dt_pthread_mutex_unlock(&pipe->synch_mutex);
+      return 0;
+    }
     dt_iop_module_t *module = (dt_iop_module_t *)(modules->data);
     dt_dev_pixelpipe_iop_t *piece = (dt_dev_pixelpipe_iop_t *)(pieces->data);
     if(piece->enabled && module->priority <= pmax && module->priority >= pmin)
@@ -1587,6 +1598,7 @@ int dt_dev_distort_backtransform_plus(dt_develop_t *dev, dt_dev_pixelpipe_t *pip
     modules = g_list_previous(modules);
     pieces = g_list_previous(pieces);
   }
+  dt_pthread_mutex_unlock(&pipe->synch_mutex);
   return 1;
 }
 
