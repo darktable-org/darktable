@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Darktable 1.6\n"
 "POT-Creation-Date: 2014-12-10 23:28+0100\n"
-"PO-Revision-Date: 2014-12-11 00:03+0100\n"
+"PO-Revision-Date: 2014-12-11 23:39+0100\n"
 "Last-Translator: Josep V. Moragues <josepvm@arrakis.es>\n"
 "Language-Team: Josep Vicenç Moragues Pastor <josepvm@arrakis.es>\n"
 "Language: ca\n"
@@ -586,7 +586,7 @@ msgstr ""
 
 #: /home/jv/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:372(term)
 msgid "--disable-opencl"
-msgstr ""
+msgstr "--disable-opencl"
 
 #: /home/jv/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:374(para)
 msgid ""
@@ -594,10 +594,13 @@ msgid ""
 "this option in case darktable crashes at startup due to a defective OpenCL "
 "implementation."
 msgstr ""
+"Aquesta opció desactiva el subsistema OpenCL. Feu-la servir si veieu que el "
+"programa falla en engegar a causa d'una implementació defectuosa d'OpenCL en "
+"el vostre ordinador."
 
 #: /home/jv/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:384(term)
 msgid "--library &lt;library file&gt;"
-msgstr ""
+msgstr "--library &lt;library file&gt;"
 
 #: /home/jv/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:386(para)
 msgid ""
@@ -609,10 +612,18 @@ msgid ""
 "give <quote>:memory:</quote> as a library file in which case the database is "
 "kept in system memory – all changes are discarded when darktable terminates."
 msgstr ""
+"El darktable, per reduir el temps d'accés, manté informació de les imatges "
+"en una base de dades sqlite. La ubicació per defecte d'aquesta base de dades "
+"és <quote>$HOME/.config/darktable/library.db</quote>. Podeu indicar una "
+"ubicació diferent, per exemple si voleu experimentar sense comprometre la "
+"vostra base de dades original. Si la base de dades indicada no existeix, el "
+"darktable la crearà. Podeu també posar <quote>:memory:</quote> com a arxiu, "
+"en aquest cas la base de dades es mantindrà en la memòria del sistema - tots "
+"els canvis es perdran en sortir del darktable."
 
 #: /home/jv/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:401(term)
 msgid "--datadir &lt;data directory&gt;"
-msgstr ""
+msgstr "--datadir &lt;data directory&gt;"
 
 #: /home/jv/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:403(para)
 msgid ""
@@ -621,10 +632,14 @@ msgid ""
 "opt/darktable/share/darktable/</quote> and <quote>/usr/share/darktable/</"
 "quote>."
 msgstr ""
+"Aquesta opció defineix el directory on el darktable llegeix les dades que "
+"necessita durant l'execució. La ubicació per defecte dependrà de la vostra "
+"instal·lació. Alguns llocs típics són <quote>/opt/darktable/share/darktable/"
+"</quote> i <quote>/usr/share/darktable/</quote>. "
 
 #: /home/jv/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:414(term)
 msgid "--moduledir &lt;module directory&gt;"
-msgstr ""
+msgstr "--moduledir &lt;module directory&gt;"
 
 #: /home/jv/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:416(para)
 msgid ""
@@ -634,30 +649,41 @@ msgid ""
 "installation; typical places are <quote>/opt/darktable/lib64/darktable/</"
 "quote> and <quote>/usr/lib64/darktable/</quote>."
 msgstr ""
+"El darktable té una estructura modular i organitza els seus mòduls en "
+"llibreries compartides que es carreguen durant l'execució. Amb aquesta opció "
+"podeu indicar al darktable on cercar les llibreries compartides. La ubicació "
+"per defecte dependrà de la vostra instal·lació. Alguns llocs típics són "
+"<quote>/opt/darktable/lib64/darktable/</quote> i <quote>/usr/lib64/darktable/"
+"</quote>. "
 
 #: /home/jv/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:428(term)
 msgid "--tmpdir &lt;tmp directory&gt;"
-msgstr ""
+msgstr "--tmpdir &lt;tmp directory&gt;"
 
 #: /home/jv/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:430(para)
 msgid ""
 "The place where darktable stores its temporary files. If this option is not "
 "supplied darktable uses the system default."
 msgstr ""
+"El lloc on el darktable desa els seus fitxers temporals. Si no s'especifica "
+"aquesta opció el darktable farà servir el valor per defecte del sistema."
 
 #: /home/jv/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:439(term)
 msgid "--configdir &lt;config directory&gt;"
-msgstr ""
+msgstr "--configdir &lt;config directory&gt;"
 
 #: /home/jv/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:441(para)
 msgid ""
 "This option defines the directory where darktable stores the user specific "
 "configuration. The default place is <quote>$HOME/.config/darktable/</quote>."
 msgstr ""
+"Aquesta opció defineix el directori on el darktable desa la configuració "
+"pròpia de l'usuari. La ubicació per defecte és <quote>$HOME/.config/"
+"darktable/</quote>."
 
 #: /home/jv/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:450(term)
 msgid "--cachedir &lt;cache directory&gt;"
-msgstr ""
+msgstr "--cachedir &lt;cache directory&gt;"
 
 #: /home/jv/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:452(para)
 msgid ""
@@ -666,10 +692,15 @@ msgid ""
 "located in <quote>$HOME/.cache/darktable/</quote>. There may exist multiple "
 "thumbnail caches in parallel – one for each library file."
 msgstr ""
+"El darktable manté una memòria cau de miniatures per a una previsualització "
+"ràpida de les imatges, i també de binaris OpenCL precompilats per a un inici "
+"ràpid. Per defecte la memòria cau es troba a <quote>$HOME/.cache/darktable/</"
+"quote>. Poden existir múltiples memòries cau de miniatures en paral·lel - "
+"una per cada fitxer de llibreria."
 
 #: /home/jv/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:463(term)
 msgid "--localedir &lt;locale directory&gt;"
-msgstr ""
+msgstr "--localedir &lt;locale directory&gt;"
 
 #: /home/jv/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:465(para)
 msgid ""
@@ -677,25 +708,34 @@ msgid ""
 "default place depends on your installation. Typical places are <quote>/opt/"
 "darktable/share/locale/</quote> and <quote>/usr/share/locale/</quote>"
 msgstr ""
+"El lloc on el darktable troba les cadenes específiques d'idioma. La ubicació "
+"per defecte dependrà de la vostra instal·lació. Alguns llocs típics són "
+"<quote>/opt/darktable/share/locale/</quote> i <quote>/usr/share/locale/</"
+"quote>"
 
 #: /home/jv/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:475(term)
 msgid "--luacmd &lt;lua command&gt;"
-msgstr ""
+msgstr "--luacmd &lt;lua command&gt;"
 
 #: /home/jv/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:477(para)
 msgid ""
 "A string containing lua commands to execute after lua initialization. These "
 "commands will be run after your <quote>luarc</quote> file."
 msgstr ""
+"Una cadena amb instruccions lua per ser executades després de la "
+"inicialització de lua. Aquestes ordres s'executaran després del vostre "
+"fitxer <quote>luarc</quote>."
 
 #: /home/jv/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:482(para)
 msgid ""
 "If lua is not compiled in, this option will be accepted but won't do anything"
 msgstr ""
+"Si lua no està compilat, aquesta opció serà acceptada però no tindrà cap "
+"efecte"
 
 #: /home/jv/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:490(term)
 msgid "--conf &lt;key&gt;=&lt;value&gt;"
-msgstr ""
+msgstr "--conf &lt;key&gt;=&lt;value&gt;"
 
 #: /home/jv/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:492(para)
 msgid ""
@@ -705,6 +745,11 @@ msgid ""
 "on the command line with this option – however, these settings will not be "
 "stored in <quote>darktablerc</quote>."
 msgstr ""
+"El darktable admet un conjunt ampli de paràmetres de configuració que "
+"l'usuari defineix al fitxer <quote>darktablerc</quote>, dins del directori "
+"de configuració de l'usuari. Amb aquesta opció podeu modificar temporalment "
+"paràmetres des de la línia de comandament - aquests canvis, però, no "
+"s'escriuran al fitxer <quote>darktablerc</quote>."
 
 #: /home/jv/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:328(para)
 msgid ""
@@ -712,20 +757,25 @@ msgid ""
 "without any additional parameters in which case darktable uses suitable "
 "defaults. <placeholder-1/>"
 msgstr ""
+"Tots els paràmetres són opcionals; en la majoria de casos els usuaris "
+"iniciaran el darktable sense cap paràmetre afegit, en aquest cas el programa "
+"farà servir els valors per defecte adients. <placeholder-1/>"
 
 #: /home/jv/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:509(title)
 msgid "<filename moreinfo=\"none\">darktable-cli</filename> binary"
-msgstr ""
+msgstr "binari <filename moreinfo=\"none\">darktable-cli</filename>"
 
 #: /home/jv/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:512(primary)
 msgid "darktable-cli"
-msgstr ""
+msgstr "darktable-cli"
 
 #: /home/jv/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:515(para)
 msgid ""
 "This binary starts the command line interface variant of darktable which "
 "allows exporting images."
 msgstr ""
+"Aquest arxiu binari inicia el darktable en la seva versió de línia de "
+"comandament, que permet exportar imatges. "
 
 #: /home/jv/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:520(para)
 msgid ""
