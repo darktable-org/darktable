@@ -31,7 +31,6 @@
 #include "gui/gtk.h"
 #include "gui/presets.h"
 #include "dtgtk/button.h"
-#include "dtgtk/icon.h"
 #include "dtgtk/gradientslider.h"
 
 #include <strings.h>

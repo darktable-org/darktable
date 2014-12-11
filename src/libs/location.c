@@ -22,7 +22,6 @@
 #include "control/conf.h"
 #include "libs/lib.h"
 #include "gui/gtk.h"
-#include "dtgtk/icon.h"
 #include <gdk/gdkkeysyms.h>
 
 DT_MODULE(1)
@@ -127,6 +126,37 @@ void gui_cleanup(dt_lib_module_t *self)
   free(lib);
 }
 
+static gboolean icon_draw(GtkWidget *widget, cairo_t *cr)
+{
+  int border = 0;
+  GtkAllocation allocation;
+  gtk_widget_get_allocation(widget, &allocation);
+  int x = allocation.x;
+  int y = allocation.y;
+  int width = allocation.width;
+  int height = allocation.height;
+
+  GtkStyleContext *ctx = gtk_style_context_new();
+  GtkWidgetPath *path;
+  path = gtk_widget_path_new();
+  int pos = gtk_widget_path_append_type(path, GTK_TYPE_WIDGET);
+  gtk_widget_path_iter_set_name(path, pos, "dtgtk-icon");
+  pos = gtk_widget_path_append_type(path, GTK_TYPE_WIDGET);
+  gtk_style_context_set_path(ctx, path);
+  gtk_style_context_set_screen(ctx, gtk_widget_get_screen(dt_ui_main_window(darktable.gui->ui)));
+
+  GdkRGBA color;
+  gtk_style_context_get_color(ctx, GTK_STATE_FLAG_NORMAL, &color);
+  gtk_widget_path_free(path);
+
+  cairo_set_source_rgb(cr, color.red, color.green, color.blue);
+
+  /* draw icon */
+  dtgtk_cairo_paint_store(cr, x + border, y + border, width - (border * 2), height - (border * 2), 0);
+
+  return FALSE;
+}
+
 static GtkWidget *_lib_location_place_widget_new(_lib_location_result_t *place)
 {
   GtkWidget *eb, *hb, *vb, *w;
@@ -149,7 +179,9 @@ static GtkWidget *_lib_location_place_widget_new(_lib_location_result_t *place)
   gtk_box_pack_start(GTK_BOX(vb), w, FALSE, FALSE, 0);
 
   /* type icon */
-  GtkWidget *icon = dtgtk_icon_new(dtgtk_cairo_paint_store, 0);
+  GtkWidget *icon = gtk_drawing_area_new();
+  gtk_widget_set_size_request(icon, DT_PIXEL_APPLY_DPI(17), DT_PIXEL_APPLY_DPI(17));
+  gtk_widget_set_name(icon, "dtgtk-icon");
 
   /* setup layout */
   gtk_box_pack_start(GTK_BOX(hb), icon, FALSE, FALSE, 2);
@@ -161,6 +193,7 @@ static GtkWidget *_lib_location_place_widget_new(_lib_location_result_t *place)
   /* connect button press signal for result item */
   g_signal_connect(G_OBJECT(eb), "button-press-event", G_CALLBACK(_lib_location_result_item_activated),
                    (gpointer)place);
+  g_signal_connect(G_OBJECT(icon), "draw", G_CALLBACK(icon_draw), (gpointer)NULL);
 
 
   return eb;

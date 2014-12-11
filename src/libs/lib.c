@@ -20,7 +20,6 @@
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
 #include "dtgtk/button.h"
-#include "dtgtk/icon.h"
 #include "control/conf.h"
 #include "control/control.h"
 #include "common/debug.h"
@@ -778,29 +777,56 @@ static void popup_callback(GtkButton *button, dt_lib_module_t *module)
   gtk_menu_reposition(GTK_MENU(darktable.gui->presets_popup_menu));
 }
 
-void dt_lib_gui_set_expanded(dt_lib_module_t *module, gboolean expanded)
+static gboolean expander_icon_draw(GtkWidget *widget, cairo_t *cr, gpointer user_data)
 {
-  if(!module->expander) return;
+  dt_lib_module_t *self = (dt_lib_module_t *)user_data;
 
-  /* update expander arrow state */
-  GtkWidget *icon;
-  GtkWidget *header = gtk_bin_get_child(
-      GTK_BIN(g_list_nth_data(gtk_container_get_children(GTK_CONTAINER(module->expander)), 0)));
+  int border = 0;
+  GtkAllocation allocation;
+  gtk_widget_get_allocation(widget, &allocation);
+  int x = allocation.x;
+  int y = allocation.y;
+  int width = allocation.width;
+  int height = allocation.height;
+
+  GtkStyleContext *ctx = gtk_style_context_new();
+  GtkWidgetPath *path;
+  path = gtk_widget_path_new();
+  int pos = gtk_widget_path_append_type(path, GTK_TYPE_WIDGET);
+  gtk_widget_path_iter_set_name(path, pos, "dtgtk-icon");
+  pos = gtk_widget_path_append_type(path, GTK_TYPE_WIDGET);
+  gtk_style_context_set_path(ctx, path);
+  gtk_style_context_set_screen(ctx, gtk_widget_get_screen(dt_ui_main_window(darktable.gui->ui)));
+
+  GdkRGBA color;
+  gtk_style_context_get_color(ctx, GTK_STATE_FLAG_NORMAL, &color);
+  gtk_widget_path_free(path);
+
   gint flags = CPF_DIRECTION_DOWN;
-  int c = module->container();
+  int c = self->container();
 
   if((c == DT_UI_CONTAINER_PANEL_LEFT_TOP) || (c == DT_UI_CONTAINER_PANEL_LEFT_CENTER)
      || (c == DT_UI_CONTAINER_PANEL_LEFT_BOTTOM))
   {
-    icon = g_list_nth_data(gtk_container_get_children(GTK_CONTAINER(header)), 0);
-    if(!expanded) flags = CPF_DIRECTION_RIGHT;
+    if(!self->expanded) flags = CPF_DIRECTION_RIGHT;
   }
   else
   {
-    icon = g_list_last(gtk_container_get_children(GTK_CONTAINER(header)))->data;
-    if(!expanded) flags = CPF_DIRECTION_LEFT;
+    if(!self->expanded) flags = CPF_DIRECTION_LEFT;
   }
-  dtgtk_icon_set_paint(icon, dtgtk_cairo_paint_solid_arrow, flags);
+
+  cairo_set_source_rgb(cr, color.red, color.green, color.blue);
+
+  /* draw icon */
+  dtgtk_cairo_paint_solid_arrow(cr, x + border, y + border, width - (border * 2), height - (border * 2),
+                                flags);
+
+  return FALSE;
+}
+
+void dt_lib_gui_set_expanded(dt_lib_module_t *module, gboolean expanded)
+{
+  if(!module->expander) return;
 
   /* show / hide plugin widget */
   if(expanded)
@@ -826,6 +852,7 @@ void dt_lib_gui_set_expanded(dt_lib_module_t *module, gboolean expanded)
   }
 
   /* store expanded state of module */
+  module->expanded = expanded;
   char var[1024];
   snprintf(var, sizeof(var), "plugins/lighttable/%s/expanded", module->plugin_name);
   dt_conf_set_bool(var, gtk_widget_get_visible(module->widget));
@@ -930,8 +957,12 @@ GtkWidget *dt_lib_gui_get_expander(dt_lib_module_t *module)
   GtkWidget *hw[5] = { NULL, NULL, NULL, NULL, NULL };
 
   /* add the expand indicator icon */
-  hw[idx] = dtgtk_icon_new(dtgtk_cairo_paint_solid_arrow, CPF_DIRECTION_LEFT);
-  gtk_widget_set_size_request(GTK_WIDGET(hw[idx++]), bs, bs);
+  hw[idx] = gtk_drawing_area_new();
+  gtk_widget_set_name(hw[idx], "dtgtk-icon");
+  gtk_widget_set_size_request(GTK_WIDGET(hw[idx]), bs, bs);
+  g_signal_connect(G_OBJECT(hw[idx]), "draw", G_CALLBACK(expander_icon_draw), module);
+
+  idx++;
 
   /* add module label */
   char label[128];
@@ -976,14 +1007,12 @@ GtkWidget *dt_lib_gui_get_expander(dt_lib_module_t *module)
     for(int i = 0; i <= 4; i++)
       if(hw[i]) gtk_box_pack_start(GTK_BOX(header), hw[i], i == 1 ? TRUE : FALSE, i == 1 ? TRUE : FALSE, 2);
     gtk_misc_set_alignment(GTK_MISC(hw[1]), 0.0, 0.5);
-    dtgtk_icon_set_paint(hw[0], dtgtk_cairo_paint_solid_arrow, CPF_DIRECTION_RIGHT);
   }
   else
   {
     for(int i = 4; i >= 0; i--)
       if(hw[i]) gtk_box_pack_start(GTK_BOX(header), hw[i], i == 1 ? TRUE : FALSE, i == 1 ? TRUE : FALSE, 2);
     gtk_misc_set_alignment(GTK_MISC(hw[1]), 1.0, 0.5);
-    dtgtk_icon_set_paint(hw[0], dtgtk_cairo_paint_solid_arrow, CPF_DIRECTION_LEFT);
   }
 
   /* add module widget into an alignment */

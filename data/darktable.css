@@ -420,3 +420,8 @@ GtkSwitch.slider:backdrop,
     box-shadow: none;
 }
 
+#dtgtk-icon
+{
+  color: green; /* fixme: does not seem to have any effect ??? */
+  background-color: red;
+}

@@ -21,7 +21,6 @@
 #define DT_DEVELOP_BLEND_H
 
 #include "dtgtk/button.h"
-#include "dtgtk/icon.h"
 #include "dtgtk/gradientslider.h"
 #include "develop/pixelpipe.h"
 #include "common/opencl.h"
