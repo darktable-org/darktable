@@ -1,51 +1,58 @@
+@define-color bg_color #212121;
+@define-color plugin_bg_color #252525;
+@define-color fg_color #cacaca;
+@define-color base_color #ffffff;
+@define-color text_color #3C3C3C;
+@define-color selected_bg_color #353535;
+@define-color selected_fg_color #e2e2e2;
+@define-color tooltip_bg_color #000000;
+@define-color tooltip_fg_color #ffffff;
+
+@define-color dark_bg_color #350000;
+
 * {
   font: Sans 10;
-  color: #cacaca;
-  background-color: #212121;
+  color: @fg_color;
+  background-color: @bg_color;
   border-color: #111111;
   margin: 0;
   padding: 2px; /* TODO: set that to 0 and only increase for buttons, combo boxes etc which need it!*/
   border: 0;
 }
 
-.GtkButton,.GtkToggleButton
-{
-  padding:2px;
-}
-
 /*#right, #left, #plugins_vbox,#plugins_vbox_left*/
-.GtkBox
+GtkBox
 {
+  background-color:transparent;
   margin:0;
   border:0;
   padding:0;
 }
 /* bright background */
 #right > .GtkEventBox, #left > .GtkEventBox, #background_job_eventbox,
-#dt-plugin-ui *
+#iop-plugin-ui *
 {
 /*  text-align:left; <- fuck, doesn't seem to be supported*/
   margin:0;
   border:0;
-  padding:0;
-  background-color: #252525;
+  padding:0 0 4px 0;
+  background-color: @plugin_bg_color;
 }
-#dt-plugin-ui .GtkBox
+#iop-plugin-ui .GtkBox,
+#lib-plugin-ui .GtkBox
 {
-  background-color: rgba(0,0,0,0);
+  background-color: transparent;
 }
-#dt-plugin-ui *:selected
+#iop-plugin-ui *:selected,
+#lib-plugin-ui *
 {
   margin:0;
   border:0;
-  padding:0;
-  background-color: #353535;
+  padding:0 0 4px 0;
+  background-color: @selected_bg_color;
 }
-#dt-plugin-ui *:prelight
-{
-  background-color: #550000;
-}
-#dt-plugin-ui
+#iop-plugin-ui,
+#lib-plugin-ui
 {
   border: 1px solid #151515;
   border-radius: 1px;
@@ -55,15 +62,16 @@
   padding: 4px;
   background-color: #252525;
 }
-#dt-plugin-ui:selected
+#iop-plugin-ui:selected,
+#lib-plugin-ui
 {
   border: 2px solid #111111;
   border-radius: 2px;
   /*border-style: inset;*/
   margin: 1px;
   padding: 2px;
-  color: #e2e2e2;
-  background-color: #353535;
+  color: @selected_fg_color;
+  background-color: @selected_bg_color;
 }
 
 #plugins_vbox_left  .GtkTable * {
@@ -75,7 +83,7 @@
 
 #header_label,#darktable_label,#view_label {
   color: #7f7f7f;
-  background-color: #212121;
+  background-color: @bg_color;
   font: Sans 10;
   margin:0;
   border:0;
@@ -83,10 +91,327 @@
 }
 
 #panel_label {
-  color: #cacaca;
-  background-color: #212121;
+  color: @fg_color;
+  background-color: @bg_color;
   font: Sans 10;
   margin:0;
   border:0;
   padding:0;
 }
+
+/*==============================================*/
+/* button madness, adjusted from Ambiance theme */
+/*==============================================*/
+.button {
+    -GtkWidget-focus-line-width: 0;
+    padding: 2px;
+}
+
+GtkSwitch.slider,
+.button {
+    background-image: none;
+    color: @fg_color;
+    text-shadow: none;
+}
+
+GtkSwitch.slider:backdrop,
+.button:backdrop {
+    background-image: none;
+    background-color: @bg_color;
+
+    color: @backdrop_fg_color;
+    text-shadow: none;
+}
+
+.button:hover {
+    background-image: none;
+    background-color: @selected_bg_color;
+}
+
+.button:hover:backdrop {
+    background-image: none;
+    background-color: @selected_bg_color;
+    /*background-color: shade (@bg_color, 1.04);*/
+}
+
+.button:insensitive {
+    background-image: none;
+    background-color: mix (#ebebeb, @bg_color, 0.5);
+
+    text-shadow: 0 1px alpha (shade (@button_bg_color, 1.25), 0.4);
+}
+
+.button:insensitive:backdrop {
+    background-image: none;
+    background-color: #ebebeb;
+
+    text-shadow: 0 1px alpha (shade (@button_bg_color, 1.25), 0.2);
+}
+
+.button:active {
+    background-image: none;
+    background-color: @selected_bg_color;
+}
+
+.button:active:hover {
+    background-image: none;
+    background-color: @selected_bg_color;
+}
+
+.button:active:insensitive {
+    background-image: -gtk-gradient (linear, left top, left bottom,
+                                     from (#e3e3e3),
+                                     to (#f3f3f3));
+}
+
+.button:active:insensitive:backdrop {
+    background-image: -gtk-gradient (linear, left top, left bottom,
+                                     from (mix (#e3e3e3, @bg_color, 0.5)),
+                                     to (mix (#f3f3f3, @bg_color, 0.5)));
+}
+
+/* Set up shadows and hilights for button visual separation */
+.linked .button,
+.toolbar .button.raised.linked,
+.toolbar .raised.linked .button,
+.inline-toolbar.toolbar .button,
+.inline-toolbar.toolbar GtkToolButton .button {
+    box-shadow: inset -1px 0 shade (@bg_color, 0.84);
+}
+
+.linked .button:first-child,
+.toolbar .button.raised.linked:first-child,
+.toolbar .raised.linked .button:first-child,
+.inline-toolbar.toolbar .button:first-child,
+.inline-toolbar.toolbar GtkToolButton:first-child .button {
+    box-shadow: inset -1px 0 shade (@bg_color, 0.84);
+}
+
+.linked .button:last-child,
+.toolbar .button.raised.linked:last-child,
+.toolbar .raised.linked .button:last-child,
+.inline-toolbar.toolbar .button:last-child,
+.inline-toolbar.toolbar GtkToolButton:last-child .button {
+    /*box-shadow: inset 1px 0 shade (@bg_color, 1.06);*/
+}
+
+.linked .button:active,
+.toolbar .button.raised.linked:active,
+.toolbar .raised.linked .button:active,
+.inline-toolbar.toolbar .button:active,
+.inline-toolbar.toolbar GtkToolButton .button:active {
+    /*box-shadow: inset 1px 0 shade (@bg_color, 0.76);*/
+}
+
+.linked .button:insensitive,
+.toolbar .button.raised.linked:insensitive,
+.toolbar .raised.linked .button:insensitive,
+.inline-toolbar.toolbar .button:insensitive,
+.inline-toolbar.toolbar GtkToolButton .button:insensitive {
+    box-shadow: inset -1px 0 shade (@bg_color, 0.84);
+}
+
+.linked .button:backdrop,
+.toolbar .button.raised.linked:backdrop,
+.toolbar .raised.linked .button:backdrop,
+.inline-toolbar.toolbar .button:backdrop,
+.inline-toolbar.toolbar GtkToolButton .button:backdrop {
+    /*box-shadow: inset -1px 0 @unfocused_borders;*/
+}
+
+.linked .button:insensitive:backdrop,
+.toolbar .button.raised.linked:insensitive:backdrop,
+.toolbar .raised.linked .button:insensitive:backdrop,
+.inline-toolbar.toolbar .button:insensitive:backdrop,
+.inline-toolbar.toolbar GtkToolButton .button:insensitive:backdrop {
+    /*box-shadow: inset -1px 0 @unfocused_insensitive_borders;*/
+}
+
+
+/* Middle button */
+.linked .entry,
+.linked .entry:active,
+.linked .entry:focus,
+.linked .entry:focus:active,
+.linked .button,
+.linked .button:active,
+.linked .button:active:hover,
+.linked .button:focus,
+.linked .button:focus:active,
+.linked .button:insensitive,
+.linked .button:backdrop,
+.linked .button:active:backdrop {
+    border-right-width: 0;
+    border-left-width: 0;
+    border-image-width: 10px 0 10px 0;
+    border-radius: 0;
+}
+
+/* Leftmost button */
+.linked .entry:first-child,
+.linked .entry:active:first-child,
+.linked .entry:focus:first-child,
+.linked .entry:focus:active:first-child,
+.linked .button:first-child,
+.linked .button:active:first-child,
+.linked .button:active:hover:first-child,
+.linked .button:focus:first-child,
+.linked .button:focus:active:first-child,
+.linked .button:insensitive:first-child,
+.linked .button:backdrop:first-child,
+.linked .button:active:backdrop:first-child {
+    border-width: 1px;
+    border-right-width: 0;
+    border-image-width: 10px 0 10px 12px;
+    border-radius: 8px;
+    border-bottom-right-radius: 0;
+    border-top-right-radius: 0;
+}
+
+/* Rightmost button */
+.linked .entry:last-child,
+.linked .entry:active:last-child,
+.linked .entry:focus:last-child,
+.linked .entry:focus:active:last-child,
+.linked .button:last-child,
+.linked .button:active:last-child,
+.linked .button:active:hover:last-child,
+.linked .button:focus:last-child,
+.linked .button:focus:active:last-child,
+.linked .button:insensitive:last-child,
+.linked .button:backdrop:last-child,
+.linked .button:active:backdrop:last-child {
+    border-width: 1px;
+    border-left-width: 0;
+    border-image-width: 10px 12px 10px 0;
+    border-radius: 8px;
+    border-bottom-left-radius: 0;
+    border-top-left-radius: 0;
+}
+
+/* Linked single button */
+.linked .entry:only-child,
+.linked .entry:active:only-child,
+.linked .entry:focus:only-child,
+.linked .entry:focus:active:only-child,
+.linked .button:only-child,
+.linked .button:active:only-child,
+.linked .button:active:hover:only-child,
+.linked .button:focus:only-child,
+.linked .button:focus:active:only-child,
+.linked .button:insensitive:only-child,
+.linked .button:backdrop:only-child,
+.linked .button:active:backdrop:only-child {
+    border-right-width: 1px;
+    border-left-width: 1px;
+    border-image-width: 10px 12px 10px 12px;
+    border-radius: 8px;
+}
+
+/* Set up shadows and hilights for button visual separation */
+.primary-toolbar .linked .button,
+.primary-toolbar .button.raised.linked,
+.primary-toolbar .raised.linked .button,
+.menubar.toolbar .linked .button,
+.menubar.toolbar .button.raised.linked,
+.menubar.toolbar .raised.linked .button,
+.header-bar .linked .button,
+.header-bar .button.raised.linked,
+.header-bar .raised.linked .button {
+    box-shadow: inset 1px 0 shade (@dark_bg_color, 1.4),
+                inset -1px 0 shade (@dark_bg_color, 0.9);
+}
+
+.primary-toolbar .linked .button:first-child,
+.primary-toolbar .button.raised.linked:first-child,
+.primary-toolbar .raised.linked .button:first-child,
+.menubar.toolbar .linked .button:first-child,
+.menubar.toolbar .button.raised.linked:first-child,
+.menubar.toolbar .raised.linked .button:first-child,
+.header-bar .linked .button:first-child,
+.header-bar .button.raised.linked:first-child,
+.header-bar .raised.linked .button:first-child {
+    box-shadow: inset -1px 0 shade (@dark_bg_color, 0.9);
+}
+
+.primary-toolbar .linked .button:last-child,
+.primary-toolbar .button.raised.linked:last-child,
+.primary-toolbar .raised.linked .button:last-child,
+.menubar.toolbar .linked .button:last-child,
+.menubar.toolbar .button.raised.linked:last-child,
+.menubar.toolbar .raised.linked .button:last-child,
+.header-bar .linked .button:last-child,s
+.header-bar .button.raised.linked:last-child,
+.header-bar .raised.linked .button:last-child {
+    box-shadow: inset 1px 0 shade (@dark_bg_color, 1.4)
+}
+
+.primary-toolbar .linked .button:active,
+.primary-toolbar .button.raised.linked:active,
+.primary-toolbar .raised.linked .button:active,
+.menubar.toolbar .linked .button:active,
+.menubar.toolbar .button.raised.linked:active
+.menubar.toolbar .raised.linked .button:active,
+.header-bar .linked .button:active,
+.header-bar .button.raised.linked:active,
+.header-bar .raised.linked .button:active {
+    box-shadow: inset 1px 0 shade (@dark_bg_color, 0.9);
+}
+
+.primary-toolbar .linked .button:insensitive,
+.primary-toolbar .button.raised.linked:insensitive,
+.primary-toolbar .raised.linked .button:insensitive,
+.menubar.toolbar .linked .button:insensitive,
+.menubar.toolbar .button.raised.linked:insensitive,
+.menubar.toolbar .raised.linked .button:insensitive,
+.header-bar .linked .button:insensitive,
+.header-bar .button.raised.linked:insensitive,
+.header-bar .raised.linked .button:insensitive {
+    box-shadow: inset -1px 0 shade (@dark_bg_color, 0.9);
+}
+
+.primary-toolbar .linked .button:backdrop:last-child,
+.primary-toolbar .button.raised.linked:backdrop:last-child,
+.primary-toolbar .raised.linked .button:backdrop:last-child,
+.menubar.toolbar .linked .button:backdrop:last-child,
+.menubar.toolbar .button.raised.linked:backdrop:last-child,
+.menubar.toolbar .raised.linked .button:backdrop:last-child,
+.header-bar .linked .button:backdrop:last-child,
+.header-bar .button.raised.linked:backdrop:last-child,
+.header-bar .raised.linked .button:backdrop:last-child {
+    box-shadow: inset 1px 0 shade (@dark_bg_color, 1.2);
+}
+
+/*.primary-toolbar .linked .button:insensitive:backdrop,
+.primary-toolbar .button.raised.linked:insensitive:backdrop,
+.primary-toolbar .raised.linked .button:insensitive:backdrop,
+.menubar.toolbar .linked .button:insensitive:backdrop,
+.menubar.toolbar .button.raised.linked:insensitive:backdrop,
+.menubar.toolbar .raised.linked .button:insensitive:backdrop,
+.header-bar .linked .button:insensitive:backdrop,
+.header-bar .button.raised.linked:insensitive:backdrop,
+.header-bar .raised.linked .button:insensitive:backdrop {
+    box-shadow: inset -1px 0 @unfocused_insensitive_borders;
+}*/
+
+
+/* Linked single button */
+.primary-toolbar .linked .entry:only-child,
+.primary-toolbar .linked .button:only-child,
+.primary-toolbar .linked .button:active:only-child,
+.primary-toolbar .linked .button:active:hover:only-child,
+.primary-toolbar .linked .button:insensitive:only-child,
+.menubar.toolbar .linked .entry:only-child,
+.menubar.toolbar .linked .button:only-child,
+.menubar.toolbar .linked .button:active:only-child,
+.menubar.toolbar .linked .button:active:hover:only-child,
+.menubar.toolbar .linked .button:insensitive:only-child,
+.header-bar .linked .entry:only-child,
+.header-bar .linked .button:only-child,
+.header-bar .linked .button:active:only-child,
+.header-bar .linked .button:active:hover:only-child,
+.header-bar .linked .button:insensitive:only-child {
+    border-radius: 8px;
+    box-shadow: none;
+}
+

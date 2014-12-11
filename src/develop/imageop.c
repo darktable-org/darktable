@@ -1700,7 +1700,7 @@ GtkWidget *dt_iop_gui_get_expander(dt_iop_module_t *module)
   GtkWidget *pluginui_frame = gtk_frame_new(NULL);
   GtkWidget *pluginui = gtk_event_box_new();
 
-  gtk_widget_set_name(pluginui, "dt-plugin-ui");
+  gtk_widget_set_name(pluginui, "iop-plugin-ui");
 
   module->header = header;
   /* connect mouse button callbacks for focus and presets */
