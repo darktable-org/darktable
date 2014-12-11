@@ -749,6 +749,11 @@ int dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[])
   gui->last_preset = NULL;
 
   // load the style / theme
+  GtkSettings *settings = gtk_settings_get_default();
+  g_object_set(G_OBJECT(settings), "gtk-application-prefer-dark-theme", TRUE, NULL);
+  g_object_set(G_OBJECT(settings), "gtk-theme-name", "Adwaita", NULL);
+  g_object_unref(settings);
+
   GError *error = NULL;
   GtkStyleProvider *themes_style_provider = GTK_STYLE_PROVIDER(gtk_css_provider_new());
   gtk_style_context_add_provider_for_screen(gdk_screen_get_default(), themes_style_provider,
