@@ -185,7 +185,7 @@ void _lib_import_ui_devices_update(dt_lib_module_t *self)
   /* add the rescan button */
   GtkButton *scan = GTK_BUTTON(gtk_button_new_with_label(_("scan for devices")));
   d->scan_devices = scan;
-  gtk_button_set_alignment(scan, 0.0, 0.5);
+  gtk_widget_set_halign(gtk_bin_get_child(GTK_BIN(scan)), GTK_ALIGN_START);
   g_object_set(G_OBJECT(scan), "tooltip-text", _("scan for newly attached devices"), (char *)NULL);
   g_signal_connect(G_OBJECT(scan), "clicked", G_CALLBACK(_lib_import_scan_devices_callback), self);
   gtk_box_pack_start(GTK_BOX(d->devices), GTK_WIDGET(scan), TRUE, TRUE, 0);
@@ -237,12 +237,12 @@ void _lib_import_ui_devices_update(dt_lib_module_t *self)
       if(ib)
       {
         g_signal_connect(G_OBJECT(ib), "clicked", G_CALLBACK(_lib_import_from_camera_callback), camera);
-        gtk_button_set_alignment(GTK_BUTTON(ib), 0.0, 0.5);
+        gtk_widget_set_halign(gtk_bin_get_child(GTK_BIN(ib)), GTK_ALIGN_START);
       }
       if(tb)
       {
         g_signal_connect(G_OBJECT(tb), "clicked", G_CALLBACK(_lib_import_tethered_callback), camera);
-        gtk_button_set_alignment(GTK_BUTTON(tb), 0.0, 0.5);
+        gtk_widget_set_halign(gtk_bin_get_child(GTK_BIN(tb)), GTK_ALIGN_START);
       }
       gtk_box_pack_start(GTK_BOX(d->devices), vbx, FALSE, FALSE, 0);
     } while((citem = g_list_next(citem)) != NULL);
@@ -831,7 +831,7 @@ void gui_init(dt_lib_module_t *self)
   /* add import single image buttons */
   GtkWidget *widget = gtk_button_new_with_label(_("image"));
   d->import_file = GTK_BUTTON(widget);
-  gtk_button_set_alignment(GTK_BUTTON(widget), 0.0, 0.5);
+  gtk_widget_set_halign(gtk_bin_get_child(GTK_BIN(widget)), GTK_ALIGN_START);
   gtk_widget_set_tooltip_text(widget, _("select one or more images to import"));
   gtk_widget_set_can_focus(widget, TRUE);
   gtk_widget_set_receives_default(widget, TRUE);
@@ -841,7 +841,7 @@ void gui_init(dt_lib_module_t *self)
   /* adding the import folder button */
   widget = gtk_button_new_with_label(_("folder"));
   d->import_directory = GTK_BUTTON(widget);
-  gtk_button_set_alignment(GTK_BUTTON(widget), 0.0, 0.5);
+  gtk_widget_set_halign(gtk_bin_get_child(GTK_BIN(widget)), GTK_ALIGN_START);
   gtk_widget_set_tooltip_text(widget, _("select a folder to import as film roll"));
   gtk_widget_set_can_focus(widget, TRUE);
   gtk_widget_set_receives_default(widget, TRUE);

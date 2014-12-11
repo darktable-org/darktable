@@ -303,7 +303,7 @@ void gui_init(dt_lib_module_t *self)
   {
     /* create snapshot button */
     d->snapshot[k].button = gtk_toggle_button_new_with_label(wdname);
-    gtk_button_set_alignment(GTK_BUTTON(d->snapshot[k].button), 0.0, 0.5);
+    gtk_widget_set_halign(gtk_bin_get_child(GTK_BIN(d->snapshot[k].button)), GTK_ALIGN_START);
     g_signal_connect(G_OBJECT(d->snapshot[k].button), "clicked", G_CALLBACK(_lib_snapshots_toggled_callback),
                      self);
 
@@ -352,6 +352,7 @@ static void _lib_snapshots_add_button_clicked_callback(GtkWidget *widget, gpoint
     d->snapshot[k].button = b;
     gtk_button_set_label(GTK_BUTTON(d->snapshot[k].button),
                          gtk_button_get_label(GTK_BUTTON(d->snapshot[k - 1].button)));
+    gtk_widget_set_halign(gtk_bin_get_child(GTK_BIN(d->snapshot[k].button)), GTK_ALIGN_START);
   }
 
   /* update top slot with new snapshot */
@@ -371,6 +372,7 @@ static void _lib_snapshots_add_button_clicked_callback(GtkWidget *widget, gpoint
   }
   g_snprintf(label, sizeof(label), "%s (%d)", name, darktable.develop->history_end);
   gtk_button_set_label(GTK_BUTTON(d->snapshot[0].button), label);
+  gtk_widget_set_halign(gtk_bin_get_child(GTK_BIN(d->snapshot[0].button)), GTK_ALIGN_START);
 
   dt_lib_snapshot_t *s = d->snapshot + 0;
   s->zoom_y = dt_control_get_dev_zoom_y();
