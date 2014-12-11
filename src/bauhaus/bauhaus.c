@@ -507,12 +507,6 @@ static void dt_bh_class_init(DtBauhausWidgetClass *class)
   // widget_class->draw = dt_bauhaus_draw;
 }
 
-static int guess_font_size()
-{
-  // FIXME: port to gtk3 style providers somehow!
-  return 10;
-}
-
 void dt_bauhaus_init()
 {
   darktable.bauhaus = (dt_bauhaus_t *)calloc(1, sizeof(dt_bauhaus_t));
@@ -541,14 +535,42 @@ void dt_bauhaus_init()
   darktable.bauhaus->indicator = .6f;
   darktable.bauhaus->insensitive = 0.2f;
 
-  // it seems impossible to get to the font size in a portable way (gtk3 deprecates GtkStyle..),
-  // so we parse it ourselves and convert it from pt to scale (.. :( )
-  int gtk_fontsize = guess_font_size();
+  GtkStyleContext *ctx = gtk_style_context_new();
+  GtkWidgetPath *path;
+  path = gtk_widget_path_new ();
+  int pos = gtk_widget_path_append_type(path, GTK_TYPE_WIDGET);
+  gtk_widget_path_iter_set_name(path, pos, "iop-plugin-ui");
+  pos = gtk_widget_path_append_type(path, GTK_TYPE_WIDGET);
+  gtk_style_context_set_path(ctx, path);
+  gtk_style_context_set_screen (ctx, gtk_widget_get_screen(root_window));
+
+  GdkRGBA color, selected_color, bg_color, selected_bg_color;
+  gtk_style_context_get(ctx, GTK_STATE_FLAG_NORMAL, "color", &color, NULL);
+  gtk_style_context_get(ctx, GTK_STATE_FLAG_NORMAL, "background-color", &bg_color, NULL);
+  gtk_style_context_get(ctx, GTK_STATE_FLAG_SELECTED, "color", &selected_color, NULL);
+  gtk_style_context_get(ctx, GTK_STATE_FLAG_SELECTED, "background-color", &selected_bg_color, NULL);
+  PangoFontDescription *pfont = 0;
+  gtk_style_context_get(ctx, GTK_STATE_FLAG_NORMAL, "font", &pfont, NULL);
+  darktable.bauhaus->bg_normal = bg_color.red;
+  darktable.bauhaus->bg_focus = selected_bg_color.red;
+  fprintf(stderr, "colors %g %g\n", darktable.bauhaus->bg_normal, darktable.bauhaus->bg_focus);
+  // g_value_unset(color);
+  // g_value_unset(bg_color);
+  // g_value_unset(selected_bg_color);
+  // g_value_unset(selected_color);
+  // int gtk_fontsize = pango_font_description_get_size(pfont);
+   // if(!pango_font_description_get_size_is_absolute(pfont)) gtk_fontsize = DT_PIXEL_APPLY_DPI(gtk_fontsize);
+  // font is owned by gtk, no need to free
+
+  // DEBUG
+  // double gtk_fontsize;
+  // gtk_style_context_get(ctx, GTK_STATE_FLAG_NORMAL, "font-size", &gtk_fontsize, NULL);
+  // fprintf(stderr, "font size: %g\n", gtk_fontsize);
 
   // now create the pango description for the strings using the font and size found above
-  gchar *font = g_strdup_printf("%s %d", darktable.bauhaus->label_font, gtk_fontsize);
-  darktable.bauhaus->pango_font_desc = pango_font_description_from_string(font);
-  g_free(font);
+  // gchar *font = g_strdup_printf("%s %d", darktable.bauhaus->label_font, gtk_fontsize+.5);
+  darktable.bauhaus->pango_font_desc = pfont;//pango_font_description_from_string(font);
+  // g_free(font);
 
   PangoLayout *layout;
   cairo_surface_t *cst = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, 128, 128);
