@@ -33,9 +33,9 @@ GtkBox
 #iop-plugin-ui *
 {
 /*  text-align:left; <- fuck, doesn't seem to be supported*/
-  margin:0;
+  padding:0;
   border:0;
-  padding:0 0 4px 0;
+  margin:0;
   background-color: @plugin_bg_color;
 }
 #iop-plugin-ui .GtkBox,
@@ -43,33 +43,37 @@ GtkBox
 {
   background-color: transparent;
 }
-#iop-plugin-ui *:selected,
+#iop-plugin-ui *:selected
+{
+  padding:0;
+  border:0;
+  margin:0;
+  background-color: @selected_bg_color;
+}
 #lib-plugin-ui *
 {
   margin:0;
   border:0;
-  padding:0 0 4px 0;
+  padding:0 0 2px 2px;
   background-color: @selected_bg_color;
 }
 #iop-plugin-ui,
 #lib-plugin-ui
 {
-  border: 1px solid #151515;
+  border: 1px solid #171717;
   border-radius: 1px;
-  box-shadow: inset 0 0 1px #151515;
-  margin: 0px;
-  /*border-style: inset;*/
+  box-shadow: inset 0 0 1px #202020;
+  margin: 1px;
   padding: 4px;
   background-color: #252525;
 }
 #iop-plugin-ui:selected,
 #lib-plugin-ui
 {
-  border: 2px solid #111111;
-  border-radius: 2px;
-  /*border-style: inset;*/
+  border: 1px solid #111111;
+  border-radius: 1px;
   margin: 1px;
-  padding: 2px;
+  padding: 4px;
   color: @selected_fg_color;
   background-color: @selected_bg_color;
 }
