@@ -1044,23 +1044,9 @@ static void dt_bauhaus_clear(dt_bauhaus_widget_t *w, cairo_t *cr)
   }
   else
   {
-    if(gtk_widget_get_state_flags(GTK_WIDGET(w)) & GTK_STATE_FLAG_SELECTED)
-      set_bg_focus(cr);
-    else
-      set_bg_normal(cr);
+    // lib modules always with bright bg
+    set_bg_focus(cr);
   }
-
-#if 0
-  GtkWidget *topwidget = dt_iop_gui_get_pluginui(w->module);
-  GtkStyle *style = gtk_widget_get_style(topwidget);
-  if(style)
-  {
-    cairo_set_source_rgb (cr,
-                          style->bg[gtk_widget_get_state(topwidget)].red/65535.0f,
-                          style->bg[gtk_widget_get_state(topwidget)].green/65535.0f,
-                          style->bg[gtk_widget_get_state(topwidget)].blue/65535.0f);
-  }
-#endif
   cairo_paint(cr);
   cairo_restore(cr);
 }
