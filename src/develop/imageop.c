@@ -1719,7 +1719,6 @@ GtkWidget *dt_iop_gui_get_expander(dt_iop_module_t *module)
                    module);
 
   /* setup plugin content frame */
-  gtk_frame_set_shadow_type(GTK_FRAME(pluginui_frame), GTK_SHADOW_IN);
   gtk_container_add(GTK_CONTAINER(pluginui_frame), pluginui);
 
   /* layout the main expander widget */

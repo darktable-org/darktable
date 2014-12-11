@@ -1,3 +1,5 @@
+/* based on ambiance theme. TODO: probably this hardcoded path breaks it for most people, better copy the stuff.. */
+@import url("/usr/share/themes/Ambiance/gtk-3.0/gtk-main.css");
 @define-color bg_color #212121;
 @define-color plugin_bg_color #252525;
 @define-color fg_color #cacaca;
@@ -16,12 +18,11 @@
   background-color: @bg_color;
   border-color: #111111;
   margin: 0;
-  padding: 2px; /* TODO: set that to 0 and only increase for buttons, combo boxes etc which need it!*/
+  padding: 0;
   border: 0;
 }
 
-/*#right, #left, #plugins_vbox,#plugins_vbox_left*/
-GtkBox
+#iop-plugin-ui GtkBox
 {
   background-color:transparent;
   margin:0;
@@ -54,7 +55,7 @@ GtkBox
 {
   margin:0;
   border:0;
-  padding:0 0 2px 2px;
+  padding:0 0 2pt 2pt;
   background-color: @selected_bg_color;
 }
 #iop-plugin-ui,
