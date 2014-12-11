@@ -321,7 +321,7 @@ void gui_init(dt_lib_module_t *self)
   // add buttons in the list, set them all to invisible
   for(int k = 0; k < NUM_LINES; k++)
   {
-    d->item[k].button = dtgtk_button_new(NULL, CPF_STYLE_FLAT);
+    d->item[k].button = gtk_button_new_with_label("");
     gtk_box_pack_start(GTK_BOX(self->widget), d->item[k].button, FALSE, TRUE, 0);
     g_signal_connect(G_OBJECT(d->item[k].button), "clicked", G_CALLBACK(button_pressed), (gpointer)self);
     gtk_widget_set_no_show_all(d->item[k].button, TRUE);

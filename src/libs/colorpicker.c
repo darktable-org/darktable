@@ -295,7 +295,7 @@ static void _add_sample(GtkButton *widget, gpointer self)
   sample->container = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 2);
   gtk_box_pack_start(GTK_BOX(data->samples_container), sample->container, TRUE, TRUE, 0);
 
-  sample->output_button = dtgtk_button_new(NULL, CPF_STYLE_BOX);
+  sample->output_button = gtk_button_new_with_label("");
   gtk_widget_set_size_request(sample->output_button, DT_PIXEL_APPLY_DPI(40), -1);
   gtk_widget_set_events(sample->output_button, GDK_ENTER_NOTIFY_MASK | GDK_LEAVE_NOTIFY_MASK);
   gtk_widget_set_tooltip_text(sample->output_button, _("hover to highlight sample on canvas, "
@@ -438,7 +438,7 @@ void gui_init(dt_lib_module_t *self)
   gtk_box_pack_start(GTK_BOX(container), output_row, TRUE, TRUE, 0);
 
   // The output button
-  data->output_button = dtgtk_button_new(NULL, CPF_STYLE_BOX);
+  data->output_button = gtk_button_new_with_label("");
   gtk_widget_set_size_request(data->output_button, DT_PIXEL_APPLY_DPI(100), DT_PIXEL_APPLY_DPI(100));
   gtk_widget_set_sensitive(data->output_button, FALSE);
   gtk_box_pack_start(GTK_BOX(output_row), data->output_button, FALSE, FALSE, 0);
