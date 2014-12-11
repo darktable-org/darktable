@@ -21,7 +21,6 @@
 #include "control/signal.h"
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
-#include "dtgtk/button.h"
 #include "libs/lib.h"
 #include "libs/collect.h"
 
@@ -321,11 +320,12 @@ void gui_init(dt_lib_module_t *self)
   // add buttons in the list, set them all to invisible
   for(int k = 0; k < NUM_LINES; k++)
   {
-    d->item[k].button = gtk_button_new_with_label("");
+    d->item[k].button = gtk_button_new();
     gtk_box_pack_start(GTK_BOX(self->widget), d->item[k].button, FALSE, TRUE, 0);
     g_signal_connect(G_OBJECT(d->item[k].button), "clicked", G_CALLBACK(button_pressed), (gpointer)self);
     gtk_widget_set_no_show_all(d->item[k].button, TRUE);
     gtk_widget_set_visible(d->item[k].button, FALSE);
+    gtk_button_set_alignment(GTK_BUTTON(d->item[k].button), 0.0, 0.5);
   }
   _lib_recentcollection_updated(NULL, self);
 

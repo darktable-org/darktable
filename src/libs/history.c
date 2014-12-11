@@ -26,7 +26,6 @@
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
 #include "gui/styles.h"
-#include "dtgtk/button.h"
 
 DT_MODULE(1)
 
@@ -104,7 +103,8 @@ void gui_init(dt_lib_module_t *self)
   g_signal_connect(G_OBJECT(hbutton), "clicked", G_CALLBACK(_lib_history_compress_clicked_callback), NULL);
 
   /* add toolbar button for creating style */
-  GtkWidget *hbutton2 = dtgtk_button_new(dtgtk_cairo_paint_styles, 0);
+  // GtkWidget *hbutton2 = dtgtk_button_new(dtgtk_cairo_paint_styles, 0);
+  GtkWidget *hbutton2 = gtk_button_new();
   // gtk_widget_set_size_request (hbutton, DT_PIXEL_APPLY_DPI(24), -1);
   g_signal_connect(G_OBJECT(hbutton2), "clicked",
                    G_CALLBACK(_lib_history_create_style_button_clicked_callback), NULL);
@@ -154,6 +154,7 @@ static GtkWidget *_lib_history_create_button(dt_lib_module_t *self, int num, con
 
   /* create toggle button */
   widget = gtk_toggle_button_new_with_label(numlabel);
+  gtk_button_set_alignment(GTK_BUTTON(widget), 0.0, 0.5);
   g_object_set_data(G_OBJECT(widget), "history_number", GINT_TO_POINTER(num + 1));
   g_object_set_data(G_OBJECT(widget), "label", (gpointer)g_strdup(label));
 
