@@ -1,15 +1,16 @@
-/*
- this file only exists to check if style loading works. dark dt => ok, light dt => fail.
- */
-
 * {
   font: Sans 10;
   color: #cacaca;
   background-color: #212121;
   border-color: #111111;
   margin: 0;
-  padding: 2px;
+  padding: 2px; /* TODO: set that to 0 and only increase for buttons, combo boxes etc which need it!*/
   border: 0;
+}
+
+.GtkButton,.GtkToggleButton
+{
+  padding:2px;
 }
 
 /*#right, #left, #plugins_vbox,#plugins_vbox_left*/
@@ -23,7 +24,7 @@
 #right > .GtkEventBox, #left > .GtkEventBox, #background_job_eventbox,
 #dt-plugin-ui *
 {
-  text-align:left;
+/*  text-align:left; <- fuck, doesn't seem to be supported*/
   margin:0;
   border:0;
   padding:0;
