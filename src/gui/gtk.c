@@ -933,13 +933,15 @@ int dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[])
   while(input_devices)
   {
     GdkDevice *device = (GdkDevice *)input_devices->data;
+    GdkInputSource source = gdk_device_get_source(device);
+    gint n_axes = (source == GDK_SOURCE_KEYBOARD ? 0 : gdk_device_get_n_axes(device));
 
     dt_print(DT_DEBUG_INPUT, "%s (%s), source: %s, mode: %s, %d axes, %d keys\n", gdk_device_get_name(device),
-             gdk_device_get_has_cursor(device) ? "with cursor" : "no cursor",
-             SOURCE_NAMES[gdk_device_get_source(device)], MODE_NAMES[gdk_device_get_mode(device)],
-             gdk_device_get_n_axes(device), gdk_device_get_n_keys(device));
+             (source != GDK_SOURCE_KEYBOARD) && gdk_device_get_has_cursor(device) ? "with cursor" : "no cursor",
+             SOURCE_NAMES[source], MODE_NAMES[gdk_device_get_mode(device)], n_axes,
+             source != GDK_SOURCE_KEYBOARD ? gdk_device_get_n_keys(device) : 0);
 
-    for(int i = 0; i < gdk_device_get_n_axes(device); i++)
+    for(int i = 0; i < n_axes; i++)
     {
       dt_print(DT_DEBUG_INPUT, "  %s\n", AXIS_NAMES[gdk_device_get_axis_use(device, i)]);
     }
