@@ -1,5 +1,3 @@
-/* based on ambiance theme. TODO: probably this hardcoded path breaks it for most people, better copy the stuff.. */
-@import url("/usr/share/themes/Ambiance/gtk-3.0/gtk-main.css");
 @define-color bg_color #212121;
 @define-color plugin_bg_color #252525;
 @define-color fg_color #cacaca;
@@ -20,6 +18,12 @@
   margin: 0;
   padding: 0;
   border: 0;
+}
+
+GtkFrame
+{
+  margin : 1px;
+  padding : 1px;
 }
 
 #iop-plugin-ui GtkBox
