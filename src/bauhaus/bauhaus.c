@@ -509,41 +509,8 @@ static void dt_bh_class_init(DtBauhausWidgetClass *class)
 
 static int guess_font_size()
 {
-  const int def = 8;
-  const char *gtkrc_filename = darktable.gui->gtkrc;
-  if(!gtkrc_filename) return def;
-  FILE *f = fopen(gtkrc_filename, "rb");
-  if(!f) return def;
-  char line[256];
-  while(!feof(f))
-  {
-    int read = fscanf(f, "%[^\n]\n", line);
-    if(read > 0)
-    {
-      char *c = line;
-      while(*c == ' ' || *c == '\t') c++;
-      if(!strncmp(c, "font_name", 9))
-      {
-        fclose(f);
-        // skip all to = then second " (end)
-        while(*c != '=' && *c != 0) c++;
-        while(*c != '"' && *c != 0) c++;
-        if(*c != 0) c++;
-        while(*c != '"' && *c != 0) c++;
-        // back to last space
-        while(*c != ' ' && c > line) c--;
-        if(*c == ' ' && c != line)
-        {
-          int fontsize = (int)atol(c);
-          // fprintf(stderr, "[bauhaus] guessing gtk font size of %d pt\n", fontsize);
-          if(fontsize > 0) return fontsize;
-        }
-        return def;
-      }
-    }
-  }
-  fclose(f);
-  return def;
+  // FIXME: port to gtk3 style providers somehow!
+  return 10;
 }
 
 void dt_bauhaus_init()
