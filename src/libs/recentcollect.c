@@ -284,7 +284,9 @@ static void _lib_recentcollection_updated(gpointer instance, gpointer user_data)
     {
       gtk_button_set_label(GTK_BUTTON(d->item[k].button), str);
     }
-    gtk_widget_set_halign(gtk_bin_get_child(GTK_BIN(d->item[k].button)), GTK_ALIGN_START);
+    GtkWidget *child = gtk_bin_get_child(GTK_BIN(d->item[k].button));
+    if(child)
+      gtk_widget_set_halign(child, GTK_ALIGN_START);
     gtk_widget_set_no_show_all(d->item[k].button, TRUE);
     gtk_widget_set_visible(d->item[k].button, FALSE);
   }
@@ -326,7 +328,9 @@ void gui_init(dt_lib_module_t *self)
     g_signal_connect(G_OBJECT(d->item[k].button), "clicked", G_CALLBACK(button_pressed), (gpointer)self);
     gtk_widget_set_no_show_all(d->item[k].button, TRUE);
     gtk_widget_set_visible(d->item[k].button, FALSE);
-    gtk_widget_set_halign(gtk_bin_get_child(GTK_BIN(d->item[k].button)), GTK_ALIGN_START);
+    GtkWidget *child = gtk_bin_get_child(GTK_BIN(d->item[k].button));
+    if(child)
+      gtk_widget_set_halign(child, GTK_ALIGN_START);
   }
   _lib_recentcollection_updated(NULL, self);
 
