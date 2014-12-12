@@ -73,6 +73,9 @@ typedef struct dt_slideshow_t
   uint32_t state_waiting_for_user; // user input (needed to step the cycle at one point)
 
   uint32_t auto_advance;
+
+  // some magic to hide the mosue pointer
+  guint mouse_timeout;
 } dt_slideshow_t;
 
 typedef struct dt_slideshow_format_t
@@ -333,6 +336,9 @@ void enter(dt_view_t *self)
 {
   dt_slideshow_t *d = (dt_slideshow_t *)self->data;
 
+  dt_control_change_cursor(GDK_BLANK_CURSOR);
+  d->mouse_timeout = 0;
+
   dt_ui_panel_show(darktable.gui->ui, DT_UI_PANEL_LEFT, FALSE, TRUE);
   dt_ui_panel_show(darktable.gui->ui, DT_UI_PANEL_RIGHT, FALSE, TRUE);
   dt_ui_panel_show(darktable.gui->ui, DT_UI_PANEL_TOP, FALSE, TRUE);
@@ -378,8 +384,12 @@ void enter(dt_view_t *self)
 
 void leave(dt_view_t *self)
 {
-  dt_ui_border_show(darktable.gui->ui, TRUE);
   dt_slideshow_t *d = (dt_slideshow_t *)self->data;
+
+  if(d->mouse_timeout > 0) g_source_remove(d->mouse_timeout);
+  d->mouse_timeout = 0;
+  dt_control_change_cursor(GDK_LEFT_PTR);
+  dt_ui_border_show(darktable.gui->ui, TRUE);
   d->auto_advance = 0;
   dt_view_lighttable_set_position(darktable.view_manager, d->front_num);
   dt_conf_set_string("plugins/lighttable/export/iccprofile", d->oldprofile);
@@ -443,8 +453,23 @@ int scrolled(dt_view_t *self, double x, double y, int up, int state)
 }
 
 
+static gboolean _hide_mouse(gpointer user_data)
+{
+  dt_view_t *self = (dt_view_t *)user_data;
+  dt_slideshow_t *d = (dt_slideshow_t *)self->data;
+  d->mouse_timeout = 0;
+  dt_control_change_cursor(GDK_BLANK_CURSOR);
+  return FALSE;
+}
+
+
 void mouse_moved(dt_view_t *self, double x, double y, int which)
 {
+  dt_slideshow_t *d = (dt_slideshow_t *)self->data;
+
+  if(d->mouse_timeout > 0) g_source_remove(d->mouse_timeout);
+  else dt_control_change_cursor(GDK_LEFT_PTR);
+  d->mouse_timeout = g_timeout_add_seconds(1, _hide_mouse, self);
 }
 
 

@@ -218,52 +218,62 @@ void SrwDecoder::decodeCompressed2( TiffIFD* raw, int bits)
   mRaw->dim = iPoint2D(width, height);
   mRaw->createData();
 
-  const ushort16 tab[14] = { 0x304,0x307,0x206,0x205,0x403,0x600,0x709,
-                             0x80a,0x90b,0xa0c,0xa0d,0x501,0x408,0x402 };
-  ushort16 huff[1026], vpred[2][2] = {{0,0},{0,0}}, hpred[2];
+  // This format has a variable length encoding of how many bits are needed
+  // to encode the difference between pixels, we use a table to process it
+  // that has two values, the first the number of bits that were used to 
+  // encode, the second the number of bits that come after with the difference
+  // The table has 14 entries because the difference can have between 0 (no 
+  // difference) and 13 bits (differences between 12 bits numbers can need 13)
+  const ushort16 tab[14][2] = {{3,4}, {3,7}, {2,6}, {2,5}, {4,3}, {6,0}, {7,9},
+                               {8,10}, {9,11}, {10,12}, {10,13}, {5,1}, {4,8}, {4,2}};
+  encTableItem tbl[1024];
+  ushort16 vpred[2][2] = {{0,0},{0,0}}, hpred[2];
 
+  // We generate a 1024 entry table (to be addressed by reading 10 bits) by 
+  // consecutively filling in 2^(10-N) positions where N is the variable number of
+  // bits of the encoding. So for example 4 is encoded with 3 bits so the first
+  // 2^(10-3)=128 positions are set with 3,4 so that any time we read 000 we 
+  // know the next 4 bits are the difference. We read 10 bits because that is
+  // the maximum number of bits used in the variable encoding (for the 12 and 
+  // 13 cases)
   uint32 n = 0;
-  huff[n] = 10;
-  for (uint32 i=0; i < 14; i++)
-    for(int32 c = 0; c < (1024 >> (tab[i] >> 8)); c++)
-      huff[++n] = tab[i];
+  for (uint32 i=0; i < 14; i++) {
+    for(int32 c = 0; c < (1024 >> tab[i][0]); c++) {
+      tbl[n  ].encLen = tab[i][0];
+      tbl[n++].diffLen = tab[i][1];
+    }
+  }
 
   BitPumpMSB pump(mFile->getData(offset),mFile->getSize() - offset);
   for (uint32 y = 0; y < height; y++) {
     ushort16* img = (ushort16*)mRaw->getData(0, y);
     for (uint32 x = 0; x < width; x++) {
-      int32 diff = ljpegDiff(pump, huff);
+      int32 diff = samsungDiff(pump, tbl);
       if (x < 2)
         hpred[x] = vpred[y & 1][x] += diff;
       else
         hpred[x & 1] += diff;
       img[x] = hpred[x & 1];
       if (img[x] >> bits)
-        ThrowRDE("SRW: Error: decoded value out of bounds");
+        ThrowRDE("SRW: Error: decoded value out of bounds at %d:%d", x, y);
     }
   }
 }
 
-int32 SrwDecoder::ljpegDiff (BitPumpMSB &pump, ushort16 *huff)
+int32 SrwDecoder::samsungDiff (BitPumpMSB &pump, encTableItem *tbl)
 {
-  int32 len, diff;
+  // We read 10 bits to index into our table
+  uint32 c = pump.peekBits(10);
+  // Skip the bits that were used to encode this case
+  pump.getBitsSafe(tbl[c].encLen);
+  // Read the number of bits the table tells me
+  int32 len = tbl[c].diffLen;
+  int32 diff = pump.getBitsSafe(len);
 
-  len = getbithuff(pump, *huff, huff+1);
-  if (len == 16)
-    return -32768;
-  diff = pump.getBitsSafe(len);
+  // If the first bit is 0 we need to turn this into a negative number
   if (len && (diff & (1 << (len-1))) == 0)
     diff -= (1 << len) - 1;
   return diff;
-}
-
-uint32 SrwDecoder::getbithuff (BitPumpMSB &pump, int nbits, ushort16 *huff)
-{
-  uint32 c = pump.peekBits(nbits);
-  // Skip bits given by the high order bits of the huff table
-  pump.getBitsSafe(huff[c] >> 8);
-  // Return the lower order bits
-  return (uchar8) huff[c];
 }
 
 void SrwDecoder::checkSupportInternal(CameraMetaData *meta) {

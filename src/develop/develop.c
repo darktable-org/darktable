@@ -353,13 +353,13 @@ restart:
     window_width /= 2;
     window_height /= 2;
   }
-  dev->capwidth = MIN(MIN(window_width, dev->pipe->processed_width * scale), darktable.thumbnail_width);
-  dev->capheight = MIN(MIN(window_height, dev->pipe->processed_height * scale), darktable.thumbnail_height);
-  x = MAX(0, scale * dev->pipe->processed_width * (.5 + zoom_x) - dev->capwidth / 2);
-  y = MAX(0, scale * dev->pipe->processed_height * (.5 + zoom_y) - dev->capheight / 2);
+  const int wd = MIN(window_width, dev->pipe->processed_width * scale);
+  const int ht = MIN(window_height, dev->pipe->processed_height * scale);
+  x = MAX(0, scale * dev->pipe->processed_width  * (.5 + zoom_x) - wd / 2);
+  y = MAX(0, scale * dev->pipe->processed_height * (.5 + zoom_y) - ht / 2);
 
   dt_get_times(&start);
-  if(dt_dev_pixelpipe_process(dev->pipe, dev, x, y, dev->capwidth, dev->capheight, scale))
+  if(dt_dev_pixelpipe_process(dev->pipe, dev, x, y, wd, ht, scale))
   {
     // interrupted because image changed?
     if(dev->image_force_reload)
@@ -472,8 +472,10 @@ void dt_dev_load_image(dt_develop_t *dev, const uint32_t imgid)
 
 void dt_dev_configure(dt_develop_t *dev, int wd, int ht)
 {
-  wd = MIN(darktable.thumbnail_width, wd);
-  ht = MIN(darktable.thumbnail_height, ht);
+  // fixed border on every side
+  const int tb = DT_PIXEL_APPLY_DPI(dt_conf_get_int("plugins/darkroom/ui/border_size"));
+  wd -= 2*tb;
+  ht -= 2*tb;
   if(dev->width != wd || dev->height != ht)
   {
     dev->width = wd;
