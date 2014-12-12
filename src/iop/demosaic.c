@@ -1161,8 +1161,10 @@ static void demosaic_ppg(float *out, const float *in, dt_iop_roi_t *roi_out, con
   const int offX = 3; // MAX(0, 3 - (roi_in->width  - (roi_out->x + roi_out->width)));
   const int offY = 3; // MAX(0, 3 - (roi_in->height - (roi_out->y + roi_out->height)));
 
-  assert(roi_in->width == roi_out->width);
-  assert(roi_in->height == roi_out->height);
+  // these may differ a little, if you're unlucky enough to split a bayer block with cropping or similar.
+  // we never want to access the input out of bounds though:
+  assert(roi_in->width >= roi_out->width);
+  assert(roi_in->height >= roi_out->height);
   // border interpolate
   float sum[8];
   for(int j = 0; j < roi_out->height; j++)
