@@ -708,7 +708,6 @@ void dt_control_log(const char *msg, ...)
   darktable.control->log_message_timeout_id
       = g_timeout_add(DT_CTL_LOG_TIMEOUT, _dt_ctl_log_message_timeout_callback, NULL);
   dt_pthread_mutex_unlock(&darktable.control->log_mutex);
-  dt_control_queue_redraw_center();
 }
 
 static void dt_control_log_ack_all()
