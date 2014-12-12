@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Darktable 1.6\n"
 "POT-Creation-Date: 2014-12-10 23:28+0100\n"
-"PO-Revision-Date: 2014-12-11 23:39+0100\n"
+"PO-Revision-Date: 2014-12-12 11:16+0100\n"
 "Last-Translator: Josep V. Moragues <josepvm@arrakis.es>\n"
 "Language-Team: Josep Vicenç Moragues Pastor <josepvm@arrakis.es>\n"
 "Language: ca\n"
@@ -782,6 +782,8 @@ msgid ""
 "<filename moreinfo=\"none\">darktable-cli</filename> is called with the "
 "following command line parameters:"
 msgstr ""
+"<filename moreinfo=\"none\">darktable-cli</filename> es pot invocar amb els "
+"següents paràmetres a la línia de comandament:"
 
 #: /home/jv/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:524(synopsis)
 msgid ""
@@ -789,18 +791,21 @@ msgid ""
 "width &lt;max width&gt;] [--height &lt;max height&gt;] [--bpp &lt;bpp&gt;] "
 "[--hq &lt;0|1|true|false&gt;] [--verbose] [--core &lt;darktable options&gt;]"
 msgstr ""
+"darktable-cli &lt;input file&gt; [&lt;xmp file&gt;] &lt;output file&gt; [--"
+"width &lt;max width&gt;] [--height &lt;max height&gt;] [--bpp &lt;bpp&gt;] "
+"[--hq &lt;0|1|true|false&gt;] [--verbose] [--core &lt;darktable options&gt;]"
 
 #: /home/jv/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:541(term)
 msgid "&lt;input file&gt;"
-msgstr ""
+msgstr "&lt;input file&gt;"
 
 #: /home/jv/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:543(para)
 msgid "The name of the input file to export."
-msgstr ""
+msgstr "El nom de l'arxiu d'entrada que es vol exportar"
 
 #: /home/jv/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:551(term)
 msgid "&lt;xmp file&gt;"
-msgstr ""
+msgstr "&lt;xmp file&gt;"
 
 #: /home/jv/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:553(para)
 msgid ""
@@ -808,40 +813,49 @@ msgid ""
 "to be applied during export. If this option is not given darktable will "
 "search for an XMP file that belongs to the given input file."
 msgstr ""
+"El nom (opcional) d'un arxiu XMP que contingui la pila de l'historial del "
+"processat a aplicar durant l'exportació. Si no s'especifica aquesta opció el "
+"darktable cercarà l'arxiu XMP associat a l'arxiu d'entrada triat."
 
 #: /home/jv/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:563(term)
 msgid "&lt;output file&gt;"
-msgstr ""
+msgstr "&lt;output file&gt;"
 
 #: /home/jv/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:565(para)
 msgid ""
 "The name of the output file. darktable derives the export file format from "
 "the file extension."
 msgstr ""
+"El nom de l'arxiu de sortida. El darktable deduirà el format d'exportació a "
+"partir de l'extensió del fitxer."
 
 #: /home/jv/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:574(term)
 msgid "--width &lt;max width&gt;"
-msgstr ""
+msgstr "--width &lt;max width&gt;"
 
 #: /home/jv/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:576(para)
 msgid ""
 "This optional parameter allows to limit the width of the exported image to "
 "that number of pixels."
 msgstr ""
+"Aquest paràmetre opcional permet limitar l'amplada de la imatge exportada al "
+"número de píxels que s'indiqui."
 
 #: /home/jv/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:585(term)
 msgid "--height &lt;max height&gt;"
-msgstr ""
+msgstr "--height &lt;max height&gt;"
 
 #: /home/jv/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:587(para)
 msgid ""
 "This optional parameter allows to limit the height of the exported image to "
 "that number of pixels."
 msgstr ""
+"Aquest paràmetre opcional permet limitar l'alçada de la imatge exportada al "
+"número de píxels que s'indiqui."
 
 #: /home/jv/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:596(term)
 msgid "--bpp &lt;bpp&gt;"
-msgstr ""
+msgstr "--bpp &lt;bpp&gt;"
 
 #: /home/jv/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:598(para)
 msgid ""
@@ -850,36 +864,43 @@ msgid ""
 "functional. If you need to define the bit depth you need to use the "
 "following workaround:"
 msgstr ""
+"Paràmetre opcional per definir la profunditat de color (bits per píxel) de "
+"la imatge exportada; els valors admesos depenen del format d'arxiu. En "
+"aquests moments aquesta opció encara no és funcional. Si us cal definir la "
+"profunditat de color feu servir el següent procediment provisional:"
 
 #: /home/jv/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:604(synopsis)
 msgid "--core --conf plugins/imageio/format/&lt;FORMAT&gt;/bpp=&lt;VALUE&gt;"
-msgstr ""
+msgstr "--core --conf plugins/imageio/format/&lt;FORMAT&gt;/bpp=&lt;VALUE&gt;"
 
 #: /home/jv/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:607(para)
 msgid "where &lt;FORMAT&gt; is the name of the selected output format."
-msgstr ""
+msgstr "on &lt;FORMAT&gt; és el nom del format de sortida triat."
 
 #: /home/jv/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:615(term)
 msgid "--hq &lt;0|1|true|false&gt;"
-msgstr ""
+msgstr "--hq &lt;0|1|true|false&gt;"
 
 #: /home/jv/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:617(para)
 msgid ""
 "A flag that defines whether to use high quality resampling during export "
 "(see <xref linkend=\"core_options\"/>). Defaults to true."
 msgstr ""
+"Senyalador que defineix si s'ha d'aplicar el reescalat d'alta qualitat "
+"durant l'exportació (veure <xref linkend=\"core_options\"/>). Per defecte sí "
+"s'aplica (true)."
 
 #: /home/jv/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:626(term)
 msgid "--verbose"
-msgstr ""
+msgstr "--verbose"
 
 #: /home/jv/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:628(para)
 msgid "Enables verbose output."
-msgstr ""
+msgstr "Activa la sortida d'informació detallada."
 
 #: /home/jv/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:636(term)
 msgid "--core &lt;darktable options&gt;"
-msgstr ""
+msgstr "--core &lt;darktable options&gt;"
 
 #: /home/jv/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:638(para)
 msgid ""
@@ -887,24 +908,30 @@ msgid ""
 "the darktable core and handled as standard parameters. See <xref linkend="
 "\"darktable_commandline_parameters\"/> for a detailed description."
 msgstr ""
+"Tots els paràmetres de línia de comandament que segueixin a <quote>--core</"
+"quote> es passen al nucli del darktable i es gestionen com a paràmetres "
+"estàndard. Consulteu <xref linkend=\"darktable_commandline_parameters\"/> "
+"per a una descripció detallada."
 
 #: /home/jv/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:534(para)
 msgid ""
 "The user needs to supply an input filename and an output filename. All other "
 "parameters are optional. <placeholder-1/>"
 msgstr ""
+"L'usuari ha d'indicar un nom d'arxiu d'entrada i un nom d'arxiu de sortida. "
+"Tots els altres paràmetres són opcionals. <placeholder-1/>"
 
 #: /home/jv/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:655(title)
 msgid "User interface"
-msgstr ""
+msgstr "Interfície d'usuari"
 
 #: /home/jv/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:664(para)
 msgid "This section describes the layout of the user interface."
-msgstr ""
+msgstr "Aquesta secció descriu la disposició de la interfície d'usuari."
 
 #: /home/jv/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:678(title)
 msgid "Views"
-msgstr ""
+msgstr "Vistes"
 
 #: /home/jv/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:680(para)
 msgid ""
@@ -922,11 +949,25 @@ msgid ""
 "entry><entry> switches to slideshow </entry></row></tbody></tgroup></"
 "informaltable>"
 msgstr ""
+"El darktable compta amb diferents vistes o modes. Hi ha cinc vistes "
+"disponibles tal com es descriu en aquesta secció. Podeu alternar entre les "
+"vistes fent clic sobre el nom de la vista a la part superior del panell "
+"dret. – la vista activa es veurà ressaltada – o bé fent servir les dreceres "
+"de teclat: <informaltable frame=\"none\" width=\"60%\"><tgroup cols=\"2\" "
+"colsep=\"0\" rowsep=\"0\"><colspec colwidth=\"1*\"/><colspec colwidth=\"9*\"/"
+"><tbody><row><entry><emphasis>l</emphasis></entry><entry> canvia a mode "
+"taula de llum (lighttable) </entry></row><row><entry><emphasis>d</emphasis></"
+"entry><entry> canvia al mode cambra fosca (darkroom) </entry></"
+"row><row><entry><emphasis>t</emphasis></entry><entry> canvia al mode "
+"tethering </entry></row><row><entry><emphasis>m</emphasis></entry><entry> "
+"canvia al mode mapa </entry></row><row><entry><emphasis>s</emphasis></"
+"entry><entry> canvia al mode projecció (slideshow) </entry></row></tbody></"
+"tgroup></informaltable>"
 
 #: /home/jv/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:737(title)
 #: /home/jv/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1229(title)
 msgid "Lighttable"
-msgstr ""
+msgstr "Taula de llum"
 
 #: /home/jv/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:739(para)
 msgid ""
@@ -934,23 +975,30 @@ msgid ""
 "where you rate images, add tags and colorlabels, and export images among "
 "other actions (see <xref linkend=\"lighttable_chapter\"/>)."
 msgstr ""
+"El mode taula de llum (lighttable) és aquell on es gestionen les imatges i "
+"els rodets. També és el mode amb el que podeu puntuar les imatges, adjuntar "
+"etiquetes descriptives i etiquetes de colors, i exportar imatges, entre "
+"altres tasques (vegeu <xref linkend=\"lighttable_chapter\"/>). "
 
 #: /home/jv/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:749(title)
 #: /home/jv/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:4172(title)
 msgid "Darkroom"
-msgstr ""
+msgstr "Cambra fosca"
 
 #: /home/jv/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:751(para)
 msgid ""
 "In the darkroom view you develop a single image using the available modules "
 "(see <xref linkend=\"darkroom_chapter\"/>)."
 msgstr ""
+"El mode cambra fosca (darkroom) o de laboratori fotogràfic, és el mode on "
+"podeu revelar una imatge individual fent servir els mòduls disponibles "
+"(vegeu <xref linkend=\"darkroom_chapter\"/>)."
 
 #: /home/jv/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:760(title)
 #: /home/jv/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:14712(title)
 #: /home/jv/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:14760(title)
 msgid "Tethering"
-msgstr ""
+msgstr "Tethering"
 
 #: /home/jv/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:762(para)
 msgid ""
@@ -958,29 +1006,38 @@ msgid ""
 "remotely capturing images that will be downloaded and shown on computer "
 "screen (see <xref linkend=\"tethering_chapter\"/>)."
 msgstr ""
+"Aquesta vista serveix per fer fotos amb la càmera connectada a l'ordinador, "
+"capturant imatges de forma remota que es descarreguen i es mostren al moment "
+"a la pantalla de l'ordinador (vegeu <xref linkend=\"tethering_chapter\"/>)."
 
 #: /home/jv/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:772(title)
 #: /home/jv/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:3466(emphasis)
 #: /home/jv/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:15123(title)
 msgid "Map"
-msgstr ""
+msgstr "Mapa"
 
 #: /home/jv/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:774(para)
 msgid ""
 "This view shows images with geo-tag data on a map and allows manually geo-"
 "tagging new images (see <xref linkend=\"map_chapter\"/>)."
 msgstr ""
+"Aquesta vista mostra en un mapa les imatges que inclouen dades de "
+"geolocalització, i permet georeferenciar manualment noves imatges (vegeu "
+"<xref linkend=\"map_chapter\"/>)."
 
 #: /home/jv/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:783(title)
 #: /home/jv/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:15392(title)
 msgid "Slideshow"
-msgstr ""
+msgstr "Projecció"
 
 #: /home/jv/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:785(para)
 msgid ""
 "This view shows images as a slideshow, processing them on-the-fly (see <xref "
 "linkend=\"slideshow_chapter\"/>)."
 msgstr ""
+"La vista de projecció (slideshow) mostra les imatges com una presentació de "
+"diapositives, processant-les al mateix moment (vegeu <xref linkend="
+"\"slideshow_chapter\"/>)."
 
 #: /home/jv/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:796(title)
 msgid "Screen layout"
