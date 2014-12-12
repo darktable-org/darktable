@@ -27,36 +27,39 @@
 struct dt_dev_pixelpipe_t;
 typedef struct dt_dev_pixelpipe_cache_t
 {
-  int32_t  entries;
-  void    **data;
-  size_t   *size;
+  int32_t entries;
+  void **data;
+  size_t *size;
   uint64_t *hash;
-  int32_t  *used;
+  int32_t *used;
 #ifdef HAVE_OPENCL
-  void    **gpu_mem;
+  void **gpu_mem;
 #endif
   // profiling:
   uint64_t queries;
   uint64_t misses;
-}
-dt_dev_pixelpipe_cache_t;
+} dt_dev_pixelpipe_cache_t;
 
 /** constructs a new cache with given cache line count (entries) and float buffer entry size in bytes.
-	\param[out] returns 0 if fail to allocate mem cache.
+  \param[out] returns 0 if fail to allocate mem cache.
 */
 int dt_dev_pixelpipe_cache_init(dt_dev_pixelpipe_cache_t *cache, int entries, size_t size);
 void dt_dev_pixelpipe_cache_cleanup(dt_dev_pixelpipe_cache_t *cache);
 
 struct dt_iop_roi_t;
 /** creates a hopefully unique hash from the complete module stack up to the module-th. */
-uint64_t dt_dev_pixelpipe_cache_hash(int imgid, const struct dt_iop_roi_t *roi, struct dt_dev_pixelpipe_t *pipe, int module);
+uint64_t dt_dev_pixelpipe_cache_hash(int imgid, const struct dt_iop_roi_t *roi,
+                                     struct dt_dev_pixelpipe_t *pipe, int module);
 
 /** returns the float data buffer for the given hash from the cache. if the hash does not match any
   * cache line, the least recently used cache line will be cleared and an empty buffer is returned
   * together with a non-zero return value. */
-int dt_dev_pixelpipe_cache_get(dt_dev_pixelpipe_cache_t *cache, const uint64_t hash, const size_t size, void **data);
-int dt_dev_pixelpipe_cache_get_important(dt_dev_pixelpipe_cache_t *cache, const uint64_t hash, const size_t size, void **data);
-int dt_dev_pixelpipe_cache_get_weighted(dt_dev_pixelpipe_cache_t *cache, const uint64_t hash, const size_t size, void **data, int weight);
+int dt_dev_pixelpipe_cache_get(dt_dev_pixelpipe_cache_t *cache, const uint64_t hash, const size_t size,
+                               void **data);
+int dt_dev_pixelpipe_cache_get_important(dt_dev_pixelpipe_cache_t *cache, const uint64_t hash,
+                                         const size_t size, void **data);
+int dt_dev_pixelpipe_cache_get_weighted(dt_dev_pixelpipe_cache_t *cache, const uint64_t hash,
+                                        const size_t size, void **data, int weight);
 
 /** test availability of a cache line without destroying another, if it is not found. */
 int dt_dev_pixelpipe_cache_available(dt_dev_pixelpipe_cache_t *cache, const uint64_t hash);

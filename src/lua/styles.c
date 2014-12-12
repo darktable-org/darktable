@@ -24,9 +24,9 @@
 #include "common/debug.h"
 
 
-static void free_style_item(void * d)
+static void free_style_item(void *d)
 {
-  dt_style_item_t * item = d;
+  dt_style_item_t *item = d;
   free(item->name);
   free(item->params);
   free(item->blendop_params);
@@ -34,80 +34,80 @@ static void free_style_item(void * d)
 }
 
 // can't use glist functions we need a list of int and glist can only produce a list of int*
-static GList * style_item_table_to_id_list(lua_State*L, int index);
+static GList *style_item_table_to_id_list(lua_State *L, int index);
 /////////////////////////
 // dt_style_t
 /////////////////////////
-static int style_gc(lua_State*L)
+static int style_gc(lua_State *L)
 {
   dt_style_t style;
-  luaA_to(L,dt_style_t,&style,-1);
+  luaA_to(L, dt_style_t, &style, -1);
   free(style.name);
   free(style.description);
   return 0;
 }
 
-static int style_tostring(lua_State*L)
+static int style_tostring(lua_State *L)
 {
   dt_style_t style;
-  luaA_to(L,dt_style_t,&style,1);
-  lua_pushstring(L,style.name);
+  luaA_to(L, dt_style_t, &style, 1);
+  lua_pushstring(L, style.name);
   return 1;
 }
 
 
-static int style_delete(lua_State*L)
+static int style_delete(lua_State *L)
 {
   dt_style_t style;
-  luaA_to(L,dt_style_t,&style,1);
+  luaA_to(L, dt_style_t, &style, 1);
   dt_styles_delete_by_name(style.name);
   return 0;
 }
 
 
-static int style_duplicate(lua_State*L)
+static int style_duplicate(lua_State *L)
 {
   dt_style_t style;
-  luaA_to(L,dt_style_t,&style,1);
-  const char * newname =luaL_checkstring(L,2);
-  const char * description =lua_isnoneornil(L,3)?style.description:luaL_checkstring(L,3);
-  GList* filter= style_item_table_to_id_list(L, 4);
-  dt_styles_create_from_style(style.name,newname,description,filter,-1,NULL);
+  luaA_to(L, dt_style_t, &style, 1);
+  const char *newname = luaL_checkstring(L, 2);
+  const char *description = lua_isnoneornil(L, 3) ? style.description : luaL_checkstring(L, 3);
+  GList *filter = style_item_table_to_id_list(L, 4);
+  dt_styles_create_from_style(style.name, newname, description, filter, -1, NULL);
   g_list_free(filter);
   return 0;
 }
 
-static int style_getnumber(lua_State* L)
+static int style_getnumber(lua_State *L)
 {
-  int index = luaL_checknumber(L,-1);
-  if ( index <= 0 )
+  int index = luaL_checknumber(L, -1);
+  if(index <= 0)
   {
-    return luaL_error(L,"incorrect index for style");
+    return luaL_error(L, "incorrect index for style");
   }
   dt_style_t style;
-  luaA_to(L,dt_style_t,&style,-2);
-  GList * items = dt_styles_get_item_list(style.name,true,-1);
-  dt_style_item_t * item  = g_list_nth_data(items,index-1);
+  luaA_to(L, dt_style_t, &style, -2);
+  GList *items = dt_styles_get_item_list(style.name, true, -1);
+  dt_style_item_t *item = g_list_nth_data(items, index - 1);
   if(!item)
   {
-    return luaL_error(L,"incorrect index for style");
+    return luaL_error(L, "incorrect index for style");
   }
-  items = g_list_remove(items,item);
-  g_list_free_full(items,free_style_item);
-  luaA_push(L,dt_style_item_t,item);
+  items = g_list_remove(items, item);
+  g_list_free_full(items, free_style_item);
+  luaA_push(L, dt_style_item_t, item);
   free(item);
   return 1;
 }
 
 
-static int style_length(lua_State* L)
+static int style_length(lua_State *L)
 {
 
   dt_style_t style;
-  luaA_to(L,dt_style_t,&style,-1);
-  GList * items = dt_styles_get_item_list(style.name,true,-1);
-  lua_pushnumber(L,g_list_length(items));
-  g_list_free_full(items,free_style_item);
+  luaA_to(L, dt_style_t, &style, -1);
+  GList *items = dt_styles_get_item_list(style.name, true, -1);
+  lua_pushnumber(L, g_list_length(items));
+  g_list_free_full(items, free_style_item);
   return 1;
 }
 
@@ -115,14 +115,17 @@ static int style_length(lua_State* L)
 static int name_member(lua_State *L)
 {
   dt_style_t style;
-  luaA_to(L,dt_style_t,&style,1);
-  if(lua_gettop(L) != 3) {
-      lua_pushstring(L,style.name);
+  luaA_to(L, dt_style_t, &style, 1);
+  if(lua_gettop(L) != 3)
+  {
+    lua_pushstring(L, style.name);
     return 1;
-  } else {
-    const char * newval;
-    newval = luaL_checkstring(L,3);
-    dt_styles_update(style.name,newval,style.description,NULL,-1,NULL);
+  }
+  else
+  {
+    const char *newval;
+    newval = luaL_checkstring(L, 3);
+    dt_styles_update(style.name, newval, style.description, NULL, -1, NULL);
     return 0;
   }
 }
@@ -130,14 +133,17 @@ static int name_member(lua_State *L)
 static int description_member(lua_State *L)
 {
   dt_style_t style;
-  luaA_to(L,dt_style_t,&style,1);
-  if(lua_gettop(L) != 3) {
-      lua_pushstring(L,style.description);
+  luaA_to(L, dt_style_t, &style, 1);
+  if(lua_gettop(L) != 3)
+  {
+    lua_pushstring(L, style.description);
     return 1;
-  } else {
-    const char * newval;
-    newval = luaL_checkstring(L,-1);
-    dt_styles_update(style.name,style.name,newval,NULL,-1,NULL);
+  }
+  else
+  {
+    const char *newval;
+    newval = luaL_checkstring(L, -1);
+    dt_styles_update(style.name, style.name, newval, NULL, -1, NULL);
     return 0;
   }
 }
@@ -147,34 +153,34 @@ static int description_member(lua_State *L)
 // dt_style_item_t
 /////////////////////////
 
-static int style_item_tostring(lua_State*L)
+static int style_item_tostring(lua_State *L)
 {
-  dt_style_item_t * item =luaL_checkudata(L,-1,"dt_style_item_t");
-  lua_pushfstring(L,"%d : %s",item->num,item->name);
+  dt_style_item_t *item = luaL_checkudata(L, -1, "dt_style_item_t");
+  lua_pushfstring(L, "%d : %s", item->num, item->name);
   return 1;
 }
 
-static int style_item_gc(lua_State*L)
+static int style_item_gc(lua_State *L)
 {
-  dt_style_item_t * item =luaL_checkudata(L,-1,"dt_style_item_t");
+  dt_style_item_t *item = luaL_checkudata(L, -1, "dt_style_item_t");
   free(item->name);
   free(item->params);
   free(item->blendop_params);
   return 0;
 }
 
-static GList * style_item_table_to_id_list(lua_State*L, int index)
+static GList *style_item_table_to_id_list(lua_State *L, int index)
 {
-  if(lua_isnoneornil(L,index)) return NULL;
-  luaL_checktype(L,index,LUA_TTABLE);
-  lua_pushnil(L);  /* first key */
-  GList * result=NULL;
-  while (lua_next(L, index) != 0)
+  if(lua_isnoneornil(L, index)) return NULL;
+  luaL_checktype(L, index, LUA_TTABLE);
+  lua_pushnil(L); /* first key */
+  GList *result = NULL;
+  while(lua_next(L, index) != 0)
   {
     /* uses 'key' (at index -2) and 'value' (at index -1) */
-    dt_style_item_t * item =luaL_checkudata(L,-1,"dt_style_item_t");
-    result =g_list_prepend(result, GINT_TO_POINTER(item->num));
-    lua_pop(L,1);
+    dt_style_item_t *item = luaL_checkudata(L, -1, "dt_style_item_t");
+    result = g_list_prepend(result, GINT_TO_POINTER(item->num));
+    lua_pop(L, 1);
   }
   result = g_list_reverse(result);
   return result;
@@ -183,173 +189,178 @@ static GList * style_item_table_to_id_list(lua_State*L, int index)
 /////////////////////////
 // toplevel and common
 /////////////////////////
-static int style_table_index(lua_State*L)
+static int style_table_index(lua_State *L)
 {
-  int index = luaL_checkinteger(L,-1);
-  if(index < 1) {
-    return luaL_error(L,"incorrect index in database");
+  int index = luaL_checkinteger(L, -1);
+  if(index < 1)
+  {
+    return luaL_error(L, "incorrect index in database");
   }
   sqlite3_stmt *stmt = NULL;
   char query[1024];
-  snprintf(query,sizeof(query),"select name from styles order by name limit 1 offset %d",index -1);
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),query, -1, &stmt, NULL);
+  snprintf(query, sizeof(query), "select name from styles order by name limit 1 offset %d", index - 1);
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
   if(sqlite3_step(stmt) == SQLITE_ROW)
   {
-    const char *name = (const char *)sqlite3_column_text (stmt, 0);
-    dt_style_t *style= dt_styles_get_by_name (name);
-    luaA_push(L,dt_style_t,style);
-    sqlite3_finalize (stmt);
+    const char *name = (const char *)sqlite3_column_text(stmt, 0);
+    dt_style_t *style = dt_styles_get_by_name(name);
+    luaA_push(L, dt_style_t, style);
+    sqlite3_finalize(stmt);
     free(style);
     return 1;
   }
   else
   {
     sqlite3_finalize(stmt);
-    return luaL_error(L,"incorrect index in database");
+    return luaL_error(L, "incorrect index in database");
   }
 }
 
-static int style_table_len(lua_State*L)
+static int style_table_len(lua_State *L)
 {
   sqlite3_stmt *stmt = NULL;
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),"select count(*) from styles", -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select count(*) from styles", -1, &stmt, NULL);
   if(sqlite3_step(stmt) == SQLITE_ROW)
-    lua_pushnumber(L,sqlite3_column_int(stmt, 0));
-  else {
-    lua_pushnumber(L,0);
+    lua_pushnumber(L, sqlite3_column_int(stmt, 0));
+  else
+  {
+    lua_pushnumber(L, 0);
   }
   sqlite3_finalize(stmt);
   return 1;
 }
 
-int dt_lua_style_create_from_image(lua_State*L)
+int dt_lua_style_create_from_image(lua_State *L)
 {
   dt_lua_image_t imgid;
-  luaA_to(L,dt_lua_image_t,&imgid,-3);
-  const char * newname =luaL_checkstring(L,-2);
-  const char * description =lua_isnoneornil(L,-1)?"":luaL_checkstring(L,-1);
-  dt_styles_create_from_image(newname,description,imgid,NULL);
-  GList * style_list = dt_styles_get_list(newname);
+  luaA_to(L, dt_lua_image_t, &imgid, -3);
+  const char *newname = luaL_checkstring(L, -2);
+  const char *description = lua_isnoneornil(L, -1) ? "" : luaL_checkstring(L, -1);
+  dt_styles_create_from_image(newname, description, imgid, NULL);
+  GList *style_list = dt_styles_get_list(newname);
   while(style_list)
   {
-    dt_style_t *data =style_list->data;
+    dt_style_t *data = style_list->data;
     if(!strcmp(data->name, newname))
     {
-      luaA_push(L,dt_style_t,data);
+      luaA_push(L, dt_style_t, data);
     }
-    style_list = g_list_delete_link(style_list,style_list);
+    style_list = g_list_delete_link(style_list, style_list);
   }
   return 1;
 }
 
-int dt_lua_style_apply(lua_State*L) 
+int dt_lua_style_apply(lua_State *L)
 {
   dt_lua_image_t imgid = -1;
   dt_style_t style;
-  if(luaL_testudata(L,1,"dt_lua_image_t")) {
-    luaA_to(L,dt_lua_image_t,&imgid,1);
-    luaA_to(L,dt_style_t,&style,2);
-  } else {
-    luaA_to(L,dt_style_t,&style,1);
-    luaA_to(L,dt_lua_image_t,&imgid,2);
+  if(luaL_testudata(L, 1, "dt_lua_image_t"))
+  {
+    luaA_to(L, dt_lua_image_t, &imgid, 1);
+    luaA_to(L, dt_style_t, &style, 2);
   }
-  dt_styles_apply_to_image(style.name,FALSE,imgid);
+  else
+  {
+    luaA_to(L, dt_style_t, &style, 1);
+    luaA_to(L, dt_lua_image_t, &imgid, 2);
+  }
+  dt_styles_apply_to_image(style.name, FALSE, imgid);
   return 1;
 }
 
-int dt_lua_style_import(lua_State*L) 
+int dt_lua_style_import(lua_State *L)
 {
-  const char*filename = luaL_checkstring(L,1);
+  const char *filename = luaL_checkstring(L, 1);
   dt_styles_import_from_file(filename);
   return 0;
 }
 
-int dt_lua_style_export(lua_State*L) 
+int dt_lua_style_export(lua_State *L)
 {
   dt_style_t style;
-  luaA_to(L,dt_style_t,&style,1);
-  const char*filename = lua_tostring(L,2);
-  if(!filename) filename =".";
-  gboolean overwrite = lua_toboolean(L,3);
-  dt_styles_save_to_file(style.name,filename,overwrite);
+  luaA_to(L, dt_style_t, &style, 1);
+  const char *filename = lua_tostring(L, 2);
+  if(!filename) filename = ".";
+  gboolean overwrite = lua_toboolean(L, 3);
+  dt_styles_save_to_file(style.name, filename, overwrite);
   return 0;
 }
 
 
 
-int dt_lua_init_styles(lua_State * L)
+int dt_lua_init_styles(lua_State *L)
 {
   // dt_style
-  dt_lua_init_type(L,dt_style_t);
-  lua_pushcfunction(L,name_member);
-  dt_lua_type_register_const(L,dt_style_t,"name");
-  lua_pushcfunction(L,description_member);
-  dt_lua_type_register_const(L,dt_style_t,"description");
-  lua_pushcfunction(L,style_length);
-  lua_pushcfunction(L,style_getnumber);
-  dt_lua_type_register_number_const(L,dt_style_t);
-  lua_pushcfunction(L,style_duplicate);
-  lua_pushcclosure(L,dt_lua_type_member_common,1);
-  dt_lua_type_register_const(L,dt_style_t,"duplicate");
-  lua_pushcfunction(L,style_delete);
-  lua_pushcclosure(L,dt_lua_type_member_common,1);
-  dt_lua_type_register_const(L,dt_style_t,"delete");
-  lua_pushcfunction(L,dt_lua_style_apply);
-  lua_pushcclosure(L,dt_lua_type_member_common,1);
-  dt_lua_type_register_const(L,dt_style_t,"apply");
-  lua_pushcfunction(L,dt_lua_style_export);
-  lua_pushcclosure(L,dt_lua_type_member_common,1);
-  dt_lua_type_register_const(L,dt_style_t,"export");
-  luaL_getmetatable(L,"dt_style_t");
-  lua_pushcfunction(L,style_gc);
-  lua_setfield(L,-2,"__gc");
-  lua_pushcfunction(L,style_tostring);
-  lua_setfield(L,-2,"__tostring");
-  lua_pop(L,1);
+  dt_lua_init_type(L, dt_style_t);
+  lua_pushcfunction(L, name_member);
+  dt_lua_type_register_const(L, dt_style_t, "name");
+  lua_pushcfunction(L, description_member);
+  dt_lua_type_register_const(L, dt_style_t, "description");
+  lua_pushcfunction(L, style_length);
+  lua_pushcfunction(L, style_getnumber);
+  dt_lua_type_register_number_const(L, dt_style_t);
+  lua_pushcfunction(L, style_duplicate);
+  lua_pushcclosure(L, dt_lua_type_member_common, 1);
+  dt_lua_type_register_const(L, dt_style_t, "duplicate");
+  lua_pushcfunction(L, style_delete);
+  lua_pushcclosure(L, dt_lua_type_member_common, 1);
+  dt_lua_type_register_const(L, dt_style_t, "delete");
+  lua_pushcfunction(L, dt_lua_style_apply);
+  lua_pushcclosure(L, dt_lua_type_member_common, 1);
+  dt_lua_type_register_const(L, dt_style_t, "apply");
+  lua_pushcfunction(L, dt_lua_style_export);
+  lua_pushcclosure(L, dt_lua_type_member_common, 1);
+  dt_lua_type_register_const(L, dt_style_t, "export");
+  luaL_getmetatable(L, "dt_style_t");
+  lua_pushcfunction(L, style_gc);
+  lua_setfield(L, -2, "__gc");
+  lua_pushcfunction(L, style_tostring);
+  lua_setfield(L, -2, "__tostring");
+  lua_pop(L, 1);
 
-  //dt_style_item_t
-  dt_lua_init_type(L,dt_style_item_t);
-  luaA_struct(L,dt_style_item_t);
-  luaA_struct_member(L,dt_style_item_t,num,const int);
-  luaA_struct_member(L,dt_style_item_t,name,const_string);
-  lua_pushcfunction(L,dt_lua_type_member_luaautoc);
-  dt_lua_type_register_struct(L,dt_style_item_t);
-  luaL_getmetatable(L,"dt_style_item_t");
-  lua_pushcfunction(L,style_item_gc);
-  lua_setfield(L,-2,"__gc");
-  lua_pushcfunction(L,style_item_tostring);
-  lua_setfield(L,-2,"__tostring");
-  lua_pop(L,1);
+  // dt_style_item_t
+  dt_lua_init_type(L, dt_style_item_t);
+  luaA_struct(L, dt_style_item_t);
+  luaA_struct_member(L, dt_style_item_t, num, const int);
+  luaA_struct_member(L, dt_style_item_t, name, const_string);
+  lua_pushcfunction(L, dt_lua_type_member_luaautoc);
+  dt_lua_type_register_struct(L, dt_style_item_t);
+  luaL_getmetatable(L, "dt_style_item_t");
+  lua_pushcfunction(L, style_item_gc);
+  lua_setfield(L, -2, "__gc");
+  lua_pushcfunction(L, style_item_tostring);
+  lua_setfield(L, -2, "__tostring");
+  lua_pop(L, 1);
 
 
 
   /* style table type */
   dt_lua_push_darktable_lib(L);
-  luaA_Type type_id =  dt_lua_init_singleton(L,"style_table",NULL);
-  lua_setfield(L,-2,"styles");
-  lua_pop(L,1);
+  luaA_Type type_id = dt_lua_init_singleton(L, "style_table", NULL);
+  lua_setfield(L, -2, "styles");
+  lua_pop(L, 1);
 
-  lua_pushcfunction(L,style_table_len);
-  lua_pushcfunction(L,style_table_index);
-  dt_lua_type_register_number_const_type(L,type_id);
-  lua_pushcfunction(L,style_duplicate);
-  lua_pushcclosure(L,dt_lua_type_member_common,1);
-  dt_lua_type_register_const_type(L,type_id,"duplicate");
-  lua_pushcfunction(L,style_delete);
-  lua_pushcclosure(L,dt_lua_type_member_common,1);
-  dt_lua_type_register_const_type(L,type_id,"delete");
-  lua_pushcfunction(L,dt_lua_style_create_from_image);
-  lua_pushcclosure(L,dt_lua_type_member_common,1);
-  dt_lua_type_register_const_type(L,type_id,"create");
-  lua_pushcfunction(L,dt_lua_style_apply);
-  lua_pushcclosure(L,dt_lua_type_member_common,1);
-  dt_lua_type_register_const_type(L,type_id,"apply");
-  lua_pushcfunction(L,dt_lua_style_import);
-  lua_pushcclosure(L,dt_lua_type_member_common,1);
-  dt_lua_type_register_const_type(L,type_id,"import");
-  lua_pushcfunction(L,dt_lua_style_export);
-  lua_pushcclosure(L,dt_lua_type_member_common,1);
-  dt_lua_type_register_const_type(L,type_id,"export");
+  lua_pushcfunction(L, style_table_len);
+  lua_pushcfunction(L, style_table_index);
+  dt_lua_type_register_number_const_type(L, type_id);
+  lua_pushcfunction(L, style_duplicate);
+  lua_pushcclosure(L, dt_lua_type_member_common, 1);
+  dt_lua_type_register_const_type(L, type_id, "duplicate");
+  lua_pushcfunction(L, style_delete);
+  lua_pushcclosure(L, dt_lua_type_member_common, 1);
+  dt_lua_type_register_const_type(L, type_id, "delete");
+  lua_pushcfunction(L, dt_lua_style_create_from_image);
+  lua_pushcclosure(L, dt_lua_type_member_common, 1);
+  dt_lua_type_register_const_type(L, type_id, "create");
+  lua_pushcfunction(L, dt_lua_style_apply);
+  lua_pushcclosure(L, dt_lua_type_member_common, 1);
+  dt_lua_type_register_const_type(L, type_id, "apply");
+  lua_pushcfunction(L, dt_lua_style_import);
+  lua_pushcclosure(L, dt_lua_type_member_common, 1);
+  dt_lua_type_register_const_type(L, type_id, "import");
+  lua_pushcfunction(L, dt_lua_style_export);
+  lua_pushcclosure(L, dt_lua_type_member_common, 1);
+  dt_lua_type_register_const_type(L, type_id, "export");
 
   return 0;
 }

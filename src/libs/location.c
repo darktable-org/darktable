@@ -38,8 +38,7 @@ typedef struct dt_lib_location_t
   gchar *response;
   size_t response_size;
 
-}
-dt_lib_location_t;
+} dt_lib_location_t;
 
 typedef enum _lib_location_type_t
 {
@@ -65,17 +64,15 @@ typedef struct _lib_location_result_t
 #define LIMIT_RESULT 5
 
 /* entry value committed, perform a search */
-static void _lib_location_entry_activated (GtkButton *button, gpointer user_data);
+static void _lib_location_entry_activated(GtkButton *button, gpointer user_data);
 
-static gboolean _lib_location_result_item_activated (GtkButton *button, GdkEventButton *ev, gpointer user_data);
+static gboolean _lib_location_result_item_activated(GtkButton *button, GdkEventButton *ev, gpointer user_data);
 
-static void _lib_location_parser_start_element(GMarkupParseContext *cxt,
-    const char *element_name, const char **attribute_names,
-    const gchar **attribute_values, gpointer user_data,
-    GError **error);
+static void _lib_location_parser_start_element(GMarkupParseContext *cxt, const char *element_name,
+                                               const char **attribute_names, const gchar **attribute_values,
+                                               gpointer user_data, GError **error);
 
-const char*
-name ()
+const char *name()
 {
   return _("find location");
 }
@@ -91,13 +88,11 @@ uint32_t container()
 }
 
 
-void
-gui_reset (dt_lib_module_t *self)
+void gui_reset(dt_lib_module_t *self)
 {
 }
 
-int
-position ()
+int position()
 {
   return 999;
 }
@@ -105,8 +100,7 @@ position ()
 /*
   http://nominatim.openstreetmap.org/search/norrköping?format=xml&limit=5
  */
-void
-gui_init (dt_lib_module_t *self)
+void gui_init(dt_lib_module_t *self)
 {
   self->data = calloc(1, sizeof(dt_lib_location_t));
   dt_lib_location_t *lib = self->data;
@@ -115,22 +109,21 @@ gui_init (dt_lib_module_t *self)
 
   /* add search box */
   lib->search = GTK_ENTRY(gtk_entry_new());
-  dt_gui_key_accel_block_on_focus_connect (GTK_WIDGET (lib->search));
+  dt_gui_key_accel_block_on_focus_connect(GTK_WIDGET(lib->search));
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(lib->search), FALSE, FALSE, 0);
 
-  g_signal_connect(G_OBJECT (lib->search), "activate",
-                   G_CALLBACK (_lib_location_entry_activated), (gpointer)self);
+  g_signal_connect(G_OBJECT(lib->search), "activate", G_CALLBACK(_lib_location_entry_activated),
+                   (gpointer)self);
 
   /* add result vbox */
-  lib->result = gtk_vbox_new(FALSE,2);
+  lib->result = gtk_vbox_new(FALSE, 2);
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(lib->result), TRUE, FALSE, 2);
 }
 
-void
-gui_cleanup (dt_lib_module_t *self)
+void gui_cleanup(dt_lib_module_t *self)
 {
   dt_lib_location_t *lib = self->data;
-  dt_gui_key_accel_block_on_focus_disconnect (GTK_WIDGET (lib->search));
+  dt_gui_key_accel_block_on_focus_disconnect(GTK_WIDGET(lib->search));
   free(lib);
 }
 
@@ -139,8 +132,8 @@ static GtkWidget *_lib_location_place_widget_new(_lib_location_result_t *place)
   GtkWidget *eb, *hb, *vb, *w;
   char location[512];
   eb = gtk_event_box_new();
-  hb = gtk_hbox_new(FALSE,2);
-  vb = gtk_vbox_new(FALSE,2);
+  hb = gtk_hbox_new(FALSE, 2);
+  vb = gtk_vbox_new(FALSE, 2);
 
   /* add name */
   w = gtk_label_new(place->name);
@@ -166,8 +159,8 @@ static GtkWidget *_lib_location_place_widget_new(_lib_location_result_t *place)
   gtk_widget_show_all(eb);
 
   /* connect button press signal for result item */
-  g_signal_connect(G_OBJECT (eb), "button-press-event",
-                   G_CALLBACK (_lib_location_result_item_activated), (gpointer)place);
+  g_signal_connect(G_OBJECT(eb), "button-press-event", G_CALLBACK(_lib_location_result_item_activated),
+                   (gpointer)place);
 
 
   return eb;
@@ -178,10 +171,9 @@ static size_t _lib_location_curl_write_data(void *buffer, size_t size, size_t nm
   dt_lib_location_t *lib = (dt_lib_location_t *)userp;
 
   char *newdata = g_malloc0(lib->response_size + nmemb + 1);
-  if( lib->response != NULL )
-    memcpy(newdata, lib->response, lib->response_size);
+  if(lib->response != NULL) memcpy(newdata, lib->response, lib->response_size);
   memcpy(newdata + lib->response_size, buffer, nmemb);
-  g_free( lib->response );
+  g_free(lib->response);
   lib->response = newdata;
   lib->response_size += nmemb;
 
@@ -189,14 +181,7 @@ static size_t _lib_location_curl_write_data(void *buffer, size_t size, size_t nm
 }
 
 
-static GMarkupParser _lib_location_parser =
-{
-  _lib_location_parser_start_element,
-  NULL,
-  NULL,
-  NULL,
-  NULL
-};
+static GMarkupParser _lib_location_parser = { _lib_location_parser_start_element, NULL, NULL, NULL, NULL };
 
 
 static int32_t _lib_location_place_get_zoom(_lib_location_result_t *place)
@@ -228,11 +213,10 @@ static int32_t _lib_location_place_get_zoom(_lib_location_result_t *place)
 static void _lib_location_search_finish(gpointer user_data)
 {
   dt_lib_module_t *self = (dt_lib_module_t *)user_data;
-  dt_lib_location_t *lib   = (dt_lib_location_t *)self->data;
+  dt_lib_location_t *lib = (dt_lib_location_t *)self->data;
 
   /* check if search gave us some result */
-  if (!lib->places)
-    return;
+  if(!lib->places) return;
 
   /* for each location found populate the result list */
   GList *item = lib->places;
@@ -241,20 +225,17 @@ static void _lib_location_search_finish(gpointer user_data)
     _lib_location_result_t *place = (_lib_location_result_t *)item->data;
     gtk_box_pack_start(GTK_BOX(lib->result), _lib_location_place_widget_new(place), TRUE, TRUE, 2);
     gtk_widget_show(lib->result);
-  }
-  while ((item = g_list_next(item)) != NULL);
+  } while((item = g_list_next(item)) != NULL);
 
   /* if we only got one search result back lets
      set center location and zoom based on place type  */
-  if (g_list_length(lib->places) == 1)
+  if(g_list_length(lib->places) == 1)
   {
     int32_t zoom = 0;
-    _lib_location_result_t *item = (_lib_location_result_t*)lib->places->data;
+    _lib_location_result_t *item = (_lib_location_result_t *)lib->places->data;
     zoom = _lib_location_place_get_zoom(item);
-    dt_view_map_center_on_location(darktable.view_manager,
-                                   item->lon, item->lat, zoom);
+    dt_view_map_center_on_location(darktable.view_manager, item->lon, item->lat, zoom);
   }
-
 }
 
 static gboolean _lib_location_search(gpointer user_data)
@@ -265,14 +246,13 @@ static gboolean _lib_location_search(gpointer user_data)
   GError *err = NULL;
 
   dt_lib_module_t *self = (dt_lib_module_t *)user_data;
-  dt_lib_location_t *lib   = (dt_lib_location_t *)self->data;
-  gchar *query = NULL, *text = NULL ;
+  dt_lib_location_t *lib = (dt_lib_location_t *)self->data;
+  gchar *query = NULL, *text = NULL;
 
   /* get escaped search text */
   text = g_uri_escape_string(gtk_entry_get_text(lib->search), NULL, FALSE);
 
-  if (!(text && *text))
-    goto bail_out;
+  if(!(text && *text)) goto bail_out;
 
   /* clean up previous results before adding new */
   g_free(lib->response);
@@ -282,15 +262,14 @@ static gboolean _lib_location_search(gpointer user_data)
   g_list_free_full(lib->places, g_free);
   lib->places = NULL;
 
-  gtk_container_foreach(GTK_CONTAINER(lib->result),(GtkCallback)gtk_widget_destroy,NULL);
+  gtk_container_foreach(GTK_CONTAINER(lib->result), (GtkCallback)gtk_widget_destroy, NULL);
 
   /* build the query url */
-  query = dt_util_dstrcat(query, "http://nominatim.openstreetmap.org/search/%s?format=xml&limit=%d",
-                          text, LIMIT_RESULT);
+  query = dt_util_dstrcat(query, "http://nominatim.openstreetmap.org/search/%s?format=xml&limit=%d", text,
+                          LIMIT_RESULT);
   /* load url */
   curl = curl_easy_init();
-  if (!curl)
-    goto bail_out;
+  if(!curl) goto bail_out;
 
   curl_easy_setopt(curl, CURLOPT_URL, query);
   // curl_easy_setopt(curl, CURLOPT_VERBOSE, 1);
@@ -298,22 +277,18 @@ static gboolean _lib_location_search(gpointer user_data)
   curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, _lib_location_curl_write_data);
 
   res = curl_easy_perform(curl);
-  if (res != 0)
-    goto bail_out;
+  if(res != 0) goto bail_out;
 
-  if (!lib->response)
-    goto bail_out;
+  if(!lib->response) goto bail_out;
 
   /* parse xml response and populate the result list */
   ctx = g_markup_parse_context_new(&_lib_location_parser, 0, lib, NULL);
   g_markup_parse_context_parse(ctx, lib->response, lib->response_size, &err);
-  if (err)
-    goto bail_out;
+  if(err) goto bail_out;
 
   /* add the places into the result list */
   GList *item = lib->places;
-  if (!item)
-    goto bail_out;
+  if(!item) goto bail_out;
 
   while(item)
   {
@@ -322,22 +297,20 @@ static gboolean _lib_location_search(gpointer user_data)
     item = g_list_next(item);
   }
 
-  /* cleanup an exit search job */
+/* cleanup an exit search job */
 bail_out:
-  if (err)
+  if(err)
   {
     fprintf(stderr, "location search: %s\n", err->message);
     g_error_free(err);
   }
 
-  if (curl)
-    curl_easy_cleanup(curl);
+  if(curl) curl_easy_cleanup(curl);
 
   g_free(text);
   g_free(query);
 
-  if (ctx)
-    g_markup_parse_context_free(ctx);
+  if(ctx) g_markup_parse_context_free(ctx);
 
   /* enable the widgets */
   gtk_widget_set_sensitive(GTK_WIDGET(lib->search), TRUE);
@@ -350,16 +323,15 @@ gboolean _lib_location_result_item_activated(GtkButton *button, GdkEventButton *
 {
   _lib_location_result_t *p = (_lib_location_result_t *)user_data;
   int32_t zoom = _lib_location_place_get_zoom(p);
-  fprintf(stderr,"zoom to: %d\n",zoom);
-  dt_view_map_center_on_location(darktable.view_manager,
-                                 p->lon, p->lat, zoom);
+  fprintf(stderr, "zoom to: %d\n", zoom);
+  dt_view_map_center_on_location(darktable.view_manager, p->lon, p->lat, zoom);
   return TRUE;
 }
 
-void _lib_location_entry_activated (GtkButton *button, gpointer user_data)
+void _lib_location_entry_activated(GtkButton *button, gpointer user_data)
 {
   dt_lib_module_t *self = (dt_lib_module_t *)user_data;
-  dt_lib_location_t *lib   = (dt_lib_location_t *)self->data;
+  dt_lib_location_t *lib = (dt_lib_location_t *)self->data;
   const gchar *text = gtk_entry_get_text(lib->search);
   if(!text || text[0] == '\0') return;
 
@@ -368,21 +340,18 @@ void _lib_location_entry_activated (GtkButton *button, gpointer user_data)
   // gtk_widget_set_sensitive(lib->result, FALSE);
 
   /* start a bg job for fetching results of a search */
-  g_idle_add_full( G_PRIORITY_DEFAULT_IDLE, _lib_location_search, user_data, _lib_location_search_finish);
-
+  g_idle_add_full(G_PRIORITY_DEFAULT_IDLE, _lib_location_search, user_data, _lib_location_search_finish);
 }
 
 
-static void _lib_location_parser_start_element(GMarkupParseContext *cxt,
-    const char *element_name, const char **attribute_names,
-    const gchar **attribute_values, gpointer user_data,
-    GError **error)
+static void _lib_location_parser_start_element(GMarkupParseContext *cxt, const char *element_name,
+                                               const char **attribute_names, const gchar **attribute_values,
+                                               gpointer user_data, GError **error)
 {
-  dt_lib_location_t *lib   = (dt_lib_location_t *)user_data;
+  dt_lib_location_t *lib = (dt_lib_location_t *)user_data;
 
   /* only interested in place element */
-  if (strcmp(element_name, "place") != 0)
-    return;
+  if(strcmp(element_name, "place") != 0) return;
 
   /* create new place */
   _lib_location_result_t *place = g_malloc0(sizeof(_lib_location_result_t));
@@ -394,32 +363,32 @@ static void _lib_location_parser_start_element(GMarkupParseContext *cxt,
   /* handle the element attribute values */
   const gchar **aname = attribute_names;
   const gchar **avalue = attribute_values;
-  if (*aname)
+  if(*aname)
   {
-    while (*aname)
+    while(*aname)
     {
-      if (strcmp(*aname, "display_name") == 0)
+      if(strcmp(*aname, "display_name") == 0)
       {
         place->name = g_strdup(*avalue);
         if(!(place->name)) goto bail_out;
-      } else if (strcmp(*aname, "lon") == 0)
+      }
+      else if(strcmp(*aname, "lon") == 0)
         place->lon = g_strtod(*avalue, NULL);
-      else if (strcmp(*aname, "lat") == 0)
+      else if(strcmp(*aname, "lat") == 0)
         place->lat = g_strtod(*avalue, NULL);
-      else if (strcmp(*aname, "type") == 0)
+      else if(strcmp(*aname, "type") == 0)
       {
 
-        if (strcmp(*avalue, "village") == 0)
+        if(strcmp(*avalue, "village") == 0)
           place->type = LOCATION_TYPE_RESIDENTAL;
-        else if (strcmp(*avalue, "hamlet") == 0)
+        else if(strcmp(*avalue, "hamlet") == 0)
           place->type = LOCATION_TYPE_HAMLET;
-        else if (strcmp(*avalue, "city") == 0)
+        else if(strcmp(*avalue, "city") == 0)
           place->type = LOCATION_TYPE_CITY;
-        else if (strcmp(*avalue, "administrative") == 0)
+        else if(strcmp(*avalue, "administrative") == 0)
           place->type = LOCATION_TYPE_ADMINISTRATIVE;
-        else if (strcmp(*avalue, "residental") == 0)
+        else if(strcmp(*avalue, "residental") == 0)
           place->type = LOCATION_TYPE_RESIDENTAL;
-
       }
 
       aname++;
@@ -428,11 +397,10 @@ static void _lib_location_parser_start_element(GMarkupParseContext *cxt,
   }
 
   /* check if we got sane data */
-  if (isnan(place->lon) || isnan(place->lat))
-    goto bail_out;
+  if(isnan(place->lon) || isnan(place->lat)) goto bail_out;
 
   /* add place to result list */
-  lib->places =  g_list_append(lib->places, place);
+  lib->places = g_list_append(lib->places, place);
 
   return;
 

@@ -23,8 +23,8 @@
 
 struct dt_selection_t;
 
-struct dt_selection_t * dt_selection_new();
-void dt_selection_free (struct dt_selection_t *selection);
+struct dt_selection_t *dt_selection_new();
+void dt_selection_free(struct dt_selection_t *selection);
 
 /** inverts the current selection */
 void dt_selection_invert(struct dt_selection_t *selection);
@@ -43,7 +43,7 @@ void dt_selection_select_filmroll(struct dt_selection_t *selection);
 /** selects all unaltered images in the current collection */
 void dt_selection_select_unaltered(struct dt_selection_t *selection);
 /** selects a set of images from a list. the list is unaltered */
-void dt_selection_select_list(struct dt_selection_t *selection, GList * list);
+void dt_selection_select_list(struct dt_selection_t *selection, GList *list);
 #endif
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

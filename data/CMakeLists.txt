@@ -11,11 +11,6 @@ endif(USE_OPENCL)
 #
 set(GTKRC_FONT_SIZE 8)
 set(GTKRC_HEADER_FONT_SIZE 9)
-if(APPLE)
-  # 8 is very tiny on mac
-  set(GTKRC_FONT_SIZE 13)
-  set(GTKRC_HEADER_FONT_SIZE 15)
-endif(APPLE)
 configure_file( ${CMAKE_CURRENT_SOURCE_DIR}/darktable.gtkrc.in ${CMAKE_CURRENT_BINARY_DIR}/darktable.gtkrc )
 
 
@@ -81,6 +76,11 @@ set(DEFCONFIG_OPENCL "true")
 if(APPLE)
   # OpenCL support on OS X isn't stable enough to enable it by default
   set(DEFCONFIG_OPENCL "false")
+endif(APPLE)
+set(DEFCONFIG_AUDIOPLAYER "aplay")
+if(APPLE)
+  # OS X doesn't have aplay, but afplay should do
+  set(DEFCONFIG_AUDIOPLAYER "afplay")
 endif(APPLE)
 configure_file( ${CMAKE_CURRENT_SOURCE_DIR}/darktableconfig.xml.in ${CMAKE_CURRENT_BINARY_DIR}/darktableconfig.xml )
 execute_process( COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/darktableconfig.dtd ${CMAKE_CURRENT_BINARY_DIR}/darktableconfig.dtd)

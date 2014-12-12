@@ -1,3 +1,14 @@
+/*
+    Unless marked differently these matrices are the D65 Illuminant XYZ matrices,
+    retrieved via EXIF from RAWs converted to DNG using the Adobe DNG Converter.
+
+    Relevant DNG EXIF fields:
+    - Exif.Image.CalibrationIlluminant2 (should be 21 == D65)
+    - Exif.Image.ColorMatrix2
+
+    A helper script is available as tools/dngmeta.sh
+*/
+
 static void dt_dcraw_adobe_coeff(const char *name, float cam_xyz[1][12])
 {
   static const struct {

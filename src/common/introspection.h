@@ -51,163 +51,169 @@ typedef enum dt_introspection_type_t
 
 typedef struct dt_introspection_type_header_t
 {
-  dt_introspection_type_t             type;         // type of the field
-  const char                         *type_name;    // the type as specified in the source. mostly interesting for enum, struct and the like
-  const char                         *name;         // variable name, possibly with the name of parent structs, separated with '.'
-  const char                         *field_name;   // variable name without any parents
-  const char                         *description;  // some human readable description taken from the comments
-  size_t                              size;         // size of the field in bytes
-  size_t                              offset;       // offset from the beginning of the start of params. TODO: use start of parent struct instead?
-  struct dt_iop_module_so_t          *so;           // a pointer to the dlopen'ed module
+  dt_introspection_type_t type; // type of the field
+  const char *type_name;   // the type as specified in the source. mostly interesting for enum, struct and the
+                           // like
+  const char *name;        // variable name, possibly with the name of parent structs, separated with '.'
+  const char *field_name;  // variable name without any parents
+  const char *description; // some human readable description taken from the comments
+  size_t size;             // size of the field in bytes
+  size_t offset; // offset from the beginning of the start of params. TODO: use start of parent struct
+                 // instead?
+  struct dt_iop_module_so_t *so; // a pointer to the dlopen'ed module
 } dt_introspection_type_header_t;
 
 typedef struct dt_introspection_type_opaque_t
 {
-  dt_introspection_type_header_t      header;
+  dt_introspection_type_header_t header;
 } dt_introspection_type_opaque_t;
 
 typedef struct dt_introspection_type_float_t
 {
-  dt_introspection_type_header_t      header;
-  float                               Min;          // minimum allowed value for this float field. taken from comments. defaults to -G_MAXFLOAT
-  float                               Max;          // minimum allowed value for this float field. taken from comments. defau to G_MAXFLOAT
-  float                               Default;      // default value for this char field. taken from comments. defaults to 0
+  dt_introspection_type_header_t header;
+  float Min;     // minimum allowed value for this float field. taken from comments. defaults to -G_MAXFLOAT
+  float Max;     // minimum allowed value for this float field. taken from comments. defau to G_MAXFLOAT
+  float Default; // default value for this char field. taken from comments. defaults to 0
 } dt_introspection_type_float_t;
 
 typedef struct dt_introspection_type_double_t
 {
-  dt_introspection_type_header_t      header;
-  double                              Min;          // minimum allowed value for this double field. taken from comments. defaults to -G_MAXDOUBLE
-  double                              Max;          // minimum allowed value for this double field. taken from comments. defau to G_MAXDOUBLE
-  double                              Default;      // default value for this double field. taken from comments. defaults to 0
+  dt_introspection_type_header_t header;
+  double Min; // minimum allowed value for this double field. taken from comments. defaults to -G_MAXDOUBLE
+  double Max; // minimum allowed value for this double field. taken from comments. defau to G_MAXDOUBLE
+  double Default; // default value for this double field. taken from comments. defaults to 0
 } dt_introspection_type_double_t;
 
 typedef struct dt_introspection_type_char_t
 {
-  dt_introspection_type_header_t      header;
-  char                                Min;          // minimum allowed value for this char field. taken from comments. defaults to G_MININT8
-  char                                Max;          // maximum allowed value for this char field. taken from comments. defaults to G_MAXINT8
-  char                                Default;      // default value for this char field. taken from comments. defaults to 0
+  dt_introspection_type_header_t header;
+  char Min;     // minimum allowed value for this char field. taken from comments. defaults to G_MININT8
+  char Max;     // maximum allowed value for this char field. taken from comments. defaults to G_MAXINT8
+  char Default; // default value for this char field. taken from comments. defaults to 0
 } dt_introspection_type_char_t;
 
 typedef struct dt_introspection_type_uchar_t
 {
-  dt_introspection_type_header_t      header;
-  unsigned char                       Min;          // minimum allowed value for this char field. taken from comments. defaults to 0
-  unsigned char                       Max;          // maximum allowed value for this char field. taken from comments. defaults to G_MAXUINT8
-  unsigned char                       Default;      // default value for this char field. taken from comments. defaults to 0
+  dt_introspection_type_header_t header;
+  unsigned char Min; // minimum allowed value for this char field. taken from comments. defaults to 0
+  unsigned char Max; // maximum allowed value for this char field. taken from comments. defaults to G_MAXUINT8
+  unsigned char Default; // default value for this char field. taken from comments. defaults to 0
 } dt_introspection_type_uchar_t;
 
 typedef struct dt_introspection_type_short_t
 {
-  dt_introspection_type_header_t      header;
-  short                               Min;          // minimum allowed value for this short field. taken from comments. defaults to G_MINSHORT
-  short                               Max;          // maximum allowed value for this short field. taken from comments. defaults to G_MAXSHORT
-  short                               Default;      // default value for this short field. taken from comments. defaults to 0
+  dt_introspection_type_header_t header;
+  short Min;     // minimum allowed value for this short field. taken from comments. defaults to G_MINSHORT
+  short Max;     // maximum allowed value for this short field. taken from comments. defaults to G_MAXSHORT
+  short Default; // default value for this short field. taken from comments. defaults to 0
 } dt_introspection_type_short_t;
 
 typedef struct dt_introspection_type_ushort_t
 {
-  dt_introspection_type_header_t      header;
-  unsigned short                      Min;          // minimum allowed value for this char field. taken from comments. defaults to 0
-  unsigned short                      Max;          // maximum allowed value for this char field. taken from comments. defaults to G_MAXUSHORT
-  unsigned short                      Default;      // default value for this char field. taken from comments. defaults to 0
+  dt_introspection_type_header_t header;
+  unsigned short Min;     // minimum allowed value for this char field. taken from comments. defaults to 0
+  unsigned short Max;     // maximum allowed value for this char field. taken from comments. defaults to
+                          // G_MAXUSHORT
+  unsigned short Default; // default value for this char field. taken from comments. defaults to 0
 } dt_introspection_type_ushort_t;
 
 typedef struct dt_introspection_type_int_t
 {
-  dt_introspection_type_header_t      header;
-  int                                 Min;          // minimum allowed value for this int field. taken from comments. defaults to G_MININT
-  int                                 Max;          // maximum allowed value for this int field. taken from comments. defaults to G_MAXINT
-  int                                 Default;      // default value for this int field. taken from comments. defaults to 0
+  dt_introspection_type_header_t header;
+  int Min;     // minimum allowed value for this int field. taken from comments. defaults to G_MININT
+  int Max;     // maximum allowed value for this int field. taken from comments. defaults to G_MAXINT
+  int Default; // default value for this int field. taken from comments. defaults to 0
 } dt_introspection_type_int_t;
 
 typedef struct dt_introspection_type_uint_t
 {
-  dt_introspection_type_header_t      header;
-  unsigned int                        Min;          // minimum allowed value for this unsigned int field. taken from comments. defaults to 0
-  unsigned int                        Max;          // maximum allowed value for this unsigned int field. taken from comments. defaults to G_MAXUINT
-  unsigned int                        Default;      // default value for this unsigned int field. taken from comments. defaults to 0
+  dt_introspection_type_header_t header;
+  unsigned int Min; // minimum allowed value for this unsigned int field. taken from comments. defaults to 0
+  unsigned int Max; // maximum allowed value for this unsigned int field. taken from comments. defaults to
+                    // G_MAXUINT
+  unsigned int Default; // default value for this unsigned int field. taken from comments. defaults to 0
 } dt_introspection_type_uint_t;
 
 typedef struct dt_introspection_type_long_t
 {
-  dt_introspection_type_header_t      header;
-  long                                Min;          // minimum allowed value for this long field. taken from comments. defaults to G_MINLONG
-  long                                Max;          // maximum allowed value for this long field. taken from comments. defaults to G_MAXLONG
-  long                                Default;      // default value for this long field. taken from comments. defaults to 0
+  dt_introspection_type_header_t header;
+  long Min;     // minimum allowed value for this long field. taken from comments. defaults to G_MINLONG
+  long Max;     // maximum allowed value for this long field. taken from comments. defaults to G_MAXLONG
+  long Default; // default value for this long field. taken from comments. defaults to 0
 } dt_introspection_type_long_t;
 
 typedef struct dt_introspection_type_ulong_t
 {
-  dt_introspection_type_header_t      header;
-  unsigned long                       Min;          // minimum allowed value for this unsigned long field. taken from comments. defaults to 0
-  unsigned long                       Max;          // maximum allowed value for this unsigned long field. taken from comments. defaults to G_MAXULONG
-  unsigned long                       Default;      // default value for this unsigned long field. taken from comments. defaults to 0
+  dt_introspection_type_header_t header;
+  unsigned long Min; // minimum allowed value for this unsigned long field. taken from comments. defaults to 0
+  unsigned long Max; // maximum allowed value for this unsigned long field. taken from comments. defaults to
+                     // G_MAXULONG
+  unsigned long Default; // default value for this unsigned long field. taken from comments. defaults to 0
 } dt_introspection_type_ulong_t;
 
 typedef struct dt_introspection_type_bool_t
 {
-  dt_introspection_type_header_t      header;
-  gboolean                            Default;      // default value for this gboolean field. taken from comments. defaults to FALSE
+  dt_introspection_type_header_t header;
+  gboolean Default; // default value for this gboolean field. taken from comments. defaults to FALSE
 } dt_introspection_type_bool_t;
 
 typedef struct dt_introspection_type_array_t
 {
-  dt_introspection_type_header_t      header;
-  size_t                              count;        // number of elements in the array
-  dt_introspection_type_t             type;         // type of the elements
-  union dt_introspection_field_t     *field;        // the relevant data of the elements, depending on type
+  dt_introspection_type_header_t header;
+  size_t count;                          // number of elements in the array
+  dt_introspection_type_t type;          // type of the elements
+  union dt_introspection_field_t *field; // the relevant data of the elements, depending on type
 } dt_introspection_type_array_t;
 
 typedef struct dt_introspection_type_enum_tuple_t
 {
-  const char                         *name;
-  int                                 value;
+  const char *name;
+  int value;
 } dt_introspection_type_enum_tuple_t;
 
 typedef struct dt_introspection_type_enum_t
 {
-  dt_introspection_type_header_t      header;
-  size_t                              entries;      // # entries in values (without the closing {NULL, 0})
-  dt_introspection_type_enum_tuple_t *values;       // the enum tuples, consisting of { "STRING", VALUE }. terminated with { NULL, 0 }
+  dt_introspection_type_header_t header;
+  size_t entries;                             // # entries in values (without the closing {NULL, 0})
+  dt_introspection_type_enum_tuple_t *values; // the enum tuples, consisting of { "STRING", VALUE }.
+                                              // terminated with { NULL, 0 }
 } dt_introspection_type_enum_t;
 
 typedef struct dt_introspection_type_struct_t
 {
-  dt_introspection_type_header_t      header;
-  size_t                              entries;      // # entries in fields (without the closing NULL)
-  union dt_introspection_field_t    **fields;       // the fields of the struct. NULL terminated
+  dt_introspection_type_header_t header;
+  size_t entries;                          // # entries in fields (without the closing NULL)
+  union dt_introspection_field_t **fields; // the fields of the struct. NULL terminated
 } dt_introspection_type_struct_t;
 
 // sorry for the camel case/Capitals, but we have to avoid reserved keywords
 typedef union dt_introspection_field_t
 {
-  dt_introspection_type_header_t      header;       // the common header
-  dt_introspection_type_opaque_t      Opaque;       // some binary blob
-  dt_introspection_type_float_t       Float;        // a float
-  dt_introspection_type_double_t      Double;       // a double
-  dt_introspection_type_char_t        Char;         // a char
-  dt_introspection_type_uchar_t       UChar;        // an unsigned char
-  dt_introspection_type_short_t       Short;        // a short
-  dt_introspection_type_ushort_t      UShort;       // an unsigned short
-  dt_introspection_type_int_t         Int;          // an int
-  dt_introspection_type_uint_t        UInt;         // an unsigned int
-  dt_introspection_type_long_t        Long;         // a long
-  dt_introspection_type_ulong_t       ULong;        // an unsigned long
-  dt_introspection_type_bool_t        Bool;         // a gboolean
-  dt_introspection_type_array_t       Array;        // an array
-  dt_introspection_type_enum_t        Enum;         // an enum
-  dt_introspection_type_struct_t      Struct;       // a struct
+  dt_introspection_type_header_t header; // the common header
+  dt_introspection_type_opaque_t Opaque; // some binary blob
+  dt_introspection_type_float_t Float;   // a float
+  dt_introspection_type_double_t Double; // a double
+  dt_introspection_type_char_t Char;     // a char
+  dt_introspection_type_uchar_t UChar;   // an unsigned char
+  dt_introspection_type_short_t Short;   // a short
+  dt_introspection_type_ushort_t UShort; // an unsigned short
+  dt_introspection_type_int_t Int;       // an int
+  dt_introspection_type_uint_t UInt;     // an unsigned int
+  dt_introspection_type_long_t Long;     // a long
+  dt_introspection_type_ulong_t ULong;   // an unsigned long
+  dt_introspection_type_bool_t Bool;     // a gboolean
+  dt_introspection_type_array_t Array;   // an array
+  dt_introspection_type_enum_t Enum;     // an enum
+  dt_introspection_type_struct_t Struct; // a struct
 } dt_introspection_field_t;
 
 typedef struct dt_introspection_t
 {
-  int                                 api_version;    // introspection API version
-  int                                 params_version; // the version of the params layout. taken from DT_MODULE_INTROSPECTION()
-  const char                         *type_name;      // the typedef'ed name for this type as passed to DT_MODULE_INTROSPECTION()
-  size_t                              size;           // size of the params struct
-  dt_introspection_field_t           *field;          // the type of the params. should always be a DT_INTROSPECTION_TYPE_STRUCT
+  int api_version;                 // introspection API version
+  int params_version;              // the version of the params layout. taken from DT_MODULE_INTROSPECTION()
+  const char *type_name;           // the typedef'ed name for this type as passed to DT_MODULE_INTROSPECTION()
+  size_t size;                     // size of the params struct
+  dt_introspection_field_t *field; // the type of the params. should always be a DT_INTROSPECTION_TYPE_STRUCT
 } dt_introspection_t;
 
 
@@ -219,13 +225,14 @@ typedef struct dt_introspection_t
  * @param child if non-%NULL, it returns the field description of the child element
  * @return the pointer into the params blob to the requested element, or %NULL if not found
  **/
-static inline void *dt_introspection_access_array(dt_introspection_field_t * self, void * start, unsigned int element, dt_introspection_field_t ** child)
+static inline void *dt_introspection_access_array(dt_introspection_field_t *self, void *start,
+                                                  unsigned int element, dt_introspection_field_t **child)
 {
-  if(! (start && self && self->header.type == DT_INTROSPECTION_TYPE_ARRAY && element < self->Array.count))
+  if(!(start && self && self->header.type == DT_INTROSPECTION_TYPE_ARRAY && element < self->Array.count))
     return NULL;
 
   if(child) *child = self->Array.field;
-  return (void*)((char*)start + element * self->Array.field->header.size);
+  return (void *)((char *)start + element * self->Array.field->header.size);
 }
 
 
@@ -237,10 +244,10 @@ static inline void *dt_introspection_access_array(dt_introspection_field_t * sel
  * @param child if non-%NULL, it returns the field description of the child element
  * @return the pointer into the params blob to the requested element, or %NULL if not found
  **/
-static inline void *dt_introspection_get_child(dt_introspection_field_t * self, void * start, const char * name, dt_introspection_field_t ** child)
+static inline void *dt_introspection_get_child(dt_introspection_field_t *self, void *start, const char *name,
+                                               dt_introspection_field_t **child)
 {
-  if(! (start && self && name && *name && self->header.type == DT_INTROSPECTION_TYPE_STRUCT))
-    return NULL;
+  if(!(start && self && name && *name && self->header.type == DT_INTROSPECTION_TYPE_STRUCT)) return NULL;
 
   dt_introspection_field_t **iter = self->Struct.fields;
   while(*iter)
@@ -251,7 +258,7 @@ static inline void *dt_introspection_get_child(dt_introspection_field_t * self, 
       size_t child_offset = (*iter)->header.offset;
       size_t relative_offset = child_offset - parent_offset;
       if(child) *child = *iter;
-      return (void*)((char*)start + relative_offset);
+      return (void *)((char *)start + relative_offset);
     }
     iter++;
   }

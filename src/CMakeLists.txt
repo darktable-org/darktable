@@ -96,6 +96,12 @@ FILE(GLOB SOURCE_FILES
   )
 FILE(GLOB HEADER_FILES "*.h" "common/*.h" "external/CL/*.h" "control/*.h" "iop/*.h" "libs/*.h" "views/*.h")
 
+if(APPLE)
+  list(APPEND SOURCE_FILES "osx/osx.mm")
+  list(APPEND HEADER_FILES "osx/osx.h")
+  set_source_files_properties(osx/osx.mm PROPERTIES LANGUAGE CXX)
+endif(APPLE)
+
 set(SOURCES ${SOURCE_FILES} ${HEADER_FILES})
 
 
@@ -233,7 +239,7 @@ endif(USE_OPENJPEG)
 #
 # Detect compile of optional pwstorage backends
 #
-if(USE_LIBSECRET)
+if(USE_LIBSECRET AND JsonGlib_FOUND)
   find_package(Libsecret)
   if(LIBSECRET_FOUND)
     if(LIBSECRET_VERSION VERSION_LESS "0.16")
@@ -250,7 +256,7 @@ if(USE_LIBSECRET)
       add_definitions("-DHAVE_LIBSECRET")
     endif()
   endif(LIBSECRET_FOUND)
-endif(USE_LIBSECRET)
+endif(USE_LIBSECRET AND JsonGlib_FOUND)
 
 if(USE_GNOME_KEYRING)
   find_package(GnomeKeyring)
@@ -541,7 +547,6 @@ if(USE_COLORD)
     add_library(colord-gtk_static STATIC IMPORTED)
     set_target_properties(colord-gtk_static PROPERTIES IMPORTED_LOCATION ${CMAKE_CURRENT_BINARY_DIR}/external/colord-gtk/libcolord-gtk.a)
     add_subdirectory(external/colord-gtk)
-    add_dependencies(colord-gtk colord)
     list(APPEND LIB_DEPS colord-gtk)
     list(APPEND LIBS ${COLORD_LIBRARIES})
     list(APPEND STATIC_LIBS colord-gtk_static)
@@ -746,7 +751,7 @@ if(NOT WIN32)
 endif(NOT WIN32)
 set_target_properties(darktable PROPERTIES LINKER_LANGUAGE C)
 if(APPLE)
-  set_target_properties(lib_darktable PROPERTIES LINK_FLAGS "-framework Carbon")
+  set_target_properties(lib_darktable PROPERTIES LINK_FLAGS "-framework Carbon -framework AppKit")
 endif(APPLE)
 target_link_libraries(darktable ${LIBS})
 install(TARGETS darktable DESTINATION bin)

@@ -21,8 +21,10 @@
 #include <gtk/gtk.h>
 #include "paint.h"
 G_BEGIN_DECLS
-#define DTGTK_TRISTATEBUTTON(obj) G_TYPE_CHECK_INSTANCE_CAST(obj, dtgtk_tristatebutton_get_type (), GtkDarktableTriStateButton)
-#define DTGTK_TRISTATEBUTTON_CLASS(klass) GTK_CHECK_CLASS_CAST(klass, dtgtk_tristatebutton_get_type(), GtkDarktableTriStateButtonClass)
+#define DTGTK_TRISTATEBUTTON(obj)                                                                            \
+  G_TYPE_CHECK_INSTANCE_CAST(obj, dtgtk_tristatebutton_get_type(), GtkDarktableTriStateButton)
+#define DTGTK_TRISTATEBUTTON_CLASS(klass)                                                                    \
+  GTK_CHECK_CLASS_CAST(klass, dtgtk_tristatebutton_get_type(), GtkDarktableTriStateButtonClass)
 #define DTGTK_IS_TRISTATEBUTTON(obj) G_TYPE_CHECK_INSTANCE_TYPE(obj, dtgtk_tristatebutton_get_type())
 #define DTGTK_IS_TRISTATEBUTTON_CLASS(klass) GTK_CHECK_CLASS_TYPE(obj, dtgtk_tristatebutton_get_type())
 
@@ -44,18 +46,19 @@ typedef struct _GtkDarktableTriStateButton
 typedef struct _GtkDarktableTriStateButtonClass
 {
   GtkButtonClass parent_class;
-  void  (* state_changed)  (GtkDarktableTriStateButton *ts,int state);
+  void (*state_changed)(GtkDarktableTriStateButton *ts, int state);
 } GtkDarktableTriStateButtonClass;
 
-GType dtgtk_tristatebutton_get_type (void);
+GType dtgtk_tristatebutton_get_type(void);
 
 /** Instansiate a new darktable slider control passing adjustment as range */
-GtkWidget* dtgtk_tristatebutton_new (DTGTKCairoPaintIconFunc paint, gint paintflag);
-GtkWidget* dtgtk_tristatebutton_new_with_label (const gchar *label,DTGTKCairoPaintIconFunc paint, gint paintflag);
+GtkWidget *dtgtk_tristatebutton_new(DTGTKCairoPaintIconFunc paint, gint paintflag);
+GtkWidget *dtgtk_tristatebutton_new_with_label(const gchar *label, DTGTKCairoPaintIconFunc paint,
+                                               gint paintflag);
 /** get the current state of the tristate button */
-gint dtgtk_tristatebutton_get_state(const GtkDarktableTriStateButton * );
+gint dtgtk_tristatebutton_get_state(const GtkDarktableTriStateButton *);
 /** set the current state of the tristate button */
-void dtgtk_tristatebutton_set_state(GtkDarktableTriStateButton *,gint state);
+void dtgtk_tristatebutton_set_state(GtkDarktableTriStateButton *, gint state);
 
 G_END_DECLS
 #endif

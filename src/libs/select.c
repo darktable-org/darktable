@@ -30,8 +30,7 @@
 
 DT_MODULE(1)
 
-const char*
-name ()
+const char *name()
 {
   return _("select");
 }
@@ -48,17 +47,15 @@ uint32_t container()
 
 typedef struct dt_lib_select_t
 {
-  GtkWidget
-  *select_all_button, *select_none_button, *select_invert_button,
-  *select_film_roll_button, *select_untouched_button;
+  GtkWidget *select_all_button, *select_none_button, *select_invert_button, *select_film_roll_button,
+      *select_untouched_button;
 } dt_lib_select_t;
 
-static void
-button_clicked(GtkWidget *widget, gpointer user_data)
+static void button_clicked(GtkWidget *widget, gpointer user_data)
 {
   switch(GPOINTER_TO_INT(user_data))
   {
-    case 0:  // all
+    case 0: // all
       dt_selection_select_all(darktable.selection);
       break;
     case 1: // none
@@ -77,16 +74,14 @@ button_clicked(GtkWidget *widget, gpointer user_data)
   dt_control_queue_redraw_center();
 }
 
-int
-position ()
+int position()
 {
   return 800;
 }
 
-void
-gui_init (dt_lib_module_t *self)
+void gui_init(dt_lib_module_t *self)
 {
-  dt_lib_select_t *d = (dt_lib_select_t*)malloc(sizeof(dt_lib_select_t));
+  dt_lib_select_t *d = (dt_lib_select_t *)malloc(sizeof(dt_lib_select_t));
   self->data = d;
   self->widget = gtk_vbox_new(TRUE, 5);
   GtkBox *hbox;
@@ -95,7 +90,8 @@ gui_init (dt_lib_module_t *self)
 
   button = gtk_button_new_with_label(_("select all"));
   d->select_all_button = button;
-  g_object_set(G_OBJECT(button), "tooltip-text", _("select all images in current collection (ctrl-a)"), (char *)NULL);
+  g_object_set(G_OBJECT(button), "tooltip-text", _("select all images in current collection (ctrl-a)"),
+               (char *)NULL);
   gtk_box_pack_start(hbox, button, TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(button_clicked), GINT_TO_POINTER(0));
 
@@ -109,14 +105,16 @@ gui_init (dt_lib_module_t *self)
   hbox = GTK_BOX(gtk_hbox_new(TRUE, 5));
 
   button = gtk_button_new_with_label(_("invert selection"));
-  g_object_set(G_OBJECT(button), "tooltip-text", _("select unselected images\nin current collection (ctrl-!)"), (char *)NULL);
+  g_object_set(G_OBJECT(button), "tooltip-text",
+               _("select unselected images\nin current collection (ctrl-!)"), (char *)NULL);
   d->select_invert_button = button;
   gtk_box_pack_start(hbox, button, TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(button_clicked), GINT_TO_POINTER(2));
 
   button = gtk_button_new_with_label(_("select film roll"));
   d->select_film_roll_button = button;
-  g_object_set(G_OBJECT(button), "tooltip-text", _("select all images which are in the same\nfilm roll as the selected images"), (char *)NULL);
+  g_object_set(G_OBJECT(button), "tooltip-text",
+               _("select all images which are in the same\nfilm roll as the selected images"), (char *)NULL);
   gtk_box_pack_start(hbox, button, TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(button_clicked), GINT_TO_POINTER(3));
 
@@ -125,17 +123,17 @@ gui_init (dt_lib_module_t *self)
 
   button = gtk_button_new_with_label(_("select untouched"));
   d->select_untouched_button = button;
-  g_object_set(G_OBJECT(button), "tooltip-text", _("select untouched images in\ncurrent collection"), (char *)NULL);
+  g_object_set(G_OBJECT(button), "tooltip-text", _("select untouched images in\ncurrent collection"),
+               (char *)NULL);
   gtk_box_pack_start(hbox, button, TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(button_clicked), GINT_TO_POINTER(4));
   // Just a filler, remove if a new button is added
-  gtk_box_pack_start(hbox,gtk_hbox_new(TRUE, 5),TRUE,TRUE,0);
+  gtk_box_pack_start(hbox, gtk_hbox_new(TRUE, 5), TRUE, TRUE, 0);
 
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(hbox), TRUE, TRUE, 0);
 }
 
-void
-gui_cleanup (dt_lib_module_t *self)
+void gui_cleanup(dt_lib_module_t *self)
 {
 }
 

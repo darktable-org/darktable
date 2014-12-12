@@ -32,7 +32,7 @@
 // - there is a .txt or .wav file associated with the image and mark so in the db
 //   or if such a file no longer exists
 // it returns the list of images with a (supposedly) updated xmp file to let the user decide
-GList * dt_control_crawler_run();
+GList *dt_control_crawler_run();
 
 // show a popup with the images, let the user decide what to do and free the list afterwards
 void dt_control_crawler_show_image_list(GList *images);

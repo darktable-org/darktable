@@ -2,9 +2,9 @@
 # Michel Leblond <michel.leblond62@gmail.com>, 2014.
 msgid ""
 msgstr ""
-"Project-Id-Version: \n"
-"POT-Creation-Date: 2014-11-14 23:40+0100\n"
-"PO-Revision-Date: 2014-11-19 17:04+0100\n"
+"Project-Id-Version: Darktable 1.6\n"
+"POT-Creation-Date: 2014-12-01 08:53+0100\n"
+"PO-Revision-Date: 2014-12-03 14:30+0100\n"
 "Last-Translator: Michel Leblond <michel.leblond62@gmail.com>\n"
 "Language-Team: Jean-Luc Coulon, Victor Lamoine, Michel Leblond\n"
 "Language: fr\n"
@@ -12,7 +12,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
-"X-Generator: Poedit 1.5.4\n"
+"X-Generator: Poedit 1.6.10\n"
 "X-Poedit-Bookmarks: 2169,1480,-1,416,182,458,465,290,-1,1846\n"
 
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:4(title)
@@ -427,7 +427,7 @@ msgstr ""
 "darktable est livré avec plus de 50 modules de traitement d'images qui "
 "couvrent l’ensemble des besoins depuis les opérations de base, les "
 "modifications de valeurs tonales, la manipulation de la couleur, la "
-"correction des défauts courants des images, jusqu’aux effets artistiques."
+"correction des défauts courants des images, jusqu’aux effets artistiques ;"
 
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:251(para)
 msgid ""
@@ -698,7 +698,7 @@ msgid ""
 msgstr ""
 "darktable conserve un cache des miniatures des images pour une "
 "prévisualisation rapide et un cache des exécutables OpenCL précompilés pour "
-"un démarrage rapide. Par défaut, le cache est situé dans<quote>$HOME/.cache/"
+"un démarrage rapide. Par défaut, le cache est situé dans <quote>$HOME/.cache/"
 "darktable/</quote>. Il peut exister plusieurs caches de miniatures en "
 "parallèle – un pour chaque fichier de bibliothèque."
 
@@ -983,7 +983,7 @@ msgstr ""
 "La table lumineuse est l’endroit où vous organisez les images et les "
 "pellicules. C’est dans cette vue que vous évaluez les images, que vous leur "
 "ajoutez des mots-clés et des labels de couleur et que, entre autres actions, "
-"vous les exportez. (Voyez <xref linkend=\"lighttable_chapter\"/>)."
+"vous les exportez (voyez <xref linkend=\"lighttable_chapter\"/>)."
 
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:749(title)
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:4172(title)
@@ -1263,10 +1263,10 @@ msgid ""
 "The history is stored in a database and in an XMP sidecar file for the "
 "specific image."
 msgstr ""
-"Chaque modification effectuée sur un module lors du développent d’une image "
-"devient un élément de l’<link linkend=\"history\"><emphasis>historique </"
-"emphasis></link>de développement. L’historique est enregistré dans une base "
-"de données et dans un fichier XMP lié à l’image spécifique."
+"Chaque modification effectuée sur un module lors du développement d’une "
+"image devient un élément de l’<link linkend=\"history\"><emphasis>historique "
+"</emphasis></link>de développement. L’historique est enregistré dans une "
+"base de données et dans un fichier XMP lié à l’image spécifique."
 
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:950(para)
 msgid ""
@@ -1835,7 +1835,7 @@ msgstr ""
 "\" scalefit=\"1\" width=\"3mm\"/>. Par défaut ces surimpressions sont "
 "uniquement visibles sur la miniature se trouvant sous le curseur de la "
 "souris. Un bouton de surimpression est aussi disponible sur les autres vues "
-"où il affecte le bandeau de la même façon (see <xref linkend="
+"où il affecte le bandeau de la même façon (voyez <xref linkend="
 "\"filmstrip_overview\"/> et <xref linkend=\"darkroom_filmstrip\"/>)."
 
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1364(para)
@@ -2128,13 +2128,13 @@ msgstr ""
 "se remplir. Si c'est le cas, et si des nouvelles miniatures sont créées "
 "alors des anciennes devront être supprimées. Généralement l'utilisateur ne "
 "s'en aperçoit pas, sauf si une taille de cache trop petite a été choisie. "
-"Dans ce cas il pourra observer des effets néfastes comme une régénération "
-"des miniatures chaque fois qu'il se déplace dans sa collection, un "
-"clignotement des miniatures ou même un darktable qui ne répond plus générant "
-"et supprimant continuellement de nouvelles miniatures. Un bon choix pour la "
-"taille du cache est 512MB ou plus. Veuillez noter que les limites inhérentes "
-"aux <emphasis> systèmes 32-bits</emphasis> vous forceront à opter pour une "
-"taille de cache beaucoup plus faible (voyez <xref linkend="
+"Dans ce cas il pourra observer des effets néfastes comme une nouvelle "
+"génération des miniatures chaque fois qu'il se déplace dans sa collection, "
+"un clignotement des miniatures ou même un darktable qui ne répond plus "
+"générant et supprimant continuellement de nouvelles miniatures. Un bon choix "
+"pour la taille du cache est 512MB ou plus. Veuillez noter que les limites "
+"inhérentes aux <emphasis> systèmes 32-bits</emphasis> vous forceront à opter "
+"pour une taille de cache beaucoup plus faible (voyez <xref linkend="
 "\"darktable_and_memory\"/> pour plus de détails sur ces limitations)."
 
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1562(title)
@@ -3265,7 +3265,7 @@ msgid ""
 msgstr ""
 "darktable lit de manière native les images <quote>ordinaires</quote>, dans "
 "les formats JPEG, PNG 8 ou 16 bits et TIFF 8 ou 16 bits. Le format JPEG2000 "
-"est aussi pis en charge si les bibliothèques nécessaires sont construites "
+"est aussi pris en charge si les bibliothèques nécessaires sont construites "
 "dans darktable au moment de la compilation. De la même manière, si darktable "
 "a été construit avec la prise en charge de GraphicsMagick, un certain nombre "
 "de formats d’importation supplémentaires seront disponibles, comme GIF, "
@@ -3847,8 +3847,8 @@ msgid ""
 "will delete the file(s) without further question! This is irreversible, and "
 "will also erase your development work of these images."
 msgstr ""
-"Supprime physiquement du système de fichiers les images sélectionnées. Voyez "
-"aussi l’option des préférences <quote>demander avant de supprimer des "
+"Supprimer physiquement du système de fichiers les images sélectionnées. "
+"Voyez aussi l’option des préférences <quote>demander avant de supprimer des "
 "images</quote> (<xref linkend=\"gui_options\"/>). Si cette option de "
 "configuration n’est pas active, darktable supprimera les fichiers sans "
 "demander de confirmation ! Ceci est irréversible, et supprimera aussi votre "
@@ -3904,7 +3904,7 @@ msgid ""
 "exists in the target folder it does not get overwritten – instead a new "
 "duplicate with the given history stack is generated."
 msgstr ""
-"Copie physiquement les images sélectionnées (le fichier parent plus les "
+"Copier physiquement les images sélectionnées (le fichier parent plus les "
 "fichiers liés XMP) vers un autre dossier du système de fichiers. Si une "
 "image ayant le même nom que celui indiqué existe déjà dans le dossier cible, "
 "elle ne sera pas écrasée – mais un nouveau clone avec l’historique donné "
@@ -3925,13 +3925,13 @@ msgid ""
 "\"/>). Note that darktable cannot currently create HDR files from images "
 "made with non-Bayer (e.g. Fujifilm X-Trans) sensors."
 msgstr ""
-"Crée une image en grande plage dynamique à partir des images sélectionnées "
-"et l'enregistre en tant que nouveau fichier source au format DNG. Les images "
-"doivent être correctement alignées, ce qui nécessite qu’elles aient été "
-"prises avec un trépied stable. Vous pouvez aussi générer des fichiers HDR "
-"avec des programmes tels que <ulink url=\"http://qtpfsgui.sourceforge.net/"
-"\"><emphasis>Luminance HDR</emphasis></ulink>, et les importer après dans "
-"darktable pour un traitement ultérieur (voyez <xref linkend="
+"Créer une image en grande plage dynamique à partir des images sélectionnées "
+"et l'enregistrer en tant que nouveau fichier source au format DNG. Les "
+"images doivent être correctement alignées, ce qui nécessite qu’elles aient "
+"été prises avec un trépied stable. Vous pouvez aussi générer des fichiers "
+"HDR avec des programmes tels que <ulink url=\"http://qtpfsgui.sourceforge."
+"net/\"><emphasis>Luminance HDR</emphasis></ulink>, et les importer après "
+"dans darktable pour un traitement ultérieur (voyez <xref linkend="
 "\"supported_file_formats\"/>). Notez que, actuellement, darktable ne peut "
 "pas créer des fichiers HDR à partir de photos prises avec des capteurs non-"
 "Bayer (par exemple Fujifilm X-Trans)."
@@ -3954,7 +3954,7 @@ msgid ""
 "different developments for the same image, for example. Duplicate images "
 "share the same parent input file, but each have their own XMP sidecar file."
 msgstr ""
-"Crée une copie virtuelle des images sélectionnées dans darktable. Ceci "
+"Créer une copie virtuelle des images sélectionnées dans darktable. Ceci "
 "permet par exemple de tester différents développements de la même image. Les "
 "images clonées partagent le même fichier d’entrée parent, mais chacune "
 "d’entre-elles possède son propre fichier lié XMP."
@@ -5133,7 +5133,7 @@ msgstr ""
 "Ceci définit le profil de couleur de sortie. Sélectionnez <quote>paramètres "
 "d’image </quote> si vous désirez que les paramètres du module "
 "<emphasis>profil de couleur de sortie</emphasis> (voyez <xref linkend="
-"\"output_color_profile\"/>) des images individuelles soit prioritaire."
+"\"output_color_profile\"/>) des images individuelles soient prioritaires."
 
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:4125(title)
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:20038(link)
@@ -5408,9 +5408,9 @@ msgstr ""
 "\"><emphasis>balance des blancs</emphasis></link>, puis <link linkend="
 "\"demosaic\"><emphasis>dématriçage</emphasis></link>, puis <link linkend="
 "\"base_curve\"><emphasis>courbe de base</emphasis></link> (si activé), puis "
-"<link linkend=\"denoise_bilateral\"><emphasis> réduction du bruit (bilatéral)"
-"</emphasis></link> (si activé), dans l'ordre où ces modules apparaissent de "
-"bas en haut sur le panneau de droite."
+"<link linkend=\"denoise_bilateral\"><emphasis> réduction du bruit "
+"(bilatéral)</emphasis></link> (si activé), dans l'ordre où ces modules "
+"apparaissent de bas en haut sur le panneau de droite."
 
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:4325(para)
 msgid ""
@@ -5660,7 +5660,7 @@ msgid ""
 msgstr ""
 "Certains modules sont contrôlés en ajustant des courbes. Davantage de "
 "précisions seront données ultérieurement dans ce chapitre quand les modules "
-"correspondants seront expliqués."
+"correspondants seront présentés."
 
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:4520(title)
 msgid "Module presets"
@@ -6992,10 +6992,9 @@ msgid ""
 "might provoke banding artifacts. You should consider to activate the "
 "<emphasis>dithering</emphasis> module (see <xref linkend=\"dithering\"/>)"
 msgstr ""
-"Selon le module et l'image sous-jacente l'utilisation d'une forme de dégradé "
-"peut provoquer un effet de bande. Vous pouvez envisager l'activation du "
-"module <emphasis>homogénéisation</emphasis> (voyez <xref linkend=\"dithering"
-"\"/>)"
+"Selon le module et l'image sous-jacente l'utilisation d'un dégradé peut "
+"provoquer un effet de bande. Vous pouvez envisager l'activation du module "
+"<emphasis>homogénéisation</emphasis> (voyez <xref linkend=\"dithering\"/>)."
 
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:5544(entry)
 msgid "A gradient with controls and activated mask display."
@@ -7039,8 +7038,8 @@ msgstr ""
 "\"center\"/>, respectivement) permet de basculer entre l’état normal et "
 "l’état inversé du masque dessiné, c’est-à-dire que les valeurs d’opacité "
 "sont inversées – 100% devient 0% et vice versa. Vous aurez besoin de cette "
-"fonctionnalité lorsque vous combinerez les masques dessinés et paramétriques "
-"(voyez <xref linkend=\"combined_masks\"/>)."
+"fonctionnalité lorsque vous combinerez le masque dessiné et le masque "
+"paramétrique (voyez <xref linkend=\"combined_masks\"/>)."
 
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:5585(title)
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:6551(secondary)
@@ -7085,13 +7084,13 @@ msgid ""
 "from user defined parameters. These parameters are color coordinates not the "
 "geometrical coordinates used in drawn masks."
 msgstr ""
-"La fonctionnalité de masque paramétrique, précédemment appelée <quote>fusion "
-"conditionnelle</quote>, propose un contrôle sélectif de faible granularité, "
-"de la manière dont les pixels individuels sont fusionnés. Il le fait en "
-"générant automatiquement un masque de fusion intermédiaire en fonction des "
-"paramètres choisis par l’utilisateur. Ces paramètres sont des coordonnées de "
-"couleur et non les coordonnées géométriques utilisées dans les masques "
-"dessinés."
+"La fonctionnalité masque paramétrique, appelée <quote>fusion conditionnelle</"
+"quote> dans les versions antérieures de darktable, propose un contrôle "
+"sélectif de faible granularité, de la manière dont les pixels individuels "
+"sont fusionnés. Il le fait en générant automatiquement un masque de fusion "
+"intermédiaire en fonction des paramètres choisis par l’utilisateur. Ces "
+"paramètres sont des coordonnées de couleur et non les coordonnées "
+"géométriques utilisées dans les masques dessinés."
 
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:5623(para)
 msgid ""
@@ -7174,7 +7173,7 @@ msgid ""
 "that the module receives and one for the output data that the module "
 "produces prior to blending."
 msgstr ""
-"Chaque onglet comporte deux curseurs pour ses canaux de données : l’un pour "
+"Chaque onglet fournit deux curseurs pour ses canaux de données : l’un pour "
 "les données d’entrée que le module reçoit et l’autre pour les données de "
 "sortie que le module produit avant d’effectuer la fusion."
 
@@ -7193,10 +7192,10 @@ msgstr ""
 "Avec le curseur du canal de couleur vous pouvez construire une fonction "
 "d’opacité trapézoïdale. Pour cela, il y a quatre marqueurs par curseur. Deux "
 "triangles au-dessus du curseur marquent la plage de valeurs pour lesquelles "
-"l’opacité est de 1. Deux triangles situés sous le curseur marquent la plage "
-"de valeurs pour lesquelles l’opacité est nulle. Les points intermédiaires "
-"entre l’opacité nulle et l’opacité complète se voient allouer une opacité "
-"progressive."
+"l’opacité est égale à 1. Deux triangles situés sous le curseur marquent la "
+"plage de valeurs pour lesquelles l’opacité est nulle. Les points "
+"intermédiaires entre l’opacité nulle et l’opacité complète se voient allouer "
+"une opacité progressive."
 
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:5709(para)
 msgid ""
@@ -7601,8 +7600,8 @@ msgid ""
 "toggles between inclusive and exclusive mode in the <quote>combine masks</"
 "quote> combobox."
 msgstr ""
-"Pour vous faciliter la tâche, vous trouverez sur l’interface graphique des "
-"masques paramétriques un bouton à bascule <inlinegraphic fileref=\"images/"
+"Pour vous faciliter la tâche, vous trouverez sur l’interface graphique du "
+"masque paramétrique un bouton à bascule <inlinegraphic fileref=\"images/"
 "darkroom_module_icon_invert.png\" scalefit=\"1\" width=\"2%\" align=\"center"
 "\"/> qui permet d’inverser toutes les polarités des canaux et de basculer "
 "entre les modes exclusif et inclusif de la zone de liste déroulante "
@@ -7618,8 +7617,8 @@ msgstr ""
 "Il est recommandé aux utilisateurs débutants de se contenter de ces deux "
 "cas. Ceci implique que vous devez décider à l'avance comment vous voulez "
 "construire votre masque. Les utilisateurs avancés trouveront la façon de "
-"tirer profit des nombreuses combinaisons possibles de polarités et des modes "
-"de combinaison des masques."
+"tirer profit des nombreuses combinaisons possibles des polarités et des "
+"modes de combinaison des masques."
 
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:6067(title)
 msgid "Color management"
@@ -8171,14 +8170,14 @@ msgid ""
 "within pixelpipe."
 msgstr ""
 "En plus de la pipette globale décrite ici, il y a aussi, dans certains des "
-"modules, des pipettes locales (par exemple <link linkend=\"tone_curve\"> "
-"<emphasis>courbe des tonalités</emphasis></link>). Les pipettes globales et "
-"locales sont différentes. La pipette globale fonctionne dans l’espace "
-"colorimétrique du moniteur et prend des échantillons après que le pipeline "
-"graphique a été traité. Les pipettes locales fonctionnent dans l’espace "
-"colorimétrique de chaque module individuel, qui est habituellement Lab. "
-"Elles reflètent les données d’entrée et de sortie de ce module spécifique à "
-"l’intérieur du pipeline graphique."
+"modules, des pipettes locales (par exemple <link linkend=\"tone_curve"
+"\"><emphasis>courbe des tonalités</emphasis></link>). La pipette globale et "
+"les pipettes locales sont différentes. La pipette globale fonctionne dans "
+"l’espace colorimétrique du moniteur et prend des échantillons après que le "
+"pipeline graphique a été traité. Les pipettes locales fonctionnent dans "
+"l’espace colorimétrique de chaque module individuel, qui est habituellement "
+"Lab. Elles reflètent les données d’entrée et de sortie de ce module "
+"spécifique à l’intérieur du pipeline graphique."
 
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:6494(para)
 msgid ""
@@ -8250,7 +8249,7 @@ msgid ""
 "can once again select which numerical value (mean, min, max) is to be "
 "displayed and if this is to be done in RGB or Lab color space."
 msgstr ""
-"Les couleurs prélevées soit en mode point, soit en mode zone peuvent être "
+"Les couleurs prélevées soit en mode point, soit en mode zone, peuvent être "
 "<quote>enregistrées</quote> comme échantillons en temps réel en pressant le "
 "bouton <quote>ajouter</quote>. Pour chacun des échantillons enregistrés, "
 "darktable affichera alors une pastille ayant la couleur de cet échantillon "
@@ -8578,8 +8577,8 @@ msgstr ""
 "Cet opérateur logique est représenté par le symbole <inlinegraphic fileref="
 "\"images/masks_exclusion.png\" scalefit=\"1\" width=\"4%\" align=\"center\"/"
 ">. Les pixels sélectionnés du masque résultant sont ceux qui sont "
-"sélectionnés dans le masque existant et non dans la forme ajoutée ou vice "
-"versa. Ceci est équivalent à un <placeholder-1/>."
+"sélectionnés dans le masque existant ou dans la forme ajoutée, mais pas dans "
+"les deux. Ceci est équivalent à un <placeholder-1/>."
 
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:6843(title)
 msgid "Histogram"
@@ -8619,9 +8618,9 @@ msgid ""
 msgstr ""
 "L’histogramme est directement lié au module <emphasis>exposition</emphasis> "
 "décrit dans la <xref linkend=\"exposure\"/>, et vous pouvez manœuvrer depuis "
-"l’histogramme certains des contrôles du module d’exposition. Vous pouvez "
-"faire un clic-gauche sur le côté droit de l’histogramme et ensuite glisser "
-"vers la droite pour augmenter l’exposition ou glisser vers la gauche pour la "
+"l’histogramme certains des contrôles du module exposition. Vous pouvez faire "
+"un clic-gauche sur le côté droit de l’histogramme et ensuite glisser vers la "
+"droite pour augmenter l’exposition ou glisser vers la gauche pour la "
 "diminuer. De la même manière, vous pouvez contrôler le niveau de noir en "
 "cliquant et glissant dans la partie gauche. Double-cliquer dans "
 "l'histogramme restaure les paramètres du module exposition à leur valeur par "
@@ -8723,7 +8722,7 @@ msgid ""
 "(see <xref linkend=\"correction_group\"/>)."
 msgstr ""
 "Modules pour améliorer l’image. Par exemple réduction du bruit,  aberrations "
-"chromatiques, etc. (Voyez <xref linkend=\"correction_group\"/>)."
+"chromatiques, etc. (voyez <xref linkend=\"correction_group\"/>)."
 
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:7007(entry)
 msgid "Effect"
@@ -8748,9 +8747,10 @@ msgstr ""
 "Cliquer sur l’un des symboles de groupe fera apparaître les modules de ce "
 "groupe. Si vous cliquez une nouvelle fois sur le symbole, le regroupement "
 "sera désactivé et tous les modules non masqués seront affichés en une seule "
-"longue liste. Cette liste montre l’ordre dans lequel ils sont appliqués du "
-"bas vers le haut. Un principe général de darktable est d’appliquer les "
-"modules dans un ordre prédéfini."
+"longue liste. Lors du développement des images, les modules sont appliqués "
+"selon l'ordre dans lequel ils apparaissent dans cette liste, du bas vers le "
+"haut. Un principe général de darktable est d’appliquer les modules dans un "
+"ordre prédéfini."
 
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:7031(title)
 msgid "More modules"
@@ -8817,7 +8817,7 @@ msgid ""
 msgstr ""
 "Le panneau du bas procure un accès rapide pour appliquer à vos images les "
 "préréglages et les styles. Il permet aussi d’activer l’avertissement de sur "
-"et sous exposition. Vous pouvez aussi activer le bandeau pour une navigation "
+"et sous-exposition. Vous pouvez aussi activer le bandeau pour une navigation "
 "rapide au sein de la collection courante."
 
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:7099(title)
@@ -8856,12 +8856,12 @@ msgstr ""
 
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:7126(title)
 msgid "Over/underexposed warning"
-msgstr "Alerte de sur et sous exposition"
+msgstr "Alerte de surexposition et de sous-exposition"
 
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:7130(secondary)
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:7139(primary)
 msgid "overexposed warning"
-msgstr "alerte de sur-exposition"
+msgstr "alerte de surexposition"
 
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:7135(secondary)
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:7143(primary)
@@ -8879,11 +8879,12 @@ msgid ""
 msgstr ""
 "En cliquant l’icône <inlinegraphic fileref=\"images/"
 "darkroom_module_icon_overexposed.png\" scalefit=\"1\" width=\"2%\" align="
-"\"center\"/>, un avertissement de sur et sous exposition sera basculé entre "
-"les modes actif et inactif. Les pixels situés hors de la plage dynamique, "
-"proches du blanc pur ou proches du noir pur seront mis en évidence avec un "
-"signal de couleur. Vous pouvez aussi activer l’avertissement de sur et sous "
-"exposition avec le raccourci clavier<quote>o</quote>."
+"\"center\"/>, un avertissement de surexposition et de sous-exposition sera "
+"basculé entre les modes actif et inactif. Les pixels situés hors de la plage "
+"dynamique, proches du blanc pur ou proches du noir pur seront mis en "
+"évidence avec un signal de couleur. Vous pouvez aussi activer "
+"l’avertissement de surexposition et de sous-exposition avec le raccourci "
+"clavier <quote>o</quote>."
 
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:7161(entry)
 msgid ""
@@ -8894,7 +8895,7 @@ msgstr ""
 
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:7172(bridgehead)
 msgid "color scheme"
-msgstr "thème de couleur"
+msgstr "schéma de couleur"
 
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:7174(para)
 msgid ""
@@ -8904,12 +8905,12 @@ msgid ""
 "white</quote> or <quote>purple &amp; green</quote>, eg. if you experience "
 "overexposed highlights in red blossoms."
 msgstr ""
-"Dans le schéma de couleurs par défaut, les pixels sous-exposés sont affichés "
-"en bleu et les pixels sur-exposés en rouge. Dans la plupart des cas, ces "
+"Dans le schéma de couleur par défaut, les pixels sous-exposés sont affichés "
+"en bleu et les pixels surexposés en rouge. Dans la plupart des cas, ces "
 "couleurs sont faciles à identifier. Dans certains cas, vous pourrez "
-"souhaiter modifier ce schéma de couleurs vers <quote>noir et blanc</quote> "
-"ou <quote>violet et vert</quote>, par exemple si vous avez des hautes "
-"lumières surexposées sur des fleurs rouges."
+"souhaiter modifier ce schéma de couleur vers <quote>noir et blanc</quote> ou "
+"<quote>violet et vert</quote>, par exemple si vous avez des hautes lumières "
+"surexposées sur des fleurs rouges."
 
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:7181(bridgehead)
 msgid "lower threshold"
@@ -9128,7 +9129,7 @@ msgstr ""
 
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:7333(title)
 msgid "angle"
-msgstr "angle"
+msgstr "rotation"
 
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:7334(para)
 msgid ""
@@ -9610,8 +9611,7 @@ msgstr ""
 "panneau de l’histogramme. Bien sûr, si vous corrigez graphiquement "
 "l’exposition en utilisant l’<placeholder-1/> (voyez <xref linkend=\"histogram"
 "\"/>), vous allez automatiquement activer le module exposition. "
-"L’histogramme fonctionne simplement comme une vue pour le module "
-"d’exposition."
+"L’histogramme fonctionne simplement comme une vue pour le module exposition."
 
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:7854(para)
 msgid ""
@@ -9636,9 +9636,9 @@ msgid ""
 msgstr ""
 "Ce module est chargé de l’une des étapes les plus basiques de chaque "
 "développement d’une image RAW. Une valeur d’ajustement de l’exposition vous "
-"permet – dans certaines limites – de corriger une sur ou sous-exposition. Un "
-"décalage de 1IL est équivalent à une modification du temps d’exposition d'un "
-"facteur 2."
+"permet – dans certaines limites – de corriger une surexposition ou une sous-"
+"exposition. Un décalage de 1IL est équivalent à une modification du temps "
+"d’exposition d'un facteur 2."
 
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:7874(para)
 msgid ""
@@ -9956,8 +9956,8 @@ msgstr ""
 "Le dématriçage est appliqué systématiquement lors de l’exportation des "
 "images. Il n'est effectué pour l'écran que lorsque le facteur de zoom est "
 "supérieur à 50% ou lorsque les préférences correspondantes sont définies "
-"dans <quote>méthode de dématriçage pour la vue en chambre noire> (voyez "
-"<xref linkend=\"core_options\"/>). Sinon, les canaux de couleur sont "
+"dans <quote>méthode de dématriçage pour la vue en chambre noire</quote> "
+"(voyez <xref linkend=\"core_options\"/>). Sinon, les canaux de couleur sont "
 "calculés à partir des pixels voisins sans utiliser une coûteuse "
 "interpolation."
 
@@ -10129,7 +10129,7 @@ msgstr ""
 
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:8319(para)
 msgid "Choose the method for highlight reconstruction."
-msgstr "Choisir la méthode de récupération des hautes lumières"
+msgstr "Choisir la méthode de récupération des hautes lumières."
 
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:8325(title)
 msgid "clipping threshold"
@@ -10606,7 +10606,7 @@ msgstr ""
 "canal de couleur des pixels de l’image de sortie. Des valeurs positives de a "
 "correspondent à des couleurs plus magenta ; des valeurs négatives de a "
 "correspondent à des couleurs plus verdâtres. Des valeurs positives de b "
-"donnent des couleurs plus jaunâtres ; des valeurs de b négatives "
+"donnent des couleurs plus jaunâtres ; des valeurs négatives de b "
 "correspondent à des couleurs plus bleuâtres."
 
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:8827(para)
@@ -11097,10 +11097,10 @@ msgid ""
 "to also have smoother tones than green. Therefore tonal rendering is "
 "controlled by how we blend of the three input channels."
 msgstr ""
-"Pour les tons chair le canal bleu a tendance à représenter les détails, avec "
-"le rouge ayant aussi tendance à avoir des tons plus doux que ceux du vert. "
-"Le rendu tonal est donc contrôlé par la manière dont nous mélangeons les "
-"trois canaux d’entrée."
+"Pour les tons chair, le canal bleu a tendance à représenter les détails, le "
+"canal rouge a tendance à avoir des tons plus doux que ceux du canal vert. Le "
+"rendu tonal est donc contrôlé par la manière dont nous mélangeons les trois "
+"canaux d’entrée."
 
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:9420(entry)
 msgid ""
@@ -13882,11 +13882,11 @@ msgid ""
 msgstr ""
 "Comparé au virage partiel traditionnel, notre module propose plus de "
 "paramètres pour influencer son comportement. Nous avons le paramètre "
-"<quote>répartition</quote>, qui  – selon votre choix – décale le 50% du "
-"niveau gris de votre image plus vers les ombres ou plus vers les hautes "
-"lumières. De plus, avec le paramètre <quote>seuil</quote>, vous pouvez "
-"compresser le virage dans les ombres et les hautes lumières et laisser un "
-"intervalle de tons moyens, qui resteront non modifiés par l’effet."
+"<quote>répartition</quote>, qui  – selon votre choix – décale le niveau gris "
+"50% de votre image plus vers les ombres ou plus vers les hautes lumières. De "
+"plus, avec le paramètre <quote>seuil</quote>, vous pouvez compresser le "
+"virage dans les ombres et les hautes lumières et laisser un intervalle de "
+"tons moyens, qui resteront non modifiés par l’effet."
 
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:12616(para)
 msgid ""
@@ -14313,7 +14313,7 @@ msgstr ""
 
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:13166(para)
 msgid "Set the radius of the blur."
-msgstr "Définit le rayon du flou"
+msgstr "Définit le rayon du flou."
 
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:13173(para)
 msgid ""
@@ -14611,9 +14611,9 @@ msgstr ""
 "Ouvrez tout d’abord votre image source en mode chambre noire et récupérez "
 "ses caractéristiques de couleur en pressant le bouton <quote>acquérir "
 "source</quote>. Un ensemble de groupes de couleurs est généré et affiché "
-"dans la zone <quote>groupes source</quote>. Chaque groupe est représenté par "
-"un ensemble de pastilles de couleur, celle de couleur moyenne se trouve au "
-"centre entourée par des pastilles indiquant la variation de couleur à "
+"dans la zone <quote>groupes sources</quote>. Chaque groupe est représenté "
+"par un ensemble de pastilles de couleur, celle de couleur moyenne se trouve "
+"au centre entourée par des pastilles indiquant la variation de couleur à "
 "l’intérieur de ce groupe. Les groupes sont triés par ordre croissant selon "
 "leur poids, c'est-à-dire selon le nombre de pixels contribuant au groupe."
 
@@ -14628,13 +14628,13 @@ msgid ""
 "<quote>target clusters</quote> area."
 msgstr ""
 "Ouvrez ensuite votre image de destination en mode chambre noire. darktable a "
-"mémorisé les groupes source précédemment récupérés. S’ils ne sont toujours "
+"mémorisé les groupes sources précédemment récupérés. S’ils ne sont toujours "
 "pas affichés, pressez le bouton <inlinegraphic fileref=\"images/"
 "darkroom_module_icon_reset.png\" scalefit=\"1\" width=\"2%\" align=\"center"
 "\"/>. Vous pouvez maintenant presser le bouton <quote>acquérir cible</quote> "
 "afin de générer l'ensemble des groupes de couleurs correspondant pour votre "
 "image de destination, cet ensemble sera affiché dans la zone <quote>groupes "
-"cible</quote>."
+"cibles</quote>."
 
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:13648(para)
 msgid ""
@@ -14810,11 +14810,11 @@ msgstr ""
 "Exprimé en [IL], ceci est l’équivalent des <emphasis>valeurs de diaphragme</"
 "emphasis>. Les filtres sont souvent appelés ND2, ND4, ND8 et ainsi de suite. "
 "Chaque fois que vous ajoutez un [IL], vous doublez le ND. Donc ND2 fait 1 "
-"ev, ND4 fait 2 ev et ainsi de suite. Vous pouvez aussi l’exprimer en termes "
+"IL, ND4 fait 2 IL et ainsi de suite. Vous pouvez aussi l’exprimer en termes "
 "de densité optique ou transmittance. La table ci-dessous regroupe les "
 "différentes approches pour les filtres les plus courants : <informaltable "
 "frame=\"none\" width=\"80%\"><tgroup cols=\"4\" colsep=\"0\" rowsep="
-"\"0\"><tbody><row><entry><emphasis>ND</emphasis></entry><entry>[ev] ou "
+"\"0\"><tbody><row><entry><emphasis>ND</emphasis></entry><entry>[IL] ou "
 "ouvertures</entry><entry>absorption</entry><entry>transmittance</entry></"
 "row><row><entry><emphasis>ND2</emphasis></entry><entry>-1 </"
 "entry><entry>0.3</entry><entry>50%</entry></row><row><entry><emphasis>ND4</"
@@ -15002,11 +15002,11 @@ msgstr ""
 
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:14112(para)
 msgid "Activate the color correction module"
-msgstr "Activez le module correction des couleurs"
+msgstr "Activez le module correction des couleurs."
 
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:14116(para)
 msgid "Use the bottom slider to set saturation to zero"
-msgstr "Utilisez le curseur du bas pour régler la saturation à zéro"
+msgstr "Utilisez le curseur du bas pour régler la saturation à zéro."
 
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:14126(title)
 msgid "The artistic way: color zones module"
@@ -15022,7 +15022,7 @@ msgstr ""
 
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:14135(para)
 msgid "Activate the colour zones module"
-msgstr "Activez le module zones de couleurs"
+msgstr "Activez le module zones de couleurs."
 
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:14139(para)
 msgid ""
@@ -15075,11 +15075,11 @@ msgstr ""
 
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:14173(para)
 msgid "Activate the channel mixer module"
-msgstr "Activez le module mixeur de canaux"
+msgstr "Activez le module mixeur de canaux."
 
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:14177(para)
 msgid "Select the gray output channel"
-msgstr "Sélectionnez le canal de destination gris"
+msgstr "Sélectionnez le canal de destination gris."
 
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:14181(para)
 msgid ""
@@ -15130,7 +15130,7 @@ msgstr ""
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:14237(para)
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:14365(para)
 msgid "Image preparation"
-msgstr "Préparation de l’image"
+msgstr "Préparation de l’image."
 
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:14241(para)
 msgid ""
@@ -15143,7 +15143,7 @@ msgstr ""
 
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:14246(para)
 msgid "Boost contrast"
-msgstr "Augmentation du contraste"
+msgstr "Augmentation du contraste."
 
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:14250(para)
 msgid ""
@@ -15158,7 +15158,7 @@ msgstr ""
 
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:14256(para)
 msgid "Color cast"
-msgstr "Dominante de couleur"
+msgstr "Dominante de couleur."
 
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:14260(para)
 msgid ""
@@ -15170,24 +15170,25 @@ msgstr ""
 "Cette étape modifie la dominante de couleur comme base de l’effet en "
 "utilisant le module <emphasis>mixeur de canaux</emphasis> (<xref linkend="
 "\"channel_mixer\"/>). Vous pourrez y revenir plus tard et affiner la "
-"dominante de couleur du résultat final"
+"dominante de couleur du résultat final."
 
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:14268(para)
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:14395(para)
 msgid "Enable the channel mixer module"
-msgstr "Activez le module mixeur de canaux"
+msgstr "Activez le module mixeur de canaux."
 
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:14272(para)
 msgid "Select the blue channel and set the blue color value to 0.8"
-msgstr "Sélectionnez le canal bleu et mettez la couleur bleue à la valeur 0.8"
+msgstr "Sélectionnez le canal bleu et mettez la couleur bleue à la valeur 0.8."
 
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:14276(para)
 msgid "Select the red channel and change the blue color value to 0.1"
-msgstr "Sélectionnez le canal rouge et mettez la couleur bleue à la valeur 0.1"
+msgstr ""
+"Sélectionnez le canal rouge et mettez la couleur bleue à la valeur 0.1."
 
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:14280(para)
 msgid "Select the green channel and change the blue color value to 0.1"
-msgstr "Sélectionnez le canal vert et mettez la couleur bleue à la valeur 0.1"
+msgstr "Sélectionnez le canal vert et mettez la couleur bleue à la valeur 0.1."
 
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:14290(para)
 msgid ""
@@ -15202,7 +15203,7 @@ msgstr ""
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:14297(para)
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:14431(para)
 msgid "Enable the splittoning module"
-msgstr "Activez le module de virage partiel"
+msgstr "Activez le module de virage partiel."
 
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:14301(para)
 msgid "Select a cyan/blue tone for shadows and set saturation around 50%"
@@ -15218,7 +15219,7 @@ msgstr ""
 
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:14309(para)
 msgid "Set compression to 10%"
-msgstr "Mettez le seuil à 10%"
+msgstr "Mettez le seuil à 10%."
 
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:14313(para)
 msgid ""
@@ -15260,7 +15261,7 @@ msgstr ""
 
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:14374(para)
 msgid "Black and white"
-msgstr "Noir et blanc"
+msgstr "Noir et blanc."
 
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:14378(para)
 msgid ""
@@ -15272,7 +15273,7 @@ msgstr ""
 
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:14383(para)
 msgid "Add color tone"
-msgstr "Ajoutez un virage global"
+msgstr "Ajoutez un virage global."
 
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:14387(para)
 msgid ""
@@ -15288,21 +15289,21 @@ msgstr ""
 msgid "Select the red channel destination and set the red color value to 0.7"
 msgstr ""
 "Sélectionnez le canal rouge de destination et réglez la couleur rouge à la "
-"valeur 0,7"
+"valeur 0.7."
 
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:14403(para)
 msgid ""
 "Select the green channel destination and set the green color value to 1.15"
 msgstr ""
 "Sélectionnez le canal vert de destination et réglez la couleur verte à la "
-"valeur 1,15"
+"valeur 1.15."
 
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:14407(para)
 msgid ""
 "Select the blue channel destination and set the blue color value to 1.15"
 msgstr ""
 "Sélectionnez le canal bleu de destination et réglez la couleur bleue à la "
-"valeur 1,15"
+"valeur 1.15."
 
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:14413(para)
 msgid ""
@@ -15331,7 +15332,7 @@ msgstr ""
 msgid "Select a blue/cyan tone for shadows and set saturation around 50%"
 msgstr ""
 "Sélectionnez une teinte bleue/cyan pour les ombres avec une saturation de "
-"l’ordre de 50%"
+"l’ordre de 50%."
 
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:14439(para)
 msgid "Set highlights saturation to zero, to remove saturation on highlights"
@@ -15339,7 +15340,7 @@ msgstr "Mettez la saturation des hautes lumières à zéro pour les dé-saturer.
 
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:14443(para)
 msgid "Set compression to zero"
-msgstr "Mettez le seuil à zéro"
+msgstr "Mettez le seuil à zéro."
 
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:14447(para)
 msgid ""
@@ -15347,7 +15348,7 @@ msgid ""
 "70/30"
 msgstr ""
 "Utilisez le curseur de répartition pour ajuster l’effet ; notre exemple "
-"utilise une répartition à 70/30"
+"utilise une répartition à 70/30."
 
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:14461(title)
 msgid "Removal of red-eye effect"
@@ -15392,7 +15393,7 @@ msgstr ""
 
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:14517(para)
 msgid "Activate blending"
-msgstr "Activez la fusion"
+msgstr "Activez la fusion."
 
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:14521(para)
 msgid ""
@@ -15409,7 +15410,7 @@ msgstr ""
 
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:14528(para)
 msgid "Masking the pupil"
-msgstr "Masquage de la pupille"
+msgstr "Masquage de la pupille."
 
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:14532(para)
 msgid ""
@@ -15470,19 +15471,19 @@ msgid ""
 "Set output channel <quote>destination</quote> to <quote>red</quote> (default)"
 msgstr ""
 "Définissez le canal de <quote>destination</quote> à <quote>rouge</quote> "
-"(sélectionné par défaut)"
+"(sélectionné par défaut)."
 
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:14605(para)
 msgid "Set red color value to 0.00"
-msgstr "Définissez à 0.00 la valeur de la couleur rouge"
+msgstr "Définissez à 0.00 la valeur de la couleur rouge."
 
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:14609(para)
 msgid "Set green color value to 0.50"
-msgstr "Définissez à 0.50 la valeur de la couleur verte"
+msgstr "Définissez à 0.50 la valeur de la couleur verte."
 
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:14613(para)
 msgid "Set blue color value to 0.50"
-msgstr "Définissez à 0.50 la valeur de la couleur bleue"
+msgstr "Définissez à 0.50 la valeur de la couleur bleue."
 
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:14619(para)
 msgid ""
@@ -15501,19 +15502,19 @@ msgstr "Approche - Modification du canal de sortie <quote>gris</quote>."
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:14655(para)
 msgid "Set output channel <quote>destination</quote> to <quote>gray</quote>"
 msgstr ""
-"Définissez le canal de <quote>destination</quote> à <quote>gris</quote>"
+"Définissez le canal de <quote>destination</quote> à <quote>gris</quote>."
 
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:14659(para)
 msgid "Set red color value to 0.24"
-msgstr "Définissez à 0.24 la valeur de la couleur rouge"
+msgstr "Définissez à 0.24 la valeur de la couleur rouge."
 
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:14663(para)
 msgid "Set green color value to 0.68"
-msgstr "Définissez à 0.68 la valeur de la couleur verte"
+msgstr "Définissez à 0.68 la valeur de la couleur verte."
 
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:14667(para)
 msgid "Set blue color value to 0.08"
-msgstr "Définissez à 0.08 la valeur de la couleur bleue"
+msgstr "Définissez à 0.08 la valeur de la couleur bleue."
 
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:14673(para)
 msgid ""
@@ -15849,7 +15850,7 @@ msgstr ""
 
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:15010(para)
 msgid "Verify that camera is detected"
-msgstr "Vérifiez que votre boîtier est détecté"
+msgstr "Vérifiez que votre boîtier est détecté."
 
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:15014(para)
 msgid ""
@@ -15869,7 +15870,7 @@ msgstr "env LANG=C gphoto2 --auto-detect"
 
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:15025(para)
 msgid "Verify camera driver abilities"
-msgstr "Vérifiez les possibilités du pilote du boîtier"
+msgstr "Vérifiez les possibilités du pilote du boîtier."
 
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:15029(para)
 msgid ""
@@ -15891,7 +15892,7 @@ msgstr "env LANG=C gphoto2 --port usb: --abilities"
 
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:15041(para)
 msgid "Verify camera remote capture"
-msgstr "Vérifiez que le boîtier peut être piloté à distance"
+msgstr "Vérifiez que le boîtier peut être piloté à distance."
 
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:15045(para)
 msgid ""
@@ -15909,7 +15910,7 @@ msgstr "env LANG=C gphoto2 --port usb: --capture-image-and-download"
 
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:15055(para)
 msgid "Verify camera tethered capture"
-msgstr "Vérifiez la capture par le boîtier connecté"
+msgstr "Vérifiez la capture par le boîtier connecté."
 
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:15059(para)
 msgid ""
@@ -16070,9 +16071,9 @@ msgstr ""
 "Il y a des contrôles à l’écran et un affichage qui  vous assistent dans la "
 "recherche de votre chemin. Une zone de navigation se trouve en haut et à "
 "gauche de la carte. Utilisez-la en remplacement du glisser et du défilement "
-"de la souris. L’échelle de votre carte est affichée en bas et à gauche. En "
-"bas et à droite, vous pouvez voir les coordonnées géographiques du centre de "
-"la carte."
+"de la souris. L’échelle de votre carte est affichée en bas à gauche. En bas "
+"à droite, vous pouvez voir les coordonnées géographiques du centre de la "
+"carte."
 
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:15201(para)
 msgid ""
@@ -16954,10 +16955,10 @@ msgstr "méthode de dématriçage pour la vue en chambre noire"
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:15848(para)
 msgid ""
 "Interpolation when not viewing 1:1 in darkroom mode: <quote>always bilinear "
-"(fast)</quote> is fastest, but not as sharp. <quote>at most ppg (reasonable)"
-"</quote> is using ppg + interpolation modes specified below, <quote>full "
-"(possibly slow)</quote> will use exactly the settings for full-size export "
-"(default <quote>at most ppg (reasonable)</quote>)."
+"(fast)</quote> is fastest, but not as sharp. <quote>at most ppg "
+"(reasonable)</quote> is using ppg + interpolation modes specified below, "
+"<quote>full (possibly slow)</quote> will use exactly the settings for full-"
+"size export (default <quote>at most ppg (reasonable)</quote>)."
 msgstr ""
 "Méthode d'interpolation utilisée lorsqu'on ne visualise pas en 1:1 dans le "
 "mode chambre noire : <quote>toujours bilinéaire (rapide)</quote> est le plus "
@@ -18428,7 +18429,7 @@ msgstr ""
 "Jusqu'à présent, tous nos scripts ont fait des choses pendant le démarrage. "
 "Ceci est d'une utilité limitée et ne nous permet pas de réagir aux actions "
 "d'un utilisateur. Pour faire des choses plus avancées, nous devons "
-"enregistrer une fonction qui sera appelée sur un événement donné. "
+"enregistrer une fonction qui sera appelée en réaction à un événement donné. "
 "L'événement le plus commun auquel réagir est un raccourci clavier."
 
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:17295(programlisting)
@@ -18641,12 +18642,12 @@ msgstr ""
 msgid ""
 "darktable = require \"darktable\" darktable.preferences.register(\"scp_export"
 "\",\"export_path\", \"string\",\"target SCP path\", \"Complete path to copy "
-"to. Can include user and hostname\",\"\") darktable.register_storage"
-"(\"scp_export\",\"Export via scp\", function( storage, image, format, "
-"filename, number, total, high_quality, extra_data) if coroutine.yield"
-"(\"RUN_COMMAND\",\"scp \"..filename..\" \".. darktable.preferences.read"
-"(\"scp_export\", \"export_path\",\"string\")) then darktabpe.print_error"
-"(\"scp failed for \"..tostring(image)) end end)"
+"to. Can include user and hostname\",\"\") darktable."
+"register_storage(\"scp_export\",\"Export via scp\", function( storage, "
+"image, format, filename, number, total, high_quality, extra_data) if "
+"coroutine.yield(\"RUN_COMMAND\",\"scp \"..filename..\" \".. darktable."
+"preferences.read(\"scp_export\", \"export_path\",\"string\")) then darktabpe."
+"print_error(\"scp failed for \"..tostring(image)) end end)"
 msgstr ""
 
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:17482(para)
@@ -21046,14 +21047,14 @@ msgstr ""
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:18523(programlisting)
 msgid ""
 "local tested_module=\"global_toolbox\" dt.gui.libs[tested_module]."
-"visible=false coroutine.yield(\"wait_ms\",2000) while true do dt.gui.libs"
-"[tested_module].visible = not dt.gui.libs[tested_module].visible coroutine."
-"yield(\"wait_ms\",2000) end"
+"visible=false coroutine.yield(\"wait_ms\",2000) while true do dt.gui."
+"libs[tested_module].visible = not dt.gui.libs[tested_module].visible "
+"coroutine.yield(\"wait_ms\",2000) end"
 msgstr ""
 "local tested_module=\"global_toolbox\" dt.gui.libs[tested_module]."
-"visible=false coroutine.yield(\"wait_ms\",2000) while true do dt.gui.libs"
-"[tested_module].visible = not dt.gui.libs[tested_module].visible coroutine."
-"yield(\"wait_ms\",2000) end"
+"visible=false coroutine.yield(\"wait_ms\",2000) while true do dt.gui."
+"libs[tested_module].visible = not dt.gui.libs[tested_module].visible "
+"coroutine.yield(\"wait_ms\",2000) end"
 
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:18534(title)
 msgid "darktable.gui.libs.snapshots"
@@ -21602,7 +21603,7 @@ msgstr "location"
 
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:19405(para)
 msgid "The location ui"
-msgstr "L'interface utilisateur localisation."
+msgstr "L'interface utilisateur de localisation."
 
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:19421(title)
 msgid "darktable.gui.libs.backgroundjobs"
@@ -24498,7 +24499,7 @@ msgstr "enum"
 
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:22871(para)
 msgid "a hint on the way to encode a webp image"
-msgstr "Un indice sur la façon de coder une image webp"
+msgstr "Un indice sur la façon de coder une image webp."
 
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:22878(emphasis)
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:22906(emphasis)
@@ -25703,7 +25704,7 @@ msgstr ""
 "pas faire de compromis en termes de qualité, a conduit à ce que tous les "
 "calculs se fassent en virgule flottante 4x32 bits. Ceci est plus lent que "
 "l’algèbre <quote>ordinaire</quote> en entiers 8 ou 16 bits mais élimine tous "
-"les problèmes de rupture de ton ou de pertes d’informations."
+"les problèmes de ruptures de ton ou de pertes d’informations."
 
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:23930(para)
 msgid ""
@@ -25890,8 +25891,8 @@ msgstr ""
 "link>, <link linkend=\"lowpass\"><emphasis>filtre passe-bas</emphasis></"
 "link>, <link linkend=\"lowpass\"><emphasis>filtre passe-haut</emphasis></"
 "link> ou même, à l’extrême, <link linkend=\"equalizer\"><emphasis>égaliseur</"
-"emphasis></link> et<link linkend=\"denoise_profiled\"><emphasis>réduction du "
-"bruit (profil)</emphasis></link>."
+"emphasis></link> et <link linkend=\"denoise_profiled\"><emphasis>réduction "
+"du bruit (profil)</emphasis></link>."
 
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24029(para)
 msgid ""
@@ -26177,12 +26178,12 @@ msgstr "darktable -d opencl"
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24226(para)
 msgid ""
 "This will give additional debugging output about the initialization and use "
-"of OpenCL. First see if you find a line that starts with <quote>"
-"[opencl_init] FINALLY …</quote> This should tell you, if OpenCL support is "
-"available for you or not. If initialization failed, look at the messages "
-"above for anything that reads like <quote>could not be detected</quote> or "
-"<quote>could not be created</quote>. Check if there is a hint about where it "
-"failed."
+"of OpenCL. First see if you find a line that starts with "
+"<quote>[opencl_init] FINALLY …</quote> This should tell you, if OpenCL "
+"support is available for you or not. If initialization failed, look at the "
+"messages above for anything that reads like <quote>could not be detected</"
+"quote> or <quote>could not be created</quote>. Check if there is a hint "
+"about where it failed."
 msgstr ""
 "Ceci va donner des informations de débogage supplémentaires concernant "
 "l’initialisation et l’utilisation d’OpenCL. Regardez d’abord si vous voyez "
@@ -26540,7 +26541,7 @@ msgid ""
 msgstr ""
 "Cet indicateur booléen contrôle la fréquence de blocage du pipeline "
 "graphique OpenCL et récupère un état succès/échec de tous les noyaux ayant "
-"tourné. Pour une latence optimisée, fixez le à TRUE, de manière à ce que "
+"tourné. Pour une latence optimisée, fixez-le à TRUE, de manière à ce que "
 "darktable traite le pipeline graphique de manière synchrone et essaie "
 "d'utiliser aussi peu d’interruptions que possible. Si vous rencontrez des "
 "erreurs OpenCL, comme des échecs de noyaux, changez ce paramètre en FALSE. "
@@ -26898,7 +26899,7 @@ msgid ""
 "with <quote>darktable -d opencl</quote>) will report the following devices:"
 msgstr ""
 "Voici un exemple. Supposons que nous ayons un système avec deux "
-"périphériques, une Radeon HD7950 rapide est une GeForce GTS450 plus ancienne "
+"périphériques, une Radeon HD7950 rapide et une GeForce GTS450 plus ancienne "
 "et plus lente. darktable (démarré avec <quote>darktable -d opencl</quote>) "
 "signalera les appareils suivants :"
 
@@ -27162,14 +27163,14 @@ msgstr "Index"
 
 #~ msgid ""
 #~ "Add the following line at the top of your module : <programlisting "
-#~ "language=\"lua\" format=\"linespecific\">darktable.configuration.check"
-#~ "(...,{M,m,p},{M2,m2,p2})</programlisting> To document that your module "
-#~ "has been tested with API version M.m.p and M2.m2.p2."
+#~ "language=\"lua\" format=\"linespecific\">darktable.configuration."
+#~ "check(...,{M,m,p},{M2,m2,p2})</programlisting> To document that your "
+#~ "module has been tested with API version M.m.p and M2.m2.p2."
 #~ msgstr ""
 #~ "Ajoute la ligne suivante en tête de votre module : <programlisting "
-#~ "language=\"lua\" format=\"linespecific\">darktable.configuration.check"
-#~ "(...,{M,m,p},{M2,m2,p2})</programlisting> pour prouver que votre module a "
-#~ "été testé avec l'API version M.m.p et M2.m2.p2."
+#~ "language=\"lua\" format=\"linespecific\">darktable.configuration."
+#~ "check(...,{M,m,p},{M2,m2,p2})</programlisting> pour prouver que votre "
+#~ "module a été testé avec l'API version M.m.p et M2.m2.p2."
 
 #~ msgid "types.dt_lib_module_t.container"
 #~ msgstr "types.dt_lib_module_t.container"
@@ -27370,8 +27371,8 @@ msgstr "Index"
 #~ "Lua d’être exécutés pendant ce temps. Ce comportement ne peut être "
 #~ "modifié que si le premier thread Lua redonne la main au système de "
 #~ "manière volontaire et temporaire, ce qui permettra à d’autres threads Lua "
-#~ "de tourner en parallèle. Ceci est accompli par l’appel de <emphasis>yield"
-#~ "()</emphasis>."
+#~ "de tourner en parallèle. Ceci est accompli par l’appel de "
+#~ "<emphasis>yield()</emphasis>."
 
 #~ msgid ""
 #~ "It is important to yield whenever you have some code that you expect to "
@@ -27417,25 +27418,25 @@ msgstr "Index"
 #~ msgid ""
 #~ "dt = require \"darktable\" dt.register_storage(\"module_stitcher\","
 #~ "\"mosaic generator\", function(storage,image,format,filename, number,"
-#~ "total,high_quality,extra_data) dt.print(tostring(number)..\"/\"..tostring"
-#~ "(total)) end, function(storage,image_table,extra_data) dt.print_error"
-#~ "(\"Will try to stitch now\") command = \"gm convert \" for _,v in pairs"
-#~ "(image_table) do command = command..v..\" \" end command = command..\"-"
-#~ "append -resize 15% \" ..dt.configuration.tmp_dir..\"/tmp.png\" dt."
-#~ "print_error(\"this is the command: \"..command) os.execute(command) dt."
-#~ "print(\"Stitching saved to \"..dt.configuration.tmp_dir ..\"/tmp.png\") "
-#~ "end )"
+#~ "total,high_quality,extra_data) dt.print(tostring(number)..\"/\".."
+#~ "tostring(total)) end, function(storage,image_table,extra_data) dt."
+#~ "print_error(\"Will try to stitch now\") command = \"gm convert \" for _,v "
+#~ "in pairs(image_table) do command = command..v..\" \" end command = "
+#~ "command..\"-append -resize 15% \" ..dt.configuration.tmp_dir..\"/tmp.png"
+#~ "\" dt.print_error(\"this is the command: \"..command) os.execute(command) "
+#~ "dt.print(\"Stitching saved to \"..dt.configuration.tmp_dir ..\"/tmp.png"
+#~ "\") end )"
 #~ msgstr ""
 #~ "dt = require \"darktable\" dt.register_storage(\"module_stitcher\","
 #~ "\"mosaic generator\", function(storage,image,format,filename, number,"
-#~ "total,high_quality,extra_data) dt.print(tostring(number)..\"/\"..tostring"
-#~ "(total)) end, function(storage,image_table,extra_data) dt.print_error"
-#~ "(\"Will try to stitch now\") command = \"gm convert \" for _,v in pairs"
-#~ "(image_table) do command = command..v..\" \" end command = command..\"-"
-#~ "append -resize 15% \" ..dt.configuration.tmp_dir..\"/tmp.png\" dt."
-#~ "print_error(\"this is the command: \"..command) os.execute(command) dt."
-#~ "print(\"Stitching saved to \"..dt.configuration.tmp_dir ..\"/tmp.png\") "
-#~ "end )"
+#~ "total,high_quality,extra_data) dt.print(tostring(number)..\"/\".."
+#~ "tostring(total)) end, function(storage,image_table,extra_data) dt."
+#~ "print_error(\"Will try to stitch now\") command = \"gm convert \" for _,v "
+#~ "in pairs(image_table) do command = command..v..\" \" end command = "
+#~ "command..\"-append -resize 15% \" ..dt.configuration.tmp_dir..\"/tmp.png"
+#~ "\" dt.print_error(\"this is the command: \"..command) os.execute(command) "
+#~ "dt.print(\"Stitching saved to \"..dt.configuration.tmp_dir ..\"/tmp.png"
+#~ "\") end )"
 
 #~ msgid ""
 #~ "This script is an example of storage implemented in Lua. This is not "
@@ -27494,16 +27495,16 @@ msgstr "Index"
 #~ "saved_selection = dt.gui.selection() end,\"save to buffer \"..i) dt."
 #~ "register_event(\"shortcut\",function() dt.gui.selection(saved_selection) "
 #~ "end,\"restore from buffer \"..i) end local bounce_buffer = {} dt."
-#~ "register_event(\"shortcut\",function() bounce_buffer = dt.gui.selection"
-#~ "(bounce_buffer) end,\"switch selection with temporary buffer\")"
+#~ "register_event(\"shortcut\",function() bounce_buffer = dt.gui."
+#~ "selection(bounce_buffer) end,\"switch selection with temporary buffer\")"
 #~ msgstr ""
 #~ "dt = require \"darktable\" local buffer_count = 5 for i=1,buffer_count do "
 #~ "local saved_selection dt.register_event(\"shortcut\",function() "
 #~ "saved_selection = dt.gui.selection() end,\"save to buffer \"..i) dt."
 #~ "register_event(\"shortcut\",function() dt.gui.selection(saved_selection) "
 #~ "end,\"restore from buffer \"..i) end local bounce_buffer = {} dt."
-#~ "register_event(\"shortcut\",function() bounce_buffer = dt.gui.selection"
-#~ "(bounce_buffer) end,\"switch selection with temporary buffer\")"
+#~ "register_event(\"shortcut\",function() bounce_buffer = dt.gui."
+#~ "selection(bounce_buffer) end,\"switch selection with temporary buffer\")"
 
 #~ msgid ""
 #~ "This script will add two new shortcuts <quote>save to buffer</quote> and "
@@ -27578,17 +27579,17 @@ msgstr "Index"
 #~ "être appelés depuis Lua comme sur l’exemple ci-dessous :"
 
 #~ msgid ""
-#~ "dt_debug = require \"darktable.debug\" dt_debug.debug.debug = true print"
-#~ "(dt_debug.dump(_G,\"Global environement\")"
+#~ "dt_debug = require \"darktable.debug\" dt_debug.debug.debug = true "
+#~ "print(dt_debug.dump(_G,\"Global environement\")"
 #~ msgstr ""
-#~ "dt_debug = require \"darktable.debug\" dt_debug.debug.debug = true print"
-#~ "(dt_debug.dump(_G,\"Global environement\")"
+#~ "dt_debug = require \"darktable.debug\" dt_debug.debug.debug = true "
+#~ "print(dt_debug.dump(_G,\"Global environement\")"
 
 #~ msgid ""
-#~ "The main function provided is <emphasis>darktable.debug.dump(object,name)"
-#~ "</emphasis>. This function returns a string that describes an object. The "
-#~ "object can be anything and this function will use its knowledge of the "
-#~ "darktable API to be smart about the type of objects."
+#~ "The main function provided is <emphasis>darktable.debug.dump(object,"
+#~ "name)</emphasis>. This function returns a string that describes an "
+#~ "object. The object can be anything and this function will use its "
+#~ "knowledge of the darktable API to be smart about the type of objects."
 #~ msgstr ""
 #~ "La principale fonction fournie est <emphasis>darktable.debug.dump(object,"
 #~ "name)</emphasis>. Cette fonction retourne une chaîne de caractères qui "

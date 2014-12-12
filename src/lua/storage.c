@@ -24,81 +24,81 @@
 
 static int supports_format(lua_State *L)
 {
-  luaL_argcheck(L,dt_lua_isa(L,1,dt_imageio_module_storage_t),1,"dt_imageio_module_storage_t expected");
-  luaL_getmetafield(L,1,"__associated_object");
-  dt_imageio_module_storage_t * storage = lua_touserdata(L,-1);
-  lua_pop(L,1);
+  luaL_argcheck(L, dt_lua_isa(L, 1, dt_imageio_module_storage_t), 1, "dt_imageio_module_storage_t expected");
+  luaL_getmetafield(L, 1, "__associated_object");
+  dt_imageio_module_storage_t *storage = lua_touserdata(L, -1);
+  lua_pop(L, 1);
 
-  luaL_argcheck(L,dt_lua_isa(L,2,dt_imageio_module_format_t),2,"dt_imageio_module_format_t expected");
-  luaL_getmetafield(L,2,"__associated_object");
-  dt_imageio_module_format_t * format = lua_touserdata(L,-1);
-  lua_pop(L,1);
+  luaL_argcheck(L, dt_lua_isa(L, 2, dt_imageio_module_format_t), 2, "dt_imageio_module_format_t expected");
+  luaL_getmetafield(L, 2, "__associated_object");
+  dt_imageio_module_format_t *format = lua_touserdata(L, -1);
+  lua_pop(L, 1);
 
-  lua_pushboolean(L,storage->supported(storage,format));
+  lua_pushboolean(L, storage->supported(storage, format));
   return 1;
 }
 
 static int plugin_name_member(lua_State *L)
 {
-  luaL_getmetafield(L,1,"__associated_object");
-  dt_imageio_module_storage_t * storage = lua_touserdata(L,-1);
-      lua_pushstring(L,storage->plugin_name);
+  luaL_getmetafield(L, 1, "__associated_object");
+  dt_imageio_module_storage_t *storage = lua_touserdata(L, -1);
+  lua_pushstring(L, storage->plugin_name);
   return 1;
 }
 
 static int name_member(lua_State *L)
 {
-  luaL_getmetafield(L,1,"__associated_object");
-  dt_imageio_module_storage_t * storage = lua_touserdata(L,-1);
-      lua_pushstring(L,storage->name(storage));
+  luaL_getmetafield(L, 1, "__associated_object");
+  dt_imageio_module_storage_t *storage = lua_touserdata(L, -1);
+  lua_pushstring(L, storage->name(storage));
   return 1;
 }
 
 static int width_member(lua_State *L)
 {
-  luaL_getmetafield(L,1,"__associated_object");
-  dt_imageio_module_storage_t * storage = lua_touserdata(L,-1);
-  uint32_t width,height;
-      width=0;
-      height=0;
-      storage->dimension(storage,&width,&height);
-      lua_pushinteger(L,width);
+  luaL_getmetafield(L, 1, "__associated_object");
+  dt_imageio_module_storage_t *storage = lua_touserdata(L, -1);
+  uint32_t width, height;
+  width = 0;
+  height = 0;
+  storage->dimension(storage, &width, &height);
+  lua_pushinteger(L, width);
   return 1;
 }
 
 static int height_member(lua_State *L)
 {
-  luaL_getmetafield(L,1,"__associated_object");
-  dt_imageio_module_storage_t * storage = lua_touserdata(L,-1);
-  uint32_t width,height;
-      width=0;
-      height=0;
-      storage->dimension(storage,&width,&height);
-      lua_pushinteger(L,height);
+  luaL_getmetafield(L, 1, "__associated_object");
+  dt_imageio_module_storage_t *storage = lua_touserdata(L, -1);
+  uint32_t width, height;
+  width = 0;
+  height = 0;
+  storage->dimension(storage, &width, &height);
+  lua_pushinteger(L, height);
   return 1;
 }
 
 static int recommended_width_member(lua_State *L)
 {
-  luaL_getmetafield(L,1,"__associated_object");
-  dt_imageio_module_storage_t * storage = lua_touserdata(L,-1);
-  uint32_t width,height;
-      width = dt_conf_get_int("plugins/lighttable/export/width");
-      height = dt_conf_get_int("plugins/lighttable/export/height");
-      storage->recommended_dimension(storage,&width,&height);
-      lua_pushinteger(L,width);
+  luaL_getmetafield(L, 1, "__associated_object");
+  dt_imageio_module_storage_t *storage = lua_touserdata(L, -1);
+  uint32_t width, height;
+  width = dt_conf_get_int("plugins/lighttable/export/width");
+  height = dt_conf_get_int("plugins/lighttable/export/height");
+  storage->recommended_dimension(storage, &width, &height);
+  lua_pushinteger(L, width);
   return 1;
 }
 
 static int recommended_height_member(lua_State *L)
 {
-  luaL_getmetafield(L,1,"__associated_object");
-  dt_imageio_module_storage_t * storage = lua_touserdata(L,-1);
-  uint32_t width,height;
-      width = dt_conf_get_int("plugins/lighttable/export/width");
-      height = dt_conf_get_int("plugins/lighttable/export/height");
-      storage->recommended_dimension(storage,&width,&height);
-      lua_pushinteger(L,height);
+  luaL_getmetafield(L, 1, "__associated_object");
+  dt_imageio_module_storage_t *storage = lua_touserdata(L, -1);
+  uint32_t width, height;
+  width = dt_conf_get_int("plugins/lighttable/export/width");
+  height = dt_conf_get_int("plugins/lighttable/export/height");
+  storage->recommended_dimension(storage, &width, &height);
+  lua_pushinteger(L, height);
   return 1;
 }
 
@@ -106,7 +106,7 @@ static int recommended_height_member(lua_State *L)
 
 static int get_storage_params(lua_State *L)
 {
-  dt_imageio_module_storage_t *storage_module = lua_touserdata(L,lua_upvalueindex(1));
+  dt_imageio_module_storage_t *storage_module = lua_touserdata(L, lua_upvalueindex(1));
   dt_imageio_module_data_t *fdata = storage_module->get_params(storage_module);
   if(!fdata)
   {
@@ -114,62 +114,61 @@ static int get_storage_params(lua_State *L)
     lua_pushnil(L);
     return 1;
   }
-  luaA_push_type(L,storage_module->parameter_lua_type,fdata);
-  storage_module->free_params(storage_module,fdata);
+  luaA_push_type(L, storage_module->parameter_lua_type, fdata);
+  storage_module->free_params(storage_module, fdata);
   return 1;
 }
 
-void dt_lua_register_storage_type(lua_State* L, dt_imageio_module_storage_t* module, luaA_Type type_id)
+void dt_lua_register_storage_type(lua_State *L, dt_imageio_module_storage_t *module, luaA_Type type_id)
 {
-  dt_lua_type_register_parent_type(L,type_id,luaA_type_find(L,"dt_imageio_module_storage_t"));
-  luaL_getmetatable(L,luaA_typename(L,type_id));
-  lua_pushlightuserdata(L,module);
-  lua_setfield(L,-2,"__associated_object");
-  lua_pop(L,1); // pop the metatable
+  dt_lua_type_register_parent_type(L, type_id, luaA_type_find(L, "dt_imageio_module_storage_t"));
+  luaL_getmetatable(L, luaA_typename(L, type_id));
+  lua_pushlightuserdata(L, module);
+  lua_setfield(L, -2, "__associated_object");
+  lua_pop(L, 1); // pop the metatable
   // add to the table
-  lua_pushlightuserdata(L,module);
-  lua_pushcclosure(L,get_storage_params,1);
-  dt_lua_module_entry_new(L,-1,"storage",module->plugin_name);
-  lua_pop(L,1);
+  lua_pushlightuserdata(L, module);
+  lua_pushcclosure(L, get_storage_params, 1);
+  dt_lua_module_entry_new(L, -1, "storage", module->plugin_name);
+  lua_pop(L, 1);
 };
 
-static int new_storage(lua_State*L)
+static int new_storage(lua_State *L)
 {
-  const char* entry_name = luaL_checkstring(L,1);
-  dt_lua_module_entry_push(L,"storage",entry_name);
-  lua_call(L,0,1);
+  const char *entry_name = luaL_checkstring(L, 1);
+  dt_lua_module_entry_push(L, "storage", entry_name);
+  lua_call(L, 0, 1);
   return 1;
-
 }
 
 int dt_lua_init_early_storage(lua_State *L)
 {
 
-  dt_lua_init_type(L,dt_imageio_module_storage_t);
-  lua_pushcfunction(L,plugin_name_member);
-  dt_lua_type_register(L,dt_imageio_module_storage_t,"plugin_name");
-  lua_pushcfunction(L,name_member);
-  dt_lua_type_register(L,dt_imageio_module_storage_t,"name");
-  lua_pushcfunction(L,width_member);
-  dt_lua_type_register(L,dt_imageio_module_storage_t,"width");
-  lua_pushcfunction(L,height_member);
-  dt_lua_type_register(L,dt_imageio_module_storage_t,"height");
-  lua_pushcfunction(L,recommended_width_member);
-  dt_lua_type_register(L,dt_imageio_module_storage_t,"recommended_width");
-  lua_pushcfunction(L,recommended_height_member);
-  dt_lua_type_register(L,dt_imageio_module_storage_t,"recommended_height");
+  dt_lua_init_type(L, dt_imageio_module_storage_t);
+  lua_pushcfunction(L, plugin_name_member);
+  dt_lua_type_register(L, dt_imageio_module_storage_t, "plugin_name");
+  lua_pushcfunction(L, name_member);
+  dt_lua_type_register(L, dt_imageio_module_storage_t, "name");
+  lua_pushcfunction(L, width_member);
+  dt_lua_type_register(L, dt_imageio_module_storage_t, "width");
+  lua_pushcfunction(L, height_member);
+  dt_lua_type_register(L, dt_imageio_module_storage_t, "height");
+  lua_pushcfunction(L, recommended_width_member);
+  dt_lua_type_register(L, dt_imageio_module_storage_t, "recommended_width");
+  lua_pushcfunction(L, recommended_height_member);
+  dt_lua_type_register(L, dt_imageio_module_storage_t, "recommended_height");
 
-  lua_pushcfunction(L,supports_format);
-  lua_pushcclosure(L,dt_lua_type_member_common,1);
-  dt_lua_type_register_const(L,dt_imageio_module_storage_t,"supports_format");
+  lua_pushcfunction(L, supports_format);
+  lua_pushcclosure(L, dt_lua_type_member_common, 1);
+  dt_lua_type_register_const(L, dt_imageio_module_storage_t, "supports_format");
 
-  dt_lua_module_new(L,"storage");
+  dt_lua_module_new(L, "storage");
 
   dt_lua_push_darktable_lib(L);
-  lua_pushstring(L,"new_storage");
-  lua_pushcfunction(L,&new_storage);
-  lua_settable(L,-3);
-  lua_pop(L,1);
+  lua_pushstring(L, "new_storage");
+  lua_pushcfunction(L, &new_storage);
+  lua_settable(L, -3);
+  lua_pop(L, 1);
   return 0;
 }
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

@@ -22,7 +22,7 @@
 
 typedef int dt_lua_film_t; // wrapper for dt_film_t id
 
-int dt_lua_init_film(lua_State * L);
+int dt_lua_init_film(lua_State *L);
 #endif
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

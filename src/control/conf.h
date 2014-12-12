@@ -40,22 +40,19 @@ typedef struct dt_conf_t
   GHashTable *table;
   GHashTable *defaults;
   GHashTable *override_entries;
-}
-dt_conf_t;
+} dt_conf_t;
 
 typedef struct dt_conf_string_entry_t
 {
   char *key;
   char *value;
-}
-dt_conf_string_entry_t;
+} dt_conf_string_entry_t;
 
 typedef struct dt_conf_dreggn_t
 {
   GSList *result;
   const char *match;
-}
-dt_conf_dreggn_t;
+} dt_conf_dreggn_t;
 
 /** return slot for this variable or newly allocated slot. */
 static inline char *dt_conf_get_var(const char *name)
@@ -148,7 +145,7 @@ static inline int dt_conf_get_int(const char *name)
   float new_value = dt_calculator_solve(1, str);
   if(isnan(new_value)) new_value = 0.0;
   int val;
-  if (new_value > 0)
+  if(new_value > 0)
     val = new_value + 0.5;
   else
     val = new_value - 0.5;
@@ -163,7 +160,7 @@ static inline int64_t dt_conf_get_int64(const char *name)
   float new_value = dt_calculator_solve(1, str);
   if(isnan(new_value)) new_value = 0.0;
   int64_t val;
-  if (new_value > 0)
+  if(new_value > 0)
     val = new_value + 0.5;
   else
     val = new_value - 0.5;
@@ -200,15 +197,15 @@ static inline gchar *dt_conf_get_string(const char *name)
 
 static inline void dt_conf_init(dt_conf_t *cf, const char *filename, GSList *override_entries)
 {
-  cf->table            = g_hash_table_new_full(g_str_hash, g_str_equal, g_free, g_free);
-  cf->defaults         = g_hash_table_new_full(g_str_hash, g_str_equal, g_free, g_free);
+  cf->table = g_hash_table_new_full(g_str_hash, g_str_equal, g_free, g_free);
+  cf->defaults = g_hash_table_new_full(g_str_hash, g_str_equal, g_free, g_free);
   cf->override_entries = g_hash_table_new_full(g_str_hash, g_str_equal, g_free, g_free);
   dt_pthread_mutex_init(&darktable.conf->mutex, NULL);
   FILE *f = 0;
   char line[1024];
   int read = 0;
   int defaults = 0;
-  for(int i=0; i<2; i++)
+  for(int i = 0; i < 2; i++)
   {
     // TODO: read default darktablerc into ->defaults and other into ->table!
     if(!i)
@@ -224,7 +221,7 @@ static inline void dt_conf_init(dt_conf_t *cf, const char *filename, GSList *ove
     }
     if(i)
     {
-      char buf[PATH_MAX], defaultrc[PATH_MAX];
+      char buf[PATH_MAX] = { 0 }, defaultrc[PATH_MAX] = { 0 };
       dt_loc_get_datadir(buf, sizeof(buf));
       snprintf(defaultrc, sizeof(defaultrc), "%s/darktablerc", buf);
       f = fopen(defaultrc, "rb");
@@ -232,7 +229,7 @@ static inline void dt_conf_init(dt_conf_t *cf, const char *filename, GSList *ove
     if(!f) return;
     while(!feof(f))
     {
-      gchar *line_pattern = g_strdup_printf("%%%zu[^\n]\n", sizeof(line)-1);
+      gchar *line_pattern = g_strdup_printf("%%%zu[^\n]\n", sizeof(line) - 1);
       read = fscanf(f, line_pattern, line);
       g_free(line_pattern);
       if(read > 0)
@@ -243,10 +240,8 @@ static inline void dt_conf_init(dt_conf_t *cf, const char *filename, GSList *ove
         if(*c == '=')
         {
           *c = '\0';
-          if(i)
-            g_hash_table_insert(darktable.conf->defaults, g_strdup(line), g_strdup(c+1));
-          if(!i || defaults)
-            g_hash_table_insert(darktable.conf->table, g_strdup(line), g_strdup(c+1));
+          if(i) g_hash_table_insert(darktable.conf->defaults, g_strdup(line), g_strdup(c + 1));
+          if(!i || defaults) g_hash_table_insert(darktable.conf->table, g_strdup(line), g_strdup(c + 1));
         }
       }
     }
@@ -259,7 +254,7 @@ static inline void dt_conf_init(dt_conf_t *cf, const char *filename, GSList *ove
     GSList *p = override_entries;
     while(p)
     {
-      dt_conf_string_entry_t *entry = (dt_conf_string_entry_t*)p->data;
+      dt_conf_string_entry_t *entry = (dt_conf_string_entry_t *)p->data;
       g_hash_table_insert(darktable.conf->override_entries, entry->key, entry->value);
       p = g_slist_next(p);
     }
@@ -301,11 +296,12 @@ static inline void dt_conf_cleanup(dt_conf_t *cf)
 }
 
 /** check if key exists, return 1 if lookup successed, 0 if failed..*/
-static inline int dt_conf_key_exists (const char *key)
+static inline int dt_conf_key_exists(const char *key)
 {
-  dt_pthread_mutex_lock (&darktable.conf->mutex);
-  const int res = (g_hash_table_lookup(darktable.conf->table, key) != NULL) || (g_hash_table_lookup(darktable.conf->override_entries, key) != NULL);
-  dt_pthread_mutex_unlock (&darktable.conf->mutex);
+  dt_pthread_mutex_lock(&darktable.conf->mutex);
+  const int res = (g_hash_table_lookup(darktable.conf->table, key) != NULL)
+                  || (g_hash_table_lookup(darktable.conf->override_entries, key) != NULL);
+  dt_pthread_mutex_unlock(&darktable.conf->mutex);
   return res;
 }
 
@@ -313,7 +309,7 @@ static void _conf_add(char *key, char *val, dt_conf_dreggn_t *d)
 {
   if(strncmp(key, d->match, strlen(d->match)) == 0)
   {
-    dt_conf_string_entry_t *nv = (dt_conf_string_entry_t*)g_malloc (sizeof(dt_conf_string_entry_t));
+    dt_conf_string_entry_t *nv = (dt_conf_string_entry_t *)g_malloc(sizeof(dt_conf_string_entry_t));
     nv->key = g_strdup(key + strlen(d->match) + 1);
     nv->value = g_strdup(val);
     d->result = g_slist_append(d->result, nv);
@@ -321,14 +317,14 @@ static void _conf_add(char *key, char *val, dt_conf_dreggn_t *d)
 }
 
 /** get all strings in */
-static inline GSList *dt_conf_all_string_entries (const char *dir)
+static inline GSList *dt_conf_all_string_entries(const char *dir)
 {
-  dt_pthread_mutex_lock (&darktable.conf->mutex);
+  dt_pthread_mutex_lock(&darktable.conf->mutex);
   dt_conf_dreggn_t d;
   d.result = NULL;
   d.match = dir;
   g_hash_table_foreach(darktable.conf->table, (GHFunc)_conf_add, &d);
-  dt_pthread_mutex_unlock (&darktable.conf->mutex);
+  dt_pthread_mutex_unlock(&darktable.conf->mutex);
   return d.result;
 }
 

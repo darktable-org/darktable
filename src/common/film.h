@@ -37,8 +37,7 @@ typedef struct dt_film_t
   GDir *dir;
   int32_t num_images, last_loaded;
   int32_t ref;
-}
-dt_film_t;
+} dt_film_t;
 
 void dt_film_init(dt_film_t *film);
 void dt_film_cleanup(dt_film_t *film);
@@ -49,7 +48,8 @@ int dt_film_open2(dt_film_t *film);
 
 /** open num-th most recently used film. */
 int dt_film_open_recent(const int32_t num);
-/** import new film and all images in this directory as a background task(non-recursive, existing films/images are respected). */
+/** import new film and all images in this directory as a background task(non-recursive, existing films/images
+ * are respected). */
 int dt_film_import(const char *dirname);
 /** helper for import threads. */
 void dt_film_import1(dt_film_t *film);
@@ -60,7 +60,7 @@ void dt_film_remove(const int id);
 /** checks if film is empty */
 int dt_film_is_empty(const int id);
 /** Creating a new filmroll */
-int dt_film_new(dt_film_t *film,const char *directory);
+int dt_film_new(dt_film_t *film, const char *directory);
 /** removes all empty film rolls. */
 void dt_film_remove_empty();
 

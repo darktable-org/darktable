@@ -27,13 +27,13 @@
 /** Available interpolations */
 enum dt_interpolation_type
 {
-  DT_INTERPOLATION_FIRST=0, /**< Helper for easy iteration on interpolators */
-  DT_INTERPOLATION_BILINEAR=DT_INTERPOLATION_FIRST, /**< Bilinear interpolation (aka tent filter) */
-  DT_INTERPOLATION_BICUBIC, /**< Bicubic interpolation (with -0.5 parameter) */
-  DT_INTERPOLATION_LANCZOS2, /**< Lanczos interpolation (with 2 lobes) */
-  DT_INTERPOLATION_LANCZOS3, /**< Lanczos interpolation (with 3 lobes) */
-  DT_INTERPOLATION_LAST, /**< Helper for easy iteration on interpolators */
-  DT_INTERPOLATION_DEFAULT=DT_INTERPOLATION_BILINEAR,
+  DT_INTERPOLATION_FIRST = 0,                         /**< Helper for easy iteration on interpolators */
+  DT_INTERPOLATION_BILINEAR = DT_INTERPOLATION_FIRST, /**< Bilinear interpolation (aka tent filter) */
+  DT_INTERPOLATION_BICUBIC,                           /**< Bicubic interpolation (with -0.5 parameter) */
+  DT_INTERPOLATION_LANCZOS2,                          /**< Lanczos interpolation (with 2 lobes) */
+  DT_INTERPOLATION_LANCZOS3,                          /**< Lanczos interpolation (with 3 lobes) */
+  DT_INTERPOLATION_LAST,                              /**< Helper for easy iteration on interpolators */
+  DT_INTERPOLATION_DEFAULT = DT_INTERPOLATION_BILINEAR,
   DT_INTERPOLATION_USERPREF /**< can be specified so that user setting is chosen */
 };
 
@@ -46,10 +46,10 @@ typedef __m128 (*dt_interpolation_sse_func)(__m128 width, __m128 t);
 /** Interpolation structure */
 struct dt_interpolation
 {
-  enum dt_interpolation_type id; /**< Id such as defined by the dt_interpolation_type */
-  const char* name; /**< internal name  */
-  int width; /**< Half width of its kernel support */
-  dt_interpolation_func func; /**< Kernel function */
+  enum dt_interpolation_type id;     /**< Id such as defined by the dt_interpolation_type */
+  const char *name;                  /**< internal name  */
+  int width;                         /**< Half width of its kernel support */
+  dt_interpolation_func func;        /**< Kernel function */
   dt_interpolation_sse_func funcsse; /**< Kernel function (four params a time) */
 };
 
@@ -73,16 +73,9 @@ struct dt_interpolation
  *
  * @return computed sample
  */
-float
-dt_interpolation_compute_sample(
-  const struct dt_interpolation* itor,
-  const float* in,
-  const float x,
-  const float y,
-  const int width,
-  const int height,
-  const int samplestride,
-  const int linestride);
+float dt_interpolation_compute_sample(const struct dt_interpolation *itor, const float *in, const float x,
+                                      const float y, const int width, const int height,
+                                      const int samplestride, const int linestride);
 
 /** Compute an interpolated 4 component pixel.
  *
@@ -103,24 +96,15 @@ dt_interpolation_compute_sample(
  * @param linestride Stride in bytes for complete line
  *
  */
-void
-dt_interpolation_compute_pixel4c(
-  const struct dt_interpolation* itor,
-  const float* in,
-  float* out,
-  const float x,
-  const float y,
-  const int width,
-  const int height,
-  const int linestride);
+void dt_interpolation_compute_pixel4c(const struct dt_interpolation *itor, const float *in, float *out,
+                                      const float x, const float y, const int width, const int height,
+                                      const int linestride);
 
 /** Get an interpolator from type
  * @param type Interpolator to search for
  * @return requested interpolator or default if not found (this function can't fail)
  */
-const struct dt_interpolation*
-dt_interpolation_new(
-  enum dt_interpolation_type type);
+const struct dt_interpolation *dt_interpolation_new(enum dt_interpolation_type type);
 
 /** Image resampler.
  *
@@ -143,22 +127,16 @@ dt_interpolation_new(
  * @param roi_in [in] Region of interest of the original image
  * @param in_stride [in] Input line stride in <strong>bytes</strong>
  */
-void
-dt_interpolation_resample(
-  const struct dt_interpolation* itor,
-  float *out,
-  const dt_iop_roi_t* const roi_out,
-  const int32_t out_stride,
-  const float* const in,
-  const dt_iop_roi_t* const roi_in,
-  const int32_t in_stride);
+void dt_interpolation_resample(const struct dt_interpolation *itor, float *out,
+                               const dt_iop_roi_t *const roi_out, const int32_t out_stride,
+                               const float *const in, const dt_iop_roi_t *const roi_in,
+                               const int32_t in_stride);
 
 #ifdef HAVE_OPENCL
 typedef struct dt_interpolation_cl_global_t
 {
   int kernel_interpolation_resample;
-}
-dt_interpolation_cl_global_t;
+} dt_interpolation_cl_global_t;
 
 dt_interpolation_cl_global_t *dt_interpolation_init_cl_global(void);
 
@@ -187,14 +165,9 @@ void dt_interpolation_free_cl_global(dt_interpolation_cl_global_t *g);
  * @param roi_in [in] Region of interest of the original image
  * @param in_stride [in] Input line stride in <strong>bytes</strong>
  */
-int
-dt_interpolation_resample_cl(
-  const struct dt_interpolation* itor,
-  int devid,
-  cl_mem dev_out,
-  const dt_iop_roi_t* const roi_out,
-  cl_mem dev_in,
-  const dt_iop_roi_t* const roi_in);
+int dt_interpolation_resample_cl(const struct dt_interpolation *itor, int devid, cl_mem dev_out,
+                                 const dt_iop_roi_t *const roi_out, cl_mem dev_in,
+                                 const dt_iop_roi_t *const roi_in);
 #endif
 
 

@@ -43,8 +43,7 @@ typedef struct disk_t
 {
   GtkEntry *entry;
   GtkToggleButton *overwrite_btn;
-}
-disk_t;
+} disk_t;
 
 // saved params
 typedef struct dt_imageio_disk_t
@@ -52,20 +51,17 @@ typedef struct dt_imageio_disk_t
   char filename[DT_MAX_PATH_FOR_PARAMS];
   gboolean overwrite;
   dt_variables_params_t *vp;
-}
-dt_imageio_disk_t;
+} dt_imageio_disk_t;
 
 
-const char*
-name (const struct dt_imageio_module_storage_t *self)
+const char *name(const struct dt_imageio_module_storage_t *self)
 {
   return _("file on disk");
 }
 
-void *
-legacy_params(dt_imageio_module_storage_t *self,
-              const void *const old_params, const size_t old_params_size, const int old_version,
-              const int new_version, size_t *new_size)
+void *legacy_params(dt_imageio_module_storage_t *self, const void *const old_params,
+                    const size_t old_params_size, const int old_version, const int new_version,
+                    size_t *new_size)
 {
   if(old_version == 1 && new_version == 2)
   {
@@ -74,8 +70,7 @@ legacy_params(dt_imageio_module_storage_t *self,
       char filename[1024];
       dt_variables_params_t *vp;
       gboolean overwrite;
-    }
-    dt_imageio_disk_v1_t;
+    } dt_imageio_disk_v1_t;
 
     dt_imageio_disk_t *n = (dt_imageio_disk_t *)malloc(sizeof(dt_imageio_disk_t));
     dt_imageio_disk_v1_t *o = (dt_imageio_disk_v1_t *)old_params;
@@ -88,17 +83,13 @@ legacy_params(dt_imageio_module_storage_t *self,
   return NULL;
 }
 
-static void
-button_clicked (GtkWidget *widget, dt_imageio_module_storage_t *self)
+static void button_clicked(GtkWidget *widget, dt_imageio_module_storage_t *self)
 {
   disk_t *d = (disk_t *)self->gui_data;
   GtkWidget *win = dt_ui_main_window(darktable.gui->ui);
-  GtkWidget *filechooser = gtk_file_chooser_dialog_new (_("select directory"),
-                           GTK_WINDOW (win),
-                           GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER,
-                           GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
-                           GTK_STOCK_OPEN, GTK_RESPONSE_ACCEPT,
-                           (char *)NULL);
+  GtkWidget *filechooser = gtk_file_chooser_dialog_new(
+      _("select directory"), GTK_WINDOW(win), GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER, GTK_STOCK_CANCEL,
+      GTK_RESPONSE_CANCEL, GTK_STOCK_OPEN, GTK_RESPONSE_ACCEPT, (char *)NULL);
 
   gtk_file_chooser_set_select_multiple(GTK_FILE_CHOOSER(filechooser), FALSE);
   gchar *old = g_strdup(gtk_entry_get_text(d->entry));
@@ -106,16 +97,16 @@ button_clicked (GtkWidget *widget, dt_imageio_module_storage_t *self)
   if(c) *c = '\0';
   gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(filechooser), old);
   g_free(old);
-  if (gtk_dialog_run (GTK_DIALOG (filechooser)) == GTK_RESPONSE_ACCEPT)
+  if(gtk_dialog_run(GTK_DIALOG(filechooser)) == GTK_RESPONSE_ACCEPT)
   {
-    gchar *dir = gtk_file_chooser_get_filename (GTK_FILE_CHOOSER (filechooser));
-    char composed[PATH_MAX];
+    gchar *dir = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(filechooser));
+    char composed[PATH_MAX] = { 0 };
     snprintf(composed, sizeof(composed), "%s/$(FILE_NAME)", dir);
     gtk_entry_set_text(GTK_ENTRY(d->entry), composed);
     dt_conf_set_string("plugins/imageio/storage/disk/file_directory", composed);
     g_free(dir);
   }
-  gtk_widget_destroy (filechooser);
+  gtk_widget_destroy(filechooser);
 }
 
 static void entry_changed_callback(GtkEntry *entry, gpointer user_data)
@@ -128,8 +119,7 @@ static void overwrite_toggle_callback(GtkToggleButton *togglebutton, gpointer us
   dt_conf_set_bool("plugins/imageio/storage/disk/overwrite", gtk_toggle_button_get_active(togglebutton));
 }
 
-void
-gui_init (dt_imageio_module_storage_t *self)
+void gui_init(dt_imageio_module_storage_t *self)
 {
   disk_t *d = (disk_t *)malloc(sizeof(disk_t));
   self->gui_data = (void *)d;
@@ -137,7 +127,7 @@ gui_init (dt_imageio_module_storage_t *self)
   GtkWidget *widget;
 
   GtkWidget *hbox = gtk_hbox_new(FALSE, 5);
-  gtk_box_pack_start(GTK_BOX(self->widget),GTK_WIDGET (hbox),TRUE,FALSE,0);
+  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(hbox), TRUE, FALSE, 0);
 
   widget = gtk_entry_new();
   gtk_box_pack_start(GTK_BOX(hbox), widget, TRUE, TRUE, 0);
@@ -150,12 +140,12 @@ gui_init (dt_imageio_module_storage_t *self)
 
   dt_gtkentry_setup_completion(GTK_ENTRY(widget), dt_gtkentry_get_default_path_compl_list());
 
-  char *tooltip_text = dt_gtkentry_build_completion_tooltip_text (
-                         _("enter the path where to put exported images\nrecognized variables:"),
-                         dt_gtkentry_get_default_path_compl_list());
+  char *tooltip_text = dt_gtkentry_build_completion_tooltip_text(
+      _("enter the path where to put exported images\nrecognized variables:"),
+      dt_gtkentry_get_default_path_compl_list());
 
   d->entry = GTK_ENTRY(widget);
-  dt_gui_key_accel_block_on_focus_connect (GTK_WIDGET (d->entry));
+  dt_gui_key_accel_block_on_focus_connect(GTK_WIDGET(d->entry));
   g_object_set(G_OBJECT(widget), "tooltip-text", tooltip_text, (char *)NULL);
   g_signal_connect(G_OBJECT(widget), "changed", G_CALLBACK(entry_changed_callback), self);
 
@@ -166,23 +156,21 @@ gui_init (dt_imageio_module_storage_t *self)
   g_signal_connect(G_OBJECT(widget), "clicked", G_CALLBACK(button_clicked), self);
 
   d->overwrite_btn = GTK_TOGGLE_BUTTON(gtk_check_button_new_with_label(_("overwrite")));
-  gtk_box_pack_start(GTK_BOX(self->widget),GTK_WIDGET (d->overwrite_btn),TRUE,FALSE,0);
+  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(d->overwrite_btn), TRUE, FALSE, 0);
   g_signal_connect(G_OBJECT(d->overwrite_btn), "toggled", G_CALLBACK(overwrite_toggle_callback), self);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->overwrite_btn), FALSE);
 
   g_free(tooltip_text);
 }
 
-void
-gui_cleanup (dt_imageio_module_storage_t *self)
+void gui_cleanup(dt_imageio_module_storage_t *self)
 {
   disk_t *d = (disk_t *)self->gui_data;
-  dt_gui_key_accel_block_on_focus_disconnect (GTK_WIDGET (d->entry));
+  dt_gui_key_accel_block_on_focus_disconnect(GTK_WIDGET(d->entry));
   free(self->gui_data);
 }
 
-void
-gui_reset (dt_imageio_module_storage_t *self)
+void gui_reset(dt_imageio_module_storage_t *self)
 {
   disk_t *d = (disk_t *)self->gui_data;
   // global default can be annoying:
@@ -193,14 +181,14 @@ gui_reset (dt_imageio_module_storage_t *self)
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->overwrite_btn), FALSE);
 }
 
-int
-store (dt_imageio_module_storage_t *self, dt_imageio_module_data_t *sdata, const int imgid, dt_imageio_module_format_t *format, dt_imageio_module_data_t *fdata,
-       const int num, const int total, const gboolean high_quality)
+int store(dt_imageio_module_storage_t *self, dt_imageio_module_data_t *sdata, const int imgid,
+          dt_imageio_module_format_t *format, dt_imageio_module_data_t *fdata, const int num, const int total,
+          const gboolean high_quality)
 {
   dt_imageio_disk_t *d = (dt_imageio_disk_t *)sdata;
 
-  char filename[PATH_MAX]= {0};
-  char dirname[PATH_MAX]= {0};
+  char filename[PATH_MAX] = { 0 };
+  char dirname[PATH_MAX] = { 0 };
   gboolean from_cache = FALSE;
   dt_image_full_path(imgid, dirname, sizeof(dirname), &from_cache);
   int fail = 0;
@@ -209,16 +197,17 @@ store (dt_imageio_module_storage_t *self, dt_imageio_module_data_t *sdata, const
   {
 
     // if filenamepattern is a directory just let att ${FILE_NAME} as default..
-    if ( g_file_test(d->filename, G_FILE_TEST_IS_DIR) || ((d->filename+strlen(d->filename))[0]=='/' || (d->filename+strlen(d->filename))[0]=='\\') )
-      snprintf (d->filename+strlen(d->filename), sizeof(d->filename)-strlen(d->filename), "$(FILE_NAME)");
+    if(g_file_test(d->filename, G_FILE_TEST_IS_DIR)
+       || ((d->filename + strlen(d->filename))[0] == '/' || (d->filename + strlen(d->filename))[0] == '\\'))
+      snprintf(d->filename + strlen(d->filename), sizeof(d->filename) - strlen(d->filename), "$(FILE_NAME)");
 
     // avoid braindead export which is bound to overwrite at random:
     if(total > 1 && !g_strrstr(d->filename, "$"))
     {
-      snprintf(d->filename+strlen(d->filename), sizeof(d->filename)-strlen(d->filename), "_$(SEQUENCE)");
+      snprintf(d->filename + strlen(d->filename), sizeof(d->filename) - strlen(d->filename), "_$(SEQUENCE)");
     }
 
-    gchar* fixed_path = dt_util_fix_path(d->filename);
+    gchar *fixed_path = dt_util_fix_path(d->filename);
     g_strlcpy(d->filename, fixed_path, sizeof(d->filename));
     g_free(fixed_path);
 
@@ -232,7 +221,8 @@ store (dt_imageio_module_storage_t *self, dt_imageio_module_data_t *sdata, const
 
     const char *ext = format->extension(fdata);
     char *c = dirname + strlen(dirname);
-    for(; c>dirname && *c != '/'; c--);
+    for(; c > dirname && *c != '/'; c--)
+      ;
     if(*c == '/')
     {
       if(c > dirname) // /.../.../foo
@@ -262,32 +252,33 @@ store (dt_imageio_module_storage_t *self, dt_imageio_module_data_t *sdata, const
     }
 
     c = filename + strlen(filename);
-    // remove everything after the last '.'. this destroys any file name with dots in it since $(FILE_NAME) already comes without the original extension.
-//     for(; c>filename && *c != '.' && *c != '/' ; c--);
-//     if(c <= filename || *c=='/') c = filename + strlen(filename);
+    // remove everything after the last '.'. this destroys any file name with dots in it since $(FILE_NAME)
+    // already comes without the original extension.
+    //     for(; c>filename && *c != '.' && *c != '/' ; c--);
+    //     if(c <= filename || *c=='/') c = filename + strlen(filename);
 
-    sprintf(c,".%s",ext);
+    sprintf(c, ".%s", ext);
 
-    /* prevent overwrite of files */
-failed:
-    if (!d->overwrite) {
-        int seq=1;
-        if (!fail && g_file_test (filename,G_FILE_TEST_EXISTS))
+  /* prevent overwrite of files */
+  failed:
+    if(!d->overwrite)
+    {
+      int seq = 1;
+      if(!fail && g_file_test(filename, G_FILE_TEST_EXISTS))
+      {
+        do
         {
-          do
-          {
-            sprintf(c,"_%.2d.%s",seq,ext);
-            seq++;
-          }
-          while (g_file_test (filename,G_FILE_TEST_EXISTS));
-        }
+          sprintf(c, "_%.2d.%s", seq, ext);
+          seq++;
+        } while(g_file_test(filename, G_FILE_TEST_EXISTS));
+      }
     }
   } // end of critical block
   dt_pthread_mutex_unlock(&darktable.plugin_threadsafe);
   if(fail) return 1;
 
   /* export image to file */
-  if(dt_imageio_export(imgid, filename, format, fdata, high_quality,TRUE,self,sdata) != 0)
+  if(dt_imageio_export(imgid, filename, format, fdata, high_quality, TRUE, self, sdata) != 0)
   {
     fprintf(stderr, "[imageio_storage_disk] could not export to file: `%s'!\n", filename);
     dt_control_log(_("could not export to file `%s'!"), filename);
@@ -301,8 +292,7 @@ failed:
   return 0;
 }
 
-size_t
-params_size(dt_imageio_module_storage_t *self)
+size_t params_size(dt_imageio_module_storage_t *self)
 {
   return sizeof(dt_imageio_disk_t) - sizeof(void *);
 }
@@ -310,12 +300,12 @@ params_size(dt_imageio_module_storage_t *self)
 void init(dt_imageio_module_storage_t *self)
 {
 #ifdef USE_LUA
-  dt_lua_register_module_member(darktable.lua_state.state,self,dt_imageio_disk_t,filename,char_path_length);
+  dt_lua_register_module_member(darktable.lua_state.state, self, dt_imageio_disk_t, filename,
+                                char_path_length);
 #endif
 }
 
-void*
-get_params(dt_imageio_module_storage_t *self)
+void *get_params(dt_imageio_module_storage_t *self)
 {
   dt_imageio_disk_t *d = (dt_imageio_disk_t *)calloc(1, sizeof(dt_imageio_disk_t));
 
@@ -331,16 +321,14 @@ get_params(dt_imageio_module_storage_t *self)
   return d;
 }
 
-void
-free_params(dt_imageio_module_storage_t *self, dt_imageio_module_data_t *params)
+void free_params(dt_imageio_module_storage_t *self, dt_imageio_module_data_t *params)
 {
   dt_imageio_disk_t *d = (dt_imageio_disk_t *)params;
   dt_variables_params_destroy(d->vp);
   free(params);
 }
 
-int
-set_params(dt_imageio_module_storage_t *self, const void *params, const int size)
+int set_params(dt_imageio_module_storage_t *self, const void *params, const int size)
 {
   dt_imageio_disk_t *d = (dt_imageio_disk_t *)params;
   disk_t *g = (disk_t *)self->gui_data;

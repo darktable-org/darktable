@@ -22,25 +22,25 @@
 #ifndef DT_COMMON_CURVE_TOOLS_H
 #define DT_COMMON_CURVE_TOOLS_H
 
-//Curve Types
-#define CUBIC_SPLINE      0
-#define CATMULL_ROM     1
-#define MONOTONE_HERMITE       2
+// Curve Types
+#define CUBIC_SPLINE 0
+#define CATMULL_ROM 1
+#define MONOTONE_HERMITE 2
 
-//Maximum resolution allowed due to space considerations.
-#define MAX_RESOLUTION    65536
+// Maximum resolution allowed due to space considerations.
+#define MAX_RESOLUTION 65536
 #define MAX_ANCHORS 20
 
-//ERROR CODES
-#define CT_SUCCESS  0
-#define CT_ERROR    100
-#define CT_WARNING  104
-#define CT_SET_ERROR    200
+// ERROR CODES
+#define CT_SUCCESS 0
+#define CT_ERROR 100
+#define CT_WARNING 104
+#define CT_SET_ERROR 200
 
 
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
-//DATA STRUCTURES
+// DATA STRUCTURES
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 /**********************************************************
@@ -55,31 +55,31 @@ typedef struct
 
 typedef struct
 {
-  //Type for this curve
+  // Type for this curve
   unsigned int m_spline_type;
 
-  //Box data
+  // Box data
   float m_min_x;
   float m_max_x;
   float m_min_y;
   float m_max_y;
 
-  //Number of anchor points
+  // Number of anchor points
   unsigned char m_numAnchors;
 
-  //contains a list of anchors, 2 floats per each point, x-y format
-  //max is 20 points
+  // contains a list of anchors, 2 floats per each point, x-y format
+  // max is 20 points
   CurveAnchorPoint m_anchors[MAX_ANCHORS];
 
 } CurveData;
 
 typedef struct
 {
-  //Number of samples to use for the curve.
+  // Number of samples to use for the curve.
   unsigned int m_samplingRes;
   unsigned int m_outputRes;
 
-  //Sampling array
+  // Sampling array
   unsigned short int *m_Samples; // jo: changed to short int to save memory
 
 } CurveSample;
@@ -108,7 +108,7 @@ int CurveDataSample(CurveData *curve, CurveSample *sample);
  * output:
  *      ypp  - pointer to array of parameters
  *******************************************************************/
-float *interpolate_set( int n, float x[], float y[], unsigned int type);
+float *interpolate_set(int n, float x[], float y[], unsigned int type);
 
 /***************************************************************
  * interpolate_val:
@@ -125,7 +125,7 @@ float *interpolate_set( int n, float x[], float y[], unsigned int type);
  * output:
  *      yval  - interpolated value at xval
  *******************************************************************/
-float interpolate_val( int n, float x[], float xval, float y[], float tangents[], unsigned int type);
+float interpolate_val(int n, float x[], float xval, float y[], float tangents[], unsigned int type);
 
 #endif
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

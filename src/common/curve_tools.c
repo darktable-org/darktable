@@ -25,21 +25,20 @@
 #include <float.h>
 #include "curve_tools.h"
 
-#define EPSILON 2*FLT_MIN
+#define EPSILON 2 * FLT_MIN
 #define MAX_ITER 10
-//declare some functions and so I can use the function pointer
-float spline_cubic_val( int n, float t[], float tval, float y[],
-                        float ypp[]);
-float catmull_rom_val ( int n, float x[], float xval, float y[],
-                        float tangents[]);
+// declare some functions and so I can use the function pointer
+float spline_cubic_val(int n, float t[], float tval, float y[], float ypp[]);
+float catmull_rom_val(int n, float x[], float xval, float y[], float tangents[]);
 
-float *spline_cubic_set( int n, float t[], float y[]);
-float *catmull_rom_set ( int n, float x[], float y[]);
-float *monotone_hermite_set ( int n, float x[], float y[]);
+float *spline_cubic_set(int n, float t[], float y[]);
+float *catmull_rom_set(int n, float x[], float y[]);
+float *monotone_hermite_set(int n, float x[], float y[]);
 
-float (*spline_val[])(int, float [], float, float [], float []) = {spline_cubic_val, catmull_rom_val, catmull_rom_val };
+float (*spline_val[])(int, float[], float, float[], float[])
+    = { spline_cubic_val, catmull_rom_val, catmull_rom_val };
 
-float *(*spline_set[])(int, float [], float []) = {spline_cubic_set, catmull_rom_set, monotone_hermite_set};
+float *(*spline_set[])(int, float[], float[]) = { spline_cubic_set, catmull_rom_set, monotone_hermite_set };
 
 /**********************************************************************
 
@@ -90,41 +89,41 @@ float *(*spline_set[])(int, float [], float []) = {spline_cubic_set, catmull_rom
     This is NULL if there was an error because one of the diagonal
     entries was zero.
 **********************************************************************/
-float *d3_np_fs ( int n, float a[], float b[] )
+float *d3_np_fs(int n, float a[], float b[])
 
 {
   int i;
   float *x;
   float xmult;
-//
-//  Check.
-//
-  for ( i = 0; i < n; i++ )
+  //
+  //  Check.
+  //
+  for(i = 0; i < n; i++)
   {
-    if ( a[1+i*3] == 0.0E+00 )
+    if(a[1 + i * 3] == 0.0E+00)
     {
       return NULL;
     }
   }
-  x = (float *)calloc(n,sizeof(float));
-  //nc_merror(x, "d3_np_fs");
+  x = (float *)calloc(n, sizeof(float));
+  // nc_merror(x, "d3_np_fs");
 
-  for ( i = 0; i < n; i++ )
+  for(i = 0; i < n; i++)
   {
     x[i] = b[i];
   }
 
-  for ( i = 1; i < n; i++ )
+  for(i = 1; i < n; i++)
   {
-    xmult = a[2+(i-1)*3] / a[1+(i-1)*3];
-    a[1+i*3] = a[1+i*3] - xmult * a[0+i*3];
-    x[i] = x[i] - xmult * x[i-1];
+    xmult = a[2 + (i - 1) * 3] / a[1 + (i - 1) * 3];
+    a[1 + i * 3] = a[1 + i * 3] - xmult * a[0 + i * 3];
+    x[i] = x[i] - xmult * x[i - 1];
   }
 
-  x[n-1] = x[n-1] / a[1+(n-1)*3];
-  for ( i = n-2; 0 <= i; i-- )
+  x[n - 1] = x[n - 1] / a[1 + (n - 1) * 3];
+  for(i = n - 2; 0 <= i; i--)
   {
-    x[i] = ( x[i] - a[0+(i+1)*3] * x[i+1] ) / a[1+i*3];
+    x[i] = (x[i] - a[0 + (i + 1) * 3] * x[i + 1]) / a[1 + i * 3];
   }
 
   return x;
@@ -241,122 +240,121 @@ float *d3_np_fs ( int n, float a[], float b[] )
 
     Output, float SPLINE_CUBIC_SET[N], the second derivatives of the cubic spline.
 **********************************************************************/
-static float *spline_cubic_set_internal ( int n, float t[], float y[], int ibcbeg,
-    float ybcbeg, int ibcend, float ybcend )
+static float *spline_cubic_set_internal(int n, float t[], float y[], int ibcbeg, float ybcbeg, int ibcend,
+                                        float ybcend)
 {
   float *a;
   float *b;
   int i;
   float *ypp;
-//
-//  Check.
-//
-  if ( n <= 1 )
+  //
+  //  Check.
+  //
+  if(n <= 1)
   {
     // nc_message(NC_SET_ERROR, "spline_cubic_set() error: "
     //    "The number of data points must be at least 2.\n");
     return NULL;
   }
 
-  for ( i = 0; i < n - 1; i++ )
+  for(i = 0; i < n - 1; i++)
   {
-    if ( t[i+1] <= t[i] )
+    if(t[i + 1] <= t[i])
     {
-      //nc_message(NC_SET_ERROR, "spline_cubic_set() error: "
+      // nc_message(NC_SET_ERROR, "spline_cubic_set() error: "
       //   "The knots must be strictly increasing, but "
       //  "T(%u) = %e, T(%u) = %e\n",i,t[i],i+1,t[i+1]);
       return NULL;
     }
   }
-  a = (float *)calloc(3*n,sizeof(float));
-  //nc_merror(a, "spline_cubic_set");
-  b = (float *)calloc(n,sizeof(float));
-  //nc_merror(b, "spline_cubic_set");
-//
-//  Set up the first equation.
-//
-  if ( ibcbeg == 0 )
+  a = (float *)calloc(3 * n, sizeof(float));
+  // nc_merror(a, "spline_cubic_set");
+  b = (float *)calloc(n, sizeof(float));
+  // nc_merror(b, "spline_cubic_set");
+  //
+  //  Set up the first equation.
+  //
+  if(ibcbeg == 0)
   {
     b[0] = 0.0E+00;
-    a[1+0*3] = 1.0E+00;
-    a[0+1*3] = -1.0E+00;
+    a[1 + 0 * 3] = 1.0E+00;
+    a[0 + 1 * 3] = -1.0E+00;
   }
-  else if ( ibcbeg == 1 )
+  else if(ibcbeg == 1)
   {
-    b[0] = ( y[1] - y[0] ) / ( t[1] - t[0] ) - ybcbeg;
-    a[1+0*3] = ( t[1] - t[0] ) / 3.0E+00;
-    a[0+1*3] = ( t[1] - t[0] ) / 6.0E+00;
+    b[0] = (y[1] - y[0]) / (t[1] - t[0]) - ybcbeg;
+    a[1 + 0 * 3] = (t[1] - t[0]) / 3.0E+00;
+    a[0 + 1 * 3] = (t[1] - t[0]) / 6.0E+00;
   }
-  else if ( ibcbeg == 2 )
+  else if(ibcbeg == 2)
   {
     b[0] = ybcbeg;
-    a[1+0*3] = 1.0E+00;
-    a[0+1*3] = 0.0E+00;
+    a[1 + 0 * 3] = 1.0E+00;
+    a[0 + 1 * 3] = 0.0E+00;
   }
   else
   {
-    //nc_message(NC_SET_ERROR, "spline_cubic_set() error: "
+    // nc_message(NC_SET_ERROR, "spline_cubic_set() error: "
     //   "IBCBEG must be 0, 1 or 2. The input value is %u.\n", ibcbeg);
     free(a);
     free(b);
     return NULL;
   }
-//
-//  Set up the intermediate equations.
-//
-  for ( i = 1; i < n-1; i++ )
+  //
+  //  Set up the intermediate equations.
+  //
+  for(i = 1; i < n - 1; i++)
   {
-    b[i] = ( y[i+1] - y[i] ) / ( t[i+1] - t[i] )
-           - ( y[i] - y[i-1] ) / ( t[i] - t[i-1] );
-    a[2+(i-1)*3] = ( t[i] - t[i-1] ) / 6.0E+00;
-    a[1+ i   *3] = ( t[i+1] - t[i-1] ) / 3.0E+00;
-    a[0+(i+1)*3] = ( t[i+1] - t[i] ) / 6.0E+00;
+    b[i] = (y[i + 1] - y[i]) / (t[i + 1] - t[i]) - (y[i] - y[i - 1]) / (t[i] - t[i - 1]);
+    a[2 + (i - 1) * 3] = (t[i] - t[i - 1]) / 6.0E+00;
+    a[1 + i * 3] = (t[i + 1] - t[i - 1]) / 3.0E+00;
+    a[0 + (i + 1) * 3] = (t[i + 1] - t[i]) / 6.0E+00;
   }
-//
-//  Set up the last equation.
-//
-  if ( ibcend == 0 )
+  //
+  //  Set up the last equation.
+  //
+  if(ibcend == 0)
   {
-    b[n-1] = 0.0E+00;
-    a[2+(n-2)*3] = -1.0E+00;
-    a[1+(n-1)*3] = 1.0E+00;
+    b[n - 1] = 0.0E+00;
+    a[2 + (n - 2) * 3] = -1.0E+00;
+    a[1 + (n - 1) * 3] = 1.0E+00;
   }
-  else if ( ibcend == 1 )
+  else if(ibcend == 1)
   {
-    b[n-1] = ybcend - ( y[n-1] - y[n-2] ) / ( t[n-1] - t[n-2] );
-    a[2+(n-2)*3] = ( t[n-1] - t[n-2] ) / 6.0E+00;
-    a[1+(n-1)*3] = ( t[n-1] - t[n-2] ) / 3.0E+00;
+    b[n - 1] = ybcend - (y[n - 1] - y[n - 2]) / (t[n - 1] - t[n - 2]);
+    a[2 + (n - 2) * 3] = (t[n - 1] - t[n - 2]) / 6.0E+00;
+    a[1 + (n - 1) * 3] = (t[n - 1] - t[n - 2]) / 3.0E+00;
   }
-  else if ( ibcend == 2 )
+  else if(ibcend == 2)
   {
-    b[n-1] = ybcend;
-    a[2+(n-2)*3] = 0.0E+00;
-    a[1+(n-1)*3] = 1.0E+00;
+    b[n - 1] = ybcend;
+    a[2 + (n - 2) * 3] = 0.0E+00;
+    a[1 + (n - 1) * 3] = 1.0E+00;
   }
   else
   {
-    //nc_message(NC_SET_ERROR, "spline_cubic_set() error: "
+    // nc_message(NC_SET_ERROR, "spline_cubic_set() error: "
     //   "IBCEND must be 0, 1 or 2. The input value is %u", ibcend);
     free(a);
     free(b);
     return NULL;
   }
-//
-//  Solve the linear system.
-//
-  if ( n == 2 && ibcbeg == 0 && ibcend == 0 )
+  //
+  //  Solve the linear system.
+  //
+  if(n == 2 && ibcbeg == 0 && ibcend == 0)
   {
-    ypp = (float *)calloc(2,sizeof(float));
-    //nc_merror(ypp, "spline_cubic_set");
+    ypp = (float *)calloc(2, sizeof(float));
+    // nc_merror(ypp, "spline_cubic_set");
 
     ypp[0] = 0.0E+00;
     ypp[1] = 0.0E+00;
   }
   else
   {
-    ypp = d3_np_fs ( n, a, b );
+    ypp = d3_np_fs(n, a, b);
 
-    if ( !ypp )
+    if(!ypp)
     {
       //  nc_message(NC_SET_ERROR, "spline_cubic_set() error: "
       //     "The linear system could not be solved.\n");
@@ -364,7 +362,6 @@ static float *spline_cubic_set_internal ( int n, float t[], float y[], int ibcbe
       free(b);
       return NULL;
     }
-
   }
 
   free(a);
@@ -376,7 +373,7 @@ static float *spline_cubic_set_internal ( int n, float t[], float y[], int ibcbe
  * This is a convenience wrapper function around spline_cubic_set
  *
  ************************************************************/
-float *spline_cubic_set( int n, float t[], float y[])
+float *spline_cubic_set(int n, float t[], float y[])
 {
   return spline_cubic_set_internal(n, t, y, 2, 0.0, 2, 0.0);
 }
@@ -393,63 +390,63 @@ float *spline_cubic_set( int n, float t[], float y[])
 *  output:
 *      pointer to array containing the tangents
 *************************************************************/
-float *monotone_hermite_set ( int n, float x[], float y[])
+float *monotone_hermite_set(int n, float x[], float y[])
 {
   float *delta;
   float *m;
   int i;
-  if ( n <= 1 )
+  if(n <= 1)
   {
-    //nc_message(NC_SET_ERROR, "spline_cubic_set() error: "
+    // nc_message(NC_SET_ERROR, "spline_cubic_set() error: "
     //   "The number of data points must be at least 2.\n");
     return NULL;
   }
 
-  for ( i = 0; i < n - 1; i++ )
+  for(i = 0; i < n - 1; i++)
   {
-    if ( x[i+1] <= x[i] )
+    if(x[i + 1] <= x[i])
     {
-      //nc_message(NC_SET_ERROR, "spline_cubic_set() error: "
+      // nc_message(NC_SET_ERROR, "spline_cubic_set() error: "
       //   "The knots must be strictly increasing, but "
       //  "T(%u) = %e, T(%u) = %e\n",i,x[i],i+1,x[i+1]);
       return NULL;
     }
   }
 
-  delta = (float *)calloc(n,sizeof(float));
-  //nc_merror(delta, "spline_cubic_set");
-  m = (float *)calloc(n+1,sizeof(float));
-  //nc_merror(m, "spline_cubic_set");
-  //calculate the slopes
-  for (i = 0; i<n-1; i++)
+  delta = (float *)calloc(n, sizeof(float));
+  // nc_merror(delta, "spline_cubic_set");
+  m = (float *)calloc(n + 1, sizeof(float));
+  // nc_merror(m, "spline_cubic_set");
+  // calculate the slopes
+  for(i = 0; i < n - 1; i++)
   {
-    delta[i] = (y[i+1]-y[i])/(x[i+1]-x[i]);
+    delta[i] = (y[i + 1] - y[i]) / (x[i + 1] - x[i]);
   }
-  delta[n-1] = delta[n-2];
+  delta[n - 1] = delta[n - 2];
 
   m[0] = delta[0];
-  m[n-1] = delta[n-1];
+  m[n - 1] = delta[n - 1];
 
-  for (i=1; i<n-1; i++)
+  for(i = 1; i < n - 1; i++)
   {
-    m[i] = (delta[i-1]+delta[i])*.5f;
+    m[i] = (delta[i - 1] + delta[i]) * .5f;
   }
-  for (i=0; i<n; i++)
+  for(i = 0; i < n; i++)
   {
-    if (fabs(delta[i]) < EPSILON)
+    if(fabs(delta[i]) < EPSILON)
     {
       m[i] = 0.0f;
-      m[i+1] = 0.0f;
+      m[i + 1] = 0.0f;
     }
     else
     {
-      const float alpha = m[i]/delta[i];
-      const float beta = m[i+1]/delta[i];
-      const float tau = alpha*alpha+beta*beta;
-      if (tau > 9.0f)
+      const float alpha = m[i] / delta[i];
+      const float beta = m[i + 1] / delta[i];
+      const float tau = alpha * alpha + beta * beta;
+      if(tau > 9.0f)
       {
-        m[i] = 3.0f*alpha*delta[i]/sqrtf(tau);
-        m[i+1] = 3.0f*beta*delta[i]/sqrtf(tau);
+        m[i] = 3.0f * alpha * delta[i] / sqrtf(tau);
+        m[i + 1] = 3.0f * beta * delta[i] / sqrtf(tau);
       }
     }
   }
@@ -470,49 +467,48 @@ float *monotone_hermite_set ( int n, float x[], float y[])
 *  output:
 *      pointer to array containing the tangents
 *************************************************************/
-float *catmull_rom_set ( int n, float x[], float y[])
+float *catmull_rom_set(int n, float x[], float y[])
 {
   float *m;
   int i;
-  if ( n <= 1 )
+  if(n <= 1)
   {
-    //nc_message(NC_SET_ERROR, "spline_cubic_set() error: "
+    // nc_message(NC_SET_ERROR, "spline_cubic_set() error: "
     //   "The number of data points must be at least 2.\n");
     return NULL;
   }
 
-  for ( i = 0; i < n - 1; i++ )
+  for(i = 0; i < n - 1; i++)
   {
-    if ( x[i+1] <= x[i] )
+    if(x[i + 1] <= x[i])
     {
-      //nc_message(NC_SET_ERROR, "spline_cubic_set() error: "
+      // nc_message(NC_SET_ERROR, "spline_cubic_set() error: "
       //   "The knots must be strictly increasing, but "
       //  "T(%u) = %e, T(%u) = %e\n",i,x[i],i+1,x[i+1]);
       return NULL;
     }
   }
-  //nc_merror(delta, "spline_cubic_set");
-  m = (float *)calloc(n,sizeof(float));
-  //nc_merror(m, "spline_cubic_set");
+  // nc_merror(delta, "spline_cubic_set");
+  m = (float *)calloc(n, sizeof(float));
+  // nc_merror(m, "spline_cubic_set");
 
-  //calculate the slopes
-  m[0] = (y[1]-y[0])/(x[1]-x[0]);
-  for (i=1; i<n-1; i++)
+  // calculate the slopes
+  m[0] = (y[1] - y[0]) / (x[1] - x[0]);
+  for(i = 1; i < n - 1; i++)
   {
-    m[i] = (y[i+1]-y[i-1])/(x[i+1]-x[i-1]);
+    m[i] = (y[i + 1] - y[i - 1]) / (x[i + 1] - x[i - 1]);
   }
-  m[n-1] = (y[n-1]-y[n-2])/(x[n-1]-x[n-2]);
+  m[n - 1] = (y[n - 1] - y[n - 2]) / (x[n - 1] - x[n - 2]);
 
   return m;
 }
 
-float *interpolate_set( int n, float x[], float y[], unsigned int type)
+float *interpolate_set(int n, float x[], float y[], unsigned int type)
 {
   return (*spline_set[type])(n, x, y);
 }
 
-float interpolate_val( int n, float x[], float xval, float y[], float tangents[],
-                       unsigned int type)
+float interpolate_val(int n, float x[], float xval, float y[], float tangents[], unsigned int type)
 {
   return (*spline_val[type])(n, x, xval, y, tangents);
 }
@@ -530,18 +526,17 @@ float interpolate_val( int n, float x[], float xval, float y[], float tangents[]
  *      interpolated value at xval
  *
  *************************************************************/
-float catmull_rom_val ( int n, float x[], float xval, float y[],
-                        float tangents[])
+float catmull_rom_val(int n, float x[], float xval, float y[], float tangents[])
 {
-//
-//  Determine the interval [ T(I), T(I+1) ] that contains TVAL.
-//  Values below T[0] or above T[N-1] use extrapolation.
-//
+  //
+  //  Determine the interval [ T(I), T(I+1) ] that contains TVAL.
+  //  Values below T[0] or above T[N-1] use extrapolation.
+  //
   int ival = n - 2;
 
-  for ( int i = 0; i < n-2; i++ )
+  for(int i = 0; i < n - 2; i++)
   {
-    if ( xval < x[i+1] )
+    if(xval < x[i + 1])
     {
       ival = i;
       break;
@@ -549,22 +544,22 @@ float catmull_rom_val ( int n, float x[], float xval, float y[],
   }
 
   const float m0 = tangents[ival];
-  const float m1 = tangents[ival+1];
-//
-//  In the interval I, the polynomial is in terms of a normalized
-//  coordinate between 0 and 1.
-//
-  const float h = x[ival+1] - x[ival];
-  const float dx = (xval-x[ival])/h;
-  const float dx2 = dx*dx;
-  const float dx3 = dx*dx2;
+  const float m1 = tangents[ival + 1];
+  //
+  //  In the interval I, the polynomial is in terms of a normalized
+  //  coordinate between 0 and 1.
+  //
+  const float h = x[ival + 1] - x[ival];
+  const float dx = (xval - x[ival]) / h;
+  const float dx2 = dx * dx;
+  const float dx3 = dx * dx2;
 
-  const float h00 = ( 2.0 * dx3) - (3.0 * dx2) + 1.0;
-  const float h10 = ( 1.0 * dx3) - (2.0 * dx2) + dx;
+  const float h00 = (2.0 * dx3) - (3.0 * dx2) + 1.0;
+  const float h10 = (1.0 * dx3) - (2.0 * dx2) + dx;
   const float h01 = (-2.0 * dx3) + (3.0 * dx2);
-  const float h11 = ( 1.0 * dx3) - (1.0 * dx2);
+  const float h11 = (1.0 * dx3) - (1.0 * dx2);
 
-  return (h00 * y[ival]) + (h10 * h * m0) + (h01 * y[ival+1]) + (h11 * h * m1);
+  return (h00 * y[ival]) + (h10 * h * m0) + (h01 * y[ival + 1]) + (h11 * h * m1);
 }
 
 
@@ -623,40 +618,37 @@ float catmull_rom_val ( int n, float x[], float xval, float y[],
     Output, float SPLINE_VAL, the value of the spline at TVAL.
 
 **********************************************************************/
-float spline_cubic_val( int n, float t[], float tval, float y[],
-                        float ypp[])
+float spline_cubic_val(int n, float t[], float tval, float y[], float ypp[])
 {
   float dt;
   float h;
   int i;
   int ival;
   float yval;
-//
-//  Determine the interval [ T(I), T(I+1) ] that contains TVAL.
-//  Values below T[0] or above T[N-1] use extrapolation.
-//
+  //
+  //  Determine the interval [ T(I), T(I+1) ] that contains TVAL.
+  //  Values below T[0] or above T[N-1] use extrapolation.
+  //
   ival = n - 2;
 
-  for ( i = 0; i < n-1; i++ )
+  for(i = 0; i < n - 1; i++)
   {
-    if ( tval < t[i+1] )
+    if(tval < t[i + 1])
     {
       ival = i;
       break;
     }
   }
-//
-//  In the interval I, the polynomial is in terms of a normalized
-//  coordinate between 0 and 1.
-//
+  //
+  //  In the interval I, the polynomial is in terms of a normalized
+  //  coordinate between 0 and 1.
+  //
   dt = tval - t[ival];
-  h = t[ival+1] - t[ival];
+  h = t[ival + 1] - t[ival];
 
   yval = y[ival]
-         + dt * ( ( y[ival+1] - y[ival] ) / h
-                  - ( ypp[ival+1] / 6.0E+00 + ypp[ival] / 3.0E+00 ) * h
-                  + dt * ( 0.5E+00 * ypp[ival]
-                           + dt * ( ( ypp[ival+1] - ypp[ival] ) / ( 6.0E+00 * h ) ) ) );
+         + dt * ((y[ival + 1] - y[ival]) / h - (ypp[ival + 1] / 6.0E+00 + ypp[ival] / 3.0E+00) * h
+                 + dt * (0.5E+00 * ypp[ival] + dt * ((ypp[ival + 1] - ypp[ival]) / (6.0E+00 * h))));
 
   // we really never need the derivatives so commented this out
   /**ypval = ( y[ival+1] - y[ival] ) / h
@@ -682,20 +674,20 @@ int CurveDataSample(CurveData *curve, CurveSample *sample)
 {
   int i = 0, n;
 
-  float x[20] = {0};
-  float y[20] = {0};
+  float x[20] = { 0 };
+  float y[20] = { 0 };
   float *ypp;
 
-  //The box points  are what the anchor points are relative
-  //to so...
+  // The box points  are what the anchor points are relative
+  // to so...
 
   float box_width = curve->m_max_x - curve->m_min_x;
   float box_height = curve->m_max_y - curve->m_min_y;
 
-  //build arrays for processing
-  if (curve->m_numAnchors == 0)
+  // build arrays for processing
+  if(curve->m_numAnchors == 0)
   {
-    //just a straight line using box coordinates
+    // just a straight line using box coordinates
     x[0] = curve->m_min_x;
     y[0] = curve->m_min_y;
     x[1] = curve->m_max_x;
@@ -706,46 +698,45 @@ int CurveDataSample(CurveData *curve, CurveSample *sample)
   {
     for(i = 0; i < curve->m_numAnchors; i++)
     {
-      x[i] = curve->m_anchors[i].x*box_width + curve->m_min_x;
-      y[i] = curve->m_anchors[i].y*box_height + curve->m_min_y;
+      x[i] = curve->m_anchors[i].x * box_width + curve->m_min_x;
+      y[i] = curve->m_anchors[i].y * box_height + curve->m_min_y;
     }
     n = curve->m_numAnchors;
   }
   int val;
-  float res = 1.0/(float)(sample->m_samplingRes-1);
-  int firstPointX = x[0] * (sample->m_samplingRes-1);
-  int firstPointY = y[0] * (sample->m_outputRes-1);
-  int lastPointX = x[n-1] * (sample->m_samplingRes-1);
-  int lastPointY = y[n-1] * (sample->m_outputRes-1);
-  int maxY = curve->m_max_y * (sample->m_outputRes-1);
-  int minY = curve->m_min_y * (sample->m_outputRes-1);
-  //returns an array of second derivatives used to calculate the spline curve.
-  //this is a malloc'd array that needs to be freed when done.
-  //The setings currently calculate the natural spline, which closely matches
-  //camera curve output in raw files.
+  float res = 1.0 / (float)(sample->m_samplingRes - 1);
+  int firstPointX = x[0] * (sample->m_samplingRes - 1);
+  int firstPointY = y[0] * (sample->m_outputRes - 1);
+  int lastPointX = x[n - 1] * (sample->m_samplingRes - 1);
+  int lastPointY = y[n - 1] * (sample->m_outputRes - 1);
+  int maxY = curve->m_max_y * (sample->m_outputRes - 1);
+  int minY = curve->m_min_y * (sample->m_outputRes - 1);
+  // returns an array of second derivatives used to calculate the spline curve.
+  // this is a malloc'd array that needs to be freed when done.
+  // The setings currently calculate the natural spline, which closely matches
+  // camera curve output in raw files.
   ypp = interpolate_set(n, x, y, curve->m_spline_type);
-  if (ypp==NULL) return CT_ERROR;
+  if(ypp == NULL) return CT_ERROR;
 
   for(i = 0; i < (int)sample->m_samplingRes; i++)
   {
-    //get the value of the curve at a point
-    //take into account that curves may not necessarily begin at x = 0.0
-    //nor end at x = 1.0
+    // get the value of the curve at a point
+    // take into account that curves may not necessarily begin at x = 0.0
+    // nor end at x = 1.0
 
-    //Before the first point and after the last point, take a strait line
-    if (i < firstPointX)
+    // Before the first point and after the last point, take a strait line
+    if(i < firstPointX)
     {
       sample->m_Samples[i] = firstPointY;
     }
-    else if (i > lastPointX)
+    else if(i > lastPointX)
     {
       sample->m_Samples[i] = lastPointY;
     }
     else
     {
-      //within range, we can sample the curve
-      val = interpolate_val( n, x, i*res, y,
-                             ypp, curve->m_spline_type) * (sample->m_outputRes-1) + 0.5;
+      // within range, we can sample the curve
+      val = interpolate_val(n, x, i * res, y, ypp, curve->m_spline_type) * (sample->m_outputRes - 1) + 0.5;
       if(val > maxY) val = maxY;
       if(val < minY) val = minY;
       sample->m_Samples[i] = val;

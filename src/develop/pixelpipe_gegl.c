@@ -27,7 +27,8 @@ void dt_dev_pixelpipe_init(dt_dev_pixelpipe_t *pipe)
   pipe->gegl = gegl_node_new();
   pipe->input_buffer = NULL;
   pipe->input = gegl_node_new_child(pipe->gegl, "operation", "gegl:load-buffer", NULL);
-  // pipe->scale = gegl_node_new_child(pipe->gegl, "operation", "gegl:scale", "filter", "nearest", "x", .5, "y", .5, NULL);
+  // pipe->scale = gegl_node_new_child(pipe->gegl, "operation", "gegl:scale", "filter", "nearest", "x", .5,
+  // "y", .5, NULL);
   // pipe->output = gegl_node_new_child(pipe->gegl, "operation", "gegl:nop", NULL);
   pipe->output = pipe->input;
   // gegl_node_link(pipe->input, pipe->output);
@@ -39,15 +40,13 @@ void dt_dev_pixelpipe_init(dt_dev_pixelpipe_t *pipe)
   pthread_mutex_init(&(pipe->backbuf_mutex), NULL);
 }
 
-void dt_dev_pixelpipe_set_input(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, float *input, int width, int height)
+void dt_dev_pixelpipe_set_input(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, float *input, int width,
+                                int height)
 {
   pipe->changed = DT_DEV_PIPE_UNCHANGED;
   pipe->iwidth = width;
   pipe->iheight = height;
-  GeglRectangle rect = (GeglRectangle)
-  {
-    0, 0, width, height
-  };
+  GeglRectangle rect = (GeglRectangle){ 0, 0, width, height };
   if(pipe->input_buffer) gegl_buffer_destroy(pipe->input_buffer);
   pipe->input_buffer = gegl_buffer_new(&rect, babl_format("RGB float"));
   gegl_buffer_set(pipe->input_buffer, NULL, babl_format("RGB float"), input, GEGL_AUTO_ROWSTRIDE);
@@ -140,7 +139,7 @@ void dt_dev_pixelpipe_synch_all(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev)
   }
   // go through all history items and adjust params
   GList *history = dev->history;
-  for(int k=0; k<dev->history_end; k++)
+  for(int k = 0; k < dev->history_end; k++)
   {
     dt_dev_pixelpipe_synch(pipe, dev, history);
     history = g_list_next(history);
@@ -156,7 +155,7 @@ void dt_dev_pixelpipe_synch_top(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev)
 void dt_dev_pixelpipe_change(dt_dev_pixelpipe_t *pipe, struct dt_develop_t *dev)
 {
   pthread_mutex_lock(&dev->history_mutex);
-  switch (pipe->changed)
+  switch(pipe->changed)
   {
     case DT_DEV_PIPE_UNCHANGED:
       break;
@@ -187,16 +186,17 @@ void dt_dev_pixelpipe_remove_node(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, i
 {
 }
 
-int dt_dev_pixelpipe_process(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, int x, int y, int width, int height, float scale)
+int dt_dev_pixelpipe_process(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, int x, int y, int width, int height,
+                             float scale)
 {
   pipe->processing = 1;
   printf("pixelpipe process start\n");
 
   // have backbuf in right size:
-  if(pipe->backbuf_size < width*height*4*sizeof(uint8_t))
+  if(pipe->backbuf_size < width * height * 4 * sizeof(uint8_t))
   {
     pthread_mutex_lock(&pipe->backbuf_mutex);
-    pipe->backbuf_size = width*height*4*sizeof(uint8_t);
+    pipe->backbuf_size = width * height * 4 * sizeof(uint8_t);
     dt_free_align(pipe->backbuf);
     pipe->backbuf = (uint8_t *)dt_alloc_align(16, pipe->backbuf_size);
     pthread_mutex_unlock(&pipe->backbuf_mutex);
@@ -205,36 +205,32 @@ int dt_dev_pixelpipe_process(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, int x,
   // scale node (is slow):
   // scale *= 2;
   // FIXME: this seems to be a bug in gegl. need to manually adjust updated roi here.
-  GeglRectangle roi  = (GeglRectangle)
-  {
-    x, y, width, height
-  };
-  GeglRectangle roio = (GeglRectangle)
-  {
-    roi.x/scale, roi.y/scale, roi.width/scale, roi.height/scale
-  };
-  roio.x      = MAX(0, roio.x);
-  roio.y      = MAX(0, roio.y);
-  roio.width  = MIN(pipe->iwidth -roio.x-1, roio.width);
-  roio.height = MIN(pipe->iheight-roio.y-1, roio.height);
-  GeglProcessor *processor = gegl_node_new_processor (pipe->output, &roio);
+  GeglRectangle roi = (GeglRectangle){ x, y, width, height };
+  GeglRectangle roio = (GeglRectangle){ roi.x / scale, roi.y / scale, roi.width / scale, roi.height / scale };
+  roio.x = MAX(0, roio.x);
+  roio.y = MAX(0, roio.y);
+  roio.width = MIN(pipe->iwidth - roio.x - 1, roio.width);
+  roio.height = MIN(pipe->iheight - roio.y - 1, roio.height);
+  GeglProcessor *processor = gegl_node_new_processor(pipe->output, &roio);
   // gegl_node_set(pipe->scale, "x", scale, "y", scale, NULL);
   // GeglProcessor *processor = gegl_node_new_processor (pipe->output, roi);
-  double         progress;
+  double progress;
 
   // TODO: insert constant scale node at beginning, maintain lo-res branch of pipeline (shadowed).
   // TODO: decide on scale param, which one to use.
 
-  while (gegl_processor_work (processor, &progress))
+  while(gegl_processor_work(processor, &progress))
   {
     // if history changed, abort processing?
     if(pipe->changed != DT_DEV_PIPE_UNCHANGED || dev->gui_leaving) return 1;
   }
-  gegl_processor_destroy (processor);
+  gegl_processor_destroy(processor);
 
   // gegl scale node turned out to be even slower :(
-  gegl_node_blit (pipe->output, scale, &roi, babl_format("RGBA u8"), pipe->backbuf, GEGL_AUTO_ROWSTRIDE, GEGL_BLIT_CACHE);
-  // gegl_node_blit (pipe->output, 1.0, roi, babl_format("RGBA u8"), output, GEGL_AUTO_ROWSTRIDE, GEGL_BLIT_CACHE);
+  gegl_node_blit(pipe->output, scale, &roi, babl_format("RGBA u8"), pipe->backbuf, GEGL_AUTO_ROWSTRIDE,
+                 GEGL_BLIT_CACHE);
+  // gegl_node_blit (pipe->output, 1.0, roi, babl_format("RGBA u8"), output, GEGL_AUTO_ROWSTRIDE,
+  // GEGL_BLIT_CACHE);
 
   // TODO: update histograms here with this data?
   printf("pixelpipe process end\n");

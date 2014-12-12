@@ -29,23 +29,22 @@ DT_MODULE(1)
 
 typedef struct dt_lib_file_manager_t
 {
-  pid_t        pid;
+  pid_t pid;
   VteTerminal *terminal;
-}
-dt_lib_file_manager_t;
+} dt_lib_file_manager_t;
 
-const char* name()
+const char *name()
 {
   // FIXME: Hack to get a translated name without the need to touch the .po files
-//   char* n = _("zoomable light table\nfile manager");
-//   while(*n != '\n') n++; n++;
-//   return n;
+  //   char* n = _("zoomable light table\nfile manager");
+  //   while(*n != '\n') n++; n++;
+  //   return n;
   return _("file manager");
 }
 
 uint32_t views()
 {
-  return DT_LIGHTTABLE_VIEW|DT_CAPTURE_VIEW;
+  return DT_VIEW_LIGHTTABLE | DT_VIEW_TETHERING;
 }
 
 uint32_t container()
@@ -55,12 +54,12 @@ uint32_t container()
 
 void gui_reset(dt_lib_module_t *self)
 {
-  dt_lib_file_manager_t *d = (dt_lib_file_manager_t*) self->data;
+  dt_lib_file_manager_t *d = (dt_lib_file_manager_t *)self->data;
   kill(d->pid, SIGHUP);
 #ifdef VTE_DEPRECATED
   d->pid = vte_terminal_fork_command(d->terminal, NULL, NULL, NULL, NULL, FALSE, FALSE, FALSE);
 #else
-  char* argv[2] = {g_strdup(g_getenv("SHELL")), NULL};
+  char *argv[2] = { g_strdup(g_getenv("SHELL")), NULL };
   vte_terminal_fork_command_full(d->terminal, VTE_PTY_DEFAULT, NULL, argv, NULL, 0, NULL, NULL, &d->pid, NULL);
   g_free(argv[0]);
 #endif
@@ -88,7 +87,7 @@ void gui_init(dt_lib_module_t *self)
 #ifdef VTE_DEPRECATED
   d->pid = vte_terminal_fork_command(d->terminal, NULL, NULL, NULL, NULL, FALSE, FALSE, FALSE);
 #else
-  char* argv[2] = {g_strdup(g_getenv("SHELL")), NULL};
+  char *argv[2] = { g_strdup(g_getenv("SHELL")), NULL };
   vte_terminal_fork_command_full(d->terminal, VTE_PTY_DEFAULT, NULL, argv, NULL, 0, NULL, NULL, &d->pid, NULL);
   g_free(argv[0]);
 #endif
@@ -99,14 +98,13 @@ mkdir <dir>\t\t\tcreate directory\n\
 mv <src> <dst>\tmove <src> to <dst>\n\
 cp <src> <dst>\t\tcopy <src> to <dst>\n\
 rm <file>\t\t\tdelete <file>\n\
-rmdir <dir>\t\t\tdelete empty directory"), (char *)NULL);
-
+rmdir <dir>\t\t\tdelete empty directory"),
+               (char *)NULL);
 }
 
 void gui_cleanup(dt_lib_module_t *self)
 {
-  darktable.gui->redraw_widgets = g_list_remove(darktable.gui->redraw_widgets, self->widget);
-  dt_lib_file_manager_t *d = (dt_lib_file_manager_t*) self->data;
+  dt_lib_file_manager_t *d = (dt_lib_file_manager_t *)self->data;
   dt_gui_key_accel_block_on_focus_disconnect(GTK_WIDGET(d->terminal));
   kill(d->pid, SIGKILL);
   g_free(self->data);

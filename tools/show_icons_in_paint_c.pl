@@ -54,7 +54,7 @@ close(PAINTH);
 open(TESTC, ">$tempdir/test.c");
 print TESTC <<EOF;
 #include <cairo.h>
-#include "$srcdir/dtgtk/paint.h"
+#include "dtgtk/paint.h"
 
 int main(){
 	cairo_surface_t *surface;
@@ -89,6 +89,7 @@ EOF
 my $row = 0;
 foreach my $line (@codelines){
 	my $description = @$line[0];
+	$description =~ s/"/\\"/g;
 	my $code = @$line[1];
 
 	# add description text
@@ -143,7 +144,7 @@ print TESTC <<EOF;
 EOF
 
 # compile & run the .c file
-system("gcc `pkg-config --cflags --libs gtk+-2.0` -std=c99 -I. -o $tempdir/test $tempdir/test.c $srcdir/dtgtk/paint.c");
+system("gcc `pkg-config --cflags --libs gtk+-2.0` -lm -std=c99 -I$srcdir -o $tempdir/test $tempdir/test.c $srcdir/dtgtk/paint.c");
 system("$tempdir/test");
 
 print "show_icons_in_paint_c.png created in the current directory\n";

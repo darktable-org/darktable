@@ -38,8 +38,7 @@ typedef struct dt_iop_roi_t
 {
   int x, y, width, height;
   float scale;
-}
-dt_iop_roi_t;
+} dt_iop_roi_t;
 
 typedef struct dt_dev_pixelpipe_iop_t
 {
@@ -47,27 +46,27 @@ typedef struct dt_dev_pixelpipe_iop_t
   struct dt_dev_pixelpipe_t *pipe; // the pipe this piece belongs to
   void *data;                      // to be used by the module to store stuff per pipe piece
   void *blendop_data;              // to be used by the module to store blendop per pipe piece
-  int enabled;                     // used to disable parts of the pipe for export, independent on module itself.
-  float iscale;                    // input actually just downscaled buffer? iscale*iwidth = actual width
-  int iwidth, iheight;             // width and height of input buffer
-  uint64_t hash;                   // hash of params and enabled.
-  int bpc;                         // bits per channel, 32 means float
-  int colors;                      // how many colors per pixel
-  dt_iop_roi_t buf_in, buf_out;    // theoretical full buffer regions of interest, as passed through modify_roi_out
-  int process_cl_ready;            // set this to 0 in commit_params to temporarily disable the use of process_cl
-  float processed_maximum[3];      // sensor saturation after this iop, used internally for caching
-}
-dt_dev_pixelpipe_iop_t;
+  int enabled;         // used to disable parts of the pipe for export, independent on module itself.
+  float iscale;        // input actually just downscaled buffer? iscale*iwidth = actual width
+  int iwidth, iheight; // width and height of input buffer
+  uint64_t hash;       // hash of params and enabled.
+  int bpc;             // bits per channel, 32 means float
+  int colors;          // how many colors per pixel
+  dt_iop_roi_t buf_in,
+      buf_out;                // theoretical full buffer regions of interest, as passed through modify_roi_out
+  int process_cl_ready;       // set this to 0 in commit_params to temporarily disable the use of process_cl
+  float processed_maximum[3]; // sensor saturation after this iop, used internally for caching
+} dt_dev_pixelpipe_iop_t;
 
 typedef enum dt_dev_pixelpipe_change_t
 {
-  DT_DEV_PIPE_UNCHANGED   = 0,    // no event
-  DT_DEV_PIPE_TOP_CHANGED = 1<<0, // only params of top element changed
-  DT_DEV_PIPE_REMOVE      = 1<<1, // possibly elements of the pipe have to be removed
-  DT_DEV_PIPE_SYNCH       = 1<<2, // all nodes up to end need to be synched, but no removal of module pieces is necessary
-  DT_DEV_PIPE_ZOOMED      = 1<<3  // zoom event, preview pipe does not need changes
-}
-dt_dev_pixelpipe_change_t;
+  DT_DEV_PIPE_UNCHANGED = 0,        // no event
+  DT_DEV_PIPE_TOP_CHANGED = 1 << 0, // only params of top element changed
+  DT_DEV_PIPE_REMOVE = 1 << 1,      // possibly elements of the pipe have to be removed
+  DT_DEV_PIPE_SYNCH
+  = 1 << 2, // all nodes up to end need to be synched, but no removal of module pieces is necessary
+  DT_DEV_PIPE_ZOOMED = 1 << 3 // zoom event, preview pipe does not need changes
+} dt_dev_pixelpipe_change_t;
 
 /**
  * this encapsulates the gegl pixel pipeline.
@@ -122,28 +121,31 @@ typedef struct dt_dev_pixelpipe_t
   int devid;
   // image struct as it was when the pixelpipe was initialized. copied to avoid race conditions.
   dt_image_t image;
-}
-dt_dev_pixelpipe_t;
+} dt_dev_pixelpipe_t;
 
 struct dt_develop_t;
 
 // inits the pixelpipe with plain passthrough input/output and empty input and default caching settings.
 int dt_dev_pixelpipe_init(dt_dev_pixelpipe_t *pipe);
-// inits the preview pixelpipe with plain passthrough input/output and empty input and default caching settings.
+// inits the preview pixelpipe with plain passthrough input/output and empty input and default caching
+// settings.
 int dt_dev_pixelpipe_init_preview(dt_dev_pixelpipe_t *pipe);
 // inits the pixelpipe with settings optimized for full-image export (no history stack cache)
 int dt_dev_pixelpipe_init_export(dt_dev_pixelpipe_t *pipe, int32_t width, int32_t height, int levels);
 // inits the pixelpipe with settings optimized for thumbnail export (no history stack cache)
 int dt_dev_pixelpipe_init_thumbnail(dt_dev_pixelpipe_t *pipe, int32_t width, int32_t height);
-// inits all but the pixel caches, so you can't actually process an image (just get dimensions and distortions)
+// inits all but the pixel caches, so you can't actually process an image (just get dimensions and
+// distortions)
 int dt_dev_pixelpipe_init_dummy(dt_dev_pixelpipe_t *pipe, int32_t width, int32_t height);
 // inits the pixelpipe with given cacheline size and number of entries.
 int dt_dev_pixelpipe_init_cached(dt_dev_pixelpipe_t *pipe, size_t size, int32_t entries);
 // constructs a new input gegl_buffer from given RGB float array.
-void dt_dev_pixelpipe_set_input(dt_dev_pixelpipe_t *pipe, struct dt_develop_t *dev, float *input, int width, int height, float iscale);
+void dt_dev_pixelpipe_set_input(dt_dev_pixelpipe_t *pipe, struct dt_develop_t *dev, float *input, int width,
+                                int height, float iscale);
 
 // returns the dimensions of the full image after processing.
-void dt_dev_pixelpipe_get_dimensions(dt_dev_pixelpipe_t *pipe, struct dt_develop_t *dev, int width_in, int height_in, int *width, int *height);
+void dt_dev_pixelpipe_get_dimensions(dt_dev_pixelpipe_t *pipe, struct dt_develop_t *dev, int width_in,
+                                     int height_in, int *width, int *height);
 
 // destroys all allocated data.
 void dt_dev_pixelpipe_cleanup(dt_dev_pixelpipe_t *pipe);
@@ -151,7 +153,8 @@ void dt_dev_pixelpipe_cleanup(dt_dev_pixelpipe_t *pipe);
 // flushes all cached data. useful if input pixels unexpectedly change.
 void dt_dev_pixelpipe_flush_caches(dt_dev_pixelpipe_t *pipe);
 
-// wrapper for cleanup_nodes, create_nodes, synch_all and synch_top, decides upon changed event which one to take on. also locks dev->history_mutex.
+// wrapper for cleanup_nodes, create_nodes, synch_all and synch_top, decides upon changed event which one to
+// take on. also locks dev->history_mutex.
 void dt_dev_pixelpipe_change(dt_dev_pixelpipe_t *pipe, struct dt_develop_t *dev);
 // cleanup all gegl nodes except clean input/output
 void dt_dev_pixelpipe_cleanup_nodes(dt_dev_pixelpipe_t *pipe);
@@ -163,9 +166,11 @@ void dt_dev_pixelpipe_synch_all(dt_dev_pixelpipe_t *pipe, struct dt_develop_t *d
 void dt_dev_pixelpipe_synch_top(dt_dev_pixelpipe_t *pipe, struct dt_develop_t *dev);
 
 // process region of interest of pixels. returns 1 if pipe was altered during processing.
-int dt_dev_pixelpipe_process(dt_dev_pixelpipe_t *pipe, struct dt_develop_t *dev, int x, int y, int width, int height, float scale);
+int dt_dev_pixelpipe_process(dt_dev_pixelpipe_t *pipe, struct dt_develop_t *dev, int x, int y, int width,
+                             int height, float scale);
 // convenience method that does not gamma-compress the image.
-int dt_dev_pixelpipe_process_no_gamma(dt_dev_pixelpipe_t *pipe, struct dt_develop_t *dev, int x, int y, int width, int height, float scale);
+int dt_dev_pixelpipe_process_no_gamma(dt_dev_pixelpipe_t *pipe, struct dt_develop_t *dev, int x, int y,
+                                      int width, int height, float scale);
 
 // disable given op and all that comes after it in the pipe:
 void dt_dev_pixelpipe_disable_after(dt_dev_pixelpipe_t *pipe, const char *op);
@@ -186,8 +191,7 @@ static inline int dt_dev_pixelpipe_uses_downsampled_input(dt_dev_pixelpipe_t *pi
   if(!dt_conf_get_bool("plugins/lighttable/low_quality_thumbnails"))
     return pipe->type == DT_DEV_PIXELPIPE_PREVIEW;
   else
-    return (pipe->type == DT_DEV_PIXELPIPE_PREVIEW  ) ||
-           (pipe->type == DT_DEV_PIXELPIPE_THUMBNAIL);
+    return (pipe->type == DT_DEV_PIXELPIPE_PREVIEW) || (pipe->type == DT_DEV_PIXELPIPE_THUMBNAIL);
 }
 
 #endif

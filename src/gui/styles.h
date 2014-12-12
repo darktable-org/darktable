@@ -19,10 +19,10 @@
 #define DT_GUI_STYLES_DIALOG
 
 /** shows a dialog for creating a new style */
-void dt_gui_styles_dialog_new (int imgid);
+void dt_gui_styles_dialog_new(int imgid);
 
 /** shows a dialog for editing existing style */
-void dt_gui_styles_dialog_edit (const char *name);
+void dt_gui_styles_dialog_edit(const char *name);
 
 #endif
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

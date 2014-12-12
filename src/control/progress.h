@@ -27,19 +27,24 @@ struct _dt_job_t;
 struct _dt_progress_t;
 typedef struct _dt_progress_t dt_progress_t;
 
-typedef void (*dt_progress_cancel_callback_t)(dt_progress_t *progress, void * data);
+typedef void (*dt_progress_cancel_callback_t)(dt_progress_t *progress, void *data);
 
 
-/** create a new progress object and add it to the gui. pass it to dt_control_progress_destroy() to free the resources. */
-dt_progress_t * dt_control_progress_create(struct dt_control_t *control, gboolean has_progress_bar, const gchar *message);
+/** create a new progress object and add it to the gui. pass it to dt_control_progress_destroy() to free the
+ * resources. */
+dt_progress_t *dt_control_progress_create(struct dt_control_t *control, gboolean has_progress_bar,
+                                          const gchar *message);
 /** free the resources and remove the gui. */
 void dt_control_progress_destroy(struct dt_control_t *control, dt_progress_t *progress);
 
 /** set a callback to be executed when the progress is being cancelled. */
-void dt_control_progress_make_cancellable(struct dt_control_t *control, dt_progress_t *progress, dt_progress_cancel_callback_t cancel, void *data);
+void dt_control_progress_make_cancellable(struct dt_control_t *control, dt_progress_t *progress,
+                                          dt_progress_cancel_callback_t cancel, void *data);
 /** convenience function to cancel a job when the progress gets cancelled. */
-void dt_control_progress_attach_job(struct dt_control_t *control, dt_progress_t *progress, struct _dt_job_t *job);
-/** cancel the job linked to with dt_control_progress_attach_job(). don't forget to call dt_control_progress_destroy() afterwards. */
+void dt_control_progress_attach_job(struct dt_control_t *control, dt_progress_t *progress,
+                                    struct _dt_job_t *job);
+/** cancel the job linked to with dt_control_progress_attach_job(). don't forget to call
+ * dt_control_progress_destroy() afterwards. */
 void dt_control_progress_cancel(struct dt_control_t *control, dt_progress_t *progress);
 
 /** update the progress of the progress object. the range should be [0.0, 1.0] to make progress bars work. */
@@ -48,11 +53,11 @@ void dt_control_progress_set_progress(struct dt_control_t *control, dt_progress_
 double dt_control_progress_get_progress(dt_progress_t *progress);
 
 /** get the message passed during construction. */
-const gchar * dt_control_progress_get_message(dt_progress_t *progress);
+const gchar *dt_control_progress_get_message(dt_progress_t *progress);
 
 /** these functions are to be used by lib/backgroundjobs.c only. */
-void dt_control_progress_set_gui_data(dt_progress_t *progress, void * data);
-void * dt_control_progress_get_gui_data(dt_progress_t *progress);
+void dt_control_progress_set_gui_data(dt_progress_t *progress, void *data);
+void *dt_control_progress_get_gui_data(dt_progress_t *progress);
 
 /** does the progress object have a progress bar in its gui? */
 gboolean dt_control_progress_has_progress_bar(dt_progress_t *progress);

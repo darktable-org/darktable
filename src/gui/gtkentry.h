@@ -33,12 +33,9 @@ typedef enum
   COMPL_DESCRIPTION
 } dtGtkEntryCompletionSpecCol;
 
-void
-dt_gtkentry_setup_completion(GtkEntry *entry, const dt_gtkentry_completion_spec *compl_list);
+void dt_gtkentry_setup_completion(GtkEntry *entry, const dt_gtkentry_completion_spec *compl_list);
 
-const dt_gtkentry_completion_spec *
-dt_gtkentry_get_default_path_compl_list ();
+const dt_gtkentry_completion_spec *dt_gtkentry_get_default_path_compl_list();
 
-gchar *
-dt_gtkentry_build_completion_tooltip_text (const gchar *header,
-    const dt_gtkentry_completion_spec *compl_list);
+gchar *dt_gtkentry_build_completion_tooltip_text(const gchar *header,
+                                                 const dt_gtkentry_completion_spec *compl_list);

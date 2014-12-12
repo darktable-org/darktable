@@ -30,21 +30,21 @@
 #include <errno.h>
 #include <glib.h>
 #include <strings.h>
-#if 0//def  HAVE_INOTIFY
+#if 0 // def  HAVE_INOTIFY
 #include <sys/inotify.h>
 #endif
 
 
 typedef struct _watch_t
 {
-  int descriptor;   // Handle
-  dt_fswatch_type_t type;        // DT_FSWATCH_* type
-  void *data;				// Assigned data
-  int events;				// events occurred..
+  int descriptor;         // Handle
+  dt_fswatch_type_t type; // DT_FSWATCH_* type
+  void *data;             // Assigned data
+  int events;             // events occurred..
 } _watch_t;
 
 
-#if 0// def  HAVE_INOTIFY
+#if 0 // def  HAVE_INOTIFY
 
 typedef struct inotify_event_t
 {
@@ -180,7 +180,7 @@ void dt_fswatch_destroy(const dt_fswatch_t *fswatch)
 
 void dt_fswatch_add(const dt_fswatch_t * fswatch,dt_fswatch_type_t type, void *data)
 {
-  char filename[PATH_MAX];
+  char filename[PATH_MAX] = { 0 };
   uint32_t mask=0;
   dt_fswatch_t *ctx=(dt_fswatch_t *)fswatch;
   filename[0] = '\0';
@@ -233,15 +233,21 @@ void dt_fswatch_remove(const dt_fswatch_t * fswatch,dt_fswatch_type_t type, void
   dt_pthread_mutex_unlock(&ctx->mutex);
 }
 
-#else	// HAVE_INOTIFY
-const dt_fswatch_t* dt_fswatch_new()
+#else // HAVE_INOTIFY
+const dt_fswatch_t *dt_fswatch_new()
 {
-  dt_print(DT_DEBUG_FSWATCH,"[fswatch_new] fswatch not supported on your platform\n");
+  dt_print(DT_DEBUG_FSWATCH, "[fswatch_new] fswatch not supported on your platform\n");
   return NULL;
 }
-void dt_fswatch_destroy(const dt_fswatch_t *fswatch) {}
-void dt_fswatch_add(const dt_fswatch_t *fswatch, dt_fswatch_type_t type, void *data) {}
-void dt_fswatch_remove(const dt_fswatch_t * fswatch, dt_fswatch_type_t type, void *data) {}
+void dt_fswatch_destroy(const dt_fswatch_t *fswatch)
+{
+}
+void dt_fswatch_add(const dt_fswatch_t *fswatch, dt_fswatch_type_t type, void *data)
+{
+}
+void dt_fswatch_remove(const dt_fswatch_t *fswatch, dt_fswatch_type_t type, void *data)
+{
+}
 #endif
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

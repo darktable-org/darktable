@@ -23,15 +23,14 @@
 #include <gtk/gtk.h>
 #include "common/camera_control.h"
 
-typedef struct  dt_camera_import_dialog_param_t
+typedef struct dt_camera_import_dialog_param_t
 {
   dt_camera_t *camera;
   gchar *jobcode;
   time_t time_override;
   /** Filenames of selected images to import*/
   GList *result;
-}
-dt_camera_import_dialog_param_t;
+} dt_camera_import_dialog_param_t;
 
 /** Fires up the camera import dialog, result is a list of images paths on camera to be imported. */
 void dt_camera_import_dialog_new(dt_camera_import_dialog_param_t *param);

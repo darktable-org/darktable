@@ -72,7 +72,8 @@ typedef enum dt_signal_t
   DT_SIGNAL_FILMROLLS_CHANGED,
 
   /** \brief This signal is raised only when a filmroll is imported
-    1 :  int the film_id for the film that triggered the import. in case of recursion, other filmrolls might be affected
+    1 :  int the film_id for the film that triggered the import. in case of recursion, other filmrolls might
+    be affected
     no return
    */
   DT_SIGNAL_FILMROLLS_IMPORTED,
@@ -133,8 +134,8 @@ typedef enum dt_signal_t
     2 char* : the filename we exported to
     3 dt_imageio_module_format_t* : the format used for export
     4 dt_imageio_module_data_t* : the format's data
-    5 dt_imageio_module_storage_t* : the storage used for export (can be NULL) 
-    6 dt_imageio_module_data_t* : the storage's data (can be NULL) 
+    5 dt_imageio_module_storage_t* : the storage used for export (can be NULL)
+    6 dt_imageio_module_data_t* : the storage's data (can be NULL)
     no return
     */
   DT_SIGNAL_IMAGE_EXPORT_TMPFILE,
@@ -152,17 +153,17 @@ typedef enum dt_signal_t
 
   /* do not touch !*/
   DT_SIGNAL_COUNT
-}
-dt_signal_t;
+} dt_signal_t;
 
 /* inititialize the signal framework */
 struct dt_control_signal_t *dt_control_signal_init();
 /* raises a signal */
-void dt_control_signal_raise(const struct dt_control_signal_t *ctlsig, const dt_signal_t signal,...);
+void dt_control_signal_raise(const struct dt_control_signal_t *ctlsig, const dt_signal_t signal, ...);
 /* connects a callback to a signal */
-void dt_control_signal_connect(const struct dt_control_signal_t *ctlsig,const dt_signal_t signal, GCallback cb, gpointer user_data);
+void dt_control_signal_connect(const struct dt_control_signal_t *ctlsig, const dt_signal_t signal,
+                               GCallback cb, gpointer user_data);
 /* disconnects a callback from a sink */
-void dt_control_signal_disconnect(const struct dt_control_signal_t *ctlsig, GCallback cb,gpointer user_data);
+void dt_control_signal_disconnect(const struct dt_control_signal_t *ctlsig, GCallback cb, gpointer user_data);
 #endif
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

@@ -21,64 +21,65 @@
 #include "lua/events.h"
 #include "control/jobs/control_jobs.h"
 
-static int id_member(lua_State *L) 
+static int id_member(lua_State *L)
 {
-  dt_view_t * module = *(dt_view_t**)lua_touserdata(L,1);
-  lua_pushstring(L,module->module_name);
+  dt_view_t *module = *(dt_view_t **)lua_touserdata(L, 1);
+  lua_pushstring(L, module->module_name);
   return 1;
 }
 
-static int name_member(lua_State *L) 
+static int name_member(lua_State *L)
 {
-  dt_view_t * module = *(dt_view_t**)lua_touserdata(L,1);
-      lua_pushstring(L,module->name(module));
+  dt_view_t *module = *(dt_view_t **)lua_touserdata(L, 1);
+  lua_pushstring(L, module->name(module));
   return 1;
 }
 
-static int view_tostring(lua_State* L)
+static int view_tostring(lua_State *L)
 {
-  dt_view_t * module = *(dt_view_t**)lua_touserdata(L,-1);
-  lua_pushstring(L,module->module_name);
+  dt_view_t *module = *(dt_view_t **)lua_touserdata(L, -1);
+  lua_pushstring(L, module->module_name);
   return 1;
 }
 
-void dt_lua_register_view(lua_State* L,dt_view_t* module)
+void dt_lua_register_view(lua_State *L, dt_view_t *module)
 {
-  dt_lua_module_entry_new_singleton(L,"view",module->module_name,module);
-  int my_type = dt_lua_module_entry_get_type(L,"view",module->module_name);
-  dt_lua_type_register_parent_type(L,my_type,luaA_type_find(L,"dt_view_t"));
-  luaL_getmetatable(L,luaA_typename(L,my_type));
-  lua_pushcfunction(L,view_tostring);
-  lua_setfield(L,-2,"__tostring");
-  lua_pop(L,1);
+  dt_lua_module_entry_new_singleton(L, "view", module->module_name, module);
+  int my_type = dt_lua_module_entry_get_type(L, "view", module->module_name);
+  dt_lua_type_register_parent_type(L, my_type, luaA_type_find(L, "dt_view_t"));
+  luaL_getmetatable(L, luaA_typename(L, my_type));
+  lua_pushcfunction(L, view_tostring);
+  lua_setfield(L, -2, "__tostring");
+  lua_pop(L, 1);
 };
 
 
-typedef struct {
-  dt_view_t * old_view;
-  dt_view_t * new_view;
+typedef struct
+{
+  dt_view_t *old_view;
+  dt_view_t *new_view;
 } view_changed_callback_data_t;
 
 
-static int32_t view_changed_callback_job(dt_job_t *job) {
+static int32_t view_changed_callback_job(dt_job_t *job)
+{
   gboolean has_lock = dt_lua_lock();
   view_changed_callback_data_t *t = dt_control_job_get_params(job);
-  dt_lua_module_entry_push(darktable.lua_state.state,"view",t->old_view->module_name);
-  dt_lua_module_entry_push(darktable.lua_state.state,"view",t->new_view->module_name);
+  dt_lua_module_entry_push(darktable.lua_state.state, "view", t->old_view->module_name);
+  dt_lua_module_entry_push(darktable.lua_state.state, "view", t->new_view->module_name);
   free(t);
-  dt_lua_event_trigger(darktable.lua_state.state,"view-changed",2);
+  dt_lua_event_trigger(darktable.lua_state.state, "view-changed", 2);
   dt_lua_unlock(has_lock);
   return 0;
 }
 
-static void on_view_changed(gpointer instance,
-    dt_view_t* old_view,
-    dt_view_t* new_view,
-     gpointer user_data){
+static void on_view_changed(gpointer instance, dt_view_t *old_view, dt_view_t *new_view, gpointer user_data)
+{
   dt_job_t *job = dt_control_job_create(&view_changed_callback_job, "lua: on view changed");
   if(job)
   {
-    view_changed_callback_data_t *t = (view_changed_callback_data_t*)calloc(1, sizeof(view_changed_callback_data_t));
+    view_changed_callback_data_t *t
+        = (view_changed_callback_data_t *)calloc(1, sizeof(view_changed_callback_data_t));
     if(!t)
     {
       dt_control_job_dispose(job);
@@ -96,23 +97,24 @@ static void on_view_changed(gpointer instance,
 int dt_lua_init_early_view(lua_State *L)
 {
 
-  dt_lua_init_type(L,dt_view_t);
-  lua_pushcfunction(L,id_member);
-  dt_lua_type_register_const(L,dt_view_t,"id");
-  lua_pushcfunction(L,name_member);
-  dt_lua_type_register_const(L,dt_view_t,"name");
+  dt_lua_init_type(L, dt_view_t);
+  lua_pushcfunction(L, id_member);
+  dt_lua_type_register_const(L, dt_view_t, "id");
+  lua_pushcfunction(L, name_member);
+  dt_lua_type_register_const(L, dt_view_t, "name");
 
-  dt_lua_module_new(L,"view"); // special case : will be attached to dt.gui in lua/gui.c:dt_lua_init_gui
+  dt_lua_module_new(L, "view"); // special case : will be attached to dt.gui in lua/gui.c:dt_lua_init_gui
 
 
   return 0;
 }
 int dt_lua_init_view(lua_State *L)
 {
-  lua_pushcfunction(L,dt_lua_event_multiinstance_register);
-  lua_pushcfunction(L,dt_lua_event_multiinstance_trigger);
-  dt_lua_event_add(L,"view-changed");
-  dt_control_signal_connect(darktable.signals,DT_SIGNAL_VIEWMANAGER_VIEW_CHANGED,G_CALLBACK(on_view_changed),NULL);
+  lua_pushcfunction(L, dt_lua_event_multiinstance_register);
+  lua_pushcfunction(L, dt_lua_event_multiinstance_trigger);
+  dt_lua_event_add(L, "view-changed");
+  dt_control_signal_connect(darktable.signals, DT_SIGNAL_VIEWMANAGER_VIEW_CHANGED,
+                            G_CALLBACK(on_view_changed), NULL);
   return 0;
 }
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

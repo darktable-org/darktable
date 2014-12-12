@@ -20,71 +20,85 @@
 #include "lua/types.h"
 #include "gui/gtk.h"
 
-static int expanded_member(lua_State*L) {
-  dt_lib_module_t * module = *(dt_lib_module_t**)lua_touserdata(L,1);
-  if(lua_gettop(L) != 3) {
-    lua_pushboolean(L,module->expandable());
+static int expanded_member(lua_State *L)
+{
+  dt_lib_module_t *module = *(dt_lib_module_t **)lua_touserdata(L, 1);
+  if(lua_gettop(L) != 3)
+  {
+    lua_pushboolean(L, module->expandable());
     return 1;
-  } else {
+  }
+  else
+  {
     dt_lua_unlock(true);
-    dt_lib_gui_set_expanded(module,lua_toboolean(L,3));
+    dt_lib_gui_set_expanded(module, lua_toboolean(L, 3));
     dt_lua_lock();
     return 0;
   }
 }
 
-static int visible_member(lua_State*L) {
-  dt_lib_module_t * module = *(dt_lib_module_t**)lua_touserdata(L,1);
-  if(lua_gettop(L) != 3) {
-    lua_pushboolean(L,dt_lib_is_visible(module));
+static int visible_member(lua_State *L)
+{
+  dt_lib_module_t *module = *(dt_lib_module_t **)lua_touserdata(L, 1);
+  if(lua_gettop(L) != 3)
+  {
+    lua_pushboolean(L, dt_lib_is_visible(module));
     return 1;
-  } else {
+  }
+  else
+  {
     dt_lua_unlock(true);
-    dt_lib_set_visible(module,lua_toboolean(L,3));
+    dt_lib_set_visible(module, lua_toboolean(L, 3));
     dt_lua_lock();
     return 0;
   }
 }
 
-static int version_member(lua_State*L) {
-  dt_lib_module_t * module = *(dt_lib_module_t**)lua_touserdata(L,1);
-  lua_pushinteger(L,module->version());
+static int version_member(lua_State *L)
+{
+  dt_lib_module_t *module = *(dt_lib_module_t **)lua_touserdata(L, 1);
+  lua_pushinteger(L, module->version());
   return 1;
 }
 
-static int id_member(lua_State*L) {
-  dt_lib_module_t * module = *(dt_lib_module_t**)lua_touserdata(L,1);
-  lua_pushstring(L,module->plugin_name);
+static int id_member(lua_State *L)
+{
+  dt_lib_module_t *module = *(dt_lib_module_t **)lua_touserdata(L, 1);
+  lua_pushstring(L, module->plugin_name);
   return 1;
 }
 
-gboolean dt_lua_lib_check(lua_State *L,struct dt_lib_module_t* self)
+gboolean dt_lua_lib_check(lua_State *L, struct dt_lib_module_t *self)
 {
-  return(self->widget !=NULL);
+  return (self->widget != NULL);
 }
 
-void dt_lua_lib_check_error(lua_State *L,struct dt_lib_module_t* self)
+void dt_lua_lib_check_error(lua_State *L, struct dt_lib_module_t *self)
 {
-  if(!self->widget) {
-    luaL_error(L,"Attempt to access a non-visible module");
+  if(!self->widget)
+  {
+    luaL_error(L, "Attempt to access a non-visible module");
   }
 }
 
-static int name_member(lua_State*L) {
-  dt_lib_module_t * module = *(dt_lib_module_t**)lua_touserdata(L,1);
-  lua_pushstring(L,module->name());
+static int name_member(lua_State *L)
+{
+  dt_lib_module_t *module = *(dt_lib_module_t **)lua_touserdata(L, 1);
+  lua_pushstring(L, module->name());
   return 1;
 }
 
-static int expandable_member(lua_State*L) {
-  dt_lib_module_t * module = *(dt_lib_module_t**)lua_touserdata(L,1);
-  lua_pushboolean(L,module->expandable());
+static int expandable_member(lua_State *L)
+{
+  dt_lib_module_t *module = *(dt_lib_module_t **)lua_touserdata(L, 1);
+  lua_pushboolean(L, module->expandable());
   return 1;
 }
 
-static int on_screen_member(lua_State*L) {
-  dt_lib_module_t * module = *(dt_lib_module_t**)lua_touserdata(L,1);
-  lua_pushboolean(L,module->widget != NULL);
+static int on_screen_member(lua_State *L)
+{
+  dt_lib_module_t *module = *(dt_lib_module_t **)lua_touserdata(L, 1);
+  lua_pushboolean(L, module->widget != NULL);
   return 1;
 }
 
@@ -118,31 +132,32 @@ static int views_member(lua_State*L) {
 }
 
 #endif
-static int lib_reset(lua_State * L)
+static int lib_reset(lua_State *L)
 {
-  dt_lib_module_t * module = *(dt_lib_module_t**)lua_touserdata(L,1);
-  if(module->widget && module->gui_reset) {
+  dt_lib_module_t *module = *(dt_lib_module_t **)lua_touserdata(L, 1);
+  if(module->widget && module->gui_reset)
+  {
     module->gui_reset(module);
   }
   return 0;
 }
 
-static int lib_tostring(lua_State* L)
+static int lib_tostring(lua_State *L)
 {
-  dt_lib_module_t * module = *(dt_lib_module_t**)lua_touserdata(L,-1);
-  lua_pushstring(L,module->plugin_name);
+  dt_lib_module_t *module = *(dt_lib_module_t **)lua_touserdata(L, -1);
+  lua_pushstring(L, module->plugin_name);
   return 1;
 }
 
-void dt_lua_lib_register(lua_State* L,dt_lib_module_t* module)
+void dt_lua_lib_register(lua_State *L, dt_lib_module_t *module)
 {
-  dt_lua_module_entry_new_singleton(L,"lib",module->plugin_name,module);
-  int my_type = dt_lua_module_entry_get_type(L,"lib",module->plugin_name);
-  dt_lua_type_register_parent_type(L,my_type,luaA_type_find(L,"dt_lib_module_t"));
-  luaL_getmetatable(L,luaA_typename(L,my_type));
-  lua_pushcfunction(L,lib_tostring);
-  lua_setfield(L,-2,"__tostring");
-  lua_pop(L,1);
+  dt_lua_module_entry_new_singleton(L, "lib", module->plugin_name, module);
+  int my_type = dt_lua_module_entry_get_type(L, "lib", module->plugin_name);
+  dt_lua_type_register_parent_type(L, my_type, luaA_type_find(L, "dt_lib_module_t"));
+  luaL_getmetatable(L, luaA_typename(L, my_type));
+  lua_pushcfunction(L, lib_tostring);
+  lua_setfield(L, -2, "__tostring");
+  lua_pop(L, 1);
 };
 
 int dt_lua_init_early_lib(lua_State *L)
@@ -168,20 +183,20 @@ int dt_lua_init_early_lib(lua_State *L)
   luaA_enum_value(L,dt_ui_container_t,DT_UI_CONTAINER_PANEL_BOTTOM);
 #endif
 
-  dt_lua_init_type(L,dt_lib_module_t);
-  lua_pushcfunction(L,lib_reset);
-  lua_pushcclosure(L,dt_lua_type_member_common,1);
-  dt_lua_type_register_const(L,dt_lib_module_t,"reset");
-  lua_pushcfunction(L,version_member);
-  dt_lua_type_register_const(L,dt_lib_module_t,"version");
-  lua_pushcfunction(L,id_member);
-  dt_lua_type_register_const(L,dt_lib_module_t,"id");
-  lua_pushcfunction(L,name_member);
-  dt_lua_type_register_const(L,dt_lib_module_t,"name");
-  lua_pushcfunction(L,expandable_member);
-  dt_lua_type_register_const(L,dt_lib_module_t,"expandable");
-  lua_pushcfunction(L,expanded_member);
-  dt_lua_type_register(L,dt_lib_module_t,"expanded");
+  dt_lua_init_type(L, dt_lib_module_t);
+  lua_pushcfunction(L, lib_reset);
+  lua_pushcclosure(L, dt_lua_type_member_common, 1);
+  dt_lua_type_register_const(L, dt_lib_module_t, "reset");
+  lua_pushcfunction(L, version_member);
+  dt_lua_type_register_const(L, dt_lib_module_t, "version");
+  lua_pushcfunction(L, id_member);
+  dt_lua_type_register_const(L, dt_lib_module_t, "id");
+  lua_pushcfunction(L, name_member);
+  dt_lua_type_register_const(L, dt_lib_module_t, "name");
+  lua_pushcfunction(L, expandable_member);
+  dt_lua_type_register_const(L, dt_lib_module_t, "expandable");
+  lua_pushcfunction(L, expanded_member);
+  dt_lua_type_register(L, dt_lib_module_t, "expanded");
 #if 0
   lua_pushcfunction(L,position_member);
   dt_lua_type_register_const(L,dt_lib_module_t,"position");
@@ -190,12 +205,12 @@ int dt_lua_init_early_lib(lua_State *L)
   lua_pushcfunction(L,views_member);
   dt_lua_type_register_const(L,dt_lib_module_t,"views");
 #endif
-  lua_pushcfunction(L,visible_member);
-  dt_lua_type_register(L,dt_lib_module_t,"visible");
-  lua_pushcfunction(L,on_screen_member);
-  dt_lua_type_register_const(L,dt_lib_module_t,"on_screen");
+  lua_pushcfunction(L, visible_member);
+  dt_lua_type_register(L, dt_lib_module_t, "visible");
+  lua_pushcfunction(L, on_screen_member);
+  dt_lua_type_register_const(L, dt_lib_module_t, "on_screen");
 
-  dt_lua_module_new(L,"lib"); // special case : will be attached to dt.gui in lua/gui.c:dt_lua_init_gui
+  dt_lua_module_new(L, "lib"); // special case : will be attached to dt.gui in lua/gui.c:dt_lua_init_gui
   return 0;
 }
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
