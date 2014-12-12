@@ -480,7 +480,11 @@ void gui_update(struct dt_iop_module_t *self)
               && !strcmp(wb_preset[i].name, wb_preset[g->preset_num[j]].name))
         {
           // let's find gaps
-          if(wb_preset[i - 1].tuning + 1 == wb_preset[i].tuning) continue;
+          if(wb_preset[i - 1].tuning + 1 == wb_preset[i].tuning)
+          {
+            i++;
+            continue;
+          }
 
           // we have a gap!
 
