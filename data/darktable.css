@@ -20,15 +20,17 @@
   border: 0;
 }
 
-GtkFrame
-{
-  margin : 1px;
-  padding : 1px;
-}
-
-#iop-plugin-ui GtkBox
+#iop-plugin-ui GtkBox,
+#lib-plugin-ui GtkBox
 {
   background-color:transparent;
+  margin:0;
+  border:0;
+  padding:0;
+}
+#iop-plugin-ui GtkEventBox,
+#lib-plugin-ui GtkEventBox
+{
   margin:0;
   border:0;
   padding:0;
@@ -42,11 +44,6 @@ GtkFrame
   border:0;
   margin:0;
   background-color: @plugin_bg_color;
-}
-#iop-plugin-ui .GtkBox,
-#lib-plugin-ui .GtkBox
-{
-  background-color: transparent;
 }
 #iop-plugin-ui *:selected
 {
@@ -62,29 +59,35 @@ GtkFrame
   padding:0 0 2pt 2pt;
   background-color: @selected_bg_color;
 }
+#iop-plugin-ui GtkEventBox,
+#lib-plugin-ui GtkEventBox
+{
+  background-color: transparent;
+}
 #iop-plugin-ui,
 #lib-plugin-ui
 {
   border: 1px solid #171717;
-  border-radius: 1px;
-  box-shadow: inset 0 0 1px #202020;
-  margin: 1px;
-  padding: 4px;
+  border-radius: 2px;
+  box-shadow: inset 0 0 2px #171717;
+  margin: 0px;
+  padding: 1px 4px 1px 4px;
   background-color: #252525;
 }
 #iop-plugin-ui:selected,
 #lib-plugin-ui
 {
   border: 1px solid #111111;
-  border-radius: 1px;
-  margin: 1px;
-  padding: 4px;
+  box-shadow: inset 0 0 2px #141414;
+  border-radius: 2px;
+  margin: 0px;
+  padding: 1px 4px 1px 4px;
   color: @selected_fg_color;
   background-color: @selected_bg_color;
 }
 
-#plugins_vbox_left  .GtkTable * {
-  background-color: #ff0000;
+GtkTable {
+  background-color: transparent;
   margin:0;
   border:0;
   padding:0;
