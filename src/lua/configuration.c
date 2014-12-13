@@ -33,7 +33,7 @@
 /* backward compatible API change */
 #define API_VERSION_MINOR 0
 /* bugfixes that should not change anything to the API */
-#define API_VERSION_PATCH 1
+#define API_VERSION_PATCH 2
 /* suffix for unstable version */
 #define API_VERSION_SUFFIX ""
 
