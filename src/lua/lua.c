@@ -21,7 +21,7 @@
 
 void dt_lua_debug_stack_internal(lua_State *L, const char *function, int line)
 {
-  printf("lua stack at %s:%d\n", function, line);
+  printf("lua stack at %s:%d (total %d)\n", function, line,lua_gettop(L));
   for(int i = 1; i <= lua_gettop(L); i++)
   {
     printf("\t%d:%s %s\n", i, lua_typename(L, lua_type(L, i)), luaL_tolstring(L, i, NULL));
