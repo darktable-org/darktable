@@ -148,7 +148,7 @@ int dt_lua_do_chunk(lua_State *L, int nargs, int nresults)
               goto error;
             }
             const char *command = lua_tostring(new_thread, -1);
-            lua_pop(L, 1);
+            lua_pop(new_thread, 3);
             dt_lua_unlock(false);
             int result = system(command);
             dt_lua_lock();
