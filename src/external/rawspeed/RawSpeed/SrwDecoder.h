@@ -49,6 +49,7 @@ private:
   void decodeCompressed(TiffIFD* raw);
   void decodeCompressed2(TiffIFD* raw, int bits);
   int32 samsungDiff (BitPumpMSB &pump, encTableItem *tbl);
+  void decodeCompressed3(TiffIFD* raw);
   TiffIFD *mRootIFD;
   ByteStream *b;
 };

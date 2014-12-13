@@ -56,7 +56,7 @@ RawImage SrwDecoder::decodeRawInternal() {
   int compression = raw->getEntry(COMPRESSION)->getInt();
   int bits = raw->getEntry(BITSPERSAMPLE)->getInt();
 
-  if (32769 != compression && 32770 != compression && 32772 != compression)
+  if (32769 != compression && 32770 != compression && 32772 != compression && 32773 != compression)
     ThrowRDE("Srw Decoder: Unsupported compression");
 
   if (32769 == compression)
@@ -102,6 +102,15 @@ RawImage SrwDecoder::decodeRawInternal() {
     }
     return mRaw;
   }
+  if (32773 == compression)
+  {
+    try {
+      decodeCompressed3(raw);
+    } catch (RawDecoderException& e) {
+      mRaw->setError(e.what());
+    }
+    return mRaw;
+  }
   ThrowRDE("Srw Decoder: Unsupported compression");
   return mRaw;
 }
@@ -137,7 +146,7 @@ void SrwDecoder::decodeCompressed( TiffIFD* raw )
     ushort16* img_up2 = (ushort16*)mRaw->getData(0, max(0, (int)y - 2));
     // Image is arranged in groups of 16 pixels horizontally
     for (uint32 x = 0; x < width; x += 16) {
-			bits.fill();
+      bits.fill();
       bool dir = !!bits.getBitNoFill();
       for (int i = 0; i < 4; i++)
         op[i] = bits.getBitsNoFill(2);
@@ -274,6 +283,34 @@ int32 SrwDecoder::samsungDiff (BitPumpMSB &pump, encTableItem *tbl)
   if (len && (diff & (1 << (len-1))) == 0)
     diff -= (1 << len) - 1;
   return diff;
+}
+
+// Decoder for compressed srw files (NX1 and later)
+void SrwDecoder::decodeCompressed3( TiffIFD* raw)
+{
+  uint32 offset = raw->getEntry(STRIPOFFSETS)->getInt();
+  BitPumpMSB32 pump(mFile->getData(offset),mFile->getSize() - offset);
+
+  // Process the initial metadata bits, we only really use initVal, width and
+  // height (the last two match the TIFF values anyway)
+  pump.getBitsSafe(16); // NLCVersion
+  pump.getBitsSafe(4);  // ImgFormat
+  uint32 bitDepth = pump.getBitsSafe(4)+1;
+  pump.getBitsSafe(4);  // NumBlkInRCUnit
+  pump.getBitsSafe(4);  // CompressionRatio
+  uint32 width    = pump.getBitsSafe(16);
+  uint32 height    = pump.getBitsSafe(16);
+  pump.getBitsSafe(16); // TileWidth
+  pump.getBitsSafe(4);  // reserved
+  pump.getBitsSafe(4);  // OptCode
+  pump.getBitsSafe(8);  // OverlapWidth
+  pump.getBitsSafe(8);  // reserved
+  pump.getBitsSafe(8);  // Inc
+  pump.getBitsSafe(2);  // reserved
+  uint32 initVal  = pump.getBitsSafe(14);
+
+  mRaw->dim = iPoint2D(width, height);
+  mRaw->createData();
 }
 
 void SrwDecoder::checkSupportInternal(CameraMetaData *meta) {
