@@ -26,19 +26,18 @@
 #include "common/imageio_module.h"
 
 
-
 void dt_lua_event_trigger(lua_State *L, const char *event, int nargs)
 {
   lua_getfield(L, LUA_REGISTRYINDEX, "dt_lua_event_list");
   if(lua_isnil(L, -1))
   { // events have been disabled
-    lua_pop(L, nargs);
+    lua_pop(L, nargs+1);
     return;
   }
   lua_getfield(L, -1, event);
   if(lua_isnil(L, -1))
   { // event doesn't exist
-    lua_pop(L, nargs + 1);
+    lua_pop(L, nargs + 2);
     return;
   }
   lua_getfield(L, -1, "in_use");
