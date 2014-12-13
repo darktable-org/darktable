@@ -2013,6 +2013,70 @@ void dt_masks_cleanup_unused(dt_develop_t *dev)
   dt_masks_write_forms(dev);
   free(used);
 }
+
+int dt_masks_point_in_form_exact(float x, float y, float *points, int points_start, int points_count)
+{
+  // we use ray casting algorith
+  // to avoid most problems with horizontal segments, y should be rounded as int
+  // so that there's very little chance than y==points...
+
+  if(points_count > 2 + points_start)
+  {
+    float last = points[points_count * 2 - 1];
+    float yf = (float)y;
+    int nb = 0;
+    for(int i = points_start; i < points_count; i++)
+    {
+      float yy = points[i * 2 + 1];
+      //if we need to skip points (in case of deleted point, because of self-intersection)
+      if(points[i * 2] == -999999.0)
+      {
+        if(yy == -999999.0) break;
+        i = (int)yy - 1;
+        continue;
+      }
+      if (((yf<=yy && yf>last) || (yf>=yy && yf<last)) && (points[i * 2] > x)) nb++;
+      last = yy;
+    }
+    return (nb & 1);
+  }
+  return 0;
+}
+
+int dt_masks_point_in_form_near(float x, float y, float *points, int points_start, int points_count, float distance, int *near)
+{
+  // we use ray casting algorith
+  // to avoid most problems with horizontal segments, y should be rounded as int
+  // so that there's very little chance than y==points...
+
+  // TODO : distance is only evaluated in x, not y...
+
+  if(points_count > 2 + points_start)
+  {
+    float last = points[points_count * 2 - 1];
+    float yf = (float)y;
+    int nb = 0;
+    for(int i = points_start; i < points_count; i++)
+    {
+      float yy = points[i * 2 + 1];
+      //if we need to jump to skip points (in case of deleted point, because of self-intersection)
+      if(points[i * 2] == -999999.0)
+      {
+        if(yy == -999999.0) break;
+        i = (int)yy - 1;
+        continue;
+      }
+      if ((yf<=yy && yf>last) || (yf>=yy && yf<last))
+      {
+        if(points[i * 2] > x) nb++;
+        if(points[i * 2] - x < distance && points[i * 2] - x > -distance) *near = 1;
+      }
+      last = yy;
+    }
+    return (nb & 1);
+  }
+  return 0;
+}
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

@@ -296,6 +296,10 @@ void dt_masks_form_remove(struct dt_iop_module_t *module, dt_masks_form_t *grp, 
 void dt_masks_form_change_opacity(dt_masks_form_t *form, int parentid, int up);
 void dt_masks_form_move(dt_masks_form_t *grp, int formid, int up);
 int dt_masks_form_duplicate(dt_develop_t *dev, int formid);
+
+/** utils functions */
+int dt_masks_point_in_form_exact(float x, float y, float *points, int points_start, int points_count);
+int dt_masks_point_in_form_near(float x, float y, float *points, int points_start, int points_count, float distance, int *near);
 #endif
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

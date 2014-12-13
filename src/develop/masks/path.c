@@ -785,148 +785,75 @@ static void dt_path_get_distance(float x, int y, float as, dt_masks_form_gui_t *
                                  int corner_count, int *inside, int *inside_border, int *near,
                                  int *inside_source)
 {
-  if(!gui) return;
-  // we first check if it's inside borders
-  int nb = 0;
-  int last = -9999;
-  int last2 = -9999;
-  int lastw = -9999;
-  int xx, yy;
+  // initialise returned values
+  *inside_source = 0;
+  *inside = 0;
   *inside_border = 0;
   *near = -1;
+
+  if(!gui) return;
+
+  float yf = (float)y;
   dt_masks_form_gui_points_t *gpt = (dt_masks_form_gui_points_t *)g_list_nth_data(gui->points, index);
   if(!gpt) return;
 
   // we first check if we are inside the source form
-  if(gpt->source_count > corner_count * 6 + 4)
+  if(dt_masks_point_in_form_exact(x,yf,gpt->source,corner_count * 6,gpt->source_count))
   {
-    for(int i = corner_count * 6; i < gpt->source_count; i++)
-    {
-      int yy = (int)gpt->source[i * 2 + 1];
-      if(yy != last && yy == y)
-      {
-        if(gpt->source[i * 2] > x) nb++;
-      }
-      last = yy;
-    }
-    if(nb & 1)
-    {
-      *inside_source = 1;
-      *inside = 1;
-      *inside_border = 0;
-      *near = -1;
-      return;
-    }
+    *inside_source = 1;
+    *inside = 1;
+    return;
   }
-  *inside_source = 0;
 
-  if(gpt->border_count > corner_count * 3)
+  // we check if it's inside borders
+  if(!dt_masks_point_in_form_exact(x,yf,gpt->border,corner_count * 3,gpt->border_count)) return;
+
+  *inside = 1;
+
+  // and we check if it's inside form
+  if(gpt->points_count > 2 + corner_count * 3)
   {
-    for(int i = corner_count * 3; i < gpt->border_count; i++)
+    float as2 = as * as;
+    //float as2 = 1600.0 * as1;
+    float last = gpt->points[gpt->points_count * 2 - 1];
+    int nb = 0;
+    int near_form = 0;
+    int current_seg = 1;
+    for(int i = corner_count * 3; i < gpt->points_count; i++)
     {
-      xx = (int)gpt->border[i * 2];
-      yy = (int)gpt->border[i * 2 + 1];
-      if(xx == -999999)
+      //if we need to jump to skip points (in case of deleted point, because of self-intersection)
+      if(gpt->points[i * 2] == -999999.0)
       {
-        if(yy == -999999) break;
-        i = yy - 1;
+        if(gpt->points[i * 2 + 1] == -999999.0) break;
+        i = (int)gpt->points[i * 2 + 1] - 1;
         continue;
       }
-      // we check if we are at a point were the path change of direction
-      if(last2 > 0 && lastw > 0 && lastw == last && yy != last)
+      // do we change of path segment ?
+      if(gpt->points[i * 2 + 1] == gpt->points[current_seg * 6 + 3] && gpt->points[i * 2] == gpt->points[current_seg * 6 + 2])
       {
-        if((lastw - yy) * (lastw - last2) > 0) nb++;
+        current_seg = (current_seg + 1) % corner_count;
       }
-      if(yy != last
-         && (yy == y || (yy < last && y < last && y > yy) || (yy > last && last > 0 && y > last && y < yy)))
-      {
-        if(xx > x)
-        {
-          nb++;
-          lastw = yy;
-        }
-      }
-      if(yy != lastw) lastw = -999;
-      if(yy != last) last2 = last;
-      last = yy;
-    }
-    xx = (int)gpt->border[corner_count * 6];
-    yy = (int)gpt->border[corner_count * 6 + 1];
-    if(xx == -999999)
-    {
-      xx = (int)gpt->border[(yy - 1) * 2];
-      yy = (int)gpt->border[(yy - 1) * 2 + 1];
-    }
-    if((yy - last > 1 || yy - last < -1)
-       && ((yy < last && y < last && y > yy) || (yy > last && last > 0 && y > last && y < yy)) && xx > x)
-      nb++;
-    *inside_border = (nb & 1);
-  }
-  // and we check if it's inside form
-  int seg = 1;
-  nb = 0;
-  last = last2 = lastw = -9999;
+      //distance from tested point to current form point
+      float yy = gpt->points[i * 2 + 1];
+      float dd = (gpt->points[i * 2] - x) * (gpt->points[i * 2] - x)
+                  + (yy - yf) * (yy - yf);
 
-  float as1 = 2.0 * as * as;
-  float as2 = 1600.0 * as1;
-  int near2 = 0;
-  for(int i = corner_count * 3; i < gpt->points_count; i++)
-  {
-    if(gpt->points[i * 2 + 1] == gpt->points[seg * 6 + 3] && gpt->points[i * 2] == gpt->points[seg * 6 + 2])
-    {
-      seg = (seg + 1) % corner_count;
-    }
-    float dd = (gpt->points[i * 2] - x) * (gpt->points[i * 2] - x)
-               + (gpt->points[i * 2 + 1] - y) * (gpt->points[i * 2 + 1] - y);
-    xx = (int)gpt->points[i * 2];
-    yy = (int)gpt->points[i * 2 + 1];
-    if(dd < as2)
-    {
-      near2 = 1;
-      if(dd < as1)
+      if(dd < as2)
       {
-        if(seg == 0)
+        near_form = 1;
+        if(current_seg == 0)
           *near = corner_count - 1;
         else
-          *near = seg - 1;
+          *near = current_seg - 1;
       }
-    }
-    // we check if we are at a point were the path change of direction
-    if(last2 > 0 && lastw > 0 && lastw == last && yy != last)
-    {
-      if((lastw - yy) * (lastw - last2) > 0) nb++;
-    }
-    if(yy != last
-       && (yy == y || (yy < last && y < last && y > yy) || (yy > last && last > 0 && y > last && y < yy)))
-    {
-      if(xx > x)
-      {
-        nb++;
-        lastw = yy;
-      }
-    }
-    if(yy != last) last2 = last;
-    if(yy != lastw) lastw = -999;
-    last = yy;
-  }
-  xx = (int)gpt->points[corner_count * 6];
-  yy = (int)gpt->points[corner_count * 6 + 1];
-  if((yy - last > 1 || yy - last < -1)
-     && ((yy < last && y < last && y > yy) || (yy > last && last > 0 && y > last && y < yy)) && xx > x)
-    nb++;
 
-  if(nb & 1)
-  {
-    if(near2)
-      *inside = 1;
-    else
-    {
-      *inside = 0;
-      *inside_border = 0;
+      if (((yf<=yy && yf>last) || (yf>=yy && yf<last)) && (gpt->points[i * 2] > x)) nb++;
+
+      last = yy;
     }
+    *inside_border = !((nb & 1) || (near_form));
   }
-  else
-    *inside = 0;
+  else *inside_border = 1;
 }
 
 static int dt_path_get_points_border(dt_develop_t *dev, dt_masks_form_t *form, float **points,
@@ -1763,14 +1690,14 @@ static int dt_path_events_mouse_moved(struct dt_iop_module_t *module, float pzx,
       gui->form_selected = TRUE;
       gui->source_selected = TRUE;
     }
-    else if(in)
-    {
-      gui->form_selected = TRUE;
-    }
     else if(inb)
     {
       gui->form_selected = TRUE;
       gui->border_selected = TRUE;
+    }
+    else if(in)
+    {
+      gui->form_selected = TRUE;
     }
   }
   dt_control_queue_redraw_center();
