@@ -253,8 +253,7 @@ static int32_t on_mouse_over_image_changed_callback_job(dt_job_t *job)
   if(n_params)
     luaA_push(darktable.lua_state.state, dt_lua_image_t, &t->imgid);
   dt_lua_event_trigger(darktable.lua_state.state, "mouse-over-image-changed", n_params);
-  free(t); // i am not sure if the free() may happen before the dt_lua_event_trigger as a pointer to the imgid
-  // inside of it is pushed to the lua stack
+  free(t); 
   dt_lua_unlock(has_lock);
   return 0;
 }
