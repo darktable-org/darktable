@@ -202,10 +202,11 @@ static int dt_ellipse_events_mouse_scrolled(struct dt_iop_module_t *module, floa
       dt_masks_point_ellipse_t *ellipse = (dt_masks_point_ellipse_t *)(g_list_first(form->points)->data);
       if(gui->border_selected)
       {
-        if(up && ellipse->border > 0.002f)
+        if(up && ellipse->border > 0.001f)
           ellipse->border *= 0.97f;
-        else if(ellipse->border < 1.0f)
+        else if(!up && ellipse->border < 1.0f)
           ellipse->border *= 1.0f / 0.97f;
+        else return 1;
         dt_masks_write_form(form, darktable.develop);
         dt_masks_gui_form_remove(form, gui, index);
         dt_masks_gui_form_create(form, gui, index);
@@ -218,10 +219,11 @@ static int dt_ellipse_events_mouse_scrolled(struct dt_iop_module_t *module, floa
       {
         const float oldradius = ellipse->radius[0];
 
-        if(up && ellipse->radius[0] > 0.002f)
+        if(up && ellipse->radius[0] > 0.001f)
           ellipse->radius[0] *= 0.97f;
-        else if(ellipse->radius[0] < 1.0f)
+        else if(!up && ellipse->radius[0] < 1.0f)
           ellipse->radius[0] *= 1.0f / 0.97f;
+        else return 1;
 
         const float factor = ellipse->radius[0] / oldradius;
         ellipse->radius[1] *= factor;

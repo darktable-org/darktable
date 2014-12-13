@@ -77,10 +77,12 @@ static int dt_circle_events_mouse_scrolled(struct dt_iop_module_t *module, float
       dt_masks_point_circle_t *circle = (dt_masks_point_circle_t *)(g_list_first(form->points)->data);
       if(gui->border_selected)
       {
-        if(up && circle->border > 0.002f)
+        if(up && circle->border > 0.001f)
           circle->border *= 0.97f;
-        else if(circle->border < 1.0f)
+        else if(!up && circle->border < 1.0f)
           circle->border *= 1.0f / 0.97f;
+        else
+          return 1;
         dt_masks_write_form(form, darktable.develop);
         dt_masks_gui_form_remove(form, gui, index);
         dt_masks_gui_form_create(form, gui, index);
@@ -91,10 +93,12 @@ static int dt_circle_events_mouse_scrolled(struct dt_iop_module_t *module, float
       }
       else if(gui->edit_mode == DT_MASKS_EDIT_FULL)
       {
-        if(up && circle->radius > 0.002f)
+        if(up && circle->radius > 0.001f)
           circle->radius *= 0.97f;
-        else if(circle->radius < 1.0f)
+        else if(!up && circle->radius < 1.0f)
           circle->radius *= 1.0f / 0.97f;
+        else
+          return 1;
         dt_masks_write_form(form, darktable.develop);
         dt_masks_gui_form_remove(form, gui, index);
         dt_masks_gui_form_create(form, gui, index);
