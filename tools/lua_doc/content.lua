@@ -648,6 +648,7 @@ darktable.debug.type:set_text([[Similar to the system function type() but it wil
 	types.lua_pref_type:set_text([[The type of value to save in a preference]])
 
 
+  types.dt_imageio_exr_compression_t:set_text("The type of compression to use for the EXR image")
 
 	----------------------
 	--  EVENTS          --
