@@ -136,6 +136,7 @@ int dt_dev_pixelpipe_init_cached(dt_dev_pixelpipe_t *pipe, size_t size, int32_t 
   pipe->levels = IMAGEIO_RGB | IMAGEIO_INT8;
   dt_pthread_mutex_init(&(pipe->backbuf_mutex), NULL);
   dt_pthread_mutex_init(&(pipe->busy_mutex), NULL);
+  dt_pthread_mutex_init(&(pipe->synch_mutex), NULL);
   return 1;
 }
 
@@ -154,12 +155,15 @@ void dt_dev_pixelpipe_cleanup(dt_dev_pixelpipe_t *pipe)
   dt_pthread_mutex_lock(&pipe->backbuf_mutex);
   pipe->backbuf = NULL;
   // blocks while busy and sets shutdown bit:
+  dt_pthread_mutex_unlock(&pipe->synch_mutex);  // just to be sure, in case cleanup_nodes has already be called
   dt_dev_pixelpipe_cleanup_nodes(pipe);
+  dt_pthread_mutex_unlock(&pipe->synch_mutex);  // because cleanup_nodes without create_nodes let the mutex locked
   // so now it's safe to clean up cache:
   dt_dev_pixelpipe_cache_cleanup(&(pipe->cache));
   dt_pthread_mutex_unlock(&pipe->backbuf_mutex);
   dt_pthread_mutex_destroy(&(pipe->backbuf_mutex));
   dt_pthread_mutex_destroy(&(pipe->busy_mutex));
+  dt_pthread_mutex_destroy(&(pipe->synch_mutex));
 }
 
 void dt_dev_pixelpipe_cleanup_nodes(dt_dev_pixelpipe_t *pipe)
@@ -167,6 +171,7 @@ void dt_dev_pixelpipe_cleanup_nodes(dt_dev_pixelpipe_t *pipe)
   // FIXME: either this or all process() -> gdk mutices have to be changed!
   //        (this is a circular dependency on busy_mutex and the gdk mutex)
   dt_pthread_mutex_lock(&pipe->busy_mutex);
+  dt_pthread_mutex_lock(&pipe->synch_mutex);
   pipe->shutdown = 1;
   // destroy all nodes
   GList *nodes = pipe->nodes;
@@ -216,6 +221,7 @@ void dt_dev_pixelpipe_create_nodes(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev)
     }
     modules = g_list_next(modules);
   }
+  dt_pthread_mutex_unlock(&pipe->synch_mutex);
   dt_pthread_mutex_unlock(&pipe->busy_mutex);
 }
 
@@ -241,6 +247,7 @@ void dt_dev_pixelpipe_synch(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, GList *
 void dt_dev_pixelpipe_synch_all(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev)
 {
   dt_pthread_mutex_lock(&pipe->busy_mutex);
+  dt_pthread_mutex_lock(&pipe->synch_mutex);
   // call reset_params on all pieces first.
   GList *nodes = pipe->nodes;
   while(nodes)
@@ -259,14 +266,17 @@ void dt_dev_pixelpipe_synch_all(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev)
     dt_dev_pixelpipe_synch(pipe, dev, history);
     history = g_list_next(history);
   }
+  dt_pthread_mutex_unlock(&pipe->synch_mutex);
   dt_pthread_mutex_unlock(&pipe->busy_mutex);
 }
 
 void dt_dev_pixelpipe_synch_top(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev)
 {
   dt_pthread_mutex_lock(&pipe->busy_mutex);
+  dt_pthread_mutex_lock(&pipe->synch_mutex);
   GList *history = g_list_nth(dev->history, dev->history_end - 1);
   if(history) dt_dev_pixelpipe_synch(pipe, dev, history);
+  dt_pthread_mutex_unlock(&pipe->synch_mutex);
   dt_pthread_mutex_unlock(&pipe->busy_mutex);
 }
 

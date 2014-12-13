@@ -1300,6 +1300,10 @@ void leave(dt_view_t *self)
 
   dt_pthread_mutex_unlock(&dev->history_mutex);
 
+  // as we are leaving, let's unlock pipes synchronise mutex, so it can be reused for next images
+  dt_pthread_mutex_unlock(&dev->pipe->synch_mutex);
+  dt_pthread_mutex_unlock(&dev->preview_pipe->synch_mutex);
+
   // cleanup visible masks
   if(dev->form_gui)
   {
