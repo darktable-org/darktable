@@ -427,6 +427,26 @@ GtkSwitch.slider:backdrop,
     box-shadow: none;
 }
 
+/* this shit works in gtk inspector, but not in darktable.css :( */
+.button, GtkButton
+{
+  border-width: 1px;
+  border-color: transparent;
+  border-style: solid;
+  border-radius: 0;
+  background-color: transparent;
+}
+.button GtkLabel,
+GtkButton GtkLabel
+{
+  background-color: transparent;
+}
+.button:hover,
+GtkButton:hover
+{
+  border-color: white;
+}
+
 #dtgtk-icon
 {
   color: green; /* fixme: does not seem to have any effect ??? */
