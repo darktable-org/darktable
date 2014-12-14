@@ -83,7 +83,8 @@ typedef struct dt_develop_t
   float preview_downsampling;         // < 1.0: optionally downsample preview
 
   // width, height: dimensions of window
-  int32_t width, height;
+  // capwidth, capheight: actual dimensions of scaled image inside window.
+  int32_t width, height, capwidth, capheight, capwidth_preview, capheight_preview;
 
   // image processing pipeline with caching
   struct dt_dev_pixelpipe_t *pipe, *preview_pipe;
