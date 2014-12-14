@@ -105,13 +105,13 @@ void gui_init(dt_lib_module_t *self)
   g_signal_connect(d->buttons[DT_MODULEGROUP_FAVORITES], "toggled", G_CALLBACK(_lib_modulegroups_toggle),
                    self);
   g_object_set(d->buttons[DT_MODULEGROUP_FAVORITES], "tooltip-text",
-               _("show modules explicit specified by user"), (char *)NULL);
+               _("show only your favourite modules (selected in `more modules' below)"), (char *)NULL);
 
   /* active */
   d->buttons[DT_MODULEGROUP_ACTIVE_PIPE] = dtgtk_togglebutton_new(dtgtk_cairo_paint_modulegroup_active, pf);
   g_signal_connect(d->buttons[DT_MODULEGROUP_ACTIVE_PIPE], "toggled", G_CALLBACK(_lib_modulegroups_toggle),
                    self);
-  g_object_set(d->buttons[DT_MODULEGROUP_ACTIVE_PIPE], "tooltip-text", _("the modules used in active pipe"),
+  g_object_set(d->buttons[DT_MODULEGROUP_ACTIVE_PIPE], "tooltip-text", _("show only active modules"),
                (char *)NULL);
 
   /* basic */
@@ -137,7 +137,7 @@ void gui_init(dt_lib_module_t *self)
   /* effect */
   d->buttons[DT_MODULEGROUP_EFFECT] = dtgtk_togglebutton_new(dtgtk_cairo_paint_modulegroup_effect, pf);
   g_signal_connect(d->buttons[DT_MODULEGROUP_EFFECT], "toggled", G_CALLBACK(_lib_modulegroups_toggle), self);
-  g_object_set(d->buttons[DT_MODULEGROUP_EFFECT], "tooltip-text", _("effect group"), (char *)NULL);
+  g_object_set(d->buttons[DT_MODULEGROUP_EFFECT], "tooltip-text", _("effects group"), (char *)NULL);
 
   /* minimize table height before adding the buttons */
   gtk_widget_set_size_request(self->widget, -1, -1);
