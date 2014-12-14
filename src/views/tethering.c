@@ -339,6 +339,10 @@ void leave(dt_view_t *self)
   /* destroy session, will cleanup empty film roll */
   dt_import_session_destroy(cv->session);
 
+  /* disconnect from mipmap updated signal */
+  dt_control_signal_disconnect(darktable.signals, G_CALLBACK(_capture_mipmaps_updated_signal_callback),
+                               (gpointer)self);
+
   /* disconnect from filmstrip image activate */
   dt_control_signal_disconnect(darktable.signals, G_CALLBACK(_view_capture_filmstrip_activate_callback),
                                (gpointer)self);
