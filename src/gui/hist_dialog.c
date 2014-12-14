@@ -134,9 +134,9 @@ int dt_gui_hist_dialog_new(dt_gui_hist_dialog_t *d, int imgid, gboolean iscopy)
   GtkWidget *window = dt_ui_main_window(darktable.gui->ui);
 
   GtkDialog *dialog = GTK_DIALOG(gtk_dialog_new_with_buttons(
-      _("select parts"), GTK_WINDOW(window), GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT,
-      GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL, GTK_STOCK_SELECT_ALL, GTK_RESPONSE_YES, GTK_STOCK_CLEAR,
-      GTK_RESPONSE_NONE, GTK_STOCK_OK, GTK_RESPONSE_OK, NULL));
+      _("select parts"), GTK_WINDOW(window), GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT, _("_Cancel"),
+      GTK_RESPONSE_CANCEL, _("Select _All"), GTK_RESPONSE_YES, _("_Clear"), GTK_RESPONSE_NONE, _("_OK"),
+      GTK_RESPONSE_OK, NULL));
 
   GtkContainer *content_area = GTK_CONTAINER(gtk_dialog_get_content_area(GTK_DIALOG(dialog)));
   GtkWidget *alignment = gtk_alignment_new(0.5, 0.5, 1.0, 1.0);

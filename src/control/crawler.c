@@ -359,7 +359,7 @@ void dt_control_crawler_show_image_list(GList *images)
   GtkWidget *win = dt_ui_main_window(darktable.gui->ui);
   GtkWidget *dialog = gtk_dialog_new_with_buttons(_("updated xmp sidecar files found"), GTK_WINDOW(win),
                                                   GTK_DIALOG_DESTROY_WITH_PARENT | GTK_DIALOG_MODAL,
-                                                  GTK_STOCK_CLOSE, GTK_RESPONSE_CLOSE, NULL);
+                                                  _("_Close"), GTK_RESPONSE_CLOSE, NULL);
   gtk_widget_set_size_request(dialog, -1, DT_PIXEL_APPLY_DPI(400));
   gtk_window_set_transient_for(GTK_WINDOW(dialog), GTK_WINDOW(win));
   GtkWidget *content_area = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
