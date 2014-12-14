@@ -286,31 +286,96 @@ int32 SrwDecoder::samsungDiff (BitPumpMSB &pump, encTableItem *tbl)
 }
 
 // Decoder for compressed srw files (NX1 and later)
+// Seriously Samsung just use lossless jpeg already, it compresses better too
 void SrwDecoder::decodeCompressed3( TiffIFD* raw)
 {
   uint32 offset = raw->getEntry(STRIPOFFSETS)->getInt();
-  BitPumpMSB32 pump(mFile->getData(offset),mFile->getSize() - offset);
+  BitPumpMSB32 startpump(mFile->getData(offset),mFile->getSize() - offset);
 
   // Process the initial metadata bits, we only really use initVal, width and
   // height (the last two match the TIFF values anyway)
-  pump.getBitsSafe(16); // NLCVersion
-  pump.getBitsSafe(4);  // ImgFormat
-  uint32 bitDepth = pump.getBitsSafe(4)+1;
-  pump.getBitsSafe(4);  // NumBlkInRCUnit
-  pump.getBitsSafe(4);  // CompressionRatio
-  uint32 width    = pump.getBitsSafe(16);
-  uint32 height    = pump.getBitsSafe(16);
-  pump.getBitsSafe(16); // TileWidth
-  pump.getBitsSafe(4);  // reserved
-  pump.getBitsSafe(4);  // OptCode
-  pump.getBitsSafe(8);  // OverlapWidth
-  pump.getBitsSafe(8);  // reserved
-  pump.getBitsSafe(8);  // Inc
-  pump.getBitsSafe(2);  // reserved
-  uint32 initVal  = pump.getBitsSafe(14);
+  startpump.getBitsSafe(16); // NLCVersion
+  startpump.getBitsSafe(4);  // ImgFormat
+  uint32 bitDepth = startpump.getBitsSafe(4)+1;
+  startpump.getBitsSafe(4);  // NumBlkInRCUnit
+  startpump.getBitsSafe(4);  // CompressionRatio
+  uint32 width    = startpump.getBitsSafe(16);
+  uint32 height    = startpump.getBitsSafe(16);
+  startpump.getBitsSafe(16); // TileWidth
+  startpump.getBitsSafe(4);  // reserved
+  startpump.getBitsSafe(4);  // OptCode
+  startpump.getBitsSafe(8);  // OverlapWidth
+  startpump.getBitsSafe(8);  // reserved
+  startpump.getBitsSafe(8);  // Inc
+  startpump.getBitsSafe(2);  // reserved
+  uint32 initVal  = startpump.getBitsSafe(14);
 
   mRaw->dim = iPoint2D(width, height);
   mRaw->createData();
+
+  // The format is relatively straightforward. Each line gets encoded as a set 
+  // of differences from pixels from another line. Pixels are grouped in blocks 
+  // of 16 (8 green, 8 red or blue). Each block is encoded in three sections.
+  // First 1 or 4 bits to specify which reference pixels to use, then a section
+  // that specifies for each pixel the number of bits in the difference, then
+  // the actual difference bits
+  uint32 motion;
+  int32 motionTable[7][2] = {{-2, 0}, {-1, 0}, {-1, 1}, {0, 0}, {0, 1}, {1, 0}, {2, 0}};
+  uint32 diffBitsMode[3][2] = {0};
+  uint32 line_offset = startpump.getOffset();
+  for (uint32 row=0; row < height; row++) {
+    // Align pump to 16byte boundary
+    if ((line_offset & 0xf) != 0)
+      line_offset += 16 - (line_offset & 0xf);
+    BitPumpMSB32 pump(mFile->getData(offset+line_offset),mFile->getSize()-offset-line_offset);
+
+    ushort16* img = (ushort16*)mRaw->getData(0, row);
+    // Initialize the motion and diff modes at the start of the line
+    motion = 7;
+    for (uint32 i=0; i<3; i++)
+      diffBitsMode[i][0] = diffBitsMode[i][1] = (row==0 || row==1) ? 7 : 4;
+
+    for (uint32 col=0; col < width; col += 16) {
+      // First we figure out which reference pixels mode we're in
+      if (!pump.getBitsSafe(1))
+        motion = pump.getBitsSafe(3);
+      if ((row==0 || row==1) && (motion != 7))
+        ThrowRDE("SRW Decoder: At start of image and motion isn't 7. File corrupted?");
+
+      // Now we figure out how many difference bits we have to read for each pixel
+      uint32 diffBits[4] = {0};
+      uint32 flags[4];
+      for (uint32 i=0; i<4; i++)
+        flags[i] = pump.getBitsSafe(2);
+      for (uint32 i=0; i<4; i++) {
+        // The color is 0-Green 1-Blue 2-Red
+        uint32 colornum = (row % 2 != 0) ? i>>1 : ((i>>1)+2) % 3;
+        switch(flags[i]) {
+          case 0: diffBits[i] = diffBitsMode[colornum][0]; break;
+          case 1: diffBits[i] = diffBitsMode[colornum][0]+1; break;
+          case 2: diffBits[i] = diffBitsMode[colornum][0]-1; break;
+          case 3: diffBits[i] = pump.getBitsSafe(4); break;
+        }
+        diffBitsMode[colornum][0] = diffBitsMode[colornum][1];
+        diffBitsMode[colornum][1] = diffBits[i];
+        if(diffBits[i] > bitDepth+1)
+          ThrowRDE("SRW Decoder: Too many difference bits. File corrupted?");
+      }
+
+      // Now we actually read the differences and write the pixels
+      for (uint32 i=0; i<16; i++) {
+        uint32 len = diffBits[i>>2];
+        int32 diff = pump.getBitsSafe(len);
+        // If the first bit is 1 we need to turn this into a negative number
+        if (diff >> (len-1))
+          diff -= (1 << len);
+        // Apply the diff to pixels 0 2 4 6 8 10 12 14 1 3 5 7 9 11 13 15
+        img[((i&0x7)<<1)+(i>>3)] += diff;
+      }
+      img += 16;
+    }
+    line_offset += pump.getOffset();
+  }
 }
 
 void SrwDecoder::checkSupportInternal(CameraMetaData *meta) {
