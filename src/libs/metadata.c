@@ -320,7 +320,7 @@ void gui_init(dt_lib_module_t *self)
 {
   GtkBox *hbox;
   GtkWidget *button;
-  GtkWidget *label;
+  GtkWidget *label, *last;
   GtkEntryCompletion *completion;
 
   dt_lib_metadata_t *d = (dt_lib_metadata_t *)calloc(1, sizeof(dt_lib_metadata_t));
@@ -328,14 +328,17 @@ void gui_init(dt_lib_module_t *self)
 
   d->imgsel = -1;
 
-  self->widget = gtk_table_new(6, 2, FALSE);
-  gtk_table_set_row_spacings(GTK_TABLE(self->widget), 5);
+  self->widget = gtk_grid_new();
+  gtk_grid_set_row_spacing(GTK_GRID(self->widget), 5);
+  gtk_grid_set_column_spacing(GTK_GRID(self->widget), 5);
+//   gtk_grid_set_row_homogeneous(GTK_GRID(self->widget), TRUE);
+//   gtk_grid_set_column_homogeneous(GTK_GRID(self->widget), TRUE);
 
   g_signal_connect(self->widget, "draw", G_CALLBACK(draw), self);
 
   label = gtk_label_new(_("title"));
-  gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
-  gtk_table_attach(GTK_TABLE(self->widget), label, 0, 1, 0, 1, GTK_EXPAND | GTK_FILL, 0, 0, 0);
+  gtk_widget_set_halign(label, GTK_ALIGN_START);
+  gtk_grid_attach(GTK_GRID(self->widget), label, 0, 0, 1, 1);
   d->title = GTK_COMBO_BOX(gtk_combo_box_text_new_with_entry());
   dt_gui_key_accel_block_on_focus_connect(GTK_WIDGET(gtk_bin_get_child(GTK_BIN(d->title))));
   completion = gtk_entry_completion_new();
@@ -345,11 +348,12 @@ void gui_init(dt_lib_module_t *self)
   gtk_entry_set_completion(GTK_ENTRY(gtk_bin_get_child(GTK_BIN(d->title))), completion);
   g_signal_connect(GTK_WIDGET(gtk_bin_get_child(GTK_BIN(d->title))), "key-press-event",
                    G_CALLBACK(key_pressed), self);
-  gtk_table_attach(GTK_TABLE(self->widget), GTK_WIDGET(d->title), 1, 2, 0, 1, GTK_EXPAND | GTK_FILL, 0, 0, 0);
+  gtk_grid_attach_next_to(GTK_GRID(self->widget), GTK_WIDGET(d->title), label, GTK_POS_RIGHT, 1, 1);
 
+  last = label;
   label = gtk_label_new(_("description"));
-  gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
-  gtk_table_attach(GTK_TABLE(self->widget), label, 0, 1, 1, 2, GTK_EXPAND | GTK_FILL, 0, 0, 0);
+  gtk_widget_set_halign(GTK_WIDGET(label), GTK_ALIGN_START);
+  gtk_grid_attach_next_to(GTK_GRID(self->widget), label, last, GTK_POS_BOTTOM, 1, 1);
   d->description = GTK_COMBO_BOX(gtk_combo_box_text_new_with_entry());
   dt_gui_key_accel_block_on_focus_connect(GTK_WIDGET(gtk_bin_get_child(GTK_BIN(d->description))));
   completion = gtk_entry_completion_new();
@@ -359,12 +363,12 @@ void gui_init(dt_lib_module_t *self)
   gtk_entry_set_completion(GTK_ENTRY(gtk_bin_get_child(GTK_BIN(d->description))), completion);
   g_signal_connect(GTK_WIDGET(gtk_bin_get_child(GTK_BIN(d->description))), "key-press-event",
                    G_CALLBACK(key_pressed), self);
-  gtk_table_attach(GTK_TABLE(self->widget), GTK_WIDGET(d->description), 1, 2, 1, 2, GTK_EXPAND | GTK_FILL, 0,
-                   0, 0);
+  gtk_grid_attach_next_to(GTK_GRID(self->widget), GTK_WIDGET(d->description), label, GTK_POS_RIGHT, 1, 1);
 
+  last = label;
   label = gtk_label_new(_("creator"));
-  gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
-  gtk_table_attach(GTK_TABLE(self->widget), label, 0, 1, 2, 3, GTK_EXPAND | GTK_FILL, 0, 0, 0);
+  gtk_widget_set_halign(GTK_WIDGET(label), GTK_ALIGN_START);
+  gtk_grid_attach_next_to(GTK_GRID(self->widget), label, last, GTK_POS_BOTTOM, 1, 1);
   d->creator = GTK_COMBO_BOX(gtk_combo_box_text_new_with_entry());
   dt_gui_key_accel_block_on_focus_connect(GTK_WIDGET(gtk_bin_get_child(GTK_BIN(d->creator))));
   completion = gtk_entry_completion_new();
@@ -374,12 +378,12 @@ void gui_init(dt_lib_module_t *self)
   gtk_entry_set_completion(GTK_ENTRY(gtk_bin_get_child(GTK_BIN(d->creator))), completion);
   g_signal_connect(GTK_WIDGET(gtk_bin_get_child(GTK_BIN(d->creator))), "key-press-event",
                    G_CALLBACK(key_pressed), self);
-  gtk_table_attach(GTK_TABLE(self->widget), GTK_WIDGET(d->creator), 1, 2, 2, 3, GTK_EXPAND | GTK_FILL, 0, 0,
-                   0);
+  gtk_grid_attach_next_to(GTK_GRID(self->widget), GTK_WIDGET(d->creator), label, GTK_POS_RIGHT, 1, 1);
 
+  last = label;
   label = gtk_label_new(_("publisher"));
-  gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
-  gtk_table_attach(GTK_TABLE(self->widget), label, 0, 1, 3, 4, GTK_EXPAND | GTK_FILL, 0, 0, 0);
+  gtk_widget_set_halign(GTK_WIDGET(label), GTK_ALIGN_START);
+  gtk_grid_attach_next_to(GTK_GRID(self->widget), label, last, GTK_POS_BOTTOM, 1, 1);
   d->publisher = GTK_COMBO_BOX(gtk_combo_box_text_new_with_entry());
   dt_gui_key_accel_block_on_focus_connect(GTK_WIDGET(gtk_bin_get_child(GTK_BIN(d->publisher))));
   completion = gtk_entry_completion_new();
@@ -389,12 +393,12 @@ void gui_init(dt_lib_module_t *self)
   gtk_entry_set_completion(GTK_ENTRY(gtk_bin_get_child(GTK_BIN(d->publisher))), completion);
   g_signal_connect(GTK_WIDGET(gtk_bin_get_child(GTK_BIN(d->publisher))), "key-press-event",
                    G_CALLBACK(key_pressed), self);
-  gtk_table_attach(GTK_TABLE(self->widget), GTK_WIDGET(d->publisher), 1, 2, 3, 4, GTK_EXPAND | GTK_FILL, 0, 0,
-                   0);
+  gtk_grid_attach_next_to(GTK_GRID(self->widget), GTK_WIDGET(d->publisher), label, GTK_POS_RIGHT, 1, 1);
 
+  last = label;
   label = gtk_label_new(_("rights"));
-  gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
-  gtk_table_attach(GTK_TABLE(self->widget), label, 0, 1, 4, 5, GTK_EXPAND | GTK_FILL, 0, 0, 0);
+  gtk_widget_set_halign(GTK_WIDGET(label), GTK_ALIGN_START);
+  gtk_grid_attach_next_to(GTK_GRID(self->widget), label, last, GTK_POS_BOTTOM, 1, 1);
   d->rights = GTK_COMBO_BOX(gtk_combo_box_text_new_with_entry());
   dt_gui_key_accel_block_on_focus_connect(GTK_WIDGET(gtk_bin_get_child(GTK_BIN(d->rights))));
   completion = gtk_entry_completion_new();
@@ -404,11 +408,12 @@ void gui_init(dt_lib_module_t *self)
   gtk_entry_set_completion(GTK_ENTRY(gtk_bin_get_child(GTK_BIN(d->rights))), completion);
   g_signal_connect(GTK_WIDGET(gtk_bin_get_child(GTK_BIN(d->rights))), "key-press-event",
                    G_CALLBACK(key_pressed), self);
-  gtk_table_attach(GTK_TABLE(self->widget), GTK_WIDGET(d->rights), 1, 2, 4, 5, GTK_EXPAND | GTK_FILL, 0, 0, 0);
+  gtk_grid_attach_next_to(GTK_GRID(self->widget), GTK_WIDGET(d->rights), label, GTK_POS_RIGHT, 1, 1);
 
   g_object_unref(completion);
 
   // reset/apply buttons
+  last = label;
   hbox = GTK_BOX(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5));
 
   button = gtk_button_new_with_label(_("clear"));
@@ -423,7 +428,7 @@ void gui_init(dt_lib_module_t *self)
   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(apply_button_clicked), (gpointer)self);
   gtk_box_pack_start(hbox, button, FALSE, TRUE, 0);
 
-  gtk_table_attach(GTK_TABLE(self->widget), GTK_WIDGET(hbox), 0, 2, 5, 6, GTK_EXPAND | GTK_FILL, 0, 0, 0);
+  gtk_grid_attach_next_to(GTK_GRID(self->widget), GTK_WIDGET(hbox), last, GTK_POS_BOTTOM, 2, 1);
 
   /* lets signup for mouse over image change signals */
   dt_control_signal_connect(darktable.signals, DT_SIGNAL_MOUSE_OVER_IMAGE_CHANGE,

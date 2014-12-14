@@ -189,7 +189,6 @@ void _lib_import_ui_devices_update(dt_lib_module_t *self)
   g_object_set(G_OBJECT(scan), "tooltip-text", _("scan for newly attached devices"), (char *)NULL);
   g_signal_connect(G_OBJECT(scan), "clicked", G_CALLBACK(_lib_import_scan_devices_callback), self);
   gtk_box_pack_start(GTK_BOX(d->devices), GTK_WIDGET(scan), TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(d->devices), GTK_WIDGET(gtk_label_new("")), TRUE, TRUE, 0);
 
   uint32_t count = 0;
   /* FIXME: Verify that it's safe to access camctl->cameras list here ? */
@@ -203,7 +202,8 @@ void _lib_import_ui_devices_update(dt_lib_module_t *self)
       count++;
 
       /* add camera label */
-      GtkWidget *label = GTK_WIDGET(gtk_label_new(camera->model));
+      GtkWidget *label = dt_ui_section_label_new(camera->model);
+      gtk_widget_set_margin_top(label, DT_PIXEL_APPLY_DPI(15));
       gtk_box_pack_start(GTK_BOX(d->devices), label, TRUE, TRUE, 0);
 
       /* set camera summary if available */
@@ -499,31 +499,31 @@ static GtkWidget *_lib_import_get_extra_widget(dt_lib_import_metadata_t *data, g
   int line = 0;
 
   label = gtk_label_new(_("preset"));
-  gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
+  gtk_widget_set_halign(label, GTK_ALIGN_START);
   gtk_table_attach(GTK_TABLE(table), label, 0, 1, line, line + 1, GTK_FILL, 0, 0, 0);
   gtk_table_attach(GTK_TABLE(table), presets, 1, 2, line, line + 1, GTK_FILL, 0, 0, 0);
   line++;
 
   label = gtk_label_new(_("creator"));
-  gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
+  gtk_widget_set_halign(label, GTK_ALIGN_START);
   gtk_table_attach(GTK_TABLE(table), label, 0, 1, line, line + 1, GTK_FILL, 0, 0, 0);
   gtk_table_attach(GTK_TABLE(table), creator, 1, 2, line, line + 1, GTK_FILL, 0, 0, 0);
   line++;
 
   label = gtk_label_new(_("publisher"));
-  gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
+  gtk_widget_set_halign(label, GTK_ALIGN_START);
   gtk_table_attach(GTK_TABLE(table), label, 0, 1, line, line + 1, GTK_FILL, 0, 0, 0);
   gtk_table_attach(GTK_TABLE(table), publisher, 1, 2, line, line + 1, GTK_FILL, 0, 0, 0);
   line++;
 
   label = gtk_label_new(_("rights"));
-  gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
+  gtk_widget_set_halign(label, GTK_ALIGN_START);
   gtk_table_attach(GTK_TABLE(table), label, 0, 1, line, line + 1, GTK_FILL, 0, 0, 0);
   gtk_table_attach(GTK_TABLE(table), rights, 1, 2, line, line + 1, GTK_FILL, 0, 0, 0);
   line++;
 
   label = gtk_label_new(_("tags"));
-  gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
+  gtk_widget_set_halign(label, GTK_ALIGN_START);
   gtk_table_attach(GTK_TABLE(table), label, 0, 1, line, line + 1, GTK_FILL, 0, 0, 0);
   gtk_table_attach(GTK_TABLE(table), tags, 1, 2, line, line + 1, GTK_FILL, 0, 0, 0);
 

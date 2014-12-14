@@ -445,14 +445,15 @@ void gui_init(dt_lib_module_t *self)
 {
   dt_lib_export_t *d = (dt_lib_export_t *)malloc(sizeof(dt_lib_export_t));
   self->data = (void *)d;
-  self->widget = gtk_table_new(8, 2, FALSE);
-  gtk_table_set_row_spacings(GTK_TABLE(self->widget), 5);
+  self->widget = gtk_grid_new();
+  gtk_grid_set_row_spacing(GTK_GRID(self->widget), 5);
 
-  GtkWidget *label;
+  GtkWidget *label, *last;
 
-  label = gtk_label_new(_("target storage"));
-  gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
-  gtk_table_attach(GTK_TABLE(self->widget), label, 0, 2, 0, 1, GTK_FILL | GTK_EXPAND, 0, 0, 0);
+  label = dt_ui_section_label_new(_("target storage"));
+  gtk_grid_attach(GTK_GRID(self->widget), label, 0, 0, 2, 1);
+
+  last = label;
   d->storage = GTK_COMBO_BOX(gtk_combo_box_text_new());
   GList *it = darktable.imageio->plugins_storage;
   while(it)
@@ -463,32 +464,34 @@ void gui_init(dt_lib_module_t *self)
   }
   dt_control_signal_connect(darktable.signals, DT_SIGNAL_IMAGEIO_STORAGE_CHANGE,
                             G_CALLBACK(on_storage_list_changed), self);
-  gtk_table_attach(GTK_TABLE(self->widget), GTK_WIDGET(d->storage), 0, 2, 1, 2, GTK_EXPAND | GTK_FILL, 0, 0,
-                   0);
+  gtk_grid_attach_next_to(GTK_GRID(self->widget), GTK_WIDGET(d->storage), last, GTK_POS_BOTTOM, 2, 1);
   g_signal_connect(G_OBJECT(d->storage), "changed", G_CALLBACK(storage_changed), (gpointer)d);
 
+  last = GTK_WIDGET(d->storage);
   d->storage_box = GTK_CONTAINER(gtk_alignment_new(1.0, 1.0, 1.0, 1.0));
   gtk_alignment_set_padding(GTK_ALIGNMENT(d->storage_box), 0, 0, 0, 0);
-  gtk_table_attach(GTK_TABLE(self->widget), GTK_WIDGET(d->storage_box), 0, 2, 2, 3, GTK_EXPAND | GTK_FILL, 0,
-                   0, 0);
+  gtk_grid_attach_next_to(GTK_GRID(self->widget), GTK_WIDGET(d->storage_box), last, GTK_POS_BOTTOM, 2, 1);
 
-  label = gtk_label_new(_("file format"));
-  gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
-  gtk_table_set_row_spacing(GTK_TABLE(self->widget), 2, 20);
-  gtk_table_attach(GTK_TABLE(self->widget), label, 0, 2, 3, 4, GTK_EXPAND | GTK_FILL, 0, 0, 0);
+  last = GTK_WIDGET(d->storage_box);
+  label = dt_ui_section_label_new(_("file format"));
+  gtk_widget_set_margin_top(label, DT_PIXEL_APPLY_DPI(20));
+  gtk_grid_attach_next_to(GTK_GRID(self->widget), label, last, GTK_POS_BOTTOM, 2, 1);
+
+  last = label;
   d->format = GTK_COMBO_BOX(gtk_combo_box_text_new());
-
-  gtk_table_attach(GTK_TABLE(self->widget), GTK_WIDGET(d->format), 0, 2, 4, 5, GTK_EXPAND | GTK_FILL, 0, 0, 0);
+  gtk_grid_attach_next_to(GTK_GRID(self->widget), GTK_WIDGET(d->format), last, GTK_POS_BOTTOM, 2, 1);
   g_signal_connect(G_OBJECT(d->format), "changed", G_CALLBACK(format_changed), (gpointer)d);
 
+  last = GTK_WIDGET(d->format);
   d->format_box = GTK_CONTAINER(gtk_alignment_new(1.0, 1.0, 1.0, 1.0));
   gtk_alignment_set_padding(GTK_ALIGNMENT(d->format_box), 0, 0, 0, 0);
-  gtk_table_attach(GTK_TABLE(self->widget), GTK_WIDGET(d->format_box), 0, 2, 5, 6, GTK_EXPAND | GTK_FILL, 0,
-                   0, 0);
+  gtk_grid_attach_next_to(GTK_GRID(self->widget), GTK_WIDGET(d->format_box), last, GTK_POS_BOTTOM, 2, 1);
 
-  label = gtk_label_new(_("global options"));
-  gtk_table_set_row_spacing(GTK_TABLE(self->widget), 5, 20);
-  gtk_table_attach(GTK_TABLE(self->widget), label, 0, 2, 6, 7, GTK_EXPAND | GTK_FILL, 0, 0, 0);
+  last = GTK_WIDGET(d->format_box);
+  label = dt_ui_section_label_new(_("global options"));
+  gtk_widget_set_margin_top(label, DT_PIXEL_APPLY_DPI(20));
+  gtk_grid_attach_next_to(GTK_GRID(self->widget), label, last, GTK_POS_BOTTOM, 2, 1);
+
   d->width = GTK_SPIN_BUTTON(gtk_spin_button_new_with_range(0, 10000, 1));
   g_object_set(G_OBJECT(d->width), "tooltip-text", _("maximum output width\nset to 0 for no scaling"),
                (char *)NULL);
@@ -506,25 +509,27 @@ void gui_init(dt_lib_module_t *self)
     g_signal_connect (G_OBJECT (d->height), "focus-in-event",  G_CALLBACK(focus_in),  NULL);
     g_signal_connect (G_OBJECT (d->height), "focus-out-event", G_CALLBACK(focus_out), NULL);
     */
+  last = label;
   label = gtk_label_new(_("max size"));
-  gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
-  gtk_table_attach(GTK_TABLE(self->widget), label, 0, 1, 7, 8, GTK_EXPAND | GTK_FILL, 0, 0, 0);
+  gtk_widget_set_halign(label, GTK_ALIGN_START);
+  gtk_grid_attach_next_to(GTK_GRID(self->widget), label, last, GTK_POS_BOTTOM, 1, 1);
   GtkBox *hbox = GTK_BOX(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5));
   gtk_box_pack_start(hbox, GTK_WIDGET(d->width), TRUE, TRUE, 0);
   gtk_box_pack_start(hbox, gtk_label_new(_("x")), FALSE, FALSE, 0);
   gtk_box_pack_start(hbox, GTK_WIDGET(d->height), TRUE, TRUE, 0);
-  gtk_table_attach(GTK_TABLE(self->widget), GTK_WIDGET(hbox), 1, 2, 7, 8, GTK_EXPAND | GTK_FILL, 0, 0, 0);
+  gtk_grid_attach_next_to(GTK_GRID(self->widget), GTK_WIDGET(hbox), label, GTK_POS_RIGHT, 1, 1);
 
+  last = label;
   label = gtk_label_new(_("intent"));
-  gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
-  gtk_table_attach(GTK_TABLE(self->widget), label, 0, 1, 8, 9, GTK_EXPAND | GTK_FILL, 0, 0, 0);
+  gtk_widget_set_halign(label, GTK_ALIGN_START);
+  gtk_grid_attach_next_to(GTK_GRID(self->widget), label, last, GTK_POS_BOTTOM, 1, 1);
   d->intent = GTK_COMBO_BOX(gtk_combo_box_text_new());
   gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(d->intent), _("image settings"));
   gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(d->intent), _("perceptual"));
   gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(d->intent), _("relative colorimetric"));
   gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(d->intent), C_("rendering intent", "saturation"));
   gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(d->intent), _("absolute colorimetric"));
-  gtk_table_attach(GTK_TABLE(self->widget), GTK_WIDGET(d->intent), 1, 2, 8, 9, GTK_EXPAND | GTK_FILL, 0, 0, 0);
+  gtk_grid_attach_next_to(GTK_GRID(self->widget), GTK_WIDGET(d->intent), label, GTK_POS_RIGHT, 1, 1);
 
   //  Add profile combo
 
@@ -589,15 +594,13 @@ void gui_init(dt_lib_module_t *self)
     g_dir_close(dir);
   }
   GList *l = d->profiles;
+  last = label;
   label = gtk_label_new(_("profile"));
-  gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
-  gtk_table_attach(GTK_TABLE(self->widget), label, 0, 1, 9, 10, GTK_EXPAND | GTK_FILL, 0, 0, 0);
+  gtk_widget_set_halign(label, GTK_ALIGN_START);
+  gtk_grid_attach_next_to(GTK_GRID(self->widget), label, last, GTK_POS_BOTTOM, 1, 1);
   d->profile = GTK_COMBO_BOX(gtk_combo_box_text_new());
   dt_ellipsize_combo(d->profile);
-  gtk_table_attach(GTK_TABLE(self->widget), GTK_WIDGET(d->profile), 1, 2, 9, 10,
-                   GTK_SHRINK | GTK_EXPAND | GTK_FILL, 0, 0, 0);
-  // gtk_table_attach(GTK_TABLE(self->widget), GTK_WIDGET(d->profile), 1, 2, 9, 10, GTK_EXPAND|GTK_FILL, 0, 0,
-  // 0);
+  gtk_grid_attach_next_to(GTK_GRID(self->widget), GTK_WIDGET(d->profile), label, GTK_POS_RIGHT, 1, 1);
   gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(d->profile), _("image settings"));
   while(l)
   {
@@ -615,9 +618,10 @@ void gui_init(dt_lib_module_t *self)
 
   //  Add style combo
 
+  last = label;
   label = gtk_label_new(_("style"));
-  gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
-  gtk_table_attach(GTK_TABLE(self->widget), label, 0, 1, 10, 11, GTK_EXPAND | GTK_FILL, 0, 0, 0);
+  gtk_widget_set_halign(label, GTK_ALIGN_START);
+  gtk_grid_attach_next_to(GTK_GRID(self->widget), label, last, GTK_POS_BOTTOM, 1, 1);
   d->style = GTK_COMBO_BOX(gtk_combo_box_text_new());
 
   dt_ellipsize_combo(d->style);
@@ -631,8 +635,7 @@ void gui_init(dt_lib_module_t *self)
     gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(d->style), style->name);
     styles = g_list_next(styles);
   }
-  gtk_table_attach(GTK_TABLE(self->widget), GTK_WIDGET(d->style), 1, 2, 10, 11, GTK_EXPAND | GTK_FILL, 0, 0,
-                   0);
+  gtk_grid_attach_next_to(GTK_GRID(self->widget), GTK_WIDGET(d->style), label, GTK_POS_RIGHT, 1, 1);
   g_object_set(G_OBJECT(d->style), "tooltip-text", _("temporary style to append while exporting"),
                (char *)NULL);
 
@@ -644,10 +647,11 @@ void gui_init(dt_lib_module_t *self)
 
   // Export button
 
+  last = label;
   GtkButton *button = GTK_BUTTON(gtk_button_new_with_label(_("export")));
   d->export_button = button;
   g_object_set(G_OBJECT(button), "tooltip-text", _("export with current settings (ctrl-e)"), (char *)NULL);
-  gtk_table_attach(GTK_TABLE(self->widget), GTK_WIDGET(button), 1, 2, 11, 12, GTK_EXPAND | GTK_FILL, 0, 0, 0);
+  gtk_grid_attach_next_to(GTK_GRID(self->widget), GTK_WIDGET(button), last, GTK_POS_BOTTOM, 2, 1);
 
   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(export_button_clicked), (gpointer)self);
   g_signal_connect(G_OBJECT(d->width), "value-changed", G_CALLBACK(width_changed), NULL);

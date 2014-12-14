@@ -53,7 +53,7 @@ GtkWidget *dtgtk_reset_label_new(const gchar *text, dt_iop_module_t *module, voi
   label->size = param_size;
 
   label->lb = GTK_LABEL(gtk_label_new(text));
-  gtk_misc_set_alignment(GTK_MISC(label->lb), 0.0, 0.5);
+  gtk_widget_set_halign(GTK_WIDGET(label->lb), GTK_ALIGN_START);
   gtk_event_box_set_visible_window(GTK_EVENT_BOX(label), FALSE);
   g_object_set(G_OBJECT(label), "tooltip-text", _("double-click to reset"), (char *)NULL);
   gtk_container_add(GTK_CONTAINER(label), GTK_WIDGET(label->lb));

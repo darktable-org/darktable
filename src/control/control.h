@@ -172,7 +172,6 @@ typedef struct dt_control_t
   // gui related stuff
   double tabborder;
   int32_t width, height;
-  float progress;
   pthread_t gui_thread;
   int button_down, button_down_which, button_type;
   double button_x, button_y;

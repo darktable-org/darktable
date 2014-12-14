@@ -272,7 +272,7 @@ void gui_init(dt_imageio_module_format_t *self)
 
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
   GtkWidget *comp_type_label = gtk_label_new(_("compression type"));
-  gtk_misc_set_alignment(GTK_MISC(comp_type_label), 0.0, 0.5);
+  gtk_widget_set_halign(comp_type_label, GTK_ALIGN_START);
   gtk_box_pack_start(GTK_BOX(self->widget), comp_type_label, TRUE, TRUE, 0);
   GtkWidget *hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5);
   gtk_box_pack_start(GTK_BOX(self->widget), hbox, TRUE, TRUE, 0);
@@ -305,7 +305,7 @@ void gui_init(dt_imageio_module_format_t *self)
                  "photo   : outdoor photograph, with natural lighting\n"
                  "graphic : discrete tone image (graph, map-tile etc)"),
                (char *)NULL);
-  gtk_misc_set_alignment(GTK_MISC(hint_label), 0.0, 0.5);
+  gtk_widget_set_halign(hint_label, GTK_ALIGN_START);
   gtk_box_pack_start(GTK_BOX(hint_hbox), hint_label, TRUE, TRUE, 0);
   GtkComboBoxText *hint_combo = GTK_COMBO_BOX_TEXT(gtk_combo_box_text_new());
   gui->hint_combo = GTK_COMBO_BOX(hint_combo);

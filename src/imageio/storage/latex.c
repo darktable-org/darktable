@@ -169,7 +169,7 @@ void gui_init(dt_imageio_module_storage_t *self)
   hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5);
   gtk_box_pack_start(GTK_BOX(self->widget), hbox, TRUE, TRUE, 0);
   widget = gtk_label_new(_("title"));
-  gtk_misc_set_alignment(GTK_MISC(widget), 0.0f, 0.5f);
+  gtk_widget_set_halign(widget, GTK_ALIGN_START);
   gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, FALSE, 0);
   d->title_entry = GTK_ENTRY(gtk_entry_new());
   gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(d->title_entry), TRUE, TRUE, 0);

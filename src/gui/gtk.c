@@ -27,7 +27,6 @@
 #include "develop/imageop.h"
 #include "dtgtk/button.h"
 #include "gui/accelerators.h"
-#include "gui/contrast.h"
 #include "gui/gtk.h"
 
 #include "gui/presets.h"
@@ -154,30 +153,6 @@ static void key_accel_changed(GtkAccelMap *object, gchar *accel_path, guint acce
 
   dt_accel_path_global(path, sizeof(path), "toggle header");
   gtk_accel_map_lookup_entry(path, &darktable.control->accels.global_header);
-}
-
-static gboolean brightness_key_accel_callback(GtkAccelGroup *accel_group, GObject *acceleratable,
-                                              guint keyval, GdkModifierType modifier, gpointer data)
-{
-  if(data)
-    dt_gui_brightness_increase();
-  else
-    dt_gui_brightness_decrease();
-
-  gtk_widget_queue_draw(dt_ui_center(darktable.gui->ui));
-  return TRUE;
-}
-
-static gboolean contrast_key_accel_callback(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
-                                            GdkModifierType modifier, gpointer data)
-{
-  if(data)
-    dt_gui_contrast_increase();
-  else
-    dt_gui_contrast_decrease();
-
-  gtk_widget_queue_draw(dt_ui_center(darktable.gui->ui));
-  return TRUE;
 }
 
 static gboolean fullscreen_key_accel_callback(GtkAccelGroup *accel_group, GObject *acceleratable,
@@ -321,21 +296,33 @@ static gboolean draw_borders(GtkWidget *widget, cairo_t *crf, gpointer user_data
   float width = allocation.width, height = allocation.height;
   cairo_surface_t *cst = dt_cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height);
   cairo_t *cr = cairo_create(cst);
-  GtkStyle *style = gtk_widget_get_style(dt_ui_center(darktable.gui->ui));
-  cairo_set_source_rgb(cr, .5f * style->bg[GTK_STATE_NORMAL].red / 65535.0,
-                       .5f * style->bg[GTK_STATE_NORMAL].green / 65535.0,
-                       .5f * style->bg[GTK_STATE_NORMAL].blue / 65535.0);
-  // cairo_set_source_rgb (cr, .13, .13, .13);
+
+  GdkRGBA color;
+  GtkStyleContext *context = gtk_widget_get_style_context(widget);
+  gboolean color_found = gtk_style_context_lookup_color (context, "selected_bg_color", &color);
+  if(!color_found)
+  {
+    color.red = 1.0;
+    color.green = 0.0;
+    color.blue = 0.0;
+    color.alpha = 1.0;
+  }
+  cairo_set_source_rgba(cr, color.red, color.green, color.blue, color.alpha);
   cairo_paint(cr);
 
   // draw scrollbar indicators
   int v = darktable.view_manager->current_view;
   dt_view_t *view = NULL;
   if(v >= 0 && v < darktable.view_manager->num_views) view = darktable.view_manager->view + v;
-  // cairo_set_source_rgb (cr, .16, .16, .16);
-  cairo_set_source_rgb(cr, style->bg[GTK_STATE_NORMAL].red / 65535.0,
-                       style->bg[GTK_STATE_NORMAL].green / 65535.0,
-                       style->bg[GTK_STATE_NORMAL].blue / 65535.0);
+  color_found = gtk_style_context_lookup_color (context, "bg_color", &color);
+  if(!color_found)
+  {
+    color.red = 1.0;
+    color.green = 0.0;
+    color.blue = 0.0;
+    color.alpha = 1.0;
+  }
+  cairo_set_source_rgba(cr, color.red, color.green, color.blue, color.alpha);
   const float border = 0.3;
   if(!view)
     cairo_paint(cr);
@@ -375,7 +362,15 @@ static gboolean draw_borders(GtkWidget *widget, cairo_t *crf, gpointer user_data
   }
 
   // draw gui arrows.
-  cairo_set_source_rgb(cr, .6, .6, .6);
+  color_found = gtk_style_context_lookup_color (context, "fg_color", &color);
+  if(!color_found)
+  {
+    color.red = 1.0;
+    color.green = 0.0;
+    color.blue = 0.0;
+    color.alpha = 1.0;
+  }
+  cairo_set_source_rgba(cr, color.red, color.green, color.blue, color.alpha);
 
   switch(which)
   {
@@ -883,21 +878,6 @@ int dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[])
 
   dt_accel_connect_global("quit", g_cclosure_new(G_CALLBACK(quit_callback), NULL, NULL));
 
-  // Contrast and brightness accelerators
-  dt_accel_register_global(NC_("accel", "increase brightness"), GDK_KEY_F10, 0);
-  dt_accel_register_global(NC_("accel", "decrease brightness"), GDK_KEY_F9, 0);
-  dt_accel_register_global(NC_("accel", "increase contrast"), GDK_KEY_F8, 0);
-  dt_accel_register_global(NC_("accel", "decrease contrast"), GDK_KEY_F7, 0);
-
-  dt_accel_connect_global("increase brightness", g_cclosure_new(G_CALLBACK(brightness_key_accel_callback),
-                                                                GINT_TO_POINTER(1), NULL));
-  dt_accel_connect_global("decrease brightness", g_cclosure_new(G_CALLBACK(brightness_key_accel_callback),
-                                                                GINT_TO_POINTER(0), NULL));
-  dt_accel_connect_global("increase contrast",
-                          g_cclosure_new(G_CALLBACK(contrast_key_accel_callback), GINT_TO_POINTER(1), NULL));
-  dt_accel_connect_global("decrease contrast",
-                          g_cclosure_new(G_CALLBACK(contrast_key_accel_callback), GINT_TO_POINTER(0), NULL));
-
   // Full-screen accelerators
   dt_accel_register_global(NC_("accel", "toggle fullscreen"), GDK_KEY_F11, 0);
   dt_accel_register_global(NC_("accel", "leave fullscreen"), GDK_KEY_Escape, 0);
@@ -921,9 +901,6 @@ int dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[])
 
   darktable.gui->reset = 0;
   for(int i = 0; i < 3; i++) darktable.gui->bgcolor[i] = 0.1333;
-
-  /* apply contrast to theme */
-  dt_gui_contrast_init();
 
   // let's try to support pressure sensitive input devices like tablets for mask drawing
   static const gchar *SOURCE_NAMES[]

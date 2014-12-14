@@ -184,7 +184,7 @@ static _camera_gconf_widget_t *_camera_import_gconf_widget(_camera_import_dialog
   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(_gcw_reset_callback), gcw);
 
   GtkWidget *l = gtk_label_new(label);
-  gtk_misc_set_alignment(GTK_MISC(l), 0.0, 0.0);
+  gtk_widget_set_halign(l, GTK_ALIGN_START);
   gtk_box_pack_start(GTK_BOX(vbox), l, FALSE, FALSE, 0);
 
   gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(hbox), FALSE, FALSE, 0);
@@ -216,7 +216,7 @@ static void _camera_import_dialog_new(_camera_import_dialog_t *data)
   // Top info
   data->import.info = gtk_label_new(_("please wait while prefetching thumbnails of images from camera..."));
   gtk_label_set_single_line_mode(GTK_LABEL(data->import.info), FALSE);
-  gtk_misc_set_alignment(GTK_MISC(data->import.info), 0.0, 0.0);
+  gtk_widget_set_halign(data->import.info, GTK_ALIGN_START);
   gtk_box_pack_start(GTK_BOX(data->import.page), data->import.info, FALSE, FALSE, 0);
 
   // jobcode

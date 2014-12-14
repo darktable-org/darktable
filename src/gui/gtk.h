@@ -81,23 +81,23 @@ typedef struct dt_gui_gtk_t
 } dt_gui_gtk_t;
 
 #if (CAIRO_VERSION >= CAIRO_VERSION_ENCODE(1, 14, 0))
-inline cairo_surface_t *dt_cairo_image_surface_create(cairo_format_t format, int width, int height) {
+static inline cairo_surface_t *dt_cairo_image_surface_create(cairo_format_t format, int width, int height) {
   cairo_surface_t *cst = cairo_image_surface_create(format, width * darktable.gui->ppd, height * darktable.gui->ppd);
   cairo_surface_set_device_scale(cst, darktable.gui->ppd, darktable.gui->ppd);
   return cst;
 }
 
-inline cairo_surface_t *dt_cairo_image_surface_create_for_data(unsigned char *data, cairo_format_t format, int width, int height, int stride) {
+static inline cairo_surface_t *dt_cairo_image_surface_create_for_data(unsigned char *data, cairo_format_t format, int width, int height, int stride) {
   cairo_surface_t *cst = cairo_image_surface_create_for_data(data, format, width, height, stride);
   cairo_surface_set_device_scale(cst, darktable.gui->ppd, darktable.gui->ppd);
   return cst;
 }
 
-inline int dt_cairo_image_surface_get_width(cairo_surface_t *surface) {
+static inline int dt_cairo_image_surface_get_width(cairo_surface_t *surface) {
   return cairo_image_surface_get_width(surface) / darktable.gui->ppd;
 }
 
-inline int dt_cairo_image_surface_get_height(cairo_surface_t *surface) {
+static inline int dt_cairo_image_surface_get_height(cairo_surface_t *surface) {
   return cairo_image_surface_get_height(surface) / darktable.gui->ppd;
 }
 #else
@@ -233,6 +233,18 @@ GtkBox *dt_ui_get_container(struct dt_ui_t *ui, const dt_ui_container_t c);
 
 /*  activate ellipsization of the combox entries */
 void dt_ellipsize_combo(GtkComboBox *cbox);
+
+static inline GtkWidget *dt_ui_section_label_new(const gchar *str)
+{
+  GtkWidget *label = gtk_label_new(str);
+  gtk_widget_set_halign(label, GTK_ALIGN_FILL); // make it span the whole available width
+  gtk_widget_set_hexpand(label, TRUE); // not really needed, but it makes sure that parent containers expand
+  g_object_set(G_OBJECT(label), "xalign", 1.0, NULL); // make the text right aligned
+  gtk_widget_set_margin_bottom(label, DT_PIXEL_APPLY_DPI(10)); // gtk+ css doesn't support margins :(
+  gtk_widget_set_margin_start(label, DT_PIXEL_APPLY_DPI(30)); // gtk+ css doesn't support margins :(
+  gtk_widget_set_name(label, "section_label"); // make sure that we can style these easily
+  return label;
+};
 
 #endif
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

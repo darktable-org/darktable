@@ -436,7 +436,7 @@ static void edit_preset(const char *name_in, dt_iop_module_t *module)
   g_object_set(G_OBJECT(g->model), "tooltip-text", _("string to match model (use % as wildcard)"),
                (char *)NULL);
   label = gtk_label_new(_("model"));
-  gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
+  gtk_widget_set_halign(label, GTK_ALIGN_START);
   gtk_box_pack_start(vbox2, label, FALSE, FALSE, 0);
   gtk_box_pack_start(vbox3, GTK_WIDGET(g->model), FALSE, FALSE, 0);
   gtk_box_pack_start(vbox4, gtk_label_new(""), FALSE, FALSE, 0);
@@ -444,21 +444,21 @@ static void edit_preset(const char *name_in, dt_iop_module_t *module)
   g_object_set(G_OBJECT(g->maker), "tooltip-text", _("string to match maker (use % as wildcard)"),
                (char *)NULL);
   label = gtk_label_new(_("maker"));
-  gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
+  gtk_widget_set_halign(label, GTK_ALIGN_START);
   gtk_box_pack_start(vbox2, label, FALSE, FALSE, 0);
   gtk_box_pack_start(vbox3, GTK_WIDGET(g->maker), FALSE, FALSE, 0);
   gtk_box_pack_start(vbox4, gtk_label_new(""), FALSE, FALSE, 0);
   g->lens = GTK_ENTRY(gtk_entry_new());
   g_object_set(G_OBJECT(g->lens), "tooltip-text", _("string to match lens (use % as wildcard)"), (char *)NULL);
   label = gtk_label_new(_("lens"));
-  gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
+  gtk_widget_set_halign(label, GTK_ALIGN_START);
   gtk_box_pack_start(vbox2, label, FALSE, FALSE, 0);
   gtk_box_pack_start(vbox3, GTK_WIDGET(g->lens), FALSE, FALSE, 0);
   gtk_box_pack_start(vbox4, gtk_label_new(""), FALSE, FALSE, 0);
 
   // iso
   label = gtk_label_new(_("ISO"));
-  gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
+  gtk_widget_set_halign(label, GTK_ALIGN_START);
   gtk_box_pack_start(vbox2, label, FALSE, FALSE, 0);
   g->iso_min = GTK_SPIN_BUTTON(gtk_spin_button_new_with_range(0, 51200, 100));
   g_object_set(G_OBJECT(g->iso_min), "tooltip-text", _("minimum ISO value"), (char *)NULL);
@@ -471,7 +471,7 @@ static void edit_preset(const char *name_in, dt_iop_module_t *module)
 
   // exposure
   label = gtk_label_new(_("exposure"));
-  gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
+  gtk_widget_set_halign(label, GTK_ALIGN_START);
   gtk_box_pack_start(vbox2, label, FALSE, FALSE, 0);
   g->exposure_min = GTK_COMBO_BOX(gtk_combo_box_text_new());
   g->exposure_max = GTK_COMBO_BOX(gtk_combo_box_text_new());
@@ -486,7 +486,7 @@ static void edit_preset(const char *name_in, dt_iop_module_t *module)
 
   // aperture
   label = gtk_label_new(_("aperture"));
-  gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
+  gtk_widget_set_halign(label, GTK_ALIGN_START);
   gtk_box_pack_start(vbox2, label, FALSE, FALSE, 0);
   g->aperture_min = GTK_COMBO_BOX(gtk_combo_box_text_new());
   g->aperture_max = GTK_COMBO_BOX(gtk_combo_box_text_new());
@@ -501,7 +501,7 @@ static void edit_preset(const char *name_in, dt_iop_module_t *module)
 
   // focal length
   label = gtk_label_new(_("focal length"));
-  gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
+  gtk_widget_set_halign(label, GTK_ALIGN_START);
   gtk_box_pack_start(vbox2, label, FALSE, FALSE, 0);
   g->focal_length_min = GTK_SPIN_BUTTON(gtk_spin_button_new_with_range(0, 1000, 10));
   gtk_spin_button_set_digits(g->focal_length_min, 0);
@@ -514,7 +514,7 @@ static void edit_preset(const char *name_in, dt_iop_module_t *module)
 
   // raw/hdr/ldr
   label = gtk_label_new(_("format"));
-  gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
+  gtk_widget_set_halign(label, GTK_ALIGN_START);
   gtk_box_pack_start(vbox2, label, FALSE, FALSE, 0);
 
   g->format_btn[0] = GTK_TOGGLE_BUTTON(gtk_check_button_new_with_label(dt_gui_presets_format_value_str[0]));

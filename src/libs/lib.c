@@ -1005,13 +1005,13 @@ GtkWidget *dt_lib_gui_get_expander(dt_lib_module_t *module)
   {
     for(int i = 0; i <= 4; i++)
       if(hw[i]) gtk_box_pack_start(GTK_BOX(header), hw[i], i == 1 ? TRUE : FALSE, i == 1 ? TRUE : FALSE, 2);
-    gtk_misc_set_alignment(GTK_MISC(hw[1]), 0.0, 0.5);
+    gtk_widget_set_halign(hw[1], GTK_ALIGN_START);
   }
   else
   {
     for(int i = 4; i >= 0; i--)
       if(hw[i]) gtk_box_pack_start(GTK_BOX(header), hw[i], i == 1 ? TRUE : FALSE, i == 1 ? TRUE : FALSE, 2);
-    gtk_misc_set_alignment(GTK_MISC(hw[1]), 1.0, 0.5);
+    gtk_widget_set_halign(hw[1], GTK_ALIGN_END);
   }
 
   /* add module widget into an alignment */

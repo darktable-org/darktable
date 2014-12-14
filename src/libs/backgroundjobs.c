@@ -140,7 +140,7 @@ static void *_lib_backgroundjobs_added(dt_lib_module_t *self, gboolean has_progr
 
   /* add job label */
   GtkWidget *label = gtk_label_new(message);
-  gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
+  gtk_widget_set_halign(label, GTK_ALIGN_START);
   gtk_box_pack_start(GTK_BOX(instance->hbox), GTK_WIDGET(label), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(instance->hbox), TRUE, TRUE, 0);
 

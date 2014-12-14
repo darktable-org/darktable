@@ -816,11 +816,11 @@ static gboolean dt_iop_zonesystem_preview_draw(GtkWidget *widget, cairo_t *crf, 
   cairo_t *cr = cairo_create(cst);
 
   /* clear background */
-  GtkStateType state = gtk_widget_get_state(self->expander);
-  GtkStyle *style = gtk_widget_get_style(self->expander);
-  float bg_red = style->bg[state].red / 65535.0, bg_green = style->bg[state].green / 65535.0,
-        bg_blue = style->bg[state].blue / 65535.0;
-  cairo_set_source_rgb(cr, bg_red, bg_green, bg_blue);
+  GdkRGBA color;
+  GtkStyleContext *context = gtk_widget_get_style_context(self->expander);
+  gtk_style_context_get_background_color(context, gtk_widget_get_state_flags(self->expander), &color);
+
+  cairo_set_source_rgba(cr, color.red, color.green, color.blue, color.alpha);
   cairo_paint(cr);
 
   width -= 2 * inset;
@@ -878,10 +878,10 @@ static gboolean dt_iop_zonesystem_preview_draw(GtkWidget *widget, cairo_t *crf, 
       cairo_set_operator(cr, CAIRO_OPERATOR_HSL_LUMINOSITY);
       cairo_fill_preserve(cr);
       cairo_set_operator(cr, CAIRO_OPERATOR_DARKEN);
-      cairo_set_source_rgb(cr, bg_red + 0.02, bg_green + 0.02, bg_blue + 0.02);
+      cairo_set_source_rgb(cr, color.red + 0.02, color.green + 0.02, color.blue + 0.02);
       cairo_fill_preserve(cr);
       cairo_set_operator(cr, CAIRO_OPERATOR_LIGHTEN);
-      cairo_set_source_rgb(cr, bg_red - 0.02, bg_green - 0.02, bg_blue - 0.02);
+      cairo_set_source_rgb(cr, color.red - 0.02, color.green - 0.02, color.blue - 0.02);
       cairo_fill(cr);
     }
   }

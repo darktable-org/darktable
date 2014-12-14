@@ -31,7 +31,6 @@
 #include "bauhaus/bauhaus.h"
 #include "views/view.h"
 #include "gui/gtk.h"
-#include "gui/contrast.h"
 #include "gui/draw.h"
 
 #ifdef USE_COLORDGTK
@@ -303,7 +302,6 @@ void dt_control_init(dt_control_t *s)
   s->log_busy = 0;
   s->log_message_timeout_id = 0;
   dt_pthread_mutex_init(&(s->log_mutex), NULL);
-  s->progress = 200.0f;
 
   dt_conf_set_int("ui_last/view", DT_MODE_NONE);
 
@@ -462,16 +460,31 @@ void *dt_control_expose(void *voidptr)
   darktable.control->width = width;
   darktable.control->height = height;
 
-  GtkStyle *style = gtk_widget_get_style(widget);
-  cairo_set_source_rgb(cr, style->bg[GTK_STATE_NORMAL].red / 65535.0,
-                       style->bg[GTK_STATE_NORMAL].green / 65535.0,
-                       style->bg[GTK_STATE_NORMAL].blue / 65535.0);
+  GdkRGBA color;
+  GtkStyleContext *context = gtk_widget_get_style_context(widget);
+  gboolean color_found = gtk_style_context_lookup_color (context, "bg_color", &color);
+  if(!color_found)
+  {
+    color.red = 1.0;
+    color.green = 0.0;
+    color.blue = 0.0;
+    color.alpha = 1.0;
+  }
+  cairo_set_source_rgba(cr, color.red, color.green, color.blue, color.alpha);
 
   cairo_set_line_width(cr, tb);
   cairo_rectangle(cr, tb / 2., tb / 2., width - tb, height - tb);
   cairo_stroke(cr);
   cairo_set_line_width(cr, 1.5);
-  cairo_set_source_rgb(cr, .1, .1, .1);
+  color_found = gtk_style_context_lookup_color (context, "really_dark_bg_color", &color);
+  if(!color_found)
+  {
+    color.red = 1.0;
+    color.green = 0.0;
+    color.blue = 0.0;
+    color.alpha = 1.0;
+  }
+  cairo_set_source_rgba(cr, color.red, color.green, color.blue, color.alpha);
   cairo_rectangle(cr, tb, tb, width - 2 * tb, height - 2 * tb);
   cairo_stroke(cr);
 
@@ -485,23 +498,6 @@ void *dt_control_expose(void *voidptr)
                          pointery - tb);
   cairo_restore(cr);
 
-  // draw status bar, if any
-  if(darktable.control->progress < 100.0)
-  {
-    tb = fmaxf(20, width / 40.0);
-    char num[10];
-    cairo_rectangle(cr, width * 0.4, height * 0.85, width * 0.2 * darktable.control->progress / 100.0f, tb);
-    cairo_fill(cr);
-    cairo_set_source_rgb(cr, 0., 0., 0.);
-    cairo_rectangle(cr, width * 0.4, height * 0.85, width * 0.2, tb);
-    cairo_stroke(cr);
-    cairo_set_source_rgb(cr, 0.9, 0.9, 0.9);
-    cairo_select_font_face(cr, "sans-serif", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_BOLD);
-    cairo_set_font_size(cr, tb / 3);
-    cairo_move_to(cr, width / 2.0 - 10, height * 0.85 + 2. * tb / 3.);
-    snprintf(num, sizeof(num), "%d%%", (int)darktable.control->progress);
-    cairo_show_text(cr, num);
-  }
   // draw log message, if any
   dt_pthread_mutex_lock(&darktable.control->log_mutex);
   if(darktable.control->log_ack != darktable.control->log_pos)
@@ -524,14 +520,30 @@ void *dt_control_expose(void *voidptr)
       cairo_line_to(cr, xc - wd, yc + rad);
       if(k == 0)
       {
-        cairo_set_source_rgb(cr, 0.3, 0.3, 0.3);
+        color_found = gtk_style_context_lookup_color (context, "selected_bg_color", &color);
+        if(!color_found)
+        {
+          color.red = 1.0;
+          color.green = 0.0;
+          color.blue = 0.0;
+          color.alpha = 1.0;
+        }
+        cairo_set_source_rgba(cr, color.red, color.green, color.blue, color.alpha);
         cairo_fill_preserve(cr);
       }
       cairo_set_source_rgba(cr, 0., 0., 0., 1.0 / (1 + k));
       cairo_stroke(cr);
       rad += .5f;
     }
-    cairo_set_source_rgb(cr, 0.7, 0.7, 0.7);
+    color_found = gtk_style_context_lookup_color (context, "fg_color", &color);
+    if(!color_found)
+    {
+      color.red = 1.0;
+      color.green = 0.0;
+      color.blue = 0.0;
+      color.alpha = 1.0;
+    }
+    cairo_set_source_rgba(cr, color.red, color.green, color.blue, color.alpha);
     cairo_move_to(cr, xc - wd + .5f * pad, yc + 1. / 3. * fontsize);
     cairo_show_text(cr, darktable.control->log_message[darktable.control->log_ack]);
   }

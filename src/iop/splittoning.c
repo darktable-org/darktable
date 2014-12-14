@@ -525,7 +525,7 @@ void cleanup(dt_iop_module_t *module)
 static inline void gui_init_tab(struct dt_iop_module_t *self, const char *name, GtkDarktableButton **ppcolor,
                                 GtkWidget **pphue, GtkWidget **ppsaturation)
 {
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(gtk_label_new(name)), FALSE, FALSE, 5);
+  gtk_box_pack_start(GTK_BOX(self->widget), dt_ui_section_label_new(name), FALSE, FALSE, 5);
 
   // color button
   GtkDarktableButton *color;

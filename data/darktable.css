@@ -7,6 +7,7 @@
 @define-color selected_fg_color #e2e2e2;
 @define-color tooltip_bg_color #000000;
 @define-color tooltip_fg_color #ffffff;
+@define-color really_dark_bg_color #111;
 
 @define-color dark_bg_color #350000;
 
@@ -109,6 +110,15 @@ GtkTable {
   margin:0;
   border:0;
   padding:0;
+}
+
+#section_label {
+  padding-right: 0.5em;
+  border-bottom: 1px solid @fg_color;
+}
+
+#lib-modulelist * {
+  background-color: @bg_color;
 }
 
 /*==============================================*/

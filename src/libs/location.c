@@ -168,14 +168,14 @@ static GtkWidget *_lib_location_place_widget_new(_lib_location_result_t *place)
   /* add name */
   w = gtk_label_new(place->name);
   gtk_label_set_line_wrap(GTK_LABEL(w), TRUE);
-  gtk_misc_set_alignment(GTK_MISC(w), 0.0, 0.5);
+  gtk_widget_set_halign(w, GTK_ALIGN_START);
   gtk_box_pack_start(GTK_BOX(vb), w, FALSE, FALSE, 0);
 
   /* add location coord */
   g_snprintf(location, sizeof(location), "lat: %.4f lon: %.4f", place->lat, place->lon);
   w = gtk_label_new(location);
   gtk_label_set_line_wrap(GTK_LABEL(w), TRUE);
-  gtk_misc_set_alignment(GTK_MISC(w), 0.0, 0.5);
+  gtk_widget_set_halign(w, GTK_ALIGN_START);
   gtk_box_pack_start(GTK_BOX(vb), w, FALSE, FALSE, 0);
 
   /* type icon */

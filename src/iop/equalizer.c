@@ -362,7 +362,7 @@ void gui_init(struct dt_iop_module_t *self)
   self->gui_data = malloc(sizeof(dt_iop_equalizer_gui_data_t));
   self->widget = gtk_label_new(_("this module will be removed in the future\nand is only here so you can "
                                  "switch it off\nand move to the new equalizer."));
-  gtk_misc_set_alignment(GTK_MISC(self->widget), 0.0f, 0.5f);
+  gtk_widget_set_halign(self->widget, GTK_ALIGN_START);
 
 #if 0
   dt_iop_equalizer_gui_data_t *c = (dt_iop_equalizer_gui_data_t *)self->gui_data;

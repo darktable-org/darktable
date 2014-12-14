@@ -570,7 +570,7 @@ void gui_init(dt_iop_module_t *self)
 #endif
 
   /* lift */
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(gtk_label_new(_("lift"))), FALSE, FALSE, 5);
+  gtk_box_pack_start(GTK_BOX(self->widget), dt_ui_section_label_new(_("lift")), FALSE, FALSE, 5);
 
   g->lift_factor
       = dt_bauhaus_slider_new_with_range(self, -1.0, 1.0, 0.005, p->lift[CHANNEL_FACTOR] - 1.0f, 3);
@@ -609,7 +609,7 @@ void gui_init(dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), g->lift_b, TRUE, TRUE, 0);
 
   /* gamma */
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(gtk_label_new(_("gamma"))), FALSE, FALSE, 5);
+  gtk_box_pack_start(GTK_BOX(self->widget), dt_ui_section_label_new(_("gamma")), FALSE, FALSE, 5);
 
   g->gamma_factor
       = dt_bauhaus_slider_new_with_range(self, -1.0, 1.0, 0.005, p->gamma[CHANNEL_FACTOR] - 1.0f, 3);
@@ -648,7 +648,7 @@ void gui_init(dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), g->gamma_b, TRUE, TRUE, 0);
 
   /* gain */
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(gtk_label_new(_("gain"))), FALSE, FALSE, 5);
+  gtk_box_pack_start(GTK_BOX(self->widget), dt_ui_section_label_new(_("gain")), FALSE, FALSE, 5);
 
   g->gain_factor
       = dt_bauhaus_slider_new_with_range(self, -1.0, 1.0, 0.005, p->gain[CHANNEL_FACTOR] - 1.0f, 3);

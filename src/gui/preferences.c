@@ -200,7 +200,7 @@ static void hardcoded_gui(GtkWidget *vbox1, GtkWidget *vbox2)
     selected = sys_default;
 
   label = gtk_label_new(_("interface language"));
-  gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
+  gtk_widget_set_halign(label, GTK_ALIGN_START);
   labelev = gtk_event_box_new();
   gtk_widget_add_events(labelev, GDK_BUTTON_PRESS_MASK);
   gtk_container_add(GTK_CONTAINER(labelev), label);
@@ -1217,7 +1217,7 @@ static void edit_preset(GtkTreeView *tree, const gint rowid, const gchar *name, 
   g_object_set(G_OBJECT(g->model), "tooltip-text", _("string to match model (use % as wildcard)"),
                (char *)NULL);
   label = gtk_label_new(_("model"));
-  gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
+  gtk_widget_set_halign(label, GTK_ALIGN_START);
   gtk_table_attach_defaults(GTK_TABLE(grid), label, 0, 1, 0, 1);
   gtk_table_attach_defaults(GTK_TABLE(grid), GTK_WIDGET(g->model), 1, 2, 0, 1);
 
@@ -1226,7 +1226,7 @@ static void edit_preset(GtkTreeView *tree, const gint rowid, const gchar *name, 
   g_object_set(G_OBJECT(g->maker), "tooltip-text", _("string to match maker (use % as wildcard)"),
                (char *)NULL);
   label = gtk_label_new(_("maker"));
-  gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
+  gtk_widget_set_halign(label, GTK_ALIGN_START);
   gtk_table_attach_defaults(GTK_TABLE(grid), label, 0, 1, 1, 2);
   gtk_table_attach_defaults(GTK_TABLE(grid), GTK_WIDGET(g->maker), 1, 2, 1, 2);
 
@@ -1234,13 +1234,13 @@ static void edit_preset(GtkTreeView *tree, const gint rowid, const gchar *name, 
   /* xgettext:no-c-format */
   g_object_set(G_OBJECT(g->lens), "tooltip-text", _("string to match lens (use % as wildcard)"), (char *)NULL);
   label = gtk_label_new(_("lens"));
-  gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
+  gtk_widget_set_halign(label, GTK_ALIGN_START);
   gtk_table_attach_defaults(GTK_TABLE(grid), label, 0, 1, 2, 3);
   gtk_table_attach_defaults(GTK_TABLE(grid), GTK_WIDGET(g->lens), 1, 2, 2, 3);
 
   // iso
   label = gtk_label_new(_("ISO"));
-  gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
+  gtk_widget_set_halign(label, GTK_ALIGN_START);
   gtk_table_attach_defaults(GTK_TABLE(grid), label, 0, 1, 3, 4);
   g->iso_min = GTK_SPIN_BUTTON(gtk_spin_button_new_with_range(0, 51200, 100));
   g_object_set(G_OBJECT(g->iso_min), "tooltip-text", _("minimum ISO value"), (char *)NULL);
@@ -1253,7 +1253,7 @@ static void edit_preset(GtkTreeView *tree, const gint rowid, const gchar *name, 
 
   // exposure
   label = gtk_label_new(_("exposure"));
-  gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
+  gtk_widget_set_halign(label, GTK_ALIGN_START);
   gtk_table_attach_defaults(GTK_TABLE(grid), label, 0, 1, 4, 5);
   g->exposure_min = GTK_COMBO_BOX(gtk_combo_box_text_new());
   g->exposure_max = GTK_COMBO_BOX(gtk_combo_box_text_new());
@@ -1268,7 +1268,7 @@ static void edit_preset(GtkTreeView *tree, const gint rowid, const gchar *name, 
 
   // aperture
   label = gtk_label_new(_("aperture"));
-  gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
+  gtk_widget_set_halign(label, GTK_ALIGN_START);
   gtk_table_attach_defaults(GTK_TABLE(grid), label, 0, 1, 5, 6);
   g->aperture_min = GTK_COMBO_BOX(gtk_combo_box_text_new());
   g->aperture_max = GTK_COMBO_BOX(gtk_combo_box_text_new());
@@ -1283,7 +1283,7 @@ static void edit_preset(GtkTreeView *tree, const gint rowid, const gchar *name, 
 
   // focal length
   label = gtk_label_new(_("focal length"));
-  gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
+  gtk_widget_set_halign(label, GTK_ALIGN_START);
   gtk_table_attach_defaults(GTK_TABLE(grid), label, 0, 1, 6, 7);
   g->focal_length_min = GTK_SPIN_BUTTON(gtk_spin_button_new_with_range(0, 1000, 10));
   gtk_spin_button_set_digits(g->focal_length_min, 0);

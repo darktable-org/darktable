@@ -256,10 +256,10 @@ static gboolean _lib_histogram_draw_callback(GtkWidget *widget, cairo_t *crf, gp
   int width = allocation.width, height = allocation.height;
   cairo_surface_t *cst = dt_cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height);
   cairo_t *cr = cairo_create(cst);
-  GtkStyle *style = gtk_rc_get_style_by_paths(gtk_settings_get_default(), NULL, "GtkWidget", GTK_TYPE_WIDGET);
-  if(!style) style = gtk_rc_get_style(widget);
-  cairo_set_source_rgb(cr, style->bg[0].red / 65535.0, style->bg[0].green / 65535.0,
-                       style->bg[0].blue / 65535.0);
+  GdkRGBA color;
+  gtk_style_context_get_background_color(gtk_widget_get_style_context(widget), gtk_widget_get_state_flags(widget), &color);
+  cairo_set_source_rgba(cr, color.red, color.green, color.blue, color.alpha);
+
   cairo_paint(cr);
 
   cairo_translate(cr, 4 * inset, inset);

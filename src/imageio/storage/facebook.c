@@ -994,9 +994,9 @@ void gui_init(struct dt_imageio_module_storage_t *self)
   ui->label_album_privacy = GTK_LABEL(gtk_label_new(_("privacy")));
   ui->label_status = GTK_LABEL(gtk_label_new(NULL));
 
-  gtk_misc_set_alignment(GTK_MISC(ui->label_album_title), 0.0, 0.5);
-  gtk_misc_set_alignment(GTK_MISC(ui->label_album_summary), 0.0, 0.5);
-  gtk_misc_set_alignment(GTK_MISC(ui->label_album_privacy), 0.0, 0.5);
+  gtk_widget_set_halign(GTK_WIDGET(ui->label_album_title), GTK_ALIGN_START);
+  gtk_widget_set_halign(GTK_WIDGET(ui->label_album_summary), GTK_ALIGN_START);
+  gtk_widget_set_halign(GTK_WIDGET(ui->label_album_privacy), GTK_ALIGN_START);
 
   // create entries
   GtkListStore *model_username = gtk_list_store_new(COMBO_USER_MODEL_NB_COL, G_TYPE_STRING, G_TYPE_STRING,

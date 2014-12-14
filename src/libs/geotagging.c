@@ -580,7 +580,7 @@ void gui_init(dt_lib_module_t *self)
   /* the offset line */
   hbox = GTK_BOX(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5));
   label = GTK_WIDGET(gtk_label_new(_("time offset")));
-  gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
+  gtk_widget_set_halign(label, GTK_ALIGN_START);
   gtk_box_pack_start(hbox, label, TRUE, TRUE, 0);
 
   d->offset_entry = gtk_entry_new();

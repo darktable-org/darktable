@@ -78,7 +78,6 @@ FILE(GLOB SOURCE_FILES
   "dtgtk/paint.c"
   "dtgtk/resetlabel.c"
   "gui/accelerators.c"
-  "gui/contrast.c"
   "gui/gtkentry.c"
   "gui/guides.c"
   "gui/gtk.c"

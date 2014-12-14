@@ -361,7 +361,7 @@ void gui_init(dt_lib_module_t *self)
 
   lib->overlay_id_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5);
   GtkWidget *label = gtk_label_new(_("image id"));
-  gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
+  gtk_widget_set_halign(label, GTK_ALIGN_START);
   lib->overlay_id = gtk_spin_button_new_with_range(0, 1000000000, 1);
   gtk_spin_button_set_digits(GTK_SPIN_BUTTON(lib->overlay_id), 0);
   g_object_set(G_OBJECT(lib->overlay_id), "tooltip-text", _("enter image id of the overlay manually"),

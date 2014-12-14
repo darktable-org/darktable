@@ -1560,7 +1560,8 @@ void dt_bauhaus_show_popup(dt_bauhaus_widget_t *w)
   darktable.bauhaus->mouse_line_distance = 0.0f;
   _stop_cursor();
 
-  dt_iop_request_focus(w->module);
+  if(w->module) dt_iop_request_focus(w->module);
+
   int offset = 0;
 
   switch(darktable.bauhaus->current->type)
@@ -1624,13 +1625,13 @@ static gboolean dt_bauhaus_slider_scroll(GtkWidget *widget, GdkEventScroll *even
   dt_bauhaus_slider_data_t *d = &w->data.slider;
   if(event->direction == GDK_SCROLL_UP)
   {
-    dt_iop_request_focus(w->module);
+    if(w->module) dt_iop_request_focus(w->module);
     dt_bauhaus_slider_set_normalized(w, d->pos + d->scale / 5.0f);
     return TRUE;
   }
   else if(event->direction == GDK_SCROLL_DOWN)
   {
-    dt_iop_request_focus(w->module);
+    if(w->module) dt_iop_request_focus(w->module);
     dt_bauhaus_slider_set_normalized(w, d->pos - d->scale / 5.0f);
     return TRUE;
   }
@@ -1645,13 +1646,13 @@ static gboolean dt_bauhaus_combobox_scroll(GtkWidget *widget, GdkEventScroll *ev
   dt_bauhaus_combobox_data_t *d = &w->data.combobox;
   if(event->direction == GDK_SCROLL_UP)
   {
-    dt_iop_request_focus(w->module);
+    if(w->module) dt_iop_request_focus(w->module);
     dt_bauhaus_combobox_set(widget, CLAMP(d->active - 1, 0, d->num_labels - 1));
     return TRUE;
   }
   else if(event->direction == GDK_SCROLL_DOWN)
   {
-    dt_iop_request_focus(w->module);
+    if(w->module) dt_iop_request_focus(w->module);
     dt_bauhaus_combobox_set(widget, CLAMP(d->active + 1, 0, d->num_labels - 1));
     return TRUE;
   }
@@ -1664,8 +1665,7 @@ static gboolean dt_bauhaus_combobox_button_press(GtkWidget *widget, GdkEventButt
   gtk_widget_get_allocation(widget, &allocation);
   dt_bauhaus_widget_t *w = (dt_bauhaus_widget_t *)widget;
   if(w->type != DT_BAUHAUS_COMBOBOX) return FALSE;
-  if(w->module) // tethering uses these with module == NULL
-    dt_iop_request_focus(w->module);
+  if(w->module) dt_iop_request_focus(w->module);
   GtkAllocation tmp;
   gtk_widget_get_allocation(GTK_WIDGET(w), &tmp);
   dt_bauhaus_combobox_data_t *d = &w->data.combobox;
@@ -1930,7 +1930,7 @@ static gboolean dt_bauhaus_slider_button_press(GtkWidget *widget, GdkEventButton
   GtkAllocation allocation;
   gtk_widget_get_allocation(widget, &allocation);
   dt_bauhaus_widget_t *w = (dt_bauhaus_widget_t *)widget;
-  dt_iop_request_focus(w->module);
+  if(w->module) dt_iop_request_focus(w->module);
   GtkAllocation tmp;
   gtk_widget_get_allocation(GTK_WIDGET(w), &tmp);
   if(w->quad_paint && (event->x > allocation.width - allocation.height))
@@ -1977,7 +1977,7 @@ static gboolean dt_bauhaus_slider_button_release(GtkWidget *widget, GdkEventButt
 
   if((event->button == 1) && (d->is_dragging))
   {
-    dt_iop_request_focus(w->module);
+    if(w->module) dt_iop_request_focus(w->module);
     GtkAllocation tmp;
     gtk_widget_get_allocation(GTK_WIDGET(w), &tmp);
     d->is_dragging = 0;

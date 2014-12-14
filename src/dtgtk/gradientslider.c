@@ -424,9 +424,6 @@ static void _gradient_slider_realize(GtkWidget *widget)
                         gdk_window_new(gtk_widget_get_parent_window(widget), &attributes, attributes_mask));
 
   gdk_window_set_user_data(gtk_widget_get_window(widget), widget);
-
-  gtk_widget_set_style(widget, gtk_style_attach(gtk_widget_get_style(widget), gtk_widget_get_window(widget)));
-  gtk_style_set_background(gtk_widget_get_style(widget), gtk_widget_get_window(widget), GTK_STATE_NORMAL);
 }
 
 
@@ -463,14 +460,12 @@ static gboolean _gradient_slider_draw(GtkWidget *widget, cairo_t *cr)
   g_return_val_if_fail(widget != NULL, FALSE);
   g_return_val_if_fail(DTGTK_IS_GRADIENT_SLIDER(widget), FALSE);
 
-  GtkStyle *style = gtk_rc_get_style_by_paths(gtk_settings_get_default(), NULL, "GtkButton", GTK_TYPE_BUTTON);
-  if(!style) style = gtk_rc_get_style(widget);
-  int state = gtk_widget_get_state(widget);
+  GdkRGBA color;
+  GtkStyleContext *context = gtk_widget_get_style_context(widget);
+  gtk_style_context_get_color(context, gtk_widget_get_state_flags(widget), &color);
 
   GtkAllocation allocation;
   gtk_widget_get_allocation(widget, &allocation);
-  /*int x = allocation.x;
-  int y = allocation.y;*/
   int width = allocation.width;
   int height = allocation.height;
   int margins = gslider->margins;
@@ -502,12 +497,9 @@ static gboolean _gradient_slider_draw(GtkWidget *widget, cairo_t *cr)
     cairo_stroke(cr);
   }
 
-
-
   // Lets draw position arrows
 
-  cairo_set_source_rgba(cr, style->fg[state].red / 65535.0, style->fg[state].green / 65535.0,
-                        style->fg[state].blue / 65535.0, 1.0);
+  cairo_set_source_rgba(cr, color.red, color.green, color.blue, 1.0);
 
 
   // do we have a picker value to draw?
@@ -517,14 +509,12 @@ static gboolean _gradient_slider_draw(GtkWidget *widget, cairo_t *cr)
     int vx_max = _scale_to_screen(widget, CLAMP_RANGE(gslider->picker[2], 0.0, 1.0));
     int vx_avg = _scale_to_screen(widget, CLAMP_RANGE(gslider->picker[0], 0.0, 1.0));
 
-    cairo_set_source_rgba(cr, style->fg[state].red / 65535.0, style->fg[state].green / 65535.0,
-                          style->fg[state].blue / 65535.0, 0.33);
+    cairo_set_source_rgba(cr, color.red, color.green, color.blue, 0.33);
 
     cairo_rectangle(cr, vx_min, (height - gheight) / 2.0, fmax((float)vx_max - vx_min, 0.0f), gheight);
     cairo_fill(cr);
 
-    cairo_set_source_rgba(cr, style->fg[state].red / 65535.0, style->fg[state].green / 65535.0,
-                          style->fg[state].blue / 65535.0, 1.0);
+    cairo_set_source_rgba(cr, color.red, color.green, color.blue, 1.0);
 
     cairo_move_to(cr, vx_avg, (height - gheight) / 2.0);
     cairo_line_to(cr, vx_avg, (height + gheight) / 2.0);
@@ -547,13 +537,11 @@ static gboolean _gradient_slider_draw(GtkWidget *widget, cairo_t *cr)
 
     if(l == gslider->selected && (gslider->is_entered == TRUE || gslider->is_dragging == TRUE))
     {
-      cairo_set_source_rgba(cr, style->fg[state].red / 65535.0, style->fg[state].green / 65535.0,
-                            style->fg[state].blue / 65535.0 * 0.5, 1.0);
+      cairo_set_source_rgba(cr, color.red, color.green, color.blue, 1.0);
     }
     else
     {
-      cairo_set_source_rgba(cr, style->fg[state].red / 65535.0 * 0.8, style->fg[state].green / 65535.0 * 0.8,
-                            style->fg[state].blue / 65535.0 * 0.8, 1.0);
+      cairo_set_source_rgba(cr, color.red * 0.8, color.green * 0.8, color.blue * 0.8, 1.0);
     }
 
 

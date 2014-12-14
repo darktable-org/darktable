@@ -87,7 +87,7 @@ void gui_init(dt_lib_module_t *self)
       if(k < darktable.view_manager->num_views - 1)
       {
         GtkWidget *w = gtk_label_new("<span color=\"#7f7f7f\"><big><big><b>|</b></big></big></span>");
-        gtk_misc_set_alignment(GTK_MISC(w), 0, 0.5);
+        gtk_widget_set_halign(w, GTK_ALIGN_START);
         gtk_label_set_use_markup(GTK_LABEL(w), TRUE);
         gtk_widget_set_name(w, "view_label");
         gtk_box_pack_start(GTK_BOX(self->widget), w, FALSE, FALSE, 5);
@@ -181,7 +181,7 @@ static GtkWidget *_lib_viewswitcher_create_label(dt_view_t *v)
   GtkWidget *b = gtk_label_new(label);
   gtk_container_add(GTK_CONTAINER(eb), b);
   /*setup label*/
-  gtk_misc_set_alignment(GTK_MISC(b), 0, 0.5);
+  gtk_widget_set_halign(b, GTK_ALIGN_START);
   g_object_set_data(G_OBJECT(b), "view-label", (gchar *)v->name(v));
   g_object_set_data(G_OBJECT(eb), "view-label", (gchar *)v->name(v));
   gtk_label_set_use_markup(GTK_LABEL(b), TRUE);

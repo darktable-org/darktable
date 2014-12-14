@@ -402,7 +402,7 @@ void gui_init(dt_lib_module_t *self)
   GtkWidget *output_options = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
   GtkWidget *picker_subrow = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 2);
   GtkWidget *restrict_button;
-  GtkWidget *samples_label = gtk_label_new(_("live samples"));
+  GtkWidget *samples_label = dt_ui_section_label_new(_("live samples"));
   GtkWidget *samples_options_row = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 2);
 
   // Initializing self data structure

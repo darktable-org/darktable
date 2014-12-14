@@ -1812,10 +1812,10 @@ GtkWidget *dt_iop_gui_get_expander(dt_iop_module_t *module)
   module->off = DTGTK_TOGGLEBUTTON(hw[idx]);
   gtk_widget_set_size_request(GTK_WIDGET(hw[idx++]), bs, bs);
 
-  /* reorder header, for now, iop are always int right panel */
+  /* reorder header, for now, iop are always in the right panel */
   for(int i = 6; i >= 0; i--)
     if(hw[i]) gtk_box_pack_start(GTK_BOX(header), hw[i], i == 1 ? TRUE : FALSE, i == 1 ? TRUE : FALSE, 2);
-  gtk_misc_set_alignment(GTK_MISC(hw[1]), 1.0, 0.5);
+  gtk_widget_set_halign(hw[1], GTK_ALIGN_END);
 
 
   /* add the blending ui if supported */

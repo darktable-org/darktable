@@ -72,8 +72,12 @@ static gboolean _button_draw(GtkWidget *widget, cairo_t *cr)
   g_return_val_if_fail(widget != NULL, FALSE);
   g_return_val_if_fail(DTGTK_IS_BUTTON(widget), FALSE);
 
-  GtkStyle *style = gtk_widget_get_style(widget);
-  int state = gtk_widget_get_state(widget);
+  GtkStateFlags state = gtk_widget_get_state_flags(widget);
+
+  GdkRGBA bg_color, fg_color;
+  GtkStyleContext *context = gtk_widget_get_style_context(widget);
+  gtk_style_context_get_background_color(context, state, &bg_color);
+  gtk_style_context_get_color(context, state, &fg_color);
 
   /* update paint flags depending of states */
   int flags = DTGTK_BUTTON(widget)->icon_flags;
@@ -82,7 +86,7 @@ static gboolean _button_draw(GtkWidget *widget, cairo_t *cr)
   int border = DT_PIXEL_APPLY_DPI((flags & CPF_DO_NOT_USE_BORDER) ? 2 : 4);
 
   /* prelight */
-  if(state == GTK_STATE_PRELIGHT)
+  if(state & GTK_STATE_FLAG_PRELIGHT)
     flags |= CPF_PRELIGHT;
   else
     flags &= ~CPF_PRELIGHT;
@@ -104,49 +108,44 @@ static gboolean _button_draw(GtkWidget *widget, cairo_t *cr)
   /* begin cairo drawing */
   GtkAllocation allocation;
   gtk_widget_get_allocation(widget, &allocation);
-  int x = allocation.x;
-  int y = allocation.y;
   int width = allocation.width;
   int height = allocation.height;
 
   /* draw standard button background if not transparent */
   if((flags & CPF_STYLE_FLAT))
   {
-    if(state != GTK_STATE_NORMAL)
+    if(flags & CPF_PRELIGHT)
     {
-      cairo_rectangle(cr, x, y, width, height);
-      cairo_set_source_rgba(cr, style->bg[state].red / 65535.0, style->bg[state].green / 65535.0,
-                            style->bg[state].blue / 65535.0, 0.5);
+      cairo_rectangle(cr, 0, 0, width, height);
+      cairo_set_source_rgba(cr, bg_color.red, bg_color.green, bg_color.blue, bg_color.alpha);
       cairo_fill(cr);
     }
   }
   else if(!(flags & CPF_BG_TRANSPARENT))
   {
     /* draw default boxed button */
-    gtk_paint_box(gtk_widget_get_style(widget), cr, gtk_widget_get_state(widget), GTK_SHADOW_OUT, widget,
-                  "button", x, y, width, height);
+    gtk_render_background(context, cr, 0, 0, width, height);
+    if(!(flags & CPF_DO_NOT_USE_BORDER))
+      gtk_render_frame(context, cr, 0, 0, width, height);
   }
 
-  if(flags & CPF_IGNORE_FG_STATE) state = GTK_STATE_NORMAL;
-
-  cairo_set_source_rgb(cr, style->fg[state].red / 65535.0, style->fg[state].green / 65535.0,
-                       style->fg[state].blue / 65535.0);
+  cairo_set_source_rgba(cr, fg_color.red, fg_color.green, fg_color.blue, fg_color.alpha);
 
   /* draw icon */
   if(DTGTK_BUTTON(widget)->icon)
   {
     if(text)
       DTGTK_BUTTON(widget)
-          ->icon(cr, x + border, y + border, height - (border * 2), height - (border * 2), flags);
+          ->icon(cr, border, border, height - (border * 2), height - (border * 2), flags);
     else
       DTGTK_BUTTON(widget)
-          ->icon(cr, x + border, y + border, width - (border * 2), height - (border * 2), flags);
+          ->icon(cr, border, border, width - (border * 2), height - (border * 2), flags);
   }
 
   /* draw label */
   if(text)
   {
-    int lx = x + DT_PIXEL_APPLY_DPI(2), ly = y + ((height / 2.0) - (ph / 2.0));
+    int lx = DT_PIXEL_APPLY_DPI(2), ly = ((height / 2.0) - (ph / 2.0));
     if(DTGTK_BUTTON(widget)->icon) lx += width;
     cairo_move_to(cr, lx, ly);
     cairo_set_source_rgba(cr, 1.0, 1.0, 1.0, 0.5);

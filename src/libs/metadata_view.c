@@ -553,8 +553,9 @@ void gui_init(dt_lib_module_t *self)
   self->data = (void *)d;
   _lib_metatdata_view_init_labels();
 
-  self->widget = gtk_table_new(md_size, 2, FALSE);
-
+  self->widget = gtk_grid_new();
+  gtk_grid_set_column_spacing(GTK_GRID(self->widget), DT_PIXEL_APPLY_DPI(5));
+  GtkWidget *last = NULL;
 
   /* initialize the metadata name/value labels */
   for(int k = 0; k < md_size; k++)
@@ -569,10 +570,11 @@ void gui_init(dt_lib_module_t *self)
       // film roll jump to:
       g_signal_connect(G_OBJECT(evb), "button-press-event", G_CALLBACK(_filmroll_clicked), NULL);
     }
-    gtk_misc_set_alignment(GTK_MISC(name), 0.0, 0.5);
-    gtk_misc_set_alignment(GTK_MISC(d->metadata[k]), 0.0, 0.5);
-    gtk_table_attach(GTK_TABLE(self->widget), GTK_WIDGET(name), 0, 1, k, k + 1, GTK_FILL, 0, 5, 0);
-    gtk_table_attach(GTK_TABLE(self->widget), evb, 1, 2, k, k + 1, GTK_EXPAND | GTK_FILL, 0, 0, 0);
+    gtk_widget_set_halign(GTK_WIDGET(name), GTK_ALIGN_START);
+    gtk_widget_set_halign(GTK_WIDGET(d->metadata[k]), GTK_ALIGN_START);
+    gtk_grid_attach_next_to(GTK_GRID(self->widget), GTK_WIDGET(name), last, GTK_POS_BOTTOM, 1, 1);
+    gtk_grid_attach_next_to(GTK_GRID(self->widget), GTK_WIDGET(evb), GTK_WIDGET(name), GTK_POS_RIGHT, 1, 1);
+    last = GTK_WIDGET(name);
   }
 
   /* lets signup for mouse over image change signals */

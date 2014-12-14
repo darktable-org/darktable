@@ -223,12 +223,16 @@ static gboolean _lib_darktable_draw_callback(GtkWidget *widget, cairo_t *cr, gpo
   dt_lib_darktable_t *d = (dt_lib_darktable_t *)self->data;
 
   /* get the current style */
-  GtkStyle *style = gtk_rc_get_style_by_paths(gtk_settings_get_default(), NULL, "GtkWidget", GTK_TYPE_WIDGET);
-  if(!style) style = gtk_rc_get_style(widget);
+  GdkRGBA color;
+  PangoFontDescription *font_desc = NULL;
+  GtkStateFlags state = gtk_widget_get_state_flags(widget);
+  GtkStyleContext *context = gtk_widget_get_style_context(widget);
+  gtk_style_context_get_background_color(context, state, &color);
+  gtk_style_context_get(context, state, "font", &font_desc, NULL);
+
 
   /* fill background */
-  cairo_set_source_rgb(cr, style->bg[0].red / 65535.0, style->bg[0].green / 65535.0,
-                       style->bg[0].blue / 65535.0);
+  cairo_set_source_rgba(cr, color.red, color.green, color.blue, color.alpha);
   cairo_paint(cr);
 
   /* paint icon image */
@@ -243,9 +247,9 @@ static gboolean _lib_darktable_draw_callback(GtkWidget *widget, cairo_t *cr, gpo
   /* create a pango layout and print fancy  name/version string */
   PangoLayout *layout;
   layout = gtk_widget_create_pango_layout(widget, NULL);
-  pango_font_description_set_weight(style->font_desc, PANGO_WEIGHT_BOLD);
-  pango_font_description_set_absolute_size(style->font_desc, DT_PIXEL_APPLY_DPI(25) * PANGO_SCALE);
-  pango_layout_set_font_description(layout, style->font_desc);
+  pango_font_description_set_weight(font_desc, PANGO_WEIGHT_BOLD);
+  pango_font_description_set_absolute_size(font_desc, DT_PIXEL_APPLY_DPI(25) * PANGO_SCALE);
+  pango_layout_set_font_description(layout, font_desc);
 
   pango_layout_set_text(layout, PACKAGE_NAME, -1);
   cairo_set_source_rgba(cr, 1.0, 1.0, 1.0, 0.5);
@@ -253,8 +257,8 @@ static gboolean _lib_darktable_draw_callback(GtkWidget *widget, cairo_t *cr, gpo
   pango_cairo_show_layout(cr, layout);
 
   /* print version */
-  pango_font_description_set_absolute_size(style->font_desc, DT_PIXEL_APPLY_DPI(10) * PANGO_SCALE);
-  pango_layout_set_font_description(layout, style->font_desc);
+  pango_font_description_set_absolute_size(font_desc, DT_PIXEL_APPLY_DPI(10) * PANGO_SCALE);
+  pango_layout_set_font_description(layout, font_desc);
   pango_layout_set_text(layout, PACKAGE_VERSION, -1);
   cairo_move_to(cr, d->image_width + DT_PIXEL_APPLY_DPI(4.0), DT_PIXEL_APPLY_DPI(30.0));
   cairo_set_source_rgba(cr, 1.0, 1.0, 1.0, 0.3);

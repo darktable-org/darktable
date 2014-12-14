@@ -595,10 +595,17 @@ static gboolean colorzones_draw(GtkWidget *widget, cairo_t *crf, gpointer user_d
   cairo_surface_t *cst = dt_cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height);
   cairo_t *cr = cairo_create(cst);
   // clear bg, match color of the notebook tabs:
-  GtkStyle *style = gtk_widget_get_style(GTK_WIDGET(c->channel_tabs));
-  cairo_set_source_rgb(cr, style->bg[GTK_STATE_NORMAL].red / 65535.0f,
-                       style->bg[GTK_STATE_NORMAL].green / 65535.0f,
-                       style->bg[GTK_STATE_NORMAL].blue / 65535.0f);
+  GdkRGBA color;
+  GtkStyleContext *context = gtk_widget_get_style_context(widget);
+  gboolean color_found = gtk_style_context_lookup_color (context, "bright_bg_color", &color);
+  if(!color_found)
+  {
+    color.red = 1.0;
+    color.green = 0.0;
+    color.blue = 0.0;
+    color.alpha = 1.0;
+  }
+  cairo_set_source_rgba(cr, color.red, color.green, color.blue, color.alpha);
   cairo_paint(cr);
 
   cairo_translate(cr, inset, inset);

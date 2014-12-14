@@ -147,14 +147,15 @@ static gboolean _lib_navigation_draw_callback(GtkWidget *widget, cairo_t *crf, g
   if(dev->preview_status != DT_DEV_PIXELPIPE_VALID) return FALSE;
 
   /* get the current style */
-  GtkStyle *style = gtk_rc_get_style_by_paths(gtk_settings_get_default(), NULL, "GtkWidget", GTK_TYPE_WIDGET);
-  if(!style) style = gtk_rc_get_style(widget);
+  GdkRGBA color;
+  GtkStyleContext *context = gtk_widget_get_style_context(widget);
+  GtkStateFlags state = gtk_widget_get_state_flags(widget);
+  gtk_style_context_get_background_color(context, state, &color);
   cairo_surface_t *cst = dt_cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height);
   cairo_t *cr = cairo_create(cst);
 
   /* fill background */
-  cairo_set_source_rgb(cr, style->bg[0].red / 65535.0, style->bg[0].green / 65535.0,
-                       style->bg[0].blue / 65535.0);
+  cairo_set_source_rgba(cr, color.red, color.green, color.blue, color.alpha);
   cairo_paint(cr);
 
   width -= 2 * inset;
@@ -241,8 +242,7 @@ static gboolean _lib_navigation_draw_callback(GtkWidget *widget, cairo_t *crf, g
 
       cairo_save(cr);
       cairo_set_line_width(cr, 2.0);
-      cairo_set_source_rgb(cr, style->bg[0].red / 65535.0, style->bg[0].green / 65535.0,
-                           style->bg[0].blue / 65535.0);
+      cairo_set_source_rgba(cr, color.red, color.green, color.blue, color.alpha);
       cairo_text_path(cr, zoomline);
       cairo_stroke_preserve(cr);
       cairo_set_source_rgb(cr, 0.6, 0.6, 0.6);
