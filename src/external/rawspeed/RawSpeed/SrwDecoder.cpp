@@ -383,10 +383,16 @@ void SrwDecoder::decodeCompressed3( TiffIFD* raw)
         int32 doAverage = motionDoAverage[motion];
 
         for (uint32 i=0; i<16; i++) {
+          ushort16* refpixel;
           if ((row+i) & 0x1) // Red or blue pixels use same color two lines up
-            img[i] = *(img_up2+i+slideOffset);
+            refpixel = img_up2 + i + slideOffset;
           else // Green pixels use the green one above to the left or right
-            img[i] = *(img_up+i+slideOffset+((i%2)?-1:1));
+            refpixel = img_up + i + slideOffset + ((i%2) ? 1 : -1);
+
+          if (doAverage)
+            img[i] = (*refpixel + *(refpixel+2) + 1) >> 1;
+          else
+            img[i] = *refpixel;
         }
       }
       //if (row > 1)
