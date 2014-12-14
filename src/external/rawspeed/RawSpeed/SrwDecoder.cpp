@@ -107,6 +107,7 @@ RawImage SrwDecoder::decodeRawInternal() {
     try {
       decodeCompressed3(raw);
     } catch (RawDecoderException& e) {
+      fprintf(stderr, "Error %s\n", e.what());
       mRaw->setError(e.what());
     }
     return mRaw;
@@ -320,16 +321,18 @@ void SrwDecoder::decodeCompressed3( TiffIFD* raw)
   // that specifies for each pixel the number of bits in the difference, then
   // the actual difference bits
   uint32 motion;
-  int32 motionTable[7][2] = {{-2, 0}, {-1, 0}, {-1, 1}, {0, 0}, {0, 1}, {1, 0}, {2, 0}};
   uint32 diffBitsMode[3][2] = {0};
   uint32 line_offset = startpump.getOffset();
   for (uint32 row=0; row < height; row++) {
+//    fprintf(stderr, "starting row %d\n", row);
     // Align pump to 16byte boundary
     if ((line_offset & 0xf) != 0)
       line_offset += 16 - (line_offset & 0xf);
     BitPumpMSB32 pump(mFile->getData(offset+line_offset),mFile->getSize()-offset-line_offset);
 
     ushort16* img = (ushort16*)mRaw->getData(0, row);
+    ushort16* img_up = (ushort16*)mRaw->getData(0, max(0, (int)row - 1));
+    ushort16* img_up2 = (ushort16*)mRaw->getData(0, max(0, (int)row - 2));
     // Initialize the motion and diff modes at the start of the line
     motion = 7;
     for (uint32 i=0; i<3; i++)
@@ -362,7 +365,38 @@ void SrwDecoder::decodeCompressed3( TiffIFD* raw)
           ThrowRDE("SRW Decoder: Too many difference bits. File corrupted?");
       }
 
-      // Now we actually read the differences and write the pixels
+      // Initialize the pixels
+      if (motion == 7) {
+        // The base case, just set all pixels to the previous ones on the same line
+        // If we're at the left edge we just start at the initial value
+        for (uint32 i=0; i<16; i++) {
+          img[i] = (col == 0) ? initVal : *(img+i-2);
+        }
+      } else {
+        // The complex case, we now need to actually lookup one or two lines above
+        if (row < 2)
+          ThrowRDE("SRW: Got a previous line lookup on first two lines. File corrupted?");
+        int32 motionOffset[7] =    {-4,-2,-2,0,0,2,4};
+        int32 motionDoAverage[7] = { 0, 0, 1,0,1,0,0};
+
+        int32 slideOffset = motionOffset[motion];
+        int32 doAverage = motionDoAverage[motion];
+
+        for (uint32 i=0; i<16; i++) {
+          if ((row+i) & 0x1) // Red or blue pixels use same color two lines up
+            img[i] = *(img_up2+i+slideOffset);
+          else // Green pixels use the green one above to the left or right
+            img[i] = *(img_up+i+slideOffset+((i%2)?-1:1));
+        }
+      }
+      //if (row > 1)
+//        for (uint32 i=0; i<4; i++)
+//          fprintf(stderr, "refpixs %d %d %d %d\n", img[i*4+0],
+//                                                   img[i*4+1],
+//                                                   img[i*4+2],
+//                                                   img[i*4+3]);
+
+      // Now we actually read the differences and write them to the pixels
       for (uint32 i=0; i<16; i++) {
         uint32 len = diffBits[i>>2];
         int32 diff = pump.getBitsSafe(len);
@@ -372,7 +406,15 @@ void SrwDecoder::decodeCompressed3( TiffIFD* raw)
         // Apply the diff to pixels 0 2 4 6 8 10 12 14 1 3 5 7 9 11 13 15
         img[((i&0x7)<<1)+(i>>3)] += diff;
       }
+      //if (row > 1)
+//        for (uint32 i=0; i<4; i++)
+//          fprintf(stderr, "finalpixs %d %d %d %d\n", img[i*4+0],
+//                                                     img[i*4+1],
+//                                                     img[i*4+2],
+//                                                     img[i*4+3]);
       img += 16;
+      img_up += 16;
+      img_up2 += 16;
     }
     line_offset += pump.getOffset();
   }
