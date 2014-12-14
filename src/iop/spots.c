@@ -278,8 +278,8 @@ void modify_roi_in(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *
   // now we set the values
   roi_in->x = CLAMP(roix, 0, piece->pipe->iwidth * roi_in->scale - 1);
   roi_in->y = CLAMP(roiy, 0, piece->pipe->iheight * roi_in->scale - 1);
-  roi_in->width = CLAMP(roir - roi_in->x, 1, piece->pipe->iwidth * roi_in->scale - roi_in->x);
-  roi_in->height = CLAMP(roib - roi_in->y, 1, piece->pipe->iheight * roi_in->scale - roi_in->y);
+  roi_in->width = CLAMP(roir - roi_in->x, 1, piece->pipe->iwidth * roi_in->scale + .5f - roi_in->x);
+  roi_in->height = CLAMP(roib - roi_in->y, 1, piece->pipe->iheight * roi_in->scale + .5f - roi_in->y);
 }
 
 void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, void *o,
