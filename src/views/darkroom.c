@@ -860,8 +860,8 @@ static void _darkroom_ui_favorite_presets_popupmenu(GtkWidget *w, gpointer user_
   /* if we got any styles, lets popup menu for selection */
   if(darktable.gui->presets_popup_menu)
   {
-    gtk_menu_popup(darktable.gui->presets_popup_menu, NULL, NULL, NULL, NULL, 0, 0);
     gtk_widget_show_all(GTK_WIDGET(darktable.gui->presets_popup_menu));
+    gtk_menu_popup(darktable.gui->presets_popup_menu, NULL, NULL, NULL, NULL, 0, 0);
   }
   else
     dt_control_log(_("no userdefined presets for favorite modules were found"));
