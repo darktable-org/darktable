@@ -1036,7 +1036,7 @@
   <dtconfig prefs="gui">
     <name>plugins/darkroom/ui/border_size</name>
     <type>int</type>
-    <default>0</default>
+    <default>20</default>
     <shortdescription>border around image in darkroom mode</shortdescription>
     <longdescription>process the image in darkroom mode with a small border. set to 0 if you don't want any border.</longdescription>
   </dtconfig>
