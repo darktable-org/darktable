@@ -419,6 +419,13 @@ static void transform(float *x, float *o, const float *m, const float t_h, const
 
 int distort_transform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, float *points, size_t points_count)
 {
+  // we first need to be sure that all data values are computed
+  // this is done in modify_roi_out fct, so we create tmp roi
+  dt_iop_roi_t roi_out, roi_in;
+  roi_in.width = piece->buf_in.width;
+  roi_in.height = piece->buf_in.height;
+  self->modify_roi_out(self, piece, &roi_out, &roi_in);
+
   dt_iop_clipping_data_t *d = (dt_iop_clipping_data_t *)piece->data;
 
   const float rx = piece->buf_in.width;
@@ -462,6 +469,13 @@ int distort_transform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, floa
 int distort_backtransform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, float *points,
                           size_t points_count)
 {
+  // we first need to be sure that all data values are computed
+  // this is done in modify_roi_out fct, so we create tmp roi
+  dt_iop_roi_t roi_out, roi_in;
+  roi_in.width = piece->buf_in.width;
+  roi_in.height = piece->buf_in.height;
+  self->modify_roi_out(self, piece, &roi_out, &roi_in);
+
   dt_iop_clipping_data_t *d = (dt_iop_clipping_data_t *)piece->data;
 
   const float rx = piece->buf_in.width;
