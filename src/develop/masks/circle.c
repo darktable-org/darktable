@@ -25,71 +25,34 @@
 static void dt_circle_get_distance(float x, int y, float as, dt_masks_form_gui_t *gui, int index, int *inside,
                                    int *inside_border, int *near, int *inside_source)
 {
+  // initialise returned values
+  *inside_source = 0;
+  *inside = 0;
+  *inside_border = 0;
+  *near = -1;
+
   if(!gui) return;
 
-  int nb = 0;
-  int last = -9999;
+  float yf = (float)y;
   dt_masks_form_gui_points_t *gpt = (dt_masks_form_gui_points_t *)g_list_nth_data(gui->points, index);
   if(!gpt) return;
 
   // we first check if we are inside the source form
-  if(gpt->source_count > 6)
+  if(dt_masks_point_in_form_exact(x,yf,gpt->source,1,gpt->source_count))
   {
-    for(int i = 1; i < gpt->source_count; i++)
-    {
-      int yy = (int)gpt->source[i * 2 + 1];
-      if(yy != last && yy == y)
-      {
-        if(gpt->source[i * 2] > x) nb++;
-      }
-      last = yy;
-    }
-    if(nb & 1)
-    {
-      *inside_source = 1;
-      *inside = 1;
-      *inside_border = 0;
-      *near = -1;
-      return;
-    }
-  }
-  *inside_source = 0;
-
-  // we check if it's inside borders
-  nb = 0;
-  for(int i = 1; i < gpt->border_count; i++)
-  {
-    int yy = (int)gpt->border[i * 2 + 1];
-    if(yy != last && yy == y)
-    {
-      if(gpt->border[i * 2] > x) nb++;
-    }
-    last = yy;
-  }
-  if(!(nb & 1))
-  {
-    *inside = 0;
-    *inside_border = 0;
-    *near = -1;
+    *inside_source = 1;
+    *inside = 1;
     return;
   }
+
+  // we check if it's inside borders
+  if(!dt_masks_point_in_form_exact(x,yf,gpt->border,1,gpt->border_count)) return;
+
   *inside = 1;
   *near = 0;
 
   // and we check if it's inside form
-  nb = 0;
-  last = -9999;
-  for(int i = 1; i < gpt->points_count; i++)
-  {
-    int yy = (int)gpt->points[i * 2 + 1];
-    if(yy != last && yy == y)
-    {
-      if(gpt->points[i * 2] > x) nb++;
-      if(gpt->points[i * 2] - x < as && gpt->points[i * 2] - x > -as) *near = 1;
-    }
-    last = yy;
-  }
-  *inside_border = !(nb & 1);
+  *inside_border = !(dt_masks_point_in_form_near(x,yf,gpt->points,1,gpt->points_count,as,near));
 }
 
 static int dt_circle_events_mouse_scrolled(struct dt_iop_module_t *module, float pzx, float pzy, int up,
@@ -114,10 +77,12 @@ static int dt_circle_events_mouse_scrolled(struct dt_iop_module_t *module, float
       dt_masks_point_circle_t *circle = (dt_masks_point_circle_t *)(g_list_first(form->points)->data);
       if(gui->border_selected)
       {
-        if(up && circle->border > 0.002f)
+        if(up && circle->border > 0.001f)
           circle->border *= 0.97f;
-        else if(circle->border < 1.0f)
+        else if(!up && circle->border < 1.0f)
           circle->border *= 1.0f / 0.97f;
+        else
+          return 1;
         dt_masks_write_form(form, darktable.develop);
         dt_masks_gui_form_remove(form, gui, index);
         dt_masks_gui_form_create(form, gui, index);
@@ -128,10 +93,12 @@ static int dt_circle_events_mouse_scrolled(struct dt_iop_module_t *module, float
       }
       else if(gui->edit_mode == DT_MASKS_EDIT_FULL)
       {
-        if(up && circle->radius > 0.002f)
+        if(up && circle->radius > 0.001f)
           circle->radius *= 0.97f;
-        else if(circle->radius < 1.0f)
+        else if(!up && circle->radius < 1.0f)
           circle->radius *= 1.0f / 0.97f;
+        else
+          return 1;
         dt_masks_write_form(form, darktable.develop);
         dt_masks_gui_form_remove(form, gui, index);
         dt_masks_gui_form_create(form, gui, index);

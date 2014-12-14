@@ -797,7 +797,7 @@ static int32_t dt_control_gpx_apply_job_run(dt_job_t *job)
 
   } while((t = g_list_next(t)) != NULL);
 
-  dt_control_log(_("applied matched GPX location onto %d image(s)"), cntr);
+  dt_control_log(ngettext("applied matched GPX location onto %d image", "applied matched GPX location onto %d images", cntr), cntr);
 
   g_time_zone_unref(tz_camera);
   g_time_zone_unref(tz_utc);
@@ -1359,7 +1359,7 @@ static int32_t dt_control_time_offset_job_run(dt_job_t *job)
     }
   } while((t = g_list_next(t)) != NULL);
 
-  dt_control_log(_("added time offset to %d image(s)"), cntr);
+  dt_control_log(ngettext("added time offset to %d image", "added time offset to %d images", cntr), cntr);
 
   if(progress) dt_control_progress_destroy(darktable.control, progress);
 

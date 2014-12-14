@@ -493,10 +493,11 @@ darktable.debug.type:set_text([[Similar to the system function type() but it wil
 	types.dt_lua_image_t.is_raw:set_text([[True if the image is a RAW file.]])
 	types.dt_lua_image_t.is_ldr:set_text([[True if the image is a ldr image.]])
 	types.dt_lua_image_t.is_hdr:set_text([[True if the image is a hdr image.]])
-	types.dt_lua_image_t.width:set_text([[The width of the image.]])
+  types.dt_lua_image_t.has_txt:set_text([[True if the image has a txt sidecar file.]])
+  types.dt_lua_image_t.width:set_text([[The width of the image.]])
 	types.dt_lua_image_t.height:set_text([[The height of the image.]])
-	types.dt_lua_image_t.rating:set_text([[The rating of the image (-1 for rejected).]])
-	types.dt_lua_image_t.red:set_text([[True if the image has the corresponding colorlabel.]])
+  types.dt_lua_image_t.rating:set_text([[The rating of the image (-1 for rejected).]])
+  types.dt_lua_image_t.red:set_text([[True if the image has the corresponding colorlabel.]])
 	types.dt_lua_image_t.red:set_alias(types.dt_lua_image_t.blue)
 	types.dt_lua_image_t.red:set_alias(types.dt_lua_image_t.green)
 	types.dt_lua_image_t.red:set_alias(types.dt_lua_image_t.yellow)
@@ -647,6 +648,7 @@ darktable.debug.type:set_text([[Similar to the system function type() but it wil
 	types.lua_pref_type:set_text([[The type of value to save in a preference]])
 
 
+  types.dt_imageio_exr_compression_t:set_text("The type of compression to use for the EXR image")
 
 	----------------------
 	--  EVENTS          --
@@ -685,22 +687,29 @@ darktable.debug.type:set_text([[Similar to the system function type() but it wil
 	events["shortcut"].extra_registration_parameters:add_parameter("tooltip","string",[[The string that will be displayed on the shortcut preference panel describing the shortcut.]])
 
 
+
 	events["post-import-film"]:set_text([[This event is triggered when an film import is finished (all post-import-image callbacks have already been triggered). This event can be registered multiple times.
 	]])
 	events["post-import-film"].callback:add_parameter("event","string",[[The name of the event that triggered the callback.]])
 
 	events["post-import-film"].callback:add_parameter("film",types.dt_lua_film_t,[[The new film that has been added. If multiple films were added recursively only the top level film is reported.]])
 	events["post-import-film"].extra_registration_parameters:set_text([[This event has no extra registration parameters.]])
+
 	events["view-changed"]:set_text([[This event is triggered after the user changed the active view]])
 	events["view-changed"].callback:add_parameter("old_view",types.dt_view_t,[[The view that we just left]])
 	events["view-changed"].callback:add_parameter("new_view",types.dt_view_t,[[The view we are now in]])
 	events["view-changed"].extra_registration_parameters:set_text([[This event has no extra registration parameters.]])
+
 	events["global_toolbox-grouping_toggle"]:set_text([[This event is triggered after the user toggled the grouping button.]])
 	events["global_toolbox-grouping_toggle"].callback:add_parameter("toggle", "boolean", [[the new grouping status.]]);
 	events["global_toolbox-grouping_toggle"].extra_registration_parameters:set_text([[This event has no extra registration parameters.]])
 	events["global_toolbox-overlay_toggle"]:set_text([[This event is triggered after the user toggled the overlay button.]])
 	events["global_toolbox-overlay_toggle"].callback:add_parameter("toggle", "boolean", [[the new overlay status.]]);
 	events["global_toolbox-overlay_toggle"].extra_registration_parameters:set_text([[This event has no extra registration parameters.]])
+
+  events["mouse-over-image-changed"]:set_text([[This event is triggered whenever the image under the mouse changes]])
+  events["mouse-over-image-changed"].callback:add_parameter("image",types.dt_lua_image_t,[[The new image under the mous, can be nil if there is no image under the mouse]])
+	events["mouse-over-image-changed"].extra_registration_parameters:set_text([[This event has no extra registration parameters.]])
 	----------------------
 	--  ATTRIBUTES      --
 	----------------------

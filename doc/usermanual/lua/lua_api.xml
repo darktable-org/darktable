@@ -12,7 +12,7 @@
 <para><programlisting language="lua">darktable = require "darktable"</programlisting></para>
 
 <para>All functions and data are accessed through the darktable module.</para>
-<para>This documentation for API version 2.0.0-dev.</para>
+<para>This documentation for API version 2.1.0-dev.</para>
 
 <section status="final" id="darktable">
 <title>darktable</title>
@@ -3265,6 +3265,27 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
 
 </section>
 
+<section status="final" id="types_dt_lua_image_t_has_txt">
+<title>types.dt_lua_image_t.has_txt</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>has_txt</secondary>
+</indexterm>
+<synopsis>boolean</synopsis>
+<para>True if the image has a txt sidecar file.</para>
+<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
+    <colspec colwidth="2*"/>
+    <colspec colwidth="8*"/>
+    <tbody><row>
+    <entry>Attributes:</entry>
+    <entry><itemizedlist>
+<listitem><para><emphasis><link linkend="attributes_write">write</link></emphasis></para></listitem>
+</itemizedlist>
+</entry>
+    </row></tbody>
+    </tgroup></informaltable>
+</section>
+
 <section status="final" id="types_dt_lua_image_t_width">
 <title>types.dt_lua_image_t.width</title>
 <indexterm>
@@ -5330,7 +5351,7 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
 <secondary>dt_imageio_exr_compression_t</secondary>
 </indexterm>
 <synopsis>enum</synopsis>
-<para>undocumented types.dt_imageio_exr_compression_t</para>
+<para>The type of compression to use for the EXR image</para>
 <informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
     <colspec colwidth="2*"/>
     <colspec colwidth="8*"/>
@@ -5722,6 +5743,48 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
 
 <section status="final" id="events_global_toolbox-overlay_toggle_extra_registration_parameters">
 <title>events.global_toolbox-overlay_toggle.extra registration parameters</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>extra registration parameters</secondary>
+</indexterm>
+<para>This event has no extra registration parameters.</para>
+
+</section>
+
+</section>
+
+<section status="final" id="events_mouse-over-image-changed">
+<title>events.mouse-over-image-changed</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>mouse-over-image-changed</secondary>
+</indexterm>
+<synopsis>event</synopsis>
+<para>This event is triggered whenever the image under the mouse changes</para>
+
+<section status="final" id="events_mouse-over-image-changed_callback">
+<title>events.mouse-over-image-changed.callback</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>callback</secondary>
+</indexterm>
+<synopsis>function( 
+	<emphasis><link linkend="events_mouse-over-image-changed_callback_image">image</link></emphasis> : <link linkend="types_dt_lua_image_t">types.dt_lua_image_t</link>
+)</synopsis>
+<para></para>
+
+<variablelist>
+<varlistentry id="events_mouse-over-image-changed_callback_image"><term>image</term><listitem>
+<synopsis><link linkend="types_dt_lua_image_t">types.dt_lua_image_t</link></synopsis>
+<para>The new image under the mous, can be nil if there is no image under the mouse</para>
+
+</listitem></varlistentry>
+
+</variablelist>
+</section>
+
+<section status="final" id="events_mouse-over-image-changed_extra_registration_parameters">
+<title>events.mouse-over-image-changed.extra registration parameters</title>
 <indexterm>
 <primary>Lua API</primary>
 <secondary>extra registration parameters</secondary>

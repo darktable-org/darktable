@@ -430,11 +430,6 @@ void cleanup(dt_iop_module_t *module)
   module->params = NULL;
 }
 
-int button_released(struct dt_iop_module_t *self, double x, double y, int which, uint32_t state)
-{
-  self->request_color_pick = DT_REQUEST_COLORPICK_OFF;
-  return 1;
-}
 
 static void _iop_zonesystem_redraw_preview_callback(gpointer instance, gpointer user_data);
 

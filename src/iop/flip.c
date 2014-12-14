@@ -134,7 +134,13 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
 
     *n = *d; // start with a fresh copy of default parameters
 
-    n->orientation = merge_two_orientations(dt_image_orientation(&self->dev->image_storage),
+    // we might be called from presets update infrastructure => there is no image
+    dt_image_orientation_t image_orientation = ORIENTATION_NONE;
+
+    if(self->dev)
+      image_orientation = dt_image_orientation(&self->dev->image_storage);
+
+    n->orientation = merge_two_orientations(image_orientation,
                                             (dt_image_orientation_t)(old->orientation));
 
     return 0;

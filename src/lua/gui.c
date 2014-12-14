@@ -240,6 +240,43 @@ static int lua_job_valid(lua_State *L)
   }
 }
 
+typedef struct
+{
+  uint32_t imgid;
+} on_mouse_over_image_changed_callback_data_t;
+
+static int32_t on_mouse_over_image_changed_callback_job(dt_job_t *job)
+{
+  gboolean has_lock = dt_lua_lock();
+  on_mouse_over_image_changed_callback_data_t *t = dt_control_job_get_params(job);
+  int n_params = (t->imgid != -1);
+  if(n_params)
+    luaA_push(darktable.lua_state.state, dt_lua_image_t, &t->imgid);
+  dt_lua_event_trigger(darktable.lua_state.state, "mouse-over-image-changed", n_params);
+  free(t); 
+  dt_lua_unlock(has_lock);
+  return 0;
+}
+
+static void on_mouse_over_image_changed(gpointer instance, gpointer user_data)
+{
+  dt_job_t *job = dt_control_job_create(&on_mouse_over_image_changed_callback_job, "lua: on mouse over image changed");
+  if(job)
+  {
+    on_mouse_over_image_changed_callback_data_t *t
+        = (on_mouse_over_image_changed_callback_data_t *)calloc(1, sizeof(on_mouse_over_image_changed_callback_data_t));
+    if(!t)
+    {
+      dt_control_job_dispose(job);
+    }
+    else
+    {
+      dt_control_job_set_params(job, t);
+      t->imgid = dt_control_get_mouse_over_id();
+      dt_control_add_job(darktable.control, DT_JOB_QUEUE_USER_FG, job);
+    }
+  }
+}
 
 
 int dt_lua_init_gui(lua_State *L)
@@ -281,6 +318,12 @@ int dt_lua_init_gui(lua_State *L)
     dt_lua_type_register_type(L, job_type, "percent");
     lua_pushcfunction(L, lua_job_valid);
     dt_lua_type_register_type(L, job_type, "valid");
+
+    // allow to react to highlighting an image
+    lua_pushcfunction(L, dt_lua_event_multiinstance_register);
+    lua_pushcfunction(L, dt_lua_event_multiinstance_trigger);
+    dt_lua_event_add(L, "mouse-over-image-changed");
+    dt_control_signal_connect(darktable.signals, DT_SIGNAL_MOUSE_OVER_IMAGE_CHANGE, G_CALLBACK(on_mouse_over_image_changed), NULL);
   }
   return 0;
 }

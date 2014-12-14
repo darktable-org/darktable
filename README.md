@@ -22,11 +22,15 @@ Building
 
 ### Release build
 
-            ./build.sh --prefix /opt/darktable --buildtype Release
+```bash
+./build.sh --prefix /opt/darktable --buildtype Release
+```
 
 ### Debug build
 
-            ./build.sh --prefix /opt/darktable --buildtype Debug
+```bash
+./build.sh --prefix /opt/darktable --buildtype Debug
+```
 
 
 **Tip:** Check that you have the latest [gphoto2 library](http://www.gphoto.org/ "gphoto2 homepage") installed in order to support the newest cameras.

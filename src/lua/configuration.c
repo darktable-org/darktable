@@ -31,11 +31,11 @@
 /* incompatible API change */
 #define API_VERSION_MAJOR 2
 /* backward compatible API change */
-#define API_VERSION_MINOR 0
+#define API_VERSION_MINOR 1
 /* bugfixes that should not change anything to the API */
-#define API_VERSION_PATCH 1
+#define API_VERSION_PATCH 0
 /* suffix for unstable version */
-#define API_VERSION_SUFFIX ""
+#define API_VERSION_SUFFIX "dev"
 
 static int check_version(lua_State *L)
 {
