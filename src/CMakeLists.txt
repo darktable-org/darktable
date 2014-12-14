@@ -597,6 +597,10 @@ if(NOT SOURCE_PACKAGE AND NOT APPLE)
   message(WARNING "REMOVE BEFORE FLIGHT")
   set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-error=deprecated-declarations")
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-error=deprecated-declarations")
+
+  # instead, disable deprecated stuff one-by-one after fixing it
+  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -D__GTK_STOCK_H__ -D__GTK_ACTION_GROUP_H__ -D__GTK_UI_MANAGER_H__")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -D__GTK_STOCK_H__ -D__GTK_ACTION_GROUP_H__ -D__GTK_UI_MANAGER_H__")
 elseif(SOURCE_PACKAGE)
   set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -D_RELEASE")
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -D_RELEASE")
