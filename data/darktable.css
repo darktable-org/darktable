@@ -20,6 +20,11 @@
   border: 0;
 }
 
+GtkAlignment
+{
+  background-color:transparent;
+}
+
 #iop-plugin-ui GtkBox,
 #lib-plugin-ui GtkBox
 {
@@ -31,15 +36,15 @@
 #iop-plugin-ui GtkEventBox,
 #lib-plugin-ui GtkEventBox
 {
+  background-color:transparent;
   margin:0;
   border:0;
   padding:0;
 }
 /* bright background */
-#right > .GtkEventBox, #left > .GtkEventBox, #background_job_eventbox,
+#background_job_eventbox,
 #iop-plugin-ui *
 {
-/*  text-align:left; <- fuck, doesn't seem to be supported*/
   padding:0;
   border:0;
   margin:0;
@@ -59,11 +64,6 @@
   padding:0 0 2pt 2pt;
   background-color: @selected_bg_color;
 }
-#iop-plugin-ui GtkEventBox,
-#lib-plugin-ui GtkEventBox
-{
-  background-color: transparent;
-}
 #iop-plugin-ui,
 #lib-plugin-ui
 {
@@ -72,7 +72,7 @@
   box-shadow: inset 0 0 2px #171717;
   margin: 0px;
   padding: 1px 4px 1px 4px;
-  background-color: #252525;
+  background-color: @plugin_bg_color;
 }
 #iop-plugin-ui:selected,
 #lib-plugin-ui
