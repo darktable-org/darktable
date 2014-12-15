@@ -551,6 +551,22 @@
 			<Horizontal y="24" height="8"/>
 		</BlackAreas>
 	</Camera>
+	<Camera make="Canon" model="Canon EOS 7D Mark II" mode="sRaw1">
+		<Crop x="0" y="0" width="0" height="0"/>
+		<Sensor black="0" white="65535"/>
+		<Hints>
+			<Hint name="sraw_new" value=""/>
+			<Hint name="invert_sraw_wb" value=""/>
+		</Hints>
+	</Camera>
+	<Camera make="Canon" model="Canon EOS 7D Mark II" mode="sRaw2">
+		<Crop x="0" y="0" width="0" height="0"/>
+		<Sensor black="0" white="65535"/>
+		<Hints>
+			<Hint name="sraw_new" value=""/>
+			<Hint name="invert_sraw_wb" value=""/>
+		</Hints>
+	</Camera>
 	<Camera make="Canon" model="Canon EOS 1000D">
 		<CFA width="2" height="2">
 			<Color x="0" y="0">RED</Color>
