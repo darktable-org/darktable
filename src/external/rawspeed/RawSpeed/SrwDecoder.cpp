@@ -10,6 +10,7 @@
     RawSpeed - RAW file decoder.
 
     Copyright (C) 2009-2010 Klaus Post
+    Copyright (C) 2014 Pedro Côrte-Real
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Lesser General Public
@@ -285,8 +286,12 @@ int32 SrwDecoder::samsungDiff (BitPumpMSB &pump, encTableItem *tbl)
   return diff;
 }
 
-// Decoder for compressed srw files (NX1 and later)
-// Seriously Samsung just use lossless jpeg already, it compresses better too
+// Decoder for third generation compressed SRW files (NX1)
+// Seriously Samsung just use lossless jpeg already, it compresses better too :)
+
+// Thanks to Michael Reichmann (Luminous Landscape) for putting me in contact
+// and Loring von Palleske (Samsung) for pointing to the open-source code of
+// Samsung's DNG converter at http://opensource.samsung.com/
 void SrwDecoder::decodeCompressed3( TiffIFD* raw)
 {
   uint32 offset = raw->getEntry(STRIPOFFSETS)->getInt();
