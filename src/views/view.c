@@ -69,7 +69,11 @@ void dt_view_manager_init(dt_view_manager_t *vm)
 #ifdef HAVE_MAP
                       "map",
 #endif
-                      "slideshow",  NULL };
+                      "slideshow",
+#ifdef HAVE_PRINT
+                      "print",
+#endif
+                      NULL };
   char *module = modules[midx];
   while(module != NULL)
   {
@@ -1560,6 +1564,13 @@ void dt_view_map_set_map_source(const dt_view_manager_t *vm, OsmGpsMapSource_t m
 }
 #endif
 
+#ifdef HAVE_PRINT
+void dt_view_print_settings(const dt_view_manager_t *vm, dt_print_info_t *pinfo)
+{
+  if (vm->proxy.print.view)
+    vm->proxy.print.print_settings(vm->proxy.print.view, pinfo);
+}
+#endif
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

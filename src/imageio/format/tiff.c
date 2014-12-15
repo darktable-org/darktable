@@ -30,6 +30,7 @@
 #include "control/conf.h"
 #include "common/imageio_format.h"
 #include "bauhaus/bauhaus.h"
+#include "views/view.h"
 
 DT_MODULE(2)
 
@@ -295,15 +296,34 @@ void *legacy_params(dt_imageio_module_format_t *self, const void *const old_para
 }
 void *get_params(dt_imageio_module_format_t *self)
 {
+  const dt_view_t *cv = dt_view_manager_get_current_view(darktable.view_manager);
   dt_imageio_tiff_t *d = (dt_imageio_tiff_t *)calloc(1, sizeof(dt_imageio_tiff_t));
-  d->bpp = dt_conf_get_int("plugins/imageio/format/tiff/bpp");
-  if(d->bpp == 16)
-    d->bpp = 16;
-  else if(d->bpp == 32)
-    d->bpp = 32;
+
+  // we reuse the tiff module for the print module, in the print view get the
+  // corresponding parameters.
+
+  if (cv->view(cv) == DT_VIEW_PRINT)
+  {
+    d->bpp = dt_conf_get_int("plugins/imageio/format/print/bpp");
+    if(d->bpp == 16)
+      d->bpp = 16;
+    else if(d->bpp == 32)
+      d->bpp = 32;
+    else
+      d->bpp = 8;
+    d->compress = dt_conf_get_int("plugins/imageio/format/print/compress");
+  }
   else
-    d->bpp = 8;
-  d->compress = dt_conf_get_int("plugins/imageio/format/tiff/compress");
+  {
+    d->bpp = dt_conf_get_int("plugins/imageio/format/tiff/bpp");
+    if(d->bpp == 16)
+      d->bpp = 16;
+    else if(d->bpp == 32)
+      d->bpp = 32;
+    else
+      d->bpp = 8;
+    d->compress = dt_conf_get_int("plugins/imageio/format/tiff/compress");
+  }
   return d;
 }
 
