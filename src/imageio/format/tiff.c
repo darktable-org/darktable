@@ -1,6 +1,7 @@
 /*
     This file is part of darktable,
     copyright (c) 2010--2011 Henrik Andersson and johannes hanika
+    copyright (c) 2014 LebedevRI.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -28,7 +29,6 @@
 #include "common/colorspaces.h"
 #include "control/conf.h"
 #include "common/imageio_format.h"
-#define DT_TIFFIO_STRIPE 64
 
 DT_MODULE(2)
 
@@ -61,9 +61,6 @@ int write_image(dt_imageio_module_data_t *d_tmp, const char *filename, const voi
   TIFF *tif = NULL;
 
   void *rowdata = NULL;
-  uint32_t rowsize = 0;
-  uint32_t stripesize = 0;
-  uint32_t stripe = 0;
 
   int rc = 1; // default to error
 
@@ -137,7 +134,7 @@ int write_image(dt_imageio_module_data_t *d_tmp, const char *filename, const voi
   TIFFSetField(tif, TIFFTAG_IMAGELENGTH, (uint32_t)d->height);
   TIFFSetField(tif, TIFFTAG_PHOTOMETRIC, (uint16_t)PHOTOMETRIC_RGB);
   TIFFSetField(tif, TIFFTAG_PLANARCONFIG, (uint16_t)PLANARCONFIG_CONTIG);
-  TIFFSetField(tif, TIFFTAG_ROWSPERSTRIP, (uint32_t)DT_TIFFIO_STRIPE);
+  TIFFSetField(tif, TIFFTAG_ROWSPERSTRIP, (uint32_t)1);
   TIFFSetField(tif, TIFFTAG_ORIENTATION, (uint16_t)ORIENTATION_TOPLEFT);
 
   int resolution = dt_conf_get_int("metadata/resolution");
@@ -148,12 +145,8 @@ int write_image(dt_imageio_module_data_t *d_tmp, const char *filename, const voi
     TIFFSetField(tif, TIFFTAG_RESOLUTIONUNIT, (uint16_t)RESUNIT_INCH);
   }
 
-  rowsize = (d->width * 3) * d->bpp / 8;
-  stripesize = rowsize * DT_TIFFIO_STRIPE;
-  stripe = 0;
-
-  rowdata = malloc(stripesize);
-  if(!rowdata)
+  const size_t rowsize = (d->width * 3) * d->bpp / 8;
+  if((rowdata = malloc(rowsize)) == NULL)
   {
     rc = 1;
     goto exit;
@@ -161,73 +154,59 @@ int write_image(dt_imageio_module_data_t *d_tmp, const char *filename, const voi
 
   if(d->bpp == 32)
   {
-    float *wdata = rowdata;
-
     for(int y = 0; y < d->height; y++)
     {
       float *in = (float *)in_void + (size_t)4 * y * d->width;
+      float *out = (float *)rowdata;
 
-      for(int x = 0; x < d->width; x++, in += 4, wdata += 3)
+      for(int x = 0; x < d->width; x++, in += 4, out += 3)
       {
-        memcpy(wdata, in, 3 * sizeof(float));
+        memcpy(out, in, 3 * sizeof(float));
       }
 
-      if((uintptr_t)wdata - (uintptr_t)rowdata == (uintptr_t)stripesize)
+      if(TIFFWriteScanline(tif, rowdata, y, 0) == -1)
       {
-        TIFFWriteEncodedStrip(tif, stripe++, rowdata, (size_t)(rowsize * DT_TIFFIO_STRIPE));
-        wdata = rowdata;
+        rc = 1;
+        goto exit;
       }
-    }
-    if((uintptr_t)wdata - (uintptr_t)rowdata != (uintptr_t)stripesize)
-    {
-      TIFFWriteEncodedStrip(tif, stripe++, rowdata, (size_t)((uintptr_t)wdata - (uintptr_t)rowdata));
     }
   }
   else if(d->bpp == 16)
   {
-    uint16_t *wdata = rowdata;
     for(int y = 0; y < d->height; y++)
     {
       uint16_t *in = (uint16_t *)in_void + (size_t)4 * y * d->width;
+      uint16_t *out = (uint16_t *)rowdata;
 
-      for(int x = 0; x < d->width; x++, in += 4, wdata += 3)
+      for(int x = 0; x < d->width; x++, in += 4, out += 3)
       {
-        memcpy(wdata, in, 3 * sizeof(uint16_t));
+        memcpy(out, in, 3 * sizeof(uint16_t));
       }
 
-      if((uintptr_t)wdata - (uintptr_t)rowdata == (uintptr_t)stripesize)
+      if(TIFFWriteScanline(tif, rowdata, y, 0) == -1)
       {
-        TIFFWriteEncodedStrip(tif, stripe++, rowdata, (size_t)(rowsize * DT_TIFFIO_STRIPE));
-        wdata = rowdata;
+        rc = 1;
+        goto exit;
       }
-    }
-    if((uintptr_t)wdata - (uintptr_t)rowdata != (uintptr_t)stripesize)
-    {
-      TIFFWriteEncodedStrip(tif, stripe, rowdata, (size_t)((uintptr_t)wdata - (uintptr_t)rowdata));
     }
   }
   else
   {
-    uint8_t *wdata = rowdata;
-
     for(int y = 0; y < d->height; y++)
     {
       uint8_t *in = (uint8_t *)in_void + (size_t)4 * y * d->width;
+      uint8_t *out = (uint8_t *)rowdata;
 
-      for(int x = 0; x < d->width; x++, in += 4, wdata += 3)
+      for(int x = 0; x < d->width; x++, in += 4, out += 3)
       {
-        memcpy(wdata, in, 3 * sizeof(uint8_t));
+        memcpy(out, in, 3 * sizeof(uint8_t));
       }
 
-      if((uintptr_t)wdata - (uintptr_t)rowdata == (uintptr_t)stripesize)
+      if(TIFFWriteScanline(tif, rowdata, y, 0) == -1)
       {
-        TIFFWriteEncodedStrip(tif, stripe++, rowdata, (size_t)(rowsize * DT_TIFFIO_STRIPE));
-        wdata = rowdata;
+        rc = 1;
+        goto exit;
       }
-    }
-    if((uintptr_t)wdata - (uintptr_t)rowdata != (uintptr_t)stripesize)
-    {
-      TIFFWriteEncodedStrip(tif, stripe, rowdata, (size_t)((uintptr_t)wdata - (uintptr_t)rowdata));
     }
   }
 
