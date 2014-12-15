@@ -21,6 +21,9 @@
 #define DT_VIEW_H
 
 #include "common/image.h"
+#ifdef HAVE_PRINT
+#include "common/cups_print.h"
+#endif
 #ifdef HAVE_MAP
 #include <osm-gps-map-source.h>
 #endif
@@ -48,10 +51,11 @@ enum dt_view_type_flags_t
   DT_VIEW_TETHERING = 4,
   DT_VIEW_MAP = 8,
   DT_VIEW_SLIDESHOW = 16,
+  DT_VIEW_PRINT = 32,
 };
 
 #define DT_VIEW_ALL                                                                                          \
-  (DT_VIEW_LIGHTTABLE | DT_VIEW_DARKROOM | DT_VIEW_TETHERING | DT_VIEW_MAP | DT_VIEW_SLIDESHOW)
+  (DT_VIEW_LIGHTTABLE | DT_VIEW_DARKROOM | DT_VIEW_TETHERING | DT_VIEW_MAP | DT_VIEW_SLIDESHOW | DT_VIEW_PRINT)
 
 /**
  * main dt view module (as lighttable or darkroom)
@@ -254,6 +258,14 @@ typedef struct dt_view_manager_t
     } map;
 #endif
 
+    /* map view proxy object */
+#ifdef HAVE_PRINT
+    struct
+    {
+      struct dt_view_t *view;
+      void (*print_settings)(const dt_view_t *view, dt_print_info_t *pinfo);
+    } print;
+#endif
   } proxy;
 
 
@@ -354,6 +366,13 @@ void dt_view_filmstrip_prefetch();
 void dt_view_map_center_on_location(const dt_view_manager_t *vm, gdouble lon, gdouble lat, gdouble zoom);
 void dt_view_map_show_osd(const dt_view_manager_t *vm, gboolean enabled);
 void dt_view_map_set_map_source(const dt_view_manager_t *vm, OsmGpsMapSource_t map_source);
+#endif
+
+/*
+ * Print View Proxy
+ */
+#ifdef HAVE_PRINT
+void dt_view_print_settings(const dt_view_manager_t *vm, dt_print_info_t *pinfo);
 #endif
 
 #endif
