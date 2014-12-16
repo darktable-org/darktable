@@ -71,38 +71,21 @@ static gboolean _icon_draw(GtkWidget *widget, cairo_t *cr)
   g_return_val_if_fail(widget != NULL, FALSE);
   g_return_val_if_fail(DTGTK_IS_ICON(widget), FALSE);
 
-  GtkStyle *style = gtk_widget_get_style(widget);
-  int state = gtk_widget_get_state(widget);
-  int border = 0;
-
-  /* update paint flags depending of states */
-  int flags = DTGTK_ICON(widget)->icon_flags;
-
-
   /* begin cairo drawing */
   GtkAllocation allocation;
   gtk_widget_get_allocation(widget, &allocation);
-  int x = allocation.x;
-  int y = allocation.y;
-  int width = allocation.width;
-  int height = allocation.height;
 
-  /*
-      cairo_rectangle (cr,x,y,width,height);
-      cairo_set_source_rgba (cr,
-                             style->bg[state].red/65535.0,
-                             style->bg[state].green/65535.0,
-                             style->bg[state].blue/65535.0,
-                             0.5);
-      cairo_fill (cr);
-  */
+  GtkStateFlags state = gtk_widget_get_state_flags(widget);
 
-  cairo_set_source_rgb(cr, style->fg[state].red / 65535.0, style->fg[state].green / 65535.0,
-                       style->fg[state].blue / 65535.0);
+  GdkRGBA fg_color;
+  GtkStyleContext *context = gtk_widget_get_style_context(widget);
+  gtk_style_context_get_color(context, state, &fg_color);
+
+  cairo_set_source_rgba(cr, fg_color.red, fg_color.green, fg_color.blue, fg_color.alpha);
 
   /* draw icon */
   if(DTGTK_ICON(widget)->icon)
-    DTGTK_ICON(widget)->icon(cr, x + border, y + border, width - (border * 2), height - (border * 2), flags);
+    DTGTK_ICON(widget)->icon(cr, 0, 0, allocation.width, allocation.height, DTGTK_ICON(widget)->icon_flags);
 
   return FALSE;
 }
