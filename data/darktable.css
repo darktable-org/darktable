@@ -456,9 +456,3 @@ GtkButton:hover
 {
   border-color: white;
 }
-
-#dtgtk-icon
-{
-  color: green; /* fixme: does not seem to have any effect ??? */
-  background-color: red;
-}

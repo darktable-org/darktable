@@ -78,9 +78,8 @@ typedef struct dt_lib_module_t
   char plugin_name[128];
   /** child widget which is added to the GtkExpander. */
   GtkWidget *widget;
-  /** expander containing the widget and flag to store expanded state */
+  /** expander containing the widget. */
   GtkWidget *expander;
-  gboolean expanded;
 
   /** version */
   int (*version)();
