@@ -1340,7 +1340,7 @@ void dt_control_export(GList *imgid_list, int max_width, int max_height, int for
 
 #ifdef HAVE_PRINT
 void dt_control_print(GList *imgid_list, int max_width, int max_height, int format_index, int storage_index,
-                      char *style, const char *filename, const dt_print_info_t *pinfo)
+                      char *style, gboolean style_append, const char *filename, const dt_print_info_t *pinfo)
 {
   dt_job_t *job = dt_control_job_create(&dt_control_print_job_run, "print");
   if(!job) return;
@@ -1382,6 +1382,7 @@ void dt_control_print(GList *imgid_list, int max_width, int max_height, int form
   data->sdata = sdata;
   data->high_quality = TRUE;
   g_strlcpy(data->style,style,sizeof(data->style));
+  data->style_append = style_append;
   params->data = data;
 
   dt_control_signal_raise(darktable.signals, DT_SIGNAL_IMAGE_EXPORT_MULTIPLE, params);
