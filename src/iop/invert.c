@@ -41,7 +41,7 @@ typedef struct dt_iop_invert_params_t
 
 typedef struct dt_iop_invert_gui_data_t
 {
-  GtkDarktableButton *colorpicker;
+  GtkWidget *colorpicker;
   GtkDarktableResetLabel *label;
   GtkBox *pickerbuttons;
 } dt_iop_invert_gui_data_t;
@@ -126,56 +126,24 @@ static gboolean draw(GtkWidget *widget, cairo_t *cr, dt_iop_module_t *self)
   p->color[0] = self->picked_color[0];
   p->color[1] = self->picked_color[1];
   p->color[2] = self->picked_color[2];
-  GdkColor c;
-  c.red = p->color[0] * 65535.0;
-  c.green = p->color[1] * 65535.0;
-  c.blue = p->color[2] * 65535.0;
-  gtk_widget_modify_fg(GTK_WIDGET(g->colorpicker), GTK_STATE_NORMAL, &c);
+  GdkRGBA color = (GdkRGBA){.red = p->color[0], .green = p->color[1], .blue = p->color[2], .alpha = 1.0 };
+  gtk_color_chooser_set_rgba(GTK_COLOR_CHOOSER(g->colorpicker), &color);
 
   dt_dev_add_history_item(darktable.develop, self, TRUE);
   return FALSE;
 }
 
-static void colorpick_button_callback(GtkButton *button, GtkColorSelectionDialog *csd)
-{
-  GtkWidget *okButton = 0;
-  g_object_get(G_OBJECT(csd), "ok-button", &okButton, NULL);
-
-  gtk_dialog_response(GTK_DIALOG(csd), (GTK_WIDGET(button) == okButton) ? GTK_RESPONSE_ACCEPT : 0);
-}
-
-static void colorpicker_callback(GtkDarktableButton *button, dt_iop_module_t *self)
+static void colorpicker_callback(GtkColorButton *widget, dt_iop_module_t *self)
 {
   if(self->dt->gui->reset) return;
-  dt_iop_invert_gui_data_t *g = (dt_iop_invert_gui_data_t *)self->gui_data;
   dt_iop_invert_params_t *p = (dt_iop_invert_params_t *)self->params;
 
-  GtkColorSelectionDialog *csd
-      = GTK_COLOR_SELECTION_DIALOG(gtk_color_selection_dialog_new(_("select color of film material")));
-  gtk_window_set_transient_for(GTK_WINDOW(csd), GTK_WINDOW(dt_ui_main_window(darktable.gui->ui)));
+  GdkRGBA c;
+  gtk_color_chooser_get_rgba(GTK_COLOR_CHOOSER(widget), &c);
+  p->color[0] = c.red;
+  p->color[1] = c.green;
+  p->color[2] = c.blue;
 
-  GtkWidget *okButton, *cancelButton = 0;
-  g_object_get(G_OBJECT(csd), "ok-button", &okButton, NULL);
-  g_object_get(G_OBJECT(csd), "cancel-button", &cancelButton, NULL);
-
-  g_signal_connect(G_OBJECT(okButton), "clicked", G_CALLBACK(colorpick_button_callback), csd);
-  g_signal_connect(G_OBJECT(cancelButton), "clicked", G_CALLBACK(colorpick_button_callback), csd);
-
-  GtkColorSelection *cs = GTK_COLOR_SELECTION(gtk_color_selection_dialog_get_color_selection(csd));
-  GdkColor c;
-  c.red = 65535 * p->color[0];
-  c.green = 65535 * p->color[1];
-  c.blue = 65535 * p->color[2];
-  gtk_color_selection_set_current_color(cs, &c);
-  if(gtk_dialog_run(GTK_DIALOG(csd)) == GTK_RESPONSE_ACCEPT)
-  {
-    gtk_color_selection_get_current_color(cs, &c);
-    p->color[0] = c.red / 65535.0;
-    p->color[1] = c.green / 65535.0;
-    p->color[2] = c.blue / 65535.0;
-    gtk_widget_modify_fg(GTK_WIDGET(g->colorpicker), GTK_STATE_NORMAL, &c);
-  }
-  gtk_widget_destroy(GTK_WIDGET(csd));
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
@@ -421,11 +389,8 @@ void gui_update(dt_iop_module_t *self)
   gtk_widget_set_visible(GTK_WIDGET(g->pickerbuttons), TRUE);
   dtgtk_reset_label_set_text(g->label, _("color of film material"));
 
-  GdkColor c;
-  c.red = p->color[0] * 65535.0;
-  c.green = p->color[1] * 65535.0;
-  c.blue = p->color[2] * 65535.0;
-  gtk_widget_modify_fg(GTK_WIDGET(g->colorpicker), GTK_STATE_NORMAL, &c);
+  GdkRGBA color = (GdkRGBA){.red = p->color[0], .green = p->color[1], .blue = p->color[2], .alpha = 1.0 };
+  gtk_color_chooser_set_rgba(GTK_COLOR_CHOOSER(g->colorpicker), &color);
 }
 
 void gui_init(dt_iop_module_t *self)
@@ -444,10 +409,12 @@ void gui_init(dt_iop_module_t *self)
   g->pickerbuttons = GTK_BOX(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5));
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->pickerbuttons), TRUE, TRUE, 0);
 
-  g->colorpicker = DTGTK_BUTTON(dtgtk_button_new(dtgtk_cairo_paint_color, CPF_IGNORE_FG_STATE | CPF_STYLE_FLAT
-                                                                          | CPF_DO_NOT_USE_BORDER));
+  GdkRGBA color = (GdkRGBA){.red = p->color[0], .green = p->color[1], .blue = p->color[2], .alpha = 1.0 };
+  g->colorpicker = gtk_color_button_new_with_rgba(&color);
   gtk_widget_set_size_request(GTK_WIDGET(g->colorpicker), DT_PIXEL_APPLY_DPI(75), DT_PIXEL_APPLY_DPI(24));
-  g_signal_connect(G_OBJECT(g->colorpicker), "clicked", G_CALLBACK(colorpicker_callback), self);
+  gtk_color_chooser_set_use_alpha(GTK_COLOR_CHOOSER(g->colorpicker), FALSE);
+  gtk_color_button_set_title(GTK_COLOR_BUTTON(g->colorpicker), _("select color of film material"));
+  g_signal_connect(G_OBJECT(g->colorpicker), "color-set", G_CALLBACK(colorpicker_callback), self);
   gtk_box_pack_start(GTK_BOX(g->pickerbuttons), GTK_WIDGET(g->colorpicker), TRUE, TRUE, 0);
 
   tb = dtgtk_togglebutton_new(dtgtk_cairo_paint_colorpicker, CPF_STYLE_FLAT);

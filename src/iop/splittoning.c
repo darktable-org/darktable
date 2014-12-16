@@ -53,8 +53,8 @@ typedef struct dt_iop_splittoning_params_t
 
 typedef struct dt_iop_splittoning_gui_data_t
 {
-  GtkWidget *scale1, *scale2;                  //  balance, compress
-  GtkDarktableButton *colorpick1, *colorpick2; // shadow, highlight
+  GtkWidget *scale1, *scale2;         // balance, compress
+  GtkWidget *colorpick1, *colorpick2; // shadow,  highlight
   GtkWidget *gslider1, *gslider2, *gslider3,
       *gslider4; // highlight hue, highlight saturation, shadow hue, shadow saturation
 } dt_iop_splittoning_gui_data_t;
@@ -280,15 +280,13 @@ static void compress_callback(GtkWidget *slider, gpointer user_data)
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
-static inline void update_colorpicker_fg(GtkWidget *colorpicker, float hue, float sat)
+static inline void update_colorpicker_color(GtkWidget *colorpicker, float hue, float sat)
 {
   float rgb[3];
-  GdkColor c;
   hsl2rgb(rgb, hue, sat, 0.5);
-  c.red = rgb[0] * 65535.0;
-  c.green = rgb[1] * 65535.0;
-  c.blue = rgb[2] * 65535.0;
-  gtk_widget_modify_fg(colorpicker, GTK_STATE_NORMAL, &c);
+
+  GdkRGBA color = (GdkRGBA){.red = rgb[0], .green = rgb[1], .blue = rgb[2], .alpha = 1.0 };
+  gtk_color_chooser_set_rgba(GTK_COLOR_CHOOSER(colorpicker), &color);
 }
 
 static inline void update_saturation_slider_end_color(GtkWidget *slider, float hue)
@@ -341,7 +339,7 @@ static void hue_callback(GtkWidget *slider, gpointer user_data)
     update_balance_slider_colors(g->scale1, hue, -1);
   }
 
-  update_colorpicker_fg(colorpicker, hue, saturation);
+  update_colorpicker_color(colorpicker, hue, saturation);
   update_saturation_slider_end_color(sat_slider, hue);
 
   if(self->dt->gui->reset) return;
@@ -374,66 +372,30 @@ static void saturation_callback(GtkWidget *slider, gpointer user_data)
     colorpicker = GTK_WIDGET(g->colorpick2);
   }
 
-  update_colorpicker_fg(colorpicker, hue, saturation);
+  update_colorpicker_color(colorpicker, hue, saturation);
 
   if(self->dt->gui->reset) return;
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
-
-static void colorpick_button_callback(GtkButton *button, gpointer user_data)
+static void colorpick_callback(GtkColorButton *widget, dt_iop_module_t *self)
 {
-  GtkColorSelectionDialog *csd = (GtkColorSelectionDialog *)user_data;
-  GtkWidget *okButton = 0;
-  g_object_get(G_OBJECT(csd), "ok-button", &okButton, NULL);
-
-  gtk_dialog_response(GTK_DIALOG(csd), (GTK_WIDGET(button) == okButton) ? GTK_RESPONSE_ACCEPT : 0);
-}
-
-static void colorpick_callback(GtkDarktableButton *button, gpointer user_data)
-{
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  dt_iop_splittoning_gui_data_t *g = (dt_iop_splittoning_gui_data_t *)self->gui_data;
   if(self->dt->gui->reset) return;
-  dt_iop_splittoning_params_t *p = (dt_iop_splittoning_params_t *)self->params;
 
-  GtkColorSelectionDialog *csd
-      = GTK_COLOR_SELECTION_DIALOG(gtk_color_selection_dialog_new(_("select tone color")));
-  gtk_window_set_transient_for(GTK_WINDOW(csd), GTK_WINDOW(dt_ui_main_window(darktable.gui->ui)));
+  dt_iop_splittoning_gui_data_t *g = (dt_iop_splittoning_gui_data_t *)self->gui_data;
 
-  GtkWidget *okButton, *cancelButton = 0;
-  g_object_get(G_OBJECT(csd), "ok-button", &okButton, NULL);
-  g_object_get(G_OBJECT(csd), "cancel-button", &cancelButton, NULL);
-
-  g_signal_connect(G_OBJECT(okButton), "clicked", G_CALLBACK(colorpick_button_callback), csd);
-  g_signal_connect(G_OBJECT(cancelButton), "clicked", G_CALLBACK(colorpick_button_callback), csd);
-
-  GtkColorSelection *cs = GTK_COLOR_SELECTION(gtk_color_selection_dialog_get_color_selection(csd));
-  GdkColor c;
   float color[3], h, s, l;
-  h = (button == g->colorpick1) ? p->shadow_hue : p->highlight_hue;
-  s = (button == g->colorpick1) ? p->shadow_saturation : p->highlight_saturation;
-  l = 0.5;
-  hsl2rgb(color, h, s, l);
 
-  c.red = 65535 * color[0];
-  c.green = 65535 * color[1];
-  c.blue = 65535 * color[2];
-  gtk_color_selection_set_current_color(cs, &c);
-  if(gtk_dialog_run(GTK_DIALOG(csd)) == GTK_RESPONSE_ACCEPT)
-  {
-    gtk_color_selection_get_current_color(cs, &c);
-    color[0] = c.red / 65535.0;
-    color[1] = c.green / 65535.0;
-    color[2] = c.blue / 65535.0;
-    rgb2hsl(color, &h, &s, &l);
-    l = 0.5;
-    hsl2rgb(color, h, s, l);
+  GdkRGBA c;
+  gtk_color_chooser_get_rgba(GTK_COLOR_CHOOSER(widget), &c);
+  color[0] = c.red;
+  color[1] = c.green;
+  color[2] = c.blue;
+  rgb2hsl(color, &h, &s, &l);
 
-    dt_bauhaus_slider_set((button == g->colorpick1) ? g->gslider1 : g->gslider3, h);
-    dt_bauhaus_slider_set((button == g->colorpick1) ? g->gslider2 : g->gslider4, s);
-  }
-  gtk_widget_destroy(GTK_WIDGET(csd));
+  dt_bauhaus_slider_set((GTK_WIDGET(widget) == g->colorpick1) ? g->gslider1 : g->gslider3, h);
+  dt_bauhaus_slider_set((GTK_WIDGET(widget) == g->colorpick1) ? g->gslider2 : g->gslider4, s);
+
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
@@ -493,8 +455,8 @@ void gui_update(struct dt_iop_module_t *self)
   dt_bauhaus_slider_set(g->scale1, p->balance * 100.0);
   dt_bauhaus_slider_set(g->scale2, p->compress);
 
-  update_colorpicker_fg(GTK_WIDGET(g->colorpick1), p->shadow_hue, p->shadow_saturation);
-  update_colorpicker_fg(GTK_WIDGET(g->colorpick2), p->highlight_hue, p->highlight_saturation);
+  update_colorpicker_color(GTK_WIDGET(g->colorpick1), p->shadow_hue, p->shadow_saturation);
+  update_colorpicker_color(GTK_WIDGET(g->colorpick2), p->highlight_hue, p->highlight_saturation);
   update_saturation_slider_end_color(g->gslider2, p->shadow_hue);
   update_saturation_slider_end_color(g->gslider4, p->highlight_hue);
 
@@ -522,16 +484,17 @@ void cleanup(dt_iop_module_t *module)
   module->params = NULL;
 }
 
-static inline void gui_init_tab(struct dt_iop_module_t *self, const char *name, GtkDarktableButton **ppcolor,
-                                GtkWidget **pphue, GtkWidget **ppsaturation)
+static inline void gui_init_tab(struct dt_iop_module_t *self, const char *name, GtkWidget **ppcolor,
+                                const GdkRGBA *c, GtkWidget **pphue, GtkWidget **ppsaturation)
 {
   gtk_box_pack_start(GTK_BOX(self->widget), dt_ui_section_label_new(name), FALSE, FALSE, 5);
 
   // color button
-  GtkDarktableButton *color;
-  *ppcolor = color = DTGTK_BUTTON(dtgtk_button_new(
-      dtgtk_cairo_paint_color, CPF_IGNORE_FG_STATE | CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER));
+  GtkWidget *color;
+  *ppcolor = color = gtk_color_button_new_with_rgba(c);
   gtk_widget_set_size_request(GTK_WIDGET(color), DT_PIXEL_APPLY_DPI(32), DT_PIXEL_APPLY_DPI(32));
+  gtk_color_chooser_set_use_alpha(GTK_COLOR_CHOOSER(color), FALSE);
+  gtk_color_button_set_title(GTK_COLOR_BUTTON(color), _("select tone color"));
 
   // hue slider
   GtkWidget *hue;
@@ -574,11 +537,17 @@ void gui_init(struct dt_iop_module_t *self)
 
   self->widget = GTK_WIDGET(gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE));
 
+  float rgb[3];
+
   // Shadows
-  gui_init_tab(self, _("shadows"), &g->colorpick1, &g->gslider1, &g->gslider2);
+  hsl2rgb(rgb, p->shadow_hue, p->shadow_saturation, 0.5f);
+  GdkRGBA sh_color = (GdkRGBA){.red = rgb[0], .green = rgb[1], .blue = rgb[2], .alpha = 1.0 };
+  gui_init_tab(self, _("shadows"), &g->colorpick1, &sh_color, &g->gslider1, &g->gslider2);
 
   // Highlights
-  gui_init_tab(self, _("highlights"), &g->colorpick2, &g->gslider3, &g->gslider4);
+  hsl2rgb(rgb, p->highlight_hue, p->highlight_saturation, 0.5f);
+  GdkRGBA hi_color = (GdkRGBA){.red = rgb[0], .green = rgb[1], .blue = rgb[2], .alpha = 1.0 };
+  gui_init_tab(self, _("highlights"), &g->colorpick2, &hi_color, &g->gslider3, &g->gslider4);
 
   // Additional parameters
   GtkWidget *hbox = GTK_WIDGET(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0));
@@ -613,8 +582,8 @@ void gui_init(struct dt_iop_module_t *self)
   g_signal_connect(G_OBJECT(g->scale2), "value-changed", G_CALLBACK(compress_callback), self);
 
 
-  g_signal_connect(G_OBJECT(g->colorpick1), "clicked", G_CALLBACK(colorpick_callback), self);
-  g_signal_connect(G_OBJECT(g->colorpick2), "clicked", G_CALLBACK(colorpick_callback), self);
+  g_signal_connect(G_OBJECT(g->colorpick1), "color-set", G_CALLBACK(colorpick_callback), self);
+  g_signal_connect(G_OBJECT(g->colorpick2), "color-set", G_CALLBACK(colorpick_callback), self);
 }
 
 void gui_cleanup(struct dt_iop_module_t *self)
