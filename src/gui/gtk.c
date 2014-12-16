@@ -146,6 +146,9 @@ static void key_accel_changed(GtkAccelMap *object, gchar *accel_path, guint acce
   gtk_accel_map_lookup_entry(path, &darktable.control->accels.lighttable_preview_sticky_focus);
   dt_accel_path_view(path, sizeof(path), "lighttable", "exit sticky preview");
   gtk_accel_map_lookup_entry(path, &darktable.control->accels.lighttable_preview_sticky_exit);
+  // darkroom
+  dt_accel_path_view(path, sizeof(path), "darkroom", "full preview");
+  gtk_accel_map_lookup_entry(path, &darktable.control->accels.darkroom_preview);
 
 
   // Global

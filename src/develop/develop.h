@@ -123,6 +123,13 @@ typedef struct dt_develop_t
   struct dt_masks_form_t *form_visible;
   struct dt_masks_form_gui_t *form_gui;
 
+  //full preview stuff
+  int full_preview;
+  int full_preview_last_zoom, full_preview_last_closeup;
+  float full_preview_last_zoom_x, full_preview_last_zoom_y;
+  struct dt_iop_module_t *full_preview_last_module;
+  int full_preview_masks_state;
+
   /* proxy for communication between plugins and develop/darkroom */
   struct
   {
