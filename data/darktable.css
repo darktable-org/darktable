@@ -121,6 +121,17 @@ GtkTable {
   background-color: @bg_color;
 }
 
+GtkFrame > GtkEventBox {
+  border: 1px solid #111111;
+  background-color: @selected_bg_color;
+  color: @selected_fg_color;
+}
+
+GtkFrame > GtkEventBox * {
+  background-color: @selected_bg_color;
+  color: @selected_fg_color;
+}
+
 /*==============================================*/
 /* button madness, adjusted from Ambiance theme */
 /*==============================================*/

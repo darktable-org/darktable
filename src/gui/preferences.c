@@ -393,7 +393,6 @@ static void tree_insert_presets(GtkTreeStore *tree_model)
 
 static void init_tab_presets(GtkWidget *book)
 {
-  GtkWidget *alignment = gtk_alignment_new(0.5, 0.0, 0.9, 1.0);
   GtkWidget *scroll = gtk_scrolled_window_new(NULL, NULL);
   GtkWidget *tree = gtk_tree_view_new();
   GtkTreeStore *model = gtk_tree_store_new(
@@ -405,9 +404,11 @@ static void init_tab_presets(GtkWidget *book)
   GtkTreeViewColumn *column;
 
   // Adding the outer container
-  gtk_alignment_set_padding(GTK_ALIGNMENT(alignment), 20, 20, 20, 20);
-  gtk_container_add(GTK_CONTAINER(alignment), scroll);
-  gtk_notebook_append_page(GTK_NOTEBOOK(book), alignment, gtk_label_new(_("presets")));
+  gtk_widget_set_margin_top(scroll, DT_PIXEL_APPLY_DPI(20));
+  gtk_widget_set_margin_bottom(scroll, DT_PIXEL_APPLY_DPI(20));
+  gtk_widget_set_margin_start(scroll, DT_PIXEL_APPLY_DPI(20));
+  gtk_widget_set_margin_end(scroll, DT_PIXEL_APPLY_DPI(20));
+  gtk_notebook_append_page(GTK_NOTEBOOK(book), scroll, gtk_label_new(_("presets")));
 
   tree_insert_presets(model);
 
@@ -485,7 +486,6 @@ static void init_tab_presets(GtkWidget *book)
 
 static void init_tab_accels(GtkWidget *book)
 {
-  GtkWidget *alignment = gtk_alignment_new(0.5, 0.0, 0.9, 1.0);
   GtkWidget *container = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
   GtkWidget *scroll = gtk_scrolled_window_new(NULL, NULL);
   GtkWidget *tree = gtk_tree_view_new();
@@ -496,9 +496,11 @@ static void init_tab_accels(GtkWidget *book)
   GtkTreeViewColumn *column;
 
   // Adding the outer container
-  gtk_alignment_set_padding(GTK_ALIGNMENT(alignment), 20, 20, 20, 20);
-  gtk_container_add(GTK_CONTAINER(alignment), container);
-  gtk_notebook_append_page(GTK_NOTEBOOK(book), alignment, gtk_label_new(_("shortcuts")));
+  gtk_widget_set_margin_top(container, DT_PIXEL_APPLY_DPI(20));
+  gtk_widget_set_margin_bottom(container, DT_PIXEL_APPLY_DPI(20));
+  gtk_widget_set_margin_start(container, DT_PIXEL_APPLY_DPI(20));
+  gtk_widget_set_margin_end(container, DT_PIXEL_APPLY_DPI(20));
+  gtk_notebook_append_page(GTK_NOTEBOOK(book), container, gtk_label_new(_("shortcuts")));
 
   // Building the accelerator tree
   g_slist_foreach(darktable.control->accelerator_list, tree_insert_accel, (gpointer)model);
@@ -1172,15 +1174,18 @@ static void edit_preset(GtkTreeView *tree, const gint rowid, const gchar *name, 
                                        GTK_DIALOG_DESTROY_WITH_PARENT | GTK_DIALOG_MODAL, _("_OK"),
                                        GTK_RESPONSE_NONE, NULL);
   GtkContainer *content_area = GTK_CONTAINER(gtk_dialog_get_content_area(GTK_DIALOG(dialog)));
-  GtkWidget *alignment = gtk_alignment_new(0.5, 0.5, 1.0, 1.0);
-  gtk_alignment_set_padding(GTK_ALIGNMENT(alignment), 5, 5, 5, 5);
-  gtk_container_add(content_area, alignment);
   GtkBox *box = GTK_BOX(gtk_box_new(GTK_ORIENTATION_VERTICAL, 5));
-  gtk_container_add(GTK_CONTAINER(alignment), GTK_WIDGET(box));
+  gtk_widget_set_margin_top(GTK_WIDGET(box), DT_PIXEL_APPLY_DPI(20));
+  gtk_widget_set_margin_bottom(GTK_WIDGET(box), DT_PIXEL_APPLY_DPI(20));
+  gtk_widget_set_margin_start(GTK_WIDGET(box), DT_PIXEL_APPLY_DPI(20));
+  gtk_widget_set_margin_end(GTK_WIDGET(box), DT_PIXEL_APPLY_DPI(20));
+  gtk_container_add(content_area, GTK_WIDGET(box));
   GtkWidget *label;
 
-  // GTK3: probably use GtkGrid instead...
-  GtkWidget *grid = gtk_table_new(7, 3, TRUE);
+  GtkWidget *grid = gtk_grid_new();
+  int line = 0;
+  gtk_grid_set_row_spacing(GTK_GRID(grid), DT_PIXEL_APPLY_DPI(5));
+  gtk_grid_set_column_spacing(GTK_GRID(grid), DT_PIXEL_APPLY_DPI(5));
 
   dt_gui_presets_edit_dialog_t *g
       = (dt_gui_presets_edit_dialog_t *)malloc(sizeof(dt_gui_presets_edit_dialog_t));
@@ -1218,8 +1223,8 @@ static void edit_preset(GtkTreeView *tree, const gint rowid, const gchar *name, 
                (char *)NULL);
   label = gtk_label_new(_("model"));
   gtk_widget_set_halign(label, GTK_ALIGN_START);
-  gtk_table_attach_defaults(GTK_TABLE(grid), label, 0, 1, 0, 1);
-  gtk_table_attach_defaults(GTK_TABLE(grid), GTK_WIDGET(g->model), 1, 2, 0, 1);
+  gtk_grid_attach(GTK_GRID(grid), label, 0, line++, 1, 1);
+  gtk_grid_attach_next_to(GTK_GRID(grid), GTK_WIDGET(g->model), label, GTK_POS_RIGHT, 2, 1);
 
   g->maker = GTK_ENTRY(gtk_entry_new());
   /* xgettext:no-c-format */
@@ -1227,34 +1232,33 @@ static void edit_preset(GtkTreeView *tree, const gint rowid, const gchar *name, 
                (char *)NULL);
   label = gtk_label_new(_("maker"));
   gtk_widget_set_halign(label, GTK_ALIGN_START);
-  gtk_table_attach_defaults(GTK_TABLE(grid), label, 0, 1, 1, 2);
-  gtk_table_attach_defaults(GTK_TABLE(grid), GTK_WIDGET(g->maker), 1, 2, 1, 2);
+  gtk_grid_attach(GTK_GRID(grid), label, 0, line++, 1, 1);
+  gtk_grid_attach_next_to(GTK_GRID(grid), GTK_WIDGET(g->maker), label, GTK_POS_RIGHT, 2, 1);
 
   g->lens = GTK_ENTRY(gtk_entry_new());
   /* xgettext:no-c-format */
   g_object_set(G_OBJECT(g->lens), "tooltip-text", _("string to match lens (use % as wildcard)"), (char *)NULL);
   label = gtk_label_new(_("lens"));
   gtk_widget_set_halign(label, GTK_ALIGN_START);
-  gtk_table_attach_defaults(GTK_TABLE(grid), label, 0, 1, 2, 3);
-  gtk_table_attach_defaults(GTK_TABLE(grid), GTK_WIDGET(g->lens), 1, 2, 2, 3);
+  gtk_grid_attach(GTK_GRID(grid), label, 0, line++, 1, 1);
+  gtk_grid_attach_next_to(GTK_GRID(grid), GTK_WIDGET(g->lens), label, GTK_POS_RIGHT, 2, 1);
 
   // iso
   label = gtk_label_new(_("ISO"));
   gtk_widget_set_halign(label, GTK_ALIGN_START);
-  gtk_table_attach_defaults(GTK_TABLE(grid), label, 0, 1, 3, 4);
   g->iso_min = GTK_SPIN_BUTTON(gtk_spin_button_new_with_range(0, 51200, 100));
   g_object_set(G_OBJECT(g->iso_min), "tooltip-text", _("minimum ISO value"), (char *)NULL);
   gtk_spin_button_set_digits(g->iso_min, 0);
-  gtk_table_attach_defaults(GTK_TABLE(grid), GTK_WIDGET(g->iso_min), 1, 2, 3, 4);
   g->iso_max = GTK_SPIN_BUTTON(gtk_spin_button_new_with_range(0, 51200, 100));
   g_object_set(G_OBJECT(g->iso_max), "tooltip-text", _("maximum ISO value"), (char *)NULL);
   gtk_spin_button_set_digits(g->iso_max, 0);
-  gtk_table_attach_defaults(GTK_TABLE(grid), GTK_WIDGET(g->iso_max), 2, 3, 3, 4);
+  gtk_grid_attach(GTK_GRID(grid), label, 0, line++, 1, 1);
+  gtk_grid_attach_next_to(GTK_GRID(grid), GTK_WIDGET(g->iso_min), label, GTK_POS_RIGHT, 1, 1);
+  gtk_grid_attach_next_to(GTK_GRID(grid), GTK_WIDGET(g->iso_max), GTK_WIDGET(g->iso_min), GTK_POS_RIGHT, 1, 1);
 
   // exposure
   label = gtk_label_new(_("exposure"));
   gtk_widget_set_halign(label, GTK_ALIGN_START);
-  gtk_table_attach_defaults(GTK_TABLE(grid), label, 0, 1, 4, 5);
   g->exposure_min = GTK_COMBO_BOX(gtk_combo_box_text_new());
   g->exposure_max = GTK_COMBO_BOX(gtk_combo_box_text_new());
   g_object_set(G_OBJECT(g->exposure_min), "tooltip-text", _("minimum exposure time"), (char *)NULL);
@@ -1263,13 +1267,13 @@ static void edit_preset(GtkTreeView *tree, const gint rowid, const gchar *name, 
     gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(g->exposure_min), dt_gui_presets_exposure_value_str[k]);
   for(int k = 0; k < dt_gui_presets_exposure_value_cnt; k++)
     gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(g->exposure_max), dt_gui_presets_exposure_value_str[k]);
-  gtk_table_attach_defaults(GTK_TABLE(grid), GTK_WIDGET(g->exposure_min), 1, 2, 4, 5);
-  gtk_table_attach_defaults(GTK_TABLE(grid), GTK_WIDGET(g->exposure_max), 2, 3, 4, 5);
+  gtk_grid_attach(GTK_GRID(grid), label, 0, line++, 1, 1);
+  gtk_grid_attach_next_to(GTK_GRID(grid), GTK_WIDGET(g->exposure_min), label, GTK_POS_RIGHT, 1, 1);
+  gtk_grid_attach_next_to(GTK_GRID(grid), GTK_WIDGET(g->exposure_max), GTK_WIDGET(g->exposure_min), GTK_POS_RIGHT, 1, 1);
 
   // aperture
   label = gtk_label_new(_("aperture"));
   gtk_widget_set_halign(label, GTK_ALIGN_START);
-  gtk_table_attach_defaults(GTK_TABLE(grid), label, 0, 1, 5, 6);
   g->aperture_min = GTK_COMBO_BOX(gtk_combo_box_text_new());
   g->aperture_max = GTK_COMBO_BOX(gtk_combo_box_text_new());
   g_object_set(G_OBJECT(g->aperture_min), "tooltip-text", _("minimum aperture value"), (char *)NULL);
@@ -1278,22 +1282,25 @@ static void edit_preset(GtkTreeView *tree, const gint rowid, const gchar *name, 
     gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(g->aperture_min), dt_gui_presets_aperture_value_str[k]);
   for(int k = 0; k < dt_gui_presets_aperture_value_cnt; k++)
     gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(g->aperture_max), dt_gui_presets_aperture_value_str[k]);
-  gtk_table_attach_defaults(GTK_TABLE(grid), GTK_WIDGET(g->aperture_min), 1, 2, 5, 6);
-  gtk_table_attach_defaults(GTK_TABLE(grid), GTK_WIDGET(g->aperture_max), 2, 3, 5, 6);
+  gtk_grid_attach(GTK_GRID(grid), label, 0, line++, 1, 1);
+  gtk_grid_attach_next_to(GTK_GRID(grid), GTK_WIDGET(g->aperture_min), label, GTK_POS_RIGHT, 1, 1);
+  gtk_grid_attach_next_to(GTK_GRID(grid), GTK_WIDGET(g->aperture_max), GTK_WIDGET(g->aperture_min), GTK_POS_RIGHT, 1, 1);
 
   // focal length
   label = gtk_label_new(_("focal length"));
   gtk_widget_set_halign(label, GTK_ALIGN_START);
-  gtk_table_attach_defaults(GTK_TABLE(grid), label, 0, 1, 6, 7);
   g->focal_length_min = GTK_SPIN_BUTTON(gtk_spin_button_new_with_range(0, 1000, 10));
   gtk_spin_button_set_digits(g->focal_length_min, 0);
-  gtk_table_attach_defaults(GTK_TABLE(grid), GTK_WIDGET(g->focal_length_min), 1, 2, 6, 7);
   g->focal_length_max = GTK_SPIN_BUTTON(gtk_spin_button_new_with_range(0, 1000, 10));
   g_object_set(G_OBJECT(g->focal_length_min), "tooltip-text", _("minimum focal length"), (char *)NULL);
   g_object_set(G_OBJECT(g->focal_length_max), "tooltip-text", _("maximum focal length"), (char *)NULL);
   gtk_spin_button_set_digits(g->focal_length_max, 0);
-  gtk_table_attach_defaults(GTK_TABLE(grid), GTK_WIDGET(g->focal_length_max), 2, 3, 6, 7);
   gtk_widget_set_no_show_all(GTK_WIDGET(g->details), TRUE);
+  gtk_grid_attach(GTK_GRID(grid), label, 0, line++, 1, 1);
+  gtk_grid_attach_next_to(GTK_GRID(grid), GTK_WIDGET(g->focal_length_min), label, GTK_POS_RIGHT, 1, 1);
+  gtk_grid_attach_next_to(GTK_GRID(grid), GTK_WIDGET(g->focal_length_max), GTK_WIDGET(g->focal_length_min), GTK_POS_RIGHT, 1, 1);
+  gtk_widget_set_hexpand(GTK_WIDGET(g->focal_length_min), TRUE);
+  gtk_widget_set_hexpand(GTK_WIDGET(g->focal_length_max), TRUE);
 
   sqlite3_stmt *stmt;
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),

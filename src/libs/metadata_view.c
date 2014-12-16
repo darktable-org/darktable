@@ -555,7 +555,7 @@ void gui_init(dt_lib_module_t *self)
 
   self->widget = gtk_grid_new();
   gtk_grid_set_column_spacing(GTK_GRID(self->widget), DT_PIXEL_APPLY_DPI(5));
-  GtkWidget *last = NULL;
+//   GtkWidget *last = NULL;
 
   /* initialize the metadata name/value labels */
   for(int k = 0; k < md_size; k++)
@@ -572,9 +572,8 @@ void gui_init(dt_lib_module_t *self)
     }
     gtk_widget_set_halign(GTK_WIDGET(name), GTK_ALIGN_START);
     gtk_widget_set_halign(GTK_WIDGET(d->metadata[k]), GTK_ALIGN_START);
-    gtk_grid_attach_next_to(GTK_GRID(self->widget), GTK_WIDGET(name), last, GTK_POS_BOTTOM, 1, 1);
+    gtk_grid_attach(GTK_GRID(self->widget), GTK_WIDGET(name), 0, k, 1, 1);
     gtk_grid_attach_next_to(GTK_GRID(self->widget), GTK_WIDGET(evb), GTK_WIDGET(name), GTK_POS_RIGHT, 1, 1);
-    last = GTK_WIDGET(name);
   }
 
   /* lets signup for mouse over image change signals */

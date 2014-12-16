@@ -321,8 +321,8 @@ static void _lib_import_metadata_changed(GtkWidget *widget, GtkComboBox *box)
 
 static void _lib_import_apply_metadata_toggled(GtkWidget *widget, gpointer user_data)
 {
-  GtkWidget *table = GTK_WIDGET(user_data);
-  gtk_widget_set_sensitive(table, gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget)));
+  GtkWidget *grid = GTK_WIDGET(user_data);
+  gtk_widget_set_sensitive(grid, gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget)));
 }
 
 static void _lib_import_presets_changed(GtkWidget *widget, dt_lib_import_metadata_t *data)
@@ -374,16 +374,25 @@ static GtkWidget *_lib_import_get_extra_widget(dt_lib_import_metadata_t *data, g
 
   GtkWidget *frame = gtk_frame_new(NULL);
   gtk_frame_set_shadow_type(GTK_FRAME(frame), GTK_SHADOW_IN);
-  GtkWidget *alignment = gtk_alignment_new(1.0, 1.0, 1.0, 1.0);
-  gtk_alignment_set_padding(GTK_ALIGNMENT(alignment), 8, 8, 8, 8);
+  gtk_widget_set_hexpand(frame, TRUE);
   GtkWidget *event_box = gtk_event_box_new();
+
+  gtk_widget_set_margin_start(event_box, DT_PIXEL_APPLY_DPI(8));
+  gtk_widget_set_margin_end(event_box, DT_PIXEL_APPLY_DPI(8));
+  gtk_widget_set_margin_top(event_box, DT_PIXEL_APPLY_DPI(8));
+  gtk_widget_set_margin_bottom(event_box, DT_PIXEL_APPLY_DPI(8));
+
   gtk_container_add(GTK_CONTAINER(frame), event_box);
-  gtk_container_add(GTK_CONTAINER(event_box), alignment);
-  gtk_container_add(GTK_CONTAINER(alignment), expander);
+  gtk_container_add(GTK_CONTAINER(event_box), expander);
 
   GtkWidget *extra;
   extra = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
   gtk_container_add(GTK_CONTAINER(expander), extra);
+
+  gtk_widget_set_margin_start(extra, DT_PIXEL_APPLY_DPI(8));
+  gtk_widget_set_margin_end(extra, DT_PIXEL_APPLY_DPI(8));
+  gtk_widget_set_margin_top(extra, DT_PIXEL_APPLY_DPI(8));
+  gtk_widget_set_margin_bottom(extra, DT_PIXEL_APPLY_DPI(8));
 
   GtkWidget *recursive = NULL, *ignore_jpeg = NULL;
   if(import_folder == TRUE)
@@ -407,12 +416,13 @@ static GtkWidget *_lib_import_get_extra_widget(dt_lib_import_metadata_t *data, g
 
   // default metadata
   GtkWidget *apply_metadata;
-  GtkWidget *table, *label, *creator, *publisher, *rights, *tags;
+  GtkWidget *grid, *label, *creator, *publisher, *rights, *tags;
   apply_metadata = gtk_check_button_new_with_label(_("apply metadata on import"));
   g_object_set(apply_metadata, "tooltip-text", _("apply some metadata to all newly imported images."), NULL);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(apply_metadata),
                                dt_conf_get_bool("ui_last/import_apply_metadata"));
   gtk_box_pack_start(GTK_BOX(extra), apply_metadata, FALSE, FALSE, 0);
+
 
   GValue value = {
     0,
@@ -420,16 +430,15 @@ static GtkWidget *_lib_import_get_extra_widget(dt_lib_import_metadata_t *data, g
   g_value_init(&value, G_TYPE_INT);
   gtk_widget_style_get_property(apply_metadata, "indicator-size", &value);
   gint indicator_size = g_value_get_int(&value);
-  //   gtk_widget_style_get_property(apply_metadata, "indicator-spacing", &value);
-  //   gint indicator_spacing = g_value_get_int(&value);
+  gtk_widget_style_get_property(apply_metadata, "indicator-spacing", &value);
+  gint indicator_spacing = g_value_get_int(&value);
+  g_value_unset(&value);
 
-  table = gtk_table_new(6, 3, FALSE);
-  gtk_table_set_row_spacings(GTK_TABLE(table), 5);
-  gtk_table_set_col_spacings(GTK_TABLE(table), 5);
-  alignment = gtk_alignment_new(0, 0, 1, 1);
-  gtk_alignment_set_padding(GTK_ALIGNMENT(alignment), 0, 0, 2 * indicator_size, 0);
-  gtk_container_add(GTK_CONTAINER(alignment), table);
-  gtk_box_pack_start(GTK_BOX(extra), alignment, FALSE, FALSE, 0);
+  grid = gtk_grid_new();
+  gtk_grid_set_row_spacing(GTK_GRID(grid), DT_PIXEL_APPLY_DPI(5));
+  gtk_grid_set_column_spacing(GTK_GRID(grid), DT_PIXEL_APPLY_DPI(10));
+  gtk_widget_set_margin_start(grid,  2 * (indicator_spacing + indicator_size));
+  gtk_box_pack_start(GTK_BOX(extra), grid, FALSE, FALSE, 0);
 
   creator = gtk_entry_new();
   gtk_widget_set_size_request(creator, DT_PIXEL_APPLY_DPI(300), -1);
@@ -500,32 +509,28 @@ static GtkWidget *_lib_import_get_extra_widget(dt_lib_import_metadata_t *data, g
 
   label = gtk_label_new(_("preset"));
   gtk_widget_set_halign(label, GTK_ALIGN_START);
-  gtk_table_attach(GTK_TABLE(table), label, 0, 1, line, line + 1, GTK_FILL, 0, 0, 0);
-  gtk_table_attach(GTK_TABLE(table), presets, 1, 2, line, line + 1, GTK_FILL, 0, 0, 0);
-  line++;
+  gtk_grid_attach(GTK_GRID(grid), label, 0, line++, 1, 1);
+  gtk_grid_attach_next_to(GTK_GRID(grid), presets, label, GTK_POS_RIGHT, 1, 1);
 
   label = gtk_label_new(_("creator"));
   gtk_widget_set_halign(label, GTK_ALIGN_START);
-  gtk_table_attach(GTK_TABLE(table), label, 0, 1, line, line + 1, GTK_FILL, 0, 0, 0);
-  gtk_table_attach(GTK_TABLE(table), creator, 1, 2, line, line + 1, GTK_FILL, 0, 0, 0);
-  line++;
+  gtk_grid_attach(GTK_GRID(grid), label, 0, line++, 1, 1);
+  gtk_grid_attach_next_to(GTK_GRID(grid), creator, label, GTK_POS_RIGHT, 1, 1);
 
   label = gtk_label_new(_("publisher"));
   gtk_widget_set_halign(label, GTK_ALIGN_START);
-  gtk_table_attach(GTK_TABLE(table), label, 0, 1, line, line + 1, GTK_FILL, 0, 0, 0);
-  gtk_table_attach(GTK_TABLE(table), publisher, 1, 2, line, line + 1, GTK_FILL, 0, 0, 0);
-  line++;
+  gtk_grid_attach(GTK_GRID(grid), label, 0, line++, 1, 1);
+  gtk_grid_attach_next_to(GTK_GRID(grid), publisher, label, GTK_POS_RIGHT, 1, 1);
 
   label = gtk_label_new(_("rights"));
   gtk_widget_set_halign(label, GTK_ALIGN_START);
-  gtk_table_attach(GTK_TABLE(table), label, 0, 1, line, line + 1, GTK_FILL, 0, 0, 0);
-  gtk_table_attach(GTK_TABLE(table), rights, 1, 2, line, line + 1, GTK_FILL, 0, 0, 0);
-  line++;
+  gtk_grid_attach(GTK_GRID(grid), label, 0, line++, 1, 1);
+  gtk_grid_attach_next_to(GTK_GRID(grid), rights, label, GTK_POS_RIGHT, 1, 1);
 
   label = gtk_label_new(_("tags"));
   gtk_widget_set_halign(label, GTK_ALIGN_START);
-  gtk_table_attach(GTK_TABLE(table), label, 0, 1, line, line + 1, GTK_FILL, 0, 0, 0);
-  gtk_table_attach(GTK_TABLE(table), tags, 1, 2, line, line + 1, GTK_FILL, 0, 0, 0);
+  gtk_grid_attach(GTK_GRID(grid), label, 0, line, 1, 1);
+  gtk_grid_attach_next_to(GTK_GRID(grid), tags, label, GTK_POS_RIGHT, 1, 1);
 
   gtk_widget_show_all(frame);
 
@@ -543,10 +548,9 @@ static GtkWidget *_lib_import_get_extra_widget(dt_lib_import_metadata_t *data, g
     data->tags = tags;
   }
 
-  g_signal_connect(apply_metadata, "toggled", G_CALLBACK(_lib_import_apply_metadata_toggled), table);
-  _lib_import_apply_metadata_toggled(apply_metadata,
-                                     table); // needed since the apply_metadata starts being turned off,
-  // and setting it to off doesn't emit the 'toggled' signal ...
+  g_signal_connect(apply_metadata, "toggled", G_CALLBACK(_lib_import_apply_metadata_toggled), grid);
+  // needed since the apply_metadata starts being turned off, and setting it to off doesn't emit the 'toggled' signal ...
+  _lib_import_apply_metadata_toggled(apply_metadata, grid);
 
   g_signal_connect(presets, "changed", G_CALLBACK(_lib_import_presets_changed), data);
   g_signal_connect(GTK_ENTRY(creator), "changed", G_CALLBACK(_lib_import_metadata_changed), presets);
