@@ -551,6 +551,22 @@
 			<Horizontal y="24" height="8"/>
 		</BlackAreas>
 	</Camera>
+	<Camera make="Canon" model="Canon EOS 7D Mark II" mode="sRaw1">
+		<Crop x="0" y="0" width="0" height="0"/>
+		<Sensor black="0" white="65535"/>
+		<Hints>
+			<Hint name="sraw_new" value=""/>
+			<Hint name="invert_sraw_wb" value=""/>
+		</Hints>
+	</Camera>
+	<Camera make="Canon" model="Canon EOS 7D Mark II" mode="sRaw2">
+		<Crop x="0" y="0" width="0" height="0"/>
+		<Sensor black="0" white="65535"/>
+		<Hints>
+			<Hint name="sraw_new" value=""/>
+			<Hint name="invert_sraw_wb" value=""/>
+		</Hints>
+	</Camera>
 	<Camera make="Canon" model="Canon EOS 1000D">
 		<CFA width="2" height="2">
 			<Color x="0" y="0">RED</Color>
@@ -4564,11 +4580,11 @@
 		<Crop x="0" y="2" width="-8" height="-22"/>
 		<Sensor black="0" white="16383"/>
 	</Camera>
-	<Camera make="SAMSUNG" model="NX1" supported="no">
+	<Camera make="SAMSUNG" model="NX1">
 		<CFA width="2" height="2">
 			<Color x="0" y="0">GREEN</Color>
-			<Color x="1" y="0">BLUE</Color>
-			<Color x="0" y="1">RED</Color>
+			<Color x="1" y="0">RED</Color>
+			<Color x="0" y="1">BLUE</Color>
 			<Color x="1" y="1">GREEN</Color>
 		</CFA>
 		<Crop x="0" y="0" width="0" height="0"/>
