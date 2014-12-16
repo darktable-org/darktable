@@ -49,7 +49,7 @@ uint32_t container()
 
 typedef struct dt_lib_print_settings_t
 {
-  GtkComboBox *profile, *pprofile, *intent, *style, *pintent, *printers, *papers;
+  GtkComboBox *profile, *pprofile, *intent, *style, *style_mode, *pintent, *printers, *papers;
   GtkWidget *landscape, *portrait;
   GList *profiles;
   GtkButton *print_button;
@@ -189,6 +189,8 @@ _print_button_clicked (GtkWidget *widget, gpointer user_data)
     g_free(tmp);
   }
 
+  const gboolean style_append = dt_conf_get_bool("plugins/print/print/style_append");
+
   GList *list = NULL;
 
   list = g_list_append (list, GINT_TO_POINTER(imgid));
@@ -198,7 +200,7 @@ _print_button_clicked (GtkWidget *widget, gpointer user_data)
   ps->prt.printer.intent = gtk_combo_box_get_active(GTK_COMBO_BOX(ps->pintent));
   g_strlcpy(ps->prt.printer.profile, printer_profile_filename, sizeof(ps->prt.printer.profile));
 
-  dt_control_print(list, max_width, max_height, format_index, storage_index, style, filename, &ps->prt);
+  dt_control_print(list, max_width, max_height, format_index, storage_index, style, style_append, filename, &ps->prt);
 }
 
 static void _set_printer(dt_lib_module_t *self, const char *printer_name)
@@ -430,6 +432,17 @@ _style_callback(GtkComboBox *widget, dt_lib_module_t *self)
     gchar *style = gtk_combo_box_text_get_active_text(GTK_COMBO_BOX_TEXT(ps->style));
     dt_conf_set_string("plugins/print/print/style", style);
   }
+}
+
+static void
+_style_mode_changed(GtkComboBox *widget, dt_lib_module_t *self)
+{
+  dt_lib_print_settings_t *ps = (dt_lib_print_settings_t *)self->data;
+
+  if(gtk_combo_box_get_active(ps->style_mode) == 0)
+    dt_conf_set_bool("plugins/print/print/style_append", FALSE);
+  else
+    dt_conf_set_bool("plugins/print/print/style_append", TRUE);
 }
 
 static void
@@ -815,6 +828,30 @@ gui_init (dt_lib_module_t *self)
   g_signal_connect (G_OBJECT (d->style), "changed",
                     G_CALLBACK (_style_callback),
                     (gpointer)self);
+
+  //  Whether to add/replace style items
+
+  label = gtk_label_new(_("mode"));
+  gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
+  tpos++;
+  gtk_table_attach(GTK_TABLE(self->widget), label, 0, 1, tpos, tpos+1, GTK_EXPAND | GTK_FILL, 0, 0, 0);
+  d->style_mode = GTK_COMBO_BOX(gtk_combo_box_text_new());
+
+  dt_ellipsize_combo(d->style_mode);
+
+  gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(d->style_mode), _("replace history"));
+  gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(d->style_mode), _("append history"));
+
+  if (dt_conf_get_bool("plugins/print/print/style_append"))
+    gtk_combo_box_set_active(d->style_mode, 1);
+  else
+    gtk_combo_box_set_active(d->style_mode, 0);
+
+  gtk_table_attach(GTK_TABLE(self->widget), GTK_WIDGET(d->style_mode), 1, 2, tpos, tpos+1, GTK_EXPAND|GTK_FILL, 0, 0, 0);
+  g_object_set(G_OBJECT(d->style_mode), "tooltip-text", _("whether the style is appended to the history or replacing the history"),
+               (char *)NULL);
+
+  g_signal_connect(G_OBJECT(d->style_mode), "changed", G_CALLBACK(_style_mode_changed), (gpointer)self);
 
   //  Add printer profile combo
 
