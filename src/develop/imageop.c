@@ -1692,6 +1692,22 @@ static gboolean _iop_plugin_header_button_press(GtkWidget *w, GdkEventButton *e,
   return FALSE;
 }
 
+static GdkPixbuf *load_image(const char *filename, int size)
+{
+  GError *error = NULL;
+  if(!g_file_test(filename, G_FILE_TEST_IS_REGULAR)) return NULL;
+
+  GdkPixbuf *pixbuf = gdk_pixbuf_new_from_file_at_size(filename, size, size, &error);
+  if(!pixbuf)
+  {
+    fprintf(stderr, "error loading file `%s': %s\n", filename, error->message);
+    g_error_free(error);
+  }
+  return pixbuf;
+}
+
+static const uint8_t fallback_pixel[4] = { 0, 0, 0, 0 };
+
 GtkWidget *dt_iop_gui_get_expander(dt_iop_module_t *module)
 {
   int bs = DT_PIXEL_APPLY_DPI(12);
@@ -1731,7 +1747,7 @@ GtkWidget *dt_iop_gui_get_expander(dt_iop_module_t *module)
    * initialize the header widgets
    */
   int idx = 0;
-  GtkWidget *hw[7] = { NULL, NULL, NULL, NULL, NULL, NULL, NULL };
+  GtkWidget *hw[8] = { NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL };
 
   /* add the expand indicator icon */
   hw[idx] = dtgtk_icon_new(dtgtk_cairo_paint_solid_arrow, CPF_DIRECTION_LEFT);
@@ -1744,6 +1760,42 @@ GtkWidget *dt_iop_gui_get_expander(dt_iop_module_t *module)
   g_signal_connect (G_OBJECT (hw[idx]), "clicked",
                     G_CALLBACK (dt_iop_gui_duplicate_callback), module);
   gtk_widget_set_size_request(GTK_WIDGET(hw[idx++]),bs,bs);*/
+
+  /* add module icon */
+  GdkPixbuf *pixbuf;
+  char filename[PATH_MAX] = { 0 };
+  char datadir[PATH_MAX] = { 0 };
+  dt_loc_get_datadir(datadir, sizeof(datadir));
+
+  // make the icons a little more visible
+  #define ICON_SIZE (bs * 1.7)
+
+  snprintf(filename, sizeof(filename), "%s/pixmaps/plugins/darkroom/%s.svg", datadir, module->op);
+  pixbuf = load_image(filename, ICON_SIZE);
+  if(pixbuf) goto got_image;
+
+  snprintf(filename, sizeof(filename), "%s/pixmaps/plugins/darkroom/%s.png", datadir, module->op);
+  pixbuf = load_image(filename, ICON_SIZE);
+  if(pixbuf) goto got_image;
+
+  snprintf(filename, sizeof(filename), "%s/pixmaps/plugins/darkroom/template.svg", datadir);
+  pixbuf = load_image(filename, ICON_SIZE);
+  if(pixbuf) goto got_image;
+
+  snprintf(filename, sizeof(filename), "%s/pixmaps/plugins/darkroom/template.png", datadir);
+  pixbuf = load_image(filename, ICON_SIZE);
+  if(pixbuf) goto got_image;
+
+  #undef ICON_SIZE
+
+  // wow, we could neither load the SVG nor the PNG files. something is fucked up.
+  pixbuf = gdk_pixbuf_new_from_data(fallback_pixel, GDK_COLORSPACE_RGB, TRUE, 8, 1, 1, 4, NULL, NULL);
+
+got_image:
+  hw[idx] = gtk_image_new_from_pixbuf(pixbuf);
+  gtk_widget_set_margin_left(GTK_WIDGET(hw[idx]), DT_PIXEL_APPLY_DPI(5));
+  gtk_widget_set_size_request(GTK_WIDGET(hw[idx++]), bs, bs);
+  g_object_unref(pixbuf);
 
   /* add module label */
   hw[idx] = gtk_label_new("");
@@ -1798,11 +1850,11 @@ GtkWidget *dt_iop_gui_get_expander(dt_iop_module_t *module)
   gtk_widget_set_size_request(GTK_WIDGET(hw[idx++]), bs, bs);
 
   /* reorder header, for now, iop are always in the right panel */
-  for(int i = 6; i >= 0; i--)
-    if(hw[i]) gtk_box_pack_start(GTK_BOX(header), hw[i], i == 1 ? TRUE : FALSE, i == 1 ? TRUE : FALSE, 2);
-  gtk_widget_set_halign(hw[1], GTK_ALIGN_END);
-  dtgtk_icon_set_paint(hw[0], dtgtk_cairo_paint_solid_arrow, CPF_DIRECTION_LEFT);
+  for(int i = 7; i >= 0; i--)
+    if(hw[i]) gtk_box_pack_start(GTK_BOX(header), hw[i], i == 2 ? TRUE : FALSE, i == 2 ? TRUE : FALSE, 2);
 
+  gtk_widget_set_halign(hw[2], GTK_ALIGN_END);
+  dtgtk_icon_set_paint(hw[0], dtgtk_cairo_paint_solid_arrow, CPF_DIRECTION_LEFT);
 
   /* add the blending ui if supported */
   GtkWidget *iopw = gtk_box_new(GTK_ORIENTATION_VERTICAL, 3 * DT_BAUHAUS_SPACE);
