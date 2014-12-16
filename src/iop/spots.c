@@ -88,6 +88,10 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
     {
       // we have to register a new circle mask
       dt_masks_form_t *form = dt_masks_create(DT_MASKS_CIRCLE | DT_MASKS_CLONE);
+
+      // spots v1 was before raw orientation changes
+      form->version = 1;
+
       dt_masks_point_circle_t *circle = (dt_masks_point_circle_t *)(malloc(sizeof(dt_masks_point_circle_t)));
       circle->center[0] = o->spot[i].x;
       circle->center[1] = o->spot[i].y;
@@ -96,6 +100,10 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
       form->points = g_list_append(form->points, circle);
       form->source[0] = o->spot[i].xc;
       form->source[1] = o->spot[i].yc;
+
+      // adapt for raw orientation changes
+      dt_masks_legacy_params(self->dev, form, form->version, dt_masks_version());
+
       dt_masks_gui_form_save_creation(self, form, NULL);
 
       // and add it to the module params
