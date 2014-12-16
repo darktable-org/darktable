@@ -21,49 +21,17 @@
 
 static void _icon_class_init(GtkDarktableIconClass *klass);
 static void _icon_init(GtkDarktableIcon *icon);
-static void _icon_size_request(GtkWidget *widget, GtkRequisition *requisition);
-static void _icon_get_preferred_width(GtkWidget *widget, gint *minimal_width, gint *natural_width);
-static void _icon_get_preferred_height(GtkWidget *widget, gint *minimal_height, gint *natural_height);
 static gboolean _icon_draw(GtkWidget *widget, cairo_t *cr);
 
 
 static void _icon_class_init(GtkDarktableIconClass *klass)
 {
   GtkWidgetClass *widget_class = (GtkWidgetClass *)klass;
-  widget_class->get_preferred_width = _icon_get_preferred_width;
-  widget_class->get_preferred_height = _icon_get_preferred_height;
   widget_class->draw = _icon_draw;
 }
 
 static void _icon_init(GtkDarktableIcon *icon)
 {
-}
-
-static void _icon_size_request(GtkWidget *widget, GtkRequisition *requisition)
-{
-  g_return_if_fail(widget != NULL);
-  g_return_if_fail(DTGTK_IS_ICON(widget));
-  g_return_if_fail(requisition != NULL);
-  requisition->width = DT_PIXEL_APPLY_DPI(17);
-  requisition->height = DT_PIXEL_APPLY_DPI(17);
-}
-
-static void _icon_get_preferred_width(GtkWidget *widget, gint *minimal_width, gint *natural_width)
-{
-  GtkRequisition requisition = { 0 };
-
-  _icon_size_request(widget, &requisition);
-
-  *minimal_width = *natural_width = requisition.width;
-}
-
-static void _icon_get_preferred_height(GtkWidget *widget, gint *minimal_height, gint *natural_height)
-{
-  GtkRequisition requisition = { 0 };
-
-  _icon_size_request(widget, &requisition);
-
-  *minimal_height = *natural_height = requisition.height;
 }
 
 static gboolean _icon_draw(GtkWidget *widget, cairo_t *cr)

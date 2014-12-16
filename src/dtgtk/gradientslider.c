@@ -36,11 +36,6 @@
 
 static void _gradient_slider_class_init(GtkDarktableGradientSliderClass *klass);
 static void _gradient_slider_init(GtkDarktableGradientSlider *slider);
-static void _gradient_slider_size_request(GtkWidget *widget, GtkRequisition *requisition);
-// static void _gradient_slider_size_allocate(GtkWidget *widget, GtkAllocation *allocation);
-static void _gradient_slider_get_preferred_width(GtkWidget *widget, gint *minimal_width, gint *natural_width);
-static void _gradient_slider_get_preferred_height(GtkWidget *widget, gint *minimal_height,
-                                                  gint *natural_height);
 static void _gradient_slider_realize(GtkWidget *widget);
 static gboolean _gradient_slider_draw(GtkWidget *widget, cairo_t *cr);
 static void _gradient_slider_destroy(GtkWidget *widget);
@@ -326,8 +321,6 @@ static void _gradient_slider_class_init(GtkDarktableGradientSliderClass *klass)
   GtkWidgetClass *widget_class = (GtkWidgetClass *)klass;
 
   widget_class->realize = _gradient_slider_realize;
-  widget_class->get_preferred_width = _gradient_slider_get_preferred_width;
-  widget_class->get_preferred_height = _gradient_slider_get_preferred_height;
   widget_class->draw = _gradient_slider_draw;
   widget_class->destroy = _gradient_slider_destroy;
 
@@ -347,53 +340,6 @@ static void _gradient_slider_init(GtkDarktableGradientSlider *slider)
   slider->prev_x_root = slider->is_dragging = slider->is_changed = slider->do_reset = slider->is_entered = 0;
   slider->timeout_handle = 0;
   slider->selected = slider->positions == 1 ? 0 : -1;
-}
-
-static void _gradient_slider_size_request(GtkWidget *widget, GtkRequisition *requisition)
-{
-  g_return_if_fail(widget != NULL);
-  g_return_if_fail(DTGTK_IS_GRADIENT_SLIDER(widget));
-  g_return_if_fail(requisition != NULL);
-  requisition->width = DT_PIXEL_APPLY_DPI(100);
-  requisition->height = DT_PIXEL_APPLY_DPI(17);
-}
-
-
-
-/*static void _gradient_slider_size_allocate(GtkWidget *widget, GtkAllocation *allocation)
-{
-  g_return_if_fail(widget != NULL);
-  g_return_if_fail(DTGTK_IS_BUTTON(widget));
-  g_return_if_fail(allocation != NULL);
-
-  widget->allocation = *allocation;
-
-  if (gtk_widget_get_realized(widget)) {
-     gdk_window_move_resize(
-         gtk_widget_get_window(widget),
-         allocation.x, allocation.y,
-         allocation.width, allocation.height
-     );
-   }
-}*/
-
-static void _gradient_slider_get_preferred_width(GtkWidget *widget, gint *minimal_width, gint *natural_width)
-{
-  GtkRequisition requisition = { 0 };
-
-  _gradient_slider_size_request(widget, &requisition);
-
-  *minimal_width = *natural_width = requisition.width;
-}
-
-static void _gradient_slider_get_preferred_height(GtkWidget *widget, gint *minimal_height,
-                                                  gint *natural_height)
-{
-  GtkRequisition requisition = { 0 };
-
-  _gradient_slider_size_request(widget, &requisition);
-
-  *minimal_height = *natural_height = requisition.height;
 }
 
 static void _gradient_slider_realize(GtkWidget *widget)

@@ -23,109 +23,17 @@
 
 static void _togglebutton_class_init(GtkDarktableToggleButtonClass *klass);
 static void _togglebutton_init(GtkDarktableToggleButton *slider);
-static void _togglebutton_size_request(GtkWidget *widget, GtkRequisition *requisition);
-static void _togglebutton_get_preferred_width(GtkWidget *widget, gint *minimal_width, gint *natural_width);
-static void _togglebutton_get_preferred_height(GtkWidget *widget, gint *minimal_height, gint *natural_height);
-static void _togglebutton_size_allocate(GtkWidget *widget, GtkAllocation *allocation);
-// static void _togglebutton_realize(GtkWidget *widget);
 static gboolean _togglebutton_draw(GtkWidget *widget, cairo_t *cr);
-static void _togglebutton_destroy(GtkWidget *object);
-
-void temp()
-{
-  _togglebutton_size_allocate(NULL, NULL);
-  _togglebutton_size_request(NULL, NULL);
-  _togglebutton_draw(NULL, NULL);
-  _togglebutton_destroy(NULL);
-}
 
 static void _togglebutton_class_init(GtkDarktableToggleButtonClass *klass)
 {
   GtkWidgetClass *widget_class = (GtkWidgetClass *)klass;
 
-  widget_class->get_preferred_width = _togglebutton_get_preferred_width;
-  widget_class->get_preferred_height = _togglebutton_get_preferred_height;
   widget_class->draw = _togglebutton_draw;
 }
 
 static void _togglebutton_init(GtkDarktableToggleButton *slider)
 {
-}
-
-static void _togglebutton_size_request(GtkWidget *widget, GtkRequisition *requisition)
-{
-  g_return_if_fail(widget != NULL);
-  g_return_if_fail(DTGTK_IS_TOGGLEBUTTON(widget));
-  g_return_if_fail(requisition != NULL);
-
-  /* create pango text settings if label exists */
-  PangoLayout *layout = NULL;
-  int pw = 0, ph = 0;
-  const gchar *text = gtk_button_get_label(GTK_BUTTON(widget));
-  if(text)
-  {
-    layout = gtk_widget_create_pango_layout(widget, NULL);
-    pango_layout_set_font_description(layout, darktable.bauhaus->pango_font_desc);
-    pango_cairo_context_set_resolution(pango_layout_get_context(layout), darktable.gui->dpi);
-    pango_layout_set_text(layout, text, -1);
-    pango_layout_get_pixel_size(layout, &pw, &ph);
-    g_object_unref(layout);
-
-    requisition->width = pw + DT_PIXEL_APPLY_DPI(4);
-    requisition->height = ph + DT_PIXEL_APPLY_DPI(4);
-  }
-  else
-  {
-    requisition->width = DT_PIXEL_APPLY_DPI(22);
-    requisition->height = DT_PIXEL_APPLY_DPI(17);
-  }
-}
-
-static void _togglebutton_get_preferred_width(GtkWidget *widget, gint *minimal_width, gint *natural_width)
-{
-  GtkRequisition requisition = { 0 };
-
-  _togglebutton_size_request(widget, &requisition);
-
-  *minimal_width = *natural_width = requisition.width;
-}
-
-static void _togglebutton_get_preferred_height(GtkWidget *widget, gint *minimal_height, gint *natural_height)
-{
-  GtkRequisition requisition = { 0 };
-
-  _togglebutton_size_request(widget, &requisition);
-
-  *minimal_height = *natural_height = requisition.height;
-}
-
-static void _togglebutton_size_allocate(GtkWidget *widget, GtkAllocation *allocation)
-{
-  g_return_if_fail(widget != NULL);
-  g_return_if_fail(DTGTK_IS_TOGGLEBUTTON(widget));
-  g_return_if_fail(allocation != NULL);
-
-  gtk_widget_get_allocation(widget, allocation);
-
-  if(gtk_widget_get_realized(widget))
-  {
-    gdk_window_move_resize(gtk_widget_get_window(widget), allocation->x, allocation->y, allocation->width,
-                           allocation->height);
-  }
-}
-
-static void _togglebutton_destroy(GtkWidget *widget)
-{
-  GtkDarktableToggleButtonClass *klass;
-  g_return_if_fail(widget != NULL);
-  g_return_if_fail(DTGTK_IS_TOGGLEBUTTON(widget));
-
-  // FIXME: or it should be g_type_class_ref () ?
-  klass = g_type_class_peek(gtk_widget_get_type());
-  if(GTK_WIDGET_CLASS(klass)->destroy)
-  {
-    (*GTK_WIDGET_CLASS(klass)->destroy)(widget);
-  }
 }
 
 static gboolean _togglebutton_draw(GtkWidget *widget, cairo_t *cr)

@@ -22,49 +22,17 @@
 
 static void _button_class_init(GtkDarktableButtonClass *klass);
 static void _button_init(GtkDarktableButton *button);
-static void _button_size_request(GtkWidget *widget, GtkRequisition *requisition);
-static void _button_get_preferred_width(GtkWidget *widget, gint *minimal_width, gint *natural_width);
-static void _button_get_preferred_height(GtkWidget *widget, gint *minimal_height, gint *natural_height);
 static gboolean _button_draw(GtkWidget *widget, cairo_t *cr);
 
 static void _button_class_init(GtkDarktableButtonClass *klass)
 {
   GtkWidgetClass *widget_class = (GtkWidgetClass *)klass;
 
-  widget_class->get_preferred_width = _button_get_preferred_width;
-  widget_class->get_preferred_height = _button_get_preferred_height;
   widget_class->draw = _button_draw;
 }
 
 static void _button_init(GtkDarktableButton *button)
 {
-}
-
-static void _button_size_request(GtkWidget *widget, GtkRequisition *requisition)
-{
-  g_return_if_fail(widget != NULL);
-  g_return_if_fail(DTGTK_IS_BUTTON(widget));
-  g_return_if_fail(requisition != NULL);
-  requisition->width = DT_PIXEL_APPLY_DPI(17);
-  requisition->height = DT_PIXEL_APPLY_DPI(17);
-}
-
-static void _button_get_preferred_width(GtkWidget *widget, gint *minimal_width, gint *natural_width)
-{
-  GtkRequisition requisition = { 0 };
-
-  _button_size_request(widget, &requisition);
-
-  *minimal_width = *natural_width = requisition.width;
-}
-
-static void _button_get_preferred_height(GtkWidget *widget, gint *minimal_height, gint *natural_height)
-{
-  GtkRequisition requisition = { 0 };
-
-  _button_size_request(widget, &requisition);
-
-  *minimal_height = *natural_height = requisition.height;
 }
 
 static gboolean _button_draw(GtkWidget *widget, cairo_t *cr)
