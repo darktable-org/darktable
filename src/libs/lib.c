@@ -994,6 +994,9 @@ GtkWidget *dt_lib_gui_get_expander(dt_lib_module_t *module)
   gtk_widget_set_name(pluginui_frame, "lib-plugin-ui");
   module->expander = expander;
 
+  gtk_widget_set_hexpand(module->widget, FALSE);
+  gtk_widget_set_vexpand(module->widget, FALSE);
+
   return module->expander;
 }
 

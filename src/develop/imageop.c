@@ -1824,6 +1824,9 @@ GtkWidget *dt_iop_gui_get_expander(dt_iop_module_t *module)
   dt_dev_module_update_multishow(module->dev, module);
   _iop_gui_update_header(module);
 
+  gtk_widget_set_hexpand(module->widget, FALSE);
+  gtk_widget_set_vexpand(module->widget, FALSE);
+
 
   return module->expander;
 }
