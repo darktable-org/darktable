@@ -45,6 +45,7 @@ typedef struct dt_control_print_t
                                    // is dispatched, but we have to keep that information
   gboolean high_quality;
   char style[128];
+  gboolean style_append;
   // print specific fields after this line
   char filename[PATH_MAX];
   dt_print_info_t pinfo;
