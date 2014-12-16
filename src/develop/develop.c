@@ -547,9 +547,12 @@ void dt_dev_add_history_item(dt_develop_t *dev, dt_iop_module_t *module, gboolea
       history = next;
     }
     history = g_list_nth(dev->history, dev->history_end - 1);
-    if(!history || module->instance != ((dt_dev_history_item_t *)history->data)->module->instance
-       || module->multi_priority != ((dt_dev_history_item_t *)history->data)->module->multi_priority
-       || dev->focus_hash != ((dt_dev_history_item_t *)(history->data))->focus_hash) // add new item if focused out and in
+    dt_dev_history_item_t *hist = (dt_dev_history_item_t *)(history->data);
+    if(!history || // if no history yet, push new item for sure.
+       (( module->instance != hist->module->instance             // add new item for different op
+       || module->multi_priority != hist->module->multi_priority // or instance
+       || dev->focus_hash != hist->focus_hash)                   // or if focused out and in
+       && memcmp(hist->params, module->params, module->params_size))) // but only add item if there is a difference at all
     {
       // new operation, push new item
       // printf("adding new history item %d - %s\n", dev->history_end, module->op);
