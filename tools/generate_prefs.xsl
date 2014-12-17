@@ -8,7 +8,6 @@
 	<xsl:variable name="tab_start"> (GtkWidget *dialog, GtkWidget *tab, void (*hardcoded_part)(GtkWidget *grid))
 {
   GtkWidget *widget, *label, *labelev, *viewport;
-  GtkRequisition minimum_size, natural_size;
   GtkWidget *grid = gtk_grid_new();
   gtk_grid_set_row_spacing(GTK_GRID(grid), DT_PIXEL_APPLY_DPI(5));
   gtk_grid_set_column_spacing(GTK_GRID(grid), DT_PIXEL_APPLY_DPI(5));
@@ -33,9 +32,6 @@
     (*hardcoded_part)(grid);
 
   gtk_widget_show_all(tab);
-
-  gtk_widget_get_preferred_size(viewport, &amp;minimum_size, &amp;natural_size);
-  gtk_widget_set_size_request(scroll, MAX(minimum_size.width, natural_size.width), 0.5 * MAX(minimum_size.height, natural_size.height));
 }
 </xsl:variable>
 
