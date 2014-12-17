@@ -23,11 +23,39 @@ set(_GTK3_found_all true)
 
 # Gtk
 
-pkg_check_modules(PC_GTK3 gtk+-3.0)
+libfind_pkg_check_modules(PC_GTK3 gtk+-3.0)
 
 if(NOT PC_GTK3_FOUND)
   set(_GTK3_found_all false)
 endif()
+
+if(GTK3_FIND_VERSION)
+  cmake_minimum_required(VERSION 2.6.2)
+  set(GTK3_FAILED_VERSION_CHECK true)
+
+  if(GTK3_FIND_VERSION_EXACT)
+    if(PC_GTK3_VERSION VERSION_EQUAL GTK3_FIND_VERSION)
+      set(GTK3_FAILED_VERSION_CHECK false)
+    endif()
+  else()
+    if(PC_GTK3_VERSION VERSION_EQUAL GTK3_FIND_VERSION OR
+       PC_GTK3_VERSION VERSION_GREATER GTK3_FIND_VERSION)
+      set(GTK3_FAILED_VERSION_CHECK false)
+    endif()
+  endif()
+
+  if(GTK3_FAILED_VERSION_CHECK)
+    if(GTK3_FIND_REQUIRED AND NOT GTK3_FIND_QUIETLY)
+        if(GTK3_FIND_VERSION_EXACT)
+            message(FATAL_ERROR "GTK3 version check failed.  Version ${PC_GTK3_VERSION} was found, version ${GTK3_FIND_VERSION} is needed exactly.")
+        else(GTK3_FIND_VERSION_EXACT)
+            message(FATAL_ERROR "GTK3 version check failed.  Version ${PC_GTK3_VERSION} was found, at least version ${GTK3_FIND_VERSION} is required")
+        endif(GTK3_FIND_VERSION_EXACT)
+    endif(GTK3_FIND_REQUIRED AND NOT GTK3_FIND_QUIETLY)
+
+    set(_GTK3_found_all false)
+  endif(GTK3_FAILED_VERSION_CHECK)
+endif(GTK3_FIND_VERSION)
 
 find_path(GTK3_INCLUDE_DIR NAMES gtk/gtk.h
   PATH_SUFFIXES gtk-3.0)
@@ -40,7 +68,7 @@ find_library(GDK3_LIBRARY NAMES gdk-3)
 
 # Gdk-Pixbuf
 
-pkg_check_modules(PC_GDKPIXBUF gdk-pixbuf-2.0)
+libfind_pkg_check_modules(PC_GDKPIXBUF gdk-pixbuf-2.0)
 
 if(NOT PC_GDKPIXBUF_FOUND)
   set(_GTK3_found_all false)
@@ -62,7 +90,7 @@ endif()
 
 # Pango
 
-pkg_check_modules(PC_PANGO pango)
+libfind_pkg_check_modules(PC_PANGO pango)
 
 if(NOT PC_PANGO_FOUND)
   set(_GTK3_found_all false)
@@ -88,7 +116,7 @@ find_library(CAIRO_LIBRARY NAMES cairo
 
 # Atk
 
-pkg_check_modules(PC_ATK atk)
+libfind_pkg_check_modules(PC_ATK atk)
 
 if(NOT PC_ATK_FOUND)
   set(_GTK3_found_all false)

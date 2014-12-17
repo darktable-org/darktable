@@ -128,7 +128,7 @@ endif()
 # Find all other required libraries for building
 #
 # GTK3 pulls in ATK, GDK, GDK-PIXBUF, CAIRO, GLIB, PANGO
-find_package(GTK3 REQUIRED)
+find_package(GTK3 3.12 REQUIRED)
 include_directories(${GTK3_INCLUDE_DIRS})
 list(APPEND LIBS ${GTK3_LIBRARIES})
 add_definitions(${GTK3_DEFINITIONS})
