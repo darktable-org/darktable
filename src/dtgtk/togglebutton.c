@@ -113,12 +113,18 @@ static gboolean _togglebutton_draw(GtkWidget *widget, cairo_t *cr)
     //     if (flags & CPF_IGNORE_FG_STATE)
     //       state = GTK_STATE_NORMAL;
 
-    if(text)
-      DTGTK_TOGGLEBUTTON(widget)
-          ->icon(cr, border, border, height - (border * 2), height - (border * 2), flags);
-    else
-      DTGTK_TOGGLEBUTTON(widget)
-          ->icon(cr, border, border, width - (border * 2), height - (border * 2), flags);
+    int icon_width = text ? height - (border * 2) : width - (border * 2);
+    int icon_height = height - (border * 2);
+
+    if(icon_width > 0 && icon_height > 0)
+    {
+      if(text)
+        DTGTK_TOGGLEBUTTON(widget)
+            ->icon(cr, border, border, height - (border * 2), height - (border * 2), flags);
+      else
+        DTGTK_TOGGLEBUTTON(widget)
+            ->icon(cr, border, border, width - (border * 2), height - (border * 2), flags);
+    }
   }
 
 

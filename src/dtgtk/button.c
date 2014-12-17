@@ -51,7 +51,7 @@ static gboolean _button_draw(GtkWidget *widget, cairo_t *cr)
   int flags = DTGTK_BUTTON(widget)->icon_flags;
 
   /* set inner border */
-  int border = DT_PIXEL_APPLY_DPI((flags & CPF_DO_NOT_USE_BORDER) ? 2 : 4);
+  int border = DT_PIXEL_APPLY_DPI((flags & CPF_DO_NOT_USE_BORDER) ? 2 : 6);
 
   /* prelight */
   if(state & GTK_STATE_FLAG_PRELIGHT)
@@ -102,12 +102,18 @@ static gboolean _button_draw(GtkWidget *widget, cairo_t *cr)
   /* draw icon */
   if(DTGTK_BUTTON(widget)->icon)
   {
-    if(text)
-      DTGTK_BUTTON(widget)
-          ->icon(cr, border, border, height - (border * 2), height - (border * 2), flags);
-    else
-      DTGTK_BUTTON(widget)
-          ->icon(cr, border, border, width - (border * 2), height - (border * 2), flags);
+    int icon_width = text ? height - (border * 2) : width - (border * 2);
+    int icon_height = height - (border * 2);
+
+    if(icon_width > 0 && icon_height > 0)
+    {
+      if(text)
+        DTGTK_BUTTON(widget)
+            ->icon(cr, border, border, height - (border * 2), height - (border * 2), flags);
+      else
+        DTGTK_BUTTON(widget)
+            ->icon(cr, border, border, width - (border * 2), height - (border * 2), flags);
+    }
   }
 
   /* draw label */
