@@ -36,13 +36,14 @@
 #include "dtgtk/slider.h"
 #include "common/imageio_format.h"
 
-DT_MODULE(1)
+DT_MODULE(2)
 
 typedef struct dt_imageio_png_t
 {
   int max_width, max_height;
   int width, height;
   char style[128];
+  gboolean style_append;
   int bpp;
   FILE *f;
   png_structp png_ptr;
@@ -350,6 +351,42 @@ size_t params_size(dt_imageio_module_format_t *self)
   return sizeof(dt_imageio_module_data_t) + sizeof(int);
 }
 
+void *legacy_params(dt_imageio_module_format_t *self, const void *const old_params,
+                    const size_t old_params_size, const int old_version, const int new_version,
+                    size_t *new_size)
+{
+  if(old_version == 1 && new_version == 2)
+  {
+    typedef struct dt_imageio_png_v1_t
+    {
+      int max_width, max_height;
+      int width, height;
+      char style[128];
+      gboolean style_append;
+      int bpp;
+      FILE *f;
+      png_structp png_ptr;
+      png_infop info_ptr;
+    } dt_imageio_png_v1_t;
+
+    dt_imageio_png_v1_t *o = (dt_imageio_png_v1_t *)old_params;
+    dt_imageio_png_t *n = (dt_imageio_png_t *)malloc(sizeof(dt_imageio_png_t));
+
+    n->max_width = o->max_width;
+    n->max_height = o->max_height;
+    n->width = o->width;
+    n->height = o->height;
+    g_strlcpy(n->style, o->style, sizeof(o->style));
+    n->style_append = 0;
+    n->bpp = o->bpp;
+    n->f = o->f;
+    n->png_ptr = o->png_ptr;
+    n->info_ptr = o->info_ptr;
+    *new_size = self->params_size(self);
+    return n;
+  }
+  return NULL;
+}
 void *get_params(dt_imageio_module_format_t *self)
 {
   dt_imageio_png_t *d = (dt_imageio_png_t *)calloc(1, sizeof(dt_imageio_png_t));

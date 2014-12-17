@@ -38,13 +38,14 @@
 #undef HAVE_STDLIB_H
 #undef HAVE_STDDEF_H
 
-DT_MODULE(1)
+DT_MODULE(2)
 
 typedef struct dt_imageio_jpeg_t
 {
   int max_width, max_height;
   int width, height;
   char style[128];
+  gboolean style_append;
   int quality;
   struct jpeg_source_mgr src;
   struct jpeg_destination_mgr dest;
@@ -458,6 +459,46 @@ int read_image(dt_imageio_module_data_t *jpg_tmp, uint8_t *out)
 size_t params_size(dt_imageio_module_format_t *self)
 {
   return sizeof(dt_imageio_module_data_t) + sizeof(int);
+}
+
+void *legacy_params(dt_imageio_module_format_t *self, const void *const old_params,
+                    const size_t old_params_size, const int old_version, const int new_version,
+                    size_t *new_size)
+{
+  if(old_version == 1 && new_version == 2)
+  {
+    typedef struct dt_imageio_jpeg_t
+    {
+      int max_width, max_height;
+      int width, height;
+      char style[128];
+      int quality;
+      struct jpeg_source_mgr src;
+      struct jpeg_destination_mgr dest;
+      struct jpeg_decompress_struct dinfo;
+      struct jpeg_compress_struct cinfo;
+      FILE *f;
+    } dt_imageio_jpeg_v1_t;
+
+    dt_imageio_jpeg_v1_t *o = (dt_imageio_jpeg_v1_t *)old_params;
+    dt_imageio_jpeg_t *n = (dt_imageio_jpeg_t *)malloc(sizeof(dt_imageio_jpeg_t));
+
+    n->max_width = o->max_width;
+    n->max_height = o->max_height;
+    n->width = o->width;
+    n->height = o->height;
+    g_strlcpy(n->style, o->style, sizeof(o->style));
+    n->style_append = 0;
+    n->quality = o->quality;
+    n->src = o->src;
+    n->dest = o->dest;
+    n->dinfo = o->dinfo;
+    n->cinfo = o->cinfo;
+    n->f = o->f;
+    *new_size = self->params_size(self);
+    return n;
+  }
+  return NULL;
 }
 
 void *get_params(dt_imageio_module_format_t *self)

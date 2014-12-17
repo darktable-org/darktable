@@ -82,7 +82,7 @@ typedef enum
 #define DOWNSAMPLE_FLOAT_TO_16BIT(_val)                                                                      \
   (_val) <= 0.0f ? 0 : ((_val) >= 1.0f ? 65535 : (int)(65535.0f * (_val)))
 
-DT_MODULE(1)
+DT_MODULE(2)
 
 typedef enum
 {
@@ -97,6 +97,7 @@ typedef struct dt_imageio_j2k_t
   int max_width, max_height;
   int width, height;
   char style[128];
+  gboolean style_append;
   int bpp;
   dt_imageio_j2k_format_t format;
   dt_imageio_j2k_preset_t preset;
@@ -527,6 +528,43 @@ int write_image(dt_imageio_module_data_t *j2k_tmp, const char *filename, const v
 size_t params_size(dt_imageio_module_format_t *self)
 {
   return sizeof(dt_imageio_j2k_t);
+}
+
+void *legacy_params(dt_imageio_module_format_t *self, const void *const old_params,
+                    const size_t old_params_size, const int old_version, const int new_version,
+                    size_t *new_size)
+{
+  if(old_version == 1 && new_version == 2)
+  {
+    typedef struct dt_imageio_j2k_v1_t
+    {
+      int max_width, max_height;
+      int width, height;
+      char style[128];
+      gboolean style_append;
+      int bpp;
+      dt_imageio_j2k_format_t format;
+      dt_imageio_j2k_preset_t preset;
+      int quality;
+    } dt_imageio_j2k_v1_t;
+
+    dt_imageio_j2k_v1_t *o = (dt_imageio_j2k_v1_t *)old_params;
+    dt_imageio_j2k_t *n = (dt_imageio_j2k_t *)malloc(sizeof(dt_imageio_j2k_t));
+
+    n->max_width = o->max_width;
+    n->max_height = o->max_height;
+    n->width = o->width;
+    n->height = o->height;
+    g_strlcpy(n->style, o->style, sizeof(o->style));
+    n->style_append = 0;
+    n->bpp = o->bpp;
+    n->format = o->format;
+    n->preset = o->preset;
+    n->quality = o->quality;
+    *new_size = self->params_size(self);
+    return n;
+  }
+  return NULL;
 }
 
 void *get_params(dt_imageio_module_format_t *self)
