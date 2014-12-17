@@ -45,10 +45,7 @@ typedef struct dt_cache_t
   GList *lru;           // last element is most recently used, first is about to be kicked from cache.
 
   // callback functions for cache misses/garbage collection
-  // allocate should return != 0 if a write lock on alloc is needed.
-  // this might be useful for cases where the allocation takes a lot of time and you don't want
-  // the hashtable spinlocks to block and wait for it.
-  int32_t (*allocate)(void *userdata, const uint32_t key, size_t *cost, void **payload);
+  void (*allocate)(void *userdata, const uint32_t key, size_t *cost, void **payload);
   void (*cleanup)(void *userdata, const uint32_t key, void *payload);
   void *allocate_data;
   void *cleanup_data;
