@@ -18,30 +18,20 @@
 
 #include "common/cache.h"
 
-#include <limits.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <inttypes.h>
 #include <assert.h>
-#include <sched.h>
 
-// this implements a concurrent LRU cache using
-// a concurrent doubly linked list
-
-static void dt_cache_sleep_ms(uint32_t ms)
-{
-  g_usleep(ms * 1000u);
-}
+// this implements a concurrent LRU cache
 
 void dt_cache_init(
     dt_cache_t *cache,
-    const int32_t capacity,
-    const int32_t num_threads,
-    size_t cache_line_size,
+    size_t entry_size,
     size_t cost_quota)
 {
-  cache->capacity = capacity;
   cache->cost = 0;
+  cache->entry_size = entry_size;
   cache->cost_quota = cost_quota;
   dtpthread_mutex_init(&cache->lock, 0);
   cache->allocate = 0;
@@ -54,29 +44,27 @@ void dt_cache_init(
 void dt_cache_cleanup(dt_cache_t *cache)
 {
   g_hash_table_destroy(cache->hashtable);
-  // TODO:
-  g_list_free_all(cache->lru);
-}
-
-void dt_cache_static_allocation(dt_cache_t *cache, uint8_t *buf, const uint32_t stride)
-{
-  const int num_buckets = cache->bucket_mask + 1;
-  for(int k = 0; k < num_buckets; k++)
+  GList *l = cache->lru;
+  while(l)
   {
-    cache->table[k].data = (void *)(buf + k * stride);
+    dt_cache_entry_t *entry = (dt_cache_entry_t *)l->data;
+    if(cache->cleanup)
+      cache->cleanup(cache->cleanup_data, entry->key, entry->data);
+    else
+      dt_free_align(entry->data);
+    pthread_rwlock_destroy(&entry->lock);
+    g_free(entry);
+    l = g_list_next(l);
   }
+  g_list_free(cache->lru);
 }
-
 
 int32_t dt_cache_contains(const dt_cache_t *const cache, const uint32_t key)
 {
-  return g_hash_table_contains(cache->hashtable, GINT_TO_POINTER(key));
-}
-
-
-uint32_t dt_cache_size(const dt_cache_t *const cache)
-{
-  return cache->size;
+  dt_pthread_lock(&cache->lock);
+  int32_t result = g_hash_table_contains(cache->hashtable, GINT_TO_POINTER(key));
+  dt_pthread_unlock(&cache->lock);
+  return result;
 }
 
 int dt_cache_for_all(
@@ -91,8 +79,8 @@ int dt_cache_for_all(
   g_hash_table_iter_init (&iter, cache->hashtable);
   while (g_hash_table_iter_next (&iter, &key, &value))
   {
-    // TODO: needs to be cache entry->data ?
-    const int err = process(GPOINTER_TO_INT(key), value, user_data);
+    dt_cache_entry_t *entry = (dt_cache_entry_t *)value;
+    const int err = process(GPOINTER_TO_INT(key), entry->data, user_data);
     if(err)
     {
       dt_pthread_unlock(&cache->lock);
@@ -105,32 +93,46 @@ int dt_cache_for_all(
 
 // return read locked bucket, or NULL if it's not already there.
 // never attempt to allocate a new slot.
-void *dt_cache_read_testget(dt_cache_t *cache, const uint32_t key)
+dt_cache_entry_t *dt_cache_read_testget(dt_cache_t *cache, const uint32_t key, char mode)
 {
   dt_pthread_mutex_lock(&cache->lock);
-  gpointer key, value;
+  gpointer orig_key, value;
   gboolean res = g_hash_table_lookup_extended(
-      cache->hash_table, GINT_TO_POINTER(key), &key, &value);
+      cache->hash_table, GINT_TO_POINTER(key), &orig_key, &value);
+  if(res)
+  {
+    dt_cache_entry_t *entry = (dt_cache_entry_t *)value;
+    // lock the cache entry
+    if(mode == 'w') pthread_rwlock_wrlock(&entry->lock);
+    else            pthread_rwlock_rdlock(&entry->lock);
+    // bubble up in lru list:
+    cache->lru = g_list_remove_link(cache->lru, entry->link);
+    cache->lru = g_list_concat(cache->lru, entry->link);
+    dt_pthread_mutex_unlock(&cache->lock);
+    return entry;
+  }
   dt_pthread_mutex_unlock(&cache->lock);
-  if(res) return value; // XXX entry->data
   return 0;
 }
 
 // if found, the data void* is returned. if not, it is set to be
 // the given *data and a new hash table entry is created, which can be
 // found using the given key later on.
-//
-void *dt_cache_read_get(dt_cache_t *cache, const uint32_t key)
+dt_cache_entry_t *dt_cache_get(dt_cache_t *cache, const uint32_t key, char mode)
 {
   dt_pthread_mutex_lock(&cache->lock);
   gpointer orig_key, value;
   gboolean res = g_hash_table_lookup_extended(
       cache->hash_table, GINT_TO_POINTER(key), &orig_key, &value);
-  dt_cache_entry_t *entry = (dt_cache_entry_t *)value;
   if(res)
-  {
+  { // yay, found. read lock and pass on.
+    dt_cache_entry_t *entry = (dt_cache_entry_t *)value;
+    pthread_rwlock_rdlock(&entry->lock);
+    // bubble up in lru list:
+    cache->lru = g_list_remove_link(cache->lru, entry->link);
+    cache->lru = g_list_concat(cache->lru, entry->link);
     dt_pthread_mutex_unlock(&cache->lock);
-    return value; // XXX entry->data
+    return entry;
   }
 
   // else, not found, need to allocate.
@@ -143,22 +145,28 @@ void *dt_cache_read_get(dt_cache_t *cache, const uint32_t key)
     dt_cache_gc(cache, 0.8f);
   }
 
+  // here dies your 32-bit system:
   dt_cache_entry_t *entry = (dt_cache_entry_t *)g_malloc(sizeof(dt_cache_entry_t));
   pthread_rwlock_init(&entry->lock);
   entry->data = 0;
-  size_t cost = 1;
-  int write = 0;
+  entry->cost = 1;
+  entry->link = g_list_append(0, &entry);
+  entry->key = key;
+  int write = (mode == 'w');
   if(cache->allocate)
-    write = cache->allocate(cache->allocate_data, key, &cost, &value->data);
-  else // TODO:
-    entry->data = dt_alloc_align();
+    write = cache->allocate(cache->allocate_data, entry->key, &entry->cost, &value->data);
+  else
+    entry->data = dt_alloc_align(16, cache->entry_size);
   // write lock in case the caller requests it:
   if(write) pthread_rwlock_wrlock(&entry->lock);
   else      pthread_rwlock_rdlock(&entry->lock);
-  cache->cost += cost;
+  cache->cost += entry->cost;
+
+  // put at end of lru list (most recently used):
+  cache->lru = g_list_concat(cache->lru, entry->link);
 
   dt_pthread_mutex_unlock(&cache->lock);
-  return entry->data;
+  return entry;
 }
 
 int dt_cache_remove(dt_cache_t *cache, const uint32_t key)
@@ -170,104 +178,69 @@ int dt_cache_remove(dt_cache_t *cache, const uint32_t key)
       cache->hash_table, GINT_TO_POINTER(key), &orig_key, &value);
   dt_cache_entry_t *entry = (dt_cache_entry_t *)value;
   if(!res)
-  {
+  { // not found in cache, not deleting.
     dt_pthread_mutex_unlock(&cache->lock);
     return 1;
   }
-  if(// TODO: pthread trylock
+  // need write lock to be able to delete:
+  pthread_rwlock_wrlock(&entry->lock);
+  gboolean removed = g_hash_table_remove(cache->hashtable, GINT_TO_POINTER(key));
+  assert(removed);
+  cache->lru = g_list_delete_link(g->lru, entry->link);
 
   if(cache->cleanup)
-    cache->cleanup(cache->cleanup_data, key, data);
+    cache->cleanup(cache->cleanup_data, key, entry->data);
+  else
+    dt_free_align(entry->data);
+  pthread_rwlock_unlock(&entry->lock);
+  pthread_rwlock_destroy(&entry->lock);
+  cache->cost -= entry->cost;
+  g_free(entry);
 
   dt_pthread_mutex_unlock(&cache->lock);
   return 0;
 }
 
-
-int32_t dt_cache_gc(dt_cache_t *cache, const float fill_ratio)
+// best-effort garbage collection. never blocks, never fails. well, sometimes it just doesn't free anything.
+void dt_cache_gc(dt_cache_t *cache, const float fill_ratio)
 {
-// TODO: grab bucket from lru list, remove from hash table and glist, delete it all, call cleanup if need be
+  dt_pthread_mutex_lock(&cache->lock);
+  GList *l = cache->lru;
+  while(l)
+  {
+    dt_cache_entry_t *entry = (dt_cache_entry_t *)l->data;
+    l = g_list_next(l); // we might remove this element, so walk to the next one while we still have the pointer..
+    if(cache->cost < cache->cost_quota * fill_ratio) break;
+
+    // if still locked by anyone else give up:
+    if(pthread_rwlock_trywrlock(&entry->lock)) continue;
+
+    // delete!
+    gboolean removed = g_hash_table_remove(cache->hashtable, GINT_TO_POINTER(entry->key));
+    assert(removed);
+    cache->lru = g_list_delete_link(g->lru, entry->link);
+    cache->cost -= entry->cost;
+
+    if(cache->cleanup)
+      cache->cleanup(cache->cleanup_data, entry->key, entry->data);
+    else
+      dt_free_align(entry->data);
+    pthread_rwlock_unlock(&entry->lock);
+    pthread_rwlock_destroy(&entry->lock);
+    g_free(entry);
+  }
+  dt_pthread_mutex_unlock(&cache->lock);
   return 0;
 }
 
-void dt_cache_read_release(dt_cache_t *cache, const uint32_t key)
+void dt_cache_release(dt_cache_t *cache, dt_cache_entry_t *entry)
 {
-// TODO: dt_pthread_rwlock_unlock without locking the cache lock! (someone else might be holding it, waiting for us)
-}
-
-// augments an already acquired read lock to a write lock. blocks until
-// all readers have released the image.
-// FIXME: cannot augment without forfeiting the lock!
-void *dt_cache_write_get(dt_cache_t *cache, const uint32_t key)
-{
-  // XXX
+  pthread_rwlock_unlock(&entry->lock);
 }
 
 void dt_cache_realloc(dt_cache_t *cache, const uint32_t key, const size_t cost, void *data)
 {
   // XXX whatever, just call remove and re-add?
-}
-
-void dt_cache_write_release(dt_cache_t *cache, const uint32_t key)
-{
-  // XXX
-}
-
-void dt_cache_print(dt_cache_t *cache)
-{
-  fprintf(stderr, "[cache] full entries:\n");
-  for(uint32_t k = 0; k <= cache->bucket_mask; k++)
-  {
-    if(cache->table[k].key != DT_CACHE_EMPTY_KEY)
-      fprintf(stderr, "[cache] bucket %d holds key %u with locks r %d w %d\n", k,
-              (cache->table[k].key & 0x1fffffff) + 1, cache->table[k].read, cache->table[k].write);
-    else
-      fprintf(stderr, "[cache] bucket %d is empty with locks r %d w %d\n", k, cache->table[k].read,
-              cache->table[k].write);
-  }
-  fprintf(stderr, "[cache] lru entries:\n");
-  dt_cache_lock(&cache->lru_lock);
-  int32_t curr = cache->lru;
-  while(curr >= 0)
-  {
-    if(cache->table[curr].key != DT_CACHE_EMPTY_KEY)
-      fprintf(stderr, "[cache] bucket %d holds key %u with locks r %d w %d\n", curr,
-              (cache->table[curr].key & 0x1fffffff) + 1, cache->table[curr].read, cache->table[curr].write);
-    else
-    {
-      fprintf(stderr, "[cache] bucket %d is empty with locks r %d w %d\n", curr, cache->table[curr].read,
-              cache->table[curr].write);
-      // this list should only ever contain valid buffers.
-      assert(0);
-    }
-    if(curr == cache->mru) break;
-    int32_t next = cache->table[curr].mru;
-    assert(cache->table[next].lru == curr);
-    curr = next;
-  }
-  dt_cache_unlock(&cache->lru_lock);
-}
-
-void dt_cache_print_locked(dt_cache_t *cache)
-{
-  fprintf(stderr, "[cache] locked lru entries:\n");
-  dt_cache_lock(&cache->lru_lock);
-  int32_t curr = cache->lru;
-  int32_t i = 0;
-  while(curr >= 0)
-  {
-    if(cache->table[curr].key != DT_CACHE_EMPTY_KEY && (cache->table[curr].read || cache->table[curr].write))
-    {
-      fprintf(stderr, "[cache] bucket[%d|%d] holds key %u with locks r %d w %d\n", i, curr,
-              (cache->table[curr].key & 0x1fffffff) + 1, cache->table[curr].read, cache->table[curr].write);
-    }
-    if(curr == cache->mru) break;
-    int32_t next = cache->table[curr].mru;
-    assert(cache->table[next].lru == curr);
-    curr = next;
-    i++;
-  }
-  dt_cache_unlock(&cache->lru_lock);
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
