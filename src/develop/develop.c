@@ -547,7 +547,7 @@ void dt_dev_add_history_item(dt_develop_t *dev, dt_iop_module_t *module, gboolea
       history = next;
     }
     history = g_list_nth(dev->history, dev->history_end - 1);
-    dt_dev_history_item_t *hist = (dt_dev_history_item_t *)(history->data);
+    dt_dev_history_item_t *hist = history ? (dt_dev_history_item_t *)(history->data) : 0;
     if(!history || // if no history yet, push new item for sure.
        (( module->instance != hist->module->instance             // add new item for different op
        || module->multi_priority != hist->module->multi_priority // or instance
