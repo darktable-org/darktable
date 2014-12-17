@@ -707,6 +707,12 @@ void dt_control_button_pressed(double x, double y, double pressure, int which, i
   }
 }
 
+static gboolean _redraw_center(gpointer user_data)
+{
+  dt_control_queue_redraw_center();
+  return FALSE; // don't call this again
+}
+
 void dt_control_log(const char *msg, ...)
 {
   dt_pthread_mutex_lock(&darktable.control->log_mutex);
@@ -720,6 +726,8 @@ void dt_control_log(const char *msg, ...)
   darktable.control->log_message_timeout_id
       = g_timeout_add(DT_CTL_LOG_TIMEOUT, _dt_ctl_log_message_timeout_callback, NULL);
   dt_pthread_mutex_unlock(&darktable.control->log_mutex);
+  // redraw center later in gui thread:
+  g_idle_add(_redraw_center, 0);
 }
 
 static void dt_control_log_ack_all()
