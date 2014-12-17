@@ -21,25 +21,28 @@
 
 #include <inttypes.h>
 #include <stddef.h>
+#include <pthread.h>
 
 typedef struct dt_cache_entry_t
 {
-  pthread_rwlock_t lock;
   void *data;
+  size_t cost;
+  GList *link;
+  pthread_rwlock_t lock;
+  uint32_t key;
 }
 dt_cache_entry_t;
 
 typedef struct dt_cache_t
 {
-  dtpthread_mutex_t lock;
-  uint64_t capacity;
-  uint64_t size;
+  dtpthread_mutex_t lock; // big fat lock. we're only expecting a couple hand full of cpu threads to use this concurrently.
 
-  size_t cost;
-  size_t cost_quota;
+  size_t entry_size; // cache line allocation
+  size_t cost;       // user supplied cost per cache line (bytes?)
+  size_t cost_quota; // quota to try and meet. but don't use as hard limit.
 
-  GHashTable hashtable;
-  GList *lru;
+  GHashTable hashtable; // stores (key, entry) pairs
+  GList *lru;           // last element is most recently used, first is about to be kicked from cache.
 
   // callback functions for cache misses/garbage collection
   // allocate should return != 0 if a write lock on alloc is needed.
@@ -49,73 +52,53 @@ typedef struct dt_cache_t
   void (*cleanup)(void *userdata, const uint32_t key, void *payload);
   void *allocate_data;
   void *cleanup_data;
-} dt_cache_t;
+}
+dt_cache_t;
 
-
-void dt_cache_init(dt_cache_t *cache, const int32_t capacity, const int32_t num_threads,
-                   size_t cache_line_size, size_t cost_quota);
+// entry size is only used if alloc callback is 0
+void dt_cache_init(dt_cache_t *cache, size_t entry_size, size_t cost_quota);
 void dt_cache_cleanup(dt_cache_t *cache);
 
-// don't do memory allocation, but assign static memory to the buckets, given
-// in this contiguous block of memory.
-// buf has to be large enough to hold the cache's capacity * stride bytes.
-void dt_cache_static_allocation(dt_cache_t *cache, uint8_t *buf, const uint32_t stride);
-
 static inline void dt_cache_set_allocate_callback(
-    dt_cache_t *cache, int32_t (*allocate)(void *, const uint32_t, size_t *, void **), void *allocate_data)
+    dt_cache_t *cache,
+    int32_t (*allocate)(void *, const uint32_t, size_t *, void **),
+    void *allocate_data)
 {
   cache->allocate = allocate;
   cache->allocate_data = allocate_data;
 }
-static inline void dt_cache_set_cleanup_callback(dt_cache_t *cache,
-                                                 void (*cleanup)(void *, const uint32_t, void *),
-                                                 void *cleanup_data)
+static inline void dt_cache_set_cleanup_callback(
+    dt_cache_t *cache,
+    void (*cleanup)(void *, const uint32_t, void *),
+    void *cleanup_data)
 {
   cache->cleanup = cleanup;
   cache->cleanup_data = cleanup_data;
 }
 
-void dt_cache_read_release(dt_cache_t *cache, const uint32_t key);
-// augments an already acquired read lock to a write lock. blocks until
-// all readers have released the image.
-void *dt_cache_write_get(dt_cache_t *cache, const uint32_t key);
-void dt_cache_write_release(dt_cache_t *cache, const uint32_t key);
+// returns a slot in the cache for this key (newly allocated if need be), locked according to mode (r, w)
+dt_cache_entry_t *dt_cache_get(dt_cache_t *cache, const uint32_t key, char mode);
+// same but returns 0 if not allocated yet (both will block and wait for entry rw locks to be released)
+dt_cache_entry_t *dt_cache_testget(dt_cache_t *cache, const uint32_t key, char mode);
+// release a lock on a cache entry. the cache knows which one you mean (r or w).
+void dt_cache_release(dt_cache_t *cache, dt_cache_entry_t *entry);
 
-// gets you a slot in the cache for the given key, read locked.
-// will only contain valid data if it was there before.
-void *dt_cache_read_get(dt_cache_t *cache, const uint32_t key);
-void *dt_cache_read_testget(dt_cache_t *cache, const uint32_t key);
+// 0: not contained
 int32_t dt_cache_contains(const dt_cache_t *const cache, const uint32_t key);
 // returns 0 on success, 1 if the key was not found.
 int32_t dt_cache_remove(dt_cache_t *cache, const uint32_t key);
-// removes from the end of the lru list, until the fill ratio
-// of the hashtable goes below the given parameter, in terms
-// of the user defined cost measure.
-int32_t dt_cache_gc(dt_cache_t *cache, const float fill_ratio);
-
-// returns the number of elements currently stored in the cache.
-// O(N), where N is the total capacity. don't use!
-uint32_t dt_cache_size(const dt_cache_t *const cache);
-
-// returns the maximum capacity of this cache:
-static inline uint32_t dt_cache_capacity(dt_cache_t *cache)
-{
-  return cache->capacity;
-}
-
-// very verbose dump of the cache contents
-void dt_cache_print(dt_cache_t *cache);
-// only print currently locked buckets:
-void dt_cache_print_locked(dt_cache_t *cache);
-
-// replace data pointer, cleanup has to be done by the user.
-void dt_cache_realloc(dt_cache_t *cache, const uint32_t key, const size_t cost, void *data);
+// removes from the tip of the lru list, until the fill ratio of the hashtable
+// goes below the given parameter, in terms of the user defined cost measure.
+// will never lock and never fail, but sometimes not free memory (in case all
+// is locked)
+void dt_cache_gc(dt_cache_t *cache, const float fill_ratio);
 
 // iterate over all currently contained data blocks.
 // not thread safe! only use this for init/cleanup!
 // returns non zero the first time process() returns non zero.
-int dt_cache_for_all(dt_cache_t *cache, int (*process)(const uint32_t key, const void *data, void *user_data),
-                     void *user_data);
+int dt_cache_for_all(dt_cache_t *cache,
+    int (*process)(const uint32_t key, const void *data, void *user_data),
+    void *user_data);
 
 #endif
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
