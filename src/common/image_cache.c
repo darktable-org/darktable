@@ -26,14 +26,16 @@
 
 #include <sqlite3.h>
 
-int32_t dt_image_cache_allocate(void *data, const uint32_t key, size_t *cost, void **buf)
+void dt_image_cache_allocate(void *data, const uint32_t key, size_t *cost, void **buf)
 {
   dt_image_cache_t *c = (dt_image_cache_t *)data;
   const uint32_t hash = key; // == image id
   const uint32_t slot = hash & c->cache.bucket_mask;
   *cost = sizeof(dt_image_t);
 
-  dt_image_t *img = c->images + slot;
+  dt_image_t *img = (dt_image_t *)g_malloc(sizeof(dt_image_t));
+  dt_image_init(img);
+  *buf = img;
   // load stuff from db and store in cache:
   char *str;
   sqlite3_stmt *stmt;
@@ -116,9 +118,6 @@ int32_t dt_image_cache_allocate(void *data, const uint32_t key, size_t *cost, vo
             sqlite3_errmsg(dt_database_get(darktable.db)));
   }
   sqlite3_finalize(stmt);
-
-  *buf = c->images + slot;
-  return 0; // no write lock required, we inited it all right here.
 }
 
 void dt_image_cache_deallocate(void *data, const uint32_t key, void *payload)
@@ -128,13 +127,7 @@ void dt_image_cache_deallocate(void *data, const uint32_t key, void *payload)
 
   // except for the profile
   g_free(img->profile);
-
-  // but reset all the stuff. not strictly necessary, but experience tells
-  // it might be best to make sure star ratings and such don't spill.
-  //
-  // note that no flushing to xmp takes place here, it is only done
-  // when write_release is called.
-  dt_image_init(img);
+  g_free(img);
 }
 
 void dt_image_cache_init(dt_image_cache_t *cache)
@@ -147,28 +140,16 @@ void dt_image_cache_init(dt_image_cache_t *cache)
   //       can we get away with a fixed size?
   const uint32_t max_mem = 50 * 1024 * 1024;
   uint32_t num = (uint32_t)(1.5f * max_mem / sizeof(dt_image_t));
-  dt_cache_init(&cache->cache, num, 16, 64, max_mem);
+  dt_cache_init(&cache->cache, sizeof(dt_image_t), max_mem);
   dt_cache_set_allocate_callback(&cache->cache, &dt_image_cache_allocate, cache);
   dt_cache_set_cleanup_callback(&cache->cache, &dt_image_cache_deallocate, cache);
 
-  // might have been rounded to power of two:
-  num = dt_cache_capacity(&cache->cache);
-  cache->images = dt_alloc_align(64, sizeof(dt_image_t) * num);
-  memset(cache->images, 0, sizeof(dt_image_t) * num);
   dt_print(DT_DEBUG_CACHE, "[image_cache] has %d entries\n", num);
-  // initialize first image as empty data:
-  dt_image_init(cache->images);
-  for(uint32_t k = 1; k < num; k++)
-  {
-    // optimized initialization (avoid accessing conf):
-    memcpy(cache->images + k, cache->images, sizeof(dt_image_t));
-  }
 }
 
 void dt_image_cache_cleanup(dt_image_cache_t *cache)
 {
   dt_cache_cleanup(&cache->cache);
-  dt_free_align(cache->images);
 }
 
 void dt_image_cache_print(dt_image_cache_t *cache)
