@@ -22,24 +22,24 @@
 #include <inttypes.h>
 #include <stddef.h>
 
-struct dt_cache_segment_t;
-struct dt_cache_bucket_t;
+typedef struct dt_cache_entry_t
+{
+  pthread_rwlock_t lock;
+  void *data;
+}
+dt_cache_entry_t;
 
 typedef struct dt_cache_t
 {
-  uint32_t segment_shift;
-  uint32_t segment_mask;
-  uint32_t bucket_mask;
-  struct dt_cache_segment_t *segments;
-  struct dt_cache_bucket_t *table;
+  dtpthread_mutex_t lock;
+  uint64_t capacity;
+  uint64_t size;
 
-  int32_t lru, mru;
-  int cache_mask;
-  int optimize_cacheline;
   size_t cost;
   size_t cost_quota;
-  // one fat lru lock, no use locking segments and possibly rolling back changes.
-  uint32_t lru_lock;
+
+  GHashTable hashtable;
+  GList *lru;
 
   // callback functions for cache misses/garbage collection
   // allocate should return != 0 if a write lock on alloc is needed.
@@ -100,7 +100,7 @@ uint32_t dt_cache_size(const dt_cache_t *const cache);
 // returns the maximum capacity of this cache:
 static inline uint32_t dt_cache_capacity(dt_cache_t *cache)
 {
-  return cache->bucket_mask + 1;
+  return cache->capacity;
 }
 
 // very verbose dump of the cache contents
