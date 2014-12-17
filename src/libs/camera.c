@@ -134,7 +134,8 @@ dt_lib_camera_property_t *_lib_property_add_new(dt_lib_camera_t *lib, const gcha
       gtk_widget_set_halign(GTK_WIDGET(prop->label), GTK_ALIGN_START);
       prop->values = GTK_COMBO_BOX(gtk_combo_box_text_new());
 
-      prop->osd = DTGTK_TOGGLEBUTTON(dtgtk_togglebutton_new(dtgtk_cairo_paint_eye, 0));
+      prop->osd = DTGTK_TOGGLEBUTTON(dtgtk_togglebutton_new(dtgtk_cairo_paint_eye, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER));
+      gtk_widget_set_size_request(GTK_WIDGET(prop->osd), DT_PIXEL_APPLY_DPI(14), -1);
       g_object_set(G_OBJECT(prop->osd), "tooltip-text", _("toggle view property in center view"),
                    (char *)NULL);
       do
@@ -415,7 +416,7 @@ void gui_init(dt_lib_module_t *self)
 
   // Camera control
   GtkWidget *label = dt_ui_section_label_new(_("camera control"));
-  gtk_grid_attach(GTK_GRID(self->widget), label, 0, 0, 2, 1);
+  gtk_grid_attach(GTK_GRID(self->widget), label, line++, 0, 2, 1);
 
   lib->gui.label1 = gtk_label_new(_("modes"));
   lib->gui.label2 = gtk_label_new(_("timer (s)"));
@@ -428,11 +429,11 @@ void gui_init(dt_lib_module_t *self)
   gtk_widget_set_halign(GTK_WIDGET(lib->gui.label4), GTK_ALIGN_START);
   gtk_widget_set_halign(GTK_WIDGET(lib->gui.label5), GTK_ALIGN_START);
 
-  gtk_grid_attach_next_to(GTK_GRID(self->widget), GTK_WIDGET(lib->gui.label1), label, GTK_POS_BOTTOM, 1, 1);
-  gtk_grid_attach_next_to(GTK_GRID(self->widget), GTK_WIDGET(lib->gui.label2), GTK_WIDGET(lib->gui.label1), GTK_POS_BOTTOM, 1, 1);
-  gtk_grid_attach_next_to(GTK_GRID(self->widget), GTK_WIDGET(lib->gui.label3), GTK_WIDGET(lib->gui.label2), GTK_POS_BOTTOM, 1, 1);
-  gtk_grid_attach_next_to(GTK_GRID(self->widget), GTK_WIDGET(lib->gui.label4), GTK_WIDGET(lib->gui.label3), GTK_POS_BOTTOM, 1, 1);
-  gtk_grid_attach_next_to(GTK_GRID(self->widget), GTK_WIDGET(lib->gui.label5), GTK_WIDGET(lib->gui.label4), GTK_POS_BOTTOM, 1, 1);
+  gtk_grid_attach(GTK_GRID(self->widget), GTK_WIDGET(lib->gui.label1), 0, line++, 1, 1);
+  gtk_grid_attach(GTK_GRID(self->widget), GTK_WIDGET(lib->gui.label2), 0, line++, 1, 1);
+  gtk_grid_attach(GTK_GRID(self->widget), GTK_WIDGET(lib->gui.label3), 0, line++, 1, 1);
+  gtk_grid_attach(GTK_GRID(self->widget), GTK_WIDGET(lib->gui.label4), 0, line++, 1, 1);
+  gtk_grid_attach(GTK_GRID(self->widget), GTK_WIDGET(lib->gui.label5), 0, line++, 1, 1);
 
   // capture modes buttons
   lib->gui.tb1 = DTGTK_TOGGLEBUTTON(
@@ -458,7 +459,7 @@ void gui_init(dt_lib_module_t *self)
   gtk_grid_attach_next_to(GTK_GRID(self->widget), GTK_WIDGET(lib->gui.sb4), GTK_WIDGET(lib->gui.label5), GTK_POS_RIGHT, 1, 1);
 
   lib->gui.button1 = gtk_button_new_with_label(_("capture image(s)"));
-  gtk_grid_attach_next_to(GTK_GRID(self->widget), GTK_WIDGET(lib->gui.button1), GTK_WIDGET(lib->gui.label5), GTK_POS_BOTTOM, 2, 1);
+  gtk_grid_attach(GTK_GRID(self->widget), GTK_WIDGET(lib->gui.button1), 0, line++, 2, 1);
 
   g_object_set(G_OBJECT(lib->gui.tb1), "tooltip-text", _("toggle delayed capture mode"), (char *)NULL);
   g_object_set(G_OBJECT(lib->gui.tb2), "tooltip-text", _("toggle sequenced capture mode"), (char *)NULL);
@@ -490,7 +491,7 @@ void gui_init(dt_lib_module_t *self)
   // Camera settings
   dt_lib_camera_property_t *prop;
   label = dt_ui_section_label_new(_("properties"));
-  gtk_grid_attach_next_to(GTK_GRID(self->widget), GTK_WIDGET(label), GTK_WIDGET(lib->gui.button1), GTK_POS_BOTTOM, 2, 1);
+  gtk_grid_attach(GTK_GRID(self->widget), GTK_WIDGET(label), 0, line++, 2, 1);
   lib->gui.pvbox1 = GTK_BOX(gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_PIXEL_APPLY_DPI(5)));
   lib->gui.pvbox2 = GTK_BOX(gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_PIXEL_APPLY_DPI(5)));
 
