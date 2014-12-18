@@ -417,6 +417,10 @@ for iso in $iso_settings; do
 	done
 done
 
+cp $presets ${presets}full
+bash $scriptdir/average.sh $presets
+mv ${presets}new $presets
+
 # Insert presets in the copied database.
 echo
 echo "===> Record presets in library for testing purpose"
