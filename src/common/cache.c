@@ -220,8 +220,7 @@ void dt_cache_gc(dt_cache_t *cache, const float fill_ratio)
     if(pthread_rwlock_trywrlock(&entry->lock)) continue;
 
     // delete!
-    gboolean removed = g_hash_table_remove(cache->hashtable, GINT_TO_POINTER(entry->key));
-    assert(removed);
+    g_hash_table_remove(cache->hashtable, GINT_TO_POINTER(entry->key));
     cache->lru = g_list_delete_link(cache->lru, entry->link);
     cache->cost -= entry->cost;
 
@@ -234,7 +233,6 @@ void dt_cache_gc(dt_cache_t *cache, const float fill_ratio)
     g_free(entry);
   }
   dt_pthread_mutex_unlock(&cache->lock);
-  return 0;
 }
 
 void dt_cache_release(dt_cache_t *cache, dt_cache_entry_t *entry)
