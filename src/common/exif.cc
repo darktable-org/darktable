@@ -1108,7 +1108,7 @@ int dt_exif_read_blob(uint8_t *buf, const char *path, const int imgid, const int
       }
 
       // GPS data
-      const dt_image_t *cimg = dt_image_cache_read_get(darktable.image_cache, imgid);
+      const dt_image_t *cimg = dt_image_cache_get(darktable.image_cache, imgid, 'r');
       if(!std::isnan(cimg->longitude) && !std::isnan(cimg->latitude))
       {
         exifData["Exif.GPSInfo.GPSVersionID"] = "02 02 00 00";
