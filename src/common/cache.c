@@ -152,9 +152,10 @@ dt_cache_entry_t *dt_cache_get(dt_cache_t *cache, const uint32_t key, char mode)
   entry->cost = 1;
   entry->link = g_list_append(0, &entry);
   entry->key = key;
-  int write = (mode == 'w');
+  // if allocate callback is given, always return a write lock
+  int write = ((mode == 'w') || cache->allocate);
   if(cache->allocate)
-    write = cache->allocate(cache->allocate_data, entry->key, &entry->cost, &value->data);
+    cache->allocate(cache->allocate_data, entry);
   else
     entry->data = dt_alloc_align(16, cache->entry_size);
   // write lock in case the caller requests it:
@@ -189,7 +190,7 @@ int dt_cache_remove(dt_cache_t *cache, const uint32_t key)
   cache->lru = g_list_delete_link(g->lru, entry->link);
 
   if(cache->cleanup)
-    cache->cleanup(cache->cleanup_data, key, entry->data);
+    cache->cleanup(cache->cleanup_data, entry);
   else
     dt_free_align(entry->data);
   pthread_rwlock_unlock(&entry->lock);

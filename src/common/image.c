@@ -965,6 +965,7 @@ void dt_image_init(dt_image_t *img)
   img->wb_coeffs[0] = NAN;
   img->wb_coeffs[1] = NAN;
   img->wb_coeffs[2] = NAN;
+  img->cache_entry = 0;
 }
 
 int32_t dt_image_move(const int32_t imgid, const int32_t filmid)
