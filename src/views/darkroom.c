@@ -1095,8 +1095,11 @@ void enter(dt_view_t *self)
     dev->overexposed.floating_window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
     GtkWidget *frame = gtk_frame_new(NULL);
     GtkWidget *event_box = gtk_event_box_new();
-    GtkWidget *alignment = gtk_alignment_new(0.5, 0.5, 1, 1);
     GtkWidget *vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
+    gtk_widget_set_margin_start(vbox, DT_PIXEL_APPLY_DPI(8));
+    gtk_widget_set_margin_end(vbox, DT_PIXEL_APPLY_DPI(8));
+    gtk_widget_set_margin_top(vbox, DT_PIXEL_APPLY_DPI(8));
+    gtk_widget_set_margin_bottom(vbox, DT_PIXEL_APPLY_DPI(8));
 
     gtk_widget_set_can_focus(dev->overexposed.floating_window, TRUE);
     gtk_window_set_decorated(GTK_WINDOW(dev->overexposed.floating_window), FALSE);
@@ -1108,12 +1111,10 @@ void enter(dt_view_t *self)
     gtk_widget_set_state_flags(frame, GTK_STATE_FLAG_SELECTED, TRUE);
     gtk_frame_set_shadow_type(GTK_FRAME(frame), GTK_SHADOW_OUT);
 
-    gtk_alignment_set_padding(GTK_ALIGNMENT(alignment), 8, 8, 8, 8);
 
     gtk_container_add(GTK_CONTAINER(dev->overexposed.floating_window), frame);
     gtk_container_add(GTK_CONTAINER(frame), event_box);
-    gtk_container_add(GTK_CONTAINER(event_box), alignment);
-    gtk_container_add(GTK_CONTAINER(alignment), vbox);
+    gtk_container_add(GTK_CONTAINER(event_box), vbox);
 
     /** let's fill the encapsulating widgets */
     /* color scheme */

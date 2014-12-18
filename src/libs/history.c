@@ -95,7 +95,8 @@ void gui_init(dt_lib_module_t *self)
 
   GtkWidget *hhbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 2);
 
-  GtkWidget *hbutton = gtk_button_new_with_label(_("compress history stack"));
+  GtkWidget *hbutton = dtgtk_button_new(NULL, /*CPF_DO_NOT_USE_BORDER | CPF_STYLE_FLAT*/0);
+  gtk_button_set_label(GTK_BUTTON(hbutton), _("compress history stack"));
   d->compress_button = hbutton;
   g_object_set(G_OBJECT(hbutton), "tooltip-text",
                _("create a minimal history stack which produces the same image"), (char *)NULL);
@@ -103,9 +104,8 @@ void gui_init(dt_lib_module_t *self)
   g_signal_connect(G_OBJECT(hbutton), "clicked", G_CALLBACK(_lib_history_compress_clicked_callback), NULL);
 
   /* add toolbar button for creating style */
-  // GtkWidget *hbutton2 = dtgtk_button_new(dtgtk_cairo_paint_styles, 0);
-  GtkWidget *hbutton2 = gtk_button_new();
-  // gtk_widget_set_size_request (hbutton, DT_PIXEL_APPLY_DPI(24), -1);
+  GtkWidget *hbutton2 = dtgtk_button_new(dtgtk_cairo_paint_styles, /*CPF_STYLE_FLAT*/0);
+  gtk_widget_set_size_request (hbutton2, DT_PIXEL_APPLY_DPI(24), -1);
   g_signal_connect(G_OBJECT(hbutton2), "clicked",
                    G_CALLBACK(_lib_history_create_style_button_clicked_callback), NULL);
   g_object_set(G_OBJECT(hbutton2), "tooltip-text", _("create a style from the current history stack"),

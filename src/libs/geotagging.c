@@ -376,10 +376,12 @@ static void _lib_geotagging_show_offset_window(GtkWidget *widget, dt_lib_module_
   gtk_widget_set_opacity(d->floating_window, 0.8);
   gtk_window_set_modal(GTK_WINDOW(d->floating_window), TRUE);
 
-  GtkWidget *alignment = gtk_alignment_new(0.5, 0.5, 1, 1);
-  gtk_alignment_set_padding(GTK_ALIGNMENT(alignment), 0, 5, 5, 5);
   GtkWidget *vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
-  gtk_container_add(GTK_CONTAINER(alignment), vbox);
+  gtk_widget_set_margin_top(vbox, DT_PIXEL_APPLY_DPI(2));
+  gtk_widget_set_margin_bottom(vbox, DT_PIXEL_APPLY_DPI(5));
+  gtk_widget_set_margin_start(vbox, DT_PIXEL_APPLY_DPI(5));
+  gtk_widget_set_margin_end(vbox, DT_PIXEL_APPLY_DPI(5));
+  gtk_container_add(GTK_CONTAINER(d->floating_window), vbox);
 
   d->floating_window_entry = gtk_entry_new();
   gtk_widget_add_events(d->floating_window_entry, GDK_FOCUS_CHANGE_MASK);
@@ -405,8 +407,6 @@ static void _lib_geotagging_show_offset_window(GtkWidget *widget, dt_lib_module_
                    self);
 
   gtk_box_pack_start(GTK_BOX(vbox), hbox, TRUE, TRUE, 0);
-
-  gtk_container_add(GTK_CONTAINER(d->floating_window), alignment);
 
   gtk_widget_show_all(d->floating_window);
   gtk_widget_grab_focus(d->floating_window_entry);
@@ -599,12 +599,12 @@ void gui_init(dt_lib_module_t *self)
   g_free(str);
 
   GtkBox *button_box = GTK_BOX(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5));
-  button = dtgtk_button_new(dtgtk_cairo_paint_zoom, 0);
+  button = dtgtk_button_new(dtgtk_cairo_paint_zoom, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER);
   g_object_set(G_OBJECT(button), "tooltip-text", _("calculate the time offset from an image"), (char *)NULL);
   gtk_box_pack_start(button_box, button, TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(_lib_geotagging_show_offset_window), self);
 
-  button = dtgtk_button_new(dtgtk_cairo_paint_check_mark, 0);
+  button = dtgtk_button_new(dtgtk_cairo_paint_check_mark, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER);
   g_object_set(G_OBJECT(button), "tooltip-text", _("apply time offset to selected images"), (char *)NULL);
   gtk_box_pack_start(button_box, button, TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(_lib_geotagging_apply_offset_callback), self);

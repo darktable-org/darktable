@@ -302,6 +302,7 @@ void dt_control_crawler_show_image_list(GList *images)
   // a list with all the images
   GtkTreeViewColumn *column;
   GtkWidget *scroll = gtk_scrolled_window_new(NULL, NULL);
+  gtk_widget_set_vexpand(scroll, TRUE);
   GtkListStore *store = gtk_list_store_new(DT_CONTROL_CRAWLER_NUM_COLS,
                                            G_TYPE_BOOLEAN, // selection toggle
                                            G_TYPE_INT,     // id
@@ -364,12 +365,12 @@ void dt_control_crawler_show_image_list(GList *images)
   gtk_window_set_transient_for(GTK_WINDOW(dialog), GTK_WINDOW(win));
   GtkWidget *content_area = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
 
-  GtkWidget *alignment = gtk_alignment_new(0.5, 0.5, 1.0, 1.0);
-  gtk_alignment_set_padding(GTK_ALIGNMENT(alignment), 5, 0, 10, 10);
-  gtk_container_add(GTK_CONTAINER(content_area), alignment);
-
   GtkWidget *content_box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
-  gtk_container_add(GTK_CONTAINER(alignment), content_box);
+  gtk_widget_set_margin_start(content_box, DT_PIXEL_APPLY_DPI(10));
+  gtk_widget_set_margin_end(content_box, DT_PIXEL_APPLY_DPI(10));
+  gtk_widget_set_margin_top(content_box, DT_PIXEL_APPLY_DPI(5));
+  gtk_widget_set_margin_bottom(content_box, DT_PIXEL_APPLY_DPI(0));
+  gtk_container_add(GTK_CONTAINER(content_area), content_box);
 
   gtk_box_pack_start(GTK_BOX(content_box), scroll, TRUE, TRUE, 0);
 

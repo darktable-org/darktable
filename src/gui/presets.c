@@ -385,11 +385,12 @@ static void edit_preset(const char *name_in, dt_iop_module_t *module)
   dialog = gtk_dialog_new_with_buttons(title, GTK_WINDOW(window), GTK_DIALOG_DESTROY_WITH_PARENT, _("_OK"),
                                        GTK_RESPONSE_ACCEPT, _("_Cancel"), GTK_RESPONSE_REJECT, NULL);
   GtkContainer *content_area = GTK_CONTAINER(gtk_dialog_get_content_area(GTK_DIALOG(dialog)));
-  GtkWidget *alignment = gtk_alignment_new(0.5, 0.5, 1.0, 1.0);
-  gtk_alignment_set_padding(GTK_ALIGNMENT(alignment), 5, 5, 5, 5);
-  gtk_container_add(content_area, alignment);
   GtkBox *box = GTK_BOX(gtk_box_new(GTK_ORIENTATION_VERTICAL, 5));
-  gtk_container_add(GTK_CONTAINER(alignment), GTK_WIDGET(box));
+  gtk_widget_set_margin_start(GTK_WIDGET(box), DT_PIXEL_APPLY_DPI(5));
+  gtk_widget_set_margin_end(GTK_WIDGET(box), DT_PIXEL_APPLY_DPI(5));
+  gtk_widget_set_margin_top(GTK_WIDGET(box), DT_PIXEL_APPLY_DPI(5));
+  gtk_widget_set_margin_bottom(GTK_WIDGET(box), DT_PIXEL_APPLY_DPI(5));
+  gtk_container_add(content_area, GTK_WIDGET(box));
   GtkWidget *label;
 
   GtkBox *vbox2 = GTK_BOX(gtk_box_new(GTK_ORIENTATION_VERTICAL, 5));

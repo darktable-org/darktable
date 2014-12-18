@@ -214,11 +214,12 @@ static void edit_preset(const char *name_in, dt_lib_module_info_t *minfo)
   dialog = gtk_dialog_new_with_buttons(title, GTK_WINDOW(window), GTK_DIALOG_DESTROY_WITH_PARENT, _("_OK"),
                                        GTK_RESPONSE_ACCEPT, _("_Cancel"), GTK_RESPONSE_REJECT, NULL);
   GtkContainer *content_area = GTK_CONTAINER(gtk_dialog_get_content_area(GTK_DIALOG(dialog)));
-  GtkWidget *alignment = gtk_alignment_new(0.5, 0.5, 1.0, 1.0);
-  gtk_alignment_set_padding(GTK_ALIGNMENT(alignment), 5, 5, 5, 5);
-  gtk_container_add(content_area, alignment);
   GtkBox *box = GTK_BOX(gtk_box_new(GTK_ORIENTATION_VERTICAL, 5));
-  gtk_container_add(GTK_CONTAINER(alignment), GTK_WIDGET(box));
+  gtk_widget_set_margin_start(GTK_WIDGET(box), DT_PIXEL_APPLY_DPI(10));
+  gtk_widget_set_margin_end(GTK_WIDGET(box), DT_PIXEL_APPLY_DPI(10));
+  gtk_widget_set_margin_top(GTK_WIDGET(box), DT_PIXEL_APPLY_DPI(10));
+  gtk_widget_set_margin_bottom(GTK_WIDGET(box), DT_PIXEL_APPLY_DPI(10));
+  gtk_container_add(content_area, GTK_WIDGET(box));
 
   dt_lib_presets_edit_dialog_t *g
       = (dt_lib_presets_edit_dialog_t *)g_malloc0(sizeof(dt_lib_presets_edit_dialog_t));
@@ -985,11 +986,12 @@ GtkWidget *dt_lib_gui_get_expander(dt_lib_module_t *module)
     dtgtk_icon_set_paint(hw[0], dtgtk_cairo_paint_solid_arrow, CPF_DIRECTION_LEFT);
   }
 
-  /* add module widget into an alignment */
-  GtkWidget *al = gtk_alignment_new(1.0, 1.0, 1.0, 1.0);
-  gtk_alignment_set_padding(GTK_ALIGNMENT(al), 8, 8, 8, 8);
-  gtk_container_add(GTK_CONTAINER(pluginui), al);
-  gtk_container_add(GTK_CONTAINER(al), module->widget);
+  /* add empty space around widget */
+  gtk_container_add(GTK_CONTAINER(pluginui), module->widget);
+  gtk_widget_set_margin_start(module->widget, DT_PIXEL_APPLY_DPI(8));
+  gtk_widget_set_margin_end(module->widget, DT_PIXEL_APPLY_DPI(8));
+  gtk_widget_set_margin_top(module->widget, DT_PIXEL_APPLY_DPI(8));
+  gtk_widget_set_margin_bottom(module->widget, DT_PIXEL_APPLY_DPI(8));
   gtk_widget_show_all(module->widget);
   gtk_widget_set_name(pluginui_frame, "lib-plugin-ui");
   module->expander = expander;

@@ -1420,19 +1420,14 @@ static void _ui_init_panel_left(dt_ui_t *ui, GtkWidget *container)
   GtkWidget *widget;
 
   /* create left panel main widget and add it to ui */
-  widget = ui->panels[DT_UI_PANEL_LEFT] = gtk_alignment_new(.5, .5, 1, 1);
+  widget = ui->panels[DT_UI_PANEL_LEFT] = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
   gtk_widget_set_name(widget, "left");
-  gtk_alignment_set_padding(GTK_ALIGNMENT(widget), 0, 0, 5, 0);
+//   gtk_widget_set_margin_left(widget, DT_PIXEL_APPLY_DPI(5)); // i prefer it with less blank space
   gtk_table_attach(GTK_TABLE(container), widget, 1, 2, 1, 2, GTK_SHRINK, GTK_EXPAND | GTK_SHRINK | GTK_FILL,
                    0, 0);
 
   /* set panel width */
   gtk_widget_set_size_request(widget, dt_conf_get_int("panel_width"), -1);
-
-  // Adding the vbox which will contain TOP,CENTER,BOTTOM
-  container = widget;
-  widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
-  gtk_container_add(GTK_CONTAINER(container), widget);
 
   /* add top,center,bottom*/
   container = widget;
@@ -1449,20 +1444,14 @@ static void _ui_init_panel_right(dt_ui_t *ui, GtkWidget *container)
   GtkWidget *widget;
 
   /* create left panel main widget and add it to ui */
-  widget = ui->panels[DT_UI_PANEL_RIGHT] = gtk_alignment_new(.5, .5, 1, 1);
+  widget = ui->panels[DT_UI_PANEL_RIGHT] = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
   gtk_widget_set_name(widget, "right");
-  gtk_alignment_set_padding(GTK_ALIGNMENT(widget), 0, 0, 0, 5);
+//   gtk_widget_set_margin_right(widget, DT_PIXEL_APPLY_DPI(5)); // i prefer it with less blank space
   gtk_table_attach(GTK_TABLE(container), widget, 3, 4, 1, 2, GTK_SHRINK, GTK_EXPAND | GTK_SHRINK | GTK_FILL,
                    0, 0);
 
   /* set panel width */
   gtk_widget_set_size_request(widget, dt_conf_get_int("panel_width"), -1);
-
-  // Adding the vbox which will containt TOP,CENTER,BOTTOM
-  container = widget;
-  widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
-  gtk_container_add(GTK_CONTAINER(container), widget);
-  gtk_widget_set_size_request(widget, 0, -1);
 
   /* add top,center,bottom*/
   container = widget;

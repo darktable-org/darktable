@@ -1793,7 +1793,7 @@ GtkWidget *dt_iop_gui_get_expander(dt_iop_module_t *module)
 
 got_image:
   hw[idx] = gtk_image_new_from_pixbuf(pixbuf);
-  gtk_widget_set_margin_left(GTK_WIDGET(hw[idx]), DT_PIXEL_APPLY_DPI(5));
+  gtk_widget_set_margin_start(GTK_WIDGET(hw[idx]), DT_PIXEL_APPLY_DPI(5));
   gtk_widget_set_size_request(GTK_WIDGET(hw[idx++]), bs, bs);
   g_object_unref(pixbuf);
 
@@ -1862,11 +1862,12 @@ got_image:
   dt_iop_gui_init_blending(iopw, module);
 
 
-  /* add module widget into an alignment */
-  GtkWidget *al = gtk_alignment_new(1.0, 1.0, 1.0, 1.0);
-  gtk_alignment_set_padding(GTK_ALIGNMENT(al), 8, 24, 8, 8);
-  gtk_container_add(GTK_CONTAINER(pluginui), al);
-  gtk_container_add(GTK_CONTAINER(al), iopw);
+  /* add empty space around module widget */
+  gtk_container_add(GTK_CONTAINER(pluginui), iopw);
+  gtk_widget_set_margin_start(iopw, DT_PIXEL_APPLY_DPI(8));
+  gtk_widget_set_margin_end(iopw, DT_PIXEL_APPLY_DPI(8));
+  gtk_widget_set_margin_top(iopw, DT_PIXEL_APPLY_DPI(8));
+  gtk_widget_set_margin_bottom(iopw, DT_PIXEL_APPLY_DPI(24));
 
   gtk_widget_hide(pluginui);
 

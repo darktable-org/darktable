@@ -151,6 +151,7 @@ GtkWidget *dtgtk_togglebutton_new(DTGTKCairoPaintIconFunc paint, gint paintflags
   button = g_object_new(dtgtk_togglebutton_get_type(), NULL);
   button->icon = paint;
   button->icon_flags = paintflags;
+  gtk_widget_set_size_request(GTK_WIDGET(button), DT_PIXEL_APPLY_DPI(17), DT_PIXEL_APPLY_DPI(17));
   return (GtkWidget *)button;
 }
 
