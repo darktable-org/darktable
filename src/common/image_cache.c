@@ -28,8 +28,6 @@
 
 void dt_image_cache_allocate(void *data, dt_cache_entry_t *entry)
 {
-  dt_image_cache_t *c = (dt_image_cache_t *)data;
-  const uint32_t hash = entry->key; // == image id
   entry->cost = sizeof(dt_image_t);
 
   dt_image_t *img = (dt_image_t *)g_malloc(sizeof(dt_image_t));
