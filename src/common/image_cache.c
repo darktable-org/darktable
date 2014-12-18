@@ -160,19 +160,19 @@ void dt_image_cache_print(dt_image_cache_t *cache)
          (float)cache->cache.cost / (float)cache->cache.cost_quota);
 }
 
-const dt_image_t *dt_image_cache_read_get(dt_image_cache_t *cache, const uint32_t imgid)
+dt_image_t *dt_image_cache_get(dt_image_cache_t *cache, const uint32_t imgid, char mode)
 {
   if(imgid <= 0) return NULL;
-  dt_cache_entry_t *entry = dt_cache_get(&cache->cache, imgid, 'r');
+  dt_cache_entry_t *entry = dt_cache_get(&cache->cache, imgid, mode);
   dt_image_t *img = (dt_image_t *)entry->data;
   img->cache_entry = entry;
   return img;
 }
 
-const dt_image_t *dt_image_cache_read_testget(dt_image_cache_t *cache, const uint32_t imgid)
+dt_image_t *dt_image_cache_testget(dt_image_cache_t *cache, const uint32_t imgid, char mode)
 {
   if(imgid <= 0) return 0;
-  dt_cache_entry_t *entry = dt_cache_testget(&cache->cache, imgid, 'r');
+  dt_cache_entry_t *entry = dt_cache_testget(&cache->cache, imgid, mode);
   if(!entry) return 0;
   dt_image_t *img = (dt_image_t *)entry->data;
   img->cache_entry = entry;
@@ -186,17 +186,6 @@ void dt_image_cache_read_release(dt_image_cache_t *cache, const dt_image_t *img)
   // just force the dt_image_t struct to make sure it has been locked before.
   dt_cache_release(&cache->cache, img->cache_entry);
 }
-
-// blocks until all readers have stepped back from this image
-dt_image_t *dt_image_cache_write_get(dt_image_cache_t *cache, const uint32_t imgid)
-{
-  if(!img) return NULL;
-  dt_cache_entry_t *entry = dt_cache_get(&cache->cache, imgid, 'w');
-  dt_image_t *img = (dt_image_t *)entry->data;
-  img->cache_entry = entry;
-  return img;
-}
-
 
 // drops the write privileges on an image struct.
 // this triggers a write-through to sql, and if the setting
