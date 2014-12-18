@@ -19,9 +19,10 @@
 #ifndef DT_COMMON_CACHE_H
 #define DT_COMMON_CACHE_H
 
+#include "common/dtpthread.h"
 #include <inttypes.h>
 #include <stddef.h>
-#include <pthread.h>
+#include <glib.h>
 
 typedef struct dt_cache_entry_t
 {
@@ -35,14 +36,14 @@ dt_cache_entry_t;
 
 typedef struct dt_cache_t
 {
-  dtpthread_mutex_t lock; // big fat lock. we're only expecting a couple hand full of cpu threads to use this concurrently.
+  dt_pthread_mutex_t lock; // big fat lock. we're only expecting a couple hand full of cpu threads to use this concurrently.
 
   size_t entry_size; // cache line allocation
   size_t cost;       // user supplied cost per cache line (bytes?)
   size_t cost_quota; // quota to try and meet. but don't use as hard limit.
 
-  GHashTable hashtable; // stores (key, entry) pairs
-  GList *lru;           // last element is most recently used, first is about to be kicked from cache.
+  GHashTable *hashtable; // stores (key, entry) pairs
+  GList *lru;            // last element is most recently used, first is about to be kicked from cache.
 
   // callback functions for cache misses/garbage collection
   void (*allocate)(void *userdata, dt_cache_entry_t *entry);
@@ -58,7 +59,7 @@ void dt_cache_cleanup(dt_cache_t *cache);
 
 static inline void dt_cache_set_allocate_callback(
     dt_cache_t *cache,
-    int32_t (*allocate)(void *, const uint32_t, size_t *, void **),
+    void (*allocate)(void *, dt_cache_entry_t *entry),
     void *allocate_data)
 {
   cache->allocate = allocate;
@@ -66,7 +67,7 @@ static inline void dt_cache_set_allocate_callback(
 }
 static inline void dt_cache_set_cleanup_callback(
     dt_cache_t *cache,
-    void (*cleanup)(void *, const uint32_t, void *),
+    void (*cleanup)(void *, dt_cache_entry_t *entry),
     void *cleanup_data)
 {
   cache->cleanup = cleanup;
@@ -81,7 +82,7 @@ dt_cache_entry_t *dt_cache_testget(dt_cache_t *cache, const uint32_t key, char m
 void dt_cache_release(dt_cache_t *cache, dt_cache_entry_t *entry);
 
 // 0: not contained
-int32_t dt_cache_contains(const dt_cache_t *const cache, const uint32_t key);
+int32_t dt_cache_contains(dt_cache_t *cache, const uint32_t key);
 // returns 0 on success, 1 if the key was not found.
 int32_t dt_cache_remove(dt_cache_t *cache, const uint32_t key);
 // removes from the tip of the lru list, until the fill ratio of the hashtable

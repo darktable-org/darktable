@@ -99,7 +99,7 @@ typedef enum dt_image_orientation_t
   ORIENTATION_421 /* ??? */ = ORIENTATION_FLIP_Y | ORIENTATION_FLIP_X | ORIENTATION_SWAP_XY // 7
 } dt_image_orientation_t;
 
-typedef struct dt_cache_entry_t;
+struct dt_cache_entry_t;
 // TODO: add color labels and such as cachable
 // __attribute__ ((aligned (128)))
 typedef struct dt_image_t
@@ -153,7 +153,7 @@ typedef struct dt_image_t
   gboolean pre_applied_wb;
 
   /* convenience pointer back into the image cache, so we can return dt_image_t* there directly. */
-  dt_cache_entry_t *cache_entry;
+  struct dt_cache_entry_t *cache_entry;
 } dt_image_t;
 
 // image buffer operations:
