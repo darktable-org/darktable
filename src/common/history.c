@@ -31,15 +31,13 @@
 
 static void remove_preset_flag(const int imgid)
 {
-  const dt_image_t *cimg = dt_image_cache_read_get(darktable.image_cache, imgid);
-  dt_image_t *image = dt_image_cache_write_get(darktable.image_cache, cimg);
+  dt_image_t *image = dt_image_cache_get(darktable.image_cache, imgid, 'w');
 
   // clear flag
   image->flags &= ~DT_IMAGE_AUTO_PRESETS_APPLIED;
 
   // write through to sql+xmp
   dt_image_cache_write_release(darktable.image_cache, image, DT_IMAGE_CACHE_SAFE);
-  dt_image_cache_read_release(darktable.image_cache, cimg);
 }
 
 static void _dt_history_cleanup_multi_instance(int imgid, int minnum)
@@ -178,8 +176,7 @@ void dt_history_delete_on_selection()
 int dt_history_load_and_apply(int imgid, gchar *filename, int history_only)
 {
   int res = 0;
-  const dt_image_t *cimg = dt_image_cache_read_get(darktable.image_cache, imgid);
-  dt_image_t *img = dt_image_cache_write_get(darktable.image_cache, cimg);
+  dt_image_t *img = dt_image_cache_get(darktable.image_cache, imgid, 'w');
   if(img)
   {
     if(dt_exif_xmp_read(img, filename, history_only)) return 1;
@@ -188,7 +185,6 @@ int dt_history_load_and_apply(int imgid, gchar *filename, int history_only)
     if(dt_dev_is_current_image(darktable.develop, imgid)) dt_dev_reload_history_items(darktable.develop);
 
     dt_image_cache_write_release(darktable.image_cache, img, DT_IMAGE_CACHE_SAFE);
-    dt_image_cache_read_release(darktable.image_cache, img);
     dt_mipmap_cache_remove(darktable.mipmap_cache, imgid);
   }
   return res;
