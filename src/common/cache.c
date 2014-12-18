@@ -17,6 +17,8 @@
 */
 
 #include "common/cache.h"
+#include "common/dtpthread.h"
+#include "common/darktable.h"
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -33,7 +35,7 @@ void dt_cache_init(
   cache->cost = 0;
   cache->entry_size = entry_size;
   cache->cost_quota = cost_quota;
-  dtpthread_mutex_init(&cache->lock, 0);
+  dt_pthread_mutex_init(&cache->lock, 0);
   cache->allocate = 0;
   cache->allocate_data = 0;
   cache->cleanup = 0;
@@ -49,7 +51,7 @@ void dt_cache_cleanup(dt_cache_t *cache)
   {
     dt_cache_entry_t *entry = (dt_cache_entry_t *)l->data;
     if(cache->cleanup)
-      cache->cleanup(cache->cleanup_data, entry->key, entry->data);
+      cache->cleanup(cache->cleanup_data, entry);
     else
       dt_free_align(entry->data);
     pthread_rwlock_destroy(&entry->lock);
@@ -59,11 +61,11 @@ void dt_cache_cleanup(dt_cache_t *cache)
   g_list_free(cache->lru);
 }
 
-int32_t dt_cache_contains(const dt_cache_t *const cache, const uint32_t key)
+int32_t dt_cache_contains(dt_cache_t *cache, const uint32_t key)
 {
-  dt_pthread_lock(&cache->lock);
+  dt_pthread_mutex_lock(&cache->lock);
   int32_t result = g_hash_table_contains(cache->hashtable, GINT_TO_POINTER(key));
-  dt_pthread_unlock(&cache->lock);
+  dt_pthread_mutex_unlock(&cache->lock);
   return result;
 }
 
@@ -72,7 +74,7 @@ int dt_cache_for_all(
     int (*process)(const uint32_t key, const void *data, void *user_data),
     void *user_data)
 {
-  dt_pthread_lock(&cache->lock);
+  dt_pthread_mutex_lock(&cache->lock);
   GHashTableIter iter;
   gpointer key, value;
 
@@ -83,11 +85,11 @@ int dt_cache_for_all(
     const int err = process(GPOINTER_TO_INT(key), entry->data, user_data);
     if(err)
     {
-      dt_pthread_unlock(&cache->lock);
+      dt_pthread_mutex_unlock(&cache->lock);
       return err;
     }
   }
-  dt_pthread_unlock(&cache->lock);
+  dt_pthread_mutex_unlock(&cache->lock);
   return 0;
 }
 
@@ -98,7 +100,7 @@ dt_cache_entry_t *dt_cache_read_testget(dt_cache_t *cache, const uint32_t key, c
   dt_pthread_mutex_lock(&cache->lock);
   gpointer orig_key, value;
   gboolean res = g_hash_table_lookup_extended(
-      cache->hash_table, GINT_TO_POINTER(key), &orig_key, &value);
+      cache->hashtable, GINT_TO_POINTER(key), &orig_key, &value);
   if(res)
   {
     dt_cache_entry_t *entry = (dt_cache_entry_t *)value;
@@ -123,7 +125,7 @@ dt_cache_entry_t *dt_cache_get(dt_cache_t *cache, const uint32_t key, char mode)
   dt_pthread_mutex_lock(&cache->lock);
   gpointer orig_key, value;
   gboolean res = g_hash_table_lookup_extended(
-      cache->hash_table, GINT_TO_POINTER(key), &orig_key, &value);
+      cache->hashtable, GINT_TO_POINTER(key), &orig_key, &value);
   if(res)
   { // yay, found. read lock and pass on.
     dt_cache_entry_t *entry = (dt_cache_entry_t *)value;
@@ -147,7 +149,7 @@ dt_cache_entry_t *dt_cache_get(dt_cache_t *cache, const uint32_t key, char mode)
 
   // here dies your 32-bit system:
   dt_cache_entry_t *entry = (dt_cache_entry_t *)g_malloc(sizeof(dt_cache_entry_t));
-  pthread_rwlock_init(&entry->lock);
+  pthread_rwlock_init(&entry->lock, 0);
   entry->data = 0;
   entry->cost = 1;
   entry->link = g_list_append(0, &entry);
@@ -176,7 +178,7 @@ int dt_cache_remove(dt_cache_t *cache, const uint32_t key)
 
   gpointer orig_key, value;
   gboolean res = g_hash_table_lookup_extended(
-      cache->hash_table, GINT_TO_POINTER(key), &orig_key, &value);
+      cache->hashtable, GINT_TO_POINTER(key), &orig_key, &value);
   dt_cache_entry_t *entry = (dt_cache_entry_t *)value;
   if(!res)
   { // not found in cache, not deleting.
@@ -186,8 +188,9 @@ int dt_cache_remove(dt_cache_t *cache, const uint32_t key)
   // need write lock to be able to delete:
   pthread_rwlock_wrlock(&entry->lock);
   gboolean removed = g_hash_table_remove(cache->hashtable, GINT_TO_POINTER(key));
+  (void)removed; // make non-assert compile happy
   assert(removed);
-  cache->lru = g_list_delete_link(g->lru, entry->link);
+  cache->lru = g_list_delete_link(cache->lru, entry->link);
 
   if(cache->cleanup)
     cache->cleanup(cache->cleanup_data, entry);
@@ -219,11 +222,11 @@ void dt_cache_gc(dt_cache_t *cache, const float fill_ratio)
     // delete!
     gboolean removed = g_hash_table_remove(cache->hashtable, GINT_TO_POINTER(entry->key));
     assert(removed);
-    cache->lru = g_list_delete_link(g->lru, entry->link);
+    cache->lru = g_list_delete_link(cache->lru, entry->link);
     cache->cost -= entry->cost;
 
     if(cache->cleanup)
-      cache->cleanup(cache->cleanup_data, entry->key, entry->data);
+      cache->cleanup(cache->cleanup_data, entry);
     else
       dt_free_align(entry->data);
     pthread_rwlock_unlock(&entry->lock);
