@@ -962,6 +962,7 @@ void dt_image_init(dt_image_t *img)
   img->pre_applied_wb = FALSE;
   img->fuji_rotation_pos = 0;
   img->pixel_aspect_ratio = 1.0f;
+  img->cache_entry = 0;
 }
 
 int32_t dt_image_move(const int32_t imgid, const int32_t filmid)

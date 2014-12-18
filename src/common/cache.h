@@ -45,8 +45,8 @@ typedef struct dt_cache_t
   GList *lru;           // last element is most recently used, first is about to be kicked from cache.
 
   // callback functions for cache misses/garbage collection
-  void (*allocate)(void *userdata, const uint32_t key, size_t *cost, void **payload);
-  void (*cleanup)(void *userdata, const uint32_t key, void *payload);
+  void (*allocate)(void *userdata, dt_cache_entry_t *entry);
+  void (*cleanup)(void *userdata, dt_cache_entry_t *entry);
   void *allocate_data;
   void *cleanup_data;
 }
