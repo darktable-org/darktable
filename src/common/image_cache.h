@@ -56,7 +56,7 @@ dt_image_t *dt_image_cache_get(dt_image_cache_t *cache, const uint32_t imgid, ch
 dt_image_t *dt_image_cache_testget(dt_image_cache_t *cache, const uint32_t imgid, char mode);
 
 // drops the read lock on an image struct
-void dt_image_cache_release(dt_image_cache_t *cache, const dt_image_t *img);
+void dt_image_cache_read_release(dt_image_cache_t *cache, const dt_image_t *img);
 
 // drops the write privileges on an image struct.
 // this triggers a write-through to sql, and if the setting
