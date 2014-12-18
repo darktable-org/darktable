@@ -42,7 +42,7 @@ typedef struct dt_lib_export_t
   GtkSpinButton *width, *height;
   GtkComboBox *storage, *format;
   int format_lut[128];
-  GtkContainer *storage_box, *format_box;
+  GtkWidget *shown_storage, *shown_format;
   GtkComboBox *profile, *intent, *style;
   GList *profiles;
   GtkButton *export_button;
@@ -196,14 +196,16 @@ static void set_format_by_name(dt_lib_export_t *d, const char *name)
 
   // Store the new format
   dt_conf_set_string("plugins/lighttable/export/format_name", module->plugin_name);
-
-  GtkWidget *old = gtk_bin_get_child(GTK_BIN(d->format_box));
-  if(old != module->widget)
+  if(d->shown_format)
+    gtk_widget_hide(d->shown_format);
+  if(module->widget)
   {
-    if(old) gtk_container_remove(d->format_box, old);
-    if(module->widget) gtk_container_add(d->format_box, module->widget);
+    gtk_widget_set_no_show_all(module->widget, FALSE);
+    gtk_widget_show_all(module->widget);
+    gtk_widget_set_no_show_all(module->widget, TRUE);
   }
-  gtk_widget_show_all(GTK_WIDGET(d->format_box));
+  d->shown_format = module->widget;
+
   if(!darktable.gui->reset && _combo_box_set_active_text(d->format, module->name()) == FALSE)
     gtk_combo_box_set_active(d->format, 0);
 
@@ -274,12 +276,15 @@ static void set_storage_by_name(dt_lib_export_t *d, const char *name)
 
   if(!darktable.gui->reset) gtk_combo_box_set_active(d->storage, k);
   dt_conf_set_string("plugins/lighttable/export/storage_name", module->plugin_name);
-  GtkWidget *old = gtk_bin_get_child(GTK_BIN(d->storage_box));
-  if(old != module->widget)
+  if(d->shown_storage)
+    gtk_widget_hide(d->shown_storage);
+  if(module->widget)
   {
-    if(old) gtk_container_remove(d->storage_box, old);
-    if(module->widget) gtk_container_add(d->storage_box, module->widget);
+    gtk_widget_set_no_show_all(module->widget, FALSE);
+    gtk_widget_show_all(module->widget);
+    gtk_widget_set_no_show_all(module->widget, TRUE);
   }
+  d->shown_storage = module->widget;
 
   // Check if plugin recommends a max dimension and set
   // if not implemented the stored conf values are used..
@@ -304,8 +309,6 @@ static void set_storage_by_name(dt_lib_export_t *d, const char *name)
   g_free(format_name);
   if(format == NULL || _combo_box_set_active_text(d->format, format->name()) == FALSE)
     gtk_combo_box_set_active(d->format, 0);
-
-  gtk_widget_show_all(GTK_WIDGET(d->storage_box));
 }
 
 static void storage_changed(GtkComboBox *widget, dt_lib_export_t *d)
@@ -446,6 +449,8 @@ void gui_init(dt_lib_module_t *self)
   dt_lib_export_t *d = (dt_lib_export_t *)malloc(sizeof(dt_lib_export_t));
   self->data = (void *)d;
   self->widget = gtk_grid_new();
+  d->shown_storage = NULL;
+  d->shown_format = NULL;
   gtk_grid_set_row_spacing(GTK_GRID(self->widget), 5);
 
   GtkWidget *label;
@@ -455,21 +460,26 @@ void gui_init(dt_lib_module_t *self)
   gtk_grid_attach(GTK_GRID(self->widget), label, 0, line++, 2, 1);
 
   d->storage = GTK_COMBO_BOX(gtk_combo_box_text_new());
-  GList *it = darktable.imageio->plugins_storage;
-  while(it)
+  gtk_grid_attach(GTK_GRID(self->widget), GTK_WIDGET(d->storage), 0, line++, 2, 1);
+
+  // add all storage widgets and just hide the ones not needed
+  GList *it = g_list_first(darktable.imageio->plugins_storage);
+  if(it != NULL) do
   {
     dt_imageio_module_storage_t *module = (dt_imageio_module_storage_t *)it->data;
     gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(d->storage), module->name(module));
-    it = g_list_next(it);
-  }
+    if(module->widget)
+    {
+      gtk_grid_attach(GTK_GRID(self->widget), module->widget, 0, line++, 2, 1);
+      gtk_widget_hide(module->widget);
+      gtk_widget_set_no_show_all(module->widget, TRUE);
+    }
+  } while((it = g_list_next(it)));
+
+  // postponed so we can do the two steps in one loop
   dt_control_signal_connect(darktable.signals, DT_SIGNAL_IMAGEIO_STORAGE_CHANGE,
                             G_CALLBACK(on_storage_list_changed), self);
-  gtk_grid_attach(GTK_GRID(self->widget), GTK_WIDGET(d->storage), 0, line++, 2, 1);
   g_signal_connect(G_OBJECT(d->storage), "changed", G_CALLBACK(storage_changed), (gpointer)d);
-
-  d->storage_box = GTK_CONTAINER(gtk_alignment_new(1.0, 1.0, 1.0, 1.0));
-  gtk_alignment_set_padding(GTK_ALIGNMENT(d->storage_box), 0, 0, 0, 0);
-  gtk_grid_attach(GTK_GRID(self->widget), GTK_WIDGET(d->storage_box), 0, line++, 2, 1);
 
   label = dt_ui_section_label_new(_("file format"));
   gtk_widget_set_margin_top(label, DT_PIXEL_APPLY_DPI(20));
@@ -479,9 +489,18 @@ void gui_init(dt_lib_module_t *self)
   gtk_grid_attach(GTK_GRID(self->widget), GTK_WIDGET(d->format), 0, line++, 2, 1);
   g_signal_connect(G_OBJECT(d->format), "changed", G_CALLBACK(format_changed), (gpointer)d);
 
-  d->format_box = GTK_CONTAINER(gtk_alignment_new(1.0, 1.0, 1.0, 1.0));
-  gtk_alignment_set_padding(GTK_ALIGNMENT(d->format_box), 0, 0, 0, 0);
-  gtk_grid_attach(GTK_GRID(self->widget), GTK_WIDGET(d->format_box), 0, line++, 2, 1);
+  // add all format widgets and just hide the ones not needed
+  it = g_list_first(darktable.imageio->plugins_format);
+  if(it != NULL) do
+  {
+    dt_imageio_module_format_t *module = (dt_imageio_module_format_t *)it->data;
+    if(module->widget)
+    {
+      gtk_grid_attach(GTK_GRID(self->widget), module->widget, 0, line++, 2, 1);
+      gtk_widget_hide(module->widget);
+      gtk_widget_set_no_show_all(module->widget, TRUE);
+    }
+  } while((it = g_list_next(it)));
 
   label = dt_ui_section_label_new(_("global options"));
   gtk_widget_set_margin_top(label, DT_PIXEL_APPLY_DPI(20));
@@ -655,10 +674,22 @@ void gui_cleanup(dt_lib_module_t *self)
   dt_lib_export_t *d = (dt_lib_export_t *)self->data;
   dt_gui_key_accel_block_on_focus_disconnect(GTK_WIDGET(d->width));
   dt_gui_key_accel_block_on_focus_disconnect(GTK_WIDGET(d->height));
-  GtkWidget *old = gtk_bin_get_child(GTK_BIN(d->format_box));
-  if(old) gtk_container_remove(d->format_box, old);
-  old = gtk_bin_get_child(GTK_BIN(d->storage_box));
-  if(old) gtk_container_remove(d->storage_box, old);
+
+  GList *it = g_list_first(darktable.imageio->plugins_storage);
+  if(it != NULL) do
+  {
+    dt_imageio_module_storage_t *module = (dt_imageio_module_storage_t *)it->data;
+    if(module->widget) gtk_container_remove(GTK_CONTAINER(self->widget), module->widget);
+  } while((it = g_list_next(it)));
+
+  it = g_list_first(darktable.imageio->plugins_format);
+  if(it != NULL) do
+  {
+    dt_imageio_module_format_t *module = (dt_imageio_module_format_t *)it->data;
+    if(module->widget) gtk_container_remove(GTK_CONTAINER(self->widget), module->widget);
+  } while((it = g_list_next(it)));
+
+
   while(d->profiles)
   {
     g_free(d->profiles->data);
