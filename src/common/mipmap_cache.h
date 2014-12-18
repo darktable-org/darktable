@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2011 johannes hanika.
+    copyright (c) 2011-2014 johannes hanika.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -57,14 +57,14 @@ typedef enum dt_mipmap_get_flags_t
   DT_MIPMAP_TESTLOCK = 3
 } dt_mipmap_get_flags_t;
 
-// struct to be alloc'ed by the client, filled by
-// _get functions.
+// struct to be alloc'ed by the client, filled by dt_mipmap_cache_get()
 typedef struct dt_mipmap_buffer_t
 {
   dt_mipmap_size_t size;
   uint32_t imgid;
   int32_t width, height;
   uint8_t *buf;
+  dt_cache_entry_t *cache_entry;
 } dt_mipmap_buffer_t;
 
 typedef struct dt_mipmap_cache_one_t
@@ -108,32 +108,31 @@ typedef struct dt_mipmap_cache_t
   dt_mipmap_cache_one_t scratchmem;
 } dt_mipmap_cache_t;
 
-typedef void **dt_mipmap_cache_allocator_t;
-// dynamic memory allocation interface for imageio backend:
-// the allocator is passed in, it might already contain a
-// valid buffer. this function takes care of re-allocating,
-// if necessary.
-void *dt_mipmap_cache_alloc(dt_image_t *img, dt_mipmap_size_t size, dt_mipmap_cache_allocator_t a);
+// use thread local storage to decompress thumbnails
+extern __thread uint8_t *dt_mipmap_cache_scratchmem;
+
+// dynamic memory allocation interface for imageio backend: a write locked
+// mipmap buffer is passed in, it might already contain a valid buffer. this
+// function takes care of re-allocating, if necessary.
+void *dt_mipmap_cache_alloc(dt_mipmap_buffer_t *buf, size_t size);
 
 void dt_mipmap_cache_init(dt_mipmap_cache_t *cache);
 void dt_mipmap_cache_cleanup(dt_mipmap_cache_t *cache);
 void dt_mipmap_cache_print(dt_mipmap_cache_t *cache);
 
-// get a buffer for reading.
-// see dt_mipmap_get_flags_t for explanation on the exact
+// get a buffer and lock according to mode ('r' or 'w').
+// see dt_mipmap_get_flags_t for explanation of the exact
 // behaviour. pass 0 as flags for the default (best effort)
-void dt_mipmap_cache_read_get(dt_mipmap_cache_t *cache, dt_mipmap_buffer_t *buf, const uint32_t imgid,
-                              const dt_mipmap_size_t mip, const dt_mipmap_get_flags_t flags);
+void dt_mipmap_cache_get(
+    dt_mipmap_cache_t *cache,
+    dt_mipmap_buffer_t *buf,
+    const uint32_t imgid,
+    const dt_mipmap_size_t mip,
+    const dt_mipmap_get_flags_t flags,
+    char mode);
 
-// lock it for writing. this is always blocking.
-// requires you already hold a read lock.
-void dt_mipmap_cache_write_get(dt_mipmap_cache_t *cache, dt_mipmap_buffer_t *buf);
-
-// drop a read lock
-void dt_mipmap_cache_read_release(dt_mipmap_cache_t *cache, dt_mipmap_buffer_t *buf);
-
-// drop a write lock, read will still remain.
-void dt_mipmap_cache_write_release(dt_mipmap_cache_t *cache, dt_mipmap_buffer_t *buf);
+// drop a lock
+void dt_mipmap_cache_release(dt_mipmap_cache_t *cache, dt_mipmap_buffer_t *buf);
 
 // remove thumbnails, so they will be regenerated:
 void dt_mipmap_cache_remove(dt_mipmap_cache_t *cache, const uint32_t imgid);
@@ -144,8 +143,10 @@ void dt_mipmap_cache_remove(dt_mipmap_cache_t *cache, const uint32_t imgid);
 // depending on the user parameter for the maximum thumbnail dimensions.
 // actual resolution depends on the image and is only known after
 // the thumbnail is loaded.
-dt_mipmap_size_t dt_mipmap_cache_get_matching_size(const dt_mipmap_cache_t *cache, const int32_t width,
-                                                   const int32_t height);
+dt_mipmap_size_t dt_mipmap_cache_get_matching_size(
+    const dt_mipmap_cache_t *cache,
+    const int32_t width,
+    const int32_t height);
 
 
 // allocate enough memory for an uncompressed thumbnail image.
