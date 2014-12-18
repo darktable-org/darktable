@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2011 johannes hanika.
+    copyright (c) 2011-2014 johannes hanika.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -26,16 +26,15 @@
 
 #include <sqlite3.h>
 
-void dt_image_cache_allocate(void *data, const uint32_t key, size_t *cost, void **buf)
+void dt_image_cache_allocate(void *data, dt_cache_entry_t *entry)
 {
   dt_image_cache_t *c = (dt_image_cache_t *)data;
-  const uint32_t hash = key; // == image id
-  const uint32_t slot = hash & c->cache.bucket_mask;
-  *cost = sizeof(dt_image_t);
+  const uint32_t hash = entry->key; // == image id
+  entry->cost = sizeof(dt_image_t);
 
   dt_image_t *img = (dt_image_t *)g_malloc(sizeof(dt_image_t));
   dt_image_init(img);
-  *buf = img;
+  entry->data = img;
   // load stuff from db and store in cache:
   char *str;
   sqlite3_stmt *stmt;
@@ -46,7 +45,7 @@ void dt_image_cache_allocate(void *data, const uint32_t key, size_t *cost, void 
       "raw_parameters, longitude, latitude, color_matrix, colorspace, version, raw_black, raw_maximum FROM "
       "images WHERE id = ?1",
       -1, &stmt, NULL);
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, key);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, entry->key);
   if(sqlite3_step(stmt) == SQLITE_ROW)
   {
     img->id = sqlite3_column_int(stmt, 0);
@@ -118,14 +117,16 @@ void dt_image_cache_allocate(void *data, const uint32_t key, size_t *cost, void 
             sqlite3_errmsg(dt_database_get(darktable.db)));
   }
   sqlite3_finalize(stmt);
+  img->cache_entry = entry; // init backref
+  // could use a downgrade lock if we were using concurrencykit..
+  // but this is not a race since the bf cache lock will be around this call:
+  pthread_rwlock_unlock(&entry->lock); // drop write lock
+  pthread_rwlock_rdlock(&entry->lock); // read lock
 }
 
-void dt_image_cache_deallocate(void *data, const uint32_t key, void *payload)
+void dt_image_cache_deallocate(void *data, dt_cache_entry_t *entry)
 {
-  // don't free. memory is only allocated once.
-  dt_image_t *img = (dt_image_t *)payload;
-
-  // except for the profile
+  dt_image_t *img = (dt_image_t *)entry->data;
   g_free(img->profile);
   g_free(img);
 }
@@ -162,13 +163,20 @@ void dt_image_cache_print(dt_image_cache_t *cache)
 const dt_image_t *dt_image_cache_read_get(dt_image_cache_t *cache, const uint32_t imgid)
 {
   if(imgid <= 0) return NULL;
-  return (const dt_image_t *)dt_cache_read_get(&cache->cache, imgid);
+  dt_cache_entry_t *entry = dt_cache_get(&cache->cache, imgid, 'r');
+  dt_image_t *img = (dt_image_t *)entry->data;
+  img->cache_entry = entry;
+  return img;
 }
 
 const dt_image_t *dt_image_cache_read_testget(dt_image_cache_t *cache, const uint32_t imgid)
 {
-  if(imgid <= 0) return NULL;
-  return (const dt_image_t *)dt_cache_read_testget(&cache->cache, imgid);
+  if(imgid <= 0) return 0;
+  dt_cache_entry_t *entry = dt_cache_testget(&cache->cache, imgid, 'r');
+  if(!entry) return 0;
+  dt_image_t *img = (dt_image_t *)entry->data;
+  img->cache_entry = entry;
+  return img;
 }
 
 // drops the read lock on an image struct
@@ -176,17 +184,17 @@ void dt_image_cache_read_release(dt_image_cache_t *cache, const dt_image_t *img)
 {
   if(!img || img->id <= 0) return;
   // just force the dt_image_t struct to make sure it has been locked before.
-  dt_cache_read_release(&cache->cache, img->id);
+  dt_cache_release(&cache->cache, img->cache_entry);
 }
 
-// augments the already acquired read lock on an image to write the struct.
-// blocks until all readers have stepped back from this image (all but one,
-// which is assumed to be this thread)
-dt_image_t *dt_image_cache_write_get(dt_image_cache_t *cache, const dt_image_t *img)
+// blocks until all readers have stepped back from this image
+dt_image_t *dt_image_cache_write_get(dt_image_cache_t *cache, const uint32_t imgid)
 {
   if(!img) return NULL;
-  // just force the dt_image_t struct to make sure it has been locked for reading before.
-  return (dt_image_t *)dt_cache_write_get(&cache->cache, img->id);
+  dt_cache_entry_t *entry = dt_cache_get(&cache->cache, imgid, 'w');
+  dt_image_t *img = (dt_image_t *)entry->data;
+  img->cache_entry = entry;
+  return img;
 }
 
 
@@ -241,7 +249,7 @@ void dt_image_cache_write_release(dt_image_cache_t *cache, dt_image_t *img, dt_i
     // also synch dttags file:
     dt_image_write_sidecar_file(img->id);
   }
-  dt_cache_write_release(&cache->cache, img->id);
+  dt_cache_release(&cache->cache, img->cache_entry);
 }
 
 
