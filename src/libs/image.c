@@ -191,13 +191,13 @@ void gui_init(dt_lib_module_t *self)
   hbox = GTK_BOX(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5));
 
   GtkBox *hbox2 = GTK_BOX(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5));
-  button = dtgtk_button_new(dtgtk_cairo_paint_refresh, 0);
+  button = dtgtk_button_new(dtgtk_cairo_paint_refresh, CPF_DO_NOT_USE_BORDER);
   d->rotate_ccw_button = button;
   g_object_set(G_OBJECT(button), "tooltip-text", _("rotate selected images 90 degrees CCW"), (char *)NULL);
   gtk_box_pack_start(hbox2, button, TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(button_clicked), GINT_TO_POINTER(4));
 
-  button = dtgtk_button_new(dtgtk_cairo_paint_refresh, 1);
+  button = dtgtk_button_new(dtgtk_cairo_paint_refresh, 1 | CPF_DO_NOT_USE_BORDER);
   d->rotate_cw_button = button;
   g_object_set(G_OBJECT(button), "tooltip-text", _("rotate selected images 90 degrees CW"), (char *)NULL);
   gtk_box_pack_start(hbox2, button, TRUE, TRUE, 0);
