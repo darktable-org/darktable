@@ -459,6 +459,7 @@ void gui_init(dt_imageio_module_storage_t *self)
 
 
   label = gtk_label_new(_("flickr user"));
+  g_object_set(G_OBJECT(label), "xalign", 0.0, NULL);
   gtk_grid_attach(GTK_GRID(self->widget), label, 0, line++, 1, 1);
 
   hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, DT_PIXEL_APPLY_DPI(8));
