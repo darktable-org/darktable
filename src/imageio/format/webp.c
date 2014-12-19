@@ -28,7 +28,6 @@
 #include "common/imageio_format.h"
 #include "control/conf.h"
 #include "bauhaus/bauhaus.h"
-#include "dtgtk/togglebutton.h"
 
 #include <webp/encode.h>
 
@@ -62,10 +61,9 @@ typedef struct dt_imageio_webp_t
 
 typedef struct dt_imageio_webp_gui_data_t
 {
-  GtkToggleButton *lossy, *lossless;
-  GtkComboBox *preset;
+  GtkWidget *compression;
   GtkWidget *quality;
-  GtkComboBox *hint_combo;
+  GtkWidget *hint;
 } dt_imageio_webp_gui_data_t;
 
 static const char *const EncoderError[] = {
@@ -198,12 +196,9 @@ int set_params(dt_imageio_module_format_t *self, const void *params, const int s
   if(size != self->params_size(self)) return 1;
   dt_imageio_webp_t *d = (dt_imageio_webp_t *)params;
   dt_imageio_webp_gui_data_t *g = (dt_imageio_webp_gui_data_t *)self->gui_data;
-  if(d->comp_type == webp_lossy)
-    gtk_toggle_button_set_active(g->lossy, TRUE);
-  else
-    gtk_toggle_button_set_active(g->lossless, TRUE);
+  dt_bauhaus_combobox_set(g->compression, d->comp_type);
   dt_bauhaus_slider_set(g->quality, d->quality);
-  gtk_combo_box_set_active(g->hint_combo, d->hint);
+  dt_bauhaus_combobox_set(g->hint, d->hint);
   return 0;
 }
 
@@ -243,11 +238,10 @@ const char *name()
   return _("WebP (8-bit)");
 }
 
-static void radiobutton_changed(GtkRadioButton *radiobutton, gpointer user_data)
+static void compression_changed(GtkWidget *widget, gpointer user_data)
 {
-  long int comp_type = (long int)user_data;
-  if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(radiobutton)))
-    dt_conf_set_int("plugins/imageio/format/webp/comp_type", comp_type);
+  int comp_type = dt_bauhaus_combobox_get(widget);
+  dt_conf_set_int("plugins/imageio/format/webp/comp_type", comp_type);
 }
 
 static void quality_changed(GtkWidget *slider, gpointer user_data)
@@ -256,9 +250,9 @@ static void quality_changed(GtkWidget *slider, gpointer user_data)
   dt_conf_set_int("plugins/imageio/format/webp/quality", quality);
 }
 
-static void hint_combobox_changed(GtkComboBox *widget, gpointer user_data)
+static void hint_combobox_changed(GtkWidget *widget, gpointer user_data)
 {
-  int hint = gtk_combo_box_get_active(widget);
+  int hint = dt_bauhaus_combobox_get(widget);
   dt_conf_set_int("plugins/imageio/format/webp/hint", hint);
 }
 
@@ -270,22 +264,15 @@ void gui_init(dt_imageio_module_format_t *self)
   int quality = dt_conf_get_int("plugins/imageio/format/webp/quality");
   int hint = dt_conf_get_int("plugins/imageio/format/webp/hint");
 
-  self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
-  GtkWidget *comp_type_label = gtk_label_new(_("compression type"));
-  gtk_widget_set_halign(comp_type_label, GTK_ALIGN_START);
-  gtk_box_pack_start(GTK_BOX(self->widget), comp_type_label, TRUE, TRUE, 0);
-  GtkWidget *hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5);
-  gtk_box_pack_start(GTK_BOX(self->widget), hbox, TRUE, TRUE, 0);
-  GtkWidget *radiobutton = gtk_radio_button_new_with_label(NULL, _("lossy"));
-  gui->lossy = GTK_TOGGLE_BUTTON(radiobutton);
-  gtk_box_pack_start(GTK_BOX(hbox), radiobutton, TRUE, TRUE, 0);
-  g_signal_connect(G_OBJECT(radiobutton), "toggled", G_CALLBACK(radiobutton_changed), (gpointer)webp_lossy);
-  if(comp_type == webp_lossy) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(radiobutton), TRUE);
-  radiobutton = gtk_radio_button_new_with_label_from_widget(GTK_RADIO_BUTTON(radiobutton), _("lossless"));
-  gui->lossless = GTK_TOGGLE_BUTTON(radiobutton);
-  gtk_box_pack_start(GTK_BOX(hbox), radiobutton, TRUE, TRUE, 0);
-  g_signal_connect(G_OBJECT(radiobutton), "toggled", G_CALLBACK(radiobutton_changed), (gpointer)webp_lossless);
-  if(comp_type == webp_lossless) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(radiobutton), TRUE);
+  self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_PIXEL_APPLY_DPI(5));
+
+  gui->compression = dt_bauhaus_combobox_new(NULL);
+  dt_bauhaus_widget_set_label(gui->compression, NULL, _("compression type"));
+  dt_bauhaus_combobox_add(gui->compression, _("lossy"));
+  dt_bauhaus_combobox_add(gui->compression, _("lossless"));
+  dt_bauhaus_combobox_set(gui->compression, comp_type);
+  g_signal_connect(G_OBJECT(gui->compression), "value-changed", G_CALLBACK(compression_changed), NULL);
+  gtk_box_pack_start(GTK_BOX(self->widget), gui->compression, TRUE, TRUE, 0);
 
   gui->quality = dt_bauhaus_slider_new_with_range(NULL, 5, 100, 1, 95, 0);
   dt_bauhaus_widget_set_label(gui->quality, NULL, _("quality"));
@@ -293,29 +280,25 @@ void gui_init(dt_imageio_module_format_t *self)
   dt_bauhaus_slider_set_format(gui->quality, "%.2f%%");
   g_object_set(G_OBJECT(gui->quality), "tooltip-text", _("applies only to lossy setting"), (char *)NULL);
   if(quality > 0 && quality <= 100) dt_bauhaus_slider_set(gui->quality, quality);
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(gui->quality), TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(self->widget), gui->quality, TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(gui->quality), "value-changed", G_CALLBACK(quality_changed), (gpointer)0);
 
-  GtkWidget *hint_hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5);
-  gtk_box_pack_start(GTK_BOX(self->widget), hint_hbox, TRUE, TRUE, 0);
-  GtkWidget *hint_label = gtk_label_new(_("image hint"));
-  g_object_set(G_OBJECT(hint_label), "tooltip-text",
+
+  gui->hint = dt_bauhaus_combobox_new(NULL);
+  dt_bauhaus_widget_set_label(gui->hint, NULL, _("image hint"));
+  g_object_set(G_OBJECT(gui->hint), "tooltip-text",
                _("image characteristics hint for the underlying encoder.\n"
-                 "picture : digital picture, like portrait, inner shot\n"
-                 "photo   : outdoor photograph, with natural lighting\n"
-                 "graphic : discrete tone image (graph, map-tile etc)"),
+               "picture : digital picture, like portrait, inner shot\n"
+               "photo   : outdoor photograph, with natural lighting\n"
+               "graphic : discrete tone image (graph, map-tile etc)"),
                (char *)NULL);
-  gtk_widget_set_halign(hint_label, GTK_ALIGN_START);
-  gtk_box_pack_start(GTK_BOX(hint_hbox), hint_label, TRUE, TRUE, 0);
-  GtkComboBoxText *hint_combo = GTK_COMBO_BOX_TEXT(gtk_combo_box_text_new());
-  gui->hint_combo = GTK_COMBO_BOX(hint_combo);
-  gtk_combo_box_text_append_text(hint_combo, _("default"));
-  gtk_combo_box_text_append_text(hint_combo, _("picture"));
-  gtk_combo_box_text_append_text(hint_combo, _("photo"));
-  gtk_combo_box_text_append_text(hint_combo, _("graphic"));
-  gtk_combo_box_set_active(GTK_COMBO_BOX(hint_combo), hint);
-  gtk_box_pack_start(GTK_BOX(hint_hbox), GTK_WIDGET(hint_combo), TRUE, TRUE, 0);
-  g_signal_connect(G_OBJECT(hint_combo), "changed", G_CALLBACK(hint_combobox_changed), NULL);
+  dt_bauhaus_combobox_add(gui->hint, _("default"));
+  dt_bauhaus_combobox_add(gui->hint, _("picture"));
+  dt_bauhaus_combobox_add(gui->hint, _("photo"));
+  dt_bauhaus_combobox_add(gui->hint, _("graphic"));
+  dt_bauhaus_combobox_set(gui->hint, hint);
+  gtk_box_pack_start(GTK_BOX(self->widget), gui->hint, TRUE, TRUE, 0);
+  g_signal_connect(G_OBJECT(gui->hint), "value-changed", G_CALLBACK(hint_combobox_changed), NULL);
 }
 
 void gui_cleanup(dt_imageio_module_format_t *self)
@@ -332,3 +315,7 @@ int flags(dt_imageio_module_data_t *data)
   // TODO(jinxos): support embedded XMP/ICC
   return 0;
 }
+
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// vim: shiftwidth=2 expandtab tabstop=2 cindent
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

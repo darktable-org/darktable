@@ -135,8 +135,8 @@ void gui_init(dt_imageio_module_storage_t *self)
 {
   latex_t *d = (latex_t *)malloc(sizeof(latex_t));
   self->gui_data = (void *)d;
-  self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
-  GtkWidget *hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5);
+  self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_PIXEL_APPLY_DPI(5));
+  GtkWidget *hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, DT_PIXEL_APPLY_DPI(8));
   gtk_box_pack_start(GTK_BOX(self->widget), hbox, TRUE, TRUE, 0);
   GtkWidget *widget;
 
@@ -160,17 +160,20 @@ void gui_init(dt_imageio_module_storage_t *self)
   g_signal_connect(G_OBJECT(widget), "changed", G_CALLBACK(entry_changed_callback), self);
   g_free(tooltip_text);
 
-  widget = dtgtk_button_new(dtgtk_cairo_paint_directory, 0);
+  widget = dtgtk_button_new(dtgtk_cairo_paint_directory, CPF_DO_NOT_USE_BORDER);
   gtk_widget_set_size_request(widget, DT_PIXEL_APPLY_DPI(18), DT_PIXEL_APPLY_DPI(18));
   g_object_set(G_OBJECT(widget), "tooltip-text", _("select directory"), (char *)NULL);
   gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, FALSE, 0);
   g_signal_connect(G_OBJECT(widget), "clicked", G_CALLBACK(button_clicked), self);
 
-  hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5);
+  hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, DT_PIXEL_APPLY_DPI(10));
   gtk_box_pack_start(GTK_BOX(self->widget), hbox, TRUE, TRUE, 0);
+
   widget = gtk_label_new(_("title"));
   gtk_widget_set_halign(widget, GTK_ALIGN_START);
+  g_object_set(G_OBJECT(widget), "xalign", 0.0, NULL);
   gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, FALSE, 0);
+
   d->title_entry = GTK_ENTRY(gtk_entry_new());
   gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(d->title_entry), TRUE, TRUE, 0);
   dt_gui_key_accel_block_on_focus_connect(GTK_WIDGET(d->title_entry));
@@ -183,6 +186,9 @@ void gui_init(dt_imageio_module_storage_t *self)
     g_free(dir);
   }
   g_signal_connect(G_OBJECT(d->title_entry), "changed", G_CALLBACK(title_changed_callback), self);
+
+  gtk_size_group_add_widget(darktable.gui->sg_left, widget);
+  gtk_size_group_add_widget(darktable.gui->sg_right, GTK_WIDGET(d->title_entry));
 }
 
 void gui_cleanup(dt_imageio_module_storage_t *self)

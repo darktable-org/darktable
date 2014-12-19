@@ -28,6 +28,7 @@
 #include "common/colorspaces.h"
 #include "control/conf.h"
 #include "common/imageio_format.h"
+#include "bauhaus/bauhaus.h"
 #define DT_TIFFIO_STRIPE 64
 
 DT_MODULE(1)
@@ -44,8 +45,8 @@ typedef struct dt_imageio_tiff_t
 
 typedef struct dt_imageio_tiff_gui_t
 {
-  GtkComboBox *bpp;
-  GtkComboBox *compress;
+  GtkWidget *bpp;
+  GtkWidget *compress;
 } dt_imageio_tiff_gui_t;
 
 
@@ -304,13 +305,13 @@ int set_params(dt_imageio_module_format_t *self, const void *params, const int s
   dt_imageio_tiff_gui_t *g = (dt_imageio_tiff_gui_t *)self->gui_data;
 
   if(d->bpp == 16)
-    gtk_combo_box_set_active(g->bpp, 1);
+    dt_bauhaus_combobox_set(g->bpp, 1);
   else if(d->bpp == 32)
-    gtk_combo_box_set_active(g->bpp, 2);
+    dt_bauhaus_combobox_set(g->bpp, 2);
   else // (d->bpp == 8)
-    gtk_combo_box_set_active(g->bpp, 0);
+    dt_bauhaus_combobox_set(g->bpp, 0);
 
-  gtk_combo_box_set_active(g->compress, d->compress);
+  dt_bauhaus_combobox_set(g->compress, d->compress);
 
   return 0;
 }
@@ -354,9 +355,9 @@ const char *name()
   return _("TIFF (8/16/32-bit)");
 }
 
-static void bpp_combobox_changed(GtkComboBox *widget, gpointer user_data)
+static void bpp_combobox_changed(GtkWidget *widget, gpointer user_data)
 {
-  int bpp = gtk_combo_box_get_active(widget);
+  int bpp = dt_bauhaus_combobox_get(widget);
 
   if(bpp == 1)
     dt_conf_set_int("plugins/imageio/format/tiff/bpp", 16);
@@ -366,9 +367,9 @@ static void bpp_combobox_changed(GtkComboBox *widget, gpointer user_data)
     dt_conf_set_int("plugins/imageio/format/tiff/bpp", 8);
 }
 
-static void compress_combobox_changed(GtkComboBox *widget, gpointer user_data)
+static void compress_combobox_changed(GtkWidget *widget, gpointer user_data)
 {
-  int compress = gtk_combo_box_get_active(widget);
+  int compress = dt_bauhaus_combobox_get(widget);
   dt_conf_set_int("plugins/imageio/format/tiff/compress", compress);
 }
 
@@ -392,31 +393,31 @@ void gui_init(dt_imageio_module_format_t *self)
 
   int compress = dt_conf_get_int("plugins/imageio/format/tiff/compress");
 
-  self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
+  self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_PIXEL_APPLY_DPI(5));
 
-  GtkComboBoxText *bpp_combo = GTK_COMBO_BOX_TEXT(gtk_combo_box_text_new());
-  gui->bpp = GTK_COMBO_BOX(bpp_combo);
-  gtk_combo_box_text_append_text(bpp_combo, _("8 bit"));
-  gtk_combo_box_text_append_text(bpp_combo, _("16 bit"));
-  gtk_combo_box_text_append_text(bpp_combo, _("32 bit (float)"));
+  gui->bpp = dt_bauhaus_combobox_new(NULL);
+  dt_bauhaus_widget_set_label(gui->bpp, NULL, _("bit depth"));
+  dt_bauhaus_combobox_add(gui->bpp, _("8 bit"));
+  dt_bauhaus_combobox_add(gui->bpp, _("16 bit"));
+  dt_bauhaus_combobox_add(gui->bpp, _("32 bit (float)"));
   if(bpp == 16)
-    gtk_combo_box_set_active(GTK_COMBO_BOX(bpp_combo), 1);
+    dt_bauhaus_combobox_set(gui->bpp, 1);
   else if(bpp == 32)
-    gtk_combo_box_set_active(GTK_COMBO_BOX(bpp_combo), 2);
+    dt_bauhaus_combobox_set(gui->bpp, 2);
   else // (bpp == 8)
-    gtk_combo_box_set_active(GTK_COMBO_BOX(bpp_combo), 0);
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(bpp_combo), TRUE, TRUE, 0);
-  g_signal_connect(G_OBJECT(bpp_combo), "changed", G_CALLBACK(bpp_combobox_changed), NULL);
+    dt_bauhaus_combobox_set(gui->bpp, 0);
+  gtk_box_pack_start(GTK_BOX(self->widget), gui->bpp, TRUE, TRUE, 0);
+  g_signal_connect(G_OBJECT(gui->bpp), "value-changed", G_CALLBACK(bpp_combobox_changed), NULL);
 
-  GtkComboBoxText *compress_combo = GTK_COMBO_BOX_TEXT(gtk_combo_box_text_new());
-  gui->compress = GTK_COMBO_BOX(compress_combo);
-  gtk_combo_box_text_append_text(compress_combo, _("uncompressed"));
-  gtk_combo_box_text_append_text(compress_combo, _("deflate"));
-  gtk_combo_box_text_append_text(compress_combo, _("deflate with predictor"));
-  gtk_combo_box_text_append_text(compress_combo, _("deflate with predictor (float)"));
-  gtk_combo_box_set_active(GTK_COMBO_BOX(compress_combo), compress);
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(compress_combo), TRUE, TRUE, 0);
-  g_signal_connect(G_OBJECT(compress_combo), "changed", G_CALLBACK(compress_combobox_changed), NULL);
+  gui->compress = dt_bauhaus_combobox_new(NULL);
+  dt_bauhaus_widget_set_label(gui->compress, NULL, _("compression"));
+  dt_bauhaus_combobox_add(gui->compress, _("uncompressed"));
+  dt_bauhaus_combobox_add(gui->compress, _("deflate"));
+  dt_bauhaus_combobox_add(gui->compress, _("deflate with predictor"));
+  dt_bauhaus_combobox_add(gui->compress, _("deflate with predictor (float)"));
+  dt_bauhaus_combobox_set(gui->compress, compress);
+  gtk_box_pack_start(GTK_BOX(self->widget), gui->compress, TRUE, TRUE, 0);
+  g_signal_connect(G_OBJECT(gui->compress), "value-changed", G_CALLBACK(compress_combobox_changed), NULL);
 }
 
 void gui_cleanup(dt_imageio_module_format_t *self)

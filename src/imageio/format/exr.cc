@@ -42,6 +42,7 @@ extern "C" {
 #include "common/imageio_module.h"
 #include "common/imageio_exr.h"
 #include "common/imageio_format.h"
+#include "bauhaus/bauhaus.h"
 }
 #include "common/imageio_exr.hh"
 
@@ -76,7 +77,7 @@ typedef struct dt_imageio_exr_t
 
 typedef struct dt_imageio_exr_gui_t
 {
-  GtkComboBox *compression;
+  GtkWidget *compression;
 } dt_imageio_exr_gui_t;
 
 void init(dt_imageio_module_format_t *self)
@@ -192,7 +193,7 @@ int set_params(dt_imageio_module_format_t *self, const void *params, const int s
   if(size != (int)self->params_size(self)) return 1;
   dt_imageio_exr_t *d = (dt_imageio_exr_t *)params;
   dt_imageio_exr_gui_t *g = (dt_imageio_exr_gui_t *)self->gui_data;
-  gtk_combo_box_set_active(g->compression, d->compression);
+  dt_bauhaus_combobox_set(g->compression, d->compression);
   return 0;
 }
 
@@ -221,9 +222,9 @@ const char *name()
   return _("OpenEXR (float)");
 }
 
-static void combobox_changed(GtkComboBox *widget, gpointer user_data)
+static void combobox_changed(GtkWidget *widget, gpointer user_data)
 {
-  int compression = gtk_combo_box_get_active(widget);
+  int compression = dt_bauhaus_combobox_get(widget);
   dt_conf_set_int("plugins/imageio/format/exr/compression", compression);
 }
 
@@ -236,26 +237,20 @@ void gui_init(dt_imageio_module_format_t *self)
 
   int compression_last = dt_conf_get_int("plugins/imageio/format/exr/compression");
 
-  GtkWidget *hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5);
-  gtk_box_pack_start(GTK_BOX(self->widget), hbox, TRUE, TRUE, 0);
+  gui->compression = dt_bauhaus_combobox_new(NULL);
+  dt_bauhaus_widget_set_label(gui->compression, NULL, _("compression mode"));
 
-  GtkWidget *label = gtk_label_new(_("compression mode"));
-  gtk_widget_set_halign(label, GTK_ALIGN_START);
-  gtk_box_pack_start(GTK_BOX(hbox), label, TRUE, TRUE, 0);
-
-  GtkComboBoxText *combo = GTK_COMBO_BOX_TEXT(gtk_combo_box_text_new());
-  gui->compression = GTK_COMBO_BOX(combo);
-  gtk_combo_box_text_append_text(combo, _("off"));
-  gtk_combo_box_text_append_text(combo, _("RLE"));
-  gtk_combo_box_text_append_text(combo, _("ZIPS"));
-  gtk_combo_box_text_append_text(combo, _("ZIP"));
-  gtk_combo_box_text_append_text(combo, _("PIZ (default)"));
-  gtk_combo_box_text_append_text(combo, _("PXR24 (lossy)"));
-  gtk_combo_box_text_append_text(combo, _("B44 (lossy)"));
-  gtk_combo_box_text_append_text(combo, _("B44A (lossy)"));
-  gtk_combo_box_set_active(GTK_COMBO_BOX(combo), compression_last);
-  gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(combo), TRUE, TRUE, 0);
-  g_signal_connect(G_OBJECT(combo), "changed", G_CALLBACK(combobox_changed), NULL);
+  dt_bauhaus_combobox_add(gui->compression, _("off"));
+  dt_bauhaus_combobox_add(gui->compression, _("RLE"));
+  dt_bauhaus_combobox_add(gui->compression, _("ZIPS"));
+  dt_bauhaus_combobox_add(gui->compression, _("ZIP"));
+  dt_bauhaus_combobox_add(gui->compression, _("PIZ (default)"));
+  dt_bauhaus_combobox_add(gui->compression, _("PXR24 (lossy)"));
+  dt_bauhaus_combobox_add(gui->compression, _("B44 (lossy)"));
+  dt_bauhaus_combobox_add(gui->compression, _("B44A (lossy)"));
+  dt_bauhaus_combobox_set(gui->compression, compression_last);
+  gtk_box_pack_start(GTK_BOX(self->widget), gui->compression, TRUE, TRUE, 0);
+  g_signal_connect(G_OBJECT(gui->compression), "value-changed", G_CALLBACK(combobox_changed), NULL);
 }
 
 void gui_cleanup(dt_imageio_module_format_t *self)

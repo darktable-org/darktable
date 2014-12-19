@@ -978,6 +978,10 @@ static void init_widgets(dt_gui_gtk_t *gui)
   widget = gtk_window_new(GTK_WINDOW_TOPLEVEL);
   gui->ui->main_window = widget;
 
+  // Creating the size groups that allow libs/iops to align their guis
+  gui->sg_left = gtk_size_group_new(GTK_SIZE_GROUP_HORIZONTAL);
+  gui->sg_right = gtk_size_group_new(GTK_SIZE_GROUP_HORIZONTAL);
+
   // check if in HiDPI mode
 #if (CAIRO_VERSION >= CAIRO_VERSION_ENCODE(1, 14, 0))
   float screen_ppd_overwrite = dt_conf_get_float("screen_ppd_overwrite");

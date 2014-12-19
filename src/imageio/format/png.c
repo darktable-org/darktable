@@ -34,6 +34,7 @@
 #include "common/colorspaces.h"
 #include "control/conf.h"
 #include "common/imageio_format.h"
+#include "bauhaus/bauhaus.h"
 
 DT_MODULE(1)
 
@@ -50,7 +51,7 @@ typedef struct dt_imageio_png_t
 
 typedef struct dt_imageio_png_gui_t
 {
-  GtkToggleButton *b8, *b16;
+  GtkWidget *bit_depth;
 } dt_imageio_png_gui_t;
 
 /* Write EXIF data to PNG file.
@@ -371,9 +372,9 @@ int set_params(dt_imageio_module_format_t *self, const void *params, const int s
   dt_imageio_png_t *d = (dt_imageio_png_t *)params;
   dt_imageio_png_gui_t *g = (dt_imageio_png_gui_t *)self->gui_data;
   if(d->bpp < 12)
-    gtk_toggle_button_set_active(g->b8, TRUE);
+    dt_bauhaus_combobox_set(g->bit_depth, 0);
   else
-    gtk_toggle_button_set_active(g->b16, TRUE);
+    dt_bauhaus_combobox_set(g->bit_depth, 1);
   dt_conf_set_int("plugins/imageio/format/png/bpp", d->bpp);
   return 0;
 }
@@ -403,11 +404,10 @@ const char *name()
   return _("PNG (8/16-bit)");
 }
 
-static void radiobutton_changed(GtkRadioButton *radiobutton, gpointer user_data)
+static void bit_depth_changed(GtkWidget *widget, gpointer user_data)
 {
-  int bpp = GPOINTER_TO_INT(user_data);
-  if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(radiobutton)))
-    dt_conf_set_int("plugins/imageio/format/png/bpp", bpp);
+  int bpp = (dt_bauhaus_combobox_get(widget) == 0 ? 8 : 16);
+  dt_conf_set_int("plugins/imageio/format/png/bpp", bpp);
 }
 
 void init(dt_imageio_module_format_t *self)
@@ -427,17 +427,15 @@ void gui_init(dt_imageio_module_format_t *self)
   dt_imageio_png_gui_t *gui = (dt_imageio_png_gui_t *)malloc(sizeof(dt_imageio_png_gui_t));
   self->gui_data = (void *)gui;
   int bpp = dt_conf_get_int("plugins/imageio/format/png/bpp");
-  self->widget = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5);
-  GtkWidget *radiobutton = gtk_radio_button_new_with_label(NULL, _("8-bit"));
-  gui->b8 = GTK_TOGGLE_BUTTON(radiobutton);
-  gtk_box_pack_start(GTK_BOX(self->widget), radiobutton, TRUE, TRUE, 0);
-  g_signal_connect(G_OBJECT(radiobutton), "toggled", G_CALLBACK(radiobutton_changed), GINT_TO_POINTER(8));
-  if(bpp < 12) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(radiobutton), TRUE);
-  radiobutton = gtk_radio_button_new_with_label_from_widget(GTK_RADIO_BUTTON(radiobutton), _("16-bit"));
-  gui->b16 = GTK_TOGGLE_BUTTON(radiobutton);
-  gtk_box_pack_start(GTK_BOX(self->widget), radiobutton, TRUE, TRUE, 0);
-  g_signal_connect(G_OBJECT(radiobutton), "toggled", G_CALLBACK(radiobutton_changed), GINT_TO_POINTER(16));
-  if(bpp >= 12) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(radiobutton), TRUE);
+  self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_PIXEL_APPLY_DPI(5));
+
+  gui->bit_depth = dt_bauhaus_combobox_new(NULL);
+  dt_bauhaus_widget_set_label(gui->bit_depth, NULL, _("bit depth"));
+  dt_bauhaus_combobox_add(gui->bit_depth, _("8 bit"));
+  dt_bauhaus_combobox_add(gui->bit_depth, _("16 bit"));
+  dt_bauhaus_combobox_set(gui->bit_depth, bpp);
+  gtk_box_pack_start(GTK_BOX(self->widget), gui->bit_depth, TRUE, TRUE, 0);
+  g_signal_connect(G_OBJECT(gui->bit_depth), "value-changed", G_CALLBACK(bit_depth_changed), NULL);
 }
 
 void gui_cleanup(dt_imageio_module_format_t *self)

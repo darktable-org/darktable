@@ -402,22 +402,6 @@ static void _update_formats_combobox(dt_lib_export_t *d)
   }
 }
 
-/*
-static gboolean
-focus_in(GtkWidget *widget, GdkEventFocus *event, gpointer user_data)
-{
-  dt_control_tab_shortcut_off(darktable.control);
-  return FALSE;
-}
-
-static gboolean
-focus_out(GtkWidget *widget, GdkEventFocus *event, gpointer user_data)
-{
-  dt_control_tab_shortcut_on(darktable.control);
-  return FALSE;
-}
-*/
-
 static void on_storage_list_changed(gpointer instance, dt_lib_module_t *self)
 {
   dt_lib_export_t *d = self->data;
@@ -438,17 +422,15 @@ void gui_init(dt_lib_module_t *self)
 {
   dt_lib_export_t *d = (dt_lib_export_t *)malloc(sizeof(dt_lib_export_t));
   self->data = (void *)d;
-  self->widget = gtk_grid_new();
+  self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_PIXEL_APPLY_DPI(5));
   d->shown_storage = NULL;
   d->shown_format = NULL;
-  gtk_grid_set_row_spacing(GTK_GRID(self->widget), 5);
 
   GtkWidget *label;
-  int line = 0;
 
   d->storage = dt_bauhaus_combobox_new(NULL);
   dt_bauhaus_widget_set_label(d->storage, NULL, _("target storage"));
-  gtk_grid_attach(GTK_GRID(self->widget), d->storage, 0, line++, 2, 1);
+  gtk_box_pack_start(GTK_BOX(self->widget), d->storage, TRUE, TRUE, 0);
 
   // add all storage widgets and just hide the ones not needed
   GList *it = g_list_first(darktable.imageio->plugins_storage);
@@ -458,7 +440,7 @@ void gui_init(dt_lib_module_t *self)
     dt_bauhaus_combobox_add(d->storage, module->name(module));
     if(module->widget)
     {
-      gtk_grid_attach(GTK_GRID(self->widget), module->widget, 0, line++, 2, 1);
+      gtk_box_pack_start(GTK_BOX(self->widget), module->widget, TRUE, TRUE, 0);
       gtk_widget_hide(module->widget);
       gtk_widget_set_no_show_all(module->widget, TRUE);
     }
@@ -472,7 +454,7 @@ void gui_init(dt_lib_module_t *self)
   d->format = dt_bauhaus_combobox_new(NULL);
   dt_bauhaus_widget_set_label(d->format, NULL, _("file format"));
   gtk_widget_set_margin_top(d->format, DT_PIXEL_APPLY_DPI(20));
-  gtk_grid_attach(GTK_GRID(self->widget), d->format, 0, line++, 2, 1);
+  gtk_box_pack_start(GTK_BOX(self->widget), d->format, TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(d->format), "value-changed", G_CALLBACK(format_changed), (gpointer)d);
 
   // add all format widgets and just hide the ones not needed
@@ -482,7 +464,7 @@ void gui_init(dt_lib_module_t *self)
     dt_imageio_module_format_t *module = (dt_imageio_module_format_t *)it->data;
     if(module->widget)
     {
-      gtk_grid_attach(GTK_GRID(self->widget), module->widget, 0, line++, 2, 1);
+      gtk_box_pack_start(GTK_BOX(self->widget), module->widget, TRUE, TRUE, 0);
       gtk_widget_hide(module->widget);
       gtk_widget_set_no_show_all(module->widget, TRUE);
     }
@@ -490,7 +472,7 @@ void gui_init(dt_lib_module_t *self)
 
   label = dt_ui_section_label_new(_("global options"));
   gtk_widget_set_margin_top(label, DT_PIXEL_APPLY_DPI(20));
-  gtk_grid_attach(GTK_GRID(self->widget), label, 0, line++, 2, 1);
+  gtk_box_pack_start(GTK_BOX(self->widget), label, TRUE, TRUE, 0);
 
   d->width = GTK_SPIN_BUTTON(gtk_spin_button_new_with_range(0, 10000, 1));
   g_object_set(G_OBJECT(d->width), "tooltip-text", _("maximum output width\nset to 0 for no scaling"),
@@ -501,22 +483,22 @@ void gui_init(dt_lib_module_t *self)
 
   dt_gui_key_accel_block_on_focus_connect(GTK_WIDGET(d->width));
   dt_gui_key_accel_block_on_focus_connect(GTK_WIDGET(d->height));
-  /*
-    gtk_widget_add_events(GTK_WIDGET(d->width), GDK_FOCUS_CHANGE_MASK);
-    g_signal_connect (G_OBJECT (d->width), "focus-in-event",  G_CALLBACK(focus_in),  NULL);
-    g_signal_connect (G_OBJECT (d->width), "focus-out-event", G_CALLBACK(focus_out), NULL);
-    gtk_widget_add_events(GTK_WIDGET(d->height), GDK_FOCUS_CHANGE_MASK);
-    g_signal_connect (G_OBJECT (d->height), "focus-in-event",  G_CALLBACK(focus_in),  NULL);
-    g_signal_connect (G_OBJECT (d->height), "focus-out-event", G_CALLBACK(focus_out), NULL);
-    */
+
+
+  GtkBox *hbox = GTK_BOX(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, DT_PIXEL_APPLY_DPI(10)));
   label = gtk_label_new(_("max size"));
-  gtk_widget_set_halign(label, GTK_ALIGN_START);
-  gtk_grid_attach(GTK_GRID(self->widget), label, 0, line++, 1, 1);
-  GtkBox *hbox = GTK_BOX(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5));
-  gtk_box_pack_start(hbox, GTK_WIDGET(d->width), TRUE, TRUE, 0);
-  gtk_box_pack_start(hbox, gtk_label_new(_("x")), FALSE, FALSE, 0);
-  gtk_box_pack_start(hbox, GTK_WIDGET(d->height), TRUE, TRUE, 0);
-  gtk_grid_attach_next_to(GTK_GRID(self->widget), GTK_WIDGET(hbox), label, GTK_POS_RIGHT, 1, 1);
+  g_object_set(G_OBJECT(label), "xalign", 0.0, NULL);
+  gtk_box_pack_start(hbox, label, FALSE, FALSE, 0);
+  GtkBox *hbox1 = GTK_BOX(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, DT_PIXEL_APPLY_DPI(5)));
+  gtk_box_pack_start(hbox1, GTK_WIDGET(d->width), TRUE, TRUE, 0);
+  gtk_box_pack_start(hbox1, gtk_label_new(_("x")), FALSE, FALSE, 0);
+  gtk_box_pack_start(hbox1, GTK_WIDGET(d->height), TRUE, TRUE, 0);
+  gtk_box_pack_start(hbox, GTK_WIDGET(hbox1), TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(hbox), TRUE, TRUE, 0);
+
+  // add those to our two size groups so that imageio plugins can align themselves to the main export gui
+  gtk_size_group_add_widget(darktable.gui->sg_left, label);
+  gtk_size_group_add_widget(darktable.gui->sg_right, GTK_WIDGET(hbox1));
 
   d->intent = dt_bauhaus_combobox_new(NULL);
   dt_bauhaus_widget_set_label(d->intent, NULL, _("intent"));
@@ -525,7 +507,7 @@ void gui_init(dt_lib_module_t *self)
   dt_bauhaus_combobox_add(d->intent, _("relative colorimetric"));
   dt_bauhaus_combobox_add(d->intent, C_("rendering intent", "saturation"));
   dt_bauhaus_combobox_add(d->intent, _("absolute colorimetric"));
-  gtk_grid_attach(GTK_GRID(self->widget), d->intent, 0, line++, 2, 1);
+  gtk_box_pack_start(GTK_BOX(self->widget), d->intent, TRUE, TRUE, 0);
 
   //  Add profile combo
 
@@ -592,7 +574,7 @@ void gui_init(dt_lib_module_t *self)
   GList *l = d->profiles;
   d->profile = dt_bauhaus_combobox_new(NULL);
   dt_bauhaus_widget_set_label(d->profile, NULL, _("profile"));
-  gtk_grid_attach(GTK_GRID(self->widget), d->profile, 0, line++, 2, 1);
+  gtk_box_pack_start(GTK_BOX(self->widget), d->profile, TRUE, TRUE, 0);
   dt_bauhaus_combobox_add(d->profile, _("image settings"));
   while(l)
   {
@@ -622,7 +604,7 @@ void gui_init(dt_lib_module_t *self)
     dt_bauhaus_combobox_add(d->style, style->name);
     styles = g_list_next(styles);
   }
-  gtk_grid_attach(GTK_GRID(self->widget), d->style, 0, line++, 2, 1);
+  gtk_box_pack_start(GTK_BOX(self->widget), d->style, TRUE, TRUE, 0);
   g_object_set(G_OBJECT(d->style), "tooltip-text", _("temporary style to append while exporting"),
                (char *)NULL);
 
@@ -637,7 +619,7 @@ void gui_init(dt_lib_module_t *self)
   GtkButton *button = GTK_BUTTON(gtk_button_new_with_label(_("export")));
   d->export_button = button;
   g_object_set(G_OBJECT(button), "tooltip-text", _("export with current settings (ctrl-e)"), (char *)NULL);
-  gtk_grid_attach(GTK_GRID(self->widget), GTK_WIDGET(button), 0, line++, 2, 1);
+  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(button), TRUE, TRUE, 0);
 
   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(export_button_clicked), (gpointer)self);
   g_signal_connect(G_OBJECT(d->width), "value-changed", G_CALLBACK(width_changed), NULL);
