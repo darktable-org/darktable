@@ -330,16 +330,15 @@ void gui_init(dt_lib_module_t *self)
   d->imgsel = -1;
 
   self->widget = gtk_grid_new();
-  gtk_grid_set_row_spacing(GTK_GRID(self->widget), 5);
-  gtk_grid_set_column_spacing(GTK_GRID(self->widget), 5);
-//   gtk_grid_set_row_homogeneous(GTK_GRID(self->widget), TRUE);
-//   gtk_grid_set_column_homogeneous(GTK_GRID(self->widget), TRUE);
+  gtk_grid_set_row_spacing(GTK_GRID(self->widget), DT_PIXEL_APPLY_DPI(5));
+  gtk_grid_set_column_spacing(GTK_GRID(self->widget), DT_PIXEL_APPLY_DPI(10));
 
   g_signal_connect(self->widget, "draw", G_CALLBACK(draw), self);
 
   label = gtk_label_new(_("title"));
-  gtk_widget_set_halign(label, GTK_ALIGN_START);
+  g_object_set(G_OBJECT(label), "xalign", 0.0, NULL);
   d->title = GTK_COMBO_BOX(gtk_combo_box_text_new_with_entry());
+  gtk_widget_set_hexpand(GTK_WIDGET(d->title), TRUE);
   dt_gui_key_accel_block_on_focus_connect(GTK_WIDGET(gtk_bin_get_child(GTK_BIN(d->title))));
   completion = gtk_entry_completion_new();
   gtk_entry_completion_set_model(completion, gtk_combo_box_get_model(GTK_COMBO_BOX(d->title)));
@@ -350,9 +349,11 @@ void gui_init(dt_lib_module_t *self)
                    G_CALLBACK(key_pressed), self);
   gtk_grid_attach(GTK_GRID(self->widget), label, 0, line++, 1, 1);
   gtk_grid_attach_next_to(GTK_GRID(self->widget), GTK_WIDGET(d->title), label, GTK_POS_RIGHT, 1, 1);
+  gtk_size_group_add_widget(darktable.gui->sg_left, label);
+  gtk_size_group_add_widget(darktable.gui->sg_right, GTK_WIDGET(d->title));
 
   label = gtk_label_new(_("description"));
-  gtk_widget_set_halign(GTK_WIDGET(label), GTK_ALIGN_START);
+  g_object_set(G_OBJECT(label), "xalign", 0.0, NULL);
   d->description = GTK_COMBO_BOX(gtk_combo_box_text_new_with_entry());
   dt_gui_key_accel_block_on_focus_connect(GTK_WIDGET(gtk_bin_get_child(GTK_BIN(d->description))));
   completion = gtk_entry_completion_new();
@@ -364,9 +365,11 @@ void gui_init(dt_lib_module_t *self)
                    G_CALLBACK(key_pressed), self);
   gtk_grid_attach(GTK_GRID(self->widget), label, 0, line++, 1, 1);
   gtk_grid_attach_next_to(GTK_GRID(self->widget), GTK_WIDGET(d->description), label, GTK_POS_RIGHT, 1, 1);
+  gtk_size_group_add_widget(darktable.gui->sg_left, label);
+  gtk_size_group_add_widget(darktable.gui->sg_right, GTK_WIDGET(d->description));
 
   label = gtk_label_new(_("creator"));
-  gtk_widget_set_halign(GTK_WIDGET(label), GTK_ALIGN_START);
+  g_object_set(G_OBJECT(label), "xalign", 0.0, NULL);
   d->creator = GTK_COMBO_BOX(gtk_combo_box_text_new_with_entry());
   dt_gui_key_accel_block_on_focus_connect(GTK_WIDGET(gtk_bin_get_child(GTK_BIN(d->creator))));
   completion = gtk_entry_completion_new();
@@ -378,9 +381,11 @@ void gui_init(dt_lib_module_t *self)
                    G_CALLBACK(key_pressed), self);
   gtk_grid_attach(GTK_GRID(self->widget), label, 0, line++, 1, 1);
   gtk_grid_attach_next_to(GTK_GRID(self->widget), GTK_WIDGET(d->creator), label, GTK_POS_RIGHT, 1, 1);
+  gtk_size_group_add_widget(darktable.gui->sg_left, label);
+  gtk_size_group_add_widget(darktable.gui->sg_right, GTK_WIDGET(d->creator));
 
   label = gtk_label_new(_("publisher"));
-  gtk_widget_set_halign(GTK_WIDGET(label), GTK_ALIGN_START);
+  g_object_set(G_OBJECT(label), "xalign", 0.0, NULL);
   d->publisher = GTK_COMBO_BOX(gtk_combo_box_text_new_with_entry());
   dt_gui_key_accel_block_on_focus_connect(GTK_WIDGET(gtk_bin_get_child(GTK_BIN(d->publisher))));
   completion = gtk_entry_completion_new();
@@ -392,9 +397,11 @@ void gui_init(dt_lib_module_t *self)
                    G_CALLBACK(key_pressed), self);
   gtk_grid_attach(GTK_GRID(self->widget), label, 0, line++, 1, 1);
   gtk_grid_attach_next_to(GTK_GRID(self->widget), GTK_WIDGET(d->publisher), label, GTK_POS_RIGHT, 1, 1);
+  gtk_size_group_add_widget(darktable.gui->sg_left, label);
+  gtk_size_group_add_widget(darktable.gui->sg_right, GTK_WIDGET(d->publisher));
 
   label = gtk_label_new(_("rights"));
-  gtk_widget_set_halign(GTK_WIDGET(label), GTK_ALIGN_START);
+  g_object_set(G_OBJECT(label), "xalign", 0.0, NULL);
   d->rights = GTK_COMBO_BOX(gtk_combo_box_text_new_with_entry());
   dt_gui_key_accel_block_on_focus_connect(GTK_WIDGET(gtk_bin_get_child(GTK_BIN(d->rights))));
   completion = gtk_entry_completion_new();
@@ -406,6 +413,8 @@ void gui_init(dt_lib_module_t *self)
                    G_CALLBACK(key_pressed), self);
   gtk_grid_attach(GTK_GRID(self->widget), label, 0, line++, 1, 1);
   gtk_grid_attach_next_to(GTK_GRID(self->widget), GTK_WIDGET(d->rights), label, GTK_POS_RIGHT, 1, 1);
+  gtk_size_group_add_widget(darktable.gui->sg_left, label);
+  gtk_size_group_add_widget(darktable.gui->sg_right, GTK_WIDGET(d->rights));
 
   g_object_unref(completion);
 
@@ -428,7 +437,7 @@ void gui_init(dt_lib_module_t *self)
   gtk_widget_set_margin_top(GTK_WIDGET(hbox), DT_PIXEL_APPLY_DPI(5));
 
   gtk_grid_attach(GTK_GRID(self->widget), GTK_WIDGET(hbox), 1, line, 1, 1);
-
+  gtk_size_group_add_widget(darktable.gui->sg_right, GTK_WIDGET(hbox));
 
   /* lets signup for mouse over image change signals */
   dt_control_signal_connect(darktable.signals, DT_SIGNAL_MOUSE_OVER_IMAGE_CHANGE,
