@@ -12,7 +12,7 @@
 @define-color dark_bg_color #350000;
 
 * {
-  font: Sans 10;
+  font: Sans 8;
   color: @fg_color;
   background-color: @bg_color;
   border-color: #111111;
@@ -97,7 +97,7 @@ GtkTable {
 #header_label,#darktable_label,#view_label {
   color: #7f7f7f;
   background-color: @bg_color;
-  font: Sans 10;
+  font: Sans bold 9;
   margin:0;
   border:0;
   padding:0;
@@ -106,7 +106,6 @@ GtkTable {
 #panel_label {
   color: @fg_color;
   background-color: @bg_color;
-  font: Sans 10;
   margin:0;
   border:0;
   padding:0;
