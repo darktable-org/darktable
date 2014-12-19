@@ -735,14 +735,14 @@ static void _lib_import_single_image_callback(GtkWidget *widget, gpointer user_d
       dt_film_open(filmid);
       // make sure buffers are loaded (load full for testing)
       dt_mipmap_buffer_t buf;
-      dt_mipmap_cache_read_get(darktable.mipmap_cache, &buf, id, DT_MIPMAP_FULL, DT_MIPMAP_BLOCKING);
+      dt_mipmap_cache_get(darktable.mipmap_cache, &buf, id, DT_MIPMAP_FULL, DT_MIPMAP_BLOCKING, 'r');
+      dt_mipmap_cache_release(darktable.mipmap_cache, &buf);
       if(!buf.buf)
       {
         dt_control_log(_("file has unknown format!"));
       }
       else
       {
-        dt_mipmap_cache_read_release(darktable.mipmap_cache, &buf);
         dt_control_set_mouse_over_id(id);
         dt_ctl_switch_mode_to(DT_DEVELOP);
       }

@@ -919,7 +919,7 @@ void dt_view_image_expose(dt_view_image_over_t *image_over, uint32_t imgid, cair
   }
   cairo_restore(cr);
 #endif
-  if(buf.buf) dt_mipmap_cache_release(darktable.mipmap_cache, &buf);
+  dt_mipmap_cache_release(darktable.mipmap_cache, &buf);
 
   cairo_save(cr);
   const float fscale = fminf(width, height);
