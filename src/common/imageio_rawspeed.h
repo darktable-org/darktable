@@ -26,7 +26,7 @@ extern "C" {
 #include "common/mipmap_cache.h"
 
 dt_imageio_retval_t dt_imageio_open_rawspeed(dt_image_t *img, const char *filename,
-                                             dt_mipmap_cache_allocator_t a);
+                                             dt_mipmap_buffer_t *buf);
 
 #ifdef __cplusplus
 }
