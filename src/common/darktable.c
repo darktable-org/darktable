@@ -346,6 +346,7 @@ int dt_load_from_string(const gchar *input, gboolean open_image_in_dr)
       // make sure buffers are loaded (load full for testing)
       dt_mipmap_buffer_t buf;
       dt_mipmap_cache_get(darktable.mipmap_cache, &buf, id, DT_MIPMAP_FULL, DT_MIPMAP_BLOCKING, 'r');
+      dt_mipmap_cache_release(darktable.mipmap_cache, &buf);
       if(!buf.buf)
       {
         id = 0;
@@ -353,7 +354,6 @@ int dt_load_from_string(const gchar *input, gboolean open_image_in_dr)
       }
       else
       {
-        dt_mipmap_cache_release(darktable.mipmap_cache, &buf);
         if(open_image_in_dr)
         {
           dt_control_set_mouse_over_id(id);
