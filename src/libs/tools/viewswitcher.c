@@ -28,8 +28,6 @@
 
 DT_MODULE(1)
 
-#define LABEL "<big><big><b>%s</b></big></big>"
-
 typedef struct dt_lib_viewswitcher_t
 {
 
@@ -88,12 +86,8 @@ void gui_init(dt_lib_module_t *self)
       /* create space if more views */
       if(k < darktable.view_manager->num_views - 1)
       {
-        char label[512] = { 0 };
-        g_snprintf(label, sizeof(label), LABEL, "|");
-
-        GtkWidget *w = gtk_label_new(label);
+        GtkWidget *w = gtk_label_new("|");
         gtk_widget_set_halign(w, GTK_ALIGN_START);
-        gtk_label_set_use_markup(GTK_LABEL(w), TRUE);
         gtk_widget_set_name(w, "view_label");
         gtk_box_pack_start(GTK_BOX(self->widget), w, FALSE, FALSE, 5);
       }
@@ -167,15 +161,12 @@ static void _lib_viewswitcher_view_changed_callback(gpointer instance, dt_view_t
 static GtkWidget *_lib_viewswitcher_create_label(dt_view_t *v)
 {
   GtkWidget *eb = gtk_event_box_new();
-  char label[512] = { 0 };
-  g_snprintf(label, sizeof(label), LABEL, v->name(v));
-  GtkWidget *b = gtk_label_new(label);
+  GtkWidget *b = gtk_label_new(v->name(v));
   gtk_container_add(GTK_CONTAINER(eb), b);
   /*setup label*/
   gtk_widget_set_halign(b, GTK_ALIGN_START);
   g_object_set_data(G_OBJECT(b), "view-label", (gchar *)v->name(v));
   g_object_set_data(G_OBJECT(eb), "view-label", (gchar *)v->name(v));
-  gtk_label_set_use_markup(GTK_LABEL(b), TRUE);
   gtk_widget_set_name(b, "view_label");
   gtk_widget_set_state_flags(b, GTK_STATE_FLAG_NORMAL, TRUE);
 
