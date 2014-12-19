@@ -120,20 +120,26 @@ void dt_mipmap_cache_print(dt_mipmap_cache_t *cache);
 // get a buffer and lock according to mode ('r' or 'w').
 // see dt_mipmap_get_flags_t for explanation of the exact
 // behaviour. pass 0 as flags for the default (best effort)
-void dt_mipmap_cache_get(
+#define dt_mipmap_cache_get(A,B,C,D,E,F) dt_mipmap_cache_get_with_caller(A,B,C,D,E,F,__FILE__,__LINE__)
+void dt_mipmap_cache_get_with_caller(
     dt_mipmap_cache_t *cache,
     dt_mipmap_buffer_t *buf,
     const uint32_t imgid,
     const dt_mipmap_size_t mip,
     const dt_mipmap_get_flags_t flags,
-    const char mode);
+    const char mode,
+    const char *file,
+    int line);
 
 // convenience function with fewer params
-void dt_mipmap_cache_write_get(
+#define dt_mipmap_cache_write_get(A,B,C,D) dt_mipmap_cache_write_get_with_caller(A,B,C,D,__FILE__,__LINE__)
+void dt_mipmap_cache_write_get_with_caller(
     dt_mipmap_cache_t *cache,
     dt_mipmap_buffer_t *buf,
     const uint32_t imgid,
-    const int mip);
+    const int mip,
+    const char *file,
+    int line);
 
 // drop a lock
 void dt_mipmap_cache_release(dt_mipmap_cache_t *cache, dt_mipmap_buffer_t *buf);

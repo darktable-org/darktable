@@ -116,10 +116,7 @@ void dt_image_cache_allocate(void *data, dt_cache_entry_t *entry)
   }
   sqlite3_finalize(stmt);
   img->cache_entry = entry; // init backref
-  // could use a downgrade lock if we were using concurrencykit..
-  // but this is not a race since the bf cache lock will be around this call:
-  pthread_rwlock_unlock(&entry->lock); // drop write lock
-  pthread_rwlock_rdlock(&entry->lock); // read lock
+  // could downgrade lock write->read on entry->lock if we were using concurrencykit..
 }
 
 void dt_image_cache_deallocate(void *data, dt_cache_entry_t *entry)

@@ -185,12 +185,10 @@ int main(int argc, char *arg[])
   // attach xmp, if requested:
   if(xmp_filename)
   {
-    const dt_image_t *cimg = dt_image_cache_read_get(darktable.image_cache, id);
-    dt_image_t *image = dt_image_cache_write_get(darktable.image_cache, cimg);
+    dt_image_t *image = dt_image_cache_get(darktable.image_cache, id, 'w');
     dt_exif_xmp_read(image, xmp_filename, 1);
     // don't write new xmp:
     dt_image_cache_write_release(darktable.image_cache, image, DT_IMAGE_CACHE_RELAXED);
-    dt_image_cache_read_release(darktable.image_cache, image);
   }
 
   // print the history stack
