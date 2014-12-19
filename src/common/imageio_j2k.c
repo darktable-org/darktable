@@ -88,7 +88,7 @@ static int get_file_format(const char *filename)
   return -1;
 }
 
-dt_imageio_retval_t dt_imageio_open_j2k(dt_image_t *img, const char *filename, dt_mipmap_cache_allocator_t a)
+dt_imageio_retval_t dt_imageio_open_j2k(dt_image_t *img, const char *filename, dt_mipmap_buffer_t *mbuf)
 {
   opj_dparameters_t parameters; /* decompression parameters */
   opj_event_mgr_t event_mgr;    /* event manager */
@@ -247,7 +247,7 @@ dt_imageio_retval_t dt_imageio_open_j2k(dt_image_t *img, const char *filename, d
   img->height = image->y1;
   img->bpp = 4 * sizeof(float);
 
-  float *buf = (float *)dt_mipmap_cache_alloc(img, DT_MIPMAP_FULL, a);
+  float *buf = (float *)dt_mipmap_cache_alloc(mbuf, img);
   if(!buf)
   {
     ret = DT_IMAGEIO_CACHE_FULL;

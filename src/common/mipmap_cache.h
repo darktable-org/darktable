@@ -83,9 +83,6 @@ typedef struct dt_mipmap_cache_one_t
   // 2) dynamically grow? (linux alloc on write)
   // 3) downside: no crosstalk between mip0 and mip4
 
-  // only stores 4*uint8_t per pixel for thumbnails:
-  uint32_t *buf;
-
   // one cache per mipmap scale!
   dt_cache_t cache;
 
@@ -114,7 +111,7 @@ extern __thread uint8_t *dt_mipmap_cache_scratchmem;
 // dynamic memory allocation interface for imageio backend: a write locked
 // mipmap buffer is passed in, it might already contain a valid buffer. this
 // function takes care of re-allocating, if necessary.
-void *dt_mipmap_cache_alloc(dt_mipmap_buffer_t *buf, size_t size);
+void *dt_mipmap_cache_alloc(dt_mipmap_buffer_t *buf, const dt_image_t *img);
 
 void dt_mipmap_cache_init(dt_mipmap_cache_t *cache);
 void dt_mipmap_cache_cleanup(dt_mipmap_cache_t *cache);
@@ -129,7 +126,14 @@ void dt_mipmap_cache_get(
     const uint32_t imgid,
     const dt_mipmap_size_t mip,
     const dt_mipmap_get_flags_t flags,
-    char mode);
+    const char mode);
+
+// convenience function with fewer params
+void dt_mipmap_cache_write_get(
+    dt_mipmap_cache_t *cache,
+    dt_mipmap_buffer_t *buf,
+    const uint32_t imgid,
+    const int mip);
 
 // drop a lock
 void dt_mipmap_cache_release(dt_mipmap_cache_t *cache, dt_mipmap_buffer_t *buf);

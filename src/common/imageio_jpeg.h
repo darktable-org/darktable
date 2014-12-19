@@ -65,7 +65,7 @@ int dt_imageio_jpeg_read(dt_imageio_jpeg_t *jpg, uint8_t *out);
 int dt_imageio_jpeg_read_profile(dt_imageio_jpeg_t *jpg, uint8_t **out);
 
 /** utility function to read and open jpeg from imagio.c */
-dt_imageio_retval_t dt_imageio_open_jpeg(dt_image_t *img, const char *filename, dt_mipmap_cache_allocator_t a);
+dt_imageio_retval_t dt_imageio_open_jpeg(dt_image_t *img, const char *filename, dt_mipmap_buffer_t *buf);
 #endif
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
