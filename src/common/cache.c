@@ -95,7 +95,7 @@ int dt_cache_for_all(
 
 // return read locked bucket, or NULL if it's not already there.
 // never attempt to allocate a new slot.
-dt_cache_entry_t *dt_cache_read_testget(dt_cache_t *cache, const uint32_t key, char mode)
+dt_cache_entry_t *dt_cache_testget(dt_cache_t *cache, const uint32_t key, char mode)
 {
   dt_pthread_mutex_lock(&cache->lock);
   gpointer orig_key, value;
