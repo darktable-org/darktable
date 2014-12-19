@@ -176,7 +176,7 @@ static int32_t dt_control_write_sidecar_files_job_run(dt_job_t *job)
   {
     gboolean from_cache = FALSE;
     imgid = GPOINTER_TO_INT(t->data);
-    const dt_image_t *img = dt_image_cache_read_get(darktable.image_cache, (int32_t)imgid);
+    const dt_image_t *img = dt_image_cache_get(darktable.image_cache, (int32_t)imgid, 'r');
     char dtfilename[PATH_MAX] = { 0 };
     dt_image_full_path(img->id, dtfilename, sizeof(dtfilename), &from_cache);
     dt_image_path_append_version(img->id, dtfilename, sizeof(dtfilename));
@@ -242,15 +242,15 @@ static int32_t dt_control_merge_hdr_job_run(dt_job_t *job)
   {
     imgid = GPOINTER_TO_INT(t->data);
     dt_mipmap_buffer_t buf;
-    dt_mipmap_cache_read_get(darktable.mipmap_cache, &buf, imgid, DT_MIPMAP_FULL, DT_MIPMAP_BLOCKING);
+    dt_mipmap_cache_get(darktable.mipmap_cache, &buf, imgid, DT_MIPMAP_FULL, DT_MIPMAP_BLOCKING, 'r');
     // just take a copy. also do it after blocking read, so filters and bpp will make sense.
-    const dt_image_t *img = dt_image_cache_read_get(darktable.image_cache, imgid);
+    const dt_image_t *img = dt_image_cache_get(darktable.image_cache, imgid, 'r');
     dt_image_t image = *img;
     dt_image_cache_read_release(darktable.image_cache, img);
     if(image.filters == 0u || image.filters == 9u || image.bpp != sizeof(uint16_t))
     {
       dt_control_log(_("exposure bracketing only works on Bayer raw images"));
-      dt_mipmap_cache_read_release(darktable.mipmap_cache, &buf);
+      dt_mipmap_cache_release(darktable.mipmap_cache, &buf);
       free(pixels);
       free(weight);
       goto error;
@@ -259,7 +259,7 @@ static int32_t dt_control_merge_hdr_job_run(dt_job_t *job)
     if(buf.size != DT_MIPMAP_FULL)
     {
       dt_control_log(_("failed to get raw buffer from image `%s'"), image.filename);
-      dt_mipmap_cache_read_release(darktable.mipmap_cache, &buf);
+      dt_mipmap_cache_release(darktable.mipmap_cache, &buf);
       free(pixels);
       free(weight);
       goto error;
@@ -278,7 +278,7 @@ static int32_t dt_control_merge_hdr_job_run(dt_job_t *job)
       dt_control_log(_("images have to be of same size!"));
       free(pixels);
       free(weight);
-      dt_mipmap_cache_read_release(darktable.mipmap_cache, &buf);
+      dt_mipmap_cache_release(darktable.mipmap_cache, &buf);
       goto error;
     }
     // if no valid exif data can be found, assume peleng fisheye at f/16, 8mm, with half of the light lost in
@@ -365,7 +365,7 @@ static int32_t dt_control_merge_hdr_job_run(dt_job_t *job)
     fraction += 1.0 / total;
     dt_control_progress_set_progress(darktable.control, progress, fraction);
 
-    dt_mipmap_cache_read_release(darktable.mipmap_cache, &buf);
+    dt_mipmap_cache_release(darktable.mipmap_cache, &buf);
   }
 // normalize by white level to make clipping at 1.0 work as expected
 #ifdef _OPENMP
@@ -754,7 +754,7 @@ static int32_t dt_control_gpx_apply_job_run(dt_job_t *job)
     int imgid = GPOINTER_TO_INT(t->data);
 
     /* get image */
-    const dt_image_t *cimg = dt_image_cache_read_get(darktable.image_cache, imgid);
+    const dt_image_t *cimg = dt_image_cache_get(darktable.image_cache, imgid, 'r');
     if(!cimg) continue;
 
     /* convert exif datetime
@@ -986,7 +986,7 @@ static int32_t dt_control_export_job_run(dt_job_t *job)
       dt_tag_attach(etagid, imgid);
       // check if image still exists:
       char imgfilename[PATH_MAX] = { 0 };
-      const dt_image_t *image = dt_image_cache_read_get(darktable.image_cache, (int32_t)imgid);
+      const dt_image_t *image = dt_image_cache_get(darktable.image_cache, (int32_t)imgid, 'r');
       if(image)
       {
         gboolean from_cache = TRUE;
