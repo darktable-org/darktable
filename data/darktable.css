@@ -103,6 +103,14 @@ GtkTable {
   padding:0;
 }
 
+#view_label:hover {
+  color: #a0a0a0;
+}
+
+#view_label:selected {
+  color: #afafaf;
+}
+
 #panel_label {
   color: @fg_color;
   background-color: @bg_color;

@@ -28,6 +28,8 @@
 
 DT_MODULE(1)
 
+#define LABEL "<big><big><b>%s</b></big></big>"
+
 typedef struct dt_lib_viewswitcher_t
 {
 
@@ -86,7 +88,10 @@ void gui_init(dt_lib_module_t *self)
       /* create space if more views */
       if(k < darktable.view_manager->num_views - 1)
       {
-        GtkWidget *w = gtk_label_new("<span color=\"#7f7f7f\"><big><big><b>|</b></big></big></span>");
+        char label[512] = { 0 };
+        g_snprintf(label, sizeof(label), LABEL, "|");
+
+        GtkWidget *w = gtk_label_new(label);
         gtk_widget_set_halign(w, GTK_ALIGN_START);
         gtk_label_set_use_markup(GTK_LABEL(w), TRUE);
         gtk_widget_set_name(w, "view_label");
@@ -106,35 +111,25 @@ void gui_cleanup(dt_lib_module_t *self)
   self->data = NULL;
 }
 
-#define LABEL_HIGHLIGHTED "<span color=\"#a0a0a0\"><big><big><b>%s</b></big></big></span>"
-#define LABEL_SELECTED "<span color=\"#afafaf\"><big><big><b>%s</b></big></big></span>"
-#define LABEL_DEFAULT "<span color=\"#7f7f7f\"><big><big><b>%s</b></big></big></span>"
-
-
 static void _lib_viewswitcher_enter_notify_callback(GtkWidget *w, GdkEventCrossing *e, gpointer user_data)
 {
-  char label[512] = { 0 };
   GtkLabel *l = (GtkLabel *)user_data;
 
   /* if not active view lets highlight */
   if(strcmp(g_object_get_data(G_OBJECT(w), "view-label"), dt_view_manager_name(darktable.view_manager)))
   {
-    g_snprintf(label, sizeof(label), LABEL_HIGHLIGHTED,
-               (gchar *)g_object_get_data(G_OBJECT(w), "view-label"));
-    gtk_label_set_markup(l, label);
+    gtk_widget_set_state_flags(GTK_WIDGET(l), GTK_STATE_FLAG_PRELIGHT, TRUE);
   }
 }
 
 static void _lib_viewswitcher_leave_notify_callback(GtkWidget *w, GdkEventCrossing *e, gpointer user_data)
 {
-  char label[512] = { 0 };
   GtkLabel *l = (GtkLabel *)user_data;
 
   /* if not active view lets set default */
   if(strcmp(g_object_get_data(G_OBJECT(w), "view-label"), dt_view_manager_name(darktable.view_manager)))
   {
-    g_snprintf(label, sizeof(label), LABEL_DEFAULT, (gchar *)g_object_get_data(G_OBJECT(w), "view-label"));
-    gtk_label_set_markup(l, label);
+    gtk_widget_set_state_flags(GTK_WIDGET(l), GTK_STATE_FLAG_NORMAL, TRUE);
   }
 }
 
@@ -157,16 +152,12 @@ static void _lib_viewswitcher_view_changed_callback(gpointer instance, dt_view_t
       continue;
     }
 
-    GtkLabel *w = GTK_LABEL(gtk_bin_get_child(GTK_BIN(childs->data)));
-    char label[512] = { 0 };
+    GtkLabel *l = GTK_LABEL(gtk_bin_get_child(GTK_BIN(childs->data)));
     /* check if current is the same as the one we iterate, then hilite */
-    if(!strcmp(g_object_get_data(G_OBJECT(w), "view-label"), dt_view_manager_name(darktable.view_manager)))
-      g_snprintf(label, sizeof(label), LABEL_SELECTED, (gchar *)g_object_get_data(G_OBJECT(w), "view-label"));
+    if(!strcmp(g_object_get_data(G_OBJECT(l), "view-label"), dt_view_manager_name(darktable.view_manager)))
+      gtk_widget_set_state_flags(GTK_WIDGET(l), GTK_STATE_FLAG_SELECTED, TRUE);
     else
-      g_snprintf(label, sizeof(label), LABEL_DEFAULT, (gchar *)g_object_get_data(G_OBJECT(w), "view-label"));
-
-    /* set label */
-    gtk_label_set_markup(w, label);
+      gtk_widget_set_state_flags(GTK_WIDGET(l), GTK_STATE_FLAG_NORMAL, TRUE);
 
     /* get next */
     childs = g_list_next(childs);
@@ -177,7 +168,7 @@ static GtkWidget *_lib_viewswitcher_create_label(dt_view_t *v)
 {
   GtkWidget *eb = gtk_event_box_new();
   char label[512] = { 0 };
-  g_snprintf(label, sizeof(label), LABEL_DEFAULT, v->name(v));
+  g_snprintf(label, sizeof(label), LABEL, v->name(v));
   GtkWidget *b = gtk_label_new(label);
   gtk_container_add(GTK_CONTAINER(eb), b);
   /*setup label*/
@@ -186,6 +177,7 @@ static GtkWidget *_lib_viewswitcher_create_label(dt_view_t *v)
   g_object_set_data(G_OBJECT(eb), "view-label", (gchar *)v->name(v));
   gtk_label_set_use_markup(GTK_LABEL(b), TRUE);
   gtk_widget_set_name(b, "view_label");
+  gtk_widget_set_state_flags(b, GTK_STATE_FLAG_NORMAL, TRUE);
 
   /* connect button press handler */
   g_signal_connect(G_OBJECT(eb), "button-press-event", G_CALLBACK(_lib_viewswitcher_button_press_callback),
