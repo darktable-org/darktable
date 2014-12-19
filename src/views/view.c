@@ -768,7 +768,7 @@ void dt_view_image_expose(dt_view_image_over_t *image_over, uint32_t imgid, cair
   if(sqlite3_step(darktable.view_manager->statements.is_selected) == SQLITE_ROW) selected = 1;
 #endif
 
-  const dt_image_t *img = dt_image_cache_read_testget(darktable.image_cache, imgid);
+  const dt_image_t *img = dt_image_cache_testget(darktable.image_cache, imgid, 'r');
 
   if(selected == 1 && zoom != 1) // If zoom == 1 there is no need to set colors here
   {
@@ -782,7 +782,7 @@ void dt_view_image_expose(dt_view_image_over_t *image_over, uint32_t imgid, cair
     fontcol = 0.7;
     outlinecol = 0.6;
     // if the user points at this image, we really want it:
-    if(!img) img = dt_image_cache_read_get(darktable.image_cache, imgid);
+    if(!img) img = dt_image_cache_get(darktable.image_cache, imgid, 'r');
   }
   float imgwd = 0.90f;
   if(zoom == 1)
@@ -832,7 +832,7 @@ void dt_view_image_expose(dt_view_image_over_t *image_over, uint32_t imgid, cair
   dt_mipmap_buffer_t buf;
   dt_mipmap_size_t mip
       = dt_mipmap_cache_get_matching_size(darktable.mipmap_cache, imgwd * width, imgwd * height);
-  dt_mipmap_cache_read_get(darktable.mipmap_cache, &buf, imgid, mip, DT_MIPMAP_BEST_EFFORT);
+  dt_mipmap_cache_get(darktable.mipmap_cache, &buf, imgid, mip, DT_MIPMAP_BEST_EFFORT, 'r');
 
 #if DRAW_THUMB == 1
   float scale = 1.0;
@@ -919,7 +919,7 @@ void dt_view_image_expose(dt_view_image_over_t *image_over, uint32_t imgid, cair
   }
   cairo_restore(cr);
 #endif
-  if(buf.buf) dt_mipmap_cache_read_release(darktable.mipmap_cache, &buf);
+  if(buf.buf) dt_mipmap_cache_release(darktable.mipmap_cache, &buf);
 
   cairo_save(cr);
   const float fscale = fminf(width, height);
@@ -1392,7 +1392,7 @@ void dt_view_filmstrip_prefetch()
   {
     const uint32_t prefetchid = sqlite3_column_int(stmt, 0);
     // dt_control_log("prefetching image %u", prefetchid);
-    dt_mipmap_cache_read_get(darktable.mipmap_cache, NULL, prefetchid, DT_MIPMAP_FULL, DT_MIPMAP_PREFETCH);
+    dt_mipmap_cache_get(darktable.mipmap_cache, NULL, prefetchid, DT_MIPMAP_FULL, DT_MIPMAP_PREFETCH, 'r');
   }
   sqlite3_finalize(stmt);
 }
