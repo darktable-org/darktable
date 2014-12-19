@@ -630,7 +630,7 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
   if(!strcmp(iccprofile, "eprofile"))
   {
     // embedded color profile
-    const dt_image_t *cimg = dt_image_cache_read_get(darktable.image_cache, pipe->image.id);
+    const dt_image_t *cimg = dt_image_cache_get(darktable.image_cache, pipe->image.id, 'r');
     if(cimg == NULL || cimg->profile == NULL)
       snprintf(iccprofile, sizeof(iccprofile), "ematrix");
     else
@@ -894,12 +894,12 @@ void reload_defaults(dt_iop_module_t *module)
   gboolean use_eprofile = FALSE;
   // some file formats like jpeg can have an embedded color profile
   // currently we only support jpeg, j2k, tiff and png
-  const dt_image_t *cimg = dt_image_cache_read_get(darktable.image_cache, module->dev->image_storage.id);
-  if(!cimg->profile)
+  dt_image_t *img = dt_image_cache_get(darktable.image_cache, module->dev->image_storage.id, 'w');
+  if(!img->profile)
   {
     char filename[PATH_MAX] = { 0 };
     gboolean from_cache = TRUE;
-    dt_image_full_path(cimg->id, filename, sizeof(filename), &from_cache);
+    dt_image_full_path(img->id, filename, sizeof(filename), &from_cache);
     const gchar *cc = filename + strlen(filename);
     for(; *cc != '.' && cc > filename; cc--)
       ;
@@ -909,40 +909,32 @@ void reload_defaults(dt_iop_module_t *module)
       dt_imageio_jpeg_t jpg;
       if(!dt_imageio_jpeg_read_header(filename, &jpg))
       {
-        dt_image_t *img = dt_image_cache_write_get(darktable.image_cache, cimg);
         img->profile_size = dt_imageio_jpeg_read_profile(&jpg, &img->profile);
         use_eprofile = (img->profile_size > 0);
-        dt_image_cache_write_release(darktable.image_cache, img, DT_IMAGE_CACHE_RELAXED);
       }
     }
 #ifdef HAVE_OPENJPEG
     else if(!strcmp(ext, "jp2") || !strcmp(ext, "j2k") || !strcmp(ext, "j2c") || !strcmp(ext, "jpc"))
     {
-      dt_image_t *img = dt_image_cache_write_get(darktable.image_cache, cimg);
       img->profile_size = dt_imageio_j2k_read_profile(filename, &img->profile);
       use_eprofile = (img->profile_size > 0);
-      dt_image_cache_write_release(darktable.image_cache, img, DT_IMAGE_CACHE_RELAXED);
     }
 #endif
     else if(!strcmp(ext, "tif") || !strcmp(ext, "tiff"))
     {
-      dt_image_t *img = dt_image_cache_write_get(darktable.image_cache, cimg);
       img->profile_size = dt_imageio_tiff_read_profile(filename, &img->profile);
       use_eprofile = (img->profile_size > 0);
-      dt_image_cache_write_release(darktable.image_cache, img, DT_IMAGE_CACHE_RELAXED);
     }
     else if(!strcmp(ext, "png"))
     {
-      dt_image_t *img = dt_image_cache_write_get(darktable.image_cache, cimg);
       img->profile_size = dt_imageio_png_read_profile(filename, &img->profile);
       use_eprofile = (img->profile_size > 0);
-      dt_image_cache_write_release(darktable.image_cache, img, DT_IMAGE_CACHE_RELAXED);
     }
     g_free(ext);
   }
   else
     use_eprofile = TRUE; // the image has a profile assigned
-  dt_image_cache_read_release(darktable.image_cache, cimg);
+  dt_image_cache_write_release(darktable.image_cache, img, DT_IMAGE_CACHE_RELAXED);
 
   if(use_eprofile)
     g_strlcpy(tmp.iccprofile, "eprofile", sizeof(tmp.iccprofile));
@@ -995,7 +987,7 @@ static void update_profile_list(dt_iop_module_t *self)
   int pos = -1;
   // some file formats like jpeg can have an embedded color profile
   // currently we only support jpeg, j2k, tiff and png
-  const dt_image_t *cimg = dt_image_cache_read_get(darktable.image_cache, self->dev->image_storage.id);
+  const dt_image_t *cimg = dt_image_cache_get(darktable.image_cache, self->dev->image_storage.id, 'r');
   if(cimg->profile)
   {
     prof = (dt_iop_color_profile_t *)g_malloc0(sizeof(dt_iop_color_profile_t));
