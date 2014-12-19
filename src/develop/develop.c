@@ -196,7 +196,7 @@ void dt_dev_process_preview_job(dt_develop_t *dev)
   dev->preview_status = DT_DEV_PIXELPIPE_RUNNING;
 
   // lock if there, issue a background load, if not (best-effort for mip f).
-  dt_mipmap_cache_read_get(darktable.mipmap_cache, &buf, dev->image_storage.id, DT_MIPMAP_F, 0);
+  dt_mipmap_cache_get(darktable.mipmap_cache, &buf, dev->image_storage.id, DT_MIPMAP_F, 0, 'r');
   if(!buf.buf)
   {
     dt_control_log_busy_leave();
@@ -231,7 +231,7 @@ restart:
     dt_control_log_busy_leave();
     dev->preview_status = DT_DEV_PIXELPIPE_INVALID;
     dt_pthread_mutex_unlock(&dev->preview_pipe_mutex);
-    dt_mipmap_cache_read_release(darktable.mipmap_cache, &buf);
+    dt_mipmap_cache_release(darktable.mipmap_cache, &buf);
     return;
   }
   // adjust pipeline according to changed flag set by {add,pop}_history_item.
@@ -248,7 +248,7 @@ restart:
       dt_control_log_busy_leave();
       dev->preview_status = DT_DEV_PIXELPIPE_INVALID;
       dt_pthread_mutex_unlock(&dev->preview_pipe_mutex);
-      dt_mipmap_cache_read_release(darktable.mipmap_cache, &buf);
+      dt_mipmap_cache_release(darktable.mipmap_cache, &buf);
       return;
     }
     else
@@ -264,7 +264,7 @@ restart:
   if(dev->gui_attached) dt_control_queue_redraw();
   dt_control_log_busy_leave();
   dt_pthread_mutex_unlock(&dev->preview_pipe_mutex);
-  dt_mipmap_cache_read_release(darktable.mipmap_cache, &buf);
+  dt_mipmap_cache_release(darktable.mipmap_cache, &buf);
 }
 
 void dt_dev_process_image_job(dt_develop_t *dev)
@@ -277,8 +277,8 @@ void dt_dev_process_image_job(dt_develop_t *dev)
   dt_mipmap_buffer_t buf;
   dt_times_t start;
   dt_get_times(&start);
-  dt_mipmap_cache_read_get(darktable.mipmap_cache, &buf, dev->image_storage.id, DT_MIPMAP_FULL,
-                           DT_MIPMAP_BLOCKING);
+  dt_mipmap_cache_get(darktable.mipmap_cache, &buf, dev->image_storage.id, DT_MIPMAP_FULL,
+                           DT_MIPMAP_BLOCKING, 'r');
   dt_show_times(&start, "[dev]", "to load the image.");
 
   // failed to load raw?
@@ -319,7 +319,7 @@ void dt_dev_process_image_job(dt_develop_t *dev)
 restart:
   if(dev->gui_leaving)
   {
-    dt_mipmap_cache_read_release(darktable.mipmap_cache, &buf);
+    dt_mipmap_cache_release(darktable.mipmap_cache, &buf);
     dt_control_log_busy_leave();
     dev->image_status = DT_DEV_PIXELPIPE_INVALID;
     dt_pthread_mutex_unlock(&dev->pipe_mutex);
@@ -364,7 +364,7 @@ restart:
     // interrupted because image changed?
     if(dev->image_force_reload)
     {
-      dt_mipmap_cache_read_release(darktable.mipmap_cache, &buf);
+      dt_mipmap_cache_release(darktable.mipmap_cache, &buf);
       dt_control_log_busy_leave();
       dev->image_status = DT_DEV_PIXELPIPE_INVALID;
       dt_pthread_mutex_unlock(&dev->pipe_mutex);
@@ -384,7 +384,7 @@ restart:
   dev->image_status = DT_DEV_PIXELPIPE_VALID;
   dev->image_loading = 0;
 
-  dt_mipmap_cache_read_release(darktable.mipmap_cache, &buf);
+  dt_mipmap_cache_release(darktable.mipmap_cache, &buf);
   // redraw the whole thing, to also update color picker values and histograms etc.
   if(dev->gui_attached) dt_control_queue_redraw();
   dt_control_log_busy_leave();
@@ -398,11 +398,11 @@ static inline void _dt_dev_load_raw(dt_develop_t *dev, const uint32_t imgid)
   dt_mipmap_buffer_t buf;
   dt_times_t start;
   dt_get_times(&start);
-  dt_mipmap_cache_read_get(darktable.mipmap_cache, &buf, imgid, DT_MIPMAP_FULL, DT_MIPMAP_BLOCKING);
-  dt_mipmap_cache_read_release(darktable.mipmap_cache, &buf);
+  dt_mipmap_cache_get(darktable.mipmap_cache, &buf, imgid, DT_MIPMAP_FULL, DT_MIPMAP_BLOCKING, 'r');
+  dt_mipmap_cache_release(darktable.mipmap_cache, &buf);
   dt_show_times(&start, "[dev]", "to load the image.");
 
-  const dt_image_t *image = dt_image_cache_read_get(darktable.image_cache, imgid);
+  const dt_image_t *image = dt_image_cache_get(darktable.image_cache, imgid, 'r');
   dev->image_storage = *image;
   dt_image_cache_read_release(darktable.image_cache, image);
 }
@@ -815,20 +815,17 @@ static void auto_apply_presets(dt_develop_t *dev)
   dt_pthread_mutex_lock(&darktable.db_insert);
 
   int run = 0;
-  const dt_image_t *cimg = dt_image_cache_read_get(darktable.image_cache, imgid);
-  if(!(cimg->flags & DT_IMAGE_AUTO_PRESETS_APPLIED)) run = 1;
+  dt_image_t *image = dt_image_cache_get(darktable.image_cache, imgid, 'w');
+  if(!(image->flags & DT_IMAGE_AUTO_PRESETS_APPLIED)) run = 1;
 
   // flag was already set? only apply presets once in the lifetime of a history stack.
   // (the flag will be cleared when removing it)
-  if(!run || cimg->id <= 0)
+  if(!run || image->id <= 0)
   {
-    dt_image_cache_read_release(darktable.image_cache, cimg);
+    dt_image_cache_write_release(darktable.image_cache, image, DT_IMAGE_CACHE_RELAXED);
     dt_pthread_mutex_unlock(&darktable.db_insert);
     return;
   }
-
-  // keep locked, we want to be alone messing with the history of the poor fellow:
-  dt_image_t *image = dt_image_cache_write_get(darktable.image_cache, cimg);
 
   // cleanup
   DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "delete from memory.history", NULL, NULL, NULL);
@@ -850,13 +847,13 @@ static void auto_apply_presets(dt_develop_t *dev)
   sqlite3_stmt *stmt;
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
-  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 2, cimg->exif_model, -1, SQLITE_TRANSIENT);
-  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 3, cimg->exif_maker, -1, SQLITE_TRANSIENT);
-  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 4, cimg->exif_lens, -1, SQLITE_TRANSIENT);
-  DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 5, fmaxf(0.0f, fminf(1000000, cimg->exif_iso)));
-  DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 6, fmaxf(0.0f, fminf(1000000, cimg->exif_exposure)));
-  DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 7, fmaxf(0.0f, fminf(1000000, cimg->exif_aperture)));
-  DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 8, fmaxf(0.0f, fminf(1000000, cimg->exif_focal_length)));
+  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 2, image->exif_model, -1, SQLITE_TRANSIENT);
+  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 3, image->exif_maker, -1, SQLITE_TRANSIENT);
+  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 4, image->exif_lens, -1, SQLITE_TRANSIENT);
+  DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 5, fmaxf(0.0f, fminf(1000000, image->exif_iso)));
+  DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 6, fmaxf(0.0f, fminf(1000000, image->exif_exposure)));
+  DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 7, fmaxf(0.0f, fminf(1000000, image->exif_aperture)));
+  DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 8, fmaxf(0.0f, fminf(1000000, image->exif_focal_length)));
   // 0: dontcare, 1: ldr, 2: raw
   DT_DEBUG_SQLITE3_BIND_DOUBLE(
       stmt, 9, dt_image_is_ldr(image) ? FOR_LDR : (dt_image_is_raw(image) ? FOR_RAW : FOR_HDR));
@@ -904,7 +901,6 @@ static void auto_apply_presets(dt_develop_t *dev)
 
   // make sure these end up in the image_cache + xmp (sync through here if we set the flag)
   dt_image_cache_write_release(darktable.image_cache, image, DT_IMAGE_CACHE_SAFE);
-  dt_image_cache_read_release(darktable.image_cache, cimg);
 }
 
 void dt_dev_read_history(dt_develop_t *dev)
