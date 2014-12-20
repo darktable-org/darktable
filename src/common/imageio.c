@@ -639,6 +639,7 @@ int dt_imageio_export_with_flags(const uint32_t imgid, const char *filename,
 
   if(!buf.buf)
   {
+    fprintf(stderr, "allocation failed???\n");
     dt_control_log(_("image `%s' is not available!"), img->filename);
     dt_mipmap_cache_release(darktable.mipmap_cache, &buf);
     dt_dev_cleanup(&dev);

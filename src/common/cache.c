@@ -33,6 +33,7 @@ void dt_cache_init(
     size_t cost_quota)
 {
   cache->cost = 0;
+  cache->lru = 0;
   cache->entry_size = entry_size;
   cache->cost_quota = cost_quota;
   dt_pthread_mutex_init(&cache->lock, 0);
@@ -59,6 +60,7 @@ void dt_cache_cleanup(dt_cache_t *cache)
     l = g_list_next(l);
   }
   g_list_free(cache->lru);
+  dt_pthread_mutex_destroy(&cache->lock);
 }
 
 int32_t dt_cache_contains(dt_cache_t *cache, const uint32_t key)
@@ -97,16 +99,26 @@ int dt_cache_for_all(
 // never attempt to allocate a new slot.
 dt_cache_entry_t *dt_cache_testget(dt_cache_t *cache, const uint32_t key, char mode)
 {
-  dt_pthread_mutex_lock(&cache->lock);
   gpointer orig_key, value;
-  gboolean res = g_hash_table_lookup_extended(
+  gboolean res;
+  int result;
+restart:
+  dt_pthread_mutex_lock(&cache->lock);
+  res = g_hash_table_lookup_extended(
       cache->hashtable, GINT_TO_POINTER(key), &orig_key, &value);
   if(res)
   {
     dt_cache_entry_t *entry = (dt_cache_entry_t *)value;
     // lock the cache entry
-    if(mode == 'w') dt_pthread_rwlock_wrlock(&entry->lock);
-    else            dt_pthread_rwlock_rdlock(&entry->lock);
+    if(mode == 'w') result = dt_pthread_rwlock_trywrlock(&entry->lock);
+    else            result = dt_pthread_rwlock_tryrdlock(&entry->lock);
+    if(result)
+    { // need to give up mutex so other threads have a chance to get in between and
+      // free the lock we're trying to acquire:
+      dt_pthread_mutex_unlock(&cache->lock);
+      g_usleep(500);
+      goto restart;
+    }
     // bubble up in lru list:
     cache->lru = g_list_remove_link(cache->lru, entry->link);
     cache->lru = g_list_concat(cache->lru, entry->link);
@@ -122,15 +134,25 @@ dt_cache_entry_t *dt_cache_testget(dt_cache_t *cache, const uint32_t key, char m
 // found using the given key later on.
 dt_cache_entry_t *dt_cache_get_with_caller(dt_cache_t *cache, const uint32_t key, char mode, const char *file, int line)
 {
-  dt_pthread_mutex_lock(&cache->lock);
   gpointer orig_key, value;
-  gboolean res = g_hash_table_lookup_extended(
+  gboolean res;
+  int result;
+restart:
+  dt_pthread_mutex_lock(&cache->lock);
+  res = g_hash_table_lookup_extended(
       cache->hashtable, GINT_TO_POINTER(key), &orig_key, &value);
   if(res)
   { // yay, found. read lock and pass on.
     dt_cache_entry_t *entry = (dt_cache_entry_t *)value;
-    if(mode == 'w') dt_pthread_rwlock_wrlock_with_caller(&entry->lock, file, line);
-    else            dt_pthread_rwlock_rdlock_with_caller(&entry->lock, file, line);
+    if(mode == 'w') result = dt_pthread_rwlock_trywrlock_with_caller(&entry->lock, file, line);
+    else            result = dt_pthread_rwlock_tryrdlock_with_caller(&entry->lock, file, line);
+    if(result)
+    { // need to give up mutex so other threads have a chance to get in between and
+      // free the lock we're trying to acquire:
+      dt_pthread_mutex_unlock(&cache->lock);
+      g_usleep(500);
+      goto restart;
+    }
     // bubble up in lru list:
     cache->lru = g_list_remove_link(cache->lru, entry->link);
     cache->lru = g_list_concat(cache->lru, entry->link);
@@ -154,7 +176,7 @@ dt_cache_entry_t *dt_cache_get_with_caller(dt_cache_t *cache, const uint32_t key
   if(ret) fprintf(stderr, "rwlock init: %d\n", ret);
   entry->data = 0;
   entry->cost = 1;
-  entry->link = g_list_append(0, &entry);
+  entry->link = g_list_append(0, entry);
   entry->key = key;
   g_hash_table_insert(cache->hashtable, GINT_TO_POINTER(key), entry);
   // if allocate callback is given, always return a write lock
@@ -177,19 +199,30 @@ dt_cache_entry_t *dt_cache_get_with_caller(dt_cache_t *cache, const uint32_t key
 
 int dt_cache_remove(dt_cache_t *cache, const uint32_t key)
 {
+  gpointer orig_key, value;
+  gboolean res;
+  int result;
+  dt_cache_entry_t *entry;
+restart:
   dt_pthread_mutex_lock(&cache->lock);
 
-  gpointer orig_key, value;
-  gboolean res = g_hash_table_lookup_extended(
+  res = g_hash_table_lookup_extended(
       cache->hashtable, GINT_TO_POINTER(key), &orig_key, &value);
-  dt_cache_entry_t *entry = (dt_cache_entry_t *)value;
+  entry = (dt_cache_entry_t *)value;
   if(!res)
   { // not found in cache, not deleting.
     dt_pthread_mutex_unlock(&cache->lock);
     return 1;
   }
   // need write lock to be able to delete:
-  dt_pthread_rwlock_wrlock(&entry->lock);
+  result = dt_pthread_rwlock_trywrlock(&entry->lock);
+  if(result)
+  {
+    dt_pthread_mutex_unlock(&cache->lock);
+    g_usleep(500);
+    goto restart;
+  }
+
   gboolean removed = g_hash_table_remove(cache->hashtable, GINT_TO_POINTER(key));
   (void)removed; // make non-assert compile happy
   assert(removed);
@@ -212,9 +245,12 @@ int dt_cache_remove(dt_cache_t *cache, const uint32_t key)
 void dt_cache_gc(dt_cache_t *cache, const float fill_ratio)
 {
   GList *l = cache->lru;
+  int cnt = 0;
   while(l)
   {
+    cnt++;
     dt_cache_entry_t *entry = (dt_cache_entry_t *)l->data;
+    assert(entry->link->data == entry);
     l = g_list_next(l); // we might remove this element, so walk to the next one while we still have the pointer..
     if(cache->cost < cache->cost_quota * fill_ratio) break;
 
@@ -231,7 +267,6 @@ void dt_cache_gc(dt_cache_t *cache, const float fill_ratio)
     else
       dt_free_align(entry->data);
     dt_pthread_rwlock_unlock(&entry->lock);
-    // XXX shit, i think this deadlocks because other people are still waiting for this lock!
     dt_pthread_rwlock_destroy(&entry->lock);
     g_free(entry);
   }

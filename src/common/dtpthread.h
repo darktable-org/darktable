@@ -25,6 +25,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <glib.h>
+#include <assert.h>
 
 #if 1//def _DEBUG
 
@@ -55,6 +56,7 @@ typedef struct dt_pthread_mutex_t
 typedef struct dt_pthread_rwlock_t
 {
   pthread_rwlock_t lock;
+  int cnt;
   char name[256];
 } dt_pthread_rwlock_t;
 
@@ -191,17 +193,22 @@ static inline int dt_pthread_cond_wait(pthread_cond_t *cond, dt_pthread_mutex_t 
 static inline int dt_pthread_rwlock_init(dt_pthread_rwlock_t *lock,
     const pthread_rwlockattr_t *attr)
 {
+  memset(lock->name, 0, sizeof(lock->name));
+  lock->cnt = 0;
   return pthread_rwlock_init(&lock->lock, attr);
 }
 
 static inline int dt_pthread_rwlock_destroy(dt_pthread_rwlock_t *lock)
 {
+  snprintf(lock->name, sizeof(lock->name), "destroyed with cnt %d", lock->cnt);
   return pthread_rwlock_destroy(&lock->lock);
 }
 
 static inline int dt_pthread_rwlock_unlock(dt_pthread_rwlock_t *rwlock)
 {
   int res = pthread_rwlock_unlock(&rwlock->lock);
+  rwlock->cnt --;
+  assert(rwlock->cnt >= 0);
   if(!res)
     memset(rwlock->name, 0, sizeof(rwlock->name));
   return res;
@@ -211,6 +218,7 @@ static inline int dt_pthread_rwlock_unlock(dt_pthread_rwlock_t *rwlock)
 static inline int dt_pthread_rwlock_rdlock_with_caller(dt_pthread_rwlock_t *rwlock, const char *file, int line)
 {
   int res = pthread_rwlock_rdlock(&rwlock->lock);
+  rwlock->cnt ++;
   if(!res)
     snprintf(rwlock->name, sizeof(rwlock->name), "r:%s:%d", file, line);
   return res;
@@ -219,6 +227,7 @@ static inline int dt_pthread_rwlock_rdlock_with_caller(dt_pthread_rwlock_t *rwlo
 static inline int dt_pthread_rwlock_wrlock_with_caller(dt_pthread_rwlock_t *rwlock, const char *file, int line)
 {
   int res = pthread_rwlock_wrlock(&rwlock->lock);
+  rwlock->cnt ++;
   if(!res)
     snprintf(rwlock->name, sizeof(rwlock->name), "w:%s:%d", file, line);
   return res;
@@ -228,7 +237,10 @@ static inline int dt_pthread_rwlock_tryrdlock_with_caller(dt_pthread_rwlock_t *r
 {
   int res = pthread_rwlock_tryrdlock(&rwlock->lock);
   if(!res)
+  {
+    rwlock->cnt ++;
     snprintf(rwlock->name, sizeof(rwlock->name), "tr:%s:%d", file, line);
+  }
   return res;
 }
 #define dt_pthread_rwlock_trywrlock(A) dt_pthread_rwlock_trywrlock_with_caller(A, __FILE__, __LINE__)
@@ -236,7 +248,10 @@ static inline int dt_pthread_rwlock_trywrlock_with_caller(dt_pthread_rwlock_t *r
 {
   int res = pthread_rwlock_trywrlock(&rwlock->lock);
   if(!res)
+  {
+    rwlock->cnt ++;
     snprintf(rwlock->name, sizeof(rwlock->name), "tw:%s:%d", file, line);
+  }
   return res;
 }
 
