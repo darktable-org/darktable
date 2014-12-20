@@ -768,6 +768,7 @@ void dt_view_image_expose(dt_view_image_over_t *image_over, uint32_t imgid, cair
   if(sqlite3_step(darktable.view_manager->statements.is_selected) == SQLITE_ROW) selected = 1;
 #endif
 
+  dt_image_t buffered_image;
   const dt_image_t *img = dt_image_cache_testget(darktable.image_cache, imgid, 'r');
 
   if(selected == 1 && zoom != 1) // If zoom == 1 there is no need to set colors here
@@ -783,6 +784,13 @@ void dt_view_image_expose(dt_view_image_over_t *image_over, uint32_t imgid, cair
     outlinecol = 0.6;
     // if the user points at this image, we really want it:
     if(!img) img = dt_image_cache_get(darktable.image_cache, imgid, 'r');
+  }
+  // release image cache lock as early as possible, to avoid deadlocks (mipmap cache might need to lock it, too)
+  if(img)
+  {
+    buffered_image = *img;
+    dt_image_cache_read_release(darktable.image_cache, img);
+    img = &buffered_image;
   }
   float imgwd = 0.90f;
   if(zoom == 1)
@@ -1208,7 +1216,6 @@ void dt_view_image_expose(dt_view_image_over_t *image_over, uint32_t imgid, cair
     }
   }
 
-  if(img) dt_image_cache_read_release(darktable.image_cache, img);
   cairo_restore(cr);
   // if(zoom == 1) cairo_set_antialias(cr, CAIRO_ANTIALIAS_DEFAULT);
 
