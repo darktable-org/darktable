@@ -503,35 +503,38 @@ void *dt_mipmap_cache_alloc(dt_mipmap_buffer_t *buf, const dt_image_t *img)
 
   const int wd = img->width;
   const int ht = img->height;
-  struct dt_mipmap_buffer_dsc **dsc = (struct dt_mipmap_buffer_dsc **)&buf->buf;
-  const size_t buffer_size = (size_t)wd*ht*img->bpp + sizeof(**dsc);
+  struct dt_mipmap_buffer_dsc *dsc = (struct dt_mipmap_buffer_dsc *)buf->cache_entry->data;
+  const size_t buffer_size = (size_t)wd*ht*img->bpp + sizeof(*dsc);
 
   // buf might have been alloc'ed before,
   // so only check size and re-alloc if necessary:
-  if(!(*dsc) || ((*dsc)->size < buffer_size) || ((void *)*dsc == (void *)dt_mipmap_cache_static_dead_image))
+  if(!buf->buf || (dsc->size < buffer_size) || ((void *)dsc == (void *)dt_mipmap_cache_static_dead_image))
   {
-    if((void *)*dsc != (void *)dt_mipmap_cache_static_dead_image) dt_free_align(*dsc);
-    *dsc = dt_alloc_align(64, buffer_size);
-    // fprintf(stderr, "[mipmap cache] alloc for key %u %p\n", get_key(img->id, size), *buf);
-    if(!(*dsc))
+    if((void *)dsc != (void *)dt_mipmap_cache_static_dead_image) dt_free_align(buf->cache_entry->data);
+    buf->cache_entry->data = dt_alloc_align(64, buffer_size);
+    fprintf(stderr, "[mipmap cache] alloc %d x %d @ %d for key %u %p\n", wd, ht, img->bpp, img->id, buf->buf);
+    if(!buf->cache_entry->data)
     {
+      fprintf(stderr, "allocation failed!!!!\n");
       // return fallback: at least alloc size for a dead image:
-      *dsc = (struct dt_mipmap_buffer_dsc *)dt_mipmap_cache_static_dead_image;
-      // allocator holds the pointer. but imageio client is tricked to believe allocation failed:
+      buf->cache_entry->data = (void*)dt_mipmap_cache_static_dead_image;
+      // allocator holds the pointer. but let imageio client know that allocation failed:
       return NULL;
     }
     // set buffer size only if we're making it larger.
-    (*dsc)->size = buffer_size;
+    dsc = (struct dt_mipmap_buffer_dsc *)buf->cache_entry->data;
+    dsc->size = buffer_size;
   }
-  (*dsc)->width = wd;
-  (*dsc)->height = ht;
-  (*dsc)->flags = DT_MIPMAP_BUFFER_DSC_FLAG_GENERATE;
+  dsc->width = wd;
+  dsc->height = ht;
+  dsc->flags = DT_MIPMAP_BUFFER_DSC_FLAG_GENERATE;
+  buf->buf = (uint8_t *)(dsc + 1);
 
   // fprintf(stderr, "full buffer allocating img %u %d x %d = %u bytes (%p)\n", img->id, img->width,
   // img->height, buffer_size, *buf);
 
   // return pointer to start of payload
-  return (*dsc) + 1;
+  return dsc + 1;
 }
 
 // callback for the cache backend to initialize payload pointers
@@ -851,7 +854,13 @@ void dt_mipmap_cache_get_with_caller(
           gboolean from_cache = TRUE;
           dt_image_full_path(buffered_image.id, filename, sizeof(filename), &from_cache);
 
+          buf->imgid = imgid;
+          buf->size = mip;
+          buf->buf = 0;
+          buf->width = buf->height = 0;
           dt_imageio_retval_t ret = dt_imageio_open(&buffered_image, filename, buf);
+          // might have been reallocated:
+          dsc = (struct dt_mipmap_buffer_dsc *)buf->cache_entry->data;
           if(ret != DT_IMAGEIO_OK)
           {
             // fprintf(stderr, "[mipmap read get] error loading image: %d\n", ret);
@@ -883,7 +892,6 @@ void dt_mipmap_cache_get_with_caller(
           {
             // get per-thread temporary storage without malloc from a separate cache:
             const int key = dt_control_get_threadid();
-            // const void *cbuf =
             dt_cache_entry_t *se = dt_cache_get(&cache->scratchmem.cache, key, 'w');
             uint8_t *scratchmem = (uint8_t *)se->data;
             _init_8(scratchmem, &dsc->width, &dsc->height, imgid, mip);
@@ -903,7 +911,7 @@ void dt_mipmap_cache_get_with_caller(
         dsc->flags &= ~DT_MIPMAP_BUFFER_DSC_FLAG_GENERATE;
 
         // XXX or just leave the write lock as it was? same for image_cache.
-#if 0 // 0
+#if 1 // 0
         if(mode == 'r')
         {
         // drop the write lock
@@ -913,7 +921,9 @@ void dt_mipmap_cache_get_with_caller(
         }
 #endif
         /* raise signal that mipmaps has been flushed to cache */
-        dt_control_signal_raise(darktable.signals, DT_SIGNAL_DEVELOP_MIPMAP_UPDATED);
+        // XXX this is a circular deadlock, often times 3-way circular and more
+        // XXX TODO: signals cannot acquire the gdk lock.
+        // dt_control_signal_raise(darktable.signals, DT_SIGNAL_DEVELOP_MIPMAP_UPDATED);
       }
       buf->width = dsc->width;
       buf->height = dsc->height;
@@ -928,7 +938,7 @@ void dt_mipmap_cache_get_with_caller(
         else if(mip == DT_MIPMAP_F)
           dead_image_f(buf);
         else
-          buf->buf = NULL; // full images with NULL buffer have to be handled, indicates `missing image', but still locked slot
+          buf->buf = NULL; // full images with NULL buffer have to be handled, indicates `missing image', but still return locked slot
       }
   }
   else if(flags == DT_MIPMAP_BEST_EFFORT)
