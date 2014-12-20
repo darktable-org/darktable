@@ -665,7 +665,7 @@ void gui_init(dt_lib_module_t *self)
 
   gtk_table_attach(GTK_TABLE(self->widget), GTK_WIDGET(d->style_mode), 1, 2, 11, 12, GTK_EXPAND | GTK_FILL, 0, 0,
                    0);
-  g_object_set(G_OBJECT(d->style_mode), "tooltip-text", _("whether the style is appended to the history or replacing the history"),
+  g_object_set(G_OBJECT(d->style_mode), "tooltip-text", _("whether the style items are appended to the history or replacing the history"),
                (char *)NULL);
 
   //  Set callback signals
