@@ -181,6 +181,10 @@ _print_button_clicked (GtkWidget *widget, gpointer user_data)
   dt_conf_set_int("plugins/imageio/format/print/bpp", bpp);
   dt_conf_set_int("plugins/imageio/format/print/compress", 0);
 
+  // make sure the export resolution wrote into the TIFF file corresponds to the printer resolution.
+  // this is needed to ensure that the image will fit exactly on the page.
+  dt_conf_set_int("plugins/imageio/format/print/resolution", ps->prt.printer.resolution);
+
   char style[128] = {0};
   char* tmp = dt_conf_get_string("plugins/print/print/style");
   if (tmp)
