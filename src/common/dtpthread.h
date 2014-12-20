@@ -27,7 +27,7 @@
 #include <glib.h>
 #include <assert.h>
 
-#if 1//def _DEBUG
+#ifdef _DEBUG
 
 // copied from darktable.h so we don't need to include the header
 #include <sys/time.h>
@@ -274,6 +274,11 @@ static inline int dt_pthread_rwlock_trywrlock_with_caller(dt_pthread_rwlock_t *r
 #define dt_pthread_rwlock_wrlock pthread_rwlock_wrlock
 #define dt_pthread_rwlock_tryrdlock pthread_rwlock_tryrdlock
 #define dt_pthread_rwlock_trywrlock pthread_rwlock_trywrlock
+
+#define dt_pthread_rwlock_rdlock_with_caller(A,B,C) pthread_rwlock_rdlock(A)
+#define dt_pthread_rwlock_wrlock_with_caller(A,B,C) pthread_rwlock_wrlock(A)
+#define dt_pthread_rwlock_tryrdlock_with_caller(A,B,C) pthread_rwlock_tryrdlock(A)
+#define dt_pthread_rwlock_trywrlock_with_caller(A,B,C) pthread_rwlock_trywrlock(A)
 
 #endif
 #endif
