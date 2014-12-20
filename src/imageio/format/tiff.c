@@ -55,6 +55,7 @@ typedef struct dt_imageio_tiff_gui_t
 int write_image(dt_imageio_module_data_t *d_tmp, const char *filename, const void *in_void, void *exif,
                 int exif_len, int imgid, int num, int total)
 {
+  const dt_view_t *cv = dt_view_manager_get_current_view(darktable.view_manager);
   const dt_imageio_tiff_t *d = (dt_imageio_tiff_t *)d_tmp;
 
   uint8_t *profile = NULL;
@@ -139,7 +140,15 @@ int write_image(dt_imageio_module_data_t *d_tmp, const char *filename, const voi
   TIFFSetField(tif, TIFFTAG_ROWSPERSTRIP, (uint32_t)1);
   TIFFSetField(tif, TIFFTAG_ORIENTATION, (uint16_t)ORIENTATION_TOPLEFT);
 
-  int resolution = dt_conf_get_int("metadata/resolution");
+  int resolution;
+
+  // when in the print module we don't want to use any random dpi value but the actual printer native resolution.
+
+  if (cv->view(cv) == DT_VIEW_PRINT)
+    resolution = dt_conf_get_int("plugins/imageio/format/print/resolution");
+  else
+    resolution = dt_conf_get_int("metadata/resolution");
+
   if(resolution > 0)
   {
     TIFFSetField(tif, TIFFTAG_XRESOLUTION, (float)resolution);
