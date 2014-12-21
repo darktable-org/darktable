@@ -23,6 +23,12 @@
 #include <gtk/gtk.h>
 #include <stdint.h>
 
+// super ugly deprecation avoidance. Ubuntu 14.04 LTS only ships GTK3 3.10
+#if GTK_CHECK_VERSION(3, 12, 0) == 0
+#define gtk_widget_set_margin_start(w, m) gtk_widget_set_margin_left(w, m)
+#define gtk_widget_set_margin_end(w, m) gtk_widget_set_margin_right(w, m)
+#endif
+
 #define DT_GUI_IOP_MODULE_CONTROL_SPACING 2
 
 /* helper macro that applies the DPI transformation to fixed pixel values. input should be defaulting to 96
