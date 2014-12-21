@@ -54,7 +54,7 @@ static gboolean _supported_image(const gchar *filename)
 }
 
 
-dt_imageio_retval_t dt_imageio_open_gm(dt_image_t *img, const char *filename, dt_mipmap_cache_allocator_t a)
+dt_imageio_retval_t dt_imageio_open_gm(dt_image_t *img, const char *filename, dt_mipmap_buffer_t *mbuf)
 {
   int err = DT_IMAGEIO_FILE_CORRUPTED;
   ExceptionInfo exception;
@@ -90,7 +90,7 @@ dt_imageio_retval_t dt_imageio_open_gm(dt_image_t *img, const char *filename, dt
 
   img->bpp = 4 * sizeof(float);
 
-  float *mipbuf = (float *)dt_mipmap_cache_alloc(img, DT_MIPMAP_FULL, a);
+  float *mipbuf = (float *)dt_mipmap_cache_alloc(mbuf, img);
   if(!mipbuf)
   {
     fprintf(stderr, "[GraphicsMagick_open] could not alloc full buffer for image `%s'\n", img->filename);
