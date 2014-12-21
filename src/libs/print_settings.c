@@ -22,6 +22,7 @@
 #include "common/styles.h"
 #include "common/variables.h"
 #include "common/cups_print.h"
+#include "common/image_cache.h"
 #include "dtgtk/label.h"
 #include "dtgtk/resetlabel.h"
 #include "libs/lib.h"
@@ -29,6 +30,8 @@
 #include "bauhaus/bauhaus.h"
 
 DT_MODULE(1)
+
+static gboolean _combo_box_set_active_text(GtkComboBox *cb, const gchar *text);
 
 const char*
 name ()
@@ -927,22 +930,205 @@ gui_init (dt_lib_module_t *self)
                     (gpointer)self);
 }
 
-/*
+static gboolean _combo_box_set_active_text(GtkComboBox *cb, const gchar *text)
+{
+  g_assert(text != NULL);
+  g_assert(cb != NULL);
+  GtkTreeModel *model = gtk_combo_box_get_model(cb);
+  GtkTreeIter iter;
+  if(gtk_tree_model_get_iter_first(model, &iter))
+  {
+    int k = -1;
+    do
+    {
+      k++;
+      GValue value = {
+        0,
+      };
+      gtk_tree_model_get_value(model, &iter, 0, &value);
+      gchar *v = NULL;
+      if(G_VALUE_HOLDS_STRING(&value) && (v = (gchar *)g_value_get_string(&value)) != NULL)
+      {
+        if(strcmp(v, text) == 0)
+        {
+          gtk_combo_box_set_active(cb, k);
+          return TRUE;
+        }
+      }
+    } while(gtk_tree_model_iter_next(model, &iter));
+  }
+  return FALSE;
+}
+
 void init_presets(dt_lib_module_t *self)
 {
-  ;
 }
 
 int set_params(dt_lib_module_t *self, const void *params, int size)
 {
-  return 1;
+  dt_lib_print_settings_t *ps = (dt_lib_print_settings_t *)self->data;
+
+  if(!params) return 1;
+
+  // get the parameters buffer
+  const char *buf = (char *)params;
+
+  // get individual items
+  const char *printer = buf;
+  if (!printer) return 1;
+  const int32_t printer_len = strlen(printer) + 1;
+  buf += printer_len;
+
+  const char *paper = buf;
+  if (!paper) return 1;
+  const int32_t paper_len = strlen(paper) + 1;
+  buf += paper_len;
+
+  const int32_t landscape = *(int32_t *)buf;
+  buf +=  sizeof(int32_t);
+
+  const char *profile = buf;
+  if (!profile) return 1;
+  const int32_t profile_len = strlen(profile) + 1;
+  buf += profile_len;
+
+  const int32_t intent = *(int32_t *)buf;
+  buf += sizeof(int32_t);
+
+  const char *pprofile = buf;
+  if (!pprofile) return 1;
+  const int32_t pprofile_len = strlen(pprofile) + 1;
+  buf += pprofile_len;
+
+  const int32_t pintent = *(int32_t *)buf;
+  buf += sizeof(int32_t);
+
+  const char *style = buf;
+  if (!style) return 1;
+  const int32_t style_len = strlen(style) + 1;
+  buf += style_len;
+
+  const int32_t style_mode = *(int32_t *)buf;
+  buf += sizeof(int32_t);
+
+  const double b_top = *(double *)buf;
+  buf += sizeof(double);
+
+  const double b_bottom = *(double *)buf;
+  buf += sizeof(double);
+
+  const double b_left = *(double *)buf;
+  buf += sizeof(double);
+
+  const double b_right = *(double *)buf;
+  buf += sizeof(double);
+
+  const int32_t alignment = *(int32_t *)buf;
+  buf += sizeof(int32_t);
+
+  // ensure that the size is correct
+  if(size != printer_len + paper_len + profile_len + pprofile_len + style_len + 5 * sizeof(int32_t) + 4 * sizeof(double))
+    return 1;
+
+  // set the GUI with corresponding values
+  if (printer[0] != '\0')
+    _combo_box_set_active_text(ps->printers, printer);
+
+  if (paper[0] != '\0')
+    _combo_box_set_active_text(ps->papers, paper);
+
+  gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON(ps->portrait), !landscape);
+
+  if (profile[0] != '\0')
+    _combo_box_set_active_text(ps->profile, profile);
+  gtk_combo_box_set_active (GTK_COMBO_BOX(ps->intent), intent);
+
+  if (pprofile[0] != '\0')
+    _combo_box_set_active_text(ps->pprofile, pprofile);
+  gtk_combo_box_set_active (GTK_COMBO_BOX(ps->pintent), pintent);
+
+  if (style[0] != '\0')
+    _combo_box_set_active_text(ps->style, style);
+  gtk_combo_box_set_active (GTK_COMBO_BOX(ps->style_mode), style_mode);
+
+  gtk_spin_button_set_value (GTK_SPIN_BUTTON(ps->b_top), b_top);
+  gtk_spin_button_set_value (GTK_SPIN_BUTTON(ps->b_bottom), b_bottom);
+  gtk_spin_button_set_value (GTK_SPIN_BUTTON(ps->b_left), b_left);
+  gtk_spin_button_set_value (GTK_SPIN_BUTTON(ps->b_right), b_right);
+
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(ps->dtba[alignment]),TRUE);
+
+  return 0;
 }
 
 void *get_params(dt_lib_module_t *self, int *size)
 {
-  return (int *)1899;
+  const dt_lib_print_settings_t *ps = (dt_lib_print_settings_t *)self->data;
+
+  // get the data
+  const char *printer = gtk_combo_box_text_get_active_text(GTK_COMBO_BOX_TEXT(ps->printers));
+  const char *paper = gtk_combo_box_text_get_active_text(GTK_COMBO_BOX_TEXT(ps->papers));
+  const char *profile = gtk_combo_box_text_get_active_text(GTK_COMBO_BOX_TEXT(ps->profile));
+  const int32_t intent =  gtk_combo_box_get_active(GTK_COMBO_BOX(ps->intent));
+  const char *style = gtk_combo_box_text_get_active_text(GTK_COMBO_BOX_TEXT(ps->style));
+  const int32_t style_mode = gtk_combo_box_get_active(GTK_COMBO_BOX(ps->style_mode));
+  const char *pprofile = gtk_combo_box_text_get_active_text(GTK_COMBO_BOX_TEXT(ps->pprofile));
+  const int32_t pintent =  gtk_combo_box_get_active(GTK_COMBO_BOX(ps->pintent));
+  const int32_t landscape = !gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON(ps->portrait));
+  const double b_top = gtk_spin_button_get_value(GTK_SPIN_BUTTON(ps->b_top));
+  const double b_bottom = gtk_spin_button_get_value(GTK_SPIN_BUTTON(ps->b_bottom));
+  const double b_left = gtk_spin_button_get_value(GTK_SPIN_BUTTON(ps->b_left));
+  const double b_right = gtk_spin_button_get_value(GTK_SPIN_BUTTON(ps->b_right));
+  const int32_t alignment = ps->prt.page.alignment;
+
+  // compute the size of individual items, always get the \0 for strings
+  const int32_t printer_len = strlen (printer) + 1;
+  const int32_t paper_len = strlen (paper) + 1;
+  const int32_t profile_len = strlen (profile) + 1;
+  const int32_t pprofile_len = strlen (pprofile) + 1;
+  const int32_t style_len = strlen (style) + 1;
+
+  // compute the size of all parameters
+  *size = printer_len + paper_len + profile_len + pprofile_len + style_len + 5 * sizeof(int32_t) + 4 * sizeof(double);
+
+  // allocate the parameter buffer
+  char *params = (char *)malloc(*size);
+
+  int pos = 0;
+
+  memcpy(params+pos, printer, printer_len);
+  pos += printer_len;
+  memcpy(params+pos, paper, paper_len);
+  pos += paper_len;
+  memcpy(params+pos, &landscape, sizeof(int32_t));
+  pos += sizeof(int32_t);
+  memcpy(params+pos, profile, profile_len);
+  pos += profile_len;
+  memcpy(params+pos, &intent, sizeof(int32_t));
+  pos += sizeof(int32_t);
+  memcpy(params+pos, pprofile, pprofile_len);
+  pos += pprofile_len;
+  memcpy(params+pos, &pintent, sizeof(int32_t));
+  pos += sizeof(int32_t);
+  memcpy(params+pos, style, style_len);
+  pos += style_len;
+  memcpy(params+pos, &style_mode, sizeof(int32_t));
+  pos += sizeof(int32_t);
+  memcpy(params+pos, &b_top, sizeof(double));
+  pos += sizeof(double);
+  memcpy(params+pos, &b_bottom, sizeof(double));
+  pos += sizeof(double);
+  memcpy(params+pos, &b_left, sizeof(double));
+  pos += sizeof(double);
+  memcpy(params+pos, &b_right, sizeof(double));
+  pos += sizeof(double);
+  memcpy(params+pos, &alignment, sizeof(int32_t));
+  pos += sizeof(int32_t);
+
+  g_assert(pos == *size);
+
+  return params;
 }
-*/
 
 void
 gui_cleanup (dt_lib_module_t *self)
@@ -952,6 +1138,49 @@ gui_cleanup (dt_lib_module_t *self)
   g_list_free_full(ps->profiles, g_free);
   free(self->data);
   self->data = NULL;
+}
+
+void
+gui_reset (dt_lib_module_t *self)
+{
+  dt_lib_print_settings_t *ps = (dt_lib_print_settings_t *)self->data;
+
+  gtk_spin_button_set_value(GTK_SPIN_BUTTON(ps->b_top), 15);
+  gtk_spin_button_set_value(GTK_SPIN_BUTTON(ps->b_bottom), 15);
+  gtk_spin_button_set_value(GTK_SPIN_BUTTON(ps->b_left), 15);
+  gtk_spin_button_set_value(GTK_SPIN_BUTTON(ps->b_right), 15);
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(ps->dtba[center]),TRUE);
+  ps->prt.page.alignment = center;
+  gtk_combo_box_set_active(GTK_COMBO_BOX(ps->profile), 0);
+  gtk_combo_box_set_active(GTK_COMBO_BOX(ps->pprofile), 0);
+  gtk_combo_box_set_active(ps->pintent, dt_conf_get_int("plugins/print/print/iccintent") + 1);
+  gtk_combo_box_set_active(GTK_COMBO_BOX(ps->style), 0);
+  gtk_combo_box_set_active(GTK_COMBO_BOX(ps->intent), 0);
+
+  // reset page orientation to fit the picture
+
+  ps->prt.page.landscape = TRUE;
+
+  const int imgid = dt_view_filmstrip_get_activated_imgid(darktable.view_manager);
+  const dt_image_t *img = dt_image_cache_read_get(darktable.image_cache, imgid);
+
+  if(img)
+  {
+    dt_mipmap_buffer_t buf;
+    dt_mipmap_cache_read_get(darktable.mipmap_cache, &buf, imgid, DT_MIPMAP_3, DT_MIPMAP_BEST_EFFORT);
+
+    if (buf.width > buf.height)
+      ps->prt.page.landscape = TRUE;
+    else
+      ps->prt.page.landscape = FALSE;
+
+    if(buf.buf)
+      dt_mipmap_cache_read_release(darktable.mipmap_cache, &buf);
+
+    dt_image_cache_read_release(darktable.image_cache, img);
+  }
+
+  gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON(ps->portrait), !ps->prt.page.landscape);
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
