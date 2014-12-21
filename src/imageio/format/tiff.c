@@ -53,7 +53,7 @@ typedef struct dt_imageio_tiff_gui_t
 int write_image(dt_imageio_module_data_t *d_tmp, const char *filename, const void *in_void, void *exif,
                 int exif_len, int imgid)
 {
-  dt_imageio_tiff_t *d = (dt_imageio_tiff_t *)d_tmp;
+  const dt_imageio_tiff_t *d = (dt_imageio_tiff_t *)d_tmp;
 
   uint8_t *profile = NULL;
   uint32_t profile_len = 0;
@@ -275,7 +275,7 @@ void *legacy_params(dt_imageio_module_format_t *self, const void *const old_para
       TIFF *handle;
     } dt_imageio_tiff_v1_t;
 
-    dt_imageio_tiff_v1_t *o = (dt_imageio_tiff_v1_t *)old_params;
+    const dt_imageio_tiff_v1_t *o = (dt_imageio_tiff_v1_t *)old_params;
     dt_imageio_tiff_t *n = (dt_imageio_tiff_t *)malloc(sizeof(dt_imageio_tiff_t));
 
     n->max_width = o->max_width;
@@ -314,8 +314,8 @@ void free_params(dt_imageio_module_format_t *self, dt_imageio_module_data_t *par
 int set_params(dt_imageio_module_format_t *self, const void *params, const int size)
 {
   if(size != self->params_size(self)) return 1;
-  dt_imageio_tiff_t *d = (dt_imageio_tiff_t *)params;
-  dt_imageio_tiff_gui_t *g = (dt_imageio_tiff_gui_t *)self->gui_data;
+  const dt_imageio_tiff_t *d = (dt_imageio_tiff_t *)params;
+  const dt_imageio_tiff_gui_t *g = (dt_imageio_tiff_gui_t *)self->gui_data;
 
   if(d->bpp == 16)
     gtk_combo_box_set_active(g->bpp, 1);
@@ -370,7 +370,7 @@ const char *name()
 
 static void bpp_combobox_changed(GtkComboBox *widget, gpointer user_data)
 {
-  int bpp = gtk_combo_box_get_active(widget);
+  const int bpp = gtk_combo_box_get_active(widget);
 
   if(bpp == 1)
     dt_conf_set_int("plugins/imageio/format/tiff/bpp", 16);
@@ -382,7 +382,7 @@ static void bpp_combobox_changed(GtkComboBox *widget, gpointer user_data)
 
 static void compress_combobox_changed(GtkComboBox *widget, gpointer user_data)
 {
-  int compress = gtk_combo_box_get_active(widget);
+  const int compress = gtk_combo_box_get_active(widget);
   dt_conf_set_int("plugins/imageio/format/tiff/compress", compress);
 }
 
@@ -402,9 +402,9 @@ void gui_init(dt_imageio_module_format_t *self)
   dt_imageio_tiff_gui_t *gui = (dt_imageio_tiff_gui_t *)malloc(sizeof(dt_imageio_tiff_gui_t));
   self->gui_data = (void *)gui;
 
-  int bpp = dt_conf_get_int("plugins/imageio/format/tiff/bpp");
+  const int bpp = dt_conf_get_int("plugins/imageio/format/tiff/bpp");
 
-  int compress = dt_conf_get_int("plugins/imageio/format/tiff/compress");
+  const int compress = dt_conf_get_int("plugins/imageio/format/tiff/compress");
 
   self->widget = gtk_vbox_new(TRUE, 5);
 
