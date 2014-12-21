@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2009--2010 johannes hanika.
+    copyright (c) 2009--2014 johannes hanika.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -27,7 +27,7 @@
 #include <glib.h>
 #include <assert.h>
 
-#if 1//def _DEBUG
+#ifdef _DEBUG
 
 // copied from darktable.h so we don't need to include the header
 #include <sys/time.h>
@@ -64,7 +64,7 @@ static inline int dt_pthread_mutex_destroy(dt_pthread_mutex_t *mutex)
 {
   const int ret = pthread_mutex_destroy(&(mutex->mutex));
 
-#if 1
+#if 0
   printf("\n[mutex] stats for mutex `%s':\n", mutex->name);
   printf("[mutex] total time locked: %.3f secs\n", mutex->time_sum_locked);
   printf("[mutex] total wait time  : %.3f secs\n", mutex->time_sum_wait);

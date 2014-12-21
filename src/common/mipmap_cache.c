@@ -512,7 +512,6 @@ void *dt_mipmap_cache_alloc(dt_mipmap_buffer_t *buf, const dt_image_t *img)
   {
     if((void *)dsc != (void *)dt_mipmap_cache_static_dead_image) dt_free_align(buf->cache_entry->data);
     buf->cache_entry->data = dt_alloc_align(64, buffer_size);
-    fprintf(stderr, "[mipmap cache] alloc %d x %d @ %d for key %u %p\n", wd, ht, img->bpp, img->id, buf->buf);
     if(!buf->cache_entry->data)
     {
       fprintf(stderr, "allocation failed!!!!\n");
