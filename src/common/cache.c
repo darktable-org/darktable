@@ -56,7 +56,7 @@ void dt_cache_cleanup(dt_cache_t *cache)
     else
       dt_free_align(entry->data);
     dt_pthread_rwlock_destroy(&entry->lock);
-    g_free(entry);
+    g_slice_free1(sizeof(*entry), entry);
     l = g_list_next(l);
   }
   g_list_free(cache->lru);
@@ -102,6 +102,8 @@ dt_cache_entry_t *dt_cache_testget(dt_cache_t *cache, const uint32_t key, char m
   gpointer orig_key, value;
   gboolean res;
   int result;
+  int restarts = 0;
+  double start = dt_get_wtime();
 restart:
   dt_pthread_mutex_lock(&cache->lock);
   res = g_hash_table_lookup_extended(
@@ -117,15 +119,22 @@ restart:
       // free the lock we're trying to acquire:
       dt_pthread_mutex_unlock(&cache->lock);
       g_usleep(5);
+      restarts ++;
       goto restart;
     }
     // bubble up in lru list:
     cache->lru = g_list_remove_link(cache->lru, entry->link);
     cache->lru = g_list_concat(cache->lru, entry->link);
     dt_pthread_mutex_unlock(&cache->lock);
+    double end = dt_get_wtime();
+    if(end - start > 0.1)
+      fprintf(stderr, "try+ wait time %.06fs mode %c restarts %d\n", end - start, mode, restarts);
     return entry;
   }
   dt_pthread_mutex_unlock(&cache->lock);
+  double end = dt_get_wtime();
+  if(end - start > 0.1)
+    fprintf(stderr, "try- wait time %.06fs\n", end - start);
   return 0;
 }
 
@@ -137,6 +146,7 @@ dt_cache_entry_t *dt_cache_get_with_caller(dt_cache_t *cache, const uint32_t key
   gpointer orig_key, value;
   gboolean res;
   int result;
+  double start = dt_get_wtime();
 restart:
   dt_pthread_mutex_lock(&cache->lock);
   res = g_hash_table_lookup_extended(
@@ -171,7 +181,7 @@ restart:
   }
 
   // here dies your 32-bit system:
-  dt_cache_entry_t *entry = (dt_cache_entry_t *)g_malloc(sizeof(dt_cache_entry_t));
+  dt_cache_entry_t *entry = (dt_cache_entry_t *)g_slice_alloc(sizeof(dt_cache_entry_t));
   int ret = dt_pthread_rwlock_init(&entry->lock, 0);
   if(ret) fprintf(stderr, "rwlock init: %d\n", ret);
   entry->data = 0;
@@ -194,6 +204,9 @@ restart:
   cache->lru = g_list_concat(cache->lru, entry->link);
 
   dt_pthread_mutex_unlock(&cache->lock);
+  double end = dt_get_wtime();
+  if(end - start > 0.1)
+    fprintf(stderr, "wait time %.06fs\n", end - start);
   return entry;
 }
 
@@ -235,7 +248,7 @@ restart:
   dt_pthread_rwlock_unlock(&entry->lock);
   dt_pthread_rwlock_destroy(&entry->lock);
   cache->cost -= entry->cost;
-  g_free(entry);
+  g_slice_free1(sizeof(*entry), entry);
 
   dt_pthread_mutex_unlock(&cache->lock);
   return 0;
@@ -268,7 +281,7 @@ void dt_cache_gc(dt_cache_t *cache, const float fill_ratio)
       dt_free_align(entry->data);
     dt_pthread_rwlock_unlock(&entry->lock);
     dt_pthread_rwlock_destroy(&entry->lock);
-    g_free(entry);
+    g_slice_free1(sizeof(*entry), entry);
   }
 }
 
