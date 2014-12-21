@@ -623,7 +623,7 @@ int store(dt_imageio_module_storage_t *self, dt_imageio_module_data_t *sdata, co
     return 1;
   }
   close(fd);
-  const dt_image_t *img = dt_image_cache_read_get(darktable.image_cache, imgid);
+  const dt_image_t *img = dt_image_cache_get(darktable.image_cache, imgid, 'r');
 
   // If title is not existing, then use the filename without extension. If not, then use title instead
   GList *title = dt_metadata_get(img->id, "Xmp.dc.title", NULL);
