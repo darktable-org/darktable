@@ -629,9 +629,9 @@ void dt_mipmap_cache_deallocate_dynamic(void *data, dt_cache_entry_t *entry)
             = dt_imageio_jpeg_compress(entry->data + sizeof(*dsc), blob, dsc->width, dsc->height, MIN(100, MAX(10, cache_quality)));
           assert(length <= cache->buffer_size);
           int written = fwrite(blob, sizeof(uint8_t), length, f);
-          assert(written == length);
           free(blob);
           fclose(f);
+          if(written != length) g_unlink(filename);
         }
       }
     }
