@@ -112,9 +112,9 @@ static void update(dt_lib_module_t *user_data, gboolean early_bark_out)
 {
   //   early_bark_out = FALSE; // FIXME: when barking out early we don't update on ctrl-a/ctrl-shift-a. but
   //   otherwise it's impossible to edit text
-  dt_lib_module_t *self = (dt_lib_module_t *)user_data;
+  const dt_lib_module_t *self = (dt_lib_module_t *)user_data;
   dt_lib_metadata_t *d = (dt_lib_metadata_t *)self->data;
-  int imgsel = dt_control_get_mouse_over_id();
+  const int imgsel = dt_control_get_mouse_over_id();
   if(early_bark_out && imgsel == d->imgsel) return;
 
   d->imgsel = imgsel;
@@ -255,7 +255,7 @@ static void apply_button_clicked(GtkButton *button, gpointer user_data)
 
 static gboolean key_pressed(GtkWidget *widget, GdkEventKey *event, gpointer user_data)
 {
-  dt_lib_module_t *self = (dt_lib_module_t *)user_data;
+  const dt_lib_module_t *self = (dt_lib_module_t *)user_data;
   dt_lib_metadata_t *d = (dt_lib_metadata_t *)self->data;
 
   switch(event->keyval)
@@ -290,8 +290,8 @@ int position()
 
 static void _mouse_over_image_callback(gpointer instace, gpointer user_data)
 {
-  dt_lib_module_t *self = (dt_lib_module_t *)user_data;
-  dt_lib_metadata_t *d = (dt_lib_metadata_t *)self->data;
+  const dt_lib_module_t *self = (dt_lib_module_t *)user_data;
+  const dt_lib_metadata_t *d = (dt_lib_metadata_t *)self->data;
 
   /* lets trigger an expose for a redraw of widget */
   if(d->editing)
@@ -432,7 +432,7 @@ void gui_init(dt_lib_module_t *self)
 
 void gui_cleanup(dt_lib_module_t *self)
 {
-  dt_lib_metadata_t *d = (dt_lib_metadata_t *)self->data;
+  const dt_lib_metadata_t *d = (dt_lib_metadata_t *)self->data;
   dt_control_signal_disconnect(darktable.signals, G_CALLBACK(_mouse_over_image_callback), self);
   dt_gui_key_accel_block_on_focus_disconnect(GTK_WIDGET(gtk_bin_get_child(GTK_BIN(d->publisher))));
   dt_gui_key_accel_block_on_focus_disconnect(GTK_WIDGET(gtk_bin_get_child(GTK_BIN(d->rights))));
@@ -445,7 +445,7 @@ void gui_cleanup(dt_lib_module_t *self)
 
 static void add_rights_preset(dt_lib_module_t *self, char *name, char *string)
 {
-  unsigned int params_size = strlen(string) + 5;
+  const unsigned int params_size = strlen(string) + 5;
 
   char *params = calloc(sizeof(char), params_size);
   memcpy(params + 2, string, params_size - 5);
@@ -473,11 +473,11 @@ void *get_params(dt_lib_module_t *self, int *size)
 {
   dt_lib_metadata_t *d = (dt_lib_metadata_t *)self->data;
 
-  char *title = gtk_combo_box_text_get_active_text(GTK_COMBO_BOX_TEXT(d->title));
-  char *description = gtk_combo_box_text_get_active_text(GTK_COMBO_BOX_TEXT(d->description));
-  char *rights = gtk_combo_box_text_get_active_text(GTK_COMBO_BOX_TEXT(d->rights));
-  char *creator = gtk_combo_box_text_get_active_text(GTK_COMBO_BOX_TEXT(d->creator));
-  char *publisher = gtk_combo_box_text_get_active_text(GTK_COMBO_BOX_TEXT(d->publisher));
+  const char *title = gtk_combo_box_text_get_active_text(GTK_COMBO_BOX_TEXT(d->title));
+  const char *description = gtk_combo_box_text_get_active_text(GTK_COMBO_BOX_TEXT(d->description));
+  const char *rights = gtk_combo_box_text_get_active_text(GTK_COMBO_BOX_TEXT(d->rights));
+  const char *creator = gtk_combo_box_text_get_active_text(GTK_COMBO_BOX_TEXT(d->creator));
+  const char *publisher = gtk_combo_box_text_get_active_text(GTK_COMBO_BOX_TEXT(d->publisher));
 
   int32_t title_len = strlen(title);
   int32_t description_len = strlen(description);
@@ -513,23 +513,23 @@ int set_params(dt_lib_module_t *self, const void *params, int size)
 
   char *buf = (char *)params;
 
-  char *title = buf;
+  const char *title = buf;
   if(!title) return 1;
 
   buf += strlen(title) + 1;
-  char *description = buf;
+  const char *description = buf;
   if(!description) return 1;
 
   buf += strlen(description) + 1;
-  char *rights = buf;
+  const char *rights = buf;
   if(!rights) return 1;
 
   buf += strlen(rights) + 1;
-  char *creator = buf;
+  const char *creator = buf;
   if(!creator) return 1;
 
   buf += strlen(creator) + 1;
-  char *publisher = buf;
+  const char *publisher = buf;
   if(!publisher) return 1;
 
   if(size != strlen(title) + strlen(description) + strlen(rights) + strlen(creator) + strlen(publisher) + 5)
