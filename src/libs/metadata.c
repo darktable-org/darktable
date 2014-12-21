@@ -479,27 +479,27 @@ void *get_params(dt_lib_module_t *self, int *size)
   const char *creator = gtk_combo_box_text_get_active_text(GTK_COMBO_BOX_TEXT(d->creator));
   const char *publisher = gtk_combo_box_text_get_active_text(GTK_COMBO_BOX_TEXT(d->publisher));
 
-  int32_t title_len = strlen(title);
-  int32_t description_len = strlen(description);
-  int32_t rights_len = strlen(rights);
-  int32_t creator_len = strlen(creator);
-  int32_t publisher_len = strlen(publisher);
+  const int32_t title_len = strlen(title) + 1;
+  const int32_t description_len = strlen(description) + 1;
+  const int32_t rights_len = strlen(rights) + 1;
+  const int32_t creator_len = strlen(creator) + 1;
+  const int32_t publisher_len = strlen(publisher) + 1;
 
-  *size = title_len + description_len + rights_len + creator_len + publisher_len + 5;
+  *size = title_len + description_len + rights_len + creator_len + publisher_len;
 
   char *params = (char *)malloc(*size);
 
   int pos = 0;
-  memcpy(params + pos, title, title_len + 1);
-  pos += title_len + 1;
-  memcpy(params + pos, description, description_len + 1);
-  pos += description_len + 1;
-  memcpy(params + pos, rights, rights_len + 1);
-  pos += rights_len + 1;
-  memcpy(params + pos, creator, creator_len + 1);
-  pos += creator_len + 1;
-  memcpy(params + pos, publisher, publisher_len + 1);
-  pos += publisher_len + 1;
+  memcpy(params + pos, title, title_len);
+  pos += title_len;
+  memcpy(params + pos, description, description_len);
+  pos += description_len;
+  memcpy(params + pos, rights, rights_len);
+  pos += rights_len;
+  memcpy(params + pos, creator, creator_len);
+  pos += creator_len;
+  memcpy(params + pos, publisher, publisher_len);
+  pos += publisher_len;
 
   g_assert(pos == *size);
 
@@ -515,24 +515,29 @@ int set_params(dt_lib_module_t *self, const void *params, int size)
 
   const char *title = buf;
   if(!title) return 1;
+  const int title_len = strlen(title) + 1;
 
-  buf += strlen(title) + 1;
+  buf += title_len;
   const char *description = buf;
   if(!description) return 1;
+  const int description_len = strlen(description) + 1;
 
-  buf += strlen(description) + 1;
+  buf += description_len;
   const char *rights = buf;
   if(!rights) return 1;
+  const int rights_len = strlen(rights) + 1;
 
-  buf += strlen(rights) + 1;
+  buf += rights_len;
   const char *creator = buf;
   if(!creator) return 1;
+  const int creator_len = strlen(creator) + 1;
 
-  buf += strlen(creator) + 1;
+  buf += creator_len;
   const char *publisher = buf;
   if(!publisher) return 1;
+  const int publisher_len = strlen(publisher) + 1;
 
-  if(size != strlen(title) + strlen(description) + strlen(rights) + strlen(creator) + strlen(publisher) + 5)
+  if(size != title_len + description_len + rights_len + creator_len + publisher_len)
     return 1;
 
   if(title != NULL && title[0] != '\0') dt_metadata_set(-1, "Xmp.dc.title", title);
