@@ -41,7 +41,7 @@ static const dt_image_t *checkreadimage(lua_State *L, int index)
 {
   dt_lua_image_t imgid;
   luaA_to(L, dt_lua_image_t, &imgid, index);
-  return dt_image_cache_read_get(darktable.image_cache, imgid);
+  return dt_image_cache_get(darktable.image_cache, imgid, 'r');
 }
 
 static void releasereadimage(lua_State *L, const dt_image_t *image)
@@ -51,14 +51,12 @@ static void releasereadimage(lua_State *L, const dt_image_t *image)
 
 static dt_image_t *checkwriteimage(lua_State *L, int index)
 {
-  const dt_image_t *my_readimage = checkreadimage(L, index);
-  return dt_image_cache_write_get(darktable.image_cache, my_readimage);
+  return dt_image_cache_get(darktable.image_cache, index, 'w');
 }
 
 static void releasewriteimage(lua_State *L, dt_image_t *image)
 {
   dt_image_cache_write_release(darktable.image_cache, image, DT_IMAGE_CACHE_SAFE);
-  releasereadimage(L, image);
 }
 
 void dt_lua_image_push(lua_State *L, int imgid)
@@ -485,7 +483,7 @@ int group_with(lua_State *L)
   dt_lua_image_t second_image;
   luaA_to(L, dt_lua_image_t, &second_image, 2);
 
-  const dt_image_t *cimg = dt_image_cache_read_get(darktable.image_cache, second_image);
+  const dt_image_t *cimg = dt_image_cache_get(darktable.image_cache, second_image, 'r');
   int group_id = cimg->group_id;
   dt_image_cache_read_release(darktable.image_cache, cimg);
 
@@ -506,7 +504,7 @@ int get_group(lua_State *L)
 {
   dt_lua_image_t first_image;
   luaA_to(L, dt_lua_image_t, &first_image, 1);
-  const dt_image_t *cimg = dt_image_cache_read_get(darktable.image_cache, first_image);
+  const dt_image_t *cimg = dt_image_cache_get(darktable.image_cache, first_image, 'r');
   int group_id = cimg->group_id;
   dt_image_cache_read_release(darktable.image_cache, cimg);
   sqlite3_stmt *stmt;
