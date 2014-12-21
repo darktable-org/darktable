@@ -1774,7 +1774,6 @@ static gboolean dt_bauhaus_slider_postponed_value_change(gpointer data)
 {
   if(!GTK_IS_WIDGET(data)) return 0;
 
-  gdk_threads_enter();
   dt_bauhaus_widget_t *w = (dt_bauhaus_widget_t *)data;
   dt_bauhaus_slider_data_t *d = &w->data.slider;
   if(d->is_changed)
@@ -1784,8 +1783,6 @@ static gboolean dt_bauhaus_slider_postponed_value_change(gpointer data)
   }
 
   if(!d->is_dragging) d->timeout_handle = 0;
-
-  gdk_threads_leave();
 
   return d->is_dragging;
 }
