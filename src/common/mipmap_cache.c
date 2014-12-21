@@ -608,7 +608,9 @@ void dt_mipmap_cache_deallocate_dynamic(void *data, dt_cache_entry_t *entry)
   dt_mipmap_cache_one_t *cache = (dt_mipmap_cache_one_t *)data;
   if(cache->size <= DT_MIPMAP_3)
   {
-    if(dt_conf_get_bool("cache_disk_backend"))
+    struct dt_mipmap_buffer_dsc *dsc = (struct dt_mipmap_buffer_dsc *)entry->data;
+    // don't write skulls:
+    if(dsc->width > 8 && dsc->height > 8 && dt_conf_get_bool("cache_disk_backend"))
     {
       // serialize to disk
       // TODO: if compression, uncompress first
@@ -622,12 +624,12 @@ void dt_mipmap_cache_deallocate_dynamic(void *data, dt_cache_entry_t *entry)
         FILE *f = fopen(filename, "wb");
         if(f)
         {
-          uint8_t *blob = (uint8_t *)malloc(cache->buffer_size);
-          struct dt_mipmap_buffer_dsc *dsc = (struct dt_mipmap_buffer_dsc *)entry->data;
+          // allocate temp memory, at least 1MB to be sure we fit:
+          uint8_t *blob = (uint8_t *)malloc(MIN(1<<20, cache->buffer_size));
           const int cache_quality = dt_conf_get_int("database_cache_quality");
           const int32_t length
             = dt_imageio_jpeg_compress(entry->data + sizeof(*dsc), blob, dsc->width, dsc->height, MIN(100, MAX(10, cache_quality)));
-          assert(length <= cache->buffer_size);
+          assert(length <= MIN(1<<20, cache->buffer_size));
           int written = fwrite(blob, sizeof(uint8_t), length, f);
           free(blob);
           fclose(f);
