@@ -1427,7 +1427,7 @@ int store(dt_imageio_module_storage_t *self, struct dt_imageio_module_data_t *sd
   close(fd);
 
   // get metadata
-  const dt_image_t *img = dt_image_cache_read_get(darktable.image_cache, imgid);
+  const dt_image_t *img = dt_image_cache_get(darktable.image_cache, imgid, 'r');
   char *title = NULL;
   char *summary = NULL;
   GList *meta_title = NULL;
