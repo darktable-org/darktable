@@ -116,7 +116,7 @@ restart:
     { // need to give up mutex so other threads have a chance to get in between and
       // free the lock we're trying to acquire:
       dt_pthread_mutex_unlock(&cache->lock);
-      g_usleep(500);
+      g_usleep(5);
       goto restart;
     }
     // bubble up in lru list:
@@ -150,7 +150,7 @@ restart:
     { // need to give up mutex so other threads have a chance to get in between and
       // free the lock we're trying to acquire:
       dt_pthread_mutex_unlock(&cache->lock);
-      g_usleep(500);
+      g_usleep(5);
       goto restart;
     }
     // bubble up in lru list:
@@ -219,7 +219,7 @@ restart:
   if(result)
   {
     dt_pthread_mutex_unlock(&cache->lock);
-    g_usleep(500);
+    g_usleep(5);
     goto restart;
   }
 
