@@ -180,7 +180,7 @@ if(can_build_usermanual)
 
 		COMMAND find ${CMAKE_CURRENT_BINARY_DIR}/wp -name *.html -exec sed -n -i "1h;1!H;\${;g;s/<body[^>]*>/<?php get_header(); ?><div id=\"primary\"><div id=\"content\" role=\"main\"><div class=\"usermanual\">/g;p;}" {} \;
 		COMMAND find ${CMAKE_CURRENT_BINARY_DIR}/wp -name *.html -exec sed -n -i "1h;1!H;\${;g;s/<\\/body><\\/html>/<\\/div><\\/div><\\/div><?php get_footer(); ?>/g;p;}" {} \;
-		COMMAND find ${CMAKE_CURRENT_BINARY_DIR}/wp -name *.html -exec sed -n -i "1h;1!H;\${;g;s/\\.html/\\.html\\.php/g;p;}" {} \;
+		COMMAND find ${CMAKE_CURRENT_BINARY_DIR}/wp -name *.html -exec sed -n -i "1h;1!H;\${;g;s|\"\\([^\":]*\\.html\\)|\"\\1.php|g;p;}" {} \;
 		COMMAND find ${CMAKE_CURRENT_BINARY_DIR}/wp -name *.html -exec mv {} {}.php \;
 		COMMAND cp -r ${CMAKE_CURRENT_BINARY_DIR}/media/images ${CMAKE_CURRENT_BINARY_DIR}/wp/
 		WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
@@ -197,7 +197,7 @@ if(can_build_usermanual)
 
 		COMMAND find ${CMAKE_CURRENT_BINARY_DIR}/wp -name *.html -exec sed -i "s/<body[^>]*>/<?php get_header(); ?><div id=\"primary\"><div id=\"content\" role=\"main\"><div class=\"usermanual\">/g" {} \;
 		COMMAND find ${CMAKE_CURRENT_BINARY_DIR}/wp -name *.html -exec sed -i "s/<\\/body><\\/html>/<\\/div><\\/div><\\/div><?php get_footer(); ?>/g" {} \;
-		COMMAND find ${CMAKE_CURRENT_BINARY_DIR}/wp -name *.html -exec sed -i "s/\\.html/\\.html\\.php/g" {} \;
+		COMMAND find ${CMAKE_CURRENT_BINARY_DIR}/wp -name *.html -exec sed -i "s|\"\\([^\":]*\\.html\\)|\"\\1.php|g" {} \;
 		COMMAND find ${CMAKE_CURRENT_BINARY_DIR}/wp -name *.html -exec mv {} {}.php \;
 		COMMAND cp -r ${CMAKE_CURRENT_BINARY_DIR}/media/images ${CMAKE_CURRENT_BINARY_DIR}/wp/
 		WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
