@@ -30,6 +30,13 @@
     <longdescription>this controls how much memory is going to be used for thumbnails and other buffers (needs a restart).</longdescription>
   </dtconfig>
   <dtconfig prefs="core">
+    <name>cache_disk_backend</name>
+    <type>bool</type>
+    <default>false</default>
+    <shortdescription>enable disk backend for mipmap cache</shortdescription>
+    <longdescription>if enabled, write thumbnails to disk when evicted from the memory cache.</longdescription>
+  </dtconfig>
+  <dtconfig prefs="core">
     <name>worker_threads</name>
     <type>int</type>
     <default>2</default>

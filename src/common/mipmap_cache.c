@@ -471,29 +471,6 @@ static void scratchmem_deallocate(void *data, dt_cache_entry_t *entry)
   dt_free_align(entry->data);
 }
 
-#if 0
-void dt_mipmap_cache_allocate(void *data, dt_cache_entry_t *entry)
-{
-  dt_mipmap_cache_one_t *c = (dt_mipmap_cache_one_t *)data;
-  // slot is exactly aligned with encapsulated cache's position and already allocated
-  entry->cost = c->buffer_size;
-  entry->data = dt_alloc_align(16, c->buffer_size);
-  struct dt_mipmap_buffer_dsc *dsc = (struct dt_mipmap_buffer_dsc *)entry->data;
-  // set width and height:
-  dsc->width = c->max_width;
-  dsc->height = c->max_height;
-  dsc->size = c->buffer_size;
-  dsc->flags = DT_MIPMAP_BUFFER_DSC_FLAG_GENERATE;
-}
-
-void
-dt_mipmap_cache_deallocate(void *data, dt_cache_entry_t *entry)
-{
-  dt_free_align(entry->data);
-}
-#endif
-
-
 // callback for the imageio core to allocate memory.
 // only needed for _F and _FULL buffers, as they change size
 // with the input image. will allocate img->width*img->height*img->bpp bytes.
@@ -514,7 +491,6 @@ void *dt_mipmap_cache_alloc(dt_mipmap_buffer_t *buf, const dt_image_t *img)
     buf->cache_entry->data = dt_alloc_align(64, buffer_size);
     if(!buf->cache_entry->data)
     {
-      fprintf(stderr, "allocation failed!!!!\n");
       // return fallback: at least alloc size for a dead image:
       buf->cache_entry->data = (void*)dt_mipmap_cache_static_dead_image;
       // allocator holds the pointer. but let imageio client know that allocation failed:
@@ -575,7 +551,47 @@ void dt_mipmap_cache_allocate_dynamic(void *data, dt_cache_entry_t *entry)
     }
   }
   assert(dsc->size >= sizeof(*dsc));
-  dsc->flags = DT_MIPMAP_BUFFER_DSC_FLAG_GENERATE;
+
+  int loaded_from_disk = 0;
+  if(cache->size <= DT_MIPMAP_3)
+  {
+    if(dt_conf_get_bool("cache_disk_backend"))
+    {
+      // try and load from disk, if successful set flag
+      char filename[1024];
+      snprintf(filename, 1024, "%s/%d/%d.jpg", darktable.cachedir, cache->size, get_imgid(entry->key));
+      FILE *f = fopen(filename, "rb");
+      if(f)
+      {
+        // TODO: if compression, alloc scratchmem and point blob to that, later compress!
+        // jpg too large?
+        size_t len = 0;
+        fseek(f, 0, SEEK_END);
+        len = ftell(f);
+        uint8_t *blob = (uint8_t *)malloc(len);
+        fseek(f, 0, SEEK_SET);
+        int rd = fread(blob, sizeof(uint8_t), len, f);
+        if(rd != len) goto read_error;
+        // no compression, the image is still compressed on disk, as jpg
+        dt_imageio_jpeg_t jpg;
+        if(dt_imageio_jpeg_decompress_header(blob, len, &jpg)
+           || (jpg.width > cache->max_width || jpg.height > cache->max_height)
+           || dt_imageio_jpeg_decompress(&jpg, entry->data + sizeof(*dsc)))
+        {
+          fprintf(stderr, "[mipmap_cache] failed to decompress thumbnail for image %d!\n", get_imgid(entry->key));
+        }
+        dsc->width = jpg.width;
+        dsc->height = jpg.height;
+        loaded_from_disk = 1;
+read_error:
+        free(blob);
+        fclose(f);
+      }
+    }
+  }
+
+  if(!loaded_from_disk)
+    dsc->flags = DT_MIPMAP_BUFFER_DSC_FLAG_GENERATE;
 
   // cost is just flat one for the buffer, as the buffers might have different sizes,
   // to make sure quota is meaningful.
@@ -585,6 +601,37 @@ void dt_mipmap_cache_allocate_dynamic(void *data, dt_cache_entry_t *entry)
 
 void dt_mipmap_cache_deallocate_dynamic(void *data, dt_cache_entry_t *entry)
 {
+  dt_mipmap_cache_one_t *cache = (dt_mipmap_cache_one_t *)data;
+  if(cache->size <= DT_MIPMAP_3)
+  {
+    if(dt_conf_get_bool("cache_disk_backend"))
+    {
+      // serialize to disk
+      // TODO: if compression, uncompress first
+
+      char filename[1024];
+      snprintf(filename, 1024, "%s/%d", darktable.cachedir, cache->size);
+      int mkd = g_mkdir_with_parents(filename, 0750);
+      if(!mkd)
+      {
+        snprintf(filename, 1024, "%s/%d/%d.jpg", darktable.cachedir, cache->size, get_imgid(entry->key));
+        FILE *f = fopen(filename, "wb");
+        if(f)
+        {
+          uint8_t *blob = (uint8_t *)malloc(cache->buffer_size);
+          struct dt_mipmap_buffer_dsc *dsc = (struct dt_mipmap_buffer_dsc *)entry->data;
+          const int cache_quality = dt_conf_get_int("database_cache_quality");
+          const int32_t length
+            = dt_imageio_jpeg_compress(entry->data + sizeof(*dsc), blob, dsc->width, dsc->height, MIN(100, MAX(10, cache_quality)));
+          assert(length <= cache->buffer_size);
+          int written = fwrite(blob, sizeof(uint8_t), length, f);
+          assert(written == length);
+          free(blob);
+          fclose(f);
+        }
+      }
+    }
+  }
   dt_free_align(entry->data);
 }
 
