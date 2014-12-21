@@ -565,7 +565,6 @@ void dt_mipmap_cache_allocate_dynamic(void *data, dt_cache_entry_t *entry)
       if(f)
       {
         // TODO: if compression, alloc scratchmem and point blob to that, later compress!
-        // jpg too large?
         size_t len = 0;
         fseek(f, 0, SEEK_END);
         len = ftell(f);
@@ -579,12 +578,17 @@ void dt_mipmap_cache_allocate_dynamic(void *data, dt_cache_entry_t *entry)
            || (jpg.width > cache->max_width || jpg.height > cache->max_height)
            || dt_imageio_jpeg_decompress(&jpg, entry->data + sizeof(*dsc)))
         {
-          fprintf(stderr, "[mipmap_cache] failed to decompress thumbnail for image %d!\n", get_imgid(entry->key));
+          fprintf(stderr, "[mipmap_cache] failed to decompress thumbnail for image %d from `%s'!\n", get_imgid(entry->key), filename);
+          goto read_error;
         }
         dsc->width = jpg.width;
         dsc->height = jpg.height;
         loaded_from_disk = 1;
+        if(0)
+        {
 read_error:
+          g_unlink(filename);
+        }
         free(blob);
         fclose(f);
       }
