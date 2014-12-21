@@ -782,6 +782,12 @@ void dt_mipmap_cache_print(dt_mipmap_cache_t *cache)
   // dt_cache_print(&cache->mip[DT_MIPMAP_3].cache);
 }
 
+static gboolean _raise_signal_mipmap_updated(gpointer user_data)
+{
+  dt_control_signal_raise(darktable.signals, DT_SIGNAL_DEVELOP_MIPMAP_UPDATED);
+  return FALSE; // only call once
+}
+
 void dt_mipmap_cache_get_with_caller(
     dt_mipmap_cache_t *cache,
     dt_mipmap_buffer_t *buf,
@@ -921,9 +927,9 @@ void dt_mipmap_cache_get_with_caller(
         }
 #endif
         /* raise signal that mipmaps has been flushed to cache */
-        // XXX this is a circular deadlock, often times 3-way circular and more
-        // XXX TODO: signals cannot acquire the gdk lock.
-        // dt_control_signal_raise(darktable.signals, DT_SIGNAL_DEVELOP_MIPMAP_UPDATED);
+        // FIXME: calling the signal here directly is a circular deadlock, often times 3-way circular and more
+        // FIXME: TODO: signals cannot acquire the gdk lock, but should wrap this idle call code:
+        g_idle_add(_raise_signal_mipmap_updated, 0);
       }
       buf->width = dsc->width;
       buf->height = dsc->height;
