@@ -106,7 +106,7 @@ void cleanup(dt_imageio_module_format_t *self)
 int write_image(dt_imageio_module_data_t *tmp, const char *filename, const void *in_tmp, void *exif,
                 int exif_len, int imgid)
 {
-  dt_imageio_exr_t *exr = (dt_imageio_exr_t *)tmp;
+  const dt_imageio_exr_t *exr = (dt_imageio_exr_t *)tmp;
 
   Imf::setGlobalThreadCount(dt_get_num_threads());
 
@@ -183,7 +183,7 @@ void *legacy_params(dt_imageio_module_format_t *self, const void *const old_para
       dt_imageio_exr_pixeltype_t pixel_type;
     } dt_imageio_exr_v2_t;
 
-    dt_imageio_exr_v2_t *o = (dt_imageio_exr_v2_t *)old_params;
+    const dt_imageio_exr_v2_t *o = (dt_imageio_exr_v2_t *)old_params;
     dt_imageio_exr_t *new_params = (dt_imageio_exr_t *)malloc(sizeof(dt_imageio_exr_t));
 
     // last param was dropped (pixel type)
@@ -204,7 +204,7 @@ void *legacy_params(dt_imageio_module_format_t *self, const void *const old_para
       dt_imageio_exr_compression_t compression;
     } dt_imageio_exr_v3_t;
 
-    dt_imageio_exr_v3_t *o = (dt_imageio_exr_v3_t *)old_params;
+    const dt_imageio_exr_v3_t *o = (dt_imageio_exr_v3_t *)old_params;
     dt_imageio_exr_t *new_params = (dt_imageio_exr_t *)malloc(sizeof(dt_imageio_exr_t));
 
     memcpy(new_params, old_params, sizeof(dt_imageio_exr_t));
@@ -265,7 +265,7 @@ const char *name()
 
 static void combobox_changed(GtkComboBox *widget, gpointer user_data)
 {
-  int compression = gtk_combo_box_get_active(widget);
+  const int compression = gtk_combo_box_get_active(widget);
   dt_conf_set_int("plugins/imageio/format/exr/compression", compression);
 }
 
@@ -276,7 +276,7 @@ void gui_init(dt_imageio_module_format_t *self)
 
   self->widget = gtk_vbox_new(TRUE, 5);
 
-  int compression_last = dt_conf_get_int("plugins/imageio/format/exr/compression");
+  const int compression_last = dt_conf_get_int("plugins/imageio/format/exr/compression");
 
   GtkWidget *hbox = gtk_hbox_new(FALSE, 5);
   gtk_box_pack_start(GTK_BOX(self->widget), hbox, TRUE, TRUE, 0);

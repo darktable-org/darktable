@@ -406,8 +406,8 @@ void free_params(dt_imageio_module_format_t *self, dt_imageio_module_data_t *par
 int set_params(dt_imageio_module_format_t *self, const void *params, const int size)
 {
   if(size != self->params_size(self)) return 1;
-  dt_imageio_png_t *d = (dt_imageio_png_t *)params;
-  dt_imageio_png_gui_t *g = (dt_imageio_png_gui_t *)self->gui_data;
+  const dt_imageio_png_t *d = (dt_imageio_png_t *)params;
+  const dt_imageio_png_gui_t *g = (dt_imageio_png_gui_t *)self->gui_data;
   if(d->bpp < 12)
     gtk_toggle_button_set_active(g->b8, TRUE);
   else
@@ -443,7 +443,7 @@ const char *name()
 
 static void radiobutton_changed(GtkRadioButton *radiobutton, gpointer user_data)
 {
-  int bpp = GPOINTER_TO_INT(user_data);
+  const int bpp = GPOINTER_TO_INT(user_data);
   if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(radiobutton)))
     dt_conf_set_int("plugins/imageio/format/png/bpp", bpp);
 }
@@ -464,7 +464,7 @@ void gui_init(dt_imageio_module_format_t *self)
 {
   dt_imageio_png_gui_t *gui = (dt_imageio_png_gui_t *)malloc(sizeof(dt_imageio_png_gui_t));
   self->gui_data = (void *)gui;
-  int bpp = dt_conf_get_int("plugins/imageio/format/png/bpp");
+  const int bpp = dt_conf_get_int("plugins/imageio/format/png/bpp");
   self->widget = gtk_hbox_new(TRUE, 5);
   GtkWidget *radiobutton = gtk_radio_button_new_with_label(NULL, _("8-bit"));
   gui->b8 = GTK_TOGGLE_BUTTON(radiobutton);

@@ -185,16 +185,11 @@ void finalize_store(dt_imageio_module_storage_t *self, dt_imageio_module_data_t 
   gchar uri[4096] = { 0 };
   gchar body[4096] = { 0 };
   gchar attachments[4096] = { 0 };
-  gchar *uriFormat = NULL;
-  gchar *subject = _("images exported from darktable");
-  gchar *imageBodyFormat = " - %s (%s)\\n"; // filename, exif oneliner
-  gchar *attachmentFormat = NULL;
+  gchar *uriFormat = "xdg-email --subject \"%s\" --body \"%s\" %s &"; // subject, body format
+  const gchar *subject = _("images exported from darktable");
+  const gchar *imageBodyFormat = " - %s (%s)\\n"; // filename, exif oneliner
+  gchar *attachmentFormat = " --attach \"%s\""; // list of attachments format
   gchar *attachmentSeparator = "";
-
-  // If no default handler detected above, we use gtk_show_uri with mailto:// and hopes things goes right..
-  uriFormat = "xdg-email --subject \"%s\" --body \"%s\" %s &"; // subject, body, and list of attachments with
-                                                               // format:
-  attachmentFormat = " --attach \"%s\"";
 
   while(d->images)
   {

@@ -231,7 +231,7 @@ void *get_params(dt_imageio_module_format_t *self)
 int set_params(dt_imageio_module_format_t *self, const void *params, const int size)
 {
   if(size != self->params_size(self)) return 1;
-  dt_imageio_webp_t *d = (dt_imageio_webp_t *)params;
+  const dt_imageio_webp_t *d = (dt_imageio_webp_t *)params;
   dt_imageio_webp_gui_data_t *g = (dt_imageio_webp_gui_data_t *)self->gui_data;
   if(d->comp_type == webp_lossy)
     gtk_toggle_button_set_active(g->lossy, TRUE);
@@ -280,20 +280,20 @@ const char *name()
 
 static void radiobutton_changed(GtkRadioButton *radiobutton, gpointer user_data)
 {
-  long int comp_type = (long int)user_data;
+  const long int comp_type = (long int)user_data;
   if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(radiobutton)))
     dt_conf_set_int("plugins/imageio/format/webp/comp_type", comp_type);
 }
 
 static void quality_changed(GtkDarktableSlider *slider, gpointer user_data)
 {
-  int quality = (int)dtgtk_slider_get_value(slider);
+  const int quality = (int)dtgtk_slider_get_value(slider);
   dt_conf_set_int("plugins/imageio/format/webp/quality", quality);
 }
 
 static void hint_combobox_changed(GtkComboBox *widget, gpointer user_data)
 {
-  int hint = gtk_combo_box_get_active(widget);
+  const int hint = gtk_combo_box_get_active(widget);
   dt_conf_set_int("plugins/imageio/format/webp/hint", hint);
 }
 
@@ -301,9 +301,9 @@ void gui_init(dt_imageio_module_format_t *self)
 {
   dt_imageio_webp_gui_data_t *gui = (dt_imageio_webp_gui_data_t *)malloc(sizeof(dt_imageio_webp_gui_data_t));
   self->gui_data = (void *)gui;
-  int comp_type = dt_conf_get_int("plugins/imageio/format/webp/comp_type");
-  int quality = dt_conf_get_int("plugins/imageio/format/webp/quality");
-  int hint = dt_conf_get_int("plugins/imageio/format/webp/hint");
+  const int comp_type = dt_conf_get_int("plugins/imageio/format/webp/comp_type");
+  const int quality = dt_conf_get_int("plugins/imageio/format/webp/quality");
+  const int hint = dt_conf_get_int("plugins/imageio/format/webp/hint");
 
   self->widget = gtk_vbox_new(TRUE, 5);
   GtkWidget *comp_type_label = gtk_label_new(_("compression type"));

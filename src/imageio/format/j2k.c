@@ -338,7 +338,7 @@ int write_image(dt_imageio_module_data_t *j2k_tmp, const char *filename, const v
   float *rates = NULL;
   opj_event_mgr_t event_mgr; /* event manager */
   opj_image_t *image = NULL;
-  int quality = CLAMP(j2k->quality, 1, 100);
+  const int quality = CLAMP(j2k->quality, 1, 100);
 
   /*
   configure the event callbacks (not required)
@@ -380,11 +380,11 @@ int write_image(dt_imageio_module_data_t *j2k_tmp, const char *filename, const v
 
   /*Converting the image to a format suitable for encoding*/
   {
-    int subsampling_dx = parameters.subsampling_dx;
-    int subsampling_dy = parameters.subsampling_dy;
-    int numcomps = 3;
-    int prec = 12; // TODO: allow other bitdepths!
-    int w = j2k->width, h = j2k->height;
+    const int subsampling_dx = parameters.subsampling_dx;
+    const int subsampling_dy = parameters.subsampling_dy;
+    const int numcomps = 3;
+    const int prec = 12; // TODO: allow other bitdepths!
+    const int w = j2k->width, h = j2k->height;
 
     opj_image_cmptparm_t cmptparm[4]; /* RGBA: max. 4 components */
     memset(&cmptparm[0], 0, numcomps * sizeof(opj_image_cmptparm_t));
@@ -615,7 +615,7 @@ const char *mime(dt_imageio_module_data_t *data)
 
 const char *extension(dt_imageio_module_data_t *data_tmp)
 {
-  dt_imageio_j2k_t *data = (dt_imageio_j2k_t *)data_tmp;
+  const dt_imageio_j2k_t *data = (dt_imageio_j2k_t *)data_tmp;
   if(data->format == J2K_CFMT)
     return "j2k";
   else
@@ -629,13 +629,13 @@ const char *name()
 
 static void combobox_changed(GtkComboBox *widget, gpointer user_data)
 {
-  int preset = gtk_combo_box_get_active(widget);
+  const int preset = gtk_combo_box_get_active(widget);
   dt_conf_set_int("plugins/imageio/format/j2k/preset", preset);
 }
 
 static void radiobutton_changed(GtkRadioButton *radiobutton, gpointer user_data)
 {
-  int format = GPOINTER_TO_INT(user_data);
+  const int format = GPOINTER_TO_INT(user_data);
   if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(radiobutton)))
     dt_conf_set_int("plugins/imageio/format/j2k/format", format);
 }
@@ -655,9 +655,9 @@ void gui_init(dt_imageio_module_format_t *self)
   GtkWidget *hbox = gtk_hbox_new(TRUE, 5);
   gtk_box_pack_start(GTK_BOX(self->widget), hbox, TRUE, TRUE, 0);
 
-  int format_last = dt_conf_get_int("plugins/imageio/format/j2k/format");
-  int preset_last = dt_conf_get_int("plugins/imageio/format/j2k/preset");
-  int quality_last = dt_conf_get_int("plugins/imageio/format/j2k/quality");
+  const int format_last = dt_conf_get_int("plugins/imageio/format/j2k/format");
+  const int preset_last = dt_conf_get_int("plugins/imageio/format/j2k/preset");
+  const int quality_last = dt_conf_get_int("plugins/imageio/format/j2k/quality");
 
   GtkWidget *radiobutton = gtk_radio_button_new_with_label(NULL, _("jp2"));
   gui->jp2 = GTK_TOGGLE_BUTTON(radiobutton);
