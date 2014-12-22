@@ -25,6 +25,7 @@ http://www.youtube.com/watch?v=JVoUgR6bhBc
 // our includes go first:
 #include "develop/imageop.h"
 #include "bauhaus/bauhaus.h"
+#include "dtgtk/drawingarea.h"
 #include "gui/gtk.h"
 #include "common/colorspaces.h"
 #include "common/opencl.h"
@@ -405,7 +406,8 @@ static gboolean dt_iop_area_draw(GtkWidget *widget, cairo_t *cr, dt_iop_module_t
   uint32_t light = ((255 << 24) | ((int)floor(flt_light * 255 + 0.5) << 16)
                     | ((int)floor(flt_light * 255 + 0.5) << 8) | (int)floor(flt_light * 255 + 0.5));
 
-
+  GtkAllocation allocation;
+  gtk_widget_get_allocation(widget, &allocation);
   int width = allocation.width, height = allocation.height;
   if(width % 2 == 0) width--;
   if(height % 2 == 0) height--;
@@ -521,11 +523,8 @@ void gui_init(dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), hbox, FALSE, FALSE, 0);
 
 #ifdef SHOW_COLOR_WHEELS
-  int size = dt_conf_get_int("panel_width") / 3;
-
-  GtkWidget *area = gtk_drawing_area_new();
+  GtkWidget *area = dtgtk_drawing_area_new_with_aspect_ratio(1.0);
   gtk_box_pack_start(GTK_BOX(hbox), area, TRUE, TRUE, 0);
-  gtk_widget_set_size_request(area, 0, size);
 
   //   gtk_widget_add_events(g->area,
   //                         GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK |
@@ -538,9 +537,8 @@ void gui_init(dt_iop_module_t *self)
   //   g_signal_connect (G_OBJECT (area), "leave-notify-event",
   //                     G_CALLBACK (dt_iop_colorbalance_leave_notify), self);
 
-  area = gtk_drawing_area_new();
+  area = dtgtk_drawing_area_new_with_aspect_ratio(1.0);
   gtk_box_pack_start(GTK_BOX(hbox), area, TRUE, TRUE, 0);
-  gtk_widget_set_size_request(area, 0, size);
 
   //   gtk_widget_add_events(g->area,
   //                         GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK |
@@ -553,9 +551,8 @@ void gui_init(dt_iop_module_t *self)
   //   g_signal_connect (G_OBJECT (area), "leave-notify-event",
   //                     G_CALLBACK (dt_iop_colorbalance_leave_notify), self);
 
-  area = gtk_drawing_area_new();
+  area = dtgtk_drawing_area_new_with_aspect_ratio(1.0);
   gtk_box_pack_start(GTK_BOX(hbox), area, TRUE, TRUE, 0);
-  gtk_widget_set_size_request(area, 0, size);
 
   //   gtk_widget_add_events(g->area,
   //                         GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK |

@@ -25,6 +25,7 @@
 #include "develop/develop.h"
 #include "control/control.h"
 #include "control/conf.h"
+#include "dtgtk/drawingarea.h"
 #include "gui/gtk.h"
 #include "gui/draw.h"
 #include "gui/presets.h"
@@ -1096,11 +1097,9 @@ void gui_init(struct dt_iop_module_t *self)
   g_signal_connect(G_OBJECT(c->channel_tabs), "switch_page", G_CALLBACK(colorzones_tab_switch), self);
 
   // the nice graph
-  const int panel_width = dt_conf_get_int("panel_width") * 0.95;
-  c->area = GTK_DRAWING_AREA(gtk_drawing_area_new());
+  c->area = GTK_DRAWING_AREA(dtgtk_drawing_area_new_with_aspect_ratio(9.0 / 16.0));
   gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(c->area), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(vbox), TRUE, TRUE, 5);
-  gtk_widget_set_size_request(GTK_WIDGET(c->area), -1, panel_width * (9.0 / 16.0));
 
   c->strength = dt_bauhaus_slider_new_with_range(self, -200, 200.0, 10.0, p->strength, 1);
   dt_bauhaus_slider_set_format(c->strength, "%.01f%%");

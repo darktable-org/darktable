@@ -23,6 +23,7 @@
 #include "gui/accelerators.h"
 #include "gui/draw.h"
 #include "gui/presets.h"
+#include "dtgtk/drawingarea.h"
 #include "gui/gtk.h"
 #include "bauhaus/bauhaus.h"
 #include "control/control.h"
@@ -1410,10 +1411,8 @@ void gui_init(struct dt_iop_module_t *self)
   g_signal_connect(G_OBJECT(c->channel_tabs), "switch_page", G_CALLBACK(tab_switch), self);
 
   // graph
-  c->area = GTK_DRAWING_AREA(gtk_drawing_area_new());
+  c->area = GTK_DRAWING_AREA(dtgtk_drawing_area_new_with_aspect_ratio(0.75));
   gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(c->area), TRUE, TRUE, 0);
-  int size = dt_conf_get_int("panel_width") * 0.95;
-  gtk_widget_set_size_request(GTK_WIDGET(c->area), size, 0.75 * size);
 
   gtk_widget_add_events(GTK_WIDGET(c->area), GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK
                                              | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK

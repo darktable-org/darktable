@@ -97,7 +97,7 @@ GtkTable {
 #header_label,#darktable_label,#view_label {
   color: #7f7f7f;
   background-color: @bg_color;
-  font: bold 13;
+  font-size: 1.7em;
   margin:0;
   border:0;
   padding:0;

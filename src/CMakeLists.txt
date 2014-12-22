@@ -73,6 +73,7 @@ FILE(GLOB SOURCE_FILES
   "develop/tiling.c"
   "develop/masks/masks.c"
   "dtgtk/button.c"
+  "dtgtk/drawingarea.c"
   "dtgtk/icon.c"
   "dtgtk/gradientslider.c"
   "dtgtk/togglebutton.c"
@@ -128,7 +129,7 @@ endif()
 # Find all other required libraries for building
 #
 # GTK3 pulls in ATK, GDK, GDK-PIXBUF, CAIRO, GLIB, PANGO
-find_package(GTK3 3.12 REQUIRED)
+find_package(GTK3 3.10 REQUIRED) # actually it's 3.12, but Ubuntu 14.04 LTS only ships 3.10, so we #define the rest
 include_directories(${GTK3_INCLUDE_DIRS})
 list(APPEND LIBS ${GTK3_LIBRARIES})
 add_definitions(${GTK3_DEFINITIONS})

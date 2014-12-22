@@ -30,6 +30,7 @@
 #include "control/control.h"
 #include "gui/draw.h"
 #include "gui/presets.h"
+#include "dtgtk/drawingarea.h"
 #include "gui/gtk.h"
 #include "common/colorspaces.h"
 #include "bauhaus/bauhaus.h"
@@ -515,8 +516,6 @@ void gui_init(dt_iop_module_t *self)
 
   c->modes = NULL;
 
-  const int panel_width = dt_conf_get_int("panel_width") * 0.95;
-
   c->mouse_x = c->mouse_y = -1.0;
   c->dragging = 0;
   c->activeToggleButton = NULL;
@@ -539,11 +538,10 @@ void gui_init(dt_iop_module_t *self)
   dt_bauhaus_combobox_set(c->mode, g_list_index(c->modes, GUINT_TO_POINTER(p->mode)));
   gtk_box_pack_start(GTK_BOX(self->widget), c->mode, TRUE, TRUE, 0);
 
-  c->area = GTK_DRAWING_AREA(gtk_drawing_area_new());
+  c->area = GTK_DRAWING_AREA(dtgtk_drawing_area_new_with_aspect_ratio(9.0 / 16.0));
   c->vbox_manual = GTK_WIDGET(gtk_box_new(GTK_ORIENTATION_VERTICAL, 5));
   gtk_box_pack_start(GTK_BOX(c->vbox_manual), GTK_WIDGET(c->area), TRUE, TRUE, 0);
 
-  gtk_widget_set_size_request(GTK_WIDGET(c->area), panel_width, panel_width * (9.0 / 16.0));
   g_object_set(G_OBJECT(c->area), "tooltip-text",
                _("drag handles to set black, gray, and white points.  operates on L channel."), (char *)NULL);
 
