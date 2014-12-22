@@ -681,7 +681,11 @@ int dt_imageio_export_with_flags(const uint32_t imgid, const char *filename,
           if (format_params->style_append && !(m->flags() & IOP_FLAGS_ONE_INSTANCE))
           {
             sty_module = dt_dev_module_duplicate(m->dev, m, 0);
-            if(!sty_module) return 1;
+            if(!sty_module)
+            {
+              free(h);
+              return 1;
+            }
           }
 
           h->params = s->params;
