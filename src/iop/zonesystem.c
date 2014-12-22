@@ -454,6 +454,10 @@ void size_allocate_callback(GtkWidget *widget, GtkAllocation *allocation, gpoint
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_zonesystem_gui_data_t *g = (dt_iop_zonesystem_gui_data_t *)self->gui_data;
 
+  if(g->image) cairo_surface_destroy(g->image);
+  free(g->image_buffer);
+
+  /* load the dt logo as a brackground */
   char filename[PATH_MAX] = { 0 };
   char datadir[PATH_MAX] = { 0 };
   char *logo;
@@ -554,7 +558,6 @@ void gui_init(struct dt_iop_module_t *self)
                             G_CALLBACK(_iop_zonesystem_redraw_preview_callback), self);
 
 
-  /* load the dt logo as a brackground */
   g->image = NULL;
   g->image_buffer = NULL;
   g->image_width = 0;
