@@ -943,7 +943,7 @@ static gboolean area_draw(GtkWidget *widget, cairo_t *crf, gpointer user_data)
   // clear bg, match color of the notebook tabs:
   GdkRGBA bright_bg_color, really_dark_bg_color;
   GtkStyleContext *context = gtk_widget_get_style_context(self->expander);
-  gboolean color_found = gtk_style_context_lookup_color (context, "bright_bg_color", &bright_bg_color);
+  gboolean color_found = gtk_style_context_lookup_color (context, "selected_bg_color", &bright_bg_color);
   if(!color_found)
   {
     bright_bg_color.red = 1.0;
@@ -1008,7 +1008,7 @@ static gboolean area_draw(GtkWidget *widget, cairo_t *crf, gpointer user_data)
     cairo_save(cr);
     for(int k = 1; k < c->num_samples; k += 2)
     {
-      cairo_set_source_rgba(cr, .2, .2, .2, 0.3);
+      cairo_set_source_rgba(cr, really_dark_bg_color.red, really_dark_bg_color.green, really_dark_bg_color.blue, .3);
       cairo_move_to(cr, width * c->sample[k - 1], 0.0f);
       cairo_line_to(cr, width * c->sample[k - 1], -height);
       cairo_line_to(cr, width * c->sample[k], -height);
@@ -1029,7 +1029,7 @@ static gboolean area_draw(GtkWidget *widget, cairo_t *crf, gpointer user_data)
   {
     cairo_save(cr);
     cairo_scale(cr, width / (BANDS - 1.0), -(height - DT_PIXEL_APPLY_DPI(5)) / c->band_max);
-    cairo_set_source_rgba(cr, .2, .2, .2, 0.5);
+    cairo_set_source_rgba(cr, really_dark_bg_color.red, really_dark_bg_color.green, really_dark_bg_color.blue, .3);
     cairo_move_to(cr, 0, 0);
     for(int k = 0; k < BANDS; k++) cairo_line_to(cr, k, c->band_hist[k]);
     cairo_line_to(cr, BANDS - 1.0, 0.);
