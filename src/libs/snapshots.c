@@ -110,9 +110,6 @@ void gui_post_expose(dt_lib_module_t *self, cairo_t *cri, int32_t width, int32_t
                      int32_t pointery)
 {
   dt_lib_snapshots_t *d = (dt_lib_snapshots_t *)self->data;
-  // convert to image coordinates:
-  double x_start = width > darktable.thumbnail_width ? (width - darktable.thumbnail_width) * .5f : 0;
-  double y_start = height > darktable.thumbnail_height ? (height - darktable.thumbnail_height) * .5f : 0;
 
   if(d->snapshot_image)
   {
@@ -136,7 +133,7 @@ void gui_post_expose(dt_lib_module_t *self, cairo_t *cri, int32_t width, int32_t
     double h = d->vertical ? height
                            : (d->inverted ? (height * (1.0 - d->vp_ypointer)) : height * d->vp_ypointer);
 
-    cairo_set_source_surface(cri, d->snapshot_image, x_start, y_start);
+    cairo_set_source_surface(cri, d->snapshot_image, 0, 0);
     // cairo_rectangle(cri, 0, 0, width*d->vp_xpointer, height);
     cairo_rectangle(cri, x, y, w, h);
     cairo_fill(cri);
