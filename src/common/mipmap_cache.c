@@ -47,6 +47,7 @@
 #define DT_MIPMAP_CACHE_DEFAULT_FILE_NAME "mipmaps"
 
 #define DT_MIPMAP_BUFFER_DSC_FLAG_GENERATE (1 << 0)
+#define DT_MIPMAP_BUFFER_DSC_FLAG_INVALIDATE (1 << 1)
 
 struct dt_mipmap_buffer_dsc
 {
@@ -610,30 +611,44 @@ void dt_mipmap_cache_deallocate_dynamic(void *data, dt_cache_entry_t *entry)
   {
     struct dt_mipmap_buffer_dsc *dsc = (struct dt_mipmap_buffer_dsc *)entry->data;
     // don't write skulls:
-    if(dsc->width > 8 && dsc->height > 8 && dt_conf_get_bool("cache_disk_backend"))
+    if(dsc->width > 8 && dsc->height > 8)
     {
-      // serialize to disk
-      // TODO: if compression, uncompress first
-
-      char filename[1024];
-      snprintf(filename, 1024, "%s/%d", darktable.cachedir, cache->size);
-      int mkd = g_mkdir_with_parents(filename, 0750);
-      if(!mkd)
+      if(dsc->flags & DT_MIPMAP_BUFFER_DSC_FLAG_INVALIDATE)
       {
-        snprintf(filename, 1024, "%s/%d/%d.jpg", darktable.cachedir, cache->size, get_imgid(entry->key));
-        FILE *f = fopen(filename, "wb");
-        if(f)
+        // also remove jpg backing (always try to do that, in case user just temporarily switched it off,
+        // to avoid inconsistencies.
+        // if(dt_conf_get_bool("cache_disk_backend"))
         {
-          // allocate temp memory, at least 1MB to be sure we fit:
-          uint8_t *blob = (uint8_t *)malloc(MIN(1<<20, cache->buffer_size));
-          const int cache_quality = dt_conf_get_int("database_cache_quality");
-          const int32_t length
-            = dt_imageio_jpeg_compress(entry->data + sizeof(*dsc), blob, dsc->width, dsc->height, MIN(100, MAX(10, cache_quality)));
-          assert(length <= MIN(1<<20, cache->buffer_size));
-          int written = fwrite(blob, sizeof(uint8_t), length, f);
-          free(blob);
-          fclose(f);
-          if(written != length) g_unlink(filename);
+          char filename[1024];
+          snprintf(filename, 1024, "%s/%d/%d.jpg", darktable.cachedir, cache->size, get_imgid(entry->key));
+          g_unlink(filename);
+        }
+      }
+      else if(dt_conf_get_bool("cache_disk_backend"))
+      {
+        // serialize to disk
+        // TODO: if compression, uncompress first
+
+        char filename[1024];
+        snprintf(filename, 1024, "%s/%d", darktable.cachedir, cache->size);
+        int mkd = g_mkdir_with_parents(filename, 0750);
+        if(!mkd)
+        {
+          snprintf(filename, 1024, "%s/%d/%d.jpg", darktable.cachedir, cache->size, get_imgid(entry->key));
+          FILE *f = fopen(filename, "wb");
+          if(f)
+          {
+            // allocate temp memory, at least 1MB to be sure we fit:
+            uint8_t *blob = (uint8_t *)malloc(MIN(1<<20, cache->buffer_size));
+            const int cache_quality = dt_conf_get_int("database_cache_quality");
+            const int32_t length
+              = dt_imageio_jpeg_compress(entry->data + sizeof(*dsc), blob, dsc->width, dsc->height, MIN(100, MAX(10, cache_quality)));
+            assert(length <= MIN(1<<20, cache->buffer_size));
+            int written = fwrite(blob, sizeof(uint8_t), length, f);
+            free(blob);
+            fclose(f);
+            if(written != length) g_unlink(filename);
+          }
         }
       }
     }
@@ -1077,15 +1092,12 @@ void dt_mipmap_cache_remove(dt_mipmap_cache_t *cache, const uint32_t imgid)
   for(int k = DT_MIPMAP_0; k < DT_MIPMAP_F; k++)
   {
     const uint32_t key = get_key(imgid, k);
-    dt_cache_remove(&cache->mip[k].cache, key); // this will write jpg backing thumbs again.
-    // also remove jpg backing (always try to do that, in case user just temporarily switched it off,
-    // to avoid inconsistencies.
-    // if(dt_conf_get_bool("cache_disk_backend"))
-    {
-      char filename[1024];
-      snprintf(filename, 1024, "%s/%d/%d.jpg", darktable.cachedir, k, imgid);
-      g_unlink(filename);
-    }
+    dt_cache_entry_t *entry = dt_cache_get(&cache->mip[k].cache, key, 'w');
+    struct dt_mipmap_buffer_dsc *dsc = (struct dt_mipmap_buffer_dsc *)entry->data;
+    dsc->flags |= DT_MIPMAP_BUFFER_DSC_FLAG_INVALIDATE;
+    dt_cache_release(&cache->mip[k].cache, entry);
+
+    dt_cache_remove(&cache->mip[k].cache, key); // this would write jpg backing thumbs again, if it wasn't for the flag
   }
 }
 
