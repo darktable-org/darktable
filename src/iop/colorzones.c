@@ -598,7 +598,7 @@ static gboolean colorzones_draw(GtkWidget *widget, cairo_t *crf, gpointer user_d
   // clear bg, match color of the notebook tabs:
   GdkRGBA color;
   GtkStyleContext *context = gtk_widget_get_style_context(widget);
-  gboolean color_found = gtk_style_context_lookup_color (context, "bright_bg_color", &color);
+  gboolean color_found = gtk_style_context_lookup_color (context, "selected_bg_color", &color);
   if(!color_found)
   {
     color.red = 1.0;
