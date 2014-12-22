@@ -1074,10 +1074,19 @@ dt_mipmap_size_t dt_mipmap_cache_get_matching_size(const dt_mipmap_cache_t *cach
 void dt_mipmap_cache_remove(dt_mipmap_cache_t *cache, const uint32_t imgid)
 {
   // get rid of all ldr thumbnails:
+
   for(int k = DT_MIPMAP_0; k < DT_MIPMAP_F; k++)
   {
     const uint32_t key = get_key(imgid, k);
-    dt_cache_remove(&cache->mip[k].cache, key);
+    dt_cache_remove(&cache->mip[k].cache, key); // this will write jpg backing thumbs again.
+    // also remove jpg backing (always try to do that, in case user just temporarily switched it off,
+    // to avoid inconsistencies.
+    // if(dt_conf_get_bool("cache_disk_backend"))
+    {
+      char filename[1024];
+      snprintf(filename, 1024, "%s/%d/%d.jpg", darktable.cachedir, k, imgid);
+      g_unlink(filename);
+    }
   }
 }
 
