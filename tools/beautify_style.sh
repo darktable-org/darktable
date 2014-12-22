@@ -11,6 +11,7 @@ IGNORE_SET=(
     external
     common/noiseprofiles.h
     common/colormatrices.c
+    common/nvidia_gpus.h
 )
 
 ####################################################################################

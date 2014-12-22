@@ -33,6 +33,8 @@ dt_noiseprofile_t;
 // these should be sorted by same maker/model and increasing iso
 const dt_noiseprofile_t dt_noiseprofiles[] =
 {
+  // clang-format off
+
 // preset name                   maker    model            iso    a a a                                 b b b
   {N_("generic poissonian"),       "",      "",              0,    {0.0001f, 0.0001f, 0.0001},           {0.0f, 0.0f, 0.0f}},
 
@@ -2942,6 +2944,7 @@ const dt_noiseprofile_t dt_noiseprofiles[] =
 {"X100S iso 5000",       "FUJIFILM",      "X100S",              5000,         {0.000124986845209115, 4.37010904895783e-05, 9.16247494413428e-05}, {1.76411750774797e-07, 1.36319413715772e-07, 1.86926272703825e-07}},
 {"X100S iso 6400",       "FUJIFILM",      "X100S",              6400,         {0.00012579517040419198, 4.422836018589326e-05, 9.183407428326638e-05}, {1.588587495193e-07, 1.2486482232114292e-07, 1.690787692086013e-07}},
 
+  // clang-format on
 };
 const int dt_noiseprofile_cnt = sizeof(dt_noiseprofiles)/sizeof(dt_noiseprofile_t);
 
