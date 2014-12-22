@@ -27,6 +27,7 @@
 #include "common/points.h"
 #include "common/opencl.h"
 #include "gui/accelerators.h"
+#include "dtgtk/drawingarea.h"
 #include "gui/gtk.h"
 #include "bauhaus/bauhaus.h"
 #include "dtgtk/resetlabel.h"
@@ -1045,15 +1046,12 @@ void gui_init(struct dt_iop_module_t *self)
 
   self->widget = GTK_WIDGET(gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE));
 
-  int panel_width = dt_conf_get_int("panel_width") * 0.95;
-
   GtkBox *hbox1 = GTK_BOX(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0));
   GtkWidget *source = gtk_label_new(_("source clusters:"));
   gtk_box_pack_start(GTK_BOX(hbox1), GTK_WIDGET(source), FALSE, FALSE, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(hbox1), TRUE, TRUE, 0);
 
-  g->source_area = gtk_drawing_area_new();
-  gtk_widget_set_size_request(g->source_area, panel_width, panel_width / 3);
+  g->source_area = dtgtk_drawing_area_new_with_aspect_ratio(1.0 / 3.0);
   gtk_box_pack_start(GTK_BOX(self->widget), g->source_area, TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(g->source_area), "draw", G_CALLBACK(cluster_preview_draw), self);
 
@@ -1062,8 +1060,7 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(hbox2), GTK_WIDGET(target), FALSE, FALSE, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(hbox2), TRUE, TRUE, 0);
 
-  g->target_area = gtk_drawing_area_new();
-  gtk_widget_set_size_request(g->target_area, panel_width, panel_width / 3);
+  g->target_area = dtgtk_drawing_area_new_with_aspect_ratio(1.0 / 3.0);
   gtk_box_pack_start(GTK_BOX(self->widget), g->target_area, TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(g->target_area), "draw", G_CALLBACK(cluster_preview_draw), self);
 

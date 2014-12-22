@@ -27,6 +27,7 @@
 #include "gui/draw.h"
 #include "gui/presets.h"
 #include "bauhaus/bauhaus.h"
+#include "dtgtk/drawingarea.h"
 #include <gtk/gtk.h>
 #include <inttypes.h>
 #include <stdlib.h>
@@ -1130,12 +1131,11 @@ void gui_init(struct dt_iop_module_t *self)
   c->loglogscale = 0;
 
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
-  c->area = GTK_DRAWING_AREA(gtk_drawing_area_new());
+  c->area = GTK_DRAWING_AREA(dtgtk_drawing_area_new_with_aspect_ratio(1.0));
   g_object_set(G_OBJECT(c->area), "tooltip-text",
                _("abscissa: input, ordinate: output. works on RGB channels"), (char *)NULL);
+
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(c->area), TRUE, TRUE, 0);
-  int size = dt_conf_get_int("panel_width") * 0.95;
-  gtk_widget_set_size_request(GTK_WIDGET(c->area), 0, size);
 
   c->scale = dt_bauhaus_combobox_new(self);
   dt_bauhaus_widget_set_label(c->scale, NULL, _("scale"));

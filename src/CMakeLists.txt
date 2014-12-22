@@ -73,6 +73,7 @@ FILE(GLOB SOURCE_FILES
   "develop/tiling.c"
   "develop/masks/masks.c"
   "dtgtk/button.c"
+  "dtgtk/drawingarea.c"
   "dtgtk/icon.c"
   "dtgtk/gradientslider.c"
   "dtgtk/togglebutton.c"

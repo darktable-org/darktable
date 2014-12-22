@@ -30,6 +30,7 @@
 #include "control/control.h"
 #include "control/conf.h"
 #include "gui/accelerators.h"
+#include "dtgtk/drawingarea.h"
 #include "gui/gtk.h"
 #include "gui/draw.h"
 #include "gui/presets.h"
@@ -814,9 +815,7 @@ void gui_init(struct dt_iop_module_t *self)
 
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
 
-  int panel_width = dt_conf_get_int("panel_width") * 0.95;
-  c->area = GTK_DRAWING_AREA(gtk_drawing_area_new());
-  gtk_widget_set_size_request(GTK_WIDGET(c->area), panel_width, panel_width * 0.75);
+  c->area = GTK_DRAWING_AREA(dtgtk_drawing_area_new_with_aspect_ratio(0.75));
 
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(c->area), FALSE, FALSE, 0);
 

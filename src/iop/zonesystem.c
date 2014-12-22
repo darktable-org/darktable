@@ -34,6 +34,7 @@
 #include "control/conf.h"
 #include "dtgtk/togglebutton.h"
 #include "dtgtk/gradientslider.h"
+#include "dtgtk/drawingarea.h"
 #include "gui/gtk.h"
 #include "gui/presets.h"
 #include <xmmintrin.h>
@@ -463,15 +464,11 @@ void gui_init(struct dt_iop_module_t *self)
 
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_GUI_IOP_MODULE_CONTROL_SPACING);
 
-  /* create the zone preview widget */
-  const int panel_width = dt_conf_get_int("panel_width") * 0.8;
-
-  g->preview = gtk_drawing_area_new();
+  g->preview = dtgtk_drawing_area_new_with_aspect_ratio(1.0);
   g_signal_connect(G_OBJECT(g->preview), "draw", G_CALLBACK(dt_iop_zonesystem_preview_draw), self);
   gtk_widget_add_events(GTK_WIDGET(g->preview), GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK
                                                 | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK
                                                 | GDK_LEAVE_NOTIFY_MASK);
-  gtk_widget_set_size_request(g->preview, panel_width, panel_width);
 
   /* create the zonesystem bar widget */
   g->zones = gtk_drawing_area_new();
@@ -530,7 +527,7 @@ void gui_init(struct dt_iop_module_t *self)
     rsvg_handle_get_dimensions(svg, &dimension);
 
     float svg_size = MAX(dimension.width, dimension.height);
-    float final_size = panel_width * 0.75;
+    float final_size = dt_conf_get_int("panel_width") * 0.8 * 0.75;
     float factor = final_size / svg_size;
     float final_width = dimension.width * factor * darktable.gui->ppd, final_height = dimension.height * factor * darktable.gui->ppd;
     int stride = cairo_format_stride_for_width(CAIRO_FORMAT_ARGB32, final_width);

@@ -30,6 +30,7 @@
 #include "develop/develop.h"
 #include "develop/tiling.h"
 #include "control/control.h"
+#include "dtgtk/drawingarea.h"
 #include "gui/gtk.h"
 #include "gui/presets.h"
 #include "develop/imageop.h"
@@ -532,10 +533,8 @@ void gui_init(struct dt_iop_module_t *self)
   g->dragging = 0;
 
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
-  g->area = GTK_DRAWING_AREA(gtk_drawing_area_new());
+  g->area = GTK_DRAWING_AREA(dtgtk_drawing_area_new_with_aspect_ratio(1.0));
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->area), TRUE, TRUE, 0);
-  int panel_width = dt_conf_get_int("panel_width") * 0.95;
-  gtk_widget_set_size_request(GTK_WIDGET(g->area), 0, panel_width);
   g_object_set(G_OBJECT(g->area), "tooltip-text",
                _("drag and scroll mouse wheel to adjust the virtual color filter"), (char *)NULL);
 
