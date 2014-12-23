@@ -38,6 +38,7 @@
 #include "common/exif.h"
 #include "common/history.h"
 #include "control/conf.h"
+#include "develop/imageop.h"
 
 #include <sys/time.h>
 #include <unistd.h>
@@ -71,7 +72,6 @@ static void generate_thumbnail_cache()
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select id from images", -1, &stmt, 0);
   uint8_t *tmp = (uint8_t *)dt_alloc_align(16, darktable.thumbnail_width*darktable.thumbnail_height*4);
   const int cache_quality = MIN(100, MAX(10, dt_conf_get_int("database_cache_quality")));
-  int wd, ht;
   while(sqlite3_step(stmt) == SQLITE_ROW)
   {
     // get largest thumbnail for this image
@@ -79,33 +79,28 @@ static void generate_thumbnail_cache()
     dt_mipmap_buffer_t buf;
     // this one will take care of itself, we'll just write out the lower thumbs manually:
     dt_mipmap_cache_get(darktable.mipmap_cache, &buf, imgid, DT_MIPMAP_3, DT_MIPMAP_BLOCKING, 'r');
-    wd = buf.width;
-    ht = buf.height;
     for(int k=DT_MIPMAP_2;k>=DT_MIPMAP_0;k--)
     {
-      uint8_t *in = ((k == DT_MIPMAP_2) ? (uint8_t*)buf.buf : tmp);
-      wd >>= 1; ht >>= 1;
-      for(int j=0;j<ht;j++)
+      uint32_t width, height;
+      const int wd = darktable.mipmap_cache->mip[k].max_width;
+      const int ht = darktable.mipmap_cache->mip[k].max_height;
+      // use exactly the same mechanism as the cache internally to rescale the thumbnail:
+      dt_iop_flip_and_zoom_8(buf.buf, buf.width, buf.height, tmp, wd, ht, 0, &width, &height);
+      // unfortunately this also flips the red and blue channels already, as x would. undo that for us:
+      for(int l=0;l<width*height;l++)
       {
-        for(int i=0;i<wd;i++)
-        {
-          for(int c=0;c<3;c++)
-            tmp[4*(wd*j+i)+c] = CLAMP(
-            ((float)in[4*(2*wd*2*(j  )+2*(i  ))+c] +
-             (float)in[4*(2*wd*2*(j  )+2*(i+1))+c] +
-             (float)in[4*(2*wd*2*(j+1)+2*(i  ))+c] +
-             (float)in[4*(2*wd*2*(j+1)+2*(i+1))+c])*.25f, 0, 255);
-          tmp[4*(wd*j+i)+3] = 0;
-        }
+        uint8_t r = tmp[4*l];
+        tmp[4*l] = tmp[4*l+2];
+        tmp[4*l+2] = r;
       }
       snprintf(filename, PATH_MAX, "%s.d/%d/%d.jpg", darktable.mipmap_cache->cachedir, k, imgid);
       FILE *f = fopen(filename, "wb");
       if(f)
       {
         // allocate temp memory, at least 1MB to be sure we fit:
-        uint8_t *blob = (uint8_t *)malloc(MIN(1<<20, wd*ht*4));
+        uint8_t *blob = (uint8_t *)malloc(MIN(1<<20, width*height*4));
         const int32_t length
-          = dt_imageio_jpeg_compress(tmp, blob, wd, ht, cache_quality);
+          = dt_imageio_jpeg_compress(tmp, blob, width, height, cache_quality);
         assert(length <= MIN(1<<20, wd*ht*4));
         int written = fwrite(blob, sizeof(uint8_t), length, f);
         free(blob);
@@ -119,6 +114,7 @@ static void generate_thumbnail_cache()
   }
   dt_free_align(tmp);
   sqlite3_finalize(stmt);
+  fprintf(stderr, "done                     \n");
 }
 
 static void usage(const char *progname)
