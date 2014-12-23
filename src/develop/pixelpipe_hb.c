@@ -777,8 +777,9 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
 #pragma omp parallel for schedule(static) default(none) shared(pipe, roi_out, roi_in, output)
 #endif
           for(int j = 0; j < cp_height; j++)
-            memcpy(((char *)*output) + bpp * j * roi_out->width,
-                   ((char *)pipe->input) + bpp * (in_x + (in_y + j) * pipe->iwidth), bpp * cp_width);
+            memcpy(((char *)*output) + (size_t)bpp * j * roi_out->width,
+                   ((char *)pipe->input) + (size_t)bpp * (in_x + (in_y + j) * pipe->iwidth),
+                   (size_t)bpp * cp_width);
         }
         else
         {

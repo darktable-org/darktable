@@ -469,9 +469,10 @@ static const gchar *picasa_create_album(PicasaContext *ctx, gchar *name, gchar *
   char uri[4096] = { 0 };
   struct curl_slist *headers = NULL;
 
-  if(privacy == PICASA_ALBUM_PRIVACY_PUBLIC) private
-  = g_strdup("public");
-  else private = g_strdup("private");
+  if(privacy == PICASA_ALBUM_PRIVACY_PUBLIC)
+    private = g_strdup("public");
+  else
+    private = g_strdup("private");
 
   gchar *entry = g_markup_printf_escaped("<entry xmlns='http://www.w3.org/2005/Atom'\n"
                                          "xmlns:media='http://search.yahoo.com/mrss/'\n"
@@ -563,7 +564,7 @@ static const gchar *picasa_upload_photo_to_album(PicasaContext *ctx, gchar *albu
 
   // Open the temp file and read image to memory
   GMappedFile *imgfile = g_mapped_file_new(fname, FALSE, NULL);
-  int size = g_mapped_file_get_length(imgfile);
+  const int size = g_mapped_file_get_length(imgfile);
   gchar *data = g_mapped_file_get_contents(imgfile);
 
   gchar *entry = g_markup_printf_escaped("<entry xmlns='http://www.w3.org/2005/Atom'>\n"
@@ -584,8 +585,8 @@ static const gchar *picasa_upload_photo_to_album(PicasaContext *ctx, gchar *albu
   snprintf(mpart1, sizeof(mpart1), mpart_format, entry);
   g_free(entry);
 
-  int mpart1size = strlen(mpart1);
-  int postdata_length = mpart1size + size + strlen("\n--END_OF_PART--");
+  const int mpart1size = strlen(mpart1);
+  const int postdata_length = mpart1size + size + strlen("\n--END_OF_PART--");
   gchar *postdata = g_malloc(postdata_length);
   memcpy(postdata, mpart1, mpart1size);
   memcpy(postdata + mpart1size, data, size);
@@ -824,11 +825,11 @@ static int picasa_get_user_auth_token(dt_storage_picasa_gui_data_t *ui)
   }
 
   ////////////// build & show the validation dialog
-  gchar *text1 = _("step 1: a new window or tab of your browser should have been "
-                   "loaded. you have to login into your google+ account there "
-                   "and authorize darktable to upload photos before continuing.");
-  gchar *text2 = _("step 2: paste the verification code shown to you in the browser "
-                   "and click the OK button once you are done.");
+  const gchar *text1 = _("step 1: a new window or tab of your browser should have been "
+                         "loaded. you have to login into your google+ account there "
+                         "and authorize darktable to upload photos before continuing.");
+  const gchar *text2 = _("step 2: paste the verification code shown to you in the browser "
+                         "and click the OK button once you are done.");
 
   GtkWidget *window = dt_ui_main_window(darktable.gui->ui);
   GtkDialog *picasa_auth_dialog = GTK_DIALOG(

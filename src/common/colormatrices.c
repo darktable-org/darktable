@@ -30,6 +30,7 @@ dt_profiled_colormatrix_t;
 // image submitter, chart type, illuminant, comments
 static dt_profiled_colormatrix_t dt_profiled_colormatrices[] =
 {
+  // clang-format off
 
   // Robert Park, ColorChecker Passport, strobe, well lit
   { "PENTAX K-x",                   { 821548, 337357,  42923}, { 247818, 1042969, -218735}, { -4105, -293045, 1085129}, {792206, 821823, 668640}},
@@ -309,12 +310,16 @@ static dt_profiled_colormatrix_t dt_profiled_colormatrices[] =
 
   // Oleg Dzhimiev, ColorChecker Classic, office lighting, well lit
   { "Elphel 353E",                  {782623, 147903, -272369}, { 110016, 1115250, -729172}, {175949, -157227, 1930222}, {821899, 860794, 671768}}
+
+  // clang-format on
 };
 
 static const int dt_profiled_colormatrix_cnt = sizeof(dt_profiled_colormatrices)/sizeof(dt_profiled_colormatrix_t);
 
 static dt_profiled_colormatrix_t dt_vendor_colormatrices[] =
 {
+  // clang-format off
+
   // Pascal de Bruijn, DIY ColorChecker, daylight, well lit
   { "Canon EOS 50D",                { 665588, 259155, -37750}, {  61172,  790497, -117310}, {237442,  -49667,  979965}, {946487, 1000000, 1082657}},
 
@@ -330,12 +335,16 @@ static dt_profiled_colormatrix_t dt_vendor_colormatrices[] =
   { "SAMSUNG NX5",                  { 590607, 279297,  29831}, { 245789,  745789,  -84747}, {127808,  -25101,  879822}, {955185, 1000000, 1089981}},
   { "SAMSUNG NX10",                 { 590607, 279297,  29831}, { 245789,  745789,  -84747}, {127808,  -25101,  879822}, {955185, 1000000, 1089981}},
   { "SAMSUNG NX111",                { 590607, 279297,  29831}, { 245789,  745789,  -84747}, {127808,  -25101,  879822}, {955185, 1000000, 1089981}},
+
+  // clang-format on
 };
 
 static const int dt_vendor_colormatrix_cnt = sizeof(dt_vendor_colormatrices)/sizeof(dt_profiled_colormatrix_t);
 
 static dt_profiled_colormatrix_t dt_alternate_colormatrices[] =
 {
+  // clang-format off
+
   // Pascal de Bruijn, ColorChecker Classic, daylight, well lit
   { "Canon EOS 400D DIGITAL",       { 773514, 302612,  25558}, { 244278, 1107727, -177689}, { 55725, -289902, 1080765}, {822388, 847488, 696823}},
   { "Canon EOS DIGITAL REBEL XTi",  { 773514, 302612,  25558}, { 244278, 1107727, -177689}, { 55725, -289902, 1080765}, {822388, 847488, 696823}},
@@ -348,6 +357,8 @@ static dt_profiled_colormatrix_t dt_alternate_colormatrices[] =
   { "SAMSUNG NX5",                  { 773254, 310013,  12573}, { 299774, 1003143, -150620}, {  4715, -192886, 1070877}, {817657, 850372, 693924}},
   { "SAMSUNG NX10",                 { 773254, 310013,  12573}, { 299774, 1003143, -150620}, {  4715, -192886, 1070877}, {817657, 850372, 693924}},
   { "SAMSUNG NX111",                { 773254, 310013,  12573}, { 299774, 1003143, -150620}, {  4715, -192886, 1070877}, {817657, 850372, 693924}},
+
+  // clang-format on
 };
 
 static const int dt_alternate_colormatrix_cnt = sizeof(dt_alternate_colormatrices)/sizeof(dt_profiled_colormatrix_t);

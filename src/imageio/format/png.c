@@ -36,13 +36,14 @@
 #include "common/imageio_format.h"
 #include "bauhaus/bauhaus.h"
 
-DT_MODULE(1)
+DT_MODULE(2)
 
 typedef struct dt_imageio_png_t
 {
   int max_width, max_height;
   int width, height;
   char style[128];
+  gboolean style_append;
   int bpp;
   FILE *f;
   png_structp png_ptr;
@@ -350,6 +351,42 @@ size_t params_size(dt_imageio_module_format_t *self)
   return sizeof(dt_imageio_module_data_t) + sizeof(int);
 }
 
+void *legacy_params(dt_imageio_module_format_t *self, const void *const old_params,
+                    const size_t old_params_size, const int old_version, const int new_version,
+                    size_t *new_size)
+{
+  if(old_version == 1 && new_version == 2)
+  {
+    typedef struct dt_imageio_png_v1_t
+    {
+      int max_width, max_height;
+      int width, height;
+      char style[128];
+      gboolean style_append;
+      int bpp;
+      FILE *f;
+      png_structp png_ptr;
+      png_infop info_ptr;
+    } dt_imageio_png_v1_t;
+
+    dt_imageio_png_v1_t *o = (dt_imageio_png_v1_t *)old_params;
+    dt_imageio_png_t *n = (dt_imageio_png_t *)malloc(sizeof(dt_imageio_png_t));
+
+    n->max_width = o->max_width;
+    n->max_height = o->max_height;
+    n->width = o->width;
+    n->height = o->height;
+    g_strlcpy(n->style, o->style, sizeof(o->style));
+    n->style_append = 0;
+    n->bpp = o->bpp;
+    n->f = o->f;
+    n->png_ptr = o->png_ptr;
+    n->info_ptr = o->info_ptr;
+    *new_size = self->params_size(self);
+    return n;
+  }
+  return NULL;
+}
 void *get_params(dt_imageio_module_format_t *self)
 {
   dt_imageio_png_t *d = (dt_imageio_png_t *)calloc(1, sizeof(dt_imageio_png_t));
@@ -369,8 +406,8 @@ void free_params(dt_imageio_module_format_t *self, dt_imageio_module_data_t *par
 int set_params(dt_imageio_module_format_t *self, const void *params, const int size)
 {
   if(size != self->params_size(self)) return 1;
-  dt_imageio_png_t *d = (dt_imageio_png_t *)params;
-  dt_imageio_png_gui_t *g = (dt_imageio_png_gui_t *)self->gui_data;
+  const dt_imageio_png_t *d = (dt_imageio_png_t *)params;
+  const dt_imageio_png_gui_t *g = (dt_imageio_png_gui_t *)self->gui_data;
   if(d->bpp < 12)
     dt_bauhaus_combobox_set(g->bit_depth, 0);
   else
@@ -406,7 +443,7 @@ const char *name()
 
 static void bit_depth_changed(GtkWidget *widget, gpointer user_data)
 {
-  int bpp = (dt_bauhaus_combobox_get(widget) == 0 ? 8 : 16);
+  const int bpp = (dt_bauhaus_combobox_get(widget) == 0 ? 8 : 16);
   dt_conf_set_int("plugins/imageio/format/png/bpp", bpp);
 }
 
@@ -426,7 +463,7 @@ void gui_init(dt_imageio_module_format_t *self)
 {
   dt_imageio_png_gui_t *gui = (dt_imageio_png_gui_t *)malloc(sizeof(dt_imageio_png_gui_t));
   self->gui_data = (void *)gui;
-  int bpp = dt_conf_get_int("plugins/imageio/format/png/bpp");
+  const int bpp = dt_conf_get_int("plugins/imageio/format/png/bpp");
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_PIXEL_APPLY_DPI(5));
 
   gui->bit_depth = dt_bauhaus_combobox_new(NULL);

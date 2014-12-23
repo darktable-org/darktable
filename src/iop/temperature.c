@@ -32,7 +32,7 @@
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
 #include "libraw/libraw.h"
-#include "iop/wb_presets.c"
+#include "external/wb_presets.c"
 #include "bauhaus/bauhaus.h"
 
 DT_MODULE_INTROSPECTION(2, dt_iop_temperature_params_t)
