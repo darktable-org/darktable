@@ -103,6 +103,7 @@ typedef struct dt_mipmap_cache_t
   int compression_type; // 0 - none, 1 - low quality, 2 - slow
   // per-thread cache of uncompressed buffers, in case compression is requested.
   dt_mipmap_cache_one_t scratchmem;
+  char cachedir[PATH_MAX]; // cached sha1sum filename for faster access
 } dt_mipmap_cache_t;
 
 // use thread local storage to decompress thumbnails

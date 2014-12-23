@@ -560,7 +560,7 @@ void dt_mipmap_cache_allocate_dynamic(void *data, dt_cache_entry_t *entry)
     {
       // try and load from disk, if successful set flag
       char filename[1024];
-      snprintf(filename, 1024, "%s/%d/%d.jpg", darktable.cachedir, cache->size, get_imgid(entry->key));
+      snprintf(filename, 1024, "%s.d/%d/%d.jpg", darktable.mipmap_cache->cachedir, cache->size, get_imgid(entry->key));
       FILE *f = fopen(filename, "rb");
       if(f)
       {
@@ -620,7 +620,7 @@ void dt_mipmap_cache_deallocate_dynamic(void *data, dt_cache_entry_t *entry)
         // if(dt_conf_get_bool("cache_disk_backend"))
         {
           char filename[1024];
-          snprintf(filename, 1024, "%s/%d/%d.jpg", darktable.cachedir, cache->size, get_imgid(entry->key));
+          snprintf(filename, 1024, "%s.d/%d/%d.jpg", darktable.mipmap_cache->cachedir, cache->size, get_imgid(entry->key));
           g_unlink(filename);
         }
       }
@@ -630,11 +630,11 @@ void dt_mipmap_cache_deallocate_dynamic(void *data, dt_cache_entry_t *entry)
         // TODO: if compression, uncompress first
 
         char filename[1024];
-        snprintf(filename, 1024, "%s/%d", darktable.cachedir, cache->size);
+        snprintf(filename, 1024, "%s.d/%d", darktable.mipmap_cache->cachedir, cache->size);
         int mkd = g_mkdir_with_parents(filename, 0750);
         if(!mkd)
         {
-          snprintf(filename, 1024, "%s/%d/%d.jpg", darktable.cachedir, cache->size, get_imgid(entry->key));
+          snprintf(filename, 1024, "%s.d/%d/%d.jpg", darktable.mipmap_cache->cachedir, cache->size, get_imgid(entry->key));
           FILE *f = fopen(filename, "wb");
           if(f)
           {
@@ -665,6 +665,7 @@ static uint32_t nearest_power_of_two(const uint32_t value)
 
 void dt_mipmap_cache_init(dt_mipmap_cache_t *cache)
 {
+  dt_mipmap_cache_get_filename(cache->cachedir, sizeof(cache->cachedir));
   // make sure static memory is initialized
   struct dt_mipmap_buffer_dsc *dsc = (struct dt_mipmap_buffer_dsc *)dt_mipmap_cache_static_dead_image;
   dead_image_f((dt_mipmap_buffer_t *)(dsc + 1));
