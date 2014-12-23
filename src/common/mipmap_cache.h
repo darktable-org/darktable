@@ -69,20 +69,6 @@ typedef struct dt_mipmap_buffer_t
 
 typedef struct dt_mipmap_cache_one_t
 {
-  // this cache is for which mipmap type?
-  dt_mipmap_size_t size;
-  // real width and height are stored per element
-  // (could be smaller than the max for this mip level,
-  // due to aspect ratio)
-  uint32_t max_width, max_height;
-  // size of an element inside buf
-  size_t buffer_size;
-  // 1) no memory fragmentation:
-  //    - fixed slots with fixed size (could waste a few bytes for extreme
-  //      aspect ratios)
-  // 2) dynamically grow? (linux alloc on write)
-  // 3) downside: no crosstalk between mip0 and mip4
-
   // one cache per mipmap scale!
   dt_cache_t cache;
 
@@ -97,8 +83,17 @@ typedef struct dt_mipmap_cache_one_t
 
 typedef struct dt_mipmap_cache_t
 {
+  // real width and height are stored per element
+  // (could be smaller than the max for this mip level,
+  // due to aspect ratio)
+  uint32_t max_width[DT_MIPMAP_NONE], max_height[DT_MIPMAP_NONE];
+  // size of an element inside buf
+  size_t buffer_size[DT_MIPMAP_NONE];
+
   // one cache per mipmap level
-  dt_mipmap_cache_one_t mip[DT_MIPMAP_NONE];
+  dt_mipmap_cache_one_t mip_thumbs;
+  dt_mipmap_cache_one_t mip_f;
+  dt_mipmap_cache_one_t mip_full;
   char cachedir[PATH_MAX]; // cached sha1sum filename for faster access
 } dt_mipmap_cache_t;
 
