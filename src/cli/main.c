@@ -98,7 +98,7 @@ static void generate_thumbnail_cache()
           tmp[4*(wd*j+i)+3] = 0;
         }
       }
-      snprintf(filename, PATH_MAX, "%s/%d/%d.jpg", darktable.cachedir, k, imgid);
+      snprintf(filename, PATH_MAX, "%s.d/%d/%d.jpg", darktable.mipmap_cache->cachedir, k, imgid);
       FILE *f = fopen(filename, "wb");
       if(f)
       {
