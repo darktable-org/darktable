@@ -44,7 +44,7 @@ typedef struct dt_lib_export_t
   GtkWidget *storage, *format;
   int format_lut[128];
   GtkWidget *shown_storage, *shown_format;
-  GtkWidget *profile, *intent, *style;
+  GtkWidget *profile, *intent, *style, *style_mode;
   GList *profiles;
   GtkButton *export_button;
 } dt_lib_export_t;
@@ -95,6 +95,7 @@ static void export_button_clicked(GtkWidget *widget, gpointer user_data)
   g_free(storage_name);
   gboolean high_quality = dt_conf_get_bool("plugins/lighttable/export/high_quality_processing");
   char *tmp = dt_conf_get_string("plugins/lighttable/export/style");
+  gboolean style_append = dt_conf_get_bool("plugins/lighttable/export/style_append");
   if(tmp)
   {
     g_strlcpy(style, tmp, sizeof(style));
@@ -109,7 +110,8 @@ static void export_button_clicked(GtkWidget *widget, gpointer user_data)
   else
     list = dt_collection_get_selected(darktable.collection, -1);
 
-  dt_control_export(list, max_width, max_height, format_index, storage_index, high_quality, style);
+  dt_control_export(list, max_width, max_height, format_index, storage_index, high_quality, style,
+                    style_append);
 }
 
 static void width_changed(GtkSpinButton *spin, gpointer user_data)
@@ -171,7 +173,12 @@ void gui_reset(dt_lib_module_t *self)
   else
     dt_bauhaus_combobox_set(d->style, 0);
 
+  // style mode to overwrite as it was the initial behavior
+
+  dt_bauhaus_combobox_set(d->style_mode, dt_conf_get_bool("plugins/lighttable/export/style_append"));
+
   if(!iccfound) dt_bauhaus_combobox_set(d->profile, 0);
+
   dt_imageio_module_format_t *mformat = dt_imageio_get_format();
   if(mformat) mformat->gui_reset(mformat);
   dt_imageio_module_storage_t *mstorage = dt_imageio_get_storage();
@@ -353,6 +360,14 @@ static void style_changed(GtkWidget *widget, dt_lib_export_t *d)
     const gchar *style = dt_bauhaus_combobox_get_text(d->style);
     dt_conf_set_string("plugins/lighttable/export/style", style);
   }
+}
+
+static void style_mode_changed(GtkComboBox *widget, dt_lib_export_t *d)
+{
+  if(dt_bauhaus_combobox_get(d->style_mode) == 0)
+    dt_conf_set_bool("plugins/lighttable/export/style_append", FALSE);
+  else
+    dt_conf_set_bool("plugins/lighttable/export/style_append", TRUE);
 }
 
 int position()
@@ -608,11 +623,28 @@ void gui_init(dt_lib_module_t *self)
   g_object_set(G_OBJECT(d->style), "tooltip-text", _("temporary style to append while exporting"),
                (char *)NULL);
 
+  //  Add check to control whether the style is to replace or append the current module
+
+  d->style_mode = dt_bauhaus_combobox_new(NULL);
+  dt_bauhaus_widget_set_label(d->style_mode, NULL, _("mode"));
+
+  gtk_box_pack_start(GTK_BOX(self->widget), d->style_mode, TRUE, TRUE, 0);
+
+  dt_bauhaus_combobox_add(d->style_mode, _("replace history"));
+  dt_bauhaus_combobox_add(d->style_mode, _("append history"));
+
+  dt_bauhaus_combobox_set(d->style_mode, 0);
+
+  g_object_set(G_OBJECT(d->style_mode), "tooltip-text",
+               _("whether the style items are appended to the history or replacing the history"),
+               (char *)NULL);
+
   //  Set callback signals
 
   g_signal_connect(G_OBJECT(d->intent), "value-changed", G_CALLBACK(intent_changed), (gpointer)d);
   g_signal_connect(G_OBJECT(d->profile), "value-changed", G_CALLBACK(profile_changed), (gpointer)d);
   g_signal_connect(G_OBJECT(d->style), "value-changed", G_CALLBACK(style_changed), (gpointer)d);
+  g_signal_connect(G_OBJECT(d->style_mode), "value-changed", G_CALLBACK(style_mode_changed), (gpointer)d);
 
   // Export button
 
@@ -908,10 +940,12 @@ void *get_params(dt_lib_module_t *self, int *size)
   int32_t max_height = dt_conf_get_int("plugins/lighttable/export/height");
   gchar *iccprofile = dt_conf_get_string("plugins/lighttable/export/iccprofile");
   gchar *style = dt_conf_get_string("plugins/lighttable/export/style");
+  gboolean style_append = dt_conf_get_bool("plugins/lighttable/export/style_append");
 
   if(fdata)
   {
     g_strlcpy(fdata->style, style, sizeof(fdata->style));
+    fdata->style_append = style_append;
   }
 
   if(!iccprofile)
@@ -1035,6 +1069,9 @@ int set_params(dt_lib_module_t *self, const void *params, int size)
     dt_bauhaus_combobox_set(d->style, 0);
   else
     _combo_box_set_active_text(d->style, fdata->style);
+
+  dt_bauhaus_combobox_set(d->style_mode, fdata->style_append ? 1 : 0);
+
   buf += fsize;
   const void *sdata = buf;
 

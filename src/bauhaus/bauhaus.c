@@ -664,7 +664,7 @@ static void dt_bauhaus_widget_init(dt_bauhaus_widget_t *w, dt_iop_module_t *self
   w->quad_paint = 0;
   w->quad_toggle = 0;
   w->combo_populate = NULL;
-  gtk_widget_set_size_request(GTK_WIDGET(w), DT_PIXEL_APPLY_DPI(260), get_line_height());
+  gtk_widget_set_size_request(GTK_WIDGET(w), -1, get_line_height());
 
   gtk_widget_add_events(GTK_WIDGET(w), GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK
                                        | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK

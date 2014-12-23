@@ -9,9 +9,9 @@ CLANG_FORMAT=clang-format-3.6
 # add all the files and directories that may not be reformatted, relative to src/
 IGNORE_SET=(
     external
-    iop/wb_presets.c
     common/noiseprofiles.h
     common/colormatrices.c
+    common/nvidia_gpus.h
 )
 
 ####################################################################################

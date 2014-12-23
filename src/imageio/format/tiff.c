@@ -1,6 +1,7 @@
 /*
     This file is part of darktable,
     copyright (c) 2010--2011 Henrik Andersson and johannes hanika
+    copyright (c) 2014 LebedevRI.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -29,15 +30,15 @@
 #include "control/conf.h"
 #include "common/imageio_format.h"
 #include "bauhaus/bauhaus.h"
-#define DT_TIFFIO_STRIPE 64
 
-DT_MODULE(1)
+DT_MODULE(2)
 
 typedef struct dt_imageio_tiff_t
 {
   int max_width, max_height;
   int width, height;
   char style[128];
+  gboolean style_append;
   int bpp;
   int compress;
   TIFF *handle;
@@ -53,7 +54,7 @@ typedef struct dt_imageio_tiff_gui_t
 int write_image(dt_imageio_module_data_t *d_tmp, const char *filename, const void *in_void, void *exif,
                 int exif_len, int imgid)
 {
-  dt_imageio_tiff_t *d = (dt_imageio_tiff_t *)d_tmp;
+  const dt_imageio_tiff_t *d = (dt_imageio_tiff_t *)d_tmp;
 
   uint8_t *profile = NULL;
   uint32_t profile_len = 0;
@@ -61,9 +62,6 @@ int write_image(dt_imageio_module_data_t *d_tmp, const char *filename, const voi
   TIFF *tif = NULL;
 
   void *rowdata = NULL;
-  uint32_t rowsize = 0;
-  uint32_t stripesize = 0;
-  uint32_t stripe = 0;
 
   int rc = 1; // default to error
 
@@ -137,7 +135,7 @@ int write_image(dt_imageio_module_data_t *d_tmp, const char *filename, const voi
   TIFFSetField(tif, TIFFTAG_IMAGELENGTH, (uint32_t)d->height);
   TIFFSetField(tif, TIFFTAG_PHOTOMETRIC, (uint16_t)PHOTOMETRIC_RGB);
   TIFFSetField(tif, TIFFTAG_PLANARCONFIG, (uint16_t)PLANARCONFIG_CONTIG);
-  TIFFSetField(tif, TIFFTAG_ROWSPERSTRIP, (uint32_t)DT_TIFFIO_STRIPE);
+  TIFFSetField(tif, TIFFTAG_ROWSPERSTRIP, (uint32_t)1);
   TIFFSetField(tif, TIFFTAG_ORIENTATION, (uint16_t)ORIENTATION_TOPLEFT);
 
   int resolution = dt_conf_get_int("metadata/resolution");
@@ -148,12 +146,8 @@ int write_image(dt_imageio_module_data_t *d_tmp, const char *filename, const voi
     TIFFSetField(tif, TIFFTAG_RESOLUTIONUNIT, (uint16_t)RESUNIT_INCH);
   }
 
-  rowsize = (d->width * 3) * d->bpp / 8;
-  stripesize = rowsize * DT_TIFFIO_STRIPE;
-  stripe = 0;
-
-  rowdata = malloc(stripesize);
-  if(!rowdata)
+  const size_t rowsize = (d->width * 3) * d->bpp / 8;
+  if((rowdata = malloc(rowsize)) == NULL)
   {
     rc = 1;
     goto exit;
@@ -161,73 +155,59 @@ int write_image(dt_imageio_module_data_t *d_tmp, const char *filename, const voi
 
   if(d->bpp == 32)
   {
-    float *wdata = rowdata;
-
     for(int y = 0; y < d->height; y++)
     {
       float *in = (float *)in_void + (size_t)4 * y * d->width;
+      float *out = (float *)rowdata;
 
-      for(int x = 0; x < d->width; x++, in += 4, wdata += 3)
+      for(int x = 0; x < d->width; x++, in += 4, out += 3)
       {
-        memcpy(wdata, in, 3 * sizeof(float));
+        memcpy(out, in, 3 * sizeof(float));
       }
 
-      if((uintptr_t)wdata - (uintptr_t)rowdata == (uintptr_t)stripesize)
+      if(TIFFWriteScanline(tif, rowdata, y, 0) == -1)
       {
-        TIFFWriteEncodedStrip(tif, stripe++, rowdata, (size_t)(rowsize * DT_TIFFIO_STRIPE));
-        wdata = rowdata;
+        rc = 1;
+        goto exit;
       }
-    }
-    if((uintptr_t)wdata - (uintptr_t)rowdata != (uintptr_t)stripesize)
-    {
-      TIFFWriteEncodedStrip(tif, stripe++, rowdata, (size_t)((uintptr_t)wdata - (uintptr_t)rowdata));
     }
   }
   else if(d->bpp == 16)
   {
-    uint16_t *wdata = rowdata;
     for(int y = 0; y < d->height; y++)
     {
       uint16_t *in = (uint16_t *)in_void + (size_t)4 * y * d->width;
+      uint16_t *out = (uint16_t *)rowdata;
 
-      for(int x = 0; x < d->width; x++, in += 4, wdata += 3)
+      for(int x = 0; x < d->width; x++, in += 4, out += 3)
       {
-        memcpy(wdata, in, 3 * sizeof(uint16_t));
+        memcpy(out, in, 3 * sizeof(uint16_t));
       }
 
-      if((uintptr_t)wdata - (uintptr_t)rowdata == (uintptr_t)stripesize)
+      if(TIFFWriteScanline(tif, rowdata, y, 0) == -1)
       {
-        TIFFWriteEncodedStrip(tif, stripe++, rowdata, (size_t)(rowsize * DT_TIFFIO_STRIPE));
-        wdata = rowdata;
+        rc = 1;
+        goto exit;
       }
-    }
-    if((uintptr_t)wdata - (uintptr_t)rowdata != (uintptr_t)stripesize)
-    {
-      TIFFWriteEncodedStrip(tif, stripe, rowdata, (size_t)((uintptr_t)wdata - (uintptr_t)rowdata));
     }
   }
   else
   {
-    uint8_t *wdata = rowdata;
-
     for(int y = 0; y < d->height; y++)
     {
       uint8_t *in = (uint8_t *)in_void + (size_t)4 * y * d->width;
+      uint8_t *out = (uint8_t *)rowdata;
 
-      for(int x = 0; x < d->width; x++, in += 4, wdata += 3)
+      for(int x = 0; x < d->width; x++, in += 4, out += 3)
       {
-        memcpy(wdata, in, 3 * sizeof(uint8_t));
+        memcpy(out, in, 3 * sizeof(uint8_t));
       }
 
-      if((uintptr_t)wdata - (uintptr_t)rowdata == (uintptr_t)stripesize)
+      if(TIFFWriteScanline(tif, rowdata, y, 0) == -1)
       {
-        TIFFWriteEncodedStrip(tif, stripe++, rowdata, (size_t)(rowsize * DT_TIFFIO_STRIPE));
-        wdata = rowdata;
+        rc = 1;
+        goto exit;
       }
-    }
-    if((uintptr_t)wdata - (uintptr_t)rowdata != (uintptr_t)stripesize)
-    {
-      TIFFWriteEncodedStrip(tif, stripe, rowdata, (size_t)((uintptr_t)wdata - (uintptr_t)rowdata));
     }
   }
 
@@ -279,6 +259,40 @@ size_t params_size(dt_imageio_module_format_t *self)
   return sizeof(dt_imageio_tiff_t) - sizeof(TIFF *);
 }
 
+void *legacy_params(dt_imageio_module_format_t *self, const void *const old_params,
+                    const size_t old_params_size, const int old_version, const int new_version,
+                    size_t *new_size)
+{
+  if(old_version == 1 && new_version == 2)
+  {
+    typedef struct dt_imageio_tiff_v1_t
+    {
+      int max_width, max_height;
+      int width, height;
+      char style[128];
+      gboolean style_append;
+      int bpp;
+      int compress;
+      TIFF *handle;
+    } dt_imageio_tiff_v1_t;
+
+    const dt_imageio_tiff_v1_t *o = (dt_imageio_tiff_v1_t *)old_params;
+    dt_imageio_tiff_t *n = (dt_imageio_tiff_t *)malloc(sizeof(dt_imageio_tiff_t));
+
+    n->max_width = o->max_width;
+    n->max_height = o->max_height;
+    n->width = o->width;
+    n->height = o->height;
+    g_strlcpy(n->style, o->style, sizeof(o->style));
+    n->style_append = 0;
+    n->bpp = o->bpp;
+    n->compress = o->compress;
+    n->handle = o->handle;
+    *new_size = self->params_size(self);
+    return n;
+  }
+  return NULL;
+}
 void *get_params(dt_imageio_module_format_t *self)
 {
   dt_imageio_tiff_t *d = (dt_imageio_tiff_t *)calloc(1, sizeof(dt_imageio_tiff_t));
@@ -301,8 +315,8 @@ void free_params(dt_imageio_module_format_t *self, dt_imageio_module_data_t *par
 int set_params(dt_imageio_module_format_t *self, const void *params, const int size)
 {
   if(size != self->params_size(self)) return 1;
-  dt_imageio_tiff_t *d = (dt_imageio_tiff_t *)params;
-  dt_imageio_tiff_gui_t *g = (dt_imageio_tiff_gui_t *)self->gui_data;
+  const dt_imageio_tiff_t *d = (dt_imageio_tiff_t *)params;
+  const dt_imageio_tiff_gui_t *g = (dt_imageio_tiff_gui_t *)self->gui_data;
 
   if(d->bpp == 16)
     dt_bauhaus_combobox_set(g->bpp, 1);
@@ -357,7 +371,7 @@ const char *name()
 
 static void bpp_combobox_changed(GtkWidget *widget, gpointer user_data)
 {
-  int bpp = dt_bauhaus_combobox_get(widget);
+  const int bpp = dt_bauhaus_combobox_get(widget);
 
   if(bpp == 1)
     dt_conf_set_int("plugins/imageio/format/tiff/bpp", 16);
@@ -369,7 +383,7 @@ static void bpp_combobox_changed(GtkWidget *widget, gpointer user_data)
 
 static void compress_combobox_changed(GtkWidget *widget, gpointer user_data)
 {
-  int compress = dt_bauhaus_combobox_get(widget);
+  const int compress = dt_bauhaus_combobox_get(widget);
   dt_conf_set_int("plugins/imageio/format/tiff/compress", compress);
 }
 
@@ -389,9 +403,9 @@ void gui_init(dt_imageio_module_format_t *self)
   dt_imageio_tiff_gui_t *gui = (dt_imageio_tiff_gui_t *)malloc(sizeof(dt_imageio_tiff_gui_t));
   self->gui_data = (void *)gui;
 
-  int bpp = dt_conf_get_int("plugins/imageio/format/tiff/bpp");
+  const int bpp = dt_conf_get_int("plugins/imageio/format/tiff/bpp");
 
-  int compress = dt_conf_get_int("plugins/imageio/format/tiff/compress");
+  const int compress = dt_conf_get_int("plugins/imageio/format/tiff/compress");
 
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_PIXEL_APPLY_DPI(5));
 

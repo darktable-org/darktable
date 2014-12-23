@@ -35,6 +35,7 @@ src/develop/pixelpipe_hb.c
 src/develop/tiling.c
 src/dtgtk/resetlabel.c
 src/dtgtk/slider.c
+src/external/wb_presets.c
 src/gui/accelerators.c
 src/gui/camera_import_dialog.c
 src/gui/gtk.c
@@ -120,7 +121,6 @@ src/iop/velvia.c
 src/iop/vibrance.c
 src/iop/vignette.c
 src/iop/watermark.c
-src/iop/wb_presets.c
 src/iop/zonesystem.c
 src/libs/backgroundjobs.c
 src/libs/camera.c

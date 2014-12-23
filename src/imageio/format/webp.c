@@ -31,7 +31,7 @@
 
 #include <webp/encode.h>
 
-DT_MODULE(1)
+DT_MODULE(2)
 
 typedef enum
 {
@@ -54,6 +54,7 @@ typedef struct dt_imageio_webp_t
   int max_width, max_height;
   int width, height;
   char style[128];
+  gboolean style_append;
   int comp_type;
   int quality;
   int hint;
@@ -179,6 +180,40 @@ size_t params_size(dt_imageio_module_format_t *self)
   return sizeof(dt_imageio_webp_t);
 }
 
+void *legacy_params(dt_imageio_module_format_t *self, const void *const old_params,
+                    const size_t old_params_size, const int old_version, const int new_version,
+                    size_t *new_size)
+{
+  if(old_version == 1 && new_version == 2)
+  {
+    typedef struct dt_imageio_webp_v1_t
+    {
+      int max_width, max_height;
+      int width, height;
+      char style[128];
+      gboolean style_append;
+      int comp_type;
+      int quality;
+      int hint;
+    } dt_imageio_webp_v1_t;
+
+    dt_imageio_webp_v1_t *o = (dt_imageio_webp_v1_t *)old_params;
+    dt_imageio_webp_t *n = (dt_imageio_webp_t *)malloc(sizeof(dt_imageio_webp_t));
+
+    n->max_width = o->max_width;
+    n->max_height = o->max_height;
+    n->width = o->width;
+    n->height = o->height;
+    g_strlcpy(n->style, o->style, sizeof(o->style));
+    n->style_append = 0;
+    n->comp_type = o->comp_type;
+    n->quality = o->quality;
+    n->hint = o->hint;
+    *new_size = self->params_size(self);
+    return n;
+  }
+  return NULL;
+}
 void *get_params(dt_imageio_module_format_t *self)
 {
   dt_imageio_webp_t *d = (dt_imageio_webp_t *)calloc(1, sizeof(dt_imageio_webp_t));
@@ -194,7 +229,7 @@ void *get_params(dt_imageio_module_format_t *self)
 int set_params(dt_imageio_module_format_t *self, const void *params, const int size)
 {
   if(size != self->params_size(self)) return 1;
-  dt_imageio_webp_t *d = (dt_imageio_webp_t *)params;
+  const dt_imageio_webp_t *d = (dt_imageio_webp_t *)params;
   dt_imageio_webp_gui_data_t *g = (dt_imageio_webp_gui_data_t *)self->gui_data;
   dt_bauhaus_combobox_set(g->compression, d->comp_type);
   dt_bauhaus_slider_set(g->quality, d->quality);
@@ -240,19 +275,19 @@ const char *name()
 
 static void compression_changed(GtkWidget *widget, gpointer user_data)
 {
-  int comp_type = dt_bauhaus_combobox_get(widget);
+  const int comp_type = dt_bauhaus_combobox_get(widget);
   dt_conf_set_int("plugins/imageio/format/webp/comp_type", comp_type);
 }
 
 static void quality_changed(GtkWidget *slider, gpointer user_data)
 {
-  int quality = (int)dt_bauhaus_slider_get(slider);
+  const int quality = (int)dt_bauhaus_slider_get(slider);
   dt_conf_set_int("plugins/imageio/format/webp/quality", quality);
 }
 
 static void hint_combobox_changed(GtkWidget *widget, gpointer user_data)
 {
-  int hint = dt_bauhaus_combobox_get(widget);
+  const int hint = dt_bauhaus_combobox_get(widget);
   dt_conf_set_int("plugins/imageio/format/webp/hint", hint);
 }
 
@@ -260,9 +295,9 @@ void gui_init(dt_imageio_module_format_t *self)
 {
   dt_imageio_webp_gui_data_t *gui = (dt_imageio_webp_gui_data_t *)malloc(sizeof(dt_imageio_webp_gui_data_t));
   self->gui_data = (void *)gui;
-  int comp_type = dt_conf_get_int("plugins/imageio/format/webp/comp_type");
-  int quality = dt_conf_get_int("plugins/imageio/format/webp/quality");
-  int hint = dt_conf_get_int("plugins/imageio/format/webp/hint");
+  const int comp_type = dt_conf_get_int("plugins/imageio/format/webp/comp_type");
+  const int quality = dt_conf_get_int("plugins/imageio/format/webp/quality");
+  const int hint = dt_conf_get_int("plugins/imageio/format/webp/hint");
 
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_PIXEL_APPLY_DPI(5));
 

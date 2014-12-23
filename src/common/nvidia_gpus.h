@@ -22,6 +22,8 @@
 // we're not really interested in updates, this is merely used to detect which gpus don't support sm_20
 // (and we hope newer gpus will all do that)
 static const char *nvidia_gpus[] = {
+  // clang-format off
+  
   "Tesla C2075", "2.0",
   "Tesla C2050/C2070", "2.0",
   "Tesla C1060", "1.3",
@@ -245,6 +247,8 @@ static const char *nvidia_gpus[] = {
   "GeForce G 103M", "1.1",
   "ION", "1.0",
   NULL, NULL
+  
+  // clang-format on
 };
 #endif
 

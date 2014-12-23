@@ -88,6 +88,10 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
     {
       // we have to register a new circle mask
       dt_masks_form_t *form = dt_masks_create(DT_MASKS_CIRCLE | DT_MASKS_CLONE);
+
+      // spots v1 was before raw orientation changes
+      form->version = 1;
+
       dt_masks_point_circle_t *circle = (dt_masks_point_circle_t *)(malloc(sizeof(dt_masks_point_circle_t)));
       circle->center[0] = o->spot[i].x;
       circle->center[1] = o->spot[i].y;
@@ -96,6 +100,10 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
       form->points = g_list_append(form->points, circle);
       form->source[0] = o->spot[i].xc;
       form->source[1] = o->spot[i].yc;
+
+      // adapt for raw orientation changes
+      dt_masks_legacy_params(self->dev, form, form->version, dt_masks_version());
+
       dt_masks_gui_form_save_creation(self, form, NULL);
 
       // and add it to the module params
@@ -278,8 +286,8 @@ void modify_roi_in(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *
   // now we set the values
   roi_in->x = CLAMP(roix, 0, piece->pipe->iwidth * roi_in->scale - 1);
   roi_in->y = CLAMP(roiy, 0, piece->pipe->iheight * roi_in->scale - 1);
-  roi_in->width = CLAMP(roir - roi_in->x, 1, piece->pipe->iwidth * roi_in->scale - roi_in->x);
-  roi_in->height = CLAMP(roib - roi_in->y, 1, piece->pipe->iheight * roi_in->scale - roi_in->y);
+  roi_in->width = CLAMP(roir - roi_in->x, 1, piece->pipe->iwidth * roi_in->scale + .5f - roi_in->x);
+  roi_in->height = CLAMP(roib - roi_in->y, 1, piece->pipe->iheight * roi_in->scale + .5f - roi_in->y);
 }
 
 void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, void *o,

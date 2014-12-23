@@ -726,7 +726,7 @@ static void _init_f(float *out, uint32_t *width, uint32_t *height, const uint32_
   const uint32_t wd = *width, ht = *height;
 
   /* do not even try to process file if it isn't available */
-  char filename[2048] = { 0 };
+  char filename[PATH_MAX] = { 0 };
   gboolean from_cache = TRUE;
   dt_image_full_path(imgid, filename, sizeof(filename), &from_cache);
   if(!*filename || !g_file_test(filename, G_FILE_TEST_EXISTS))

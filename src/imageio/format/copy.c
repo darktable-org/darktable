@@ -49,8 +49,8 @@ int write_image(dt_imageio_module_data_t *ppm, const char *filename, const void 
 
   if(sqlite3_step(stmt) != SQLITE_ROW) goto END;
 
-  char *sfolder = (char *)sqlite3_column_text(stmt, 0);
-  char *sfilename = (char *)sqlite3_column_text(stmt, 1);
+  const char *sfolder = (char *)sqlite3_column_text(stmt, 0);
+  const char *sfilename = (char *)sqlite3_column_text(stmt, 1);
   sourcefile = g_build_filename(sfolder, sfilename, NULL);
   char *extension = g_strrstr(sourcefile, ".");
   if(extension == NULL) goto END;

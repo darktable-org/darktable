@@ -637,6 +637,13 @@ const wb_data wb_preset[] =
   { "Canon", "EOS 7D", Flash, 8,		{ 2.5664, 1, 1.2461, 0 } },
   { "Canon", "EOS 7D", Flash, 9,		{ 2.5928, 1, 1.2266, 0 } },
 
+  { "Canon", "EOS 7D Mark II", Daylight, 0,     { 1.9462890625, 1, 1.6386718750, 0 } },
+  { "Canon", "EOS 7D Mark II", Shade, 0,        { 2.2402343750, 1, 1.4101562500, 0 } },
+  { "Canon", "EOS 7D Mark II", Cloudy, 0,       { 2.0937500000, 1, 1.5195312500, 0 } },
+  { "Canon", "EOS 7D Mark II", Tungsten, 0,     { 1.3730468750, 1, 2.3427734375, 0 } },
+  { "Canon", "EOS 7D Mark II", Fluorescent, 0,  { 1.7177734375, 1, 2.2509765625, 0 } },
+  { "Canon", "EOS 7D Mark II", Flash, 0,        { 2.1601562500, 1, 1.4882812500, 0 } },
+
   { "Canon", "EOS 10D", Daylight, 0,		{ 2.159856, 1, 1.218750, 0 } },
   { "Canon", "EOS 10D", Shade, 0,		{ 2.533654, 1, 1.036058, 0 } },
   { "Canon", "EOS 10D", Cloudy, 0,		{ 2.348558, 1, 1.116587, 0 } },

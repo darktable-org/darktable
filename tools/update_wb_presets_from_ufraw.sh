@@ -4,7 +4,7 @@
 #
 
 TEMP_FILE=`tempfile -p dtwb -s .c`
-OUT_FILE="../src/iop/wb_presets.c"
+OUT_FILE="../src/external/wb_presets.c"
 
 echo "Downloading new wb_presets.c into ${TEMP_FILE}"
 

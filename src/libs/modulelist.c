@@ -185,7 +185,7 @@ static void _lib_modulelist_populate_callback(gpointer instance, gpointer user_d
   g_object_set(pix_renderer, "cell-background-rgba", &color, NULL);
 
   fav_renderer = gtk_cell_renderer_pixbuf_new();
-  cairo_surface_t *fav_cst = dt_cairo_image_surface_create(CAIRO_FORMAT_ARGB32, ICON_SIZE, ICON_SIZE);
+  cairo_surface_t *fav_cst = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, ICON_SIZE, ICON_SIZE);
   cairo_t *fav_cr = cairo_create(fav_cst);
   cairo_set_source_rgb(fav_cr, 0.7, 0.7, 0.7);
   dtgtk_cairo_paint_modulegroup_favorites(fav_cr, 0, 0, ICON_SIZE, ICON_SIZE, 0);

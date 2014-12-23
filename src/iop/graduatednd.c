@@ -592,7 +592,15 @@ int button_released(struct dt_iop_module_t *self, double x, double y, int which,
     set_grad_from_points(self, g->xa, g->ya, g->xb, g->yb, &r, &o);
 
     // if this is a "line dragging, we reset extremities, to be sure they are not outside the image
-    if(g->dragging == 3) set_points_from_grad(self, &g->xa, &g->ya, &g->xb, &g->yb, r, o);
+    if(g->dragging == 3)
+    {
+      /*
+       * whole line dragging should not change rotation, so we should reuse
+       * old rotation to avoid rounding issues
+       */
+      r = p->rotation;
+      set_points_from_grad(self, &g->xa, &g->ya, &g->xb, &g->yb, r, o);
+    }
     self->dt->gui->reset = 1;
     dt_bauhaus_slider_set(g->scale3, r);
     // dt_bauhaus_slider_set(g->scale4,o);

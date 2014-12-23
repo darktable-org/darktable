@@ -373,6 +373,7 @@ int main(int argc, char *arg[])
   fdata->max_width = (w != 0 && fdata->max_width > w) ? w : fdata->max_width;
   fdata->max_height = (h != 0 && fdata->max_height > h) ? h : fdata->max_height;
   fdata->style[0] = '\0';
+  fdata->style_append = 0;
 
   if(storage->initialize_store)
   {

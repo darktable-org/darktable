@@ -256,7 +256,7 @@ static size_t curl_write_data_cb(void *ptr, size_t size, size_t nmemb, void *dat
 static JsonObject *fb_parse_response(FBContext *ctx, GString *response)
 {
   GError *error;
-  gboolean ret = json_parser_load_from_data(ctx->json_parser, response->str, response->len, &error);
+  const gboolean ret = json_parser_load_from_data(ctx->json_parser, response->str, response->len, &error);
   g_return_val_if_fail((ret), NULL);
 
   JsonNode *root = json_parser_get_root(ctx->json_parser);
