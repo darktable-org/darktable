@@ -99,15 +99,8 @@ typedef struct dt_mipmap_cache_t
 {
   // one cache per mipmap level
   dt_mipmap_cache_one_t mip[DT_MIPMAP_NONE];
-  // global setting: which compression type are we using?
-  int compression_type; // 0 - none, 1 - low quality, 2 - slow
-  // per-thread cache of uncompressed buffers, in case compression is requested.
-  dt_mipmap_cache_one_t scratchmem;
   char cachedir[PATH_MAX]; // cached sha1sum filename for faster access
 } dt_mipmap_cache_t;
-
-// use thread local storage to decompress thumbnails
-extern __thread uint8_t *dt_mipmap_cache_scratchmem;
 
 // dynamic memory allocation interface for imageio backend: a write locked
 // mipmap buffer is passed in, it might already contain a valid buffer. this
@@ -158,22 +151,6 @@ dt_mipmap_size_t dt_mipmap_cache_get_matching_size(
     const dt_mipmap_cache_t *cache,
     const int32_t width,
     const int32_t height);
-
-
-// allocate enough memory for an uncompressed thumbnail image.
-// returns NULL if the cache is set to not use compression.
-uint8_t *dt_mipmap_cache_alloc_scratchmem(const dt_mipmap_cache_t *cache);
-
-// decompress the raw mipmapm buffer into the scratchmemory.
-// returns a pointer to the decompressed memory block. that's because
-// for uncompressed settings, it will point directly to the mipmap
-// buffer and scratchmem can be NULL.
-uint8_t *dt_mipmap_cache_decompress(const dt_mipmap_buffer_t *buf, uint8_t *scratchmem);
-
-// writes the scratchmem buffer to compressed
-// format into the mipmap cache. does nothing
-// if compression is disabled.
-void dt_mipmap_cache_compress(dt_mipmap_buffer_t *buf, uint8_t *const scratchmem);
 
 #endif
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

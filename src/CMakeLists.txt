@@ -549,16 +549,6 @@ if(USE_COLORD)
   endif(COLORD_FOUND)
 endif(USE_COLORD)
 
-if(USE_SQUISH)
-  # libsquish for compressed thumbnails:
-  add_definitions("-DHAVE_SQUISH")
-  add_library(squish_static STATIC IMPORTED)
-  set_target_properties(squish_static PROPERTIES IMPORTED_LOCATION ${CMAKE_CURRENT_BINARY_DIR}/external/squish/libsquish.a)
-  add_subdirectory(external/squish)
-  list(APPEND LIB_DEPS squish)
-  list(APPEND STATIC_LIBS squish_static)
-endif(USE_SQUISH)
-
 if(USE_LUA)
   if(NOT LUA52_FOUND)
     list(APPEND LIB_DEPS liblua) # 2nd half of the uglyness :/
