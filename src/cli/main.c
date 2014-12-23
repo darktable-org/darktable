@@ -75,9 +75,17 @@ static void generate_thumbnail_cache()
   const int cache_quality = MIN(100, MAX(10, dt_conf_get_int("database_cache_quality")));
   while(sqlite3_step(stmt) == SQLITE_ROW)
   {
-    // get largest thumbnail for this image
     const int32_t imgid = sqlite3_column_int(stmt, 0);
+    // check whether all of these files are already there
+    int all_exist = 1;
+    for(int k=max_mip;k>=DT_MIPMAP_0;k--)
+    {
+      snprintf(filename, PATH_MAX, "%s.d/%d/%d.jpg", darktable.mipmap_cache->cachedir, k, imgid);
+      all_exist &= !access(filename, R_OK); 
+    }
+    if(all_exist) goto next;
     dt_mipmap_buffer_t buf;
+    // get largest thumbnail for this image
     // this one will take care of itself, we'll just write out the lower thumbs manually:
     dt_mipmap_cache_get(darktable.mipmap_cache, &buf, imgid, max_mip, DT_MIPMAP_BLOCKING, 'r');
     if(buf.width > 8 && buf.height > 8) // don't create for skulls
@@ -110,9 +118,10 @@ static void generate_thumbnail_cache()
         if(written != length) unlink(filename);
       }
     }
+    dt_mipmap_cache_release(darktable.mipmap_cache, &buf);
+next:
     counter ++;
     fprintf(stderr, "\rimage %lu/%lu (%.02f%%)            ", counter, image_count, 100.0*counter/(float)image_count);
-    dt_mipmap_cache_release(darktable.mipmap_cache, &buf);
   }
   dt_free_align(tmp);
   sqlite3_finalize(stmt);
