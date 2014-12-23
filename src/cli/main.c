@@ -47,9 +47,10 @@
 
 static void generate_thumbnail_cache()
 {
+  const int max_mip = DT_MIPMAP_2;
   fprintf(stderr, _("creating cache directories\n"));
   char filename[PATH_MAX] = {0};
-  for(int k=DT_MIPMAP_0;k<=DT_MIPMAP_3;k++)
+  for(int k=DT_MIPMAP_0;k<=max_mip;k++)
   {
     snprintf(filename, PATH_MAX, "%s.d/%d", darktable.mipmap_cache->cachedir, k);
     fprintf(stderr, _("creating cache directory '%s'\n"), filename);
@@ -78,8 +79,9 @@ static void generate_thumbnail_cache()
     const int32_t imgid = sqlite3_column_int(stmt, 0);
     dt_mipmap_buffer_t buf;
     // this one will take care of itself, we'll just write out the lower thumbs manually:
-    dt_mipmap_cache_get(darktable.mipmap_cache, &buf, imgid, DT_MIPMAP_3, DT_MIPMAP_BLOCKING, 'r');
-    for(int k=DT_MIPMAP_2;k>=DT_MIPMAP_0;k--)
+    dt_mipmap_cache_get(darktable.mipmap_cache, &buf, imgid, max_mip, DT_MIPMAP_BLOCKING, 'r');
+    if(buf.width > 8 && buf.height > 8) // don't create for skulls
+    for(int k=max_mip-1;k>=DT_MIPMAP_0;k--)
     {
       uint32_t width, height;
       const int wd = darktable.mipmap_cache->mip[k].max_width;
