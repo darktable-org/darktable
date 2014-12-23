@@ -26,9 +26,6 @@
 #include "common/mipmap_cache.h"
 #include "control/conf.h"
 #include "control/jobs.h"
-#ifdef HAVE_SQUISH
-#include "squish/csquish.h"
-#endif
 
 #include <assert.h>
 #include <string.h>
@@ -88,19 +85,6 @@ static inline void dead_image_f(dt_mipmap_buffer_t *buf)
       = { o, o, o, o, o, o, o, o, o, o, X, X, X, X, o, o, o, X, o, X, X, o, X, o, o, X, X, X, X, X, X, o,
           o, o, X, o, o, X, o, o, o, o, o, o, o, o, o, o, o, o, X, X, X, X, o, o, o, o, o, o, o, o, o, o };
   memcpy(buf->buf, image, sizeof(__m128) * 64);
-}
-
-static inline int32_t compressed_buffer_size(const int32_t compression_type, const int width, const int height)
-{
-  if(width <= 8 && height <= 8)
-    // skulls are uncompressed
-    return 8 * 8 * sizeof(uint32_t);
-  else if(compression_type)
-    // need 8 byte for each 4x4 block of pixels.
-    // round correctly, so a 3x3 image will still consume one block:
-    return ((width - 1) / 4 + 1) * ((height - 1) / 4 + 1) * 8;
-  else // uncompressed:
-    return width * height * sizeof(uint32_t);
 }
 
 #ifndef NDEBUG
@@ -174,17 +158,6 @@ exit:
 static void _init_f(float *buf, uint32_t *width, uint32_t *height, const uint32_t imgid);
 static void _init_8(uint8_t *buf, uint32_t *width, uint32_t *height, const uint32_t imgid,
                     const dt_mipmap_size_t size);
-
-static void scratchmem_allocate(void *data, dt_cache_entry_t *entry)
-{
-  dt_mipmap_cache_one_t *c = (dt_mipmap_cache_one_t *)data;
-  entry->data = dt_alloc_align(16, c->buffer_size);
-  entry->cost = c->buffer_size;
-}
-static void scratchmem_deallocate(void *data, dt_cache_entry_t *entry)
-{
-  dt_free_align(entry->data);
-}
 
 // callback for the imageio core to allocate memory.
 // only needed for _F and _FULL buffers, as they change size
@@ -278,7 +251,6 @@ void dt_mipmap_cache_allocate_dynamic(void *data, dt_cache_entry_t *entry)
       FILE *f = fopen(filename, "rb");
       if(f)
       {
-        // TODO: if compression, alloc scratchmem and point blob to that, later compress!
         size_t len = 0;
         fseek(f, 0, SEEK_END);
         len = ftell(f);
@@ -286,7 +258,6 @@ void dt_mipmap_cache_allocate_dynamic(void *data, dt_cache_entry_t *entry)
         fseek(f, 0, SEEK_SET);
         int rd = fread(blob, sizeof(uint8_t), len, f);
         if(rd != len) goto read_error;
-        // no compression, the image is still compressed on disk, as jpg
         dt_imageio_jpeg_t jpg;
         if(dt_imageio_jpeg_decompress_header(blob, len, &jpg)
            || (jpg.width > cache->max_width || jpg.height > cache->max_height)
@@ -382,22 +353,6 @@ void dt_mipmap_cache_init(dt_mipmap_cache_t *cache)
   struct dt_mipmap_buffer_dsc *dsc = (struct dt_mipmap_buffer_dsc *)dt_mipmap_cache_static_dead_image;
   dead_image_f((dt_mipmap_buffer_t *)(dsc + 1));
 
-  cache->compression_type = 0;
-  gchar *compression = dt_conf_get_string("cache_compression");
-  if(compression)
-  {
-    if(!strcmp(compression, "low quality (fast)"))
-      cache->compression_type = 1;
-    else if(!strcmp(compression, "high quality (slow)"))
-      cache->compression_type = 2;
-    g_free(compression);
-  }
-
-  dt_print(DT_DEBUG_CACHE, "[mipmap_cache_init] using %s\n",
-           cache->compression_type == 0 ? "no compression"
-                                        : (cache->compression_type == 1 ? "low quality compression"
-                                                                        : "slow high quality compression"));
-
   // adjust numbers to be large enough to hold what mem limit suggests.
   // we want at least 100MB, and consider 8G just still reasonable.
   size_t max_mem = CLAMPS(dt_conf_get_int64("cache_memory"), 100u << 20, ((uint64_t)8) << 30);
@@ -422,23 +377,6 @@ void dt_mipmap_cache_init(dt_mipmap_cache_t *cache)
     cache->mip[k].max_height = cache->mip[k + 1].max_height / 2;
   }
 
-  // initialize some per-thread cached scratchmem for uncompressed buffers during thumb creation:
-  if(cache->compression_type)
-  {
-    cache->scratchmem.max_width = wd;
-    cache->scratchmem.max_height = ht;
-    cache->scratchmem.buffer_size = wd * ht * sizeof(uint32_t);
-    cache->scratchmem.size = DT_MIPMAP_3; // at max.
-    // TODO: use thread local storage instead (zero performance penalty on linux)
-    dt_cache_init(&cache->scratchmem.cache, wd * ht * sizeof(uint32_t), 0.9f * parallel * wd * ht * sizeof(uint32_t));
-    // might have been rounded to power of two:
-    dt_cache_set_allocate_callback(&cache->scratchmem.cache, scratchmem_allocate, &cache->scratchmem);
-    dt_cache_set_cleanup_callback(&cache->scratchmem.cache, scratchmem_deallocate, &cache->scratchmem);
-    dt_print(DT_DEBUG_CACHE,
-             "[mipmap_cache_init] temporary compression buffers: % 4.02f MB\n",
-             parallel * wd * ht * sizeof(uint32_t) / (1024.0 * 1024.0));
-  }
-
   for(int k = DT_MIPMAP_3; k >= 0; k--)
   {
     // clear stats:
@@ -450,9 +388,9 @@ void dt_mipmap_cache_init(dt_mipmap_cache_t *cache)
     // buffer stores width and height + actual data
     const int width = cache->mip[k].max_width;
     const int height = cache->mip[k].max_height;
-    // header + adjusted for dxt compression:
+    // header + buffer
     cache->mip[k].buffer_size = sizeof(struct dt_mipmap_buffer_dsc)
-                                + compressed_buffer_size(cache->compression_type, width, height);
+                                + width * height * 4;
     cache->mip[k].size = k;
     // level of parallelism also gives minimum size (which is twice that)
     // is rounded to a power of two by the cache anyways, we might as well.
@@ -509,10 +447,6 @@ void dt_mipmap_cache_cleanup(dt_mipmap_cache_t *cache)
     dt_cache_cleanup(&cache->mip[k].cache);
   dt_cache_cleanup(&cache->mip[DT_MIPMAP_FULL].cache);
   dt_cache_cleanup(&cache->mip[DT_MIPMAP_F].cache);
-
-  // clean up temporary buffers for decompressed images, if any:
-  if(cache->compression_type)
-    dt_cache_cleanup(&cache->scratchmem.cache);
 }
 
 void dt_mipmap_cache_print(dt_mipmap_cache_t *cache)
@@ -529,13 +463,6 @@ void dt_mipmap_cache_print(dt_mipmap_cache_t *cache)
     printf("[mipmap_cache] level [f%d] fill %d/%d slots (%.2f%%)\n", k,
            (uint32_t)cache->mip[k].cache.cost, (uint32_t)cache->mip[k].cache.cost_quota,
            100.0f * (float)cache->mip[k].cache.cost / (float)cache->mip[k].cache.cost_quota);
-  }
-  if(cache->compression_type)
-  {
-    printf("[mipmap_cache] scratch fill %.2f/%.2f MB (%.2f%%)\n",
-           cache->scratchmem.cache.cost / (1024.0 * 1024.0),
-           cache->scratchmem.cache.cost_quota / (1024.0 * 1024.0),
-           100.0f * (float)cache->scratchmem.cache.cost / (float)cache->scratchmem.cache.cost_quota);
   }
   uint64_t sum = 0;
   uint64_t sum_fetches = 0;
@@ -670,26 +597,8 @@ void dt_mipmap_cache_get_with_caller(
         }
         else
         {
-          // 8-bit thumbs, possibly need to be compressed:
-          if(cache->compression_type)
-          {
-            // get per-thread temporary storage without malloc from a separate cache:
-            const int key = dt_control_get_threadid();
-            dt_cache_entry_t *se = dt_cache_get(&cache->scratchmem.cache, key, 'w');
-            uint8_t *scratchmem = (uint8_t *)se->data;
-            _init_8(scratchmem, &dsc->width, &dsc->height, imgid, mip);
-            buf->width = dsc->width;
-            buf->height = dsc->height;
-            buf->imgid = imgid;
-            buf->size = mip;
-            buf->buf = (uint8_t *)(dsc + 1);
-            dt_mipmap_cache_compress(buf, scratchmem);
-            dt_cache_release(&cache->scratchmem.cache, se);
-          }
-          else
-          {
-            _init_8((uint8_t *)(dsc + 1), &dsc->width, &dsc->height, imgid, mip);
-          }
+          // 8-bit thumbs
+          _init_8((uint8_t *)(dsc + 1), &dsc->width, &dsc->height, imgid, mip);
         }
         dsc->flags &= ~DT_MIPMAP_BUFFER_DSC_FLAG_GENERATE;
 
@@ -1026,60 +935,6 @@ static void _init_8(uint8_t *buf, uint32_t *width, uint32_t *height, const uint3
   // TODO: use mipf, but:
   // TODO: if output is cropped, don't use mipf!
 }
-
-// compression stuff: alloc a buffer if needed
-uint8_t *dt_mipmap_cache_alloc_scratchmem(const dt_mipmap_cache_t *cache)
-{
-  const size_t size = cache->mip[DT_MIPMAP_3].max_width * cache->mip[DT_MIPMAP_3].max_height;
-
-  if(cache->compression_type)
-  {
-    return dt_alloc_align(64, size * 4 * sizeof(uint8_t));
-  }
-  else // no compression, no buffer:
-    return NULL;
-}
-
-// decompress the raw mipmapm buffer into the scratchmemory.
-// returns a pointer to the decompressed memory block. that's because
-// for uncompressed settings, it will point directly to the mipmap
-// buffer and scratchmem can be NULL.
-uint8_t *dt_mipmap_cache_decompress(const dt_mipmap_buffer_t *buf, uint8_t *scratchmem)
-{
-#ifdef HAVE_SQUISH
-  if(darktable.mipmap_cache->compression_type && buf->width > 8 && buf->height > 8)
-  {
-    squish_decompress_image(scratchmem, buf->width, buf->height, buf->buf, squish_dxt1);
-    return scratchmem;
-  }
-  else
-#endif
-  {
-    return buf->buf;
-  }
-}
-
-// writes the scratchmem buffer to compressed
-// format into the mipmap cache. does nothing
-// if compression is disabled.
-void dt_mipmap_cache_compress(dt_mipmap_buffer_t *buf, uint8_t *const scratchmem)
-{
-#ifdef HAVE_SQUISH
-  // only do something if compression is on, don't compress skulls:
-  if(darktable.mipmap_cache->compression_type && buf->width > 8 && buf->height > 8)
-  {
-    int flags = squish_dxt1;
-    // low quality:
-    if(darktable.mipmap_cache->compression_type == 1) flags |= squish_colour_range_fit;
-    squish_compress_image(scratchmem, buf->width, buf->height, buf->buf, squish_dxt1);
-  }
-  else
-#endif
-  {
-    memcpy(buf->buf, scratchmem, (size_t)buf->width * buf->height * 4 * sizeof(uint8_t));
-  }
-}
-
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

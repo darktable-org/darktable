@@ -1099,16 +1099,13 @@ static void _lib_filmstrip_dnd_begin_callback(GtkWidget *widget, GdkDragContext 
 
     if(buf.buf)
     {
-      uint8_t *scratchmem = dt_mipmap_cache_alloc_scratchmem(darktable.mipmap_cache);
-      uint8_t *buf_decompressed = dt_mipmap_cache_decompress(&buf, scratchmem);
-
       uint8_t *rgbbuf = g_malloc_n(3 * (buf.width + 2) * (buf.height + 2), sizeof(uint8_t));
       memset(rgbbuf, 64, (buf.width + 2) * (buf.height + 2) * 3);
       for(int i = 1; i <= buf.height; i++)
         for(int j = 1; j <= buf.width; j++)
           for(int k = 0; k < 3; k++)
             rgbbuf[(i * (buf.width + 2) + j) * 3 + k]
-                = buf_decompressed[((i - 1) * buf.width + j - 1) * 4 + 2 - k];
+                = buf.buf[((i - 1) * buf.width + j - 1) * 4 + 2 - k];
 
       int w = ts, h = ts;
       if(buf.width < buf.height)
@@ -1123,7 +1120,6 @@ static void _lib_filmstrip_dnd_begin_callback(GtkWidget *widget, GdkDragContext 
 
       if(source) g_object_unref(source);
       if(scaled) g_object_unref(scaled);
-      free(scratchmem);
       g_free(rgbbuf);
     }
 

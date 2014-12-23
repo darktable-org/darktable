@@ -505,19 +505,6 @@
     <longdescription>maximum height of the image drawing area in darkroom mode. adjust to your screen\n(needs a restart and will invalidate current thumbnail caches).</longdescription>
   </dtconfig>
   <dtconfig prefs="gui">
-    <name>cache_compression</name>
-    <type>
-      <enum>
-        <option>off</option>
-        <option>low quality (fast)</option>
-        <option>high quality (slow)</option>
-      </enum>
-    </type>
-    <default>off</default>
-    <shortdescription>compression of thumbnail images</shortdescription>
-    <longdescription>off - no compression in memory, JPG on disk. low quality - DXT1 (fast). high quality - DXT1, same memory as low quality variant but slower.</longdescription>
-  </dtconfig>
-  <dtconfig prefs="gui">
     <name>pressure_sensitivity</name>
     <type>
       <enum>

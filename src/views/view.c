@@ -739,19 +739,6 @@ void dt_view_image_expose(dt_view_image_over_t *image_over, uint32_t imgid, cair
 #define DRAW_HISTORY 1
 #define DRAW_AUDIO 1
 
-#if DRAW_THUMB == 1
-  // this function is not thread-safe (gui-thread only), so we
-  // can safely allocate this leaking bit of memory to decompress thumbnails:
-  static int first_time = 1;
-  static uint8_t *scratchmem = NULL;
-  if(first_time)
-  {
-    // scratchmem might still be NULL after this, if compression is off.
-    scratchmem = dt_mipmap_cache_alloc_scratchmem(darktable.mipmap_cache);
-    first_time = 0;
-  }
-#endif
-
   cairo_save(cr);
   float bgcol = 0.4, fontcol = 0.425, bordercol = 0.1, outlinecol = 0.2;
   int selected = 0, altered = 0, imgsel = -1, is_grouped = 0;
@@ -844,15 +831,12 @@ void dt_view_image_expose(dt_view_image_over_t *image_over, uint32_t imgid, cair
 
 #if DRAW_THUMB == 1
   float scale = 1.0;
-  // decompress image, if necessary. if compression is off, scratchmem will be == NULL,
-  // so get the real pointer back:
-  uint8_t *buf_decompressed = dt_mipmap_cache_decompress(&buf, scratchmem);
 
   cairo_surface_t *surface = NULL;
   if(buf.buf)
   {
     const int32_t stride = cairo_format_stride_for_width(CAIRO_FORMAT_RGB24, buf.width);
-    surface = cairo_image_surface_create_for_data(buf_decompressed, CAIRO_FORMAT_RGB24, buf.width, buf.height,
+    surface = cairo_image_surface_create_for_data(buf.buf, CAIRO_FORMAT_RGB24, buf.width, buf.height,
                                                   stride);
     if(zoom == 1)
     {
