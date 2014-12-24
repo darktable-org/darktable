@@ -65,6 +65,35 @@ GtkAlignment
   padding:0 0 2pt 2pt;
   background-color: @selected_bg_color;
 }
+/* toggle buttons. hover (below) works, but none of this
+ * works to make the toggled state visible (active is only while
+ * you hold the mouse button, and selected is just the keyboard focus).
+ * hell knows what the rest means. */
+#lib-plugin-ui *:active,
+#lib-plugin-ui *:active:hover,
+#lib-plugin-ui *:backdrop,
+#lib-plugin-ui *:active:backdrop,
+#lib-plugin-ui *:focus,
+#lib-plugin-ui *:focused,
+#lib-plugin-ui *:selected,
+#lib-plugin-ui *:focus:active,
+#lib-plugin-ui *:backdrop:focus:active,
+#lib-plugin-ui *:backdrop:focus,
+#lib-plugin-ui *:backdrop:hover
+{
+  background-color: shade(@selected_bg_color, 1.2);
+}
+#lib-plugin-ui *:hover
+{
+  background-color: shade(@selected_bg_color, 1.5);
+}
+#iop-plugin-ui GtkLabel,
+#iop-plugin-ui GtkLabel:hover,
+#lib-plugin-ui GtkLabel,
+#lib-plugin-ui GtkLabel:hover
+{
+  background-color: transparent;
+}
 #iop-plugin-ui,
 #lib-plugin-ui
 {
@@ -145,6 +174,8 @@ GtkFrame > GtkEventBox * {
 .button {
     -GtkWidget-focus-line-width: 0;
     padding: 2px;
+    border:0;
+    outline-style:none;
 }
 
 GtkSwitch.slider,
@@ -163,6 +194,7 @@ GtkSwitch.slider:backdrop,
     text-shadow: none;
 }
 
+/*
 .button:hover {
     background-image: none;
     background-color: @selected_bg_color;
@@ -171,8 +203,8 @@ GtkSwitch.slider:backdrop,
 .button:hover:backdrop {
     background-image: none;
     background-color: @selected_bg_color;
-    /*background-color: shade (@bg_color, 1.04);*/
 }
+*/
 
 .button:insensitive {
     background-image: none;
@@ -188,6 +220,7 @@ GtkSwitch.slider:backdrop,
     text-shadow: 0 1px alpha (shade (@button_bg_color, 1.25), 0.2);
 }
 
+/*
 .button:active {
     background-image: none;
     background-color: @selected_bg_color;
@@ -197,6 +230,7 @@ GtkSwitch.slider:backdrop,
     background-image: none;
     background-color: @selected_bg_color;
 }
+*/
 
 .button:active:insensitive {
     background-image: -gtk-gradient (linear, left top, left bottom,
@@ -455,22 +489,3 @@ GtkSwitch.slider:backdrop,
     box-shadow: none;
 }
 
-/* this shit works in gtk inspector, but not in darktable.css :( */
-.button, GtkButton
-{
-  border-width: 1px;
-  border-color: transparent;
-  border-style: solid;
-  border-radius: 0;
-  background-color: transparent;
-}
-.button GtkLabel,
-GtkButton GtkLabel
-{
-  background-color: transparent;
-}
-.button:hover,
-GtkButton:hover
-{
-  border-color: white;
-}
