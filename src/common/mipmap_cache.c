@@ -670,6 +670,8 @@ void dt_mipmap_cache_get_with_caller(
       }
     }
     __sync_fetch_and_add(&(_get_cache(cache, mip)->stats_misses), 1);
+    // prefetch at least mip0, in case we have it in the disk caches:
+    dt_mipmap_cache_get(cache, 0, imgid, DT_MIPMAP_0, DT_MIPMAP_PREFETCH_DISK, 0);
     // fprintf(stderr, "[mipmap cache get] image not found in cache: imgid %u mip %d!\n", imgid, mip);
     // nothing found :(
     buf->buf = NULL;
