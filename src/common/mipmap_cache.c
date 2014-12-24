@@ -538,6 +538,17 @@ void dt_mipmap_cache_get_with_caller(
       return; // remove the (int) once we no longer have to support gcc < 4.8 :/
     dt_control_add_job(darktable.control, DT_JOB_QUEUE_SYSTEM_FG, dt_image_load_job_create(imgid, mip));
   }
+  else if(flags == DT_MIPMAP_PREFETCH_DISK)
+  {
+    // only prefetch if the disk cache exists:
+    char filename[1024];
+    snprintf(filename, 1024, "%s.d/%d/%d.jpg", cache->cachedir, mip, key);
+    // don't attempt to load if disk cache doesn't exist
+    if(!g_file_test(filename, G_FILE_TEST_EXISTS)) return;
+    if(mip > DT_MIPMAP_FULL || (int)mip < DT_MIPMAP_0)
+      return; // remove the (int) once we no longer have to support gcc < 4.8 :/
+    dt_control_add_job(darktable.control, DT_JOB_QUEUE_SYSTEM_FG, dt_image_load_job_create(imgid, mip));
+  }
   else if(flags == DT_MIPMAP_BLOCKING)
   {
     // simple case: blocking get

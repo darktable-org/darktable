@@ -49,12 +49,15 @@ typedef enum dt_mipmap_get_flags_t
   // actually don't lock and return a buffer, but only
   // start a bg job to load it, if it's not in cache already.
   DT_MIPMAP_PREFETCH = 1,
+  // similar to prefetching, but only prefetch in case
+  // we hit the disk cache (don't run the more expensive pipeline)
+  DT_MIPMAP_PREFETCH_DISK = 2,
   // only return when the requested buffer is loaded.
   // blocks until that happens.
-  DT_MIPMAP_BLOCKING = 2,
+  DT_MIPMAP_BLOCKING = 3,
   // don't actually acquire the lock if it is not
   // in cache (i.e. would have to be loaded first)
-  DT_MIPMAP_TESTLOCK = 3
+  DT_MIPMAP_TESTLOCK = 4
 } dt_mipmap_get_flags_t;
 
 // struct to be alloc'ed by the client, filled by dt_mipmap_cache_get()
