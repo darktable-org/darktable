@@ -654,8 +654,7 @@ void dt_mipmap_cache_get_with_caller(
     // best-effort, might also return NULL.
     // never decrease mip level for float buffer or full image:
     dt_mipmap_size_t min_mip = (mip >= DT_MIPMAP_F) ? mip : DT_MIPMAP_0;
-    dt_mipmap_size_t max_mip = (mip >= DT_MIPMAP_F) ? mip : DT_MIPMAP_3;
-    for(int k = max_mip; k >= min_mip && k >= 0; k--)
+    for(int k = mip; k >= min_mip && k >= 0; k--)
     {
       // already loaded?
       dt_mipmap_cache_get(cache, buf, imgid, k, DT_MIPMAP_TESTLOCK, 'r');
@@ -671,10 +670,25 @@ void dt_mipmap_cache_get_with_caller(
         dt_mipmap_cache_get(cache, buf, imgid, mip, DT_MIPMAP_PREFETCH, 'r');
       }
     }
+    // couldn't find a smaller thumb, try larger ones only now (these will be slightly slower due to cairo rescaling):
+    dt_mipmap_size_t max_mip = (mip >= DT_MIPMAP_F) ? mip : DT_MIPMAP_3;
+    for(int k = mip+1; k <= max_mip; k++)
+    {
+      // already loaded?
+      dt_mipmap_cache_get(cache, buf, imgid, k, DT_MIPMAP_TESTLOCK, 'r');
+      if(buf->buf && buf->width > 0 && buf->height > 0)
+      {
+        __sync_fetch_and_add(&(_get_cache(cache, mip)->stats_standin), 1);
+        return;
+      }
+    }
     __sync_fetch_and_add(&(_get_cache(cache, mip)->stats_misses), 1);
-    // prefetch at least mip0, in case we have it in the disk caches:
-    dt_mipmap_cache_get(cache, 0, imgid, DT_MIPMAP_0, DT_MIPMAP_PREFETCH_DISK, 0);
-    // fprintf(stderr, "[mipmap cache get] image not found in cache: imgid %u mip %d!\n", imgid, mip);
+    // in case we don't even have a disk cache for our requested thumbnail,
+    // prefetch at least mip0, in case we have that in the disk caches:
+    char filename[1024];
+    snprintf(filename, 1024, "%s.d/%d/%d.jpg", cache->cachedir, mip, key);
+    if(!g_file_test(filename, G_FILE_TEST_EXISTS))
+      dt_mipmap_cache_get(cache, 0, imgid, DT_MIPMAP_0, DT_MIPMAP_PREFETCH_DISK, 0);
     // nothing found :(
     buf->buf = NULL;
     buf->imgid = 0;
