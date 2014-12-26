@@ -25,6 +25,8 @@ extern "C" {
 #include "config.h"
 #endif
 
+#include "version.h"
+
 #include <glib.h>
 #include <zlib.h>
 #include <time.h>

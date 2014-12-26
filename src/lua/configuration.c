@@ -18,6 +18,7 @@
 #include "common/darktable.h"
 #include "common/file_location.h"
 #include "lua/lua.h"
+#include "version.h"
 
 /*
  * LUA API VERSIONNING
