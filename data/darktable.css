@@ -189,24 +189,37 @@ GtkFrame > GtkEventBox * {
 #lib-plugin-ui .entry,
 .entry {
   border-radius: 0;
-  border:1px;
-  padding-left: 1px; /* + 1px border aligns with 2px bauhaus offset */
-  border-style: solid;
+  border:0;
+  padding-left: 2px; /* align with bauhaus widgets */
+  border-style: none;
   border-color: alpha(@fg_color, 0.5);
   border-image:none;
   color:@fg_color;
-  /*box-shadow: inset 0 0 2px alpha(@fg_color, .5);*/
   box-shadow: none;
   background-image:none;
   outline-style:none;
   text-shadow:none;
-  background-color:@selected_bg_color;
+  background-color:shade(@selected_bg_color, 0.8);
 }
 #iop-plugin-ui .entry:selected,
 #lib-plugin-ui .entry:selected,
 .entry:selected {
   background-color:@bg_color;
 }
+/* weird fix for black event boxes in light table lib modules: */
+#lib-plugin-ui GtkEventBox
+{
+  background-color:@selected_bg_color;
+}
+/* does not match what it's supposed to:
+#lib-plugin-ui GtkScrolledWindow
+{
+  border:1px;
+  border-style:solid;
+  border-color:alpha(@fg_color, 0.5);
+  background-color:#ff0000;
+}
+*/
 
 /* due to css rubbish, we need to be more specific than anything else,
  * so we give the name of the parent widget: */
