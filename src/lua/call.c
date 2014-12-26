@@ -109,7 +109,7 @@ int dt_lua_do_chunk(lua_State *L, int nargs, int nresults)
               goto error;
             }
             int wait_time = lua_tointeger(new_thread, -1);
-            lua_pop(new_thread, 1);
+            lua_pop(new_thread, 3);
             dt_lua_unlock(false);
             g_usleep(wait_time * 1000);
             dt_lua_lock();
