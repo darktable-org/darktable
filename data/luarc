@@ -1,0 +1,7 @@
+-- default  lua require can't handle yielding across "require" calls
+-- This version is implemented in pure-lua and avoids the problem
+-- override the require function for everybody
+
+require = require "darktable/external/pygy_require/require".require
+
+-- vim: shiftwidth=2 expandtab tabstop=2 cindent syntax=lua
