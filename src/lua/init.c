@@ -69,6 +69,7 @@ void dt_lua_init_early(lua_State *L)
   }
   darktable.lua_state.state = L;
   darktable.lua_state.ending = false;
+  darktable.lua_state.pending_threads = 0;
   dt_lua_init_lock();
   luaL_openlibs(darktable.lua_state.state);
   luaA_open(L);
@@ -234,15 +235,23 @@ int luaopen_darktable(lua_State *L)
   lua_pop(L, 1);
   return 1;
 }
+void dt_lua_finalize_early()
+{
+  darktable.lua_state.ending = true;
+  int i = 10;
+  while(i && darktable.lua_state.pending_threads){
+    dt_print(DT_DEBUG_LUA, "LUA : waiting for %d threads to finish...\n", darktable.lua_state.pending_threads);
+    sleep(1);// give them a little time to finish
+    i--;
+  }
+  if(darktable.lua_state.pending_threads)
+    dt_print(DT_DEBUG_LUA, "LUA : all threads did not finish properly.\n");
+}
 
 void dt_lua_finalize()
 {
   luaA_close(darktable.lua_state.state);
-  if(!darktable.lua_state.ending)
-  {
-    darktable.lua_state.ending = true;
-    lua_close(darktable.lua_state.state);
-  }
+  lua_close(darktable.lua_state.state);
   darktable.lua_state.state = NULL;
 }
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

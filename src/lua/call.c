@@ -63,6 +63,7 @@ static int protected_to_string(lua_State *L)
 int dt_lua_do_chunk(lua_State *L, int nargs, int nresults)
 {
   lua_State *new_thread = lua_newthread(L);
+  darktable.lua_state.pending_threads++;
   lua_insert(L, -(nargs + 2));
   lua_xmove(L, new_thread, nargs + 1);
   int thread_result = lua_resume(new_thread, L, nargs);
@@ -78,9 +79,23 @@ int dt_lua_do_chunk(lua_State *L, int nargs, int nresults)
         int result = lua_gettop(new_thread);
         lua_pop(L, 1); // remove the temporary thread from the main thread
         lua_xmove(new_thread, L, result);
+        darktable.lua_state.pending_threads--;
         return LUA_OK;
       case LUA_YIELD:
       {
+        /*
+           This code will force a thread to exit at yield
+           instead of waiting for the thread to stop by itself
+
+           This is commented out for the time being, 
+           
+        if(darktable.lua_state.ending) {
+          lua_pop(L,1);
+          if(nresults != LUA_MULTRET) for(int i = 0 ; i < nresults ; i++) lua_pushnil(L);
+          darktable.lua_state.pending_threads--;
+          return LUA_OK;
+        }
+        */
         if(lua_gettop(new_thread) == 0)
         {
           lua_pushstring(new_thread, "no parameter passed to yield");
@@ -172,6 +187,7 @@ error:
   const char *error_msg = lua_tostring(new_thread, -1);
   luaL_traceback(L, new_thread, error_msg, 0);
   lua_remove(L, -2); // remove the new thread from L
+  darktable.lua_state.pending_threads--;
   return thread_result;
 }
 }

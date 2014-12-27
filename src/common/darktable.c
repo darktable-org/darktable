@@ -910,7 +910,7 @@ void dt_cleanup()
   const int init_gui = (darktable.gui != NULL);
 
 #ifdef USE_LUA
-  dt_lua_finalize();
+  dt_lua_finalize_early();
 #endif
   if(init_gui)
   {
@@ -923,6 +923,9 @@ void dt_cleanup()
     dt_lib_cleanup(darktable.lib);
     free(darktable.lib);
   }
+#ifdef USE_LUA
+  dt_lua_finalize();
+#endif
   dt_view_manager_cleanup(darktable.view_manager);
   free(darktable.view_manager);
   if(init_gui)
