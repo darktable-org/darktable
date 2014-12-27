@@ -272,14 +272,49 @@ int dt_lua_do_chunk_raise(lua_State *L, int nargs, int nresults)
 }
 
 
-
-
 static int ending_cb(lua_State *L)
 {
   lua_pushboolean(L,darktable.lua_state.ending);
   return 1;
 }
 
+
+static int32_t dispatch_callback_job(dt_job_t *job)
+{
+  gboolean has_lock = dt_lua_lock();
+  lua_State* L= darktable.lua_state.state;
+  int reference = GPOINTER_TO_INT(dt_control_job_get_params(job));
+  lua_getfield(L, LUA_REGISTRYINDEX, "dt_lua_bg_threads");
+  lua_pushinteger(L,reference);
+  lua_gettable(L,-2);
+  lua_State* thread = lua_tothread(L,-1);
+  lua_pop(L,2);
+  dt_lua_do_chunk_silent(thread,lua_gettop(thread)-1,0);
+  lua_getfield(L, LUA_REGISTRYINDEX, "dt_lua_bg_threads");
+  lua_pushinteger(L,reference);
+  lua_pushnil(L);
+  lua_settable(L,-3);
+  lua_pop(L,1);
+  dt_lua_unlock(has_lock);
+  return 0;
+}
+
+static int dispatch_cb(lua_State *L)
+{
+  lua_getfield(L, LUA_REGISTRYINDEX, "dt_lua_bg_threads");
+  lua_State *new_thread = lua_newthread(L);
+  const int reference = luaL_ref(L,-2);
+  lua_pop(L,1);
+  lua_xmove(L,new_thread,lua_gettop(L));
+  dt_job_t *job = dt_control_job_create(&dispatch_callback_job, "lua: dispatch");
+
+  if(job)
+  {
+    dt_control_job_set_params(job, GINT_TO_POINTER(reference));
+    dt_control_add_job(darktable.control, DT_JOB_QUEUE_USER_FG, job);
+  }
+  return 0;
+}
 
 
 int dt_lua_init_call(lua_State *L)
@@ -298,6 +333,11 @@ int dt_lua_init_call(lua_State *L)
   
   lua_pushcfunction(L, ending_cb);
   dt_lua_type_register_const_type(L, type_id, "ending");
+  lua_pushcfunction(L, dispatch_cb);
+  lua_pushcclosure(L, dt_lua_type_member_common, 1);
+  dt_lua_type_register_const_type(L, type_id, "dispatch");
+  lua_newtable(L);
+  lua_setfield(L, LUA_REGISTRYINDEX, "dt_lua_bg_threads");
   return 0;
 }
 
