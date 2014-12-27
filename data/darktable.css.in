@@ -276,15 +276,18 @@ GtkFrame > GtkEventBox * {
 {
   background-color:@selected_bg_color;
 }
-/* does not match what it's supposed to:
-#lib-plugin-ui GtkScrolledWindow
+#lib-plugin-ui .cell
 {
-  border:1px;
-  border-style:solid;
-  border-color:alpha(@fg_color, 0.5);
-  background-color:#ff0000;
+  background-color:shade(@selected_bg_color, 0.8);
 }
-*/
+#lib-plugin-ui row
+{
+  background-color:@selected_bg_color;
+}
+#lib-plugin-ui row:selected
+{
+  background-color:@bg_color;
+}
 
 /* due to css rubbish, we need to be more specific than anything else,
  * so we give the name of the parent widget: */
