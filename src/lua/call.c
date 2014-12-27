@@ -271,12 +271,33 @@ int dt_lua_do_chunk_raise(lua_State *L, int nargs, int nresults)
   }
 }
 
+
+
+
+static int ending_cb(lua_State *L)
+{
+  lua_pushboolean(L,darktable.lua_state.ending);
+  return 1;
+}
+
+
+
 int dt_lua_init_call(lua_State *L)
 {
   luaA_enum(L, yield_type);
   luaA_enum_value(L, yield_type, WAIT_MS);
   luaA_enum_value(L, yield_type, FILE_READABLE);
   luaA_enum_value(L, yield_type, RUN_COMMAND);
+
+  dt_lua_push_darktable_lib(L);
+  luaA_Type type_id = dt_lua_init_singleton(L, "control", NULL);
+  lua_setfield(L, -2, "control");
+  lua_pop(L, 1);
+
+
+  
+  lua_pushcfunction(L, ending_cb);
+  dt_lua_type_register_const_type(L, type_id, "ending");
   return 0;
 }
 

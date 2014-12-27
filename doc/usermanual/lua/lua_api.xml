@@ -2719,6 +2719,28 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
 
 </section>
 
+<section status="final" id="darktable_control">
+<title>darktable.control</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>control</secondary>
+</indexterm>
+<para>undocumented darktable.control</para>
+
+<section status="final" id="darktable_control_ending">
+<title>darktable.control.ending</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>ending</secondary>
+</indexterm>
+<synopsis>boolean</synopsis>
+<para>TRUE when darktable is terminating</para>
+<para>Use this variable to detect when you should finish long running jobs</para>
+
+</section>
+
+</section>
+
 </section>
 
 <section status="final" id="types">

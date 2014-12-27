@@ -428,6 +428,10 @@ darktable.gui.libs.camera:set_text([[The camera selection UI]])
 darktable.gui.libs.location:set_text([[The location ui]])
 darktable.gui.libs.backgroundjobs:set_text([[The window displaying the currently running jobs]])
 
+
+darktable.control.ending:set_text([[TRUE when darktable is terminating]]..para()..
+[[Use this variable to detect when you should finish long running jobs]])
+
 ----------------------
 --  DARKTABLE.DEBUG --
 ----------------------
