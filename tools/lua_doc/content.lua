@@ -719,6 +719,9 @@ darktable.debug.type:set_text([[Similar to the system function type() but it wil
   events["mouse-over-image-changed"]:set_text([[This event is triggered whenever the image under the mouse changes]])
   events["mouse-over-image-changed"].callback:add_parameter("image",types.dt_lua_image_t,[[The new image under the mous, can be nil if there is no image under the mouse]])
 	events["mouse-over-image-changed"].extra_registration_parameters:set_text([[This event has no extra registration parameters.]])
+  events["exit"]:set_text([[This event is triggered when darktable exits, it allows lua scripts to do cleanup jobs]])
+	events["exit"].extra_registration_parameters:set_text([[This event has no extra registration parameters.]])
+  
 	----------------------
 	--  ATTRIBUTES      --
 	----------------------

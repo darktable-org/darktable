@@ -40,7 +40,13 @@
 #include "common/file_location.h"
 #include "control/jobs.h"
 
-
+static int dt_lua_init_init(lua_State*L)
+{
+  lua_pushcfunction(L, dt_lua_event_multiinstance_register);
+  lua_pushcfunction(L, dt_lua_event_multiinstance_trigger);
+  dt_lua_event_add(L,"exit");
+  return 0;
+}
 // closed on GC of the dt lib, usually when the lua interpreter closes
 static int dt_luacleanup(lua_State *L)
 {
@@ -121,7 +127,7 @@ static lua_CFunction init_funcs[]
     = { dt_lua_init_glist,         dt_lua_init_image,       dt_lua_init_styles,   dt_lua_init_print,
         dt_lua_init_configuration, dt_lua_init_preferences, dt_lua_init_database, dt_lua_init_gui,
         dt_lua_init_luastorages,   dt_lua_init_tags,        dt_lua_init_film,     dt_lua_init_call,
-        dt_lua_init_view,          dt_lua_init_events,      NULL };
+        dt_lua_init_view,          dt_lua_init_events,      dt_lua_init_init,     NULL };
 
 
 void dt_lua_init(lua_State *L, const char *lua_command)
@@ -238,6 +244,9 @@ int luaopen_darktable(lua_State *L)
 void dt_lua_finalize_early()
 {
   darktable.lua_state.ending = true;
+  gboolean has_lock = dt_lua_lock();
+  dt_lua_event_trigger(darktable.lua_state.state,"exit",0);
+  dt_lua_unlock(has_lock);
   int i = 10;
   while(i && darktable.lua_state.pending_threads){
     dt_print(DT_DEBUG_LUA, "LUA : waiting for %d threads to finish...\n", darktable.lua_state.pending_threads);
@@ -250,9 +259,11 @@ void dt_lua_finalize_early()
 
 void dt_lua_finalize()
 {
+  dt_lua_lock();
   luaA_close(darktable.lua_state.state);
   lua_close(darktable.lua_state.state);
   darktable.lua_state.state = NULL;
+  // never unlock
 }
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

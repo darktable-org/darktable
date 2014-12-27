@@ -5845,6 +5845,41 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
 
 </section>
 
+<section status="final" id="events_exit">
+<title>events.exit</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>exit</secondary>
+</indexterm>
+<synopsis>event</synopsis>
+<para>This event is triggered when darktable exits, it allows lua scripts to do cleanup jobs</para>
+
+<section status="final" id="events_exit_callback">
+<title>events.exit.callback</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>callback</secondary>
+</indexterm>
+<synopsis>function( 
+)</synopsis>
+<para></para>
+
+<variablelist>
+</variablelist>
+</section>
+
+<section status="final" id="events_exit_extra_registration_parameters">
+<title>events.exit.extra registration parameters</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>extra registration parameters</secondary>
+</indexterm>
+<para>This event has no extra registration parameters.</para>
+
+</section>
+
+</section>
+
 </section>
 
 <section status="final" id="attributes">
