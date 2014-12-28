@@ -248,3 +248,9 @@ GtkFrame > GtkEventBox * {
 *:insensitive {
   color: black;
 }
+
+#recent-collection-ui .button,
+#history-ui .button
+{
+  background-color: transparent;
+}
