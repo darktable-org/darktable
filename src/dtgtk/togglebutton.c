@@ -79,7 +79,7 @@ static gboolean _togglebutton_draw(GtkWidget *widget, cairo_t *cr)
     if(flags & CPF_PRELIGHT || flags & CPF_ACTIVE)
     {
       cairo_rectangle(cr, 0, 0, width, height);
-      cairo_set_source_rgba(cr, bg_color.red, bg_color.green, bg_color.blue, bg_color.alpha);
+      gdk_cairo_set_source_rgba(cr, &bg_color);
       cairo_fill(cr);
     }
   }
@@ -105,7 +105,7 @@ static gboolean _togglebutton_draw(GtkWidget *widget, cairo_t *cr)
     pango_layout_get_pixel_size(layout, &pw, &ph);
   }
 
-  cairo_set_source_rgba(cr, fg_color.red, fg_color.green, fg_color.blue, fg_color.alpha);
+  gdk_cairo_set_source_rgba(cr, &fg_color);
 
   /* draw icon */
   if(DTGTK_TOGGLEBUTTON(widget)->icon)

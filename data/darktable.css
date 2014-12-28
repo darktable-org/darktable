@@ -69,7 +69,8 @@ GtkAlignment
 }
 /* lib toggle buttons (e.g recently used collection and history items): */
 /* TODO: adjust borders/padding to our liking (match bauhaus..) */
-#lib-plugin-ui .button
+#lib-plugin-ui .button,
+.button
 {
   /* note that the button has no padding, the label inside the button has the padding. */
   border-radius: 0;
@@ -81,13 +82,15 @@ GtkAlignment
   margin:0;
   border:0;
 }
-#lib-plugin-ui .button:checked
+#lib-plugin-ui .button:checked,
+.button:checked
 {
   border-style:none;
   background-image:none;
   background-color: shade(@selected_bg_color, 1.4);
 }
-#lib-plugin-ui .button:hover
+#lib-plugin-ui .button:hover,
+.button:hover
 {
   border-style:none;
   background-color: shade(@selected_bg_color, 1.7);
@@ -248,4 +251,3 @@ GtkFrame > GtkEventBox * {
 *:insensitive {
   color: black;
 }
-

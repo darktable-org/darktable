@@ -49,7 +49,7 @@ static gboolean _icon_draw(GtkWidget *widget, cairo_t *cr)
   GtkStyleContext *context = gtk_widget_get_style_context(widget);
   gtk_style_context_get_color(context, state, &fg_color);
 
-  cairo_set_source_rgba(cr, fg_color.red, fg_color.green, fg_color.blue, fg_color.alpha);
+  gdk_cairo_set_source_rgba(cr, &fg_color);
 
   /* draw icon */
   if(DTGTK_ICON(widget)->icon)
