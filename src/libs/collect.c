@@ -71,15 +71,17 @@ typedef struct dt_lib_collect_t
   struct dt_lib_collect_params_t *params;
 } dt_lib_collect_t;
 
-typedef struct dt_lib_collect_params_t
+typedef struct dt_lib_collect_params_rule_t 
 {
-  uint32_t rules;
-  struct
-  {
     uint32_t item : 16;
     uint32_t mode : 16;
     char string[PARAM_STRING_SIZE];
-  } rule[MAX_RULES];
+} dt_lib_collect_params_rule_t;
+
+typedef struct dt_lib_collect_params_t
+{
+  uint32_t rules;
+  dt_lib_collect_params_rule_t rule[MAX_RULES];
 } dt_lib_collect_params_t;
 
 typedef enum dt_lib_collect_cols_t
@@ -189,6 +191,9 @@ int set_params(dt_lib_module_t *self, const void *params, int size)
   /* set number of rules */
   snprintf(confname, sizeof(confname), "plugins/lighttable/collect/num_rules");
   dt_conf_set_int(confname, p->rules);
+
+  /* update internal params */
+  _lib_collect_update_params(self->data);
 
   /* update ui */
   _lib_collect_gui_update(self);
@@ -2118,6 +2123,181 @@ void gui_cleanup(dt_lib_module_t *self)
   self->data = NULL;
 }
 
+
+#ifdef USE_LUA
+typedef dt_lib_collect_params_rule_t* dt_lua_lib_collect_params_rule_t;
+static int filter_cb(lua_State *L)
+{
+  dt_lib_module_t *self = lua_touserdata(L, lua_upvalueindex(1));
+  dt_lua_lib_check_error(L,self);
+  dt_lib_collect_params_t old_params;
+  int size;
+  
+  dt_lua_unlock(true);
+  dt_lib_collect_params_t *p = get_params(self, &size);
+  dt_lua_lock();
+  // put it in stack so memory is not lost if a lua exception is raised
+  memcpy(&old_params, p,size);
+  free(p);
+  if(lua_gettop(L) > 0) {
+    dt_lib_collect_params_t params;
+    luaA_to(L,dt_lib_collect_params_t,&params,1);
+    dt_lua_unlock(true);
+    set_params(self, &params,size);
+    dt_lua_lock();
+    lua_pop(L,1);
+  }
+  luaA_push(L,dt_lib_collect_params_t,&old_params);
+  return 1;
+}
+
+static int param_len(lua_State *L)
+{
+  dt_lib_collect_params_t params;
+  luaA_to(L,dt_lib_collect_params_t,&params,1);
+  lua_pushnumber(L, params.rules);
+  return 1;
+}
+
+static int param_index(lua_State *L)
+{
+  dt_lib_collect_params_t* params =  lua_touserdata(L,1);
+  int index = luaL_checkinteger(L,2);
+  if(lua_gettop(L) > 2) {
+    if(index < 1 || index > params->rules+1 || index > MAX_RULES) {
+      return luaL_error(L,"incorrect write index for object of type dt_lib_collect_params_t\n");
+    }
+    if(lua_isnil(L,3)) {
+      for(int i = index; i< params->rules -1 ;i++){
+        memcpy(&params->rule[index-1],&params->rule[index],sizeof(dt_lib_collect_params_rule_t));
+      }
+      params->rules--;
+    } else if(dt_lua_isa(L,3,dt_lua_lib_collect_params_rule_t)){
+      if(index == params->rules+1) {
+        params->rules++;
+      }
+      dt_lib_collect_params_rule_t *rule;
+      luaA_to(L,dt_lua_lib_collect_params_rule_t,&rule,3);
+      memcpy(&params->rule[index-1],rule,sizeof(dt_lib_collect_params_rule_t));
+    } else {
+      return luaL_error(L,"incorrect type for field of dt_lib_collect_params_t\n");
+    }
+  }
+  if(index < 1 || index > params->rules) {
+    return luaL_error(L,"incorrect read index for object of type dt_lib_collect_params_t\n");
+  }
+  dt_lib_collect_params_rule_t* tmp = &params->rule[index-1];
+  luaA_push(L,dt_lua_lib_collect_params_rule_t,&tmp);
+  lua_getuservalue(L,-1);
+  lua_pushvalue(L,1);
+  lua_setfield(L,-2,"containing_object");//prevent GC from killing the child object
+  lua_pop(L,1);
+  return 1;
+}
+
+static int mode_member(lua_State *L)
+{
+  dt_lib_collect_params_rule_t *rule;
+  luaA_to(L,dt_lua_lib_collect_params_rule_t,&rule,1);
+  if(lua_gettop(L) > 2) {
+    dt_lib_collect_mode_t value;
+    luaA_to(L,dt_lib_collect_mode_t,&value,3);
+    rule->mode = value;
+    return 0;
+  }
+  const dt_lib_collect_mode_t tmp = rule->mode; // temp buffer because of bitfield in the original struct
+  luaA_push(L,dt_lib_collect_mode_t,&tmp);
+  return 1;
+}
+
+static int item_member(lua_State *L)
+{
+  dt_lib_collect_params_rule_t *rule;
+  luaA_to(L,dt_lua_lib_collect_params_rule_t,&rule,1);
+
+  if(lua_gettop(L) > 2) {
+    dt_collection_properties_t value;
+    luaA_to(L,dt_collection_properties_t,&value,3);
+    rule->item = value;
+    return 0;
+  }
+  const dt_collection_properties_t tmp = rule->item; // temp buffer because of bitfield in the original struct
+  luaA_push(L,dt_collection_properties_t,&tmp);
+  return 1;
+}
+
+static int data_member(lua_State *L)
+{
+  dt_lib_collect_params_rule_t *rule;
+  luaA_to(L,dt_lua_lib_collect_params_rule_t,&rule,1);
+
+  if(lua_gettop(L) > 2) {
+    size_t tgt_size;
+    const char*data = luaL_checklstring(L,3,&tgt_size);
+    if(tgt_size > PARAM_STRING_SIZE)
+    {
+      return luaL_error(L, "string '%s' too long (max is %d)", data, PARAM_STRING_SIZE);
+    }
+    memcpy(rule->string,data,strlen(data));
+    return 0;
+  }
+  lua_pushstring(L,rule->string);
+  return 1;
+}
+
+
+
+void init(struct dt_lib_module_t *self)
+{
+
+  lua_State *L = darktable.lua_state.state;
+  int my_type = dt_lua_module_entry_get_type(L, "lib", self->plugin_name);
+  lua_pushlightuserdata(L, self);
+  lua_pushcclosure(L, filter_cb,1);
+  lua_pushcclosure(L, dt_lua_type_member_common, 1);
+  dt_lua_type_register_const_type(L, my_type, "filter");
+
+  dt_lua_init_type(L,dt_lib_collect_params_t);
+  lua_pushcfunction(L,param_len);
+  lua_pushcfunction(L,param_index);
+  dt_lua_type_register_number(L,dt_lib_collect_params_t);
+
+  dt_lua_init_type(L,dt_lua_lib_collect_params_rule_t);
+  lua_pushcfunction(L,mode_member);
+  dt_lua_type_register(L, dt_lua_lib_collect_params_rule_t, "mode");
+  lua_pushcfunction(L,item_member);
+  dt_lua_type_register(L, dt_lua_lib_collect_params_rule_t, "item");
+  lua_pushcfunction(L,data_member);
+  dt_lua_type_register(L, dt_lua_lib_collect_params_rule_t, "data");
+  
+
+  luaA_enum(L,dt_lib_collect_mode_t);
+  luaA_enum_value(L,dt_lib_collect_mode_t,DT_LIB_COLLECT_MODE_AND);
+  luaA_enum_value(L,dt_lib_collect_mode_t,DT_LIB_COLLECT_MODE_OR);
+  luaA_enum_value(L,dt_lib_collect_mode_t,DT_LIB_COLLECT_MODE_AND_NOT);
+
+  luaA_enum(L,dt_collection_properties_t);
+  luaA_enum_value(L,dt_collection_properties_t,DT_COLLECTION_PROP_FILMROLL);
+  luaA_enum_value(L,dt_collection_properties_t,DT_COLLECTION_PROP_FOLDERS);
+  luaA_enum_value(L,dt_collection_properties_t,DT_COLLECTION_PROP_CAMERA);
+  luaA_enum_value(L,dt_collection_properties_t,DT_COLLECTION_PROP_TAG);
+  luaA_enum_value(L,dt_collection_properties_t,DT_COLLECTION_PROP_DAY);
+  luaA_enum_value(L,dt_collection_properties_t,DT_COLLECTION_PROP_TIME);
+  luaA_enum_value(L,dt_collection_properties_t,DT_COLLECTION_PROP_HISTORY);
+  luaA_enum_value(L,dt_collection_properties_t,DT_COLLECTION_PROP_COLORLABEL);
+  luaA_enum_value(L,dt_collection_properties_t,DT_COLLECTION_PROP_TITLE);
+  luaA_enum_value(L,dt_collection_properties_t,DT_COLLECTION_PROP_DESCRIPTION);
+  luaA_enum_value(L,dt_collection_properties_t,DT_COLLECTION_PROP_CREATOR);
+  luaA_enum_value(L,dt_collection_properties_t,DT_COLLECTION_PROP_PUBLISHER);
+  luaA_enum_value(L,dt_collection_properties_t,DT_COLLECTION_PROP_RIGHTS);
+  luaA_enum_value(L,dt_collection_properties_t,DT_COLLECTION_PROP_LENS);
+  luaA_enum_value(L,dt_collection_properties_t,DT_COLLECTION_PROP_ISO);
+  luaA_enum_value(L,dt_collection_properties_t,DT_COLLECTION_PROP_APERTURE);
+  luaA_enum_value(L,dt_collection_properties_t,DT_COLLECTION_PROP_FILENAME);
+  luaA_enum_value(L,dt_collection_properties_t,DT_COLLECTION_PROP_GEOTAGGING);
+
+}
+#endif
 #undef MAX_RULES
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
