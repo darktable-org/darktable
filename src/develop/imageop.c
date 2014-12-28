@@ -1837,7 +1837,7 @@ got_image:
   gtk_widget_set_size_request(GTK_WIDGET(hw[idx++]), bs, bs);
 
   /* add enabled button */
-  hw[idx] = dtgtk_togglebutton_new(dtgtk_cairo_paint_switch, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER);
+  hw[idx] = dtgtk_togglebutton_new(dtgtk_cairo_paint_switch, CPF_DO_NOT_USE_BORDER | CPF_BG_TRANSPARENT);
   gtk_widget_set_no_show_all(hw[idx], TRUE);
   gchar *module_label = dt_history_item_get_name(module);
   snprintf(tooltip, sizeof(tooltip), module->enabled ? _("%s is switched on") : _("%s is switched off"),
