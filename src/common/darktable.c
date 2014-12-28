@@ -513,31 +513,31 @@ int dt_init(int argc, char *argv[], const int init_gui, lua_State *L)
                );
         return 1;
       }
-      else if(!strcmp(argv[k], "--library"))
+      else if(!strcmp(argv[k], "--library") && argc > k + 1)
       {
         dbfilename_from_command = argv[++k];
       }
-      else if(!strcmp(argv[k], "--datadir"))
+      else if(!strcmp(argv[k], "--datadir") && argc > k + 1)
       {
         datadir_from_command = argv[++k];
       }
-      else if(!strcmp(argv[k], "--moduledir"))
+      else if(!strcmp(argv[k], "--moduledir") && argc > k + 1)
       {
         moduledir_from_command = argv[++k];
       }
-      else if(!strcmp(argv[k], "--tmpdir"))
+      else if(!strcmp(argv[k], "--tmpdir") && argc > k + 1)
       {
         tmpdir_from_command = argv[++k];
       }
-      else if(!strcmp(argv[k], "--configdir"))
+      else if(!strcmp(argv[k], "--configdir") && argc > k + 1)
       {
         configdir_from_command = argv[++k];
       }
-      else if(!strcmp(argv[k], "--cachedir"))
+      else if(!strcmp(argv[k], "--cachedir") && argc > k + 1)
       {
         cachedir_from_command = argv[++k];
       }
-      else if(!strcmp(argv[k], "--localedir"))
+      else if(!strcmp(argv[k], "--localedir") && argc > k + 1)
       {
         bindtextdomain(GETTEXT_PACKAGE, argv[++k]);
       }
@@ -585,7 +585,7 @@ int dt_init(int argc, char *argv[], const int init_gui, lua_State *L)
         printf("[dt_init] using %d threads for openmp parallel sections\n", darktable.num_openmp_threads);
         k++;
       }
-      else if(!strcmp(argv[k], "--conf"))
+      else if(!strcmp(argv[k], "--conf") && argc > k + 1)
       {
         gchar *keyval = g_strdup(argv[++k]), *c = keyval;
         gchar *end = keyval + strlen(keyval);
@@ -600,7 +600,7 @@ int dt_init(int argc, char *argv[], const int init_gui, lua_State *L)
         }
         g_free(keyval);
       }
-      else if(!strcmp(argv[k], "--luacmd"))
+      else if(!strcmp(argv[k], "--luacmd") && argc > k + 1)
       {
 #ifdef USE_LUA
         lua_command = argv[++k];
