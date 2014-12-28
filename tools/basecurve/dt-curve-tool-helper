@@ -66,7 +66,7 @@ check_tools()
 {
     for _tool in convert dcraw exiftool ; do
         _tpath="$(which $_tool)"
-        if [ ! -f "$_tpath" ] || [ ! -x "$_tpath" ] ; then
+        if [ ! -f "$_tpath" -o ! -x "$_tpath" ] ; then
             printf "error: '%s' not found.\n" "$_tool"
             exit 1
         fi
@@ -166,7 +166,7 @@ fi
 
 # Figure out what JPEG file the script will use
 _jpegtmp=""
-if [ -z "$_jpeg" ] || [ ! -f "$_jpeg" ] ; then
+if [ -z "$_jpeg" -o ! -f "$_jpeg" ] ; then
     if [ -f "$_base.JPG" ] ; then
         _jpeg="$_base.JPG"
     elif [ -f "$_base.jpg" ] ; then
@@ -192,7 +192,7 @@ if [ ! -f "$_ppm8" ] ; then
 fi
 
 # clean temporary extracted JPEG if any
-if [ -n "$_jpegtmp" ] && [ -f "$_jpegtmp" ] ; then
+if [ -n "$_jpegtmp" -a -f "$_jpegtmp" ] ; then
     rm -f "$_jpegtmp"
 fi
 
@@ -202,7 +202,7 @@ if [ -n "$_state" ] ; then
 fi
 
 # analyze the images
-dt-curve-tool $_state "$_ppm16" "$_ppm8"
+./dt-curve-tool $_state "$_ppm16" "$_ppm8"
 if [ $_keep -eq 0 ] ; then
     rm -f "$_ppm16" "$_ppm8"
 fi
