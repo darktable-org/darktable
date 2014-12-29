@@ -91,6 +91,25 @@ _print_button_clicked (GtkWidget *widget, gpointer user_data)
 
   const int imgid = dt_view_filmstrip_get_activated_imgid(darktable.view_manager);
 
+  if (imgid == -1)
+  {
+    dt_control_log(_("cannot print until a picture is selected"));
+    dt_control_queue_redraw();
+    return;
+  }
+  if (strlen(ps->prt.printer.name) == 0 || ps->prt.printer.resolution == 0)
+  {
+    dt_control_log(_("cannot print until a printer is selected"));
+    dt_control_queue_redraw();
+    return;
+  }
+  if (ps->prt.paper.width == 0 || ps->prt.paper.height == 0)
+  {
+    dt_control_log(_("cannot print until a paper is selected"));
+    dt_control_queue_redraw();
+    return;
+  }
+
   // compute print-area (in inches)
   double width, height;
 
