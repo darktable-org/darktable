@@ -118,7 +118,8 @@ void gui_init(dt_lib_module_t *self)
   d->zoom_entry = gtk_entry_new();
   gtk_entry_set_alignment(GTK_ENTRY(d->zoom_entry), 1.0);
   gtk_entry_set_max_length(GTK_ENTRY(d->zoom_entry), 2);
-  g_object_set(G_OBJECT(d->zoom_entry), "width-chars", 3, (char *)NULL);
+  gtk_entry_set_width_chars(GTK_ENTRY(d->zoom_entry), 3);
+  gtk_entry_set_max_width_chars(GTK_ENTRY(d->zoom_entry), 3);
   dt_gui_key_accel_block_on_focus_connect(d->zoom_entry);
   gtk_box_pack_start(GTK_BOX(self->widget), d->zoom_entry, TRUE, TRUE, 0);
 
