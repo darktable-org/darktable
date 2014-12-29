@@ -29,7 +29,6 @@
 #include "control/control.h"
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
-#include "dtgtk/slider.h"
 
 DT_MODULE_INTROSPECTION(1, dt_iop_gamma_params_t)
 

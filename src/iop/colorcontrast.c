@@ -57,7 +57,7 @@ typedef struct dt_iop_colorcontrast_gui_data_t
 {
   // whatever you need to make your gui happy.
   // stored in self->gui_data
-  GtkVBox *vbox;
+  GtkBox *vbox;
   GtkWidget *a_scale; // this is needed by gui_update
   GtkWidget *b_scale;
 } dt_iop_colorcontrast_gui_data_t;
@@ -342,7 +342,7 @@ void gui_init(dt_iop_module_t *self)
   dt_iop_colorcontrast_gui_data_t *g = (dt_iop_colorcontrast_gui_data_t *)self->gui_data;
   dt_iop_colorcontrast_params_t *p = (dt_iop_colorcontrast_params_t *)self->params;
 
-  self->widget = gtk_vbox_new(FALSE, DT_BAUHAUS_SPACE);
+  self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
 
   /* a scale */
   g->a_scale = dt_bauhaus_slider_new_with_range(self, 0.0, 5.0, 0.01, p->a_steepness, 2);

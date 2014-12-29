@@ -32,7 +32,6 @@
 #include "common/opencl.h"
 #include "bauhaus/bauhaus.h"
 #include "dtgtk/resetlabel.h"
-#include "dtgtk/togglebutton.h"
 #include "gui/accelerators.h"
 #include "gui/presets.h"
 #include "gui/gtk.h"
@@ -1126,7 +1125,7 @@ void gui_init(struct dt_iop_module_t *self)
   dt_iop_vignette_params_t *p = (dt_iop_vignette_params_t *)self->params;
   GtkWidget *hbox, *label1;
 
-  self->widget = gtk_vbox_new(FALSE, DT_BAUHAUS_SPACE);
+  self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
 
   label1 = dtgtk_reset_label_new(_("automatic ratio"), self, &p->autoratio, sizeof p->autoratio);
 
@@ -1138,8 +1137,7 @@ void gui_init(struct dt_iop_module_t *self)
   g->center_y = dt_bauhaus_slider_new_with_range(self, -1.0, 1.0, 0.01, p->center.y, 3);
   g->shape = dt_bauhaus_slider_new_with_range(self, 0.0, 5.0, 0.1, p->shape, 2);
   g->whratio = dt_bauhaus_slider_new_with_range(self, 0.0, 2.0, 0.01, p->shape, 3);
-  g->autoratio = GTK_TOGGLE_BUTTON(
-      dtgtk_togglebutton_new_with_label(_("automatic"), NULL, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER));
+  g->autoratio = GTK_TOGGLE_BUTTON(gtk_toggle_button_new_with_label(_("automatic")));
   g->dithering = dt_bauhaus_combobox_new(self);
 
   dt_bauhaus_combobox_add(g->dithering, _("off"));
@@ -1160,7 +1158,7 @@ void gui_init(struct dt_iop_module_t *self)
 
   gtk_widget_set_sensitive(GTK_WIDGET(g->whratio), !p->autoratio);
 
-  hbox = gtk_hbox_new(FALSE, 0);
+  hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
   gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(label1), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(g->autoratio), TRUE, TRUE, 0);
 

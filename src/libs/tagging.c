@@ -373,7 +373,7 @@ void gui_init(dt_lib_module_t *self)
   self->data = (void *)d;
   d->imgsel = -1;
 
-  self->widget = gtk_vbox_new(TRUE, 5);
+  self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
   //   gtk_widget_set_size_request(self->widget, DT_PIXEL_APPLY_DPI(100), -1);
 
   GtkBox *box, *hbox;
@@ -382,10 +382,11 @@ void gui_init(dt_lib_module_t *self)
   GtkListStore *liststore;
 
   // left side, current
-  box = GTK_BOX(gtk_vbox_new(FALSE, 5));
+  box = GTK_BOX(gtk_box_new(GTK_ORIENTATION_VERTICAL, 5));
 
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(box), TRUE, TRUE, 0);
   w = gtk_scrolled_window_new(NULL, NULL);
+  gtk_widget_set_size_request(w, -1, DT_PIXEL_APPLY_DPI(100));
   gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(w), GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
   gtk_box_pack_start(box, w, TRUE, TRUE, 0);
   d->current = GTK_TREE_VIEW(gtk_tree_view_new());
@@ -404,7 +405,7 @@ void gui_init(dt_lib_module_t *self)
   gtk_container_add(GTK_CONTAINER(w), GTK_WIDGET(d->current));
 
   // attach/detach buttons
-  hbox = GTK_BOX(gtk_hbox_new(TRUE, 5));
+  hbox = GTK_BOX(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5));
 
   button = gtk_button_new_with_label(_("attach"));
   d->attach_button = button;
@@ -421,7 +422,7 @@ void gui_init(dt_lib_module_t *self)
   gtk_box_pack_start(box, GTK_WIDGET(hbox), FALSE, TRUE, 0);
 
   // right side, related
-  box = GTK_BOX(gtk_vbox_new(FALSE, 5));
+  box = GTK_BOX(gtk_box_new(GTK_ORIENTATION_VERTICAL, 5));
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(box), TRUE, TRUE, 5);
 
   // text entry and new button
@@ -456,7 +457,7 @@ void gui_init(dt_lib_module_t *self)
   gtk_container_add(GTK_CONTAINER(w), GTK_WIDGET(d->related));
 
   // attach and delete buttons
-  hbox = GTK_BOX(gtk_hbox_new(TRUE, 5));
+  hbox = GTK_BOX(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5));
 
   button = gtk_button_new_with_label(_("new"));
   d->new_button = button;
@@ -579,7 +580,9 @@ static gboolean _lib_tagging_tag_show(GtkAccelGroup *accel_group, GObject *accel
 
   /* put the floating box at the mouse pointer */
   //   gint pointerx, pointery;
-  //   gtk_widget_get_pointer(center, &pointerx, &pointery);
+  //   GdkDevice *device =
+  //   gdk_device_manager_get_client_pointer(gdk_display_get_device_manager(gtk_widget_get_display(widget)));
+  //   gdk_window_get_device_position (gtk_widget_get_window (widget), device, &pointerx, &pointery, NULL);
   //   x = px + pointerx + 1;
   //   y = py + pointery + 1;
 
@@ -589,7 +592,7 @@ static gboolean _lib_tagging_tag_show(GtkAccelGroup *accel_group, GObject *accel
   gtk_window_set_decorated(GTK_WINDOW(d->floating_tag_window), FALSE);
   gtk_window_set_type_hint(GTK_WINDOW(d->floating_tag_window), GDK_WINDOW_TYPE_HINT_POPUP_MENU);
   gtk_window_set_transient_for(GTK_WINDOW(d->floating_tag_window), GTK_WINDOW(window));
-  gtk_window_set_opacity(GTK_WINDOW(d->floating_tag_window), 0.8);
+  gtk_widget_set_opacity(d->floating_tag_window, 0.8);
   gtk_window_move(GTK_WINDOW(d->floating_tag_window), x, y);
 
 

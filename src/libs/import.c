@@ -31,7 +31,6 @@
 #ifdef HAVE_GPHOTO2
 #include "control/jobs/camera_jobs.h"
 #endif
-#include "dtgtk/label.h"
 #include "dtgtk/button.h"
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
@@ -186,11 +185,10 @@ void _lib_import_ui_devices_update(dt_lib_module_t *self)
   /* add the rescan button */
   GtkButton *scan = GTK_BUTTON(gtk_button_new_with_label(_("scan for devices")));
   d->scan_devices = scan;
-  gtk_button_set_alignment(scan, 0.05, 0.5);
+  gtk_widget_set_halign(gtk_bin_get_child(GTK_BIN(scan)), GTK_ALIGN_START);
   g_object_set(G_OBJECT(scan), "tooltip-text", _("scan for newly attached devices"), (char *)NULL);
   g_signal_connect(G_OBJECT(scan), "clicked", G_CALLBACK(_lib_import_scan_devices_callback), self);
   gtk_box_pack_start(GTK_BOX(d->devices), GTK_WIDGET(scan), TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(d->devices), GTK_WIDGET(gtk_label_new("")), TRUE, TRUE, 0);
 
   uint32_t count = 0;
   /* FIXME: Verify that it's safe to access camctl->cameras list here ? */
@@ -204,8 +202,8 @@ void _lib_import_ui_devices_update(dt_lib_module_t *self)
       count++;
 
       /* add camera label */
-      GtkWidget *label
-          = GTK_WIDGET(dtgtk_label_new(camera->model, DARKTABLE_LABEL_TAB | DARKTABLE_LABEL_ALIGN_LEFT));
+      GtkWidget *label = dt_ui_section_label_new(camera->model);
+      gtk_widget_set_margin_top(label, DT_PIXEL_APPLY_DPI(15));
       gtk_box_pack_start(GTK_BOX(d->devices), label, TRUE, TRUE, 0);
 
       /* set camera summary if available */
@@ -222,7 +220,7 @@ void _lib_import_ui_devices_update(dt_lib_module_t *self)
 
       /* add camera actions buttons */
       GtkWidget *ib = NULL, *tb = NULL;
-      GtkWidget *vbx = gtk_vbox_new(FALSE, 5);
+      GtkWidget *vbx = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
       if(camera->can_import == TRUE)
       {
         gtk_box_pack_start(GTK_BOX(vbx), (ib = gtk_button_new_with_label(_("import from camera"))), FALSE,
@@ -239,12 +237,12 @@ void _lib_import_ui_devices_update(dt_lib_module_t *self)
       if(ib)
       {
         g_signal_connect(G_OBJECT(ib), "clicked", G_CALLBACK(_lib_import_from_camera_callback), camera);
-        gtk_button_set_alignment(GTK_BUTTON(ib), 0.05, 0.5);
+        gtk_widget_set_halign(gtk_bin_get_child(GTK_BIN(ib)), GTK_ALIGN_START);
       }
       if(tb)
       {
         g_signal_connect(G_OBJECT(tb), "clicked", G_CALLBACK(_lib_import_tethered_callback), camera);
-        gtk_button_set_alignment(GTK_BUTTON(tb), 0.05, 0.5);
+        gtk_widget_set_halign(gtk_bin_get_child(GTK_BIN(tb)), GTK_ALIGN_START);
       }
       gtk_box_pack_start(GTK_BOX(d->devices), vbx, FALSE, FALSE, 0);
     } while((citem = g_list_next(citem)) != NULL);
@@ -323,8 +321,8 @@ static void _lib_import_metadata_changed(GtkWidget *widget, GtkComboBox *box)
 
 static void _lib_import_apply_metadata_toggled(GtkWidget *widget, gpointer user_data)
 {
-  GtkWidget *table = GTK_WIDGET(user_data);
-  gtk_widget_set_sensitive(table, gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget)));
+  GtkWidget *grid = GTK_WIDGET(user_data);
+  gtk_widget_set_sensitive(grid, gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget)));
 }
 
 static void _lib_import_presets_changed(GtkWidget *widget, dt_lib_import_metadata_t *data)
@@ -376,16 +374,25 @@ static GtkWidget *_lib_import_get_extra_widget(dt_lib_import_metadata_t *data, g
 
   GtkWidget *frame = gtk_frame_new(NULL);
   gtk_frame_set_shadow_type(GTK_FRAME(frame), GTK_SHADOW_IN);
-  GtkWidget *alignment = gtk_alignment_new(1.0, 1.0, 1.0, 1.0);
-  gtk_alignment_set_padding(GTK_ALIGNMENT(alignment), 8, 8, 8, 8);
+  gtk_widget_set_hexpand(frame, TRUE);
   GtkWidget *event_box = gtk_event_box_new();
+
+  gtk_widget_set_margin_start(event_box, DT_PIXEL_APPLY_DPI(8));
+  gtk_widget_set_margin_end(event_box, DT_PIXEL_APPLY_DPI(8));
+  gtk_widget_set_margin_top(event_box, DT_PIXEL_APPLY_DPI(8));
+  gtk_widget_set_margin_bottom(event_box, DT_PIXEL_APPLY_DPI(8));
+
   gtk_container_add(GTK_CONTAINER(frame), event_box);
-  gtk_container_add(GTK_CONTAINER(event_box), alignment);
-  gtk_container_add(GTK_CONTAINER(alignment), expander);
+  gtk_container_add(GTK_CONTAINER(event_box), expander);
 
   GtkWidget *extra;
-  extra = gtk_vbox_new(FALSE, 0);
+  extra = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
   gtk_container_add(GTK_CONTAINER(expander), extra);
+
+  gtk_widget_set_margin_start(extra, DT_PIXEL_APPLY_DPI(8));
+  gtk_widget_set_margin_end(extra, DT_PIXEL_APPLY_DPI(8));
+  gtk_widget_set_margin_top(extra, DT_PIXEL_APPLY_DPI(8));
+  gtk_widget_set_margin_bottom(extra, DT_PIXEL_APPLY_DPI(8));
 
   GtkWidget *recursive = NULL, *ignore_jpeg = NULL;
   if(import_folder == TRUE)
@@ -409,12 +416,13 @@ static GtkWidget *_lib_import_get_extra_widget(dt_lib_import_metadata_t *data, g
 
   // default metadata
   GtkWidget *apply_metadata;
-  GtkWidget *table, *label, *creator, *publisher, *rights, *tags;
+  GtkWidget *grid, *label, *creator, *publisher, *rights, *tags;
   apply_metadata = gtk_check_button_new_with_label(_("apply metadata on import"));
   g_object_set(apply_metadata, "tooltip-text", _("apply some metadata to all newly imported images."), NULL);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(apply_metadata),
                                dt_conf_get_bool("ui_last/import_apply_metadata"));
   gtk_box_pack_start(GTK_BOX(extra), apply_metadata, FALSE, FALSE, 0);
+
 
   GValue value = {
     0,
@@ -422,16 +430,15 @@ static GtkWidget *_lib_import_get_extra_widget(dt_lib_import_metadata_t *data, g
   g_value_init(&value, G_TYPE_INT);
   gtk_widget_style_get_property(apply_metadata, "indicator-size", &value);
   gint indicator_size = g_value_get_int(&value);
-  //   gtk_widget_style_get_property(apply_metadata, "indicator-spacing", &value);
-  //   gint indicator_spacing = g_value_get_int(&value);
+  gtk_widget_style_get_property(apply_metadata, "indicator-spacing", &value);
+  gint indicator_spacing = g_value_get_int(&value);
+  g_value_unset(&value);
 
-  table = gtk_table_new(6, 3, FALSE);
-  gtk_table_set_row_spacings(GTK_TABLE(table), 5);
-  gtk_table_set_col_spacings(GTK_TABLE(table), 5);
-  alignment = gtk_alignment_new(0, 0, 1, 1);
-  gtk_alignment_set_padding(GTK_ALIGNMENT(alignment), 0, 0, 2 * indicator_size, 0);
-  gtk_container_add(GTK_CONTAINER(alignment), table);
-  gtk_box_pack_start(GTK_BOX(extra), alignment, FALSE, FALSE, 0);
+  grid = gtk_grid_new();
+  gtk_grid_set_row_spacing(GTK_GRID(grid), DT_PIXEL_APPLY_DPI(5));
+  gtk_grid_set_column_spacing(GTK_GRID(grid), DT_PIXEL_APPLY_DPI(10));
+  gtk_widget_set_margin_start(grid,  2 * (indicator_spacing + indicator_size));
+  gtk_box_pack_start(GTK_BOX(extra), grid, FALSE, FALSE, 0);
 
   creator = gtk_entry_new();
   gtk_widget_set_size_request(creator, DT_PIXEL_APPLY_DPI(300), -1);
@@ -501,33 +508,29 @@ static GtkWidget *_lib_import_get_extra_widget(dt_lib_import_metadata_t *data, g
   int line = 0;
 
   label = gtk_label_new(_("preset"));
-  gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
-  gtk_table_attach(GTK_TABLE(table), label, 0, 1, line, line + 1, GTK_FILL, 0, 0, 0);
-  gtk_table_attach(GTK_TABLE(table), presets, 1, 2, line, line + 1, GTK_FILL, 0, 0, 0);
-  line++;
+  gtk_widget_set_halign(label, GTK_ALIGN_START);
+  gtk_grid_attach(GTK_GRID(grid), label, 0, line++, 1, 1);
+  gtk_grid_attach_next_to(GTK_GRID(grid), presets, label, GTK_POS_RIGHT, 1, 1);
 
   label = gtk_label_new(_("creator"));
-  gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
-  gtk_table_attach(GTK_TABLE(table), label, 0, 1, line, line + 1, GTK_FILL, 0, 0, 0);
-  gtk_table_attach(GTK_TABLE(table), creator, 1, 2, line, line + 1, GTK_FILL, 0, 0, 0);
-  line++;
+  gtk_widget_set_halign(label, GTK_ALIGN_START);
+  gtk_grid_attach(GTK_GRID(grid), label, 0, line++, 1, 1);
+  gtk_grid_attach_next_to(GTK_GRID(grid), creator, label, GTK_POS_RIGHT, 1, 1);
 
   label = gtk_label_new(_("publisher"));
-  gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
-  gtk_table_attach(GTK_TABLE(table), label, 0, 1, line, line + 1, GTK_FILL, 0, 0, 0);
-  gtk_table_attach(GTK_TABLE(table), publisher, 1, 2, line, line + 1, GTK_FILL, 0, 0, 0);
-  line++;
+  gtk_widget_set_halign(label, GTK_ALIGN_START);
+  gtk_grid_attach(GTK_GRID(grid), label, 0, line++, 1, 1);
+  gtk_grid_attach_next_to(GTK_GRID(grid), publisher, label, GTK_POS_RIGHT, 1, 1);
 
   label = gtk_label_new(_("rights"));
-  gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
-  gtk_table_attach(GTK_TABLE(table), label, 0, 1, line, line + 1, GTK_FILL, 0, 0, 0);
-  gtk_table_attach(GTK_TABLE(table), rights, 1, 2, line, line + 1, GTK_FILL, 0, 0, 0);
-  line++;
+  gtk_widget_set_halign(label, GTK_ALIGN_START);
+  gtk_grid_attach(GTK_GRID(grid), label, 0, line++, 1, 1);
+  gtk_grid_attach_next_to(GTK_GRID(grid), rights, label, GTK_POS_RIGHT, 1, 1);
 
   label = gtk_label_new(_("tags"));
-  gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
-  gtk_table_attach(GTK_TABLE(table), label, 0, 1, line, line + 1, GTK_FILL, 0, 0, 0);
-  gtk_table_attach(GTK_TABLE(table), tags, 1, 2, line, line + 1, GTK_FILL, 0, 0, 0);
+  gtk_widget_set_halign(label, GTK_ALIGN_START);
+  gtk_grid_attach(GTK_GRID(grid), label, 0, line, 1, 1);
+  gtk_grid_attach_next_to(GTK_GRID(grid), tags, label, GTK_POS_RIGHT, 1, 1);
 
   gtk_widget_show_all(frame);
 
@@ -545,10 +548,9 @@ static GtkWidget *_lib_import_get_extra_widget(dt_lib_import_metadata_t *data, g
     data->tags = tags;
   }
 
-  g_signal_connect(apply_metadata, "toggled", G_CALLBACK(_lib_import_apply_metadata_toggled), table);
-  _lib_import_apply_metadata_toggled(apply_metadata,
-                                     table); // needed since the apply_metadata starts being turned off,
-  // and setting it to off doesn't emit the 'toggled' signal ...
+  g_signal_connect(apply_metadata, "toggled", G_CALLBACK(_lib_import_apply_metadata_toggled), grid);
+  // needed since the apply_metadata starts being turned off, and setting it to off doesn't emit the 'toggled' signal ...
+  _lib_import_apply_metadata_toggled(apply_metadata, grid);
 
   g_signal_connect(presets, "changed", G_CALLBACK(_lib_import_presets_changed), data);
   g_signal_connect(GTK_ENTRY(creator), "changed", G_CALLBACK(_lib_import_metadata_changed), presets);
@@ -665,8 +667,8 @@ static void _lib_import_single_image_callback(GtkWidget *widget, gpointer user_d
 {
   GtkWidget *win = dt_ui_main_window(darktable.gui->ui);
   GtkWidget *filechooser = gtk_file_chooser_dialog_new(
-      _("import image"), GTK_WINDOW(win), GTK_FILE_CHOOSER_ACTION_OPEN, GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
-      GTK_STOCK_OPEN, GTK_RESPONSE_ACCEPT, (char *)NULL);
+      _("import image"), GTK_WINDOW(win), GTK_FILE_CHOOSER_ACTION_OPEN, _("_Cancel"), GTK_RESPONSE_CANCEL,
+      _("_Open"), GTK_RESPONSE_ACCEPT, (char *)NULL);
 
   gtk_file_chooser_set_select_multiple(GTK_FILE_CHOOSER(filechooser), TRUE);
 
@@ -760,8 +762,8 @@ static void _lib_import_folder_callback(GtkWidget *widget, gpointer user_data)
 {
   GtkWidget *win = dt_ui_main_window(darktable.gui->ui);
   GtkWidget *filechooser = gtk_file_chooser_dialog_new(
-      _("import film"), GTK_WINDOW(win), GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER, GTK_STOCK_CANCEL,
-      GTK_RESPONSE_CANCEL, GTK_STOCK_OPEN, GTK_RESPONSE_ACCEPT, (char *)NULL);
+      _("import film"), GTK_WINDOW(win), GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER, _("_Cancel"),
+      GTK_RESPONSE_CANCEL, _("_Open"), GTK_RESPONSE_ACCEPT, (char *)NULL);
 
   gtk_file_chooser_set_select_multiple(GTK_FILE_CHOOSER(filechooser), TRUE);
 
@@ -828,12 +830,12 @@ void gui_init(dt_lib_module_t *self)
   /* initialize ui widgets */
   dt_lib_import_t *d = (dt_lib_import_t *)g_malloc0(sizeof(dt_lib_import_t));
   self->data = (void *)d;
-  self->widget = gtk_vbox_new(FALSE, 5);
+  self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
 
   /* add import single image buttons */
   GtkWidget *widget = gtk_button_new_with_label(_("image"));
   d->import_file = GTK_BUTTON(widget);
-  gtk_button_set_alignment(GTK_BUTTON(widget), 0.05, 5);
+  gtk_widget_set_halign(gtk_bin_get_child(GTK_BIN(widget)), GTK_ALIGN_START);
   gtk_widget_set_tooltip_text(widget, _("select one or more images to import"));
   gtk_widget_set_can_focus(widget, TRUE);
   gtk_widget_set_receives_default(widget, TRUE);
@@ -843,7 +845,7 @@ void gui_init(dt_lib_module_t *self)
   /* adding the import folder button */
   widget = gtk_button_new_with_label(_("folder"));
   d->import_directory = GTK_BUTTON(widget);
-  gtk_button_set_alignment(GTK_BUTTON(widget), 0.05, 5);
+  gtk_widget_set_halign(gtk_bin_get_child(GTK_BIN(widget)), GTK_ALIGN_START);
   gtk_widget_set_tooltip_text(widget, _("select a folder to import as film roll"));
   gtk_widget_set_can_focus(widget, TRUE);
   gtk_widget_set_receives_default(widget, TRUE);
@@ -852,7 +854,7 @@ void gui_init(dt_lib_module_t *self)
 
 #ifdef HAVE_GPHOTO2
   /* add devices container for cameras */
-  d->devices = GTK_BOX(gtk_vbox_new(FALSE, 5));
+  d->devices = GTK_BOX(gtk_box_new(GTK_ORIENTATION_VERTICAL, 5));
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(d->devices), FALSE, FALSE, 0);
 
   /* initialize camctl listener and update devices */

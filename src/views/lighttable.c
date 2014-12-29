@@ -87,7 +87,6 @@ typedef struct dt_library_t
   int32_t full_preview_rowid;
   int display_focus;
   gboolean offset_changed;
-  GdkColor star_color;
   int images_in_row;
 
   uint8_t *full_res_thumb;
@@ -388,12 +387,6 @@ void init(dt_view_t *self)
   lib->full_res_thumb = 0;
   lib->full_res_thumb_id = -1;
   lib->audio_player_id = -1;
-
-  GtkStyle *style = gtk_rc_get_style_by_paths(gtk_settings_get_default(), "dt-stars", NULL, G_TYPE_NONE);
-
-  lib->star_color.red = (255 / 65535) * style->fg[GTK_STATE_NORMAL].red;
-  lib->star_color.blue = (255 / 65535) * style->fg[GTK_STATE_NORMAL].blue;
-  lib->star_color.green = (255 / 65535) * style->fg[GTK_STATE_NORMAL].green;
 
   /* setup collection listener and initialize main_query statement */
   dt_control_signal_connect(darktable.signals, DT_SIGNAL_COLLECTION_CHANGED,

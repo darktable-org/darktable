@@ -109,7 +109,7 @@ void init_presets(dt_iop_module_so_t *self)
 
 typedef struct dt_iop_graduatednd_gui_data_t
 {
-  GtkVBox *vbox;
+  GtkBox *vbox;
   GtkWidget *label1, *label2, *label3, *label5, *label6; // density, compression, rotation, hue, saturation
   GtkWidget *scale1, *scale2, *scale3;                   // density, compression, rotation
   GtkWidget *gslider1, *gslider2;                        // hue, saturation
@@ -1024,7 +1024,7 @@ void gui_init(struct dt_iop_module_t *self)
   dt_iop_graduatednd_gui_data_t *g = (dt_iop_graduatednd_gui_data_t *)self->gui_data;
   dt_iop_graduatednd_params_t *p = (dt_iop_graduatednd_params_t *)self->params;
 
-  self->widget = gtk_vbox_new(FALSE, DT_BAUHAUS_SPACE);
+  self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
 
   /* density */
   g->scale1 = dt_bauhaus_slider_new_with_range(self, -8.0, 8.0, 0.1, p->density, 2);

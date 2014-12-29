@@ -26,7 +26,7 @@
 #include "common/colorspaces.h"
 #include "control/conf.h"
 #include "common/imageio_format.h"
-#include "dtgtk/slider.h"
+#include "bauhaus/bauhaus.h"
 #include <setjmp.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -56,7 +56,7 @@ typedef struct dt_imageio_jpeg_t
 
 typedef struct dt_imageio_jpeg_gui_data_t
 {
-  GtkDarktableSlider *quality;
+  GtkWidget *quality;
 } dt_imageio_jpeg_gui_data_t;
 
 
@@ -520,7 +520,7 @@ int set_params(dt_imageio_module_format_t *self, const void *params, const int s
   if(size != self->params_size(self)) return 1;
   const dt_imageio_jpeg_t *d = (dt_imageio_jpeg_t *)params;
   dt_imageio_jpeg_gui_data_t *g = (dt_imageio_jpeg_gui_data_t *)self->gui_data;
-  dtgtk_slider_set_value(g->quality, d->quality);
+  dt_bauhaus_slider_set(g->quality, d->quality);
   return 0;
 }
 
@@ -568,9 +568,9 @@ const char *name()
   return _("JPEG (8-bit)");
 }
 
-static void quality_changed(GtkDarktableSlider *slider, gpointer user_data)
+static void quality_changed(GtkWidget *slider, gpointer user_data)
 {
-  const int quality = (int)dtgtk_slider_get_value(slider);
+  const int quality = (int)dt_bauhaus_slider_get(slider);
   dt_conf_set_int("plugins/imageio/format/jpeg/quality", quality);
 }
 
@@ -579,12 +579,12 @@ void gui_init(dt_imageio_module_format_t *self)
   dt_imageio_jpeg_gui_data_t *g = (dt_imageio_jpeg_gui_data_t *)malloc(sizeof(dt_imageio_jpeg_gui_data_t));
   self->gui_data = g;
   // construct gui with jpeg specific options:
-  GtkWidget *box = gtk_hbox_new(FALSE, 20);
+  GtkWidget *box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 20);
   self->widget = box;
   // quality slider
-  g->quality = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR, 5, 100, 1, 95, 0));
-  dtgtk_slider_set_label(g->quality, _("quality"));
-  dtgtk_slider_set_default_value(g->quality, 95);
+  g->quality = dt_bauhaus_slider_new_with_range(NULL, 5, 100, 1, 95, 0);
+  dt_bauhaus_widget_set_label(g->quality, NULL, _("quality"));
+  dt_bauhaus_slider_set_default(g->quality, 95);
   gtk_box_pack_start(GTK_BOX(box), GTK_WIDGET(g->quality), TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(g->quality), "value-changed", G_CALLBACK(quality_changed), NULL);
   // TODO: add more options: subsample dreggn
@@ -598,7 +598,7 @@ void gui_cleanup(dt_imageio_module_format_t *self)
 void gui_reset(dt_imageio_module_format_t *self)
 {
   dt_imageio_jpeg_gui_data_t *g = (dt_imageio_jpeg_gui_data_t *)self->gui_data;
-  dtgtk_slider_set_value(g->quality, dt_conf_get_int("plugins/imageio/format/jpeg/quality"));
+  dt_bauhaus_slider_set(g->quality, dt_conf_get_int("plugins/imageio/format/jpeg/quality"));
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

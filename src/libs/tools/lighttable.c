@@ -92,7 +92,7 @@ void gui_init(dt_lib_module_t *self)
   dt_lib_tool_lighttable_t *d = (dt_lib_tool_lighttable_t *)g_malloc0(sizeof(dt_lib_tool_lighttable_t));
   self->data = (void *)d;
 
-  self->widget = gtk_hbox_new(FALSE, 2);
+  self->widget = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 2);
 
   GtkWidget *widget;
 
@@ -109,16 +109,20 @@ void gui_init(dt_lib_module_t *self)
 
 
   /* create horizontal zoom slider */
-  d->zoom = gtk_hscale_new_with_range(1, 21, 1);
+  d->zoom = gtk_scale_new_with_range(GTK_ORIENTATION_HORIZONTAL, 1, 21, 1);
   gtk_widget_set_size_request(GTK_WIDGET(d->zoom), DT_PIXEL_APPLY_DPI(140), -1);
   gtk_scale_set_draw_value(GTK_SCALE(d->zoom), FALSE);
+  gtk_range_set_increments(GTK_RANGE(d->zoom), 1, 1);
   gtk_box_pack_start(GTK_BOX(self->widget), d->zoom, TRUE, TRUE, 0);
 
   /* manual entry of the zoom level */
   d->zoom_entry = gtk_entry_new();
   gtk_entry_set_alignment(GTK_ENTRY(d->zoom_entry), 1.0);
   gtk_entry_set_max_length(GTK_ENTRY(d->zoom_entry), 2);
-  g_object_set(G_OBJECT(d->zoom_entry), "width-chars", 3, (char *)NULL);
+  gtk_entry_set_width_chars(GTK_ENTRY(d->zoom_entry), 3);
+#if GTK_CHECK_VERSION(3, 12, 0)
+  gtk_entry_set_max_width_chars(GTK_ENTRY(d->zoom_entry), 3);
+#endif
   dt_gui_key_accel_block_on_focus_connect(d->zoom_entry);
   gtk_box_pack_start(GTK_BOX(self->widget), d->zoom_entry, TRUE, TRUE, 0);
 

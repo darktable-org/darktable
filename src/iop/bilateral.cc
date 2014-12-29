@@ -336,7 +336,7 @@ void gui_init(dt_iop_module_t *self)
   dt_iop_bilateral_gui_data_t *g = (dt_iop_bilateral_gui_data_t *)self->gui_data;
   dt_iop_bilateral_params_t *p = (dt_iop_bilateral_params_t *)self->params;
 
-  self->widget = gtk_vbox_new(TRUE, DT_BAUHAUS_SPACE);
+  self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
 
   g->scale1 = dt_bauhaus_slider_new_with_range(self, 1.0, 30.0, 1.0, p->sigma[0], 1);
   g->scale3 = dt_bauhaus_slider_new_with_range(self, 0.0001, .1, 0.001, p->sigma[2], 4);

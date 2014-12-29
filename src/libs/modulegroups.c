@@ -24,7 +24,6 @@
 #include "develop/develop.h"
 #include "libs/lib.h"
 #include "gui/gtk.h"
-#include "dtgtk/tristatebutton.h"
 
 DT_MODULE(1)
 
@@ -97,7 +96,7 @@ void gui_init(dt_lib_module_t *self)
   dt_lib_modulegroups_t *d = (dt_lib_modulegroups_t *)g_malloc0(sizeof(dt_lib_modulegroups_t));
   self->data = (void *)d;
 
-  self->widget = gtk_hbox_new(TRUE, 2);
+  self->widget = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 2);
 
   dtgtk_cairo_paint_flags_t pf = CPF_STYLE_FLAT;
 
@@ -106,13 +105,13 @@ void gui_init(dt_lib_module_t *self)
   g_signal_connect(d->buttons[DT_MODULEGROUP_FAVORITES], "toggled", G_CALLBACK(_lib_modulegroups_toggle),
                    self);
   g_object_set(d->buttons[DT_MODULEGROUP_FAVORITES], "tooltip-text",
-               _("show modules explicit specified by user"), (char *)NULL);
+               _("show only your favourite modules (selected in `more modules' below)"), (char *)NULL);
 
   /* active */
   d->buttons[DT_MODULEGROUP_ACTIVE_PIPE] = dtgtk_togglebutton_new(dtgtk_cairo_paint_modulegroup_active, pf);
   g_signal_connect(d->buttons[DT_MODULEGROUP_ACTIVE_PIPE], "toggled", G_CALLBACK(_lib_modulegroups_toggle),
                    self);
-  g_object_set(d->buttons[DT_MODULEGROUP_ACTIVE_PIPE], "tooltip-text", _("the modules used in active pipe"),
+  g_object_set(d->buttons[DT_MODULEGROUP_ACTIVE_PIPE], "tooltip-text", _("show only active modules"),
                (char *)NULL);
 
   /* basic */
@@ -138,7 +137,7 @@ void gui_init(dt_lib_module_t *self)
   /* effect */
   d->buttons[DT_MODULEGROUP_EFFECT] = dtgtk_togglebutton_new(dtgtk_cairo_paint_modulegroup_effect, pf);
   g_signal_connect(d->buttons[DT_MODULEGROUP_EFFECT], "toggled", G_CALLBACK(_lib_modulegroups_toggle), self);
-  g_object_set(d->buttons[DT_MODULEGROUP_EFFECT], "tooltip-text", _("effect group"), (char *)NULL);
+  g_object_set(d->buttons[DT_MODULEGROUP_EFFECT], "tooltip-text", _("effects group"), (char *)NULL);
 
   /* minimize table height before adding the buttons */
   gtk_widget_set_size_request(self->widget, -1, -1);

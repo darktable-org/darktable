@@ -79,23 +79,23 @@ static void create_callback(GtkButton *button, gpointer user_data)
 
 void gui_init(dt_lib_module_t *self)
 {
-  self->widget = gtk_vbox_new(TRUE, 5);
+  self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_PIXEL_APPLY_DPI(5));
   self->data = calloc(1, sizeof(dt_lib_session_t));
 
   // Setup lib data
   dt_lib_session_t *lib = self->data;
 
   // Setup gui
-  self->widget = gtk_vbox_new(FALSE, 5);
+  self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_PIXEL_APPLY_DPI(5));
   GtkBox *hbox, *vbox1, *vbox2;
 
   // Session settings
-  hbox = GTK_BOX(gtk_hbox_new(FALSE, 5));
-  vbox1 = GTK_BOX(gtk_vbox_new(TRUE, 5));
-  vbox2 = GTK_BOX(gtk_vbox_new(TRUE, 5));
+  hbox = GTK_BOX(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, DT_PIXEL_APPLY_DPI(5)));
+  vbox1 = GTK_BOX(gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_PIXEL_APPLY_DPI(5)));
+  vbox2 = GTK_BOX(gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_PIXEL_APPLY_DPI(5)));
 
   lib->gui.label1 = GTK_LABEL(gtk_label_new(_("jobcode")));
-  gtk_misc_set_alignment(GTK_MISC(lib->gui.label1), 0.0, 0.5);
+  gtk_widget_set_halign(GTK_WIDGET(lib->gui.label1), GTK_ALIGN_START);
   gtk_box_pack_start(vbox1, GTK_WIDGET(lib->gui.label1), TRUE, TRUE, 0);
 
   lib->gui.entry1 = GTK_ENTRY(gtk_entry_new());

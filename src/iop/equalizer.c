@@ -58,7 +58,7 @@ typedef enum dt_iop_equalizer_channel_t
 typedef struct dt_iop_equalizer_gui_data_t
 {
   dt_draw_curve_t *minmax_curve; // curve for gui to draw
-  GtkHBox *hbox;
+  GtkBox *hbox;
   GtkDrawingArea *area;
   GtkComboBox *presets;
   GtkRadioButton *channel_button[3];
@@ -362,7 +362,7 @@ void gui_init(struct dt_iop_module_t *self)
   self->gui_data = malloc(sizeof(dt_iop_equalizer_gui_data_t));
   self->widget = gtk_label_new(_("this module will be removed in the future\nand is only here so you can "
                                  "switch it off\nand move to the new equalizer."));
-  gtk_misc_set_alignment(GTK_MISC(self->widget), 0.0f, 0.5f);
+  gtk_widget_set_halign(self->widget, GTK_ALIGN_START);
 
 #if 0
   dt_iop_equalizer_gui_data_t *c = (dt_iop_equalizer_gui_data_t *)self->gui_data;
@@ -378,13 +378,13 @@ void gui_init(struct dt_iop_module_t *self)
   c->x_move = -1;
   c->mouse_radius = 1.0/DT_IOP_EQUALIZER_BANDS;
 
-  self->widget = GTK_WIDGET(gtk_vbox_new(FALSE, 0));
+  self->widget = GTK_WIDGET(gtk_box_new(GTK_ORIENTATION_VERTICAL, 0));
   c->area = GTK_DRAWING_AREA(gtk_drawing_area_new());
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(c->area), TRUE, TRUE, 0);
   gtk_widget_set_size_request(GTK_WIDGET(c->area), 195, 195);
 
-  gtk_widget_add_events(GTK_WIDGET(c->area), GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK | GDK_LEAVE_NOTIFY_MASK);
-  g_signal_connect (G_OBJECT (c->area), "expose-event",
+  gtk_widget_add_events(GTK_WIDGET(c->area), GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK | GDK_LEAVE_NOTIFY_MASK | GDK_SCROLL_MASK);
+  g_signal_connect (G_OBJECT (c->area), "draw",
                     G_CALLBACK (dt_iop_equalizer_expose), self);
   g_signal_connect (G_OBJECT (c->area), "button-press-event",
                     G_CALLBACK (dt_iop_equalizer_button_press), self);
@@ -397,7 +397,7 @@ void gui_init(struct dt_iop_module_t *self)
   g_signal_connect (G_OBJECT (c->area), "scroll-event",
                     G_CALLBACK (dt_iop_equalizer_scrolled), self);
   // init gtk stuff
-  c->hbox = GTK_HBOX(gtk_hbox_new(FALSE, 0));
+  c->hbox = GTK_BOX(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0));
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(c->hbox), FALSE, FALSE, 0);
 
   c->channel_button[0] = GTK_RADIO_BUTTON(gtk_radio_button_new_with_label(NULL, _("luma")));
@@ -444,7 +444,7 @@ static void dt_iop_equalizer_get_params(dt_iop_equalizer_params_t *p, const int 
   }
 }
 
-static gboolean dt_iop_equalizer_expose(GtkWidget *widget, GdkEventExpose *event, gpointer user_data)
+static gboolean dt_iop_equalizer_expose(GtkWidget *widget, cairo_t *crf, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_equalizer_gui_data_t *c = (dt_iop_equalizer_gui_data_t *)self->gui_data;
@@ -595,10 +595,8 @@ static gboolean dt_iop_equalizer_expose(GtkWidget *widget, GdkEventExpose *event
   cairo_set_operator(cr, CAIRO_OPERATOR_SOURCE);
 
   cairo_destroy(cr);
-  cairo_t *cr_pixmap = gdk_cairo_create(gtk_widget_get_window(widget));
-  cairo_set_source_surface (cr_pixmap, cst, 0, 0);
-  cairo_paint(cr_pixmap);
-  cairo_destroy(cr_pixmap);
+  cairo_set_source_surface (crf, cst, 0, 0);
+  cairo_paint(crf);
   cairo_surface_destroy(cst);
   return TRUE;
 }
@@ -651,7 +649,8 @@ static gboolean dt_iop_equalizer_motion_notify(GtkWidget *widget, GdkEventMotion
   }
   gtk_widget_queue_draw(widget);
   gint x, y;
-  gdk_window_get_pointer(event->window, &x, &y, NULL);
+  gdk_window_get_device_position(event->window, gdk_device_manager_get_client_pointer(gdk_display_get_device_manager(gdk_window_get_display(event->window))), &x, &y, NULL);
+
   return TRUE;
 }
 

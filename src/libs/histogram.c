@@ -42,7 +42,7 @@ typedef struct dt_lib_histogram_t
   float color_w, button_h, button_y, button_spacing;
 } dt_lib_histogram_t;
 
-static gboolean _lib_histogram_expose_callback(GtkWidget *widget, GdkEventExpose *event, gpointer user_data);
+static gboolean _lib_histogram_draw_callback(GtkWidget *widget, cairo_t *cr, gpointer user_data);
 static gboolean _lib_histogram_motion_notify_callback(GtkWidget *widget, GdkEventMotion *event,
                                                       gpointer user_data);
 static gboolean _lib_histogram_button_press_callback(GtkWidget *widget, GdkEventButton *event,
@@ -126,12 +126,12 @@ void gui_init(dt_lib_module_t *self)
   gtk_widget_add_events(self->widget, GDK_LEAVE_NOTIFY_MASK | GDK_ENTER_NOTIFY_MASK | GDK_POINTER_MOTION_MASK
                                       | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK |
                                       //                         GDK_STRUCTURE_MASK |
-                                      GDK_SCROLL);
+                                      GDK_SCROLL | GDK_SCROLL_MASK);
 
   /* connect callbacks */
   g_object_set(G_OBJECT(self->widget), "tooltip-text", _("drag to change exposure,\ndoubleclick resets"),
                (char *)NULL);
-  g_signal_connect(G_OBJECT(self->widget), "expose-event", G_CALLBACK(_lib_histogram_expose_callback), self);
+  g_signal_connect(G_OBJECT(self->widget), "draw", G_CALLBACK(_lib_histogram_draw_callback), self);
   g_signal_connect(G_OBJECT(self->widget), "button-press-event",
                    G_CALLBACK(_lib_histogram_button_press_callback), self);
   g_signal_connect(G_OBJECT(self->widget), "button-release-event",
@@ -241,7 +241,7 @@ static void _draw_mode_toggle(cairo_t *cr, float x, float y, float width, float 
   cairo_restore(cr);
 }
 
-static gboolean _lib_histogram_expose_callback(GtkWidget *widget, GdkEventExpose *event, gpointer user_data)
+static gboolean _lib_histogram_draw_callback(GtkWidget *widget, cairo_t *crf, gpointer user_data)
 {
   dt_lib_module_t *self = (dt_lib_module_t *)user_data;
   dt_lib_histogram_t *d = (dt_lib_histogram_t *)self->data;
@@ -256,10 +256,10 @@ static gboolean _lib_histogram_expose_callback(GtkWidget *widget, GdkEventExpose
   int width = allocation.width, height = allocation.height;
   cairo_surface_t *cst = dt_cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height);
   cairo_t *cr = cairo_create(cst);
-  GtkStyle *style = gtk_rc_get_style_by_paths(gtk_settings_get_default(), NULL, "GtkWidget", GTK_TYPE_WIDGET);
-  if(!style) style = gtk_rc_get_style(widget);
-  cairo_set_source_rgb(cr, style->bg[0].red / 65535.0, style->bg[0].green / 65535.0,
-                       style->bg[0].blue / 65535.0);
+  GdkRGBA color;
+  gtk_style_context_get_background_color(gtk_widget_get_style_context(widget), gtk_widget_get_state_flags(widget), &color);
+  cairo_set_source_rgba(cr, color.red, color.green, color.blue, color.alpha);
+
   cairo_paint(cr);
 
   cairo_translate(cr, 4 * inset, inset);
@@ -424,10 +424,8 @@ static gboolean _lib_histogram_expose_callback(GtkWidget *widget, GdkEventExpose
   }
 
   cairo_destroy(cr);
-  cairo_t *cr_pixmap = gdk_cairo_create(gtk_widget_get_window(widget));
-  cairo_set_source_surface(cr_pixmap, cst, 0, 0);
-  cairo_paint(cr_pixmap);
-  cairo_destroy(cr_pixmap);
+  cairo_set_source_surface(crf, cst, 0, 0);
+  cairo_paint(crf);
   cairo_surface_destroy(cst);
   return TRUE;
 }
@@ -517,7 +515,10 @@ static gboolean _lib_histogram_motion_notify_callback(GtkWidget *widget, GdkEven
     gtk_widget_queue_draw(widget);
   }
   gint x, y; // notify gtk for motion_hint.
-  gdk_window_get_pointer(event->window, &x, &y, NULL);
+  gdk_window_get_device_position(event->window,
+                                 gdk_device_manager_get_client_pointer(
+                                     gdk_display_get_device_manager(gdk_window_get_display(event->window))),
+                                 &x, &y, NULL);
   return TRUE;
 }
 

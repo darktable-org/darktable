@@ -23,7 +23,6 @@
 #include "libs/lib.h"
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
-#include "dtgtk/label.h"
 #include <gdk/gdkkeysyms.h>
 #include "dtgtk/button.h"
 
@@ -48,12 +47,15 @@ typedef struct dt_lib_camera_t
   /** Gui part of the module */
   struct
   {
+    GtkGrid *main_grid;
     GtkWidget *label1, *label2, *label3, *label4, *label5; // Capture modes, delay, sequenced, brackets, steps
     GtkDarktableToggleButton *tb1, *tb2, *tb3;             // Delayed capture, Sequenced capture, brackets
     GtkWidget *sb1, *sb2, *sb3, *sb4;                      // delay, sequence, brackets, steps
     GtkWidget *button1;
 
-    GtkBox *pvbox1, *pvbox2;   // propertylabel,widget
+    int rows; // the number of row in the grid
+    int prop_end; // the row of the grid where to insert new properties
+
     GtkWidget *plabel, *pname; // propertylabel,widget
     GList *properties;         // a list of dt_lib_camera_property_t
 
@@ -132,10 +134,11 @@ dt_lib_camera_property_t *_lib_property_add_new(dt_lib_camera_t *lib, const gcha
       prop->name = label;
       prop->property_name = propertyname;
       prop->label = GTK_LABEL(gtk_label_new(label));
-      gtk_misc_set_alignment(GTK_MISC(prop->label), 0.0, 0.5);
+      gtk_widget_set_halign(GTK_WIDGET(prop->label), GTK_ALIGN_START);
       prop->values = GTK_COMBO_BOX(gtk_combo_box_text_new());
 
-      prop->osd = DTGTK_TOGGLEBUTTON(dtgtk_togglebutton_new(dtgtk_cairo_paint_eye, 0));
+      prop->osd = DTGTK_TOGGLEBUTTON(dtgtk_togglebutton_new(dtgtk_cairo_paint_eye, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER));
+      gtk_widget_set_size_request(GTK_WIDGET(prop->osd), DT_PIXEL_APPLY_DPI(14), -1);
       g_object_set(G_OBJECT(prop->osd), "tooltip-text", _("toggle view property in center view"),
                    (char *)NULL);
       do
@@ -259,6 +262,20 @@ static void _show_property_popupmenu_clicked(GtkWidget *widget, gpointer user_da
   gtk_menu_popup(lib->gui.properties_menu, NULL, NULL, NULL, NULL, 1, gtk_get_current_event_time());
 }
 
+static void _lib_property_add_to_gui(dt_lib_camera_property_t *prop, dt_lib_camera_t *lib)
+{
+  GtkWidget *hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, DT_PIXEL_APPLY_DPI(5));
+  gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(prop->values), TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(prop->osd), FALSE, FALSE, 0);
+  gtk_grid_attach(lib->gui.main_grid, GTK_WIDGET(prop->label), 0, lib->gui.prop_end, 1, 1);
+  gtk_grid_attach_next_to(lib->gui.main_grid, GTK_WIDGET(hbox), GTK_WIDGET(prop->label), GTK_POS_RIGHT, 1, 1);
+  g_signal_connect(G_OBJECT(prop->osd), "clicked", G_CALLBACK(_osd_button_clicked), prop);
+  gtk_widget_show_all(GTK_WIDGET(prop->label));
+  gtk_widget_show_all(GTK_WIDGET(hbox));
+  lib->gui.rows++;
+  lib->gui.prop_end++;
+}
+
 static void _add_property_button_clicked(GtkWidget *widget, gpointer user_data)
 {
   dt_lib_camera_t *lib = (dt_lib_camera_t *)user_data;
@@ -271,12 +288,8 @@ static void _add_property_button_clicked(GtkWidget *widget, gpointer user_data)
     dt_lib_camera_property_t *prop = NULL;
     if((prop = _lib_property_add_new(lib, label, property)) != NULL)
     {
-      GtkBox *hbox = GTK_BOX(gtk_hbox_new(FALSE, 0));
-      gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(prop->values), TRUE, TRUE, 0);
-      gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(prop->osd), FALSE, FALSE, 0);
-      gtk_box_pack_start(lib->gui.pvbox1, GTK_WIDGET(prop->label), TRUE, TRUE, 0);
-      gtk_box_pack_start(lib->gui.pvbox2, GTK_WIDGET(hbox), TRUE, TRUE, 0);
-      g_signal_connect(G_OBJECT(prop->osd), "clicked", G_CALLBACK(_osd_button_clicked), prop);
+      gtk_grid_insert_row(lib->gui.main_grid, lib->gui.prop_end); // make space for the new row
+      _lib_property_add_to_gui(prop, lib);
 
       gchar key[256] = { "plugins/capture/tethering/properties/" };
       g_strlcat(key, label, sizeof(key));
@@ -289,9 +302,6 @@ static void _add_property_button_clicked(GtkWidget *widget, gpointer user_data)
       /* clean entries */
       gtk_entry_set_text(GTK_ENTRY(lib->gui.plabel), "");
       gtk_entry_set_text(GTK_ENTRY(lib->gui.pname), "");
-
-      gtk_widget_show_all(GTK_WIDGET(prop->label));
-      gtk_widget_show_all(GTK_WIDGET(hbox));
     }
   }
 }
@@ -387,7 +397,6 @@ void gui_post_expose(dt_lib_module_t *self, cairo_t *cr, int32_t width, int32_t 
 
 void gui_init(dt_lib_module_t *self)
 {
-  self->widget = gtk_vbox_new(FALSE, 5);
   self->data = calloc(1, sizeof(dt_lib_camera_t));
 
   // Setup lib data
@@ -399,31 +408,34 @@ void gui_init(dt_lib_module_t *self)
   lib->data.listener->camera_property_accessibility_changed = _camera_property_accessibility_changed;
 
   // Setup gui
-  self->widget = gtk_vbox_new(FALSE, 5);
-  GtkBox *hbox, *vbox1, *vbox2;
+  lib->gui.rows = 0;
+  lib->gui.prop_end = 0;
+  self->widget = gtk_grid_new();
+  lib->gui.main_grid = GTK_GRID(self->widget);
+  gtk_grid_set_row_spacing(GTK_GRID(self->widget), DT_PIXEL_APPLY_DPI(5));
+
+  GtkBox *hbox/*, *vbox1, *vbox2*/;
 
   // Camera control
-  gtk_box_pack_start(GTK_BOX(self->widget),
-                     dtgtk_label_new(_("camera control"), DARKTABLE_LABEL_TAB | DARKTABLE_LABEL_ALIGN_RIGHT),
-                     TRUE, TRUE, 5);
-  vbox1 = GTK_BOX(gtk_vbox_new(TRUE, 0));
-  vbox2 = GTK_BOX(gtk_vbox_new(TRUE, 0));
+  GtkWidget *label = dt_ui_section_label_new(_("camera control"));
+  gtk_grid_attach(GTK_GRID(self->widget), label, lib->gui.rows++, 0, 2, 1);
 
   lib->gui.label1 = gtk_label_new(_("modes"));
   lib->gui.label2 = gtk_label_new(_("timer (s)"));
   lib->gui.label3 = gtk_label_new(_("count"));
   lib->gui.label4 = gtk_label_new(_("brackets"));
   lib->gui.label5 = gtk_label_new(_("bkt. steps"));
-  gtk_misc_set_alignment(GTK_MISC(lib->gui.label1), 0.0, 0.5);
-  gtk_misc_set_alignment(GTK_MISC(lib->gui.label2), 0.0, 0.5);
-  gtk_misc_set_alignment(GTK_MISC(lib->gui.label3), 0.0, 0.5);
-  gtk_misc_set_alignment(GTK_MISC(lib->gui.label4), 0.0, 0.5);
-  gtk_misc_set_alignment(GTK_MISC(lib->gui.label5), 0.0, 0.5);
-  gtk_box_pack_start(vbox1, GTK_WIDGET(lib->gui.label1), FALSE, FALSE, 0);
-  gtk_box_pack_start(vbox1, GTK_WIDGET(lib->gui.label2), FALSE, FALSE, 0);
-  gtk_box_pack_start(vbox1, GTK_WIDGET(lib->gui.label3), FALSE, FALSE, 0);
-  gtk_box_pack_start(vbox1, GTK_WIDGET(lib->gui.label4), FALSE, FALSE, 0);
-  gtk_box_pack_start(vbox1, GTK_WIDGET(lib->gui.label5), FALSE, FALSE, 0);
+  gtk_widget_set_halign(GTK_WIDGET(lib->gui.label1), GTK_ALIGN_START);
+  gtk_widget_set_halign(GTK_WIDGET(lib->gui.label2), GTK_ALIGN_START);
+  gtk_widget_set_halign(GTK_WIDGET(lib->gui.label3), GTK_ALIGN_START);
+  gtk_widget_set_halign(GTK_WIDGET(lib->gui.label4), GTK_ALIGN_START);
+  gtk_widget_set_halign(GTK_WIDGET(lib->gui.label5), GTK_ALIGN_START);
+
+  gtk_grid_attach(GTK_GRID(self->widget), GTK_WIDGET(lib->gui.label1), 0, lib->gui.rows++, 1, 1);
+  gtk_grid_attach(GTK_GRID(self->widget), GTK_WIDGET(lib->gui.label2), 0, lib->gui.rows++, 1, 1);
+  gtk_grid_attach(GTK_GRID(self->widget), GTK_WIDGET(lib->gui.label3), 0, lib->gui.rows++, 1, 1);
+  gtk_grid_attach(GTK_GRID(self->widget), GTK_WIDGET(lib->gui.label4), 0, lib->gui.rows++, 1, 1);
+  gtk_grid_attach(GTK_GRID(self->widget), GTK_WIDGET(lib->gui.label5), 0, lib->gui.rows++, 1, 1);
 
   // capture modes buttons
   lib->gui.tb1 = DTGTK_TOGGLEBUTTON(
@@ -433,27 +445,23 @@ void gui_init(dt_lib_module_t *self)
   lib->gui.tb3 = DTGTK_TOGGLEBUTTON(
       dtgtk_togglebutton_new(dtgtk_cairo_paint_bracket, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER));
 
-  hbox = GTK_BOX(gtk_hbox_new(TRUE, 5));
+  hbox = GTK_BOX(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, DT_PIXEL_APPLY_DPI(5)));
   gtk_box_pack_start(hbox, GTK_WIDGET(lib->gui.tb1), TRUE, TRUE, 0);
   gtk_box_pack_start(hbox, GTK_WIDGET(lib->gui.tb2), TRUE, TRUE, 0);
   gtk_box_pack_start(hbox, GTK_WIDGET(lib->gui.tb3), TRUE, TRUE, 0);
-  gtk_box_pack_start(vbox2, GTK_WIDGET(hbox), FALSE, FALSE, 0);
+  gtk_grid_attach_next_to(GTK_GRID(self->widget), GTK_WIDGET(hbox), GTK_WIDGET(lib->gui.label1), GTK_POS_RIGHT, 1, 1);
 
   lib->gui.sb1 = gtk_spin_button_new_with_range(1, 60, 1);
   lib->gui.sb2 = gtk_spin_button_new_with_range(1, 500, 1);
   lib->gui.sb3 = gtk_spin_button_new_with_range(1, 5, 1);
   lib->gui.sb4 = gtk_spin_button_new_with_range(1, 9, 1);
-  gtk_box_pack_start(vbox2, GTK_WIDGET(lib->gui.sb1), TRUE, TRUE, 0);
-  gtk_box_pack_start(vbox2, GTK_WIDGET(lib->gui.sb2), TRUE, TRUE, 0);
-  gtk_box_pack_start(vbox2, GTK_WIDGET(lib->gui.sb3), TRUE, TRUE, 0);
-  gtk_box_pack_start(vbox2, GTK_WIDGET(lib->gui.sb4), TRUE, TRUE, 0);
+  gtk_grid_attach_next_to(GTK_GRID(self->widget), GTK_WIDGET(lib->gui.sb1), GTK_WIDGET(lib->gui.label2), GTK_POS_RIGHT, 1, 1);
+  gtk_grid_attach_next_to(GTK_GRID(self->widget), GTK_WIDGET(lib->gui.sb2), GTK_WIDGET(lib->gui.label3), GTK_POS_RIGHT, 1, 1);
+  gtk_grid_attach_next_to(GTK_GRID(self->widget), GTK_WIDGET(lib->gui.sb3), GTK_WIDGET(lib->gui.label4), GTK_POS_RIGHT, 1, 1);
+  gtk_grid_attach_next_to(GTK_GRID(self->widget), GTK_WIDGET(lib->gui.sb4), GTK_WIDGET(lib->gui.label5), GTK_POS_RIGHT, 1, 1);
 
-  hbox = GTK_BOX(gtk_hbox_new(FALSE, 0));
-  gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(vbox1), FALSE, FALSE, 5);
-  gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(vbox2), TRUE, TRUE, 5);
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(hbox), FALSE, FALSE, 5);
   lib->gui.button1 = gtk_button_new_with_label(_("capture image(s)"));
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(lib->gui.button1), FALSE, FALSE, 5);
+  gtk_grid_attach(GTK_GRID(self->widget), GTK_WIDGET(lib->gui.button1), 0, lib->gui.rows++, 2, 1);
 
   g_object_set(G_OBJECT(lib->gui.tb1), "tooltip-text", _("toggle delayed capture mode"), (char *)NULL);
   g_object_set(G_OBJECT(lib->gui.tb2), "tooltip-text", _("toggle sequenced capture mode"), (char *)NULL);
@@ -484,128 +492,43 @@ void gui_init(dt_lib_module_t *self)
 
   // Camera settings
   dt_lib_camera_property_t *prop;
-  gtk_box_pack_start(GTK_BOX(self->widget),
-                     dtgtk_label_new(_("properties"), DARKTABLE_LABEL_TAB | DARKTABLE_LABEL_ALIGN_RIGHT),
-                     TRUE, TRUE, 0);
-  lib->gui.pvbox1 = GTK_BOX(gtk_vbox_new(TRUE, 0));
-  lib->gui.pvbox2 = GTK_BOX(gtk_vbox_new(TRUE, 0));
+  label = dt_ui_section_label_new(_("properties"));
+  gtk_grid_attach(GTK_GRID(self->widget), GTK_WIDGET(label), 0, lib->gui.rows++, 2, 1);
+
+  lib->gui.prop_end = lib->gui.rows;
 
   if((prop = _lib_property_add_new(lib, _("program"), "expprogram")) != NULL)
-  {
-    hbox = GTK_BOX(gtk_hbox_new(FALSE, 0));
-    gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(prop->values), TRUE, TRUE, 0);
-    gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(prop->osd), FALSE, FALSE, 0);
-    gtk_box_pack_start(lib->gui.pvbox1, GTK_WIDGET(prop->label), TRUE, TRUE, 0);
-    gtk_box_pack_start(lib->gui.pvbox2, GTK_WIDGET(hbox), TRUE, TRUE, 0);
-    g_signal_connect(G_OBJECT(prop->osd), "clicked", G_CALLBACK(_osd_button_clicked), prop);
-  }
+    _lib_property_add_to_gui(prop, lib);
 
   if((prop = _lib_property_add_new(lib, _("focus mode"), "focusmode")) != NULL)
-  {
-    hbox = GTK_BOX(gtk_hbox_new(FALSE, 0));
-    gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(prop->values), TRUE, TRUE, 0);
-    gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(prop->osd), FALSE, FALSE, 0);
-    gtk_box_pack_start(lib->gui.pvbox1, GTK_WIDGET(prop->label), TRUE, TRUE, 0);
-    gtk_box_pack_start(lib->gui.pvbox2, GTK_WIDGET(hbox), TRUE, TRUE, 0);
-    g_signal_connect(G_OBJECT(prop->osd), "clicked", G_CALLBACK(_osd_button_clicked), prop);
-  }
+    _lib_property_add_to_gui(prop, lib);
   else if((prop = _lib_property_add_new(lib, _("focus mode"), "drivemode")) != NULL)
-  {
-    hbox = GTK_BOX(gtk_hbox_new(FALSE, 0));
-    gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(prop->values), TRUE, TRUE, 0);
-    gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(prop->osd), FALSE, FALSE, 0);
-    gtk_box_pack_start(lib->gui.pvbox1, GTK_WIDGET(prop->label), TRUE, TRUE, 0);
-    gtk_box_pack_start(lib->gui.pvbox2, GTK_WIDGET(hbox), TRUE, TRUE, 0);
-    g_signal_connect(G_OBJECT(prop->osd), "clicked", G_CALLBACK(_osd_button_clicked), prop);
-  }
+    _lib_property_add_to_gui(prop, lib);
 
   if((prop = _lib_property_add_new(lib, _("aperture"), "f-number")) != NULL)
-  {
-    hbox = GTK_BOX(gtk_hbox_new(FALSE, 0));
-    gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(prop->values), TRUE, TRUE, 0);
-    gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(prop->osd), FALSE, FALSE, 0);
-    gtk_box_pack_start(lib->gui.pvbox1, GTK_WIDGET(prop->label), TRUE, TRUE, 0);
-    gtk_box_pack_start(lib->gui.pvbox2, GTK_WIDGET(hbox), TRUE, TRUE, 0);
-    g_signal_connect(G_OBJECT(prop->osd), "clicked", G_CALLBACK(_osd_button_clicked), prop);
-  }
+    _lib_property_add_to_gui(prop, lib);
   else if((prop = _lib_property_add_new(lib, _("aperture"), "aperture")) != NULL) // for Canon cameras
-  {
-    hbox = GTK_BOX(gtk_hbox_new(FALSE, 0));
-    gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(prop->values), TRUE, TRUE, 0);
-    gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(prop->osd), FALSE, FALSE, 0);
-    gtk_box_pack_start(lib->gui.pvbox1, GTK_WIDGET(prop->label), TRUE, TRUE, 0);
-    gtk_box_pack_start(lib->gui.pvbox2, GTK_WIDGET(hbox), TRUE, TRUE, 0);
-    g_signal_connect(G_OBJECT(prop->osd), "clicked", G_CALLBACK(_osd_button_clicked), prop);
-  }
+    _lib_property_add_to_gui(prop, lib);
 
   if((prop = _lib_property_add_new(lib, _("focal length"), "focallength")) != NULL)
-  {
-    hbox = GTK_BOX(gtk_hbox_new(FALSE, 0));
-    gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(prop->values), TRUE, TRUE, 0);
-    gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(prop->osd), FALSE, FALSE, 0);
-    gtk_box_pack_start(lib->gui.pvbox1, GTK_WIDGET(prop->label), TRUE, TRUE, 0);
-    gtk_box_pack_start(lib->gui.pvbox2, GTK_WIDGET(hbox), TRUE, TRUE, 0);
-    g_signal_connect(G_OBJECT(prop->osd), "clicked", G_CALLBACK(_osd_button_clicked), prop);
-  }
+    _lib_property_add_to_gui(prop, lib);
 
   if((prop = _lib_property_add_new(lib, _("shutterspeed2"), "shutterspeed2")) != NULL)
-  {
-    hbox = GTK_BOX(gtk_hbox_new(FALSE, 0));
-    gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(prop->values), TRUE, TRUE, 0);
-    gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(prop->osd), FALSE, FALSE, 0);
-    gtk_box_pack_start(lib->gui.pvbox1, GTK_WIDGET(prop->label), TRUE, TRUE, 0);
-    gtk_box_pack_start(lib->gui.pvbox2, GTK_WIDGET(hbox), TRUE, TRUE, 0);
-    g_signal_connect(G_OBJECT(prop->osd), "clicked", G_CALLBACK(_osd_button_clicked), prop);
-  }
+    _lib_property_add_to_gui(prop, lib);
   else if((prop = _lib_property_add_new(lib, _("shutterspeed"), "shutterspeed")) != NULL) // Canon, again
-  {
-    hbox = GTK_BOX(gtk_hbox_new(FALSE, 0));
-    gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(prop->values), TRUE, TRUE, 0);
-    gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(prop->osd), FALSE, FALSE, 0);
-    gtk_box_pack_start(lib->gui.pvbox1, GTK_WIDGET(prop->label), TRUE, TRUE, 0);
-    gtk_box_pack_start(lib->gui.pvbox2, GTK_WIDGET(hbox), TRUE, TRUE, 0);
-    g_signal_connect(G_OBJECT(prop->osd), "clicked", G_CALLBACK(_osd_button_clicked), prop);
-  }
+    _lib_property_add_to_gui(prop, lib);
 
   if((prop = _lib_property_add_new(lib, _("ISO"), "iso")) != NULL)
-  {
-    hbox = GTK_BOX(gtk_hbox_new(FALSE, 0));
-    gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(prop->values), TRUE, TRUE, 0);
-    gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(prop->osd), FALSE, FALSE, 0);
-    gtk_box_pack_start(lib->gui.pvbox1, GTK_WIDGET(prop->label), TRUE, TRUE, 0);
-    gtk_box_pack_start(lib->gui.pvbox2, GTK_WIDGET(hbox), TRUE, TRUE, 0);
-    g_signal_connect(G_OBJECT(prop->osd), "clicked", G_CALLBACK(_osd_button_clicked), prop);
-  }
+    _lib_property_add_to_gui(prop, lib);
 
   if((prop = _lib_property_add_new(lib, _("WB"), "whitebalance")) != NULL)
-  {
-    hbox = GTK_BOX(gtk_hbox_new(FALSE, 0));
-    gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(prop->values), TRUE, TRUE, 0);
-    gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(prop->osd), FALSE, FALSE, 0);
-    gtk_box_pack_start(lib->gui.pvbox1, GTK_WIDGET(prop->label), TRUE, TRUE, 0);
-    gtk_box_pack_start(lib->gui.pvbox2, GTK_WIDGET(hbox), TRUE, TRUE, 0);
-    g_signal_connect(G_OBJECT(prop->osd), "clicked", G_CALLBACK(_osd_button_clicked), prop);
-  }
+    _lib_property_add_to_gui(prop, lib);
 
   if((prop = _lib_property_add_new(lib, _("quality"), "imagequality")) != NULL)
-  {
-    hbox = GTK_BOX(gtk_hbox_new(FALSE, 0));
-    gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(prop->values), TRUE, TRUE, 0);
-    gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(prop->osd), FALSE, FALSE, 0);
-    gtk_box_pack_start(lib->gui.pvbox1, GTK_WIDGET(prop->label), TRUE, TRUE, 0);
-    gtk_box_pack_start(lib->gui.pvbox2, GTK_WIDGET(hbox), TRUE, TRUE, 0);
-    g_signal_connect(G_OBJECT(prop->osd), "clicked", G_CALLBACK(_osd_button_clicked), prop);
-  }
+    _lib_property_add_to_gui(prop, lib);
 
   if((prop = _lib_property_add_new(lib, _("size"), "imagesize")) != NULL)
-  {
-    hbox = GTK_BOX(gtk_hbox_new(FALSE, 0));
-    gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(prop->values), TRUE, TRUE, 0);
-    gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(prop->osd), FALSE, FALSE, 0);
-    gtk_box_pack_start(lib->gui.pvbox1, GTK_WIDGET(prop->label), TRUE, TRUE, 0);
-    gtk_box_pack_start(lib->gui.pvbox2, GTK_WIDGET(hbox), TRUE, TRUE, 0);
-    g_signal_connect(G_OBJECT(prop->osd), "clicked", G_CALLBACK(_osd_button_clicked), prop);
-  }
+    _lib_property_add_to_gui(prop, lib);
 
   /* add user widgets */
   GSList *options = dt_conf_all_string_entries("plugins/capture/tethering/properties");
@@ -625,61 +548,41 @@ void gui_init(dt_lib_module_t *self)
           if(*p == '_') *p = ' ';
 
         if((prop = _lib_property_add_new(lib, entry->key, entry->value)) != NULL)
-        {
-          hbox = GTK_BOX(gtk_hbox_new(FALSE, 0));
-          gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(prop->values), TRUE, TRUE, 0);
-          gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(prop->osd), FALSE, FALSE, 0);
-          gtk_box_pack_start(lib->gui.pvbox1, GTK_WIDGET(prop->label), TRUE, TRUE, 0);
-          gtk_box_pack_start(lib->gui.pvbox2, GTK_WIDGET(hbox), TRUE, TRUE, 0);
-          g_signal_connect(G_OBJECT(prop->osd), "clicked", G_CALLBACK(_osd_button_clicked), prop);
-        }
+          _lib_property_add_to_gui(prop, lib);
       } while((item = g_slist_next(item)) != NULL);
     }
   }
-
-
-  hbox = GTK_BOX(gtk_hbox_new(FALSE, 0));
-  gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(lib->gui.pvbox1), FALSE, FALSE, 5);
-  gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(lib->gui.pvbox2), TRUE, TRUE, 5);
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(hbox), FALSE, FALSE, 5);
 
   /* build the propertymenu */
   dt_camctl_camera_build_property_menu(darktable.camctl, NULL, &lib->gui.properties_menu,
                                        G_CALLBACK(_property_choice_callback), lib);
 
   // user specified properties
-  gtk_box_pack_start(
-      GTK_BOX(self->widget),
-      dtgtk_label_new(_("additional properties"), DARKTABLE_LABEL_TAB | DARKTABLE_LABEL_ALIGN_RIGHT), TRUE,
-      TRUE, 5);
-  vbox1 = GTK_BOX(gtk_vbox_new(TRUE, 0));
-  vbox2 = GTK_BOX(gtk_vbox_new(TRUE, 0));
+  label = dt_ui_section_label_new(_("additional properties"));
+  gtk_grid_attach(GTK_GRID(self->widget), GTK_WIDGET(label), 0, lib->gui.rows++, 2, 1);
 
-  gtk_box_pack_start(vbox1, GTK_WIDGET(gtk_label_new(_("label"))), TRUE, TRUE, 0);
+  label = gtk_label_new(_("label"));
   lib->gui.plabel = gtk_entry_new();
   dt_gui_key_accel_block_on_focus_connect(lib->gui.plabel);
-  gtk_box_pack_start(vbox2, GTK_WIDGET(lib->gui.plabel), TRUE, TRUE, 0);
+  gtk_grid_attach(GTK_GRID(self->widget), GTK_WIDGET(label), 0, lib->gui.rows++, 1, 1);
+  gtk_grid_attach_next_to(GTK_GRID(self->widget), GTK_WIDGET(lib->gui.plabel), GTK_WIDGET(label), GTK_POS_RIGHT, 1, 1);
 
-  hbox = GTK_BOX(gtk_hbox_new(FALSE, 0));
-  gtk_box_pack_start(vbox1, GTK_WIDGET(gtk_label_new(_("property"))), TRUE, TRUE, 0);
+  hbox = GTK_BOX(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, DT_PIXEL_APPLY_DPI(5)));
+  label = gtk_label_new(_("property"));
   GtkWidget *widget = gtk_button_new_with_label("O");
   g_signal_connect(G_OBJECT(widget), "clicked", G_CALLBACK(_show_property_popupmenu_clicked), lib);
   lib->gui.pname = gtk_entry_new();
   dt_gui_key_accel_block_on_focus_connect(lib->gui.pname);
   gtk_box_pack_start(hbox, GTK_WIDGET(lib->gui.pname), TRUE, TRUE, 0);
   gtk_box_pack_start(hbox, GTK_WIDGET(widget), FALSE, FALSE, 0);
-  gtk_box_pack_start(vbox2, GTK_WIDGET(hbox), TRUE, TRUE, 0);
+  gtk_grid_attach(GTK_GRID(self->widget), GTK_WIDGET(label), 0, lib->gui.rows++, 1, 1);
+  gtk_grid_attach_next_to(GTK_GRID(self->widget), GTK_WIDGET(hbox), GTK_WIDGET(label), GTK_POS_RIGHT, 1, 1);
 
-  hbox = GTK_BOX(gtk_hbox_new(FALSE, 0));
-  gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(vbox1), FALSE, FALSE, 5);
-  gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(vbox2), TRUE, TRUE, 5);
+
   widget = gtk_button_new_with_label(_("add user property"));
   g_signal_connect(G_OBJECT(widget), "clicked", G_CALLBACK(_add_property_button_clicked), lib);
   gtk_widget_show(widget);
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(hbox), FALSE, FALSE, 5);
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(widget), TRUE, TRUE, 5);
-
-
+  gtk_grid_attach(GTK_GRID(self->widget), GTK_WIDGET(widget), 0, lib->gui.rows++, 2, 1);
 
   // Get camera model name
   lib->data.camera_model = dt_camctl_camera_get_model(darktable.camctl, NULL);

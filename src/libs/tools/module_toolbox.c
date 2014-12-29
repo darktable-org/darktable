@@ -62,7 +62,7 @@ void gui_init(dt_lib_module_t *self)
   self->data = (void *)d;
 
   /* the toolbar container */
-  d->container = self->widget = gtk_hbox_new(FALSE, 10);
+  d->container = self->widget = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 10);
 
   /* setup proxy */
   darktable.view_manager->proxy.module_toolbox.module = self;

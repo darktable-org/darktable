@@ -30,6 +30,7 @@
 #include "control/control.h"
 #include "control/conf.h"
 #include "gui/accelerators.h"
+#include "dtgtk/drawingarea.h"
 #include "gui/gtk.h"
 #include "gui/draw.h"
 #include "gui/presets.h"
@@ -479,7 +480,7 @@ static void dt_iop_lowlight_get_params(dt_iop_lowlight_params_t *p, const double
   }
 }
 
-static gboolean lowlight_expose(GtkWidget *widget, GdkEventExpose *event, gpointer user_data)
+static gboolean lowlight_draw(GtkWidget *widget, cairo_t *crf, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_lowlight_gui_data_t *c = (dt_iop_lowlight_gui_data_t *)self->gui_data;
@@ -655,10 +656,8 @@ static gboolean lowlight_expose(GtkWidget *widget, GdkEventExpose *event, gpoint
 
 
   cairo_destroy(cr);
-  cairo_t *cr_pixmap = gdk_cairo_create(gtk_widget_get_window(widget));
-  cairo_set_source_surface(cr_pixmap, cst, 0, 0);
-  cairo_paint(cr_pixmap);
-  cairo_destroy(cr_pixmap);
+  cairo_set_source_surface(crf, cst, 0, 0);
+  cairo_paint(crf);
   cairo_surface_destroy(cst);
   return TRUE;
 }
@@ -713,7 +712,10 @@ static gboolean lowlight_motion_notify(GtkWidget *widget, GdkEventMotion *event,
   }
   gtk_widget_queue_draw(widget);
   gint x, y;
-  gdk_window_get_pointer(event->window, &x, &y, NULL);
+  gdk_window_get_device_position(event->window,
+                                 gdk_device_manager_get_client_pointer(
+                                     gdk_display_get_device_manager(gdk_window_get_display(event->window))),
+                                 &x, &y, NULL);
   return TRUE;
 }
 
@@ -811,18 +813,16 @@ void gui_init(struct dt_iop_module_t *self)
   c->x_move = -1;
   c->mouse_radius = 1.0 / DT_IOP_LOWLIGHT_BANDS;
 
-  self->widget = gtk_vbox_new(FALSE, DT_BAUHAUS_SPACE);
+  self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
 
-  int panel_width = dt_conf_get_int("panel_width") * 0.95;
-  c->area = GTK_DRAWING_AREA(gtk_drawing_area_new());
-  gtk_widget_set_size_request(GTK_WIDGET(c->area), panel_width, panel_width * 0.75);
+  c->area = GTK_DRAWING_AREA(dtgtk_drawing_area_new_with_aspect_ratio(0.75));
 
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(c->area), FALSE, FALSE, 0);
 
   gtk_widget_add_events(GTK_WIDGET(c->area), GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK
                                              | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK
-                                             | GDK_LEAVE_NOTIFY_MASK);
-  g_signal_connect(G_OBJECT(c->area), "expose-event", G_CALLBACK(lowlight_expose), self);
+                                             | GDK_LEAVE_NOTIFY_MASK | GDK_SCROLL_MASK);
+  g_signal_connect(G_OBJECT(c->area), "draw", G_CALLBACK(lowlight_draw), self);
   g_signal_connect(G_OBJECT(c->area), "button-press-event", G_CALLBACK(lowlight_button_press), self);
   g_signal_connect(G_OBJECT(c->area), "button-release-event", G_CALLBACK(lowlight_button_release), self);
   g_signal_connect(G_OBJECT(c->area), "motion-notify-event", G_CALLBACK(lowlight_motion_notify), self);

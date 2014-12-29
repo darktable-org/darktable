@@ -5,35 +5,33 @@
 	<xsl:variable name="lowercase" select="'abcdefghijklmnopqrstuvwxyz'" />
 	<xsl:variable name="uppercase" select="'ABCDEFGHIJKLMNOPQRSTUVWXYZ'" />
 	<!-- The start of the gui generating functions -->
-	<xsl:variable name="tab_start"> (GtkWidget *dialog, GtkWidget *tab, void (*hardcoded_part)(GtkWidget *vbox1, GtkWidget *vbox2))
+	<xsl:variable name="tab_start"> (GtkWidget *dialog, GtkWidget *tab, void (*hardcoded_part)(GtkWidget *grid))
 {
   GtkWidget *widget, *label, *labelev, *viewport;
-  GtkRequisition size;
-  GtkWidget *hbox = gtk_hbox_new(5, FALSE);
-  GtkWidget *vbox1 = gtk_vbox_new(5, TRUE);
-  GtkWidget *vbox2 = gtk_vbox_new(5, TRUE);
+  GtkWidget *grid = gtk_grid_new();
+  gtk_grid_set_row_spacing(GTK_GRID(grid), DT_PIXEL_APPLY_DPI(5));
+  gtk_grid_set_column_spacing(GTK_GRID(grid), DT_PIXEL_APPLY_DPI(5));
+  gtk_grid_set_row_homogeneous(GTK_GRID(grid), TRUE);
+  gtk_widget_set_valign(grid, GTK_ALIGN_START);
+  int line = 0;
   char tooltip[1024];
-  gtk_box_pack_start(GTK_BOX(hbox), vbox1, FALSE, FALSE, 0);
-  gtk_box_pack_start(GTK_BOX(hbox), vbox2, FALSE, FALSE, 0);
-  GtkWidget *alignment = gtk_alignment_new(0.5, 0.0, 1.0, 0.0);
-  gtk_alignment_set_padding(GTK_ALIGNMENT(alignment), 20, 20, 20, 20);
   GtkWidget *scroll = gtk_scrolled_window_new(NULL, NULL);
   gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(scroll), GTK_POLICY_NEVER, GTK_POLICY_AUTOMATIC);
+  gtk_widget_set_margin_top(scroll, DT_PIXEL_APPLY_DPI(20));
+  gtk_widget_set_margin_bottom(scroll, DT_PIXEL_APPLY_DPI(20));
+  gtk_widget_set_margin_start(scroll, DT_PIXEL_APPLY_DPI(20));
+  gtk_widget_set_margin_end(scroll, DT_PIXEL_APPLY_DPI(20));
   viewport = gtk_viewport_new(NULL, NULL);
   gtk_viewport_set_shadow_type(GTK_VIEWPORT(viewport), GTK_SHADOW_NONE); // doesn't seem to work from gtkrc
-  gtk_container_add(GTK_CONTAINER(alignment), scroll);
   gtk_container_add(GTK_CONTAINER(scroll), viewport);
-  gtk_container_add(GTK_CONTAINER(viewport), hbox);
+  gtk_container_add(GTK_CONTAINER(viewport), grid);
 </xsl:variable>
 
   <xsl:variable name="tab_end">
   if(hardcoded_part)
-    (*hardcoded_part)(vbox1, vbox2);
+    (*hardcoded_part)(grid);
 
   gtk_widget_show_all(tab);
-
-  gtk_widget_size_request(viewport, &amp;size);
-  gtk_widget_set_size_request(scroll, size.width, size.height);
 }
 </xsl:variable>
 
@@ -84,7 +82,7 @@
 	<!-- preferences tabs -->
 	<!-- gui -->
 
-	<xsl:text>&#xA;static void&#xA;init_tab_gui</xsl:text><xsl:value-of select="$tab_start"/><xsl:text>  gtk_notebook_append_page(GTK_NOTEBOOK(tab), alignment, gtk_label_new(_("GUI options")));&#xA;</xsl:text>
+	<xsl:text>&#xA;static void&#xA;init_tab_gui</xsl:text><xsl:value-of select="$tab_start"/><xsl:text>  gtk_notebook_append_page(GTK_NOTEBOOK(tab), scroll, gtk_label_new(_("GUI options")));&#xA;</xsl:text>
 
 	<xsl:for-each select="./dtconfiglist/dtconfig[@prefs='gui']">
 		<xsl:apply-templates select="." mode="tab_block"/>
@@ -93,7 +91,7 @@
 
 	<!-- core -->
 
-	<xsl:text>&#xA;static void&#xA;init_tab_core</xsl:text><xsl:value-of select="$tab_start"/><xsl:text>  gtk_notebook_append_page(GTK_NOTEBOOK(tab), alignment, gtk_label_new(_("core options")));&#xA;</xsl:text>
+	<xsl:text>&#xA;static void&#xA;init_tab_core</xsl:text><xsl:value-of select="$tab_start"/><xsl:text>  gtk_notebook_append_page(GTK_NOTEBOOK(tab), scroll, gtk_label_new(_("core options")));&#xA;</xsl:text>
 
 	<xsl:for-each select="./dtconfiglist/dtconfig[@prefs='core']">
 		<xsl:if test="name != 'opencl' or $HAVE_OPENCL=1">
@@ -103,7 +101,7 @@
 	<xsl:value-of select="$tab_end" />
 
         <!-- session -->
-	<xsl:text>&#xA;static void&#xA;init_tab_session</xsl:text><xsl:value-of select="$tab_start"/><xsl:text>  gtk_notebook_append_page(GTK_NOTEBOOK(tab), alignment, gtk_label_new(_("session options")));&#xA;</xsl:text>
+	<xsl:text>&#xA;static void&#xA;init_tab_session</xsl:text><xsl:value-of select="$tab_start"/><xsl:text>  gtk_notebook_append_page(GTK_NOTEBOOK(tab), scroll, gtk_label_new(_("session options")));&#xA;</xsl:text>
 
 	<xsl:for-each select="./dtconfiglist/dtconfig[@prefs='session']">
 	        <xsl:apply-templates select="." mode="tab_block"/>
@@ -121,7 +119,7 @@
 	<xsl:text>
   {
     label = gtk_label_new(_("</xsl:text><xsl:value-of select="shortdescription"/><xsl:text>"));
-    gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
+    gtk_widget_set_halign(label, GTK_ALIGN_START);
     labelev = gtk_event_box_new();
     gtk_widget_add_events(labelev, GDK_BUTTON_PRESS_MASK);
     gtk_container_add(GTK_CONTAINER(labelev), label);
@@ -138,8 +136,8 @@
                 <xsl:text>&#xA;      g_object_set(widget, "tooltip-text", _("not available on this system"), (char *)NULL);</xsl:text>
 	</xsl:if>
 	<xsl:text>
-    gtk_box_pack_start(GTK_BOX(vbox1), labelev, FALSE, FALSE, 0);
-    gtk_box_pack_start(GTK_BOX(vbox2), widget, FALSE, FALSE, 0);
+    gtk_grid_attach(GTK_GRID(grid), labelev, 0, line++, 1, 1);
+    gtk_grid_attach_next_to(GTK_GRID(grid), widget, labelev, GTK_POS_RIGHT, 1, 1);
     g_signal_connect(G_OBJECT(labelev), "button-press-event", G_CALLBACK(reset_widget_</xsl:text><xsl:value-of select="generate-id(.)"/><xsl:text>), (gpointer)widget);
   }
 </xsl:text>
@@ -219,6 +217,8 @@
 <!-- TAB -->
 	<xsl:template match="dtconfig[type='string']" mode="tab">
 		<xsl:text>    widget = gtk_entry_new();
+		gtk_widget_set_hexpand(widget, TRUE);
+		gtk_widget_set_halign(widget, GTK_ALIGN_FILL);
     gtk_entry_set_text(GTK_ENTRY(widget), dt_conf_get_string("</xsl:text><xsl:value-of select="name"/><xsl:text>"));
     g_signal_connect(G_OBJECT(widget), "activate", G_CALLBACK(preferences_callback_</xsl:text><xsl:value-of select="generate-id(.)"/><xsl:text>), NULL);
     g_signal_connect(G_OBJECT(dialog), "response", G_CALLBACK(preferences_response_callback_</xsl:text><xsl:value-of select="generate-id(.)"/><xsl:text>), widget);

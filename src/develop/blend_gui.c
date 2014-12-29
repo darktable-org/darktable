@@ -31,12 +31,7 @@
 #include "gui/gtk.h"
 #include "gui/presets.h"
 #include "dtgtk/button.h"
-#include "dtgtk/icon.h"
-#include "dtgtk/tristatebutton.h"
-#include "dtgtk/slider.h"
-#include "dtgtk/tristatebutton.h"
 #include "dtgtk/gradientslider.h"
-#include "dtgtk/label.h"
 
 #include <strings.h>
 #include <assert.h>
@@ -790,7 +785,7 @@ static void _blendop_masks_polarity_callback(GtkToggleButton *togglebutton, dt_i
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
-static gboolean _blendop_blendif_expose(GtkWidget *widget, GdkEventExpose *event, dt_iop_module_t *module)
+static gboolean _blendop_blendif_draw(GtkWidget *widget, cairo_t *cr, dt_iop_module_t *module)
 {
   if(darktable.gui->reset) return FALSE;
 
@@ -936,11 +931,11 @@ void dt_iop_gui_update_blendif(dt_iop_module_t *module)
 }
 
 
-void dt_iop_gui_init_blendif(GtkVBox *blendw, dt_iop_module_t *module)
+void dt_iop_gui_init_blendif(GtkBox *blendw, dt_iop_module_t *module)
 {
   dt_iop_gui_blend_data_t *bd = (dt_iop_gui_blend_data_t *)module->blend_data;
 
-  bd->blendif_box = GTK_VBOX(gtk_vbox_new(FALSE, DT_BAUHAUS_SPACE));
+  bd->blendif_box = GTK_BOX(gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE));
 
   /* create and add blendif support if module supports it */
   if(bd->blendif_support)
@@ -1059,18 +1054,19 @@ void dt_iop_gui_init_blendif(GtkVBox *blendw, dt_iop_module_t *module)
                        // here
     }
 
-    GtkWidget *uplabel = gtk_hbox_new(FALSE, 0);
-    GtkWidget *lowlabel = gtk_hbox_new(FALSE, 0);
-    GtkWidget *upslider = gtk_hbox_new(FALSE, 0);
-    GtkWidget *lowslider = gtk_hbox_new(FALSE, 0);
-    GtkWidget *notebook = gtk_vbox_new(FALSE, 0);
-    GtkWidget *header = gtk_hbox_new(FALSE, 0);
+    GtkWidget *uplabel = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+    GtkWidget *lowlabel = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+    GtkWidget *upslider = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, DT_PIXEL_APPLY_DPI(5));
+    GtkWidget *lowslider = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, DT_PIXEL_APPLY_DPI(5));
+    GtkWidget *notebook = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
+    GtkWidget *header = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, DT_PIXEL_APPLY_DPI(5));
 
     bd->channel_tabs = GTK_NOTEBOOK(gtk_notebook_new());
 
     for(int ch = 0; ch < maxchannels; ch++)
     {
-      gtk_notebook_append_page(GTK_NOTEBOOK(bd->channel_tabs), GTK_WIDGET(gtk_hbox_new(FALSE, 0)),
+      gtk_notebook_append_page(GTK_NOTEBOOK(bd->channel_tabs),
+                               GTK_WIDGET(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0)),
                                gtk_label_new(labels[ch]));
       g_object_set(G_OBJECT(gtk_notebook_get_tab_label(bd->channel_tabs,
                                                        gtk_notebook_get_nth_page(bd->channel_tabs, -1))),
@@ -1079,7 +1075,6 @@ void dt_iop_gui_init_blendif(GtkVBox *blendw, dt_iop_module_t *module)
 
     gtk_widget_show_all(GTK_WIDGET(gtk_notebook_get_nth_page(bd->channel_tabs, bd->tab)));
     gtk_notebook_set_current_page(GTK_NOTEBOOK(bd->channel_tabs), bd->tab);
-    g_object_set(G_OBJECT(bd->channel_tabs), "homogeneous", TRUE, (char *)NULL);
     gtk_notebook_set_scrollable(bd->channel_tabs, TRUE);
 
     gtk_box_pack_start(GTK_BOX(notebook), GTK_WIDGET(bd->channel_tabs), FALSE, FALSE, 0);
@@ -1089,11 +1084,13 @@ void dt_iop_gui_init_blendif(GtkVBox *blendw, dt_iop_module_t *module)
     g_object_set(G_OBJECT(bd->colorpicker), "tooltip-text", _("pick GUI color from image"), (char *)NULL);
     gtk_widget_set_size_request(GTK_WIDGET(bd->colorpicker), bs, bs);
 
-    GtkWidget *res = dtgtk_button_new(dtgtk_cairo_paint_reset, CPF_STYLE_FLAT);
+    GtkWidget *res = dtgtk_button_new(dtgtk_cairo_paint_reset, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER);
     g_object_set(G_OBJECT(res), "tooltip-text", _("reset blend mask settings"), (char *)NULL);
+    gtk_widget_set_size_request(res, bs, bs);
 
-    GtkWidget *inv = dtgtk_button_new(dtgtk_cairo_paint_invert, CPF_STYLE_FLAT);
+    GtkWidget *inv = dtgtk_button_new(dtgtk_cairo_paint_invert, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER);
     g_object_set(G_OBJECT(inv), "tooltip-text", _("invert all channel's polarities"), (char *)NULL);
+    gtk_widget_set_size_request(inv, bs, bs);
 
     gtk_box_pack_start(GTK_BOX(header), GTK_WIDGET(notebook), TRUE, TRUE, 0);
     gtk_box_pack_end(GTK_BOX(header), GTK_WIDGET(res), FALSE, FALSE, 0);
@@ -1147,9 +1144,9 @@ void dt_iop_gui_init_blendif(GtkVBox *blendw, dt_iop_module_t *module)
     g_object_set(output, "tooltip-text", ttoutput, (char *)NULL);
     g_object_set(input, "tooltip-text", ttinput, (char *)NULL);
 
-    g_signal_connect(G_OBJECT(bd->lower_slider), "expose-event", G_CALLBACK(_blendop_blendif_expose), module);
+    g_signal_connect(G_OBJECT(bd->lower_slider), "draw", G_CALLBACK(_blendop_blendif_draw), module);
 
-    g_signal_connect(G_OBJECT(bd->upper_slider), "expose-event", G_CALLBACK(_blendop_blendif_expose), module);
+    g_signal_connect(G_OBJECT(bd->upper_slider), "draw", G_CALLBACK(_blendop_blendif_draw), module);
 
     g_signal_connect(G_OBJECT(bd->channel_tabs), "switch_page", G_CALLBACK(_blendop_blendif_tab_switch), bd);
 
@@ -1236,11 +1233,11 @@ void dt_iop_gui_update_masks(dt_iop_module_t *module)
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(bd->masks_brush), b5);
 }
 
-void dt_iop_gui_init_masks(GtkVBox *blendw, dt_iop_module_t *module)
+void dt_iop_gui_init_masks(GtkBox *blendw, dt_iop_module_t *module)
 {
   dt_iop_gui_blend_data_t *bd = (dt_iop_gui_blend_data_t *)module->blend_data;
 
-  bd->masks_box = GTK_VBOX(gtk_vbox_new(FALSE, DT_BAUHAUS_SPACE));
+  bd->masks_box = GTK_BOX(gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE));
 
   /* create and add masks support if module supports it */
   if(bd->masks_support)
@@ -1250,8 +1247,8 @@ void dt_iop_gui_init_masks(GtkVBox *blendw, dt_iop_module_t *module)
     bd->masks_combo_ids = NULL;
     bd->masks_shown = DT_MASKS_EDIT_OFF;
 
-    GtkWidget *hbox = gtk_hbox_new(FALSE, 0);
-    GtkWidget *abox = gtk_hbox_new(FALSE, 0);
+    GtkWidget *hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+    GtkWidget *abox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
 
     bd->masks_combo = dt_bauhaus_combobox_new(module);
     dt_bauhaus_widget_set_label(bd->masks_combo, _("blend"), _("drawn mask"));
@@ -1854,24 +1851,24 @@ void dt_iop_gui_init_blending(GtkWidget *iopw, dt_iop_module_t *module)
     gtk_widget_set_size_request(GTK_WIDGET(bd->suppress), bs, bs);
     g_signal_connect(G_OBJECT(bd->suppress), "toggled", G_CALLBACK(_blendop_blendif_suppress_toggled), module);
 
-    GtkWidget *box = gtk_vbox_new(FALSE, DT_BAUHAUS_SPACE);
+    GtkWidget *box = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
     gtk_box_pack_start(GTK_BOX(iopw), GTK_WIDGET(box), TRUE, TRUE, 0);
 
     gtk_box_pack_start(GTK_BOX(box), GTK_WIDGET(bd->masks_modes_combo), TRUE, TRUE, 0);
 
-    bd->top_box = GTK_VBOX(gtk_vbox_new(FALSE, DT_BAUHAUS_SPACE));
+    bd->top_box = GTK_BOX(gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE));
     gtk_box_pack_start(GTK_BOX(bd->top_box), bd->blend_modes_combo, TRUE, TRUE, 0);
     gtk_box_pack_start(GTK_BOX(bd->top_box), bd->opacity_slider, TRUE, TRUE, 0);
     gtk_box_pack_start(GTK_BOX(box), GTK_WIDGET(bd->top_box), TRUE, TRUE, 0);
 
-    dt_iop_gui_init_masks(GTK_VBOX(iopw), module);
-    dt_iop_gui_init_blendif(GTK_VBOX(iopw), module);
+    dt_iop_gui_init_masks(GTK_BOX(iopw), module);
+    dt_iop_gui_init_blendif(GTK_BOX(iopw), module);
 
-    GtkWidget *hbox = gtk_hbox_new(FALSE, 0);
+    GtkWidget *hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
     gtk_box_pack_start(GTK_BOX(hbox), bd->radius_slider, TRUE, TRUE, 0);
     gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(bd->suppress), FALSE, FALSE, 0);
     gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(bd->showmask), FALSE, FALSE, 0);
-    bd->bottom_box = GTK_VBOX(gtk_vbox_new(FALSE, DT_BAUHAUS_SPACE));
+    bd->bottom_box = GTK_BOX(gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE));
     gtk_box_pack_start(GTK_BOX(bd->bottom_box), GTK_WIDGET(bd->masks_combine_combo), TRUE, TRUE, 0);
     gtk_box_pack_start(GTK_BOX(bd->bottom_box), GTK_WIDGET(bd->masks_invert_combo), TRUE, TRUE, 0);
     gtk_box_pack_start(GTK_BOX(bd->bottom_box), hbox, TRUE, TRUE, 0);

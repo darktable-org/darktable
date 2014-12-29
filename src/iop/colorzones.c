@@ -25,6 +25,7 @@
 #include "develop/develop.h"
 #include "control/control.h"
 #include "control/conf.h"
+#include "dtgtk/drawingarea.h"
 #include "gui/gtk.h"
 #include "gui/draw.h"
 #include "gui/presets.h"
@@ -74,7 +75,7 @@ typedef struct dt_iop_colorzones_params1_t
 typedef struct dt_iop_colorzones_gui_data_t
 {
   dt_draw_curve_t *minmax_curve; // curve for gui to draw
-  GtkHBox *hbox;
+  GtkBox *hbox;
   GtkDrawingArea *area;
   GtkNotebook *channel_tabs;
   GtkWidget *select_by;
@@ -567,7 +568,7 @@ static void dt_iop_colorzones_get_params(dt_iop_colorzones_params_t *p, const in
   }
 }
 
-static gboolean colorzones_expose(GtkWidget *widget, GdkEventExpose *event, gpointer user_data)
+static gboolean colorzones_draw(GtkWidget *widget, cairo_t *crf, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_colorzones_gui_data_t *c = (dt_iop_colorzones_gui_data_t *)self->gui_data;
@@ -595,10 +596,17 @@ static gboolean colorzones_expose(GtkWidget *widget, GdkEventExpose *event, gpoi
   cairo_surface_t *cst = dt_cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height);
   cairo_t *cr = cairo_create(cst);
   // clear bg, match color of the notebook tabs:
-  GtkStyle *style = gtk_widget_get_style(GTK_WIDGET(c->channel_tabs));
-  cairo_set_source_rgb(cr, style->bg[GTK_STATE_NORMAL].red / 65535.0f,
-                       style->bg[GTK_STATE_NORMAL].green / 65535.0f,
-                       style->bg[GTK_STATE_NORMAL].blue / 65535.0f);
+  GdkRGBA color;
+  GtkStyleContext *context = gtk_widget_get_style_context(widget);
+  gboolean color_found = gtk_style_context_lookup_color (context, "selected_bg_color", &color);
+  if(!color_found)
+  {
+    color.red = 1.0;
+    color.green = 0.0;
+    color.blue = 0.0;
+    color.alpha = 1.0;
+  }
+  cairo_set_source_rgba(cr, color.red, color.green, color.blue, color.alpha);
   cairo_paint(cr);
 
   cairo_translate(cr, inset, inset);
@@ -852,10 +860,8 @@ static gboolean colorzones_expose(GtkWidget *widget, GdkEventExpose *event, gpoi
   cairo_set_operator(cr, CAIRO_OPERATOR_SOURCE);
 
   cairo_destroy(cr);
-  cairo_t *cr_pixmap = gdk_cairo_create(gtk_widget_get_window(widget));
-  cairo_set_source_surface(cr_pixmap, cst, 0, 0);
-  cairo_paint(cr_pixmap);
-  cairo_destroy(cr_pixmap);
+  cairo_set_source_surface(crf, cst, 0, 0);
+  cairo_paint(crf);
   cairo_surface_destroy(cst);
   return TRUE;
 }
@@ -1060,26 +1066,26 @@ void gui_init(struct dt_iop_module_t *self)
   c->x_move = -1;
   c->mouse_radius = 1.0 / DT_IOP_COLORZONES_BANDS;
 
-  self->widget = gtk_vbox_new(FALSE, DT_BAUHAUS_SPACE);
+  self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
 
   // tabs
-  GtkWidget *hbox = gtk_hbox_new(FALSE, 0);
-  GtkWidget *vbox = gtk_vbox_new(FALSE, 0);
+  GtkWidget *hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+  GtkWidget *vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
   gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, FALSE, 0);
 
   c->channel_tabs = GTK_NOTEBOOK(gtk_notebook_new());
 
-  gtk_notebook_append_page(GTK_NOTEBOOK(c->channel_tabs), GTK_WIDGET(gtk_hbox_new(FALSE, 0)),
+  gtk_notebook_append_page(GTK_NOTEBOOK(c->channel_tabs),
+                           GTK_WIDGET(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0)),
                            gtk_label_new(_("lightness")));
-  gtk_notebook_append_page(GTK_NOTEBOOK(c->channel_tabs), GTK_WIDGET(gtk_hbox_new(FALSE, 0)),
+  gtk_notebook_append_page(GTK_NOTEBOOK(c->channel_tabs),
+                           GTK_WIDGET(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0)),
                            gtk_label_new(_("saturation")));
-  gtk_notebook_append_page(GTK_NOTEBOOK(c->channel_tabs), GTK_WIDGET(gtk_hbox_new(FALSE, 0)),
-                           gtk_label_new(_("hue")));
+  gtk_notebook_append_page(GTK_NOTEBOOK(c->channel_tabs),
+                           GTK_WIDGET(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0)), gtk_label_new(_("hue")));
 
   gtk_widget_show_all(GTK_WIDGET(gtk_notebook_get_nth_page(c->channel_tabs, c->channel)));
   gtk_notebook_set_current_page(GTK_NOTEBOOK(c->channel_tabs), c->channel);
-
-  g_object_set(G_OBJECT(c->channel_tabs), "homogeneous", TRUE, (char *)NULL);
 
   gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(c->channel_tabs), FALSE, FALSE, 0);
   GtkWidget *tb = dtgtk_togglebutton_new(dtgtk_cairo_paint_colorpicker, CPF_STYLE_FLAT);
@@ -1091,11 +1097,9 @@ void gui_init(struct dt_iop_module_t *self)
   g_signal_connect(G_OBJECT(c->channel_tabs), "switch_page", G_CALLBACK(colorzones_tab_switch), self);
 
   // the nice graph
-  const int panel_width = dt_conf_get_int("panel_width") * 0.95;
-  c->area = GTK_DRAWING_AREA(gtk_drawing_area_new());
+  c->area = GTK_DRAWING_AREA(dtgtk_drawing_area_new_with_aspect_ratio(9.0 / 16.0));
   gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(c->area), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(vbox), TRUE, TRUE, 5);
-  gtk_widget_set_size_request(GTK_WIDGET(c->area), -1, panel_width * (9.0 / 16.0));
 
   c->strength = dt_bauhaus_slider_new_with_range(self, -200, 200.0, 10.0, p->strength, 1);
   dt_bauhaus_slider_set_format(c->strength, "%.01f%%");
@@ -1118,8 +1122,8 @@ void gui_init(struct dt_iop_module_t *self)
 
   gtk_widget_add_events(GTK_WIDGET(c->area), GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK
                                              | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK
-                                             | GDK_LEAVE_NOTIFY_MASK);
-  g_signal_connect(G_OBJECT(c->area), "expose-event", G_CALLBACK(colorzones_expose), self);
+                                             | GDK_LEAVE_NOTIFY_MASK | GDK_SCROLL_MASK);
+  g_signal_connect(G_OBJECT(c->area), "draw", G_CALLBACK(colorzones_draw), self);
   g_signal_connect(G_OBJECT(c->area), "button-press-event", G_CALLBACK(colorzones_button_press), self);
   g_signal_connect(G_OBJECT(c->area), "button-release-event", G_CALLBACK(colorzones_button_release), self);
   g_signal_connect(G_OBJECT(c->area), "motion-notify-event", G_CALLBACK(colorzones_motion_notify), self);

@@ -37,7 +37,7 @@ typedef struct dt_lib_navigation_t
 
 
 /* expose function for navigation module */
-static gboolean _lib_navigation_expose_callback(GtkWidget *widget, GdkEventExpose *event, gpointer user_data);
+static gboolean _lib_navigation_draw_callback(GtkWidget *widget, cairo_t *crf, gpointer user_data);
 /* motion notify callback handler*/
 static gboolean _lib_navigation_motion_notify_callback(GtkWidget *widget, GdkEventMotion *event,
                                                        gpointer user_data);
@@ -99,9 +99,8 @@ void gui_init(dt_lib_module_t *self)
                                       | GDK_BUTTON_RELEASE_MASK | GDK_STRUCTURE_MASK);
 
   /* connect callbacks */
-  gtk_widget_set_double_buffered(self->widget, FALSE);
   gtk_widget_set_app_paintable(self->widget, TRUE);
-  g_signal_connect(G_OBJECT(self->widget), "expose-event", G_CALLBACK(_lib_navigation_expose_callback), self);
+  g_signal_connect(G_OBJECT(self->widget), "draw", G_CALLBACK(_lib_navigation_draw_callback), self);
   g_signal_connect(G_OBJECT(self->widget), "button-press-event",
                    G_CALLBACK(_lib_navigation_button_press_callback), self);
   g_signal_connect(G_OBJECT(self->widget), "button-release-event",
@@ -133,7 +132,7 @@ void gui_cleanup(dt_lib_module_t *self)
 
 
 
-static gboolean _lib_navigation_expose_callback(GtkWidget *widget, GdkEventExpose *event, gpointer user_data)
+static gboolean _lib_navigation_draw_callback(GtkWidget *widget, cairo_t *crf, gpointer user_data)
 {
   dt_lib_module_t *self = (dt_lib_module_t *)user_data;
   dt_lib_navigation_t *d = (dt_lib_navigation_t *)self->data;
@@ -148,14 +147,15 @@ static gboolean _lib_navigation_expose_callback(GtkWidget *widget, GdkEventExpos
   if(dev->preview_status != DT_DEV_PIXELPIPE_VALID) return FALSE;
 
   /* get the current style */
-  GtkStyle *style = gtk_rc_get_style_by_paths(gtk_settings_get_default(), NULL, "GtkWidget", GTK_TYPE_WIDGET);
-  if(!style) style = gtk_rc_get_style(widget);
+  GdkRGBA color;
+  GtkStyleContext *context = gtk_widget_get_style_context(widget);
+  GtkStateFlags state = gtk_widget_get_state_flags(widget);
+  gtk_style_context_get_background_color(context, state, &color);
   cairo_surface_t *cst = dt_cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height);
   cairo_t *cr = cairo_create(cst);
 
   /* fill background */
-  cairo_set_source_rgb(cr, style->bg[0].red / 65535.0, style->bg[0].green / 65535.0,
-                       style->bg[0].blue / 65535.0);
+  cairo_set_source_rgba(cr, color.red, color.green, color.blue, color.alpha);
   cairo_paint(cr);
 
   width -= 2 * inset;
@@ -242,8 +242,7 @@ static gboolean _lib_navigation_expose_callback(GtkWidget *widget, GdkEventExpos
 
       cairo_save(cr);
       cairo_set_line_width(cr, 2.0);
-      cairo_set_source_rgb(cr, style->bg[0].red / 65535.0, style->bg[0].green / 65535.0,
-                           style->bg[0].blue / 65535.0);
+      cairo_set_source_rgba(cr, color.red, color.green, color.blue, color.alpha);
       cairo_text_path(cr, zoomline);
       cairo_stroke_preserve(cr);
       cairo_set_source_rgb(cr, 0.6, 0.6, 0.6);
@@ -297,10 +296,8 @@ static gboolean _lib_navigation_expose_callback(GtkWidget *widget, GdkEventExpos
 
   /* blit memsurface into widget */
   cairo_destroy(cr);
-  cairo_t *cr_pixmap = gdk_cairo_create(gtk_widget_get_window(widget));
-  cairo_set_source_surface(cr_pixmap, cst, 0, 0);
-  cairo_paint(cr_pixmap);
-  cairo_destroy(cr_pixmap);
+  cairo_set_source_surface(crf, cst, 0, 0);
+  cairo_paint(crf);
   cairo_surface_destroy(cst);
 
   return TRUE;
@@ -349,7 +346,10 @@ static gboolean _lib_navigation_motion_notify_callback(GtkWidget *widget, GdkEve
   gtk_widget_get_allocation(widget, &allocation);
   _lib_navigation_set_position(self, event->x, event->y, allocation.width, allocation.height);
   gint x, y; // notify gtk for motion_hint.
-  gdk_window_get_pointer(event->window, &x, &y, NULL);
+  gdk_window_get_device_position(event->window,
+                                 gdk_device_manager_get_client_pointer(
+                                     gdk_display_get_device_manager(gdk_window_get_display(event->window))),
+                                 &x, &y, NULL);
   return TRUE;
 }
 

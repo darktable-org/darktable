@@ -22,46 +22,39 @@
 
 static void _button_class_init(GtkDarktableButtonClass *klass);
 static void _button_init(GtkDarktableButton *button);
-static void _button_size_request(GtkWidget *widget, GtkRequisition *requisition);
-static gboolean _button_expose(GtkWidget *widget, GdkEventExpose *event);
-
+static gboolean _button_draw(GtkWidget *widget, cairo_t *cr);
 
 static void _button_class_init(GtkDarktableButtonClass *klass)
 {
   GtkWidgetClass *widget_class = (GtkWidgetClass *)klass;
-  widget_class->size_request = _button_size_request;
-  widget_class->expose_event = _button_expose;
+
+  widget_class->draw = _button_draw;
 }
 
 static void _button_init(GtkDarktableButton *button)
 {
 }
 
-static void _button_size_request(GtkWidget *widget, GtkRequisition *requisition)
-{
-  g_return_if_fail(widget != NULL);
-  g_return_if_fail(DTGTK_IS_BUTTON(widget));
-  g_return_if_fail(requisition != NULL);
-  requisition->width = DT_PIXEL_APPLY_DPI(17);
-  requisition->height = DT_PIXEL_APPLY_DPI(17);
-}
-
-static gboolean _button_expose(GtkWidget *widget, GdkEventExpose *event)
+static gboolean _button_draw(GtkWidget *widget, cairo_t *cr)
 {
   g_return_val_if_fail(widget != NULL, FALSE);
   g_return_val_if_fail(DTGTK_IS_BUTTON(widget), FALSE);
-  g_return_val_if_fail(event != NULL, FALSE);
-  GtkStyle *style = gtk_widget_get_style(widget);
-  int state = gtk_widget_get_state(widget);
+
+  GtkStateFlags state = gtk_widget_get_state_flags(widget);
+
+  GdkRGBA bg_color, fg_color;
+  GtkStyleContext *context = gtk_widget_get_style_context(widget);
+  gtk_style_context_get_background_color(context, state, &bg_color);
+  gtk_style_context_get_color(context, state, &fg_color);
 
   /* update paint flags depending of states */
   int flags = DTGTK_BUTTON(widget)->icon_flags;
 
   /* set inner border */
-  int border = DT_PIXEL_APPLY_DPI((flags & CPF_DO_NOT_USE_BORDER) ? 2 : 4);
+  int border = DT_PIXEL_APPLY_DPI((flags & CPF_DO_NOT_USE_BORDER) ? 2 : 6);
 
   /* prelight */
-  if(state == GTK_STATE_PRELIGHT)
+  if(state & GTK_STATE_FLAG_PRELIGHT)
     flags |= CPF_PRELIGHT;
   else
     flags &= ~CPF_PRELIGHT;
@@ -81,62 +74,58 @@ static gboolean _button_expose(GtkWidget *widget, GdkEventExpose *event)
   }
 
   /* begin cairo drawing */
-  cairo_t *cr;
-  cr = gdk_cairo_create(gtk_widget_get_window(widget));
-
   GtkAllocation allocation;
   gtk_widget_get_allocation(widget, &allocation);
-  int x = allocation.x;
-  int y = allocation.y;
   int width = allocation.width;
   int height = allocation.height;
 
   /* draw standard button background if not transparent */
   if((flags & CPF_STYLE_FLAT))
   {
-    if(state != GTK_STATE_NORMAL)
+    if(flags & CPF_PRELIGHT)
     {
-      cairo_rectangle(cr, x, y, width, height);
-      cairo_set_source_rgba(cr, style->bg[state].red / 65535.0, style->bg[state].green / 65535.0,
-                            style->bg[state].blue / 65535.0, 0.5);
+      cairo_rectangle(cr, 0, 0, width, height);
+      gdk_cairo_set_source_rgba(cr, &bg_color);
       cairo_fill(cr);
     }
   }
   else if(!(flags & CPF_BG_TRANSPARENT))
   {
     /* draw default boxed button */
-    gtk_paint_box(gtk_widget_get_style(widget), gtk_widget_get_window(widget), gtk_widget_get_state(widget),
-                  GTK_SHADOW_OUT, NULL, widget, "button", x, y, width, height);
+    gtk_render_background(context, cr, 0, 0, width, height);
+    if(!(flags & CPF_DO_NOT_USE_BORDER))
+      gtk_render_frame(context, cr, 0, 0, width, height);
   }
 
-  if(flags & CPF_IGNORE_FG_STATE) state = GTK_STATE_NORMAL;
-
-  cairo_set_source_rgb(cr, style->fg[state].red / 65535.0, style->fg[state].green / 65535.0,
-                       style->fg[state].blue / 65535.0);
+  gdk_cairo_set_source_rgba(cr, &fg_color);
 
   /* draw icon */
   if(DTGTK_BUTTON(widget)->icon)
   {
-    if(text)
-      DTGTK_BUTTON(widget)
-          ->icon(cr, x + border, y + border, height - (border * 2), height - (border * 2), flags);
-    else
-      DTGTK_BUTTON(widget)
-          ->icon(cr, x + border, y + border, width - (border * 2), height - (border * 2), flags);
+    int icon_width = text ? height - (border * 2) : width - (border * 2);
+    int icon_height = height - (border * 2);
+
+    if(icon_width > 0 && icon_height > 0)
+    {
+      if(text)
+        DTGTK_BUTTON(widget)
+            ->icon(cr, border, border, height - (border * 2), height - (border * 2), flags);
+      else
+        DTGTK_BUTTON(widget)
+            ->icon(cr, border, border, width - (border * 2), height - (border * 2), flags);
+    }
   }
 
   /* draw label */
   if(text)
   {
-    int lx = x + DT_PIXEL_APPLY_DPI(2), ly = y + ((height / 2.0) - (ph / 2.0));
+    int lx = DT_PIXEL_APPLY_DPI(2), ly = ((height / 2.0) - (ph / 2.0));
     if(DTGTK_BUTTON(widget)->icon) lx += width;
     cairo_move_to(cr, lx, ly);
     cairo_set_source_rgba(cr, 1.0, 1.0, 1.0, 0.5);
     pango_cairo_show_layout(cr, layout);
     g_object_unref(layout);
   }
-
-  cairo_destroy(cr);
 
   return FALSE;
 }
@@ -148,17 +137,8 @@ GtkWidget *dtgtk_button_new(DTGTKCairoPaintIconFunc paint, gint paintflags)
   button = g_object_new(dtgtk_button_get_type(), NULL);
   button->icon = paint;
   button->icon_flags = paintflags;
+  gtk_widget_set_size_request(GTK_WIDGET(button), DT_PIXEL_APPLY_DPI(17), DT_PIXEL_APPLY_DPI(17));
   return (GtkWidget *)button;
-}
-
-GtkWidget *dtgtk_button_new_with_label(const gchar *label, DTGTKCairoPaintIconFunc paint, gint paintflags)
-{
-  GtkWidget *button = dtgtk_button_new(paint, paintflags);
-
-  /* set button label */
-  gtk_button_set_label(GTK_BUTTON(button), label);
-
-  return button;
 }
 
 GType dtgtk_button_get_type()
@@ -182,6 +162,28 @@ void dtgtk_button_set_paint(GtkDarktableButton *button, DTGTKCairoPaintIconFunc 
 {
   button->icon = paint;
   button->icon_flags = paintflags;
+}
+
+void dtgtk_button_override_color(GtkDarktableButton *button, GdkRGBA *color)
+{
+  if(color)
+  {
+    button->fg = *color;
+    button->icon_flags |= CPF_CUSTOM_FG;
+  }
+  else
+    button->icon_flags &= ~CPF_CUSTOM_FG;
+}
+
+void dtgtk_button_override_background_color(GtkDarktableButton *button, GdkRGBA *color)
+{
+  if(color)
+  {
+    button->bg = *color;
+    button->icon_flags |= CPF_CUSTOM_BG;
+  }
+  else
+    button->icon_flags &= ~CPF_CUSTOM_BG;
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

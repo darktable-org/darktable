@@ -357,7 +357,7 @@ void cleanup(dt_iop_module_t *self)
 void gui_init(dt_iop_module_t *self)
 {
   self->widget = gtk_label_new("");
-  gtk_misc_set_alignment(GTK_MISC(self->widget), 0.0, 0.5);
+  gtk_widget_set_halign(self->widget, GTK_ALIGN_START);
 }
 
 void gui_cleanup(dt_iop_module_t *self)

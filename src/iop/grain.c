@@ -64,7 +64,7 @@ typedef struct dt_iop_grain_params_t
 
 typedef struct dt_iop_grain_gui_data_t
 {
-  GtkVBox *vbox;
+  GtkBox *vbox;
   GtkWidget *label1, *label2, *label3; // channel, scale, strength
   GtkWidget *scale1, *scale2;          // scale, strength
 } dt_iop_grain_gui_data_t;
@@ -531,7 +531,7 @@ void gui_init(struct dt_iop_module_t *self)
   dt_iop_grain_gui_data_t *g = (dt_iop_grain_gui_data_t *)self->gui_data;
   dt_iop_grain_params_t *p = (dt_iop_grain_params_t *)self->params;
 
-  self->widget = gtk_vbox_new(FALSE, DT_BAUHAUS_SPACE);
+  self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
 
   /* courseness */
   g->scale1 = dt_bauhaus_slider_new_with_range(self, 20.0, 6400.0, 20.0, p->scale * GRAIN_SCALE_FACTOR, 0);

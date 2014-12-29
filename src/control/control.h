@@ -57,7 +57,7 @@ typedef GdkCursorType dt_cursor_t;
 
 // called from gui
 void *dt_control_expose(void *voidptr);
-gboolean dt_control_expose_endmarker(GtkWidget *widget, GdkEventExpose *event, gpointer user_data);
+gboolean dt_control_draw_endmarker(GtkWidget *widget, cairo_t *crf, gpointer user_data);
 void dt_control_button_pressed(double x, double y, double pressure, int which, int type, uint32_t state);
 void dt_control_button_released(double x, double y, int which, uint32_t state);
 void dt_control_mouse_moved(double x, double y, double pressure, int which);
@@ -172,7 +172,6 @@ typedef struct dt_control_t
   // gui related stuff
   double tabborder;
   int32_t width, height;
-  float progress;
   pthread_t gui_thread;
   int button_down, button_down_which, button_type;
   double button_x, button_y;

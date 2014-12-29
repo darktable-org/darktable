@@ -25,7 +25,6 @@
 #include "control/control.h"
 #include "control/conf.h"
 #include "dtgtk/button.h"
-#include "dtgtk/tristatebutton.h"
 #include "develop/imageop.h"
 #include "develop/blend.h"
 #include "develop/masks.h"
@@ -893,7 +892,7 @@ static void _darkroom_ui_apply_style_popupmenu(GtkWidget *w, gpointer user_data)
       gtk_widget_set_tooltip_markup(mi, tooltip);
 
       gtk_menu_shell_append(menu, mi);
-      g_signal_connect_swapped(GTK_OBJECT(mi), "activate",
+      g_signal_connect_swapped(G_OBJECT(mi), "activate",
                                G_CALLBACK(_darkroom_ui_apply_style_activate_callback),
                                (gpointer)g_strdup(style->name));
       gtk_widget_show(mi);
@@ -1097,25 +1096,26 @@ void enter(dt_view_t *self)
     dev->overexposed.floating_window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
     GtkWidget *frame = gtk_frame_new(NULL);
     GtkWidget *event_box = gtk_event_box_new();
-    GtkWidget *alignment = gtk_alignment_new(0.5, 0.5, 1, 1);
-    GtkWidget *vbox = gtk_vbox_new(TRUE, 5);
+    GtkWidget *vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
+    gtk_widget_set_margin_start(vbox, DT_PIXEL_APPLY_DPI(8));
+    gtk_widget_set_margin_end(vbox, DT_PIXEL_APPLY_DPI(8));
+    gtk_widget_set_margin_top(vbox, DT_PIXEL_APPLY_DPI(8));
+    gtk_widget_set_margin_bottom(vbox, DT_PIXEL_APPLY_DPI(8));
 
     gtk_widget_set_can_focus(dev->overexposed.floating_window, TRUE);
     gtk_window_set_decorated(GTK_WINDOW(dev->overexposed.floating_window), FALSE);
     gtk_window_set_type_hint(GTK_WINDOW(dev->overexposed.floating_window), GDK_WINDOW_TYPE_HINT_POPUP_MENU);
     gtk_window_set_transient_for(GTK_WINDOW(dev->overexposed.floating_window), GTK_WINDOW(window));
-    gtk_window_set_opacity(GTK_WINDOW(dev->overexposed.floating_window), 0.9);
+    gtk_widget_set_opacity(dev->overexposed.floating_window, 0.9);
 
     //     gtk_widget_set_size_request(frame, panel_width, -1);
-    gtk_widget_set_state(frame, GTK_STATE_SELECTED);
+    gtk_widget_set_state_flags(frame, GTK_STATE_FLAG_SELECTED, TRUE);
     gtk_frame_set_shadow_type(GTK_FRAME(frame), GTK_SHADOW_OUT);
 
-    gtk_alignment_set_padding(GTK_ALIGNMENT(alignment), 8, 8, 8, 8);
 
     gtk_container_add(GTK_CONTAINER(dev->overexposed.floating_window), frame);
     gtk_container_add(GTK_CONTAINER(frame), event_box);
-    gtk_container_add(GTK_CONTAINER(event_box), alignment);
-    gtk_container_add(GTK_CONTAINER(alignment), vbox);
+    gtk_container_add(GTK_CONTAINER(event_box), vbox);
 
     /** let's fill the encapsulating widgets */
     /* color scheme */
@@ -1129,7 +1129,7 @@ void enter(dt_view_t *self)
                  (char *)NULL);
     g_signal_connect(G_OBJECT(colorscheme), "value-changed", G_CALLBACK(colorscheme_callback), dev);
     gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(colorscheme), TRUE, TRUE, 0);
-    gtk_widget_set_state(colorscheme, GTK_STATE_SELECTED);
+    gtk_widget_set_state_flags(colorscheme, GTK_STATE_FLAG_SELECTED, TRUE);
 
     /* lower */
     GtkWidget *lower = dt_bauhaus_slider_new_with_range(NULL, 0.0, 100.0, 0.1, 2.0, 2);

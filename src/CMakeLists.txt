@@ -73,16 +73,13 @@ FILE(GLOB SOURCE_FILES
   "develop/tiling.c"
   "develop/masks/masks.c"
   "dtgtk/button.c"
+  "dtgtk/drawingarea.c"
   "dtgtk/icon.c"
-  "dtgtk/label.c"
-  "dtgtk/slider.c"
   "dtgtk/gradientslider.c"
-  "dtgtk/tristatebutton.c"
   "dtgtk/togglebutton.c"
   "dtgtk/paint.c"
   "dtgtk/resetlabel.c"
   "gui/accelerators.c"
-  "gui/contrast.c"
   "gui/gtkentry.c"
   "gui/guides.c"
   "gui/gtk.c"
@@ -131,15 +128,11 @@ endif()
 #
 # Find all other required libraries for building
 #
-find_package(Glib 2.30 REQUIRED)
-include_directories(SYSTEM ${Glib_INCLUDE_DIRS})
-list(APPEND LIBS ${Glib_LIBRARIES})
-add_definitions(${Glib_DEFINITIONS})
-
-find_package(GTK2 2.24 REQUIRED gtk)
-include_directories(SYSTEM ${GTK2_INCLUDE_DIRS})
-list(APPEND LIBS ${GTK2_LIBRARIES})
-add_definitions(${GTK2_DEFINITIONS})
+# GTK3 pulls in ATK, GDK, GDK-PIXBUF, CAIRO, GLIB, PANGO
+find_package(GTK3 3.10 REQUIRED) # actually it's 3.12, but Ubuntu 14.04 LTS only ships 3.10, so we #define the rest
+include_directories(${GTK3_INCLUDE_DIRS})
+list(APPEND LIBS ${GTK3_LIBRARIES})
+add_definitions(${GTK3_DEFINITIONS})
 
 # Check for libxml2 / broken cmake module can't be included in the foreach() below
 find_package(LibXml2 2.6 REQUIRED)
@@ -183,8 +176,7 @@ if(USE_WEBP)
   else(USE_WEBP)
 endif(USE_WEBP)
 
-# Find all the libs that don't require extra parameters
-foreach(lib ${OUR_LIBS} LensFun GIO GThread GModule Cairo PangoCairo PThread Rsvg2 GDK-PixBuf LibXml2 Sqlite3 Exiv2 CURL PNG JPEG TIFF LCMS2)
+foreach(lib ${OUR_LIBS} LensFun GIO GThread GModule PangoCairo PThread Rsvg2 LibXml2 Sqlite3 Exiv2 CURL PNG JPEG TIFF LCMS2)
   find_package(${lib} REQUIRED)
   include_directories(SYSTEM ${${lib}_INCLUDE_DIRS})
   list(APPEND LIBS ${${lib}_LIBRARIES})
@@ -516,23 +508,18 @@ endif(NOT DONT_USE_RAWSPEED)
 
 # osm gps map library
 if(USE_GEO)
-  find_package(LibSoup2)
-  if(LIBSOUP2_FOUND)
-    include_directories(SYSTEM ${LIBSOUP2_INCLUDE_DIRS})
-    add_definitions(${LIBSOUP2_DEFINITIONS})
-    include_directories(${CMAKE_CURRENT_SOURCE_DIR}/external/osm-gps-map/src)
-    add_library(osmgpsmap_static STATIC IMPORTED)
-    set_target_properties(osmgpsmap_static PROPERTIES IMPORTED_LOCATION ${CMAKE_CURRENT_BINARY_DIR}/external/osm-gps-map/libosmgpsmap.a)
-    add_subdirectory(external/osm-gps-map)
-    list(APPEND LIB_DEPS osmgpsmap)
-    list(APPEND LIBS ${LIBSOUP2_LIBRARIES})
-    list(APPEND STATIC_LIBS osmgpsmap_static)
-    add_definitions("-DHAVE_MAP")
+  find_package(OSMGpsMap)
+  if(OSMGPSMAP_FOUND)
     message(STATUS "Map mode: enabled")
-  else(LIBSOUP2_FOUND)
+    add_definitions("-DHAVE_MAP")
+    include_directories(SYSTEM ${OSMGPSMAP_INCLUDE_DIRS})
+    list(APPEND LIBS ${OSMGPSMAP_LIBRARIES})
+    add_definitions(${OSMGPSMAP_DEFINITIONS})
+  else(OSMGPSMAP_FOUND)
     set(USE_GEO OFF)
-    message(STATUS "Map mode: disabled, please install libsoup2")
-  endif(LIBSOUP2_FOUND)
+    message(STATUS "Map mode: disabled, please install libosmgpsmap")
+  endif(OSMGPSMAP_FOUND)
+
 else(USE_GEO)
   message(STATUS "Map mode: disabled")
 endif(USE_GEO)
@@ -541,17 +528,24 @@ endif(USE_GEO)
 if(USE_COLORD)
   find_package(Colord)
   if(COLORD_FOUND)
-    add_definitions("-DUSE_COLORDGTK")
-    include_directories(SYSTEM ${COLORD_INCLUDE_DIRS})
-    # we ship our own copy of libcolord-gtk - the one packaged in distros is linked against gtk3 :(
-    include_directories(${CMAKE_CURRENT_SOURCE_DIR}/external/colord-gtk/src)
-    add_library(colord-gtk_static STATIC IMPORTED)
-    set_target_properties(colord-gtk_static PROPERTIES IMPORTED_LOCATION ${CMAKE_CURRENT_BINARY_DIR}/external/colord-gtk/libcolord-gtk.a)
-    add_subdirectory(external/colord-gtk)
-    list(APPEND LIB_DEPS colord-gtk)
-    list(APPEND LIBS ${COLORD_LIBRARIES})
-    list(APPEND STATIC_LIBS colord-gtk_static)
+    find_package(ColordGTK)
+    if(COLORDGTK_FOUND)
+      # We might make use of colord directly so link against it explicitly. just in case. move up if it is used without colord-gtk, too.
+      include_directories(SYSTEM ${COLORD_INCLUDE_DIRS})
+      list(APPEND LIBS ${COLORD_LIBRARIES})
+      add_definitions(${COLORD_DEFINITIONS})
+
+      # ... and also against libcolord-gtk to get the display profile
+      include_directories(SYSTEM ${COLORDGTK_INCLUDE_DIRS})
+      list(APPEND LIBS ${COLORDGTK_LIBRARIES})
+      add_definitions(${COLORDGTK_DEFINITIONS})
+      add_definitions("-DUSE_COLORDGTK")
+    else(COLORDGTK_FOUND)
+      message(STATUS "No libcolord-gtk found, this build will lack the ability to get the screen profile from colord")
+      set(USE_COLORD OFF)
+    endif(COLORDGTK_FOUND)
   else(COLORD_FOUND)
+    message(STATUS "No libcolord found, this build will lack the ability to get the screen profile from colord")
     set(USE_COLORD OFF)
   endif(COLORD_FOUND)
 endif(USE_COLORD)
@@ -600,6 +594,18 @@ if(NOT SOURCE_PACKAGE AND NOT APPLE)
   # apple build fails on deprecated warnings..
   set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Werror -Werror=type-limits")
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Werror -Werror=type-limits")
+
+  #gtk3 porting: disable -Werror=deprecated-declarations for now
+  message(WARNING "REMOVE BEFORE FLIGHT")
+  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-error=deprecated-declarations")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-error=deprecated-declarations")
+
+  # instead, disable deprecated stuff one-by-one after fixing it
+  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -D__GTK_STOCK_H__ -D__GTK_ACTION_GROUP_H__ -D__GTK_UI_MANAGER_H__")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -D__GTK_STOCK_H__ -D__GTK_ACTION_GROUP_H__ -D__GTK_UI_MANAGER_H__")
+
+  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -D__GTK_COLOR_SELECTION_DIALOG_H__")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -D__GTK_COLOR_SELECTION_DIALOG_H__")
 elseif(SOURCE_PACKAGE)
   set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -D_RELEASE")
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -D_RELEASE")
@@ -624,8 +630,8 @@ add_definitions("-DGSEAL_ENABLE")
 #
 #  Do not use deprecated symbols
 #
-add_definitions("-DGDK_DISABLE_DEPRECATED")
-add_definitions("-DGTK_DISABLE_DEPRECATED")
+#add_definitions("-DGDK_DISABLE_DEPRECATED")
+#add_definitions("-DGTK_DISABLE_DEPRECATED")
 add_definitions("-Werror=implicit-function-declaration")
 ###### GTK+3 port ######
 

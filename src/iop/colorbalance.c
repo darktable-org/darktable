@@ -25,8 +25,8 @@ http://www.youtube.com/watch?v=JVoUgR6bhBc
 // our includes go first:
 #include "develop/imageop.h"
 #include "bauhaus/bauhaus.h"
+#include "dtgtk/drawingarea.h"
 #include "gui/gtk.h"
-#include "dtgtk/label.h"
 #include "common/colorspaces.h"
 #include "common/opencl.h"
 
@@ -390,9 +390,8 @@ static void gain_blue_callback(GtkWidget *slider, dt_iop_module_t *self)
 }
 
 #ifdef SHOW_COLOR_WHEELS
-static gboolean dt_iop_area_expose(GtkWidget *widget, GdkEventExpose *event, dt_iop_module_t *self)
+static gboolean dt_iop_area_draw(GtkWidget *widget, cairo_t *cr, dt_iop_module_t *self)
 {
-  cairo_t *cr;
   float flt_bg = darktable.bauhaus->bg_normal;
   if(gtk_widget_get_state(GTK_WIDGET(widget)) == GTK_STATE_SELECTED) flt_bg = darktable.bauhaus->bg_focus;
   float flt_dark = flt_bg / 1.5, flt_light = flt_bg * 1.5;
@@ -407,7 +406,8 @@ static gboolean dt_iop_area_expose(GtkWidget *widget, GdkEventExpose *event, dt_
   uint32_t light = ((255 << 24) | ((int)floor(flt_light * 255 + 0.5) << 16)
                     | ((int)floor(flt_light * 255 + 0.5) << 8) | (int)floor(flt_light * 255 + 0.5));
 
-
+  GtkAllocation allocation;
+  gtk_widget_get_allocation(widget, &allocation);
   int width = allocation.width, height = allocation.height;
   if(width % 2 == 0) width--;
   if(height % 2 == 0) height--;
@@ -415,8 +415,6 @@ static gboolean dt_iop_area_expose(GtkWidget *widget, GdkEventExpose *event, dt_
   double diameter = MIN(width, height) - 4;
   double r_outside = diameter / 2.0, r_inside = r_outside * 0.87;
   double r_outside_2 = r_outside * r_outside, r_inside_2 = r_inside * r_inside;
-
-  cr = gdk_cairo_create(gtk_widget_get_window(widget));
 
   // clear the background
   cairo_set_source_rgb(cr, flt_bg, flt_bg, flt_bg);
@@ -508,8 +506,6 @@ static gboolean dt_iop_area_expose(GtkWidget *widget, GdkEventExpose *event, dt_
 
   cairo_surface_destroy(source);
 
-  cairo_destroy(cr);
-
   return TRUE;
 }
 #endif
@@ -520,23 +516,20 @@ void gui_init(dt_iop_module_t *self)
   dt_iop_colorbalance_gui_data_t *g = (dt_iop_colorbalance_gui_data_t *)self->gui_data;
   dt_iop_colorbalance_params_t *p = (dt_iop_colorbalance_params_t *)self->params;
 
-  self->widget = gtk_vbox_new(FALSE, DT_BAUHAUS_SPACE);
+  self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
 
 
-  GtkWidget *hbox = gtk_hbox_new(FALSE, DT_BAUHAUS_SPACE);
+  GtkWidget *hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, DT_BAUHAUS_SPACE);
   gtk_box_pack_start(GTK_BOX(self->widget), hbox, FALSE, FALSE, 0);
 
 #ifdef SHOW_COLOR_WHEELS
-  int size = dt_conf_get_int("panel_width") / 3;
-
-  GtkWidget *area = gtk_drawing_area_new();
+  GtkWidget *area = dtgtk_drawing_area_new_with_aspect_ratio(1.0);
   gtk_box_pack_start(GTK_BOX(hbox), area, TRUE, TRUE, 0);
-  gtk_widget_set_size_request(area, 0, size);
 
   //   gtk_widget_add_events(g->area,
   //                         GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK |
   //                         GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK | GDK_LEAVE_NOTIFY_MASK);
-  g_signal_connect(G_OBJECT(area), "expose-event", G_CALLBACK(dt_iop_area_expose), self);
+  g_signal_connect(G_OBJECT(area), "draw", G_CALLBACK(dt_iop_area_draw), self);
   //   g_signal_connect (G_OBJECT (area), "button-press-event",
   //                     G_CALLBACK (dt_iop_colorbalance_button_press), self);
   //   g_signal_connect (G_OBJECT (area), "motion-notify-event",
@@ -544,14 +537,13 @@ void gui_init(dt_iop_module_t *self)
   //   g_signal_connect (G_OBJECT (area), "leave-notify-event",
   //                     G_CALLBACK (dt_iop_colorbalance_leave_notify), self);
 
-  area = gtk_drawing_area_new();
+  area = dtgtk_drawing_area_new_with_aspect_ratio(1.0);
   gtk_box_pack_start(GTK_BOX(hbox), area, TRUE, TRUE, 0);
-  gtk_widget_set_size_request(area, 0, size);
 
   //   gtk_widget_add_events(g->area,
   //                         GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK |
   //                         GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK | GDK_LEAVE_NOTIFY_MASK);
-  g_signal_connect(G_OBJECT(area), "expose-event", G_CALLBACK(dt_iop_area_expose), self);
+  g_signal_connect(G_OBJECT(area), "draw", G_CALLBACK(dt_iop_area_draw), self);
   //   g_signal_connect (G_OBJECT (area), "button-press-event",
   //                     G_CALLBACK (dt_iop_colorbalance_button_press), self);
   //   g_signal_connect (G_OBJECT (area), "motion-notify-event",
@@ -559,14 +551,13 @@ void gui_init(dt_iop_module_t *self)
   //   g_signal_connect (G_OBJECT (area), "leave-notify-event",
   //                     G_CALLBACK (dt_iop_colorbalance_leave_notify), self);
 
-  area = gtk_drawing_area_new();
+  area = dtgtk_drawing_area_new_with_aspect_ratio(1.0);
   gtk_box_pack_start(GTK_BOX(hbox), area, TRUE, TRUE, 0);
-  gtk_widget_set_size_request(area, 0, size);
 
   //   gtk_widget_add_events(g->area,
   //                         GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK |
   //                         GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK | GDK_LEAVE_NOTIFY_MASK);
-  g_signal_connect(G_OBJECT(area), "expose-event", G_CALLBACK(dt_iop_area_expose), self);
+  g_signal_connect(G_OBJECT(area), "draw", G_CALLBACK(dt_iop_area_draw), self);
 //   g_signal_connect (G_OBJECT (area), "button-press-event",
 //                     G_CALLBACK (dt_iop_colorbalance_button_press), self);
 //   g_signal_connect (G_OBJECT (area), "motion-notify-event",
@@ -576,9 +567,7 @@ void gui_init(dt_iop_module_t *self)
 #endif
 
   /* lift */
-  gtk_box_pack_start(GTK_BOX(self->widget),
-                     GTK_WIDGET(dtgtk_label_new(_("lift"), DARKTABLE_LABEL_TAB | DARKTABLE_LABEL_ALIGN_RIGHT)),
-                     FALSE, FALSE, 5);
+  gtk_box_pack_start(GTK_BOX(self->widget), dt_ui_section_label_new(_("lift")), FALSE, FALSE, 5);
 
   g->lift_factor
       = dt_bauhaus_slider_new_with_range(self, -1.0, 1.0, 0.005, p->lift[CHANNEL_FACTOR] - 1.0f, 3);
@@ -617,10 +606,7 @@ void gui_init(dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), g->lift_b, TRUE, TRUE, 0);
 
   /* gamma */
-  gtk_box_pack_start(
-      GTK_BOX(self->widget),
-      GTK_WIDGET(dtgtk_label_new(_("gamma"), DARKTABLE_LABEL_TAB | DARKTABLE_LABEL_ALIGN_RIGHT)), FALSE,
-      FALSE, 5);
+  gtk_box_pack_start(GTK_BOX(self->widget), dt_ui_section_label_new(_("gamma")), FALSE, FALSE, 5);
 
   g->gamma_factor
       = dt_bauhaus_slider_new_with_range(self, -1.0, 1.0, 0.005, p->gamma[CHANNEL_FACTOR] - 1.0f, 3);
@@ -659,9 +645,7 @@ void gui_init(dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), g->gamma_b, TRUE, TRUE, 0);
 
   /* gain */
-  gtk_box_pack_start(GTK_BOX(self->widget),
-                     GTK_WIDGET(dtgtk_label_new(_("gain"), DARKTABLE_LABEL_TAB | DARKTABLE_LABEL_ALIGN_RIGHT)),
-                     FALSE, FALSE, 5);
+  gtk_box_pack_start(GTK_BOX(self->widget), dt_ui_section_label_new(_("gain")), FALSE, FALSE, 5);
 
   g->gain_factor
       = dt_bauhaus_slider_new_with_range(self, -1.0, 1.0, 0.005, p->gain[CHANNEL_FACTOR] - 1.0f, 3);

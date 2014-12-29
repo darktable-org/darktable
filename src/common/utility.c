@@ -300,6 +300,53 @@ dt_logo_season_t get_logo_season(void)
   return DT_LOGO_SEASON_NONE;
 }
 
+// the following two functions (dt_util_latitude_str and dt_util_longitude_str) were taken from libosmgpsmap
+// Copyright (C) 2013 John Stowers <john.stowers@gmail.com>
+/* these can be overwritten with versions that support
+ *   localization */
+#define OSD_COORDINATES_CHR_N  "N"
+#define OSD_COORDINATES_CHR_S  "S"
+#define OSD_COORDINATES_CHR_E  "E"
+#define OSD_COORDINATES_CHR_W  "W"
+
+/* this is the classic geocaching notation */
+gchar *dt_util_latitude_str(float latitude)
+{
+  gchar *c = OSD_COORDINATES_CHR_N;
+  float integral, fractional;
+
+  if(isnan(latitude)) return NULL;
+
+  if(latitude < 0)
+  {
+    latitude = fabs(latitude);
+    c = OSD_COORDINATES_CHR_S;
+  }
+
+  fractional = modff(latitude, &integral);
+
+  return g_strdup_printf("%s %02d° %06.3f'", c, (int)integral, fractional*60.0);
+}
+
+gchar *dt_util_longitude_str(float longitude)
+{
+  gchar *c = OSD_COORDINATES_CHR_E;
+  float integral, fractional;
+
+  if(isnan(longitude)) return NULL;
+
+  if(longitude < 0)
+  {
+    longitude = fabs(longitude);
+    c = OSD_COORDINATES_CHR_W;
+  }
+
+  fractional = modff(longitude, &integral);
+
+  return g_strdup_printf("%s %03d° %06.3f'", c, (int)integral, fractional*60.0);
+}
+
+
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

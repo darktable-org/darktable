@@ -413,8 +413,8 @@ void view_popup_menu_onSearchFilmroll(GtkWidget *menuitem, gpointer userdata)
   gchar *new_path = NULL;
 
   filechooser = gtk_file_chooser_dialog_new(
-      _("search filmroll"), GTK_WINDOW(win), GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER, GTK_STOCK_CANCEL,
-      GTK_RESPONSE_CANCEL, GTK_STOCK_OPEN, GTK_RESPONSE_ACCEPT, (char *)NULL);
+      _("search filmroll"), GTK_WINDOW(win), GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER, _("_Cancel"),
+      GTK_RESPONSE_CANCEL, _("_Open"), GTK_RESPONSE_ACCEPT, (char *)NULL);
 
   gtk_file_chooser_set_select_multiple(GTK_FILE_CHOOSER(filechooser), FALSE);
 
@@ -1988,7 +1988,7 @@ void gui_init(dt_lib_module_t *self)
   dt_lib_collect_t *d = (dt_lib_collect_t *)calloc(1, sizeof(dt_lib_collect_t));
 
   self->data = (void *)d;
-  self->widget = gtk_vbox_new(FALSE, 5);
+  self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
   //   gtk_widget_set_size_request(self->widget, 100, -1);
   d->active_rule = 0;
   d->params = (dt_lib_collect_params_t *)malloc(sizeof(dt_lib_collect_params_t));
@@ -2000,7 +2000,7 @@ void gui_init(dt_lib_module_t *self)
   {
     d->rule[i].num = i;
     d->rule[i].typing = FALSE;
-    box = GTK_BOX(gtk_hbox_new(FALSE, 5));
+    box = GTK_BOX(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5));
     d->rule[i].hbox = GTK_WIDGET(box);
     gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(box), TRUE, TRUE, 0);
     w = gtk_combo_box_text_new();
@@ -2058,13 +2058,13 @@ void gui_init(dt_lib_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(sw), TRUE, TRUE, 0);
 
 
-  GtkWidget *vbox = gtk_vbox_new(FALSE, 5);
+  GtkWidget *vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
   d->box = GTK_BOX(vbox);
 
   GtkWidget *sw2 = gtk_scrolled_window_new(NULL, NULL);
   d->sw2 = GTK_SCROLLED_WINDOW(sw2);
   gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(sw2), GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
-  gtk_scrolled_window_add_with_viewport(GTK_SCROLLED_WINDOW(sw2), GTK_WIDGET(d->box));
+  gtk_container_add(GTK_CONTAINER(sw2), GTK_WIDGET(d->box));
   gtk_widget_set_size_request(GTK_WIDGET(sw2), -1, DT_PIXEL_APPLY_DPI(300));
 
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(sw2), TRUE, TRUE, 0);

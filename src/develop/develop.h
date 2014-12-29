@@ -39,6 +39,7 @@ typedef struct dt_dev_history_item_t
   struct dt_develop_blend_params_t *blend_params;
   int multi_priority;
   char multi_name[128];
+  int32_t focus_hash;             // used to determine whether or not to start a new item or to merge down
 } dt_dev_history_item_t;
 
 typedef enum dt_dev_overexposed_colorscheme_t
@@ -73,6 +74,7 @@ typedef struct dt_develop_t
                         // gui_init'ed.
   int32_t gui_leaving;  // set if everything is scheduled to shut down.
   int32_t gui_synch;    // set by the render threads if gui_update should be called in the modules.
+  int32_t focus_hash;   // determines whether to start a new history item or to merge down.
   int32_t image_loading, first_load, image_force_reload;
   int32_t preview_loading, preview_input_changed;
   dt_dev_pixelpipe_status_t image_status, preview_status;

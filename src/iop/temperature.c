@@ -686,7 +686,7 @@ static void gui_update_from_coeffs(dt_iop_module_t *self)
 }
 
 
-static gboolean expose(GtkWidget *widget, GdkEventExpose *event, dt_iop_module_t *self)
+static gboolean draw(GtkWidget *widget, cairo_t *cr, dt_iop_module_t *self)
 {
   // capture gui color picked event.
   if(darktable.gui->reset) return FALSE;
@@ -880,8 +880,8 @@ void gui_init(struct dt_iop_module_t *self)
   dt_iop_temperature_params_t *p = (dt_iop_temperature_params_t *)self->default_params;
 
   self->request_color_pick = DT_REQUEST_COLORPICK_OFF;
-  self->widget = gtk_vbox_new(TRUE, DT_BAUHAUS_SPACE);
-  g_signal_connect(G_OBJECT(self->widget), "expose-event", G_CALLBACK(expose), self);
+  self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
+  g_signal_connect(G_OBJECT(self->widget), "draw", G_CALLBACK(draw), self);
 
   for(int k = 0; k < 3; k++) g->daylight_wb[k] = 1.0f;
   g->scale_tint = dt_bauhaus_slider_new_with_range(self, 0.1, 8.0, .01, 1.0, 3);

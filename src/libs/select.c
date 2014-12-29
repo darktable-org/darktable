@@ -83,54 +83,49 @@ void gui_init(dt_lib_module_t *self)
 {
   dt_lib_select_t *d = (dt_lib_select_t *)malloc(sizeof(dt_lib_select_t));
   self->data = d;
-  self->widget = gtk_vbox_new(TRUE, 5);
-  GtkBox *hbox;
+  self->widget = gtk_grid_new();
+  GtkGrid *grid = GTK_GRID(self->widget);
+  gtk_grid_set_row_spacing(grid, DT_PIXEL_APPLY_DPI(5));
+  gtk_grid_set_column_spacing(grid, DT_PIXEL_APPLY_DPI(5));
+  gtk_grid_set_column_homogeneous(grid, TRUE);
+  int line = 0;
   GtkWidget *button;
-  hbox = GTK_BOX(gtk_hbox_new(TRUE, 5));
 
   button = gtk_button_new_with_label(_("select all"));
   d->select_all_button = button;
   g_object_set(G_OBJECT(button), "tooltip-text", _("select all images in current collection (ctrl-a)"),
                (char *)NULL);
-  gtk_box_pack_start(hbox, button, TRUE, TRUE, 0);
+  gtk_grid_attach(grid, button, 0, line, 1, 1);
   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(button_clicked), GINT_TO_POINTER(0));
 
   button = gtk_button_new_with_label(_("select none"));
   d->select_none_button = button;
   g_object_set(G_OBJECT(button), "tooltip-text", _("clear selection (ctrl-shift-a)"), (char *)NULL);
-  gtk_box_pack_start(hbox, button, TRUE, TRUE, 0);
+  gtk_grid_attach(grid, button, 1, line++, 1, 1);
   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(button_clicked), GINT_TO_POINTER(1));
 
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(hbox), TRUE, TRUE, 0);
-  hbox = GTK_BOX(gtk_hbox_new(TRUE, 5));
 
   button = gtk_button_new_with_label(_("invert selection"));
   g_object_set(G_OBJECT(button), "tooltip-text",
                _("select unselected images\nin current collection (ctrl-!)"), (char *)NULL);
   d->select_invert_button = button;
-  gtk_box_pack_start(hbox, button, TRUE, TRUE, 0);
+  gtk_grid_attach(grid, button, 0, line, 1, 1);
   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(button_clicked), GINT_TO_POINTER(2));
 
   button = gtk_button_new_with_label(_("select film roll"));
   d->select_film_roll_button = button;
   g_object_set(G_OBJECT(button), "tooltip-text",
                _("select all images which are in the same\nfilm roll as the selected images"), (char *)NULL);
-  gtk_box_pack_start(hbox, button, TRUE, TRUE, 0);
+  gtk_grid_attach(grid, button, 1, line++, 1, 1);
   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(button_clicked), GINT_TO_POINTER(3));
 
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(hbox), TRUE, TRUE, 0);
-  hbox = GTK_BOX(gtk_hbox_new(TRUE, 5));
 
   button = gtk_button_new_with_label(_("select untouched"));
   d->select_untouched_button = button;
   g_object_set(G_OBJECT(button), "tooltip-text", _("select untouched images in\ncurrent collection"),
                (char *)NULL);
-  gtk_box_pack_start(hbox, button, TRUE, TRUE, 0);
+  gtk_grid_attach(grid, button, 0, line, 1, 1);
   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(button_clicked), GINT_TO_POINTER(4));
-  // Just a filler, remove if a new button is added
-  gtk_box_pack_start(hbox, gtk_hbox_new(TRUE, 5), TRUE, TRUE, 0);
-
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(hbox), TRUE, TRUE, 0);
 }
 
 void gui_cleanup(dt_lib_module_t *self)

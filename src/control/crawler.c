@@ -302,6 +302,7 @@ void dt_control_crawler_show_image_list(GList *images)
   // a list with all the images
   GtkTreeViewColumn *column;
   GtkWidget *scroll = gtk_scrolled_window_new(NULL, NULL);
+  gtk_widget_set_vexpand(scroll, TRUE);
   GtkListStore *store = gtk_list_store_new(DT_CONTROL_CRAWLER_NUM_COLS,
                                            G_TYPE_BOOLEAN, // selection toggle
                                            G_TYPE_INT,     // id
@@ -359,28 +360,28 @@ void dt_control_crawler_show_image_list(GList *images)
   GtkWidget *win = dt_ui_main_window(darktable.gui->ui);
   GtkWidget *dialog = gtk_dialog_new_with_buttons(_("updated xmp sidecar files found"), GTK_WINDOW(win),
                                                   GTK_DIALOG_DESTROY_WITH_PARENT | GTK_DIALOG_MODAL,
-                                                  GTK_STOCK_CLOSE, GTK_RESPONSE_CLOSE, NULL);
+                                                  _("_Close"), GTK_RESPONSE_CLOSE, NULL);
   gtk_widget_set_size_request(dialog, -1, DT_PIXEL_APPLY_DPI(400));
   gtk_window_set_transient_for(GTK_WINDOW(dialog), GTK_WINDOW(win));
   GtkWidget *content_area = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
 
-  GtkWidget *alignment = gtk_alignment_new(0.5, 0.5, 1.0, 1.0);
-  gtk_alignment_set_padding(GTK_ALIGNMENT(alignment), 5, 0, 10, 10);
-  gtk_container_add(GTK_CONTAINER(content_area), alignment);
-
-  GtkWidget *content_box = gtk_vbox_new(FALSE, 5);
-  gtk_container_add(GTK_CONTAINER(alignment), content_box);
+  GtkWidget *content_box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
+  gtk_widget_set_margin_start(content_box, DT_PIXEL_APPLY_DPI(10));
+  gtk_widget_set_margin_end(content_box, DT_PIXEL_APPLY_DPI(10));
+  gtk_widget_set_margin_top(content_box, DT_PIXEL_APPLY_DPI(5));
+  gtk_widget_set_margin_bottom(content_box, DT_PIXEL_APPLY_DPI(0));
+  gtk_container_add(GTK_CONTAINER(content_area), content_box);
 
   gtk_box_pack_start(GTK_BOX(content_box), scroll, TRUE, TRUE, 0);
 
-  GtkWidget *box = gtk_hbox_new(FALSE, 5);
+  GtkWidget *box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5);
   gtk_box_pack_start(GTK_BOX(content_box), box, FALSE, FALSE, 0);
   GtkWidget *select_all = gtk_check_button_new_with_label(_("select all"));
   gtk_box_pack_start(GTK_BOX(box), select_all, FALSE, FALSE, 0);
   gui->select_all_handler_id = g_signal_connect(select_all, "toggled", G_CALLBACK(_select_all_callback), gui);
   gui->select_all = select_all;
 
-  box = gtk_hbox_new(FALSE, 5);
+  box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5);
   gtk_box_pack_start(GTK_BOX(content_box), box, FALSE, FALSE, 0);
   GtkWidget *reload_button = gtk_button_new_with_label(_("reload selected xmp files"));
   GtkWidget *overwrite_button = gtk_button_new_with_label(_("overwrite selected xmp files"));

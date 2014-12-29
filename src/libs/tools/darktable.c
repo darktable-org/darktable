@@ -44,7 +44,7 @@ typedef struct dt_lib_darktable_t
 
 
 /* expose function for darktable module */
-static gboolean _lib_darktable_expose_callback(GtkWidget *widget, GdkEventExpose *event, gpointer user_data);
+static gboolean _lib_darktable_draw_callback(GtkWidget *widget, cairo_t *cr, gpointer user_data);
 /* button press callback */
 static gboolean _lib_darktable_button_press_callback(GtkWidget *widget, GdkEventButton *event,
                                                      gpointer user_data);
@@ -88,7 +88,7 @@ void gui_init(dt_lib_module_t *self)
   self->widget = gtk_event_box_new();
 
   /* connect callbacks */
-  g_signal_connect(G_OBJECT(self->widget), "expose-event", G_CALLBACK(_lib_darktable_expose_callback), self);
+  g_signal_connect(G_OBJECT(self->widget), "draw", G_CALLBACK(_lib_darktable_draw_callback), self);
   g_signal_connect(G_OBJECT(self->widget), "button-press-event",
                    G_CALLBACK(_lib_darktable_button_press_callback), self);
 
@@ -218,20 +218,22 @@ void gui_cleanup(dt_lib_module_t *self)
 
 
 
-static gboolean _lib_darktable_expose_callback(GtkWidget *widget, GdkEventExpose *event, gpointer user_data)
+static gboolean _lib_darktable_draw_callback(GtkWidget *widget, cairo_t *cr, gpointer user_data)
 {
   dt_lib_module_t *self = (dt_lib_module_t *)user_data;
   dt_lib_darktable_t *d = (dt_lib_darktable_t *)self->data;
 
   /* get the current style */
-  GtkStyle *style = gtk_rc_get_style_by_paths(gtk_settings_get_default(), NULL, "GtkWidget", GTK_TYPE_WIDGET);
-  if(!style) style = gtk_rc_get_style(widget);
+  GdkRGBA color;
+  PangoFontDescription *font_desc = NULL;
+  GtkStateFlags state = gtk_widget_get_state_flags(widget);
+  GtkStyleContext *context = gtk_widget_get_style_context(widget);
+  gtk_style_context_get_background_color(context, state, &color);
+  gtk_style_context_get(context, state, "font", &font_desc, NULL);
 
-  cairo_t *cr = gdk_cairo_create(gtk_widget_get_window(widget));
 
   /* fill background */
-  cairo_set_source_rgb(cr, style->bg[0].red / 65535.0, style->bg[0].green / 65535.0,
-                       style->bg[0].blue / 65535.0);
+  cairo_set_source_rgba(cr, color.red, color.green, color.blue, color.alpha);
   cairo_paint(cr);
 
   /* paint icon image */
@@ -246,9 +248,9 @@ static gboolean _lib_darktable_expose_callback(GtkWidget *widget, GdkEventExpose
   /* create a pango layout and print fancy  name/version string */
   PangoLayout *layout;
   layout = gtk_widget_create_pango_layout(widget, NULL);
-  pango_font_description_set_weight(style->font_desc, PANGO_WEIGHT_BOLD);
-  pango_font_description_set_absolute_size(style->font_desc, DT_PIXEL_APPLY_DPI(25) * PANGO_SCALE);
-  pango_layout_set_font_description(layout, style->font_desc);
+  pango_font_description_set_weight(font_desc, PANGO_WEIGHT_BOLD);
+  pango_font_description_set_absolute_size(font_desc, DT_PIXEL_APPLY_DPI(25) * PANGO_SCALE);
+  pango_layout_set_font_description(layout, font_desc);
 
   pango_layout_set_text(layout, PACKAGE_NAME, -1);
   cairo_set_source_rgba(cr, 1.0, 1.0, 1.0, 0.5);
@@ -256,8 +258,8 @@ static gboolean _lib_darktable_expose_callback(GtkWidget *widget, GdkEventExpose
   pango_cairo_show_layout(cr, layout);
 
   /* print version */
-  pango_font_description_set_absolute_size(style->font_desc, DT_PIXEL_APPLY_DPI(10) * PANGO_SCALE);
-  pango_layout_set_font_description(layout, style->font_desc);
+  pango_font_description_set_absolute_size(font_desc, DT_PIXEL_APPLY_DPI(10) * PANGO_SCALE);
+  pango_layout_set_font_description(layout, font_desc);
   pango_layout_set_text(layout, PACKAGE_VERSION, -1);
   cairo_move_to(cr, d->image_width + DT_PIXEL_APPLY_DPI(4.0), DT_PIXEL_APPLY_DPI(30.0));
   cairo_set_source_rgba(cr, 1.0, 1.0, 1.0, 0.3);
@@ -265,7 +267,6 @@ static gboolean _lib_darktable_expose_callback(GtkWidget *widget, GdkEventExpose
 
   /* cleanup */
   g_object_unref(layout);
-  cairo_destroy(cr);
 
   return TRUE;
 }

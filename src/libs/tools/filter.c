@@ -23,7 +23,6 @@
 #include "develop/develop.h"
 #include "libs/lib.h"
 #include "gui/gtk.h"
-#include "dtgtk/button.h"
 
 DT_MODULE(1)
 
@@ -98,7 +97,7 @@ void gui_init(dt_lib_module_t *self)
   dt_lib_tool_filter_t *d = (dt_lib_tool_filter_t *)g_malloc0(sizeof(dt_lib_tool_filter_t));
   self->data = (void *)d;
 
-  self->widget = gtk_hbox_new(FALSE, 2);
+  self->widget = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 2);
 
   /**/
   GtkWidget *widget;
@@ -107,8 +106,7 @@ void gui_init(dt_lib_module_t *self)
   widget = gtk_label_new(_("view"));
   gtk_box_pack_start(GTK_BOX(self->widget), widget, FALSE, FALSE, 4);
 
-  d->comparator = widget = dtgtk_togglebutton_new_with_label(
-      comparators[dt_collection_get_rating_comparator(darktable.collection)], NULL, CPF_STYLE_BOX);
+  d->comparator = widget = gtk_toggle_button_new_with_label(comparators[dt_collection_get_rating_comparator(darktable.collection)]);
   gtk_box_pack_start(GTK_BOX(self->widget), widget, FALSE, FALSE, 4);
   g_signal_connect(G_OBJECT(widget), "toggled", G_CALLBACK(_lib_filter_compare_button_changed),
                    (gpointer)self);
@@ -151,10 +149,10 @@ void gui_init(dt_lib_module_t *self)
 
   /* reverse order checkbutton */
   d->reverse = widget
-      = dtgtk_togglebutton_new(dtgtk_cairo_paint_solid_arrow, CPF_STYLE_BOX | CPF_DIRECTION_UP);
+      = dtgtk_togglebutton_new(dtgtk_cairo_paint_solid_arrow, CPF_DO_NOT_USE_BORDER | CPF_STYLE_BOX | CPF_DIRECTION_UP);
   if(darktable.collection->params.descending)
     dtgtk_togglebutton_set_paint(DTGTK_TOGGLEBUTTON(widget), dtgtk_cairo_paint_solid_arrow,
-                                 CPF_STYLE_BOX | CPF_DIRECTION_DOWN);
+                                 CPF_DO_NOT_USE_BORDER | CPF_STYLE_BOX | CPF_DIRECTION_DOWN);
 
   gtk_box_pack_start(GTK_BOX(self->widget), widget, FALSE, FALSE, 0);
 
@@ -261,9 +259,10 @@ static void _lib_filter_reverse_button_changed(GtkDarktableToggleButton *widget,
   gboolean reverse = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget));
 
   if(reverse)
-    dtgtk_togglebutton_set_paint(widget, dtgtk_cairo_paint_solid_arrow, CPF_STYLE_BOX | CPF_DIRECTION_DOWN);
+    dtgtk_togglebutton_set_paint(widget, dtgtk_cairo_paint_solid_arrow, CPF_DO_NOT_USE_BORDER | CPF_STYLE_BOX | CPF_DIRECTION_DOWN);
   else
-    dtgtk_togglebutton_set_paint(widget, dtgtk_cairo_paint_solid_arrow, CPF_STYLE_BOX | CPF_DIRECTION_UP);
+    dtgtk_togglebutton_set_paint(widget, dtgtk_cairo_paint_solid_arrow, CPF_DO_NOT_USE_BORDER | CPF_STYLE_BOX | CPF_DIRECTION_UP);
+  gtk_widget_queue_draw(GTK_WIDGET(widget));
 
   /* update last settings */
   dt_collection_set_sort(darktable.collection, -1, reverse);

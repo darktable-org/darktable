@@ -67,8 +67,8 @@ static void load_button_clicked(GtkWidget *widget, dt_lib_module_t *self)
 {
   GtkWidget *win = dt_ui_main_window(darktable.gui->ui);
   GtkWidget *filechooser = gtk_file_chooser_dialog_new(
-      _("open sidecar file"), GTK_WINDOW(win), GTK_FILE_CHOOSER_ACTION_OPEN, GTK_STOCK_CANCEL,
-      GTK_RESPONSE_CANCEL, GTK_STOCK_OPEN, GTK_RESPONSE_ACCEPT, (char *)NULL);
+      _("open sidecar file"), GTK_WINDOW(win), GTK_FILE_CHOOSER_ACTION_OPEN, _("_Cancel"),
+      GTK_RESPONSE_CANCEL, _("_Open"), GTK_RESPONSE_ACCEPT, (char *)NULL);
 
   GtkFileFilter *filter;
   filter = GTK_FILE_FILTER(gtk_file_filter_new());
@@ -225,70 +225,69 @@ void gui_init(dt_lib_module_t *self)
 {
   dt_lib_copy_history_t *d = (dt_lib_copy_history_t *)malloc(sizeof(dt_lib_copy_history_t));
   self->data = (void *)d;
-  self->widget = gtk_vbox_new(TRUE, 5);
+  self->widget = gtk_grid_new();
+  GtkGrid *grid = GTK_GRID(self->widget);
+  gtk_grid_set_row_spacing(grid, DT_PIXEL_APPLY_DPI(5));
+  gtk_grid_set_column_spacing(grid, DT_PIXEL_APPLY_DPI(5));
+  gtk_grid_set_column_homogeneous(grid, TRUE);
+  int line = 0;
   dt_gui_hist_dialog_init(&d->dg);
 
-  GtkBox *hbox = GTK_BOX(gtk_hbox_new(TRUE, 5));
 
   GtkWidget *copy_parts = gtk_button_new_with_label(_("copy"));
   d->copy_parts_button = copy_parts;
   g_object_set(G_OBJECT(copy_parts), "tooltip-text",
                _("copy part history stack of\nfirst selected image (ctrl-shift-c)"), (char *)NULL);
-  gtk_box_pack_start(hbox, copy_parts, TRUE, TRUE, 0);
+  gtk_grid_attach(grid, copy_parts, 0, line, 2, 1);
 
   GtkWidget *copy = gtk_button_new_with_label(_("copy all"));
   d->copy_button = copy;
   g_object_set(G_OBJECT(copy), "tooltip-text", _("copy history stack of\nfirst selected image (ctrl-c)"),
                (char *)NULL);
-  gtk_box_pack_start(hbox, copy, TRUE, TRUE, 0);
+  gtk_grid_attach(grid, copy, 2, line, 2, 1);
 
   GtkWidget *delete = gtk_button_new_with_label(_("discard"));
   d->delete_button = delete;
   g_object_set(G_OBJECT(delete), "tooltip-text", _("discard history stack of\nall selected images"),
                (char *)NULL);
-  gtk_box_pack_start(hbox, delete, TRUE, TRUE, 0);
+  gtk_grid_attach(grid, delete, 4, line++, 2, 1);
 
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(hbox), TRUE, TRUE, 0);
-  hbox = GTK_BOX(gtk_hbox_new(TRUE, 5));
 
   d->paste_parts = GTK_BUTTON(gtk_button_new_with_label(_("paste")));
   g_object_set(G_OBJECT(d->paste_parts), "tooltip-text",
                _("paste part history stack to\nall selected images (ctrl-shift-v)"), (char *)NULL);
   d->imageid = -1;
   gtk_widget_set_sensitive(GTK_WIDGET(d->paste_parts), FALSE);
-  gtk_box_pack_start(hbox, GTK_WIDGET(d->paste_parts), TRUE, TRUE, 0);
+  gtk_grid_attach(grid, GTK_WIDGET(d->paste_parts), 0, line, 2, 1);
 
   d->paste = GTK_BUTTON(gtk_button_new_with_label(_("paste all")));
   g_object_set(G_OBJECT(d->paste), "tooltip-text", _("paste history stack to\nall selected images (ctrl-v)"),
                (char *)NULL);
   gtk_widget_set_sensitive(GTK_WIDGET(d->paste), FALSE);
-  gtk_box_pack_start(hbox, GTK_WIDGET(d->paste), TRUE, TRUE, 0);
+  gtk_grid_attach(grid, GTK_WIDGET(d->paste), 2, line, 2, 1);
 
   d->pastemode = GTK_COMBO_BOX_TEXT(gtk_combo_box_text_new());
   gtk_combo_box_text_append_text(d->pastemode, _("append"));
   gtk_combo_box_text_append_text(d->pastemode, _("overwrite"));
   g_object_set(G_OBJECT(d->pastemode), "tooltip-text", _("how to handle existing history"), (char *)NULL);
-  gtk_box_pack_start(hbox, GTK_WIDGET(d->pastemode), TRUE, TRUE, 0);
+  gtk_grid_attach(grid, GTK_WIDGET(d->pastemode), 4, line++, 2, 1);
   gtk_combo_box_set_active(GTK_COMBO_BOX(d->pastemode),
                            dt_conf_get_int("plugins/lighttable/copy_history/pastemode"));
 
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(hbox), TRUE, TRUE, 0);
 
-  hbox = GTK_BOX(gtk_hbox_new(TRUE, 5));
   GtkWidget *loadbutton = gtk_button_new_with_label(_("load sidecar file"));
   d->load_button = loadbutton;
   g_object_set(G_OBJECT(loadbutton), "tooltip-text",
                _("open an XMP sidecar file\nand apply it to selected images"), (char *)NULL);
-  gtk_box_pack_start(hbox, loadbutton, TRUE, TRUE, 0);
+  gtk_grid_attach(grid, loadbutton, 0, line, 3, 1);
 
   GtkWidget *button = gtk_button_new_with_label(_("write sidecar files"));
   d->write_button = button;
   g_object_set(G_OBJECT(button), "tooltip-text", _("write history stack and tags to XMP sidecar files"),
                (char *)NULL);
-  gtk_box_pack_start(hbox, button, TRUE, TRUE, 0);
+  gtk_grid_attach(grid, button, 3, line, 3, 1);
   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(write_button_clicked), (gpointer)self);
 
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(hbox), TRUE, TRUE, 0);
 
   g_signal_connect(G_OBJECT(copy), "clicked", G_CALLBACK(copy_button_clicked), (gpointer)self);
   g_signal_connect(G_OBJECT(copy_parts), "clicked", G_CALLBACK(copy_parts_button_clicked), (gpointer)self);

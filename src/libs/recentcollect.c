@@ -21,7 +21,6 @@
 #include "control/signal.h"
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
-#include "dtgtk/button.h"
 #include "libs/lib.h"
 #include "libs/collect.h"
 
@@ -285,6 +284,9 @@ static void _lib_recentcollection_updated(gpointer instance, gpointer user_data)
     {
       gtk_button_set_label(GTK_BUTTON(d->item[k].button), str);
     }
+    GtkWidget *child = gtk_bin_get_child(GTK_BIN(d->item[k].button));
+    if(child)
+      gtk_widget_set_halign(child, GTK_ALIGN_START);
     gtk_widget_set_no_show_all(d->item[k].button, TRUE);
     gtk_widget_set_visible(d->item[k].button, FALSE);
   }
@@ -315,17 +317,22 @@ void gui_init(dt_lib_module_t *self)
 {
   dt_lib_recentcollect_t *d = (dt_lib_recentcollect_t *)calloc(1, sizeof(dt_lib_recentcollect_t));
   self->data = (void *)d;
-  self->widget = gtk_vbox_new(FALSE, 0);
+  self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
   d->inited = 0;
+
+  gtk_widget_set_name(self->widget, "recent-collection-ui");
 
   // add buttons in the list, set them all to invisible
   for(int k = 0; k < NUM_LINES; k++)
   {
-    d->item[k].button = dtgtk_button_new(NULL, CPF_STYLE_FLAT);
+    d->item[k].button = gtk_button_new();
     gtk_box_pack_start(GTK_BOX(self->widget), d->item[k].button, FALSE, TRUE, 0);
     g_signal_connect(G_OBJECT(d->item[k].button), "clicked", G_CALLBACK(button_pressed), (gpointer)self);
     gtk_widget_set_no_show_all(d->item[k].button, TRUE);
     gtk_widget_set_visible(d->item[k].button, FALSE);
+    GtkWidget *child = gtk_bin_get_child(GTK_BIN(d->item[k].button));
+    if(child)
+      gtk_widget_set_halign(child, GTK_ALIGN_START);
   }
   _lib_recentcollection_updated(NULL, self);
 
