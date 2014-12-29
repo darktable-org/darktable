@@ -26,18 +26,20 @@
 typedef enum dtgtk_cairo_paint_flags_t
 {
   CPF_NONE = 0,
-  CPF_DIRECTION_UP = 1,
-  CPF_DIRECTION_DOWN = 2,
-  CPF_DIRECTION_LEFT = 4,
-  CPF_DIRECTION_RIGHT = 8,
-  CPF_ACTIVE = 16,
-  CPF_PRELIGHT = 32,
-  CPF_IGNORE_FG_STATE = 64,     // Ignore state when setting foregroundcolor
-  CPF_BG_TRANSPARENT = 128,     // transparent background
-  CPF_STYLE_FLAT = 256,         // flat style widget
-  CPF_STYLE_BOX = 512,          // boxed style widget
-  CPF_DO_NOT_USE_BORDER = 1024, // do not paint inner border
-  CPF_SPECIAL_FLAG = 2048
+  CPF_DIRECTION_UP = 1 << 0,
+  CPF_DIRECTION_DOWN = 1 << 1,
+  CPF_DIRECTION_LEFT = 1 << 2,
+  CPF_DIRECTION_RIGHT = 1 << 3,
+  CPF_ACTIVE = 1 << 4,
+  CPF_PRELIGHT = 1 << 5,
+  CPF_IGNORE_FG_STATE = 1 << 6,     // Ignore state when setting foregroundcolor
+  CPF_BG_TRANSPARENT = 1 << 7,     // transparent background
+  CPF_STYLE_FLAT = 1 << 8,         // flat style widget
+  CPF_STYLE_BOX = 1 << 9,          // boxed style widget
+  CPF_DO_NOT_USE_BORDER = 1 << 10, // do not paint inner border
+  CPF_SPECIAL_FLAG = 1 << 11,
+  CPF_CUSTOM_BG = 1 << 12,
+  CPF_CUSTOM_FG = 1 << 13
 } dtgtk_cairo_paint_flags_t;
 
 
