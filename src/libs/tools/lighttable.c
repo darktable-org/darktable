@@ -112,6 +112,7 @@ void gui_init(dt_lib_module_t *self)
   d->zoom = gtk_scale_new_with_range(GTK_ORIENTATION_HORIZONTAL, 1, 21, 1);
   gtk_widget_set_size_request(GTK_WIDGET(d->zoom), DT_PIXEL_APPLY_DPI(140), -1);
   gtk_scale_set_draw_value(GTK_SCALE(d->zoom), FALSE);
+  gtk_range_set_increments(GTK_RANGE(d->zoom), 1, 1);
   gtk_box_pack_start(GTK_BOX(self->widget), d->zoom, TRUE, TRUE, 0);
 
   /* manual entry of the zoom level */
