@@ -6,10 +6,9 @@ if(USE_OPENCL)
 	add_subdirectory(kernels)
 endif(USE_OPENCL)
 
+#
 # Generate and instal darktable.css
 #
-MESSAGE( "PC_GTK3_VERSION is ${PC_GTK3_VERSION}" )
-
 if ("${PC_GTK3_VERSION}" VERSION_GREATER "3.13.6")
   set(GTK_CSS_CLASS "checked")
 else ()
