@@ -841,10 +841,9 @@ static gboolean dt_iop_levels_vbox_automatic_draw(GtkWidget *widget, cairo_t *cr
     g->reprocess_on_next_expose = FALSE;
     // FIXME: or just use dev->pipe->changed |= DT_DEV_PIPE_SYNCH; ?
     dt_dev_reprocess_all(self->dev);
-    return FALSE;
   }
 
-  return TRUE;
+  return FALSE;
 }
 
 /**
