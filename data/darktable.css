@@ -97,10 +97,12 @@ GtkAlignment
   border-style:none;
   background-color: shade(@selected_bg_color, 1.7);
 }
-#iop-plugin-ui .button {
+#iop-plugin-ui .button,
+#iop-plugin-ui GtkButton {
   background-color: transparent;
 }
-#iop-plugin-ui .button:hover {
+#iop-plugin-ui .button:hover
+#iop-plugin-ui GtkButton {
   background-color: shade(@plugin_bg_color, 1.7);
 }
 #iop-plugin-ui GtkLabel,
