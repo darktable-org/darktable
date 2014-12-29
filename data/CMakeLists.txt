@@ -6,10 +6,17 @@ if(USE_OPENCL)
 	add_subdirectory(kernels)
 endif(USE_OPENCL)
 
+# Generate and instal darktable.css
 #
-# FIXME: gtk3-3.10: s/checked/active/
-#
-install(FILES darktable.css DESTINATION ${SHARE_INSTALL}/darktable)
+MESSAGE( "PC_GTK3_VERSION is ${PC_GTK3_VERSION}" )
+
+if ("${PC_GTK3_VERSION}" VERSION_GREATER "3.13.6")
+  set(GTK_CSS_CLASS "checked")
+else ()
+  set(GTK_CSS_CLASS "active")
+endif ()
+configure_file( ${CMAKE_CURRENT_SOURCE_DIR}/darktable.css.in ${CMAKE_CURRENT_BINARY_DIR}/darktable.css )
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/darktable.css DESTINATION ${SHARE_INSTALL}/darktable)
 
 #
 # web gallery export support files:
