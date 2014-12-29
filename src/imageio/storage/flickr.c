@@ -17,7 +17,7 @@
 */
 
 #include "dtgtk/button.h"
-#include "dtgtk/label.h"
+#include "bauhaus/bauhaus.h"
 #include "gui/gtk.h"
 #include "common/darktable.h"
 #include "common/image.h"
@@ -61,15 +61,11 @@ typedef struct _flickr_api_context_t
 typedef struct dt_storage_flickr_gui_data_t
 {
 
-  GtkLabel *label1, *label2, *label3, *label4, *label5, *label6, *label7,
-      *labelPerms; // username, password, albums, status, albumtitle, albumsummary, albumrights
-  GtkEntry *entry1, *entry2, *entry3, *entry4; // username, password, albumtitle,albumsummary
-  GtkComboBoxText *comboBox1;                  // album box
-  GtkCheckButton *checkButton2;                // export tags
-  GtkDarktableButton *dtbutton1;               // refresh albums
-  GtkButton *button;                           // login button. These buttons call the same functions
-  GtkBox *hbox1;                               // Create album options...
-  GtkComboBoxText *permsComboBox;              // Permissions for flickr
+  GtkLabel *status_label;
+  GtkEntry *user_entry, *title_entry, *summary_entry;
+  GtkWidget *export_tags;
+  GtkBox *create_box;                               // Create album options...
+  GtkWidget *permission_list, *album_list;
 
   char *user_token;
 
@@ -147,7 +143,7 @@ static _flickr_api_context_t *_flickr_api_authenticate(dt_storage_flickr_gui_dat
 
     if(_username)
     {
-      if(!strcmp(_username, gtk_entry_get_text(ui->entry1)))
+      if(!strcmp(_username, gtk_entry_get_text(ui->user_entry)))
       {
         flickr_user_token = g_strdup(_user_token);
         perms = flickcurl_auth_checkToken(ctx->fc, flickr_user_token);
@@ -231,7 +227,7 @@ static _flickr_api_context_t *_flickr_api_authenticate(dt_storage_flickr_gui_dat
 
         /* Add creds to pwstorage */
         GHashTable *table = g_hash_table_new(g_str_hash, g_str_equal);
-        gchar *username = (gchar *)gtk_entry_get_text(ui->entry1);
+        gchar *username = (gchar *)gtk_entry_get_text(ui->user_entry);
 
         g_hash_table_insert(table, "username", username);
         g_hash_table_insert(table, "token", flickr_user_token);
@@ -320,7 +316,7 @@ static void set_status(dt_storage_flickr_gui_data_t *ui, gchar *message, gchar *
   if(!color) color = "#ffffff";
   gchar mup[512] = { 0 };
   snprintf(mup, sizeof(mup), "<span foreground=\"%s\" ><small>%s</small></span>", color, message);
-  gtk_label_set_markup(ui->label4, mup);
+  gtk_label_set_markup(ui->status_label, mup);
 }
 
 static void flickr_entry_changed(GtkEntry *entry, gpointer data)
@@ -333,7 +329,7 @@ static void flickr_entry_changed(GtkEntry *entry, gpointer data)
     g_free(ui->user_token);
     ui->user_token = NULL;
     set_status(ui, _("not authenticated"), "#e07f7f");
-    gtk_widget_set_sensitive(GTK_WIDGET(ui->comboBox1), FALSE);
+    gtk_widget_set_sensitive(GTK_WIDGET(ui->album_list), FALSE);
   }
 }
 
@@ -360,7 +356,7 @@ static flickcurl_photoset **_flickr_api_photosets(_flickr_api_context_t *ctx, co
 static void refresh_albums(dt_storage_flickr_gui_data_t *ui)
 {
   int i;
-  gtk_widget_set_sensitive(GTK_WIDGET(ui->comboBox1), FALSE);
+  gtk_widget_set_sensitive(GTK_WIDGET(ui->album_list), FALSE);
 
   if(ui->flickr_api == NULL || ui->flickr_api->needsReauthentication == TRUE)
   {
@@ -373,69 +369,54 @@ static void refresh_albums(dt_storage_flickr_gui_data_t *ui)
     else
     {
       set_status(ui, _("not authenticated"), "#e07f7f");
-      gtk_widget_set_sensitive(GTK_WIDGET(ui->comboBox1), FALSE);
+      gtk_widget_set_sensitive(GTK_WIDGET(ui->album_list), FALSE);
       return;
     }
   }
 
-  // First clear the model of data except first item (Create new album)
-  GtkTreeModel *model = gtk_combo_box_get_model(GTK_COMBO_BOX(ui->comboBox1));
-  gtk_list_store_clear(GTK_LIST_STORE(model));
+  // First clear the cobobox except first 2 items (none / create new album)
+  dt_bauhaus_combobox_clear(ui->album_list);
 
-  ui->albums = _flickr_api_photosets(ui->flickr_api, gtk_entry_get_text(ui->entry1));
+  ui->albums = _flickr_api_photosets(ui->flickr_api, gtk_entry_get_text(ui->user_entry));
   if(ui->albums)
   {
 
     // Add standard action
-    gtk_combo_box_text_append_text(ui->comboBox1, _("without album"));
-    gtk_combo_box_text_append_text(ui->comboBox1, _("create new album"));
-    gtk_combo_box_text_append_text(ui->comboBox1, ""); // Separator
+    dt_bauhaus_combobox_add(ui->album_list, _("without album"));
+    dt_bauhaus_combobox_add(ui->album_list, _("create new album"));
+//     dt_bauhaus_combobox_add(ui->album_list, ""); // Separator // FIXME: bauhaus doesn't support separators
 
     // Then add albums from list...
     for(i = 0; ui->albums[i]; i++)
     {
       char data[512] = { 0 };
       snprintf(data, sizeof(data), "%s (%i)", ui->albums[i]->title, ui->albums[i]->photos_count);
-      gtk_combo_box_text_append_text(ui->comboBox1, g_strdup(data));
+      dt_bauhaus_combobox_add(ui->album_list, data);
     }
-    gtk_combo_box_set_active(GTK_COMBO_BOX(ui->comboBox1), 3);
-    gtk_widget_hide(GTK_WIDGET(ui->hbox1)); // Hide create album box...
+    dt_bauhaus_combobox_set(ui->album_list, 2);
+    gtk_widget_hide(GTK_WIDGET(ui->create_box)); // Hide create album box...
   }
   else
   {
     // Failed to parse feed of album...
     // Lets notify somehow...
-    gtk_combo_box_set_active(GTK_COMBO_BOX(ui->comboBox1), 0);
+    dt_bauhaus_combobox_set(ui->album_list, 0);
   }
-  gtk_widget_set_sensitive(GTK_WIDGET(ui->comboBox1), TRUE);
+  gtk_widget_set_sensitive(GTK_WIDGET(ui->album_list), TRUE);
 }
 
 
 static void flickr_album_changed(GtkComboBox *cb, gpointer data)
 {
   dt_storage_flickr_gui_data_t *ui = (dt_storage_flickr_gui_data_t *)data;
-  gchar *value = gtk_combo_box_text_get_active_text(ui->comboBox1);
+  const gchar *value = dt_bauhaus_combobox_get_text(ui->album_list);
   if(value != NULL && strcmp(value, _("create new album")) == 0)
   {
-    gtk_widget_set_no_show_all(GTK_WIDGET(ui->hbox1), FALSE);
-    gtk_widget_show_all(GTK_WIDGET(ui->hbox1));
+    gtk_widget_set_no_show_all(GTK_WIDGET(ui->create_box), FALSE);
+    gtk_widget_show_all(GTK_WIDGET(ui->create_box));
   }
   else
-    gtk_widget_hide(GTK_WIDGET(ui->hbox1));
-}
-
-static gboolean combobox_separator(GtkTreeModel *model, GtkTreeIter *iter, gpointer data)
-{
-  GValue value = {
-    0,
-  };
-  gtk_tree_model_get_value(model, iter, 0, &value);
-  gchar *v = NULL;
-  if(G_VALUE_HOLDS_STRING(&value))
-  {
-    if((v = (gchar *)g_value_get_string(&value)) != NULL && *v == '\0') return TRUE;
-  }
-  return FALSE;
+    gtk_widget_hide(GTK_WIDGET(ui->create_box));
 }
 
 // Refresh button pressed...
@@ -465,126 +446,126 @@ void gui_init(dt_imageio_module_storage_t *self)
 {
   self->gui_data = (dt_storage_flickr_gui_data_t *)g_malloc0(sizeof(dt_storage_flickr_gui_data_t));
   dt_storage_flickr_gui_data_t *ui = self->gui_data;
-  self->widget = gtk_vbox_new(FALSE, 0);
+  self->widget = gtk_grid_new();
+  gtk_grid_set_row_spacing(GTK_GRID(self->widget), DT_PIXEL_APPLY_DPI(5));
+  gtk_grid_set_column_spacing(GTK_GRID(self->widget), DT_PIXEL_APPLY_DPI(10));
+  int line = 0;
 
-  GtkWidget *hbox1 = gtk_hbox_new(FALSE, 5);
-  GtkWidget *hbox0 = gtk_hbox_new(FALSE, 5);
-  GtkWidget *vbox1 = gtk_vbox_new(FALSE, 0);
-  GtkWidget *vbox2 = gtk_vbox_new(FALSE, 5);
-
-  ui->label1 = GTK_LABEL(gtk_label_new(_("flickr user")));
-  ui->label3 = GTK_LABEL(gtk_label_new(_("photosets")));
-  ui->labelPerms = GTK_LABEL(gtk_label_new(_("visible to")));
-  ui->label4 = GTK_LABEL(gtk_label_new(NULL));
-
-  set_status(ui, _("click login button to start"), "#ffffff");
-
-  ui->label5 = GTK_LABEL(gtk_label_new(_("title")));
-  ui->label6 = GTK_LABEL(gtk_label_new(_("summary")));
-  gtk_misc_set_alignment(GTK_MISC(ui->label1), 0.0, 0.5);
-  gtk_misc_set_alignment(GTK_MISC(ui->labelPerms), 0.0, 0.9);
-  gtk_misc_set_alignment(GTK_MISC(ui->label3), 0.0, 0.7);
-  gtk_misc_set_alignment(GTK_MISC(ui->label5), 0.0, 0.5);
-  gtk_misc_set_alignment(GTK_MISC(ui->label6), 0.0, 0.5);
-
-  ui->entry1 = GTK_ENTRY(gtk_entry_new());
-  ui->entry3 = GTK_ENTRY(gtk_entry_new()); // Album title
-  ui->entry4 = GTK_ENTRY(gtk_entry_new()); // Album summary
-
-  dt_gui_key_accel_block_on_focus_connect(GTK_WIDGET(ui->entry1));
-  dt_gui_key_accel_block_on_focus_connect(GTK_WIDGET(ui->entry3));
-  dt_gui_key_accel_block_on_focus_connect(GTK_WIDGET(ui->entry4));
-
-  /*
-    gtk_widget_add_events(GTK_WIDGET(ui->entry1), GDK_FOCUS_CHANGE_MASK);
-    g_signal_connect (G_OBJECT (ui->entry1), "focus-in-event",  G_CALLBACK(focus_in),  NULL);
-    g_signal_connect (G_OBJECT (ui->entry1), "focus-out-event", G_CALLBACK(focus_out), NULL);
-
-    gtk_widget_add_events(GTK_WIDGET(ui->entry2), GDK_FOCUS_CHANGE_MASK);
-    g_signal_connect (G_OBJECT (ui->entry2), "focus-in-event",  G_CALLBACK(focus_in),  NULL);
-    g_signal_connect (G_OBJECT (ui->entry2), "focus-out-event", G_CALLBACK(focus_out), NULL);
-    gtk_widget_add_events(GTK_WIDGET(ui->entry3), GDK_FOCUS_CHANGE_MASK);
-    g_signal_connect (G_OBJECT (ui->entry3), "focus-in-event",  G_CALLBACK(focus_in),  NULL);
-    g_signal_connect (G_OBJECT (ui->entry3), "focus-out-event", G_CALLBACK(focus_out), NULL);
-    gtk_widget_add_events(GTK_WIDGET(ui->entry4), GDK_FOCUS_CHANGE_MASK);
-    g_signal_connect (G_OBJECT (ui->entry4), "focus-in-event",  G_CALLBACK(focus_in),  NULL);
-    g_signal_connect (G_OBJECT (ui->entry4), "focus-out-event", G_CALLBACK(focus_out), NULL);
-  */
   GHashTable *table = dt_pwstorage_get("flickr");
   gchar *_username = g_strdup(g_hash_table_lookup(table, "username"));
   g_hash_table_destroy(table);
-  gtk_entry_set_text(ui->entry1, _username == NULL ? "" : _username);
-  gtk_entry_set_text(ui->entry3, _("my new photoset"));
-  gtk_entry_set_text(ui->entry4, _("exported from darktable"));
 
-  GtkWidget *albumlist = gtk_hbox_new(FALSE, 0);
-  ui->comboBox1 = GTK_COMBO_BOX_TEXT(gtk_combo_box_text_new()); // Available albums
-
-  dt_ellipsize_combo(GTK_COMBO_BOX(ui->comboBox1));
-
-  ui->dtbutton1 = DTGTK_BUTTON(dtgtk_button_new(dtgtk_cairo_paint_refresh, 0));
-  g_object_set(G_OBJECT(ui->dtbutton1), "tooltip-text", _("refresh album list"), (char *)NULL);
-
-  ui->button = GTK_BUTTON(gtk_button_new_with_label(_("login")));
-  g_object_set(G_OBJECT(ui->button), "tooltip-text", _("flickr login"), (char *)NULL);
-
-  gtk_widget_set_sensitive(GTK_WIDGET(ui->comboBox1), FALSE);
-  gtk_combo_box_set_row_separator_func(GTK_COMBO_BOX(ui->comboBox1), combobox_separator, ui->comboBox1, NULL);
-  gtk_box_pack_start(GTK_BOX(albumlist), GTK_WIDGET(ui->comboBox1), TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(albumlist), GTK_WIDGET(ui->dtbutton1), FALSE, FALSE, 0);
-
-  ui->checkButton2 = GTK_CHECK_BUTTON(gtk_check_button_new_with_label(_("export tags")));
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(ui->checkButton2), TRUE);
-
-  ui->permsComboBox = GTK_COMBO_BOX_TEXT(gtk_combo_box_text_new());
-  gtk_combo_box_text_append_text(ui->permsComboBox, _("you"));
-  gtk_combo_box_text_append_text(ui->permsComboBox, _("friends"));
-  gtk_combo_box_text_append_text(ui->permsComboBox, _("family"));
-  gtk_combo_box_text_append_text(ui->permsComboBox, _("friends + family"));
-  gtk_combo_box_text_append_text(ui->permsComboBox, _("everyone"));
-  gtk_combo_box_set_active(GTK_COMBO_BOX(ui->permsComboBox), 0); // Set default permission to private
-
-  gtk_box_pack_start(GTK_BOX(self->widget), hbox0, TRUE, FALSE, 5);
-  gtk_box_pack_start(GTK_BOX(self->widget), hbox1, TRUE, FALSE, 0);
-  gtk_box_pack_start(GTK_BOX(hbox0), GTK_WIDGET(ui->label1), TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(hbox0), GTK_WIDGET(ui->entry1), TRUE, FALSE, 0);
-  gtk_box_pack_start(GTK_BOX(hbox0), GTK_WIDGET(ui->button), FALSE, FALSE, 0);
-  gtk_box_pack_start(GTK_BOX(hbox1), vbox1, FALSE, FALSE, 0);
-  gtk_box_pack_start(GTK_BOX(hbox1), vbox2, TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(vbox1), GTK_WIDGET(gtk_label_new("")), TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(vbox1), GTK_WIDGET(ui->labelPerms), TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(vbox1), GTK_WIDGET(ui->label3), TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(vbox2), GTK_WIDGET(ui->label4), TRUE, FALSE, 0);
-  gtk_box_pack_start(GTK_BOX(vbox2), GTK_WIDGET(ui->checkButton2), TRUE, FALSE, 0);
-  gtk_box_pack_start(GTK_BOX(vbox2), GTK_WIDGET(ui->permsComboBox), TRUE, FALSE, 0);
-  gtk_box_pack_start(GTK_BOX(vbox2), GTK_WIDGET(albumlist), TRUE, FALSE, 0);
+  GtkWidget *hbox, *label, *button;
 
 
-  // Create Album
-  ui->hbox1 = GTK_BOX(gtk_hbox_new(FALSE, 5));
-  gtk_widget_set_no_show_all(GTK_WIDGET(ui->hbox1), TRUE);
-  vbox1 = gtk_vbox_new(FALSE, 0);
-  vbox2 = gtk_vbox_new(FALSE, 0);
+  label = gtk_label_new(_("flickr user"));
+  g_object_set(G_OBJECT(label), "xalign", 0.0, NULL);
+  gtk_grid_attach(GTK_GRID(self->widget), label, 0, line++, 1, 1);
 
-  gtk_box_pack_start(GTK_BOX(ui->hbox1), vbox1, FALSE, FALSE, 0);
-  gtk_box_pack_start(GTK_BOX(ui->hbox1), vbox2, TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(ui->hbox1), TRUE, FALSE, 5);
-  gtk_box_pack_start(GTK_BOX(vbox1), GTK_WIDGET(ui->label5), TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(vbox1), GTK_WIDGET(ui->label6), TRUE, TRUE, 0);
+  hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, DT_PIXEL_APPLY_DPI(8));
 
-  gtk_box_pack_start(GTK_BOX(vbox2), GTK_WIDGET(ui->entry3), TRUE, FALSE, 0);
-  gtk_box_pack_start(GTK_BOX(vbox2), GTK_WIDGET(ui->entry4), TRUE, FALSE, 0);
+  ui->user_entry = GTK_ENTRY(gtk_entry_new());
+  gtk_widget_set_hexpand(GTK_WIDGET(ui->user_entry), TRUE);
+  dt_gui_key_accel_block_on_focus_connect(GTK_WIDGET(ui->user_entry));
+  gtk_entry_set_text(ui->user_entry, _username == NULL ? "" : _username);
+  g_signal_connect(G_OBJECT(ui->user_entry), "changed", G_CALLBACK(flickr_entry_changed), (gpointer)ui);
 
-  // Setup signals
-  // add signal on realize and hide gtk_widget_hide(GTK_WIDGET(ui->hbox1));
+  button = gtk_button_new_with_label(_("login"));
+  g_object_set(G_OBJECT(button), "tooltip-text", _("flickr login"), (char *)NULL);
+  g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(flickr_button1_clicked), (gpointer)ui);
+  gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(ui->user_entry), TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(hbox), button, TRUE, TRUE, 0);
 
-  g_signal_connect(G_OBJECT(ui->dtbutton1), "clicked", G_CALLBACK(flickr_button1_clicked), (gpointer)ui);
-  g_signal_connect(G_OBJECT(ui->button), "clicked", G_CALLBACK(flickr_button1_clicked), (gpointer)ui);
-  g_signal_connect(G_OBJECT(ui->entry1), "changed", G_CALLBACK(flickr_entry_changed), (gpointer)ui);
-  g_signal_connect(G_OBJECT(ui->comboBox1), "changed", G_CALLBACK(flickr_album_changed), (gpointer)ui);
+  gtk_grid_attach_next_to(GTK_GRID(self->widget), hbox, label, GTK_POS_RIGHT, 1, 1);
+
+  gtk_size_group_add_widget(darktable.gui->sg_left, label);
+  gtk_size_group_add_widget(darktable.gui->sg_right, hbox);
+
+
+  ui->status_label = GTK_LABEL(gtk_label_new(NULL));
+  gtk_widget_set_halign(GTK_WIDGET(ui->status_label), GTK_ALIGN_START);
+  gtk_grid_attach(GTK_GRID(self->widget), GTK_WIDGET(ui->status_label), 1, line++, 1, 1);
+
+
+  ui->export_tags = dt_bauhaus_combobox_new(NULL);
+  dt_bauhaus_widget_set_label(ui->export_tags, NULL, _("export tags"));
+  dt_bauhaus_combobox_add(ui->export_tags, _("yes"));
+  dt_bauhaus_combobox_add(ui->export_tags, _("no"));
+  dt_bauhaus_combobox_set(ui->export_tags, 0);
+  gtk_grid_attach(GTK_GRID(self->widget), ui->export_tags, 0, line++, 2, 1);
+
+
+  ui->permission_list = dt_bauhaus_combobox_new(NULL);
+  dt_bauhaus_widget_set_label(ui->permission_list, NULL, _("visible to"));
+  dt_bauhaus_combobox_add(ui->permission_list, _("you"));
+  dt_bauhaus_combobox_add(ui->permission_list, _("friends"));
+  dt_bauhaus_combobox_add(ui->permission_list, _("family"));
+  dt_bauhaus_combobox_add(ui->permission_list, _("friends + family"));
+  dt_bauhaus_combobox_add(ui->permission_list, _("everyone"));
+  dt_bauhaus_combobox_set(ui->permission_list, 0); // Set default permission to private
+  gtk_grid_attach(GTK_GRID(self->widget), GTK_WIDGET(ui->permission_list), 0, line++, 2, 1);
+
+
+  hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, DT_PIXEL_APPLY_DPI(5));
+
+  ui->album_list = dt_bauhaus_combobox_new(NULL); // Available albums
+  dt_bauhaus_widget_set_label(ui->album_list, NULL, _("photosets"));
+  g_signal_connect(G_OBJECT(ui->album_list), "value-changed", G_CALLBACK(flickr_album_changed), (gpointer)ui);
+  gtk_widget_set_sensitive(ui->album_list, FALSE);
+  gtk_box_pack_start(GTK_BOX(hbox), ui->album_list, TRUE, TRUE, 0);
+
+  button = dtgtk_button_new(dtgtk_cairo_paint_refresh, CPF_DO_NOT_USE_BORDER);
+  g_object_set(G_OBJECT(button), "tooltip-text", _("refresh album list"), (char *)NULL);
+  g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(flickr_button1_clicked), (gpointer)ui);
+  gtk_box_pack_start(GTK_BOX(hbox), button, FALSE, FALSE, 0);
+
+  gtk_grid_attach(GTK_GRID(self->widget), hbox, 0, line++, 2, 1);
+
+
+  // the box that gets shown when a new album is to be created
+  ui->create_box = GTK_BOX(gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_PIXEL_APPLY_DPI(5)));
+  gtk_widget_set_no_show_all(GTK_WIDGET(ui->create_box), TRUE);
+  gtk_grid_attach(GTK_GRID(self->widget), GTK_WIDGET(ui->create_box), 0, line++, 2, 1);
+
+
+  hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, DT_PIXEL_APPLY_DPI(10));
+
+  label = gtk_label_new(_("title"));
+  g_object_set(G_OBJECT(label), "xalign", 0.0, NULL);
+  gtk_box_pack_start(GTK_BOX(hbox), label, FALSE, FALSE, 0);
+
+  ui->title_entry = GTK_ENTRY(gtk_entry_new()); // Album title
+  dt_gui_key_accel_block_on_focus_connect(GTK_WIDGET(ui->title_entry));
+  gtk_entry_set_text(ui->title_entry, _("my new photoset"));
+  gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(ui->title_entry), TRUE, TRUE, 0);
+
+  gtk_box_pack_start(ui->create_box, hbox, FALSE, FALSE, 0);
+
+  gtk_size_group_add_widget(darktable.gui->sg_left, label);
+  gtk_size_group_add_widget(darktable.gui->sg_right, GTK_WIDGET(ui->title_entry));
+
+
+  hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, DT_PIXEL_APPLY_DPI(10));
+
+  label = gtk_label_new(_("summary"));
+  g_object_set(G_OBJECT(label), "xalign", 0.0, NULL);
+  gtk_box_pack_start(GTK_BOX(hbox), label, FALSE, FALSE, 0);
+
+  ui->summary_entry = GTK_ENTRY(gtk_entry_new()); // Album summary
+  dt_gui_key_accel_block_on_focus_connect(GTK_WIDGET(ui->summary_entry));
+  gtk_entry_set_text(ui->summary_entry, _("exported from darktable"));
+  gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(ui->summary_entry), TRUE, TRUE, 0);
+
+  gtk_box_pack_start(ui->create_box, hbox, TRUE, TRUE, 0);
+
+  gtk_size_group_add_widget(darktable.gui->sg_left, label);
+  gtk_size_group_add_widget(darktable.gui->sg_right, GTK_WIDGET(ui->summary_entry));
+
+
+  set_status(ui, _("click login button to start"), "#ffffff");
 
   /**
-  dont' populate the combo on startup, save 3 second
+  don't populate the combo on startup, save 3 second
 
   // If username and password is stored, let's populate the combo
   if( _username && _password )
@@ -595,15 +576,15 @@ void gui_init(dt_imageio_module_storage_t *self)
   */
 
   g_free(_username);
-  gtk_combo_box_set_active(GTK_COMBO_BOX(ui->comboBox1), 0);
+  dt_bauhaus_combobox_set(ui->album_list, 0);
 }
 
 void gui_cleanup(dt_imageio_module_storage_t *self)
 {
   dt_storage_flickr_gui_data_t *ui = self->gui_data;
-  dt_gui_key_accel_block_on_focus_disconnect(GTK_WIDGET(ui->entry1));
-  dt_gui_key_accel_block_on_focus_disconnect(GTK_WIDGET(ui->entry3));
-  dt_gui_key_accel_block_on_focus_disconnect(GTK_WIDGET(ui->entry4));
+  dt_gui_key_accel_block_on_focus_disconnect(GTK_WIDGET(ui->user_entry));
+  dt_gui_key_accel_block_on_focus_disconnect(GTK_WIDGET(ui->title_entry));
+  dt_gui_key_accel_block_on_focus_disconnect(GTK_WIDGET(ui->summary_entry));
   g_free(self->gui_data);
 }
 
@@ -751,6 +732,7 @@ size_t params_size(dt_imageio_module_storage_t *self)
 void init(dt_imageio_module_storage_t *self)
 {
 }
+
 void *get_params(dt_imageio_module_storage_t *self)
 {
   // have to return the size of the struct to store (i.e. without all the variable pointers at the end)
@@ -767,7 +749,7 @@ void *get_params(dt_imageio_module_storage_t *self)
   {
     // We are authenticated and off to actually export images..
     d->flickr_api = ui->flickr_api;
-    int index = gtk_combo_box_get_active(GTK_COMBO_BOX(ui->comboBox1));
+    int index = dt_bauhaus_combobox_get(ui->album_list);
     if(index >= 0)
     {
       switch(index)
@@ -777,18 +759,18 @@ void *get_params(dt_imageio_module_storage_t *self)
           break;
         case 1: // Create new album
           d->flickr_api->current_album = NULL;
-          d->flickr_api->album_title = g_strdup(gtk_entry_get_text(ui->entry3));
-          d->flickr_api->album_summary = g_strdup(gtk_entry_get_text(ui->entry4));
+          d->flickr_api->album_title = g_strdup(gtk_entry_get_text(ui->title_entry));
+          d->flickr_api->album_summary = g_strdup(gtk_entry_get_text(ui->summary_entry));
           d->flickr_api->new_album = TRUE;
           break;
         default:
           // use existing album
           d->flickr_api->current_album
-              = flickcurl_photosets_getInfo(d->flickr_api->fc, ui->albums[index - 3]->id);
+              = flickcurl_photosets_getInfo(d->flickr_api->fc, ui->albums[index - 2]->id);
           if(d->flickr_api->current_album == NULL)
           {
             // Something went wrong...
-            fprintf(stderr, "Something went wrong.. album index %d = NULL\n", index - 3);
+            fprintf(stderr, "Something went wrong.. album index %d = NULL\n", index - 2);
             g_free(d);
             return NULL;
           }
@@ -801,10 +783,10 @@ void *get_params(dt_imageio_module_storage_t *self)
       return NULL;
     }
 
-    d->export_tags = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(ui->checkButton2));
+    d->export_tags = (dt_bauhaus_combobox_get(ui->export_tags) == 0);
 
     /* Handle the permissions */
-    int perm_index = (int)gtk_combo_box_get_active(GTK_COMBO_BOX(ui->permsComboBox));
+    int perm_index = (int)dt_bauhaus_combobox_get(ui->permission_list);
     switch(perm_index)
     {
       case 0: // Private
@@ -843,13 +825,13 @@ void *get_params(dt_imageio_module_storage_t *self)
     else
     {
       set_status(ui, _("not authenticated"), "#e07f7f");
-      gtk_widget_set_sensitive(GTK_WIDGET(ui->comboBox1), FALSE);
+      gtk_widget_set_sensitive(GTK_WIDGET(ui->album_list), FALSE);
     }
   }
   else
   {
     set_status(ui, _("not authenticated"), "#e07f7f");
-    gtk_widget_set_sensitive(GTK_WIDGET(ui->comboBox1), FALSE);
+    gtk_widget_set_sensitive(GTK_WIDGET(ui->album_list), FALSE);
     g_free(d);
     return NULL;
   }

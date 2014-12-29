@@ -25,7 +25,6 @@
 #include "develop/imageop.h"
 #include "control/control.h"
 #include "common/debug.h"
-#include "dtgtk/label.h"
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
 #include "gui/presets.h"
@@ -87,9 +86,9 @@ typedef struct dt_iop_channelmixer_params_t
 
 typedef struct dt_iop_channelmixer_gui_data_t
 {
-  GtkVBox *vbox;
+  GtkBox *vbox;
   GtkWidget *combo1;                      // Output channel
-  GtkDarktableLabel *dtlabel1, *dtlabel2; // output channel, source channels
+  GtkLabel *dtlabel1, *dtlabel2;          // output channel, source channels
   GtkLabel *label1, *label2, *label3;     // red, green, blue
   GtkWidget *scale1, *scale2, *scale3;    // red, green, blue
 } dt_iop_channelmixer_gui_data_t;
@@ -453,7 +452,7 @@ void gui_init(struct dt_iop_module_t *self)
   dt_iop_channelmixer_gui_data_t *g = (dt_iop_channelmixer_gui_data_t *)self->gui_data;
   dt_iop_channelmixer_params_t *p = (dt_iop_channelmixer_params_t *)self->params;
 
-  self->widget = gtk_vbox_new(FALSE, DT_BAUHAUS_SPACE);
+  self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
 
   /* output */
   g->combo1 = dt_bauhaus_combobox_new(self);
@@ -471,14 +470,14 @@ void gui_init(struct dt_iop_module_t *self)
 
   /* red */
   g->scale1 = dt_bauhaus_slider_new_with_range(self, -2.0, 2.0, 0.005, p->red[CHANNEL_RED], 3);
-  g_object_set(GTK_OBJECT(g->scale1), "tooltip-text", _("amount of red channel in the output channel"),
+  g_object_set(G_OBJECT(g->scale1), "tooltip-text", _("amount of red channel in the output channel"),
                (char *)NULL);
   dt_bauhaus_widget_set_label(g->scale1, NULL, _("red"));
   g_signal_connect(G_OBJECT(g->scale1), "value-changed", G_CALLBACK(red_callback), self);
 
   /* green */
   g->scale2 = dt_bauhaus_slider_new_with_range(self, -2.0, 2.0, 0.005, p->green[CHANNEL_RED], 3);
-  g_object_set(GTK_OBJECT(g->scale2), "tooltip-text", _("amount of green channel in the output channel"),
+  g_object_set(G_OBJECT(g->scale2), "tooltip-text", _("amount of green channel in the output channel"),
                (char *)NULL);
   dt_bauhaus_widget_set_label(g->scale2, NULL, _("green"));
   g_signal_connect(G_OBJECT(g->scale2), "value-changed", G_CALLBACK(green_callback), self);

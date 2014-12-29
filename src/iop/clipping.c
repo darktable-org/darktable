@@ -1229,11 +1229,8 @@ void gui_focus(struct dt_iop_module_t *self, gboolean in)
       {
         g->old_width = g->old_height = -1;
       }
-      // flip one bit to trigger the cache:
-      uint32_t hack = *(uint32_t *)&p->cy;
-      hack ^= 1;
-      p->cy = *(float *)&hack;
-      if(!darktable.gui->reset) dt_dev_add_history_item(darktable.develop, self, TRUE);
+      // make sure the cache is avoided:
+      dt_dev_reprocess_all(self->dev);
     }
     else
     {
@@ -1719,7 +1716,6 @@ static void hvflip_callback(GtkWidget *widget, dt_iop_module_t *self)
   const int flip = dt_bauhaus_combobox_get(widget);
   p->cw = copysignf(p->cw, (flip & 1) ? -1.0 : 1.0);
   p->ch = copysignf(p->ch, (flip & 2) ? -1.0 : 1.0);
-  if(self->off) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(self->off), 1);
   commit_box(self, g, p);
 }
 
@@ -1813,7 +1809,7 @@ void gui_init(struct dt_iop_module_t *self)
   g->k_selected = -1;
   g->old_width = g->old_height = -1;
 
-  self->widget = gtk_vbox_new(FALSE, DT_BAUHAUS_SPACE);
+  self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
   g->hvflip = dt_bauhaus_combobox_new(self);
   dt_bauhaus_widget_set_label(g->hvflip, NULL, _("flip"));
   dt_bauhaus_combobox_add(g->hvflip, _("none"));
@@ -2819,7 +2815,6 @@ static void commit_box(dt_iop_module_t *self, dt_iop_clipping_gui_data_t *g, dt_
       p->ch = CLAMPF(p->ch, -1.0f, 1.0f);
     }
   }
-  if(self->off) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(self->off), 1);
   g->applied = 1;
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
@@ -2853,7 +2848,6 @@ int button_released(struct dt_iop_module_t *self, double x, double y, int which,
     float a = 180.0 / M_PI * close + g->button_down_angle;
     if(a < -180.0) a += 360.0;
     if(a > 180.0) a -= 360.0;
-    if(self->off) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(self->off), 1);
     dt_bauhaus_slider_set(g->angle, -a);
     dt_control_change_cursor(GDK_LEFT_PTR);
   }
@@ -2880,11 +2874,13 @@ int button_pressed(struct dt_iop_module_t *self, double x, double y, double pres
   if(type == GDK_2BUTTON_PRESS && which == 1)
   {
     dt_iop_request_focus(NULL);
+    commit_box(self, g, p);
     return 1;
   }
   if(which == 3 || which == 1)
   {
-    if(self->off) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(self->off), 1);
+    // switch module on already, other code depends in this:
+    dt_dev_add_history_item(darktable.develop, self, TRUE);
 
     if(g->k_show == 1)
     {

@@ -27,7 +27,7 @@
 #include <gdk/gdkkeysyms.h>
 #include "dtgtk/button.h"
 
-#include "osm-gps-map-source.h"
+#include <osm-gps-map-source.h>
 
 DT_MODULE(1)
 
@@ -84,7 +84,7 @@ void gui_init(dt_lib_module_t *self)
 {
   dt_lib_map_settings_t *d = (dt_lib_map_settings_t *)malloc(sizeof(dt_lib_map_settings_t));
   self->data = d;
-  self->widget = gtk_vbox_new(TRUE, 5);
+  self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
   GtkBox *hbox;
   GtkWidget *label;
 
@@ -96,10 +96,10 @@ void gui_init(dt_lib_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), d->show_osd_checkbutton, TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(d->show_osd_checkbutton), "toggled", G_CALLBACK(_show_osd_toggled), NULL);
 
-  hbox = GTK_BOX(gtk_hbox_new(FALSE, 5));
+  hbox = GTK_BOX(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5));
 
   label = gtk_label_new(_("map source"));
-  gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
+  gtk_widget_set_halign(label, GTK_ALIGN_START);
   gtk_box_pack_start(hbox, label, TRUE, TRUE, 0);
 
   GtkListStore *model = gtk_list_store_new(2, G_TYPE_STRING, G_TYPE_INT);

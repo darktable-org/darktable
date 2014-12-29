@@ -40,6 +40,7 @@ extern "C" {
 #include "common/imageio_module.h"
 #include "common/imageio_exr.h"
 #include "common/imageio_format.h"
+#include "bauhaus/bauhaus.h"
 }
 #include "common/imageio_exr.hh"
 
@@ -75,7 +76,7 @@ typedef struct dt_imageio_exr_t
 
 typedef struct dt_imageio_exr_gui_t
 {
-  GtkComboBox *compression;
+  GtkWidget *compression;
 } dt_imageio_exr_gui_t;
 
 void init(dt_imageio_module_format_t *self)
@@ -166,11 +167,11 @@ void *legacy_params(dt_imageio_module_format_t *self, const void *const old_para
   {
     enum dt_imageio_exr_pixeltype_t
     {
-      UINT   = 0,         // unsigned int (32 bit)
-      HALF   = 1,         // half (16 bit floating point)
-      FLOAT  = 2,         // float (32 bit floating point)
-      NUM_PIXELTYPES      // number of different pixel types
-    }; // copy of Imf::PixelType
+      UINT = 0,      // unsigned int (32 bit)
+      HALF = 1,      // half (16 bit floating point)
+      FLOAT = 2,     // float (32 bit floating point)
+      NUM_PIXELTYPES // number of different pixel types
+    };               // copy of Imf::PixelType
 
     typedef struct dt_imageio_exr_v2_t
     {
@@ -232,7 +233,7 @@ int set_params(dt_imageio_module_format_t *self, const void *params, const int s
   if(size != (int)self->params_size(self)) return 1;
   dt_imageio_exr_t *d = (dt_imageio_exr_t *)params;
   dt_imageio_exr_gui_t *g = (dt_imageio_exr_gui_t *)self->gui_data;
-  gtk_combo_box_set_active(g->compression, d->compression);
+  dt_bauhaus_combobox_set(g->compression, d->compression);
   return 0;
 }
 
@@ -261,9 +262,9 @@ const char *name()
   return _("OpenEXR (float)");
 }
 
-static void combobox_changed(GtkComboBox *widget, gpointer user_data)
+static void combobox_changed(GtkWidget *widget, gpointer user_data)
 {
-  const int compression = gtk_combo_box_get_active(widget);
+  const int compression = dt_bauhaus_combobox_get(widget);
   dt_conf_set_int("plugins/imageio/format/exr/compression", compression);
 }
 
@@ -272,30 +273,24 @@ void gui_init(dt_imageio_module_format_t *self)
   self->gui_data = malloc(sizeof(dt_imageio_exr_gui_t));
   dt_imageio_exr_gui_t *gui = (dt_imageio_exr_gui_t *)self->gui_data;
 
-  self->widget = gtk_vbox_new(TRUE, 5);
+  self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
 
   const int compression_last = dt_conf_get_int("plugins/imageio/format/exr/compression");
 
-  GtkWidget *hbox = gtk_hbox_new(FALSE, 5);
-  gtk_box_pack_start(GTK_BOX(self->widget), hbox, TRUE, TRUE, 0);
+  gui->compression = dt_bauhaus_combobox_new(NULL);
+  dt_bauhaus_widget_set_label(gui->compression, NULL, _("compression mode"));
 
-  GtkWidget *label = gtk_label_new(_("compression mode"));
-  gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
-  gtk_box_pack_start(GTK_BOX(hbox), label, TRUE, TRUE, 0);
-
-  GtkComboBoxText *combo = GTK_COMBO_BOX_TEXT(gtk_combo_box_text_new());
-  gui->compression = GTK_COMBO_BOX(combo);
-  gtk_combo_box_text_append_text(combo, _("off"));
-  gtk_combo_box_text_append_text(combo, _("RLE"));
-  gtk_combo_box_text_append_text(combo, _("ZIPS"));
-  gtk_combo_box_text_append_text(combo, _("ZIP"));
-  gtk_combo_box_text_append_text(combo, _("PIZ (default)"));
-  gtk_combo_box_text_append_text(combo, _("PXR24 (lossy)"));
-  gtk_combo_box_text_append_text(combo, _("B44 (lossy)"));
-  gtk_combo_box_text_append_text(combo, _("B44A (lossy)"));
-  gtk_combo_box_set_active(GTK_COMBO_BOX(combo), compression_last);
-  gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(combo), TRUE, TRUE, 0);
-  g_signal_connect(G_OBJECT(combo), "changed", G_CALLBACK(combobox_changed), NULL);
+  dt_bauhaus_combobox_add(gui->compression, _("off"));
+  dt_bauhaus_combobox_add(gui->compression, _("RLE"));
+  dt_bauhaus_combobox_add(gui->compression, _("ZIPS"));
+  dt_bauhaus_combobox_add(gui->compression, _("ZIP"));
+  dt_bauhaus_combobox_add(gui->compression, _("PIZ (default)"));
+  dt_bauhaus_combobox_add(gui->compression, _("PXR24 (lossy)"));
+  dt_bauhaus_combobox_add(gui->compression, _("B44 (lossy)"));
+  dt_bauhaus_combobox_add(gui->compression, _("B44A (lossy)"));
+  dt_bauhaus_combobox_set(gui->compression, compression_last);
+  gtk_box_pack_start(GTK_BOX(self->widget), gui->compression, TRUE, TRUE, 0);
+  g_signal_connect(G_OBJECT(gui->compression), "value-changed", G_CALLBACK(combobox_changed), NULL);
 }
 
 void gui_cleanup(dt_imageio_module_format_t *self)

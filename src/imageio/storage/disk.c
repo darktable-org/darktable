@@ -30,6 +30,7 @@
 #include "gui/gtkentry.h"
 #include "dtgtk/button.h"
 #include "dtgtk/paint.h"
+#include "bauhaus/bauhaus.h"
 #include "common/imageio_storage.h"
 #include <stdio.h>
 #include <stdlib.h>
@@ -42,7 +43,7 @@ DT_MODULE(2)
 typedef struct disk_t
 {
   GtkEntry *entry;
-  GtkToggleButton *overwrite_btn;
+  GtkWidget *overwrite;
 } disk_t;
 
 // saved params
@@ -88,8 +89,8 @@ static void button_clicked(GtkWidget *widget, dt_imageio_module_storage_t *self)
   disk_t *d = (disk_t *)self->gui_data;
   GtkWidget *win = dt_ui_main_window(darktable.gui->ui);
   GtkWidget *filechooser = gtk_file_chooser_dialog_new(
-      _("select directory"), GTK_WINDOW(win), GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER, GTK_STOCK_CANCEL,
-      GTK_RESPONSE_CANCEL, GTK_STOCK_OPEN, GTK_RESPONSE_ACCEPT, (char *)NULL);
+      _("select directory"), GTK_WINDOW(win), GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER, _("_Cancel"),
+      GTK_RESPONSE_CANCEL, _("_Select as output destination"), GTK_RESPONSE_ACCEPT, (char *)NULL);
 
   gtk_file_chooser_set_select_multiple(GTK_FILE_CHOOSER(filechooser), FALSE);
   gchar *old = g_strdup(gtk_entry_get_text(d->entry));
@@ -114,19 +115,19 @@ static void entry_changed_callback(GtkEntry *entry, gpointer user_data)
   dt_conf_set_string("plugins/imageio/storage/disk/file_directory", gtk_entry_get_text(entry));
 }
 
-static void overwrite_toggle_callback(GtkToggleButton *togglebutton, gpointer user_data)
+static void overwrite_toggle_callback(GtkWidget *widget, gpointer user_data)
 {
-  dt_conf_set_bool("plugins/imageio/storage/disk/overwrite", gtk_toggle_button_get_active(togglebutton));
+  dt_conf_set_bool("plugins/imageio/storage/disk/overwrite", dt_bauhaus_combobox_get(widget) == 1);
 }
 
 void gui_init(dt_imageio_module_storage_t *self)
 {
   disk_t *d = (disk_t *)malloc(sizeof(disk_t));
   self->gui_data = (void *)d;
-  self->widget = gtk_vbox_new(FALSE, 5);
+  self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_PIXEL_APPLY_DPI(5));
   GtkWidget *widget;
 
-  GtkWidget *hbox = gtk_hbox_new(FALSE, 5);
+  GtkWidget *hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, DT_PIXEL_APPLY_DPI(8));
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(hbox), TRUE, FALSE, 0);
 
   widget = gtk_entry_new();
@@ -149,16 +150,19 @@ void gui_init(dt_imageio_module_storage_t *self)
   g_object_set(G_OBJECT(widget), "tooltip-text", tooltip_text, (char *)NULL);
   g_signal_connect(G_OBJECT(widget), "changed", G_CALLBACK(entry_changed_callback), self);
 
-  widget = dtgtk_button_new(dtgtk_cairo_paint_directory, 0);
+  widget = dtgtk_button_new(dtgtk_cairo_paint_directory, CPF_DO_NOT_USE_BORDER);
   gtk_widget_set_size_request(widget, DT_PIXEL_APPLY_DPI(18), DT_PIXEL_APPLY_DPI(18));
   g_object_set(G_OBJECT(widget), "tooltip-text", _("select directory"), (char *)NULL);
   gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, FALSE, 0);
   g_signal_connect(G_OBJECT(widget), "clicked", G_CALLBACK(button_clicked), self);
 
-  d->overwrite_btn = GTK_TOGGLE_BUTTON(gtk_check_button_new_with_label(_("overwrite")));
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(d->overwrite_btn), TRUE, FALSE, 0);
-  g_signal_connect(G_OBJECT(d->overwrite_btn), "toggled", G_CALLBACK(overwrite_toggle_callback), self);
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->overwrite_btn), FALSE);
+  d->overwrite = dt_bauhaus_combobox_new(NULL);
+  dt_bauhaus_widget_set_label(d->overwrite, NULL, _("on conflict"));
+  dt_bauhaus_combobox_add(d->overwrite, _("create unique filename"));
+  dt_bauhaus_combobox_add(d->overwrite, _("overwrite"));
+  gtk_box_pack_start(GTK_BOX(self->widget), d->overwrite, TRUE, TRUE, 0);
+  g_signal_connect(G_OBJECT(d->overwrite), "value-changed", G_CALLBACK(overwrite_toggle_callback), self);
+  dt_bauhaus_combobox_set(d->overwrite, 0);
 
   g_free(tooltip_text);
 }
@@ -178,7 +182,7 @@ void gui_reset(dt_imageio_module_storage_t *self)
   dt_conf_set_string("plugins/imageio/storage/disk/file_directory", gtk_entry_get_text(d->entry));
 
   // this should prevent users from unintentional image overwrite
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->overwrite_btn), FALSE);
+  dt_bauhaus_combobox_set(d->overwrite, 0);
 }
 
 int store(dt_imageio_module_storage_t *self, dt_imageio_module_data_t *sdata, const int imgid,
@@ -338,14 +342,14 @@ int set_params(dt_imageio_module_storage_t *self, const void *params, const int 
   gtk_entry_set_text(GTK_ENTRY(g->entry), d->filename);
 
   // we really do not want user to unintentionally overwrite image
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->overwrite_btn), FALSE);
+  dt_bauhaus_combobox_set(g->overwrite, 0);
   return 0;
 }
 
 void export_dispatched(dt_imageio_module_storage_t *self)
 {
   disk_t *g = (disk_t *)self->gui_data;
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->overwrite_btn), FALSE);
+  dt_bauhaus_combobox_set(g->overwrite, 0);
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

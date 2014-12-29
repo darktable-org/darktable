@@ -21,10 +21,6 @@
 #define DT_DEVELOP_BLEND_H
 
 #include "dtgtk/button.h"
-#include "dtgtk/icon.h"
-#include "dtgtk/tristatebutton.h"
-#include "dtgtk/slider.h"
-#include "dtgtk/tristatebutton.h"
 #include "dtgtk/gradientslider.h"
 #include "develop/pixelpipe.h"
 #include "common/opencl.h"
@@ -321,10 +317,10 @@ typedef struct dt_iop_gui_blend_data_t
   GList *masks_invert;
   GList *blend_modes_all;
   GtkWidget *iopw;
-  GtkVBox *top_box;
-  GtkVBox *bottom_box;
-  GtkVBox *blendif_box;
-  GtkVBox *masks_box;
+  GtkBox *top_box;
+  GtkBox *bottom_box;
+  GtkBox *blendif_box;
+  GtkBox *masks_box;
   GtkDarktableGradientSlider *upper_slider;
   GtkDarktableGradientSlider *lower_slider;
   GtkLabel *upper_label[8];
@@ -387,7 +383,7 @@ int dt_develop_blend_legacy_params(dt_iop_module_t *module, const void *const ol
                                    const int lenght);
 
 /** gui related stuff */
-void dt_iop_gui_init_blendif(GtkVBox *blendw, dt_iop_module_t *module);
+void dt_iop_gui_init_blendif(GtkBox *blendw, dt_iop_module_t *module);
 void dt_iop_gui_init_blending(GtkWidget *iopw, dt_iop_module_t *module);
 void dt_iop_gui_update_blending(dt_iop_module_t *module);
 void dt_iop_gui_update_blendif(dt_iop_module_t *module);

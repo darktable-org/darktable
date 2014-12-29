@@ -32,7 +32,7 @@
 #include "gui/accelerators.h"
 #include <gdk/gdkkeysyms.h>
 
-#include "osm-gps-map.h"
+#include <osm-gps-map.h>
 
 DT_MODULE(1)
 
@@ -604,8 +604,14 @@ static gboolean _view_map_motion_notify_callback(GtkWidget *w, GdkEventMotion *e
       gdk_pixbuf_scale(source, thumb, thumb_border, thumb_border, w, h, thumb_border, thumb_border,
                        (1.0 * w) / buf.width, (1.0 * h) / buf.height, GDK_INTERP_HYPER);
 
+#if GTK_CHECK_VERSION(3, 10, 0)
+      GdkDragContext *context = gtk_drag_begin_with_coordinates(GTK_WIDGET(lib->map), targets,
+                                                                GDK_ACTION_COPY, 1, (GdkEvent *)e, -1, -1);
+#else
       GdkDragContext *context
           = gtk_drag_begin(GTK_WIDGET(lib->map), targets, GDK_ACTION_COPY, 1, (GdkEvent *)e);
+#endif
+
       gtk_drag_set_icon_pixbuf(context, thumb, 0, 0);
 
     map_motion_failure:

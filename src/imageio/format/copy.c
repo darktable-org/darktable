@@ -142,12 +142,12 @@ void cleanup(dt_imageio_module_format_t *self)
 
 void gui_init(dt_imageio_module_format_t *self)
 {
-  GtkWidget *box = gtk_hbox_new(FALSE, 20);
+  GtkWidget *box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 20);
   self->widget = box;
 
   GtkWidget *label
       = gtk_label_new(_("do a 1:1 copy of the selected files.\nthe global options below do not apply!"));
-  gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
+  gtk_widget_set_halign(label, GTK_ALIGN_START);
   gtk_box_pack_start(GTK_BOX(box), label, FALSE, FALSE, 0);
 }
 void gui_cleanup(dt_imageio_module_format_t *self)

@@ -27,6 +27,7 @@
 #include "gui/draw.h"
 #include "gui/presets.h"
 #include "bauhaus/bauhaus.h"
+#include "dtgtk/drawingarea.h"
 #include <gtk/gtk.h>
 #include <inttypes.h>
 #include <stdlib.h>
@@ -160,7 +161,7 @@ typedef struct dt_iop_basecurve_gui_data_t
 {
   dt_draw_curve_t *minmax_curve; // curve for gui to draw
   int minmax_curve_type, minmax_curve_nodes;
-  GtkHBox *hbox;
+  GtkBox *hbox;
   GtkDrawingArea *area;
   GtkWidget *scale;
   double mouse_x, mouse_y;
@@ -443,7 +444,7 @@ static float to_lin(const float x, float base)
     return x;
 }
 
-static gboolean dt_iop_basecurve_expose(GtkWidget *widget, GdkEventExpose *event, gpointer user_data)
+static gboolean dt_iop_basecurve_draw(GtkWidget *widget, cairo_t *crf, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_basecurve_gui_data_t *c = (dt_iop_basecurve_gui_data_t *)self->gui_data;
@@ -569,10 +570,8 @@ static gboolean dt_iop_basecurve_expose(GtkWidget *widget, GdkEventExpose *event
   cairo_stroke(cr);
 
   cairo_destroy(cr);
-  cairo_t *cr_pixmap = gdk_cairo_create(gtk_widget_get_window(widget));
-  cairo_set_source_surface(cr_pixmap, cst, 0, 0);
-  cairo_paint(cr_pixmap);
-  cairo_destroy(cr_pixmap);
+  cairo_set_source_surface(crf, cst, 0, 0);
+  cairo_paint(crf);
   cairo_surface_destroy(cst);
   return TRUE;
 }
@@ -704,7 +703,7 @@ static gboolean area_resized(GtkWidget *widget, GdkEvent *event, gpointer user_d
   GtkRequisition r;
   r.width = allocation.width;
   r.height = allocation.width;
-  gtk_widget_size_request(widget, &r);
+  gtk_widget_get_preferred_size(widget, &r, NULL);
   return TRUE;
 }
 
@@ -755,13 +754,12 @@ void gui_init(struct dt_iop_module_t *self)
   c->selected = -1;
   c->loglogscale = 0;
 
-  self->widget = gtk_vbox_new(FALSE, DT_BAUHAUS_SPACE);
-  c->area = GTK_DRAWING_AREA(gtk_drawing_area_new());
-  g_object_set(GTK_OBJECT(c->area), "tooltip-text",
+  self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
+  c->area = GTK_DRAWING_AREA(dtgtk_drawing_area_new_with_aspect_ratio(1.0));
+  g_object_set(G_OBJECT(c->area), "tooltip-text",
                _("abscissa: input, ordinate: output. works on RGB channels"), (char *)NULL);
+
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(c->area), TRUE, TRUE, 0);
-  int size = dt_conf_get_int("panel_width") * 0.95;
-  gtk_widget_set_size_request(GTK_WIDGET(c->area), 0, size);
 
   c->scale = dt_bauhaus_combobox_new(self);
   dt_bauhaus_widget_set_label(c->scale, NULL, _("scale"));
@@ -775,8 +773,8 @@ void gui_init(struct dt_iop_module_t *self)
 
   gtk_widget_add_events(GTK_WIDGET(c->area), GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK
                                              | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK
-                                             | GDK_LEAVE_NOTIFY_MASK);
-  g_signal_connect(G_OBJECT(c->area), "expose-event", G_CALLBACK(dt_iop_basecurve_expose), self);
+                                             | GDK_LEAVE_NOTIFY_MASK | GDK_SCROLL_MASK);
+  g_signal_connect(G_OBJECT(c->area), "draw", G_CALLBACK(dt_iop_basecurve_draw), self);
   g_signal_connect(G_OBJECT(c->area), "button-press-event", G_CALLBACK(dt_iop_basecurve_button_press), self);
   g_signal_connect(G_OBJECT(c->area), "motion-notify-event", G_CALLBACK(dt_iop_basecurve_motion_notify), self);
   g_signal_connect(G_OBJECT(c->area), "leave-notify-event", G_CALLBACK(dt_iop_basecurve_leave_notify), self);

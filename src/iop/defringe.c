@@ -22,8 +22,6 @@
 #include "bauhaus/bauhaus.h"
 #include "common/darktable.h"
 #include "develop/imageop.h"
-#include "dtgtk/label.h"
-#include "dtgtk/slider.h"
 #include "gui/gtk.h"
 #include <gtk/gtk.h>
 #include <stdlib.h>
@@ -439,7 +437,7 @@ void gui_init(dt_iop_module_t *module)
   dt_iop_defringe_gui_data_t *g = (dt_iop_defringe_gui_data_t *)module->gui_data;
   dt_iop_defringe_params_t *p = (dt_iop_defringe_params_t *)module->params;
 
-  module->widget = gtk_vbox_new(FALSE, DT_BAUHAUS_SPACE);
+  module->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
 
   /* mode selection */
   g->mode_select = dt_bauhaus_combobox_new(module);
@@ -449,7 +447,7 @@ void gui_init(dt_iop_module_t *module)
   dt_bauhaus_combobox_add(g->mode_select, _("local average (slow)"));    // 1
   dt_bauhaus_combobox_add(g->mode_select, _("static threshold (fast)")); // 2
   g_object_set(
-      GTK_OBJECT(g->mode_select), "tooltip-text",
+      G_OBJECT(g->mode_select), "tooltip-text",
       _("method for color protection:\n - global average: fast, might show slightly wrong previews in high "
         "magnification; might sometimes protect saturation too much or too low in comparison to local "
         "average\n - local average: slower, might protect saturation better than global average by using "

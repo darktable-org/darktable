@@ -188,7 +188,7 @@ void finalize_store(dt_imageio_module_storage_t *self, dt_imageio_module_data_t 
   gchar *uriFormat = "xdg-email --subject \"%s\" --body \"%s\" %s &"; // subject, body format
   const gchar *subject = _("images exported from darktable");
   const gchar *imageBodyFormat = " - %s (%s)\\n"; // filename, exif oneliner
-  gchar *attachmentFormat = " --attach \"%s\""; // list of attachments format
+  gchar *attachmentFormat = " --attach \"%s\"";   // list of attachments format
   gchar *attachmentSeparator = "";
 
   while(d->images)

@@ -64,7 +64,7 @@ void init_presets(dt_iop_module_so_t *self)
 
 typedef struct dt_iop_relight_gui_data_t
 {
-  GtkVBox *vbox1, *vbox2;               // left and right controlboxes
+  GtkBox *vbox1, *vbox2;                // left and right controlboxes
   GtkLabel *label1, *label2, *label3;   // ev, center, width
   GtkWidget *scale1, *scale2;           // ev,width
   GtkDarktableGradientSlider *gslider1; // center
@@ -330,7 +330,7 @@ void cleanup(dt_iop_module_t *module)
 }
 
 
-static gboolean expose(GtkWidget *widget, GdkEventExpose *event, dt_iop_module_t *self)
+static gboolean draw(GtkWidget *widget, cairo_t *cr, dt_iop_module_t *self)
 {
   // capture gui color picked event.
   if(darktable.gui->reset) return FALSE;
@@ -362,9 +362,9 @@ void gui_init(struct dt_iop_module_t *self)
   dt_iop_relight_gui_data_t *g = (dt_iop_relight_gui_data_t *)self->gui_data;
   dt_iop_relight_params_t *p = (dt_iop_relight_params_t *)self->params;
 
-  self->widget = gtk_vbox_new(FALSE, DT_BAUHAUS_SPACE);
+  self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
 
-  g_signal_connect(G_OBJECT(self->widget), "expose-event", G_CALLBACK(expose), self);
+  g_signal_connect(G_OBJECT(self->widget), "draw", G_CALLBACK(draw), self);
 
   /* exposure */
   g->scale1 = dt_bauhaus_slider_new_with_range(self, -2.0, 2.0, 0.05, p->ev, 2);
@@ -382,7 +382,7 @@ void gui_init(struct dt_iop_module_t *self)
   g_signal_connect(G_OBJECT(g->scale2), "value-changed", G_CALLBACK(width_callback), self);
 
   /* lightnessslider */
-  GtkBox *hbox = GTK_BOX(gtk_hbox_new(FALSE, 2));
+  GtkBox *hbox = GTK_BOX(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 2));
   int lightness = 32768;
   g->gslider1 = DTGTK_GRADIENT_SLIDER(dtgtk_gradient_slider_new_with_color(
       (GdkColor){ 0, 0, 0, 0 }, (GdkColor){ 0, lightness, lightness, lightness }));

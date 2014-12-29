@@ -137,45 +137,44 @@ void gui_init(dt_lib_module_t *self)
 {
   dt_lib_image_t *d = (dt_lib_image_t *)malloc(sizeof(dt_lib_image_t));
   self->data = (void *)d;
-  self->widget = gtk_vbox_new(TRUE, 5);
-  GtkBox *hbox;
+  self->widget = gtk_grid_new();
+  GtkGrid *grid = GTK_GRID(self->widget);
+  gtk_grid_set_row_spacing(grid, DT_PIXEL_APPLY_DPI(5));
+  gtk_grid_set_column_spacing(grid, DT_PIXEL_APPLY_DPI(5));
+  gtk_grid_set_column_homogeneous(grid, TRUE);
+  int line = 0;
+
   GtkWidget *button;
-  hbox = GTK_BOX(gtk_hbox_new(TRUE, 5));
 
   button = gtk_button_new_with_label(_("remove"));
   d->remove_button = button;
   g_object_set(G_OBJECT(button), "tooltip-text", _("remove from the collection"), (char *)NULL);
-  gtk_box_pack_start(hbox, button, TRUE, TRUE, 0);
+  gtk_grid_attach(grid, button, 0, line, 2, 1);
   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(button_clicked), GINT_TO_POINTER(0));
 
   button = gtk_button_new_with_label(_("delete"));
   d->delete_button = button;
   g_object_set(G_OBJECT(button), "tooltip-text", _("physically delete from disk"), (char *)NULL);
-  gtk_box_pack_start(hbox, button, TRUE, TRUE, 0);
+  gtk_grid_attach(grid, button, 2, line++, 2, 1);
   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(button_clicked), GINT_TO_POINTER(1));
 
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(hbox), TRUE, TRUE, 0);
-  hbox = GTK_BOX(gtk_hbox_new(TRUE, 5));
 
   button = gtk_button_new_with_label(_("move"));
   d->move_button = button;
   g_object_set(G_OBJECT(button), "tooltip-text", _("move to other folder"), (char *)NULL);
-  gtk_box_pack_start(hbox, button, TRUE, TRUE, 0);
+  gtk_grid_attach(grid, button, 0, line, 2, 1);
   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(button_clicked), GINT_TO_POINTER(8));
 
   button = gtk_button_new_with_label(_("copy"));
   d->copy_button = button;
   g_object_set(G_OBJECT(button), "tooltip-text", _("copy to other folder"), (char *)NULL);
-  gtk_box_pack_start(hbox, button, TRUE, TRUE, 0);
+  gtk_grid_attach(grid, button, 2, line++, 2, 1);
   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(button_clicked), GINT_TO_POINTER(9));
 
 
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(hbox), TRUE, TRUE, 0);
-  hbox = GTK_BOX(gtk_hbox_new(TRUE, 5));
-
   button = gtk_button_new_with_label(_("create HDR"));
   d->create_hdr_button = button;
-  gtk_box_pack_start(hbox, button, TRUE, TRUE, 0);
+  gtk_grid_attach(grid, button, 0, line, 2, 1);
   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(button_clicked), GINT_TO_POINTER(7));
   g_object_set(G_OBJECT(button), "tooltip-text", _("create a high dynamic range image from selected shots"),
                (char *)NULL);
@@ -184,65 +183,55 @@ void gui_init(dt_lib_module_t *self)
   d->duplicate_button = button;
   g_object_set(G_OBJECT(button), "tooltip-text",
                _("add a duplicate to the collection, including its history stack"), (char *)NULL);
-  gtk_box_pack_start(hbox, button, TRUE, TRUE, 0);
+  gtk_grid_attach(grid, button, 2, line++, 2, 1);
   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(button_clicked), GINT_TO_POINTER(3));
 
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(hbox), TRUE, TRUE, 0);
-  hbox = GTK_BOX(gtk_hbox_new(TRUE, 5));
 
-  GtkBox *hbox2 = GTK_BOX(gtk_hbox_new(TRUE, 5));
-  button = dtgtk_button_new(dtgtk_cairo_paint_refresh, 0);
+  button = dtgtk_button_new(dtgtk_cairo_paint_refresh, CPF_DO_NOT_USE_BORDER);
   d->rotate_ccw_button = button;
   g_object_set(G_OBJECT(button), "tooltip-text", _("rotate selected images 90 degrees CCW"), (char *)NULL);
-  gtk_box_pack_start(hbox2, button, TRUE, TRUE, 0);
+  gtk_grid_attach(grid, button, 0, line, 1, 1);
   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(button_clicked), GINT_TO_POINTER(4));
 
-  button = dtgtk_button_new(dtgtk_cairo_paint_refresh, 1);
+  button = dtgtk_button_new(dtgtk_cairo_paint_refresh, 1 | CPF_DO_NOT_USE_BORDER);
   d->rotate_cw_button = button;
   g_object_set(G_OBJECT(button), "tooltip-text", _("rotate selected images 90 degrees CW"), (char *)NULL);
-  gtk_box_pack_start(hbox2, button, TRUE, TRUE, 0);
+  gtk_grid_attach(grid, button, 1, line, 1, 1);
   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(button_clicked), GINT_TO_POINTER(5));
-  gtk_box_pack_start(hbox, GTK_WIDGET(hbox2), TRUE, TRUE, 0);
 
   button = gtk_button_new_with_label(_("reset rotation"));
   d->reset_button = button;
   g_object_set(G_OBJECT(button), "tooltip-text", _("reset rotation to EXIF data"), (char *)NULL);
-  gtk_box_pack_start(hbox, button, TRUE, TRUE, 0);
+  gtk_grid_attach(grid, button, 2, line++, 2, 1);
   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(button_clicked), GINT_TO_POINTER(6));
 
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(hbox), TRUE, TRUE, 0);
-  hbox = GTK_BOX(gtk_hbox_new(TRUE, 5));
 
   button = gtk_button_new_with_label(_("copy locally"));
   d->cache_button = button;
   g_object_set(G_OBJECT(button), "tooltip-text", _("copy the image locally"), (char *)NULL);
-  gtk_box_pack_start(hbox, button, TRUE, TRUE, 0);
+  gtk_grid_attach(grid, button, 0, line, 2, 1);
   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(button_clicked), GINT_TO_POINTER(12));
 
   button = gtk_button_new_with_label(_("resync local copy"));
   d->uncache_button = button;
   g_object_set(G_OBJECT(button), "tooltip-text", _("synchronize the image's XMP and remove the local copy"),
                (char *)NULL);
-  gtk_box_pack_start(hbox, button, TRUE, TRUE, 0);
+  gtk_grid_attach(grid, button, 2, line++, 2, 1);
   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(button_clicked), GINT_TO_POINTER(13));
 
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(hbox), TRUE, TRUE, 0);
-  hbox = GTK_BOX(gtk_hbox_new(TRUE, 5));
 
   button = gtk_button_new_with_label(_("group"));
   d->group_button = button;
   g_object_set(G_OBJECT(button), "tooltip-text",
                _("add selected images to expanded group or create a new one"), (char *)NULL);
-  gtk_box_pack_start(hbox, button, TRUE, TRUE, 0);
+  gtk_grid_attach(grid, button, 0, line, 2, 1);
   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(button_clicked), GINT_TO_POINTER(10));
 
   button = gtk_button_new_with_label(_("ungroup"));
   d->ungroup_button = button;
   g_object_set(G_OBJECT(button), "tooltip-text", _("remove selected images from the group"), (char *)NULL);
-  gtk_box_pack_start(hbox, button, TRUE, TRUE, 0);
+  gtk_grid_attach(grid, button, 2, line, 2, 1);
   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(button_clicked), GINT_TO_POINTER(11));
-
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(hbox), TRUE, TRUE, 0);
 }
 
 void gui_cleanup(dt_lib_module_t *self)

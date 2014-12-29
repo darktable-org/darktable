@@ -1,7 +1,0 @@
-osm-gps-map is a Gtk mapping widget (and Python bindings) that when given
-GPS co-ordinates, draws a GPS track, and points of interest on a moving map
-display.
-
-osm-gps-map Downloads map data from a number of websites, including
-openstreetmap.org, openaerialmap.org and others and can be used to build
-desktop mapping or geolocation applications.

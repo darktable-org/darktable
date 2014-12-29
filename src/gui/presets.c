@@ -26,7 +26,6 @@
 #include "gui/gtk.h"
 #include "gui/presets.h"
 #include "gui/accelerators.h"
-#include "dtgtk/tristatebutton.h"
 #include <stdlib.h>
 #include <assert.h>
 
@@ -383,21 +382,20 @@ static void edit_preset(const char *name_in, dt_iop_module_t *module)
   char title[1024];
   GtkWidget *window = dt_ui_main_window(darktable.gui->ui);
   snprintf(title, sizeof(title), _("edit `%s' for module `%s'"), name, module->name());
-  dialog
-      = gtk_dialog_new_with_buttons(title, GTK_WINDOW(window), GTK_DIALOG_DESTROY_WITH_PARENT, GTK_STOCK_OK,
-                                    GTK_RESPONSE_ACCEPT, GTK_STOCK_CANCEL, GTK_RESPONSE_REJECT, NULL);
+  dialog = gtk_dialog_new_with_buttons(title, GTK_WINDOW(window), GTK_DIALOG_DESTROY_WITH_PARENT, _("_OK"),
+                                       GTK_RESPONSE_ACCEPT, _("_Cancel"), GTK_RESPONSE_REJECT, NULL);
   GtkContainer *content_area = GTK_CONTAINER(gtk_dialog_get_content_area(GTK_DIALOG(dialog)));
-  GtkWidget *alignment = gtk_alignment_new(0.5, 0.5, 1.0, 1.0);
-  gtk_alignment_set_padding(GTK_ALIGNMENT(alignment), 5, 5, 5, 5);
-  gtk_container_add(content_area, alignment);
-  GtkBox *box = GTK_BOX(gtk_vbox_new(FALSE, 5));
-  gtk_container_add(GTK_CONTAINER(alignment), GTK_WIDGET(box));
+  GtkBox *box = GTK_BOX(gtk_box_new(GTK_ORIENTATION_VERTICAL, 5));
+  gtk_widget_set_margin_start(GTK_WIDGET(box), DT_PIXEL_APPLY_DPI(5));
+  gtk_widget_set_margin_end(GTK_WIDGET(box), DT_PIXEL_APPLY_DPI(5));
+  gtk_widget_set_margin_top(GTK_WIDGET(box), DT_PIXEL_APPLY_DPI(5));
+  gtk_widget_set_margin_bottom(GTK_WIDGET(box), DT_PIXEL_APPLY_DPI(5));
+  gtk_container_add(content_area, GTK_WIDGET(box));
   GtkWidget *label;
-  // GtkBox *vbox1 = GTK_BOX(gtk_vbox_new(TRUE, 5));
 
-  GtkBox *vbox2 = GTK_BOX(gtk_vbox_new(TRUE, 5));
-  GtkBox *vbox3 = GTK_BOX(gtk_vbox_new(TRUE, 5));
-  GtkBox *vbox4 = GTK_BOX(gtk_vbox_new(TRUE, 5));
+  GtkBox *vbox2 = GTK_BOX(gtk_box_new(GTK_ORIENTATION_VERTICAL, 5));
+  GtkBox *vbox3 = GTK_BOX(gtk_box_new(GTK_ORIENTATION_VERTICAL, 5));
+  GtkBox *vbox4 = GTK_BOX(gtk_box_new(GTK_ORIENTATION_VERTICAL, 5));
 
   dt_gui_presets_edit_dialog_t *g
       = (dt_gui_presets_edit_dialog_t *)malloc(sizeof(dt_gui_presets_edit_dialog_t));
@@ -426,8 +424,8 @@ static void edit_preset(const char *name_in, dt_iop_module_t *module)
   g_signal_connect(G_OBJECT(g->autoapply), "toggled", G_CALLBACK(check_buttons_activated), g);
   g_signal_connect(G_OBJECT(g->filter), "toggled", G_CALLBACK(check_buttons_activated), g);
 
-  g->details = GTK_BOX(gtk_hbox_new(FALSE, 0));
-  GtkBox *hbox = GTK_BOX(gtk_hbox_new(TRUE, 5));
+  g->details = GTK_BOX(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0));
+  GtkBox *hbox = GTK_BOX(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5));
   gtk_box_pack_start(box, GTK_WIDGET(g->details), FALSE, FALSE, 0);
   gtk_box_pack_start(g->details, GTK_WIDGET(hbox), FALSE, FALSE, 0);
   gtk_box_pack_start(hbox, GTK_WIDGET(vbox2), TRUE, TRUE, 0);
@@ -439,7 +437,7 @@ static void edit_preset(const char *name_in, dt_iop_module_t *module)
   g_object_set(G_OBJECT(g->model), "tooltip-text", _("string to match model (use % as wildcard)"),
                (char *)NULL);
   label = gtk_label_new(_("model"));
-  gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
+  gtk_widget_set_halign(label, GTK_ALIGN_START);
   gtk_box_pack_start(vbox2, label, FALSE, FALSE, 0);
   gtk_box_pack_start(vbox3, GTK_WIDGET(g->model), FALSE, FALSE, 0);
   gtk_box_pack_start(vbox4, gtk_label_new(""), FALSE, FALSE, 0);
@@ -447,21 +445,21 @@ static void edit_preset(const char *name_in, dt_iop_module_t *module)
   g_object_set(G_OBJECT(g->maker), "tooltip-text", _("string to match maker (use % as wildcard)"),
                (char *)NULL);
   label = gtk_label_new(_("maker"));
-  gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
+  gtk_widget_set_halign(label, GTK_ALIGN_START);
   gtk_box_pack_start(vbox2, label, FALSE, FALSE, 0);
   gtk_box_pack_start(vbox3, GTK_WIDGET(g->maker), FALSE, FALSE, 0);
   gtk_box_pack_start(vbox4, gtk_label_new(""), FALSE, FALSE, 0);
   g->lens = GTK_ENTRY(gtk_entry_new());
   g_object_set(G_OBJECT(g->lens), "tooltip-text", _("string to match lens (use % as wildcard)"), (char *)NULL);
   label = gtk_label_new(_("lens"));
-  gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
+  gtk_widget_set_halign(label, GTK_ALIGN_START);
   gtk_box_pack_start(vbox2, label, FALSE, FALSE, 0);
   gtk_box_pack_start(vbox3, GTK_WIDGET(g->lens), FALSE, FALSE, 0);
   gtk_box_pack_start(vbox4, gtk_label_new(""), FALSE, FALSE, 0);
 
   // iso
   label = gtk_label_new(_("ISO"));
-  gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
+  gtk_widget_set_halign(label, GTK_ALIGN_START);
   gtk_box_pack_start(vbox2, label, FALSE, FALSE, 0);
   g->iso_min = GTK_SPIN_BUTTON(gtk_spin_button_new_with_range(0, 51200, 100));
   g_object_set(G_OBJECT(g->iso_min), "tooltip-text", _("minimum ISO value"), (char *)NULL);
@@ -474,7 +472,7 @@ static void edit_preset(const char *name_in, dt_iop_module_t *module)
 
   // exposure
   label = gtk_label_new(_("exposure"));
-  gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
+  gtk_widget_set_halign(label, GTK_ALIGN_START);
   gtk_box_pack_start(vbox2, label, FALSE, FALSE, 0);
   g->exposure_min = GTK_COMBO_BOX(gtk_combo_box_text_new());
   g->exposure_max = GTK_COMBO_BOX(gtk_combo_box_text_new());
@@ -489,7 +487,7 @@ static void edit_preset(const char *name_in, dt_iop_module_t *module)
 
   // aperture
   label = gtk_label_new(_("aperture"));
-  gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
+  gtk_widget_set_halign(label, GTK_ALIGN_START);
   gtk_box_pack_start(vbox2, label, FALSE, FALSE, 0);
   g->aperture_min = GTK_COMBO_BOX(gtk_combo_box_text_new());
   g->aperture_max = GTK_COMBO_BOX(gtk_combo_box_text_new());
@@ -504,7 +502,7 @@ static void edit_preset(const char *name_in, dt_iop_module_t *module)
 
   // focal length
   label = gtk_label_new(_("focal length"));
-  gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
+  gtk_widget_set_halign(label, GTK_ALIGN_START);
   gtk_box_pack_start(vbox2, label, FALSE, FALSE, 0);
   g->focal_length_min = GTK_SPIN_BUTTON(gtk_spin_button_new_with_range(0, 1000, 10));
   gtk_spin_button_set_digits(g->focal_length_min, 0);
@@ -517,7 +515,7 @@ static void edit_preset(const char *name_in, dt_iop_module_t *module)
 
   // raw/hdr/ldr
   label = gtk_label_new(_("format"));
-  gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
+  gtk_widget_set_halign(label, GTK_ALIGN_START);
   gtk_box_pack_start(vbox2, label, FALSE, FALSE, 0);
 
   g->format_btn[0] = GTK_TOGGLE_BUTTON(gtk_check_button_new_with_label(dt_gui_presets_format_value_str[0]));

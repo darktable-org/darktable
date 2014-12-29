@@ -30,8 +30,8 @@
 #include "control/control.h"
 #include "gui/draw.h"
 #include "gui/presets.h"
+#include "dtgtk/drawingarea.h"
 #include "gui/gtk.h"
-#include "dtgtk/button.h"
 #include "common/colorspaces.h"
 #include "bauhaus/bauhaus.h"
 #include "common/opencl.h"
@@ -41,9 +41,8 @@
 
 DT_MODULE_INTROSPECTION(2, dt_iop_levels_params_t)
 
-static gboolean dt_iop_levels_area_expose(GtkWidget *widget, GdkEventExpose *event, gpointer user_data);
-static gboolean dt_iop_levels_vbox_automatic_expose(GtkWidget *widget, GdkEventExpose *event,
-                                                    gpointer user_data);
+static gboolean dt_iop_levels_area_draw(GtkWidget *widget, cairo_t *crf, gpointer user_data);
+static gboolean dt_iop_levels_vbox_automatic_draw(GtkWidget *widget, cairo_t *cr, gpointer user_data);
 static gboolean dt_iop_levels_motion_notify(GtkWidget *widget, GdkEventMotion *event, gpointer user_data);
 static gboolean dt_iop_levels_button_press(GtkWidget *widget, GdkEventButton *event, gpointer user_data);
 static gboolean dt_iop_levels_button_release(GtkWidget *widget, GdkEventButton *event, gpointer user_data);
@@ -517,8 +516,6 @@ void gui_init(dt_iop_module_t *self)
 
   c->modes = NULL;
 
-  const int panel_width = dt_conf_get_int("panel_width") * 0.95;
-
   c->mouse_x = c->mouse_y = -1.0;
   c->dragging = 0;
   c->activeToggleButton = NULL;
@@ -526,7 +523,7 @@ void gui_init(dt_iop_module_t *self)
   c->last_picked_color = -1;
   for(int i = 0; i < 3; i++)
     for(int j = 0; j < 2; j++) c->pick_xy_positions[i][j] = -1;
-  self->widget = GTK_WIDGET(gtk_vbox_new(FALSE, 5));
+  self->widget = GTK_WIDGET(gtk_box_new(GTK_ORIENTATION_VERTICAL, 5));
 
   c->mode = dt_bauhaus_combobox_new(self);
   dt_bauhaus_widget_set_label(c->mode, NULL, _("mode"));
@@ -541,61 +538,49 @@ void gui_init(dt_iop_module_t *self)
   dt_bauhaus_combobox_set(c->mode, g_list_index(c->modes, GUINT_TO_POINTER(p->mode)));
   gtk_box_pack_start(GTK_BOX(self->widget), c->mode, TRUE, TRUE, 0);
 
-  c->area = GTK_DRAWING_AREA(gtk_drawing_area_new());
-  c->vbox_manual = GTK_WIDGET(gtk_vbox_new(FALSE, 5));
+  c->area = GTK_DRAWING_AREA(dtgtk_drawing_area_new_with_aspect_ratio(9.0 / 16.0));
+  c->vbox_manual = GTK_WIDGET(gtk_box_new(GTK_ORIENTATION_VERTICAL, 5));
   gtk_box_pack_start(GTK_BOX(c->vbox_manual), GTK_WIDGET(c->area), TRUE, TRUE, 0);
 
-  gtk_widget_set_size_request(GTK_WIDGET(c->area), panel_width, panel_width * (9.0 / 16.0));
-  g_object_set(GTK_OBJECT(c->area), "tooltip-text",
+  g_object_set(G_OBJECT(c->area), "tooltip-text",
                _("drag handles to set black, gray, and white points.  operates on L channel."), (char *)NULL);
 
   gtk_widget_add_events(GTK_WIDGET(c->area), GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK
                                              | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK
-                                             | GDK_LEAVE_NOTIFY_MASK);
-  g_signal_connect(G_OBJECT(c->area), "expose-event", G_CALLBACK(dt_iop_levels_area_expose), self);
+                                             | GDK_LEAVE_NOTIFY_MASK | GDK_SCROLL_MASK);
+  g_signal_connect(G_OBJECT(c->area), "draw", G_CALLBACK(dt_iop_levels_area_draw), self);
   g_signal_connect(G_OBJECT(c->area), "button-press-event", G_CALLBACK(dt_iop_levels_button_press), self);
   g_signal_connect(G_OBJECT(c->area), "button-release-event", G_CALLBACK(dt_iop_levels_button_release), self);
   g_signal_connect(G_OBJECT(c->area), "motion-notify-event", G_CALLBACK(dt_iop_levels_motion_notify), self);
   g_signal_connect(G_OBJECT(c->area), "leave-notify-event", G_CALLBACK(dt_iop_levels_leave_notify), self);
   g_signal_connect(G_OBJECT(c->area), "scroll-event", G_CALLBACK(dt_iop_levels_scroll), self);
 
-  GtkWidget *autobutton
-      = dtgtk_button_new_with_label(_("auto"), NULL, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER);
+  GtkWidget *autobutton = gtk_button_new_with_label(_("auto"));
   g_object_set(G_OBJECT(autobutton), "tooltip-text", _("apply auto levels"), (char *)NULL);
-  gtk_widget_set_size_request(autobutton, DT_PIXEL_APPLY_DPI(70), DT_PIXEL_APPLY_DPI(24));
+  gtk_widget_set_size_request(autobutton, -1, DT_PIXEL_APPLY_DPI(24));
 
   GtkWidget *blackpick = dtgtk_togglebutton_new(dtgtk_cairo_paint_colorpicker, CPF_STYLE_FLAT);
   g_object_set(G_OBJECT(blackpick), "tooltip-text", _("pick black point from image"), (char *)NULL);
-  gtk_widget_set_size_request(blackpick, DT_PIXEL_APPLY_DPI(24), DT_PIXEL_APPLY_DPI(24));
 
   GtkWidget *greypick = dtgtk_togglebutton_new(dtgtk_cairo_paint_colorpicker, CPF_STYLE_FLAT);
   g_object_set(G_OBJECT(greypick), "tooltip-text", _("pick medium gray point from image"), (char *)NULL);
-  gtk_widget_set_size_request(greypick, DT_PIXEL_APPLY_DPI(24), DT_PIXEL_APPLY_DPI(24));
 
   GtkWidget *whitepick = dtgtk_togglebutton_new(dtgtk_cairo_paint_colorpicker, CPF_STYLE_FLAT);
   g_object_set(G_OBJECT(whitepick), "tooltip-text", _("pick white point from image"), (char *)NULL);
-  gtk_widget_set_size_request(whitepick, DT_PIXEL_APPLY_DPI(24), DT_PIXEL_APPLY_DPI(24));
 
-  GdkColor col;
-  col.red = col.green = col.blue = 0;
-  gtk_widget_modify_fg(GTK_WIDGET(blackpick), GTK_STATE_NORMAL, &col);
-  gtk_widget_modify_fg(GTK_WIDGET(blackpick), GTK_STATE_SELECTED, &col);
-  col.red = col.green = col.blue = 32767;
-  gtk_widget_modify_fg(GTK_WIDGET(greypick), GTK_STATE_NORMAL, &col);
-  gtk_widget_modify_fg(GTK_WIDGET(greypick), GTK_STATE_SELECTED, &col);
-  col.red = col.green = col.blue = 65535;
-  gtk_widget_modify_fg(GTK_WIDGET(whitepick), GTK_STATE_NORMAL, &col);
-  gtk_widget_modify_fg(GTK_WIDGET(whitepick), GTK_STATE_SELECTED, &col);
-  col.red = col.green = col.blue = 4096;
-  gtk_widget_modify_bg(GTK_WIDGET(blackpick), GTK_STATE_ACTIVE, &col);
-  gtk_widget_modify_bg(GTK_WIDGET(greypick), GTK_STATE_ACTIVE, &col);
-  gtk_widget_modify_bg(GTK_WIDGET(whitepick), GTK_STATE_ACTIVE, &col);
+  GdkRGBA color = { 0 };
+  color.alpha = 1.0;
+  dtgtk_togglebutton_override_color(DTGTK_TOGGLEBUTTON(blackpick), &color);
+  color.red = color.green = color.blue = 0.5;
+  dtgtk_togglebutton_override_color(DTGTK_TOGGLEBUTTON(greypick), &color);
+  color.red = color.green = color.blue = 1.0;
+  dtgtk_togglebutton_override_color(DTGTK_TOGGLEBUTTON(whitepick), &color);
 
-  GtkWidget *box = gtk_hbox_new(TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(box), GTK_WIDGET(autobutton), FALSE, FALSE, 0);
-  gtk_box_pack_start(GTK_BOX(box), GTK_WIDGET(blackpick), FALSE, FALSE, 0);
-  gtk_box_pack_start(GTK_BOX(box), GTK_WIDGET(greypick), FALSE, FALSE, 0);
-  gtk_box_pack_end(GTK_BOX(box), GTK_WIDGET(whitepick), FALSE, FALSE, 0);
+  GtkWidget *box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, DT_PIXEL_APPLY_DPI(10));
+  gtk_box_pack_start(GTK_BOX(box), GTK_WIDGET(autobutton), TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(box), GTK_WIDGET(blackpick), TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(box), GTK_WIDGET(greypick), TRUE, TRUE, 0);
+  gtk_box_pack_end(GTK_BOX(box), GTK_WIDGET(whitepick), TRUE, TRUE, 0);
 
   gtk_box_pack_start(GTK_BOX(c->vbox_manual), box, TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), c->vbox_manual, TRUE, TRUE, 0);
@@ -615,7 +600,7 @@ void gui_init(dt_iop_module_t *self)
   dt_bauhaus_slider_set_format(c->percentile_white, "%.1f%%");
   dt_bauhaus_widget_set_label(c->percentile_white, NULL, _("white"));
 
-  c->vbox_automatic = GTK_WIDGET(gtk_vbox_new(FALSE, 5));
+  c->vbox_automatic = GTK_WIDGET(gtk_box_new(GTK_ORIENTATION_VERTICAL, 5));
   gtk_box_pack_start(GTK_BOX(c->vbox_automatic), GTK_WIDGET(c->percentile_black), FALSE, FALSE, 0);
   gtk_box_pack_start(GTK_BOX(c->vbox_automatic), GTK_WIDGET(c->percentile_grey), FALSE, FALSE, 0);
   gtk_box_pack_start(GTK_BOX(c->vbox_automatic), GTK_WIDGET(c->percentile_white), FALSE, FALSE, 0);
@@ -634,8 +619,7 @@ void gui_init(dt_iop_module_t *self)
       break;
   }
 
-  g_signal_connect(G_OBJECT(c->vbox_automatic), "expose-event",
-                   G_CALLBACK(dt_iop_levels_vbox_automatic_expose), self);
+  g_signal_connect(G_OBJECT(c->vbox_automatic), "draw", G_CALLBACK(dt_iop_levels_vbox_automatic_draw), self);
 
   g_signal_connect(G_OBJECT(c->mode), "value-changed", G_CALLBACK(dt_iop_levels_mode_callback), self);
   g_signal_connect(G_OBJECT(c->percentile_black), "value-changed",
@@ -670,7 +654,7 @@ static gboolean dt_iop_levels_leave_notify(GtkWidget *widget, GdkEventCrossing *
   return TRUE;
 }
 
-static gboolean dt_iop_levels_area_expose(GtkWidget *widget, GdkEventExpose *event, gpointer user_data)
+static gboolean dt_iop_levels_area_draw(GtkWidget *widget, cairo_t *crf, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_levels_gui_data_t *c = (dt_iop_levels_gui_data_t *)self->gui_data;
@@ -841,16 +825,13 @@ static gboolean dt_iop_levels_area_expose(GtkWidget *widget, GdkEventExpose *eve
 
   // Cleaning up
   cairo_destroy(cr);
-  cairo_t *cr_pixmap = gdk_cairo_create(gtk_widget_get_window(GTK_WIDGET(c->area)));
-  cairo_set_source_surface(cr_pixmap, cst, 0, 0);
-  cairo_paint(cr_pixmap);
-  cairo_destroy(cr_pixmap);
+  cairo_set_source_surface(crf, cst, 0, 0);
+  cairo_paint(crf);
   cairo_surface_destroy(cst);
   return TRUE;
 }
 
-static gboolean dt_iop_levels_vbox_automatic_expose(GtkWidget *widget, GdkEventExpose *event,
-                                                    gpointer user_data)
+static gboolean dt_iop_levels_vbox_automatic_draw(GtkWidget *widget, cairo_t *cr, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_levels_gui_data_t *g = (dt_iop_levels_gui_data_t *)self->gui_data;
@@ -860,10 +841,9 @@ static gboolean dt_iop_levels_vbox_automatic_expose(GtkWidget *widget, GdkEventE
     g->reprocess_on_next_expose = FALSE;
     // FIXME: or just use dev->pipe->changed |= DT_DEV_PIPE_SYNCH; ?
     dt_dev_reprocess_all(self->dev);
-    return FALSE;
   }
 
-  return TRUE;
+  return FALSE;
 }
 
 /**
@@ -961,7 +941,10 @@ static gboolean dt_iop_levels_motion_notify(GtkWidget *widget, GdkEventMotion *e
   gtk_widget_queue_draw(widget);
 
   gint x, y;
-  gdk_window_get_pointer(event->window, &x, &y, NULL);
+  gdk_window_get_device_position(event->window,
+                                 gdk_device_manager_get_client_pointer(
+                                     gdk_display_get_device_manager(gdk_window_get_display(event->window))),
+                                 &x, &y, NULL);
   return TRUE;
 }
 

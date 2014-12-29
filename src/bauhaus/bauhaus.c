@@ -40,7 +40,7 @@ G_DEFINE_TYPE(DtBauhausWidget, dt_bh, GTK_TYPE_DRAWING_AREA)
 #pragma GCC diagnostic pop
 
 // fwd declare
-static gboolean dt_bauhaus_popup_expose(GtkWidget *widget, GdkEventExpose *event, gpointer user_data);
+static gboolean dt_bauhaus_popup_draw(GtkWidget *widget, cairo_t *cr, gpointer user_data);
 static gboolean dt_bauhaus_popup_key_press(GtkWidget *widget, GdkEventKey *event, gpointer user_data);
 static void dt_bauhaus_widget_accept(dt_bauhaus_widget_t *w);
 static void dt_bauhaus_widget_reject(dt_bauhaus_widget_t *w);
@@ -428,8 +428,9 @@ static gboolean dt_bauhaus_popup_button_release(GtkWidget *widget, GdkEventButto
     // event might be in wrong system, transform ourselves:
     gint wx, wy, x, y;
     gdk_window_get_origin(gtk_widget_get_window(darktable.bauhaus->popup_window), &wx, &wy);
-    GdkDisplay *display = gdk_display_get_default();
-    gdk_display_get_pointer(display, NULL, &x, &y, NULL);
+    gdk_device_get_position(
+        gdk_device_manager_get_client_pointer(gdk_display_get_device_manager(gdk_display_get_default())),
+        NULL, &x, &y);
     darktable.bauhaus->end_mouse_x = x - wx;
     darktable.bauhaus->end_mouse_y = y - wy;
     dt_bauhaus_widget_accept(darktable.bauhaus->current);
@@ -468,18 +469,21 @@ static gboolean dt_bauhaus_popup_button_press(GtkWidget *widget, GdkEventButton 
 
 static void window_show(GtkWidget *w, gpointer user_data)
 {
-  /* grabbing might not succeed immediately... */
-  if(gdk_keyboard_grab(gtk_widget_get_window(w), FALSE, GDK_CURRENT_TIME) != GDK_GRAB_SUCCESS)
+  GdkDisplay *display = gtk_widget_get_display(w);
+  GdkDeviceManager *mgr = gdk_display_get_device_manager(display);
+  GList *devices = gdk_device_manager_list_devices(mgr, GDK_DEVICE_TYPE_MASTER);
+  GList *tmp = devices;
+  while(tmp)
   {
-    // never happened so far:
-    /* ...wait a while and try again */
-    fprintf(stderr, "[bauhaus] failed to get keyboard focus for popup window!\n");
-    // struct timeval s;
-    // s.tv_sec = 0;
-    // s.tv_usec = 5000;
-    // select(0, NULL, NULL, NULL, &s);
-    // sched_yield();
+    GdkDevice *dev = tmp->data;
+    if(gdk_device_get_source(dev) == GDK_SOURCE_KEYBOARD)
+    {
+      gdk_device_grab(dev, gtk_widget_get_window(w), GDK_OWNERSHIP_NONE, FALSE,
+                      GDK_KEY_PRESS_MASK | GDK_KEY_RELEASE_MASK, NULL, GDK_CURRENT_TIME);
+    }
+    tmp = tmp->next;
   }
+  g_list_free(devices);
 }
 
 static void dt_bh_init(DtBauhausWidget *class)
@@ -500,46 +504,7 @@ static void dt_bh_class_init(DtBauhausWidgetClass *class)
   // TODO: could init callbacks once per class for more efficiency:
   // GtkWidgetClass *widget_class;
   // widget_class = GTK_WIDGET_CLASS (class);
-  // widget_class->expose_event = dt_bauhaus_expose;
-}
-
-static int guess_font_size()
-{
-  const int def = 8;
-  const char *gtkrc_filename = darktable.gui->gtkrc;
-  if(!gtkrc_filename) return def;
-  FILE *f = fopen(gtkrc_filename, "rb");
-  if(!f) return def;
-  char line[256];
-  while(!feof(f))
-  {
-    int read = fscanf(f, "%[^\n]\n", line);
-    if(read > 0)
-    {
-      char *c = line;
-      while(*c == ' ' || *c == '\t') c++;
-      if(!strncmp(c, "font_name", 9))
-      {
-        fclose(f);
-        // skip all to = then second " (end)
-        while(*c != '=' && *c != 0) c++;
-        while(*c != '"' && *c != 0) c++;
-        if(*c != 0) c++;
-        while(*c != '"' && *c != 0) c++;
-        // back to last space
-        while(*c != ' ' && c > line) c--;
-        if(*c == ' ' && c != line)
-        {
-          int fontsize = (int)atol(c);
-          // fprintf(stderr, "[bauhaus] guessing gtk font size of %d pt\n", fontsize);
-          if(fontsize > 0) return fontsize;
-        }
-        return def;
-      }
-    }
-  }
-  fclose(f);
-  return def;
+  // widget_class->draw = dt_bauhaus_draw;
 }
 
 void dt_bauhaus_init()
@@ -570,14 +535,27 @@ void dt_bauhaus_init()
   darktable.bauhaus->indicator = .6f;
   darktable.bauhaus->insensitive = 0.2f;
 
-  // it seems impossible to get to the font size in a portable way (gtk3 deprecates GtkStyle..),
-  // so we parse it ourselves and convert it from pt to scale (.. :( )
-  int gtk_fontsize = guess_font_size();
+  GtkStyleContext *ctx = gtk_style_context_new();
+  GtkWidgetPath *path;
+  path = gtk_widget_path_new ();
+  int pos = gtk_widget_path_append_type(path, GTK_TYPE_WIDGET);
+  gtk_widget_path_iter_set_name(path, pos, "iop-plugin-ui");
+  pos = gtk_widget_path_append_type(path, GTK_TYPE_WIDGET);
+  gtk_style_context_set_path(ctx, path);
+  gtk_style_context_set_screen (ctx, gtk_widget_get_screen(root_window));
 
-  // now create the pango description for the strings using the font and size found above
-  gchar *font = g_strdup_printf("%s %d", darktable.bauhaus->label_font, gtk_fontsize);
-  darktable.bauhaus->pango_font_desc = pango_font_description_from_string(font);
-  g_free(font);
+  GdkRGBA color, selected_color, bg_color, selected_bg_color;
+  gtk_style_context_get_color(ctx, GTK_STATE_FLAG_NORMAL, &color);
+  gtk_style_context_get_background_color(ctx, GTK_STATE_FLAG_NORMAL, &bg_color);
+  gtk_style_context_get_color(ctx, GTK_STATE_FLAG_SELECTED, &selected_color);
+  gtk_style_context_get_background_color(ctx, GTK_STATE_FLAG_SELECTED, &selected_bg_color);
+  PangoFontDescription *pfont = 0;
+  gtk_style_context_get(ctx, GTK_STATE_FLAG_NORMAL, "font", &pfont, NULL);
+  darktable.bauhaus->bg_normal = bg_color.red;
+  darktable.bauhaus->bg_focus = selected_bg_color.red;
+  gtk_widget_path_free(path);
+
+  darktable.bauhaus->pango_font_desc = pfont;
 
   PangoLayout *layout;
   cairo_surface_t *cst = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, 128, 128);
@@ -630,11 +608,11 @@ void dt_bauhaus_init()
   gtk_widget_set_can_focus(darktable.bauhaus->popup_area, TRUE);
   gtk_widget_add_events(darktable.bauhaus->popup_area, GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK
                                                        | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK
-                                                       | GDK_KEY_PRESS_MASK | GDK_LEAVE_NOTIFY_MASK);
+                                                       | GDK_KEY_PRESS_MASK | GDK_LEAVE_NOTIFY_MASK | GDK_SCROLL_MASK);
 
   g_signal_connect(G_OBJECT(darktable.bauhaus->popup_window), "show", G_CALLBACK(window_show), (gpointer)NULL);
-  g_signal_connect(G_OBJECT(darktable.bauhaus->popup_area), "expose-event",
-                   G_CALLBACK(dt_bauhaus_popup_expose), (gpointer)NULL);
+  g_signal_connect(G_OBJECT(darktable.bauhaus->popup_area), "draw", G_CALLBACK(dt_bauhaus_popup_draw),
+                   (gpointer)NULL);
   g_signal_connect(G_OBJECT(darktable.bauhaus->popup_area), "motion-notify-event",
                    G_CALLBACK(dt_bauhaus_popup_motion_notify), (gpointer)NULL);
   g_signal_connect(G_OBJECT(darktable.bauhaus->popup_area), "leave-notify-event",
@@ -669,7 +647,7 @@ static gboolean dt_bauhaus_combobox_button_press(GtkWidget *widget, GdkEventButt
 static gboolean dt_bauhaus_combobox_scroll(GtkWidget *widget, GdkEventScroll *event, gpointer user_data);
 // static gboolean
 // dt_bauhaus_button_release(GtkWidget *widget, GdkEventButton *event, gpointer user_data);
-static gboolean dt_bauhaus_expose(GtkWidget *widget, GdkEventExpose *event, gpointer user_data);
+static gboolean dt_bauhaus_draw(GtkWidget *widget, cairo_t *crf, gpointer user_data);
 
 
 // end static init/cleanup
@@ -686,13 +664,13 @@ static void dt_bauhaus_widget_init(dt_bauhaus_widget_t *w, dt_iop_module_t *self
   w->quad_paint = 0;
   w->quad_toggle = 0;
   w->combo_populate = NULL;
-  gtk_widget_set_size_request(GTK_WIDGET(w), DT_PIXEL_APPLY_DPI(260), get_line_height());
+  gtk_widget_set_size_request(GTK_WIDGET(w), -1, get_line_height());
 
   gtk_widget_add_events(GTK_WIDGET(w), GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK
                                        | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK
-                                       | GDK_LEAVE_NOTIFY_MASK);
+                                       | GDK_LEAVE_NOTIFY_MASK | GDK_SCROLL_MASK);
 
-  g_signal_connect(G_OBJECT(w), "expose-event", G_CALLBACK(dt_bauhaus_expose), NULL);
+  g_signal_connect(G_OBJECT(w), "draw", G_CALLBACK(dt_bauhaus_draw), NULL);
 
   // for combobox, where mouse-release triggers a selection, we need to catch this
   // event where the mouse-press occurred, which will be this widget. we just pass
@@ -1073,23 +1051,9 @@ static void dt_bauhaus_clear(dt_bauhaus_widget_t *w, cairo_t *cr)
   }
   else
   {
-    if(gtk_widget_get_state(GTK_WIDGET(w)) == GTK_STATE_SELECTED)
-      set_bg_focus(cr);
-    else
-      set_bg_normal(cr);
+    // lib modules always with bright bg
+    set_bg_focus(cr);
   }
-
-#if 0
-  GtkWidget *topwidget = dt_iop_gui_get_pluginui(w->module);
-  GtkStyle *style = gtk_widget_get_style(topwidget);
-  if(style)
-  {
-    cairo_set_source_rgb (cr,
-                          style->bg[gtk_widget_get_state(topwidget)].red/65535.0f,
-                          style->bg[gtk_widget_get_state(topwidget)].green/65535.0f,
-                          style->bg[gtk_widget_get_state(topwidget)].blue/65535.0f);
-  }
-#endif
   cairo_paint(cr);
   cairo_restore(cr);
 }
@@ -1295,7 +1259,7 @@ static void dt_bauhaus_widget_accept(dt_bauhaus_widget_t *w)
   }
 }
 
-static gboolean dt_bauhaus_popup_expose(GtkWidget *widget, GdkEventExpose *event, gpointer user_data)
+static gboolean dt_bauhaus_popup_draw(GtkWidget *widget, cairo_t *crf, gpointer user_data)
 {
   GtkAllocation allocation;
   gtk_widget_get_allocation(widget, &allocation);
@@ -1486,16 +1450,14 @@ static gboolean dt_bauhaus_popup_expose(GtkWidget *widget, GdkEventExpose *event
   }
 
   cairo_destroy(cr);
-  cairo_t *cr_pixmap = gdk_cairo_create(gtk_widget_get_window(widget));
-  cairo_set_source_surface(cr_pixmap, cst, 0, 0);
-  cairo_paint(cr_pixmap);
-  cairo_destroy(cr_pixmap);
+  cairo_set_source_surface(crf, cst, 0, 0);
+  cairo_paint(crf);
   cairo_surface_destroy(cst);
 
   return TRUE;
 }
 
-static gboolean dt_bauhaus_expose(GtkWidget *widget, GdkEventExpose *event, gpointer user_data)
+static gboolean dt_bauhaus_draw(GtkWidget *widget, cairo_t *crf, gpointer user_data)
 {
   GtkAllocation allocation;
   gtk_widget_get_allocation(widget, &allocation);
@@ -1556,10 +1518,8 @@ static gboolean dt_bauhaus_expose(GtkWidget *widget, GdkEventExpose *event, gpoi
   cairo_restore(cr);
 
   cairo_destroy(cr);
-  cairo_t *cr_pixmap = gdk_cairo_create(gtk_widget_get_window(widget));
-  cairo_set_source_surface(cr_pixmap, cst, 0, 0);
-  cairo_paint(cr_pixmap);
-  cairo_destroy(cr_pixmap);
+  cairo_set_source_surface(crf, cst, 0, 0);
+  cairo_paint(crf);
   cairo_surface_destroy(cst);
 
   return TRUE;
@@ -1569,7 +1529,20 @@ void dt_bauhaus_hide_popup()
 {
   if(darktable.bauhaus->current)
   {
-    gdk_keyboard_ungrab(GDK_CURRENT_TIME);
+    GdkDisplay *display = gdk_display_get_default();
+    GdkDeviceManager *mgr = gdk_display_get_device_manager(display);
+    GList *devices = gdk_device_manager_list_devices(mgr, GDK_DEVICE_TYPE_MASTER);
+    GList *tmp = devices;
+    while(tmp)
+    {
+      GdkDevice *dev = tmp->data;
+      if(gdk_device_get_source(dev) == GDK_SOURCE_KEYBOARD)
+      {
+        gdk_device_ungrab(dev, GDK_CURRENT_TIME);
+      }
+      tmp = tmp->next;
+    }
+    g_list_free(devices);
     gtk_widget_hide(darktable.bauhaus->popup_window);
     darktable.bauhaus->current = NULL;
     // TODO: give focus to center view? do in accept() as well?
@@ -1587,7 +1560,8 @@ void dt_bauhaus_show_popup(dt_bauhaus_widget_t *w)
   darktable.bauhaus->mouse_line_distance = 0.0f;
   _stop_cursor();
 
-  dt_iop_request_focus(w->module);
+  if(w->module) dt_iop_request_focus(w->module);
+
   int offset = 0;
 
   switch(darktable.bauhaus->current->type)
@@ -1651,13 +1625,13 @@ static gboolean dt_bauhaus_slider_scroll(GtkWidget *widget, GdkEventScroll *even
   dt_bauhaus_slider_data_t *d = &w->data.slider;
   if(event->direction == GDK_SCROLL_UP)
   {
-    dt_iop_request_focus(w->module);
+    if(w->module) dt_iop_request_focus(w->module);
     dt_bauhaus_slider_set_normalized(w, d->pos + d->scale / 5.0f);
     return TRUE;
   }
   else if(event->direction == GDK_SCROLL_DOWN)
   {
-    dt_iop_request_focus(w->module);
+    if(w->module) dt_iop_request_focus(w->module);
     dt_bauhaus_slider_set_normalized(w, d->pos - d->scale / 5.0f);
     return TRUE;
   }
@@ -1672,13 +1646,13 @@ static gboolean dt_bauhaus_combobox_scroll(GtkWidget *widget, GdkEventScroll *ev
   dt_bauhaus_combobox_data_t *d = &w->data.combobox;
   if(event->direction == GDK_SCROLL_UP)
   {
-    dt_iop_request_focus(w->module);
+    if(w->module) dt_iop_request_focus(w->module);
     dt_bauhaus_combobox_set(widget, CLAMP(d->active - 1, 0, d->num_labels - 1));
     return TRUE;
   }
   else if(event->direction == GDK_SCROLL_DOWN)
   {
-    dt_iop_request_focus(w->module);
+    if(w->module) dt_iop_request_focus(w->module);
     dt_bauhaus_combobox_set(widget, CLAMP(d->active + 1, 0, d->num_labels - 1));
     return TRUE;
   }
@@ -1691,8 +1665,7 @@ static gboolean dt_bauhaus_combobox_button_press(GtkWidget *widget, GdkEventButt
   gtk_widget_get_allocation(widget, &allocation);
   dt_bauhaus_widget_t *w = (dt_bauhaus_widget_t *)widget;
   if(w->type != DT_BAUHAUS_COMBOBOX) return FALSE;
-  if(w->module) // tethering uses these with module == NULL
-    dt_iop_request_focus(w->module);
+  if(w->module) dt_iop_request_focus(w->module);
   GtkAllocation tmp;
   gtk_widget_get_allocation(GTK_WIDGET(w), &tmp);
   dt_bauhaus_combobox_data_t *d = &w->data.combobox;
@@ -1957,7 +1930,7 @@ static gboolean dt_bauhaus_slider_button_press(GtkWidget *widget, GdkEventButton
   GtkAllocation allocation;
   gtk_widget_get_allocation(widget, &allocation);
   dt_bauhaus_widget_t *w = (dt_bauhaus_widget_t *)widget;
-  dt_iop_request_focus(w->module);
+  if(w->module) dt_iop_request_focus(w->module);
   GtkAllocation tmp;
   gtk_widget_get_allocation(GTK_WIDGET(w), &tmp);
   if(w->quad_paint && (event->x > allocation.width - allocation.height))
@@ -2004,7 +1977,7 @@ static gboolean dt_bauhaus_slider_button_release(GtkWidget *widget, GdkEventButt
 
   if((event->button == 1) && (d->is_dragging))
   {
-    dt_iop_request_focus(w->module);
+    if(w->module) dt_iop_request_focus(w->module);
     GtkAllocation tmp;
     gtk_widget_get_allocation(GTK_WIDGET(w), &tmp);
     d->is_dragging = 0;

@@ -547,8 +547,14 @@ void dt_dev_add_history_item(dt_develop_t *dev, dt_iop_module_t *module, gboolea
       history = next;
     }
     history = g_list_nth(dev->history, dev->history_end - 1);
-    if(!history || module->instance != ((dt_dev_history_item_t *)history->data)->module->instance
-       || module->multi_priority != ((dt_dev_history_item_t *)history->data)->module->multi_priority)
+    dt_dev_history_item_t *hist = history ? (dt_dev_history_item_t *)(history->data) : 0;
+    if(!history || // if no history yet, push new item for sure.
+       (( module->instance != hist->module->instance             // add new item for different op
+       || module->multi_priority != hist->module->multi_priority // or instance
+       || dev->focus_hash != hist->focus_hash)                   // or if focused out and in
+       && (// but only add item if there is a difference at all for the same module
+         (module->params_size != hist->module->params_size) ||
+         (module->params_size == hist->module->params_size && memcmp(hist->params, module->params, module->params_size)))))
     {
       // new operation, push new item
       // printf("adding new history item %d - %s\n", dev->history_end, module->op);
@@ -566,6 +572,7 @@ void dt_dev_add_history_item(dt_develop_t *dev, dt_iop_module_t *module, gboolea
           darktable.gui->reset = 0;
         }
       }
+      hist->focus_hash = dev->focus_hash;
       hist->enabled = module->enabled;
       hist->module = module;
       hist->params = malloc(module->params_size);
@@ -640,6 +647,7 @@ void dt_dev_add_history_item(dt_develop_t *dev, dt_iop_module_t *module, gboolea
 
 void dt_dev_reload_history_items(dt_develop_t *dev)
 {
+  dev->focus_hash = 0;
   dt_dev_pop_history_items(dev, 0);
   // remove unused history items:
   GList *history = g_list_nth(dev->history, dev->history_end);

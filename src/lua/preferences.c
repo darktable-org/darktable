@@ -20,6 +20,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "control/conf.h"
+#include "gui/gtk.h"
 
 typedef enum
 {
@@ -544,16 +545,24 @@ void init_tab_lua(GtkWidget *dialog, GtkWidget *tab)
 {
   if(!pref_list) return; // no option registered => don't create the tab
   char tooltip[1024];
-  GtkWidget *label, *labelev;
-  GtkWidget *hbox = gtk_hbox_new(5, FALSE);
-  GtkWidget *vbox1 = gtk_vbox_new(5, TRUE);
-  GtkWidget *vbox2 = gtk_vbox_new(5, TRUE);
-  gtk_box_pack_start(GTK_BOX(hbox), vbox1, FALSE, FALSE, 0);
-  gtk_box_pack_start(GTK_BOX(hbox), vbox2, FALSE, FALSE, 0);
-  GtkWidget *alignment = gtk_alignment_new(0.5, 0.0, 1.0, 0.0);
-  gtk_alignment_set_padding(GTK_ALIGNMENT(alignment), 20, 20, 20, 20);
-  gtk_container_add(GTK_CONTAINER(alignment), hbox);
-  gtk_notebook_append_page(GTK_NOTEBOOK(tab), alignment, gtk_label_new(_("lua options")));
+  GtkWidget *label, *labelev, *viewport;
+  GtkWidget *grid = gtk_grid_new();
+  int line = 0;
+  gtk_grid_set_row_spacing(GTK_GRID(grid), DT_PIXEL_APPLY_DPI(5));
+  gtk_grid_set_column_spacing(GTK_GRID(grid), DT_PIXEL_APPLY_DPI(5));
+  gtk_grid_set_row_homogeneous(GTK_GRID(grid), TRUE);
+  gtk_widget_set_valign(grid, GTK_ALIGN_START);
+  GtkWidget *scroll = gtk_scrolled_window_new(NULL, NULL);
+  gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(scroll), GTK_POLICY_NEVER, GTK_POLICY_AUTOMATIC);
+  gtk_widget_set_margin_top(scroll, DT_PIXEL_APPLY_DPI(20));
+  gtk_widget_set_margin_bottom(scroll, DT_PIXEL_APPLY_DPI(20));
+  gtk_widget_set_margin_start(scroll, DT_PIXEL_APPLY_DPI(20));
+  gtk_widget_set_margin_end(scroll, DT_PIXEL_APPLY_DPI(20));
+  viewport = gtk_viewport_new(NULL, NULL);
+  gtk_viewport_set_shadow_type(GTK_VIEWPORT(viewport), GTK_SHADOW_NONE); // doesn't seem to work from gtkrc
+  gtk_container_add(GTK_CONTAINER(scroll), viewport);
+  gtk_container_add(GTK_CONTAINER(viewport), grid);
+  gtk_notebook_append_page(GTK_NOTEBOOK(tab), scroll, gtk_label_new(_("lua options")));
 
   pref_element *cur_elt = pref_list;
   while(cur_elt)
@@ -561,7 +570,7 @@ void init_tab_lua(GtkWidget *dialog, GtkWidget *tab)
     char pref_name[1024];
     get_pref_name(pref_name, sizeof(pref_name), cur_elt->script, cur_elt->name);
     label = gtk_label_new(cur_elt->label);
-    gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
+    gtk_widget_set_halign(GTK_WIDGET(label), GTK_ALIGN_START);
     labelev = gtk_event_box_new();
     gtk_widget_add_events(labelev, GDK_BUTTON_PRESS_MASK);
     gtk_container_add(GTK_CONTAINER(labelev), label);
@@ -668,8 +677,8 @@ void init_tab_lua(GtkWidget *dialog, GtkWidget *tab)
     g_object_set(labelev, "tooltip-text", tooltip, (char *)NULL);
     gtk_event_box_set_visible_window(GTK_EVENT_BOX(labelev), FALSE);
     g_object_set(cur_elt->widget, "tooltip-text", cur_elt->tooltip, (char *)NULL);
-    gtk_box_pack_start(GTK_BOX(vbox1), labelev, FALSE, FALSE, 0);
-    gtk_box_pack_start(GTK_BOX(vbox2), cur_elt->widget, FALSE, FALSE, 0);
+    gtk_grid_attach(GTK_GRID(grid), labelev, 0, line++, 1, 1);
+    gtk_grid_attach_next_to(GTK_GRID(grid), cur_elt->widget, labelev, GTK_POS_RIGHT, 1, 1);
     cur_elt = cur_elt->next;
   }
 }

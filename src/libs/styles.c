@@ -222,8 +222,8 @@ static void export_clicked(GtkWidget *w, gpointer user_data)
   {
     GtkWidget *win = dt_ui_main_window(darktable.gui->ui);
     GtkWidget *filechooser = gtk_file_chooser_dialog_new(
-        _("select directory"), GTK_WINDOW(win), GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER, GTK_STOCK_CANCEL,
-        GTK_RESPONSE_CANCEL, GTK_STOCK_SAVE, GTK_RESPONSE_ACCEPT, (char *)NULL);
+        _("select directory"), GTK_WINDOW(win), GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER, _("_Cancel"),
+        GTK_RESPONSE_CANCEL, _("_Save"), GTK_RESPONSE_ACCEPT, (char *)NULL);
     gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(filechooser), g_get_home_dir());
     gtk_file_chooser_set_select_multiple(GTK_FILE_CHOOSER(filechooser), FALSE);
     if(gtk_dialog_run(GTK_DIALOG(filechooser)) == GTK_RESPONSE_ACCEPT)
@@ -242,8 +242,8 @@ static void import_clicked(GtkWidget *w, gpointer user_data)
 {
   GtkWidget *win = dt_ui_main_window(darktable.gui->ui);
   GtkWidget *filechooser = gtk_file_chooser_dialog_new(
-      _("select style"), GTK_WINDOW(win), GTK_FILE_CHOOSER_ACTION_OPEN, GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
-      GTK_STOCK_OPEN, GTK_RESPONSE_ACCEPT, (char *)NULL);
+      _("select style"), GTK_WINDOW(win), GTK_FILE_CHOOSER_ACTION_OPEN, _("_Cancel"), GTK_RESPONSE_CANCEL,
+      _("_Open"), GTK_RESPONSE_ACCEPT, (char *)NULL);
 
   gtk_file_chooser_set_select_multiple(GTK_FILE_CHOOSER(filechooser), TRUE);
   gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(filechooser), g_get_home_dir());
@@ -300,7 +300,7 @@ void gui_init(dt_lib_module_t *self)
   dt_lib_styles_t *d = (dt_lib_styles_t *)malloc(sizeof(dt_lib_styles_t));
   self->data = (void *)d;
   d->edit_button = NULL;
-  self->widget = gtk_vbox_new(FALSE, 5);
+  self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
   GtkWidget *w;
   GtkWidget *scrolled;
 
@@ -348,8 +348,8 @@ void gui_init(dt_lib_module_t *self)
   g_object_set(d->duplicate, "tooltip-text", _("creates a duplicate of the image before applying style"),
                (char *)NULL);
 
-  GtkWidget *hbox1 = gtk_hbox_new(TRUE, 5);
-  GtkWidget *hbox2 = gtk_hbox_new(TRUE, 5);
+  GtkWidget *hbox1 = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5);
+  GtkWidget *hbox2 = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5);
   gtk_box_pack_start(GTK_BOX(self->widget), hbox1, TRUE, FALSE, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), hbox2, TRUE, FALSE, 0);
 

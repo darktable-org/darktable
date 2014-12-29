@@ -37,7 +37,6 @@
 #include "gui/gtk.h"
 #include "gui/presets.h"
 #include "dtgtk/resetlabel.h"
-#include "dtgtk/slider.h"
 #include "bauhaus/bauhaus.h"
 #include "develop/pixelpipe.h"
 #include "common/histogram.h"
@@ -855,7 +854,7 @@ static void black_callback(GtkWidget *slider, gpointer user_data)
   dt_iop_exposure_set_black(self, black);
 }
 
-static gboolean expose(GtkWidget *widget, GdkEventExpose *event, dt_iop_module_t *self)
+static gboolean draw(GtkWidget *widget, cairo_t *cr, dt_iop_module_t *self)
 {
   if(darktable.gui->reset) return FALSE;
 
@@ -919,7 +918,7 @@ void gui_init(struct dt_iop_module_t *self)
 
   self->request_color_pick = DT_REQUEST_COLORPICK_OFF;
 
-  self->widget = GTK_WIDGET(gtk_vbox_new(FALSE, DT_BAUHAUS_SPACE));
+  self->widget = GTK_WIDGET(gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE));
 
   g->mode = dt_bauhaus_combobox_new(self);
   dt_bauhaus_widget_set_label(g->mode, NULL, _("mode"));
@@ -942,7 +941,7 @@ void gui_init(struct dt_iop_module_t *self)
   dt_bauhaus_slider_enable_soft_boundaries(g->black, -1.0, 1.0);
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->black), TRUE, TRUE, 0);
 
-  g->vbox_manual = GTK_WIDGET(gtk_vbox_new(FALSE, DT_BAUHAUS_SPACE));
+  g->vbox_manual = GTK_WIDGET(gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE));
 
   g->exposure = dt_bauhaus_slider_new_with_range(self, -3.0, 3.0, .02, p->exposure, 3);
   g_object_set(G_OBJECT(g->exposure), "tooltip-text", _("adjust the exposure correction"), (char *)NULL);
@@ -951,7 +950,7 @@ void gui_init(struct dt_iop_module_t *self)
   dt_bauhaus_slider_enable_soft_boundaries(g->exposure, -18.0, 18.0);
   gtk_box_pack_start(GTK_BOX(g->vbox_manual), GTK_WIDGET(g->exposure), TRUE, TRUE, 0);
 
-  GtkHBox *hbox = GTK_HBOX(gtk_hbox_new(FALSE, 0));
+  GtkBox *hbox = GTK_BOX(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0));
 
   g->autoexp = GTK_CHECK_BUTTON(gtk_check_button_new_with_label(_("auto")));
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->autoexp), FALSE);
@@ -966,7 +965,7 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(g->vbox_manual), GTK_WIDGET(hbox), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->vbox_manual), TRUE, TRUE, 0);
 
-  g->vbox_deflicker = GTK_WIDGET(gtk_vbox_new(FALSE, DT_BAUHAUS_SPACE));
+  g->vbox_deflicker = GTK_WIDGET(gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE));
 
   g->deflicker_percentile = dt_bauhaus_slider_new_with_range(self, 0, 100, .01, p->deflicker_percentile, 3);
   // FIXME: this needs a better tooltip!
@@ -998,13 +997,13 @@ void gui_init(struct dt_iop_module_t *self)
                           g_list_index(g->modes, GUINT_TO_POINTER(p->deflicker_histogram_source)));
   gtk_box_pack_start(GTK_BOX(g->vbox_deflicker), GTK_WIDGET(g->deflicker_histogram_source), TRUE, TRUE, 0);
 
-  GtkHBox *hbox1 = GTK_HBOX(gtk_hbox_new(FALSE, 0));
+  GtkBox *hbox1 = GTK_BOX(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0));
   GtkLabel *label = GTK_LABEL(gtk_label_new(_("computed EC: ")));
   gtk_box_pack_start(GTK_BOX(hbox1), GTK_WIDGET(label), FALSE, FALSE, 0);
 
   g->deflicker_used_EC = GTK_LABEL(gtk_label_new("")); // This gets filled in by process
-  g_object_set(GTK_OBJECT(g->deflicker_used_EC), "tooltip-text",
-               _("what exposure correction has actually been used"), (char *)NULL);
+  g_object_set(G_OBJECT(g->deflicker_used_EC), "tooltip-text",
+               _("what exposure correction have actually been used"), (char *)NULL);
   gtk_box_pack_start(GTK_BOX(hbox1), GTK_WIDGET(g->deflicker_used_EC), FALSE, FALSE, 0);
   g->deflicker_computed_exposure = NAN;
 
@@ -1023,7 +1022,7 @@ void gui_init(struct dt_iop_module_t *self)
                    G_CALLBACK(deflicker_params_callback), self);
   g_signal_connect(G_OBJECT(g->deflicker_histogram_source), "value-changed",
                    G_CALLBACK(deflicker_histogram_source_callback), self);
-  g_signal_connect(G_OBJECT(self->widget), "expose-event", G_CALLBACK(expose), self);
+  g_signal_connect(G_OBJECT(self->widget), "draw", G_CALLBACK(draw), self);
 }
 
 void gui_cleanup(struct dt_iop_module_t *self)

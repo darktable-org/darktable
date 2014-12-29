@@ -388,14 +388,13 @@ int dt_view_manager_switch(dt_view_manager_t *vm, int k)
     /* add endmarkers to left and right center containers */
     GtkWidget *endmarker = gtk_drawing_area_new();
     dt_ui_container_add_widget(darktable.gui->ui, DT_UI_CONTAINER_PANEL_LEFT_CENTER, endmarker);
-    g_signal_connect(G_OBJECT(endmarker), "expose-event", G_CALLBACK(dt_control_expose_endmarker), 0);
+    g_signal_connect(G_OBJECT(endmarker), "draw", G_CALLBACK(dt_control_draw_endmarker), 0);
     gtk_widget_set_size_request(endmarker, -1, DT_PIXEL_APPLY_DPI(50));
     gtk_widget_show(endmarker);
 
     endmarker = gtk_drawing_area_new();
     dt_ui_container_add_widget(darktable.gui->ui, DT_UI_CONTAINER_PANEL_RIGHT_CENTER, endmarker);
-    g_signal_connect(G_OBJECT(endmarker), "expose-event", G_CALLBACK(dt_control_expose_endmarker),
-                     GINT_TO_POINTER(1));
+    g_signal_connect(G_OBJECT(endmarker), "draw", G_CALLBACK(dt_control_draw_endmarker), GINT_TO_POINTER(1));
     gtk_widget_set_size_request(endmarker, -1, DT_PIXEL_APPLY_DPI(50));
     gtk_widget_show(endmarker);
   }

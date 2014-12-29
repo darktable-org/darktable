@@ -31,7 +31,6 @@
 #include "bauhaus/bauhaus.h"
 #include "views/view.h"
 #include "gui/gtk.h"
-#include "gui/contrast.h"
 #include "gui/draw.h"
 
 #ifdef USE_COLORDGTK
@@ -303,7 +302,6 @@ void dt_control_init(dt_control_t *s)
   s->log_busy = 0;
   s->log_message_timeout_id = 0;
   dt_pthread_mutex_init(&(s->log_mutex), NULL);
-  s->progress = 200.0f;
 
   dt_conf_set_int("ui_last/view", DT_MODE_NONE);
 
@@ -352,7 +350,7 @@ void dt_control_change_cursor(dt_cursor_t curs)
   GtkWidget *widget = dt_ui_main_window(darktable.gui->ui);
   GdkCursor *cursor = gdk_cursor_new(curs);
   gdk_window_set_cursor(gtk_widget_get_window(widget), cursor);
-  gdk_cursor_unref(cursor);
+  g_object_unref(cursor);
 }
 
 int dt_control_running()
@@ -447,7 +445,9 @@ void *dt_control_expose(void *voidptr)
   width = dt_cairo_image_surface_get_width(darktable.gui->surface);
   height = dt_cairo_image_surface_get_height(darktable.gui->surface);
   GtkWidget *widget = dt_ui_center(darktable.gui->ui);
-  gtk_widget_get_pointer(widget, &pointerx, &pointery);
+  GdkDevice *device
+      = gdk_device_manager_get_client_pointer(gdk_display_get_device_manager(gtk_widget_get_display(widget)));
+  gdk_window_get_device_position(gtk_widget_get_window(widget), device, &pointerx, &pointery, NULL);
 
   // create a gtk-independent surface to draw on
   cairo_surface_t *cst = dt_cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height);
@@ -460,16 +460,31 @@ void *dt_control_expose(void *voidptr)
   darktable.control->width = width;
   darktable.control->height = height;
 
-  GtkStyle *style = gtk_widget_get_style(widget);
-  cairo_set_source_rgb(cr, style->bg[GTK_STATE_NORMAL].red / 65535.0,
-                       style->bg[GTK_STATE_NORMAL].green / 65535.0,
-                       style->bg[GTK_STATE_NORMAL].blue / 65535.0);
+  GdkRGBA color;
+  GtkStyleContext *context = gtk_widget_get_style_context(widget);
+  gboolean color_found = gtk_style_context_lookup_color (context, "bg_color", &color);
+  if(!color_found)
+  {
+    color.red = 1.0;
+    color.green = 0.0;
+    color.blue = 0.0;
+    color.alpha = 1.0;
+  }
+  cairo_set_source_rgba(cr, color.red, color.green, color.blue, color.alpha);
 
   cairo_set_line_width(cr, tb);
   cairo_rectangle(cr, tb / 2., tb / 2., width - tb, height - tb);
   cairo_stroke(cr);
   cairo_set_line_width(cr, 1.5);
-  cairo_set_source_rgb(cr, .1, .1, .1);
+  color_found = gtk_style_context_lookup_color (context, "really_dark_bg_color", &color);
+  if(!color_found)
+  {
+    color.red = 1.0;
+    color.green = 0.0;
+    color.blue = 0.0;
+    color.alpha = 1.0;
+  }
+  cairo_set_source_rgba(cr, color.red, color.green, color.blue, color.alpha);
   cairo_rectangle(cr, tb, tb, width - 2 * tb, height - 2 * tb);
   cairo_stroke(cr);
 
@@ -483,23 +498,6 @@ void *dt_control_expose(void *voidptr)
                          pointery - tb);
   cairo_restore(cr);
 
-  // draw status bar, if any
-  if(darktable.control->progress < 100.0)
-  {
-    tb = fmaxf(20, width / 40.0);
-    char num[10];
-    cairo_rectangle(cr, width * 0.4, height * 0.85, width * 0.2 * darktable.control->progress / 100.0f, tb);
-    cairo_fill(cr);
-    cairo_set_source_rgb(cr, 0., 0., 0.);
-    cairo_rectangle(cr, width * 0.4, height * 0.85, width * 0.2, tb);
-    cairo_stroke(cr);
-    cairo_set_source_rgb(cr, 0.9, 0.9, 0.9);
-    cairo_select_font_face(cr, "sans-serif", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_BOLD);
-    cairo_set_font_size(cr, tb / 3);
-    cairo_move_to(cr, width / 2.0 - 10, height * 0.85 + 2. * tb / 3.);
-    snprintf(num, sizeof(num), "%d%%", (int)darktable.control->progress);
-    cairo_show_text(cr, num);
-  }
   // draw log message, if any
   dt_pthread_mutex_lock(&darktable.control->log_mutex);
   if(darktable.control->log_ack != darktable.control->log_pos)
@@ -522,14 +520,30 @@ void *dt_control_expose(void *voidptr)
       cairo_line_to(cr, xc - wd, yc + rad);
       if(k == 0)
       {
-        cairo_set_source_rgb(cr, 0.3, 0.3, 0.3);
+        color_found = gtk_style_context_lookup_color (context, "selected_bg_color", &color);
+        if(!color_found)
+        {
+          color.red = 1.0;
+          color.green = 0.0;
+          color.blue = 0.0;
+          color.alpha = 1.0;
+        }
+        cairo_set_source_rgba(cr, color.red, color.green, color.blue, color.alpha);
         cairo_fill_preserve(cr);
       }
       cairo_set_source_rgba(cr, 0., 0., 0., 1.0 / (1 + k));
       cairo_stroke(cr);
       rad += .5f;
     }
-    cairo_set_source_rgb(cr, 0.7, 0.7, 0.7);
+    color_found = gtk_style_context_lookup_color (context, "fg_color", &color);
+    if(!color_found)
+    {
+      color.red = 1.0;
+      color.green = 0.0;
+      color.blue = 0.0;
+      color.alpha = 1.0;
+    }
+    cairo_set_source_rgba(cr, color.red, color.green, color.blue, color.alpha);
     cairo_move_to(cr, xc - wd + .5f * pad, yc + 1. / 3. * fontsize);
     cairo_show_text(cr, darktable.control->log_message[darktable.control->log_ack]);
   }
@@ -563,7 +577,7 @@ void *dt_control_expose(void *voidptr)
   return NULL;
 }
 
-gboolean dt_control_expose_endmarker(GtkWidget *widget, GdkEventExpose *event, gpointer user_data)
+gboolean dt_control_draw_endmarker(GtkWidget *widget, cairo_t *crf, gpointer user_data)
 {
   GtkAllocation allocation;
   gtk_widget_get_allocation(widget, &allocation);
@@ -573,10 +587,8 @@ gboolean dt_control_expose_endmarker(GtkWidget *widget, GdkEventExpose *event, g
   cairo_t *cr = cairo_create(cst);
   dt_draw_endmarker(cr, width, height, GPOINTER_TO_INT(user_data));
   cairo_destroy(cr);
-  cairo_t *cr_pixmap = gdk_cairo_create(gtk_widget_get_window(widget));
-  cairo_set_source_surface(cr_pixmap, cst, 0, 0);
-  cairo_paint(cr_pixmap);
-  cairo_destroy(cr_pixmap);
+  cairo_set_source_surface(crf, cst, 0, 0);
+  cairo_paint(crf);
   cairo_surface_destroy(cst);
   return TRUE;
 }
@@ -695,6 +707,12 @@ void dt_control_button_pressed(double x, double y, double pressure, int which, i
   }
 }
 
+static gboolean _redraw_center(gpointer user_data)
+{
+  dt_control_queue_redraw_center();
+  return FALSE; // don't call this again
+}
+
 void dt_control_log(const char *msg, ...)
 {
   dt_pthread_mutex_lock(&darktable.control->log_mutex);
@@ -708,6 +726,8 @@ void dt_control_log(const char *msg, ...)
   darktable.control->log_message_timeout_id
       = g_timeout_add(DT_CTL_LOG_TIMEOUT, _dt_ctl_log_message_timeout_callback, NULL);
   dt_pthread_mutex_unlock(&darktable.control->log_mutex);
+  // redraw center later in gui thread:
+  g_idle_add(_redraw_center, 0);
 }
 
 static void dt_control_log_ack_all()

@@ -867,7 +867,7 @@ void gui_init(struct dt_iop_module_t *self)
     g_dir_close(dir);
   }
 
-  self->widget = gtk_vbox_new(TRUE, DT_BAUHAUS_SPACE);
+  self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
 
   // TODO:
   g->cbox1 = dt_bauhaus_combobox_new(self);

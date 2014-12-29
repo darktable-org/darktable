@@ -23,6 +23,7 @@
 #include "develop/develop.h"
 #include "control/control.h"
 #include "gui/accelerators.h"
+#include "dtgtk/drawingarea.h"
 #include "gui/gtk.h"
 #include "gui/presets.h"
 #include "bauhaus/bauhaus.h"
@@ -243,7 +244,7 @@ void cleanup(dt_iop_module_t *module)
 }
 
 static void sat_callback(GtkWidget *slider, gpointer user_data);
-static gboolean dt_iop_colorcorrection_expose(GtkWidget *widget, GdkEventExpose *event, gpointer user_data);
+static gboolean dt_iop_colorcorrection_draw(GtkWidget *widget, cairo_t *cr, gpointer user_data);
 static gboolean dt_iop_colorcorrection_motion_notify(GtkWidget *widget, GdkEventMotion *event,
                                                      gpointer user_data);
 static gboolean dt_iop_colorcorrection_button_press(GtkWidget *widget, GdkEventButton *event,
@@ -259,20 +260,18 @@ void gui_init(struct dt_iop_module_t *self)
 
   g->selected = 0;
 
-  self->widget = gtk_vbox_new(FALSE, DT_BAUHAUS_SPACE);
-  g->area = GTK_DRAWING_AREA(gtk_drawing_area_new());
+  self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
+  g->area = GTK_DRAWING_AREA(dtgtk_drawing_area_new_with_aspect_ratio(1.0));
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->area), TRUE, TRUE, 0);
-  int size = dt_conf_get_int("panel_width") * 0.95;
-  gtk_widget_set_size_request(GTK_WIDGET(g->area), size, size);
-  g_object_set(GTK_OBJECT(g->area), "tooltip-text", _("drag the line for split toning. "
-                                                      "bright means highlights, dark means shadows. "
-                                                      "use mouse wheel to change saturation."),
+  g_object_set(G_OBJECT(g->area), "tooltip-text", _("drag the line for split toning. "
+                                                    "bright means highlights, dark means shadows. "
+                                                    "use mouse wheel to change saturation."),
                (char *)NULL);
 
   gtk_widget_add_events(GTK_WIDGET(g->area), GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK
                                              | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK
-                                             | GDK_LEAVE_NOTIFY_MASK);
-  g_signal_connect(G_OBJECT(g->area), "expose-event", G_CALLBACK(dt_iop_colorcorrection_expose), self);
+                                             | GDK_LEAVE_NOTIFY_MASK | GDK_SCROLL_MASK);
+  g_signal_connect(G_OBJECT(g->area), "draw", G_CALLBACK(dt_iop_colorcorrection_draw), self);
   g_signal_connect(G_OBJECT(g->area), "button-press-event", G_CALLBACK(dt_iop_colorcorrection_button_press),
                    self);
   g_signal_connect(G_OBJECT(g->area), "motion-notify-event", G_CALLBACK(dt_iop_colorcorrection_motion_notify),
@@ -283,7 +282,7 @@ void gui_init(struct dt_iop_module_t *self)
 
   g->slider = dt_bauhaus_slider_new_with_range(self, -3.0f, 3.0f, 0.01f, 1.0f, 2);
   gtk_box_pack_start(GTK_BOX(self->widget), g->slider, TRUE, TRUE, 0);
-  g_object_set(GTK_OBJECT(g->slider), "tooltip-text", _("set the global saturation"), (char *)NULL);
+  g_object_set(G_OBJECT(g->slider), "tooltip-text", _("set the global saturation"), (char *)NULL);
   dt_bauhaus_widget_set_label(g->slider, NULL, _("saturation"));
 
   g_signal_connect(G_OBJECT(g->slider), "value-changed", G_CALLBACK(sat_callback), self);
@@ -313,7 +312,7 @@ static void sat_callback(GtkWidget *slider, gpointer user_data)
   gtk_widget_queue_draw(self->widget);
 }
 
-static gboolean dt_iop_colorcorrection_expose(GtkWidget *widget, GdkEventExpose *event, gpointer user_data)
+static gboolean dt_iop_colorcorrection_draw(GtkWidget *widget, cairo_t *crf, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_colorcorrection_gui_data_t *g = (dt_iop_colorcorrection_gui_data_t *)self->gui_data;
@@ -383,10 +382,8 @@ static gboolean dt_iop_colorcorrection_expose(GtkWidget *widget, GdkEventExpose 
   cairo_fill(cr);
 
   cairo_destroy(cr);
-  cairo_t *cr_pixmap = gdk_cairo_create(gtk_widget_get_window(widget));
-  cairo_set_source_surface(cr_pixmap, cst, 0, 0);
-  cairo_paint(cr_pixmap);
-  cairo_destroy(cr_pixmap);
+  cairo_set_source_surface(crf, cst, 0, 0);
+  cairo_paint(crf);
   cairo_surface_destroy(cst);
   return TRUE;
 }

@@ -614,10 +614,10 @@ void gui_init(struct dt_iop_module_t *self)
   dt_iop_lowpass_gui_data_t *g = (dt_iop_lowpass_gui_data_t *)self->gui_data;
   dt_iop_lowpass_params_t *p = (dt_iop_lowpass_params_t *)self->params;
 
-  self->widget = gtk_vbox_new(TRUE, DT_BAUHAUS_SPACE);
+  self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
 
 #if 0 // gaussian is order not user selectable here, as it does not make much sense for a lowpass filter
-  GtkBox *hbox  = GTK_BOX(gtk_hbox_new(FALSE, 5));
+  GtkBox *hbox  = GTK_BOX(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5));
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(hbox), FALSE, FALSE, 0);
   GtkWidget *label = dtgtk_reset_label_new(_("filter order"), self, &p->order, sizeof(float));
   gtk_box_pack_start(hbox, label, FALSE, FALSE, 0);

@@ -24,7 +24,6 @@
 #include "develop/develop.h"
 #include "develop/imageop.h"
 #include "control/control.h"
-#include "dtgtk/slider.h"
 #include "dtgtk/button.h"
 #include "dtgtk/togglebutton.h"
 #include "dtgtk/resetlabel.h"
@@ -1061,13 +1060,13 @@ void gui_init(struct dt_iop_module_t *self)
   dt_iop_watermark_gui_data_t *g = (dt_iop_watermark_gui_data_t *)self->gui_data;
   dt_iop_watermark_params_t *p = (dt_iop_watermark_params_t *)self->params;
 
-  self->widget = gtk_vbox_new(FALSE, DT_BAUHAUS_SPACE);
+  self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
 
   GtkWidget *label1 = dtgtk_reset_label_new(_("marker"), self, &p->filename, sizeof(char) * 64);
   GtkWidget *label4 = dtgtk_reset_label_new(_("alignment"), self, &p->alignment, sizeof(int));
 
   // Add the marker combobox
-  GtkWidget *hbox = gtk_hbox_new(FALSE, 0);
+  GtkWidget *hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
   g->combobox1 = GTK_COMBO_BOX_TEXT(gtk_combo_box_text_new());
   g->dtbutton1
       = DTGTK_BUTTON(dtgtk_button_new(dtgtk_cairo_paint_refresh, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER));
@@ -1100,17 +1099,18 @@ void gui_init(struct dt_iop_module_t *self)
   g_object_set(G_OBJECT(g->sizeto), "tooltip-text", _("size is relative to"), (char *)NULL);
 
   // Create the 3x3 gtk table toggle button table...
-  GtkTable *bat = GTK_TABLE(gtk_table_new(3, 3, TRUE));
+  GtkGrid *bat = GTK_GRID(gtk_grid_new());
+  gtk_grid_set_row_spacing(bat, DT_PIXEL_APPLY_DPI(3));
+  gtk_grid_set_column_spacing(bat, DT_PIXEL_APPLY_DPI(3));
   for(int i = 0; i < 9; i++)
   {
     g->dtba[i] = DTGTK_TOGGLEBUTTON(
         dtgtk_togglebutton_new(dtgtk_cairo_paint_alignment, CPF_STYLE_FLAT | (CPF_SPECIAL_FLAG << (i + 1))));
     gtk_widget_set_size_request(GTK_WIDGET(g->dtba[i]), DT_PIXEL_APPLY_DPI(16), DT_PIXEL_APPLY_DPI(16));
-    gtk_table_attach(GTK_TABLE(bat), GTK_WIDGET(g->dtba[i]), (i % 3), (i % 3) + 1, (i / 3), (i / 3) + 1, 0, 0,
-                     0, 0);
+    gtk_grid_attach(bat, GTK_WIDGET(g->dtba[i]), i%3, i/3, 1, 1);
     g_signal_connect(G_OBJECT(g->dtba[i]), "toggled", G_CALLBACK(alignment_callback), self);
   }
-  GtkWidget *hbox2 = gtk_hbox_new(FALSE, 0);
+  GtkWidget *hbox2 = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
   gtk_box_pack_start(GTK_BOX(hbox2), GTK_WIDGET(label4), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(hbox2), GTK_WIDGET(bat), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(hbox2), TRUE, TRUE, 0);

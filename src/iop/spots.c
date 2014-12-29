@@ -578,8 +578,8 @@ void gui_init(dt_iop_module_t *self)
   self->gui_data = malloc(sizeof(dt_iop_spots_gui_data_t));
   dt_iop_spots_gui_data_t *g = (dt_iop_spots_gui_data_t *)self->gui_data;
 
-  self->widget = gtk_vbox_new(FALSE, 5);
-  GtkWidget *hbox = gtk_hbox_new(FALSE, 5);
+  self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
+  GtkWidget *hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5);
   GtkWidget *label = gtk_label_new(_("number of strokes:"));
   gtk_box_pack_start(GTK_BOX(hbox), label, FALSE, TRUE, 0);
   g->label = GTK_LABEL(gtk_label_new("-1"));

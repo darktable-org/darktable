@@ -23,9 +23,9 @@
 #include "develop/develop.h"
 #include "develop/imageop.h"
 #include "control/control.h"
-#include "dtgtk/slider.h"
 #include "dtgtk/resetlabel.h"
 #include "gui/gtk.h"
+#include "bauhaus/bauhaus.h"
 #include <gtk/gtk.h>
 #include <inttypes.h>
 #include <stdlib.h>
@@ -47,9 +47,9 @@ typedef struct dt_iop_rlce_params_t
 
 typedef struct dt_iop_rlce_gui_data_t
 {
-  GtkVBox *vbox1, *vbox2;
+  GtkBox *vbox1, *vbox2;
   GtkWidget *label1, *label2;
-  GtkDarktableSlider *scale1, *scale2; // radie pixels, slope
+  GtkWidget *scale1, *scale2; // radie pixels, slope
 } dt_iop_rlce_gui_data_t;
 
 typedef struct dt_iop_rlce_data_t
@@ -226,21 +226,21 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *
   free(luminance);
 }
 
-static void radius_callback(GtkDarktableSlider *slider, gpointer user_data)
+static void radius_callback(GtkWidget *slider, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(self->dt->gui->reset) return;
   dt_iop_rlce_params_t *p = (dt_iop_rlce_params_t *)self->params;
-  p->radius = dtgtk_slider_get_value(slider);
+  p->radius = dt_bauhaus_slider_get(slider);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
-static void slope_callback(GtkDarktableSlider *slider, gpointer user_data)
+static void slope_callback(GtkWidget *slider, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(self->dt->gui->reset) return;
   dt_iop_rlce_params_t *p = (dt_iop_rlce_params_t *)self->params;
-  p->slope = dtgtk_slider_get_value(slider);
+  p->slope = dt_bauhaus_slider_get(slider);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
@@ -288,8 +288,8 @@ void gui_update(struct dt_iop_module_t *self)
   dt_iop_module_t *module = (dt_iop_module_t *)self;
   dt_iop_rlce_gui_data_t *g = (dt_iop_rlce_gui_data_t *)self->gui_data;
   dt_iop_rlce_params_t *p = (dt_iop_rlce_params_t *)module->params;
-  dtgtk_slider_set_value(g->scale1, p->radius);
-  dtgtk_slider_set_value(g->scale2, p->slope);
+  dt_bauhaus_slider_set(g->scale1, p->radius);
+  dt_bauhaus_slider_set(g->scale2, p->slope);
 }
 
 void init(dt_iop_module_t *module)
@@ -319,9 +319,9 @@ void gui_init(struct dt_iop_module_t *self)
   dt_iop_rlce_gui_data_t *g = (dt_iop_rlce_gui_data_t *)self->gui_data;
   dt_iop_rlce_params_t *p = (dt_iop_rlce_params_t *)self->params;
 
-  self->widget = GTK_WIDGET(gtk_hbox_new(FALSE, 0));
-  g->vbox1 = GTK_VBOX(gtk_vbox_new(FALSE, DT_GUI_IOP_MODULE_CONTROL_SPACING));
-  g->vbox2 = GTK_VBOX(gtk_vbox_new(FALSE, DT_GUI_IOP_MODULE_CONTROL_SPACING));
+  self->widget = GTK_WIDGET(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0));
+  g->vbox1 = GTK_BOX(gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_GUI_IOP_MODULE_CONTROL_SPACING));
+  g->vbox2 = GTK_BOX(gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_GUI_IOP_MODULE_CONTROL_SPACING));
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->vbox1), FALSE, FALSE, 5);
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->vbox2), TRUE, TRUE, 5);
 
@@ -330,8 +330,10 @@ void gui_init(struct dt_iop_module_t *self)
   g->label2 = dtgtk_reset_label_new(_("amount"), self, &p->slope, sizeof(float));
   gtk_box_pack_start(GTK_BOX(g->vbox1), g->label2, TRUE, TRUE, 0);
 
-  g->scale1 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR, 0.0, 256.0, 1.0, p->radius, 0));
-  g->scale2 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR, 1.0, 3.0, 0.05, p->slope, 2));
+  g->scale1 = dt_bauhaus_slider_new_with_range(NULL, 0.0, 256.0, 1.0,
+                                               p->radius, 0);
+  g->scale2 = dt_bauhaus_slider_new_with_range(NULL, 1.0, 3.0, 0.05,
+                                               p->slope, 2);
   // dtgtk_slider_set_format_type(g->scale2,DARKTABLE_SLIDER_FORMAT_PERCENT);
 
   gtk_box_pack_start(GTK_BOX(g->vbox2), GTK_WIDGET(g->scale1), TRUE, TRUE, 0);

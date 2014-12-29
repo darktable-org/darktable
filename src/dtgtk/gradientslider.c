@@ -36,11 +36,9 @@
 
 static void _gradient_slider_class_init(GtkDarktableGradientSliderClass *klass);
 static void _gradient_slider_init(GtkDarktableGradientSlider *slider);
-static void _gradient_slider_size_request(GtkWidget *widget, GtkRequisition *requisition);
-// static void _gradient_slider_size_allocate(GtkWidget *widget, GtkAllocation *allocation);
 static void _gradient_slider_realize(GtkWidget *widget);
-static gboolean _gradient_slider_expose(GtkWidget *widget, GdkEventExpose *event);
-static void _gradient_slider_destroy(GtkObject *object);
+static gboolean _gradient_slider_draw(GtkWidget *widget, cairo_t *cr);
+static void _gradient_slider_destroy(GtkWidget *widget);
 
 // Events
 static gboolean _gradient_slider_enter_notify_event(GtkWidget *widget, GdkEventCrossing *event);
@@ -130,7 +128,7 @@ static gdouble _slider_move(GtkWidget *widget, gint k, gdouble value, gint direc
 static gboolean _gradient_slider_enter_notify_event(GtkWidget *widget, GdkEventCrossing *event)
 {
   GtkDarktableGradientSlider *gslider = DTGTK_GRADIENT_SLIDER(widget);
-  gtk_widget_set_state(widget, GTK_STATE_PRELIGHT);
+  gtk_widget_set_state_flags(widget, GTK_STATE_FLAG_PRELIGHT, TRUE);
   gslider->is_entered = TRUE;
   gtk_widget_queue_draw(widget);
   DTGTK_GRADIENT_SLIDER(widget)->prev_x_root = event->x_root;
@@ -140,7 +138,7 @@ static gboolean _gradient_slider_enter_notify_event(GtkWidget *widget, GdkEventC
 static gboolean _gradient_slider_leave_notify_event(GtkWidget *widget, GdkEventCrossing *event)
 {
   GtkDarktableGradientSlider *gslider = DTGTK_GRADIENT_SLIDER(widget);
-  gtk_widget_set_state(widget, GTK_STATE_NORMAL);
+  gtk_widget_set_state_flags(widget, GTK_STATE_FLAG_NORMAL, TRUE);
   gslider->is_entered = FALSE;
   gtk_widget_queue_draw(widget);
   DTGTK_GRADIENT_SLIDER(widget)->prev_x_root = event->x_root;
@@ -321,12 +319,10 @@ static gboolean _gradient_slider_scroll_event(GtkWidget *widget, GdkEventScroll 
 static void _gradient_slider_class_init(GtkDarktableGradientSliderClass *klass)
 {
   GtkWidgetClass *widget_class = (GtkWidgetClass *)klass;
-  GtkObjectClass *object_class = (GtkObjectClass *)klass;
+
   widget_class->realize = _gradient_slider_realize;
-  widget_class->size_request = _gradient_slider_size_request;
-  // widget_class->size_allocate = _gradient_slider_size_allocate;
-  widget_class->expose_event = _gradient_slider_expose;
-  object_class->destroy = _gradient_slider_destroy;
+  widget_class->draw = _gradient_slider_draw;
+  widget_class->destroy = _gradient_slider_destroy;
 
   widget_class->enter_notify_event = _gradient_slider_enter_notify_event;
   widget_class->leave_notify_event = _gradient_slider_leave_notify_event;
@@ -345,34 +341,6 @@ static void _gradient_slider_init(GtkDarktableGradientSlider *slider)
   slider->timeout_handle = 0;
   slider->selected = slider->positions == 1 ? 0 : -1;
 }
-
-static void _gradient_slider_size_request(GtkWidget *widget, GtkRequisition *requisition)
-{
-  g_return_if_fail(widget != NULL);
-  g_return_if_fail(DTGTK_IS_GRADIENT_SLIDER(widget));
-  g_return_if_fail(requisition != NULL);
-  requisition->width = DT_PIXEL_APPLY_DPI(100);
-  requisition->height = DT_PIXEL_APPLY_DPI(17);
-}
-
-
-
-/*static void _gradient_slider_size_allocate(GtkWidget *widget, GtkAllocation *allocation)
-{
-  g_return_if_fail(widget != NULL);
-  g_return_if_fail(DTGTK_IS_BUTTON(widget));
-  g_return_if_fail(allocation != NULL);
-
-  widget->allocation = *allocation;
-
-  if (gtk_widget_get_realized(widget)) {
-     gdk_window_move_resize(
-         gtk_widget_get_window(widget),
-         allocation.x, allocation.y,
-         allocation.width, allocation.height
-     );
-   }
-}*/
 
 static void _gradient_slider_realize(GtkWidget *widget)
 {
@@ -395,44 +363,41 @@ static void _gradient_slider_realize(GtkWidget *widget)
   attributes.wclass = GDK_INPUT_OUTPUT;
   attributes.event_mask = gtk_widget_get_events(widget) | GDK_EXPOSURE_MASK | GDK_BUTTON_PRESS_MASK
                           | GDK_BUTTON_RELEASE_MASK | GDK_ENTER_NOTIFY_MASK | GDK_LEAVE_NOTIFY_MASK
-                          | GDK_KEY_PRESS_MASK | GDK_KEY_RELEASE_MASK | GDK_POINTER_MOTION_MASK;
+                          | GDK_KEY_PRESS_MASK | GDK_KEY_RELEASE_MASK | GDK_POINTER_MOTION_MASK | GDK_SCROLL_MASK;
   attributes_mask = GDK_WA_X | GDK_WA_Y;
 
   gtk_widget_set_window(widget,
                         gdk_window_new(gtk_widget_get_parent_window(widget), &attributes, attributes_mask));
 
   gdk_window_set_user_data(gtk_widget_get_window(widget), widget);
-
-  gtk_widget_set_style(widget, gtk_style_attach(gtk_widget_get_style(widget), gtk_widget_get_window(widget)));
-  gtk_style_set_background(gtk_widget_get_style(widget), gtk_widget_get_window(widget), GTK_STATE_NORMAL);
 }
 
 
-static void _gradient_slider_destroy(GtkObject *object)
+static void _gradient_slider_destroy(GtkWidget *widget)
 {
   GtkDarktableGradientSliderClass *klass;
-  g_return_if_fail(object != NULL);
-  g_return_if_fail(DTGTK_IS_GRADIENT_SLIDER(object));
+  g_return_if_fail(widget != NULL);
+  g_return_if_fail(DTGTK_IS_GRADIENT_SLIDER(widget));
 
-  if(DTGTK_GRADIENT_SLIDER(object)->timeout_handle)
-    g_source_remove(DTGTK_GRADIENT_SLIDER(object)->timeout_handle);
-  DTGTK_GRADIENT_SLIDER(object)->timeout_handle = 0;
+  if(DTGTK_GRADIENT_SLIDER(widget)->timeout_handle)
+    g_source_remove(DTGTK_GRADIENT_SLIDER(widget)->timeout_handle);
+  DTGTK_GRADIENT_SLIDER(widget)->timeout_handle = 0;
 
-  if(DTGTK_GRADIENT_SLIDER(object)->colors)
+  if(DTGTK_GRADIENT_SLIDER(widget)->colors)
   {
-    g_list_free_full(DTGTK_GRADIENT_SLIDER(object)->colors, g_free);
-    DTGTK_GRADIENT_SLIDER(object)->colors = NULL;
+    g_list_free_full(DTGTK_GRADIENT_SLIDER(widget)->colors, g_free);
+    DTGTK_GRADIENT_SLIDER(widget)->colors = NULL;
   }
 
   // FIXME: or it should be g_type_class_ref () ?
   klass = g_type_class_peek(gtk_widget_get_type());
-  if(GTK_OBJECT_CLASS(klass)->destroy)
+  if(GTK_WIDGET_CLASS(klass)->destroy)
   {
-    (*GTK_OBJECT_CLASS(klass)->destroy)(object);
+    (*GTK_WIDGET_CLASS(klass)->destroy)(widget);
   }
 }
 
-static gboolean _gradient_slider_expose(GtkWidget *widget, GdkEventExpose *event)
+static gboolean _gradient_slider_draw(GtkWidget *widget, cairo_t *cr)
 {
   GtkDarktableGradientSlider *gslider = DTGTK_GRADIENT_SLIDER(widget);
 
@@ -440,23 +405,18 @@ static gboolean _gradient_slider_expose(GtkWidget *widget, GdkEventExpose *event
 
   g_return_val_if_fail(widget != NULL, FALSE);
   g_return_val_if_fail(DTGTK_IS_GRADIENT_SLIDER(widget), FALSE);
-  g_return_val_if_fail(event != NULL, FALSE);
-  GtkStyle *style = gtk_rc_get_style_by_paths(gtk_settings_get_default(), NULL, "GtkButton", GTK_TYPE_BUTTON);
-  if(!style) style = gtk_rc_get_style(widget);
-  int state = gtk_widget_get_state(widget);
+
+  GdkRGBA color;
+  GtkStyleContext *context = gtk_widget_get_style_context(widget);
+  gtk_style_context_get_color(context, gtk_widget_get_state_flags(widget), &color);
 
   GtkAllocation allocation;
   gtk_widget_get_allocation(widget, &allocation);
-  /*int x = allocation.x;
-  int y = allocation.y;*/
   int width = allocation.width;
   int height = allocation.height;
   int margins = gslider->margins;
 
   // Begin cairo drawing
-  cairo_t *cr;
-  cr = gdk_cairo_create(gtk_widget_get_window(widget));
-
   // First build the cairo gradient and then fill the gradient
   float gheight = height / 2.0;
   float gwidth = width - 2 * margins;
@@ -483,12 +443,9 @@ static gboolean _gradient_slider_expose(GtkWidget *widget, GdkEventExpose *event
     cairo_stroke(cr);
   }
 
-
-
   // Lets draw position arrows
 
-  cairo_set_source_rgba(cr, style->fg[state].red / 65535.0, style->fg[state].green / 65535.0,
-                        style->fg[state].blue / 65535.0, 1.0);
+  cairo_set_source_rgba(cr, color.red, color.green, color.blue, 1.0);
 
 
   // do we have a picker value to draw?
@@ -498,14 +455,12 @@ static gboolean _gradient_slider_expose(GtkWidget *widget, GdkEventExpose *event
     int vx_max = _scale_to_screen(widget, CLAMP_RANGE(gslider->picker[2], 0.0, 1.0));
     int vx_avg = _scale_to_screen(widget, CLAMP_RANGE(gslider->picker[0], 0.0, 1.0));
 
-    cairo_set_source_rgba(cr, style->fg[state].red / 65535.0, style->fg[state].green / 65535.0,
-                          style->fg[state].blue / 65535.0, 0.33);
+    cairo_set_source_rgba(cr, color.red, color.green, color.blue, 0.33);
 
     cairo_rectangle(cr, vx_min, (height - gheight) / 2.0, fmax((float)vx_max - vx_min, 0.0f), gheight);
     cairo_fill(cr);
 
-    cairo_set_source_rgba(cr, style->fg[state].red / 65535.0, style->fg[state].green / 65535.0,
-                          style->fg[state].blue / 65535.0, 1.0);
+    cairo_set_source_rgba(cr, color.red, color.green, color.blue, 1.0);
 
     cairo_move_to(cr, vx_avg, (height - gheight) / 2.0);
     cairo_line_to(cr, vx_avg, (height + gheight) / 2.0);
@@ -528,13 +483,11 @@ static gboolean _gradient_slider_expose(GtkWidget *widget, GdkEventExpose *event
 
     if(l == gslider->selected && (gslider->is_entered == TRUE || gslider->is_dragging == TRUE))
     {
-      cairo_set_source_rgba(cr, style->fg[state].red / 65535.0, style->fg[state].green / 65535.0,
-                            style->fg[state].blue / 65535.0 * 0.5, 1.0);
+      cairo_set_source_rgba(cr, color.red, color.green, color.blue, 1.0);
     }
     else
     {
-      cairo_set_source_rgba(cr, style->fg[state].red / 65535.0 * 0.8, style->fg[state].green / 65535.0 * 0.8,
-                            style->fg[state].blue / 65535.0 * 0.8, 1.0);
+      cairo_set_source_rgba(cr, color.red * 0.8, color.green * 0.8, color.blue * 0.8, 1.0);
     }
 
 
@@ -566,7 +519,6 @@ static gboolean _gradient_slider_expose(GtkWidget *widget, GdkEventExpose *event
     }
   }
 
-  cairo_destroy(cr);
   return FALSE;
 }
 

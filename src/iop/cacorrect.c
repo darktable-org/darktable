@@ -20,7 +20,6 @@
 #endif
 #include "common/darktable.h"
 #include "develop/imageop.h"
-#include "dtgtk/slider.h"
 #include "gui/gtk.h"
 #include <gtk/gtk.h>
 #include <stdlib.h>
@@ -1396,7 +1395,7 @@ void gui_init(dt_iop_module_t *self)
 {
   self->gui_data = NULL;
   self->widget = gtk_label_new("");
-  gtk_misc_set_alignment(GTK_MISC(self->widget), 0.0, 0.5);
+  gtk_widget_set_halign(self->widget, GTK_ALIGN_START);
 }
 
 void gui_cleanup(dt_iop_module_t *self)

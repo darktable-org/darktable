@@ -18,7 +18,7 @@
   <dtconfig prefs="gui">
     <name>panel_width</name>
     <type>int</type>
-    <default>300</default>
+    <default>350</default>
     <shortdescription>width of the side panels in pixels</shortdescription>
     <longdescription>(needs a restart)</longdescription>
   </dtconfig>

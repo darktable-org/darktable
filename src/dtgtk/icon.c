@@ -21,72 +21,39 @@
 
 static void _icon_class_init(GtkDarktableIconClass *klass);
 static void _icon_init(GtkDarktableIcon *icon);
-static void _icon_size_request(GtkWidget *widget, GtkRequisition *requisition);
-static gboolean _icon_expose(GtkWidget *widget, GdkEventExpose *event);
+static gboolean _icon_draw(GtkWidget *widget, cairo_t *cr);
 
 
 static void _icon_class_init(GtkDarktableIconClass *klass)
 {
   GtkWidgetClass *widget_class = (GtkWidgetClass *)klass;
-  widget_class->size_request = _icon_size_request;
-  widget_class->expose_event = _icon_expose;
+  widget_class->draw = _icon_draw;
 }
 
 static void _icon_init(GtkDarktableIcon *icon)
 {
 }
 
-static void _icon_size_request(GtkWidget *widget, GtkRequisition *requisition)
-{
-  g_return_if_fail(widget != NULL);
-  g_return_if_fail(DTGTK_IS_ICON(widget));
-  g_return_if_fail(requisition != NULL);
-  requisition->width = DT_PIXEL_APPLY_DPI(17);
-  requisition->height = DT_PIXEL_APPLY_DPI(17);
-}
-
-static gboolean _icon_expose(GtkWidget *widget, GdkEventExpose *event)
+static gboolean _icon_draw(GtkWidget *widget, cairo_t *cr)
 {
   g_return_val_if_fail(widget != NULL, FALSE);
   g_return_val_if_fail(DTGTK_IS_ICON(widget), FALSE);
-  g_return_val_if_fail(event != NULL, FALSE);
-  GtkStyle *style = gtk_widget_get_style(widget);
-  int state = gtk_widget_get_state(widget);
-  int border = 0;
-
-  /* update paint flags depending of states */
-  int flags = DTGTK_ICON(widget)->icon_flags;
-
 
   /* begin cairo drawing */
-  cairo_t *cr;
-  cr = gdk_cairo_create(gtk_widget_get_window(widget));
-
   GtkAllocation allocation;
   gtk_widget_get_allocation(widget, &allocation);
-  int x = allocation.x;
-  int y = allocation.y;
-  int width = allocation.width;
-  int height = allocation.height;
 
-  /*
-      cairo_rectangle (cr,x,y,width,height);
-      cairo_set_source_rgba (cr,
-                             style->bg[state].red/65535.0,
-                             style->bg[state].green/65535.0,
-                             style->bg[state].blue/65535.0,
-                             0.5);
-      cairo_fill (cr);
-  */
+  GtkStateFlags state = gtk_widget_get_state_flags(widget);
 
-  cairo_set_source_rgb(cr, style->fg[state].red / 65535.0, style->fg[state].green / 65535.0,
-                       style->fg[state].blue / 65535.0);
+  GdkRGBA fg_color;
+  GtkStyleContext *context = gtk_widget_get_style_context(widget);
+  gtk_style_context_get_color(context, state, &fg_color);
+
+  gdk_cairo_set_source_rgba(cr, &fg_color);
 
   /* draw icon */
   if(DTGTK_ICON(widget)->icon)
-    DTGTK_ICON(widget)->icon(cr, x + border, y + border, width - (border * 2), height - (border * 2), flags);
-
-  cairo_destroy(cr);
+    DTGTK_ICON(widget)->icon(cr, 0, 0, allocation.width, allocation.height, DTGTK_ICON(widget)->icon_flags);
 
   return FALSE;
 }

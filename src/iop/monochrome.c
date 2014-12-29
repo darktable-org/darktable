@@ -30,6 +30,7 @@
 #include "develop/develop.h"
 #include "develop/tiling.h"
 #include "control/control.h"
+#include "dtgtk/drawingarea.h"
 #include "gui/gtk.h"
 #include "gui/presets.h"
 #include "develop/imageop.h"
@@ -364,7 +365,7 @@ void cleanup_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev
   piece->data = NULL;
 }
 
-static gboolean dt_iop_monochrome_expose(GtkWidget *widget, GdkEventExpose *event, gpointer user_data)
+static gboolean dt_iop_monochrome_draw(GtkWidget *widget, cairo_t *crf, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_monochrome_gui_data_t *g = (dt_iop_monochrome_gui_data_t *)self->gui_data;
@@ -420,10 +421,8 @@ static gboolean dt_iop_monochrome_expose(GtkWidget *widget, GdkEventExpose *even
   if(g->dragging) dt_dev_add_history_item(darktable.develop, self, TRUE);
 
   cairo_destroy(cr);
-  cairo_t *cr_pixmap = gdk_cairo_create(gtk_widget_get_window(widget));
-  cairo_set_source_surface(cr_pixmap, cst, 0, 0);
-  cairo_paint(cr_pixmap);
-  cairo_destroy(cr_pixmap);
+  cairo_set_source_surface(crf, cst, 0, 0);
+  cairo_paint(crf);
   cairo_surface_destroy(cst);
   return TRUE;
 }
@@ -446,7 +445,10 @@ static gboolean dt_iop_monochrome_motion_notify(GtkWidget *widget, GdkEventMotio
     gtk_widget_queue_draw(self->widget);
   }
   gint x, y;
-  gdk_window_get_pointer(event->window, &x, &y, NULL);
+  gdk_window_get_device_position(event->window,
+                                 gdk_device_manager_get_client_pointer(
+                                     gdk_display_get_device_manager(gdk_window_get_display(event->window))),
+                                 &x, &y, NULL);
   return TRUE;
 }
 
@@ -530,18 +532,16 @@ void gui_init(struct dt_iop_module_t *self)
 
   g->dragging = 0;
 
-  self->widget = gtk_vbox_new(FALSE, DT_BAUHAUS_SPACE);
-  g->area = GTK_DRAWING_AREA(gtk_drawing_area_new());
+  self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
+  g->area = GTK_DRAWING_AREA(dtgtk_drawing_area_new_with_aspect_ratio(1.0));
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->area), TRUE, TRUE, 0);
-  int panel_width = dt_conf_get_int("panel_width") * 0.95;
-  gtk_widget_set_size_request(GTK_WIDGET(g->area), 0, panel_width);
   g_object_set(G_OBJECT(g->area), "tooltip-text",
                _("drag and scroll mouse wheel to adjust the virtual color filter"), (char *)NULL);
 
   gtk_widget_add_events(GTK_WIDGET(g->area), GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK
                                              | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK
-                                             | GDK_LEAVE_NOTIFY_MASK);
-  g_signal_connect(G_OBJECT(g->area), "expose-event", G_CALLBACK(dt_iop_monochrome_expose), self);
+                                             | GDK_LEAVE_NOTIFY_MASK | GDK_SCROLL_MASK);
+  g_signal_connect(G_OBJECT(g->area), "draw", G_CALLBACK(dt_iop_monochrome_draw), self);
   g_signal_connect(G_OBJECT(g->area), "button-press-event", G_CALLBACK(dt_iop_monochrome_button_press), self);
   g_signal_connect(G_OBJECT(g->area), "button-release-event", G_CALLBACK(dt_iop_monochrome_button_release),
                    self);
@@ -551,7 +551,7 @@ void gui_init(struct dt_iop_module_t *self)
   g_signal_connect(G_OBJECT(g->area), "scroll-event", G_CALLBACK(dt_iop_monochrome_scrolled), self);
 
   g->highlights = dt_bauhaus_slider_new_with_range(self, 0.0, 1.0, 0.01, 0.0, 2);
-  g_object_set(GTK_OBJECT(g->highlights), "tooltip-text", _("how much to keep highlights"), (char *)NULL);
+  g_object_set(G_OBJECT(g->highlights), "tooltip-text", _("how much to keep highlights"), (char *)NULL);
   dt_bauhaus_widget_set_label(g->highlights, NULL, _("highlights"));
   gtk_box_pack_start(GTK_BOX(self->widget), g->highlights, TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(g->highlights), "value-changed", G_CALLBACK(highlights_callback), self);

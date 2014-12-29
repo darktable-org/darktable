@@ -26,7 +26,6 @@
 #include "common/camera_control.h"
 #include "common/utility.h"
 #include "dtgtk/button.h"
-#include "dtgtk/label.h"
 #include "gui/camera_import_dialog.h"
 
 #include <time.h>
@@ -156,8 +155,8 @@ static _camera_gconf_widget_t *_camera_import_gconf_widget(_camera_import_dialog
 {
   _camera_gconf_widget_t *gcw = calloc(1, sizeof(_camera_gconf_widget_t));
   GtkWidget *vbox, *hbox;
-  gcw->widget = vbox = GTK_WIDGET(gtk_vbox_new(FALSE, 0));
-  hbox = GTK_WIDGET(gtk_hbox_new(FALSE, 0));
+  gcw->widget = vbox = GTK_WIDGET(gtk_box_new(GTK_ORIENTATION_VERTICAL, 0));
+  hbox = GTK_WIDGET(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0));
   g_object_set_data(G_OBJECT(vbox), "gconf:string", confstring);
   gcw->dialog = dlg;
 
@@ -185,7 +184,7 @@ static _camera_gconf_widget_t *_camera_import_gconf_widget(_camera_import_dialog
   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(_gcw_reset_callback), gcw);
 
   GtkWidget *l = gtk_label_new(label);
-  gtk_misc_set_alignment(GTK_MISC(l), 0.0, 0.0);
+  gtk_widget_set_halign(l, GTK_ALIGN_START);
   gtk_box_pack_start(GTK_BOX(vbox), l, FALSE, FALSE, 0);
 
   gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(hbox), FALSE, FALSE, 0);
@@ -211,13 +210,13 @@ static void _camera_import_dialog_new(_camera_import_dialog_t *data)
   data->store = gtk_list_store_new(2, GDK_TYPE_PIXBUF, G_TYPE_STRING);
 
   // IMPORT PAGE
-  data->import.page = gtk_vbox_new(FALSE, 5);
+  data->import.page = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
   gtk_container_set_border_width(GTK_CONTAINER(data->import.page), 5);
 
   // Top info
   data->import.info = gtk_label_new(_("please wait while prefetching thumbnails of images from camera..."));
   gtk_label_set_single_line_mode(GTK_LABEL(data->import.info), FALSE);
-  gtk_misc_set_alignment(GTK_MISC(data->import.info), 0.0, 0.0);
+  gtk_widget_set_halign(data->import.info, GTK_ALIGN_START);
   gtk_box_pack_start(GTK_BOX(data->import.page), data->import.info, FALSE, FALSE, 0);
 
   // jobcode
@@ -255,13 +254,11 @@ static void _camera_import_dialog_new(_camera_import_dialog_t *data)
 
 
   // SETTINGS PAGE
-  data->settings.page = gtk_vbox_new(FALSE, 5);
+  data->settings.page = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
   gtk_container_set_border_width(GTK_CONTAINER(data->settings.page), 5);
 
   // general settings
-  gtk_box_pack_start(GTK_BOX(data->settings.page),
-                     dtgtk_label_new(_("general"), DARKTABLE_LABEL_TAB | DARKTABLE_LABEL_ALIGN_RIGHT), FALSE,
-                     FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(data->settings.page), gtk_label_new(_("general")), FALSE, FALSE, 0);
 
   // ignoring of jpegs. hack while we don't handle raw+jpeg in the same directories.
   data->settings.general.ignore_jpeg = gtk_check_button_new_with_label(_("ignore JPEG files"));
@@ -275,7 +272,7 @@ static void _camera_import_dialog_new(_camera_import_dialog_t *data)
   g_signal_connect(G_OBJECT(data->settings.general.ignore_jpeg), "clicked",
                    G_CALLBACK(_check_button_callback), data);
 
-  GtkWidget *hbox = gtk_hbox_new(FALSE, 5);
+  GtkWidget *hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5);
   data->settings.general.date_override = gtk_check_button_new_with_label(_("override today's date"));
   gtk_box_pack_start(GTK_BOX(hbox), data->settings.general.date_override, FALSE, FALSE, 0);
   g_object_set(data->settings.general.date_override, "tooltip-text",

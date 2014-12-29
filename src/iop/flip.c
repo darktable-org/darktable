@@ -33,7 +33,6 @@
 #include "common/debug.h"
 #include "common/imageio.h"
 #include "common/opencl.h"
-#include "dtgtk/label.h"
 #include "dtgtk/resetlabel.h"
 #include "dtgtk/button.h"
 #include "gui/accelerators.h"
@@ -504,7 +503,7 @@ void gui_init(struct dt_iop_module_t *self)
   self->gui_data = NULL;
   dt_iop_flip_params_t *p = (dt_iop_flip_params_t *)self->params;
 
-  self->widget = gtk_hbox_new(TRUE, 5);
+  self->widget = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5);
 
   GtkWidget *label = dtgtk_reset_label_new(_("rotate"), self, &p->orientation, sizeof(int32_t));
   gtk_box_pack_start(GTK_BOX(self->widget), label, TRUE, TRUE, 0);

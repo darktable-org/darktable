@@ -26,7 +26,6 @@
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
 #include "gui/styles.h"
-#include "dtgtk/button.h"
 
 DT_MODULE(1)
 
@@ -91,12 +90,14 @@ void gui_init(dt_lib_module_t *self)
   dt_lib_history_t *d = (dt_lib_history_t *)g_malloc0(sizeof(dt_lib_history_t));
   self->data = (void *)d;
 
-  self->widget = gtk_vbox_new(FALSE, 2);
-  d->history_box = gtk_vbox_new(FALSE, 0);
+  self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 2);
+  gtk_widget_set_name(self->widget, "history-ui");
+  d->history_box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
 
-  GtkWidget *hhbox = gtk_hbox_new(FALSE, 2);
+  GtkWidget *hhbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 2);
 
-  GtkWidget *hbutton = gtk_button_new_with_label(_("compress history stack"));
+  GtkWidget *hbutton = dtgtk_button_new(NULL, /*CPF_DO_NOT_USE_BORDER | CPF_STYLE_FLAT*/0);
+  gtk_button_set_label(GTK_BUTTON(hbutton), _("compress history stack"));
   d->compress_button = hbutton;
   g_object_set(G_OBJECT(hbutton), "tooltip-text",
                _("create a minimal history stack which produces the same image"), (char *)NULL);
@@ -104,8 +105,8 @@ void gui_init(dt_lib_module_t *self)
   g_signal_connect(G_OBJECT(hbutton), "clicked", G_CALLBACK(_lib_history_compress_clicked_callback), NULL);
 
   /* add toolbar button for creating style */
-  GtkWidget *hbutton2 = dtgtk_button_new(dtgtk_cairo_paint_styles, 0);
-  // gtk_widget_set_size_request (hbutton, DT_PIXEL_APPLY_DPI(24), -1);
+  GtkWidget *hbutton2 = dtgtk_button_new(dtgtk_cairo_paint_styles, /*CPF_STYLE_FLAT*/0);
+  gtk_widget_set_size_request (hbutton2, DT_PIXEL_APPLY_DPI(24), -1);
   g_signal_connect(G_OBJECT(hbutton2), "clicked",
                    G_CALLBACK(_lib_history_create_style_button_clicked_callback), NULL);
   g_object_set(G_OBJECT(hbutton2), "tooltip-text", _("create a style from the current history stack"),
@@ -153,7 +154,8 @@ static GtkWidget *_lib_history_create_button(dt_lib_module_t *self, int num, con
   }
 
   /* create toggle button */
-  widget = dtgtk_togglebutton_new_with_label(numlabel, NULL, CPF_STYLE_FLAT);
+  widget = gtk_toggle_button_new_with_label(numlabel);
+  gtk_widget_set_halign(gtk_bin_get_child(GTK_BIN(widget)), GTK_ALIGN_START);
   g_object_set_data(G_OBJECT(widget), "history_number", GINT_TO_POINTER(num + 1));
   g_object_set_data(G_OBJECT(widget), "label", (gpointer)g_strdup(label));
 

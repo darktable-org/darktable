@@ -678,7 +678,7 @@ int dt_imageio_export_with_flags(const uint32_t imgid, const char *filename,
           dt_dev_history_item_t *h = malloc(sizeof(dt_dev_history_item_t));
           dt_iop_module_t *sty_module = m;
 
-          if (format_params->style_append && !(m->flags() & IOP_FLAGS_ONE_INSTANCE))
+          if(format_params->style_append && !(m->flags() & IOP_FLAGS_ONE_INSTANCE))
           {
             sty_module = dt_dev_module_duplicate(m->dev, m, 0);
             if(!sty_module)
