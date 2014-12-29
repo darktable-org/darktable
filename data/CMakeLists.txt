@@ -7,24 +7,9 @@ if(USE_OPENCL)
 endif(USE_OPENCL)
 
 #
-# Generate and instal gtkrc
-#
-set(GTKRC_FONT_SIZE 8)
-set(GTKRC_HEADER_FONT_SIZE 9)
-configure_file( ${CMAKE_CURRENT_SOURCE_DIR}/darktable.gtkrc.in ${CMAKE_CURRENT_BINARY_DIR}/darktable.gtkrc )
-
-
-#
-# GTK3 uses .css files instead of .gtkrc -- get rid of the above section and fill the file installed here instead
+# FIXME: gtk3-3.10: s/checked/active/
 #
 install(FILES darktable.css DESTINATION ${SHARE_INSTALL}/darktable)
-
-
-#
-# Add files that should go into shared
-#
-set(SHARE_FILES ${CMAKE_CURRENT_BINARY_DIR}/darktable.gtkrc)
-install(FILES ${SHARE_FILES} DESTINATION ${SHARE_INSTALL}/darktable)
 
 #
 # web gallery export support files:
