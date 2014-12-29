@@ -20,3 +20,11 @@ include_directories(${EXIV2_INCLUDE_DIR})
 
 add_executable(dt-curve-tool dt-curve-tool.c exif-wrapper.cpp)
 target_link_libraries(dt-curve-tool ${EXIV2_LIBRARY} ${M_LIBRARY})
+install(TARGETS dt-curve-tool RUNTIME DESTINATION bin)
+install(FILES
+          ${CMAKE_CURRENT_SOURCE_DIR}/dt-curve-tool-helper
+        DESTINATION bin
+        PERMISSIONS
+          OWNER_EXECUTE OWNER_WRITE OWNER_READ
+          GROUP_EXECUTE GROUP_READ
+          WORLD_EXECUTE WORLD_READ)
