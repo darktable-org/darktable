@@ -103,6 +103,11 @@ static dt_signal_description _signal_description[DT_SIGNAL_COUNT] = {
 
   { "dt-preferences-changed", NULL, NULL, G_TYPE_NONE, g_cclosure_marshal_VOID__VOID, 0,
     NULL }, // DT_SIGNAL_PREFERENCES_CHANGE
+
+
+  { "dt-camera-detected", NULL, NULL, G_TYPE_NONE, g_cclosure_marshal_VOID__VOID, 0,
+    NULL }, // DT_SIGNAL_CAMERA_DETECTED,
+
 };
 
 static GType _signal_type;
