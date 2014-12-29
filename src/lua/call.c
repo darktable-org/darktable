@@ -63,6 +63,7 @@ static int protected_to_string(lua_State *L)
 int dt_lua_do_chunk(lua_State *L, int nargs, int nresults)
 {
   lua_State *new_thread = lua_newthread(L);
+  darktable.lua_state.pending_threads++;
   lua_insert(L, -(nargs + 2));
   lua_xmove(L, new_thread, nargs + 1);
   int thread_result = lua_resume(new_thread, L, nargs);
@@ -78,9 +79,23 @@ int dt_lua_do_chunk(lua_State *L, int nargs, int nresults)
         int result = lua_gettop(new_thread);
         lua_pop(L, 1); // remove the temporary thread from the main thread
         lua_xmove(new_thread, L, result);
+        darktable.lua_state.pending_threads--;
         return LUA_OK;
       case LUA_YIELD:
       {
+        /*
+           This code will force a thread to exit at yield
+           instead of waiting for the thread to stop by itself
+
+           This is commented out for the time being, 
+           
+        if(darktable.lua_state.ending) {
+          lua_pop(L,1);
+          if(nresults != LUA_MULTRET) for(int i = 0 ; i < nresults ; i++) lua_pushnil(L);
+          darktable.lua_state.pending_threads--;
+          return LUA_OK;
+        }
+        */
         if(lua_gettop(new_thread) == 0)
         {
           lua_pushstring(new_thread, "no parameter passed to yield");
@@ -109,7 +124,7 @@ int dt_lua_do_chunk(lua_State *L, int nargs, int nresults)
               goto error;
             }
             int wait_time = lua_tointeger(new_thread, -1);
-            lua_pop(new_thread, 1);
+            lua_pop(new_thread, 3);
             dt_lua_unlock(false);
             g_usleep(wait_time * 1000);
             dt_lua_lock();
@@ -172,6 +187,7 @@ error:
   const char *error_msg = lua_tostring(new_thread, -1);
   luaL_traceback(L, new_thread, error_msg, 0);
   lua_remove(L, -2); // remove the new thread from L
+  darktable.lua_state.pending_threads--;
   return thread_result;
 }
 }
@@ -255,12 +271,73 @@ int dt_lua_do_chunk_raise(lua_State *L, int nargs, int nresults)
   }
 }
 
+
+static int ending_cb(lua_State *L)
+{
+  lua_pushboolean(L,darktable.lua_state.ending);
+  return 1;
+}
+
+
+static int32_t dispatch_callback_job(dt_job_t *job)
+{
+  gboolean has_lock = dt_lua_lock();
+  lua_State* L= darktable.lua_state.state;
+  int reference = GPOINTER_TO_INT(dt_control_job_get_params(job));
+  lua_getfield(L, LUA_REGISTRYINDEX, "dt_lua_bg_threads");
+  lua_pushinteger(L,reference);
+  lua_gettable(L,-2);
+  lua_State* thread = lua_tothread(L,-1);
+  lua_pop(L,2);
+  dt_lua_do_chunk_silent(thread,lua_gettop(thread)-1,0);
+  lua_getfield(L, LUA_REGISTRYINDEX, "dt_lua_bg_threads");
+  lua_pushinteger(L,reference);
+  lua_pushnil(L);
+  lua_settable(L,-3);
+  lua_pop(L,1);
+  dt_lua_unlock(has_lock);
+  return 0;
+}
+
+static int dispatch_cb(lua_State *L)
+{
+  lua_getfield(L, LUA_REGISTRYINDEX, "dt_lua_bg_threads");
+  lua_State *new_thread = lua_newthread(L);
+  const int reference = luaL_ref(L,-2);
+  lua_pop(L,1);
+  lua_xmove(L,new_thread,lua_gettop(L));
+  dt_job_t *job = dt_control_job_create(&dispatch_callback_job, "lua: dispatch");
+
+  if(job)
+  {
+    dt_control_job_set_params(job, GINT_TO_POINTER(reference));
+    dt_control_add_job(darktable.control, DT_JOB_QUEUE_USER_FG, job);
+  }
+  return 0;
+}
+
+
 int dt_lua_init_call(lua_State *L)
 {
   luaA_enum(L, yield_type);
   luaA_enum_value(L, yield_type, WAIT_MS);
   luaA_enum_value(L, yield_type, FILE_READABLE);
   luaA_enum_value(L, yield_type, RUN_COMMAND);
+
+  dt_lua_push_darktable_lib(L);
+  luaA_Type type_id = dt_lua_init_singleton(L, "control", NULL);
+  lua_setfield(L, -2, "control");
+  lua_pop(L, 1);
+
+
+  
+  lua_pushcfunction(L, ending_cb);
+  dt_lua_type_register_const_type(L, type_id, "ending");
+  lua_pushcfunction(L, dispatch_cb);
+  lua_pushcclosure(L, dt_lua_type_member_common, 1);
+  dt_lua_type_register_const_type(L, type_id, "dispatch");
+  lua_newtable(L);
+  lua_setfield(L, LUA_REGISTRYINDEX, "dt_lua_bg_threads");
   return 0;
 }
 

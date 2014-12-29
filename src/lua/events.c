@@ -49,7 +49,7 @@ void dt_lua_event_trigger(lua_State *L, const char *event, int nargs)
   lua_getfield(L, -2, "on_event");
   lua_getfield(L, -3, "data");
   lua_pushstring(L, event);
-  for(int i = 1; i <= nargs; i++) lua_pushvalue(L, i);
+  for(int i = 1; i <= nargs; i++) lua_pushvalue(L, -7);
   dt_lua_do_chunk(L, nargs + 2, 0);
   lua_pop(L, nargs + 3);
   dt_lua_redraw_screen();
