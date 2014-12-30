@@ -31,14 +31,14 @@
 typedef enum dt_mipmap_size_t
 {
   DT_MIPMAP_0 = 0,
-  DT_MIPMAP_1 = 1,
-  DT_MIPMAP_2 = 2,
-  DT_MIPMAP_3 = 3,
-  DT_MIPMAP_4 = 4,
-  DT_MIPMAP_5 = 5,
-  DT_MIPMAP_F = 6,
-  DT_MIPMAP_FULL = 7,
-  DT_MIPMAP_NONE = 8
+  DT_MIPMAP_1,
+  DT_MIPMAP_2,
+  DT_MIPMAP_3,
+  DT_MIPMAP_4,
+//  DT_MIPMAP_5,
+  DT_MIPMAP_F,
+  DT_MIPMAP_FULL,
+  DT_MIPMAP_NONE
 } dt_mipmap_size_t;
 
 // type to be passed to getter functions
