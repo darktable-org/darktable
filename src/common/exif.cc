@@ -326,13 +326,39 @@ static bool dt_exif_read_iptc_data(dt_image_t *img, Exiv2::IptcData &iptcData)
   try
   {
     Exiv2::IptcData::const_iterator pos;
+    iptcData.sortByKey(); // this helps to quickly find all Iptc.Application2.Keywords
 
     if((pos = iptcData.findKey(Exiv2::IptcKey("Iptc.Application2.Keywords"))) != iptcData.end())
     {
-      std::string str = pos->print(/*&iptcData*/);
-      guint tagid = 0;
-      dt_tag_new(str.c_str(), &tagid);
-      dt_tag_attach(tagid, img->id);
+      while(pos != iptcData.end())
+      {
+        char *tag = NULL;
+        std::string key = pos->key();
+        if(g_strcmp0(key.c_str(), "Iptc.Application2.Keywords")) break;
+        std::string str = pos->print();
+
+        if(g_utf8_validate(str.c_str(), -1, NULL)) // first check if it's utf8 already
+          tag = g_strdup(str.c_str());
+        else
+          tag = g_convert(str.c_str(), -1, "UTF-8", "LATIN1", NULL, NULL, NULL); // let's try latin1
+
+        if(!tag) // hmm, neither utf8 not latin1, let's fall back to ascii and just remove everything that isn't
+        {
+          tag = g_strdup(str.c_str());
+          char *c = tag;
+          while(*c)
+          {
+            if((*c < 0x20) || (*c >= 0x7f)) *c = '?';
+            c++;
+          }
+          fprintf(stderr, "unknown charset in IPTC Keyword `%s', replacing it with `%s'\n", str.c_str(), tag);
+        }
+        guint tagid = 0;
+        dt_tag_new(tag, &tagid);
+        dt_tag_attach(tagid, img->id);
+        g_free(tag);
+        ++pos;
+      }
     }
     if((pos = iptcData.findKey(Exiv2::IptcKey("Iptc.Application2.Caption"))) != iptcData.end())
     {
