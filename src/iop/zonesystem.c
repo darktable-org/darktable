@@ -819,7 +819,7 @@ static gboolean dt_iop_zonesystem_preview_draw(GtkWidget *widget, cairo_t *crf, 
   GtkStyleContext *context = gtk_widget_get_style_context(self->expander);
   gtk_style_context_get_background_color(context, gtk_widget_get_state_flags(self->expander), &color);
 
-  cairo_set_source_rgba(cr, color.red, color.green, color.blue, color.alpha);
+  gdk_cairo_set_source_rgba(cr, &color);
   cairo_paint(cr);
 
   width -= 2 * inset;

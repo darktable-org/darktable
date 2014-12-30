@@ -470,7 +470,7 @@ void *dt_control_expose(void *voidptr)
     color.blue = 0.0;
     color.alpha = 1.0;
   }
-  cairo_set_source_rgba(cr, color.red, color.green, color.blue, color.alpha);
+  gdk_cairo_set_source_rgba(cr, &color);
 
   cairo_set_line_width(cr, tb);
   cairo_rectangle(cr, tb / 2., tb / 2., width - tb, height - tb);
@@ -484,7 +484,7 @@ void *dt_control_expose(void *voidptr)
     color.blue = 0.0;
     color.alpha = 1.0;
   }
-  cairo_set_source_rgba(cr, color.red, color.green, color.blue, color.alpha);
+  gdk_cairo_set_source_rgba(cr, &color);
   cairo_rectangle(cr, tb, tb, width - 2 * tb, height - 2 * tb);
   cairo_stroke(cr);
 
@@ -528,7 +528,7 @@ void *dt_control_expose(void *voidptr)
           color.blue = 0.0;
           color.alpha = 1.0;
         }
-        cairo_set_source_rgba(cr, color.red, color.green, color.blue, color.alpha);
+        gdk_cairo_set_source_rgba(cr, &color);
         cairo_fill_preserve(cr);
       }
       cairo_set_source_rgba(cr, 0., 0., 0., 1.0 / (1 + k));
@@ -543,7 +543,7 @@ void *dt_control_expose(void *voidptr)
       color.blue = 0.0;
       color.alpha = 1.0;
     }
-    cairo_set_source_rgba(cr, color.red, color.green, color.blue, color.alpha);
+    gdk_cairo_set_source_rgba(cr, &color);
     cairo_move_to(cr, xc - wd + .5f * pad, yc + 1. / 3. * fontsize);
     cairo_show_text(cr, darktable.control->log_message[darktable.control->log_ack]);
   }

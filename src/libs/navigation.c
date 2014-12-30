@@ -153,7 +153,7 @@ static gboolean _lib_navigation_draw_callback(GtkWidget *widget, cairo_t *cr, gp
   gtk_style_context_get_background_color(context, state, &color);
 
   /* fill background */
-  cairo_set_source_rgba(cr, color.red, color.green, color.blue, color.alpha);
+  gdk_cairo_set_source_rgba(cr, &color);
   cairo_paint(cr);
 
   width -= 2 * inset;
@@ -240,7 +240,7 @@ static gboolean _lib_navigation_draw_callback(GtkWidget *widget, cairo_t *cr, gp
 
       cairo_save(cr);
       cairo_set_line_width(cr, 2.0);
-      cairo_set_source_rgba(cr, color.red, color.green, color.blue, color.alpha);
+      gdk_cairo_set_source_rgba(cr, &color);
       cairo_text_path(cr, zoomline);
       cairo_stroke_preserve(cr);
       cairo_set_source_rgb(cr, 0.6, 0.6, 0.6);

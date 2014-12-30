@@ -256,7 +256,7 @@ static gboolean _lib_histogram_draw_callback(GtkWidget *widget, cairo_t *cr, gpo
   int width = allocation.width, height = allocation.height;
   GdkRGBA color;
   gtk_style_context_get_background_color(gtk_widget_get_style_context(widget), gtk_widget_get_state_flags(widget), &color);
-  cairo_set_source_rgba(cr, color.red, color.green, color.blue, color.alpha);
+  gdk_cairo_set_source_rgba(cr, &color);
 
   cairo_paint(cr);
 

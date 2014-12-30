@@ -604,7 +604,7 @@ static gboolean colorzones_draw(GtkWidget *widget, cairo_t *cr, gpointer user_da
     color.blue = 0.0;
     color.alpha = 1.0;
   }
-  cairo_set_source_rgba(cr, color.red, color.green, color.blue, color.alpha);
+  gdk_cairo_set_source_rgba(cr, &color);
   cairo_paint(cr);
 
   cairo_translate(cr, inset, inset);

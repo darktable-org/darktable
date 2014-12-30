@@ -305,7 +305,7 @@ static gboolean draw_borders(GtkWidget *widget, cairo_t *cr, gpointer user_data)
     color.blue = 0.0;
     color.alpha = 1.0;
   }
-  cairo_set_source_rgba(cr, color.red, color.green, color.blue, color.alpha);
+  gdk_cairo_set_source_rgba(cr, &color);
   cairo_paint(cr);
 
   // draw scrollbar indicators
@@ -320,7 +320,7 @@ static gboolean draw_borders(GtkWidget *widget, cairo_t *cr, gpointer user_data)
     color.blue = 0.0;
     color.alpha = 1.0;
   }
-  cairo_set_source_rgba(cr, color.red, color.green, color.blue, color.alpha);
+  gdk_cairo_set_source_rgba(cr, &color);
   const float border = 0.3;
   if(!view)
     cairo_paint(cr);
@@ -368,7 +368,7 @@ static gboolean draw_borders(GtkWidget *widget, cairo_t *cr, gpointer user_data)
     color.blue = 0.0;
     color.alpha = 1.0;
   }
-  cairo_set_source_rgba(cr, color.red, color.green, color.blue, color.alpha);
+  gdk_cairo_set_source_rgba(cr, &color);
 
   switch(which)
   {

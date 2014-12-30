@@ -123,13 +123,13 @@ static gboolean _lib_ratings_draw_callback(GtkWidget *widget, cairo_t *cr, gpoin
   gtk_style_context_get_background_color(context, state, &bg_color);
 
   /* fill background */
-  cairo_set_source_rgba(cr, bg_color.red, bg_color.green, bg_color.blue, bg_color.alpha);
+  gdk_cairo_set_source_rgba(cr, &bg_color);
   cairo_paint(cr);
 
   /* lets draw stars */
   int x = 0;
   cairo_set_line_width(cr, 1.5);
-  cairo_set_source_rgba(cr, fg_color.red, fg_color.green, fg_color.blue, fg_color.alpha);
+  gdk_cairo_set_source_rgba(cr, &fg_color);
   d->current = 0;
   for(int k = 0; k < 5; k++)
   {
@@ -140,7 +140,7 @@ static gboolean _lib_ratings_draw_callback(GtkWidget *widget, cairo_t *cr, gpoin
       cairo_fill_preserve(cr);
       cairo_set_source_rgba(cr, fg_color.red, fg_color.green, fg_color.blue, fg_color.alpha * 0.5);
       cairo_stroke(cr);
-      cairo_set_source_rgba(cr, fg_color.red, fg_color.green, fg_color.blue, fg_color.alpha);
+      gdk_cairo_set_source_rgba(cr, &fg_color);
       if((k + 1) > d->current) d->current = (k + 1);
     }
     else
