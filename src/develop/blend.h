@@ -290,7 +290,7 @@ typedef struct dt_blendop_t
 typedef struct dt_iop_gui_blendif_colorstop_t
 {
   float stoppoint;
-  GdkColor color;
+  GdkRGBA color;
 } dt_iop_gui_blendif_colorstop_t;
 
 

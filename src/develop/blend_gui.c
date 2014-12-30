@@ -43,7 +43,7 @@
 
 
 #define CLAMP_RANGE(x, y, z) (CLAMP(x, y, z))
-#define LIGHTNESS 32767.0f
+#define LIGHTNESS 1.0
 
 typedef enum _iop_gui_blendif_channel_t
 {
@@ -60,55 +60,58 @@ typedef enum _iop_gui_blendif_channel_t
 
 
 static const dt_iop_gui_blendif_colorstop_t _gradient_L[]
-    = { { 0.0f, { 0, 0, 0, 0 } },
-        { 0.5f, { 0, LIGHTNESS / 2, LIGHTNESS / 2, LIGHTNESS / 2 } },
-        { 1.0f, { 0, LIGHTNESS, LIGHTNESS, LIGHTNESS } } };
+    = { { 0.0f, { 0, 0, 0, 1.0 } },
+        { 0.5f, { LIGHTNESS / 2, LIGHTNESS / 2, LIGHTNESS / 2, 1.0 } },
+        { 1.0f, { LIGHTNESS, LIGHTNESS, LIGHTNESS, 1.0 } } };
 
 static const dt_iop_gui_blendif_colorstop_t _gradient_a[]
-    = { { 0.0f, { 0, 0, 0.34 * LIGHTNESS * 2, 0.27 * LIGHTNESS * 2 } },
-        { 0.5f, { 0, LIGHTNESS, LIGHTNESS, LIGHTNESS } },
-        { 1.0f, { 0, 0.53 * LIGHTNESS * 2, 0.08 * LIGHTNESS * 2, 0.28 * LIGHTNESS * 2 } } };
+    = { { 0.0f, { 0, 0.34 * LIGHTNESS * 2, 0.27 * LIGHTNESS * 2, 1.0 } },
+        { 0.5f, { LIGHTNESS, LIGHTNESS, LIGHTNESS, 1.0 } },
+        { 1.0f, { 0.53 * LIGHTNESS * 2, 0.08 * LIGHTNESS * 2, 0.28 * LIGHTNESS * 2, 1.0 } } };
 
 static const dt_iop_gui_blendif_colorstop_t _gradient_b[]
-    = { { 0.0f, { 0, 0, 0.27 * LIGHTNESS * 2, 0.58 * LIGHTNESS * 2 } },
-        { 0.5f, { 0, LIGHTNESS, LIGHTNESS, LIGHTNESS } },
-        { 1.0f, { 0, 0.81 * LIGHTNESS * 2, 0.66 * LIGHTNESS * 2, 0 } } };
+    = { { 0.0f, { 0, 0.27 * LIGHTNESS * 2, 0.58 * LIGHTNESS * 2, 1.0 } },
+        { 0.5f, { LIGHTNESS, LIGHTNESS, LIGHTNESS, 1.0 } },
+        { 1.0f, { 0.81 * LIGHTNESS * 2, 0.66 * LIGHTNESS * 2, 0, 1.0 } } };
 
 static const dt_iop_gui_blendif_colorstop_t _gradient_gray[]
-    = { { 0.0f, { 0, 0, 0, 0 } },
-        { 0.5f, { 0, LIGHTNESS / 2, LIGHTNESS / 2, LIGHTNESS / 2 } },
-        { 1.0f, { 0, LIGHTNESS, LIGHTNESS, LIGHTNESS } } };
+    = { { 0.0f, { 0, 0, 0, 1.0 } },
+        { 0.5f, { LIGHTNESS / 2, LIGHTNESS / 2, LIGHTNESS / 2, 1.0 } },
+        { 1.0f, { LIGHTNESS, LIGHTNESS, LIGHTNESS, 1.0 } } };
 
-static const dt_iop_gui_blendif_colorstop_t _gradient_red[]
-    = { { 0.0f, { 0, 0, 0, 0 } }, { 0.5f, { 0, LIGHTNESS / 2, 0, 0 } }, { 1.0f, { 0, LIGHTNESS, 0, 0 } } };
+static const dt_iop_gui_blendif_colorstop_t _gradient_red[] = { { 0.0f, { 0, 0, 0, 1.0 } },
+                                                                { 0.5f, { LIGHTNESS / 2, 0, 0, 1.0 } },
+                                                                { 1.0f, { LIGHTNESS, 0, 0, 1.0 } } };
 
-static const dt_iop_gui_blendif_colorstop_t _gradient_green[]
-    = { { 0.0f, { 0, 0, 0, 0 } }, { 0.5f, { 0, 0, LIGHTNESS / 2, 0 } }, { 1.0f, { 0, 0, LIGHTNESS, 0 } } };
+static const dt_iop_gui_blendif_colorstop_t _gradient_green[] = { { 0.0f, { 0, 0, 0, 1.0 } },
+                                                                  { 0.5f, { 0, LIGHTNESS / 2, 0, 1.0 } },
+                                                                  { 1.0f, { 0, LIGHTNESS, 0, 1.0 } } };
 
-static const dt_iop_gui_blendif_colorstop_t _gradient_blue[]
-    = { { 0.0f, { 0, 0, 0, 0 } }, { 0.5f, { 0, 0, 0, LIGHTNESS / 2 } }, { 1.0f, { 0, 0, 0, LIGHTNESS } } };
+static const dt_iop_gui_blendif_colorstop_t _gradient_blue[] = { { 0.0f, { 0, 0, 0, 1.0 } },
+                                                                 { 0.5f, { 0, 0, LIGHTNESS / 2, 1.0 } },
+                                                                 { 1.0f, { 0, 0, LIGHTNESS, 1.0 } } };
 
 static const dt_iop_gui_blendif_colorstop_t _gradient_chroma[]
-    = { { 0.0f, { 0, LIGHTNESS, LIGHTNESS, LIGHTNESS } },
-        { 0.5f, { 0, LIGHTNESS, LIGHTNESS / 2, LIGHTNESS } },
-        { 1.0f, { 0, LIGHTNESS, 0, LIGHTNESS } } };
+    = { { 0.0f, { LIGHTNESS, LIGHTNESS, LIGHTNESS, 1.0 } },
+        { 0.5f, { LIGHTNESS, LIGHTNESS / 2, LIGHTNESS, 1.0 } },
+        { 1.0f, { LIGHTNESS, 0, LIGHTNESS, 1.0 } } };
 
 static const dt_iop_gui_blendif_colorstop_t _gradient_hue[]
-    = { { 0.0f, { 0, 1.00f * 1.5f * LIGHTNESS, 0.68f * 1.5f * LIGHTNESS, 0.78f * 1.5f * LIGHTNESS } },
-        { 0.166f, { 0, 0.95f * 1.5f * LIGHTNESS, 0.73f * 1.5f * LIGHTNESS, 0.56f * 1.5f * LIGHTNESS } },
-        { 0.333f, { 0, 0.71f * 1.5f * LIGHTNESS, 0.81f * 1.5f * LIGHTNESS, 0.55f * 1.5f * LIGHTNESS } },
-        { 0.500f, { 0, 0.45f * 1.5f * LIGHTNESS, 0.85f * 1.5f * LIGHTNESS, 0.77f * 1.5f * LIGHTNESS } },
-        { 0.666f, { 0, 0.49f * 1.5f * LIGHTNESS, 0.82f * 1.5f * LIGHTNESS, 1.00f * 1.5f * LIGHTNESS } },
-        { 0.833f, { 0, 0.82f * 1.5f * LIGHTNESS, 0.74f * 1.5f * LIGHTNESS, 1.00f * 1.5f * LIGHTNESS } },
-        { 1.0f, { 0, 1.00f * 1.5f * LIGHTNESS, 0.68f * 1.5f * LIGHTNESS, 0.78f * 1.5f * LIGHTNESS } } };
+    = { { 0.0f, { 1.00f * 1.5f * LIGHTNESS, 0.68f * 1.5f * LIGHTNESS, 0.78f * 1.5f * LIGHTNESS, 1.0 } },
+        { 0.166f, { 0.95f * 1.5f * LIGHTNESS, 0.73f * 1.5f * LIGHTNESS, 0.56f * 1.5f * LIGHTNESS, 1.0 } },
+        { 0.333f, { 0.71f * 1.5f * LIGHTNESS, 0.81f * 1.5f * LIGHTNESS, 0.55f * 1.5f * LIGHTNESS, 1.0 } },
+        { 0.500f, { 0.45f * 1.5f * LIGHTNESS, 0.85f * 1.5f * LIGHTNESS, 0.77f * 1.5f * LIGHTNESS, 1.0 } },
+        { 0.666f, { 0.49f * 1.5f * LIGHTNESS, 0.82f * 1.5f * LIGHTNESS, 1.00f * 1.5f * LIGHTNESS, 1.0 } },
+        { 0.833f, { 0.82f * 1.5f * LIGHTNESS, 0.74f * 1.5f * LIGHTNESS, 1.00f * 1.5f * LIGHTNESS, 1.0 } },
+        { 1.0f, { 1.00f * 1.5f * LIGHTNESS, 0.68f * 1.5f * LIGHTNESS, 0.78f * 1.5f * LIGHTNESS, 1.0 } } };
 
-static const dt_iop_gui_blendif_colorstop_t _gradient_HUE[] = { { 0.0f, { 0, LIGHTNESS, 0, 0 } },
-                                                                { 0.166f, { 0, LIGHTNESS, LIGHTNESS, 0 } },
-                                                                { 0.332f, { 0, 0, LIGHTNESS, 0 } },
-                                                                { 0.498f, { 0, 0, LIGHTNESS, LIGHTNESS } },
-                                                                { 0.664f, { 0, 0, 0, LIGHTNESS } },
-                                                                { 0.830f, { 0, LIGHTNESS, 0, LIGHTNESS } },
-                                                                { 1.0f, { 0, LIGHTNESS, 0, 0 } } };
+static const dt_iop_gui_blendif_colorstop_t _gradient_HUE[] = { { 0.0f, { LIGHTNESS, 0, 0, 1.0 } },
+                                                                { 0.166f, { LIGHTNESS, LIGHTNESS, 0, 1.0 } },
+                                                                { 0.332f, { 0, LIGHTNESS, 0, 1.0 } },
+                                                                { 0.498f, { 0, LIGHTNESS, LIGHTNESS, 1.0 } },
+                                                                { 0.664f, { 0, 0, LIGHTNESS, 1.0 } },
+                                                                { 0.830f, { LIGHTNESS, 0, LIGHTNESS, 1.0 } },
+                                                                { 1.0f, { LIGHTNESS, 0, 0, 1.0 } } };
 
 
 static inline void _RGB_2_HSL(const float *RGB, float *HSL)
