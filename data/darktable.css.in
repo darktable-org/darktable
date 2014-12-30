@@ -84,8 +84,8 @@ GtkAlignment
   background-color: shade(@selected_bg_color, 1.2);
   background-image: none;
 }
-#lib-plugin-ui .button:checked,
-.button:checked
+#lib-plugin-ui .button:${GTK_CSS_CLASS},
+.button:${GTK_CSS_CLASS}
 {
   border-style:none;
   background-image:none;
@@ -105,7 +105,7 @@ GtkAlignment
   background-color: transparent;
 }
 #iop-plugin-ui .button:hover,
-#iop-plugin-ui GtkButton {
+#iop-plugin-ui GtkButton:hover {
   background-color: shade(@plugin_bg_color, 1.7);
 }
 #iop-plugin-ui GtkLabel,

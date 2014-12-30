@@ -733,11 +733,6 @@ int dt_init(int argc, char *argv[], const int init_gui, lua_State *L)
   // Initialize the filesystem watcher
   darktable.fswatch = dt_fswatch_new();
 
-#ifdef HAVE_GPHOTO2
-  // Initialize the camera control
-  darktable.camctl = dt_camctl_new();
-#endif
-
   // get max lighttable thumbnail size:
   darktable.thumbnail_width = CLAMPS(dt_conf_get_int("plugins/lighttable/thumbnail_width"), 200, 3000);
   darktable.thumbnail_height = CLAMPS(dt_conf_get_int("plugins/lighttable/thumbnail_height"), 200, 3000);
@@ -823,6 +818,12 @@ int dt_init(int argc, char *argv[], const int init_gui, lua_State *L)
 
   // load the darkroom mode plugins once:
   dt_iop_load_modules_so();
+
+#ifdef HAVE_GPHOTO2
+  // Initialize the camera control.
+  // this is done late so that the gui can react to the signal sent but before switching to lighttable!
+  darktable.camctl = dt_camctl_new();
+#endif
 
   if(init_gui)
   {

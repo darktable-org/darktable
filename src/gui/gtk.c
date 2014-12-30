@@ -707,9 +707,6 @@ int dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[])
   if(!g_file_test(gui->gtkrc, G_FILE_TEST_EXISTS))
     g_snprintf(gui->gtkrc, sizeof(gui->gtkrc), "%s/darktable.css", datadir);
 
-  if(!g_file_test(gui->gtkrc, G_FILE_TEST_EXISTS))
-    g_snprintf(gui->gtkrc, PATH_MAX, "%s/darktable.css", datadir);
-
 #if !GLIB_CHECK_VERSION(2, 32, 0)
   if(!g_thread_supported()) g_thread_init(NULL);
 #endif

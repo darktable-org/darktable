@@ -151,6 +151,11 @@ typedef enum dt_signal_t
     */
   DT_SIGNAL_PREFERENCES_CHANGE,
 
+  /** \brief This signal is raised when new gphoto2 cameras might have been detected
+    no return
+   * */
+  DT_SIGNAL_CAMERA_DETECTED,
+
   /* do not touch !*/
   DT_SIGNAL_COUNT
 } dt_signal_t;
