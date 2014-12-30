@@ -319,11 +319,14 @@ enum module_type
 static void
 linearize_8bit(
   int width, int height,
-  uint8_t* s,
-  float* d)
+  uint8_t* _s,
+  float* _d)
 {
   // XXX support ICC profiles here ?
+#pragma omp parallel for
   for (int y=0; y<height; y++) {
+    float* d = _d + 3*width*y;
+    uint8_t* s = _s + 3*width*y;
     for (int x=0; x<width; x++) {
       d[0] = linearize_sRGB((float)s[0]/255.f);
       d[1] = linearize_sRGB((float)s[1]/255.f);
@@ -337,10 +340,13 @@ linearize_8bit(
 static void
 linearize_16bit(
   int width, int height,
-  uint16_t* s,
-  float* d)
+  uint16_t* _s,
+  float* _d)
 {
+#pragma omp parallel for
   for (int y=0; y<height; y++) {
+    float* d = _d + 3*width*y;
+    uint16_t* s = _s + 3*width*y;
     for (int x=0; x<width; x++) {
       d[0] = (float)s[0]/65535.f;
       d[1] = (float)s[1]/65535.f;
