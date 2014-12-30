@@ -85,21 +85,6 @@ typedef enum _styles_columns_t
   DT_STYLES_NUM_COLS
 } _styles_columns_t;
 
-static int get_font_height(GtkWidget *widget, const char *str)
-{
-  int width, height;
-
-  PangoLayout *layout = pango_layout_new(gtk_widget_get_pango_context(widget));
-
-  pango_layout_set_text(layout, str, -1);
-  pango_layout_set_font_description(layout, NULL);
-  pango_layout_get_pixel_size(layout, &width, &height);
-
-  g_object_unref(layout);
-  return height;
-}
-
-
 static void _gui_styles_update_view(dt_lib_styles_t *d)
 {
   /* clear current list */
@@ -314,9 +299,6 @@ void gui_init(dt_lib_module_t *self)
   gtk_tree_view_column_pack_start(col, renderer, TRUE);
   gtk_tree_view_column_add_attribute(col, renderer, "text", DT_STYLES_COL_NAME);
 
-  int ht = get_font_height(GTK_WIDGET(d->list), "Dreggn");
-  gtk_widget_set_size_request(GTK_WIDGET(d->list), -1, 8 * ht);
-
   gtk_tree_selection_set_mode(gtk_tree_view_get_selection(GTK_TREE_VIEW(d->list)), GTK_SELECTION_SINGLE);
   gtk_tree_view_set_model(GTK_TREE_VIEW(d->list), GTK_TREE_MODEL(liststore));
   g_object_unref(liststore);
@@ -335,6 +317,8 @@ void gui_init(dt_lib_module_t *self)
 
   scrolled = gtk_scrolled_window_new(NULL, NULL);
   gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(scrolled), GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
+
+  gtk_scrolled_window_set_min_content_height(GTK_SCROLLED_WINDOW(scrolled), DT_PIXEL_APPLY_DPI(150));
 
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(d->entry), TRUE, FALSE, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(scrolled), TRUE, FALSE, 0);
