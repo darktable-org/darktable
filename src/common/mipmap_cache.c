@@ -366,11 +366,12 @@ void dt_mipmap_cache_init(dt_mipmap_cache_t *cache)
     {1280, 720},  // mip2 - 720p (only one not /2 the previous one and 2x the next)
     {1920, 1080}, // mip3 - 1080p
     {3840, 2160}, // mip4 - Normal 4K panels
-    {7860, 4320}, // mip5/mipf - 5K and up panels
+    {7860, 4320}, // mip5 - 5K and up panels
   };
-  // cache these, can't change at runtime:
-  cache->max_width[DT_MIPMAP_F] = mipsizes[DT_MIPMAP_F-1][0];
-  cache->max_height[DT_MIPMAP_F] = mipsizes[DT_MIPMAP_F-1][1];
+  // Set mipf to mip3 size as at most the user will be using an 8K screen and
+  // have a preview that's ~4x smaller
+  cache->max_width[DT_MIPMAP_F] = mipsizes[DT_MIPMAP_3][0];
+  cache->max_height[DT_MIPMAP_F] = mipsizes[DT_MIPMAP_3][1];
   for(int k = DT_MIPMAP_F-1; k >= 0; k--)
   {
     cache->max_width[k]  = mipsizes[k][0];
