@@ -37,8 +37,6 @@ DT_MODULE(1)
 
 #define PARAM_STRING_SIZE 256 // FIXME: is this enough !?
 
-// DT_MODULE(1)
-
 typedef struct dt_lib_collect_rule_t
 {
   int num;
