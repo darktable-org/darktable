@@ -842,6 +842,37 @@ static void _create_schema(dt_database_t *db)
                         NULL, NULL, NULL);
 }
 
+static void _sanitize_db(dt_database_t *db)
+{
+  sqlite3_stmt *stmt, *innerstmt;
+
+  /* first let's get rid of non-utf8 tags. */
+  sqlite3_prepare_v2(db->handle, "SELECT id, name FROM tags", -1, &stmt, NULL);
+  sqlite3_prepare_v2(db->handle, "UPDATE tags SET name = ?1 WHERE id = ?2", -1, &innerstmt, NULL);
+  while(sqlite3_step(stmt) == SQLITE_ROW)
+  {
+    int id = sqlite3_column_int(stmt, 0);
+    const char *tag = (const char *)sqlite3_column_text(stmt, 1);
+
+    if(!g_utf8_validate(tag, -1, NULL))
+    {
+      gchar *new_tag = dt_util_foo_to_utf8(tag);
+      fprintf(stderr, "[init]: tag `%s' is not valid utf8, replacing it with `%s'\n", tag, new_tag);
+      if(tag)
+      {
+        sqlite3_bind_text(innerstmt, 1, new_tag, -1, SQLITE_TRANSIENT);
+        sqlite3_bind_int(innerstmt, 2, id);
+        sqlite3_step(innerstmt);
+        sqlite3_reset(innerstmt);
+        sqlite3_clear_bindings(innerstmt);
+        g_free(new_tag);
+      }
+    }
+  }
+  sqlite3_finalize(stmt);
+  sqlite3_finalize(innerstmt);
+}
+
 dt_database_t *dt_database_init(char *alternative)
 {
   /* migrate default database location to new default */
@@ -1091,6 +1122,9 @@ dt_database_t *dt_database_init(char *alternative)
 
   // drop table settings -- we don't want old versions of dt to drop our tables
   sqlite3_exec(db->handle, "drop table settings", NULL, NULL, NULL);
+
+  // take care of potential bad data in the db.
+  _sanitize_db(db);
 
 error:
   g_free(dbname);

@@ -287,6 +287,28 @@ gboolean dt_util_is_dir_empty(const char *dirname)
     return FALSE;
 }
 
+gchar *dt_util_foo_to_utf8(const char *string)
+{
+  gchar *tag = NULL;
+
+  if(g_utf8_validate(string, -1, NULL)) // first check if it's utf8 already
+    tag = g_strdup(string);
+  else
+    tag = g_convert(string, -1, "UTF-8", "LATIN1", NULL, NULL, NULL); // let's try latin1
+
+  if(!tag) // hmm, neither utf8 nor latin1, let's fall back to ascii and just remove everything that isn't
+  {
+    tag = g_strdup(string);
+    char *c = tag;
+    while(*c)
+    {
+      if((*c < 0x20) || (*c >= 0x7f)) *c = '?';
+      c++;
+    }
+  }
+  return tag;
+}
+
 // days are in [1..31], months are in [0..11], see "man localtime"
 dt_logo_season_t get_logo_season(void)
 {
