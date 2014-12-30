@@ -926,7 +926,7 @@ static void get_params(dt_iop_atrous_params_t *p, const int ch, const double mou
   }
 }
 
-static gboolean area_draw(GtkWidget *widget, cairo_t *crf, gpointer user_data)
+static gboolean area_draw(GtkWidget *widget, cairo_t *cr, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_atrous_gui_data_t *c = (dt_iop_atrous_gui_data_t *)self->gui_data;
@@ -938,8 +938,6 @@ static gboolean area_draw(GtkWidget *widget, cairo_t *crf, gpointer user_data)
   GtkAllocation allocation;
   gtk_widget_get_allocation(widget, &allocation);
   int width = allocation.width, height = allocation.height;
-  cairo_surface_t *cst = dt_cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height);
-  cairo_t *cr = cairo_create(cst);
   // clear bg, match color of the notebook tabs:
   GdkRGBA bright_bg_color, really_dark_bg_color;
   GtkStyleContext *context = gtk_widget_get_style_context(self->expander);
@@ -1192,10 +1190,6 @@ static gboolean area_draw(GtkWidget *widget, cairo_t *crf, gpointer user_data)
   }
 
 
-  cairo_destroy(cr);
-  cairo_set_source_surface(crf, cst, 0, 0);
-  cairo_paint(crf);
-  cairo_surface_destroy(cst);
   return TRUE;
 }
 

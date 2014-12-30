@@ -194,7 +194,7 @@ static void update(dt_lib_module_t *user_data, gboolean early_bark_out)
 }
 
 
-static gboolean draw(GtkWidget *widget, cairo_t *crf, gpointer user_data)
+static gboolean draw(GtkWidget *widget, cairo_t *cr, gpointer user_data)
 {
   if(!dt_control_running()) return FALSE;
   update((dt_lib_module_t *)user_data, TRUE);

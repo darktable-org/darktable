@@ -41,7 +41,7 @@
 
 DT_MODULE_INTROSPECTION(2, dt_iop_levels_params_t)
 
-static gboolean dt_iop_levels_area_draw(GtkWidget *widget, cairo_t *crf, gpointer user_data);
+static gboolean dt_iop_levels_area_draw(GtkWidget *widget, cairo_t *cr, gpointer user_data);
 static gboolean dt_iop_levels_vbox_automatic_draw(GtkWidget *widget, cairo_t *cr, gpointer user_data);
 static gboolean dt_iop_levels_motion_notify(GtkWidget *widget, GdkEventMotion *event, gpointer user_data);
 static gboolean dt_iop_levels_button_press(GtkWidget *widget, GdkEventButton *event, gpointer user_data);
@@ -654,7 +654,7 @@ static gboolean dt_iop_levels_leave_notify(GtkWidget *widget, GdkEventCrossing *
   return TRUE;
 }
 
-static gboolean dt_iop_levels_area_draw(GtkWidget *widget, cairo_t *crf, gpointer user_data)
+static gboolean dt_iop_levels_area_draw(GtkWidget *widget, cairo_t *cr, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_levels_gui_data_t *c = (dt_iop_levels_gui_data_t *)self->gui_data;
@@ -665,8 +665,6 @@ static gboolean dt_iop_levels_area_draw(GtkWidget *widget, cairo_t *crf, gpointe
   GtkAllocation allocation;
   gtk_widget_get_allocation(GTK_WIDGET(c->area), &allocation);
   int width = allocation.width, height = allocation.height;
-  cairo_surface_t *cst = dt_cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height);
-  cairo_t *cr = cairo_create(cst);
 
   float mean_picked_color = *self->picked_color / 100.0;
 
@@ -824,10 +822,6 @@ static gboolean dt_iop_levels_area_draw(GtkWidget *widget, cairo_t *crf, gpointe
   }
 
   // Cleaning up
-  cairo_destroy(cr);
-  cairo_set_source_surface(crf, cst, 0, 0);
-  cairo_paint(crf);
-  cairo_surface_destroy(cst);
   return TRUE;
 }
 
