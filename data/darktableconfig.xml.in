@@ -491,20 +491,6 @@
     <longdescription>if set to true, thumbnails will be processed by first downscaling rather than demosaicing the full image. this can result in much faster processing times and blurrier images, especially when you cropped a lot.</longdescription>
   </dtconfig>
   <dtconfig prefs="gui">
-    <name>plugins/lighttable/thumbnail_width</name>
-    <type>int</type>
-    <default>1300</default>
-    <shortdescription>maximum width of image drawing area</shortdescription>
-    <longdescription>maximum width of the image drawing area in darkroom mode. adjust to your screen\n(needs a restart and will invalidate current thumbnail caches).</longdescription>
-  </dtconfig>
-  <dtconfig prefs="gui">
-    <name>plugins/lighttable/thumbnail_height</name>
-    <type>int</type>
-    <default>1000</default>
-    <shortdescription>maximum height of image drawing area</shortdescription>
-    <longdescription>maximum height of the image drawing area in darkroom mode. adjust to your screen\n(needs a restart and will invalidate current thumbnail caches).</longdescription>
-  </dtconfig>
-  <dtconfig prefs="gui">
     <name>pressure_sensitivity</name>
     <type>
       <enum>

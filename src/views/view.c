@@ -840,8 +840,7 @@ void dt_view_image_expose(dt_view_image_over_t *image_over, uint32_t imgid, cair
                                                   stride);
     if(zoom == 1)
     {
-      scale = fminf(fminf(darktable.thumbnail_width, width) / (float)buf.width,
-                    fminf(darktable.thumbnail_height, height) / (float)buf.height);
+      scale = fminf(width / (float)buf.width, height / (float)buf.height);
     }
     else
       scale = fminf(width * imgwd / (float)buf.width, height * imgwd / (float)buf.height);

@@ -71,7 +71,7 @@ static void generate_thumbnail_cache()
 
   // go through all images:
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select id from images", -1, &stmt, 0);
-  uint8_t *tmp = (uint8_t *)dt_alloc_align(16, darktable.thumbnail_width*darktable.thumbnail_height*4);
+  uint8_t *tmp = (uint8_t *)dt_alloc_align(16, 1280*720*4);
   const int cache_quality = MIN(100, MAX(10, dt_conf_get_int("database_cache_quality")));
   while(sqlite3_step(stmt) == SQLITE_ROW)
   {
