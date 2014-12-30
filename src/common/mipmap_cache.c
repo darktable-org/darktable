@@ -243,7 +243,7 @@ void dt_mipmap_cache_allocate_dynamic(void *data, dt_cache_entry_t *entry)
   assert(dsc->size >= sizeof(*dsc));
 
   int loaded_from_disk = 0;
-  if(mip <= DT_MIPMAP_3)
+  if(mip < DT_MIPMAP_F)
   {
     if(dt_conf_get_bool("cache_disk_backend"))
     {
@@ -295,7 +295,7 @@ void dt_mipmap_cache_deallocate_dynamic(void *data, dt_cache_entry_t *entry)
 {
   dt_mipmap_cache_t *cache = (dt_mipmap_cache_t *)data;
   const dt_mipmap_size_t mip = get_size(entry->key);
-  if(mip <= DT_MIPMAP_3)
+  if(mip < DT_MIPMAP_F)
   {
     struct dt_mipmap_buffer_dsc *dsc = (struct dt_mipmap_buffer_dsc *)entry->data;
     // don't write skulls:
@@ -361,26 +361,24 @@ void dt_mipmap_cache_init(dt_mipmap_cache_t *cache)
   size_t max_mem = CLAMPS(dt_conf_get_int64("cache_memory"), 100u << 20, ((uint64_t)8) << 30);
   const uint32_t parallel
       = CLAMP(dt_conf_get_int("worker_threads") * dt_conf_get_int("parallel_export"), 1, 8);
-  const int32_t max_size = 2048, min_size = 32;
-  int32_t wd = darktable.thumbnail_width;
-  int32_t ht = darktable.thumbnail_height;
-  wd = CLAMPS(wd, min_size, max_size);
-  ht = CLAMPS(ht, min_size, max_size);
-  // round up to a multiple of 8, so we can divide by two 3 times
-  if(wd & 0xf) wd = (wd & ~0xf) + 0x10;
-  if(ht & 0xf) ht = (ht & ~0xf) + 0x10;
+  int32_t mipsizes[6][2] = {
+    {240,  135},  // mip0
+    {480,  270},  // mip1
+    {1280, 720},  // mip2 - 720p (only one not /2 the previous one and 2x the next)
+    {1920, 1080}, // mip3 - 1080p
+    {3840, 2160}, // mip4 - Normal 4K panels
+    {7860, 4320}, // mip5/mipf - 5K and up panels
+  };
   // cache these, can't change at runtime:
-  cache->max_width[DT_MIPMAP_F] = wd;
-  cache->max_height[DT_MIPMAP_F] = ht;
-  cache->max_width[DT_MIPMAP_F - 1] = wd;
-  cache->max_height[DT_MIPMAP_F - 1] = ht;
-  for(int k = DT_MIPMAP_F - 2; k >= DT_MIPMAP_0; k--)
+  cache->max_width[DT_MIPMAP_F] = mipsizes[DT_MIPMAP_F-1][0];
+  cache->max_height[DT_MIPMAP_F] = mipsizes[DT_MIPMAP_F-1][1];
+  for(int k = DT_MIPMAP_F-1; k >= 0; k--)
   {
-    cache->max_width[k]  = cache->max_width[k + 1]  / 2;
-    cache->max_height[k] = cache->max_height[k + 1] / 2;
+    cache->max_width[k]  = mipsizes[k][0];
+    cache->max_height[k] = mipsizes[k][1];
   }
     // header + buffer
-  for(int k = DT_MIPMAP_3; k >= 0; k--)
+  for(int k = DT_MIPMAP_F-1; k >= 0; k--)
     cache->buffer_size[k] = sizeof(struct dt_mipmap_buffer_dsc)
                                 + cache->max_width[k] * cache->max_height[k] * 4;
 
@@ -671,7 +669,7 @@ void dt_mipmap_cache_get_with_caller(
       }
     }
     // couldn't find a smaller thumb, try larger ones only now (these will be slightly slower due to cairo rescaling):
-    dt_mipmap_size_t max_mip = (mip >= DT_MIPMAP_F) ? mip : DT_MIPMAP_3;
+    dt_mipmap_size_t max_mip = (mip >= DT_MIPMAP_F) ? mip : DT_MIPMAP_F-1;
     for(int k = mip+1; k <= max_mip; k++)
     {
       // already loaded?
