@@ -27,6 +27,11 @@ include_directories(${EXIV2_INCLUDE_DIR})
 add_executable(dt-curve-tool dt-curve-tool.c exif-wrapper.cpp)
 target_link_libraries(dt-curve-tool ${EXIV2_LIBRARY} ${M_LIBRARY})
 install(TARGETS dt-curve-tool RUNTIME DESTINATION bin)
+add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/dt-curve-tool-helper
+                   COMMAND ${CMAKE_COMMAND} -E copy_if_different ${CMAKE_CURRENT_SOURCE_DIR}/dt-curve-tool-helper ${CMAKE_CURRENT_BINARY_DIR}/dt-curve-tool-helper
+                   DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/dt-curve-tool-helper
+                   COMMENT "Copying dt-curve-tool-helper")
+add_custom_target(copy_dt-curve-tool-helper ALL DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/dt-curve-tool-helper)
 install(FILES
           ${CMAKE_CURRENT_SOURCE_DIR}/dt-curve-tool-helper
         DESTINATION bin
