@@ -62,6 +62,7 @@ typedef struct
 {
   lua_State *state;
   dt_pthread_mutex_t mutex;
+  int pending_threads ;
   bool ending;
 
 } dt_lua_state_t;

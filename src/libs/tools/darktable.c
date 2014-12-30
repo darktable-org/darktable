@@ -24,6 +24,7 @@
 #include "develop/develop.h"
 #include "libs/lib.h"
 #include "gui/gtk.h"
+#include "version.h"
 
 #include <librsvg/rsvg.h>
 // ugh, ugly hack. why do people break stuff all the time?

@@ -40,7 +40,8 @@ size_t dt_utf8_strlcpy(char *dest, const char *src, size_t n);
 off_t dt_util_get_file_size(const char *filename);
 /** returns true if dirname is empty */
 gboolean dt_util_is_dir_empty(const char *dirname);
-
+/** returns a valid UTF-8 string for the given char array. has to be freed with g_free(). */
+gchar *dt_util_foo_to_utf8(const char *string);
 
 typedef enum dt_logo_season_t
 {

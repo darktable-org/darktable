@@ -686,6 +686,8 @@ function M.all_children(node)
 		end
 	end
 
+  local collect_data = dt.gui.libs.collect.filter()
+  document_type_from_obj(collect_data,toplevel.types.dt_lib_collect_params_t)
 
 
 	local job =dt.gui.create_job("test job",true)

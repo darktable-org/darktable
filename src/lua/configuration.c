@@ -18,6 +18,7 @@
 #include "common/darktable.h"
 #include "common/file_location.h"
 #include "lua/lua.h"
+#include "version.h"
 
 /*
  * LUA API VERSIONNING
@@ -28,6 +29,8 @@
    however, beware of stable releases and API changes
  */
 // LAST RELEASED VERSION : 1.4 was 1.0.0
+// 1.6 was 2.0.1
+// 1.6.1 was 2.0.2
 /* incompatible API change */
 #define API_VERSION_MAJOR 2
 /* backward compatible API change */

@@ -41,12 +41,20 @@ static gboolean _togglebutton_draw(GtkWidget *widget, cairo_t *cr)
   g_return_val_if_fail(widget != NULL, FALSE);
   g_return_val_if_fail(DTGTK_IS_TOGGLEBUTTON(widget), FALSE);
 
+  GtkDarktableToggleButton *button = DTGTK_TOGGLEBUTTON(widget);
+
   GtkStateFlags state = gtk_widget_get_state_flags(widget);
 
   GdkRGBA bg_color, fg_color;
   GtkStyleContext *context = gtk_widget_get_style_context(widget);
-  gtk_style_context_get_background_color(context, state, &bg_color);
-  gtk_style_context_get_color(context, state, &fg_color);
+  if(button->icon_flags & CPF_CUSTOM_BG)
+    bg_color = button->bg;
+  else
+    gtk_style_context_get_background_color(context, state, &bg_color);
+  if(button->icon_flags & CPF_CUSTOM_FG)
+    fg_color = button->fg;
+  else
+    gtk_style_context_get_color(context, state, &fg_color);
 
   /* fetch flags */
   int flags = DTGTK_TOGGLEBUTTON(widget)->icon_flags;
@@ -79,7 +87,7 @@ static gboolean _togglebutton_draw(GtkWidget *widget, cairo_t *cr)
     if(flags & CPF_PRELIGHT || flags & CPF_ACTIVE)
     {
       cairo_rectangle(cr, 0, 0, width, height);
-      cairo_set_source_rgba(cr, bg_color.red, bg_color.green, bg_color.blue, bg_color.alpha);
+      gdk_cairo_set_source_rgba(cr, &bg_color);
       cairo_fill(cr);
     }
   }
@@ -105,7 +113,7 @@ static gboolean _togglebutton_draw(GtkWidget *widget, cairo_t *cr)
     pango_layout_get_pixel_size(layout, &pw, &ph);
   }
 
-  cairo_set_source_rgba(cr, fg_color.red, fg_color.green, fg_color.blue, fg_color.alpha);
+  gdk_cairo_set_source_rgba(cr, &fg_color);
 
   /* draw icon */
   if(DTGTK_TOGGLEBUTTON(widget)->icon)
@@ -180,6 +188,29 @@ void dtgtk_togglebutton_set_paint(GtkDarktableToggleButton *button, DTGTKCairoPa
   button->icon = paint;
   button->icon_flags = paintflags;
 }
+
+void dtgtk_togglebutton_override_color(GtkDarktableToggleButton *button, GdkRGBA *color)
+{
+  if(color)
+  {
+    button->fg = *color;
+    button->icon_flags |= CPF_CUSTOM_FG;
+  }
+  else
+    button->icon_flags &= ~CPF_CUSTOM_FG;
+}
+
+void dtgtk_togglebutton_override_background_color(GtkDarktableToggleButton *button, GdkRGBA *color)
+{
+  if(color)
+  {
+    button->bg = *color;
+    button->icon_flags |= CPF_CUSTOM_BG;
+  }
+  else
+    button->icon_flags &= ~CPF_CUSTOM_BG;
+}
+
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

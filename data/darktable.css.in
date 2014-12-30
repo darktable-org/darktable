@@ -69,7 +69,8 @@ GtkAlignment
 }
 /* lib toggle buttons (e.g recently used collection and history items): */
 /* TODO: adjust borders/padding to our liking (match bauhaus..) */
-#lib-plugin-ui .button
+#lib-plugin-ui .button,
+.button
 {
   /* note that the button has no padding, the label inside the button has the padding. */
   border-radius: 0;
@@ -80,17 +81,32 @@ GtkAlignment
   padding:0;
   margin:0;
   border:0;
+  background-color: shade(@selected_bg_color, 1.2);
+  background-image: none;
 }
-#lib-plugin-ui .button:checked
+#lib-plugin-ui .button:${GTK_CSS_CLASS},
+.button:${GTK_CSS_CLASS}
 {
   border-style:none;
   background-image:none;
   background-color: shade(@selected_bg_color, 1.4);
 }
-#lib-plugin-ui .button:hover
+#lib-plugin-ui .button:hover,
+.button:hover
 {
   border-style:none;
   background-color: shade(@selected_bg_color, 1.7);
+}
+#iop-plugin-ui .button,
+#iop-plugin-ui GtkButton {
+  background-color: transparent;
+}
+#iop-plugin-ui GtkGrid {
+  background-color: transparent;
+}
+#iop-plugin-ui .button:hover,
+#iop-plugin-ui GtkButton:hover {
+  background-color: shade(@plugin_bg_color, 1.7);
 }
 #iop-plugin-ui GtkLabel,
 #iop-plugin-ui GtkLabel:hover,
@@ -174,17 +190,6 @@ GtkFrame > GtkEventBox * {
   color: @selected_fg_color;
 }
 
-.button {
-  border-radius: 0;
-  border:0;
-  border-style: none;
-  border-image:none;
-  border-color: transparent;
-  background-image:none;
-  outline-style:none;
-  text-shadow:none;
-}
-
 #iop-plugin-ui .entry,
 #lib-plugin-ui .entry,
 .entry {
@@ -249,3 +254,8 @@ GtkFrame > GtkEventBox * {
   color: black;
 }
 
+#recent-collection-ui .button,
+#history-ui .button
+{
+  background-color: transparent;
+}

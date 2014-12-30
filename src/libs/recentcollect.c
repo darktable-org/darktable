@@ -320,6 +320,8 @@ void gui_init(dt_lib_module_t *self)
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
   d->inited = 0;
 
+  gtk_widget_set_name(self->widget, "recent-collection-ui");
+
   // add buttons in the list, set them all to invisible
   for(int k = 0; k < NUM_LINES; k++)
   {

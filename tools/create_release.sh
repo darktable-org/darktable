@@ -14,7 +14,7 @@ cd tmp
 tar xvf ../darktable-$dt_decoration.tar
 
 # create version header for non-git tarball:
-echo "set(PROJECT_VERSION \"$dt_decoration\")" >> darktable-$dt_decoration/cmake/version.cmake
+echo "#define PACKAGE_VERSION \"$dt_decoration\"" > darktable-$dt_decoration/src/version_gen.h
 
 # remove docs, that's > 45 MB
 rm -rf darktable-$dt_decoration/doc/htdocs

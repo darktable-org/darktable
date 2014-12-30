@@ -135,7 +135,7 @@ static void _lib_import_scan_devices_callback(GtkButton *button, gpointer data)
   /* detect cameras */
   dt_camctl_detect_cameras(darktable.camctl);
   /* update UI */
-  _lib_import_ui_devices_update(data);
+  // this part is now asynchronously done by the signal connected to in gui_init()
 }
 
 /* show import from camera dialog */
@@ -259,16 +259,11 @@ void _lib_import_ui_devices_update(dt_lib_module_t *self)
 /** camctl camera disconnect callback */
 static void _camctl_camera_disconnected_callback(const dt_camera_t *camera, void *data)
 {
-  dt_lib_module_t *self = (dt_lib_module_t *)data;
-
-
   /* rescan connected cameras */
   dt_camctl_detect_cameras(darktable.camctl);
 
   /* update gui with detected devices */
-  gboolean i_own_lock = dt_control_gdk_lock();
-  _lib_import_ui_devices_update(self);
-  if(i_own_lock) dt_control_gdk_unlock();
+  // this is done asynchronously in _camera_detected()
 }
 
 /** camctl status listener callback */
@@ -825,6 +820,16 @@ static void _lib_import_folder_callback(GtkWidget *widget, gpointer user_data)
   gtk_widget_queue_draw(dt_ui_center(darktable.gui->ui));
 }
 
+#ifdef HAVE_GPHOTO2
+static void _camera_detected(gpointer instance, gpointer self)
+{
+  /* update gui with detected devices */
+  gboolean i_own_lock = dt_control_gdk_lock();
+  _lib_import_ui_devices_update(self);
+  if(i_own_lock) dt_control_gdk_unlock();
+}
+#endif
+
 void gui_init(dt_lib_module_t *self)
 {
   /* initialize ui widgets */
@@ -862,14 +867,15 @@ void gui_init(dt_lib_module_t *self)
   d->camctl_listener.control_status = _camctl_camera_control_status_callback;
   d->camctl_listener.camera_disconnected = _camctl_camera_disconnected_callback;
   dt_camctl_register_listener(darktable.camctl, &d->camctl_listener);
-  _lib_import_ui_devices_update(self);
-
+  dt_control_signal_connect(darktable.signals, DT_SIGNAL_CAMERA_DETECTED, G_CALLBACK(_camera_detected),
+                            self);
 #endif
 }
 
 void gui_cleanup(dt_lib_module_t *self)
 {
 #ifdef HAVE_GPHOTO2
+  dt_control_signal_disconnect(darktable.signals, G_CALLBACK(_camera_detected), self);
   dt_lib_import_t *d = (dt_lib_import_t *)self->data;
   /* unregister camctl listener */
   dt_camctl_unregister_listener(darktable.camctl, &d->camctl_listener);

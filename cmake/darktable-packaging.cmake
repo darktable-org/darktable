@@ -77,7 +77,7 @@ endif(WIN32)
 include(CPack)
 
 ADD_CUSTOM_TARGET(pkgsrc
-	COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_BINARY_DIR}/version.cmake ${CMAKE_SOURCE_DIR}/cmake/version.cmake
+	COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_BINARY_DIR}/src/version_gen.h ${CMAKE_SOURCE_DIR}/src/version_gen.h
 	COMMAND ${CMAKE_COMMAND} --build ${CMAKE_BINARY_DIR} --target package_source
-	COMMAND ${CMAKE_COMMAND} -E remove ${CMAKE_SOURCE_DIR}/cmake/version.cmake
+	COMMAND ${CMAKE_COMMAND} -E remove ${CMAKE_SOURCE_DIR}/src/version_gen.h
 )

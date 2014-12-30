@@ -389,6 +389,12 @@ darktable.gui.libs.snapshots.selected:set_text([[The currently selected snapshot
 darktable.gui.libs.snapshots.take_snapshot:set_text([[Take a snapshot of the current image and add it to the UI]]..para()..[[The snapshot file will be generated at the next redraw of the main window]])
 darktable.gui.libs.snapshots.max_snapshot:set_text([[The maximum number of snapshots]])
 
+darktable.gui.libs.collect:set_text([[The collection UI element that allows to filter images by collection]])
+darktable.gui.libs.collect.filter:set_text([[Allows to get or change the list of visible images]])
+darktable.gui.libs.collect.filter:add_parameter("rules",my_tostring(types.dt_lib_collect_params_t),[[An object describing filtering rules for the collection. These rules will be applied after this call]]):set_attribute("optional",true)
+darktable.gui.libs.collect.filter:add_return(my_tostring(types.dt_lib_collect_params_t),[[The rules that were applied before this call.]])
+darktable.gui.libs.collect.filter:set_attribute("implicit_yield",true)
+
 darktable.gui.libs.styles:set_text([[The style selection menu]])
 darktable.gui.libs.metadata_view:set_text([[The widget displaying metadata about the current image]])
 darktable.gui.libs.metadata:set_text([[The widget allowing modification of metadata fields on the current image]])
@@ -407,7 +413,6 @@ darktable.gui.libs.filter:set_text([[The image-filter menus at the top of the UI
 darktable.gui.libs.import:set_text([[The buttons to start importing images]])
 darktable.gui.libs.ratings:set_text([[The starts to set the rating of an image]])
 darktable.gui.libs.select:set_text([[The buttons that allow to quickly change the selection]])
-darktable.gui.libs.collect:set_text([[The collection UI element that allows to filter images by collection]])
 darktable.gui.libs.colorlabels:set_text([[The color buttons that allow to set labels on an image]])
 darktable.gui.libs.lighttable_mode:set_text([[The navigation and zoom level UI in lighttable]])
 darktable.gui.libs.copy_history:set_text([[The UI element that manipulates history]])
@@ -427,6 +432,15 @@ darktable.gui.libs.map_settings:set_text([[The map setting window]])
 darktable.gui.libs.camera:set_text([[The camera selection UI]])
 darktable.gui.libs.location:set_text([[The location ui]])
 darktable.gui.libs.backgroundjobs:set_text([[The window displaying the currently running jobs]])
+
+
+darktable.control:set_text([[This table contain function to manipulate the control flow of lua programs. It provides ways to do background jobs and other related functions]])
+darktable.control.ending:set_text([[TRUE when darktable is terminating]]..para()..
+[[Use this variable to detect when you should finish long running jobs]])
+darktable.control.dispatch:set_text([[Runs a function in the background. This function will be run at a later point, after luarc has finished running. If you do a loop in such a function, please check ]]..my_tostring(darktable.control.ending)..[[ in your loop to finish the function when DT exits]])
+darktable.control.dispatch:add_parameter("function","function",[[The call to dispatch]])
+darktable.control.dispatch:add_parameter("...","anything",[[extra parameters to pass to the function]])
+
 
 ----------------------
 --  DARKTABLE.DEBUG --
@@ -451,7 +465,7 @@ darktable.debug.max_depth:set_text([[Initialized to 10; The maximum depth to rec
 remove_all_children(darktable.debug.known) -- debug values, not interesting
 darktable.debug.known:set_text([[A table containing the default value of ]]..my_tostring(tmp_node))
 darktable.debug.type:set_text([[Similar to the system function type() but it will return the real type instead of "userdata" for darktable specific objects.]])
-	darktable.debug.type:add_parameter("object","anything",[[The object whos type must be reported.]])
+  darktable.debug.type:add_parameter("object","anything",[[The object whos type must be reported.]])
 	darktable.debug.type:add_return("string",[[A string describing the type of the object.]])
 
 	----------------------
@@ -650,6 +664,17 @@ darktable.debug.type:set_text([[Similar to the system function type() but it wil
 
   types.dt_imageio_exr_compression_t:set_text("The type of compression to use for the EXR image")
 
+  types.dt_lib_collect_params_t:set_text("A set of rules decribing a collection filter for the collect module")
+  types.dt_lib_collect_params_t["#"]:set_text("Each rule has a numeric index. You can add a rule by setting a rule after the last valid one, you can remove a rule by setting it to nil")
+
+  types.dt_lua_lib_collect_params_rule_t:set_text("A single rule for filtering a collection");
+  types.dt_lua_lib_collect_params_rule_t.mode:set_text("How this rule is applied after the previous one. Unused for the first rule");
+  types.dt_lua_lib_collect_params_rule_t.mode:set_reported_type(types.dt_lib_collect_mode_t)
+  types.dt_lua_lib_collect_params_rule_t.data:set_text("The text segment of the rule. Exact content depends on the type of rule");
+  types.dt_lua_lib_collect_params_rule_t.item:set_text("The item on which this rule filter. i.e the type of the rule");
+  types.dt_lua_lib_collect_params_rule_t.item:set_reported_type(types.dt_collection_properties_t)
+  types.dt_lib_collect_mode_t:set_text("The logical operators to apply between rules");
+  types.dt_collection_properties_t:set_text("The different elements on which a collection can be filtered");
 	----------------------
 	--  EVENTS          --
 	----------------------
@@ -710,6 +735,9 @@ darktable.debug.type:set_text([[Similar to the system function type() but it wil
   events["mouse-over-image-changed"]:set_text([[This event is triggered whenever the image under the mouse changes]])
   events["mouse-over-image-changed"].callback:add_parameter("image",types.dt_lua_image_t,[[The new image under the mous, can be nil if there is no image under the mouse]])
 	events["mouse-over-image-changed"].extra_registration_parameters:set_text([[This event has no extra registration parameters.]])
+  events["exit"]:set_text([[This event is triggered when darktable exits, it allows lua scripts to do cleanup jobs]])
+	events["exit"].extra_registration_parameters:set_text([[This event has no extra registration parameters.]])
+  
 	----------------------
 	--  ATTRIBUTES      --
 	----------------------

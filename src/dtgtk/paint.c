@@ -77,6 +77,7 @@ void dtgtk_cairo_paint_triangle(cairo_t *cr, gint x, int y, gint w, gint h, gint
 
   /* scale and transform*/
   gint s = w < h ? w : h;
+  cairo_save(cr);
   cairo_translate(cr, x + (w / 2.0) - (s / 2.0), y + (h / 2.0) - (s / 2.0));
   cairo_scale(cr, s, s);
   cairo_set_line_width(cr, 0.1);
@@ -94,6 +95,7 @@ void dtgtk_cairo_paint_triangle(cairo_t *cr, gint x, int y, gint w, gint h, gint
   cairo_line_to(cr, 0.2, 0.2);
   cairo_stroke(cr);
   cairo_identity_matrix(cr);
+  cairo_restore(cr);
 }
 
 
@@ -112,6 +114,7 @@ void dtgtk_cairo_paint_solid_triangle(cairo_t *cr, gint x, int y, gint w, gint h
 
   /* scale and transform*/
   gint s = w < h ? w : h;
+  cairo_save(cr);
   cairo_translate(cr, x + (w / 2.0) - (s / 2.0), y + (h / 2.0) - (s / 2.0));
   cairo_scale(cr, s, s);
   cairo_set_line_width(cr, 0.1);
@@ -134,6 +137,7 @@ void dtgtk_cairo_paint_solid_triangle(cairo_t *cr, gint x, int y, gint w, gint h
   cairo_line_to(cr, 0.2, 0.2);
   cairo_fill(cr);
   cairo_identity_matrix(cr);
+  cairo_restore(cr);
 }
 
 

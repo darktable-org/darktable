@@ -16,6 +16,7 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include "version.h"
 #include "common/darktable.h"
 #include "common/image.h"
 #include "common/image_cache.h"

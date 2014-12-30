@@ -33,6 +33,7 @@ typedef struct _GtkDarktableToggleButton
   GtkToggleButton widget;
   DTGTKCairoPaintIconFunc icon;
   gint icon_flags;
+  GdkRGBA bg, fg;
 } GtkDarktableToggleButton;
 
 typedef struct _GtkDarktableToggleButtonClass
@@ -48,6 +49,11 @@ GtkWidget *dtgtk_togglebutton_new(DTGTKCairoPaintIconFunc paint, gint paintflag)
 /** Set the paint function and paint flags */
 void dtgtk_togglebutton_set_paint(GtkDarktableToggleButton *button, DTGTKCairoPaintIconFunc paint,
                                   gint paintflags);
+/** overwrite the foreground color, or NULL to reset it */
+void dtgtk_togglebutton_override_color(GtkDarktableToggleButton *button, GdkRGBA *color);
+/** overwrite the background color, or NULL to reset it */
+void dtgtk_togglebutton_override_background_color(GtkDarktableToggleButton *button, GdkRGBA *color);
+
 G_END_DECLS
 #endif
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

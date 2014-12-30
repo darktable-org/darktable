@@ -203,7 +203,6 @@ static void _lib_modulelist_populate_callback(gpointer instance, gpointer user_d
 
   gtk_tree_view_set_headers_visible(GTK_TREE_VIEW(view), FALSE);
   gtk_tree_view_set_headers_clickable(GTK_TREE_VIEW(view), FALSE);
-  gtk_tree_view_set_rules_hint(GTK_TREE_VIEW(view), FALSE);
   GtkTreeSelection *selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(view));
   gtk_tree_selection_set_mode(selection, GTK_SELECTION_NONE);
 

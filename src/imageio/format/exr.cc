@@ -16,9 +16,7 @@
    You should have received a copy of the GNU General Public License
    along with darktable.  If not, see <http://www.gnu.org/licenses/>.
  */
-#ifdef HAVE_CONFIG_H
-#include "config.h"
-#endif
+#include "version.h"
 
 // needs to be defined before any system header includes for control/conf.h to work in C++ code
 #define __STDC_FORMAT_MACROS

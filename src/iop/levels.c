@@ -557,40 +557,30 @@ void gui_init(dt_iop_module_t *self)
 
   GtkWidget *autobutton = gtk_button_new_with_label(_("auto"));
   g_object_set(G_OBJECT(autobutton), "tooltip-text", _("apply auto levels"), (char *)NULL);
-  gtk_widget_set_size_request(autobutton, DT_PIXEL_APPLY_DPI(70), DT_PIXEL_APPLY_DPI(24));
+  gtk_widget_set_size_request(autobutton, -1, DT_PIXEL_APPLY_DPI(24));
 
   GtkWidget *blackpick = dtgtk_togglebutton_new(dtgtk_cairo_paint_colorpicker, CPF_STYLE_FLAT);
   g_object_set(G_OBJECT(blackpick), "tooltip-text", _("pick black point from image"), (char *)NULL);
-  gtk_widget_set_size_request(blackpick, DT_PIXEL_APPLY_DPI(24), DT_PIXEL_APPLY_DPI(24));
 
   GtkWidget *greypick = dtgtk_togglebutton_new(dtgtk_cairo_paint_colorpicker, CPF_STYLE_FLAT);
   g_object_set(G_OBJECT(greypick), "tooltip-text", _("pick medium gray point from image"), (char *)NULL);
-  gtk_widget_set_size_request(greypick, DT_PIXEL_APPLY_DPI(24), DT_PIXEL_APPLY_DPI(24));
 
   GtkWidget *whitepick = dtgtk_togglebutton_new(dtgtk_cairo_paint_colorpicker, CPF_STYLE_FLAT);
   g_object_set(G_OBJECT(whitepick), "tooltip-text", _("pick white point from image"), (char *)NULL);
-  gtk_widget_set_size_request(whitepick, DT_PIXEL_APPLY_DPI(24), DT_PIXEL_APPLY_DPI(24));
 
-  GdkColor col;
-  col.red = col.green = col.blue = 0;
-  gtk_widget_modify_fg(GTK_WIDGET(blackpick), GTK_STATE_NORMAL, &col);
-  gtk_widget_modify_fg(GTK_WIDGET(blackpick), GTK_STATE_SELECTED, &col);
-  col.red = col.green = col.blue = 32767;
-  gtk_widget_modify_fg(GTK_WIDGET(greypick), GTK_STATE_NORMAL, &col);
-  gtk_widget_modify_fg(GTK_WIDGET(greypick), GTK_STATE_SELECTED, &col);
-  col.red = col.green = col.blue = 65535;
-  gtk_widget_modify_fg(GTK_WIDGET(whitepick), GTK_STATE_NORMAL, &col);
-  gtk_widget_modify_fg(GTK_WIDGET(whitepick), GTK_STATE_SELECTED, &col);
-  col.red = col.green = col.blue = 4096;
-  gtk_widget_modify_bg(GTK_WIDGET(blackpick), GTK_STATE_ACTIVE, &col);
-  gtk_widget_modify_bg(GTK_WIDGET(greypick), GTK_STATE_ACTIVE, &col);
-  gtk_widget_modify_bg(GTK_WIDGET(whitepick), GTK_STATE_ACTIVE, &col);
+  GdkRGBA color = { 0 };
+  color.alpha = 1.0;
+  dtgtk_togglebutton_override_color(DTGTK_TOGGLEBUTTON(blackpick), &color);
+  color.red = color.green = color.blue = 0.5;
+  dtgtk_togglebutton_override_color(DTGTK_TOGGLEBUTTON(greypick), &color);
+  color.red = color.green = color.blue = 1.0;
+  dtgtk_togglebutton_override_color(DTGTK_TOGGLEBUTTON(whitepick), &color);
 
-  GtkWidget *box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-  gtk_box_pack_start(GTK_BOX(box), GTK_WIDGET(autobutton), FALSE, FALSE, 0);
-  gtk_box_pack_start(GTK_BOX(box), GTK_WIDGET(blackpick), FALSE, FALSE, 0);
-  gtk_box_pack_start(GTK_BOX(box), GTK_WIDGET(greypick), FALSE, FALSE, 0);
-  gtk_box_pack_end(GTK_BOX(box), GTK_WIDGET(whitepick), FALSE, FALSE, 0);
+  GtkWidget *box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, DT_PIXEL_APPLY_DPI(10));
+  gtk_box_pack_start(GTK_BOX(box), GTK_WIDGET(autobutton), TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(box), GTK_WIDGET(blackpick), TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(box), GTK_WIDGET(greypick), TRUE, TRUE, 0);
+  gtk_box_pack_end(GTK_BOX(box), GTK_WIDGET(whitepick), TRUE, TRUE, 0);
 
   gtk_box_pack_start(GTK_BOX(c->vbox_manual), box, TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), c->vbox_manual, TRUE, TRUE, 0);
@@ -851,10 +841,9 @@ static gboolean dt_iop_levels_vbox_automatic_draw(GtkWidget *widget, cairo_t *cr
     g->reprocess_on_next_expose = FALSE;
     // FIXME: or just use dev->pipe->changed |= DT_DEV_PIPE_SYNCH; ?
     dt_dev_reprocess_all(self->dev);
-    return FALSE;
   }
 
-  return TRUE;
+  return FALSE;
 }
 
 /**

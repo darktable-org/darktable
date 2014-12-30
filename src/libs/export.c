@@ -443,6 +443,9 @@ void gui_init(dt_lib_module_t *self)
 
   GtkWidget *label;
 
+  label = dt_ui_section_label_new(_("storage options"));
+  gtk_box_pack_start(GTK_BOX(self->widget), label, TRUE, TRUE, 0);
+
   d->storage = dt_bauhaus_combobox_new(NULL);
   dt_bauhaus_widget_set_label(d->storage, NULL, _("target storage"));
   gtk_box_pack_start(GTK_BOX(self->widget), d->storage, TRUE, TRUE, 0);
@@ -466,9 +469,12 @@ void gui_init(dt_lib_module_t *self)
                             G_CALLBACK(on_storage_list_changed), self);
   g_signal_connect(G_OBJECT(d->storage), "value-changed", G_CALLBACK(storage_changed), (gpointer)d);
 
+  label = dt_ui_section_label_new(_("format options"));
+  gtk_widget_set_margin_top(label, DT_PIXEL_APPLY_DPI(20));
+  gtk_box_pack_start(GTK_BOX(self->widget), label, TRUE, TRUE, 0);
+
   d->format = dt_bauhaus_combobox_new(NULL);
   dt_bauhaus_widget_set_label(d->format, NULL, _("file format"));
-  gtk_widget_set_margin_top(d->format, DT_PIXEL_APPLY_DPI(20));
   gtk_box_pack_start(GTK_BOX(self->widget), d->format, TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(d->format), "value-changed", G_CALLBACK(format_changed), (gpointer)d);
 

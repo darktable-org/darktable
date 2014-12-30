@@ -19,6 +19,8 @@
 #include "common/metadata.h"
 #include "common/debug.h"
 
+#include "version.h"
+
 #include <stdlib.h>
 
 static void dt_metadata_set_xmp(int id, const char *key, const char *value)

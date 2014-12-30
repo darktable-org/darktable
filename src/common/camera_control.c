@@ -117,6 +117,9 @@ void _dispatch_camera_property_accessibility_changed(const dt_camctl_t *c, const
 /** Helper function to destroy a dt_camera_t object */
 static void dt_camctl_camera_destroy(dt_camera_t *cam);
 
+/** Wrapper to asynchronously look for cameras */
+static int _detect_cameras_callback(dt_job_t *job);
+
 
 static int logid = 0;
 
@@ -550,8 +553,13 @@ dt_camctl_t *dt_camctl_new()
   dt_pthread_mutex_init(&camctl->lock, NULL);
   dt_pthread_mutex_init(&camctl->listeners_lock, NULL);
 
-  // TODO: make this asynchronous
-//   dt_camctl_detect_cameras(camctl);
+  // asynchronously call dt_camctl_detect_cameras(camctl); to fill in camctl
+  dt_job_t *job = dt_control_job_create(&_detect_cameras_callback, "detect connected cameras");
+  if(job)
+  {
+    dt_control_job_set_params(job, camctl);
+    dt_control_add_job(darktable.control, DT_JOB_QUEUE_SYSTEM_BG, job);
+  }
 
   return camctl;
 }
@@ -725,6 +733,18 @@ void dt_camctl_detect_cameras(const dt_camctl_t *c)
   gp_list_unref(available_cameras);
 
   dt_pthread_mutex_unlock(&camctl->lock);
+
+  // tell the world that we are done. this assumes that there is just one global camctl.
+  // if there would ever be more it would be easy to pass c with the signal.
+  // TODO: only raise it when the connected cameras changed?
+  dt_control_signal_raise(darktable.signals, DT_SIGNAL_CAMERA_DETECTED);
+}
+
+static int _detect_cameras_callback(dt_job_t *job)
+{
+  dt_camctl_t *c = dt_control_job_get_params(job);
+  dt_camctl_detect_cameras(c);
+  return 0;
 }
 
 static void *_camera_event_thread(void *data)

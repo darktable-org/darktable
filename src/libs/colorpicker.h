@@ -25,22 +25,6 @@
 #define DT_COLORPICKER_SIZE_POINT 0
 #define DT_COLORPICKER_SIZE_BOX 1
 
-typedef struct dt_lib_colorpicker_t
-{
-  GtkWidget *output_button;
-  GtkWidget *output_label;
-  GtkWidget *color_mode_selector;
-  GtkWidget *statistic_selector;
-  GtkWidget *size_selector;
-  GtkWidget *picker_button;
-  GtkWidget *samples_container;
-  GtkWidget *samples_mode_selector;
-  GtkWidget *samples_statistic_selector;
-  GtkWidget *add_sample_button;
-  GtkWidget *display_samples_check_box;
-
-} dt_lib_colorpicker_t;
-
 /** The struct for live color picker samples */
 typedef struct dt_colorpicker_sample_t
 {
@@ -62,10 +46,10 @@ typedef struct dt_colorpicker_sample_t
 
   /** The GUI elements */
   GtkWidget *container;
-  GtkWidget *output_button;
+  GtkWidget *color_patch;
   GtkWidget *output_label;
   GtkWidget *delete_button;
-
+  GdkRGBA rgb;
 } dt_colorpicker_sample_t;
 
 #endif

@@ -607,7 +607,7 @@ static void tree_insert_rec(GtkTreeStore *model, GtkTreeIter *parent, const gcha
   if(!g_strrstr(accel_path, "/"))
   {
     /* we are on a leaf lets add */
-    gchar *name = gtk_accelerator_name(accel_key, accel_mods);
+    gchar *name = gtk_accelerator_get_label(accel_key, accel_mods);
     gtk_tree_store_append(model, &iter, parent);
     gtk_tree_store_set(model, &iter, A_ACCEL_COLUMN, accel_path, A_BINDING_COLUMN,
                        g_dpgettext2("gtk20", "keyboard label", name), A_TRANS_COLUMN, translated_path, -1);
@@ -732,7 +732,7 @@ static void update_accels_model_rec(GtkTreeModel *model, GtkTreeIter *parent, gc
 
     gtk_accel_map_lookup_entry(path, &key);
     gtk_tree_store_set(GTK_TREE_STORE(model), parent, A_BINDING_COLUMN,
-                       gtk_accelerator_name(key.accel_key, key.accel_mods), -1);
+                       gtk_accelerator_get_label(key.accel_key, key.accel_mods), -1);
   }
 }
 
@@ -851,7 +851,7 @@ static void tree_selection_changed(GtkTreeSelection *selection, gpointer data)
   // Restoring the A_BINDING_COLUMN text
   gtk_accel_map_lookup_entry(darktable.control->accel_remap_str, &key);
   gtk_tree_store_set(GTK_TREE_STORE(model), &iter, A_BINDING_COLUMN,
-                     gtk_accelerator_name(key.accel_key, key.accel_mods), -1);
+                     gtk_accelerator_get_label(key.accel_key, key.accel_mods), -1);
 
   // Cleaning up the darktable.gui info
   darktable.control->accel_remap_str = NULL;
