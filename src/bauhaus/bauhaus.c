@@ -22,7 +22,6 @@
 #include "common/calculator.h"
 #include "common/darktable.h"
 #include "develop/develop.h"
-#include "dtgtk/drawingarea.h"
 #include "gui/gtk.h"
 
 #include <math.h>
@@ -513,7 +512,7 @@ void dt_bauhaus_init()
   darktable.bauhaus = (dt_bauhaus_t *)calloc(1, sizeof(dt_bauhaus_t));
   darktable.bauhaus->keys_cnt = 0;
   darktable.bauhaus->current = NULL;
-  darktable.bauhaus->popup_area = dtgtk_drawing_area_new_with_aspect_ratio(1.0);
+  darktable.bauhaus->popup_area = gtk_drawing_area_new();
 
   // connect signal to eventually clean up our popup if we go too far away and such:
   GtkWidget *root_window = dt_ui_main_window(darktable.gui->ui);
@@ -589,6 +588,7 @@ void dt_bauhaus_init()
   // we need.
   dt_gui_key_accel_block_on_focus_connect(darktable.bauhaus->popup_area);
 
+  gtk_widget_set_size_request(darktable.bauhaus->popup_area, DT_PIXEL_APPLY_DPI(300), DT_PIXEL_APPLY_DPI(300));
   gtk_window_set_resizable(GTK_WINDOW(darktable.bauhaus->popup_window), FALSE);
   gtk_window_set_default_size(GTK_WINDOW(darktable.bauhaus->popup_window), 260, 260);
   // gtk_window_set_modal(GTK_WINDOW(c->popup_window), TRUE);
