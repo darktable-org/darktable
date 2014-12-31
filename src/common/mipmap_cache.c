@@ -1248,7 +1248,7 @@ static void _init_8(uint8_t *buf, uint32_t *width, uint32_t *height, const uint3
       if(!res)
       {
         // scale to fit
-        dt_iop_flip_and_zoom_8(tmp, thumb_width, thumb_height, buf, wd, ht, 1, width, height);
+        dt_iop_flip_and_zoom_8(tmp, thumb_width, thumb_height, buf, wd, ht, ORIENTATION_NONE, width, height);
         free(tmp);
       }
     }
