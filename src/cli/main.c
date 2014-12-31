@@ -96,13 +96,7 @@ static void generate_thumbnail_cache()
       const int ht = darktable.mipmap_cache->max_height[k];
       // use exactly the same mechanism as the cache internally to rescale the thumbnail:
       dt_iop_flip_and_zoom_8(buf.buf, buf.width, buf.height, tmp, wd, ht, 0, &width, &height);
-      // unfortunately this also flips the red and blue channels already, as x would. undo that for us:
-      for(int l=0;l<width*height;l++)
-      {
-        uint8_t r = tmp[4*l];
-        tmp[4*l] = tmp[4*l+2];
-        tmp[4*l+2] = r;
-      }
+
       snprintf(filename, PATH_MAX, "%s.d/%d/%d.jpg", darktable.mipmap_cache->cachedir, k, imgid);
       FILE *f = fopen(filename, "wb");
       if(f)
