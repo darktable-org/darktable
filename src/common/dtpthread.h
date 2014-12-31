@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2009--2010 johannes hanika.
+    copyright (c) 2009--2014 johannes hanika.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -25,6 +25,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <glib.h>
+#include <assert.h>
 
 #ifdef _DEBUG
 
@@ -52,19 +53,28 @@ typedef struct dt_pthread_mutex_t
   double top_wait_sum[TOPN];
 } dt_pthread_mutex_t;
 
+typedef struct dt_pthread_rwlock_t
+{
+  pthread_rwlock_t lock;
+  int cnt;
+  char name[256];
+} dt_pthread_rwlock_t;
+
 static inline int dt_pthread_mutex_destroy(dt_pthread_mutex_t *mutex)
 {
   const int ret = pthread_mutex_destroy(&(mutex->mutex));
 
-  // printf("\n[mutex] stats for mutex `%s':\n", mutex->name);
-  // printf("[mutex] total time locked: %.3f secs\n", mutex->time_sum_locked);
-  // printf("[mutex] total wait time  : %.3f secs\n", mutex->time_sum_wait);
-  // printf("[mutex] top %d lockers   :\n", TOPN);
-  // for(int k=0; k<TOPN; k++) printf("[mutex]  %.3f secs : `%s'\n", mutex->top_locked_sum[k],
-  // mutex->top_locked_name[k]);
-  // printf("[mutex] top %d waiters   :\n", TOPN);
-  // for(int k=0; k<TOPN; k++) printf("[mutex]  %.3f secs : `%s'\n", mutex->top_wait_sum[k],
-  // mutex->top_wait_name[k]);
+#if 0
+  printf("\n[mutex] stats for mutex `%s':\n", mutex->name);
+  printf("[mutex] total time locked: %.3f secs\n", mutex->time_sum_locked);
+  printf("[mutex] total wait time  : %.3f secs\n", mutex->time_sum_wait);
+  printf("[mutex] top %d lockers   :\n", TOPN);
+  for(int k=0; k<TOPN; k++) printf("[mutex]  %.3f secs : `%s'\n", mutex->top_locked_sum[k],
+  mutex->top_locked_name[k]);
+  printf("[mutex] top %d waiters   :\n", TOPN);
+  for(int k=0; k<TOPN; k++) printf("[mutex]  %.3f secs : `%s'\n", mutex->top_wait_sum[k],
+  mutex->top_wait_name[k]);
+#endif
 
   return ret;
 }
@@ -181,6 +191,72 @@ static inline int dt_pthread_cond_wait(pthread_cond_t *cond, dt_pthread_mutex_t 
   return pthread_cond_wait(cond, &(mutex->mutex));
 }
 
+
+static inline int dt_pthread_rwlock_init(dt_pthread_rwlock_t *lock,
+    const pthread_rwlockattr_t *attr)
+{
+  memset(lock->name, 0, sizeof(lock->name));
+  lock->cnt = 0;
+  return pthread_rwlock_init(&lock->lock, attr);
+}
+
+static inline int dt_pthread_rwlock_destroy(dt_pthread_rwlock_t *lock)
+{
+  snprintf(lock->name, sizeof(lock->name), "destroyed with cnt %d", lock->cnt);
+  return pthread_rwlock_destroy(&lock->lock);
+}
+
+static inline int dt_pthread_rwlock_unlock(dt_pthread_rwlock_t *rwlock)
+{
+  int res = pthread_rwlock_unlock(&rwlock->lock);
+  rwlock->cnt --;
+  assert(rwlock->cnt >= 0);
+  if(!res)
+    memset(rwlock->name, 0, sizeof(rwlock->name));
+  return res;
+}
+
+#define dt_pthread_rwlock_rdlock(A) dt_pthread_rwlock_rdlock_with_caller(A, __FILE__, __LINE__)
+static inline int dt_pthread_rwlock_rdlock_with_caller(dt_pthread_rwlock_t *rwlock, const char *file, int line)
+{
+  int res = pthread_rwlock_rdlock(&rwlock->lock);
+  rwlock->cnt ++;
+  if(!res)
+    snprintf(rwlock->name, sizeof(rwlock->name), "r:%s:%d", file, line);
+  return res;
+}
+#define dt_pthread_rwlock_wrlock(A) dt_pthread_rwlock_wrlock_with_caller(A, __FILE__, __LINE__)
+static inline int dt_pthread_rwlock_wrlock_with_caller(dt_pthread_rwlock_t *rwlock, const char *file, int line)
+{
+  int res = pthread_rwlock_wrlock(&rwlock->lock);
+  rwlock->cnt ++;
+  if(!res)
+    snprintf(rwlock->name, sizeof(rwlock->name), "w:%s:%d", file, line);
+  return res;
+}
+#define dt_pthread_rwlock_tryrdlock(A) dt_pthread_rwlock_tryrdlock_with_caller(A, __FILE__, __LINE__)
+static inline int dt_pthread_rwlock_tryrdlock_with_caller(dt_pthread_rwlock_t *rwlock, const char *file, int line)
+{
+  int res = pthread_rwlock_tryrdlock(&rwlock->lock);
+  if(!res)
+  {
+    rwlock->cnt ++;
+    snprintf(rwlock->name, sizeof(rwlock->name), "tr:%s:%d", file, line);
+  }
+  return res;
+}
+#define dt_pthread_rwlock_trywrlock(A) dt_pthread_rwlock_trywrlock_with_caller(A, __FILE__, __LINE__)
+static inline int dt_pthread_rwlock_trywrlock_with_caller(dt_pthread_rwlock_t *rwlock, const char *file, int line)
+{
+  int res = pthread_rwlock_trywrlock(&rwlock->lock);
+  if(!res)
+  {
+    rwlock->cnt ++;
+    snprintf(rwlock->name, sizeof(rwlock->name), "tw:%s:%d", file, line);
+  }
+  return res;
+}
+
 #undef TOPN
 #else
 
@@ -191,6 +267,20 @@ static inline int dt_pthread_cond_wait(pthread_cond_t *cond, dt_pthread_mutex_t 
 #define dt_pthread_mutex_trylock pthread_mutex_trylock
 #define dt_pthread_mutex_unlock pthread_mutex_unlock
 #define dt_pthread_cond_wait pthread_cond_wait
+
+#define dt_pthread_rwlock_t pthread_rwlock_t
+#define dt_pthread_rwlock_init pthread_rwlock_init
+#define dt_pthread_rwlock_destroy pthread_rwlock_destroy
+#define dt_pthread_rwlock_unlock pthread_rwlock_unlock
+#define dt_pthread_rwlock_rdlock pthread_rwlock_rdlock
+#define dt_pthread_rwlock_wrlock pthread_rwlock_wrlock
+#define dt_pthread_rwlock_tryrdlock pthread_rwlock_tryrdlock
+#define dt_pthread_rwlock_trywrlock pthread_rwlock_trywrlock
+
+#define dt_pthread_rwlock_rdlock_with_caller(A,B,C) pthread_rwlock_rdlock(A)
+#define dt_pthread_rwlock_wrlock_with_caller(A,B,C) pthread_rwlock_wrlock(A)
+#define dt_pthread_rwlock_tryrdlock_with_caller(A,B,C) pthread_rwlock_tryrdlock(A)
+#define dt_pthread_rwlock_trywrlock_with_caller(A,B,C) pthread_rwlock_trywrlock(A)
 
 #endif
 #endif

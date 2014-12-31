@@ -21,7 +21,7 @@
 #include "common/image.h"
 #include "common/mipmap_cache.h"
 
-dt_imageio_retval_t dt_imageio_open_rgbe(dt_image_t *img, const char *filename, dt_mipmap_cache_allocator_t a);
+dt_imageio_retval_t dt_imageio_open_rgbe(dt_image_t *img, const char *filename, dt_mipmap_buffer_t *buf);
 
 #endif
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

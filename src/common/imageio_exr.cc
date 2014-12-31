@@ -47,7 +47,7 @@ extern "C" {
 }
 #include "common/imageio_exr.hh"
 
-dt_imageio_retval_t dt_imageio_open_exr(dt_image_t *img, const char *filename, dt_mipmap_cache_allocator_t a)
+dt_imageio_retval_t dt_imageio_open_exr(dt_image_t *img, const char *filename, dt_mipmap_buffer_t *mbuf)
 {
   bool isTiled = false;
 
@@ -132,7 +132,7 @@ dt_imageio_retval_t dt_imageio_open_exr(dt_image_t *img, const char *filename, d
 
   // Try to allocate image data
   img->bpp = 4 * sizeof(float);
-  float *buf = (float *)dt_mipmap_cache_alloc(img, DT_MIPMAP_FULL, a);
+  float *buf = (float *)dt_mipmap_cache_alloc(mbuf, img);
   if(!buf)
   {
     fprintf(stderr, "[exr_read] could not alloc full buffer for image `%s'\n", img->filename);

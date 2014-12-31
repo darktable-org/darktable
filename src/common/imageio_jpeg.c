@@ -536,7 +536,7 @@ int dt_imageio_jpeg_read_profile(dt_imageio_jpeg_t *jpg, uint8_t **out)
   return res ? length : 0;
 }
 
-dt_imageio_retval_t dt_imageio_open_jpeg(dt_image_t *img, const char *filename, dt_mipmap_cache_allocator_t a)
+dt_imageio_retval_t dt_imageio_open_jpeg(dt_image_t *img, const char *filename, dt_mipmap_buffer_t *mbuf)
 {
   const char *ext = filename + strlen(filename);
   while(*ext != '.' && ext > filename) ext--;
@@ -559,7 +559,7 @@ dt_imageio_retval_t dt_imageio_open_jpeg(dt_image_t *img, const char *filename, 
   }
 
   img->bpp = 4 * sizeof(float);
-  void *buf = dt_mipmap_cache_alloc(img, DT_MIPMAP_FULL, a);
+  void *buf = dt_mipmap_cache_alloc(mbuf, img);
   if(!buf)
   {
     free(tmp);

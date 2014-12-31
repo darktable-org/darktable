@@ -546,7 +546,7 @@ static void expose_filemanager(dt_view_t *self, cairo_t *cr, int32_t width, int3
 
   if(mouse_over_id != -1)
   {
-    const dt_image_t *mouse_over_image = dt_image_cache_read_get(darktable.image_cache, mouse_over_id);
+    const dt_image_t *mouse_over_image = dt_image_cache_get(darktable.image_cache, mouse_over_id, 'r');
     mouse_over_group = mouse_over_image->group_id;
     dt_image_cache_read_release(darktable.image_cache, mouse_over_image);
     DT_DEBUG_SQLITE3_CLEAR_BINDINGS(lib->statements.is_grouped);
@@ -658,7 +658,7 @@ escape_image_loop:
 
       if(id > 0)
       {
-        const dt_image_t *image = dt_image_cache_read_get(darktable.image_cache, id);
+        const dt_image_t *image = dt_image_cache_get(darktable.image_cache, id, 'r');
         int group_id = -1;
         if(image) group_id = image->group_id;
         dt_image_cache_read_release(darktable.image_cache, image);
@@ -695,7 +695,7 @@ escape_image_loop:
             int _id = query_ids[current_image - iir];
             if(_id > 0)
             {
-              const dt_image_t *_img = dt_image_cache_read_get(darktable.image_cache, _id);
+              const dt_image_t *_img = dt_image_cache_get(darktable.image_cache, _id, 'r');
               neighbour_group = _img->group_id;
               dt_image_cache_read_release(darktable.image_cache, _img);
             }
@@ -712,7 +712,7 @@ escape_image_loop:
             int _id = query_ids[current_image - 1];
             if(_id > 0)
             {
-              const dt_image_t *_img = dt_image_cache_read_get(darktable.image_cache, _id);
+              const dt_image_t *_img = dt_image_cache_get(darktable.image_cache, _id, 'r');
               neighbour_group = _img->group_id;
               dt_image_cache_read_release(darktable.image_cache, _img);
             }
@@ -729,7 +729,7 @@ escape_image_loop:
             int _id = query_ids[current_image + iir];
             if(_id > 0)
             {
-              const dt_image_t *_img = dt_image_cache_read_get(darktable.image_cache, _id);
+              const dt_image_t *_img = dt_image_cache_get(darktable.image_cache, _id, 'r');
               neighbour_group = _img->group_id;
               dt_image_cache_read_release(darktable.image_cache, _img);
             }
@@ -746,7 +746,7 @@ escape_image_loop:
             int _id = query_ids[current_image + 1];
             if(_id > 0)
             {
-              const dt_image_t *_img = dt_image_cache_read_get(darktable.image_cache, _id);
+              const dt_image_t *_img = dt_image_cache_get(darktable.image_cache, _id, 'r');
               neighbour_group = _img->group_id;
               dt_image_cache_read_release(darktable.image_cache, _img);
             }
@@ -799,7 +799,7 @@ after_drawing:
     {
       imgids_num--;
       dt_mipmap_buffer_t buf;
-      dt_mipmap_cache_read_get(darktable.mipmap_cache, &buf, imgids[imgids_num], mip, DT_MIPMAP_PREFETCH);
+      dt_mipmap_cache_get(darktable.mipmap_cache, &buf, imgids[imgids_num], mip, DT_MIPMAP_PREFETCH, 'r');
     }
   }
 
@@ -1104,7 +1104,7 @@ void expose_full_preview(dt_view_t *self, cairo_t *cr, int32_t width, int32_t he
       sqlite3_finalize(stmt);
     }
 
-    const dt_image_t *img = dt_image_cache_read_get(darktable.image_cache, lib->full_preview_id);
+    const dt_image_t *img = dt_image_cache_get(darktable.image_cache, lib->full_preview_id, 'r');
 
     /* Build outer select criteria */
     gchar *filter_criteria
@@ -1620,8 +1620,7 @@ int button_pressed(dt_view_t *self, double x, double y, double pressure, int whi
       case DT_VIEW_STAR_5:
       {
         int32_t mouse_over_id = dt_control_get_mouse_over_id();
-        const dt_image_t *cimg = dt_image_cache_read_get(darktable.image_cache, mouse_over_id);
-        dt_image_t *image = dt_image_cache_write_get(darktable.image_cache, cimg);
+        dt_image_t *image = dt_image_cache_get(darktable.image_cache, mouse_over_id, 'w');
         if(image)
         {
           if(lib->image_over == DT_VIEW_STAR_1 && ((image->flags & 0x7) == 1))
@@ -1635,14 +1634,15 @@ int button_pressed(dt_view_t *self, double x, double y, double pressure, int whi
           }
           dt_image_cache_write_release(darktable.image_cache, image, DT_IMAGE_CACHE_SAFE);
         }
-        dt_image_cache_read_release(darktable.image_cache, image);
+        else
+          dt_image_cache_write_release(darktable.image_cache, image, DT_IMAGE_CACHE_RELAXED);
         _update_collected_images(self);
         break;
       }
       case DT_VIEW_GROUP:
       {
         int32_t mouse_over_id = dt_control_get_mouse_over_id();
-        const dt_image_t *image = dt_image_cache_read_get(darktable.image_cache, mouse_over_id);
+        const dt_image_t *image = dt_image_cache_get(darktable.image_cache, mouse_over_id, 'r');
         if(!image) return 0;
         int group_id = image->group_id;
         int id = image->id;

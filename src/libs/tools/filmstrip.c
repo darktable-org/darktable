@@ -556,8 +556,7 @@ static gboolean _lib_filmstrip_button_press_callback(GtkWidget *w, GdkEventButto
           int offset = 0;
           if(mouse_over_id == strip->activated_image) offset = dt_collection_image_offset(mouse_over_id);
 
-          const dt_image_t *cimg = dt_image_cache_read_get(darktable.image_cache, mouse_over_id);
-          dt_image_t *image = dt_image_cache_write_get(darktable.image_cache, cimg);
+          dt_image_t *image = dt_image_cache_get(darktable.image_cache, mouse_over_id, 'w');
           if(strip->image_over == DT_VIEW_STAR_1 && ((image->flags & 0x7) == 1))
             image->flags &= ~0x7;
           else if(strip->image_over == DT_VIEW_REJECT && ((image->flags & 0x7) == 6))
@@ -568,7 +567,6 @@ static gboolean _lib_filmstrip_button_press_callback(GtkWidget *w, GdkEventButto
             image->flags |= strip->image_over;
           }
           dt_image_cache_write_release(darktable.image_cache, image, DT_IMAGE_CACHE_SAFE);
-          dt_image_cache_read_release(darktable.image_cache, image);
 
 
           dt_collection_hint_message(darktable.collection); // More than this, we need to redraw all
@@ -936,8 +934,7 @@ static gboolean _lib_filmstrip_ratings_key_accel_callback(GtkAccelGroup *accel_g
       int offset = 0;
       if(mouse_over_id == activated_image) offset = dt_collection_image_offset(mouse_over_id);
 
-      const dt_image_t *cimg = dt_image_cache_read_get(darktable.image_cache, mouse_over_id);
-      dt_image_t *image = dt_image_cache_write_get(darktable.image_cache, cimg);
+      dt_image_t *image = dt_image_cache_get(darktable.image_cache, mouse_over_id, 'w');
       if(num == 666)
         image->flags &= ~0xf;
       else if(num == DT_VIEW_STAR_1 && ((image->flags & 0x7) == 1))
@@ -950,7 +947,6 @@ static gboolean _lib_filmstrip_ratings_key_accel_callback(GtkAccelGroup *accel_g
         image->flags |= num;
       }
       dt_image_cache_write_release(darktable.image_cache, image, DT_IMAGE_CACHE_SAFE);
-      dt_image_cache_read_release(darktable.image_cache, image);
 
       dt_collection_hint_message(darktable.collection); // More than this, we need to redraw all
 
@@ -1099,20 +1095,17 @@ static void _lib_filmstrip_dnd_begin_callback(GtkWidget *widget, GdkDragContext 
   {
     dt_mipmap_buffer_t buf;
     dt_mipmap_size_t mip = dt_mipmap_cache_get_matching_size(darktable.mipmap_cache, ts, ts);
-    dt_mipmap_cache_read_get(darktable.mipmap_cache, &buf, imgid, mip, DT_MIPMAP_BLOCKING);
+    dt_mipmap_cache_get(darktable.mipmap_cache, &buf, imgid, mip, DT_MIPMAP_BLOCKING, 'r');
 
     if(buf.buf)
     {
-      uint8_t *scratchmem = dt_mipmap_cache_alloc_scratchmem(darktable.mipmap_cache);
-      uint8_t *buf_decompressed = dt_mipmap_cache_decompress(&buf, scratchmem);
-
       uint8_t *rgbbuf = g_malloc_n(3 * (buf.width + 2) * (buf.height + 2), sizeof(uint8_t));
       memset(rgbbuf, 64, (buf.width + 2) * (buf.height + 2) * 3);
       for(int i = 1; i <= buf.height; i++)
         for(int j = 1; j <= buf.width; j++)
           for(int k = 0; k < 3; k++)
             rgbbuf[(i * (buf.width + 2) + j) * 3 + k]
-                = buf_decompressed[((i - 1) * buf.width + j - 1) * 4 + 2 - k];
+                = buf.buf[((i - 1) * buf.width + j - 1) * 4 + 2 - k];
 
       int w = ts, h = ts;
       if(buf.width < buf.height)
@@ -1127,11 +1120,10 @@ static void _lib_filmstrip_dnd_begin_callback(GtkWidget *widget, GdkDragContext 
 
       if(source) g_object_unref(source);
       if(scaled) g_object_unref(scaled);
-      free(scratchmem);
       g_free(rgbbuf);
     }
 
-    dt_mipmap_cache_read_release(darktable.mipmap_cache, &buf);
+    dt_mipmap_cache_release(darktable.mipmap_cache, &buf);
   }
 }
 

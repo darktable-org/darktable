@@ -122,7 +122,7 @@ gboolean _variable_get_value(dt_variables_params_t *params, gchar *variable, gch
   struct tm exif_tm = { 0 };
   if(params->imgid)
   {
-    const dt_image_t *img = dt_image_cache_read_get(darktable.image_cache, params->imgid);
+    const dt_image_t *img = dt_image_cache_get(darktable.image_cache, params->imgid, 'r');
     if(sscanf(img->exif_datetime_taken, "%d:%d:%d %d:%d:%d", &exif_tm.tm_year, &exif_tm.tm_mon,
               &exif_tm.tm_mday, &exif_tm.tm_hour, &exif_tm.tm_min, &exif_tm.tm_sec) == 6)
     {

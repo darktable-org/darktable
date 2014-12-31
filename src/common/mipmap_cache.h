@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2011 johannes hanika.
+    copyright (c) 2011-2014 johannes hanika.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -31,12 +31,14 @@
 typedef enum dt_mipmap_size_t
 {
   DT_MIPMAP_0 = 0,
-  DT_MIPMAP_1 = 1,
-  DT_MIPMAP_2 = 2,
-  DT_MIPMAP_3 = 3,
-  DT_MIPMAP_F = 4,
-  DT_MIPMAP_FULL = 5,
-  DT_MIPMAP_NONE = 6
+  DT_MIPMAP_1,
+  DT_MIPMAP_2,
+  DT_MIPMAP_3,
+  DT_MIPMAP_4,
+  DT_MIPMAP_5,
+  DT_MIPMAP_F,
+  DT_MIPMAP_FULL,
+  DT_MIPMAP_NONE
 } dt_mipmap_size_t;
 
 // type to be passed to getter functions
@@ -49,43 +51,29 @@ typedef enum dt_mipmap_get_flags_t
   // actually don't lock and return a buffer, but only
   // start a bg job to load it, if it's not in cache already.
   DT_MIPMAP_PREFETCH = 1,
+  // similar to prefetching, but only prefetch in case
+  // we hit the disk cache (don't run the more expensive pipeline)
+  DT_MIPMAP_PREFETCH_DISK = 2,
   // only return when the requested buffer is loaded.
   // blocks until that happens.
-  DT_MIPMAP_BLOCKING = 2,
+  DT_MIPMAP_BLOCKING = 3,
   // don't actually acquire the lock if it is not
   // in cache (i.e. would have to be loaded first)
-  DT_MIPMAP_TESTLOCK = 3
+  DT_MIPMAP_TESTLOCK = 4
 } dt_mipmap_get_flags_t;
 
-// struct to be alloc'ed by the client, filled by
-// _get functions.
+// struct to be alloc'ed by the client, filled by dt_mipmap_cache_get()
 typedef struct dt_mipmap_buffer_t
 {
   dt_mipmap_size_t size;
   uint32_t imgid;
   int32_t width, height;
   uint8_t *buf;
+  dt_cache_entry_t *cache_entry;
 } dt_mipmap_buffer_t;
 
 typedef struct dt_mipmap_cache_one_t
 {
-  // this cache is for which mipmap type?
-  dt_mipmap_size_t size;
-  // real width and height are stored per element
-  // (could be smaller than the max for this mip level,
-  // due to aspect ratio)
-  uint32_t max_width, max_height;
-  // size of an element inside buf
-  size_t buffer_size;
-  // 1) no memory fragmentation:
-  //    - fixed slots with fixed size (could waste a few bytes for extreme
-  //      aspect ratios)
-  // 2) dynamically grow? (linux alloc on write)
-  // 3) downside: no crosstalk between mip0 and mip4
-
-  // only stores 4*uint8_t per pixel for thumbnails:
-  uint32_t *buf;
-
   // one cache per mipmap scale!
   dt_cache_t cache;
 
@@ -100,40 +88,55 @@ typedef struct dt_mipmap_cache_one_t
 
 typedef struct dt_mipmap_cache_t
 {
+  // real width and height are stored per element
+  // (could be smaller than the max for this mip level,
+  // due to aspect ratio)
+  uint32_t max_width[DT_MIPMAP_NONE], max_height[DT_MIPMAP_NONE];
+  // size of an element inside buf
+  size_t buffer_size[DT_MIPMAP_NONE];
+
   // one cache per mipmap level
-  dt_mipmap_cache_one_t mip[DT_MIPMAP_NONE];
-  // global setting: which compression type are we using?
-  int compression_type; // 0 - none, 1 - low quality, 2 - slow
-  // per-thread cache of uncompressed buffers, in case compression is requested.
-  dt_mipmap_cache_one_t scratchmem;
+  dt_mipmap_cache_one_t mip_thumbs;
+  dt_mipmap_cache_one_t mip_f;
+  dt_mipmap_cache_one_t mip_full;
+  char cachedir[PATH_MAX]; // cached sha1sum filename for faster access
 } dt_mipmap_cache_t;
 
-typedef void **dt_mipmap_cache_allocator_t;
-// dynamic memory allocation interface for imageio backend:
-// the allocator is passed in, it might already contain a
-// valid buffer. this function takes care of re-allocating,
-// if necessary.
-void *dt_mipmap_cache_alloc(dt_image_t *img, dt_mipmap_size_t size, dt_mipmap_cache_allocator_t a);
+// dynamic memory allocation interface for imageio backend: a write locked
+// mipmap buffer is passed in, it might already contain a valid buffer. this
+// function takes care of re-allocating, if necessary.
+void *dt_mipmap_cache_alloc(dt_mipmap_buffer_t *buf, const dt_image_t *img);
 
 void dt_mipmap_cache_init(dt_mipmap_cache_t *cache);
 void dt_mipmap_cache_cleanup(dt_mipmap_cache_t *cache);
 void dt_mipmap_cache_print(dt_mipmap_cache_t *cache);
 
-// get a buffer for reading.
-// see dt_mipmap_get_flags_t for explanation on the exact
+// get a buffer and lock according to mode ('r' or 'w').
+// see dt_mipmap_get_flags_t for explanation of the exact
 // behaviour. pass 0 as flags for the default (best effort)
-void dt_mipmap_cache_read_get(dt_mipmap_cache_t *cache, dt_mipmap_buffer_t *buf, const uint32_t imgid,
-                              const dt_mipmap_size_t mip, const dt_mipmap_get_flags_t flags);
+#define dt_mipmap_cache_get(A,B,C,D,E,F) dt_mipmap_cache_get_with_caller(A,B,C,D,E,F,__FILE__,__LINE__)
+void dt_mipmap_cache_get_with_caller(
+    dt_mipmap_cache_t *cache,
+    dt_mipmap_buffer_t *buf,
+    const uint32_t imgid,
+    const dt_mipmap_size_t mip,
+    const dt_mipmap_get_flags_t flags,
+    const char mode,
+    const char *file,
+    int line);
 
-// lock it for writing. this is always blocking.
-// requires you already hold a read lock.
-void dt_mipmap_cache_write_get(dt_mipmap_cache_t *cache, dt_mipmap_buffer_t *buf);
+// convenience function with fewer params
+#define dt_mipmap_cache_write_get(A,B,C,D) dt_mipmap_cache_write_get_with_caller(A,B,C,D,__FILE__,__LINE__)
+void dt_mipmap_cache_write_get_with_caller(
+    dt_mipmap_cache_t *cache,
+    dt_mipmap_buffer_t *buf,
+    const uint32_t imgid,
+    const int mip,
+    const char *file,
+    int line);
 
-// drop a read lock
-void dt_mipmap_cache_read_release(dt_mipmap_cache_t *cache, dt_mipmap_buffer_t *buf);
-
-// drop a write lock, read will still remain.
-void dt_mipmap_cache_write_release(dt_mipmap_cache_t *cache, dt_mipmap_buffer_t *buf);
+// drop a lock
+void dt_mipmap_cache_release(dt_mipmap_cache_t *cache, dt_mipmap_buffer_t *buf);
 
 // remove thumbnails, so they will be regenerated:
 void dt_mipmap_cache_remove(dt_mipmap_cache_t *cache, const uint32_t imgid);
@@ -144,24 +147,10 @@ void dt_mipmap_cache_remove(dt_mipmap_cache_t *cache, const uint32_t imgid);
 // depending on the user parameter for the maximum thumbnail dimensions.
 // actual resolution depends on the image and is only known after
 // the thumbnail is loaded.
-dt_mipmap_size_t dt_mipmap_cache_get_matching_size(const dt_mipmap_cache_t *cache, const int32_t width,
-                                                   const int32_t height);
-
-
-// allocate enough memory for an uncompressed thumbnail image.
-// returns NULL if the cache is set to not use compression.
-uint8_t *dt_mipmap_cache_alloc_scratchmem(const dt_mipmap_cache_t *cache);
-
-// decompress the raw mipmapm buffer into the scratchmemory.
-// returns a pointer to the decompressed memory block. that's because
-// for uncompressed settings, it will point directly to the mipmap
-// buffer and scratchmem can be NULL.
-uint8_t *dt_mipmap_cache_decompress(const dt_mipmap_buffer_t *buf, uint8_t *scratchmem);
-
-// writes the scratchmem buffer to compressed
-// format into the mipmap cache. does nothing
-// if compression is disabled.
-void dt_mipmap_cache_compress(dt_mipmap_buffer_t *buf, uint8_t *const scratchmem);
+dt_mipmap_size_t dt_mipmap_cache_get_matching_size(
+    const dt_mipmap_cache_t *cache,
+    const int32_t width,
+    const int32_t height);
 
 #endif
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
