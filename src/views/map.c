@@ -568,7 +568,7 @@ static gboolean _view_map_motion_notify_callback(GtkWidget *w, GdkEventMotion *e
       for(int i = 0; i < buf.height; i++)
         for(int j = 0; j < buf.width; j++)
           for(int k = 0; k < 3; k++)
-            rgbbuf[(i * buf.width + j) * 3 + k] = buf.buf[(i * buf.width + j) * 4 + 2 - k];
+            rgbbuf[(i * buf.width + j) * 3 + k] = buf.buf[(i * buf.width + j) * 4 + k];
 
       int w = thumb_size, h = thumb_size;
       if(buf.width < buf.height)
