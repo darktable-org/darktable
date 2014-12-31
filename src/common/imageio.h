@@ -44,11 +44,9 @@ typedef enum dt_imageio_levels_t
 
 // opens the file using pfm, hdr, exr.
 dt_imageio_retval_t dt_imageio_open_hdr(dt_image_t *img, const char *filename, dt_mipmap_cache_allocator_t a);
-// opens the file using libraw, doing interpolation and stuff
-dt_imageio_retval_t dt_imageio_open_raw(dt_image_t *img, const char *filename, dt_mipmap_cache_allocator_t a);
 // opens file using imagemagick
 dt_imageio_retval_t dt_imageio_open_ldr(dt_image_t *img, const char *filename, dt_mipmap_cache_allocator_t a);
-// try both, first libraw.
+// try all the options in sequence
 dt_imageio_retval_t dt_imageio_open(dt_image_t *img, const char *filename, dt_mipmap_cache_allocator_t a);
 // tries to open the files not opened by the other routines using GraphicsMagick (if supported)
 dt_imageio_retval_t dt_imageio_open_exotic(dt_image_t *img, const char *filename,

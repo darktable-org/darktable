@@ -311,138 +311,6 @@ return_label:
   return ret;
 }
 
-// most common modern raw files are handled by rawspeed, which accidentally
-// may go through LibRaw, since it may break history stacks because of different
-// blackpoint handling. in addition guarding LibRaw from these
-// extensions slightly reduces our security surface
-static gboolean _blacklisted_ext(const gchar *filename)
-{
-  const char *extensions_blacklist[]
-      = { "dng", "cr2", "nef", "nrw", "orf", "rw2", "rwl", "pef", "srw", "arw", "raf",
-          "mrw", "raw", "sr2", "mef", "mos", "dcr", "erf", "3fr", "crw", NULL };
-  gboolean supported = TRUE;
-  char *ext = g_strrstr(filename, ".");
-  if(!ext) return FALSE;
-  ext++;
-  for(const char **i = extensions_blacklist; *i != NULL; i++)
-    if(!g_ascii_strncasecmp(ext, *i, strlen(*i)))
-    {
-      supported = FALSE;
-      break;
-    }
-  return supported;
-}
-
-// open a raw file, libraw path:
-dt_imageio_retval_t dt_imageio_open_raw(dt_image_t *img, const char *filename, dt_mipmap_cache_allocator_t a)
-{
-  if(!_blacklisted_ext(filename)) return DT_IMAGEIO_FILE_CORRUPTED;
-
-  if(!img->exif_inited) (void)dt_exif_read(img, filename);
-
-  int ret;
-  libraw_data_t *raw = libraw_init(0);
-  libraw_processed_image_t *image = NULL;
-  raw->params.half_size = 0; /* dcraw -h */
-  raw->params.use_camera_wb = 0;
-  raw->params.use_auto_wb = 0;
-  raw->params.med_passes = 0; // img->raw_params.med_passes;
-  raw->params.no_auto_bright = 1;
-  // raw->params.filtering_mode |= LIBRAW_FILTERING_NOBLACKS;
-  // raw->params.document_mode = 2; // no color scaling, no black, no max, no wb..?
-  raw->params.document_mode = 2; // color scaling (clip,wb,max) and black point, but no demosaic
-  raw->params.output_color = 0;
-  raw->params.output_bps = 16;
-  raw->params.user_flip = 0; // -1: use orientation from raw; 0: do not rotate
-  raw->params.gamm[0] = 1.0;
-  raw->params.gamm[1] = 1.0;
-  // raw->params.user_qual = img->raw_params.demosaic_method; // 3: AHD, 2: PPG, 1: VNG
-  raw->params.user_qual = 0;
-  // raw->params.four_color_rgb = img->raw_params.four_color_rgb;
-  raw->params.four_color_rgb = 0;
-  raw->params.use_camera_matrix = 0;
-  raw->params.green_matching = 0;
-  raw->params.highlight = 1;
-  raw->params.threshold = 0;
-  // raw->params.auto_bright_thr = img->raw_auto_bright_threshold;
-
-  // raw->params.amaze_ca_refine = 0;
-  raw->params.fbdd_noiserd = 0;
-
-  ret = libraw_open_file(raw, filename);
-  HANDLE_ERRORS(ret, 0);
-  raw->params.user_qual = 0;
-  raw->params.half_size = 0;
-
-  ret = libraw_unpack(raw);
-  img->raw_black_level = raw->color.black;
-  img->raw_white_point = raw->color.maximum;
-  HANDLE_ERRORS(ret, 1);
-  ret = libraw_dcraw_process(raw);
-  // ret = libraw_dcraw_document_mode_processing(raw);
-  HANDLE_ERRORS(ret, 1);
-  image = libraw_dcraw_make_mem_image(raw, &ret);
-  HANDLE_ERRORS(ret, 1);
-
-  // fallback for broken exif read in case of phase one H25
-  if(!strncmp(img->exif_maker, "Phase One", 9)) img->orientation = raw->sizes.flip;
-  // filters seem only ever to take a useful value after unpack/process
-  img->filters = raw->idata.filters;
-  img->bpp = img->filters ? sizeof(uint16_t) : 4 * sizeof(float);
-  img->width = raw->sizes.width;
-  img->height = raw->sizes.height;
-#if 0 // disabled libraw exif data. it's inconsistent with exiv2, we don't want that.
-  img->exif_iso = raw->other.iso_speed;
-  img->exif_exposure = raw->other.shutter;
-  img->exif_aperture = raw->other.aperture;
-  img->exif_focal_length = raw->other.focal_len;
-  g_strlcpy(img->exif_maker, raw->idata.make, sizeof(img->exif_maker));
-  img->exif_maker[sizeof(img->exif_maker) - 1] = 0x0;
-  g_strlcpy(img->exif_model, raw->idata.model, sizeof(img->exif_model));
-  img->exif_model[sizeof(img->exif_model) - 1] = 0x0;
-  dt_gettime_t(img->exif_datetime_taken, raw->other.timestamp);
-#endif
-
-  void *buf = dt_mipmap_cache_alloc(img, DT_MIPMAP_FULL, a);
-  if(!buf)
-  {
-    libraw_recycle(raw);
-    libraw_close(raw);
-    free(image);
-    return DT_IMAGEIO_CACHE_FULL;
-  }
-  if(img->filters)
-  {
-#ifdef _OPENMP
-#pragma omp parallel for schedule(static) default(none) shared(img, image, raw, buf)
-#endif
-    for(size_t k = 0; k < (size_t)img->width * img->height; k++)
-      ((uint16_t *)buf)[k] = CLAMPS((((uint16_t *)image->data)[k] - raw->color.black) * 65535.0f
-                                    / (float)(raw->color.maximum - raw->color.black),
-                                    0, 0xffff);
-  }
-  // clean up raw stuff.
-  libraw_recycle(raw);
-  libraw_close(raw);
-  free(image);
-  raw = NULL;
-  image = NULL;
-
-  if(img->filters)
-  {
-    img->flags &= ~DT_IMAGE_LDR;
-    img->flags &= ~DT_IMAGE_HDR;
-    img->flags |= DT_IMAGE_RAW;
-  }
-  else
-  {
-    // ldr dng. it exists :(
-    img->flags &= ~DT_IMAGE_RAW;
-    img->flags &= ~DT_IMAGE_HDR;
-    img->flags |= DT_IMAGE_LDR;
-  }
-  return DT_IMAGEIO_OK;
-}
 
 /* magic data: exclusion,offset,length, xx, yy, ...
     just add magic bytes to match to this struct
@@ -965,15 +833,14 @@ dt_imageio_retval_t dt_imageio_open(dt_image_t *img,               // non-const 
   /* silly check using file extensions: */
   if(ret != DT_IMAGEIO_OK && ret != DT_IMAGEIO_CACHE_FULL && dt_imageio_is_hdr(filename))
     ret = dt_imageio_open_hdr(img, filename, a);
-
-#ifdef HAVE_RAWSPEED
-  if(ret != DT_IMAGEIO_OK && ret != DT_IMAGEIO_CACHE_FULL) ret = dt_imageio_open_rawspeed(img, filename, a);
-#endif
-
-  if(ret != DT_IMAGEIO_OK && ret != DT_IMAGEIO_CACHE_FULL) ret = dt_imageio_open_raw(img, filename, a);
+  
+  /* use rawspeed to load the raw */
+  if(ret != DT_IMAGEIO_OK && ret != DT_IMAGEIO_CACHE_FULL) 
+    ret = dt_imageio_open_rawspeed(img, filename, a);
 
   /* fallback that tries to open file via GraphicsMagick */
-  if(ret != DT_IMAGEIO_OK && ret != DT_IMAGEIO_CACHE_FULL) ret = dt_imageio_open_exotic(img, filename, a);
+  if(ret != DT_IMAGEIO_OK && ret != DT_IMAGEIO_CACHE_FULL) 
+    ret = dt_imageio_open_exotic(img, filename, a);
 
   return ret;
 }
