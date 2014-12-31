@@ -1165,7 +1165,7 @@ void expose_full_preview(dt_view_t *self, cairo_t *cr, int32_t width, int32_t he
       if(!dt_imageio_large_thumbnail(filename, &lib->full_res_thumb, 
                                                &lib->full_res_thumb_wd,
                                                &lib->full_res_thumb_ht)) {
-        lib->full_res_thumb_orientation = 1;
+        lib->full_res_thumb_orientation = ORIENTATION_NONE;
         lib->full_res_thumb_id = lib->full_preview_id;
       }
 
