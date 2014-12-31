@@ -383,7 +383,7 @@ void gui_init(struct dt_iop_module_t *self)
 
   /* lightnessslider */
   GtkBox *hbox = GTK_BOX(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 2));
-  gdouble lightness = 1.0;
+  gdouble lightness = 0.5;
   g->gslider1 = DTGTK_GRADIENT_SLIDER(dtgtk_gradient_slider_new_with_color(
       (GdkRGBA){ 0.0, 0.0, 0.0, 1.0 }, (GdkRGBA){ lightness, lightness, lightness, 1.0 }));
   g_object_set(G_OBJECT(g->gslider1), "tooltip-text", _("select the center of fill-light"), (char *)NULL);
