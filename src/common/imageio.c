@@ -60,7 +60,7 @@
 #include <glib/gstdio.h>
 
 // load the jpg thumbnail from the raw
-int dt_imageio_get_thumbnail(const char *filename, uint8_t **buffer, int32_t *size, int32_t *orientation)
+int dt_imageio_get_thumbnail(const char *filename, uint8_t **buffer, uint32_t *size, int32_t *orientation)
 {
   int ret = 0;
   int res = 1;
@@ -105,7 +105,7 @@ int dt_imageio_large_thumbnail(const char *filename, uint8_t **buffer, int32_t *
 {
   // Get the JPG embedded in the raw
   uint8_t *jpgbuffer;
-  int32_t jpgbuffersize;
+  uint32_t jpgbuffersize;
   dt_imageio_get_thumbnail(filename, &jpgbuffer, &jpgbuffersize, orientation);
 
   // Decompress the JPG into our own memory format

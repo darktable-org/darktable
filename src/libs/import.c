@@ -595,7 +595,7 @@ static void _lib_import_update_preview(GtkFileChooser *file_chooser, gpointer da
   if(!have_preview)
   {
     uint8_t *buffer;
-    int32_t size;
+    uint32_t size;
     if (dt_imageio_get_thumbnail(filename, &buffer, &size, NULL)) {
       have_preview = FALSE;
     } else {
