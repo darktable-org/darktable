@@ -61,27 +61,35 @@
 // load a full-res thumbnail:
 int dt_imageio_large_thumbnail(const char *filename, uint8_t **buffer, int32_t *width, int32_t *height)
 {
+  int res = 1;
+
   // Get the JPG embedded in the raw
-  uint8_t *jpgbuffer;
+  uint8_t *jpgbuffer = NULL;
   size_t jpgbuffersize;
 
   if(dt_exif_get_thumbnail(filename, &jpgbuffer, &jpgbuffersize)) return 1;
 
   // Decompress the JPG into our own memory format
   dt_imageio_jpeg_t jpg;
-  if(dt_imageio_jpeg_decompress_header(jpgbuffer, jpgbuffersize, &jpg))
-    return 1;
+  if(dt_imageio_jpeg_decompress_header(jpgbuffer, jpgbuffersize, &jpg)) goto error;
+
   *buffer = (uint8_t *)malloc((size_t)sizeof(uint8_t) * jpg.width * jpg.height * 4);
-  if(!*buffer) return 1;
+  if(!*buffer) goto error;
+
   *width = jpg.width;
   *height = jpg.height;
   if(dt_imageio_jpeg_decompress(&jpg, *buffer))
   {
     free(*buffer);
     *buffer = 0;
-    return 1;
+    goto error;
   }
-  return 0;
+
+  res = 0;
+
+error:
+  free(jpgbuffer);
+  return res;
 }
 
 void dt_imageio_flip_buffers(char *out, const char *in, const size_t bpp, const int wd, const int ht,
