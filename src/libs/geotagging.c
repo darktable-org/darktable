@@ -298,7 +298,7 @@ static void _lib_geotagging_calculate_offset_callback(GtkWidget *widget, dt_lib_
 
           if(imgid > 0)
           {
-            const dt_image_t *cimg = dt_image_cache_read_get(darktable.image_cache, imgid);
+            const dt_image_t *cimg = dt_image_cache_get(darktable.image_cache, imgid, 'r');
             // get the exif_datetime_taken and parse it
             gint year;
             gint month;
