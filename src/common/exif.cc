@@ -840,13 +840,8 @@ int dt_exif_get_thumbnail(const char *path, uint8_t **buffer, uint32_t *size) {
       return 1;
     }
 
-    Exiv2::PreviewProperties selected = list[0];
-    for (unsigned int i=1; i<list.size(); i++)
-      if (list[i].size_ > selected.size_)
-        selected = list[i];
-
     // Get the selected preview image
-    Exiv2::PreviewImage preview = loader.getPreviewImage(selected);
+    Exiv2::PreviewImage preview = loader.getPreviewImage(list[list.size()-1]);
     const unsigned  char *tmp = preview.pData();
     uint32_t size = preview.size();
 
@@ -855,8 +850,7 @@ int dt_exif_get_thumbnail(const char *path, uint8_t **buffer, uint32_t *size) {
       tmp++;
       size--;
     }
-
-    if (list.size() == 0) {
+    if (size == 0) {
       std::cerr << "[exiv2] thumbnail doesn't seem to be a JPG " << path << std::endl;
       return 1;
     }
