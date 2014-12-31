@@ -833,11 +833,28 @@ void dt_view_image_expose(dt_view_image_over_t *image_over, uint32_t imgid, cair
   float scale = 1.0;
 
   cairo_surface_t *surface = NULL;
+  uint8_t *rgbbuf = NULL;
   if(buf.buf)
   {
+    rgbbuf = (uint8_t *)calloc(buf.width * buf.height * 4, sizeof(uint8_t));
+    if(rgbbuf)
+    {
+      for(int i = 0; i < buf.height; i++)
+      {
+        uint8_t *in = buf.buf + i * buf.width * 4;
+        uint8_t *out = rgbbuf + i * buf.width * 4;
+
+        for(int j = 0; j < buf.width; j++, in += 4, out += 4)
+        {
+          out[0] = in[2];
+          out[1] = in[1];
+          out[2] = in[0];
+        }
+      }
+    }
+
     const int32_t stride = cairo_format_stride_for_width(CAIRO_FORMAT_RGB24, buf.width);
-    surface = cairo_image_surface_create_for_data(buf.buf, CAIRO_FORMAT_RGB24, buf.width, buf.height,
-                                                  stride);
+    surface = cairo_image_surface_create_for_data(rgbbuf, CAIRO_FORMAT_RGB24, buf.width, buf.height, stride);
     if(zoom == 1)
     {
       const int32_t tb = DT_PIXEL_APPLY_DPI(dt_conf_get_int("plugins/darkroom/ui/border_size"));
@@ -852,7 +869,7 @@ void dt_view_image_expose(dt_view_image_over_t *image_over, uint32_t imgid, cair
   cairo_translate(cr, width / 2.0, height / 2.0);
   cairo_scale(cr, scale, scale);
 
-  if(buf.buf)
+  if(surface)
   {
     cairo_translate(cr, -0.5 * buf.width, -0.5 * buf.height);
     cairo_set_source_surface(cr, surface, 0, 0);
@@ -865,6 +882,7 @@ void dt_view_image_expose(dt_view_image_over_t *image_over, uint32_t imgid, cair
     cairo_rectangle(cr, 0, 0, buf.width, buf.height);
     cairo_fill(cr);
     cairo_surface_destroy(surface);
+    free(rgbbuf);
 
     cairo_rectangle(cr, 0, 0, buf.width, buf.height);
   }
