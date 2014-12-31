@@ -59,14 +59,12 @@
 #include <strings.h>
 #include <glib/gstdio.h>
 
-
-// load a full-res thumbnail:
-int dt_imageio_large_thumbnail(const char *filename, uint8_t **buffer, int32_t *width, int32_t *height,
-                               int32_t *orientation)
+// load the jpg thumbnail from the raw
+int dt_imageio_get_thumbnail(const char *filename, uint8_t **buffer, int32_t *size, int32_t *orientation)
 {
   int ret = 0;
   int res = 1;
-  // raw image thumbnail
+
   libraw_data_t *raw = libraw_init(0);
   libraw_processed_image_t *image = NULL;
   ret = libraw_open_file(raw, filename);
@@ -77,24 +75,15 @@ int dt_imageio_large_thumbnail(const char *filename, uint8_t **buffer, int32_t *
   if(ret) goto libraw_fail;
 
   image = libraw_dcraw_make_mem_thumb(raw, &ret);
-  if(!image || ret) goto libraw_fail;
-  *orientation = raw->sizes.flip;
-  if(image->type == LIBRAW_IMAGE_JPEG)
-  {
-    dt_imageio_jpeg_t jpg;
-    if(dt_imageio_jpeg_decompress_header(image->data, image->data_size, &jpg)) goto libraw_fail;
-    *buffer = (uint8_t *)malloc((size_t)sizeof(uint8_t) * jpg.width * jpg.height * 4);
-    if(!*buffer) goto libraw_fail;
-    *width = jpg.width;
-    *height = jpg.height;
-    if(dt_imageio_jpeg_decompress(&jpg, *buffer))
-    {
-      free(*buffer);
-      *buffer = 0;
-      goto libraw_fail;
-    }
-    res = 0;
-  }
+  if(!image || ret || image->type != LIBRAW_IMAGE_JPEG) goto libraw_fail;
+
+  if (orientation)
+    *orientation = raw->sizes.flip;
+  *buffer = (uint8_t *)malloc((size_t) image->data_size);
+  if(!*buffer) goto libraw_fail;
+  *size = image->data_size;
+  memcpy(*buffer, image->data, image->data_size);
+  res = 0;
 
   // clean up raw stuff.
   libraw_recycle(raw);
@@ -108,6 +97,32 @@ int dt_imageio_large_thumbnail(const char *filename, uint8_t **buffer, int32_t *
     res = 1;
   }
   return res;
+}
+
+// load a full-res thumbnail:
+int dt_imageio_large_thumbnail(const char *filename, uint8_t **buffer, int32_t *width, int32_t *height,
+                               int32_t *orientation)
+{
+  // Get the JPG embedded in the raw
+  uint8_t *jpgbuffer;
+  int32_t jpgbuffersize;
+  dt_imageio_get_thumbnail(filename, &jpgbuffer, &jpgbuffersize, orientation);
+
+  // Decompress the JPG into our own memory format
+  dt_imageio_jpeg_t jpg;
+  if(dt_imageio_jpeg_decompress_header(jpgbuffer, jpgbuffersize, &jpg))
+    return 1;
+  *buffer = (uint8_t *)malloc((size_t)sizeof(uint8_t) * jpg.width * jpg.height * 4);
+  if(!*buffer) return 1;
+  *width = jpg.width;
+  *height = jpg.height;
+  if(dt_imageio_jpeg_decompress(&jpg, *buffer))
+  {
+    free(*buffer);
+    *buffer = 0;
+    return 1;
+  }
+  return 0;
 }
 
 // =================================================

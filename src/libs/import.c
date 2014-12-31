@@ -25,7 +25,6 @@
 #include "common/imageio.h"
 #include "common/imageio_jpeg.h"
 #include "common/dt_logo_128x128.h"
-#include "libraw/libraw.h"
 #include "control/control.h"
 #include "control/conf.h"
 #ifdef HAVE_GPHOTO2
@@ -595,54 +594,26 @@ static void _lib_import_update_preview(GtkFileChooser *file_chooser, gpointer da
   have_preview = (pixbuf != NULL);
   if(!have_preview)
   {
-    // raw image thumbnail
-    int ret;
-    libraw_data_t *raw = libraw_init(0);
-    libraw_processed_image_t *image = NULL;
-    ret = libraw_open_file(raw, filename);
-    if(ret) goto libraw_fail;
-    ret = libraw_unpack_thumb(raw);
-    if(ret) goto libraw_fail;
-    ret = libraw_adjust_sizes_info_only(raw);
-    if(ret) goto libraw_fail;
-
-    image = libraw_dcraw_make_mem_thumb(raw, &ret);
-    if(!image || ret) goto libraw_fail;
-    //     const int orientation = raw->sizes.flip;
-
-    GdkPixbuf *tmp;
-    GdkPixbufLoader *loader = gdk_pixbuf_loader_new();
-    have_preview = gdk_pixbuf_loader_write(loader, image->data, image->data_size, NULL);
-    tmp = gdk_pixbuf_loader_get_pixbuf(loader);
-    gdk_pixbuf_loader_close(loader, NULL);
-    float ratio;
-    if(image->type == LIBRAW_IMAGE_JPEG)
-    {
-      // jpeg
-      dt_imageio_jpeg_t jpg;
-      if(dt_imageio_jpeg_decompress_header(image->data, image->data_size, &jpg)) goto libraw_fail;
-      ratio = 1.0 * jpg.height / jpg.width;
-    }
-    else
-    {
-      // bmp -- totally untested
-      ratio = 1.0 * image->height / image->width;
-    }
-    int width = 128, height = 128 * ratio;
-    pixbuf = gdk_pixbuf_scale_simple(tmp, width, height, GDK_INTERP_BILINEAR);
-
-    if(loader) g_object_unref(loader);
-
-    // clean up raw stuff.
-    libraw_recycle(raw);
-    libraw_close(raw);
-    free(image);
-    if(0)
-    {
-    libraw_fail:
-      // fprintf(stderr,"[imageio] %s: %s\n", filename, libraw_strerror(ret));
-      libraw_close(raw);
+    uint8_t *buffer;
+    int32_t size;
+    if (dt_imageio_get_thumbnail(filename, &buffer, &size, NULL)) {
       have_preview = FALSE;
+    } else {
+      // Scale the image to the correct size
+      GdkPixbuf *tmp;
+      GdkPixbufLoader *loader = gdk_pixbuf_loader_new();
+      if (!gdk_pixbuf_loader_write(loader, buffer, size, NULL)) {
+        have_preview = FALSE;
+      } else {
+        tmp = gdk_pixbuf_loader_get_pixbuf(loader);
+        gdk_pixbuf_loader_close(loader, NULL);
+        free(buffer);
+        float ratio = 1.0 * gdk_pixbuf_get_height(tmp) / gdk_pixbuf_get_width(tmp);
+        int width = 128, height = 128 * ratio;
+        pixbuf = gdk_pixbuf_scale_simple(tmp, width, height, GDK_INTERP_BILINEAR);
+        g_object_unref(loader); // This should clean up tmp as well
+        have_preview = TRUE;
+      }
     }
   }
   if(!have_preview)
