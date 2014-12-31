@@ -434,21 +434,18 @@ static void _view_map_changed_callback(OsmGpsMap *map, dt_view_t *self)
   {
     int imgid = sqlite3_column_int(lib->statements.main_query, 0);
     dt_mipmap_buffer_t buf;
-    dt_mipmap_cache_read_get(darktable.mipmap_cache, &buf, imgid, mip, DT_MIPMAP_BEST_EFFORT);
+    dt_mipmap_cache_get(darktable.mipmap_cache, &buf, imgid, mip, DT_MIPMAP_BEST_EFFORT, 'r');
 
     if(buf.buf)
     {
       GdkPixbuf *source = NULL, *thumb = NULL;
-      uint8_t *scratchmem = dt_mipmap_cache_alloc_scratchmem(darktable.mipmap_cache);
-      uint8_t *buf_decompressed = dt_mipmap_cache_decompress(&buf, scratchmem);
 
-      // convert image to pixbuf compatible rgb format
       uint8_t *rgbbuf = (uint8_t *)malloc(buf.width * buf.height * 3);
       if(!rgbbuf) goto map_changed_failure;
       for(int i = 0; i < buf.height; i++)
         for(int j = 0; j < buf.width; j++)
           for(int k = 0; k < 3; k++)
-            rgbbuf[(i * buf.width + j) * 3 + k] = buf_decompressed[(i * buf.width + j) * 4 + 2 - k];
+            rgbbuf[(i * buf.width + j) * 3 + k] = buf.buf[(i * buf.width + j) * 4 + 2 - k];
 
       int w = thumb_size, h = thumb_size;
       if(buf.width < buf.height)
@@ -474,7 +471,7 @@ static void _view_map_changed_callback(OsmGpsMap *map, dt_view_t *self)
       // and finally add the pin
       gdk_pixbuf_copy_area(lib->pin, 0, 0, w + 2 * thumb_border, pin_size, thumb, 0, h + 2 * thumb_border);
 
-      const dt_image_t *cimg = dt_image_cache_read_get(darktable.image_cache, imgid);
+      const dt_image_t *cimg = dt_image_cache_get(darktable.image_cache, imgid, 'r');
       if(!cimg) goto map_changed_failure;
       dt_map_image_t *entry = (dt_map_image_t *)malloc(sizeof(dt_map_image_t));
       if(!entry)
@@ -492,12 +489,11 @@ static void _view_map_changed_callback(OsmGpsMap *map, dt_view_t *self)
     map_changed_failure:
       if(source) g_object_unref(source);
       if(thumb) g_object_unref(thumb);
-      free(scratchmem);
       free(rgbbuf);
     }
     else
       needs_redraw = TRUE;
-    dt_mipmap_cache_read_release(darktable.mipmap_cache, &buf);
+    dt_mipmap_cache_release(darktable.mipmap_cache, &buf);
   }
 
   // not exactly thread safe, but should be good enough for updating the display
@@ -561,21 +557,18 @@ static gboolean _view_map_motion_notify_callback(GtkWidget *w, GdkEventMotion *e
 
     dt_mipmap_buffer_t buf;
     dt_mipmap_size_t mip = dt_mipmap_cache_get_matching_size(darktable.mipmap_cache, thumb_size, thumb_size);
-    dt_mipmap_cache_read_get(darktable.mipmap_cache, &buf, lib->selected_image, mip, DT_MIPMAP_BLOCKING);
+    dt_mipmap_cache_get(darktable.mipmap_cache, &buf, lib->selected_image, mip, DT_MIPMAP_BLOCKING, 'r');
 
     if(buf.buf)
     {
       GdkPixbuf *source = NULL, *thumb = NULL;
-      uint8_t *scratchmem = dt_mipmap_cache_alloc_scratchmem(darktable.mipmap_cache);
-      uint8_t *buf_decompressed = dt_mipmap_cache_decompress(&buf, scratchmem);
 
-      // convert image to pixbuf compatible rgb format
       uint8_t *rgbbuf = (uint8_t *)malloc(buf.width * buf.height * 3);
       if(!rgbbuf) goto map_motion_failure;
       for(int i = 0; i < buf.height; i++)
         for(int j = 0; j < buf.width; j++)
           for(int k = 0; k < 3; k++)
-            rgbbuf[(i * buf.width + j) * 3 + k] = buf_decompressed[(i * buf.width + j) * 4 + 2 - k];
+            rgbbuf[(i * buf.width + j) * 3 + k] = buf.buf[(i * buf.width + j) * 4 + 2 - k];
 
       int w = thumb_size, h = thumb_size;
       if(buf.width < buf.height)
@@ -608,11 +601,10 @@ static gboolean _view_map_motion_notify_callback(GtkWidget *w, GdkEventMotion *e
     map_motion_failure:
       if(source) g_object_unref(source);
       if(thumb) g_object_unref(thumb);
-      free(scratchmem);
       free(rgbbuf);
     }
 
-    dt_mipmap_cache_read_release(darktable.mipmap_cache, &buf);
+    dt_mipmap_cache_release(darktable.mipmap_cache, &buf);
 
     gtk_target_list_unref(targets);
     return TRUE;
@@ -840,7 +832,7 @@ static void _view_map_filmstrip_activate_callback(gpointer instance, gpointer us
   int32_t imgid = 0;
   if((imgid = dt_view_filmstrip_get_activated_imgid(darktable.view_manager)) > 0)
   {
-    const dt_image_t *cimg = dt_image_cache_read_get(darktable.image_cache, imgid);
+    const dt_image_t *cimg = dt_image_cache_get(darktable.image_cache, imgid, 'r');
     longitude = cimg->longitude;
     latitude = cimg->latitude;
     dt_image_cache_read_release(darktable.image_cache, cimg);
@@ -888,7 +880,7 @@ static void _push_position(dt_view_t *self, int imgid, float longitude, float la
 
 static void _get_image_location(dt_view_t *self, int imgid, float *longitude, float *latitude)
 {
-  const dt_image_t *img = dt_image_cache_read_get(darktable.image_cache, imgid);
+  const dt_image_t *img = dt_image_cache_get(darktable.image_cache, imgid, 'r');
   *longitude = img->longitude;
   *latitude = img->latitude;
   dt_image_cache_read_release(darktable.image_cache, img);
@@ -897,15 +889,13 @@ static void _get_image_location(dt_view_t *self, int imgid, float *longitude, fl
 static void _set_image_location(dt_view_t *self, int imgid, float longitude, float latitude,
                                 gboolean record_undo)
 {
-  const dt_image_t *cimg = dt_image_cache_read_get(darktable.image_cache, imgid);
-  dt_image_t *img = dt_image_cache_write_get(darktable.image_cache, cimg);
+  dt_image_t *img = dt_image_cache_get(darktable.image_cache, imgid, 'w');
 
   if(record_undo) _push_position(self, imgid, img->longitude, img->latitude);
 
   img->longitude = longitude;
   img->latitude = latitude;
   dt_image_cache_write_release(darktable.image_cache, img, DT_IMAGE_CACHE_SAFE);
-  dt_image_cache_read_release(darktable.image_cache, cimg);
 }
 
 static void _view_map_add_image_to_map(dt_view_t *self, int imgid, gint x, gint y)
