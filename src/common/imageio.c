@@ -64,7 +64,8 @@ int dt_imageio_large_thumbnail(const char *filename, uint8_t **buffer, int32_t *
   // Get the JPG embedded in the raw
   uint8_t *jpgbuffer;
   uint32_t jpgbuffersize;
-  dt_exif_get_thumbnail(filename, &jpgbuffer, &jpgbuffersize);
+
+  if(dt_exif_get_thumbnail(filename, &jpgbuffer, &jpgbuffersize)) return 1;
 
   // Decompress the JPG into our own memory format
   dt_imageio_jpeg_t jpg;
