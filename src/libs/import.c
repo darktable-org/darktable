@@ -596,7 +596,7 @@ static void _lib_import_update_preview(GtkFileChooser *file_chooser, gpointer da
   if(!have_preview)
   {
     uint8_t *buffer;
-    uint32_t size;
+    size_t size;
     if (!dt_exif_get_thumbnail(filename, &buffer, &size)) {
       // Scale the image to the correct size
       GdkPixbuf *tmp;
