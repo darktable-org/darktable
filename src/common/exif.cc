@@ -840,6 +840,8 @@ int dt_exif_get_thumbnail(const char *path, uint8_t **buffer, size_t *size)
       return 1;
     }
     // Select the largest one
+    // FIXME: We could probably select a smaller thumbnail to match the mip size
+    //        we actually want to create. Is it really much faster though?
     Exiv2::PreviewProperties selected = list[0];
     for (unsigned int i=1; i<list.size(); i++)
       if (list[i].size_ > selected.size_)

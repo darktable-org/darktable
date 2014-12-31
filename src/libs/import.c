@@ -599,6 +599,9 @@ static void _lib_import_update_preview(GtkFileChooser *file_chooser, gpointer da
     size_t size;
     if (!dt_exif_get_thumbnail(filename, &buffer, &size)) {
       // Scale the image to the correct size
+      // FIXME: gdk seems much less forgiving to getting slightly misformed
+      //        jpg streams from exiv2 than our own code, so not all thumbnails
+      //        work here. This is really an exiv2 bug though
       GdkPixbuf *tmp;
       GdkPixbufLoader *loader = gdk_pixbuf_loader_new();
       if (!gdk_pixbuf_loader_write(loader, buffer, size, NULL)) goto cleanup;
