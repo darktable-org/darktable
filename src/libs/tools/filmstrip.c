@@ -1099,12 +1099,7 @@ static void _lib_filmstrip_dnd_begin_callback(GtkWidget *widget, GdkDragContext 
 
     if(buf.buf)
     {
-      uint8_t *rgbbuf = g_malloc_n(3 * (buf.width + 2) * (buf.height + 2), sizeof(uint8_t));
-      memset(rgbbuf, 64, (buf.width + 2) * (buf.height + 2) * 3);
-      for(int i = 1; i <= buf.height; i++)
-        for(int j = 1; j <= buf.width; j++)
-          for(int k = 0; k < 3; k++)
-            rgbbuf[(i * (buf.width + 2) + j) * 3 + k] = buf.buf[((i - 1) * buf.width + j - 1) * 4 + k];
+      for(size_t i = 3; i < (size_t)4 * buf.width * buf.height; i += 4) buf.buf[i] = UINT8_MAX;
 
       int w = ts, h = ts;
       if(buf.width < buf.height)
@@ -1112,14 +1107,13 @@ static void _lib_filmstrip_dnd_begin_callback(GtkWidget *widget, GdkDragContext 
       else
         h = (buf.height * ts) / buf.width; // landscape
 
-      GdkPixbuf *source = gdk_pixbuf_new_from_data(rgbbuf, GDK_COLORSPACE_RGB, FALSE, 8, (buf.width + 2),
-                                                   (buf.height + 2), (buf.width + 2) * 3, NULL, NULL);
+      GdkPixbuf *source = gdk_pixbuf_new_from_data(buf.buf, GDK_COLORSPACE_RGB, TRUE, 8, buf.width,
+                                                   buf.height, buf.width * 4, NULL, NULL);
       GdkPixbuf *scaled = gdk_pixbuf_scale_simple(source, w, h, GDK_INTERP_HYPER);
       gtk_drag_set_icon_pixbuf(context, scaled, 0, 0);
 
       if(source) g_object_unref(source);
       if(scaled) g_object_unref(scaled);
-      g_free(rgbbuf);
     }
 
     dt_mipmap_cache_release(darktable.mipmap_cache, &buf);
