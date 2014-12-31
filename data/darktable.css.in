@@ -323,7 +323,7 @@ GtkFrame > GtkEventBox * {
 GtkMenuItem
 {
   padding: 2pt;
-  background-color:@bg_color;
+  background-color:@really_dark_bg_color;
 }
 
 GtkMenuItem:hover
