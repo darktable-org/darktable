@@ -831,22 +831,26 @@ int dt_exif_get_thumbnail(const char *path, uint8_t **buffer, uint32_t *size) {
     assert(image.get() != 0);
     image->readMetadata();
 
-    // Get a list of preview images available in the image. The list is sorted
-    // by the preview image pixel size, starting with the smallest preview.
+    // Get a list of preview images available in the image.
     Exiv2::PreviewManager loader(*image);
     Exiv2::PreviewPropertiesList list = loader.getPreviewProperties();
     if (list.size() == 0) {
       std::cerr << "[exiv2] couldn't find thumbnail for " << path << std::endl;
       return 1;
     }
+    // Select the largest one
+    Exiv2::PreviewProperties selected = list[0];
+    for (unsigned int i=1; i<list.size(); i++)
+      if (list[i].size_ > selected.size_)
+        selected = list[i];
 
     // Get the selected preview image
-    Exiv2::PreviewImage preview = loader.getPreviewImage(list[list.size()-1]);
+    Exiv2::PreviewImage preview = loader.getPreviewImage(selected);
     const unsigned  char *tmp = preview.pData();
     uint32_t size = preview.size();
 
     // Workaround the fact that exiv2 sometimes returns prepended garbage 
-    while (size > 0 && tmp[0] != 0xff) {
+    while (size > 4 && (tmp[0] != 0xff || tmp[1] != 0xd8)) {
       tmp++;
       size--;
     }
