@@ -1089,11 +1089,12 @@ void enter(dt_view_t *self)
     dt_view_manager_module_toolbox_add(darktable.view_manager, dev->overexposed.button);
 
     // and the popup window
-    //     int panel_width = dt_conf_get_int("panel_width");
+    const int panel_width = dt_conf_get_int("panel_width");
 
     GtkWidget *window = dt_ui_main_window(darktable.gui->ui);
 
     dev->overexposed.floating_window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+    gtk_window_set_default_size(GTK_WINDOW(dev->overexposed.floating_window), panel_width, -1);
     GtkWidget *frame = gtk_frame_new(NULL);
     GtkWidget *event_box = gtk_event_box_new();
     GtkWidget *vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
@@ -1108,7 +1109,6 @@ void enter(dt_view_t *self)
     gtk_window_set_transient_for(GTK_WINDOW(dev->overexposed.floating_window), GTK_WINDOW(window));
     gtk_widget_set_opacity(dev->overexposed.floating_window, 0.9);
 
-    //     gtk_widget_set_size_request(frame, panel_width, -1);
     gtk_widget_set_state_flags(frame, GTK_STATE_FLAG_SELECTED, TRUE);
     gtk_frame_set_shadow_type(GTK_FRAME(frame), GTK_SHADOW_OUT);
 
