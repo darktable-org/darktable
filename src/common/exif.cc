@@ -847,13 +847,28 @@ int dt_exif_get_thumbnail(const char *path, uint8_t **buffer, uint32_t *size) {
 
     // Get the selected preview image
     Exiv2::PreviewImage preview = loader.getPreviewImage(selected);
-    *buffer = (uint8_t *)malloc((size_t) preview.size());
+    const unsigned  char *tmp = preview.pData();
+    uint32_t size = preview.size();
+
+    // Workaround the fact that exiv2 sometimes returns prepended garbage 
+    while (size > 0 && tmp[0] != 0xff) {
+      tmp++;
+      size--;
+    }
+
+    if (list.size() == 0) {
+      std::cerr << "[exiv2] thumbnail doesn't seem to be a JPG " << path << std::endl;
+      return 1;
+    }
+
+    *buffer = (uint8_t *)malloc((size_t) size);
     if(!*buffer) {
       std::cerr << "[exiv2] couldn't allocate memory for thumbnail for" << path << std::endl;
       return 1;
     }
-    memcpy(*buffer, preview.pData(), preview.size());
+    memcpy(*buffer, tmp, size);
     //std::cerr << "[exiv2] "<< path << ": found thumbnail "<< preview.width() << "x" << preview.height() << std::endl;
+
 
     return 0;
   }
