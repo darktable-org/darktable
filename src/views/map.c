@@ -563,12 +563,7 @@ static gboolean _view_map_motion_notify_callback(GtkWidget *w, GdkEventMotion *e
     {
       GdkPixbuf *source = NULL, *thumb = NULL;
 
-      uint8_t *rgbbuf = (uint8_t *)malloc(buf.width * buf.height * 3);
-      if(!rgbbuf) goto map_motion_failure;
-      for(int i = 0; i < buf.height; i++)
-        for(int j = 0; j < buf.width; j++)
-          for(int k = 0; k < 3; k++)
-            rgbbuf[(i * buf.width + j) * 3 + k] = buf.buf[(i * buf.width + j) * 4 + k];
+      for(size_t i = 3; i < (size_t)4 * buf.width * buf.height; i += 4) buf.buf[i] = UINT8_MAX;
 
       int w = thumb_size, h = thumb_size;
       if(buf.width < buf.height)
@@ -577,8 +572,8 @@ static gboolean _view_map_motion_notify_callback(GtkWidget *w, GdkEventMotion *e
         h = (buf.height * thumb_size) / buf.width; // landscape
 
       // next we get a pixbuf for the image
-      source = gdk_pixbuf_new_from_data(rgbbuf, GDK_COLORSPACE_RGB, FALSE, 8, buf.width, buf.height,
-                                        buf.width * 3, NULL, NULL);
+      source = gdk_pixbuf_new_from_data(buf.buf, GDK_COLORSPACE_RGB, TRUE, 8, buf.width, buf.height,
+                                        buf.width * 4, NULL, NULL);
 
       // now we want a slightly larger pixbuf that we can put the image on
       thumb = gdk_pixbuf_new(GDK_COLORSPACE_RGB, TRUE, 8, w + 2 * thumb_border, h + 2 * thumb_border);
@@ -598,10 +593,8 @@ static gboolean _view_map_motion_notify_callback(GtkWidget *w, GdkEventMotion *e
 
       gtk_drag_set_icon_pixbuf(context, thumb, 0, 0);
 
-    map_motion_failure:
       if(source) g_object_unref(source);
       if(thumb) g_object_unref(thumb);
-      free(rgbbuf);
     }
 
     dt_mipmap_cache_release(darktable.mipmap_cache, &buf);
