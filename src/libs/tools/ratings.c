@@ -108,16 +108,12 @@ void gui_cleanup(dt_lib_module_t *self)
   self->data = NULL;
 }
 
-static gboolean _lib_ratings_draw_callback(GtkWidget *widget, cairo_t *crf, gpointer user_data)
+static gboolean _lib_ratings_draw_callback(GtkWidget *widget, cairo_t *cr, gpointer user_data)
 {
   dt_lib_module_t *self = (dt_lib_module_t *)user_data;
   dt_lib_ratings_t *d = (dt_lib_ratings_t *)self->data;
 
   if(!darktable.control->running) return TRUE;
-
-  GtkAllocation allocation;
-  gtk_widget_get_allocation(widget, &allocation);
-  int width = allocation.width, height = allocation.height;
 
   /* get current style */
   GdkRGBA fg_color, bg_color;
@@ -125,17 +121,15 @@ static gboolean _lib_ratings_draw_callback(GtkWidget *widget, cairo_t *crf, gpoi
   GtkStyleContext *context = gtk_widget_get_style_context(widget);
   gtk_style_context_get_color(context, state, &fg_color);
   gtk_style_context_get_background_color(context, state, &bg_color);
-  cairo_surface_t *cst = dt_cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height);
-  cairo_t *cr = cairo_create(cst);
 
   /* fill background */
-  cairo_set_source_rgba(cr, bg_color.red, bg_color.green, bg_color.blue, bg_color.alpha);
+  gdk_cairo_set_source_rgba(cr, &bg_color);
   cairo_paint(cr);
 
   /* lets draw stars */
   int x = 0;
   cairo_set_line_width(cr, 1.5);
-  cairo_set_source_rgba(cr, fg_color.red, fg_color.green, fg_color.blue, fg_color.alpha);
+  gdk_cairo_set_source_rgba(cr, &fg_color);
   d->current = 0;
   for(int k = 0; k < 5; k++)
   {
@@ -146,19 +140,13 @@ static gboolean _lib_ratings_draw_callback(GtkWidget *widget, cairo_t *crf, gpoi
       cairo_fill_preserve(cr);
       cairo_set_source_rgba(cr, fg_color.red, fg_color.green, fg_color.blue, fg_color.alpha * 0.5);
       cairo_stroke(cr);
-      cairo_set_source_rgba(cr, fg_color.red, fg_color.green, fg_color.blue, fg_color.alpha);
+      gdk_cairo_set_source_rgba(cr, &fg_color);
       if((k + 1) > d->current) d->current = (k + 1);
     }
     else
       cairo_stroke(cr);
     x += STAR_SIZE + STAR_SPACING;
   }
-
-  /* blit memsurface onto widget*/
-  cairo_destroy(cr);
-  cairo_set_source_surface(crf, cst, 0, 0);
-  cairo_paint(crf);
-  cairo_surface_destroy(cst);
 
   return TRUE;
 }

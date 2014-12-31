@@ -26,6 +26,10 @@ The tool has some known limitations:
    about ICC profiles (not even AdobeRGB).
  - the tool is happily confused by JPEG files that are portrait rotated, and their
    raw is not. The helper script tries to auto correct that during the conversion step.
+ - the current procedure relies on dcraw which may not have a correct color matrix
+   for your camera. Check if `darktable/src/external/adobe_coeff.c` and
+   dcraw.c::adobe_coeff::table do match. If not, copy darktable's one. Beware
+   both tables do not use the same camera names.
 
 
 ## Building
@@ -34,11 +38,13 @@ The tool has some known limitations:
 You can build the tool using the following commands:
 
     $ cd "$DARKATBLE_SRC_ROOT/tools/basecurve"
-    $ make
+    $ mkdir build
+    $ cmake -DCMAKE_INSTALL_PREFIX=$YOUR_INSTALL_PATH -DCMAKE_BUILD_TYPE=Release ..
+    $ cmake --build . -- install
 
 You are invited to print the help message to get to know the tool's options:
 
-    $ ./dt-curve-tool -h
+    $ "$YOUR_INSTALL_PATH/bin/dt-curve-tool" -h
 
 It may help you better understand the following paragraphs.
 
@@ -49,8 +55,7 @@ It may help you better understand the following paragraphs.
 An additional helper script called _dt-curve-tool-helper_ is provided. This
 script should automate many steps of the curve determination process.
 
-It is assumed that both _dt-curve-tool_ and _dt-curve-tool-helper_ are in
-your `$PATH`.
+It is assumed that `$YOUR_INSTALL_PATH` is in your `$PATH`.
 
 
 ### Gathering the statistics

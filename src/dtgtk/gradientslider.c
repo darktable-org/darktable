@@ -428,8 +428,8 @@ static gboolean _gradient_slider_draw(GtkWidget *widget, cairo_t *cr)
     do
     {
       _gradient_slider_stop_t *stop = (_gradient_slider_stop_t *)current->data;
-      cairo_pattern_add_color_stop_rgb(gradient, stop->position, stop->color.red / 65535.0,
-                                       stop->color.green / 65535.0, stop->color.blue / 65535.0);
+      cairo_pattern_add_color_stop_rgb(gradient, stop->position, stop->color.red, stop->color.green,
+                                       stop->color.blue);
     } while((current = g_list_next(current)) != NULL);
   }
 
@@ -545,7 +545,7 @@ GtkWidget *dtgtk_gradient_slider_multivalue_new(gint positions)
 }
 
 
-GtkWidget *dtgtk_gradient_slider_multivalue_new_with_color(GdkColor start, GdkColor end, gint positions)
+GtkWidget *dtgtk_gradient_slider_multivalue_new_with_color(GdkRGBA start, GdkRGBA end, gint positions)
 {
   assert(positions <= GRADIENT_SLIDER_MAX_POSITIONS);
 
@@ -567,13 +567,13 @@ GtkWidget *dtgtk_gradient_slider_multivalue_new_with_color(GdkColor start, GdkCo
   // Construct gradient start color
   _gradient_slider_stop_t *gc = (_gradient_slider_stop_t *)g_malloc(sizeof(_gradient_slider_stop_t));
   gc->position = 0.0;
-  memcpy(&gc->color, &start, sizeof(GdkColor));
+  memcpy(&gc->color, &start, sizeof(GdkRGBA));
   gslider->colors = g_list_append(gslider->colors, gc);
 
   // Construct gradient stop color
   gc = (_gradient_slider_stop_t *)g_malloc(sizeof(_gradient_slider_stop_t));
   gc->position = 1.0;
-  memcpy(&gc->color, &end, sizeof(GdkColor));
+  memcpy(&gc->color, &end, sizeof(GdkRGBA));
   gslider->colors = g_list_append(gslider->colors, gc);
 
 
@@ -589,20 +589,20 @@ gint _list_find_by_position(gconstpointer a, gconstpointer b)
 }
 
 void dtgtk_gradient_slider_multivalue_set_stop(GtkDarktableGradientSlider *gslider, gfloat position,
-                                               GdkColor color)
+                                               GdkRGBA color)
 {
   // First find color at position, if exists update color, otherwise create a new stop at position.
   GList *current = g_list_find_custom(gslider->colors, (gpointer)&position, _list_find_by_position);
   if(current != NULL)
   {
-    memcpy(&((_gradient_slider_stop_t *)current->data)->color, &color, sizeof(GdkColor));
+    memcpy(&((_gradient_slider_stop_t *)current->data)->color, &color, sizeof(GdkRGBA));
   }
   else
   {
     // stop didn't exist lets add it
     _gradient_slider_stop_t *gc = (_gradient_slider_stop_t *)g_malloc(sizeof(_gradient_slider_stop_t));
     gc->position = position;
-    memcpy(&gc->color, &color, sizeof(GdkColor));
+    memcpy(&gc->color, &color, sizeof(GdkRGBA));
     gslider->colors = g_list_append(gslider->colors, gc);
   }
 }
@@ -720,12 +720,12 @@ GtkWidget *dtgtk_gradient_slider_new()
   return dtgtk_gradient_slider_multivalue_new(1);
 }
 
-GtkWidget *dtgtk_gradient_slider_new_with_color(GdkColor start, GdkColor end)
+GtkWidget *dtgtk_gradient_slider_new_with_color(GdkRGBA start, GdkRGBA end)
 {
   return dtgtk_gradient_slider_multivalue_new_with_color(start, end, 1);
 }
 
-void dtgtk_gradient_slider_set_stop(GtkDarktableGradientSlider *gslider, gfloat position, GdkColor color)
+void dtgtk_gradient_slider_set_stop(GtkDarktableGradientSlider *gslider, gfloat position, GdkRGBA color)
 {
   dtgtk_gradient_slider_multivalue_set_stop(gslider, position, color);
 }

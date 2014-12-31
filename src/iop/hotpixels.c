@@ -374,7 +374,7 @@ void gui_update(dt_iop_module_t *self)
   gtk_label_set_text(g->message, "");
 }
 
-static gboolean draw(GtkWidget *widget, cairo_t *crf, dt_iop_module_t *self)
+static gboolean draw(GtkWidget *widget, cairo_t *cr, dt_iop_module_t *self)
 {
   dt_iop_hotpixels_gui_data_t *g = (dt_iop_hotpixels_gui_data_t *)self->gui_data;
   if(darktable.gui->reset) return FALSE;

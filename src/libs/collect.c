@@ -37,8 +37,6 @@ DT_MODULE(1)
 
 #define PARAM_STRING_SIZE 256 // FIXME: is this enough !?
 
-// DT_MODULE(1)
-
 typedef struct dt_lib_collect_rule_t
 {
   int num;
@@ -2033,6 +2031,7 @@ void gui_init(dt_lib_module_t *self)
   GtkWidget *sw = gtk_scrolled_window_new(NULL, NULL);
   d->scrolledwindow = GTK_SCROLLED_WINDOW(sw);
   gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(sw), GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
+  gtk_scrolled_window_set_min_content_height(GTK_SCROLLED_WINDOW(d->scrolledwindow), DT_PIXEL_APPLY_DPI(300));
   GtkTreeView *view = GTK_TREE_VIEW(gtk_tree_view_new());
   d->view = view;
   gtk_tree_view_set_headers_visible(view, FALSE);

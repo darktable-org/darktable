@@ -286,7 +286,7 @@ void dt_gui_key_accel_block_on_focus_connect(GtkWidget *w)
                    (gpointer)w);
 }
 
-static gboolean draw_borders(GtkWidget *widget, cairo_t *crf, gpointer user_data)
+static gboolean draw_borders(GtkWidget *widget, cairo_t *cr, gpointer user_data)
 {
   // draw arrows on borders
   if(!dt_control_running()) return TRUE;
@@ -294,8 +294,6 @@ static gboolean draw_borders(GtkWidget *widget, cairo_t *crf, gpointer user_data
   GtkAllocation allocation;
   gtk_widget_get_allocation(widget, &allocation);
   float width = allocation.width, height = allocation.height;
-  cairo_surface_t *cst = dt_cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height);
-  cairo_t *cr = cairo_create(cst);
 
   GdkRGBA color;
   GtkStyleContext *context = gtk_widget_get_style_context(widget);
@@ -307,7 +305,7 @@ static gboolean draw_borders(GtkWidget *widget, cairo_t *crf, gpointer user_data
     color.blue = 0.0;
     color.alpha = 1.0;
   }
-  cairo_set_source_rgba(cr, color.red, color.green, color.blue, color.alpha);
+  gdk_cairo_set_source_rgba(cr, &color);
   cairo_paint(cr);
 
   // draw scrollbar indicators
@@ -322,7 +320,7 @@ static gboolean draw_borders(GtkWidget *widget, cairo_t *crf, gpointer user_data
     color.blue = 0.0;
     color.alpha = 1.0;
   }
-  cairo_set_source_rgba(cr, color.red, color.green, color.blue, color.alpha);
+  gdk_cairo_set_source_rgba(cr, &color);
   const float border = 0.3;
   if(!view)
     cairo_paint(cr);
@@ -370,7 +368,7 @@ static gboolean draw_borders(GtkWidget *widget, cairo_t *crf, gpointer user_data
     color.blue = 0.0;
     color.alpha = 1.0;
   }
-  cairo_set_source_rgba(cr, color.red, color.green, color.blue, color.alpha);
+  gdk_cairo_set_source_rgba(cr, &color);
 
   switch(which)
   {
@@ -434,10 +432,6 @@ static gboolean draw_borders(GtkWidget *widget, cairo_t *crf, gpointer user_data
   cairo_close_path(cr);
   cairo_fill(cr);
 
-  cairo_destroy(cr);
-  cairo_set_source_surface(crf, cst, 0, 0);
-  cairo_paint(crf);
-  cairo_surface_destroy(cst);
   return TRUE;
 }
 

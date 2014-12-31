@@ -926,7 +926,7 @@ static void get_params(dt_iop_atrous_params_t *p, const int ch, const double mou
   }
 }
 
-static gboolean area_draw(GtkWidget *widget, cairo_t *crf, gpointer user_data)
+static gboolean area_draw(GtkWidget *widget, cairo_t *cr, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_atrous_gui_data_t *c = (dt_iop_atrous_gui_data_t *)self->gui_data;
@@ -938,8 +938,6 @@ static gboolean area_draw(GtkWidget *widget, cairo_t *crf, gpointer user_data)
   GtkAllocation allocation;
   gtk_widget_get_allocation(widget, &allocation);
   int width = allocation.width, height = allocation.height;
-  cairo_surface_t *cst = dt_cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height);
-  cairo_t *cr = cairo_create(cst);
   // clear bg, match color of the notebook tabs:
   GdkRGBA bright_bg_color, really_dark_bg_color;
   GtkStyleContext *context = gtk_widget_get_style_context(self->expander);
@@ -961,7 +959,7 @@ static gboolean area_draw(GtkWidget *widget, cairo_t *crf, gpointer user_data)
     really_dark_bg_color.alpha = 1.0;
   }
 
-  cairo_set_source_rgba(cr, bright_bg_color.red, bright_bg_color.green, bright_bg_color.blue, bright_bg_color.alpha);
+  gdk_cairo_set_source_rgba(cr, &bright_bg_color);
   cairo_paint(cr);
 
   cairo_translate(cr, inset, inset);
@@ -969,11 +967,11 @@ static gboolean area_draw(GtkWidget *widget, cairo_t *crf, gpointer user_data)
   height -= 2 * inset;
 
   cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(1.0));
-  cairo_set_source_rgba(cr, really_dark_bg_color.red, really_dark_bg_color.green, really_dark_bg_color.blue, really_dark_bg_color.alpha);
+  gdk_cairo_set_source_rgba(cr, &really_dark_bg_color);
   cairo_rectangle(cr, 0, 0, width, height);
   cairo_stroke(cr);
 
-  cairo_set_source_rgba(cr, bright_bg_color.red, bright_bg_color.green, bright_bg_color.blue, bright_bg_color.alpha);
+  gdk_cairo_set_source_rgba(cr, &bright_bg_color);
   cairo_rectangle(cr, 0, 0, width, height);
   cairo_fill(cr);
 
@@ -992,7 +990,7 @@ static gboolean area_draw(GtkWidget *widget, cairo_t *crf, gpointer user_data)
 
   // draw grid
   cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(.4));
-  cairo_set_source_rgba(cr, really_dark_bg_color.red, really_dark_bg_color.green, really_dark_bg_color.blue, really_dark_bg_color.alpha);
+  gdk_cairo_set_source_rgba(cr, &really_dark_bg_color);
   dt_draw_grid(cr, 8, 0, 0, width, height);
 
   cairo_save(cr);
@@ -1156,7 +1154,7 @@ static gboolean area_draw(GtkWidget *widget, cairo_t *crf, gpointer user_data)
   {
     // draw labels:
     cairo_text_extents_t ext;
-    cairo_set_source_rgba(cr, really_dark_bg_color.red, really_dark_bg_color.green, really_dark_bg_color.blue, really_dark_bg_color.alpha);
+    gdk_cairo_set_source_rgba(cr, &really_dark_bg_color);
     cairo_select_font_face(cr, "sans-serif", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_BOLD);
     cairo_set_font_size(cr, .06 * height);
     cairo_text_extents(cr, _("coarse"), &ext);
@@ -1192,10 +1190,6 @@ static gboolean area_draw(GtkWidget *widget, cairo_t *crf, gpointer user_data)
   }
 
 
-  cairo_destroy(cr);
-  cairo_set_source_surface(crf, cst, 0, 0);
-  cairo_paint(crf);
-  cairo_surface_destroy(cst);
   return TRUE;
 }
 

@@ -820,6 +820,7 @@ static void _lib_import_folder_callback(GtkWidget *widget, gpointer user_data)
   gtk_widget_queue_draw(dt_ui_center(darktable.gui->ui));
 }
 
+#ifdef HAVE_GPHOTO2
 static void _camera_detected(gpointer instance, gpointer self)
 {
   /* update gui with detected devices */
@@ -827,6 +828,7 @@ static void _camera_detected(gpointer instance, gpointer self)
   _lib_import_ui_devices_update(self);
   if(i_own_lock) dt_control_gdk_unlock();
 }
+#endif
 
 void gui_init(dt_lib_module_t *self)
 {
@@ -867,7 +869,6 @@ void gui_init(dt_lib_module_t *self)
   dt_camctl_register_listener(darktable.camctl, &d->camctl_listener);
   dt_control_signal_connect(darktable.signals, DT_SIGNAL_CAMERA_DETECTED, G_CALLBACK(_camera_detected),
                             self);
-
 #endif
 }
 

@@ -326,13 +326,22 @@ static bool dt_exif_read_iptc_data(dt_image_t *img, Exiv2::IptcData &iptcData)
   try
   {
     Exiv2::IptcData::const_iterator pos;
+    iptcData.sortByKey(); // this helps to quickly find all Iptc.Application2.Keywords
 
     if((pos = iptcData.findKey(Exiv2::IptcKey("Iptc.Application2.Keywords"))) != iptcData.end())
     {
-      std::string str = pos->print(/*&iptcData*/);
-      guint tagid = 0;
-      dt_tag_new(str.c_str(), &tagid);
-      dt_tag_attach(tagid, img->id);
+      while(pos != iptcData.end())
+      {
+        std::string key = pos->key();
+        if(g_strcmp0(key.c_str(), "Iptc.Application2.Keywords")) break;
+        std::string str = pos->print();
+        char *tag = dt_util_foo_to_utf8(str.c_str());
+        guint tagid = 0;
+        dt_tag_new(tag, &tagid);
+        dt_tag_attach(tagid, img->id);
+        g_free(tag);
+        ++pos;
+      }
     }
     if((pos = iptcData.findKey(Exiv2::IptcKey("Iptc.Application2.Caption"))) != iptcData.end())
     {

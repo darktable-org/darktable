@@ -250,6 +250,66 @@ GtkFrame > GtkEventBox * {
   background-color: @bg_color;
 }
 
+#iop-plugin-ui .entry,
+#lib-plugin-ui .entry,
+.entry {
+  border-radius: 0;
+  border:0;
+  padding-left: 2px; /* align with bauhaus widgets */
+  border-style: none;
+  border-color: alpha(@fg_color, 0.5);
+  border-image:none;
+  color:@fg_color;
+  box-shadow: none;
+  background-image:none;
+  outline-style:none;
+  text-shadow:none;
+  background-color:shade(@selected_bg_color, 0.8);
+}
+#iop-plugin-ui .entry:selected,
+#lib-plugin-ui .entry:selected,
+.entry:selected {
+  background-color:@bg_color;
+}
+/* weird fix for black event boxes in light table lib modules: */
+#lib-plugin-ui GtkEventBox
+{
+  background-color:@selected_bg_color;
+}
+#lib-plugin-ui .cell
+{
+  background-color:shade(@selected_bg_color, 0.8);
+}
+#lib-plugin-ui row
+{
+  background-color:@selected_bg_color;
+}
+#lib-plugin-ui row:selected
+{
+  background-color:@bg_color;
+}
+
+/* due to css rubbish, we need to be more specific than anything else,
+ * so we give the name of the parent widget: */
+#iop-plugin-ui .notebook,
+#lib-plugin-ui .notebook,
+#iop-plugin-ui .notebook tab,
+#lib-plugin-ui .notebook tab {
+  border:0;
+  border-radius:0;
+  border-style:none;
+  box-shadow:none;
+  background-image:none;
+  outline-style:none;
+  outline-width:0;
+  border-image:none;
+  background-color: transparent;
+}
+#iop-plugin-ui .notebook tab:active,
+#lib-plugin-ui .notebook tab:active {
+  background-color: @bg_color;
+}
+
 *:insensitive {
   color: black;
 }

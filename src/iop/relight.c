@@ -383,9 +383,12 @@ void gui_init(struct dt_iop_module_t *self)
 
   /* lightnessslider */
   GtkBox *hbox = GTK_BOX(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 2));
-  int lightness = 32768;
-  g->gslider1 = DTGTK_GRADIENT_SLIDER(dtgtk_gradient_slider_new_with_color(
-      (GdkColor){ 0, 0, 0, 0 }, (GdkColor){ 0, lightness, lightness, lightness }));
+
+#define NEUTRAL_GRAY 0.5
+  static const GdkRGBA _gradient_L[]
+      = { { 0, 0, 0, 1.0 }, { NEUTRAL_GRAY, NEUTRAL_GRAY, NEUTRAL_GRAY, 1.0 } };
+  g->gslider1 = DTGTK_GRADIENT_SLIDER(dtgtk_gradient_slider_new_with_color(_gradient_L[0], _gradient_L[1]));
+
   g_object_set(G_OBJECT(g->gslider1), "tooltip-text", _("select the center of fill-light"), (char *)NULL);
   g_signal_connect(G_OBJECT(g->gslider1), "value-changed", G_CALLBACK(center_callback), self);
   g->tbutton1 = DTGTK_TOGGLEBUTTON(dtgtk_togglebutton_new(dtgtk_cairo_paint_colorpicker, CPF_STYLE_FLAT));

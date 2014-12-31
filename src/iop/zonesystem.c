@@ -436,7 +436,7 @@ static void _iop_zonesystem_redraw_preview_callback(gpointer instance, gpointer 
 
 static gboolean dt_iop_zonesystem_preview_draw(GtkWidget *widget, cairo_t *crf, dt_iop_module_t *self);
 
-static gboolean dt_iop_zonesystem_bar_draw(GtkWidget *widget, cairo_t *crf, dt_iop_module_t *self);
+static gboolean dt_iop_zonesystem_bar_draw(GtkWidget *widget, cairo_t *cr, dt_iop_module_t *self);
 static gboolean dt_iop_zonesystem_bar_motion_notify(GtkWidget *widget, GdkEventMotion *event,
                                                     dt_iop_module_t *self);
 static gboolean dt_iop_zonesystem_bar_leave_notify(GtkWidget *widget, GdkEventCrossing *event,
@@ -582,7 +582,7 @@ void gui_cleanup(struct dt_iop_module_t *self)
 #define DT_ZONESYSTEM_INSET DT_PIXEL_APPLY_DPI(5)
 #define DT_ZONESYSTEM_BAR_SPLIT_WIDTH 0.0
 #define DT_ZONESYSTEM_REFERENCE_SPLIT 0.30
-static gboolean dt_iop_zonesystem_bar_draw(GtkWidget *widget, cairo_t *crf, dt_iop_module_t *self)
+static gboolean dt_iop_zonesystem_bar_draw(GtkWidget *widget, cairo_t *cr, dt_iop_module_t *self)
 {
   dt_iop_zonesystem_gui_data_t *g = (dt_iop_zonesystem_gui_data_t *)self->gui_data;
   dt_iop_zonesystem_params_t *p = (dt_iop_zonesystem_params_t *)self->params;
@@ -591,8 +591,6 @@ static gboolean dt_iop_zonesystem_bar_draw(GtkWidget *widget, cairo_t *crf, dt_i
   GtkAllocation allocation;
   gtk_widget_get_allocation(widget, &allocation);
   int width = allocation.width, height = allocation.height;
-  cairo_surface_t *cst = dt_cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height);
-  cairo_t *cr = cairo_create(cst);
 
   /* clear background */
   cairo_set_source_rgb(cr, .15, .15, .15);
@@ -663,13 +661,6 @@ static gboolean dt_iop_zonesystem_bar_draw(GtkWidget *widget, cairo_t *crf, dt_i
         cairo_stroke(cr);
     }
   }
-
-
-  /* push mem surface into widget */
-  cairo_destroy(cr);
-  cairo_set_source_surface(crf, cst, 0, 0);
-  cairo_paint(crf);
-  cairo_surface_destroy(cst);
 
   return TRUE;
 }
@@ -819,6 +810,7 @@ static gboolean dt_iop_zonesystem_preview_draw(GtkWidget *widget, cairo_t *crf, 
   dt_iop_zonesystem_gui_data_t *g = (dt_iop_zonesystem_gui_data_t *)self->gui_data;
   dt_iop_zonesystem_params_t *p = (dt_iop_zonesystem_params_t *)self->params;
 
+  // FIXME: drop this!
   cairo_surface_t *cst = dt_cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height);
   cairo_t *cr = cairo_create(cst);
 
@@ -827,7 +819,7 @@ static gboolean dt_iop_zonesystem_preview_draw(GtkWidget *widget, cairo_t *crf, 
   GtkStyleContext *context = gtk_widget_get_style_context(self->expander);
   gtk_style_context_get_background_color(context, gtk_widget_get_state_flags(self->expander), &color);
 
-  cairo_set_source_rgba(cr, color.red, color.green, color.blue, color.alpha);
+  gdk_cairo_set_source_rgba(cr, &color);
   cairo_paint(cr);
 
   width -= 2 * inset;
