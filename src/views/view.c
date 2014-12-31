@@ -840,7 +840,8 @@ void dt_view_image_expose(dt_view_image_over_t *image_over, uint32_t imgid, cair
                                                   stride);
     if(zoom == 1)
     {
-      scale = fminf(width / (float)buf.width, height / (float)buf.height);
+      const int32_t tb = DT_PIXEL_APPLY_DPI(dt_conf_get_int("plugins/darkroom/ui/border_size"));
+      scale = fminf((width-2*tb) / (float)buf.width, (height-2*tb) / (float)buf.height);
     }
     else
       scale = fminf(width * imgwd / (float)buf.width, height * imgwd / (float)buf.height);
