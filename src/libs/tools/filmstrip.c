@@ -1104,8 +1104,7 @@ static void _lib_filmstrip_dnd_begin_callback(GtkWidget *widget, GdkDragContext 
       for(int i = 1; i <= buf.height; i++)
         for(int j = 1; j <= buf.width; j++)
           for(int k = 0; k < 3; k++)
-            rgbbuf[(i * (buf.width + 2) + j) * 3 + k]
-                = buf.buf[((i - 1) * buf.width + j - 1) * 4 + 2 - k];
+            rgbbuf[(i * (buf.width + 2) + j) * 3 + k] = buf.buf[((i - 1) * buf.width + j - 1) * 4 + k];
 
       int w = ts, h = ts;
       if(buf.width < buf.height)
