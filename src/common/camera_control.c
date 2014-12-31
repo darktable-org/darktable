@@ -933,7 +933,7 @@ int _camctl_recursive_get_previews(const dt_camctl_t *c, dt_camera_preview_flags
               char fullpath[512];
               snprintf(fullpath, sizeof(fullpath), "%s/%s/%s", c->active_camera->port + 5, path, filename);
               uint8_t *jpg; // gphoto takes care of freeing img eventually
-              uint32_t size;
+              size_t size;
               if (dt_exif_get_thumbnail(fullpath, &jpg, &size))
                 gp_file_set_data_and_size(preview, (char *) jpg, size);
             }
