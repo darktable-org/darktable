@@ -597,24 +597,19 @@ static void _lib_import_update_preview(GtkFileChooser *file_chooser, gpointer da
   {
     uint8_t *buffer;
     uint32_t size;
-    if (dt_exif_get_thumbnail(filename, &buffer, &size)) {
-      have_preview = FALSE;
-    } else {
+    if (!dt_exif_get_thumbnail(filename, &buffer, &size)) {
       // Scale the image to the correct size
       GdkPixbuf *tmp;
       GdkPixbufLoader *loader = gdk_pixbuf_loader_new();
-      if (!gdk_pixbuf_loader_write(loader, buffer, size, NULL)) {
-        have_preview = FALSE;
-      } else {
-        tmp = gdk_pixbuf_loader_get_pixbuf(loader);
-        gdk_pixbuf_loader_close(loader, NULL);
-        free(buffer);
-        float ratio = 1.0 * gdk_pixbuf_get_height(tmp) / gdk_pixbuf_get_width(tmp);
-        int width = 128, height = 128 * ratio;
-        pixbuf = gdk_pixbuf_scale_simple(tmp, width, height, GDK_INTERP_BILINEAR);
-        g_object_unref(loader); // This should clean up tmp as well
-        have_preview = TRUE;
-      }
+      if (!gdk_pixbuf_loader_write(loader, buffer, size, NULL)) goto cleanup;
+      if (!(tmp = gdk_pixbuf_loader_get_pixbuf(loader))) goto cleanup;
+      float ratio = 1.0 * gdk_pixbuf_get_height(tmp) / gdk_pixbuf_get_width(tmp);
+      int width = 128, height = 128 * ratio;
+      pixbuf = gdk_pixbuf_scale_simple(tmp, width, height, GDK_INTERP_BILINEAR);
+    cleanup:
+      gdk_pixbuf_loader_close(loader, NULL);
+      free(buffer);
+      g_object_unref(loader); // This should clean up tmp as well
     }
   }
   if(!have_preview)
