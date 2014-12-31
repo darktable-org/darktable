@@ -26,7 +26,6 @@
 #include "common/mipmap_cache.h"
 #include "control/conf.h"
 #include "control/jobs.h"
-#include "libraw/libraw.h"
 #ifdef HAVE_SQUISH
 #include "squish/csquish.h"
 #endif

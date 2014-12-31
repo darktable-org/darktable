@@ -125,21 +125,6 @@ int dt_imageio_large_thumbnail(const char *filename, uint8_t **buffer, int32_t *
   return 0;
 }
 
-// =================================================
-//   begin libraw wrapper functions:
-// =================================================
-
-#define HANDLE_ERRORS(ret, verb)                                                                             \
-  {                                                                                                          \
-    if(ret)                                                                                                  \
-    {                                                                                                        \
-      if(verb) fprintf(stderr, "[imageio] %s: %s\n", filename, libraw_strerror(ret));                        \
-      libraw_close(raw);                                                                                     \
-      raw = NULL;                                                                                            \
-      return DT_IMAGEIO_FILE_CORRUPTED;                                                                      \
-    }                                                                                                        \
-  }
-
 void dt_imageio_flip_buffers(char *out, const char *in, const size_t bpp, const int wd, const int ht,
                              const int fwd, const int fht, const int stride,
                              const dt_image_orientation_t orientation)
