@@ -495,16 +495,13 @@ add_subdirectory(external/LibRaw)
 list(APPEND LIB_DEPS libraw_r)
 list(APPEND STATIC_LIBS libraw_static)
 
-# same for librawspeed (can switch it off with -DDONT_USE_RAWSPEED, for macs):
-if(NOT DONT_USE_RAWSPEED)
-  add_definitions("-DHAVE_RAWSPEED")
-  add_library(rawspeed_static STATIC IMPORTED)
-  set_target_properties(rawspeed_static PROPERTIES IMPORTED_LOCATION ${CMAKE_CURRENT_BINARY_DIR}/external/rawspeed/librawspeed.a)
-  # compile rawspeed
-  add_subdirectory(external/rawspeed)
-  list(APPEND LIB_DEPS rawspeed)
-  list(APPEND STATIC_LIBS rawspeed_static)
-endif(NOT DONT_USE_RAWSPEED)
+# same for librawspeed
+add_library(rawspeed_static STATIC IMPORTED)
+set_target_properties(rawspeed_static PROPERTIES IMPORTED_LOCATION ${CMAKE_CURRENT_BINARY_DIR}/external/rawspeed/librawspeed.a)
+# compile rawspeed
+add_subdirectory(external/rawspeed)
+list(APPEND LIB_DEPS rawspeed)
+list(APPEND STATIC_LIBS rawspeed_static)
 
 # osm gps map library
 if(USE_GEO)
