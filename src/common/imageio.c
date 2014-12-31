@@ -47,7 +47,6 @@
 #include "develop/develop.h"
 #include "develop/imageop.h"
 #include "develop/blend.h"
-#include "libraw/libraw.h"
 
 #include <inttypes.h>
 #include <stdio.h>
@@ -59,54 +58,13 @@
 #include <strings.h>
 #include <glib/gstdio.h>
 
-// load the jpg thumbnail from the raw
-int dt_imageio_get_thumbnail(const char *filename, uint8_t **buffer, uint32_t *size, int32_t *orientation)
-{
-  int ret = 0;
-  int res = 1;
-
-  libraw_data_t *raw = libraw_init(0);
-  libraw_processed_image_t *image = NULL;
-  ret = libraw_open_file(raw, filename);
-  if(ret) goto libraw_fail;
-  ret = libraw_unpack_thumb(raw);
-  if(ret) goto libraw_fail;
-  ret = libraw_adjust_sizes_info_only(raw);
-  if(ret) goto libraw_fail;
-
-  image = libraw_dcraw_make_mem_thumb(raw, &ret);
-  if(!image || ret || image->type != LIBRAW_IMAGE_JPEG) goto libraw_fail;
-
-  if (orientation)
-    *orientation = raw->sizes.flip;
-  *buffer = (uint8_t *)malloc((size_t) image->data_size);
-  if(!*buffer) goto libraw_fail;
-  *size = image->data_size;
-  memcpy(*buffer, image->data, image->data_size);
-  res = 0;
-
-  // clean up raw stuff.
-  libraw_recycle(raw);
-  libraw_close(raw);
-  free(image);
-  if(0)
-  {
-  libraw_fail:
-    // fprintf(stderr,"[imageio] %s: %s\n", filename, libraw_strerror(ret));
-    libraw_close(raw);
-    res = 1;
-  }
-  return res;
-}
-
 // load a full-res thumbnail:
-int dt_imageio_large_thumbnail(const char *filename, uint8_t **buffer, int32_t *width, int32_t *height,
-                               int32_t *orientation)
+int dt_imageio_large_thumbnail(const char *filename, uint8_t **buffer, int32_t *width, int32_t *height)
 {
   // Get the JPG embedded in the raw
   uint8_t *jpgbuffer;
   uint32_t jpgbuffersize;
-  dt_imageio_get_thumbnail(filename, &jpgbuffer, &jpgbuffersize, orientation);
+  dt_exif_get_thumbnail(filename, &jpgbuffer, &jpgbuffersize);
 
   // Decompress the JPG into our own memory format
   dt_imageio_jpeg_t jpg;

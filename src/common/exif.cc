@@ -48,6 +48,7 @@ extern "C" {
 #include <exiv2/error.hpp>
 #include <exiv2/image.hpp>
 #include <exiv2/exif.hpp>
+#include <exiv2/preview.hpp>
 
 using namespace std;
 
@@ -816,6 +817,50 @@ int dt_exif_read_from_blob(dt_image_t *img, uint8_t *blob, const int size)
   {
     std::string s(e.what());
     std::cerr << "[exiv2] " << s << std::endl;
+    return 1;
+  }
+}
+
+/**
+ * Get the largest possible thumbnail from the image
+ */
+int dt_exif_get_thumbnail(const char *path, uint8_t **buffer, uint32_t *size) {
+  try
+  {
+    Exiv2::Image::AutoPtr image = Exiv2::ImageFactory::open(path);
+    assert(image.get() != 0);
+    image->readMetadata();
+
+    // Get a list of preview images available in the image. The list is sorted
+    // by the preview image pixel size, starting with the smallest preview.
+    Exiv2::PreviewManager loader(*image);
+    Exiv2::PreviewPropertiesList list = loader.getPreviewProperties();
+    if (list.size() == 0) {
+      std::cerr << "[exiv2] couldn't find thumbnail for " << path << std::endl;
+      return 1;
+    }
+
+    Exiv2::PreviewProperties selected = list[0];
+    for (unsigned int i=1; i<list.size(); i++)
+      if (list[i].size_ > selected.size_)
+        selected = list[i];
+
+    // Get the selected preview image
+    Exiv2::PreviewImage preview = loader.getPreviewImage(selected);
+    *buffer = (uint8_t *)malloc((size_t) preview.size());
+    if(!*buffer) {
+      std::cerr << "[exiv2] couldn't allocate memory for thumbnail for" << path << std::endl;
+      return 1;
+    }
+    memcpy(*buffer, preview.pData(), preview.size());
+    //std::cerr << "[exiv2] "<< path << ": found thumbnail "<< preview.width() << "x" << preview.height() << std::endl;
+
+    return 0;
+  }
+  catch(Exiv2::AnyError &e)
+  {
+    std::string s(e.what());
+    std::cerr << "[exiv2] " << path << ": " << s << std::endl;
     return 1;
   }
 }
@@ -2052,67 +2097,6 @@ int dt_exif_xmp_write(const int imgid, const char *filename)
   {
     std::cerr << "[xmp_write] caught exiv2 exception '" << e << "'\n";
     return -1;
-  }
-}
-
-int dt_exif_thumbnail(const char *filename, uint8_t *out, uint32_t width, uint32_t height,
-                      dt_image_orientation_t orientation, uint32_t *wd, uint32_t *ht)
-{
-  // fprintf(stderr, "[exif] trying to load thumbnail `%s'!\n", filename);
-  try
-  {
-    Exiv2::Image::AutoPtr image;
-    image = Exiv2::ImageFactory::open(filename);
-    assert(image.get() != 0);
-    image->readMetadata();
-
-    Exiv2::ExifData &exifData = image->exifData();
-    Exiv2::ExifThumbC thumb(exifData);
-    Exiv2::DataBuf buf = thumb.copy();
-    int res = 1;
-    if(!buf.pData_) return 1;
-
-    // canon crops that thumbnail:
-    int y_beg = 0, y_end = 0;
-    Exiv2::ExifData::const_iterator pos;
-    if((pos = exifData.findKey(Exiv2::ExifKey("Exif.Canon.ThumbnailImageValidArea"))) != exifData.end()
-       && pos->size() && pos->count() == 4)
-    {
-      // pos->toLong(0); // x bounds. we ignore those because canon doesn't seem
-      // to set them.
-      y_beg = pos->toLong(2);
-      y_end = pos->toLong(3);
-    }
-
-    dt_imageio_jpeg_t jpg;
-    if(!dt_imageio_jpeg_decompress_header(buf.pData_, buf.size_, &jpg))
-    {
-      // don't upsample those:
-      if((uint32_t)jpg.width < width || (uint32_t)jpg.height < height) return 1;
-      if(!y_beg && !y_end)
-      {
-        // if those weren't set, do it now:
-        y_beg = 0;
-        y_end = jpg.height - 1;
-      }
-      uint8_t *tmp = (uint8_t *)malloc(sizeof(uint8_t) * jpg.width * jpg.height * 4);
-      if(!tmp) return 1;
-      if(!dt_imageio_jpeg_decompress(&jpg, tmp))
-      {
-        dt_iop_flip_and_zoom_8(tmp + 4 * jpg.width * y_beg, jpg.width, y_end - y_beg + 1, out, width, height,
-                               orientation, wd, ht);
-        res = 0;
-      }
-      free(tmp);
-    }
-
-    // fprintf(stderr, "[exif] loaded thumbnail %d x %d `%s'!\n", jpg.width, jpg.height, filename);
-
-    return res;
-  }
-  catch(Exiv2::AnyError &e)
-  {
-    return 1;
   }
 }
 

@@ -50,10 +50,8 @@ int dt_exif_xmp_attach(const int imgid, const char *filename);
 /** read xmp sidecar file. */
 int dt_exif_xmp_read(dt_image_t *img, const char *filename, const int history_only);
 
-/** load exif thumbnail (these are like 160x120) */
-int dt_exif_thumbnail(const char *filename, uint8_t *out, uint32_t width, uint32_t height,
-                      dt_image_orientation_t orientation, uint32_t *wd, uint32_t *ht);
-
+/** fetch largest exif thumbnail jpg bytestream into buffer*/
+int dt_exif_get_thumbnail(const char *path, uint8_t **buffer, uint32_t *size);
 
 /** thread safe init and cleanup. */
 void dt_exif_init();

@@ -25,6 +25,7 @@
 #include "common/imageio.h"
 #include "common/imageio_jpeg.h"
 #include "common/dt_logo_128x128.h"
+#include "common/exif.h"
 #include "control/control.h"
 #include "control/conf.h"
 #ifdef HAVE_GPHOTO2
@@ -596,7 +597,7 @@ static void _lib_import_update_preview(GtkFileChooser *file_chooser, gpointer da
   {
     uint8_t *buffer;
     uint32_t size;
-    if (dt_imageio_get_thumbnail(filename, &buffer, &size, NULL)) {
+    if (dt_exif_get_thumbnail(filename, &buffer, &size)) {
       have_preview = FALSE;
     } else {
       // Scale the image to the correct size

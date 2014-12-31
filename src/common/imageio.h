@@ -85,12 +85,8 @@ void dt_imageio_flip_buffers_ui8_to_float(float *out, const uint8_t *in, const f
                                           const int fht, const int stride,
                                           const dt_image_orientation_t orientation);
 
-// allocate buffer and return 0 on sucess along with largest jpg bytestream from raw
-int dt_imageio_get_thumbnail(const char *filename, uint8_t **buffer, uint32_t *size, int32_t *orientation);
-
 // allocate buffer and return 0 on success along with largest jpg thumbnail from raw.
-int dt_imageio_large_thumbnail(const char *filename, uint8_t **buffer, int32_t *width, int32_t *height,
-                               dt_image_orientation_t *orientation);
+int dt_imageio_large_thumbnail(const char *filename, uint8_t **buffer, int32_t *width, int32_t *height);
 #endif
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
