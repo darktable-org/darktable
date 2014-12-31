@@ -321,7 +321,24 @@ RawImage DngDecoder::decodeRawInternal() {
   // Crop
   if (raw->hasEntry(ACTIVEAREA)) {
     iPoint2D new_size(mRaw->dim.x, mRaw->dim.y);
-    const uint32 *corners = raw->getEntry(ACTIVEAREA)->getIntArray();
+
+    TiffEntry *active_area = raw->getEntry(ACTIVEAREA);
+    if (active_area->count != 4)
+      ThrowRDE("DNG: active area has %d values instead of 4", active_area->count);
+
+    const uint32 *corners = NULL;
+    if (active_area->type == TIFF_LONG) {
+      corners = active_area->getIntArray();
+    } else if (active_area->type == TIFF_SHORT) {
+      const ushort16 *short_corners = active_area->getShortArray();
+      uint32 *tmp = new uint32[4];
+      for (uint32 i=0; i<4; i++)
+        tmp[i] = short_corners[i];
+      corners = tmp;
+    }
+    else {
+      ThrowRDE("DNG: active area has to be LONG or SHORT");
+    }
     if (iPoint2D(corners[1], corners[0]).isThisInside(mRaw->dim)) {
       if (iPoint2D(corners[3], corners[2]).isThisInside(mRaw->dim)) {
         iRectangle2D crop(corners[1], corners[0], corners[3] - corners[1], corners[2] - corners[0]);
