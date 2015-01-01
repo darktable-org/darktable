@@ -595,9 +595,11 @@ static void _lib_import_update_preview(GtkFileChooser *file_chooser, gpointer da
   have_preview = (pixbuf != NULL);
   if(!have_preview)
   {
-    uint8_t *buffer;
+    uint8_t *buffer = NULL;
     size_t size;
-    if (!dt_exif_get_thumbnail(filename, &buffer, &size)) {
+    char *mime_type = NULL;
+    if(!dt_exif_get_thumbnail(filename, &buffer, &size, &mime_type))
+    {
       // Scale the image to the correct size
       // FIXME: gdk seems much less forgiving to getting slightly misformed
       //        jpg streams from exiv2 than our own code, so not all thumbnails
@@ -611,6 +613,7 @@ static void _lib_import_update_preview(GtkFileChooser *file_chooser, gpointer da
       pixbuf = gdk_pixbuf_scale_simple(tmp, width, height, GDK_INTERP_BILINEAR);
     cleanup:
       gdk_pixbuf_loader_close(loader, NULL);
+      free(mime_type);
       free(buffer);
       g_object_unref(loader); // This should clean up tmp as well
     }

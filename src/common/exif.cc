@@ -824,7 +824,7 @@ int dt_exif_read_from_blob(dt_image_t *img, uint8_t *blob, const int size)
 /**
  * Get the largest possible thumbnail from the image
  */
-int dt_exif_get_thumbnail(const char *path, uint8_t **buffer, size_t *size)
+int dt_exif_get_thumbnail(const char *path, uint8_t **buffer, size_t *size, char **mime_type)
 {
   try
   {
@@ -853,14 +853,14 @@ int dt_exif_get_thumbnail(const char *path, uint8_t **buffer, size_t *size)
     size_t _size = preview.size();
 
     *size = _size;
+    *mime_type = strdup(preview.mimeType().c_str());
     *buffer = (uint8_t *)malloc(_size);
     if(!*buffer) {
-      std::cerr << "[exiv2] couldn't allocate memory for thumbnail for" << path << std::endl;
+      std::cerr << "[exiv2] couldn't allocate memory for thumbnail for " << path << std::endl;
       return 1;
     }
     //std::cerr << "[exiv2] "<< path << ": found thumbnail "<< preview.width() << "x" << preview.height() << std::endl;
     memcpy(*buffer, tmp, _size);
-
 
     return 0;
   }

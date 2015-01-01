@@ -63,32 +63,50 @@ int dt_imageio_large_thumbnail(const char *filename, uint8_t **buffer, int32_t *
 {
   int res = 1;
 
-  // Get the JPG embedded in the raw
-  uint8_t *jpgbuffer = NULL;
-  size_t jpgbuffersize;
+  uint8_t *buf = NULL;
+  char *mime_type = NULL;
+  size_t bufsize;
 
-  if(dt_exif_get_thumbnail(filename, &jpgbuffer, &jpgbuffersize)) return 1;
+  // get the biggest thumb from exif
+  if(dt_exif_get_thumbnail(filename, &buf, &bufsize, &mime_type)) goto error;
 
-  // Decompress the JPG into our own memory format
-  dt_imageio_jpeg_t jpg;
-  if(dt_imageio_jpeg_decompress_header(jpgbuffer, jpgbuffersize, &jpg)) goto error;
-
-  *buffer = (uint8_t *)malloc((size_t)sizeof(uint8_t) * jpg.width * jpg.height * 4);
-  if(!*buffer) goto error;
-
-  *width = jpg.width;
-  *height = jpg.height;
-  if(dt_imageio_jpeg_decompress(&jpg, *buffer))
+  if(strcmp(mime_type, "image/jpeg") == 0)
   {
-    free(*buffer);
-    *buffer = 0;
+    // Decompress the JPG into our own memory format
+    dt_imageio_jpeg_t jpg;
+    if(dt_imageio_jpeg_decompress_header(buf, bufsize, &jpg)) goto error;
+
+    *buffer = (uint8_t *)malloc((size_t)sizeof(uint8_t) * jpg.width * jpg.height * 4);
+    if(!*buffer) goto error;
+
+    *width = jpg.width;
+    *height = jpg.height;
+    if(dt_imageio_jpeg_decompress(&jpg, *buffer))
+    {
+      free(*buffer);
+      *buffer = NULL;
+      goto error;
+    }
+
+    res = 0;
+  }
+  else
+  {
+    // TODO: GM
+  }
+
+  if(res)
+  {
+    fprintf(
+        stderr,
+        "[dt_imageio_large_thumbnail] error: Not an supported thumbnail image format or broken thumbnail: %s",
+        mime_type);
     goto error;
   }
 
-  res = 0;
-
 error:
-  free(jpgbuffer);
+  free(mime_type);
+  free(buf);
   return res;
 }
 
