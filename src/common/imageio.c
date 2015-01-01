@@ -32,6 +32,10 @@
 #ifdef HAVE_OPENJPEG
 #include "common/imageio_j2k.h"
 #endif
+#ifdef HAVE_GRAPHICSMAGICK
+#include <magick/api.h>
+#include <magick/blob.h>
+#endif
 #include "common/imageio_jpeg.h"
 #include "common/imageio_png.h"
 #include "common/imageio_tiff.h"
@@ -92,7 +96,55 @@ int dt_imageio_large_thumbnail(const char *filename, uint8_t **buffer, int32_t *
   }
   else
   {
-    // TODO: GM
+#ifdef HAVE_GRAPHICSMAGICK
+    ExceptionInfo exception;
+    Image *image = NULL;
+    ImageInfo *image_info = NULL;
+
+    GetExceptionInfo(&exception);
+    image_info = CloneImageInfo((ImageInfo *)NULL);
+
+    image = BlobToImage(image_info, buf, bufsize, &exception);
+
+    if(exception.severity != UndefinedException) CatchException(&exception);
+
+    if(!image)
+    {
+      fprintf(stderr, "[dt_imageio_large_thumbnail GM] thumbnail not found?\n");
+      goto error_gm;
+    }
+
+    *width = image->columns;
+    *height = image->rows;
+
+    *buffer = (uint8_t *)malloc((size_t)sizeof(uint8_t) * image->columns * image->rows * 4);
+    if(!*buffer) goto error_gm;
+
+    for(uint32_t row = 0; row < image->rows; row++)
+    {
+      uint8_t *bufprt = *buffer + (size_t)4 * row * image->columns;
+      int gm_ret = DispatchImage(image, 0, row, image->columns, 1, "RGBP", CharPixel, bufprt, &exception);
+
+      if(exception.severity != UndefinedException) CatchException(&exception);
+
+      if(gm_ret != MagickPass)
+      {
+        fprintf(stderr, "[dt_imageio_large_thumbnail GM] error_gm reading thumbnail\n");
+        free(*buffer);
+        *buffer = NULL;
+        goto error_gm;
+      }
+    }
+
+    // fprintf(stderr, "[dt_imageio_large_thumbnail GM] successfully decoded thumbnail\n");
+    res = 0;
+
+  error_gm:
+    if(image) DestroyImage(image);
+    if(image_info) DestroyImageInfo(image_info);
+    DestroyExceptionInfo(&exception);
+    if(res) goto error;
+#endif
   }
 
   if(res)
