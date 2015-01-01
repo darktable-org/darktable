@@ -151,7 +151,7 @@ int dt_imageio_large_thumbnail(const char *filename, uint8_t **buffer, int32_t *
   {
     fprintf(
         stderr,
-        "[dt_imageio_large_thumbnail] error: Not an supported thumbnail image format or broken thumbnail: %s",
+        "[dt_imageio_large_thumbnail] error: Not an supported thumbnail image format or broken thumbnail: %s\n",
         mime_type);
     goto error;
   }
