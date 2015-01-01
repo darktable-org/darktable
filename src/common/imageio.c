@@ -49,6 +49,11 @@
 #include "develop/blend.h"
 #include "libraw/libraw.h"
 
+#ifdef HAVE_GRAPHICSMAGICK
+#include <magick/api.h>
+#include <magick/blob.h>
+#endif
+
 #include <inttypes.h>
 #include <stdio.h>
 #include <stdlib.h>
