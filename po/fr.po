@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: darktable 1.3\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2015-01-01 19:06+0100\n"
-"PO-Revision-Date: 2015-01-01 19:21+0100\n"
+"PO-Revision-Date: 2015-01-01 19:44+0100\n"
 "Last-Translator: Pascal Obry <pascal@obry.net>\n"
 "Language-Team: \n"
 "Language: fr_FR\n"
@@ -4188,7 +4188,7 @@ msgstr "rotation"
 
 #: ../src/iop/colisa.c:74
 msgid "contrast brightness saturation"
-msgstr "contraste luminosité saturation"
+msgstr "contraste lum. saturation"
 
 #: ../src/iop/colisa.c:90 ../src/iop/lowpass.c:161
 msgctxt "accel"
@@ -5209,7 +5209,7 @@ msgstr "gamma"
 
 #: ../src/iop/globaltonemap.c:98
 msgid "global tonemap"
-msgstr "mappage global des tonalités"
+msgstr "mappage global tonalités"
 
 #: ../src/iop/globaltonemap.c:616
 msgid "operator"
@@ -5357,7 +5357,7 @@ msgstr "force du grain à appliquer"
 
 #: ../src/iop/highlights.c:69
 msgid "highlight reconstruction"
-msgstr "récupération des hautes lumières"
+msgstr "récupérer hautes lumières"
 
 #: ../src/iop/highlights.c:736
 msgid "clip highlights"
@@ -6359,7 +6359,7 @@ msgstr ""
 
 #: ../src/iop/tonemap.cc:74
 msgid "tone mapping"
-msgstr "mappage des tonalités"
+msgstr "mappage tonalités"
 
 #: ../src/iop/tonemap.cc:90
 msgctxt "accel"
@@ -7116,7 +7116,7 @@ msgstr "sauver en xmp"
 
 #: ../src/libs/export.c:69
 msgid "export selected"
-msgstr "exportation de la sélection"
+msgstr "exporter sélection"
 
 #: ../src/libs/export.c:446
 msgid "storage options"
