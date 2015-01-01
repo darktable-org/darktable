@@ -150,10 +150,8 @@ void dt_lua_lib_register(lua_State *L, dt_lib_module_t *module)
   dt_lua_module_entry_new_singleton(L, "lib", module->plugin_name, module);
   int my_type = dt_lua_module_entry_get_type(L, "lib", module->plugin_name);
   dt_lua_type_register_parent_type(L, my_type, luaA_type_find(L, "dt_lib_module_t"));
-  luaL_getmetatable(L, luaA_typename(L, my_type));
   lua_pushcfunction(L, lib_tostring);
-  lua_setfield(L, -2, "__tostring");
-  lua_pop(L, 1);
+  dt_lua_type_setmetafield_type(L,my_type,"__tostring");
 };
 
 int dt_lua_init_early_lib(lua_State *L)

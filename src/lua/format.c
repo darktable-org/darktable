@@ -166,10 +166,8 @@ static int write_image(lua_State *L)
 void dt_lua_register_format_type(lua_State *L, dt_imageio_module_format_t *module, luaA_Type type_id)
 {
   dt_lua_type_register_parent_type(L, type_id, luaA_type_find(L, "dt_imageio_module_format_t"));
-  luaL_getmetatable(L, luaA_typename(L, type_id));
   lua_pushlightuserdata(L, module);
-  lua_setfield(L, -2, "__associated_object");
-  lua_pop(L, 1); // pop the metatable
+  dt_lua_type_setmetafield_type(L,type_id,"__associated_object");
   // add to the table
   lua_pushlightuserdata(L, module);
   lua_pushcclosure(L, get_format_params, 1);
