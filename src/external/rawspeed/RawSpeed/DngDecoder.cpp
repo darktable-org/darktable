@@ -318,6 +318,25 @@ RawImage DngDecoder::decodeRawInternal() {
     ThrowRDE("DNG Decoder: Image could not be read:\n%s", e.what());
   }
 
+  // Fetch the white balance
+  if (mRootIFD->hasEntryRecursive(ASSHOTNEUTRAL)) {
+    TiffEntry *as_shot_neutral = mRootIFD->getEntryRecursive(ASSHOTNEUTRAL);
+    if (as_shot_neutral->count != 3)
+      ThrowRDE("DNG: active area has %d values instead of 3", as_shot_neutral->count);
+
+    if (as_shot_neutral->type == TIFF_SHORT) {
+      const ushort16 *tmp = as_shot_neutral->getShortArray();
+      for (uint32 i=0; i<3; i++)
+        mRaw->wbCoeffs[i] = 1.0f/tmp[i];
+    } else if (as_shot_neutral->type == TIFF_RATIONAL) {
+      const uint32 *tmp = as_shot_neutral->getIntArray();
+      for (uint32 i=0; i<3; i++)
+        mRaw->wbCoeffs[i] = (tmp[i*2+1]*1.0f)/tmp[i*2];
+    } else {
+      ThrowRDE("DNG: AsShotNeutral has to be SHORT or RATIONAL");
+    }
+  }
+
   // Crop
   if (raw->hasEntry(ACTIVEAREA)) {
     iPoint2D new_size(mRaw->dim.x, mRaw->dim.y);
