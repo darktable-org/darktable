@@ -32,6 +32,10 @@
 #ifdef HAVE_OPENJPEG
 #include "common/imageio_j2k.h"
 #endif
+#ifdef HAVE_GRAPHICSMAGICK
+#include <magick/api.h>
+#include <magick/blob.h>
+#endif
 #include "common/imageio_jpeg.h"
 #include "common/imageio_png.h"
 #include "common/imageio_tiff.h"
@@ -63,32 +67,98 @@ int dt_imageio_large_thumbnail(const char *filename, uint8_t **buffer, int32_t *
 {
   int res = 1;
 
-  // Get the JPG embedded in the raw
-  uint8_t *jpgbuffer = NULL;
-  size_t jpgbuffersize;
+  uint8_t *buf = NULL;
+  char *mime_type = NULL;
+  size_t bufsize;
 
-  if(dt_exif_get_thumbnail(filename, &jpgbuffer, &jpgbuffersize)) return 1;
+  // get the biggest thumb from exif
+  if(dt_exif_get_thumbnail(filename, &buf, &bufsize, &mime_type)) goto error;
 
-  // Decompress the JPG into our own memory format
-  dt_imageio_jpeg_t jpg;
-  if(dt_imageio_jpeg_decompress_header(jpgbuffer, jpgbuffersize, &jpg)) goto error;
-
-  *buffer = (uint8_t *)malloc((size_t)sizeof(uint8_t) * jpg.width * jpg.height * 4);
-  if(!*buffer) goto error;
-
-  *width = jpg.width;
-  *height = jpg.height;
-  if(dt_imageio_jpeg_decompress(&jpg, *buffer))
+  if(strcmp(mime_type, "image/jpeg") == 0)
   {
-    free(*buffer);
-    *buffer = 0;
+    // Decompress the JPG into our own memory format
+    dt_imageio_jpeg_t jpg;
+    if(dt_imageio_jpeg_decompress_header(buf, bufsize, &jpg)) goto error;
+
+    *buffer = (uint8_t *)malloc((size_t)sizeof(uint8_t) * jpg.width * jpg.height * 4);
+    if(!*buffer) goto error;
+
+    *width = jpg.width;
+    *height = jpg.height;
+    if(dt_imageio_jpeg_decompress(&jpg, *buffer))
+    {
+      free(*buffer);
+      *buffer = NULL;
+      goto error;
+    }
+
+    res = 0;
+  }
+  else
+  {
+#ifdef HAVE_GRAPHICSMAGICK
+    ExceptionInfo exception;
+    Image *image = NULL;
+    ImageInfo *image_info = NULL;
+
+    GetExceptionInfo(&exception);
+    image_info = CloneImageInfo((ImageInfo *)NULL);
+
+    image = BlobToImage(image_info, buf, bufsize, &exception);
+
+    if(exception.severity != UndefinedException) CatchException(&exception);
+
+    if(!image)
+    {
+      fprintf(stderr, "[dt_imageio_large_thumbnail GM] thumbnail not found?\n");
+      goto error_gm;
+    }
+
+    *width = image->columns;
+    *height = image->rows;
+
+    *buffer = (uint8_t *)malloc((size_t)sizeof(uint8_t) * image->columns * image->rows * 4);
+    if(!*buffer) goto error_gm;
+
+    for(uint32_t row = 0; row < image->rows; row++)
+    {
+      uint8_t *bufprt = *buffer + (size_t)4 * row * image->columns;
+      int gm_ret = DispatchImage(image, 0, row, image->columns, 1, "RGBP", CharPixel, bufprt, &exception);
+
+      if(exception.severity != UndefinedException) CatchException(&exception);
+
+      if(gm_ret != MagickPass)
+      {
+        fprintf(stderr, "[dt_imageio_large_thumbnail GM] error_gm reading thumbnail\n");
+        free(*buffer);
+        *buffer = NULL;
+        goto error_gm;
+      }
+    }
+
+    // fprintf(stderr, "[dt_imageio_large_thumbnail GM] successfully decoded thumbnail\n");
+    res = 0;
+
+  error_gm:
+    if(image) DestroyImage(image);
+    if(image_info) DestroyImageInfo(image_info);
+    DestroyExceptionInfo(&exception);
+    if(res) goto error;
+#endif
+  }
+
+  if(res)
+  {
+    fprintf(
+        stderr,
+        "[dt_imageio_large_thumbnail] error: Not an supported thumbnail image format or broken thumbnail: %s",
+        mime_type);
     goto error;
   }
 
-  res = 0;
-
 error:
-  free(jpgbuffer);
+  free(mime_type);
+  free(buf);
   return res;
 }
 

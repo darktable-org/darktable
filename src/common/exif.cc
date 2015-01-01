@@ -824,7 +824,7 @@ int dt_exif_read_from_blob(dt_image_t *img, uint8_t *blob, const int size)
 /**
  * Get the largest possible thumbnail from the image
  */
-int dt_exif_get_thumbnail(const char *path, uint8_t **buffer, size_t *size)
+int dt_exif_get_thumbnail(const char *path, uint8_t **buffer, size_t *size, char **mime_type)
 {
   try
   {
@@ -832,47 +832,35 @@ int dt_exif_get_thumbnail(const char *path, uint8_t **buffer, size_t *size)
     assert(image.get() != 0);
     image->readMetadata();
 
-    // Get a list of preview images available in the image.
+    // Get a list of preview images available in the image. The list is sorted
+    // by the preview image pixel size, starting with the smallest preview.
     Exiv2::PreviewManager loader(*image);
     Exiv2::PreviewPropertiesList list = loader.getPreviewProperties();
-    if (list.size() == 0) {
+    if(list.empty())
+    {
       std::cerr << "[exiv2] couldn't find thumbnail for " << path << std::endl;
       return 1;
     }
+
     // Select the largest one
     // FIXME: We could probably select a smaller thumbnail to match the mip size
     //        we actually want to create. Is it really much faster though?
-    Exiv2::PreviewProperties selected = list[0];
-    for (unsigned int i=1; i<list.size(); i++)
-      if (list[i].size_ > selected.size_)
-        selected = list[i];
+    Exiv2::PreviewProperties selected = list.back();
 
     // Get the selected preview image
     Exiv2::PreviewImage preview = loader.getPreviewImage(selected);
     const unsigned  char *tmp = preview.pData();
     size_t _size = preview.size();
 
-    // Workaround the fact that exiv2 sometimes returns prepended garbage
-    while(_size > 4 && (tmp[0] != 0xff || tmp[1] != 0xd8))
-    {
-      tmp++;
-      _size--;
-    }
-    if(_size == 0)
-    {
-      std::cerr << "[exiv2] thumbnail doesn't seem to be a JPG " << path << std::endl;
-      return 1;
-    }
-
     *size = _size;
+    *mime_type = strdup(preview.mimeType().c_str());
     *buffer = (uint8_t *)malloc(_size);
     if(!*buffer) {
-      std::cerr << "[exiv2] couldn't allocate memory for thumbnail for" << path << std::endl;
+      std::cerr << "[exiv2] couldn't allocate memory for thumbnail for " << path << std::endl;
       return 1;
     }
     //std::cerr << "[exiv2] "<< path << ": found thumbnail "<< preview.width() << "x" << preview.height() << std::endl;
     memcpy(*buffer, tmp, _size);
-
 
     return 0;
   }

@@ -51,7 +51,7 @@ int dt_exif_xmp_attach(const int imgid, const char *filename);
 int dt_exif_xmp_read(dt_image_t *img, const char *filename, const int history_only);
 
 /** fetch largest exif thumbnail jpg bytestream into buffer*/
-int dt_exif_get_thumbnail(const char *path, uint8_t **buffer, size_t *size);
+int dt_exif_get_thumbnail(const char *path, uint8_t **buffer, size_t *size, char **mime_type);
 
 /** thread safe init and cleanup. */
 void dt_exif_init();

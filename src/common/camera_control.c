@@ -930,12 +930,16 @@ int _camctl_recursive_get_previews(const dt_camctl_t *c, dt_camera_preview_flags
             }
             else if(!strncmp(c->active_camera->port, "disk:", 5))
             {
-              char fullpath[512];
+              char fullpath[PATH_MAX] = { 0 };
               snprintf(fullpath, sizeof(fullpath), "%s/%s/%s", c->active_camera->port + 5, path, filename);
-              uint8_t *jpg; // gphoto takes care of freeing jpg eventually
-              size_t size;
-              if(!dt_exif_get_thumbnail(fullpath, &jpg, &size))
-                gp_file_set_data_and_size(preview, (char *) jpg, size);
+              uint8_t *buf = NULL; // gphoto takes care of freeing it eventually
+              size_t bufsize;
+              char *mime_type = NULL;
+
+              if(!dt_exif_get_thumbnail(fullpath, &buf, &bufsize, &mime_type))
+                gp_file_set_data_and_size(preview, (char *)buf, bufsize);
+
+              free(mime_type);
             }
           }
         }
