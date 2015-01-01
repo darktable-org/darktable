@@ -50,8 +50,17 @@ void dt_lua_goto_subtable(lua_State *L, const char *sub_name);
 
 
 void dt_lua_init_lock();
-gboolean dt_lua_lock();
-void dt_lua_unlock(gboolean relock_gdk);
+void dt_lua_lock();
+void dt_lua_unlock();
+
+/*
+   call a lua function that is its upvalue, with an unchanged stack
+   the function is called within the gtk thread so it
+   IS NOT ALLOWED TO CALL USER CODE AND SHOULD BE FAST
+
+
+   */
+int dt_lua_gtk_wrap(lua_State*L);
 
 #define dt_lua_debug_stack(L) dt_lua_debug_stack_internal(L, __FUNCTION__, __LINE__)
 void dt_lua_debug_stack_internal(lua_State *L, const char *function, int line);

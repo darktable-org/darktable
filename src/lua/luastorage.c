@@ -94,7 +94,7 @@ static int store_wrapper(struct dt_imageio_module_storage_t *self, struct dt_ima
   d->imgids = g_list_prepend(d->imgids, (void *)(intptr_t)imgid);
   d->file_names = g_list_prepend(d->file_names, complete_name);
 
-  gboolean has_lock = dt_lua_lock();
+  dt_lua_lock();
   if(!d->data_created)
   {
     lua_pushlightuserdata(darktable.lua_state.state, d);
@@ -114,7 +114,7 @@ static int store_wrapper(struct dt_imageio_module_storage_t *self, struct dt_ima
   if(lua_isnil(L, -1))
   {
     lua_pop(L, 3);
-    dt_lua_unlock(has_lock);
+    dt_lua_unlock();
     g_free(filename);
     return 0;
   }
@@ -131,7 +131,7 @@ static int store_wrapper(struct dt_imageio_module_storage_t *self, struct dt_ima
   dt_lua_do_chunk_silent(L, 8, 1);
   int result = lua_toboolean(L, -1);
   lua_pop(L, 3);
-  dt_lua_unlock(has_lock);
+  dt_lua_unlock();
   g_free(filename);
   return result;
 }
@@ -139,7 +139,7 @@ static void initialize_store_wrapper(struct dt_imageio_module_storage_t *self, d
                                      dt_imageio_module_format_t *format, dt_imageio_module_data_t *fdata,
                                      GList **images, const gboolean high_quality)
 {
-  gboolean has_lock = dt_lua_lock();
+  dt_lua_lock();
   lua_State *L = darktable.lua_state.state;
 
   lua_getfield(L, LUA_REGISTRYINDEX, "dt_lua_storages");
@@ -149,7 +149,7 @@ static void initialize_store_wrapper(struct dt_imageio_module_storage_t *self, d
   if(lua_isnil(L, -1))
   {
     lua_pop(L, 3);
-    dt_lua_unlock(has_lock);
+    dt_lua_unlock();
     return;
   }
 
@@ -195,11 +195,11 @@ static void initialize_store_wrapper(struct dt_imageio_module_storage_t *self, d
     *images = new_images;
   }
   lua_pop(L, 3);
-  dt_lua_unlock(has_lock);
+  dt_lua_unlock();
 }
 static void finalize_store_wrapper(struct dt_imageio_module_storage_t *self, dt_imageio_module_data_t *data)
 {
-  gboolean has_lock = dt_lua_lock();
+  dt_lua_lock();
   lua_State *L = darktable.lua_state.state;
 
   lua_getfield(L, LUA_REGISTRYINDEX, "dt_lua_storages");
@@ -209,7 +209,7 @@ static void finalize_store_wrapper(struct dt_imageio_module_storage_t *self, dt_
   if(lua_isnil(L, -1))
   {
     lua_pop(L, 3);
-    dt_lua_unlock(has_lock);
+    dt_lua_unlock();
     return;
   }
 
@@ -240,7 +240,7 @@ static void finalize_store_wrapper(struct dt_imageio_module_storage_t *self, dt_
 
   dt_lua_do_chunk_silent(L, 3, 0);
   lua_pop(L, 2);
-  dt_lua_unlock(has_lock);
+  dt_lua_unlock();
 }
 static size_t params_size_wrapper(struct dt_imageio_module_storage_t *self)
 {
@@ -268,11 +268,11 @@ static int32_t free_param_wrapper_job(dt_job_t *job)
   g_list_free_full(d->file_names, free);
   if(d->data_created)
   {
-    gboolean has_lock = dt_lua_lock();
+    dt_lua_lock();
     lua_pushlightuserdata(darktable.lua_state.state, d);
     lua_pushnil(darktable.lua_state.state);
     lua_settable(darktable.lua_state.state, LUA_REGISTRYINDEX);
-    dt_lua_unlock(has_lock);
+    dt_lua_unlock();
   }
   free(d);
   free(params);

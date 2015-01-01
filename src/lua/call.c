@@ -125,7 +125,7 @@ int dt_lua_do_chunk(lua_State *L, int nargs, int nresults)
             }
             int wait_time = lua_tointeger(new_thread, -1);
             lua_pop(new_thread, 3);
-            dt_lua_unlock(false);
+            dt_lua_unlock();
             g_usleep(wait_time * 1000);
             dt_lua_lock();
             thread_result = lua_resume(new_thread, L, 0);
@@ -147,7 +147,7 @@ int dt_lua_do_chunk(lua_State *L, int nargs, int nresults)
             fd_set fdset;
             FD_ZERO(&fdset);
             FD_SET(myfileno, &fdset);
-            dt_lua_unlock(false);
+            dt_lua_unlock();
             select(myfileno + 1, &fdset, NULL, NULL, 0);
             dt_lua_lock();
             thread_result = lua_resume(new_thread, L, 0);
@@ -164,7 +164,7 @@ int dt_lua_do_chunk(lua_State *L, int nargs, int nresults)
             }
             const char *command = lua_tostring(new_thread, -1);
             lua_pop(new_thread, 3);
-            dt_lua_unlock(false);
+            dt_lua_unlock();
             int result = system(command);
             dt_lua_lock();
             lua_pushinteger(new_thread, result);
@@ -281,7 +281,7 @@ static int ending_cb(lua_State *L)
 
 static int32_t dispatch_callback_job(dt_job_t *job)
 {
-  gboolean has_lock = dt_lua_lock();
+  dt_lua_lock();
   lua_State* L= darktable.lua_state.state;
   int reference = GPOINTER_TO_INT(dt_control_job_get_params(job));
   lua_getfield(L, LUA_REGISTRYINDEX, "dt_lua_bg_threads");
@@ -295,7 +295,7 @@ static int32_t dispatch_callback_job(dt_job_t *job)
   lua_pushnil(L);
   lua_settable(L,-3);
   lua_pop(L,1);
-  dt_lua_unlock(has_lock);
+  dt_lua_unlock();
   return 0;
 }
 

@@ -63,13 +63,13 @@ typedef struct
 
 static int32_t view_changed_callback_job(dt_job_t *job)
 {
-  gboolean has_lock = dt_lua_lock();
+  dt_lua_lock();
   view_changed_callback_data_t *t = dt_control_job_get_params(job);
   dt_lua_module_entry_push(darktable.lua_state.state, "view", t->old_view->module_name);
   dt_lua_module_entry_push(darktable.lua_state.state, "view", t->new_view->module_name);
   free(t);
   dt_lua_event_trigger(darktable.lua_state.state, "view-changed", 2);
-  dt_lua_unlock(has_lock);
+  dt_lua_unlock();
   return 0;
 }
 

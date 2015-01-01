@@ -243,13 +243,13 @@ typedef struct
 } shortcut_callback_data;
 static int32_t shortcut_callback_job(dt_job_t *job)
 {
-  gboolean has_lock = dt_lua_lock();
+  dt_lua_lock();
   shortcut_callback_data *t = dt_control_job_get_params(job);
   lua_pushstring(darktable.lua_state.state, t->name);
   free(t->name);
   free(t);
   dt_lua_event_trigger(darktable.lua_state.state, "shortcut", 1);
-  dt_lua_unlock(has_lock);
+  dt_lua_unlock();
   return 0;
 }
 static gboolean shortcut_callback(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
@@ -302,7 +302,7 @@ static void on_export_image_tmpfile(gpointer instance, int imgid, char *filename
                                     dt_imageio_module_storage_t *storage, dt_imageio_module_data_t *sdata,
                                     gpointer user_data)
 {
-  gboolean has_lock = dt_lua_lock();
+  dt_lua_lock();
   luaA_push(darktable.lua_state.state, dt_lua_image_t, &imgid);
   lua_pushstring(darktable.lua_state.state, filename);
   luaA_push_type(darktable.lua_state.state, format->parameter_lua_type, fdata);
@@ -315,7 +315,7 @@ static void on_export_image_tmpfile(gpointer instance, int imgid, char *filename
     lua_pushnil(darktable.lua_state.state);
   }
   dt_lua_event_trigger(darktable.lua_state.state, "intermediate-export-image", 4);
-  dt_lua_unlock(has_lock);
+  dt_lua_unlock();
 }
 
 

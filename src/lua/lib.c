@@ -30,9 +30,7 @@ static int expanded_member(lua_State *L)
   }
   else
   {
-    dt_lua_unlock(true);
     dt_lib_gui_set_expanded(module, lua_toboolean(L, 3));
-    dt_lua_lock();
     return 0;
   }
 }
@@ -47,9 +45,7 @@ static int visible_member(lua_State *L)
   }
   else
   {
-    dt_lua_unlock(true);
     dt_lib_set_visible(module, lua_toboolean(L, 3));
-    dt_lua_lock();
     return 0;
   }
 }
@@ -196,6 +192,7 @@ int dt_lua_init_early_lib(lua_State *L)
   lua_pushcfunction(L, expandable_member);
   dt_lua_type_register_const(L, dt_lib_module_t, "expandable");
   lua_pushcfunction(L, expanded_member);
+  lua_pushcclosure(L,dt_lua_gtk_wrap,1);
   dt_lua_type_register(L, dt_lib_module_t, "expanded");
 #if 0
   lua_pushcfunction(L,position_member);
@@ -206,6 +203,7 @@ int dt_lua_init_early_lib(lua_State *L)
   dt_lua_type_register_const(L,dt_lib_module_t,"views");
 #endif
   lua_pushcfunction(L, visible_member);
+  lua_pushcclosure(L,dt_lua_gtk_wrap,1);
   dt_lua_type_register(L, dt_lib_module_t, "visible");
   lua_pushcfunction(L, on_screen_member);
   dt_lua_type_register_const(L, dt_lib_module_t, "on_screen");

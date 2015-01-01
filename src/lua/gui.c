@@ -47,10 +47,8 @@ static int selection_cb(lua_State *L)
       lua_pop(L, 1);
     }
     new_selection = g_list_reverse(new_selection);
-    dt_lua_unlock(true); // we need the gdk lock to update ui information
     dt_selection_clear(darktable.selection);
     dt_selection_select_list(darktable.selection, new_selection);
-    dt_lua_lock();
     g_list_free(new_selection);
   }
   lua_newtable(L);
@@ -127,14 +125,14 @@ static int32_t lua_job_canceled_job(dt_job_t *job)
 {
   dt_progress_t *progress = dt_control_job_get_params(job);
   lua_State *L = darktable.lua_state.state;
-  gboolean has_lock = dt_lua_lock();
+  dt_lua_lock();
   luaA_push(L, dt_lua_backgroundjob_t, &progress);
   lua_getuservalue(L, -1);
   lua_getfield(L, -1, "cancel_callback");
   lua_pushvalue(L, -3);
   dt_lua_do_chunk(L, 1, 0);
   lua_pop(L, 2);
-  dt_lua_unlock(has_lock);
+  dt_lua_unlock();
   return 0;
 }
 
@@ -156,13 +154,11 @@ static int lua_create_job(lua_State *L)
     luaL_checktype(L, 3, LUA_TFUNCTION);
     cancellable = TRUE;
   }
-  dt_lua_unlock(false);
   dt_progress_t *progress = dt_control_progress_create(darktable.control, has_progress_bar, message);
   if(cancellable)
   {
     dt_control_progress_make_cancellable(darktable.control, progress, lua_job_cancelled, progress);
   }
-  dt_lua_lock();
   luaA_push(L, dt_lua_backgroundjob_t, &progress);
   if(cancellable)
   {
@@ -178,19 +174,13 @@ static int lua_job_progress(lua_State *L)
 {
   dt_progress_t *progress;
   luaA_to(L, dt_lua_backgroundjob_t, &progress, 1);
-  dt_lua_unlock(false);
-  gboolean i_own_lock = dt_control_gdk_lock();
   dt_pthread_mutex_lock(&darktable.control->progress_system.mutex);
   GList *iter = g_list_find(darktable.control->progress_system.list, progress);
   dt_pthread_mutex_unlock(&darktable.control->progress_system.mutex);
-  if(i_own_lock) dt_control_gdk_unlock();
-  dt_lua_lock();
   if(!iter) luaL_error(L, "Accessing an invalid job");
   if(lua_isnone(L, 3))
   {
-    dt_lua_unlock(false);
     double result = dt_control_progress_get_progress(progress);
-    dt_lua_lock();
     if(!dt_control_progress_has_progress_bar(progress))
       lua_pushnil(L);
     else
@@ -201,9 +191,7 @@ static int lua_job_progress(lua_State *L)
   {
     double value;
     luaA_to(L, progress_double, &value, 3);
-    dt_lua_unlock(false);
     dt_control_progress_set_progress(darktable.control, progress, value);
-    dt_lua_lock();
     return 0;
   }
 }
@@ -214,13 +202,9 @@ static int lua_job_valid(lua_State *L)
   luaA_to(L, dt_lua_backgroundjob_t, &progress, 1);
   if(lua_isnone(L, 3))
   {
-    dt_lua_unlock(false);
-    gboolean i_own_lock = dt_control_gdk_lock();
     dt_pthread_mutex_lock(&darktable.control->progress_system.mutex);
     GList *iter = g_list_find(darktable.control->progress_system.list, progress);
     dt_pthread_mutex_unlock(&darktable.control->progress_system.mutex);
-    if(i_own_lock) dt_control_gdk_unlock();
-    dt_lua_lock();
 
     if(iter)
       lua_pushboolean(L, true);
@@ -233,9 +217,7 @@ static int lua_job_valid(lua_State *L)
   {
     int validity = lua_toboolean(L, 3);
     if(validity) return luaL_argerror(L, 3, "a job can not be made valid");
-    dt_lua_unlock(false);
     dt_control_progress_destroy(darktable.control, progress);
-    dt_lua_lock();
     return 0;
   }
 }
@@ -247,14 +229,14 @@ typedef struct
 
 static int32_t on_mouse_over_image_changed_callback_job(dt_job_t *job)
 {
-  gboolean has_lock = dt_lua_lock();
+  dt_lua_lock();
   on_mouse_over_image_changed_callback_data_t *t = dt_control_job_get_params(job);
   int n_params = (t->imgid != -1);
   if(n_params)
     luaA_push(darktable.lua_state.state, dt_lua_image_t, &t->imgid);
   dt_lua_event_trigger(darktable.lua_state.state, "mouse-over-image-changed", n_params);
   free(t); 
-  dt_lua_unlock(has_lock);
+  dt_lua_unlock();
   return 0;
 }
 
@@ -291,6 +273,7 @@ int dt_lua_init_gui(lua_State *L)
     lua_pop(L, 1);
 
     lua_pushcfunction(L, selection_cb);
+    lua_pushcclosure(L,dt_lua_gtk_wrap,1);
     lua_pushcclosure(L, dt_lua_type_member_common, 1);
     dt_lua_type_register_const_type(L, type_id, "selection");
     lua_pushcfunction(L, hovered_cb);
