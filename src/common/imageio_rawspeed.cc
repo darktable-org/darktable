@@ -185,6 +185,9 @@ dt_imageio_retval_t dt_imageio_open_rawspeed(dt_image_t *img, const char *filena
     img->fuji_rotation_pos = r->fujiRotationPos;
     img->pixel_aspect_ratio = (float)r->pixelAspectRatio;
 
+    for (int i=0; i<3; i++)
+      img->wb_coeffs[i] = r->wbCoeffs[i];
+
     void *buf = dt_mipmap_cache_alloc(img, DT_MIPMAP_FULL, a);
     if(!buf) return DT_IMAGEIO_CACHE_FULL;
 

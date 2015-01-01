@@ -107,6 +107,9 @@ public:
   // >1 means the image needs to be stretched horizontally (2 mean 2x)
   double pixelAspectRatio;
 
+  // White balance coefficients of the image
+  float wbCoeffs[3];
+
   // If the image already has WB corrected (used for Nikon sNEF files)
   bool preAppliedWB;
 

@@ -44,6 +44,9 @@ RawImageData::RawImageData(void):
   fujiRotationPos = 0;
   pixelAspectRatio = 1;
   preAppliedWB = FALSE;
+  wbCoeffs[0] = NAN;
+  wbCoeffs[1] = NAN;
+  wbCoeffs[2] = NAN;
 }
 
 RawImageData::RawImageData(iPoint2D _dim, uint32 _bpc, uint32 _cpp) :
@@ -59,6 +62,9 @@ RawImageData::RawImageData(iPoint2D _dim, uint32 _bpc, uint32 _cpp) :
   fujiRotationPos = 0;
   pixelAspectRatio = 1;
   preAppliedWB = FALSE;
+  wbCoeffs[0] = NAN;
+  wbCoeffs[1] = NAN;
+  wbCoeffs[2] = NAN;
   createData();
   pthread_mutex_init(&mymutex, NULL);
   pthread_mutex_init(&errMutex, NULL);
