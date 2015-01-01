@@ -44,11 +44,9 @@ typedef enum dt_imageio_levels_t
 
 // opens the file using pfm, hdr, exr.
 dt_imageio_retval_t dt_imageio_open_hdr(dt_image_t *img, const char *filename, dt_mipmap_cache_allocator_t a);
-// opens the file using libraw, doing interpolation and stuff
-dt_imageio_retval_t dt_imageio_open_raw(dt_image_t *img, const char *filename, dt_mipmap_cache_allocator_t a);
 // opens file using imagemagick
 dt_imageio_retval_t dt_imageio_open_ldr(dt_image_t *img, const char *filename, dt_mipmap_cache_allocator_t a);
-// try both, first libraw.
+// try all the options in sequence
 dt_imageio_retval_t dt_imageio_open(dt_image_t *img, const char *filename, dt_mipmap_cache_allocator_t a);
 // tries to open the files not opened by the other routines using GraphicsMagick (if supported)
 dt_imageio_retval_t dt_imageio_open_exotic(dt_image_t *img, const char *filename,
@@ -88,8 +86,7 @@ void dt_imageio_flip_buffers_ui8_to_float(float *out, const uint8_t *in, const f
                                           const dt_image_orientation_t orientation);
 
 // allocate buffer and return 0 on success along with largest jpg thumbnail from raw.
-int dt_imageio_large_thumbnail(const char *filename, uint8_t **buffer, int32_t *width, int32_t *height,
-                               dt_image_orientation_t *orientation);
+int dt_imageio_large_thumbnail(const char *filename, uint8_t **buffer, int32_t *width, int32_t *height);
 #endif
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

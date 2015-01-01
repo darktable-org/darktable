@@ -15,7 +15,6 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
-#ifdef HAVE_RAWSPEED
 #ifdef _OPENMP
 #include <omp.h>
 #endif
@@ -283,8 +282,6 @@ dt_imageio_retval_t dt_imageio_open_rawspeed_sraw(dt_image_t *img, RawImage r, d
 
   return DT_IMAGEIO_OK;
 }
-
-#endif
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

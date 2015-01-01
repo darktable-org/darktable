@@ -20,8 +20,8 @@
 #include "config.h"
 #endif
 #include "common/camera_control.h"
+#include "common/exif.h"
 #include "control/control.h"
-#include "libraw/libraw.h"
 #include <gphoto2/gphoto2-file.h>
 
 #include <unistd.h>
@@ -930,26 +930,16 @@ int _camctl_recursive_get_previews(const dt_camctl_t *c, dt_camera_preview_flags
             }
             else if(!strncmp(c->active_camera->port, "disk:", 5))
             {
-              int ret;
-              char fullpath[512];
+              char fullpath[PATH_MAX] = { 0 };
               snprintf(fullpath, sizeof(fullpath), "%s/%s/%s", c->active_camera->port + 5, path, filename);
-              libraw_data_t *raw = libraw_init(0);
-              libraw_processed_image_t *image = NULL;
-              ret = libraw_open_file(raw, fullpath);
-              if(ret) goto libraw_thumb_fail;
-              ret = libraw_unpack_thumb(raw);
-              if(ret) goto libraw_thumb_fail;
-              ret = libraw_adjust_sizes_info_only(raw);
-              if(ret) goto libraw_thumb_fail;
-              image = libraw_dcraw_make_mem_thumb(raw, &ret);
-              if(!image || ret) goto libraw_thumb_fail;
-              char *img = (char *)malloc(image->data_size); // gphoto takes care of freeing img eventually
-              if(!img) goto libraw_thumb_fail;
-              memcpy(img, image->data, image->data_size);
-              gp_file_set_data_and_size(preview, img, (unsigned long int)image->data_size);
-              free(image);
-            libraw_thumb_fail:
-              libraw_close(raw);
+              uint8_t *buf = NULL; // gphoto takes care of freeing it eventually
+              size_t bufsize;
+              char *mime_type = NULL;
+
+              if(!dt_exif_get_thumbnail(fullpath, &buf, &bufsize, &mime_type))
+                gp_file_set_data_and_size(preview, (char *)buf, bufsize);
+
+              free(mime_type);
             }
           }
         }
