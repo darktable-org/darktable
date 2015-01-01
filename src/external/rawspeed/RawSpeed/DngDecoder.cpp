@@ -322,7 +322,7 @@ RawImage DngDecoder::decodeRawInternal() {
   if (mRootIFD->hasEntryRecursive(ASSHOTNEUTRAL)) {
     TiffEntry *as_shot_neutral = mRootIFD->getEntryRecursive(ASSHOTNEUTRAL);
     if (as_shot_neutral->count != 3)
-      ThrowRDE("DNG: active area has %d values instead of 3", as_shot_neutral->count);
+      ThrowRDE("DNG: AsShotNeutral has %d values instead of 3", as_shot_neutral->count);
 
     if (as_shot_neutral->type == TIFF_SHORT) {
       const ushort16 *tmp = as_shot_neutral->getShortArray();
@@ -335,6 +335,19 @@ RawImage DngDecoder::decodeRawInternal() {
     } else {
       ThrowRDE("DNG: AsShotNeutral has to be SHORT or RATIONAL");
     }
+  } else if (mRootIFD->hasEntryRecursive(ASSHOTWHITEXY)) {
+    TiffEntry *as_shot_white_xy = mRootIFD->getEntryRecursive(ASSHOTWHITEXY);
+    if (as_shot_white_xy->count != 2)
+      ThrowRDE("DNG: AsShotXY has %d values instead of 2", as_shot_white_xy->count);
+
+    const uint32 *tmp = as_shot_white_xy->getIntArray();
+    mRaw->wbCoeffs[0] = tmp[1]/tmp[0];
+    mRaw->wbCoeffs[1] = tmp[3]/tmp[2];
+    mRaw->wbCoeffs[2] = 1 - mRaw->wbCoeffs[0] - mRaw->wbCoeffs[1];
+
+    const float d65_white[3] = { 0.950456, 1, 1.088754 };
+    for (uint32 i=0; i<3; i++)
+        mRaw->wbCoeffs[i] /= d65_white[i];
   }
 
   // Crop
