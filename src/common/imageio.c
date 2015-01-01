@@ -32,10 +32,6 @@
 #ifdef HAVE_OPENJPEG
 #include "common/imageio_j2k.h"
 #endif
-#ifdef HAVE_GRAPHICSMAGICK
-#include <magick/api.h>
-#include <magick/blob.h>
-#endif
 #include "common/imageio_jpeg.h"
 #include "common/imageio_png.h"
 #include "common/imageio_tiff.h"
@@ -51,6 +47,11 @@
 #include "develop/develop.h"
 #include "develop/imageop.h"
 #include "develop/blend.h"
+
+#ifdef HAVE_GRAPHICSMAGICK
+#include <magick/api.h>
+#include <magick/blob.h>
+#endif
 
 #include <inttypes.h>
 #include <stdio.h>
