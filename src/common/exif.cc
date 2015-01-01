@@ -852,18 +852,6 @@ int dt_exif_get_thumbnail(const char *path, uint8_t **buffer, size_t *size)
     const unsigned  char *tmp = preview.pData();
     size_t _size = preview.size();
 
-    // Workaround the fact that exiv2 sometimes returns prepended garbage
-    while(_size > 4 && (tmp[0] != 0xff || tmp[1] != 0xd8))
-    {
-      tmp++;
-      _size--;
-    }
-    if(_size == 0)
-    {
-      std::cerr << "[exiv2] thumbnail doesn't seem to be a JPG " << path << std::endl;
-      return 1;
-    }
-
     *size = _size;
     *buffer = (uint8_t *)malloc(_size);
     if(!*buffer) {
