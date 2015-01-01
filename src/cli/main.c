@@ -52,7 +52,7 @@ static void generate_thumbnail_cache()
   char filename[PATH_MAX] = {0};
   for(int k=DT_MIPMAP_0;k<=max_mip;k++)
   {
-    snprintf(filename, PATH_MAX, "%s.d/%d", darktable.mipmap_cache->cachedir, k);
+    snprintf(filename, sizeof(filename), "%s.d/%d", darktable.mipmap_cache->cachedir, k);
     fprintf(stderr, _("creating cache directory '%s'\n"), filename);
     int mkd = g_mkdir_with_parents(filename, 0750);
     if(mkd)
@@ -72,6 +72,12 @@ static void generate_thumbnail_cache()
   // go through all images:
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select id from images", -1, &stmt, 0);
   uint8_t *tmp = (uint8_t *)dt_alloc_align(16, 1280*720*4);
+  if(!tmp)
+  {
+    fprintf(stderr, "couldn't allocate temporary memory!\n");
+    sqlite3_finalize(stmt);
+    return;
+  }
   const int cache_quality = MIN(100, MAX(10, dt_conf_get_int("database_cache_quality")));
   while(sqlite3_step(stmt) == SQLITE_ROW)
   {
@@ -80,7 +86,7 @@ static void generate_thumbnail_cache()
     int all_exist = 1;
     for(int k=max_mip;k>=DT_MIPMAP_0;k--)
     {
-      snprintf(filename, PATH_MAX, "%s.d/%d/%d.jpg", darktable.mipmap_cache->cachedir, k, imgid);
+      snprintf(filename, sizeof(filename), "%s.d/%d/%d.jpg", darktable.mipmap_cache->cachedir, k, imgid);
       all_exist &= !access(filename, R_OK); 
     }
     if(all_exist) goto next;
@@ -97,19 +103,24 @@ static void generate_thumbnail_cache()
       // use exactly the same mechanism as the cache internally to rescale the thumbnail:
       dt_iop_flip_and_zoom_8(buf.buf, buf.width, buf.height, tmp, wd, ht, 0, &width, &height);
 
-      snprintf(filename, PATH_MAX, "%s.d/%d/%d.jpg", darktable.mipmap_cache->cachedir, k, imgid);
+      snprintf(filename, sizeof(filename), "%s.d/%d/%d.jpg", darktable.mipmap_cache->cachedir, k, imgid);
       FILE *f = fopen(filename, "wb");
       if(f)
       {
         // allocate temp memory, at least 1MB to be sure we fit:
         uint8_t *blob = (uint8_t *)malloc(MIN(1<<20, width*height*4));
+        if(!blob) goto write_error;
         const int32_t length
           = dt_imageio_jpeg_compress(tmp, blob, width, height, cache_quality);
         assert(length <= MIN(1<<20, wd*ht*4));
         int written = fwrite(blob, sizeof(uint8_t), length, f);
+        if(written != length)
+        {
+write_error:
+          unlink(filename);
+        }
         free(blob);
         fclose(f);
-        if(written != length) unlink(filename);
       }
     }
     dt_mipmap_cache_release(darktable.mipmap_cache, &buf);

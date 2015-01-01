@@ -247,8 +247,8 @@ void dt_mipmap_cache_allocate_dynamic(void *data, dt_cache_entry_t *entry)
     if(dt_conf_get_bool("cache_disk_backend"))
     {
       // try and load from disk, if successful set flag
-      char filename[1024];
-      snprintf(filename, 1024, "%s.d/%d/%d.jpg", cache->cachedir, mip, get_imgid(entry->key));
+      char filename[PATH_MAX] = {0};
+      snprintf(filename, sizeof(filename), "%s.d/%d/%d.jpg", cache->cachedir, mip, get_imgid(entry->key));
       FILE *f = fopen(filename, "rb");
       if(f)
       {
@@ -256,6 +256,7 @@ void dt_mipmap_cache_allocate_dynamic(void *data, dt_cache_entry_t *entry)
         fseek(f, 0, SEEK_END);
         len = ftell(f);
         uint8_t *blob = (uint8_t *)malloc(len);
+        if(!blob) goto read_error;
         fseek(f, 0, SEEK_SET);
         int rd = fread(blob, sizeof(uint8_t), len, f);
         if(rd != len) goto read_error;
@@ -306,33 +307,38 @@ void dt_mipmap_cache_deallocate_dynamic(void *data, dt_cache_entry_t *entry)
         // to avoid inconsistencies.
         // if(dt_conf_get_bool("cache_disk_backend"))
         {
-          char filename[1024];
-          snprintf(filename, 1024, "%s.d/%d/%d.jpg", cache->cachedir, mip, get_imgid(entry->key));
+          char filename[PATH_MAX] = {0};
+          snprintf(filename, sizeof(filename), "%s.d/%d/%d.jpg", cache->cachedir, mip, get_imgid(entry->key));
           g_unlink(filename);
         }
       }
       else if(dt_conf_get_bool("cache_disk_backend"))
       {
         // serialize to disk
-        char filename[1024];
-        snprintf(filename, 1024, "%s.d/%d", cache->cachedir, mip);
+        char filename[PATH_MAX] = {0};
+        snprintf(filename, sizeof(filename), "%s.d/%d", cache->cachedir, mip);
         int mkd = g_mkdir_with_parents(filename, 0750);
         if(!mkd)
         {
-          snprintf(filename, 1024, "%s.d/%d/%d.jpg", cache->cachedir, mip, get_imgid(entry->key));
+          snprintf(filename, sizeof(filename), "%s.d/%d/%d.jpg", cache->cachedir, mip, get_imgid(entry->key));
           FILE *f = fopen(filename, "wb");
           if(f)
           {
             // allocate temp memory, at least 1MB to be sure we fit:
             uint8_t *blob = (uint8_t *)malloc(MIN(1<<20, cache->buffer_size[mip]));
+            if(!blob) goto write_error;
             const int cache_quality = dt_conf_get_int("database_cache_quality");
             const int32_t length
               = dt_imageio_jpeg_compress(entry->data + sizeof(*dsc), blob, dsc->width, dsc->height, MIN(100, MAX(10, cache_quality)));
             assert(length <= MIN(1<<20, cache->buffer_size[mip]));
             int written = fwrite(blob, sizeof(uint8_t), length, f);
+            if(written != length)
+            {
+write_error:
+              g_unlink(filename);
+            }
             free(blob);
             fclose(f);
-            if(written != length) g_unlink(filename);
           }
         }
       }
@@ -540,8 +546,8 @@ void dt_mipmap_cache_get_with_caller(
   else if(flags == DT_MIPMAP_PREFETCH_DISK)
   {
     // only prefetch if the disk cache exists:
-    char filename[1024];
-    snprintf(filename, 1024, "%s.d/%d/%d.jpg", cache->cachedir, mip, key);
+    char filename[PATH_MAX] = {0};
+    snprintf(filename, sizeof(filename), "%s.d/%d/%d.jpg", cache->cachedir, mip, key);
     // don't attempt to load if disk cache doesn't exist
     if(!g_file_test(filename, G_FILE_TEST_EXISTS)) return;
     if(mip > DT_MIPMAP_FULL || (int)mip < DT_MIPMAP_0)
@@ -683,8 +689,8 @@ void dt_mipmap_cache_get_with_caller(
     __sync_fetch_and_add(&(_get_cache(cache, mip)->stats_misses), 1);
     // in case we don't even have a disk cache for our requested thumbnail,
     // prefetch at least mip0, in case we have that in the disk caches:
-    char filename[1024];
-    snprintf(filename, 1024, "%s.d/%d/%d.jpg", cache->cachedir, mip, key);
+    char filename[PATH_MAX] = {0};
+    snprintf(filename, sizeof(filename), "%s.d/%d/%d.jpg", cache->cachedir, mip, key);
     if(!g_file_test(filename, G_FILE_TEST_EXISTS))
       dt_mipmap_cache_get(cache, 0, imgid, DT_MIPMAP_0, DT_MIPMAP_PREFETCH_DISK, 0);
     // nothing found :(
