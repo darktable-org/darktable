@@ -102,18 +102,18 @@ static inline int32_t buffer_is_broken(dt_mipmap_buffer_t *buf)
 
 static inline uint32_t get_key(const uint32_t imgid, const dt_mipmap_size_t size)
 {
-  // imgid can't be >= 2^29 (~500 million images)
-  return (((uint32_t)size) << 29) | (imgid - 1);
+  // imgid can't be >= 2^28 (~250 million images)
+  return (((uint32_t)size) << 28) | (imgid - 1);
 }
 
 static inline uint32_t get_imgid(const uint32_t key)
 {
-  return (key & 0x1fffffff) + 1;
+  return (key & 0xfffffff) + 1;
 }
 
 static inline dt_mipmap_size_t get_size(const uint32_t key)
 {
-  return (dt_mipmap_size_t)(key >> 29);
+  return (dt_mipmap_size_t)(key >> 28);
 }
 
 static int dt_mipmap_cache_get_filename(gchar *mipmapfilename, size_t size)
