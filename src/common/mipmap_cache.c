@@ -366,18 +366,21 @@ void dt_mipmap_cache_init(dt_mipmap_cache_t *cache)
   size_t max_mem = CLAMPS(dt_conf_get_int64("cache_memory"), 100u << 20, ((uint64_t)8) << 30);
   const uint32_t parallel
       = CLAMP(dt_conf_get_int("worker_threads") * dt_conf_get_int("parallel_export"), 1, 8);
-  int32_t mipsizes[6][2] = {
-    {240,  135},  // mip0
-    {480,  270},  // mip1
-    {1280, 720},  // mip2 - 720p (only one not /2 the previous one and 2x the next)
-    {1920, 1080}, // mip3 - 1080p
-    {3840, 2160}, // mip4 - Normal 4K panels
-    {7860, 4320}, // mip5 - 5K and up panels
+
+  // Fixed sizes for the thumbnail mip levels, selected for coverage of most screen sizes
+  int32_t mipsizes[DT_MIPMAP_F][2] = {
+    {360,  225},  // mip0 - 1/2 size previous one
+    {720,  450},  // mip1 - 1/2 size previous one
+    {1440, 900},  // mip2 - covers 720p and 1366x768
+    {1920, 1200}, // mip3 - covers 1080p and 1600x1200
+    {2560, 1600}, // mip4 - covers 2560x1440
+    {4096, 2560}, // mip5 - covers 4K and UHD
+    {5120, 3200}, // mip6 - covers 5120x2880 panels
   };
-  // Set mipf to mip3 size as at most the user will be using an 8K screen and
+  // Set mipf to mip2 size as at most the user will be using an 8K screen and
   // have a preview that's ~4x smaller
-  cache->max_width[DT_MIPMAP_F] = mipsizes[DT_MIPMAP_3][0];
-  cache->max_height[DT_MIPMAP_F] = mipsizes[DT_MIPMAP_3][1];
+  cache->max_width[DT_MIPMAP_F] = mipsizes[DT_MIPMAP_2][0];
+  cache->max_height[DT_MIPMAP_F] = mipsizes[DT_MIPMAP_2][1];
   for(int k = DT_MIPMAP_F-1; k >= 0; k--)
   {
     cache->max_width[k]  = mipsizes[k][0];
