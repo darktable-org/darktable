@@ -54,8 +54,8 @@ typedef struct dt_gui_widgets_t
   GtkWidget *top_border;
 
   /* left panel */
-  GtkTable *panel_left; // panel table 3 rows, top,center,bottom and file on center
-  GtkTable *panel_right;
+  GtkGrid *panel_left; // panel grid 3 rows, top,center,bottom and file on center
+  GtkGrid *panel_right;
 
 } dt_gui_widgets_t;
 
