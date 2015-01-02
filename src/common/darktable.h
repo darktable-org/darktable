@@ -171,7 +171,6 @@ typedef struct darktable_t
   uint32_t cpu_flags;
   int32_t num_openmp_threads;
 
-  int32_t thumbnail_width, thumbnail_height;
   int32_t unmuted;
   GList *iop;
   GList *collection_listeners;

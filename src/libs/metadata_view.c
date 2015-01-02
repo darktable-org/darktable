@@ -207,7 +207,7 @@ static void _metadata_view_update_values(dt_lib_module_t *self)
   {
     char value[512];
     char pathname[PATH_MAX] = { 0 };
-    const dt_image_t *img = dt_image_cache_read_get(darktable.image_cache, mouse_over_id);
+    const dt_image_t *img = dt_image_cache_get(darktable.image_cache, mouse_over_id, 'r');
     if(!img) goto fill_minuses;
     if(img->film_id == -1)
     {
@@ -505,7 +505,7 @@ static void _jump_to()
   if(imgid != -1)
   {
     char path[512];
-    const dt_image_t *img = dt_image_cache_read_get(darktable.image_cache, imgid);
+    const dt_image_t *img = dt_image_cache_get(darktable.image_cache, imgid, 'r');
     dt_image_film_roll_directory(img, path, sizeof(path));
     dt_image_cache_read_release(darktable.image_cache, img);
     char collect[1024];

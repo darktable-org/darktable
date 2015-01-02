@@ -30,6 +30,13 @@
     <longdescription>this controls how much memory is going to be used for thumbnails and other buffers (needs a restart).</longdescription>
   </dtconfig>
   <dtconfig prefs="core">
+    <name>cache_disk_backend</name>
+    <type>bool</type>
+    <default>true</default>
+    <shortdescription>enable disk backend for mipmap cache</shortdescription>
+    <longdescription>if enabled, write thumbnails to disk (.cache/darktable/) when evicted from the memory cache. note that this can take a lot of memory (several gigabytes for 20k images) and will never delete cached thumbnails again. it's safe though to delete these manually, if you want. light table performance will be increased greatly when browsing a lot. to generate all thumbnails of your entire collection offline, run 'darktable-cli --generate-cache --core --library ~/.config/darktable/library.db'.</longdescription>
+  </dtconfig>
+  <dtconfig prefs="core">
     <name>worker_threads</name>
     <type>int</type>
     <default>2</default>
@@ -482,33 +489,6 @@
     <default>false</default>
     <shortdescription>low quality thumbnails</shortdescription>
     <longdescription>if set to true, thumbnails will be processed by first downscaling rather than demosaicing the full image. this can result in much faster processing times and blurrier images, especially when you cropped a lot.</longdescription>
-  </dtconfig>
-  <dtconfig prefs="gui">
-    <name>plugins/lighttable/thumbnail_width</name>
-    <type>int</type>
-    <default>1300</default>
-    <shortdescription>maximum width of image drawing area</shortdescription>
-    <longdescription>maximum width of the image drawing area in darkroom mode. adjust to your screen\n(needs a restart and will invalidate current thumbnail caches).</longdescription>
-  </dtconfig>
-  <dtconfig prefs="gui">
-    <name>plugins/lighttable/thumbnail_height</name>
-    <type>int</type>
-    <default>1000</default>
-    <shortdescription>maximum height of image drawing area</shortdescription>
-    <longdescription>maximum height of the image drawing area in darkroom mode. adjust to your screen\n(needs a restart and will invalidate current thumbnail caches).</longdescription>
-  </dtconfig>
-  <dtconfig prefs="gui">
-    <name>cache_compression</name>
-    <type>
-      <enum>
-        <option>off</option>
-        <option>low quality (fast)</option>
-        <option>high quality (slow)</option>
-      </enum>
-    </type>
-    <default>off</default>
-    <shortdescription>compression of thumbnail images</shortdescription>
-    <longdescription>off - no compression in memory, JPG on disk. low quality - DXT1 (fast). high quality - DXT1, same memory as low quality variant but slower.</longdescription>
   </dtconfig>
   <dtconfig prefs="gui">
     <name>pressure_sensitivity</name>
@@ -1036,7 +1016,7 @@
   <dtconfig prefs="gui">
     <name>plugins/darkroom/ui/border_size</name>
     <type>int</type>
-    <default>0</default>
+    <default>20</default>
     <shortdescription>border around image in darkroom mode</shortdescription>
     <longdescription>process the image in darkroom mode with a small border. set to 0 if you don't want any border.</longdescription>
   </dtconfig>

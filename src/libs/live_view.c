@@ -484,18 +484,9 @@ void gui_post_expose(dt_lib_module_t *self, cairo_t *cr, int32_t width, int32_t 
   if(imgid > 0)
   {
     cairo_save(cr);
-    // this is blatantly stolen from dt_view_image_expose() -- this are just the relevant parts
-    static int first_time = 1;
-    static uint8_t *scratchmem = NULL;
-    if(first_time)
-    {
-      // scratchmem might still be NULL after this, if compression is off.
-      scratchmem = dt_mipmap_cache_alloc_scratchmem(darktable.mipmap_cache);
-      first_time = 0;
-    }
-    const dt_image_t *img = dt_image_cache_read_testget(darktable.image_cache, imgid);
+    const dt_image_t *img = dt_image_cache_testget(darktable.image_cache, imgid, 'r');
     // if the user points at this image, we really want it:
-    if(!img) img = dt_image_cache_read_get(darktable.image_cache, imgid);
+    if(!img) img = dt_image_cache_get(darktable.image_cache, imgid, 'r');
 
     int zoom = 1;
     float imgwd = 0.90f;
@@ -506,17 +497,14 @@ void gui_post_expose(dt_lib_module_t *self, cairo_t *cr, int32_t width, int32_t 
 
     dt_mipmap_buffer_t buf;
     dt_mipmap_size_t mip = dt_mipmap_cache_get_matching_size(darktable.mipmap_cache, imgwd * w, imgwd * h);
-    dt_mipmap_cache_read_get(darktable.mipmap_cache, &buf, imgid, mip, 0);
-    // decompress image, if necessary. if compression is off, scratchmem will be == NULL,
-    // so get the real pointer back:
-    uint8_t *buf_decompressed = dt_mipmap_cache_decompress(&buf, scratchmem);
+    dt_mipmap_cache_get(darktable.mipmap_cache, &buf, imgid, mip, 0, 'r');
 
     float scale = 1.0;
     cairo_surface_t *surface = NULL;
     if(buf.buf)
     {
       const int32_t stride = cairo_format_stride_for_width(CAIRO_FORMAT_RGB24, buf.width);
-      surface = cairo_image_surface_create_for_data(buf_decompressed, CAIRO_FORMAT_RGB24, buf.width,
+      surface = cairo_image_surface_create_for_data(buf.buf, CAIRO_FORMAT_RGB24, buf.width,
                                                     buf.height, stride);
       if(zoom == 1)
       {
@@ -591,7 +579,7 @@ void gui_post_expose(dt_lib_module_t *self, cairo_t *cr, int32_t width, int32_t 
       cairo_surface_destroy(surface);
     }
     cairo_restore(cr);
-    if(buf.buf) dt_mipmap_cache_read_release(darktable.mipmap_cache, &buf);
+    if(buf.buf) dt_mipmap_cache_release(darktable.mipmap_cache, &buf);
     if(img) dt_image_cache_read_release(darktable.image_cache, img);
 
     // ON CANVAS CONTROLS

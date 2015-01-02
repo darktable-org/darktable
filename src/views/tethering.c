@@ -208,20 +208,12 @@ static void _expose_tethered_mode(dt_view_t *self, cairo_t *cr, int32_t width, i
 }
 
 
-void expose(dt_view_t *self, cairo_t *cri, int32_t width_i, int32_t height_i, int32_t pointerx,
+void expose(dt_view_t *self, cairo_t *cri, int32_t width, int32_t height, int32_t pointerx,
             int32_t pointery)
 {
-  const int32_t capwd = darktable.thumbnail_width;
-  const int32_t capht = darktable.thumbnail_height;
-  int32_t width = MIN(width_i, capwd);
-  int32_t height = MIN(height_i, capht);
-
   cairo_set_source_rgb(cri, .2, .2, .2);
-  cairo_rectangle(cri, 0, 0, width_i, height_i);
+  cairo_rectangle(cri, 0, 0, width, height);
   cairo_fill(cri);
-
-  if(width_i > capwd) cairo_translate(cri, -(capwd - width_i) * .5f, 0.0f);
-  if(height_i > capht) cairo_translate(cri, 0.0f, -(capht - height_i) * .5f);
 
   // Expose tethering center view
   cairo_save(cri);
