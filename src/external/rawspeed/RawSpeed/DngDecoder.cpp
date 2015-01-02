@@ -325,9 +325,10 @@ RawImage DngDecoder::decodeRawInternal() {
       ThrowRDE("DNG: AsShotNeutral has %d values instead of 3", as_shot_neutral->count);
 
     if (as_shot_neutral->type == TIFF_SHORT) {
-      const ushort16 *tmp = as_shot_neutral->getShortArray();
+      // Commented out because I didn't have an example file to verify it's correct
+      /* const ushort16 *tmp = as_shot_neutral->getShortArray();
       for (uint32 i=0; i<3; i++)
-        mRaw->wbCoeffs[i] = 1.0f/tmp[i];
+        mRaw->wbCoeffs[i] = tmp[i];*/
     } else if (as_shot_neutral->type == TIFF_RATIONAL) {
       const uint32 *tmp = as_shot_neutral->getIntArray();
       for (uint32 i=0; i<3; i++)
