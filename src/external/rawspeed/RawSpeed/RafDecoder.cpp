@@ -104,6 +104,25 @@ RawImage RafDecoder::decodeRawInternal() {
     else
       readUncompressedRaw(input, mRaw->dim, pos, width*bps/8, bps, BitOrder_Plain);
   }
+
+  if (raw->hasEntry(FUJI_WB_GRBLEVELS)) {
+    TiffEntry *wb = raw->getEntry(FUJI_WB_GRBLEVELS);
+    if (wb->count != 3)
+      ThrowRDE("RAF: WB has %d entries instead of 3");
+    const uint32 *tmp = wb->getIntArray();
+    mRaw->wbCoeffs[0] = tmp[1];
+    mRaw->wbCoeffs[1] = tmp[0];
+    mRaw->wbCoeffs[2] = tmp[2];
+  } else if (raw->hasEntry(FUJIOLDWB)) {
+    TiffEntry *wb = raw->getEntry(FUJIOLDWB);
+    if (wb->count != 8)
+      ThrowRDE("RAF: WB has %d bytes instead of 8", wb->count);
+    const ushort16 *tmp = wb->getShortArray();
+    mRaw->wbCoeffs[0] = tmp[1];
+    mRaw->wbCoeffs[1] = tmp[0];
+    mRaw->wbCoeffs[2] = tmp[3];
+  }
+
   return mRaw;
 }
 
@@ -183,6 +202,8 @@ void RafDecoder::decodeMetaDataInternal(CameraMetaData *meta) {
     RawImage rotated = RawImage::create(final_size, TYPE_USHORT16, 1);
     rotated->clearArea(iRectangle2D(iPoint2D(0,0), rotated->dim));
     rotated->fujiRotationPos = rotationPos;
+    for (int i=0; i<3; i++)
+      rotated->wbCoeffs[i] = mRaw->wbCoeffs[i];
 
     int dest_pitch = (int)rotated->pitch / 2;
     ushort16 *dst = (ushort16*)rotated->getData(0,0);

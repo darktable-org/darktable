@@ -150,6 +150,9 @@ typedef struct dt_image_t
 
   /* If the image already has WB applied from the start */
   gboolean pre_applied_wb;
+
+  /* White balance coeffs from the raw */
+  float wb_coeffs[3];
 } dt_image_t;
 
 // image buffer operations:
