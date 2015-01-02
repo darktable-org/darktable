@@ -284,6 +284,7 @@ read_error:
 
   if(!loaded_from_disk)
     dsc->flags = DT_MIPMAP_BUFFER_DSC_FLAG_GENERATE;
+  else dsc->flags = 0;
 
   // cost is just flat one for the buffer, as the buffers might have different sizes,
   // to make sure quota is meaningful.
@@ -564,7 +565,6 @@ void dt_mipmap_cache_get_with_caller(
     struct dt_mipmap_buffer_dsc *dsc = (struct dt_mipmap_buffer_dsc *)entry->data;
     buf->cache_entry = entry;
 
-    // uninitialized?
     if(dsc->flags & DT_MIPMAP_BUFFER_DSC_FLAG_GENERATE)
     {
       __sync_fetch_and_add(&(_get_cache(cache, mip)->stats_fetches), 1);
