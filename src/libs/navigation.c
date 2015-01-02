@@ -163,6 +163,7 @@ static gboolean _lib_navigation_draw_callback(GtkWidget *widget, cairo_t *cr, gp
   /* draw navigation image if available */
   if(dev->preview_pipe->backbuf && (dev->preview_status == DT_DEV_PIXELPIPE_VALID))
   {
+    cairo_save(cr);
     dt_pthread_mutex_t *mutex = &dev->preview_pipe->backbuf_mutex;
     dt_pthread_mutex_lock(mutex);
     const int wd = dev->preview_pipe->backbuf_width;
@@ -207,7 +208,6 @@ static gboolean _lib_navigation_draw_callback(GtkWidget *widget, cairo_t *cr, gp
     {
       float boxw = 1, boxh = 1;
       dt_dev_check_zoom_bounds(darktable.develop, &zoom_x, &zoom_y, zoom, closeup, &boxw, &boxh);
-
       cairo_translate(cr, wd * (.5f + zoom_x), ht * (.5f + zoom_y));
       cairo_set_source_rgb(cr, 0., 0., 0.);
       cairo_set_line_width(cr, 1.f / scale);
@@ -219,10 +219,10 @@ static gboolean _lib_navigation_draw_callback(GtkWidget *widget, cairo_t *cr, gp
       cairo_rectangle(cr, -boxw / 2, -boxh / 2, boxw, boxh);
       cairo_stroke(cr);
     }
+    cairo_restore(cr);
     if(fabsf(cur_scale - min_scale) > 0.001f)
     {
       /* Zoom % */
-      cairo_identity_matrix(cr);
       cairo_translate(cr, 0, height);
       cairo_set_source_rgba(cr, 1., 1., 1., 0.5);
       cairo_select_font_face(cr, "sans-serif", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_BOLD);
@@ -250,7 +250,6 @@ static gboolean _lib_navigation_draw_callback(GtkWidget *widget, cairo_t *cr, gp
     else
     {
       // draw the zoom-to-fit icon
-      cairo_identity_matrix(cr);
       cairo_translate(cr, 0, height);
       cairo_set_source_rgb(cr, 0.6, 0.6, 0.6);
       cairo_text_extents_t ext;
@@ -419,9 +418,8 @@ static gboolean _lib_navigation_button_press_callback(GtkWidget *widget, GdkEven
   gtk_widget_get_allocation(widget, &allocation);
   int w = allocation.width;
   int h = allocation.height;
-  if(event->x >= w - 2 * DT_NAVIGATION_INSET - d->zoom_h - d->zoom_w
-     && event->y <= w - 2 * DT_NAVIGATION_INSET && event->y >= h - 2 * DT_NAVIGATION_INSET - d->zoom_h
-     && event->y <= h - 2 * DT_NAVIGATION_INSET)
+  if(event->x >= w - DT_NAVIGATION_INSET - d->zoom_h - d->zoom_w
+     && event->y >= h - DT_NAVIGATION_INSET - d->zoom_h)
   {
     // we show the zoom menu
     GtkMenuShell *menu = GTK_MENU_SHELL(gtk_menu_new());
