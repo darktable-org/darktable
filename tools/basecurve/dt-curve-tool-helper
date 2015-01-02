@@ -112,15 +112,12 @@ extract_jpeg_from_raw()
     local _make=$(exiftool -Make -t "$_src"|cut -d "$(printf '\t')" -f 2)
 
     case "$_make" in
-    [Nn][Ii][Kk][Oo][Nn]*)
+    [Nn][Ii][Kk][Oo][Nn]*|[Pp][Ee][Nn][Tt][Aa][Xx]*)
         exiftool -b -JpgFromRaw "$_src" > "$_dst"
         ;;
-    [Cc][Aa][Nn][Oo][Nn]*)
+    [Cc][Aa][Nn][Oo][Nn]*|[Ss][Oo][Nn][Yy]*)
         exiftool -b -PreviewImage "$_src" > "$_dst"
         ;;
-    [Ss][Oo][Nn][Yy]*)
-        exiftool -b -PreviewImage "$_src" > "$_dst"
-        ;;    
     *)
         printf "unknown camera manufacturer $_make, please provide a sample file to darktable developers to see if an embedded JPEG could be used"
         ;;

@@ -319,3 +319,19 @@ GtkFrame > GtkEventBox * {
 {
   background-color: transparent;
 }
+
+GtkMenuItem
+{
+  padding: 2pt;
+  background-color:@really_dark_bg_color;
+}
+
+GtkMenuItem:hover
+{
+  background-color: shade(@selected_bg_color, 1.7);
+}
+
+GtkMenuItem *
+{
+  background-color: transparent;
+}

@@ -671,10 +671,8 @@ int dt_lua_init_image(lua_State *L)
   lua_pushcfunction(L, drop_cache);
   lua_pushcclosure(L, dt_lua_type_member_common, 1);
   dt_lua_type_register_const(L, dt_lua_image_t, "drop_cache");
-  luaL_getmetatable(L, "dt_lua_image_t");
   lua_pushcfunction(L, image_tostring);
-  lua_setfield(L, -2, "__tostring");
-  lua_pop(L, 1);
+  dt_lua_type_setmetafield(L,dt_lua_image_t,"__tostring");
 
   return 0;
 }

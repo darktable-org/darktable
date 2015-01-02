@@ -626,7 +626,7 @@ void gui_init(dt_lib_module_t *self)
     styles = g_list_next(styles);
   }
   gtk_box_pack_start(GTK_BOX(self->widget), d->style, TRUE, TRUE, 0);
-  g_object_set(G_OBJECT(d->style), "tooltip-text", _("temporary style to append while exporting"),
+  g_object_set(G_OBJECT(d->style), "tooltip-text", _("temporary style to use while exporting"),
                (char *)NULL);
 
   //  Add check to control whether the style is to replace or append the current module

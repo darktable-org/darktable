@@ -34,7 +34,6 @@ src/develop/masks/masks.c
 src/develop/pixelpipe_hb.c
 src/develop/tiling.c
 src/dtgtk/resetlabel.c
-src/dtgtk/slider.c
 src/external/wb_presets.c
 src/gui/accelerators.c
 src/gui/camera_import_dialog.c

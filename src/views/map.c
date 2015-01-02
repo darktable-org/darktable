@@ -132,9 +132,7 @@ static int latitude_member(lua_State *L)
     else
     {
       float value;
-      dt_lua_unlock(true);
       g_object_get(G_OBJECT(lib->map), "latitude", &value, NULL);
-      dt_lua_lock();
       lua_pushnumber(L, value);
     }
     return 1;
@@ -151,10 +149,8 @@ static int latitude_member(lua_State *L)
     else
     {
       float value;
-      dt_lua_unlock(true);
       g_object_get(G_OBJECT(lib->map), "longitude", &value, NULL);
       osm_gps_map_set_center(lib->map, lat, value);
-      dt_lua_lock();
     }
     return 0;
   }
@@ -173,9 +169,7 @@ static int longitude_member(lua_State *L)
     else
     {
       float value;
-      dt_lua_unlock(true);
       g_object_get(G_OBJECT(lib->map), "longitude", &value, NULL);
-      dt_lua_lock();
       lua_pushnumber(L, value);
     }
     return 1;
@@ -192,10 +186,8 @@ static int longitude_member(lua_State *L)
     else
     {
       float value;
-      dt_lua_unlock(true);
       g_object_get(G_OBJECT(lib->map), "latitude", &value, NULL);
       osm_gps_map_set_center(lib->map, value, longi);
-      dt_lua_lock();
     }
     return 0;
   }
@@ -214,9 +206,7 @@ static int zoom_member(lua_State *L)
     else
     {
       int value;
-      dt_lua_unlock(true);
       g_object_get(G_OBJECT(lib->map), "zoom", &value, NULL);
-      dt_lua_lock();
       lua_pushinteger(L, value);
     }
     return 1;
@@ -234,9 +224,7 @@ static int zoom_member(lua_State *L)
     }
     else
     {
-      dt_lua_unlock(true);
       osm_gps_map_set_zoom(lib->map, zoom);
-      dt_lua_lock();
     }
     return 0;
   }
@@ -333,10 +321,13 @@ void init(dt_view_t *self)
   lua_State *L = darktable.lua_state.state;
   luaA_Type my_type = dt_lua_module_entry_get_type(L, "view", self->module_name);
   lua_pushcfunction(L, latitude_member);
+  lua_pushcclosure(L,dt_lua_gtk_wrap,1);
   dt_lua_type_register_type(L, my_type, "latitude");
   lua_pushcfunction(L, longitude_member);
+  lua_pushcclosure(L,dt_lua_gtk_wrap,1);
   dt_lua_type_register_type(L, my_type, "longitude");
   lua_pushcfunction(L, zoom_member);
+  lua_pushcclosure(L,dt_lua_gtk_wrap,1);
   dt_lua_type_register_type(L, my_type, "zoom");
 
 #endif // USE_LUA

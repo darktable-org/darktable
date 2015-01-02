@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2014-12-21 08:54+0100\n"
-"PO-Revision-Date: 2014-12-21 09:07+0100\n"
+"PO-Revision-Date: 2015-01-01 11:08+0100\n"
 "Last-Translator: Ger Siemerink <g.siemerink@gmail.com>\n"
 "Language-Team: Ger Siemerink <g.siemerink@gmail.com>\n"
 "Language: nl_NL\n"
@@ -357,7 +357,7 @@ msgstr "vertoon in de informatie module een beter leesbare weergave"
 
 #: ../build/src/preferences_gen.h:1934
 msgid "overlay txt sidecar over zoomed images"
-msgstr ""
+msgstr "overlay xmp bestand over ingezoomde afbeeldingen"
 
 #: ../build/src/preferences_gen.h:1946
 msgid ""

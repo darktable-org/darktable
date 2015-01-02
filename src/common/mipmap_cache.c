@@ -26,7 +26,6 @@
 #include "common/mipmap_cache.h"
 #include "control/conf.h"
 #include "control/jobs.h"
-#include "libraw/libraw.h"
 #ifdef HAVE_SQUISH
 #include "squish/csquish.h"
 #endif
@@ -1212,18 +1211,11 @@ static void _init_8(uint8_t *buf, uint32_t *width, uint32_t *height, const uint3
   const dt_image_t *cimg = dt_image_cache_read_get(darktable.image_cache, imgid);
   const dt_image_orientation_t orientation = dt_image_orientation(cimg);
   // the orientation for this camera is not read correctly from exiv2, so we need
-  // to go the full libraw path (as the thumbnail will be flipped the wrong way round)
+  // to go the full path (as the thumbnail will be flipped the wrong way round)
   const int incompatible = !strncmp(cimg->exif_maker, "Phase One", 9);
   dt_image_cache_read_release(darktable.image_cache, cimg);
 
-
-  // first try exif thumbnail, that's smaller and thus faster to load:
-  if(!altered && !dt_conf_get_bool("never_use_embedded_thumb")
-     && !dt_exif_thumbnail(filename, buf, wd, ht, orientation, width, height))
-  {
-    res = 0;
-  }
-  else if(!altered && !dt_conf_get_bool("never_use_embedded_thumb") && !incompatible)
+  if(!altered && !dt_conf_get_bool("never_use_embedded_thumb") && !incompatible)
   {
     // try to load the embedded thumbnail in raw
     gboolean from_cache = TRUE;
@@ -1252,12 +1244,11 @@ static void _init_8(uint8_t *buf, uint32_t *width, uint32_t *height, const uint3
     {
       uint8_t *tmp = 0;
       int32_t thumb_width, thumb_height;
-      dt_image_orientation_t orientation;
-      res = dt_imageio_large_thumbnail(filename, &tmp, &thumb_width, &thumb_height, &orientation);
+      res = dt_imageio_large_thumbnail(filename, &tmp, &thumb_width, &thumb_height);
       if(!res)
       {
         // scale to fit
-        dt_iop_flip_and_zoom_8(tmp, thumb_width, thumb_height, buf, wd, ht, orientation, width, height);
+        dt_iop_flip_and_zoom_8(tmp, thumb_width, thumb_height, buf, wd, ht, ORIENTATION_NONE, width, height);
         free(tmp);
       }
     }

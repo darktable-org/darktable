@@ -687,11 +687,10 @@ void init(struct dt_lib_module_t *self)
   lua_pushcclosure(L, lua_select, 1);
   lua_pushcclosure(L, dt_lua_type_member_common, 1);
   dt_lua_type_register_const(L, dt_lua_snapshot_t, "select");
-  luaL_getmetatable(L, "dt_lua_snapshot_t");
+
   lua_pushlightuserdata(L, self);
   lua_pushcclosure(L, name_member, 1);
-  lua_setfield(L, -2, "__tostring");
-  lua_pop(L, 1);
+  dt_lua_type_setmetafield(L,dt_lua_snapshot_t,"__tostring");
 
 
 

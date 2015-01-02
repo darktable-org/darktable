@@ -28,7 +28,7 @@ The tool has some known limitations:
    raw is not. The helper script tries to auto correct that during the conversion step.
  - the current procedure relies on dcraw which may not have a correct color matrix
    for your camera. Check if `darktable/src/external/adobe_coeff.c` and
-   dcraw.c::adobe_coeff::table do match. If not, copy darktable's one. Beware
+   `dcraw.c::adobe_coeff::table` do match. If not, copy darktable's one. Beware
    both tables do not use the same camera names.
 
 

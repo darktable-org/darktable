@@ -121,13 +121,13 @@ typedef struct
 
 static int32_t _button_clicked_callback_job(dt_job_t *job)
 {
-  gboolean has_lock = dt_lua_lock();
+  dt_lua_lock();
   button_clicked_callback_data_t *t = dt_control_job_get_params(job);
   lua_pushboolean(darktable.lua_state.state, t->toggle);
   dt_lua_event_trigger(darktable.lua_state.state, t->event_name, 1);
   g_free(t->event_name);
   free(t);
-  dt_lua_unlock(has_lock);
+  dt_lua_unlock();
 
   return 0;
 }
@@ -240,9 +240,7 @@ static int grouping_member(lua_State *L)
     gboolean value = lua_toboolean(L, 3);
     if(darktable.gui->grouping != value)
     {
-      dt_lua_unlock(TRUE);
       gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->grouping_button), value);
-      dt_lua_lock();
     }
   }
   return 0;
@@ -263,9 +261,7 @@ static int show_overlays_member(lua_State *L)
     gboolean value = lua_toboolean(L, 3);
     if(darktable.gui->show_overlays != value)
     {
-      dt_lua_unlock(TRUE);
       gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->overlays_button), value);
-      dt_lua_lock();
     }
   }
   return 0;
@@ -277,8 +273,10 @@ void init(struct dt_lib_module_t *self)
   int my_type = dt_lua_module_entry_get_type(L, "lib", self->plugin_name);
 
   lua_pushcfunction(L, grouping_member);
+  lua_pushcclosure(L,dt_lua_gtk_wrap,1);
   dt_lua_type_register_type(L, my_type, "grouping");
   lua_pushcfunction(L, show_overlays_member);
+  lua_pushcclosure(L,dt_lua_gtk_wrap,1);
   dt_lua_type_register_type(L, my_type, "show_overlays");
 
   lua_pushcfunction(L, dt_lua_event_multiinstance_register);

@@ -2132,18 +2132,14 @@ static int filter_cb(lua_State *L)
   dt_lib_collect_params_t old_params;
   int size;
   
-  dt_lua_unlock(true);
   dt_lib_collect_params_t *p = get_params(self, &size);
-  dt_lua_lock();
   // put it in stack so memory is not lost if a lua exception is raised
   memcpy(&old_params, p,size);
   free(p);
   if(lua_gettop(L) > 0) {
     dt_lib_collect_params_t params;
     luaA_to(L,dt_lib_collect_params_t,&params,1);
-    dt_lua_unlock(true);
     set_params(self, &params,size);
-    dt_lua_lock();
     lua_pop(L,1);
   }
   luaA_push(L,dt_lib_collect_params_t,&old_params);
@@ -2253,6 +2249,7 @@ void init(struct dt_lib_module_t *self)
   int my_type = dt_lua_module_entry_get_type(L, "lib", self->plugin_name);
   lua_pushlightuserdata(L, self);
   lua_pushcclosure(L, filter_cb,1);
+  lua_pushcclosure(L,dt_lua_gtk_wrap,1);
   lua_pushcclosure(L, dt_lua_type_member_common, 1);
   dt_lua_type_register_const_type(L, my_type, "filter");
 

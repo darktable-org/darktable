@@ -102,7 +102,7 @@ static int32_t run_early_script(dt_job_t *job)
 {
   char tmp_path[PATH_MAX] = { 0 };
   lua_State *L = darktable.lua_state.state;
-  gboolean has_lock = dt_lua_lock();
+  dt_lua_lock();
   // run global init script
   dt_loc_get_datadir(tmp_path, sizeof(tmp_path));
   g_strlcat(tmp_path, "/luarc", sizeof(tmp_path));
@@ -118,7 +118,7 @@ static int32_t run_early_script(dt_job_t *job)
   if(lua_command) dt_lua_dostring_silent(L, lua_command, 0, 0);
   free(lua_command);
   dt_lua_redraw_screen();
-  dt_lua_unlock(has_lock);
+  dt_lua_unlock();
   return 0;
 }
 
@@ -244,9 +244,9 @@ int luaopen_darktable(lua_State *L)
 void dt_lua_finalize_early()
 {
   darktable.lua_state.ending = true;
-  gboolean has_lock = dt_lua_lock();
+  dt_lua_lock();
   dt_lua_event_trigger(darktable.lua_state.state,"exit",0);
-  dt_lua_unlock(has_lock);
+  dt_lua_unlock();
   int i = 10;
   while(i && darktable.lua_state.pending_threads){
     dt_print(DT_DEBUG_LUA, "LUA : waiting for %d threads to finish...\n", darktable.lua_state.pending_threads);
