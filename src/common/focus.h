@@ -262,8 +262,8 @@ void dt_focus_draw_clusters(cairo_t *cr, int width, int height, int imgid, int b
     dt_dev_cleanup(&dev);
   }
 
-  const float scale = fminf(fminf(darktable.thumbnail_width, width) / (float)wd,
-                            fminf(darktable.thumbnail_height, height) / (float)ht);
+  const int32_t tb = DT_PIXEL_APPLY_DPI(dt_conf_get_int("plugins/darkroom/ui/border_size"));
+  const float scale = fminf((width-2*tb) / (float)wd, (height-2*tb) / (float)ht);
   cairo_scale(cr, scale, scale);
 
   cairo_translate(cr, -wd / 2.0f, -ht / 2.0f);

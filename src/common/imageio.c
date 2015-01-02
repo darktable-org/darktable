@@ -325,18 +325,18 @@ size_t dt_imageio_write_pos(int i, int j, int wd, int ht, float fwd, float fht,
   return (size_t)jj * w + ii;
 }
 
-dt_imageio_retval_t dt_imageio_open_hdr(dt_image_t *img, const char *filename, dt_mipmap_cache_allocator_t a)
+dt_imageio_retval_t dt_imageio_open_hdr(dt_image_t *img, const char *filename, dt_mipmap_buffer_t *buf)
 {
   // needed to alloc correct buffer size:
   img->bpp = 4 * sizeof(float);
   dt_imageio_retval_t ret;
 #ifdef HAVE_OPENEXR
-  ret = dt_imageio_open_exr(img, filename, a);
+  ret = dt_imageio_open_exr(img, filename, buf);
   if(ret == DT_IMAGEIO_OK || ret == DT_IMAGEIO_CACHE_FULL) goto return_label;
 #endif
-  ret = dt_imageio_open_rgbe(img, filename, a);
+  ret = dt_imageio_open_rgbe(img, filename, buf);
   if(ret == DT_IMAGEIO_OK || ret == DT_IMAGEIO_CACHE_FULL) goto return_label;
-  ret = dt_imageio_open_pfm(img, filename, a);
+  ret = dt_imageio_open_pfm(img, filename, buf);
   if(ret == DT_IMAGEIO_OK || ret == DT_IMAGEIO_CACHE_FULL) goto return_label;
 return_label:
   if(ret == DT_IMAGEIO_OK)
@@ -348,7 +348,6 @@ return_label:
   }
   return ret;
 }
-
 
 /* magic data: exclusion,offset,length, xx, yy, ...
     just add magic bytes to match to this struct
@@ -428,10 +427,10 @@ int dt_imageio_is_hdr(const char *filename)
 }
 
 // transparent read method to load ldr image to dt_raw_image_t with exif and so on.
-dt_imageio_retval_t dt_imageio_open_ldr(dt_image_t *img, const char *filename, dt_mipmap_cache_allocator_t a)
+dt_imageio_retval_t dt_imageio_open_ldr(dt_image_t *img, const char *filename, dt_mipmap_buffer_t *buf)
 {
   dt_imageio_retval_t ret;
-  ret = dt_imageio_open_tiff(img, filename, a);
+  ret = dt_imageio_open_tiff(img, filename, buf);
   if(ret == DT_IMAGEIO_OK || ret == DT_IMAGEIO_CACHE_FULL)
   {
     img->filters = 0u;
@@ -441,7 +440,7 @@ dt_imageio_retval_t dt_imageio_open_ldr(dt_image_t *img, const char *filename, d
     return ret;
   }
 
-  ret = dt_imageio_open_png(img, filename, a);
+  ret = dt_imageio_open_png(img, filename, buf);
   if(ret == DT_IMAGEIO_OK || ret == DT_IMAGEIO_CACHE_FULL)
   {
     img->filters = 0u;
@@ -452,7 +451,7 @@ dt_imageio_retval_t dt_imageio_open_ldr(dt_image_t *img, const char *filename, d
   }
 
 #ifdef HAVE_OPENJPEG
-  ret = dt_imageio_open_j2k(img, filename, a);
+  ret = dt_imageio_open_j2k(img, filename, buf);
   if(ret == DT_IMAGEIO_OK || ret == DT_IMAGEIO_CACHE_FULL)
   {
     img->filters = 0u;
@@ -463,7 +462,7 @@ dt_imageio_retval_t dt_imageio_open_ldr(dt_image_t *img, const char *filename, d
   }
 #endif
 
-  ret = dt_imageio_open_jpeg(img, filename, a);
+  ret = dt_imageio_open_jpeg(img, filename, buf);
   if(ret == DT_IMAGEIO_OK || ret == DT_IMAGEIO_CACHE_FULL)
   {
     img->filters = 0u;
@@ -518,9 +517,9 @@ int dt_imageio_export_with_flags(const uint32_t imgid, const char *filename,
   dt_dev_init(&dev, 0);
   dt_mipmap_buffer_t buf;
   if(thumbnail_export && dt_conf_get_bool("plugins/lighttable/low_quality_thumbnails"))
-    dt_mipmap_cache_read_get(darktable.mipmap_cache, &buf, imgid, DT_MIPMAP_F, DT_MIPMAP_BLOCKING);
+    dt_mipmap_cache_get(darktable.mipmap_cache, &buf, imgid, DT_MIPMAP_F, DT_MIPMAP_BLOCKING, 'r');
   else
-    dt_mipmap_cache_read_get(darktable.mipmap_cache, &buf, imgid, DT_MIPMAP_FULL, DT_MIPMAP_BLOCKING);
+    dt_mipmap_cache_get(darktable.mipmap_cache, &buf, imgid, DT_MIPMAP_FULL, DT_MIPMAP_BLOCKING, 'r');
   dt_dev_load_image(&dev, imgid);
   const dt_image_t *img = &dev.image_storage;
   const int wd = img->width;
@@ -539,14 +538,15 @@ int dt_imageio_export_with_flags(const uint32_t imgid, const char *filename,
         _("failed to allocate memory for %s, please lower the threads used for export or buy more memory."),
         thumbnail_export ? C_("noun", "thumbnail export") : C_("noun", "export"));
     dt_dev_cleanup(&dev);
-    dt_mipmap_cache_read_release(darktable.mipmap_cache, &buf);
+    dt_mipmap_cache_release(darktable.mipmap_cache, &buf);
     return 1;
   }
 
   if(!buf.buf)
   {
+    fprintf(stderr, "allocation failed???\n");
     dt_control_log(_("image `%s' is not available!"), img->filename);
-    dt_mipmap_cache_read_release(darktable.mipmap_cache, &buf);
+    dt_mipmap_cache_release(darktable.mipmap_cache, &buf);
     dt_dev_cleanup(&dev);
     return 1;
   }
@@ -563,7 +563,7 @@ int dt_imageio_export_with_flags(const uint32_t imgid, const char *filename,
     {
       dt_control_log(_("cannot find the style '%s' to apply during export."), format_params->style);
       dt_dev_cleanup(&dev);
-      dt_mipmap_cache_read_release(darktable.mipmap_cache, &buf);
+      dt_mipmap_cache_release(darktable.mipmap_cache, &buf);
       return 1;
     }
 
@@ -812,7 +812,7 @@ int dt_imageio_export_with_flags(const uint32_t imgid, const char *filename,
 
   dt_dev_pixelpipe_cleanup(&pipe);
   dt_dev_cleanup(&dev);
-  dt_mipmap_cache_read_release(darktable.mipmap_cache, &buf);
+  dt_mipmap_cache_release(darktable.mipmap_cache, &buf);
   dt_free_align(moutbuf);
   /* now write xmp into that container, if possible */
   if(copy_metadata && (format->flags(format_params) & FORMAT_FLAGS_SUPPORT_XMP))
@@ -834,10 +834,10 @@ int dt_imageio_export_with_flags(const uint32_t imgid, const char *filename,
 // fallback read method in case file could not be opened yet.
 // use GraphicsMagick (if supported) to read exotic LDRs
 dt_imageio_retval_t dt_imageio_open_exotic(dt_image_t *img, const char *filename,
-                                           dt_mipmap_cache_allocator_t a)
+                                           dt_mipmap_buffer_t *buf)
 {
 #ifdef HAVE_GRAPHICSMAGICK
-  dt_imageio_retval_t ret = dt_imageio_open_gm(img, filename, a);
+  dt_imageio_retval_t ret = dt_imageio_open_gm(img, filename, buf);
   if(ret == DT_IMAGEIO_OK || ret == DT_IMAGEIO_CACHE_FULL)
   {
     img->filters = 0u;
@@ -858,7 +858,7 @@ dt_imageio_retval_t dt_imageio_open_exotic(dt_image_t *img, const char *filename
 
 dt_imageio_retval_t dt_imageio_open(dt_image_t *img,               // non-const * means you hold a write lock!
                                     const char *filename,          // full path
-                                    dt_mipmap_cache_allocator_t a) // allocate via dt_mipmap_cache_alloc
+                                    dt_mipmap_buffer_t *buf)
 {
   /* first of all, check if file exists, don't bother to test loading if not exists */
   if(!g_file_test(filename, G_FILE_TEST_IS_REGULAR)) return !DT_IMAGEIO_OK;
@@ -866,19 +866,19 @@ dt_imageio_retval_t dt_imageio_open(dt_image_t *img,               // non-const 
   dt_imageio_retval_t ret = DT_IMAGEIO_FILE_CORRUPTED;
 
   /* check if file is ldr using magic's */
-  if(dt_imageio_is_ldr(filename)) ret = dt_imageio_open_ldr(img, filename, a);
+  if(dt_imageio_is_ldr(filename)) ret = dt_imageio_open_ldr(img, filename, buf);
 
   /* silly check using file extensions: */
   if(ret != DT_IMAGEIO_OK && ret != DT_IMAGEIO_CACHE_FULL && dt_imageio_is_hdr(filename))
-    ret = dt_imageio_open_hdr(img, filename, a);
+    ret = dt_imageio_open_hdr(img, filename, buf);
   
   /* use rawspeed to load the raw */
   if(ret != DT_IMAGEIO_OK && ret != DT_IMAGEIO_CACHE_FULL) 
-    ret = dt_imageio_open_rawspeed(img, filename, a);
+    ret = dt_imageio_open_rawspeed(img, filename, buf);
 
   /* fallback that tries to open file via GraphicsMagick */
   if(ret != DT_IMAGEIO_OK && ret != DT_IMAGEIO_CACHE_FULL) 
-    ret = dt_imageio_open_exotic(img, filename, a);
+    ret = dt_imageio_open_exotic(img, filename, buf);
 
   return ret;
 }

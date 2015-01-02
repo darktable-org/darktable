@@ -112,6 +112,7 @@ typedef enum {
   RELATEDIMAGEFILEFORMAT    = 0x1000,
   RELATEDIMAGEWIDTH  = 0x1001,
   RELATEDIMAGELENGTH  = 0x1002,
+  FUJIOLDWB  = 0x2ff0,
   CFAREPEATPATTERNDIM  = 0x828D,
   CFAPATTERN   = 0x828E,
   BATTERYLEVEL   = 0x828F,
@@ -240,7 +241,7 @@ typedef enum {
   REDUCTIONMATRIX1                = 0xC625, // IFD0
   REDUCTIONMATRIX2                = 0xC626, // IFD0
   ANALOGBALANCE                   = 0xC627, // IFD0
-  ASSHOTNETURAL                   = 0xC628, // IFD0
+  ASSHOTNEUTRAL                   = 0xC628, // IFD0
   ASSHOTWHITEXY                   = 0xC629, // IFD0
   BASELINEEXPOSURE                = 0xC62A, // IFD0
   BASELINENOISE                   = 0xC62B, // IFD0

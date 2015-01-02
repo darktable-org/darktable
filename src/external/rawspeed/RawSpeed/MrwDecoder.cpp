@@ -107,6 +107,28 @@ RawImage MrwDecoder::decodeRawInternal() {
   mRaw->dim = iPoint2D(raw_width, raw_height);
   mRaw->createData();
 
+  uint32 currpos = 8;
+  const unsigned char* data = mFile->getData(0);
+  while (currpos < data_offset) {
+    uint32 tag = get4BE(data,currpos);
+    uint32 len = get4BE(data,currpos+4);
+    if (tag == 0x574247) { /* WBG */
+      ushort16 tmp[4];
+      for(uint32 i=0; i<4; i++)
+        tmp[i] = get2BE(data, currpos+12+i*2);
+      if (!strcmp(cameraName,"DIMAGE A200")) {
+        mRaw->wbCoeffs[0] = tmp[2];
+        mRaw->wbCoeffs[1] = tmp[0];
+        mRaw->wbCoeffs[2] = tmp[1];
+      } else {
+        mRaw->wbCoeffs[0] = tmp[0];
+        mRaw->wbCoeffs[1] = tmp[1];
+        mRaw->wbCoeffs[2] = tmp[3];
+      }
+    }
+    currpos += len+8;
+  }
+
   if (packed)
     imgsize = raw_width * raw_height * 3 / 2;
   else

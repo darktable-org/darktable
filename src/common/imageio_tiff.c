@@ -138,7 +138,7 @@ static inline int _read_planar_f(tiff_t *t)
   return 1;
 }
 
-dt_imageio_retval_t dt_imageio_open_tiff(dt_image_t *img, const char *filename, dt_mipmap_cache_allocator_t a)
+dt_imageio_retval_t dt_imageio_open_tiff(dt_image_t *img, const char *filename, dt_mipmap_buffer_t *mbuf)
 {
   const char *ext = filename + strlen(filename);
   while(*ext != '.' && ext > filename) ext--;
@@ -184,7 +184,7 @@ dt_imageio_retval_t dt_imageio_open_tiff(dt_image_t *img, const char *filename, 
 
   t.image->bpp = 4 * sizeof(float);
 
-  t.mipbuf = (float *)dt_mipmap_cache_alloc(t.image, DT_MIPMAP_FULL, a);
+  t.mipbuf = (float *)dt_mipmap_cache_alloc(mbuf, t.image);
   if(!t.mipbuf)
   {
     fprintf(stderr, "[tiff_open] could not alloc full buffer for image `%s'\n", t.image->filename);
