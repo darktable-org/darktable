@@ -280,12 +280,14 @@ static void _update_collected_images(dt_view_t *self)
   // a temporary (in-memory) table (collected_images).
   //
   // 0. get current lower rowid
-
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "SELECT MIN(rowid) FROM memory.collected_images",
-                              -1, &stmt, NULL);
-  if(sqlite3_step(stmt) == SQLITE_ROW)
+  if (lib->full_preview_id != -1)
   {
-    min_before = sqlite3_column_int(stmt, 0);
+    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "SELECT MIN(rowid) FROM memory.collected_images",
+                                -1, &stmt, NULL);
+    if(sqlite3_step(stmt) == SQLITE_ROW)
+    {
+      min_before = sqlite3_column_int(stmt, 0);
+    }
   }
 
   // 1. drop previous data
@@ -306,19 +308,32 @@ static void _update_collected_images(dt_view_t *self)
   sqlite3_finalize(stmt);
 
   // 3. get new low-bound, then update the full preview rowid accordingly
-
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "SELECT MIN(rowid) FROM memory.collected_images",
-                              -1, &stmt, NULL);
-  if(sqlite3_step(stmt) == SQLITE_ROW)
+  if (lib->full_preview_id != -1)
   {
-    min_after = sqlite3_column_int(stmt, 0);
+    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "SELECT MIN(rowid) FROM memory.collected_images",
+                                -1, &stmt, NULL);
+    if(sqlite3_step(stmt) == SQLITE_ROW)
+    {
+      min_after = sqlite3_column_int(stmt, 0);
+    }
+
+    // note that this adjustement is needed as for a memory table the rowid doesn't start to 1 after the DELETE
+    // above,
+    // but rowid is incremented each time we INSERT.
+    lib->full_preview_rowid += (min_after - min_before);
+
+    snprintf(col_query, sizeof(col_query), "SELECT imgid FROM memory.collected_images WHERE rowid=%d", lib->full_preview_rowid);
+    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), col_query, -1, &stmt, NULL);
+    if(sqlite3_step(stmt) == SQLITE_ROW)
+    {
+      int nid = sqlite3_column_int(stmt, 0);
+      if (nid != lib->full_preview_id)
+      {
+        lib->full_preview_id = sqlite3_column_int(stmt, 0);
+        dt_control_set_mouse_over_id(lib->full_preview_id);
+      }
+    }
   }
-
-  // note that this adjustement is needed as for a memory table the rowid doesn't start to 1 after the DELETE
-  // above,
-  // but rowid is incremented each time we INSERT.
-
-  lib->full_preview_rowid += (min_after - min_before);
 
   /* if we have a statment lets clean it */
   if(lib->statements.main_query) sqlite3_finalize(lib->statements.main_query);
