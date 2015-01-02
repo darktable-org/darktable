@@ -198,6 +198,46 @@ static int32_t dt_control_write_sidecar_files_job_run(dt_job_t *job)
   return 0;
 }
 
+typedef struct dt_control_merge_hdr_t
+{
+  uint32_t first_imgid;
+  uint32_t first_filter;
+
+  float *pixels, *weight;
+
+  int wd;
+  int ht;
+
+  float whitelevel;
+  float epsw;
+
+  // in case export is faster than our dt_control_merge_hdr_process callback:
+  dt_pthread_mutex_t lock;
+} dt_control_merge_hdr_t;
+
+typedef struct dt_control_merge_hdr_format_t
+{
+  int max_width, max_height;
+  int width, height;
+  char style[128];
+  dt_control_merge_hdr_t *d;
+} dt_control_merge_hdr_format_t;
+
+static int dt_control_merge_hdr_bpp(dt_imageio_module_data_t *data)
+{
+  return 32;
+}
+
+static int dt_control_merge_hdr_levels(dt_imageio_module_data_t *data)
+{
+  return IMAGEIO_RGB | IMAGEIO_FLOAT;
+}
+
+static const char *dt_control_merge_hdr_mime(dt_imageio_module_data_t *data)
+{
+  return "memory";
+}
+
 static float envelope(const float xx)
 {
   const float x = CLAMPS(xx, 0.0f, 1.0f);
@@ -218,12 +258,128 @@ static float envelope(const float xx)
   }
 }
 
+static int dt_control_merge_hdr_process(dt_imageio_module_data_t *datai, const char *filename,
+                                        const void *const ivoid, void *exif, int exif_len, int imgid, int num,
+                                        int total)
+{
+  dt_control_merge_hdr_format_t *data = (dt_control_merge_hdr_format_t *)datai;
+  dt_control_merge_hdr_t *d = data->d;
+
+  dt_pthread_mutex_lock(&d->lock);
+
+  // just take a copy. also do it after blocking read, so filters will make sense.
+  const dt_image_t *img = dt_image_cache_get(darktable.image_cache, imgid, 'r');
+  const dt_image_t image = *img;
+  dt_image_cache_read_release(darktable.image_cache, img);
+
+  if(!d->pixels)
+  {
+    d->first_imgid = imgid;
+    d->first_filter = dt_image_filter(&image);
+    d->pixels = calloc(datai->width * datai->height, sizeof(float));
+    d->weight = calloc(datai->width * datai->height, sizeof(float));
+    d->wd = datai->width;
+    d->ht = datai->height;
+  }
+
+  if(image.filters == 0u || image.filters == 9u || image.bpp != sizeof(uint16_t))
+  {
+    dt_control_log(_("exposure bracketing only works on Bayer raw images."));
+    return 0;
+  }
+  else if(datai->width != d->wd || datai->height != d->ht || d->first_filter != dt_image_filter(&image))
+  {
+    dt_control_log(_("images have to be of same size! Skipping."));
+    return 0;
+  }
+
+  // if no valid exif data can be found, assume peleng fisheye at f/16, 8mm, with half of the light lost in
+  // the system => f/22
+  const float eap = image.exif_aperture > 0.0f ? image.exif_aperture : 22.0f;
+  const float efl = image.exif_focal_length > 0.0f ? image.exif_focal_length : 8.0f;
+  const float rad = .5f * efl / eap;
+  const float aperture = M_PI * rad * rad;
+  const float iso = image.exif_iso > 0.0f ? image.exif_iso : 100.0f;
+  const float exp = image.exif_exposure > 0.0f ? image.exif_exposure : 1.0f;
+  const float cal = 100.0f / (aperture * exp * iso);
+  // about proportional to how many photons we can expect from this shot:
+  const float photoncnt = 100.0f * aperture * exp / iso;
+  // once we get unscaled raw data in this uint16_t buffer, we need to rescale (and subtract black before
+  // using the values):
+  int32_t saturation = 0xffff; // image.raw_white_point - image.raw_black_level;
+  d->whitelevel = fmaxf(d->whitelevel, saturation * cal);
+#ifdef _OPENMP
+#pragma omp parallel for schedule(static) default(none) shared(d, saturation)
+#endif
+  for(int y = 0; y < d->ht; y++)
+    for(int x = 0; x < d->wd; x++)
+    {
+      const float in = ((float *)ivoid)[x + d->wd * y];
+      // weights based on siggraph 12 poster
+      // zijian zhu, zhengguo li, susanto rahardja, pasi fraenti
+      // 2d denoising factor for high dynamic range imaging
+      float w = photoncnt;
+
+      // need some safety margin due to upsampling and 16-bit quantization + dithering?
+      int32_t offset = 3000;
+
+      // cannot do an envelope based on single pixel values here, need to get
+      // maximum value of all color channels. do find that, go through the bayer
+      // pattern block:
+      int xx = x & ~1, yy = y & ~1;
+      int32_t M = 0, m = 0xffff;
+      if(xx < d->wd - 1 && yy < d->ht - 1)
+      {
+        for(int i = 0; i < 2; i++)
+          for(int j = 0; j < 2; j++)
+          {
+            M = MAX(M, ((float *)ivoid)[xx + i + d->wd * (yy + j)]);
+            m = MIN(m, ((float *)ivoid)[xx + i + d->wd * (yy + j)]);
+          }
+        // move envelope a little to allow non-zero weight even for clipped regions.
+        // this is because even if the 2x2 block is clipped somewhere, the other channels
+        // might still prove useful. we'll check for individual channel saturation below.
+        w *= d->epsw + envelope((M + offset) / (float)saturation);
+      }
+
+      if(M + offset >= saturation)
+      {
+        if(d->weight[x + d->wd * y] <= 0.0f)
+        { // only consider saturated pixels in case we have nothing better:
+          if(d->weight[x + d->wd * y] == 0 || m < -d->weight[x + d->wd * y])
+          {
+            if(m + offset >= saturation)
+              d->pixels[x + d->wd * y] = 1.0f; // let's admit we were completely clipped, too
+            else
+              d->pixels[x + d->wd * y] = in * cal / d->whitelevel;
+            d->weight[x + d->wd * y]
+                = -m; // could use -cal here, but m is per pixel and safer for varying illumination conditions
+          }
+        }
+        // else silently ignore, others have filled in a better color here already
+      }
+      else
+      {
+        if(d->weight[x + d->wd * y] <= 0.0)
+        { // cleanup potentially blown highlights from earlier images
+          d->pixels[x + d->wd * y] = 0.0f;
+          d->weight[x + d->wd * y] = 0.0f;
+        }
+        d->pixels[x + d->wd * y] += w * in * cal;
+        d->weight[x + d->wd * y] += w;
+      }
+    }
+
+  dt_pthread_mutex_unlock(&d->lock);
+
+  return 0;
+}
+
 static int32_t dt_control_merge_hdr_job_run(dt_job_t *job)
 {
-  int imgid = -1;
   dt_control_image_enumerator_t *params = dt_control_job_get_params(job);
   GList *t = params->index;
-  guint total = g_list_length(t);
+  const guint total = g_list_length(t);
   char message[512] = { 0 };
   double fraction = 0;
   snprintf(message, sizeof(message), ngettext("merging %d image", "merging %d images", total), total);
@@ -231,162 +387,52 @@ static int32_t dt_control_merge_hdr_job_run(dt_job_t *job)
   dt_progress_t *progress = dt_control_progress_create(darktable.control, TRUE, message);
   dt_control_progress_attach_job(darktable.control, progress, job);
 
-  float *pixels = NULL;
-  float *weight = NULL;
-  int wd = 0, ht = 0, first_imgid = -1;
-  uint32_t filter = 0;
-  float whitelevel = 0.0f;
-  const float epsw = 1e-8f;
-  total++;
+  dt_control_merge_hdr_t d = (dt_control_merge_hdr_t){.epsw = 1e-8f };
+
+  dt_imageio_module_format_t buf = (dt_imageio_module_format_t){.mime = dt_control_merge_hdr_mime,
+                                                                .levels = dt_control_merge_hdr_levels,
+                                                                .bpp = dt_control_merge_hdr_bpp,
+                                                                .write_image = dt_control_merge_hdr_process };
+
+  dt_control_merge_hdr_format_t dat = (dt_control_merge_hdr_format_t){.style = { '\0' }, .d = &d };
+
+  int num = 1;
   while(t)
   {
-    imgid = GPOINTER_TO_INT(t->data);
-    dt_mipmap_buffer_t buf;
-    dt_mipmap_cache_get(darktable.mipmap_cache, &buf, imgid, DT_MIPMAP_FULL, DT_MIPMAP_BLOCKING, 'r');
-    // just take a copy. also do it after blocking read, so filters and bpp will make sense.
-    const dt_image_t *img = dt_image_cache_get(darktable.image_cache, imgid, 'r');
-    dt_image_t image = *img;
-    dt_image_cache_read_release(darktable.image_cache, img);
-    if(image.filters == 0u || image.filters == 9u || image.bpp != sizeof(uint16_t))
-    {
-      dt_control_log(_("exposure bracketing only works on Bayer raw images"));
-      dt_mipmap_cache_release(darktable.mipmap_cache, &buf);
-      free(pixels);
-      free(weight);
-      goto error;
-    }
-    filter = dt_image_filter(img);
-    if(buf.size != DT_MIPMAP_FULL)
-    {
-      dt_control_log(_("failed to get raw buffer from image `%s'"), image.filename);
-      dt_mipmap_cache_release(darktable.mipmap_cache, &buf);
-      free(pixels);
-      free(weight);
-      goto error;
-    }
+    const uint32_t imgid = GPOINTER_TO_INT(t->data);
 
-    if(!pixels)
-    {
-      first_imgid = imgid;
-      pixels = (float *)calloc(image.width * image.height, sizeof(float));
-      weight = (float *)calloc(image.width * image.height, sizeof(float));
-      wd = image.width;
-      ht = image.height;
-    }
-    else if(image.width != wd || image.height != ht)
-    {
-      dt_control_log(_("images have to be of same size!"));
-      free(pixels);
-      free(weight);
-      dt_mipmap_cache_release(darktable.mipmap_cache, &buf);
-      goto error;
-    }
-    // if no valid exif data can be found, assume peleng fisheye at f/16, 8mm, with half of the light lost in
-    // the system => f/22
-    const float eap = image.exif_aperture > 0.0f ? image.exif_aperture : 22.0f;
-    const float efl = image.exif_focal_length > 0.0f ? image.exif_focal_length : 8.0f;
-    const float rad = .5f * efl / eap;
-    const float aperture = M_PI * rad * rad;
-    const float iso = image.exif_iso > 0.0f ? image.exif_iso : 100.0f;
-    const float exp = image.exif_exposure > 0.0f ? image.exif_exposure : 1.0f;
-    const float cal = 100.0f / (aperture * exp * iso);
-    // about proportional to how many photons we can expect from this shot:
-    const float photoncnt = 100.0f * aperture * exp / iso;
-    // once we get unscaled raw data in this uint16_t buffer, we need to rescale (and subtract black before
-    // using the values):
-    int32_t saturation = 0xffff; // image.raw_white_point - image.raw_black_level;
-    whitelevel = fmaxf(whitelevel, saturation * cal);
-#ifdef _OPENMP
-#pragma omp parallel for schedule(static) default(none) shared(buf, pixels, weight, wd, ht, saturation,      \
-                                                               whitelevel)
-#endif
-    for(int y = 0; y < ht; y++)
-      for(int x = 0; x < wd; x++)
-      {
-        const uint16_t in = ((uint16_t *)buf.buf)[x + wd * y];
-        // weights based on siggraph 12 poster
-        // zijian zhu, zhengguo li, susanto rahardja, pasi fraenti
-        // 2d denoising factor for high dynamic range imaging
-        float w = photoncnt;
-
-        // need some safety margin due to upsampling and 16-bit quantization + dithering?
-        int32_t offset = 3000;
-
-        // cannot do an envelope based on single pixel values here, need to get
-        // maximum value of all color channels. do find that, go through the bayer
-        // pattern block:
-        int xx = x & ~1, yy = y & ~1;
-        int32_t M = 0, m = 0xffff;
-        if(xx < wd - 1 && yy < ht - 1)
-        {
-          for(int i = 0; i < 2; i++)
-            for(int j = 0; j < 2; j++)
-            {
-              M = MAX(M, ((uint16_t *)buf.buf)[xx + i + wd * (yy + j)]);
-              m = MIN(m, ((uint16_t *)buf.buf)[xx + i + wd * (yy + j)]);
-            }
-          // move envelope a little to allow non-zero weight even for clipped regions.
-          // this is because even if the 2x2 block is clipped somewhere, the other channels
-          // might still prove useful. we'll check for individual channel saturation below.
-          w *= epsw + envelope((M + offset) / (float)saturation);
-        }
-
-        if(M + offset >= saturation)
-        {
-          if(weight[x + wd * y] <= 0.0f)
-          { // only consider saturated pixels in case we have nothing better:
-            if(weight[x + wd * y] == 0 || m < -weight[x + wd * y])
-            {
-              if(m + offset >= saturation)
-                pixels[x + wd * y] = 1.0f; // let's admit we were completely clipped, too
-              else
-                pixels[x + wd * y] = in * cal / whitelevel;
-              weight[x + wd * y] = -m; // could use -cal here, but m is per pixel and safer for varying
-                                       // illumination conditions
-            }
-          }
-          // else silently ignore, others have filled in a better color here already
-        }
-        else
-        {
-          if(weight[x + wd * y] <= 0.0)
-          { // cleanup potentially blown highlights from earlier images
-            pixels[x + wd * y] = 0.0f;
-            weight[x + wd * y] = 0.0f;
-          }
-          pixels[x + wd * y] += w * in * cal;
-          weight[x + wd * y] += w;
-        }
-      }
+    dt_imageio_export_with_flags(imgid, "unused", &buf, (dt_imageio_module_data_t *)&dat, 1, 0, 1, 0,
+                                 "pre:rawprepare", 0, 0, 0, num, total);
 
     t = g_list_delete_link(t, t);
 
     /* update the progress bar */
-    fraction += 1.0 / total;
+    fraction += 1.0 / (total + 1);
     dt_control_progress_set_progress(darktable.control, progress, fraction);
-
-    dt_mipmap_cache_release(darktable.mipmap_cache, &buf);
+    num++;
   }
 // normalize by white level to make clipping at 1.0 work as expected
+
 #ifdef _OPENMP
-#pragma omp parallel for schedule(static) default(none) shared(pixels, wd, ht, weight, whitelevel)
+#pragma omp parallel for schedule(static) default(none) shared(d)
 #endif
-  for(int k = 0; k < wd * ht; k++)
+  for(size_t k = 0; k < (size_t)d.wd * d.ht; k++)
   {
-    if(weight[k] > 0.0) pixels[k] = fmaxf(0.0f, pixels[k] / (whitelevel * weight[k]));
+    if(d.weight[k] > 0.0) d.pixels[k] = fmaxf(0.0f, d.pixels[k] / (d.whitelevel * d.weight[k]));
   }
 
   // output hdr as digital negative with exif data.
   uint8_t exif[65535];
   char pathname[PATH_MAX] = { 0 };
   gboolean from_cache = TRUE;
-  dt_image_full_path(first_imgid, pathname, sizeof(pathname), &from_cache);
+  dt_image_full_path(d.first_imgid, pathname, sizeof(pathname), &from_cache);
+
   // last param is dng mode
-  const int exif_len = dt_exif_read_blob(exif, pathname, first_imgid, 0, wd, ht, 1);
+  const int exif_len = dt_exif_read_blob(exif, pathname, d.first_imgid, 0, d.wd, d.ht, 1);
   char *c = pathname + strlen(pathname);
   while(*c != '.' && c > pathname) c--;
   g_strlcpy(c, "-hdr.dng", sizeof(pathname) - (c - pathname));
-  dt_imageio_write_dng(pathname, pixels, wd, ht, exif, exif_len, filter, 1.0f);
+  dt_imageio_write_dng(pathname, d.pixels, d.wd, d.ht, exif, exif_len, d.first_filter, 1.0f);
 
   dt_control_progress_set_progress(darktable.control, progress, 1.0);
 
@@ -400,9 +446,9 @@ static int32_t dt_control_merge_hdr_job_run(dt_job_t *job)
   dt_image_import(filmid, pathname, TRUE);
   g_free(directory);
 
-  free(pixels);
-  free(weight);
-error:
+  free(d.pixels);
+  free(d.weight);
+
   dt_control_progress_destroy(darktable.control, progress);
   dt_control_queue_redraw_center();
   free(params);
