@@ -33,6 +33,9 @@ typedef struct dt_lib_navigation_t
 {
   int dragging;
   int zoom_w, zoom_h;
+  unsigned char* buffer;
+  int wd;
+  int ht;
 } dt_lib_navigation_t;
 
 
@@ -92,6 +95,10 @@ void gui_init(dt_lib_module_t *self)
   dt_lib_navigation_t *d = (dt_lib_navigation_t *)g_malloc0(sizeof(dt_lib_navigation_t));
   self->data = (void *)d;
 
+  d->buffer = NULL;
+  d->wd = -1;
+  d->ht = -1;
+
   /* create drawingarea */
   self->widget = gtk_drawing_area_new();
   gtk_widget_set_events(self->widget, GDK_EXPOSURE_MASK | GDK_POINTER_MOTION_MASK
@@ -126,6 +133,9 @@ void gui_cleanup(dt_lib_module_t *self)
   /* disconnect from signal */
   dt_control_signal_disconnect(darktable.signals, G_CALLBACK(_lib_navigation_control_redraw_callback), self);
 
+  dt_lib_navigation_t *d = self->data;
+  g_free(d->buffer);
+
   g_free(self->data);
   self->data = NULL;
 }
@@ -144,7 +154,27 @@ static gboolean _lib_navigation_draw_callback(GtkWidget *widget, cairo_t *cr, gp
 
   dt_develop_t *dev = darktable.develop;
 
-  if(dev->preview_status != DT_DEV_PIXELPIPE_VALID) return FALSE;
+  /* double buffering of image data: only take new data if valid */
+  if(dev->preview_pipe->backbuf && dev->preview_status == DT_DEV_PIXELPIPE_VALID)
+  {
+    /* re-allocate in case of changed image dimensions */
+    if(d->buffer == NULL || dev->preview_pipe->backbuf_width != d->wd || dev->preview_pipe->backbuf_height != d->ht)
+    {
+      g_free(d->buffer);
+      d->wd = dev->preview_pipe->backbuf_width;
+      d->ht = dev->preview_pipe->backbuf_height;
+      d->buffer = g_malloc0((size_t)d->wd * d->ht * 4 * sizeof(unsigned char));
+    }
+
+    /* copy data */
+    if(d->buffer)
+    {
+      dt_pthread_mutex_t *mutex = &dev->preview_pipe->backbuf_mutex;
+      dt_pthread_mutex_lock(mutex);
+      memcpy(d->buffer, dev->preview_pipe->backbuf, (size_t)d->wd * d->ht * 4 * sizeof(unsigned char));
+      dt_pthread_mutex_unlock(mutex);
+    }
+  }
 
   /* get the current style */
   GdkRGBA color;
@@ -161,17 +191,15 @@ static gboolean _lib_navigation_draw_callback(GtkWidget *widget, cairo_t *cr, gp
   cairo_translate(cr, inset, inset);
 
   /* draw navigation image if available */
-  if(dev->preview_pipe->backbuf && (dev->preview_status == DT_DEV_PIXELPIPE_VALID))
+  if(d->buffer)
   {
-    dt_pthread_mutex_t *mutex = &dev->preview_pipe->backbuf_mutex;
-    dt_pthread_mutex_lock(mutex);
-    const int wd = dev->preview_pipe->backbuf_width;
-    const int ht = dev->preview_pipe->backbuf_height;
+    const int wd = d->wd;
+    const int ht = d->ht;
     const float scale = fminf(width / (float)wd, height / (float)ht);
 
     const int stride = cairo_format_stride_for_width(CAIRO_FORMAT_RGB24, wd);
     cairo_surface_t *surface
-        = cairo_image_surface_create_for_data(dev->preview_pipe->backbuf, CAIRO_FORMAT_RGB24, wd, ht, stride);
+        = cairo_image_surface_create_for_data(d->buffer, CAIRO_FORMAT_RGB24, wd, ht, stride);
     cairo_translate(cr, width / 2.0, height / 2.0f);
     cairo_scale(cr, scale, scale);
     cairo_translate(cr, -.5f * wd, -.5f * ht);
@@ -191,8 +219,6 @@ static gboolean _lib_navigation_draw_callback(GtkWidget *widget, cairo_t *cr, gp
     cairo_pattern_set_filter(cairo_get_source(cr), CAIRO_FILTER_FAST);
     cairo_fill(cr);
     cairo_surface_destroy(surface);
-
-    dt_pthread_mutex_unlock(mutex);
 
     // draw box where we are
     dt_dev_zoom_t zoom = dt_control_get_dev_zoom();
