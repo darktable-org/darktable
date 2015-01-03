@@ -1265,7 +1265,7 @@ int32_t dt_image_copy(const int32_t imgid, const int32_t filmid)
   return newid;
 }
 
-void dt_image_local_copy_set(const int32_t imgid)
+int dt_image_local_copy_set(const int32_t imgid)
 {
   gchar srcpath[PATH_MAX] = { 0 };
   gchar destpath[PATH_MAX] = { 0 };
@@ -1279,7 +1279,7 @@ void dt_image_local_copy_set(const int32_t imgid)
   if(!g_file_test(srcpath, G_FILE_TEST_IS_REGULAR))
   {
     dt_control_log(_("cannot create local copy when the original file is not accessible."));
-    return;
+    return 1;
   }
 
   if(!g_file_test(destpath, G_FILE_TEST_EXISTS))
@@ -1295,7 +1295,7 @@ void dt_image_local_copy_set(const int32_t imgid)
       dt_control_log(_("cannot create local copy."));
       g_object_unref(dest);
       g_object_unref(src);
-      return;
+      return 1;
     }
 
     g_object_unref(dest);
@@ -1311,6 +1311,7 @@ void dt_image_local_copy_set(const int32_t imgid)
   dt_image_cache_read_release(darktable.image_cache, img);
 
   dt_control_queue_redraw_center();
+  return 0;
 }
 
 static int _nb_other_local_copy_for(const int32_t imgid)

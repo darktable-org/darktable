@@ -863,13 +863,13 @@ static int32_t dt_control_local_copy_images_job_run(dt_job_t *job)
     imgid = GPOINTER_TO_INT(t->data);
     if(is_copy)
     {
-      dt_image_local_copy_set(imgid);
-      dt_tag_attach(tagid, imgid);
+      if (dt_image_local_copy_set(imgid) == 0)
+        dt_tag_attach(tagid, imgid);
     }
     else
     {
-      dt_image_local_copy_reset(imgid);
-      dt_tag_detach(tagid, imgid);
+      if (dt_image_local_copy_reset(imgid) == 0)
+        dt_tag_detach(tagid, imgid);
     }
     t = g_list_delete_link(t, t);
 

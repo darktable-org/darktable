@@ -269,7 +269,7 @@ int32_t dt_image_move(const int32_t imgid, const int32_t filmid);
 /** physically cope image to the folder of the film roll with filmid and
  *  duplicate update database entries. */
 int32_t dt_image_copy(const int32_t imgid, const int32_t filmid);
-void dt_image_local_copy_set(const int32_t imgid);
+int dt_image_local_copy_set(const int32_t imgid);
 int dt_image_local_copy_reset(const int32_t imgid);
 /* check whether it is safe to remove a file */
 gboolean dt_image_safe_remove(const int32_t imgid);
