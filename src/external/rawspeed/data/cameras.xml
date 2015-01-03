@@ -1719,7 +1719,7 @@
 			<Alias>NIKON D800E</Alias>
 		</Aliases>
 	</Camera>
-	<Camera make="NIKON CORPORATION" model="NIKON D810" mode="rgb-uncompressed">
+	<Camera make="NIKON CORPORATION" model="NIKON D810" mode="sNEF-uncompressed">
 		<Crop x="0" y="0" width="0" height="0"/>
 		<Sensor black="0" white="4095"/>
 		<Hints>
@@ -1780,7 +1780,7 @@
 			<Hint name="nikon_override_auto_black" value=""/>
 		</Hints>
 	</Camera>
-	<Camera make="NIKON CORPORATION" model="NIKON D4S" mode="rgb-uncompressed">
+	<Camera make="NIKON CORPORATION" model="NIKON D4S" mode="sNEF-uncompressed">
 		<Crop x="0" y="0" width="0" height="0"/>
 		<Sensor black="0" white="4095"/>
 		<Hints>
