@@ -18,6 +18,7 @@
 #include "lua/lua.h"
 #include "common/darktable.h"
 #include "control/control.h"
+#include "lua/call.h"
 
 void dt_lua_debug_stack_internal(lua_State *L, const char *function, int line)
 {
@@ -87,40 +88,74 @@ void dt_lua_init_lock()
   pthread_mutexattr_destroy(&a);
 }
 
-gboolean dt_lua_lock()
+void dt_lua_lock()
 {
-  gboolean had_lock = dt_control_gdk_haslock();
-  if(had_lock)
-  {
-    dt_control_gdk_unlock();
-  }
   if(!darktable.lua_state.ending && pthread_equal(darktable.control->gui_thread, pthread_self()) != 0)
   {
     dt_print(DT_DEBUG_LUA, "LUA WARNING locking from the gui thread should be avoided\n");
   }
 
   dt_pthread_mutex_lock(&darktable.lua_state.mutex);
-  return had_lock;
 }
-void dt_lua_unlock(gboolean relock_gdk)
+void dt_lua_unlock()
 {
   dt_pthread_mutex_unlock(&darktable.lua_state.mutex);
-  if(relock_gdk)
-  {
-    dt_control_gdk_lock();
-  }
+}
+
+static gboolean async_redraw(gpointer data)
+{
+    dt_control_signal_raise(darktable.signals, DT_SIGNAL_FILMROLLS_CHANGED); // just for good measure
+    dt_control_queue_redraw();
+    return false;
 }
 
 void dt_lua_redraw_screen()
 {
   if(darktable.gui != NULL)
   {
-    dt_lua_unlock(false);
-    dt_control_signal_raise(darktable.signals, DT_SIGNAL_FILMROLLS_CHANGED); // just for good measure
-    dt_control_queue_redraw();
-    dt_lua_lock();
+    g_idle_add(async_redraw,NULL);
   }
 }
+
+typedef struct gtk_wrap_communication {
+  GCond end_cond;
+  GMutex end_mutex;
+  lua_State *L;
+  int retval;
+} gtk_wrap_communication;
+
+gboolean dt_lua_gtk_wrap_callback(gpointer data)
+{
+  gtk_wrap_communication *communication = (gtk_wrap_communication*)data;
+  g_mutex_lock(&communication->end_mutex);
+  communication->retval = dt_lua_do_chunk(communication->L,lua_gettop(communication->L)-1,LUA_MULTRET);
+  g_cond_signal(&communication->end_cond);
+  g_mutex_unlock(&communication->end_mutex);
+  return false;
+} 
+
+int dt_lua_gtk_wrap(lua_State*L)
+{
+  gtk_wrap_communication communication;
+  lua_pushvalue(L,lua_upvalueindex(1));
+  lua_insert(L,1);
+  g_mutex_init(&communication.end_mutex);
+  g_cond_init(&communication.end_cond);
+  communication.L = L;
+  g_mutex_lock(&communication.end_mutex);
+  g_main_context_invoke(NULL,dt_lua_gtk_wrap_callback,&communication);
+  g_cond_wait(&communication.end_cond,&communication.end_mutex);
+  g_mutex_unlock(&communication.end_mutex);
+  g_mutex_clear(&communication.end_mutex);
+  if(communication.retval == LUA_OK) {
+    return lua_gettop(L);
+  } else {
+    return lua_error(L);
+  }
+
+}
+
+
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

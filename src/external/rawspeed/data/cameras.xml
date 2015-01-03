@@ -1719,9 +1719,9 @@
 			<Alias>NIKON D800E</Alias>
 		</Aliases>
 	</Camera>
-	<Camera make="NIKON CORPORATION" model="NIKON D810" mode="rgb-uncompressed">
+	<Camera make="NIKON CORPORATION" model="NIKON D810" mode="sNEF-uncompressed">
 		<Crop x="0" y="0" width="0" height="0"/>
-		<Sensor black="0" white="4095"/>
+		<Sensor black="0" white="32000"/>
 		<Hints>
 			<Hint name="nikon_override_auto_black" value=""/>
 		</Hints>
@@ -1780,9 +1780,9 @@
 			<Hint name="nikon_override_auto_black" value=""/>
 		</Hints>
 	</Camera>
-	<Camera make="NIKON CORPORATION" model="NIKON D4S" mode="rgb-uncompressed">
+	<Camera make="NIKON CORPORATION" model="NIKON D4S" mode="sNEF-uncompressed">
 		<Crop x="0" y="0" width="0" height="0"/>
-		<Sensor black="0" white="4095"/>
+		<Sensor black="0" white="10600"/>
 		<Hints>
 			<Hint name="nikon_override_auto_black" value=""/>
 		</Hints>
@@ -5138,6 +5138,16 @@
 		<Crop x="0" y="0" width="-34" height="0"/>
 		<Sensor black="512" white="16300"/>
 	</Camera>
+	<Camera make="SONY" model="ILCE-3500" supported="yes">
+		<CFA width="2" height="2">
+			<Color x="0" y="0">RED</Color>
+			<Color x="1" y="0">GREEN</Color>
+			<Color x="0" y="1">GREEN</Color>
+			<Color x="1" y="1">BLUE</Color>
+		</CFA>
+		<Crop x="0" y="0" width="-34" height="0"/>
+		<Sensor black="512" white="16300"/>
+	</Camera>
 	<Camera make="SONY" model="ILCE-5000" supported="yes">
 		<CFA width="2" height="2">
 			<Color x="0" y="0">RED</Color>
@@ -5238,7 +5248,7 @@
 		<Crop x="0" y="0" width="0" height="0"/>
 		<Sensor black="520" white="16500"/>
 	</Camera>
-	<Camera make="SONY" model="SLT-A55V">
+	<Camera make="SONY" model="SLT-A55">
 		<CFA width="2" height="2">
 			<Color x="0" y="0">RED</Color>
 			<Color x="1" y="0">GREEN</Color>
@@ -5247,6 +5257,9 @@
 		</CFA>
 		<Crop x="0" y="0" width="0" height="0"/>
 		<Sensor black="520" white="16596"/>
+		<Aliases>
+			<Alias>SLT-A55V</Alias>
+		</Aliases>
 	</Camera>
 	<Camera make="SONY" model="SLT-A57">
 		<CFA width="2" height="2">
@@ -5268,7 +5281,7 @@
 		<Crop x="0" y="0" width="-36" height="0"/>
 		<Sensor black="520" white="16596"/>
 	</Camera>
-	<Camera make="SONY" model="SLT-A65V">
+	<Camera make="SONY" model="SLT-A65">
 		<CFA width="2" height="2">
 			<Color x="0" y="0">RED</Color>
 			<Color x="1" y="0">GREEN</Color>
@@ -5277,8 +5290,11 @@
 		</CFA>
 		<Crop x="0" y="0" width="-30" height="0"/>
 		<Sensor black="520" white="16596"/>
+		<Aliases>
+			<Alias>SLT-A65V</Alias>
+		</Aliases>
 	</Camera>
-	<Camera make="SONY" model="SLT-A77V">
+	<Camera make="SONY" model="SLT-A77">
 		<CFA width="2" height="2">
 			<Color x="0" y="0">RED</Color>
 			<Color x="1" y="0">GREEN</Color>
@@ -5287,6 +5303,9 @@
 		</CFA>
 		<Crop x="0" y="0" width="-28" height="0"/>
 		<Sensor black="520" white="16596"/>
+		<Aliases>
+			<Alias>SLT-A77V</Alias>
+		</Aliases>
 	</Camera>
 	<Camera make="SONY" model="ILCA-77M2">
 		<CFA width="2" height="2">
@@ -5298,7 +5317,7 @@
 		<Crop x="0" y="0" width="-26" height="0"/>
 		<Sensor black="512" white="16300"/>
 	</Camera>
-	<Camera make="SONY" model="SLT-A99V">
+	<Camera make="SONY" model="SLT-A99">
 		<CFA width="2" height="2">
 			<Color x="0" y="0">RED</Color>
 			<Color x="1" y="0">GREEN</Color>
@@ -5307,6 +5326,9 @@
 		</CFA>
 		<Crop x="0" y="0" width="-28" height="0"/>
 		<Sensor black="520" white="16596"/>
+		<Aliases>
+			<Alias>SLT-A99V</Alias>
+		</Aliases>
 	</Camera>
 	<Camera make="Sinar Photography AG" model="Sinar Hy6/ Sinarback eXact" mode="dng">
 		<CFA width="2" height="2">

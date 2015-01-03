@@ -47,10 +47,8 @@ void dt_lua_register_view(lua_State *L, dt_view_t *module)
   dt_lua_module_entry_new_singleton(L, "view", module->module_name, module);
   int my_type = dt_lua_module_entry_get_type(L, "view", module->module_name);
   dt_lua_type_register_parent_type(L, my_type, luaA_type_find(L, "dt_view_t"));
-  luaL_getmetatable(L, luaA_typename(L, my_type));
   lua_pushcfunction(L, view_tostring);
-  lua_setfield(L, -2, "__tostring");
-  lua_pop(L, 1);
+  dt_lua_type_setmetafield_type(L,my_type,"__tostring");
 };
 
 
@@ -63,13 +61,13 @@ typedef struct
 
 static int32_t view_changed_callback_job(dt_job_t *job)
 {
-  gboolean has_lock = dt_lua_lock();
+  dt_lua_lock();
   view_changed_callback_data_t *t = dt_control_job_get_params(job);
   dt_lua_module_entry_push(darktable.lua_state.state, "view", t->old_view->module_name);
   dt_lua_module_entry_push(darktable.lua_state.state, "view", t->new_view->module_name);
   free(t);
   dt_lua_event_trigger(darktable.lua_state.state, "view-changed", 2);
-  dt_lua_unlock(has_lock);
+  dt_lua_unlock();
   return 0;
 }
 

@@ -92,10 +92,8 @@ uchar8 BitPumpPlain::getByteSafe() {
 }
 
 void BitPumpPlain::setAbsoluteOffset(unsigned int offset) {
-  if (offset >= size)
-    throw IOException("Offset set out of buffer");
-
   off = offset * 8;
+  checkPos();
 }
 
 

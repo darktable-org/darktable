@@ -32,7 +32,7 @@ RawImageData::RawImageData(void):
     dim(0, 0), isCFA(true), cfa(iPoint2D(0,0)),
     blackLevel(-1), whitePoint(65536),
     dataRefCount(0), data(0), cpp(1), bpp(0),
-    uncropped_dim(0, 0) {
+    uncropped_dim(0, 0), table(NULL) {
   blackLevelSeparate[0] = blackLevelSeparate[1] = blackLevelSeparate[2] = blackLevelSeparate[3] = -1;
   pthread_mutex_init(&mymutex, NULL);
   subsampling.x = subsampling.y = 1;
@@ -43,14 +43,16 @@ RawImageData::RawImageData(void):
   mDitherScale = TRUE;
   fujiRotationPos = 0;
   pixelAspectRatio = 1;
-  preAppliedWB = FALSE;
+  wbCoeffs[0] = NAN;
+  wbCoeffs[1] = NAN;
+  wbCoeffs[2] = NAN;
 }
 
 RawImageData::RawImageData(iPoint2D _dim, uint32 _bpc, uint32 _cpp) :
     dim(_dim), isCFA(_cpp==1), cfa(iPoint2D(0,0)),
     blackLevel(-1), whitePoint(65536),
     dataRefCount(0), data(0), cpp(_cpp), bpp(_bpc * _cpp),
-    uncropped_dim(0, 0) {
+    uncropped_dim(0, 0), table(NULL) {
   blackLevelSeparate[0] = blackLevelSeparate[1] = blackLevelSeparate[2] = blackLevelSeparate[3] = -1;
   subsampling.x = subsampling.y = 1;
   isoSpeed = 0;
@@ -58,7 +60,9 @@ RawImageData::RawImageData(iPoint2D _dim, uint32 _bpc, uint32 _cpp) :
   mDitherScale = TRUE;
   fujiRotationPos = 0;
   pixelAspectRatio = 1;
-  preAppliedWB = FALSE;
+  wbCoeffs[0] = NAN;
+  wbCoeffs[1] = NAN;
+  wbCoeffs[2] = NAN;
   createData();
   pthread_mutex_init(&mymutex, NULL);
   pthread_mutex_init(&errMutex, NULL);
@@ -73,6 +77,9 @@ RawImageData::~RawImageData(void) {
   pthread_mutex_destroy(&mBadPixelMutex);
   for (uint32 i = 0 ; i < errors.size(); i++) {
     free((void*)errors[i]);
+  }
+  if (table != NULL) {
+    delete table;
   }
   errors.clear();
   destroyData();
@@ -281,7 +288,10 @@ void RawImageData::fixBadPixels()
 
 void RawImageData::startWorker(RawImageWorker::RawImageWorkerTask task, bool cropped )
 {
-  int height = cropped ? dim.y : uncropped_dim.y;
+  int height = (cropped) ? dim.y : uncropped_dim.y;
+  if (task & RawImageWorker::FULL_IMAGE) {
+    height = uncropped_dim.y;
+  }
 
   int threads = getThreadCount();
   if (threads <= 1) {
@@ -469,6 +479,9 @@ void RawImageWorker::performTask()
     case FIX_BAD_PIXELS:
       data->fixBadPixelsThread(start_y, end_y);
       break;
+    case APPLY_LOOKUP:
+      data->doLookup(start_y, end_y);
+      break;
     default:
       _ASSERTE(false);
     }
@@ -481,6 +494,84 @@ void RawImageWorker::performTask()
   }
 }
 
+void RawImageData::sixteenBitLookup()
+{
+  if (table == NULL) {
+    return;
+  }
+  startWorker(RawImageWorker::APPLY_LOOKUP, true);
+}
+
+void RawImageData::setTable( TableLookUp *t )
+{
+  if (table != NULL) {
+    delete table;
+  }
+  table = t;
+}
+
+void RawImageData::setTable(const ushort16* table, int nfilled, bool dither) {
+  TableLookUp* t = new TableLookUp(1, dither);
+  t->setTable(0, table, nfilled);
+  this->setTable(t);
+}
+
+const int TABLE_SIZE = 65536 * 2;
+
+// Creates n numre of tables.
+TableLookUp::TableLookUp( int _ntables, bool _dither ) : ntables(_ntables), dither(_dither) {
+  tables = NULL;
+  if (ntables < 1) {
+    ThrowRDE("Cannot construct 0 tables");
+  }
+  tables = new ushort16[ntables * TABLE_SIZE];
+  memset(tables, 0, sizeof(ushort16) * ntables * TABLE_SIZE);
+}
+
+TableLookUp::~TableLookUp()
+{
+  if (tables != NULL) {
+    delete[] tables;
+    tables = NULL;
+  }
+}
+
+
+void TableLookUp::setTable(int ntable, const ushort16 *table , int nfilled) {
+  if (ntable > ntables) {
+    ThrowRDE("Table lookup with number greater than number of tables.");
+  }
+  ushort16* t = &tables[ntable* TABLE_SIZE];
+  if (!dither) {
+    for (int i = 0; i < 65536; i++) {
+      t[i] = (i < nfilled) ? table[i] : table[nfilled-1];
+    }
+    return;
+  }
+  for (int i = 0; i < nfilled; i++) {
+    int center = table[i];
+    int lower = i > 0 ? table[i-1] : center;
+    int upper = i < (nfilled-1) ? table[i+1] : center;
+    int delta = upper - lower;
+    t[i*2] = center - ((upper - lower + 2) / 4);
+    t[i*2+1] = delta;
+  }
+
+  for (int i = nfilled; i < 65536; i++) {
+    t[i*2] = table[nfilled-1];
+    t[i*2+1] = 0;
+  }
+  t[0] = t[1];
+  t[TABLE_SIZE - 1] = t[TABLE_SIZE - 2];
+}
+
+
+ushort16* TableLookUp::getTable(int n) {
+  if (n > ntables) {
+    ThrowRDE("Table lookup with number greater than number of tables.");
+  }
+  return &tables[n * TABLE_SIZE];
+}
 
 
 } // namespace RawSpeed

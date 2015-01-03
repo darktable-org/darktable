@@ -31,7 +31,7 @@
 #include <sys/stat.h>
 #include <unistd.h>
 
-dt_imageio_retval_t dt_imageio_open_pfm(dt_image_t *img, const char *filename, dt_mipmap_cache_allocator_t a)
+dt_imageio_retval_t dt_imageio_open_pfm(dt_image_t *img, const char *filename, dt_mipmap_buffer_t *mbuf)
 {
   const char *ext = filename + strlen(filename);
   while(*ext != '.' && ext > filename) ext--;
@@ -55,7 +55,7 @@ dt_imageio_retval_t dt_imageio_open_pfm(dt_image_t *img, const char *filename, d
   if(ret != 1) goto error_corrupt;
   ret = 0;
 
-  float *buf = (float *)dt_mipmap_cache_alloc(img, DT_MIPMAP_FULL, a);
+  float *buf = (float *)dt_mipmap_cache_alloc(mbuf, img);
   if(!buf) goto error_cache_full;
 
   if(cols == 3)

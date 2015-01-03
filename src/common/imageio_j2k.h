@@ -21,7 +21,7 @@
 #include "common/image.h"
 #include "common/mipmap_cache.h"
 
-dt_imageio_retval_t dt_imageio_open_j2k(dt_image_t *img, const char *filename, dt_mipmap_cache_allocator_t a);
+dt_imageio_retval_t dt_imageio_open_j2k(dt_image_t *img, const char *filename, dt_mipmap_buffer_t *buf);
 
 /** reads the color profile attached to the image */
 int dt_imageio_j2k_read_profile(const char *filename, uint8_t **out);

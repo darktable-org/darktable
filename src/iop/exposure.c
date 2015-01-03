@@ -211,15 +211,15 @@ static void deflicker_prepare_histogram(dt_iop_module_t *self, uint32_t **histog
                                         dt_dev_histogram_stats_t *histogram_stats)
 {
   dt_mipmap_buffer_t buf;
-  dt_mipmap_cache_read_get(darktable.mipmap_cache, &buf, self->dev->image_storage.id, DT_MIPMAP_FULL,
-                           DT_MIPMAP_BLOCKING);
-  const dt_image_t *img = dt_image_cache_read_get(darktable.image_cache, self->dev->image_storage.id);
+  dt_mipmap_cache_get(darktable.mipmap_cache, &buf, self->dev->image_storage.id, DT_MIPMAP_FULL,
+                      DT_MIPMAP_BLOCKING, 'r');
+  const dt_image_t *img = dt_image_cache_get(darktable.image_cache, self->dev->image_storage.id, 'r');
   dt_image_t image = *img;
   dt_image_cache_read_release(darktable.image_cache, img);
-  if(buf.size != DT_MIPMAP_FULL)
+  if(!buf.buf)
   {
     dt_control_log(_("failed to get raw buffer from image `%s'"), image.filename);
-    dt_mipmap_cache_read_release(darktable.mipmap_cache, &buf);
+    dt_mipmap_cache_release(darktable.mipmap_cache, &buf);
     return;
   }
 
@@ -233,7 +233,7 @@ static void deflicker_prepare_histogram(dt_iop_module_t *self, uint32_t **histog
                       dt_histogram_helper_cs_RAW_uint16);
   histogram_stats->ch = 1u;
 
-  dt_mipmap_cache_read_release(darktable.mipmap_cache, &buf);
+  dt_mipmap_cache_release(darktable.mipmap_cache, &buf);
 }
 
 /* input: 0 - 16384 (valid range: from black level to white level) */
@@ -877,7 +877,7 @@ static gboolean draw(GtkWidget *widget, cairo_t *cr, dt_iop_module_t *self)
     g->reprocess_on_next_expose = FALSE;
     // FIXME: or just use dev->pipe->changed |= DT_DEV_PIPE_SYNCH; ?
     dt_dev_reprocess_all(self->dev);
-    return TRUE;
+    return FALSE;
   }
 
   if(self->request_color_pick != DT_REQUEST_COLORPICK_MODULE) return FALSE;

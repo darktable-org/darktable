@@ -416,7 +416,7 @@ int try_enter(dt_view_t *self)
   }
 
   // this loads the image from db if needed:
-  const dt_image_t *img = dt_image_cache_read_get(darktable.image_cache, selected);
+  const dt_image_t *img = dt_image_cache_get(darktable.image_cache, selected, 'r');
   // get image and check if it has been deleted from disk first!
 
   char imgfilename[PATH_MAX] = { 0 };

@@ -739,19 +739,6 @@ void dt_view_image_expose(dt_view_image_over_t *image_over, uint32_t imgid, cair
 #define DRAW_HISTORY 1
 #define DRAW_AUDIO 1
 
-#if DRAW_THUMB == 1
-  // this function is not thread-safe (gui-thread only), so we
-  // can safely allocate this leaking bit of memory to decompress thumbnails:
-  static int first_time = 1;
-  static uint8_t *scratchmem = NULL;
-  if(first_time)
-  {
-    // scratchmem might still be NULL after this, if compression is off.
-    scratchmem = dt_mipmap_cache_alloc_scratchmem(darktable.mipmap_cache);
-    first_time = 0;
-  }
-#endif
-
   cairo_save(cr);
   float bgcol = 0.4, fontcol = 0.425, bordercol = 0.1, outlinecol = 0.2;
   int selected = 0, altered = 0, imgsel = -1, is_grouped = 0;
@@ -768,7 +755,8 @@ void dt_view_image_expose(dt_view_image_over_t *image_over, uint32_t imgid, cair
   if(sqlite3_step(darktable.view_manager->statements.is_selected) == SQLITE_ROW) selected = 1;
 #endif
 
-  const dt_image_t *img = dt_image_cache_read_testget(darktable.image_cache, imgid);
+  dt_image_t buffered_image;
+  const dt_image_t *img = dt_image_cache_testget(darktable.image_cache, imgid, 'r');
 
   if(selected == 1 && zoom != 1) // If zoom == 1 there is no need to set colors here
   {
@@ -782,7 +770,14 @@ void dt_view_image_expose(dt_view_image_over_t *image_over, uint32_t imgid, cair
     fontcol = 0.7;
     outlinecol = 0.6;
     // if the user points at this image, we really want it:
-    if(!img) img = dt_image_cache_read_get(darktable.image_cache, imgid);
+    if(!img) img = dt_image_cache_get(darktable.image_cache, imgid, 'r');
+  }
+  // release image cache lock as early as possible, to avoid deadlocks (mipmap cache might need to lock it, too)
+  if(img)
+  {
+    buffered_image = *img;
+    dt_image_cache_read_release(darktable.image_cache, img);
+    img = &buffered_image;
   }
   float imgwd = 0.90f;
   if(zoom == 1)
@@ -832,24 +827,40 @@ void dt_view_image_expose(dt_view_image_over_t *image_over, uint32_t imgid, cair
   dt_mipmap_buffer_t buf;
   dt_mipmap_size_t mip
       = dt_mipmap_cache_get_matching_size(darktable.mipmap_cache, imgwd * width, imgwd * height);
-  dt_mipmap_cache_read_get(darktable.mipmap_cache, &buf, imgid, mip, DT_MIPMAP_BEST_EFFORT);
+  dt_mipmap_cache_get(darktable.mipmap_cache, &buf, imgid, mip, DT_MIPMAP_BEST_EFFORT, 'r');
 
 #if DRAW_THUMB == 1
   float scale = 1.0;
-  // decompress image, if necessary. if compression is off, scratchmem will be == NULL,
-  // so get the real pointer back:
-  uint8_t *buf_decompressed = dt_mipmap_cache_decompress(&buf, scratchmem);
 
   cairo_surface_t *surface = NULL;
+  uint8_t *rgbbuf = NULL;
   if(buf.buf)
   {
-    const int32_t stride = cairo_format_stride_for_width(CAIRO_FORMAT_RGB24, buf.width);
-    surface = cairo_image_surface_create_for_data(buf_decompressed, CAIRO_FORMAT_RGB24, buf.width, buf.height,
-                                                  stride);
+    rgbbuf = (uint8_t *)calloc(buf.width * buf.height * 4, sizeof(uint8_t));
+    if(rgbbuf)
+    {
+      for(int i = 0; i < buf.height; i++)
+      {
+        uint8_t *in = buf.buf + i * buf.width * 4;
+        uint8_t *out = rgbbuf + i * buf.width * 4;
+
+        for(int j = 0; j < buf.width; j++, in += 4, out += 4)
+        {
+          out[0] = in[2];
+          out[1] = in[1];
+          out[2] = in[0];
+        }
+      }
+
+      const int32_t stride = cairo_format_stride_for_width(CAIRO_FORMAT_RGB24, buf.width);
+      surface
+          = cairo_image_surface_create_for_data(rgbbuf, CAIRO_FORMAT_RGB24, buf.width, buf.height, stride);
+    }
+
     if(zoom == 1)
     {
-      scale = fminf(fminf(darktable.thumbnail_width, width) / (float)buf.width,
-                    fminf(darktable.thumbnail_height, height) / (float)buf.height);
+      const int32_t tb = DT_PIXEL_APPLY_DPI(dt_conf_get_int("plugins/darkroom/ui/border_size"));
+      scale = fminf((width-2*tb) / (float)buf.width, (height-2*tb) / (float)buf.height);
     }
     else
       scale = fminf(width * imgwd / (float)buf.width, height * imgwd / (float)buf.height);
@@ -860,7 +871,7 @@ void dt_view_image_expose(dt_view_image_over_t *image_over, uint32_t imgid, cair
   cairo_translate(cr, width / 2.0, height / 2.0);
   cairo_scale(cr, scale, scale);
 
-  if(buf.buf)
+  if(buf.buf && surface)
   {
     cairo_translate(cr, -0.5 * buf.width, -0.5 * buf.height);
     cairo_set_source_surface(cr, surface, 0, 0);
@@ -873,6 +884,7 @@ void dt_view_image_expose(dt_view_image_over_t *image_over, uint32_t imgid, cair
     cairo_rectangle(cr, 0, 0, buf.width, buf.height);
     cairo_fill(cr);
     cairo_surface_destroy(surface);
+    free(rgbbuf);
 
     cairo_rectangle(cr, 0, 0, buf.width, buf.height);
   }
@@ -919,7 +931,7 @@ void dt_view_image_expose(dt_view_image_over_t *image_over, uint32_t imgid, cair
   }
   cairo_restore(cr);
 #endif
-  if(buf.buf) dt_mipmap_cache_read_release(darktable.mipmap_cache, &buf);
+  dt_mipmap_cache_release(darktable.mipmap_cache, &buf);
 
   cairo_save(cr);
   const float fscale = fminf(width, height);
@@ -1208,7 +1220,6 @@ void dt_view_image_expose(dt_view_image_over_t *image_over, uint32_t imgid, cair
     }
   }
 
-  if(img) dt_image_cache_read_release(darktable.image_cache, img);
   cairo_restore(cr);
   // if(zoom == 1) cairo_set_antialias(cr, CAIRO_ANTIALIAS_DEFAULT);
 
@@ -1392,7 +1403,7 @@ void dt_view_filmstrip_prefetch()
   {
     const uint32_t prefetchid = sqlite3_column_int(stmt, 0);
     // dt_control_log("prefetching image %u", prefetchid);
-    dt_mipmap_cache_read_get(darktable.mipmap_cache, NULL, prefetchid, DT_MIPMAP_FULL, DT_MIPMAP_PREFETCH);
+    dt_mipmap_cache_get(darktable.mipmap_cache, NULL, prefetchid, DT_MIPMAP_FULL, DT_MIPMAP_PREFETCH, 'r');
   }
   sqlite3_finalize(stmt);
 }

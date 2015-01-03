@@ -185,10 +185,10 @@ static int number_member(lua_State *L)
 
 static void on_film_imported(gpointer instance, uint32_t id, gpointer user_data)
 {
-  gboolean has_lock = dt_lua_lock();
+  dt_lua_lock();
   luaA_push(darktable.lua_state.state, dt_lua_film_t, &id);
   dt_lua_event_trigger(darktable.lua_state.state, "post-import-film", 1);
-  dt_lua_unlock(has_lock);
+  dt_lua_unlock();
 }
 
 typedef struct
@@ -199,13 +199,13 @@ typedef struct
 
 static int32_t on_image_imported_callback_job(dt_job_t *job)
 {
-  gboolean has_lock = dt_lua_lock();
+  dt_lua_lock();
   on_image_imported_callback_data_t *t = dt_control_job_get_params(job);
   luaA_push(darktable.lua_state.state, dt_lua_image_t, &t->imgid);
   dt_lua_event_trigger(darktable.lua_state.state, "post-import-image", 1);
   free(t); // i am not sure if the free() may happen before the dt_lua_event_trigger as a pointer to the imgid
            // inside of it is pushed to the lua stack
-  dt_lua_unlock(has_lock);
+  dt_lua_unlock();
   return 0;
 }
 

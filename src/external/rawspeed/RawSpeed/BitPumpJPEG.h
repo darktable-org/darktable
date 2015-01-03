@@ -103,12 +103,13 @@ __inline uint32 peekByte() {
 } 
 
   __inline void skipBits(unsigned int nbits) {
-    while (nbits) {
+    int skipn = nbits;
+    while (skipn) {
       fill();
       checkPos();
-      int n = MIN(nbits, mLeft);
+      int n = MIN(skipn, mLeft);
       mLeft -= n;
-      nbits -= n;
+      skipn -= n;
     }
   }
 
@@ -132,9 +133,9 @@ protected:
   const uchar8* buffer;
   uchar8 current_buffer[16];
   const uint32 size;            // This if the end of buffer.
-  uint32 mLeft;
+  int mLeft;
   uint32 off;                  // Offset in bytes
-  uint32 stuffed;              // How many bytes has been stuffed?
+  int stuffed;              // How many bytes has been stuffed?
 private:
 };
 

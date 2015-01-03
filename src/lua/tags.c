@@ -232,10 +232,8 @@ int dt_lua_init_tags(lua_State *L)
   lua_pushcfunction(L, dt_lua_tag_detach);
   lua_pushcclosure(L, dt_lua_type_member_common, 1);
   dt_lua_type_register_const(L, dt_lua_tag_t, "detach");
-  luaL_getmetatable(L, "dt_lua_tag_t");
   lua_pushcfunction(L, tag_tostring);
-  lua_setfield(L, -2, "__tostring");
-  lua_pop(L, 1);
+  dt_lua_type_setmetafield(L,dt_lua_tag_t,"__tostring");
 
   /* tags */
   dt_lua_push_darktable_lib(L);

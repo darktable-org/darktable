@@ -149,7 +149,7 @@ int read_image(dt_imageio_png_t *png, void *out)
 
 
 
-dt_imageio_retval_t dt_imageio_open_png(dt_image_t *img, const char *filename, dt_mipmap_cache_allocator_t a)
+dt_imageio_retval_t dt_imageio_open_png(dt_image_t *img, const char *filename, dt_mipmap_buffer_t *mbuf)
 {
   const char *ext = filename + strlen(filename);
   while(*ext != '.' && ext > filename) ext--;
@@ -170,7 +170,7 @@ dt_imageio_retval_t dt_imageio_open_png(dt_image_t *img, const char *filename, d
 
   img->bpp = 4 * sizeof(float);
 
-  float *mipbuf = (float *)dt_mipmap_cache_alloc(img, DT_MIPMAP_FULL, a);
+  float *mipbuf = (float *)dt_mipmap_cache_alloc(mbuf, img);
   if(!mipbuf)
   {
     fclose(image.f);

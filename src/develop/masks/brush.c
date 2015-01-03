@@ -973,24 +973,25 @@ static void dt_brush_get_distance(float x, int y, float as, dt_masks_form_gui_t 
   }
 
   // we check if it's inside borders
-  if(!dt_masks_point_in_form_exact(x,yf,gpt->border,corner_count * 3,gpt->border_count)) return;
+  if(gpt->border_count > 2 + corner_count * 3)
+  {
+    float last = gpt->border[gpt->border_count * 2 - 1];
+    int nb = 0;
+    for(int i = corner_count * 3; i < gpt->border_count; i++)
+    {
+      float yy = gpt->border[i * 2 + 1];
+      if (((yf<=yy && yf>last) || (yf>=yy && yf<last)) && (gpt->border[i * 2] > x)) nb++;
+      last = yy;
+    }
+    *inside = *inside_border = (nb & 1);
+  }
 
-  *inside = 1;
-
-  // and we check if it's inside form
+  // and we check if we are near a segment
   if(gpt->points_count > 2 + corner_count * 3)
   {
-    float as2 = as * as;
     int current_seg = 1;
     for(int i = corner_count * 3; i < gpt->points_count; i++)
     {
-      //if we need to jump to skip points (in case of deleted point, because of self-intersection)
-      if(gpt->points[i * 2] == -999999.0)
-      {
-        if(gpt->points[i * 2 + 1] == -999999.0) break;
-        i = (int)gpt->points[i * 2 + 1] - 1;
-        continue;
-      }
       // do we change of path segment ?
       if(gpt->points[i * 2 + 1] == gpt->points[current_seg * 6 + 3] && gpt->points[i * 2] == gpt->points[current_seg * 6 + 2])
       {
@@ -998,22 +999,18 @@ static void dt_brush_get_distance(float x, int y, float as, dt_masks_form_gui_t 
       }
       //distance from tested point to current form point
       float yy = gpt->points[i * 2 + 1];
-      float dd = (gpt->points[i * 2] - x) * (gpt->points[i * 2] - x)
-                  + (yy - yf) * (yy - yf);
-      if(dd < as2)
+      float xx = gpt->points[i * 2];
+      if ((yy-yf)<as && (yy-yf)>-as && (xx-x)<as && (xx-x)>-as)
       {
         if(current_seg == 0)
           *near = corner_count - 1;
         else
           *near = current_seg - 1;
 
-        *inside_border = 0;
         return;
       }
     }
-    *inside_border = 1;
   }
-  else *inside_border = 1;
 }
 
 static int dt_brush_get_points_border(dt_develop_t *dev, dt_masks_form_t *form, float **points,

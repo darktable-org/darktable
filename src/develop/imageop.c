@@ -1965,10 +1965,9 @@ void dt_iop_flip_and_zoom_8(const uint8_t *in, int32_t iw, int32_t ih, uint8_t *
       if(in3 + offm >= in && in3 + offM < in + bpp * iw * ih)
       {
         for(int k = 0; k < 3; k++)
-          out2[k] = // in3[2-k];
-              CLAMP(((int32_t)in3[bpp * half_pixel * sj + 2 - k]
-                     + (int32_t)in3[bpp * half_pixel * (si + sj) + 2 - k]
-                     + (int32_t)in3[bpp * half_pixel * si + 2 - k] + (int32_t)in3[2 - k]) / 4,
+          out2[k] = // in3[k];
+              CLAMP(((int32_t)in3[bpp * half_pixel * sj + k] + (int32_t)in3[bpp * half_pixel * (si + sj) + k]
+                     + (int32_t)in3[bpp * half_pixel * si + k] + (int32_t)in3[k]) / 4,
                     0, 255);
       }
       out2 += bpp;

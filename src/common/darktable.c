@@ -347,7 +347,8 @@ int dt_load_from_string(const gchar *input, gboolean open_image_in_dr)
       dt_film_open(filmid);
       // make sure buffers are loaded (load full for testing)
       dt_mipmap_buffer_t buf;
-      dt_mipmap_cache_read_get(darktable.mipmap_cache, &buf, id, DT_MIPMAP_FULL, DT_MIPMAP_BLOCKING);
+      dt_mipmap_cache_get(darktable.mipmap_cache, &buf, id, DT_MIPMAP_FULL, DT_MIPMAP_BLOCKING, 'r');
+      dt_mipmap_cache_release(darktable.mipmap_cache, &buf);
       if(!buf.buf)
       {
         id = 0;
@@ -355,7 +356,6 @@ int dt_load_from_string(const gchar *input, gboolean open_image_in_dr)
       }
       else
       {
-        dt_mipmap_cache_read_release(darktable.mipmap_cache, &buf);
         if(open_image_in_dr)
         {
           dt_control_set_mouse_over_id(id);
@@ -733,15 +733,6 @@ int dt_init(int argc, char *argv[], const int init_gui, lua_State *L)
   // Initialize the filesystem watcher
   darktable.fswatch = dt_fswatch_new();
 
-  // get max lighttable thumbnail size:
-  darktable.thumbnail_width = CLAMPS(dt_conf_get_int("plugins/lighttable/thumbnail_width"), 200, 3000);
-  darktable.thumbnail_height = CLAMPS(dt_conf_get_int("plugins/lighttable/thumbnail_height"), 200, 3000);
-  // and make sure it can be mip-mapped all the way from mip4 to mip0
-  darktable.thumbnail_width /= 16;
-  darktable.thumbnail_width *= 16;
-  darktable.thumbnail_height /= 16;
-  darktable.thumbnail_height *= 16;
-
   // FIXME: move there into dt_database_t
   dt_pthread_mutex_init(&(darktable.db_insert), NULL);
   dt_pthread_mutex_init(&(darktable.plugin_threadsafe), NULL);
@@ -1065,8 +1056,6 @@ void dt_configure_defaults()
     fprintf(stderr, "[defaults] setting high quality defaults\n");
     dt_conf_set_int("worker_threads", 8);
     dt_conf_set_int64("cache_memory", 1u << 30);
-    dt_conf_set_int("plugins/lighttable/thumbnail_width", 1300);
-    dt_conf_set_int("plugins/lighttable/thumbnail_height", 1000);
     dt_conf_set_bool("plugins/lighttable/low_quality_thumbnails", FALSE);
   }
   if(mem < (1u << 20) || threads <= 2 || bits < 64 || atom_cores > 0)
@@ -1076,8 +1065,6 @@ void dt_configure_defaults()
     dt_conf_set_int64("cache_memory", 200u << 20);
     dt_conf_set_int("host_memory_limit", 500);
     dt_conf_set_int("singlebuffer_limit", 8);
-    dt_conf_set_int("plugins/lighttable/thumbnail_width", 800);
-    dt_conf_set_int("plugins/lighttable/thumbnail_height", 500);
     dt_conf_set_string("plugins/darkroom/demosaic/quality", "always bilinear (fast)");
     dt_conf_set_bool("plugins/lighttable/low_quality_thumbnails", TRUE);
   }

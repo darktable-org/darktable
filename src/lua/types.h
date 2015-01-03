@@ -143,14 +143,16 @@ luaA_Type dt_lua_init_wrapped_singleton(lua_State *L, lua_CFunction pusher, lua_
                                         const char *unique_name, void *data);
 
 
-int dt_lua_init_early_types(lua_State *L);
 
 #define dt_lua_isa(L, index, type) dt_lua_isa_type(L, index, luaA_type(L, type))
 
 gboolean dt_lua_isa_type(lua_State *L, int index, luaA_Type type_id);
 gboolean dt_lua_typeisa_type(lua_State *L, luaA_Type obj_type, luaA_Type type_id);
 
+#define dt_lua_type_setmetafield(L,type_name,name) dt_lua_type_setmetafield_type(L,luaA_type(L,type_name),name)
+void dt_lua_type_setmetafield_type(lua_State*L,luaA_Type type,const char* method_name);
 
+int dt_lua_init_early_types(lua_State *L);
 #endif
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

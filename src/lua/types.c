@@ -802,6 +802,14 @@ gboolean dt_lua_typeisa_type(lua_State *L, luaA_Type obj_type, luaA_Type type_id
   return dt_lua_typeisa_type(L, parent_type, type_id);
 }
 
+void dt_lua_type_setmetafield_type(lua_State*L,luaA_Type type_id,const char* method_name)
+{
+  luaL_getmetatable(L, luaA_typename(L, type_id));
+  lua_pushvalue(L,-2);
+  lua_setfield(L, -2, method_name);
+  lua_pop(L, 2); // pop the metatable and the value
+}
+
 int dt_lua_init_early_types(lua_State *L)
 {
   luaA_conversion(L, char_20, push_char_array, to_char20);

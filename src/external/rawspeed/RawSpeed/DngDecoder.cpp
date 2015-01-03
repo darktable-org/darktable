@@ -318,6 +318,40 @@ RawImage DngDecoder::decodeRawInternal() {
     ThrowRDE("DNG Decoder: Image could not be read:\n%s", e.what());
   }
 
+  // Fetch the white balance
+  if (mRootIFD->hasEntryRecursive(ASSHOTNEUTRAL)) {
+    TiffEntry *as_shot_neutral = mRootIFD->getEntryRecursive(ASSHOTNEUTRAL);
+    if (as_shot_neutral->count != 3)
+      ThrowRDE("DNG: AsShotNeutral has %d values instead of 3", as_shot_neutral->count);
+
+    if (as_shot_neutral->type == TIFF_SHORT) {
+      // Commented out because I didn't have an example file to verify it's correct
+      /* const ushort16 *tmp = as_shot_neutral->getShortArray();
+      for (uint32 i=0; i<3; i++)
+        mRaw->wbCoeffs[i] = tmp[i];*/
+    } else if (as_shot_neutral->type == TIFF_RATIONAL) {
+      const uint32 *tmp = as_shot_neutral->getIntArray();
+      for (uint32 i=0; i<3; i++)
+        mRaw->wbCoeffs[i] = (tmp[i*2+1]*1.0f)/tmp[i*2];
+    } else {
+      ThrowRDE("DNG: AsShotNeutral has to be SHORT or RATIONAL");
+    }
+  } else if (mRootIFD->hasEntryRecursive(ASSHOTWHITEXY)) {
+    // Commented out because I didn't have an example file to verify it's correct
+    /* TiffEntry *as_shot_white_xy = mRootIFD->getEntryRecursive(ASSHOTWHITEXY);
+    if (as_shot_white_xy->count != 2)
+      ThrowRDE("DNG: AsShotXY has %d values instead of 2", as_shot_white_xy->count);
+
+    const uint32 *tmp = as_shot_white_xy->getIntArray();
+    mRaw->wbCoeffs[0] = tmp[1]/tmp[0];
+    mRaw->wbCoeffs[1] = tmp[3]/tmp[2];
+    mRaw->wbCoeffs[2] = 1 - mRaw->wbCoeffs[0] - mRaw->wbCoeffs[1];
+
+    const float d65_white[3] = { 0.950456, 1, 1.088754 };
+    for (uint32 i=0; i<3; i++)
+        mRaw->wbCoeffs[i] /= d65_white[i]; */
+  }
+
   // Crop
   if (raw->hasEntry(ACTIVEAREA)) {
     iPoint2D new_size(mRaw->dim.x, mRaw->dim.y);
@@ -418,22 +452,24 @@ RawImage DngDecoder::decodeRawInternal() {
   }
 
   // Linearization
-  if (raw->hasEntry(LINEARIZATIONTABLE) && !uncorrectedRawValues) {
+  if (raw->hasEntry(LINEARIZATIONTABLE)) {
     const ushort16* intable = raw->getEntry(LINEARIZATIONTABLE)->getShortArray();
     uint32 len =  raw->getEntry(LINEARIZATIONTABLE)->count;
-    ushort16 table[65536];
-    for (uint32 i = 0; i < 65536 ; i++) {
-      if (i < len)
-        table[i] = intable[i];
-      else
-        table[i] = intable[len-1];
+    mRaw->setTable(intable, len, !uncorrectedRawValues);
+    if (!uncorrectedRawValues) {
+      mRaw->sixteenBitLookup();
+      mRaw->setTable(NULL);
     }
-    for (int y = 0; y < mRaw->dim.y; y++) {
+
+    if (0) {
+      // Test average for bias
       uint32 cw = mRaw->dim.x * mRaw->getCpp();
-      ushort16* pixels = (ushort16*)mRaw->getData(0, y);
+      ushort16* pixels = (ushort16*)mRaw->getData(0, 500);
+      float avg = 0.0f;
       for (uint32 x = 0; x < cw; x++) {
-        pixels[x]  = table[pixels[x]];
+        avg += (float)pixels[x];
       }
+      printf("Average:%f\n", avg/(float)cw);    
     }
   }
 
