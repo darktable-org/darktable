@@ -138,7 +138,7 @@ RawImage Cr2Decoder::decodeRawInternal() {
     offY += slice.w;
   }
 
-  if (mRaw->subsampling.x > 1 || mRaw->subsampling.y > 1)
+  if (mRaw->metadata.subsampling.x > 1 || mRaw->metadata.subsampling.y > 1)
     sRawInterpolate();
 
   return mRaw;
@@ -181,10 +181,10 @@ void Cr2Decoder::decodeMetaDataInternal(CameraMetaData *meta) {
   string model = data[0]->getEntry(MODEL)->getString();
   string mode = "";
 
-  if (mRaw->subsampling.y == 2 && mRaw->subsampling.x == 2)
+  if (mRaw->metadata.subsampling.y == 2 && mRaw->metadata.subsampling.x == 2)
     mode = "sRaw1";
 
-  if (mRaw->subsampling.y == 1 && mRaw->subsampling.x == 2)
+  if (mRaw->metadata.subsampling.y == 1 && mRaw->metadata.subsampling.x == 2)
     mode = "sRaw2";
 
   if (mRootIFD->hasEntryRecursive(ISOSPEEDRATINGS))
@@ -196,13 +196,13 @@ void Cr2Decoder::decodeMetaDataInternal(CameraMetaData *meta) {
 
 int Cr2Decoder::getHue() {
   if (hints.find("old_sraw_hue") != hints.end())
-    return (mRaw->subsampling.y * mRaw->subsampling.x);
+    return (mRaw->metadata.subsampling.y * mRaw->metadata.subsampling.x);
 
   uint32 model_id = mRootIFD->getEntryRecursive((TiffTag)0x10)->getInt();
   if (model_id >= 0x80000281 || model_id == 0x80000218 || (hints.find("force_new_sraw_hue") != hints.end()))
-    return ((mRaw->subsampling.y * mRaw->subsampling.x) - 1) >> 1;
+    return ((mRaw->metadata.subsampling.y * mRaw->metadata.subsampling.x) - 1) >> 1;
 
-  return (mRaw->subsampling.y * mRaw->subsampling.x);
+  return (mRaw->metadata.subsampling.y * mRaw->metadata.subsampling.x);
     
 }
 
@@ -230,14 +230,14 @@ void Cr2Decoder::sRawInterpolate() {
   bool isOldSraw = hints.find("sraw_40d") != hints.end();
   bool isNewSraw = hints.find("sraw_new") != hints.end();
 
-  if (mRaw->subsampling.y == 1 && mRaw->subsampling.x == 2) {
+  if (mRaw->metadata.subsampling.y == 1 && mRaw->metadata.subsampling.x == 2) {
     if (isOldSraw)
       interpolate_422_old(mRaw->dim.x / 2, mRaw->dim.y , 0, mRaw->dim.y);
     else if (isNewSraw)
       interpolate_422_new(mRaw->dim.x / 2, mRaw->dim.y , 0, mRaw->dim.y);
     else
       interpolate_422(mRaw->dim.x / 2, mRaw->dim.y , 0, mRaw->dim.y);
-  } else if (mRaw->subsampling.y == 2 && mRaw->subsampling.x == 2) {
+  } else if (mRaw->metadata.subsampling.y == 2 && mRaw->metadata.subsampling.x == 2) {
     if (isNewSraw)
       interpolate_420_new(mRaw->dim.x / 2, mRaw->dim.y / 2 , 0 , mRaw->dim.y / 2);
     else

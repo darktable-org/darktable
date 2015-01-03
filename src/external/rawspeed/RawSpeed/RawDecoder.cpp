@@ -477,6 +477,8 @@ void RawDecoder::Decode12BitRawUnpacked(ByteStream &input, uint32 w, uint32 h) {
 bool RawDecoder::checkCameraSupported(CameraMetaData *meta, string make, string model, string mode) {
   TrimSpaces(make);
   TrimSpaces(model);
+  mRaw->metadata.make = make;
+  mRaw->metadata.model = model;
   Camera* cam = meta->getCamera(make, model, mode);
   if (!cam) {
     if (mode.length() == 0)
@@ -500,7 +502,7 @@ bool RawDecoder::checkCameraSupported(CameraMetaData *meta, string make, string 
 }
 
 void RawDecoder::setMetaData(CameraMetaData *meta, string make, string model, string mode, int iso_speed) {
-  mRaw->isoSpeed = iso_speed;
+  mRaw->metadata.isoSpeed = iso_speed;
   TrimSpaces(make);
   TrimSpaces(model);
   Camera *cam = meta->getCamera(make, model, mode);
@@ -606,7 +608,7 @@ RawSpeed::RawImage RawDecoder::decodeRaw()
     RawImage raw = decodeRawInternal();
     if(hints.find("pixel_aspect_ratio") != hints.end()) {
       stringstream convert(hints.find("pixel_aspect_ratio")->second);
-      convert >> raw->pixelAspectRatio;
+      convert >> raw->metadata.pixelAspectRatio;
     }
     if (interpolateBadPixels)
       raw->fixBadPixels();

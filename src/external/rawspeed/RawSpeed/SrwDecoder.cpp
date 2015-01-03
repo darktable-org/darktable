@@ -78,9 +78,9 @@ RawImage SrwDecoder::decodeRawInternal() {
     wb_black->offsetFromParent();
     const uint32 *blacks = wb_black->getIntArray();
 
-    mRaw->wbCoeffs[0] = levels[0] - blacks[0];
-    mRaw->wbCoeffs[1] = levels[1] - blacks[1];
-    mRaw->wbCoeffs[2] = levels[3] - blacks[3];
+    mRaw->metadata.wbCoeffs[0] = levels[0] - blacks[0];
+    mRaw->metadata.wbCoeffs[1] = levels[1] - blacks[1];
+    mRaw->metadata.wbCoeffs[2] = levels[3] - blacks[3];
   }
 
   if (32769 == compression)

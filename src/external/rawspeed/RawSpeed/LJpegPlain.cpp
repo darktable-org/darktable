@@ -173,8 +173,8 @@ void LJpegPlain::decodeScanLeftGeneric() {
     pixGroup += samplesComp[i];
   }
 
-  mRaw->subsampling.x = maxSuperH;
-  mRaw->subsampling.y = maxSuperV;
+  mRaw->metadata.subsampling.x = maxSuperH;
+  mRaw->metadata.subsampling.y = maxSuperV;
 
   //Prepare slices (for CR2)
   uint32 slices = (uint32)slicesW.size() * (frame.h - skipY) / maxSuperV;
@@ -326,8 +326,8 @@ void LJpegPlain::decodeScanLeft4_2_0() {
 
   ushort16 *predict;      // Prediction pointer
 
-  mRaw->subsampling.x = 2;
-  mRaw->subsampling.y = 2;
+  mRaw->metadata.subsampling.x = 2;
+  mRaw->metadata.subsampling.y = 2;
 
   uchar8 *draw = mRaw->getData();
   // Fix for Canon 6D mRaw, which has flipped width & height
@@ -453,8 +453,8 @@ void LJpegPlain::decodeScanLeft4_2_2() {
   HuffmanTable *dctbl2 = &huff[frame.compInfo[1].dcTblNo];
   HuffmanTable *dctbl3 = &huff[frame.compInfo[2].dcTblNo];
 
-  mRaw->subsampling.x = 2;
-  mRaw->subsampling.y = 1;
+  mRaw->metadata.subsampling.x = 2;
+  mRaw->metadata.subsampling.y = 1;
 
   ushort16 *predict;      // Prediction pointer
 

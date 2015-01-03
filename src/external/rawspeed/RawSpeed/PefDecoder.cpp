@@ -42,9 +42,9 @@ RawImage PefDecoder::decodeRawInternal() {
     if (wb->count != 4)
       ThrowRDE("PEF: WB has %d entries instead of 4", wb->count);
     const ushort16 *tmp = wb->getShortArray();
-    mRaw->wbCoeffs[0] = tmp[0];
-    mRaw->wbCoeffs[1] = tmp[1];
-    mRaw->wbCoeffs[2] = tmp[3];
+    mRaw->metadata.wbCoeffs[0] = tmp[0];
+    mRaw->metadata.wbCoeffs[1] = tmp[1];
+    mRaw->metadata.wbCoeffs[2] = tmp[3];
   }
 
   vector<TiffIFD*> data = mRootIFD->getIFDsWithTag(STRIPOFFSETS);

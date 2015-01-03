@@ -181,11 +181,11 @@ dt_imageio_retval_t dt_imageio_open_rawspeed(dt_image_t *img, const char *filena
     img->raw_black_level = r->blackLevel;
     img->raw_white_point = r->whitePoint;
 
-    img->fuji_rotation_pos = r->fujiRotationPos;
-    img->pixel_aspect_ratio = (float)r->pixelAspectRatio;
+    img->fuji_rotation_pos = r->metadata.fujiRotationPos;
+    img->pixel_aspect_ratio = (float)r->metadata.pixelAspectRatio;
 
     for (int i=0; i<3; i++)
-      img->wb_coeffs[i] = r->wbCoeffs[i];
+      img->wb_coeffs[i] = r->metadata.wbCoeffs[i];
 
     void *buf = dt_mipmap_cache_alloc(mbuf, img);
     if(!buf) return DT_IMAGEIO_CACHE_FULL;

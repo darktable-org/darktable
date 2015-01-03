@@ -46,9 +46,9 @@ RawImage NefDecoder::decodeRawInternal() {
       ThrowRDE("NEF Decoder: Whitebalance has unknown count or type");
 
     const uint32* wba = wb->getIntArray();
-    mRaw->wbCoeffs[0] = wba[0]*1.0f / wba[1];
-    mRaw->wbCoeffs[1] = wba[4]*1.0f / wba[5];
-    mRaw->wbCoeffs[2] = wba[2]*1.0f / wba[3];
+    mRaw->metadata.wbCoeffs[0] = wba[0]*1.0f / wba[1];
+    mRaw->metadata.wbCoeffs[1] = wba[4]*1.0f / wba[5];
+    mRaw->metadata.wbCoeffs[2] = wba[2]*1.0f / wba[3];
   }
 
   vector<TiffIFD*> data = mRootIFD->getIFDsWithTag(CFAPATTERN);

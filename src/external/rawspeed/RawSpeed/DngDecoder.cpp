@@ -328,11 +328,11 @@ RawImage DngDecoder::decodeRawInternal() {
       // Commented out because I didn't have an example file to verify it's correct
       /* const ushort16 *tmp = as_shot_neutral->getShortArray();
       for (uint32 i=0; i<3; i++)
-        mRaw->wbCoeffs[i] = tmp[i];*/
+        mRaw->metadata.wbCoeffs[i] = tmp[i];*/
     } else if (as_shot_neutral->type == TIFF_RATIONAL) {
       const uint32 *tmp = as_shot_neutral->getIntArray();
       for (uint32 i=0; i<3; i++)
-        mRaw->wbCoeffs[i] = (tmp[i*2+1]*1.0f)/tmp[i*2];
+        mRaw->metadata.wbCoeffs[i] = (tmp[i*2+1]*1.0f)/tmp[i*2];
     } else {
       ThrowRDE("DNG: AsShotNeutral has to be SHORT or RATIONAL");
     }
@@ -343,13 +343,13 @@ RawImage DngDecoder::decodeRawInternal() {
       ThrowRDE("DNG: AsShotXY has %d values instead of 2", as_shot_white_xy->count);
 
     const uint32 *tmp = as_shot_white_xy->getIntArray();
-    mRaw->wbCoeffs[0] = tmp[1]/tmp[0];
-    mRaw->wbCoeffs[1] = tmp[3]/tmp[2];
-    mRaw->wbCoeffs[2] = 1 - mRaw->wbCoeffs[0] - mRaw->wbCoeffs[1];
+    mRaw->metadata.wbCoeffs[0] = tmp[1]/tmp[0];
+    mRaw->metadata.wbCoeffs[1] = tmp[3]/tmp[2];
+    mRaw->metadata.wbCoeffs[2] = 1 - mRaw->metadata.wbCoeffs[0] - mRaw->metadata.wbCoeffs[1];
 
     const float d65_white[3] = { 0.950456, 1, 1.088754 };
     for (uint32 i=0; i<3; i++)
-        mRaw->wbCoeffs[i] /= d65_white[i]; */
+        mRaw->metadata.wbCoeffs[i] /= d65_white[i]; */
   }
 
   // Crop
@@ -509,7 +509,7 @@ RawImage DngDecoder::decodeRawInternal() {
 
 void DngDecoder::decodeMetaDataInternal(CameraMetaData *meta) {
   if (mRootIFD->hasEntryRecursive(ISOSPEEDRATINGS))
-    mRaw->isoSpeed = mRootIFD->getEntryRecursive(ISOSPEEDRATINGS)->getInt();
+    mRaw->metadata.isoSpeed = mRootIFD->getEntryRecursive(ISOSPEEDRATINGS)->getInt();
 
 }
 

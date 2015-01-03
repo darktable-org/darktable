@@ -35,17 +35,10 @@ RawImageData::RawImageData(void):
     uncropped_dim(0, 0), table(NULL) {
   blackLevelSeparate[0] = blackLevelSeparate[1] = blackLevelSeparate[2] = blackLevelSeparate[3] = -1;
   pthread_mutex_init(&mymutex, NULL);
-  subsampling.x = subsampling.y = 1;
-  isoSpeed = 0;
   mBadPixelMap = NULL;
   pthread_mutex_init(&errMutex, NULL);
   pthread_mutex_init(&mBadPixelMutex, NULL);
   mDitherScale = TRUE;
-  fujiRotationPos = 0;
-  pixelAspectRatio = 1;
-  wbCoeffs[0] = NAN;
-  wbCoeffs[1] = NAN;
-  wbCoeffs[2] = NAN;
 }
 
 RawImageData::RawImageData(iPoint2D _dim, uint32 _bpc, uint32 _cpp) :
@@ -54,19 +47,22 @@ RawImageData::RawImageData(iPoint2D _dim, uint32 _bpc, uint32 _cpp) :
     dataRefCount(0), data(0), cpp(_cpp), bpp(_bpc * _cpp),
     uncropped_dim(0, 0), table(NULL) {
   blackLevelSeparate[0] = blackLevelSeparate[1] = blackLevelSeparate[2] = blackLevelSeparate[3] = -1;
-  subsampling.x = subsampling.y = 1;
-  isoSpeed = 0;
   mBadPixelMap = NULL;
   mDitherScale = TRUE;
-  fujiRotationPos = 0;
-  pixelAspectRatio = 1;
-  wbCoeffs[0] = NAN;
-  wbCoeffs[1] = NAN;
-  wbCoeffs[2] = NAN;
   createData();
   pthread_mutex_init(&mymutex, NULL);
   pthread_mutex_init(&errMutex, NULL);
   pthread_mutex_init(&mBadPixelMutex, NULL);
+}
+
+ImageMetaData::ImageMetaData(void) {
+  subsampling.x = subsampling.y = 1;
+  isoSpeed = 0;
+  pixelAspectRatio = 1;
+  fujiRotationPos = 0;
+  wbCoeffs[0] = NAN;
+  wbCoeffs[1] = NAN;
+  wbCoeffs[2] = NAN;
 }
 
 RawImageData::~RawImageData(void) {

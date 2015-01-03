@@ -60,6 +60,34 @@ public:
   const bool dither;
 };
 
+
+class ImageMetaData {
+public:
+  ImageMetaData(void);
+
+  // Aspect ratio of the pixels, usually 1 but some cameras need scaling
+  // <1 means the image needs to be stretched vertically, (0.5 means 2x)
+  // >1 means the image needs to be stretched horizontally (2 mean 2x)
+  double pixelAspectRatio;
+
+  // White balance coefficients of the image
+  float wbCoeffs[3];
+
+  // How many pixels far down the left edge and far up the right edge the image 
+  // corners are when the image is rotated 45 degrees in Fuji rotated sensors.
+  uint32 fujiRotationPos;
+
+  iPoint2D subsampling;
+  string make;
+  string model;
+  string mode;
+
+  // ISO speed. If known the value is set, otherwise it will be '0'.
+  int isoSpeed;
+
+private:
+};
+
 class RawImageData
 {
   friend class RawImageWorker;
@@ -99,9 +127,6 @@ public:
   int blackLevelSeparate[4];
   int whitePoint;
   vector<BlackArea> blackAreas;
-  iPoint2D subsampling;
-  string mode;
-  int isoSpeed;
   /* Vector containing silent errors that occurred doing decoding, that may have lead to */
   /* an incomplete image. */
   vector<const char*> errors;
@@ -114,18 +139,7 @@ public:
   uchar8 *mBadPixelMap;
   uint32 mBadPixelMapPitch;
   bool mDitherScale;           // Should upscaling be done with dither to minimize banding?
-
-  // How many pixels far down the left edge and far up the right edge the image 
-  // corners are when the image is rotated 45 degrees in Fuji rotated sensors.
-  uint32 fujiRotationPos;
-
-  // Aspect ratio of the pixels, usually 1 but some cameras need scaling
-  // <1 means the image needs to be stretched vertically, (0.5 means 2x)
-  // >1 means the image needs to be stretched horizontally (2 mean 2x)
-  double pixelAspectRatio;
-
-  // White balance coefficients of the image
-  float wbCoeffs[3];
+  ImageMetaData metadata;
 
 protected:
   RawImageType dataType;
