@@ -149,9 +149,6 @@ typedef struct dt_image_t
   /* filter for Fuji X-Trans images, only used if filters == 9u */
   uint8_t xtrans[6][6];
 
-  /* If the image already has WB applied from the start */
-  gboolean pre_applied_wb;
-
   /* White balance coeffs from the raw */
   float wb_coeffs[3];
   /* convenience pointer back into the image cache, so we can return dt_image_t* there directly. */
