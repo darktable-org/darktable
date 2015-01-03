@@ -511,13 +511,15 @@ void NefDecoder::DecodeNikonSNef(ByteStream &input, uint32 w, uint32 h) {
       float cb = (float)(g4 | ((g5 & 0x0f) << 8));
       float cr = (float)((g5 >> 4) | (g6 << 4));
 
+      // FIXME: Figure out a better curve to use that matches normal raws
       // Apply gamma 2.0 to Y (Are we sure Cr/Cb isn't gamma compressed?)
-      y1 = y1 * (1.0f/4096.0f);
-      y2 = y2 * (1.0f/4096.0f);
-      y1 = y1 * y1 * 4096.0f;
-      y2 = y2 * y2 * 4096.0f;
+      //y1 = y1 * (1.0f/4096.0f);
+      //y2 = y2 * (1.0f/4096.0f);
+      //y1 = y1 * y1 * 4096.0f;
+      //y2 = y2 * y2 * 4096.0f;
       cb -= 2048.0f;
       cr -= 2048.0f;
+
       // OPTME: This calculation can be done in fixed point integer.
 
       dest[x]   = clampbits((int)(inv_wb_r * (y1 + 1.40200f * cr)), 16);
