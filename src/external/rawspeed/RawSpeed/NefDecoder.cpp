@@ -38,6 +38,19 @@ NefDecoder::~NefDecoder(void) {
 }
 
 RawImage NefDecoder::decodeRawInternal() {
+  // Read the whitebalance on some cameras
+  vector<TiffIFD*> note = mRootIFD->getIFDsWithTag((TiffTag)12);
+  if (!note.empty()) {
+    TiffEntry* wb = note[0]->getEntry((TiffTag)12);
+    if (wb->count != 4 || wb->type != TIFF_RATIONAL)
+      ThrowRDE("NEF Decoder: Whitebalance has unknown count or type");
+
+    const uint32* wba = wb->getIntArray();
+    mRaw->wbCoeffs[0] = wba[0]*1.0f / wba[1];
+    mRaw->wbCoeffs[1] = wba[4]*1.0f / wba[5];
+    mRaw->wbCoeffs[2] = wba[2]*1.0f / wba[3];
+  }
+
   vector<TiffIFD*> data = mRootIFD->getIFDsWithTag(CFAPATTERN);
 
   if (data.empty())
