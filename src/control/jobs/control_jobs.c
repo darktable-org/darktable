@@ -1343,6 +1343,7 @@ void dt_control_print(GList *imgid_list, int max_width, int max_height, int form
                       char *style, gboolean style_append, const char *filename, const dt_print_info_t *pinfo)
 {
   dt_job_t *job = dt_control_job_create(&dt_control_print_job_run, "print");
+
   if(!job) return;
   dt_control_image_enumerator_t *params
       = (dt_control_image_enumerator_t *)calloc(1, sizeof(dt_control_image_enumerator_t));
