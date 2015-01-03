@@ -36,8 +36,18 @@ PefDecoder::~PefDecoder(void) {
 }
 
 RawImage PefDecoder::decodeRawInternal() {
-  vector<TiffIFD*> data = mRootIFD->getIFDsWithTag(STRIPOFFSETS);
+  // Set the whitebalance
+  if (mRootIFD->hasEntryRecursive((TiffTag) 0x0201)) {
+    TiffEntry *wb = mRootIFD->getEntryRecursive((TiffTag) 0x0201);
+    if (wb->count != 4)
+      ThrowRDE("PEF: WB has %d entries instead of 4", wb->count);
+    const ushort16 *tmp = wb->getShortArray();
+    mRaw->wbCoeffs[0] = tmp[0];
+    mRaw->wbCoeffs[1] = tmp[1];
+    mRaw->wbCoeffs[2] = tmp[3];
+  }
 
+  vector<TiffIFD*> data = mRootIFD->getIFDsWithTag(STRIPOFFSETS);
   if (data.empty())
     ThrowRDE("PEF Decoder: No image data found");
 
