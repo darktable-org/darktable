@@ -880,7 +880,7 @@ static gboolean expose(GtkWidget *widget, GdkEventExpose *event, dt_iop_module_t
     g->reprocess_on_next_expose = FALSE;
     // FIXME: or just use dev->pipe->changed |= DT_DEV_PIPE_SYNCH; ?
     dt_dev_reprocess_all(self->dev);
-    return TRUE;
+    return FALSE;
   }
 
   if(self->request_color_pick != DT_REQUEST_COLORPICK_MODULE) return FALSE;
