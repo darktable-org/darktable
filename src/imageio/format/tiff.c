@@ -30,7 +30,6 @@
 #include "control/conf.h"
 #include "common/imageio_format.h"
 #include "bauhaus/bauhaus.h"
-#include "views/view.h"
 
 DT_MODULE(2)
 
@@ -55,7 +54,6 @@ typedef struct dt_imageio_tiff_gui_t
 int write_image(dt_imageio_module_data_t *d_tmp, const char *filename, const void *in_void, void *exif,
                 int exif_len, int imgid)
 {
-  const dt_view_t *cv = dt_view_manager_get_current_view(darktable.view_manager);
   const dt_imageio_tiff_t *d = (dt_imageio_tiff_t *)d_tmp;
 
   uint8_t *profile = NULL;
@@ -140,15 +138,7 @@ int write_image(dt_imageio_module_data_t *d_tmp, const char *filename, const voi
   TIFFSetField(tif, TIFFTAG_ROWSPERSTRIP, (uint32_t)1);
   TIFFSetField(tif, TIFFTAG_ORIENTATION, (uint16_t)ORIENTATION_TOPLEFT);
 
-  int resolution;
-
-  // when in the print module we don't want to use any random dpi value but the actual printer native resolution.
-
-  if (cv->view(cv) == DT_VIEW_PRINT)
-    resolution = dt_conf_get_int("plugins/imageio/format/print/resolution");
-  else
-    resolution = dt_conf_get_int("metadata/resolution");
-
+  int resolution = dt_conf_get_int("metadata/resolution");
   if(resolution > 0)
   {
     TIFFSetField(tif, TIFFTAG_XRESOLUTION, (float)resolution);
@@ -305,34 +295,15 @@ void *legacy_params(dt_imageio_module_format_t *self, const void *const old_para
 }
 void *get_params(dt_imageio_module_format_t *self)
 {
-  const dt_view_t *cv = dt_view_manager_get_current_view(darktable.view_manager);
   dt_imageio_tiff_t *d = (dt_imageio_tiff_t *)calloc(1, sizeof(dt_imageio_tiff_t));
-
-  // we reuse the tiff module for the print module, in the print view get the
-  // corresponding parameters.
-
-  if (cv->view(cv) == DT_VIEW_PRINT)
-  {
-    d->bpp = dt_conf_get_int("plugins/imageio/format/print/bpp");
-    if(d->bpp == 16)
-      d->bpp = 16;
-    else if(d->bpp == 32)
-      d->bpp = 32;
-    else
-      d->bpp = 8;
-    d->compress = dt_conf_get_int("plugins/imageio/format/print/compress");
-  }
+  d->bpp = dt_conf_get_int("plugins/imageio/format/tiff/bpp");
+  if(d->bpp == 16)
+    d->bpp = 16;
+  else if(d->bpp == 32)
+    d->bpp = 32;
   else
-  {
-    d->bpp = dt_conf_get_int("plugins/imageio/format/tiff/bpp");
-    if(d->bpp == 16)
-      d->bpp = 16;
-    else if(d->bpp == 32)
-      d->bpp = 32;
-    else
-      d->bpp = 8;
-    d->compress = dt_conf_get_int("plugins/imageio/format/tiff/compress");
-  }
+    d->bpp = 8;
+  d->compress = dt_conf_get_int("plugins/imageio/format/tiff/compress");
   return d;
 }
 
