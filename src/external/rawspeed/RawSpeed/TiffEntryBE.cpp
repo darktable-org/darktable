@@ -24,8 +24,10 @@
 
 namespace RawSpeed {
 
-TiffEntryBE::TiffEntryBE(FileMap* f, uint32 offset) {
+TiffEntryBE::TiffEntryBE(FileMap* f, uint32 offset, uint32 up_offset) {
   own_data = NULL;
+  file = f;
+  parent_offset = up_offset;
   type = TIFF_UNDEFINED;  // We set type to undefined to avoid debug assertion errors.
   data = f->getDataWrt(offset);
   tag = (TiffTag)getShort();
@@ -60,6 +62,8 @@ TiffEntryBE::TiffEntryBE(FileMap* f, uint32 offset) {
 TiffEntryBE::TiffEntryBE( TiffTag tag, TiffDataType type, uint32 count, const uchar8* data /*= NULL*/ )
 : TiffEntry(tag, type,count, data)
 {
+  file = NULL;
+  parent_offset = 0;
 #ifdef _DEBUG
   debug_intVal = 0xC0CAC01A;
   debug_floatVal = sqrtf(-1);
@@ -89,7 +93,7 @@ unsigned short TiffEntryBE::getShort() {
 }
 
 const uint32* TiffEntryBE::getIntArray() {
-  if (!(type == TIFF_LONG || type == TIFF_UNDEFINED || type == TIFF_RATIONAL ||  type == TIFF_SRATIONAL))
+  if (!(type == TIFF_LONG || type == TIFF_SLONG || type == TIFF_UNDEFINED || type == TIFF_RATIONAL ||  type == TIFF_SRATIONAL))
     ThrowTPE("TIFF, getIntArray: Wrong type 0x%x encountered. Expected Int", type);
   if (own_data)
     return (uint32*)own_data;

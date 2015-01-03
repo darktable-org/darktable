@@ -54,7 +54,7 @@ TiffIFD::TiffIFD(FileMap* f, uint32 offset) {
 
   CHECKSIZE(offset + 2 + entries*4);
   for (uint32 i = 0; i < entries; i++) {
-    TiffEntry *t = new TiffEntry(f, offset + 2 + i*12);
+    TiffEntry *t = new TiffEntry(f, offset + 2 + i*12, offset);
 
     switch (t->tag) {
       case DNGPRIVATEDATA: 

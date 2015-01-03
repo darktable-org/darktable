@@ -60,6 +60,29 @@ RawImage SrwDecoder::decodeRawInternal() {
   if (32769 != compression && 32770 != compression && 32772 != compression && 32773 != compression)
     ThrowRDE("Srw Decoder: Unsupported compression");
 
+  data = mRootIFD->getIFDsWithTag(SAMSUNG_WB_RGGBLEVELSUNCORRECTED);
+  if (data.empty())
+    ThrowRDE("SRW Decoder: No MAKERNOTE found");
+
+  if (mRootIFD->hasEntryRecursive(SAMSUNG_WB_RGGBLEVELSUNCORRECTED) &&
+      mRootIFD->hasEntryRecursive(SAMSUNG_WB_RGGBLEVELSBLACK)) {
+    TiffEntry *wb_levels = mRootIFD->getEntryRecursive(SAMSUNG_WB_RGGBLEVELSUNCORRECTED);
+    if (wb_levels->count != 4)
+      ThrowRDE("SRW: WB has %d entries instead of 4", wb_levels->count);
+    TiffEntry *wb_black = mRootIFD->getEntryRecursive(SAMSUNG_WB_RGGBLEVELSBLACK);
+    if (wb_black->count != 4)
+      ThrowRDE("SRW: WB has %d entries instead of 4", wb_black->count);
+
+    wb_levels->offsetFromParent();
+    const uint32 *levels = wb_levels->getIntArray();
+    wb_black->offsetFromParent();
+    const uint32 *blacks = wb_black->getIntArray();
+
+    mRaw->wbCoeffs[0] = levels[0] - blacks[0];
+    mRaw->wbCoeffs[1] = levels[1] - blacks[1];
+    mRaw->wbCoeffs[2] = levels[3] - blacks[3];
+  }
+
   if (32769 == compression)
   {
     bool bit_order = false;  // Default guess

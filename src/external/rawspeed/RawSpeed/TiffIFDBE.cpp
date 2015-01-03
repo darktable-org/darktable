@@ -40,7 +40,7 @@ TiffIFDBE::TiffIFDBE(FileMap* f, uint32 offset) {
 
   CHECKSIZE(offset + 2 + entries*4);
   for (int i = 0; i < entries; i++) {
-    TiffEntryBE *t = new TiffEntryBE(f, offset + 2 + i*12);
+    TiffEntryBE *t = new TiffEntryBE(f, offset + 2 + i*12, offset);
 
     if (t->tag == SUBIFDS || t->tag == EXIFIFDPOINTER || t->tag == DNGPRIVATEDATA || t->tag == MAKERNOTE) {   // subIFD tag
       if (t->tag == DNGPRIVATEDATA) {
