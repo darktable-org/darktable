@@ -46,7 +46,6 @@ protected:
   void DecodeARW2(ByteStream &input, uint32 w, uint32 h, uint32 bpp);
   void DecodeSR2(TiffIFD* raw);
   TiffIFD *mRootIFD;
-  uint32 curve[0x4001];
   ByteStream *in;
   int mShiftDownScale;
 };

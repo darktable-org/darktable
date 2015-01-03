@@ -39,7 +39,7 @@ public:
 private:
   void initTable(uint32 huffSelect);
   int HuffDecodeNikon(BitPumpMSB& bits);
-  ushort16 curve[0x8000];
+  ushort16 curve[65536];
 };
 
 static const uchar8 nikon_tree[][32] = {

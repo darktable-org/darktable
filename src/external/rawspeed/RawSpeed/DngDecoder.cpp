@@ -452,22 +452,24 @@ RawImage DngDecoder::decodeRawInternal() {
   }
 
   // Linearization
-  if (raw->hasEntry(LINEARIZATIONTABLE) && !uncorrectedRawValues) {
+  if (raw->hasEntry(LINEARIZATIONTABLE)) {
     const ushort16* intable = raw->getEntry(LINEARIZATIONTABLE)->getShortArray();
     uint32 len =  raw->getEntry(LINEARIZATIONTABLE)->count;
-    ushort16 table[65536];
-    for (uint32 i = 0; i < 65536 ; i++) {
-      if (i < len)
-        table[i] = intable[i];
-      else
-        table[i] = intable[len-1];
+    mRaw->setTable(intable, len, !uncorrectedRawValues);
+    if (!uncorrectedRawValues) {
+      mRaw->sixteenBitLookup();
+      mRaw->setTable(NULL);
     }
-    for (int y = 0; y < mRaw->dim.y; y++) {
+
+    if (0) {
+      // Test average for bias
       uint32 cw = mRaw->dim.x * mRaw->getCpp();
-      ushort16* pixels = (ushort16*)mRaw->getData(0, y);
+      ushort16* pixels = (ushort16*)mRaw->getData(0, 500);
+      float avg = 0.0f;
       for (uint32 x = 0; x < cw; x++) {
-        pixels[x]  = table[pixels[x]];
+        avg += (float)pixels[x];
       }
+      printf("Average:%f\n", avg/(float)cw);    
     }
   }
 

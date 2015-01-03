@@ -34,7 +34,9 @@ typedef enum {TYPE_USHORT16, TYPE_FLOAT32} RawImageType;
 
 class RawImageWorker {
 public:
-  typedef enum {SCALE_VALUES, FIX_BAD_PIXELS} RawImageWorkerTask;
+  typedef enum {
+    SCALE_VALUES = 1, FIX_BAD_PIXELS = 2, APPLY_LOOKUP = 3 | 0x1000, FULL_IMAGE = 0x1000
+  } RawImageWorkerTask;
   RawImageWorker(RawImageData *img, RawImageWorkerTask task, int start_y, int end_y);
   void startThread();
   void waitForThread();
@@ -45,6 +47,17 @@ protected:
   RawImageWorkerTask task;
   int start_y;
   int end_y;
+};
+
+class TableLookUp {
+public:
+  TableLookUp(int ntables, bool dither);
+  ~TableLookUp();
+  void setTable(int ntable, const ushort16* table, int nfilled);
+  ushort16* getTable(int n);
+  const int ntables;
+  ushort16* tables;
+  const bool dither;
 };
 
 class RawImageData
@@ -68,9 +81,13 @@ public:
   iPoint2D getCropOffset();
   virtual void scaleBlackWhite() = 0;
   virtual void calculateBlackAreas() = 0;
+  virtual void setWithLookUp(ushort16 value, uchar8* dst, uint32* random) = 0;
+  virtual void sixteenBitLookup();
   virtual void transferBadPixelsToMap();
   virtual void fixBadPixels();
   void expandBorder(iRectangle2D validData);
+  void setTable(const ushort16* table, int nfilled, bool dither);
+  void setTable(TableLookUp *t);
 
   bool isAllocated() {return !!data;}
   void createBadPixelMap();
@@ -110,14 +127,12 @@ public:
   // White balance coefficients of the image
   float wbCoeffs[3];
 
-  // If the image already has WB corrected (used for Nikon sNEF files)
-  bool preAppliedWB;
-
 protected:
   RawImageType dataType;
   RawImageData(void);
   RawImageData(iPoint2D dim, uint32 bpp, uint32 cpp=1);
   virtual void scaleValues(int start_y, int end_y) = 0;
+  virtual void doLookup(int start_y, int end_y) = 0;
   virtual void fixBadPixel( uint32 x, uint32 y, int component = 0) = 0;
   void fixBadPixelsThread(int start_y, int end_y);
   void startWorker(RawImageWorker::RawImageWorkerTask task, bool cropped );
@@ -129,17 +144,21 @@ protected:
   pthread_mutex_t mymutex;
   iPoint2D mOffset;
   iPoint2D uncropped_dim;
+  TableLookUp *table;
 };
+
 
 class RawImageDataU16 : public RawImageData
 {
 public:
   virtual void scaleBlackWhite();
   virtual void calculateBlackAreas();
+  virtual void setWithLookUp(ushort16 value, uchar8* dst, uint32* random);
 
 protected:
   virtual void scaleValues(int start_y, int end_y);
   virtual void fixBadPixel( uint32 x, uint32 y, int component = 0);
+  virtual void doLookup(int start_y, int end_y);
 
   RawImageDataU16(void);
   RawImageDataU16(iPoint2D dim, uint32 cpp=1);
@@ -151,10 +170,12 @@ class RawImageDataFloat : public RawImageData
 public:
   virtual void scaleBlackWhite();
   virtual void calculateBlackAreas();
+  virtual void setWithLookUp(ushort16 value, uchar8* dst, uint32* random);
 
 protected:
   virtual void scaleValues(int start_y, int end_y);
   virtual void fixBadPixel( uint32 x, uint32 y, int component = 0);
+  virtual void doLookup(int start_y, int end_y);
   RawImageDataFloat(void);
   RawImageDataFloat(iPoint2D dim, uint32 cpp=1);
   friend class RawImage;
