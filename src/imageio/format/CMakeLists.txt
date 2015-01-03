@@ -27,8 +27,12 @@ if(OPENJPEG_FOUND)
 	add_library(j2k MODULE "j2k.c")
 endif(OPENJPEG_FOUND)
 
+if(BUILD_PRINT)
+	list(APPEND MODULES "prt")
+        add_library(prt MODULE "prt.c")
+endif(BUILD_PRINT)
+
 foreach(module ${MODULES})
 	target_link_libraries(${module} ${LIBS})
 	install(TARGETS  ${module} DESTINATION ${LIB_INSTALL}/darktable/plugins/imageio/format)
 endforeach(module)
-
