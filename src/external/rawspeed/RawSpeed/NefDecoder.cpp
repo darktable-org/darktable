@@ -457,12 +457,40 @@ void NefDecoder::decodeMetaDataInternal(CameraMetaData *meta) {
     mRaw->whitePoint = white;
   if (black >= 0 && hints.find(string("nikon_override_auto_black")) == hints.end())
     mRaw->blackLevel = black;
+
+  // Allow overriding individual blacklevels. Values are in CFA order
+  // (the same order as the in the CFA tag)
+  // A hint could be:
+  // <Hint name="nikon_rgb_black" value="10,20,30,20"/>
+  //
+  if (hints.find(string("nikon_rgb_black")) == hints.end()) {
+    string rgb = hints.find(string("nikon_cfa_black"))->second;
+    vector<string> v = split_string(rgb, ',');
+    if (v.size() != 4) {
+      mRaw->setError("Expected 4 values '10,20,30,20' as values for nikon_cfa_black hint.");
+    } else {
+      for (int i = 0; i < 4; i++) {
+        mRaw->blackLevelSeparate[i] = atoi(v[i].c_str());
+      }
+    }
+  }
+}
+
+
+// Curve measured by libraw: https://github.com/LibRaw/LibRaw/blob/master/src/libraw_cxx.cpp#L1092-L1118
+__inline float curveValue(float v) {
+  float beta_1 = 5.79342238397656E-02f;
+  float beta_2 = 3.28163551282665f;
+  float beta_3 = -8.43136004842678f;
+  float beta_4 = 1.03533181861023E+01f;
+  float x = v* (1.0f/4096.f);
+  float y = (1.f-expf(beta_1*x-beta_2*x*x-beta_3*x*x*x-beta_4*x*x*x*x));
+  return y*16383.f;
 }
 
 // DecodeNikonYUY2 decodes 12 bit data in an YUY2-like pattern (2 Luma, 1 Chroma per 2 pixels).
 // We un-apply the whitebalance, so output matches lossless.
 // Note that values are scaled. See comment below on details.
-// FIXME: Interpolate Cr/Cb components, though it would be nice to know how they are aligned.
 // OPTME: It would be trivial to run this multithreaded.
 void NefDecoder::DecodeNikonSNef(ByteStream &input, uint32 w, uint32 h) {
   uchar8* data = mRaw->getData();
@@ -496,15 +524,8 @@ void NefDecoder::DecodeNikonSNef(ByteStream &input, uint32 w, uint32 h) {
   //float wb_g1 = (float)wba[4] / (float)wba[5];
   //float wb_g2 = (float)wba[6] / (float)wba[7];
 
-  // Since we are dealing with calulated data (YCbCr -> unwhitebalanced RGB), we upscale the result to keep
-  // better precision.
-  // This can give scaled values that are (scale) times bigger than naively converted values.
-  // We select 8, since it gives values approximately 0->32000, and 8 is a power of two, so if the main routine gets
-  // to be fixed point this can be done by adjusting output bitshifts.
-  float scale = 8.0f;
-
-  float inv_wb_r = scale * 1.0f / wb_r;
-  float inv_wb_b = scale * 1.0f / wb_b;
+  float inv_wb_r = 1.0f / wb_r;
+  float inv_wb_b = 1.0f / wb_b;
 
   for (uint32 y = 0; y < h; y++) {
     ushort16* dest = (ushort16*) & data[y*pitch];
@@ -524,23 +545,32 @@ void NefDecoder::DecodeNikonSNef(ByteStream &input, uint32 w, uint32 h) {
       float cb = (float)(g4 | ((g5 & 0x0f) << 8));
       float cr = (float)((g5 >> 4) | (g6 << 4));
 
-      // FIXME: Figure out a better curve to use that matches normal raws
-      // Apply gamma 2.0 to Y (Are we sure Cr/Cb isn't gamma compressed?)
-      //y1 = y1 * (1.0f/4096.0f);
-      //y2 = y2 * (1.0f/4096.0f);
-      //y1 = y1 * y1 * 4096.0f;
-      //y2 = y2 * y2 * 4096.0f;
-      cb -= 2048.0f;
-      cr -= 2048.0f;
+      float cb2 = cb;
+      float cr2 = cr;
+      // Interpolate right pixel. We assume the sample is aligned with left pixel.
+      if ((x+6) < w*3) {
+        g5 = in[4];
+        g6 = in[5];
+        cb2 = ((float)(g4 | ((g5 & 0x0f) << 8)) + cb)*0.5f;
+        cr2 = ((float)((g5 >> 4) | (g6 << 4)) + cr)* 0.5f;
+      }
 
-      // OPTME: This calculation can be done in fixed point integer.
+      // Scale Y to 2549 (maximum value determined by rawdigger)
+      y1 = y1 * (4096.0f/2549.0f);
+      y2 = y2 * (4096.0f/2549.0f);
 
-      dest[x]   = clampbits((int)(inv_wb_r * (y1 + 1.40200f * cr)), 16);
-      dest[x+1] = clampbits((int)(scale * (y1 - 0.34414f * cb - 0.71414f * cr)), 16);
-      dest[x+2] = clampbits((int)(inv_wb_b * (y1 + 1.77200f * cb)), 16);
-      dest[x+3] = clampbits((int)(inv_wb_r * (y2 + 1.40200f * cr)), 16);
-      dest[x+4] = clampbits((int)(scale * (y2 - 0.34414f * cb - 0.71414f * cr)), 16);
-      dest[x+5] = clampbits((int)(inv_wb_b * (y2 + 1.77200f * cb)), 16);
+      // Center cb/cr on 0. cb/cr has maximum of +- 1280 (recommended  by rawdigger)
+      cb = (cb - 2048.0f)*(2048.0f/1280.0f);
+      cr = (cr - 2048.0f)*(2048.0f/1280.0f);
+      cb2 = (cb2 - 2048.0f)*(2048.0f/1280.0f);
+      cr2 = (cr2 - 2048.0f)*(2048.0f/1280.0f);
+
+      dest[x]   = clampbits((int)(inv_wb_r * curveValue(y1 + 1.40200f * cr)), 16);
+      dest[x+1] = clampbits((int)(curveValue(y1 - 0.34414f * cb - 0.71414f * cr)), 16);
+      dest[x+2] = clampbits((int)(inv_wb_b * curveValue(y1 + 1.77200f * cb)), 16);
+      dest[x+3] = clampbits((int)(inv_wb_r * curveValue(y2 + 1.40200f * cr2)), 16);
+      dest[x+4] = clampbits((int)(curveValue(y2 - 0.34414f * cb2 - 0.71414f * cr2)), 16);
+      dest[x+5] = clampbits((int)(inv_wb_b * curveValue(y2 + 1.77200f * cb2)), 16);
     }
   }
 }
