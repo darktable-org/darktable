@@ -33,6 +33,32 @@ letsgofloat_1ui(read_only image2d_t in, write_only image2d_t out,
   write_imagef (out, (int2)(x, y), (float4)(pixel / 65535.0f, 0.0f, 0.0f, 0.0f));
 }
 
+
+int
+BL(const int row, const int col)
+{
+  return (((row & 1) << 1) + (col & 1));
+}
+
+kernel void
+rawprepare_1f(read_only image2d_t in, write_only image2d_t out,
+              const int width, const int height,
+              global const float *sub, global const float *div,
+              const int rx, const int ry)
+{
+  const int x = get_global_id(0);
+  const int y = get_global_id(1);
+
+  if(x >= width || y >= height) return;
+
+  const float pixel = read_imagef(in, sampleri, (int2)(x, y)).x;
+
+  const int id = BL(ry+y, rx+x);
+  const float pixel_scaled = max(0.0f, (pixel - sub[id]) / div[id]);
+
+  write_imagef(out, (int2)(x, y), (float4)(pixel_scaled, 0.0f, 0.0f, 0.0f));
+}
+
 kernel void
 invert_1f(read_only image2d_t in, write_only image2d_t out, const int width, const int height, global float *color,
           const unsigned int filters, const int rx, const int ry)

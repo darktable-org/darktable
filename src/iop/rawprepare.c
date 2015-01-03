@@ -23,6 +23,7 @@
 #include "bauhaus/bauhaus.h"
 #include "gui/gtk.h"
 #include "gui/accelerators.h"
+#include "common/opencl.h"
 
 #include <gtk/gtk.h>
 #include <stdlib.h>
@@ -50,6 +51,11 @@ typedef struct dt_iop_rawprepare_data_t
   float sub[4];
   float div[4];
 } dt_iop_rawprepare_data_t;
+
+typedef struct dt_iop_rawprepare_global_data_t
+{
+  int kernel_rawprepare_1f;
+} dt_iop_rawprepare_global_data_t;
 
 const char *name()
 {
@@ -196,6 +202,54 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
   _mm_sfence();
 }
 
+#ifdef HAVE_OPENCL
+int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out,
+               const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
+{
+  dt_iop_rawprepare_data_t *d = (dt_iop_rawprepare_data_t *)piece->data;
+  dt_iop_rawprepare_global_data_t *gd = (dt_iop_rawprepare_global_data_t *)self->data;
+
+  const int devid = piece->pipe->devid;
+  cl_mem dev_sub = NULL;
+  cl_mem dev_div = NULL;
+  cl_int err = -999;
+
+  int kernel = gd->kernel_rawprepare_1f;
+
+  dev_sub = dt_opencl_copy_host_to_device_constant(devid, sizeof(float) * 4, d->sub);
+  if(dev_sub == NULL) goto error;
+
+  dev_div = dt_opencl_copy_host_to_device_constant(devid, sizeof(float) * 4, d->div);
+  if(dev_div == NULL) goto error;
+
+  const int width = roi_out->width;
+  const int height = roi_out->height;
+
+  size_t sizes[] = { ROUNDUPWD(roi_in->width), ROUNDUPHT(roi_in->height), 1 };
+  dt_opencl_set_kernel_arg(devid, kernel, 0, sizeof(cl_mem), (void *)&dev_in);
+  dt_opencl_set_kernel_arg(devid, kernel, 1, sizeof(cl_mem), (void *)&dev_out);
+  dt_opencl_set_kernel_arg(devid, kernel, 2, sizeof(int), (void *)&(width));
+  dt_opencl_set_kernel_arg(devid, kernel, 3, sizeof(int), (void *)&(height));
+  dt_opencl_set_kernel_arg(devid, kernel, 4, sizeof(cl_mem), (void *)&dev_sub);
+  dt_opencl_set_kernel_arg(devid, kernel, 5, sizeof(cl_mem), (void *)&dev_div);
+  dt_opencl_set_kernel_arg(devid, kernel, 6, sizeof(uint32_t), (void *)&roi_out->x);
+  dt_opencl_set_kernel_arg(devid, kernel, 7, sizeof(uint32_t), (void *)&roi_out->y);
+  err = dt_opencl_enqueue_kernel_2d(devid, kernel, sizes);
+  if(err != CL_SUCCESS) goto error;
+
+  dt_opencl_release_mem_object(dev_sub);
+  dt_opencl_release_mem_object(dev_div);
+
+  return TRUE;
+
+error:
+  if(dev_sub != NULL) dt_opencl_release_mem_object(dev_sub);
+  if(dev_div != NULL) dt_opencl_release_mem_object(dev_div);
+  dt_print(DT_DEBUG_OPENCL, "[opencl_rawprepare] couldn't enqueue kernel! %d\n", err);
+  return FALSE;
+}
+#endif
+
 void commit_params(dt_iop_module_t *self, const dt_iop_params_t *const params, dt_dev_pixelpipe_t *pipe,
                    dt_dev_pixelpipe_iop_t *piece)
 {
@@ -229,6 +283,9 @@ void commit_params(dt_iop_module_t *self, const dt_iop_params_t *const params, d
   }
 
   if(!dt_image_is_raw(&piece->pipe->image) || piece->pipe->image.bpp == sizeof(float)) piece->enabled = 0;
+
+  if(!(!dt_dev_pixelpipe_uses_downsampled_input(piece->pipe) && dt_image_filter(&piece->pipe->image)))
+    piece->process_cl_ready = 0;
 }
 
 void init_pipe(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
@@ -265,6 +322,15 @@ end:
   memcpy(self->default_params, &tmp, sizeof(dt_iop_rawprepare_params_t));
 }
 
+void init_global(dt_iop_module_so_t *self)
+{
+  const int program = 2; // basic.cl, from programs.conf
+  self->data = malloc(sizeof(dt_iop_rawprepare_global_data_t));
+
+  dt_iop_rawprepare_global_data_t *gd = self->data;
+  gd->kernel_rawprepare_1f = dt_opencl_create_kernel(program, "rawprepare_1f");
+}
+
 void init(dt_iop_module_t *self)
 {
   const dt_image_t *const image = &(self->dev->image_storage);
@@ -283,6 +349,14 @@ void cleanup(dt_iop_module_t *self)
   self->gui_data = NULL;
   free(self->params);
   self->params = NULL;
+}
+
+void cleanup_global(dt_iop_module_so_t *self)
+{
+  dt_iop_rawprepare_global_data_t *gd = (dt_iop_rawprepare_global_data_t *)self->data;
+  dt_opencl_free_kernel(gd->kernel_rawprepare_1f);
+  free(self->data);
+  self->data = NULL;
 }
 
 void gui_update(dt_iop_module_t *self)
