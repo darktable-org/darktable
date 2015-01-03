@@ -250,7 +250,8 @@ static void _capture_mipmaps_updated_signal_callback(gpointer instance, gpointer
 
 
 /** callbacks to deal with images taken in tethering mode */
-static const char *_camera_request_image_filename(const dt_camera_t *camera, const char *filename, void *data)
+static const char *_camera_request_image_filename(const dt_camera_t *camera, const char *filename,
+                                                  time_t exif_time, void *data)
 {
   struct dt_capture_t *lib = (dt_capture_t *)data;
 
@@ -264,7 +265,7 @@ static const char *_camera_request_image_filename(const dt_camera_t *camera, con
   return g_strdup(file);
 }
 
-static const char *_camera_request_image_path(const dt_camera_t *camera, void *data)
+static const char *_camera_request_image_path(const dt_camera_t *camera, time_t exif_time, void *data)
 {
   struct dt_capture_t *lib = (dt_capture_t *)data;
   return dt_import_session_path(lib->session, FALSE);

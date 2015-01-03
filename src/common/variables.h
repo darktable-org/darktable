@@ -48,6 +48,8 @@ void dt_variables_params_init(dt_variables_params_t **params);
 void dt_variables_params_destroy(dt_variables_params_t *params);
 /** set the time in a dt_variables_params_t. */
 void dt_variables_set_time(dt_variables_params_t *params, time_t time);
+/** set the time to use for EXIF variables */
+void dt_variables_set_exif_time(dt_variables_params_t *params, time_t time);
 
 /** expands variables in string, this free's previous expanding result */
 gboolean dt_variables_expand(dt_variables_params_t *params, gchar *string, gboolean iterate);
