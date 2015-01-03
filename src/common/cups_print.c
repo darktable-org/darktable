@@ -263,7 +263,6 @@ void dt_print_file(const int32_t imgid, const char *filename, const dt_print_inf
     num_options = cupsAddOption("Borderless", "true", num_options, &options);
   }
 
-  char value[25];
   int32_t px, py, pwidth, pheight;
   int32_t ix, iy, iwidth, iheight;
   int32_t ax, ay, awidth, aheight;
@@ -297,43 +296,15 @@ void dt_print_file(const int32_t imgid, const char *filename, const dt_print_inf
   fprintf (stderr, "[print] offset (%d %d) -> width: %d height: %d | right: %d bottom: %d\n",
            ix, iy, iwidth, iheight, ir, ib);
 
-  if (iy <= ib)
-    g_strlcpy(value, "top-", sizeof(value));
-  else
-    g_strlcpy(value, "bottom-", sizeof(value));
-
-  if (ix <= ir)
-    g_strlcat(value, "left", sizeof(value));
-  else
-    g_strlcat(value, "right", sizeof(value));
-
   if (pinfo->page.landscape)
+  {
     num_options = cupsAddOption("landscape", "true", num_options, &options);
+    num_options = cupsAddOption("position", "top-right", num_options, &options);
+  }
   else
+  {
     num_options = cupsAddOption("landscape", "false", num_options, &options);
-
-  num_options = cupsAddOption("position", value, num_options, &options);
-
-  if (iy <= ib)
-  {
-    sprintf(value,"%d",(int)(iy/ptTOmm));
-    num_options = cupsAddOption("page-top", value, num_options, &options);
-  }
-  else
-  {
-    sprintf(value,"%d",(int)(ib/ptTOmm));
-    num_options = cupsAddOption("page-bottom", value, num_options, &options);
-  }
-
-  if (ix <= ir)
-  {
-    sprintf(value,"%d",(int)(ix/ptTOmm));
-    num_options = cupsAddOption("page-left", value, num_options, &options);
-  }
-  else
-  {
-    sprintf(value,"%d",(int)(ir/ptTOmm));
-    num_options = cupsAddOption("page-right", value, num_options, &options);
+    num_options = cupsAddOption("position", "top-left", num_options, &options);
   }
 
   // print lp options

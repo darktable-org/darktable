@@ -111,6 +111,9 @@ _print_button_clicked (GtkWidget *widget, gpointer user_data)
 
   // compute print-area (in inches)
   double width, height;
+  int32_t px=0, py=0, pwidth=0, pheight=0;
+  int32_t ax=0, ay=0, awidth=0, aheight=0;
+  int32_t ix=0, iy=0, iwidth=0, iheight=0;
 
   // user margin are already in the proper orientation landscape/portrait
   double margin_w = ps->prt.page.margin_left + ps->prt.page.margin_right;
@@ -131,10 +134,54 @@ _print_button_clicked (GtkWidget *widget, gpointer user_data)
     margin_h += ps->prt.printer.hw_margin_top + ps->prt.printer.hw_margin_bottom;
   }
 
+  const int32_t width_pix = (width * ps->prt.printer.resolution) / 25.4;
+  const int32_t height_pix = (height * ps->prt.printer.resolution) / 25.4;
+
+  dt_get_print_layout (imgid, &ps->prt, width_pix, height_pix,
+                       &px, &py, &pwidth, &pheight,
+                       &ax, &ay, &awidth, &aheight,
+                       &ix, &iy, &iwidth, &iheight);
+
   const double pa_width  = (width  - margin_w) / 25.4;
   const double pa_height = (height - margin_h) / 25.4;
 
   fprintf(stderr, "[print] area for image %u : %3.2fin x %3.2fin\n", imgid, pa_width, pa_height);
+
+  int margin_top = iy;
+  int margin_left = ix;
+  int margin_right = ix + iwidth;
+  int margin_bottom = iy + iheight;
+
+  if (ps->prt.page.landscape)
+  {
+    margin_top = iy;
+    margin_left = ix;
+    margin_right = pwidth - iwidth - ix;
+    margin_bottom = pheight - iheight - iy;
+  }
+  else
+  {
+    margin_top = iy;
+    margin_left = ix;
+    margin_right = pwidth - iwidth - ix;
+    margin_bottom = pheight - iheight - iy;
+  }
+
+  dt_conf_set_int("plugins/imageio/format/print/margin-top", margin_top);
+  if (ps->prt.page.landscape)
+  {
+    dt_conf_set_int("plugins/imageio/format/print/margin-right", margin_right);
+    dt_conf_set_int("plugins/imageio/format/print/margin-left", 0);
+  }
+  else
+  {
+    dt_conf_set_int("plugins/imageio/format/print/margin-left", margin_left);
+    dt_conf_set_int("plugins/imageio/format/print/margin-right", 0);
+  }
+  dt_conf_set_int("plugins/imageio/format/print/margin-bottom", 0);
+
+  fprintf(stderr, "[print] margins top %d ; bottom %d ; left %d ; right %d\n",
+          margin_top, margin_bottom, margin_left, margin_right);
 
   // compute the needed size for picture for the given printer resolution
 
@@ -153,7 +200,7 @@ _print_button_clicked (GtkWidget *widget, gpointer user_data)
   // printer profile.
 
   const char *storage_name = "disk";
-  const char *format_name = "tiff";
+  const char *format_name = "prt";
 
   dt_imageio_module_storage_t *mstorage = dt_imageio_get_storage_by_name(storage_name);
   dt_imageio_module_format_t *mformat = dt_imageio_get_format_by_name(format_name);
