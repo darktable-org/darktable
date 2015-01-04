@@ -1157,9 +1157,10 @@ fit:;
       }
       fprintf(stdout, "},");
     }
-    fprintf(stdout, "}, {%d, %d, %d}, {%d, %d, %d}, 0, 0, 0}},\n",
+    fprintf(stdout, "}, {%d, %d, %d}, {%d, %d, %d}, %d, 0, %d}},\n",
       params.tonecurve_nodes[0], params.tonecurve_nodes[1], params.tonecurve_nodes[2],
-      params.tonecurve_type[0], params.tonecurve_type[1], params.tonecurve_type[2]);
+      params.tonecurve_type[0], params.tonecurve_type[1], params.tonecurve_type[2],
+      params.tonecurve_autoscale_ab, params.tonecurve_unbound_ab);
   }
 
 exit:
