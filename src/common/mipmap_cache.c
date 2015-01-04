@@ -326,12 +326,13 @@ void dt_mipmap_cache_deallocate_dynamic(void *data, dt_cache_entry_t *entry)
           if(f)
           {
             // allocate temp memory, at least 1MB to be sure we fit:
-            uint8_t *blob = (uint8_t *)malloc(MIN(1<<20, cache->buffer_size[mip]));
+            size_t bloblen = MAX(1<<20, cache->buffer_size[mip]);
+            uint8_t *blob = (uint8_t *)malloc(bloblen);
             if(!blob) goto write_error;
             const int cache_quality = dt_conf_get_int("database_cache_quality");
             const int32_t length
               = dt_imageio_jpeg_compress(entry->data + sizeof(*dsc), blob, dsc->width, dsc->height, MIN(100, MAX(10, cache_quality)));
-            assert(length <= MIN(1<<20, cache->buffer_size[mip]));
+            assert(length <= bloblen);
             int written = fwrite(blob, sizeof(uint8_t), length, f);
             if(written != length)
             {
