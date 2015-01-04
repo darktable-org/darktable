@@ -69,11 +69,7 @@ void dt_view_manager_init(dt_view_manager_t *vm)
 #ifdef HAVE_MAP
                       "map",
 #endif
-                      "slideshow",
-#ifdef HAVE_PRINT
-                      "print",
-#endif
-                      NULL };
+                      "slideshow",  NULL };
   char *module = modules[midx];
   while(module != NULL)
   {
@@ -1232,96 +1228,6 @@ void dt_view_image_expose(dt_view_image_over_t *image_over, uint32_t imgid, cair
     dt_print(DT_DEBUG_LIGHTTABLE, "[lighttable] image expose took %0.04f sec\n", end - start);
 }
 
-void
-dt_view_image_only_expose(
-  uint32_t imgid,
-  cairo_t *cr,
-  int32_t width,
-  int32_t height,
-  int32_t offsetx,
-  int32_t offsety)
-{
-  const double start = dt_get_wtime();
-  // some performance tuning stuff, for your pleasure.
-  // on my machine with 7 image per row it seems grouping has the largest
-  // impact from around 400ms -> 55ms per redraw.
-
-  dt_image_t buffered_image;
-  const dt_image_t *img = dt_image_cache_get(darktable.image_cache, imgid, 'r');
-  // release image cache lock as early as possible, to avoid deadlocks (mipmap cache might need to lock it, too)
-  if(img)
-  {
-    buffered_image = *img;
-    dt_image_cache_read_release(darktable.image_cache, img);
-    img = &buffered_image;
-  }
-  float imgwd = 1.0f;
-
-  dt_mipmap_buffer_t buf;
-  dt_mipmap_size_t mip = dt_mipmap_cache_get_matching_size(darktable.mipmap_cache,
-                                                           imgwd*width, imgwd*height);
-  dt_mipmap_cache_get(darktable.mipmap_cache, &buf, imgid, mip, DT_MIPMAP_BEST_EFFORT, 'r');
-
-  float scale = 1.0;
-  // decompress image, if necessary. if compression is off, scratchmem will be == NULL,
-  // so get the real pointer back:
-  // uint8_t *buf_decompressed = dt_mipmap_cache_decompress(&buf, scratchmem);
-
-  cairo_surface_t *surface = NULL;
-  uint8_t *rgbbuf = NULL;
-  if(buf.buf)
-  {
-    rgbbuf = (uint8_t *)calloc(buf.width * buf.height * 4, sizeof(uint8_t));
-    if(rgbbuf)
-    {
-      for(int i = 0; i < buf.height; i++)
-      {
-        uint8_t *in = buf.buf + i * buf.width * 4;
-        uint8_t *out = rgbbuf + i * buf.width * 4;
-
-        for(int j = 0; j < buf.width; j++, in += 4, out += 4)
-        {
-          out[0] = in[2];
-          out[1] = in[1];
-          out[2] = in[0];
-        }
-      }
-      const int32_t stride = cairo_format_stride_for_width (CAIRO_FORMAT_RGB24, buf.width);
-      surface = cairo_image_surface_create_for_data (rgbbuf, CAIRO_FORMAT_RGB24, buf.width, buf.height, stride);
-    }
-    const int32_t tb = DT_PIXEL_APPLY_DPI(dt_conf_get_int("plugins/darkroom/ui/border_size"));
-    scale = fminf((width-2*tb) / (float)buf.width, (height-2*tb) / (float)buf.height);
-  }
-
-  // draw at offset offsetx, offsety
-  cairo_save(cr);
-  cairo_translate (cr, offsetx, offsety);
-  cairo_scale(cr, scale, scale);
-
-  if(buf.buf)
-  {
-    cairo_set_source_surface (cr, surface, 0, 0);
-    cairo_pattern_set_filter(cairo_get_source(cr), CAIRO_FILTER_NEAREST);
-    cairo_rectangle(cr, 0, 0, buf.width, buf.height);
-    cairo_fill(cr);
-    cairo_surface_destroy (surface);
-  }
-
-  cairo_restore(cr);
-  cairo_save(cr);
-
-  // kill all paths, in case img was not loaded yet, or is blocked:
-  cairo_new_path(cr);
-
-  if(img) dt_image_cache_read_release(darktable.image_cache, img);
-
-  cairo_restore(cr);
-
-  const double end = dt_get_wtime();
-  if (darktable.unmuted & DT_DEBUG_PERF)
-    dt_print(DT_DEBUG_LIGHTTABLE, "[lighttable] image expose took %0.04f sec\n", end-start);
-}
-
 
 /**
  * \brief Set the selection bit to a given value for the specified image
@@ -1572,13 +1478,6 @@ void dt_view_map_set_map_source(const dt_view_manager_t *vm, OsmGpsMapSource_t m
 }
 #endif
 
-#ifdef HAVE_PRINT
-void dt_view_print_settings(const dt_view_manager_t *vm, dt_print_info_t *pinfo)
-{
-  if (vm->proxy.print.view)
-    vm->proxy.print.print_settings(vm->proxy.print.view, pinfo);
-}
-#endif
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

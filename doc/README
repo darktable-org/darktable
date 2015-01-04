@@ -8,7 +8,6 @@ to build it, you need:
 
 optionally, you might need for special features:
 
- - libcups2 (for the print module)
  - gphoto2 (for camera support, recommended)
  - librsvg2 (for watermark plugin)
  - flickcurl (for Flickr support)
