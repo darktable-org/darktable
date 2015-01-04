@@ -1,0 +1,21 @@
+
+FIND_PATH(CUPS_INCLUDE_DIR cups.h
+  PATHS /usr/include
+  /usr/local/include
+  HINTS ENV CUPS_INCLUDE_DIR
+  PATH_SUFFIXES cups
+)
+
+FIND_LIBRARY(CUPS_LIBRARY
+  NAMES ${CUPS_NAMES} cups libcups
+  PATHS /usr/lib /usr/local/lib
+  HINTS ENV CUPS_LIBDIR
+)
+
+include(FindPackageHandleStandardArgs)
+find_package_handle_standard_args(CUPS DEFAULT_MSG CUPS_LIBRARY CUPS_INCLUDE_DIR)
+
+IF(CUPS_FOUND)
+  SET(CUPS_LIBRARIES ${CUPS_LIBRARY})
+  SET(CUPS_INCLUDE_DIRS ${CUPS_INCLUDE_DIR})
+ENDIF(CUPS_FOUND)

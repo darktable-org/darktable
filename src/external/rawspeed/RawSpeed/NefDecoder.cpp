@@ -38,6 +38,19 @@ NefDecoder::~NefDecoder(void) {
 }
 
 RawImage NefDecoder::decodeRawInternal() {
+  // Read the whitebalance on some cameras
+  vector<TiffIFD*> note = mRootIFD->getIFDsWithTag((TiffTag)12);
+  if (!note.empty()) {
+    TiffEntry* wb = note[0]->getEntry((TiffTag)12);
+    if (wb->count != 4 || wb->type != TIFF_RATIONAL)
+      ThrowRDE("NEF Decoder: Whitebalance has unknown count or type");
+
+    const uint32* wba = wb->getIntArray();
+    mRaw->metadata.wbCoeffs[0] = wba[0]*1.0f / wba[1];
+    mRaw->metadata.wbCoeffs[1] = wba[4]*1.0f / wba[5];
+    mRaw->metadata.wbCoeffs[2] = wba[2]*1.0f / wba[3];
+  }
+
   vector<TiffIFD*> data = mRootIFD->getIFDsWithTag(CFAPATTERN);
 
   if (data.empty())
@@ -70,7 +83,7 @@ RawImage NefDecoder::decodeRawInternal() {
   }
 
   if (NEFIsUncompressedRGB(raw)) {
-    DecodeRGBUncompressed();
+    DecodeSNefUncompressed();
     return mRaw;
   }
 
@@ -94,26 +107,15 @@ RawImage NefDecoder::decodeRawInternal() {
   mRaw->dim = iPoint2D(width, height);
   mRaw->createData();
 
-  data = mRootIFD->getIFDsWithTag(MAKERNOTE);
-  if (data.empty())
-    ThrowRDE("NEF Decoder: No EXIF data found");
-
-  TiffIFD* exif = data[0];
-  TiffEntry *makernoteEntry = exif->getEntry(MAKERNOTE);
-  const uchar8* makernote = makernoteEntry->getData();
-  FileMap makermap((uchar8*)&makernote[10], mFile->getSize() - makernoteEntry->getDataOffset() - 10);
-  TiffParser makertiff(&makermap);
-  makertiff.parseData();
-
-  data = makertiff.RootIFD()->getIFDsWithTag((TiffTag)0x8c);
+  data = mRootIFD->getIFDsWithTag((TiffTag)0x8c);
 
   if (data.empty())
     ThrowRDE("NEF Decoder: Decompression info tag not found");
 
   TiffEntry *meta;
-  try {
+  if (data[0]->hasEntry((TiffTag)0x96)) {
     meta = data[0]->getEntry((TiffTag)0x96);
-  } catch (TiffParserException) {
+  } else {
     meta = data[0]->getEntry((TiffTag)0x8c);  // Fall back
   }
 
@@ -353,7 +355,7 @@ void NefDecoder::DecodeD100Uncompressed() {
   Decode12BitRawBEWithControl(input, width, height);
 }
 
-void NefDecoder::DecodeRGBUncompressed() {
+void NefDecoder::DecodeSNefUncompressed() {
   vector<TiffIFD*> data = mRootIFD->getIFDsWithTag(CFAPATTERN);
   TiffIFD* raw = FindBestImage(&data);
   uint32 offset = raw->getEntry(STRIPOFFSETS)->getInt();
@@ -363,12 +365,11 @@ void NefDecoder::DecodeRGBUncompressed() {
   mRaw->dim = iPoint2D(width, height);
   mRaw->setCpp(3);
   mRaw->isCFA = false;
-  mRaw->preAppliedWB = true;
   mRaw->createData();
 
   ByteStream in(mFile->getData(offset), mFile->getSize()-offset);
 
-  Decode8BitRGB(in, width, height);
+  DecodeNikonSNef(in, width, height);
 }
 
 void NefDecoder::checkSupportInternal(CameraMetaData *meta) {
@@ -397,7 +398,7 @@ string NefDecoder::getMode() {
   uint32 bitPerPixel = raw->getEntry(BITSPERSAMPLE)->getInt();
 
   if (NEFIsUncompressedRGB(raw))
-    mode << "rgb-uncompressed";
+    mode << "sNEF-uncompressed";
   else {
     if (1 == compression || NEFIsUncompressed(raw))
       mode << bitPerPixel << "bit-uncompressed";
@@ -456,6 +457,105 @@ void NefDecoder::decodeMetaDataInternal(CameraMetaData *meta) {
     mRaw->whitePoint = white;
   if (black >= 0 && hints.find(string("nikon_override_auto_black")) == hints.end())
     mRaw->blackLevel = black;
+}
+
+
+// Curve measured by libraw: https://github.com/LibRaw/LibRaw/blob/master/src/libraw_cxx.cpp#L1092-L1118
+__inline float curveValue(float v) {
+  float beta_1 = 5.79342238397656E-02f;
+  float beta_2 = 3.28163551282665f;
+  float beta_3 = -8.43136004842678f;
+  float beta_4 = 1.03533181861023E+01f;
+  float x = v* (1.0f/4096.f);
+  float y = (1.f-expf(beta_1*x-beta_2*x*x-beta_3*x*x*x-beta_4*x*x*x*x));
+  return y*16383.f;
+}
+
+// DecodeNikonYUY2 decodes 12 bit data in an YUY2-like pattern (2 Luma, 1 Chroma per 2 pixels).
+// We un-apply the whitebalance, so output matches lossless.
+// Note that values are scaled. See comment below on details.
+// OPTME: It would be trivial to run this multithreaded.
+void NefDecoder::DecodeNikonSNef(ByteStream &input, uint32 w, uint32 h) {
+  uchar8* data = mRaw->getData();
+  uint32 pitch = mRaw->pitch;
+  const uchar8 *in = input.getData();
+  if (input.getRemainSize() < (w*h*3)) {
+    if ((uint32)input.getRemainSize() > w*3) {
+      h = input.getRemainSize() / (w*3) - 1;
+      mRaw->setError("Image truncated (file is too short)");
+    } else
+      ThrowIOE("DecodeNikonSNef: Not enough data to decode a single line. Image file truncated.");
+  }
+
+  // We need to read the applied whitebalance, since we should return
+  // data before whitebalance, so we "unapply" it.
+  vector<TiffIFD*> note = mRootIFD->getIFDsWithTag((TiffTag)12);
+
+  if (note.empty())
+    ThrowRDE("NEF Decoder: Unable to locate whitebalance needed for decompression");
+
+  TiffEntry* wb = note[0]->getEntry((TiffTag)12);
+  if (wb->count != 4 || wb->type != TIFF_RATIONAL)
+    ThrowRDE("NEF Decoder: Whitebalance has unknown count or type");
+
+  const uint32* wba = wb->getIntArray();
+  if (!(wba[1] && wba[3] && wba[5] && wba[7]))
+    ThrowRDE("NEF Decoder: Whitebalance has zero value");
+
+  float wb_r = (float)wba[0] / (float)wba[1];
+  float wb_b = (float)wba[2] / (float)wba[3];
+  //float wb_g1 = (float)wba[4] / (float)wba[5];
+  //float wb_g2 = (float)wba[6] / (float)wba[7];
+
+  float inv_wb_r = 1.0f / wb_r;
+  float inv_wb_b = 1.0f / wb_b;
+
+  for (uint32 y = 0; y < h; y++) {
+    ushort16* dest = (ushort16*) & data[y*pitch];
+    for (uint32 x = 0 ; x < w*3; x += 6) {
+      /* Decoding method and coefficients taken from
+      http://www.rawdigger.com/howtouse/nikon-small-raw-internals */
+
+      uint32 g1 = *in++;
+      uint32 g2 = *in++;
+      uint32 g3 = *in++;
+      uint32 g4 = *in++;
+      uint32 g5 = *in++;
+      uint32 g6 = *in++;
+
+      float y1 = (float)(g1 | ((g2 & 0x0f) << 8));
+      float y2 = (float)((g2 >> 4) | (g3 << 4));
+      float cb = (float)(g4 | ((g5 & 0x0f) << 8));
+      float cr = (float)((g5 >> 4) | (g6 << 4));
+
+      float cb2 = cb;
+      float cr2 = cr;
+      // Interpolate right pixel. We assume the sample is aligned with left pixel.
+      if ((x+6) < w*3) {
+        g5 = in[4];
+        g6 = in[5];
+        cb2 = ((float)(g4 | ((g5 & 0x0f) << 8)) + cb)*0.5f;
+        cr2 = ((float)((g5 >> 4) | (g6 << 4)) + cr)* 0.5f;
+      }
+
+      // Scale Y to 2549 (maximum value determined by rawdigger)
+      y1 = y1 * (4096.0f/2549.0f);
+      y2 = y2 * (4096.0f/2549.0f);
+
+      // Center cb/cr on 0. cb/cr has maximum of +- 1280 (recommended  by rawdigger)
+      cb = (cb - 2048.0f)*(2048.0f/1280.0f);
+      cr = (cr - 2048.0f)*(2048.0f/1280.0f);
+      cb2 = (cb2 - 2048.0f)*(2048.0f/1280.0f);
+      cr2 = (cr2 - 2048.0f)*(2048.0f/1280.0f);
+
+      dest[x]   = clampbits((int)(inv_wb_r * curveValue(y1 + 1.40200f * cr)), 16);
+      dest[x+1] = clampbits((int)(curveValue(y1 - 0.34414f * cb - 0.71414f * cr)), 16);
+      dest[x+2] = clampbits((int)(inv_wb_b * curveValue(y1 + 1.77200f * cb)), 16);
+      dest[x+3] = clampbits((int)(inv_wb_r * curveValue(y2 + 1.40200f * cr2)), 16);
+      dest[x+4] = clampbits((int)(curveValue(y2 - 0.34414f * cb2 - 0.71414f * cr2)), 16);
+      dest[x+5] = clampbits((int)(inv_wb_b * curveValue(y2 + 1.77200f * cb2)), 16);
+    }
+  }
 }
 
 } // namespace RawSpeed

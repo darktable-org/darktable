@@ -118,6 +118,7 @@ RawImage ArwDecoder::decodeRawInternal() {
   mRaw->dim = iPoint2D(width, height);
   mRaw->createData();
 
+  ushort16 curve[0x4001];
   const ushort16* c = raw->getEntry(SONY_CURVE)->getShortArray();
   uint32 sony_curve[] = { 0, 0, 0, 0, 0, 4095 };
 
@@ -130,6 +131,9 @@ RawImage ArwDecoder::decodeRawInternal() {
   for (uint32 i = 0; i < 5; i++)
     for (uint32 j = sony_curve[i] + 1; j <= sony_curve[i+1]; j++)
       curve[j] = curve[j-1] + (1 << i);
+
+  if (!uncorrectedRawValues)
+    mRaw->setTable(curve, 0x4000, true);
 
   uint32 c2 = counts->getInt();
   uint32 off = offsets->getInt();
@@ -151,6 +155,13 @@ RawImage ArwDecoder::decodeRawInternal() {
   } catch (IOException &e) {
     mRaw->setError(e.what());
     // Let's ignore it, it may have delivered somewhat useful data.
+  }
+
+  // Set the table, if it should be needed later.
+  if (uncorrectedRawValues) {
+    mRaw->setTable(curve, 0x4000, false);
+  } else {
+    mRaw->setTable(NULL);
   }
 
   return mRaw;
@@ -273,6 +284,7 @@ void ArwDecoder::decodeThreaded(RawDecoderThread * t) {
     ushort16* dest = (ushort16*) & data[y*pitch];
     // Realign
     bits.setAbsoluteOffset((w*8*y) >> 3);
+    uint32 random = bits.peekBits(24);
 
     // Process 32 pixels (16x2) per loop.
     for (uint32 x = 0; x < w - 30;) {
@@ -292,10 +304,7 @@ void ArwDecoder::decodeThreaded(RawDecoderThread * t) {
           if (p > 0x7ff)
             p = 0x7ff;
         }
-        if (uncorrectedRawValues)
-          dest[x+i*2] = p;
-        else
-          dest[x+i*2] = curve[p << 1];
+        mRaw->setWithLookUp(p << 1, (uchar8*)&dest[x+i*2], &random);
       }
       x += x & 1 ? 31 : 1;  // Skip to next 32 pixels
     }

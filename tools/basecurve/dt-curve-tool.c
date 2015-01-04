@@ -1143,9 +1143,11 @@ fit:;
             opt.filename_exif ? model : "new measured tonecurve",
             TONECURVE_PARAMS_VERSION, encoded);
     fprintf(stdout, "\n\n\n"
-                    "# if it pleases you, then in iop/tonecurve.c append the following line to the array presets_from_basecurve and modify its name\n"
-                    "# {\"%s\", {{",
-                    opt.filename_exif ? model : "new measured tonecurve");
+                    "# if it pleases you, then in iop/tonecurve.c append the following line to the array preset_camera_curves and modify its name\n"
+                    "# {\"%s\", \"%s\", \"%s\", 0, 51200, {{",
+                    opt.filename_exif ? model : "new measured tonecurve",
+                    opt.filename_exif ? maker : "<MAKER>",
+                    opt.filename_exif ? model : "<MODEL>");
     for (int i=0; i<3; i++)
     {
       fprintf(stdout, "{");
@@ -1155,9 +1157,10 @@ fit:;
       }
       fprintf(stdout, "},");
     }
-    fprintf(stdout, "}, {%d, %d, %d}, {%d, %d, %d}, 0, 0, 0}},\n",
+    fprintf(stdout, "}, {%d, %d, %d}, {%d, %d, %d}, %d, 0, %d}},\n",
       params.tonecurve_nodes[0], params.tonecurve_nodes[1], params.tonecurve_nodes[2],
-      params.tonecurve_type[0], params.tonecurve_type[1], params.tonecurve_type[2]);
+      params.tonecurve_type[0], params.tonecurve_type[1], params.tonecurve_type[2],
+      params.tonecurve_autoscale_ab, params.tonecurve_unbound_ab);
   }
 
 exit:

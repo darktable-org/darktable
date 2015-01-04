@@ -109,7 +109,10 @@ void LJpegPlain::decodeScan() {
   if (pred == 1) {
     if (mCanonFlipDim)
       ThrowRDE("LJpegDecompressor::decodeScan: Cannot flip non subsampled images.");
-
+    if (mRaw->dim.y * mRaw->pitch >= 1<<28) {
+      decodeScanLeftGeneric();
+      return;
+    }
     if (frame.cps == 2)
       decodeScanLeft2Comps();
     else if (frame.cps == 3)
@@ -170,12 +173,13 @@ void LJpegPlain::decodeScanLeftGeneric() {
     pixGroup += samplesComp[i];
   }
 
-  mRaw->subsampling.x = maxSuperH;
-  mRaw->subsampling.y = maxSuperV;
+  mRaw->metadata.subsampling.x = maxSuperH;
+  mRaw->metadata.subsampling.y = maxSuperV;
 
   //Prepare slices (for CR2)
   uint32 slices = (uint32)slicesW.size() * (frame.h - skipY) / maxSuperV;
-  offset = new uint32[slices+1];
+  ushort16** imagePos = new ushort16*[slices+1];
+  int* sliceWidth = new int[slices+1];
 
   uint32 t_y = 0;
   uint32 t_x = 0;
@@ -188,27 +192,35 @@ void LJpegPlain::decodeScanLeftGeneric() {
   for (uint32 i = 0 ; i <  slicesW.size(); i++)
     slice_width[i] = slicesW[i] / pixGroup / maxSuperH; // This is a guess, but works for sRaw1+2.
 
+  if (skipX && (maxSuperV > 1 || maxSuperH > 1)) {
+    ThrowRDE("LJpegPlain::decodeScanLeftGeneric: Cannot skip right border in subsampled mode");
+  }
+  if (skipX) {
+    slice_width[slicesW.size()-1] -= skipX;
+  }
+
   for (slice = 0; slice < slices; slice++) {
-    offset[slice] = ((t_x + offX) * mRaw->getBpp() + ((offY + t_y) * mRaw->pitch)) | (t_s << 28);
-    _ASSERTE((offset[slice]&0x0fffffff) < mRaw->pitch*mRaw->dim.y);
+    imagePos[slice] = (ushort16*)&draw[(t_x + offX) * mRaw->getBpp() + ((offY + t_y) * mRaw->pitch)];
+    sliceWidth[slice] = slice_width[t_s];
     t_y += maxSuperV;
     if (t_y >= (frame.h - skipY)) {
       t_y = 0;
       t_x += slice_width[t_s++];
     }
   }
-  offset[slices] = offset[slices-1];        // Extra offset to avoid branch in loop.
+  delete[] slice_width;
+  slice_width = NULL;
 
-  if (skipX)
-    ThrowRDE("LJpegPlain::decodeScanLeftGeneric: Cannot skip right border in subsampled mode");
+  imagePos[slices] = imagePos[slices-1];      // Extra offset to avoid branch in loop.
+  sliceWidth[slices] = sliceWidth[slices-1];        // Extra offset to avoid branch in loop.
 
   // Predictors for components
   int p[4];
-  ushort16 *dest = (ushort16*) & draw[offset[0] & 0x0fffffff];
+  ushort16 *dest = imagePos[0];
 
   // Always points to next slice
   slice = 1;
-  uint32 pixInSlice = slice_width[0];
+  uint32 pixInSlice = sliceWidth[0];
 
   // Initialize predictors and decode one group.
   uint32 x = 0;
@@ -243,12 +255,10 @@ void LJpegPlain::decodeScanLeftGeneric() {
       if (0 == pixInSlice) { // Next slice
         if (slice > slices)
           ThrowRDE("LJpegPlain::decodeScanLeft: Ran out of slices");
-        uint32 o = offset[slice++];
-        dest = (ushort16*) & draw[o&0x0fffffff];  // Adjust destination for next pixel
-        if((o&0x0fffffff) > mRaw->pitch*mRaw->dim.y)
-          ThrowRDE("LJpegPlain::decodeScanLeft: Offset out of bounds");
-        pixInSlice = slice_width[o>>28];
+        pixInSlice = sliceWidth[slice];
+        dest = imagePos[slice];  // Adjust destination for next pixel
 
+        slice++;
         // If new are at the start of a new line, also update predictors.
         if (x == 0)
           predict = dest;
@@ -267,6 +277,15 @@ void LJpegPlain::decodeScanLeftGeneric() {
       dest += (maxSuperH * comps) - comps;
       pixInSlice -= maxSuperH;
     }
+
+    if (skipX) {
+      for (uint32 sx = 0; sx < skipX; sx++) {
+        for (uint32 i = 0; i < comps; i++) {
+          HuffDecode(dctbl[i]);
+        }
+      }
+    }
+
     // Update predictors
     for (uint32 i = 0; i < comps; i++) {
       p[i] = predict[i];
@@ -279,6 +298,8 @@ void LJpegPlain::decodeScanLeftGeneric() {
     predict = dest;
     x = 0;
   }
+  delete[] imagePos;
+  delete[] sliceWidth;
 }
 
 #define COMPS 3
@@ -305,8 +326,8 @@ void LJpegPlain::decodeScanLeft4_2_0() {
 
   ushort16 *predict;      // Prediction pointer
 
-  mRaw->subsampling.x = 2;
-  mRaw->subsampling.y = 2;
+  mRaw->metadata.subsampling.x = 2;
+  mRaw->metadata.subsampling.y = 2;
 
   uchar8 *draw = mRaw->getData();
   // Fix for Canon 6D mRaw, which has flipped width & height
@@ -432,8 +453,8 @@ void LJpegPlain::decodeScanLeft4_2_2() {
   HuffmanTable *dctbl2 = &huff[frame.compInfo[1].dcTblNo];
   HuffmanTable *dctbl3 = &huff[frame.compInfo[2].dcTblNo];
 
-  mRaw->subsampling.x = 2;
-  mRaw->subsampling.y = 1;
+  mRaw->metadata.subsampling.x = 2;
+  mRaw->metadata.subsampling.y = 1;
 
   ushort16 *predict;      // Prediction pointer
 

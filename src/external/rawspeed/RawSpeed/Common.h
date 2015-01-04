@@ -29,6 +29,11 @@
 #define MIN(a,b) min(a,b)
 #define MAX(a,b) max(a,b)
 typedef unsigned __int64 uint64;
+// MSVC may not have NAN
+#ifndef NAN
+  static const unsigned long __nan[2] = {0xffffffff, 0x7fffffff};
+  #define NAN (*(const float *) __nan)
+#endif
 #else // On linux
 #define _ASSERTE(a) void(a)
 #define _RPT0(a,b) 

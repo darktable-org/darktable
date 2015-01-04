@@ -85,6 +85,12 @@ if(USE_GEO)
 	set(MODULES ${MODULES} geotagging)
 endif(USE_GEO)
 
+# the module specific to print mode
+if(CUPS_FOUND)
+        add_library(print_settings MODULE "print_settings.c")
+	set(MODULES ${MODULES} print_settings)
+endif(CUPS_FOUND)
+
 # Add libs references
 foreach(module ${MODULES})
 	target_link_libraries(${module} ${LIBS})
@@ -96,4 +102,3 @@ endforeach(module)
 foreach(module ${MODULES})
 	install(TARGETS  ${module} DESTINATION ${LIB_INSTALL}/darktable/plugins/lighttable)
 endforeach(module)
-

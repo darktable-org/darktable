@@ -218,7 +218,7 @@ void Rw2Decoder::decodeMetaDataInternal(CameraMetaData *meta) {
   if (this->checkCameraSupported(meta, make, model, mode)) {
     setMetaData(meta, make, model, mode, iso);
   } else {
-    mRaw->mode = mode;
+    mRaw->metadata.mode = mode;
     _RPT1(0, "Mode not found in DB: %s", mode.c_str());
     setMetaData(meta, make, model, "", iso);
   }

@@ -1719,9 +1719,9 @@
 			<Alias>NIKON D800E</Alias>
 		</Aliases>
 	</Camera>
-	<Camera make="NIKON CORPORATION" model="NIKON D810" mode="rgb-uncompressed">
+	<Camera make="NIKON CORPORATION" model="NIKON D810" mode="sNEF-uncompressed">
 		<Crop x="0" y="0" width="0" height="0"/>
-		<Sensor black="0" white="4095"/>
+		<Sensor black="0" white="16384"/>
 		<Hints>
 			<Hint name="nikon_override_auto_black" value=""/>
 		</Hints>
@@ -1780,9 +1780,9 @@
 			<Hint name="nikon_override_auto_black" value=""/>
 		</Hints>
 	</Camera>
-	<Camera make="NIKON CORPORATION" model="NIKON D4S" mode="rgb-uncompressed">
+	<Camera make="NIKON CORPORATION" model="NIKON D4S" mode="sNEF-uncompressed">
 		<Crop x="0" y="0" width="0" height="0"/>
-		<Sensor black="0" white="4095"/>
+		<Sensor black="0" white="16384"/>
 		<Hints>
 			<Hint name="nikon_override_auto_black" value=""/>
 		</Hints>
@@ -1903,6 +1903,19 @@
 		</CFA>
 		<Crop x="0" y="0" width="0" height="-2"/>
 		<Sensor black="0" white="0"/>
+	</Camera>
+	<Camera make="NIKON CORPORATION" model="NIKON 1 S2" decoder_version="4">
+		<CFA width="2" height="2">
+			<Color x="0" y="0">RED</Color>
+			<Color x="1" y="0">GREEN</Color>
+			<Color x="0" y="1">GREEN</Color>
+			<Color x="1" y="1">BLUE</Color>
+		</CFA>
+		<Crop x="0" y="0" width="0" height="0"/>
+		<Sensor black="200" white="4095"/>
+    <Hints>
+      <Hint name="nikon_override_auto_black" value=""/>
+    </Hints>
 	</Camera>
 	<Camera make="NIKON CORPORATION" model="NIKON 1 V1" decoder_version="4">
 		<CFA width="2" height="2">

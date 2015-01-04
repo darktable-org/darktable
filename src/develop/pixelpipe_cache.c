@@ -40,12 +40,16 @@ int dt_dev_pixelpipe_cache_init(dt_dev_pixelpipe_cache_t *cache, int entries, si
   cache->used = (int32_t *)calloc(entries, sizeof(int32_t));
   for(int k = 0; k < entries; k++)
   {
-    cache->data[k] = (void *)dt_alloc_align(16, size);
-    if(!cache->data[k]) goto alloc_memory_fail;
-    cache->size[k] = size;
+    if(size)
+    { // allow 0 initial buffer size (yet unknown dimensions)
+      cache->data[k] = (void *)dt_alloc_align(16, size);
+      if(!cache->data[k]) goto alloc_memory_fail;
 #ifdef _DEBUG
-    memset(cache->data[k], 0x5d, size);
+      memset(cache->data[k], 0x5d, size);
 #endif
+    }
+    else cache->data[k] = 0;
+    cache->size[k] = size;
     cache->hash[k] = -1;
     cache->used[k] = 0;
   }

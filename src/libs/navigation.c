@@ -33,6 +33,10 @@ typedef struct dt_lib_navigation_t
 {
   int dragging;
   int zoom_w, zoom_h;
+  unsigned char* buffer;
+  int wd;
+  int ht;
+  int timestamp;
 } dt_lib_navigation_t;
 
 
@@ -92,6 +96,11 @@ void gui_init(dt_lib_module_t *self)
   dt_lib_navigation_t *d = (dt_lib_navigation_t *)g_malloc0(sizeof(dt_lib_navigation_t));
   self->data = (void *)d;
 
+  d->buffer = NULL;
+  d->wd = -1;
+  d->ht = -1;
+  d->timestamp = -1;
+
   /* create drawingarea */
   self->widget = gtk_drawing_area_new();
   gtk_widget_set_events(self->widget, GDK_EXPOSURE_MASK | GDK_POINTER_MOTION_MASK
@@ -126,6 +135,9 @@ void gui_cleanup(dt_lib_module_t *self)
   /* disconnect from signal */
   dt_control_signal_disconnect(darktable.signals, G_CALLBACK(_lib_navigation_control_redraw_callback), self);
 
+  dt_lib_navigation_t *d = self->data;
+  g_free(d->buffer);
+
   g_free(self->data);
   self->data = NULL;
 }
@@ -144,7 +156,28 @@ static gboolean _lib_navigation_draw_callback(GtkWidget *widget, cairo_t *cr, gp
 
   dt_develop_t *dev = darktable.develop;
 
-  if(dev->preview_status != DT_DEV_PIXELPIPE_VALID) return FALSE;
+  /* double buffering of image data: only take new data if valid */
+  if(dev->preview_pipe->backbuf && dev->preview_status == DT_DEV_PIXELPIPE_VALID)
+  {
+    /* re-allocate in case of changed image dimensions */
+    if(d->buffer == NULL || dev->preview_pipe->backbuf_width != d->wd || dev->preview_pipe->backbuf_height != d->ht)
+    {
+      g_free(d->buffer);
+      d->wd = dev->preview_pipe->backbuf_width;
+      d->ht = dev->preview_pipe->backbuf_height;
+      d->buffer = g_malloc0((size_t)d->wd * d->ht * 4 * sizeof(unsigned char));
+    }
+
+    /* update buffer if new data is available */
+    if(d->buffer && dev->preview_pipe->input_timestamp > d->timestamp)
+    {
+      dt_pthread_mutex_t *mutex = &dev->preview_pipe->backbuf_mutex;
+      dt_pthread_mutex_lock(mutex);
+      memcpy(d->buffer, dev->preview_pipe->backbuf, (size_t)d->wd * d->ht * 4 * sizeof(unsigned char));
+      d->timestamp = dev->preview_pipe->input_timestamp;
+      dt_pthread_mutex_unlock(mutex);
+    }
+  }
 
   /* get the current style */
   GdkRGBA color;
@@ -161,17 +194,16 @@ static gboolean _lib_navigation_draw_callback(GtkWidget *widget, cairo_t *cr, gp
   cairo_translate(cr, inset, inset);
 
   /* draw navigation image if available */
-  if(dev->preview_pipe->backbuf && (dev->preview_status == DT_DEV_PIXELPIPE_VALID))
+  if(d->buffer)
   {
-    dt_pthread_mutex_t *mutex = &dev->preview_pipe->backbuf_mutex;
-    dt_pthread_mutex_lock(mutex);
-    const int wd = dev->preview_pipe->backbuf_width;
-    const int ht = dev->preview_pipe->backbuf_height;
+    cairo_save(cr);
+    const int wd = d->wd;
+    const int ht = d->ht;
     const float scale = fminf(width / (float)wd, height / (float)ht);
 
     const int stride = cairo_format_stride_for_width(CAIRO_FORMAT_RGB24, wd);
     cairo_surface_t *surface
-        = cairo_image_surface_create_for_data(dev->preview_pipe->backbuf, CAIRO_FORMAT_RGB24, wd, ht, stride);
+        = cairo_image_surface_create_for_data(d->buffer, CAIRO_FORMAT_RGB24, wd, ht, stride);
     cairo_translate(cr, width / 2.0, height / 2.0f);
     cairo_scale(cr, scale, scale);
     cairo_translate(cr, -.5f * wd, -.5f * ht);
@@ -192,8 +224,6 @@ static gboolean _lib_navigation_draw_callback(GtkWidget *widget, cairo_t *cr, gp
     cairo_fill(cr);
     cairo_surface_destroy(surface);
 
-    dt_pthread_mutex_unlock(mutex);
-
     // draw box where we are
     dt_dev_zoom_t zoom = dt_control_get_dev_zoom();
     int closeup = dt_control_get_dev_closeup();
@@ -207,7 +237,6 @@ static gboolean _lib_navigation_draw_callback(GtkWidget *widget, cairo_t *cr, gp
     {
       float boxw = 1, boxh = 1;
       dt_dev_check_zoom_bounds(darktable.develop, &zoom_x, &zoom_y, zoom, closeup, &boxw, &boxh);
-
       cairo_translate(cr, wd * (.5f + zoom_x), ht * (.5f + zoom_y));
       cairo_set_source_rgb(cr, 0., 0., 0.);
       cairo_set_line_width(cr, 1.f / scale);
@@ -219,10 +248,10 @@ static gboolean _lib_navigation_draw_callback(GtkWidget *widget, cairo_t *cr, gp
       cairo_rectangle(cr, -boxw / 2, -boxh / 2, boxw, boxh);
       cairo_stroke(cr);
     }
+    cairo_restore(cr);
     if(fabsf(cur_scale - min_scale) > 0.001f)
     {
       /* Zoom % */
-      cairo_identity_matrix(cr);
       cairo_translate(cr, 0, height);
       cairo_set_source_rgba(cr, 1., 1., 1., 0.5);
       cairo_select_font_face(cr, "sans-serif", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_BOLD);
@@ -250,7 +279,6 @@ static gboolean _lib_navigation_draw_callback(GtkWidget *widget, cairo_t *cr, gp
     else
     {
       // draw the zoom-to-fit icon
-      cairo_identity_matrix(cr);
       cairo_translate(cr, 0, height);
       cairo_set_source_rgb(cr, 0.6, 0.6, 0.6);
       cairo_text_extents_t ext;
@@ -419,9 +447,8 @@ static gboolean _lib_navigation_button_press_callback(GtkWidget *widget, GdkEven
   gtk_widget_get_allocation(widget, &allocation);
   int w = allocation.width;
   int h = allocation.height;
-  if(event->x >= w - 2 * DT_NAVIGATION_INSET - d->zoom_h - d->zoom_w
-     && event->y <= w - 2 * DT_NAVIGATION_INSET && event->y >= h - 2 * DT_NAVIGATION_INSET - d->zoom_h
-     && event->y <= h - 2 * DT_NAVIGATION_INSET)
+  if(event->x >= w - DT_NAVIGATION_INSET - d->zoom_h - d->zoom_w
+     && event->y >= h - DT_NAVIGATION_INSET - d->zoom_h)
   {
     // we show the zoom menu
     GtkMenuShell *menu = GTK_MENU_SHELL(gtk_menu_new());

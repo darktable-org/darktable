@@ -110,17 +110,17 @@ RawImage RafDecoder::decodeRawInternal() {
     if (wb->count != 3)
       ThrowRDE("RAF: WB has %d entries instead of 3");
     const uint32 *tmp = wb->getIntArray();
-    mRaw->wbCoeffs[0] = tmp[1];
-    mRaw->wbCoeffs[1] = tmp[0];
-    mRaw->wbCoeffs[2] = tmp[2];
+    mRaw->metadata.wbCoeffs[0] = (float)tmp[1];
+    mRaw->metadata.wbCoeffs[1] = (float)tmp[0];
+    mRaw->metadata.wbCoeffs[2] = (float)tmp[2];
   } else if (raw->hasEntry(FUJIOLDWB)) {
     TiffEntry *wb = raw->getEntry(FUJIOLDWB);
     if (wb->count != 8)
       ThrowRDE("RAF: WB has %d bytes instead of 8", wb->count);
     const ushort16 *tmp = wb->getShortArray();
-    mRaw->wbCoeffs[0] = tmp[1];
-    mRaw->wbCoeffs[1] = tmp[0];
-    mRaw->wbCoeffs[2] = tmp[3];
+    mRaw->metadata.wbCoeffs[0] = (float)tmp[1];
+    mRaw->metadata.wbCoeffs[1] = (float)tmp[0];
+    mRaw->metadata.wbCoeffs[2] = (float)tmp[3];
   }
 
   return mRaw;
@@ -155,7 +155,7 @@ void RafDecoder::decodeMetaDataInternal(CameraMetaData *meta) {
   int iso = 0;
   if (mRootIFD->hasEntryRecursive(ISOSPEEDRATINGS))
     iso = mRootIFD->getEntryRecursive(ISOSPEEDRATINGS)->getInt();
-  mRaw->isoSpeed = iso;
+  mRaw->metadata.isoSpeed = iso;
 
   // This is where we'd normally call setMetaData but since we may still need
   // to rotate the image for SuperCCD cameras we do everything ourselves
@@ -201,9 +201,8 @@ void RafDecoder::decodeMetaDataInternal(CameraMetaData *meta) {
     iPoint2D final_size(rotatedsize, rotatedsize-1);
     RawImage rotated = RawImage::create(final_size, TYPE_USHORT16, 1);
     rotated->clearArea(iRectangle2D(iPoint2D(0,0), rotated->dim));
-    rotated->fujiRotationPos = rotationPos;
-    for (int i=0; i<3; i++)
-      rotated->wbCoeffs[i] = mRaw->wbCoeffs[i];
+    rotated->metadata = mRaw->metadata;
+    rotated->metadata.fujiRotationPos = rotationPos;
 
     int dest_pitch = (int)rotated->pitch / 2;
     ushort16 *dst = (ushort16*)rotated->getData(0,0);

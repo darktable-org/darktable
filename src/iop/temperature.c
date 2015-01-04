@@ -524,22 +524,14 @@ void reload_defaults(dt_iop_module_t *module)
   if(!module->dev) goto end;
 
   // raw images need wb:
-  module->default_enabled = dt_image_is_raw(&module->dev->image_storage)
-                            && !module->dev->image_storage.pre_applied_wb;
+  module->default_enabled = dt_image_is_raw(&module->dev->image_storage);
 
   // get white balance coefficients, as shot
   char filename[PATH_MAX] = { 0 };
   int ret = 0;
 
   /* check if file is raw / hdr */
-  if(dt_image_is_raw(&module->dev->image_storage)
-     &&
-     /*
-      * ugly nikon hack: d810 sraws have WB pre-applied,
-      * but it is still stored inside.
-      * once we move WB coeffs reading into RS, this can be deleted.
-      */
-     !module->dev->image_storage.pre_applied_wb)
+  if(dt_image_is_raw(&module->dev->image_storage))
   {
     gboolean from_cache = TRUE;
     dt_image_full_path(module->dev->image_storage.id, filename, sizeof(filename), &from_cache);
@@ -564,12 +556,12 @@ void reload_defaults(dt_iop_module_t *module)
         for(int k = 0; k < 3; k++) tmp.coeffs[k] = raw->color.pre_mul[k];
       }
 
-/*      for(int k = 0; k < 3; k++) {*/
-/*        float libraw = tmp.coeffs[k];*/
-/*        float rawspeed = module->dev->image_storage.wb_coeffs[k];*/
-/*        if (libraw != rawspeed)*/
-/*          fprintf(stderr, "Coeff %d is %f in libraw and %f in rawspeed\n", k, libraw, rawspeed);*/
-/*      }*/
+      /* for(int k = 0; k < 3; k+=2) {
+        float libraw = tmp.coeffs[k]/tmp.coeffs[1];
+        float rawspeed = module->dev->image_storage.wb_coeffs[k]/module->dev->image_storage.wb_coeffs[1];
+        if (libraw != rawspeed)
+          fprintf(stderr, "Coeff %d is %f in libraw and %f in rawspeed\n", k, libraw, rawspeed);
+      }*/
 
       if(tmp.coeffs[0] == 0 || tmp.coeffs[1] == 0 || tmp.coeffs[2] == 0)
       {
