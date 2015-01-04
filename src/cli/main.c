@@ -71,7 +71,8 @@ static void generate_thumbnail_cache()
 
   // go through all images:
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select id from images", -1, &stmt, 0);
-  uint8_t *tmp = (uint8_t *)dt_alloc_align(16, 1280*720*4);
+  // could only alloc max_mip-1, but would need to detect the special case that max==0.
+  uint8_t *tmp = (uint8_t *)dt_alloc_align(16, 4*darktable.mipmap_cache->max_width[max_mip]*darktable.mipmap_cache->max_height[max_mip]);
   if(!tmp)
   {
     fprintf(stderr, "couldn't allocate temporary memory!\n");
