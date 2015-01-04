@@ -44,7 +44,6 @@ typedef struct dt_lib_collect_rule_t
   GtkComboBox *combo;
   GtkWidget *text;
   GtkWidget *button;
-  gboolean typing;
 } dt_lib_collect_rule_t;
 
 typedef struct dt_lib_collect_t
@@ -83,10 +82,6 @@ typedef enum dt_lib_collect_cols_t
   DT_LIB_COLLECT_NUM_COLS
 } dt_lib_collect_cols_t;
 
-static void _lib_collect_gui_update(dt_lib_module_t *self);
-static void entry_changed(GtkWidget *entry, gchar *new_text, gint new_length, gpointer *position,
-                          dt_lib_collect_rule_t *d);
-
 const char *name()
 {
   return _("collect images");
@@ -96,8 +91,10 @@ void init_presets(dt_lib_module_t *self)
 {
 }
 
+static void _lib_collect_gui_update(dt_lib_module_t *self);
 static void row_activated(GtkTreeView *view, GtkTreePath *path, GtkTreeViewColumn *col, dt_lib_collect_t *d);
-static void update_selection (dt_lib_collect_rule_t *dr);
+static void update_selection (dt_lib_collect_rule_t *dr, gboolean exact);
+static void entry_changed (GtkEditable *editable, dt_lib_collect_rule_t *d);
 
 /* Update the params struct with active ruleset */
 static void _lib_collect_update_params(dt_lib_collect_t *d)
@@ -200,8 +197,30 @@ static dt_lib_collect_t* get_collect(dt_lib_collect_rule_t *r)
   return d;
 }
 
+static gboolean match_string (GtkTreeModel *model, GtkTreePath *path, GtkTreeIter *iter, gpointer data)
+{
+  // we just search for an entry which begin like the text in the entry
+  
+  dt_lib_collect_rule_t *dr = (dt_lib_collect_rule_t *) data;
+  gchar *val = NULL;
 
-static gboolean match_string(GtkTreeModel *model, GtkTreePath *path, GtkTreeIter *iter, gpointer data)
+  const int item = gtk_combo_box_get_active(GTK_COMBO_BOX(dr->combo));
+  if(item == DT_COLLECTION_PROP_FILMROLL || item == DT_COLLECTION_PROP_TAG || item == DT_COLLECTION_PROP_FOLDERS)
+    gtk_tree_model_get (model, iter, DT_LIB_COLLECT_COL_PATH, &val, -1);
+  else
+    gtk_tree_model_get (model, iter, DT_LIB_COLLECT_COL_TEXT, &val, -1);
+
+  // if the path start with the entry text, then we expand
+  if (g_str_has_prefix(val,gtk_entry_get_text(GTK_ENTRY(dr->text))))
+  {
+    dt_lib_collect_t *d = get_collect(dr);
+    gtk_tree_view_expand_to_path(d->view, path);
+  }
+
+  return FALSE;
+}
+
+static gboolean match_string_exact(GtkTreeModel *model, GtkTreePath *path, GtkTreeIter *iter, gpointer data)
 {
   // TODO handle wildcards at the beginning of the entry text
   
@@ -367,7 +386,7 @@ static void folders_view(dt_lib_collect_rule_t *dr)
   gtk_widget_set_no_show_all(GTK_WIDGET(d->scrolledwindow), FALSE);
   gtk_widget_show_all(GTK_WIDGET(d->scrolledwindow));
 
-  update_selection(dr);
+  update_selection(dr, TRUE);
   
   g_object_unref(d->treemodel);
 }
@@ -738,7 +757,7 @@ entry_key_press_exit:
   g_object_unref(listmodel);
 }
 
-static void update_selection(dt_lib_collect_rule_t *dr)
+static void update_selection(dt_lib_collect_rule_t *dr, gboolean exact)
 {
   dt_lib_collect_t *d = get_collect(dr);
   GtkTreeModel *model = gtk_tree_view_get_model(d->view);
@@ -748,7 +767,8 @@ static void update_selection(dt_lib_collect_rule_t *dr)
   gtk_tree_view_collapse_all(d->view);
   
   // we crawl throught the tree to find what we want
-  gtk_tree_model_foreach (model, (GtkTreeModelForeachFunc)match_string, dr);
+  if (exact) gtk_tree_model_foreach (model, (GtkTreeModelForeachFunc)match_string_exact, dr);
+  else gtk_tree_model_foreach (model, (GtkTreeModelForeachFunc)match_string, dr);
 }
 
 static void update_view(dt_lib_collect_rule_t *dr)
@@ -832,7 +852,6 @@ static void _lib_collect_gui_update(dt_lib_module_t *self)
       gtk_editable_set_position(GTK_EDITABLE(d->rule[i].text), -1);
       g_signal_handlers_unblock_matched(d->rule[i].text, G_SIGNAL_MATCH_FUNC, 0, 0, NULL, entry_changed, NULL);
       g_free(text);
-      d->rule[i].typing = FALSE;
     }
 
     GtkDarktableButton *button = DTGTK_BUTTON(d->rule[i].button);
@@ -895,7 +914,6 @@ static void row_activated(GtkTreeView *view, GtkTreePath *path, GtkTreeViewColum
   gchar *text;
 
   const int active = d->active_rule;
-  d->rule[active].typing = FALSE;
 
   const int item = gtk_combo_box_get_active(GTK_COMBO_BOX(d->rule[active].combo));
   if(item == DT_COLLECTION_PROP_FILMROLL || // get full path for film rolls
@@ -921,17 +939,16 @@ static void row_activated(GtkTreeView *view, GtkTreePath *path, GtkTreeViewColum
 static void entry_activated(GtkWidget *entry, dt_lib_collect_rule_t *d)
 {
   // we update the selection
-  update_selection(d);
+  update_selection(d, TRUE);
   // we save the params
   set_properties(d);
   // and we update the query
   dt_collection_update_query(darktable.collection);
 }
 
-static void entry_changed(GtkWidget *entry, gchar *new_text, gint new_length, gpointer *position,
-                          dt_lib_collect_rule_t *d)
+static void entry_changed(GtkEditable *editable, dt_lib_collect_rule_t *d)
 {
-  d->typing = TRUE;
+  update_selection(d, FALSE);
 }
 
 int position()
@@ -1099,7 +1116,6 @@ static void menuitem_clear(GtkMenuItem *menuitem, dt_lib_collect_rule_t *d)
     dt_conf_set_int("plugins/lighttable/collect/mode0", DT_LIB_COLLECT_MODE_AND);
     dt_conf_set_int("plugins/lighttable/collect/item0", 0);
     dt_conf_set_string("plugins/lighttable/collect/string0", "");
-    d->typing = FALSE;
     gtk_combo_box_set_active(d->combo, 0);
     gtk_entry_set_text(GTK_ENTRY(d->text), "");
   }
@@ -1182,7 +1198,6 @@ void gui_init(dt_lib_module_t *self)
 
   self->data = (void *)d;
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
-  //   gtk_widget_set_size_request(self->widget, 100, -1);
   d->active_rule = 0;
   d->params = (dt_lib_collect_params_t *)malloc(sizeof(dt_lib_collect_params_t));
 
@@ -1192,7 +1207,6 @@ void gui_init(dt_lib_module_t *self)
   for(int i = 0; i < MAX_RULES; i++)
   {
     d->rule[i].num = i;
-    d->rule[i].typing = FALSE;
     box = GTK_BOX(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5));
     d->rule[i].hbox = GTK_WIDGET(box);
     gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(box), TRUE, TRUE, 0);
@@ -1211,7 +1225,7 @@ void gui_init(dt_lib_module_t *self)
     /* xgettext:no-c-format */
     g_object_set(G_OBJECT(w), "tooltip-text", _("type your query, use `%' as wildcard"), (char *)NULL);
     gtk_widget_add_events(w, GDK_KEY_PRESS_MASK);
-    g_signal_connect(G_OBJECT(w), "insert-text", G_CALLBACK(entry_changed), d->rule + i);
+    g_signal_connect(G_OBJECT(w), "changed", G_CALLBACK(entry_changed), d->rule + i);
     g_signal_connect(G_OBJECT(w), "activate", G_CALLBACK(entry_activated), d->rule + i);
     gtk_box_pack_start(box, w, TRUE, TRUE, 0);
     w = dtgtk_button_new(dtgtk_cairo_paint_presets, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER);
