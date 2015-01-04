@@ -45,6 +45,7 @@ typedef struct dt_lib_collect_rule_t
   GtkWidget *text;
   GtkWidget *button;
   gboolean typing;
+  int nb_match;
 } dt_lib_collect_rule_t;
 
 typedef struct dt_lib_collect_t
@@ -114,6 +115,7 @@ void init_presets(dt_lib_module_t *self)
 }
 
 static void row_activated(GtkTreeView *view, GtkTreePath *path, GtkTreeViewColumn *col, dt_lib_collect_t *d);
+static void update_selection (dt_lib_collect_rule_t *dr);
 
 /* Update the params struct with active ruleset */
 static void _lib_collect_update_params(dt_lib_collect_t *d)
@@ -642,52 +644,128 @@ static void _show_filmroll_present(GtkTreeViewColumn *column, GtkCellRenderer *r
 }
 
 */
+
+static dt_lib_collect_t* get_collect(dt_lib_collect_rule_t *r)
+{
+  dt_lib_collect_t *d = (dt_lib_collect_t *)(((char *)r) - r->num*sizeof(dt_lib_collect_rule_t));
+  return d;
+}
+
+
 static gboolean match_string(GtkTreeModel *model, GtkTreePath *path, GtkTreeIter *iter, gpointer data)
 {
-  dt_lib_collect_rule_t *dr = (dt_lib_collect_rule_t *)data;
+  // TODO handle wildcards at the beginning of the entry text
+  
+  dt_lib_collect_rule_t *dr = (dt_lib_collect_rule_t *) data;
+  gchar *val = NULL;
+
+  const int item = gtk_combo_box_get_active(GTK_COMBO_BOX(dr->combo));
+  if(item == DT_COLLECTION_PROP_FILMROLL || item == DT_COLLECTION_PROP_TAG || item == DT_COLLECTION_PROP_FOLDERS)
+    gtk_tree_model_get (model, iter, DT_LIB_COLLECT_COL_PATH, &val, -1);
+  else
+    gtk_tree_model_get (model, iter, DT_LIB_COLLECT_COL_TEXT, &val, -1);
+
+
+  gchar *txt = g_strdup(gtk_entry_get_text(GTK_ENTRY(dr->text)));
+  
+  // if the entry and the path are exactly equals, then expand,select and stop the foreach
+  if (strcmp(val,txt) == 0)
+  {
+    dt_lib_collect_t *d = get_collect(dr);
+    gtk_tree_view_expand_to_path(d->view, path);
+    gtk_tree_selection_select_path(gtk_tree_view_get_selection(d->view), path);
+    g_free(txt);
+    return TRUE;
+  }
+  
+  //we get the basepath to expand row if needed
+  gchar *f = NULL;
+  if (item == DT_COLLECTION_PROP_TAG) f = g_strrstr(txt,"|");
+  else if (item == DT_COLLECTION_PROP_TAG) f = g_strrstr(txt,"/");
+  
+  if (!f)
+  {
+    g_free(txt);
+    return FALSE;
+  }
+  gchar *end = txt + strlen(txt) - strlen(f) + 1;
+  *(end) = 0;
+  gchar *txt2 = g_strconcat(txt,"%",NULL);
+  
+  // and we compare that to the path, to see if we have to expand it
+  if (strcmp(val,txt2) == 0)
+  {
+    dt_lib_collect_t *d = get_collect(dr);
+    gtk_tree_view_expand_to_path(d->view, path);
+  }
+  g_free(txt);
+  g_free(txt2);
+
+  return FALSE;
+}
+
+
+/*
+static gboolean match_string2 (GtkTreeModel *model, GtkTreePath *path, GtkTreeIter *iter, gpointer data)
+{
+  dt_lib_collect_rule_t *dr = (dt_lib_collect_rule_t *) data;
   gchar *str = NULL;
   gboolean cur_state, visible;
 
-  gtk_tree_model_get(model, iter, DT_LIB_COLLECT_COL_PATH, &str, DT_LIB_COLLECT_COL_VISIBLE, &cur_state, -1);
+  const int item = gtk_combo_box_get_active(GTK_COMBO_BOX(dr->combo));
+  if(item == DT_COLLECTION_PROP_FILMROLL || item == DT_COLLECTION_PROP_TAG || item == DT_COLLECTION_PROP_FOLDERS)
+    gtk_tree_model_get (model, iter, DT_LIB_COLLECT_COL_PATH, &str, DT_LIB_COLLECT_COL_VISIBLE, &cur_state, -1);
+  else
+    gtk_tree_model_get (model, iter, DT_LIB_COLLECT_COL_TEXT, &str, DT_LIB_COLLECT_COL_VISIBLE, &cur_state, -1);
 
-  if(dr->typing == FALSE && !cur_state)
+
+  gchar *haystack = g_utf8_strdown(str, -1), *needle = g_utf8_strdown(gtk_entry_get_text(GTK_ENTRY(dr->text)), -1);
+  
+  // if the path ends with some wildcard, we remove it
+  if (g_str_has_suffix(haystack,"/%") || g_str_has_suffix(haystack,"|%"))
   {
-    visible = TRUE;
+    gchar *end = haystack + strlen(haystack) - 2;
+    *(end) = 0;
+  }
+  // we take care of starting and finishing wildcard (no central ones, too complex)
+  if (g_str_has_prefix(needle,"%"))
+  {
+    gchar *n2 = needle+1;
+    if (g_str_has_suffix(needle,"%"))
+    {
+      gchar *end = needle + strlen(needle) - 1;
+      *(end) = 0;
+      printf("comp x-x %s %s\n",haystack,n2);
+      visible = (g_strrstr(haystack, n2) != NULL);
+    }
+    else
+    {
+      printf("comp x- %s %s\n",haystack,n2);
+      visible = (g_str_has_suffix(haystack,n2));
+    }
+  }
+  else if (g_str_has_suffix(needle,"%"))
+  {
+    gchar *end = needle + strlen(needle) - 1;
+    *(end) = 0;
+    printf("comp -x %s %s\n",haystack,needle);
+    visible = (g_str_has_prefix(haystack,needle));
   }
   else
   {
-    gchar *haystack = g_utf8_strdown(str, -1),
-          *needle = g_utf8_strdown(gtk_entry_get_text(GTK_ENTRY(dr->text)), -1);
-    visible = (g_strrstr(haystack, needle) != NULL);
-    g_free(haystack);
-    g_free(needle);
+    printf("comp - %s %s\n",haystack,needle);
+    visible = (strcmp(haystack,needle) == 0);
   }
 
-  gtk_tree_store_set(GTK_TREE_STORE(model), iter, DT_LIB_COLLECT_COL_VISIBLE, visible, -1);
+  g_free(haystack);
+  g_free(needle);
+
+
+  if (visible) dr->nb_match += 1;
+  
+  gtk_tree_store_set (GTK_TREE_STORE(model), iter, DT_LIB_COLLECT_COL_VISIBLE, visible, -1);
   return FALSE;
 }
-
-
-static gboolean reveal_func(GtkTreeModel *model, GtkTreePath *path, GtkTreeIter *iter, gpointer data)
-{
-  gboolean state;
-  GtkTreeIter parent, child = *iter;
-  gchar *str;
-
-  gtk_tree_model_get(model, iter, DT_LIB_COLLECT_COL_PATH, &str, DT_LIB_COLLECT_COL_VISIBLE, &state, -1);
-  if(!state) return FALSE;
-
-  while(gtk_tree_model_iter_parent(model, &parent, &child))
-  {
-    gtk_tree_model_get(model, &parent, DT_LIB_COLLECT_COL_PATH, &str, DT_LIB_COLLECT_COL_VISIBLE, &state, -1);
-    gtk_tree_store_set(GTK_TREE_STORE(model), &parent, DT_LIB_COLLECT_COL_VISIBLE, TRUE, -1);
-    child = parent;
-  }
-
-  return FALSE;
-}
-
-
 static gboolean expand_row(GtkTreeModel *model, GtkTreePath *path, GtkTreeIter *iter, GtkTreeView *view)
 {
   gboolean state;
@@ -698,7 +776,20 @@ static gboolean expand_row(GtkTreeModel *model, GtkTreePath *path, GtkTreeIter *
 
   return FALSE;
 }
-/*
+static gboolean expand_select_row (GtkTreeModel *model, GtkTreePath *path, GtkTreeIter *iter, GtkTreeView *view)
+{
+  gboolean state;
+  gtk_tree_model_get (model, iter, DT_LIB_COLLECT_COL_VISIBLE, &state, -1);
+
+  if (state)
+  {
+    gtk_tree_view_expand_to_path(view, path);
+    gtk_tree_selection_select_path(gtk_tree_view_get_selection(view), path);
+  }
+
+  return FALSE;
+}
+
 static void expand_tree(GtkTreeView *view, dt_lib_collect_rule_t *dr)
 {
   GtkTreeModel *model = gtk_tree_view_get_model(view);
@@ -709,16 +800,9 @@ static void expand_tree(GtkTreeView *view, dt_lib_collect_rule_t *dr)
   }
 }
 */
-static void refilter(GtkTreeModel *model, gpointer data)
-{
-  gtk_tree_model_foreach(model, (GtkTreeModelForeachFunc)match_string, data);
-
-  gtk_tree_model_foreach(model, (GtkTreeModelForeachFunc)reveal_func, NULL);
-}
 
 static void _lib_folders_update_collection(const gchar *filmroll)
 {
-
   gchar *complete_query = NULL;
 
   // remove from selected images where not in this query.
@@ -760,12 +844,6 @@ void destroy_widget(gpointer data)
   GtkWidget *widget = (GtkWidget *)data;
 
   gtk_widget_destroy(widget);
-}
-
-static dt_lib_collect_t *get_collect(dt_lib_collect_rule_t *r)
-{
-  dt_lib_collect_t *d = (dt_lib_collect_t *)(((char *)r) - r->num * sizeof(dt_lib_collect_rule_t));
-  return d;
 }
 
 static void set_properties(dt_lib_collect_rule_t *dr)
@@ -878,7 +956,7 @@ static void folders_view(dt_lib_collect_rule_t *dr)
   gtk_widget_show_all(GTK_WIDGET(d->scrolledwindow));
 
   // TODO : we have to expand and select a row, if needed
-  refilter(d->treemodel,dr);
+  update_selection(dr);
   
   g_object_unref(d->treemodel);
 }
@@ -1020,8 +1098,8 @@ static void tags_view(dt_lib_collect_rule_t *dr)
       gtk_tree_path_free(path);
     }
   }
-  else
-    gtk_tree_model_foreach(tagsmodel, (GtkTreeModelForeachFunc)expand_row, view);
+  //else
+  //  gtk_tree_model_foreach(tagsmodel, (GtkTreeModelForeachFunc)expand_row, view);
   g_object_unref(tagsmodel);
 }
 
@@ -1255,7 +1333,15 @@ entry_key_press_exit:
 
 static void update_selection(dt_lib_collect_rule_t *dr)
 {
-  // TODO
+  dt_lib_collect_t *d = get_collect(dr);
+  GtkTreeModel *model = gtk_tree_view_get_model(d->view);
+  
+  // we deselect and collapse everything
+  gtk_tree_selection_unselect_all(gtk_tree_view_get_selection(d->view));
+  gtk_tree_view_collapse_all(d->view);
+  
+  // we crawl throught the tree to find what we want
+  gtk_tree_model_foreach (model, (GtkTreeModelForeachFunc)match_string, dr);
 }
 
 static void update_view(dt_lib_collect_rule_t *dr)
@@ -1428,7 +1514,6 @@ static void row_activated(GtkTreeView *view, GtkTreePath *path, GtkTreeViewColum
 
 static void entry_activated(GtkWidget *entry, dt_lib_collect_rule_t *d)
 {
-  d->typing = FALSE;
   // we update the selection
   update_selection(d);
   // we save the params
