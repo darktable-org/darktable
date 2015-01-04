@@ -311,12 +311,12 @@ void init(dt_imageio_module_storage_t *self)
 
 void *get_params(dt_imageio_module_storage_t *self)
 {
-  const dt_view_t *cv = dt_view_manager_get_current_view(darktable.view_manager);
   dt_imageio_disk_t *d = (dt_imageio_disk_t *)calloc(1, sizeof(dt_imageio_disk_t));
 
+#ifdef BUILD_PRINT
   // we reuse the disk module for the print module, in the print view get the
   // corresponding parameters.
-
+  const dt_view_t *cv = dt_view_manager_get_current_view(darktable.view_manager);
   if (cv->view(cv) == DT_VIEW_PRINT)
   {
     char *text = dt_conf_get_string("plugins/imageio/storage/print/file_directory");
@@ -325,6 +325,7 @@ void *get_params(dt_imageio_module_storage_t *self)
     d->overwrite = dt_conf_get_bool("plugins/imageio/storage/print/overwrite");
   }
   else
+#endif
   {
     char *text = dt_conf_get_string("plugins/imageio/storage/disk/file_directory");
     g_strlcpy(d->filename, text, sizeof(d->filename));
