@@ -457,23 +457,6 @@ void NefDecoder::decodeMetaDataInternal(CameraMetaData *meta) {
     mRaw->whitePoint = white;
   if (black >= 0 && hints.find(string("nikon_override_auto_black")) == hints.end())
     mRaw->blackLevel = black;
-
-  // Allow overriding individual blacklevels. Values are in CFA order
-  // (the same order as the in the CFA tag)
-  // A hint could be:
-  // <Hint name="nikon_rgb_black" value="10,20,30,20"/>
-  //
-  if (hints.find(string("nikon_rgb_black")) == hints.end()) {
-    string rgb = hints.find(string("nikon_cfa_black"))->second;
-    vector<string> v = split_string(rgb, ',');
-    if (v.size() != 4) {
-      mRaw->setError("Expected 4 values '10,20,30,20' as values for nikon_cfa_black hint.");
-    } else {
-      for (int i = 0; i < 4; i++) {
-        mRaw->blackLevelSeparate[i] = atoi(v[i].c_str());
-      }
-    }
-  }
 }
 
 
