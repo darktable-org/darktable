@@ -781,7 +781,7 @@ static void set_properties(dt_lib_collect_rule_t *dr)
   dt_conf_set_int(confname, property);
 }
 
-static void show_folders(dt_lib_collect_rule_t *dr)
+static void folders_view(dt_lib_collect_rule_t *dr)
 {
  // TODO take account of '_filmroll_is_present'
   
@@ -1253,12 +1253,17 @@ entry_key_press_exit:
   g_object_unref(listmodel);
 }
 
-static void update_view(GtkEntry *entry, dt_lib_collect_rule_t *dr)
+static void update_selection(dt_lib_collect_rule_t *dr)
+{
+  // TODO
+}
+
+static void update_view(dt_lib_collect_rule_t *dr)
 {
   int property = gtk_combo_box_get_active(dr->combo);
 
   if(property == DT_COLLECTION_PROP_FOLDERS)
-    show_folders(dr);
+    folders_view(dr);
   else if(property == DT_COLLECTION_PROP_TAG)
     tags_view(dr);
   else
@@ -1330,11 +1335,9 @@ static void _lib_collect_gui_update(dt_lib_module_t *self)
     gchar *text = dt_conf_get_string(confname);
     if(text)
     {
-      g_signal_handlers_block_matched(d->rule[i].text, G_SIGNAL_MATCH_FUNC, 0, 0, NULL, update_view, NULL);
       g_signal_handlers_block_matched(d->rule[i].text, G_SIGNAL_MATCH_FUNC, 0, 0, NULL, entry_changed, NULL);
       gtk_entry_set_text(GTK_ENTRY(d->rule[i].text), text);
       gtk_editable_set_position(GTK_EDITABLE(d->rule[i].text), -1);
-      g_signal_handlers_unblock_matched(d->rule[i].text, G_SIGNAL_MATCH_FUNC, 0, 0, NULL, update_view, NULL);
       g_signal_handlers_unblock_matched(d->rule[i].text, G_SIGNAL_MATCH_FUNC, 0, 0, NULL, entry_changed, NULL);
       g_free(text);
       d->rule[i].typing = FALSE;
@@ -1364,7 +1367,7 @@ static void _lib_collect_gui_update(dt_lib_module_t *self)
   }
 
   // update list of proposals
-  update_view(NULL, d->rule + d->active_rule);
+  update_view(d->rule + d->active_rule);
   darktable.gui->reset = old;
 }
 
@@ -1386,7 +1389,7 @@ static void combo_changed(GtkComboBox *combo, dt_lib_collect_rule_t *d)
   dt_lib_collect_t *c = get_collect(d);
   c->active_rule = d->num;
 
-  update_view(NULL, d);
+  update_view(d);
   dt_collection_update_query(darktable.collection);
 }
 
@@ -1425,45 +1428,12 @@ static void row_activated(GtkTreeView *view, GtkTreePath *path, GtkTreeViewColum
 
 static void entry_activated(GtkWidget *entry, dt_lib_collect_rule_t *d)
 {
-  GtkTreeView *view;
-  GtkTreeModel *model;
-  int property, rows;
-
-  update_view(NULL, d);
-  dt_lib_collect_t *c = get_collect(d);
-
-  property = gtk_combo_box_get_active(d->combo);
-
-  if(property != DT_COLLECTION_PROP_FOLDERS && property != DT_COLLECTION_PROP_TAG)
-  {
-    view = c->view;
-    model = gtk_tree_view_get_model(GTK_TREE_VIEW(view));
-
-    rows = gtk_tree_model_iter_n_children(model, NULL);
-
-    if(rows == 1)
-    {
-      GtkTreeIter iter;
-      if(gtk_tree_model_get_iter_first(model, &iter))
-      {
-        gchar *text;
-        const int item = gtk_combo_box_get_active(GTK_COMBO_BOX(d->combo));
-        if(item == DT_COLLECTION_PROP_FILMROLL || // get full path for film rolls
-           item == DT_COLLECTION_PROP_TAG || item == DT_COLLECTION_PROP_FOLDERS) // or folders
-          gtk_tree_model_get(model, &iter, DT_LIB_COLLECT_COL_PATH, &text, -1);
-        else
-          gtk_tree_model_get(model, &iter, DT_LIB_COLLECT_COL_TEXT, &text, -1);
-
-        g_signal_handlers_block_matched(d->text, G_SIGNAL_MATCH_FUNC, 0, 0, NULL, entry_changed, NULL);
-        gtk_entry_set_text(GTK_ENTRY(d->text), text);
-        gtk_editable_set_position(GTK_EDITABLE(d->text), -1);
-        g_signal_handlers_unblock_matched(d->text, G_SIGNAL_MATCH_FUNC, 0, 0, NULL, entry_changed, NULL);
-        g_free(text);
-        d->typing = FALSE;
-        update_view(NULL, d);
-      }
-    }
-  }
+  d->typing = FALSE;
+  // we update the selection
+  update_selection(d);
+  // we save the params
+  set_properties(d);
+  // and we update the query
   dt_collection_update_query(darktable.collection);
 }
 
@@ -1483,7 +1453,7 @@ static void entry_focus_in_callback(GtkWidget *w, GdkEventFocus *event, dt_lib_c
   dt_lib_collect_t *c = get_collect(d);
   if (c->active_rule == d->num) return; // we don't have to change the view
   c->active_rule = d->num;
-  update_view(NULL, c->rule + c->active_rule);
+  update_view(c->rule + c->active_rule);
 }
 
 static void menuitem_and(GtkMenuItem *menuitem, dt_lib_collect_rule_t *d)
@@ -1757,7 +1727,6 @@ void gui_init(dt_lib_module_t *self)
     g_object_set(G_OBJECT(w), "tooltip-text", _("type your query, use `%' as wildcard"), (char *)NULL);
     gtk_widget_add_events(w, GDK_KEY_PRESS_MASK);
     g_signal_connect(G_OBJECT(w), "insert-text", G_CALLBACK(entry_changed), d->rule + i);
-    //g_signal_connect(G_OBJECT(w), "changed", G_CALLBACK(update_view), d->rule + i);
     g_signal_connect(G_OBJECT(w), "activate", G_CALLBACK(entry_activated), d->rule + i);
     gtk_box_pack_start(box, w, TRUE, TRUE, 0);
     w = dtgtk_button_new(dtgtk_cairo_paint_presets, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER);
