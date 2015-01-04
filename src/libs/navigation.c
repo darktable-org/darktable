@@ -36,6 +36,7 @@ typedef struct dt_lib_navigation_t
   unsigned char* buffer;
   int wd;
   int ht;
+  int timestamp;
 } dt_lib_navigation_t;
 
 
@@ -98,6 +99,7 @@ void gui_init(dt_lib_module_t *self)
   d->buffer = NULL;
   d->wd = -1;
   d->ht = -1;
+  d->timestamp = -1;
 
   /* create drawingarea */
   self->widget = gtk_drawing_area_new();
@@ -166,12 +168,13 @@ static gboolean _lib_navigation_draw_callback(GtkWidget *widget, cairo_t *cr, gp
       d->buffer = g_malloc0((size_t)d->wd * d->ht * 4 * sizeof(unsigned char));
     }
 
-    /* copy data */
-    if(d->buffer)
+    /* update buffer if new data is available */
+    if(d->buffer && dev->preview_pipe->input_timestamp > d->timestamp)
     {
       dt_pthread_mutex_t *mutex = &dev->preview_pipe->backbuf_mutex;
       dt_pthread_mutex_lock(mutex);
       memcpy(d->buffer, dev->preview_pipe->backbuf, (size_t)d->wd * d->ht * 4 * sizeof(unsigned char));
+      d->timestamp = dev->preview_pipe->input_timestamp;
       dt_pthread_mutex_unlock(mutex);
     }
   }
