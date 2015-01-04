@@ -310,6 +310,20 @@ GtkFrame > GtkEventBox * {
   background-color: @bg_color;
 }
 
+.scale
+{
+  -GtkRange-slider-width:13;
+  -GtkRange-trough-border:1;
+  -GtkScale-slider-length:13;
+  margin:5px 0;
+}
+
+.scale.trough.highlight
+{
+  background-color:@selected_bg_color;
+  background-image:none;
+}
+
 *:insensitive {
   color: black;
 }
