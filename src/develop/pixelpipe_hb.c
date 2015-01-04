@@ -102,18 +102,18 @@ int dt_dev_pixelpipe_init_dummy(dt_dev_pixelpipe_t *pipe, int32_t width, int32_t
 
 int dt_dev_pixelpipe_init_preview(dt_dev_pixelpipe_t *pipe)
 {
-  // Use 720p as a decent initial value
+  // don't know which buffer size we're going to need, set to 0 (will be alloced on demand)
   int res = dt_dev_pixelpipe_init_cached(
-      pipe, 4 * sizeof(float) * 1280 * 720, 5);
+      pipe, 0, 5);
   pipe->type = DT_DEV_PIXELPIPE_PREVIEW;
   return res;
 }
 
 int dt_dev_pixelpipe_init(dt_dev_pixelpipe_t *pipe)
 {
-  // Use 720p as a decent initial value
+  // don't know which buffer size we're going to need, set to 0 (will be alloced on demand)
   int res = dt_dev_pixelpipe_init_cached(
-      pipe, 4 * sizeof(float) * 1280 * 720, 5);
+      pipe, 0, 5);
   pipe->type = DT_DEV_PIXELPIPE_FULL;
   return res;
 }
