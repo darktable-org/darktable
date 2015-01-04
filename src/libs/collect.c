@@ -414,8 +414,6 @@ static void tags_view(dt_lib_collect_rule_t *dr)
 
   /* query construction */
   char query[1024];
-  const gchar *text = NULL;
-  text = gtk_entry_get_text(GTK_ENTRY(dr->text));
   snprintf(query, sizeof(query), "SELECT distinct name, id FROM tags ORDER BY UPPER(name) DESC");
 
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
@@ -513,18 +511,9 @@ static void tags_view(dt_lib_collect_rule_t *dr)
   gtk_widget_set_no_show_all(GTK_WIDGET(d->scrolledwindow), FALSE);
   gtk_widget_show_all(GTK_WIDGET(d->scrolledwindow));
 
-  if(text[0] == '\0')
-  {
-    if(uncategorized.stamp)
-    {
-      GtkTreePath *path = gtk_tree_model_get_path(tagsmodel, &uncategorized);
-      gtk_tree_view_expand_row(GTK_TREE_VIEW(view), path, TRUE);
-      gtk_tree_path_free(path);
-    }
-  }
-  //else
-  //  gtk_tree_model_foreach(tagsmodel, (GtkTreeModelForeachFunc)expand_row, view);
   g_object_unref(tagsmodel);
+
+  update_selection(dr, TRUE);
 }
 
 static void list_view(dt_lib_collect_rule_t *dr)
@@ -548,28 +537,17 @@ static void list_view(dt_lib_collect_rule_t *dr)
 
   char query[1024];
   int property = gtk_combo_box_get_active(dr->combo);
-  const gchar *text = NULL;
-  text = gtk_entry_get_text(GTK_ENTRY(dr->text));
-  gchar *escaped_text = NULL;
-
-  escaped_text = dt_util_str_replace(text, "'", "''");
 
   switch(property)
   {
     case DT_COLLECTION_PROP_FILMROLL: // film roll
-      snprintf(query, sizeof(query),
-               "select distinct folder, id from film_rolls where folder like '%%%s%%'  order by folder desc",
-               escaped_text);
+      snprintf(query, sizeof(query), "select distinct folder, id from film_rolls order by folder desc");
       break;
     case DT_COLLECTION_PROP_CAMERA: // camera
-      snprintf(query, sizeof(query), "select distinct maker || ' ' || model as model, 1 from images where "
-                                     "maker || ' ' || model like '%%%s%%' order by model",
-               escaped_text);
+      snprintf(query, sizeof(query), "select distinct maker || ' ' || model as model, 1 from images order by model");
       break;
     case DT_COLLECTION_PROP_TAG: // tag
-      snprintf(query, sizeof(query),
-               "SELECT distinct name, id FROM tags WHERE name LIKE '%%%s%%' ORDER BY UPPER(name)",
-               escaped_text);
+      snprintf(query, sizeof(query), "SELECT distinct name, id FROM tags ORDER BY UPPER(name)");
       break;
     case DT_COLLECTION_PROP_HISTORY: // History, 2 hardcoded alternatives
       gtk_list_store_append(GTK_LIST_STORE(listmodel), &iter);
@@ -613,109 +591,47 @@ static void list_view(dt_lib_collect_rule_t *dr)
     // TODO: Add empty string for metadata?
     // TODO: Autogenerate this code?
     case DT_COLLECTION_PROP_TITLE: // title
-      snprintf(
-          query, sizeof(query),
-          "select distinct value, 1 from meta_data where key = %d and value like '%%%s%%' order by value",
-          DT_METADATA_XMP_DC_TITLE, escaped_text);
+      snprintf(query, sizeof(query), "select distinct value, 1 from meta_data where key = %d order by value",
+                DT_METADATA_XMP_DC_TITLE);
       break;
     case DT_COLLECTION_PROP_DESCRIPTION: // description
-      snprintf(
-          query, sizeof(query),
-          "select distinct value, 1 from meta_data where key = %d and value like '%%%s%%' order by value",
-          DT_METADATA_XMP_DC_DESCRIPTION, escaped_text);
+      snprintf(query, sizeof(query), "select distinct value, 1 from meta_data where key = %d order by value",
+                DT_METADATA_XMP_DC_DESCRIPTION);
       break;
     case DT_COLLECTION_PROP_CREATOR: // creator
-      snprintf(
-          query, sizeof(query),
-          "select distinct value, 1 from meta_data where key = %d and value like '%%%s%%' order by value",
-          DT_METADATA_XMP_DC_CREATOR, escaped_text);
+      snprintf(query, sizeof(query), "select distinct value, 1 from meta_data where key = %d order by value",
+                DT_METADATA_XMP_DC_CREATOR);
       break;
     case DT_COLLECTION_PROP_PUBLISHER: // publisher
-      snprintf(
-          query, sizeof(query),
-          "select distinct value, 1 from meta_data where key = %d and value like '%%%s%%' order by value",
-          DT_METADATA_XMP_DC_PUBLISHER, escaped_text);
+      snprintf(query, sizeof(query), "select distinct value, 1 from meta_data where key = %d order by value",
+                DT_METADATA_XMP_DC_PUBLISHER);
       break;
     case DT_COLLECTION_PROP_RIGHTS: // rights
-      snprintf(
-          query, sizeof(query),
-          "select distinct value, 1 from meta_data where key = %d and value like '%%%s%%'order by value ",
-          DT_METADATA_XMP_DC_RIGHTS, escaped_text);
+      snprintf(query, sizeof(query), "select distinct value, 1 from meta_data where key = %d order by value ",
+                DT_METADATA_XMP_DC_RIGHTS);
       break;
     case DT_COLLECTION_PROP_LENS: // lens
-      snprintf(query, sizeof(query),
-               "select distinct lens, 1 from images where lens like '%%%s%%' order by lens", escaped_text);
+      snprintf(query, sizeof(query), "select distinct lens, 1 from images order by lens");
       break;
     case DT_COLLECTION_PROP_ISO: // iso
-    {
-      gchar *operator, *number;
-      dt_collection_split_operator_number(escaped_text, &number, &operator);
-
-      if(operator&& number)
-        snprintf(query, sizeof(query),
-                 "select distinct cast(iso as integer) as iso, 1 from images where iso %s %s order by iso",
-                 operator, number);
-      else if(number)
-        snprintf(query, sizeof(query),
-                 "select distinct cast(iso as integer) as iso, 1 from images where iso = %s order by iso",
-                 number);
-      else
-        snprintf(
-            query, sizeof(query),
-            "select distinct cast(iso as integer) as iso, 1 from images where iso like '%%%s%%' order by iso",
-            escaped_text);
-
-      g_free(operator);
-      g_free(number);
-    }
-    break;
-
-    case DT_COLLECTION_PROP_APERTURE: // aperture
-    {
-      gchar *operator, *number;
-      dt_collection_split_operator_number(escaped_text, &number, &operator);
-
-      if(operator&& number)
-        snprintf(query, sizeof(query), "select distinct round(aperture,1) as aperture, 1 from images where "
-                                       "aperture %s %s order by aperture",
-                                       operator, number);
-      else if(number)
-        snprintf(query, sizeof(query), "select distinct round(aperture,1) as aperture, 1 from images where "
-                                       "aperture = %s order by aperture",
-                 number);
-      else
-        snprintf(query, sizeof(query), "select distinct round(aperture,1) as aperture, 1 from images where "
-                                       "aperture like '%%%s%%' order by aperture",
-                 escaped_text);
-
-      g_free(operator);
-      g_free(number);
-    }
-    break;
-
-    case DT_COLLECTION_PROP_FILENAME: // filename
-      snprintf(query, sizeof(query),
-               "select distinct filename, 1 from images where filename like '%%%s%%' order by filename",
-               escaped_text);
+      snprintf(query, sizeof(query), "select distinct cast(iso as integer) as iso, 1 from images order by iso");
       break;
-
+    case DT_COLLECTION_PROP_APERTURE: // aperture
+      snprintf(query, sizeof(query), "select distinct round(aperture,1) as aperture, 1 from images order by aperture");    break;
+      break;
+    case DT_COLLECTION_PROP_FILENAME: // filename
+      snprintf(query, sizeof(query), "select distinct filename, 1 from images order by filename");
+      break;
     case DT_COLLECTION_PROP_FOLDERS: // folders
       // We shouldn't ever be here
       break;
-
     case DT_COLLECTION_PROP_DAY:
-      snprintf(query, sizeof(query), "SELECT DISTINCT substr(datetime_taken, 1, 10), 1 FROM images WHERE "
-                                     "datetime_taken LIKE '%%%s%%' ORDER BY datetime_taken DESC",
-               escaped_text);
+      snprintf(query, sizeof(query), "SELECT DISTINCT substr(datetime_taken, 1, 10), 1 FROM images ORDER BY datetime_taken DESC");
       break;
-
     default: // time
-      snprintf(query, sizeof(query), "SELECT DISTINCT datetime_taken, 1 FROM images WHERE datetime_taken "
-                                     "LIKE '%%%s%%' ORDER BY datetime_taken DESC",
-               escaped_text);
+      snprintf(query, sizeof(query), "SELECT DISTINCT datetime_taken, 1 FROM images ORDER BY datetime_taken DESC");
       break;
   }
-  g_free(escaped_text);
 
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
   while(sqlite3_step(stmt) == SQLITE_ROW)
@@ -755,6 +671,8 @@ entry_key_press_exit:
   gtk_widget_set_no_show_all(GTK_WIDGET(d->scrolledwindow), FALSE);
   gtk_widget_show_all(GTK_WIDGET(d->scrolledwindow));
   g_object_unref(listmodel);
+
+  update_selection(dr,TRUE);
 }
 
 static void update_selection(dt_lib_collect_rule_t *dr, gboolean exact)
