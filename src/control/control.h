@@ -50,6 +50,9 @@ typedef enum dt_control_gui_mode_t
   DT_MAP,
 #endif
   DT_SLIDESHOW,
+#ifdef HAVE_PRINT
+  DT_PRINT,
+#endif
   DT_MODE_NONE
 } dt_control_gui_mode_t;
 

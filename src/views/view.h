@@ -21,6 +21,9 @@
 #define DT_VIEW_H
 
 #include "common/image.h"
+#ifdef HAVE_PRINT
+#include "common/cups_print.h"
+#endif
 #ifdef HAVE_MAP
 #include <osm-gps-map-source.h>
 #endif
@@ -48,10 +51,11 @@ enum dt_view_type_flags_t
   DT_VIEW_TETHERING = 4,
   DT_VIEW_MAP = 8,
   DT_VIEW_SLIDESHOW = 16,
+  DT_VIEW_PRINT = 32,
 };
 
 #define DT_VIEW_ALL                                                                                          \
-  (DT_VIEW_LIGHTTABLE | DT_VIEW_DARKROOM | DT_VIEW_TETHERING | DT_VIEW_MAP | DT_VIEW_SLIDESHOW)
+  (DT_VIEW_LIGHTTABLE | DT_VIEW_DARKROOM | DT_VIEW_TETHERING | DT_VIEW_MAP | DT_VIEW_SLIDESHOW | DT_VIEW_PRINT)
 
 /**
  * main dt view module (as lighttable or darkroom)
@@ -121,6 +125,19 @@ int32_t dt_view_get_image_to_act_on();
 /** expose an image, set image over flags. */
 void dt_view_image_expose(dt_view_image_over_t *image_over, uint32_t index, cairo_t *cr, int32_t width,
                           int32_t height, int32_t zoom, int32_t px, int32_t py, gboolean full_preview);
+
+/* expose only the image imgid at position (offsetx,offsety) into the cairo surface occupying width/height pixels.
+   this routine does not output any meta-data as the version above.
+ */
+void
+dt_view_image_only_expose(
+  uint32_t imgid,
+  cairo_t *cr,
+  int32_t width,
+  int32_t height,
+  int32_t offsetx,
+  int32_t offsety);
+
 
 /** Set the selection bit to a given value for the specified image */
 void dt_view_set_selection(int imgid, int value);
@@ -241,6 +258,14 @@ typedef struct dt_view_manager_t
     } map;
 #endif
 
+    /* map view proxy object */
+#ifdef HAVE_PRINT
+    struct
+    {
+      struct dt_view_t *view;
+      void (*print_settings)(const dt_view_t *view, dt_print_info_t *pinfo);
+    } print;
+#endif
   } proxy;
 
 
@@ -341,6 +366,13 @@ void dt_view_filmstrip_prefetch();
 void dt_view_map_center_on_location(const dt_view_manager_t *vm, gdouble lon, gdouble lat, gdouble zoom);
 void dt_view_map_show_osd(const dt_view_manager_t *vm, gboolean enabled);
 void dt_view_map_set_map_source(const dt_view_manager_t *vm, OsmGpsMapSource_t map_source);
+#endif
+
+/*
+ * Print View Proxy
+ */
+#ifdef HAVE_PRINT
+void dt_view_print_settings(const dt_view_manager_t *vm, dt_print_info_t *pinfo);
 #endif
 
 #endif

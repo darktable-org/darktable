@@ -205,7 +205,7 @@ int set_params(dt_lib_module_t *self, const void *params, int size)
 
 uint32_t views()
 {
-  return DT_VIEW_LIGHTTABLE | DT_VIEW_MAP;
+  return DT_VIEW_LIGHTTABLE | DT_VIEW_MAP | DT_VIEW_PRINT;
 }
 
 uint32_t container()
