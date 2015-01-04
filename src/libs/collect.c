@@ -548,7 +548,7 @@ static void list_view(dt_lib_collect_rule_t *dr)
       snprintf(query, sizeof(query), "select distinct maker || ' ' || model as model, 1 from images order by model");
       break;
     case DT_COLLECTION_PROP_TAG: // tag
-      snprintf(query, sizeof(query), "SELECT distinct name, id FROM tags ORDER BY UPPER(name)");
+      // We shouldn't ever be here
       break;
     case DT_COLLECTION_PROP_HISTORY: // History, 2 hardcoded alternatives
       gtk_list_store_append(GTK_LIST_STORE(listmodel), &iter);
@@ -649,18 +649,52 @@ static void list_view(dt_lib_collect_rule_t *dr)
     gchar *text = g_strdup(value);
     gchar *ptr = text;
     while(!g_utf8_validate(ptr, -1, (const gchar **)&ptr)) ptr[0] = '?';
-
     gchar *escaped_text = g_markup_escape_text(text, -1);
 
+    // we add the wildcards if needed
+    // we do that here and not in the query creation, so the user can remove them if he want
+    gchar *val_wild = NULL;
+    switch(property)
+    {
+      case DT_COLLECTION_PROP_CAMERA:
+      case DT_COLLECTION_PROP_FILENAME:
+      case DT_COLLECTION_PROP_TITLE:
+      case DT_COLLECTION_PROP_DESCRIPTION:
+      case DT_COLLECTION_PROP_CREATOR:
+      case DT_COLLECTION_PROP_PUBLISHER:
+      case DT_COLLECTION_PROP_RIGHTS:
+      case DT_COLLECTION_PROP_LENS:
+        val_wild = dt_util_dstrcat(val_wild,"%%%s%%",value);
+        break;
+      case DT_COLLECTION_PROP_DAY:
+      case DT_COLLECTION_PROP_TIME:
+        val_wild = dt_util_dstrcat(val_wild,"%s%%",value);
+        break;
+      case DT_COLLECTION_PROP_ISO:
+      case DT_COLLECTION_PROP_APERTURE:
+      {
+        gchar *operator, *number;
+        dt_collection_split_operator_number(escaped_text, &number, &operator);
+        if(!operator && !number) val_wild = dt_util_dstrcat(val_wild,"%%%s%%",value);
+        else val_wild = dt_util_dstrcat(val_wild,"%s",value);
+        g_free(operator);
+        g_free(number);
+      }  
+        break;
+      default:
+        val_wild = dt_util_dstrcat(val_wild,"%s",value);
+        break;
+    }
 
     gtk_list_store_set(GTK_LIST_STORE(listmodel), &iter, DT_LIB_COLLECT_COL_TEXT, folder,
                        DT_LIB_COLLECT_COL_ID, sqlite3_column_int(stmt, 1),
                        DT_LIB_COLLECT_COL_TOOLTIP, escaped_text,
-                       DT_LIB_COLLECT_COL_PATH, value,
+                       DT_LIB_COLLECT_COL_PATH, val_wild,
                        DT_LIB_COLLECT_COL_STRIKETROUGTH, (property==DT_COLLECTION_PROP_FILMROLL && !g_file_test(value, G_FILE_TEST_IS_DIR)),
                        -1);
     g_free(text);
     g_free(escaped_text);
+    g_free(val_wild);
   }
   sqlite3_finalize(stmt);
 
@@ -840,13 +874,7 @@ static void selection_change (GtkTreeSelection *selection, dt_lib_collect_t *d)
 
   const int active = d->active_rule;
 
-  const int item = gtk_combo_box_get_active(GTK_COMBO_BOX(d->rule[active].combo));
-  if(item == DT_COLLECTION_PROP_FILMROLL || // get full path for film rolls
-     item == DT_COLLECTION_PROP_TAG ||      // or tags
-     item == DT_COLLECTION_PROP_FOLDERS)    // or folders
-    gtk_tree_model_get(model, &iter, DT_LIB_COLLECT_COL_PATH, &text, -1);
-  else
-    gtk_tree_model_get(model, &iter, DT_LIB_COLLECT_COL_TEXT, &text, -1);
+  gtk_tree_model_get(model, &iter, DT_LIB_COLLECT_COL_PATH, &text, -1);
 
   g_signal_handlers_block_matched(d->rule[active].text, G_SIGNAL_MATCH_FUNC, 0, 0, NULL, entry_changed, NULL);
   gtk_entry_set_text(GTK_ENTRY(d->rule[active].text), text);
