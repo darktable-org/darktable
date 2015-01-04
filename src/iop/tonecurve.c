@@ -349,12 +349,16 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *
 static const struct
 {
   const char *name;
+  const char *maker;
+  const char *model;
+  int iso_min;
+  int iso_max;
   struct dt_iop_tonecurve_params_t preset;
 } preset_camera_curves[] = {
     // This is where you can paste the line provided by dt-curve-tool
     // Here is a valid example for you to compare
     // clang-format off
-    //{"NIKON D7000 from source", {{{{0.000000, 0.006116}, {0.000296, 0.006028}, {0.002370, 0.007261}, {0.008000, 0.007445}, {0.018963, 0.010777}, {0.037037, 0.020175}, {0.064000, 0.035687}, {0.101630, 0.067279}, {0.151704, 0.134889}, {0.216000, 0.246140}, {0.296296, 0.405786}, {0.394370, 0.576875}, {0.512000, 0.724585}, {0.650963, 0.851117}, {0.813037, 0.957309}, {1.000000, 0.986196}, },{{0.000000, 0.000000}, {0.062500, 0.062500}, {0.125000, 0.125000}, {0.187500, 0.187500}, {0.250000, 0.250000}, {0.312500, 0.312500}, {0.375000, 0.375000}, {0.437500, 0.437500}, {0.500000, 0.500000}, {0.562500, 0.562500}, {0.625000, 0.625000}, {0.687500, 0.687500}, {0.750000, 0.750000}, {0.812500, 0.812500}, {0.875000, 0.875000}, {0.937500, 0.937500}, },{{0.000000, 0.000000}, {0.062500, 0.062500}, {0.125000, 0.125000}, {0.187500, 0.187500}, {0.250000, 0.250000}, {0.312500, 0.312500}, {0.375000, 0.375000}, {0.437500, 0.437500}, {0.500000, 0.500000}, {0.562500, 0.562500}, {0.625000, 0.625000}, {0.687500, 0.687500}, {0.750000, 0.750000}, {0.812500, 0.812500}, {0.875000, 0.875000}, {0.937500, 0.937500}, },}, {16, 16, 16}, {2, 2, 2}, 0, 0, 0}},
+    //{"NIKON D7000 from source", "NIKON CORPORATION", "NIKON D7000", 0, 51200, {{{{0.000000, 0.006116}, {0.000296, 0.006028}, {0.002370, 0.007261}, {0.008000, 0.007445}, {0.018963, 0.010777}, {0.037037, 0.020175}, {0.064000, 0.035687}, {0.101630, 0.067279}, {0.151704, 0.134889}, {0.216000, 0.246140}, {0.296296, 0.405786}, {0.394370, 0.576875}, {0.512000, 0.724585}, {0.650963, 0.851117}, {0.813037, 0.957309}, {1.000000, 0.986196}, },{{0.000000, 0.000000}, {0.062500, 0.062500}, {0.125000, 0.125000}, {0.187500, 0.187500}, {0.250000, 0.250000}, {0.312500, 0.312500}, {0.375000, 0.375000}, {0.437500, 0.437500}, {0.500000, 0.500000}, {0.562500, 0.562500}, {0.625000, 0.625000}, {0.687500, 0.687500}, {0.750000, 0.750000}, {0.812500, 0.812500}, {0.875000, 0.875000}, {0.937500, 0.937500}, },{{0.000000, 0.000000}, {0.062500, 0.062500}, {0.125000, 0.125000}, {0.187500, 0.187500}, {0.250000, 0.250000}, {0.312500, 0.312500}, {0.375000, 0.375000}, {0.437500, 0.437500}, {0.500000, 0.500000}, {0.562500, 0.562500}, {0.625000, 0.625000}, {0.687500, 0.687500}, {0.750000, 0.750000}, {0.812500, 0.812500}, {0.875000, 0.875000}, {0.937500, 0.937500}, },}, {16, 16, 16}, {2, 2, 2}, 0, 0, 0}},
     // clang-format on
   };
 
@@ -421,12 +425,24 @@ void init_presets(dt_iop_module_so_t *self)
   for(int k = 1; k < 5; k++) p.tonecurve[ch_L][k].y = powf(p.tonecurve[ch_L][k].y, 2.2f);
   dt_gui_presets_add_generic(_("high contrast"), self->op, self->version(), &p, sizeof(p), 1);
 
-  // XXX uncomment this once presets_from_basecurve will contain something!
+  // XXX uncomment this once preset_camera_curves contains something
 #if 0
   for (int k=0; k<sizeof(preset_camera_curves)/sizeof(preset_camera_curves[0]); k++)
   {
+    // insert the preset
     dt_gui_presets_add_generic(preset_camera_curves[k].name, self->op, self->version(),
-    &preset_camera_curves[k].preset, sizeof(p), 1);
+                               &preset_camera_curves[k].preset, sizeof(p), 1);
+
+    // restrict it to model, maker
+    dt_gui_presets_update_mml(preset_camera_curves[k].name, self->op, self->version(),
+                              preset_camera_curves[k].maker, preset_camera_curves[k].model, "");
+
+    // restrict it to  iso
+    dt_gui_presets_update_iso(preset_camera_curves[k].name, self->op, self->version(),
+                              preset_camera_curves[k].iso_min, preset_camera_curves[k].iso_max);
+
+    // restrict it to raw images
+    dt_gui_presets_update_ldr(preset_camera_curves[k].name, self->op, self->version(), FOR_RAW);
   }
 #endif
 }

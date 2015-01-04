@@ -1138,8 +1138,10 @@ fit:;
             TONECURVE_PARAMS_VERSION, encoded);
     fprintf(stdout, "\n\n\n"
                     "# if it pleases you, then in iop/tonecurve.c append the following line to the array preset_camera_curves and modify its name\n"
-                    "# {\"%s\", {{",
-                    opt.filename_exif ? model : "new measured tonecurve");
+                    "# {\"%s\", \"%s\", \"%s\", 0, 51200, {{",
+                    opt.filename_exif ? model : "new measured tonecurve",
+                    opt.filename_exif ? maker : "<MAKER>",
+                    opt.filename_exif ? model : "<MODEL>");
     for (int i=0; i<3; i++)
     {
       fprintf(stdout, "{");
