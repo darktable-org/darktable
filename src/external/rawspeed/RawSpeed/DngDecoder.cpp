@@ -169,13 +169,11 @@ RawImage DngDecoder::decodeRawInternal() {
     // Now load the image
     if (compression == 1) {  // Uncompressed.
       try {
-        if (!mRaw->isCFA)
-        {
-          uint32 cpp = raw->getEntry(SAMPLESPERPIXEL)->getInt();
-          if (cpp > 4)
-            ThrowRDE("DNG Decoder: More than 4 samples per pixel is not supported.");
-          mRaw->setCpp(cpp);
-        }
+        uint32 cpp = raw->getEntry(SAMPLESPERPIXEL)->getInt();
+        if (cpp > 4)
+          ThrowRDE("DNG Decoder: More than 4 samples per pixel is not supported.");
+        mRaw->setCpp(cpp);
+
         uint32 nslices = raw->getEntry(STRIPOFFSETS)->count;
         TiffEntry *TEoffsets = raw->getEntry(STRIPOFFSETS);
         TiffEntry *TEcounts = raw->getEntry(STRIPBYTECOUNTS);
@@ -238,9 +236,7 @@ RawImage DngDecoder::decodeRawInternal() {
       try {
         // Let's try loading it as tiles instead
 
-        if (!mRaw->isCFA) {
-          mRaw->setCpp(raw->getEntry(SAMPLESPERPIXEL)->getInt());
-        }
+        mRaw->setCpp(raw->getEntry(SAMPLESPERPIXEL)->getInt());
         mRaw->createData();
 
         if (sample_format != 1)
