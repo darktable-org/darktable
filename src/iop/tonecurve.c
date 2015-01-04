@@ -444,6 +444,9 @@ void init_presets(dt_iop_module_so_t *self)
 
     // restrict it to raw images
     dt_gui_presets_update_ldr(preset_camera_curves[k].name, self->op, self->version(), FOR_RAW);
+
+    // hide all non-matching presets in case the model string is set.
+    dt_gui_presets_update_filter(preset_camera_curves[k].name, self->op, self->version(), 1);
   }
 }
 
