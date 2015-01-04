@@ -1385,20 +1385,17 @@ static GtkWidget *_ui_init_panel_container_center(GtkWidget *container, gboolean
                                     left ? GTK_CORNER_TOP_LEFT : GTK_CORNER_TOP_RIGHT);
   gtk_box_pack_start(GTK_BOX(container), widget, TRUE, TRUE, 0);
   gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(widget), GTK_POLICY_NEVER, GTK_POLICY_ALWAYS);
-  gtk_widget_set_size_request(widget, dt_conf_get_int("panel_width") - DT_PIXEL_APPLY_DPI(5 + 13), -1);
 
   /* create the scrolled viewport */
   container = widget;
   widget = gtk_viewport_new(a[2], a[3]);
   gtk_viewport_set_shadow_type(GTK_VIEWPORT(widget), GTK_SHADOW_NONE);
-  gtk_container_set_resize_mode(GTK_CONTAINER(widget), GTK_RESIZE_QUEUE);
   gtk_container_add(GTK_CONTAINER(container), widget);
 
   /* create the container */
   container = widget;
   widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_UI_PANEL_MODULE_SPACING);
   gtk_widget_set_name(widget, "plugins_vbox_left");
-  gtk_widget_set_size_request(widget, 0, -1);
   gtk_container_add(GTK_CONTAINER(container), widget);
 
   return widget;
