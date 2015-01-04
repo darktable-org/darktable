@@ -328,27 +328,14 @@ void dt_print_file(const int32_t imgid, const char *filename, const dt_print_inf
 
 static void _get_image_dimension (int32_t imgid, int32_t *iwidth, int32_t *iheight)
 {
-  const dt_image_t *img = dt_image_cache_read_get(darktable.image_cache, imgid);
-
-  if(img)
-  {
-    dt_mipmap_buffer_t buf;
-    dt_mipmap_cache_read_get(darktable.mipmap_cache, &buf, imgid, DT_MIPMAP_3, DT_MIPMAP_BEST_EFFORT);
-
-    *iwidth = buf.width;
-    *iheight = buf.height;
-
-    if(buf.buf)
-      dt_mipmap_cache_read_release(darktable.mipmap_cache, &buf);
-
-    dt_image_cache_read_release(darktable.image_cache, img);
-  }
-  else
-    *iwidth = *iheight = 0;
+  dt_mipmap_buffer_t buf;
+  dt_mipmap_cache_get(darktable.mipmap_cache, &buf, imgid, DT_MIPMAP_3, DT_MIPMAP_BEST_EFFORT, 'r');
 
   // more than the image dimension we want the image aspect to be preserved
-  *iwidth *= 4;
-  *iheight *= 4;
+  *iwidth = buf.width * 4;
+  *iheight = buf.height * 4;
+
+  dt_mipmap_cache_release(darktable.mipmap_cache, &buf);
 }
 
 void dt_get_print_layout(const int32_t imgid, const dt_print_info_t *prt,
