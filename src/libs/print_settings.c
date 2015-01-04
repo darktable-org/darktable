@@ -23,7 +23,6 @@
 #include "common/variables.h"
 #include "common/cups_print.h"
 #include "common/image_cache.h"
-#include "dtgtk/label.h"
 #include "dtgtk/resetlabel.h"
 #include "libs/lib.h"
 #include "gui/gtk.h"
@@ -1229,20 +1228,17 @@ gui_reset (dt_lib_module_t *self)
   ps->prt.page.landscape = TRUE;
 
   const int imgid = dt_view_filmstrip_get_activated_imgid(darktable.view_manager);
-  const dt_image_t *img = dt_image_cache_read_get(darktable.image_cache, imgid);
+  const dt_image_t *img = dt_image_cache_get(darktable.image_cache, imgid, 'r');
 
   if(img)
   {
     dt_mipmap_buffer_t buf;
-    dt_mipmap_cache_read_get(darktable.mipmap_cache, &buf, imgid, DT_MIPMAP_3, DT_MIPMAP_BEST_EFFORT);
+    dt_mipmap_cache_get(darktable.mipmap_cache, &buf, imgid, DT_MIPMAP_3, DT_MIPMAP_BEST_EFFORT, 'r');
 
     if (buf.width > buf.height)
       ps->prt.page.landscape = TRUE;
     else
       ps->prt.page.landscape = FALSE;
-
-    if(buf.buf)
-      dt_mipmap_cache_read_release(darktable.mipmap_cache, &buf);
 
     dt_image_cache_read_release(darktable.image_cache, img);
   }

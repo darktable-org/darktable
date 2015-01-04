@@ -334,18 +334,15 @@ void dt_print_file(const int32_t imgid, const char *filename, const dt_print_inf
 
 static void _get_image_dimension (int32_t imgid, int32_t *iwidth, int32_t *iheight)
 {
-  const dt_image_t *img = dt_image_cache_read_get(darktable.image_cache, imgid);
+  const dt_image_t *img = dt_image_cache_get(darktable.image_cache, imgid, 'r');
 
   if(img)
   {
     dt_mipmap_buffer_t buf;
-    dt_mipmap_cache_read_get(darktable.mipmap_cache, &buf, imgid, DT_MIPMAP_3, DT_MIPMAP_BEST_EFFORT);
+    dt_mipmap_cache_get(darktable.mipmap_cache, &buf, imgid, DT_MIPMAP_3, DT_MIPMAP_BEST_EFFORT, 'r');
 
     *iwidth = buf.width;
     *iheight = buf.height;
-
-    if(buf.buf)
-      dt_mipmap_cache_read_release(darktable.mipmap_cache, &buf);
 
     dt_image_cache_read_release(darktable.image_cache, img);
   }

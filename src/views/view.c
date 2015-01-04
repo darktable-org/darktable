@@ -1246,39 +1246,51 @@ dt_view_image_only_expose(
   // on my machine with 7 image per row it seems grouping has the largest
   // impact from around 400ms -> 55ms per redraw.
 
-  // this function is not thread-safe (gui-thread only), so we
-  // can safely allocate this leaking bit of memory to decompress thumbnails:
-  static int first_time = 1;
-  static uint8_t *scratchmem = NULL;
-  if(first_time)
+  dt_image_t buffered_image;
+  const dt_image_t *img = dt_image_cache_get(darktable.image_cache, imgid, 'r');
+  // release image cache lock as early as possible, to avoid deadlocks (mipmap cache might need to lock it, too)
+  if(img)
   {
-    // scratchmem might still be NULL after this, if compression is off.
-    scratchmem = dt_mipmap_cache_alloc_scratchmem(darktable.mipmap_cache);
-    first_time = 0;
+    buffered_image = *img;
+    dt_image_cache_read_release(darktable.image_cache, img);
+    img = &buffered_image;
   }
-
-  const dt_image_t *img = dt_image_cache_read_get(darktable.image_cache, imgid);
   float imgwd = 1.0f;
 
   dt_mipmap_buffer_t buf;
   dt_mipmap_size_t mip = dt_mipmap_cache_get_matching_size(darktable.mipmap_cache,
                                                            imgwd*width, imgwd*height);
-  dt_mipmap_cache_read_get(darktable.mipmap_cache, &buf, imgid, mip, DT_MIPMAP_BEST_EFFORT);
+  dt_mipmap_cache_get(darktable.mipmap_cache, &buf, imgid, mip, DT_MIPMAP_BEST_EFFORT, 'r');
 
   float scale = 1.0;
   // decompress image, if necessary. if compression is off, scratchmem will be == NULL,
   // so get the real pointer back:
-  uint8_t *buf_decompressed = dt_mipmap_cache_decompress(&buf, scratchmem);
+  // uint8_t *buf_decompressed = dt_mipmap_cache_decompress(&buf, scratchmem);
 
   cairo_surface_t *surface = NULL;
+  uint8_t *rgbbuf = NULL;
   if(buf.buf)
   {
-    const int32_t stride = cairo_format_stride_for_width (CAIRO_FORMAT_RGB24, buf.width);
-    surface = cairo_image_surface_create_for_data (buf_decompressed, CAIRO_FORMAT_RGB24, buf.width, buf.height, stride);
-    scale = fminf(
-      fminf(darktable.thumbnail_width, width) / (float)buf.width,
-      fminf(darktable.thumbnail_height, height) / (float)buf.height
-      );
+    rgbbuf = (uint8_t *)calloc(buf.width * buf.height * 4, sizeof(uint8_t));
+    if(rgbbuf)
+    {
+      for(int i = 0; i < buf.height; i++)
+      {
+        uint8_t *in = buf.buf + i * buf.width * 4;
+        uint8_t *out = rgbbuf + i * buf.width * 4;
+
+        for(int j = 0; j < buf.width; j++, in += 4, out += 4)
+        {
+          out[0] = in[2];
+          out[1] = in[1];
+          out[2] = in[0];
+        }
+      }
+      const int32_t stride = cairo_format_stride_for_width (CAIRO_FORMAT_RGB24, buf.width);
+      surface = cairo_image_surface_create_for_data (rgbbuf, CAIRO_FORMAT_RGB24, buf.width, buf.height, stride);
+    }
+    const int32_t tb = DT_PIXEL_APPLY_DPI(dt_conf_get_int("plugins/darkroom/ui/border_size"));
+    scale = fminf((width-2*tb) / (float)buf.width, (height-2*tb) / (float)buf.height);
   }
 
   // draw at offset offsetx, offsety
@@ -1296,10 +1308,6 @@ dt_view_image_only_expose(
   }
 
   cairo_restore(cr);
-
-  if(buf.buf)
-    dt_mipmap_cache_read_release(darktable.mipmap_cache, &buf);
-
   cairo_save(cr);
 
   // kill all paths, in case img was not loaded yet, or is blocked:
