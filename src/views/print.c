@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2014 pascal obry.
+    copyright (c) 2014-2015 pascal obry.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -73,23 +73,15 @@ static void _film_strip_activated(const int imgid, void *data)
 
   prt->pinfo->page.landscape = TRUE;
 
-  const dt_image_t *img = dt_image_cache_read_get(darktable.image_cache, prt->image_id);
+  dt_mipmap_buffer_t buf;
+  dt_mipmap_cache_get(darktable.mipmap_cache, &buf, prt->image_id, DT_MIPMAP_3, DT_MIPMAP_BEST_EFFORT, 'r');
 
-  if(img)
-  {
-    dt_mipmap_buffer_t buf;
-    dt_mipmap_cache_read_get(darktable.mipmap_cache, &buf, prt->image_id, DT_MIPMAP_3, DT_MIPMAP_BEST_EFFORT);
+  if (buf.width > buf.height)
+    prt->pinfo->page.landscape = TRUE;
+  else
+    prt->pinfo->page.landscape = FALSE;
 
-    if (buf.width > buf.height)
-      prt->pinfo->page.landscape = TRUE;
-    else
-      prt->pinfo->page.landscape = FALSE;
-
-    if(buf.buf)
-      dt_mipmap_cache_read_release(darktable.mipmap_cache, &buf);
-
-    dt_image_cache_read_release(darktable.image_cache, img);
-  }
+  dt_mipmap_cache_release(darktable.mipmap_cache, &buf);
 
   dt_view_filmstrip_scroll_to_image(darktable.view_manager, imgid, FALSE);
   // record the imgid to display when going back to lighttable
