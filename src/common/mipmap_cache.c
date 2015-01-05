@@ -373,13 +373,14 @@ void dt_mipmap_cache_init(dt_mipmap_cache_t *cache)
 
   // Fixed sizes for the thumbnail mip levels, selected for coverage of most screen sizes
   int32_t mipsizes[DT_MIPMAP_F][2] = {
-    {360,  225},  // mip0 - 1/2 size previous one
-    {720,  450},  // mip1 - 1/2 size previous one
-    {1440, 900},  // mip2 - covers 720p and 1366x768
-    {1920, 1200}, // mip3 - covers 1080p and 1600x1200
-    {2560, 1600}, // mip4 - covers 2560x1440
-    {4096, 2560}, // mip5 - covers 4K and UHD
-    {5120, 3200}, // mip6 - covers 5120x2880 panels
+    {180,  110},  // mip0 - ~1/2 size previous one
+    {360,  225},  // mip1 - 1/2 size previous one
+    {720,  450},  // mip2 - 1/2 size previous one
+    {1440, 900},  // mip3 - covers 720p and 1366x768
+    {1920, 1200}, // mip4 - covers 1080p and 1600x1200
+    {2560, 1600}, // mip5 - covers 2560x1440
+    {4096, 2560}, // mip6 - covers 4K and UHD
+    {5120, 3200}, // mip7 - covers 5120x2880 panels
   };
   // Set mipf to mip2 size as at most the user will be using an 8K screen and
   // have a preview that's ~4x smaller
