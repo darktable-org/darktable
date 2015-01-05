@@ -1,6 +1,5 @@
 #include "StdAfx.h"
 #include "OrfDecoder.h"
-#include "TiffParserOlympus.h"
 #if defined(__unix__) || defined(__APPLE__) 
 #include <stdlib.h>
 #endif

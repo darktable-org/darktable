@@ -1,6 +1,5 @@
 #include "StdAfx.h"
 #include "SrwDecoder.h"
-#include "TiffParserOlympus.h"
 #include "ByteStreamSwap.h"
 
 #if defined(__unix__) || defined(__APPLE__) 
