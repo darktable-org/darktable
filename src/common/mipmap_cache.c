@@ -252,10 +252,12 @@ void dt_mipmap_cache_allocate_dynamic(void *data, dt_cache_entry_t *entry)
       FILE *f = fopen(filename, "rb");
       if(f)
       {
-        size_t len = 0;
+        long len = 0;
+        uint8_t *blob = 0;
         fseek(f, 0, SEEK_END);
         len = ftell(f);
-        uint8_t *blob = (uint8_t *)malloc(len);
+        if(len <= 0) goto read_error; // coverity madness
+        blob = (uint8_t *)malloc(len);
         if(!blob) goto read_error;
         fseek(f, 0, SEEK_SET);
         int rd = fread(blob, sizeof(uint8_t), len, f);
