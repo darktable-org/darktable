@@ -59,6 +59,15 @@ typedef struct dt_lib_collect_t
   GtkScrolledWindow *scrolledwindow;
   gboolean update_query_on_sel_change;
 
+  GtkWidget *num_box;
+  GtkWidget *num_op;
+  GtkWidget *num1_box;
+  GtkWidget *num2_box;
+  GtkWidget *num1_label;
+  GtkWidget *num2_label;
+  GtkWidget *num1_entry;
+  GtkWidget *num2_entry;
+
   struct dt_lib_collect_params_t *params;
 } dt_lib_collect_t;
 
@@ -84,6 +93,17 @@ typedef enum dt_lib_collect_cols_t
   DT_LIB_COLLECT_COL_STRIKETROUGTH,
   DT_LIB_COLLECT_NUM_COLS
 } dt_lib_collect_cols_t;
+
+typedef enum dt_lib_collect_numop_t
+{
+  DT_LIB_COLLECT_NUMOP_EQUAL,
+  DT_LIB_COLLECT_NUMOP_INF,
+  DT_LIB_COLLECT_NUMOP_INF_EQ,
+  DT_LIB_COLLECT_NUMOP_SUP,
+  DT_LIB_COLLECT_NUMOP_SUP_EQ,
+  DT_LIB_COLLECT_NUMOP_DIFF,
+  DT_LIB_COLLECT_NUMOP_RANGE
+} dt_lib_collect_numop_t;
 
 const char *name()
 {
@@ -333,6 +353,9 @@ static void folders_view(dt_lib_collect_rule_t *dr)
   gtk_list_store_clear(GTK_LIST_STORE(d->listmodel));
   gtk_widget_hide(GTK_WIDGET(d->scrolledwindow));
 
+  gtk_widget_hide(d->num_box);
+  gtk_widget_show(GTK_WIDGET(d->view));
+
   set_properties (dr);
 
   /* query construction */
@@ -454,6 +477,9 @@ static void tags_view(dt_lib_collect_rule_t *dr)
   gtk_tree_store_clear(GTK_TREE_STORE(tagsmodel));
   gtk_list_store_clear(GTK_LIST_STORE(d->listmodel));
   gtk_widget_hide(GTK_WIDGET(d->scrolledwindow));
+
+  gtk_widget_hide(d->num_box);
+  gtk_widget_show(GTK_WIDGET(d->view));
 
   set_properties(dr);
 
@@ -593,6 +619,9 @@ static void list_view(dt_lib_collect_rule_t *dr)
   gtk_tree_view_set_model(GTK_TREE_VIEW(view), NULL);
   gtk_list_store_clear(GTK_LIST_STORE(listmodel));
   gtk_widget_hide(GTK_WIDGET(d->scrolledwindow));
+
+  gtk_widget_hide(d->num_box);
+  gtk_widget_show(GTK_WIDGET(d->view));
 
   set_properties(dr);
 
@@ -825,6 +854,47 @@ entry_key_press_exit:
   update_selection(dr,TRUE);
 }
 
+static void num_view (dt_lib_collect_rule_t *dr)
+{
+  // update related list
+  dt_lib_collect_t *d = get_collect(dr);
+  
+  set_properties (dr);
+  
+  //we update the gui
+  gtk_widget_hide(GTK_WIDGET(d->scrolledwindow));
+  
+  gchar *operator, *number, *number2;
+  dt_collection_split_operator_number(gtk_entry_get_text(GTK_ENTRY(dr->text)), &number, &number2, &operator);
+  d->update_query_on_sel_change = FALSE;
+  if (!operator)
+  {
+    gtk_combo_box_set_active(GTK_COMBO_BOX(d->num_op),DT_LIB_COLLECT_NUMOP_EQUAL);
+    operator = dt_util_dstrcat(operator,"=");
+  }
+  else if (strcmp(operator,"=")==0) gtk_combo_box_set_active(GTK_COMBO_BOX(d->num_op),DT_LIB_COLLECT_NUMOP_EQUAL);
+  else if (strcmp(operator,"<")==0) gtk_combo_box_set_active(GTK_COMBO_BOX(d->num_op),DT_LIB_COLLECT_NUMOP_INF);
+  else if (strcmp(operator,"<=")==0) gtk_combo_box_set_active(GTK_COMBO_BOX(d->num_op),DT_LIB_COLLECT_NUMOP_INF_EQ);
+  else if (strcmp(operator,">")==0) gtk_combo_box_set_active(GTK_COMBO_BOX(d->num_op),DT_LIB_COLLECT_NUMOP_SUP);
+  else if (strcmp(operator,">=")==0) gtk_combo_box_set_active(GTK_COMBO_BOX(d->num_op),DT_LIB_COLLECT_NUMOP_SUP_EQ);
+  else if (strcmp(operator,"!=")==0 || strcmp(operator,"<>")==0) gtk_combo_box_set_active(GTK_COMBO_BOX(d->num_op),DT_LIB_COLLECT_NUMOP_DIFF);
+  else if (strcmp(operator,"[]")==0) gtk_combo_box_set_active(GTK_COMBO_BOX(d->num_op),DT_LIB_COLLECT_NUMOP_RANGE);
+  
+  if (number) gtk_entry_set_text(GTK_ENTRY(d->num1_entry),number);
+  else gtk_entry_set_text(GTK_ENTRY(d->num1_entry), "");
+  if (number2) gtk_entry_set_text(GTK_ENTRY(d->num2_entry),number2);
+  else gtk_entry_set_text(GTK_ENTRY(d->num2_entry), "");
+  d->update_query_on_sel_change = TRUE;
+  
+  gtk_widget_set_no_show_all(GTK_WIDGET(d->num_box), FALSE);
+  gtk_widget_show_all(GTK_WIDGET(d->num_box));
+  gtk_widget_set_visible(d->num2_box,(gtk_combo_box_get_active(GTK_COMBO_BOX(d->num_op)) == DT_LIB_COLLECT_NUMOP_RANGE));
+  
+  g_free(operator);
+  g_free(number);
+  g_free(number2);
+}
+
 static void update_selection(dt_lib_collect_rule_t *dr, gboolean exact)
 {
   dt_lib_collect_t *d = get_collect(dr);
@@ -850,7 +920,9 @@ static void update_view(dt_lib_collect_rule_t *dr)
 
   int property = gtk_combo_box_get_active(dr->combo);
 
-  if(property == DT_COLLECTION_PROP_FOLDERS)
+  if (property == DT_COLLECTION_PROP_ISO || property == DT_COLLECTION_PROP_APERTURE)
+    num_view(dr);
+  else if(property == DT_COLLECTION_PROP_FOLDERS)
     folders_view(dr);
   else if(property == DT_COLLECTION_PROP_TAG)
     tags_view(dr);
@@ -906,6 +978,7 @@ static void _lib_collect_gui_update(dt_lib_module_t *self)
   char confname[200];
 
   gtk_widget_set_no_show_all(GTK_WIDGET(d->scrolledwindow), TRUE);
+  gtk_widget_set_no_show_all(GTK_WIDGET(d->num_box), TRUE);
 
   for(int i = 0; i < MAX_RULES; i++)
   {
@@ -965,6 +1038,207 @@ void gui_reset(dt_lib_module_t *self)
   dt_conf_set_string("plugins/lighttable/collect/string0", "");
   dt_collection_set_query_flags(darktable.collection, COLLECTION_QUERY_FULL);
   dt_collection_update_query(darktable.collection);
+}
+
+// function to increase and decrease value using canonicals values
+static double num_decrease(double value, int property)
+{
+  if (property == DT_COLLECTION_PROP_ISO)
+  {
+    if (value>102400) return 102400;
+    if (value>51200) return 51200;
+    if (value>25600) return 25600;
+    if (value>12800) return 12800;
+    if (value>6400) return 6400;
+    if (value>3200) return 3200;
+    if (value>1600) return 1600;
+    if (value>800) return 800;
+    if (value>400) return 400;
+    if (value>200) return 200;
+    if (value>100) return 100;
+    if (value>50) return 50;
+    return 0;
+  }
+  else if (property == DT_COLLECTION_PROP_APERTURE)
+  {
+    if (value>32.0) return 32.0;
+    if (value>22.0) return 22.0;
+    if (value>16.0) return 16.0;
+    if (value>11.0) return 11.0;
+    if (value>8.0) return 8.0;
+    if (value>5.6) return 5.6;
+    if (value>4.0) return 4.0;
+    if (value>2.8) return 2.8;
+    if (value>2.0) return 2.0;
+    if (value>1.4) return 1.4;
+    if (value>1.0) return 1.0;
+    return 0.0;
+  }
+  return 0;
+}
+static double num_increase(double value, int property)
+{
+  if (property == DT_COLLECTION_PROP_ISO)
+  {
+    if (value<50) return 50;
+    if (value<100) return 100;
+    if (value<200) return 200;
+    if (value<400) return 400;
+    if (value<800) return 800;
+    if (value<1600) return 1600;
+    if (value<3200) return 3200;
+    if (value<6400) return 6400;
+    if (value<12800) return 12800;
+    if (value<25600) return 25600;
+    if (value<51200) return 51200;
+    if (value<102400) return 102400;
+    if (value<999999) return value + 50000;
+    return 999999;
+  }
+  else if (property == DT_COLLECTION_PROP_APERTURE)
+  {
+    if (value<1.0) return 1.0;
+    if (value<1.4) return 1.4;
+    if (value<2.0) return 2.0;
+    if (value<2.8) return 2.8;
+    if (value<4.0) return 4.0;
+    if (value<5.6) return 5.6;
+    if (value<8.0) return 8.0;
+    if (value<11.0) return 11.0;
+    if (value<16.0) return 16.0;
+    if (value<22.0) return 22.0;
+    if (value<32.0) return 32.0;
+    if (value<99999.0) return value + 10.0;
+    return 99999.0;
+  }
+  return 999999;
+}
+
+static void num_update_entry(dt_lib_collect_t *d)
+{
+  if (!d->update_query_on_sel_change) return;
+  
+  //we create the new text
+  gchar *txt = NULL;
+  int op = gtk_combo_box_get_active(GTK_COMBO_BOX(d->num_op));
+  char *optxt;
+  if (op == DT_LIB_COLLECT_NUMOP_EQUAL) optxt = "";
+  else optxt = gtk_combo_box_text_get_active_text(GTK_COMBO_BOX_TEXT(d->num_op));
+  int property = gtk_combo_box_get_active(d->rule[d->active_rule].combo);
+  
+  char *locale = strdup(setlocale(LC_NUMERIC, NULL));
+  setlocale(LC_NUMERIC, "C");
+  
+  double n1 = atof(gtk_entry_get_text(GTK_ENTRY(d->num1_entry)));
+  double n2 = atof(gtk_entry_get_text(GTK_ENTRY(d->num2_entry)));
+  if (property == DT_COLLECTION_PROP_ISO)
+  {
+    if (op == DT_LIB_COLLECT_NUMOP_RANGE) txt = dt_util_dstrcat(txt,"[%.0f;%.0f]", n1, n2);
+    else txt = dt_util_dstrcat(txt,"%s%.0f", optxt, n1);
+  }
+  else
+  {
+    if (op == DT_LIB_COLLECT_NUMOP_RANGE) txt = dt_util_dstrcat(txt,"[%.1f;%.1f]", n1, n2);
+    else txt = dt_util_dstrcat(txt,"%s%.1f", optxt, n1);
+  }
+  
+  setlocale(LC_NUMERIC, locale);
+  g_free(locale);
+  
+  //we verify that it's a real change
+  if (strcmp(txt,gtk_entry_get_text(GTK_ENTRY(d->rule[d->active_rule].text))) != 0)
+  {
+    g_signal_handlers_block_matched (d->rule[d->active_rule].text, G_SIGNAL_MATCH_FUNC, 0, 0 , NULL, entry_changed, NULL);
+    gtk_entry_set_text(GTK_ENTRY(d->rule[d->active_rule].text), txt);
+    gtk_editable_set_position(GTK_EDITABLE(d->rule[d->active_rule].text), -1);
+    g_signal_handlers_unblock_matched (d->rule[d->active_rule].text, G_SIGNAL_MATCH_FUNC, 0, 0 , NULL, entry_changed, NULL);
+    
+    //we update the query
+    set_properties(&d->rule[d->active_rule]);
+    dt_collection_update_query(darktable.collection);
+  }
+  g_free(txt);
+}
+
+static void num_op_changed(GtkComboBox *combo, dt_lib_collect_t *d)
+{
+  //we update the gui
+  
+  int op = gtk_combo_box_get_active(GTK_COMBO_BOX(d->num_op));
+  gtk_widget_set_visible(d->num2_box,(op == DT_LIB_COLLECT_NUMOP_RANGE));
+  int property = gtk_combo_box_get_active(d->rule[d->active_rule].combo);
+  if (property == DT_COLLECTION_PROP_ISO)
+  {
+    if (op == DT_LIB_COLLECT_NUMOP_RANGE)
+    {
+      gtk_label_set_text(GTK_LABEL(d->num1_label),_("ISO min."));
+      gtk_label_set_text(GTK_LABEL(d->num2_label),_("ISO max."));
+    }
+    else
+    {
+      gtk_label_set_text(GTK_LABEL(d->num1_label),_("ISO"));
+    }
+  }
+  else if (property == DT_COLLECTION_PROP_APERTURE)
+  {
+    if (op == DT_LIB_COLLECT_NUMOP_RANGE)
+    {
+      gtk_label_set_text(GTK_LABEL(d->num1_label),_("F min."));
+      gtk_label_set_text(GTK_LABEL(d->num2_label),_("F max."));
+    }
+    else
+    {
+      gtk_label_set_text(GTK_LABEL(d->num1_label),_("F"));
+    }
+  }
+  
+  num_update_entry(d);
+}
+
+static void num_entry_activate(GtkWidget *widget, dt_lib_collect_t *d)
+{
+  num_update_entry(d);
+}
+static void num_btn_press(GtkEntry *entry, gboolean increase, dt_lib_collect_t *d)
+{
+  int property = gtk_combo_box_get_active(d->rule[d->active_rule].combo);
+  
+  char *locale = strdup(setlocale(LC_NUMERIC, NULL));
+  setlocale(LC_NUMERIC, "C");
+
+  double value = atof(gtk_entry_get_text(entry));
+  if (increase) value = num_increase(value,property);
+  else value = num_decrease(value,property);
+  gchar *txt = NULL;
+  if (property == DT_COLLECTION_PROP_ISO) txt = dt_util_dstrcat(txt,"%.0f", value);
+  else txt = dt_util_dstrcat(txt,"%.1f", value);
+  gtk_entry_set_text(entry,txt);
+  g_free(txt);
+  
+  setlocale(LC_NUMERIC, locale);
+  g_free(locale);
+  
+  num_update_entry(d);
+}
+static gboolean num1_minus_press(GtkWidget *widget, GdkEventButton *event, dt_lib_collect_t *d)
+{
+  num_btn_press(GTK_ENTRY(d->num1_entry),FALSE,d);
+  return TRUE;
+}
+static gboolean num1_plus_press(GtkWidget *widget, GdkEventButton *event, dt_lib_collect_t *d)
+{
+  num_btn_press(GTK_ENTRY(d->num1_entry),TRUE,d);
+  return TRUE;
+}
+static gboolean num2_minus_press(GtkWidget *widget, GdkEventButton *event, dt_lib_collect_t *d)
+{
+  num_btn_press(GTK_ENTRY(d->num2_entry),FALSE,d);
+  return TRUE;
+}
+static gboolean num2_plus_press(GtkWidget *widget, GdkEventButton *event, dt_lib_collect_t *d)
+{
+  num_btn_press(GTK_ENTRY(d->num2_entry),TRUE,d);
+  return TRUE;
 }
 
 static void combo_changed(GtkComboBox *combo, dt_lib_collect_rule_t *d)
@@ -1338,6 +1612,55 @@ void gui_init(dt_lib_module_t *self)
                                           G_TYPE_STRING, G_TYPE_BOOLEAN));
   d->treemodel = treemodel;
 
+  d->num_box = gtk_grid_new();
+  gtk_widget_set_size_request(GTK_WIDGET(d->num_box), -1, DT_PIXEL_APPLY_DPI(300));
+  
+  d->num_op = gtk_combo_box_text_new();
+  gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(d->num_op), "=");
+  gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(d->num_op), "<");
+  gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(d->num_op), "<=");
+  gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(d->num_op), ">");
+  gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(d->num_op), ">=");
+  gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(d->num_op), "!=");
+  gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(d->num_op), "[]");
+  g_signal_connect(G_OBJECT(d->num_op), "changed", G_CALLBACK(num_op_changed), d);
+  gtk_grid_attach(GTK_GRID(d->num_box), d->num_op, 0, 0, 1, 1);
+  
+  d->num1_box = gtk_hbox_new(FALSE, 0);
+  d->num1_label = gtk_label_new("");
+  d->num1_entry = gtk_entry_new();
+  gtk_entry_set_max_length(GTK_ENTRY(d->num1_entry), 6);
+  gtk_entry_set_width_chars(GTK_ENTRY(d->num1_entry), 6);
+  GtkWidget *bt1 = dtgtk_button_new(dtgtk_cairo_paint_plusminus, 0);
+  GtkWidget *bt2 = dtgtk_button_new(dtgtk_cairo_paint_plusminus, CPF_ACTIVE);
+  g_signal_connect(G_OBJECT(d->num1_entry), "activate", G_CALLBACK(num_entry_activate), d);
+  g_signal_connect(G_OBJECT(bt1), "button-press-event", G_CALLBACK(num1_minus_press), d);
+  g_signal_connect(G_OBJECT(bt2), "button-press-event", G_CALLBACK(num1_plus_press), d);
+  gtk_box_pack_start(GTK_BOX(d->num1_box), d->num1_entry, FALSE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(d->num1_box), bt1, FALSE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(d->num1_box), bt2, FALSE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(d->num1_box), d->num1_label, FALSE, FALSE, 5);
+  gtk_grid_attach(GTK_GRID(d->num_box), d->num1_box, 1, 0, 1, 1);
+
+  d->num2_box = gtk_hbox_new(FALSE, 0);
+  d->num2_label = gtk_label_new("");
+  d->num2_entry = gtk_entry_new();
+  gtk_entry_set_max_length(GTK_ENTRY(d->num2_entry), 6);
+  gtk_entry_set_width_chars(GTK_ENTRY(d->num2_entry), 6);
+  bt1 = dtgtk_button_new(dtgtk_cairo_paint_plusminus, 0);
+  bt2 = dtgtk_button_new(dtgtk_cairo_paint_plusminus, CPF_ACTIVE);
+  g_signal_connect(G_OBJECT(d->num2_entry), "activate", G_CALLBACK(num_entry_activate), d);
+  g_signal_connect(G_OBJECT(bt1), "button-press-event", G_CALLBACK(num2_minus_press), d);
+  g_signal_connect(G_OBJECT(bt2), "button-press-event", G_CALLBACK(num2_plus_press), d);
+  gtk_box_pack_start(GTK_BOX(d->num2_box), d->num2_entry, FALSE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(d->num2_box), bt1, FALSE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(d->num2_box), bt2, FALSE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(d->num2_box), d->num2_label, FALSE, FALSE, 5);
+  gtk_grid_attach(GTK_GRID(d->num_box), d->num2_box, 1, 1, 1, 1);
+  gtk_widget_show_all(GTK_WIDGET(d->num2_box));
+  gtk_widget_set_no_show_all(GTK_WIDGET(d->num2_box), TRUE);
+  
+  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(d->num_box), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(sw), TRUE, TRUE, 0);
 
   d->autocompletion = gtk_entry_completion_new();
