@@ -449,7 +449,7 @@ int read_image(dt_imageio_module_data_t *jpg_tmp, uint8_t *out)
         for(int k = 0; k < 3; k++) tmp[4 * i + k] = row_pointer[0][3 * i + k];
     tmp += 4 * jpg->width;
   }
-  // (void)jpeg_finish_decompress(&(jpg->dinfo));
+  (void)jpeg_finish_decompress(&(jpg->dinfo));
   jpeg_destroy_decompress(&(jpg->dinfo));
   free(row_pointer[0]);
   fclose(jpg->f);
