@@ -534,6 +534,7 @@ void dt_collection_split_operator_number(const gchar *input, char **number, char
 }
 void dt_collection_split_operator_datetime(const gchar *input, char **number, char **number2, char **operator)
 {
+  // we don't check if it's a valid date, in order to let more flexibility to advanced users (wildcards, ...)
   GRegex *regex;
   GMatchInfo *match_info;
   int match_count;
@@ -541,7 +542,7 @@ void dt_collection_split_operator_datetime(const gchar *input, char **number, ch
   *number = *number2 = *operator = NULL;
 
   // we test the range expression first
-  regex = g_regex_new("^\\s*\\[\\s*(\\d{4}:\\d{2}:\\d{2}(?: \\d{2}:\\d{2}:\\d{2})?);(\\d{4}:\\d{2}:\\d{2}(?: \\d{2}:\\d{2}:\\d{2})?)\\s*\\]\\s*$", 0, 0, NULL);
+  regex = g_regex_new("^\\s*\\[\\s*([0-9:\\% ]+)\\s-;\\s*([0-9:\\% ]+)\\s*\\]\\s*$", 0, 0, NULL);
   g_regex_match_full(regex, input, -1, 0, 0, &match_info, NULL);
   match_count = g_match_info_get_match_count(match_info);
   
@@ -556,7 +557,7 @@ void dt_collection_split_operator_datetime(const gchar *input, char **number, ch
   }
   
   // and we test the classic comparaison operators
-  regex = g_regex_new("^\\s*(=|<|>|<=|>=|<>)?\\s*(\\d{4}:\\d{2}:\\d{2}(?: \\d{2}:\\d{2}:\\d{2})?)\\s*$", 0, 0, NULL);
+  regex = g_regex_new("^\\s*(=|<|>|<=|>=|<>|\\!=)?\\s*([0-9:\\% ]+)\\s*$", 0, 0, NULL);
   g_regex_match_full(regex, input, -1, 0, 0, &match_info, NULL);
   match_count = g_match_info_get_match_count(match_info);
 
@@ -720,10 +721,12 @@ static void get_query_string(const dt_collection_properties_t property, const gc
         if (number && number2)
           snprintf(query, query_len, "((datetime_taken >= '%s') AND (datetime_taken <= '%s'))", number, number2);
       }
+      else if(operator && number && (strcmp(operator, "!=") == 0 || strcmp(operator, "<>") == 0))
+        snprintf(query, query_len, "(datetime_taken not like '%s')", number);
       else if(operator && number)
         snprintf(query, query_len, "(datetime_taken %s '%s')", operator, number);
       else if(number)
-        snprintf(query, query_len, "(datetime_taken = '%s')", number);
+        snprintf(query, query_len, "(datetime_taken like '%s')", number);
       else
         snprintf(query, query_len, "(datetime_taken like '%s')", escaped_text);
       g_free(operator);

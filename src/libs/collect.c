@@ -1191,55 +1191,6 @@ static void num_update_query(dt_lib_collect_t *d)
   g_free(txt);
 }
 
-static void num_op_changed(GtkComboBox *combo, dt_lib_collect_t *d)
-{
-  //we update the gui
-  
-  int op = gtk_combo_box_get_active(GTK_COMBO_BOX(d->num_op));
-  int property = gtk_combo_box_get_active(d->rule[d->active_rule].combo);
-  if (property == DT_COLLECTION_PROP_ISO)
-  {
-    gtk_widget_set_visible(d->num2_box,(op == DT_LIB_COLLECT_NUMOP_RANGE));
-    if (op == DT_LIB_COLLECT_NUMOP_RANGE)
-    {
-      gtk_label_set_text(GTK_LABEL(d->num1_label),_("ISO min."));
-      gtk_label_set_text(GTK_LABEL(d->num2_label),_("ISO max."));
-    }
-    else
-    {
-      gtk_label_set_text(GTK_LABEL(d->num1_label),_("ISO"));
-    }
-  }
-  else if (property == DT_COLLECTION_PROP_APERTURE)
-  {
-    gtk_widget_set_visible(d->num2_box,(op == DT_LIB_COLLECT_NUMOP_RANGE));
-    if (op == DT_LIB_COLLECT_NUMOP_RANGE)
-    {
-      gtk_label_set_text(GTK_LABEL(d->num1_label),_("F min."));
-      gtk_label_set_text(GTK_LABEL(d->num2_label),_("F max."));
-    }
-    else
-    {
-      gtk_label_set_text(GTK_LABEL(d->num1_label),_("F"));
-    }
-  }
-  else if (property == DT_COLLECTION_PROP_TIME)
-  {
-    gtk_widget_set_visible(d->date2_box,(op == DT_LIB_COLLECT_NUMOP_RANGE));
-    if (op == DT_LIB_COLLECT_NUMOP_RANGE)
-    {
-      gtk_label_set_text(GTK_LABEL(d->date1_label),_("min."));
-      gtk_label_set_text(GTK_LABEL(d->date2_label),_("max."));
-    }
-    else
-    {
-      gtk_label_set_text(GTK_LABEL(d->date1_label), "");
-    }
-  }
-
-  num_update_query(d);
-}
-
 static void num_entry_activate(GtkWidget *widget, dt_lib_collect_t *d)
 {
   num_update_query(d);
@@ -1287,6 +1238,45 @@ static gboolean num2_plus_press(GtkWidget *widget, GdkEventButton *event, dt_lib
 }
 
 // date entries fct
+static int date_read(const char *dte, int *year, int *month, int *day, int *hour, int *minute, int *second)
+{
+  // returned values :
+  // 0 invalid date-time
+  // 1 valid date
+  // 2 valid date-time
+  GRegex *regex;
+  GMatchInfo *match_info;
+  int match_count;
+
+  //we initialize the values
+  *year = *month = *day = *hour = *minute = *second = 0;
+  
+  // we test the range expression first
+  regex = g_regex_new("^\\s*(\\d{4})[:\\/-](\\d{2})[:\\/-](\\d{2})(?:\\s*[ T]\\s*(\\d{2}):(\\d{2}):(\\d{2}))?\\s*$", 0, 0, NULL);
+  g_regex_match_full(regex, dte, -1, 0, 0, &match_info, NULL);
+  match_count = g_match_info_get_match_count(match_info);
+  
+  int rep = 0;
+  if(match_count >= 3)
+  {
+    *year = atoi(g_match_info_fetch(match_info, 1));
+    *month = atoi(g_match_info_fetch(match_info, 2));
+    *day = atoi(g_match_info_fetch(match_info, 3));
+    rep = 1;
+  }
+  if(match_count >= 6)
+  {
+    *hour = atoi(g_match_info_fetch(match_info, 4));
+    *minute = atoi(g_match_info_fetch(match_info, 5));
+    *second = atoi(g_match_info_fetch(match_info, 6));
+    rep = 2;
+  }
+
+  g_match_info_free(match_info);
+  g_regex_unref(regex);
+  return rep;
+}
+
 static void date_update_query(dt_lib_collect_t *d)
 {
   if (!d->update_query_on_sel_change) return;
@@ -1298,8 +1288,40 @@ static void date_update_query(dt_lib_collect_t *d)
   if (op == DT_LIB_COLLECT_NUMOP_EQUAL) optxt = "";
   else optxt = gtk_combo_box_text_get_active_text(GTK_COMBO_BOX_TEXT(d->num_op));
   
-  if (op == DT_LIB_COLLECT_NUMOP_RANGE) txt = dt_util_dstrcat(txt,"[%s;%s]", gtk_entry_get_text(GTK_ENTRY(d->date1_entry)), gtk_entry_get_text(GTK_ENTRY(d->date2_entry)));
-  else txt = dt_util_dstrcat(txt,"%s%s", optxt, gtk_entry_get_text(GTK_ENTRY(d->date1_entry)));
+  int r1,y1,m1,d1,h1,mm1,s1;
+  r1 = date_read(gtk_entry_get_text(GTK_ENTRY(d->date1_entry)),&y1,&m1,&d1,&h1,&mm1,&s1);
+  int r2,y2,m2,d2,h2,mm2,s2;
+  r2 = date_read(gtk_entry_get_text(GTK_ENTRY(d->date2_entry)),&y2,&m2,&d2,&h2,&mm2,&s2);
+  
+  if (op == DT_LIB_COLLECT_NUMOP_RANGE)
+  {
+    // if the second date as no time, we add it as 23:59:59 (user expected behaviour)
+    if (r2 == 1)
+    {
+      h2 = 23;
+      mm2 = 59;
+      s2 = 59;
+    }
+    if (r1>0) txt = dt_util_dstrcat(txt,"[%04d:%02d:%02d %02d:%02d:%02d;", y1, m1, d1, h1, mm1, s1);
+    else txt = dt_util_dstrcat(txt,"[%s;", gtk_entry_get_text(GTK_ENTRY(d->date1_entry)));
+    if (r2>0) txt = dt_util_dstrcat(txt,"%04d:%02d:%02d %02d:%02d:%02d]", y2, m2, d2, h2, mm2, s2);
+    else txt = dt_util_dstrcat(txt,"%s]", gtk_entry_get_text(GTK_ENTRY(d->date2_entry)));
+  }
+  else
+  {
+    if (r1 == 0) txt = dt_util_dstrcat(txt,"%s%s", optxt, gtk_entry_get_text(GTK_ENTRY(d->date1_entry)));
+    else if (r1 == 1)
+    {
+      if (op == DT_LIB_COLLECT_NUMOP_EQUAL) txt = dt_util_dstrcat(txt,"%04d:%02d:%02d%%", y1, m1, d1);
+      else if (op == DT_LIB_COLLECT_NUMOP_INF) txt = dt_util_dstrcat(txt,"%s%04d:%02d:%02d 00:00:00", optxt, y1, m1, d1);
+      else if (op == DT_LIB_COLLECT_NUMOP_INF_EQ) txt = dt_util_dstrcat(txt,"%s%04d:%02d:%02d 23:59:59", optxt, y1, m1, d1);
+      else if (op == DT_LIB_COLLECT_NUMOP_SUP) txt = dt_util_dstrcat(txt,"%s%04d:%02d:%02d 23:59:59", optxt, y1, m1, d1);
+      else if (op == DT_LIB_COLLECT_NUMOP_SUP_EQ) txt = dt_util_dstrcat(txt,"%s%04d:%02d:%02d 00:00:00", optxt, y1, m1, d1);
+      else if (op == DT_LIB_COLLECT_NUMOP_DIFF) txt = dt_util_dstrcat(txt,"%s%04d:%02d:%02d%%", optxt, y1, m1, d1);
+      else txt = dt_util_dstrcat(txt,"%s%04d:%02d:%02d", optxt, y1, m1, d1);
+    }
+    else txt = dt_util_dstrcat(txt,"%s%04d:%02d:%02d %02d:%02d:%02d", optxt, y1, m1, d1, h1, mm1, s1);
+  }
   
   //we verify that it's a real change
   if (strcmp(txt,gtk_entry_get_text(GTK_ENTRY(d->rule[d->active_rule].text))) != 0)
@@ -1328,10 +1350,11 @@ static void date_cal_select(GtkCalendar *calendar, dt_lib_collect_t *d)
   {
     guint y,m,dd;
     gtk_calendar_get_date(calendar, &y, &m, &dd);
-    int op = gtk_combo_box_get_active(GTK_COMBO_BOX(d->num_op));
+    int r1,y1,m1,d1,h1,mm1,s1;
+    r1 = date_read(gtk_entry_get_text(entry),&y1,&m1,&d1,&h1,&mm1,&s1);
     char dtxt[25] = "";
-    if (op == DT_LIB_COLLECT_NUMOP_EQUAL) sprintf(dtxt,"%04d:%02d:%02d",y,m,dd);
-    else sprintf(dtxt,"%04d:%02d:%02d 00:00:00",y,m,dd);
+    if (r1 == 2) sprintf(dtxt,"%04d:%02d:%02d %02d:%02d:%02d",y,m+1,dd,h1,mm1,s1);
+    else sprintf(dtxt,"%04d:%02d:%02d",y,m+1,dd);
     gtk_entry_set_text(entry,dtxt);
     date_update_query(d);
   }
@@ -1345,10 +1368,18 @@ static void date_entry_activate(GtkWidget *widget, dt_lib_collect_t *d)
 }
 static void date_btn_press(GtkWidget *widget, GtkEntry *entry, GdkEventButton *event, dt_lib_collect_t *d)
 {
-  //we have to setup and show a date picker
+  // we setup the calendar options
+  int r1,y1,m1,d1,h1,mm1,s1;
+  r1 = date_read(gtk_entry_get_text(entry),&y1,&m1,&d1,&h1,&mm1,&s1);
+  if (r1>0)
+  {
+    gtk_calendar_select_month(GTK_CALENDAR(d->date_cal),m1-1,y1);
+    gtk_calendar_select_day(GTK_CALENDAR(d->date_cal),d1);
+  }
   g_object_set_data (G_OBJECT(d->date_cal),"current-entry",entry);
-  GtkRequisition s2;
-  gtk_widget_size_request(d->date_cal, &s2);
+  // we setup the calendar position
+  GtkRequisition s2, s3;
+  gtk_widget_get_preferred_size(d->date_cal, &s2, &s3);
   GtkAllocation a1;
   gtk_widget_get_allocation(widget,&a1);
   int wx,wy;
@@ -1368,11 +1399,61 @@ static gboolean date2_press(GtkWidget *widget, GdkEventButton *event, dt_lib_col
   return TRUE;
 }
 
+static void num_op_changed(GtkComboBox *combo, dt_lib_collect_t *d)
+{
+  //we update the gui
+  
+  int op = gtk_combo_box_get_active(GTK_COMBO_BOX(d->num_op));
+  int property = gtk_combo_box_get_active(d->rule[d->active_rule].combo);
+  if (property == DT_COLLECTION_PROP_ISO)
+  {
+    gtk_widget_set_visible(d->num2_box,(op == DT_LIB_COLLECT_NUMOP_RANGE));
+    if (op == DT_LIB_COLLECT_NUMOP_RANGE)
+    {
+      gtk_label_set_text(GTK_LABEL(d->num1_label),_("ISO min."));
+      gtk_label_set_text(GTK_LABEL(d->num2_label),_("ISO max."));
+    }
+    else
+    {
+      gtk_label_set_text(GTK_LABEL(d->num1_label),_("ISO"));
+    }
+    num_update_query(d);
+  }
+  else if (property == DT_COLLECTION_PROP_APERTURE)
+  {
+    gtk_widget_set_visible(d->num2_box,(op == DT_LIB_COLLECT_NUMOP_RANGE));
+    if (op == DT_LIB_COLLECT_NUMOP_RANGE)
+    {
+      gtk_label_set_text(GTK_LABEL(d->num1_label),_("F min."));
+      gtk_label_set_text(GTK_LABEL(d->num2_label),_("F max."));
+    }
+    else
+    {
+      gtk_label_set_text(GTK_LABEL(d->num1_label),_("F"));
+    }
+    num_update_query(d);
+  }
+  else if (property == DT_COLLECTION_PROP_TIME)
+  {
+    gtk_widget_set_visible(d->date2_box,(op == DT_LIB_COLLECT_NUMOP_RANGE));
+    if (op == DT_LIB_COLLECT_NUMOP_RANGE)
+    {
+      gtk_label_set_text(GTK_LABEL(d->date1_label),_("min."));
+      gtk_label_set_text(GTK_LABEL(d->date2_label),_("max."));
+    }
+    else
+    {
+      gtk_label_set_text(GTK_LABEL(d->date1_label), "");
+    }
+    date_update_query(d);
+  }  
+}
+
 static void combo_changed(GtkComboBox *combo, dt_lib_collect_rule_t *d)
 {
   if(darktable.gui->reset) return;
   g_signal_handlers_block_matched(d->text, G_SIGNAL_MATCH_FUNC, 0, 0, NULL, entry_changed, NULL);
-  gtk_entry_set_text(GTK_ENTRY(d->text), "");
+  gtk_entry_set_text(GTK_ENTRY(d->text), "%");
   g_signal_handlers_unblock_matched(d->text, G_SIGNAL_MATCH_FUNC, 0, 0, NULL, entry_changed, NULL);
   dt_lib_collect_t *c = get_collect(d);
   c->active_rule = d->num;
@@ -1411,16 +1492,40 @@ static void selection_change(GtkTreeSelection *selection, dt_lib_collect_t *d)
 static void entry_activated(GtkWidget *entry, dt_lib_collect_rule_t *d)
 {
   // we update the selection
-  update_selection(d, TRUE);
-  // we save the params
-  set_properties(d);
+  int property = gtk_combo_box_get_active(d->combo);
+  switch(property)
+  {
+    case DT_COLLECTION_PROP_DAY:
+    case DT_COLLECTION_PROP_TIME:
+    case DT_COLLECTION_PROP_ISO:
+    case DT_COLLECTION_PROP_APERTURE:
+      num_view(d);
+      break;
+    default:
+      update_selection(d, TRUE);
+      set_properties(d);
+      break;
+  }
+
   // and we update the query
   dt_collection_update_query(darktable.collection);
 }
 
 static void entry_changed(GtkEditable *editable, dt_lib_collect_rule_t *d)
 {
-  update_selection(d, FALSE);
+  int property = gtk_combo_box_get_active(d->combo);
+  switch(property)
+  {
+    case DT_COLLECTION_PROP_DAY:
+    case DT_COLLECTION_PROP_TIME:
+    case DT_COLLECTION_PROP_ISO:
+    case DT_COLLECTION_PROP_APERTURE:
+      // do nothing
+      break;
+    default:
+      update_selection(d, FALSE);
+      break;
+  }
 }
 
 int position()
@@ -1753,9 +1858,9 @@ void gui_init(dt_lib_module_t *self)
   g_signal_connect(G_OBJECT(d->num_op), "changed", G_CALLBACK(num_op_changed), d);
   gtk_grid_attach(GTK_GRID(d->num_box), d->num_op, 0, 0, 1, 1);
 
-  box = GTK_BOX(gtk_hbox_new(FALSE, 0));
+  box = GTK_BOX(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0));
 
-  d->num1_box = gtk_hbox_new(FALSE, 0);
+  d->num1_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
   d->num1_label = gtk_label_new("");
   d->num1_entry = gtk_entry_new();
   gtk_entry_set_max_length(GTK_ENTRY(d->num1_entry), 6);
@@ -1773,13 +1878,13 @@ void gui_init(dt_lib_module_t *self)
   gtk_widget_show_all(GTK_WIDGET(d->num1_box));
   gtk_widget_set_no_show_all(GTK_WIDGET(d->num1_box), TRUE);
   
-  d->date1_box = gtk_hbox_new(FALSE, 0);
+  d->date1_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
   d->date1_label = gtk_label_new("");
   d->date1_entry = gtk_entry_new();
   gtk_entry_set_max_length(GTK_ENTRY(d->date1_entry), 20);
   gtk_entry_set_width_chars(GTK_ENTRY(d->date1_entry), 20);
   bt1 = dtgtk_button_new(dtgtk_cairo_paint_solid_triangle, CPF_DIRECTION_DOWN);
-  g_signal_connect(G_OBJECT(d->num1_entry), "activate", G_CALLBACK(date_entry_activate), d);
+  g_signal_connect(G_OBJECT(d->date1_entry), "activate", G_CALLBACK(date_entry_activate), d);
   g_signal_connect(G_OBJECT(bt1), "button-press-event", G_CALLBACK(date1_press), d);
   gtk_box_pack_start(GTK_BOX(d->date1_box), d->date1_entry, FALSE, FALSE, 0);
   gtk_box_pack_start(GTK_BOX(d->date1_box), bt1, FALSE, FALSE, 0);
@@ -1788,11 +1893,11 @@ void gui_init(dt_lib_module_t *self)
   gtk_widget_show_all(GTK_WIDGET(d->date1_box));
   gtk_widget_set_no_show_all(GTK_WIDGET(d->date1_box), TRUE);
   
-  gtk_table_attach(GTK_TABLE(d->num_box), GTK_WIDGET(box), 1, 2, 0, 1, GTK_EXPAND | GTK_FILL, 0, 5, 0);
+  gtk_grid_attach(GTK_GRID(d->num_box), GTK_WIDGET(box), 1, 0, 1, 1);
 
-  box = GTK_BOX(gtk_hbox_new(FALSE, 0));
+  box = GTK_BOX(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0));
 
-  d->num2_box = gtk_hbox_new(FALSE, 0);
+  d->num2_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
   d->num2_label = gtk_label_new("");
   d->num2_entry = gtk_entry_new();
   gtk_entry_set_max_length(GTK_ENTRY(d->num2_entry), 6);
@@ -1810,13 +1915,13 @@ void gui_init(dt_lib_module_t *self)
   gtk_widget_show_all(GTK_WIDGET(d->num2_box));
   gtk_widget_set_no_show_all(GTK_WIDGET(d->num2_box), TRUE);
 
-  d->date2_box = gtk_hbox_new(FALSE, 0);
+  d->date2_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
   d->date2_label = gtk_label_new("");
   d->date2_entry = gtk_entry_new();
   gtk_entry_set_max_length(GTK_ENTRY(d->date2_entry), 20);
   gtk_entry_set_width_chars(GTK_ENTRY(d->date2_entry), 20);
   bt1 = dtgtk_button_new(dtgtk_cairo_paint_solid_triangle, CPF_DIRECTION_DOWN);
-  g_signal_connect(G_OBJECT(d->num1_entry), "activate", G_CALLBACK(date_entry_activate), d);
+  g_signal_connect(G_OBJECT(d->date2_entry), "activate", G_CALLBACK(date_entry_activate), d);
   g_signal_connect(G_OBJECT(bt1), "button-press-event", G_CALLBACK(date2_press), d);
   gtk_box_pack_start(GTK_BOX(d->date2_box), d->date2_entry, FALSE, FALSE, 0);
   gtk_box_pack_start(GTK_BOX(d->date2_box), bt1, FALSE, FALSE, 0);
@@ -1825,7 +1930,7 @@ void gui_init(dt_lib_module_t *self)
   gtk_widget_show_all(GTK_WIDGET(d->date2_box));
   gtk_widget_set_no_show_all(GTK_WIDGET(d->date2_box), TRUE);
   
-  gtk_table_attach(GTK_TABLE(d->num_box), GTK_WIDGET(box), 1, 2, 1, 2, GTK_EXPAND | GTK_FILL, 0, 5, 0);
+  gtk_grid_attach(GTK_GRID(d->num_box), GTK_WIDGET(box), 1, 1, 1, 1);
 
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(d->num_box), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(sw), TRUE, TRUE, 0);
