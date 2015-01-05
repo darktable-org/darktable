@@ -2160,9 +2160,9 @@ void gui_init(struct dt_iop_module_t *self)
   g->demosaic_method_xtrans = dt_bauhaus_combobox_new(self);
   dt_bauhaus_widget_set_label(g->demosaic_method_xtrans, NULL, _("method"));
   gtk_box_pack_start(GTK_BOX(self->widget), g->demosaic_method_xtrans, TRUE, TRUE, 0);
-  dt_bauhaus_combobox_add(g->demosaic_method_xtrans, _("VNG"));
-  dt_bauhaus_combobox_add(g->demosaic_method_xtrans, _("Markesteijn 1-pass (slow)"));
-  dt_bauhaus_combobox_add(g->demosaic_method_xtrans, _("Markesteijn 3-pass (slower)"));
+  dt_bauhaus_combobox_add(g->demosaic_method_xtrans, _("VNG (slow)"));
+  dt_bauhaus_combobox_add(g->demosaic_method_xtrans, _("Markesteijn 1-pass"));
+  dt_bauhaus_combobox_add(g->demosaic_method_xtrans, _("Markesteijn 3-pass (slow)"));
   g_object_set(G_OBJECT(g->demosaic_method_xtrans), "tooltip-text", _("demosaicing raw data method"),
                (char *)NULL);
 
