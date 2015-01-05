@@ -24,9 +24,9 @@ G_BEGIN_DECLS
 #define DTGTK_TOGGLEBUTTON(obj)                                                                              \
   G_TYPE_CHECK_INSTANCE_CAST(obj, dtgtk_togglebutton_get_type(), GtkDarktableToggleButton)
 #define DTGTK_TOGGLEBUTTON_CLASS(klass)                                                                      \
-  GTK_CHECK_CLASS_CAST(klass, dtgtk_togglebutton_get_type(), GtkDarktableToggleButtonClass)
+  G_TYPE_CHECK_CLASS_CAST(klass, dtgtk_togglebutton_get_type(), GtkDarktableToggleButtonClass)
 #define DTGTK_IS_TOGGLEBUTTON(obj) G_TYPE_CHECK_INSTANCE_TYPE(obj, dtgtk_togglebutton_get_type())
-#define DTGTK_IS_TOGGLEBUTTON_CLASS(klass) GTK_CHECK_CLASS_TYPE(obj, dtgtk_togglebutton_get_type())
+#define DTGTK_IS_TOGGLEBUTTON_CLASS(klass) G_TYPE_CHECK_CLASS_TYPE(obj, dtgtk_togglebutton_get_type())
 
 typedef struct _GtkDarktableToggleButton
 {

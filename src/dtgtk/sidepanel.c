@@ -32,18 +32,17 @@ static void _side_panel_class_init(GtkDarktableSidePanelClass *klass)
   widget_class->get_preferred_width = get_preferred_width;
 }
 
-// public functions
-GtkWidget *dtgtk_side_panel_new()
+static void _side_panel_init(GtkDarktableSidePanel *panel)
 {
-  GtkDarktableSidePanel *panel;
-
-  panel = g_object_new(dtgtk_side_panel_get_type(), "orientation", GTK_ORIENTATION_VERTICAL, NULL);
   panel->panel_width = dt_conf_get_int("panel_width");
 
   gtk_widget_set_vexpand(GTK_WIDGET(panel), TRUE);
-  gtk_widget_set_size_request(GTK_WIDGET(panel), panel->panel_width, -1);
+}
 
-  return (GtkWidget *)panel;
+// public functions
+GtkWidget *dtgtk_side_panel_new()
+{
+  return g_object_new(dtgtk_side_panel_get_type(), "orientation", GTK_ORIENTATION_VERTICAL, NULL);
 }
 
 GType dtgtk_side_panel_get_type()
@@ -56,7 +55,7 @@ GType dtgtk_side_panel_get_type()
       (GClassInitFunc)_side_panel_class_init, NULL, /* class_finalize */
       NULL,                                         /* class_data */
       sizeof(GtkDarktableSidePanel), 0,             /* n_preallocs */
-      (GInstanceInitFunc)NULL,
+      (GInstanceInitFunc)_side_panel_init,
     };
     dtgtk_side_panel_type
         = g_type_register_static(GTK_TYPE_BOX, "GtkDarktableSidePanel", &dtgtk_side_panel_info, 0);

@@ -27,17 +27,17 @@ G_BEGIN_DECLS
 #define DTGTK_GRADIENT_SLIDER(obj)                                                                           \
   G_TYPE_CHECK_INSTANCE_CAST(obj, dtgtk_gradient_slider_get_type(), GtkDarktableGradientSlider)
 #define DTGTK_GRADIENT_SLIDER_CLASS(klass)                                                                   \
-  GTK_CHECK_CLASS_CAST(klass, dtgtk_gradient_slider_get_type(), GtkDarktableGradientSliderClass)
+  G_TYPE_CHECK_CLASS_CAST(klass, dtgtk_gradient_slider_get_type(), GtkDarktableGradientSliderClass)
 #define DTGTK_IS_GRADIENT_SLIDER(obj) G_TYPE_CHECK_INSTANCE_TYPE(obj, dtgtk_gradient_slider_get_type())
-#define DTGTK_IS_GRADIENT_SLIDER_CLASS(klass) GTK_CHECK_CLASS_TYPE(obj, dtgtk_gradient_slider_get_type())
+#define DTGTK_IS_GRADIENT_SLIDER_CLASS(klass) G_TYPE_CHECK_CLASS_TYPE(obj, dtgtk_gradient_slider_get_type())
 #define DTGTK_GRADIENT_SLIDER_MULTIVALUE(obj)                                                                \
   G_TYPE_CHECK_INSTANCE_CAST(obj, dtgtk_gradient_slider_multivalue_get_type(), GtkDarktableGradientSlider)
 #define DTGTK_GRADIENT_SLIDER_MULTIVALUE_CLASS(klass)                                                        \
-  GTK_CHECK_CLASS_CAST(klass, dtgtk_gradient_slider_multivalue_get_type(), GtkDarktableGradientSliderClass)
+  G_TYPE_CHECK_CLASS_CAST(klass, dtgtk_gradient_slider_multivalue_get_type(), GtkDarktableGradientSliderClass)
 #define DTGTK_IS_GRADIENT_SLIDER_MULTIVALUE(obj)                                                             \
   G_TYPE_CHECK_INSTANCE_TYPE(obj, dtgtk_gradient_slider_multivalue_get_type())
 #define DTGTK_IS_GRADIENT_SLIDER_MULTIVALUE_CLASS(klass)                                                     \
-  GTK_CHECK_CLASS_TYPE(obj, dtgtk_gradient_slider_multivalue_get_type())
+  G_TYPE_CHECK_CLASS_TYPE(obj, dtgtk_gradient_slider_multivalue_get_type())
 
 enum
 {

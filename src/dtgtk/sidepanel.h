@@ -25,9 +25,9 @@ G_BEGIN_DECLS
 #define DTGTK_SIDE_PANEL(obj)                                                                                \
   G_TYPE_CHECK_INSTANCE_CAST(obj, dtgtk_side_panel_get_type(), GtkDarktableSidePanel)
 #define DTGTK_SIDE_PANEL_CLASS(klass)                                                                        \
-  GTK_CHECK_CLASS_CAST(klass, dtgtk_side_panel_get_type(), GtkDarktableButtonClass)
+  G_TYPE_CHECK_CLASS_CAST(klass, dtgtk_side_panel_get_type(), GtkDarktableButtonClass)
 #define DTGTK_IS_SIDE_PANEL(obj) G_TYPE_CHECK_INSTANCE_TYPE(obj, dtgtk_side_panel_get_type())
-#define DTGTK_IS_SIDE_PANEL_CLASS(klass) GTK_CHECK_CLASS_TYPE(obj, dtgtk_side_panel_get_type())
+#define DTGTK_IS_SIDE_PANEL_CLASS(klass) G_TYPE_CHECK_CLASS_TYPE(obj, dtgtk_side_panel_get_type())
 
 typedef struct _GtkDarktableSidePanel
 {

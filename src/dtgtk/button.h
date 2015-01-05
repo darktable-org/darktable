@@ -23,9 +23,9 @@
 G_BEGIN_DECLS
 #define DTGTK_BUTTON(obj) G_TYPE_CHECK_INSTANCE_CAST(obj, dtgtk_button_get_type(), GtkDarktableButton)
 #define DTGTK_BUTTON_CLASS(klass)                                                                            \
-  GTK_CHECK_CLASS_CAST(klass, dtgtk_button_get_type(), GtkDarktableButtonClass)
+  G_TYPE_CHECK_CLASS_CAST(klass, dtgtk_button_get_type(), GtkDarktableButtonClass)
 #define DTGTK_IS_BUTTON(obj) G_TYPE_CHECK_INSTANCE_TYPE(obj, dtgtk_button_get_type())
-#define DTGTK_IS_BUTTON_CLASS(klass) GTK_CHECK_CLASS_TYPE(obj, dtgtk_button_get_type())
+#define DTGTK_IS_BUTTON_CLASS(klass) G_TYPE_CHECK_CLASS_TYPE(obj, dtgtk_button_get_type())
 
 typedef enum _darktable_button_flags
 {
