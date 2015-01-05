@@ -38,8 +38,9 @@ def add_edges(gr):
   # camera input color profile:
   gr.add_edge(('colorin', 'demosaic'))
 
-  # these work on float mosaic data:
-  gr.add_edge(('demosaic', 'letsgofloat'))
+  # these work on float, rescaled mosaic data:
+  gr.add_edge(('demosaic', 'rawprepare'))
+
   # handle highlights correctly:
   # we want highlights as early as possible, to avoid
   # pink highlights in plugins (happens only before highlight clipping)
@@ -50,27 +51,28 @@ def add_edges(gr):
 
   # highlights come directly after whitebalance
   gr.add_edge(('highlights', 'temperature'))
-  
+
   # cacorrect works better on undenoised data:
   gr.add_edge(('hotpixels', 'cacorrect'))
   gr.add_edge(('rawdenoise', 'cacorrect'))
-  
+
   # all these need white balanced and clipped input:
   gr.add_edge(('rawdenoise', 'highlights'))
   gr.add_edge(('hotpixels', 'highlights'))
   gr.add_edge(('cacorrect', 'highlights'))
 
-  # we want float pixels:
-  gr.add_edge(('temperature', 'letsgofloat'))
+  # we want cropped and B/W rescaled pixels,
+  # after after uint16 -> float conversion
+  gr.add_edge(('temperature', 'rawprepare'))
 
   # and of course rawspeed needs to give us the pixels first:
-  gr.add_edge(('letsgofloat', 'rawspeed'))
+  gr.add_edge(('rawprepare', 'rawspeed'))
 
   # inversion should be really early in the pipe
   gr.add_edge(('temperature', 'invert'))
 
-  # but after uint16 -> float conversio
-  gr.add_edge(('invert', 'letsgofloat'))
+  # but after cropping and B/W rescaling
+  gr.add_edge(('invert', 'rawprepare'))
 
   # these need to be in camera color space (linear input rgb):
   gr.add_edge(('colorin', 'exposure'))
@@ -360,7 +362,6 @@ gr.add_nodes([
 'channelmixer',
 'clahe', # deprecated
 'clipping',
-'letsgofloat',
 'colisa',
 'colorbalance',
 'colorcorrection',
@@ -410,6 +411,7 @@ gr.add_nodes([
 'vignette',
 'watermark',
 'zonesystem',
+'rawprepare',
 'rawspeed' ])
 
 add_edges(gr)
