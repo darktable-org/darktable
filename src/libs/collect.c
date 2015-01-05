@@ -54,6 +54,8 @@ typedef struct dt_lib_collect_t
   GtkTreeView *view;
   GtkTreeModel *treemodel;
   GtkTreeModel *listmodel;
+  GtkEntryCompletion *autocompletion;
+  GtkCellRenderer *auto_renderer;
   GtkScrolledWindow *scrolledwindow;
   gboolean update_query_on_sel_change;
 
@@ -293,6 +295,31 @@ static void set_properties(dt_lib_collect_rule_t *dr)
   dt_conf_set_int(confname, property);
 }
 
+static gboolean entry_autocompl_match_selected(GtkEntryCompletion *widget, GtkTreeModel *model, GtkTreeIter *iter, dt_lib_collect_t *d)
+{
+  gchar *text;
+  gtk_tree_model_get (model, iter, DT_LIB_COLLECT_COL_PATH, &text, -1);
+  gtk_entry_set_text(GTK_ENTRY(d->rule[d->active_rule].text), text);
+  gtk_editable_set_position(GTK_EDITABLE(d->rule[d->active_rule].text), -1);
+  
+  // we update the selection
+  update_selection(&d->rule[d->active_rule], TRUE);
+  // we save the params
+  set_properties(&d->rule[d->active_rule]);
+  // and we update the query
+  dt_collection_update_query(darktable.collection);
+  
+  return TRUE;
+}
+
+static gboolean entry_autocompl_match(GtkEntryCompletion *completion, const gchar *key, GtkTreeIter *iter, gpointer data)
+{
+  gchar *text;
+  gtk_tree_model_get (gtk_entry_completion_get_model(completion), iter, DT_LIB_COLLECT_COL_PATH, &text, -1);
+  if (!key || !text) return FALSE;
+  return (g_str_has_prefix(text,key));
+}
+
 static void folders_view(dt_lib_collect_rule_t *dr)
 {
   // update related list
@@ -300,8 +327,10 @@ static void folders_view(dt_lib_collect_rule_t *dr)
   sqlite3_stmt *stmt;
 
   g_object_ref(d->treemodel);
+  g_object_ref(d->listmodel);
   gtk_tree_view_set_model(GTK_TREE_VIEW(d->view), NULL);
   gtk_tree_store_clear(GTK_TREE_STORE(d->treemodel));
+  gtk_list_store_clear(GTK_LIST_STORE(d->listmodel));
   gtk_widget_hide(GTK_WIDGET(d->scrolledwindow));
 
   set_properties (dr);
@@ -316,7 +345,7 @@ static void folders_view(dt_lib_collect_rule_t *dr)
   {
     int level = 0;
     char *value;
-    GtkTreeIter current,iter;
+    GtkTreeIter current, iter, iter2;
     char **pch = g_strsplit((char *)sqlite3_column_text(stmt, 0),"/", -1);
 
     if (pch != NULL)
@@ -369,6 +398,10 @@ static void folders_view(dt_lib_collect_rule_t *dr)
           gtk_tree_store_set(GTK_TREE_STORE(d->treemodel), &iter, DT_LIB_COLLECT_COL_TEXT, pch[j],
                             DT_LIB_COLLECT_COL_PATH, pth2,
                             DT_LIB_COLLECT_COL_STRIKETROUGTH, !(g_file_test(pth3, G_FILE_TEST_IS_DIR)), -1);
+          gtk_list_store_append(GTK_LIST_STORE(d->listmodel), &iter2);
+          gtk_list_store_set(GTK_LIST_STORE(d->listmodel), &iter2, DT_LIB_COLLECT_COL_TEXT, pch[j],
+                            DT_LIB_COLLECT_COL_PATH, pth2,
+                            DT_LIB_COLLECT_COL_STRIKETROUGTH, FALSE, -1);
           current = iter;
         }
 
@@ -382,6 +415,11 @@ static void folders_view(dt_lib_collect_rule_t *dr)
   }
   sqlite3_finalize(stmt);
 
+  gtk_entry_completion_set_model(d->autocompletion,d->listmodel);
+  gtk_cell_layout_set_attributes(GTK_CELL_LAYOUT(d->autocompletion),d->auto_renderer, "text", DT_LIB_COLLECT_COL_PATH, NULL);
+  gtk_entry_completion_set_popup_set_width(d->autocompletion,FALSE);
+  gtk_entry_set_completion(GTK_ENTRY(dr->text),d->autocompletion);
+
   gtk_tree_view_set_tooltip_column(GTK_TREE_VIEW(d->view), DT_LIB_COLLECT_COL_TOOLTIP);
   gtk_tree_view_set_model(GTK_TREE_VIEW(d->view), d->treemodel);
   gtk_widget_set_no_show_all(GTK_WIDGET(d->scrolledwindow), FALSE);
@@ -390,6 +428,7 @@ static void folders_view(dt_lib_collect_rule_t *dr)
   update_selection(dr, TRUE);
   
   g_object_unref(d->treemodel);
+  g_object_unref(d->listmodel);
 }
 
 static const char *UNCATEGORIZED_TAG = N_("uncategorized");
@@ -407,8 +446,10 @@ static void tags_view(dt_lib_collect_rule_t *dr)
   view = d->view;
   tagsmodel = d->treemodel;
   g_object_ref(tagsmodel);
+  g_object_ref(d->listmodel);
   gtk_tree_view_set_model(GTK_TREE_VIEW(view), NULL);
   gtk_tree_store_clear(GTK_TREE_STORE(tagsmodel));
+  gtk_list_store_clear(GTK_LIST_STORE(d->listmodel));
   gtk_widget_hide(GTK_WIDGET(d->scrolledwindow));
 
   set_properties(dr);
@@ -437,12 +478,18 @@ static void tags_view(dt_lib_collect_rule_t *dr)
       gtk_tree_store_set(GTK_TREE_STORE(tagsmodel), &temp,
                           DT_LIB_COLLECT_COL_TEXT, sqlite3_column_text(stmt, 0),
                           DT_LIB_COLLECT_COL_PATH, sqlite3_column_text(stmt, 0), -1);
+      GtkTreeIter iter2;
+      gtk_list_store_append(GTK_LIST_STORE(d->listmodel), &iter2);
+      gtk_list_store_set(GTK_LIST_STORE(d->listmodel), &iter2,
+                          DT_LIB_COLLECT_COL_TEXT, sqlite3_column_text(stmt, 0),
+                          DT_LIB_COLLECT_COL_PATH, sqlite3_column_text(stmt, 0),
+                          DT_LIB_COLLECT_COL_STRIKETROUGTH, FALSE, -1);
     }
     else
     {
       int level = 0;
       char *value;
-      GtkTreeIter current, iter;
+      GtkTreeIter current, iter, iter2;
       char **pch = g_strsplit((char *)sqlite3_column_text(stmt, 0), "|", -1);
 
       if(pch != NULL)
@@ -494,6 +541,10 @@ static void tags_view(dt_lib_collect_rule_t *dr)
             gtk_tree_store_insert(GTK_TREE_STORE(tagsmodel), &iter, level > 0 ? &current : NULL, 0);
             gtk_tree_store_set(GTK_TREE_STORE(tagsmodel), &iter, DT_LIB_COLLECT_COL_TEXT, pch[j],
                                DT_LIB_COLLECT_COL_PATH, pth2, -1);
+            gtk_list_store_append(GTK_LIST_STORE(d->listmodel), &iter2);
+            gtk_list_store_set(GTK_LIST_STORE(d->listmodel), &iter2, DT_LIB_COLLECT_COL_TEXT, pch[j],
+                                DT_LIB_COLLECT_COL_PATH, pth2,
+                                DT_LIB_COLLECT_COL_STRIKETROUGTH, FALSE, -1);
             current = iter;
           }
 
@@ -507,12 +558,18 @@ static void tags_view(dt_lib_collect_rule_t *dr)
   }
   sqlite3_finalize(stmt);
 
+  gtk_entry_completion_set_model(d->autocompletion,d->listmodel);
+  gtk_cell_layout_set_attributes(GTK_CELL_LAYOUT(d->autocompletion),d->auto_renderer, "text", DT_LIB_COLLECT_COL_PATH, NULL);
+  gtk_entry_completion_set_popup_set_width(d->autocompletion,FALSE);
+  gtk_entry_set_completion(GTK_ENTRY(dr->text),d->autocompletion);
+
   gtk_tree_view_set_tooltip_column(GTK_TREE_VIEW(view), DT_LIB_COLLECT_COL_TOOLTIP);
   gtk_tree_view_set_model(GTK_TREE_VIEW(view), tagsmodel);
   gtk_widget_set_no_show_all(GTK_WIDGET(d->scrolledwindow), FALSE);
   gtk_widget_show_all(GTK_WIDGET(d->scrolledwindow));
 
   g_object_unref(tagsmodel);
+  g_object_unref(d->listmodel);
 
   update_selection(dr, TRUE);
 }
@@ -738,6 +795,24 @@ static void list_view(dt_lib_collect_rule_t *dr)
   goto entry_key_press_exit;
 
 entry_key_press_exit:
+  // we setup the autocompletion of the entry
+  switch(property)
+  {
+    case DT_COLLECTION_PROP_FILMROLL:
+    case DT_COLLECTION_PROP_CAMERA:
+    case DT_COLLECTION_PROP_FILENAME:
+    case DT_COLLECTION_PROP_TITLE:
+    case DT_COLLECTION_PROP_DESCRIPTION:
+    case DT_COLLECTION_PROP_CREATOR:
+    case DT_COLLECTION_PROP_PUBLISHER:
+    case DT_COLLECTION_PROP_RIGHTS:
+    case DT_COLLECTION_PROP_LENS:
+      gtk_entry_completion_set_model(d->autocompletion,listmodel);
+      gtk_cell_layout_set_attributes(GTK_CELL_LAYOUT(d->autocompletion),d->auto_renderer, "text", DT_LIB_COLLECT_COL_TEXT, NULL);
+      gtk_entry_completion_set_popup_set_width(d->autocompletion,TRUE);
+      gtk_entry_set_completion(GTK_ENTRY(dr->text),d->autocompletion);
+      break;
+  }
   gtk_tree_view_set_tooltip_column(GTK_TREE_VIEW(view), DT_LIB_COLLECT_COL_TOOLTIP);
   gtk_tree_view_set_model(GTK_TREE_VIEW(view), listmodel);
   gtk_widget_set_no_show_all(GTK_WIDGET(d->scrolledwindow), FALSE);
@@ -767,6 +842,9 @@ static void update_view(dt_lib_collect_rule_t *dr)
 {
   dt_lib_collect_t *d = get_collect(dr);
   d->update_query_on_sel_change = FALSE;
+
+  gtk_entry_set_completion(GTK_ENTRY(dr->text), NULL); 
+
   int property = gtk_combo_box_get_active(dr->combo);
 
   if(property == DT_COLLECTION_PROP_FOLDERS)
@@ -1258,6 +1336,13 @@ void gui_init(dt_lib_module_t *self)
   d->treemodel = treemodel;
 
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(sw), TRUE, TRUE, 0);
+
+  d->autocompletion = gtk_entry_completion_new();
+  d->auto_renderer = gtk_cell_renderer_text_new();
+  gtk_cell_layout_pack_start(GTK_CELL_LAYOUT(d->autocompletion),d->auto_renderer,TRUE);
+  gtk_cell_layout_add_attribute(GTK_CELL_LAYOUT(d->autocompletion),d->auto_renderer, "text", DT_LIB_COLLECT_COL_PATH);
+  gtk_entry_completion_set_match_func(d->autocompletion, entry_autocompl_match, d, NULL);
+  g_signal_connect(G_OBJECT(d->autocompletion), "match-selected", G_CALLBACK(entry_autocompl_match_selected), d);
 
   /* setup proxy */
   darktable.view_manager->proxy.module_collect.module = self;
