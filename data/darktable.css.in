@@ -19,7 +19,6 @@
   text-shadow:none;
   margin: 0;
   padding: 0;
-  border: 0;
 }
 
 GtkAlignment
@@ -64,8 +63,6 @@ GtkAlignment
 #lib-plugin-ui *
 {
   margin:0;
-  border:0;
-  background-color: @selected_bg_color;
 }
 /* lib toggle buttons (e.g recently used collection and history items): */
 /* TODO: adjust borders/padding to our liking (match bauhaus..) */
@@ -334,4 +331,16 @@ GtkMenuItem:hover
 GtkMenuItem *
 {
   background-color: transparent;
+}
+
+.slider.horizontal,
+.slider.vertical {
+    border-color: @selected_bg_color;
+    background-color: @text_color;
+}
+
+.slider.horizontal:hover,
+.slider.vertical:hover {
+    border-color:  @selected_bg_color;
+    background-color: @fg_color;
 }
