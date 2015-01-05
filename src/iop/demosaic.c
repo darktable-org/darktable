@@ -1429,7 +1429,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *
   int demosaicing_method = data->demosaicing_method;
   if(piece->pipe->type == DT_DEV_PIXELPIPE_FULL && qual < 2
      && roi_out->scale <= .99999f) // only overwrite setting if quality << requested and in dr mode
-    demosaicing_method = (img->filters != 9u) ? DT_IOP_DEMOSAIC_PPG : DT_IOP_DEMOSAIC_VNG;
+    demosaicing_method = (img->filters != 9u) ? DT_IOP_DEMOSAIC_PPG : DT_IOP_DEMOSAIC_MARKESTEIJN;
 
   const float *const pixels = (float *)i;
   if(roi_out->scale > .99999f && roi_out->scale < 1.00001f)
@@ -2061,7 +2061,7 @@ void reload_defaults(dt_iop_module_t *module)
   // we might be called from presets update infrastructure => there is no image
   if(!module->dev) goto end;
 
-  if(module->dev->image_storage.filters == 9u) tmp.demosaicing_method = DT_IOP_DEMOSAIC_VNG;
+  if(module->dev->image_storage.filters == 9u) tmp.demosaicing_method = DT_IOP_DEMOSAIC_MARKESTEIJN;
 
 end:
   memcpy(module->params, &tmp, sizeof(dt_iop_demosaic_params_t));
@@ -2136,7 +2136,7 @@ static void demosaic_method_xtrans_callback(GtkWidget *combo, dt_iop_module_t *s
   dt_iop_demosaic_params_t *p = (dt_iop_demosaic_params_t *)self->params;
   p->demosaicing_method = dt_bauhaus_combobox_get(combo) | DEMOSAIC_XTRANS;
   if((p->demosaicing_method > DT_IOP_DEMOSAIC_MARKESTEIJN_3) || (p->demosaicing_method < DT_IOP_DEMOSAIC_VNG))
-    p->demosaicing_method = DT_IOP_DEMOSAIC_VNG;
+    p->demosaicing_method = DT_IOP_DEMOSAIC_MARKESTEIJN;
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
