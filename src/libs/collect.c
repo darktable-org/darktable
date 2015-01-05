@@ -1453,7 +1453,7 @@ static void combo_changed(GtkComboBox *combo, dt_lib_collect_rule_t *d)
 {
   if(darktable.gui->reset) return;
   g_signal_handlers_block_matched(d->text, G_SIGNAL_MATCH_FUNC, 0, 0, NULL, entry_changed, NULL);
-  gtk_entry_set_text(GTK_ENTRY(d->text), "%");
+  gtk_entry_set_text(GTK_ENTRY(d->text), "");
   g_signal_handlers_unblock_matched(d->text, G_SIGNAL_MATCH_FUNC, 0, 0, NULL, entry_changed, NULL);
   dt_lib_collect_t *c = get_collect(d);
   c->active_rule = d->num;

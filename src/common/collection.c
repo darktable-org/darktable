@@ -584,13 +584,16 @@ static void get_query_string(const dt_collection_properties_t property, const gc
   {
     case DT_COLLECTION_PROP_FILMROLL: // film roll
       if (!(escaped_text && *escaped_text))
-        snprintf(query, query_len, "(film_id in (select id from film_rolls where folder like '%s%%'))", escaped_text);
+        snprintf(query, query_len, "(film_id in (select id from film_rolls where folder like '%%'))");
       else
         snprintf(query, query_len, "(film_id in (select id from film_rolls where folder like '%s'))", escaped_text);
       break;
 
     case DT_COLLECTION_PROP_FOLDERS: // folders
-      snprintf(query, query_len, "(film_id in (select id from film_rolls where folder like '%s'))", escaped_text);
+      if (!(escaped_text && *escaped_text))
+        snprintf(query, query_len, "(film_id in (select id from film_rolls where folder like '%%'))");
+      else
+        snprintf(query, query_len, "(film_id in (select id from film_rolls where folder like '%s'))", escaped_text);
       break;
 
     case DT_COLLECTION_PROP_COLORLABEL: // colorlabel
@@ -616,21 +619,33 @@ static void get_query_string(const dt_collection_properties_t property, const gc
     break;
 
     case DT_COLLECTION_PROP_HISTORY: // history
-      snprintf(query, query_len, "(id %s in (select imgid from history where imgid=images.id)) ",
+      if(!(escaped_text && *escaped_text) || strcmp(escaped_text, "%") == 0)
+        snprintf(query, query_len, "(id like '%%')"); // dummy request to select all images
+      else
+        snprintf(query, query_len, "(id %s in (select imgid from history where imgid=images.id)) ",
                (strcmp(escaped_text, _("altered")) == 0) ? "" : "not");
       break;
 
     case DT_COLLECTION_PROP_GEOTAGGING: // geotagging
-      snprintf(query, query_len, "(id %s in (select id AS imgid from images where (longitude IS NOT NULL AND "
+      if(!(escaped_text && *escaped_text) || strcmp(escaped_text, "%") == 0)
+        snprintf(query, query_len, "(id like '%%')"); // dummy request to select all images
+      else
+        snprintf(query, query_len, "(id %s in (select id AS imgid from images where (longitude IS NOT NULL AND "
                                  "latitude IS NOT NULL))) ",
                (strcmp(escaped_text, _("tagged")) == 0) ? "" : "not");
       break;
 
     case DT_COLLECTION_PROP_CAMERA: // camera
-      snprintf(query, query_len, "(maker || ' ' || model like '%s')", escaped_text);
+      if (!(escaped_text && *escaped_text))
+        snprintf(query, query_len, "(maker || ' ' || model like '%%')");
+      else
+        snprintf(query, query_len, "(maker || ' ' || model like '%s')", escaped_text);
       break;
     case DT_COLLECTION_PROP_TAG: // tag
-      snprintf(query, query_len, "(id in (select imgid from tagged_images as a join "
+      if (!(escaped_text && *escaped_text))
+        snprintf(query, query_len, "(id like '%%')"); // dummy request to select all images
+      else
+        snprintf(query, query_len, "(id in (select imgid from tagged_images as a join "
                                  "tags as b on a.tagid = b.id where name like '%s'))",
                escaped_text);
       break;
@@ -638,34 +653,54 @@ static void get_query_string(const dt_collection_properties_t property, const gc
     // TODO: How to handle images without metadata? In the moment they are not shown.
     // TODO: Autogenerate this code?
     case DT_COLLECTION_PROP_TITLE: // title
-      snprintf(query, query_len, "(id in (select id from meta_data where key = %d and value like '%s'))",
+      if(!(escaped_text && *escaped_text) || strcmp(escaped_text, "%") == 0)
+        snprintf(query, query_len, "(id like '%%')"); // dummy request to select all images
+      else
+        snprintf(query, query_len, "(id in (select id from meta_data where key = %d and value like '%s'))",
                DT_METADATA_XMP_DC_TITLE, escaped_text);
       break;
     case DT_COLLECTION_PROP_DESCRIPTION: // description
-      snprintf(query, query_len, "(id in (select id from meta_data where key = %d and value like '%s'))",
+      if(!(escaped_text && *escaped_text) || strcmp(escaped_text, "%") == 0)
+        snprintf(query, query_len, "(id like '%%')"); // dummy request to select all images
+      else
+        snprintf(query, query_len, "(id in (select id from meta_data where key = %d and value like '%s'))",
                DT_METADATA_XMP_DC_DESCRIPTION, escaped_text);
       break;
     case DT_COLLECTION_PROP_CREATOR: // creator
-      snprintf(query, query_len, "(id in (select id from meta_data where key = %d and value like '%s'))",
+      if(!(escaped_text && *escaped_text) || strcmp(escaped_text, "%") == 0)
+        snprintf(query, query_len, "(id like '%%')"); // dummy request to select all images
+      else
+        snprintf(query, query_len, "(id in (select id from meta_data where key = %d and value like '%s'))",
                DT_METADATA_XMP_DC_CREATOR, escaped_text);
       break;
     case DT_COLLECTION_PROP_PUBLISHER: // publisher
-      snprintf(query, query_len, "(id in (select id from meta_data where key = %d and value like '%s'))",
+      if(!(escaped_text && *escaped_text) || strcmp(escaped_text, "%") == 0)
+        snprintf(query, query_len, "(id like '%%')"); // dummy request to select all images
+      else
+        snprintf(query, query_len, "(id in (select id from meta_data where key = %d and value like '%s'))",
                DT_METADATA_XMP_DC_PUBLISHER, escaped_text);
       break;
     case DT_COLLECTION_PROP_RIGHTS: // rights
-      snprintf(query, query_len, "(id in (select id from meta_data where key = %d and value like '%s'))",
+      if(!(escaped_text && *escaped_text) || strcmp(escaped_text, "%") == 0)
+        snprintf(query, query_len, "(id like '%%')"); // dummy request to select all images
+      else
+        snprintf(query, query_len, "(id in (select id from meta_data where key = %d and value like '%s'))",
                DT_METADATA_XMP_DC_RIGHTS, escaped_text);
       break;
     case DT_COLLECTION_PROP_LENS: // lens
-      snprintf(query, query_len, "(lens like '%s')", escaped_text);
+      if (!(escaped_text && *escaped_text))
+        snprintf(query, query_len, "(lens like '%%')");
+      else
+        snprintf(query, query_len, "(lens like '%s')", escaped_text);
       break;
     case DT_COLLECTION_PROP_ISO: // iso
     {
       gchar *operator, *number, *number2;
       dt_collection_split_operator_number(escaped_text, &number, &number2, &operator);
-
-      if(operator && strcmp(operator, "[]") == 0)
+      
+      if (!(escaped_text && *escaped_text))
+        snprintf(query, query_len, "(iso like '%%')");
+      else if(operator && strcmp(operator, "[]") == 0)
       {
         if (number && number2)
           snprintf(query, query_len, "((iso >= %s) AND (iso <= %s))", number, number2);
@@ -687,8 +722,10 @@ static void get_query_string(const dt_collection_properties_t property, const gc
     {
       gchar *operator, *number, *number2;
       dt_collection_split_operator_number(escaped_text, &number, &number2, &operator);
-
-      if(operator && strcmp(operator, "[]") == 0)
+      
+      if (!(escaped_text && *escaped_text))
+        snprintf(query, query_len, "(aperture like '%%')");
+      else if(operator && strcmp(operator, "[]") == 0)
       {
         if (number && number2)
           snprintf(query, query_len, "((aperture >= %s) AND (aperture <= %s))", number, number2);
@@ -707,7 +744,10 @@ static void get_query_string(const dt_collection_properties_t property, const gc
     break;
 
     case DT_COLLECTION_PROP_FILENAME: // filename
-      snprintf(query, query_len, "(filename like '%s')", escaped_text);
+      if(!(escaped_text && *escaped_text) || strcmp(escaped_text, "%") == 0)
+        snprintf(query, query_len, "(filename like '%%')"); // dummy request to select all images
+      else
+        snprintf(query, query_len, "(filename like '%s')", escaped_text);
       break;
 
     case DT_COLLECTION_PROP_DAY:
@@ -716,7 +756,9 @@ static void get_query_string(const dt_collection_properties_t property, const gc
       gchar *operator, *number, *number2;
       dt_collection_split_operator_datetime (escaped_text, &number, &number2, &operator);
       
-      if(operator && strcmp(operator, "[]") == 0)
+      if (!(escaped_text && *escaped_text))
+        snprintf(query, query_len, "(datetime_taken like '%%')");
+      else if(operator && strcmp(operator, "[]") == 0)
       {
         if (number && number2)
           snprintf(query, query_len, "((datetime_taken >= '%s') AND (datetime_taken <= '%s'))", number, number2);
