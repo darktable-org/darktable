@@ -552,40 +552,76 @@ static void list_view(dt_lib_collect_rule_t *dr)
       break;
     case DT_COLLECTION_PROP_HISTORY: // History, 2 hardcoded alternatives
       gtk_list_store_append(GTK_LIST_STORE(listmodel), &iter);
-      gtk_list_store_set(GTK_LIST_STORE(listmodel), &iter, DT_LIB_COLLECT_COL_TEXT, _("altered"),
-                         DT_LIB_COLLECT_COL_ID, 0, DT_LIB_COLLECT_COL_TOOLTIP, _("altered"), -1);
+      gtk_list_store_set (GTK_LIST_STORE(listmodel), &iter,
+                          DT_LIB_COLLECT_COL_TEXT,_("altered"),
+                          DT_LIB_COLLECT_COL_PATH,_("altered"),
+                          DT_LIB_COLLECT_COL_ID, 0,
+                          DT_LIB_COLLECT_COL_TOOLTIP,_("altered"),
+                          -1);
       gtk_list_store_append(GTK_LIST_STORE(listmodel), &iter);
-      gtk_list_store_set(GTK_LIST_STORE(listmodel), &iter, DT_LIB_COLLECT_COL_TEXT, _("not altered"),
-                         DT_LIB_COLLECT_COL_ID, 1, DT_LIB_COLLECT_COL_TOOLTIP, _("not altered"), -1);
+      gtk_list_store_set (GTK_LIST_STORE(listmodel), &iter,
+                          DT_LIB_COLLECT_COL_TEXT,_("not altered"),
+                          DT_LIB_COLLECT_COL_PATH,_("not altered"),
+                          DT_LIB_COLLECT_COL_ID, 1,
+                          DT_LIB_COLLECT_COL_TOOLTIP,_("not altered"),
+                          -1);
       goto entry_key_press_exit;
       break;
 
     case DT_COLLECTION_PROP_GEOTAGGING: // Geotagging, 2 hardcoded alternatives
       gtk_list_store_append(GTK_LIST_STORE(listmodel), &iter);
-      gtk_list_store_set(GTK_LIST_STORE(listmodel), &iter, DT_LIB_COLLECT_COL_TEXT, _("tagged"),
-                         DT_LIB_COLLECT_COL_ID, 0, DT_LIB_COLLECT_COL_TOOLTIP, _("tagged"), -1);
+      gtk_list_store_set (GTK_LIST_STORE(listmodel), &iter,
+                          DT_LIB_COLLECT_COL_TEXT,_("tagged"),
+                          DT_LIB_COLLECT_COL_PATH,_("tagged"),
+                          DT_LIB_COLLECT_COL_ID, 0,
+                          DT_LIB_COLLECT_COL_TOOLTIP,_("tagged"),
+                          -1);
       gtk_list_store_append(GTK_LIST_STORE(listmodel), &iter);
-      gtk_list_store_set(GTK_LIST_STORE(listmodel), &iter, DT_LIB_COLLECT_COL_TEXT, _("not tagged"),
-                         DT_LIB_COLLECT_COL_ID, 1, DT_LIB_COLLECT_COL_TOOLTIP, _("not tagged"), -1);
+      gtk_list_store_set (GTK_LIST_STORE(listmodel), &iter,
+                          DT_LIB_COLLECT_COL_TEXT,_("not tagged"),
+                          DT_LIB_COLLECT_COL_PATH,_("not tagged"),
+                          DT_LIB_COLLECT_COL_ID, 1,
+                          DT_LIB_COLLECT_COL_TOOLTIP,_("not tagged"),
+                          -1);
       goto entry_key_press_exit;
       break;
 
     case DT_COLLECTION_PROP_COLORLABEL: // colorlabels
       gtk_list_store_append(GTK_LIST_STORE(listmodel), &iter);
-      gtk_list_store_set(GTK_LIST_STORE(listmodel), &iter, DT_LIB_COLLECT_COL_TEXT, _("red"),
-                         DT_LIB_COLLECT_COL_ID, 0, DT_LIB_COLLECT_COL_TOOLTIP, _("red"), -1);
+      gtk_list_store_set (GTK_LIST_STORE(listmodel), &iter,
+                          DT_LIB_COLLECT_COL_TEXT,_("red"),
+                          DT_LIB_COLLECT_COL_PATH,_("red"),
+                          DT_LIB_COLLECT_COL_ID, 0,
+                          DT_LIB_COLLECT_COL_TOOLTIP, _("red"),
+                          -1);
       gtk_list_store_append(GTK_LIST_STORE(listmodel), &iter);
-      gtk_list_store_set(GTK_LIST_STORE(listmodel), &iter, DT_LIB_COLLECT_COL_TEXT, _("yellow"),
-                         DT_LIB_COLLECT_COL_ID, 1, DT_LIB_COLLECT_COL_TOOLTIP, _("yellow"), -1);
+      gtk_list_store_set (GTK_LIST_STORE(listmodel), &iter,
+                          DT_LIB_COLLECT_COL_TEXT,_("yellow"),
+                          DT_LIB_COLLECT_COL_PATH,_("yellow"),
+                          DT_LIB_COLLECT_COL_ID, 1,
+                          DT_LIB_COLLECT_COL_TOOLTIP, _("yellow"),
+                          -1);
       gtk_list_store_append(GTK_LIST_STORE(listmodel), &iter);
-      gtk_list_store_set(GTK_LIST_STORE(listmodel), &iter, DT_LIB_COLLECT_COL_TEXT, _("green"),
-                         DT_LIB_COLLECT_COL_ID, 2, DT_LIB_COLLECT_COL_TOOLTIP, _("green"), -1);
+      gtk_list_store_set (GTK_LIST_STORE(listmodel), &iter,
+                          DT_LIB_COLLECT_COL_TEXT,_("green"),
+                          DT_LIB_COLLECT_COL_PATH,_("green"),
+                          DT_LIB_COLLECT_COL_ID, 2,
+                          DT_LIB_COLLECT_COL_TOOLTIP, _("green"),
+                          -1);
       gtk_list_store_append(GTK_LIST_STORE(listmodel), &iter);
-      gtk_list_store_set(GTK_LIST_STORE(listmodel), &iter, DT_LIB_COLLECT_COL_TEXT, _("blue"),
-                         DT_LIB_COLLECT_COL_ID, 3, DT_LIB_COLLECT_COL_TOOLTIP, _("blue"), -1);
+      gtk_list_store_set (GTK_LIST_STORE(listmodel), &iter,
+                          DT_LIB_COLLECT_COL_TEXT,_("blue"),
+                          DT_LIB_COLLECT_COL_PATH,_("blue"),
+                          DT_LIB_COLLECT_COL_ID, 3,
+                          DT_LIB_COLLECT_COL_TOOLTIP, _("blue"),
+                          -1);
       gtk_list_store_append(GTK_LIST_STORE(listmodel), &iter);
-      gtk_list_store_set(GTK_LIST_STORE(listmodel), &iter, DT_LIB_COLLECT_COL_TEXT, _("purple"),
-                         DT_LIB_COLLECT_COL_ID, 4, DT_LIB_COLLECT_COL_TOOLTIP, _("purple"), -1);
+      gtk_list_store_set (GTK_LIST_STORE(listmodel), &iter,
+                          DT_LIB_COLLECT_COL_TEXT,_("purple"),
+                          DT_LIB_COLLECT_COL_PATH,_("purple"),
+                          DT_LIB_COLLECT_COL_ID, 4,
+                          DT_LIB_COLLECT_COL_TOOLTIP, _("purple"),
+                          -1);
       goto entry_key_press_exit;
       break;
 
