@@ -285,8 +285,6 @@ void commit_params(dt_iop_module_t *self, const dt_iop_params_t *const params, d
       d->sub[i] = (float)p->raw_black_level_separate[i];
       d->div[i] = (white - d->sub[i]);
     }
-
-    piece->process_cl_ready = 0;
   }
   else
   {
