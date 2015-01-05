@@ -346,7 +346,10 @@ static void folders_view(dt_lib_collect_rule_t *dr)
     int level = 0;
     char *value;
     GtkTreeIter current, iter, iter2;
-    char **pch = g_strsplit((char *)sqlite3_column_text(stmt, 0),"/", -1);
+
+    char *folder = (char*)sqlite3_column_text(stmt, 0);
+    if(folder == NULL) continue; // safeguard against degenerated db entries
+    char **pch = g_strsplit(folder, "/", -1);
 
     if (pch != NULL)
     {
