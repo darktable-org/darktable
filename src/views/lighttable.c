@@ -838,8 +838,6 @@ after_drawing:
     darktable.gui->center_tooltip = 0;
     g_object_set(G_OBJECT(dt_ui_center(darktable.gui->ui)), "tooltip-text", "", (char *)NULL);
   }
-
-  dt_control_queue_redraw_center();
 }
 
 
