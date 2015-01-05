@@ -52,34 +52,6 @@ RawImage OrfDecoder::decodeRawInternal() {
   if (1 != compression)
     ThrowRDE("ORF Decoder: Unsupported compression");
 
-  if (mRootIFD->hasEntryRecursive(OLYMPUSREDMULTIPLIER) &&
-      mRootIFD->hasEntryRecursive(OLYMPUSBLUEMULTIPLIER)) {
-    mRaw->metadata.wbCoeffs[0] = (float) mRootIFD->getEntryRecursive(OLYMPUSREDMULTIPLIER)->getShort();
-    mRaw->metadata.wbCoeffs[1] = 256.0f;
-    mRaw->metadata.wbCoeffs[2] = (float) mRootIFD->getEntryRecursive(OLYMPUSBLUEMULTIPLIER)->getShort();
-  } else if(mRootIFD->hasEntryRecursive(OLYMPUSIMAGEPROCESSING)) {
-    TiffEntry *img_entry = mRootIFD->getEntryRecursive(OLYMPUSIMAGEPROCESSING);
-    uint32 offset = *((ushort16 *) img_entry->getData()) + img_entry->parent_offset - 12;
-    TiffIFD *image_processing;
-    if (mRootIFD->endian == getHostEndianness())
-      image_processing = new TiffIFD(mFile, offset);
-    else
-      image_processing = new TiffIFDBE(mFile, offset);
-    if(image_processing->hasEntry((TiffTag) 0x0100)) {
-      TiffEntry *wb = image_processing->getEntry((TiffTag) 0x0100);
-      if (wb->count == 4) {
-        wb->parent_offset = img_entry->parent_offset - 12;
-        wb->offsetFromParent();
-      }
-      if (wb->count == 2 || wb->count == 4) {
-        const ushort16 *tmp = wb->getShortArray();
-        mRaw->metadata.wbCoeffs[0] = (float) tmp[0];
-        mRaw->metadata.wbCoeffs[1] = 256.0f;
-        mRaw->metadata.wbCoeffs[2] = (float) tmp[1];
-      }
-    }
-  }
-
   TiffEntry *offsets = raw->getEntry(STRIPOFFSETS);
   TiffEntry *counts = raw->getEntry(STRIPBYTECOUNTS);
 
@@ -332,70 +304,63 @@ void OrfDecoder::decodeMetaDataInternal(CameraMetaData *meta) {
 
   setMetaData(meta, make, model, "", iso);
 
-  TiffIFD *ImageProcessing = 0;
-  try {
-    data = mRootIFD->getIFDsWithTag(MAKERNOTE);
+  if (mRootIFD->hasEntryRecursive(OLYMPUSREDMULTIPLIER) &&
+      mRootIFD->hasEntryRecursive(OLYMPUSBLUEMULTIPLIER)) {
+    mRaw->metadata.wbCoeffs[0] = (float) mRootIFD->getEntryRecursive(OLYMPUSREDMULTIPLIER)->getShort();
+    mRaw->metadata.wbCoeffs[1] = 256.0f;
+    mRaw->metadata.wbCoeffs[2] = (float) mRootIFD->getEntryRecursive(OLYMPUSBLUEMULTIPLIER)->getShort();
+  } else {
+    // Newer cameras process the Image Processing SubIFD in the makernote
+    if(mRootIFD->hasEntryRecursive(OLYMPUSIMAGEPROCESSING)) {
+      TiffEntry *img_entry = mRootIFD->getEntryRecursive(OLYMPUSIMAGEPROCESSING);
+      uint32 offset = *((ushort16 *) img_entry->getData()) + img_entry->parent_offset - 12;
+      TiffIFD *image_processing;
+      if (mRootIFD->endian == getHostEndianness())
+        image_processing = new TiffIFD(mFile, offset);
+      else
+        image_processing = new TiffIFDBE(mFile, offset);
 
-    if (!data.empty()) {
-      TiffIFD* exif = data[0];
-      TiffEntry *makernoteEntry = exif->getEntry(MAKERNOTE);
-      const uchar8* makernote = makernoteEntry->getData();
-      FileMap makermap((uchar8*)&makernote[8], makernoteEntry->count - 8);
-      TiffParserOlympus makertiff(&makermap);
-      makertiff.parseData();
-      TiffEntry *blackEntry = 0;
-
-      // Try reading black level from tag 0x2040 (Olympus Imageprocessing)
-      if (makertiff.RootIFD()->hasEntryRecursive((TiffTag)0x2040)) {
-        try {
-          TiffEntry *imagep = makertiff.RootIFD()->getEntryRecursive((TiffTag)0x2040);
-
-          int32 offset;
-          const uchar8* data = imagep->getData();
-          if (makertiff.tiff_endian == makertiff.getHostEndian())
-            offset = *(int32*)data;
-          else
-            offset = (unsigned int)data[0] << 24 | (unsigned int)data[1] << 16 | (unsigned int)data[2] << 8 | (unsigned int)data[3];
-
-          // It seems like Olympus doesn't mind data pointing out of the makernote, 
-          // so we give it the entire remaining file
-          FileMap makermap2((uchar8*)&makernote[0], mFile->getSize()-makernoteEntry->getDataOffset());
-          if (makertiff.getHostEndian() == makertiff.tiff_endian)
-            ImageProcessing = new TiffIFD(&makermap2, offset);
-          else
-            ImageProcessing = new TiffIFDBE(&makermap2, offset);
-          blackEntry = ImageProcessing->getEntry((TiffTag)0x600);
-        } catch (TiffParserException) {
+      // Get the WB
+      if(image_processing->hasEntry((TiffTag) 0x0100)) {
+        TiffEntry *wb = image_processing->getEntry((TiffTag) 0x0100);
+        if (wb->count == 4) {
+          wb->parent_offset = img_entry->parent_offset - 12;
+          wb->offsetFromParent();
+        }
+        if (wb->count == 2 || wb->count == 4) {
+          const ushort16 *tmp = wb->getShortArray();
+          mRaw->metadata.wbCoeffs[0] = (float) tmp[0];
+          mRaw->metadata.wbCoeffs[1] = 256.0f;
+          mRaw->metadata.wbCoeffs[2] = (float) tmp[1];
         }
       }
 
-      // Otherwise try 0x1012
-      if (!blackEntry && makertiff.RootIFD()->hasEntryRecursive((TiffTag)0x1012)) {
-        blackEntry = makertiff.RootIFD()->getEntryRecursive((TiffTag)0x1012);
-      }
-
-      // Order is assumed to be RGGB
-      if (blackEntry && blackEntry->count == 4) {
-        const ushort16* black = blackEntry->getShortArray();
-        for (int i = 0; i < 4; i++) {
-          if (mRaw->cfa.getColorAt(i&1, i>>1) == CFA_RED)
-            mRaw->blackLevelSeparate[i] = black[0];
-          else if (mRaw->cfa.getColorAt(i&1, i>>1) == CFA_BLUE)
-            mRaw->blackLevelSeparate[i] = black[3];
-          else if (mRaw->cfa.getColorAt(i&1, i>>1) == CFA_GREEN && i<2)
-            mRaw->blackLevelSeparate[i] = black[1];
-          else if (mRaw->cfa.getColorAt(i&1, i>>1) == CFA_GREEN)
-            mRaw->blackLevelSeparate[i] = black[2];
+      // Get the black levels
+      if(image_processing->hasEntry((TiffTag) 0x0600)) {
+        TiffEntry *blackEntry = image_processing->getEntry((TiffTag) 0x0600);
+        // Order is assumed to be RGGB
+        if (blackEntry->count == 4) {
+          blackEntry->parent_offset = img_entry->parent_offset - 12;
+          blackEntry->offsetFromParent();
+          const ushort16* black = blackEntry->getShortArray();
+          for (int i = 0; i < 4; i++) {
+            if (mRaw->cfa.getColorAt(i&1, i>>1) == CFA_RED)
+              mRaw->blackLevelSeparate[i] = black[0];
+            else if (mRaw->cfa.getColorAt(i&1, i>>1) == CFA_BLUE)
+              mRaw->blackLevelSeparate[i] = black[3];
+            else if (mRaw->cfa.getColorAt(i&1, i>>1) == CFA_GREEN && i<2)
+              mRaw->blackLevelSeparate[i] = black[1];
+            else if (mRaw->cfa.getColorAt(i&1, i>>1) == CFA_GREEN)
+              mRaw->blackLevelSeparate[i] = black[2];
+          }
+          // Adjust whitelevel based on the read black (we assume the dynamic range is the same)
+          mRaw->whitePoint -= (mRaw->blackLevel - mRaw->blackLevelSeparate[0]);
         }
-        // Adjust whitelevel based on the read black (we assume the dynamic range is the same)
-        mRaw->whitePoint -= (mRaw->blackLevel - mRaw->blackLevelSeparate[0]);
       }
+      if (image_processing)
+        delete image_processing;
     }
-  } catch (TiffParserException) {
   }
-  if (ImageProcessing)
-    delete ImageProcessing;
-
 }
 
 } // namespace RawSpeed
