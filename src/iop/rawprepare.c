@@ -26,6 +26,7 @@
 
 #include <gtk/gtk.h>
 #include <stdlib.h>
+#include <xmmintrin.h>
 
 DT_MODULE_INTROSPECTION(1, dt_iop_rawprepare_params_t)
 
@@ -133,7 +134,35 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
     {
       const float *in = ((float *)ivoid) + (size_t)roi_in->width * j;
       float *out = ((float *)ovoid) + (size_t)roi_out->width * j;
-      for(int i = 0; i < roi_out->width; i++, in++, out++)
+
+      int i = 0;
+      int alignment = ((4 - (j * roi_out->width & (4 - 1))) & (4 - 1));
+
+      // process unaligned pixels
+      for(; i < alignment; i++, out++, in++)
+      {
+        const int id = BL(roi_out, d, j, i);
+        *out = MAX(0.0f, (*in - d->sub[id]) / d->div[id]);
+      }
+
+      const __m128 sub = _mm_set_ps(d->sub[BL(roi_out, d, j, i + 3)], d->sub[BL(roi_out, d, j, i + 2)],
+                                    d->sub[BL(roi_out, d, j, i + 1)], d->sub[BL(roi_out, d, j, i)]);
+
+      const __m128 div = _mm_set_ps(d->div[BL(roi_out, d, j, i + 3)], d->div[BL(roi_out, d, j, i + 2)],
+                                    d->div[BL(roi_out, d, j, i + 1)], d->div[BL(roi_out, d, j, i)]);
+
+      // process aligned pixels with SSE
+      for(; i < roi_out->width - (4 - 1); i += 4, in += 4, out += 4)
+      {
+        const __m128 input = _mm_load_ps(in);
+
+        const __m128 scaled = _mm_div_ps(_mm_sub_ps(input, sub), div);
+
+        _mm_stream_ps(out, _mm_max_ps(_mm_setzero_ps(), scaled));
+      }
+
+      // process the rest
+      for(; i < roi_out->width; i++, in++, out++)
       {
         const int id = BL(roi_out, d, j, i);
         *out = MAX(0.0f, (*in - d->sub[id]) / d->div[id]);
@@ -159,6 +188,7 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
       }
     }
   }
+  _mm_sfence();
 }
 
 void commit_params(dt_iop_module_t *self, const dt_iop_params_t *const params, dt_dev_pixelpipe_t *pipe,
