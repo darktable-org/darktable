@@ -52,6 +52,34 @@ RawImage OrfDecoder::decodeRawInternal() {
   if (1 != compression)
     ThrowRDE("ORF Decoder: Unsupported compression");
 
+  if (mRootIFD->hasEntryRecursive(OLYMPUSREDMULTIPLIER) &&
+      mRootIFD->hasEntryRecursive(OLYMPUSBLUEMULTIPLIER)) {
+    mRaw->metadata.wbCoeffs[0] = (float) mRootIFD->getEntryRecursive(OLYMPUSREDMULTIPLIER)->getShort();
+    mRaw->metadata.wbCoeffs[1] = 256.0f;
+    mRaw->metadata.wbCoeffs[2] = (float) mRootIFD->getEntryRecursive(OLYMPUSBLUEMULTIPLIER)->getShort();
+  } else if(mRootIFD->hasEntryRecursive(OLYMPUSIMAGEPROCESSING)) {
+    TiffEntry *img_entry = mRootIFD->getEntryRecursive(OLYMPUSIMAGEPROCESSING);
+    uint32 offset = *((ushort16 *) img_entry->getData()) + img_entry->parent_offset - 12;
+    TiffIFD *image_processing;
+    if (mRootIFD->endian == getHostEndianness())
+      image_processing = new TiffIFD(mFile, offset);
+    else
+      image_processing = new TiffIFDBE(mFile, offset);
+    if(image_processing->hasEntry((TiffTag) 0x0100)) {
+      TiffEntry *wb = image_processing->getEntry((TiffTag) 0x0100);
+      if (wb->count == 4) {
+        wb->parent_offset = img_entry->parent_offset - 12;
+        wb->offsetFromParent();
+      }
+      if (wb->count == 2 || wb->count == 4) {
+        const ushort16 *tmp = wb->getShortArray();
+        mRaw->metadata.wbCoeffs[0] = (float) tmp[0];
+        mRaw->metadata.wbCoeffs[1] = 256.0f;
+        mRaw->metadata.wbCoeffs[2] = (float) tmp[1];
+      }
+    }
+  }
+
   TiffEntry *offsets = raw->getEntry(STRIPOFFSETS);
   TiffEntry *counts = raw->getEntry(STRIPBYTECOUNTS);
 
@@ -77,25 +105,8 @@ RawImage OrfDecoder::decodeRawInternal() {
   mRaw->dim = iPoint2D(width, height);
   mRaw->createData();
 
-  data = mRootIFD->getIFDsWithTag(MAKERNOTE);
-  if (data.empty())
-    ThrowRDE("ORF Decoder: No Makernote found");
-
-  TiffIFD* exif = data[0];
-  TiffEntry *makernoteEntry = exif->getEntry(MAKERNOTE);
-  const uchar8* makernote = makernoteEntry->getData();
-  FileMap makermap((uchar8*)&makernote[8], makernoteEntry->count - 8);
-  try {
-    TiffParserOlympus makertiff(&makermap);
-    makertiff.parseData();
-    data = makertiff.RootIFD()->getIFDsWithTag((TiffTag)0x2010);
-    if (data.empty())
-      ThrowRDE("ORF Decoder: Unsupported compression");
-    TiffEntry *oly = data[0]->getEntry((TiffTag)0x2010);
-    if (oly->type == TIFF_UNDEFINED)
-      ThrowRDE("ORF Decoder: Unsupported compression");
-  } catch (TiffParserException) {
-    // We're probably in an old packed ORF, try to decode it like that
+  if ((hints.find(string("force_uncompressed")) != hints.end())) {
+    // Old packed ORF, decode it like that
     uint32 off = offsets->getInt();
     uint32 size = mFile->getSize() - off;
     ByteStream input(mFile->getData(off), size);

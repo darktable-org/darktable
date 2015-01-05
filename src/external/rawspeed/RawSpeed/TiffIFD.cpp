@@ -244,6 +244,14 @@ TiffIFD* TiffIFD::parseMakerNote(FileMap *f, uint32 offset, Endianness parent_en
     offset +=2;
   }
 
+  // Olympus starts the makernote with their own name, sometimes truncated
+  if (!strncmp((const char *)data, "OLYMP", 5)) {
+    offset += 8;
+    if (!strncmp((const char *)data, "OLYMPUS", 7)) {
+      offset += 4;
+    }
+  }
+
   // Attempt to parse the rest as an IFD
   try {
     if (parent_end == getHostEndianness())

@@ -2176,6 +2176,9 @@
 		</CFA>
 		<Crop x="0" y="0" width="3340" height="2504"/>
 		<Sensor black="63" white="4095"/>
+		<Hints>
+			<Hint name="force_uncompressed" value=""/>
+		</Hints>
 	</Camera>
 	<Camera make="OLYMPUS IMAGING CORP." model="E-330">
 		<CFA width="2" height="2">
@@ -2226,6 +2229,9 @@
 		</CFA>
 		<Crop x="0" y="0" width="3340" height="2504"/>
 		<Sensor black="63" white="3967"/>
+		<Hints>
+			<Hint name="force_uncompressed" value=""/>
+		</Hints>
 	</Camera>
 	<Camera make="OLYMPUS IMAGING CORP." model="E-510">
 		<CFA width="2" height="2">

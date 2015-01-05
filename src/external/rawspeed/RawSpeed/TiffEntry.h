@@ -89,13 +89,13 @@ public:
   bool isInt();
   bool isString();
   void offsetFromParent() {data_offset += parent_offset; parent_offset = 0; fetchData(); }
+  uint32 parent_offset;
 protected:
   void fetchData();
   string getValueAsString();
   uchar8* own_data;
   const uchar8* data;
   uint32 data_offset;
-  uint32 parent_offset;
   FileMap *file;
 #ifdef _DEBUG
   int debug_intVal;
