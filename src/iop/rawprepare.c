@@ -139,17 +139,17 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
 #endif
     for(int j = 0; j < roi_out->height; j++)
     {
-      const float *in = ((float *)ivoid) + (size_t)roi_in->width * j;
+      const uint16_t *in = ((uint16_t *)ivoid) + (size_t)roi_in->width * j;
       float *out = ((float *)ovoid) + (size_t)roi_out->width * j;
 
       int i = 0;
-      int alignment = ((4 - (j * roi_out->width & (4 - 1))) & (4 - 1));
+      int alignment = ((8 - (j * roi_out->width & (8 - 1))) & (8 - 1));
 
       // process unaligned pixels
       for(; i < alignment; i++, out++, in++)
       {
         const int id = BL(roi_out, d, j, i);
-        *out = MAX(0.0f, (*in - d->sub[id]) / d->div[id]);
+        *out = MAX(0.0f, ((float)(*in)) - d->sub[id]) / d->div[id];
       }
 
       const __m128 sub = _mm_set_ps(d->sub[BL(roi_out, d, j, i + 3)], d->sub[BL(roi_out, d, j, i + 2)],
@@ -159,20 +159,30 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
                                     d->div[BL(roi_out, d, j, i + 1)], d->div[BL(roi_out, d, j, i)]);
 
       // process aligned pixels with SSE
-      for(; i < roi_out->width - (4 - 1); i += 4, in += 4, out += 4)
+      for(; i < roi_out->width - (8 - 1); i += 8, in += 8)
       {
-        const __m128 input = _mm_load_ps(in);
+        const __m128i input = _mm_load_si128((__m128i *)in);
 
-        const __m128 scaled = _mm_div_ps(_mm_sub_ps(input, sub), div);
+        __m128i ilo = _mm_unpacklo_epi16(input, _mm_set1_epi16(0));
+        __m128i ihi = _mm_unpackhi_epi16(input, _mm_set1_epi16(0));
 
-        _mm_stream_ps(out, _mm_max_ps(_mm_setzero_ps(), scaled));
+        __m128 flo = _mm_cvtepi32_ps(ilo);
+        __m128 fhi = _mm_cvtepi32_ps(ihi);
+
+        flo = _mm_div_ps(_mm_max_ps(_mm_setzero_ps(), _mm_sub_ps(flo, sub)), div);
+        fhi = _mm_div_ps(_mm_max_ps(_mm_setzero_ps(), _mm_sub_ps(fhi, sub)), div);
+
+        _mm_stream_ps(out, flo);
+        out += 4;
+        _mm_stream_ps(out, fhi);
+        out += 4;
       }
 
       // process the rest
       for(; i < roi_out->width; i++, in++, out++)
       {
         const int id = BL(roi_out, d, j, i);
-        *out = MAX(0.0f, (*in - d->sub[id]) / d->div[id]);
+        *out = MAX(0.0f, ((float)(*in)) - d->sub[id]) / d->div[id];
       }
     }
   }
@@ -266,18 +276,21 @@ void commit_params(dt_iop_module_t *self, const dt_iop_params_t *const params, d
   const dt_iop_rawprepare_params_t *const p = (dt_iop_rawprepare_params_t *)params;
   dt_iop_rawprepare_data_t *d = (dt_iop_rawprepare_data_t *)piece->data;
 
-  const float white = (float)p->raw_white_point / (float)UINT16_MAX;
-
   if(!dt_dev_pixelpipe_uses_downsampled_input(piece->pipe) && dt_image_filter(&piece->pipe->image))
   {
+    const float white = (float)p->raw_white_point;
+
     for(int i = 0; i < 4; i++)
     {
-      d->sub[i] = (float)p->raw_black_level_separate[i] / (float)UINT16_MAX;
+      d->sub[i] = (float)p->raw_black_level_separate[i];
       d->div[i] = (white - d->sub[i]);
     }
+
+    piece->process_cl_ready = 0;
   }
   else
   {
+    const float white = (float)p->raw_white_point / (float)UINT16_MAX;
     float black = 0;
     for(int i = 0; i < 4; i++)
     {
@@ -345,6 +358,7 @@ void init(dt_iop_module_t *self)
 
   self->params = calloc(1, sizeof(dt_iop_rawprepare_params_t));
   self->default_params = calloc(1, sizeof(dt_iop_rawprepare_params_t));
+  self->hide_enable_button = 1;
   self->default_enabled = dt_image_is_raw(image) && image->bpp != sizeof(float);
   self->priority = 10; // module order created by iop_dependencies.py, do not edit!
   self->params_size = sizeof(dt_iop_rawprepare_params_t);

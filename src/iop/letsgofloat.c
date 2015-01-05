@@ -157,7 +157,7 @@ void init(dt_iop_module_t *self)
   self->params = calloc(1, sizeof(dt_iop_letsgofloat_params_t));
   self->default_params = calloc(1, sizeof(dt_iop_letsgofloat_params_t));
   self->hide_enable_button = 1;
-  self->default_enabled = 1;
+  self->default_enabled = 0;
   self->priority = 5; // module order created by iop_dependencies.py, do not edit!
   self->params_size = sizeof(dt_iop_letsgofloat_params_t);
   self->gui_data = NULL;
