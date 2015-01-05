@@ -67,6 +67,15 @@ typedef struct dt_lib_collect_t
   GtkWidget *num2_label;
   GtkWidget *num1_entry;
   GtkWidget *num2_entry;
+  GtkWidget *date1_box;
+  GtkWidget *date2_box;
+  GtkWidget *date1_label;
+  GtkWidget *date2_label;
+  GtkWidget *date1_entry;
+  GtkWidget *date2_entry;
+  
+  GtkWidget *date_window;
+  GtkWidget *date_cal;
 
   struct dt_lib_collect_params_t *params;
 } dt_lib_collect_t;
@@ -858,6 +867,7 @@ static void num_view (dt_lib_collect_rule_t *dr)
 {
   // update related list
   dt_lib_collect_t *d = get_collect(dr);
+  int property = gtk_combo_box_get_active(dr->combo);
   
   set_properties (dr);
   
@@ -865,7 +875,10 @@ static void num_view (dt_lib_collect_rule_t *dr)
   gtk_widget_hide(GTK_WIDGET(d->scrolledwindow));
   
   gchar *operator, *number, *number2;
-  dt_collection_split_operator_number(gtk_entry_get_text(GTK_ENTRY(dr->text)), &number, &number2, &operator);
+  if (property == DT_COLLECTION_PROP_ISO || property == DT_COLLECTION_PROP_APERTURE) 
+    dt_collection_split_operator_number(gtk_entry_get_text(GTK_ENTRY(dr->text)), &number, &number2, &operator);
+  else
+    dt_collection_split_operator_datetime(gtk_entry_get_text(GTK_ENTRY(dr->text)), &number, &number2, &operator);
   d->update_query_on_sel_change = FALSE;
   if (!operator)
   {
@@ -880,15 +893,33 @@ static void num_view (dt_lib_collect_rule_t *dr)
   else if (strcmp(operator,"!=")==0 || strcmp(operator,"<>")==0) gtk_combo_box_set_active(GTK_COMBO_BOX(d->num_op),DT_LIB_COLLECT_NUMOP_DIFF);
   else if (strcmp(operator,"[]")==0) gtk_combo_box_set_active(GTK_COMBO_BOX(d->num_op),DT_LIB_COLLECT_NUMOP_RANGE);
   
-  if (number) gtk_entry_set_text(GTK_ENTRY(d->num1_entry),number);
-  else gtk_entry_set_text(GTK_ENTRY(d->num1_entry), "");
-  if (number2) gtk_entry_set_text(GTK_ENTRY(d->num2_entry),number2);
-  else gtk_entry_set_text(GTK_ENTRY(d->num2_entry), "");
+  if (property == DT_COLLECTION_PROP_ISO || property == DT_COLLECTION_PROP_APERTURE)
+  {
+    gtk_widget_hide(d->date1_box);
+    gtk_widget_hide(d->date2_box);
+    gtk_widget_show(d->num1_box);
+    gtk_widget_set_visible(d->num2_box,(gtk_combo_box_get_active(GTK_COMBO_BOX(d->num_op)) == DT_LIB_COLLECT_NUMOP_RANGE));
+    if (number) gtk_entry_set_text(GTK_ENTRY(d->num1_entry),number);
+    else gtk_entry_set_text(GTK_ENTRY(d->num1_entry), "");
+    if (number2) gtk_entry_set_text(GTK_ENTRY(d->num2_entry),number2);
+    else gtk_entry_set_text(GTK_ENTRY(d->num2_entry), "");
+  }
+  else
+  {
+    gtk_widget_hide(d->num1_box);
+    gtk_widget_hide(d->num2_box);
+    gtk_widget_show(d->date1_box);
+    gtk_widget_set_visible(d->date2_box,(gtk_combo_box_get_active(GTK_COMBO_BOX(d->num_op)) == DT_LIB_COLLECT_NUMOP_RANGE));
+    if (number) gtk_entry_set_text(GTK_ENTRY(d->date1_entry),number);
+    else gtk_entry_set_text(GTK_ENTRY(d->date1_entry), "");
+    if (number2) gtk_entry_set_text(GTK_ENTRY(d->date2_entry),number2);
+    else gtk_entry_set_text(GTK_ENTRY(d->date2_entry), "");
+  }
+
   d->update_query_on_sel_change = TRUE;
   
   gtk_widget_set_no_show_all(GTK_WIDGET(d->num_box), FALSE);
   gtk_widget_show_all(GTK_WIDGET(d->num_box));
-  gtk_widget_set_visible(d->num2_box,(gtk_combo_box_get_active(GTK_COMBO_BOX(d->num_op)) == DT_LIB_COLLECT_NUMOP_RANGE));
   
   g_free(operator);
   g_free(number);
@@ -920,7 +951,7 @@ static void update_view(dt_lib_collect_rule_t *dr)
 
   int property = gtk_combo_box_get_active(dr->combo);
 
-  if (property == DT_COLLECTION_PROP_ISO || property == DT_COLLECTION_PROP_APERTURE)
+  if (property == DT_COLLECTION_PROP_ISO || property == DT_COLLECTION_PROP_APERTURE || property == DT_COLLECTION_PROP_TIME)
     num_view(dr);
   else if(property == DT_COLLECTION_PROP_FOLDERS)
     folders_view(dr);
@@ -1114,7 +1145,7 @@ static double num_increase(double value, int property)
   return 999999;
 }
 
-static void num_update_entry(dt_lib_collect_t *d)
+static void num_update_query(dt_lib_collect_t *d)
 {
   if (!d->update_query_on_sel_change) return;
   
@@ -1165,10 +1196,10 @@ static void num_op_changed(GtkComboBox *combo, dt_lib_collect_t *d)
   //we update the gui
   
   int op = gtk_combo_box_get_active(GTK_COMBO_BOX(d->num_op));
-  gtk_widget_set_visible(d->num2_box,(op == DT_LIB_COLLECT_NUMOP_RANGE));
   int property = gtk_combo_box_get_active(d->rule[d->active_rule].combo);
   if (property == DT_COLLECTION_PROP_ISO)
   {
+    gtk_widget_set_visible(d->num2_box,(op == DT_LIB_COLLECT_NUMOP_RANGE));
     if (op == DT_LIB_COLLECT_NUMOP_RANGE)
     {
       gtk_label_set_text(GTK_LABEL(d->num1_label),_("ISO min."));
@@ -1181,6 +1212,7 @@ static void num_op_changed(GtkComboBox *combo, dt_lib_collect_t *d)
   }
   else if (property == DT_COLLECTION_PROP_APERTURE)
   {
+    gtk_widget_set_visible(d->num2_box,(op == DT_LIB_COLLECT_NUMOP_RANGE));
     if (op == DT_LIB_COLLECT_NUMOP_RANGE)
     {
       gtk_label_set_text(GTK_LABEL(d->num1_label),_("F min."));
@@ -1191,13 +1223,26 @@ static void num_op_changed(GtkComboBox *combo, dt_lib_collect_t *d)
       gtk_label_set_text(GTK_LABEL(d->num1_label),_("F"));
     }
   }
-  
-  num_update_entry(d);
+  else if (property == DT_COLLECTION_PROP_TIME)
+  {
+    gtk_widget_set_visible(d->date2_box,(op == DT_LIB_COLLECT_NUMOP_RANGE));
+    if (op == DT_LIB_COLLECT_NUMOP_RANGE)
+    {
+      gtk_label_set_text(GTK_LABEL(d->date1_label),_("min."));
+      gtk_label_set_text(GTK_LABEL(d->date2_label),_("max."));
+    }
+    else
+    {
+      gtk_label_set_text(GTK_LABEL(d->date1_label), "");
+    }
+  }
+
+  num_update_query(d);
 }
 
 static void num_entry_activate(GtkWidget *widget, dt_lib_collect_t *d)
 {
-  num_update_entry(d);
+  num_update_query(d);
 }
 static void num_btn_press(GtkEntry *entry, gboolean increase, dt_lib_collect_t *d)
 {
@@ -1218,7 +1263,7 @@ static void num_btn_press(GtkEntry *entry, gboolean increase, dt_lib_collect_t *
   setlocale(LC_NUMERIC, locale);
   g_free(locale);
   
-  num_update_entry(d);
+  num_update_query(d);
 }
 static gboolean num1_minus_press(GtkWidget *widget, GdkEventButton *event, dt_lib_collect_t *d)
 {
@@ -1241,6 +1286,88 @@ static gboolean num2_plus_press(GtkWidget *widget, GdkEventButton *event, dt_lib
   return TRUE;
 }
 
+// date entries fct
+static void date_update_query(dt_lib_collect_t *d)
+{
+  if (!d->update_query_on_sel_change) return;
+  
+  //we create the new text
+  gchar *txt = NULL;
+  int op = gtk_combo_box_get_active(GTK_COMBO_BOX(d->num_op));
+  char *optxt;
+  if (op == DT_LIB_COLLECT_NUMOP_EQUAL) optxt = "";
+  else optxt = gtk_combo_box_text_get_active_text(GTK_COMBO_BOX_TEXT(d->num_op));
+  
+  if (op == DT_LIB_COLLECT_NUMOP_RANGE) txt = dt_util_dstrcat(txt,"[%s;%s]", gtk_entry_get_text(GTK_ENTRY(d->date1_entry)), gtk_entry_get_text(GTK_ENTRY(d->date2_entry)));
+  else txt = dt_util_dstrcat(txt,"%s%s", optxt, gtk_entry_get_text(GTK_ENTRY(d->date1_entry)));
+  
+  //we verify that it's a real change
+  if (strcmp(txt,gtk_entry_get_text(GTK_ENTRY(d->rule[d->active_rule].text))) != 0)
+  {
+    g_signal_handlers_block_matched (d->rule[d->active_rule].text, G_SIGNAL_MATCH_FUNC, 0, 0 , NULL, entry_changed, NULL);
+    gtk_entry_set_text(GTK_ENTRY(d->rule[d->active_rule].text), txt);
+    gtk_editable_set_position(GTK_EDITABLE(d->rule[d->active_rule].text), -1);
+    g_signal_handlers_unblock_matched (d->rule[d->active_rule].text, G_SIGNAL_MATCH_FUNC, 0, 0 , NULL, entry_changed, NULL);
+    
+    //we update the query
+    set_properties(&d->rule[d->active_rule]);
+    dt_collection_update_query(darktable.collection);
+  }
+  g_free(txt);
+}
+static gboolean date_cal_leave(GtkWidget *widget, GdkEvent  *event, dt_lib_collect_t *d)
+{
+  gtk_widget_hide(d->date_window);
+  return FALSE;
+}
+static void date_cal_select(GtkCalendar *calendar, dt_lib_collect_t *d)
+{
+  // we write the selected date in the correct entry
+  GtkEntry *entry = GTK_ENTRY(g_object_get_data (G_OBJECT(calendar),"current-entry"));
+  if (entry)
+  {
+    guint y,m,dd;
+    gtk_calendar_get_date(calendar, &y, &m, &dd);
+    int op = gtk_combo_box_get_active(GTK_COMBO_BOX(d->num_op));
+    char dtxt[25] = "";
+    if (op == DT_LIB_COLLECT_NUMOP_EQUAL) sprintf(dtxt,"%04d:%02d:%02d",y,m,dd);
+    else sprintf(dtxt,"%04d:%02d:%02d 00:00:00",y,m,dd);
+    gtk_entry_set_text(entry,dtxt);
+    date_update_query(d);
+  }
+  
+  // we hide the calendar
+  gtk_widget_hide(d->date_window);
+}
+static void date_entry_activate(GtkWidget *widget, dt_lib_collect_t *d)
+{
+  date_update_query(d);
+}
+static void date_btn_press(GtkWidget *widget, GtkEntry *entry, GdkEventButton *event, dt_lib_collect_t *d)
+{
+  //we have to setup and show a date picker
+  g_object_set_data (G_OBJECT(d->date_cal),"current-entry",entry);
+  GtkRequisition s2;
+  gtk_widget_size_request(d->date_cal, &s2);
+  GtkAllocation a1;
+  gtk_widget_get_allocation(widget,&a1);
+  int wx,wy;
+  gdk_window_get_origin(gtk_widget_get_window(widget), &wx, &wy);
+  gtk_window_move(GTK_WINDOW(d->date_window), a1.x+wx+a1.width-s2.width, a1.y+wy+a1.height);
+  gtk_widget_show_all(d->date_window);
+  gtk_widget_grab_focus(d->date_window);
+}
+static gboolean date1_press(GtkWidget *widget, GdkEventButton *event, dt_lib_collect_t *d)
+{
+  date_btn_press(widget, GTK_ENTRY(d->date1_entry), event, d);
+  return TRUE;
+}
+static gboolean date2_press(GtkWidget *widget, GdkEventButton *event, dt_lib_collect_t *d)
+{
+  date_btn_press(widget, GTK_ENTRY(d->date2_entry), event, d);
+  return TRUE;
+}
+
 static void combo_changed(GtkComboBox *combo, dt_lib_collect_rule_t *d)
 {
   if(darktable.gui->reset) return;
@@ -1254,7 +1381,7 @@ static void combo_changed(GtkComboBox *combo, dt_lib_collect_rule_t *d)
   dt_collection_update_query(darktable.collection);
 }
 
-static void selection_change (GtkTreeSelection *selection, dt_lib_collect_t *d)
+static void selection_change(GtkTreeSelection *selection, dt_lib_collect_t *d)
 {
   if (!d->update_query_on_sel_change) return;
   
@@ -1625,7 +1752,9 @@ void gui_init(dt_lib_module_t *self)
   gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(d->num_op), "[]");
   g_signal_connect(G_OBJECT(d->num_op), "changed", G_CALLBACK(num_op_changed), d);
   gtk_grid_attach(GTK_GRID(d->num_box), d->num_op, 0, 0, 1, 1);
-  
+
+  box = GTK_BOX(gtk_hbox_new(FALSE, 0));
+
   d->num1_box = gtk_hbox_new(FALSE, 0);
   d->num1_label = gtk_label_new("");
   d->num1_entry = gtk_entry_new();
@@ -1640,7 +1769,28 @@ void gui_init(dt_lib_module_t *self)
   gtk_box_pack_start(GTK_BOX(d->num1_box), bt1, FALSE, FALSE, 0);
   gtk_box_pack_start(GTK_BOX(d->num1_box), bt2, FALSE, FALSE, 0);
   gtk_box_pack_start(GTK_BOX(d->num1_box), d->num1_label, FALSE, FALSE, 5);
-  gtk_grid_attach(GTK_GRID(d->num_box), d->num1_box, 1, 0, 1, 1);
+  gtk_box_pack_start(GTK_BOX(box), d->num1_box, FALSE, FALSE, 5);
+  gtk_widget_show_all(GTK_WIDGET(d->num1_box));
+  gtk_widget_set_no_show_all(GTK_WIDGET(d->num1_box), TRUE);
+  
+  d->date1_box = gtk_hbox_new(FALSE, 0);
+  d->date1_label = gtk_label_new("");
+  d->date1_entry = gtk_entry_new();
+  gtk_entry_set_max_length(GTK_ENTRY(d->date1_entry), 20);
+  gtk_entry_set_width_chars(GTK_ENTRY(d->date1_entry), 20);
+  bt1 = dtgtk_button_new(dtgtk_cairo_paint_solid_triangle, CPF_DIRECTION_DOWN);
+  g_signal_connect(G_OBJECT(d->num1_entry), "activate", G_CALLBACK(date_entry_activate), d);
+  g_signal_connect(G_OBJECT(bt1), "button-press-event", G_CALLBACK(date1_press), d);
+  gtk_box_pack_start(GTK_BOX(d->date1_box), d->date1_entry, FALSE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(d->date1_box), bt1, FALSE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(d->date1_box), d->date1_label, FALSE, FALSE, 5);
+  gtk_box_pack_start(GTK_BOX(box), d->date1_box, FALSE, FALSE, 5);
+  gtk_widget_show_all(GTK_WIDGET(d->date1_box));
+  gtk_widget_set_no_show_all(GTK_WIDGET(d->date1_box), TRUE);
+  
+  gtk_table_attach(GTK_TABLE(d->num_box), GTK_WIDGET(box), 1, 2, 0, 1, GTK_EXPAND | GTK_FILL, 0, 5, 0);
+
+  box = GTK_BOX(gtk_hbox_new(FALSE, 0));
 
   d->num2_box = gtk_hbox_new(FALSE, 0);
   d->num2_label = gtk_label_new("");
@@ -1656,13 +1806,41 @@ void gui_init(dt_lib_module_t *self)
   gtk_box_pack_start(GTK_BOX(d->num2_box), bt1, FALSE, FALSE, 0);
   gtk_box_pack_start(GTK_BOX(d->num2_box), bt2, FALSE, FALSE, 0);
   gtk_box_pack_start(GTK_BOX(d->num2_box), d->num2_label, FALSE, FALSE, 5);
-  gtk_grid_attach(GTK_GRID(d->num_box), d->num2_box, 1, 1, 1, 1);
+  gtk_box_pack_start(GTK_BOX(box), d->num2_box, FALSE, FALSE, 5);
   gtk_widget_show_all(GTK_WIDGET(d->num2_box));
   gtk_widget_set_no_show_all(GTK_WIDGET(d->num2_box), TRUE);
+
+  d->date2_box = gtk_hbox_new(FALSE, 0);
+  d->date2_label = gtk_label_new("");
+  d->date2_entry = gtk_entry_new();
+  gtk_entry_set_max_length(GTK_ENTRY(d->date2_entry), 20);
+  gtk_entry_set_width_chars(GTK_ENTRY(d->date2_entry), 20);
+  bt1 = dtgtk_button_new(dtgtk_cairo_paint_solid_triangle, CPF_DIRECTION_DOWN);
+  g_signal_connect(G_OBJECT(d->num1_entry), "activate", G_CALLBACK(date_entry_activate), d);
+  g_signal_connect(G_OBJECT(bt1), "button-press-event", G_CALLBACK(date2_press), d);
+  gtk_box_pack_start(GTK_BOX(d->date2_box), d->date2_entry, FALSE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(d->date2_box), bt1, FALSE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(d->date2_box), d->date2_label, FALSE, FALSE, 5);
+  gtk_box_pack_start(GTK_BOX(box), d->date2_box, FALSE, FALSE, 5);
+  gtk_widget_show_all(GTK_WIDGET(d->date2_box));
+  gtk_widget_set_no_show_all(GTK_WIDGET(d->date2_box), TRUE);
   
+  gtk_table_attach(GTK_TABLE(d->num_box), GTK_WIDGET(box), 1, 2, 1, 2, GTK_EXPAND | GTK_FILL, 0, 5, 0);
+
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(d->num_box), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(sw), TRUE, TRUE, 0);
 
+  // calendar gui
+  d->date_window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+  gtk_window_set_decorated(GTK_WINDOW(d->date_window),FALSE);
+  gtk_window_set_skip_taskbar_hint(GTK_WINDOW(d->date_window),TRUE);
+  d->date_cal = gtk_calendar_new();
+  gtk_widget_set_can_focus(d->date_cal,TRUE);
+  gtk_container_add(GTK_CONTAINER(d->date_window), d->date_cal);
+  g_signal_connect(G_OBJECT(d->date_cal), "day-selected-double-click", G_CALLBACK(date_cal_select), d);
+  g_signal_connect(G_OBJECT(d->date_cal), "focus-out-event", G_CALLBACK(date_cal_leave), d);
+
+  // autocompletion stuff
   d->autocompletion = gtk_entry_completion_new();
   d->auto_renderer = gtk_cell_renderer_text_new();
   gtk_cell_layout_pack_start(GTK_CELL_LAYOUT(d->autocompletion),d->auto_renderer,TRUE);
