@@ -1559,6 +1559,7 @@ int scrolled(dt_view_t *self, double x, double y, int up, int state)
 
 void mouse_moved(dt_view_t *self, double x, double y, double pressure, int which)
 {
+  dt_control_queue_redraw_center();
 }
 
 
