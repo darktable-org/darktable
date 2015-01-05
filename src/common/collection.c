@@ -484,19 +484,36 @@ GList *dt_collection_get_selected(const dt_collection_t *collection, int limit)
 /* splits an input string into a number part and an optional operator part.
    number can be a decimal integer or rational numerical item.
    operator can be any of "=", "<", ">", "<=", ">=" and "<>".
+   range notation [x;y] can also be used
 
    number and operator are returned as pointers to null terminated strings in g_mallocated
    memory (to be g_free'd after use) - or NULL if no match is found.
 */
-void dt_collection_split_operator_number(const gchar *input, char **number, char **operator)
+void dt_collection_split_operator_number(const gchar *input, char **number, char **number2, char **operator)
 {
   GRegex *regex;
   GMatchInfo *match_info;
   int match_count;
 
-  *number = *operator= NULL;
+  *number = *number2 = *operator= NULL;
 
-  regex = g_regex_new("\\s*(=|<|>|<=|>=|<>)?\\s*([0-9]+\\.?[0-9]*)\\s*", 0, 0, NULL);
+  // we test the range expression first
+  regex = g_regex_new("^\\s*\\[\\s*([0-9]+\\.?[0-9]*);([0-9]+\\.?[0-9]*)\\s*\\]\\s*$", 0, 0, NULL);
+  g_regex_match_full(regex, input, -1, 0, 0, &match_info, NULL);
+  match_count = g_match_info_get_match_count(match_info);
+  
+  if(match_count == 3)
+  {
+    *number = g_match_info_fetch(match_info, 1);
+    *number2 = g_match_info_fetch(match_info, 2);
+    *operator = g_strdup("[]");
+    g_match_info_free(match_info);
+    g_regex_unref(regex);
+    return;
+  }
+
+  // and we test the classic comparaison operators
+  regex = g_regex_new("^\\s*(=|<|>|<=|>=|<>)?\\s*([0-9]+\\.?[0-9]*)\\s*$", 0, 0, NULL);
   g_regex_match_full(regex, input, -1, 0, 0, &match_info, NULL);
   match_count = g_match_info_get_match_count(match_info);
 
@@ -515,7 +532,49 @@ void dt_collection_split_operator_number(const gchar *input, char **number, char
   g_match_info_free(match_info);
   g_regex_unref(regex);
 }
+void dt_collection_split_operator_datetime(const gchar *input, char **number, char **number2, char **operator)
+{
+  GRegex *regex;
+  GMatchInfo *match_info;
+  int match_count;
 
+  *number = *number2 = *operator = NULL;
+
+  // we test the range expression first
+  regex = g_regex_new("^\\s*\\[\\s*(\\d{4}:\\d{2}:\\d{2}(?: \\d{2}:\\d{2}:\\d{2})?);(\\d{4}:\\d{2}:\\d{2}(?: \\d{2}:\\d{2}:\\d{2})?)\\s*\\]\\s*$", 0, 0, NULL);
+  g_regex_match_full(regex, input, -1, 0, 0, &match_info, NULL);
+  match_count = g_match_info_get_match_count(match_info);
+  
+  if(match_count == 3)
+  {
+    *number = g_match_info_fetch(match_info, 1);
+    *number2 = g_match_info_fetch(match_info, 2);
+    *operator = g_strdup("[]");
+    g_match_info_free(match_info);
+    g_regex_unref(regex);
+    return;
+  }
+  
+  // and we test the classic comparaison operators
+  regex = g_regex_new("^\\s*(=|<|>|<=|>=|<>)?\\s*(\\d{4}:\\d{2}:\\d{2}(?: \\d{2}:\\d{2}:\\d{2})?)\\s*$", 0, 0, NULL);
+  g_regex_match_full(regex, input, -1, 0, 0, &match_info, NULL);
+  match_count = g_match_info_get_match_count(match_info);
+
+  if(match_count == 3)
+  {
+    *operator = g_match_info_fetch(match_info, 1);
+    *number = g_match_info_fetch(match_info, 2);
+
+    if(*operator && strcmp(*operator, "") == 0)
+    {
+      g_free(*operator);
+      *operator = NULL;
+    }
+  }
+
+  g_match_info_free(match_info);
+  g_regex_unref(regex);
+} 
 
 static void get_query_string(const dt_collection_properties_t property, const gchar *escaped_text,
                              char *query, size_t query_len)
@@ -602,10 +661,15 @@ static void get_query_string(const dt_collection_properties_t property, const gc
       break;
     case DT_COLLECTION_PROP_ISO: // iso
     {
-      gchar *operator, *number;
-      dt_collection_split_operator_number(escaped_text, &number, &operator);
+      gchar *operator, *number, *number2;
+      dt_collection_split_operator_number(escaped_text, &number, &number2, &operator);
 
-      if(operator&& number)
+      if(operator && strcmp(operator, "[]") == 0)
+      {
+        if (number && number2)
+          snprintf(query, query_len, "((iso >= %s) AND (iso <= %s))", number, number2);
+      }
+      else if(operator&& number)
         snprintf(query, query_len, "(iso %s %s)", operator, number);
       else if(number)
         snprintf(query, query_len, "(iso = %s)", number);
@@ -614,15 +678,21 @@ static void get_query_string(const dt_collection_properties_t property, const gc
 
       g_free(operator);
       g_free(number);
+      g_free(number2);
     }
     break;
 
     case DT_COLLECTION_PROP_APERTURE: // aperture
     {
-      gchar *operator, *number;
-      dt_collection_split_operator_number(escaped_text, &number, &operator);
+      gchar *operator, *number, *number2;
+      dt_collection_split_operator_number(escaped_text, &number, &number2, &operator);
 
-      if(operator&& number)
+      if(operator && strcmp(operator, "[]") == 0)
+      {
+        if (number && number2)
+          snprintf(query, query_len, "((aperture >= %s) AND (aperture <= %s))", number, number2);
+      }
+      else if(operator&& number)
         snprintf(query, query_len, "(aperture %s %s)", operator, number);
       else if(number)
         snprintf(query, query_len, "(aperture = %s)", number);
@@ -631,6 +701,7 @@ static void get_query_string(const dt_collection_properties_t property, const gc
 
       g_free(operator);
       g_free(number);
+      g_free(number2);
     }
     break;
 
@@ -638,8 +709,29 @@ static void get_query_string(const dt_collection_properties_t property, const gc
       snprintf(query, query_len, "(filename like '%s')", escaped_text);
       break;
 
-    default: // day or time
-      snprintf(query, query_len, "(datetime_taken like '%s')", escaped_text);
+    case DT_COLLECTION_PROP_DAY:
+    case DT_COLLECTION_PROP_TIME:
+    {
+      gchar *operator, *number, *number2;
+      dt_collection_split_operator_datetime (escaped_text, &number, &number2, &operator);
+      
+      if(operator && strcmp(operator, "[]") == 0)
+      {
+        if (number && number2)
+          snprintf(query, query_len, "((datetime_taken >= '%s') AND (datetime_taken <= '%s'))", number, number2);
+      }
+      else if(operator && number)
+        snprintf(query, query_len, "(datetime_taken %s '%s')", operator, number);
+      else if(number)
+        snprintf(query, query_len, "(datetime_taken = '%s')", number);
+      else
+        snprintf(query, query_len, "(datetime_taken like '%s')", escaped_text);
+      g_free(operator);
+      g_free(number);
+      g_free(number2);
+    }
+    default:
+      // we shouldn't be here
       break;
   }
 }

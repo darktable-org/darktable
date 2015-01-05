@@ -673,12 +673,13 @@ static void list_view(dt_lib_collect_rule_t *dr)
       case DT_COLLECTION_PROP_ISO:
       case DT_COLLECTION_PROP_APERTURE:
       {
-        gchar *operator, *number;
-        dt_collection_split_operator_number(escaped_text, &number, &operator);
+        gchar *operator, *number, *number2;
+        dt_collection_split_operator_number(escaped_text, &number, &number2, &operator);
         if(!operator && !number) val_wild = dt_util_dstrcat(val_wild,"%%%s%%",value);
         else val_wild = dt_util_dstrcat(val_wild,"%s",value);
         g_free(operator);
         g_free(number);
+        g_free(number2);
       }  
         break;
       default:
