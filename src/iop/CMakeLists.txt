@@ -17,6 +17,7 @@ macro (add_iop _lib _src)
 endmacro (add_iop)
 
 add_iop(letsgofloat "letsgofloat.c")
+add_iop(rawprepare "rawprepare.c")
 add_iop(soften "soften.c")
 add_iop(bloom "bloom.c")
 add_iop(highpass "highpass.c")
