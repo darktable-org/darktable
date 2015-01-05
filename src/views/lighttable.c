@@ -297,7 +297,7 @@ static void _update_collected_images(dt_view_t *self)
 
   // 2. insert collected images into the temporary table
 
-  char col_query[2048];
+  char col_query[2048] = { 0 };
 
   snprintf(col_query, sizeof(col_query), "INSERT INTO memory.collected_images (imgid) %s", query);
 

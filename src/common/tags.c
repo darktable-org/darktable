@@ -274,7 +274,7 @@ uint32_t dt_tag_get_attached(gint imgid, GList **result, gboolean ignore_dt_tags
   sqlite3_stmt *stmt;
   if(imgid > 0)
   {
-    char query[1024];
+    char query[1024] = { 0 };
     snprintf(query, sizeof(query), "SELECT DISTINCT T.id, T.name FROM tagged_images "
                                    "JOIN tags T on T.id = tagged_images.tagid "
                                    "WHERE tagged_images.imgid = %d %s ORDER BY T.name",
