@@ -628,8 +628,6 @@ void dt_mipmap_cache_get_with_caller(
       }
       dsc->flags &= ~DT_MIPMAP_BUFFER_DSC_FLAG_GENERATE;
 
-        // XXX or just leave the write lock as it was? same for image_cache.
-#if 1 // 0
       if(mode == 'r')
       {
         // drop the write lock
@@ -637,11 +635,6 @@ void dt_mipmap_cache_get_with_caller(
         // get a read lock
         buf->cache_entry = dt_cache_get(&_get_cache(cache, mip)->cache, key, mode);
       }
-#endif
-      /* raise signal that mipmaps has been flushed to cache */
-      // FIXME: calling the signal here directly is a circular deadlock, often times 3-way circular and more
-      // FIXME: TODO: signals cannot acquire the gdk lock, but should wrap this idle call code:
-      g_idle_add(_raise_signal_mipmap_updated, 0);
     }
     buf->width = dsc->width;
     buf->height = dsc->height;
@@ -723,6 +716,9 @@ void dt_mipmap_cache_release(dt_mipmap_cache_t *cache, dt_mipmap_buffer_t *buf)
   dt_cache_release(&_get_cache(cache, buf->size)->cache, buf->cache_entry);
   buf->size = DT_MIPMAP_NONE;
   buf->buf = NULL;
+  // notify the world that we've probably got a new thumbnail, and in case someone was
+  // just waiting for the write lock to be released.
+  g_idle_add(_raise_signal_mipmap_updated, 0);
 }
 
 
