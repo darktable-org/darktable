@@ -534,6 +534,7 @@ void dt_mipmap_cache_get_with_caller(
       buf->size = mip;
       // skip to next 8-byte alignment, for sse buffers.
       buf->buf = (uint8_t *)(dsc + 1);
+      buf->mode = mode;
     }
     else
     {
@@ -635,6 +636,7 @@ void dt_mipmap_cache_get_with_caller(
         // get a read lock
         buf->cache_entry = dt_cache_get(&_get_cache(cache, mip)->cache, key, mode);
       }
+      buf->mode = mode;
     }
     buf->width = dsc->width;
     buf->height = dsc->height;
@@ -651,6 +653,7 @@ void dt_mipmap_cache_get_with_caller(
       else
         buf->buf = NULL; // full images with NULL buffer have to be handled, indicates `missing image', but still return locked slot
     }
+    buf->mode = mode;
   }
   else if(flags == DT_MIPMAP_BEST_EFFORT)
   {
@@ -672,6 +675,7 @@ void dt_mipmap_cache_get_with_caller(
       {
         __sync_fetch_and_add(&(_get_cache(cache, mip)->stats_near_match), 1);
         dt_mipmap_cache_get(cache, buf, imgid, mip, DT_MIPMAP_PREFETCH, 'r');
+        buf->mode = mode;
       }
     }
     // couldn't find a smaller thumb, try larger ones only now (these will be slightly slower due to cairo rescaling):
@@ -718,7 +722,7 @@ void dt_mipmap_cache_release(dt_mipmap_cache_t *cache, dt_mipmap_buffer_t *buf)
   buf->buf = NULL;
   // notify the world that we've probably got a new thumbnail, and in case someone was
   // just waiting for the write lock to be released.
-  g_idle_add(_raise_signal_mipmap_updated, 0);
+  if(buf->mode == 'w') g_idle_add(_raise_signal_mipmap_updated, 0);
 }
 
 
