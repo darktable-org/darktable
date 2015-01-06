@@ -705,6 +705,7 @@ void dt_mipmap_cache_get_with_caller(
     buf->imgid = 0;
     buf->size = DT_MIPMAP_NONE;
     buf->width = buf->height = 0;
+    g_idle_add(_raise_signal_mipmap_updated, 0);
   }
 }
 
