@@ -349,3 +349,15 @@ GtkMenuItem *
 {
   background-color: transparent;
 }
+
+.slider.horizontal,
+.slider.vertical {
+    border-color: @selected_bg_color;
+    background-color: @text_color;
+}
+
+.slider.horizontal:hover,
+.slider.vertical:hover {
+    border-color:  @selected_bg_color;
+    background-color: @fg_color;
+}
