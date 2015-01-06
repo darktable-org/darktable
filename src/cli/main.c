@@ -72,7 +72,9 @@ static void generate_thumbnail_cache()
   // go through all images:
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select id from images", -1, &stmt, 0);
   // could only alloc max_mip-1, but would need to detect the special case that max==0.
-  uint8_t *tmp = (uint8_t *)dt_alloc_align(16, 4*darktable.mipmap_cache->max_width[max_mip]*darktable.mipmap_cache->max_height[max_mip]);
+  const size_t bufsize = (size_t)4 * darktable.mipmap_cache->max_width[max_mip]
+                         * darktable.mipmap_cache->max_height[max_mip];
+  uint8_t *tmp = (uint8_t *)dt_alloc_align(16, bufsize);
   if(!tmp)
   {
     fprintf(stderr, "couldn't allocate temporary memory!\n");
@@ -108,12 +110,12 @@ static void generate_thumbnail_cache()
       FILE *f = fopen(filename, "wb");
       if(f)
       {
-        // allocate temp memory, at least 1MB to be sure we fit:
-        uint8_t *blob = (uint8_t *)malloc(MIN(1<<20, width*height*4));
+        // allocate temp memory:
+        uint8_t *blob = (uint8_t *)malloc(bufsize);
         if(!blob) goto write_error;
         const int32_t length
           = dt_imageio_jpeg_compress(tmp, blob, width, height, cache_quality);
-        assert(length <= MIN(1<<20, wd*ht*4));
+        assert(length <= bufsize);
         int written = fwrite(blob, sizeof(uint8_t), length, f);
         if(written != length)
         {
