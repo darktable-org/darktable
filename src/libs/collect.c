@@ -124,7 +124,7 @@ void init_presets(dt_lib_module_t *self)
 }
 
 static void _lib_collect_gui_update(dt_lib_module_t *self);
-static void selection_change (GtkTreeSelection *selection, dt_lib_collect_t *d);
+static void row_activated (GtkTreeView *view, GtkTreePath *path, GtkTreeViewColumn *column, dt_lib_collect_t *d);
 static void update_selection (dt_lib_collect_rule_t *dr, gboolean exact);
 static void entry_changed (GtkEditable *editable, dt_lib_collect_rule_t *d);
 
@@ -1462,10 +1462,11 @@ static void combo_changed(GtkComboBox *combo, dt_lib_collect_rule_t *d)
   dt_collection_update_query(darktable.collection);
 }
 
-static void selection_change(GtkTreeSelection *selection, dt_lib_collect_t *d)
+static void row_activated (GtkTreeView *view, GtkTreePath *path, GtkTreeViewColumn *column, dt_lib_collect_t *d)
 {
   if (!d->update_query_on_sel_change) return;
   
+  GtkTreeSelection *selection = gtk_tree_view_get_selection(view);
   GtkTreeIter iter;
   GtkTreeModel *model = NULL;
 
@@ -1823,8 +1824,8 @@ void gui_init(dt_lib_module_t *self)
   gtk_tree_view_set_headers_visible(view, FALSE);
   gtk_widget_set_size_request(GTK_WIDGET(view), -1, DT_PIXEL_APPLY_DPI(300));
   gtk_container_add(GTK_CONTAINER(sw), GTK_WIDGET(view));
-  GtkTreeSelection *selection = gtk_tree_view_get_selection(d->view);
-  g_signal_connect(selection, "changed", G_CALLBACK(selection_change), d);
+  g_object_set(G_OBJECT(d->view), "activate-on-single-click", dt_conf_get_bool("plugins/lighttable/collect/single-click"), NULL);
+  g_signal_connect(d->view, "row_activated", G_CALLBACK(row_activated), d);
 
   GtkTreeViewColumn *col = gtk_tree_view_column_new();
   gtk_tree_view_append_column(view, col);
@@ -1865,8 +1866,8 @@ void gui_init(dt_lib_module_t *self)
   d->num1_entry = gtk_entry_new();
   gtk_entry_set_max_length(GTK_ENTRY(d->num1_entry), 6);
   gtk_entry_set_width_chars(GTK_ENTRY(d->num1_entry), 6);
-  GtkWidget *bt1 = dtgtk_button_new(dtgtk_cairo_paint_plusminus, 0);
-  GtkWidget *bt2 = dtgtk_button_new(dtgtk_cairo_paint_plusminus, CPF_ACTIVE);
+  GtkWidget *bt1 = dtgtk_button_new(dtgtk_cairo_paint_plusminus, CPF_DO_NOT_USE_BORDER);
+  GtkWidget *bt2 = dtgtk_button_new(dtgtk_cairo_paint_plusminus, CPF_DO_NOT_USE_BORDER | CPF_ACTIVE);
   g_signal_connect(G_OBJECT(d->num1_entry), "activate", G_CALLBACK(num_entry_activate), d);
   g_signal_connect(G_OBJECT(bt1), "button-press-event", G_CALLBACK(num1_minus_press), d);
   g_signal_connect(G_OBJECT(bt2), "button-press-event", G_CALLBACK(num1_plus_press), d);
@@ -1883,7 +1884,7 @@ void gui_init(dt_lib_module_t *self)
   d->date1_entry = gtk_entry_new();
   gtk_entry_set_max_length(GTK_ENTRY(d->date1_entry), 20);
   gtk_entry_set_width_chars(GTK_ENTRY(d->date1_entry), 20);
-  bt1 = dtgtk_button_new(dtgtk_cairo_paint_solid_triangle, CPF_DIRECTION_DOWN);
+  bt1 = dtgtk_button_new(dtgtk_cairo_paint_solid_triangle, CPF_DO_NOT_USE_BORDER | CPF_DIRECTION_DOWN);
   g_signal_connect(G_OBJECT(d->date1_entry), "activate", G_CALLBACK(date_entry_activate), d);
   g_signal_connect(G_OBJECT(bt1), "button-press-event", G_CALLBACK(date1_press), d);
   gtk_box_pack_start(GTK_BOX(d->date1_box), d->date1_entry, FALSE, FALSE, 0);
@@ -1902,8 +1903,8 @@ void gui_init(dt_lib_module_t *self)
   d->num2_entry = gtk_entry_new();
   gtk_entry_set_max_length(GTK_ENTRY(d->num2_entry), 6);
   gtk_entry_set_width_chars(GTK_ENTRY(d->num2_entry), 6);
-  bt1 = dtgtk_button_new(dtgtk_cairo_paint_plusminus, 0);
-  bt2 = dtgtk_button_new(dtgtk_cairo_paint_plusminus, CPF_ACTIVE);
+  bt1 = dtgtk_button_new(dtgtk_cairo_paint_plusminus, CPF_DO_NOT_USE_BORDER);
+  bt2 = dtgtk_button_new(dtgtk_cairo_paint_plusminus, CPF_DO_NOT_USE_BORDER | CPF_ACTIVE);
   g_signal_connect(G_OBJECT(d->num2_entry), "activate", G_CALLBACK(num_entry_activate), d);
   g_signal_connect(G_OBJECT(bt1), "button-press-event", G_CALLBACK(num2_minus_press), d);
   g_signal_connect(G_OBJECT(bt2), "button-press-event", G_CALLBACK(num2_plus_press), d);
@@ -1920,7 +1921,7 @@ void gui_init(dt_lib_module_t *self)
   d->date2_entry = gtk_entry_new();
   gtk_entry_set_max_length(GTK_ENTRY(d->date2_entry), 20);
   gtk_entry_set_width_chars(GTK_ENTRY(d->date2_entry), 20);
-  bt1 = dtgtk_button_new(dtgtk_cairo_paint_solid_triangle, CPF_DIRECTION_DOWN);
+  bt1 = dtgtk_button_new(dtgtk_cairo_paint_solid_triangle, CPF_DO_NOT_USE_BORDER | CPF_DIRECTION_DOWN);
   g_signal_connect(G_OBJECT(d->date2_entry), "activate", G_CALLBACK(date_entry_activate), d);
   g_signal_connect(G_OBJECT(bt1), "button-press-event", G_CALLBACK(date2_press), d);
   gtk_box_pack_start(GTK_BOX(d->date2_box), d->date2_entry, FALSE, FALSE, 0);
