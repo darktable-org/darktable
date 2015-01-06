@@ -11,20 +11,29 @@
 
 @define-color dark_bg_color #350000;
 
-* {
+/* global to the application and the GtkDialog */
+
+*
+{
   font: Sans 8;
-  color: @fg_color;
-  background-color: @bg_color;
-  border-color: #111111;
   text-shadow:none;
   margin: 0;
-  padding: 0;
-  border: 0;
 }
 
-GtkAlignment
+/* only for the application */
+
+GtkWindow GtkBox GtkGrid *
+{
+  color: @fg_color;
+  border-color: #111111;
+  background-color: @bg_color;
+  padding: 0;
+}
+
+GtkWindow GtkAlignment
 {
   background-color:transparent;
+  padding: 0;
 }
 
 #iop-plugin-ui GtkBox,
@@ -68,7 +77,10 @@ GtkAlignment
 /* lib toggle buttons (e.g recently used collection and history items): */
 /* TODO: adjust borders/padding to our liking (match bauhaus..) */
 #lib-plugin-ui .button,
-.button
+GtkComboBoxText *,
+GtkToggleButton *,
+GtkDarktableToggleButton,
+GtkDarktableButton
 {
   /* note that the button has no padding, the label inside the button has the padding. */
   border-radius: 0;
@@ -83,14 +95,14 @@ GtkAlignment
   background-image: none;
 }
 #lib-plugin-ui .button:${GTK_CSS_CLASS},
-.button:${GTK_CSS_CLASS}
+GtkWindow .button:${GTK_CSS_CLASS}
 {
   border-style:none;
   background-image:none;
   background-color: shade(@selected_bg_color, 1.4);
 }
 #lib-plugin-ui .button:hover,
-.button:hover
+GtkWindow .button:hover
 {
   border-style:none;
   background-color: shade(@selected_bg_color, 1.7);
@@ -136,7 +148,7 @@ GtkAlignment
   background-color: @selected_bg_color;
 }
 
-GtkTable {
+GtkWindow GtkTable {
   background-color: transparent;
   margin:0;
   border:0;
@@ -177,13 +189,13 @@ GtkTable {
   background-color: @bg_color;
 }
 
-GtkFrame > GtkEventBox {
+GtkWindow GtkFrame GtkEventBox {
   border: 1px solid #111111;
   background-color: @selected_bg_color;
   color: @selected_fg_color;
 }
 
-GtkFrame > GtkEventBox * {
+GtkWindow GtkFrame GtkEventBox * {
   background-color: @selected_bg_color;
   color: @selected_fg_color;
 }
@@ -245,7 +257,7 @@ GtkFrame > GtkEventBox * {
 }
 #iop-plugin-ui .entry:selected,
 #lib-plugin-ui .entry:selected,
-.entry:selected {
+GtkWindow > .entry:selected {
   background-color:shade(@selected_bg_color, 1.7);
 }
 /* weird fix for black event boxes in light table lib modules: */
@@ -301,7 +313,7 @@ GtkFrame > GtkEventBox * {
   background-image:none;
 }
 
-*:insensitive {
+GtkWindow > *:insensitive {
   color: black;
 }
 
