@@ -556,12 +556,12 @@ void reload_defaults(dt_iop_module_t *module)
         for(int k = 0; k < 3; k++) tmp.coeffs[k] = raw->color.pre_mul[k];
       }
 
-      for(int k = 0; k < 3; k+=2) {
+      /*for(int k = 0; k < 3; k+=2) {
         float libraw = tmp.coeffs[k]/tmp.coeffs[1];
         float rawspeed = module->dev->image_storage.wb_coeffs[k]/module->dev->image_storage.wb_coeffs[1];
         if (libraw != rawspeed)
           fprintf(stderr, "Coeff %d is %f in libraw and %f in rawspeed\n", k, libraw, rawspeed);
-      }
+      }*/
 
       if(tmp.coeffs[0] == 0 || tmp.coeffs[1] == 0 || tmp.coeffs[2] == 0)
       {
