@@ -555,8 +555,53 @@ int dt_imageio_jpeg_read_header(const char *filename, dt_imageio_jpeg_t *jpg)
   setup_read_icc_profile(&(jpg->dinfo));
   // jpg->dinfo.buffered_image = TRUE;
   jpeg_read_header(&(jpg->dinfo), TRUE);
+#ifdef JCS_EXTENSIONS
+  jpg->dinfo.out_color_space = JCS_EXT_RGBX;
+  jpg->dinfo.out_color_components = 4;
+#else
+  jpg->dinfo.out_color_space = JCS_RGB;
+  jpg->dinfo.out_color_components = 3;
+#endif
   jpg->width = jpg->dinfo.image_width;
   jpg->height = jpg->dinfo.image_height;
+  return 0;
+}
+
+#ifdef JCS_EXTENSIONS
+static int read_jsc(dt_imageio_jpeg_t *jpg, uint8_t *out)
+{
+  uint8_t *tmp = out;
+  while(jpg->dinfo.output_scanline < jpg->dinfo.image_height)
+  {
+    if(jpeg_read_scanlines(&(jpg->dinfo), &tmp, 1) != 1)
+    {
+      return 1;
+    }
+    tmp += 4 * jpg->width;
+  }
+  return 0;
+}
+#endif
+
+static int read_plain(dt_imageio_jpeg_t *jpg, uint8_t *out)
+{
+  JSAMPROW row_pointer[1];
+  row_pointer[0] = (uint8_t *)malloc(jpg->dinfo.output_width * jpg->dinfo.num_components);
+  uint8_t *tmp = out;
+  while(jpg->dinfo.output_scanline < jpg->dinfo.image_height)
+  {
+    if(jpeg_read_scanlines(&(jpg->dinfo), row_pointer, 1) != 1)
+    {
+      jpeg_destroy_decompress(&(jpg->dinfo));
+      free(row_pointer[0]);
+      fclose(jpg->f);
+      return 1;
+    }
+    for(unsigned int i = 0; i < jpg->dinfo.image_width; i++)
+      for(int k = 0; k < 3; k++) tmp[4 * i + k] = row_pointer[0][3 * i + k];
+    tmp += 4 * jpg->width;
+  }
+  free(row_pointer[0]);
   return 0;
 }
 
@@ -570,30 +615,52 @@ int dt_imageio_jpeg_read(dt_imageio_jpeg_t *jpg, uint8_t *out)
     fclose(jpg->f);
     return 1;
   }
-  (void)jpeg_start_decompress(&(jpg->dinfo));
-  JSAMPROW row_pointer[1];
-  row_pointer[0] = (uint8_t *)malloc(jpg->dinfo.output_width * jpg->dinfo.num_components);
-  uint8_t *tmp = out;
-  while(jpg->dinfo.output_scanline < jpg->dinfo.image_height)
+
+#ifdef JCS_EXTENSIONS
+  /*
+   * Do a run-time detection for JCS_EXTENSIONS:
+   * it might have been only available at build-time
+   */
+  int jcs_alpha_valid = 1;
+  if(setjmp(jerr.setjmp_buffer))
   {
-    if(jpeg_read_scanlines(&(jpg->dinfo), row_pointer, 1) != 1)
+    if(jpg->dinfo.out_color_space == JCS_EXT_RGBX && jpg->dinfo.out_color_components == 4)
+    {
+      // ok, no JCS_EXTENSIONS, fall-back to slow plain code.
+      jpg->dinfo.out_color_components = 3;
+      jpg->dinfo.out_color_space = JCS_RGB;
+      jcs_alpha_valid = 0;
+    }
+    else
     {
       jpeg_destroy_decompress(&(jpg->dinfo));
-      free(row_pointer[0]);
-      fclose(jpg->f);
       return 1;
     }
-    if(jpg->dinfo.num_components < 3)
-      for(unsigned int i = 0; i < jpg->dinfo.image_width; i++)
-        for(int k = 0; k < 3; k++) tmp[4 * i + k] = row_pointer[0][jpg->dinfo.num_components * i + 0];
-    else
-      for(unsigned int i = 0; i < jpg->dinfo.image_width; i++)
-        for(int k = 0; k < 3; k++) tmp[4 * i + k] = row_pointer[0][3 * i + k];
-    tmp += 4 * jpg->width;
   }
+#endif
+  (void)jpeg_start_decompress(&(jpg->dinfo));
+
+  if(setjmp(jerr.setjmp_buffer))
+  {
+    jpeg_destroy_decompress(&(jpg->dinfo));
+    return 1;
+  }
+
+#ifdef JCS_EXTENSIONS
+  if(jcs_alpha_valid)
+  {
+    read_jsc(jpg, out);
+  }
+  else
+  {
+    read_plain(jpg, out);
+  }
+#else
+  read_plain(jpg, out);
+#endif
+
   (void)jpeg_finish_decompress(&(jpg->dinfo));
   jpeg_destroy_decompress(&(jpg->dinfo));
-  free(row_pointer[0]);
   fclose(jpg->f);
   return 0;
 }
