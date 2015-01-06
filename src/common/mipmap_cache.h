@@ -67,6 +67,7 @@ typedef struct dt_mipmap_buffer_t
   int32_t width, height;
   uint8_t *buf;
   dt_cache_entry_t *cache_entry;
+  char mode;
 } dt_mipmap_buffer_t;
 
 typedef struct dt_mipmap_cache_one_t
