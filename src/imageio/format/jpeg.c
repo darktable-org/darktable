@@ -467,7 +467,7 @@ void *legacy_params(dt_imageio_module_format_t *self, const void *const old_para
 {
   if(old_version == 1 && new_version == 2)
   {
-    typedef struct dt_imageio_jpeg_t
+    typedef struct dt_imageio_jpeg_v1_t
     {
       int max_width, max_height;
       int width, height;
