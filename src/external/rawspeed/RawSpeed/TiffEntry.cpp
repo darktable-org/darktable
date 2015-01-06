@@ -129,7 +129,7 @@ const uint32* TiffEntry::getIntArray() {
 }
 
 const ushort16* TiffEntry::getShortArray() {
-  if (type != TIFF_SHORT)
+  if (!(type == TIFF_SHORT || type == TIFF_UNDEFINED))
     ThrowTPE("TIFF, getShortArray: Wrong type 0x%x encountered. Expected Short", type);
   return (ushort16*)&data[0];
 }
