@@ -64,8 +64,6 @@ GtkAlignment
 #lib-plugin-ui *
 {
   margin:0;
-  border:0;
-  background-color: @selected_bg_color;
 }
 /* lib toggle buttons (e.g recently used collection and history items): */
 /* TODO: adjust borders/padding to our liking (match bauhaus..) */
