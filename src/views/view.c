@@ -724,9 +724,10 @@ int32_t dt_view_get_image_to_act_on()
   }
 }
 
-void dt_view_image_expose(dt_view_image_over_t *image_over, uint32_t imgid, cairo_t *cr, int32_t width,
+int dt_view_image_expose(dt_view_image_over_t *image_over, uint32_t imgid, cairo_t *cr, int32_t width,
                           int32_t height, int32_t zoom, int32_t px, int32_t py, gboolean full_preview)
 {
+  int missing = 0;
   const double start = dt_get_wtime();
 // some performance tuning stuff, for your pleasure.
 // on my machine with 7 image per row it seems grouping has the largest
@@ -828,6 +829,9 @@ void dt_view_image_expose(dt_view_image_over_t *image_over, uint32_t imgid, cair
   dt_mipmap_size_t mip
       = dt_mipmap_cache_get_matching_size(darktable.mipmap_cache, imgwd * width, imgwd * height);
   dt_mipmap_cache_get(darktable.mipmap_cache, &buf, imgid, mip, DT_MIPMAP_BEST_EFFORT, 'r');
+  // if we got a different mip than requested, and it's not a skull (8x8 px), we count
+  // this thumbnail as missing (to trigger re-exposure)
+  if(buf.size != mip && buf.width != 8 && buf.height != 8) missing = 1;
 
 #if DRAW_THUMB == 1
   float scale = 1.0;
@@ -1226,6 +1230,7 @@ void dt_view_image_expose(dt_view_image_over_t *image_over, uint32_t imgid, cair
   const double end = dt_get_wtime();
   if(darktable.unmuted & DT_DEBUG_PERF)
     dt_print(DT_DEBUG_LIGHTTABLE, "[lighttable] image expose took %0.04f sec\n", end - start);
+  return missing;
 }
 
 
