@@ -157,8 +157,6 @@ static void _lib_collect_update_params(dt_lib_collect_t *d)
       snprintf(p->rule[i].string, PARAM_STRING_SIZE, "%s", string);
       g_free(string);
     }
-
-    // fprintf(stderr,"[%i] %d,%d,%s\n",i, p->rule[i].item, p->rule[i].mode,  p->rule[i].string);
   }
 
   p->rules = active + 1;
@@ -249,6 +247,7 @@ static gboolean match_string (GtkTreeModel *model, GtkTreePath *path, GtkTreeIte
     gtk_tree_view_expand_to_path(d->view, path);
   }
 
+  g_free(val);
   return FALSE;
 }
 
@@ -275,6 +274,7 @@ static gboolean match_string_exact(GtkTreeModel *model, GtkTreePath *path, GtkTr
     gtk_tree_view_expand_to_path(d->view, path);
     gtk_tree_selection_select_path(gtk_tree_view_get_selection(d->view), path);
     g_free(txt);
+    g_free(val);
     return TRUE;
   }
   
@@ -285,6 +285,7 @@ static gboolean match_string_exact(GtkTreeModel *model, GtkTreePath *path, GtkTr
   
   if (!f)
   {
+    g_free(val);
     g_free(txt);
     return FALSE;
   }
@@ -300,6 +301,7 @@ static gboolean match_string_exact(GtkTreeModel *model, GtkTreePath *path, GtkTr
   }
   g_free(txt);
   g_free(txt2);
+  g_free(val);
 
   return FALSE;
 }
@@ -314,8 +316,7 @@ void destroy_widget(gpointer data)
 static void set_properties(dt_lib_collect_rule_t *dr)
 {
   int property = gtk_combo_box_get_active(dr->combo);
-  const gchar *text = NULL;
-  text = gtk_entry_get_text(GTK_ENTRY(dr->text));
+  const gchar *text = gtk_entry_get_text(GTK_ENTRY(dr->text));
 
   char confname[200] = {0};
   snprintf(confname, sizeof(confname), "plugins/lighttable/collect/string%1d", dr->num);
@@ -338,6 +339,7 @@ static gboolean entry_autocompl_match_selected(GtkEntryCompletion *widget, GtkTr
   // and we update the query
   dt_collection_update_query(darktable.collection);
   
+  g_free(text);
   return TRUE;
 }
 
@@ -381,7 +383,6 @@ static void folders_view(dt_lib_collect_rule_t *dr)
   while (sqlite3_step(stmt) == SQLITE_ROW)
   {
     int level = 0;
-    char *value;
     GtkTreeIter current, iter, iter2;
 
     char *folder = (char*)sqlite3_column_text(stmt, 0);
@@ -408,14 +409,17 @@ static void folders_view(dt_lib_collect_rule_t *dr)
         {
           if (gtk_tree_model_iter_nth_child(d->treemodel, &iter, level>0?&current:NULL, k))
           {
+            char *value;
             gtk_tree_model_get (d->treemodel, &iter, 0, &value, -1);
 
             if (strcmp(value, pch[j])==0)
             {
               current = iter;
               found = TRUE;
+              g_free(value);
               break;
             }
+            g_free(value);
           }
         }
 
@@ -443,6 +447,8 @@ static void folders_view(dt_lib_collect_rule_t *dr)
                             DT_LIB_COLLECT_COL_PATH, pth2,
                             DT_LIB_COLLECT_COL_STRIKETROUGTH, FALSE, -1);
           current = iter;
+          g_free(pth2);
+          g_free(pth3);
         }
 
         level++;
@@ -531,7 +537,6 @@ static void tags_view(dt_lib_collect_rule_t *dr)
     else
     {
       int level = 0;
-      char *value;
       GtkTreeIter current, iter, iter2;
       char **pch = g_strsplit((char *)sqlite3_column_text(stmt, 0), "|", -1);
 
@@ -555,14 +560,17 @@ static void tags_view(dt_lib_collect_rule_t *dr)
           {
             if(gtk_tree_model_iter_nth_child(tagsmodel, &iter, level > 0 ? &current : NULL, k))
             {
+              char *value;
               gtk_tree_model_get(tagsmodel, &iter, 0, &value, -1);
 
               if(strcmp(value, pch[j]) == 0)
               {
                 current = iter;
                 found = TRUE;
+                g_free(value);
                 break;
               }
+              g_free(value);
             }
           }
 
@@ -589,6 +597,7 @@ static void tags_view(dt_lib_collect_rule_t *dr)
                                 DT_LIB_COLLECT_COL_PATH, pth2,
                                 DT_LIB_COLLECT_COL_STRIKETROUGTH, FALSE, -1);
             current = iter;
+            g_free(pth2);
           }
 
           level++;
@@ -757,7 +766,7 @@ static void list_view(dt_lib_collect_rule_t *dr)
       snprintf(query, sizeof(query), "select distinct cast(iso as integer) as iso, 1 from images order by iso");
       break;
     case DT_COLLECTION_PROP_APERTURE: // aperture
-      snprintf(query, sizeof(query), "select distinct round(aperture,1) as aperture, 1 from images order by aperture");    break;
+      snprintf(query, sizeof(query), "select distinct round(aperture,1) as aperture, 1 from images order by aperture");
       break;
     case DT_COLLECTION_PROP_FILENAME: // filename
       snprintf(query, sizeof(query), "select distinct filename, 1 from images order by filename");
@@ -1158,7 +1167,7 @@ static void num_update_query(dt_lib_collect_t *d)
   //we create the new text
   gchar *txt = NULL;
   int op = gtk_combo_box_get_active(GTK_COMBO_BOX(d->num_op));
-  char *optxt;
+  gchar *optxt = NULL;
   if (op == DT_LIB_COLLECT_NUMOP_EQUAL) optxt = "";
   else optxt = gtk_combo_box_text_get_active_text(GTK_COMBO_BOX_TEXT(d->num_op));
   int property = gtk_combo_box_get_active(d->rule[d->active_rule].combo);
@@ -1195,6 +1204,7 @@ static void num_update_query(dt_lib_collect_t *d)
     dt_collection_update_query(darktable.collection);
   }
   g_free(txt);
+  g_free(optxt);
 }
 
 static void num_entry_activate(GtkWidget *widget, dt_lib_collect_t *d)
@@ -1290,7 +1300,7 @@ static void date_update_query(dt_lib_collect_t *d)
   //we create the new text
   gchar *txt = NULL;
   int op = gtk_combo_box_get_active(GTK_COMBO_BOX(d->num_op));
-  char *optxt;
+  gchar *optxt;
   if (op == DT_LIB_COLLECT_NUMOP_EQUAL) optxt = "";
   else optxt = gtk_combo_box_text_get_active_text(GTK_COMBO_BOX_TEXT(d->num_op));
   
@@ -1342,6 +1352,7 @@ static void date_update_query(dt_lib_collect_t *d)
     dt_collection_update_query(darktable.collection);
   }
   g_free(txt);
+  g_free(optxt);
 }
 static gboolean date_cal_leave(GtkWidget *widget, GdkEvent  *event, dt_lib_collect_t *d)
 {
