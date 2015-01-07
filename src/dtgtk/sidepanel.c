@@ -17,25 +17,30 @@
 */
 
 #include "dtgtk/sidepanel.h"
+#include "develop/imageop.h"
 
-static void get_preferred_width(GtkWidget *widget, gint *minimum_size, gint *natural_size)
+#include <gtk/gtk.h>
+
+G_DEFINE_TYPE(GtkDarktableSidePanel, dtgtk_side_panel, GTK_TYPE_BOX);
+
+static void dtgtk_side_panel_get_preferred_width(GtkWidget *widget, gint *minimum_size, gint *natural_size)
 {
-  GtkDarktableSidePanel *panel = (GtkDarktableSidePanel *)widget;
+  GtkDarktableSidePanelClass *class = DTGTK_SIDE_PANEL_GET_CLASS(widget);
 
-  *minimum_size = *natural_size = panel->panel_width;
+  *minimum_size = *natural_size = class->width;
 }
 
-static void _side_panel_class_init(GtkDarktableSidePanelClass *klass)
+static void dtgtk_side_panel_class_init(GtkDarktableSidePanelClass *class)
 {
-  GtkWidgetClass *widget_class = (GtkWidgetClass *)klass;
+  GtkWidgetClass *widget_class = GTK_WIDGET_CLASS(class);
 
-  widget_class->get_preferred_width = get_preferred_width;
+  widget_class->get_preferred_width = dtgtk_side_panel_get_preferred_width;
+
+  class->width = dt_conf_get_int("panel_width");
 }
 
-static void _side_panel_init(GtkDarktableSidePanel *panel)
+static void dtgtk_side_panel_init(GtkDarktableSidePanel *panel)
 {
-  panel->panel_width = dt_conf_get_int("panel_width");
-
   gtk_widget_set_vexpand(GTK_WIDGET(panel), TRUE);
 }
 
@@ -43,24 +48,6 @@ static void _side_panel_init(GtkDarktableSidePanel *panel)
 GtkWidget *dtgtk_side_panel_new()
 {
   return g_object_new(dtgtk_side_panel_get_type(), "orientation", GTK_ORIENTATION_VERTICAL, NULL);
-}
-
-GType dtgtk_side_panel_get_type()
-{
-  static GType dtgtk_side_panel_type = 0;
-  if(!dtgtk_side_panel_type)
-  {
-    static const GTypeInfo dtgtk_side_panel_info = {
-      sizeof(GtkDarktableSidePanelClass), (GBaseInitFunc)NULL, (GBaseFinalizeFunc)NULL,
-      (GClassInitFunc)_side_panel_class_init, NULL, /* class_finalize */
-      NULL,                                         /* class_data */
-      sizeof(GtkDarktableSidePanel), 0,             /* n_preallocs */
-      (GInstanceInitFunc)_side_panel_init,
-    };
-    dtgtk_side_panel_type
-        = g_type_register_static(GTK_TYPE_BOX, "GtkDarktableSidePanel", &dtgtk_side_panel_info, 0);
-  }
-  return dtgtk_side_panel_type;
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

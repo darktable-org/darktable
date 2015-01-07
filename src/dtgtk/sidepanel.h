@@ -18,26 +18,32 @@
 #ifndef DTGTK_SIDE_PANEL_H
 #define DTGTK_SIDE_PANEL_H
 
-#include "develop/imageop.h"
+#include <glib-object.h>
 #include <gtk/gtk.h>
 
 G_BEGIN_DECLS
+
+#define DTGTK_TYPE_SIDE_PANEL (dtgtk_side_panel_get_type())
 #define DTGTK_SIDE_PANEL(obj)                                                                                \
-  G_TYPE_CHECK_INSTANCE_CAST(obj, dtgtk_side_panel_get_type(), GtkDarktableSidePanel)
+  (G_TYPE_CHECK_INSTANCE_CAST((obj), DTGTK_TYPE_SIDE_PANEL, GtkDarktableSidePanel))
+#define DTGTK_IS_SIDE_PANEL(obj) (G_TYPE_CHECK_INSTANCE_TYPE((obj), DTGTK_TYPE_SIDE_PANEL))
 #define DTGTK_SIDE_PANEL_CLASS(klass)                                                                        \
-  G_TYPE_CHECK_CLASS_CAST(klass, dtgtk_side_panel_get_type(), GtkDarktableButtonClass)
-#define DTGTK_IS_SIDE_PANEL(obj) G_TYPE_CHECK_INSTANCE_TYPE(obj, dtgtk_side_panel_get_type())
-#define DTGTK_IS_SIDE_PANEL_CLASS(klass) G_TYPE_CHECK_CLASS_TYPE(obj, dtgtk_side_panel_get_type())
+  (G_TYPE_CHECK_CLASS_CAST((klass), DTGTK_TYPE_SIDE_PANEL, GtkDarktableSidePanelClass))
+#define DTGTK_IS_SIDE_PANEL_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE((klass), DTGTK_TYPE_SIDE_PANEL))
+#define DTGTK_SIDE_PANEL_GET_CLASS(obj)                                                                      \
+  (G_TYPE_INSTANCE_GET_CLASS((obj), DTGTK_TYPE_SIDE_PANEL, GtkDarktableSidePanelClass))
 
 typedef struct _GtkDarktableSidePanel
 {
   GtkBox panel;
-  gint panel_width;
 } GtkDarktableSidePanel;
 
 typedef struct _GtkDarktableSidePanelClass
 {
   GtkBoxClass parent_class;
+
+  /*< private >*/
+  gint width;
 } GtkDarktableSidePanelClass;
 
 GType dtgtk_side_panel_get_type(void);
