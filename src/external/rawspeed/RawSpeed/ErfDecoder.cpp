@@ -83,7 +83,7 @@ void ErfDecoder::decodeMetaDataInternal(CameraMetaData *meta) {
   if (mRootIFD->hasEntryRecursive(EPSONWB)) {
     TiffEntry *wb = mRootIFD->getEntryRecursive(EPSONWB);
     if (wb->count != 256)
-      ThrowRDE("RAF: WB has %d values instead of 256", wb->count);
+      ThrowRDE("ERF: WB has %d values instead of 256", wb->count);
     const ushort16 *tmp = wb->getShortArray()+24;
     // Magic values taken directly from dcraw
     mRaw->metadata.wbCoeffs[0] = (float) tmp[0] * 508 * 1.078 / 0x10000;

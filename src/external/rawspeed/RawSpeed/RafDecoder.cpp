@@ -108,7 +108,7 @@ RawImage RafDecoder::decodeRawInternal() {
   if (raw->hasEntry(FUJI_WB_GRBLEVELS)) {
     TiffEntry *wb = raw->getEntry(FUJI_WB_GRBLEVELS);
     if (wb->count != 3)
-      ThrowRDE("RAF: WB has %d entries instead of 3");
+      ThrowRDE("RAF: WB has %d entries instead of 3", wb->count);
     const uint32 *tmp = wb->getIntArray();
     mRaw->metadata.wbCoeffs[0] = (float)tmp[1];
     mRaw->metadata.wbCoeffs[1] = (float)tmp[0];
