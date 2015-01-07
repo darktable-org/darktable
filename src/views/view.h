@@ -118,8 +118,8 @@ typedef enum dt_view_image_over_t
     or the imgid otherwise */
 int32_t dt_view_get_image_to_act_on();
 
-/** expose an image, set image over flags. */
-void dt_view_image_expose(dt_view_image_over_t *image_over, uint32_t index, cairo_t *cr, int32_t width,
+/** expose an image, set image over flags. return != 0 if thumbnail wasn't loaded yet. */
+int dt_view_image_expose(dt_view_image_over_t *image_over, uint32_t index, cairo_t *cr, int32_t width,
                           int32_t height, int32_t zoom, int32_t px, int32_t py, gboolean full_preview);
 
 /** Set the selection bit to a given value for the specified image */

@@ -79,6 +79,7 @@ FILE(GLOB SOURCE_FILES
   "dtgtk/togglebutton.c"
   "dtgtk/paint.c"
   "dtgtk/resetlabel.c"
+  "dtgtk/sidepanel.c"
   "gui/accelerators.c"
   "gui/gtkentry.c"
   "gui/guides.c"

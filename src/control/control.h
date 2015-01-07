@@ -145,7 +145,7 @@ typedef struct dt_control_accels_t
 
 #define DT_CTL_LOG_SIZE 10
 #define DT_CTL_LOG_MSG_SIZE 200
-#define DT_CTL_LOG_TIMEOUT 20000
+#define DT_CTL_LOG_TIMEOUT 5000
 /**
  * this manages everything time-consuming.
  * distributes the jobs on all processors,

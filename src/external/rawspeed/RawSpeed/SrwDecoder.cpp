@@ -1,6 +1,5 @@
 #include "StdAfx.h"
 #include "SrwDecoder.h"
-#include "TiffParserOlympus.h"
 #include "ByteStreamSwap.h"
 
 #if defined(__unix__) || defined(__APPLE__) 
@@ -10,7 +9,7 @@
     RawSpeed - RAW file decoder.
 
     Copyright (C) 2009-2010 Klaus Post
-    Copyright (C) 2014 Pedro Côrte-Real
+    Copyright (C) 2014-2015 Pedro Côrte-Real
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Lesser General Public

@@ -252,10 +252,12 @@ void dt_mipmap_cache_allocate_dynamic(void *data, dt_cache_entry_t *entry)
       FILE *f = fopen(filename, "rb");
       if(f)
       {
-        size_t len = 0;
+        long len = 0;
+        uint8_t *blob = 0;
         fseek(f, 0, SEEK_END);
         len = ftell(f);
-        uint8_t *blob = (uint8_t *)malloc(len);
+        if(len <= 0) goto read_error; // coverity madness
+        blob = (uint8_t *)malloc(len);
         if(!blob) goto read_error;
         fseek(f, 0, SEEK_SET);
         int rd = fread(blob, sizeof(uint8_t), len, f);
@@ -326,12 +328,13 @@ void dt_mipmap_cache_deallocate_dynamic(void *data, dt_cache_entry_t *entry)
           if(f)
           {
             // allocate temp memory, at least 1MB to be sure we fit:
-            uint8_t *blob = (uint8_t *)malloc(MIN(1<<20, cache->buffer_size[mip]));
+            size_t bloblen = MAX(1<<20, cache->buffer_size[mip]);
+            uint8_t *blob = (uint8_t *)malloc(bloblen);
             if(!blob) goto write_error;
             const int cache_quality = dt_conf_get_int("database_cache_quality");
             const int32_t length
               = dt_imageio_jpeg_compress(entry->data + sizeof(*dsc), blob, dsc->width, dsc->height, MIN(100, MAX(10, cache_quality)));
-            assert(length <= MIN(1<<20, cache->buffer_size[mip]));
+            assert(length <= bloblen);
             int written = fwrite(blob, sizeof(uint8_t), length, f);
             if(written != length)
             {
@@ -370,13 +373,14 @@ void dt_mipmap_cache_init(dt_mipmap_cache_t *cache)
 
   // Fixed sizes for the thumbnail mip levels, selected for coverage of most screen sizes
   int32_t mipsizes[DT_MIPMAP_F][2] = {
-    {360,  225},  // mip0 - 1/2 size previous one
-    {720,  450},  // mip1 - 1/2 size previous one
-    {1440, 900},  // mip2 - covers 720p and 1366x768
-    {1920, 1200}, // mip3 - covers 1080p and 1600x1200
-    {2560, 1600}, // mip4 - covers 2560x1440
-    {4096, 2560}, // mip5 - covers 4K and UHD
-    {5120, 3200}, // mip6 - covers 5120x2880 panels
+    {180,  110},  // mip0 - ~1/2 size previous one
+    {360,  225},  // mip1 - 1/2 size previous one
+    {720,  450},  // mip2 - 1/2 size previous one
+    {1440, 900},  // mip3 - covers 720p and 1366x768
+    {1920, 1200}, // mip4 - covers 1080p and 1600x1200
+    {2560, 1600}, // mip5 - covers 2560x1440
+    {4096, 2560}, // mip6 - covers 4K and UHD
+    {5120, 3200}, // mip7 - covers 5120x2880 panels
   };
   // Set mipf to mip2 size as at most the user will be using an 8K screen and
   // have a preview that's ~4x smaller

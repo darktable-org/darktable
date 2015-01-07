@@ -5,7 +5,7 @@
     RawSpeed - RAW file decoder.
 
     Copyright (C) 2009-2014 Klaus Post
-    Copyright (C) 2014 Pedro Côrte-Real
+    Copyright (C) 2014-2015 Pedro Côrte-Real
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Lesser General Public
@@ -83,6 +83,16 @@ void KdcDecoder::decodeMetaDataInternal(CameraMetaData *meta) {
   string make = data[0]->getEntry(MAKE)->getString();
   string model = data[0]->getEntry(MODEL)->getString();
   setMetaData(meta, make, model, "", 0);
+
+  if (mRootIFD->hasEntryRecursive(KODAKWB)) {
+    TiffEntry *wb = mRootIFD->getEntryRecursive(KODAKWB);
+    if (wb->count != 734 && wb->count != 1502)
+      ThrowRDE("KDC: WB has %d values instead of 734 or 1502", wb->count);
+    const uchar8 *tmp = wb->getData();
+    mRaw->metadata.wbCoeffs[0] = (float)((((ushort16) tmp[148])<<8)|tmp[149])/256.0f;
+    mRaw->metadata.wbCoeffs[1] = 1.0f;
+    mRaw->metadata.wbCoeffs[2] = (float)((((ushort16) tmp[150])<<8)|tmp[151])/256.0f;
+  }
 }
 
 } // namespace RawSpeed
