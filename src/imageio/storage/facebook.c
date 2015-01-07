@@ -1,6 +1,7 @@
 /*
     This file is part of darktable,
     copyright (c) 2012 Pierre Lamot
+    copyright (c) 2015 Jose Carlos Garcia Sogo
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -25,6 +26,7 @@
 #include "common/imageio.h"
 #include "common/tags.h"
 #include "common/pwstorage/pwstorage.h"
+#include "common/webauth/webauth.h"
 #include "common/metadata.h"
 #include "common/imageio_storage.h"
 #include "control/conf.h"
@@ -177,6 +179,7 @@ typedef struct dt_storage_facebook_gui_data_t
   // == context ==
   gboolean connected;
   FBContext *facebook_api;
+  dt_webauth_t *webauth;
 } dt_storage_facebook_gui_data_t;
 
 
@@ -207,41 +210,11 @@ typedef struct dt_storage_facebook_param_t
   FBContext *facebook_ctx;
 } dt_storage_facebook_param_t;
 
+static void ui_login_ok(dt_storage_facebook_gui_data_t *ui);
+static void ui_login_failed(dt_storage_facebook_gui_data_t *ui);
+
 
 //////////////////////////// curl requests related functions
-
-/**
- * extract the user token from the callback @a url
- */
-static gchar *fb_extract_token_from_url(const gchar *url)
-{
-  g_return_val_if_fail((url != NULL), NULL);
-  if(!(g_str_has_prefix(url, FB_WS_BASE_URL "connect/login_success.html") == TRUE)) return NULL;
-
-  char *authtoken = NULL;
-
-  char **urlchunks = g_strsplit_set(url, "#&=", -1);
-  // starts at 1 to skip the url prefix, then values are in the form key=value
-  for(int i = 1; urlchunks[i] != NULL; i += 2)
-  {
-    if((g_strcmp0(urlchunks[i], "access_token") == 0) && (urlchunks[i + 1] != NULL))
-    {
-      authtoken = g_strdup(urlchunks[i + 1]);
-      break;
-    }
-    else if(g_strcmp0(urlchunks[i], "error") == 0)
-    {
-      break;
-    }
-    if(urlchunks[i + 1] == NULL) // this shouldn't happens but we never know...
-    {
-      g_printerr(_("[facebook] unexpected URL format\n"));
-      break;
-    }
-  }
-  g_strfreev(urlchunks);
-  return authtoken;
-}
 
 static size_t curl_write_data_cb(void *ptr, size_t size, size_t nmemb, void *data)
 {
@@ -573,76 +546,87 @@ static gboolean combobox_separator(GtkTreeModel *model, GtkTreeIter *iter, gpoin
  * @see https://developers.facebook.com/docs/authentication/
  * @returs NULL if the user cancel the operation or a valid token
  */
-static gchar *facebook_get_user_auth_token(dt_storage_facebook_gui_data_t *ui)
+void facebook_on_load_cb(WebKitWebView *web_view,
+                         WebKitWebFrame *web_frame,
+                         gpointer user_data)
 {
-  ///////////// open the authentication url in a browser
-  GError *error = NULL;
-  if(!gtk_show_uri(gdk_screen_get_default(), FB_WS_BASE_URL
+  dt_storage_facebook_gui_data_t *ui = user_data; 
+  dt_webauth_t *webauth = ui->webauth;
+
+  const gchar *url = webkit_web_frame_get_uri (web_frame);
+
+  g_return_val_if_fail((url != NULL), NULL);
+  if(!(g_str_has_prefix(url, FB_WS_BASE_URL "connect/login_success.html") == TRUE)) return;
+
+  char **urlchunks = g_strsplit_set(url, "#&=", -1);
+  // starts at 1 to skip the url prefix, then values are in the form key=value
+  for(int i = 1; urlchunks[i] != NULL; i += 2)
+  {
+    if((g_strcmp0(urlchunks[i], "access_token") == 0) && (urlchunks[i + 1] != NULL))
+    {
+      ui->facebook_api->token = g_strdup(urlchunks[i + 1]);
+      webauth->result = GTK_RESPONSE_ACCEPT;
+      break;
+    }
+    else if(g_strcmp0(urlchunks[i], "error") == 0)
+    {
+      webauth->result = GTK_RESPONSE_CANCEL;
+      break;
+    }
+    if(urlchunks[i + 1] == NULL) // this shouldn't happens but we never know...
+    {
+      g_printerr(_("[facebook] unexpected URL format\n"));
+      webauth->result = GTK_RESPONSE_CANCEL;
+      break;
+    }
+  }
+  g_strfreev(urlchunks);
+
+  ui_login_ok(ui);
+}
+
+void facebook_on_cancel_cb(WebKitWebView *web_view,
+                           gpointer user_data)
+{
+  dt_storage_facebook_gui_data_t *ui = user_data; 
+  dt_webauth_t *webauth = ui->webauth;
+
+  //TODO: could a race happen here with dt_webauth_destroy ??
+  webauth->result = GTK_RESPONSE_CANCEL;
+
+  ui_login_failed(ui);
+}
+
+static void facebook_get_user_auth_token(dt_storage_facebook_gui_data_t *ui)
+{
+  dt_webauth_t *webauth;
+
+  webauth = dt_webauth_new();
+  ui->webauth=webauth;
+
+  g_signal_connect(WEBKIT_WEB_VIEW(webauth->web_view), "document-load-finished", G_CALLBACK(facebook_on_load_cb), ui); 
+  
+  dt_webauth_load_uri_and_show(webauth, FB_WS_BASE_URL
                    "dialog/oauth?"
                    "client_id=" FB_API_KEY "&redirect_uri=" FB_WS_BASE_URL "connect/login_success.html"
                    "&scope=user_photos,publish_stream"
-                   "&response_type=token",
-                   gtk_get_current_event_time(), &error))
+                   "&response_type=token");
+
+  /* Wait for the user to login or cancel
+  while (FALSE)
   {
-    fprintf(stderr, "[facebook] error opening browser: %s\n", error->message);
-    g_error_free(error);
-  }
-
-  ////////////// build & show the validation dialog
-  gchar *text1 = _("step 1: a new window or tab of your browser should have been "
-                   "loaded. you have to login into your facebook account there "
-                   "and authorize darktable to upload photos before continuing.");
-  gchar *text2 = _("step 2: paste your browser URL and click the OK button once "
-                   "you are done.");
-
-  GtkWidget *window = dt_ui_main_window(darktable.gui->ui);
-  GtkDialog *fb_auth_dialog = GTK_DIALOG(
-      gtk_message_dialog_new(GTK_WINDOW(window), GTK_DIALOG_DESTROY_WITH_PARENT, GTK_MESSAGE_QUESTION,
-                             GTK_BUTTONS_OK_CANCEL, _("facebook authentication")));
-  gtk_message_dialog_format_secondary_text(GTK_MESSAGE_DIALOG(fb_auth_dialog), "%s\n\n%s", text1, text2);
-
-  GtkWidget *entry = gtk_entry_new();
-  GtkWidget *hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5);
-  gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(gtk_label_new(_("URL:"))), FALSE, FALSE, 0);
-  gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(entry), TRUE, TRUE, 0);
-
-  GtkWidget *fbauthdialog_vbox = gtk_message_dialog_get_message_area(GTK_MESSAGE_DIALOG(fb_auth_dialog));
-  gtk_box_pack_end(GTK_BOX(fbauthdialog_vbox), hbox, TRUE, TRUE, 0);
-
-  gtk_widget_show_all(GTK_WIDGET(fb_auth_dialog));
-
-  ////////////// wait for the user to enter the validation URL
-  gint result;
-  gchar *token = NULL;
-  const char *replyurl;
-  while(TRUE)
-  {
-    result = gtk_dialog_run(GTK_DIALOG(fb_auth_dialog));
-    if(result == GTK_RESPONSE_CANCEL) break;
-    replyurl = gtk_entry_get_text(GTK_ENTRY(entry));
-    if(replyurl == NULL || g_strcmp0(replyurl, "") == 0)
+    if (webauth->token != NULL)
     {
-      gtk_message_dialog_format_secondary_markup(GTK_MESSAGE_DIALOG(fb_auth_dialog),
-                                                 "%s\n\n%s\n\n<span foreground=\"" MSGCOLOR_RED
-                                                 "\" ><small>%s</small></span>",
-                                                 text1, text2, _("please enter the validation URL"));
-      continue;
-    }
-    token = fb_extract_token_from_url(replyurl);
-    if(token != NULL) // we have a valid token
+      token = g_strdup (webauth->token);
       break;
-    else
-      gtk_message_dialog_format_secondary_markup(
-          GTK_MESSAGE_DIALOG(fb_auth_dialog),
-          "%s\n\n%s%s\n\n<span foreground=\"" MSGCOLOR_RED "\"><small>%s</small></span>", text1, text2,
-          _("the given URL is not valid, it should look like: "),
-          FB_WS_BASE_URL "connect/login_success.html?...");
-  }
-  gtk_widget_destroy(GTK_WIDGET(fb_auth_dialog));
+    }
 
-  return token;
+    if (webauth->result == GTK_RESPONSE_CANCEL)
+     break; 
+  }*/
+  //TODO: dt_webauth_destroy(webauth);
+
 }
-
 
 static void load_account_info_fill(gchar *key, gchar *value, GSList **accountlist)
 {
@@ -803,7 +787,7 @@ cleanup:
   return;
 }
 
-static gboolean ui_authenticate(dt_storage_facebook_gui_data_t *ui)
+static void ui_authenticate(dt_storage_facebook_gui_data_t *ui)
 {
   if(ui->facebook_api == NULL)
   {
@@ -811,7 +795,7 @@ static gboolean ui_authenticate(dt_storage_facebook_gui_data_t *ui)
   }
 
   FBContext *ctx = ui->facebook_api;
-  gboolean mustsaveaccount = FALSE;
+  //gboolean mustsaveaccount = FALSE;
 
   gchar *uiselectedaccounttoken = NULL;
   GtkTreeIter iter;
@@ -830,14 +814,14 @@ static gboolean ui_authenticate(dt_storage_facebook_gui_data_t *ui)
 
   if(ctx->token == NULL)
   {
-    mustsaveaccount = TRUE;
-    ctx->token = facebook_get_user_auth_token(ui); // ask user to log in
+    //mustsaveaccount = TRUE;
+    //ctx->token = facebook_get_user_auth_token(ui); // ask user to log in
+    facebook_get_user_auth_token(ui);
   }
+}
 
-  if(ctx->token == NULL) return FALSE;
-
-  if(mustsaveaccount)
-  {
+static void ui_login_ok(dt_storage_facebook_gui_data_t *ui)
+{
     FBAccountInfo *accountinfo = fb_get_account_info(ui->facebook_api);
     g_return_val_if_fail(accountinfo != NULL, FALSE);
     save_account_info(ui, accountinfo);
@@ -874,21 +858,34 @@ static gboolean ui_authenticate(dt_storage_facebook_gui_data_t *ui)
     gtk_combo_box_set_active_iter(ui->comboBox_username, &iter);
     // we have to re-set the current token here since ui_combo_username_changed is called
     // on gtk_combo_box_set_active_iter (and thus is resetting the active token)
-    ctx->token = g_strdup(accountinfo->token);
+    ui->facebook_api->token = g_strdup(accountinfo->token);
     fb_account_info_destroy(accountinfo);
-  }
-  return TRUE;
+
+    ui_refresh_albums(ui);
+    ui->connected = TRUE;
+    gtk_button_set_label(ui->button_login, _("logout"));
+    gtk_widget_set_sensitive(GTK_WIDGET(ui->comboBox_album), TRUE);
+
+    dt_webauth_destroy(ui->webauth);
 }
 
+static void ui_login_failed(dt_storage_facebook_gui_data_t *ui)
+{
+  gtk_button_set_label(ui->button_login, _("login"));
+  gtk_widget_set_sensitive(GTK_WIDGET(ui->comboBox_album), TRUE); //TODO: Check this
+}
 
 static void ui_login_clicked(GtkButton *button, gpointer data)
 {
   dt_storage_facebook_gui_data_t *ui = (dt_storage_facebook_gui_data_t *)data;
-  gtk_widget_set_sensitive(GTK_WIDGET(ui->comboBox_album), FALSE);
+  gtk_widget_set_sensitive(GTK_WIDGET(ui->comboBox_album), FALSE); //TODO: we want the button insensitive
   if(ui->connected == FALSE)
   {
-    if(ui_authenticate(ui))
+    ui_authenticate(ui);
+    /* We call here ui_authenticate() but the response will be asynchronous */
+    /*if(ui_authenticate(ui))
     {
+      // TODO: Move these elsewhere
       ui_refresh_albums(ui);
       ui->connected = TRUE;
       gtk_button_set_label(ui->button_login, _("logout"));
@@ -897,6 +894,7 @@ static void ui_login_clicked(GtkButton *button, gpointer data)
     {
       gtk_button_set_label(ui->button_login, _("login"));
     }
+    */
   }
   else // disconnect user
   {
@@ -911,9 +909,11 @@ static void ui_login_clicked(GtkButton *button, gpointer data)
       gtk_button_set_label(ui->button_login, _("login"));
       ui_refresh_users(ui);
       ui->connected = FALSE;
+
+      gtk_widget_set_sensitive(GTK_WIDGET(ui->comboBox_album), TRUE);
     }
   }
-  gtk_widget_set_sensitive(GTK_WIDGET(ui->comboBox_album), TRUE);
+  // TODO: Make the widget sensitive again if connected or if fails
 }
 
 
