@@ -4,6 +4,7 @@
 #include "RawDecoder.h"
 #include "LJpegPlain.h"
 #include "TiffIFD.h"
+#include "TiffIFDBE.h"
 #include "BitPumpPlain.h"
 
 /* 

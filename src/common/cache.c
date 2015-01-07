@@ -102,10 +102,7 @@ dt_cache_entry_t *dt_cache_testget(dt_cache_t *cache, const uint32_t key, char m
   gpointer orig_key, value;
   gboolean res;
   int result;
-  int restarts = 0;
-  // char blocker[256] = {0};
   double start = dt_get_wtime();
-restart:
   dt_pthread_mutex_lock(&cache->lock);
   res = g_hash_table_lookup_extended(
       cache->hashtable, GINT_TO_POINTER(key), &orig_key, &value);
@@ -119,11 +116,7 @@ restart:
     { // need to give up mutex so other threads have a chance to get in between and
       // free the lock we're trying to acquire:
       dt_pthread_mutex_unlock(&cache->lock);
-      return 0; // XXX changed semantics here! also fail if lock couldn't be acquired!
-      // memcpy(blocker, entry->lock.name, 256);
-      g_usleep(5);
-      restarts ++;
-      goto restart;
+      return 0;
     }
     // bubble up in lru list:
     cache->lru = g_list_remove_link(cache->lru, entry->link);
@@ -131,8 +124,7 @@ restart:
     dt_pthread_mutex_unlock(&cache->lock);
     double end = dt_get_wtime();
     if(end - start > 0.1)
-      // fprintf(stderr, "try+ wait time %.06fs mode %c restarts %d waiting for `%s'\n", end - start, mode, restarts, blocker);
-      fprintf(stderr, "try+ wait time %.06fs mode %c restarts %d \n", end - start, mode, restarts);
+      fprintf(stderr, "try+ wait time %.06fs mode %c \n", end - start, mode);
     return entry;
   }
   dt_pthread_mutex_unlock(&cache->lock);

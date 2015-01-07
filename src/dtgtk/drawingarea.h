@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2014 LebedevRI.
+    copyright (c) 2014-2015 LebedevRI.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -18,16 +18,20 @@
 #ifndef DTGTK_DRAWING_AREA_H
 #define DTGTK_DRAWING_AREA_H
 
-#include "develop/imageop.h"
+#include <glib-object.h>
 #include <gtk/gtk.h>
 
 G_BEGIN_DECLS
+
+#define DTGTK_TYPE_DRAWING_AREA (dtgtk_drawing_area_get_type())
 #define DTGTK_DRAWING_AREA(obj)                                                                              \
-  G_TYPE_CHECK_INSTANCE_CAST(obj, dtgtk_drawing_area_get_type(), GtkDarktableDrawingArea)
+  (G_TYPE_CHECK_INSTANCE_CAST((obj), DTGTK_TYPE_DRAWING_AREA, GtkDarktableDrawingArea))
+#define DTGTK_IS_DRAWING_AREA(obj) (G_TYPE_CHECK_INSTANCE_TYPE((obj), DTGTK_TYPE_DRAWING_AREA))
 #define DTGTK_DRAWING_AREA_CLASS(klass)                                                                      \
-  GTK_CHECK_CLASS_CAST(klass, dtgtk_drawing_area_get_type(), GtkDarktableButtonClass)
-#define DTGTK_IS_DRAWING_AREA(obj) G_TYPE_CHECK_INSTANCE_TYPE(obj, dtgtk_drawing_area_get_type())
-#define DTGTK_IS_DRAWING_AREA_CLASS(klass) GTK_CHECK_CLASS_TYPE(obj, dtgtk_drawing_area_get_type())
+  (G_TYPE_CHECK_CLASS_CAST((klass), DTGTK_TYPE_DRAWING_AREA, GtkDarktableDrawingAreaClass))
+#define DTGTK_IS_DRAWING_AREA_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE((klass), DTGTK_TYPE_DRAWING_AREA))
+#define DTGTK_DRAWING_AREA_GET_CLASS(obj)                                                                    \
+  (G_TYPE_INSTANCE_GET_CLASS((obj), DTGTK_TYPE_DRAWING_AREA, GtkDarktableDrawingAreaClass))
 
 typedef struct _GtkDarktableDrawingArea
 {

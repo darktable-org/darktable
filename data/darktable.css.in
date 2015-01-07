@@ -64,8 +64,6 @@ GtkAlignment
 #lib-plugin-ui *
 {
   margin:0;
-  border:0;
-  background-color: @selected_bg_color;
 }
 /* lib toggle buttons (e.g recently used collection and history items): */
 /* TODO: adjust borders/padding to our liking (match bauhaus..) */
@@ -310,6 +308,20 @@ GtkFrame > GtkEventBox * {
   background-color: @bg_color;
 }
 
+.scale
+{
+  -GtkRange-slider-width:13;
+  -GtkRange-trough-border:1;
+  -GtkScale-slider-length:13;
+  margin:5px 0;
+}
+
+.scale.trough.highlight
+{
+  background-color:@selected_bg_color;
+  background-image:none;
+}
+
 *:insensitive {
   color: black;
 }
@@ -334,4 +346,16 @@ GtkMenuItem:hover
 GtkMenuItem *
 {
   background-color: transparent;
+}
+
+.slider.horizontal,
+.slider.vertical {
+    border-color: @selected_bg_color;
+    background-color: @text_color;
+}
+
+.slider.horizontal:hover,
+.slider.vertical:hover {
+    border-color:  @selected_bg_color;
+    background-color: @fg_color;
 }

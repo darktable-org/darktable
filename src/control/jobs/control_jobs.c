@@ -31,7 +31,6 @@
 #include "common/tags.h"
 #include "common/debug.h"
 #include "common/gpx.h"
-#include "common/printprof.h"
 #include "control/conf.h"
 #include "control/jobs/control_jobs.h"
 #include "control/progress.h"
@@ -864,13 +863,13 @@ static int32_t dt_control_local_copy_images_job_run(dt_job_t *job)
     imgid = GPOINTER_TO_INT(t->data);
     if(is_copy)
     {
-      dt_image_local_copy_set(imgid);
-      dt_tag_attach(tagid, imgid);
+      if (dt_image_local_copy_set(imgid) == 0)
+        dt_tag_attach(tagid, imgid);
     }
     else
     {
-      dt_image_local_copy_reset(imgid);
-      dt_tag_detach(tagid, imgid);
+      if (dt_image_local_copy_reset(imgid) == 0)
+        dt_tag_detach(tagid, imgid);
     }
     t = g_list_delete_link(t, t);
 
@@ -1033,50 +1032,6 @@ static int32_t dt_control_export_job_run(dt_job_t *job)
   free(params);
   return 0;
 }
-
-#ifdef HAVE_PRINT
-static int32_t dt_control_print_job_run(dt_job_t *job)
-{
-  dt_control_image_enumerator_t *params = (dt_control_image_enumerator_t *)dt_control_job_get_params(job);
-  GList *t = params->index;
-  dt_control_print_t *pp = (dt_control_print_t*)params->data;
-  int32_t imgid = 0;
-  char filename[PATH_MAX] = { 0 };
-
-  if (t) imgid = GPOINTER_TO_INT(t->data);
-
-  g_strlcpy(filename, pp->filename, sizeof(pp->filename));
-  g_strlcat(filename, ".tif", sizeof(filename));
-
-  dt_control_export_job_run(job);
-
-  // now apply the printer profile/intent if any
-
-  if (strlen(pp->pinfo.printer.profile)>0 && g_file_test(pp->pinfo.printer.profile,G_FILE_TEST_EXISTS))
-  {
-    fprintf(stderr, "[print] printer profile %s and intent %d\n", pp->pinfo.printer.profile, pp->pinfo.printer.intent);
-    if (!dt_apply_printer_profile(filename, pp->pinfo.printer.profile, pp->pinfo.printer.intent))
-    {
-      dt_control_log(_("failed to apply printer profile '%s'"), pp->pinfo.printer.profile);
-      return 1;
-    }
-  }
-
-  // and finaly print
-
-  dt_print_file (imgid, filename, &pp->pinfo);
-
-  // add tag for this image
-
-  char tag[256] = { 0 };
-  guint tagid = 0;
-  snprintf (tag, sizeof(tag), "darktable|printed|%s", pp->pinfo.printer.name);
-  dt_tag_new(tag, &tagid);
-  dt_tag_attach(tagid, imgid);
-
-  return 0;
-}
-#endif
 
 static dt_job_t *dt_control_gpx_apply_job_create(const gchar *filename, int32_t filmid, const gchar *tz)
 {
@@ -1363,62 +1318,6 @@ void dt_control_export(GList *imgid_list, int max_width, int max_height, int for
   // tell the storage that we got its params for an export so it can reset itself to a safe state
   mstorage->export_dispatched(mstorage);
 }
-
-#ifdef HAVE_PRINT
-void dt_control_print(GList *imgid_list, int max_width, int max_height, int format_index, int storage_index,
-                      char *style, gboolean style_append, const char *filename, const dt_print_info_t *pinfo)
-{
-  dt_job_t *job = dt_control_job_create(&dt_control_print_job_run, "print");
-
-  if(!job) return;
-  dt_control_image_enumerator_t *params
-      = (dt_control_image_enumerator_t *)calloc(1, sizeof(dt_control_image_enumerator_t));
-  if(!params)
-  {
-    dt_control_job_dispose(job);
-    return;
-  }
-  dt_control_job_set_params(job, params);
-  params->index = imgid_list;
-  dt_control_print_t *data = (dt_control_print_t*)malloc(sizeof(dt_control_print_t));
-  if(!data)
-  {
-    dt_control_job_dispose(job);
-    return;
-  }
-  data->max_width = max_width;
-  data->max_height = max_height;
-  data->format_index = format_index;
-  data->storage_index = storage_index;
-  g_strlcpy(data->filename, filename, sizeof(data->filename));
-  memcpy(&data->pinfo, pinfo, sizeof(dt_print_info_t));
-
-  dt_imageio_module_storage_t *mstorage = dt_imageio_get_storage_by_index(storage_index);
-  g_assert(mstorage);
-
-  // get shared storage param struct (global sequence counter, one picasa connection etc)
-  dt_imageio_module_data_t *sdata = mstorage->get_params(mstorage);
-  if(sdata == NULL)
-  {
-    dt_control_log(_("failed to get parameters from storage module `%s', aborting export.."), mstorage->name(mstorage));
-    free(data);
-    free(params);
-    dt_control_job_dispose(job);
-    return;
-  }
-  data->sdata = sdata;
-  data->high_quality = TRUE;
-  g_strlcpy(data->style,style,sizeof(data->style));
-  data->style_append = style_append;
-  params->data = data;
-
-  dt_control_signal_raise(darktable.signals, DT_SIGNAL_IMAGE_EXPORT_MULTIPLE, params);
-  dt_control_add_job(darktable.control, DT_JOB_QUEUE_USER_FG, job);
-
-  // tell the storage that we got its params for an export so it can reset itself to a safe state
-  mstorage->export_dispatched(mstorage);
-}
-#endif
 
 static int32_t dt_control_time_offset_job_run(dt_job_t *job)
 {

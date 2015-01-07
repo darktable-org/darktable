@@ -27,6 +27,7 @@
 #include "develop/imageop.h"
 #include "dtgtk/button.h"
 #include "gui/accelerators.h"
+#include "dtgtk/sidepanel.h"
 #include "gui/gtk.h"
 
 #include "gui/presets.h"
@@ -1385,20 +1386,17 @@ static GtkWidget *_ui_init_panel_container_center(GtkWidget *container, gboolean
                                     left ? GTK_CORNER_TOP_LEFT : GTK_CORNER_TOP_RIGHT);
   gtk_box_pack_start(GTK_BOX(container), widget, TRUE, TRUE, 0);
   gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(widget), GTK_POLICY_NEVER, GTK_POLICY_ALWAYS);
-  gtk_widget_set_size_request(widget, dt_conf_get_int("panel_width") - DT_PIXEL_APPLY_DPI(5 + 13), -1);
 
   /* create the scrolled viewport */
   container = widget;
   widget = gtk_viewport_new(a[2], a[3]);
   gtk_viewport_set_shadow_type(GTK_VIEWPORT(widget), GTK_SHADOW_NONE);
-  gtk_container_set_resize_mode(GTK_CONTAINER(widget), GTK_RESIZE_QUEUE);
   gtk_container_add(GTK_CONTAINER(container), widget);
 
   /* create the container */
   container = widget;
   widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_UI_PANEL_MODULE_SPACING);
   gtk_widget_set_name(widget, "plugins_vbox_left");
-  gtk_widget_set_size_request(widget, 0, -1);
   gtk_container_add(GTK_CONTAINER(container), widget);
 
   return widget;
@@ -1416,14 +1414,10 @@ static void _ui_init_panel_left(dt_ui_t *ui, GtkWidget *container)
   GtkWidget *widget;
 
   /* create left panel main widget and add it to ui */
-  widget = ui->panels[DT_UI_PANEL_LEFT] = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
-  gtk_widget_set_vexpand(GTK_WIDGET(widget), TRUE);
+  widget = ui->panels[DT_UI_PANEL_LEFT] = dtgtk_side_panel_new();
   gtk_widget_set_name(widget, "left");
 //   gtk_widget_set_margin_left(widget, DT_PIXEL_APPLY_DPI(5)); // i prefer it with less blank space
   gtk_grid_attach(GTK_GRID(container), widget, 1, 1, 1, 1);
-
-  /* set panel width */
-  gtk_widget_set_size_request(widget, dt_conf_get_int("panel_width"), -1);
 
   /* add top,center,bottom*/
   container = widget;
@@ -1440,14 +1434,10 @@ static void _ui_init_panel_right(dt_ui_t *ui, GtkWidget *container)
   GtkWidget *widget;
 
   /* create left panel main widget and add it to ui */
-  widget = ui->panels[DT_UI_PANEL_RIGHT] = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
-  gtk_widget_set_vexpand(GTK_WIDGET(widget), TRUE);
+  widget = ui->panels[DT_UI_PANEL_RIGHT] = dtgtk_side_panel_new();
   gtk_widget_set_name(widget, "right");
 //   gtk_widget_set_margin_right(widget, DT_PIXEL_APPLY_DPI(5)); // i prefer it with less blank space
   gtk_grid_attach(GTK_GRID(container), widget, 3, 1, 1, 1);
-
-  /* set panel width */
-  gtk_widget_set_size_request(widget, dt_conf_get_int("panel_width"), -1);
 
   /* add top,center,bottom*/
   container = widget;

@@ -59,14 +59,28 @@ RawImage DcrDecoder::decodeRawInternal() {
     TiffEntry *ifdoffset = mRootIFD->getEntryRecursive(KODAK_IFD);
     if (!ifdoffset)
       ThrowRDE("DCR Decoder: Couldn't find the Kodak IFD offset");
-    TiffIFDBE kodakifd = TiffIFDBE(mFile, ifdoffset->getInt());
-    TiffEntry *linearization = kodakifd.getEntryRecursive(KODAK_LINEARIZATION);
-    if (!linearization)
+    TiffIFD *kodakifd;
+    if (mRootIFD->endian == getHostEndianness())
+      kodakifd = new TiffIFD(mFile, ifdoffset->getInt());
+    else
+      kodakifd = new TiffIFDBE(mFile, ifdoffset->getInt());
+    TiffEntry *linearization = kodakifd->getEntryRecursive(KODAK_LINEARIZATION);
+    if (!linearization || linearization->count != 1024 || linearization->type != TIFF_SHORT) {
+      delete kodakifd;
       ThrowRDE("DCR Decoder: Couldn't find the linearization table");
-    if (linearization->count != 1024)
-      ThrowRDE("DCR Decoder: Linearization table is wrong size %d", linearization->count);
-    if (linearization->type != TIFF_SHORT)
-      ThrowRDE("DCR Decoder: Linearization table is wrong type");
+    }
+
+    // FIXME: dcraw does all sorts of crazy things besides this to fetch
+    //        WB from what appear to be presets and calculate it in weird ways
+    //        The only file I have only uses this method, if anybody careas look
+    //        in dcraw.c parse_kodak_ifd() for all that weirdness
+    TiffEntry *blob = kodakifd->getEntryRecursive((TiffTag) 0x03fd);
+    if (blob && blob->count == 72) {
+      ushort16 *data = (ushort16 *) blob->getShortArray();
+      mRaw->metadata.wbCoeffs[0] = (float) 2048.0f / data[20];
+      mRaw->metadata.wbCoeffs[1] = (float) 2048.0f / data[21];
+      mRaw->metadata.wbCoeffs[2] = (float) 2048.0f / data[22];
+    }
 
     // Get create passthrough curve if user has requested that.
     if (uncorrectedRawValues) {
@@ -75,13 +89,14 @@ RawImage DcrDecoder::decodeRawInternal() {
     }
 
     try {
-    if (uncorrectedRawValues)
-      decodeKodak65000(input, width, height, linear);
-    else
-      decodeKodak65000(input, width, height, linearization->getShortArray());
+      if (uncorrectedRawValues)
+        decodeKodak65000(input, width, height, linear);
+      else
+        decodeKodak65000(input, width, height, linearization->getShortArray());
     } catch (IOException) {
       mRaw->setError("IO error occurred while reading image. Returning partial result.");
     }
+    delete kodakifd;
   } else
     ThrowRDE("DCR Decoder: Unsupported compression %d", compression);
 

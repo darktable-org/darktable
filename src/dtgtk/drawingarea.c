@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2014 LebedevRI.
+    copyright (c) 2014-2015 LebedevRI.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -18,25 +18,32 @@
 
 #include "dtgtk/drawingarea.h"
 
-static GtkSizeRequestMode get_request_mode(GtkWidget *widget)
+G_DEFINE_TYPE(GtkDarktableDrawingArea, dtgtk_drawing_area, GTK_TYPE_DRAWING_AREA);
+
+static GtkSizeRequestMode dtgtk_drawing_area_get_request_mode(GtkWidget *widget)
 {
   return GTK_SIZE_REQUEST_HEIGHT_FOR_WIDTH;
 };
 
-static void get_preferred_height_for_width(GtkWidget *widget, gint for_width, gint *min_height,
-                                           gint *nat_height)
+static void dtgtk_drawing_area_get_preferred_height_for_width(GtkWidget *widget, gint for_width,
+                                                              gint *min_height, gint *nat_height)
 {
-  GtkDarktableDrawingArea *da = (GtkDarktableDrawingArea *)widget;
+  GtkDarktableDrawingArea *da = DTGTK_DRAWING_AREA(widget);
 
   *min_height = *nat_height = for_width * da->aspect;
 }
 
-static void _drawing_area_class_init(GtkDarktableDrawingAreaClass *klass)
+static void dtgtk_drawing_area_class_init(GtkDarktableDrawingAreaClass *class)
 {
-  GtkWidgetClass *widget_class = (GtkWidgetClass *)klass;
+  GtkWidgetClass *widget_class = GTK_WIDGET_CLASS(class);
 
-  widget_class->get_request_mode = get_request_mode;
-  widget_class->get_preferred_height_for_width = get_preferred_height_for_width;
+  widget_class->get_request_mode = dtgtk_drawing_area_get_request_mode;
+  widget_class->get_preferred_height_for_width = dtgtk_drawing_area_get_preferred_height_for_width;
+}
+
+static void dtgtk_drawing_area_init(GtkDarktableDrawingArea *da)
+{
+  gtk_widget_set_hexpand(GTK_WIDGET(da), TRUE);
 }
 
 // public functions
@@ -46,27 +53,7 @@ GtkWidget *dtgtk_drawing_area_new_with_aspect_ratio(double aspect)
   da = g_object_new(dtgtk_drawing_area_get_type(), NULL);
   da->aspect = aspect;
 
-  gtk_widget_set_hexpand(GTK_WIDGET(da), TRUE);
-
   return (GtkWidget *)da;
-}
-
-GType dtgtk_drawing_area_get_type()
-{
-  static GType dtgtk_drawing_area_type = 0;
-  if(!dtgtk_drawing_area_type)
-  {
-    static const GTypeInfo dtgtk_drawing_area_info = {
-      sizeof(GtkDarktableDrawingAreaClass), (GBaseInitFunc)NULL, (GBaseFinalizeFunc)NULL,
-      (GClassInitFunc)_drawing_area_class_init, NULL, /* class_finalize */
-      NULL,                                           /* class_data */
-      sizeof(GtkDarktableDrawingArea), 0,             /* n_preallocs */
-      (GInstanceInitFunc)NULL,
-    };
-    dtgtk_drawing_area_type = g_type_register_static(GTK_TYPE_DRAWING_AREA, "GtkDarktableDrawingArea",
-                                                     &dtgtk_drawing_area_info, 0);
-  }
-  return dtgtk_drawing_area_type;
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

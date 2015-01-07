@@ -5,6 +5,7 @@
     RawSpeed - RAW file decoder.
 
     Copyright (C) 2009-2014 Klaus Post
+    Copyright (C) 2015 Pedro Côrte-Real
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Lesser General Public
@@ -242,6 +243,19 @@ TiffIFD* TiffIFD::parseMakerNote(FileMap *f, uint32 offset, Endianness parent_en
   } else if (data[0] == 0x4D && data[1] == 0x4D) {
     parent_end = big;
     offset +=2;
+  }
+
+  // Olympus starts the makernote with their own name, sometimes truncated
+  if (!strncmp((const char *)data, "OLYMP", 5)) {
+    offset += 8;
+    if (!strncmp((const char *)data, "OLYMPUS", 7)) {
+      offset += 4;
+    }
+  }
+
+  // Epson starts the makernote with its own name
+  if (!strncmp((const char *)data, "EPSON", 5)) {
+    offset += 8;
   }
 
   // Attempt to parse the rest as an IFD

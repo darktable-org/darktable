@@ -205,10 +205,6 @@ static gboolean _lib_viewswitcher_button_press_callback(GtkWidget *w, GdkEventBu
 #endif
     else if(which == DT_VIEW_SLIDESHOW)
       dt_ctl_switch_mode_to(DT_SLIDESHOW);
-#ifdef HAVE_PRINT
-    else if (which == DT_VIEW_PRINT)
-      dt_ctl_switch_mode_to(DT_PRINT);
-#endif
 
     return TRUE;
   }
