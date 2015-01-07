@@ -343,10 +343,15 @@ static gboolean entry_autocompl_match_selected(GtkEntryCompletion *widget, GtkTr
 
 static gboolean entry_autocompl_match(GtkEntryCompletion *completion, const gchar *key, GtkTreeIter *iter, gpointer data)
 {
+  if (!completion || !gtk_entry_completion_get_entry(completion)) return FALSE;
   gchar *text;
   gtk_tree_model_get (gtk_entry_completion_get_model(completion), iter, DT_LIB_COLLECT_COL_PATH, &text, -1);
-  if (!key || !text) return FALSE;
-  return (g_str_has_prefix(text,key));
+  const gchar *key2= gtk_entry_get_text (GTK_ENTRY (gtk_entry_completion_get_entry(completion)));
+  
+  if (!text || !key2) return FALSE;
+  int rep = (g_str_has_prefix(text,key2));
+  g_free(text);
+  return rep;
 }
 
 static void folders_view(dt_lib_collect_rule_t *dr)
@@ -820,6 +825,7 @@ static void list_view(dt_lib_collect_rule_t *dr)
         val_wild = dt_util_dstrcat(val_wild,"%s",value);
         break;
     }
+
 
     gtk_list_store_set(GTK_LIST_STORE(listmodel), &iter, DT_LIB_COLLECT_COL_TEXT, folder,
                        DT_LIB_COLLECT_COL_ID, sqlite3_column_int(stmt, 1),
