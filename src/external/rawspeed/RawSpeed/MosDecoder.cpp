@@ -4,7 +4,7 @@
     RawSpeed - RAW file decoder.
 
     Copyright (C) 2009-2014 Klaus Post
-    Copyright (C) 2014 Pedro Côrte-Real
+    Copyright (C) 2014-2015 Pedro Côrte-Real
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Lesser General Public
@@ -202,6 +202,26 @@ void MosDecoder::checkSupportInternal(CameraMetaData *meta) {
 
 void MosDecoder::decodeMetaDataInternal(CameraMetaData *meta) {
   setMetaData(meta, make, model, "", 0);
+
+  // Fetch the white balance (see dcraw.c parse_mos for more metadata that can be gotten)
+  if (mRootIFD->hasEntryRecursive(LEAFMETADATA)) {
+    TiffEntry *meta = mRootIFD->getEntryRecursive(LEAFMETADATA);
+    char *text = (char *) meta->getDataWrt();
+    uint32 size = meta->count;
+    text[size-1] = 0; //Make sure the data is NUL terminated so that scanf never reads beyond limits
+
+    // dcraw does actual parsing, since we just want one field we bruteforce it
+    char *neutobj = (char *) memmem(text, size, "NeutObj_neutrals", 16);
+    if (neutobj) {
+      uint32 tmp[4] = {0};
+      sscanf((const char *)neutobj+44, "%u %u %u %u", &tmp[0], &tmp[1], &tmp[2], &tmp[3]);
+      mRaw->metadata.wbCoeffs[0] = (float) tmp[0]/tmp[1];
+      mRaw->metadata.wbCoeffs[1] = (float) tmp[0]/tmp[2];
+      mRaw->metadata.wbCoeffs[2] = (float) tmp[0]/tmp[3];
+    }
+    if (text)
+      delete text;
+  }
 }
 
 } // namespace RawSpeed
