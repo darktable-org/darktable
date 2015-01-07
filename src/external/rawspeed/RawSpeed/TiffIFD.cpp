@@ -253,6 +253,11 @@ TiffIFD* TiffIFD::parseMakerNote(FileMap *f, uint32 offset, Endianness parent_en
     }
   }
 
+  // Epson starts the makernote with its own name
+  if (!strncmp((const char *)data, "EPSON", 5)) {
+    offset += 8;
+  }
+
   // Attempt to parse the rest as an IFD
   try {
     if (parent_end == getHostEndianness())
