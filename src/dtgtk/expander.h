@@ -53,6 +53,7 @@ GType dtgtk_expander_get_type(void);
 GtkWidget *dtgtk_expander_get_frame(GtkDarktableExpander *expander);
 GtkWidget *dtgtk_expander_get_header(GtkDarktableExpander *expander);
 GtkWidget *dtgtk_expander_get_header_event_box(GtkDarktableExpander *expander);
+GtkWidget *dtgtk_expander_get_body(GtkDarktableExpander *expander);
 GtkWidget *dtgtk_expander_get_body_event_box(GtkDarktableExpander *expander);
 
 void dtgtk_expander_set_expanded(GtkDarktableExpander *expander, gboolean expanded);

@@ -47,6 +47,13 @@ GtkWidget *dtgtk_expander_get_header_event_box(GtkDarktableExpander *expander)
   return expander->header_evb;
 }
 
+GtkWidget *dtgtk_expander_get_body(GtkDarktableExpander *expander)
+{
+  g_return_val_if_fail(DTGTK_IS_EXPANDER(expander), NULL);
+
+  return expander->body;
+}
+
 GtkWidget *dtgtk_expander_get_body_event_box(GtkDarktableExpander *expander)
 {
   g_return_val_if_fail(DTGTK_IS_EXPANDER(expander), NULL);
