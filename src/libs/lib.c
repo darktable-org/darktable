@@ -21,7 +21,6 @@
 #include "gui/gtk.h"
 #include "dtgtk/button.h"
 #include "dtgtk/icon.h"
-#include "dtgtk/expander.h"
 #include "control/conf.h"
 #include "control/control.h"
 #include "common/debug.h"
@@ -783,11 +782,10 @@ void dt_lib_gui_set_expanded(dt_lib_module_t *module, gboolean expanded)
 {
   if(!module->expander) return;
 
-  dtgtk_expander_set_expanded(DTGTK_EXPANDER(module->expander), expanded);
-
   /* update expander arrow state */
   GtkWidget *icon;
-  GtkWidget *header = dtgtk_expander_get_header(DTGTK_EXPANDER(module->expander));
+  GtkWidget *header = gtk_bin_get_child(
+      GTK_BIN(g_list_nth_data(gtk_container_get_children(GTK_CONTAINER(module->expander)), 0)));
   gint flags = CPF_DIRECTION_DOWN;
   int c = module->container();
 
@@ -807,6 +805,8 @@ void dt_lib_gui_set_expanded(dt_lib_module_t *module, gboolean expanded)
   /* show / hide plugin widget */
   if(expanded)
   {
+    gtk_widget_show_all(module->widget);
+
     /* register to receive draw events */
     darktable.lib->gui_module = module;
 
@@ -816,6 +816,8 @@ void dt_lib_gui_set_expanded(dt_lib_module_t *module, gboolean expanded)
   }
   else
   {
+    gtk_widget_hide(module->widget);
+
     if(darktable.lib->gui_module == module)
     {
       darktable.lib->gui_module = NULL;
@@ -826,7 +828,7 @@ void dt_lib_gui_set_expanded(dt_lib_module_t *module, gboolean expanded)
   /* store expanded state of module */
   char var[1024];
   snprintf(var, sizeof(var), "plugins/lighttable/%s/expanded", module->plugin_name);
-  dt_conf_set_bool(var, expanded);
+  dt_conf_set_bool(var, gtk_widget_get_visible(module->widget));
 }
 gboolean dt_lib_gui_get_expanded(dt_lib_module_t *module)
 {
@@ -838,7 +840,7 @@ gboolean dt_lib_gui_get_expanded(dt_lib_module_t *module)
     snprintf(var, sizeof(var), "plugins/lighttable/%s/expanded", module->plugin_name);
     return dt_conf_get_bool(var);
   }
-  return dtgtk_expander_get_expanded(DTGTK_EXPANDER(module->expander));
+  return gtk_widget_get_visible(module->widget);
 }
 
 static gboolean _lib_plugin_header_button_press(GtkWidget *w, GdkEventButton *e, gpointer user_data)
@@ -863,21 +865,21 @@ static gboolean _lib_plugin_header_button_press(GtkWidget *w, GdkEventButton *e,
 
         if(m != module && container == m->container() && m->expandable() && (m->views() & v->view(v)))
         {
-          all_other_closed = all_other_closed && !dtgtk_expander_get_expanded(DTGTK_EXPANDER(m->expander));
+          all_other_closed = all_other_closed && !gtk_widget_get_visible(m->widget);
           dt_lib_gui_set_expanded(m, FALSE);
         }
 
         it = g_list_next(it);
       }
       if(all_other_closed)
-        dt_lib_gui_set_expanded(module, !dtgtk_expander_get_expanded(DTGTK_EXPANDER(module->expander)));
+        dt_lib_gui_set_expanded(module, !gtk_widget_get_visible(module->widget));
       else
         dt_lib_gui_set_expanded(module, TRUE);
     }
     else
     {
       /* else just toggle */
-      dt_lib_gui_set_expanded(module, !dtgtk_expander_get_expanded(DTGTK_EXPANDER(module->expander)));
+      dt_lib_gui_set_expanded(module, !gtk_widget_get_visible(module->widget));
     }
 
     return TRUE;
@@ -902,17 +904,24 @@ GtkWidget *dt_lib_gui_get_expander(dt_lib_module_t *module)
 
   int bs = DT_PIXEL_APPLY_DPI(12);
 
+  GtkWidget *expander = gtk_box_new(GTK_ORIENTATION_VERTICAL, 3);
+  GtkWidget *header_evb = gtk_event_box_new();
   GtkWidget *header = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-  GtkWidget *expander = dtgtk_expander_new(header, module->widget);
-  GtkWidget *header_evb = dtgtk_expander_get_header_event_box(DTGTK_EXPANDER(expander));
-  GtkWidget *pluginui_frame = dtgtk_expander_get_frame(DTGTK_EXPANDER(expander));
+  GtkWidget *pluginui_frame = gtk_frame_new(NULL);
+  GtkWidget *pluginui = gtk_event_box_new();
 
   /* setup the header box */
+  gtk_container_add(GTK_CONTAINER(header_evb), header);
   g_signal_connect(G_OBJECT(header_evb), "button-press-event", G_CALLBACK(_lib_plugin_header_button_press),
                    module);
 
   /* setup plugin content frame */
   gtk_frame_set_shadow_type(GTK_FRAME(pluginui_frame), GTK_SHADOW_IN);
+  gtk_container_add(GTK_CONTAINER(pluginui_frame), pluginui);
+
+  /* layout the main expander widget */
+  gtk_box_pack_start(GTK_BOX(expander), header_evb, TRUE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(expander), pluginui_frame, TRUE, FALSE, 0);
 
   /*
    * initialize the header widgets
@@ -978,6 +987,7 @@ GtkWidget *dt_lib_gui_get_expander(dt_lib_module_t *module)
   }
 
   /* add empty space around widget */
+  gtk_container_add(GTK_CONTAINER(pluginui), module->widget);
   gtk_widget_set_margin_start(module->widget, DT_PIXEL_APPLY_DPI(8));
   gtk_widget_set_margin_end(module->widget, DT_PIXEL_APPLY_DPI(8));
   gtk_widget_set_margin_top(module->widget, DT_PIXEL_APPLY_DPI(8));
@@ -1057,7 +1067,7 @@ void dt_lib_set_visible(dt_lib_module_t *module, gboolean visible)
   {
     if(module->expander)
     {
-      dtgtk_expander_set_expanded(DTGTK_EXPANDER(module->expander), visible);
+      gtk_widget_set_visible(GTK_WIDGET(module->expander), visible);
     }
     else
     {
