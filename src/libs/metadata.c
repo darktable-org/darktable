@@ -335,76 +335,43 @@ void gui_init(dt_lib_module_t *self)
 
   g_signal_connect(self->widget, "draw", G_CALLBACK(draw), self);
 
-  label = gtk_label_new(_("title"));
-  g_object_set(G_OBJECT(label), "xalign", 0.0, NULL);
-  d->title = GTK_COMBO_BOX(gtk_combo_box_text_new_with_entry());
-  gtk_widget_set_hexpand(GTK_WIDGET(d->title), TRUE);
-  dt_gui_key_accel_block_on_focus_connect(GTK_WIDGET(gtk_bin_get_child(GTK_BIN(d->title))));
-  completion = gtk_entry_completion_new();
-  gtk_entry_completion_set_model(completion, gtk_combo_box_get_model(GTK_COMBO_BOX(d->title)));
-  gtk_entry_completion_set_text_column(completion, 0);
-  gtk_entry_completion_set_inline_completion(completion, TRUE);
-  gtk_entry_set_completion(GTK_ENTRY(gtk_bin_get_child(GTK_BIN(d->title))), completion);
-  g_signal_connect(GTK_WIDGET(gtk_bin_get_child(GTK_BIN(d->title))), "key-press-event",
-                   G_CALLBACK(key_pressed), self);
-  gtk_grid_attach(GTK_GRID(self->widget), label, 0, line++, 1, 1);
-  gtk_grid_attach_next_to(GTK_GRID(self->widget), GTK_WIDGET(d->title), label, GTK_POS_RIGHT, 1, 1);
+  struct
+  {
+    char *name;
+    GtkComboBox **box;
+  } entries[] = {
+    // clang-format off
+    {_("title"), &d->title},
+    {_("description"), &d->description},
+    {_("creator"), &d->creator},
+    {_("publisher"), &d->publisher},
+    {_("rights"), &d->rights}
+    // clang-format on
+  };
 
-  label = gtk_label_new(_("description"));
-  g_object_set(G_OBJECT(label), "xalign", 0.0, NULL);
-  d->description = GTK_COMBO_BOX(gtk_combo_box_text_new_with_entry());
-  dt_gui_key_accel_block_on_focus_connect(GTK_WIDGET(gtk_bin_get_child(GTK_BIN(d->description))));
-  completion = gtk_entry_completion_new();
-  gtk_entry_completion_set_model(completion, gtk_combo_box_get_model(GTK_COMBO_BOX(d->description)));
-  gtk_entry_completion_set_text_column(completion, 0);
-  gtk_entry_completion_set_inline_completion(completion, TRUE);
-  gtk_entry_set_completion(GTK_ENTRY(gtk_bin_get_child(GTK_BIN(d->description))), completion);
-  g_signal_connect(GTK_WIDGET(gtk_bin_get_child(GTK_BIN(d->description))), "key-press-event",
-                   G_CALLBACK(key_pressed), self);
-  gtk_grid_attach(GTK_GRID(self->widget), label, 0, line++, 1, 1);
-  gtk_grid_attach_next_to(GTK_GRID(self->widget), GTK_WIDGET(d->description), label, GTK_POS_RIGHT, 1, 1);
+  for(line = 0; line < sizeof(entries) / sizeof(entries[0]); line++)
+  {
+    label = gtk_label_new(entries[line].name);
+    g_object_set(G_OBJECT(label), "xalign", 0.0, NULL);
 
-  label = gtk_label_new(_("creator"));
-  g_object_set(G_OBJECT(label), "xalign", 0.0, NULL);
-  d->creator = GTK_COMBO_BOX(gtk_combo_box_text_new_with_entry());
-  dt_gui_key_accel_block_on_focus_connect(GTK_WIDGET(gtk_bin_get_child(GTK_BIN(d->creator))));
-  completion = gtk_entry_completion_new();
-  gtk_entry_completion_set_model(completion, gtk_combo_box_get_model(GTK_COMBO_BOX(d->creator)));
-  gtk_entry_completion_set_text_column(completion, 0);
-  gtk_entry_completion_set_inline_completion(completion, TRUE);
-  gtk_entry_set_completion(GTK_ENTRY(gtk_bin_get_child(GTK_BIN(d->creator))), completion);
-  g_signal_connect(GTK_WIDGET(gtk_bin_get_child(GTK_BIN(d->creator))), "key-press-event",
-                   G_CALLBACK(key_pressed), self);
-  gtk_grid_attach(GTK_GRID(self->widget), label, 0, line++, 1, 1);
-  gtk_grid_attach_next_to(GTK_GRID(self->widget), GTK_WIDGET(d->creator), label, GTK_POS_RIGHT, 1, 1);
+    GtkWidget *combobox = gtk_combo_box_text_new_with_entry();
+    *(entries[line].box) = GTK_COMBO_BOX(combobox);
 
-  label = gtk_label_new(_("publisher"));
-  g_object_set(G_OBJECT(label), "xalign", 0.0, NULL);
-  d->publisher = GTK_COMBO_BOX(gtk_combo_box_text_new_with_entry());
-  dt_gui_key_accel_block_on_focus_connect(GTK_WIDGET(gtk_bin_get_child(GTK_BIN(d->publisher))));
-  completion = gtk_entry_completion_new();
-  gtk_entry_completion_set_model(completion, gtk_combo_box_get_model(GTK_COMBO_BOX(d->publisher)));
-  gtk_entry_completion_set_text_column(completion, 0);
-  gtk_entry_completion_set_inline_completion(completion, TRUE);
-  gtk_entry_set_completion(GTK_ENTRY(gtk_bin_get_child(GTK_BIN(d->publisher))), completion);
-  g_signal_connect(GTK_WIDGET(gtk_bin_get_child(GTK_BIN(d->publisher))), "key-press-event",
-                   G_CALLBACK(key_pressed), self);
-  gtk_grid_attach(GTK_GRID(self->widget), label, 0, line++, 1, 1);
-  gtk_grid_attach_next_to(GTK_GRID(self->widget), GTK_WIDGET(d->publisher), label, GTK_POS_RIGHT, 1, 1);
+    // gtk_widget_set_hexpand(combobox, TRUE);
 
-  label = gtk_label_new(_("rights"));
-  g_object_set(G_OBJECT(label), "xalign", 0.0, NULL);
-  d->rights = GTK_COMBO_BOX(gtk_combo_box_text_new_with_entry());
-  dt_gui_key_accel_block_on_focus_connect(GTK_WIDGET(gtk_bin_get_child(GTK_BIN(d->rights))));
-  completion = gtk_entry_completion_new();
-  gtk_entry_completion_set_model(completion, gtk_combo_box_get_model(GTK_COMBO_BOX(d->rights)));
-  gtk_entry_completion_set_text_column(completion, 0);
-  gtk_entry_completion_set_inline_completion(completion, TRUE);
-  gtk_entry_set_completion(GTK_ENTRY(gtk_bin_get_child(GTK_BIN(d->rights))), completion);
-  g_signal_connect(GTK_WIDGET(gtk_bin_get_child(GTK_BIN(d->rights))), "key-press-event",
-                   G_CALLBACK(key_pressed), self);
-  gtk_grid_attach(GTK_GRID(self->widget), label, 0, line++, 1, 1);
-  gtk_grid_attach_next_to(GTK_GRID(self->widget), GTK_WIDGET(d->rights), label, GTK_POS_RIGHT, 1, 1);
+    GtkWidget *entry = gtk_bin_get_child(GTK_BIN(combobox));
+    dt_gui_key_accel_block_on_focus_connect(entry);
+    completion = gtk_entry_completion_new();
+    gtk_entry_completion_set_model(completion, gtk_combo_box_get_model(GTK_COMBO_BOX(d->title)));
+    gtk_entry_completion_set_text_column(completion, 0);
+    gtk_entry_completion_set_inline_completion(completion, TRUE);
+    gtk_entry_set_completion(GTK_ENTRY(entry), completion);
+
+    g_signal_connect(entry, "key-press-event", G_CALLBACK(key_pressed), self);
+
+    gtk_grid_attach(GTK_GRID(self->widget), label, 0, line, 1, 1);
+    gtk_grid_attach_next_to(GTK_GRID(self->widget), combobox, label, GTK_POS_RIGHT, 1, 1);
+  }
 
   g_object_unref(completion);
 
