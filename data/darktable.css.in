@@ -188,27 +188,6 @@ GtkFrame > GtkEventBox * {
   color: @selected_fg_color;
 }
 
-#iop-plugin-ui .entry,
-#lib-plugin-ui .entry,
-.entry {
-  border-radius: 0;
-  border:0;
-  padding-left: 2px; /* align with bauhaus widgets */
-  border-style: none;
-  border-color: alpha(@fg_color, 0.5);
-  border-image:none;
-  color:@fg_color;
-  box-shadow: none;
-  background-image:none;
-  outline-style:none;
-  text-shadow:none;
-  background-color:shade(@selected_bg_color, 0.8);
-}
-#iop-plugin-ui .entry:selected,
-#lib-plugin-ui .entry:selected,
-.entry:selected {
-  background-color:@bg_color;
-}
 /* weird fix for black event boxes in light table lib modules: */
 #lib-plugin-ui GtkEventBox
 {
@@ -267,7 +246,7 @@ GtkFrame > GtkEventBox * {
 #iop-plugin-ui .entry:selected,
 #lib-plugin-ui .entry:selected,
 .entry:selected {
-  background-color:@bg_color;
+  background-color:shade(@selected_bg_color, 1.7);
 }
 /* weird fix for black event boxes in light table lib modules: */
 #lib-plugin-ui GtkEventBox
