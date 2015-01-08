@@ -30,6 +30,11 @@ GtkWindow GtkBox GtkGrid *
   padding: 0;
 }
 
+#preferences_notebook
+{
+background-color: @bg_color;
+}
+
 GtkWindow GtkAlignment
 {
   background-color:transparent;
@@ -80,7 +85,8 @@ GtkWindow GtkAlignment
 GtkComboBoxText *,
 GtkToggleButton *,
 GtkDarktableToggleButton,
-GtkDarktableButton
+GtkDarktableButton,
+#preferences_notebook .button
 {
   /* note that the button has no padding, the label inside the button has the padding. */
   border-radius: 0;
@@ -95,6 +101,7 @@ GtkDarktableButton
   background-image: none;
 }
 #lib-plugin-ui .button:${GTK_CSS_CLASS},
+#preferences_notebook .button:${GTK_CSS_CLASS},
 GtkWindow .button:${GTK_CSS_CLASS}
 {
   border-style:none;
@@ -102,6 +109,7 @@ GtkWindow .button:${GTK_CSS_CLASS}
   background-color: shade(@selected_bg_color, 1.4);
 }
 #lib-plugin-ui .button:hover,
+#preferences_notebook .button:hover,
 GtkWindow .button:hover
 {
   border-style:none;
