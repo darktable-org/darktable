@@ -373,3 +373,14 @@ GtkMenuItem *
   background-color: @really_dark_bg_color;
   border-color: @selected_bg_color;
 }
+
+.separator, .separator:hover {
+  color: @selected_bg_color;
+  -GtkWidget-wide-separators: true;
+  -GtkWidget-separator-width: 2px;
+  -GtkWidget-separator-height: 2px;
+  border-style: solid;
+  border-width: 2px;
+  border-color: @selected_bg_color;
+  background-color: @selected_bg_color;
+ }
