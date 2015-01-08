@@ -41,7 +41,6 @@ typedef struct _GtkDarktableExpander
   GtkWidget *header_evb;
   GtkWidget *body;
   GtkWidget *body_evb;
-  GtkWidget *separator;
 } GtkDarktableExpander;
 
 typedef struct _GtkDarktableExpanderClass
