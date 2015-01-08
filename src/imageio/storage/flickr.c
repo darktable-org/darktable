@@ -469,6 +469,7 @@ void gui_init(dt_imageio_module_storage_t *self)
   dt_gui_key_accel_block_on_focus_connect(GTK_WIDGET(ui->user_entry));
   gtk_entry_set_text(ui->user_entry, _username == NULL ? "" : _username);
   g_signal_connect(G_OBJECT(ui->user_entry), "changed", G_CALLBACK(flickr_entry_changed), (gpointer)ui);
+  gtk_entry_set_width_chars(GTK_ENTRY(ui->user_entry), 0);
 
   button = gtk_button_new_with_label(_("login"));
   g_object_set(G_OBJECT(button), "tooltip-text", _("flickr login"), (char *)NULL);
@@ -536,6 +537,7 @@ void gui_init(dt_imageio_module_storage_t *self)
   dt_gui_key_accel_block_on_focus_connect(GTK_WIDGET(ui->title_entry));
   gtk_entry_set_text(ui->title_entry, _("my new photoset"));
   gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(ui->title_entry), TRUE, TRUE, 0);
+  gtk_entry_set_width_chars(GTK_ENTRY(ui->title_entry), 0);
 
   gtk_box_pack_start(ui->create_box, hbox, FALSE, FALSE, 0);
 
@@ -550,6 +552,7 @@ void gui_init(dt_imageio_module_storage_t *self)
   dt_gui_key_accel_block_on_focus_connect(GTK_WIDGET(ui->summary_entry));
   gtk_entry_set_text(ui->summary_entry, _("exported from darktable"));
   gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(ui->summary_entry), TRUE, TRUE, 0);
+  gtk_entry_set_width_chars(GTK_ENTRY(ui->summary_entry), 0);
 
   gtk_box_pack_start(ui->create_box, hbox, TRUE, TRUE, 0);
 
