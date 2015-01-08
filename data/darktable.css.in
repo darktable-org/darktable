@@ -16,6 +16,7 @@
 *
 {
   font: Sans 8;
+  color: @fg_color;
   text-shadow:none;
   margin: 0;
 }
@@ -24,7 +25,6 @@
 
 GtkWindow GtkBox GtkGrid *
 {
-  color: @fg_color;
   border-color: #111111;
   background-color: @bg_color;
   padding: 0;
@@ -365,4 +365,11 @@ GtkMenuItem *
 #lib-plugin-ui .slider.vertical:hover {
     border-color: @selected_bg_color;
     background-color: shade(@selected_bg_color, 1.3);
+}
+
+.tooltip
+{
+  color: @fg_color;
+  background-color: @really_dark_bg_color;
+  border-color: @selected_bg_color;
 }
