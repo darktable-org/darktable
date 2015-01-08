@@ -34,7 +34,6 @@
 #include "gui/presets.h"
 #include "dtgtk/button.h"
 #include "dtgtk/icon.h"
-#include "dtgtk/expander.h"
 #include "dtgtk/gradientslider.h"
 #include "libs/modulegroups.h"
 
@@ -1540,10 +1539,9 @@ static void dt_iop_gui_set_single_expanded(dt_iop_module_t *module, gboolean exp
 
   /* update expander arrow state */
   GtkWidget *icon;
-
-  dtgtk_expander_set_expanded(DTGTK_EXPANDER(module->expander), expanded);
-
-  GtkWidget *header = dtgtk_expander_get_header(DTGTK_EXPANDER(module->expander));
+  GtkWidget *header = gtk_bin_get_child(
+      GTK_BIN(g_list_nth_data(gtk_container_get_children(GTK_CONTAINER(module->expander)), 0)));
+  GtkWidget *pluginui = dt_iop_gui_get_widget(module);
   gint flags = CPF_DIRECTION_DOWN;
 
   /* get arrow icon widget */
@@ -1563,6 +1561,9 @@ static void dt_iop_gui_set_single_expanded(dt_iop_module_t *module, gboolean exp
   /* show / hide plugin widget */
   if(expanded)
   {
+    /* show plugin ui */
+    gtk_widget_show(pluginui);
+
     /* set this module to receive focus / draw events*/
     dt_iop_request_focus(module);
 
@@ -1575,6 +1576,8 @@ static void dt_iop_gui_set_single_expanded(dt_iop_module_t *module, gboolean exp
   }
   else
   {
+    gtk_widget_hide(pluginui);
+
     if(module->dev->gui_module == module)
     {
       dt_iop_request_focus(NULL);
@@ -1625,8 +1628,9 @@ void dt_iop_gui_update_expanded(dt_iop_module_t *module)
 
   /* update expander arrow state */
   GtkWidget *icon;
-  GtkWidget *header = dtgtk_expander_get_header(DTGTK_EXPANDER(module->expander));
-
+  GtkWidget *header = gtk_bin_get_child(
+      GTK_BIN(g_list_nth_data(gtk_container_get_children(GTK_CONTAINER(module->expander)), 0)));
+  GtkWidget *pluginui = dt_iop_gui_get_widget(module);
   gint flags = CPF_DIRECTION_DOWN;
 
   /* get arrow icon widget */
@@ -1635,7 +1639,10 @@ void dt_iop_gui_update_expanded(dt_iop_module_t *module)
 
   dtgtk_icon_set_paint(icon, dtgtk_cairo_paint_solid_arrow, flags);
 
-  dtgtk_expander_set_expanded(DTGTK_EXPANDER(module->expander), expanded);
+  if(expanded)
+    gtk_widget_show(pluginui);
+  else
+    gtk_widget_hide(pluginui);
 }
 
 
@@ -1705,12 +1712,11 @@ GtkWidget *dt_iop_gui_get_expander(dt_iop_module_t *module)
 {
   int bs = DT_PIXEL_APPLY_DPI(12);
   char tooltip[512];
-
+  GtkWidget *expander = gtk_box_new(GTK_ORIENTATION_VERTICAL, 3);
+  GtkWidget *header_evb = gtk_event_box_new();
   GtkWidget *header = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+  GtkWidget *pluginui_frame = gtk_frame_new(NULL);
   GtkWidget *pluginui = gtk_event_box_new();
-  GtkWidget *expander = dtgtk_expander_new(header, pluginui);
-  GtkWidget *header_evb = dtgtk_expander_get_header_event_box(DTGTK_EXPANDER(expander));
-  GtkWidget *pluginui_frame = dtgtk_expander_get_frame(DTGTK_EXPANDER(expander));
 
   gtk_widget_set_name(pluginui_frame, "iop-plugin-ui");
 
@@ -1726,8 +1732,16 @@ GtkWidget *dt_iop_gui_get_expander(dt_iop_module_t *module)
   g_signal_connect(G_OBJECT(header), "scroll-event", G_CALLBACK(_iop_plugin_body_scrolled), module);
 
   /* setup the header box */
+  gtk_container_add(GTK_CONTAINER(header_evb), header);
   g_signal_connect(G_OBJECT(header_evb), "button-press-event", G_CALLBACK(_iop_plugin_header_button_press),
                    module);
+
+  /* setup plugin content frame */
+  gtk_container_add(GTK_CONTAINER(pluginui_frame), pluginui);
+
+  /* layout the main expander widget */
+  gtk_box_pack_start(GTK_BOX(expander), header_evb, TRUE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(expander), pluginui_frame, TRUE, FALSE, 0);
 
   /*
    * initialize the header widgets
@@ -1872,13 +1886,14 @@ got_image:
 
 GtkWidget *dt_iop_gui_get_widget(dt_iop_module_t *module)
 {
-  return dtgtk_expander_get_body(DTGTK_EXPANDER(module->expander));
+  return gtk_bin_get_child(GTK_BIN(gtk_bin_get_child(
+      GTK_BIN(g_list_nth_data(gtk_container_get_children(GTK_CONTAINER(module->expander)), 1)))));
 }
 
 GtkWidget *dt_iop_gui_get_pluginui(dt_iop_module_t *module)
 {
   // return gtkframe (pluginui_frame)
-  return dtgtk_expander_get_frame(DTGTK_EXPANDER(module->expander));
+  return GTK_WIDGET(g_list_nth_data(gtk_container_get_children(GTK_CONTAINER(module->expander)), 1));
 }
 
 int dt_iop_breakpoint(struct dt_develop_t *dev, struct dt_dev_pixelpipe_t *pipe)
