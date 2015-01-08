@@ -944,6 +944,13 @@
     <longdescription/>
   </dtconfig>
   <dtconfig>
+    <name>plugins/lighttable/collect/selection-label</name>
+    <type>bool</type>
+    <default>true</default>
+    <shortdescription/>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
     <name>plugins/lighttable/tagging/expanded</name>
     <type>bool</type>
     <default>false</default>

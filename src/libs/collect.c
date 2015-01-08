@@ -74,6 +74,8 @@ typedef struct dt_lib_collect_t
   GtkWidget *date1_entry;
   GtkWidget *date2_entry;
   
+  GtkWidget *sel_label;
+
   GtkWidget *date_window;
   GtkWidget *date_cal;
 
@@ -370,6 +372,7 @@ static void folders_view(dt_lib_collect_rule_t *dr)
   gtk_widget_hide(GTK_WIDGET(d->scrolledwindow));
 
   gtk_widget_hide(d->num_box);
+  gtk_widget_hide(d->sel_label);
   gtk_widget_show(GTK_WIDGET(d->view));
 
   set_properties (dr);
@@ -499,6 +502,7 @@ static void tags_view(dt_lib_collect_rule_t *dr)
   gtk_widget_hide(GTK_WIDGET(d->scrolledwindow));
 
   gtk_widget_hide(d->num_box);
+  gtk_widget_hide(d->sel_label);
   gtk_widget_show(GTK_WIDGET(d->view));
 
   set_properties(dr);
@@ -650,6 +654,30 @@ static void list_view(dt_lib_collect_rule_t *dr)
 
   char query[1024] = { 0 };
   int property = gtk_combo_box_get_active(dr->combo);
+
+  // we show/hide the selection label
+  if(dt_conf_get_bool("plugins/lighttable/collect/selection-label"))
+  {
+    switch(property)
+    {
+      case DT_COLLECTION_PROP_CAMERA:
+      case DT_COLLECTION_PROP_CREATOR:
+      case DT_COLLECTION_PROP_DESCRIPTION:
+      case DT_COLLECTION_PROP_FILENAME:
+      case DT_COLLECTION_PROP_FILMROLL:
+      case DT_COLLECTION_PROP_LENS:
+      case DT_COLLECTION_PROP_PUBLISHER:
+      case DT_COLLECTION_PROP_RIGHTS:
+      case DT_COLLECTION_PROP_TITLE:
+        gtk_widget_show(d->sel_label);
+        break;
+      default:
+        gtk_widget_hide(d->sel_label);
+        break;
+    }
+  }
+  else
+    gtk_widget_hide(d->sel_label);
 
   switch(property)
   {
@@ -888,6 +916,7 @@ static void num_view (dt_lib_collect_rule_t *dr)
   
   //we update the gui
   gtk_widget_hide(GTK_WIDGET(d->scrolledwindow));
+  gtk_widget_hide(d->sel_label);
   
   gchar *operator, *number, *number2;
   if (property == DT_COLLECTION_PROP_ISO || property == DT_COLLECTION_PROP_APERTURE) 
@@ -1507,6 +1536,43 @@ static void row_activated (GtkTreeView *view, GtkTreePath *path, GtkTreeViewColu
   dt_control_queue_redraw_center();
 }
 
+static void selection_changed(GtkTreeSelection *selection, dt_lib_collect_t *d)
+{
+  // this is only used to show more clearly the selected item
+  int property = gtk_combo_box_get_active(d->rule[d->active_rule].combo);
+  switch(property)
+  {
+    case DT_COLLECTION_PROP_CAMERA:
+    case DT_COLLECTION_PROP_CREATOR:
+    case DT_COLLECTION_PROP_DESCRIPTION:
+    case DT_COLLECTION_PROP_FILENAME:
+    case DT_COLLECTION_PROP_FILMROLL:
+    case DT_COLLECTION_PROP_LENS:
+    case DT_COLLECTION_PROP_PUBLISHER:
+    case DT_COLLECTION_PROP_RIGHTS:
+    case DT_COLLECTION_PROP_TITLE:
+      // we go ahead to show the label
+      break;
+    default:
+      return;
+  }
+
+  gchar *txt = NULL;
+  txt = dt_util_dstrcat(txt, "<span style=\"italic\">");
+  GtkTreeIter sel_iter;
+  if (gtk_tree_selection_get_selected(selection, &d->listmodel, &sel_iter))
+  {
+    gchar *sel = NULL;
+    gtk_tree_model_get (d->listmodel, &sel_iter, DT_LIB_COLLECT_COL_TEXT, &sel, -1);
+    txt = dt_util_dstrcat(txt, "%s", sel);
+    g_free(sel);
+  }
+  txt = dt_util_dstrcat(txt, "</span>");
+  gtk_label_set_markup(GTK_LABEL(d->sel_label), txt);
+
+  g_free(txt);
+}
+
 static void entry_activated(GtkWidget *entry, dt_lib_collect_rule_t *d)
 {
   // we update the selection
@@ -1844,6 +1910,8 @@ void gui_init(dt_lib_module_t *self)
   gtk_container_add(GTK_CONTAINER(sw), GTK_WIDGET(view));
   g_object_set(G_OBJECT(d->view), "activate-on-single-click", dt_conf_get_bool("plugins/lighttable/collect/single-click"), NULL);
   g_signal_connect(d->view, "row_activated", G_CALLBACK(row_activated), d);
+  if(dt_conf_get_bool("plugins/lighttable/collect/selection-label"))
+    g_signal_connect(gtk_tree_view_get_selection(d->view), "changed", G_CALLBACK(selection_changed), d);
 
   GtkTreeViewColumn *col = gtk_tree_view_column_new();
   gtk_tree_view_append_column(view, col);
@@ -1952,6 +2020,11 @@ void gui_init(dt_lib_module_t *self)
   gtk_grid_attach(GTK_GRID(d->num_box), GTK_WIDGET(box), 1, 1, 1, 1);
 
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(d->num_box), TRUE, TRUE, 0);
+  d->sel_label = gtk_label_new("");
+  gtk_widget_set_halign(d->sel_label, GTK_ALIGN_CENTER);
+  gtk_widget_show_all(d->sel_label);
+  gtk_widget_set_no_show_all(d->sel_label, TRUE);
+  gtk_box_pack_start(GTK_BOX(self->widget), d->sel_label, TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(sw), TRUE, TRUE, 0);
 
   // calendar gui
