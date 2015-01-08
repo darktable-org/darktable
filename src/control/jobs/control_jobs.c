@@ -932,102 +932,71 @@ static int32_t dt_control_export_job_run(dt_job_t *job)
   dt_control_progress_attach_job(control, progress, job);
 
   double fraction = 0;
-#ifdef _OPENMP
-  // limit this to num threads = num full buffers - 1 (keep one for darkroom mode)
-  // use min of user request and mipmap cache entries
-  const int full_entries = dt_conf_get_int("parallel_export");
-  // GCC won't accept that this variable is used in a macro, considers
-  // it set but not used, which makes for instance Fedora break.
-  const __attribute__((__unused__)) int num_threads = MAX(1, MIN(full_entries, 8));
-#if !defined(__SUNOS__) && !defined(__NetBSD__) && !defined(__WIN32__)
-#pragma omp parallel default(none) private(imgid)                                                            \
-    shared(control, fraction, w, h, stderr, mformat, mstorage, t, sdata, job, progress, darktable, settings) \
-        num_threads(num_threads) if(num_threads > 1)
-#else
-#pragma omp parallel private(imgid) shared(control, fraction, w, h, mformat, mstorage, t, sdata, job,        \
-                                           progress, darktable,                                              \
-                                           settings) num_threads(num_threads) if(num_threads > 1)
-#endif
-  {
-#endif
-    // get a thread-safe fdata struct (one jpeg struct per thread etc):
-    dt_imageio_module_data_t *fdata = mformat->get_params(mformat);
-    fdata->max_width = settings->max_width;
-    fdata->max_height = settings->max_height;
-    fdata->max_width = (w != 0 && fdata->max_width > w) ? w : fdata->max_width;
-    fdata->max_height = (h != 0 && fdata->max_height > h) ? h : fdata->max_height;
-    g_strlcpy(fdata->style, settings->style, sizeof(fdata->style));
-    fdata->style_append = settings->style_append;
-    guint num = 0;
-    // Invariant: the tagid for 'darktable|changed' will not change while this function runs. Is this a
-    // sensible assumption?
-    guint tagid = 0, etagid = 0;
-    dt_tag_new("darktable|changed", &tagid);
-    dt_tag_new("darktable|exported", &etagid);
 
-    while(t && dt_control_job_get_state(job) != DT_JOB_STATE_CANCELLED)
+  // get a thread-safe fdata struct (one jpeg struct per thread etc):
+  dt_imageio_module_data_t *fdata = mformat->get_params(mformat);
+  fdata->max_width = settings->max_width;
+  fdata->max_height = settings->max_height;
+  fdata->max_width = (w != 0 && fdata->max_width > w) ? w : fdata->max_width;
+  fdata->max_height = (h != 0 && fdata->max_height > h) ? h : fdata->max_height;
+  g_strlcpy(fdata->style, settings->style, sizeof(fdata->style));
+  fdata->style_append = settings->style_append;
+  guint num = 0;
+  // Invariant: the tagid for 'darktable|changed' will not change while this function runs. Is this a
+  // sensible assumption?
+  guint tagid = 0, etagid = 0;
+  dt_tag_new("darktable|changed", &tagid);
+  dt_tag_new("darktable|exported", &etagid);
+
+  while(t && dt_control_job_get_state(job) != DT_JOB_STATE_CANCELLED)
+  {
+    if(!t)
+      imgid = 0;
+    else
     {
-#ifdef _OPENMP
-#pragma omp critical
-#endif
+      imgid = GPOINTER_TO_INT(t->data);
+      t = g_list_delete_link(t, t);
+      num = total - g_list_length(t);
+    }
+
+    // remove 'changed' tag from image
+    dt_tag_detach(tagid, imgid);
+    // make sure the 'exported' tag is set on the image
+    dt_tag_attach(etagid, imgid);
+    // check if image still exists:
+    char imgfilename[PATH_MAX] = { 0 };
+    const dt_image_t *image = dt_image_cache_get(darktable.image_cache, (int32_t)imgid, 'r');
+    if(image)
+    {
+      gboolean from_cache = TRUE;
+      dt_image_full_path(image->id, imgfilename, sizeof(imgfilename), &from_cache);
+      if(!g_file_test(imgfilename, G_FILE_TEST_IS_REGULAR))
       {
-        if(!t)
-          imgid = 0;
-        else
-        {
-          imgid = GPOINTER_TO_INT(t->data);
-          t = g_list_delete_link(t, t);
-          num = total - g_list_length(t);
-        }
+        dt_control_log(_("image `%s' is currently unavailable"), image->filename);
+        fprintf(stderr, "image `%s' is currently unavailable", imgfilename);
+        // dt_image_remove(imgid);
+        dt_image_cache_read_release(darktable.image_cache, image);
       }
-      // remove 'changed' tag from image
-      dt_tag_detach(tagid, imgid);
-      // make sure the 'exported' tag is set on the image
-      dt_tag_attach(etagid, imgid);
-      // check if image still exists:
-      char imgfilename[PATH_MAX] = { 0 };
-      const dt_image_t *image = dt_image_cache_get(darktable.image_cache, (int32_t)imgid, 'r');
-      if(image)
+      else
       {
-        gboolean from_cache = TRUE;
-        dt_image_full_path(image->id, imgfilename, sizeof(imgfilename), &from_cache);
-        if(!g_file_test(imgfilename, G_FILE_TEST_IS_REGULAR))
-        {
-          dt_control_log(_("image `%s' is currently unavailable"), image->filename);
-          fprintf(stderr, "image `%s' is currently unavailable", imgfilename);
-          // dt_image_remove(imgid);
-          dt_image_cache_read_release(darktable.image_cache, image);
-        }
-        else
-        {
-          dt_image_cache_read_release(darktable.image_cache, image);
-          if(mstorage->store(mstorage, sdata, imgid, mformat, fdata, num, total, settings->high_quality) != 0)
-            dt_control_job_cancel(job);
-        }
-      }
-#ifdef _OPENMP
-#pragma omp critical
-#endif
-      {
-        fraction += 1.0 / total;
-        if(fraction > 1.0) fraction = 1.0;
-        dt_control_progress_set_progress(control, progress, fraction);
+        dt_image_cache_read_release(darktable.image_cache, image);
+        if(mstorage->store(mstorage, sdata, imgid, mformat, fdata, num, total, settings->high_quality) != 0)
+          dt_control_job_cancel(job);
       }
     }
-#ifdef _OPENMP
-#pragma omp barrier
-#pragma omp master
-#endif
-    {
-      dt_control_progress_destroy(control, progress);
-      if(mstorage->finalize_store) mstorage->finalize_store(mstorage, sdata);
-      mstorage->free_params(mstorage, sdata);
-    }
-    // all threads free their fdata
-    mformat->free_params(mformat, fdata);
-#ifdef _OPENMP
+
+    fraction += 1.0 / total;
+    if(fraction > 1.0) fraction = 1.0;
+    dt_control_progress_set_progress(control, progress, fraction);
   }
-#endif
+
+  dt_control_progress_destroy(control, progress);
+  if(mstorage->finalize_store) mstorage->finalize_store(mstorage, sdata);
+  mstorage->free_params(mstorage, sdata);
+
+  // all threads free their fdata
+  mformat->free_params(mformat, fdata);
+
   g_free(params->data);
   free(params);
   return 0;
