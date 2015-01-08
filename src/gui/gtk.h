@@ -66,9 +66,6 @@ typedef struct dt_gui_gtk_t
 
   dt_gui_widgets_t widgets;
 
-  // allow widgets all over the place to share a common alignment
-  GtkSizeGroup *sg_left, *sg_right;
-
   cairo_surface_t *surface;
   GtkMenu *presets_popup_menu;
   char *last_preset;

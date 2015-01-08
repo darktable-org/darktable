@@ -517,10 +517,6 @@ void gui_init(dt_lib_module_t *self)
   gtk_box_pack_start(hbox, GTK_WIDGET(hbox1), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(hbox), TRUE, TRUE, 0);
 
-  // add those to our two size groups so that imageio plugins can align themselves to the main export gui
-  gtk_size_group_add_widget(darktable.gui->sg_left, label);
-  gtk_size_group_add_widget(darktable.gui->sg_right, GTK_WIDGET(hbox1));
-
   d->intent = dt_bauhaus_combobox_new(NULL);
   dt_bauhaus_widget_set_label(d->intent, NULL, _("intent"));
   dt_bauhaus_combobox_add(d->intent, _("image settings"));
