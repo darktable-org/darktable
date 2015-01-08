@@ -1483,17 +1483,6 @@ void dt_iop_request_focus(dt_iop_module_t *module)
     gtk_widget_set_state_flags(dt_iop_gui_get_pluginui(darktable.develop->gui_module), GTK_STATE_FLAG_NORMAL,
                                TRUE);
 
-    //    gtk_widget_set_state(darktable.develop->gui_module->topwidget, GTK_STATE_NORMAL);
-
-    /*
-    GtkWidget *off = GTK_WIDGET(darktable.develop->gui_module->off);
-
-    if (off)
-      gtk_widget_set_state(off,
-         gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(off)) ?
-         GTK_STATE_ACTIVE : GTK_STATE_NORMAL);
-    */
-
     if(darktable.develop->gui_module->operation_tags_filter()) dt_dev_invalidate_from_gui(darktable.develop);
 
     dt_accel_disconnect_locals_iop(darktable.develop->gui_module);
@@ -1509,20 +1498,14 @@ void dt_iop_request_focus(dt_iop_module_t *module)
   {
     gtk_widget_set_state_flags(dt_iop_gui_get_pluginui(module), GTK_STATE_FLAG_SELECTED, TRUE);
 
-    // gtk_widget_set_state(module->widget,    GTK_STATE_NORMAL);
-
-    /*
-    GtkWidget *off = GTK_WIDGET(darktable.develop->gui_module->off);
-    if (off)
-      gtk_widget_set_state(off,
-         gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(off)) ?
-         GTK_STATE_ACTIVE : GTK_STATE_NORMAL);
-    */
     if(module->operation_tags_filter()) dt_dev_invalidate_from_gui(darktable.develop);
 
     dt_accel_connect_locals_iop(module);
 
     if(module->gui_focus) module->gui_focus(module, TRUE);
+
+    gboolean collapse_others = dt_conf_get_bool("darkroom/ui/single_module");
+    dt_iop_gui_set_expanded(module, !module->expanded, collapse_others);
   }
 
   dt_control_change_cursor(GDK_LEFT_PTR);
