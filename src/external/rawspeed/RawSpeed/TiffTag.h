@@ -134,6 +134,8 @@ typedef enum {
 
   IPTCNAA           = 0x83BB,
 
+  LEAFMETADATA = 0x8606,
+
   PHOTOSHOPPRIVATE                = 0x8649,
 
   EXIFIFDPOINTER        = 0x8769,
