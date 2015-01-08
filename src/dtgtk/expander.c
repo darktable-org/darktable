@@ -75,12 +75,11 @@ void dtgtk_expander_set_expanded(GtkDarktableExpander *expander, gboolean expand
 
     expander->expanded = expanded;
 
-    frame = expander->frame;
+    frame = expander->body;
 
     if(frame)
     {
       gtk_widget_set_visible(frame, expander->expanded);
-      gtk_widget_set_visible(expander->separator, !(expander->expanded));
       gtk_widget_queue_resize(widget);
     }
   }
@@ -120,9 +119,6 @@ GtkWidget *dtgtk_expander_new(GtkWidget *header, GtkWidget *body)
 
   gtk_box_pack_start(GTK_BOX(expander), expander->header_evb, TRUE, FALSE, 0);
   gtk_box_pack_start(GTK_BOX(expander), expander->frame, TRUE, FALSE, 0);
-
-  expander->separator = gtk_separator_new(GTK_ORIENTATION_HORIZONTAL);
-  gtk_box_pack_start(GTK_BOX(expander), expander->separator, TRUE, FALSE, 0);
 
   return GTK_WIDGET(expander);
 }
