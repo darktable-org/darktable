@@ -367,9 +367,10 @@ void dt_mipmap_cache_init(dt_mipmap_cache_t *cache)
 
   // adjust numbers to be large enough to hold what mem limit suggests.
   // we want at least 100MB, and consider 8G just still reasonable.
-  size_t max_mem = CLAMPS(dt_conf_get_int64("cache_memory"), 100u << 20, ((uint64_t)8) << 30);
-  const uint32_t parallel
-      = CLAMP(dt_conf_get_int("worker_threads") * dt_conf_get_int("parallel_export"), 1, 8);
+  int64_t cache_memory = dt_conf_get_int64("cache_memory");
+  int worker_threads = dt_conf_get_int("worker_threads");
+  size_t max_mem = CLAMPS(cache_memory, 100u << 20, ((uint64_t)8) << 30);
+  const uint32_t parallel = CLAMP(worker_threads, 1, 8);
 
   // Fixed sizes for the thumbnail mip levels, selected for coverage of most screen sizes
   int32_t mipsizes[DT_MIPMAP_F][2] = {

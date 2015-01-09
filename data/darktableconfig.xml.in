@@ -43,13 +43,6 @@
     <shortdescription>number of background threads</shortdescription>
     <longdescription>this controls for example how many threads are used to create thumbnails during import. the cache will grow to a maximum of twice this number of full resolution image buffers (needs a restart).</longdescription>
   </dtconfig>
-  <dtconfig>
-    <name>parallel_export</name>
-    <type>int</type>
-    <default>1</default>
-    <shortdescription>export multiple images in parallel</shortdescription>
-    <longdescription>set this variable to num_threads if you want multithreaded export to process multiple images at a time. be warned: every thread will need at the very least 1GB of memory. setting this to 1 switches on per-image parallelization.</longdescription>
-  </dtconfig>
   <dtconfig prefs="core">
     <name>host_memory_limit</name>
     <type>int</type>

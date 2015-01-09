@@ -32,6 +32,7 @@
 #include "views/undo.h"
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
+#include "dtgtk/expander.h"
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -347,18 +348,6 @@ int dt_view_manager_switch(dt_view_manager_t *vm, int k)
         {
           snprintf(var, sizeof(var), "plugins/lighttable/%s/expanded", plugin->plugin_name);
           expanded = dt_conf_get_bool(var);
-
-          /* show expander if visible  */
-          if(visible)
-          {
-            gtk_widget_show_all(GTK_WIDGET(plugin->expander));
-            // gtk_widget_show_all(plugin->widget);
-          }
-          else
-          {
-            gtk_widget_hide(GTK_WIDGET(plugin->expander));
-            // gtk_widget_hide(plugin->widget);
-          }
 
           dt_lib_gui_set_expanded(plugin, expanded);
         }

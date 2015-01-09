@@ -469,17 +469,15 @@ void gui_init(dt_imageio_module_storage_t *self)
   dt_gui_key_accel_block_on_focus_connect(GTK_WIDGET(ui->user_entry));
   gtk_entry_set_text(ui->user_entry, _username == NULL ? "" : _username);
   g_signal_connect(G_OBJECT(ui->user_entry), "changed", G_CALLBACK(flickr_entry_changed), (gpointer)ui);
+  gtk_entry_set_width_chars(GTK_ENTRY(ui->user_entry), 0);
 
   button = gtk_button_new_with_label(_("login"));
   g_object_set(G_OBJECT(button), "tooltip-text", _("flickr login"), (char *)NULL);
   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(flickr_button1_clicked), (gpointer)ui);
   gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(ui->user_entry), TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(hbox), button, TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(hbox), button, FALSE, FALSE, 0);
 
   gtk_grid_attach_next_to(GTK_GRID(self->widget), hbox, label, GTK_POS_RIGHT, 1, 1);
-
-  gtk_size_group_add_widget(darktable.gui->sg_left, label);
-  gtk_size_group_add_widget(darktable.gui->sg_right, hbox);
 
 
   ui->status_label = GTK_LABEL(gtk_label_new(NULL));
@@ -492,6 +490,7 @@ void gui_init(dt_imageio_module_storage_t *self)
   dt_bauhaus_combobox_add(ui->export_tags, _("yes"));
   dt_bauhaus_combobox_add(ui->export_tags, _("no"));
   dt_bauhaus_combobox_set(ui->export_tags, 0);
+  gtk_widget_set_hexpand(ui->export_tags, TRUE);
   gtk_grid_attach(GTK_GRID(self->widget), ui->export_tags, 0, line++, 2, 1);
 
 
@@ -538,11 +537,9 @@ void gui_init(dt_imageio_module_storage_t *self)
   dt_gui_key_accel_block_on_focus_connect(GTK_WIDGET(ui->title_entry));
   gtk_entry_set_text(ui->title_entry, _("my new photoset"));
   gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(ui->title_entry), TRUE, TRUE, 0);
+  gtk_entry_set_width_chars(GTK_ENTRY(ui->title_entry), 0);
 
   gtk_box_pack_start(ui->create_box, hbox, FALSE, FALSE, 0);
-
-  gtk_size_group_add_widget(darktable.gui->sg_left, label);
-  gtk_size_group_add_widget(darktable.gui->sg_right, GTK_WIDGET(ui->title_entry));
 
 
   hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, DT_PIXEL_APPLY_DPI(10));
@@ -555,11 +552,9 @@ void gui_init(dt_imageio_module_storage_t *self)
   dt_gui_key_accel_block_on_focus_connect(GTK_WIDGET(ui->summary_entry));
   gtk_entry_set_text(ui->summary_entry, _("exported from darktable"));
   gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(ui->summary_entry), TRUE, TRUE, 0);
+  gtk_entry_set_width_chars(GTK_ENTRY(ui->summary_entry), 0);
 
   gtk_box_pack_start(ui->create_box, hbox, TRUE, TRUE, 0);
-
-  gtk_size_group_add_widget(darktable.gui->sg_left, label);
-  gtk_size_group_add_widget(darktable.gui->sg_right, GTK_WIDGET(ui->summary_entry));
 
 
   set_status(ui, _("click login button to start"), "#ffffff");

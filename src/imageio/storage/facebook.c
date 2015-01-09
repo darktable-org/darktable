@@ -1013,6 +1013,10 @@ void gui_init(struct dt_imageio_module_storage_t *self)
   dt_gui_key_accel_block_on_focus_connect(GTK_WIDGET(ui->entry_album_title));
   dt_gui_key_accel_block_on_focus_connect(GTK_WIDGET(ui->entry_album_summary));
 
+  gtk_entry_set_width_chars(GTK_ENTRY(ui->entry_album_title), 0);
+  gtk_entry_set_width_chars(GTK_ENTRY(ui->entry_album_summary), 0);
+
+
   // retrieve saved accounts
   ui_refresh_users(ui);
 

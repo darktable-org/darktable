@@ -187,9 +187,6 @@ void gui_init(dt_imageio_module_storage_t *self)
     g_free(dir);
   }
   g_signal_connect(G_OBJECT(d->title_entry), "changed", G_CALLBACK(title_changed_callback), self);
-
-  gtk_size_group_add_widget(darktable.gui->sg_left, widget);
-  gtk_size_group_add_widget(darktable.gui->sg_right, GTK_WIDGET(d->title_entry));
 }
 
 void gui_cleanup(dt_imageio_module_storage_t *self)

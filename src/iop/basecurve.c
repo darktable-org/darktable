@@ -121,6 +121,8 @@ typedef struct basecurve_preset_t
 static const basecurve_preset_t basecurve_presets[] = {
   // copy paste your measured basecurve line at the top here, like so (note the exif data and the last 1):
 
+  // smoother cubic spline curve
+  { N_("cubic spline"), "", "", 0, 51200, { { { { 0.0, 0.0}, { 1.0, 1.0 }, { 0., 0.}, { 0., 0.}, { 0., 0.}, { 0., 0.}, { 0., 0.}, { 0., 0.} } }, { 2 }, { CUBIC_SPLINE } }, 0, 0 },
   // nikon d750 by Edouard Gomez
   {"NIKON D750", "NIKON CORPORATION", "NIKON D750", 0, 51200, {{{{0.000000, 0.000000}, {0.018124, 0.026126}, {0.143357, 0.370145}, {0.330116, 0.730507}, {0.457952, 0.853462}, {0.734950, 0.965061}, {0.904758, 0.985699}, {1.000000, 1.000000}}}, {8}, {m}}, 0, 1},
   // nikon d7000 by Edouard Gomez
