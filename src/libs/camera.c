@@ -563,6 +563,7 @@ void gui_init(dt_lib_module_t *self)
 
   label = gtk_label_new(_("label"));
   lib->gui.plabel = gtk_entry_new();
+  gtk_entry_set_width_chars(GTK_ENTRY(lib->gui.plabel), 0);
   dt_gui_key_accel_block_on_focus_connect(lib->gui.plabel);
   gtk_grid_attach(GTK_GRID(self->widget), GTK_WIDGET(label), 0, lib->gui.rows++, 1, 1);
   gtk_grid_attach_next_to(GTK_GRID(self->widget), GTK_WIDGET(lib->gui.plabel), GTK_WIDGET(label), GTK_POS_RIGHT, 1, 1);
@@ -572,6 +573,7 @@ void gui_init(dt_lib_module_t *self)
   GtkWidget *widget = gtk_button_new_with_label("O");
   g_signal_connect(G_OBJECT(widget), "clicked", G_CALLBACK(_show_property_popupmenu_clicked), lib);
   lib->gui.pname = gtk_entry_new();
+  gtk_entry_set_width_chars(GTK_ENTRY(lib->gui.pname), 0);
   dt_gui_key_accel_block_on_focus_connect(lib->gui.pname);
   gtk_box_pack_start(hbox, GTK_WIDGET(lib->gui.pname), TRUE, TRUE, 0);
   gtk_box_pack_start(hbox, GTK_WIDGET(widget), FALSE, FALSE, 0);
