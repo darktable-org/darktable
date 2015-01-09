@@ -30,11 +30,6 @@ GtkWindow GtkBox GtkGrid *
   padding: 0;
 }
 
-#preferences_notebook
-{
-background-color: @bg_color;
-}
-
 GtkWindow GtkAlignment
 {
   background-color:transparent;
@@ -398,3 +393,31 @@ GtkMenuItem *
   border-color: @selected_bg_color;
   background-color: @selected_bg_color;
  }
+
+/* preferences and other dialogs */
+
+#preferences_notebook
+{
+  background-color: @bg_color;
+}
+
+GtkDialog GtkButtonBox *
+{
+  border-radius: 0;
+  border-style: none;
+  box-shadow:none;
+  outline-width:0;
+  border-image:none;
+  padding:2px;
+  margin:0;
+  border:0;
+  background-color: shade(@selected_bg_color, 1.2);
+  background-image: none;
+  border-color:  shade(@selected_bg_color, 1.2);
+}
+
+GtkDialog .button:hover *
+{
+  background-color: shade(@selected_bg_color, 1.7);
+  border-color:  shade(@selected_bg_color, 1.7);
+}
