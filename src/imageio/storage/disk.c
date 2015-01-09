@@ -147,6 +147,7 @@ void gui_init(dt_imageio_module_storage_t *self)
 
   d->entry = GTK_ENTRY(widget);
   dt_gui_key_accel_block_on_focus_connect(GTK_WIDGET(d->entry));
+  gtk_entry_set_width_chars(GTK_ENTRY(widget), 0);
   g_object_set(G_OBJECT(widget), "tooltip-text", tooltip_text, (char *)NULL);
   g_signal_connect(G_OBJECT(widget), "changed", G_CALLBACK(entry_changed_callback), self);
 

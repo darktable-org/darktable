@@ -2007,8 +2007,8 @@ void gui_init(dt_lib_module_t *self)
       gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(w), _(dt_lib_collect_string[k]));
     g_signal_connect(G_OBJECT(w), "changed", G_CALLBACK(combo_changed), d->rule + i);
     gtk_box_pack_start(box, w, FALSE, FALSE, 0);
+
     w = gtk_entry_new();
-    gtk_entry_set_width_chars(GTK_ENTRY(w), 8);
     d->rule[i].text = w;
     dt_gui_key_accel_block_on_focus_connect(d->rule[i].text);
     gtk_widget_add_events(w, GDK_FOCUS_CHANGE_MASK);
@@ -2021,6 +2021,8 @@ void gui_init(dt_lib_module_t *self)
     g_signal_connect(G_OBJECT(w), "changed", G_CALLBACK(update_view), d->rule + i);
     g_signal_connect(G_OBJECT(w), "activate", G_CALLBACK(entry_activated), d->rule + i);
     gtk_box_pack_start(box, w, TRUE, TRUE, 0);
+    gtk_entry_set_width_chars(GTK_ENTRY(w), 0);
+
     w = dtgtk_button_new(dtgtk_cairo_paint_presets, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER);
     d->rule[i].button = w;
     gtk_widget_set_events(w, GDK_BUTTON_PRESS_MASK);
@@ -2036,7 +2038,6 @@ void gui_init(dt_lib_module_t *self)
   GtkTreeView *view = GTK_TREE_VIEW(gtk_tree_view_new());
   d->view = view;
   gtk_tree_view_set_headers_visible(view, FALSE);
-  gtk_widget_set_size_request(GTK_WIDGET(view), -1, DT_PIXEL_APPLY_DPI(300));
   gtk_container_add(GTK_CONTAINER(sw), GTK_WIDGET(view));
   g_signal_connect(G_OBJECT(view), "row-activated", G_CALLBACK(row_activated), d);
 
@@ -2065,7 +2066,6 @@ void gui_init(dt_lib_module_t *self)
   d->sw2 = GTK_SCROLLED_WINDOW(sw2);
   gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(sw2), GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
   gtk_container_add(GTK_CONTAINER(sw2), GTK_WIDGET(d->box));
-  gtk_widget_set_size_request(GTK_WIDGET(sw2), -1, DT_PIXEL_APPLY_DPI(300));
 
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(sw2), TRUE, TRUE, 0);
 

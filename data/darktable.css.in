@@ -11,20 +11,29 @@
 
 @define-color dark_bg_color #350000;
 
-* {
+/* global to the application and the GtkDialog */
+
+*
+{
   font: Sans 8;
   color: @fg_color;
-  background-color: @bg_color;
-  border-color: #111111;
   text-shadow:none;
   margin: 0;
-  padding: 0;
-  border: 0;
 }
 
-GtkAlignment
+/* only for the application */
+
+GtkWindow GtkBox GtkGrid *
+{
+  border-color: #111111;
+  background-color: @bg_color;
+  padding: 0;
+}
+
+GtkWindow GtkAlignment
 {
   background-color:transparent;
+  padding: 0;
 }
 
 #iop-plugin-ui GtkBox,
@@ -68,7 +77,11 @@ GtkAlignment
 /* lib toggle buttons (e.g recently used collection and history items): */
 /* TODO: adjust borders/padding to our liking (match bauhaus..) */
 #lib-plugin-ui .button,
-.button
+GtkComboBoxText *,
+GtkToggleButton *,
+GtkDarktableToggleButton,
+GtkDarktableButton,
+#preferences_notebook .button
 {
   /* note that the button has no padding, the label inside the button has the padding. */
   border-radius: 0;
@@ -83,14 +96,16 @@ GtkAlignment
   background-image: none;
 }
 #lib-plugin-ui .button:${GTK_CSS_CLASS},
-.button:${GTK_CSS_CLASS}
+#preferences_notebook .button:${GTK_CSS_CLASS},
+GtkWindow .button:${GTK_CSS_CLASS}
 {
   border-style:none;
   background-image:none;
   background-color: shade(@selected_bg_color, 1.4);
 }
 #lib-plugin-ui .button:hover,
-.button:hover
+#preferences_notebook .button:hover,
+GtkWindow .button:hover
 {
   border-style:none;
   background-color: shade(@selected_bg_color, 1.7);
@@ -136,7 +151,7 @@ GtkAlignment
   background-color: @selected_bg_color;
 }
 
-GtkTable {
+GtkWindow GtkTable {
   background-color: transparent;
   margin:0;
   border:0;
@@ -177,38 +192,17 @@ GtkTable {
   background-color: @bg_color;
 }
 
-GtkFrame > GtkEventBox {
+GtkWindow GtkFrame GtkEventBox {
   border: 1px solid #111111;
   background-color: @selected_bg_color;
   color: @selected_fg_color;
 }
 
-GtkFrame > GtkEventBox * {
+GtkWindow GtkFrame GtkEventBox * {
   background-color: @selected_bg_color;
   color: @selected_fg_color;
 }
 
-#iop-plugin-ui .entry,
-#lib-plugin-ui .entry,
-.entry {
-  border-radius: 0;
-  border:0;
-  padding-left: 2px; /* align with bauhaus widgets */
-  border-style: none;
-  border-color: alpha(@fg_color, 0.5);
-  border-image:none;
-  color:@fg_color;
-  box-shadow: none;
-  background-image:none;
-  outline-style:none;
-  text-shadow:none;
-  background-color:shade(@selected_bg_color, 0.8);
-}
-#iop-plugin-ui .entry:selected,
-#lib-plugin-ui .entry:selected,
-.entry:selected {
-  background-color:@bg_color;
-}
 /* weird fix for black event boxes in light table lib modules: */
 #lib-plugin-ui GtkEventBox
 {
@@ -266,8 +260,8 @@ GtkFrame > GtkEventBox * {
 }
 #iop-plugin-ui .entry:selected,
 #lib-plugin-ui .entry:selected,
-.entry:selected {
-  background-color:@bg_color;
+GtkWindow > .entry:selected {
+  background-color:shade(@selected_bg_color, 1.7);
 }
 /* weird fix for black event boxes in light table lib modules: */
 #lib-plugin-ui GtkEventBox
@@ -322,7 +316,7 @@ GtkFrame > GtkEventBox * {
   background-image:none;
 }
 
-*:insensitive {
+GtkWindow > *:insensitive {
   color: black;
 }
 
@@ -348,14 +342,82 @@ GtkMenuItem *
   background-color: transparent;
 }
 
+/* sliders */
+
 .slider.horizontal,
 .slider.vertical {
-    border-color: @selected_bg_color;
-    background-color: @text_color;
+    border-color: @bg_color;
+    background-color: @selected_bg_color;
 }
 
 .slider.horizontal:hover,
 .slider.vertical:hover {
-    border-color:  @selected_bg_color;
-    background-color: @fg_color;
+    border-color: @bg_color;
+    background-color: shade(@selected_bg_color, 1.3);
+}
+
+#iop-plugin-ui .slider.horizontal,
+#iop-plugin-ui .slider.vertical,
+#lib-plugin-ui .slider.horizontal,
+#lib-plugin-ui .slider.vertical {
+    border-color: @selected_bg_color;
+    background-color: @text_color;
+}
+
+#iop-plugin-ui .slider.horizontal:hover,
+#iop-plugin-ui .slider.vertical:hover,
+#lib-plugin-ui .slider.horizontal:hover,
+#lib-plugin-ui .slider.vertical:hover {
+    border-color: @selected_bg_color;
+    background-color: shade(@selected_bg_color, 1.3);
+}
+
+/* tooltip */
+
+.tooltip
+{
+  color: @fg_color;
+  background-color: @really_dark_bg_color;
+  border-color: @selected_bg_color;
+}
+
+/* separator */
+
+.separator, .separator:hover {
+  color: @selected_bg_color;
+  -GtkWidget-wide-separators: true;
+  -GtkWidget-separator-width: 2px;
+  -GtkWidget-separator-height: 2px;
+  border-style: solid;
+  border-width: 2px;
+  border-color: @selected_bg_color;
+  background-color: @selected_bg_color;
+ }
+
+/* preferences and other dialogs */
+
+#preferences_notebook
+{
+  background-color: @bg_color;
+}
+
+GtkDialog GtkButtonBox *
+{
+  border-radius: 0;
+  border-style: none;
+  box-shadow:none;
+  outline-width:0;
+  border-image:none;
+  padding:2px;
+  margin:0;
+  border:0;
+  background-color: shade(@selected_bg_color, 1.2);
+  background-image: none;
+  border-color:  shade(@selected_bg_color, 1.2);
+}
+
+GtkDialog .button:hover *
+{
+  background-color: shade(@selected_bg_color, 1.7);
+  border-color:  shade(@selected_bg_color, 1.7);
 }
