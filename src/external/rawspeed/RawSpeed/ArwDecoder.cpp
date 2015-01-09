@@ -90,7 +90,7 @@ RawImage ArwDecoder::decodeRawInternal() {
             mRaw->metadata.wbCoeffs[2] = (float) tmp[3];
             break;
           }
-          currpos += len+8;
+          currpos += MAX(len+8,1); // MAX(,1) to make sure we make progress
         }
       }
 
