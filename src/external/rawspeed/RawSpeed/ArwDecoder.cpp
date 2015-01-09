@@ -24,6 +24,12 @@
     http://www.klauspost.com
 */
 
+#define get2LE(data,pos) ((((ushort16)(data)[pos+1]) << 8) | ((ushort16)(data)[pos]))
+#define get4BE(data,pos) ((((uint32)(data)[pos]) << 24) | (((uint32)(data)[pos+1]) << 16) | \
+                          (((uint32)(data)[pos+2]) << 8) | ((uint32)(data)[pos+3]))
+#define get4LE(data,pos) ((((uint32)(data)[pos+3]) << 24) | (((uint32)(data)[pos+2]) << 16) | \
+                          (((uint32)(data)[pos+1]) << 8) | ((uint32)(data)[pos]))
+
 namespace RawSpeed {
 
 ArwDecoder::ArwDecoder(TiffIFD *rootIFD, FileMap* file) :
@@ -54,7 +60,6 @@ RawImage ArwDecoder::decodeRawInternal() {
 
       mRaw->dim = iPoint2D(width, height);
       mRaw->createData();
-      // FIXME: there may be a better way to set the total max size;
       ByteStream input(mFile->getData(off),mFile->getSize()-off);
 
       try {
@@ -62,6 +67,31 @@ RawImage ArwDecoder::decodeRawInternal() {
       } catch (IOException &e) {
         mRaw->setError(e.what());
         // Let's ignore it, it may have delivered somewhat useful data.
+      }
+
+      // Set the whitebalance
+      if (mRootIFD->hasEntryRecursive(DNGPRIVATEDATA)) {
+        TiffEntry *priv = mRootIFD->getEntryRecursive(DNGPRIVATEDATA);
+        const uchar8 *offdata = priv->getData();
+        uint32 off = (uint32)offdata[3] << 24 | (uint32)offdata[2] << 16 | (uint32)offdata[1] << 8 | (uint32)offdata[0];
+        const unsigned char* data = mFile->getData(off);
+        uint32 length = mFile->getSize()-off;
+        uint32 currpos = 8;
+        while (currpos < length) {
+          uint32 tag = get4BE(data,currpos);
+          uint32 len = get4LE(data,currpos+4);
+          if (tag == 0x574247) { /* WBG */
+            ushort16 tmp[4];
+            for(uint32 i=0; i<4; i++)
+              tmp[i] = get2LE(data, currpos+12+i*2);
+
+            mRaw->metadata.wbCoeffs[0] = (float) tmp[0];
+            mRaw->metadata.wbCoeffs[1] = (float) tmp[1];
+            mRaw->metadata.wbCoeffs[2] = (float) tmp[3];
+            break;
+          }
+          currpos += len+8;
+        }
       }
 
       return mRaw;
