@@ -11,29 +11,19 @@
 
 @define-color dark_bg_color #350000;
 
-/* global to the application and the GtkDialog */
-
-*
-{
+* {
   font: Sans 8;
   color: @fg_color;
+  background-color: @bg_color;
+  border-color: #111111;
   text-shadow:none;
   margin: 0;
-}
-
-/* only for the application */
-
-GtkWindow GtkBox GtkGrid *
-{
-  border-color: #111111;
-  background-color: @bg_color;
   padding: 0;
 }
 
-GtkWindow GtkAlignment
+GtkAlignment
 {
   background-color:transparent;
-  padding: 0;
 }
 
 #iop-plugin-ui GtkBox,
@@ -77,11 +67,7 @@ GtkWindow GtkAlignment
 /* lib toggle buttons (e.g recently used collection and history items): */
 /* TODO: adjust borders/padding to our liking (match bauhaus..) */
 #lib-plugin-ui .button,
-GtkComboBoxText *,
-GtkToggleButton *,
-GtkDarktableToggleButton,
-GtkDarktableButton,
-#preferences_notebook .button
+.button
 {
   /* note that the button has no padding, the label inside the button has the padding. */
   border-radius: 0;
@@ -96,16 +82,14 @@ GtkDarktableButton,
   background-image: none;
 }
 #lib-plugin-ui .button:${GTK_CSS_CLASS},
-#preferences_notebook .button:${GTK_CSS_CLASS},
-GtkWindow .button:${GTK_CSS_CLASS}
+.button:${GTK_CSS_CLASS}
 {
   border-style:none;
   background-image:none;
   background-color: shade(@selected_bg_color, 1.4);
 }
 #lib-plugin-ui .button:hover,
-#preferences_notebook .button:hover,
-GtkWindow .button:hover
+.button:hover
 {
   border-style:none;
   background-color: shade(@selected_bg_color, 1.7);
@@ -151,7 +135,7 @@ GtkWindow .button:hover
   background-color: @selected_bg_color;
 }
 
-GtkWindow GtkTable {
+GtkTable {
   background-color: transparent;
   margin:0;
   border:0;
@@ -192,13 +176,13 @@ GtkWindow GtkTable {
   background-color: @bg_color;
 }
 
-GtkWindow GtkFrame GtkEventBox {
+GtkFrame > GtkEventBox {
   border: 1px solid #111111;
   background-color: @selected_bg_color;
   color: @selected_fg_color;
 }
 
-GtkWindow GtkFrame GtkEventBox * {
+GtkFrame > GtkEventBox * {
   background-color: @selected_bg_color;
   color: @selected_fg_color;
 }
@@ -260,7 +244,7 @@ GtkWindow GtkFrame GtkEventBox * {
 }
 #iop-plugin-ui .entry:selected,
 #lib-plugin-ui .entry:selected,
-GtkWindow > .entry:selected {
+.entry:selected {
   background-color:shade(@selected_bg_color, 1.7);
 }
 /* weird fix for black event boxes in light table lib modules: */
@@ -316,7 +300,7 @@ GtkWindow > .entry:selected {
   background-image:none;
 }
 
-GtkWindow > *:insensitive {
+*:insensitive {
   color: black;
 }
 
@@ -376,9 +360,14 @@ GtkMenuItem *
 
 .tooltip
 {
+  background-color: @really_dark_bg_color;
+}
+.tooltip *
+{
   color: @fg_color;
   background-color: @really_dark_bg_color;
   border-color: @selected_bg_color;
+  padding: 2px;
 }
 
 /* separator */
@@ -394,30 +383,57 @@ GtkMenuItem *
   background-color: @selected_bg_color;
  }
 
-/* preferences and other dialogs */
+/* dialogs */
 
-#preferences_notebook
-{
-  background-color: @bg_color;
-}
-
-GtkDialog GtkButtonBox *
+GtkDialog *
 {
   border-radius: 0;
   border-style: none;
   box-shadow:none;
   outline-width:0;
   border-image:none;
-  padding:2px;
+  padding:0;
   margin:0;
   border:0;
-  background-color: shade(@selected_bg_color, 1.2);
+  background-color: transparent;
   background-image: none;
   border-color:  shade(@selected_bg_color, 1.2);
+}
+
+GtkDialog .button
+{
+  padding: 5px;
 }
 
 GtkDialog .button:hover *
 {
   background-color: shade(@selected_bg_color, 1.7);
   border-color:  shade(@selected_bg_color, 1.7);
+}
+
+GtkDialog GtkEventBox *
+{
+   background-color: transparent;
+}
+
+/* preferences notebook */
+
+#preferences_notebook GtkGrid *
+{
+  padding:0;
+}
+
+GtkNotebook tab *
+{
+  padding: 2px;
+}
+
+GtkNotebook tab:hover
+{
+  background-color:  shade(@selected_bg_color, 1.7);
+}
+
+GtkNotebook tab:active
+{
+  background-color: shade(@selected_bg_color, 1.3);
 }
