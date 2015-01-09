@@ -74,6 +74,7 @@ public:
   virtual ushort16 getShort();
   virtual const uint32* getIntArray();
   virtual const ushort16* getShortArray();
+  virtual const short16* getSignedShortArray();
   string getString();
   uchar8 getByte();
   const uchar8* getData() {return data;};

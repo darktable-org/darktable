@@ -39,6 +39,7 @@ public:
   virtual ushort16 getShort();
   virtual const uint32* getIntArray();
   virtual const ushort16* getShortArray();
+  virtual const short16* getSignedShortArray();
   virtual void setData(const void *in_data, uint32 byte_count );
 };
 

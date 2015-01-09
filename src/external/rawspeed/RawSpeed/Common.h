@@ -74,6 +74,7 @@ typedef unsigned char uchar8;
 typedef unsigned int uint32;
 typedef signed int int32;
 typedef unsigned short ushort16;
+typedef signed short short16;
 
 typedef enum Endianness {
   big, little, unknown
