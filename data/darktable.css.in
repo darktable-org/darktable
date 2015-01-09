@@ -347,6 +347,8 @@ GtkMenuItem *
   background-color: transparent;
 }
 
+/* sliders */
+
 .slider.horizontal,
 .slider.vertical {
     border-color: @bg_color;
@@ -375,12 +377,16 @@ GtkMenuItem *
     background-color: shade(@selected_bg_color, 1.3);
 }
 
+/* tooltip */
+
 .tooltip
 {
   color: @fg_color;
   background-color: @really_dark_bg_color;
   border-color: @selected_bg_color;
 }
+
+/* separator */
 
 .separator, .separator:hover {
   color: @selected_bg_color;
