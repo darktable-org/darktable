@@ -110,7 +110,7 @@ GtkAlignment
 #lib-plugin-ui GtkLabel,
 #lib-plugin-ui GtkLabel:hover
 {
-  padding:2pt 4pt 2pt 4pt;
+  padding: 2px;
   background-color: transparent;
 }
 #iop-plugin-ui,
