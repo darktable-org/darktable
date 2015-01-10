@@ -630,7 +630,7 @@ void dt_mipmap_cache_init(dt_mipmap_cache_t *cache)
   // we want at least 100MB, and consider 8G just still reasonable.
   size_t max_mem = CLAMPS(dt_conf_get_int64("cache_memory"), 100u << 20, ((uint64_t)8) << 30);
   const uint32_t parallel
-      = CLAMP(dt_conf_get_int("worker_threads") * dt_conf_get_int("parallel_export"), 1, 8);
+      = CLAMP(dt_conf_get_int("worker_threads"),  1, 8);
   const int32_t max_size = 2048, min_size = 32;
   int32_t wd = darktable.thumbnail_width;
   int32_t ht = darktable.thumbnail_height;
