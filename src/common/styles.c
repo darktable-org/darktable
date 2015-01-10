@@ -747,7 +747,9 @@ void dt_styles_save_to_file(const char *style_name, const char *filedir, gboolea
   char stylename[520];
   sqlite3_stmt *stmt;
 
-  snprintf(stylename, sizeof(stylename), "%s/%s.dtstyle", filedir, style_name);
+  char *name = g_strdup(style_name);
+  snprintf(stylename, sizeof(stylename), "%s/%s.dtstyle", filedir, g_strdelimit(name, "/", '_'));
+  g_free(name);
 
   // check if file exists
   if(g_file_test(stylename, G_FILE_TEST_EXISTS) == TRUE)
