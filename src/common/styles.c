@@ -747,9 +747,11 @@ void dt_styles_save_to_file(const char *style_name, const char *filedir, gboolea
   char stylename[520];
   sqlite3_stmt *stmt;
 
-  char *name = g_strdup(style_name);
-  snprintf(stylename, sizeof(stylename), "%s/%s.dtstyle", filedir, g_strdelimit(name, "/", '_'));
-  g_free(name);
+  // generate filename based on name of style
+  // convert all characters to underscore which are not allowed in filenames
+  char *filename = g_strdup(style_name);
+  snprintf(stylename, sizeof(stylename), "%s/%s.dtstyle", filedir, g_strdelimit(filename, "/<>:\"\\|*?[]", '_'));
+  g_free(filename);
 
   // check if file exists
   if(g_file_test(stylename, G_FILE_TEST_EXISTS) == TRUE)
