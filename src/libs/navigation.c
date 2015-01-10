@@ -41,7 +41,7 @@ typedef struct dt_lib_navigation_t
 
 
 /* expose function for navigation module */
-static gboolean _lib_navigation_draw_callback(GtkWidget *widget, cairo_t *cr, gpointer user_data);
+static gboolean _lib_navigation_draw_callback(GtkWidget *widget, cairo_t *crf, gpointer user_data);
 /* motion notify callback handler*/
 static gboolean _lib_navigation_motion_notify_callback(GtkWidget *widget, GdkEventMotion *event,
                                                        gpointer user_data);
@@ -144,7 +144,7 @@ void gui_cleanup(dt_lib_module_t *self)
 
 
 
-static gboolean _lib_navigation_draw_callback(GtkWidget *widget, cairo_t *cr, gpointer user_data)
+static gboolean _lib_navigation_draw_callback(GtkWidget *widget, cairo_t *crf, gpointer user_data)
 {
   dt_lib_module_t *self = (dt_lib_module_t *)user_data;
   dt_lib_navigation_t *d = (dt_lib_navigation_t *)self->data;
@@ -184,6 +184,8 @@ static gboolean _lib_navigation_draw_callback(GtkWidget *widget, cairo_t *cr, gp
   GtkStyleContext *context = gtk_widget_get_style_context(widget);
   GtkStateFlags state = gtk_widget_get_state_flags(widget);
   gtk_style_context_get_background_color(context, state, &color);
+  cairo_surface_t *cst = dt_cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height);
+  cairo_t *cr = cairo_create(cst);
 
   /* fill background */
   gdk_cairo_set_source_rgba(cr, &color);
@@ -319,6 +321,12 @@ static gboolean _lib_navigation_draw_callback(GtkWidget *widget, cairo_t *cr, gp
     cairo_line_to(cr, width - 0.5 * h, -0.1 * h);
     cairo_fill(cr);
   }
+
+  /* blit memsurface into widget */
+  cairo_destroy(cr);
+  cairo_set_source_surface(crf, cst, 0, 0);
+  cairo_paint(crf);
+  cairo_surface_destroy(cst);
 
   return TRUE;
 }

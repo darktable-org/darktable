@@ -44,7 +44,7 @@
 
 DT_MODULE_INTROSPECTION(4, dt_iop_tonecurve_params_t)
 
-static gboolean dt_iop_tonecurve_draw(GtkWidget *widget, cairo_t *cr, gpointer user_data);
+static gboolean dt_iop_tonecurve_draw(GtkWidget *widget, cairo_t *crf, gpointer user_data);
 static gboolean dt_iop_tonecurve_motion_notify(GtkWidget *widget, GdkEventMotion *event, gpointer user_data);
 static gboolean dt_iop_tonecurve_button_press(GtkWidget *widget, GdkEventButton *event, gpointer user_data);
 static gboolean dt_iop_tonecurve_leave_notify(GtkWidget *widget, GdkEventCrossing *event, gpointer user_data);
@@ -829,7 +829,7 @@ static void picker_scale(const float *in, float *out)
   out[2] = CLAMP((in[2] + 128.0f) / 256.0f, 0.0f, 1.0f);
 }
 
-static gboolean dt_iop_tonecurve_draw(GtkWidget *widget, cairo_t *cr, gpointer user_data)
+static gboolean dt_iop_tonecurve_draw(GtkWidget *widget, cairo_t *crf, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_tonecurve_gui_data_t *c = (dt_iop_tonecurve_gui_data_t *)self->gui_data;
@@ -876,6 +876,8 @@ static gboolean dt_iop_tonecurve_draw(GtkWidget *widget, cairo_t *cr, gpointer u
   GtkAllocation allocation;
   gtk_widget_get_allocation(widget, &allocation);
   int width = allocation.width, height = allocation.height;
+  cairo_surface_t *cst = dt_cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height);
+  cairo_t *cr = cairo_create(cst);
   // clear bg
   cairo_set_source_rgb(cr, .2, .2, .2);
   cairo_paint(cr);
@@ -1056,6 +1058,10 @@ static gboolean dt_iop_tonecurve_draw(GtkWidget *widget, cairo_t *cr, gpointer u
   cairo_stroke(cr);
 
 finally:
+  cairo_destroy(cr);
+  cairo_set_source_surface(crf, cst, 0, 0);
+  cairo_paint(crf);
+  cairo_surface_destroy(cst);
   return TRUE;
 }
 

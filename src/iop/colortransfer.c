@@ -583,7 +583,7 @@ void cleanup(dt_iop_module_t *module)
 
 #if 0
 static gboolean
-cluster_preview_draw (GtkWidget *widget, cairo_t *cr, dt_iop_module_t *self)
+cluster_preview_draw (GtkWidget *widget, cairo_t *crf, dt_iop_module_t *self)
 {
   // dt_iop_colortransfer_params_t *p = (dt_iop_colortransfer_params_t *)self->params;
   dt_iop_colortransfer_gui_data_t *g = (dt_iop_colortransfer_gui_data_t *)self->gui_data;
@@ -591,6 +591,8 @@ cluster_preview_draw (GtkWidget *widget, cairo_t *cr, dt_iop_module_t *self)
   if(!g->flowback_set) p = (dt_iop_colortransfer_params_t *)self->params;
   const int inset = 5;
   int width = allocation.width, height = allocation.height;
+  cairo_surface_t *cst = dt_cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height);
+  cairo_t *cr = cairo_create(cst);
   cairo_set_source_rgb (cr, .2, .2, .2);
   cairo_paint(cr);
 
@@ -631,6 +633,10 @@ cluster_preview_draw (GtkWidget *widget, cairo_t *cr, dt_iop_module_t *self)
     cairo_translate (cr, qwd + sep, 0);
   }
 
+  cairo_destroy(cr);
+  cairo_set_source_surface (crf, cst, 0, 0);
+  cairo_paint(crf);
+  cairo_surface_destroy(cst);
   return TRUE;
 }
 #endif

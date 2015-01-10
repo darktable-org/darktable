@@ -647,7 +647,7 @@ static gboolean dt_bauhaus_combobox_button_press(GtkWidget *widget, GdkEventButt
 static gboolean dt_bauhaus_combobox_scroll(GtkWidget *widget, GdkEventScroll *event, gpointer user_data);
 // static gboolean
 // dt_bauhaus_button_release(GtkWidget *widget, GdkEventButton *event, gpointer user_data);
-static gboolean dt_bauhaus_draw(GtkWidget *widget, cairo_t *cr, gpointer user_data);
+static gboolean dt_bauhaus_draw(GtkWidget *widget, cairo_t *crf, gpointer user_data);
 
 
 // end static init/cleanup
@@ -1259,7 +1259,7 @@ static void dt_bauhaus_widget_accept(dt_bauhaus_widget_t *w)
   }
 }
 
-static gboolean dt_bauhaus_popup_draw(GtkWidget *widget, cairo_t *cr, gpointer user_data)
+static gboolean dt_bauhaus_popup_draw(GtkWidget *widget, cairo_t *crf, gpointer user_data)
 {
   GtkAllocation allocation;
   gtk_widget_get_allocation(widget, &allocation);
@@ -1271,6 +1271,8 @@ static gboolean dt_bauhaus_popup_draw(GtkWidget *widget, cairo_t *cr, gpointer u
   GtkAllocation allocation_current;
   gtk_widget_get_allocation(current, &allocation_current);
   int wd = allocation_current.width, ht = allocation_current.height;
+  cairo_surface_t *cst = dt_cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height);
+  cairo_t *cr = cairo_create(cst);
 
   // draw same things as original widget, for visual consistency:
   dt_bauhaus_clear(w, cr);
@@ -1447,15 +1449,22 @@ static gboolean dt_bauhaus_popup_draw(GtkWidget *widget, cairo_t *cr, gpointer u
     cairo_restore(cr);
   }
 
+  cairo_destroy(cr);
+  cairo_set_source_surface(crf, cst, 0, 0);
+  cairo_paint(crf);
+  cairo_surface_destroy(cst);
+
   return TRUE;
 }
 
-static gboolean dt_bauhaus_draw(GtkWidget *widget, cairo_t *cr, gpointer user_data)
+static gboolean dt_bauhaus_draw(GtkWidget *widget, cairo_t *crf, gpointer user_data)
 {
   GtkAllocation allocation;
   gtk_widget_get_allocation(widget, &allocation);
   dt_bauhaus_widget_t *w = DT_BAUHAUS_WIDGET(widget);
   const int width = allocation.width, height = allocation.height;
+  cairo_surface_t *cst = dt_cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height);
+  cairo_t *cr = cairo_create(cst);
 
   dt_bauhaus_clear(w, cr);
 
@@ -1507,6 +1516,11 @@ static gboolean dt_bauhaus_draw(GtkWidget *widget, cairo_t *cr, gpointer user_da
       break;
   }
   cairo_restore(cr);
+
+  cairo_destroy(cr);
+  cairo_set_source_surface(crf, cst, 0, 0);
+  cairo_paint(crf);
+  cairo_surface_destroy(cst);
 
   return TRUE;
 }

@@ -568,7 +568,7 @@ static void dt_iop_colorzones_get_params(dt_iop_colorzones_params_t *p, const in
   }
 }
 
-static gboolean colorzones_draw(GtkWidget *widget, cairo_t *cr, gpointer user_data)
+static gboolean colorzones_draw(GtkWidget *widget, cairo_t *crf, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_colorzones_gui_data_t *c = (dt_iop_colorzones_gui_data_t *)self->gui_data;
@@ -593,6 +593,8 @@ static gboolean colorzones_draw(GtkWidget *widget, cairo_t *cr, gpointer user_da
   gtk_widget_get_allocation(widget, &allocation);
   const int inset = DT_IOP_COLORZONES_INSET;
   int width = allocation.width, height = allocation.height;
+  cairo_surface_t *cst = dt_cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height);
+  cairo_t *cr = cairo_create(cst);
   // clear bg, match color of the notebook tabs:
   GdkRGBA color;
   GtkStyleContext *context = gtk_widget_get_style_context(widget);
@@ -857,6 +859,10 @@ static gboolean colorzones_draw(GtkWidget *widget, cairo_t *cr, gpointer user_da
 
   cairo_set_operator(cr, CAIRO_OPERATOR_SOURCE);
 
+  cairo_destroy(cr);
+  cairo_set_source_surface(crf, cst, 0, 0);
+  cairo_paint(crf);
+  cairo_surface_destroy(cst);
   return TRUE;
 }
 
