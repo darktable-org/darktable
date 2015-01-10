@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: darktable 1.3\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2015-01-10 10:39+0100\n"
-"PO-Revision-Date: 2015-01-10 11:19+0100\n"
+"PO-Revision-Date: 2015-01-10 16:51+0100\n"
 "Last-Translator: Pascal Obry <pascal@obry.net>\n"
 "Language-Team: \n"
 "Language: fr_FR\n"
@@ -1705,7 +1705,7 @@ msgstr "masque paramétrique"
 
 #: ../src/develop/blend_gui.c:1628
 msgid "drawn & parametric mask"
-msgstr "masque dessiné et paramétrique"
+msgstr "masque dessiné + paramétrique"
 
 #: ../src/develop/blend_gui.c:1636
 msgid ""
