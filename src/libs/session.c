@@ -99,6 +99,7 @@ void gui_init(dt_lib_module_t *self)
   gtk_box_pack_start(vbox1, GTK_WIDGET(lib->gui.label1), TRUE, TRUE, 0);
 
   lib->gui.entry1 = GTK_ENTRY(gtk_entry_new());
+  gtk_entry_set_width_chars(GTK_ENTRY(lib->gui.entry1), 0);
   dt_gui_key_accel_block_on_focus_connect(GTK_WIDGET(lib->gui.entry1));
   gtk_box_pack_start(vbox2, GTK_WIDGET(lib->gui.entry1), TRUE, TRUE, 0);
 

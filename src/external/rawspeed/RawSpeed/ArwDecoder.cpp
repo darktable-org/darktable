@@ -1,5 +1,6 @@
 #include "StdAfx.h"
 #include "ArwDecoder.h"
+#include <arpa/inet.h>
 /*
     RawSpeed - RAW file decoder.
 
@@ -22,6 +23,12 @@
 
     http://www.klauspost.com
 */
+
+#define get2LE(data,pos) ((((ushort16)(data)[pos+1]) << 8) | ((ushort16)(data)[pos]))
+#define get4BE(data,pos) ((((uint32)(data)[pos]) << 24) | (((uint32)(data)[pos+1]) << 16) | \
+                          (((uint32)(data)[pos+2]) << 8) | ((uint32)(data)[pos+3]))
+#define get4LE(data,pos) ((((uint32)(data)[pos+3]) << 24) | (((uint32)(data)[pos+2]) << 16) | \
+                          (((uint32)(data)[pos+1]) << 8) | ((uint32)(data)[pos]))
 
 namespace RawSpeed {
 
@@ -53,7 +60,6 @@ RawImage ArwDecoder::decodeRawInternal() {
 
       mRaw->dim = iPoint2D(width, height);
       mRaw->createData();
-      // FIXME: there may be a better way to set the total max size;
       ByteStream input(mFile->getData(off),mFile->getSize()-off);
 
       try {
@@ -63,11 +69,39 @@ RawImage ArwDecoder::decodeRawInternal() {
         // Let's ignore it, it may have delivered somewhat useful data.
       }
 
+      // Set the whitebalance
+      if (mRootIFD->hasEntryRecursive(DNGPRIVATEDATA)) {
+        TiffEntry *priv = mRootIFD->getEntryRecursive(DNGPRIVATEDATA);
+        const uchar8 *offdata = priv->getData();
+        uint32 off = (uint32)offdata[3] << 24 | (uint32)offdata[2] << 16 | (uint32)offdata[1] << 8 | (uint32)offdata[0];
+        const unsigned char* data = mFile->getData(off);
+        uint32 length = mFile->getSize()-off;
+        uint32 currpos = 8;
+        while (currpos < length) {
+          uint32 tag = get4BE(data,currpos);
+          uint32 len = get4LE(data,currpos+4);
+          if (tag == 0x574247) { /* WBG */
+            ushort16 tmp[4];
+            for(uint32 i=0; i<4; i++)
+              tmp[i] = get2LE(data, currpos+12+i*2);
+
+            mRaw->metadata.wbCoeffs[0] = (float) tmp[0];
+            mRaw->metadata.wbCoeffs[1] = (float) tmp[1];
+            mRaw->metadata.wbCoeffs[2] = (float) tmp[3];
+            break;
+          }
+          currpos += MAX(len+8,1); // MAX(,1) to make sure we make progress
+        }
+      }
+
       return mRaw;
     } else {
       ThrowRDE("ARW Decoder: No image data found");
     }
   }
+
+  // All cameras except the A100 should work with the same WB code so get it now
+  GetWB();
 
   TiffIFD* raw = data[0];
   int compression = raw->getEntry(COMPRESSION)->getInt();
@@ -270,6 +304,88 @@ void ArwDecoder::decodeMetaDataInternal(CameraMetaData *meta) {
   setMetaData(meta, make, model, "", iso);
   mRaw->whitePoint >>= mShiftDownScale;
   mRaw->blackLevel >>= mShiftDownScale;
+}
+
+void ArwDecoder::GetWB() {
+  // Set the whitebalance
+  if (mRootIFD->hasEntryRecursive(DNGPRIVATEDATA)) {
+    TiffEntry *priv = mRootIFD->getEntryRecursive(DNGPRIVATEDATA);
+    const uchar8 *data = priv->getData();
+    uint32 off = (uint32)data[3] << 24 | (uint32)data[2] << 16 | (uint32)data[1] << 8 | (uint32)data[0];
+    TiffIFD *sony_private;
+    if (mRootIFD->endian == getHostEndianness())
+      sony_private = new TiffIFD(mFile, off);
+    else
+      sony_private = new TiffIFDBE(mFile, off);
+
+    TiffEntry *sony_offset = sony_private->getEntryRecursive(SONY_OFFSET);
+    TiffEntry *sony_length = sony_private->getEntryRecursive(SONY_LENGTH);
+    TiffEntry *sony_key = sony_private->getEntryRecursive(SONY_KEY);
+    if(!sony_offset || !sony_length || !sony_key || sony_key->count != 4)
+      ThrowRDE("ARW: couldn't find the correct metadata for WB decoding");
+
+    off = sony_offset->getInt();
+    uint32 len = sony_length->getInt();
+    data = sony_key->getData();
+    uint32 key = (uint32)data[3] << 24 | (uint32)data[2] << 16 | (uint32)data[1] << 8 | (uint32)data[0];
+
+    if (sony_private)
+      delete(sony_private);
+
+    if (mFile->getSize() < off+len)
+      ThrowRDE("ARW: Sony WB block out of range, corrupted file?");
+
+    uint32 *ifp_data = (uint32 *) mFile->getDataWrt(off);
+    uint32 pad[128];
+	  uint32 p;
+    // Initialize the decryption
+    for (p=0; p < 4; p++)
+      pad[p] = key = key * 48828125 + 1;
+    pad[3] = pad[3] << 1 | (pad[0]^pad[2]) >> 31;
+    for (p=4; p < 127; p++)
+      pad[p] = (pad[p-4]^pad[p-2]) << 1 | (pad[p-3]^pad[p-1]) >> 31;
+    for (p=0; p < 127; p++)
+      pad[p] = htonl(pad[p]);
+    pad[127] = 0;
+
+    // Decrypt the buffer in place
+    uint32 count = len/4;
+    while (count--)
+      *ifp_data++ ^= (pad[p++ & 127] = pad[p & 127] ^ pad[(p+64) & 127]);
+
+    if (mRootIFD->endian == getHostEndianness())
+      sony_private = new TiffIFD(mFile, off);
+    else
+      sony_private = new TiffIFDBE(mFile, off);
+
+    if (sony_private->hasEntry(SONYGRBGLEVELS)){
+      TiffEntry *wb = sony_private->getEntry(SONYGRBGLEVELS);
+      if (wb->count != 4)
+        ThrowRDE("ARW: WB has %d entries instead of 4", wb->count);
+      if (wb->type == TIFF_SHORT) { // We're probably in the SR2 format
+        const ushort16 *tmp = wb->getShortArray();
+        mRaw->metadata.wbCoeffs[0] = (float)tmp[1];
+        mRaw->metadata.wbCoeffs[1] = (float)tmp[0];
+        mRaw->metadata.wbCoeffs[2] = (float)tmp[2];
+      }
+      else {
+        const short16 *tmp = wb->getSignedShortArray();
+        mRaw->metadata.wbCoeffs[0] = (float)tmp[1];
+        mRaw->metadata.wbCoeffs[1] = (float)tmp[0];
+        mRaw->metadata.wbCoeffs[2] = (float)tmp[2];
+      }
+    } else if (sony_private->hasEntry(SONYRGGBLEVELS)){
+      TiffEntry *wb = sony_private->getEntry(SONYRGGBLEVELS);
+      if (wb->count != 4)
+        ThrowRDE("ARW: WB has %d entries instead of 4", wb->count);
+      const short16 *tmp = wb->getSignedShortArray();
+      mRaw->metadata.wbCoeffs[0] = (float)tmp[0];
+      mRaw->metadata.wbCoeffs[1] = (float)tmp[1];
+      mRaw->metadata.wbCoeffs[2] = (float)tmp[3];
+    }
+    if (sony_private)
+      delete(sony_private);
+  }
 }
 
 /* Since ARW2 compressed images have predictable offsets, we decode them threaded */

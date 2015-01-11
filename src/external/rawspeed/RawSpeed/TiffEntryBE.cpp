@@ -126,6 +126,21 @@ const ushort16* TiffEntryBE::getShortArray() {
   return d;
 }
 
+const short16* TiffEntryBE::getSignedShortArray() {
+  if (!(type == TIFF_SSHORT))
+    ThrowTPE("TIFF, getShortArray: Wrong type 0x%x encountered. Expected SShort", type);
+
+  if (own_data)
+    return (short16 *)own_data;
+
+  own_data = new uchar8[count*2];
+  ushort16* d = (ushort16*)own_data;
+  for (uint32 i = 0; i < count; i++) {
+    d[i] = (ushort16)data[i*2+0] << 8 | (ushort16)data[i*2+1];
+  }
+  return (short16 *)d;
+}
+
 void TiffEntryBE::setData( const void *in_data, uint32 byte_count )
 {
   if (datashifts[type] != 0)

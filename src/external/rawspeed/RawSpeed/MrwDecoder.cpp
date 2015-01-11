@@ -117,16 +117,16 @@ RawImage MrwDecoder::decodeRawInternal() {
       for(uint32 i=0; i<4; i++)
         tmp[i] = get2BE(data, currpos+12+i*2);
       if (!strcmp(cameraName,"DIMAGE A200")) {
-        mRaw->metadata.wbCoeffs[0] = tmp[2];
-        mRaw->metadata.wbCoeffs[1] = tmp[0];
-        mRaw->metadata.wbCoeffs[2] = tmp[1];
+        mRaw->metadata.wbCoeffs[0] = (float) tmp[2];
+        mRaw->metadata.wbCoeffs[1] = (float) tmp[0];
+        mRaw->metadata.wbCoeffs[2] = (float) tmp[1];
       } else {
-        mRaw->metadata.wbCoeffs[0] = tmp[0];
-        mRaw->metadata.wbCoeffs[1] = tmp[1];
-        mRaw->metadata.wbCoeffs[2] = tmp[3];
+        mRaw->metadata.wbCoeffs[0] = (float) tmp[0];
+        mRaw->metadata.wbCoeffs[1] = (float) tmp[1];
+        mRaw->metadata.wbCoeffs[2] = (float) tmp[3];
       }
     }
-    currpos += len+8;
+    currpos += MAX(len+8,1); // MAX(,1) to make sure we make progress
   }
 
   if (packed)

@@ -385,7 +385,7 @@ void gui_init(struct dt_iop_module_t *self)
 
   gtk_widget_add_events(GTK_WIDGET(c->area), GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK | GDK_LEAVE_NOTIFY_MASK | GDK_SCROLL_MASK);
   g_signal_connect (G_OBJECT (c->area), "draw",
-                    G_CALLBACK (dt_iop_equalizer_draw), self);
+                    G_CALLBACK (dt_iop_equalizer_expose), self);
   g_signal_connect (G_OBJECT (c->area), "button-press-event",
                     G_CALLBACK (dt_iop_equalizer_button_press), self);
   g_signal_connect (G_OBJECT (c->area), "button-release-event",
@@ -444,7 +444,7 @@ static void dt_iop_equalizer_get_params(dt_iop_equalizer_params_t *p, const int 
   }
 }
 
-static gboolean dt_iop_equalizer_draw(GtkWidget *widget, cairo_t *cr, gpointer user_data)
+static gboolean dt_iop_equalizer_expose(GtkWidget *widget, cairo_t *crf, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_equalizer_gui_data_t *c = (dt_iop_equalizer_gui_data_t *)self->gui_data;
@@ -453,6 +453,8 @@ static gboolean dt_iop_equalizer_draw(GtkWidget *widget, cairo_t *cr, gpointer u
   for(int k=0; k<DT_IOP_EQUALIZER_BANDS; k++) dt_draw_curve_set_point(c->minmax_curve, k, p.equalizer_x[ch][k], p.equalizer_y[ch][k]);
   const int inset = DT_GUI_EQUALIZER_INSET;
   int width = allocation.width, height = allocation.height;
+  cairo_surface_t *cst = dt_cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height);
+  cairo_t *cr = cairo_create(cst);
   // clear bg
   cairo_set_source_rgb (cr, .2, .2, .2);
   cairo_paint(cr);
@@ -592,6 +594,10 @@ static gboolean dt_iop_equalizer_draw(GtkWidget *widget, cairo_t *cr, gpointer u
 
   cairo_set_operator(cr, CAIRO_OPERATOR_SOURCE);
 
+  cairo_destroy(cr);
+  cairo_set_source_surface (crf, cst, 0, 0);
+  cairo_paint(crf);
+  cairo_surface_destroy(cst);
   return TRUE;
 }
 

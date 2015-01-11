@@ -480,7 +480,7 @@ static void dt_iop_lowlight_get_params(dt_iop_lowlight_params_t *p, const double
   }
 }
 
-static gboolean lowlight_draw(GtkWidget *widget, cairo_t *cr, gpointer user_data)
+static gboolean lowlight_draw(GtkWidget *widget, cairo_t *crf, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_lowlight_gui_data_t *c = (dt_iop_lowlight_gui_data_t *)self->gui_data;
@@ -497,6 +497,8 @@ static gboolean lowlight_draw(GtkWidget *widget, cairo_t *cr, gpointer user_data
   GtkAllocation allocation;
   gtk_widget_get_allocation(widget, &allocation);
   int width = allocation.width, height = allocation.height;
+  cairo_surface_t *cst = dt_cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height);
+  cairo_t *cr = cairo_create(cst);
 
   cairo_set_source_rgb(cr, .2, .2, .2);
   cairo_paint(cr);
@@ -653,6 +655,10 @@ static gboolean lowlight_draw(GtkWidget *widget, cairo_t *cr, gpointer user_data
   cairo_show_text(cr, _("night vision"));
 
 
+  cairo_destroy(cr);
+  cairo_set_source_surface(crf, cst, 0, 0);
+  cairo_paint(crf);
+  cairo_surface_destroy(cst);
   return TRUE;
 }
 

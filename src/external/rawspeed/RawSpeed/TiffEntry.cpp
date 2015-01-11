@@ -134,6 +134,12 @@ const ushort16* TiffEntry::getShortArray() {
   return (ushort16*)&data[0];
 }
 
+const short16* TiffEntry::getSignedShortArray() {
+  if (!(type == TIFF_SSHORT))
+    ThrowTPE("TIFF, getShortArray: Wrong type 0x%x encountered. Expected Signed Short", type);
+  return (short16*)&data[0];
+}
+
 uchar8 TiffEntry::getByte() {
   if (type != TIFF_BYTE)
     ThrowTPE("TIFF, getByte: Wrong type 0x%x encountered. Expected Byte", type);

@@ -312,7 +312,7 @@ static void sat_callback(GtkWidget *slider, gpointer user_data)
   gtk_widget_queue_draw(self->widget);
 }
 
-static gboolean dt_iop_colorcorrection_draw(GtkWidget *widget, cairo_t *cr, gpointer user_data)
+static gboolean dt_iop_colorcorrection_draw(GtkWidget *widget, cairo_t *crf, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_colorcorrection_gui_data_t *g = (dt_iop_colorcorrection_gui_data_t *)self->gui_data;
@@ -322,6 +322,8 @@ static gboolean dt_iop_colorcorrection_draw(GtkWidget *widget, cairo_t *cr, gpoi
   GtkAllocation allocation;
   gtk_widget_get_allocation(widget, &allocation);
   int width = allocation.width, height = allocation.height;
+  cairo_surface_t *cst = dt_cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height);
+  cairo_t *cr = cairo_create(cst);
   // clear bg
   cairo_set_source_rgb(cr, .2, .2, .2);
   cairo_paint(cr);
@@ -379,6 +381,10 @@ static gboolean dt_iop_colorcorrection_draw(GtkWidget *widget, cairo_t *cr, gpoi
     cairo_arc(cr, hia, hib, DT_PIXEL_APPLY_DPI(3), 0, 2. * M_PI);
   cairo_fill(cr);
 
+  cairo_destroy(cr);
+  cairo_set_source_surface(crf, cst, 0, 0);
+  cairo_paint(crf);
+  cairo_surface_destroy(cst);
   return TRUE;
 }
 
