@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: darktable 1.3\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2015-01-10 10:39+0100\n"
-"PO-Revision-Date: 2015-01-10 16:51+0100\n"
+"PO-Revision-Date: 2015-01-11 15:07+0100\n"
 "Last-Translator: Pascal Obry <pascal@obry.net>\n"
 "Language-Team: \n"
 "Language: fr_FR\n"
@@ -4746,7 +4746,7 @@ msgstr "critère de sélection; correspond à l’abscisse du graphique"
 
 #: ../src/iop/defringe.c:65
 msgid "defringe"
-msgstr "suppression de la frange"
+msgstr "suppression des franges"
 
 #: ../src/iop/defringe.c:445
 msgid "operation mode"
