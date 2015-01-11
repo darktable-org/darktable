@@ -219,6 +219,10 @@ dt_imageio_retval_t dt_imageio_open_rawspeed_sraw(dt_image_t *img, RawImage r, d
   img->width = r->dim.x;
   img->height = r->dim.y;
 
+  // Grab the WB
+  for (int i=0; i<3; i++)
+    img->wb_coeffs[i] = r->metadata.wbCoeffs[i];
+
   /* needed by Deflicker */
   img->raw_black_level = r->blackLevel;
   img->raw_white_point = r->whitePoint;
