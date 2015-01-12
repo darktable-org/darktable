@@ -86,12 +86,12 @@ void KdcDecoder::decodeMetaDataInternal(CameraMetaData *meta) {
 
   if (mRootIFD->hasEntryRecursive(KODAKWB)) {
     TiffEntry *wb = mRootIFD->getEntryRecursive(KODAKWB);
-    if (wb->count != 734 && wb->count != 1502)
-      ThrowRDE("KDC: WB has %d values instead of 734 or 1502", wb->count);
-    const uchar8 *tmp = wb->getData();
-    mRaw->metadata.wbCoeffs[0] = (float)((((ushort16) tmp[148])<<8)|tmp[149])/256.0f;
-    mRaw->metadata.wbCoeffs[1] = 1.0f;
-    mRaw->metadata.wbCoeffs[2] = (float)((((ushort16) tmp[150])<<8)|tmp[151])/256.0f;
+    if (wb->count == 734 || wb->count == 1502) {
+      const uchar8 *tmp = wb->getData();
+      mRaw->metadata.wbCoeffs[0] = (float)((((ushort16) tmp[148])<<8)|tmp[149])/256.0f;
+      mRaw->metadata.wbCoeffs[1] = 1.0f;
+      mRaw->metadata.wbCoeffs[2] = (float)((((ushort16) tmp[150])<<8)|tmp[151])/256.0f;
+    }
   }
 }
 
