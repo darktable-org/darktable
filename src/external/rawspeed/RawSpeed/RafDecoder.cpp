@@ -105,24 +105,6 @@ RawImage RafDecoder::decodeRawInternal() {
       readUncompressedRaw(input, mRaw->dim, pos, width*bps/8, bps, BitOrder_Plain);
   }
 
-  if (raw->hasEntry(FUJI_WB_GRBLEVELS)) {
-    TiffEntry *wb = raw->getEntry(FUJI_WB_GRBLEVELS);
-    if (wb->count != 3)
-      ThrowRDE("RAF: WB has %d entries instead of 3", wb->count);
-    const uint32 *tmp = wb->getIntArray();
-    mRaw->metadata.wbCoeffs[0] = (float)tmp[1];
-    mRaw->metadata.wbCoeffs[1] = (float)tmp[0];
-    mRaw->metadata.wbCoeffs[2] = (float)tmp[2];
-  } else if (raw->hasEntry(FUJIOLDWB)) {
-    TiffEntry *wb = raw->getEntry(FUJIOLDWB);
-    if (wb->count != 8)
-      ThrowRDE("RAF: WB has %d bytes instead of 8", wb->count);
-    const ushort16 *tmp = wb->getShortArray();
-    mRaw->metadata.wbCoeffs[0] = (float)tmp[1];
-    mRaw->metadata.wbCoeffs[1] = (float)tmp[0];
-    mRaw->metadata.wbCoeffs[2] = (float)tmp[3];
-  }
-
   return mRaw;
 }
 
@@ -234,6 +216,24 @@ void RafDecoder::decodeMetaDataInternal(CameraMetaData *meta) {
   mRaw->whitePoint = sensor->mWhiteLevel;
   mRaw->blackAreas = cam->blackAreas;
   mRaw->cfa = cam->cfa;
+
+  if (mRootIFD->hasEntryRecursive(FUJI_WB_GRBLEVELS)) {
+    TiffEntry *wb = mRootIFD->getEntryRecursive(FUJI_WB_GRBLEVELS);
+    if (wb->count == 3) {
+      const uint32 *tmp = wb->getIntArray();
+      mRaw->metadata.wbCoeffs[0] = (float)tmp[1];
+      mRaw->metadata.wbCoeffs[1] = (float)tmp[0];
+      mRaw->metadata.wbCoeffs[2] = (float)tmp[2];
+    }
+  } else if (mRootIFD->hasEntryRecursive(FUJIOLDWB)) {
+    TiffEntry *wb = mRootIFD->getEntryRecursive(FUJIOLDWB);
+    if (wb->count == 8) {
+      const ushort16 *tmp = wb->getShortArray();
+      mRaw->metadata.wbCoeffs[0] = (float)tmp[1];
+      mRaw->metadata.wbCoeffs[1] = (float)tmp[0];
+      mRaw->metadata.wbCoeffs[2] = (float)tmp[3];
+    }
+  }
 }
 
 
