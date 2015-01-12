@@ -77,12 +77,6 @@ void MefDecoder::decodeMetaDataInternal(CameraMetaData *meta) {
   string make = data[0]->getEntry(MAKE)->getString();
   string model = data[0]->getEntry(MODEL)->getString();
   setMetaData(meta, make, model, "", 0);
-
-  // dcraw calculates these from the camera's color matrix and since the
-  // Mamiya ZD seems to be the only MEF camera we may as well hardcode these
-  mRaw->metadata.wbCoeffs[0] = 1.2740092277526855468750f;
-  mRaw->metadata.wbCoeffs[1] = 1.0f;
-  mRaw->metadata.wbCoeffs[2] = 1.1964914798736572265625f;
 }
 
 } // namespace RawSpeed
