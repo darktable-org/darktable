@@ -1,6 +1,5 @@
 #include "StdAfx.h"
 #include "ArwDecoder.h"
-#include <arpa/inet.h>
 /*
     RawSpeed - RAW file decoder.
 
@@ -69,39 +68,11 @@ RawImage ArwDecoder::decodeRawInternal() {
         // Let's ignore it, it may have delivered somewhat useful data.
       }
 
-      // Set the whitebalance
-      if (mRootIFD->hasEntryRecursive(DNGPRIVATEDATA)) {
-        TiffEntry *priv = mRootIFD->getEntryRecursive(DNGPRIVATEDATA);
-        const uchar8 *offdata = priv->getData();
-        uint32 off = (uint32)offdata[3] << 24 | (uint32)offdata[2] << 16 | (uint32)offdata[1] << 8 | (uint32)offdata[0];
-        const unsigned char* data = mFile->getData(off);
-        uint32 length = mFile->getSize()-off;
-        uint32 currpos = 8;
-        while (currpos < length) {
-          uint32 tag = get4BE(data,currpos);
-          uint32 len = get4LE(data,currpos+4);
-          if (tag == 0x574247) { /* WBG */
-            ushort16 tmp[4];
-            for(uint32 i=0; i<4; i++)
-              tmp[i] = get2LE(data, currpos+12+i*2);
-
-            mRaw->metadata.wbCoeffs[0] = (float) tmp[0];
-            mRaw->metadata.wbCoeffs[1] = (float) tmp[1];
-            mRaw->metadata.wbCoeffs[2] = (float) tmp[3];
-            break;
-          }
-          currpos += MAX(len+8,1); // MAX(,1) to make sure we make progress
-        }
-      }
-
       return mRaw;
     } else {
       ThrowRDE("ARW Decoder: No image data found");
     }
   }
-
-  // All cameras except the A100 should work with the same WB code so get it now
-  GetWB();
 
   TiffIFD* raw = data[0];
   int compression = raw->getEntry(COMPRESSION)->getInt();
@@ -304,14 +275,47 @@ void ArwDecoder::decodeMetaDataInternal(CameraMetaData *meta) {
   setMetaData(meta, make, model, "", iso);
   mRaw->whitePoint >>= mShiftDownScale;
   mRaw->blackLevel >>= mShiftDownScale;
+
+  // Set the whitebalance
+  if (model == "DSLR-A100") { // Handle the MRW style WB of the A100
+    if (mRootIFD->hasEntryRecursive(DNGPRIVATEDATA)) {
+      TiffEntry *priv = mRootIFD->getEntryRecursive(DNGPRIVATEDATA);
+      const uchar8 *offdata = priv->getData();
+      uint32 off = get4LE(offdata,0);
+      const unsigned char* data = mFile->getData(off);
+      uint32 length = mFile->getSize()-off;
+      uint32 currpos = 8;
+      while (currpos < length) {
+        uint32 tag = get4BE(data,currpos);
+        uint32 len = get4LE(data,currpos+4);
+        if (tag == 0x574247) { /* WBG */
+          ushort16 tmp[4];
+          for(uint32 i=0; i<4; i++)
+            tmp[i] = get2LE(data, currpos+12+i*2);
+
+          mRaw->metadata.wbCoeffs[0] = (float) tmp[0];
+          mRaw->metadata.wbCoeffs[1] = (float) tmp[1];
+          mRaw->metadata.wbCoeffs[2] = (float) tmp[3];
+          break;
+        }
+        currpos += MAX(len+8,1); // MAX(,1) to make sure we make progress
+      }
+    }
+  } else { // Everything else but the A100
+    try {
+      GetWB();
+    } catch (...) {
+      // We caught an exception reading WB, just ignore it
+    }
+  }
 }
 
 void ArwDecoder::GetWB() {
-  // Set the whitebalance
+  // Set the whitebalance for all the modern ARW formats (everything after A100)
   if (mRootIFD->hasEntryRecursive(DNGPRIVATEDATA)) {
     TiffEntry *priv = mRootIFD->getEntryRecursive(DNGPRIVATEDATA);
     const uchar8 *data = priv->getData();
-    uint32 off = (uint32)data[3] << 24 | (uint32)data[2] << 16 | (uint32)data[1] << 8 | (uint32)data[0];
+    uint32 off = get4LE(data, 0);
     TiffIFD *sony_private;
     if (mRootIFD->endian == getHostEndianness())
       sony_private = new TiffIFD(mFile, off);
@@ -327,7 +331,7 @@ void ArwDecoder::GetWB() {
     off = sony_offset->getInt();
     uint32 len = sony_length->getInt();
     data = sony_key->getData();
-    uint32 key = (uint32)data[3] << 24 | (uint32)data[2] << 16 | (uint32)data[1] << 8 | (uint32)data[0];
+    uint32 key = get4LE(data,0);
 
     if (sony_private)
       delete(sony_private);
@@ -345,8 +349,7 @@ void ArwDecoder::GetWB() {
     for (p=4; p < 127; p++)
       pad[p] = (pad[p-4]^pad[p-2]) << 1 | (pad[p-3]^pad[p-1]) >> 31;
     for (p=0; p < 127; p++)
-      pad[p] = htonl(pad[p]);
-    pad[127] = 0;
+      pad[p] = get4BE((uchar8 *) &pad[p],0);
 
     // Decrypt the buffer in place
     uint32 count = len/4;
