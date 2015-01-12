@@ -4,7 +4,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Darktable 1.6\n"
 "POT-Creation-Date: 2015-01-08 09:12+0100\n"
-"PO-Revision-Date: 2014-12-15 14:53+0100\n"
+"PO-Revision-Date: 2015-01-12 16:39+0100\n"
 "Last-Translator: Michel Leblond <michel.leblond62@gmail.com>\n"
 "Language-Team: Jean-Luc Coulon, Victor Lamoine, Michel Leblond\n"
 "Language: fr\n"
@@ -9792,7 +9792,6 @@ msgid "auto"
 msgstr "auto"
 
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:7950(para)
-#, fuzzy
 msgid ""
 "Activating this checkbox makes darktable calculate a correct exposure for "
 "the rectangular view appearing in the centre of the image. You can draw your "
@@ -9807,7 +9806,9 @@ msgstr ""
 "pouvez dessiner votre propre sélection à l’aide de la souris. Un curseur de "
 "réglage, situé à droite de la case à cocher d’exposition automatique, vous "
 "permet de définir le pourcentage de valeurs claires qui devront être "
-"tronquées lors des calculs."
+"tronquées lors des calculs. Cette fonctionnalité ne doit pas être confondue "
+"avec le mode <quote>automatique</quote> du module exposition et est "
+"disponible uniquement dans le mode <quote>manuel</quote>."
 
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:7961(title)
 msgid "percentile"
@@ -21401,9 +21402,8 @@ msgstr ""
 "images par collection."
 
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:18654(title)
-#, fuzzy
 msgid "darktable.gui.libs.collect.filter"
-msgstr "darktable.gui.libs.collect"
+msgstr "darktable.gui.libs.collect.filter"
 
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:18657(secondary)
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:18991(secondary)
@@ -21412,33 +21412,32 @@ msgstr "filter"
 
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:18660(link)
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:18675(term)
-#, fuzzy
 msgid "rules"
-msgstr "Modules"
+msgstr "règles"
 
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:18660(link)
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:18661(link)
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:18676(link)
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:18682(link)
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:23191(title)
-#, fuzzy
 msgid "types.dt_lib_collect_params_t"
-msgstr "types.dt_lib_module_t"
+msgstr "types.dt_lib_collect_params_t"
 
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:18662(para)
-#, fuzzy
 msgid "Allows to get or change the list of visible images"
-msgstr "Permettre de modifier l'ensemble des images sélectionnées."
+msgstr "Permet d'obtenir ou de modifier la liste des images visibles."
 
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:18677(para)
 msgid ""
 "An object describing filtering rules for the collection. These rules will be "
 "applied after this call"
 msgstr ""
+"Un objet décrivant les règles de filtrage de la collection. Ces règles "
+"seront appliquées après cet appel."
 
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:18683(para)
 msgid "The rules that were applied before this call."
-msgstr ""
+msgstr "Les règles qui seront appliquées avant cet appel."
 
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:18694(title)
 msgid "darktable.gui.libs.styles"
@@ -22871,56 +22870,55 @@ msgstr ""
 "delete</link>"
 
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:20364(title)
-#, fuzzy
 msgid "darktable.control"
-msgstr "darktable.configuration"
+msgstr "darktable.control"
 
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:20367(secondary)
-#, fuzzy
 msgid "control"
-msgstr "contraste"
+msgstr "contrôle"
 
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:20369(para)
 msgid ""
 "This table contain function to manipulate the control flow of lua programs. "
 "It provides ways to do background jobs and other related functions"
 msgstr ""
+"Cette table contient une fonction pour manipuler le flot de contrôle des "
+"programmes Lua. Elle fournit le moyen de mettre en arrière-plan les tâches "
+"et d'autres fonctions connexes."
 
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:20372(title)
-#, fuzzy
 msgid "darktable.control.ending"
-msgstr "darktable.configuration.version"
+msgstr "darktable.control.ending"
 
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:20375(secondary)
-#, fuzzy
 msgid "ending"
-msgstr "Fusion"
+msgstr "achèvement"
 
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:20378(para)
 msgid "TRUE when darktable is terminating"
-msgstr ""
+msgstr "Vraie quand darktable se termine."
 
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:20379(para)
 msgid "Use this variable to detect when you should finish long running jobs"
 msgstr ""
+"Utilisez cette variable pour détecter le moment où vous devriez terminer les "
+"longues tâches en cours d'exécution."
 
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:20384(title)
-#, fuzzy
 msgid "darktable.control.dispatch"
-msgstr "darktable.configuration.api_version_patch"
+msgstr "darktable.control.dispatch"
 
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:20387(secondary)
 msgid "dispatch"
-msgstr ""
+msgstr "émettre"
 
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:20389(synopsis)
-#, fuzzy
 msgid ""
 "function( <emphasis><placeholder-1/></emphasis> : function, "
 "<emphasis><placeholder-2/></emphasis> : anything )"
 msgstr ""
-"function( <emphasis><placeholder-1/></emphasis> : string, "
-"<emphasis><placeholder-2/></emphasis> : string )"
+"function( <emphasis><placeholder-1/></emphasis> : function, "
+"<emphasis><placeholder-2/></emphasis> : anything )"
 
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:20393(para)
 msgid ""
@@ -22929,11 +22927,16 @@ msgid ""
 "function, please check <link linkend=\"darktable_control_ending\">darktable."
 "control.ending</link> in your loop to finish the function when DT exits"
 msgstr ""
+"Exécute une fonction en arrière-plan. Cette fonction sera exécutée plus "
+"tard, après que l'exécution de luarc sera terminée. Si vous faites une "
+"boucle dans une telle fonction, vérifiez s'il vous plaît la présence dans "
+"votre boucle de <link linkend=\"darktable_control_ending\">darktable.control."
+"ending</link> pour que l'exécution de la fonction s'achève quand darktable "
+"s'arrêtera."
 
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:20398(para)
-#, fuzzy
 msgid "The call to dispatch"
-msgstr "Le fichier à importer."
+msgstr "L'appel à émettre."
 
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:20403(synopsis)
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:20442(synopsis)
@@ -22943,7 +22946,7 @@ msgstr "anything"
 
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:20404(para)
 msgid "extra parameters to pass to the function"
-msgstr ""
+msgstr "Paramètres supplémentaires à passer à la fonction."
 
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:20414(title)
 msgid "darktable.debug"
@@ -24993,196 +24996,195 @@ msgid "b44a"
 msgstr "b44a"
 
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:23194(secondary)
-#, fuzzy
 msgid "dt_lib_collect_params_t"
-msgstr "dt_lib_module_t"
+msgstr "dt_lib_collect_params_t"
 
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:23197(para)
 msgid "A set of rules decribing a collection filter for the collect module"
 msgstr ""
+"Un ensemble de règles décrivant un filtre de collection pour le module "
+"collection."
 
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:23200(title)
-#, fuzzy
 msgid "types.dt_lib_collect_params_t.#"
-msgstr "types.dt_lib_module_t"
+msgstr "types.dt_lib_collect_params_t.#"
 
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:23205(link)
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:23223(title)
-#, fuzzy
 msgid "types.dt_lua_lib_collect_params_rule_t"
-msgstr "types.dt_lib_module_t.reset"
+msgstr "types.dt_lua_lib_collect_params_rule_t"
 
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:23206(para)
 msgid ""
 "Each rule has a numeric index. You can add a rule by setting a rule after "
 "the last valid one, you can remove a rule by setting it to nil"
 msgstr ""
+"Chaque règle possède un index numérique. Vous pouvez ajouter une règle en la "
+"plaçant après la dernière règle valide, vous pouvez supprimer une règle en "
+"la définissant à nil."
 
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:23226(secondary)
 msgid "dt_lua_lib_collect_params_rule_t"
-msgstr ""
+msgstr "dt_lua_lib_collect_params_rule_t"
 
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:23229(para)
 msgid "A single rule for filtering a collection"
-msgstr ""
+msgstr "Une seule règle pour filtrer une collection."
 
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:23232(title)
-#, fuzzy
 msgid "types.dt_lua_lib_collect_params_rule_t.mode"
-msgstr "types.dt_lua_image_t.move"
+msgstr "types.dt_lua_lib_collect_params_rule_t.mode"
 
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:23237(link)
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:23297(title)
-#, fuzzy
 msgid "types.dt_lib_collect_mode_t"
-msgstr "types.dt_lib_module_t"
+msgstr "types.dt_lib_collect_mode_t"
 
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:23238(para)
 msgid ""
 "How this rule is applied after the previous one. Unused for the first rule"
 msgstr ""
+"Indique comment cette règle est appliquée après celle qui la précède. "
+"Inutilisé pour la première règle."
 
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:23253(title)
-#, fuzzy
 msgid "types.dt_lua_lib_collect_params_rule_t.data"
-msgstr "types.dt_lib_module_t.id"
+msgstr "types.dt_lua_lib_collect_params_rule_t.data"
 
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:23256(secondary)
-#, fuzzy
 msgid "data"
-msgstr "metadata"
+msgstr "données"
 
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:23259(para)
-#, fuzzy
 msgid "The text segment of the rule. Exact content depends on the type of rule"
 msgstr ""
-"L'objet nouvellement créé. Son type exact dépend du type passé en paramètre."
+"Le segment de texte de la règle. Son contenu exact dépend du type de la "
+"règle."
 
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:23274(title)
-#, fuzzy
 msgid "types.dt_lua_lib_collect_params_rule_t.item"
-msgstr "types.dt_lua_image_t.title"
+msgstr "types.dt_lua_lib_collect_params_rule_t.item"
 
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:23277(secondary)
 msgid "item"
-msgstr ""
+msgstr "élément"
 
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:23279(link)
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:23324(title)
-#, fuzzy
 msgid "types.dt_collection_properties_t"
-msgstr "types.dt_ui_container_t"
+msgstr "types.dt_collection_properties_t"
 
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:23280(para)
 msgid "The item on which this rule filter. i.e the type of the rule"
 msgstr ""
+"L'élément utilisé par cette règle pour filtrer. C'est à dire le type de la "
+"règle. "
 
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:23300(secondary)
-#, fuzzy
 msgid "dt_lib_collect_mode_t"
-msgstr "dt_lib_module_t"
+msgstr "dt_lib_collect_mode_t"
 
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:23303(para)
 msgid "The logical operators to apply between rules"
-msgstr ""
+msgstr "Les opérateurs logiques à appliquer entre les règles."
 
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:23312(para)
 msgid "DT_LIB_COLLECT_MODE_AND"
-msgstr ""
+msgstr "DT_LIB_COLLECT_MODE_AND"
 
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:23313(para)
 msgid "DT_LIB_COLLECT_MODE_OR"
-msgstr ""
+msgstr "DT_LIB_COLLECT_MODE_OR"
 
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:23314(para)
 msgid "DT_LIB_COLLECT_MODE_AND_NOT"
-msgstr ""
+msgstr "DT_LIB_COLLECT_MODE_AND_NOT"
 
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:23327(secondary)
 msgid "dt_collection_properties_t"
-msgstr ""
+msgstr "dt_collection_properties_t"
 
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:23330(para)
 msgid "The different elements on which a collection can be filtered"
 msgstr ""
+"Les différents éléments à partir desquels une collection peut être filtrée."
 
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:23339(para)
 msgid "DT_COLLECTION_PROP_FILMROLL"
-msgstr ""
+msgstr "DT_COLLECTION_PROP_FILMROLL"
 
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:23340(para)
 msgid "DT_COLLECTION_PROP_FOLDERS"
-msgstr ""
+msgstr "DT_COLLECTION_PROP_FOLDERS"
 
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:23341(para)
 msgid "DT_COLLECTION_PROP_CAMERA"
-msgstr ""
+msgstr "DT_COLLECTION_PROP_CAMERA"
 
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:23342(para)
 msgid "DT_COLLECTION_PROP_TAG"
-msgstr ""
+msgstr "DT_COLLECTION_PROP_TAG"
 
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:23343(para)
 msgid "DT_COLLECTION_PROP_DAY"
-msgstr ""
+msgstr "DT_COLLECTION_PROP_DAY"
 
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:23344(para)
 msgid "DT_COLLECTION_PROP_TIME"
-msgstr ""
+msgstr "DT_COLLECTION_PROP_TIME"
 
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:23345(para)
 msgid "DT_COLLECTION_PROP_HISTORY"
-msgstr ""
+msgstr "DT_COLLECTION_PROP_HISTORY"
 
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:23346(para)
 msgid "DT_COLLECTION_PROP_COLORLABEL"
-msgstr ""
+msgstr "DT_COLLECTION_PROP_COLORLABEL"
 
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:23347(para)
 msgid "DT_COLLECTION_PROP_TITLE"
-msgstr ""
+msgstr "DT_COLLECTION_PROP_TITLE"
 
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:23348(para)
 msgid "DT_COLLECTION_PROP_DESCRIPTION"
-msgstr ""
+msgstr "DT_COLLECTION_PROP_DESCRIPTION"
 
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:23349(para)
 msgid "DT_COLLECTION_PROP_CREATOR"
-msgstr ""
+msgstr "DT_COLLECTION_PROP_CREATOR"
 
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:23350(para)
 msgid "DT_COLLECTION_PROP_PUBLISHER"
-msgstr ""
+msgstr "DT_COLLECTION_PROP_PUBLISHER"
 
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:23351(para)
-#, fuzzy
 msgid "DT_COLLECTION_PROP_RIGHTS"
-msgstr "DT_UI_CONTAINER_PANEL_TOP_RIGHT"
+msgstr "DT_COLLECTION_PROP_RIGHTS"
 
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:23352(para)
 msgid "DT_COLLECTION_PROP_LENS"
-msgstr ""
+msgstr "DT_COLLECTION_PROP_LENS"
 
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:23353(para)
 msgid "DT_COLLECTION_PROP_ISO"
-msgstr ""
+msgstr "DT_COLLECTION_PROP_ISO"
 
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:23354(para)
 msgid "DT_COLLECTION_PROP_APERTURE"
-msgstr ""
+msgstr "DT_COLLECTION_PROP_APERTURE"
 
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:23355(para)
 msgid "DT_COLLECTION_PROP_FILENAME"
-msgstr ""
+msgstr "DT_COLLECTION_PROP_FILENAME"
 
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:23356(para)
 msgid "DT_COLLECTION_PROP_GEOTAGGING"
-msgstr ""
+msgstr "DT_COLLECTION_PROP_GEOTAGGING"
 
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:23368(title)
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:23371(secondary)
 msgid "events"
-msgstr "Événements"
+msgstr "événements"
 
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:23373(para)
 msgid ""
@@ -25553,32 +25555,28 @@ msgid "events.mouse-over-image-changed.extra registration parameters"
 msgstr "events.mouse-over-image-changed.extra registration parameters"
 
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:23785(title)
-#, fuzzy
 msgid "events.exit"
-msgstr "Événements"
+msgstr "events.exit"
 
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:23788(secondary)
 msgid "exit"
-msgstr ""
+msgstr "sortie"
 
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:23791(para)
-#, fuzzy
 msgid ""
 "This event is triggered when darktable exits, it allows lua scripts to do "
 "cleanup jobs"
 msgstr ""
-"Cet événement est déclenché quand l'image située sous le curseur de la "
-"souris change."
+"Cet événement est déclenché quand darktable se termine, il autorise les "
+"scripts Lua à effectuer les tâches de nettoyage."
 
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:23794(title)
-#, fuzzy
 msgid "events.exit.callback"
-msgstr "events.shortcut.callback"
+msgstr "events.exit.callback"
 
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:23808(title)
-#, fuzzy
 msgid "events.exit.extra registration parameters"
-msgstr "events.shortcut.extra registration parameters"
+msgstr "paramètres d'enregistrement des events.shortcut.extra."
 
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:23822(title)
 #: /home/michel/Logiciels/DT_ML/build/doc/usermanual/po/darktable-usermanual_profiled.xml:23825(secondary)
