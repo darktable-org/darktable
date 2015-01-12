@@ -92,11 +92,11 @@ void ThreefrDecoder::decodeMetaDataInternal(CameraMetaData *meta) {
   // Fetch the white balance
   if (mRootIFD->hasEntryRecursive(ASSHOTNEUTRAL)) {
     TiffEntry *wb = mRootIFD->getEntryRecursive(ASSHOTNEUTRAL);
-    if (wb->count != 3)
-      ThrowRDE("3FR: WB has %d values instead of 3", wb->count);
-    const uint32 *tmp = wb->getIntArray();
-    for (uint32 i=0; i<3; i++)
-      mRaw->metadata.wbCoeffs[i] = (tmp[i*2+1]*1.0f)/tmp[i*2];
+    if (wb->count == 3) {
+      const uint32 *tmp = wb->getIntArray();
+      for (uint32 i=0; i<3; i++)
+        mRaw->metadata.wbCoeffs[i] = (tmp[i*2+1]*1.0f)/tmp[i*2];
+    }
   }
 }
 
