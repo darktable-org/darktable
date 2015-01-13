@@ -82,12 +82,21 @@ RawImage Cr2Decoder::decodeRawInternal() {
       case 1346: /* Canon EOS 60D, Canon EOS 1100D */
         offset += 126;
       break;
+      case 5120:
+        /* Canon PowerShot G10, Canon PowerShot G11, Canon PowerShot G12,
+         * Canon PowerShot G1X, Canon PowerShot S120, Canon PowerShot SX1 IS */
+        offset += 142;
+      break;
       default:
         std::cerr << "CR2 Decoder: CanonColorData has unsupported count of values: %d" << color_data->count << std::endl;
       break;
     }
 
-    if (color_data->type == TIFF_SHORT) {
+    /*
+     * Canon PowerShot cameras (color_data->count == 5120) identify this tag
+     * as TIFF_UNDEFINED, while they still write normal TIFF_SHORT data there
+     */
+    if (color_data->type == TIFF_SHORT || color_data->count == 5120) {
       const ushort16* data = color_data->getShortArray();
 
       // RGGB !
