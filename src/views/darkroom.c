@@ -62,6 +62,10 @@ static gboolean skip_b_key_accel_callback(GtkAccelGroup *accel_group, GObject *a
                                           GdkModifierType modifier, gpointer data);
 static gboolean _overexposed_toggle_callback(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
                                              GdkModifierType modifier, gpointer data);
+static gboolean _brush_size_up_callback(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
+                                        GdkModifierType modifier, gpointer data);
+static gboolean _brush_size_down_callback(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
+                                          GdkModifierType modifier, gpointer data);
 
 /* signal handler for filmstrip image switching */
 static void _view_darkroom_filmstrip_activate_callback(gpointer instance, gpointer user_data);
@@ -1022,6 +1026,23 @@ static gboolean _overexposed_toggle_callback(GtkAccelGroup *accel_group, GObject
   return TRUE;
 }
 
+static gboolean _brush_size_up_callback(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
+                                        GdkModifierType modifier, gpointer data)
+{
+  dt_develop_t *dev = (dt_develop_t *)data;
+
+  dt_masks_events_mouse_scrolled(dev->gui_module, 0, 0, 0, 0);
+  return TRUE;
+}
+static gboolean _brush_size_down_callback(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
+                                          GdkModifierType modifier, gpointer data)
+{
+  dt_develop_t *dev = (dt_develop_t *)data;
+
+  dt_masks_events_mouse_scrolled(dev->gui_module, 0, 0, 1, 0);
+  return TRUE;
+}
+
 void enter(dt_view_t *self)
 {
 
@@ -1672,6 +1693,10 @@ void init_key_accels(dt_view_t *self)
 
   // toggle overexposure indication
   dt_accel_register_view(self, NC_("accel", "overexposed"), GDK_KEY_o, 0);
+
+  // brush size +/-
+  dt_accel_register_view(self, NC_("accel", "brush larger"), GDK_KEY_bracketright, 0);
+  dt_accel_register_view(self, NC_("accel", "brush smaller"), GDK_KEY_bracketleft, 0);
 }
 
 void connect_key_accels(dt_view_t *self)
@@ -1706,6 +1731,12 @@ void connect_key_accels(dt_view_t *self)
   // toggle overexposure indication
   closure = g_cclosure_new(G_CALLBACK(_overexposed_toggle_callback), (gpointer)self->data, NULL);
   dt_accel_connect_view(self, "overexposed", closure);
+
+  // brush size +/-
+  closure = g_cclosure_new(G_CALLBACK(_brush_size_up_callback), (gpointer)self->data, NULL);
+  dt_accel_connect_view(self, "brush larger", closure);
+  closure = g_cclosure_new(G_CALLBACK(_brush_size_down_callback), (gpointer)self->data, NULL);
+  dt_accel_connect_view(self, "brush smaller", closure);
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
