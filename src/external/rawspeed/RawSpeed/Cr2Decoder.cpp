@@ -6,6 +6,7 @@
     RawSpeed - RAW file decoder.
 
     Copyright (C) 2009-2014 Klaus Post
+    Copyright (C) 2015 Roman Lebedev
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Lesser General Public
@@ -50,6 +51,60 @@ RawImage Cr2Decoder::decodeRawInternal() {
   mRaw->isCFA = true;
   vector<Cr2Slice> slices;
   int completeH = 0;
+
+  // Fetch the white balance
+  if (mRootIFD->hasEntryRecursive(CANONCOLORDATA)) {
+    TiffEntry *color_data = mRootIFD->getEntryRecursive(CANONCOLORDATA);
+
+    // this entry is a big table, and different cameras store used WB in
+    // different parts, so find the offset
+    int offset = 0;
+    switch (color_data->count)
+    {
+      case 582: /* Canon EOS 20D, Canon EOS 350D */
+        offset += 50;
+      break;
+      case 653: /* Canon EOS-1D Mk II, Canon 1Ds Mk II */
+        offset += 68;
+      break;
+      case 674: /* Canon EOS-1D Mk III */
+      case 692: /* Canon EOS 40D */
+      case 702: /* Canon EOS-1Ds Mk III */
+      case 796: /* Canon EOS-1D Mk II N, Canon EOS 5D, Canon EOS 30D, Canon EOS 400D */
+      case 1227: /* Canon EOS 450D, Canon EOS 1000D */
+      case 1250: /* Canon EOS 5D Mk II, Canon EOS 50D */
+      case 1273: /* Canon EOS 600D */
+      case 1312: /* Canon EOS 5D Mk III, Canon EOS 700D */
+      case 1313: /* Canon EOS 70D */
+      case 1316: /* Canon EOS-1D X */
+      case 1337: /* Canon EOS-1D Mk IV, Canon EOS 7D */
+      case 1338: /* Canon EOS 550D */
+      case 1346: /* Canon EOS 60D, Canon EOS 1100D */
+        offset += 126;
+      break;
+      default:
+        std::cerr << "CR2 Decoder: CanonColorData has unsupported count of values: %d" << color_data->count << std::endl;
+      break;
+    }
+
+    if (color_data->type == TIFF_SHORT) {
+      const ushort16* data = color_data->getShortArray();
+
+      // RGGB !
+      float cam_mul[4];
+      for(int c = 0; c < 4; c++)
+      {
+        cam_mul[c] = (float) data[offset/2 + c];
+      }
+
+      const float green = (cam_mul[1] + cam_mul[2]) / 2.0f;
+      mRaw->metadata.wbCoeffs[0] = cam_mul[0] / green;
+      mRaw->metadata.wbCoeffs[1] = 1.0f;
+      mRaw->metadata.wbCoeffs[2] = cam_mul[3] / green;
+    } else {
+      std::cerr << "CR2 Decoder: CanonColorData has to be SHORT, " << color_data->type << " found." << std::endl;
+    }
+  }
 
   try {
     TiffEntry *offsets = raw->getEntry(STRIPOFFSETS);
@@ -208,11 +263,11 @@ int Cr2Decoder::getHue() {
 
 // Interpolate and convert sRaw data.
 void Cr2Decoder::sRawInterpolate() {
-  vector<TiffIFD*> data = mRootIFD->getIFDsWithTag((TiffTag)0x4001);
+  vector<TiffIFD*> data = mRootIFD->getIFDsWithTag(CANONCOLORDATA);
   if (data.empty())
     ThrowRDE("CR2 sRaw: Unable to locate WB info.");
 
-  const ushort16 *wb_data = data[0]->getEntry((TiffTag)0x4001)->getShortArray();
+  const ushort16 *wb_data = data[0]->getEntry(CANONCOLORDATA)->getShortArray();
 
   // Offset to sRaw coefficients used to reconstruct uncorrected RGB data.
   wb_data = &wb_data[4+(126+22)/2];
