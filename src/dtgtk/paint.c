@@ -959,13 +959,13 @@ void dtgtk_cairo_paint_preferences(cairo_t *cr, gint x, gint y, gint w, gint h, 
   cairo_translate(cr, x + (w / 2.0) - (s / 2.0), y + (h / 2.0) - (s / 2.0));
   cairo_scale(cr, s, s);
 
-  cairo_set_line_width(cr, .3);
-  cairo_arc(cr, 0.5, 0.5, 0.4, 0., 2.0f * M_PI);
+  cairo_set_line_width(cr, .45);
+  cairo_arc(cr, 0.5, 0.5, 0.7, 0., 2.0f * M_PI);
   cairo_stroke(cr);
 
-  double dashes = .21;
+  double dashes = .35;
   cairo_set_dash(cr, &dashes, 1, 0);
-  cairo_arc(cr, 0.5, 0.5, 0.55, 0., 2.0f * M_PI);
+  cairo_arc(cr, 0.5, 0.5, 0.9, 0., 2.0f * M_PI);
   cairo_stroke(cr);
 }
 
