@@ -25,6 +25,9 @@
     http://www.klauspost.com
 */
 
+#define get4LE(data,pos) ((((uint32)(data)[pos+3]) << 24) | (((uint32)(data)[pos+2]) << 16) | \
+                          (((uint32)(data)[pos+1]) << 8) | ((uint32)(data)[pos]))
+
 namespace RawSpeed {
 
 NefDecoder::NefDecoder(TiffIFD *rootIFD, FileMap* file) :
@@ -39,19 +42,6 @@ NefDecoder::~NefDecoder(void) {
 }
 
 RawImage NefDecoder::decodeRawInternal() {
-  // Read the whitebalance on some cameras
-  vector<TiffIFD*> note = mRootIFD->getIFDsWithTag((TiffTag)12);
-  if (!note.empty()) {
-    TiffEntry* wb = note[0]->getEntry((TiffTag)12);
-    if (wb->count != 4 || wb->type != TIFF_RATIONAL)
-      ThrowRDE("NEF Decoder: Whitebalance has unknown count or type");
-
-    const uint32* wba = wb->getIntArray();
-    mRaw->metadata.wbCoeffs[0] = wba[0]*1.0f / wba[1];
-    mRaw->metadata.wbCoeffs[1] = wba[4]*1.0f / wba[5];
-    mRaw->metadata.wbCoeffs[2] = wba[2]*1.0f / wba[3];
-  }
-
   vector<TiffIFD*> data = mRootIFD->getIFDsWithTag(CFAPATTERN);
 
   if (data.empty())
@@ -444,6 +434,69 @@ void NefDecoder::decodeMetaDataInternal(CameraMetaData *meta) {
   if (mRootIFD->hasEntryRecursive(ISOSPEEDRATINGS))
     iso = mRootIFD->getEntryRecursive(ISOSPEEDRATINGS)->getInt();
 
+  // Read the whitebalance
+  vector<TiffIFD*> note = mRootIFD->getIFDsWithTag((TiffTag)12);
+  if (!note.empty()) {
+    TiffEntry *wb = note[0]->getEntry((TiffTag)12);
+    if (wb->count == 4 && wb->type == TIFF_RATIONAL) {
+      const uint32* wba = wb->getIntArray();
+      mRaw->metadata.wbCoeffs[0] = wba[0]*1.0f / wba[1];
+      mRaw->metadata.wbCoeffs[1] = wba[4]*1.0f / wba[5];
+      mRaw->metadata.wbCoeffs[2] = wba[2]*1.0f / wba[3];
+      if (mRaw->metadata.wbCoeffs[1] == 0)
+        mRaw->metadata.wbCoeffs[1] = 1.0f;
+    }
+  } else if (mRootIFD->hasEntryRecursive((TiffTag)0x0097)) {
+    TiffEntry *wb = mRootIFD->getEntryRecursive((TiffTag)0x0097);
+    if (wb->count > 4) {
+      const uchar8 *data = wb->getData();
+      uint32 version = 0;
+      for (uint32 i=0; i<4; i++)
+        version = (version << 4) + data[i]-'0';
+      switch(version) {
+        case 0x100:
+          if (wb->count >= 80 && wb->type == TIFF_UNDEFINED) {
+            const ushort16 *tmp = wb->getShortArray();
+            mRaw->metadata.wbCoeffs[0] = (float) tmp[36];
+            mRaw->metadata.wbCoeffs[2] = (float) tmp[37];
+            mRaw->metadata.wbCoeffs[1] = (float) tmp[38];
+          }
+          break;
+        case 0x103:
+          if (wb->count >= 26 && wb->type == TIFF_UNDEFINED) {
+            const ushort16 *tmp = wb->getShortArray();
+            mRaw->metadata.wbCoeffs[0] = (float) tmp[10];
+            mRaw->metadata.wbCoeffs[1] = (float) tmp[11];
+            mRaw->metadata.wbCoeffs[2] = (float) tmp[12];
+          }
+          break;
+      }
+    }
+  } else if (mRootIFD->hasEntryRecursive((TiffTag)0x0014)) {
+    TiffEntry *wb = mRootIFD->getEntryRecursive((TiffTag)0x0014);
+    uchar8 *tmp = (uchar8 *) wb->getData();
+    if (wb->count == 2560 && wb->type == TIFF_UNDEFINED) {
+      uint32 red = ((uint32) tmp[1249]) | (((uint32) tmp[1248]) <<8);
+      uint32 blue = ((uint32) tmp[1251]) | (((uint32) tmp[1250]) <<8);
+      mRaw->metadata.wbCoeffs[0] = (float) red / 256.0f;
+      mRaw->metadata.wbCoeffs[1] = 1.0f;
+      mRaw->metadata.wbCoeffs[2] = (float) blue / 256.0f;
+    } else if (!strncmp((char *)tmp,"NRW ",4)) {
+      uint32 offset = 0;
+      if (strncmp((char *)tmp+4,"0100",4) && wb->count > 72)
+        offset = 56;
+      else if (wb->count > 1572)
+        offset = 1556;
+
+      if (offset) {
+        tmp += offset;
+        mRaw->metadata.wbCoeffs[0] = (float) (get4LE(tmp,0) << 2);
+        mRaw->metadata.wbCoeffs[1] = (float) (get4LE(tmp,4) + get4LE(tmp,8));
+        mRaw->metadata.wbCoeffs[2] = (float) (get4LE(tmp,12) << 2);
+      }
+    }
+  }
+
   string mode = getMode();
   string extended_mode = getExtendedMode(mode);
   if (meta->hasCamera(make, model, extended_mode)) {
@@ -459,7 +512,6 @@ void NefDecoder::decodeMetaDataInternal(CameraMetaData *meta) {
   if (black >= 0 && hints.find(string("nikon_override_auto_black")) == hints.end())
     mRaw->blackLevel = black;
 }
-
 
 // Curve measured by libraw: https://github.com/LibRaw/LibRaw/blob/master/src/libraw_cxx.cpp#L1092-L1118
 __inline float curveValue(float v) {
