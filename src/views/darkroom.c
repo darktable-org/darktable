@@ -178,7 +178,10 @@ void expose(
     surface = dt_cairo_image_surface_create_for_data(dev->pipe->backbuf, CAIRO_FORMAT_RGB24, wd, ht, stride);
     wd /= darktable.gui->ppd;
     ht /= darktable.gui->ppd;
-    cairo_set_source_rgb(cr, .2, .2, .2);
+    if(dev->full_preview)
+      cairo_set_source_rgb(cr, .1, .1, .1);
+    else
+      cairo_set_source_rgb(cr, .2, .2, .2);
     cairo_paint(cr);
     cairo_translate(cr, .5f * (width - wd), .5f * (height - ht));
     if(closeup)
