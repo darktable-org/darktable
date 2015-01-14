@@ -40,16 +40,6 @@ int MrwDecoder::isMRW(FileMap* input) {
   const uchar8* data = input->getData(0);
   return data[0] == 0x00 && data[1] == 0x4D && data[2] == 0x52 && data[3] == 0x4D;
 }
-
-#define get2BE(data,pos) ((((ushort16)(data)[pos]) << 8) | ((ushort16)(data)[pos+1]))
-
-#define get4BE(data,pos) ((((uint32)(data)[pos]) << 24) | (((uint32)(data)[pos+1]) << 16) | \
-                          (((uint32)(data)[pos+2]) << 8) | ((uint32)(data)[pos+3]))
-
-#define get8LE(data,pos) ((((uint64)(data)[pos+7]) << 56) | (((uint64)(data)[pos+6]) << 48) | \
-                          (((uint64)(data)[pos+5]) << 40) | (((uint64)(data)[pos+4]) << 32) | \
-                          (((uint64)(data)[pos+3]) << 24) | (((uint64)(data)[pos+2]) << 16) | \
-                          (((uint64)(data)[pos+1]) << 8) | ((uint64)(data)[pos]))
                         
 /* This table includes all cameras that have ever had official MRW raw support.
    There were also a few compacts (G400, G500, G530 and G600) that had a raw

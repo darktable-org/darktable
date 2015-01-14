@@ -25,10 +25,6 @@
     http://www.klauspost.com
 */
 
-#define get4LE(data,pos) ((((uint32)(data)[pos+3]) << 24) | (((uint32)(data)[pos+2]) << 16) | \
-                          (((uint32)(data)[pos+1]) << 8) | ((uint32)(data)[pos]))
-#define get2BE(data,pos) ((((ushort16)(data)[pos]) << 8) | ((ushort16)(data)[pos+1]))
-
 namespace RawSpeed {
 
 NefDecoder::NefDecoder(TiffIFD *rootIFD, FileMap* file) :
