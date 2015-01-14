@@ -113,6 +113,45 @@ RawImage Cr2Decoder::decodeRawInternal() {
     } else {
       std::cerr << "CR2 Decoder: CanonColorData has to be SHORT, " << color_data->type << " found." << std::endl;
     }
+  } else {
+    vector<TiffIFD*> data = mRootIFD->getIFDsWithTag(MODEL);
+
+    /*
+     * do not check that the entries exist, checkSupportInternal() has already done that.
+     * FIXME: are they stored somewhere except IFD at this point already?
+     */
+
+    string make = data[0]->getEntry(MAKE)->getString();
+    string model = data[0]->getEntry(MODEL)->getString();
+    if(make.compare("Canon") == 0 && model.compare("Canon PowerShot G9") == 0 &&
+        mRootIFD->hasEntryRecursive(CANONSHOTINFO) &&
+        mRootIFD->hasEntryRecursive(CANONPOWERSHOTG9WB))
+    {
+
+      TiffEntry *shot_info = mRootIFD->getEntryRecursive(CANONSHOTINFO);
+      ushort16 wb_index = shot_info->getShortArray()[14/2];
+
+      /* Canon PowerShot G9 */
+      TiffEntry *g9_wb = mRootIFD->getEntryRecursive(CANONPOWERSHOTG9WB);
+      if (g9_wb->type == TIFF_BYTE) {
+        int wb_offset = (wb_index < 18) ? "012347800000005896"[wb_index]-'0' : 0;
+        wb_offset = wb_offset*32 + 8;
+
+        // GRBG !
+        float cam_mul[4];
+        for(int c = 0; c < 4; c++)
+        {
+          cam_mul[c] = (float) get4LE(g9_wb->getData(), wb_offset + 4*c);
+        }
+
+        const float green = (cam_mul[0] + cam_mul[3]) / 2.0f;
+        mRaw->metadata.wbCoeffs[0] = cam_mul[1] / green;
+        mRaw->metadata.wbCoeffs[1] = 1.0f;
+        mRaw->metadata.wbCoeffs[2] = cam_mul[2] / green;
+      } else {
+        std::cerr << "CR2 Decoder: CANONPOWERSHOTG9WB has to be BYTE, " << g9_wb->type << " found." << std::endl;
+      }
+    }
   }
 
   try {
@@ -211,7 +250,7 @@ RawImage Cr2Decoder::decodeRawInternal() {
 void Cr2Decoder::checkSupportInternal(CameraMetaData *meta) {
   vector<TiffIFD*> data = mRootIFD->getIFDsWithTag(MODEL);
   if (data.empty())
-    ThrowRDE("CR2 Support check: Model name found");
+    ThrowRDE("CR2 Support check: Model name not found");
   if (!data[0]->hasEntry(MAKE))
     ThrowRDE("CR2 Support: Make name not found");
   string make = data[0]->getEntry(MAKE)->getString();
@@ -267,7 +306,7 @@ int Cr2Decoder::getHue() {
     return ((mRaw->metadata.subsampling.y * mRaw->metadata.subsampling.x) - 1) >> 1;
 
   return (mRaw->metadata.subsampling.y * mRaw->metadata.subsampling.x);
-    
+
 }
 
 // Interpolate and convert sRaw data.

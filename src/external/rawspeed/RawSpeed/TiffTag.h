@@ -31,6 +31,8 @@ namespace RawSpeed {
 typedef enum {
   INTEROPERABILITYINDEX  = 0x0001,
   INTEROPERABILITYVERSION         = 0x0002,
+  CANONSHOTINFO = 0x0004,
+  CANONPOWERSHOTG9WB = 0x0029,
   PANASONIC_ISO_SPEED = 23,
   NEWSUBFILETYPE                  = 0x00FE,
   SUBFILETYPE                     = 0x00FF,
