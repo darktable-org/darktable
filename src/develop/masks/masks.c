@@ -1254,10 +1254,9 @@ void dt_masks_set_edit_mode(struct dt_iop_module_t *module, dt_masks_edit_mode_t
     grp->formid = 0;
     dt_masks_group_ungroup(grp, form);
   }
-  if(!(module->flags() & IOP_FLAGS_NO_MASKS))
-  {
-    bd->masks_shown = value;
-  }
+
+  if (bd) bd->masks_shown = value;
+
   dt_masks_change_form_gui(grp);
   darktable.develop->form_gui->edit_mode = value;
   if(value && form)

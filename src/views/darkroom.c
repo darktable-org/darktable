@@ -182,7 +182,10 @@ void expose(
     surface = dt_cairo_image_surface_create_for_data(dev->pipe->backbuf, CAIRO_FORMAT_RGB24, wd, ht, stride);
     wd /= darktable.gui->ppd;
     ht /= darktable.gui->ppd;
-    cairo_set_source_rgb(cr, .2, .2, .2);
+    if(dev->full_preview)
+      cairo_set_source_rgb(cr, .1, .1, .1);
+    else
+      cairo_set_source_rgb(cr, .2, .2, .2);
     cairo_paint(cr);
     cairo_translate(cr, .5f * (width - wd), .5f * (height - ht));
     if(closeup)
@@ -238,6 +241,9 @@ void expose(
     cairo_set_source_surface(cri, image_surface, 0, 0);
     cairo_paint(cri);
   }
+
+  /* if we are in full preview mode, we don"t want anything else than the image */
+  if(dev->full_preview) return;
 
   /* check if we should create a snapshot of view */
   if(darktable.develop->proxy.snapshot.request && !darktable.develop->image_loading)
@@ -1661,9 +1667,72 @@ void border_scrolled(dt_view_t *view, double x, double y, int which, int up)
   dt_control_queue_redraw();
 }
 
+int key_released(dt_view_t *self, guint key, guint state)
+{
+  dt_control_accels_t *accels = &darktable.control->accels;
+  dt_develop_t *lib = (dt_develop_t *)self->data;
+
+  if(!darktable.control->key_accelerators_on)
+    return 0;
+
+  if(key == accels->darkroom_preview.accel_key && state == accels->darkroom_preview.accel_mods && lib->full_preview)
+  {
+    dt_ui_restore_panels(darktable.gui->ui);
+    dt_control_set_dev_zoom(lib->full_preview_last_zoom);
+    dt_control_set_dev_zoom_x(lib->full_preview_last_zoom_x);
+    dt_control_set_dev_zoom_y(lib->full_preview_last_zoom_y);
+    dt_control_set_dev_closeup(lib->full_preview_last_closeup);
+    lib->full_preview = FALSE;
+    dt_iop_request_focus(lib->full_preview_last_module);
+    dt_masks_set_edit_mode(darktable.develop->gui_module, lib->full_preview_masks_state);
+    dt_dev_invalidate(darktable.develop);
+    dt_control_queue_redraw_center();
+  }
+
+  return 1;
+}
 
 int key_pressed(dt_view_t *self, guint key, guint state)
 {
+  dt_control_accels_t *accels = &darktable.control->accels;
+  dt_develop_t *lib = (dt_develop_t *)self->data;
+
+  if(!darktable.control->key_accelerators_on)
+    return 0;
+
+  if(key == accels->darkroom_preview.accel_key && state == accels->darkroom_preview.accel_mods)
+  {
+    if(!lib->full_preview)
+    {
+      lib->full_preview = TRUE;
+      // we hide all panels
+      for(int k = 0; k < DT_UI_PANEL_SIZE; k++)
+        dt_ui_panel_show(darktable.gui->ui, k, FALSE, FALSE);
+      // we remember the masks edit state
+      if(darktable.develop->gui_module)
+      {
+        dt_iop_gui_blend_data_t *bd = (dt_iop_gui_blend_data_t *)darktable.develop->gui_module->blend_data;
+        if (bd) lib->full_preview_masks_state = bd->masks_shown;
+      }
+      // we set the zoom values to "fit"
+      lib->full_preview_last_zoom = dt_control_get_dev_zoom();
+      lib->full_preview_last_zoom_x = dt_control_get_dev_zoom_x();
+      lib->full_preview_last_zoom_y = dt_control_get_dev_zoom_y();
+      lib->full_preview_last_closeup = dt_control_get_dev_closeup();
+      dt_control_set_dev_zoom(DT_ZOOM_FIT);
+      dt_control_set_dev_zoom_x(0);
+      dt_control_set_dev_zoom_y(0);
+      dt_control_set_dev_closeup(0);
+      // we quit the active iop if any
+      lib->full_preview_last_module = darktable.develop->gui_module;
+      dt_iop_request_focus(NULL);
+      // and we redraw all
+      dt_dev_invalidate(darktable.develop);
+      dt_control_queue_redraw_center();
+    }
+    else
+      return 0;
+  }
   return 1;
 }
 
@@ -1697,6 +1766,9 @@ void init_key_accels(dt_view_t *self)
   // brush size +/-
   dt_accel_register_view(self, NC_("accel", "brush larger"), GDK_KEY_bracketright, 0);
   dt_accel_register_view(self, NC_("accel", "brush smaller"), GDK_KEY_bracketleft, 0);
+
+  // fullscreen view
+  dt_accel_register_view(self, NC_("accel", "full preview"), GDK_KEY_z, 0);
 }
 
 void connect_key_accels(dt_view_t *self)
