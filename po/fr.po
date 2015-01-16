@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: darktable 1.3\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2015-01-10 10:39+0100\n"
-"PO-Revision-Date: 2015-01-11 15:07+0100\n"
+"PO-Revision-Date: 2015-01-16 19:03+0100\n"
 "Last-Translator: Pascal Obry <pascal@obry.net>\n"
 "Language-Team: \n"
 "Language: fr_FR\n"
@@ -6677,7 +6677,7 @@ msgstr "fourchette"
 
 #: ../src/libs/camera.c:427
 msgid "bkt. steps"
-msgstr "pas de fourchette"
+msgstr "pas de fourch."
 
 #: ../src/libs/camera.c:463
 msgid "capture image(s)"
@@ -6737,7 +6737,7 @@ msgstr "programme"
 
 #: ../src/libs/camera.c:503 ../src/libs/camera.c:505
 msgid "focus mode"
-msgstr "mode de focus"
+msgstr "mode focus"
 
 #: ../src/libs/camera.c:516
 msgid "shutterspeed2"
