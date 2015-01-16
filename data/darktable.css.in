@@ -416,6 +416,11 @@ GtkDialog GtkEventBox *
    background-color: transparent;
 }
 
+GtkDialog GtkTreeView *:selected
+{
+   background-color: @selected_bg_color;
+}
+
 /* preferences notebook */
 
 #preferences_notebook GtkGrid *
