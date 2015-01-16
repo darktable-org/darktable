@@ -24,8 +24,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 1.3\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-01-14 00:06+0100\n"
-"PO-Revision-Date: 2015-01-14 00:08+0100\n"
+"POT-Creation-Date: 2015-01-16 23:33+0100\n"
+"PO-Revision-Date: 2015-01-16 23:48+0100\n"
 "Last-Translator: Richard Levitte <richard@levitte.org>\n"
 "Language-Team: \n"
 "Language: sv\n"
@@ -887,14 +887,14 @@ msgstr ""
 #: ../src/common/history.c:361 ../src/common/history.c:364
 #: ../src/common/history.c:379 ../src/common/styles.c:673
 #: ../src/common/styles.c:677 ../src/develop/blend_gui.c:1827
-#: ../src/develop/develop.c:1227 ../src/libs/live_view.c:409
+#: ../src/develop/develop.c:1228 ../src/libs/live_view.c:409
 msgid "on"
 msgstr "på"
 
 #: ../src/common/history.c:361 ../src/common/history.c:364
 #: ../src/common/history.c:379 ../src/common/styles.c:673
 #: ../src/common/styles.c:677 ../src/develop/blend_gui.c:1606
-#: ../src/develop/blend_gui.c:1824 ../src/develop/develop.c:1227
+#: ../src/develop/blend_gui.c:1824 ../src/develop/develop.c:1228
 #: ../src/imageio/format/exr.cc:283 ../src/imageio/format/j2k.c:671
 #: ../src/iop/colorin.c:1258 ../src/iop/demosaic.c:2179
 #: ../src/iop/vignette.c:1143 ../src/libs/history.c:153
@@ -1008,7 +1008,7 @@ msgstr "skapade stilen '%s'"
 
 #. fail :(
 #: ../src/common/styles.c:465 ../src/common/styles.c:482
-#: ../src/views/darkroom.c:418
+#: ../src/views/darkroom.c:424
 msgid "no image selected!"
 msgstr "inga bilder valda!"
 
@@ -1225,7 +1225,7 @@ msgid_plural "exporting %d images to %s"
 msgstr[0] "exporterar %d bild till %s"
 msgstr[1] "exporterar %d bilder till %s"
 
-#: ../src/control/jobs/control_jobs.c:975 ../src/views/darkroom.c:431
+#: ../src/control/jobs/control_jobs.c:975 ../src/views/darkroom.c:437
 #, c-format
 msgid "image `%s' is currently unavailable"
 msgstr "`%s' är inte tillgänglig"
@@ -1775,7 +1775,7 @@ msgstr "visningsmask"
 msgid "temporarily switch off blend mask. only for module in focus"
 msgstr "stäng av markeringen tillfälligtvis.  enbart för den aktiva modulen."
 
-#: ../src/develop/develop.c:1040
+#: ../src/develop/develop.c:1041
 #, c-format
 msgid "%s: module `%s' version mismatch: %d != %d"
 msgstr "%s: modul `%s' skiljer i version: %d != %d"
@@ -1978,11 +1978,11 @@ msgstr "kopia av %"
 msgid "%s: mask version mismatch: %d != %d"
 msgstr "%s: maskering skiljer i version: %d != %d"
 
-#: ../src/develop/masks/masks.c:1497 ../src/libs/masks.c:1024
+#: ../src/develop/masks/masks.c:1496 ../src/libs/masks.c:1024
 msgid "add existing shape"
 msgstr "lägg till existerande form"
 
-#: ../src/develop/masks/masks.c:1524
+#: ../src/develop/masks/masks.c:1523
 msgid "use same shapes as"
 msgstr "använd samma form som"
 
@@ -2105,7 +2105,7 @@ msgstr "kvällssol"
 msgid "underwater"
 msgstr "under vatten"
 
-#: ../src/external/wb_presets.c:73 ../src/views/darkroom.c:1145
+#: ../src/external/wb_presets.c:73 ../src/views/darkroom.c:1151
 msgid "black & white"
 msgstr "svart & vitt"
 
@@ -2201,33 +2201,33 @@ msgid "import"
 msgstr "importera"
 
 #. Top info
-#: ../src/gui/camera_import_dialog.c:217
+#: ../src/gui/camera_import_dialog.c:218
 msgid "please wait while prefetching thumbnails of images from camera..."
 msgstr "var god vänta medans förhandsvisningsbilder hämtas från kameran."
 
-#: ../src/gui/camera_import_dialog.c:224 ../src/libs/session.c:97
+#: ../src/gui/camera_import_dialog.c:225 ../src/libs/session.c:97
 msgid "jobcode"
 msgstr "jobbkod"
 
-#: ../src/gui/camera_import_dialog.c:238
+#: ../src/gui/camera_import_dialog.c:239
 msgid "thumbnail"
 msgstr "miniatyr"
 
-#: ../src/gui/camera_import_dialog.c:242
+#: ../src/gui/camera_import_dialog.c:243
 msgid "storage file"
 msgstr "lagringsfil"
 
 #. general settings
-#: ../src/gui/camera_import_dialog.c:261
+#: ../src/gui/camera_import_dialog.c:262
 msgid "general"
 msgstr "generella"
 
 #. ignoring of jpegs. hack while we don't handle raw+jpeg in the same directories.
-#: ../src/gui/camera_import_dialog.c:264 ../src/libs/import.c:403
+#: ../src/gui/camera_import_dialog.c:265 ../src/libs/import.c:403
 msgid "ignore JPEG files"
 msgstr "ignorera JPEG-bilder"
 
-#: ../src/gui/camera_import_dialog.c:266 ../src/libs/import.c:404
+#: ../src/gui/camera_import_dialog.c:267 ../src/libs/import.c:404
 msgid ""
 "do not load files with an extension of .jpg or .jpeg. this can be useful "
 "when there are raw+JPEG in a directory."
@@ -2235,11 +2235,11 @@ msgstr ""
 "importerar inte bilder med filändelse .jpg eller .jpeg. detta är användbart "
 "om du har raw+JPEG bilder i katalogerna."
 
-#: ../src/gui/camera_import_dialog.c:276
+#: ../src/gui/camera_import_dialog.c:277
 msgid "override today's date"
 msgstr "överskrida dagens datum"
 
-#: ../src/gui/camera_import_dialog.c:279
+#: ../src/gui/camera_import_dialog.c:280
 msgid ""
 "check this, if you want to override the timestamp used when expanding "
 "variables:\n"
@@ -2251,82 +2251,82 @@ msgstr ""
 "$(YEAR), $(MONTH), $(DAY),\n"
 "$(HOUR), $(MINUTE), $(SECONDS)"
 
-#: ../src/gui/camera_import_dialog.c:296
+#: ../src/gui/camera_import_dialog.c:297
 msgid "images"
 msgstr "bilder"
 
-#: ../src/gui/camera_import_dialog.c:297
+#: ../src/gui/camera_import_dialog.c:298
 msgid "settings"
 msgstr "inställningar"
 
-#: ../src/gui/camera_import_dialog.c:466
+#: ../src/gui/camera_import_dialog.c:467
 msgid ""
 "select the images from the list below that you want to import into a new "
 "filmroll"
 msgstr ""
 "markera de bilder i listan nedan som du vill importera till en ny filmrulle"
 
-#: ../src/gui/camera_import_dialog.c:516
+#: ../src/gui/camera_import_dialog.c:517
 msgid "please use YYYY-MM-DD format for date override"
 msgstr "använd datumformatet YYYY-MM-DD för egna datum"
 
 #. register keys for view switching
-#: ../src/gui/gtk.c:850
+#: ../src/gui/gtk.c:853
 msgctxt "accel"
 msgid "capture view"
 msgstr "tjudring"
 
-#: ../src/gui/gtk.c:851
+#: ../src/gui/gtk.c:854
 msgctxt "accel"
 msgid "lighttable view"
 msgstr "ljusbord"
 
-#: ../src/gui/gtk.c:852
+#: ../src/gui/gtk.c:855
 msgctxt "accel"
 msgid "darkroom view"
 msgstr "mörkrum"
 
-#: ../src/gui/gtk.c:853
+#: ../src/gui/gtk.c:856
 msgctxt "accel"
 msgid "map view"
 msgstr "karta"
 
-#: ../src/gui/gtk.c:854
+#: ../src/gui/gtk.c:857
 msgctxt "accel"
 msgid "slideshow view"
 msgstr "bildspel"
 
 #. register ctrl-q to quit:
-#: ../src/gui/gtk.c:875
+#: ../src/gui/gtk.c:878
 msgctxt "accel"
 msgid "quit"
 msgstr "avsluta"
 
 #. Full-screen accelerators
-#: ../src/gui/gtk.c:880
+#: ../src/gui/gtk.c:883
 msgctxt "accel"
 msgid "toggle fullscreen"
 msgstr "växla fullskärm"
 
-#: ../src/gui/gtk.c:881
+#: ../src/gui/gtk.c:884
 msgctxt "accel"
 msgid "leave fullscreen"
 msgstr "lämna fullskärm"
 
 #. Side-border hide/show
-#: ../src/gui/gtk.c:889
+#: ../src/gui/gtk.c:892
 msgctxt "accel"
 msgid "toggle side borders"
 msgstr "växla visning av paneler"
 
 #. toggle view of header
-#: ../src/gui/gtk.c:892
+#: ../src/gui/gtk.c:895
 msgctxt "accel"
 msgid "toggle header"
 msgstr "växla visning av huvud"
 
 #. View-switch
-#: ../src/gui/gtk.c:895
+#: ../src/gui/gtk.c:898
 msgctxt "accel"
 msgid "switch view"
 msgstr "byt vy"
@@ -7137,7 +7137,7 @@ msgstr "exportera med nuvarande inställningar (ctrl-e)"
 
 #. enable shortcut to export with current export settings:
 #: ../src/libs/export.c:1097 ../src/libs/styles.c:66
-#: ../src/views/darkroom.c:1688
+#: ../src/views/darkroom.c:1757
 msgctxt "accel"
 msgid "export"
 msgstr "exportera"
@@ -8674,28 +8674,28 @@ msgstr "dubbelklicka för att återställa till `%f'"
 msgid "darkroom"
 msgstr "mörkrum"
 
-#: ../src/views/darkroom.c:856
+#: ../src/views/darkroom.c:862
 msgid "no userdefined presets for favorite modules were found"
 msgstr "inga förinställningar skapad av användare för favorit moduler hittades"
 
-#: ../src/views/darkroom.c:861
+#: ../src/views/darkroom.c:867
 #, c-format
 msgid "applied style `%s' on current image"
 msgstr "applicerar stil `%s' på aktiv bild"
 
-#: ../src/views/darkroom.c:918
+#: ../src/views/darkroom.c:924
 msgid "no styles have been created yet"
 msgstr "det finns inga stilar skapade ännu"
 
-#: ../src/views/darkroom.c:1084
+#: ../src/views/darkroom.c:1090
 msgid "quick access to presets of your favorites"
 msgstr "snabbtillgång av förinställningar av dina favoriter"
 
-#: ../src/views/darkroom.c:1093
+#: ../src/views/darkroom.c:1099
 msgid "quick access for applying any of your styles"
 msgstr "snabbtillgång för applicering av dina stilar"
 
-#: ../src/views/darkroom.c:1103
+#: ../src/views/darkroom.c:1109
 msgid ""
 "toggle over/under exposed indication\n"
 "right click for options"
@@ -8703,89 +8703,95 @@ msgstr ""
 "växla visning av indikation på över-/underexponering\n"
 "höger-klicka för alternativ"
 
-#: ../src/views/darkroom.c:1144
+#: ../src/views/darkroom.c:1150
 msgid "color scheme"
 msgstr "färgschema"
 
-#: ../src/views/darkroom.c:1146
+#: ../src/views/darkroom.c:1152
 msgid "red & blue"
 msgstr "rött & blått"
 
-#: ../src/views/darkroom.c:1147
+#: ../src/views/darkroom.c:1153
 msgid "purple & green"
 msgstr "lila & grönt"
 
-#: ../src/views/darkroom.c:1149
+#: ../src/views/darkroom.c:1155
 msgid "select colors to indicate over/under exposure"
 msgstr "välj färger som ska ange över- och underexponering"
 
-#: ../src/views/darkroom.c:1159
+#: ../src/views/darkroom.c:1165
 msgid "lower threshold"
 msgstr "undre tröskel"
 
-#: ../src/views/darkroom.c:1160
+#: ../src/views/darkroom.c:1166
 msgid "threshold of what shall be considered underexposed"
 msgstr "tröskelvärde för underexponerade områden"
 
-#: ../src/views/darkroom.c:1169
+#: ../src/views/darkroom.c:1175
 msgid "upper threshold"
 msgstr "övre tröskel"
 
-#: ../src/views/darkroom.c:1170
+#: ../src/views/darkroom.c:1176
 msgid "threshold of what shall be considered overexposed"
 msgstr "tröskelvärde för överexponerade områden"
 
 #. Film strip shortcuts
 #. Setup key accelerators in capture view...
-#: ../src/views/darkroom.c:1680 ../src/views/map.c:715
+#: ../src/views/darkroom.c:1749 ../src/views/map.c:715
 #: ../src/views/tethering.c:391
 msgctxt "accel"
 msgid "toggle film strip"
 msgstr "växla visning av filmrulle"
 
 #. Zoom shortcuts
-#: ../src/views/darkroom.c:1683
+#: ../src/views/darkroom.c:1752
 msgctxt "accel"
 msgid "zoom close-up"
 msgstr "zoom close-up"
 
-#: ../src/views/darkroom.c:1684
+#: ../src/views/darkroom.c:1753
 msgctxt "accel"
 msgid "zoom fill"
 msgstr "fyll zoom"
 
-#: ../src/views/darkroom.c:1685
+#: ../src/views/darkroom.c:1754
 msgctxt "accel"
 msgid "zoom fit"
 msgstr "anpassa zoom"
 
 #. Shortcut to skip images
-#: ../src/views/darkroom.c:1691
+#: ../src/views/darkroom.c:1760
 msgctxt "accel"
 msgid "image forward"
 msgstr "nästa bild"
 
-#: ../src/views/darkroom.c:1692
+#: ../src/views/darkroom.c:1761
 msgctxt "accel"
 msgid "image back"
 msgstr "föregående bild"
 
 #. toggle overexposure indication
-#: ../src/views/darkroom.c:1695
+#: ../src/views/darkroom.c:1764
 msgctxt "accel"
 msgid "overexposed"
 msgstr "överexponerad"
 
 #. brush size +/-
-#: ../src/views/darkroom.c:1698
+#: ../src/views/darkroom.c:1767
 msgctxt "accel"
 msgid "brush larger"
 msgstr "större pensel"
 
-#: ../src/views/darkroom.c:1699
+#: ../src/views/darkroom.c:1768
 msgctxt "accel"
 msgid "brush smaller"
 msgstr "mindre pensel"
+
+#. fullscreen view
+#: ../src/views/darkroom.c:1771
+msgctxt "accel"
+msgid "full preview"
+msgstr "förhandsvisning i helskärm"
 
 #: ../src/views/lighttable.c:506 ../src/views/slideshow.c:330
 msgid "there are no images in this collection"
