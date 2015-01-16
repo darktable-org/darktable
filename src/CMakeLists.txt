@@ -43,6 +43,7 @@ FILE(GLOB SOURCE_FILES
   "common/interpolation.c"
   "common/metadata.c"
   "common/mipmap_cache.c"
+  "common/pdf.c"
   "common/styles.c"
   "common/selection.c"
   "common/tags.c"

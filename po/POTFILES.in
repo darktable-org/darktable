@@ -14,6 +14,7 @@ src/common/imageio.c
 src/common/import_session.c
 src/common/mipmap_cache.c
 src/common/noiseprofiles.h
+src/common/pdf.h
 src/common/points.h
 src/common/ratings.c
 src/common/styles.c
@@ -58,6 +59,7 @@ src/imageio/storage/facebook.c
 src/imageio/storage/flickr.c
 src/imageio/storage/gallery.c
 src/imageio/storage/latex.c
+src/imageio/storage/pdf.c
 src/imageio/storage/picasa.c
 src/iop/amaze_demosaic_RT.cc
 src/iop/atrous.c

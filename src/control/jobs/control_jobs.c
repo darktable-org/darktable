@@ -895,11 +895,25 @@ static int32_t dt_control_export_job_run(dt_job_t *job)
   g_assert(mstorage);
   dt_imageio_module_data_t *sdata = settings->sdata;
 
+  // get a thread-safe fdata struct (one jpeg struct per thread etc):
+  dt_imageio_module_data_t *fdata = mformat->get_params(mformat);
+
+  if(mstorage->initialize_store)
+  {
+    if(mstorage->initialize_store(mstorage, sdata, &mformat, &fdata, &t, settings->high_quality))
+    {
+      // bail out, something went wrong
+      g_list_free(t);
+      goto end;
+    }
+    mformat->set_params(mformat, fdata, mformat->params_size(mformat));
+  }
+
   // Get max dimensions...
   uint32_t w, h, fw, fh, sw, sh;
   fw = fh = sw = sh = 0;
-  mstorage->dimension(mstorage, &sw, &sh);
-  mformat->dimension(mformat, &fw, &fh);
+  mstorage->dimension(mstorage, sdata, &sw, &sh);
+  mformat->dimension(mformat, fdata, &fw, &fh);
 
   if(sw == 0 || fw == 0)
     w = sw > fw ? sw : fw;
@@ -911,14 +925,6 @@ static int32_t dt_control_export_job_run(dt_job_t *job)
   else
     h = sh < fh ? sh : fh;
 
-  if(mstorage->initialize_store)
-  {
-    /* get temporary format params */
-    dt_imageio_module_data_t *fdata = mformat->get_params(mformat);
-    mstorage->initialize_store(mstorage, sdata, mformat, fdata, &t, settings->high_quality);
-    mformat->set_params(mformat, fdata, mformat->params_size(mformat));
-    mformat->free_params(mformat, fdata);
-  }
   const guint total = g_list_length(t);
   dt_control_log(ngettext("exporting %d image..", "exporting %d images..", total), total);
   char message[512] = { 0 };
@@ -933,12 +939,9 @@ static int32_t dt_control_export_job_run(dt_job_t *job)
 
   double fraction = 0;
 
-  // get a thread-safe fdata struct (one jpeg struct per thread etc):
-  dt_imageio_module_data_t *fdata = mformat->get_params(mformat);
-  fdata->max_width = settings->max_width;
-  fdata->max_height = settings->max_height;
-  fdata->max_width = (w != 0 && fdata->max_width > w) ? w : fdata->max_width;
-  fdata->max_height = (h != 0 && fdata->max_height > h) ? h : fdata->max_height;
+  // set up the fdata struct
+  fdata->max_width = (settings->max_width != 0 && w != 0) ? MIN(w, settings->max_width) : MAX(w, settings->max_width);
+  fdata->max_height = (settings->max_height != 0 && h != 0) ? MIN(h, settings->max_height) : MAX(h, settings->max_height);
   g_strlcpy(fdata->style, settings->style, sizeof(fdata->style));
   fdata->style_append = settings->style_append;
   guint num = 0;
@@ -992,6 +995,8 @@ static int32_t dt_control_export_job_run(dt_job_t *job)
 
   dt_control_progress_destroy(control, progress);
   if(mstorage->finalize_store) mstorage->finalize_store(mstorage, sdata);
+
+end:
   mstorage->free_params(mstorage, sdata);
 
   // all threads free their fdata

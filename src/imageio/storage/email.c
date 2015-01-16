@@ -74,7 +74,7 @@ void *legacy_params(dt_imageio_module_storage_t *self, const void *const old_par
   return NULL;
 }
 
-int recommended_dimension(struct dt_imageio_module_storage_t *self, uint32_t *width, uint32_t *height)
+int recommended_dimension(struct dt_imageio_module_storage_t *self, dt_imageio_module_data_t *data, uint32_t *width, uint32_t *height)
 {
   *width = 1536;
   *height = 1536;

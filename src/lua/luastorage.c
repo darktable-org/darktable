@@ -57,8 +57,8 @@ static int default_supported_wrapper(struct dt_imageio_module_storage_t *self,
     return FALSE;
   }
 }
-static int default_dimension_wrapper(struct dt_imageio_module_storage_t *self, uint32_t *width,
-                                     uint32_t *height)
+static int default_dimension_wrapper(struct dt_imageio_module_storage_t *self, dt_imageio_module_data_t *data,
+                                     uint32_t *width, uint32_t *height)
 {
   return 0;
 };
@@ -135,8 +135,10 @@ static int store_wrapper(struct dt_imageio_module_storage_t *self, struct dt_ima
   g_free(filename);
   return result;
 }
-static void initialize_store_wrapper(struct dt_imageio_module_storage_t *self, dt_imageio_module_data_t *data,
-                                     dt_imageio_module_format_t *format, dt_imageio_module_data_t *fdata,
+
+// FIXME: return 0 on success and 1 on error!
+static int initialize_store_wrapper(struct dt_imageio_module_storage_t *self, dt_imageio_module_data_t *data,
+                                     dt_imageio_module_format_t **format, dt_imageio_module_data_t **fdata,
                                      GList **images, const gboolean high_quality)
 {
   dt_lua_lock();
@@ -150,11 +152,11 @@ static void initialize_store_wrapper(struct dt_imageio_module_storage_t *self, d
   {
     lua_pop(L, 3);
     dt_lua_unlock();
-    return;
+    return 1;
   }
 
   luaA_push_type(L, self->parameter_lua_type, data);
-  luaA_push_type(L, format->parameter_lua_type, fdata);
+  luaA_push_type(L, (*format)->parameter_lua_type, *fdata);
 
   GList *imgids = *images;
   lua_newtable(L);
@@ -196,6 +198,7 @@ static void initialize_store_wrapper(struct dt_imageio_module_storage_t *self, d
   }
   lua_pop(L, 3);
   dt_lua_unlock();
+  return 0;
 }
 static void finalize_store_wrapper(struct dt_imageio_module_storage_t *self, dt_imageio_module_data_t *data)
 {

@@ -61,7 +61,7 @@ static int width_member(lua_State *L)
   uint32_t width, height;
   width = 0;
   height = 0;
-  storage->dimension(storage, &width, &height);
+  storage->dimension(storage, NULL, &width, &height);
   lua_pushinteger(L, width);
   return 1;
 }
@@ -73,7 +73,7 @@ static int height_member(lua_State *L)
   uint32_t width, height;
   width = 0;
   height = 0;
-  storage->dimension(storage, &width, &height);
+  storage->dimension(storage, NULL, &width, &height);
   lua_pushinteger(L, height);
   return 1;
 }
@@ -85,7 +85,7 @@ static int recommended_width_member(lua_State *L)
   uint32_t width, height;
   width = dt_conf_get_int("plugins/lighttable/export/width");
   height = dt_conf_get_int("plugins/lighttable/export/height");
-  storage->recommended_dimension(storage, &width, &height);
+  storage->recommended_dimension(storage, NULL, &width, &height);
   lua_pushinteger(L, width);
   return 1;
 }
@@ -97,7 +97,7 @@ static int recommended_height_member(lua_State *L)
   uint32_t width, height;
   width = dt_conf_get_int("plugins/lighttable/export/width");
   height = dt_conf_get_int("plugins/lighttable/export/height");
-  storage->recommended_dimension(storage, &width, &height);
+  storage->recommended_dimension(storage, NULL, &width, &height);
   lua_pushinteger(L, height);
   return 1;
 }

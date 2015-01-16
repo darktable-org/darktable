@@ -82,17 +82,15 @@ uint32_t container()
 static void export_button_clicked(GtkWidget *widget, gpointer user_data)
 {
   char style[128] = { 0 };
+  dt_lib_module_t *self = (dt_lib_module_t *)user_data;
+  dt_lib_export_t *d = (dt_lib_export_t *)self->data;
 
   // Let's get the max dimension restriction if any...
   // TODO: pass the relevant values directly, not using the conf ...
   int max_width = dt_conf_get_int("plugins/lighttable/export/width");
   int max_height = dt_conf_get_int("plugins/lighttable/export/height");
-  char *format_name = dt_conf_get_string("plugins/lighttable/export/format_name");
-  char *storage_name = dt_conf_get_string("plugins/lighttable/export/storage_name");
-  int format_index = dt_imageio_get_index_of_format(dt_imageio_get_format_by_name(format_name));
-  int storage_index = dt_imageio_get_index_of_storage(dt_imageio_get_storage_by_name(storage_name));
-  g_free(format_name);
-  g_free(storage_name);
+  int format_index = dt_bauhaus_combobox_get(d->format);
+  int storage_index = dt_bauhaus_combobox_get(d->storage);
   gboolean high_quality = dt_conf_get_bool("plugins/lighttable/export/high_quality_processing");
   char *tmp = dt_conf_get_string("plugins/lighttable/export/style");
   gboolean style_append = dt_conf_get_bool("plugins/lighttable/export/style_append");
@@ -192,20 +190,22 @@ static void set_format_by_name(dt_lib_export_t *d, const char *name)
   GList *it = g_list_first(darktable.imageio->plugins_format);
   if(it != NULL) do
     {
-      if(strcmp(((dt_imageio_module_format_t *)it->data)->name(), name) == 0
-         || strcmp(((dt_imageio_module_format_t *)it->data)->plugin_name, name) == 0)
+      if(g_strcmp0(((dt_imageio_module_format_t *)it->data)->name(), name) == 0
+         || g_strcmp0(((dt_imageio_module_format_t *)it->data)->plugin_name, name) == 0)
       {
         module = (dt_imageio_module_format_t *)it->data;
         break;
       }
     } while((it = g_list_next(it)));
 
+  if(d->shown_format)
+    gtk_widget_hide(d->shown_format);
+  d->shown_format = NULL;
+
   if(!module) return;
 
   // Store the new format
   dt_conf_set_string("plugins/lighttable/export/format_name", module->plugin_name);
-  if(d->shown_format)
-    gtk_widget_hide(d->shown_format);
   if(module->widget)
   {
     gtk_widget_set_no_show_all(module->widget, FALSE);
@@ -225,7 +225,7 @@ static void format_changed(GtkWidget *widget, dt_lib_export_t *d)
 {
   const gchar *name = dt_bauhaus_combobox_get_text(d->format);
   g_signal_handlers_block_by_func(widget, format_changed, d);
-  if(name) set_format_by_name(d, name);
+  set_format_by_name(d, name);
   g_signal_handlers_unblock_by_func(widget, format_changed, d);
 }
 
@@ -241,8 +241,8 @@ static void _get_max_output_dimension(dt_lib_export_t *d, uint32_t *width, uint3
   {
     uint32_t fw, fh, sw, sh;
     fw = fh = sw = sh = 0; // We are all equals!!!
-    storage->dimension(storage, &sw, &sh);
-    format->dimension(format, &fw, &fh);
+    storage->dimension(storage, NULL, &sw, &sh);
+    format->dimension(format, NULL, &fw, &fh);
 
     if(sw == 0 || fw == 0)
       *width = sw > fw ? sw : fw;
@@ -280,12 +280,14 @@ static void set_storage_by_name(dt_lib_export_t *d, const char *name)
       }
     } while((it = g_list_next(it)));
 
+  if(d->shown_storage)
+    gtk_widget_hide(d->shown_storage);
+  d->shown_storage = NULL;
+
   if(!module) return;
 
   dt_bauhaus_combobox_set(d->storage, k);
   dt_conf_set_string("plugins/lighttable/export/storage_name", module->plugin_name);
-  if(d->shown_storage)
-    gtk_widget_hide(d->shown_storage);
   if(module->widget)
   {
     gtk_widget_set_no_show_all(module->widget, FALSE);
@@ -299,7 +301,7 @@ static void set_storage_by_name(dt_lib_export_t *d, const char *name)
   uint32_t w = 0, h = 0;
   w = dt_conf_get_int("plugins/lighttable/export/width");
   h = dt_conf_get_int("plugins/lighttable/export/height");
-  module->recommended_dimension(module, &w, &h);
+  module->recommended_dimension(module, NULL, &w, &h);
   // Set the recommended dimension, prevent signal changed...
   g_signal_handlers_block_by_func(d->width, width_changed, NULL);
   g_signal_handlers_block_by_func(d->height, height_changed, NULL);
@@ -407,14 +409,20 @@ static void _update_formats_combobox(dt_lib_export_t *d)
 
   // Add supported formats to combobox
   GList *it = darktable.imageio->plugins_format;
+  gboolean empty = TRUE;
   while(it)
   {
     dt_imageio_module_format_t *format = (dt_imageio_module_format_t *)it->data;
     if(storage->supported(storage, format))
+    {
       dt_bauhaus_combobox_add(d->format, format->name());
+      empty = FALSE;
+    }
 
     it = g_list_next(it);
   }
+
+  gtk_widget_set_sensitive(d->format, !empty);
 }
 
 static void on_storage_list_changed(gpointer instance, dt_lib_module_t *self)

@@ -101,7 +101,7 @@ typedef struct dt_imageio_module_format_t
   /* this extension (plus dot) is appended to the exported filename. */
   const char *(*extension)(dt_imageio_module_data_t *data);
   /* get storage max supported image dimension, return 0 if no dimension restrictions exists. */
-  int (*dimension)(struct dt_imageio_module_format_t *self, uint32_t *width, uint32_t *height);
+  int (*dimension)(struct dt_imageio_module_format_t *self, dt_imageio_module_data_t *data, uint32_t *width, uint32_t *height);
 
   // writing functions:
   /* bits per pixel and color channel we want to write: 8: char x3, 16: uint16_t x3, 32: float x3. */
@@ -150,16 +150,16 @@ typedef struct dt_imageio_module_storage_t
   /* try and see if this format is supported? */
   int (*supported)(struct dt_imageio_module_storage_t *self, struct dt_imageio_module_format_t *format);
   /* get storage max supported image dimension, return 0 if no dimension restrictions exists. */
-  int (*dimension)(struct dt_imageio_module_storage_t *self, uint32_t *width, uint32_t *height);
+  int (*dimension)(struct dt_imageio_module_storage_t *self, dt_imageio_module_data_t *data, uint32_t *width, uint32_t *height);
   /* get storage recommended image dimension, return 0 if no recommendation exists. */
-  int (*recommended_dimension)(struct dt_imageio_module_storage_t *self, uint32_t *width, uint32_t *height);
+  int (*recommended_dimension)(struct dt_imageio_module_storage_t *self, dt_imageio_module_data_t *data, uint32_t *width, uint32_t *height);
 
   /* called once at the beginning (before exporting image), if implemented
      * can change the list of exported images (including a NULL list)
    */
-  void (*initialize_store)(struct dt_imageio_module_storage_t *self, dt_imageio_module_data_t *data,
-                           dt_imageio_module_format_t *format, dt_imageio_module_data_t *fdata,
-                           GList **images, const gboolean high_quality);
+  int (*initialize_store)(struct dt_imageio_module_storage_t *self, dt_imageio_module_data_t *data,
+                          dt_imageio_module_format_t **format, dt_imageio_module_data_t **fdata,
+                          GList **images, const gboolean high_quality);
   /* this actually does the work */
   int (*store)(struct dt_imageio_module_storage_t *self, struct dt_imageio_module_data_t *self_data,
                const int imgid, dt_imageio_module_format_t *format, dt_imageio_module_data_t *fdata,

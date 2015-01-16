@@ -263,11 +263,6 @@ const char *extension(dt_imageio_module_data_t *data)
   return "webp";
 }
 
-int dimension(dt_imageio_module_format_t *self, uint32_t *width, uint32_t *height)
-{
-  return 0;
-}
-
 const char *name()
 {
   return _("WebP (8-bit)");

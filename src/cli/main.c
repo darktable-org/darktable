@@ -363,8 +363,8 @@ int main(int argc, char *arg[])
 
   uint32_t w, h, fw, fh, sw, sh;
   fw = fh = sw = sh = 0;
-  storage->dimension(storage, &sw, &sh);
-  format->dimension(format, &fw, &fh);
+  storage->dimension(storage, sdata, &sw, &sh);
+  format->dimension(format, fdata, &fw, &fh);
 
   if(sw == 0 || fw == 0)
     w = sw > fw ? sw : fw;
@@ -386,7 +386,7 @@ int main(int argc, char *arg[])
   if(storage->initialize_store)
   {
     GList *single_image = g_list_append(NULL, GINT_TO_POINTER(id));
-    storage->initialize_store(storage, sdata, format, fdata, &single_image, high_quality);
+    storage->initialize_store(storage, sdata, &format, &fdata, &single_image, high_quality);
     g_list_free(single_image);
   }
   // TODO: add a callback to set the bpp without going through the config

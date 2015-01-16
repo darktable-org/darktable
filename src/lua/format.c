@@ -71,7 +71,7 @@ static int max_width_member(lua_State *L)
     uint32_t width, height;
     width = 0;
     height = 0;
-    format->dimension(format, &width, &height);
+    format->dimension(format, data, &width, &height);
     int new_width = luaL_checkinteger(L, 3);
     if(width > 0 && width < new_width)
     {
@@ -90,17 +90,18 @@ static int max_height_member(lua_State *L)
   luaL_getmetafield(L, 1, "__associated_object");
   dt_imageio_module_format_t *format = lua_touserdata(L, -1);
   lua_pop(L, 1);
-  uint32_t width, height;
-  width = 0;
-  height = 0;
-  format->dimension(format, &width, &height);
+  dt_imageio_module_data_t *data = lua_touserdata(L, 1);
   if(lua_gettop(L) != 3)
   {
-    lua_pushinteger(L, height);
+    lua_pushinteger(L, data->max_height);
     return 1;
   }
   else
   {
+    uint32_t width, height;
+    width = 0;
+    height = 0;
+    format->dimension(format, data, &width, &height);
     int new_height = luaL_checkinteger(L, 3);
     if(height > 0 && height < new_height)
     {
@@ -108,13 +109,11 @@ static int max_height_member(lua_State *L)
     }
     else
     {
-      dt_imageio_module_data_t *data = lua_touserdata(L, 1);
       data->max_height = new_height;
       return 0;
     }
   }
 }
-
 
 static int get_format_params(lua_State *L)
 {
@@ -123,7 +122,7 @@ static int get_format_params(lua_State *L)
   uint32_t width, height;
   width = 0;
   height = 0;
-  format_module->dimension(format_module, &width, &height);
+  format_module->dimension(format_module, fdata, &width, &height);
   fdata->max_width = width;
   fdata->max_height = height;
   luaA_push_type(L, format_module->parameter_lua_type, fdata);
