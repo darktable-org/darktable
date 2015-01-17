@@ -20,6 +20,7 @@
 #include "common/darktable.h"
 #include "common/imageio.h"
 #include "common/imageio_module.h"
+#include "common/variables.h"
 #include "common/pdf.h"
 #include "control/control.h"
 #include "gui/gtkentry.h"
