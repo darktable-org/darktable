@@ -1432,69 +1432,24 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *
     demosaicing_method = (img->filters != 9u) ? DT_IOP_DEMOSAIC_PPG : DT_IOP_DEMOSAIC_MARKESTEIJN;
 
   const float *const pixels = (float *)i;
-  if(roi_out->scale > .99999f && roi_out->scale < 1.00001f)
-  {
-    // output 1:1
-    if(img->filters == 9u)
-    {
-      if(demosaicing_method < DT_IOP_DEMOSAIC_MARKESTEIJN)
-        vng_interpolate((float *)o, pixels, &roo, &roi, data->filters, img->xtrans);
-      else
-        xtrans_markesteijn_interpolate((float *)o, pixels, &roo, &roi, img, img->xtrans,
-                                       1 + (demosaicing_method - DT_IOP_DEMOSAIC_MARKESTEIJN) * 2);
-    }
-    // green eq:
-    else if(data->green_eq != DT_IOP_GREEN_EQ_NO)
-    {
-      float *in = (float *)dt_alloc_align(16, (size_t)roi_in->height * roi_in->width * sizeof(float));
-      switch(data->green_eq)
-      {
-        case DT_IOP_GREEN_EQ_FULL:
-          green_equilibration_favg(in, pixels, roi_in->width, roi_in->height, data->filters, roi_in->x,
-                                   roi_in->y);
-          break;
-        case DT_IOP_GREEN_EQ_LOCAL:
-          green_equilibration_lavg(in, pixels, roi_in->width, roi_in->height, data->filters, roi_in->x,
-                                   roi_in->y, 0, threshold);
-          break;
-        case DT_IOP_GREEN_EQ_BOTH:
-          green_equilibration_favg(in, pixels, roi_in->width, roi_in->height, data->filters, roi_in->x,
-                                   roi_in->y);
-          green_equilibration_lavg(in, in, roi_in->width, roi_in->height, data->filters, roi_in->x, roi_in->y,
-                                   1, threshold);
-          break;
-      }
-      if(demosaicing_method == DT_IOP_DEMOSAIC_VNG4)
-        vng_interpolate((float *)o, in, &roo, &roi, data->filters, img->xtrans);
-      else if(demosaicing_method != DT_IOP_DEMOSAIC_AMAZE)
-        demosaic_ppg((float *)o, in, &roo, &roi, data->filters, data->median_thrs);
-      else
-        amaze_demosaic_RT(self, piece, in, (float *)o, &roi, &roo, data->filters);
-      dt_free_align(in);
-    }
-    else
-    {
-      if(demosaicing_method == DT_IOP_DEMOSAIC_VNG4)
-        vng_interpolate((float *)o, pixels, &roo, &roi, data->filters, img->xtrans);
-      else if(demosaicing_method != DT_IOP_DEMOSAIC_AMAZE)
-        demosaic_ppg((float *)o, pixels, &roo, &roi, data->filters, data->median_thrs);
-      else
-        amaze_demosaic_RT(self, piece, pixels, (float *)o, &roi, &roo, data->filters);
-    }
-  }
-  else if(roi_out->scale > (img->filters == 9u ? 0.333f : .5f) || // also covers roi_out->scale >1
-          (piece->pipe->type == DT_DEV_PIXELPIPE_FULL && qual > 0)
-          || // or in darkroom mode and quality requested by user settings
-          (piece->pipe->type == DT_DEV_PIXELPIPE_EXPORT)) // we assume you always want that for exports.
-  {
-    // demosaic and then clip and zoom
-    // we demosaic at 1:1 the size of input roi, so make sure
-    // we fit these bounds exactly, to avoid crashes..
-    roo.width = roi_in->width;
-    roo.height = roi_in->height;
-    roo.scale = 1.0f;
 
-    float *tmp = (float *)dt_alloc_align(16, (size_t)roo.width * roo.height * 4 * sizeof(float));
+  if((piece->pipe->type == DT_DEV_PIXELPIPE_FULL && qual > 0) ||
+      piece->pipe->type == DT_DEV_PIXELPIPE_EXPORT ||
+      roi_out->scale > (img->filters == 9u ? 0.333f : .5f))
+  {
+    // Full demosaic and then scaling if needed
+    int scaled = (roi_out->scale <= 0.99999f || roi_out->scale >= 1.00001f);
+    float *tmp = (float *) o;
+    if (scaled) {
+      // demosaic and then clip and zoom
+      // we demosaic at 1:1 the size of input roi, so make sure
+      // we fit these bounds exactly, to avoid crashes..
+      roo.width = roi_in->width;
+      roo.height = roi_in->height;
+      roo.scale = 1.0f;
+      tmp = (float *)dt_alloc_align(16, (size_t)roo.width * roo.height * 4 * sizeof(float));
+    }
+
     if(img->filters == 9u)
     {
       if(demosaicing_method < DT_IOP_DEMOSAIC_MARKESTEIJN)
@@ -1541,11 +1496,14 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *
       else
         amaze_demosaic_RT(self, piece, pixels, tmp, &roi, &roo, data->filters);
     }
-    roi = *roi_out;
-    roi.x = roi.y = 0;
-    roi.scale = roi_out->scale;
-    dt_iop_clip_and_zoom((float *)o, tmp, &roi, &roo, roi.width, roo.width);
-    dt_free_align(tmp);
+
+    if (scaled) {
+      roi = *roi_out;
+      roi.x = roi.y = 0;
+      roi.scale = roi_out->scale;
+      dt_iop_clip_and_zoom((float *)o, tmp, &roi, &roo, roi.width, roo.width);
+      dt_free_align(tmp);
+    }
   }
   else
   {
