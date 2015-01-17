@@ -1544,91 +1544,27 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   cl_mem dev_green_eq = NULL;
   cl_int err = -999;
 
-  if(roi_out->scale > .99999f)
+  if((piece->pipe->type == DT_DEV_PIXELPIPE_FULL && qual > 0) ||
+      piece->pipe->type == DT_DEV_PIXELPIPE_EXPORT ||
+      roi_out->scale > (img->filters == 9u ? 0.333f : .5f))
   {
-    const int width = roi_out->width;
-    const int height = roi_out->height;
+    // Full demosaic and then scaling if needed
+    int scaled = (roi_out->scale <= 0.99999f || roi_out->scale >= 1.00001f);
+
+    int width = roi_out->width;
+    int height = roi_out->height;
+    dev_tmp = dev_out;
+    if (scaled) {
+      // need to scale to right res
+      dev_tmp = dt_opencl_alloc_device(devid, roi_in->width, roi_in->height, 4 * sizeof(float));
+      if(dev_tmp == NULL) goto error;
+      width = roi_in->width;
+      height = roi_in->height;
+    }
     size_t sizes[2] = { ROUNDUPWD(width), ROUNDUPHT(height) };
+
     // 1:1 demosaic
     dev_green_eq = NULL;
-    if(data->green_eq != DT_IOP_GREEN_EQ_NO)
-    {
-      // green equilibration
-      dev_green_eq = dt_opencl_alloc_device(devid, roi_in->width, roi_in->height, sizeof(float));
-      if(dev_green_eq == NULL) goto error;
-      dt_opencl_set_kernel_arg(devid, gd->kernel_green_eq, 0, sizeof(cl_mem), &dev_in);
-      dt_opencl_set_kernel_arg(devid, gd->kernel_green_eq, 1, sizeof(cl_mem), &dev_green_eq);
-      dt_opencl_set_kernel_arg(devid, gd->kernel_green_eq, 2, sizeof(int), &width);
-      dt_opencl_set_kernel_arg(devid, gd->kernel_green_eq, 3, sizeof(int), &height);
-      dt_opencl_set_kernel_arg(devid, gd->kernel_green_eq, 4, sizeof(uint32_t), (void *)&data->filters);
-      dt_opencl_set_kernel_arg(devid, gd->kernel_green_eq, 5, sizeof(float), (void *)&threshold);
-      err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_green_eq, sizes);
-      if(err != CL_SUCCESS) goto error;
-      dev_in = dev_green_eq;
-    }
-
-    if(data->median_thrs > 0.0f)
-    {
-      const int one = 1;
-      dt_opencl_set_kernel_arg(devid, gd->kernel_pre_median, 0, sizeof(cl_mem), &dev_in);
-      dt_opencl_set_kernel_arg(devid, gd->kernel_pre_median, 1, sizeof(cl_mem), &dev_out);
-      dt_opencl_set_kernel_arg(devid, gd->kernel_pre_median, 2, sizeof(int), &width);
-      dt_opencl_set_kernel_arg(devid, gd->kernel_pre_median, 3, sizeof(int), &height);
-      dt_opencl_set_kernel_arg(devid, gd->kernel_pre_median, 4, sizeof(uint32_t), (void *)&data->filters);
-      dt_opencl_set_kernel_arg(devid, gd->kernel_pre_median, 5, sizeof(float), (void *)&data->median_thrs);
-      dt_opencl_set_kernel_arg(devid, gd->kernel_pre_median, 6, sizeof(int), (void *)&one);
-      err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_pre_median, sizes);
-      if(err != CL_SUCCESS) goto error;
-
-      dt_opencl_set_kernel_arg(devid, gd->kernel_ppg_green_median, 0, sizeof(cl_mem), &dev_out);
-      dt_opencl_set_kernel_arg(devid, gd->kernel_ppg_green_median, 1, sizeof(cl_mem), &dev_out);
-      dt_opencl_set_kernel_arg(devid, gd->kernel_ppg_green_median, 2, sizeof(int), &width);
-      dt_opencl_set_kernel_arg(devid, gd->kernel_ppg_green_median, 3, sizeof(int), &height);
-      dt_opencl_set_kernel_arg(devid, gd->kernel_ppg_green_median, 4, sizeof(uint32_t),
-                               (void *)&data->filters);
-      err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_ppg_green_median, sizes);
-      if(err != CL_SUCCESS) goto error;
-    }
-    else
-    {
-      dt_opencl_set_kernel_arg(devid, gd->kernel_ppg_green, 0, sizeof(cl_mem), &dev_in);
-      dt_opencl_set_kernel_arg(devid, gd->kernel_ppg_green, 1, sizeof(cl_mem), &dev_out);
-      dt_opencl_set_kernel_arg(devid, gd->kernel_ppg_green, 2, sizeof(int), &width);
-      dt_opencl_set_kernel_arg(devid, gd->kernel_ppg_green, 3, sizeof(int), &height);
-      dt_opencl_set_kernel_arg(devid, gd->kernel_ppg_green, 4, sizeof(uint32_t), (void *)&data->filters);
-      err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_ppg_green, sizes);
-      if(err != CL_SUCCESS) goto error;
-    }
-
-    dt_opencl_set_kernel_arg(devid, gd->kernel_ppg_redblue, 0, sizeof(cl_mem), &dev_out);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_ppg_redblue, 1, sizeof(cl_mem), &dev_out);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_ppg_redblue, 2, sizeof(int), &width);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_ppg_redblue, 3, sizeof(int), &height);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_ppg_redblue, 4, sizeof(uint32_t), (void *)&data->filters);
-    err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_ppg_redblue, sizes);
-    if(err != CL_SUCCESS) goto error;
-
-    // manage borders
-    dt_opencl_set_kernel_arg(devid, gd->kernel_border_interpolate, 0, sizeof(cl_mem), &dev_in);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_border_interpolate, 1, sizeof(cl_mem), &dev_out);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_border_interpolate, 2, sizeof(int), (void *)&width);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_border_interpolate, 3, sizeof(int), (void *)&height);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_border_interpolate, 4, sizeof(uint32_t),
-                             (void *)&data->filters);
-    err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_border_interpolate, sizes);
-    if(err != CL_SUCCESS) goto error;
-  }
-  else if(roi_out->scale > .5f || // full needed because zoomed in enough
-          (piece->pipe->type == DT_DEV_PIXELPIPE_FULL && qual > 0)
-          || // or in darkroom mode and quality requested by user settings
-          (piece->pipe->type == DT_DEV_PIXELPIPE_EXPORT)) // we assume you always want that for exports.
-  {
-    // need to scale to right res
-    dev_tmp = dt_opencl_alloc_device(devid, roi_in->width, roi_in->height, 4 * sizeof(float));
-    if(dev_tmp == NULL) goto error;
-    const int width = roi_in->width;
-    const int height = roi_in->height;
-    size_t sizes[2] = { ROUNDUPWD(width), ROUNDUPHT(height) };
     if(data->green_eq != DT_IOP_GREEN_EQ_NO)
     {
       // green equilibration
@@ -1696,13 +1632,15 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
     err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_border_interpolate, sizes);
     if(err != CL_SUCCESS) goto error;
 
-    // scale temp buffer to output buffer
-    dt_iop_roi_t roi, roo;
-    roi = *roi_in;
-    roo = *roi_out;
-    roo.x = roo.y = roi.x = roi.y = 0;
-    err = dt_iop_clip_and_zoom_cl(devid, dev_out, dev_tmp, &roo, &roi);
-    if(err != CL_SUCCESS) goto error;
+    if (scaled) {
+      // scale temp buffer to output buffer
+      dt_iop_roi_t roi, roo;
+      roi = *roi_in;
+      roo = *roi_out;
+      roo.x = roo.y = roi.x = roi.y = 0;
+      err = dt_iop_clip_and_zoom_cl(devid, dev_out, dev_tmp, &roo, &roi);
+      if(err != CL_SUCCESS) goto error;
+    }
   }
   else
   {
