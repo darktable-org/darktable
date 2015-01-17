@@ -137,7 +137,11 @@ void gui_reset(dt_lib_module_t *self)
   gchar *storage_name = dt_conf_get_string("plugins/lighttable/export/storage_name");
   int storage_index = dt_imageio_get_index_of_storage(dt_imageio_get_storage_by_name(storage_name));
   g_free(storage_name);
-  gtk_combo_box_set_active(d->storage, storage_index);
+  if(storage_index >= 0) {
+    gtk_combo_box_set_active(d->storage, storage_index);
+  } else {
+    gtk_combo_box_set_active(d->storage, 0);
+  }
 
   gtk_combo_box_set_active(d->intent, dt_conf_get_int("plugins/lighttable/export/iccintent") + 1);
   // iccprofile
