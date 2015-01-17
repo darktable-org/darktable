@@ -1511,18 +1511,12 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *
     const float clip = fminf(piece->pipe->processed_maximum[0],
                              fminf(piece->pipe->processed_maximum[1], piece->pipe->processed_maximum[2]));
     if(img->filters == 9u)
-      dt_iop_clip_and_zoom_demosaic_third_size_xtrans_f((float *)o, pixels, &roo, &roi, roo.width, roi.width,
+      dt_iop_clip_and_zoom_demosaic_third_size_xtrans_f((float *)o, pixels, &roo, &roi,
+                                                        roo.width, roi.width,
                                                         img->xtrans);
-    else if(piece->pipe->type == DT_DEV_PIXELPIPE_EXPORT && data->median_thrs > 0.0f)
-    {
-      float *tmp = (float *)dt_alloc_align(16, (size_t)sizeof(float) * roi_in->width * roi_in->height);
-      pre_median_b(tmp, pixels, roi_in, data->filters, 1, data->median_thrs);
-      dt_iop_clip_and_zoom_demosaic_half_size_f((float *)o, tmp, &roo, &roi, roo.width, roi.width,
-                                                data->filters, clip);
-      dt_free_align(tmp);
-    }
     else
-      dt_iop_clip_and_zoom_demosaic_half_size_f((float *)o, pixels, &roo, &roi, roo.width, roi.width,
+      dt_iop_clip_and_zoom_demosaic_half_size_f((float *)o, pixels, &roo, &roi,
+                                                roo.width, roi.width,
                                                 data->filters, clip);
   }
   if(data->color_smoothing) color_smoothing(o, roi_out, data->color_smoothing);
