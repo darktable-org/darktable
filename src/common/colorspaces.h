@@ -63,6 +63,9 @@ cmsHPROFILE dt_colorspaces_create_alternate_profile(const char *makermodel);
 /** just get the associated transformation matrix, for manual application. */
 int dt_colorspaces_get_darktable_matrix(const char *makermodel, float *matrix);
 
+/** get the name of the icc profile this image would be exported with. */
+char *dt_colorspaces_get_output_profile_name(const int imgid);
+
 /** get the icc profile this image would be exported with. */
 cmsHPROFILE dt_colorspaces_create_output_profile(const int imgid);
 

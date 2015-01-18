@@ -17,6 +17,7 @@
  */
 
 #include "version.h"
+#include "common/colorspaces.h"
 #include "common/darktable.h"
 #include "common/imageio.h"
 #include "common/imageio_module.h"
@@ -228,6 +229,12 @@ static const struct
   { NULL,          0 }
 };
 
+typedef struct _pdf_icc_t
+{
+  char *name;
+  int   icc_id;
+} _pdf_icc_t;
+
 // saved params -- just there to get the sizeof() without worrying about padding, ...
 typedef struct dt_imageio_pdf_params_t
 {
@@ -257,6 +264,7 @@ typedef struct dt_imageio_pdf_t
   char                    *actual_filename;
   dt_pdf_t                *pdf;
   GList                   *images;
+  GList                   *icc_profiles;
 } dt_imageio_pdf_t;
 
 // clang-format on
@@ -589,14 +597,13 @@ void gui_init(dt_imageio_module_storage_t *self)
   // embedded icc profile yes|no
 
   d->icc = dt_bauhaus_combobox_new(NULL);
-  dt_bauhaus_widget_set_label(d->icc, NULL, _("TODO: embed icc profiles"));
+  dt_bauhaus_widget_set_label(d->icc, NULL, _("embed icc profiles"));
   dt_bauhaus_combobox_add(d->icc, _("no"));
   dt_bauhaus_combobox_add(d->icc, _("yes"));
   gtk_grid_attach(grid, GTK_WIDGET(d->icc), 0, ++line, 2, 1);
   g_signal_connect(G_OBJECT(d->icc), "value-changed", G_CALLBACK(icc_toggle_callback), self);
   g_object_set(G_OBJECT(d->icc), "tooltip-text", _("images can be tagged with their icc profile"), (char *)NULL);
   dt_bauhaus_combobox_set(d->icc, dt_conf_get_bool("plugins/imageio/storage/pdf/icc"));
-  gtk_widget_set_sensitive(d->icc, FALSE); // TODO
 
   // image mode normal|draft|debug
 
@@ -944,6 +951,48 @@ int store(dt_imageio_module_storage_t *self, dt_imageio_module_data_t *sdata, co
   dt_imageio_pdf_t *d = (dt_imageio_pdf_t *)sdata;
   dt_imageio_pdf_format_t *f = (dt_imageio_pdf_format_t *)fdata;
 
+  if(imgid > 0 && d->params.icc && d->params.mode == MODE_NORMAL)
+  {
+    // get the id of the profile
+    char *profile_name = dt_colorspaces_get_output_profile_name(imgid);
+    int icc_id = 0;
+
+    // look it up in the list
+    for(GList *iter = d->icc_profiles; iter; iter = g_list_next(iter))
+    {
+      _pdf_icc_t *icc = (_pdf_icc_t *)iter->data;
+      if(!g_strcmp0(profile_name, icc->name))
+      {
+        icc_id = icc->icc_id;
+        break;
+      }
+    }
+    if(icc_id == 0)
+    {
+      cmsHPROFILE profile = dt_colorspaces_create_output_profile(imgid);
+      uint32_t len = 0;
+      cmsSaveProfileToMem(profile, 0, &len);
+      if(len > 0)
+      {
+        unsigned char buf[len];
+        cmsSaveProfileToMem(profile, buf, &len);
+        icc_id = dt_pdf_add_icc_from_data(d->pdf, buf, len);
+        _pdf_icc_t *icc = (_pdf_icc_t *)malloc(sizeof(_pdf_icc_t));
+        icc->name = profile_name;
+        icc->icc_id = icc_id;
+        d->icc_profiles = g_list_append(d->icc_profiles, icc);
+      }
+      else
+        free(profile_name);
+      dt_colorspaces_cleanup_profile(profile);
+    }
+    else
+      free(profile_name);
+
+    f->icc_id = icc_id;
+  }
+
+
   if(dt_imageio_export_with_flags(imgid, "unused", format, fdata, 1, 0, high_quality, 0, NULL, FALSE, self, sdata) != 0)
   {
     fprintf(stderr, "[imageio_storage_pdf] could not export to file: `%s'!\n", d->actual_filename);
@@ -995,6 +1044,12 @@ void finalize_store(dt_imageio_module_storage_t *self, dt_imageio_module_data_t 
   for(int i = 0; i < n_images; i++)
     free(pages[i]);
   g_free(d->actual_filename);
+  for(GList *iter = d->icc_profiles; iter; iter = g_list_next(iter))
+  {
+    _pdf_icc_t *icc = (_pdf_icc_t *)iter->data;
+    g_free(icc->name);
+  }
+  g_list_free_full(d->icc_profiles, free);
 }
 
 

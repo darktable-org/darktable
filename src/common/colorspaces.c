@@ -769,7 +769,7 @@ int dt_colorspaces_find_profile(char *filename, size_t filename_len, const char 
   return 0;
 }
 
-cmsHPROFILE dt_colorspaces_create_output_profile(const int imgid)
+char *dt_colorspaces_get_output_profile_name(const int imgid)
 {
   // find the colorout module -- the pointer stays valid until darktable shuts down
   static dt_iop_module_so_t *colorout = NULL;
@@ -820,6 +820,13 @@ cmsHPROFILE dt_colorspaces_create_output_profile(const int imgid)
 
   g_free(overprofile);
 
+  return g_strdup(profile);
+}
+
+cmsHPROFILE dt_colorspaces_create_output_profile(const int imgid)
+{
+  char *profile = dt_colorspaces_get_output_profile_name(imgid);
+
   cmsHPROFILE output = NULL;
 
   if(!strcmp(profile, "sRGB"))
@@ -847,6 +854,7 @@ cmsHPROFILE dt_colorspaces_create_output_profile(const int imgid)
     output = cmsOpenProfileFromFile(filename, "r");
   }
   if(!output) output = dt_colorspaces_create_srgb_profile();
+  free(profile);
   return output;
 }
 
