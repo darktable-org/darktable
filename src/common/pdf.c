@@ -372,7 +372,7 @@ int dt_pdf_add_icc_from_data(dt_pdf_t *pdf, const unsigned char *data, size_t si
 // this adds an image to the pdf file and returns the info needed to reference it later.
 // if icc_id is 0 then we suppose the pixel data to be in output device space, otherwise the ICC profile object is referenced.
 // if image == NULL only the outline can be shown later
-dt_pdf_image_t *dt_pdf_add_image(dt_pdf_t *pdf, const uint16_t *image, int width, int height, int icc_id, float border)
+dt_pdf_image_t *dt_pdf_add_image(dt_pdf_t *pdf, const unsigned char *image, int width, int height, int bpp, int icc_id, float border)
 {
   size_t stream_size = 0;
   size_t bytes_written = 0;
@@ -417,16 +417,16 @@ dt_pdf_image_t *dt_pdf_add_image(dt_pdf_t *pdf, const uint16_t *image, int width
   else
     bytes_written += fprintf(pdf->fd, "/ColorSpace /DeviceRGB\n");
   bytes_written += fprintf(pdf->fd,
-    "/BitsPerComponent 16\n" // TODO: or 8? does 16 work with CUPS?
+    "/BitsPerComponent %d\n"
     "/Intent /Perceptual\n" // TODO: allow setting it from the outside
     "/Length %d 0 R\n"
     ">>\n"
     "stream\n",
-    length_id
+    bpp, length_id
   );
 
   // the stream
-  stream_size = _pdf_write_stream(pdf, pdf->default_encoder, (unsigned char *)image, width * height * 3 * sizeof(uint16_t));
+  stream_size = _pdf_write_stream(pdf, pdf->default_encoder, image, width * height * 3 * (bpp / 8));
   if(stream_size == 0)
   {
     free(pdf_image);
@@ -873,7 +873,7 @@ int main(int argc, char *argv[])
     for(int i = 0; i < width * height * 3; i++)
       data[i] = CLAMP_FLT(image[i]) * 65535;
 
-    images[i] = dt_pdf_add_image(pdf, data, width, height, icc_id, border);
+    images[i] = dt_pdf_add_image(pdf, (unsigned char *)data, width, height, 16, icc_id, border);
     free(image);
     free(data);
   }

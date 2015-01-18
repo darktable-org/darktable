@@ -39,6 +39,7 @@ typedef struct dt_imageio_pdf_format_t
   dt_imageio_module_data_t  parent;
   dt_pdf_t                 *pdf;
   float                     border;
+  int                       bpp;
   gboolean                  only_outline;
   dt_pdf_image_t           *image; // to get it back to the storage
   int                       icc_id;
@@ -87,36 +88,48 @@ static int _format_dimension(dt_imageio_module_format_t *self, dt_imageio_module
 
 static int _format_bpp(dt_imageio_module_data_t *data)
 {
-  return 16; // TODO: also support 8 bit
+  return ((dt_imageio_pdf_format_t *)data)->bpp;
 }
 
 static int _format_write_image(dt_imageio_module_data_t *data, const char *filename, const void *in, void *exif,
                                int exif_len, int imgid)
 {
   dt_imageio_pdf_format_t *d = (dt_imageio_pdf_format_t *)data;
-  uint16_t *image = NULL;
+  uint8_t *image = NULL;
 
+  // TODO
+  // decide if we want to push that conversion step into the pdf lib and maybe do it on the fly while writing.
+  // that would get rid of one buffer in the case of ASCII_HEX
   if(!d->only_outline)
   {
-    // TODO
-    // decide if we want to push that conversion step into the pdf lib and maybe do it on the fly while writing.
-    // that would get rid of one buffer in the case of ASCII_HEX
-    image = (uint16_t *)malloc(data->width * data->height * 3 * sizeof(uint16_t));
-    const uint16_t *in_ptr = (const uint16_t *)in;
-    uint16_t *out_ptr = image;
-    for(int y = 0; y < data->height; y++)
+    if(d->bpp == 8)
     {
-      for(int x = 0; x < data->width; x++)
+      image = (uint8_t *)malloc(data->width * data->height * 3);
+      const uint8_t *in_ptr = (const uint8_t *)in;
+      uint8_t *out_ptr = image;
+      for(int y = 0; y < data->height; y++)
       {
-        for(int c = 0; c < 3; c++)
-          out_ptr[c] = (0xff00 & (in_ptr[c] << 8)) | (in_ptr[c] >> 8);
-        out_ptr += 3;
-        in_ptr += 4;
+        for(int x = 0; x < data->width; x++, in_ptr += 4, out_ptr += 3)
+          memcpy(out_ptr, in_ptr, 3);
+      }
+    }
+    else
+    {
+      image = (uint8_t *)malloc(data->width * data->height * 3 * sizeof(uint16_t));
+      const uint16_t *in_ptr = (const uint16_t *)in;
+      uint16_t *out_ptr = (uint16_t *)image;
+      for(int y = 0; y < data->height; y++)
+      {
+        for(int x = 0; x < data->width; x++, in_ptr += 4, out_ptr += 3)
+        {
+          for(int c = 0; c < 3; c++)
+            out_ptr[c] = (0xff00 & (in_ptr[c] << 8)) | (in_ptr[c] >> 8);
+        }
       }
     }
   }
 
-  d->image = dt_pdf_add_image(d->pdf, image, d->parent.width, d->parent.height, d->icc_id, d->border);
+  d->image = dt_pdf_add_image(d->pdf, image, d->parent.width, d->parent.height, d->bpp, d->icc_id, d->border);
 
   free(image);
 
@@ -125,7 +138,7 @@ static int _format_write_image(dt_imageio_module_data_t *data, const char *filen
 
 static int _format_levels(dt_imageio_module_data_t *data)
 {
-  return IMAGEIO_RGB | IMAGEIO_INT16;
+  return IMAGEIO_RGB | (((dt_imageio_pdf_format_t *)data)->bpp == 8 ? IMAGEIO_INT8 : IMAGEIO_INT16);
 }
 
 static int _format_flags(dt_imageio_module_data_t *data)
@@ -180,6 +193,7 @@ typedef struct pdf_t
   GtkWidget      *pages;
   GtkWidget      *icc;
   GtkWidget      *mode;
+  GtkWidget      *bpp;
   GtkWidget      *compression;
 } pdf_t;
 
@@ -203,6 +217,17 @@ typedef enum _pdf_mode_t
   MODE_DEBUG  = 2,
 } _pdf_mode_t;
 
+static const struct
+{
+  char *name;
+  int   bpp;
+} _pdf_bpp[] =
+{
+  { N_("8 bit"),   8 },
+  { N_("16 bit"), 16 },
+  { NULL,          0 }
+};
+
 // saved params -- just there to get the sizeof() without worrying about padding, ...
 typedef struct dt_imageio_pdf_params_t
 {
@@ -218,6 +243,10 @@ typedef struct dt_imageio_pdf_params_t
   gboolean                  icc;
   _pdf_mode_t               mode;
   dt_pdf_stream_encoder_t   compression;
+  int                       bpp;
+
+  // the following are unused at the moment
+  int                       intent;
 } dt_imageio_pdf_params_t;
 
 // the real type used in the code
@@ -382,6 +411,12 @@ static void icc_toggle_callback(GtkWidget *widget, gpointer user_data)
 static void mode_toggle_callback(GtkWidget *widget, gpointer user_data)
 {
   dt_conf_set_int("plugins/imageio/storage/pdf/mode", dt_bauhaus_combobox_get(widget));
+}
+
+static void bpp_toggle_callback(GtkWidget *widget, gpointer user_data)
+{
+  const int sel = dt_bauhaus_combobox_get(widget);
+  dt_conf_set_int("plugins/imageio/storage/pdf/bpp", _pdf_bpp[sel].bpp);
 }
 
 static void compression_toggle_callback(GtkWidget *widget, gpointer user_data)
@@ -579,6 +614,17 @@ void gui_init(dt_imageio_module_storage_t *self)
                (char *)NULL);
   dt_bauhaus_combobox_set(d->mode, dt_conf_get_int("plugins/imageio/storage/pdf/mode"));
 
+  // bpp
+
+  d->bpp = dt_bauhaus_combobox_new(NULL);
+  dt_bauhaus_widget_set_label(d->bpp, NULL, _("bit depth"));
+  for(int i = 0; _pdf_bpp[i].name; i++)
+    dt_bauhaus_combobox_add(d->bpp, _(_pdf_bpp[i].name));
+  gtk_grid_attach(grid, GTK_WIDGET(d->bpp), 0, ++line, 2, 1);
+  g_signal_connect(G_OBJECT(d->bpp), "value-changed", G_CALLBACK(bpp_toggle_callback), self);
+  g_object_set(G_OBJECT(d->bpp), "tooltip-text", _("bits per channel of the embedded images"), (char *)NULL);
+  dt_bauhaus_combobox_set(d->bpp, dt_conf_get_int("plugins/imageio/storage/pdf/bpp"));
+
   // compression
 
   d->compression = dt_bauhaus_combobox_new(NULL);
@@ -614,6 +660,7 @@ void gui_reset(dt_imageio_module_storage_t *self)
   rotate_toggle_callback(GTK_WIDGET(d->rotate), self);
   size_toggle_callback(GTK_WIDGET(d->size), self);
   title_changed_callback(GTK_WIDGET(d->title), self);
+  bpp_toggle_callback(GTK_WIDGET(d->bpp), self);
   compression_toggle_callback(GTK_WIDGET(d->compression), self);
   dt_bauhaus_combobox_set(d->overwrite, 0);
 }
@@ -652,6 +699,7 @@ void *get_params(dt_imageio_module_storage_t *self)
   g_strlcpy(d->params.size, text, sizeof(d->params.size));
   g_free(text);
 
+  d->params.bpp = dt_conf_get_int("plugins/imageio/storage/pdf/bpp");
   d->params.compression = dt_conf_get_int("plugins/imageio/storage/pdf/compression");
   d->params.dpi = dt_conf_get_float("plugins/imageio/storage/pdf/dpi");
   d->params.icc = dt_conf_get_bool("plugins/imageio/storage/pdf/icc");
@@ -676,6 +724,12 @@ int set_params(dt_imageio_module_storage_t *self, const void *params, const int 
   const dt_imageio_pdf_t *d = (dt_imageio_pdf_t *)params;
   pdf_t *g = (pdf_t *)self->gui_data;
 
+  for(int i = 0; _pdf_bpp[i].name; i++)
+  {
+    if(_pdf_bpp[i].bpp == d->params.bpp)
+      dt_bauhaus_combobox_set(g->bpp, i);
+  }
+
   gtk_entry_set_text(g->filename, d->params.filename);
   dt_bauhaus_combobox_set(g->overwrite, 0);
   gtk_entry_set_text(g->title, d->params.title);
@@ -692,6 +746,7 @@ int set_params(dt_imageio_module_storage_t *self, const void *params, const int 
   dt_conf_set_string("plugins/imageio/storage/pdf/filename", d->params.filename);
   dt_conf_set_string("plugins/imageio/storage/pdf/title", d->params.title);
   dt_conf_set_string("plugins/imageio/storage/pdf/border", d->params.border);
+  dt_conf_set_int("plugins/imageio/storage/pdf/bpp", d->params.bpp);
   dt_conf_set_int("plugins/imageio/storage/pdf/compression", d->params.compression);
   dt_conf_set_float("plugins/imageio/storage/pdf/dpi", d->params.dpi);
   dt_conf_set_bool("plugins/imageio/storage/pdf/icc", d->params.icc);
@@ -875,6 +930,7 @@ failed:
   f->pdf = pdf;
   f->border = border;
   f->only_outline = d->params.mode != MODE_NORMAL;
+  f->bpp = d->params.bpp;
   d->pdf = pdf;
   d->actual_filename = g_strdup(filename);
 
