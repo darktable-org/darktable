@@ -130,7 +130,7 @@
 
 </listitem></varlistentry>
 
-<varlistentry id="darktable_register_storage_store"><term>store</term><listitem>
+<varlistentry id="darktable_register_storage_store"><term>[store]</term><listitem>
 <synopsis>function( 
 	<emphasis><link linkend="darktable_register_storage_store_storage">storage</link></emphasis> : <link linkend="types_dt_imageio_module_storage_t">types.dt_imageio_module_storage_t</link>, 
 	<emphasis><link linkend="darktable_register_storage_store_image">image</link></emphasis> : <link linkend="types_dt_lua_image_t">types.dt_lua_image_t</link>, 
@@ -195,7 +195,7 @@
 </variablelist>
 </listitem></varlistentry>
 
-<varlistentry id="darktable_register_storage_finalize"><term>finalize</term><listitem>
+<varlistentry id="darktable_register_storage_finalize"><term>[finalize]</term><listitem>
 <synopsis>function( 
 	<emphasis><link linkend="darktable_register_storage_finalize_storage">storage</link></emphasis> : <link linkend="types_dt_imageio_module_storage_t">types.dt_imageio_module_storage_t</link>, 
 	<emphasis><link linkend="darktable_register_storage_finalize_image_table">image_table</link></emphasis> : table, 
@@ -225,7 +225,7 @@
 </variablelist>
 </listitem></varlistentry>
 
-<varlistentry id="darktable_register_storage_supported"><term>supported</term><listitem>
+<varlistentry id="darktable_register_storage_supported"><term>[supported]</term><listitem>
 <synopsis>function( 
 	<emphasis><link linkend="darktable_register_storage_supported_storage">storage</link></emphasis> : <link linkend="types_dt_imageio_module_storage_t">types.dt_imageio_module_storage_t</link>, 
 	<emphasis><link linkend="darktable_register_storage_supported_format">format</link></emphasis> : <link linkend="types_dt_imageio_module_format_t">types.dt_imageio_module_format_t</link>
@@ -256,7 +256,7 @@
 </variablelist>
 </listitem></varlistentry>
 
-<varlistentry id="darktable_register_storage_initialize"><term>initialize</term><listitem>
+<varlistentry id="darktable_register_storage_initialize"><term>[initialize]</term><listitem>
 <synopsis>function( 
 	<emphasis><link linkend="darktable_register_storage_initialize_storage">storage</link></emphasis> : <link linkend="types_dt_imageio_module_storage_t">types.dt_imageio_module_storage_t</link>, 
 	<emphasis><link linkend="darktable_register_storage_initialize_format">format</link></emphasis> : <link linkend="types_dt_imageio_module_format_t">types.dt_imageio_module_format_t</link>, 
@@ -432,6 +432,7 @@
 <listitem><para>flickr</para></listitem>
 <listitem><para>gallery</para></listitem>
 <listitem><para>latex</para></listitem>
+<listitem><para>pdf</para></listitem>
 <listitem><para>picasa</para></listitem>
 </itemizedlist>
 (Other, lua-defined, storage types may appear.)</para>
@@ -440,6 +441,47 @@
 
 <varlistentry><term><emphasis>return</emphasis></term><listitem>
 <synopsis><link linkend="types_dt_imageio_module_storage_t">types.dt_imageio_module_storage_t</link></synopsis>
+<para>The newly created object. Exact type depends on the type passed</para>
+
+</listitem></varlistentry>
+
+
+</variablelist>
+</section>
+
+<section status="final" id="darktable_new_widget">
+<title>darktable.new_widget</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>new_widget</secondary>
+</indexterm>
+<synopsis>function( 
+	<emphasis><link linkend="darktable_new_widget_type">type</link></emphasis> : string, 
+	<emphasis><link linkend="darktable_new_widget____">...</link></emphasis> : variable
+) : <link linkend="types_lua_widget">types.lua_widget</link></synopsis>
+<para>Creates a new widget object to display in the UI</para>
+
+<variablelist>
+<varlistentry id="darktable_new_widget_type"><term>type</term><listitem>
+<synopsis>string</synopsis>
+<para>The type of storage object to create, one of : <itemizedlist>
+<listitem><para>box</para></listitem>
+<listitem><para>button</para></listitem>
+<listitem><para>check_button</para></listitem>
+<listitem><para>label</para></listitem>
+</itemizedlist>
+</para>
+
+</listitem></varlistentry>
+
+<varlistentry id="darktable_new_widget____"><term>...</term><listitem>
+<synopsis>variable</synopsis>
+<para>Extra parameters, depend on the type of widget created</para>
+
+</listitem></varlistentry>
+
+<varlistentry><term><emphasis>return</emphasis></term><listitem>
+<synopsis><link linkend="types_lua_widget">types.lua_widget</link></synopsis>
 <para>The newly created object. Exact type depends on the type passed</para>
 
 </listitem></varlistentry>
@@ -476,6 +518,7 @@
 <primary>Lua API</primary>
 <secondary>hovered</secondary>
 </indexterm>
+<synopsis><link linkend="types_dt_lua_image_t">types.dt_lua_image_t</link></synopsis>
 <para>The image under the cursor or nil if no image is hovered.</para>
 
 </section>
@@ -502,7 +545,7 @@
     </row></tbody>
     </tgroup></informaltable>
 <variablelist>
-<varlistentry id="darktable_gui_selection_selection"><term>selection</term><listitem>
+<varlistentry id="darktable_gui_selection_selection"><term>[selection]</term><listitem>
 <synopsis>table of <link linkend="types_dt_lua_image_t">types.dt_lua_image_t</link></synopsis>
 <para>A table of images which will define the selected images. If this parameter is not given the selection will be untouched. If an empty table is given the selection will be emptied.</para>
 
@@ -530,7 +573,7 @@
 <para>Allows to change the current view.</para>
 
 <variablelist>
-<varlistentry id="darktable_gui_current_view_view"><term>view</term><listitem>
+<varlistentry id="darktable_gui_current_view_view"><term>[view]</term><listitem>
 <synopsis><link linkend="types_dt_view_t">types.dt_view_t</link></synopsis>
 <para>The view to switch to. If empty the current view is unchanged</para>
 
@@ -566,13 +609,13 @@
 
 </listitem></varlistentry>
 
-<varlistentry id="darktable_gui_create_job_percentage"><term>percentage</term><listitem>
+<varlistentry id="darktable_gui_create_job_percentage"><term>[percentage]</term><listitem>
 <synopsis>boolean</synopsis>
 <para>Should a progress bar be displayed</para>
 
 </listitem></varlistentry>
 
-<varlistentry id="darktable_gui_create_job_cancel_callback"><term>cancel_callback</term><listitem>
+<varlistentry id="darktable_gui_create_job_cancel_callback"><term>[cancel_callback]</term><listitem>
 <synopsis>function( 
 	<emphasis><link linkend="darktable_gui_create_job_cancel_callback_job">job</link></emphasis> : <link linkend="types_dt_lua_backgroundjob_t">types.dt_lua_backgroundjob_t</link>
 )</synopsis>
@@ -876,6 +919,7 @@ end</programlisting></para>
 <primary>Lua API</primary>
 <secondary>selected</secondary>
 </indexterm>
+<synopsis><link linkend="types_dt_lua_snapshot_t">types.dt_lua_snapshot_t</link></synopsis>
 <para>The currently selected snapshot</para>
 
 </section>
@@ -949,7 +993,7 @@ end</programlisting></para>
     </row></tbody>
     </tgroup></informaltable>
 <variablelist>
-<varlistentry id="darktable_gui_libs_collect_filter_rules"><term>rules</term><listitem>
+<varlistentry id="darktable_gui_libs_collect_filter_rules"><term>[rules]</term><listitem>
 <synopsis><link linkend="types_dt_lib_collect_params_t">types.dt_lib_collect_params_t</link></synopsis>
 <para>An object describing filtering rules for the collection. These rules will be applied after this call</para>
 
@@ -2153,26 +2197,26 @@ end</programlisting></para>
 
 </listitem></varlistentry>
 
-<varlistentry id="darktable_preferences_register_default"><term>default</term><listitem>
+<varlistentry id="darktable_preferences_register_default"><term>[default]</term><listitem>
 <synopsis>depends on type</synopsis>
 <para>Default value to use when not set explicitely or by the user.</para>
 <para>For the enum type of pref, this is mandatory</para>
 
 </listitem></varlistentry>
 
-<varlistentry id="darktable_preferences_register_min"><term>min</term><listitem>
+<varlistentry id="darktable_preferences_register_min"><term>[min]</term><listitem>
 <synopsis>int or float</synopsis>
 <para>Minimum value (integer and float preferences only).</para>
 
 </listitem></varlistentry>
 
-<varlistentry id="darktable_preferences_register_max"><term>max</term><listitem>
+<varlistentry id="darktable_preferences_register_max"><term>[max]</term><listitem>
 <synopsis>int or float</synopsis>
 <para>Maximum value (integer and float preferences only).</para>
 
 </listitem></varlistentry>
 
-<varlistentry id="darktable_preferences_register_step"><term>step</term><listitem>
+<varlistentry id="darktable_preferences_register_step"><term>[step]</term><listitem>
 <synopsis>float</synopsis>
 <para>Step of the spinner (float preferences only).</para>
 
@@ -2721,13 +2765,13 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
 
 </listitem></varlistentry>
 
-<varlistentry id="darktable_debug_dump_name"><term>name</term><listitem>
+<varlistentry id="darktable_debug_dump_name"><term>[name]</term><listitem>
 <synopsis>string</synopsis>
 <para>A name to use for the object.</para>
 
 </listitem></varlistentry>
 
-<varlistentry id="darktable_debug_dump_known"><term>known</term><listitem>
+<varlistentry id="darktable_debug_dump_known"><term>[known]</term><listitem>
 <synopsis>table</synopsis>
 <para>A table of object,string pairs. Any object in that table will not be dumped, the string will be printed instead.</para>
 <para>defaults to <link linkend="darktable_debug_known">darktable.debug.known</link> if not set</para>
@@ -3286,6 +3330,7 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
 <primary>Lua API</primary>
 <secondary>latitude</secondary>
 </indexterm>
+<synopsis>float or nil</synopsis>
 <para>GPS latitude data of the image, nil if not set.</para>
 <informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
     <colspec colwidth="2*"/>
@@ -3306,6 +3351,7 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
 <primary>Lua API</primary>
 <secondary>longitude</secondary>
 </indexterm>
+<synopsis>float or nil</synopsis>
 <para>GPS longitude data of the image, nil if not set.</para>
 <informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
     <colspec colwidth="2*"/>
@@ -3532,7 +3578,7 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
 
 </listitem></varlistentry>
 
-<varlistentry id="types_dt_lua_image_t_group_with_image"><term>image</term><listitem>
+<varlistentry id="types_dt_lua_image_t_group_with_image"><term>[image]</term><listitem>
 <synopsis><link linkend="types_dt_lua_image_t">types.dt_lua_image_t</link></synopsis>
 <para>The image we want to group with.</para>
 
@@ -4743,7 +4789,7 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
 
 </listitem></varlistentry>
 
-<varlistentry id="types_dt_lua_film_t_delete_force"><term>force</term><listitem>
+<varlistentry id="types_dt_lua_film_t_delete_force"><term>[force]</term><listitem>
 <synopsis>Boolean</synopsis>
 <para>Force removal, even if the film is not empty.</para>
 
@@ -5481,17 +5527,7 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
 </indexterm>
 <synopsis><link linkend="types_dt_lua_lib_collect_params_rule_t">types.dt_lua_lib_collect_params_rule_t</link></synopsis>
 <para>Each rule has a numeric index. You can add a rule by setting a rule after the last valid one, you can remove a rule by setting it to nil</para>
-<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
-    <colspec colwidth="2*"/>
-    <colspec colwidth="8*"/>
-    <tbody><row>
-    <entry>Attributes:</entry>
-    <entry><itemizedlist>
-<listitem><para><emphasis><link linkend="attributes_write">write</link></emphasis></para></listitem>
-</itemizedlist>
-</entry>
-    </row></tbody>
-    </tgroup></informaltable>
+
 </section>
 
 </section>
@@ -5633,6 +5669,457 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
 <listitem><para>DT_COLLECTION_PROP_GEOTAGGING</para></listitem>
 </itemizedlist>
 </para></listitem>
+</itemizedlist>
+</entry>
+    </row></tbody>
+    </tgroup></informaltable>
+</section>
+
+<section status="final" id="types_lua_widget">
+<title>types.lua_widget</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>lua_widget</secondary>
+</indexterm>
+<synopsis>dt_type</synopsis>
+<para>Common parent type for all lua-handled widgets</para>
+
+</section>
+
+<section status="final" id="types_lua_check_button">
+<title>types.lua_check_button</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>lua_check_button</secondary>
+</indexterm>
+<synopsis>dt_type</synopsis>
+<para>A checkable button with a label next to it</para>
+<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
+    <colspec colwidth="2*"/>
+    <colspec colwidth="8*"/>
+    <tbody><row>
+    <entry>Attributes:</entry>
+    <entry><itemizedlist>
+<listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_lua_widget">types.lua_widget</link></para></listitem>
+</itemizedlist>
+</entry>
+    </row></tbody>
+    </tgroup></informaltable>
+<section status="final" id="types_lua_check_button_label">
+<title>types.lua_check_button.label</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>label</secondary>
+</indexterm>
+<synopsis>string</synopsis>
+<para>The label displayed next to the button</para>
+<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
+    <colspec colwidth="2*"/>
+    <colspec colwidth="8*"/>
+    <tbody><row>
+    <entry>Attributes:</entry>
+    <entry><itemizedlist>
+<listitem><para><emphasis><link linkend="attributes_write">write</link></emphasis></para></listitem>
+</itemizedlist>
+</entry>
+    </row></tbody>
+    </tgroup></informaltable>
+</section>
+
+<section status="final" id="types_lua_check_button_default_label">
+<title>types.lua_check_button.default_label</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>default_label</secondary>
+</indexterm>
+<synopsis>string</synopsis>
+<para>The value to set to the label when the widget is reset</para>
+<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
+    <colspec colwidth="2*"/>
+    <colspec colwidth="8*"/>
+    <tbody><row>
+    <entry>Attributes:</entry>
+    <entry><itemizedlist>
+<listitem><para><emphasis><link linkend="attributes_write">write</link></emphasis></para></listitem>
+</itemizedlist>
+</entry>
+    </row></tbody>
+    </tgroup></informaltable>
+</section>
+
+<section status="final" id="types_lua_check_button_value">
+<title>types.lua_check_button.value</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>value</secondary>
+</indexterm>
+<synopsis>boolean</synopsis>
+<para>If the widget is checked or not</para>
+<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
+    <colspec colwidth="2*"/>
+    <colspec colwidth="8*"/>
+    <tbody><row>
+    <entry>Attributes:</entry>
+    <entry><itemizedlist>
+<listitem><para><emphasis><link linkend="attributes_write">write</link></emphasis></para></listitem>
+</itemizedlist>
+</entry>
+    </row></tbody>
+    </tgroup></informaltable>
+</section>
+
+<section status="final" id="types_lua_check_button_default_value">
+<title>types.lua_check_button.default_value</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>default_value</secondary>
+</indexterm>
+<synopsis>boolean</synopsis>
+<para>If the widget should be checked when the widget is reset</para>
+<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
+    <colspec colwidth="2*"/>
+    <colspec colwidth="8*"/>
+    <tbody><row>
+    <entry>Attributes:</entry>
+    <entry><itemizedlist>
+<listitem><para><emphasis><link linkend="attributes_write">write</link></emphasis></para></listitem>
+</itemizedlist>
+</entry>
+    </row></tbody>
+    </tgroup></informaltable>
+</section>
+
+<section status="final" id="types_lua_check_button_extra_registration_parameters">
+<title>types.lua_check_button.extra registration parameters</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>extra registration parameters</secondary>
+</indexterm>
+<para></para>
+
+<variablelist>
+<varlistentry id="types_lua_check_button_extra_registration_parameters_label"><term>[label]</term><listitem>
+<synopsis>string</synopsis>
+<para>The label to use, both for current and default label</para>
+
+</listitem></varlistentry>
+
+</variablelist>
+</section>
+
+</section>
+
+<section status="final" id="types_lua_label">
+<title>types.lua_label</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>lua_label</secondary>
+</indexterm>
+<synopsis>dt_type</synopsis>
+<para>A label containing some text</para>
+<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
+    <colspec colwidth="2*"/>
+    <colspec colwidth="8*"/>
+    <tbody><row>
+    <entry>Attributes:</entry>
+    <entry><itemizedlist>
+<listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_lua_widget">types.lua_widget</link></para></listitem>
+</itemizedlist>
+</entry>
+    </row></tbody>
+    </tgroup></informaltable>
+<section status="final" id="types_lua_label_label">
+<title>types.lua_label.label</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>label</secondary>
+</indexterm>
+<synopsis>string</synopsis>
+<para>The label displayed</para>
+<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
+    <colspec colwidth="2*"/>
+    <colspec colwidth="8*"/>
+    <tbody><row>
+    <entry>Attributes:</entry>
+    <entry><itemizedlist>
+<listitem><para><emphasis><link linkend="attributes_write">write</link></emphasis></para></listitem>
+</itemizedlist>
+</entry>
+    </row></tbody>
+    </tgroup></informaltable>
+</section>
+
+<section status="final" id="types_lua_label_default_label">
+<title>types.lua_label.default_label</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>default_label</secondary>
+</indexterm>
+<synopsis>string</synopsis>
+<para>The value to set to the label when the widget is reset</para>
+<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
+    <colspec colwidth="2*"/>
+    <colspec colwidth="8*"/>
+    <tbody><row>
+    <entry>Attributes:</entry>
+    <entry><itemizedlist>
+<listitem><para><emphasis><link linkend="attributes_write">write</link></emphasis></para></listitem>
+</itemizedlist>
+</entry>
+    </row></tbody>
+    </tgroup></informaltable>
+</section>
+
+<section status="final" id="types_lua_label_extra_registration_parameters">
+<title>types.lua_label.extra registration parameters</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>extra registration parameters</secondary>
+</indexterm>
+<para></para>
+
+<variablelist>
+<varlistentry id="types_lua_label_extra_registration_parameters_label"><term>[label]</term><listitem>
+<synopsis>string</synopsis>
+<para>The label to use, both for current and default label</para>
+
+</listitem></varlistentry>
+
+</variablelist>
+</section>
+
+</section>
+
+<section status="final" id="types_lua_button">
+<title>types.lua_button</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>lua_button</secondary>
+</indexterm>
+<synopsis>dt_type</synopsis>
+<para>A clickable button</para>
+<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
+    <colspec colwidth="2*"/>
+    <colspec colwidth="8*"/>
+    <tbody><row>
+    <entry>Attributes:</entry>
+    <entry><itemizedlist>
+<listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_lua_widget">types.lua_widget</link></para></listitem>
+</itemizedlist>
+</entry>
+    </row></tbody>
+    </tgroup></informaltable>
+<section status="final" id="types_lua_button_label">
+<title>types.lua_button.label</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>label</secondary>
+</indexterm>
+<synopsis>string</synopsis>
+<para>The label displayed on the button</para>
+<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
+    <colspec colwidth="2*"/>
+    <colspec colwidth="8*"/>
+    <tbody><row>
+    <entry>Attributes:</entry>
+    <entry><itemizedlist>
+<listitem><para><emphasis><link linkend="attributes_write">write</link></emphasis></para></listitem>
+</itemizedlist>
+</entry>
+    </row></tbody>
+    </tgroup></informaltable>
+</section>
+
+<section status="final" id="types_lua_button_default_label">
+<title>types.lua_button.default_label</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>default_label</secondary>
+</indexterm>
+<synopsis>string</synopsis>
+<para>The value to set to the label when the widget is reset</para>
+<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
+    <colspec colwidth="2*"/>
+    <colspec colwidth="8*"/>
+    <tbody><row>
+    <entry>Attributes:</entry>
+    <entry><itemizedlist>
+<listitem><para><emphasis><link linkend="attributes_write">write</link></emphasis></para></listitem>
+</itemizedlist>
+</entry>
+    </row></tbody>
+    </tgroup></informaltable>
+</section>
+
+<section status="final" id="types_lua_button_extra_registration_parameters">
+<title>types.lua_button.extra registration parameters</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>extra registration parameters</secondary>
+</indexterm>
+<para></para>
+
+<variablelist>
+<varlistentry id="types_lua_button_extra_registration_parameters_label"><term>[label]</term><listitem>
+<synopsis>string</synopsis>
+<para>The label to use, both for current and default label</para>
+
+</listitem></varlistentry>
+
+<varlistentry id="types_lua_button_extra_registration_parameters_callback"><term>[callback]</term><listitem>
+<synopsis><link linkend="types_lua_button_clicked_callback">types.lua_button.clicked_callback</link></synopsis>
+<para>A function to call on button click</para>
+
+</listitem></varlistentry>
+
+</variablelist>
+</section>
+
+<section status="final" id="types_lua_button_clicked_callback">
+<title>types.lua_button.clicked_callback</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>clicked_callback</secondary>
+</indexterm>
+<synopsis>function( 
+	<emphasis><link linkend="types_lua_button_clicked_callback_widget">widget</link></emphasis> : <link linkend="types_lua_widget">types.lua_widget</link>
+)</synopsis>
+<para>A function to call on button click</para>
+<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
+    <colspec colwidth="2*"/>
+    <colspec colwidth="8*"/>
+    <tbody><row>
+    <entry>Attributes:</entry>
+    <entry><itemizedlist>
+<listitem><para><emphasis><link linkend="attributes_write">write</link></emphasis></para></listitem>
+</itemizedlist>
+</entry>
+    </row></tbody>
+    </tgroup></informaltable>
+<variablelist>
+<varlistentry id="types_lua_button_clicked_callback_widget"><term>widget</term><listitem>
+<synopsis><link linkend="types_lua_widget">types.lua_widget</link></synopsis>
+<para>The widget that triggered the callback</para>
+
+</listitem></varlistentry>
+
+</variablelist>
+</section>
+
+</section>
+
+<section status="final" id="types_lua_box">
+<title>types.lua_box</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>lua_box</secondary>
+</indexterm>
+<synopsis>dt_type</synopsis>
+<para>A widget containing other widgets</para>
+<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
+    <colspec colwidth="2*"/>
+    <colspec colwidth="8*"/>
+    <tbody><row>
+    <entry>Attributes:</entry>
+    <entry><itemizedlist>
+<listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_lua_widget">types.lua_widget</link></para></listitem>
+</itemizedlist>
+</entry>
+    </row></tbody>
+    </tgroup></informaltable>
+<section status="final" id="types_lua_box_extra_registration_parameters">
+<title>types.lua_box.extra registration parameters</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>extra registration parameters</secondary>
+</indexterm>
+<para></para>
+
+<variablelist>
+<varlistentry id="types_lua_box_extra_registration_parameters_orientation"><term>orientation</term><listitem>
+<synopsis><link linkend="types_GtkOrientation">types.GtkOrientation</link></synopsis>
+<para>The orientation of the box widget</para>
+
+</listitem></varlistentry>
+
+</variablelist>
+</section>
+
+<section status="final" id="types_lua_box__hash_">
+<title>types.lua_box.#</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>#</secondary>
+</indexterm>
+<synopsis><link linkend="types_lua_widget">types.lua_widget</link></synopsis>
+<para>The widgets contained by the box</para>
+
+</section>
+
+<section status="final" id="types_lua_box_append">
+<title>types.lua_box.append</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>append</secondary>
+</indexterm>
+<synopsis>function( 
+	<emphasis><link linkend="types_lua_box_append_widget">widget</link></emphasis> : <link linkend="types_lua_widget">types.lua_widget</link>
+)</synopsis>
+<para>Add a widget at the end of the box</para>
+
+<variablelist>
+<varlistentry id="types_lua_box_append_widget"><term>widget</term><listitem>
+<synopsis><link linkend="types_lua_widget">types.lua_widget</link></synopsis>
+<para>The widget to append</para>
+
+</listitem></varlistentry>
+
+</variablelist>
+</section>
+
+</section>
+
+<section status="final" id="types_GtkOrientation">
+<title>types.GtkOrientation</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>GtkOrientation</secondary>
+</indexterm>
+<synopsis>enum</synopsis>
+<para>A possible orientation for a widget</para>
+<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
+    <colspec colwidth="2*"/>
+    <colspec colwidth="8*"/>
+    <tbody><row>
+    <entry>Attributes:</entry>
+    <entry><itemizedlist>
+<listitem><para><emphasis>values : </emphasis></para>
+<para><itemizedlist>
+<listitem><para>GTK_ORIENTATION_HORIZONTAL</para></listitem>
+<listitem><para>GTK_ORIENTATION_VERTICAL</para></listitem>
+</itemizedlist>
+</para></listitem>
+</itemizedlist>
+</entry>
+    </row></tbody>
+    </tgroup></informaltable>
+</section>
+
+<section status="final" id="types_dt_imageio_module_storage_data_pdf">
+<title>types.dt_imageio_module_storage_data_pdf</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>dt_imageio_module_storage_data_pdf</secondary>
+</indexterm>
+<synopsis>dt_type</synopsis>
+<para>undocumented</para>
+<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
+    <colspec colwidth="2*"/>
+    <colspec colwidth="8*"/>
+    <tbody><row>
+    <entry>Attributes:</entry>
+    <entry><itemizedlist>
+<listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_imageio_module_storage_t">types.dt_imageio_module_storage_t</link></para></listitem>
 </itemizedlist>
 </entry>
     </row></tbody>

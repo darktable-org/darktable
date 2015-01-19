@@ -17,6 +17,7 @@
  */
 #include "lua/luastorage.h"
 #include "lua/image.h"
+#include "lua/widget.h"
 #include <stdio.h>
 #include <common/darktable.h>
 #include "common/imageio_module.h"
@@ -38,6 +39,7 @@ typedef struct
 {
   char *name;
   GList *supported_formats;
+  lua_widget widget;
 } lua_storage_gui_t;
 
 static const char *name_wrapper(const struct dt_imageio_module_storage_t *self)
@@ -308,15 +310,33 @@ static int version_wrapper()
   return 0;
 }
 
+static void gui_init_wrapper(struct dt_imageio_module_storage_t *self)
+{
+  lua_storage_gui_t *gui_data =self->gui_data;
+  self->widget = gui_data->widget->widget;
+}
+
+static void gui_reset_wrapper(struct dt_imageio_module_storage_t *self)
+{
+  lua_storage_gui_t *gui_data =self->gui_data;
+  gui_data->widget->type->gui_reset(gui_data->widget);
+}
+
+static void gui_cleanup_wrapper(struct dt_imageio_module_storage_t *self)
+{
+  self->widget = NULL;
+}
+
+
 static dt_imageio_module_storage_t ref_storage = {
   .plugin_name = { 0 },
   .module = NULL,
   .widget = NULL,
   .gui_data = NULL,
   .name = name_wrapper,
-  .gui_init = empty_wrapper,
-  .gui_cleanup = empty_wrapper,
-  .gui_reset = empty_wrapper,
+  .gui_init = gui_init_wrapper,
+  .gui_cleanup = gui_cleanup_wrapper,
+  .gui_reset = gui_reset_wrapper,
   .init = NULL,
   .supported = default_supported_wrapper,
   .dimension = default_dimension_wrapper,
@@ -338,7 +358,7 @@ static dt_imageio_module_storage_t ref_storage = {
 
 static int register_storage(lua_State *L)
 {
-  lua_settop(L, 6);
+  lua_settop(L, 7);
   lua_getfield(L, LUA_REGISTRYINDEX, "dt_lua_storages");
   lua_newtable(L);
 
@@ -357,6 +377,7 @@ static int register_storage(lua_State *L)
   lua_setfield(L, -2, "name");
   data->name = strdup(name);
   data->supported_formats = NULL;
+  data->widget = NULL;
 
   if(!lua_isnoneornil(L, 3))
   {
@@ -393,6 +414,25 @@ static int register_storage(lua_State *L)
     lua_pushvalue(L, 6);
     lua_setfield(L, -2, "initialize_store");
   }
+
+  if(lua_isnil(L, 7))
+  {
+    storage->gui_init = empty_wrapper;
+    storage->gui_reset = empty_wrapper;
+    storage->gui_cleanup = empty_wrapper;
+  }
+  else
+  {
+    if(!dt_lua_isa(L,7,lua_widget)) {
+      luaL_argerror(L,7,"widget type expected");
+    } else {
+      lua_pushvalue(L, 7);
+      lua_setfield(L, -2, "widget"); // protect the widget from GC
+      lua_widget widget = *(lua_widget*)lua_touserdata(L,7);
+      data->widget = widget;
+    }
+  }
+
 
   lua_setfield(L, -2, plugin_name);
 
@@ -439,6 +479,8 @@ static int register_storage(lua_State *L)
     }
   }
 
+  storage->gui_init(storage);
+  if(storage->widget) g_object_ref(storage->widget);
   dt_imageio_insert_storage(storage);
 
   return 0;

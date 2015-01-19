@@ -8,6 +8,7 @@ local meta_node = {__index = {}}
 ----------------------------------------
 --  INTERNAL : PARSING OF SOURCE TREE --
 ----------------------------------------
+local create_node
 local create_documentation_node
 local toplevel = {}
 
@@ -113,7 +114,7 @@ local function document_type_sub(node,result,parent,prev_name)
 				end
 			end
 		elseif field == "__luaA_ParentMetatable" then
-			local type_node = create_documentation_node(value,toplevel.types,value.__luaA_TypeName);
+			local type_node = create_node(value,toplevel.types,value.__luaA_TypeName);
 			set_attribute(result,"parent",type_node)
 		elseif (field == "__index"
 			or field == "__newindex"
@@ -138,14 +139,14 @@ local function document_type_sub(node,result,parent,prev_name)
 	return result
 end
 
-local function document_type_from_obj(obj,type_doc)
+local function document_from_obj(obj,type_doc)
 	if(type_doc._luadoc_in_obj_rec) then return end
 	type_doc._luadoc_in_obj_rec = true
 	for k,v in pairs(obj) do
 		if type_doc[k] and M.get_attribute(type_doc[k],"reported_type")== "undocumented" then
 			local old_vers = type_doc[k]
 			M.remove_parent(type_doc[k],type_doc)
-			type_doc[k] = create_documentation_node(v,type_doc,k)
+			type_doc[k] = create_node(v,type_doc,k)
 			for k2,v2 in pairs(old_vers._luadoc_attributes) do
 				if type_doc[k]._luadoc_attributes[k2] == nil then
 					set_attribute(type_doc[k],k2,v2)
@@ -155,7 +156,7 @@ local function document_type_from_obj(obj,type_doc)
 			local old_vers = type_doc["#"]
 			M.remove_parent(type_doc["#"],type_doc)
 			nojoin[v] = true
-			type_doc["#"] = create_documentation_node(v,type_doc,"#")
+			type_doc["#"] = create_node(v,type_doc,"#")
 			for k2,v2 in pairs(old_vers._luadoc_attributes) do
 				if type_doc["#"]._luadoc_attributes[k2] == nil then
 					set_attribute(type_doc["#"],k2,v2)
@@ -165,10 +166,10 @@ local function document_type_from_obj(obj,type_doc)
 	end
 	type_doc._luadoc_in_obj_rec = false
 	if M.get_attribute(type_doc,"parent") then
-		document_type_from_obj(obj, M.get_attribute(type_doc,"parent"))
+		document_from_obj(obj, M.get_attribute(type_doc,"parent"))
 	end
 end
-M.document_type_from_obj = document_type_from_obj
+M.document_from_obj = document_from_obj
 
 local function document_type(node,parent,prev_name)
 	local result = create_empty_node(node,"dt_type",parent,prev_name);
@@ -205,7 +206,7 @@ local function document_dt_singleton(node,parent,prev_name)
 	local result = create_empty_node(node,"dt_singleton",parent,prev_name);
 	local mt = getmetatable(node)
 	document_type_sub(mt,result,parent,prev_name)
-	document_type_from_obj(node,result)
+	document_from_obj(node,result)
 	set_attribute(result,"reported_type","dt_singleton")
 	return result
 end
@@ -219,10 +220,10 @@ end
 local function document_dt_userdata(node,parent,prev_name)
 	local result = create_empty_node(node,"dt_userdata",parent,prev_name);
 	local mt = getmetatable(node)
-	local ret_node = create_documentation_node(mt,result,"reported_type")
+	local ret_node = create_node(mt,result,"reported_type")
 	set_attribute(result,"reported_type",ret_node)
 	M.remove_parent(ret_node,result)
-	document_type_from_obj(node,ret_node)
+	document_from_obj(node,ret_node)
 	return result
 end
 
@@ -247,7 +248,7 @@ local function document_table(node,parent,prev_name)
 	local result = create_empty_node(node,"table",parent,prev_name);
 	for k,v in pairs(node) do
 		if not result[k] then
-			result[k] = create_documentation_node(v,result,k)
+			result[k] = create_node(v,result,k)
 		end
 	end
 	set_attribute(result,"reported_type",type(node))
@@ -264,8 +265,8 @@ local function is_nil(node)
 	return node == nil
 end
 local function document_nil(node,parent,prev_name)
-	local result = create_empty_node(node,"documentation node",parent,prev_name)
-	set_attribute(result,"reported_type","documentation node")
+	local result = create_empty_node(node,"nil",parent,prev_name)
+	set_attribute(result,"reported_type","nil")
 	return result
 end
 
@@ -291,10 +292,16 @@ local type_matcher ={
 }
 
 create_documentation_node = function(node,parent,prev_name)
+	local result = create_empty_node(node,"documentation node",parent,prev_name)
+	set_attribute(result,"reported_type","documentation node")
+	return result
+end
+
+create_node = function(node,parent,prev_name)
 	for _,v in pairs(type_matcher) do
 		if v[1](node) then return v[2](node,parent,prev_name)  end
 	end
-	return create_empty_node(node,"undocumented node type "..type(node),parent,prev_name)
+	return create_empty_node(node,"undocumented",parent,prev_name)
 end
 
 local function document_lautoc_enum(node,parent,prev_name)
@@ -548,7 +555,7 @@ function M.all_children(node)
 		if node._luadoc_text then
 			return node._luadoc_text
 		else
-			return "undocumented "..M.get_name(node,true)
+			return "undocumented"
 		end
 	end
 
@@ -655,14 +662,14 @@ function M.all_children(node)
 	end
 	for k,v in pairs(debug.getregistry()) do
 		if is_type(v) then
-			toplevel.types[k] = create_documentation_node(v,toplevel.types,k);
+			toplevel.types[k] = create_node(v,toplevel.types,k);
 		end
 	end
 
 
 	toplevel.darktable = create_documentation_node(nil,toplevel,"darktable")
 	for k,v in pairs(dt) do
-		toplevel.darktable[k] = create_documentation_node(v,toplevel.darktable,k);
+		toplevel.darktable[k] = create_node(v,toplevel.darktable,k);
 	end
 
 	toplevel.events = create_documentation_node(nil,toplevel,"events")
@@ -677,21 +684,35 @@ function M.all_children(node)
 	local registry = debug.getregistry();
 	for k, v in pairs(registry.dt_lua_modules.format) do
 		local res = v()
-		document_type_from_obj(res,toplevel.types[dt.debug.type(res)])
+		document_from_obj(res,toplevel.types[dt.debug.type(res)])
 	end
 	for k, v in pairs(registry.dt_lua_modules.storage) do
 		local res = v()
 		if res then
-			document_type_from_obj(res,toplevel.types[dt.debug.type(res)])
+			document_from_obj(res,toplevel.types[dt.debug.type(res)])
 		end
 	end
 
+  -- create one widget of each type
+	for k, v in pairs(registry.dt_lua_modules.widget) do
+    local res
+    if k == "box" then
+      res = v("GTK_ORIENTATION_HORIZONTAL","")
+    else
+      res = v("")
+    end
+    local thetype= toplevel.types[dt.debug.type(res)]
+		document_from_obj(res,thetype)
+    thetype.extra_registration_parameters = create_documentation_node(nil,thetype,"extra_registration_parameters");
+    thetype.extra_registration_parameters:set_real_name("extra registration parameters")
+	end
+
   local collect_data = dt.gui.libs.collect.filter()
-  document_type_from_obj(collect_data,toplevel.types.dt_lib_collect_params_t)
+  document_from_obj(collect_data,toplevel.types.dt_lib_collect_params_t)
 
 
 	local job =dt.gui.create_job("test job",true)
-	document_type_from_obj(job,toplevel.types.dt_lua_backgroundjob_t)
+	document_from_obj(job,toplevel.types.dt_lua_backgroundjob_t)
 	job.valid = false
 	job = nil
 
@@ -703,10 +724,10 @@ function M.all_children(node)
 		if(view == dt.gui.views.darkroom) then
 			dt.gui.libs.snapshots:take_snapshot();
 			local snapshot = dt.gui.libs.snapshots[1]
-			document_type_from_obj(snapshot,toplevel.types.dt_lua_snapshot_t)
+			document_from_obj(snapshot,toplevel.types.dt_lua_snapshot_t)
 		end
 		for libname,lib in pairs(dt.gui.libs) do
-			document_type_from_obj(lib,toplevel.darktable.gui.libs[libname])
+			document_from_obj(lib,toplevel.darktable.gui.libs[libname])
 		end
 	end
 
@@ -721,7 +742,7 @@ function M.all_children(node)
 	for _,view in pairs(dt.gui.views) do
 		dt.gui.current_view(view);
 		for libname,lib in pairs(dt.gui.libs) do
-			document_type_from_obj(lib,toplevel.darktable.gui.libs[libname])
+			document_from_obj(lib,toplevel.darktable.gui.libs[libname])
 		end
 	end
 	return M;

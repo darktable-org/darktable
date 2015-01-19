@@ -26,10 +26,12 @@
      * string : runs a string as a command
  * doxxx_silent : same but errors go to dt_console_log and nil is put as a result on the stack
  * doxxx_raise : same but a lua error is raised
+ * dxxx_later : call will be dispatched to a secondary job, returns immediately, can't return values, will treat errors in secondary thread as "silent"
  */
 int dt_lua_do_chunk(lua_State *L, int nargs, int nresults);
 int dt_lua_do_chunk_silent(lua_State *L, int nargs, int nresults);
 int dt_lua_do_chunk_raise(lua_State *L, int nargs, int nresults);
+void dt_lua_do_chunk_later(lua_State *L, int nargs);
 
 int dt_lua_dostring(lua_State *L, const char *command, int nargs, int nresults);
 int dt_lua_dostring_silent(lua_State *L, const char *command, int nargs, int nresults);

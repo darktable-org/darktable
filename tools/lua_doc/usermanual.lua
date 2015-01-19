@@ -52,6 +52,12 @@ local function get_reported_type(node,simple)
   end
   if rtype == "documentation node" then rtype = nil end
   if rtype == "dt_singleton" then rtype = nil end
+  if rtype == "undocumented" then
+    io.stderr:write("warning, undocumented type for "..node:get_name(true).."\n")
+  end
+  if rtype == "nil" then
+    io.stderr:write("warning, documenting a nil for "..node:get_name(true).."\n")
+  end
   if( rtype and not simple and doc.get_attribute(node,"signature")) then
     rtype = rtype.."( "
     local sig = doc.get_attribute(node,"signature")
@@ -126,6 +132,10 @@ local function print_content(node)
     result = result .."<synopsis>"..rtype.."</synopsis>\n"
   end
   result = result .."<para>"..doc.get_text(node).."</para>\n"
+  if doc.get_text(node) == "undocumented" then
+    io.stderr:write("warning, undocumented node "..node:get_name(true).."\n")
+  end
+
   result = result ..print_attributes(node)
   result = result.."\n"
   local sig = doc.get_attribute(node,"signature")
@@ -184,7 +194,11 @@ parse_doc_node = function(node,parent,prev_name)
     if(node:get_short_name() == "return") then
       result = result ..'<varlistentry><term><emphasis>return</emphasis></term><listitem>\n'
     else
-      result = result ..'<varlistentry id="'..doc.get_name(node,true):gsub("%.","_"):gsub("#","_hash_")..'"><term>'..doc.get_short_name(node).."</term><listitem>\n"
+      node_name  = doc.get_short_name(node)
+      if(doc.get_attribute(node,"optional")) then
+        node_name ="["..node_name.."]"
+      end
+      result = result ..'<varlistentry id="'..doc.get_name(node,true):gsub("%.","_"):gsub("#","_hash_")..'"><term>'..node_name.."</term><listitem>\n"
     end
   elseif depth ~= 0 then
     --result = result..'<sect'..(depth+1)..' status="final" '

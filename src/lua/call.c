@@ -272,14 +272,7 @@ int dt_lua_do_chunk_raise(lua_State *L, int nargs, int nresults)
 }
 
 
-static int ending_cb(lua_State *L)
-{
-  lua_pushboolean(L,darktable.lua_state.ending);
-  return 1;
-}
-
-
-static int32_t dispatch_callback_job(dt_job_t *job)
+static int32_t do_chunk_later_callback(dt_job_t *job)
 {
   dt_lua_lock();
   lua_State* L= darktable.lua_state.state;
@@ -299,21 +292,33 @@ static int32_t dispatch_callback_job(dt_job_t *job)
   return 0;
 }
 
-static int dispatch_cb(lua_State *L)
+
+void dt_lua_do_chunk_later(lua_State *L, int nargs)
 {
   lua_getfield(L, LUA_REGISTRYINDEX, "dt_lua_bg_threads");
   lua_State *new_thread = lua_newthread(L);
   const int reference = luaL_ref(L,-2);
   lua_pop(L,1);
-  lua_xmove(L,new_thread,lua_gettop(L));
-  dt_job_t *job = dt_control_job_create(&dispatch_callback_job, "lua: dispatch");
+  lua_xmove(L,new_thread,nargs+1);
+  dt_job_t *job = dt_control_job_create(&do_chunk_later_callback, "lua: later_chunk");
 
   if(job)
   {
     dt_control_job_set_params(job, GINT_TO_POINTER(reference));
     dt_control_add_job(darktable.control, DT_JOB_QUEUE_USER_FG, job);
   }
+}
+
+static int dispatch_cb(lua_State *L)
+{
+  dt_lua_do_chunk_later(L,lua_gettop(L)-1);
   return 0;
+}
+
+static int ending_cb(lua_State *L)
+{
+  lua_pushboolean(L,darktable.lua_state.ending);
+  return 1;
 }
 
 

@@ -152,6 +152,15 @@ for k,v in sorted_pairs(debug.getregistry().dt_lua_modules.storage) do
 end
 darktable.new_storage:add_parameter("type","string",[[The type of storage object to create, one of : ]]..  startlist().. tmp..endlist().."(Other, lua-defined, storage types may appear.)") 
 darktable.new_storage:add_return(types.dt_imageio_module_storage_t,"The newly created object. Exact type depends on the type passed")
+
+darktable.new_widget:set_text("Creates a new widget object to display in the UI")
+tmp =""
+for k,v in sorted_pairs(debug.getregistry().dt_lua_modules.widget) do
+  tmp = tmp..listel(k)
+end
+darktable.new_widget:add_parameter("type","string",[[The type of storage object to create, one of : ]]..  startlist().. tmp..endlist()) 
+darktable.new_widget:add_parameter("...","variable",[[Extra parameters, depend on the type of widget created]]) 
+darktable.new_widget:add_return(types.lua_widget,"The newly created object. Exact type depends on the type passed")
 ----------------------
 --  DARKTABLE.GUI   --
 ----------------------
@@ -165,6 +174,7 @@ darktable.gui.action_images:set_text([[A table of ]]..my_tostring(types.dt_lua_i
 remove_all_children(darktable.gui.action_images)
 
 darktable.gui.hovered:set_text([[The image under the cursor or nil if no image is hovered.]])
+darktable.gui.hovered:set_reported_type(types.dt_lua_image_t)
 darktable.gui.selection:set_text([[Allows to change the set of selected images.]])
 darktable.gui.selection:add_parameter("selection","table of "..my_tostring(types.dt_lua_image_t),[[A table of images which will define the selected images. If this parameter is not given the selection will be untouched. If an empty table is given the selection will be emptied.]]):set_attribute("optional",true)
 darktable.gui.selection:add_return("table of "..my_tostring(types.dt_lua_image_t),[[A table containing the selection as it was before the function was called.]])
@@ -386,6 +396,7 @@ darktable.gui.libs.snapshots.direction:set_text([[The direction of the snapshot 
 
 darktable.gui.libs.snapshots["#"]:set_text([[The different snapshots for the image]])
 darktable.gui.libs.snapshots.selected:set_text([[The currently selected snapshot]])
+darktable.gui.libs.snapshots.selected:set_reported_type(types.dt_lua_snapshot_t)
 darktable.gui.libs.snapshots.take_snapshot:set_text([[Take a snapshot of the current image and add it to the UI]]..para()..[[The snapshot file will be generated at the next redraw of the main window]])
 darktable.gui.libs.snapshots.max_snapshot:set_text([[The maximum number of snapshots]])
 
@@ -503,7 +514,9 @@ darktable.debug.type:set_text([[Similar to the system function type() but it wil
 	types.dt_lua_image_t.exif_focus_distance:set_text([[The distance of the subject.]])
 	types.dt_lua_image_t.exif_crop:set_text([[The exif crop data.]])
 	types.dt_lua_image_t.latitude:set_text([[GPS latitude data of the image, nil if not set.]])
+	types.dt_lua_image_t.latitude:set_reported_type("float or nil")
 	types.dt_lua_image_t.longitude:set_text([[GPS longitude data of the image, nil if not set.]])
+	types.dt_lua_image_t.longitude:set_reported_type("float or nil")
 	types.dt_lua_image_t.is_raw:set_text([[True if the image is a RAW file.]])
 	types.dt_lua_image_t.is_ldr:set_text([[True if the image is a ldr image.]])
 	types.dt_lua_image_t.is_hdr:set_text([[True if the image is a hdr image.]])
@@ -675,6 +688,43 @@ darktable.debug.type:set_text([[Similar to the system function type() but it wil
   types.dt_lua_lib_collect_params_rule_t.item:set_reported_type(types.dt_collection_properties_t)
   types.dt_lib_collect_mode_t:set_text("The logical operators to apply between rules");
   types.dt_collection_properties_t:set_text("The different elements on which a collection can be filtered");
+
+
+  types.lua_widget:set_text("Common parent type for all lua-handled widgets");
+
+  types.lua_check_button:set_text("A checkable button with a label next to it");
+  types.lua_check_button.label:set_text("The label displayed next to the button");
+  types.lua_check_button.default_label:set_text("The value to set to the label when the widget is reset");
+  types.lua_check_button.value:set_text("If the widget is checked or not");
+  types.lua_check_button.default_value:set_text("If the widget should be checked when the widget is reset");
+	types.lua_check_button.extra_registration_parameters:set_text("")
+	types.lua_check_button.extra_registration_parameters:add_parameter("label","string","The label to use, both for current and default label"):set_attribute("optional",true)
+
+  types.lua_label:set_text("A label containing some text");
+  types.lua_label.label:set_text("The label displayed");
+  types.lua_label.default_label:set_text("The value to set to the label when the widget is reset");
+	types.lua_label.extra_registration_parameters:set_text("")
+	types.lua_label.extra_registration_parameters:add_parameter("label","string","The label to use, both for current and default label"):set_attribute("optional",true)
+
+  types.lua_button:set_text("A clickable button");
+  types.lua_button.label:set_text("The label displayed on the button");
+  types.lua_button.default_label:set_text("The value to set to the label when the widget is reset");
+	types.lua_button.extra_registration_parameters:set_text("")
+	types.lua_button.extra_registration_parameters:add_parameter("label","string","The label to use, both for current and default label"):set_attribute("optional",true)
+	types.lua_button.extra_registration_parameters:add_parameter("callback",types.lua_button.clicked_callback,"A function to call on button click"):set_attribute("optional",true)
+  types.lua_button.clicked_callback:set_text("A function to call on button click")
+  types.lua_button.clicked_callback:set_reported_type("function")
+  types.lua_button.clicked_callback:add_parameter("widget",types.lua_widget,"The widget that triggered the callback")
+
+  types.lua_box:set_text("A widget containing other widgets");
+	types.lua_box.extra_registration_parameters:set_text("")
+	types.lua_box.extra_registration_parameters:add_parameter("orientation",types.GtkOrientation,"The orientation of the box widget")
+	types.lua_box["#"]:set_reported_type(types.lua_widget)
+	types.lua_box["#"]:set_text("The widgets contained by the box")
+  types.lua_box.append:set_text("Add a widget at the end of the box")
+  types.lua_box.append:add_parameter("widget",types.lua_widget,"The widget to append")
+
+  types.GtkOrientation:set_text("A possible orientation for a widget")
 	----------------------
 	--  EVENTS          --
 	----------------------

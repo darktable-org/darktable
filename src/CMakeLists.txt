@@ -479,6 +479,11 @@ if(USE_LUA)
       "lua/tags.c"
       "lua/types.c"
       "lua/view.c"
+      "lua/widget.c"
+      "lua/widget/box.c"
+      "lua/widget/button.c"
+      "lua/widget/check_button.c"
+      "lua/widget/label.c"
       )
     set(SOURCES ${SOURCES} ${SOURCE_FILES_LUA})
   endif(USE_LUA)
