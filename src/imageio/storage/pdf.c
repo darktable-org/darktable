@@ -424,7 +424,9 @@ static void mode_toggle_callback(GtkWidget *widget, gpointer user_data)
 static void bpp_toggle_callback(GtkWidget *widget, gpointer user_data)
 {
   const int sel = dt_bauhaus_combobox_get(widget);
-  dt_conf_set_int("plugins/imageio/storage/pdf/bpp", _pdf_bpp[sel].bpp);
+  // we don't allow typing in that dropdown so -1 shouldn't happen, but coverity doesn't know that
+  if(sel >= 0)
+    dt_conf_set_int("plugins/imageio/storage/pdf/bpp", _pdf_bpp[sel].bpp);
 }
 
 static void compression_toggle_callback(GtkWidget *widget, gpointer user_data)
