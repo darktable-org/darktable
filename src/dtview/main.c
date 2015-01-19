@@ -73,11 +73,6 @@ int init(int argc, char *arg[])
   pixels = (float *)malloc(sizeof(float) * 4 * width * height);
   for(int k = 0; k < width * height * 4; k++) pixels[k] = 1.0f;
 
-  if(!info)
-  {
-    fprintf(stderr, "[%s] video query failed: %s\n", arg[0], SDL_GetError());
-    return 0;
-  }
   bpp = 32;
 
   SDL_GL_SetAttribute(SDL_GL_RED_SIZE, 8);
