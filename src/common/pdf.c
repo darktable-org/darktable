@@ -307,8 +307,14 @@ int dt_pdf_add_icc(dt_pdf_t *pdf, const char *filename)
   if(!in) return 0;
 
   fseek(in, 0, SEEK_END);
-  size_t file_size = ftell(in);
+  ssize_t file_size = ftell(in);
   fseek(in, 0, SEEK_SET);
+
+  if(file_size < 0)
+  {
+    fclose(in);
+    return 0;
+  }
 
   unsigned char *data = (unsigned char *)malloc(file_size);
   size_t len = fread(data, 1, file_size, in);
