@@ -932,7 +932,7 @@ failed:
   }
 
   // TODO: escape ')' and maybe also '('
-  pdf->title = (d->params.title && *d->params.title) ? d->params.title : NULL;
+  pdf->title = d->params.title;
 
   f->pdf = pdf;
   f->border = border;
