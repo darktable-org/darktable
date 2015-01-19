@@ -32,6 +32,7 @@
 
 DT_MODULE(1)
 
+static gboolean _bauhaus_combo_box_set_active_text(GtkWidget *cb, const gchar *text);
 static gboolean _combo_box_set_active_text(GtkComboBox *cb, const gchar *text);
 
 const char*
@@ -52,8 +53,9 @@ uint32_t container()
 
 typedef struct dt_lib_print_settings_t
 {
-  GtkComboBox *profile, *pprofile, *intent, *style, *style_mode, *pintent, *printers, *papers;
-  GtkWidget *landscape, *portrait;
+  GtkComboBox *printers;
+  GtkWidget *profile, *intent, *style, *style_mode, *papers;
+  GtkWidget *landscape, *portrait, *pprofile, *pintent;
   GList *profiles;
   GtkButton *print_button;
   GtkToggleButton *lock_button;
@@ -270,7 +272,7 @@ _print_button_clicked (GtkWidget *widget, gpointer user_data)
 
   //  record printer intent and profile
 
-  ps->prt.printer.intent = gtk_combo_box_get_active(GTK_COMBO_BOX(ps->pintent));
+  ps->prt.printer.intent = dt_bauhaus_combobox_get(ps->pintent);
   g_strlcpy(ps->prt.printer.profile, printer_profile_filename, sizeof(ps->prt.printer.profile));
 
   dt_control_print(list, max_width, max_height, format_index, storage_index, style, style_append, filename, &ps->prt);
@@ -316,10 +318,7 @@ static void _set_printer(dt_lib_module_t *self, const char *printer_name)
 
   // first clear current list
 
-  GtkTreeModel *store = gtk_combo_box_get_model(ps->papers);
-
-  if (store)
-    gtk_list_store_clear(GTK_LIST_STORE (store));
+  dt_bauhaus_combobox_clear(ps->papers);
 
   // then add papers for the given printer
 
@@ -331,11 +330,11 @@ static void _set_printer(dt_lib_module_t *self, const char *printer_name)
   while (papers)
   {
     dt_paper_info_t *p = (dt_paper_info_t *)papers->data;
-    gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(ps->papers), p->common_name);
+    dt_bauhaus_combobox_add(ps->papers, p->common_name);
 
     if (ispaperset == FALSE && (!strcmp(default_paper, p->common_name) || default_paper[0] == '\0'))
     {
-      gtk_combo_box_set_active(GTK_COMBO_BOX(ps->papers), np);
+      dt_bauhaus_combobox_set(ps->papers, np);
       ispaperset = TRUE;
     }
 
@@ -348,7 +347,6 @@ static void _set_printer(dt_lib_module_t *self, const char *printer_name)
   if (paper)
     memcpy(&ps->prt.paper, paper, sizeof(dt_paper_info_t));
 
-  dt_ellipsize_combo(ps->papers);
   dt_view_print_settings(darktable.view_manager, &ps->prt);
 }
 
@@ -362,11 +360,11 @@ _printer_changed (GtkComboBoxText *combo, dt_lib_module_t *self)
 }
 
 static void
-_paper_changed (GtkComboBoxText *combo, dt_lib_module_t *self)
+_paper_changed (GtkWidget *combo, dt_lib_module_t *self)
 {
   dt_lib_print_settings_t *ps = (dt_lib_print_settings_t *)self->data;
 
-  const gchar *paper_name = gtk_combo_box_text_get_active_text(GTK_COMBO_BOX_TEXT(combo));
+  const gchar *paper_name = dt_bauhaus_combobox_get_text(combo);
 
   if (!paper_name) return;
 
@@ -494,35 +492,35 @@ _orientation_callback (GtkWidget *radio, gpointer user_data)
 }
 
 static void
-_style_callback(GtkComboBox *widget, dt_lib_module_t *self)
+_style_callback(GtkWidget *widget, dt_lib_module_t *self)
 {
   dt_lib_print_settings_t *ps = (dt_lib_print_settings_t *)self->data;
 
-  if(gtk_combo_box_get_active(ps->style) == 0)
+  if(dt_bauhaus_combobox_get(ps->style) == 0)
     dt_conf_set_string("plugins/print/print/style", "");
   else
   {
-    gchar *style = gtk_combo_box_text_get_active_text(GTK_COMBO_BOX_TEXT(ps->style));
+    const gchar *style = dt_bauhaus_combobox_get_text(ps->style);
     dt_conf_set_string("plugins/print/print/style", style);
   }
 }
 
 static void
-_style_mode_changed(GtkComboBox *widget, dt_lib_module_t *self)
+_style_mode_changed(GtkWidget *widget, dt_lib_module_t *self)
 {
   dt_lib_print_settings_t *ps = (dt_lib_print_settings_t *)self->data;
 
-  if(gtk_combo_box_get_active(ps->style_mode) == 0)
+  if(dt_bauhaus_combobox_get(ps->style_mode) == 0)
     dt_conf_set_bool("plugins/print/print/style_append", FALSE);
   else
     dt_conf_set_bool("plugins/print/print/style_append", TRUE);
 }
 
 static void
-_profile_changed(GtkComboBox *widget, dt_lib_module_t *self)
+_profile_changed(GtkWidget *widget, dt_lib_module_t *self)
 {
   dt_lib_print_settings_t *ps = (dt_lib_print_settings_t *)self->data;
-  int pos = gtk_combo_box_get_active(widget);
+  int pos = dt_bauhaus_combobox_get(widget);
   GList *prof = ps->profiles;
   while(prof)
   {
@@ -541,10 +539,10 @@ _profile_changed(GtkComboBox *widget, dt_lib_module_t *self)
 }
 
 static void
-_printer_profile_changed(GtkComboBox *widget, dt_lib_module_t *self)
+_printer_profile_changed(GtkWidget *widget, dt_lib_module_t *self)
 {
   dt_lib_print_settings_t *ps = (dt_lib_print_settings_t *)self->data;
-  const gchar *printer_profile = gtk_combo_box_text_get_active_text(GTK_COMBO_BOX_TEXT(widget));
+  const gchar *printer_profile = dt_bauhaus_combobox_get_text(widget);
   GList *prof = ps->profiles;
   while(prof)
   {
@@ -561,16 +559,16 @@ _printer_profile_changed(GtkComboBox *widget, dt_lib_module_t *self)
 }
 
 static void
-_printer_intent_callback (GtkComboBox *widget, dt_lib_module_t *self)
+_printer_intent_callback (GtkWidget *widget, dt_lib_module_t *self)
 {
-  int pos = gtk_combo_box_get_active(widget);
+  int pos = dt_bauhaus_combobox_get(widget);
   dt_conf_set_int("plugins/print/printer/iccintent", pos);
 }
 
 static void
-_intent_callback (GtkComboBox *widget, dt_lib_module_t *self)
+_intent_callback (GtkWidget *widget, dt_lib_module_t *self)
 {
-  int pos = gtk_combo_box_get_active(widget);
+  int pos = dt_bauhaus_combobox_get(widget);
   // record the intent that will override the out rendering module on export
   dt_conf_set_int("plugins/lighttable/export/iccintent", pos - 1);
   dt_conf_set_int("plugins/print/print/iccintent", pos - 1);
@@ -592,13 +590,11 @@ gui_init (dt_lib_module_t *self)
 {
   dt_lib_print_settings_t *d = (dt_lib_print_settings_t*)malloc(sizeof(dt_lib_print_settings_t));
   self->data = d;
-  self->widget = gtk_table_new(18, 2, FALSE);
+  self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
+
   GtkWidget *label;
   GtkComboBox *comb;
-  int tpos = 1; // the ligne on the table
   char tooltip[1024];
-
-  gtk_table_set_row_spacings(GTK_TABLE(self->widget), 5);
 
   dt_init_print_info(&d->prt);
   d->prt.page.landscape = TRUE;
@@ -619,16 +615,15 @@ gui_init (dt_lib_module_t *self)
   ////////////////////////// PRINTER SETTINGS
 
   // create papers combo as filled when adding printers
-  d->papers = GTK_COMBO_BOX(gtk_combo_box_text_new());
+  d->papers = dt_bauhaus_combobox_new(NULL);
 
   GList *printers = dt_get_printers();
   int np=0;
   int printer_index = 0;
   char printer_name[128] = { 0 };
 
-  label = gtk_label_new(_("printer"));
-  gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
-  gtk_table_attach(GTK_TABLE(self->widget), label, 0, 1, tpos, tpos+1, GTK_SHRINK|GTK_EXPAND|GTK_FILL, 0, 0, 0);
+  label = dt_ui_section_label_new(_("printer"));
+  gtk_box_pack_start(GTK_BOX(self->widget), label, TRUE, TRUE, 0);
 
   comb = GTK_COMBO_BOX(gtk_combo_box_text_new());
 
@@ -648,27 +643,23 @@ gui_init (dt_lib_module_t *self)
     printers = g_list_next (printers);
     np++;
   }
-  gtk_table_attach(GTK_TABLE(self->widget), GTK_WIDGET(comb), 1, 2, tpos, tpos+1, GTK_SHRINK|GTK_EXPAND|GTK_FILL, 0, 0, 0);
+
+  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(comb), TRUE, TRUE, 0);
   d->printers = comb;
   g_signal_connect(G_OBJECT(d->printers), "changed", G_CALLBACK(_printer_changed), self);
   g_list_free (printers);
 
   ////////////////////////// PAGE SETTINGS
 
-  label = dtgtk_label_new(_("page"), DARKTABLE_LABEL_TAB | DARKTABLE_LABEL_ALIGN_RIGHT);
-  gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
-  tpos++;
-  gtk_table_attach(GTK_TABLE(self->widget), label, 0, 2, tpos, tpos+1, GTK_EXPAND|GTK_FILL, 0, 0, 0);
+  label = dt_ui_section_label_new(_("page"));
+  gtk_box_pack_start(GTK_BOX(self->widget), label, TRUE, TRUE, 0);
 
   //// papers
 
-  label = gtk_label_new(_("paper"));
-  gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
-  tpos++;
-  gtk_table_attach(GTK_TABLE(self->widget), label, 0, 1, tpos, tpos+1, GTK_SHRINK|GTK_EXPAND|GTK_FILL, 0, 0, 0);
+  dt_bauhaus_widget_set_label(d->papers, NULL, _("paper"));
 
-  gtk_table_attach(GTK_TABLE(self->widget), GTK_WIDGET(d->papers), 1, 2, tpos, tpos+1, GTK_EXPAND|GTK_FILL, 0, 0, 0);
-  g_signal_connect(G_OBJECT(d->papers), "changed", G_CALLBACK(_paper_changed), self);
+  g_signal_connect(G_OBJECT(d->papers), "value-changed", G_CALLBACK(_paper_changed), self);
+  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(d->papers), TRUE, TRUE, 0);
 
   // now set recorded default/active printer
 
@@ -679,42 +670,42 @@ gui_init (dt_lib_module_t *self)
 
   d->landscape = gtk_radio_button_new_with_label(NULL, _("landscape"));
   d->portrait = gtk_radio_button_new_with_label_from_widget(GTK_RADIO_BUTTON (d->landscape), _("portrait"));
-  tpos++;
-  gtk_table_attach(GTK_TABLE(self->widget), d->landscape, 0, 1, tpos, tpos+1, GTK_SHRINK|GTK_EXPAND|GTK_FILL, 0, 0, 0);
-  gtk_table_attach(GTK_TABLE(self->widget), d->portrait, 1, 2, tpos, tpos+1, GTK_SHRINK|GTK_EXPAND|GTK_FILL, 0, 0, 0);
+  GtkBox *hbox2 = GTK_BOX(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, DT_PIXEL_APPLY_DPI(5)));
+  gtk_box_pack_start(GTK_BOX(hbox2), GTK_WIDGET(d->landscape), TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(hbox2), GTK_WIDGET(d->portrait), TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(hbox2), TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(d->landscape), "toggled", G_CALLBACK(_orientation_callback), self);
   g_signal_connect(G_OBJECT(d->portrait), "toggled", G_CALLBACK(_orientation_callback), self);
 
   //// borders
 
-  GtkTable *bds = GTK_TABLE(gtk_table_new(3,3,TRUE));
+  GtkGrid *bds = GTK_GRID(gtk_grid_new());
+  gtk_grid_set_row_spacing(bds, DT_PIXEL_APPLY_DPI(3));
+  gtk_grid_set_column_spacing(bds, DT_PIXEL_APPLY_DPI(3));
 
   d->lock_activated = FALSE;
 
   //d->b_top  = gtk_spin_button_new_with_range(0, 10000, 1);
   g_object_set(G_OBJECT(d->b_top), "tooltip-text", _("top margin (in mm)"), (char *)NULL);
-  gtk_table_attach(bds, GTK_WIDGET(d->b_top), 1, 2, 0, 1, GTK_EXPAND|GTK_FILL, 0, 0, 0);
+  gtk_grid_attach(bds, GTK_WIDGET(d->b_top), 1, 0, 1, 1);
 
   //d->b_left  = gtk_spin_button_new_with_range(0, 10000, 1);
   g_object_set(bds, "tooltip-text", _("left margin (in mm)"), (char *)NULL);
-  gtk_table_attach(bds, GTK_WIDGET(d->b_left), 0, 1, 1, 2, GTK_EXPAND|GTK_FILL, 0, 0, 0);
+  gtk_grid_attach(bds, GTK_WIDGET(d->b_left), 0, 1, 1, 1);
 
-  d->lock_button = GTK_TOGGLE_BUTTON(
-    dtgtk_togglebutton_new_with_label(_("lock"), NULL, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER));
+  d->lock_button = GTK_TOGGLE_BUTTON(gtk_toggle_button_new_with_label(_("lock")));
   g_object_set(G_OBJECT(d->lock_button), "tooltip-text", _("change all borders uniformly"), (char *)NULL);
-  gtk_table_attach(bds, GTK_WIDGET(d->lock_button), 1, 2, 1, 2, GTK_EXPAND|GTK_FILL, 0, 0, 0);
-  tpos++;
+  gtk_grid_attach(bds, GTK_WIDGET(d->lock_button), 1, 1, 1, 1);
 
   //d->b_right  = gtk_spin_button_new_with_range(0, 10000, 1);
   g_object_set(G_OBJECT(d->b_right), "tooltip-text", _("right margin (in mm)"), (char *)NULL);
-  gtk_table_attach(bds, GTK_WIDGET(d->b_right), 2, 3, 1, 2, GTK_EXPAND|GTK_FILL, 0, 0, 0);
+  gtk_grid_attach(bds, GTK_WIDGET(d->b_right), 2, 1, 1, 1);
 
   //d->b_bottom  = gtk_spin_button_new_with_range(0, 10000, 1);
   g_object_set(G_OBJECT(d->b_bottom), "tooltip-text", _("bottom margin (in mm)"), (char *)NULL);
-  gtk_table_attach(bds, GTK_WIDGET(d->b_bottom), 1, 2, 2, 3, GTK_EXPAND, 0, 0, 0);
+  gtk_grid_attach(bds, GTK_WIDGET(d->b_bottom), 1, 2, 1, 1);
 
-  tpos++;
-  gtk_table_attach(GTK_TABLE(self->widget), GTK_WIDGET(bds), 0, 2, tpos, tpos+1, GTK_SHRINK|GTK_EXPAND|GTK_FILL, 0, 0, 0);
+  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(bds), TRUE, TRUE, 0);
 
   g_signal_connect (G_OBJECT (d->b_top), "value-changed",
                     G_CALLBACK (_top_border_callback), self);
@@ -733,27 +724,25 @@ gui_init (dt_lib_module_t *self)
   //// alignments
 
   // Create the 3x3 gtk table toggle button table...
-  GtkTable *bat = GTK_TABLE(gtk_table_new(3,3,TRUE));
+  GtkGrid *bat = GTK_GRID(gtk_grid_new());
+  gtk_grid_set_row_spacing(bat, DT_PIXEL_APPLY_DPI(3));
+  gtk_grid_set_column_spacing(bat, DT_PIXEL_APPLY_DPI(3));
   for(int i=0; i<9; i++)
   {
     d->dtba[i] = DTGTK_TOGGLEBUTTON (dtgtk_togglebutton_new (dtgtk_cairo_paint_alignment,CPF_STYLE_FLAT|(CPF_SPECIAL_FLAG<<(i+1))));
-    gtk_widget_set_size_request (GTK_WIDGET (d->dtba[i]), DT_PIXEL_APPLY_DPI(16), DT_PIXEL_APPLY_DPI(16));
-    gtk_table_attach (GTK_TABLE (bat), GTK_WIDGET (d->dtba[i]), (i%3),(i%3)+1,(i/3),(i/3)+1,0,0,0,0);
+    gtk_grid_attach (GTK_GRID (bat), GTK_WIDGET (d->dtba[i]), (i%3), i/3, 1, 1);
     g_signal_connect (G_OBJECT (d->dtba[i]), "toggled",G_CALLBACK (_alignment_callback), self);
   }
-  GtkWidget *hbox2 = gtk_hbox_new(FALSE,0);
+  GtkWidget *hbox22 = gtk_box_new(GTK_ORIENTATION_HORIZONTAL,0);
   GtkWidget *label4 = gtk_label_new(_("alignment"));
-  gtk_box_pack_start(GTK_BOX(hbox2),GTK_WIDGET(label4),TRUE,TRUE,0);
-  gtk_box_pack_start(GTK_BOX(hbox2), GTK_WIDGET(bat), TRUE, TRUE, 0);
-  tpos++;
-  gtk_table_attach(GTK_TABLE(self->widget), GTK_WIDGET(hbox2), 0, 2, tpos, tpos+1, GTK_EXPAND|GTK_FILL, 0, 0, 0);
+  gtk_box_pack_start(GTK_BOX(hbox22),GTK_WIDGET(label4),TRUE,TRUE,0);
+  gtk_box_pack_start(GTK_BOX(hbox22), GTK_WIDGET(bat), TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(hbox22), TRUE, TRUE, 0);
 
   ////////////////////////// PRINT SETTINGS
 
-  label = dtgtk_label_new(_("print settings"), DARKTABLE_LABEL_TAB | DARKTABLE_LABEL_ALIGN_RIGHT);
-  gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
-  tpos++;
-  gtk_table_attach(GTK_TABLE(self->widget), label, 0, 2, tpos, tpos+1, GTK_EXPAND|GTK_FILL, 0, 0, 0);
+  label = dt_ui_section_label_new(_("print settings"));
+  gtk_box_pack_start(GTK_BOX(self->widget), label, TRUE, TRUE, 0);
 
   //  Create list of profiles
 
@@ -809,16 +798,13 @@ gui_init (dt_lib_module_t *self)
 
   //  Add export profile combo
 
-  tpos++;
+  d->profile = dt_bauhaus_combobox_new(NULL);
+  dt_bauhaus_widget_set_label(d->profile, NULL, _("export profile"));
+
   GList *l = d->profiles;
-  label = gtk_label_new(_("export profile"));
-  gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
-  tpos++;
-  gtk_table_attach(GTK_TABLE(self->widget), label, 0, 1, tpos, tpos+1, GTK_EXPAND|GTK_FILL, 0, 0, 0);
-  d->profile = GTK_COMBO_BOX(gtk_combo_box_text_new());
-  dt_ellipsize_combo(d->profile);
-  gtk_table_attach(GTK_TABLE(self->widget), GTK_WIDGET(d->profile), 1, 2, tpos, tpos+1, GTK_SHRINK|GTK_EXPAND|GTK_FILL, 0, 0, 0);
-  gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(d->profile), _("image settings"));
+
+  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(d->profile), TRUE, TRUE, 0);
+  dt_bauhaus_combobox_add(d->profile, _("image settings"));
 
   const gchar *iccprofile = dt_conf_get_string("plugins/print/print/iccprofile");
   int combo_idx = -1, n=0;
@@ -826,7 +812,7 @@ gui_init (dt_lib_module_t *self)
   while(l)
   {
     dt_lib_export_profile_t *prof = (dt_lib_export_profile_t *)l->data;
-    gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(d->profile), prof->name);
+    dt_bauhaus_combobox_add(d->profile, prof->name);
     n++;
     if (strcmp(prof->filename, iccprofile)==0)
       combo_idx=n;
@@ -839,40 +825,34 @@ gui_init (dt_lib_module_t *self)
     combo_idx=0;
   }
 
-  gtk_combo_box_set_active(d->profile, combo_idx);
+  dt_bauhaus_combobox_set(d->profile, combo_idx);
 
   snprintf(tooltip, sizeof(tooltip), _("output ICC profiles in %s/color/out or %s/color/out"), confdir, datadir);
   g_object_set(G_OBJECT(d->profile), "tooltip-text", tooltip, (char *)NULL);
-  g_signal_connect(G_OBJECT(d->profile), "changed", G_CALLBACK(_profile_changed), (gpointer)self);
+  g_signal_connect(G_OBJECT(d->profile), "value-changed", G_CALLBACK(_profile_changed), (gpointer)self);
 
   //  Add export intent combo
 
-  tpos++;
-  label = gtk_label_new(_("intent"));
-  gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
-  gtk_table_attach(GTK_TABLE(self->widget), label, 0, 1, tpos, tpos+1, GTK_EXPAND|GTK_FILL, 0, 0, 0);
-  d->intent = GTK_COMBO_BOX(gtk_combo_box_text_new());
-  gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(d->intent), _("image settings"));
-  gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(d->intent), _("perceptual"));
-  gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(d->intent), _("relative colorimetric"));
-  gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(d->intent), C_("rendering intent", "saturation"));
-  gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(d->intent), _("absolute colorimetric"));
-  gtk_table_attach(GTK_TABLE(self->widget), GTK_WIDGET(d->intent), 1, 2, tpos, tpos+1, GTK_EXPAND|GTK_FILL, 0, 0, 0);
-  gtk_combo_box_set_active(GTK_COMBO_BOX(d->intent), 0);
+  d->intent = dt_bauhaus_combobox_new(NULL);
+  dt_bauhaus_widget_set_label(d->intent, NULL, _("intent"));
 
-  g_signal_connect (G_OBJECT (d->intent), "changed", G_CALLBACK (_intent_callback), (gpointer)self);
+  dt_bauhaus_combobox_add(d->intent, _("image settings"));
+  dt_bauhaus_combobox_add(d->intent, _("perceptual"));
+  dt_bauhaus_combobox_add(d->intent, _("relative colorimetric"));
+  dt_bauhaus_combobox_add(d->intent, C_("rendering intent", "saturation"));
+  dt_bauhaus_combobox_add(d->intent, _("absolute colorimetric"));
+  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(d->intent), TRUE, TRUE, 0);
+
+  dt_bauhaus_combobox_set(d->intent, 0);
+
+  g_signal_connect (G_OBJECT (d->intent), "value-changed", G_CALLBACK (_intent_callback), (gpointer)self);
 
   //  Add export style combo
 
-  label = gtk_label_new(_("style"));
-  gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
-  tpos++;
-  gtk_table_attach(GTK_TABLE(self->widget), label, 0, 1, tpos, tpos+1, GTK_EXPAND|GTK_FILL, 0, 0, 0);
-  d->style = GTK_COMBO_BOX(gtk_combo_box_text_new());
+  d->style = dt_bauhaus_combobox_new(NULL);
+  dt_bauhaus_widget_set_label(d->style, NULL, _("style"));
 
-  dt_ellipsize_combo(d->style);
-
-  gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(d->style), _("none"));
+  dt_bauhaus_combobox_add(d->style, _("none"));
 
   GList *styles = dt_styles_get_list("");
   const gchar *current_style = dt_conf_get_string("plugins/print/print/style");
@@ -881,13 +861,13 @@ gui_init (dt_lib_module_t *self)
   while (styles)
   {
     dt_style_t *style=(dt_style_t *)styles->data;
-    gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(d->style), style->name);
+    dt_bauhaus_combobox_add(d->style, style->name);
     n++;
     if (strcmp(style->name,current_style)==0)
       combo_idx=n;
     styles=g_list_next(styles);
   }
-  gtk_table_attach(GTK_TABLE(self->widget), GTK_WIDGET(d->style), 1, 2, tpos, tpos+1, GTK_EXPAND|GTK_FILL, 0, 0, 0);
+  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(d->style), TRUE, TRUE, 0);
   g_object_set(G_OBJECT(d->style), "tooltip-text", _("temporary style to append while printing"), (char *)NULL);
 
   // style not found, maybe a style has been removed? revert to none
@@ -896,59 +876,50 @@ gui_init (dt_lib_module_t *self)
     dt_conf_set_string("plugins/print/print/style", "");
     combo_idx=0;
   }
-  gtk_combo_box_set_active(GTK_COMBO_BOX(d->style), combo_idx);
+  dt_bauhaus_combobox_set(d->style, combo_idx);
 
-  g_signal_connect (G_OBJECT (d->style), "changed",
+  g_signal_connect (G_OBJECT (d->style), "value-changed",
                     G_CALLBACK (_style_callback),
                     (gpointer)self);
 
   //  Whether to add/replace style items
 
-  label = gtk_label_new(_("mode"));
-  gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
-  tpos++;
-  gtk_table_attach(GTK_TABLE(self->widget), label, 0, 1, tpos, tpos+1, GTK_EXPAND | GTK_FILL, 0, 0, 0);
-  d->style_mode = GTK_COMBO_BOX(gtk_combo_box_text_new());
+  d->style_mode = dt_bauhaus_combobox_new(NULL);
+  dt_bauhaus_widget_set_label(d->style_mode, NULL, _("mode"));
 
-  dt_ellipsize_combo(d->style_mode);
-
-  gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(d->style_mode), _("replace history"));
-  gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(d->style_mode), _("append history"));
+  dt_bauhaus_combobox_add(d->style_mode, _("replace history"));
+  dt_bauhaus_combobox_add(d->style_mode, _("append history"));
 
   if (dt_conf_get_bool("plugins/print/print/style_append"))
-    gtk_combo_box_set_active(d->style_mode, 1);
+    dt_bauhaus_combobox_set(d->style_mode, 1);
   else
-    gtk_combo_box_set_active(d->style_mode, 0);
+    dt_bauhaus_combobox_set(d->style_mode, 0);
 
-  gtk_table_attach(GTK_TABLE(self->widget), GTK_WIDGET(d->style_mode), 1, 2, tpos, tpos+1, GTK_EXPAND|GTK_FILL, 0, 0, 0);
+  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(d->style_mode), TRUE, TRUE, 0);
   g_object_set(G_OBJECT(d->style_mode), "tooltip-text", _("whether the style is appended to the history or replacing the history"),
                (char *)NULL);
 
-  g_signal_connect(G_OBJECT(d->style_mode), "changed", G_CALLBACK(_style_mode_changed), (gpointer)self);
+  g_signal_connect(G_OBJECT(d->style_mode), "value-changed", G_CALLBACK(_style_mode_changed), (gpointer)self);
 
   //  Add printer profile combo
 
-  tpos++;
+  d->pprofile = dt_bauhaus_combobox_new(NULL);
+  dt_bauhaus_widget_set_label(d->pprofile, NULL, _("printer profile"));
+
   l = d->profiles;
-  label = gtk_label_new(_("printer profile"));
-  gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
-  tpos++;
-  gtk_table_attach(GTK_TABLE(self->widget), label, 0, 1, tpos, tpos+1, GTK_EXPAND|GTK_FILL, 0, 0, 0);
-  d->pprofile = GTK_COMBO_BOX(gtk_combo_box_text_new());
-  dt_ellipsize_combo(d->pprofile);
-  gtk_table_attach(GTK_TABLE(self->widget), GTK_WIDGET(d->pprofile), 1, 2, tpos, tpos+1, GTK_SHRINK|GTK_EXPAND|GTK_FILL, 0, 0, 0);
+  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(d->pprofile), TRUE, TRUE, 0);
   const gchar *printer_profile = dt_conf_get_string("plugins/print/printer/iccprofile");
   combo_idx = -1;
   n=0;
 
-  gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(d->pprofile), _("none"));
+  dt_bauhaus_combobox_add(d->pprofile, _("none"));
   while(l)
   {
     dt_lib_export_profile_t *prof = (dt_lib_export_profile_t *)l->data;
     // do not add built-in profile, these are in no way for printing
     if (strcmp(prof->filename,"sRGB")!=0 && strcmp(prof->filename,"adobergb")!=0)
     {
-      gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(d->pprofile), prof->name);
+      dt_bauhaus_combobox_add(d->pprofile, prof->name);
       n++;
       if (strcmp(prof->filename,printer_profile)==0)
         combo_idx=n;
@@ -962,52 +933,68 @@ gui_init (dt_lib_module_t *self)
     dt_conf_set_string("plugins/print/printer/iccprofile", "");
     combo_idx=0;
   }
-  gtk_combo_box_set_active(d->pprofile, combo_idx);
+  dt_bauhaus_combobox_set(d->pprofile, combo_idx);
 
   snprintf(tooltip, sizeof(tooltip), _("output ICC profiles in %s/color/out or %s/color/out"), confdir, datadir);
   g_object_set(G_OBJECT(d->pprofile), "tooltip-text", tooltip, (char *)NULL);
-  g_signal_connect(G_OBJECT(d->pprofile), "changed", G_CALLBACK(_printer_profile_changed), (gpointer)self);
+  g_signal_connect(G_OBJECT(d->pprofile), "value-changed", G_CALLBACK(_printer_profile_changed), (gpointer)self);
 
   //  Add printer intent combo
 
-  tpos++;
-  label = gtk_label_new(_("intent"));
-  gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
-  gtk_table_attach(GTK_TABLE(self->widget), label, 0, 1, tpos, tpos+1, GTK_EXPAND|GTK_FILL, 0, 0, 0);
-  d->pintent = GTK_COMBO_BOX(gtk_combo_box_text_new());
-  gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(d->pintent), _("perceptual"));
-  gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(d->pintent), _("relative colorimetric"));
-  gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(d->pintent), C_("rendering intent", "saturation"));
-  gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(d->pintent), _("absolute colorimetric"));
-  gtk_table_attach(GTK_TABLE(self->widget), GTK_WIDGET(d->pintent), 1, 2, tpos, tpos+1, GTK_EXPAND|GTK_FILL, 0, 0, 0);
-  gtk_combo_box_set_active(d->pintent, dt_conf_get_int("plugins/print/print/iccintent") + 1);
+  d->pintent = dt_bauhaus_combobox_new(NULL);
+  dt_bauhaus_widget_set_label(d->pintent, NULL, _("intent"));
+  dt_bauhaus_combobox_add(d->pintent, _("perceptual"));
+  dt_bauhaus_combobox_add(d->pintent, _("relative colorimetric"));
+  dt_bauhaus_combobox_add(d->pintent, C_("rendering intent", "saturation"));
+  dt_bauhaus_combobox_add(d->pintent, _("absolute colorimetric"));
+  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(d->pintent), TRUE, TRUE, 0);
+  dt_bauhaus_combobox_set(d->pintent, dt_conf_get_int("plugins/print/printer/iccintent"));
 
-  g_signal_connect (G_OBJECT (d->pintent), "changed", G_CALLBACK (_printer_intent_callback), (gpointer)self);
+  g_signal_connect (G_OBJECT (d->pintent), "value-changed", G_CALLBACK (_printer_intent_callback), (gpointer)self);
 
   // Print button
 
   GtkButton *button = GTK_BUTTON(gtk_button_new_with_label(_("print")));
   d->print_button = button;
   g_object_set(G_OBJECT(button), "tooltip-text", _("print with current settings (ctrl-p)"), (char *)NULL);
-  tpos++;
-  gtk_table_attach(GTK_TABLE(self->widget), GTK_WIDGET(button), 1, 2, tpos, tpos+1, GTK_EXPAND|GTK_FILL, 0, 0, 0);
+  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(button), TRUE, TRUE, 0);
 
   g_signal_connect (G_OBJECT (button), "clicked",
                     G_CALLBACK (_print_button_clicked),
                     (gpointer)self);
 }
 
-static gboolean _combo_box_set_active_text(GtkComboBox *cb, const gchar *text)
+static gboolean _bauhaus_combo_box_set_active_text(GtkWidget *cb, const gchar *text)
 {
   g_assert(text != NULL);
   g_assert(cb != NULL);
+  const GList *labels = dt_bauhaus_combobox_get_labels(cb);
+  const GList *iter = labels;
+  int i = 0;
+  while(iter)
+  {
+    if(!g_strcmp0((gchar*)iter->data, text))
+    {
+      dt_bauhaus_combobox_set(cb, i);
+      return TRUE;
+    }
+    i++;
+    iter = g_list_next(iter);
+  }
+  return FALSE;
+}
+
+static gboolean _combo_box_set_active_text(GtkComboBox *cb, const gchar *text)
+ {
+   g_assert(text != NULL);
+   g_assert(cb != NULL);
   GtkTreeModel *model = gtk_combo_box_get_model(cb);
   GtkTreeIter iter;
   if(gtk_tree_model_get_iter_first(model, &iter))
-  {
+   {
     int k = -1;
     do
-    {
+     {
       k++;
       GValue value = {
         0,
@@ -1023,9 +1010,9 @@ static gboolean _combo_box_set_active_text(GtkComboBox *cb, const gchar *text)
         }
       }
     } while(gtk_tree_model_iter_next(model, &iter));
-  }
-  return FALSE;
-}
+   }
+   return FALSE;
+ }
 
 void init_presets(dt_lib_module_t *self)
 {
@@ -1102,21 +1089,21 @@ int set_params(dt_lib_module_t *self, const void *params, int size)
     _combo_box_set_active_text(ps->printers, printer);
 
   if (paper[0] != '\0')
-    _combo_box_set_active_text(ps->papers, paper);
+    _bauhaus_combo_box_set_active_text(ps->papers, paper);
 
   gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON(ps->portrait), !landscape);
 
   if (profile[0] != '\0')
-    _combo_box_set_active_text(ps->profile, profile);
-  gtk_combo_box_set_active (GTK_COMBO_BOX(ps->intent), intent);
+    _bauhaus_combo_box_set_active_text(ps->profile, profile);
+  dt_bauhaus_combobox_set (ps->intent, intent);
 
   if (pprofile[0] != '\0')
-    _combo_box_set_active_text(ps->pprofile, pprofile);
-  gtk_combo_box_set_active (GTK_COMBO_BOX(ps->pintent), pintent);
+    _bauhaus_combo_box_set_active_text(ps->pprofile, pprofile);
+  dt_bauhaus_combobox_set (ps->pintent, pintent);
 
   if (style[0] != '\0')
-    _combo_box_set_active_text(ps->style, style);
-  gtk_combo_box_set_active (GTK_COMBO_BOX(ps->style_mode), style_mode);
+    _bauhaus_combo_box_set_active_text(ps->style, style);
+  dt_bauhaus_combobox_set (ps->style_mode, style_mode);
 
   gtk_spin_button_set_value (GTK_SPIN_BUTTON(ps->b_top), b_top);
   gtk_spin_button_set_value (GTK_SPIN_BUTTON(ps->b_bottom), b_bottom);
@@ -1134,13 +1121,13 @@ void *get_params(dt_lib_module_t *self, int *size)
 
   // get the data
   const char *printer = gtk_combo_box_text_get_active_text(GTK_COMBO_BOX_TEXT(ps->printers));
-  const char *paper = gtk_combo_box_text_get_active_text(GTK_COMBO_BOX_TEXT(ps->papers));
-  const char *profile = gtk_combo_box_text_get_active_text(GTK_COMBO_BOX_TEXT(ps->profile));
-  const int32_t intent =  gtk_combo_box_get_active(GTK_COMBO_BOX(ps->intent));
-  const char *style = gtk_combo_box_text_get_active_text(GTK_COMBO_BOX_TEXT(ps->style));
-  const int32_t style_mode = gtk_combo_box_get_active(GTK_COMBO_BOX(ps->style_mode));
-  const char *pprofile = gtk_combo_box_text_get_active_text(GTK_COMBO_BOX_TEXT(ps->pprofile));
-  const int32_t pintent =  gtk_combo_box_get_active(GTK_COMBO_BOX(ps->pintent));
+  const char *paper = dt_bauhaus_combobox_get_text(ps->papers);
+  const char *profile = dt_bauhaus_combobox_get_text(ps->profile);
+  const int32_t intent =  dt_bauhaus_combobox_get(ps->intent);
+  const char *style = dt_bauhaus_combobox_get_text(ps->style);
+  const int32_t style_mode = dt_bauhaus_combobox_get(ps->style_mode);
+  const char *pprofile = dt_bauhaus_combobox_get_text(ps->pprofile);
+  const int32_t pintent =  dt_bauhaus_combobox_get(ps->pintent);
   const int32_t landscape = !gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON(ps->portrait));
   const double b_top = gtk_spin_button_get_value(GTK_SPIN_BUTTON(ps->b_top));
   const double b_bottom = gtk_spin_button_get_value(GTK_SPIN_BUTTON(ps->b_bottom));
@@ -1218,11 +1205,11 @@ gui_reset (dt_lib_module_t *self)
   gtk_spin_button_set_value(GTK_SPIN_BUTTON(ps->b_right), 15);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(ps->dtba[center]),TRUE);
   ps->prt.page.alignment = center;
-  gtk_combo_box_set_active(GTK_COMBO_BOX(ps->profile), 0);
-  gtk_combo_box_set_active(GTK_COMBO_BOX(ps->pprofile), 0);
-  gtk_combo_box_set_active(ps->pintent, dt_conf_get_int("plugins/print/print/iccintent") + 1);
-  gtk_combo_box_set_active(GTK_COMBO_BOX(ps->style), 0);
-  gtk_combo_box_set_active(GTK_COMBO_BOX(ps->intent), 0);
+  dt_bauhaus_combobox_set(ps->profile, 0);
+  dt_bauhaus_combobox_set(ps->pprofile, 0);
+  dt_bauhaus_combobox_set(ps->pintent, dt_conf_get_int("plugins/print/print/iccintent") + 1);
+  dt_bauhaus_combobox_set(ps->style, 0);
+  dt_bauhaus_combobox_set(ps->intent, 0);
 
   // reset page orientation to fit the picture
 
