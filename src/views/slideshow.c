@@ -83,6 +83,7 @@ typedef struct dt_slideshow_format_t
   int max_width, max_height;
   int width, height;
   char style[128];
+  gboolean style_append;
   dt_slideshow_t *d;
 } dt_slideshow_format_t;
 
