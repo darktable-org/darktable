@@ -36,22 +36,6 @@ typedef struct dt_control_export_t
   gboolean style_append;
 } dt_control_export_t;
 
-#ifdef HAVE_PRINT
-// note that dt_control_print_t must start as dt_control_export_t as it is also used by the export circuitry (inheritance)
-typedef struct dt_control_print_t
-{
-  int max_width, max_height, format_index, storage_index;
-  dt_imageio_module_data_t *sdata; // needed since the gui thread resets things like overwrite once the export
-                                   // is dispatched, but we have to keep that information
-  gboolean high_quality;
-  char style[128];
-  gboolean style_append;
-  // print specific fields after this line
-  char filename[PATH_MAX];
-  dt_print_info_t pinfo;
-} dt_control_print_t;
-#endif
-
 typedef struct dt_control_image_enumerator_t
 {
   GList *index;
@@ -74,10 +58,6 @@ void dt_control_set_local_copy_images();
 void dt_control_reset_local_copy_images();
 void dt_control_export(GList *imgid_list, int max_width, int max_height, int format_index, int storage_index,
                        gboolean high_quality, char *style, gboolean style_append);
-#ifdef HAVE_PRINT
-void dt_control_print(GList *imgid_list,int max_width, int max_height, int format_index, int storage_index,
-                      char *style, gboolean style_append, const char *filename, const dt_print_info_t *pinfo);
-#endif
 void dt_control_merge_hdr();
 
 void dt_control_seed_denoise();
