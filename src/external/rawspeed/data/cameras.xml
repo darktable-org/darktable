@@ -5667,7 +5667,7 @@
 			<ColorRow y="5">RBGBRG</ColorRow>
 		</CFA2>
 		<Crop x="0" y="0" width="-168" height="0"/>
-		<Sensor black="256" white="4094"/>
+		<Sensor black="255" white="4094"/>
 	</Camera>
 	<Camera make="FUJIFILM" model="X20">
 		<CFA2 width="6" height="6">
