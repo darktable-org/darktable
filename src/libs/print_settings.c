@@ -24,6 +24,8 @@
 #include "common/variables.h"
 #include "common/cups_print.h"
 #include "common/image_cache.h"
+#include "common/pdf.h"
+#include "common/tags.h"
 #include "dtgtk/resetlabel.h"
 #include "libs/lib.h"
 #include "gui/gtk.h"
@@ -64,6 +66,7 @@ typedef struct dt_lib_print_settings_t
   GList *paper_list;
   gboolean lock_activated;
   dt_print_info_t prt;
+  uint16_t *buf;
 } dt_lib_print_settings_t;
 
 typedef struct dt_lib_export_profile_t
@@ -83,6 +86,50 @@ int
 position ()
 {
   return 990;
+}
+
+// callbacks for in-memory export
+
+typedef struct dt_print_format_t
+{
+  int max_width, max_height;
+  int width, height;
+  char style[128];
+  gboolean style_append;
+  dt_lib_print_settings_t *ps;
+} dt_print_format_t;
+
+static int bpp(dt_imageio_module_data_t *data)
+{
+  return 8;
+}
+
+static int levels(dt_imageio_module_data_t *data)
+{
+  return IMAGEIO_RGB | IMAGEIO_INT8;
+}
+
+static const char *mime(dt_imageio_module_data_t *data)
+{
+  return "memory";
+}
+
+static int write_image(dt_imageio_module_data_t *datai, const char *filename, const void *in, void *exif,
+                       int exif_len, int imgid)
+{
+  dt_print_format_t *data = (dt_print_format_t *)datai;
+
+  data->ps->buf = (uint16_t *)malloc(data->width * data->height * 3 * sizeof(uint16_t));
+
+  const uint8_t *in_ptr = (const uint8_t *)in;
+  uint8_t *out_ptr = (uint8_t *)data->ps->buf;
+  for(int y = 0; y < data->height; y++)
+  {
+    for(int x = 0; x < data->width; x++, in_ptr += 4, out_ptr += 3)
+      memcpy(out_ptr, in_ptr, 3);
+  }
+
+  return 0;
 }
 
 static void
@@ -150,38 +197,10 @@ _print_button_clicked (GtkWidget *widget, gpointer user_data)
 
   fprintf(stderr, "[print] area for image %u : %3.2fin x %3.2fin\n", imgid, pa_width, pa_height);
 
-  int margin_top = iy;
-  int margin_left = ix;
-  int margin_right = ix + iwidth;
-  int margin_bottom = iy + iheight;
-
-  if (ps->prt.page.landscape)
-  {
-    margin_top = iy;
-    margin_left = ix;
-    margin_right = pwidth - iwidth - ix;
-    margin_bottom = pheight - iheight - iy;
-  }
-  else
-  {
-    margin_top = iy;
-    margin_left = ix;
-    margin_right = pwidth - iwidth - ix;
-    margin_bottom = pheight - iheight - iy;
-  }
-
-  dt_conf_set_int("plugins/imageio/format/print/margin-top", margin_top);
-  if (ps->prt.page.landscape)
-  {
-    dt_conf_set_int("plugins/imageio/format/print/margin-right", margin_right);
-    dt_conf_set_int("plugins/imageio/format/print/margin-left", 0);
-  }
-  else
-  {
-    dt_conf_set_int("plugins/imageio/format/print/margin-left", margin_left);
-    dt_conf_set_int("plugins/imageio/format/print/margin-right", 0);
-  }
-  dt_conf_set_int("plugins/imageio/format/print/margin-bottom", 0);
+  const int margin_top    = iy;
+  const int margin_left   = ix;
+  const int margin_right  = pwidth - iwidth - ix;
+  const int margin_bottom = pheight - iheight - iy;
 
   fprintf(stderr, "[print] margins top %d ; bottom %d ; left %d ; right %d\n",
           margin_top, margin_bottom, margin_left, margin_right);
@@ -192,90 +211,87 @@ _print_button_clicked (GtkWidget *widget, gpointer user_data)
   int max_height = (pa_height * ps->prt.printer.resolution);
 
   // make sure we are a multiple of four
+
   max_width -= max_width % 4;
   max_height -= max_height % 4;
 
   fprintf(stderr, "[print] max image size %d x %d (at resolution %d)\n", max_width, max_height, ps->prt.printer.resolution);
 
-  // export as TIFF 16bit (if a profile is given, 8bit otherwise) on disk
-  // CUPS can only print directly 8bit pictures. If we print directly we then export as 8bit TIFF
-  // otherwise we use 16bit format here, the file will be converted to 8bit later when applying the
-  // printer profile.
+  dt_imageio_module_format_t buf;
+  buf.mime = mime;
+  buf.levels = levels;
+  buf.bpp = bpp;
+  buf.write_image = write_image;
 
-  const char *storage_name = "disk";
-  const char *format_name = "prt";
+  dt_print_format_t dat;
+  dat.max_width = max_width;
+  dat.max_height = max_height;
+  dat.style[0] = '\0';
+  dat.style_append = dt_conf_get_bool("plugins/print/print/style_append");
+  dat.ps = ps;
 
-  dt_imageio_module_storage_t *mstorage = dt_imageio_get_storage_by_name(storage_name);
-  dt_imageio_module_format_t *mformat = dt_imageio_get_format_by_name(format_name);
-  int format_index = dt_imageio_get_index_of_format(mformat);
-  int storage_index = dt_imageio_get_index_of_storage(mstorage);
-
-  // get printer profile filename
-
-  const gchar *printer_profile = gtk_combo_box_text_get_active_text(GTK_COMBO_BOX_TEXT(ps->pprofile));
-
-  GList *prof = ps->profiles;
-  char printer_profile_filename[PATH_MAX] = {0};
-
-  while(prof)
+  char* style = dt_conf_get_string("plugins/print/print/style");
+  if (style)
   {
-    dt_lib_export_profile_t *p = (dt_lib_export_profile_t *)prof->data;
-    if (strcmp(p->name, printer_profile)==0)
-    {
-      g_strlcpy(printer_profile_filename, p->filename, sizeof(printer_profile_filename));
-      break;
-    }
-    prof = g_list_next(prof);
+    g_strlcpy(dat.style, style, sizeof(dat.style));
+    g_free(style);
   }
 
-  // the exported filename, on /tmp we do not want to mess with user's home directory
+  // the flags are: ignore exif, display byteorder, high quality, thumbnail
+  const int high_quality = 1;
+  dt_imageio_export_with_flags
+    (imgid, "unused", &buf, (dt_imageio_module_data_t *)&dat, 1, 0, high_quality, 0, NULL, FALSE, 0, 0);
+
+  float border;
+  dt_pdf_parse_length("0 mm", &border);
+
+  const float page_width  = dt_pdf_mm_to_point(width);
+  const float page_height = dt_pdf_mm_to_point(height);
 
   char filename[PATH_MAX] = { 0 };
+  snprintf(filename, sizeof(filename), "/tmp/pf_%d.pdf", imgid);
 
-  snprintf(filename, sizeof(filename), "/tmp/pf_%d", imgid);
+  int icc_id = 0;
+  const gchar *printer_profile = dt_conf_get_string("plugins/print/printer/iccprofile");
 
-  // set parameters for the disk storage module
-  // make sure we overwrite the file as we really want to keep the filename as created here. This is the file
-  // that will be sent to CUPS, we do not want to have any _nn suffix added.
+  dt_pdf_t *pdf = dt_pdf_start(filename, page_width, page_height, ps->prt.printer.resolution, DT_PDF_STREAM_ENCODER_FLATE);
 
-  dt_conf_set_string("plugins/imageio/storage/print/file_directory", filename);
-  dt_conf_set_bool("plugins/imageio/storage/print/overwrite", TRUE);
+  if (*printer_profile)
+    icc_id = dt_pdf_add_icc(pdf, printer_profile);
 
-  // set parameters for the tiff format module
+  dt_pdf_image_t *pdf_image = dt_pdf_add_image(pdf, (uint8_t *)dat.ps->buf, dat.width, dat.height, 8, icc_id, border);
 
-  int bpp;
-  if (*printer_profile_filename)
-    bpp = 16;
+  //  PDF bounding-box has origin on bottom-left
+  pdf_image->bb_x      = dt_pdf_pixel_to_point((float)margin_left, ps->prt.printer.resolution);
+  pdf_image->bb_y      = dt_pdf_pixel_to_point((float)margin_bottom, ps->prt.printer.resolution);
+  pdf_image->bb_width  = dt_pdf_pixel_to_point((float)iwidth, ps->prt.printer.resolution);
+  pdf_image->bb_height = dt_pdf_pixel_to_point((float)iheight, ps->prt.printer.resolution);
+
+  if (ps->prt.page.landscape && (dat.width > dat.height))
+    pdf_image->rotate_to_fit = TRUE;
   else
-    bpp = 8;
+    pdf_image->rotate_to_fit = FALSE;
 
-  dt_conf_set_int("plugins/imageio/format/print/bpp", bpp);
-  dt_conf_set_int("plugins/imageio/format/print/compress", 0);
+  dt_pdf_page_t *pdf_page = dt_pdf_add_page(pdf, &pdf_image, 1);
+  dt_pdf_finish(pdf, &pdf_page, 1);
 
-  // make sure the export resolution wrote into the TIFF file corresponds to the printer resolution.
-  // this is needed to ensure that the image will fit exactly on the page.
-  dt_conf_set_int("plugins/imageio/format/print/resolution", ps->prt.printer.resolution);
+  // free memory
 
-  char style[128] = {0};
-  char* tmp = dt_conf_get_string("plugins/print/print/style");
-  if (tmp)
-  {
-    g_strlcpy(style, tmp, sizeof(style));
-    g_free(tmp);
-  }
+  free (dat.ps->buf);
 
-  const gboolean style_append = dt_conf_get_bool("plugins/print/print/style_append");
+  // send to CUPS
 
-  GList *list = NULL;
+  dt_print_file (imgid, filename, &ps->prt);
 
-  list = g_list_append (list, GINT_TO_POINTER(imgid));
+  unlink(filename);
 
-  //  record printer intent and profile
+  // add tag for this image
 
-  ps->prt.printer.intent = dt_bauhaus_combobox_get(ps->pintent);
-  g_strlcpy(ps->prt.printer.profile, printer_profile_filename, sizeof(ps->prt.printer.profile));
-
-  dt_control_print(list, max_width, max_height, format_index, storage_index, style, style_append, filename, &ps->prt);
+  char tag[256] = { 0 };
+  guint tagid = 0;
+  snprintf (tag, sizeof(tag), "darktable|printed|%s", ps->prt.printer.name);
+  dt_tag_new(tag, &tagid);
+  dt_tag_attach(tagid, imgid);
 }
 
 static void _set_printer(dt_lib_module_t *self, const char *printer_name)
