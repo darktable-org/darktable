@@ -134,6 +134,7 @@ extern int dt_lua_init_widget_box(lua_State* L);
 extern int dt_lua_init_widget_button(lua_State* L);
 extern int dt_lua_init_widget_check_button(lua_State* L);
 extern int dt_lua_init_widget_label(lua_State* L);
+extern int dt_lua_init_widget_entry(lua_State* L);
 
 int dt_lua_init_widget(lua_State* L)
 {
@@ -145,6 +146,7 @@ int dt_lua_init_widget(lua_State* L)
   dt_lua_init_widget_button(L);
   dt_lua_init_widget_check_button(L);
   dt_lua_init_widget_label(L);
+  dt_lua_init_widget_entry(L);
 
 
 

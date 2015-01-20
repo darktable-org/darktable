@@ -468,6 +468,7 @@
 <listitem><para>box</para></listitem>
 <listitem><para>button</para></listitem>
 <listitem><para>check_button</para></listitem>
+<listitem><para>entry</para></listitem>
 <listitem><para>label</para></listitem>
 </itemizedlist>
 </para>
@@ -5527,7 +5528,17 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
 </indexterm>
 <synopsis><link linkend="types_dt_lua_lib_collect_params_rule_t">types.dt_lua_lib_collect_params_rule_t</link></synopsis>
 <para>Each rule has a numeric index. You can add a rule by setting a rule after the last valid one, you can remove a rule by setting it to nil</para>
-
+<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
+    <colspec colwidth="2*"/>
+    <colspec colwidth="8*"/>
+    <tbody><row>
+    <entry>Attributes:</entry>
+    <entry><itemizedlist>
+<listitem><para><emphasis><link linkend="attributes_write">write</link></emphasis></para></listitem>
+</itemizedlist>
+</entry>
+    </row></tbody>
+    </tgroup></informaltable>
 </section>
 
 </section>
@@ -6075,6 +6086,121 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
 </listitem></varlistentry>
 
 </variablelist>
+</section>
+
+</section>
+
+<section status="final" id="types_lua_entry">
+<title>types.lua_entry</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>lua_entry</secondary>
+</indexterm>
+<synopsis>dt_type</synopsis>
+<para>A widget in which the user can input text</para>
+<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
+    <colspec colwidth="2*"/>
+    <colspec colwidth="8*"/>
+    <tbody><row>
+    <entry>Attributes:</entry>
+    <entry><itemizedlist>
+<listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_lua_widget">types.lua_widget</link></para></listitem>
+</itemizedlist>
+</entry>
+    </row></tbody>
+    </tgroup></informaltable>
+<section status="final" id="types_lua_entry_text">
+<title>types.lua_entry.text</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>text</secondary>
+</indexterm>
+<synopsis>string</synopsis>
+<para>The content of the entry</para>
+<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
+    <colspec colwidth="2*"/>
+    <colspec colwidth="8*"/>
+    <tbody><row>
+    <entry>Attributes:</entry>
+    <entry><itemizedlist>
+<listitem><para><emphasis><link linkend="attributes_write">write</link></emphasis></para></listitem>
+</itemizedlist>
+</entry>
+    </row></tbody>
+    </tgroup></informaltable>
+</section>
+
+<section status="final" id="types_lua_entry_placeholder">
+<title>types.lua_entry.placeholder</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>placeholder</secondary>
+</indexterm>
+<synopsis>string</synopsis>
+<para>The text to display when the entry is empty</para>
+<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
+    <colspec colwidth="2*"/>
+    <colspec colwidth="8*"/>
+    <tbody><row>
+    <entry>Attributes:</entry>
+    <entry><itemizedlist>
+<listitem><para><emphasis><link linkend="attributes_write">write</link></emphasis></para></listitem>
+</itemizedlist>
+</entry>
+    </row></tbody>
+    </tgroup></informaltable>
+</section>
+
+<section status="final" id="types_lua_entry_is_password">
+<title>types.lua_entry.is_password</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>is_password</secondary>
+</indexterm>
+<synopsis>boolean</synopsis>
+<para>True if the text content should be hidden</para>
+<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
+    <colspec colwidth="2*"/>
+    <colspec colwidth="8*"/>
+    <tbody><row>
+    <entry>Attributes:</entry>
+    <entry><itemizedlist>
+<listitem><para><emphasis><link linkend="attributes_write">write</link></emphasis></para></listitem>
+</itemizedlist>
+</entry>
+    </row></tbody>
+    </tgroup></informaltable>
+</section>
+
+<section status="final" id="types_lua_entry_editable">
+<title>types.lua_entry.editable</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>editable</secondary>
+</indexterm>
+<synopsis>boolean</synopsis>
+<para>False if the entry should be read-only</para>
+<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
+    <colspec colwidth="2*"/>
+    <colspec colwidth="8*"/>
+    <tbody><row>
+    <entry>Attributes:</entry>
+    <entry><itemizedlist>
+<listitem><para><emphasis><link linkend="attributes_write">write</link></emphasis></para></listitem>
+</itemizedlist>
+</entry>
+    </row></tbody>
+    </tgroup></informaltable>
+</section>
+
+<section status="final" id="types_lua_entry_extra_registration_parameters">
+<title>types.lua_entry.extra registration parameters</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>extra registration parameters</secondary>
+</indexterm>
+<para>This widget has no extra registration parameters.</para>
+
 </section>
 
 </section>

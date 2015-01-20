@@ -724,6 +724,14 @@ darktable.debug.type:set_text([[Similar to the system function type() but it wil
   types.lua_box.append:set_text("Add a widget at the end of the box")
   types.lua_box.append:add_parameter("widget",types.lua_widget,"The widget to append")
 
+  types.lua_entry:set_text("A widget in which the user can input text")
+  types.lua_entry.text:set_text("The content of the entry")
+  types.lua_entry.placeholder:set_reported_type("string")
+  types.lua_entry.placeholder:set_text("The text to display when the entry is empty")
+  types.lua_entry.is_password:set_text("True if the text content should be hidden")
+  types.lua_entry.editable:set_text("False if the entry should be read-only")
+	types.lua_entry.extra_registration_parameters:set_text([[This widget has no extra registration parameters.]])
+
   types.dt_lua_orientation_t:set_text("A possible orientation for a widget")
 	----------------------
 	--  EVENTS          --

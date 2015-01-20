@@ -483,6 +483,7 @@ if(USE_LUA)
       "lua/widget/box.c"
       "lua/widget/button.c"
       "lua/widget/check_button.c"
+      "lua/widget/entry.c"
       "lua/widget/label.c"
       )
     set(SOURCES ${SOURCES} ${SOURCE_FILES_LUA})
