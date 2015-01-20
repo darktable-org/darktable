@@ -215,7 +215,7 @@ void process(struct dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece, void
   const int samples_avg = fib[sampleidx_avg];
 
   // precompute all required fibonacci lattices:
-  if((xy_avg = malloc(2 * sizeof(int) * samples_avg)))
+  if((xy_avg = malloc((size_t)2 * sizeof(int) * samples_avg)))
   {
     tmp = xy_avg;
     for(int u = 0; u < samples_avg; u++)
@@ -232,7 +232,7 @@ void process(struct dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece, void
     goto ERROR_EXIT;
   }
 
-  if((xy_small = malloc(2 * sizeof(int) * samples_small)))
+  if((xy_small = malloc((size_t)2 * sizeof(int) * samples_small)))
   {
     tmp = xy_small;
     for(int u = 0; u < samples_small; u++)
