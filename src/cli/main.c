@@ -235,7 +235,7 @@ int main(int argc, char *arg[])
   }
 
   int m_argc = 0;
-  char *m_arg[4 + argc - k];
+  char *m_arg[5 + argc - k];
   m_arg[m_argc++] = "darktable-cli";
   m_arg[m_argc++] = "--library";
   m_arg[m_argc++] = ":memory:";
