@@ -854,7 +854,7 @@ cmsHPROFILE dt_colorspaces_create_output_profile(const int imgid)
     output = cmsOpenProfileFromFile(filename, "r");
   }
   if(!output) output = dt_colorspaces_create_srgb_profile();
-  free(profile);
+  g_free(profile);
   return output;
 }
 

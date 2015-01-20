@@ -994,11 +994,11 @@ int store(dt_imageio_module_storage_t *self, dt_imageio_module_data_t *sdata, co
         d->icc_profiles = g_list_append(d->icc_profiles, icc);
       }
       else
-        free(profile_name);
+        g_free(profile_name);
       dt_colorspaces_cleanup_profile(profile);
     }
     else
-      free(profile_name);
+      g_free(profile_name);
 
     f->icc_id = icc_id;
   }
