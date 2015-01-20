@@ -697,7 +697,7 @@ function M.all_children(node)
 	for k, v in pairs(registry.dt_lua_modules.widget) do
     local res
     if k == "box" then
-      res = v("GTK_ORIENTATION_HORIZONTAL","")
+      res = v("horizontal","")
     else
       res = v("")
     end

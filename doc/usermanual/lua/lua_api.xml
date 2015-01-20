@@ -6037,7 +6037,7 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
 
 <variablelist>
 <varlistentry id="types_lua_box_extra_registration_parameters_orientation"><term>orientation</term><listitem>
-<synopsis><link linkend="types_GtkOrientation">types.GtkOrientation</link></synopsis>
+<synopsis><link linkend="types_dt_lua_orientation_t">types.dt_lua_orientation_t</link></synopsis>
 <para>The orientation of the box widget</para>
 
 </listitem></varlistentry>
@@ -6079,11 +6079,11 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
 
 </section>
 
-<section status="final" id="types_GtkOrientation">
-<title>types.GtkOrientation</title>
+<section status="final" id="types_dt_lua_orientation_t">
+<title>types.dt_lua_orientation_t</title>
 <indexterm>
 <primary>Lua API</primary>
-<secondary>GtkOrientation</secondary>
+<secondary>dt_lua_orientation_t</secondary>
 </indexterm>
 <synopsis>enum</synopsis>
 <para>A possible orientation for a widget</para>
@@ -6095,8 +6095,8 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
     <entry><itemizedlist>
 <listitem><para><emphasis>values : </emphasis></para>
 <para><itemizedlist>
-<listitem><para>GTK_ORIENTATION_HORIZONTAL</para></listitem>
-<listitem><para>GTK_ORIENTATION_VERTICAL</para></listitem>
+<listitem><para>horizontal</para></listitem>
+<listitem><para>vertical</para></listitem>
 </itemizedlist>
 </para></listitem>
 </itemizedlist>

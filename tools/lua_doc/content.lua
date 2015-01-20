@@ -718,13 +718,13 @@ darktable.debug.type:set_text([[Similar to the system function type() but it wil
 
   types.lua_box:set_text("A widget containing other widgets");
 	types.lua_box.extra_registration_parameters:set_text("")
-	types.lua_box.extra_registration_parameters:add_parameter("orientation",types.GtkOrientation,"The orientation of the box widget")
+	types.lua_box.extra_registration_parameters:add_parameter("orientation",types.dt_lua_orientation_t,"The orientation of the box widget")
 	types.lua_box["#"]:set_reported_type(types.lua_widget)
 	types.lua_box["#"]:set_text("The widgets contained by the box")
   types.lua_box.append:set_text("Add a widget at the end of the box")
   types.lua_box.append:add_parameter("widget",types.lua_widget,"The widget to append")
 
-  types.GtkOrientation:set_text("A possible orientation for a widget")
+  types.dt_lua_orientation_t:set_text("A possible orientation for a widget")
 	----------------------
 	--  EVENTS          --
 	----------------------
