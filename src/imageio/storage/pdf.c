@@ -606,22 +606,6 @@ void gui_init(dt_imageio_module_storage_t *self)
   g_object_set(G_OBJECT(d->icc), "tooltip-text", _("images can be tagged with their icc profile"), (char *)NULL);
   dt_bauhaus_combobox_set(d->icc, dt_conf_get_bool("plugins/imageio/storage/pdf/icc"));
 
-  // image mode normal|draft|debug
-
-  d->mode = dt_bauhaus_combobox_new(NULL);
-  dt_bauhaus_widget_set_label(d->mode, NULL, _("image mode"));
-  dt_bauhaus_combobox_add(d->mode, _("normal"));
-  dt_bauhaus_combobox_add(d->mode, _("draft"));
-  dt_bauhaus_combobox_add(d->mode, _("debug"));
-  gtk_grid_attach(grid, GTK_WIDGET(d->mode), 0, ++line, 2, 1);
-  g_signal_connect(G_OBJECT(d->mode), "value-changed", G_CALLBACK(mode_toggle_callback), self);
-  g_object_set(G_OBJECT(d->mode), "tooltip-text",
-               _("normal -- just put the images into the pdf\n"
-                 "draft mode -- images are replaced with boxes\n"
-                 "debug -- only show the outlines and bounding boxen"),
-               (char *)NULL);
-  dt_bauhaus_combobox_set(d->mode, dt_conf_get_int("plugins/imageio/storage/pdf/mode"));
-
   // bpp
 
   d->bpp = dt_bauhaus_combobox_new(NULL);
@@ -648,6 +632,22 @@ void gui_init(dt_imageio_module_storage_t *self)
   g_signal_connect(G_OBJECT(d->compression), "value-changed", G_CALLBACK(compression_toggle_callback), self);
   g_object_set(G_OBJECT(d->compression), "tooltip-text", _("method used for image compression\nuncompressed -- fast but big files\ndeflate -- smaller files but slower"), (char *)NULL);
   dt_bauhaus_combobox_set(d->compression, dt_conf_get_int("plugins/imageio/storage/pdf/compression"));
+
+  // image mode normal|draft|debug
+
+  d->mode = dt_bauhaus_combobox_new(NULL);
+  dt_bauhaus_widget_set_label(d->mode, NULL, _("image mode"));
+  dt_bauhaus_combobox_add(d->mode, _("normal"));
+  dt_bauhaus_combobox_add(d->mode, _("draft"));
+  dt_bauhaus_combobox_add(d->mode, _("debug"));
+  gtk_grid_attach(grid, GTK_WIDGET(d->mode), 0, ++line, 2, 1);
+  g_signal_connect(G_OBJECT(d->mode), "value-changed", G_CALLBACK(mode_toggle_callback), self);
+  g_object_set(G_OBJECT(d->mode), "tooltip-text",
+               _("normal -- just put the images into the pdf\n"
+               "draft mode -- images are replaced with boxes\n"
+               "debug -- only show the outlines and bounding boxen"),
+               (char *)NULL);
+  dt_bauhaus_combobox_set(d->mode, dt_conf_get_int("plugins/imageio/storage/pdf/mode"));
 
 }
 
