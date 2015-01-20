@@ -62,6 +62,8 @@ typedef struct dt_pdf_image_t
   size_t    width, height;
   float     bb_x, bb_y, bb_width, bb_height;
 
+  gboolean  rotate_to_fit;
+
   gboolean  outline_mode; // set to 1 to only draw a box instead of the image
   gboolean  show_bb; // set to 1 to draw the bounding box. useful for debugging
 } dt_pdf_image_t;

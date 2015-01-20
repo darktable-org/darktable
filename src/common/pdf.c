@@ -507,24 +507,40 @@ dt_pdf_page_t *dt_pdf_add_page(dt_pdf_t *pdf, dt_pdf_image_t **images, int n_ima
 
   // the stream -- we need its size in the length object
   // we want the image printed with at least the given DPI, scaling it down to fit the page if it is too big
+  gboolean portrait_page = pdf->page_width < pdf->page_height;
+
   for(int i = 0; i < n_images; i++)
   {
     // fit the image into the bounding box that comes with the image
     float scale_x, scale_y, translate_x, translate_y;
-    float image_aspect_ratio = (float)images[i]->width / images[i]->height;
+    float width, height;
+    gboolean portrait_image = images[i]->width < images[i]->height;
+    gboolean rotate_to_fit = images[i]->rotate_to_fit && (portrait_page != portrait_image);
+    if(rotate_to_fit)
+    {
+      width = images[i]->height;
+      height = images[i]->width;
+    }
+    else
+    {
+      width = images[i]->width;
+      height = images[i]->height;
+    }
+
+    float image_aspect_ratio = width / height;
     float bb_aspect_ratio = images[i]->bb_width / images[i]->bb_height;
 
     if(image_aspect_ratio <= bb_aspect_ratio)
     {
       // scale to fit height
-      float height_in_point = ((float)images[i]->height / pdf->dpi) * 72.0;
+      float height_in_point = (height / pdf->dpi) * 72.0;
       scale_y = MIN(images[i]->bb_height, height_in_point);
       scale_x = scale_y * image_aspect_ratio;
     }
     else
     {
       // scale to fit width
-      float width_in_point = ((float)images[i]->width / pdf->dpi) * 72.0;
+      float width_in_point = (width / pdf->dpi) * 72.0;
       scale_x = MIN(images[i]->bb_width, width_in_point);
       scale_y = scale_x / image_aspect_ratio;
     }
@@ -532,6 +548,14 @@ dt_pdf_page_t *dt_pdf_add_page(dt_pdf_t *pdf, dt_pdf_image_t **images, int n_ima
     // center inside image's bounding box
     translate_x = images[i]->bb_x + 0.5 * (images[i]->bb_width - scale_x);
     translate_y = images[i]->bb_y + 0.5 * (images[i]->bb_height - scale_y);
+
+    if(rotate_to_fit && !images[i]->outline_mode)
+    {
+      float tmp = scale_x;
+      scale_x = scale_y;
+      scale_y = tmp;
+      translate_x += scale_y;
+    }
 
     // unfortunately regular fprintf honours the decimal separator as set by the current locale,
     // we want '.' in all cases though.
@@ -561,11 +585,18 @@ dt_pdf_page_t *dt_pdf_add_page(dt_pdf_t *pdf, dt_pdf_image_t **images, int n_ima
     {
       stream_size += fprintf(pdf->fd,
         "q\n"
-        "1 0 0 1 %s %s cm\n" // translate
+        "1 0 0 1 %s %s cm\n", // translate
+        translate_x_str, translate_y_str
+      );
+      if(rotate_to_fit)
+        stream_size += fprintf(pdf->fd,
+          "0 1 -1 0 0 0 cm\n" // rotate
+        );
+      stream_size += fprintf(pdf->fd,
         "%s 0 0 %s 0 0 cm\n" // scale
         "/Im%d Do\n"
         "Q\n",
-        translate_x_str, translate_y_str, scale_x_str, scale_y_str, images[i]->name_id
+        scale_x_str, scale_y_str, images[i]->name_id
       );
     }
 

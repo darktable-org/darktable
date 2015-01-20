@@ -572,7 +572,7 @@ void gui_init(dt_imageio_module_storage_t *self)
   // rotate images yes|no
 
   d->rotate = dt_bauhaus_combobox_new(NULL);
-  dt_bauhaus_widget_set_label(d->rotate, NULL, _("TODO: rotate images"));
+  dt_bauhaus_widget_set_label(d->rotate, NULL, _("rotate images"));
   dt_bauhaus_combobox_add(d->rotate, _("no"));
   dt_bauhaus_combobox_add(d->rotate, _("yes"));
   gtk_grid_attach(grid, GTK_WIDGET(d->rotate), 0, ++line, 2, 1);
@@ -581,7 +581,6 @@ void gui_init(dt_imageio_module_storage_t *self)
                _("images can be rotated to match the pdf orientation to waste less space when printing"),
                (char *)NULL);
   dt_bauhaus_combobox_set(d->rotate, dt_conf_get_bool("plugins/imageio/storage/pdf/rotate"));
-  gtk_widget_set_sensitive(d->rotate, FALSE); // TODO
 
   // pages all|single images|contact sheet
 
@@ -627,12 +626,17 @@ void gui_init(dt_imageio_module_storage_t *self)
 
   d->bpp = dt_bauhaus_combobox_new(NULL);
   dt_bauhaus_widget_set_label(d->bpp, NULL, _("bit depth"));
+  int sel = 0;
+  int bpp = dt_conf_get_int("plugins/imageio/storage/pdf/bpp");
   for(int i = 0; _pdf_bpp[i].name; i++)
+  {
     dt_bauhaus_combobox_add(d->bpp, _(_pdf_bpp[i].name));
+    if(_pdf_bpp[i].bpp == bpp) sel = i;
+  }
   gtk_grid_attach(grid, GTK_WIDGET(d->bpp), 0, ++line, 2, 1);
   g_signal_connect(G_OBJECT(d->bpp), "value-changed", G_CALLBACK(bpp_toggle_callback), self);
   g_object_set(G_OBJECT(d->bpp), "tooltip-text", _("bits per channel of the embedded images"), (char *)NULL);
-  dt_bauhaus_combobox_set(d->bpp, dt_conf_get_int("plugins/imageio/storage/pdf/bpp"));
+  dt_bauhaus_combobox_set(d->bpp, sel);
 
   // compression
 
@@ -789,6 +793,8 @@ int initialize_store(dt_imageio_module_storage_t *self, dt_imageio_module_data_t
 {
   dt_imageio_pdf_t *d = (dt_imageio_pdf_t *)sdata;
 
+  if(images == NULL || *images == NULL) return 1;
+
   // let's play dirty and change whatever format was set to our internal one
   (*format)->free_params(*format, *fdata);
   *format = &pdf_format;
@@ -921,6 +927,9 @@ failed:
   sdata->max_width = dt_pdf_point_to_pixel(page_width - 2 * border, page_dpi) + 0.5;
   sdata->max_height = dt_pdf_point_to_pixel(page_height - 2 * border, page_dpi) + 0.5;
 
+  if(d->params.rotate)
+    sdata->max_width = sdata->max_height = MAX(sdata->max_width, sdata->max_height);
+
   unsigned int compression = d->params.compression;
   compression = MIN(compression, DT_PDF_STREAM_ENCODER_FLATE);
 
@@ -1034,6 +1043,7 @@ void finalize_store(dt_imageio_module_storage_t *self, dt_imageio_module_data_t 
     dt_pdf_image_t *image = (dt_pdf_image_t *)iter->data;
     image->outline_mode = outline_mode;
     image->show_bb = show_bb;
+    image->rotate_to_fit = d->params.rotate;
     pages[i] = dt_pdf_add_page(d->pdf, &image, 1);
     iter = g_list_next(iter);
     i++;
