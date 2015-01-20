@@ -260,49 +260,10 @@ void dt_print_file(const int32_t imgid, const char *filename, const dt_print_inf
     num_options = cupsAddOption("StpFullBleed", "true", num_options, &options);
   }
 
-  int32_t px, py, pwidth, pheight;
-  int32_t ix, iy, iwidth, iheight;
-  int32_t ax, ay, awidth, aheight;
-
-  // get the exact size of the picture for proper placement on the page, this is critical for the
-  // job sent to CUPS as we really want our picture to fit in a single page.
-
-  TIFF *tif = TIFFOpen (filename, "r");
-  TIFFGetField (tif, TIFFTAG_IMAGEWIDTH, &iwidth);
-  TIFFGetField (tif, TIFFTAG_IMAGELENGTH, &iheight);
-  TIFFClose (tif);
-
-  dt_get_print_layout (imgid, pinfo, 0, 0,
-                       &px, &py, &pwidth, &pheight,
-                       &ax, &ay, &awidth, &aheight,
-                       &ix, &iy, &iwidth, &iheight);
-
-  fprintf (stderr, "[print] === tif size in mm : %d x %d\n", iwidth, iheight);
-
-  // look for the smallest margins
-
-  int32_t ir = pinfo->paper.width - ix - iwidth;
-  int32_t ib = pinfo->paper.height - iy - iheight;
-
   if (pinfo->page.landscape)
-  {
-    ir = pinfo->paper.height - ix - iwidth;
-    ib = pinfo->paper.width - iy - iheight;
-  }
-
-  fprintf (stderr, "[print] offset (%d %d) -> width: %d height: %d | right: %d bottom: %d\n",
-           ix, iy, iwidth, iheight, ir, ib);
-
-  if (pinfo->page.landscape)
-  {
     num_options = cupsAddOption("landscape", "true", num_options, &options);
-    num_options = cupsAddOption("position", "top-right", num_options, &options);
-  }
   else
-  {
     num_options = cupsAddOption("landscape", "false", num_options, &options);
-    num_options = cupsAddOption("position", "top-left", num_options, &options);
-  }
 
   // print lp options
 
@@ -323,7 +284,6 @@ void dt_print_file(const int32_t imgid, const char *filename, const dt_print_inf
     dt_control_log(_("printing image `%d' on %s"), imgid, pinfo->printer.name);
 
   cupsFreeOptions (num_options, options);
-  unlink(filename);
 }
 
 static void _get_image_dimension (int32_t imgid, int32_t *iwidth, int32_t *iheight)

@@ -74,10 +74,6 @@ void dt_control_set_local_copy_images();
 void dt_control_reset_local_copy_images();
 void dt_control_export(GList *imgid_list, int max_width, int max_height, int format_index, int storage_index,
                        gboolean high_quality, char *style, gboolean style_append);
-#ifdef HAVE_PRINT
-void dt_control_print(GList *imgid_list,int max_width, int max_height, int format_index, int storage_index,
-                      char *style, gboolean style_append, const char *filename, const dt_print_info_t *pinfo);
-#endif
 void dt_control_merge_hdr();
 
 void dt_control_seed_denoise();
