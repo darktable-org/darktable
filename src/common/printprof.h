@@ -19,7 +19,12 @@
 #ifndef __PRINTPROF_H__
 #define __PRINTPROF_H__
 
-int dt_apply_printer_profile(char *filename, char *profile, int intent);
+#include <inttypes.h>
+#include <stddef.h>
+
+int dt_apply_printer_profile(int imgid, void **in, uint32_t width, uint32_t height, int bpp, const char *profile, int intent);
+// this routines takes as input an image of 8 or 16 bpp but always return a 8 bpp result. It is indeed better to
+// apply the profile to a 16bit input but we do not need this for printing.
 
 #endif // __PRINTPROF_H__
 
