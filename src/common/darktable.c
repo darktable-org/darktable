@@ -577,6 +577,8 @@ int dt_init(int argc, char *argv[], const int init_gui, lua_State *L)
           darktable.unmuted |= DT_DEBUG_MASKS; // masks related stuff.
         else if(!strcmp(argv[k + 1], "lua"))
           darktable.unmuted |= DT_DEBUG_LUA; // lua errors are reported on console
+        else if(!strcmp(argv[k + 1], "print"))
+          darktable.unmuted |= DT_DEBUG_PRINT; // print errors are reported on console
         else
           return usage(argv[0]);
         k++;

@@ -130,6 +130,10 @@ GList *dt_get_printers(void)
       dt_printer_info_t *pr = dt_get_printer_info(dest->name);
       result = g_list_append(result,pr);
     }
+    else if (darktable.unmuted & DT_DEBUG_PRINT)
+    {
+      printf("[print] skip printer %s as stopped", dest->name);
+    }
   }
 
   cupsFreeDests(num_dests, dests);
@@ -208,6 +212,11 @@ GList *dt_get_papers(const char *printer_name)
         }
       }
     }
+    else if (darktable.unmuted & DT_DEBUG_PRINT)
+    {
+      printf("[print] cannot connect to printer %s (cancel=%d)", printer_name, cancel);
+    }
+
   }
   return result;
 }
@@ -267,10 +276,13 @@ void dt_print_file(const int32_t imgid, const char *filename, const dt_print_inf
 
   // print lp options
 
-  fprintf (stderr, "[print] printer options (%d)\n", num_options);
-  for (int k=0; k<num_options; k++)
+  if (darktable.unmuted & DT_DEBUG_PRINT)
   {
-    fprintf (stderr, "[print]   %s=%s\n", options[k].name, options[k].value);
+    printf ("[print] printer options (%d)\n", num_options);
+    for (int k=0; k<num_options; k++)
+    {
+      printf ("[print]   %s=%s\n", options[k].name, options[k].value);
+    }
   }
 
   const int job_id = cupsPrintFile(pinfo->printer.name, filename,  "darktable", num_options, options);
