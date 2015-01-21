@@ -252,6 +252,17 @@ void dt_print_file(const int32_t imgid, const char *filename, const dt_print_inf
 
   num_options = cupsAddOption("number-up", "1", num_options, &options);
 
+  // if the printer has no hardward margins activate the borderless mode
+
+  if (pinfo->printer.hw_margin_top == 0 || pinfo->printer.hw_margin_bottom == 0
+      || pinfo->printer.hw_margin_left == 0 || pinfo->printer.hw_margin_right == 0)
+  {
+    // there is many vaariant for this parameter
+    num_options = cupsAddOption("StpFullBleed", "true", num_options, &options);
+    num_options = cupsAddOption("STP_FullBleed", "true", num_options, &options);
+    num_options = cupsAddOption("Borderless", "true", num_options, &options);
+  }
+
   char value[25];
   int32_t px, py, pwidth, pheight;
   int32_t ix, iy, iwidth, iheight;
