@@ -142,9 +142,10 @@ static int _paper_size(dt_imageio_pdf_params_t *d, float *page_width, float *pag
 
   if(!dt_pdf_parse_length(d->border, &border))
   {
-    fprintf(stderr, "[imageio_format_pdf] invalid border size: `%s'!\n", d->border);
-    dt_control_log(_("invalid border size"));
-    return 1;
+    fprintf(stderr, "[imageio_format_pdf] invalid border size: `%s'! using 0\n", d->border);
+    dt_control_log(_("invalid border size, using 0"));
+//     return 1;
+    border = 0.0;
   }
 
   if(d->orientation == ORIENTATION_LANDSCAPE)
