@@ -182,7 +182,7 @@ GList *dt_get_papers(const char *printer_name)
 
   if (dest)
   {
-    http_t *hcon = cupsConnectDest (dest, 0, 1000, &cancel, resource, ressize, NULL, (void *)NULL);
+    http_t *hcon = cupsConnectDest (dest, 0, 2000, &cancel, resource, ressize, NULL, (void *)NULL);
 
     if (hcon)
     {
