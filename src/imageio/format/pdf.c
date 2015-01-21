@@ -377,7 +377,11 @@ static void _set_paper_size(dt_imageio_module_format_t *self, const char *text)
 {
   pdf_t *d = (pdf_t *)self->gui_data;
 
-  if(text == NULL || *text == '\0') return;
+  if(text == NULL || *text == '\0')
+  {
+    _set_paper_size(self, dt_pdf_paper_sizes[0].name);
+    return;
+  }
 
   g_signal_handlers_block_by_func(d->size, size_toggle_callback, self);
 
@@ -536,11 +540,8 @@ void gui_init(dt_imageio_module_format_t *self)
   g_signal_connect(G_OBJECT(d->size), "value-changed", G_CALLBACK(size_toggle_callback), self);
   g_object_set(G_OBJECT(d->size), "tooltip-text", _("paper size of the pdf\neither one from the list or \"<width> [unit] x <height> <unit>\nexample: 210 mm x 2.97 cm"), (char *)NULL);
   str = dt_conf_get_string("plugins/imageio/format/pdf/size");
-  if(str)
-  {
-    _set_paper_size(self, str);
-    g_free(str);
-  }
+  _set_paper_size(self, str);
+  g_free(str);
 
   // orientation
 

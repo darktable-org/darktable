@@ -1181,28 +1181,28 @@
     <longdescription/>
   </dtconfig>
   <dtconfig>
-    <name>plugins/imageio/storage/pdf/filename</name>
+    <name>plugins/imageio/format/pdf/size</name>
     <type>string</type>
-    <default>$(FILE_FOLDER)/darktable_exported/pdf_export</default>
+    <default>a4</default>
     <shortdescription/>
     <longdescription/>
   </dtconfig>
   <dtconfig>
-    <name>plugins/imageio/storage/pdf/border</name>
+    <name>plugins/imageio/format/pdf/border</name>
     <type>string</type>
     <default>0 mm</default>
     <shortdescription/>
     <longdescription/>
   </dtconfig>
   <dtconfig>
-    <name>plugins/imageio/storage/pdf/dpi</name>
+    <name>plugins/imageio/format/pdf/dpi</name>
     <type>float</type>
     <default>300</default>
     <shortdescription/>
     <longdescription/>
   </dtconfig>
   <dtconfig>
-    <name>plugins/imageio/storage/pdf/compression</name>
+    <name>plugins/imageio/format/pdf/compression</name>
     <type>int</type>
     <default>1</default>
     <shortdescription/>
