@@ -107,7 +107,7 @@ static const char *mime(dt_imageio_module_data_t *data)
 }
 
 static int write_image(dt_imageio_module_data_t *datai, const char *filename, const void *in, void *exif,
-                       int exif_len, int imgid)
+                       int exif_len, int imgid, int num, int total)
 {
   dt_slideshow_format_t *data = (dt_slideshow_format_t *)datai;
   dt_pthread_mutex_lock(&data->d->lock);
@@ -188,7 +188,7 @@ static int process_next_image(dt_slideshow_t *d)
   if(id)
     // the flags are: ignore exif, display byteorder, high quality, thumbnail
     dt_imageio_export_with_flags(id, "unused", &buf, (dt_imageio_module_data_t *)&dat, 1, 1, high_quality, 0,
-                                 0, 0, 0, 0);
+                                 0, 0, 0, 0, 1, 1);
   return 0;
 }
 

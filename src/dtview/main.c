@@ -196,7 +196,7 @@ static const char *mime(dt_imageio_module_data_t *data)
 }
 
 static int write_image(dt_imageio_module_data_t *data, const char *filename, const void *in, void *exif,
-                       int exif_len, int imgid)
+                       int exif_len, int imgid, int num, int total)
 {
   const int offx = (width - data->width) / 2;
   const int offy = (height - data->height) / 2;
@@ -271,7 +271,7 @@ static int process_next_image()
 
   if(id)
   {
-    dt_imageio_export(id, "unused", &buf, &dat, TRUE, FALSE, NULL, NULL);
+    dt_imageio_export(id, "unused", &buf, &dat, TRUE, FALSE, NULL, NULL, 1, 1);
   }
   return 0;
 }

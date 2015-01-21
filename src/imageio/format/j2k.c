@@ -328,7 +328,7 @@ static void cinema_setup_encoder(opj_cparameters_t *parameters, opj_image_t *ima
 }
 
 int write_image(dt_imageio_module_data_t *j2k_tmp, const char *filename, const void *in_tmp, void *exif,
-                int exif_len, int imgid)
+                int exif_len, int imgid, int num, int total)
 {
   const float *in = (const float *)in_tmp;
   dt_imageio_j2k_t *j2k = (dt_imageio_j2k_t *)j2k_tmp;

@@ -121,7 +121,7 @@ static void PNGwriteRawProfile(png_struct *ping, png_info *ping_info, char *prof
 }
 
 int write_image(dt_imageio_module_data_t *p_tmp, const char *filename, const void *ivoid, void *exif,
-                int exif_len, int imgid)
+                int exif_len, int imgid, int num, int total)
 {
   dt_imageio_png_t *p = (dt_imageio_png_t *)p_tmp;
   const int width = p->width, height = p->height;

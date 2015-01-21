@@ -30,7 +30,7 @@ DT_MODULE(1)
 
 // FIXME: we can't rely on darktable to avoid file overwriting -- it doesn't know the filename (extension).
 int write_image(dt_imageio_module_data_t *ppm, const char *filename, const void *in, void *exif, int exif_len,
-                int imgid)
+                int imgid, int num, int total)
 {
   int status = 1;
   char *sourcefile = NULL;

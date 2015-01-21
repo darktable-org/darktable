@@ -52,7 +52,7 @@ typedef struct dt_imageio_tiff_gui_t
 
 
 int write_image(dt_imageio_module_data_t *d_tmp, const char *filename, const void *in_void, void *exif,
-                int exif_len, int imgid)
+                int exif_len, int imgid, int num, int total)
 {
   const dt_imageio_tiff_t *d = (dt_imageio_tiff_t *)d_tmp;
 

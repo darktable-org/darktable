@@ -35,7 +35,7 @@ void *get_params(struct dt_imageio_module_format_t *self);
 void free_params(struct dt_imageio_module_format_t *self, dt_imageio_module_data_t *data);
 int set_params(struct dt_imageio_module_format_t *self, const void *params, const int size);
 int write_image(dt_imageio_module_data_t *data, const char *filename, const void *in, void *exif,
-                int exif_len, int imgid);
+                int exif_len, int imgid, int num, int total);
 int bpp(dt_imageio_module_data_t *data);
 int flags(dt_imageio_module_data_t *data);
 int levels(dt_imageio_module_data_t *data);

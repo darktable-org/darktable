@@ -29,7 +29,7 @@
 DT_MODULE(1)
 
 int write_image(dt_imageio_module_data_t *data, const char *filename, const void *ivoid, void *exif,
-                int exif_len, int imgid)
+                int exif_len, int imgid, int num, int total)
 {
   const dt_imageio_module_data_t *const pfm = data;
   int status = 0;

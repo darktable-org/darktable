@@ -1171,7 +1171,7 @@ int store(dt_imageio_module_storage_t *self, struct dt_imageio_module_data_t *sd
   if(fdata->max_height == 0 || fdata->max_height > FB_IMAGE_MAX_SIZE) fdata->max_height = FB_IMAGE_MAX_SIZE;
   if(fdata->max_width == 0 || fdata->max_width > FB_IMAGE_MAX_SIZE) fdata->max_width = FB_IMAGE_MAX_SIZE;
 
-  if(dt_imageio_export(imgid, fname, format, fdata, high_quality, FALSE, self, sdata) != 0)
+  if(dt_imageio_export(imgid, fname, format, fdata, high_quality, FALSE, self, sdata, num, total) != 0)
   {
     g_printerr("[facebook] could not export to file: `%s'!\n", fname);
     dt_control_log(_("could not export to file `%s'!"), fname);

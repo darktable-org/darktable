@@ -103,7 +103,7 @@ void cleanup(dt_imageio_module_format_t *self)
 }
 
 int write_image(dt_imageio_module_data_t *tmp, const char *filename, const void *in_tmp, void *exif,
-                int exif_len, int imgid)
+                int exif_len, int imgid, int num, int total)
 {
   const dt_imageio_exr_t *exr = (dt_imageio_exr_t *)tmp;
 

@@ -2,10 +2,11 @@ cmake_minimum_required(VERSION 2.6)
 
 include_directories("${CMAKE_CURRENT_BINARY_DIR}/../../" "${CMAKE_CURRENT_SOURCE_DIR}")
 include_directories(SYSTEM "${PNG_PNG_INCLUDE_DIR}")
-set(MODULES copy jpeg png ppm pfm tiff )
+set(MODULES copy jpeg pdf png ppm pfm tiff )
 
 add_library(copy MODULE "copy.c")
 add_library(jpeg MODULE "jpeg.c")
+add_library(pdf MODULE "pdf.c")
 add_library(png MODULE "png.c")
 add_library(ppm MODULE "ppm.c")
 add_library(pfm MODULE "pfm.c")
