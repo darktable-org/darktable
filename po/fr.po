@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 1.3\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-01-10 10:39+0100\n"
-"PO-Revision-Date: 2015-01-20 23:00+0100\n"
+"POT-Creation-Date: 2015-01-21 18:35+0100\n"
+"PO-Revision-Date: 2015-01-21 18:37+0100\n"
 "Last-Translator: Pascal Obry <pascal@obry.net>\n"
 "Language-Team: \n"
 "Language: fr_FR\n"
@@ -1292,8 +1292,7 @@ msgstr "supprimer les images ?"
 #: ../src/control/jobs/control_jobs.c:1200 ../src/imageio/storage/disk.c:92
 #: ../src/imageio/storage/disk.c:156 ../src/imageio/storage/gallery.c:104
 #: ../src/imageio/storage/gallery.c:165 ../src/imageio/storage/latex.c:104
-#: ../src/imageio/storage/latex.c:165 ../src/imageio/storage/pdf.c:289
-#: ../src/imageio/storage/pdf.c:477 ../src/libs/styles.c:210
+#: ../src/imageio/storage/latex.c:165 ../src/libs/styles.c:210
 #: ../src/lua/preferences.c:610
 msgid "select directory"
 msgstr "sélectionner répertoire"
@@ -1303,11 +1302,10 @@ msgstr "sélectionner répertoire"
 #: ../src/gui/preferences.c:1012 ../src/gui/preferences.c:1034
 #: ../src/gui/presets.c:386 ../src/gui/styles_dialog.c:284
 #: ../src/imageio/storage/disk.c:92 ../src/imageio/storage/gallery.c:104
-#: ../src/imageio/storage/latex.c:104 ../src/imageio/storage/pdf.c:289
-#: ../src/libs/collect.c:414 ../src/libs/copy_history.c:70
-#: ../src/libs/geotagging.c:439 ../src/libs/import.c:638
-#: ../src/libs/import.c:733 ../src/libs/lib.c:216 ../src/libs/styles.c:210
-#: ../src/libs/styles.c:230
+#: ../src/imageio/storage/latex.c:104 ../src/libs/collect.c:414
+#: ../src/libs/copy_history.c:70 ../src/libs/geotagging.c:439
+#: ../src/libs/import.c:638 ../src/libs/import.c:733 ../src/libs/lib.c:216
+#: ../src/libs/styles.c:210 ../src/libs/styles.c:230
 msgid "_Cancel"
 msgstr "_Annuler"
 
@@ -2924,6 +2922,218 @@ msgstr "Cinema4K, 24fps"
 msgid "JPEG (8-bit)"
 msgstr "JPEG (8-bits)"
 
+#: ../src/imageio/format/pdf.c:77 ../src/imageio/format/png.c:471
+#: ../src/imageio/format/tiff.c:414
+msgid "8 bit"
+msgstr "8 bits"
+
+#: ../src/imageio/format/pdf.c:78 ../src/imageio/format/png.c:472
+#: ../src/imageio/format/tiff.c:415
+msgid "16 bit"
+msgstr "16 bits"
+
+#: ../src/imageio/format/pdf.c:139 ../src/imageio/format/pdf.c:420
+msgid "invalid paper size"
+msgstr "taille du papier non valide"
+
+#: ../src/imageio/format/pdf.c:146
+msgid "invalid border size, using 0"
+msgstr "taille des bords non valide, 0 est utilisé"
+
+#: ../src/imageio/format/pdf.c:194 ../src/imageio/storage/disk.c:289
+#: ../src/imageio/storage/email.c:133 ../src/imageio/storage/facebook.c:1177
+#: ../src/imageio/storage/flickr.c:646 ../src/imageio/storage/gallery.c:337
+#: ../src/imageio/storage/gallery.c:357 ../src/imageio/storage/picasa.c:1447
+#, c-format
+msgid "could not export to file `%s'!"
+msgstr "impossible d'exporter le fichier «%s» !"
+
+#: ../src/imageio/format/pdf.c:350
+msgid "PDF"
+msgstr "PDF"
+
+#. title
+#. create labels
+#. clang-format off
+#. xmp
+#: ../src/imageio/format/pdf.c:515 ../src/imageio/storage/facebook.c:992
+#: ../src/imageio/storage/flickr.c:532 ../src/imageio/storage/gallery.c:171
+#: ../src/imageio/storage/latex.c:172 ../src/imageio/storage/picasa.c:1300
+#: ../src/libs/collect.h:29 ../src/libs/metadata.c:344
+#: ../src/libs/metadata_view.c:104
+msgid "title"
+msgstr "titre"
+
+#: ../src/imageio/format/pdf.c:524
+msgid "enter the title of the pdf"
+msgstr "entrer le titre du pdf"
+
+#: ../src/imageio/format/pdf.c:537
+msgid "paper size"
+msgstr "taille papier"
+
+#: ../src/imageio/format/pdf.c:542
+msgid ""
+"paper size of the pdf\n"
+"either one from the list or \"<width> [unit] x <height> <unit>\n"
+"example: 210 mm x 2.97 cm"
+msgstr ""
+"taille du papier du pdf\n"
+"soit une valeur depuis la liste ou  \"<largeur> [unité] x <hauteur> <unité>\n"
+"exemple: 210 mm x 2.97 cm"
+
+#: ../src/imageio/format/pdf.c:550
+msgid "page orientation"
+msgstr "orientation de la page"
+
+#: ../src/imageio/format/pdf.c:551 ../src/iop/borders.c:994
+msgid "portrait"
+msgstr "portrait"
+
+#: ../src/imageio/format/pdf.c:552 ../src/iop/borders.c:995
+msgid "landscape"
+msgstr "paysage"
+
+#: ../src/imageio/format/pdf.c:555
+msgid "paper orientation of the pdf"
+msgstr "orientation du papier du pdf"
+
+#. border
+#: ../src/imageio/format/pdf.c:560
+msgid "border"
+msgstr "bords"
+
+#: ../src/imageio/format/pdf.c:569
+msgid ""
+"empty space around the pdf\n"
+"format: size + unit\n"
+"examples: 10 mm, 1 inch"
+msgstr ""
+"espace vide autour du pdf\n"
+"format: taille + unité\n"
+"exemples: 10 mm, 1 pouce"
+
+#. dpi
+#: ../src/imageio/format/pdf.c:580
+msgid "dpi"
+msgstr "dpi"
+
+#: ../src/imageio/format/pdf.c:588
+msgid "dpi of the images inside the pdf"
+msgstr "dpi des images embarquées dans le pdf"
+
+#: ../src/imageio/format/pdf.c:595
+msgid "rotate images"
+msgstr "retournement des images"
+
+#: ../src/imageio/format/pdf.c:596 ../src/imageio/format/pdf.c:622
+#: ../src/imageio/storage/flickr.c:491 ../src/iop/clipping.c:1860
+#: ../src/libs/metadata_view.c:242
+msgid "no"
+msgstr "non"
+
+#: ../src/imageio/format/pdf.c:597 ../src/imageio/format/pdf.c:623
+#: ../src/imageio/storage/flickr.c:490 ../src/iop/clipping.c:1861
+#: ../src/libs/metadata_view.c:242
+msgid "yes"
+msgstr "oui"
+
+#: ../src/imageio/format/pdf.c:601
+msgid ""
+"images can be rotated to match the pdf orientation to waste less space when "
+"printing"
+msgstr ""
+"les images peuvent être tournées pour correspondre à l'orientation du pdf et "
+"gâcher moins d'espace lors de l'impression"
+
+#: ../src/imageio/format/pdf.c:608
+msgid "TODO: pages"
+msgstr ""
+
+#: ../src/imageio/format/pdf.c:609 ../src/iop/clipping.c:1929
+#: ../src/iop/lens.c:1971 ../src/libs/live_view.c:348
+#: ../src/libs/tools/filter.c:117
+msgid "all"
+msgstr "tout"
+
+#: ../src/imageio/format/pdf.c:610
+msgid "single images"
+msgstr "image unique"
+
+#: ../src/imageio/format/pdf.c:611
+msgid "contact sheet"
+msgstr "planche contacte"
+
+#: ../src/imageio/format/pdf.c:614
+msgid "what pages should be added to the pdf"
+msgstr "quelles pages sont à ajouter au pdf"
+
+#: ../src/imageio/format/pdf.c:621
+msgid "embed icc profiles"
+msgstr "profil icc intégré"
+
+#: ../src/imageio/format/pdf.c:626
+msgid "images can be tagged with their icc profile"
+msgstr "le profil icc à embarquer dans les images"
+
+#: ../src/imageio/format/pdf.c:632 ../src/imageio/format/png.c:470
+#: ../src/imageio/format/tiff.c:413
+msgid "bit depth"
+msgstr "bits"
+
+#: ../src/imageio/format/pdf.c:642
+msgid "bits per channel of the embedded images"
+msgstr "nombre de bit pour les images embarquées"
+
+#: ../src/imageio/format/pdf.c:648 ../src/imageio/format/tiff.c:427
+#: ../src/iop/graduatednd.c:1039
+msgid "compression"
+msgstr "dégradé"
+
+#: ../src/imageio/format/pdf.c:649 ../src/imageio/format/tiff.c:428
+msgid "uncompressed"
+msgstr "non compressé"
+
+#: ../src/imageio/format/pdf.c:650 ../src/imageio/format/tiff.c:429
+msgid "deflate"
+msgstr "deflate"
+
+#: ../src/imageio/format/pdf.c:653
+msgid ""
+"method used for image compression\n"
+"uncompressed -- fast but big files\n"
+"deflate -- smaller files but slower"
+msgstr ""
+"méthode utilisé pour la compression des images\n"
+"non-compressée -- rapide mais taille importante\n"
+"deflate -- taille réduite mais plus lent "
+
+#: ../src/imageio/format/pdf.c:659
+msgid "image mode"
+msgstr "mode de l'image"
+
+#: ../src/imageio/format/pdf.c:660
+msgid "normal"
+msgstr "normal"
+
+#: ../src/imageio/format/pdf.c:661
+msgid "draft"
+msgstr "épreuve"
+
+#: ../src/imageio/format/pdf.c:662
+msgid "debug"
+msgstr "débogage"
+
+#: ../src/imageio/format/pdf.c:666
+msgid ""
+"normal -- just put the images into the pdf\n"
+"draft mode -- images are replaced with boxes\n"
+"debug -- only show the outlines and bounding boxen"
+msgstr ""
+"normal -- place simple les images dans le pdf\n"
+"épreuve -- les images sont remplacées par des boîtes\n"
+"débogage -- montre uniquement le contours des emplacements"
+
 #: ../src/imageio/format/pfm.c:109
 msgid "PFM (float)"
 msgstr "PFM (flottant)"
@@ -2931,21 +3141,6 @@ msgstr "PFM (flottant)"
 #: ../src/imageio/format/png.c:441
 msgid "PNG (8/16-bit)"
 msgstr "PNG (8/16-bits)"
-
-#: ../src/imageio/format/png.c:470 ../src/imageio/format/tiff.c:413
-#: ../src/imageio/storage/pdf.c:612
-msgid "bit depth"
-msgstr "bits"
-
-#: ../src/imageio/format/png.c:471 ../src/imageio/format/tiff.c:414
-#: ../src/imageio/storage/pdf.c:227
-msgid "8 bit"
-msgstr "8 bits"
-
-#: ../src/imageio/format/png.c:472 ../src/imageio/format/tiff.c:415
-#: ../src/imageio/storage/pdf.c:228
-msgid "16 bit"
-msgstr "16 bits"
 
 #: ../src/imageio/format/ppm.c:107
 msgid "PPM (16-bit)"
@@ -2958,19 +3153,6 @@ msgstr "TIFF (8/16/32-bits)"
 #: ../src/imageio/format/tiff.c:416
 msgid "32 bit (float)"
 msgstr "32 bits (flottant)"
-
-#: ../src/imageio/format/tiff.c:427 ../src/imageio/storage/pdf.c:628
-#: ../src/iop/graduatednd.c:1039
-msgid "compression"
-msgstr "dégradé"
-
-#: ../src/imageio/format/tiff.c:428 ../src/imageio/storage/pdf.c:629
-msgid "uncompressed"
-msgstr "non compressé"
-
-#: ../src/imageio/format/tiff.c:429 ../src/imageio/storage/pdf.c:630
-msgid "deflate"
-msgstr "deflate"
 
 #: ../src/imageio/format/tiff.c:430
 msgid "deflate with predictor"
@@ -3037,7 +3219,7 @@ msgid "file on disk"
 msgstr "fichier sur le disque"
 
 #: ../src/imageio/storage/disk.c:93 ../src/imageio/storage/gallery.c:105
-#: ../src/imageio/storage/latex.c:105 ../src/imageio/storage/pdf.c:290
+#: ../src/imageio/storage/latex.c:105
 msgid "_Select as output destination"
 msgstr "_Sélectionner comme destination de sortie"
 
@@ -3050,42 +3232,31 @@ msgstr ""
 "chemin des images exportées\n"
 "variables reconnues :"
 
-#: ../src/imageio/storage/disk.c:161 ../src/imageio/storage/pdf.c:484
+#: ../src/imageio/storage/disk.c:161
 msgid "on conflict"
 msgstr "sur conflit"
 
-#: ../src/imageio/storage/disk.c:162 ../src/imageio/storage/pdf.c:485
+#: ../src/imageio/storage/disk.c:162
 msgid "create unique filename"
 msgstr "créer fichier unique"
 
-#: ../src/imageio/storage/disk.c:163 ../src/imageio/storage/pdf.c:486
-#: ../src/libs/copy_history.c:271
+#: ../src/imageio/storage/disk.c:163 ../src/libs/copy_history.c:271
 msgid "overwrite"
 msgstr "écraser"
 
 #: ../src/imageio/storage/disk.c:247 ../src/imageio/storage/gallery.c:258
-#: ../src/imageio/storage/latex.c:256 ../src/imageio/storage/pdf.c:857
+#: ../src/imageio/storage/latex.c:256
 #, c-format
 msgid "could not create directory `%s'!"
 msgstr "impossible de créer le répertoire «%s» !"
 
-#: ../src/imageio/storage/disk.c:254 ../src/imageio/storage/pdf.c:864
+#: ../src/imageio/storage/disk.c:254
 #, c-format
 msgid "could not write to directory `%s'!"
 msgstr "impossible d'écrire dans le répertoire «%s» !"
 
-#: ../src/imageio/storage/disk.c:289 ../src/imageio/storage/email.c:133
-#: ../src/imageio/storage/facebook.c:1177 ../src/imageio/storage/flickr.c:646
-#: ../src/imageio/storage/gallery.c:337 ../src/imageio/storage/gallery.c:357
-#: ../src/imageio/storage/pdf.c:941 ../src/imageio/storage/pdf.c:1010
-#: ../src/imageio/storage/picasa.c:1447
-#, c-format
-msgid "could not export to file `%s'!"
-msgstr "impossible d'exporter le fichier «%s» !"
-
 #: ../src/imageio/storage/disk.c:296 ../src/imageio/storage/email.c:142
 #: ../src/imageio/storage/gallery.c:367 ../src/imageio/storage/latex.c:346
-#: ../src/imageio/storage/pdf.c:1024
 #, c-format
 msgid "%d/%d exported to `%s%s'"
 msgstr "%d/%d exportée(s) vers «%s%s»"
@@ -3174,19 +3345,6 @@ msgstr "connexion"
 #: ../src/imageio/storage/facebook.c:972
 msgid "facebook webalbum"
 msgstr "album web facebook"
-
-#. create labels
-#. title
-#. create labels
-#. clang-format off
-#. xmp
-#: ../src/imageio/storage/facebook.c:992 ../src/imageio/storage/flickr.c:532
-#: ../src/imageio/storage/gallery.c:171 ../src/imageio/storage/latex.c:172
-#: ../src/imageio/storage/pdf.c:492 ../src/imageio/storage/picasa.c:1300
-#: ../src/libs/collect.h:29 ../src/libs/metadata.c:344
-#: ../src/libs/metadata_view.c:104
-msgid "title"
-msgstr "titre"
 
 #: ../src/imageio/storage/facebook.c:993 ../src/imageio/storage/flickr.c:547
 #: ../src/imageio/storage/picasa.c:1301
@@ -3284,18 +3442,6 @@ msgstr "identifiant flickr"
 msgid "export tags"
 msgstr "exporter les mots-clés"
 
-#: ../src/imageio/storage/flickr.c:490 ../src/imageio/storage/pdf.c:577
-#: ../src/imageio/storage/pdf.c:603 ../src/iop/clipping.c:1861
-#: ../src/libs/metadata_view.c:242
-msgid "yes"
-msgstr "oui"
-
-#: ../src/imageio/storage/flickr.c:491 ../src/imageio/storage/pdf.c:576
-#: ../src/imageio/storage/pdf.c:602 ../src/iop/clipping.c:1860
-#: ../src/libs/metadata_view.c:242
-msgid "no"
-msgstr "non"
-
 #: ../src/imageio/storage/flickr.c:498
 msgid "visible to"
 msgstr "visible par"
@@ -3363,166 +3509,6 @@ msgstr "modèle de livre LaTeX"
 #: ../src/imageio/storage/latex.c:181
 msgid "enter the title of the book"
 msgstr "entrer le titre du livre"
-
-#: ../src/imageio/storage/pdf.c:275
-msgid "pdf"
-msgstr "pdf"
-
-#: ../src/imageio/storage/pdf.c:351 ../src/imageio/storage/pdf.c:902
-msgid "invalid paper size"
-msgstr "taille du papier non valide"
-
-#: ../src/imageio/storage/pdf.c:468
-msgid ""
-"enter the path where to put the exported pdf\n"
-"recognized variables (using the first image):"
-msgstr ""
-"chemin du pdf exporté\n"
-"variables reconnues (utilisant la première image):"
-
-#: ../src/imageio/storage/pdf.c:501
-msgid "enter the title of the pdf"
-msgstr "entrer le titre du pdf"
-
-#: ../src/imageio/storage/pdf.c:514
-msgid "paper size"
-msgstr "taille papier"
-
-#: ../src/imageio/storage/pdf.c:519
-msgid ""
-"paper size of the pdf\n"
-"either one from the list or \"<width> [unit] x <height> <unit>\n"
-"example: 210 mm x 2.97 cm"
-msgstr ""
-"taille du papier du pdf\n"
-"soit une valeur depuis la liste ou  \"<largeur> [unité] x <hauteur> <unité>\n"
-"exemple: 210 mm x 2.97 cm"
-
-#: ../src/imageio/storage/pdf.c:530
-msgid "page orientation"
-msgstr "orientation de la page"
-
-#: ../src/imageio/storage/pdf.c:531 ../src/iop/borders.c:994
-msgid "portrait"
-msgstr "portrait"
-
-#: ../src/imageio/storage/pdf.c:532 ../src/iop/borders.c:995
-msgid "landscape"
-msgstr "paysage"
-
-#: ../src/imageio/storage/pdf.c:535
-msgid "paper orientation of the pdf"
-msgstr "orientation du papier du pdf"
-
-#. border
-#: ../src/imageio/storage/pdf.c:540
-msgid "border"
-msgstr "bords"
-
-#: ../src/imageio/storage/pdf.c:549
-msgid ""
-"empty space around the pdf\n"
-"format: size + unit\n"
-"examples: 10 mm, 1 inch"
-msgstr ""
-"espace vide autour du pdf\n"
-"format: taille + unité\n"
-"exemples: 10 mm, 1 pouce"
-
-#. dpi
-#: ../src/imageio/storage/pdf.c:560
-msgid "dpi"
-msgstr "dpi"
-
-#: ../src/imageio/storage/pdf.c:568
-msgid "dpi of the images inside the pdf"
-msgstr "dpi des images embarquées dans le pdf"
-
-#: ../src/imageio/storage/pdf.c:575
-msgid "rotate images"
-msgstr "retournement des images"
-
-#: ../src/imageio/storage/pdf.c:581
-msgid ""
-"images can be rotated to match the pdf orientation to waste less space when "
-"printing"
-msgstr ""
-"les images peuvent être tournées pour correspondre à l'orientation du pdf et "
-"gâcher moins d'espace lors de l'impression"
-
-#: ../src/imageio/storage/pdf.c:588
-msgid "TODO: pages"
-msgstr ""
-
-#: ../src/imageio/storage/pdf.c:589 ../src/iop/clipping.c:1929
-#: ../src/iop/lens.c:1971 ../src/libs/live_view.c:348
-#: ../src/libs/tools/filter.c:117
-msgid "all"
-msgstr "tout"
-
-#: ../src/imageio/storage/pdf.c:590
-msgid "single images"
-msgstr "image unique"
-
-#: ../src/imageio/storage/pdf.c:591
-msgid "contact sheet"
-msgstr "planche contacte"
-
-#: ../src/imageio/storage/pdf.c:594
-msgid "what pages should be added to the pdf"
-msgstr "quelles pages sont à ajouter au pdf"
-
-#: ../src/imageio/storage/pdf.c:601
-msgid "embed icc profiles"
-msgstr "profil icc intégré"
-
-#: ../src/imageio/storage/pdf.c:606
-msgid "images can be tagged with their icc profile"
-msgstr "le profil icc à embarquer dans les images"
-
-#: ../src/imageio/storage/pdf.c:622
-msgid "bits per channel of the embedded images"
-msgstr "nombre de bit pour les images embarquées"
-
-#: ../src/imageio/storage/pdf.c:633
-msgid ""
-"method used for image compression\n"
-"uncompressed -- fast but big files\n"
-"deflate -- smaller files but slower"
-msgstr ""
-"méthode utilisé pour la compression des images\n"
-"non-compressée -- rapide mais taille importante\n"
-"deflate -- taille réduite mais plus lent "
-
-#: ../src/imageio/storage/pdf.c:639
-msgid "image mode"
-msgstr "mode de l'image"
-
-#: ../src/imageio/storage/pdf.c:640
-msgid "normal"
-msgstr "normal"
-
-#: ../src/imageio/storage/pdf.c:641
-msgid "draft"
-msgstr "épreuve"
-
-#: ../src/imageio/storage/pdf.c:642
-msgid "debug"
-msgstr "débogage"
-
-#: ../src/imageio/storage/pdf.c:646
-msgid ""
-"normal -- just put the images into the pdf\n"
-"draft mode -- images are replaced with boxes\n"
-"debug -- only show the outlines and bounding boxen"
-msgstr ""
-"normal -- place simple les images dans le pdf\n"
-"épreuve -- les images sont remplacées par des boîtes\n"
-"débogage -- montre uniquement le contours des emplacements"
-
-#: ../src/imageio/storage/pdf.c:909
-msgid "invalid border size"
-msgstr "taille des bords non valide"
 
 #. //////////// build & show the validation dialog
 #: ../src/imageio/storage/picasa.c:828
@@ -9245,6 +9231,16 @@ msgstr "nouvelle session initiée «%s»"
 #: ../src/views/tethering.c:242
 msgid "no camera with tethering support available for use..."
 msgstr "aucun boîtier disponible pour la capture..."
+
+#~ msgid "pdf"
+#~ msgstr "pdf"
+
+#~ msgid ""
+#~ "enter the path where to put the exported pdf\n"
+#~ "recognized variables (using the first image):"
+#~ msgstr ""
+#~ "chemin du pdf exporté\n"
+#~ "variables reconnues (utilisant la première image):"
 
 #~ msgid "maximum width of image drawing area"
 #~ msgstr "largeur maximale des images (pixels)"
