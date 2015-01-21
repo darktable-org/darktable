@@ -26,6 +26,7 @@
 #include "common/image_cache.h"
 #include "common/pdf.h"
 #include "common/tags.h"
+#include "common/printprof.h"
 #include "dtgtk/resetlabel.h"
 #include "libs/lib.h"
 #include "gui/gtk.h"
@@ -95,17 +96,20 @@ typedef struct dt_print_format_t
   int width, height;
   char style[128];
   gboolean style_append;
+  int bpp;
   dt_lib_print_settings_t *ps;
 } dt_print_format_t;
 
 static int bpp(dt_imageio_module_data_t *data)
 {
-  return 8;
+  dt_print_format_t *d = (dt_print_format_t *)data;
+  return d->bpp;
 }
 
 static int levels(dt_imageio_module_data_t *data)
 {
-  return IMAGEIO_RGB | IMAGEIO_INT8;
+  dt_print_format_t *d = (dt_print_format_t *)data;
+  return IMAGEIO_RGB | (d->bpp == 8 ? IMAGEIO_INT8 : IMAGEIO_INT16);
 }
 
 static const char *mime(dt_imageio_module_data_t *data)
@@ -113,19 +117,32 @@ static const char *mime(dt_imageio_module_data_t *data)
   return "memory";
 }
 
-static int write_image(dt_imageio_module_data_t *datai, const char *filename, const void *in, void *exif,
-                       int exif_len, int imgid)
+static int write_image(dt_imageio_module_data_t *data, const char *filename, const void *in,
+                       void *exif, int exif_len, int imgid, int num, int total)
 {
-  dt_print_format_t *data = (dt_print_format_t *)datai;
+  dt_print_format_t *d = (dt_print_format_t *)data;
 
-  data->ps->buf = (uint16_t *)malloc(data->width * data->height * 3 * sizeof(uint16_t));
+  d->ps->buf = (uint16_t *)malloc(d->width * d->height * 3 * (d->bpp == 8?1:2));
 
-  const uint8_t *in_ptr = (const uint8_t *)in;
-  uint8_t *out_ptr = (uint8_t *)data->ps->buf;
-  for(int y = 0; y < data->height; y++)
+  if (d->bpp == 8)
   {
-    for(int x = 0; x < data->width; x++, in_ptr += 4, out_ptr += 3)
-      memcpy(out_ptr, in_ptr, 3);
+    const uint8_t *in_ptr = (const uint8_t *)in;
+    uint8_t *out_ptr = (uint8_t *)d->ps->buf;
+    for(int y = 0; y < d->height; y++)
+    {
+      for(int x = 0; x < d->width; x++, in_ptr += 4, out_ptr += 3)
+        memcpy(out_ptr, in_ptr, 3);
+    }
+  }
+  else
+  {
+    const uint16_t *in_ptr = (const uint16_t *)in;
+    uint16_t *out_ptr = (uint16_t *)d->ps->buf;
+    for(int y = 0; y < d->height; y++)
+    {
+      for(int x = 0; x < d->width; x++, in_ptr += 4, out_ptr += 3)
+        memcpy(out_ptr, in_ptr, 6);
+    }
   }
 
   return 0;
@@ -157,6 +174,9 @@ _print_button_clicked (GtkWidget *widget, gpointer user_data)
     dt_control_queue_redraw();
     return;
   }
+
+  dt_control_log(_("prepare printing image %d on `%s'"), imgid, ps->prt.printer.name);
+  dt_control_queue_redraw();
 
   // compute print-area (in inches)
   double width, height;
@@ -214,6 +234,9 @@ _print_button_clicked (GtkWidget *widget, gpointer user_data)
   max_width -= max_width % 4;
   max_height -= max_height % 4;
 
+  gchar *printer_profile = dt_conf_get_string("plugins/print/printer/iccprofile");
+  const int pintent = dt_conf_get_int("plugins/print/printer/iccintent");
+
   fprintf(stderr, "[print] max image size %d x %d (at resolution %d)\n", max_width, max_height, ps->prt.printer.resolution);
 
   dt_imageio_module_format_t buf;
@@ -227,6 +250,7 @@ _print_button_clicked (GtkWidget *widget, gpointer user_data)
   dat.max_height = max_height;
   dat.style[0] = '\0';
   dat.style_append = dt_conf_get_bool("plugins/print/print/style_append");
+  dat.bpp = *printer_profile ? 16 : 8; // set to 16bit when a profile is to be applied
   dat.ps = ps;
 
   char* style = dt_conf_get_string("plugins/print/print/style");
@@ -239,25 +263,33 @@ _print_button_clicked (GtkWidget *widget, gpointer user_data)
   // the flags are: ignore exif, display byteorder, high quality, thumbnail
   const int high_quality = 1;
   dt_imageio_export_with_flags
-    (imgid, "unused", &buf, (dt_imageio_module_data_t *)&dat, 1, 0, high_quality, 0, NULL, FALSE, 0, 0);
+    (imgid, "unused", &buf, (dt_imageio_module_data_t *)&dat, 1, 0, high_quality, 0, NULL, FALSE, 0, 0, 1, 1);
 
-  float border;
-  dt_pdf_parse_length("0 mm", &border);
+  // we have the exported buffer, let's apply the printer profile
+
+  if (*printer_profile)
+    if (dt_apply_printer_profile(imgid, (void **)&(dat.ps->buf), dat.width, dat.height, dat.bpp, printer_profile, pintent))
+    {
+      dt_control_log(_("cannot apply printer profile `%s'"), printer_profile);
+      dt_control_queue_redraw();
+      return;
+    }
 
   const float page_width  = dt_pdf_mm_to_point(width);
   const float page_height = dt_pdf_mm_to_point(height);
 
   char *filename = tempnam(NULL, "pf");
 
-  int icc_id = 0;
-  const gchar *printer_profile = dt_conf_get_string("plugins/print/printer/iccprofile");
+  const int icc_id = 0;
 
   dt_pdf_t *pdf = dt_pdf_start(filename, page_width, page_height, ps->prt.printer.resolution, DT_PDF_STREAM_ENCODER_FLATE);
 
+/*
+  // ??? should a profile be embedded here?
   if (*printer_profile)
     icc_id = dt_pdf_add_icc(pdf, printer_profile);
-
-  dt_pdf_image_t *pdf_image = dt_pdf_add_image(pdf, (uint8_t *)dat.ps->buf, dat.width, dat.height, 8, icc_id, border);
+*/
+  dt_pdf_image_t *pdf_image = dt_pdf_add_image(pdf, (uint8_t *)dat.ps->buf, dat.width, dat.height, 8, icc_id, 0.0);
 
   //  PDF bounding-box has origin on bottom-left
   pdf_image->bb_x      = dt_pdf_pixel_to_point((float)margin_left, ps->prt.printer.resolution);
@@ -276,6 +308,9 @@ _print_button_clicked (GtkWidget *widget, gpointer user_data)
   // free memory
 
   free (dat.ps->buf);
+  free (pdf_image);
+  free (pdf_page);
+  free (printer_profile);
 
   // send to CUPS
 
