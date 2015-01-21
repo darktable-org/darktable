@@ -48,6 +48,7 @@ src/imageio/format/copy.c
 src/imageio/format/exr.cc
 src/imageio/format/j2k.c
 src/imageio/format/jpeg.c
+src/imageio/format/pdf.c
 src/imageio/format/pfm.c
 src/imageio/format/png.c
 src/imageio/format/ppm.c
@@ -59,7 +60,6 @@ src/imageio/storage/facebook.c
 src/imageio/storage/flickr.c
 src/imageio/storage/gallery.c
 src/imageio/storage/latex.c
-src/imageio/storage/pdf.c
 src/imageio/storage/picasa.c
 src/iop/amaze_demosaic_RT.cc
 src/iop/atrous.c
