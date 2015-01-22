@@ -550,9 +550,14 @@ int set_params(dt_imageio_module_storage_t *self, const void *params, const int 
 
 int supported(dt_imageio_module_storage_t *storage, dt_imageio_module_format_t *format)
 {
-  if(strcmp(format->mime(NULL), "image/jpeg") == 0)
+  const char *mime = format->mime(NULL);
+  if(strcmp(mime, "image/jpeg") == 0)
     return 1;
-  else if(strcmp(format->mime(NULL), "image/png") == 0)
+  if(strcmp(mime, "image/png") == 0)
+    return 1;
+  if(strcmp(mime, "image/webp") == 0)
+    return 1;
+  if(strcmp(mime, "image/jp2") == 0)
     return 1;
 
   return 0;
