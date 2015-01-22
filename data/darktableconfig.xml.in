@@ -484,6 +484,25 @@
     <longdescription>if set to true, thumbnails will be processed by first downscaling rather than demosaicing the full image. this can result in much faster processing times and blurrier images, especially when you cropped a lot.</longdescription>
   </dtconfig>
   <dtconfig prefs="gui">
+    <name>plugins/lighttable/thumbnail_hq_min_level</name>
+    <type>
+      <enum>
+        <option>always</option>
+        <option>1 - 180 x 110 px</option>
+        <option>2 - 360 x 225 px</option>
+        <option>3 - 720 x 450 px</option>
+        <option>4 - 1440 x 900 px</option>
+        <option>5 - 1920 x 1200 px</option>
+        <option>6 - 2560 x 1600 px</option>
+        <option>7 - 4096 x 2560 px</option>
+        <option>never</option>
+      </enum>
+    </type>
+    <default>3 - 720 x 450 px</default>
+    <shortdescription>process hight quality thumb if size is greater than</shortdescription>
+    <longdescription>if the thumbnail size is greater than this value, it will be processed using the full quality rendering path (better but slower).</longdescription>
+  </dtconfig>
+  <dtconfig prefs="gui">
     <name>pressure_sensitivity</name>
     <type>
       <enum>
