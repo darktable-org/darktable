@@ -19,12 +19,12 @@
 #define USE_EXPOSURE 0
 #define USE_ZONES_L 0
 #define USE_ZONES_C 0
-#define USE_ZONES_h 0
+#define USE_ZONES_h 1
 #define USE_ZONES_CHANGE_h 0
 #define USE_CURVE 1
 #define USE_AB_CURVES 1
-#define USE_SATURATION 0
-#define USE_CORR 0
+#define USE_SATURATION 1
+#define USE_CORR 1
 // #define USE_CLUT 0 // doesn't compile any longer, deprecated.
 
 // clut
@@ -431,6 +431,7 @@ static inline void write_xmp(module_params_t *m)
   fprintf(f, "<rdf:li>%d</rdf:li>\n", USE_CURVE);
   // fprintf(f, "<rdf:li>%d</rdf:li>\n", USE_CLUT);
   fprintf(f, "<rdf:li>%d</rdf:li>\n", USE_CORR);
+  fprintf(f, "<rdf:li>1</rdf:li>\n");
   fprintf(f, "</rdf:Seq>\n</darktable:history_enabled>\n<darktable:history_operation>\n<rdf:Seq>\n");
   fprintf(f, "<rdf:li>colorzones</rdf:li>\n");
   fprintf(f, "<rdf:li>colorzones</rdf:li>\n");
@@ -438,6 +439,7 @@ static inline void write_xmp(module_params_t *m)
   fprintf(f, "<rdf:li>tonecurve</rdf:li>\n");
   // fprintf(f, "<rdf:li>clut</rdf:li>\n");
   fprintf(f, "<rdf:li>colorcorrection</rdf:li>\n");
+  fprintf(f, "<rdf:li>colorin</rdf:li>\n");
   fprintf(f, "</rdf:Seq>\n");
   fprintf(f, "</darktable:history_operation>\n");
   fprintf(f, "<darktable:history_params>\n");
@@ -501,7 +503,8 @@ void eval_diff(float *param, float *sample, int param_cnt, int sample_cnt, void 
   assert(check == param_cnt);
   write_xmp(d->m);
   // execute dt-cli
-  system("rm output.pfm input.pfm.xmp");
+  system("rm -f output.pfm input.pfm.xmp");
+  system("cp input.xmp backup.xmp");
   system("darktable-cli input.pfm input.xmp output.pfm");
   // read back image and write to float *sample
   FILE *f = fopen("output.pfm", "rb");

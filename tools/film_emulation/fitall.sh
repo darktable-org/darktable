@@ -19,17 +19,19 @@ rm -f input.pfm
 darktable-cli unity.pfm unity_to_input.xmp input.pfm
 
 # now fit all color luts!
-for i in ~/.gmic_film_presets/*.cimgz
+for i in $(seq 0 1 20)
 do
   # create reference image
-  gmic unity_srgb.png $i -map_clut -o reference.png
+  #  gmic unity_srgb.png "$i" -map_clut -o reference.png
+  gmic unity_srgb.png -gimp_emulate_film_colorslide $i,1,0,1,0,0,0,0,0 -o reference.png
   # create pfm
   rm -f reference.pfm
   darktable-cli reference.png unity_to_gmic_input.xmp reference.pfm
   # fit:
   ./fit
   # rename output xmp to something sane:
-  mv input.xmp ${i%cimgz}xmp
+  # mv input.xmp ${i%cimgz}xmp
+  mv input.xmp preset_${i}.xmp
   # XXX DEBUG
   break;
 done
