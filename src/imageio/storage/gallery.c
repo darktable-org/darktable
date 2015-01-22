@@ -548,6 +548,16 @@ int set_params(dt_imageio_module_storage_t *self, const void *params, const int 
   return 0;
 }
 
+int supported(dt_imageio_module_storage_t *storage, dt_imageio_module_format_t *format)
+{
+  if(strcmp(format->mime(NULL), "image/jpeg") == 0)
+    return 1;
+  else if(strcmp(format->mime(NULL), "image/png") == 0)
+    return 1;
+
+  return 0;
+}
+
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;
