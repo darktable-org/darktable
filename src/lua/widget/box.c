@@ -19,7 +19,6 @@
 #include "lua/types.h"
 #include "gui/gtk.h"
 
-typedef GtkOrientation dt_lua_orientation_t;
 typedef struct {
   dt_lua_widget_t parent;
   GList * children;
@@ -109,10 +108,6 @@ int dt_lua_init_widget_box(lua_State* L)
   lua_pushcclosure(L,dt_lua_gtk_wrap,1);
   lua_pushcfunction(L,box_numindex);
   dt_lua_type_register_number_const(L,lua_box);
-
-  luaA_enum(L,dt_lua_orientation_t);
-  luaA_enum_value_name(L,dt_lua_orientation_t,GTK_ORIENTATION_HORIZONTAL,"horizontal");
-  luaA_enum_value_name(L,dt_lua_orientation_t,GTK_ORIENTATION_VERTICAL,"vertical");
 
   return 0;
 }

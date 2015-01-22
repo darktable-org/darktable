@@ -391,6 +391,7 @@
 <listitem><para>exr</para></listitem>
 <listitem><para>j2k</para></listitem>
 <listitem><para>jpeg</para></listitem>
+<listitem><para>pdf</para></listitem>
 <listitem><para>pfm</para></listitem>
 <listitem><para>png</para></listitem>
 <listitem><para>ppm</para></listitem>
@@ -432,7 +433,6 @@
 <listitem><para>flickr</para></listitem>
 <listitem><para>gallery</para></listitem>
 <listitem><para>latex</para></listitem>
-<listitem><para>pdf</para></listitem>
 <listitem><para>picasa</para></listitem>
 </itemizedlist>
 (Other, lua-defined, storage types may appear.)</para>
@@ -470,6 +470,7 @@
 <listitem><para>check_button</para></listitem>
 <listitem><para>entry</para></listitem>
 <listitem><para>label</para></listitem>
+<listitem><para>separator</para></listitem>
 </itemizedlist>
 </para>
 
@@ -6205,6 +6206,45 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
 
 </section>
 
+<section status="final" id="types_lua_separator">
+<title>types.lua_separator</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>lua_separator</secondary>
+</indexterm>
+<synopsis>dt_type</synopsis>
+<para>A widget providing a separation in the UI.</para>
+<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
+    <colspec colwidth="2*"/>
+    <colspec colwidth="8*"/>
+    <tbody><row>
+    <entry>Attributes:</entry>
+    <entry><itemizedlist>
+<listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_lua_widget">types.lua_widget</link></para></listitem>
+</itemizedlist>
+</entry>
+    </row></tbody>
+    </tgroup></informaltable>
+<section status="final" id="types_lua_separator_extra_registration_parameters">
+<title>types.lua_separator.extra registration parameters</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>extra registration parameters</secondary>
+</indexterm>
+<para></para>
+
+<variablelist>
+<varlistentry id="types_lua_separator_extra_registration_parameters_orientation"><term>orientation</term><listitem>
+<synopsis><link linkend="types_dt_lua_orientation_t">types.dt_lua_orientation_t</link></synopsis>
+<para>The orientation of the separator</para>
+
+</listitem></varlistentry>
+
+</variablelist>
+</section>
+
+</section>
+
 <section status="final" id="types_dt_lua_orientation_t">
 <title>types.dt_lua_orientation_t</title>
 <indexterm>
@@ -6231,11 +6271,11 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
     </tgroup></informaltable>
 </section>
 
-<section status="final" id="types_dt_imageio_module_storage_data_pdf">
-<title>types.dt_imageio_module_storage_data_pdf</title>
+<section status="final" id="types_dt_imageio_module_format_data_pdf">
+<title>types.dt_imageio_module_format_data_pdf</title>
 <indexterm>
 <primary>Lua API</primary>
-<secondary>dt_imageio_module_storage_data_pdf</secondary>
+<secondary>dt_imageio_module_format_data_pdf</secondary>
 </indexterm>
 <synopsis>dt_type</synopsis>
 <para>undocumented</para>
@@ -6245,7 +6285,7 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
     <tbody><row>
     <entry>Attributes:</entry>
     <entry><itemizedlist>
-<listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_imageio_module_storage_t">types.dt_imageio_module_storage_t</link></para></listitem>
+<listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_imageio_module_format_t">types.dt_imageio_module_format_t</link></para></listitem>
 </itemizedlist>
 </entry>
     </row></tbody>

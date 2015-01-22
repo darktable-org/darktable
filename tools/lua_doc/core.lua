@@ -696,7 +696,7 @@ function M.all_children(node)
   -- create one widget of each type
 	for k, v in pairs(registry.dt_lua_modules.widget) do
     local res
-    if k == "box" then
+    if k == "box" or k == "separator" then
       res = v("horizontal","")
     else
       res = v("")

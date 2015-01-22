@@ -732,6 +732,10 @@ darktable.debug.type:set_text([[Similar to the system function type() but it wil
   types.lua_entry.editable:set_text("False if the entry should be read-only")
 	types.lua_entry.extra_registration_parameters:set_text([[This widget has no extra registration parameters.]])
 
+  types.lua_separator:set_text("A widget providing a separation in the UI.")
+	types.lua_separator.extra_registration_parameters:set_text("")
+	types.lua_separator.extra_registration_parameters:add_parameter("orientation",types.dt_lua_orientation_t,"The orientation of the separator")
+
   types.dt_lua_orientation_t:set_text("A possible orientation for a widget")
 	----------------------
 	--  EVENTS          --

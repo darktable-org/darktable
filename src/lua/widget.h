@@ -37,6 +37,9 @@ typedef struct dt_lua_widget_type_t{
 } dt_lua_widget_type_t;
 
 
+// Types added to the lua type system and useable externally
+typedef GtkOrientation dt_lua_orientation_t;
+
 /** pop a function from the top of the stack, 
     register as a callback named "name" for the object (not type) at index index
     */
