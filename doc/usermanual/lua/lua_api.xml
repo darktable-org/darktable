@@ -468,6 +468,7 @@
 <listitem><para>box</para></listitem>
 <listitem><para>button</para></listitem>
 <listitem><para>check_button</para></listitem>
+<listitem><para>combo_box_text</para></listitem>
 <listitem><para>entry</para></listitem>
 <listitem><para>label</para></listitem>
 <listitem><para>separator</para></listitem>
@@ -5698,6 +5699,32 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
 
 </section>
 
+<section status="final" id="types_dt_lua_orientation_t">
+<title>types.dt_lua_orientation_t</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>dt_lua_orientation_t</secondary>
+</indexterm>
+<synopsis>enum</synopsis>
+<para>A possible orientation for a widget</para>
+<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
+    <colspec colwidth="2*"/>
+    <colspec colwidth="8*"/>
+    <tbody><row>
+    <entry>Attributes:</entry>
+    <entry><itemizedlist>
+<listitem><para><emphasis>values : </emphasis></para>
+<para><itemizedlist>
+<listitem><para>horizontal</para></listitem>
+<listitem><para>vertical</para></listitem>
+</itemizedlist>
+</para></listitem>
+</itemizedlist>
+</entry>
+    </row></tbody>
+    </tgroup></informaltable>
+</section>
+
 <section status="final" id="types_lua_check_button">
 <title>types.lua_check_button</title>
 <indexterm>
@@ -6245,30 +6272,92 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
 
 </section>
 
-<section status="final" id="types_dt_lua_orientation_t">
-<title>types.dt_lua_orientation_t</title>
+<section status="final" id="types_lua_combo_box_text">
+<title>types.lua_combo_box_text</title>
 <indexterm>
 <primary>Lua API</primary>
-<secondary>dt_lua_orientation_t</secondary>
+<secondary>lua_combo_box_text</secondary>
 </indexterm>
-<synopsis>enum</synopsis>
-<para>A possible orientation for a widget</para>
+<synopsis>dt_type</synopsis>
+<para>A widget with multiple text entries in a menu</para>
+<para>This widget can be set as editable at construction time.</para>
+<para>If it is editable the user can type a value and is not constrained by the values in the menu</para>
 <informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
     <colspec colwidth="2*"/>
     <colspec colwidth="8*"/>
     <tbody><row>
     <entry>Attributes:</entry>
     <entry><itemizedlist>
-<listitem><para><emphasis>values : </emphasis></para>
-<para><itemizedlist>
-<listitem><para>horizontal</para></listitem>
-<listitem><para>vertical</para></listitem>
-</itemizedlist>
-</para></listitem>
+<listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_lua_widget">types.lua_widget</link></para></listitem>
 </itemizedlist>
 </entry>
     </row></tbody>
     </tgroup></informaltable>
+<section status="final" id="types_lua_combo_box_text_value">
+<title>types.lua_combo_box_text.value</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>value</secondary>
+</indexterm>
+<synopsis>string</synopsis>
+<para>The text content of the selected entry, can be nil</para>
+<para>You can set it to a number to select the corresponding entry from the menu</para>
+<para>If the combo box is editable, you can set it to any string</para>
+<para>You can set it to nil to deselect all entries</para>
+<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
+    <colspec colwidth="2*"/>
+    <colspec colwidth="8*"/>
+    <tbody><row>
+    <entry>Attributes:</entry>
+    <entry><itemizedlist>
+<listitem><para><emphasis><link linkend="attributes_write">write</link></emphasis></para></listitem>
+</itemizedlist>
+</entry>
+    </row></tbody>
+    </tgroup></informaltable>
+</section>
+
+<section status="final" id="types_lua_combo_box_text__hash_">
+<title>types.lua_combo_box_text.#</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>#</secondary>
+</indexterm>
+<synopsis>string, number or nil</synopsis>
+<para>The various menu entries.</para>
+<para>You can add new entries by writing to the first element beyond the end</para>
+<para>You can removes entries by setting them to nil</para>
+<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
+    <colspec colwidth="2*"/>
+    <colspec colwidth="8*"/>
+    <tbody><row>
+    <entry>Attributes:</entry>
+    <entry><itemizedlist>
+<listitem><para><emphasis><link linkend="attributes_write">write</link></emphasis></para></listitem>
+</itemizedlist>
+</entry>
+    </row></tbody>
+    </tgroup></informaltable>
+</section>
+
+<section status="final" id="types_lua_combo_box_text_extra_registration_parameters">
+<title>types.lua_combo_box_text.extra registration parameters</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>extra registration parameters</secondary>
+</indexterm>
+<para></para>
+
+<variablelist>
+<varlistentry id="types_lua_combo_box_text_extra_registration_parameters_editable"><term>editable</term><listitem>
+<synopsis>boolean</synopsis>
+<para>True if the combo box should be editable by the user</para>
+
+</listitem></varlistentry>
+
+</variablelist>
+</section>
+
 </section>
 
 <section status="final" id="types_dt_imageio_module_format_data_pdf">

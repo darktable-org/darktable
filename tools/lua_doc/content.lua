@@ -692,6 +692,8 @@ darktable.debug.type:set_text([[Similar to the system function type() but it wil
 
   types.lua_widget:set_text("Common parent type for all lua-handled widgets");
 
+  types.dt_lua_orientation_t:set_text("A possible orientation for a widget")
+
   types.lua_check_button:set_text("A checkable button with a label next to it");
   types.lua_check_button.label:set_text("The label displayed next to the button");
   types.lua_check_button.default_label:set_text("The value to set to the label when the widget is reset");
@@ -736,7 +738,20 @@ darktable.debug.type:set_text([[Similar to the system function type() but it wil
 	types.lua_separator.extra_registration_parameters:set_text("")
 	types.lua_separator.extra_registration_parameters:add_parameter("orientation",types.dt_lua_orientation_t,"The orientation of the separator")
 
-  types.dt_lua_orientation_t:set_text("A possible orientation for a widget")
+  types.lua_combo_box_text:set_text("A widget with multiple text entries in a menu"..para()..
+      "This widget can be set as editable at construction time."..para()..
+      "If it is editable the user can type a value and is not constrained by the values in the menu")
+  types.lua_combo_box_text.value:set_text("The text content of the selected entry, can be nil"..para()..
+      "You can set it to a number to select the corresponding entry from the menu"..para()..
+      "If the combo box is editable, you can set it to any string"..para()..
+      "You can set it to nil to deselect all entries")
+  types.lua_combo_box_text["#"]:set_text("The various menu entries."..para()..
+      "You can add new entries by writing to the first element beyond the end"..para()..
+      "You can removes entries by setting them to nil")
+  types.lua_combo_box_text["#"]:set_reported_type("string, number or nil")
+	types.lua_combo_box_text.extra_registration_parameters:set_text("")
+	types.lua_combo_box_text.extra_registration_parameters:add_parameter("editable","boolean","True if the combo box should be editable by the user")
+
 	----------------------
 	--  EVENTS          --
 	----------------------
