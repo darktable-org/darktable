@@ -208,7 +208,7 @@ int write_image(dt_imageio_module_data_t *data, const char *filename, const void
   if(imgid > 0 && d->params.icc && d->params.mode == MODE_NORMAL)
   {
     // get the id of the profile
-    char *profile_name = dt_colorspaces_get_output_profile_name(imgid); // TODO: special case for the embedded/image specific profile
+    char *profile_name = dt_colorspaces_get_output_profile_name(imgid);
 
     // look it up in the list
     for(GList *iter = d->icc_profiles; iter; iter = g_list_next(iter))
@@ -320,6 +320,11 @@ int write_image(dt_imageio_module_data_t *data, const char *filename, const void
       g_free(icc->name);
     }
     g_list_free_full(d->icc_profiles, free);
+
+    d->pdf = NULL;
+    d->images = NULL;
+    d->actual_filename = NULL;
+    d->icc_profiles = NULL;
   } // finish the pdf
 
   return 0;
@@ -732,8 +737,35 @@ void *get_params(dt_imageio_module_format_t *self)
   return d;
 }
 
+// in normal operations we free these after exporting the last image, but when an export
+// gets cancelled that last image doesn't get exported, so we have to take care of it here.
 void free_params(dt_imageio_module_format_t *self, dt_imageio_module_data_t *params)
 {
+  dt_imageio_pdf_t *d = (dt_imageio_pdf_t *)params;
+
+  if(d->pdf)
+    dt_pdf_finish(d->pdf, NULL, 0);
+
+  g_list_free_full(d->images, free);
+
+  if(d->actual_filename)
+  {
+    unlink(d->actual_filename); // no need to leave broken files on disk
+    g_free(d->actual_filename);
+  }
+
+  for(GList *iter = d->icc_profiles; iter; iter = g_list_next(iter))
+  {
+    _pdf_icc_t *icc = (_pdf_icc_t *)iter->data;
+    g_free(icc->name);
+  }
+  g_list_free_full(d->icc_profiles, free);
+
+  d->pdf = NULL;
+  d->images = NULL;
+  d->actual_filename = NULL;
+  d->icc_profiles = NULL;
+
   free(params);
 }
 
