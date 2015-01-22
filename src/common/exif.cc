@@ -866,6 +866,8 @@ int dt_exif_get_thumbnail(const char *path, uint8_t **buffer, size_t *size, char
   }
   catch(Exiv2::AnyError &e)
   {
+    const char *c = path + strlen(path) - 4;
+    if(c >= path && !strcmp(c, ".pfm")) return 0;
     std::string s(e.what());
     std::cerr << "[exiv2] " << path << ": " << s << std::endl;
     return 1;
@@ -923,6 +925,8 @@ int dt_exif_read(dt_image_t *img, const char *path)
   }
   catch(Exiv2::AnyError &e)
   {
+    const char *c = path + strlen(path) - 4;
+    if(c >= path && !strcmp(c, ".pfm")) return 0;
     std::string s(e.what());
     std::cerr << "[exiv2] " << path << ": " << s << std::endl;
     return 1;
