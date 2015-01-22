@@ -488,17 +488,17 @@
     <type>
       <enum>
         <option>always</option>
-        <option>1 - 180 x 110 px</option>
-        <option>2 - 360 x 225 px</option>
-        <option>3 - 720 x 450 px</option>
-        <option>4 - 1440 x 900 px</option>
-        <option>5 - 1920 x 1200 px</option>
-        <option>6 - 2560 x 1600 px</option>
-        <option>7 - 4096 x 2560 px</option>
+        <option>0 - 180 x 110 px</option>
+        <option>1 - 360 x 225 px</option>
+        <option>2 - 720 x 450 px</option>
+        <option>3 - 1440 x 900 px</option>
+        <option>4 - 1920 x 1200 px</option>
+        <option>5 - 2560 x 1600 px</option>
+        <option>6 - 4096 x 2560 px</option>
         <option>never</option>
       </enum>
     </type>
-    <default>3 - 720 x 450 px</default>
+    <default>2 - 720 x 450 px</default>
     <shortdescription>process hight quality thumb if size is greater than</shortdescription>
     <longdescription>if the thumbnail size is greater than this value, it will be processed using the full quality rendering path (better but slower).</longdescription>
   </dtconfig>

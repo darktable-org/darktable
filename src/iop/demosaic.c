@@ -1427,7 +1427,7 @@ static int get_thumb_quality(int width, int height)
   }
   int level = dt_mipmap_cache_get_matching_size(darktable.mipmap_cache, width, height);
   min[1] = '\0';
-  int res = ( level >= atoi(min) );
+  int res = ( level > atoi(min) );
   g_free(min);
   return res;
 }
