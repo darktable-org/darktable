@@ -25,7 +25,7 @@
 #define USE_AB_CURVES 1
 #define USE_SATURATION 0
 #define USE_CORR 0
-#define USE_CLUT 0
+// #define USE_CLUT 0 // doesn't compile any longer, deprecated.
 
 // clut
 // ======================================================================
@@ -429,14 +429,14 @@ static inline void write_xmp(module_params_t *m)
   fprintf(f, "<rdf:li>%d</rdf:li>\n", USE_ZONES_L);
   fprintf(f, "<rdf:li>%d</rdf:li>\n", USE_ZONES_C);
   fprintf(f, "<rdf:li>%d</rdf:li>\n", USE_CURVE);
-  fprintf(f, "<rdf:li>%d</rdf:li>\n", USE_CLUT);
+  // fprintf(f, "<rdf:li>%d</rdf:li>\n", USE_CLUT);
   fprintf(f, "<rdf:li>%d</rdf:li>\n", USE_CORR);
   fprintf(f, "</rdf:Seq>\n</darktable:history_enabled>\n<darktable:history_operation>\n<rdf:Seq>\n");
   fprintf(f, "<rdf:li>colorzones</rdf:li>\n");
   fprintf(f, "<rdf:li>colorzones</rdf:li>\n");
   fprintf(f, "<rdf:li>colorzones</rdf:li>\n");
   fprintf(f, "<rdf:li>tonecurve</rdf:li>\n");
-  fprintf(f, "<rdf:li>clut</rdf:li>\n");
+  // fprintf(f, "<rdf:li>clut</rdf:li>\n");
   fprintf(f, "<rdf:li>colorcorrection</rdf:li>\n");
   fprintf(f, "</rdf:Seq>\n");
   fprintf(f, "</darktable:history_operation>\n");
@@ -464,9 +464,9 @@ static inline void write_xmp(module_params_t *m)
   fprintf(f, "<rdf:li>");
   write_hex(f, (uint8_t *)&m->curve, sizeof(dt_iop_tonecurve_params_t));
   fprintf(f, "</rdf:li>\n");
-  fprintf(f, "<rdf:li>");
-  write_hex(f, (uint8_t *)&m->clut, sizeof(dt_iop_clut_params_t));
-  fprintf(f, "</rdf:li>\n");
+  // fprintf(f, "<rdf:li>");
+  // write_hex(f, (uint8_t *)&m->clut, sizeof(dt_iop_clut_params_t));
+  // fprintf(f, "</rdf:li>\n");
   fprintf(f, "<rdf:li>");
   write_hex(f, (uint8_t *)&m->corr, sizeof(dt_iop_colorcorrection_params_t));
   fprintf(f, "</rdf:li>\n");
