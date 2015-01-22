@@ -1,0 +1,55 @@
+fit darktable parameters to given before/after image pair.
+================================================================================
+
+before:
+input.pfm (linear rgb)
+
+after:
+reference.pfm (srgb)
+
+output will be written to:
+output.pfm (srgb, processed image)
+input.xmp (fitted parameters)
+
+
+depends on:
+- compiled levmar-2.6 in a subdirectory levmar-2.6/
+  (might depend on f2c, libblas-dev and liblapack-dev)
+- rm (command line tool)
+- darktable-cli
+
+
+example usage:
+================================================================================
+
+make
+./unitylut
+
+open unity.pfm in darktable and store it unchanged as unity_ldr_srgb.png
+(e.g. set input and output color profile to the same thing, for example linear rgb)
+
+process unity_ldr_srgb.png in gimp or gmic to get your desired look (apply film
+emulation preset). store the result as reference.png
+
+open reference.png in darktable and store unchanged as reference.pfm
+(e.g. by setting both input and output profiles to srgb)
+
+open unity.pfm in darktable and store it as input.pfm, converting srgb to linear
+rgb on the way (i.e. set input profile to srgb, output to linear rgb).
+
+./fit
+get coffee
+
+apply input.xmp to your jpg/raw and hdr images :)
+
+
+
+to download and process all g'mic film emulation presets:
+================================================================================
+
+- go to gimp g'mic, find `download all presets' button in the film emulation menu
+- after download, find all appropriately named cluts as .cimgz in ~/.gmic_film_presets/
+  at the time of this writing it gets them from:
+  http://gmic.sourceforge.net/data_film_presets/*.cimgz
+
+
