@@ -189,6 +189,17 @@ static float lookup(const float *lut, const float i)
   const float f = DT_IOP_COLORZONES_LUT_RES * i - bin0;
   return lut[bin1] * f + lut[bin0] * (1. - f);
 }
+static float
+lookup_wrap(const float *lut, const float i)
+{
+  const int bin0f = (DT_IOP_COLORZONES_LUT_RES-1)*i + 0.5f;
+  const int bin0i = (int)bin0f;
+  const int bin0 = MIN(0xffff, MAX(0, bin0i));
+  int bin1 = MAX(0, bin0i + 1);
+  if(bin1 > 0xffff) bin1 -= 0xffff;
+  const float f = bin0f - bin0;
+  return lut[bin1]*f + lut[bin0]*(1.-f);
+}
 
 static float strength(float value, float strength)
 {
@@ -211,27 +222,40 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *
     const float h = fmodf(atan2f(b, a) + 2.0 * M_PI, 2.0 * M_PI) / (2.0 * M_PI);
     const float C = sqrtf(b * b + a * a);
     float select = 0.0f;
-    float blend = 0.0f;
+    float lut0, lut1, lut2;
+    // float blend = 0.0f;
     switch(d->channel)
     {
       case DT_IOP_COLORZONES_L:
-        select = fminf(1.0, in[0] / 100.0);
+        select = fminf(1.0, in[0]/100.0);
+        lut0 = lookup(d->lut[0], select);
+        lut1 = lookup(d->lut[1], select);
+        lut2 = lookup(d->lut[2], select);
         break;
       case DT_IOP_COLORZONES_C:
-        select = fminf(1.0, C / 128.0);
+        select = fminf(1.0, C/128.0);
+        lut0 = lookup(d->lut[0], select);
+        lut1 = lookup(d->lut[1], select);
+        lut2 = lookup(d->lut[2], select);
         break;
       default:
       case DT_IOP_COLORZONES_h:
         select = h;
-        blend = powf(1.0f - C / 128.0f, 2.0f);
+        lut0 = lookup_wrap(d->lut[0], select);
+        lut1 = lookup_wrap(d->lut[1], select);
+        lut2 = lookup_wrap(d->lut[2], select);
+        // blend = powf(1.0f - C/128.0f, 2.0f);
         break;
     }
-    const float Lm = (blend * .5f + (1.0f - blend) * lookup(d->lut[0], select)) - .5f;
-    const float hm = (blend * .5f + (1.0f - blend) * lookup(d->lut[2], select)) - .5f;
-    blend *= blend; // saturation isn't as prone to artifacts:
+    // const float Lm =       (blend*.5f + (1.0f-blend)*lookup(d->lut[0], select)) - .5f;
+    // const float hm =       (blend*.5f + (1.0f-blend)*lookup(d->lut[2], select)) - .5f;
+    const float blend = 1.0f;// XXX causes stupid discontinuity in color wheel, avoided by: fminf(1.0f, 2.0 * C/128.0f); // making it ineffective.. :(
+    const float Lm = blend*(lut0 - .5f);
+    const float hm = lut2 - .5f;
+    // blend *= blend; // saturation isn't as prone to artifacts:
     // const float Cm = 2.0 * (blend*.5f + (1.0f-blend)*lookup(d->lut[1], select));
-    const float Cm = 2.0 * lookup(d->lut[1], select);
-    const float L = in[0] * powf(2.0f, 4.0f * Lm);
+    const float Cm = 2.0 * lut1;
+    const float L = in[0] * powf(2.0f, 4.0f*Lm);
     out[0] = L;
     out[1] = cosf(2.0 * M_PI * (h + hm)) * Cm * C;
     out[2] = sinf(2.0 * M_PI * (h + hm)) * Cm * C;
@@ -306,9 +330,6 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
   // pull in new params to gegl
   dt_iop_colorzones_data_t *d = (dt_iop_colorzones_data_t *)(piece->data);
   dt_iop_colorzones_params_t *p = (dt_iop_colorzones_params_t *)p1;
-#ifdef HAVE_GEGL
-// TODO
-#else
 #if 0 // print new preset
   printf("p.channel = %d;\n", p->channel);
   for(int k=0; k<3; k++) for(int i=0; i<DT_IOP_COLORZONES_BANDS; i++)
@@ -337,7 +358,6 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
                               strength(p->equalizer_y[ch][DT_IOP_COLORZONES_BANDS - 1], p->strength));
     dt_draw_curve_calc_values(d->curve[ch], 0.0, 1.0, DT_IOP_COLORZONES_LUT_RES, d->lut[3], d->lut[ch]);
   }
-#endif
 }
 
 void init_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
@@ -347,15 +367,11 @@ void init_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pi
   piece->data = (void *)d;
   for(int ch = 0; ch < 3; ch++)
   {
-    d->curve[ch] = dt_draw_curve_new(0.0, 1.0, CATMULL_ROM);
-    (void)dt_draw_curve_add_point(d->curve[ch],
-                                  default_params->equalizer_x[ch][DT_IOP_COLORZONES_BANDS - 2] - 1.0,
-                                  default_params->equalizer_y[ch][DT_IOP_COLORZONES_BANDS - 2]);
-    for(int k = 0; k < DT_IOP_COLORZONES_BANDS; k++)
-      (void)dt_draw_curve_add_point(d->curve[ch], default_params->equalizer_x[ch][k],
-                                    default_params->equalizer_y[ch][k]);
-    (void)dt_draw_curve_add_point(d->curve[ch], default_params->equalizer_x[ch][1] + 1.0,
-                                  default_params->equalizer_y[ch][1]);
+    d->curve[ch] = dt_draw_curve_new(0.0, 1.0, MONOTONE_HERMITE);//CATMULL_ROM);
+    (void)dt_draw_curve_add_point(d->curve[ch], default_params->equalizer_x[ch][DT_IOP_COLORZONES_BANDS-2]-1.0, default_params->equalizer_y[ch][DT_IOP_COLORZONES_BANDS-2]);
+    for(int k=0; k<DT_IOP_COLORZONES_BANDS; k++)
+      (void)dt_draw_curve_add_point(d->curve[ch], default_params->equalizer_x[ch][k], default_params->equalizer_y[ch][k]);
+    (void)dt_draw_curve_add_point(d->curve[ch], default_params->equalizer_x[ch][1]+1.0, default_params->equalizer_y[ch][1]);
   }
   d->channel = (dt_iop_colorzones_channel_t)default_params->channel;
 #ifdef HAVE_GEGL
@@ -1055,12 +1071,10 @@ void gui_init(struct dt_iop_module_t *self)
   //   c->channel = DT_IOP_COLORZONES_C;
   c->channel = dt_conf_get_int("plugins/darkroom/colorzones/gui_channel");
   int ch = (int)c->channel;
-  c->minmax_curve = dt_draw_curve_new(0.0, 1.0, CATMULL_ROM);
-  (void)dt_draw_curve_add_point(c->minmax_curve, p->equalizer_x[ch][DT_IOP_COLORZONES_BANDS - 2] - 1.0,
-                                p->equalizer_y[ch][DT_IOP_COLORZONES_BANDS - 2]);
-  for(int k = 0; k < DT_IOP_COLORZONES_BANDS; k++)
-    (void)dt_draw_curve_add_point(c->minmax_curve, p->equalizer_x[ch][k], p->equalizer_y[ch][k]);
-  (void)dt_draw_curve_add_point(c->minmax_curve, p->equalizer_x[ch][1] + 1.0, p->equalizer_y[ch][1]);
+  c->minmax_curve = dt_draw_curve_new(0.0, 1.0, MONOTONE_HERMITE);//CATMULL_ROM);
+  (void)dt_draw_curve_add_point(c->minmax_curve, p->equalizer_x[ch][DT_IOP_COLORZONES_BANDS-2]-1.0, p->equalizer_y[ch][DT_IOP_COLORZONES_BANDS-2]);
+  for(int k=0; k<DT_IOP_COLORZONES_BANDS; k++) (void)dt_draw_curve_add_point(c->minmax_curve, p->equalizer_x[ch][k], p->equalizer_y[ch][k]);
+  (void)dt_draw_curve_add_point(c->minmax_curve, p->equalizer_x[ch][1]+1.0, p->equalizer_y[ch][1]);
   c->mouse_x = c->mouse_y = c->mouse_pick = -1.0;
   c->dragging = 0;
   c->x_move = -1;
