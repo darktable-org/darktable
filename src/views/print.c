@@ -61,17 +61,10 @@ static void _print_mipmaps_updated_signal_callback(gpointer instance, gpointer u
   dt_control_queue_redraw_center();
 }
 
-static void _film_strip_activated(const int imgid, void *data)
+static void _set_orientation(dt_print_t *prt)
 {
-  dt_view_t *self = (dt_view_t *)data;
-  dt_print_t *prt = (dt_print_t *)self->data;
-
-  prt->image_id = imgid;
-  prt->iwidth = prt->iheight = 0;
-
-  //  guess the image orientation
-
-  prt->pinfo->page.landscape = TRUE;
+  if (prt->image_id <= 0)
+    return;
 
   dt_mipmap_buffer_t buf;
   dt_mipmap_cache_get(darktable.mipmap_cache, &buf, prt->image_id, DT_MIPMAP_3, DT_MIPMAP_BEST_EFFORT, 'r');
@@ -82,6 +75,19 @@ static void _film_strip_activated(const int imgid, void *data)
     prt->pinfo->page.landscape = FALSE;
 
   dt_mipmap_cache_release(darktable.mipmap_cache, &buf);
+}
+
+static void _film_strip_activated(const int imgid, void *data)
+{
+  dt_view_t *self = (dt_view_t *)data;
+  dt_print_t *prt = (dt_print_t *)self->data;
+
+  prt->image_id = imgid;
+  prt->iwidth = prt->iheight = 0;
+
+  //  guess the image orientation
+
+  _set_orientation(prt);
 
   dt_view_filmstrip_scroll_to_image(darktable.view_manager, imgid, FALSE);
   // record the imgid to display when going back to lighttable
@@ -110,6 +116,9 @@ void
 init(dt_view_t *self)
 {
   self->data = malloc(sizeof(dt_print_t));
+  dt_print_t *prt = (dt_print_t *)self->data;
+
+  prt->image_id = -1;
 
   /* initialize CB to get the print settings from corresponding lib module */
   darktable.view_manager->proxy.print.view = self;
@@ -244,6 +253,18 @@ void enter(dt_view_t *self)
 
   prt->image_id = -1;
 
+  /* scroll filmstrip to the first selected image */
+  GList *selected_images = dt_collection_get_selected(darktable.collection, 1);
+  if(selected_images)
+  {
+    int imgid = GPOINTER_TO_INT(selected_images->data);
+    prt->image_id = imgid;
+    dt_view_filmstrip_scroll_to_image(darktable.view_manager, imgid, FALSE);
+  }
+  g_list_free(selected_images);
+
+  _set_orientation(prt);
+
   dt_control_signal_connect(darktable.signals, DT_SIGNAL_DEVELOP_MIPMAP_UPDATED,
                             G_CALLBACK(_print_mipmaps_updated_signal_callback),
                             (gpointer)self);
@@ -257,16 +278,6 @@ void enter(dt_view_t *self)
 
   // prefetch next few from first selected image on.
   dt_view_filmstrip_prefetch();
-
-  /* scroll filmstrip to the first selected image */
-  GList *selected_images = dt_collection_get_selected(darktable.collection, 1);
-  if(selected_images)
-  {
-    int imgid = GPOINTER_TO_INT(selected_images->data);
-    dt_view_filmstrip_scroll_to_image(darktable.view_manager, imgid, FALSE);
-    prt->image_id = imgid;
-  }
-  g_list_free(selected_images);
 }
 
 void leave(dt_view_t *self)
