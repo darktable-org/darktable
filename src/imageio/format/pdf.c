@@ -518,6 +518,7 @@ void gui_init(dt_imageio_module_format_t *self)
   gtk_grid_attach(grid, widget, 0, ++line, 1, 1);
 
   d->title = GTK_ENTRY(gtk_entry_new());
+  gtk_entry_set_placeholder_text(d->title, "untitled");
   gtk_widget_set_hexpand(GTK_WIDGET(d->title), TRUE);
   gtk_grid_attach(grid, GTK_WIDGET(d->title), 1, line, 1, 1);
   dt_gui_key_accel_block_on_focus_connect(GTK_WIDGET(d->title));
@@ -564,6 +565,7 @@ void gui_init(dt_imageio_module_format_t *self)
 
   d->border = GTK_ENTRY(gtk_entry_new());
   gtk_entry_set_max_length(d->border, sizeof(((dt_imageio_pdf_params_t *)NULL)->border) - 1);
+  gtk_entry_set_placeholder_text(d->border, "0 mm");
   gtk_grid_attach(grid, GTK_WIDGET(d->border), 1, line, 1, 1);
   dt_gui_key_accel_block_on_focus_connect(GTK_WIDGET(d->border));
   g_object_set(G_OBJECT(d->border), "tooltip-text", _("empty space around the pdf\nformat: size + unit\nexamples: 10 mm, 1 inch"), (char *)NULL);
