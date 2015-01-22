@@ -18,6 +18,7 @@
 
 #include <glib.h>
 
+#include "common/collection.h"
 #include "common/colorspaces.h"
 #include "common/image_cache.h"
 #include "common/styles.h"
@@ -68,6 +69,7 @@ typedef struct dt_lib_print_settings_t
   gboolean lock_activated;
   dt_print_info_t prt;
   uint16_t *buf;
+  int32_t image_id;
 } dt_lib_print_settings_t;
 
 typedef struct dt_lib_export_profile_t
@@ -655,10 +657,30 @@ _intent_callback (GtkWidget *widget, dt_lib_module_t *self)
   dt_conf_set_int("plugins/print/print/iccintent", pos - 1);
 }
 
+static void _set_orientation(dt_lib_print_settings_t *ps)
+{
+  if (ps->image_id <= 0)
+    return;
+
+  dt_mipmap_buffer_t buf;
+  dt_mipmap_cache_get(darktable.mipmap_cache, &buf, ps->image_id, DT_MIPMAP_3, DT_MIPMAP_BEST_EFFORT, 'r');
+
+  if (buf.width > buf.height)
+    ps->prt.page.landscape = TRUE;
+  else
+    ps->prt.page.landscape = FALSE;
+
+  dt_mipmap_cache_release(darktable.mipmap_cache, &buf);
+}
+
 static void _print_settings_filmstrip_activate_callback(gpointer instance,gpointer user_data)
 {
   dt_lib_module_t *self = (dt_lib_module_t *)user_data;
   dt_lib_print_settings_t *ps = (dt_lib_print_settings_t *)self->data;
+
+  ps->image_id = dt_view_filmstrip_get_activated_imgid(darktable.view_manager);
+
+  _set_orientation (ps);
 
   if (ps->prt.page.landscape)
     gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON(ps->landscape), TRUE);
@@ -678,13 +700,26 @@ gui_init (dt_lib_module_t *self)
   char tooltip[1024];
 
   dt_init_print_info(&d->prt);
-  d->prt.page.landscape = TRUE;
   dt_view_print_settings(darktable.view_manager, &d->prt);
 
   dt_control_signal_connect(darktable.signals,
                             DT_SIGNAL_VIEWMANAGER_FILMSTRIP_ACTIVATE,
                             G_CALLBACK(_print_settings_filmstrip_activate_callback),
                             self);
+
+  //  get orientation of the selectd image if possible
+
+  d->image_id = -1;
+
+  GList *selected_images = dt_collection_get_selected(darktable.collection, 1);
+  if(selected_images)
+  {
+    int imgid = GPOINTER_TO_INT(selected_images->data);
+    d->image_id = imgid;
+  }
+  g_list_free(selected_images);
+
+  _set_orientation(d);
 
   //  create the spin-button now as values could be set when the printer has no hardware margin
 
@@ -757,6 +792,11 @@ gui_init (dt_lib_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(hbox2), TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(d->landscape), "toggled", G_CALLBACK(_orientation_callback), self);
   g_signal_connect(G_OBJECT(d->portrait), "toggled", G_CALLBACK(_orientation_callback), self);
+
+  if (d->prt.page.landscape)
+    gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON(d->landscape), TRUE);
+  else
+    gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON(d->portrait), TRUE);
 
   //// borders
 
@@ -1293,18 +1333,7 @@ gui_reset (dt_lib_module_t *self)
 
   // reset page orientation to fit the picture
 
-  ps->prt.page.landscape = TRUE;
-
-  const int imgid = dt_view_filmstrip_get_activated_imgid(darktable.view_manager);
-  dt_mipmap_buffer_t buf;
-  dt_mipmap_cache_get(darktable.mipmap_cache, &buf, imgid, DT_MIPMAP_3, DT_MIPMAP_BEST_EFFORT, 'r');
-
-  if (buf.width > buf.height)
-    ps->prt.page.landscape = TRUE;
-  else
-    ps->prt.page.landscape = FALSE;
-
-  dt_mipmap_cache_release(darktable.mipmap_cache, &buf);
+  _set_orientation (ps);
 
   gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON(ps->portrait), !ps->prt.page.landscape);
 }
