@@ -505,6 +505,20 @@ _lock_callback (GtkWidget *button, gpointer user_data)
   gtk_widget_set_sensitive(GTK_WIDGET(ps->b_bottom), !ps->lock_activated);
   gtk_widget_set_sensitive(GTK_WIDGET(ps->b_left), !ps->lock_activated);
   gtk_widget_set_sensitive(GTK_WIDGET(ps->b_right), !ps->lock_activated);
+
+  //  get value of top and set it to all other borders
+
+  const double value = gtk_spin_button_get_value(GTK_SPIN_BUTTON(ps->b_top));
+
+  ps->prt.page.margin_bottom = value;
+  ps->prt.page.margin_left = value;
+  ps->prt.page.margin_right = value;
+
+  gtk_spin_button_set_value(GTK_SPIN_BUTTON(ps->b_bottom), value);
+  gtk_spin_button_set_value(GTK_SPIN_BUTTON(ps->b_left), value);
+  gtk_spin_button_set_value(GTK_SPIN_BUTTON(ps->b_right), value);
+
+  _update_slider (ps);
 }
 
 static void
