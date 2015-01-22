@@ -557,8 +557,6 @@ int supported(dt_imageio_module_storage_t *storage, dt_imageio_module_format_t *
     return 1;
   if(strcmp(mime, "image/webp") == 0)
     return 1;
-  if(strcmp(mime, "image/jp2") == 0)
-    return 1;
 
   return 0;
 }
