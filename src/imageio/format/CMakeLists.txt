@@ -31,4 +31,3 @@ foreach(module ${MODULES})
 	target_link_libraries(${module} ${LIBS})
 	install(TARGETS  ${module} DESTINATION ${LIB_INSTALL}/darktable/plugins/imageio/format)
 endforeach(module)
-
