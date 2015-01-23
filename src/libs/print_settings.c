@@ -180,13 +180,8 @@ _print_button_clicked (GtkWidget *widget, gpointer user_data)
   dt_control_log(_("prepare printing image %d on `%s'"), imgid, ps->prt.printer.name);
   dt_control_queue_redraw();
 
-  // compute print-area (in inches)
-  double width, height;
-  int32_t px=0, py=0, pwidth=0, pheight=0;
-  int32_t ax=0, ay=0, awidth=0, aheight=0;
-  int32_t ix=0, iy=0, iwidth=0, iheight=0;
-
   // user margin are already in the proper orientation landscape/portrait
+  double width, height;
   double margin_w = ps->prt.page.margin_left + ps->prt.page.margin_right;
   double margin_h = ps->prt.page.margin_top + ps->prt.page.margin_bottom;
 
@@ -208,25 +203,11 @@ _print_button_clicked (GtkWidget *widget, gpointer user_data)
   const int32_t width_pix = (width * ps->prt.printer.resolution) / 25.4;
   const int32_t height_pix = (height * ps->prt.printer.resolution) / 25.4;
 
-  dt_get_print_layout (imgid, &ps->prt, width_pix, height_pix,
-                       &px, &py, &pwidth, &pheight,
-                       &ax, &ay, &awidth, &aheight,
-                       &ix, &iy, &iwidth, &iheight);
-
   const double pa_width  = (width  - margin_w) / 25.4;
   const double pa_height = (height - margin_h) / 25.4;
 
   if (darktable.unmuted & DT_DEBUG_PRINT)
     fprintf(stderr, "[print] area for image %u : %3.2fin x %3.2fin\n", imgid, pa_width, pa_height);
-
-  const int margin_top    = iy;
-  const int margin_left   = ix;
-  const int margin_right  = pwidth - iwidth - ix;
-  const int margin_bottom = pheight - iheight - iy;
-
-  if (darktable.unmuted & DT_DEBUG_PRINT)
-    fprintf(stderr, "[print] margins top %d ; bottom %d ; left %d ; right %d\n",
-            margin_top, margin_bottom, margin_left, margin_right);
 
   // compute the needed size for picture for the given printer resolution
 
@@ -269,6 +250,27 @@ _print_button_clicked (GtkWidget *widget, gpointer user_data)
   const int high_quality = 1;
   dt_imageio_export_with_flags
     (imgid, "unused", &buf, (dt_imageio_module_data_t *)&dat, 1, 0, high_quality, 0, NULL, FALSE, 0, 0, 1, 1);
+
+  // after exporting we know the real size of the image, compute the layout
+
+  // compute print-area (in inches)
+  int32_t px=0, py=0, pwidth=0, pheight=0;
+  int32_t ax=0, ay=0, awidth=0, aheight=0;
+  int32_t ix=0, iy=0, iwidth=dat.width, iheight=dat.height;
+
+  dt_get_print_layout (imgid, &ps->prt, width_pix, height_pix,
+                       &px, &py, &pwidth, &pheight,
+                       &ax, &ay, &awidth, &aheight,
+                       &ix, &iy, &iwidth, &iheight);
+
+  const int margin_top    = iy;
+  const int margin_left   = ix;
+  const int margin_right  = pwidth - iwidth - ix;
+  const int margin_bottom = pheight - iheight - iy;
+
+  if (darktable.unmuted & DT_DEBUG_PRINT)
+    fprintf(stderr, "[print] margins top %d ; bottom %d ; left %d ; right %d\n",
+            margin_top, margin_bottom, margin_left, margin_right);
 
   // we have the exported buffer, let's apply the printer profile
 
