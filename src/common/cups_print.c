@@ -24,11 +24,9 @@
 #include "common/image.h"
 #include "common/image_cache.h"
 #include "common/mipmap_cache.h"
+#include "common/pdf.h"
 #include "cups_print.h"
 #include "control/jobs/control_jobs.h"
-
-// points to mm factor
-#define ptTOmm (25.4 / 72.0)
 
 // initialize the pinfo structure
 void dt_init_print_info(dt_print_info_t *pinfo)
@@ -69,10 +67,10 @@ dt_printer_info_t *dt_get_printer_info(const char *printer_name)
                &result->hw_margin_left, &result->hw_margin_bottom,
                &result->hw_margin_right, &result->hw_margin_top);
 
-        result->hw_margin_left *= ptTOmm;
-        result->hw_margin_bottom *= ptTOmm;
-        result->hw_margin_right *= ptTOmm;
-        result->hw_margin_top *= ptTOmm;
+        result->hw_margin_left   = dt_pdf_point_to_mm (result->hw_margin_left);
+        result->hw_margin_bottom = dt_pdf_point_to_mm (result->hw_margin_bottom);
+        result->hw_margin_right  = dt_pdf_point_to_mm (result->hw_margin_right);
+        result->hw_margin_top    = dt_pdf_point_to_mm (result->hw_margin_top);
       }
 
       // default resolution
