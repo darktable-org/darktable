@@ -96,9 +96,9 @@ void dt_lua_type_register_number_type(lua_State *L, luaA_Type type_id);
 void dt_lua_type_register_number_const_type(lua_State *L, luaA_Type type_id);
 
 /// register a type as a parent type
-/// the type will reuse all functions from the parent (overwriting its own if any)
+/// the type will reuse all members and metafiels from the parent (unless it has its own)
 /// inheritence will be marked in __luaA_ParentMetatable
-/// YOU WANT TO REGISTER THIS BEFORE ANY OTHER MEMBER
+/// THIS FUNCTION MUST BE CALLED AFTER PARENT WAS COMPLETELY DEFINED
 #define dt_lua_type_register_parent(L, type_name, parent_type_name)                                          \
   dt_lua_type_register_parent_type(L, luaA_type_find(L, #type_name), luaA_type_find(L, #parent_type_name))
 void dt_lua_type_register_parent_type(lua_State *L, luaA_Type type_id, luaA_Type parent_type_id);

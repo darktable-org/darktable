@@ -35,7 +35,7 @@ static int get_widget_params(lua_State *L)
   return 1;
 }
 
-int widget_gc(lua_State *L)
+static int widget_gc(lua_State *L)
 {
   lua_widget widget = *(lua_widget*)lua_touserdata(L,1);
   widget->type->gui_cleanup(L,widget);
@@ -48,8 +48,6 @@ void dt_lua_register_widget_type_type(lua_State *L, dt_lua_widget_type_t* widget
   widget_type->associated_type = type_id;
   dt_lua_type_register_parent_type(L, type_id, luaA_type_find(L, "lua_widget"));
 
-  lua_pushcfunction(L,widget_gc);
-  dt_lua_type_setmetafield_type(L,type_id,"__gc");
   // add to the table
   lua_pushlightuserdata(L, widget_type);
   lua_pushcclosure(L, get_widget_params, 1);
@@ -161,6 +159,8 @@ int dt_lua_init_widget(lua_State* L)
   lua_pushcfunction(L,tooltip_member);
   lua_pushcclosure(L,dt_lua_gtk_wrap,1);
   dt_lua_type_register(L, lua_widget, "tooltip");
+  lua_pushcfunction(L,widget_gc);
+  dt_lua_type_setmetafield(L,lua_widget,"__gc");
   
   dt_lua_init_widget_box(L);
   dt_lua_init_widget_button(L);

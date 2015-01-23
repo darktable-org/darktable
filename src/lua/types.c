@@ -598,7 +598,13 @@ void dt_lua_type_register_parent_type(lua_State *L, luaA_Type type_id, luaA_Type
   lua_pushnil(L); /* first key */
   while(lua_next(L, -2) != 0)
   {
-    lua_setfield(L, -4, lua_tostring(L, -2));
+    lua_getfield(L,-4,lua_tostring(L,-2));
+    if(lua_isnil(L,-1)) {
+      lua_pop(L,1);
+      lua_setfield(L, -4, lua_tostring(L,-2));
+    } else {
+      lua_pop(L,2);
+    }
   }
   lua_pop(L, 2);
 
@@ -607,21 +613,30 @@ void dt_lua_type_register_parent_type(lua_State *L, luaA_Type type_id, luaA_Type
   lua_pushnil(L); /* first key */
   while(lua_next(L, -2) != 0)
   {
-    lua_setfield(L, -4, lua_tostring(L, -2));
+    lua_getfield(L,-4,lua_tostring(L,-2));
+    if(lua_isnil(L,-1)) {
+      lua_pop(L,1);
+      lua_setfield(L, -4, lua_tostring(L,-2));
+    } else {
+      lua_pop(L,2);
+    }
   }
   lua_pop(L, 2);
 
-  lua_getfield(L, -1, "__len");
-  if(!lua_isnil(L, -1))
+  lua_pushnil(L); /* first key */
+  while(lua_next(L, -2) != 0)
   {
-    lua_getfield(L, -1, "__len");
-    lua_setfield(L, -3, "__len");
-    lua_getfield(L, -1, "__number_index");
-    lua_setfield(L, -3, "__number_index");
-    lua_getfield(L, -1, "__number_newindex");
-    lua_setfield(L, -3, "__number_newindex");
+    lua_getfield(L,-4,lua_tostring(L,-2));
+    if(lua_isnil(L,-1)) {
+      lua_pop(L,1);
+      lua_setfield(L, -4, lua_tostring(L,-2));
+    } else {
+      lua_pop(L,2);
+    }
   }
-  lua_pop(L, 3);
+
+
+  lua_pop(L, 2);
 }
 
 static void init_metatable(lua_State *L, luaA_Type type_id)
