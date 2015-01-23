@@ -70,9 +70,7 @@ static int new_widget(lua_State *L)
 
 void dt_lua_widget_setcallback(lua_State *L,int index,const char* name)
 {
-  if(!dt_lua_isa(L,index,lua_widget)) {
-    luaL_argerror(L,index,"widget type expected");
-  } 
+  luaL_argcheck(L, dt_lua_isa(L, index, lua_widget), index, "lua_widget expected");
   luaL_checktype(L,-1,LUA_TFUNCTION);
   lua_getuservalue(L,index);
   lua_pushvalue(L,-2);
@@ -82,9 +80,7 @@ void dt_lua_widget_setcallback(lua_State *L,int index,const char* name)
 
 void dt_lua_widget_getcallback(lua_State *L,int index,const char* name)
 {
-  if(!dt_lua_isa(L,index,lua_widget)) {
-    luaL_argerror(L,index,"widget type expected");
-  } 
+  luaL_argcheck(L, dt_lua_isa(L, index, lua_widget), index, "lua_widget expected");
   lua_getuservalue(L,index);
   lua_getfield(L,-1,name);
   lua_remove(L,-2);
@@ -133,11 +129,7 @@ void dt_lua_widget_trigger_callback(gpointer object,luaA_Type object_type,const 
 static int tooltip_member(lua_State *L)
 {
   lua_widget widget;
-  if(!dt_lua_isa(L,1,lua_widget)) {
-    return luaL_argerror(L,7,"widget type expected");
-  } else {
-    widget = *(lua_widget*)lua_touserdata(L,1);
-  }
+  luaA_to(L,lua_widget,&widget,1);
   if(lua_gettop(L) > 2) {
     if(lua_isnil(L,3)) {
       gtk_widget_set_tooltip_text(widget->widget,NULL);

@@ -68,10 +68,8 @@ static int box_append(lua_State *L)
 {
   lua_box box;
   luaA_to(L,lua_box,&box,1);
-  if(!dt_lua_isa(L,2,lua_widget)) {
-    luaL_argerror(L,2,"widget type expected");
-  } 
-  lua_widget widget = *(lua_widget*)lua_touserdata(L,2);
+  lua_widget widget;
+  luaA_to(L, lua_widget,&widget,2),
   gtk_box_pack_start(GTK_BOX(box->parent.widget),widget->widget,TRUE,TRUE, 0);
   box->children = g_list_append(box->children,widget);
   lua_getuservalue(L,1);

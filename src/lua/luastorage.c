@@ -423,14 +423,11 @@ static int register_storage(lua_State *L)
   }
   else
   {
-    if(!dt_lua_isa(L,7,lua_widget)) {
-      luaL_argerror(L,7,"widget type expected");
-    } else {
-      lua_pushvalue(L, 7);
-      lua_setfield(L, -2, "widget"); // protect the widget from GC
-      lua_widget widget = *(lua_widget*)lua_touserdata(L,7);
-      data->widget = widget;
-    }
+    lua_pushvalue(L, 7);
+    lua_setfield(L, -2, "widget"); // protect the widget from GC
+    lua_widget widget;
+    luaA_to(L,lua_widget,&widget,7);
+    data->widget = widget;
   }
 
 
