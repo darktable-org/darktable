@@ -130,6 +130,29 @@ void dt_lua_widget_trigger_callback(gpointer object,luaA_Type object_type,const 
 }
 
 
+static int tooltip_member(lua_State *L)
+{
+  lua_widget widget;
+  if(!dt_lua_isa(L,1,lua_widget)) {
+    return luaL_argerror(L,7,"widget type expected");
+  } else {
+    widget = *(lua_widget*)lua_touserdata(L,1);
+  }
+  if(lua_gettop(L) > 2) {
+    if(lua_isnil(L,3)) {
+      gtk_widget_set_tooltip_text(widget->widget,NULL);
+    } else {
+      const char * text = luaL_checkstring(L,3);
+      gtk_widget_set_tooltip_text(widget->widget,text);
+    }
+    return 0;
+  }
+  char* result = gtk_widget_get_tooltip_text(widget->widget);
+  lua_pushstring(L,result);
+  free(result);
+  return 1;
+}
+
 extern int dt_lua_init_widget_box(lua_State* L);
 extern int dt_lua_init_widget_button(lua_State* L);
 extern int dt_lua_init_widget_check_button(lua_State* L);
@@ -143,6 +166,9 @@ int dt_lua_init_widget(lua_State* L)
   dt_lua_module_new(L,"widget");
 
   dt_lua_init_gpointer_type(L,lua_widget);
+  lua_pushcfunction(L,tooltip_member);
+  lua_pushcclosure(L,dt_lua_gtk_wrap,1);
+  dt_lua_type_register(L, lua_widget, "tooltip");
   
   dt_lua_init_widget_box(L);
   dt_lua_init_widget_button(L);

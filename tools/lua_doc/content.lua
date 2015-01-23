@@ -691,6 +691,8 @@ darktable.debug.type:set_text([[Similar to the system function type() but it wil
 
 
   types.lua_widget:set_text("Common parent type for all lua-handled widgets");
+  types.lua_widget.tooltip:set_text("Tooltip to display for the widget");
+  types.lua_widget.tooltip:set_reported_type("string or nil")
 
   types.dt_lua_orientation_t:set_text("A possible orientation for a widget")
 
