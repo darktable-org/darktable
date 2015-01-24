@@ -22,17 +22,17 @@
 #include "control/control.h"
 /**
   TODO
-  replace gui_init with __init ? problem is dealing with optional params of constructor
   generic property member registration
-  generic callback registration
+  generic callback registration for gtk signals
   generic container registration
   use name to save/restore states as pref like other widgets
   have a way to save presets
-  remove gtk combo box for bauhaus version
-  check static for all widget init/cleanup/reset
-  check fot touserdata instead of luaA_to that remain
+  storage lib looses index for lua storages, 
 
-  cleanup, where is the actual structure freed ?
+  cleanup, not symetrical with init, maybe use lua_to to push ?
+    * or use only the size to malloc ourselves, push, pass to gui_init ?
+    * can't use __init because there is no way to pass params/detect if params are here in a reliable way 
+      * make all params optional ? is __init called as a do_chunk ?
   */
 
 
@@ -46,11 +46,13 @@ static int get_widget_params(lua_State *L)
 
 static int widget_gc(lua_State *L)
 {
-  lua_widget widget = *(lua_widget*)lua_touserdata(L,1);
+  lua_widget widget;
+  luaA_to(L,lua_widget,&widget,1);
   if(widget->type->gui_cleanup) {
     widget->type->gui_cleanup(L,widget);
   }
   g_object_unref(widget->widget);
+  free(widget);
   return 0;
 }
 
@@ -178,7 +180,7 @@ extern int dt_lua_init_widget_check_button(lua_State* L);
 extern int dt_lua_init_widget_label(lua_State* L);
 extern int dt_lua_init_widget_entry(lua_State* L);
 extern int dt_lua_init_widget_separator(lua_State* L);
-extern int dt_lua_init_widget_combo_box_text(lua_State* L);
+extern int dt_lua_init_widget_combobox(lua_State* L);
 
 int dt_lua_init_widget(lua_State* L)
 {
@@ -197,10 +199,10 @@ int dt_lua_init_widget(lua_State* L)
   dt_lua_init_widget_box(L);
   dt_lua_init_widget_button(L);
   dt_lua_init_widget_check_button(L);
+  dt_lua_init_widget_combobox(L);
   dt_lua_init_widget_label(L);
   dt_lua_init_widget_entry(L);
   dt_lua_init_widget_separator(L);
-  dt_lua_init_widget_combo_box_text(L);
 
   luaA_enum(L,dt_lua_orientation_t);
   luaA_enum_value_name(L,dt_lua_orientation_t,GTK_ORIENTATION_HORIZONTAL,"horizontal");

@@ -874,6 +874,14 @@ void dt_bauhaus_combobox_set_editable(GtkWidget *widget, int editable)
   d->editable = editable ? 1 : 0;
 }
 
+int dt_bauhaus_combobox_get_editable(GtkWidget *widget)
+{
+  dt_bauhaus_widget_t *w = DT_BAUHAUS_WIDGET(widget);
+  if(w->type != DT_BAUHAUS_COMBOBOX) return 0;
+  dt_bauhaus_combobox_data_t *d = &w->data.combobox;
+  return d->editable;
+}
+
 void dt_bauhaus_combobox_remove_at(GtkWidget *widget, int pos)
 {
   dt_bauhaus_widget_t *w = DT_BAUHAUS_WIDGET(widget);
@@ -885,6 +893,15 @@ void dt_bauhaus_combobox_remove_at(GtkWidget *widget, int pos)
   GList *rm = g_list_nth(d->labels, pos);
   d->labels = g_list_delete_link(d->labels, rm);
   d->num_labels--;
+}
+
+void dt_bauhaus_combobox_insert(GtkWidget *widget, const char *text,int pos)
+{
+  dt_bauhaus_widget_t *w = DT_BAUHAUS_WIDGET(widget);
+  if(w->type != DT_BAUHAUS_COMBOBOX) return;
+  dt_bauhaus_combobox_data_t *d = &w->data.combobox;
+  d->num_labels++;
+  d->labels = g_list_insert(d->labels, g_strdup(text),pos);
 }
 
 int dt_bauhaus_combobox_length(GtkWidget *widget)
