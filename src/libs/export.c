@@ -83,15 +83,22 @@ uint32_t container()
 static void export_button_clicked(GtkWidget *widget, gpointer user_data)
 {
   char style[128] = { 0 };
-  dt_lib_module_t *self = (dt_lib_module_t *)user_data;
-  dt_lib_export_t *d = (dt_lib_export_t *)self->data;
 
   // Let's get the max dimension restriction if any...
   // TODO: pass the relevant values directly, not using the conf ...
   int max_width = dt_conf_get_int("plugins/lighttable/export/width");
   int max_height = dt_conf_get_int("plugins/lighttable/export/height");
-  int format_index = dt_bauhaus_combobox_get(d->format);
-  int storage_index = dt_bauhaus_combobox_get(d->storage);
+
+  // get the format_name and storage_name settings which are plug-ins name and not necessary what is displayed on the combobox.
+  // note that we cannot take directly the combobox entry index as depending on the storage some format are not listed.
+  char *format_name = dt_conf_get_string("plugins/lighttable/export/format_name");
+  char *storage_name = dt_conf_get_string("plugins/lighttable/export/storage_name");
+  const int format_index = dt_imageio_get_index_of_format(dt_imageio_get_format_by_name(format_name));
+  const int storage_index = dt_imageio_get_index_of_storage(dt_imageio_get_storage_by_name(storage_name));
+
+  g_free(format_name);
+  g_free(storage_name);
+
   gboolean high_quality = dt_conf_get_bool("plugins/lighttable/export/high_quality_processing");
   char *tmp = dt_conf_get_string("plugins/lighttable/export/style");
   gboolean style_append = dt_conf_get_bool("plugins/lighttable/export/style_append");
