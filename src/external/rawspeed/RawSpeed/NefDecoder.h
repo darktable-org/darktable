@@ -7,7 +7,7 @@
 #include "BitPumpPlain.h"
 #include "TiffParser.h"
 #include "NikonDecompressor.h"
-/* 
+/*
     RawSpeed - RAW file decoder.
 
     Copyright (C) 2009-2014 Klaus Post

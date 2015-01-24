@@ -28,7 +28,6 @@
 #pragma intrinsic(_ReturnAddress)
 #define MIN(a,b) min(a,b)
 #define MAX(a,b) max(a,b)
-
 typedef unsigned __int64 uint64;
 // MSVC may not have NAN
 #ifndef NAN

@@ -275,7 +275,7 @@ int Cr2Decoder::getHue() {
     return ((mRaw->metadata.subsampling.y * mRaw->metadata.subsampling.x) - 1) >> 1;
 
   return (mRaw->metadata.subsampling.y * mRaw->metadata.subsampling.x);
-
+    
 }
 
 // Interpolate and convert sRaw data.
