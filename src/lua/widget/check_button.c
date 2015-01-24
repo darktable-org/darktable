@@ -24,14 +24,14 @@ typedef struct {
 
 typedef dt_lua_check_button_t* lua_check_button;
 
-void check_button_init(lua_State* L);
+static void check_button_init(lua_State* L);
 static dt_lua_widget_type_t check_button_type = {
   .name = "check_button",
   .gui_init = check_button_init,
   .gui_cleanup = NULL,
 };
 
-void check_button_init(lua_State* L)
+static void check_button_init(lua_State* L)
 {
   const char * new_value = NULL;
   if(!lua_isnoneornil(L,1)){

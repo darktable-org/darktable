@@ -29,7 +29,6 @@ static void separator_init(lua_State* L);
 static dt_lua_widget_type_t separator_type = {
   .name = "separator",
   .gui_init = separator_init,
-  .gui_reset = NULL,
   .gui_cleanup = NULL,
 };
 

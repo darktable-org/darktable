@@ -26,16 +26,15 @@ typedef struct {
 
 typedef dt_lua_combo_box_text_t* lua_combo_box_text;
 
-void combo_box_text_init(lua_State* L);
-void combo_box_text_cleanup(lua_State* L,lua_widget widget);
+static void combo_box_text_init(lua_State* L);
+static void combo_box_text_cleanup(lua_State* L,lua_widget widget);
 static dt_lua_widget_type_t combo_box_text_type = {
   .name = "combo_box_text",
   .gui_init = combo_box_text_init,
-  .gui_reset = NULL,
   .gui_cleanup = combo_box_text_cleanup,
 };
 
-void combo_box_text_init(lua_State* L)
+static void combo_box_text_init(lua_State* L)
 {
   lua_combo_box_text combo_box_text = malloc(sizeof(dt_lua_combo_box_text_t));
   combo_box_text->text = NULL;
@@ -50,7 +49,7 @@ void combo_box_text_init(lua_State* L)
   g_object_ref_sink(combo_box_text->parent.widget);
 }
 
-void combo_box_text_cleanup(lua_State* L,lua_widget widget)
+static void combo_box_text_cleanup(lua_State* L,lua_widget widget)
 {
   lua_combo_box_text combo_box_text = (lua_combo_box_text)widget;
   g_list_free_full(combo_box_text->text,free);

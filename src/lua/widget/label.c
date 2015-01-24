@@ -28,7 +28,6 @@ static void label_init(lua_State* L);
 static dt_lua_widget_type_t label_type = {
   .name = "label",
   .gui_init = label_init,
-  .gui_reset = NULL,
   .gui_cleanup = NULL,
 };
 

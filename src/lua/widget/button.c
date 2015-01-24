@@ -24,7 +24,7 @@ typedef struct {
 
 typedef dt_lua_button_t* lua_button;
 
-void button_init(lua_State* L);
+static void button_init(lua_State* L);
 static dt_lua_widget_type_t button_type = {
   .name = "button",
   .gui_init = button_init,
@@ -36,7 +36,7 @@ static void lua_button_callback(GtkButton *widget, gpointer user_data)
   dt_lua_widget_trigger_callback_async((lua_widget)user_data,"clicked");
 }
 
-void button_init(lua_State* L)
+static void button_init(lua_State* L)
 {
   const char * new_value = NULL;
   if(!lua_isnoneornil(L,1)){

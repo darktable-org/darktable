@@ -26,8 +26,8 @@ typedef struct {
 
 typedef dt_lua_box_t* lua_box;
 
-void box_init(lua_State* L);
-void box_cleanup(lua_State* L,lua_widget widget);
+static void box_init(lua_State* L);
+static void box_cleanup(lua_State* L,lua_widget widget);
 static dt_lua_widget_type_t box_type = {
   .name = "box",
   .gui_init = box_init,
@@ -47,7 +47,7 @@ static int box_reset(lua_State* L)
   return 0;
 }
 
-void box_init(lua_State* L)
+static void box_init(lua_State* L)
 {
   lua_box box = malloc(sizeof(dt_lua_box_t));
   dt_lua_orientation_t orientation;
@@ -62,7 +62,7 @@ void box_init(lua_State* L)
 }
 
 
-void box_cleanup(lua_State* L,lua_widget widget)
+static void box_cleanup(lua_State* L,lua_widget widget)
 {
   lua_box box = (lua_box)widget;
   g_list_free(box->children);

@@ -25,18 +25,16 @@ typedef struct {
 
 typedef dt_lua_entry_t* lua_entry;
 
-void entry_init(lua_State* L);
-void entry_reset(lua_widget widget);
-void entry_cleanup(lua_State* L,lua_widget widget);
+static void entry_init(lua_State* L);
+static void entry_cleanup(lua_State* L,lua_widget widget);
 static dt_lua_widget_type_t entry_type = {
   .name = "entry",
   .gui_init = entry_init,
-  .gui_reset = entry_reset,
   .gui_cleanup = entry_cleanup,
 };
 
 
-void entry_init(lua_State* L)
+static void entry_init(lua_State* L)
 {
   lua_entry entry = malloc(sizeof(dt_lua_entry_t));
 	entry->parent.widget = gtk_entry_new();
@@ -46,13 +44,7 @@ void entry_init(lua_State* L)
   g_object_ref_sink(entry->parent.widget);
 }
 
-void entry_reset(lua_widget widget)
-{
-  lua_entry entry = (lua_entry)widget;
-  gtk_entry_set_text(GTK_ENTRY(entry->parent.widget),"");
-}
-
-void entry_cleanup(lua_State* L,lua_widget widget)
+static void entry_cleanup(lua_State* L,lua_widget widget)
 {
   dt_gui_key_accel_block_on_focus_disconnect(widget->widget);
 }
