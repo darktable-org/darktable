@@ -52,108 +52,6 @@ RawImage Cr2Decoder::decodeRawInternal() {
   vector<Cr2Slice> slices;
   int completeH = 0;
 
-  // Fetch the white balance
-  if (mRootIFD->hasEntryRecursive(CANONCOLORDATA)) {
-    TiffEntry *color_data = mRootIFD->getEntryRecursive(CANONCOLORDATA);
-
-    // this entry is a big table, and different cameras store used WB in
-    // different parts, so find the offset
-    int offset = 0;
-    switch (color_data->count)
-    {
-      case 582: /* Canon EOS 20D, Canon EOS 350D */
-        offset += 50;
-      break;
-      case 653: /* Canon EOS-1D Mk II, Canon 1Ds Mk II */
-        offset += 68;
-      break;
-      case 674: /* Canon EOS-1D Mk III */
-      case 692: /* Canon EOS 40D */
-      case 702: /* Canon EOS-1Ds Mk III */
-      case 796: /* Canon EOS-1D Mk II N, Canon EOS 5D, Canon EOS 30D, Canon EOS 400D */
-      case 1227: /* Canon EOS 450D, Canon EOS 1000D */
-      case 1250: /* Canon EOS 5D Mk II, Canon EOS 50D */
-      case 1273: /* Canon EOS 600D */
-      case 1312: /* Canon EOS 5D Mk III, Canon EOS 700D */
-      case 1313: /* Canon EOS 70D */
-      case 1316: /* Canon EOS-1D X */
-      case 1337: /* Canon EOS-1D Mk IV, Canon EOS 7D */
-      case 1338: /* Canon EOS 550D */
-      case 1346: /* Canon EOS 60D, Canon EOS 1100D */
-        offset += 126;
-      break;
-      case 5120:
-        /* Canon PowerShot G10, Canon PowerShot G11, Canon PowerShot G12,
-         * Canon PowerShot G1X, Canon PowerShot S120, Canon PowerShot SX1 IS */
-        offset += 142;
-      break;
-      default:
-        std::cerr << "CR2 Decoder: CanonColorData has unsupported count of values: %d" << color_data->count << std::endl;
-      break;
-    }
-
-    /*
-     * Canon PowerShot cameras (color_data->count == 5120) identify this tag
-     * as TIFF_UNDEFINED, while they still write normal TIFF_SHORT data there
-     */
-    if (color_data->type == TIFF_SHORT || color_data->count == 5120) {
-      const ushort16* data = color_data->getShortArray();
-
-      // RGGB !
-      float cam_mul[4];
-      for(int c = 0; c < 4; c++)
-      {
-        cam_mul[c] = (float) data[offset/2 + c];
-      }
-
-      const float green = (cam_mul[1] + cam_mul[2]) / 2.0f;
-      mRaw->metadata.wbCoeffs[0] = cam_mul[0] / green;
-      mRaw->metadata.wbCoeffs[1] = 1.0f;
-      mRaw->metadata.wbCoeffs[2] = cam_mul[3] / green;
-    } else {
-      std::cerr << "CR2 Decoder: CanonColorData has to be SHORT, " << color_data->type << " found." << std::endl;
-    }
-  } else {
-    vector<TiffIFD*> data = mRootIFD->getIFDsWithTag(MODEL);
-
-    /*
-     * do not check that the entries exist, checkSupportInternal() has already done that.
-     * FIXME: are they stored somewhere except IFD at this point already?
-     */
-
-    string make = data[0]->getEntry(MAKE)->getString();
-    string model = data[0]->getEntry(MODEL)->getString();
-    if(make.compare("Canon") == 0 && model.compare("Canon PowerShot G9") == 0 &&
-        mRootIFD->hasEntryRecursive(CANONSHOTINFO) &&
-        mRootIFD->hasEntryRecursive(CANONPOWERSHOTG9WB))
-    {
-
-      TiffEntry *shot_info = mRootIFD->getEntryRecursive(CANONSHOTINFO);
-      ushort16 wb_index = shot_info->getShortArray()[14/2];
-
-      /* Canon PowerShot G9 */
-      TiffEntry *g9_wb = mRootIFD->getEntryRecursive(CANONPOWERSHOTG9WB);
-      if (g9_wb->type == TIFF_BYTE) {
-        int wb_offset = (wb_index < 18) ? "012347800000005896"[wb_index]-'0' : 0;
-        wb_offset = wb_offset*32 + 8;
-
-        // GRBG !
-        float cam_mul[4];
-        for(int c = 0; c < 4; c++)
-        {
-          cam_mul[c] = (float) get4LE(g9_wb->getData(), wb_offset + 4*c);
-        }
-
-        const float green = (cam_mul[0] + cam_mul[3]) / 2.0f;
-        mRaw->metadata.wbCoeffs[0] = cam_mul[1] / green;
-        mRaw->metadata.wbCoeffs[1] = 1.0f;
-        mRaw->metadata.wbCoeffs[2] = cam_mul[2] / green;
-      } else {
-        std::cerr << "CR2 Decoder: CANONPOWERSHOTG9WB has to be BYTE, " << g9_wb->type << " found." << std::endl;
-      }
-    }
-  }
-
   try {
     TiffEntry *offsets = raw->getEntry(STRIPOFFSETS);
     TiffEntry *counts = raw->getEntry(STRIPBYTECOUNTS);
@@ -292,6 +190,104 @@ void Cr2Decoder::decodeMetaDataInternal(CameraMetaData *meta) {
 
   if (mRootIFD->hasEntryRecursive(ISOSPEEDRATINGS))
     iso = mRootIFD->getEntryRecursive(ISOSPEEDRATINGS)->getInt();
+
+  // Fetch the white balance
+  if (mRootIFD->hasEntryRecursive(CANONCOLORDATA)) {
+    TiffEntry *color_data = mRootIFD->getEntryRecursive(CANONCOLORDATA);
+
+    // this entry is a big table, and different cameras store used WB in
+    // different parts, so find the offset
+    int offset = 0;
+    switch (color_data->count)
+    {
+      case 582: /* Canon EOS 20D, Canon EOS 350D */
+        offset += 50;
+      break;
+      case 653: /* Canon EOS-1D Mk II, Canon 1Ds Mk II */
+        offset += 68;
+      break;
+      case 674: /* Canon EOS-1D Mk III */
+      case 692: /* Canon EOS 40D */
+      case 702: /* Canon EOS-1Ds Mk III */
+      case 796: /* Canon EOS-1D Mk II N, Canon EOS 5D, Canon EOS 30D, Canon EOS 400D */
+      case 1227: /* Canon EOS 450D, Canon EOS 1000D */
+      case 1250: /* Canon EOS 5D Mk II, Canon EOS 50D */
+      case 1273: /* Canon EOS 600D */
+      case 1312: /* Canon EOS 5D Mk III, Canon EOS 700D */
+      case 1313: /* Canon EOS 70D */
+      case 1316: /* Canon EOS-1D X */
+      case 1337: /* Canon EOS-1D Mk IV, Canon EOS 7D */
+      case 1338: /* Canon EOS 550D */
+      case 1346: /* Canon EOS 60D, Canon EOS 1100D */
+        offset += 126;
+      break;
+      case 5120:
+        /* Canon PowerShot G10, Canon PowerShot G11, Canon PowerShot G12,
+         * Canon PowerShot G1X, Canon PowerShot S120, Canon PowerShot SX1 IS */
+        offset += 142;
+      break;
+      default:
+        std::cerr << "CR2 Decoder: CanonColorData has unsupported count of values: %d" << color_data->count << std::endl;
+      break;
+    }
+
+    /*
+     * Canon PowerShot cameras (color_data->count == 5120) identify this tag
+     * as TIFF_UNDEFINED, while they still write normal TIFF_SHORT data there
+     */
+    if (color_data->type == TIFF_SHORT || color_data->count == 5120) {
+      const ushort16* data = color_data->getShortArray();
+
+      // RGGB !
+      float cam_mul[4];
+      for(int c = 0; c < 4; c++)
+      {
+        cam_mul[c] = (float) data[offset/2 + c];
+      }
+
+      const float green = (cam_mul[1] + cam_mul[2]) / 2.0f;
+      mRaw->metadata.wbCoeffs[0] = cam_mul[0] / green;
+      mRaw->metadata.wbCoeffs[1] = 1.0f;
+      mRaw->metadata.wbCoeffs[2] = cam_mul[3] / green;
+    } else {
+      std::cerr << "CR2 Decoder: CanonColorData has to be SHORT, " << color_data->type << " found." << std::endl;
+    }
+  } else {
+    vector<TiffIFD*> data = mRootIFD->getIFDsWithTag(MODEL);
+
+    /*
+     * do not check that the entries exist, checkSupportInternal() has already done that.
+     */
+    if(make.compare("Canon") == 0 && model.compare("Canon PowerShot G9") == 0 &&
+        mRootIFD->hasEntryRecursive(CANONSHOTINFO) &&
+        mRootIFD->hasEntryRecursive(CANONPOWERSHOTG9WB))
+    {
+
+      TiffEntry *shot_info = mRootIFD->getEntryRecursive(CANONSHOTINFO);
+      ushort16 wb_index = shot_info->getShortArray()[14/2];
+
+      /* Canon PowerShot G9 */
+      TiffEntry *g9_wb = mRootIFD->getEntryRecursive(CANONPOWERSHOTG9WB);
+      if (g9_wb->type == TIFF_BYTE) {
+        int wb_offset = (wb_index < 18) ? "012347800000005896"[wb_index]-'0' : 0;
+        wb_offset = wb_offset*32 + 8;
+
+        // GRBG !
+        float cam_mul[4];
+        for(int c = 0; c < 4; c++)
+        {
+          cam_mul[c] = (float) get4LE(g9_wb->getData(), wb_offset + 4*c);
+        }
+
+        const float green = (cam_mul[0] + cam_mul[3]) / 2.0f;
+        mRaw->metadata.wbCoeffs[0] = cam_mul[1] / green;
+        mRaw->metadata.wbCoeffs[1] = 1.0f;
+        mRaw->metadata.wbCoeffs[2] = cam_mul[2] / green;
+      } else {
+        std::cerr << "CR2 Decoder: CANONPOWERSHOTG9WB has to be BYTE, " << g9_wb->type << " found." << std::endl;
+      }
+    }
+  }
 
   setMetaData(meta, make, model, mode, iso);
 
