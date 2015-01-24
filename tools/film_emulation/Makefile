@@ -1,6 +1,7 @@
-PROGS = fit unitylut
+PROGS = fit identitylut
 
 CFLAGS = -g -std=c99 -Wall -D_XOPEN_SOURCE
+CC=gcc
 
 all: $(PROGS)
 
@@ -8,12 +9,12 @@ clean:
 	rm -f $(PROGS)
 
 fit: fit.c template.h Makefile
-	$(CC) $(CFLAGS) fit.c levmar-2.6/liblevmar.a -lm -o $@
+	# $(CC) $(CFLAGS) fit.c levmar-2.6/liblevmar.a -lm -o $@
 	# use this if you linked your levmar aginst lapack
-	# $(CC) $(CFLAGS) fit.c levmar-2.6/liblevmar.a -llapack -lblas -lf2c -lm -o $@
+	$(CC) -u MAIN__ $(CFLAGS) fit.c levmar-2.6/build/liblevmar.a -llapack -lblas -lf2c -lm -lc -o $@
 
-unitylut: unitylut.c Makefile
-	$(CC) $(CFLAGS) unitylut.c -o $@
+identitylut: identitylut.c Makefile
+	$(CC) $(CFLAGS) identitylut.c -o $@
 
 template.h: template_head.xmp template_foot.xmp template_color_head.xmp
 	xxd -i template_head.xmp > template.h

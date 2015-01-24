@@ -44,6 +44,7 @@
      <rdf:li>4</rdf:li>
      <rdf:li>1</rdf:li>
      <rdf:li>3</rdf:li>
+     <rdf:li>3</rdf:li>
     </rdf:Seq>
    </darktable:history_modversion>
    <darktable:history_enabled>

@@ -4,7 +4,7 @@
 
 int main(int argc, char *arg[])
 {
-  FILE *f = fopen("unity.pfm", "wb");
+  FILE *f = fopen("identity.pfm", "wb");
   fprintf(f, "PF\n512 512\n-1.0\n");
   float *buf = (float *)malloc(512*512*3*sizeof(float));
   for(int k=0;k<64;k++)
