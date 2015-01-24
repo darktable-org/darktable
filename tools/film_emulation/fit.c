@@ -17,13 +17,26 @@
 // define this to optimize for monochrome images
 #define USE_MONOCHROME 0
 #define USE_EXPOSURE 0
-#define USE_ZONES_L 0
-#define USE_ZONES_C 0
-#define USE_ZONES_h 1
-#define USE_ZONES_CHANGE_h 1
-#define USE_ZONES_CHANGE_L 1
+// colour zones. important seem to be in this order:
+// L(L) C(L) C(h) .. C(C) L(C)
+// L(h) makes poles/artifacts
+#define USE_ZONES_L_L 0 // use curve instead, more intuitive xmp (and more fine-grained blacks)
+#define USE_ZONES_L_C 0 // might not be necessary
+#define USE_ZONES_L_h 0
+#define USE_ZONES_C_L 1 // counteract saturation changes in tone curve
+#define USE_ZONES_C_C 1
+#define USE_ZONES_C_h 1
+#define USE_ZONES_h_L 0
+#define USE_ZONES_h_C 0
+#define USE_ZONES_h_h 1
+
+// #define USE_ZONES_L 1
+// #define USE_ZONES_C 0 // might not be necessary, maybe only C(C)
+// #define USE_ZONES_h 1
+// #define USE_ZONES_CHANGE_h 0 // doesn't change much for film presets
+// #define USE_ZONES_CHANGE_L 1 // L(hue) doesn't seem to be important either.
 #define USE_CURVE 1
-#define USE_AB_CURVES 1
+#define USE_AB_CURVES 0
 #define USE_SATURATION 0
 #define USE_CORR 0
 // #define USE_CLUT 0 // doesn't compile any longer, deprecated.
@@ -262,41 +275,54 @@ static inline int params2float(const module_params_t *m, float *f)
 #endif
 #endif
 
-#if USE_ZONES_h==1
-  int chm = 1, chM = 2;
-#if USE_ZONES_CHANGE_h==1
-  chM = 3;
+  for(int k=0; k<DT_IOP_COLORZONES_BANDS-1; k++) // hue is cyclic, one less
+  {
+#if USE_ZONES_L_h==1
+    f[j++] = m->zones_h.equalizer_y[0][k];
 #endif
-#if USE_ZONES_CHANGE_L==1
-  chm = 0;
+#if USE_ZONES_C_h==1
+    f[j++] = m->zones_h.equalizer_y[1][k];
 #endif
-  for(int ch=chm; ch<chM; ch++)
-    for(int k=0; k<DT_IOP_COLORZONES_BANDS-1; k++) // hue is cyclic, one less
-      f[j++] = m->zones_h.equalizer_y[ch][k];
+#if USE_ZONES_h_h==1
+    f[j++] = m->zones_h.equalizer_y[2][k];
+#endif
+  }
+#if USE_ZONES_L_h==1 || USE_ZONES_C_h==1 || USE_ZONES_h_h==1
   f[j++] = m->zones_h.strength;
 #endif
 
-#if USE_ZONES_L==1
-#if USE_ZONES_CHANGE_h==1
-  for(int ch=0; ch<3; ch++)
-#else
-  for(int ch=0; ch<2; ch++)
+  for(int k=0; k<DT_IOP_COLORZONES_BANDS; k++)
+  {
+#if USE_ZONES_L_L==1
+    f[j++] = m->zones_L.equalizer_y[0][k];
 #endif
-    for(int k=0; k<DT_IOP_COLORZONES_BANDS; k++)
-      f[j++] = m->zones_L.equalizer_y[ch][k];
+#if USE_ZONES_C_L==1
+    f[j++] = m->zones_L.equalizer_y[1][k];
+#endif
+#if USE_ZONES_h_L==1
+    f[j++] = m->zones_L.equalizer_y[2][k];
+#endif
+  }
+#if USE_ZONES_L_L==1 || USE_ZONES_C_L==1 || USE_ZONES_h_L==1
   f[j++] = m->zones_L.strength;
 #endif
 
-#if USE_ZONES_C==1
-#if USE_ZONES_CHANGE_h==1
-  for(int ch=0; ch<3; ch++)
-#else
-  for(int ch=0; ch<2; ch++)
+  for(int k=0; k<DT_IOP_COLORZONES_BANDS; k++)
+  {
+#if USE_ZONES_L_C==1
+    f[j++] = m->zones_C.equalizer_y[0][k];
 #endif
-    for(int k=0; k<DT_IOP_COLORZONES_BANDS; k++)
-      f[j++] = m->zones_C.equalizer_y[ch][k];
+#if USE_ZONES_C_C==1
+    f[j++] = m->zones_C.equalizer_y[1][k];
+#endif
+#if USE_ZONES_h_C==1
+    f[j++] = m->zones_C.equalizer_y[2][k];
+#endif
+  }
+#if USE_ZONES_L_C==1 || USE_ZONES_C_C==1 || USE_ZONES_h_C==1
   f[j++] = m->zones_C.strength;
 #endif
+
 
 #if USE_CLUT==1
   for(int k=0;k<m->clut.num;k++)
@@ -349,46 +375,60 @@ static inline int float2params(const float *f, module_params_t *m)
 #endif
 #endif
 
-#if USE_ZONES_h==1
-  int chm = 1, chM = 2;
-#if USE_ZONES_CHANGE_h==1
-  chM = 3;
-#endif
-#if USE_ZONES_CHANGE_L==1
-  chm = 0;
-#endif
-  for(int ch=chm; ch<chM; ch++)
+  for(int k=0; k<DT_IOP_COLORZONES_BANDS-1; k++)
   {
-    for(int k=0; k<DT_IOP_COLORZONES_BANDS-1; k++)
-      m->zones_h.equalizer_y[ch][k] = f[j++];
-    m->zones_h.equalizer_y[ch][DT_IOP_COLORZONES_BANDS-1] = m->zones_h.equalizer_y[ch][0]; // hue selection is cyclic
+#if USE_ZONES_L_h==1
+    m->zones_h.equalizer_y[0][k] = f[j++];
+#endif
+#if USE_ZONES_C_h==1
+    m->zones_h.equalizer_y[1][k] = f[j++];
+#endif
+#if USE_ZONES_h_h==1
+    m->zones_h.equalizer_y[2][k] = f[j++];
+#endif
   }
+#if USE_ZONES_L_h==1
+  m->zones_h.equalizer_y[0][DT_IOP_COLORZONES_BANDS-1] = m->zones_h.equalizer_y[0][0]; // hue selection is cyclic
+#endif
+#if USE_ZONES_C_h==1
+  m->zones_h.equalizer_y[1][DT_IOP_COLORZONES_BANDS-1] = m->zones_h.equalizer_y[1][0]; // hue selection is cyclic
+#endif
+#if USE_ZONES_h_h==1
+  m->zones_h.equalizer_y[2][DT_IOP_COLORZONES_BANDS-1] = m->zones_h.equalizer_y[2][0]; // hue selection is cyclic
+#endif
+#if USE_ZONES_L_h==1 || USE_ZONES_C_h==1 || USE_ZONES_h_h==1
   m->zones_h.strength = f[j++];
 #endif
 
-#if USE_ZONES_L==1
-#if USE_ZONES_CHANGE_h==1
-  for(int ch=0; ch<3; ch++)
-#else
-  for(int ch=0; ch<2; ch++)
-#endif
+  for(int k=0; k<DT_IOP_COLORZONES_BANDS; k++)
   {
-    for(int k=0; k<DT_IOP_COLORZONES_BANDS; k++)
-      m->zones_L.equalizer_y[ch][k] = f[j++];
+#if USE_ZONES_L_L==1
+    m->zones_L.equalizer_y[0][k] = f[j++];
+#endif
+#if USE_ZONES_C_L==1
+    m->zones_L.equalizer_y[1][k] = f[j++];
+#endif
+#if USE_ZONES_h_L==1
+    m->zones_L.equalizer_y[2][k] = f[j++];
+#endif
   }
+#if USE_ZONES_L_L==1 || USE_ZONES_C_L==1 || USE_ZONES_h_L==1
   m->zones_L.strength = f[j++];
 #endif
 
-#if USE_ZONES_C==1
-#if USE_ZONES_CHANGE_h==1
-  for(int ch=0; ch<3; ch++)
-#else
-  for(int ch=0; ch<2; ch++)
-#endif
+  for(int k=0; k<DT_IOP_COLORZONES_BANDS; k++)
   {
-    for(int k=0; k<DT_IOP_COLORZONES_BANDS; k++)
-      m->zones_C.equalizer_y[ch][k] = f[j++];
+#if USE_ZONES_L_C==1
+    m->zones_C.equalizer_y[0][k] = f[j++];
+#endif
+#if USE_ZONES_C_C==1
+    m->zones_C.equalizer_y[1][k] = f[j++];
+#endif
+#if USE_ZONES_h_C==1
+    m->zones_C.equalizer_y[2][k] = f[j++];
+#endif
   }
+#if USE_ZONES_L_C==1 || USE_ZONES_C_C==1 || USE_ZONES_h_C==1
   m->zones_C.strength = f[j++];
 #endif
 
@@ -436,9 +476,9 @@ static inline void write_xmp(module_params_t *m)
   FILE *f = fopen("input.xmp", "wb");
   fwrite(template_color_head_xmp, template_color_head_xmp_len, 1, f);
 
-  fprintf(f, "<rdf:li>%d</rdf:li>\n", USE_ZONES_h);
-  fprintf(f, "<rdf:li>%d</rdf:li>\n", USE_ZONES_L);
-  fprintf(f, "<rdf:li>%d</rdf:li>\n", USE_ZONES_C);
+  fprintf(f, "<rdf:li>%d</rdf:li>\n", USE_ZONES_L_h || USE_ZONES_C_h || USE_ZONES_h_h);
+  fprintf(f, "<rdf:li>%d</rdf:li>\n", USE_ZONES_L_L || USE_ZONES_C_L || USE_ZONES_h_L);
+  fprintf(f, "<rdf:li>%d</rdf:li>\n", USE_ZONES_L_C || USE_ZONES_C_C || USE_ZONES_h_C);
   fprintf(f, "<rdf:li>%d</rdf:li>\n", USE_CURVE);
   // fprintf(f, "<rdf:li>%d</rdf:li>\n", USE_CLUT);
   fprintf(f, "<rdf:li>%d</rdf:li>\n", USE_CORR);
@@ -499,7 +539,7 @@ opt_data_t;
 
 static inline void distort_samples(float *sample, int sample_cnt)
 {
-  const float c = 1.0f;
+  const float c = 10.0f;
   for(int k=0;k<sample_cnt/3;k++)
   {
     sample[3*k+0] = c*(sample[3*k+0]-sample[3*k+1]);
