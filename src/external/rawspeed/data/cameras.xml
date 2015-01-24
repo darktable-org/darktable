@@ -148,6 +148,9 @@
 		</CFA>
 		<Crop x="74" y="12" width="3522" height="2348"/>
 		<Sensor black="126" white="4095"/>
+		<Hints>
+			<Hint name="wb_offset" value="50"/>
+		</Hints>
 		<BlackAreas>
 			<Vertical x="0" width="72"/>
 			<Horizontal y="2" height="8"/>
@@ -176,6 +179,9 @@
 		</CFA>
 		<Crop x="42" y="14" width="3474" height="2314"/>
 		<Sensor black="255" white="4095"/>
+		<Hints>
+			<Hint name="wb_offset" value="50"/>
+		</Hints>
 		<BlackAreas>
 			<Vertical x="0" width="40"/>
 			<Horizontal y="0" height="12"/>
@@ -664,6 +670,9 @@
 		</CFA>
 		<Crop x="74" y="12" width="3522" height="2348"/>
 		<Sensor black="127" white="3700"/>
+		<Hints>
+			<Hint name="wb_offset" value="68"/>
+		</Hints>
 		<BlackAreas>
 			<Vertical x="0" width="72"/>
 			<Horizontal y="2" height="8"/>
@@ -736,6 +745,9 @@
 		</CFA>
 		<Crop x="98" y="13" width="5010" height="3336"/>
 		<Sensor black="126" white="4060"/>
+		<Hints>
+			<Hint name="wb_offset" value="68"/>
+		</Hints>
 		<BlackAreas>
 			<Vertical x="0" width="96"/>
 			<Horizontal y="2" height="10"/>
@@ -892,6 +904,9 @@
 		</CFA>
 		<Crop x="82" y="52" width="-14" height="0"/>
 		<Sensor black="0" white="16383"/>
+		<Hints>
+			<Hint name="wb_offset" value="142"/>
+		</Hints>
 		<BlackAreas>
 			<Vertical x="0" width="68"/>
 			<Horizontal y="0" height="46"/>
@@ -920,6 +935,9 @@
 		</CFA>
 		<Crop x="54" y="14" width="-12" height="-18"/>
 		<Sensor black="120" white="4095"/>
+		<Hints>
+			<Hint name="wb_offset" value="142"/>
+		</Hints>
 		<BlackAreas>
 			<Vertical x="0" width="50"/>
 			<Horizontal y="0" height="10"/>
@@ -934,6 +952,9 @@
 		</CFA>
 		<Crop x="10" y="18" width="-56" height="-14"/>
 		<Sensor black="120" white="4095"/>
+		<Hints>
+			<Hint name="wb_offset" value="142"/>
+		</Hints>
 		<BlackAreas>
 			<Vertical x="0" width="10"/>
 			<Vertical x="3696" width="48"/>
@@ -950,6 +971,9 @@
 		</CFA>
 		<Crop x="12" y="13" width="4432" height="3323"/>
 		<Sensor black="128" white="4095"/>
+		<Hints>
+			<Hint name="wb_offset" value="142"/>
+		</Hints>
 		<BlackAreas>
 			<Vertical x="0" width="10"/>
 			<Horizontal y="0" height="8"/>
@@ -1007,6 +1031,9 @@
 		</CFA>
 		<Crop x="192" y="12" width="3958" height="2760"/>
 		<Sensor black="125" white="4095"/>
+		<Hints>
+			<Hint name="wb_offset" value="142"/>
+		</Hints>
 		<BlackAreas>
 			<Vertical x="0" width="188"/>
 			<Horizontal y="0" height="10"/>
@@ -1169,6 +1196,9 @@
 		</CFA>
 		<Crop x="121" y="30" width="-47" height="-14"/>
 		<Sensor black="0" white="4000"/>
+		<Hints>
+			<Hint name="wb_offset" value="142"/>
+		</Hints>
 		<BlackAreas>
 			<Vertical x="0" width="74"/>
 			<Horizontal y="0" height="12"/>

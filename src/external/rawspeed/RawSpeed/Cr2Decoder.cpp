@@ -197,38 +197,14 @@ void Cr2Decoder::decodeMetaDataInternal(CameraMetaData *meta) {
 
     // this entry is a big table, and different cameras store used WB in
     // different parts, so find the offset
-    int offset = 0;
-    switch (color_data->count)
-    {
-      case 582: /* Canon EOS 20D, Canon EOS 350D */
-        offset += 50;
-      break;
-      case 653: /* Canon EOS-1D Mk II, Canon 1Ds Mk II */
-        offset += 68;
-      break;
-      case 674: /* Canon EOS-1D Mk III */
-      case 692: /* Canon EOS 40D */
-      case 702: /* Canon EOS-1Ds Mk III */
-      case 796: /* Canon EOS-1D Mk II N, Canon EOS 5D, Canon EOS 30D, Canon EOS 400D */
-      case 1227: /* Canon EOS 450D, Canon EOS 1000D */
-      case 1250: /* Canon EOS 5D Mk II, Canon EOS 50D */
-      case 1273: /* Canon EOS 600D */
-      case 1312: /* Canon EOS 5D Mk III, Canon EOS 700D */
-      case 1313: /* Canon EOS 70D */
-      case 1316: /* Canon EOS-1D X */
-      case 1337: /* Canon EOS-1D Mk IV, Canon EOS 7D */
-      case 1338: /* Canon EOS 550D */
-      case 1346: /* Canon EOS 60D, Canon EOS 1100D */
-        offset += 126;
-      break;
-      case 5120:
-        /* Canon PowerShot G10, Canon PowerShot G11, Canon PowerShot G12,
-         * Canon PowerShot G1X, Canon PowerShot S120, Canon PowerShot SX1 IS */
-        offset += 142;
-      break;
-      default:
-        writeLog(DEBUG_PRIO_INFO, "CR2 Decoder: CanonColorData has unsupported count of values: %d\n", color_data->count);
-      break;
+
+    // correct offset for most cameras
+    int offset = 126;
+
+    // check for the hint that we need to use other offset
+    if (hints.find("wb_offset") != hints.end()) {
+      stringstream wb_offset(hints.find("wb_offset")->second);
+      wb_offset >> offset;
     }
 
     /*
@@ -255,9 +231,6 @@ void Cr2Decoder::decodeMetaDataInternal(CameraMetaData *meta) {
   } else {
     vector<TiffIFD*> data = mRootIFD->getIFDsWithTag(MODEL);
 
-    /*
-     * do not check that the entries exist, checkSupportInternal() has already done that.
-     */
     if(make.compare("Canon") == 0 && model.compare("Canon PowerShot G9") == 0 &&
         mRootIFD->hasEntryRecursive(CANONSHOTINFO) &&
         mRootIFD->hasEntryRecursive(CANONPOWERSHOTG9WB))
