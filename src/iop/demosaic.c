@@ -1425,11 +1425,46 @@ static int get_thumb_quality(int width, int height)
     g_free(min);
     return 1;
   }
+
   int level = dt_mipmap_cache_get_matching_size(darktable.mipmap_cache, width, height);
-  min[1] = '\0';
-  int res = ( level > atoi(min) );
+  if (strcmp(min, "small")==0)
+  {
+    g_free(min);
+    return ( level >= 1 );
+  }
+  if (strcmp(min, "VGA")==0)
+  {
+    g_free(min);
+    return ( level >= 2 );
+  }
+  if (strcmp(min, "720p")==0)
+  {
+    g_free(min);
+    return ( level >= 3 );
+  }
+  if (strcmp(min, "1080p")==0)
+  {
+    g_free(min);
+    return ( level >= 4 );
+  }
+  if (strcmp(min, "WQXGA")==0)
+  {
+    g_free(min);
+    return ( level >= 5 );
+  }
+  if (strcmp(min, "4k")==0)
+  {
+    g_free(min);
+    return ( level >= 6 );
+  }
+  if (strcmp(min, "5K")==0)
+  {
+    g_free(min);
+    return ( level >= 7 );
+  }
+
   g_free(min);
-  return res;
+  return 0;
 }
 
 void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, void *o,
