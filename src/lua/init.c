@@ -36,7 +36,7 @@
 #include "lua/storage.h"
 #include "lua/lib.h"
 #include "lua/view.h"
-#include "lua/widget.h"
+#include "lua/widget/widget.h"
 #include "common/darktable.h"
 #include "common/file_location.h"
 #include "control/jobs.h"

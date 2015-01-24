@@ -15,7 +15,7 @@
    You should have received a copy of the GNU General Public License
    along with darktable.  If not, see <http://www.gnu.org/licenses/>.
  */
-#include "lua/widget.h"
+#include "lua/widget/widget.h"
 #include "lua/types.h"
 #include "lua/modules.h"
 #include "lua/call.h"
@@ -29,7 +29,6 @@
   use name to save/restore states as pref like other widgets
   have a way to save presets
   remove gtk combo box for bauhaus version
-  move widget.c to widget/
   check static for all widget init/cleanup/reset
   check fot touserdata instead of luaA_to that remain
 

@@ -479,7 +479,7 @@ if(USE_LUA)
       "lua/tags.c"
       "lua/types.c"
       "lua/view.c"
-      "lua/widget.c"
+      "lua/widget/widget.c"
       "lua/widget/box.c"
       "lua/widget/button.c"
       "lua/widget/check_button.c"

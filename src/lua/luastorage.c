@@ -17,7 +17,7 @@
  */
 #include "lua/luastorage.h"
 #include "lua/image.h"
-#include "lua/widget.h"
+#include "lua/widget/widget.h"
 #include <stdio.h>
 #include <common/darktable.h>
 #include "common/imageio_module.h"

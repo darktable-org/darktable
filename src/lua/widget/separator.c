@@ -15,7 +15,7 @@
    You should have received a copy of the GNU General Public License
    along with darktable.  If not, see <http://www.gnu.org/licenses/>.
  */
-#include "lua/widget.h"
+#include "lua/widget/widget.h"
 #include "lua/types.h"
 #include "gui/gtk.h"
 
