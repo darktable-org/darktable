@@ -227,7 +227,7 @@ void Cr2Decoder::decodeMetaDataInternal(CameraMetaData *meta) {
         offset += 142;
       break;
       default:
-        std::cerr << "CR2 Decoder: CanonColorData has unsupported count of values: %d" << color_data->count << std::endl;
+        writeLog(DEBUG_PRIO_INFO, "CR2 Decoder: CanonColorData has unsupported count of values: %d\n", color_data->count);
       break;
     }
 
@@ -250,7 +250,7 @@ void Cr2Decoder::decodeMetaDataInternal(CameraMetaData *meta) {
       mRaw->metadata.wbCoeffs[1] = 1.0f;
       mRaw->metadata.wbCoeffs[2] = cam_mul[3] / green;
     } else {
-      std::cerr << "CR2 Decoder: CanonColorData has to be SHORT, " << color_data->type << " found." << std::endl;
+      writeLog(DEBUG_PRIO_INFO, "CR2 Decoder: CanonColorData has to be SHORT, %d found.\n", color_data->type);
     }
   } else {
     vector<TiffIFD*> data = mRootIFD->getIFDsWithTag(MODEL);
@@ -284,7 +284,7 @@ void Cr2Decoder::decodeMetaDataInternal(CameraMetaData *meta) {
         mRaw->metadata.wbCoeffs[1] = 1.0f;
         mRaw->metadata.wbCoeffs[2] = cam_mul[2] / green;
       } else {
-        std::cerr << "CR2 Decoder: CANONPOWERSHOTG9WB has to be BYTE, " << g9_wb->type << " found." << std::endl;
+        writeLog(DEBUG_PRIO_INFO, "CR2 Decoder: CANONPOWERSHOTG9WB has to be BYTE, %d found.", g9_wb->type);
       }
     }
   }
