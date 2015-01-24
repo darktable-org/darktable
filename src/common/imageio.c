@@ -145,6 +145,10 @@ int dt_imageio_large_thumbnail(const char *filename, uint8_t **buffer, int32_t *
     if(image_info) DestroyImageInfo(image_info);
     DestroyExceptionInfo(&exception);
     if(res) goto error;
+#else
+    fprintf(stderr, "[dt_imageio_large_thumbnail] error: The thumbnail image is not in JPEG format, but DT "
+                    "was built without GraphicsMagick. Please rebuild DT with GraphicsMagick support "
+                    "enabled.\n");
 #endif
   }
 
