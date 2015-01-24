@@ -135,22 +135,26 @@ gboolean dt_lua_gtk_wrap_callback(gpointer data)
 } 
 
 int dt_lua_gtk_wrap(lua_State*L)
-{
-  gtk_wrap_communication communication;
+{ 
   lua_pushvalue(L,lua_upvalueindex(1));
   lua_insert(L,1);
-  g_mutex_init(&communication.end_mutex);
-  g_cond_init(&communication.end_cond);
-  communication.L = L;
-  g_mutex_lock(&communication.end_mutex);
-  g_main_context_invoke(NULL,dt_lua_gtk_wrap_callback,&communication);
-  g_cond_wait(&communication.end_cond,&communication.end_mutex);
-  g_mutex_unlock(&communication.end_mutex);
-  g_mutex_clear(&communication.end_mutex);
-  if(communication.retval == LUA_OK) {
-    return lua_gettop(L);
+  if(pthread_equal(darktable.control->gui_thread, pthread_self())) {
+    return dt_lua_do_chunk_raise(L,lua_gettop(L)-1,LUA_MULTRET);
   } else {
-    return lua_error(L);
+    gtk_wrap_communication communication;
+    g_mutex_init(&communication.end_mutex);
+    g_cond_init(&communication.end_cond);
+    communication.L = L;
+    g_mutex_lock(&communication.end_mutex);
+    g_main_context_invoke(NULL,dt_lua_gtk_wrap_callback,&communication);
+    g_cond_wait(&communication.end_cond,&communication.end_mutex);
+    g_mutex_unlock(&communication.end_mutex);
+    g_mutex_clear(&communication.end_mutex);
+    if(communication.retval == LUA_OK) {
+      return lua_gettop(L);
+    } else {
+      return lua_error(L);
+    }
   }
 
 }

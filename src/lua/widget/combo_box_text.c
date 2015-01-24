@@ -26,17 +26,16 @@ typedef struct {
 
 typedef dt_lua_combo_box_text_t* lua_combo_box_text;
 
-lua_widget combo_box_text_init(lua_State* L);
-void combo_box_text_reset(lua_widget widget);
+void combo_box_text_init(lua_State* L);
 void combo_box_text_cleanup(lua_State* L,lua_widget widget);
 static dt_lua_widget_type_t combo_box_text_type = {
   .name = "combo_box_text",
   .gui_init = combo_box_text_init,
-  .gui_reset = combo_box_text_reset,
+  .gui_reset = NULL,
   .gui_cleanup = combo_box_text_cleanup,
 };
 
-lua_widget combo_box_text_init(lua_State* L)
+void combo_box_text_init(lua_State* L)
 {
   lua_combo_box_text combo_box_text = malloc(sizeof(dt_lua_combo_box_text_t));
   combo_box_text->text = NULL;
@@ -46,11 +45,9 @@ lua_widget combo_box_text_init(lua_State* L)
     combo_box_text->parent.widget = gtk_combo_box_text_new();
   }
   dt_gui_key_accel_block_on_focus_connect(gtk_bin_get_child(GTK_BIN(combo_box_text->parent.widget)));
-  return (lua_widget) combo_box_text;
-}
-
-void combo_box_text_reset(lua_widget widget)
-{
+  combo_box_text->parent.type = &combo_box_text_type;
+  luaA_push_type(L, combo_box_text_type.associated_type, &combo_box_text);
+  g_object_ref_sink(combo_box_text->parent.widget);
 }
 
 void combo_box_text_cleanup(lua_State* L,lua_widget widget)

@@ -25,31 +25,23 @@ typedef struct {
 
 typedef dt_lua_separator_t* lua_separator;
 
-lua_widget separator_init(lua_State* L);
-void separator_reset(lua_widget widget);
-void separator_cleanup(lua_State* L,lua_widget widget);
+static void separator_init(lua_State* L);
 static dt_lua_widget_type_t separator_type = {
   .name = "separator",
   .gui_init = separator_init,
-  .gui_reset = separator_reset,
-  .gui_cleanup = separator_cleanup,
+  .gui_reset = NULL,
+  .gui_cleanup = NULL,
 };
 
-lua_widget separator_init(lua_State* L)
+static void separator_init(lua_State* L)
 {
   lua_separator separator = malloc(sizeof(dt_lua_separator_t));
   dt_lua_orientation_t orientation;
   luaA_to(L,dt_lua_orientation_t,&orientation,1);
   separator->parent.widget = gtk_separator_new(orientation);
-  return (lua_widget) separator;
-}
-
-void separator_reset(lua_widget widget)
-{
-}
-
-void separator_cleanup(lua_State* L,lua_widget widget)
-{
+  separator->parent.type = &separator_type;
+  luaA_push_type(L, separator_type.associated_type, &separator);
+  g_object_ref_sink(separator->parent.widget);
 }
 
 int dt_lua_init_widget_separator(lua_State* L)

@@ -20,23 +20,20 @@
 
 typedef struct {
   dt_lua_widget_t parent;
-  char * default_label;
 } dt_lua_label_t;
 
 typedef dt_lua_label_t* lua_label;
 
-lua_widget label_init(lua_State* L);
-void label_reset(lua_widget widget);
-void label_cleanup(lua_State* L,lua_widget widget);
+static void label_init(lua_State* L);
 static dt_lua_widget_type_t label_type = {
   .name = "label",
   .gui_init = label_init,
-  .gui_reset = label_reset,
-  .gui_cleanup = label_cleanup,
+  .gui_reset = NULL,
+  .gui_cleanup = NULL,
 };
 
 
-lua_widget label_init(lua_State* L)
+static void label_init(lua_State* L)
 {
   const char * new_value = NULL;
   if(!lua_isnoneornil(L,1)){
@@ -44,41 +41,14 @@ lua_widget label_init(lua_State* L)
   }
   lua_label label = malloc(sizeof(dt_lua_label_t));
   if(new_value) {
-    label->default_label = strdup(new_value);
     label->parent.widget = gtk_label_new(new_value);
   } else {
-    label->default_label = NULL;
     label->parent.widget = gtk_label_new(NULL);
   }
+  label->parent.type = &label_type;
+  luaA_push_type(L, label_type.associated_type, &label);
+  g_object_ref_sink(label->parent.widget);
 
-
-  return (lua_widget) label;
-}
-
-void label_reset(lua_widget widget)
-{
-  lua_label label = (lua_label)widget;
-  gtk_label_set_text(GTK_LABEL(label->parent.widget),label->default_label);
-}
-
-void label_cleanup(lua_State* L,lua_widget widget)
-{
-  lua_label label = (lua_label)widget;
-  if(label->default_label) free(label->default_label);
-}
-
-static int default_label_member(lua_State *L)
-{
-  lua_label label;
-  luaA_to(L,lua_label,&label,1);
-  if(lua_gettop(L) > 2) {
-    const char * new_val =luaL_checkstring(L,3);
-    if(label->default_label) free(label->default_label);
-    label->default_label = strdup(new_val);
-    return 0;
-  }
-  lua_pushstring(L,label->default_label);
-  return 1;
 }
 
 static int label_member(lua_State *L)
@@ -102,10 +72,6 @@ int dt_lua_init_widget_label(lua_State* L)
   lua_pushcfunction(L,label_member);
   lua_pushcclosure(L,dt_lua_gtk_wrap,1);
   dt_lua_type_register(L, lua_label, "label");
-  lua_pushcfunction(L,default_label_member);
-  lua_pushcclosure(L,dt_lua_gtk_wrap,1);
-  dt_lua_type_register(L, lua_label, "default_label");
-
   return 0;
 }
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

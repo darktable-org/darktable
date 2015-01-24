@@ -25,7 +25,7 @@ typedef struct {
 
 typedef dt_lua_entry_t* lua_entry;
 
-lua_widget entry_init(lua_State* L);
+void entry_init(lua_State* L);
 void entry_reset(lua_widget widget);
 void entry_cleanup(lua_State* L,lua_widget widget);
 static dt_lua_widget_type_t entry_type = {
@@ -36,12 +36,14 @@ static dt_lua_widget_type_t entry_type = {
 };
 
 
-lua_widget entry_init(lua_State* L)
+void entry_init(lua_State* L)
 {
   lua_entry entry = malloc(sizeof(dt_lua_entry_t));
 	entry->parent.widget = gtk_entry_new();
   dt_gui_key_accel_block_on_focus_connect(GTK_WIDGET(entry->parent.widget));
-	return (lua_widget) entry;
+  entry->parent.type = &entry_type;
+  luaA_push_type(L, entry_type.associated_type, &entry);
+  g_object_ref_sink(entry->parent.widget);
 }
 
 void entry_reset(lua_widget widget)

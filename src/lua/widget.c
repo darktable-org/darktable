@@ -22,23 +22,35 @@
 #include "control/control.h"
 /**
   TODO
-  gui_cleanup not double checked
+  replace gui_init with __init ? problem is dealing with optional params of constructor
+  generic property member registration
+  generic callback registration
+  generic container registration
+  use name to save/restore states as pref like other widgets
+  have a way to save presets
+  remove gtk combo box for bauhaus version
+  move widget.c to widget/
+  check static for all widget init/cleanup/reset
+  check fot touserdata instead of luaA_to that remain
+
+  cleanup, where is the actual structure freed ?
   */
+
+
 
 static int get_widget_params(lua_State *L)
 {
   struct dt_lua_widget_type_t *widget_type = lua_touserdata(L, lua_upvalueindex(1));
-  lua_widget widget = widget_type->gui_init(L);
-  widget->type = widget_type;
-  g_object_ref_sink(widget->widget);
-  luaA_push_type(L, widget_type->associated_type, &widget);
+  widget_type->gui_init(L);
   return 1;
 }
 
 static int widget_gc(lua_State *L)
 {
   lua_widget widget = *(lua_widget*)lua_touserdata(L,1);
-  widget->type->gui_cleanup(L,widget);
+  if(widget->type->gui_cleanup) {
+    widget->type->gui_cleanup(L,widget);
+  }
   g_object_unref(widget->widget);
   return 0;
 }
@@ -66,7 +78,7 @@ static int new_widget(lua_State *L)
   return 1;
 }
 
-void dt_lua_widget_setcallback(lua_State *L,int index,const char* name)
+void dt_lua_widget_set_callback(lua_State *L,int index,const char* name)
 {
   luaL_argcheck(L, dt_lua_isa(L, index, lua_widget), index, "lua_widget expected");
   luaL_checktype(L,-1,LUA_TFUNCTION);
@@ -76,7 +88,7 @@ void dt_lua_widget_setcallback(lua_State *L,int index,const char* name)
   lua_pop(L,2);
 }
 
-void dt_lua_widget_getcallback(lua_State *L,int index,const char* name)
+void dt_lua_widget_get_callback(lua_State *L,int index,const char* name)
 {
   luaL_argcheck(L, dt_lua_isa(L, index, lua_widget), index, "lua_widget expected");
   lua_getuservalue(L,index);
@@ -84,10 +96,24 @@ void dt_lua_widget_getcallback(lua_State *L,int index,const char* name)
   lua_remove(L,-2);
 }
 
+
+
+void dt_lua_widget_trigger_callback(lua_State*L,lua_widget object,const char* name)
+{
+  luaA_push_type(L,object->type->associated_type,&object);
+  lua_getuservalue(L,-1);
+  lua_getfield(L,-1,name);
+  if(! lua_isnil(L,-1)) {
+    lua_pushvalue(L,-3);
+    dt_lua_do_chunk(L,1,0);
+  }
+  lua_pop(L,2);
+}
+
+
 typedef struct {
-  gpointer object;
+  lua_widget object;
   char * event_name;
-  luaA_Type object_type;
 }widget_callback_data;
 
 
@@ -96,12 +122,7 @@ static int32_t widget_callback_job(dt_job_t *job)
   dt_lua_lock();
   lua_State* L= darktable.lua_state.state;
   widget_callback_data* data = (widget_callback_data*)dt_control_job_get_params(job);
-  luaA_push_type(L,data->object_type,&data->object);
-  lua_getuservalue(L,-1);
-  lua_getfield(L,-1,data->event_name);
-  lua_pushvalue(L,-3);
-  dt_lua_do_chunk_later(L,1);
-  lua_pop(L,2);
+  dt_lua_widget_trigger_callback(L,data->object,data->event_name);
   free(data->event_name);
   free(data);
   dt_lua_unlock();
@@ -109,18 +130,27 @@ static int32_t widget_callback_job(dt_job_t *job)
 
 }
 
-void dt_lua_widget_trigger_callback(gpointer object,luaA_Type object_type,const char* name)
+void dt_lua_widget_trigger_callback_async(lua_widget object,const char* name)
 {
   dt_job_t *job = dt_control_job_create(&widget_callback_job, "lua: widget event");
   if(job)
   {
     widget_callback_data*data = malloc(sizeof(widget_callback_data));
     data->object = object;
-    data->object_type = object_type;
     data->event_name = strdup(name);
     dt_control_job_set_params(job, data);
     dt_control_add_job(darktable.control, DT_JOB_QUEUE_USER_FG, job);
   }
+}
+
+static int reset_member(lua_State *L)
+{
+  if(lua_gettop(L) > 2) {
+    dt_lua_widget_set_callback(L,1,"reset");
+    return 0;
+  }
+  dt_lua_widget_get_callback(L,1,"reset");
+  return 1;
 }
 
 
@@ -160,7 +190,10 @@ int dt_lua_init_widget(lua_State* L)
   lua_pushcclosure(L,dt_lua_gtk_wrap,1);
   dt_lua_type_register(L, lua_widget, "tooltip");
   lua_pushcfunction(L,widget_gc);
+  lua_pushcclosure(L,dt_lua_gtk_wrap,1);
   dt_lua_type_setmetafield(L,lua_widget,"__gc");
+  lua_pushcfunction(L,reset_member);
+  dt_lua_type_register(L, lua_widget, "reset_callback");
   
   dt_lua_init_widget_box(L);
   dt_lua_init_widget_button(L);

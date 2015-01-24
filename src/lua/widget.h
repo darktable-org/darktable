@@ -28,7 +28,7 @@ typedef struct {
 typedef dt_lua_widget_t* lua_widget;
 
 typedef struct dt_lua_widget_type_t{
-  lua_widget (*gui_init)(lua_State *L);
+  void (*gui_init)(lua_State *L);
   void (*gui_reset)(lua_widget widget);
   void (*gui_cleanup)(lua_State *L, lua_widget widget);
   const char * name;
@@ -43,17 +43,18 @@ typedef GtkOrientation dt_lua_orientation_t;
 /** pop a function from the top of the stack, 
     register as a callback named "name" for the object (not type) at index index
     */
-void dt_lua_widget_setcallback(lua_State *L,int index,const char* name);
+void dt_lua_widget_set_callback(lua_State *L,int index,const char* name);
 /** push the callback for name "name" on the stack, or nil if not available */
-void dt_lua_widget_getcallback(lua_State *L,int index,const char* name);
+void dt_lua_widget_get_callback(lua_State *L,int index,const char* name);
 /** triggers a callback for the object, 
     the callback always happen in a secondary thread with the object as unique parameter
     gpointer is the pointer to the object.
     object_tyep is the type of the lua type of the gpointer above
 
-    this function can be called without the lua lock and from the gtk main thread (that's the whole point)
+    the async function can be called without the lua lock and from the gtk main thread (that's the whole point)
  */
-void dt_lua_widget_trigger_callback(gpointer object,luaA_Type object_type,const char* name);
+void dt_lua_widget_trigger_callback(lua_State*L,lua_widget object,const char* name);
+void dt_lua_widget_trigger_callback_async(lua_widget object,const char* name);
 
 
 #define dt_lua_register_widget_type(L, widget_type, type_name)  \

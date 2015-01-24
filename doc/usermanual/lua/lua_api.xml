@@ -5718,6 +5718,38 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
     </tgroup></informaltable>
 </section>
 
+<section status="final" id="types_lua_widget_reset_callback">
+<title>types.lua_widget.reset_callback</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>reset_callback</secondary>
+</indexterm>
+<synopsis>function( 
+	<emphasis><link linkend="types_lua_widget_reset_callback_widget">widget</link></emphasis> : <link linkend="types_lua_widget">types.lua_widget</link>
+)</synopsis>
+<para>A function to call when the widget needs to reset itself</para>
+<para>Note that some widgets have a default implementation that can be overridden, (containers in particular will recursively reset their children). If you replace that default implementation you need to reimplement that functionality</para>
+<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
+    <colspec colwidth="2*"/>
+    <colspec colwidth="8*"/>
+    <tbody><row>
+    <entry>Attributes:</entry>
+    <entry><itemizedlist>
+<listitem><para><emphasis><link linkend="attributes_write">write</link></emphasis></para></listitem>
+</itemizedlist>
+</entry>
+    </row></tbody>
+    </tgroup></informaltable>
+<variablelist>
+<varlistentry id="types_lua_widget_reset_callback_widget"><term>widget</term><listitem>
+<synopsis><link linkend="types_lua_widget">types.lua_widget</link></synopsis>
+<para>The widget that triggered the callback</para>
+
+</listitem></varlistentry>
+
+</variablelist>
+</section>
+
 </section>
 
 <section status="final" id="types_dt_lua_orientation_t">
@@ -5786,27 +5818,6 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
     </tgroup></informaltable>
 </section>
 
-<section status="final" id="types_lua_check_button_default_label">
-<title>types.lua_check_button.default_label</title>
-<indexterm>
-<primary>Lua API</primary>
-<secondary>default_label</secondary>
-</indexterm>
-<synopsis>string</synopsis>
-<para>The value to set to the label when the widget is reset</para>
-<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
-    <colspec colwidth="2*"/>
-    <colspec colwidth="8*"/>
-    <tbody><row>
-    <entry>Attributes:</entry>
-    <entry><itemizedlist>
-<listitem><para><emphasis><link linkend="attributes_write">write</link></emphasis></para></listitem>
-</itemizedlist>
-</entry>
-    </row></tbody>
-    </tgroup></informaltable>
-</section>
-
 <section status="final" id="types_lua_check_button_value">
 <title>types.lua_check_button.value</title>
 <indexterm>
@@ -5815,27 +5826,6 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
 </indexterm>
 <synopsis>boolean</synopsis>
 <para>If the widget is checked or not</para>
-<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
-    <colspec colwidth="2*"/>
-    <colspec colwidth="8*"/>
-    <tbody><row>
-    <entry>Attributes:</entry>
-    <entry><itemizedlist>
-<listitem><para><emphasis><link linkend="attributes_write">write</link></emphasis></para></listitem>
-</itemizedlist>
-</entry>
-    </row></tbody>
-    </tgroup></informaltable>
-</section>
-
-<section status="final" id="types_lua_check_button_default_value">
-<title>types.lua_check_button.default_value</title>
-<indexterm>
-<primary>Lua API</primary>
-<secondary>default_value</secondary>
-</indexterm>
-<synopsis>boolean</synopsis>
-<para>If the widget should be checked when the widget is reset</para>
 <informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
     <colspec colwidth="2*"/>
     <colspec colwidth="8*"/>
@@ -5860,7 +5850,7 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
 <variablelist>
 <varlistentry id="types_lua_check_button_extra_registration_parameters_label"><term>[label]</term><listitem>
 <synopsis>string</synopsis>
-<para>The label to use, both for current and default label</para>
+<para>The label to use</para>
 
 </listitem></varlistentry>
 
@@ -5909,27 +5899,6 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
     </tgroup></informaltable>
 </section>
 
-<section status="final" id="types_lua_label_default_label">
-<title>types.lua_label.default_label</title>
-<indexterm>
-<primary>Lua API</primary>
-<secondary>default_label</secondary>
-</indexterm>
-<synopsis>string</synopsis>
-<para>The value to set to the label when the widget is reset</para>
-<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
-    <colspec colwidth="2*"/>
-    <colspec colwidth="8*"/>
-    <tbody><row>
-    <entry>Attributes:</entry>
-    <entry><itemizedlist>
-<listitem><para><emphasis><link linkend="attributes_write">write</link></emphasis></para></listitem>
-</itemizedlist>
-</entry>
-    </row></tbody>
-    </tgroup></informaltable>
-</section>
-
 <section status="final" id="types_lua_label_extra_registration_parameters">
 <title>types.lua_label.extra registration parameters</title>
 <indexterm>
@@ -5941,7 +5910,7 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
 <variablelist>
 <varlistentry id="types_lua_label_extra_registration_parameters_label"><term>[label]</term><listitem>
 <synopsis>string</synopsis>
-<para>The label to use, both for current and default label</para>
+<para>The label to use</para>
 
 </listitem></varlistentry>
 
@@ -5990,27 +5959,6 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
     </tgroup></informaltable>
 </section>
 
-<section status="final" id="types_lua_button_default_label">
-<title>types.lua_button.default_label</title>
-<indexterm>
-<primary>Lua API</primary>
-<secondary>default_label</secondary>
-</indexterm>
-<synopsis>string</synopsis>
-<para>The value to set to the label when the widget is reset</para>
-<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
-    <colspec colwidth="2*"/>
-    <colspec colwidth="8*"/>
-    <tbody><row>
-    <entry>Attributes:</entry>
-    <entry><itemizedlist>
-<listitem><para><emphasis><link linkend="attributes_write">write</link></emphasis></para></listitem>
-</itemizedlist>
-</entry>
-    </row></tbody>
-    </tgroup></informaltable>
-</section>
-
 <section status="final" id="types_lua_button_extra_registration_parameters">
 <title>types.lua_button.extra registration parameters</title>
 <indexterm>
@@ -6022,7 +5970,7 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
 <variablelist>
 <varlistentry id="types_lua_button_extra_registration_parameters_label"><term>[label]</term><listitem>
 <synopsis>string</synopsis>
-<para>The label to use, both for current and default label</para>
+<para>The label to use</para>
 
 </listitem></varlistentry>
 

@@ -693,28 +693,28 @@ darktable.debug.type:set_text([[Similar to the system function type() but it wil
   types.lua_widget:set_text("Common parent type for all lua-handled widgets");
   types.lua_widget.tooltip:set_text("Tooltip to display for the widget");
   types.lua_widget.tooltip:set_reported_type("string or nil")
+  types.lua_widget.reset_callback:set_text("A function to call when the widget needs to reset itself"..para()..
+  "Note that some widgets have a default implementation that can be overridden, (containers in particular will recursively reset their children). If you replace that default implementation you need to reimplement that functionality")
+  types.lua_widget.reset_callback:set_reported_type("function")
+  types.lua_widget.reset_callback:add_parameter("widget",types.lua_widget,"The widget that triggered the callback")
 
   types.dt_lua_orientation_t:set_text("A possible orientation for a widget")
 
   types.lua_check_button:set_text("A checkable button with a label next to it");
   types.lua_check_button.label:set_text("The label displayed next to the button");
-  types.lua_check_button.default_label:set_text("The value to set to the label when the widget is reset");
   types.lua_check_button.value:set_text("If the widget is checked or not");
-  types.lua_check_button.default_value:set_text("If the widget should be checked when the widget is reset");
 	types.lua_check_button.extra_registration_parameters:set_text("")
-	types.lua_check_button.extra_registration_parameters:add_parameter("label","string","The label to use, both for current and default label"):set_attribute("optional",true)
+	types.lua_check_button.extra_registration_parameters:add_parameter("label","string","The label to use"):set_attribute("optional",true)
 
   types.lua_label:set_text("A label containing some text");
   types.lua_label.label:set_text("The label displayed");
-  types.lua_label.default_label:set_text("The value to set to the label when the widget is reset");
 	types.lua_label.extra_registration_parameters:set_text("")
-	types.lua_label.extra_registration_parameters:add_parameter("label","string","The label to use, both for current and default label"):set_attribute("optional",true)
+	types.lua_label.extra_registration_parameters:add_parameter("label","string","The label to use"):set_attribute("optional",true)
 
   types.lua_button:set_text("A clickable button");
   types.lua_button.label:set_text("The label displayed on the button");
-  types.lua_button.default_label:set_text("The value to set to the label when the widget is reset");
 	types.lua_button.extra_registration_parameters:set_text("")
-	types.lua_button.extra_registration_parameters:add_parameter("label","string","The label to use, both for current and default label"):set_attribute("optional",true)
+	types.lua_button.extra_registration_parameters:add_parameter("label","string","The label to use"):set_attribute("optional",true)
 	types.lua_button.extra_registration_parameters:add_parameter("callback",types.lua_button.clicked_callback,"A function to call on button click"):set_attribute("optional",true)
   types.lua_button.clicked_callback:set_text("A function to call on button click")
   types.lua_button.clicked_callback:set_reported_type("function")

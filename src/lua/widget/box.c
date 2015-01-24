@@ -26,36 +26,41 @@ typedef struct {
 
 typedef dt_lua_box_t* lua_box;
 
-lua_widget box_init(lua_State* L);
-void box_reset(lua_widget widget);
+void box_init(lua_State* L);
 void box_cleanup(lua_State* L,lua_widget widget);
 static dt_lua_widget_type_t box_type = {
   .name = "box",
   .gui_init = box_init,
-  .gui_reset = box_reset,
   .gui_cleanup = box_cleanup,
 };
 
-lua_widget box_init(lua_State* L)
+static int box_reset(lua_State* L)
+{
+  lua_box box;
+  luaA_to(L,lua_box,&box,1);
+  GList*curelt = box->children;
+  while(curelt) {
+    lua_widget cur_widget = curelt->data;
+    dt_lua_widget_trigger_callback(L,cur_widget,"reset");
+    curelt = g_list_next(curelt);
+  }
+  return 0;
+}
+
+void box_init(lua_State* L)
 {
   lua_box box = malloc(sizeof(dt_lua_box_t));
   dt_lua_orientation_t orientation;
   luaA_to(L,dt_lua_orientation_t,&orientation,1);
   box->parent.widget = gtk_box_new(orientation, DT_PIXEL_APPLY_DPI(5));
   box->children = NULL;
-  return (lua_widget) box;
+  box->parent.type = &box_type;
+  luaA_push_type(L, box_type.associated_type, &box);
+  g_object_ref_sink(box->parent.widget);
+  lua_pushcfunction(L,box_reset);
+  dt_lua_widget_set_callback(L,-2,"reset");
 }
 
-void box_reset(lua_widget widget)
-{
-  lua_box box = (lua_box)widget;
-  GList*curelt = box->children;
-  while(curelt) {
-    lua_widget cur_widget = curelt->data;
-    cur_widget->type->gui_reset(cur_widget);
-    curelt = g_list_next(curelt);
-  }
-}
 
 void box_cleanup(lua_State* L,lua_widget widget)
 {
