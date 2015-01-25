@@ -4160,6 +4160,14 @@ const wb_data wb_preset[] =
   { "OLYMPUS", "E-620", Flash, 0,		{ 2.039063, 1, 1.195313, 0 } },
   { "OLYMPUS", "E-620", Flash, 7,		{ 2.276786, 1.142857, 1, 0 } },
 
+  { "OLYMPUS", "E-M1", Daylight, 0,		{ 1.9766, 1, 1.6094, 0 } },
+  { "OLYMPUS", "E-M1", Shade, 0,		{ 2.3047, 1, 1.2578, 0 } },
+  { "OLYMPUS", "E-M1", Cloudy, 0,		{ 2.1250, 1, 1.4688, 0 } },
+  { "OLYMPUS", "E-M1", Incandescent, 0,		{ 1.1484, 1, 2.8516, 0 } },
+  { "OLYMPUS", "E-M1", Fluorescent, 0,		{ 1.9219, 1, 2.2188, 0 } },
+  { "OLYMPUS", "E-M1", Underwater, 0,		{ 1.3984, 1, 2.2813, 0 } },
+  { "OLYMPUS", "E-M1", Flash, 0,		{ 2.3437, 1, 1.4219, 0 } },
+
   /* -7/+7 fine tuning is -7/+7 in amber-blue and zero in green-magenta */
   { "OLYMPUS", "E-M5", Daylight, -7,		{ 1.8047, 1, 2.0547, 0 } },
   { "OLYMPUS", "E-M5", Daylight, 0,		{ 2.1016, 1, 1.8047, 0 } },
