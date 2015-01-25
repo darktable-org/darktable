@@ -65,8 +65,7 @@ static int label_member(lua_State *L)
 
 int dt_lua_init_widget_label(lua_State* L)
 {
-  dt_lua_init_gpointer_type(L,lua_label);
-  dt_lua_register_widget_type(L,&label_type,lua_label);
+  dt_lua_init_widget_type(L,&label_type,lua_label);
 
   lua_pushcfunction(L,label_member);
   lua_pushcclosure(L,dt_lua_gtk_wrap,1);

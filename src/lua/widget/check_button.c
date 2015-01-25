@@ -78,8 +78,7 @@ static int value_member(lua_State *L)
 
 int dt_lua_init_widget_check_button(lua_State* L)
 {
-  dt_lua_init_gpointer_type(L,lua_check_button);
-  dt_lua_register_widget_type(L,&check_button_type,lua_check_button);
+  dt_lua_init_widget_type(L,&check_button_type,lua_check_button);
 
   lua_pushcfunction(L,value_member);
   lua_pushcclosure(L,dt_lua_gtk_wrap,1);

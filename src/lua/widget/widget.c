@@ -56,8 +56,9 @@ static int widget_gc(lua_State *L)
   return 0;
 }
 
-void dt_lua_register_widget_type_type(lua_State *L, dt_lua_widget_type_t* widget_type, luaA_Type type_id)
+luaA_Type dt_lua_init_widget_type_type(lua_State *L, dt_lua_widget_type_t* widget_type,const char* lua_type)
 {
+  luaA_Type type_id = dt_lua_init_gpointer_type_type(L,luaA_type_add(L,lua_type,sizeof(gpointer)));
   widget_type->associated_type = type_id;
   dt_lua_type_register_parent_type(L, type_id, luaA_type_find(L, "lua_widget"));
 
@@ -67,6 +68,7 @@ void dt_lua_register_widget_type_type(lua_State *L, dt_lua_widget_type_t* widget
   lua_pushcclosure(L,dt_lua_gtk_wrap,1);
   dt_lua_module_entry_new(L, -1, "widget", widget_type->name);
   lua_pop(L, 1);
+  return type_id;
 };
 
 

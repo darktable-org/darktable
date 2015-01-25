@@ -106,8 +106,7 @@ static int editable_member(lua_State *L)
 
 int dt_lua_init_widget_entry(lua_State* L)
 {
-  dt_lua_init_gpointer_type(L,lua_entry);
-  dt_lua_register_widget_type(L,&entry_type,lua_entry);
+  dt_lua_init_widget_type(L,&entry_type,lua_entry);
 
   lua_pushcfunction(L,text_member);
   lua_pushcclosure(L,dt_lua_gtk_wrap,1);

@@ -86,8 +86,7 @@ static int clicked_member(lua_State *L)
 
 int dt_lua_init_widget_button(lua_State* L)
 {
-  dt_lua_init_gpointer_type(L,lua_button);
-  dt_lua_register_widget_type(L,&button_type,lua_button);
+  dt_lua_init_widget_type(L,&button_type,lua_button);
 
   lua_pushcfunction(L,label_member);
   lua_pushcclosure(L,dt_lua_gtk_wrap,1);

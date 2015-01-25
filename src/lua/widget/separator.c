@@ -45,8 +45,7 @@ static void separator_init(lua_State* L)
 
 int dt_lua_init_widget_separator(lua_State* L)
 {
-  dt_lua_init_gpointer_type(L,lua_separator);
-  dt_lua_register_widget_type(L,&separator_type,lua_separator);
+  dt_lua_init_widget_type(L,&separator_type,lua_separator);
 
   return 0;
 }

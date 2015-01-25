@@ -56,9 +56,10 @@ void dt_lua_widget_trigger_callback(lua_State*L,lua_widget object,const char* na
 void dt_lua_widget_trigger_callback_async(lua_widget object,const char* name);
 
 
-#define dt_lua_register_widget_type(L, widget_type, type_name)  \
-  dt_lua_register_widget_type_type(L, widget_type, luaA_type_find(L,#type_name))
-void dt_lua_register_widget_type_type(lua_State *L, dt_lua_widget_type_t* widget_type, luaA_Type type_id);
+
+#define dt_lua_init_widget_type(L, widget_type,lua_type)  \
+  dt_lua_init_widget_type_type(L, widget_type, #lua_type)
+luaA_Type dt_lua_init_widget_type_type(lua_State *L, dt_lua_widget_type_t* widget_type,const char* lua_type);
 
 
 int dt_lua_init_widget(lua_State *L);

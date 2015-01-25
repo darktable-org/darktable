@@ -102,8 +102,7 @@ static int box_numindex(lua_State*L)
 
 int dt_lua_init_widget_box(lua_State* L)
 {
-  dt_lua_init_gpointer_type(L,lua_box);
-  dt_lua_register_widget_type(L,&box_type,lua_box);
+  dt_lua_init_widget_type(L,&box_type,lua_box);
   lua_pushcfunction(L, box_append);
   lua_pushcclosure(L, dt_lua_type_member_common, 1);
   dt_lua_type_register_const(L, lua_box, "append");

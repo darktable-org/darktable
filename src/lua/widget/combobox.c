@@ -110,8 +110,7 @@ static int value_member(lua_State*L)
 
 int dt_lua_init_widget_combobox(lua_State* L)
 {
-  dt_lua_init_gpointer_type(L,lua_combobox);
-  dt_lua_register_widget_type(L,&combobox_type,lua_combobox);
+  dt_lua_init_widget_type(L,&combobox_type,lua_combobox);
 
   lua_pushcfunction(L,combobox_len);
   lua_pushcclosure(L,dt_lua_gtk_wrap,1);
