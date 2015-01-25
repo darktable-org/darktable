@@ -631,7 +631,7 @@ end_query_cache:
           dt_selection_select_single(darktable.selection, id);
         }
         missing += dt_view_image_expose(&(lib->image_over), id, cr, wd, iir == 1 ? height : ht, iir, img_pointerx,
-                             img_pointery, FALSE);
+                             img_pointery, FALSE, FALSE);
 
         cairo_restore(cr);
       }
@@ -1067,7 +1067,7 @@ static int expose_zoomable(dt_view_t *self, cairo_t *cr, int32_t width, int32_t 
         cairo_save(cr);
         // if(zoom == 1) dt_image_prefetch(image, DT_IMAGE_MIPF);
         missing += dt_view_image_expose(&(lib->image_over), id, cr, wd, zoom == 1 ? height : ht, zoom, img_pointerx,
-                             img_pointery, FALSE);
+                             img_pointery, FALSE, FALSE);
         cairo_restore(cr);
         if(zoom == 1)
         {
@@ -1181,7 +1181,7 @@ int expose_full_preview(dt_view_t *self, cairo_t *cr, int32_t width, int32_t hei
       dt_image_full_path(lib->full_preview_id, filename, sizeof(filename), &from_cache);
       free(lib->full_res_thumb);
       lib->full_res_thumb = NULL;
-      if(!dt_imageio_large_thumbnail(filename, &lib->full_res_thumb, 
+      if(!dt_imageio_large_thumbnail(filename, &lib->full_res_thumb,
                                                &lib->full_res_thumb_wd,
                                                &lib->full_res_thumb_ht)) {
         lib->full_res_thumb_orientation = ORIENTATION_NONE;
@@ -1254,7 +1254,7 @@ int expose_full_preview(dt_view_t *self, cairo_t *cr, int32_t width, int32_t hei
   else
 #endif
   const int missing = dt_view_image_expose(&(lib->image_over), lib->full_preview_id, cr,
-                                           width, height, 1, pointerx, pointery, TRUE);
+                                           width, height, 1, pointerx, pointery, TRUE, FALSE);
 
   if(lib->display_focus && (lib->full_res_thumb_id == lib->full_preview_id))
     dt_focus_draw_clusters(cr, width, height, lib->full_preview_id, lib->full_res_thumb_wd,
