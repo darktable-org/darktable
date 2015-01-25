@@ -244,7 +244,8 @@ void dt_print_file(const int32_t imgid, const char *filename, const dt_print_inf
 
   // disable cm on CUPS, this is important as dt does the cm
 
-  num_options = cupsAddOption("cm-calibration", "true", num_options, &options);
+  if (*pinfo->printer.profile)
+    num_options = cupsAddOption("cm-calibration", "true", num_options, &options);
 
   // media to print on
 
