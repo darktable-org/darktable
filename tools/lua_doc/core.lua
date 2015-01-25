@@ -698,6 +698,8 @@ function M.all_children(node)
     local res
     if k == "box" or k == "separator" then
       res = v("horizontal","")
+    elseif k == "file_chooser_button" then
+      res = v(true,"")
     else
       res = v("")
     end

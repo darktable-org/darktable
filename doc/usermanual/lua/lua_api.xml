@@ -470,6 +470,7 @@
 <listitem><para>check_button</para></listitem>
 <listitem><para>combobox</para></listitem>
 <listitem><para>entry</para></listitem>
+<listitem><para>file_chooser_button</para></listitem>
 <listitem><para>label</para></listitem>
 <listitem><para>separator</para></listitem>
 </itemizedlist>
@@ -6301,6 +6302,93 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
 <varlistentry id="types_lua_combobox_extra_registration_parameters_editable"><term>editable</term><listitem>
 <synopsis>boolean</synopsis>
 <para>True if the combo box should be editable by the user</para>
+
+</listitem></varlistentry>
+
+</variablelist>
+</section>
+
+</section>
+
+<section status="final" id="types_lua_file_chooser_button">
+<title>types.lua_file_chooser_button</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>lua_file_chooser_button</secondary>
+</indexterm>
+<synopsis>dt_type</synopsis>
+<para>A button that allows the user to select an existing file</para>
+<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
+    <colspec colwidth="2*"/>
+    <colspec colwidth="8*"/>
+    <tbody><row>
+    <entry>Attributes:</entry>
+    <entry><itemizedlist>
+<listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_lua_widget">types.lua_widget</link></para></listitem>
+</itemizedlist>
+</entry>
+    </row></tbody>
+    </tgroup></informaltable>
+<section status="final" id="types_lua_file_chooser_button_title">
+<title>types.lua_file_chooser_button.title</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>title</secondary>
+</indexterm>
+<synopsis>string</synopsis>
+<para>The title of the window when choosing a file</para>
+<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
+    <colspec colwidth="2*"/>
+    <colspec colwidth="8*"/>
+    <tbody><row>
+    <entry>Attributes:</entry>
+    <entry><itemizedlist>
+<listitem><para><emphasis><link linkend="attributes_write">write</link></emphasis></para></listitem>
+</itemizedlist>
+</entry>
+    </row></tbody>
+    </tgroup></informaltable>
+</section>
+
+<section status="final" id="types_lua_file_chooser_button_value">
+<title>types.lua_file_chooser_button.value</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>value</secondary>
+</indexterm>
+<synopsis>string</synopsis>
+<para>The currently selected file</para>
+<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
+    <colspec colwidth="2*"/>
+    <colspec colwidth="8*"/>
+    <tbody><row>
+    <entry>Attributes:</entry>
+    <entry><itemizedlist>
+<listitem><para><emphasis><link linkend="attributes_write">write</link></emphasis></para></listitem>
+</itemizedlist>
+</entry>
+    </row></tbody>
+    </tgroup></informaltable>
+</section>
+
+<section status="final" id="types_lua_file_chooser_button_extra_registration_parameters">
+<title>types.lua_file_chooser_button.extra registration parameters</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>extra registration parameters</secondary>
+</indexterm>
+<para></para>
+
+<variablelist>
+<varlistentry id="types_lua_file_chooser_button_extra_registration_parameters_directory_only"><term>[directory_only]</term><listitem>
+<synopsis>boolean</synopsis>
+<para>True if the selection menu should allow only directorie</para>
+
+</listitem></varlistentry>
+
+<varlistentry id="types_lua_file_chooser_button_extra_registration_parameters_title"><term>[title]</term><listitem>
+<synopsis>string</synopsis>
+<para>The tile for the selection window</para>
 
 </listitem></varlistentry>
 

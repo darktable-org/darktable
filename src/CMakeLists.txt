@@ -485,6 +485,7 @@ if(USE_LUA)
       "lua/widget/check_button.c"
       "lua/widget/combobox.c"
       "lua/widget/entry.c"
+      "lua/widget/file_chooser.c"
       "lua/widget/label.c"
       "lua/widget/separator.c"
       )

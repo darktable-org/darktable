@@ -755,6 +755,14 @@ darktable.debug.type:set_text([[Similar to the system function type() but it wil
 	types.lua_combobox.extra_registration_parameters:set_text("")
 	types.lua_combobox.extra_registration_parameters:add_parameter("editable","boolean","True if the combo box should be editable by the user")
 
+  types.lua_file_chooser_button:set_text("A button that allows the user to select an existing file")
+  types.lua_file_chooser_button.title:set_text("The title of the window when choosing a file")
+  types.lua_file_chooser_button.value:set_text("The currently selected file")
+  types.lua_file_chooser_button.value:set_reported_type("string")
+  types.lua_file_chooser_button.extra_registration_parameters:set_text("")
+  types.lua_file_chooser_button.extra_registration_parameters:add_parameter("directory_only","boolean","True if the selection menu should allow only directorie"):set_attribute("optional",true)
+  types.lua_file_chooser_button.extra_registration_parameters:add_parameter("title","string","The tile for the selection window"):set_attribute("optional",true)
+
 	----------------------
 	--  EVENTS          --
 	----------------------

@@ -64,6 +64,7 @@ void dt_lua_register_widget_type_type(lua_State *L, dt_lua_widget_type_t* widget
   // add to the table
   lua_pushlightuserdata(L, widget_type);
   lua_pushcclosure(L, get_widget_params, 1);
+  lua_pushcclosure(L,dt_lua_gtk_wrap,1);
   dt_lua_module_entry_new(L, -1, "widget", widget_type->name);
   lua_pop(L, 1);
 };
@@ -179,6 +180,7 @@ extern int dt_lua_init_widget_button(lua_State* L);
 extern int dt_lua_init_widget_check_button(lua_State* L);
 extern int dt_lua_init_widget_label(lua_State* L);
 extern int dt_lua_init_widget_entry(lua_State* L);
+extern int dt_lua_init_widget_file_chooser_button(lua_State* L);
 extern int dt_lua_init_widget_separator(lua_State* L);
 extern int dt_lua_init_widget_combobox(lua_State* L);
 
@@ -202,6 +204,7 @@ int dt_lua_init_widget(lua_State* L)
   dt_lua_init_widget_combobox(L);
   dt_lua_init_widget_label(L);
   dt_lua_init_widget_entry(L);
+  dt_lua_init_widget_file_chooser_button(L);
   dt_lua_init_widget_separator(L);
 
   luaA_enum(L,dt_lua_orientation_t);
