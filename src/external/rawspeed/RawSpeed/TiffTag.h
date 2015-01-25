@@ -325,6 +325,7 @@ typedef enum {
   KODAK_KDC_OFFSET = 0xFD04,
   KODAK_KDC_WIDTH = 0xFD00,
   KODAK_KDC_HEIGHT = 0xFD01,
+  KODAK_IFD2 = 0xFE00,
 } TiffTag;
 
 } // namespace RawSpeed
