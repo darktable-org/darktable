@@ -23,7 +23,6 @@
 /**
   TODO
   generic property member registration
-  generic callback registration for gtk signals
   generic container registration
   use name to save/restore states as pref like other widgets
   have a way to save presets
@@ -36,11 +35,21 @@
   */
 
 
-
 static int get_widget_params(lua_State *L)
 {
   struct dt_lua_widget_type_t *widget_type = lua_touserdata(L, lua_upvalueindex(1));
   widget_type->gui_init(L);
+
+  lua_widget widget;
+  luaA_to(L,lua_widget,&widget,-1);
+  luaL_getmetafield(L,-1,"__gtk_signals");
+  lua_pushnil(L); /* first key */
+  while(lua_next(L, -2) != 0)
+  {
+    g_signal_connect(widget->widget, lua_tostring(L,-2), G_CALLBACK(lua_touserdata(L,-1)), widget);
+    lua_pop(L,1);
+  }
+  lua_pop(L,1);
   return 1;
 }
 
@@ -62,6 +71,8 @@ luaA_Type dt_lua_init_widget_type_type(lua_State *L, dt_lua_widget_type_t* widge
   widget_type->associated_type = type_id;
   dt_lua_type_register_parent_type(L, type_id, luaA_type_find(L, "lua_widget"));
 
+  lua_newtable(L);
+  dt_lua_type_setmetafield_type(L,type_id,"__gtk_signals");
   // add to the table
   lua_pushlightuserdata(L, widget_type);
   lua_pushcclosure(L, get_widget_params, 1);
@@ -175,6 +186,32 @@ static int tooltip_member(lua_State *L)
   lua_pushstring(L,result);
   free(result);
   return 1;
+}
+
+static int gtk_signal_member(lua_State *L)
+{
+
+  const char *signal = lua_tostring(L,lua_upvalueindex(1));
+  if(lua_gettop(L) > 2) {
+    dt_lua_widget_set_callback(L,1,signal);
+    return 0;
+  }
+  dt_lua_widget_get_callback(L,1,signal);
+  return 1;
+}
+
+void dt_lua_widget_register_gtk_callback_type(lua_State *L,luaA_Type type_id,const char* signal_name, const char* lua_name,GCallback callback) 
+{
+  lua_pushstring(L,signal_name);
+  lua_pushcclosure(L,gtk_signal_member,1);
+  dt_lua_type_register_type(L, type_id, lua_name);
+
+  luaL_newmetatable(L, luaA_typename(L, type_id));
+  lua_getfield(L,-1,"__gtk_signals");
+  lua_pushlightuserdata(L,callback);
+  lua_setfield(L,-2,signal_name);
+  lua_pop(L,2);
+  
 }
 
 extern int dt_lua_init_widget_box(lua_State* L);

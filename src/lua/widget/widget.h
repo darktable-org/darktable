@@ -55,6 +55,10 @@ void dt_lua_widget_get_callback(lua_State *L,int index,const char* name);
 void dt_lua_widget_trigger_callback(lua_State*L,lua_widget object,const char* name);
 void dt_lua_widget_trigger_callback_async(lua_widget object,const char* name);
 
+/* wrapper to automatically implement a callback on a GTK signal */
+#define dt_lua_widget_register_gtk_callback(L,widget_type,signal_name,lua_name,callback) \
+  dt_lua_widget_register_gtk_callback_type(L,luaA_type_find(L, #widget_type),signal_name,lua_name,callback)
+void dt_lua_widget_register_gtk_callback_type(lua_State *L,luaA_Type type_id,const char* signal_name, const char* lua_name,GCallback callback); 
 
 
 #define dt_lua_init_widget_type(L, widget_type,lua_type)  \

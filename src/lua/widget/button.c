@@ -31,7 +31,7 @@ static dt_lua_widget_type_t button_type = {
   .gui_cleanup = NULL,
 };
 
-static void lua_button_callback(GtkButton *widget, gpointer user_data)
+static void clicked_callback(GtkButton *widget, gpointer user_data)
 {
   dt_lua_widget_trigger_callback_async((lua_widget)user_data,"clicked");
 }
@@ -49,11 +49,11 @@ static void button_init(lua_State* L)
     button->parent.widget = gtk_button_new();
   }
   if(!lua_isnoneornil(L,2)){
-    dt_lua_widget_set_callback(L,2,"clicked");
+    lua_pushvalue(L,2);
+    dt_lua_widget_set_callback(L,1,"clicked");
   }
 
 
-  g_signal_connect(button->parent.widget, "clicked", G_CALLBACK(lua_button_callback), button);
   button->parent.type = &button_type;
   luaA_push_type(L, button_type.associated_type, &button);
   g_object_ref_sink(button->parent.widget);
@@ -74,16 +74,6 @@ static int label_member(lua_State *L)
   return 1;
 }
 
-static int clicked_member(lua_State *L)
-{
-  if(lua_gettop(L) > 2) {
-    dt_lua_widget_set_callback(L,1,"clicked");
-    return 0;
-  }
-  dt_lua_widget_get_callback(L,1,"clicked");
-  return 1;
-}
-
 int dt_lua_init_widget_button(lua_State* L)
 {
   dt_lua_init_widget_type(L,&button_type,lua_button);
@@ -91,8 +81,7 @@ int dt_lua_init_widget_button(lua_State* L)
   lua_pushcfunction(L,label_member);
   lua_pushcclosure(L,dt_lua_gtk_wrap,1);
   dt_lua_type_register(L, lua_button, "label");
-  lua_pushcfunction(L,clicked_member);
-  dt_lua_type_register(L, lua_button, "clicked_callback");
+  dt_lua_widget_register_gtk_callback(L,lua_button,"clicked","clicked_callback",G_CALLBACK(clicked_callback));
 
   return 0;
 }
