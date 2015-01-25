@@ -22,6 +22,7 @@
 #include "develop/tiling.h"
 #include "bauhaus/bauhaus.h"
 #include "gui/gtk.h"
+#include "gui/accelerators.h"
 
 #include <gtk/gtk.h>
 #include <stdlib.h>
@@ -37,6 +38,10 @@ typedef struct dt_iop_rawprepare_params_t
 
 typedef struct dt_iop_rawprepare_gui_data_t
 {
+  GtkWidget *box_raw;
+  GtkWidget *black_level_separate[4];
+  GtkWidget *white_point;
+  GtkWidget *label_non_raw;
 } dt_iop_rawprepare_gui_data_t;
 
 typedef struct dt_iop_rawprepare_data_t
@@ -58,6 +63,32 @@ int flags()
 int groups()
 {
   return IOP_GROUP_BASIC;
+}
+
+void init_key_accels(dt_iop_module_so_t *self)
+{
+  for(int i = 0; i < 4; i++)
+  {
+    gchar *label = g_strdup_printf(_("black level %i"), i);
+    dt_accel_register_slider_iop(self, FALSE, NC_("accel", label));
+    g_free(label);
+  }
+
+  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "white point"));
+}
+
+void connect_key_accels(dt_iop_module_t *self)
+{
+  dt_iop_rawprepare_gui_data_t *g = (dt_iop_rawprepare_gui_data_t *)self->gui_data;
+
+  for(int i = 0; i < 4; i++)
+  {
+    gchar *label = g_strdup_printf(_("black level %i"), i);
+    dt_accel_connect_slider_iop(self, label, g->black_level_separate[i]);
+    g_free(label);
+  }
+
+  dt_accel_connect_slider_iop(self, "white point", GTK_WIDGET(g->white_point));
 }
 
 void tiling_callback(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const dt_iop_roi_t *const roi_in,
@@ -221,13 +252,84 @@ void cleanup(dt_iop_module_t *self)
 
 void gui_update(dt_iop_module_t *self)
 {
+  dt_iop_rawprepare_gui_data_t *g = (dt_iop_rawprepare_gui_data_t *)self->gui_data;
+  dt_iop_rawprepare_params_t *p = (dt_iop_rawprepare_params_t *)self->params;
+
+  for(int i = 0; i < 4; i++)
+  {
+    dt_bauhaus_slider_set_soft(g->black_level_separate[i], p->raw_black_level_separate[i]);
+    dt_bauhaus_slider_set_default(g->black_level_separate[i], p->raw_black_level_separate[i]);
+  }
+
+  dt_bauhaus_slider_set_soft(g->white_point, p->raw_white_point);
+  dt_bauhaus_slider_set_default(g->white_point, p->raw_white_point);
+
+  if(self->default_enabled)
+  {
+    gtk_widget_show(g->box_raw);
+    gtk_widget_hide(g->label_non_raw);
+  }
+  else
+  {
+    gtk_widget_hide(g->box_raw);
+    gtk_widget_show(g->label_non_raw);
+  }
+}
+
+static void callback(GtkWidget *widget, gpointer *user_data)
+{
+  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
+  if(self->dt->gui->reset) return;
+
+  dt_iop_rawprepare_gui_data_t *g = (dt_iop_rawprepare_gui_data_t *)self->gui_data;
+  dt_iop_rawprepare_params_t *p = (dt_iop_rawprepare_params_t *)self->params;
+
+  for(int i = 0; i < 4; i++)
+    p->raw_black_level_separate[i] = dt_bauhaus_slider_get(g->black_level_separate[i]);
+  p->raw_white_point = dt_bauhaus_slider_get(g->white_point);
+
+  dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
 void gui_init(dt_iop_module_t *self)
 {
   self->gui_data = malloc(sizeof(dt_iop_rawprepare_gui_data_t));
-  // dt_iop_rawprepare_gui_data_t *g = (dt_iop_rawprepare_gui_data_t *)self->gui_data;
+
+  dt_iop_rawprepare_gui_data_t *g = (dt_iop_rawprepare_gui_data_t *)self->gui_data;
+  dt_iop_rawprepare_params_t *p = (dt_iop_rawprepare_params_t *)self->params;
+
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
+
+  g->box_raw = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
+
+  for(int i = 0; i < 4; i++)
+  {
+    gchar *label = g_strdup_printf(_("black level %i"), i);
+
+    g->black_level_separate[i]
+        = dt_bauhaus_slider_new_with_range(self, 0, 16384, 1, p->raw_black_level_separate[i], 0);
+    dt_bauhaus_widget_set_label(g->black_level_separate[i], NULL, label);
+    g_object_set(G_OBJECT(g->black_level_separate[i]), "tooltip-text", label, (char *)NULL);
+    gtk_box_pack_start(GTK_BOX(g->box_raw), g->black_level_separate[i], FALSE, FALSE, 0);
+    dt_bauhaus_slider_enable_soft_boundaries(g->black_level_separate[i], 0, UINT16_MAX);
+    g_signal_connect(G_OBJECT(g->black_level_separate[i]), "value-changed", G_CALLBACK(callback), self);
+
+    g_free(label);
+  }
+
+  g->white_point = dt_bauhaus_slider_new_with_range(self, 0, 16384, 1, p->raw_white_point, 0);
+  dt_bauhaus_widget_set_label(g->white_point, NULL, _("white point"));
+  g_object_set(G_OBJECT(g->white_point), "tooltip-text", _("white point"), (char *)NULL);
+  gtk_box_pack_start(GTK_BOX(g->box_raw), g->white_point, FALSE, FALSE, 0);
+  dt_bauhaus_slider_enable_soft_boundaries(g->white_point, 0, UINT16_MAX);
+  g_signal_connect(G_OBJECT(g->white_point), "value-changed", G_CALLBACK(callback), self);
+
+  gtk_box_pack_start(GTK_BOX(self->widget), g->box_raw, FALSE, FALSE, 0);
+
+  g->label_non_raw
+      = gtk_label_new(_("raw black/white point correction\nonly works for the sensors that need it."));
+  gtk_widget_set_halign(g->label_non_raw, GTK_ALIGN_START);
+  gtk_box_pack_start(GTK_BOX(self->widget), g->label_non_raw, FALSE, FALSE, 0);
 }
 
 void gui_cleanup(dt_iop_module_t *self)
