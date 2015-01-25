@@ -39,20 +39,25 @@ RawImage KdcDecoder::decodeRawInternal() {
   if (7 != compression)
     ThrowRDE("KDC Decoder: Unsupported compression %d", compression);
 
-  TiffEntry *ex = mRootIFD->getEntryRecursive(PIXELXDIMENSION);
-  TiffEntry *ey = mRootIFD->getEntryRecursive(PIXELYDIMENSION);
-
-  if (NULL == ex || NULL == ey)
+  uint32 width = 0;
+  uint32 height = 0;
+  TiffEntry *ew = mRootIFD->getEntryRecursive(KODAK_KDC_WIDTH);
+  TiffEntry *eh = mRootIFD->getEntryRecursive(KODAK_KDC_HEIGHT);
+  if (ew && eh) {
+    width = ew->getInt()+80;
+    height = eh->getInt()+70;
+  } else
     ThrowRDE("KDC Decoder: Unable to retrieve image size");
-
-  uint32 width = ex->getInt();
-  uint32 height = ey->getInt();
 
   TiffEntry *offset = mRootIFD->getEntryRecursive(KODAK_KDC_OFFSET);
   if (!offset || offset->count < 13)
     ThrowRDE("KDC Decoder: Couldn't find the KDC offset");
   const uint32 *offsetarray = offset->getIntArray();
   uint32 off = offsetarray[4] + offsetarray[12];
+
+  // Offset hardcoding gotten from dcraw
+  if (hints.find("easyshare_offset_hack") != hints.end())
+    off = off < 0x15000 ? 0x15000 : 0x17000;
 
   mRaw->dim = iPoint2D(width, height);
   mRaw->createData();

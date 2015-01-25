@@ -6192,6 +6192,19 @@
 		<Crop x="0" y="0" width="0" height="0"/>
 		<Sensor black="0" white="4095"/>
 	</Camera>
+	<Camera make="EASTMAN KODAK COMPANY" model="KODAK EASYSHARE Z1015 IS DIGITAL CAMERA">
+		<CFA width="2" height="2">
+			<Color x="0" y="0">BLUE</Color>
+			<Color x="1" y="0">GREEN</Color>
+			<Color x="0" y="1">GREEN</Color>
+			<Color x="1" y="1">RED</Color>
+		</CFA>
+		<Crop x="0" y="0" width="0" height="0"/>
+		<Sensor black="0" white="4095"/>
+		<Hints>
+			<Hint name="easyshare_offset_hack" value=""/>
+		</Hints>
+	</Camera>
 	<Camera make="SEIKO EPSON CORP." model="R-D1">
 		<CFA width="2" height="2">
 			<Color x="0" y="0">RED</Color>
