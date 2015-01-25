@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2015-01-24 17:48+0100\n"
-"PO-Revision-Date: 2015-01-24 23:16+0100\n"
+"PO-Revision-Date: 2015-01-25 14:54+0100\n"
 "Last-Translator: Ger Siemerink <g.siemerink@gmail.com>\n"
 "Language-Team: Ger Siemerink <g.siemerink@gmail.com>\n"
 "Language: nl_NL\n"
@@ -696,7 +696,7 @@ msgstr "grafische vormgeving, fotografie, raw;"
 #: ../src/cli/main.c:51
 #, c-format
 msgid "creating cache directories\n"
-msgstr ""
+msgstr "aanmaak cache mappen\n"
 
 #: ../src/cli/main.c:56
 #, fuzzy, c-format
@@ -724,7 +724,7 @@ msgstr "dit bestand bestaat al, het krijgt een andere naam"
 #: ../src/cli/main.c:273
 #, c-format
 msgid "creating complete lighttable thumbnail cache\n"
-msgstr ""
+msgstr "aanmaak complete bibliotheek-miniaturen cache\n"
 
 #: ../src/cli/main.c:288
 #, c-format
@@ -1077,9 +1077,8 @@ msgid "updated xmp sidecar files found"
 msgstr "bijgewerkt xmp bestand gevonden"
 
 #: ../src/control/crawler.c:363
-#, fuzzy
 msgid "_Close"
-msgstr "afsluiten"
+msgstr "_Close"
 
 #: ../src/control/crawler.c:379 ../src/libs/select.c:94
 msgid "select all"
@@ -1285,15 +1284,13 @@ msgstr "selecteer map"
 #: ../src/libs/copy_history.c:70 ../src/libs/geotagging.c:439
 #: ../src/libs/import.c:638 ../src/libs/import.c:733 ../src/libs/lib.c:216
 #: ../src/libs/styles.c:210 ../src/libs/styles.c:230
-#, fuzzy
 msgid "_Cancel"
-msgstr "annuleer"
+msgstr "_Cancel"
 
 #: ../src/control/jobs/control_jobs.c:1147
 #: ../src/control/jobs/control_jobs.c:1201
-#, fuzzy
 msgid "_Select as destination"
-msgstr "bestemming"
+msgstr "_Select as destination"
 
 #: ../src/control/jobs/control_jobs.c:1165
 #, c-format
@@ -2460,14 +2457,13 @@ msgid "Select _All"
 msgstr "selecteer alles"
 
 #: ../src/gui/hist_dialog.c:138
-#, fuzzy
 msgid "_Clear"
-msgstr "wis"
+msgstr "_Clear"
 
 #: ../src/gui/hist_dialog.c:138 ../src/gui/preferences.c:1174
 #: ../src/gui/presets.c:385 ../src/libs/lib.c:215
 msgid "_OK"
-msgstr ""
+msgstr "_OK"
 
 #: ../src/gui/hist_dialog.c:160 ../src/gui/styles_dialog.c:334
 #: ../src/gui/styles_dialog.c:343
@@ -2603,7 +2599,7 @@ msgstr "kies bestand voor export"
 #: ../src/gui/preferences.c:1012 ../src/gui/styles_dialog.c:285
 #: ../src/libs/styles.c:211
 msgid "_Save"
-msgstr ""
+msgstr "_Save"
 
 #. Zero value indicates import
 #: ../src/gui/preferences.c:1033
@@ -2614,7 +2610,7 @@ msgstr "kies bestand voor import"
 #: ../src/libs/copy_history.c:71 ../src/libs/geotagging.c:440
 #: ../src/libs/import.c:639 ../src/libs/import.c:734 ../src/libs/styles.c:231
 msgid "_Open"
-msgstr ""
+msgstr "_Open"
 
 #: ../src/gui/preferences.c:1073
 msgid ""
@@ -2954,6 +2950,9 @@ msgid ""
 "either one from the list or \"<width> [unit] x <height> <unit>\n"
 "example: 210 mm x 2.97 cm"
 msgstr ""
+"papier formaat van de pdf\n"
+"of een uit de list of  \"<breedte> [eenheid] x <hoogte> <eenheid>\n"
+"bijvoorbeeld: 210 mm x 2.97 cm"
 
 #: ../src/imageio/format/pdf.c:556
 msgid "page orientation"
@@ -3047,7 +3046,7 @@ msgstr "insluiten ICC profiel"
 
 #: ../src/imageio/format/pdf.c:633
 msgid "images can be tagged with their icc profile"
-msgstr ""
+msgstr "afbeeldingen kunnen worden gelabeld met hun icc profiel"
 
 #: ../src/imageio/format/pdf.c:639 ../src/imageio/format/png.c:470
 #: ../src/imageio/format/tiff.c:413
@@ -3077,6 +3076,9 @@ msgid ""
 "uncompressed -- fast but big files\n"
 "deflate -- smaller files but slower"
 msgstr ""
+"gebruikte methode voor compressie\n"
+"niet gecomprimeerd -- snel met grootte bestanden\n"
+"deflate -- kleinere bestanden maar langzamer"
 
 #: ../src/imageio/format/pdf.c:666
 #, fuzzy
@@ -8210,11 +8212,11 @@ msgstr "moduul groepen"
 #: ../src/libs/modulegroups.c:108
 msgid "show only your favourite modules (selected in `more modules' below)"
 msgstr ""
+"toon alleen favoriete modulen (hieronder geselecteerd in `overige modulen')"
 
 #: ../src/libs/modulegroups.c:114
-#, fuzzy
 msgid "show only active modules"
-msgstr "toon module"
+msgstr "toon alleen actieve modulen"
 
 #: ../src/libs/modulegroups.c:120
 msgid "basic group"
@@ -8233,7 +8235,6 @@ msgid "tone group"
 msgstr "modulen om tonen te beïnvloeden"
 
 #: ../src/libs/modulegroups.c:140
-#, fuzzy
 msgid "effects group"
 msgstr "modulen voor speciale effecten"
 
