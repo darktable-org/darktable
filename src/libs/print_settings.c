@@ -69,6 +69,7 @@ typedef struct dt_lib_print_settings_t
   dt_print_info_t prt;
   uint16_t *buf;
   int32_t image_id;
+  int unit;
 } dt_lib_print_settings_t;
 
 typedef struct dt_lib_export_profile_t
@@ -83,6 +84,8 @@ typedef struct _dialog_description
 {
   const char *name;
 } dialog_description_t;
+
+static double units[3] = {1.0, 0.1, 1.0/25.4};
 
 int
 position ()
@@ -434,6 +437,11 @@ _paper_changed (GtkWidget *combo, dt_lib_module_t *self)
   dt_view_print_settings(darktable.view_manager, &ps->prt);
 }
 
+static double to_mm(dt_lib_print_settings_t *ps, double value)
+{
+  return value / units[ps->unit];
+}
+
 static void
 _update_slider (dt_lib_print_settings_t *ps)
 {
@@ -447,13 +455,13 @@ _top_border_callback (GtkWidget *spin, gpointer user_data)
   dt_lib_print_settings_t *ps = (dt_lib_print_settings_t *)self->data;
   const double value = gtk_spin_button_get_value(GTK_SPIN_BUTTON(spin));
 
-  ps->prt.page.margin_top = value;
+  ps->prt.page.margin_top = to_mm(ps, value);
 
   if (ps->lock_activated == TRUE)
   {
-    ps->prt.page.margin_bottom = value;
-    ps->prt.page.margin_left = value;
-    ps->prt.page.margin_right = value;
+    ps->prt.page.margin_bottom = to_mm(ps, value);
+    ps->prt.page.margin_left = to_mm(ps, value);
+    ps->prt.page.margin_right = to_mm(ps, value);
 
     gtk_spin_button_set_value(GTK_SPIN_BUTTON(ps->b_bottom), value);
     gtk_spin_button_set_value(GTK_SPIN_BUTTON(ps->b_left), value);
@@ -470,7 +478,7 @@ _bottom_border_callback (GtkWidget *spin, gpointer user_data)
   dt_lib_print_settings_t *ps = (dt_lib_print_settings_t *)self->data;
   const double value = gtk_spin_button_get_value(GTK_SPIN_BUTTON(spin));
 
-  ps->prt.page.margin_bottom = value;
+  ps->prt.page.margin_bottom = to_mm(ps, value);
   _update_slider (ps);
 }
 
@@ -481,7 +489,7 @@ _left_border_callback (GtkWidget *spin, gpointer user_data)
   dt_lib_print_settings_t *ps = (dt_lib_print_settings_t *)self->data;
   const double value = gtk_spin_button_get_value(GTK_SPIN_BUTTON(spin));
 
-  ps->prt.page.margin_left = value;
+  ps->prt.page.margin_left = to_mm(ps, value);
   _update_slider (ps);
 }
 
@@ -492,7 +500,7 @@ _right_border_callback (GtkWidget *spin, gpointer user_data)
   dt_lib_print_settings_t *ps = (dt_lib_print_settings_t *)self->data;
   const double value = gtk_spin_button_get_value(GTK_SPIN_BUTTON(spin));
 
-  ps->prt.page.margin_right = value;
+  ps->prt.page.margin_right = to_mm(ps, value);
   _update_slider (ps);
 }
 
@@ -513,11 +521,6 @@ _lock_callback (GtkWidget *button, gpointer user_data)
   //  get value of top and set it to all other borders
 
   const double value = gtk_spin_button_get_value(GTK_SPIN_BUTTON(ps->b_top));
-
-  ps->prt.page.margin_bottom = value;
-  ps->prt.page.margin_left = value;
-  ps->prt.page.margin_right = value;
-
   gtk_spin_button_set_value(GTK_SPIN_BUTTON(ps->b_bottom), value);
   gtk_spin_button_set_value(GTK_SPIN_BUTTON(ps->b_left), value);
   gtk_spin_button_set_value(GTK_SPIN_BUTTON(ps->b_right), value);
@@ -558,6 +561,37 @@ _orientation_callback (GtkWidget *radio, gpointer user_data)
   dt_lib_print_settings_t *ps = (dt_lib_print_settings_t *)self->data;
 
   ps->prt.page.landscape = !gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON(ps->portrait));
+
+  _update_slider (ps);
+}
+
+static void
+_unit_changed (GtkWidget *combo, dt_lib_module_t *self)
+{
+  dt_lib_print_settings_t *ps = (dt_lib_print_settings_t *)self->data;
+
+  ps->unit = dt_bauhaus_combobox_get(combo);
+  dt_conf_set_int("plugins/print/print/unit", ps->unit);
+
+  // convert margins to new unit
+  gtk_spin_button_set_value(GTK_SPIN_BUTTON(ps->b_top),    ps->prt.page.margin_top * units[ps->unit]);
+  gtk_spin_button_set_value(GTK_SPIN_BUTTON(ps->b_bottom), ps->prt.page.margin_bottom * units[ps->unit]);
+  gtk_spin_button_set_value(GTK_SPIN_BUTTON(ps->b_left),   ps->prt.page.margin_left * units[ps->unit]);
+  gtk_spin_button_set_value(GTK_SPIN_BUTTON(ps->b_right),  ps->prt.page.margin_right * units[ps->unit]);
+
+  const int n_digits = (int)(1.0 / (units[ps->unit] * 10.0));
+
+  gtk_spin_button_set_digits(GTK_SPIN_BUTTON(ps->b_top),    n_digits);
+  gtk_spin_button_set_digits(GTK_SPIN_BUTTON(ps->b_bottom), n_digits);
+  gtk_spin_button_set_digits(GTK_SPIN_BUTTON(ps->b_left),   n_digits);
+  gtk_spin_button_set_digits(GTK_SPIN_BUTTON(ps->b_right),  n_digits);
+
+  const float incr = units[ps->unit];
+
+  gtk_spin_button_set_increments(GTK_SPIN_BUTTON(ps->b_top), incr, incr);
+  gtk_spin_button_set_increments(GTK_SPIN_BUTTON(ps->b_bottom), incr, incr);
+  gtk_spin_button_set_increments(GTK_SPIN_BUTTON(ps->b_left), incr, incr);
+  gtk_spin_button_set_increments(GTK_SPIN_BUTTON(ps->b_right), incr, incr);
 
   _update_slider (ps);
 }
@@ -777,9 +811,27 @@ gui_init (dt_lib_module_t *self)
   GtkBox *hbox2 = GTK_BOX(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, DT_PIXEL_APPLY_DPI(5)));
   gtk_box_pack_start(GTK_BOX(hbox2), GTK_WIDGET(d->landscape), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(hbox2), GTK_WIDGET(d->portrait), TRUE, TRUE, 0);
+
+  comb = GTK_COMBO_BOX(gtk_combo_box_text_new());
+  gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(comb), _("mm"));
+  gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(comb), _("cm"));
+  gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(comb), _("inch"));
+  gtk_box_pack_start(GTK_BOX(hbox2), GTK_WIDGET(comb), TRUE, TRUE, 0);
+
+  GtkWidget *ucomb = dt_bauhaus_combobox_new(NULL);
+  dt_bauhaus_combobox_add(ucomb, _("mm"));
+  dt_bauhaus_combobox_add(ucomb, _("cm"));
+  dt_bauhaus_combobox_add(ucomb, _("inch"));
+  gtk_box_pack_start(GTK_BOX(self->widget), ucomb, TRUE, TRUE, 0);
+
+  d->unit = dt_conf_get_int("plugins/print/print/unit");
+  dt_bauhaus_combobox_set(ucomb, d->unit);
+
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(hbox2), TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(d->landscape), "toggled", G_CALLBACK(_orientation_callback), self);
   g_signal_connect(G_OBJECT(d->portrait), "toggled", G_CALLBACK(_orientation_callback), self);
+  g_signal_connect(G_OBJECT(comb), "changed", G_CALLBACK(_unit_callback), self);
+  g_signal_connect(G_OBJECT(ucomb), "value-changed", G_CALLBACK(_unit_changed), self);
 
   if (d->prt.page.landscape)
     gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON(d->landscape), TRUE);
@@ -795,11 +847,11 @@ gui_init (dt_lib_module_t *self)
   d->lock_activated = FALSE;
 
   //d->b_top  = gtk_spin_button_new_with_range(0, 10000, 1);
-  g_object_set(G_OBJECT(d->b_top), "tooltip-text", _("top margin (in mm)"), (char *)NULL);
+  g_object_set(G_OBJECT(d->b_top), "tooltip-text", _("top margin"), (char *)NULL);
   gtk_grid_attach(bds, GTK_WIDGET(d->b_top), 1, 0, 1, 1);
 
   //d->b_left  = gtk_spin_button_new_with_range(0, 10000, 1);
-  g_object_set(bds, "tooltip-text", _("left margin (in mm)"), (char *)NULL);
+  g_object_set(bds, "tooltip-text", _("left margin"), (char *)NULL);
   gtk_grid_attach(bds, GTK_WIDGET(d->b_left), 0, 1, 1, 1);
 
   d->lock_button = GTK_TOGGLE_BUTTON(gtk_toggle_button_new_with_label(_("lock")));
@@ -807,11 +859,11 @@ gui_init (dt_lib_module_t *self)
   gtk_grid_attach(bds, GTK_WIDGET(d->lock_button), 1, 1, 1, 1);
 
   //d->b_right  = gtk_spin_button_new_with_range(0, 10000, 1);
-  g_object_set(G_OBJECT(d->b_right), "tooltip-text", _("right margin (in mm)"), (char *)NULL);
+  g_object_set(G_OBJECT(d->b_right), "tooltip-text", _("right margin"), (char *)NULL);
   gtk_grid_attach(bds, GTK_WIDGET(d->b_right), 2, 1, 1, 1);
 
   //d->b_bottom  = gtk_spin_button_new_with_range(0, 10000, 1);
-  g_object_set(G_OBJECT(d->b_bottom), "tooltip-text", _("bottom margin (in mm)"), (char *)NULL);
+  g_object_set(G_OBJECT(d->b_bottom), "tooltip-text", _("bottom margin"), (char *)NULL);
   gtk_grid_attach(bds, GTK_WIDGET(d->b_bottom), 1, 2, 1, 1);
 
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(bds), TRUE, TRUE, 0);
@@ -842,6 +894,9 @@ gui_init (dt_lib_module_t *self)
     gtk_grid_attach (GTK_GRID (bat), GTK_WIDGET (d->dtba[i]), (i%3), i/3, 1, 1);
     g_signal_connect (G_OBJECT (d->dtba[i]), "toggled",G_CALLBACK (_alignment_callback), self);
   }
+  d->prt.page.alignment = center;
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->dtba[d->prt.page.alignment]),TRUE);
+
   GtkWidget *hbox22 = gtk_box_new(GTK_ORIENTATION_HORIZONTAL,0);
   GtkWidget *label4 = gtk_label_new(_("alignment"));
   gtk_box_pack_start(GTK_BOX(hbox22),GTK_WIDGET(label4),TRUE,TRUE,0);
@@ -1214,10 +1269,10 @@ int set_params(dt_lib_module_t *self, const void *params, int size)
     _bauhaus_combo_box_set_active_text(ps->style, style);
   dt_bauhaus_combobox_set (ps->style_mode, style_mode);
 
-  gtk_spin_button_set_value (GTK_SPIN_BUTTON(ps->b_top), b_top);
-  gtk_spin_button_set_value (GTK_SPIN_BUTTON(ps->b_bottom), b_bottom);
-  gtk_spin_button_set_value (GTK_SPIN_BUTTON(ps->b_left), b_left);
-  gtk_spin_button_set_value (GTK_SPIN_BUTTON(ps->b_right), b_right);
+  gtk_spin_button_set_value (GTK_SPIN_BUTTON(ps->b_top), b_top * units[ps->unit]);
+  gtk_spin_button_set_value (GTK_SPIN_BUTTON(ps->b_bottom), b_bottom * units[ps->unit]);
+  gtk_spin_button_set_value (GTK_SPIN_BUTTON(ps->b_left), b_left * units[ps->unit]);
+  gtk_spin_button_set_value (GTK_SPIN_BUTTON(ps->b_right), b_right * units[ps->unit]);
 
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(ps->dtba[alignment]),TRUE);
 
@@ -1238,10 +1293,10 @@ void *get_params(dt_lib_module_t *self, int *size)
   const char *pprofile = dt_bauhaus_combobox_get_text(ps->pprofile);
   const int32_t pintent =  dt_bauhaus_combobox_get(ps->pintent);
   const int32_t landscape = !gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON(ps->portrait));
-  const double b_top = gtk_spin_button_get_value(GTK_SPIN_BUTTON(ps->b_top));
-  const double b_bottom = gtk_spin_button_get_value(GTK_SPIN_BUTTON(ps->b_bottom));
-  const double b_left = gtk_spin_button_get_value(GTK_SPIN_BUTTON(ps->b_left));
-  const double b_right = gtk_spin_button_get_value(GTK_SPIN_BUTTON(ps->b_right));
+  const double b_top = ps->prt.page.margin_top;
+  const double b_bottom = ps->prt.page.margin_bottom;
+  const double b_left = ps->prt.page.margin_left;
+  const double b_right = ps->prt.page.margin_right;
   const int32_t alignment = ps->prt.page.alignment;
 
   // compute the size of individual items, always get the \0 for strings
@@ -1308,10 +1363,10 @@ gui_reset (dt_lib_module_t *self)
 {
   dt_lib_print_settings_t *ps = (dt_lib_print_settings_t *)self->data;
 
-  gtk_spin_button_set_value(GTK_SPIN_BUTTON(ps->b_top), 15);
-  gtk_spin_button_set_value(GTK_SPIN_BUTTON(ps->b_bottom), 15);
-  gtk_spin_button_set_value(GTK_SPIN_BUTTON(ps->b_left), 15);
-  gtk_spin_button_set_value(GTK_SPIN_BUTTON(ps->b_right), 15);
+  gtk_spin_button_set_value(GTK_SPIN_BUTTON(ps->b_top), 15 * units[ps->unit]);
+  gtk_spin_button_set_value(GTK_SPIN_BUTTON(ps->b_bottom), 15 * units[ps->unit]);
+  gtk_spin_button_set_value(GTK_SPIN_BUTTON(ps->b_left), 15 * units[ps->unit]);
+  gtk_spin_button_set_value(GTK_SPIN_BUTTON(ps->b_right), 15 * units[ps->unit]);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(ps->dtba[center]),TRUE);
   ps->prt.page.alignment = center;
   dt_bauhaus_combobox_set(ps->profile, 0);
