@@ -747,10 +747,15 @@ gui_init (dt_lib_module_t *self)
 
   //  create the spin-button now as values could be set when the printer has no hardware margin
 
-  d->b_top    = gtk_spin_button_new_with_range(0, 10000, 1);
-  d->b_left   = gtk_spin_button_new_with_range(0, 10000, 1);
-  d->b_right  = gtk_spin_button_new_with_range(0, 10000, 1);
-  d->b_bottom = gtk_spin_button_new_with_range(0, 10000, 1);
+  d->b_top    = gtk_spin_button_new_with_range(0, 1000, 1);
+  d->b_left   = gtk_spin_button_new_with_range(0, 1000, 1);
+  d->b_right  = gtk_spin_button_new_with_range(0, 1000, 1);
+  d->b_bottom = gtk_spin_button_new_with_range(0, 1000, 1);
+
+  gtk_entry_set_alignment (GTK_ENTRY(d->b_top), 1);
+  gtk_entry_set_alignment (GTK_ENTRY(d->b_left), 1);
+  gtk_entry_set_alignment (GTK_ENTRY(d->b_right), 1);
+  gtk_entry_set_alignment (GTK_ENTRY(d->b_bottom), 1);
 
   ////////////////////////// PRINTER SETTINGS
 
