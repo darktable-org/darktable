@@ -39,7 +39,8 @@ static void clicked_callback(GtkButton *widget, gpointer user_data)
 static void button_init(lua_State* L)
 {
   const char * new_value = NULL;
-  if(!lua_isnoneornil(L,1)){
+  lua_settop(L,2);
+  if(!lua_isnil(L,1)){
     new_value = luaL_checkstring(L,1);
   }
   lua_button button = malloc(sizeof(dt_lua_button_t));
@@ -48,15 +49,16 @@ static void button_init(lua_State* L)
   } else {
     button->parent.widget = gtk_button_new();
   }
-  if(!lua_isnoneornil(L,2)){
-    lua_pushvalue(L,2);
-    dt_lua_widget_set_callback(L,1,"clicked");
-  }
 
 
   button->parent.type = &button_type;
   luaA_push_type(L, button_type.associated_type, &button);
   g_object_ref_sink(button->parent.widget);
+
+  if(!lua_isnil(L,2)){
+    lua_pushvalue(L,2);
+    dt_lua_widget_set_callback(L,-2,"clicked");
+  }
 }
 
 

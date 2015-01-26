@@ -35,18 +35,20 @@ static dt_lua_widget_type_t combobox_type = {
 
 static void combobox_init(lua_State* L)
 {
+  lua_settop(L,2);
   lua_combobox combobox = malloc(sizeof(dt_lua_combobox_t));
   combobox->parent.widget = dt_bauhaus_combobox_new(NULL);
   if(lua_toboolean(L,1)) {
     dt_bauhaus_combobox_set_editable(combobox->parent.widget,1);
   }
-  if(!lua_isnoneornil(L,2)){
-    lua_pushvalue(L,2);
-    dt_lua_widget_set_callback(L,1,"value-changed");
-  }
   combobox->parent.type = &combobox_type;
   luaA_push_type(L, combobox_type.associated_type, &combobox);
   g_object_ref_sink(combobox->parent.widget);
+
+  if(!lua_isnil(L,2)){
+    lua_pushvalue(L,2);
+    dt_lua_widget_set_callback(L,-2,"value-changed");
+  }
 }
 
 static int combobox_len(lua_State*L)

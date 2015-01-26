@@ -5531,7 +5531,17 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
 </indexterm>
 <synopsis><link linkend="types_dt_lua_lib_collect_params_rule_t">types.dt_lua_lib_collect_params_rule_t</link></synopsis>
 <para>Each rule has a numeric index. You can add a rule by setting a rule after the last valid one, you can remove a rule by setting it to nil</para>
-
+<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
+    <colspec colwidth="2*"/>
+    <colspec colwidth="8*"/>
+    <tbody><row>
+    <entry>Attributes:</entry>
+    <entry><itemizedlist>
+<listitem><para><emphasis><link linkend="attributes_write">write</link></emphasis></para></listitem>
+</itemizedlist>
+</entry>
+    </row></tbody>
+    </tgroup></informaltable>
 </section>
 
 </section>
@@ -5842,6 +5852,43 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
 <varlistentry id="types_lua_check_button_extra_registration_parameters_label"><term>[label]</term><listitem>
 <synopsis>string</synopsis>
 <para>The label to use</para>
+
+</listitem></varlistentry>
+
+<varlistentry id="types_lua_check_button_extra_registration_parameters_callback"><term>[callback]</term><listitem>
+<synopsis><link linkend="types_lua_check_button_clicked_callback">types.lua_check_button.clicked_callback</link></synopsis>
+<para>A function to call on button click</para>
+
+</listitem></varlistentry>
+
+</variablelist>
+</section>
+
+<section status="final" id="types_lua_check_button_clicked_callback">
+<title>types.lua_check_button.clicked_callback</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>clicked_callback</secondary>
+</indexterm>
+<synopsis>function( 
+	<emphasis><link linkend="types_lua_check_button_clicked_callback_widget">widget</link></emphasis> : <link linkend="types_lua_widget">types.lua_widget</link>
+)</synopsis>
+<para>A function to call on button click</para>
+<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
+    <colspec colwidth="2*"/>
+    <colspec colwidth="8*"/>
+    <tbody><row>
+    <entry>Attributes:</entry>
+    <entry><itemizedlist>
+<listitem><para><emphasis><link linkend="attributes_write">write</link></emphasis></para></listitem>
+</itemizedlist>
+</entry>
+    </row></tbody>
+    </tgroup></informaltable>
+<variablelist>
+<varlistentry id="types_lua_check_button_clicked_callback_widget"><term>widget</term><listitem>
+<synopsis><link linkend="types_lua_widget">types.lua_widget</link></synopsis>
+<para>The widget that triggered the callback</para>
 
 </listitem></varlistentry>
 
@@ -6287,7 +6334,17 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
 <para>The various menu entries.</para>
 <para>You can add new entries by writing to the first element beyond the end</para>
 <para>You can removes entries by setting them to nil</para>
-
+<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
+    <colspec colwidth="2*"/>
+    <colspec colwidth="8*"/>
+    <tbody><row>
+    <entry>Attributes:</entry>
+    <entry><itemizedlist>
+<listitem><para><emphasis><link linkend="attributes_write">write</link></emphasis></para></listitem>
+</itemizedlist>
+</entry>
+    </row></tbody>
+    </tgroup></informaltable>
 </section>
 
 <section status="final" id="types_lua_combobox_extra_registration_parameters">
@@ -6426,6 +6483,43 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
 <varlistentry id="types_lua_file_chooser_button_extra_registration_parameters_title"><term>[title]</term><listitem>
 <synopsis>string</synopsis>
 <para>The tile for the selection window</para>
+
+</listitem></varlistentry>
+
+<varlistentry id="types_lua_file_chooser_button_extra_registration_parameters_callback"><term>[callback]</term><listitem>
+<synopsis><link linkend="types_lua_file_chooser_button_changed_callback">types.lua_file_chooser_button.changed_callback</link></synopsis>
+<para>A function to call on button click</para>
+
+</listitem></varlistentry>
+
+</variablelist>
+</section>
+
+<section status="final" id="types_lua_file_chooser_button_changed_callback">
+<title>types.lua_file_chooser_button.changed_callback</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>changed_callback</secondary>
+</indexterm>
+<synopsis>function( 
+	<emphasis><link linkend="types_lua_file_chooser_button_changed_callback_widget">widget</link></emphasis> : <link linkend="types_lua_widget">types.lua_widget</link>
+)</synopsis>
+<para>A function to call when the value field changes (character entered or value selected)</para>
+<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
+    <colspec colwidth="2*"/>
+    <colspec colwidth="8*"/>
+    <tbody><row>
+    <entry>Attributes:</entry>
+    <entry><itemizedlist>
+<listitem><para><emphasis><link linkend="attributes_write">write</link></emphasis></para></listitem>
+</itemizedlist>
+</entry>
+    </row></tbody>
+    </tgroup></informaltable>
+<variablelist>
+<varlistentry id="types_lua_file_chooser_button_changed_callback_widget"><term>widget</term><listitem>
+<synopsis><link linkend="types_lua_widget">types.lua_widget</link></synopsis>
+<para>The widget that triggered the callback</para>
 
 </listitem></varlistentry>
 

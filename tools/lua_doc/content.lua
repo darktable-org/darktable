@@ -705,6 +705,10 @@ darktable.debug.type:set_text([[Similar to the system function type() but it wil
   types.lua_check_button.value:set_text("If the widget is checked or not");
 	types.lua_check_button.extra_registration_parameters:set_text("")
 	types.lua_check_button.extra_registration_parameters:add_parameter("label","string","The label to use"):set_attribute("optional",true)
+	types.lua_check_button.extra_registration_parameters:add_parameter("callback",types.lua_check_button.clicked_callback,"A function to call on button click"):set_attribute("optional",true)
+  types.lua_check_button.clicked_callback:set_text("A function to call on button click")
+  types.lua_check_button.clicked_callback:set_reported_type("function")
+  types.lua_check_button.clicked_callback:add_parameter("widget",types.lua_widget,"The widget that triggered the callback")
 
   types.lua_label:set_text("A label containing some text");
   types.lua_label.label:set_text("The label displayed");
@@ -766,6 +770,10 @@ darktable.debug.type:set_text([[Similar to the system function type() but it wil
   types.lua_file_chooser_button.extra_registration_parameters:set_text("")
   types.lua_file_chooser_button.extra_registration_parameters:add_parameter("directory_only","boolean","True if the selection menu should allow only directorie"):set_attribute("optional",true)
   types.lua_file_chooser_button.extra_registration_parameters:add_parameter("title","string","The tile for the selection window"):set_attribute("optional",true)
+	types.lua_file_chooser_button.extra_registration_parameters:add_parameter("callback",types.lua_file_chooser_button.changed_callback,"A function to call on button click"):set_attribute("optional",true)
+  types.lua_file_chooser_button.changed_callback:set_text("A function to call when the value field changes (character entered or value selected)")
+  types.lua_file_chooser_button.changed_callback:set_reported_type("function")
+  types.lua_file_chooser_button.changed_callback:add_parameter("widget",types.lua_widget,"The widget that triggered the callback")
 
 	----------------------
 	--  EVENTS          --
