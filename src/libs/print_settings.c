@@ -57,6 +57,7 @@ typedef struct dt_lib_print_settings_t
 {
   GtkWidget *profile, *intent, *style, *style_mode, *papers;
   GtkWidget *printers, *orientation, *pprofile, *pintent;
+  GtkWidget *width, *height;
   GList *profiles;
   GtkButton *print_button;
   GtkToggleButton *lock_button;
@@ -67,6 +68,7 @@ typedef struct dt_lib_print_settings_t
   dt_print_info_t prt;
   uint16_t *buf;
   int32_t image_id;
+  int32_t iwidth, iheight;
   int unit;
   int v_intent, v_pintent;
   char *v_iccprofile, *v_piccprofile, *v_style;
@@ -427,6 +429,8 @@ _paper_changed (GtkWidget *combo, dt_lib_module_t *self)
   if (paper)
     memcpy(&ps->prt.paper, paper, sizeof(dt_paper_info_t));
 
+  ps->iwidth = ps->iheight = 0;
+
   dt_conf_set_string("plugins/print/print/paper", paper_name);
   dt_view_print_settings(darktable.view_manager, &ps->prt);
 }
@@ -440,6 +444,48 @@ static void
 _update_slider (dt_lib_print_settings_t *ps)
 {
   dt_view_print_settings(darktable.view_manager, &ps->prt);
+
+  // if widget are created, let's display the current image size
+
+  if (ps->width && ps->height)
+  {
+    int32_t px=0, py=0, pwidth=0, pheight=0;
+    int32_t ax=0, ay=0, awidth=0, aheight=0;
+    int32_t ix=0, iy=0, iwidth=ps->iwidth * 10, iheight=ps->iheight *10;
+    int32_t pa_width, pa_height;
+
+    if (ps->prt.page.landscape)
+    {
+      pa_height = (int32_t)ps->prt.paper.width;
+      pa_width = (int32_t)ps->prt.paper.height;
+    }
+    else
+    {
+      pa_width = (int32_t)ps->prt.paper.width;
+      pa_height = (int32_t)ps->prt.paper.height;
+    }
+
+    dt_get_print_layout(ps->image_id, &ps->prt, pa_width, pa_height,
+                        &px, &py, &pwidth, &pheight,
+                        &ax, &ay, &awidth, &aheight,
+                        &ix, &iy, &iwidth, &iheight);
+
+    if (ps->iwidth==0 || ps->iheight==0)
+    {
+      ps->iwidth = iwidth;
+      ps->iheight = iheight;
+    }
+
+    const double h = iheight * units[ps->unit];
+    const double w = iwidth * units[ps->unit];
+    char value[20];
+
+    sprintf(value, "%3.2f", w);
+    gtk_label_set_text(GTK_LABEL(ps->width), value);
+
+    sprintf(value, "%3.2f", h);
+    gtk_label_set_text(GTK_LABEL(ps->height), value);
+  }
 }
 
 static void
@@ -713,6 +759,7 @@ static void _print_settings_filmstrip_activate_callback(gpointer instance,gpoint
   dt_lib_print_settings_t *ps = (dt_lib_print_settings_t *)self->data;
 
   ps->image_id = dt_view_filmstrip_get_activated_imgid(darktable.view_manager);
+  ps->iwidth = ps->iheight = 0;
 
   _set_orientation (ps);
 
@@ -791,6 +838,9 @@ gui_init (dt_lib_module_t *self)
   char tooltip[1024];
 
   d->paper_list = NULL;
+  d->iwidth = d->iheight = 0;
+  d->unit = 0;
+  d->width = d->height = NULL;
 
   dt_init_print_info(&d->prt);
   dt_view_print_settings(darktable.view_manager, &d->prt);
@@ -965,6 +1015,18 @@ gui_init (dt_lib_module_t *self)
 
   dt_bauhaus_combobox_set (d->orientation, d->prt.page.landscape?1:0);
 
+  //// image dimensions, create them now as we need them
+
+  GtkWidget *hboxdim = gtk_box_new(GTK_ORIENTATION_HORIZONTAL,0);
+  label = gtk_label_new(_("image width/height"));
+  gtk_box_pack_start(GTK_BOX(hboxdim),GTK_WIDGET(label),TRUE,TRUE,0);
+  d->width = gtk_label_new(_("width"));
+  gtk_box_pack_start(GTK_BOX(hboxdim),GTK_WIDGET(d->width),TRUE,TRUE,0);
+  label = gtk_label_new(_(" x "));
+  gtk_box_pack_start(GTK_BOX(hboxdim),GTK_WIDGET(label),TRUE,TRUE,0);
+  d->height = gtk_label_new(_("height"));
+  gtk_box_pack_start(GTK_BOX(hboxdim),GTK_WIDGET(d->height),TRUE,TRUE,0);
+
   //// borders
 
   GtkGrid *bds = GTK_GRID(gtk_grid_new());
@@ -1008,6 +1070,10 @@ gui_init (dt_lib_module_t *self)
 
   const gboolean lock_active = dt_conf_get_bool("plugins/print/print/lock_borders");
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->lock_button), lock_active);
+
+  // pack image dimention hbox here
+
+  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(hboxdim), TRUE, TRUE, 0);
 
   //// alignments
 
