@@ -754,6 +754,10 @@ darktable.debug.type:set_text([[Similar to the system function type() but it wil
   types.lua_combobox["#"]:set_reported_type("string")
 	types.lua_combobox.extra_registration_parameters:set_text("")
 	types.lua_combobox.extra_registration_parameters:add_parameter("editable","boolean","True if the combo box should be editable by the user")
+	types.lua_combobox.extra_registration_parameters:add_parameter("callback",types.lua_combobox.changed_callback,"A function to call on button click"):set_attribute("optional",true)
+  types.lua_combobox.changed_callback:set_text("A function to call when the value field changes (character entered or value selected)")
+  types.lua_combobox.changed_callback:set_reported_type("function")
+  types.lua_combobox.changed_callback:add_parameter("widget",types.lua_widget,"The widget that triggered the callback")
 
   types.lua_file_chooser_button:set_text("A button that allows the user to select an existing file")
   types.lua_file_chooser_button.title:set_text("The title of the window when choosing a file")

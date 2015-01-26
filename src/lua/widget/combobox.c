@@ -40,6 +40,10 @@ static void combobox_init(lua_State* L)
   if(lua_toboolean(L,1)) {
     dt_bauhaus_combobox_set_editable(combobox->parent.widget,1);
   }
+  if(!lua_isnoneornil(L,2)){
+    lua_pushvalue(L,2);
+    dt_lua_widget_set_callback(L,1,"value-changed");
+  }
   combobox->parent.type = &combobox_type;
   luaA_push_type(L, combobox_type.associated_type, &combobox);
   g_object_ref_sink(combobox->parent.widget);
@@ -108,6 +112,11 @@ static int value_member(lua_State*L)
   return 1;
 }
 
+static void changed_callback(GtkButton *widget, gpointer user_data)
+{
+  dt_lua_widget_trigger_callback_async((lua_widget)user_data,"value-changed");
+}
+
 int dt_lua_init_widget_combobox(lua_State* L)
 {
   dt_lua_init_widget_type(L,&combobox_type,lua_combobox);
@@ -120,6 +129,7 @@ int dt_lua_init_widget_combobox(lua_State* L)
   lua_pushcfunction(L,value_member);
   lua_pushcclosure(L,dt_lua_gtk_wrap,1);
   dt_lua_type_register(L, lua_combobox, "value");
+  dt_lua_widget_register_gtk_callback(L,lua_combobox,"value-changed","changed_callback",G_CALLBACK(changed_callback));
 
   return 0;
 }

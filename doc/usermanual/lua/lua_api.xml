@@ -6305,6 +6305,43 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
 
 </listitem></varlistentry>
 
+<varlistentry id="types_lua_combobox_extra_registration_parameters_callback"><term>[callback]</term><listitem>
+<synopsis><link linkend="types_lua_combobox_changed_callback">types.lua_combobox.changed_callback</link></synopsis>
+<para>A function to call on button click</para>
+
+</listitem></varlistentry>
+
+</variablelist>
+</section>
+
+<section status="final" id="types_lua_combobox_changed_callback">
+<title>types.lua_combobox.changed_callback</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>changed_callback</secondary>
+</indexterm>
+<synopsis>function( 
+	<emphasis><link linkend="types_lua_combobox_changed_callback_widget">widget</link></emphasis> : <link linkend="types_lua_widget">types.lua_widget</link>
+)</synopsis>
+<para>A function to call when the value field changes (character entered or value selected)</para>
+<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
+    <colspec colwidth="2*"/>
+    <colspec colwidth="8*"/>
+    <tbody><row>
+    <entry>Attributes:</entry>
+    <entry><itemizedlist>
+<listitem><para><emphasis><link linkend="attributes_write">write</link></emphasis></para></listitem>
+</itemizedlist>
+</entry>
+    </row></tbody>
+    </tgroup></informaltable>
+<variablelist>
+<varlistentry id="types_lua_combobox_changed_callback_widget"><term>widget</term><listitem>
+<synopsis><link linkend="types_lua_widget">types.lua_widget</link></synopsis>
+<para>The widget that triggered the callback</para>
+
+</listitem></varlistentry>
+
 </variablelist>
 </section>
 
