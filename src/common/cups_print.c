@@ -140,11 +140,14 @@ GList *dt_get_printers(void)
 
 static int paper_exists(GList *papers, const char *name)
 {
+  if (strstr(name,"custom_") == name)
+    return 1;
+
   GList *p = papers;
   while (p)
   {
     dt_paper_info_t *pi = (dt_paper_info_t*)p->data;
-    if (!strcmp(pi->name,name))
+    if (!strcmp(pi->name,name) || !strcmp(pi->common_name,name))
       return 1;
     p = g_list_next (p);
   }
@@ -167,6 +170,16 @@ dt_paper_info_t *dt_get_paper(GList *papers, const char *name)
     p = g_list_next (p);
   }
   return result;
+}
+
+static gint
+sort_papers (gconstpointer p1, gconstpointer p2)
+{
+  const dt_paper_info_t *n1 = (dt_paper_info_t *)p1;
+  const dt_paper_info_t *n2 = (dt_paper_info_t *)p2;
+  const int l1 = strlen(n1->common_name);
+  const int l2 = strlen(n2->common_name);
+  return l1==l2 ? strcmp(n1->common_name, n2->common_name) : (l1 < l2 ? -1 : +1);
 }
 
 GList *dt_get_papers(const char *printer_name)
@@ -195,13 +208,19 @@ GList *dt_get_papers(const char *printer_name)
       {
         if (cupsGetDestMediaByIndex(hcon, dest, info, k, CUPS_MEDIA_FLAGS_DEFAULT, &size))
         {
-          pwg_media_t *med = pwgMediaForPWG (size.media);
-
-          if (med->ppd && !paper_exists(result,size.media))
+          if (!paper_exists(result,size.media))
           {
+            pwg_media_t *med = pwgMediaForPWG (size.media);
+            char common_name[MAX_NAME] = { 0 };
+
+            if (med->ppd)
+              g_strlcpy(common_name, med->ppd, MAX_NAME);
+            else
+              g_strlcpy(common_name, size.media, MAX_NAME);
+
             dt_paper_info_t *paper = (dt_paper_info_t*)malloc(sizeof(dt_paper_info_t));
             g_strlcpy(paper->name, size.media, MAX_NAME);
-            g_strlcpy(paper->common_name, med->ppd, MAX_NAME);
+            g_strlcpy(paper->common_name, common_name, MAX_NAME);
             paper->width = (double)size.width / 100.0;
             paper->height = (double)size.length / 100.0;
             result = g_list_append (result, paper);
@@ -213,8 +232,36 @@ GList *dt_get_papers(const char *printer_name)
     {
       printf("[print] cannot connect to printer %s (cancel=%d)\n", printer_name, cancel);
     }
-
   }
+
+  // check now PPD page sizes
+
+  const char *PPDFile = cupsGetPPD(printer_name);
+  ppd_file_t *ppd = ppdOpenFile(PPDFile);
+
+  if (ppd)
+  {
+    ppd_size_t *size = ppd->sizes;
+
+    for (int k=0; k<ppd->num_sizes; k++)
+    {
+      dt_paper_info_t *paper = (dt_paper_info_t*)malloc(sizeof(dt_paper_info_t));
+      if (!paper_exists(result,size->name))
+      {
+        g_strlcpy(paper->name, size->name, MAX_NAME);
+        g_strlcpy(paper->common_name, size->name, MAX_NAME);
+        paper->width = (double)dt_pdf_point_to_mm(size->width);
+        paper->height = (double)dt_pdf_point_to_mm(size->length);
+        result = g_list_append (result, paper);
+      }
+      size++;
+    }
+
+    ppdClose(ppd);
+    unlink(PPDFile);
+  }
+
+  result = g_list_sort_with_data (result, (GCompareDataFunc)sort_papers, NULL);
   return result;
 }
 
