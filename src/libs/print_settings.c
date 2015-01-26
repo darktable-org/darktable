@@ -712,12 +712,73 @@ static void _print_settings_filmstrip_activate_callback(gpointer instance,gpoint
     gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON(ps->portrait), TRUE);
 }
 
+static GList* _get_profiles ()
+{
+  //  Create list of profiles
+  GList *list = NULL;
+
+  dt_lib_export_profile_t *prof = (dt_lib_export_profile_t *)g_malloc0(sizeof(dt_lib_export_profile_t));
+  g_strlcpy(prof->filename, "sRGB", sizeof(prof->filename));
+  dt_utf8_strlcpy(prof->name, _("sRGB (web-safe)"), sizeof(prof->name));
+  int pos;
+  prof->pos = 1;
+  list = g_list_append(list, prof);
+
+  prof = (dt_lib_export_profile_t *)g_malloc0(sizeof(dt_lib_export_profile_t));
+  g_strlcpy(prof->filename, "adobergb", sizeof(prof->filename));
+  dt_utf8_strlcpy(prof->name, _("Adobe RGB (compatible)"), sizeof(prof->name));
+  pos = prof->pos = 2;
+  list = g_list_append(list, prof);
+
+  // read datadir/color/out/*.icc
+  char datadir[PATH_MAX] = { 0 };
+  char confdir[PATH_MAX] = { 0 };
+  char dirname[PATH_MAX] = { 0 };
+  char filename[PATH_MAX] = { 0 };
+  dt_loc_get_user_config_dir(confdir, sizeof(confdir));
+  dt_loc_get_datadir(datadir, sizeof(datadir));
+  cmsHPROFILE tmpprof;
+  const gchar *d_name;
+  snprintf(dirname, sizeof(dirname), "%s/color/out", confdir);
+  if(!g_file_test(dirname, G_FILE_TEST_IS_DIR))
+    snprintf(dirname, sizeof(dirname), "%s/color/out", datadir);
+  GDir *dir = g_dir_open(dirname, 0, NULL);
+  if(dir)
+  {
+    while((d_name = g_dir_read_name(dir)))
+    {
+      snprintf(filename, sizeof(filename), "%s/%s", dirname, d_name);
+      tmpprof = cmsOpenProfileFromFile(filename, "r");
+      if(tmpprof)
+      {
+        char *lang = getenv("LANG");
+        if (!lang) lang = "en_US";
+
+        dt_lib_export_profile_t *prof = (dt_lib_export_profile_t *)g_malloc0(sizeof(dt_lib_export_profile_t));
+        dt_colorspaces_get_profile_name(tmpprof, lang, lang+3, prof->name, sizeof(prof->name));
+        g_strlcpy(prof->filename, filename, sizeof(prof->filename));
+        prof->pos = ++pos;
+        cmsCloseProfile(tmpprof);
+        list = g_list_append(list, prof);
+      }
+    }
+    g_dir_close(dir);
+  }
+
+  return list;
+}
+
 void
 gui_init (dt_lib_module_t *self)
 {
   dt_lib_print_settings_t *d = (dt_lib_print_settings_t*)malloc(sizeof(dt_lib_print_settings_t));
   self->data = d;
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
+
+  char datadir[PATH_MAX] = { 0 };
+  char confdir[PATH_MAX] = { 0 };
+  dt_loc_get_user_config_dir(confdir, sizeof(confdir));
+  dt_loc_get_datadir(datadir, sizeof(datadir));
 
   GtkWidget *label;
   GtkComboBox *comb;
@@ -730,6 +791,8 @@ gui_init (dt_lib_module_t *self)
                             DT_SIGNAL_VIEWMANAGER_FILMSTRIP_ACTIVATE,
                             G_CALLBACK(_print_settings_filmstrip_activate_callback),
                             self);
+
+  d->profiles = _get_profiles();
 
   //  get orientation of the selectd image if possible
 
@@ -793,6 +856,59 @@ gui_init (dt_lib_module_t *self)
   d->printers = comb;
   g_signal_connect(G_OBJECT(d->printers), "changed", G_CALLBACK(_printer_changed), self);
   g_list_free (printers);
+
+  //  Add printer profile combo
+
+  d->pprofile = dt_bauhaus_combobox_new(NULL);
+  dt_bauhaus_widget_set_label(d->pprofile, NULL, _("profile"));
+
+  int combo_idx = -1, n=0;
+  GList *l = d->profiles;
+
+  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(d->pprofile), TRUE, TRUE, 0);
+  const gchar *printer_profile = dt_conf_get_string("plugins/print/printer/iccprofile");
+  combo_idx = -1;
+  n=0;
+
+  dt_bauhaus_combobox_add(d->pprofile, _("none"));
+  while(l)
+  {
+    dt_lib_export_profile_t *prof = (dt_lib_export_profile_t *)l->data;
+    // do not add built-in profile, these are in no way for printing
+    if (strcmp(prof->filename,"sRGB")!=0 && strcmp(prof->filename,"adobergb")!=0)
+    {
+      dt_bauhaus_combobox_add(d->pprofile, prof->name);
+      n++;
+      if (strcmp(prof->filename,printer_profile)==0)
+        combo_idx=n;
+    }
+    l = g_list_next(l);
+  }
+
+  // profile not found, maybe a profile has been removed? revert to none
+  if (combo_idx == -1)
+  {
+    dt_conf_set_string("plugins/print/printer/iccprofile", "");
+    combo_idx=0;
+  }
+  dt_bauhaus_combobox_set(d->pprofile, combo_idx);
+
+  snprintf(tooltip, sizeof(tooltip), _("printer ICC profiles in %s/color/out or %s/color/out"), confdir, datadir);
+  g_object_set(G_OBJECT(d->pprofile), "tooltip-text", tooltip, (char *)NULL);
+  g_signal_connect(G_OBJECT(d->pprofile), "value-changed", G_CALLBACK(_printer_profile_changed), (gpointer)self);
+
+  //  Add printer intent combo
+
+  d->pintent = dt_bauhaus_combobox_new(NULL);
+  dt_bauhaus_widget_set_label(d->pintent, NULL, _("intent"));
+  dt_bauhaus_combobox_add(d->pintent, _("perceptual"));
+  dt_bauhaus_combobox_add(d->pintent, _("relative colorimetric"));
+  dt_bauhaus_combobox_add(d->pintent, C_("rendering intent", "saturation"));
+  dt_bauhaus_combobox_add(d->pintent, _("absolute colorimetric"));
+  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(d->pintent), TRUE, TRUE, 0);
+  dt_bauhaus_combobox_set(d->pintent, dt_conf_get_int("plugins/print/printer/iccintent"));
+
+  g_signal_connect (G_OBJECT (d->pintent), "value-changed", G_CALLBACK (_printer_intent_callback), (gpointer)self);
 
   ////////////////////////// PAGE SETTINGS
 
@@ -908,71 +1024,17 @@ gui_init (dt_lib_module_t *self)
   label = dt_ui_section_label_new(_("print settings"));
   gtk_box_pack_start(GTK_BOX(self->widget), label, TRUE, TRUE, 0);
 
-  //  Create list of profiles
-
-  d->profiles = NULL;
-
-  dt_lib_export_profile_t *prof = (dt_lib_export_profile_t *)g_malloc0(sizeof(dt_lib_export_profile_t));
-  g_strlcpy(prof->filename, "sRGB", sizeof(prof->filename));
-  dt_utf8_strlcpy(prof->name, _("sRGB (web-safe)"), sizeof(prof->name));
-  int pos;
-  prof->pos = 1;
-  d->profiles = g_list_append(d->profiles, prof);
-
-  prof = (dt_lib_export_profile_t *)g_malloc0(sizeof(dt_lib_export_profile_t));
-  g_strlcpy(prof->filename, "adobergb", sizeof(prof->filename));
-  dt_utf8_strlcpy(prof->name, _("Adobe RGB (compatible)"), sizeof(prof->name));
-  pos = prof->pos = 2;
-  d->profiles = g_list_append(d->profiles, prof);
-
-  // read datadir/color/out/*.icc
-  char datadir[PATH_MAX] = { 0 };
-  char confdir[PATH_MAX] = { 0 };
-  char dirname[PATH_MAX] = { 0 };
-  char filename[PATH_MAX] = { 0 };
-  dt_loc_get_user_config_dir(confdir, sizeof(confdir));
-  dt_loc_get_datadir(datadir, sizeof(datadir));
-  cmsHPROFILE tmpprof;
-  const gchar *d_name;
-  snprintf(dirname, sizeof(dirname), "%s/color/out", confdir);
-  if(!g_file_test(dirname, G_FILE_TEST_IS_DIR))
-    snprintf(dirname, sizeof(dirname), "%s/color/out", datadir);
-  GDir *dir = g_dir_open(dirname, 0, NULL);
-  if(dir)
-  {
-    while((d_name = g_dir_read_name(dir)))
-    {
-      snprintf(filename, sizeof(filename), "%s/%s", dirname, d_name);
-      tmpprof = cmsOpenProfileFromFile(filename, "r");
-      if(tmpprof)
-      {
-        char *lang = getenv("LANG");
-        if (!lang) lang = "en_US";
-
-        dt_lib_export_profile_t *prof = (dt_lib_export_profile_t *)g_malloc0(sizeof(dt_lib_export_profile_t));
-        dt_colorspaces_get_profile_name(tmpprof, lang, lang+3, prof->name, sizeof(prof->name));
-        g_strlcpy(prof->filename, filename, sizeof(prof->filename));
-        prof->pos = ++pos;
-        cmsCloseProfile(tmpprof);
-        d->profiles = g_list_append(d->profiles, prof);
-      }
-    }
-    g_dir_close(dir);
-  }
-
   //  Add export profile combo
 
   d->profile = dt_bauhaus_combobox_new(NULL);
-  dt_bauhaus_widget_set_label(d->profile, NULL, _("export profile"));
-
-  GList *l = d->profiles;
+  dt_bauhaus_widget_set_label(d->profile, NULL, _("profile"));
 
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(d->profile), TRUE, TRUE, 0);
   dt_bauhaus_combobox_add(d->profile, _("image settings"));
 
   const gchar *iccprofile = dt_conf_get_string("plugins/print/print/iccprofile");
-  int combo_idx = -1, n=0;
 
+  l = d->profiles;
   while(l)
   {
     dt_lib_export_profile_t *prof = (dt_lib_export_profile_t *)l->data;
@@ -1064,57 +1126,6 @@ gui_init (dt_lib_module_t *self)
                (char *)NULL);
 
   g_signal_connect(G_OBJECT(d->style_mode), "value-changed", G_CALLBACK(_style_mode_changed), (gpointer)self);
-
-  //  Add printer profile combo
-
-  d->pprofile = dt_bauhaus_combobox_new(NULL);
-  dt_bauhaus_widget_set_label(d->pprofile, NULL, _("printer profile"));
-
-  l = d->profiles;
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(d->pprofile), TRUE, TRUE, 0);
-  const gchar *printer_profile = dt_conf_get_string("plugins/print/printer/iccprofile");
-  combo_idx = -1;
-  n=0;
-
-  dt_bauhaus_combobox_add(d->pprofile, _("none"));
-  while(l)
-  {
-    dt_lib_export_profile_t *prof = (dt_lib_export_profile_t *)l->data;
-    // do not add built-in profile, these are in no way for printing
-    if (strcmp(prof->filename,"sRGB")!=0 && strcmp(prof->filename,"adobergb")!=0)
-    {
-      dt_bauhaus_combobox_add(d->pprofile, prof->name);
-      n++;
-      if (strcmp(prof->filename,printer_profile)==0)
-        combo_idx=n;
-    }
-    l = g_list_next(l);
-  }
-
-  // profile not found, maybe a profile has been removed? revert to none
-  if (combo_idx == -1)
-  {
-    dt_conf_set_string("plugins/print/printer/iccprofile", "");
-    combo_idx=0;
-  }
-  dt_bauhaus_combobox_set(d->pprofile, combo_idx);
-
-  snprintf(tooltip, sizeof(tooltip), _("output ICC profiles in %s/color/out or %s/color/out"), confdir, datadir);
-  g_object_set(G_OBJECT(d->pprofile), "tooltip-text", tooltip, (char *)NULL);
-  g_signal_connect(G_OBJECT(d->pprofile), "value-changed", G_CALLBACK(_printer_profile_changed), (gpointer)self);
-
-  //  Add printer intent combo
-
-  d->pintent = dt_bauhaus_combobox_new(NULL);
-  dt_bauhaus_widget_set_label(d->pintent, NULL, _("intent"));
-  dt_bauhaus_combobox_add(d->pintent, _("perceptual"));
-  dt_bauhaus_combobox_add(d->pintent, _("relative colorimetric"));
-  dt_bauhaus_combobox_add(d->pintent, C_("rendering intent", "saturation"));
-  dt_bauhaus_combobox_add(d->pintent, _("absolute colorimetric"));
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(d->pintent), TRUE, TRUE, 0);
-  dt_bauhaus_combobox_set(d->pintent, dt_conf_get_int("plugins/print/printer/iccintent"));
-
-  g_signal_connect (G_OBJECT (d->pintent), "value-changed", G_CALLBACK (_printer_intent_callback), (gpointer)self);
 
   // Print button
 
