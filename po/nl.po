@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2015-01-24 17:48+0100\n"
-"PO-Revision-Date: 2015-01-25 14:54+0100\n"
+"PO-Revision-Date: 2015-01-26 19:56+0100\n"
 "Last-Translator: Ger Siemerink <g.siemerink@gmail.com>\n"
 "Language-Team: Ger Siemerink <g.siemerink@gmail.com>\n"
 "Language: nl_NL\n"
@@ -339,6 +339,8 @@ msgid ""
 "process the image in darkroom mode with a small border. set to 0 if you "
 "don't want any border."
 msgstr ""
+"de afbeelding in de modus ontwikkelen aanmaken met een smalle rand, kies 0 "
+"als je geen rand wil"
 
 #: ../build/src/preferences_gen.h:1862
 msgid "do high quality processing for slideshow"
@@ -392,9 +394,8 @@ msgstr ""
 "(opnieuw opstarten)"
 
 #: ../build/src/preferences_gen.h:1979
-#, fuzzy
 msgid "enable disk backend for mipmap cache"
-msgstr "geheugen in megabytes te gebruiken voor de mipmap cache"
+msgstr "inschakelen schijf backend voor mipmap cache"
 
 #: ../build/src/preferences_gen.h:1991
 msgid ""
@@ -406,6 +407,13 @@ msgid ""
 "entire collection offline, run 'darktable-cli --generate-cache --core --"
 "library ~/.config/darktable/library.db'."
 msgstr ""
+"indien ingeschakeld, schrijf miniaturen op de schijf (.cache/darktable) "
+"wanneer ze zijn uitgezet van het geheugen cache, nb dit kan veel geheugen "
+"kosten (meerder Gb voor 20k afbeeldingen) en zal nooit opgeslagen miniaturen "
+"verwijderen, handmatig verwijderen is wel veilig, indien gewenst. de "
+"bibliotheek verwerking zal daardoor enorm verbeteren, om alle minaturen van "
+"je gehele collectie offline aan te maken geef het commando  'darktable-cli --"
+"generate-cache --core --library ~/.config/darktable/library.db'."
 
 #: ../build/src/preferences_gen.h:1998
 msgid "number of background threads"
@@ -699,9 +707,9 @@ msgid "creating cache directories\n"
 msgstr "aanmaak cache mappen\n"
 
 #: ../src/cli/main.c:56
-#, fuzzy, c-format
+#, c-format
 msgid "creating cache directory '%s'\n"
-msgstr "fout bij het inladen van map `%s'"
+msgstr "aanmaak cache map '%s'\n"
 
 #: ../src/cli/main.c:60
 #, c-format
@@ -2452,9 +2460,8 @@ msgid "select parts"
 msgstr "selecteer delen"
 
 #: ../src/gui/hist_dialog.c:138
-#, fuzzy
 msgid "Select _All"
-msgstr "selecteer alles"
+msgstr "Select _All"
 
 #: ../src/gui/hist_dialog.c:138
 msgid "_Clear"
@@ -2942,7 +2949,7 @@ msgstr "geef titel voor het pdf"
 
 #: ../src/imageio/format/pdf.c:543
 msgid "paper size"
-msgstr "papier formaat"
+msgstr "formaat"
 
 #: ../src/imageio/format/pdf.c:548
 msgid ""
@@ -2951,12 +2958,12 @@ msgid ""
 "example: 210 mm x 2.97 cm"
 msgstr ""
 "papier formaat van de pdf\n"
-"of een uit de list of  \"<breedte> [eenheid] x <hoogte> <eenheid>\n"
+"kies er een uit de list of  \"<breedte> [eenheid] x <hoogte> <eenheid>\n"
 "bijvoorbeeld: 210 mm x 2.97 cm"
 
 #: ../src/imageio/format/pdf.c:556
 msgid "page orientation"
-msgstr "papier oriëntatie"
+msgstr "oriëntatie"
 
 #: ../src/imageio/format/pdf.c:557 ../src/iop/borders.c:994
 msgid "portrait"
@@ -2981,6 +2988,9 @@ msgid ""
 "format: size + unit\n"
 "examples: 10 mm, 1 inch"
 msgstr ""
+"witruimte om de pdf\n"
+"formaat: afmeting + eenheid\n"
+"voorbeelden: 10 mm, 1 inch"
 
 #. dpi
 #: ../src/imageio/format/pdf.c:587
@@ -3027,14 +3037,12 @@ msgid "all"
 msgstr "alles"
 
 #: ../src/imageio/format/pdf.c:617
-#, fuzzy
 msgid "single images"
-msgstr "verzamelingen"
+msgstr "enkelvoudige afbeeldingen"
 
 #: ../src/imageio/format/pdf.c:618
-#, fuzzy
 msgid "contact sheet"
-msgstr "contrast"
+msgstr "contactformulier"
 
 #: ../src/imageio/format/pdf.c:621
 msgid "what pages should be added to the pdf"
@@ -3046,7 +3054,7 @@ msgstr "insluiten ICC profiel"
 
 #: ../src/imageio/format/pdf.c:633
 msgid "images can be tagged with their icc profile"
-msgstr "afbeeldingen kunnen worden gelabeld met hun icc profiel"
+msgstr "afbeeldingen kunnen worden gekoppeld aan hun icc profiel"
 
 #: ../src/imageio/format/pdf.c:639 ../src/imageio/format/png.c:470
 #: ../src/imageio/format/tiff.c:413
@@ -3081,9 +3089,8 @@ msgstr ""
 "deflate -- kleinere bestanden maar langzamer"
 
 #: ../src/imageio/format/pdf.c:666
-#, fuzzy
 msgid "image mode"
-msgstr "afbeeldings id"
+msgstr "afbeeldings manier"
 
 #: ../src/imageio/format/pdf.c:667
 msgid "normal"
@@ -3103,6 +3110,9 @@ msgid ""
 "draft mode -- images are replaced with boxes\n"
 "debug -- only show the outlines and bounding boxen"
 msgstr ""
+"normaal - plaatst de afbeeldingen in de pdf\n"
+"concept - de afbeelding wordt vervangen door selectiekader\n"
+"foutopsporing - alleen de contouren en selectiekader"
 
 #: ../src/imageio/format/pfm.c:109
 msgid "PFM (float)"
@@ -3191,7 +3201,7 @@ msgstr "lokale map"
 #: ../src/imageio/storage/disk.c:93 ../src/imageio/storage/gallery.c:105
 #: ../src/imageio/storage/latex.c:105
 msgid "_Select as output destination"
-msgstr ""
+msgstr "_Select as output destination"
 
 #: ../src/imageio/storage/disk.c:145 ../src/imageio/storage/gallery.c:158
 #: ../src/imageio/storage/latex.c:158
@@ -3696,7 +3706,7 @@ msgstr "gelijk aan nokia"
 #. smoother cubic spline curve
 #: ../src/iop/basecurve.c:125
 msgid "cubic spline"
-msgstr ""
+msgstr "cubic spline"
 
 #: ../src/iop/basecurve.c:199
 msgid "base curve"
@@ -5278,7 +5288,6 @@ msgid "computed EC: "
 msgstr "berekende EC: "
 
 #: ../src/iop/exposure.c:1006
-#, fuzzy
 msgid "what exposure correction have actually been used"
 msgstr "welke belichtingscorrectie nu is gebruikt"
 
@@ -5665,7 +5674,7 @@ msgid "try to locate your camera/lens in the above two menus"
 msgstr "zoek zo mogelijk uw camera/lens in bovenvermelde menu's"
 
 #: ../src/iop/lens.c:1605
-#, fuzzy, c-format
+#, c-format
 msgid ""
 "maker:\t\t%s\n"
 "model:\t\t%s\n"
@@ -5678,8 +5687,8 @@ msgstr ""
 "fabrikant:\t\t%s\n"
 "model:\t\t%s\n"
 "brandpuntsafstand:\t%s\n"
-"aperture:\t%s\n"
-"vergrotingsfactor:\t%.1f\n"
+"diafragma:\t%s\n"
+"cropfactor:\t%.1f\n"
 "type:\t\t%s\n"
 "koppelingen:\t\t%s"
 
@@ -8974,7 +8983,6 @@ msgstr "penseel kleiner"
 
 #. fullscreen view
 #: ../src/views/darkroom.c:1771
-#, fuzzy
 msgctxt "accel"
 msgid "full preview"
 msgstr "voorbeeld"
