@@ -6632,6 +6632,16 @@ const wb_data wb_preset[] =
   { "SONY", "SLT-A77V", Fluorescent, 2,		{ 2.945313, 1, 1.300781, 0 } },
   { "SONY", "SLT-A77V", Flash, 0,		{ 3.222656, 1, 1.207031, 0 } },
 
+  { "SONY", "SLT-A99", Daylight, 0,		{ 2.44921875, 1, 1.46484375, 0 } },
+  { "SONY", "SLT-A99", Shade, 0,		{ 2.93359375, 1, 1.20703125, 0 } },
+  { "SONY", "SLT-A99", Cloudy, 0,		{ 2.65234375, 1, 1.34375000, 0 } },
+  { "SONY", "SLT-A99", Incandescent, 0,		{ 1.49609375, 1, 2.66796875, 0 } },
+  { "SONY", "SLT-A99", WarmWhiteFluorescent, 0,	{ 1.73828125, 1, 2.65234375, 0 } },
+  { "SONY", "SLT-A99", CoolWhiteFluorescent, 0,	{ 2.29296875, 1, 2.13671875, 0 } },
+  { "SONY", "SLT-A99", DayWhiteFluorescent, 0,	{ 2.34375000, 1, 1.58984375, 0 } },
+  { "SONY", "SLT-A99", DaylightFluorescent, 0,	{ 2.63671875, 1, 1.37890625, 0 } },
+  { "SONY", "SLT-A99", Flash, 0,		{ 2.70703125, 1, 1.32031250, 0 } },
+
 };
 
 const int wb_preset_count = sizeof(wb_preset) / sizeof(wb_data);
