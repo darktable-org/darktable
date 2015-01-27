@@ -775,6 +775,19 @@ darktable.debug.type:set_text([[Similar to the system function type() but it wil
   types.lua_file_chooser_button.changed_callback:set_reported_type("function")
   types.lua_file_chooser_button.changed_callback:add_parameter("widget",types.lua_widget,"The widget that triggered the callback")
 
+  types.lua_radio_button:set_text("A radio button with a label next to it"..para().."only one radio button within a group can be selected");
+  types.lua_radio_button.label:set_text("The label displayed next to the button");
+  types.lua_radio_button.value:set_text("If the widget is selected or not");
+	types.lua_radio_button.extra_registration_parameters:set_text("")
+	types.lua_radio_button.extra_registration_parameters:add_parameter("label","string","The label to use"):set_attribute("optional",true)
+	types.lua_radio_button.extra_registration_parameters:add_parameter("callback",types.lua_radio_button.clicked_callback,"A function to call on button click"):set_attribute("optional",true)
+  types.lua_radio_button.clicked_callback:set_text("A function to call on button click")
+  types.lua_radio_button.clicked_callback:set_reported_type("function")
+  types.lua_radio_button.clicked_callback:add_parameter("widget",types.lua_widget,"The widget that triggered the callback")
+  types.lua_radio_button.group_with:set_text("Groups two radio buttons together."..para().."This does not change UI layout and bot buttons need to be put into your UI");
+	types.lua_radio_button.extra_registration_parameters:add_parameter("self",types.lua_radio_button,"The radio button to group"):set_attribute("is_self",true)
+	types.lua_radio_button.extra_registration_parameters:add_parameter("radio_button",types.lua_radio_button,"The second button to group, can be nil to ungroup"):set_attribute("optional",true)
+
 	----------------------
 	--  EVENTS          --
 	----------------------

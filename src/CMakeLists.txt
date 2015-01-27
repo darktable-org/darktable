@@ -487,6 +487,7 @@ if(USE_LUA)
       "lua/widget/entry.c"
       "lua/widget/file_chooser.c"
       "lua/widget/label.c"
+      "lua/widget/radio_button.c"
       "lua/widget/separator.c"
       )
     set(SOURCES ${SOURCES} ${SOURCE_FILES_LUA})
