@@ -207,8 +207,7 @@ _print_button_clicked (GtkWidget *widget, gpointer user_data)
   const double pa_width  = (width  - margin_w) / 25.4;
   const double pa_height = (height - margin_h) / 25.4;
 
-  if (darktable.unmuted & DT_DEBUG_PRINT)
-    fprintf(stderr, "[print] area for image %u : %3.2fin x %3.2fin\n", imgid, pa_width, pa_height);
+  dt_print(DT_DEBUG_PRINT, "[print] area for image %u : %3.2fin x %3.2fin\n", imgid, pa_width, pa_height);
 
   // compute the needed size for picture for the given printer resolution
 
@@ -223,8 +222,7 @@ _print_button_clicked (GtkWidget *widget, gpointer user_data)
   gchar *printer_profile = dt_conf_get_string("plugins/print/printer/iccprofile");
   const int pintent = dt_conf_get_int("plugins/print/printer/iccintent");
 
-  if (darktable.unmuted & DT_DEBUG_PRINT)
-    fprintf(stderr, "[print] max image size %d x %d (at resolution %d)\n", max_width, max_height, ps->prt.printer.resolution);
+  dt_print(DT_DEBUG_PRINT, "[print] max image size %d x %d (at resolution %d)\n", max_width, max_height, ps->prt.printer.resolution);
 
   dt_imageio_module_format_t buf;
   buf.mime = mime;
@@ -269,9 +267,8 @@ _print_button_clicked (GtkWidget *widget, gpointer user_data)
   const int margin_right  = pwidth - iwidth - ix;
   const int margin_bottom = pheight - iheight - iy;
 
-  if (darktable.unmuted & DT_DEBUG_PRINT)
-    fprintf(stderr, "[print] margins top %d ; bottom %d ; left %d ; right %d\n",
-            margin_top, margin_bottom, margin_left, margin_right);
+  dt_print(DT_DEBUG_PRINT, "[print] margins top %d ; bottom %d ; left %d ; right %d\n",
+           margin_top, margin_bottom, margin_left, margin_right);
 
   // we have the exported buffer, let's apply the printer profile
 
