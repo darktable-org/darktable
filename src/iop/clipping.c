@@ -1266,8 +1266,11 @@ static float _ratio_get_aspect(dt_iop_module_t *self)
 {
   dt_iop_clipping_params_t *p = (dt_iop_clipping_params_t *)self->params;
 
-  int iwd, iht;
-  dt_dev_get_processed_size(darktable.develop, &iwd, &iht);
+  // we want to know the size of the actual buffer
+  dt_dev_pixelpipe_iop_t *piece = dt_dev_distort_get_iop_pipe(self->dev, self->dev->preview_pipe, self);
+  if(!piece) return 0;
+
+  const int iwd = piece->buf_in.width, iht = piece->buf_in.height;
 
   // if we do not have yet computed the aspect ratio, let's do it now
   if(p->ratio_d == -2 && p->ratio_n == -2)
