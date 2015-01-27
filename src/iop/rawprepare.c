@@ -325,10 +325,14 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_
   cl_int err = -999;
 
   int kernel = -1;
+  int cx = -1;
+  int cy = -1;
 
   if(!dt_dev_pixelpipe_uses_downsampled_input(piece->pipe) && dt_image_filter(&piece->pipe->image))
   {
     kernel = gd->kernel_rawprepare_1f;
+    cx = d->x;
+    cy = d->y;
   }
   else
   {
@@ -349,10 +353,12 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_
   dt_opencl_set_kernel_arg(devid, kernel, 1, sizeof(cl_mem), (void *)&dev_out);
   dt_opencl_set_kernel_arg(devid, kernel, 2, sizeof(int), (void *)&(width));
   dt_opencl_set_kernel_arg(devid, kernel, 3, sizeof(int), (void *)&(height));
-  dt_opencl_set_kernel_arg(devid, kernel, 4, sizeof(cl_mem), (void *)&dev_sub);
-  dt_opencl_set_kernel_arg(devid, kernel, 5, sizeof(cl_mem), (void *)&dev_div);
-  dt_opencl_set_kernel_arg(devid, kernel, 6, sizeof(uint32_t), (void *)&roi_out->x);
-  dt_opencl_set_kernel_arg(devid, kernel, 7, sizeof(uint32_t), (void *)&roi_out->y);
+  dt_opencl_set_kernel_arg(devid, kernel, 4, sizeof(int), (void *)&cx);
+  dt_opencl_set_kernel_arg(devid, kernel, 5, sizeof(int), (void *)&cy);
+  dt_opencl_set_kernel_arg(devid, kernel, 6, sizeof(cl_mem), (void *)&dev_sub);
+  dt_opencl_set_kernel_arg(devid, kernel, 7, sizeof(cl_mem), (void *)&dev_div);
+  dt_opencl_set_kernel_arg(devid, kernel, 8, sizeof(uint32_t), (void *)&roi_out->x);
+  dt_opencl_set_kernel_arg(devid, kernel, 9, sizeof(uint32_t), (void *)&roi_out->y);
   err = dt_opencl_enqueue_kernel_2d(devid, kernel, sizes);
   if(err != CL_SUCCESS) goto error;
 
@@ -409,7 +415,8 @@ void commit_params(dt_iop_module_t *self, const dt_iop_params_t *const params, d
 
   if(!dt_image_is_raw(&piece->pipe->image) || piece->pipe->image.bpp == sizeof(float)) piece->enabled = 0;
 
-  piece->process_cl_ready = 0;
+  if(!(!dt_dev_pixelpipe_uses_downsampled_input(piece->pipe) && dt_image_filter(&piece->pipe->image)))
+    piece->process_cl_ready = 0;
 }
 
 void init_pipe(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
