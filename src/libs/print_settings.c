@@ -36,7 +36,6 @@
 DT_MODULE(1)
 
 static gboolean _bauhaus_combo_box_set_active_text(GtkWidget *cb, const gchar *text);
-static gboolean _combo_box_set_active_text(GtkComboBox *cb, const gchar *text);
 
 const char*
 name ()
@@ -56,9 +55,8 @@ uint32_t container()
 
 typedef struct dt_lib_print_settings_t
 {
-  GtkComboBox *printers;
   GtkWidget *profile, *intent, *style, *style_mode, *papers;
-  GtkWidget *landscape, *portrait, *pprofile, *pintent;
+  GtkWidget *printers, *orientation, *pprofile, *pintent;
   GList *profiles;
   GtkButton *print_button;
   GtkToggleButton *lock_button;
@@ -416,9 +414,9 @@ static void _set_printer(dt_lib_module_t *self, const char *printer_name)
 }
 
 static void
-_printer_changed (GtkComboBoxText *combo, dt_lib_module_t *self)
+_printer_changed (GtkWidget *combo, dt_lib_module_t *self)
 {
-  const gchar *printer_name = gtk_combo_box_text_get_active_text(GTK_COMBO_BOX_TEXT(combo));
+  const gchar *printer_name = dt_bauhaus_combobox_get_text(combo);
 
   if (printer_name)
     _set_printer (self, printer_name);
@@ -560,12 +558,11 @@ _alignment_callback(GtkWidget *tb, gpointer user_data)
 }
 
 static void
-_orientation_callback (GtkWidget *radio, gpointer user_data)
+_orientation_changed (GtkWidget *combo, dt_lib_module_t *self)
 {
-  dt_lib_module_t *self = (dt_lib_module_t *)user_data;
   dt_lib_print_settings_t *ps = (dt_lib_print_settings_t *)self->data;
 
-  ps->prt.page.landscape = !gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON(ps->portrait));
+  ps->prt.page.landscape = dt_bauhaus_combobox_get (combo);
 
   _update_slider (ps);
 }
@@ -709,10 +706,7 @@ static void _print_settings_filmstrip_activate_callback(gpointer instance,gpoint
 
   _set_orientation (ps);
 
-  if (ps->prt.page.landscape)
-    gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON(ps->landscape), TRUE);
-  else
-    gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON(ps->portrait), TRUE);
+  dt_bauhaus_combobox_set (ps->orientation, ps->prt.page.landscape==TRUE?1:0);
 }
 
 static GList* _get_profiles ()
@@ -784,7 +778,6 @@ gui_init (dt_lib_module_t *self)
   dt_loc_get_datadir(datadir, sizeof(datadir));
 
   GtkWidget *label;
-  GtkComboBox *comb;
   char tooltip[1024];
 
   dt_init_print_info(&d->prt);
@@ -836,7 +829,7 @@ gui_init (dt_lib_module_t *self)
   label = dt_ui_section_label_new(_("printer"));
   gtk_box_pack_start(GTK_BOX(self->widget), label, TRUE, TRUE, 0);
 
-  comb = GTK_COMBO_BOX(gtk_combo_box_text_new());
+  d->printers = dt_bauhaus_combobox_new(NULL);
 
   const char *default_printer = dt_conf_get_string("plugins/print/print/printer");
 
@@ -844,7 +837,7 @@ gui_init (dt_lib_module_t *self)
   while (printers)
   {
     dt_printer_info_t *printer = (dt_printer_info_t *)printers->data;
-    gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(comb), printer->name);
+    dt_bauhaus_combobox_add(d->printers, printer->name);
     if (!strcmp(default_printer, printer->name) || default_printer[0]=='\0')
     {
       // record the printer to set as we want to set this when the paper widget is realized
@@ -855,9 +848,8 @@ gui_init (dt_lib_module_t *self)
     np++;
   }
 
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(comb), TRUE, TRUE, 0);
-  d->printers = comb;
-  g_signal_connect(G_OBJECT(d->printers), "changed", G_CALLBACK(_printer_changed), self);
+  gtk_box_pack_start(GTK_BOX(self->widget), d->printers, TRUE, TRUE, 0);
+  g_signal_connect(G_OBJECT(d->printers), "value-changed", G_CALLBACK(_printer_changed), self);
   g_list_free_full (printers, g_free);
 
   //  Add printer profile combo
@@ -929,22 +921,17 @@ gui_init (dt_lib_module_t *self)
 
   // now set recorded default/active printer
 
-  gtk_combo_box_set_active(GTK_COMBO_BOX(comb), printer_index);
+  dt_bauhaus_combobox_set(d->printers, printer_index);
   _set_printer(self, printer_name);
 
   //// portrait / landscape
 
-  d->landscape = gtk_radio_button_new_with_label(NULL, _("landscape"));
-  d->portrait = gtk_radio_button_new_with_label_from_widget(GTK_RADIO_BUTTON (d->landscape), _("portrait"));
-  GtkBox *hbox2 = GTK_BOX(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, DT_PIXEL_APPLY_DPI(5)));
-  gtk_box_pack_start(GTK_BOX(hbox2), GTK_WIDGET(d->landscape), TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(hbox2), GTK_WIDGET(d->portrait), TRUE, TRUE, 0);
+  d->orientation = dt_bauhaus_combobox_new(NULL);
+  dt_bauhaus_widget_set_label(d->orientation, NULL, _("orientation"));
+  dt_bauhaus_combobox_add(d->orientation, _("portrait"));
+  dt_bauhaus_combobox_add(d->orientation, _("landscape"));
 
-  comb = GTK_COMBO_BOX(gtk_combo_box_text_new());
-  gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(comb), _("mm"));
-  gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(comb), _("cm"));
-  gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(comb), _("inch"));
-  gtk_box_pack_start(GTK_BOX(hbox2), GTK_WIDGET(comb), TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(d->orientation), TRUE, TRUE, 0);
 
   GtkWidget *ucomb = dt_bauhaus_combobox_new(NULL);
   dt_bauhaus_combobox_add(ucomb, _("mm"));
@@ -955,16 +942,10 @@ gui_init (dt_lib_module_t *self)
   d->unit = dt_conf_get_int("plugins/print/print/unit");
   dt_bauhaus_combobox_set(ucomb, d->unit);
 
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(hbox2), TRUE, TRUE, 0);
-  g_signal_connect(G_OBJECT(d->landscape), "toggled", G_CALLBACK(_orientation_callback), self);
-  g_signal_connect(G_OBJECT(d->portrait), "toggled", G_CALLBACK(_orientation_callback), self);
-  g_signal_connect(G_OBJECT(comb), "changed", G_CALLBACK(_unit_callback), self);
+  g_signal_connect(G_OBJECT(d->orientation), "value-changed", G_CALLBACK(_orientation_changed), self);
   g_signal_connect(G_OBJECT(ucomb), "value-changed", G_CALLBACK(_unit_changed), self);
 
-  if (d->prt.page.landscape)
-    gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON(d->landscape), TRUE);
-  else
-    gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON(d->portrait), TRUE);
+  dt_bauhaus_combobox_set (d->orientation, d->prt.page.landscape?1:0);
 
   //// borders
 
@@ -1173,36 +1154,6 @@ static gboolean _bauhaus_combo_box_set_active_text(GtkWidget *cb, const gchar *t
   return FALSE;
 }
 
-static gboolean _combo_box_set_active_text(GtkComboBox *cb, const gchar *text)
- {
-   g_assert(text != NULL);
-   g_assert(cb != NULL);
-  GtkTreeModel *model = gtk_combo_box_get_model(cb);
-  GtkTreeIter iter;
-  if(gtk_tree_model_get_iter_first(model, &iter))
-   {
-    int k = -1;
-    do
-     {
-      k++;
-      GValue value = {
-        0,
-      };
-      gtk_tree_model_get_value(model, &iter, 0, &value);
-      gchar *v = NULL;
-      if(G_VALUE_HOLDS_STRING(&value) && (v = (gchar *)g_value_get_string(&value)) != NULL)
-      {
-        if(strcmp(v, text) == 0)
-        {
-          gtk_combo_box_set_active(cb, k);
-          return TRUE;
-        }
-      }
-    } while(gtk_tree_model_iter_next(model, &iter));
-   }
-   return FALSE;
- }
-
 void init_presets(dt_lib_module_t *self)
 {
 }
@@ -1275,12 +1226,12 @@ int set_params(dt_lib_module_t *self, const void *params, int size)
 
   // set the GUI with corresponding values
   if (printer[0] != '\0')
-    _combo_box_set_active_text(ps->printers, printer);
+    _bauhaus_combo_box_set_active_text(ps->printers, printer);
 
   if (paper[0] != '\0')
     _bauhaus_combo_box_set_active_text(ps->papers, paper);
 
-  gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON(ps->portrait), !landscape);
+  dt_bauhaus_combobox_set (ps->orientation, landscape);
 
   if (profile[0] != '\0')
     _bauhaus_combo_box_set_active_text(ps->profile, profile);
@@ -1317,7 +1268,7 @@ void *get_params(dt_lib_module_t *self, int *size)
   const int32_t style_mode = dt_bauhaus_combobox_get(ps->style_mode);
   const char *pprofile = dt_bauhaus_combobox_get_text(ps->pprofile);
   const int32_t pintent =  dt_bauhaus_combobox_get(ps->pintent);
-  const int32_t landscape = !gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON(ps->portrait));
+  const int32_t landscape = dt_bauhaus_combobox_get(ps->orientation);
   const double b_top = ps->prt.page.margin_top;
   const double b_bottom = ps->prt.page.margin_bottom;
   const double b_left = ps->prt.page.margin_left;
@@ -1405,7 +1356,7 @@ gui_reset (dt_lib_module_t *self)
 
   _set_orientation (ps);
 
-  gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON(ps->portrait), !ps->prt.page.landscape);
+  dt_bauhaus_combobox_set (ps->orientation, ps->prt.page.landscape?1:0);
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
