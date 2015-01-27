@@ -42,6 +42,7 @@ typedef struct dt_iop_rawprepare_params_t
 typedef struct dt_iop_rawprepare_gui_data_t
 {
   GtkWidget *box_raw;
+  // TODO: GUI for cropping.
   GtkWidget *black_level_separate[4];
   GtkWidget *white_point;
   GtkWidget *label_non_raw;
@@ -124,6 +125,47 @@ int output_bpp(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe
     return 4 * sizeof(float);
 }
 
+// we're not scaling here (bayer input), so just crop borders
+void modify_roi_out(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, dt_iop_roi_t *roi_out,
+                    const dt_iop_roi_t *const roi_in)
+{
+  *roi_out = *roi_in;
+  dt_iop_rawprepare_data_t *d = (dt_iop_rawprepare_data_t *)piece->data;
+
+  roi_out->x = roi_out->y = 0;
+
+  int32_t x = d->x + d->width, y = d->y + d->height;
+
+  if(dt_dev_pixelpipe_uses_downsampled_input(piece->pipe))
+  {
+    // TODO
+  }
+  else
+  {
+    roi_out->width -= x;
+    roi_out->height -= y;
+  }
+}
+
+void modify_roi_in(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const dt_iop_roi_t *const roi_out,
+                   dt_iop_roi_t *roi_in)
+{
+  *roi_in = *roi_out;
+  dt_iop_rawprepare_data_t *d = (dt_iop_rawprepare_data_t *)piece->data;
+
+  int32_t x = d->x + d->width, y = d->y + d->height;
+
+  if(dt_dev_pixelpipe_uses_downsampled_input(piece->pipe))
+  {
+    // TODO
+  }
+  else
+  {
+    roi_in->width += x;
+    roi_in->height += y;
+  }
+}
+
 static int BL(const dt_iop_roi_t *const roi_out, const dt_iop_rawprepare_data_t *const d, const int row,
               const int col)
 {
@@ -140,22 +182,26 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
 
   if(!dt_dev_pixelpipe_uses_downsampled_input(piece->pipe) && dt_image_filter(&piece->pipe->image))
   { // raw mosaic
+    const int cx = d->x, cy = d->y;
+
 #ifdef _OPENMP
 #pragma omp parallel for default(none) schedule(static) shared(ovoid)
 #endif
     for(int j = 0; j < roi_out->height; j++)
     {
-      const uint16_t *in = ((uint16_t *)ivoid) + (size_t)roi_in->width * j;
+      const uint16_t *in = ((uint16_t *)ivoid) + ((size_t)roi_in->width * (j + cy) + cx);
       float *out = ((float *)ovoid) + (size_t)roi_out->width * j;
 
       int i = 0;
-      int alignment = ((8 - (j * roi_out->width & (8 - 1))) & (8 - 1));
 
-      // process unaligned pixels
-      for(; i < alignment; i++, out++, in++)
+      // FIXME: figure alignment!  !!! replace with for !!!
+      while((!dt_is_aligned(in, 16) || !dt_is_aligned(out, 16)) && (i < roi_out->width))
       {
         const int id = BL(roi_out, d, j, i);
         *out = MAX(0.0f, ((float)(*in)) - d->sub[id]) / d->div[id];
+        i++;
+        in++;
+        out++;
       }
 
       const __m128 sub = _mm_set_ps(d->sub[BL(roi_out, d, j, i + 3)], d->sub[BL(roi_out, d, j, i + 2)],
@@ -315,6 +361,9 @@ void commit_params(dt_iop_module_t *self, const dt_iop_params_t *const params, d
   }
 
   if(!dt_image_is_raw(&piece->pipe->image) || piece->pipe->image.bpp == sizeof(float)) piece->enabled = 0;
+
+  if(!dt_dev_pixelpipe_uses_downsampled_input(piece->pipe) && dt_image_filter(&piece->pipe->image))
+    piece->process_cl_ready = 0;
 }
 
 void init_pipe(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
