@@ -207,19 +207,18 @@ typedef struct dt_control_merge_hdr_t
 
   int wd;
   int ht;
+  dt_image_orientation_t orientation;
 
   float whitelevel;
   float epsw;
 
-  // in case export is faster than our dt_control_merge_hdr_process callback:
-  dt_pthread_mutex_t lock;
+  // 0 - ok; 1 - errors, abort
+  gboolean abort;
 } dt_control_merge_hdr_t;
 
 typedef struct dt_control_merge_hdr_format_t
 {
-  int max_width, max_height;
-  int width, height;
-  char style[128];
+  dt_imageio_module_data_t parent;
   dt_control_merge_hdr_t *d;
 } dt_control_merge_hdr_format_t;
 
@@ -265,8 +264,6 @@ static int dt_control_merge_hdr_process(dt_imageio_module_data_t *datai, const c
   dt_control_merge_hdr_format_t *data = (dt_control_merge_hdr_format_t *)datai;
   dt_control_merge_hdr_t *d = data->d;
 
-  dt_pthread_mutex_lock(&d->lock);
-
   // just take a copy. also do it after blocking read, so filters will make sense.
   const dt_image_t *img = dt_image_cache_get(darktable.image_cache, imgid, 'r');
   const dt_image_t image = *img;
@@ -280,17 +277,21 @@ static int dt_control_merge_hdr_process(dt_imageio_module_data_t *datai, const c
     d->weight = calloc(datai->width * datai->height, sizeof(float));
     d->wd = datai->width;
     d->ht = datai->height;
+    d->orientation = image.orientation;
   }
 
   if(image.filters == 0u || image.filters == 9u || image.bpp != sizeof(uint16_t))
   {
     dt_control_log(_("exposure bracketing only works on Bayer raw images."));
-    return 0;
+    d->abort = TRUE;
+    return 1;
   }
-  else if(datai->width != d->wd || datai->height != d->ht || d->first_filter != dt_image_filter(&image))
+  else if(datai->width != d->wd || datai->height != d->ht || d->first_filter != dt_image_filter(&image)
+          || d->orientation != image.orientation)
   {
-    dt_control_log(_("images have to be of same size! Skipping."));
-    return 0;
+    dt_control_log(_("images have to be of same size and orientation!"));
+    d->abort = TRUE;
+    return 1;
   }
 
   // if no valid exif data can be found, assume peleng fisheye at f/16, 8mm, with half of the light lost in
@@ -306,7 +307,7 @@ static int dt_control_merge_hdr_process(dt_imageio_module_data_t *datai, const c
   const float photoncnt = 100.0f * aperture * exp / iso;
   // once we get unscaled raw data in this uint16_t buffer, we need to rescale (and subtract black before
   // using the values):
-  int32_t saturation = 0xffff; // image.raw_white_point - image.raw_black_level;
+  float saturation = 1.0f; // image.raw_white_point - image.raw_black_level;
   d->whitelevel = fmaxf(d->whitelevel, saturation * cal);
 #ifdef _OPENMP
 #pragma omp parallel for schedule(static) default(none) shared(d, saturation)
@@ -321,13 +322,13 @@ static int dt_control_merge_hdr_process(dt_imageio_module_data_t *datai, const c
       float w = photoncnt;
 
       // need some safety margin due to upsampling and 16-bit quantization + dithering?
-      int32_t offset = 3000;
+      float offset = 3000.0f / (float)UINT16_MAX;
 
       // cannot do an envelope based on single pixel values here, need to get
       // maximum value of all color channels. do find that, go through the bayer
       // pattern block:
       int xx = x & ~1, yy = y & ~1;
-      int32_t M = 0, m = 0xffff;
+      float M = 0.0f, m = FLT_MAX;
       if(xx < d->wd - 1 && yy < d->ht - 1)
       {
         for(int i = 0; i < 2; i++)
@@ -339,7 +340,7 @@ static int dt_control_merge_hdr_process(dt_imageio_module_data_t *datai, const c
         // move envelope a little to allow non-zero weight even for clipped regions.
         // this is because even if the 2x2 block is clipped somewhere, the other channels
         // might still prove useful. we'll check for individual channel saturation below.
-        w *= d->epsw + envelope((M + offset) / (float)saturation);
+        w *= d->epsw + envelope((M + offset) / saturation);
       }
 
       if(M + offset >= saturation)
@@ -370,8 +371,6 @@ static int dt_control_merge_hdr_process(dt_imageio_module_data_t *datai, const c
       }
     }
 
-  dt_pthread_mutex_unlock(&d->lock);
-
   return 0;
 }
 
@@ -387,18 +386,20 @@ static int32_t dt_control_merge_hdr_job_run(dt_job_t *job)
   dt_progress_t *progress = dt_control_progress_create(darktable.control, TRUE, message);
   dt_control_progress_attach_job(darktable.control, progress, job);
 
-  dt_control_merge_hdr_t d = (dt_control_merge_hdr_t){.epsw = 1e-8f };
+  dt_control_merge_hdr_t d = (dt_control_merge_hdr_t){.epsw = 1e-8f, .abort = FALSE };
 
   dt_imageio_module_format_t buf = (dt_imageio_module_format_t){.mime = dt_control_merge_hdr_mime,
                                                                 .levels = dt_control_merge_hdr_levels,
                                                                 .bpp = dt_control_merge_hdr_bpp,
                                                                 .write_image = dt_control_merge_hdr_process };
 
-  dt_control_merge_hdr_format_t dat = (dt_control_merge_hdr_format_t){.style = { '\0' }, .d = &d };
+  dt_control_merge_hdr_format_t dat = (dt_control_merge_hdr_format_t){.parent = { 0 }, .d = &d };
 
   int num = 1;
   while(t)
   {
+    if(d.abort) goto end;
+
     const uint32_t imgid = GPOINTER_TO_INT(t->data);
 
     dt_imageio_export_with_flags(imgid, "unused", &buf, (dt_imageio_module_data_t *)&dat, 1, 0, 1, 0,
@@ -411,6 +412,9 @@ static int32_t dt_control_merge_hdr_job_run(dt_job_t *job)
     dt_control_progress_set_progress(darktable.control, progress, fraction);
     num++;
   }
+
+  if(d.abort) goto end;
+
 // normalize by white level to make clipping at 1.0 work as expected
 
 #ifdef _OPENMP
@@ -446,6 +450,7 @@ static int32_t dt_control_merge_hdr_job_run(dt_job_t *job)
   dt_image_import(filmid, pathname, TRUE);
   g_free(directory);
 
+end:
   free(d.pixels);
   free(d.weight);
 
