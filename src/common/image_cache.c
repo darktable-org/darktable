@@ -93,6 +93,7 @@ void dt_image_cache_allocate(void *data, dt_cache_entry_t *entry)
     img->colorspace = sqlite3_column_int(stmt, 22);
     img->version = sqlite3_column_int(stmt, 23);
     img->raw_black_level = sqlite3_column_int(stmt, 24);
+    for(uint8_t i = 0; i < 4; i++) img->raw_black_level_separate[i] = 0;
     img->raw_white_point = sqlite3_column_int(stmt, 25);
 
     // buffer size?

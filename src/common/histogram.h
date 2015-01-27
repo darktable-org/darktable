@@ -24,6 +24,18 @@
 #include "develop/imageop.h"
 #include "develop/pixelpipe.h"
 
+/*
+ * histogram region of interest
+ *
+ * image is located in (0,     0)      .. (width,           height)
+ * but only            (crop_x,crop_y) .. (width-crop_width,height-crop_height)
+ * will be sampled
+ */
+typedef struct dt_histogram_roi_t
+{
+  int width, height, crop_x, crop_y, crop_width, crop_height;
+} dt_histogram_roi_t;
+
 void dt_histogram_helper_cs_RAW_uint16(const dt_dev_histogram_collection_params_t *histogram_params,
                                        const void *pixel, uint32_t *histogram, int j);
 
