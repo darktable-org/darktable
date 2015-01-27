@@ -336,14 +336,34 @@ void dt_print_file(const int32_t imgid, const char *filename, const dt_print_inf
 
 static void _get_image_dimension (int32_t imgid, int32_t *iwidth, int32_t *iheight)
 {
+  dt_develop_t dev;
   dt_mipmap_buffer_t buf;
-  dt_mipmap_cache_get(darktable.mipmap_cache, &buf, imgid, DT_MIPMAP_3, DT_MIPMAP_BEST_EFFORT, 'r');
+  dt_mipmap_cache_get(darktable.mipmap_cache, &buf, imgid, DT_MIPMAP_FULL, DT_MIPMAP_BLOCKING, 'r');
 
-  // more than the image dimension we want the image aspect to be preserved
-  *iwidth = buf.width * 4;
-  *iheight = buf.height * 4;
+  dt_dev_init(&dev, 0);
+  dt_dev_load_image(&dev, imgid);
+  const dt_image_t *img = &dev.image_storage;
 
+  dt_dev_pixelpipe_t pipe;
+  int wd = img->width, ht = img->height;
+  int res = dt_dev_pixelpipe_init_dummy(&pipe, wd, ht);
+  if(res)
+  {
+    // set mem pointer to 0, won't be used.
+    dt_dev_pixelpipe_set_input(&pipe, &dev, (float *)buf.buf, wd, ht, 1.0f);
+    dt_dev_pixelpipe_create_nodes(&pipe, &dev);
+    dt_dev_pixelpipe_synch_all(&pipe, &dev);
+    dt_dev_pixelpipe_get_dimensions(&pipe, &dev, pipe.iwidth, pipe.iheight, &pipe.processed_width,
+                                    &pipe.processed_height);
+    wd = pipe.processed_width;
+    ht = pipe.processed_height;
+    dt_dev_pixelpipe_cleanup(&pipe);
+  }
+  dt_dev_cleanup(&dev);
   dt_mipmap_cache_release(darktable.mipmap_cache, &buf);
+
+  *iwidth = wd;
+  *iheight = ht;
 }
 
 void dt_get_print_layout(const int32_t imgid, const dt_print_info_t *prt,
@@ -453,11 +473,7 @@ void dt_get_print_layout(const int32_t imgid, const dt_print_info_t *prt,
   *awidth  = br - bx;
   *aheight = bb - by;
 
-  // get the image dimensions
-
-  // if we got iwidth and iheight it is the exact size of the image, otherwise let's computer the
-  // *max* image dimension (not counting the crop). This is not a problem for displaying the image
-  // but for printing we really want to have here the real size of the image.
+  // get the image dimensions if needed
 
   if (*iwidth==0 || *iheight==0)
     _get_image_dimension (imgid, iwidth, iheight);
