@@ -372,7 +372,7 @@ static void _set_printer(dt_lib_module_t *self, const char *printer_name)
 
   dt_conf_set_string("plugins/print/print/printer", printer_name);
 
-  const char *default_paper = dt_conf_get_string("plugins/print/print/paper");
+  char *default_paper = dt_conf_get_string("plugins/print/print/paper");
 
   // next add corresponding papers
 
@@ -381,6 +381,9 @@ static void _set_printer(dt_lib_module_t *self, const char *printer_name)
   dt_bauhaus_combobox_clear(ps->papers);
 
   // then add papers for the given printer
+
+  if (ps->paper_list)
+    g_list_free_full(ps->paper_list, g_free);
 
   ps->paper_list = dt_get_papers (printer_name);
   GList *papers = ps->paper_list;
@@ -406,6 +409,8 @@ static void _set_printer(dt_lib_module_t *self, const char *printer_name)
 
   if (paper)
     memcpy(&ps->prt.paper, paper, sizeof(dt_paper_info_t));
+
+  g_free (default_paper);
 
   dt_view_print_settings(darktable.view_manager, &ps->prt);
 }
@@ -853,7 +858,7 @@ gui_init (dt_lib_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(comb), TRUE, TRUE, 0);
   d->printers = comb;
   g_signal_connect(G_OBJECT(d->printers), "changed", G_CALLBACK(_printer_changed), self);
-  g_list_free (printers);
+  g_list_free_full (printers, g_free);
 
   //  Add printer profile combo
 
@@ -864,7 +869,7 @@ gui_init (dt_lib_module_t *self)
   GList *l = d->profiles;
 
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(d->pprofile), TRUE, TRUE, 0);
-  const gchar *printer_profile = dt_conf_get_string("plugins/print/printer/iccprofile");
+  gchar *printer_profile = dt_conf_get_string("plugins/print/printer/iccprofile");
   combo_idx = -1;
   n=0;
 
@@ -882,6 +887,8 @@ gui_init (dt_lib_module_t *self)
     }
     l = g_list_next(l);
   }
+
+  g_free (printer_profile);
 
   // profile not found, maybe a profile has been removed? revert to none
   if (combo_idx == -1)
@@ -1037,7 +1044,7 @@ gui_init (dt_lib_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(d->profile), TRUE, TRUE, 0);
   dt_bauhaus_combobox_add(d->profile, _("image settings"));
 
-  const gchar *iccprofile = dt_conf_get_string("plugins/print/print/iccprofile");
+  gchar *iccprofile = dt_conf_get_string("plugins/print/print/iccprofile");
 
   l = d->profiles;
   while(l)
@@ -1055,6 +1062,7 @@ gui_init (dt_lib_module_t *self)
     dt_conf_set_string("plugins/print/print/iccprofile", "image");
     combo_idx=0;
   }
+  g_free (iccprofile);
 
   dt_bauhaus_combobox_set(d->profile, combo_idx);
 
@@ -1086,7 +1094,7 @@ gui_init (dt_lib_module_t *self)
   dt_bauhaus_combobox_add(d->style, _("none"));
 
   GList *styles = dt_styles_get_list("");
-  const gchar *current_style = dt_conf_get_string("plugins/print/print/style");
+  gchar *current_style = dt_conf_get_string("plugins/print/print/style");
   combo_idx = -1; n=0;
 
   while (styles)
@@ -1098,6 +1106,7 @@ gui_init (dt_lib_module_t *self)
       combo_idx=n;
     styles=g_list_next(styles);
   }
+  g_free(current_style);
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(d->style), TRUE, TRUE, 0);
   g_object_set(G_OBJECT(d->style), "tooltip-text", _("temporary style to append while printing"), (char *)NULL);
 
@@ -1370,6 +1379,7 @@ gui_cleanup (dt_lib_module_t *self)
   dt_lib_print_settings_t *ps = (dt_lib_print_settings_t *)self->data;
 
   g_list_free_full(ps->profiles, g_free);
+  g_list_free_full(ps->paper_list, g_free);
   free(self->data);
   self->data = NULL;
 }
