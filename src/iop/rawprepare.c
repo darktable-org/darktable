@@ -49,6 +49,7 @@ typedef struct dt_iop_rawprepare_gui_data_t
 
 typedef struct dt_iop_rawprepare_data_t
 {
+  int32_t x, y, width, height; // crop, now unused, for future expansion
   float sub[4];
   float div[4];
 } dt_iop_rawprepare_data_t;
@@ -133,6 +134,9 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
              const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
   const dt_iop_rawprepare_data_t *const d = (dt_iop_rawprepare_data_t *)piece->data;
+
+  // fprintf(stderr, "roi in %d %d %d %d\n", roi_in->x, roi_in->y, roi_in->width, roi_in->height);
+  // fprintf(stderr, "roi out %d %d %d %d\n", roi_out->x, roi_out->y, roi_out->width, roi_out->height);
 
   if(!dt_dev_pixelpipe_uses_downsampled_input(piece->pipe) && dt_image_filter(&piece->pipe->image))
   { // raw mosaic
@@ -278,6 +282,11 @@ void commit_params(dt_iop_module_t *self, const dt_iop_params_t *const params, d
   const dt_iop_rawprepare_params_t *const p = (dt_iop_rawprepare_params_t *)params;
   dt_iop_rawprepare_data_t *d = (dt_iop_rawprepare_data_t *)piece->data;
 
+  d->x = p->x;
+  d->y = p->y;
+  d->width = p->width;
+  d->height = p->height;
+
   if(!dt_dev_pixelpipe_uses_downsampled_input(piece->pipe) && dt_image_filter(&piece->pipe->image))
   {
     const float white = (float)p->raw_white_point;
@@ -329,7 +338,11 @@ void reload_defaults(dt_iop_module_t *self)
 
   const dt_image_t *const image = &(self->dev->image_storage);
 
-  tmp = (dt_iop_rawprepare_params_t){.raw_black_level_separate[0] = image->raw_black_level_separate[0],
+  tmp = (dt_iop_rawprepare_params_t){.x = image->crop_x,
+                                     .y = image->crop_y,
+                                     .width = image->crop_width,
+                                     .height = image->crop_height,
+                                     .raw_black_level_separate[0] = image->raw_black_level_separate[0],
                                      .raw_black_level_separate[1] = image->raw_black_level_separate[1],
                                      .raw_black_level_separate[2] = image->raw_black_level_separate[2],
                                      .raw_black_level_separate[3] = image->raw_black_level_separate[3],
