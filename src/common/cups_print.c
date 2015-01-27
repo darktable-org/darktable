@@ -127,10 +127,8 @@ GList *dt_get_printers(void)
       dt_printer_info_t *pr = dt_get_printer_info(dest->name);
       result = g_list_append(result,pr);
     }
-    else if (darktable.unmuted & DT_DEBUG_PRINT)
-    {
-      fprintf(stderr, "[print] skip printer %s as stopped\n", dest->name);
-    }
+    else
+      dt_print(DT_DEBUG_PRINT, "[print] skip printer %s as stopped\n", dest->name);
   }
 
   cupsFreeDests(num_dests, dests);
@@ -228,10 +226,8 @@ GList *dt_get_papers(const char *printer_name)
         }
       }
     }
-    else if (darktable.unmuted & DT_DEBUG_PRINT)
-    {
-      fprintf(stderr, "[print] cannot connect to printer %s (cancel=%d)\n", printer_name, cancel);
-    }
+    else
+      dt_print(DT_DEBUG_PRINT, "[print] cannot connect to printer %s (cancel=%d)\n", printer_name, cancel);
   }
 
   // check now PPD page sizes
@@ -324,14 +320,9 @@ void dt_print_file(const int32_t imgid, const char *filename, const dt_print_inf
 
   // print lp options
 
-  if (darktable.unmuted & DT_DEBUG_PRINT)
-  {
-    fprintf (stderr, "[print] printer options (%d)\n", num_options);
-    for (int k=0; k<num_options; k++)
-    {
-      fprintf (stderr, "[print]   %s=%s\n", options[k].name, options[k].value);
-    }
-  }
+  dt_print(DT_DEBUG_PRINT, "[print] printer options (%d)\n", num_options);
+  for (int k=0; k<num_options; k++)
+    dt_print(DT_DEBUG_PRINT, "[print]   %s=%s\n", options[k].name, options[k].value);
 
   const int job_id = cupsPrintFile(pinfo->printer.name, filename,  "darktable", num_options, options);
 
