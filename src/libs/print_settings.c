@@ -217,11 +217,6 @@ _print_button_clicked (GtkWidget *widget, gpointer user_data)
   int max_width  = (pa_width  * ps->prt.printer.resolution);
   int max_height = (pa_height * ps->prt.printer.resolution);
 
-  // make sure we are a multiple of four
-
-  max_width -= max_width % 4;
-  max_height -= max_height % 4;
-
   dt_print(DT_DEBUG_PRINT, "[print] max image size %d x %d (at resolution %d)\n", max_width, max_height, ps->prt.printer.resolution);
 
   dt_imageio_module_format_t buf;
