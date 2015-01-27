@@ -18,6 +18,11 @@ if(GPHOTO2_FOUND)
     set(MODULES ${MODULES} tethering)
 endif(GPHOTO2_FOUND)
 
+if(CUPS_FOUND)
+    add_library(print MODULE "print.c")
+    set(MODULES ${MODULES} print)
+endif(CUPS_FOUND)
+
 foreach(module ${MODULES})
     target_link_libraries(${module} ${LIBS})
 endforeach(module)
@@ -25,4 +30,3 @@ endforeach(module)
 foreach(module ${MODULES})
     install(TARGETS  ${module} DESTINATION ${LIB_INSTALL}/darktable/views)
 endforeach(module)
-

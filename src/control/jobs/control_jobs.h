@@ -22,6 +22,10 @@
 #include "control/control.h"
 #include "common/imageio_module.h"
 
+#ifdef HAVE_PRINT
+#include "common/cups_print.h"
+#endif
+
 typedef struct dt_control_export_t
 {
   int max_width, max_height, format_index, storage_index;
@@ -31,6 +35,22 @@ typedef struct dt_control_export_t
   char style[128];
   gboolean style_append;
 } dt_control_export_t;
+
+#ifdef HAVE_PRINT
+// note that dt_control_print_t must start as dt_control_export_t as it is also used by the export circuitry (inheritance)
+typedef struct dt_control_print_t
+{
+  int max_width, max_height, format_index, storage_index;
+  dt_imageio_module_data_t *sdata; // needed since the gui thread resets things like overwrite once the export
+                                   // is dispatched, but we have to keep that information
+  gboolean high_quality;
+  char style[128];
+  gboolean style_append;
+  // print specific fields after this line
+  char filename[PATH_MAX];
+  dt_print_info_t pinfo;
+} dt_control_print_t;
+#endif
 
 typedef struct dt_control_image_enumerator_t
 {

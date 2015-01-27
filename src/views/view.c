@@ -70,7 +70,11 @@ void dt_view_manager_init(dt_view_manager_t *vm)
 #ifdef HAVE_MAP
                       "map",
 #endif
-                      "slideshow",  NULL };
+                      "slideshow",
+#ifdef HAVE_PRINT
+                      "print",
+#endif
+                      NULL };
   char *module = modules[midx];
   while(module != NULL)
   {
@@ -714,20 +718,22 @@ int32_t dt_view_get_image_to_act_on()
 }
 
 int dt_view_image_expose(dt_view_image_over_t *image_over, uint32_t imgid, cairo_t *cr, int32_t width,
-                          int32_t height, int32_t zoom, int32_t px, int32_t py, gboolean full_preview)
+                         int32_t height, int32_t zoom, int32_t px, int32_t py, gboolean full_preview, gboolean image_only)
 {
   int missing = 0;
   const double start = dt_get_wtime();
 // some performance tuning stuff, for your pleasure.
 // on my machine with 7 image per row it seems grouping has the largest
 // impact from around 400ms -> 55ms per redraw.
-#define DRAW_THUMB 1
-#define DRAW_COLORLABELS 1
-#define DRAW_LOCAL_COPY 1
-#define DRAW_GROUPING 1
-#define DRAW_SELECTED 1
-#define DRAW_HISTORY 1
-#define DRAW_AUDIO 1
+
+  const gboolean draw_thumb = TRUE;
+  const gboolean draw_colorlabels = !image_only;
+  const gboolean draw_local_copy = !image_only;
+  const gboolean draw_grouping = !image_only;
+  const gboolean draw_selected = !image_only;
+  const gboolean draw_history = !image_only;
+  const gboolean draw_metadata = !image_only;
+  const gboolean draw_audio = !image_only;
 
   cairo_save(cr);
   float bgcol = 0.4, fontcol = 0.425, bordercol = 0.1, outlinecol = 0.2;
@@ -735,15 +741,16 @@ int dt_view_image_expose(dt_view_image_over_t *image_over, uint32_t imgid, cairo
   // this is a gui thread only thing. no mutex required:
   imgsel = dt_control_get_mouse_over_id(); //  darktable.control->global_settings.lib_image_mouse_over_id;
 
-#if DRAW_SELECTED == 1
-  /* clear and reset statements */
-  DT_DEBUG_SQLITE3_CLEAR_BINDINGS(darktable.view_manager->statements.is_selected);
-  DT_DEBUG_SQLITE3_RESET(darktable.view_manager->statements.is_selected);
-  /* bind imgid to prepared statments */
-  DT_DEBUG_SQLITE3_BIND_INT(darktable.view_manager->statements.is_selected, 1, imgid);
-  /* lets check if imgid is selected */
-  if(sqlite3_step(darktable.view_manager->statements.is_selected) == SQLITE_ROW) selected = 1;
-#endif
+  if (draw_selected)
+  {
+    /* clear and reset statements */
+    DT_DEBUG_SQLITE3_CLEAR_BINDINGS(darktable.view_manager->statements.is_selected);
+    DT_DEBUG_SQLITE3_RESET(darktable.view_manager->statements.is_selected);
+    /* bind imgid to prepared statments */
+    DT_DEBUG_SQLITE3_BIND_INT(darktable.view_manager->statements.is_selected, 1, imgid);
+    /* lets check if imgid is selected */
+    if(sqlite3_step(darktable.view_manager->statements.is_selected) == SQLITE_ROW) selected = 1;
+  }
 
   dt_image_t buffered_image;
   const dt_image_t *img = dt_image_cache_testget(darktable.image_cache, imgid, 'r');
@@ -769,8 +776,13 @@ int dt_view_image_expose(dt_view_image_over_t *image_over, uint32_t imgid, cairo
     dt_image_cache_read_release(darktable.image_cache, img);
     img = &buffered_image;
   }
+
   float imgwd = 0.90f;
-  if(zoom == 1)
+  if (image_only)
+  {
+    imgwd = 1.0;
+  }
+  else if(zoom == 1)
   {
     imgwd = .97f;
     // cairo_set_antialias(cr, CAIRO_ANTIALIAS_NONE);
@@ -822,117 +834,133 @@ int dt_view_image_expose(dt_view_image_over_t *image_over, uint32_t imgid, cairo
   // this thumbnail as missing (to trigger re-exposure)
   if(buf.size != mip && buf.width != 8 && buf.height != 8) missing = 1;
 
-#if DRAW_THUMB == 1
-  float scale = 1.0;
-
-  cairo_surface_t *surface = NULL;
-  uint8_t *rgbbuf = NULL;
-  if(buf.buf)
+  if (draw_thumb)
   {
-    rgbbuf = (uint8_t *)calloc(buf.width * buf.height * 4, sizeof(uint8_t));
-    if(rgbbuf)
-    {
-      for(int i = 0; i < buf.height; i++)
-      {
-        uint8_t *in = buf.buf + i * buf.width * 4;
-        uint8_t *out = rgbbuf + i * buf.width * 4;
+    float scale = 1.0;
 
-        for(int j = 0; j < buf.width; j++, in += 4, out += 4)
+    cairo_surface_t *surface = NULL;
+    uint8_t *rgbbuf = NULL;
+    if(buf.buf)
+    {
+      rgbbuf = (uint8_t *)calloc(buf.width * buf.height * 4, sizeof(uint8_t));
+      if(rgbbuf)
+      {
+        for(int i = 0; i < buf.height; i++)
         {
-          out[0] = in[2];
-          out[1] = in[1];
-          out[2] = in[0];
+          uint8_t *in = buf.buf + i * buf.width * 4;
+          uint8_t *out = rgbbuf + i * buf.width * 4;
+
+          for(int j = 0; j < buf.width; j++, in += 4, out += 4)
+          {
+            out[0] = in[2];
+            out[1] = in[1];
+            out[2] = in[0];
+          }
+        }
+
+        const int32_t stride = cairo_format_stride_for_width(CAIRO_FORMAT_RGB24, buf.width);
+        surface
+          = cairo_image_surface_create_for_data(rgbbuf, CAIRO_FORMAT_RGB24, buf.width, buf.height, stride);
+      }
+
+      if(zoom == 1 && !image_only)
+      {
+        const int32_t tb = DT_PIXEL_APPLY_DPI(dt_conf_get_int("plugins/darkroom/ui/border_size"));
+        scale = fminf((width-2*tb) / (float)buf.width, (height-2*tb) / (float)buf.height);
+      }
+      else
+        scale = fminf(width * imgwd / (float)buf.width, height * imgwd / (float)buf.height);
+    }
+
+    // draw centered and fitted:
+    cairo_save(cr);
+
+    if (image_only) // in this case we want to display the picture exactly at (px, py)
+      cairo_translate(cr, px, py);
+    else
+      cairo_translate(cr, width / 2.0, height / 2.0);
+
+    cairo_scale(cr, scale, scale);
+
+    if(buf.buf && surface)
+    {
+      if (!image_only) cairo_translate(cr, -0.5 * buf.width, -0.5 * buf.height);
+      cairo_set_source_surface(cr, surface, 0, 0);
+      // set filter no nearest:
+      // in skull mode, we want to see big pixels.
+      // in 1 iir mode for the right mip, we want to see exactly what the pipe gave us, 1:1 pixel for pixel.
+      // in between, filtering just makes stuff go unsharp.
+      if((buf.width <= 8 && buf.height <= 8) || fabsf(scale - 1.0f) < 0.01f)
+        cairo_pattern_set_filter(cairo_get_source(cr), CAIRO_FILTER_NEAREST);
+      cairo_rectangle(cr, 0, 0, buf.width, buf.height);
+      cairo_fill(cr);
+      cairo_surface_destroy(surface);
+      free(rgbbuf);
+
+      cairo_rectangle(cr, 0, 0, buf.width, buf.height);
+    }
+
+    if (image_only)
+    {
+      cairo_restore(cr);
+      cairo_save(cr);
+      cairo_new_path(cr);
+      cairo_restore(cr);
+    }
+    else
+    {
+      // border around image
+      cairo_set_source_rgb(cr, bordercol, bordercol, bordercol);
+      if(buf.buf && (selected || zoom == 1))
+      {
+        const float border = zoom == 1 ? 16 / scale : 2 / scale;
+        cairo_set_line_width(cr, 1. / scale);
+        if(zoom == 1)
+        {
+          // draw shadow around border
+          cairo_set_source_rgb(cr, 0.2, 0.2, 0.2);
+          cairo_stroke(cr);
+          // cairo_new_path(cr);
+          cairo_set_fill_rule(cr, CAIRO_FILL_RULE_EVEN_ODD);
+          float alpha = 1.0f;
+          for(int k = 0; k < 16; k++)
+          {
+            cairo_rectangle(cr, 0, 0, buf.width, buf.height);
+            cairo_new_sub_path(cr);
+            cairo_rectangle(cr, -k / scale, -k / scale, buf.width + 2. * k / scale, buf.height + 2. * k / scale);
+            cairo_set_source_rgba(cr, 0, 0, 0, alpha);
+            alpha *= 0.6f;
+            cairo_fill(cr);
+          }
+        }
+        else
+        {
+          cairo_set_fill_rule(cr, CAIRO_FILL_RULE_EVEN_ODD);
+          cairo_new_sub_path(cr);
+          cairo_rectangle(cr, -border, -border, buf.width + 2. * border, buf.height + 2. * border);
+          cairo_stroke_preserve(cr);
+          cairo_set_source_rgb(cr, 1.0 - bordercol, 1.0 - bordercol, 1.0 - bordercol);
+          cairo_fill(cr);
         }
       }
-
-      const int32_t stride = cairo_format_stride_for_width(CAIRO_FORMAT_RGB24, buf.width);
-      surface
-          = cairo_image_surface_create_for_data(rgbbuf, CAIRO_FORMAT_RGB24, buf.width, buf.height, stride);
-    }
-
-    if(zoom == 1)
-    {
-      const int32_t tb = DT_PIXEL_APPLY_DPI(dt_conf_get_int("plugins/darkroom/ui/border_size"));
-      scale = fminf((width-2*tb) / (float)buf.width, (height-2*tb) / (float)buf.height);
-    }
-    else
-      scale = fminf(width * imgwd / (float)buf.width, height * imgwd / (float)buf.height);
-  }
-
-  // draw centered and fitted:
-  cairo_save(cr);
-  cairo_translate(cr, width / 2.0, height / 2.0);
-  cairo_scale(cr, scale, scale);
-
-  if(buf.buf && surface)
-  {
-    cairo_translate(cr, -0.5 * buf.width, -0.5 * buf.height);
-    cairo_set_source_surface(cr, surface, 0, 0);
-    // set filter no nearest:
-    // in skull mode, we want to see big pixels.
-    // in 1 iir mode for the right mip, we want to see exactly what the pipe gave us, 1:1 pixel for pixel.
-    // in between, filtering just makes stuff go unsharp.
-    if((buf.width <= 8 && buf.height <= 8) || fabsf(scale - 1.0f) < 0.01f)
-      cairo_pattern_set_filter(cairo_get_source(cr), CAIRO_FILTER_NEAREST);
-    cairo_rectangle(cr, 0, 0, buf.width, buf.height);
-    cairo_fill(cr);
-    cairo_surface_destroy(surface);
-    free(rgbbuf);
-
-    cairo_rectangle(cr, 0, 0, buf.width, buf.height);
-  }
-
-
-  // border around image
-  cairo_set_source_rgb(cr, bordercol, bordercol, bordercol);
-  if(buf.buf && (selected || zoom == 1))
-  {
-    const float border = zoom == 1 ? 16 / scale : 2 / scale;
-    cairo_set_line_width(cr, 1. / scale);
-    if(zoom == 1)
-    {
-      // draw shadow around border
-      cairo_set_source_rgb(cr, 0.2, 0.2, 0.2);
-      cairo_stroke(cr);
-      // cairo_new_path(cr);
-      cairo_set_fill_rule(cr, CAIRO_FILL_RULE_EVEN_ODD);
-      float alpha = 1.0f;
-      for(int k = 0; k < 16; k++)
+      else if(buf.buf)
       {
-        cairo_rectangle(cr, 0, 0, buf.width, buf.height);
-        cairo_new_sub_path(cr);
-        cairo_rectangle(cr, -k / scale, -k / scale, buf.width + 2. * k / scale, buf.height + 2. * k / scale);
-        cairo_set_source_rgba(cr, 0, 0, 0, alpha);
-        alpha *= 0.6f;
-        cairo_fill(cr);
+        cairo_set_line_width(cr, 0.5 / scale);
+        cairo_stroke(cr);
       }
     }
-    else
-    {
-      cairo_set_fill_rule(cr, CAIRO_FILL_RULE_EVEN_ODD);
-      cairo_new_sub_path(cr);
-      cairo_rectangle(cr, -border, -border, buf.width + 2. * border, buf.height + 2. * border);
-      cairo_stroke_preserve(cr);
-      cairo_set_source_rgb(cr, 1.0 - bordercol, 1.0 - bordercol, 1.0 - bordercol);
-      cairo_fill(cr);
-    }
-  }
-  else if(buf.buf)
-  {
-    cairo_set_line_width(cr, 0.5 / scale);
-    cairo_stroke(cr);
   }
   cairo_restore(cr);
-#endif
+
   dt_mipmap_cache_release(darktable.mipmap_cache, &buf);
 
   cairo_save(cr);
+
   const float fscale = fminf(width, height);
   if(imgsel == imgid || full_preview || darktable.gui->show_overlays || zoom == 1)
   {
-    if(width > DECORATION_SIZE_LIMIT)
+    if(draw_metadata && width > DECORATION_SIZE_LIMIT)
     {
-
       // draw mouseover hover effects, set event hook for mouse button down!
       cairo_set_line_width(cr, 1.5);
       cairo_set_source_rgb(cr, outlinecol, outlinecol, outlinecol);
@@ -992,7 +1020,7 @@ int dt_view_image_expose(dt_view_image_over_t *image_over, uint32_t imgid, cairo
       else
         x = .04 * fscale;
 
-      if(image_is_rejected) cairo_set_source_rgb(cr, 1., 0., 0.);
+      if(draw_metadata && image_is_rejected) cairo_set_source_rgb(cr, 1., 0., 0.);
 
       // Only draw hovering effects in stars for the hovered image
       if((imgsel == imgid || zoom == 1) && ((px - x) * (px - x) + (py - y) * (py - y) < r1 * r1))
@@ -1003,52 +1031,56 @@ int dt_view_image_expose(dt_view_image_over_t *image_over, uint32_t imgid, cairo
         cairo_stroke(cr);
       }
 
-      if(image_is_rejected) cairo_set_line_width(cr, 2.5);
+      if(draw_metadata && image_is_rejected) cairo_set_line_width(cr, 2.5);
 
-      // reject cross:
-      cairo_move_to(cr, x - r2, y - r2);
-      cairo_line_to(cr, x + r2, y + r2);
-      cairo_move_to(cr, x + r2, y - r2);
-      cairo_line_to(cr, x - r2, y + r2);
-      cairo_close_path(cr);
-      cairo_stroke(cr);
-      cairo_set_source_rgb(cr, outlinecol, outlinecol, outlinecol);
-      cairo_set_line_width(cr, 1.5);
-
-#if DRAW_AUDIO == 1
-      if(img && (img->flags & DT_IMAGE_HAS_WAV))
+      if(draw_metadata)
       {
-        // align to right
-        float s = (r1 + r2) * .5;
-        if(zoom != 1)
-        {
-          x = width * 0.9 - s * 5;
-          y = height * 0.1;
-        }
-        else
-          x = (.04 + 8 * 0.04 - 1.9 * .04) * fscale;
-        dt_view_draw_audio(cr, x, y, s);
-        // mouse is over the audio icon
-        if(fabsf(px - x) <= 1.2 * s && fabsf(-y) <= 1.2 * s) *image_over = DT_VIEW_AUDIO;
+        // reject cross:
+        cairo_move_to(cr, x - r2, y - r2);
+        cairo_line_to(cr, x + r2, y + r2);
+        cairo_move_to(cr, x + r2, y - r2);
+        cairo_line_to(cr, x - r2, y + r2);
+        cairo_close_path(cr);
+        cairo_stroke(cr);
+        cairo_set_source_rgb(cr, outlinecol, outlinecol, outlinecol);
+        cairo_set_line_width(cr, 1.5);
       }
-#endif
 
+      if (draw_audio)
+      {
+        if(img && (img->flags & DT_IMAGE_HAS_WAV))
+        {
+          // align to right
+          float s = (r1 + r2) * .5;
+          if(zoom != 1)
+          {
+            x = width * 0.9 - s * 5;
+            y = height * 0.1;
+          }
+          else
+            x = (.04 + 8 * 0.04 - 1.9 * .04) * fscale;
+          dt_view_draw_audio(cr, x, y, s);
+          // mouse is over the audio icon
+          if(fabsf(px - x) <= 1.2 * s && fabsf(-y) <= 1.2 * s) *image_over = DT_VIEW_AUDIO;
+        }
+      }
 
-#if DRAW_GROUPING == 1
-      DT_DEBUG_SQLITE3_CLEAR_BINDINGS(darktable.view_manager->statements.get_grouped);
-      DT_DEBUG_SQLITE3_RESET(darktable.view_manager->statements.get_grouped);
-      DT_DEBUG_SQLITE3_BIND_INT(darktable.view_manager->statements.get_grouped, 1, imgid);
-      DT_DEBUG_SQLITE3_BIND_INT(darktable.view_manager->statements.get_grouped, 2, imgid);
+      if (draw_grouping)
+      {
+        DT_DEBUG_SQLITE3_CLEAR_BINDINGS(darktable.view_manager->statements.get_grouped);
+        DT_DEBUG_SQLITE3_RESET(darktable.view_manager->statements.get_grouped);
+        DT_DEBUG_SQLITE3_BIND_INT(darktable.view_manager->statements.get_grouped, 1, imgid);
+        DT_DEBUG_SQLITE3_BIND_INT(darktable.view_manager->statements.get_grouped, 2, imgid);
 
-      /* lets check if imgid is in a group */
-      if(sqlite3_step(darktable.view_manager->statements.get_grouped) == SQLITE_ROW)
-        is_grouped = 1;
-      else if(img && darktable.gui->expanded_group_id == img->group_id)
-        darktable.gui->expanded_group_id = -1;
-#endif
+        /* lets check if imgid is in a group */
+        if(sqlite3_step(darktable.view_manager->statements.get_grouped) == SQLITE_ROW)
+          is_grouped = 1;
+        else if(img && darktable.gui->expanded_group_id == img->group_id)
+          darktable.gui->expanded_group_id = -1;
+      }
 
       // image part of a group?
-      if(is_grouped && darktable.gui && darktable.gui->grouping)
+      if(draw_metadata && is_grouped && darktable.gui && darktable.gui->grouping)
       {
         // draw grouping icon and border if the current group is expanded
         // align to the right, left of altered
@@ -1073,17 +1105,18 @@ int dt_view_image_expose(dt_view_image_over_t *image_over, uint32_t imgid, cairo
           *image_over = DT_VIEW_GROUP;
       }
 
-#if DRAW_HISTORY == 1
-      DT_DEBUG_SQLITE3_CLEAR_BINDINGS(darktable.view_manager->statements.have_history);
-      DT_DEBUG_SQLITE3_RESET(darktable.view_manager->statements.have_history);
-      DT_DEBUG_SQLITE3_BIND_INT(darktable.view_manager->statements.have_history, 1, imgid);
+      if (draw_history)
+      {
+        DT_DEBUG_SQLITE3_CLEAR_BINDINGS(darktable.view_manager->statements.have_history);
+        DT_DEBUG_SQLITE3_RESET(darktable.view_manager->statements.have_history);
+        DT_DEBUG_SQLITE3_BIND_INT(darktable.view_manager->statements.have_history, 1, imgid);
 
-      /* lets check if imgid has history */
-      if(sqlite3_step(darktable.view_manager->statements.have_history) == SQLITE_ROW) altered = 1;
-#endif
+        /* lets check if imgid has history */
+        if(sqlite3_step(darktable.view_manager->statements.have_history) == SQLITE_ROW) altered = 1;
+      }
 
       // image altered?
-      if(altered)
+      if(draw_metadata && altered)
       {
         // align to right
         float s = (r1 + r2) * .5;
@@ -1109,52 +1142,54 @@ int dt_view_image_expose(dt_view_image_over_t *image_over, uint32_t imgid, cairo
   // kill all paths, in case img was not loaded yet, or is blocked:
   cairo_new_path(cr);
 
-#if DRAW_COLORLABELS == 1
-  // TODO: make mouse sensitive, just as stars!
-  // TODO: cache in image struct!
-
-  // TODO: there is a branch that sets the bg == colorlabel
-  //       this might help if zoom > 15
-  if(width > DECORATION_SIZE_LIMIT)
+  if (draw_colorlabels)
   {
-    // color labels:
-    const float x = zoom == 1 ? (0.07) * fscale : .21 * width;
-    const float y = zoom == 1 ? 0.17 * fscale : 0.1 * height;
-    const float r = zoom == 1 ? 0.01 * fscale : 0.03 * width;
+    // TODO: make mouse sensitive, just as stars!
+    // TODO: cache in image struct!
 
-    /* clear and reset prepared statement */
-    DT_DEBUG_SQLITE3_CLEAR_BINDINGS(darktable.view_manager->statements.get_color);
-    DT_DEBUG_SQLITE3_RESET(darktable.view_manager->statements.get_color);
-
-    /* setup statement and iterate rows */
-    DT_DEBUG_SQLITE3_BIND_INT(darktable.view_manager->statements.get_color, 1, imgid);
-    while(sqlite3_step(darktable.view_manager->statements.get_color) == SQLITE_ROW)
+    // TODO: there is a branch that sets the bg == colorlabel
+    //       this might help if zoom > 15
+    if(width > DECORATION_SIZE_LIMIT)
     {
+      // color labels:
+      const float x = zoom == 1 ? (0.07) * fscale : .21 * width;
+      const float y = zoom == 1 ? 0.17 * fscale : 0.1 * height;
+      const float r = zoom == 1 ? 0.01 * fscale : 0.03 * width;
+
+      /* clear and reset prepared statement */
+      DT_DEBUG_SQLITE3_CLEAR_BINDINGS(darktable.view_manager->statements.get_color);
+      DT_DEBUG_SQLITE3_RESET(darktable.view_manager->statements.get_color);
+
+      /* setup statement and iterate rows */
+      DT_DEBUG_SQLITE3_BIND_INT(darktable.view_manager->statements.get_color, 1, imgid);
+      while(sqlite3_step(darktable.view_manager->statements.get_color) == SQLITE_ROW)
+      {
+        cairo_save(cr);
+        int col = sqlite3_column_int(darktable.view_manager->statements.get_color, 0);
+        // see src/dtgtk/paint.c
+        dtgtk_cairo_paint_label(cr, x + (3 * r * col) - 5 * r, y - r, r * 2, r * 2, col);
+        cairo_restore(cr);
+      }
+    }
+  }
+
+  if (draw_local_copy)
+  {
+    if(img && width > DECORATION_SIZE_LIMIT)
+    {
+      // copy status:
+      const float x = zoom == 1 ? (0.07) * fscale : .21 * width;
+      const float y = zoom == 1 ? 0.17 * fscale : 0.1 * height;
+      const float r = zoom == 1 ? 0.01 * fscale : 0.03 * width;
+      const int xoffset = 6;
+      gboolean has_local_copy = (img && (img->flags & DT_IMAGE_LOCAL_COPY));
       cairo_save(cr);
-      int col = sqlite3_column_int(darktable.view_manager->statements.get_color, 0);
-      // see src/dtgtk/paint.c
-      dtgtk_cairo_paint_label(cr, x + (3 * r * col) - 5 * r, y - r, r * 2, r * 2, col);
+      dtgtk_cairo_paint_local_copy(cr, x + (3 * r * xoffset) - 5 * r, y - r, r * 2, r * 2, has_local_copy);
       cairo_restore(cr);
     }
   }
-#endif
 
-#if DRAW_LOCAL_COPY == 1
-  if(img && width > DECORATION_SIZE_LIMIT)
-  {
-    // copy status:
-    const float x = zoom == 1 ? (0.07) * fscale : .21 * width;
-    const float y = zoom == 1 ? 0.17 * fscale : 0.1 * height;
-    const float r = zoom == 1 ? 0.01 * fscale : 0.03 * width;
-    const int xoffset = 6;
-    gboolean has_local_copy = (img && (img->flags & DT_IMAGE_LOCAL_COPY));
-    cairo_save(cr);
-    dtgtk_cairo_paint_local_copy(cr, x + (3 * r * xoffset) - 5 * r, y - r, r * 2, r * 2, has_local_copy);
-    cairo_restore(cr);
-  }
-#endif
-
-  if(img && (zoom == 1))
+  if(draw_metadata && img && (zoom == 1))
   {
     // some exif data
     cairo_set_source_rgb(cr, .7, .7, .7);
@@ -1174,9 +1209,8 @@ int dt_view_image_expose(dt_view_image_over_t *image_over, uint32_t imgid, cairo
     cairo_stroke(cr);
   }
 
-
   // draw custom metadata from accompanying text file:
-  if(img && (img->flags & DT_IMAGE_HAS_TXT) && dt_conf_get_bool("plugins/lighttable/draw_custom_metadata")
+  if(draw_metadata && img && (img->flags & DT_IMAGE_HAS_TXT) && dt_conf_get_bool("plugins/lighttable/draw_custom_metadata")
      && (zoom == 1))
   {
     char *path = dt_image_get_text_path(img->id);
@@ -1220,6 +1254,19 @@ int dt_view_image_expose(dt_view_image_over_t *image_over, uint32_t imgid, cairo
   if(darktable.unmuted & DT_DEBUG_PERF)
     dt_print(DT_DEBUG_LIGHTTABLE, "[lighttable] image expose took %0.04f sec\n", end - start);
   return missing;
+}
+
+void
+dt_view_image_only_expose(
+  uint32_t imgid,
+  cairo_t *cr,
+  int32_t width,
+  int32_t height,
+  int32_t offsetx,
+  int32_t offsety)
+{
+  dt_view_image_over_t image_over;
+  dt_view_image_expose(&image_over, imgid, cr, width, height, 1, offsetx, offsety, TRUE, TRUE);
 }
 
 
@@ -1472,6 +1519,13 @@ void dt_view_map_set_map_source(const dt_view_manager_t *vm, OsmGpsMapSource_t m
 }
 #endif
 
+#ifdef HAVE_PRINT
+void dt_view_print_settings(const dt_view_manager_t *vm, dt_print_info_t *pinfo)
+{
+  if (vm->proxy.print.view)
+    vm->proxy.print.print_settings(vm->proxy.print.view, pinfo);
+}
+#endif
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;
