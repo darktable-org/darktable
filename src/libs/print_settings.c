@@ -68,6 +68,9 @@ typedef struct dt_lib_print_settings_t
   uint16_t *buf;
   int32_t image_id;
   int unit;
+  int v_intent, v_pintent;
+  char *v_iccprofile, *v_piccprofile, *v_style;
+  gboolean v_style_append;
 } dt_lib_print_settings_t;
 
 typedef struct dt_lib_export_profile_t
@@ -219,9 +222,6 @@ _print_button_clicked (GtkWidget *widget, gpointer user_data)
   max_width -= max_width % 4;
   max_height -= max_height % 4;
 
-  gchar *printer_profile = dt_conf_get_string("plugins/print/printer/iccprofile");
-  const int pintent = dt_conf_get_int("plugins/print/printer/iccintent");
-
   dt_print(DT_DEBUG_PRINT, "[print] max image size %d x %d (at resolution %d)\n", max_width, max_height, ps->prt.printer.resolution);
 
   dt_imageio_module_format_t buf;
@@ -234,8 +234,8 @@ _print_button_clicked (GtkWidget *widget, gpointer user_data)
   dat.max_width = max_width;
   dat.max_height = max_height;
   dat.style[0] = '\0';
-  dat.style_append = dt_conf_get_bool("plugins/print/print/style_append");
-  dat.bpp = *printer_profile ? 16 : 8; // set to 16bit when a profile is to be applied
+  dat.style_append = ps->v_style_append;
+  dat.bpp = *ps->v_piccprofile ? 16 : 8; // set to 16bit when a profile is to be applied
   dat.ps = ps;
 
   char* style = dt_conf_get_string("plugins/print/print/style");
@@ -272,10 +272,10 @@ _print_button_clicked (GtkWidget *widget, gpointer user_data)
 
   // we have the exported buffer, let's apply the printer profile
 
-  if (*printer_profile)
-    if (dt_apply_printer_profile(imgid, (void **)&(dat.ps->buf), dat.width, dat.height, dat.bpp, printer_profile, pintent))
+  if (*ps->v_piccprofile)
+    if (dt_apply_printer_profile(imgid, (void **)&(dat.ps->buf), dat.width, dat.height, dat.bpp, ps->v_piccprofile, ps->v_pintent))
     {
-      dt_control_log(_("cannot apply printer profile `%s'"), printer_profile);
+      dt_control_log(_("cannot apply printer profile `%s'"), ps->v_piccprofile);
       dt_control_queue_redraw();
       return;
     }
@@ -315,7 +315,6 @@ _print_button_clicked (GtkWidget *widget, gpointer user_data)
   free (dat.ps->buf);
   free (pdf_image);
   free (pdf_page);
-  free (printer_profile);
 
   // send to CUPS
 
@@ -601,12 +600,17 @@ _style_callback(GtkWidget *widget, dt_lib_module_t *self)
   dt_lib_print_settings_t *ps = (dt_lib_print_settings_t *)self->data;
 
   if(dt_bauhaus_combobox_get(ps->style) == 0)
+  {
     dt_conf_set_string("plugins/print/print/style", "");
+  }
   else
   {
     const gchar *style = dt_bauhaus_combobox_get_text(ps->style);
     dt_conf_set_string("plugins/print/print/style", style);
   }
+
+  if (ps->v_style) g_free(ps->v_style);
+  ps->v_style = dt_conf_get_string("plugins/print/print/style");
 }
 
 static void
@@ -615,9 +619,11 @@ _style_mode_changed(GtkWidget *widget, dt_lib_module_t *self)
   dt_lib_print_settings_t *ps = (dt_lib_print_settings_t *)self->data;
 
   if(dt_bauhaus_combobox_get(ps->style_mode) == 0)
-    dt_conf_set_bool("plugins/print/print/style_append", FALSE);
+    ps->v_style_append = FALSE;
   else
-    dt_conf_set_bool("plugins/print/print/style_append", TRUE);
+    ps->v_style_append = TRUE;
+
+  dt_conf_set_bool("plugins/print/print/style_append", ps->v_style_append);
 }
 
 static void
@@ -634,12 +640,16 @@ _profile_changed(GtkWidget *widget, dt_lib_module_t *self)
     {
       dt_conf_set_string("plugins/lighttable/export/iccprofile", pp->filename);
       dt_conf_set_string("plugins/print/print/iccprofile", pp->filename);
+      if (ps->v_iccprofile) g_free(ps->v_iccprofile);
+      ps->v_iccprofile = g_strdup(pp->filename);
       return;
     }
     prof = g_list_next(prof);
   }
   dt_conf_set_string("plugins/lighttable/export/iccprofile", "image");
   dt_conf_set_string("plugins/print/print/iccprofile", "image");
+  if (ps->v_iccprofile) g_free(ps->v_iccprofile);
+  ps->v_piccprofile = g_strdup("image");
 }
 
 static void
@@ -655,27 +665,35 @@ _printer_profile_changed(GtkWidget *widget, dt_lib_module_t *self)
     if(strcmp(pp->name,printer_profile)==0)
     {
       dt_conf_set_string("plugins/print/printer/iccprofile", pp->filename);
+      if (ps->v_piccprofile) g_free(ps->v_piccprofile);
+      ps->v_piccprofile = g_strdup(pp->filename);
       return;
     }
     prof = g_list_next(prof);
   }
   dt_conf_set_string("plugins/print/printer/iccprofile", "");
+  if (ps->v_piccprofile) g_free(ps->v_piccprofile);
+  ps->v_piccprofile = g_strdup("");
 }
 
 static void
 _printer_intent_callback (GtkWidget *widget, dt_lib_module_t *self)
 {
+  dt_lib_print_settings_t *ps = (dt_lib_print_settings_t *)self->data;
   int pos = dt_bauhaus_combobox_get(widget);
   dt_conf_set_int("plugins/print/printer/iccintent", pos);
+  ps->v_pintent = pos;
 }
 
 static void
 _intent_callback (GtkWidget *widget, dt_lib_module_t *self)
 {
+  dt_lib_print_settings_t *ps = (dt_lib_print_settings_t *)self->data;
   int pos = dt_bauhaus_combobox_get(widget);
   // record the intent that will override the out rendering module on export
   dt_conf_set_int("plugins/lighttable/export/iccintent", pos - 1);
   dt_conf_set_int("plugins/print/print/iccintent", pos - 1);
+  ps->v_intent = pos - 1;
 }
 
 static void _set_orientation(dt_lib_print_settings_t *ps)
@@ -777,6 +795,8 @@ gui_init (dt_lib_module_t *self)
   GtkWidget *label;
   char tooltip[1024];
 
+  d->paper_list = NULL;
+
   dt_init_print_info(&d->prt);
   dt_view_print_settings(darktable.view_manager, &d->prt);
 
@@ -872,7 +892,10 @@ gui_init (dt_lib_module_t *self)
       dt_bauhaus_combobox_add(d->pprofile, prof->name);
       n++;
       if (strcmp(prof->filename,printer_profile)==0)
+      {
+        d->v_piccprofile = g_strdup(printer_profile);
         combo_idx=n;
+      }
     }
     l = g_list_next(l);
   }
@@ -883,6 +906,7 @@ gui_init (dt_lib_module_t *self)
   if (combo_idx == -1)
   {
     dt_conf_set_string("plugins/print/printer/iccprofile", "");
+    d->v_piccprofile = g_strdup("");
     combo_idx=0;
   }
   dt_bauhaus_combobox_set(d->pprofile, combo_idx);
@@ -900,7 +924,9 @@ gui_init (dt_lib_module_t *self)
   dt_bauhaus_combobox_add(d->pintent, C_("rendering intent", "saturation"));
   dt_bauhaus_combobox_add(d->pintent, _("absolute colorimetric"));
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(d->pintent), TRUE, TRUE, 0);
-  dt_bauhaus_combobox_set(d->pintent, dt_conf_get_int("plugins/print/printer/iccintent"));
+
+  d->v_pintent = dt_conf_get_int("plugins/print/printer/iccintent");
+  dt_bauhaus_combobox_set(d->pintent, d->v_pintent);
 
   g_signal_connect (G_OBJECT (d->pintent), "value-changed", G_CALLBACK (_printer_intent_callback), (gpointer)self);
 
@@ -1023,6 +1049,8 @@ gui_init (dt_lib_module_t *self)
   dt_bauhaus_combobox_add(d->profile, _("image settings"));
 
   gchar *iccprofile = dt_conf_get_string("plugins/print/print/iccprofile");
+  combo_idx = -1;
+  n=0;
 
   l = d->profiles;
   while(l)
@@ -1031,13 +1059,17 @@ gui_init (dt_lib_module_t *self)
     dt_bauhaus_combobox_add(d->profile, prof->name);
     n++;
     if (strcmp(prof->filename, iccprofile)==0)
+    {
+      d->v_iccprofile = g_strdup(iccprofile);
       combo_idx=n;
+    }
     l = g_list_next(l);
   }
 
   if (combo_idx == -1)
   {
     dt_conf_set_string("plugins/print/print/iccprofile", "image");
+    d->v_iccprofile = g_strdup("");
     combo_idx=0;
   }
   g_free (iccprofile);
@@ -1081,7 +1113,10 @@ gui_init (dt_lib_module_t *self)
     dt_bauhaus_combobox_add(d->style, style->name);
     n++;
     if (strcmp(style->name,current_style)==0)
+    {
+      d->v_style = g_strdup(current_style);
       combo_idx=n;
+    }
     styles=g_list_next(styles);
   }
   g_free(current_style);
@@ -1092,6 +1127,7 @@ gui_init (dt_lib_module_t *self)
   if (combo_idx == -1)
   {
     dt_conf_set_string("plugins/print/print/style", "");
+    d->v_style = g_strdup("");
     combo_idx=0;
   }
   dt_bauhaus_combobox_set(d->style, combo_idx);
@@ -1108,10 +1144,8 @@ gui_init (dt_lib_module_t *self)
   dt_bauhaus_combobox_add(d->style_mode, _("replace history"));
   dt_bauhaus_combobox_add(d->style_mode, _("append history"));
 
-  if (dt_conf_get_bool("plugins/print/print/style_append"))
-    dt_bauhaus_combobox_set(d->style_mode, 1);
-  else
-    dt_bauhaus_combobox_set(d->style_mode, 0);
+  d->v_style_append = dt_conf_get_bool("plugins/print/print/style_append");
+  dt_bauhaus_combobox_set(d->style_mode, d->v_style_append?1:0);
 
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(d->style_mode), TRUE, TRUE, 0);
   g_object_set(G_OBJECT(d->style_mode), "tooltip-text", _("whether the style is appended to the history or replacing the history"),
