@@ -39,7 +39,7 @@ static void combobox_init(lua_State* L)
   lua_combobox combobox = malloc(sizeof(dt_lua_combobox_t));
   combobox->parent.widget = dt_bauhaus_combobox_new(NULL);
   if(!lua_isnil(L,1)){
-    const char tmp[256];
+    char tmp[256];
     luaA_to(L,char_256,&tmp,1);
     dt_bauhaus_widget_set_label(combobox->parent.widget,NULL,tmp);
   }
@@ -98,7 +98,7 @@ static int label_member(lua_State *L)
   lua_combobox combobox;
   luaA_to(L,lua_combobox,&combobox,1);
   if(lua_gettop(L) > 2) {
-    const char tmp[256];
+    char tmp[256];
     luaA_to(L,char_256,&tmp,1);
     dt_bauhaus_widget_set_label(combobox->parent.widget,NULL,tmp);
     return 0;
