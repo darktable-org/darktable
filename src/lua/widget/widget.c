@@ -27,7 +27,6 @@
   use name to save/restore states as pref like other widgets
   have a way to save presets
   storage lib looses index for lua storages, 
-  generalize inheritence of widgets (for stuff like buttons and containers)
 
   cleanup, not symetrical with init, maybe use lua_to to push ?
     * or use only the size to malloc ourselves, push, pass to gui_init ?
@@ -223,7 +222,6 @@ extern int dt_lua_init_widget_entry(lua_State* L);
 extern int dt_lua_init_widget_file_chooser_button(lua_State* L);
 extern int dt_lua_init_widget_separator(lua_State* L);
 extern int dt_lua_init_widget_combobox(lua_State* L);
-extern int dt_lua_init_widget_radio_button(lua_State* L);
 
 int dt_lua_init_widget(lua_State* L)
 {
@@ -247,7 +245,6 @@ int dt_lua_init_widget(lua_State* L)
   dt_lua_init_widget_entry(L);
   dt_lua_init_widget_file_chooser_button(L);
   dt_lua_init_widget_separator(L);
-  dt_lua_init_widget_radio_button(L);
 
   luaA_enum(L,dt_lua_orientation_t);
   luaA_enum_value_name(L,dt_lua_orientation_t,GTK_ORIENTATION_HORIZONTAL,"horizontal");
