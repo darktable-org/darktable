@@ -745,6 +745,12 @@ void dt_bauhaus_widget_set_label(GtkWidget *widget, const char *section, const c
   }
 }
 
+const char* dt_bauhaus_widget_get_label(GtkWidget *widget)
+{
+  dt_bauhaus_widget_t *w = DT_BAUHAUS_WIDGET(widget);
+  return w->label;
+}
+
 void dt_bauhaus_widget_set_quad_paint(GtkWidget *widget, dt_bauhaus_quad_paint_f f, int paint_flags)
 {
   dt_bauhaus_widget_t *w = DT_BAUHAUS_WIDGET(widget);

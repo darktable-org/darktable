@@ -65,6 +65,10 @@ static void to_char128(lua_State *L, luaA_Type type_id, void *c_out, int index)
 {
   to_char_array(L, type_id, c_out, index, 128);
 }
+static void to_char256(lua_State *L, luaA_Type type_id, void *c_out, int index)
+{
+  to_char_array(L, type_id, c_out, index, 256);
+}
 static void to_char512(lua_State *L, luaA_Type type_id, void *c_out, int index)
 {
   to_char_array(L, type_id, c_out, index, 512);
@@ -852,6 +856,8 @@ int dt_lua_init_early_types(lua_State *L)
   luaA_conversion_push(L, const char_64, push_char_array);
   luaA_conversion(L, char_128, push_char_array, to_char128);
   luaA_conversion_push(L, const char_128, push_char_array);
+  luaA_conversion(L, char_256, push_char_array, to_char256);
+  luaA_conversion_push(L, const char_256, push_char_array);
   luaA_conversion(L, char_512, push_char_array, to_char512);
   luaA_conversion_push(L, const char_512, push_char_array);
   luaA_conversion(L, char_1024, push_char_array, to_char1024);
