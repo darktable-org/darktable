@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 1.3\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-01-28 21:24+0100\n"
-"PO-Revision-Date: 2015-01-28 21:22+0100\n"
+"POT-Creation-Date: 2015-01-28 21:29+0100\n"
+"PO-Revision-Date: 2015-01-28 21:38+0100\n"
 "Last-Translator: Pascal Obry <pascal@obry.net>\n"
 "Language-Team: \n"
 "Language: fr_FR\n"
@@ -829,18 +829,18 @@ msgstr[1] "%d images sur %d de la collection courante sont sélectionnées"
 
 #: ../src/common/cups_print.c:270
 #, c-format
-msgid "file '%s' to print not found for image `%d' on %s"
-msgstr ""
+msgid "file `%s' to print not found for image %d on `%s'"
+msgstr "fichier «%s» à imprimer non trouvé pour l'image %d sur «%s»"
 
 #: ../src/common/cups_print.c:330
-#, fuzzy, c-format
+#, c-format
 msgid "error while printing image %d on `%s'"
-msgstr "erreur de chargement du fichier «%s»"
+msgstr "erreur pendant l'impression de l'image %d sur «%s»"
 
 #: ../src/common/cups_print.c:332
-#, fuzzy, c-format
+#, c-format
 msgid "printing image %d on `%s'"
-msgstr "importation de l'image %s"
+msgstr "impression de l'image %d sur «%s»"
 
 #: ../src/common/darktable.c:317
 #, c-format
@@ -8415,99 +8415,91 @@ msgstr "200%"
 
 #. //////////////////////// PRINT SETTINGS
 #: ../src/libs/print_settings.c:43 ../src/libs/print_settings.c:1123
-#, fuzzy
 msgid "print settings"
-msgstr "paramètres de carte"
+msgstr "paramètres d'impression"
 
 #: ../src/libs/print_settings.c:171
 msgid "cannot print until a picture is selected"
-msgstr ""
+msgstr "impossible d'imprimer tant qu'une image n'est pas sélectionnée"
 
 #: ../src/libs/print_settings.c:177
 msgid "cannot print until a printer is selected"
-msgstr ""
+msgstr "impossible d'imprimer tant qu'une imprimante n'est pas sélectionnée"
 
 #: ../src/libs/print_settings.c:183
 msgid "cannot print until a paper is selected"
-msgstr ""
+msgstr "impossible d'imprimer tant qu'un papier n'est pas sélectionné"
 
 #: ../src/libs/print_settings.c:188
-#, fuzzy, c-format
+#, c-format
 msgid "prepare printing image %d on `%s'"
-msgstr "exportation de %d image vers %s"
+msgstr "préparation de l'impression de l'image %d sur «%s»"
 
 #: ../src/libs/print_settings.c:278
-#, fuzzy, c-format
+#, c-format
 msgid "cannot apply printer profile `%s'"
-msgstr "impossible d'exporter le fichier «%s» !"
+msgstr "impossible d'appliquer le profil d'impression «%s» !"
 
 #: ../src/libs/print_settings.c:912
-#, fuzzy
 msgid "printer"
-msgstr "rendu"
+msgstr "imprimante"
 
 #: ../src/libs/print_settings.c:981
-#, fuzzy, c-format
+#, c-format
 msgid "printer ICC profiles in %s/color/out or %s/color/out"
-msgstr "profils ICC dans %s/color/out ou %s/color/out"
+msgstr "profils ICC d'imprimante dans %s/color/out ou %s/color/out"
 
 #. //////////////////////// PAGE SETTINGS
 #: ../src/libs/print_settings.c:1002
 msgid "page"
-msgstr ""
+msgstr "page"
 
 #. // papers
 #: ../src/libs/print_settings.c:1007
-#, fuzzy
 msgid "paper"
-msgstr "taille papier"
+msgstr "papier"
 
 #: ../src/libs/print_settings.c:1043
-#, fuzzy
 msgid "image width/height"
-msgstr "largeur/hauteur"
+msgstr "largeur/hauteur image"
 
 #: ../src/libs/print_settings.c:1047
-#, fuzzy
 msgid " x "
-msgstr " g"
+msgstr " x"
 
 #. d->b_top  = gtk_spin_button_new_with_range(0, 10000, 1);
 #: ../src/libs/print_settings.c:1061
 msgid "top margin"
-msgstr ""
+msgstr "marge haute"
 
 #. d->b_left  = gtk_spin_button_new_with_range(0, 10000, 1);
 #: ../src/libs/print_settings.c:1065
 msgid "left margin"
-msgstr ""
+msgstr "marge gauche"
 
 #: ../src/libs/print_settings.c:1068
 msgid "lock"
-msgstr ""
+msgstr "sync"
 
 #: ../src/libs/print_settings.c:1069
 msgid "change all borders uniformly"
-msgstr ""
+msgstr "change toutes les marges uniformement"
 
 #. d->b_right  = gtk_spin_button_new_with_range(0, 10000, 1);
 #: ../src/libs/print_settings.c:1073
 msgid "right margin"
-msgstr ""
+msgstr "marge droite"
 
 #. d->b_bottom  = gtk_spin_button_new_with_range(0, 10000, 1);
 #: ../src/libs/print_settings.c:1077
-#, fuzzy
 msgid "bottom margin"
-msgstr "zoom mini"
+msgstr "marge basse"
 
 #: ../src/libs/print_settings.c:1207
-#, fuzzy
 msgid "temporary style to append while printing"
-msgstr "style temporaire à utiliser lors de l'exportation"
+msgstr "style temporaire à utiliser lors de l'impression"
 
 #: ../src/libs/print_settings.c:1234
-#, fuzzy
 msgid "whether the style is appended to the history or replacing the history"
 msgstr ""
 "indique si les éléments du style sont à ajouter à l'historique ou remplace "
@@ -8516,12 +8508,11 @@ msgstr ""
 #. Print button
 #: ../src/libs/print_settings.c:1241 ../src/views/print.c:51
 msgid "print"
-msgstr ""
+msgstr "impression"
 
 #: ../src/libs/print_settings.c:1243
-#, fuzzy
 msgid "print with current settings (ctrl-p)"
-msgstr "exporte avec les réglages actuels (ctrl-e)"
+msgstr "imprime avec les réglages actuels (ctrl-p)"
 
 #: ../src/libs/recentcollect.c:50
 msgid "recently used collections"
@@ -9371,7 +9362,7 @@ msgstr "refaire"
 
 #: ../src/views/print.c:243
 msgid "there is no printer available, cannot print!"
-msgstr ""
+msgstr "aucune imprimante disponible, impossible d'imprimer !"
 
 #: ../src/views/slideshow.c:164
 msgid "end of images. press any key to return to lighttable mode"
