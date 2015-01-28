@@ -27,6 +27,7 @@ OPT_GEO=-1
 OPT_LUA=-1
 OPT_OPENEXR=-1
 OPT_WEBP=-1
+OPT_WEBKITGTK=-1
 
 # ---------------------------------------------------------------------------
 # Parse options
@@ -59,6 +60,9 @@ parse_feature()
 	unity)
 		OPT_UNITY=$value
 		;;
+  webkit)
+    OPT_WEBKITGTK=$value
+    ;;
 	tethering)
 		OPT_TETHERING=$value
 		;;
@@ -143,6 +147,7 @@ so that the cmake script autodetects features.
    --enable-openmp
    --enable-opencl
    --enable-unity
+   --enable-webkit
    --enable-tethering
    --enable-geo
    --enable-lua
@@ -217,6 +222,7 @@ cmake_boolean_option USE_GNOME_KEYRING $OPT_GNOME_KEYRING
 cmake_boolean_option USE_OPENMP $OPT_OPENMP
 cmake_boolean_option USE_OPENCL $OPT_OPENCL
 cmake_boolean_option USE_UNITY $OPT_UNITY
+cmake_boolean_option USE_WEBKITGTK $OPT_WEBKITGTK
 cmake_boolean_option USE_CAMERA_SUPPORT $OPT_TETHERING
 cmake_boolean_option USE_GEO $OPT_GEO
 cmake_boolean_option USE_LUA $OPT_LUA

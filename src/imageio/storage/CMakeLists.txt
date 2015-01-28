@@ -8,7 +8,10 @@ if(FLICKCURL_FOUND)
 endif(FLICKCURL_FOUND)
 
 if (JsonGlib_FOUND)
-	list(APPEND MODULES facebook picasa)
+	list(APPEND MODULES picasa)
+  if(WEBKITGTK_FOUND)
+    list(APPEND MODULES facebook)
+  endif(WEBKITGTK_FOUND)
 endif(JsonGlib_FOUND)
 
 foreach(module ${MODULES})
