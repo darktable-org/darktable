@@ -216,7 +216,7 @@ typedef struct dt_storage_facebook_param_t
 static gchar *fb_extract_token_from_url(const gchar *url)
 {
   g_return_val_if_fail((url != NULL), NULL);
-  if(!(g_str_has_prefix(url, FB_WS_BASE_URL "connect/login_success.html") == TRUE)) return NULL;
+  if(!(g_str_has_prefix(url, "http://localhost:8123/dt_fb_oauth/") == TRUE)) return NULL;
 
   char *authtoken = NULL;
 
@@ -579,7 +579,7 @@ static gchar *facebook_get_user_auth_token(dt_storage_facebook_gui_data_t *ui)
   GError *error = NULL;
   if(!gtk_show_uri(gdk_screen_get_default(), FB_WS_BASE_URL
                    "dialog/oauth?"
-                   "client_id=" FB_API_KEY "&redirect_uri=" FB_WS_BASE_URL "connect/login_success.html"
+                   "client_id=" FB_API_KEY "&redirect_uri=http://localhost:8123/dt_fb_oauth/"
                    "&scope=user_photos,publish_stream"
                    "&response_type=token",
                    gtk_get_current_event_time(), &error))
