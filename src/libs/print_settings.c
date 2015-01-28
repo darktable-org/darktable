@@ -1027,11 +1027,11 @@ gui_init (dt_lib_module_t *self)
   dt_bauhaus_combobox_add(ucomb, _("inch"));
   gtk_box_pack_start(GTK_BOX(self->widget), ucomb, TRUE, TRUE, 0);
 
-  d->unit = dt_conf_get_int("plugins/print/print/unit");
-  dt_bauhaus_combobox_set(ucomb, d->unit);
-
   g_signal_connect(G_OBJECT(d->orientation), "value-changed", G_CALLBACK(_orientation_changed), self);
   g_signal_connect(G_OBJECT(ucomb), "value-changed", G_CALLBACK(_unit_changed), self);
+
+  d->unit = dt_conf_get_int("plugins/print/print/unit");
+  dt_bauhaus_combobox_set(ucomb, d->unit);
 
   dt_bauhaus_combobox_set (d->orientation, d->prt.page.landscape?1:0);
 
