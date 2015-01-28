@@ -1066,7 +1066,7 @@ gui_init (dt_lib_module_t *self)
   gtk_grid_attach(bds, GTK_WIDGET(d->b_left), 0, 1, 1, 1);
 
   d->lock_button = GTK_TOGGLE_BUTTON(gtk_toggle_button_new_with_label(_("lock")));
-  g_object_set(G_OBJECT(d->lock_button), "tooltip-text", _("change all borders uniformly"), (char *)NULL);
+  g_object_set(G_OBJECT(d->lock_button), "tooltip-text", _("change all margins uniformly"), (char *)NULL);
   gtk_grid_attach(bds, GTK_WIDGET(d->lock_button), 1, 1, 1, 1);
 
   //d->b_right  = gtk_spin_button_new_with_range(0, 10000, 1);
@@ -1204,7 +1204,7 @@ gui_init (dt_lib_module_t *self)
   }
   g_free(current_style);
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(d->style), TRUE, TRUE, 0);
-  g_object_set(G_OBJECT(d->style), "tooltip-text", _("temporary style to append while printing"), (char *)NULL);
+  g_object_set(G_OBJECT(d->style), "tooltip-text", _("temporary style to use while printing"), (char *)NULL);
 
   // style not found, maybe a style has been removed? revert to none
   if (combo_idx == -1)

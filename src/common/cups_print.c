@@ -267,7 +267,7 @@ void dt_print_file(const int32_t imgid, const char *filename, const dt_print_inf
 
   if (!g_file_test(filename, G_FILE_TEST_IS_REGULAR))
   {
-    dt_control_log(_("file '%s' to print not found for image `%d' on %s"), filename, imgid, pinfo->printer.name);
+    dt_control_log(_("file `%s' to print not found for image %d on `%s'"), filename, imgid, pinfo->printer.name);
     return;
   }
 
