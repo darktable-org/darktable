@@ -98,7 +98,6 @@ src/iop/highpass.c
 src/iop/hotpixels.c
 src/iop/invert.c
 src/iop/lens.c
-src/iop/letsgofloat.c
 src/iop/levels.c
 src/iop/lowlight.c
 src/iop/lowpass.c
@@ -107,6 +106,7 @@ src/iop/nlmeans.c
 src/iop/overexposed.c
 src/iop/profile_gamma.c
 src/iop/rawdenoise.c
+src/iop/rawprepare.c
 src/iop/relight.c
 src/iop/rotatepixels.c
 src/iop/scalepixels.c
