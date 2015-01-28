@@ -274,6 +274,7 @@ _print_button_clicked (GtkWidget *widget, gpointer user_data)
   if (*ps->v_piccprofile)
     if (dt_apply_printer_profile(imgid, (void **)&(dat.ps->buf), dat.width, dat.height, dat.bpp, ps->v_piccprofile, ps->v_pintent))
     {
+      free (dat.ps->buf);
       dt_control_log(_("cannot apply printer profile `%s'"), ps->v_piccprofile);
       dt_control_queue_redraw();
       return;
@@ -913,7 +914,7 @@ gui_init (dt_lib_module_t *self)
 
   d->printers = dt_bauhaus_combobox_new(NULL);
 
-  const char *default_printer = dt_conf_get_string("plugins/print/print/printer");
+  char *default_printer = dt_conf_get_string("plugins/print/print/printer");
 
   // we need the printer details, so request them here
   while (printers)
@@ -930,6 +931,7 @@ gui_init (dt_lib_module_t *self)
     np++;
   }
 
+  free(default_printer);
   gtk_box_pack_start(GTK_BOX(self->widget), d->printers, TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(d->printers), "value-changed", G_CALLBACK(_printer_changed), self);
   g_list_free_full (printers, g_free);
