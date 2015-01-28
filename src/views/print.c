@@ -188,29 +188,29 @@ static void expose_print_page(dt_view_t *self, cairo_t *cr, int32_t width, int32
   // top-left
   int npx = px + (np_left / pg_width) * pwidth;
   int npy = py + (np_top / pg_height) * pheight;
-  cairo_move_to (cr, npx, npy); cairo_line_to (cr, npx-10, npy);
-  cairo_move_to (cr, npx, npy); cairo_line_to (cr, npx, npy-10);
+  cairo_move_to (cr, npx-10, npy);
+  cairo_line_to (cr, npx, npy); cairo_line_to (cr, npx, npy-10);
   cairo_stroke (cr);
 
   // top-right
   npx = pright - (np_right / pg_width) * pwidth;
   // npy = p_y + (np_top / pg_height) * p_height;
-  cairo_move_to (cr, npx, npy); cairo_line_to (cr, npx+10, npy);
-  cairo_move_to (cr, npx, npy); cairo_line_to (cr, npx, npy-10);
+  cairo_move_to (cr, npx+10, npy);
+  cairo_line_to (cr, npx, npy); cairo_line_to (cr, npx, npy-10);
   cairo_stroke (cr);
 
   // bottom-left
   npx = px + (np_left / pg_width) * pwidth;
   npy = pbottom - (np_bottom / pg_height) * pheight;
-  cairo_move_to (cr, npx, npy); cairo_line_to (cr, npx-10, npy);
-  cairo_move_to (cr, npx, npy); cairo_line_to (cr, npx, npy+10);
+  cairo_move_to (cr, npx-10, npy);
+  cairo_line_to (cr, npx, npy); cairo_line_to (cr, npx, npy+10);
   cairo_stroke (cr);
 
   // bottom-right
   npx = pright - (np_right / pg_width) * pwidth;
   // npy = p_bottom - (np_bottom / pg_height) * p_height;
-  cairo_move_to (cr, npx, npy); cairo_line_to (cr, npx+10, npy);
-  cairo_move_to (cr, npx, npy); cairo_line_to (cr, npx, npy+10);
+  cairo_move_to (cr, npx+10, npy);
+  cairo_line_to (cr, npx, npy); cairo_line_to (cr, npx, npy+10);
   cairo_stroke (cr);
 
   cairo_set_source_rgb (cr, 0.77, 0.77, 0.77);
