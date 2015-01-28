@@ -31,7 +31,9 @@
 #define dt_pdf_inch_to_point(inch)      ((inch) * 72.0)
 #define dt_pdf_point_to_inch(pt)        ((pt) / 72.0)
 #define dt_pdf_mm_to_point(mm)          dt_pdf_inch_to_point((mm) / 25.4)
+#define dt_pdf_point_to_mm(pt)          dt_pdf_point_to_inch((pt) * 25.4)
 #define dt_pdf_point_to_pixel(pt, dpi)  (dt_pdf_point_to_inch(pt) * (dpi))
+#define dt_pdf_pixel_to_point(px, dpi)  (dt_pdf_inch_to_point((px) / (dpi)))
 
 typedef enum dt_pdf_stream_encoder_t
 {

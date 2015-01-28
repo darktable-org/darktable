@@ -572,6 +572,30 @@ if(USE_LUA)
   list(APPEND STATIC_LIBS lautoc_static)
 endif(USE_LUA)
 
+if(BUILD_PRINT)
+  find_package(CUPS)
+  if(CUPS_FOUND)
+    include_directories(SYSTEM ${CUPS_INCLUDE_DIRS})
+    add_definitions(${CUPS_DEFINITIONS})
+    FILE(GLOB SOURCE_FILES_PRINT
+      "common/cups_print.h"
+      "common/cups_print.c"
+      "common/printprof.c"
+      "libs/print_settings.c"
+      )
+    set(SOURCES ${SOURCES} ${SOURCE_FILES_PRINT})
+    add_library(cups_static STATIC IMPORTED)
+    list(APPEND LIBS ${CUPS_LIBRARIES})
+    add_definitions("-DHAVE_PRINT")
+    message(STATUS "Print mode: enabled")
+  else(CUPS_FOUND)
+    set(BUILD_PRINT OFF)
+    message(STATUS "Print mode: disabled, please install CUPS dev package")
+  endif(CUPS_FOUND)
+else(BUILD_PRINT)
+  message(STATUS "Print mode: disabled")
+endif(BUILD_PRINT)
+
 #
 # We need C++11
 #

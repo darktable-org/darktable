@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2009--2012 johannes hanika.
+    copyright (c) 2014 pascal obry
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -15,25 +15,18 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
-#ifndef DARKTABLE_IOP_COLOR_H
-#define DARKTABLE_IOP_COLOR_H
 
-#include <lcms2.h>
+#ifndef __PRINTPROF_H__
+#define __PRINTPROF_H__
 
-// max iccprofile file name length
-#define DT_IOP_COLOR_ICC_LEN 100
+#include <inttypes.h>
+#include <stddef.h>
 
-#define LUT_SAMPLES 0x10000
+int dt_apply_printer_profile(int imgid, void **in, uint32_t width, uint32_t height, int bpp, const char *profile, int intent);
+// this routines takes as input an image of 8 or 16 bpp but always return a 8 bpp result. It is indeed better to
+// apply the profile to a 16bit input but we do not need this for printing.
 
-typedef struct dt_iop_color_profile_t
-{
-  char filename[512]; // icc file name
-  char name[512];     // product name
-  int pos;            // position in combo box
-  int display_pos;    // position in display combo box
-} dt_iop_color_profile_t;
-
-#endif
+#endif // __PRINTPROF_H__
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

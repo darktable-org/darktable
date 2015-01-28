@@ -21,6 +21,15 @@
 #include "common/darktable.h"
 #include <lcms2.h>
 
+// constants fit to the ones from lcms.h:
+typedef enum dt_iop_color_intent_t
+{
+  DT_INTENT_PERCEPTUAL = INTENT_PERCEPTUAL,                       // 0
+  DT_INTENT_RELATIVE_COLORIMETRIC = INTENT_RELATIVE_COLORIMETRIC, // 1
+  DT_INTENT_SATURATION = INTENT_SATURATION,                       // 2
+  DT_INTENT_ABSOLUTE_COLORIMETRIC = INTENT_ABSOLUTE_COLORIMETRIC  // 3
+} dt_iop_color_intent_t;
+
 /** create the lab profile. */
 cmsHPROFILE dt_colorspaces_create_lab_profile();
 

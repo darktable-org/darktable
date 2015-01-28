@@ -22,6 +22,10 @@
 #include "control/control.h"
 #include "common/imageio_module.h"
 
+#ifdef HAVE_PRINT
+#include "common/cups_print.h"
+#endif
+
 typedef struct dt_control_export_t
 {
   int max_width, max_height, format_index, storage_index;

@@ -143,7 +143,7 @@ const char *name()
 
 uint32_t views()
 {
-  return DT_VIEW_DARKROOM | DT_VIEW_TETHERING | DT_VIEW_MAP;
+  return DT_VIEW_DARKROOM | DT_VIEW_TETHERING | DT_VIEW_MAP | DT_VIEW_PRINT;
 }
 
 uint32_t container()
@@ -720,7 +720,7 @@ static gboolean _lib_filmstrip_draw_callback(GtkWidget *widget, cairo_t *cr, gpo
       // getting it from the matrix ...
       cairo_matrix_t m;
       cairo_get_matrix(cr, &m);
-      dt_view_image_expose(&(strip->image_over), id, cr, wd, ht, max_cols, img_pointerx, img_pointery, FALSE);
+      dt_view_image_expose(&(strip->image_over), id, cr, wd, ht, max_cols, img_pointerx, img_pointery, FALSE, FALSE);
       cairo_restore(cr);
     }
     else if(step_res == SQLITE_DONE)
