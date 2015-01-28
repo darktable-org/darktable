@@ -87,8 +87,8 @@ endif(USE_GEO)
 
 # the module specific to print mode
 if(CUPS_FOUND)
-        add_library(print_settings MODULE "print_settings.c")
-	set(MODULES ${MODULES} print_settings)
+  add_library(print_settings MODULE "print_settings.c")
+  set(MODULES ${MODULES} print_settings)
 endif(CUPS_FOUND)
 
 # Add libs references

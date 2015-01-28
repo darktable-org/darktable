@@ -581,7 +581,6 @@ if(BUILD_PRINT)
       "common/cups_print.h"
       "common/cups_print.c"
       "common/printprof.c"
-      "libs/print_settings.c"
       )
     set(SOURCES ${SOURCES} ${SOURCE_FILES_PRINT})
     add_library(cups_static STATIC IMPORTED)
