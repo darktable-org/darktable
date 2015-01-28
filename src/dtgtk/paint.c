@@ -1002,7 +1002,7 @@ void dtgtk_cairo_paint_alignment(cairo_t *cr, gint x, gint y, gint w, gint h, gi
 
   cairo_set_line_width(cr, 0.3);
   cairo_set_line_cap(cr, CAIRO_LINE_CAP_ROUND);
-  switch(flags >> 12)
+  switch(flags >> 13)
   {
     case 1: // Top left
       cairo_move_to(cr, 0.9, 0.1);

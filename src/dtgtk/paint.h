@@ -37,9 +37,9 @@ typedef enum dtgtk_cairo_paint_flags_t
   CPF_STYLE_FLAT = 1 << 8,         // flat style widget
   CPF_STYLE_BOX = 1 << 9,          // boxed style widget
   CPF_DO_NOT_USE_BORDER = 1 << 10, // do not paint inner border
-  CPF_SPECIAL_FLAG = 1 << 11,
-  CPF_CUSTOM_BG = 1 << 12,
-  CPF_CUSTOM_FG = 1 << 13
+  CPF_CUSTOM_BG = 1 << 11,
+  CPF_CUSTOM_FG = 1 << 12,
+  CPF_SPECIAL_FLAG = 1 << 13       // this needs to be the last one. also update shift in dtgtk_cairo_paint_alignment
 } dtgtk_cairo_paint_flags_t;
 
 

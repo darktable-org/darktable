@@ -1105,7 +1105,7 @@ void gui_init(struct dt_iop_module_t *self)
   for(int i = 0; i < 9; i++)
   {
     g->dtba[i] = DTGTK_TOGGLEBUTTON(
-        dtgtk_togglebutton_new(dtgtk_cairo_paint_alignment, CPF_STYLE_FLAT | (CPF_SPECIAL_FLAG << (i + 1))));
+        dtgtk_togglebutton_new(dtgtk_cairo_paint_alignment, CPF_STYLE_FLAT | (CPF_SPECIAL_FLAG << i)));
     gtk_widget_set_size_request(GTK_WIDGET(g->dtba[i]), DT_PIXEL_APPLY_DPI(16), DT_PIXEL_APPLY_DPI(16));
     gtk_grid_attach(bat, GTK_WIDGET(g->dtba[i]), i%3, i/3, 1, 1);
     g_signal_connect(G_OBJECT(g->dtba[i]), "toggled", G_CALLBACK(alignment_callback), self);
