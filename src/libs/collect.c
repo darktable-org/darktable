@@ -24,6 +24,7 @@
 #include "control/control.h"
 #include "control/jobs.h"
 #include "gui/gtk.h"
+#include "gui/draw.h"
 #include "dtgtk/button.h"
 #include "libs/lib.h"
 #include "common/metadata.h"
@@ -79,6 +80,8 @@ typedef struct dt_lib_collect_t
   GtkWidget *date_window;
   GtkWidget *date_cal;
 
+  GdkPixbuf *px_error;
+
   struct dt_lib_collect_params_t *params;
 } dt_lib_collect_t;
 
@@ -101,7 +104,7 @@ typedef enum dt_lib_collect_cols_t
   DT_LIB_COLLECT_COL_ID,
   DT_LIB_COLLECT_COL_TOOLTIP,
   DT_LIB_COLLECT_COL_PATH,
-  DT_LIB_COLLECT_COL_STRIKETROUGTH,
+  DT_LIB_COLLECT_COL_NOTHERE,
   DT_LIB_COLLECT_NUM_COLS
 } dt_lib_collect_cols_t;
 
@@ -444,11 +447,11 @@ static void folders_view(dt_lib_collect_rule_t *dr)
           gtk_tree_store_insert(GTK_TREE_STORE(d->treemodel), &iter, level>0?&current:NULL,0);
           gtk_tree_store_set(GTK_TREE_STORE(d->treemodel), &iter, DT_LIB_COLLECT_COL_TEXT, pch[j],
                             DT_LIB_COLLECT_COL_PATH, pth2,
-                            DT_LIB_COLLECT_COL_STRIKETROUGTH, !(g_file_test(pth3, G_FILE_TEST_IS_DIR)), -1);
+                            DT_LIB_COLLECT_COL_NOTHERE, !(g_file_test(pth3, G_FILE_TEST_IS_DIR)), -1);
           gtk_list_store_append(GTK_LIST_STORE(d->listmodel), &iter2);
           gtk_list_store_set(GTK_LIST_STORE(d->listmodel), &iter2, DT_LIB_COLLECT_COL_TEXT, pch[j],
                             DT_LIB_COLLECT_COL_PATH, pth2,
-                            DT_LIB_COLLECT_COL_STRIKETROUGTH, FALSE, -1);
+                            DT_LIB_COLLECT_COL_NOTHERE, FALSE, -1);
           current = iter;
           g_free(pth2);
           g_free(pth3);
@@ -536,7 +539,7 @@ static void tags_view(dt_lib_collect_rule_t *dr)
       gtk_list_store_set(GTK_LIST_STORE(d->listmodel), &iter2,
                           DT_LIB_COLLECT_COL_TEXT, sqlite3_column_text(stmt, 0),
                           DT_LIB_COLLECT_COL_PATH, sqlite3_column_text(stmt, 0),
-                          DT_LIB_COLLECT_COL_STRIKETROUGTH, FALSE, -1);
+                          DT_LIB_COLLECT_COL_NOTHERE, FALSE, -1);
     }
     else
     {
@@ -599,7 +602,7 @@ static void tags_view(dt_lib_collect_rule_t *dr)
             gtk_list_store_append(GTK_LIST_STORE(d->listmodel), &iter2);
             gtk_list_store_set(GTK_LIST_STORE(d->listmodel), &iter2, DT_LIB_COLLECT_COL_TEXT, pch[j],
                                 DT_LIB_COLLECT_COL_PATH, pth2,
-                                DT_LIB_COLLECT_COL_STRIKETROUGTH, FALSE, -1);
+                                DT_LIB_COLLECT_COL_NOTHERE, FALSE, -1);
             current = iter;
             g_free(pth2);
           }
@@ -868,7 +871,7 @@ static void list_view(dt_lib_collect_rule_t *dr)
                        DT_LIB_COLLECT_COL_ID, sqlite3_column_int(stmt, 1),
                        DT_LIB_COLLECT_COL_TOOLTIP, escaped_text,
                        DT_LIB_COLLECT_COL_PATH, val_wild,
-                       DT_LIB_COLLECT_COL_STRIKETROUGTH, (property==DT_COLLECTION_PROP_FILMROLL && !g_file_test(value, G_FILE_TEST_IS_DIR)),
+                       DT_LIB_COLLECT_COL_NOTHERE, (property==DT_COLLECTION_PROP_FILMROLL && !g_file_test(value, G_FILE_TEST_IS_DIR)),
                        -1);
     g_free(text);
     g_free(escaped_text);
@@ -1855,6 +1858,7 @@ static gboolean popup_button_callback(GtkWidget *widget, GdkEventButton *event, 
 
 void gui_init(dt_lib_module_t *self)
 {
+  const int bs2 = DT_PIXEL_APPLY_DPI(13);
   dt_lib_collect_t *d = (dt_lib_collect_t *)calloc(1, sizeof(dt_lib_collect_t));
 
   self->data = (void *)d;
@@ -1901,6 +1905,17 @@ void gui_init(dt_lib_module_t *self)
     gtk_widget_set_size_request(w, DT_PIXEL_APPLY_DPI(13), DT_PIXEL_APPLY_DPI(13));
   }
 
+  // initialise error icon (used if the filmroll is not reachable)
+  guchar *data = NULL;
+  cairo_surface_t *err_cst = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, bs2, bs2);
+  cairo_t *err_cr = cairo_create(err_cst);
+  cairo_set_source_rgb(err_cr, 0.7, 0.7, 0.7);
+  dtgtk_cairo_paint_cancel(err_cr, 0, 0, bs2, bs2, 0);
+  data = cairo_image_surface_get_data(err_cst);
+  dt_draw_cairo_to_gdk_pixbuf(data, bs2, bs2);
+  d->px_error = gdk_pixbuf_new_from_data(data, GDK_COLORSPACE_RGB, TRUE, 8, bs2, bs2,
+                                           cairo_image_surface_get_stride(err_cst), NULL, NULL);
+
   GtkWidget *sw = gtk_scrolled_window_new(NULL, NULL);
   d->scrolledwindow = GTK_SCROLLED_WINDOW(sw);
   gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(sw), GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
@@ -1916,12 +1931,17 @@ void gui_init(dt_lib_module_t *self)
 
   GtkTreeViewColumn *col = gtk_tree_view_column_new();
   gtk_tree_view_append_column(view, col);
-  GtkCellRenderer *renderer = gtk_cell_renderer_text_new();
-  gtk_tree_view_column_pack_start(col, renderer, TRUE);
-  gtk_tree_view_column_add_attribute(col, renderer, "text", DT_LIB_COLLECT_COL_TEXT);
   //this is used for filmroll and folder only
-  g_object_set(renderer, "strikethrough", TRUE, NULL);
-  gtk_tree_view_column_add_attribute(col, renderer, "strikethrough-set", DT_LIB_COLLECT_COL_STRIKETROUGTH);
+  GtkCellRenderer *renderer = gtk_cell_renderer_pixbuf_new();
+  gtk_tree_view_column_pack_start(col, renderer, FALSE);
+  g_object_set(renderer, "pixbuf", d->px_error, NULL);
+  gtk_tree_view_column_add_attribute(col, renderer, "visible", DT_LIB_COLLECT_COL_NOTHERE);
+
+  renderer = gtk_cell_renderer_text_new();
+  gtk_tree_view_column_pack_start(col, renderer, TRUE);
+  g_object_set(renderer, "style", PANGO_STYLE_ITALIC, NULL);
+  gtk_tree_view_column_add_attribute(col, renderer, "style-set", DT_LIB_COLLECT_COL_NOTHERE);
+  gtk_tree_view_column_add_attribute(col, renderer, "text", DT_LIB_COLLECT_COL_TEXT);
 
   GtkTreeModel *listmodel
       = GTK_TREE_MODEL(gtk_list_store_new(DT_LIB_COLLECT_NUM_COLS, G_TYPE_STRING, G_TYPE_UINT, G_TYPE_STRING,
