@@ -4,6 +4,7 @@ data/darktable.desktop.in
 src/cli/main.c
 src/common/collection.c
 src/common/colorspaces.c
+src/common/cups_print.c
 src/common/darktable.c
 src/common/darktable.h
 src/common/debug.h
@@ -16,6 +17,7 @@ src/common/mipmap_cache.c
 src/common/noiseprofiles.h
 src/common/pdf.h
 src/common/points.h
+src/common/printprof.c
 src/common/ratings.c
 src/common/styles.c
 src/common/variables.c
@@ -146,6 +148,7 @@ src/libs/metadata_view.c
 src/libs/modulegroups.c
 src/libs/modulelist.c
 src/libs/navigation.c
+src/libs/print_settings.c
 src/libs/recentcollect.c
 src/libs/select.c
 src/libs/session.c
@@ -161,12 +164,13 @@ src/libs/tools/hinter.c
 src/libs/tools/lighttable.c
 src/libs/tools/module_toolbox.c
 src/libs/tools/ratings.c
-src/libs/tools/viewswitcher.c
 src/libs/tools/view_toolbox.c
+src/libs/tools/viewswitcher.c
 src/lua/preferences.c
 src/views/darkroom.c
 src/views/lighttable.c
 src/views/map.c
+src/views/print.c
 src/views/slideshow.c
 src/views/tethering.c
 src/views/view.c
