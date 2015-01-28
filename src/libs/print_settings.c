@@ -90,6 +90,8 @@ typedef struct _dialog_description
 
 static double units[3] = {1.0, 0.1, 1.0/25.4};
 
+static void _update_slider (dt_lib_print_settings_t *ps);
+
 int
 position ()
 {
@@ -433,6 +435,8 @@ _paper_changed (GtkWidget *combo, dt_lib_module_t *self)
 
   dt_conf_set_string("plugins/print/print/paper", paper_name);
   dt_view_print_settings(darktable.view_manager, &ps->prt);
+
+  _update_slider(ps);
 }
 
 static double to_mm(dt_lib_print_settings_t *ps, double value)
@@ -486,6 +490,16 @@ _update_slider (dt_lib_print_settings_t *ps)
     sprintf(value, "%3.2f", h);
     gtk_label_set_text(GTK_LABEL(ps->height), value);
   }
+
+  // set the max range for the borders depending on the others border and never allow to have an image size of 0 or less
+  const int min_size = 5; // minimum size in mm
+  const int pa_max_height = ps->prt.paper.height - ps->prt.printer.hw_margin_top - ps->prt.printer.hw_margin_bottom - min_size;
+  const int pa_max_width  = ps->prt.paper.width  - ps->prt.printer.hw_margin_left - ps->prt.printer.hw_margin_right - min_size;
+
+  gtk_spin_button_set_range (GTK_SPIN_BUTTON(ps->b_top),    0, (pa_max_height - ps->prt.page.margin_bottom) * units[ps->unit]);
+  gtk_spin_button_set_range (GTK_SPIN_BUTTON(ps->b_left),   0, (pa_max_width - ps->prt.page.margin_right) * units[ps->unit]);
+  gtk_spin_button_set_range (GTK_SPIN_BUTTON(ps->b_right),  0, (pa_max_width - ps->prt.page.margin_left) * units[ps->unit]);
+  gtk_spin_button_set_range (GTK_SPIN_BUTTON(ps->b_bottom), 0, (pa_max_height - ps->prt.page.margin_top) * units[ps->unit]);
 }
 
 static void
@@ -612,11 +626,10 @@ _unit_changed (GtkWidget *combo, dt_lib_module_t *self)
   ps->unit = dt_bauhaus_combobox_get(combo);
   dt_conf_set_int("plugins/print/print/unit", ps->unit);
 
-  // convert margins to new unit
-  gtk_spin_button_set_value(GTK_SPIN_BUTTON(ps->b_top),    ps->prt.page.margin_top * units[ps->unit]);
-  gtk_spin_button_set_value(GTK_SPIN_BUTTON(ps->b_bottom), ps->prt.page.margin_bottom * units[ps->unit]);
-  gtk_spin_button_set_value(GTK_SPIN_BUTTON(ps->b_left),   ps->prt.page.margin_left * units[ps->unit]);
-  gtk_spin_button_set_value(GTK_SPIN_BUTTON(ps->b_right),  ps->prt.page.margin_right * units[ps->unit]);
+  double margin_top = ps->prt.page.margin_top;
+  double margin_left = ps->prt.page.margin_left;
+  double margin_right = ps->prt.page.margin_right;
+  double margin_bottom = ps->prt.page.margin_bottom;
 
   const int n_digits = (int)(1.0 / (units[ps->unit] * 10.0));
 
@@ -633,6 +646,13 @@ _unit_changed (GtkWidget *combo, dt_lib_module_t *self)
   gtk_spin_button_set_increments(GTK_SPIN_BUTTON(ps->b_right), incr, incr);
 
   _update_slider (ps);
+
+  // convert margins to new unit
+  gtk_spin_button_set_value(GTK_SPIN_BUTTON(ps->b_top),    margin_top * units[ps->unit]);
+  gtk_spin_button_set_value(GTK_SPIN_BUTTON(ps->b_bottom), margin_bottom * units[ps->unit]);
+  gtk_spin_button_set_value(GTK_SPIN_BUTTON(ps->b_left),   margin_left * units[ps->unit]);
+  gtk_spin_button_set_value(GTK_SPIN_BUTTON(ps->b_right),  margin_right * units[ps->unit]);
+
 }
 
 static void
