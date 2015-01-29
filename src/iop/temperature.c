@@ -547,8 +547,7 @@ void reload_defaults(dt_iop_module_t *module)
 
     for(int k = 0; k < 3; k++)
     {
-      if(isnan(module->dev->image_storage.wb_coeffs[k]) || module->dev->image_storage.wb_coeffs[k] == 0.0f
-         || module->dev->image_storage.wb_coeffs[k] == 1.0f)
+      if(isnan(module->dev->image_storage.wb_coeffs[k]) || module->dev->image_storage.wb_coeffs[k] == 0.0f)
       {
         found = 0;
         break;
