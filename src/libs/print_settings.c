@@ -1389,6 +1389,10 @@ void *get_params(dt_lib_module_t *self, int *size)
   const double b_right = ps->prt.page.margin_right;
   const int32_t alignment = ps->prt.page.alignment;
 
+  // these will be NULL when no printer is connected/found
+  if(!printer) printer = "";
+  if(!paper) paper = "";
+
   // compute the size of individual items, always get the \0 for strings
   const int32_t printer_len = strlen (printer) + 1;
   const int32_t paper_len = strlen (paper) + 1;
