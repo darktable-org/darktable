@@ -88,6 +88,27 @@ void CrwDecoder::decodeMetaDataInternal(CameraMetaData *meta) {
   string mode = "";
 
   // Fetch the white balance
+  if(mRootIFD->hasEntryRecursive((CiffTag)0x102c)) {
+    CiffEntry *entry = mRootIFD->getEntryRecursive((CiffTag)0x102c);
+
+    if(entry->getShort() > 512) {
+      /* G1 */
+
+      const ushort16 *data = entry->getShortArray();
+
+      // RGB? (second green level looks bogus)
+      float cam_mul[4];
+      for(int c = 0; c < 4; c++)
+      {
+        cam_mul[c ^ 2] = (float) data[60 + c];
+      }
+
+      const float green = cam_mul[1];
+      mRaw->metadata.wbCoeffs[0] = cam_mul[0] / green;
+      mRaw->metadata.wbCoeffs[1] = 1.0f;
+      mRaw->metadata.wbCoeffs[2] = cam_mul[2] / green;
+    }
+  }
   if (mRootIFD->hasEntryRecursive(CIFF_SHOTINFO) && mRootIFD->hasEntryRecursive(CIFF_WHITEBALANCE)) {
     CiffEntry *shot_info = mRootIFD->getEntryRecursive(CIFF_SHOTINFO);
 
