@@ -93,7 +93,7 @@ static int label_member(lua_State *L)
   luaA_to(L,lua_combobox,&combobox,1);
   if(lua_gettop(L) > 2) {
     char tmp[256];
-    luaA_to(L,char_256,&tmp,1);
+    luaA_to(L,char_256,&tmp,2);
     dt_bauhaus_widget_set_label(combobox->widget,NULL,tmp);
     return 0;
   }
