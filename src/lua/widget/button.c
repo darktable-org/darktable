@@ -15,14 +15,8 @@
    You should have received a copy of the GNU General Public License
    along with darktable.  If not, see <http://www.gnu.org/licenses/>.
  */
-#include "lua/widget/widget.h"
+#include "lua/widget/common.h"
 #include "lua/types.h"
-
-typedef struct {
-  dt_lua_widget_t parent;
-} dt_lua_button_t;
-
-typedef dt_lua_button_t* lua_button;
 
 static void button_init(lua_State* L);
 static dt_lua_widget_type_t button_type = {
@@ -43,17 +37,17 @@ static void button_init(lua_State* L)
   if(!lua_isnil(L,1)){
     new_value = luaL_checkstring(L,1);
   }
-  lua_button button = malloc(sizeof(dt_lua_button_t));
+  lua_button button = malloc(sizeof(dt_lua_widget_t));
   if(new_value) {
-    button->parent.widget = gtk_button_new_with_label(new_value);
+    button->widget = gtk_button_new_with_label(new_value);
   } else {
-    button->parent.widget = gtk_button_new();
+    button->widget = gtk_button_new();
   }
 
 
-  button->parent.type = &button_type;
+  button->type = &button_type;
   luaA_push_type(L, button_type.associated_type, &button);
-  g_object_ref_sink(button->parent.widget);
+  g_object_ref_sink(button->widget);
 
   if(!lua_isnil(L,2)){
     lua_pushvalue(L,2);
@@ -69,10 +63,10 @@ static int label_member(lua_State *L)
   luaA_to(L,lua_button,&button,1);
   if(lua_gettop(L) > 2) {
     const char * label = luaL_checkstring(L,3);
-    gtk_button_set_label(GTK_BUTTON(button->parent.widget),label);
+    gtk_button_set_label(GTK_BUTTON(button->widget),label);
     return 0;
   }
-  lua_pushstring(L,gtk_button_get_label(GTK_BUTTON(button->parent.widget)));
+  lua_pushstring(L,gtk_button_get_label(GTK_BUTTON(button->widget)));
   return 1;
 }
 

@@ -15,15 +15,9 @@
    You should have received a copy of the GNU General Public License
    along with darktable.  If not, see <http://www.gnu.org/licenses/>.
  */
-#include "lua/widget/widget.h"
+#include "lua/widget/common.h"
 #include "lua/types.h"
 #include "gui/gtk.h"
-
-typedef struct {
-  dt_lua_widget_t parent;
-} dt_lua_separator_t;
-
-typedef dt_lua_separator_t* lua_separator;
 
 static void separator_init(lua_State* L);
 static dt_lua_widget_type_t separator_type = {
@@ -34,13 +28,13 @@ static dt_lua_widget_type_t separator_type = {
 
 static void separator_init(lua_State* L)
 {
-  lua_separator separator = malloc(sizeof(dt_lua_separator_t));
+  lua_separator separator = malloc(sizeof(dt_lua_widget_t));
   dt_lua_orientation_t orientation;
   luaA_to(L,dt_lua_orientation_t,&orientation,1);
-  separator->parent.widget = gtk_separator_new(orientation);
-  separator->parent.type = &separator_type;
+  separator->widget = gtk_separator_new(orientation);
+  separator->type = &separator_type;
   luaA_push_type(L, separator_type.associated_type, &separator);
-  g_object_ref_sink(separator->parent.widget);
+  g_object_ref_sink(separator->widget);
 }
 
 int dt_lua_init_widget_separator(lua_State* L)

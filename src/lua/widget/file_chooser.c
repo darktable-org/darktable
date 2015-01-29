@@ -15,15 +15,9 @@
    You should have received a copy of the GNU General Public License
    along with darktable.  If not, see <http://www.gnu.org/licenses/>.
  */
-#include "lua/widget/widget.h"
+#include "lua/widget/common.h"
 #include "lua/types.h"
 #include "gui/gtk.h"
-
-typedef struct {
-  dt_lua_widget_t parent;
-} dt_lua_file_chooser_button_t;
-
-typedef dt_lua_file_chooser_button_t* lua_file_chooser_button;
 
 void file_chooser_button_init(lua_State* L);
 static dt_lua_widget_type_t file_chooser_button_type = {
@@ -41,12 +35,12 @@ static void file_set_callback(GtkButton *widget, gpointer user_data)
 void file_chooser_button_init(lua_State* L)
 {
   lua_settop(L,3);
-  lua_file_chooser_button file_chooser_button = malloc(sizeof(dt_lua_file_chooser_button_t));
-	file_chooser_button->parent.widget = gtk_file_chooser_button_new(lua_tostring(L,2),lua_toboolean(L,1)?GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER:GTK_FILE_CHOOSER_ACTION_OPEN );
+  lua_file_chooser_button file_chooser_button = malloc(sizeof(dt_lua_widget_t));
+	file_chooser_button->widget = gtk_file_chooser_button_new(lua_tostring(L,2),lua_toboolean(L,1)?GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER:GTK_FILE_CHOOSER_ACTION_OPEN );
 
-  file_chooser_button->parent.type = &file_chooser_button_type;
+  file_chooser_button->type = &file_chooser_button_type;
   luaA_push_type(L, file_chooser_button_type.associated_type, &file_chooser_button);
-  g_object_ref_sink(file_chooser_button->parent.widget);
+  g_object_ref_sink(file_chooser_button->widget);
 
   if(!lua_isnil(L,3)){
     lua_pushvalue(L,3);
@@ -61,10 +55,10 @@ static int title_member(lua_State *L)
   luaA_to(L,lua_file_chooser_button,&file_chooser_button,1);
   if(lua_gettop(L) > 2) {
     const char * title = luaL_checkstring(L,3);
-    gtk_file_chooser_button_set_title(GTK_FILE_CHOOSER_BUTTON(file_chooser_button->parent.widget),title);
+    gtk_file_chooser_button_set_title(GTK_FILE_CHOOSER_BUTTON(file_chooser_button->widget),title);
     return 0;
   }
-  lua_pushstring(L,gtk_file_chooser_button_get_title(GTK_FILE_CHOOSER_BUTTON(file_chooser_button->parent.widget)));
+  lua_pushstring(L,gtk_file_chooser_button_get_title(GTK_FILE_CHOOSER_BUTTON(file_chooser_button->widget)));
   return 1;
 }
 
@@ -74,10 +68,10 @@ static int value_member(lua_State *L)
   luaA_to(L,lua_file_chooser_button,&file_chooser_button,1);
   if(lua_gettop(L) > 2) {
     const char * value = luaL_checkstring(L,3);
-    gtk_file_chooser_set_filename(GTK_FILE_CHOOSER(file_chooser_button->parent.widget),value);
+    gtk_file_chooser_set_filename(GTK_FILE_CHOOSER(file_chooser_button->widget),value);
     return 0;
   }
-  lua_pushstring(L,gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(file_chooser_button->parent.widget)));
+  lua_pushstring(L,gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(file_chooser_button->widget)));
   return 1;
 }
 

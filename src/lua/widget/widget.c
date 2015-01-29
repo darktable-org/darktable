@@ -15,7 +15,8 @@
    You should have received a copy of the GNU General Public License
    along with darktable.  If not, see <http://www.gnu.org/licenses/>.
  */
-#include "lua/widget/widget.h"
+#include "lua/widget/common.h"
+#include "lua/widget/common.h"
 #include "lua/types.h"
 #include "lua/modules.h"
 #include "lua/call.h"
@@ -27,11 +28,44 @@
   use name to save/restore states as pref like other widgets
   have a way to save presets
   storage lib looses index for lua storages, 
+  luastorage can's save presets
 
   cleanup, not symetrical with init, maybe use lua_to to push ?
     * or use only the size to malloc ourselves, push, pass to gui_init ?
-    * can't use __init because there is no way to pass params/detect if params are here in a reliable way 
-      * make all params optional ? is __init called as a do_chunk ?
+    * keep gui_init for looking at the stack, but do a luaA_push before, what about __init __gc and inheritence
+
+    the plan
+      * gui_init initialize the GtkWidget, reads and uses the stack and push it on the stack
+      * should gui_init be recursive ? how do we handle the stack ? the creation of the GtkWidget ? only create if not NULL ?
+      * __init is called on push, but recurse calls the parent's push
+      * lua_widget's init does the systematic stuff
+      * __gtk_signals need to be rethought (current method works but is not clean)
+      * all gpointer types should use a common table and not a per-type table (inheritence)
+      * also deal with __gc, do we need a gui_cleanup ? __gc should call parent's __gc
+
+      * inherit from button and container
+      * check/deal with abstract types ?
+      * can get rid of widget_type->name and widget->associated type (find them in a different way)
+      * maybe get rid of associated_type ?
+
+    alternative
+      * no more parameters to new widget, split widgets with build-time params
+      * have widget:set(param,value)=>widget so you can write
+      box = new_widget("box)
+         :set("append",new_widget("button"):set("label","test"):set("clicked_callback",function()...end))
+         :set("append",new_widget("label"):set("label","this is the label"))
+      * use a generic __call(obj,key,value,key,value) to allow the syntax below
+        for named fields, it's trivial, for function and indices, it needs thinking
+      box = new_widget("box"){
+        new_widget("button"){
+        label ="test"
+        clicked_callback =...
+        },
+        new_widget("label"){
+          label ="hello"
+        }
+      }
+
   */
 
 
@@ -213,15 +247,6 @@ void dt_lua_widget_register_gtk_callback_type(lua_State *L,luaA_Type type_id,con
   lua_pop(L,2);
   
 }
-
-extern int dt_lua_init_widget_box(lua_State* L);
-extern int dt_lua_init_widget_button(lua_State* L);
-extern int dt_lua_init_widget_check_button(lua_State* L);
-extern int dt_lua_init_widget_label(lua_State* L);
-extern int dt_lua_init_widget_entry(lua_State* L);
-extern int dt_lua_init_widget_file_chooser_button(lua_State* L);
-extern int dt_lua_init_widget_separator(lua_State* L);
-extern int dt_lua_init_widget_combobox(lua_State* L);
 
 int dt_lua_init_widget(lua_State* L)
 {

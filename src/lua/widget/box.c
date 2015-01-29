@@ -15,16 +15,9 @@
    You should have received a copy of the GNU General Public License
    along with darktable.  If not, see <http://www.gnu.org/licenses/>.
  */
-#include "lua/widget/widget.h"
+#include "lua/widget/common.h"
 #include "lua/types.h"
 #include "gui/gtk.h"
-
-typedef struct {
-  dt_lua_widget_t parent;
-  GList * children;
-} dt_lua_box_t;
-
-typedef dt_lua_box_t* lua_box;
 
 static void box_init(lua_State* L);
 static void box_cleanup(lua_State* L,lua_widget widget);
