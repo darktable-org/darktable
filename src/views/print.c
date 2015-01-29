@@ -234,7 +234,6 @@ void expose(dt_view_t *self, cairo_t *cri, int32_t width_i, int32_t height_i, in
 
 int try_enter(dt_view_t *self)
 {
-#if 0
   // enter only if there is some printer available
   if (is_printer_available())
     return 0;
@@ -243,7 +242,7 @@ int try_enter(dt_view_t *self)
     dt_control_log(_("there is no printer available, cannot print!"));
     return 1;
   }
-#endif
+
   int selected = dt_control_get_mouse_over_id();
   if(selected < 0)
   {
