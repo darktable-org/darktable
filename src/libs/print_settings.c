@@ -1374,7 +1374,7 @@ void *get_params(dt_lib_module_t *self, int *size)
   const dt_lib_print_settings_t *ps = (dt_lib_print_settings_t *)self->data;
 
   // get the data
-  const char *printer = gtk_combo_box_text_get_active_text(GTK_COMBO_BOX_TEXT(ps->printers));
+  const char *printer = dt_bauhaus_combobox_get_text(ps->printers);
   const char *paper = dt_bauhaus_combobox_get_text(ps->papers);
   const char *profile = dt_bauhaus_combobox_get_text(ps->profile);
   const int32_t intent =  dt_bauhaus_combobox_get(ps->intent);
