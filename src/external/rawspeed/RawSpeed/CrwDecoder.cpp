@@ -107,6 +107,22 @@ void CrwDecoder::decodeMetaDataInternal(CameraMetaData *meta) {
       mRaw->metadata.wbCoeffs[0] = cam_mul[0] / green;
       mRaw->metadata.wbCoeffs[1] = 1.0f;
       mRaw->metadata.wbCoeffs[2] = cam_mul[2] / green;
+    } else {
+      /* G2, S30, S40 */
+
+      const ushort16 *data = entry->getShortArray();
+
+      // RGBG !
+      float cam_mul[4];
+      for(int c = 0; c < 4; c++)
+      {
+        cam_mul[c ^ (c >> 1) ^ 1] = (float) data[50 + c];
+      }
+
+      const float green = (cam_mul[1] + cam_mul[3]) / 2.0f;
+      mRaw->metadata.wbCoeffs[0] = cam_mul[0] / green;
+      mRaw->metadata.wbCoeffs[1] = 1.0f;
+      mRaw->metadata.wbCoeffs[2] = cam_mul[2] / green;
     }
   }
   if (mRootIFD->hasEntryRecursive(CIFF_SHOTINFO) && mRootIFD->hasEntryRecursive(CIFF_WHITEBALANCE)) {
