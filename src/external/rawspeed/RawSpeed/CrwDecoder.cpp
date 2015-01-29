@@ -6,6 +6,7 @@
 
     Copyright (C) 2009-2014 Klaus Post
     Copyright (C) 2014 Pedro Côrte-Real
+    Copyright (C) 2015 Roman Lebedev
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Lesser General Public
@@ -85,6 +86,74 @@ void CrwDecoder::decodeMetaDataInternal(CameraMetaData *meta) {
   string make = makemodel[0];
   string model = makemodel[1];
   string mode = "";
+
+  // Fetch the white balance
+  if(mRootIFD->hasEntryRecursive((CiffTag)0x102c)) {
+    CiffEntry *entry = mRootIFD->getEntryRecursive((CiffTag)0x102c);
+
+    if(entry->getShort() > 512) {
+      /* G1 */
+
+      const ushort16 *data = entry->getShortArray();
+
+      // RGB? (second green level looks bogus)
+      float cam_mul[4];
+      for(int c = 0; c < 4; c++)
+      {
+        cam_mul[c ^ 2] = (float) data[60 + c];
+      }
+
+      const float green = cam_mul[1];
+      mRaw->metadata.wbCoeffs[0] = cam_mul[0] / green;
+      mRaw->metadata.wbCoeffs[1] = 1.0f;
+      mRaw->metadata.wbCoeffs[2] = cam_mul[2] / green;
+    } else {
+      /* G2, S30, S40 */
+
+      const ushort16 *data = entry->getShortArray();
+
+      // RGBG !
+      float cam_mul[4];
+      for(int c = 0; c < 4; c++)
+      {
+        cam_mul[c ^ (c >> 1) ^ 1] = (float) data[50 + c];
+      }
+
+      const float green = (cam_mul[1] + cam_mul[3]) / 2.0f;
+      mRaw->metadata.wbCoeffs[0] = cam_mul[0] / green;
+      mRaw->metadata.wbCoeffs[1] = 1.0f;
+      mRaw->metadata.wbCoeffs[2] = cam_mul[2] / green;
+    }
+  }
+  if (mRootIFD->hasEntryRecursive(CIFF_SHOTINFO) && mRootIFD->hasEntryRecursive(CIFF_WHITEBALANCE)) {
+    CiffEntry *shot_info = mRootIFD->getEntryRecursive(CIFF_SHOTINFO);
+
+    ushort16 wb_index = shot_info->getShortArray()[14/2];
+
+    CiffEntry *wb_data = mRootIFD->getEntryRecursive(CIFF_WHITEBALANCE);
+    if (wb_data->type == 4096) {
+      /* CANON EOS D60, CANON EOS 10D, CANON EOS 300D */
+      int wb_offset = (wb_index < 18) ? "0134567028"[wb_index]-'0' : 0;
+      wb_offset = 1+wb_offset*4;
+
+      const ushort16 *data = wb_data->getShortArray();
+
+      // RGGB !
+      float cam_mul[4];
+      for(int c = 0; c < 4; c++)
+      {
+        cam_mul[c] = (float) data[wb_offset + c];
+      }
+
+      // NOTE: dcraw just uses first green level, so the values are different.
+      const float green = (cam_mul[1] + cam_mul[2]) / 2.0f;
+      mRaw->metadata.wbCoeffs[0] = cam_mul[0] / green;
+      mRaw->metadata.wbCoeffs[1] = 1.0f;
+      mRaw->metadata.wbCoeffs[2] = cam_mul[3] / green;
+    } else {
+      writeLog(DEBUG_PRIO_INFO, "CRW Decoder: CIFF_WHITEBALANCE has to be 4096, %i found.", wb_data->type);
+    }
+  }
 
   setMetaData(meta, make, model, mode, iso);
 }

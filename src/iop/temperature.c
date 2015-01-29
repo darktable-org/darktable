@@ -528,7 +528,6 @@ void reload_defaults(dt_iop_module_t *module)
 
   // get white balance coefficients, as shot
   char filename[PATH_MAX] = { 0 };
-  int ret = 0;
 
   /* check if file is raw / hdr */
   if(dt_image_is_raw(&module->dev->image_storage))
@@ -542,29 +541,32 @@ void reload_defaults(dt_iop_module_t *module)
                                         module->dev->image_storage.exif_maker,
                                         module->dev->image_storage.exif_model);
 
-    for(int k = 0; k < 3; k++) tmp.coeffs[k] = module->dev->image_storage.wb_coeffs[k];
+    module->default_enabled = 1;
 
-    libraw_data_t *raw = libraw_init(0);
-    ret = libraw_open_file(raw, filename);
-    if(!ret)
+    int found = 1, is_monochrom = 0;
+
+    for(int k = 0; k < 3; k++)
     {
-      module->default_enabled = 1;
-
-      for(int k = 0; k < 3; k++) tmp.coeffs[k] = raw->color.cam_mul[k];
-      if(tmp.coeffs[0] <= 0.0)
+      if(isnan(module->dev->image_storage.wb_coeffs[k]) || module->dev->image_storage.wb_coeffs[k] == 0.0f
+         || module->dev->image_storage.wb_coeffs[k] == 1.0f)
       {
-        for(int k = 0; k < 3; k++) tmp.coeffs[k] = raw->color.pre_mul[k];
+        found = 0;
+        break;
       }
+    }
 
-      /*for(int k = 0; k < 3; k+=2) {
-        float libraw = tmp.coeffs[k]/tmp.coeffs[1];
-        float rawspeed = module->dev->image_storage.wb_coeffs[k]/module->dev->image_storage.wb_coeffs[1];
-        if (libraw != rawspeed)
-          fprintf(stderr, "Coeff %d is %f in libraw and %f in rawspeed\n", k, libraw, rawspeed);
-      }*/
-
-      if(tmp.coeffs[0] == 0 || tmp.coeffs[1] == 0 || tmp.coeffs[2] == 0)
+    if(found)
+    {
+      for(int k = 0; k < 3; k++) tmp.coeffs[k] = module->dev->image_storage.wb_coeffs[k];
+    }
+    else
+    {
+      if(!(!strncmp(module->dev->image_storage.exif_maker, "Leica Camera AG", 15)
+           && !strncmp(module->dev->image_storage.exif_model, "M9 monochrom", 12)))
       {
+        dt_control_log(_("failed to read camera white balance information!"));
+        fprintf(stderr, "[temperature] failed to read camera white balance information!\n");
+
         // could not get useful info, try presets:
         for(int i = 0; i < wb_preset_count; i++)
         {
@@ -572,25 +574,25 @@ void reload_defaults(dt_iop_module_t *module)
           {
             // just take the first preset we find for this camera
             for(int k = 0; k < 3; k++) tmp.coeffs[k] = wb_preset[i].channel[k];
+            found = 1;
             break;
           }
         }
       }
-    }
-    if(tmp.coeffs[0] == 1.0f && tmp.coeffs[1] == 1.0f && tmp.coeffs[2] == 1.0f)
-    {
-      // nop white balance is valid for monochrome sraws (like the leica monochrom produces)
-      if(!(!strncmp(module->dev->image_storage.exif_maker, "Leica Camera AG", 15)
-           && !strncmp(module->dev->image_storage.exif_model, "M9 monochrom", 12)))
+      else
       {
-        dt_control_log(_("failed to read camera white balance information!"));
-        fprintf(stderr, "[temperature] failed to read camera white balance information!\n");
-
-        // final security net: hardcoded default that fits most cams.
-        tmp.coeffs[0] = 2.0f;
-        tmp.coeffs[1] = 1.0f;
-        tmp.coeffs[2] = 1.5f;
+        // nop white balance is valid for monochrome sraws (like the leica monochrom produces)
+        is_monochrom = 1;
       }
+    }
+
+    // did not find preset either?
+    if(!found && !is_monochrom)
+    {
+      // final security net: hardcoded default that fits most cams.
+      tmp.coeffs[0] = 2.0f;
+      tmp.coeffs[1] = 1.0f;
+      tmp.coeffs[2] = 1.5f;
     }
 
     tmp.coeffs[0] /= tmp.coeffs[1];
@@ -602,7 +604,7 @@ void reload_defaults(dt_iop_module_t *module)
     if(module->gui_data)
     {
       dt_iop_temperature_gui_data_t *g = (dt_iop_temperature_gui_data_t *)module->gui_data;
-      for(int c = 0; c < 3; c++) g->daylight_wb[c] = raw->color.pre_mul[c];
+      for(int c = 0; c < 3; c++) g->daylight_wb[c] = module->dev->image_storage.wb_coeffs[c];
 
       if(g->daylight_wb[0] == 1.0f && g->daylight_wb[1] == 1.0f && g->daylight_wb[2] == 1.0f)
       {
@@ -624,7 +626,6 @@ void reload_defaults(dt_iop_module_t *module)
       dt_bauhaus_slider_set_default(g->scale_k, temp);
       dt_bauhaus_slider_set_default(g->scale_tint, tint);
     }
-    libraw_close(raw);
   }
 
 end:

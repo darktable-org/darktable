@@ -111,6 +111,9 @@
 		</CFA>
 		<Crop x="48" y="6" width="0" height="-2"/>
 		<Sensor black="126" white="4095"/>
+		<Hints>
+			<Hint name="override_whitebalance" value="2093285,1000000,1055975"/>
+		</Hints>
 		<BlackAreas>
 			<Vertical x="0" width="46"/>
 		</BlackAreas>
@@ -806,6 +809,9 @@
 		</CFA>
 		<Crop x="4" y="6" width="-52" height="-6"/>
 		<Sensor black="129" white="4095"/>
+		<Hints>
+			<Hint name="override_whitebalance" value="2185173,1000000,1342573"/>
+		</Hints>
 		<BlackAreas>
 			<Vertical x="-50" width="50"/>
 		</BlackAreas>
@@ -852,6 +858,9 @@
 		</CFA>
 		<Crop x="12" y="6" width="-52" height="-2"/>
 		<Sensor black="0" white="4095"/>
+		<Hints>
+			<Hint name="override_whitebalance" value="1757692,1000000,2071795"/>
+		</Hints>
 		<BlackAreas>
 			<Vertical x="-50" width="50"/>
 			<Horizontal y="0" height="10"/>
@@ -866,6 +875,9 @@
 		</CFA>
 		<Crop x="12" y="6" width="-44" height="-2"/>
 		<Sensor black="0" white="4095"/>
+		<Hints>
+			<Hint name="override_whitebalance" value="1984870,1000000,1237501"/>
+		</Hints>
 		<BlackAreas>
 			<Vertical x="-40" width="40"/>
 			<Horizontal y="0" height="10"/>
@@ -880,6 +892,9 @@
 		</CFA>
 		<Crop x="44" y="12" width="-4" height="-4"/>
 		<Sensor black="128" white="4095"/>
+		<Hints>
+			<Hint name="override_whitebalance" value="2340268,1000000,1351293"/>
+		</Hints>
 		<BlackAreas>
 			<Vertical x="0" width="40"/>
 			<Horizontal y="0" height="10"/>
@@ -1081,6 +1096,9 @@
 		</CFA>
 		<Crop x="12" y="6" width="-52" height="-2"/>
 		<Sensor black="129" white="4095"/>
+		<Hints>
+			<Hint name="override_whitebalance" value="2466639,1000000,1153626"/>
+		</Hints>
 		<BlackAreas>
 			<Vertical x="-50" width="50"/>
 		</BlackAreas>
@@ -1094,6 +1112,9 @@
 		</CFA>
 		<Crop x="12" y="6" width="-44" height="-2"/>
 		<Sensor black="129" white="4095"/>
+		<Hints>
+			<Hint name="override_whitebalance" value="2168080,1000000,1356259"/>
+		</Hints>
 		<BlackAreas>
 			<Vertical x="-40" width="40"/>
 			<Horizontal y="0" height="10"/>
@@ -1108,6 +1129,9 @@
 		</CFA>
 		<Crop x="12" y="6" width="-44" height="-2"/>
 		<Sensor black="129" white="4095"/>
+		<Hints>
+			<Hint name="override_whitebalance" value="2143041,1000000,1136598"/>
+		</Hints>
 		<BlackAreas>
 			<Vertical x="-40" width="40"/>
 			<Horizontal y="0" height="10"/>
@@ -1122,6 +1146,9 @@
 		</CFA>
 		<Crop x="44" y="12" width="-4" height="-4"/>
 		<Sensor black="129" white="4095"/>
+		<Hints>
+			<Hint name="override_whitebalance" value="2279613,1000000,1245660"/>
+		</Hints>
 		<BlackAreas>
 			<Vertical x="0" width="40"/>
 			<Horizontal y="0" height="10"/>
@@ -1240,6 +1267,9 @@
 		</CFA>
 		<Crop x="12" y="8" width="-44" height="0"/>
 		<Sensor black="0" white="1023"/>
+		<Hints>
+			<Hint name="override_whitebalance" value="1564987,1000000,1710746"/>
+		</Hints>
 		<BlackAreas>
 			<Vertical x="-40" width="40"/>
 		</BlackAreas>
@@ -1252,6 +1282,9 @@
 			<Color x="1" y="1">BLUE</Color>
 		</CFA>
 		<Crop x="36" y="12" width="-4" height="0"/>
+		<Hints>
+			<Hint name="override_whitebalance" value="1568679,1000000,1602855"/>
+		</Hints>
 		<BlackAreas>
 			<Vertical x="0" width="30"/>
 		</BlackAreas>
@@ -1266,6 +1299,9 @@
 		</CFA>
 		<Crop x="12" y="6" width="-52" height="-6"/>
 		<Sensor black="0" white="1023"/>
+		<Hints>
+			<Hint name="override_whitebalance" value="1838080,1000000,1556674"/>
+		</Hints>
 		<BlackAreas>
 			<Vertical x="-50" width="50"/>
 		</BlackAreas>
@@ -1279,6 +1315,9 @@
 		</CFA>
 		<Crop x="48" y="12" width="-24" height="-12"/>
 		<Sensor black="0" white="1023"/>
+		<Hints>
+			<Hint name="override_whitebalance" value="2110416,1000000,1770211"/>
+		</Hints>
 		<BlackAreas>
 			<Vertical x="0" width="45"/>
 		</BlackAreas>
@@ -1292,6 +1331,9 @@
 		</CFA>
 		<Crop x="6" y="5" width="-32" height="-3"/>
 		<Sensor black="0" white="1023"/>
+		<Hints>
+			<Hint name="override_whitebalance" value="1524730,1000000,2009988"/>
+		</Hints>
 		<BlackAreas>
 			<Vertical x="-30" width="30"/>
 		</BlackAreas>
@@ -1421,6 +1463,9 @@
 		</CFA>
 		<Crop x="0" y="0" width="4320" height="2868"/>
 		<Sensor black="0" white="15236"/>
+		<Hints>
+			<Hint name="override_whitebalance" value="2093285,1000000,1055975"/>
+		</Hints>
 	</Camera>
 	<Camera make="NIKON CORPORATION" model="NIKON D300S">
 		<CFA width="2" height="2">
