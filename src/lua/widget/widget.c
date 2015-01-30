@@ -54,7 +54,7 @@
       box = new_widget("box)
          :set("append",new_widget("button"):set("label","test"):set("clicked_callback",function()...end))
          :set("append",new_widget("label"):set("label","this is the label"))
-      * use a generic __call(obj,key,value,key,value) to allow the syntax below
+      * use a generic __call(obj,{key,value,key,value}) to allow the syntax below
         for named fields, it's trivial, for function and indices, it needs thinking
       box = new_widget("box"){
         new_widget("button"){
@@ -248,6 +248,20 @@ void dt_lua_widget_register_gtk_callback_type(lua_State *L,luaA_Type type_id,con
   
 }
 
+int widget_call(lua_State *L)
+{
+  lua_pushnil(L); /* first key */
+  while(lua_next(L, 2) != 0)
+  {
+    lua_pushvalue(L,-2);
+    lua_pushvalue(L,-2);
+    lua_settable(L,1);
+    lua_pop(L,1);
+  }
+  lua_pop(L,1);
+  return 1;
+}
+
 int dt_lua_init_widget(lua_State* L)
 {
   dt_lua_module_new(L,"widget");
@@ -261,6 +275,8 @@ int dt_lua_init_widget(lua_State* L)
   dt_lua_type_setmetafield(L,lua_widget,"__gc");
   lua_pushcfunction(L,reset_member);
   dt_lua_type_register(L, lua_widget, "reset_callback");
+  lua_pushcfunction(L,widget_call);
+  dt_lua_type_setmetafield(L,lua_widget,"__call");
   
   dt_lua_init_widget_box(L);
   dt_lua_init_widget_button(L);

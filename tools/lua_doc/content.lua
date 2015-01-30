@@ -689,6 +689,7 @@ darktable.debug.type:set_text([[Similar to the system function type() but it wil
   types.dt_lib_collect_mode_t:set_text("The logical operators to apply between rules");
   types.dt_collection_properties_t:set_text("The different elements on which a collection can be filtered");
 
+  types.dt_lua_orientation_t:set_text("A possible orientation for a widget")
 
   types.lua_widget:set_text("Common parent type for all lua-handled widgets");
   types.lua_widget.tooltip:set_text("Tooltip to display for the widget");
@@ -697,8 +698,17 @@ darktable.debug.type:set_text([[Similar to the system function type() but it wil
   "Note that some widgets have a default implementation that can be overridden, (containers in particular will recursively reset their children). If you replace that default implementation you need to reimplement that functionality")
   types.lua_widget.reset_callback:set_reported_type("function")
   types.lua_widget.reset_callback:add_parameter("widget",types.lua_widget,"The widget that triggered the callback")
+  types.lua_widget.__call:set_main_parent(types.lua_widget)
+  types.lua_widget.__call:set_text("Using a lua widget as a function Allows to set multiple attributes of that widget at once. This is mainly used to create UI elements in a more readable way"..para()..
+      "For example:"..code([[
+local widget = dt.new_widget("button"){
+    label ="my label",
+    clicked_callback = function() print "hello world" end
+    }]]))
+  types.lua_widget.__call:add_parameter("attibutes","table","A table of attributes => value to set")
+  types.lua_widget.__call:add_return(types.lua_widget,"The object called itself, to allow chaining")
+           
 
-  types.dt_lua_orientation_t:set_text("A possible orientation for a widget")
 
   types.lua_check_button:set_text("A checkable button with a label next to it");
   types.lua_check_button.label:set_text("The label displayed next to the button");

@@ -116,6 +116,9 @@ local function document_type_sub(node,result,parent,prev_name)
 		elseif field == "__luaA_ParentMetatable" then
 			local type_node = create_node(value,toplevel.types,value.__luaA_TypeName);
 			set_attribute(result,"parent",type_node)
+		elseif field == "__call" then
+     result["__call"] =  create_node(value,result,"__call")
+     result["__call"]:set_real_name("As a function")
 		elseif (field == "__index"
 			or field == "__newindex"
 			or field == "__luaA_TypeName"

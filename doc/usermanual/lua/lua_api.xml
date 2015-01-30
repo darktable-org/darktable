@@ -5679,6 +5679,32 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
     </tgroup></informaltable>
 </section>
 
+<section status="final" id="types_dt_lua_orientation_t">
+<title>types.dt_lua_orientation_t</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>dt_lua_orientation_t</secondary>
+</indexterm>
+<synopsis>enum</synopsis>
+<para>A possible orientation for a widget</para>
+<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
+    <colspec colwidth="2*"/>
+    <colspec colwidth="8*"/>
+    <tbody><row>
+    <entry>Attributes:</entry>
+    <entry><itemizedlist>
+<listitem><para><emphasis>values : </emphasis></para>
+<para><itemizedlist>
+<listitem><para>horizontal</para></listitem>
+<listitem><para>vertical</para></listitem>
+</itemizedlist>
+</para></listitem>
+</itemizedlist>
+</entry>
+    </row></tbody>
+    </tgroup></informaltable>
+</section>
+
 <section status="final" id="types_lua_widget">
 <title>types.lua_widget</title>
 <indexterm>
@@ -5741,32 +5767,42 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
 </variablelist>
 </section>
 
-</section>
-
-<section status="final" id="types_dt_lua_orientation_t">
-<title>types.dt_lua_orientation_t</title>
+<section status="final" id="types_lua_widget___call">
+<title>types.lua_widget.As a function</title>
 <indexterm>
 <primary>Lua API</primary>
-<secondary>dt_lua_orientation_t</secondary>
+<secondary>As a function</secondary>
 </indexterm>
-<synopsis>enum</synopsis>
-<para>A possible orientation for a widget</para>
-<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
-    <colspec colwidth="2*"/>
-    <colspec colwidth="8*"/>
-    <tbody><row>
-    <entry>Attributes:</entry>
-    <entry><itemizedlist>
-<listitem><para><emphasis>values : </emphasis></para>
-<para><itemizedlist>
-<listitem><para>horizontal</para></listitem>
-<listitem><para>vertical</para></listitem>
-</itemizedlist>
-</para></listitem>
-</itemizedlist>
-</entry>
-    </row></tbody>
-    </tgroup></informaltable>
+<synopsis>function( 
+	<emphasis><link linkend="types_lua_widget___call_attibutes">attibutes</link></emphasis> : table
+) : <link linkend="types_lua_widget">types.lua_widget</link></synopsis>
+<para>Using a lua widget as a function Allows to set multiple attributes of that widget at once. This is mainly used to create UI elements in a more readable way</para>
+<para>For example:</para>
+
+<para><programlisting language="lua">local widget = dt.new_widget("button"){
+    label ="my label",
+    clicked_callback = function() print "hello world" end
+    }</programlisting></para>
+
+<para></para>
+
+<variablelist>
+<varlistentry id="types_lua_widget___call_attibutes"><term>attibutes</term><listitem>
+<synopsis>table</synopsis>
+<para>A table of attributes => value to set</para>
+
+</listitem></varlistentry>
+
+<varlistentry><term><emphasis>return</emphasis></term><listitem>
+<synopsis><link linkend="types_lua_widget">types.lua_widget</link></synopsis>
+<para>The object called itself, to allow chaining</para>
+
+</listitem></varlistentry>
+
+
+</variablelist>
+</section>
+
 </section>
 
 <section status="final" id="types_lua_check_button">
@@ -5788,6 +5824,15 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
 </entry>
     </row></tbody>
     </tgroup></informaltable>
+<section status="final" >
+<title>types.lua_check_button.__call</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>__call</secondary>
+</indexterm>
+<para>see <link linkend="types_lua_widget___call">types.lua_widget.As a function</link></para>
+</section>
+
 <section status="final" id="types_lua_check_button_label">
 <title>types.lua_check_button.label</title>
 <indexterm>
@@ -5906,6 +5951,15 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
 </entry>
     </row></tbody>
     </tgroup></informaltable>
+<section status="final" >
+<title>types.lua_label.__call</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>__call</secondary>
+</indexterm>
+<para>see <link linkend="types_lua_widget___call">types.lua_widget.As a function</link></para>
+</section>
+
 <section status="final" id="types_lua_label_label">
 <title>types.lua_label.label</title>
 <indexterm>
@@ -5966,6 +6020,15 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
 </entry>
     </row></tbody>
     </tgroup></informaltable>
+<section status="final" >
+<title>types.lua_button.__call</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>__call</secondary>
+</indexterm>
+<para>see <link linkend="types_lua_widget___call">types.lua_widget.As a function</link></para>
+</section>
+
 <section status="final" id="types_lua_button_label">
 <title>types.lua_button.label</title>
 <indexterm>
@@ -6063,6 +6126,15 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
 </entry>
     </row></tbody>
     </tgroup></informaltable>
+<section status="final" >
+<title>types.lua_box.__call</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>__call</secondary>
+</indexterm>
+<para>see <link linkend="types_lua_widget___call">types.lua_widget.As a function</link></para>
+</section>
+
 <section status="final" id="types_lua_box_extra_registration_parameters">
 <title>types.lua_box.extra registration parameters</title>
 <indexterm>
@@ -6134,6 +6206,15 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
 </entry>
     </row></tbody>
     </tgroup></informaltable>
+<section status="final" >
+<title>types.lua_entry.__call</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>__call</secondary>
+</indexterm>
+<para>see <link linkend="types_lua_widget___call">types.lua_widget.As a function</link></para>
+</section>
+
 <section status="final" id="types_lua_entry_text">
 <title>types.lua_entry.text</title>
 <indexterm>
@@ -6249,6 +6330,15 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
 </entry>
     </row></tbody>
     </tgroup></informaltable>
+<section status="final" >
+<title>types.lua_separator.__call</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>__call</secondary>
+</indexterm>
+<para>see <link linkend="types_lua_widget___call">types.lua_widget.As a function</link></para>
+</section>
+
 <section status="final" id="types_lua_separator_extra_registration_parameters">
 <title>types.lua_separator.extra registration parameters</title>
 <indexterm>
@@ -6290,6 +6380,15 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
 </entry>
     </row></tbody>
     </tgroup></informaltable>
+<section status="final" >
+<title>types.lua_combobox.__call</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>__call</secondary>
+</indexterm>
+<para>see <link linkend="types_lua_widget___call">types.lua_widget.As a function</link></para>
+</section>
+
 <section status="final" id="types_lua_combobox_value">
 <title>types.lua_combobox.value</title>
 <indexterm>
@@ -6430,6 +6529,15 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
 </entry>
     </row></tbody>
     </tgroup></informaltable>
+<section status="final" >
+<title>types.lua_file_chooser_button.__call</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>__call</secondary>
+</indexterm>
+<para>see <link linkend="types_lua_widget___call">types.lua_widget.As a function</link></para>
+</section>
+
 <section status="final" id="types_lua_file_chooser_button_title">
 <title>types.lua_file_chooser_button.title</title>
 <indexterm>
