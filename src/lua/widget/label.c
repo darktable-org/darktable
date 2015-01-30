@@ -28,16 +28,8 @@ static dt_lua_widget_type_t label_type = {
 
 static void label_init(lua_State* L)
 {
-  const char * new_value = NULL;
-  if(!lua_isnoneornil(L,1)){
-    new_value = luaL_checkstring(L,1);
-  }
   lua_label label = malloc(sizeof(dt_lua_widget_t));
-  if(new_value) {
-    label->widget = gtk_label_new(new_value);
-  } else {
-    label->widget = gtk_label_new(NULL);
-  }
+  label->widget = gtk_label_new(NULL);
   label->type = &label_type;
   luaA_push_type(L, label_type.associated_type, &label);
   g_object_ref_sink(label->widget);

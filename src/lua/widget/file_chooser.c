@@ -34,19 +34,25 @@ static void file_set_callback(GtkButton *widget, gpointer user_data)
 
 void file_chooser_button_init(lua_State* L)
 {
-  lua_settop(L,3);
   lua_file_chooser_button file_chooser_button = malloc(sizeof(dt_lua_widget_t));
-	file_chooser_button->widget = gtk_file_chooser_button_new(lua_tostring(L,2),lua_toboolean(L,1)?GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER:GTK_FILE_CHOOSER_ACTION_OPEN );
+	file_chooser_button->widget = gtk_file_chooser_button_new(NULL,GTK_FILE_CHOOSER_ACTION_OPEN );
 
   file_chooser_button->type = &file_chooser_button_type;
   luaA_push_type(L, file_chooser_button_type.associated_type, &file_chooser_button);
   g_object_ref_sink(file_chooser_button->widget);
+}
 
-  if(!lua_isnil(L,3)){
-    lua_pushvalue(L,3);
-    dt_lua_widget_set_callback(L,-2,"file-set");
+static int is_directory_member(lua_State *L)
+{
+  lua_file_chooser_button file_chooser_button;
+  luaA_to(L,lua_file_chooser_button,&file_chooser_button,1);
+  if(lua_gettop(L) > 2) {
+    const gboolean is_directory = lua_toboolean(L,3);
+    gtk_file_chooser_set_action(GTK_FILE_CHOOSER(file_chooser_button->widget),is_directory?GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER:GTK_FILE_CHOOSER_ACTION_OPEN);
+    return 0;
   }
-
+  lua_pushboolean(L,gtk_file_chooser_get_action(GTK_FILE_CHOOSER(file_chooser_button->widget)) == GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER);
+  return 1;
 }
 
 static int title_member(lua_State *L)
@@ -83,6 +89,10 @@ int dt_lua_init_widget_file_chooser_button(lua_State* L)
   lua_pushcfunction(L,title_member);
   lua_pushcclosure(L,dt_lua_gtk_wrap,1);
   dt_lua_type_register(L, lua_file_chooser_button, "title");
+
+  lua_pushcfunction(L,is_directory_member);
+  lua_pushcclosure(L,dt_lua_gtk_wrap,1);
+  dt_lua_type_register(L, lua_file_chooser_button, "is_directory");
 
   lua_pushcfunction(L,value_member);
   lua_pushcclosure(L,dt_lua_gtk_wrap,1);

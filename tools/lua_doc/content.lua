@@ -159,7 +159,6 @@ for k,v in sorted_pairs(debug.getregistry().dt_lua_modules.widget) do
   tmp = tmp..listel(k)
 end
 darktable.new_widget:add_parameter("type","string",[[The type of storage object to create, one of : ]]..  startlist().. tmp..endlist()) 
-darktable.new_widget:add_parameter("...","variable",[[Extra parameters, depend on the type of widget created]]) 
 darktable.new_widget:add_return(types.lua_widget,"The newly created object. Exact type depends on the type passed")
 ----------------------
 --  DARKTABLE.GUI   --
@@ -711,36 +710,29 @@ local widget = dt.new_widget("button"){
 
 
   types.lua_check_button:set_text("A checkable button with a label next to it");
+  types.lua_check_button.label:set_reported_type("string")
   types.lua_check_button.label:set_text("The label displayed next to the button");
   types.lua_check_button.value:set_text("If the widget is checked or not");
-	types.lua_check_button.extra_registration_parameters:set_text("")
-	types.lua_check_button.extra_registration_parameters:add_parameter("label","string","The label to use"):set_attribute("optional",true)
-	types.lua_check_button.extra_registration_parameters:add_parameter("callback",types.lua_check_button.clicked_callback,"A function to call on button click"):set_attribute("optional",true)
   types.lua_check_button.clicked_callback:set_text("A function to call on button click")
   types.lua_check_button.clicked_callback:set_reported_type("function")
   types.lua_check_button.clicked_callback:add_parameter("widget",types.lua_widget,"The widget that triggered the callback")
 
   types.lua_label:set_text("A label containing some text");
   types.lua_label.label:set_text("The label displayed");
-	types.lua_label.extra_registration_parameters:set_text("")
-	types.lua_label.extra_registration_parameters:add_parameter("label","string","The label to use"):set_attribute("optional",true)
 
   types.lua_button:set_text("A clickable button");
+  types.lua_button.label:set_reported_type("string")
   types.lua_button.label:set_text("The label displayed on the button");
-	types.lua_button.extra_registration_parameters:set_text("")
-	types.lua_button.extra_registration_parameters:add_parameter("label","string","The label to use"):set_attribute("optional",true)
-	types.lua_button.extra_registration_parameters:add_parameter("callback",types.lua_button.clicked_callback,"A function to call on button click"):set_attribute("optional",true)
   types.lua_button.clicked_callback:set_text("A function to call on button click")
   types.lua_button.clicked_callback:set_reported_type("function")
   types.lua_button.clicked_callback:add_parameter("widget",types.lua_widget,"The widget that triggered the callback")
 
   types.lua_box:set_text("A widget containing other widgets");
-	types.lua_box.extra_registration_parameters:set_text("")
-	types.lua_box.extra_registration_parameters:add_parameter("orientation",types.dt_lua_orientation_t,"The orientation of the box widget")
 	types.lua_box["#"]:set_reported_type(types.lua_widget)
 	types.lua_box["#"]:set_text("The widgets contained by the box")
   types.lua_box.append:set_text("Add a widget at the end of the box")
   types.lua_box.append:add_parameter("widget",types.lua_widget,"The widget to append")
+  types.lua_box.orientation:set_text("The orientation of the box.")
 
   types.lua_entry:set_text("A widget in which the user can input text")
   types.lua_entry.text:set_text("The content of the entry")
@@ -748,11 +740,9 @@ local widget = dt.new_widget("button"){
   types.lua_entry.placeholder:set_text("The text to display when the entry is empty")
   types.lua_entry.is_password:set_text("True if the text content should be hidden")
   types.lua_entry.editable:set_text("False if the entry should be read-only")
-	types.lua_entry.extra_registration_parameters:set_text([[This widget has no extra registration parameters.]])
 
   types.lua_separator:set_text("A widget providing a separation in the UI.")
-	types.lua_separator.extra_registration_parameters:set_text("")
-	types.lua_separator.extra_registration_parameters:add_parameter("orientation",types.dt_lua_orientation_t,"The orientation of the separator")
+  types.lua_separator.orientation:set_text("The orientation of the separator.")
 
   types.lua_combobox:set_text("A widget with multiple text entries in a menu"..para()..
       "This widget can be set as editable at construction time."..para()..
@@ -766,10 +756,6 @@ local widget = dt.new_widget("button"){
       "You can add new entries by writing to the first element beyond the end"..para()..
       "You can removes entries by setting them to nil")
   types.lua_combobox["#"]:set_reported_type("string")
-	types.lua_combobox.extra_registration_parameters:set_text("")
-	types.lua_combobox.extra_registration_parameters:add_parameter("label","string","A label to put on the left side of the combobox"):set_attribute("optional",true)
-	types.lua_combobox.extra_registration_parameters:add_parameter("editable","boolean","True if the combo box should be editable by the user"):set_attribute("optional",true)
-	types.lua_combobox.extra_registration_parameters:add_parameter("callback",types.lua_combobox.changed_callback,"A function to call on button click"):set_attribute("optional",true)
   types.lua_combobox.changed_callback:set_text("A function to call when the value field changes (character entered or value selected)")
   types.lua_combobox.changed_callback:set_reported_type("function")
   types.lua_combobox.changed_callback:add_parameter("widget",types.lua_widget,"The widget that triggered the callback")
@@ -779,13 +765,11 @@ local widget = dt.new_widget("button"){
   types.lua_file_chooser_button.title:set_text("The title of the window when choosing a file")
   types.lua_file_chooser_button.value:set_text("The currently selected file")
   types.lua_file_chooser_button.value:set_reported_type("string")
-  types.lua_file_chooser_button.extra_registration_parameters:set_text("")
-  types.lua_file_chooser_button.extra_registration_parameters:add_parameter("directory_only","boolean","True if the selection menu should allow only directorie"):set_attribute("optional",true)
-  types.lua_file_chooser_button.extra_registration_parameters:add_parameter("title","string","The tile for the selection window"):set_attribute("optional",true)
-	types.lua_file_chooser_button.extra_registration_parameters:add_parameter("callback",types.lua_file_chooser_button.changed_callback,"A function to call on button click"):set_attribute("optional",true)
   types.lua_file_chooser_button.changed_callback:set_text("A function to call when the value field changes (character entered or value selected)")
   types.lua_file_chooser_button.changed_callback:set_reported_type("function")
   types.lua_file_chooser_button.changed_callback:add_parameter("widget",types.lua_widget,"The widget that triggered the callback")
+  types.lua_file_chooser_button.is_directory:set_text("True if the file chooser button only allows directories to be selecte")
+
 
 	----------------------
 	--  EVENTS          --

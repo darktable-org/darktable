@@ -456,8 +456,7 @@
 <secondary>new_widget</secondary>
 </indexterm>
 <synopsis>function( 
-	<emphasis><link linkend="darktable_new_widget_type">type</link></emphasis> : string, 
-	<emphasis><link linkend="darktable_new_widget____">...</link></emphasis> : variable
+	<emphasis><link linkend="darktable_new_widget_type">type</link></emphasis> : string
 ) : <link linkend="types_lua_widget">types.lua_widget</link></synopsis>
 <para>Creates a new widget object to display in the UI</para>
 
@@ -475,12 +474,6 @@
 <listitem><para>separator</para></listitem>
 </itemizedlist>
 </para>
-
-</listitem></varlistentry>
-
-<varlistentry id="darktable_new_widget____"><term>...</term><listitem>
-<synopsis>variable</synopsis>
-<para>Extra parameters, depend on the type of widget created</para>
 
 </listitem></varlistentry>
 
@@ -5531,7 +5524,17 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
 </indexterm>
 <synopsis><link linkend="types_dt_lua_lib_collect_params_rule_t">types.dt_lua_lib_collect_params_rule_t</link></synopsis>
 <para>Each rule has a numeric index. You can add a rule by setting a rule after the last valid one, you can remove a rule by setting it to nil</para>
-
+<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
+    <colspec colwidth="2*"/>
+    <colspec colwidth="8*"/>
+    <tbody><row>
+    <entry>Attributes:</entry>
+    <entry><itemizedlist>
+<listitem><para><emphasis><link linkend="attributes_write">write</link></emphasis></para></listitem>
+</itemizedlist>
+</entry>
+    </row></tbody>
+    </tgroup></informaltable>
 </section>
 
 </section>
@@ -5875,30 +5878,6 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
     </tgroup></informaltable>
 </section>
 
-<section status="final" id="types_lua_check_button_extra_registration_parameters">
-<title>types.lua_check_button.extra registration parameters</title>
-<indexterm>
-<primary>Lua API</primary>
-<secondary>extra registration parameters</secondary>
-</indexterm>
-<para></para>
-
-<variablelist>
-<varlistentry id="types_lua_check_button_extra_registration_parameters_label"><term>[label]</term><listitem>
-<synopsis>string</synopsis>
-<para>The label to use</para>
-
-</listitem></varlistentry>
-
-<varlistentry id="types_lua_check_button_extra_registration_parameters_callback"><term>[callback]</term><listitem>
-<synopsis><link linkend="types_lua_check_button_clicked_callback">types.lua_check_button.clicked_callback</link></synopsis>
-<para>A function to call on button click</para>
-
-</listitem></varlistentry>
-
-</variablelist>
-</section>
-
 <section status="final" id="types_lua_check_button_clicked_callback">
 <title>types.lua_check_button.clicked_callback</title>
 <indexterm>
@@ -5981,24 +5960,6 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
     </tgroup></informaltable>
 </section>
 
-<section status="final" id="types_lua_label_extra_registration_parameters">
-<title>types.lua_label.extra registration parameters</title>
-<indexterm>
-<primary>Lua API</primary>
-<secondary>extra registration parameters</secondary>
-</indexterm>
-<para></para>
-
-<variablelist>
-<varlistentry id="types_lua_label_extra_registration_parameters_label"><term>[label]</term><listitem>
-<synopsis>string</synopsis>
-<para>The label to use</para>
-
-</listitem></varlistentry>
-
-</variablelist>
-</section>
-
 </section>
 
 <section status="final" id="types_lua_button">
@@ -6048,30 +6009,6 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
 </entry>
     </row></tbody>
     </tgroup></informaltable>
-</section>
-
-<section status="final" id="types_lua_button_extra_registration_parameters">
-<title>types.lua_button.extra registration parameters</title>
-<indexterm>
-<primary>Lua API</primary>
-<secondary>extra registration parameters</secondary>
-</indexterm>
-<para></para>
-
-<variablelist>
-<varlistentry id="types_lua_button_extra_registration_parameters_label"><term>[label]</term><listitem>
-<synopsis>string</synopsis>
-<para>The label to use</para>
-
-</listitem></varlistentry>
-
-<varlistentry id="types_lua_button_extra_registration_parameters_callback"><term>[callback]</term><listitem>
-<synopsis><link linkend="types_lua_button_clicked_callback">types.lua_button.clicked_callback</link></synopsis>
-<para>A function to call on button click</para>
-
-</listitem></varlistentry>
-
-</variablelist>
 </section>
 
 <section status="final" id="types_lua_button_clicked_callback">
@@ -6135,24 +6072,6 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
 <para>see <link linkend="types_lua_widget___call">types.lua_widget.As a function</link></para>
 </section>
 
-<section status="final" id="types_lua_box_extra_registration_parameters">
-<title>types.lua_box.extra registration parameters</title>
-<indexterm>
-<primary>Lua API</primary>
-<secondary>extra registration parameters</secondary>
-</indexterm>
-<para></para>
-
-<variablelist>
-<varlistentry id="types_lua_box_extra_registration_parameters_orientation"><term>orientation</term><listitem>
-<synopsis><link linkend="types_dt_lua_orientation_t">types.dt_lua_orientation_t</link></synopsis>
-<para>The orientation of the box widget</para>
-
-</listitem></varlistentry>
-
-</variablelist>
-</section>
-
 <section status="final" id="types_lua_box__hash_">
 <title>types.lua_box.#</title>
 <indexterm>
@@ -6183,6 +6102,27 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
 </listitem></varlistentry>
 
 </variablelist>
+</section>
+
+<section status="final" id="types_lua_box_orientation">
+<title>types.lua_box.orientation</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>orientation</secondary>
+</indexterm>
+<synopsis>string</synopsis>
+<para>The orientation of the box.</para>
+<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
+    <colspec colwidth="2*"/>
+    <colspec colwidth="8*"/>
+    <tbody><row>
+    <entry>Attributes:</entry>
+    <entry><itemizedlist>
+<listitem><para><emphasis><link linkend="attributes_write">write</link></emphasis></para></listitem>
+</itemizedlist>
+</entry>
+    </row></tbody>
+    </tgroup></informaltable>
 </section>
 
 </section>
@@ -6299,16 +6239,6 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
     </tgroup></informaltable>
 </section>
 
-<section status="final" id="types_lua_entry_extra_registration_parameters">
-<title>types.lua_entry.extra registration parameters</title>
-<indexterm>
-<primary>Lua API</primary>
-<secondary>extra registration parameters</secondary>
-</indexterm>
-<para>This widget has no extra registration parameters.</para>
-
-</section>
-
 </section>
 
 <section status="final" id="types_lua_separator">
@@ -6339,22 +6269,25 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
 <para>see <link linkend="types_lua_widget___call">types.lua_widget.As a function</link></para>
 </section>
 
-<section status="final" id="types_lua_separator_extra_registration_parameters">
-<title>types.lua_separator.extra registration parameters</title>
+<section status="final" id="types_lua_separator_orientation">
+<title>types.lua_separator.orientation</title>
 <indexterm>
 <primary>Lua API</primary>
-<secondary>extra registration parameters</secondary>
+<secondary>orientation</secondary>
 </indexterm>
-<para></para>
-
-<variablelist>
-<varlistentry id="types_lua_separator_extra_registration_parameters_orientation"><term>orientation</term><listitem>
-<synopsis><link linkend="types_dt_lua_orientation_t">types.dt_lua_orientation_t</link></synopsis>
-<para>The orientation of the separator</para>
-
-</listitem></varlistentry>
-
-</variablelist>
+<synopsis>string</synopsis>
+<para>The orientation of the separator.</para>
+<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
+    <colspec colwidth="2*"/>
+    <colspec colwidth="8*"/>
+    <tbody><row>
+    <entry>Attributes:</entry>
+    <entry><itemizedlist>
+<listitem><para><emphasis><link linkend="attributes_write">write</link></emphasis></para></listitem>
+</itemizedlist>
+</entry>
+    </row></tbody>
+    </tgroup></informaltable>
 </section>
 
 </section>
@@ -6423,37 +6356,17 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
 <para>The various menu entries.</para>
 <para>You can add new entries by writing to the first element beyond the end</para>
 <para>You can removes entries by setting them to nil</para>
-
-</section>
-
-<section status="final" id="types_lua_combobox_extra_registration_parameters">
-<title>types.lua_combobox.extra registration parameters</title>
-<indexterm>
-<primary>Lua API</primary>
-<secondary>extra registration parameters</secondary>
-</indexterm>
-<para></para>
-
-<variablelist>
-<varlistentry id="types_lua_combobox_extra_registration_parameters_label"><term>[label]</term><listitem>
-<synopsis>string</synopsis>
-<para>A label to put on the left side of the combobox</para>
-
-</listitem></varlistentry>
-
-<varlistentry id="types_lua_combobox_extra_registration_parameters_editable"><term>[editable]</term><listitem>
-<synopsis>boolean</synopsis>
-<para>True if the combo box should be editable by the user</para>
-
-</listitem></varlistentry>
-
-<varlistentry id="types_lua_combobox_extra_registration_parameters_callback"><term>[callback]</term><listitem>
-<synopsis><link linkend="types_lua_combobox_changed_callback">types.lua_combobox.changed_callback</link></synopsis>
-<para>A function to call on button click</para>
-
-</listitem></varlistentry>
-
-</variablelist>
+<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
+    <colspec colwidth="2*"/>
+    <colspec colwidth="8*"/>
+    <tbody><row>
+    <entry>Attributes:</entry>
+    <entry><itemizedlist>
+<listitem><para><emphasis><link linkend="attributes_write">write</link></emphasis></para></listitem>
+</itemizedlist>
+</entry>
+    </row></tbody>
+    </tgroup></informaltable>
 </section>
 
 <section status="final" id="types_lua_combobox_changed_callback">
@@ -6580,36 +6493,6 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
     </tgroup></informaltable>
 </section>
 
-<section status="final" id="types_lua_file_chooser_button_extra_registration_parameters">
-<title>types.lua_file_chooser_button.extra registration parameters</title>
-<indexterm>
-<primary>Lua API</primary>
-<secondary>extra registration parameters</secondary>
-</indexterm>
-<para></para>
-
-<variablelist>
-<varlistentry id="types_lua_file_chooser_button_extra_registration_parameters_directory_only"><term>[directory_only]</term><listitem>
-<synopsis>boolean</synopsis>
-<para>True if the selection menu should allow only directorie</para>
-
-</listitem></varlistentry>
-
-<varlistentry id="types_lua_file_chooser_button_extra_registration_parameters_title"><term>[title]</term><listitem>
-<synopsis>string</synopsis>
-<para>The tile for the selection window</para>
-
-</listitem></varlistentry>
-
-<varlistentry id="types_lua_file_chooser_button_extra_registration_parameters_callback"><term>[callback]</term><listitem>
-<synopsis><link linkend="types_lua_file_chooser_button_changed_callback">types.lua_file_chooser_button.changed_callback</link></synopsis>
-<para>A function to call on button click</para>
-
-</listitem></varlistentry>
-
-</variablelist>
-</section>
-
 <section status="final" id="types_lua_file_chooser_button_changed_callback">
 <title>types.lua_file_chooser_button.changed_callback</title>
 <indexterm>
@@ -6639,6 +6522,27 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
 </listitem></varlistentry>
 
 </variablelist>
+</section>
+
+<section status="final" id="types_lua_file_chooser_button_is_directory">
+<title>types.lua_file_chooser_button.is_directory</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>is_directory</secondary>
+</indexterm>
+<synopsis>boolean</synopsis>
+<para>True if the file chooser button only allows directories to be selecte</para>
+<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
+    <colspec colwidth="2*"/>
+    <colspec colwidth="8*"/>
+    <tbody><row>
+    <entry>Attributes:</entry>
+    <entry><itemizedlist>
+<listitem><para><emphasis><link linkend="attributes_write">write</link></emphasis></para></listitem>
+</itemizedlist>
+</entry>
+    </row></tbody>
+    </tgroup></informaltable>
 </section>
 
 </section>

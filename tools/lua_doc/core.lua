@@ -699,18 +699,9 @@ function M.all_children(node)
 
   -- create one widget of each type
 	for k, v in pairs(registry.dt_lua_modules.widget) do
-    local res
-    if k == "box" or k == "separator" then
-      res = v("horizontal","")
-    elseif k == "file_chooser_button" then
-      res = v(true,"")
-    else
-      res = v("")
-    end
+    res = v()
     local thetype= toplevel.types[dt.debug.type(res)]
 		document_from_obj(res,thetype)
-    thetype.extra_registration_parameters = create_documentation_node(nil,thetype,"extra_registration_parameters");
-    thetype.extra_registration_parameters:set_real_name("extra registration parameters")
 	end
 
   local collect_data = dt.gui.libs.collect.filter()

@@ -43,9 +43,7 @@ static int box_reset(lua_State* L)
 static void box_init(lua_State* L)
 {
   lua_box box = malloc(sizeof(dt_lua_box_t));
-  dt_lua_orientation_t orientation;
-  luaA_to(L,dt_lua_orientation_t,&orientation,1);
-  box->parent.widget = gtk_box_new(orientation, DT_PIXEL_APPLY_DPI(5));
+  box->parent.widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_PIXEL_APPLY_DPI(5));
   box->children = NULL;
   box->parent.type = &box_type;
   luaA_push_type(L, box_type.associated_type, &box);
@@ -60,6 +58,21 @@ static void box_cleanup(lua_State* L,lua_widget widget)
   lua_box box = (lua_box)widget;
   g_list_free(box->children);
   // no need to cleanup the actual widget, __gc does it for us
+}
+
+static int orientation_member(lua_State *L)
+{
+  lua_box box;
+  luaA_to(L,lua_box,&box,1);
+  dt_lua_orientation_t orientation;
+  if(lua_gettop(L) > 2) {
+    luaA_to(L,dt_lua_orientation_t,&orientation,3);
+    gtk_orientable_set_orientation(GTK_ORIENTABLE(box->parent.widget),orientation);
+    return 0;
+  }
+  orientation = gtk_orientable_get_orientation(GTK_ORIENTABLE(box->parent.widget));
+  luaA_push(L,dt_lua_orientation_t,&orientation);
+  return 1;
 }
 
 static int box_append(lua_State *L)
@@ -104,6 +117,9 @@ int dt_lua_init_widget_box(lua_State* L)
   lua_pushcfunction(L,box_numindex);
   dt_lua_type_register_number_const(L,lua_box);
 
+  lua_pushcfunction(L,orientation_member);
+  lua_pushcclosure(L,dt_lua_gtk_wrap,1);
+  dt_lua_type_register(L, lua_box, "orientation");
   return 0;
 }
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

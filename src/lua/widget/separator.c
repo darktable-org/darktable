@@ -29,18 +29,36 @@ static dt_lua_widget_type_t separator_type = {
 static void separator_init(lua_State* L)
 {
   lua_separator separator = malloc(sizeof(dt_lua_widget_t));
-  dt_lua_orientation_t orientation;
-  luaA_to(L,dt_lua_orientation_t,&orientation,1);
-  separator->widget = gtk_separator_new(orientation);
+  separator->widget = gtk_separator_new(GTK_ORIENTATION_HORIZONTAL);
   separator->type = &separator_type;
   luaA_push_type(L, separator_type.associated_type, &separator);
   g_object_ref_sink(separator->widget);
 }
 
+
+static int orientation_member(lua_State *L)
+{
+  lua_separator separator;
+  luaA_to(L,lua_separator,&separator,1);
+  dt_lua_orientation_t orientation;
+  if(lua_gettop(L) > 2) {
+    luaA_to(L,dt_lua_orientation_t,&orientation,3);
+    gtk_orientable_set_orientation(GTK_ORIENTABLE(separator->widget),orientation);
+    return 0;
+  }
+  orientation = gtk_orientable_get_orientation(GTK_ORIENTABLE(separator->widget));
+  luaA_push(L,dt_lua_orientation_t,&orientation);
+  return 1;
+}
+
+
 int dt_lua_init_widget_separator(lua_State* L)
 {
   dt_lua_init_widget_type(L,&separator_type,lua_separator);
 
+  lua_pushcfunction(L,orientation_member);
+  lua_pushcclosure(L,dt_lua_gtk_wrap,1);
+  dt_lua_type_register(L, lua_separator, "orientation");
   return 0;
 }
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
