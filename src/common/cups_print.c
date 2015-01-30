@@ -182,10 +182,12 @@ sort_papers (gconstpointer p1, gconstpointer p2)
 
 GList *dt_get_papers(const char *printer_name)
 {
+  GList *result = NULL;
+
+#if ((CUPS_VERSION_MAJOR == 1) && (CUPS_VERSION_MINOR >= 6)) || CUPS_VERSION_MAJOR > 1
   cups_dest_t *dests;
   int num_dests = cupsGetDests(&dests);
   cups_dest_t *dest = cupsGetDest(printer_name, NULL, num_dests, dests);
-  GList *result = NULL;
 
   int cancel;
   const size_t ressize = 1024;
@@ -229,6 +231,7 @@ GList *dt_get_papers(const char *printer_name)
     else
       dt_print(DT_DEBUG_PRINT, "[print] cannot connect to printer %s (cancel=%d)\n", printer_name, cancel);
   }
+#endif
 
   // check now PPD page sizes
 
