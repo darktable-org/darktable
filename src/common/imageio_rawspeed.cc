@@ -28,6 +28,8 @@
 #include "rawspeed/RawSpeed/CameraMetaData.h"
 #include "rawspeed/RawSpeed/ColorFilterArray.h"
 
+#define __STDC_LIMIT_MACROS
+
 extern "C" {
 #include "imageio.h"
 #include "common/imageio_rawspeed.h"
@@ -35,6 +37,7 @@ extern "C" {
 #include "common/darktable.h"
 #include "common/colorspaces.h"
 #include "common/file_location.h"
+#include <stdint.h>
 }
 
 // define this function, it is only declared in rawspeed:

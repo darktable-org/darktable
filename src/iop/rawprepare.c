@@ -27,6 +27,7 @@
 
 #include <gtk/gtk.h>
 #include <stdlib.h>
+#include <stdint.h>
 #include <xmmintrin.h>
 
 DT_MODULE_INTROSPECTION(1, dt_iop_rawprepare_params_t)
