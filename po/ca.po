@@ -8,8 +8,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 1.6\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2014-12-23 14:33+0100\n"
-"PO-Revision-Date: 2014-12-23 14:34+0100\n"
+"POT-Creation-Date: 2015-01-26 23:45+0100\n"
+"PO-Revision-Date: 2015-01-26 23:49+0100\n"
 "Last-Translator: Josep V. Moragues <josepvm@arrakis.es>\n"
 "Language-Team: Josep Vicenç Moragues Pastor <josepvm@arrakis.es>\n"
 "Language: ca\n"
@@ -919,7 +919,7 @@ msgid_plural "%d local copies have been synchronized"
 msgstr[0] "s'ha sincronitzat %d còpia local"
 msgstr[1] "s'han sincronitzat %d còpies locals"
 
-#: ../src/common/imageio.c:633
+#: ../src/common/imageio.c:638
 #, c-format
 msgid ""
 "failed to allocate memory for %s, please lower the threads used for export "
@@ -928,22 +928,22 @@ msgstr ""
 "no s'ha pogut assignar memòria per %s, si us plau reduïu els fils d'execució "
 "en exportar o adquiriu més memòria"
 
-#: ../src/common/imageio.c:634
+#: ../src/common/imageio.c:639
 msgctxt "noun"
 msgid "thumbnail export"
 msgstr "exporta miniatura"
 
-#: ../src/common/imageio.c:634
+#: ../src/common/imageio.c:639
 msgctxt "noun"
 msgid "export"
 msgstr "exporta"
 
-#: ../src/common/imageio.c:642 ../src/common/mipmap_cache.c:1116
+#: ../src/common/imageio.c:647 ../src/common/mipmap_cache.c:1116
 #, c-format
 msgid "image `%s' is not available!"
 msgstr "no es troba la imatge `%s'!"
 
-#: ../src/common/imageio.c:658
+#: ../src/common/imageio.c:663
 #, c-format
 msgid "cannot find the style '%s' to apply during export."
 msgstr "no es troba l'estil '%s' per aplicar-lo en exportar."
@@ -988,8 +988,8 @@ msgstr "l'estil amb nom '%s' ja existeix"
 #. freed by _destroy_style_shortcut_callback
 #: ../src/common/styles.c:283 ../src/common/styles.c:287
 #: ../src/common/styles.c:365 ../src/common/styles.c:433
-#: ../src/common/styles.c:583 ../src/common/styles.c:1103
-#: ../src/common/styles.c:1125
+#: ../src/common/styles.c:583 ../src/common/styles.c:1107
+#: ../src/common/styles.c:1129
 #, c-format
 msgctxt "accel"
 msgid "styles/apply %s"
@@ -1002,21 +1002,21 @@ msgstr "s'ha creat l'estil '%s'"
 
 #. fail :(
 #: ../src/common/styles.c:465 ../src/common/styles.c:482
-#: ../src/views/darkroom.c:430
+#: ../src/views/darkroom.c:434
 msgid "no image selected!"
 msgstr "no hi ha cap imatge seleccionada!"
 
-#: ../src/common/styles.c:759
+#: ../src/common/styles.c:763
 #, c-format
 msgid "failed to overwrite style file for %s"
 msgstr "no s'ha pogut sobreescriure el fitxer d'estil per a %s"
 
-#: ../src/common/styles.c:765
+#: ../src/common/styles.c:769
 #, c-format
 msgid "style file for %s exists"
 msgstr "existeix un fitxer d'estil per %s"
 
-#: ../src/common/styles.c:994
+#: ../src/common/styles.c:998
 #, c-format
 msgid "style %s was successfully imported"
 msgstr "s'ha importat amb èxit l'estil %s"
@@ -1024,7 +1024,7 @@ msgstr "s'ha importat amb èxit l'estil %s"
 #: ../src/common/variables.c:240 ../src/common/variables.c:254
 #: ../src/iop/clipping.c:1571 ../src/iop/clipping.c:1819
 #: ../src/iop/clipping.c:1839 ../src/iop/clipping.c:1884
-#: ../src/iop/clipping.c:1906 ../src/iop/lens.c:1965 ../src/libs/export.c:627
+#: ../src/iop/clipping.c:1906 ../src/iop/lens.c:1965 ../src/libs/export.c:631
 #: ../src/libs/live_view.c:324 ../src/libs/live_view.c:337
 #: ../src/libs/live_view.c:355
 msgid "none"
@@ -1215,7 +1215,7 @@ msgid_plural "exporting %d images to %s"
 msgstr[0] "s'està exportant %d imatge a %s"
 msgstr[1] "s'estan exportant %d imatges a %s"
 
-#: ../src/control/jobs/control_jobs.c:995 ../src/views/darkroom.c:443
+#: ../src/control/jobs/control_jobs.c:995 ../src/views/darkroom.c:447
 #, c-format
 msgid "image `%s' is currently unavailable"
 msgstr "la imatge `%s' no està disponible"
@@ -2082,7 +2082,7 @@ msgstr "sol vespertí"
 msgid "underwater"
 msgstr "Sota aigua"
 
-#: ../src/external/wb_presets.c:73 ../src/views/darkroom.c:1138
+#: ../src/external/wb_presets.c:73 ../src/views/darkroom.c:1159
 msgid "black & white"
 msgstr "Blanc i negre"
 
@@ -2541,7 +2541,7 @@ msgstr "importa"
 
 #. Export button
 #. export button
-#: ../src/gui/preferences.c:559 ../src/libs/export.c:649
+#: ../src/gui/preferences.c:559 ../src/libs/export.c:653
 #: ../src/libs/styles.c:385
 msgid "export"
 msgstr "exporta"
@@ -4337,21 +4337,21 @@ msgstr "sRGB (p.ex. JPG)"
 #: ../src/iop/colorin.c:1099 ../src/iop/colorin.c:1133
 #: ../src/iop/colorin.c:1268 ../src/iop/colorout.c:934
 #: ../src/iop/colorout.c:935 ../src/iop/colorout.c:936
-#: ../src/libs/export.c:544
+#: ../src/libs/export.c:548
 msgid "Adobe RGB (compatible)"
 msgstr "Adobe RGB (compatible)"
 
 #: ../src/iop/colorin.c:1101 ../src/iop/colorin.c:1135
 #: ../src/iop/colorin.c:1269 ../src/iop/colorout.c:916
 #: ../src/iop/colorout.c:917 ../src/iop/colorout.c:918
-#: ../src/libs/export.c:550
+#: ../src/libs/export.c:554
 msgid "linear Rec709 RGB"
 msgstr "lineal Rec709 RGB"
 
 #: ../src/iop/colorin.c:1103 ../src/iop/colorin.c:1137
 #: ../src/iop/colorin.c:1270 ../src/iop/colorout.c:922
 #: ../src/iop/colorout.c:923 ../src/iop/colorout.c:924
-#: ../src/libs/export.c:556
+#: ../src/libs/export.c:560
 msgid "linear Rec2020 RGB"
 msgstr "lineal Rec2020 RGB"
 
@@ -4369,7 +4369,7 @@ msgid "Lab"
 msgstr "Lab"
 
 #: ../src/iop/colorin.c:1249 ../src/iop/denoiseprofile.c:1641
-#: ../src/libs/export.c:594
+#: ../src/libs/export.c:598
 msgid "profile"
 msgstr "perfil"
 
@@ -4518,23 +4518,23 @@ msgstr "prova sortida"
 
 # FIXME
 #: ../src/iop/colorout.c:876 ../src/iop/colorout.c:883
-#: ../src/libs/export.c:525
+#: ../src/libs/export.c:529
 msgid "perceptual"
 msgstr "perceptiu"
 
 #: ../src/iop/colorout.c:877 ../src/iop/colorout.c:884
-#: ../src/libs/export.c:526
+#: ../src/libs/export.c:530
 msgid "relative colorimetric"
 msgstr "mètrica de color relativa"
 
 #: ../src/iop/colorout.c:878 ../src/iop/colorout.c:885
-#: ../src/libs/export.c:527
+#: ../src/libs/export.c:531
 msgctxt "rendering intent"
 msgid "saturation"
 msgstr "saturació"
 
 #: ../src/iop/colorout.c:879 ../src/iop/colorout.c:886
-#: ../src/libs/export.c:528
+#: ../src/libs/export.c:532
 msgid "absolute colorimetric"
 msgstr "mètrica de color absoluta"
 
@@ -4560,7 +4560,7 @@ msgid "system display profile"
 msgstr "perf. pantalla del sistema"
 
 #: ../src/iop/colorout.c:928 ../src/iop/colorout.c:929
-#: ../src/iop/colorout.c:930 ../src/libs/export.c:537
+#: ../src/iop/colorout.c:930 ../src/libs/export.c:541
 msgid "sRGB (web-safe)"
 msgstr "sRGB (per a web)"
 
@@ -4756,16 +4756,16 @@ msgid "demosaicing raw data method"
 msgstr "mètode de demosaicing de les dades raw"
 
 #: ../src/iop/demosaic.c:2163
-msgid "VNG"
-msgstr "VNG"
+msgid "VNG (slow)"
+msgstr "VNG (lent)"
 
 #: ../src/iop/demosaic.c:2164
-msgid "Markesteijn 1-pass (slow)"
-msgstr "Markesteijn 1 passada (lent)"
+msgid "Markesteijn 1-pass"
+msgstr "Markesteijn 1 passada"
 
 #: ../src/iop/demosaic.c:2165
-msgid "Markesteijn 3-pass (slower)"
-msgstr "Markesteijn 3 passades (més lent)"
+msgid "Markesteijn 3-pass (slow)"
+msgstr "Markesteijn 3 passades (lent)"
 
 #: ../src/iop/demosaic.c:2171
 msgid ""
@@ -7010,19 +7010,19 @@ msgstr "escriu els fitxers XMP"
 msgid "export selected"
 msgstr "exporta les seleccionades"
 
-#: ../src/libs/export.c:455
+#: ../src/libs/export.c:459
 msgid "target storage"
 msgstr "desar a"
 
-#: ../src/libs/export.c:477
+#: ../src/libs/export.c:481
 msgid "file format"
 msgstr "format del fitxer"
 
-#: ../src/libs/export.c:491
+#: ../src/libs/export.c:495
 msgid "global options"
 msgstr "opcions globals"
 
-#: ../src/libs/export.c:495
+#: ../src/libs/export.c:499
 msgid ""
 "maximum output width\n"
 "set to 0 for no scaling"
@@ -7030,7 +7030,7 @@ msgstr ""
 "amplada de sortida màxima\n"
 "0 per a no escalar"
 
-#: ../src/libs/export.c:498
+#: ../src/libs/export.c:502
 msgid ""
 "maximum output height\n"
 "set to 0 for no scaling"
@@ -7046,45 +7046,45 @@ msgstr ""
 #. g_signal_connect (G_OBJECT (d->height), "focus-in-event",  G_CALLBACK(focus_in),  NULL);
 #. g_signal_connect (G_OBJECT (d->height), "focus-out-event", G_CALLBACK(focus_out), NULL);
 #.
-#: ../src/libs/export.c:511
+#: ../src/libs/export.c:515
 msgid "max size"
 msgstr "mida màxima"
 
-#: ../src/libs/export.c:516
+#: ../src/libs/export.c:520
 msgid "x"
 msgstr "x"
 
-#: ../src/libs/export.c:520
+#: ../src/libs/export.c:524
 msgid "intent"
 msgstr "prova"
 
 #. gtk_table_attach(GTK_TABLE(self->widget), GTK_WIDGET(d->profile), 1, 2, 9, 10, GTK_EXPAND|GTK_FILL, 0, 0,
 #. 0);
-#: ../src/libs/export.c:524 ../src/libs/export.c:603
+#: ../src/libs/export.c:528 ../src/libs/export.c:607
 msgid "image settings"
 msgstr "definit a la imatge"
 
-#: ../src/libs/export.c:613
+#: ../src/libs/export.c:617
 #, c-format
 msgid "output ICC profiles in %s/color/out or %s/color/out"
 msgstr "perfils ICC de sortida a %s/color/out o %s/color/out"
 
 #. Add style combo
-#: ../src/libs/export.c:620
+#: ../src/libs/export.c:624
 msgid "style"
 msgstr "estil"
 
-#: ../src/libs/export.c:638
+#: ../src/libs/export.c:642
 msgid "temporary style to append while exporting"
 msgstr "estil temporal a afegir en exportar"
 
-#: ../src/libs/export.c:651
+#: ../src/libs/export.c:655
 msgid "export with current settings (ctrl-e)"
 msgstr "exporta amb valors actual (ctrl-e)"
 
 #. enable shortcut to export with current export settings:
-#: ../src/libs/export.c:1076 ../src/libs/styles.c:66
-#: ../src/views/darkroom.c:1677
+#: ../src/libs/export.c:1080 ../src/libs/styles.c:66
+#: ../src/views/darkroom.c:1698
 msgctxt "accel"
 msgid "export"
 msgstr "exporta"
@@ -8309,37 +8309,37 @@ msgstr "tira de pel·lícula"
 #. setup rating key accelerators
 #. Initializing accelerators
 #. Rating keys
-#: ../src/libs/tools/filmstrip.c:167 ../src/views/lighttable.c:1952
+#: ../src/libs/tools/filmstrip.c:167 ../src/views/lighttable.c:1967
 msgctxt "accel"
 msgid "rate 0"
 msgstr "puntua 0"
 
-#: ../src/libs/tools/filmstrip.c:168 ../src/views/lighttable.c:1953
+#: ../src/libs/tools/filmstrip.c:168 ../src/views/lighttable.c:1968
 msgctxt "accel"
 msgid "rate 1"
 msgstr "puntua 1"
 
-#: ../src/libs/tools/filmstrip.c:169 ../src/views/lighttable.c:1954
+#: ../src/libs/tools/filmstrip.c:169 ../src/views/lighttable.c:1969
 msgctxt "accel"
 msgid "rate 2"
 msgstr "puntua 2"
 
-#: ../src/libs/tools/filmstrip.c:170 ../src/views/lighttable.c:1955
+#: ../src/libs/tools/filmstrip.c:170 ../src/views/lighttable.c:1970
 msgctxt "accel"
 msgid "rate 3"
 msgstr "puntua 3"
 
-#: ../src/libs/tools/filmstrip.c:171 ../src/views/lighttable.c:1956
+#: ../src/libs/tools/filmstrip.c:171 ../src/views/lighttable.c:1971
 msgctxt "accel"
 msgid "rate 4"
 msgstr "puntua 4"
 
-#: ../src/libs/tools/filmstrip.c:172 ../src/views/lighttable.c:1957
+#: ../src/libs/tools/filmstrip.c:172 ../src/views/lighttable.c:1972
 msgctxt "accel"
 msgid "rate 5"
 msgstr "puntua 5"
 
-#: ../src/libs/tools/filmstrip.c:173 ../src/views/lighttable.c:1958
+#: ../src/libs/tools/filmstrip.c:173 ../src/views/lighttable.c:1973
 msgctxt "accel"
 msgid "rate reject"
 msgstr "puntua com a rebutjada"
@@ -8377,27 +8377,27 @@ msgstr "duplica la imatge"
 
 #. setup color label accelerators
 #. Color keys
-#: ../src/libs/tools/filmstrip.c:189 ../src/views/lighttable.c:1967
+#: ../src/libs/tools/filmstrip.c:189 ../src/views/lighttable.c:1982
 msgctxt "accel"
 msgid "color red"
 msgstr "color vermell"
 
-#: ../src/libs/tools/filmstrip.c:190 ../src/views/lighttable.c:1968
+#: ../src/libs/tools/filmstrip.c:190 ../src/views/lighttable.c:1983
 msgctxt "accel"
 msgid "color yellow"
 msgstr "color groc"
 
-#: ../src/libs/tools/filmstrip.c:191 ../src/views/lighttable.c:1969
+#: ../src/libs/tools/filmstrip.c:191 ../src/views/lighttable.c:1984
 msgctxt "accel"
 msgid "color green"
 msgstr "color verd"
 
-#: ../src/libs/tools/filmstrip.c:192 ../src/views/lighttable.c:1970
+#: ../src/libs/tools/filmstrip.c:192 ../src/views/lighttable.c:1985
 msgctxt "accel"
 msgid "color blue"
 msgstr "color blau"
 
-#: ../src/libs/tools/filmstrip.c:193 ../src/views/lighttable.c:1971
+#: ../src/libs/tools/filmstrip.c:193 ../src/views/lighttable.c:1986
 msgctxt "accel"
 msgid "color purple"
 msgstr "color magenta"
@@ -8560,32 +8560,32 @@ msgstr "seleccioneu un arxiu"
 msgid "double click to reset to `%f'"
 msgstr "feu doble clic per reiniciar a `%f'"
 
-#: ../src/views/darkroom.c:72
+#: ../src/views/darkroom.c:76
 msgid "darkroom"
 msgstr "cambra fosca"
 
-#: ../src/views/darkroom.c:867
+#: ../src/views/darkroom.c:871
 msgid "no userdefined presets for favorite modules were found"
 msgstr "no s'han trobat predefinits de l'usuari pels mòduls favorits"
 
-#: ../src/views/darkroom.c:872
+#: ../src/views/darkroom.c:876
 #, c-format
 msgid "applied style `%s' on current image"
 msgstr "aplicat l'estil `%s' a la imatge"
 
-#: ../src/views/darkroom.c:929
+#: ../src/views/darkroom.c:933
 msgid "no styles have been created yet"
 msgstr "encara no s'ha creat cap estil"
 
-#: ../src/views/darkroom.c:1078
+#: ../src/views/darkroom.c:1099
 msgid "quick access to presets of your favorites"
 msgstr "accés ràpid als predefinits dels vostres mòduls favorits"
 
-#: ../src/views/darkroom.c:1087
+#: ../src/views/darkroom.c:1108
 msgid "quick access for applying any of your styles"
 msgstr "accés ràpid per aplicar qualsevol dels vostres estils"
 
-#: ../src/views/darkroom.c:1097
+#: ../src/views/darkroom.c:1118
 msgid ""
 "toggle over/under exposed indication\n"
 "right click for options"
@@ -8593,173 +8593,184 @@ msgstr ""
 "permuta indicador de sobre/subexposició\n"
 "clic dret per més opcions"
 
-#: ../src/views/darkroom.c:1137
+#: ../src/views/darkroom.c:1158
 msgid "color scheme"
 msgstr "esquema de color"
 
-#: ../src/views/darkroom.c:1139
+#: ../src/views/darkroom.c:1160
 msgid "red & blue"
 msgstr "vermell i blau"
 
-#: ../src/views/darkroom.c:1140
+#: ../src/views/darkroom.c:1161
 msgid "purple & green"
 msgstr "violeta i verd"
 
-#: ../src/views/darkroom.c:1142
+#: ../src/views/darkroom.c:1163
 msgid "select colors to indicate over/under exposure"
 msgstr "trieu colors per indicar sobre/subexposició"
 
-#: ../src/views/darkroom.c:1152
+#: ../src/views/darkroom.c:1173
 msgid "lower threshold"
 msgstr "llindar inferior"
 
-#: ../src/views/darkroom.c:1153
+#: ../src/views/darkroom.c:1174
 msgid "threshold of what shall be considered underexposed"
 msgstr "llindar del que s'ha de considerar subexposat"
 
-#: ../src/views/darkroom.c:1162
+#: ../src/views/darkroom.c:1183
 msgid "upper threshold"
 msgstr "llindar superior"
 
-#: ../src/views/darkroom.c:1163
+#: ../src/views/darkroom.c:1184
 msgid "threshold of what shall be considered overexposed"
 msgstr "llindar del que s'ha de considerar sobreexposat"
 
 #. Film strip shortcuts
 #. Setup key accelerators in capture view...
-#: ../src/views/darkroom.c:1669 ../src/views/map.c:739
+#: ../src/views/darkroom.c:1690 ../src/views/map.c:739
 #: ../src/views/tethering.c:399
 msgctxt "accel"
 msgid "toggle film strip"
 msgstr "permuta la cinta de pel·licula"
 
 #. Zoom shortcuts
-#: ../src/views/darkroom.c:1672
+#: ../src/views/darkroom.c:1693
 msgctxt "accel"
 msgid "zoom close-up"
 msgstr "zoom proper (100%)"
 
-#: ../src/views/darkroom.c:1673
+#: ../src/views/darkroom.c:1694
 msgctxt "accel"
 msgid "zoom fill"
 msgstr "zoom ampli"
 
-#: ../src/views/darkroom.c:1674
+#: ../src/views/darkroom.c:1695
 msgctxt "accel"
 msgid "zoom fit"
 msgstr "zoom ajustat"
 
 #. Shortcut to skip images
-#: ../src/views/darkroom.c:1680
+#: ../src/views/darkroom.c:1701
 msgctxt "accel"
 msgid "image forward"
 msgstr "imatge endavant"
 
-#: ../src/views/darkroom.c:1681
+#: ../src/views/darkroom.c:1702
 msgctxt "accel"
 msgid "image back"
 msgstr "imatge enrere"
 
 #. toggle overexposure indication
-#: ../src/views/darkroom.c:1684
+#: ../src/views/darkroom.c:1705
 msgctxt "accel"
 msgid "overexposed"
 msgstr "sobreexposat"
 
-#: ../src/views/lighttable.c:497 ../src/views/slideshow.c:330
+#. brush size +/-
+#: ../src/views/darkroom.c:1708
+msgctxt "accel"
+msgid "brush larger"
+msgstr "pinzell més gros"
+
+#: ../src/views/darkroom.c:1709
+msgctxt "accel"
+msgid "brush smaller"
+msgstr "pinzell més prim"
+
+#: ../src/views/lighttable.c:512 ../src/views/slideshow.c:330
 msgid "there are no images in this collection"
 msgstr "no hi ha imatges a la col·lecció"
 
-#: ../src/views/lighttable.c:499
+#: ../src/views/lighttable.c:514
 msgid "if you have not imported any images yet"
 msgstr "encara no heu importat cap imatge"
 
-#: ../src/views/lighttable.c:501
+#: ../src/views/lighttable.c:516
 msgid "you can do so in the import module"
 msgstr "podeu fer-ho en el mòdul d'importació"
 
-#: ../src/views/lighttable.c:508
+#: ../src/views/lighttable.c:523
 msgid "try to relax the filter settings in the top panel"
 msgstr "proveu de relaxar els valors del filtre al panell superior"
 
-#: ../src/views/lighttable.c:515
+#: ../src/views/lighttable.c:530
 msgid "or add images in the collection module in the left panel"
 msgstr "o afegiu imatges amb el mòdul de col·lecció al panell esquerre"
 
 #. Navigation keys
-#: ../src/views/lighttable.c:1961
+#: ../src/views/lighttable.c:1976
 msgctxt "accel"
 msgid "navigate up"
 msgstr "navega amunt"
 
-#: ../src/views/lighttable.c:1962
+#: ../src/views/lighttable.c:1977
 msgctxt "accel"
 msgid "navigate down"
 msgstr "navega avall"
 
-#: ../src/views/lighttable.c:1963
+#: ../src/views/lighttable.c:1978
 msgctxt "accel"
 msgid "navigate page up"
 msgstr "navegueu una pàgina amunt"
 
-#: ../src/views/lighttable.c:1964
+#: ../src/views/lighttable.c:1979
 msgctxt "accel"
 msgid "navigate page down"
 msgstr "navega pàgina avall"
 
 #. Scroll keys
-#: ../src/views/lighttable.c:1974
+#: ../src/views/lighttable.c:1989
 msgctxt "accel"
 msgid "scroll up"
 msgstr "desplaceu-vos amunt"
 
-#: ../src/views/lighttable.c:1975
+#: ../src/views/lighttable.c:1990
 msgctxt "accel"
 msgid "scroll down"
 msgstr "desplaceu-vos avall"
 
-#: ../src/views/lighttable.c:1976
+#: ../src/views/lighttable.c:1991
 msgctxt "accel"
 msgid "scroll left"
 msgstr "desplaceu-vos a l'esquerra"
 
-#: ../src/views/lighttable.c:1977
+#: ../src/views/lighttable.c:1992
 msgctxt "accel"
 msgid "scroll right"
 msgstr "desplaçament a la dreta"
 
-#: ../src/views/lighttable.c:1978
+#: ../src/views/lighttable.c:1993
 msgctxt "accel"
 msgid "scroll center"
 msgstr "desplaceu-vos al centre"
 
-#: ../src/views/lighttable.c:1979
+#: ../src/views/lighttable.c:1994
 msgctxt "accel"
 msgid "realign images to grid"
 msgstr "alinear imatges amb la graella"
 
 #. Preview key
-#: ../src/views/lighttable.c:1982
+#: ../src/views/lighttable.c:1997
 msgctxt "accel"
 msgid "preview"
 msgstr "vista prèvia"
 
-#: ../src/views/lighttable.c:1983
+#: ../src/views/lighttable.c:1998
 msgctxt "accel"
 msgid "preview with focus detection"
 msgstr "vista prèvia amb detecció d'enfoc"
 
-#: ../src/views/lighttable.c:1984
+#: ../src/views/lighttable.c:1999
 msgctxt "accel"
 msgid "sticky preview"
 msgstr "vista prèvia permanent"
 
-#: ../src/views/lighttable.c:1985
+#: ../src/views/lighttable.c:2000
 msgctxt "accel"
 msgid "sticky preview with focus detection"
 msgstr "vista prèvia permanent amb detecció de focus"
 
-#: ../src/views/lighttable.c:1986
+#: ../src/views/lighttable.c:2001
 msgctxt "accel"
 msgid "exit sticky preview"
 msgstr "surt de la vista prèvia permanent"
@@ -8804,6 +8815,9 @@ msgstr "s'ha iniciat una sessió nova '%s'"
 #: ../src/views/tethering.c:250
 msgid "no camera with tethering support available for use..."
 msgstr "no es troba cap càmera amb suport per tethering"
+
+#~ msgid "VNG"
+#~ msgstr "VNG"
 
 #~ msgid "* developers *"
 #~ msgstr "* desenvolupadors *"
