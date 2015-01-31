@@ -623,6 +623,13 @@ void reload_defaults(dt_iop_module_t *module)
     }
 
     // did not find preset either?
+    if(!is_monochrom && !found && !calculate_bogus_daylight_wb(module, tmp.coeffs))
+    {
+      // found camera matrix and used it to calculate bogus daylight wb
+      found = 1;
+    }
+
+    // and no cam matrix too???
     if(!found && !is_monochrom)
     {
       // final security net: hardcoded default that fits most cams.
