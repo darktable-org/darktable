@@ -858,21 +858,24 @@ cmsHPROFILE dt_colorspaces_create_output_profile(const int imgid)
   return output;
 }
 
-cmsHPROFILE dt_colorspaces_create_cmatrix_profile(float cmatrix[3][4])
+void dt_colorspaces_create_cmatrix(float cmatrix[4][3], float mat[3][3])
 {
-  float mat[3][3];
   // sRGB D65, the linear part:
   const float rgb_to_xyz[3][3] = { { 0.4124564, 0.3575761, 0.1804375 },
                                    { 0.2126729, 0.7151522, 0.0721750 },
                                    { 0.0193339, 0.1191920, 0.9503041 } };
 
   for(int c = 0; c < 3; c++)
+  {
     for(int j = 0; j < 3; j++)
     {
-      mat[c][j] = 0;
-      for(int k = 0; k < 3; k++) mat[c][j] += rgb_to_xyz[c][k] * cmatrix[k][j];
+      mat[c][j] = 0.0f;
+      for(int k = 0; k < 3; k++)
+      {
+        mat[c][j] += rgb_to_xyz[k][j] * cmatrix[c][k];
+      }
     }
-  return dt_colorspaces_create_xyzmatrix_profile(mat);
+  }
 }
 
 cmsHPROFILE dt_colorspaces_create_xyzimatrix_profile(float mat[3][3])

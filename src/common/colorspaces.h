@@ -51,8 +51,8 @@ cmsHPROFILE dt_colorspaces_create_adobergb_profile(void);
 /** create a ICC virtual profile for XYZ. */
 cmsHPROFILE dt_colorspaces_create_xyz_profile(void);
 
-/** create a profile from a color matrix from dcraw. */
-cmsHPROFILE dt_colorspaces_create_cmatrix_profile(float cmatrix[3][4]);
+/** create a RGB matrix from a color matrix from dcraw. */
+void dt_colorspaces_create_cmatrix(float cmatrix[4][3], float mat[3][3]);
 
 /** create a profile from a camera->xyz matrix. */
 cmsHPROFILE dt_colorspaces_create_xyzmatrix_profile(float cam_xyz[3][3]);
