@@ -35,7 +35,7 @@
 
 DT_MODULE(1)
 
-static gboolean _bauhaus_combo_box_set_active_text(GtkWidget *cb, const gchar *text);
+static gboolean _bauhaus_combobox_set_active_text(GtkWidget *cb, const gchar *text);
 
 const char*
 name ()
@@ -1248,7 +1248,7 @@ gui_init (dt_lib_module_t *self)
                     (gpointer)self);
 }
 
-static gboolean _bauhaus_combo_box_set_active_text(GtkWidget *cb, const gchar *text)
+static gboolean _bauhaus_combobox_set_active_text(GtkWidget *cb, const gchar *text)
 {
   g_assert(text != NULL);
   g_assert(cb != NULL);
@@ -1340,23 +1340,23 @@ int set_params(dt_lib_module_t *self, const void *params, int size)
 
   // set the GUI with corresponding values
   if (printer[0] != '\0')
-    _bauhaus_combo_box_set_active_text(ps->printers, printer);
+    _bauhaus_combobox_set_active_text(ps->printers, printer);
 
   if (paper[0] != '\0')
-    _bauhaus_combo_box_set_active_text(ps->papers, paper);
+    _bauhaus_combobox_set_active_text(ps->papers, paper);
 
   dt_bauhaus_combobox_set (ps->orientation, landscape);
 
   if (profile[0] != '\0')
-    _bauhaus_combo_box_set_active_text(ps->profile, profile);
+    _bauhaus_combobox_set_active_text(ps->profile, profile);
   dt_bauhaus_combobox_set (ps->intent, intent);
 
   if (pprofile[0] != '\0')
-    _bauhaus_combo_box_set_active_text(ps->pprofile, pprofile);
+    _bauhaus_combobox_set_active_text(ps->pprofile, pprofile);
   dt_bauhaus_combobox_set (ps->pintent, pintent);
 
   if (style[0] != '\0')
-    _bauhaus_combo_box_set_active_text(ps->style, style);
+    _bauhaus_combobox_set_active_text(ps->style, style);
   dt_bauhaus_combobox_set (ps->style_mode, style_mode);
 
   gtk_spin_button_set_value (GTK_SPIN_BUTTON(ps->b_top), b_top * units[ps->unit]);
