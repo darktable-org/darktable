@@ -1,6 +1,7 @@
 /*
     This file is part of darktable,
     copyright (c) 2009--2013 johannes hanika.
+    copyright (c) 2015 LebedevRI.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -563,15 +564,9 @@ void reload_defaults(dt_iop_module_t *module)
   // raw images need wb:
   module->default_enabled = dt_image_is_raw(&module->dev->image_storage);
 
-  // get white balance coefficients, as shot
-  char filename[PATH_MAX] = { 0 };
-
   /* check if file is raw / hdr */
   if(dt_image_is_raw(&module->dev->image_storage))
   {
-    gboolean from_cache = TRUE;
-    dt_image_full_path(module->dev->image_storage.id, filename, sizeof(filename), &from_cache);
-
     char makermodel[1024];
     char *model = makermodel;
     dt_colorspaces_get_makermodel_split(makermodel, sizeof(makermodel), &model,
@@ -658,11 +653,11 @@ void reload_defaults(dt_iop_module_t *module)
       else
       {
         // if we didn't find anything for daylight wb, look for a wb preset with appropriate name.
-        // we're normalising that to be D65
+        // we're normalizing that to be D65
         for(int i = 0; i < wb_preset_count; i++)
         {
           if(!strcmp(wb_preset[i].make, makermodel) && !strcmp(wb_preset[i].model, model)
-             && !strcasecmp(wb_preset[i].name, Daylight) && wb_preset[i].tuning == 0)
+             && !strcmp(wb_preset[i].name, Daylight) && wb_preset[i].tuning == 0)
           {
             for(int k = 0; k < 3; k++) g->daylight_wb[k] = wb_preset[i].channel[k];
             break;
