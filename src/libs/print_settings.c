@@ -346,22 +346,22 @@ static void _set_printer(dt_lib_module_t *self, const char *printer_name)
   if (ps->prt.printer.hw_margin_top == 0)
   {
     ps->prt.page.margin_top = 15;
-    gtk_spin_button_set_value(GTK_SPIN_BUTTON(ps->b_top), ps->prt.page.margin_top);
+    gtk_spin_button_set_value(GTK_SPIN_BUTTON(ps->b_top), ps->prt.page.margin_top * units[ps->unit]);
   }
   if (ps->prt.printer.hw_margin_bottom == 0)
   {
     ps->prt.page.margin_bottom = 15;
-    gtk_spin_button_set_value(GTK_SPIN_BUTTON(ps->b_bottom), ps->prt.page.margin_bottom);
+    gtk_spin_button_set_value(GTK_SPIN_BUTTON(ps->b_bottom), ps->prt.page.margin_bottom * units[ps->unit]);
   }
   if (ps->prt.printer.hw_margin_left == 0)
   {
     ps->prt.page.margin_left = 15;
-    gtk_spin_button_set_value(GTK_SPIN_BUTTON(ps->b_left), ps->prt.page.margin_left);
+    gtk_spin_button_set_value(GTK_SPIN_BUTTON(ps->b_left), ps->prt.page.margin_left * units[ps->unit]);
   }
   if (ps->prt.printer.hw_margin_right == 0)
   {
     ps->prt.page.margin_right = 15;
-    gtk_spin_button_set_value(GTK_SPIN_BUTTON(ps->b_right), ps->prt.page.margin_right);
+    gtk_spin_button_set_value(GTK_SPIN_BUTTON(ps->b_right), ps->prt.page.margin_right * units[ps->unit]);
   }
 
   dt_conf_set_string("plugins/print/print/printer", printer_name);
