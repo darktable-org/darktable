@@ -1272,6 +1272,40 @@ void init_presets(dt_lib_module_t *self)
 {
 }
 
+static const char *none = "none";
+
+static const char *_get_profile_filename(GList *profiles, const char *name)
+{
+  GList *p = profiles;
+  while(p)
+  {
+    // could use g_list_nth. this seems safer?
+    dt_lib_export_profile_t *pp = (dt_lib_export_profile_t *)p->data;
+    if(!strcmp(pp->name, name))
+    {
+      const char *ds = strrchr(pp->filename,'/'); // keep last / to ensure full match of filename
+      return ds ? ds : pp->filename;
+    }
+    p = g_list_next(p);
+  }
+  return none;
+}
+
+static const char *_get_profile(GList *profiles, const char *filename)
+{
+  GList *p = profiles;
+  while(p)
+  {
+    dt_lib_export_profile_t *pp = (dt_lib_export_profile_t *)p->data;
+    if(strstr(pp->filename, filename))
+    {
+      return pp->name;
+    }
+    p = g_list_next(p);
+  }
+  return none;
+}
+
 int set_params(dt_lib_module_t *self, const void *params, int size)
 {
   dt_lib_print_settings_t *ps = (dt_lib_print_settings_t *)self->data;
@@ -1295,17 +1329,17 @@ int set_params(dt_lib_module_t *self, const void *params, int size)
   const int32_t landscape = *(int32_t *)buf;
   buf +=  sizeof(int32_t);
 
-  const char *profile = buf;
-  if (!profile) return 1;
-  const int32_t profile_len = strlen(profile) + 1;
+  const char *f_profile = buf;
+  if (!f_profile) return 1;
+  const int32_t profile_len = strlen(f_profile) + 1;
   buf += profile_len;
 
   const int32_t intent = *(int32_t *)buf;
   buf += sizeof(int32_t);
 
-  const char *pprofile = buf;
-  if (!pprofile) return 1;
-  const int32_t pprofile_len = strlen(pprofile) + 1;
+  const char *f_pprofile = buf;
+  if (!f_pprofile) return 1;
+  const int32_t pprofile_len = strlen(f_pprofile) + 1;
   buf += pprofile_len;
 
   const int32_t pintent = *(int32_t *)buf;
@@ -1347,9 +1381,13 @@ int set_params(dt_lib_module_t *self, const void *params, int size)
 
   dt_bauhaus_combobox_set (ps->orientation, landscape);
 
+  const char *profile = _get_profile(ps->profiles, f_profile);
+
   if (profile[0] != '\0')
     _bauhaus_combobox_set_active_text(ps->profile, profile);
   dt_bauhaus_combobox_set (ps->intent, intent);
+
+  const char *pprofile = _get_profile(ps->profiles, f_pprofile);
 
   if (pprofile[0] != '\0')
     _bauhaus_combobox_set_active_text(ps->pprofile, pprofile);
@@ -1376,11 +1414,11 @@ void *get_params(dt_lib_module_t *self, int *size)
   // get the data
   const char *printer = dt_bauhaus_combobox_get_text(ps->printers);
   const char *paper = dt_bauhaus_combobox_get_text(ps->papers);
-  const char *profile = dt_bauhaus_combobox_get_text(ps->profile);
+  const char *profile = _get_profile_filename(ps->profiles, dt_bauhaus_combobox_get_text(ps->profile));
   const int32_t intent =  dt_bauhaus_combobox_get(ps->intent);
   const char *style = dt_bauhaus_combobox_get_text(ps->style);
   const int32_t style_mode = dt_bauhaus_combobox_get(ps->style_mode);
-  const char *pprofile = dt_bauhaus_combobox_get_text(ps->pprofile);
+  const char *pprofile = _get_profile_filename(ps->profiles, dt_bauhaus_combobox_get_text(ps->pprofile));
   const int32_t pintent =  dt_bauhaus_combobox_get(ps->pintent);
   const int32_t landscape = dt_bauhaus_combobox_get(ps->orientation);
   const double b_top = ps->prt.page.margin_top;
