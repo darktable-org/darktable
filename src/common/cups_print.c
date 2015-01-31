@@ -310,7 +310,7 @@ void dt_print_file(const int32_t imgid, const char *filename, const dt_print_inf
   if (pinfo->printer.hw_margin_top == 0 || pinfo->printer.hw_margin_bottom == 0
       || pinfo->printer.hw_margin_left == 0 || pinfo->printer.hw_margin_right == 0)
   {
-    // there is many vaariant for this parameter
+    // there is many variant for this parameter
     num_options = cupsAddOption("StpFullBleed", "true", num_options, &options);
     num_options = cupsAddOption("STP_FullBleed", "true", num_options, &options);
     num_options = cupsAddOption("Borderless", "true", num_options, &options);
@@ -402,7 +402,7 @@ void dt_get_print_layout(const int32_t imgid, const dt_print_info_t *prt,
   double np_right = prt->printer.hw_margin_right;
   double np_bottom = prt->printer.hw_margin_bottom;
 
-  /* do some arangments for the landscape mode. */
+  /* do some arrangements for the landscape mode. */
 
   if (prt->page.landscape)
   {
@@ -455,7 +455,7 @@ void dt_get_print_layout(const int32_t imgid, const dt_print_info_t *prt,
 
   // page margins, note that we do not want to change those values for the landscape mode.
   // these margins are those set by the user from the GUI, and the top margin is *always*
-  // at the top of the screeen.
+  // at the top of the screen.
 
   const double border_top = prt->page.margin_top;
   const double border_left = prt->page.margin_left;
