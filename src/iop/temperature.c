@@ -612,7 +612,7 @@ void reload_defaults(dt_iop_module_t *module)
         for(int i = 0; i < wb_preset_count; i++)
         {
           if(!strcmp(wb_preset[i].make, makermodel) && !strcmp(wb_preset[i].model, model)
-             && !strncasecmp(wb_preset[i].name, "daylight", 8))
+             && !strcasecmp(wb_preset[i].name, Daylight) && wb_preset[i].tuning == 0)
           {
             for(int k = 0; k < 3; k++) g->daylight_wb[k] = wb_preset[i].channel[k];
             break;
