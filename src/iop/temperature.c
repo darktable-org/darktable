@@ -35,6 +35,10 @@
 #include "external/wb_presets.c"
 #include "bauhaus/bauhaus.h"
 
+// for Kelvin temperature and bogus WB
+#include "external/adobe_coeff.c"
+#include "common/colorspaces.h"
+
 DT_MODULE_INTROSPECTION(2, dt_iop_temperature_params_t)
 
 #define DT_IOP_LOWEST_TEMPERATURE 2000
@@ -515,6 +519,39 @@ void gui_update(struct dt_iop_module_t *self)
   }
 }
 
+int calculate_bogus_daylight_wb(dt_iop_module_t *module, float bwb[3])
+{
+  // color matrix
+  char makermodel[1024];
+  dt_colorspaces_get_makermodel(makermodel, sizeof(makermodel), module->dev->image_storage.exif_maker,
+                                module->dev->image_storage.exif_model);
+  float cam_xyz[4][3];
+  cam_xyz[0][0] = NAN;
+  dt_dcraw_adobe_coeff(makermodel, (float(*)[12])cam_xyz);
+  if(!isnan(cam_xyz[0][0]))
+  {
+    float mat[3][3];
+
+    dt_colorspaces_create_cmatrix(cam_xyz, mat);
+
+    for(int c = 0; c < 3; c++)
+    {
+      float num = 0.0f;
+
+      for(int j = 0; j < 3; j++)
+      {
+        num += mat[c][j];
+      }
+
+      bwb[c] = 1.0f / num;
+    }
+
+    return 0;
+  }
+
+  return 1;
+}
+
 void reload_defaults(dt_iop_module_t *module)
 {
   dt_iop_temperature_params_t tmp
@@ -603,9 +640,15 @@ void reload_defaults(dt_iop_module_t *module)
     if(module->gui_data)
     {
       dt_iop_temperature_gui_data_t *g = (dt_iop_temperature_gui_data_t *)module->gui_data;
+
+      // to have at least something and definitely not crash
       for(int c = 0; c < 3; c++) g->daylight_wb[c] = module->dev->image_storage.wb_coeffs[c];
 
-      if(g->daylight_wb[0] == 1.0f && g->daylight_wb[1] == 1.0f && g->daylight_wb[2] == 1.0f)
+      if(!calculate_bogus_daylight_wb(module, g->daylight_wb))
+      {
+        // found camera matrix and used it to calculate bogus daylight wb
+      }
+      else
       {
         // if we didn't find anything for daylight wb, look for a wb preset with appropriate name.
         // we're normalising that to be D65
@@ -619,6 +662,7 @@ void reload_defaults(dt_iop_module_t *module)
           }
         }
       }
+
       float temp, tint, mul[3];
       for(int k = 0; k < 3; k++) mul[k] = g->daylight_wb[k] / tmp.coeffs[k];
       convert_rgb_to_k(mul, &temp, &tint);
