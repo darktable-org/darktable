@@ -214,7 +214,7 @@ _print_button_clicked (GtkWidget *widget, gpointer user_data)
   const double pa_width  = (width  - margin_w) / 25.4;
   const double pa_height = (height - margin_h) / 25.4;
 
-  dt_print(DT_DEBUG_PRINT, "[print] area for image %u : %3.2fin x %3.2fin\n", imgid, pa_width, pa_height);
+  dt_print(DT_DEBUG_PRINT, "[print] printable area for image %u : %3.2fin x %3.2fin\n", imgid, pa_width, pa_height);
 
   // compute the needed size for picture for the given printer resolution
 
