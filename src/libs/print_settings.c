@@ -624,7 +624,9 @@ _unit_changed (GtkWidget *combo, dt_lib_module_t *self)
 {
   dt_lib_print_settings_t *ps = (dt_lib_print_settings_t *)self->data;
 
-  ps->unit = dt_bauhaus_combobox_get(combo);
+  int unit = dt_bauhaus_combobox_get(combo);
+  if(unit < 0) return; // shouldn't happen, but it could be -1 if nothing is selected
+  ps->unit = unit;
   dt_conf_set_int("plugins/print/print/unit", ps->unit);
 
   double margin_top = ps->prt.page.margin_top;
