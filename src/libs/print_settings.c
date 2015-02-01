@@ -57,7 +57,7 @@ typedef struct dt_lib_print_settings_t
 {
   GtkWidget *profile, *intent, *style, *style_mode, *papers;
   GtkWidget *printers, *orientation, *pprofile, *pintent;
-  GtkWidget *width, *height;
+  GtkWidget *width, *height, *black_point_compensation;
   GList *profiles;
   GtkButton *print_button;
   GtkToggleButton *lock_button;
@@ -72,7 +72,7 @@ typedef struct dt_lib_print_settings_t
   int unit;
   int v_intent, v_pintent;
   char *v_iccprofile, *v_piccprofile, *v_style;
-  gboolean v_style_append;
+  gboolean v_style_append, v_black_point_compensation;
 } dt_lib_print_settings_t;
 
 typedef struct dt_lib_export_profile_t
@@ -272,7 +272,8 @@ _print_button_clicked (GtkWidget *widget, gpointer user_data)
   // we have the exported buffer, let's apply the printer profile
 
   if (*ps->v_piccprofile)
-    if (dt_apply_printer_profile(imgid, (void **)&(dat.ps->buf), dat.width, dat.height, dat.bpp, ps->v_piccprofile, ps->v_pintent))
+    if (dt_apply_printer_profile(imgid, (void **)&(dat.ps->buf), dat.width, dat.height, dat.bpp,
+                                 ps->v_piccprofile, ps->v_pintent, ps->v_black_point_compensation))
     {
       free (dat.ps->buf);
       dt_control_log(_("cannot apply printer profile `%s'"), ps->v_piccprofile);
@@ -750,6 +751,14 @@ _printer_intent_callback (GtkWidget *widget, dt_lib_module_t *self)
 }
 
 static void
+_printer_bpc_callback (GtkWidget *widget, dt_lib_module_t *self)
+{
+  dt_lib_print_settings_t *ps = (dt_lib_print_settings_t *)self->data;
+  ps->v_black_point_compensation = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(ps->black_point_compensation));
+  dt_conf_set_bool("plugins/print/print/black_point_compensation", ps->v_black_point_compensation);
+}
+
+static void
 _intent_callback (GtkWidget *widget, dt_lib_module_t *self)
 {
   dt_lib_print_settings_t *ps = (dt_lib_print_settings_t *)self->data;
@@ -998,6 +1007,16 @@ gui_init (dt_lib_module_t *self)
   dt_bauhaus_combobox_set(d->pintent, d->v_pintent);
 
   g_signal_connect (G_OBJECT (d->pintent), "value-changed", G_CALLBACK (_printer_intent_callback), (gpointer)self);
+
+  d->black_point_compensation = gtk_check_button_new_with_label(_("black point compensation"));
+  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(d->black_point_compensation), TRUE, FALSE, 0);
+  g_signal_connect(d->black_point_compensation, "toggled", G_CALLBACK(_printer_bpc_callback), (gpointer)self);
+
+  d->v_black_point_compensation = dt_conf_get_bool("plugins/print/print/black_point_compensation");
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->black_point_compensation), d->v_black_point_compensation);
+
+  g_object_set(d->black_point_compensation, "tooltip-text",
+               _("activate black point compensation when applying the printer profile"), (char *)NULL);
 
   ////////////////////////// PAGE SETTINGS
 
@@ -1347,6 +1366,9 @@ int set_params(dt_lib_module_t *self, const void *params, int size)
   const int32_t pintent = *(int32_t *)buf;
   buf += sizeof(int32_t);
 
+  const int32_t bpc = *(int32_t *)buf;
+  buf += sizeof(int32_t);
+
   const char *style = buf;
   if (!style) return 1;
   const int32_t style_len = strlen(style) + 1;
@@ -1371,7 +1393,7 @@ int set_params(dt_lib_module_t *self, const void *params, int size)
   buf += sizeof(int32_t);
 
   // ensure that the size is correct
-  if(size != printer_len + paper_len + profile_len + pprofile_len + style_len + 5 * sizeof(int32_t) + 4 * sizeof(double))
+  if(size != printer_len + paper_len + profile_len + pprofile_len + style_len + 6 * sizeof(int32_t) + 4 * sizeof(double))
     return 1;
 
   // set the GUI with corresponding values
@@ -1405,6 +1427,7 @@ int set_params(dt_lib_module_t *self, const void *params, int size)
   gtk_spin_button_set_value (GTK_SPIN_BUTTON(ps->b_right), b_right * units[ps->unit]);
 
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(ps->dtba[alignment]),TRUE);
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(ps->black_point_compensation), bpc);
 
   return 0;
 }
@@ -1423,6 +1446,7 @@ void *get_params(dt_lib_module_t *self, int *size)
   const char *pprofile = _get_profile_filename(ps->profiles, dt_bauhaus_combobox_get_text(ps->pprofile));
   const int32_t pintent =  dt_bauhaus_combobox_get(ps->pintent);
   const int32_t landscape = dt_bauhaus_combobox_get(ps->orientation);
+  const int32_t bpc = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(ps->black_point_compensation));
   const double b_top = ps->prt.page.margin_top;
   const double b_bottom = ps->prt.page.margin_bottom;
   const double b_left = ps->prt.page.margin_left;
@@ -1441,7 +1465,7 @@ void *get_params(dt_lib_module_t *self, int *size)
   const int32_t style_len = strlen (style) + 1;
 
   // compute the size of all parameters
-  *size = printer_len + paper_len + profile_len + pprofile_len + style_len + 5 * sizeof(int32_t) + 4 * sizeof(double);
+  *size = printer_len + paper_len + profile_len + pprofile_len + style_len + 6 * sizeof(int32_t) + 4 * sizeof(double);
 
   // allocate the parameter buffer
   char *params = (char *)malloc(*size);
@@ -1461,6 +1485,8 @@ void *get_params(dt_lib_module_t *self, int *size)
   memcpy(params+pos, pprofile, pprofile_len);
   pos += pprofile_len;
   memcpy(params+pos, &pintent, sizeof(int32_t));
+  pos += sizeof(int32_t);
+  memcpy(params+pos, &bpc, sizeof(int32_t));
   pos += sizeof(int32_t);
   memcpy(params+pos, style, style_len);
   pos += style_len;
@@ -1509,6 +1535,7 @@ gui_reset (dt_lib_module_t *self)
   dt_bauhaus_combobox_set(ps->pintent, dt_conf_get_int("plugins/print/print/iccintent") + 1);
   dt_bauhaus_combobox_set(ps->style, 0);
   dt_bauhaus_combobox_set(ps->intent, 0);
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(ps->black_point_compensation), TRUE);
 
   // reset page orientation to fit the picture
 
