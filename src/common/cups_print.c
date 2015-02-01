@@ -489,14 +489,14 @@ void dt_get_print_layout(const int32_t imgid, const dt_print_info_t *prt,
   {
     scale =  (double)(*awidth) / (double)*iwidth;
     *iwidth = *awidth;
-    *iheight *= scale;
+    *iheight = (int32_t)(((double)*iheight + 0.5) * scale);
   }
 
   if (*iheight > *aheight)
   {
     scale = (double)(*aheight) / (double)*iheight;
     *iheight = *aheight;
-    *iwidth *= scale;
+    *iwidth = (int32_t)(((double)*iwidth + 0.5) * scale);
   }
 
   // now the image position (top-left corner coordinates) in the display area depending on the page
