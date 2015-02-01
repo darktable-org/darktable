@@ -478,7 +478,7 @@ void dt_get_print_layout(const int32_t imgid, const dt_print_info_t *prt,
 
   // get the image dimensions if needed
 
-  if (*iwidth==0 || *iheight==0)
+  if (*iwidth <= 0 || *iheight <= 0)
     _get_image_dimension (imgid, iwidth, iheight);
 
   // compute the scaling for the image to fit into the printable area
