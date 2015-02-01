@@ -423,8 +423,7 @@ static void int_tofunc(lua_State *L, luaA_Type type_id, void *cout, int index)
 
 static int gpointer_pushfunc(lua_State *L, luaA_Type type_id, const void *cin)
 {
-  luaL_getmetatable(L, luaA_typename(L, type_id));
-  luaL_getsubtable(L, -1, "__values");
+  luaL_getsubtable(L, LUA_REGISTRYINDEX, "dt_lua_gpointer_values");
   gpointer singleton = *(gpointer *)cin;
   lua_pushlightuserdata(L, singleton);
   lua_gettable(L, -2);
@@ -446,8 +445,7 @@ static int gpointer_pushfunc(lua_State *L, luaA_Type type_id, const void *cin)
       lua_call(L, 2, 0);
     }
   }
-  lua_remove(L, -2); //__values
-  lua_remove(L, -2); // metatable
+  lua_remove(L, -2); //dt_lua_gpointer_values
   return 1;
 }
 
@@ -798,19 +796,28 @@ luaA_Type dt_lua_init_int_type_type(lua_State *L, luaA_Type type_id)
 luaA_Type dt_lua_init_gpointer_type_type(lua_State *L, luaA_Type type_id)
 {
   init_metatable(L, type_id);
-  lua_newtable(L);
-  // metatable of __values
-  lua_newtable(L);
-  lua_pushstring(L, "kv");
-  lua_setfield(L, -2, "__mode");
-  lua_setmetatable(L, -2);
-
-  lua_setfield(L, -2, "__values");
   lua_pop(L, 1);
+
   luaA_conversion_type(L, type_id, gpointer_pushfunc, gpointer_tofunc);
   return type_id;
 }
 
+void dt_lua_type_gpointer_alias_type(lua_State*L,luaA_Type type_id,void* pointer,void* alias)
+{
+  luaL_getsubtable(L, LUA_REGISTRYINDEX, "dt_lua_gpointer_values");
+  lua_pushlightuserdata(L, pointer);
+  lua_gettable(L, -2);
+  if(lua_isnoneornil(L, -1))
+  {
+    luaL_error(L,"Adding an alias to an unknown object for type %s",luaA_typename(L,type_id));
+  }
+  lua_pushlightuserdata(L,alias);
+  lua_insert(L,-2);
+  lua_settable(L,-3);
+  lua_pop(L,1);
+
+
+}
 
 gboolean dt_lua_isa_type(lua_State *L, int index, luaA_Type type_id)
 {
@@ -872,6 +879,14 @@ int dt_lua_init_early_types(lua_State *L)
   luaA_conversion(L, protected_double, push_protected_double, luaA_to_double);
   luaA_conversion(L, progress_double, push_progress_double, to_progress_double);
 
+  // table of gpointer values
+  lua_newtable(L);
+  lua_newtable(L);
+  lua_pushstring(L, "kv");
+  lua_setfield(L, -2, "__mode");
+  lua_setmetatable(L, -2);
+
+  lua_setfield(L, LUA_REGISTRYINDEX, "dt_lua_gpointer_values");
 
   return 0;
 }

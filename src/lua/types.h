@@ -128,6 +128,10 @@ luaA_Type dt_lua_init_int_type_type(lua_State *L, luaA_Type type_id);
 #define dt_lua_init_gpointer_type(L, type_name) dt_lua_init_gpointer_type_type(L, luaA_type(L, type_name))
 luaA_Type dt_lua_init_gpointer_type_type(lua_State *L, luaA_Type type_id);
 
+
+#define dt_lua_type_gpointer_alias(L,type_name,pointer,alias) \
+  dt_lua_type_gpointer_alias_type(L,luaA_type(L,type_name,pointer,alias)
+void dt_lua_type_gpointer_alias_type(lua_State*L,luaA_Type type_id,void* pointer,void* alias);
 /**
  * similar to dt_lua_init_type but creates a singleton type
  * that is : a type who has only one instance (which is a void* pointer)
