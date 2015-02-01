@@ -107,7 +107,7 @@ static int value_member(lua_State*L)
 
 static void changed_callback(GtkButton *widget, gpointer user_data)
 {
-  dt_lua_widget_trigger_callback_async((lua_widget)user_data,"value-changed");
+  dt_lua_widget_trigger_callback_async((lua_widget)user_data,"value-changed",NULL);
 }
 
 int dt_lua_init_widget_combobox(lua_State* L)

@@ -21,6 +21,7 @@
 #include "lua/modules.h"
 #include "lua/call.h"
 #include "control/control.h"
+#include "stdarg.h"
 /**
   TODO
   generic property member registration
@@ -59,6 +60,7 @@ static int get_widget_params(lua_State *L)
   g_object_ref_sink(widget->widget);
   widget->type = widget_type;
   luaA_push_type(L,widget_type->associated_type,&widget);
+  dt_lua_type_gpointer_alias_type(L,widget_type->associated_type,widget,widget->widget);
   init_widget_sub(L,widget_type);
 
   luaL_getmetafield(L,-1,"__gtk_signals");
@@ -132,23 +134,38 @@ void dt_lua_widget_get_callback(lua_State *L,int index,const char* name)
 }
 
 
-
-void dt_lua_widget_trigger_callback(lua_State*L,lua_widget object,const char* name)
+void dt_lua_widget_trigger_callback_glist(lua_State*L,lua_widget object,const char* name,GList*extra)
 {
   luaA_push_type(L,object->type->associated_type,&object);
   lua_getuservalue(L,-1);
   lua_getfield(L,-1,name);
   if(! lua_isnil(L,-1)) {
     lua_pushvalue(L,-3);
-    dt_lua_do_chunk(L,1,0);
+    GList* cur_elt = extra;
+    int nargs = 1;
+    while(cur_elt) {
+      const char* next_type = cur_elt->data;
+      cur_elt = g_list_next(cur_elt);
+      luaA_push_type(L,luaA_type_find(L,next_type),cur_elt->data);
+      nargs++;
+      cur_elt = g_list_next(cur_elt);
+    }
+    dt_lua_do_chunk(L,nargs,0);
   }
+  g_list_free(extra);
   lua_pop(L,2);
+}
+
+void dt_lua_widget_trigger_callback(lua_State*L,lua_widget object,const char* name)
+{
+  dt_lua_widget_trigger_callback_glist(L,object,name,NULL);
 }
 
 
 typedef struct {
   lua_widget object;
   char * event_name;
+  GList* extra;
 }widget_callback_data;
 
 
@@ -157,7 +174,7 @@ static int32_t widget_callback_job(dt_job_t *job)
   dt_lua_lock();
   lua_State* L= darktable.lua_state.state;
   widget_callback_data* data = (widget_callback_data*)dt_control_job_get_params(job);
-  dt_lua_widget_trigger_callback(L,data->object,data->event_name);
+  dt_lua_widget_trigger_callback_glist(L,data->object,data->event_name,data->extra);
   free(data->event_name);
   free(data);
   dt_lua_unlock();
@@ -165,7 +182,7 @@ static int32_t widget_callback_job(dt_job_t *job)
 
 }
 
-void dt_lua_widget_trigger_callback_async(lua_widget object,const char* name)
+void dt_lua_widget_trigger_callback_async(lua_widget object,const char* name,const char* type_name,...)
 {
   dt_job_t *job = dt_control_job_create(&widget_callback_job, "lua: widget event");
   if(job)
@@ -173,6 +190,18 @@ void dt_lua_widget_trigger_callback_async(lua_widget object,const char* name)
     widget_callback_data*data = malloc(sizeof(widget_callback_data));
     data->object = object;
     data->event_name = strdup(name);
+    data->extra=NULL;
+    va_list ap;
+    va_start(ap,type_name);
+    const char *cur_type = type_name;
+    while(cur_type ){
+      data->extra=g_list_append(data->extra,GINT_TO_POINTER(cur_type));
+      data->extra=g_list_append(data->extra,va_arg(ap,gpointer));
+      cur_type = va_arg(ap,const char*);
+
+    }
+    va_end(ap);
+    
     dt_control_job_set_params(job, data);
     dt_control_add_job(darktable.control, DT_JOB_QUEUE_USER_FG, job);
   }

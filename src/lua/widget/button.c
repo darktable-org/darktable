@@ -28,7 +28,7 @@ static dt_lua_widget_type_t button_type = {
 
 static void clicked_callback(GtkButton *widget, gpointer user_data)
 {
-  dt_lua_widget_trigger_callback_async((lua_widget)user_data,"clicked");
+  dt_lua_widget_trigger_callback_async((lua_widget)user_data,"clicked",NULL);
 }
 
 
