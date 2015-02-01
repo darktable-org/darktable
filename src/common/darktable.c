@@ -507,13 +507,46 @@ int dt_init(int argc, char *argv[], const int init_gui, lua_State *L)
       }
       else if(!strcmp(argv[k], "--version"))
       {
-        printf("this is " PACKAGE_STRING "\ncopyright (c) 2009-2014 johannes hanika\n" PACKAGE_BUGREPORT "\n"
+        printf("this is " PACKAGE_STRING "\ncopyright (c) 2009-2014 johannes hanika\n" PACKAGE_BUGREPORT
+               "\n\ncompile options:\n"
 #ifdef _OPENMP
-               "OpenMP support enabled\n"
+               "  OpenMP support enabled\n"
 #else
-               "OpenMP support disabled\n"
+               "  OpenMP support disabled\n"
 #endif
-               );
+
+#ifdef HAVE_OPENCL
+               "  OpenCL support enabled\n"
+#else
+               "  OpenCL support disabled\n"
+#endif
+
+#ifdef USE_LUA
+               "  Lua support enabled\n"
+#else
+               "  Lua support disabled\n"
+#endif
+
+#ifdef USE_COLORDGTK
+               "  Colord support enabled\n"
+#else
+               "  Colord support disabled\n"
+#endif
+
+#ifdef HAVE_GPHOTO2
+               "  gPhoto2 support enabled\n"
+#else
+               "  gPhoto2 support disabled\n"
+#endif
+
+#ifdef HAVE_GRAPHICSMAGICK
+               "  GraphicsMagick support enabled\n"
+#else
+               "  GraphicsMagick support disabled\n"
+#endif
+
+
+        );
         return 1;
       }
       else if(!strcmp(argv[k], "--library") && argc > k + 1)
