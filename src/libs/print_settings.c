@@ -925,7 +925,7 @@ gui_init (dt_lib_module_t *self)
     {
       // record the printer to set as we want to set this when the paper widget is realized
       printer_index = np;
-      strncpy(printer_name,printer->name,sizeof(printer_name));
+      g_strlcpy(printer_name, printer->name, sizeof(printer_name));
     }
     printers = g_list_next (printers);
     np++;
