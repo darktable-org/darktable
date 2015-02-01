@@ -107,7 +107,6 @@ set(SOURCES ${SOURCE_FILES} ${HEADER_FILES})
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/external)
-include_directories(${CMAKE_CURRENT_SOURCE_DIR}/external/LibRaw)
 
 # initial compiler flags
 add_definitions("-DHAVE_CONFIG_H")
@@ -372,7 +371,6 @@ if(WIN32)
   SET(CMAKE_SHARED_LIBRARY_LINK_C_FLAGS "-Wl,--no-undefined -static-libgcc -Wl,-O1 -Wl,--as-needed -Wl,--sort-common -s")
   SET(CMAKE_SHARED_LIBRARY_LINK_CXX_FLAGS "-Wl,--no-undefined -static-libgcc -Wl,-O1 -Wl,--as-needed -Wl,--sort-common -s")
 
-  add_definitions("-DLIBRAW_NODLL")
   list(APPEND LIBS ws2_32)
   list(APPEND LIBS msvcrt) # Needed for _aligned_alloc()
   list(APPEND SOURCES "win/getrusage.c")
@@ -496,18 +494,11 @@ else(USE_LUA)
 endif(USE_LUA)
 
 #
-# the libraw part is a bit of a hack:
+# the rawspeed part is a bit of a hack:
 # the static linking didn't work since it was pulling -lstdc++ and -lm into linker flags.
-# so we do a custom dependency and pretend an imported liblibraw_r.a so no other -l are
+# so we do a custom dependency and pretend an imported librawsped.a so no other -l are
 # appended.
 #
-add_library(libraw_static STATIC IMPORTED)
-set_target_properties(libraw_static PROPERTIES IMPORTED_LOCATION ${CMAKE_CURRENT_BINARY_DIR}/external/LibRaw/liblibraw_r.a)
-add_subdirectory(external/LibRaw)
-list(APPEND LIB_DEPS libraw_r)
-list(APPEND STATIC_LIBS libraw_static)
-
-# same for librawspeed
 add_library(rawspeed_static STATIC IMPORTED)
 set_target_properties(rawspeed_static PROPERTIES IMPORTED_LOCATION ${CMAKE_CURRENT_BINARY_DIR}/external/rawspeed/librawspeed.a)
 # compile rawspeed

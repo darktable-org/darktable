@@ -32,7 +32,6 @@
 #include "common/opencl.h"
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
-#include "libraw/libraw.h"
 #include "external/wb_presets.c"
 #include "bauhaus/bauhaus.h"
 
