@@ -467,7 +467,7 @@
 <listitem><para>box</para></listitem>
 <listitem><para>button</para></listitem>
 <listitem><para>check_button</para></listitem>
-<listitem><para>combobox</para></listitem>
+<listitem><para>container</para></listitem>
 <listitem><para>entry</para></listitem>
 <listitem><para>file_chooser_button</para></listitem>
 <listitem><para>label</para></listitem>
@@ -5524,17 +5524,7 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
 </indexterm>
 <synopsis><link linkend="types_dt_lua_lib_collect_params_rule_t">types.dt_lua_lib_collect_params_rule_t</link></synopsis>
 <para>Each rule has a numeric index. You can add a rule by setting a rule after the last valid one, you can remove a rule by setting it to nil</para>
-<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
-    <colspec colwidth="2*"/>
-    <colspec colwidth="8*"/>
-    <tbody><row>
-    <entry>Attributes:</entry>
-    <entry><itemizedlist>
-<listitem><para><emphasis><link linkend="attributes_write">write</link></emphasis></para></listitem>
-</itemizedlist>
-</entry>
-    </row></tbody>
-    </tgroup></informaltable>
+
 </section>
 
 </section>
@@ -5808,6 +5798,68 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
 
 </section>
 
+<section status="final" id="types_lua_container">
+<title>types.lua_container</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>lua_container</secondary>
+</indexterm>
+<synopsis>dt_type</synopsis>
+<para>A widget containing other widgets</para>
+<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
+    <colspec colwidth="2*"/>
+    <colspec colwidth="8*"/>
+    <tbody><row>
+    <entry>Attributes:</entry>
+    <entry><itemizedlist>
+<listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_lua_widget">types.lua_widget</link></para></listitem>
+</itemizedlist>
+</entry>
+    </row></tbody>
+    </tgroup></informaltable>
+<section status="final" >
+<title>types.lua_container.__call</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>__call</secondary>
+</indexterm>
+<para>see <link linkend="types_lua_widget___call">types.lua_widget.As a function</link></para>
+</section>
+
+<section status="final" id="types_lua_container__hash_">
+<title>types.lua_container.#</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>#</secondary>
+</indexterm>
+<synopsis><link linkend="types_lua_widget">types.lua_widget</link></synopsis>
+<para>The widgets contained by the box</para>
+
+</section>
+
+<section status="final" id="types_lua_container_append">
+<title>types.lua_container.append</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>append</secondary>
+</indexterm>
+<synopsis>function( 
+	<emphasis><link linkend="types_lua_container_append_widget">widget</link></emphasis> : <link linkend="types_lua_widget">types.lua_widget</link>
+)</synopsis>
+<para>Add a widget at the end of the box</para>
+
+<variablelist>
+<varlistentry id="types_lua_container_append_widget"><term>widget</term><listitem>
+<synopsis><link linkend="types_lua_widget">types.lua_widget</link></synopsis>
+<para>The widget to append</para>
+
+</listitem></varlistentry>
+
+</variablelist>
+</section>
+
+</section>
+
 <section status="final" id="types_lua_check_button">
 <title>types.lua_check_button</title>
 <indexterm>
@@ -6051,14 +6103,14 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
 <secondary>lua_box</secondary>
 </indexterm>
 <synopsis>dt_type</synopsis>
-<para>A widget containing other widgets</para>
+<para>A container for widget in a horizontal or vertical list</para>
 <informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
     <colspec colwidth="2*"/>
     <colspec colwidth="8*"/>
     <tbody><row>
     <entry>Attributes:</entry>
     <entry><itemizedlist>
-<listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_lua_widget">types.lua_widget</link></para></listitem>
+<listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_lua_container">types.lua_container</link></para></listitem>
 </itemizedlist>
 </entry>
     </row></tbody>
@@ -6070,38 +6122,6 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
 <secondary>__call</secondary>
 </indexterm>
 <para>see <link linkend="types_lua_widget___call">types.lua_widget.As a function</link></para>
-</section>
-
-<section status="final" id="types_lua_box__hash_">
-<title>types.lua_box.#</title>
-<indexterm>
-<primary>Lua API</primary>
-<secondary>#</secondary>
-</indexterm>
-<synopsis><link linkend="types_lua_widget">types.lua_widget</link></synopsis>
-<para>The widgets contained by the box</para>
-
-</section>
-
-<section status="final" id="types_lua_box_append">
-<title>types.lua_box.append</title>
-<indexterm>
-<primary>Lua API</primary>
-<secondary>append</secondary>
-</indexterm>
-<synopsis>function( 
-	<emphasis><link linkend="types_lua_box_append_widget">widget</link></emphasis> : <link linkend="types_lua_widget">types.lua_widget</link>
-)</synopsis>
-<para>Add a widget at the end of the box</para>
-
-<variablelist>
-<varlistentry id="types_lua_box_append_widget"><term>widget</term><listitem>
-<synopsis><link linkend="types_lua_widget">types.lua_widget</link></synopsis>
-<para>The widget to append</para>
-
-</listitem></varlistentry>
-
-</variablelist>
 </section>
 
 <section status="final" id="types_lua_box_orientation">
@@ -6277,137 +6297,6 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
 </indexterm>
 <synopsis>string</synopsis>
 <para>The orientation of the separator.</para>
-<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
-    <colspec colwidth="2*"/>
-    <colspec colwidth="8*"/>
-    <tbody><row>
-    <entry>Attributes:</entry>
-    <entry><itemizedlist>
-<listitem><para><emphasis><link linkend="attributes_write">write</link></emphasis></para></listitem>
-</itemizedlist>
-</entry>
-    </row></tbody>
-    </tgroup></informaltable>
-</section>
-
-</section>
-
-<section status="final" id="types_lua_combobox">
-<title>types.lua_combobox</title>
-<indexterm>
-<primary>Lua API</primary>
-<secondary>lua_combobox</secondary>
-</indexterm>
-<synopsis>dt_type</synopsis>
-<para>A widget with multiple text entries in a menu</para>
-<para>This widget can be set as editable at construction time.</para>
-<para>If it is editable the user can type a value and is not constrained by the values in the menu</para>
-<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
-    <colspec colwidth="2*"/>
-    <colspec colwidth="8*"/>
-    <tbody><row>
-    <entry>Attributes:</entry>
-    <entry><itemizedlist>
-<listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_lua_widget">types.lua_widget</link></para></listitem>
-</itemizedlist>
-</entry>
-    </row></tbody>
-    </tgroup></informaltable>
-<section status="final" >
-<title>types.lua_combobox.__call</title>
-<indexterm>
-<primary>Lua API</primary>
-<secondary>__call</secondary>
-</indexterm>
-<para>see <link linkend="types_lua_widget___call">types.lua_widget.As a function</link></para>
-</section>
-
-<section status="final" id="types_lua_combobox_value">
-<title>types.lua_combobox.value</title>
-<indexterm>
-<primary>Lua API</primary>
-<secondary>value</secondary>
-</indexterm>
-<synopsis>string</synopsis>
-<para>The text content of the selected entry, can be nil</para>
-<para>You can set it to a number to select the corresponding entry from the menu</para>
-<para>If the combo box is editable, you can set it to any string</para>
-<para>You can set it to nil to deselect all entries</para>
-<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
-    <colspec colwidth="2*"/>
-    <colspec colwidth="8*"/>
-    <tbody><row>
-    <entry>Attributes:</entry>
-    <entry><itemizedlist>
-<listitem><para><emphasis><link linkend="attributes_write">write</link></emphasis></para></listitem>
-</itemizedlist>
-</entry>
-    </row></tbody>
-    </tgroup></informaltable>
-</section>
-
-<section status="final" id="types_lua_combobox__hash_">
-<title>types.lua_combobox.#</title>
-<indexterm>
-<primary>Lua API</primary>
-<secondary>#</secondary>
-</indexterm>
-<synopsis>string</synopsis>
-<para>The various menu entries.</para>
-<para>You can add new entries by writing to the first element beyond the end</para>
-<para>You can removes entries by setting them to nil</para>
-<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
-    <colspec colwidth="2*"/>
-    <colspec colwidth="8*"/>
-    <tbody><row>
-    <entry>Attributes:</entry>
-    <entry><itemizedlist>
-<listitem><para><emphasis><link linkend="attributes_write">write</link></emphasis></para></listitem>
-</itemizedlist>
-</entry>
-    </row></tbody>
-    </tgroup></informaltable>
-</section>
-
-<section status="final" id="types_lua_combobox_changed_callback">
-<title>types.lua_combobox.changed_callback</title>
-<indexterm>
-<primary>Lua API</primary>
-<secondary>changed_callback</secondary>
-</indexterm>
-<synopsis>function( 
-	<emphasis><link linkend="types_lua_combobox_changed_callback_widget">widget</link></emphasis> : <link linkend="types_lua_widget">types.lua_widget</link>
-)</synopsis>
-<para>A function to call when the value field changes (character entered or value selected)</para>
-<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
-    <colspec colwidth="2*"/>
-    <colspec colwidth="8*"/>
-    <tbody><row>
-    <entry>Attributes:</entry>
-    <entry><itemizedlist>
-<listitem><para><emphasis><link linkend="attributes_write">write</link></emphasis></para></listitem>
-</itemizedlist>
-</entry>
-    </row></tbody>
-    </tgroup></informaltable>
-<variablelist>
-<varlistentry id="types_lua_combobox_changed_callback_widget"><term>widget</term><listitem>
-<synopsis><link linkend="types_lua_widget">types.lua_widget</link></synopsis>
-<para>The widget that triggered the callback</para>
-
-</listitem></varlistentry>
-
-</variablelist>
-</section>
-
-<section status="final" id="types_lua_combobox_label">
-<title>types.lua_combobox.label</title>
-<indexterm>
-<primary>Lua API</primary>
-<secondary>label</secondary>
-</indexterm>
-<synopsis>string</synopsis>
-<para>The label displayed on the combobox</para>
 <informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
     <colspec colwidth="2*"/>
     <colspec colwidth="8*"/>

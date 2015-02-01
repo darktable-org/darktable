@@ -18,11 +18,12 @@
 #include "lua/widget/common.h"
 #include "lua/types.h"
 
-static void button_init(lua_State* L);
 static dt_lua_widget_type_t button_type = {
   .name = "button",
-  .gui_init = button_init,
+  .gui_init = NULL,
   .gui_cleanup = NULL,
+  .alloc_size = sizeof(dt_lua_widget_t),
+  .parent= &widget_type
 };
 
 static void clicked_callback(GtkButton *widget, gpointer user_data)
@@ -30,16 +31,6 @@ static void clicked_callback(GtkButton *widget, gpointer user_data)
   dt_lua_widget_trigger_callback_async((lua_widget)user_data,"clicked");
 }
 
-static void button_init(lua_State* L)
-{
-  lua_button button = malloc(sizeof(dt_lua_widget_t));
-  button->widget = gtk_button_new();
-
-  button->type = &button_type;
-  luaA_push_type(L, button_type.associated_type, &button);
-  g_object_ref_sink(button->widget);
-
-}
 
 
 
@@ -58,7 +49,7 @@ static int label_member(lua_State *L)
 
 int dt_lua_init_widget_button(lua_State* L)
 {
-  dt_lua_init_widget_type(L,&button_type,lua_button);
+  dt_lua_init_widget_type(L,&button_type,lua_button,GTK_TYPE_BUTTON);
 
   lua_pushcfunction(L,label_member);
   lua_pushcclosure(L,dt_lua_gtk_wrap,1);

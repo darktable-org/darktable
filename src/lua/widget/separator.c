@@ -19,22 +19,14 @@
 #include "lua/types.h"
 #include "gui/gtk.h"
 
-static void separator_init(lua_State* L);
 static dt_lua_widget_type_t separator_type = {
   .name = "separator",
-  .gui_init = separator_init,
+  .gui_init = NULL,
   .gui_cleanup = NULL,
+  .alloc_size = sizeof(dt_lua_widget_t),
+  .parent= &widget_type
+
 };
-
-static void separator_init(lua_State* L)
-{
-  lua_separator separator = malloc(sizeof(dt_lua_widget_t));
-  separator->widget = gtk_separator_new(GTK_ORIENTATION_HORIZONTAL);
-  separator->type = &separator_type;
-  luaA_push_type(L, separator_type.associated_type, &separator);
-  g_object_ref_sink(separator->widget);
-}
-
 
 static int orientation_member(lua_State *L)
 {
@@ -54,7 +46,7 @@ static int orientation_member(lua_State *L)
 
 int dt_lua_init_widget_separator(lua_State* L)
 {
-  dt_lua_init_widget_type(L,&separator_type,lua_separator);
+  dt_lua_init_widget_type(L,&separator_type,lua_separator,GTK_TYPE_SEPARATOR);
 
   lua_pushcfunction(L,orientation_member);
   lua_pushcclosure(L,dt_lua_gtk_wrap,1);

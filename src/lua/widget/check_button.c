@@ -18,27 +18,17 @@
 #include "lua/widget/common.h"
 #include "lua/types.h"
 
-static void check_button_init(lua_State* L);
 static dt_lua_widget_type_t check_button_type = {
   .name = "check_button",
-  .gui_init = check_button_init,
+  .gui_init = NULL,
   .gui_cleanup = NULL,
+  .alloc_size = sizeof(dt_lua_widget_t),
+  .parent= &widget_type
 };
 
 static void clicked_callback(GtkButton *widget, gpointer user_data)
 {
   dt_lua_widget_trigger_callback_async((lua_widget)user_data,"clicked");
-}
-
-static void check_button_init(lua_State* L)
-{
-  lua_check_button check_button = malloc(sizeof(dt_lua_widget_t));
-  check_button->widget = gtk_check_button_new();
-
-  check_button->type = &check_button_type;
-  luaA_push_type(L, check_button_type.associated_type, &check_button);
-  g_object_ref_sink(check_button->widget);
-
 }
 
 static int label_member(lua_State *L)
@@ -70,7 +60,7 @@ static int value_member(lua_State *L)
 
 int dt_lua_init_widget_check_button(lua_State* L)
 {
-  dt_lua_init_widget_type(L,&check_button_type,lua_check_button);
+  dt_lua_init_widget_type(L,&check_button_type,lua_check_button,GTK_TYPE_CHECK_BUTTON);
 
   lua_pushcfunction(L,value_member);
   lua_pushcclosure(L,dt_lua_gtk_wrap,1);

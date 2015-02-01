@@ -33,11 +33,12 @@ typedef dt_lua_widget_t* lua_combobox;
 typedef dt_lua_widget_t* lua_check_button;
 typedef dt_lua_widget_t* lua_button;
 
-typedef struct {
-  dt_lua_widget_t parent;
-  GList * children;
-} dt_lua_box_t;
-typedef dt_lua_box_t* lua_box;
+// containers can be inherited
+extern dt_lua_widget_type_t container_type;
+typedef dt_lua_widget_t dt_lua_container_t;
+
+typedef dt_lua_widget_t* lua_container;
+typedef dt_lua_widget_t* lua_box;
 
 // Various functions to init various widget types
 int dt_lua_init_widget_box(lua_State* L);
@@ -48,6 +49,7 @@ int dt_lua_init_widget_entry(lua_State* L);
 int dt_lua_init_widget_file_chooser_button(lua_State* L);
 int dt_lua_init_widget_separator(lua_State* L);
 int dt_lua_init_widget_combobox(lua_State* L);
+int dt_lua_init_widget_container(lua_State* L);
 
 #endif
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

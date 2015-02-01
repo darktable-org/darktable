@@ -81,10 +81,13 @@ local function document_type_sub(node,result,parent,prev_name)
 		elseif field == "__singleton" then
 			set_attribute(result,"is_singleton",true)
 		elseif field == "__number_index" then
-			nojoin[value] = true
-			result["#"] = document_unknown(value,result,"#")
-			set_attribute(result["#"],"read",true)
-			set_attribute(result["#"],"is_attribute",true)
+      if not node.__luaA_ParentMetatable or
+        node.__luaA_ParentMetatable.__number_index ~= value then
+        nojoin[value] = true
+        result["#"] = document_unknown(value,result,"#")
+        set_attribute(result["#"],"read",true)
+        set_attribute(result["#"],"is_attribute",true)
+      end
 		elseif field == "__number_newindex" then
 			nojoin[value] = true
 			if not result["#"] then
@@ -699,9 +702,11 @@ function M.all_children(node)
 
   -- create one widget of each type
 	for k, v in pairs(registry.dt_lua_modules.widget) do
-    res = v()
-    local thetype= toplevel.types[dt.debug.type(res)]
-		document_from_obj(res,thetype)
+    success,res = pcall(v)
+    if success then
+      local thetype= toplevel.types[dt.debug.type(res)]
+      document_from_obj(res,thetype)
+    end
 	end
 
   local collect_data = dt.gui.libs.collect.filter()

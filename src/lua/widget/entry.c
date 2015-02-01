@@ -25,17 +25,16 @@ static dt_lua_widget_type_t entry_type = {
   .name = "entry",
   .gui_init = entry_init,
   .gui_cleanup = entry_cleanup,
+  .alloc_size = sizeof(dt_lua_widget_t),
+  .parent= &widget_type
 };
 
 
 static void entry_init(lua_State* L)
 {
-  lua_entry entry = malloc(sizeof(dt_lua_widget_t));
-	entry->widget = gtk_entry_new();
+  lua_entry entry;
+  luaA_to(L,lua_entry,&entry,1);
   dt_gui_key_accel_block_on_focus_connect(GTK_WIDGET(entry->widget));
-  entry->type = &entry_type;
-  luaA_push_type(L, entry_type.associated_type, &entry);
-  g_object_ref_sink(entry->widget);
 }
 
 static void entry_cleanup(lua_State* L,lua_widget widget)
@@ -100,7 +99,7 @@ static int editable_member(lua_State *L)
 
 int dt_lua_init_widget_entry(lua_State* L)
 {
-  dt_lua_init_widget_type(L,&entry_type,lua_entry);
+  dt_lua_init_widget_type(L,&entry_type,lua_entry,GTK_TYPE_ENTRY);
 
   lua_pushcfunction(L,text_member);
   lua_pushcclosure(L,dt_lua_gtk_wrap,1);

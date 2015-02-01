@@ -19,27 +19,18 @@
 #include "lua/types.h"
 #include "gui/gtk.h"
 
-void file_chooser_button_init(lua_State* L);
 static dt_lua_widget_type_t file_chooser_button_type = {
   .name = "file_chooser_button",
-  .gui_init = file_chooser_button_init,
+  .gui_init = NULL,
   .gui_cleanup = NULL,
+  .alloc_size = sizeof(dt_lua_widget_t),
+  .parent= &widget_type
 };
 
 
 static void file_set_callback(GtkButton *widget, gpointer user_data)
 {
   dt_lua_widget_trigger_callback_async((lua_widget)user_data,"file-set");
-}
-
-void file_chooser_button_init(lua_State* L)
-{
-  lua_file_chooser_button file_chooser_button = malloc(sizeof(dt_lua_widget_t));
-	file_chooser_button->widget = gtk_file_chooser_button_new(NULL,GTK_FILE_CHOOSER_ACTION_OPEN );
-
-  file_chooser_button->type = &file_chooser_button_type;
-  luaA_push_type(L, file_chooser_button_type.associated_type, &file_chooser_button);
-  g_object_ref_sink(file_chooser_button->widget);
 }
 
 static int is_directory_member(lua_State *L)
@@ -84,7 +75,7 @@ static int value_member(lua_State *L)
 
 int dt_lua_init_widget_file_chooser_button(lua_State* L)
 {
-  dt_lua_init_widget_type(L,&file_chooser_button_type,lua_file_chooser_button);
+  dt_lua_init_widget_type(L,&file_chooser_button_type,lua_file_chooser_button,GTK_TYPE_FILE_CHOOSER_BUTTON);
 
   lua_pushcfunction(L,title_member);
   lua_pushcclosure(L,dt_lua_gtk_wrap,1);

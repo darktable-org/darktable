@@ -20,45 +20,21 @@
 #include "gui/gtk.h"
 
 static void box_init(lua_State* L);
-static void box_cleanup(lua_State* L,lua_widget widget);
 static dt_lua_widget_type_t box_type = {
   .name = "box",
   .gui_init = box_init,
-  .gui_cleanup = box_cleanup,
+  .gui_cleanup = NULL,
+  .alloc_size = sizeof(dt_lua_container_t),
+  .parent= &container_type
 };
-
-static int box_reset(lua_State* L)
-{
-  lua_box box;
-  luaA_to(L,lua_box,&box,1);
-  GList*curelt = box->children;
-  while(curelt) {
-    lua_widget cur_widget = curelt->data;
-    dt_lua_widget_trigger_callback(L,cur_widget,"reset");
-    curelt = g_list_next(curelt);
-  }
-  return 0;
-}
 
 static void box_init(lua_State* L)
 {
-  lua_box box = malloc(sizeof(dt_lua_box_t));
-  box->parent.widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_PIXEL_APPLY_DPI(5));
-  box->children = NULL;
-  box->parent.type = &box_type;
-  luaA_push_type(L, box_type.associated_type, &box);
-  g_object_ref_sink(box->parent.widget);
-  lua_pushcfunction(L,box_reset);
-  dt_lua_widget_set_callback(L,-2,"reset");
+  lua_box box;
+  luaA_to(L,lua_box,&box,-1);
+  gtk_orientable_set_orientation(GTK_ORIENTABLE(box->widget),GTK_ORIENTATION_VERTICAL);
 }
 
-
-static void box_cleanup(lua_State* L,lua_widget widget)
-{
-  lua_box box = (lua_box)widget;
-  g_list_free(box->children);
-  // no need to cleanup the actual widget, __gc does it for us
-}
 
 static int orientation_member(lua_State *L)
 {
@@ -67,55 +43,17 @@ static int orientation_member(lua_State *L)
   dt_lua_orientation_t orientation;
   if(lua_gettop(L) > 2) {
     luaA_to(L,dt_lua_orientation_t,&orientation,3);
-    gtk_orientable_set_orientation(GTK_ORIENTABLE(box->parent.widget),orientation);
+    gtk_orientable_set_orientation(GTK_ORIENTABLE(box->widget),orientation);
     return 0;
   }
-  orientation = gtk_orientable_get_orientation(GTK_ORIENTABLE(box->parent.widget));
+  orientation = gtk_orientable_get_orientation(GTK_ORIENTABLE(box->widget));
   luaA_push(L,dt_lua_orientation_t,&orientation);
-  return 1;
-}
-
-static int box_append(lua_State *L)
-{
-  lua_box box;
-  luaA_to(L,lua_box,&box,1);
-  lua_widget widget;
-  luaA_to(L, lua_widget,&widget,2),
-  gtk_box_pack_start(GTK_BOX(box->parent.widget),widget->widget,TRUE,TRUE, 0);
-  box->children = g_list_append(box->children,widget);
-  lua_getuservalue(L,1);
-  lua_pushvalue(L,2);
-  luaL_ref(L,-2);
-  lua_pop(L,1);
-  return 0;
-}
-
-static int box_len(lua_State*L)
-{
-  lua_box box;
-  luaA_to(L,lua_box,&box,1);
-  lua_pushinteger(L,g_list_length(box->children));
-  return 1;
-}
-
-static int box_numindex(lua_State*L)
-{
-  lua_getuservalue(L,1);
-  lua_pushvalue(L,2);
-  lua_gettable(L,-2);
   return 1;
 }
 
 int dt_lua_init_widget_box(lua_State* L)
 {
-  dt_lua_init_widget_type(L,&box_type,lua_box);
-  lua_pushcfunction(L, box_append);
-  lua_pushcclosure(L, dt_lua_type_member_common, 1);
-  dt_lua_type_register_const(L, lua_box, "append");
-  lua_pushcfunction(L,box_len);
-  lua_pushcclosure(L,dt_lua_gtk_wrap,1);
-  lua_pushcfunction(L,box_numindex);
-  dt_lua_type_register_number_const(L,lua_box);
+  dt_lua_init_widget_type(L,&box_type,lua_box,GTK_TYPE_BOX);
 
   lua_pushcfunction(L,orientation_member);
   lua_pushcclosure(L,dt_lua_gtk_wrap,1);

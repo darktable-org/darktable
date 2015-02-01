@@ -18,23 +18,14 @@
 #include "lua/widget/common.h"
 #include "lua/types.h"
 
-static void label_init(lua_State* L);
 static dt_lua_widget_type_t label_type = {
   .name = "label",
-  .gui_init = label_init,
+  .gui_init = NULL,
   .gui_cleanup = NULL,
+  .alloc_size = sizeof(dt_lua_widget_t),
+  .parent= &widget_type
 };
 
-
-static void label_init(lua_State* L)
-{
-  lua_label label = malloc(sizeof(dt_lua_widget_t));
-  label->widget = gtk_label_new(NULL);
-  label->type = &label_type;
-  luaA_push_type(L, label_type.associated_type, &label);
-  g_object_ref_sink(label->widget);
-
-}
 
 static int label_member(lua_State *L)
 {
@@ -51,7 +42,7 @@ static int label_member(lua_State *L)
 
 int dt_lua_init_widget_label(lua_State* L)
 {
-  dt_lua_init_widget_type(L,&label_type,lua_label);
+  dt_lua_init_widget_type(L,&label_type,lua_label,GTK_TYPE_LABEL);
 
   lua_pushcfunction(L,label_member);
   lua_pushcclosure(L,dt_lua_gtk_wrap,1);

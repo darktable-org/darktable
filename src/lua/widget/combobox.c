@@ -20,22 +20,13 @@
 #include "lua/types.h"
 #include "gui/gtk.h"
 
-static void combobox_init(lua_State* L);
 static dt_lua_widget_type_t combobox_type = {
   .name = "combobox",
-  .gui_init = combobox_init,
+  .gui_init = NULL,
   .gui_cleanup = NULL,
+  .alloc_size = sizeof(dt_lua_widget_t),
+  .parent= &widget_type
 };
-
-static void combobox_init(lua_State* L)
-{
-  lua_combobox combobox = malloc(sizeof(dt_lua_widget_t));
-  combobox->widget = dt_bauhaus_combobox_new(NULL);
-  combobox->type = &combobox_type;
-  luaA_push_type(L, combobox_type.associated_type, &combobox);
-  g_object_ref_sink(combobox->widget);
-
-}
 
 static int combobox_len(lua_State*L)
 {
@@ -121,7 +112,7 @@ static void changed_callback(GtkButton *widget, gpointer user_data)
 
 int dt_lua_init_widget_combobox(lua_State* L)
 {
-  dt_lua_init_widget_type(L,&combobox_type,lua_combobox);
+  dt_lua_init_widget_type(L,&combobox_type,lua_combobox,DT_BAUHAUS_WIDGET_TYPE);
 
   lua_pushcfunction(L,combobox_len);
   lua_pushcclosure(L,dt_lua_gtk_wrap,1);

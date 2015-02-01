@@ -28,54 +28,39 @@
   use name to save/restore states as pref like other widgets
   have a way to save presets
   storage lib looses index for lua storages, 
-  luastorage can's save presets
-
-  cleanup, not symetrical with init, maybe use lua_to to push ?
-    * or use only the size to malloc ourselves, push, pass to gui_init ?
-    * keep gui_init for looking at the stack, but do a luaA_push before, what about __init __gc and inheritence
-
-    the plan
-      * gui_init initialize the GtkWidget, reads and uses the stack and push it on the stack
-      * should gui_init be recursive ? how do we handle the stack ? the creation of the GtkWidget ? only create if not NULL ?
-      * __init is called on push, but recurse calls the parent's push
-      * lua_widget's init does the systematic stuff
-      * __gtk_signals need to be rethought (current method works but is not clean)
-      * all gpointer types should use a common table and not a per-type table (inheritence)
-      * also deal with __gc, do we need a gui_cleanup ? __gc should call parent's __gc
-
-      * inherit from button and container
-      * check/deal with abstract types ?
-      * can get rid of widget_type->name and widget->associated type (find them in a different way)
-      * maybe get rid of associated_type ?
-
-    alternative
-      * no more parameters to new widget, split widgets with build-time params
-      * have widget:set(param,value)=>widget so you can write
-      box = new_widget("box)
-         :set("append",new_widget("button"):set("label","test"):set("clicked_callback",function()...end))
-         :set("append",new_widget("label"):set("label","this is the label"))
-      * use a generic __call(obj,{key,value,key,value}) to allow the syntax below
-        for named fields, it's trivial, for function and indices, it needs thinking
-      box = new_widget("box"){
-        new_widget("button"){
-        label ="test"
-        clicked_callback =...
-        },
-        new_widget("label"){
-          label ="hello"
-        }
-      }
+  luastorage can't save presets
 
   */
 
+dt_lua_widget_type_t widget_type = {
+  .name = "widget",
+  .gui_init = NULL,
+  .gui_cleanup = NULL,
+  .alloc_size = sizeof(dt_lua_widget_t),
+  .parent = NULL
+};
 
+
+static void init_widget_sub(lua_State *L,dt_lua_widget_type_t*widget_type);
+static void init_widget_sub(lua_State *L,dt_lua_widget_type_t*widget_type) {
+  if(widget_type->parent) 
+    init_widget_sub(L,widget_type->parent);
+  if(widget_type->gui_init) 
+    widget_type->gui_init(L);
+}
 static int get_widget_params(lua_State *L)
 {
   struct dt_lua_widget_type_t *widget_type = lua_touserdata(L, lua_upvalueindex(1));
-  widget_type->gui_init(L);
+  if(G_TYPE_IS_ABSTRACT(widget_type->gtk_type)){
+    luaL_error(L,"Trying to create a widget of an abstract type : %s\n",widget_type->name);
+  }
+  lua_widget widget= malloc(widget_type->alloc_size);
+  widget->widget = gtk_widget_new(widget_type->gtk_type,NULL);
+  g_object_ref_sink(widget->widget);
+  widget->type = widget_type;
+  luaA_push_type(L,widget_type->associated_type,&widget);
+  init_widget_sub(L,widget_type);
 
-  lua_widget widget;
-  luaA_to(L,lua_widget,&widget,-1);
   luaL_getmetafield(L,-1,"__gtk_signals");
   lua_pushnil(L); /* first key */
   while(lua_next(L, -2) != 0)
@@ -99,11 +84,12 @@ static int widget_gc(lua_State *L)
   return 0;
 }
 
-luaA_Type dt_lua_init_widget_type_type(lua_State *L, dt_lua_widget_type_t* widget_type,const char* lua_type)
+luaA_Type dt_lua_init_widget_type_type(lua_State *L, dt_lua_widget_type_t* widget_type,const char* lua_type,GType gtk_type)
 {
   luaA_Type type_id = dt_lua_init_gpointer_type_type(L,luaA_type_add(L,lua_type,sizeof(gpointer)));
   widget_type->associated_type = type_id;
-  dt_lua_type_register_parent_type(L, type_id, luaA_type_find(L, "lua_widget"));
+  widget_type->gtk_type = gtk_type;
+  dt_lua_type_register_parent_type(L, type_id, widget_type->parent->associated_type);
 
   lua_newtable(L);
   dt_lua_type_setmetafield_type(L,type_id,"__gtk_signals");
@@ -266,7 +252,7 @@ int dt_lua_init_widget(lua_State* L)
 {
   dt_lua_module_new(L,"widget");
 
-  dt_lua_init_gpointer_type(L,lua_widget);
+  widget_type.associated_type = dt_lua_init_gpointer_type(L,lua_widget);
   lua_pushcfunction(L,tooltip_member);
   lua_pushcclosure(L,dt_lua_gtk_wrap,1);
   dt_lua_type_register(L, lua_widget, "tooltip");
@@ -278,10 +264,11 @@ int dt_lua_init_widget(lua_State* L)
   lua_pushcfunction(L,widget_call);
   dt_lua_type_setmetafield(L,lua_widget,"__call");
   
+  dt_lua_init_widget_container(L);
   dt_lua_init_widget_box(L);
   dt_lua_init_widget_button(L);
   dt_lua_init_widget_check_button(L);
-  dt_lua_init_widget_combobox(L);
+//  dt_lua_init_widget_combobox(L);
   dt_lua_init_widget_label(L);
   dt_lua_init_widget_entry(L);
   dt_lua_init_widget_file_chooser_button(L);

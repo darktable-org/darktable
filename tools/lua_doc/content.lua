@@ -708,6 +708,11 @@ local widget = dt.new_widget("button"){
   types.lua_widget.__call:add_return(types.lua_widget,"The object called itself, to allow chaining")
            
 
+  types.lua_container:set_text("A widget containing other widgets");
+	types.lua_container["#"]:set_reported_type(types.lua_widget)
+	types.lua_container["#"]:set_text("The widgets contained by the box")
+  types.lua_container.append:set_text("Add a widget at the end of the box")
+  types.lua_container.append:add_parameter("widget",types.lua_widget,"The widget to append")
 
   types.lua_check_button:set_text("A checkable button with a label next to it");
   types.lua_check_button.label:set_reported_type("string")
@@ -727,11 +732,7 @@ local widget = dt.new_widget("button"){
   types.lua_button.clicked_callback:set_reported_type("function")
   types.lua_button.clicked_callback:add_parameter("widget",types.lua_widget,"The widget that triggered the callback")
 
-  types.lua_box:set_text("A widget containing other widgets");
-	types.lua_box["#"]:set_reported_type(types.lua_widget)
-	types.lua_box["#"]:set_text("The widgets contained by the box")
-  types.lua_box.append:set_text("Add a widget at the end of the box")
-  types.lua_box.append:add_parameter("widget",types.lua_widget,"The widget to append")
+  types.lua_box:set_text("A container for widget in a horizontal or vertical list");
   types.lua_box.orientation:set_text("The orientation of the box.")
 
   types.lua_entry:set_text("A widget in which the user can input text")
@@ -744,6 +745,7 @@ local widget = dt.new_widget("button"){
   types.lua_separator:set_text("A widget providing a separation in the UI.")
   types.lua_separator.orientation:set_text("The orientation of the separator.")
 
+  --[[
   types.lua_combobox:set_text("A widget with multiple text entries in a menu"..para()..
       "This widget can be set as editable at construction time."..para()..
       "If it is editable the user can type a value and is not constrained by the values in the menu")
@@ -760,7 +762,7 @@ local widget = dt.new_widget("button"){
   types.lua_combobox.changed_callback:set_reported_type("function")
   types.lua_combobox.changed_callback:add_parameter("widget",types.lua_widget,"The widget that triggered the callback")
   types.lua_combobox.label:set_text("The label displayed on the combobox");
-
+]]
   types.lua_file_chooser_button:set_text("A button that allows the user to select an existing file")
   types.lua_file_chooser_button.title:set_text("The title of the window when choosing a file")
   types.lua_file_chooser_button.value:set_text("The currently selected file")
