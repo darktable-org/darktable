@@ -38,7 +38,8 @@ static cmsUInt32Number ComputeFormatDescriptor (int OutColorSpace, int bps)
   return (FLOAT_SH(IsFlt)|COLORSPACE_SH(OutColorSpace)|PLANAR_SH(IsPlanar)|CHANNELS_SH(Channels)|BYTES_SH(bps));
 }
 
-int dt_apply_printer_profile(int imgid, void **in, uint32_t width, uint32_t height, int bpp, const char *profile, int intent)
+int dt_apply_printer_profile(int imgid, void **in, uint32_t width, uint32_t height, int bpp,
+                             const char *profile, int intent, gboolean black_point_compensation)
 {
   cmsHPROFILE hInProfile, hOutProfile;
   cmsHTRANSFORM hTransform;
@@ -61,7 +62,8 @@ int dt_apply_printer_profile(int imgid, void **in, uint32_t width, uint32_t heig
   hTransform = cmsCreateTransform
     (hInProfile,  wInput,
      hOutProfile, wOutput,
-     intent, 0);
+     intent,
+     black_point_compensation ? cmsFLAGS_BLACKPOINTCOMPENSATION : 0);
 
   cmsCloseProfile(hInProfile);
   cmsCloseProfile(hOutProfile);
