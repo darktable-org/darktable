@@ -14,6 +14,13 @@ touch package/darktable.app/Contents/Resources/etc/pango/pangorc
 find package/darktable.app/Contents/MacOS/darktable-bin package/darktable.app/Contents/MacOS/darktable-cli-bin package/darktable.app/Contents/Resources/lib/darktable -type f -exec \
   install_name_tool -change @executable_path/../lib/darktable/libdarktable.dylib @executable_path/../Resources/lib/darktable/libdarktable.dylib \{} \;
 ln -s /Applications package/
+#copy gtk-osx-application translations if we can find them
+IFS=""
+port contents gtk-osx-application | sed "s|^ */|/|" | grep "\.lproj/GtkosxApplication\.strings$" | while read -r i
+do
+	mkdir package/darktable.app/Contents/Resources/"$(basename "$(dirname "$i")")"
+	cp "$i" package/darktable.app/Contents/Resources/"$(basename "$(dirname "$i")")"
+done
 
 if [ -z "$STRIPDEBUGINFO" ]
 then
