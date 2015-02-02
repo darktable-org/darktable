@@ -9,10 +9,10 @@ How to make disk image with darktable application bundle (64 bit Intel only):
     (practice showed that support for versions older than 10.6 isn't viable)
     and this line to /opt/local/etc/macports/variant.conf:
      +llvm34
-    To have working OpenMP (at least partly, only for C source files) you will also need gcc48:
-     sudo port install gcc48
+    To have working OpenMP (at least partly, only for C source files) you will also need gcc49:
+     sudo port install gcc49
     Configure darktable with this command instead of just "cmake ..":
-     CC=gcc-mp-4.8 cmake .. -DCMAKE_OSX_DEPLOYMENT_TARGET=10.6
+     CC=gcc-mp-4.9 cmake .. -DCMAKE_OSX_DEPLOYMENT_TARGET=10.6
     If you are building on OS X 10.10 Yosemite also add this argument to the command above:
      -DCMAKE_OSX_SYSROOT=/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.9.sdk
 
