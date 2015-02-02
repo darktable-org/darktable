@@ -638,14 +638,14 @@ end_query_cache:
           {
             // I would like to jump from before_mouse_over_id to query_ids[idx]
             int idx = current_image+lib->key_jump_offset-1;
-            int current_row = (int)floor((current_image-1)/lib->images_in_row);
-            int current_col = current_image%lib->images_in_row;
+            int current_row = (int)((current_image-1)/iir);
+            int current_col = current_image%iir;
 
             // detect if the current movement need some extra movement (page adjust)
-            if (current_row  == (int)(max_rows-1.5) && lib->key_jump_offset == lib->images_in_row)
+            if (current_row  == (int)(max_rows-1.5) && lib->key_jump_offset == iir)
               // going DOWN from last row
               move_view(lib,DOWN);
-            else if (current_row  == 0 && lib->key_jump_offset == lib->images_in_row*-1)
+            else if (current_row  == 0 && lib->key_jump_offset == iir*-1)
             {
               // going UP from first row
               move_view(lib,UP);
@@ -690,12 +690,9 @@ end_query_cache:
             }
           }
         }
-        else
+        else if(pi == col && pj == row)
         {
-          if(pi == col && pj == row)
-          {
-            mouse_over_id = id;
-          }
+          mouse_over_id = id;
         }
 
         cairo_save(cr);
@@ -1722,7 +1719,6 @@ int button_pressed(dt_view_t *self, double x, double y, double pressure, int whi
   dt_library_t *lib = (dt_library_t *)self->data;
   lib->modifiers = state;
   lib->key_jump_offset = 0;
-  lib->using_arrows = 0;
   lib->button = which;
   lib->select_offset_x = lib->zoom_x;
   lib->select_offset_y = lib->zoom_y;
@@ -1738,8 +1734,15 @@ int button_pressed(dt_view_t *self, double x, double y, double pressure, int whi
     {
       case DT_VIEW_DESERT:
       {
-        int32_t id = dt_control_get_mouse_over_id();
 
+        if (lib->using_arrows)
+        {
+          // in this case dt_control_get_mouse_over_id() means "last image visited with arrows"
+          lib->using_arrows = 0;
+          return 0;
+        }
+
+        int32_t id = dt_control_get_mouse_over_id();
         if((lib->modifiers & (GDK_SHIFT_MASK | GDK_CONTROL_MASK)) == 0)
           dt_selection_select_single(darktable.selection, id);
         else if((lib->modifiers & (GDK_CONTROL_MASK)) == GDK_CONTROL_MASK)
@@ -1863,7 +1866,7 @@ int key_released(dt_view_t *self, guint key, guint state)
 {
   dt_control_accels_t *accels = &darktable.control->accels;
   dt_library_t *lib = (dt_library_t *)self->data;
-  if(lib->key_select && key == GDK_KEY_Shift_L) 
+  if(lib->key_select && (key == GDK_KEY_Shift_L || key == GDK_KEY_Shift_R))
   {
     lib->key_select = 0;
     lib->key_select_direction = -1;
@@ -1992,7 +1995,7 @@ int key_pressed(dt_view_t *self, guint key, guint state)
     return 0;
   }
 
-  if(key == GDK_KEY_Shift_L) 
+  if (key == GDK_KEY_Shift_L || key == GDK_KEY_Shift_R)
   {
     lib->key_select = 1;
   }
@@ -2043,7 +2046,7 @@ int key_pressed(dt_view_t *self, guint key, guint state)
     else if(layout == 1)
     {
       lib->using_arrows = 1;
-      lib->key_jump_offset = lib->images_in_row*-1;
+      lib->key_jump_offset = zoom*-1;
       //move_view(lib, UP);
     }
     else
@@ -2058,7 +2061,7 @@ int key_pressed(dt_view_t *self, guint key, guint state)
     else if(layout == 1) 
     {
       lib->using_arrows = 1;
-      lib->key_jump_offset = lib->images_in_row;
+      lib->key_jump_offset = zoom;
       //move_view(lib, DOWN);
     }
     else
