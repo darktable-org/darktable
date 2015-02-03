@@ -49,28 +49,53 @@ static int container_reset(lua_State* L)
   return 0;
 }
 
+
+
+static void on_child_added(GtkContainer *container,GtkWidget *child,lua_container user_data)
+{
+  dt_lua_widget_trigger_callback_async(user_data,"add","lua_widget",child,NULL);
+}
+
+static void on_child_removed(GtkContainer *container,GtkWidget *child,lua_container user_data)
+{
+  dt_lua_widget_trigger_callback_async(user_data,"remove","lua_widget",child,NULL);
+}
+
+
+static int child_added(lua_State *L)
+{
+  lua_widget widget;
+  luaA_to(L, lua_widget,&widget,2),
+  lua_getuservalue(L,1);
+  lua_pushlightuserdata(L,widget->widget);
+  lua_pushvalue(L,2);
+  lua_settable(L,-3);
+  return 0;
+}
+
+static int child_removed(lua_State *L)
+{
+  lua_widget widget;
+  luaA_to(L, lua_widget,&widget,2),
+  lua_getuservalue(L,1);
+  lua_pushlightuserdata(L,widget->widget);
+  lua_pushnil(L);
+  lua_settable(L,-3);
+  return 0;
+}
+
 static void container_init(lua_State* L)
 {
   lua_container container;
   luaA_to(L,lua_container,&container,-1);
   lua_pushcfunction(L,container_reset);
   dt_lua_widget_set_callback(L,-2,"reset");
-}
-
-
-static int container_append(lua_State *L)
-{
-  lua_container container;
-  luaA_to(L,lua_container,&container,1);
-  lua_widget widget;
-  luaA_to(L, lua_widget,&widget,2),
-  gtk_container_add(GTK_CONTAINER(container->widget),widget->widget);
-  lua_getuservalue(L,1);
-  lua_pushlightuserdata(L,widget->widget);
-  lua_pushvalue(L,2);
-  lua_settable(L,-3);
-  lua_pop(L,1);
-  return 0;
+  lua_pushcfunction(L,child_added);
+  dt_lua_widget_set_callback(L,-2,"add");
+  lua_pushcfunction(L,child_removed);
+  dt_lua_widget_set_callback(L,-2,"remove");
+  g_signal_connect(container->widget, "add", G_CALLBACK(on_child_added), container);
+  g_signal_connect(container->widget, "remove", G_CALLBACK(on_child_removed), container);
 }
 
 static int container_len(lua_State*L)
@@ -88,24 +113,40 @@ static int container_numindex(lua_State*L)
   lua_container container;
   luaA_to(L,lua_container,&container,1);
   GList * children = gtk_container_get_children(GTK_CONTAINER(container->widget));
-  GtkWidget *searched_widget = g_list_nth_data(children,lua_tointeger(L,2)-1);
-  g_list_free(children);
-  lua_getuservalue(L,1);
-  lua_pushlightuserdata(L,searched_widget);
-  lua_gettable(L,-2);
-  return 1;
+  int index = lua_tointeger(L,2) -1;
+  if(lua_gettop(L) >2) {
+    int length = g_list_length(children);
+    if(!lua_isnil(L,3) &&  index == length) {
+      lua_widget widget;
+      luaA_to(L, lua_widget,&widget,3),
+      gtk_container_add(GTK_CONTAINER(container->widget),widget->widget);
+      gtk_widget_set_visible(widget->widget,gtk_widget_get_visible(container->widget));
+    } else if(lua_isnil(L,3) && index < length) {
+      GtkWidget *searched_widget = g_list_nth_data(children,index);
+      gtk_container_remove(GTK_CONTAINER(container->widget),searched_widget);
+    } else {
+      luaL_error(L,"Incorrect index or value when setting the child of a container");
+    }
+    g_list_free(children);
+    return 0;
+  } else {
+    GtkWidget *searched_widget = g_list_nth_data(children,index);
+    g_list_free(children);
+    lua_getuservalue(L,1);
+    lua_pushlightuserdata(L,searched_widget);
+    lua_gettable(L,-2);
+    return 1;
+  }
 }
 
 int dt_lua_init_widget_container(lua_State* L)
 {
   dt_lua_init_widget_type(L,&container_type,lua_container,GTK_TYPE_CONTAINER);
-  lua_pushcfunction(L, container_append);
-  lua_pushcclosure(L, dt_lua_type_member_common, 1);
-  dt_lua_type_register_const(L, lua_container, "append");
   lua_pushcfunction(L,container_len);
   lua_pushcclosure(L,dt_lua_gtk_wrap,1);
   lua_pushcfunction(L,container_numindex);
-  dt_lua_type_register_number_const(L,lua_container);
+  lua_pushcclosure(L,dt_lua_gtk_wrap,1);
+  dt_lua_type_register_number(L,lua_container);
 
   return 0;
 }

@@ -89,12 +89,15 @@ local function document_type_sub(node,result,parent,prev_name)
         set_attribute(result["#"],"is_attribute",true)
       end
 		elseif field == "__number_newindex" then
-			nojoin[value] = true
-			if not result["#"] then
-				result["#"] = document_unknown(value,result,"#")
-			end
-			set_attribute(result["#"],"write",true)
-			set_attribute(result["#"],"is_attribute",true)
+      if not node.__luaA_ParentMetatable or
+        node.__luaA_ParentMetatable.__number_newindex ~= value then
+        nojoin[value] = true
+        if not result["#"] then
+          result["#"] = document_unknown(value,result,"#")
+        end
+        set_attribute(result["#"],"write",true)
+        set_attribute(result["#"],"is_attribute",true)
+      end
 		elseif field == "__get" then
 			for k,v in pairs(node.__get) do
 				if not node.__luaA_ParentMetatable or

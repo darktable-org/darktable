@@ -25,7 +25,6 @@
 /**
   TODO
   generic property member registration
-  generic container registration
   use name to save/restore states as pref like other widgets
   have a way to save presets
   storage lib looses index for lua storages, 
@@ -146,12 +145,13 @@ void dt_lua_widget_trigger_callback_glist(lua_State*L,lua_widget object,const ch
     while(cur_elt) {
       const char* next_type = cur_elt->data;
       cur_elt = g_list_next(cur_elt);
-      luaA_push_type(L,luaA_type_find(L,next_type),cur_elt->data);
+      luaA_push_type(L,luaA_type_find(L,next_type),&cur_elt->data);
       nargs++;
       cur_elt = g_list_next(cur_elt);
     }
     dt_lua_do_chunk(L,nargs,0);
   }
+  dt_lua_redraw_screen();
   g_list_free(extra);
   lua_pop(L,2);
 }

@@ -710,9 +710,9 @@ local widget = dt.new_widget("button"){
 
   types.lua_container:set_text("A widget containing other widgets");
 	types.lua_container["#"]:set_reported_type(types.lua_widget)
-	types.lua_container["#"]:set_text("The widgets contained by the box")
-  types.lua_container.append:set_text("Add a widget at the end of the box")
-  types.lua_container.append:add_parameter("widget",types.lua_widget,"The widget to append")
+	types.lua_container["#"]:set_text("The widgets contained by the box"..para()..
+      "You can append widgets by adding them at the end of the list"..para()..
+      "You can remove widgets by setting them to nil")
 
   types.lua_check_button:set_text("A checkable button with a label next to it");
   types.lua_check_button.label:set_reported_type("string")
