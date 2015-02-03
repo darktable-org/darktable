@@ -92,6 +92,7 @@ typedef struct dt_library_t
   int display_focus;
   gboolean offset_changed;
   int images_in_row;
+  int max_rows;
 
   uint8_t *full_res_thumb;
   int32_t full_res_thumb_id, full_res_thumb_wd, full_res_thumb_ht;
@@ -192,17 +193,13 @@ static void move_view(dt_library_t *lib, direction dir)
     break;
     case PGUP:
     {
-      // TODO: this behavior has not been changed, but it really ought to be fixed so it scrolls a full page
-      // up or down.
-      lib->offset -= 4 * iir;
+      lib->offset -= (lib->max_rows - 1 ) * iir;
       while(lib->offset < 0) lib->offset += iir;
     }
     break;
     case PGDOWN:
     {
-      // TODO: this behavior has not been changed, but it really ought to be fixed so it scrolls a full page
-      // up or down.
-      lib->offset += 4 * iir;
+      lib->offset += (lib->max_rows - 1 ) * iir;
       while(lib->offset >= lib->collection_count) lib->offset -= iir;
     }
     break;
@@ -491,6 +488,7 @@ static int expose_filemanager(dt_view_t *self, cairo_t *cr, int32_t width, int32
   const int img_pointery = iir == 1 ? pointery : fmodf(pointery, ht);
 
   const int max_rows = 1 + (int)((height) / ht + .5);
+  lib->max_rows = max_rows;
   const int max_cols = iir;
 
   int id;
@@ -1085,6 +1083,7 @@ static int expose_zoomable(dt_view_t *self, cairo_t *cr, int32_t width, int32_t 
   float offset_x = (zoom == 1) ? 0.0 : (zoom_x / wd - (int)(zoom_x / wd));
   float offset_y = (zoom == 1) ? 0.0 : (zoom_y / ht - (int)(zoom_y / ht));
   const int max_rows = (zoom == 1) ? 1 : (2 + (int)((height) / ht + .5));
+  lib->max_rows = max_rows;
   const int max_cols = (zoom == 1) ? 1 : (MIN(DT_LIBRARY_MAX_ZOOM - MAX(0, offset_i), 1 + (int)(zoom + .5)));
 
   int offset = MAX(0, offset_i) + DT_LIBRARY_MAX_ZOOM * offset_j;
