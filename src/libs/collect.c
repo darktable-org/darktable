@@ -2125,15 +2125,14 @@ void gui_init(dt_lib_module_t *self)
   GtkTreeViewColumn *col = gtk_tree_view_column_new();
   gtk_tree_view_append_column(view, col);
   //this is used for filmroll and folder only
-  GtkCellRenderer *renderer = gtk_cell_renderer_pixbuf_new();
-  gtk_tree_view_column_pack_start(col, renderer, FALSE);
-  g_object_set(renderer, "pixbuf", d->px_error, NULL);
-  gtk_tree_view_column_add_attribute(col, renderer, "visible", DT_LIB_COLLECT_COL_NOTHERE);
-
-  renderer = gtk_cell_renderer_text_new();
+  GtkCellRenderer *renderer = gtk_cell_renderer_text_new();
   gtk_tree_view_column_pack_start(col, renderer, TRUE);
   g_object_set(renderer, "style", PANGO_STYLE_ITALIC, NULL);
   gtk_tree_view_column_add_attribute(col, renderer, "style-set", DT_LIB_COLLECT_COL_NOTHERE);
+  GdkRGBA *color;
+  gtk_style_context_get (gtk_widget_get_style_context(GTK_WIDGET(d->view)), GTK_STATE_FLAG_INSENSITIVE, "color", &color, NULL);
+  g_object_set(renderer, "foreground-rgba", color, NULL);
+  gtk_tree_view_column_add_attribute(col, renderer, "foreground-set", DT_LIB_COLLECT_COL_NOTHERE);
   gtk_tree_view_column_add_attribute(col, renderer, "text", DT_LIB_COLLECT_COL_TEXT);
 
   GtkTreeModel *listmodel
