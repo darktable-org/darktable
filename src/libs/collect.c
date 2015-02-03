@@ -131,6 +131,7 @@ void init_presets(dt_lib_module_t *self)
 static void _lib_collect_gui_update(dt_lib_module_t *self);
 static void row_activated (GtkTreeView *view, GtkTreePath *path, GtkTreeViewColumn *column, dt_lib_collect_t *d);
 static void update_selection (dt_lib_collect_rule_t *dr, gboolean exact);
+static void update_view(dt_lib_collect_rule_t *dr);
 static void entry_changed (GtkEditable *editable, dt_lib_collect_rule_t *d);
 
 /* Update the params struct with active ruleset */
@@ -230,6 +231,195 @@ static dt_lib_collect_t* get_collect(dt_lib_collect_rule_t *r)
 {
   dt_lib_collect_t *d = (dt_lib_collect_t *)(((char *)r) - r->num*sizeof(dt_lib_collect_rule_t));
   return d;
+}
+
+void view_popup_menu_onSearchFilmroll(GtkWidget *menuitem, gpointer userdata)
+{
+  GtkTreeView *treeview = GTK_TREE_VIEW(userdata);
+  GtkWidget *win = dt_ui_main_window(darktable.gui->ui);
+  GtkWidget *filechooser;
+
+  GtkTreeSelection *selection;
+  GtkTreeIter iter, child;
+  GtkTreeModel *model;
+
+  gchar *tree_path = NULL;
+  gchar *new_path = NULL;
+
+  filechooser = gtk_file_chooser_dialog_new(
+      _("search filmroll"), GTK_WINDOW(win), GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER, _("_Cancel"),
+      GTK_RESPONSE_CANCEL, _("_Open"), GTK_RESPONSE_ACCEPT, (char *)NULL);
+
+  gtk_file_chooser_set_select_multiple(GTK_FILE_CHOOSER(filechooser), FALSE);
+
+  model = gtk_tree_view_get_model(treeview);
+  selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(treeview));
+  gtk_tree_selection_get_selected(selection, &model, &iter);
+  child = iter;
+  gtk_tree_model_iter_parent(model, &iter, &child);
+  gtk_tree_model_get(model, &child, DT_LIB_COLLECT_COL_PATH, &tree_path, -1);
+
+  if(tree_path != NULL)
+    gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(filechooser), tree_path);
+  else
+    goto error;
+
+  // run the dialog
+  if(gtk_dialog_run(GTK_DIALOG(filechooser)) == GTK_RESPONSE_ACCEPT)
+  {
+    gint id = -1;
+    sqlite3_stmt *stmt;
+    gchar *query = NULL;
+
+    gchar *uri = NULL;
+    uri = gtk_file_chooser_get_uri(GTK_FILE_CHOOSER(filechooser));
+    new_path = g_filename_from_uri(uri, NULL, NULL);
+    g_free(uri);
+    if(new_path)
+    {
+      gchar *old = NULL;
+      query = dt_util_dstrcat(query, "select id,folder from film_rolls where folder like '%s%%'", tree_path);
+      DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
+      g_free(query);
+      query = NULL;
+
+      while(sqlite3_step(stmt) == SQLITE_ROW)
+      {
+        id = sqlite3_column_int(stmt, 0);
+        old = (gchar *)sqlite3_column_text(stmt, 1);
+
+        query = NULL;
+        query = dt_util_dstrcat(query, "update film_rolls set folder=?1 where id=?2");
+
+        gchar trailing[1024] = { 0 };
+        gchar final[1024] = { 0 };
+
+        if(g_strcmp0(old, tree_path))
+        {
+          g_snprintf(trailing, sizeof(trailing), "%s", old + strlen(tree_path) + 1);
+          g_snprintf(final, sizeof(final), "%s/%s", new_path, trailing);
+        }
+        else
+        {
+          g_snprintf(final, sizeof(final), "%s", new_path);
+        }
+
+        sqlite3_stmt *stmt2;
+        DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt2, NULL);
+        DT_DEBUG_SQLITE3_BIND_TEXT(stmt2, 1, final, -1, SQLITE_STATIC);
+        DT_DEBUG_SQLITE3_BIND_INT(stmt2, 2, id);
+        sqlite3_step(stmt2);
+        sqlite3_finalize(stmt2);
+      }
+      g_free(query);
+
+      /* reset filter so that view isn't empty */
+      dt_view_filter_reset(darktable.view_manager, FALSE);
+
+      /* update collection to view missing filmroll */
+      dt_control_signal_raise(darktable.signals, DT_SIGNAL_FILMROLLS_CHANGED);
+    }
+    else
+      goto error;
+  }
+  g_free(tree_path);
+  g_free(new_path);
+  gtk_widget_destroy(filechooser);
+  return;
+
+error:
+  /* Something wrong happened */
+  gtk_widget_destroy(filechooser);
+  dt_control_log(_("problem selecting new path for the filmroll in %s"), tree_path);
+
+  g_free(tree_path);
+  g_free(new_path);
+}
+
+void view_popup_menu_onRemove(GtkWidget *menuitem, gpointer userdata)
+{
+  GtkTreeView *treeview = GTK_TREE_VIEW(userdata);
+
+  GtkTreeSelection *selection;
+  GtkTreeIter iter;
+  GtkTreeModel *model;
+
+  gchar *filmroll_path = NULL;
+  gchar *fullq = NULL;
+
+  /* Get info about the filmroll (or parent) selected */
+  model = gtk_tree_view_get_model(treeview);
+  selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(treeview));
+  gtk_tree_selection_get_selected(selection, &model, &iter);
+  gtk_tree_model_get(model, &iter, DT_LIB_COLLECT_COL_PATH, &filmroll_path, -1);
+
+  /* Clean selected images, and add to the table those which are going to be deleted */
+  DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "delete from selected_images", NULL, NULL, NULL);
+
+  fullq = dt_util_dstrcat(fullq, "insert into selected_images select id from images where film_id  in "
+                                 "(select id from film_rolls where folder like '%s%%')",
+                          filmroll_path);
+  DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), fullq, NULL, NULL, NULL);
+
+  dt_control_remove_images();
+}
+
+void view_popup_menu(GtkWidget *treeview, GdkEventButton *event, gpointer userdata)
+{
+  GtkWidget *menu, *menuitem;
+
+  menu = gtk_menu_new();
+
+  menuitem = gtk_menu_item_new_with_label(_("search filmroll..."));
+  g_signal_connect(menuitem, "activate", (GCallback)view_popup_menu_onSearchFilmroll, treeview);
+  gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
+
+  menuitem = gtk_menu_item_new_with_label(_("remove..."));
+  gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
+  g_signal_connect(menuitem, "activate", (GCallback)view_popup_menu_onRemove, treeview);
+
+  gtk_widget_show_all(menu);
+
+  /* Note: event can be NULL here when called from view_onPopupMenu;
+   *  gdk_event_get_time() accepts a NULL argument */
+  gtk_menu_popup(GTK_MENU(menu), NULL, NULL, NULL, NULL, (event != NULL) ? event->button : 0,
+                 gdk_event_get_time((GdkEvent *)event));
+}
+
+gboolean view_onButtonPressed(GtkWidget *treeview, GdkEventButton *event, gpointer userdata)
+{
+  dt_lib_collect_t *d = (dt_lib_collect_t *) userdata;
+  const int item = gtk_combo_box_get_active(GTK_COMBO_BOX(d->rule[d->active_rule].combo));
+  if(item == DT_COLLECTION_PROP_FILMROLL || item == DT_COLLECTION_PROP_FOLDERS)
+  {
+    /* single click with the right mouse button? */
+    if(event->type == GDK_BUTTON_PRESS && event->button == 3)
+    {
+      GtkTreeSelection *selection;
+  
+      selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(treeview));
+  
+      /* Note: gtk_tree_selection_count_selected_rows() does not
+       *   exist in gtk+-2.0, only in gtk+ >= v2.2 ! */
+      if(gtk_tree_selection_count_selected_rows(selection) <= 1)
+      {
+        GtkTreePath *path;
+  
+        /* Get tree path for row that was clicked */
+        if(gtk_tree_view_get_path_at_pos(GTK_TREE_VIEW(treeview), (gint)event->x, (gint)event->y, &path, NULL,
+                                         NULL, NULL))
+        {
+          gtk_tree_selection_unselect_all(selection);
+          gtk_tree_selection_select_path(selection, path);
+          gtk_tree_path_free(path);
+        }
+      }
+      view_popup_menu(treeview, event, userdata);
+  
+      return TRUE; /* we handled this */
+    }
+  }
+  return FALSE; /* we did not handle this */
 }
 
 static gboolean match_string (GtkTreeModel *model, GtkTreePath *path, GtkTreeIter *iter, gpointer data)
@@ -1732,7 +1922,9 @@ static void collection_updated(gpointer instance, gpointer self)
 
 static void filmrolls_updated(gpointer instance, gpointer self)
 {
-  _lib_collect_gui_update(self);
+  dt_lib_module_t *l = (dt_lib_module_t *)self;
+  dt_lib_collect_t *d = (dt_lib_collect_t *)l->data;
+  update_view(&d->rule[d->active_rule]);
 }
 
 static void filmrolls_imported(gpointer instance, int film_id, gpointer self)
@@ -1926,6 +2118,7 @@ void gui_init(dt_lib_module_t *self)
   gtk_container_add(GTK_CONTAINER(sw), GTK_WIDGET(view));
   g_object_set(G_OBJECT(d->view), "activate-on-single-click", dt_conf_get_bool("plugins/lighttable/collect/single-click"), NULL);
   g_signal_connect(d->view, "row_activated", G_CALLBACK(row_activated), d);
+  g_signal_connect(d->view, "button-press-event", (GCallback)view_onButtonPressed, d);
   if(dt_conf_get_bool("plugins/lighttable/collect/selection-label"))
     g_signal_connect(gtk_tree_view_get_selection(d->view), "changed", G_CALLBACK(selection_changed), d);
 
