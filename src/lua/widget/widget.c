@@ -297,7 +297,7 @@ int dt_lua_init_widget(lua_State* L)
   dt_lua_init_widget_box(L);
   dt_lua_init_widget_button(L);
   dt_lua_init_widget_check_button(L);
-//  dt_lua_init_widget_combobox(L);
+  dt_lua_init_widget_combobox(L);
   dt_lua_init_widget_label(L);
   dt_lua_init_widget_entry(L);
   dt_lua_init_widget_file_chooser_button(L);

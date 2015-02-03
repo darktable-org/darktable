@@ -745,7 +745,6 @@ local widget = dt.new_widget("button"){
   types.lua_separator:set_text("A widget providing a separation in the UI.")
   types.lua_separator.orientation:set_text("The orientation of the separator.")
 
-  --[[
   types.lua_combobox:set_text("A widget with multiple text entries in a menu"..para()..
       "This widget can be set as editable at construction time."..para()..
       "If it is editable the user can type a value and is not constrained by the values in the menu")
@@ -761,8 +760,9 @@ local widget = dt.new_widget("button"){
   types.lua_combobox.changed_callback:set_text("A function to call when the value field changes (character entered or value selected)")
   types.lua_combobox.changed_callback:set_reported_type("function")
   types.lua_combobox.changed_callback:add_parameter("widget",types.lua_widget,"The widget that triggered the callback")
+  types.lua_combobox.editable:set_text("True is the user is allowed to type a string in the combobox")
   types.lua_combobox.label:set_text("The label displayed on the combobox");
-]]
+  
   types.lua_file_chooser_button:set_text("A button that allows the user to select an existing file")
   types.lua_file_chooser_button.title:set_text("The title of the window when choosing a file")
   types.lua_file_chooser_button.value:set_text("The currently selected file")

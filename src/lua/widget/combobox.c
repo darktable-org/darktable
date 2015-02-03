@@ -20,13 +20,23 @@
 #include "lua/types.h"
 #include "gui/gtk.h"
 
+static void combobox_init(lua_State *L);
 static dt_lua_widget_type_t combobox_type = {
   .name = "combobox",
-  .gui_init = NULL,
+  .gui_init = combobox_init,
   .gui_cleanup = NULL,
   .alloc_size = sizeof(dt_lua_widget_t),
   .parent= &widget_type
 };
+
+
+static void combobox_init(lua_State*L)
+{
+  lua_combobox combobox;
+  luaA_to(L,lua_combobox,&combobox,-1);
+  dt_bauhaus_combobox_from_widget(DT_BAUHAUS_WIDGET(combobox->widget),NULL);
+
+}
 
 static int combobox_len(lua_State*L)
 {
@@ -71,11 +81,24 @@ static int label_member(lua_State *L)
   luaA_to(L,lua_combobox,&combobox,1);
   if(lua_gettop(L) > 2) {
     char tmp[256];
-    luaA_to(L,char_256,&tmp,2);
+    luaA_to(L,char_256,&tmp,3);
     dt_bauhaus_widget_set_label(combobox->widget,NULL,tmp);
     return 0;
   }
   lua_pushstring(L,dt_bauhaus_widget_get_label(combobox->widget));
+  return 1;
+}
+
+static int editable_member(lua_State *L)
+{
+  lua_combobox combobox;
+  luaA_to(L,lua_combobox,&combobox,1);
+  if(lua_gettop(L) > 2) {
+    gboolean editable = lua_toboolean(L,3);
+    dt_bauhaus_combobox_set_editable(combobox->widget,editable);
+    return 0;
+  }
+  lua_pushboolean(L,dt_bauhaus_combobox_get_editable(combobox->widget));
   return 1;
 }
 
@@ -126,6 +149,10 @@ int dt_lua_init_widget_combobox(lua_State* L)
   lua_pushcfunction(L,label_member);
   lua_pushcclosure(L,dt_lua_gtk_wrap,1);
   dt_lua_type_register(L, lua_combobox, "label");
+
+  lua_pushcfunction(L,editable_member);
+  lua_pushcclosure(L,dt_lua_gtk_wrap,1);
+  dt_lua_type_register(L, lua_combobox, "editable");
 
   return 0;
 }
