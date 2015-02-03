@@ -599,7 +599,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *
 #ifdef _OPENMP
 #pragma omp parallel for schedule(static) default(none)
 #endif
-      for(int j = 0; j < n; j += 4) _mm_stream_ps(out + j, _mm_min_ps(clipm, _mm_load_ps(in + j)));
+      for(size_t j = 0; j < (n & ~3u); j += 4) _mm_stream_ps(out + j, _mm_min_ps(clipm, _mm_load_ps(in + j)));
       _mm_sfence();
       // lets see if there's a non-multiple of four rest to process:
       if(n & 3)
