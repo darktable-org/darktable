@@ -13,6 +13,8 @@ INSTALL_PREFIX=""
 BUILD_TYPE=""
 MAKE_TASKS=-1
 BUILD_DIR="./build"
+BUILD_GENERATOR="Unix Makefiles"
+ADDRESS_SANITIZER=0
 
 PRINT_HELP=0
 
@@ -91,6 +93,10 @@ while [ $# -ge 1 ] ; do
 		BUILD_DIR="$2"
 		shift
 		;;
+	--buildgenerator)
+		BUILD_GENERATOR="$2"
+		shift
+		;;
 	-j|--jobs)
 		MAKE_TASKS="$2"
 		shift
@@ -102,6 +108,9 @@ while [ $# -ge 1 ] ; do
 	--disable-*)
 		feature=${option#--disable-}
 		parse_feature "$feature" 0
+		;;
+	--asan)
+		ADDRESS_SANITIZER=1
 		;;
 	-h|--help)
 		PRINT_HELP=1
@@ -126,9 +135,11 @@ Installation:
    --prefix <string>     Install directory prefix (default: /opt/darktable)
 
 Build:
-   --builddir <string>   Building directory (default: $DT_SRC_DIR/build)
-   --buildtype <string>  Build type (Release, Debug, default: Release)
--j --jobs <integer>      Number of tasks (default: number of CPUs)
+   --builddir <string>       Building directory (default: $DT_SRC_DIR/build)
+   --buildtype <string>      Build type (Release, Debug, RelWithDebInfo)
+                                        (default:RelWithDebInfo)
+   --buildgenerator <string> Build tool (default: Unix Makefiles)
+-j --jobs <integer>          Number of tasks (default: number of CPUs)
 
 Features:
 All these options have a --disable-* equivalent. By default they are set
@@ -155,7 +166,7 @@ if [ "$INSTALL_PREFIX" =  "" ]; then
 fi
 
 if [ "$BUILD_TYPE" =  "" ]; then
-	BUILD_TYPE=Release
+	BUILD_TYPE="RelWithDebInfo"
 fi
 
 KERNELNAME=`uname -s`
@@ -178,8 +189,6 @@ fi
 if [ "$KERNELNAME" = "SunOS" ]; then
 	MAKE=gmake
 	PATH=/usr/gnu/bin:$PATH ; export PATH
-else
-	MAKE=make
 fi
 
 # Being smart may fail :D
@@ -231,8 +240,8 @@ Darktable build script
 Building directory:  $BUILD_DIR
 Installation prefix: $INSTALL_PREFIX
 Build type:          $BUILD_TYPE
-Make program:        $MAKE
-Make tasks:          $MAKE_TASKS
+Build generator:     $BUILD_GENERATOR
+Build tasks:         $MAKE_TASKS
 
 
 EOF
@@ -241,19 +250,31 @@ if [ ! -d "$BUILD_DIR" ]; then
 	mkdir "$BUILD_DIR"
 fi
 
-cd "$BUILD_DIR"
+PREPEND=""
+if [ $ADDRESS_SANITIZER -ne 0 ] ; then
+	PREPEND="CFLAGS=\"-fsanitize=address -fno-omit-frame-pointer\""
+	PREPEND="$PREPEND CXXFLAGS=\"-fsanitize=address -fno-omit-frame-pointer\""
+	PREPEND="$PREPEND LDFLAGS=\"-fsanitize=address\""
+fi
 
+set -e 
+
+OLDPWD="$(pwd)"
+cd "$BUILD_DIR"
+eval $PREPEND \
 cmake \
+	-G \"$BUILD_GENERATOR\" \
 	-DCMAKE_INSTALL_PREFIX=${INSTALL_PREFIX} \
 	-DCMAKE_BUILD_TYPE=${BUILD_TYPE} \
 	${CMAKE_MORE_OPTIONS} \
-	"$DT_SRC_DIR" \
-&& $MAKE -j $MAKE_TASKS
+	\"$DT_SRC_DIR\" 
+cd "$OLDPWD"
+cmake --build "$BUILD_DIR" -- -j$MAKE_TASKS
 
 if [ $? = 0 ]; then
 	cat <<EOF
 Darktable finished building, to actually install darktable you need to type:
-# cd "$BUILD_DIR"; sudo make install
+\$ cmake --build "$BUILD_DIR" --target install # optionnaly prefixed by sudo
 EOF
 else
    exit 1
