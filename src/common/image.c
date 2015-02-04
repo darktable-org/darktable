@@ -373,26 +373,8 @@ void dt_image_flip(const int32_t imgid, const int32_t cw)
   // this is light table only:
   const dt_view_t *cv = dt_view_manager_get_current_view(darktable.view_manager);
   if(darktable.develop->image_storage.id == imgid && cv->view((dt_view_t *)cv) == DT_VIEW_DARKROOM) return;
-  dt_image_orientation_t orientation = ORIENTATION_NULL;
-  sqlite3_stmt *stmt;
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                              "select * from history where imgid = ?1 and operation = 'flip' and "
-                              "num in (select MAX(num) from history where imgid = ?1 and "
-                              "operation = 'flip')",
-                              -1, &stmt, NULL);
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
-  if(sqlite3_step(stmt) == SQLITE_ROW)
-  {
-    if(sqlite3_column_bytes(stmt, 4) >= 4) orientation = *(int32_t *)sqlite3_column_blob(stmt, 4);
-  }
-  sqlite3_finalize(stmt);
 
-  if(orientation == ORIENTATION_NULL)
-  {
-    const dt_image_t *img = dt_image_cache_get(darktable.image_cache, imgid, 'r');
-    orientation = dt_image_orientation(img);
-    dt_image_cache_read_release(darktable.image_cache, img);
-  }
+  dt_image_orientation_t orientation = dt_image_get_orientation(imgid);
 
   if(cw == 1)
   {
