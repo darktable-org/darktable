@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-01-28 19:26+0100\n"
-"PO-Revision-Date: 2015-01-28 19:45+0100\n"
+"POT-Creation-Date: 2015-02-04 18:22+0100\n"
+"PO-Revision-Date: 2015-02-04 18:56+0100\n"
 "Last-Translator: Ger Siemerink <g.siemerink@gmail.com>\n"
 "Language-Team: Ger Siemerink <g.siemerink@gmail.com>\n"
 "Language: nl_NL\n"
@@ -770,34 +770,34 @@ msgstr ""
 "ophalen instellingen van het formaat module mislukt, exporteren is "
 "afgebroken ..."
 
-#: ../src/common/collection.c:546 ../src/develop/lightroom.c:923
+#: ../src/common/collection.c:546 ../src/develop/lightroom.c:915
 #: ../src/iop/bilateral.cc:351 ../src/iop/channelmixer.c:463
 #: ../src/iop/channelmixer.c:475 ../src/iop/colorbalance.c:586
 #: ../src/iop/colorbalance.c:625 ../src/iop/colorbalance.c:664
-#: ../src/iop/temperature.c:898 ../src/libs/collect.c:1238
+#: ../src/iop/temperature.c:943 ../src/libs/collect.c:1238
 #: ../src/libs/collect.c:1239
 msgid "red"
 msgstr "rood"
 
-#: ../src/common/collection.c:548 ../src/develop/lightroom.c:925
+#: ../src/common/collection.c:548 ../src/develop/lightroom.c:917
 #: ../src/libs/collect.c:1241 ../src/libs/collect.c:1242
 msgid "yellow"
 msgstr "geel"
 
-#: ../src/common/collection.c:550 ../src/develop/lightroom.c:927
+#: ../src/common/collection.c:550 ../src/develop/lightroom.c:919
 #: ../src/iop/bilateral.cc:352 ../src/iop/channelmixer.c:464
 #: ../src/iop/channelmixer.c:482 ../src/iop/colorbalance.c:595
 #: ../src/iop/colorbalance.c:634 ../src/iop/colorbalance.c:673
-#: ../src/iop/temperature.c:899 ../src/libs/collect.c:1244
+#: ../src/iop/temperature.c:944 ../src/libs/collect.c:1244
 #: ../src/libs/collect.c:1245
 msgid "green"
 msgstr "groen"
 
-#: ../src/common/collection.c:552 ../src/develop/lightroom.c:929
+#: ../src/common/collection.c:552 ../src/develop/lightroom.c:921
 #: ../src/iop/bilateral.cc:353 ../src/iop/channelmixer.c:465
 #: ../src/iop/channelmixer.c:488 ../src/iop/colorbalance.c:604
 #: ../src/iop/colorbalance.c:643 ../src/iop/colorbalance.c:682
-#: ../src/iop/temperature.c:900 ../src/libs/collect.c:1247
+#: ../src/iop/temperature.c:945 ../src/libs/collect.c:1247
 #: ../src/libs/collect.c:1248
 msgid "blue"
 msgstr "blauw"
@@ -825,6 +825,21 @@ msgstr[0] "%d afbeelding van de %d uit de huidige collectie is geselecteerd"
 msgstr[1] ""
 "%d afbeeldingen van de %d uit de huidige collectie zijn geselecteerd"
 
+#: ../src/common/cups_print.c:273
+#, c-format
+msgid "file `%s' to print not found for image %d on `%s'"
+msgstr "af te drukken bestand `%s' niet gevonden voor afbeelding %d op `%s'"
+
+#: ../src/common/cups_print.c:333
+#, c-format
+msgid "error while printing image %d on `%s'"
+msgstr "fout tijdens afdrukken afbeelding %d op `%s'"
+
+#: ../src/common/cups_print.c:335
+#, c-format
+msgid "printing image %d on `%s'"
+msgstr "afdrukken afbeelding %d op `%s'"
+
 #: ../src/common/darktable.c:317
 #, c-format
 msgid "found strange path `%s'"
@@ -845,7 +860,7 @@ msgstr "bestand `%s' heeft een onbekend formaat!"
 msgid "error loading file `%s'"
 msgstr "fout bij het inladen van bestand `%s'"
 
-#: ../src/common/darktable.c:636
+#: ../src/common/darktable.c:671
 #, c-format
 msgid "ERROR : invalid temporary directory : %s\n"
 msgstr "ERRO: ongeldige tijdelijk map: %s\n"
@@ -959,35 +974,36 @@ msgstr ""
 msgid "generic poissonian"
 msgstr "generic poissonian"
 
-#: ../src/common/pdf.h:83 ../src/iop/lens.c:1644
+#: ../src/common/pdf.h:85 ../src/iop/lens.c:1644
+#: ../src/libs/print_settings.c:1048
 msgid "mm"
 msgstr "mm"
 
-#: ../src/common/pdf.h:84
+#: ../src/common/pdf.h:86 ../src/libs/print_settings.c:1049
 msgid "cm"
 msgstr "cm"
 
-#: ../src/common/pdf.h:85
+#: ../src/common/pdf.h:87 ../src/libs/print_settings.c:1050
 msgid "inch"
 msgstr "inch"
 
-#: ../src/common/pdf.h:86
+#: ../src/common/pdf.h:88
 msgid "\""
 msgstr "\""
 
-#: ../src/common/pdf.h:99
+#: ../src/common/pdf.h:101
 msgid "a4"
 msgstr "a4"
 
-#: ../src/common/pdf.h:100
+#: ../src/common/pdf.h:102
 msgid "a3"
 msgstr "a3"
 
-#: ../src/common/pdf.h:101
+#: ../src/common/pdf.h:103
 msgid "letter"
 msgstr "letter"
 
-#: ../src/common/pdf.h:102
+#: ../src/common/pdf.h:104
 msgid "legal"
 msgstr "legal"
 
@@ -1031,7 +1047,7 @@ msgstr "aanmaak profielstijl '%s' is gelukt"
 
 #. fail :(
 #: ../src/common/styles.c:465 ../src/common/styles.c:482
-#: ../src/views/darkroom.c:424
+#: ../src/views/darkroom.c:424 ../src/views/print.c:268
 msgid "no image selected!"
 msgstr "er is geen afbeelding geselecteerd"
 
@@ -1055,7 +1071,8 @@ msgstr "stijl '%s' is geïmporteerd"
 #: ../src/iop/clipping.c:1852 ../src/iop/clipping.c:1897
 #: ../src/iop/clipping.c:1919 ../src/iop/lens.c:1965 ../src/libs/export.c:651
 #: ../src/libs/live_view.c:323 ../src/libs/live_view.c:336
-#: ../src/libs/live_view.c:354
+#: ../src/libs/live_view.c:354 ../src/libs/print_settings.c:963
+#: ../src/libs/print_settings.c:1208
 msgid "none"
 msgstr "geen"
 
@@ -1243,6 +1260,7 @@ msgstr[0] "exporteer %d afbeelding naar %s"
 msgstr[1] "exporteren %d afbeeldingen naar %s"
 
 #: ../src/control/jobs/control_jobs.c:1029 ../src/views/darkroom.c:437
+#: ../src/views/print.c:281
 #, c-format
 msgid "image `%s' is currently unavailable"
 msgstr "afbeelding `%s' is op dit moment niet beschikbaar"
@@ -1838,7 +1856,7 @@ msgstr "%s is uitgeschakeld"
 #: ../src/gui/accelerators.c:679 ../src/gui/accelerators.c:847
 #: ../src/gui/accelerators.c:873 ../src/gui/presets.c:188
 #: ../src/gui/presets.c:294 ../src/gui/presets.c:662
-#: ../src/iop/temperature.c:910 ../src/libs/import.c:505 ../src/libs/lib.c:309
+#: ../src/iop/temperature.c:955 ../src/libs/import.c:505 ../src/libs/lib.c:309
 #: ../src/libs/lib.c:334 ../src/libs/lib.c:1089
 msgid "preset"
 msgstr "voorkeur"
@@ -1882,36 +1900,36 @@ msgstr "reset"
 msgid "presets"
 msgstr "voorkeuren"
 
-#: ../src/develop/lightroom.c:387
+#: ../src/develop/lightroom.c:379
 msgid "cannot find lightroom XMP!"
 msgstr "ligthroom xmp niet gevonden!"
 
-#: ../src/develop/lightroom.c:419 ../src/develop/lightroom.c:441
-#: ../src/develop/lightroom.c:461 ../src/develop/lightroom.c:471
-#: ../src/develop/lightroom.c:488
+#: ../src/develop/lightroom.c:411 ../src/develop/lightroom.c:433
+#: ../src/develop/lightroom.c:453 ../src/develop/lightroom.c:463
+#: ../src/develop/lightroom.c:480
 #, c-format
 msgid "`%s' not a lightroom XMP!"
 msgstr "`%s' is geen lightroom xmp!"
 
-#: ../src/develop/lightroom.c:1390 ../src/libs/import.c:525
+#: ../src/develop/lightroom.c:1382 ../src/libs/import.c:525
 msgid "tags"
 msgstr "labels"
 
-#: ../src/develop/lightroom.c:1399 ../src/libs/tools/filter.c:141
+#: ../src/develop/lightroom.c:1391 ../src/libs/tools/filter.c:141
 msgid "rating"
 msgstr "waardering"
 
-#: ../src/develop/lightroom.c:1408 ../src/libs/collect.h:31
+#: ../src/develop/lightroom.c:1400 ../src/libs/collect.h:31
 #: ../src/libs/geotagging.c:43
 msgid "geotagging"
 msgstr "geotagging"
 
-#: ../src/develop/lightroom.c:1417 ../src/libs/collect.h:28
+#: ../src/develop/lightroom.c:1409 ../src/libs/collect.h:28
 #: ../src/libs/tools/filter.c:143
 msgid "color label"
 msgstr "kleur label"
 
-#: ../src/develop/lightroom.c:1425
+#: ../src/develop/lightroom.c:1417
 #, c-format
 msgid "%s has been imported"
 msgid_plural "%s have been imported"
@@ -2965,10 +2983,12 @@ msgid "page orientation"
 msgstr "oriëntatie"
 
 #: ../src/imageio/format/pdf.c:557 ../src/iop/borders.c:994
+#: ../src/libs/print_settings.c:1042
 msgid "portrait"
 msgstr "portret"
 
 #: ../src/imageio/format/pdf.c:558 ../src/iop/borders.c:995
+#: ../src/libs/print_settings.c:1043
 msgid "landscape"
 msgstr "landschap"
 
@@ -3764,19 +3784,19 @@ msgid "radius"
 msgstr "straal"
 
 #: ../src/iop/bilateral.cc:83 ../src/iop/channelmixer.c:128
-#: ../src/iop/temperature.c:92
+#: ../src/iop/temperature.c:96
 msgctxt "accel"
 msgid "red"
 msgstr "rood"
 
 #: ../src/iop/bilateral.cc:84 ../src/iop/channelmixer.c:129
-#: ../src/iop/temperature.c:93
+#: ../src/iop/temperature.c:97
 msgctxt "accel"
 msgid "green"
 msgstr "groen"
 
 #: ../src/iop/bilateral.cc:85 ../src/iop/channelmixer.c:130
-#: ../src/iop/temperature.c:94
+#: ../src/iop/temperature.c:98
 msgctxt "accel"
 msgid "blue"
 msgstr "blauw"
@@ -3966,6 +3986,7 @@ msgstr ""
 "kies de aspect verhouding of klik met de rechtermuisknop en typ uw eigen b:h"
 
 #: ../src/iop/borders.c:992 ../src/iop/flip.c:73
+#: ../src/libs/print_settings.c:1041
 msgid "orientation"
 msgstr "oriëntatie"
 
@@ -4558,7 +4579,7 @@ msgstr "sRGB (b.v. JPG)"
 #: ../src/iop/colorin.c:1091 ../src/iop/colorin.c:1125
 #: ../src/iop/colorin.c:1260 ../src/iop/colorout.c:934
 #: ../src/iop/colorout.c:935 ../src/iop/colorout.c:936
-#: ../src/libs/export.c:578
+#: ../src/libs/export.c:578 ../src/libs/print_settings.c:815
 msgid "Adobe RGB (compatible)"
 msgstr "Adobe RGB (compatibel)"
 
@@ -4590,7 +4611,8 @@ msgid "Lab"
 msgstr "Lab"
 
 #: ../src/iop/colorin.c:1241 ../src/iop/denoiseprofile.c:1641
-#: ../src/libs/export.c:629
+#: ../src/libs/export.c:629 ../src/libs/print_settings.c:953
+#: ../src/libs/print_settings.c:1150
 msgid "profile"
 msgstr "profiel"
 
@@ -4738,23 +4760,27 @@ msgid "output intent"
 msgstr "voorgenomen output "
 
 #: ../src/iop/colorout.c:876 ../src/iop/colorout.c:883
-#: ../src/libs/export.c:559
+#: ../src/libs/export.c:559 ../src/libs/print_settings.c:1000
+#: ../src/libs/print_settings.c:1193
 msgid "perceptual"
 msgstr "perceptueel"
 
 #: ../src/iop/colorout.c:877 ../src/iop/colorout.c:884
-#: ../src/libs/export.c:560
+#: ../src/libs/export.c:560 ../src/libs/print_settings.c:1001
+#: ../src/libs/print_settings.c:1194
 msgid "relative colorimetric"
 msgstr "relatieve colorimetrie"
 
 #: ../src/iop/colorout.c:878 ../src/iop/colorout.c:885
-#: ../src/libs/export.c:561
+#: ../src/libs/export.c:561 ../src/libs/print_settings.c:1002
+#: ../src/libs/print_settings.c:1195
 msgctxt "rendering intent"
 msgid "saturation"
 msgstr "verzadiging"
 
 #: ../src/iop/colorout.c:879 ../src/iop/colorout.c:886
-#: ../src/libs/export.c:562
+#: ../src/libs/export.c:562 ../src/libs/print_settings.c:1003
+#: ../src/libs/print_settings.c:1196
 msgid "absolute colorimetric"
 msgstr "absolute colorimetrie"
 
@@ -4781,6 +4807,7 @@ msgstr "systeem weergave profiel"
 
 #: ../src/iop/colorout.c:928 ../src/iop/colorout.c:929
 #: ../src/iop/colorout.c:930 ../src/libs/export.c:571
+#: ../src/libs/print_settings.c:808
 msgid "sRGB (web-safe)"
 msgstr "sRGB (web-veilig)"
 
@@ -5072,6 +5099,7 @@ msgstr "geïnterpoleerd uit ISO %d en %d"
 
 #: ../src/iop/denoiseprofile.c:1642 ../src/iop/exposure.c:926
 #: ../src/iop/lens.c:2115 ../src/iop/levels.c:529 ../src/libs/export.c:667
+#: ../src/libs/print_settings.c:1246
 msgid "mode"
 msgstr "modus"
 
@@ -6100,27 +6128,27 @@ msgstr "ruis drempel"
 msgid "noise threshold"
 msgstr "ruis drempel"
 
-#: ../src/iop/rawprepare.c:63
+#: ../src/iop/rawprepare.c:64
 msgctxt "modulename"
 msgid "raw black/white point"
 msgstr "raw zwart/wit punt"
 
-#: ../src/iop/rawprepare.c:81 ../src/iop/rawprepare.c:95
-#: ../src/iop/rawprepare.c:438
+#: ../src/iop/rawprepare.c:82 ../src/iop/rawprepare.c:96
+#: ../src/iop/rawprepare.c:439
 #, c-format
 msgid "black level %i"
 msgstr "zwart niveau %i"
 
-#: ../src/iop/rawprepare.c:86
+#: ../src/iop/rawprepare.c:87
 msgctxt "accel"
 msgid "white point"
 msgstr "witpunt"
 
-#: ../src/iop/rawprepare.c:452 ../src/iop/rawprepare.c:453
+#: ../src/iop/rawprepare.c:453 ../src/iop/rawprepare.c:454
 msgid "white point"
 msgstr "witpunt"
 
-#: ../src/iop/rawprepare.c:461
+#: ../src/iop/rawprepare.c:462
 msgid ""
 "raw black/white point correction\n"
 "only works for the sensors that need it."
@@ -6150,6 +6178,7 @@ msgid "the fill-light in EV"
 msgstr "lichtopvulling in EV"
 
 #: ../src/iop/relight.c:378 ../src/libs/metadata_view.c:100
+#: ../src/libs/print_settings.c:1066
 msgid "width"
 msgstr "breedte"
 
@@ -6402,55 +6431,55 @@ msgstr ""
 "bepaal met het muiswiel de afmeting\n"
 "klik rechts om een lijn te verwijderen"
 
-#: ../src/iop/temperature.c:74
+#: ../src/iop/temperature.c:78
 msgctxt "modulename"
 msgid "white balance"
 msgstr "witbalans"
 
-#: ../src/iop/temperature.c:90
+#: ../src/iop/temperature.c:94
 msgctxt "accel"
 msgid "tint"
 msgstr "tint"
 
-#: ../src/iop/temperature.c:91
+#: ../src/iop/temperature.c:95
 msgctxt "accel"
 msgid "temperature"
 msgstr "temperatuur"
 
-#: ../src/iop/temperature.c:412
+#: ../src/iop/temperature.c:416
 msgid "camera white balance"
 msgstr "camera witbalans"
 
-#: ../src/iop/temperature.c:413
+#: ../src/iop/temperature.c:417
 msgid "spot white balance"
 msgstr "spot witbalans"
 
-#: ../src/iop/temperature.c:586
+#: ../src/iop/temperature.c:597
 msgid "failed to read camera white balance information!"
 msgstr "inlezen camera witbalans informatie is mislukt"
 
-#: ../src/iop/temperature.c:896
+#: ../src/iop/temperature.c:941
 msgid "tint"
 msgstr "tint"
 
-#: ../src/iop/temperature.c:897
+#: ../src/iop/temperature.c:942
 msgid "temperature"
 msgstr "temperatuur"
 
-#: ../src/iop/temperature.c:912
+#: ../src/iop/temperature.c:957
 msgid "choose white balance preset from camera"
 msgstr "neem camera witbalans"
 
-#: ../src/iop/temperature.c:916
+#: ../src/iop/temperature.c:961
 msgid "finetune"
 msgstr "fijnafstelling"
 
-#: ../src/iop/temperature.c:917
+#: ../src/iop/temperature.c:962
 #, c-format
 msgid "%.0f mired"
 msgstr "%.0f mired"
 
-#: ../src/iop/temperature.c:921
+#: ../src/iop/temperature.c:966
 msgid "fine tune white balance preset"
 msgstr "fijnafstelling witbalans voorkeur"
 
@@ -6721,7 +6750,7 @@ msgstr "compenseer y"
 msgid "marker"
 msgstr "bestand"
 
-#: ../src/iop/watermark.c:1066
+#: ../src/iop/watermark.c:1066 ../src/libs/print_settings.c:1137
 msgid "alignment"
 msgstr "uitlijning"
 
@@ -7303,20 +7332,22 @@ msgstr "formaat"
 msgid "x"
 msgstr "x"
 
-#: ../src/libs/export.c:557
+#: ../src/libs/export.c:557 ../src/libs/print_settings.c:999
+#: ../src/libs/print_settings.c:1190
 msgid "intent"
 msgstr "intensie"
 
 #: ../src/libs/export.c:558 ../src/libs/export.c:631
+#: ../src/libs/print_settings.c:1153 ../src/libs/print_settings.c:1192
 msgid "image settings"
 msgstr "afbeeldings instellingen"
 
-#: ../src/libs/export.c:641
+#: ../src/libs/export.c:641 ../src/libs/print_settings.c:1183
 #, c-format
 msgid "output ICC profiles in %s/color/out or %s/color/out"
 msgstr "uitgaande ICC profielen in %s/kleur/uit of %s/kleur/uit"
 
-#: ../src/libs/export.c:649
+#: ../src/libs/export.c:649 ../src/libs/print_settings.c:1206
 msgid "style"
 msgstr "stijl"
 
@@ -7324,11 +7355,11 @@ msgstr "stijl"
 msgid "temporary style to use while exporting"
 msgstr "tijdelijke stijl te gebruiken tijdens het exporteren"
 
-#: ../src/libs/export.c:671
+#: ../src/libs/export.c:671 ../src/libs/print_settings.c:1248
 msgid "replace history"
 msgstr "vervang geschiedenis"
 
-#: ../src/libs/export.c:672
+#: ../src/libs/export.c:672 ../src/libs/print_settings.c:1249
 msgid "append history"
 msgstr "toevoegen geschiedenis"
 
@@ -8159,7 +8190,7 @@ msgstr "focus afstand"
 msgid "datetime"
 msgstr "tijdsopname"
 
-#: ../src/libs/metadata_view.c:101
+#: ../src/libs/metadata_view.c:101 ../src/libs/print_settings.c:1070
 msgid "height"
 msgstr "hoogte"
 
@@ -8297,6 +8328,113 @@ msgstr "volledig"
 #: ../src/libs/navigation.c:477
 msgid "200%"
 msgstr "vergroot"
+
+#. //////////////////////// PRINT SETTINGS
+#: ../src/libs/print_settings.c:43 ../src/libs/print_settings.c:1144
+msgid "print settings"
+msgstr "afdruk instellingen"
+
+#: ../src/libs/print_settings.c:171
+msgid "cannot print until a picture is selected"
+msgstr "kan niet afdrukken voordat een papierformaat is geselecteerd"
+
+#: ../src/libs/print_settings.c:177
+msgid "cannot print until a printer is selected"
+msgstr "kan niet afdrukken voordat een papierformaat is geselecteerd"
+
+#: ../src/libs/print_settings.c:183
+msgid "cannot print until a paper is selected"
+msgstr "kan niet afdrukken voordat een papierformaat is geselecteerd"
+
+#: ../src/libs/print_settings.c:188
+#, c-format
+msgid "prepare printing image %d on `%s'"
+msgstr "voorbereiden afdrukken afbeelding %d op `%s'"
+
+#: ../src/libs/print_settings.c:279
+#, c-format
+msgid "cannot apply printer profile `%s'"
+msgstr "toepassen printer profiel `%s' mislukt"
+
+#: ../src/libs/print_settings.c:923
+msgid "printer"
+msgstr "printer"
+
+#: ../src/libs/print_settings.c:992
+#, c-format
+msgid "printer ICC profiles in %s/color/out or %s/color/out"
+msgstr "printer ICC profielens in %s/color/out of %s/color/out"
+
+#: ../src/libs/print_settings.c:1011
+msgid "black point compensation"
+msgstr "zwartpunt compensatie"
+
+#: ../src/libs/print_settings.c:1019
+msgid "activate black point compensation when applying the printer profile"
+msgstr "activeer zwartpunt compensatie bij toepassing printer profiel"
+
+#. //////////////////////// PAGE SETTINGS
+#: ../src/libs/print_settings.c:1023
+msgid "page"
+msgstr "pagina"
+
+#. // papers
+#: ../src/libs/print_settings.c:1028
+msgid "paper"
+msgstr "papierformaat"
+
+#: ../src/libs/print_settings.c:1064
+msgid "image width/height"
+msgstr "afbeelding b/h"
+
+#: ../src/libs/print_settings.c:1068
+msgid " x "
+msgstr " x "
+
+#. d->b_top  = gtk_spin_button_new_with_range(0, 10000, 1);
+#: ../src/libs/print_settings.c:1082
+msgid "top margin"
+msgstr "afstand boven"
+
+#. d->b_left  = gtk_spin_button_new_with_range(0, 10000, 1);
+#: ../src/libs/print_settings.c:1086
+msgid "left margin"
+msgstr "afstand links"
+
+#: ../src/libs/print_settings.c:1089
+msgid "lock"
+msgstr "vergrendel"
+
+#: ../src/libs/print_settings.c:1090
+msgid "change all margins uniformly"
+msgstr "wijzig alle afstanden evenredig"
+
+#. d->b_right  = gtk_spin_button_new_with_range(0, 10000, 1);
+#: ../src/libs/print_settings.c:1094
+msgid "right margin"
+msgstr "afstand rechts"
+
+#. d->b_bottom  = gtk_spin_button_new_with_range(0, 10000, 1);
+#: ../src/libs/print_settings.c:1098
+msgid "bottom margin"
+msgstr "afstand onder"
+
+#: ../src/libs/print_settings.c:1228
+msgid "temporary style to use while printing"
+msgstr "te gebruiken tijdelijke stijl tijdens afdrukken"
+
+#: ../src/libs/print_settings.c:1255
+msgid "whether the style is appended to the history or replacing the history"
+msgstr "of de stijl wordt toegevoegd of het vervangt de geschiedenis"
+
+#. Print button
+#: ../src/libs/print_settings.c:1262 ../src/views/print.c:51
+msgid "print"
+msgstr "afdrukken"
+
+#: ../src/libs/print_settings.c:1264
+msgid "print with current settings (ctrl-p)"
+msgstr "afdrukken met huidige instellingen (ctrl-p)"
 
 #: ../src/libs/recentcollect.c:50
 msgid "recently used collections"
@@ -8640,37 +8778,37 @@ msgstr "fotoreeks"
 #. setup rating key accelerators
 #. Initializing accelerators
 #. Rating keys
-#: ../src/libs/tools/filmstrip.c:167 ../src/views/lighttable.c:1982
+#: ../src/libs/tools/filmstrip.c:167 ../src/views/lighttable.c:2119
 msgctxt "accel"
 msgid "rate 0"
 msgstr "waardering 0"
 
-#: ../src/libs/tools/filmstrip.c:168 ../src/views/lighttable.c:1983
+#: ../src/libs/tools/filmstrip.c:168 ../src/views/lighttable.c:2120
 msgctxt "accel"
 msgid "rate 1"
 msgstr "waardering 1"
 
-#: ../src/libs/tools/filmstrip.c:169 ../src/views/lighttable.c:1984
+#: ../src/libs/tools/filmstrip.c:169 ../src/views/lighttable.c:2121
 msgctxt "accel"
 msgid "rate 2"
 msgstr "waardering 2"
 
-#: ../src/libs/tools/filmstrip.c:170 ../src/views/lighttable.c:1985
+#: ../src/libs/tools/filmstrip.c:170 ../src/views/lighttable.c:2122
 msgctxt "accel"
 msgid "rate 3"
 msgstr "waardering 3"
 
-#: ../src/libs/tools/filmstrip.c:171 ../src/views/lighttable.c:1986
+#: ../src/libs/tools/filmstrip.c:171 ../src/views/lighttable.c:2123
 msgctxt "accel"
 msgid "rate 4"
 msgstr "waardering 4"
 
-#: ../src/libs/tools/filmstrip.c:172 ../src/views/lighttable.c:1987
+#: ../src/libs/tools/filmstrip.c:172 ../src/views/lighttable.c:2124
 msgctxt "accel"
 msgid "rate 5"
 msgstr "waardering 5"
 
-#: ../src/libs/tools/filmstrip.c:173 ../src/views/lighttable.c:1988
+#: ../src/libs/tools/filmstrip.c:173 ../src/views/lighttable.c:2125
 msgctxt "accel"
 msgid "rate reject"
 msgstr "waardering afgekeurd"
@@ -8708,27 +8846,27 @@ msgstr "kloon afbeelding"
 
 #. setup color label accelerators
 #. Color keys
-#: ../src/libs/tools/filmstrip.c:189 ../src/views/lighttable.c:1997
+#: ../src/libs/tools/filmstrip.c:189 ../src/views/lighttable.c:2134
 msgctxt "accel"
 msgid "color red"
 msgstr "kleur rood"
 
-#: ../src/libs/tools/filmstrip.c:190 ../src/views/lighttable.c:1998
+#: ../src/libs/tools/filmstrip.c:190 ../src/views/lighttable.c:2135
 msgctxt "accel"
 msgid "color yellow"
 msgstr "kleur geel"
 
-#: ../src/libs/tools/filmstrip.c:191 ../src/views/lighttable.c:1999
+#: ../src/libs/tools/filmstrip.c:191 ../src/views/lighttable.c:2136
 msgctxt "accel"
 msgid "color green"
 msgstr "kleur groen"
 
-#: ../src/libs/tools/filmstrip.c:192 ../src/views/lighttable.c:2000
+#: ../src/libs/tools/filmstrip.c:192 ../src/views/lighttable.c:2137
 msgctxt "accel"
 msgid "color blue"
 msgstr "kleur blauw"
 
-#: ../src/libs/tools/filmstrip.c:193 ../src/views/lighttable.c:2001
+#: ../src/libs/tools/filmstrip.c:193 ../src/views/lighttable.c:2138
 msgctxt "accel"
 msgid "color purple"
 msgstr "kleur paars"
@@ -8833,7 +8971,7 @@ msgstr "toon overlays"
 msgid "hinter"
 msgstr "'hinter' (achter?)"
 
-#: ../src/libs/tools/lighttable.c:66 ../src/views/lighttable.c:129
+#: ../src/libs/tools/lighttable.c:66 ../src/views/lighttable.c:134
 msgid "lighttable"
 msgstr "bibliotheek"
 
@@ -8870,13 +9008,13 @@ msgstr "module toolbox"
 msgid "ratings"
 msgstr "waarderingen"
 
-#: ../src/libs/tools/viewswitcher.c:46
-msgid "viewswitcher"
-msgstr "scherm wisselaar"
-
 #: ../src/libs/tools/view_toolbox.c:35
 msgid "view toolbox"
 msgstr "bekijk toolbox"
+
+#: ../src/libs/tools/viewswitcher.c:46
+msgid "viewswitcher"
+msgstr "scherm wisselaar"
 
 #: ../src/lua/preferences.c:565
 msgid "lua options"
@@ -8959,7 +9097,7 @@ msgstr "drempel voor wat moet worden beschouwt als overbelicht"
 #. Film strip shortcuts
 #. Setup key accelerators in capture view...
 #: ../src/views/darkroom.c:1749 ../src/views/map.c:715
-#: ../src/views/tethering.c:391
+#: ../src/views/print.c:349 ../src/views/tethering.c:391
 msgctxt "accel"
 msgid "toggle film strip"
 msgstr "wissel fotoreeks"
@@ -9014,100 +9152,110 @@ msgctxt "accel"
 msgid "full preview"
 msgstr "voorbeeld"
 
-#: ../src/views/lighttable.c:506 ../src/views/slideshow.c:331
+#: ../src/views/lighttable.c:509 ../src/views/slideshow.c:331
 msgid "there are no images in this collection"
 msgstr "er bevinden zich geen afbeeldingen in deze catalogus"
 
-#: ../src/views/lighttable.c:508
+#: ../src/views/lighttable.c:511
 msgid "if you have not imported any images yet"
 msgstr "als nog geen afbeeldingen zijn geïmporteerd"
 
-#: ../src/views/lighttable.c:510
+#: ../src/views/lighttable.c:513
 msgid "you can do so in the import module"
 msgstr "dan kan dit worden uitgevoerd vanuit de module importeren"
 
-#: ../src/views/lighttable.c:517
+#: ../src/views/lighttable.c:520
 msgid "try to relax the filter settings in the top panel"
 msgstr "verruim het filter in het top paneel "
 
-#: ../src/views/lighttable.c:524
+#: ../src/views/lighttable.c:527
 msgid "or add images in the collection module in the left panel"
 msgstr "of importeer afbeeldingen naar de catalogus in het linkerpaneel"
 
 #. Navigation keys
-#: ../src/views/lighttable.c:1991
+#: ../src/views/lighttable.c:2128
 msgctxt "accel"
 msgid "navigate up"
 msgstr "navigeer omhoog"
 
-#: ../src/views/lighttable.c:1992
+#: ../src/views/lighttable.c:2129
 msgctxt "accel"
 msgid "navigate down"
 msgstr "navigeer omlaag"
 
-#: ../src/views/lighttable.c:1993
+#: ../src/views/lighttable.c:2130
 msgctxt "accel"
 msgid "navigate page up"
 msgstr "volgende pagina"
 
-#: ../src/views/lighttable.c:1994
+#: ../src/views/lighttable.c:2131
 msgctxt "accel"
 msgid "navigate page down"
 msgstr "vorige pagina"
 
 #. Scroll keys
-#: ../src/views/lighttable.c:2004
+#: ../src/views/lighttable.c:2141
 msgctxt "accel"
 msgid "scroll up"
 msgstr "blader omhoog"
 
-#: ../src/views/lighttable.c:2005
+#: ../src/views/lighttable.c:2142
 msgctxt "accel"
 msgid "scroll down"
 msgstr "blader omlaag"
 
-#: ../src/views/lighttable.c:2006
+#: ../src/views/lighttable.c:2143
 msgctxt "accel"
 msgid "scroll left"
 msgstr "blader naar links"
 
-#: ../src/views/lighttable.c:2007
+#: ../src/views/lighttable.c:2144
 msgctxt "accel"
 msgid "scroll right"
 msgstr "blader naar rechts"
 
-#: ../src/views/lighttable.c:2008
+#: ../src/views/lighttable.c:2145
 msgctxt "accel"
 msgid "scroll center"
 msgstr "scroll naar middelpunt"
 
-#: ../src/views/lighttable.c:2009
+#: ../src/views/lighttable.c:2146
 msgctxt "accel"
 msgid "realign images to grid"
 msgstr "afbeeldingen opnieuw op raster uitlijnen"
 
+#: ../src/views/lighttable.c:2147
+msgctxt "accel"
+msgid "select toggle image"
+msgstr "omkeren afbeelding"
+
+#: ../src/views/lighttable.c:2148
+msgctxt "accel"
+msgid "select single image"
+msgstr "selecteer een  afbeelding"
+
 #. Preview key
-#: ../src/views/lighttable.c:2012
+#: ../src/views/lighttable.c:2151
 msgctxt "accel"
 msgid "preview"
 msgstr "voorbeeld"
 
-#: ../src/views/lighttable.c:2013
+#: ../src/views/lighttable.c:2152
 msgctxt "accel"
 msgid "preview with focus detection"
 msgstr "voorbeeld met focus detectie"
 
-#: ../src/views/lighttable.c:2014
+#: ../src/views/lighttable.c:2153
 msgctxt "accel"
 msgid "sticky preview"
 msgstr "sticky voorbeeld"
 
-#: ../src/views/lighttable.c:2015
+#: ../src/views/lighttable.c:2154
 msgctxt "accel"
 msgid "sticky preview with focus detection"
 msgstr "sticky voorbeeld met focus detectie"
 
-#: ../src/views/lighttable.c:2016
+#: ../src/views/lighttable.c:2155
 msgctxt "accel"
 msgid "exit sticky preview"
 msgstr "verlaat sticky voorbeeld"
@@ -9125,6 +9273,10 @@ msgstr "herstel"
 msgctxt "accel"
 msgid "redo"
 msgstr "opnieuw"
+
+#: ../src/views/print.c:240
+msgid "there is no printer available, cannot print!"
+msgstr "er is geen printer beschikbaar, kan niet afdrukken!"
 
 #: ../src/views/slideshow.c:164
 msgid "end of images. press any key to return to lighttable mode"
@@ -10453,9 +10605,6 @@ msgstr "geen tethering ondersteunde camera aanwezig"
 
 #~ msgid "local_contrast_2"
 #~ msgstr "lokaal contrast 2"
-
-#~ msgid "page up"
-#~ msgstr "page up"
 
 #~ msgid "reset camera from exif data"
 #~ msgstr "camera instelling herstellen van EXIF gegevens"
