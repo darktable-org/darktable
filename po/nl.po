@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2015-02-04 18:22+0100\n"
-"PO-Revision-Date: 2015-02-04 19:04+0100\n"
+"PO-Revision-Date: 2015-02-04 19:08+0100\n"
 "Last-Translator: Ger Siemerink <g.siemerink@gmail.com>\n"
 "Language-Team: Ger Siemerink <g.siemerink@gmail.com>\n"
 "Language: nl_NL\n"
@@ -8385,7 +8385,7 @@ msgstr "papierformaat"
 
 #: ../src/libs/print_settings.c:1064
 msgid "image width/height"
-msgstr "afbeelding b/h"
+msgstr "afbeelding b x h"
 
 #: ../src/libs/print_settings.c:1068
 msgid " x "
