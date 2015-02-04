@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2015-02-04 18:22+0100\n"
-"PO-Revision-Date: 2015-02-04 18:56+0100\n"
+"PO-Revision-Date: 2015-02-04 19:04+0100\n"
 "Last-Translator: Ger Siemerink <g.siemerink@gmail.com>\n"
 "Language-Team: Ger Siemerink <g.siemerink@gmail.com>\n"
 "Language: nl_NL\n"
@@ -8394,12 +8394,12 @@ msgstr " x "
 #. d->b_top  = gtk_spin_button_new_with_range(0, 10000, 1);
 #: ../src/libs/print_settings.c:1082
 msgid "top margin"
-msgstr "afstand boven"
+msgstr "marge boven"
 
 #. d->b_left  = gtk_spin_button_new_with_range(0, 10000, 1);
 #: ../src/libs/print_settings.c:1086
 msgid "left margin"
-msgstr "afstand links"
+msgstr "marge links"
 
 #: ../src/libs/print_settings.c:1089
 msgid "lock"
@@ -8407,17 +8407,17 @@ msgstr "vergrendel"
 
 #: ../src/libs/print_settings.c:1090
 msgid "change all margins uniformly"
-msgstr "wijzig alle afstanden evenredig"
+msgstr "wijzig alle marges evenredig"
 
 #. d->b_right  = gtk_spin_button_new_with_range(0, 10000, 1);
 #: ../src/libs/print_settings.c:1094
 msgid "right margin"
-msgstr "afstand rechts"
+msgstr "marge rechts"
 
 #. d->b_bottom  = gtk_spin_button_new_with_range(0, 10000, 1);
 #: ../src/libs/print_settings.c:1098
 msgid "bottom margin"
-msgstr "afstand onder"
+msgstr "marge onder"
 
 #: ../src/libs/print_settings.c:1228
 msgid "temporary style to use while printing"
