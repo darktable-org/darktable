@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2015-02-04 18:22+0100\n"
-"PO-Revision-Date: 2015-02-04 19:08+0100\n"
+"PO-Revision-Date: 2015-02-04 19:14+0100\n"
 "Last-Translator: Ger Siemerink <g.siemerink@gmail.com>\n"
 "Language-Team: Ger Siemerink <g.siemerink@gmail.com>\n"
 "Language: nl_NL\n"
@@ -8905,7 +8905,7 @@ msgstr "filter"
 #. list label
 #: ../src/libs/tools/filter.c:106
 msgid "view"
-msgstr "weergave"
+msgstr "weergeven"
 
 #: ../src/libs/tools/filter.c:118
 msgid "unstarred only"
