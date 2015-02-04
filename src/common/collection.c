@@ -516,6 +516,23 @@ void dt_collection_split_operator_number(const gchar *input, char **number, char
   g_regex_unref(regex);
 }
 
+static void
+get_query_string_number_operator(const char* property, const gchar *escaped_text, char *query, size_t query_len)
+{
+  gchar *operator;
+  gchar *number;
+  dt_collection_split_operator_number(escaped_text, &number, &operator);
+
+  if(operator && number)
+    snprintf(query, query_len, "(%s %s %s)", property, operator, number);
+  else if(number)
+    snprintf(query, query_len, "(%s = %s)", property, number);
+  else
+    snprintf(query, query_len, "(%s like '%%%s%%')", property, escaped_text);
+
+  g_free(operator);
+  g_free(number);
+}
 
 static void get_query_string(const dt_collection_properties_t property, const gchar *escaped_text,
                              char *query, size_t query_len)
@@ -603,42 +620,25 @@ static void get_query_string(const dt_collection_properties_t property, const gc
     case DT_COLLECTION_PROP_LENS: // lens
       snprintf(query, query_len, "(lens like '%%%s%%')", escaped_text);
       break;
+
     case DT_COLLECTION_PROP_ISO: // iso
-    {
-      gchar *operator, *number;
-      dt_collection_split_operator_number(escaped_text, &number, &operator);
-
-      if(operator&& number)
-        snprintf(query, query_len, "(iso %s %s)", operator, number);
-      else if(number)
-        snprintf(query, query_len, "(iso = %s)", number);
-      else
-        snprintf(query, query_len, "(iso like '%%%s%%')", escaped_text);
-
-      g_free(operator);
-      g_free(number);
-    }
-    break;
+      get_query_string_number_operator("iso", escaped_text, query, query_len);
+      break;
 
     case DT_COLLECTION_PROP_APERTURE: // aperture
-    {
-      gchar *operator, *number;
-      dt_collection_split_operator_number(escaped_text, &number, &operator);
-
-      if(operator&& number)
-        snprintf(query, query_len, "(aperture %s %s)", operator, number);
-      else if(number)
-        snprintf(query, query_len, "(aperture = %s)", number);
-      else
-        snprintf(query, query_len, "(aperture like '%%%s%%')", escaped_text);
-
-      g_free(operator);
-      g_free(number);
-    }
-    break;
+      get_query_string_number_operator("aperture", escaped_text, query, query_len);
+      break;
 
     case DT_COLLECTION_PROP_FILENAME: // filename
       snprintf(query, query_len, "(filename like '%%%s%%')", escaped_text);
+      break;
+
+    case DT_COLLECTION_PROP_FOCAL_LENGTH:
+      get_query_string_number_operator("focal_length", escaped_text, query, query_len);
+      break;
+
+    case DT_COLLECTION_PROP_FOCUS_DISTANCE:
+      get_query_string_number_operator("focus_distance", escaped_text, query, query_len);
       break;
 
     default: // day or time
