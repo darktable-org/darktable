@@ -587,7 +587,6 @@ static void _lib_import_evaluate_extra_widget(dt_lib_import_metadata_t *data, gb
   dt_conf_set_string("ui_last/import_last_tags", gtk_entry_get_text(GTK_ENTRY(data->tags)));
 }
 
-// TODO: use orientation to correctly rotate the image.
 // maybe this should be (partly) in common/imageio.[c|h]?
 static void _lib_import_update_preview(GtkFileChooser *file_chooser, gpointer data)
 {
@@ -605,7 +604,9 @@ static void _lib_import_update_preview(GtkFileChooser *file_chooser, gpointer da
   while(c > filename && *c != '.') c--;
   if(!strcasecmp(c, ".dng")) goto no_preview_fallback;
 
-  pixbuf = gdk_pixbuf_new_from_file_at_size(filename, 128, 128, NULL);
+  // unfortunately we can not use following, because frequently it uses wrong orientation
+  // pixbuf = gdk_pixbuf_new_from_file_at_size(filename, 128, 128, NULL);
+
   have_preview = (pixbuf != NULL);
   if(!have_preview)
   {
@@ -615,9 +616,6 @@ static void _lib_import_update_preview(GtkFileChooser *file_chooser, gpointer da
     if(!dt_exif_get_thumbnail(filename, &buffer, &size, &mime_type))
     {
       // Scale the image to the correct size
-      // FIXME: gdk seems much less forgiving to getting slightly misformed
-      //        jpg streams from exiv2 than our own code, so not all thumbnails
-      //        work here. This is really an exiv2 bug though
       GdkPixbuf *tmp;
       GdkPixbufLoader *loader = gdk_pixbuf_loader_new();
       if (!gdk_pixbuf_loader_write(loader, buffer, size, NULL)) goto cleanup;
@@ -625,11 +623,42 @@ static void _lib_import_update_preview(GtkFileChooser *file_chooser, gpointer da
       float ratio = 1.0 * gdk_pixbuf_get_height(tmp) / gdk_pixbuf_get_width(tmp);
       int width = 128, height = 128 * ratio;
       pixbuf = gdk_pixbuf_scale_simple(tmp, width, height, GDK_INTERP_BILINEAR);
+
+      have_preview = TRUE;
+
     cleanup:
       gdk_pixbuf_loader_close(loader, NULL);
       free(mime_type);
       free(buffer);
       g_object_unref(loader); // This should clean up tmp as well
+    }
+  }
+  if(have_preview)
+  {
+    // get image orientation
+    dt_image_t img = { 0 };
+    (void)dt_exif_read(&img, filename);
+
+    // Rotate the image to the correct orientation
+    GdkPixbuf *tmp = pixbuf;
+
+    if(img.orientation == ORIENTATION_ROTATE_CCW_90_DEG)
+    {
+      tmp = gdk_pixbuf_rotate_simple(pixbuf, GDK_PIXBUF_ROTATE_COUNTERCLOCKWISE);
+    }
+    else if(img.orientation == ORIENTATION_ROTATE_CW_90_DEG)
+    {
+      tmp = gdk_pixbuf_rotate_simple(pixbuf, GDK_PIXBUF_ROTATE_CLOCKWISE);
+    }
+    else if(img.orientation == ORIENTATION_ROTATE_180_DEG)
+    {
+      tmp = gdk_pixbuf_rotate_simple(pixbuf, GDK_PIXBUF_ROTATE_UPSIDEDOWN);
+    }
+
+    if(pixbuf != tmp)
+    {
+      g_object_unref(pixbuf);
+      pixbuf = tmp;
     }
   }
   if(!have_preview)
