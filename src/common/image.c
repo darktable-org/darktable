@@ -549,22 +549,6 @@ int dt_image_altered(const uint32_t imgid)
   int altered = 0;
   sqlite3_stmt *stmt;
 
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                              "select orientation != 0 from images where id = ?1", -1, &stmt, NULL);
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
-  if(sqlite3_step(stmt) == SQLITE_ROW)
-  {
-    /*
-     * if image orientation != ORIENTATION_NONE, then we _need_ to consider
-     * image as altered, or else e.g. FD works uncorrectly on portrait images
-     * just after "history stack" -> "discard"
-     */
-    altered = sqlite3_column_int(stmt, 0);
-  }
-  sqlite3_finalize(stmt);
-
-  if(altered) return 1;
-
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select operation from history where imgid = ?1",
                               -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
@@ -576,6 +560,7 @@ int dt_image_altered(const uint32_t imgid)
     // (that's currently the only use of this function)
     if(!op) continue; // can happen while importing or something like that
     if(!strcmp(op, "basecurve")) continue;
+    if(!strcmp(op, "flip")) continue;
     if(!strcmp(op, "sharpen")) continue;
     if(!strcmp(op, "dither")) continue;
     if(!strcmp(op, "highlights")) continue;
