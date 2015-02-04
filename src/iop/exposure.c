@@ -518,7 +518,7 @@ void gui_update(struct dt_iop_module_t *self)
 
   dt_bauhaus_combobox_set(g->mode, g_list_index(g->modes, GUINT_TO_POINTER(p->mode)));
 
-  dt_bauhaus_slider_set(g->black, p->black);
+  dt_bauhaus_slider_set_soft(g->black, p->black);
   dt_bauhaus_slider_set_soft(g->exposure, p->exposure);
 
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->autoexp), FALSE);
@@ -735,7 +735,7 @@ static void exposure_set_black(struct dt_iop_module_t *self, const float black)
 
   dt_iop_exposure_gui_data_t *g = (dt_iop_exposure_gui_data_t *)self->gui_data;
   darktable.gui->reset = 1;
-  dt_bauhaus_slider_set(g->black, p->black);
+  dt_bauhaus_slider_set_soft(g->black, p->black);
   darktable.gui->reset = 0;
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
