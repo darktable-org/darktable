@@ -239,7 +239,7 @@ void dt_focus_draw_clusters(cairo_t *cr, int width, int height, int imgid, int b
     offy[2 * k + 1] = y + stddevy;
   }
 
-  if(dt_image_altered(imgid))
+  // could use dt_image_altered() here, but it ignores flip module
   {
     dt_develop_t dev;
     dt_dev_init(&dev, 0);
