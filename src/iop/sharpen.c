@@ -525,7 +525,7 @@ void gui_update(struct dt_iop_module_t *self)
   dt_iop_module_t *module = (dt_iop_module_t *)self;
   dt_iop_sharpen_gui_data_t *g = (dt_iop_sharpen_gui_data_t *)self->gui_data;
   dt_iop_sharpen_params_t *p = (dt_iop_sharpen_params_t *)module->params;
-  dt_bauhaus_slider_set(g->scale1, p->radius);
+  dt_bauhaus_slider_set_soft(g->scale1, p->radius);
   dt_bauhaus_slider_set(g->scale2, p->amount);
   dt_bauhaus_slider_set(g->scale3, p->threshold);
 }
@@ -584,6 +584,7 @@ void gui_init(struct dt_iop_module_t *self)
   g->scale1 = dt_bauhaus_slider_new_with_range(self, 0.0, 8.0000, 0.100, p->radius, 3);
   g_object_set(GTK_OBJECT(g->scale1), "tooltip-text", _("spatial extent of the unblurring"), (char *)NULL);
   dt_bauhaus_widget_set_label(g->scale1, NULL, _("radius"));
+  dt_bauhaus_slider_enable_soft_boundaries(g->scale1, 0.0, 99.0);
   g->scale2 = dt_bauhaus_slider_new_with_range(self, 0.0, 2.0000, 0.010, p->amount, 3);
   g_object_set(GTK_OBJECT(g->scale2), "tooltip-text", _("strength of the sharpen"), (char *)NULL);
   dt_bauhaus_widget_set_label(g->scale2, NULL, _("amount"));
