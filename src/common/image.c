@@ -319,6 +319,55 @@ void dt_image_set_flip(const int32_t imgid, const dt_image_orientation_t orienta
   dt_image_write_sidecar_file(imgid);
 }
 
+dt_image_orientation_t dt_image_get_orientation(const int imgid)
+{
+  // find the flip module -- the pointer stays valid until darktable shuts down
+  static dt_iop_module_so_t *flip = NULL;
+  if(flip == NULL)
+  {
+    GList *modules = g_list_first(darktable.iop);
+    while(modules)
+    {
+      dt_iop_module_so_t *module = (dt_iop_module_so_t *)(modules->data);
+      if(!strcmp(module->op, "flip"))
+      {
+        flip = module;
+        break;
+      }
+      modules = g_list_next(modules);
+    }
+  }
+
+  dt_image_orientation_t orientation = ORIENTATION_NULL;
+
+  // db lookup flip params
+  if(flip && flip->get_p)
+  {
+    sqlite3_stmt *stmt;
+    DT_DEBUG_SQLITE3_PREPARE_V2(
+        dt_database_get(darktable.db),
+        "SELECT op_params FROM history WHERE imgid=?1 AND operation='flip' ORDER BY num DESC LIMIT 1", -1,
+        &stmt, NULL);
+    DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
+    if(sqlite3_step(stmt) == SQLITE_ROW)
+    {
+      // use introspection to get the orientation from the binary params blob
+      const void *params = sqlite3_column_blob(stmt, 0);
+      orientation = *((dt_image_orientation_t *)flip->get_p(params, "orientation"));
+    }
+    sqlite3_finalize(stmt);
+  }
+
+  if(orientation == ORIENTATION_NULL)
+  {
+    const dt_image_t *img = dt_image_cache_get(darktable.image_cache, imgid, 'r');
+    orientation = dt_image_orientation(img);
+    dt_image_cache_read_release(darktable.image_cache, img);
+  }
+
+  return orientation;
+}
+
 void dt_image_flip(const int32_t imgid, const int32_t cw)
 {
   // this is light table only:
@@ -364,7 +413,6 @@ void dt_image_flip(const int32_t imgid, const int32_t cw)
   if(cw == 2) orientation = ORIENTATION_NULL;
   dt_image_set_flip(imgid, orientation);
 }
-
 
 int32_t dt_image_duplicate(const int32_t imgid)
 {
