@@ -139,18 +139,80 @@ dt_control_signal_t *dt_control_signal_init()
   return ctlsig;
 }
 
+typedef struct _signal_param_t
+{
+  GValue *instance_and_params;
+  guint signal_id;
+  guint n_params;
+} _signal_param_t;
+
+static gboolean _signal_raise(gpointer user_data)
+{
+  _signal_param_t *params = (_signal_param_t *)user_data;
+  g_signal_emitv(params->instance_and_params, params->signal_id, 0, NULL);
+  for(int i = 0; i <= params->n_params; i++) g_value_unset(&params->instance_and_params[i]);
+  free(params->instance_and_params);
+  free(params);
+  return FALSE;
+}
+
 void dt_control_signal_raise(const dt_control_signal_t *ctlsig, dt_signal_t signal, ...)
 {
-  va_list extra_args;
-  // ignore all signals on shutdown, especially don't lock anything..
+  // ignore all signals on shutdown
   if(!dt_control_running()) return;
+
+  dt_signal_description *signal_description = &_signal_description[signal];
+
+  _signal_param_t *params = (_signal_param_t *)malloc(sizeof(_signal_param_t));
+  if(!params) return;
+
+  GValue *instance_and_params = calloc(1 + signal_description->n_params, sizeof(GValue));
+  if(!instance_and_params)
+  {
+    free(params);
+    return;
+  }
+
+  // 0th element has to be the instance to call
+  g_value_init(instance_and_params, _signal_type);
+  g_value_set_object(instance_and_params, ctlsig->sink);
+
+  // the rest of instance_and_params will be the params for the callback
+  va_list extra_args;
   va_start(extra_args, signal);
-  gboolean i_own_lock = dt_control_gdk_lock();
-  // g_signal_emit_by_name(G_OBJECT(ctlsig->sink), _signal_description[signal].name);
-  g_signal_emit_valist(G_OBJECT(ctlsig->sink),
-                       g_signal_lookup(_signal_description[signal].name, _signal_type), 0, extra_args);
+
+  for(int i = 1; i <= signal_description->n_params; i++)
+  {
+    GType type = signal_description->param_types[i-1];
+    g_value_init(&instance_and_params[i], type);
+    switch(type)
+    {
+      case G_TYPE_UINT:
+        g_value_set_uint(&instance_and_params[i], va_arg(extra_args, guint));
+        break;
+      case G_TYPE_STRING:
+        g_value_set_string(&instance_and_params[i], va_arg(extra_args, const char *));
+        break;
+      case G_TYPE_POINTER:
+        g_value_set_pointer(&instance_and_params[i], va_arg(extra_args, void *));
+        break;
+      default:
+        fprintf(stderr, "error: unsupported parameter type `%s' for signal `%s'\n", g_type_name(type), signal_description->name);
+        va_end(extra_args);
+        for(int j = 0; j <= i; j++) g_value_unset(&instance_and_params[j]);
+        free(instance_and_params);
+        free(params);
+        return;
+    }
+  }
+
   va_end(extra_args);
-  if(i_own_lock) dt_control_gdk_unlock();
+
+  params->instance_and_params = instance_and_params;
+  params->signal_id = g_signal_lookup(_signal_description[signal].name, _signal_type);
+  params->n_params = signal_description->n_params;
+
+  g_main_context_invoke(NULL, _signal_raise, params);
 }
 
 
