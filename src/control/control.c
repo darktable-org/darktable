@@ -626,10 +626,9 @@ void dt_control_button_released(double x, double y, int which, uint32_t state)
   dt_view_manager_button_released(darktable.view_manager, x - tb, y - tb, which, state);
 }
 
-void dt_ctl_switch_mode_to(dt_control_gui_mode_t mode)
+static gboolean _dt_ctl_switch_mode_to(gpointer user_data)
 {
-  dt_control_gui_mode_t oldmode = dt_conf_get_int("ui_last/view");
-  if(oldmode == mode) return;
+  dt_control_gui_mode_t mode = GPOINTER_TO_INT(user_data);
 
   darktable.control->button_down = 0;
   darktable.control->button_down_which = 0;
@@ -637,18 +636,18 @@ void dt_ctl_switch_mode_to(dt_control_gui_mode_t mode)
   GtkWidget *widget = dt_ui_center(darktable.gui->ui);
   g_object_set(G_OBJECT(widget), "tooltip-text", "", (char *)NULL);
 
-  char buf[512];
-  snprintf(buf, sizeof(buf) - 1, _("switch to %s mode"), dt_view_manager_name(darktable.view_manager));
+  if(!dt_view_manager_switch(darktable.view_manager, mode))
+    dt_conf_set_int("ui_last/view", mode);
 
-  gboolean i_own_lock = dt_control_gdk_lock();
+  return FALSE;
+}
 
-  int error = dt_view_manager_switch(darktable.view_manager, mode);
+void dt_ctl_switch_mode_to(dt_control_gui_mode_t mode)
+{
+  dt_control_gui_mode_t oldmode = dt_conf_get_int("ui_last/view");
+  if(oldmode == mode) return;
 
-  if(i_own_lock) dt_control_gdk_unlock();
-
-  if(error) return;
-
-  dt_conf_set_int("ui_last/view", mode);
+  g_main_context_invoke(NULL, _dt_ctl_switch_mode_to, GINT_TO_POINTER(mode));
 }
 
 void dt_ctl_switch_mode()
@@ -811,16 +810,16 @@ void dt_control_queue_redraw_center()
   dt_control_signal_raise(darktable.signals, DT_SIGNAL_CONTROL_REDRAW_CENTER);
 }
 
+static gboolean _gtk_widget_queue_draw(gpointer user_data)
+{
+  gtk_widget_queue_draw(GTK_WIDGET(user_data));
+  return FALSE;
+}
+
 void dt_control_queue_redraw_widget(GtkWidget *widget)
 {
   if(dt_control_running())
-  {
-    gboolean i_own_lock = dt_control_gdk_lock();
-
-    gtk_widget_queue_draw(widget);
-
-    if(i_own_lock) dt_control_gdk_unlock();
-  }
+    g_main_context_invoke(NULL, _gtk_widget_queue_draw, widget);
 }
 
 

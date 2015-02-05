@@ -763,12 +763,6 @@ static void _lib_filmstrip_collection_changed_callback(gpointer instance, gpoint
   dt_control_queue_redraw_widget(self->widget);
 }
 
-static gboolean _gtk_widget_queue_draw(gpointer user_data)
-{
-  gtk_widget_queue_draw(GTK_WIDGET(user_data));
-  return FALSE;
-}
-
 static void _lib_filmstrip_scroll_to_image(dt_lib_module_t *self, gint imgid, gboolean activate)
 {
   dt_lib_filmstrip_t *strip = (dt_lib_filmstrip_t *)self->data;
@@ -790,7 +784,7 @@ static void _lib_filmstrip_scroll_to_image(dt_lib_module_t *self, gint imgid, gb
   }
 
   /* redraw filmstrip. since this is a proxy function it could be used from another thread */
-  g_main_context_invoke(NULL, _gtk_widget_queue_draw, self->widget);
+  dt_control_queue_redraw_widget(self->widget);
 }
 
 int32_t _lib_filmstrip_get_activated_imgid(dt_lib_module_t *self)
