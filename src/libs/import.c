@@ -267,27 +267,31 @@ static void _camctl_camera_disconnected_callback(const dt_camera_t *camera, void
 }
 
 /** camctl status listener callback */
-static void _camctl_camera_control_status_callback(dt_camctl_status_t status, void *data)
+typedef struct _control_status_params_t
 {
-  dt_lib_module_t *self = (dt_lib_module_t *)data;
-  dt_lib_import_t *d = (dt_lib_import_t *)self->data;
+  dt_camctl_status_t status;
+  dt_lib_module_t *self;
+} _control_status_params_t;
 
-  /* check if we need gdk locking */
-  gboolean i_have_lock = dt_control_gdk_lock();
+static gboolean _camctl_camera_control_status_callback_gui_thread(gpointer user_data)
+{
+  _control_status_params_t *params = (_control_status_params_t *)user_data;
+
+  dt_lib_import_t *d = (dt_lib_import_t *)params->self->data;
 
   /* handle camctl status */
-  switch(status)
+  switch(params->status)
   {
     case CAMERA_CONTROL_BUSY:
     {
       /* set all devices as inaccessible */
       GList *child = gtk_container_get_children(GTK_CONTAINER(d->devices));
       if(child) do
-        {
-          if(!(GTK_IS_TOGGLE_BUTTON(child->data)
-               && gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(child->data)) == TRUE))
-            gtk_widget_set_sensitive(GTK_WIDGET(child->data), FALSE);
-        } while((child = g_list_next(child)));
+      {
+        if(!(GTK_IS_TOGGLE_BUTTON(child->data)
+          && gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(child->data)) == TRUE))
+          gtk_widget_set_sensitive(GTK_WIDGET(child->data), FALSE);
+      } while((child = g_list_next(child)));
     }
     break;
 
@@ -296,15 +300,25 @@ static void _camctl_camera_control_status_callback(dt_camctl_status_t status, vo
       /* set all devices as accessible */
       GList *child = gtk_container_get_children(GTK_CONTAINER(d->devices));
       if(child) do
-        {
-          gtk_widget_set_sensitive(GTK_WIDGET(child->data), TRUE);
-        } while((child = g_list_next(child)));
+      {
+        gtk_widget_set_sensitive(GTK_WIDGET(child->data), TRUE);
+      } while((child = g_list_next(child)));
     }
     break;
   }
 
-  /* unlock */
-  if(i_have_lock) dt_control_gdk_unlock();
+  free(params);
+  return FALSE;
+}
+
+static void _camctl_camera_control_status_callback(dt_camctl_status_t status, void *data)
+{
+  dt_lib_module_t *self = (dt_lib_module_t *)data;
+  _control_status_params_t *params = (_control_status_params_t *)malloc(sizeof(_control_status_params_t));
+  if(!params) return;
+  params->status = status;
+  params->self = self;
+  g_main_context_invoke(NULL, _camctl_camera_control_status_callback_gui_thread, params);
 }
 
 #endif // HAVE_GPHOTO2
@@ -798,9 +812,7 @@ static void _lib_import_folder_callback(GtkWidget *widget, gpointer user_data)
 static void _camera_detected(gpointer instance, gpointer self)
 {
   /* update gui with detected devices */
-  gboolean i_own_lock = dt_control_gdk_lock();
   _lib_import_ui_devices_update(self);
-  if(i_own_lock) dt_control_gdk_unlock();
 }
 #endif
 
