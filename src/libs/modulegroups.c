@@ -338,6 +338,7 @@ static gboolean _lib_modulegroups_set_gui_thread(gpointer user_data)
   if(d->current == params->group)
   {
     _lib_modulegroups_update_iop_visibility(params->self);
+    free(params);
     return FALSE;
   }
 
