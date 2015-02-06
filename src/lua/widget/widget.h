@@ -52,10 +52,13 @@ void dt_lua_widget_get_callback(lua_State *L,int index,const char* name);
     the callback always happen in a secondary thread with the object as unique parameter
     gpointer is the pointer to the object.
     object_tyep is the type of the lua type of the gpointer above
+    
+    pcall convention (returns error code)
 
     the async function can be called without the lua lock and from the gtk main thread (that's the whole point)
+    error go to stderr
  */
-void dt_lua_widget_trigger_callback(lua_State*L,lua_widget object,const char* name);
+int dt_lua_widget_trigger_callback(lua_State*L,lua_widget object,const char* name);
 void dt_lua_widget_trigger_callback_async(lua_widget object,const char* name,const char *type_name,...);
 
 /* wrapper to automatically implement a callback on a GTK signal */
