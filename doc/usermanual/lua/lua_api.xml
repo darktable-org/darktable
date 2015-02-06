@@ -473,6 +473,7 @@
 <listitem><para>file_chooser_button</para></listitem>
 <listitem><para>label</para></listitem>
 <listitem><para>separator</para></listitem>
+<listitem><para>stack</para></listitem>
 </itemizedlist>
 </para>
 
@@ -5837,17 +5838,7 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
 <para>The widgets contained by the box</para>
 <para>You can append widgets by adding them at the end of the list</para>
 <para>You can remove widgets by setting them to nil</para>
-<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
-    <colspec colwidth="2*"/>
-    <colspec colwidth="8*"/>
-    <tbody><row>
-    <entry>Attributes:</entry>
-    <entry><itemizedlist>
-<listitem><para><emphasis><link linkend="attributes_write">write</link></emphasis></para></listitem>
-</itemizedlist>
-</entry>
-    </row></tbody>
-    </tgroup></informaltable>
+
 </section>
 
 </section>
@@ -6368,17 +6359,7 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
 <para>The various menu entries.</para>
 <para>You can add new entries by writing to the first element beyond the end</para>
 <para>You can removes entries by setting them to nil</para>
-<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
-    <colspec colwidth="2*"/>
-    <colspec colwidth="8*"/>
-    <tbody><row>
-    <entry>Attributes:</entry>
-    <entry><itemizedlist>
-<listitem><para><emphasis><link linkend="attributes_write">write</link></emphasis></para></listitem>
-</itemizedlist>
-</entry>
-    </row></tbody>
-    </tgroup></informaltable>
+
 </section>
 
 <section status="final" id="types_lua_combobox_changed_callback">
@@ -6565,6 +6546,57 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
 </indexterm>
 <synopsis>boolean</synopsis>
 <para>True if the file chooser button only allows directories to be selecte</para>
+<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
+    <colspec colwidth="2*"/>
+    <colspec colwidth="8*"/>
+    <tbody><row>
+    <entry>Attributes:</entry>
+    <entry><itemizedlist>
+<listitem><para><emphasis><link linkend="attributes_write">write</link></emphasis></para></listitem>
+</itemizedlist>
+</entry>
+    </row></tbody>
+    </tgroup></informaltable>
+</section>
+
+</section>
+
+<section status="final" id="types_lua_stack">
+<title>types.lua_stack</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>lua_stack</secondary>
+</indexterm>
+<synopsis>dt_type</synopsis>
+<para>A container that will only show one of its child at a time</para>
+<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
+    <colspec colwidth="2*"/>
+    <colspec colwidth="8*"/>
+    <tbody><row>
+    <entry>Attributes:</entry>
+    <entry><itemizedlist>
+<listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_lua_container">types.lua_container</link></para></listitem>
+</itemizedlist>
+</entry>
+    </row></tbody>
+    </tgroup></informaltable>
+<section status="final" >
+<title>types.lua_stack.__call</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>__call</secondary>
+</indexterm>
+<para>see <link linkend="types_lua_widget___call">types.lua_widget.As a function</link></para>
+</section>
+
+<section status="final" id="types_lua_stack_active">
+<title>types.lua_stack.active</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>active</secondary>
+</indexterm>
+<synopsis><link linkend="types_lua_widget">types.lua_widget</link> or nil</synopsis>
+<para>The currently selected child, can be nil if the container has no child, can be set to one of the child widget or to an index in the child table</para>
 <informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
     <colspec colwidth="2*"/>
     <colspec colwidth="8*"/>

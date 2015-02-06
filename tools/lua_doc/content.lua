@@ -772,6 +772,10 @@ local widget = dt.new_widget("button"){
   types.lua_file_chooser_button.changed_callback:add_parameter("widget",types.lua_widget,"The widget that triggered the callback")
   types.lua_file_chooser_button.is_directory:set_text("True if the file chooser button only allows directories to be selecte")
 
+  types.lua_stack:set_text("A container that will only show one of its child at a time")
+  types.lua_stack.active:set_text("The currently selected child, can be nil if the container has no child, can be set to one of the child widget or to an index in the child table")
+  types.lua_stack.active:set_reported_type(my_tostring(types.lua_widget).." or nil")
+
 
 	----------------------
 	--  EVENTS          --

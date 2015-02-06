@@ -318,6 +318,7 @@ int dt_lua_init_widget(lua_State* L)
   dt_lua_init_widget_entry(L);
   dt_lua_init_widget_file_chooser_button(L);
   dt_lua_init_widget_separator(L);
+  dt_lua_init_widget_stack(L);
 
   luaA_enum(L,dt_lua_orientation_t);
   luaA_enum_value_name(L,dt_lua_orientation_t,GTK_ORIENTATION_HORIZONTAL,"horizontal");

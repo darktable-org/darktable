@@ -37,8 +37,9 @@ typedef dt_lua_widget_t* lua_button;
 extern dt_lua_widget_type_t container_type;
 typedef dt_lua_widget_t dt_lua_container_t;
 
-typedef dt_lua_widget_t* lua_container;
-typedef dt_lua_widget_t* lua_box;
+typedef dt_lua_container_t* lua_container;
+typedef dt_lua_container_t* lua_box;
+typedef dt_lua_container_t* lua_stack;
 
 // Various functions to init various widget types
 int dt_lua_init_widget_box(lua_State* L);
@@ -50,6 +51,7 @@ int dt_lua_init_widget_file_chooser_button(lua_State* L);
 int dt_lua_init_widget_separator(lua_State* L);
 int dt_lua_init_widget_combobox(lua_State* L);
 int dt_lua_init_widget_container(lua_State* L);
+int dt_lua_init_widget_stack(lua_State* L);
 
 #endif
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
