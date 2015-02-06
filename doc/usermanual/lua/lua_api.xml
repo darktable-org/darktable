@@ -831,10 +831,10 @@
 
 <para><programlisting language="lua">local tested_module="global_toolbox"
 dt.gui.libs[tested_module].visible=false
-coroutine.yield("wait_ms",2000)
+coroutine.yield("WAIT_MS",2000)
 while true do
 	dt.gui.libs[tested_module].visible = not dt.gui.libs[tested_module].visible
-	coroutine.yield("wait_ms",2000)
+	coroutine.yield("WAIT_MS",2000)
 end</programlisting></para>
 
 <para></para>
@@ -5525,17 +5525,7 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
 </indexterm>
 <synopsis><link linkend="types_dt_lua_lib_collect_params_rule_t">types.dt_lua_lib_collect_params_rule_t</link></synopsis>
 <para>Each rule has a numeric index. You can add a rule by setting a rule after the last valid one, you can remove a rule by setting it to nil</para>
-<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
-    <colspec colwidth="2*"/>
-    <colspec colwidth="8*"/>
-    <tbody><row>
-    <entry>Attributes:</entry>
-    <entry><itemizedlist>
-<listitem><para><emphasis><link linkend="attributes_write">write</link></emphasis></para></listitem>
-</itemizedlist>
-</entry>
-    </row></tbody>
-    </tgroup></informaltable>
+
 </section>
 
 </section>
@@ -7145,9 +7135,9 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
 ) : variable</synopsis>
 <para>Lua functions can yield at any point. The parameters and return types depend on why we want to yield.</para>
 <para>A callback that is yielding allows other Lua code to run.<itemizedlist>
-<listitem><para>wait_ms: one extra parameter; the execution will pause for that many miliseconds; yield returns nothing;</para></listitem>
-<listitem><para>file_readable: an opened file from a call to the OS library; will return when the file is readable; returns nothing;</para></listitem>
-<listitem><para>run_command: a command to be run by "sh -c"; will return when the command terminates; returns the return code of the execution.</para></listitem>
+<listitem><para>WAIT_MS: one extra parameter; the execution will pause for that many miliseconds; yield returns nothing;</para></listitem>
+<listitem><para>FILE_READABLE: an opened file from a call to the OS library; will return when the file is readable; returns nothing;</para></listitem>
+<listitem><para>RUN_COMMAND: a command to be run by "sh -c"; will return when the command terminates; returns the return code of the execution.</para></listitem>
 </itemizedlist>
 </para>
 
@@ -7160,13 +7150,13 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
 
 <varlistentry id="system_coroutine_yield_extra"><term>extra</term><listitem>
 <synopsis>variable</synopsis>
-<para>An extra parameter: integer for "wait_ms", open file for "file_readable", string for "run_command".</para>
+<para>An extra parameter: integer for "WAIT_MS", open file for "FILE_READABLE", string for "RUN_COMMAND".</para>
 
 </listitem></varlistentry>
 
 <varlistentry><term><emphasis>return</emphasis></term><listitem>
 <synopsis>variable</synopsis>
-<para>Nothing for "wait_ms" and "file_readable"; the returned code of the command for "run_command".</para>
+<para>Nothing for "WAIT_MS" and "FILE_READABLE"; the returned code of the command for "RUN_COMMAND".</para>
 
 </listitem></varlistentry>
 

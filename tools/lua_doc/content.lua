@@ -382,10 +382,10 @@ darktable.gui.libs:set_text([[This table allows to reference all lib objects]]..
 [[To quickly figure out what lib is what, you can use the following code which will make a given lib blink.]]..para()..
 code([[local tested_module="global_toolbox"
 dt.gui.libs[tested_module].visible=false
-coroutine.yield("wait_ms",2000)
+coroutine.yield("WAIT_MS",2000)
 while true do
 	dt.gui.libs[tested_module].visible = not dt.gui.libs[tested_module].visible
-	coroutine.yield("wait_ms",2000)
+	coroutine.yield("WAIT_MS",2000)
 end]]))
 
 
@@ -882,12 +882,12 @@ local widget = dt.new_widget("button"){
 	system.coroutine.yield = doc.document_function(nil,system.coroutine,"yield");
 	system.coroutine.yield:set_text([[Lua functions can yield at any point. The parameters and return types depend on why we want to yield.]]..para()..
 	[[A callback that is yielding allows other Lua code to run.]]..startlist()..
-	listel("wait_ms: one extra parameter; the execution will pause for that many miliseconds; yield returns nothing;")..
-	listel("file_readable: an opened file from a call to the OS library; will return when the file is readable; returns nothing;")..
-	listel([[run_command: a command to be run by "sh -c"; will return when the command terminates; returns the return code of the execution.]])..
+	listel("WAIT_MS: one extra parameter; the execution will pause for that many miliseconds; yield returns nothing;")..
+	listel("FILE_READABLE: an opened file from a call to the OS library; will return when the file is readable; returns nothing;")..
+	listel([[RUN_COMMAND: a command to be run by "sh -c"; will return when the command terminates; returns the return code of the execution.]])..
 endlist())
 system.coroutine.yield:add_parameter("type",types.yield_type,[[The type of yield.]])
-system.coroutine.yield:add_parameter("extra","variable",[[An extra parameter: integer for "wait_ms", open file for "file_readable", string for "run_command".]])
-system.coroutine.yield:add_return("variable",[[Nothing for "wait_ms" and "file_readable"; the returned code of the command for "run_command".]])
+system.coroutine.yield:add_parameter("extra","variable",[[An extra parameter: integer for "WAIT_MS", open file for "FILE_READABLE", string for "RUN_COMMAND".]])
+system.coroutine.yield:add_return("variable",[[Nothing for "WAIT_MS" and "FILE_READABLE"; the returned code of the command for "RUN_COMMAND".]])
 --
 -- vim: shiftwidth=2 expandtab tabstop=2 cindent syntax=lua
