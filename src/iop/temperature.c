@@ -416,6 +416,7 @@ void gui_update(struct dt_iop_module_t *self)
   dt_bauhaus_combobox_add(g->presets, _("camera white balance"));
   dt_bauhaus_combobox_add(g->presets, _("spot white balance"));
   g->preset_cnt = DT_IOP_NUM_OF_STD_TEMP_PRESETS;
+  memset(g->preset_num, 0, sizeof(g->preset_num));
 
   dt_bauhaus_combobox_set(g->presets, -1);
   dt_bauhaus_slider_set(g->finetune, 0);
@@ -437,7 +438,8 @@ void gui_update(struct dt_iop_module_t *self)
         {
           wb_name = wb_preset[i].name;
           dt_bauhaus_combobox_add(g->presets, _(wb_preset[i].name));
-          g->preset_num[g->preset_cnt++] = i;
+          g->preset_num[g->preset_cnt] = i;
+          g->preset_cnt++;
         }
       }
     }
@@ -451,9 +453,9 @@ void gui_update(struct dt_iop_module_t *self)
     for(int j = DT_IOP_NUM_OF_STD_TEMP_PRESETS; !found && (j < g->preset_cnt); j++)
     {
       // look through all variants of this preset, with different tuning
-      for(int i = g->preset_num[j];
-          !found && !strcmp(wb_preset[i].make, makermodel) && !strcmp(wb_preset[i].model, model)
-              && !strcmp(wb_preset[i].name, wb_preset[g->preset_num[j]].name);
+      for(int i = g->preset_num[j]; !found && (i < wb_preset_count) && !strcmp(wb_preset[i].make, makermodel)
+                                        && !strcmp(wb_preset[i].model, model)
+                                        && !strcmp(wb_preset[i].name, wb_preset[g->preset_num[j]].name);
           i++)
       {
         float coeffs[3];
@@ -480,7 +482,8 @@ void gui_update(struct dt_iop_module_t *self)
       {
         // look through all variants of this preset, with different tuning
         int i = g->preset_num[j] + 1;
-        while(!found && !strcmp(wb_preset[i].make, makermodel) && !strcmp(wb_preset[i].model, model)
+        while(!found && (i < wb_preset_count) && !strcmp(wb_preset[i].make, makermodel)
+              && !strcmp(wb_preset[i].model, model)
               && !strcmp(wb_preset[i].name, wb_preset[g->preset_num[j]].name))
         {
           // let's find gaps
@@ -854,9 +857,9 @@ static void apply_preset(dt_iop_module_t *self)
 
       gboolean found = FALSE;
       // look through all variants of this preset, with different tuning
-      for(int i = g->preset_num[pos];
-          !strcmp(wb_preset[i].make, makermodel) && !strcmp(wb_preset[i].model, model)
-              && !strcmp(wb_preset[i].name, wb_preset[g->preset_num[pos]].name);
+      for(int i = g->preset_num[pos]; (i < wb_preset_count) && !strcmp(wb_preset[i].make, makermodel)
+                                          && !strcmp(wb_preset[i].model, model)
+                                          && !strcmp(wb_preset[i].name, wb_preset[g->preset_num[pos]].name);
           i++)
       {
         if(wb_preset[i].tuning == tune)
@@ -878,7 +881,8 @@ static void apply_preset(dt_iop_module_t *self)
         // look through all variants of this preset, with different tuning, starting from second entry (if
         // any)
         int i = g->preset_num[pos] + 1;
-        while(!strcmp(wb_preset[i].make, makermodel) && !strcmp(wb_preset[i].model, model)
+        while((i < wb_preset_count) && !strcmp(wb_preset[i].make, makermodel)
+              && !strcmp(wb_preset[i].model, model)
               && !strcmp(wb_preset[i].name, wb_preset[g->preset_num[pos]].name))
         {
           if(wb_preset[i - 1].tuning < tune && wb_preset[i].tuning > tune)
