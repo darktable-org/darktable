@@ -30,7 +30,6 @@
   storage lib looses index for lua storages, 
   luastorage can't save presets
 
-  dt_lua_trigger_widget_callback needs to be checked for returned errors
   */
 
 dt_lua_widget_type_t widget_type = {
