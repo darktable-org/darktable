@@ -609,13 +609,6 @@ if(NOT SOURCE_PACKAGE AND NOT APPLE)
   # apple build fails on deprecated warnings..
   set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Werror -Werror=type-limits")
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Werror -Werror=type-limits")
-
-  # instead, disable deprecated stuff one-by-one after fixing it
-  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -D__GTK_STOCK_H__ -D__GTK_ACTION_GROUP_H__ -D__GTK_UI_MANAGER_H__")
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -D__GTK_STOCK_H__ -D__GTK_ACTION_GROUP_H__ -D__GTK_UI_MANAGER_H__")
-
-  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -D__GTK_COLOR_SELECTION_DIALOG_H__")
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -D__GTK_COLOR_SELECTION_DIALOG_H__")
 elseif(SOURCE_PACKAGE)
   set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -D_RELEASE")
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -D_RELEASE")
@@ -633,15 +626,10 @@ add_definitions("-DGTK_DISABLE_SINGLE_INCLUDES")
 add_definitions("-D__GDK_KEYSYMS_COMPAT_H__")
 
 #
-# Use accessor functions instead of direct access
-#
-add_definitions("-DGSEAL_ENABLE")
-
-#
 #  Do not use deprecated symbols
 #
-#add_definitions("-DGDK_DISABLE_DEPRECATED")
-#add_definitions("-DGTK_DISABLE_DEPRECATED")
+add_definitions("-DGDK_DISABLE_DEPRECATED")
+add_definitions("-DGTK_DISABLE_DEPRECATED")
 add_definitions("-Werror=implicit-function-declaration")
 ###### GTK+3 port ######
 

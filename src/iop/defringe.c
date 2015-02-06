@@ -47,7 +47,7 @@ typedef dt_iop_defringe_params_t dt_iop_defringe_data_t;
 
 typedef struct dt_iop_defringe_gui_data_t
 {
-  GtkVBox *vbox;
+  GtkBox *vbox;
   GtkWidget *mode_select;
   GtkWidget *radius_scale;
   GtkWidget *thresh_scale;
