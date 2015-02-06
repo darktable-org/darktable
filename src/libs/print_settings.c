@@ -254,9 +254,11 @@ _print_button_clicked (GtkWidget *widget, gpointer user_data)
   // compute print-area (in inches)
   int32_t px=0, py=0, pwidth=0, pheight=0;
   int32_t ax=0, ay=0, awidth=0, aheight=0;
-  int32_t ix=0, iy=0, iwidth=dat.width, iheight=dat.height;
+  int32_t ix=0, iy=0, iwidth=0, iheight=0;
+  int32_t iwpix=dat.width, ihpix=dat.height;
 
   dt_get_print_layout (imgid, &ps->prt, width_pix, height_pix,
+                       &iwpix, &ihpix,
                        &px, &py, &pwidth, &pheight,
                        &ax, &ay, &awidth, &aheight,
                        &ix, &iy, &iwidth, &iheight);
@@ -457,7 +459,8 @@ _update_slider (dt_lib_print_settings_t *ps)
   {
     int32_t px=0, py=0, pwidth=0, pheight=0;
     int32_t ax=0, ay=0, awidth=0, aheight=0;
-    int32_t ix=0, iy=0, iwidth=ps->iwidth * 10, iheight=ps->iheight *10;
+    int32_t ix=0, iy=0, iwidth=0, iheight=0;
+    int32_t iwpix=ps->iwidth, ihpix=ps->iheight;
     int32_t pa_width, pa_height;
 
     if (ps->prt.page.landscape)
@@ -472,14 +475,15 @@ _update_slider (dt_lib_print_settings_t *ps)
     }
 
     dt_get_print_layout(ps->image_id, &ps->prt, pa_width, pa_height,
+                        &iwpix, &ihpix,
                         &px, &py, &pwidth, &pheight,
                         &ax, &ay, &awidth, &aheight,
                         &ix, &iy, &iwidth, &iheight);
 
     if (ps->iwidth==0 || ps->iheight==0)
     {
-      ps->iwidth = iwidth;
-      ps->iheight = iheight;
+      ps->iwidth = iwpix;
+      ps->iheight = ihpix;
     }
 
     const double h = iheight * units[ps->unit];

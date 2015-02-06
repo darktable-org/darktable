@@ -371,9 +371,10 @@ static void _get_image_dimension (int32_t imgid, int32_t *iwidth, int32_t *iheig
 
 void dt_get_print_layout(const int32_t imgid, const dt_print_info_t *prt,
                          const int32_t area_width, const int32_t area_height,
-                         int32_t *px, int32_t *py, int32_t *pwidth, int32_t *pheight,
-                         int32_t *ax, int32_t *ay, int32_t *awidth, int32_t *aheight,
-                         int32_t *ix, int32_t *iy, int32_t *iwidth, int32_t *iheight)
+                         int32_t *iwpix, int32_t *ihpix,
+                         int32_t *px,    int32_t *py,    int32_t *pwidth, int32_t *pheight,
+                         int32_t *ax,    int32_t *ay,    int32_t *awidth, int32_t *aheight,
+                         int32_t *ix,    int32_t *iy,    int32_t *iwidth, int32_t *iheight)
 {
   /* this is where the layout is done for the display and for the print too. So this routine is one
      of the most critical for the print circuitry. */
@@ -478,12 +479,15 @@ void dt_get_print_layout(const int32_t imgid, const dt_print_info_t *prt,
 
   // get the image dimensions if needed
 
-  if (*iwidth <= 0 || *iheight <= 0)
-    _get_image_dimension (imgid, iwidth, iheight);
+  if (*iwpix <= 0 || *ihpix <= 0)
+    _get_image_dimension (imgid, iwpix, ihpix);
 
   // compute the scaling for the image to fit into the printable area
 
   double scale;
+
+  *iwidth = *iwpix;
+  *iheight = *ihpix;
 
   if (*iwidth > *awidth)
   {
