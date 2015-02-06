@@ -59,8 +59,6 @@ static gboolean _gradient_slider_postponed_value_change(gpointer data)
 {
   if(!GTK_IS_WIDGET(data)) return 0;
 
-  gdk_threads_enter();
-
   if(DTGTK_GRADIENT_SLIDER(data)->is_changed == TRUE)
   {
     g_signal_emit_by_name(G_OBJECT(data), "value-changed");
@@ -68,8 +66,6 @@ static gboolean _gradient_slider_postponed_value_change(gpointer data)
   }
 
   if(!DTGTK_GRADIENT_SLIDER(data)->is_dragging) DTGTK_GRADIENT_SLIDER(data)->timeout_handle = 0;
-
-  gdk_threads_leave();
 
   return DTGTK_GRADIENT_SLIDER(data)->is_dragging; // This is called by the gtk mainloop and is threadsafe
 }
