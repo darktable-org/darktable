@@ -53,9 +53,6 @@
 #include <lcms2.h>
 
 
-/* redraw mutex to synchronize redraws */
-static dt_pthread_mutex_t _control_gdk_lock_threads_mutex;
-
 int dt_control_load_config(dt_control_t *c)
 {
   GtkWidget *widget = dt_ui_main_window(darktable.gui->ui);
@@ -292,9 +289,6 @@ void dt_control_init(dt_control_t *s)
 
   // same thread as init
   s->gui_thread = pthread_self();
-
-  // initialize static mutex
-  dt_pthread_mutex_init(&_control_gdk_lock_threads_mutex, NULL);
 
   // s->last_expose_time = dt_get_wtime();
   s->key_accelerators_on = 1;
@@ -751,53 +745,6 @@ void dt_control_log_busy_leave()
   dt_pthread_mutex_unlock(&darktable.control->log_mutex);
   /* lets redraw */
   dt_control_queue_redraw_center();
-}
-
-static __thread gboolean _control_gdk_lock_mine = FALSE;
-gboolean dt_control_gdk_lock()
-{
-  /* if current thread equals gui thread do nothing */
-  if(pthread_equal(darktable.control->gui_thread, pthread_self()) != 0) return FALSE;
-
-  dt_pthread_mutex_lock(&_control_gdk_lock_threads_mutex);
-
-  /* lets check if current thread has a managed lock */
-  if(_control_gdk_lock_mine)
-  {
-    /* current thread has a lock just do nothing */
-    dt_pthread_mutex_unlock(&_control_gdk_lock_threads_mutex);
-    return FALSE;
-  }
-
-  /* lets lock */
-  _control_gdk_lock_mine = TRUE;
-  dt_pthread_mutex_unlock(&_control_gdk_lock_threads_mutex);
-
-  /* enter gdk critical section */
-  gdk_threads_enter();
-
-  return TRUE;
-}
-
-void dt_control_gdk_unlock()
-{
-  /* check if current thread has a lock and remove if exists */
-  dt_pthread_mutex_lock(&_control_gdk_lock_threads_mutex);
-  if(_control_gdk_lock_mine)
-  {
-    /* remove lock */
-    _control_gdk_lock_mine = FALSE;
-
-    /* leave critical section */
-    gdk_threads_leave();
-  }
-  dt_pthread_mutex_unlock(&_control_gdk_lock_threads_mutex);
-}
-
-gboolean dt_control_gdk_haslock()
-{
-  if(pthread_equal(darktable.control->gui_thread, pthread_self()) != 0) return TRUE;
-  return _control_gdk_lock_mine;
 }
 
 void dt_control_queue_redraw()
