@@ -1219,14 +1219,18 @@ cleanup:
   return 0;
 }
 
+static gboolean _finalize_store(gpointer user_data)
+{
+  dt_storage_facebook_gui_data_t *ui = (dt_storage_facebook_gui_data_t *)user_data;
+  ui_reset_albums_creation(ui);
+  ui_refresh_albums(ui);
+
+  return FALSE;
+}
 
 void finalize_store(struct dt_imageio_module_storage_t *self, dt_imageio_module_data_t *data)
 {
-  gdk_threads_enter();
-  dt_storage_facebook_gui_data_t *ui = (dt_storage_facebook_gui_data_t *)self->gui_data;
-  ui_reset_albums_creation(ui);
-  ui_refresh_albums(ui);
-  gdk_threads_leave();
+  g_main_context_invoke(NULL, _finalize_store, self->gui_data);
 }
 
 size_t params_size(dt_imageio_module_storage_t *self)
