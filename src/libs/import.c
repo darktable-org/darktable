@@ -170,7 +170,6 @@ static void _lib_import_tethered_callback(GtkToggleButton *button, gpointer data
 /** update the device list */
 void _lib_import_ui_devices_update(dt_lib_module_t *self)
 {
-
   dt_lib_import_t *d = (dt_lib_import_t *)self->data;
 
   GList *citem;
@@ -181,14 +180,6 @@ void _lib_import_ui_devices_update(dt_lib_module_t *self)
     {
       gtk_container_remove(GTK_CONTAINER(d->devices), GTK_WIDGET(item->data));
     } while((item = g_list_next(item)) != NULL);
-
-  /* add the rescan button */
-  GtkButton *scan = GTK_BUTTON(gtk_button_new_with_label(_("scan for devices")));
-  d->scan_devices = scan;
-  gtk_widget_set_halign(gtk_bin_get_child(GTK_BIN(scan)), GTK_ALIGN_START);
-  g_object_set(G_OBJECT(scan), "tooltip-text", _("scan for newly attached devices"), (char *)NULL);
-  g_signal_connect(G_OBJECT(scan), "clicked", G_CALLBACK(_lib_import_scan_devices_callback), self);
-  gtk_box_pack_start(GTK_BOX(d->devices), GTK_WIDGET(scan), TRUE, TRUE, 0);
 
   uint32_t count = 0;
   /* FIXME: Verify that it's safe to access camctl->cameras list here ? */
@@ -869,13 +860,23 @@ void gui_init(dt_lib_module_t *self)
   gtk_widget_set_tooltip_text(widget, _("select a folder to import as film roll"));
   gtk_widget_set_can_focus(widget, TRUE);
   gtk_widget_set_receives_default(widget, TRUE);
-  gtk_box_pack_start(GTK_BOX(self->widget), widget, FALSE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(self->widget), widget, TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(widget), "clicked", G_CALLBACK(_lib_import_folder_callback), self);
 
 #ifdef HAVE_GPHOTO2
+  /* add the rescan button */
+  GtkButton *scan = GTK_BUTTON(gtk_button_new_with_label(_("scan for devices")));
+  d->scan_devices = scan;
+  gtk_widget_set_halign(gtk_bin_get_child(GTK_BIN(scan)), GTK_ALIGN_START);
+  g_object_set(G_OBJECT(scan), "tooltip-text", _("scan for newly attached devices"), (char *)NULL);
+  g_signal_connect(G_OBJECT(scan), "clicked", G_CALLBACK(_lib_import_scan_devices_callback), self);
+  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(scan), TRUE, TRUE, 0);
+
   /* add devices container for cameras */
   d->devices = GTK_BOX(gtk_box_new(GTK_ORIENTATION_VERTICAL, 5));
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(d->devices), FALSE, FALSE, 0);
+
+  _lib_import_ui_devices_update(self);
 
   /* initialize camctl listener and update devices */
   d->camctl_listener.data = self;
