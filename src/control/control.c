@@ -388,7 +388,6 @@ void dt_control_shutdown(dt_control_t *s)
   /* first wait for kick_on_workers_thread */
   pthread_join(s->kick_on_workers_thread, NULL);
 
-  gdk_threads_leave();
   int k;
   for(k = 0; k < s->num_threads; k++)
     // pthread_kill(s->thread[k], 9);
@@ -397,8 +396,6 @@ void dt_control_shutdown(dt_control_t *s)
     // pthread_kill(s->thread_res[k], 9);
     pthread_join(s->thread_res[k], NULL);
 
-
-  gdk_threads_enter();
 }
 
 void dt_control_cleanup(dt_control_t *s)
