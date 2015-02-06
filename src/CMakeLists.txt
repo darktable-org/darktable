@@ -610,11 +610,6 @@ if(NOT SOURCE_PACKAGE AND NOT APPLE)
   set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Werror -Werror=type-limits")
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Werror -Werror=type-limits")
 
-  #gtk3 porting: disable -Werror=deprecated-declarations for now
-  message(WARNING "REMOVE BEFORE FLIGHT")
-  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-error=deprecated-declarations")
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-error=deprecated-declarations")
-
   # instead, disable deprecated stuff one-by-one after fixing it
   set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -D__GTK_STOCK_H__ -D__GTK_ACTION_GROUP_H__ -D__GTK_UI_MANAGER_H__")
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -D__GTK_STOCK_H__ -D__GTK_ACTION_GROUP_H__ -D__GTK_UI_MANAGER_H__")
