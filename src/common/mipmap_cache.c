@@ -953,8 +953,8 @@ static void _init_8(uint8_t *buf, uint32_t *width, uint32_t *height, const uint3
     dat.head.max_height = ht;
     dat.buf = buf;
     // export with flags: ignore exif (don't load from disk), don't swap byte order, don't do hq processing,
-    // and signal we want thumbnail export
-    res = dt_imageio_export_with_flags(imgid, "unused", &format, (dt_imageio_module_data_t *)&dat, 1, 0, 0, 1,
+    // no upscaling and signal we want thumbnail export
+    res = dt_imageio_export_with_flags(imgid, "unused", &format, (dt_imageio_module_data_t *)&dat, 1, 0, 0, 0, 1,
                                        NULL, FALSE, NULL, NULL, 1, 1);
     if(!res)
     {

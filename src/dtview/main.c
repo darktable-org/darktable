@@ -271,7 +271,7 @@ static int process_next_image()
 
   if(id)
   {
-    dt_imageio_export(id, "unused", &buf, &dat, TRUE, FALSE, NULL, NULL, 1, 1);
+    dt_imageio_export(id, "unused", &buf, &dat, TRUE, TRUE, FALSE, NULL, NULL, 1, 1);
   }
   return 0;
 }

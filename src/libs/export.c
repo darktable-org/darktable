@@ -36,7 +36,7 @@
 #include "dtgtk/button.h"
 #include "bauhaus/bauhaus.h"
 
-DT_MODULE(2)
+DT_MODULE(3)
 
 typedef struct dt_lib_export_t
 {
@@ -44,7 +44,7 @@ typedef struct dt_lib_export_t
   GtkWidget *storage, *format;
   int format_lut[128];
   GtkWidget *shown_storage, *shown_format;
-  GtkWidget *profile, *intent, *style, *style_mode;
+  GtkWidget *upscale, *profile, *intent, *style, *style_mode;
   GList *profiles;
   GtkButton *export_button;
   GtkWidget *storage_extra_container;
@@ -99,6 +99,7 @@ static void export_button_clicked(GtkWidget *widget, gpointer user_data)
   g_free(format_name);
   g_free(storage_name);
 
+  gboolean upscale = dt_conf_get_bool("plugins/lighttable/export/upscale");
   gboolean high_quality = dt_conf_get_bool("plugins/lighttable/export/high_quality_processing");
   char *tmp = dt_conf_get_string("plugins/lighttable/export/style");
   gboolean style_append = dt_conf_get_bool("plugins/lighttable/export/style_append");
@@ -116,8 +117,8 @@ static void export_button_clicked(GtkWidget *widget, gpointer user_data)
   else
     list = dt_collection_get_selected(darktable.collection, -1);
 
-  dt_control_export(list, max_width, max_height, format_index, storage_index, high_quality, style,
-                    style_append);
+  dt_control_export(list, max_width, max_height, format_index, storage_index, high_quality, upscale,
+                    style, style_append);
 }
 
 static void width_changed(GtkSpinButton *spin, gpointer user_data)
@@ -149,6 +150,8 @@ void gui_reset(dt_lib_module_t *self)
   } else {
     dt_bauhaus_combobox_set(d->storage, 0);
   }
+
+  dt_bauhaus_combobox_set(d->upscale, dt_conf_get_bool("plugins/lighttable/export/upscale") ? 1 : 0);
 
   dt_bauhaus_combobox_set(d->intent, dt_conf_get_int("plugins/lighttable/export/iccintent") + 1);
   // iccprofile
@@ -359,6 +362,12 @@ static void profile_changed(GtkWidget *widget, dt_lib_export_t *d)
   dt_conf_set_string("plugins/lighttable/export/iccprofile", "image");
 }
 
+static void upscale_changed(GtkWidget *widget, dt_lib_export_t *d)
+{
+  int pos = dt_bauhaus_combobox_get(widget);
+  dt_conf_set_bool("plugins/lighttable/export/upscale", pos == 1);
+}
+
 static void intent_changed(GtkWidget *widget, dt_lib_export_t *d)
 {
   int pos = dt_bauhaus_combobox_get(widget);
@@ -553,6 +562,12 @@ void gui_init(dt_lib_module_t *self)
   gtk_box_pack_start(hbox, GTK_WIDGET(hbox1), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(hbox), TRUE, TRUE, 0);
 
+  d->upscale = dt_bauhaus_combobox_new(NULL);
+  dt_bauhaus_widget_set_label(d->upscale, NULL, _("allow upscaling"));
+  dt_bauhaus_combobox_add(d->upscale, _("no"));
+  dt_bauhaus_combobox_add(d->upscale, _("yes"));
+  gtk_box_pack_start(GTK_BOX(self->widget), d->upscale, TRUE, TRUE, 0);
+
   d->intent = dt_bauhaus_combobox_new(NULL);
   dt_bauhaus_widget_set_label(d->intent, NULL, _("intent"));
   dt_bauhaus_combobox_add(d->intent, _("image settings"));
@@ -679,6 +694,7 @@ void gui_init(dt_lib_module_t *self)
 
   //  Set callback signals
 
+  g_signal_connect(G_OBJECT(d->upscale), "value-changed", G_CALLBACK(upscale_changed), (gpointer)d);
   g_signal_connect(G_OBJECT(d->intent), "value-changed", G_CALLBACK(intent_changed), (gpointer)d);
   g_signal_connect(G_OBJECT(d->profile), "value-changed", G_CALLBACK(profile_changed), (gpointer)d);
   g_signal_connect(G_OBJECT(d->style), "value-changed", G_CALLBACK(style_changed), (gpointer)d);
@@ -776,8 +792,8 @@ void init_presets(dt_lib_module_t *self)
       // extract the interesting parts from the blob
       const char *buf = (const char *)op_params;
 
-      // skip 3*int32_t: max_width, max_height and iccintent
-      buf += 3 * sizeof(int32_t);
+      // skip 4*int32_t: max_width, max_height, upscale and iccintent
+      buf += 4 * sizeof(int32_t);
       // next skip iccprofile
       buf += strlen(buf) + 1;
 
@@ -940,6 +956,18 @@ void *legacy_params(dt_lib_module_t *self, const void *const old_params, const s
     *new_size = new_params_size;
     return new_params;
   }
+  else if(old_version == 2 && new_version == 3)
+  {
+    // add upscale to params
+    size_t new_params_size = old_params_size + sizeof(int32_t);
+    void *new_params = calloc(1, new_params_size);
+
+    memcpy(new_params, old_params, 2 * sizeof(int32_t));
+    memcpy(new_params + 3 * sizeof(int32_t), old_params + 2 * sizeof(int32_t), old_params_size - 2 * sizeof(int32_t));
+
+    *new_size = new_params_size;
+    return new_params;
+  }
   return NULL;
 }
 
@@ -976,6 +1004,7 @@ void *get_params(dt_lib_module_t *self, int *size)
   int32_t iccintent = dt_conf_get_int("plugins/lighttable/export/iccintent");
   int32_t max_width = dt_conf_get_int("plugins/lighttable/export/width");
   int32_t max_height = dt_conf_get_int("plugins/lighttable/export/height");
+  int32_t upscale = dt_conf_get_bool("plugins/lighttable/export/upscale") ? 1 : 0;
   gchar *iccprofile = dt_conf_get_string("plugins/lighttable/export/iccprofile");
   gchar *style = dt_conf_get_string("plugins/lighttable/export/style");
   gboolean style_append = dt_conf_get_bool("plugins/lighttable/export/style_append");
@@ -994,7 +1023,7 @@ void *get_params(dt_lib_module_t *self, int *size)
 
   char *fname = mformat->plugin_name, *sname = mstorage->plugin_name;
   int32_t fname_len = strlen(fname), sname_len = strlen(sname);
-  *size = fname_len + sname_len + 2 + 4 * sizeof(int32_t) + fsize + ssize + 3 * sizeof(int32_t)
+  *size = fname_len + sname_len + 2 + 4 * sizeof(int32_t) + fsize + ssize + 4 * sizeof(int32_t)
           + strlen(iccprofile) + 1;
 
   char *params = (char *)calloc(1, *size);
@@ -1002,6 +1031,8 @@ void *get_params(dt_lib_module_t *self, int *size)
   memcpy(params + pos, &max_width, sizeof(int32_t));
   pos += sizeof(int32_t);
   memcpy(params + pos, &max_height, sizeof(int32_t));
+  pos += sizeof(int32_t);
+  memcpy(params + pos, &upscale, sizeof(int32_t));
   pos += sizeof(int32_t);
   memcpy(params + pos, &iccintent, sizeof(int32_t));
   pos += sizeof(int32_t);
@@ -1048,6 +1079,8 @@ int set_params(dt_lib_module_t *self, const void *params, int size)
   const int max_width = *(const int *)buf;
   buf += sizeof(int32_t);
   const int max_height = *(const int *)buf;
+  buf += sizeof(int32_t);
+  const int upscale = *(const int *)buf;
   buf += sizeof(int32_t);
   const int iccintent = *(const int *)buf;
   buf += sizeof(int32_t);
@@ -1097,7 +1130,7 @@ int set_params(dt_lib_module_t *self, const void *params, int size)
   buf += sizeof(int32_t);
 
   if(size
-     != strlen(fname) + strlen(sname) + 2 + 4 * sizeof(int32_t) + fsize + ssize + 3 * sizeof(int32_t)
+     != strlen(fname) + strlen(sname) + 2 + 4 * sizeof(int32_t) + fsize + ssize + 4 * sizeof(int32_t)
         + strlen(iccprofile) + 1)
     return 1;
   if(fversion != fmod->version() || sversion != smod->version()) return 1;
@@ -1120,6 +1153,7 @@ int set_params(dt_lib_module_t *self, const void *params, int size)
   // set dimensions after switching, to have new range ready.
   gtk_spin_button_set_value(d->width, max_width);
   gtk_spin_button_set_value(d->height, max_height);
+  dt_bauhaus_combobox_set(d->upscale, upscale ? 1 : 0);
 
   // propagate to modules
   int res = 0;

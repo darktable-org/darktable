@@ -54,6 +54,23 @@ typedef struct dt_control_gpx_apply_t
   gchar *tz;
 } dt_control_gpx_apply_t;
 
+typedef struct dt_control_export_t
+{
+  int max_width, max_height, format_index, storage_index;
+  dt_imageio_module_data_t *sdata; // needed since the gui thread resets things like overwrite once the export
+  // is dispatched, but we have to keep that information
+  gboolean high_quality, upscale;
+  char style[128];
+  gboolean style_append;
+} dt_control_export_t;
+
+typedef struct dt_control_image_enumerator_t
+{
+  GList *index;
+  int flag;
+  gpointer data;
+} dt_control_image_enumerator_t;
+
 /* enumerator of images from filmroll */
 static void dt_control_image_enumerator_job_film_init(dt_control_image_enumerator_t *t, int32_t filmid)
 {
@@ -402,7 +419,7 @@ static int32_t dt_control_merge_hdr_job_run(dt_job_t *job)
 
     const uint32_t imgid = GPOINTER_TO_INT(t->data);
 
-    dt_imageio_export_with_flags(imgid, "unused", &buf, (dt_imageio_module_data_t *)&dat, 1, 0, 1, 0,
+    dt_imageio_export_with_flags(imgid, "unused", &buf, (dt_imageio_module_data_t *)&dat, 1, 0, 0, 1, 0,
                                  "pre:rawprepare", 0, 0, 0, num, total);
 
     t = g_list_delete_link(t, t);
@@ -951,7 +968,7 @@ static int32_t dt_control_export_job_run(dt_job_t *job)
 
   if(mstorage->initialize_store)
   {
-    if(mstorage->initialize_store(mstorage, sdata, &mformat, &fdata, &t, settings->high_quality))
+    if(mstorage->initialize_store(mstorage, sdata, &mformat, &fdata, &t, settings->high_quality, settings->upscale))
     {
       // bail out, something went wrong
       g_list_free(t);
@@ -1034,7 +1051,7 @@ static int32_t dt_control_export_job_run(dt_job_t *job)
       else
       {
         dt_image_cache_read_release(darktable.image_cache, image);
-        if(mstorage->store(mstorage, sdata, imgid, mformat, fdata, num, total, settings->high_quality) != 0)
+        if(mstorage->store(mstorage, sdata, imgid, mformat, fdata, num, total, settings->high_quality, settings->upscale) != 0)
           dt_control_job_cancel(job);
       }
     }
@@ -1301,7 +1318,7 @@ void dt_control_reset_local_copy_images()
 }
 
 void dt_control_export(GList *imgid_list, int max_width, int max_height, int format_index, int storage_index,
-                       gboolean high_quality, char *style, gboolean style_append)
+                       gboolean high_quality, gboolean upscale, char *style, gboolean style_append)
 {
   dt_job_t *job = dt_control_job_create(&dt_control_export_job_run, "export");
   if(!job) return;
@@ -1334,6 +1351,7 @@ void dt_control_export(GList *imgid_list, int max_width, int max_height, int for
   }
   data->sdata = sdata;
   data->high_quality = high_quality;
+  data->upscale = upscale;
   g_strlcpy(data->style, style, sizeof(data->style));
   data->style_append = style_append;
   params->data = data;

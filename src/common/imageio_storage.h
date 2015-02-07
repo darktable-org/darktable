@@ -28,7 +28,7 @@ void gui_cleanup(struct dt_imageio_module_storage_t *self);
 void init(struct dt_imageio_module_storage_t *self);
 int store(struct dt_imageio_module_storage_t *self, struct dt_imageio_module_data_t *self_data,
           const int imgid, dt_imageio_module_format_t *format, dt_imageio_module_data_t *fdata, const int num,
-          const int total, const gboolean high_quality);
+          const int total, const gboolean high_quality, const gboolean upscale);
 size_t params_size(struct dt_imageio_module_storage_t *self);
 void *get_params(struct dt_imageio_module_storage_t *self);
 void free_params(struct dt_imageio_module_storage_t *self, dt_imageio_module_data_t *data);
@@ -39,7 +39,7 @@ int dimension(struct dt_imageio_module_storage_t *self, dt_imageio_module_data_t
 int recommended_dimension(struct dt_imageio_module_storage_t *self, dt_imageio_module_data_t *data, uint32_t *width, uint32_t *height);
 int initialize_store(struct dt_imageio_module_storage_t *self, dt_imageio_module_data_t *data,
                      dt_imageio_module_format_t **format, dt_imageio_module_data_t **fdata, GList **images,
-                     const gboolean high_quality);
+                     const gboolean high_quality, const gboolean upscale);
 #ifdef __cplusplus
 }
 #endif

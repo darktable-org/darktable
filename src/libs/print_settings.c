@@ -245,10 +245,11 @@ _print_button_clicked (GtkWidget *widget, gpointer user_data)
     g_free(style);
   }
 
-  // the flags are: ignore exif, display byteorder, high quality, thumbnail
+  // the flags are: ignore exif, display byteorder, high quality, upscale, thumbnail
   const int high_quality = 1;
-  dt_imageio_export_with_flags
-    (imgid, "unused", &buf, (dt_imageio_module_data_t *)&dat, 1, 0, high_quality, 0, NULL, FALSE, 0, 0, 1, 1);
+  const int upscale = 1;
+  dt_imageio_export_with_flags(imgid, "unused", &buf, (dt_imageio_module_data_t *)&dat, 1, 0,
+                               high_quality, upscale, 0, NULL, FALSE, 0, 0, 1, 1);
 
   // after exporting we know the real size of the image, compute the layout
 

@@ -159,11 +159,11 @@ typedef struct dt_imageio_module_storage_t
    */
   int (*initialize_store)(struct dt_imageio_module_storage_t *self, dt_imageio_module_data_t *data,
                           dt_imageio_module_format_t **format, dt_imageio_module_data_t **fdata,
-                          GList **images, const gboolean high_quality);
+                          GList **images, const gboolean high_quality, const gboolean upscale);
   /* this actually does the work */
   int (*store)(struct dt_imageio_module_storage_t *self, struct dt_imageio_module_data_t *self_data,
                const int imgid, dt_imageio_module_format_t *format, dt_imageio_module_data_t *fdata,
-               const int num, const int total, const gboolean high_quality);
+               const int num, const int total, const gboolean high_quality, const gboolean upscale);
   /* called once at the end (after exporting all images), if implemented. */
   void (*finalize_store)(struct dt_imageio_module_storage_t *self, dt_imageio_module_data_t *data);
 
