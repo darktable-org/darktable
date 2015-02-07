@@ -58,6 +58,7 @@ typedef struct dt_lib_print_settings_t
   GtkWidget *profile, *intent, *style, *style_mode, *papers;
   GtkWidget *printers, *orientation, *pprofile, *pintent;
   GtkWidget *width, *height, *black_point_compensation;
+  GtkWidget *info;
   GList *profiles;
   GtkButton *print_button;
   GtkToggleButton *lock_button;
@@ -254,9 +255,11 @@ _print_button_clicked (GtkWidget *widget, gpointer user_data)
   // compute print-area (in inches)
   int32_t px=0, py=0, pwidth=0, pheight=0;
   int32_t ax=0, ay=0, awidth=0, aheight=0;
-  int32_t ix=0, iy=0, iwidth=dat.width, iheight=dat.height;
+  int32_t ix=0, iy=0, iwidth=0, iheight=0;
+  int32_t iwpix=dat.width, ihpix=dat.height;
 
   dt_get_print_layout (imgid, &ps->prt, width_pix, height_pix,
+                       &iwpix, &ihpix,
                        &px, &py, &pwidth, &pheight,
                        &ax, &ay, &awidth, &aheight,
                        &ix, &iy, &iwidth, &iheight);
@@ -453,11 +456,12 @@ _update_slider (dt_lib_print_settings_t *ps)
 
   // if widget are created, let's display the current image size
 
-  if (ps->width && ps->height)
+  if (ps->width && ps->height && ps->info)
   {
     int32_t px=0, py=0, pwidth=0, pheight=0;
     int32_t ax=0, ay=0, awidth=0, aheight=0;
-    int32_t ix=0, iy=0, iwidth=ps->iwidth * 10, iheight=ps->iheight *10;
+    int32_t ix=0, iy=0, iwidth=0, iheight=0;
+    int32_t iwpix=ps->iwidth, ihpix=ps->iheight;
     int32_t pa_width, pa_height;
 
     if (ps->prt.page.landscape)
@@ -472,14 +476,15 @@ _update_slider (dt_lib_print_settings_t *ps)
     }
 
     dt_get_print_layout(ps->image_id, &ps->prt, pa_width, pa_height,
+                        &iwpix, &ihpix,
                         &px, &py, &pwidth, &pheight,
                         &ax, &ay, &awidth, &aheight,
                         &ix, &iy, &iwidth, &iheight);
 
     if (ps->iwidth==0 || ps->iheight==0)
     {
-      ps->iwidth = iwidth;
-      ps->iheight = iheight;
+      ps->iwidth = iwpix;
+      ps->iheight = ihpix;
     }
 
     const double h = iheight * units[ps->unit];
@@ -491,6 +496,17 @@ _update_slider (dt_lib_print_settings_t *ps)
 
     sprintf(value, "%3.2f", h);
     gtk_label_set_text(GTK_LABEL(ps->height), value);
+
+    // compute the image down/up scale and report information
+    double scale;
+
+    if (iwidth >= awidth)
+      scale = dt_pdf_point_to_pixel(dt_pdf_mm_to_point((double)awidth), ps->prt.printer.resolution) / ps->iwidth;
+    else
+      scale = dt_pdf_point_to_pixel(dt_pdf_mm_to_point((double)aheight), ps->prt.printer.resolution) / ps->iheight;
+
+    sprintf(value, _("%3.2f (dpi:%d)"), scale, scale<=1.0 ? (int)ps->prt.printer.resolution : (int)(ps->prt.printer.resolution / scale));
+    gtk_label_set_text(GTK_LABEL(ps->info), value);
   }
 
   // set the max range for the borders depending on the others border and never allow to have an image size of 0 or less
@@ -1070,6 +1086,19 @@ gui_init (dt_lib_module_t *self)
   d->height = gtk_label_new(_("height"));
   gtk_box_pack_start(GTK_BOX(hboxdim),GTK_WIDGET(d->height),TRUE,TRUE,0);
 
+  //// image information (downscale/upscale)
+
+  GtkWidget *hboxinfo = gtk_box_new(GTK_ORIENTATION_HORIZONTAL,0);
+  label = gtk_label_new(_("scale factor"));
+  gtk_box_pack_start(GTK_BOX(hboxinfo),GTK_WIDGET(label),TRUE,TRUE,0);
+  d->info = gtk_label_new(_("1.0"));
+  gtk_box_pack_start(GTK_BOX(hboxinfo),GTK_WIDGET(d->info),TRUE,TRUE,0);
+  g_object_set(G_OBJECT(hboxinfo), "tooltip-text",
+               _("image scale factor from native printer DPI:\n"
+                 " < 0 means that it is downscaled (best quality)\n"
+                 " > 0 means that the image is upscaled\n"
+                 " a too large value may result in poor print quality"), (char *)NULL);
+
   //// borders
 
   GtkGrid *bds = GTK_GRID(gtk_grid_new());
@@ -1117,6 +1146,7 @@ gui_init (dt_lib_module_t *self)
   // pack image dimention hbox here
 
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(hboxdim), TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(hboxinfo), TRUE, TRUE, 0);
 
   //// alignments
 

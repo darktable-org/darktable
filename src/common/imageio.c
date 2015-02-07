@@ -675,8 +675,8 @@ int dt_imageio_export_with_flags(const uint32_t imgid, const char *filename,
             : high_quality;
   const int width = high_quality_processing ? 0 : format_params->max_width;
   const int height = high_quality_processing ? 0 : format_params->max_height;
-  const double scalex = width > 0 ? fminf(width / (double)pipe.processed_width, 1.0) : 1.0;
-  const double scaley = height > 0 ? fminf(height / (double)pipe.processed_height, 1.0) : 1.0;
+  const double scalex = width > 0 ? fminf(width / (double)pipe.processed_width, 100.0) : 1.0;
+  const double scaley = height > 0 ? fminf(height / (double)pipe.processed_height, 100.0) : 1.0;
   const double scale = fminf(scalex, scaley);
   int processed_width = scale * pipe.processed_width + .5f;
   int processed_height = scale * pipe.processed_height + .5f;
@@ -690,10 +690,10 @@ int dt_imageio_export_with_flags(const uint32_t imgid, const char *filename,
   {
     dt_dev_pixelpipe_process_no_gamma(&pipe, &dev, 0, 0, processed_width, processed_height, scale);
     const double scalex = format_params->max_width > 0
-                              ? fminf(format_params->max_width / (double)pipe.processed_width, 1.0)
+                              ? fminf(format_params->max_width / (double)pipe.processed_width, 100.0)
                               : 1.0;
     const double scaley = format_params->max_height > 0
-                              ? fminf(format_params->max_height / (double)pipe.processed_height, 1.0)
+                              ? fminf(format_params->max_height / (double)pipe.processed_height, 100.0)
                               : 1.0;
     const double scale = fminf(scalex, scaley);
     processed_width = scale * pipe.processed_width + .5f;
