@@ -1092,7 +1092,7 @@ gui_init (dt_lib_module_t *self)
   GtkWidget *hboxinfo = gtk_box_new(GTK_ORIENTATION_HORIZONTAL,0);
   label = gtk_label_new(_("scale factor"));
   gtk_box_pack_start(GTK_BOX(hboxinfo),GTK_WIDGET(label),TRUE,TRUE,0);
-  d->info = gtk_label_new(_("1.0"));
+  d->info = gtk_label_new("1.0");
   gtk_box_pack_start(GTK_BOX(hboxinfo),GTK_WIDGET(d->info),TRUE,TRUE,0);
   g_object_set(G_OBJECT(hboxinfo), "tooltip-text",
                _("image scale factor from native printer DPI:\n"
