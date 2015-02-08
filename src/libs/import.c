@@ -248,10 +248,16 @@ void _lib_import_ui_devices_update(dt_lib_module_t *self)
 }
 
 /** camctl camera disconnect callback */
+static gboolean _detect_async(gpointer user_data)
+{
+  dt_camctl_detect_cameras(darktable.camctl);
+  return FALSE;
+}
+
 static void _camctl_camera_disconnected_callback(const dt_camera_t *camera, void *data)
 {
-  /* rescan connected cameras */
-  dt_camctl_detect_cameras(darktable.camctl);
+  /* rescan connected cameras. do that asynchronously since otherwise we deadlock (#10314) */
+  g_idle_add(_detect_async, NULL);
 
   /* update gui with detected devices */
   // this is done asynchronously in _camera_detected()
