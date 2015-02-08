@@ -3792,7 +3792,8 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
 </indexterm>
 <synopsis>self:function( 
 	<emphasis><link linkend="types_dt_imageio_module_format_t_write_image_image">image</link></emphasis> : <link linkend="types_dt_lua_image_t">types.dt_lua_image_t</link>, 
-	<emphasis><link linkend="types_dt_imageio_module_format_t_write_image_filename">filename</link></emphasis> : string
+	<emphasis><link linkend="types_dt_imageio_module_format_t_write_image_filename">filename</link></emphasis> : string, 
+	[<emphasis><link linkend="types_dt_imageio_module_format_t_write_image_allow_upscale">allow_upscale</link></emphasis> : boolean]
 ) : boolean</synopsis>
 <para>Exports an image to a file. This is a blocking operation that will not return until the image is exported.</para>
 <informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
@@ -3822,6 +3823,12 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
 <varlistentry id="types_dt_imageio_module_format_t_write_image_filename"><term>filename</term><listitem>
 <synopsis>string</synopsis>
 <para>The filename to export to.</para>
+
+</listitem></varlistentry>
+
+<varlistentry id="types_dt_imageio_module_format_t_write_image_allow_upscale"><term>[allow_upscale]</term><listitem>
+<synopsis>boolean</synopsis>
+<para>Set to true to allow upscaling of the image.</para>
 
 </listitem></varlistentry>
 

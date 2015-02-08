@@ -152,10 +152,12 @@ static int write_image(lua_State *L)
   /* check that param 3 is a string (filename) */
   const char *filename = luaL_checkstring(L, 3);
 
+  /* treat param 4 as an optional boolean */
+  const gboolean upscale = lua_toboolean(L, 4);
+
 
   dt_lua_unlock();
   gboolean high_quality = dt_conf_get_bool("plugins/lighttable/export/high_quality_processing");
-  gboolean upscale = dt_conf_get_bool("plugins/lighttable/export/upscale");
   gboolean result = dt_imageio_export(imgid, filename, format, fdata, high_quality, upscale, FALSE, NULL, NULL, 1, 1);
   dt_lua_lock();
   lua_pushboolean(L, result);

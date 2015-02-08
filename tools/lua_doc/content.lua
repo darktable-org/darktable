@@ -561,6 +561,7 @@ darktable.debug.type:set_text([[Similar to the system function type() but it wil
 	types.dt_imageio_module_format_t.write_image:add_parameter("self",types.dt_imageio_module_format_t,[[The format that will be used to export.]]):set_attribute("is_self",true)
 	types.dt_imageio_module_format_t.write_image:add_parameter("image",types.dt_lua_image_t,[[The image object to export.]])
 	types.dt_imageio_module_format_t.write_image:add_parameter("filename","string",[[The filename to export to.]])
+	types.dt_imageio_module_format_t.write_image:add_parameter("allow_upscale","boolean",[[Set to true to allow upscaling of the image.]]):set_attribute("optional",true)
 	types.dt_imageio_module_format_t.write_image:add_return("boolean",[[Returns true on success.]])
 
 	types.dt_imageio_module_format_data_png:set_text([[Type object describing parameters to export to png.]])
