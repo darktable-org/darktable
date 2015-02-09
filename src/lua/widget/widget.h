@@ -18,6 +18,7 @@
 #ifndef LUA_WIDGET_H
 #define LUA_WIDGET_H
 #include "lua/lua.h"
+#include "lua/call.h"
 #include <gtk/gtk.h>
 struct dt_lua_widget_type_t;
 typedef struct {
@@ -59,7 +60,7 @@ void dt_lua_widget_get_callback(lua_State *L,int index,const char* name);
     error go to stderr
  */
 int dt_lua_widget_trigger_callback(lua_State*L,lua_widget object,const char* name);
-void dt_lua_widget_trigger_callback_async(lua_widget object,const char* name,const char *type_name,...);
+void dt_lua_widget_trigger_callback_async(lua_widget object,const char* name,char *type_name,...);
 
 /* wrapper to automatically implement a callback on a GTK signal */
 #define dt_lua_widget_register_gtk_callback(L,widget_type,signal_name,lua_name,callback) \

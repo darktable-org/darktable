@@ -28,6 +28,7 @@
 #include "lua/modules.h"
 #include "lua/lib.h"
 #include "lua/events.h"
+#include "lua/call.h"
 #endif
 
 struct dt_lib_module_t;

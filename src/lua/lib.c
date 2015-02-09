@@ -18,6 +18,7 @@
 #include "lua/lib.h"
 #include "lua/modules.h"
 #include "lua/types.h"
+#include "lua/call.h"
 #include "gui/gtk.h"
 
 static int expanded_member(lua_State *L)

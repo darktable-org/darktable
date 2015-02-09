@@ -39,6 +39,16 @@ int dt_lua_dostring_silent(lua_State *L, const char *command, int nargs, int nre
 int dt_lua_dofile_silent(lua_State *L, const char *filename, int nargs, int nresults);
 
 
+/*
+   call a lua function that is its upvalue, with an unchanged stack
+   the function is called within the gtk thread so it
+   IS NOT ALLOWED TO CALL USER CODE AND SHOULD BE FAST
+
+
+   */
+int dt_lua_gtk_wrap(lua_State*L);
+
+
 
 int dt_lua_init_call(lua_State *L);
 

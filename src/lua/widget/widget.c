@@ -27,7 +27,6 @@
   generic property member registration
   use name to save/restore states as pref like other widgets
   have a way to save presets
-  storage lib looses index for lua storages, 
   luastorage can't save presets
 
   */
@@ -196,7 +195,7 @@ static int32_t widget_callback_job(dt_job_t *job)
 
 }
 
-void dt_lua_widget_trigger_callback_async(lua_widget object,const char* name,const char* type_name,...)
+void dt_lua_widget_trigger_callback_async(lua_widget object,const char* name,char* type_name,...)
 {
   dt_job_t *job = dt_control_job_create(&widget_callback_job, "lua: widget event");
   if(job)
@@ -207,11 +206,11 @@ void dt_lua_widget_trigger_callback_async(lua_widget object,const char* name,con
     data->extra=NULL;
     va_list ap;
     va_start(ap,type_name);
-    const char *cur_type = type_name;
+    char *cur_type = type_name;
     while(cur_type ){
-      data->extra=g_list_append(data->extra,GINT_TO_POINTER(cur_type));
+      data->extra=g_list_append(data->extra,cur_type);
       data->extra=g_list_append(data->extra,va_arg(ap,gpointer));
-      cur_type = va_arg(ap,const char*);
+      cur_type = va_arg(ap,char*);
 
     }
     va_end(ap);

@@ -28,6 +28,7 @@
 #include "lua/format.h"
 #include "lua/storage.h"
 #include "lua/events.h"
+#include "lua/call.h"
 #endif
 
 

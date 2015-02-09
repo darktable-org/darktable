@@ -321,6 +321,47 @@ static int ending_cb(lua_State *L)
   return 1;
 }
 
+typedef struct gtk_wrap_communication {
+  GCond end_cond;
+  GMutex end_mutex;
+  lua_State *L;
+  int retval;
+} gtk_wrap_communication;
+
+gboolean dt_lua_gtk_wrap_callback(gpointer data)
+{
+  gtk_wrap_communication *communication = (gtk_wrap_communication*)data;
+  g_mutex_lock(&communication->end_mutex);
+  communication->retval = dt_lua_do_chunk(communication->L,lua_gettop(communication->L)-1,LUA_MULTRET);
+  g_cond_signal(&communication->end_cond);
+  g_mutex_unlock(&communication->end_mutex);
+  return false;
+} 
+
+int dt_lua_gtk_wrap(lua_State*L)
+{ 
+  lua_pushvalue(L,lua_upvalueindex(1));
+  lua_insert(L,1);
+  if(pthread_equal(darktable.control->gui_thread, pthread_self())) {
+    return dt_lua_do_chunk_raise(L,lua_gettop(L)-1,LUA_MULTRET);
+  } else {
+    gtk_wrap_communication communication;
+    g_mutex_init(&communication.end_mutex);
+    g_cond_init(&communication.end_cond);
+    communication.L = L;
+    g_mutex_lock(&communication.end_mutex);
+    g_main_context_invoke(NULL,dt_lua_gtk_wrap_callback,&communication);
+    g_cond_wait(&communication.end_cond,&communication.end_mutex);
+    g_mutex_unlock(&communication.end_mutex);
+    g_mutex_clear(&communication.end_mutex);
+    if(communication.retval == LUA_OK) {
+      return lua_gettop(L);
+    } else {
+      return lua_error(L);
+    }
+  }
+
+}
 
 int dt_lua_init_call(lua_State *L)
 {
