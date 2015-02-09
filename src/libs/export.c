@@ -195,6 +195,8 @@ void gui_reset(dt_lib_module_t *self)
 
   dt_bauhaus_combobox_set(d->style_mode, dt_conf_get_bool("plugins/lighttable/export/style_append"));
 
+  gtk_widget_set_sensitive(GTK_WIDGET(d->style_mode), dt_bauhaus_combobox_get(d->style)==0?FALSE:TRUE);
+
   if(!iccfound) dt_bauhaus_combobox_set(d->profile, 0);
 
   dt_imageio_module_format_t *mformat = dt_imageio_get_format();
@@ -382,11 +384,15 @@ static void intent_changed(GtkWidget *widget, dt_lib_export_t *d)
 static void style_changed(GtkWidget *widget, dt_lib_export_t *d)
 {
   if(dt_bauhaus_combobox_get(d->style) == 0)
+  {
     dt_conf_set_string("plugins/lighttable/export/style", "");
+    gtk_widget_set_sensitive(GTK_WIDGET(d->style_mode), FALSE);
+  }
   else
   {
     const gchar *style = dt_bauhaus_combobox_get_text(d->style);
     dt_conf_set_string("plugins/lighttable/export/style", style);
+    gtk_widget_set_sensitive(GTK_WIDGET(d->style_mode), TRUE);
   }
 }
 
