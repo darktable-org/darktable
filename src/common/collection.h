@@ -200,7 +200,8 @@ void dt_collection_deserialize(char *buf);
 int dt_collection_serialize(char *buf, int bufsize);
 
 /* splits an input string into a number part and an optional operator part */
-void dt_collection_split_operator_number(const gchar *input, char **number, char **operator);
+void dt_collection_split_operator_number(const gchar *input, char **number, char **number2, char **operator);
+void dt_collection_split_operator_datetime (const gchar *input, char **number, char **number2, char **operator);
 
 #endif
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
