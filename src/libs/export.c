@@ -94,6 +94,16 @@ static void export_button_clicked(GtkWidget *widget, gpointer user_data)
   int storage_index = dt_imageio_get_index_of_storage(dt_imageio_get_storage_by_name(storage_name));
   g_free(format_name);
   g_free(storage_name);
+
+  if(format_index == -1) {
+    dt_control_log("Invalid format for export selected\n");
+    return;
+  }
+  if(storage_index == -1) {
+    dt_control_log("Invalid storage for export selected\n");
+    return;
+  }
+
   gboolean high_quality = dt_conf_get_bool("plugins/lighttable/export/high_quality_processing");
   char *tmp = dt_conf_get_string("plugins/lighttable/export/style");
   if(tmp)
