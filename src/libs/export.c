@@ -145,11 +145,7 @@ void gui_reset(dt_lib_module_t *self)
   gchar *storage_name = dt_conf_get_string("plugins/lighttable/export/storage_name");
   int storage_index = dt_imageio_get_index_of_storage(dt_imageio_get_storage_by_name(storage_name));
   g_free(storage_name);
-  if(storage_index >= 0) {
-    dt_bauhaus_combobox_set(d->storage, storage_index);
-  } else {
-    dt_bauhaus_combobox_set(d->storage, 0);
-  }
+  dt_bauhaus_combobox_set(d->storage, storage_index);
 
   dt_bauhaus_combobox_set(d->upscale, dt_conf_get_bool("plugins/lighttable/export/upscale") ? 1 : 0);
 
