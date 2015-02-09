@@ -731,7 +731,7 @@ _profile_changed(GtkWidget *widget, dt_lib_module_t *self)
   dt_conf_set_string("plugins/lighttable/export/iccprofile", "image");
   dt_conf_set_string("plugins/print/print/iccprofile", "image");
   if (ps->v_iccprofile) g_free(ps->v_iccprofile);
-  ps->v_piccprofile = g_strdup("image");
+  ps->v_iccprofile = g_strdup("image");
 }
 
 static void
