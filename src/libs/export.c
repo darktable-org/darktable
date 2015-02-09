@@ -99,6 +99,15 @@ static void export_button_clicked(GtkWidget *widget, gpointer user_data)
   g_free(format_name);
   g_free(storage_name);
 
+  if(format_index == -1) {
+    dt_control_log("Invalid format for export selected\n");
+    return;
+  }
+  if(storage_index == -1) {
+    dt_control_log("Invalid storage for export selected\n");
+    return;
+  }
+
   gboolean upscale = dt_conf_get_bool("plugins/lighttable/export/upscale");
   gboolean high_quality = dt_conf_get_bool("plugins/lighttable/export/high_quality_processing");
   char *tmp = dt_conf_get_string("plugins/lighttable/export/style");
