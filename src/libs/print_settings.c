@@ -712,7 +712,7 @@ static void
 _profile_changed(GtkWidget *widget, dt_lib_module_t *self)
 {
   dt_lib_print_settings_t *ps = (dt_lib_print_settings_t *)self->data;
-  int pos = dt_bauhaus_combobox_get(widget);
+  const int pos = dt_bauhaus_combobox_get(widget);
   GList *prof = ps->profiles;
   while(prof)
   {
@@ -762,7 +762,7 @@ static void
 _printer_intent_callback (GtkWidget *widget, dt_lib_module_t *self)
 {
   dt_lib_print_settings_t *ps = (dt_lib_print_settings_t *)self->data;
-  int pos = dt_bauhaus_combobox_get(widget);
+  const int pos = dt_bauhaus_combobox_get(widget);
   dt_conf_set_int("plugins/print/printer/iccintent", pos);
   ps->v_pintent = pos;
 }
@@ -779,7 +779,7 @@ static void
 _intent_callback (GtkWidget *widget, dt_lib_module_t *self)
 {
   dt_lib_print_settings_t *ps = (dt_lib_print_settings_t *)self->data;
-  int pos = dt_bauhaus_combobox_get(widget);
+  const int pos = dt_bauhaus_combobox_get(widget);
   // record the intent that will override the out rendering module on export
   dt_conf_set_int("plugins/lighttable/export/iccintent", pos - 1);
   dt_conf_set_int("plugins/print/print/iccintent", pos - 1);
