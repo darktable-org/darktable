@@ -749,6 +749,10 @@ _printer_profile_changed(GtkWidget *widget, dt_lib_module_t *self)
       dt_conf_set_string("plugins/print/printer/iccprofile", pp->filename);
       if (ps->v_piccprofile) g_free(ps->v_piccprofile);
       ps->v_piccprofile = g_strdup(pp->filename);
+
+      // activate the black compensation and printer intent
+      gtk_widget_set_sensitive(GTK_WIDGET(ps->pintent), TRUE);
+      gtk_widget_set_sensitive(GTK_WIDGET(ps->black_point_compensation), TRUE);
       return;
     }
     prof = g_list_next(prof);
@@ -756,6 +760,8 @@ _printer_profile_changed(GtkWidget *widget, dt_lib_module_t *self)
   dt_conf_set_string("plugins/print/printer/iccprofile", "");
   if (ps->v_piccprofile) g_free(ps->v_piccprofile);
   ps->v_piccprofile = g_strdup("");
+  gtk_widget_set_sensitive(GTK_WIDGET(ps->pintent), FALSE);
+  gtk_widget_set_sensitive(GTK_WIDGET(ps->black_point_compensation), FALSE);
 }
 
 static void
@@ -1034,6 +1040,9 @@ gui_init (dt_lib_module_t *self)
 
   g_object_set(d->black_point_compensation, "tooltip-text",
                _("activate black point compensation when applying the printer profile"), (char *)NULL);
+
+  gtk_widget_set_sensitive(GTK_WIDGET(d->pintent), combo_idx==0?FALSE:TRUE);
+  gtk_widget_set_sensitive(GTK_WIDGET(d->black_point_compensation), combo_idx==0?FALSE:TRUE);
 
   ////////////////////////// PAGE SETTINGS
 
@@ -1567,6 +1576,8 @@ gui_reset (dt_lib_module_t *self)
   dt_bauhaus_combobox_set(ps->style, 0);
   dt_bauhaus_combobox_set(ps->intent, 0);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(ps->black_point_compensation), TRUE);
+  gtk_widget_set_sensitive(GTK_WIDGET(ps->pintent), FALSE);
+  gtk_widget_set_sensitive(GTK_WIDGET(ps->black_point_compensation), FALSE);
 
   // reset page orientation to fit the picture
 
