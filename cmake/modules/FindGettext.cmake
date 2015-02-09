@@ -1,42 +1,28 @@
 # - Try to find Gettext
 # Once done, this will define
 #
-#  Gettext_FOUND - system has Gettext
-#  Gettext_INCLUDE_DIRS - the Gettext include directories
-#  Gettext_LIBRARIES - link these to use Gettext
+#  GETTEXT_FOUND - system has Gettext
+#  GETTEXT_INCLUDE_DIRS - the Gettext include directories
+#  GETTEXT_LIBRARIES - link these to use Gettext
 #
 # See documentation on how to write CMake scripts at
 # http://www.cmake.org/Wiki/CMake:How_To_Find_Libraries
 
-include(LibFindMacros)
+if(GETTEXT_LIBRARIES)
+  set(GETTEXT_FIND_QUIETLY TRUE)
+endif(GETTEXT_LIBRARIES)
 
-# On Linux there is no pkgconfig script, but with this we force Gettext_PKGCONF_INCLUDE_DIRS to ""
-if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
-  set(Gettext_PKGCONF_INCLUDE_DIRS "")
-else(CMAKE_SYSTEM_NAME STREQUAL "Linux")
-  libfind_pkg_check_modules(Gettext_PKGCONF Gettext)
-endif(CMAKE_SYSTEM_NAME STREQUAL "Linux")
+find_path(GETTEXT_INCLUDE_DIR
+    NAMES dns_sd.h
+    PATHS /opt/local/lib /sw/local/lib)
 
-if(WIN32 OR APPLE)
-  set(Gettext_LIBRARY_SEARCH_DIRS
-    /opt/local/lib
-    /sw/local/lib
-  )
-
-  find_library(Gettext_LIBRARY
+find_library(GETTEXT_LIBRARIES 
     NAMES intl
-    PATHS ${Gettext_LIBRARY_SEARCH_DIRS}
-    HINTS ${Gettext_PKGCONF_LIBRARY_DIRS}
-  )
+    PATHS /opt/local/lib /sw/local/lib)
 
-  set(Gettext_PROCESS_LIBS Gettext_LIBRARY)
-endif()
-
-find_path(Gettext_INCLUDE_DIR
-  NAMES libintl.h
-  HINTS ${Gettext_PKGCONF_INCLUDE_DIRS}
-  PATHS /opt/local/include
-)
-
-set(Gettext_PROCESS_INCLUDES Gettext_INCLUDE_DIR)
-libfind_process(Gettext)
+include(FindPackageHandleStandardArgs)
+FIND_PACKAGE_HANDLE_STANDARD_ARGS(
+    GETTEXT DEFAULT_MSG
+    GETTEXT_LIBRARIES
+    GETTEXT_INCLUDE_DIR)
+mark_as_advanced(GETTEXT_INCLUDE_DIR GETTEXT_LIBRARIES)
