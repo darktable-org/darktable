@@ -684,11 +684,13 @@ _style_callback(GtkWidget *widget, dt_lib_module_t *self)
   if(dt_bauhaus_combobox_get(ps->style) == 0)
   {
     dt_conf_set_string("plugins/print/print/style", "");
+    gtk_widget_set_sensitive(GTK_WIDGET(ps->style_mode), FALSE);
   }
   else
   {
     const gchar *style = dt_bauhaus_combobox_get_text(ps->style);
     dt_conf_set_string("plugins/print/print/style", style);
+    gtk_widget_set_sensitive(GTK_WIDGET(ps->style_mode), TRUE);
   }
 
   if (ps->v_style) g_free(ps->v_style);
@@ -1295,6 +1297,8 @@ gui_init (dt_lib_module_t *self)
   g_object_set(G_OBJECT(d->style_mode), "tooltip-text", _("whether the style is appended to the history or replacing the history"),
                (char *)NULL);
 
+  gtk_widget_set_sensitive(GTK_WIDGET(d->style_mode), combo_idx==0?FALSE:TRUE);
+
   g_signal_connect(G_OBJECT(d->style_mode), "value-changed", G_CALLBACK(_style_mode_changed), (gpointer)self);
 
   // Print button
@@ -1578,6 +1582,7 @@ gui_reset (dt_lib_module_t *self)
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(ps->black_point_compensation), TRUE);
   gtk_widget_set_sensitive(GTK_WIDGET(ps->pintent), FALSE);
   gtk_widget_set_sensitive(GTK_WIDGET(ps->black_point_compensation), FALSE);
+  gtk_widget_set_sensitive(GTK_WIDGET(ps->style_mode), FALSE);
 
   // reset page orientation to fit the picture
 
