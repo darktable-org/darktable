@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 1.3\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-02-10 17:29+0100\n"
-"PO-Revision-Date: 2015-02-10 17:32+0100\n"
+"POT-Creation-Date: 2015-02-10 17:49+0100\n"
+"PO-Revision-Date: 2015-02-10 17:50+0100\n"
 "Last-Translator: Pascal Obry <pascal@obry.net>\n"
 "Language-Team: \n"
 "Language: fr_FR\n"
@@ -3748,7 +3748,7 @@ msgstr "courbe de base"
 
 #: ../src/iop/basecurve.c:766
 msgid "abscissa: input, ordinate: output. works on RGB channels"
-msgstr "abscisse : entrée, ordonnée : sortie. fonctionne sur les canaux RVB"
+msgstr "abscisse : entrée, ordonnée : sortie. fonctionne sur les canaux RGB"
 
 #: ../src/iop/basecurve.c:771 ../src/iop/lens.c:2107
 #: ../src/iop/vignette.c:1149 ../src/iop/watermark.c:1084
@@ -4566,7 +4566,7 @@ msgstr "impossible de générer le profil d'entrée"
 
 #: ../src/iop/colorin.c:771
 msgid "unsupported input profile has been replaced by linear Rec709 RGB!"
-msgstr "profil d'entrée non supporté, remplacé par linéaire RVB Rec709 !"
+msgstr "profil d'entrée non supporté, remplacé par linéaire RGB Rec709 !"
 
 #: ../src/iop/colorin.c:1077 ../src/iop/colorin.c:1111
 msgid "embedded ICC profile"
@@ -4608,14 +4608,14 @@ msgstr "Adobe RGB (compatible)"
 #: ../src/iop/colorout.c:917 ../src/iop/colorout.c:918
 #: ../src/libs/export.c:610
 msgid "linear Rec709 RGB"
-msgstr "RVB Rec709 linéaire"
+msgstr "RGB Rec709 linéaire"
 
 #: ../src/iop/colorin.c:1095 ../src/iop/colorin.c:1129
 #: ../src/iop/colorin.c:1262 ../src/iop/colorout.c:922
 #: ../src/iop/colorout.c:923 ../src/iop/colorout.c:924
 #: ../src/libs/export.c:616
 msgid "linear Rec2020 RGB"
-msgstr "RVB Rec2020 linéaire"
+msgstr "RGB Rec2020 linéaire"
 
 #: ../src/iop/colorin.c:1097 ../src/iop/colorin.c:1131
 msgid "linear infrared BGR"
@@ -4765,7 +4765,7 @@ msgstr "profil de couleur de sortie "
 
 #: ../src/iop/colorout.c:622
 msgid "unsupported output profile has been replaced by sRGB!"
-msgstr "profil de sortie non supporté, remplacé par sRVB !"
+msgstr "profil de sortie non supporté, remplacé par sRGB !"
 
 #: ../src/iop/colorout.c:758
 msgid "gamut check"
@@ -5184,11 +5184,11 @@ msgstr "floyd-steinberg 4-bit gris"
 
 #: ../src/iop/dither.c:550
 msgid "floyd-steinberg 8-bit RGB"
-msgstr "floyd-steinberg 8-bit RVB"
+msgstr "floyd-steinberg 8-bit RGB"
 
 #: ../src/iop/dither.c:551
 msgid "floyd-steinberg 16-bit RGB"
-msgstr "floyd-steinberg 16-bit RVB"
+msgstr "floyd-steinberg 16-bit RGB"
 
 #: ../src/iop/dither.c:552
 msgid "floyd-steinberg auto"
@@ -7176,7 +7176,7 @@ msgstr "max"
 
 #: ../src/libs/colorpicker.c:541 ../src/libs/colorpicker.c:579
 msgid "RGB"
-msgstr "RVB"
+msgstr "RGB"
 
 #: ../src/libs/colorpicker.c:554
 msgid "restrict histogram to selection"
