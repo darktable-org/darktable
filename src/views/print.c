@@ -324,6 +324,9 @@ void enter(dt_view_t *self)
 
   // prefetch next few from first selected image on.
   dt_view_filmstrip_prefetch();
+
+  darktable.control->mouse_over_id = -1;
+  dt_control_set_mouse_over_id(prt->image_id);
 }
 
 void leave(dt_view_t *self)
