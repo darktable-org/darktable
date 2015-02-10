@@ -96,11 +96,11 @@ static void export_button_clicked(GtkWidget *widget, gpointer user_data)
   g_free(storage_name);
 
   if(format_index == -1) {
-    dt_control_log("Invalid format for export selected\n");
+    dt_control_log("invalid format for export selected\n");
     return;
   }
   if(storage_index == -1) {
-    dt_control_log("Invalid storage for export selected\n");
+    dt_control_log("invalid storage for export selected\n");
     return;
   }
 
