@@ -1323,19 +1323,28 @@ static float _ratio_get_aspect(dt_iop_module_t *self)
   else
     d = p->ratio_d, n = p->ratio_n;
 
-  if(d < 0)
-    return -n / d;
+  // make aspect ratios like 3:2 and 2:3 to be the same thing
+  const float dn = copysign(MAX(fabsf(d), fabsf(n)), d);
+  const float nn = copysign(MIN(fabsf(d), fabsf(n)), n);
+
+  if(dn < 0)
+    return -nn / dn;
   else
-    return d / n;
+    return dn / nn;
 }
 static void apply_box_aspect(dt_iop_module_t *self, _grab_region_t grab)
 {
   dt_iop_clipping_gui_data_t *g = (dt_iop_clipping_gui_data_t *)self->gui_data;
+
   int iwd, iht;
   dt_dev_get_processed_size(darktable.develop, &iwd, &iht);
-  float wd = iwd, ht = iht;
+
   // enforce aspect ratio.
-  const float aspect = _ratio_get_aspect(self);
+  float aspect = _ratio_get_aspect(self);
+
+  // since one rarely changes between portrait and landscape by cropping,
+  // long side of the crop box should match the long side of the image.
+  if(iwd < iht) aspect = 1.0 / aspect;
 
   if(aspect > 0)
   {
@@ -1344,8 +1353,8 @@ static void apply_box_aspect(dt_iop_module_t *self, _grab_region_t grab)
     double clip_x = g->clip_x, clip_y = g->clip_y, clip_w = g->clip_w, clip_h = g->clip_h;
 
     // if we only modified one dim, respectively, we wanted these values:
-    const double target_h = (double)wd * g->clip_w / (double)(ht * aspect);
-    const double target_w = (double)ht * g->clip_h * aspect / (double)wd;
+    const double target_h = (double)iwd * g->clip_w / (double)((double)iht * aspect);
+    const double target_w = (double)iht * g->clip_h * aspect / (double)iwd;
     // i.e. target_w/h = w/target_h = aspect
     // first fix aspect ratio:
 
@@ -1877,7 +1886,7 @@ void gui_init(struct dt_iop_module_t *self)
   dt_bauhaus_combobox_set(g->aspect_presets, 0);
 
   g_signal_connect(G_OBJECT(g->aspect_presets), "value-changed", G_CALLBACK(aspect_presets_changed), self);
-  g_object_set(G_OBJECT(g->aspect_presets), "tooltip-text", _("set the aspect ratio (w:h)"), (char *)NULL);
+  g_object_set(G_OBJECT(g->aspect_presets), "tooltip-text", _("set the aspect ratio"), (char *)NULL);
   dt_bauhaus_widget_set_quad_paint(g->aspect_presets, dtgtk_cairo_paint_aspectflip, 0);
   g_signal_connect(G_OBJECT(g->aspect_presets), "quad-pressed", G_CALLBACK(aspect_flip), self);
   gtk_box_pack_start(GTK_BOX(self->widget), g->aspect_presets, TRUE, TRUE, 0);
