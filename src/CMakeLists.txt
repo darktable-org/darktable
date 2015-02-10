@@ -186,15 +186,8 @@ foreach(lib ${OUR_LIBS} LensFun GIO GThread GModule PangoCairo PThread Rsvg2 Lib
 endforeach(lib)
 
 if(USE_NLS)
-  find_package(Gettext)
-  if(Gettext_FOUND)
-    include_directories(SYSTEM ${Gettext_INCLUDE_DIRS})
-    list(APPEND LIBS ${Gettext_LIBRARIES})
-    add_definitions("-DUSE_GETTEXT")
-    message(STATUS "Internationalization: Enabled")
-  else()
-    message(STATUS "Internationalization: Disabled (libintl not found)")
-  endif()
+  add_definitions("-DUSE_GETTEXT")
+  message(STATUS "Internationalization: Enabled")
 endif(USE_NLS)
 
 if(USE_FLICKR)
