@@ -57,24 +57,11 @@ typedef enum dt_iop_clipping_flags_t
   FLAG_FLIP_VERTICAL = 2
 } dt_iop_clipping_flags_t;
 
-/** clipping ratios */
-typedef enum dt_iop_clipping_ratios_flags_t
+typedef struct dt_iop_clipping_aspect_t
 {
-  RATIO_FREE,
-  RATIO_IMAGE,
-  RATIO_GOLDEN,
-  RATIO_1_2,
-  RATIO_3_2,
-  RATIO_7_5,
-  RATIO_4_3,
-  RATIO_5_4,
-  RATIO_1_1,
-  RATIO_DIN,
-  RATIO_16_9,
-  RATIO_16_10,
-  RATIO_10_8,
-  RATIO_COUNT // should always be the last entry
-} dt_iop_clipping_ratios_flags_t;
+  const char *name;
+  int d, n;
+} dt_iop_clipping_aspect_t;
 
 typedef enum dt_iop_clipping_guide_t
 {
@@ -230,7 +217,10 @@ typedef struct dt_iop_clipping_gui_data_t
 {
   GtkWidget *angle;
   GtkWidget *hvflip;
+
+  GList *aspect_list;
   GtkWidget *aspect_presets;
+
   GtkWidget *guide_lines;
   GtkWidget *flip_guides;
   GtkWidget *golden_extras;
@@ -1460,12 +1450,13 @@ void reload_defaults(dt_iop_module_t *self)
 
 static void aspect_presets_changed(GtkWidget *combo, dt_iop_module_t *self)
 {
+  dt_iop_clipping_gui_data_t *g = (dt_iop_clipping_gui_data_t *)self->gui_data;
   dt_iop_clipping_params_t *p = (dt_iop_clipping_params_t *)self->params;
   int which = dt_bauhaus_combobox_get(combo);
   int d = p->ratio_d, n = p->ratio_n;
+  const char *text = dt_bauhaus_combobox_get_text(combo);
   if(which < 0)
   {
-    const char *text = dt_bauhaus_combobox_get_text(combo);
     if(text)
     {
       const char *c = text;
@@ -1488,34 +1479,22 @@ static void aspect_presets_changed(GtkWidget *combo, dt_iop_module_t *self)
       }
     }
   }
-  else if(which < RATIO_COUNT)
+  else
   {
-    if(which == RATIO_10_8)
-      d = 2445, n = 2032;
-    else if(which == RATIO_16_10)
-      d = 16, n = 10;
-    else if(which == RATIO_16_9)
-      d = 16, n = 9;
-    else if(which == RATIO_1_1)
-      d = 1, n = 1;
-    else if(which == RATIO_1_2)
-      d = 1, n = 2;
-    else if(which == RATIO_3_2)
-      d = 3, n = 2;
-    else if(which == RATIO_4_3)
-      d = 4, n = 3;
-    else if(which == RATIO_5_4)
-      d = 5, n = 4;
-    else if(which == RATIO_7_5)
-      d = 7, n = 5;
-    else if(which == RATIO_DIN)
-      d = 14142136, n = 10000000;
-    else if(which == RATIO_GOLDEN)
-      d = 16180340, n = 10000000;
-    else if(which == RATIO_IMAGE)
-      d = 1, n = 0;
-    else
-      d = n = 0;
+    d = n = 0;
+
+    GList *iter = g->aspect_list;
+    while(iter != NULL)
+    {
+      const dt_iop_clipping_aspect_t *aspect = iter->data;
+      if(g_strcmp0(aspect->name, text) == 0)
+      {
+        d = aspect->d;
+        n = aspect->n;
+        break;
+      }
+      iter = g_list_next(iter);
+    }
   }
 
   // now we save all that if it has changed
@@ -1641,43 +1620,27 @@ void gui_update(struct dt_iop_module_t *self)
 
   if(p->ratio_d == -2 && p->ratio_n == -2) _ratio_get_aspect(self);
 
-  int act = 0;
   if(p->ratio_d == -1 && p->ratio_n == -1)
   {
     p->ratio_d = dt_conf_get_int("plugins/darkroom/clipping/ratio_d");
     p->ratio_n = dt_conf_get_int("plugins/darkroom/clipping/ratio_n");
   }
-  int d = abs(p->ratio_d), n = p->ratio_n;
-  if(d == 0 && n == 0)
-    act = RATIO_FREE;
-  else if(n == 0)
-    act = RATIO_IMAGE;
-  else if(d == 3 && n == 2)
-    act = RATIO_3_2;
-  else if(d == 1 && n == 2)
-    act = RATIO_1_2;
-  else if(d == 1 && n == 1)
-    act = RATIO_1_1;
-  else if(d == 7 && n == 5)
-    act = RATIO_7_5;
-  else if(d == 4 && n == 3)
-    act = RATIO_4_3;
-  else if(d == 5 && n == 4)
-    act = RATIO_5_4;
-  else if(d == 16 && n == 9)
-    act = RATIO_16_9;
-  else if(d == 16 && n == 10)
-    act = RATIO_16_10;
-  else if(d == 16180340 && n == 10000000)
-    act = RATIO_GOLDEN;
-  else if(d == 14142136 && n == 10000000)
-    act = RATIO_DIN;
-  else if(d == 2445 && n == 2032)
-    act = RATIO_10_8;
-  else
-    act = -1;
+  const int d = abs(p->ratio_d), n = p->ratio_n;
 
-  if(act < -1 || act >= RATIO_COUNT) act = 0;
+  int act = -1, i = 0;
+
+  GList *iter = g->aspect_list;
+  while(iter != NULL)
+  {
+    const dt_iop_clipping_aspect_t *aspect = iter->data;
+    if((aspect->d == d) && (aspect->n == n))
+    {
+      act = i;
+      break;
+    }
+    i++;
+    iter = g_list_next(iter);
+  }
 
   // keystone :
   if(p->k_apply == 1) g->k_show = 2; // needed to initialise correctly the combobox
@@ -1813,12 +1776,34 @@ static void crop_auto_changed(GtkWidget *combo, dt_iop_module_t *self)
   dt_control_queue_redraw_center();
 }
 
+static gint _aspect_ratio_cmp(const dt_iop_clipping_aspect_t *a, const dt_iop_clipping_aspect_t *b)
+{
+  // want most square at the end, and the most non-square at the beginning
+
+  if((a->d == 0 || a->d == 1) && a->n == 0) return -1;
+
+  const float ad = MAX(a->d, a->n);
+  const float an = MIN(a->d, a->n);
+  const float bd = MAX(b->d, b->n);
+  const float bn = MIN(b->d, b->n);
+  const float aratio = (float)ad / (float)an;
+  const float bratio = (float)bd / (float)bn;
+
+  if(aratio > bratio) return -1;
+
+  float prec = 0.0003f;
+  if(fabsf(aratio - bratio) < prec) return 0;
+
+  return 1;
+}
+
 void gui_init(struct dt_iop_module_t *self)
 {
   self->gui_data = malloc(sizeof(dt_iop_clipping_gui_data_t));
   dt_iop_clipping_gui_data_t *g = (dt_iop_clipping_gui_data_t *)self->gui_data;
   dt_iop_clipping_params_t *p = (dt_iop_clipping_params_t *)self->params;
 
+  g->aspect_list = NULL;
   g->clip_x = g->clip_y = g->handle_x = g->handle_y = 0.0;
   g->clip_w = g->clip_h = 1.0;
   g->old_clip_x = g->old_clip_y = 0.0;
@@ -1876,27 +1861,48 @@ void gui_init(struct dt_iop_module_t *self)
   g_signal_connect(G_OBJECT(g->crop_auto), "value-changed", G_CALLBACK(crop_auto_changed), self);
   gtk_box_pack_start(GTK_BOX(self->widget), g->crop_auto, TRUE, TRUE, 0);
 
+  dt_iop_clipping_aspect_t aspects[] = { { _("free"), 0, 0 },
+                                         { _("image"), 1, 0 },
+                                         { _("golden cut"), 16180340, 10000000 },
+                                         { _("1:2"), 1, 2 },
+                                         { _("3:2"), 3, 2 },
+                                         { _("7:5"), 7, 5 },
+                                         { _("4:3"), 4, 3 },
+                                         { _("5:4"), 5, 4 },
+                                         { _("square"), 1, 1 },
+                                         { _("DIN"), 14142136, 10000000 },
+                                         { _("16:9"), 16, 9 },
+                                         { _("16:10"), 16, 10 },
+                                         { _("10:8 in print"), 2445, 2032 } };
+  const int aspects_count = sizeof(aspects) / sizeof(dt_iop_clipping_aspect_t);
+
+  for(int i = 0; i < aspects_count; i++)
+  {
+    dt_iop_clipping_aspect_t *aspect = g_malloc(sizeof(dt_iop_clipping_aspect_t));
+    *aspect = aspects[i];
+    g->aspect_list = g_list_append(g->aspect_list, aspect);
+  }
+
+  g->aspect_list = g_list_sort(g->aspect_list, (GCompareFunc)_aspect_ratio_cmp);
+
   g->aspect_presets = dt_bauhaus_combobox_new(self);
   dt_bauhaus_combobox_set_editable(g->aspect_presets, 1);
   dt_bauhaus_widget_set_label(g->aspect_presets, NULL, _("aspect"));
-  dt_bauhaus_combobox_add(g->aspect_presets, _("free"));
-  dt_bauhaus_combobox_add(g->aspect_presets, _("image"));
-  dt_bauhaus_combobox_add(g->aspect_presets, _("golden cut"));
-  dt_bauhaus_combobox_add(g->aspect_presets, _("1:2"));
-  dt_bauhaus_combobox_add(g->aspect_presets, _("3:2"));
-  dt_bauhaus_combobox_add(g->aspect_presets, _("7:5"));
-  dt_bauhaus_combobox_add(g->aspect_presets, _("4:3"));
-  dt_bauhaus_combobox_add(g->aspect_presets, _("5:4"));
-  dt_bauhaus_combobox_add(g->aspect_presets, _("square"));
-  dt_bauhaus_combobox_add(g->aspect_presets, _("DIN"));
-  dt_bauhaus_combobox_add(g->aspect_presets, _("16:9"));
-  dt_bauhaus_combobox_add(g->aspect_presets, _("16:10"));
-  dt_bauhaus_combobox_add(g->aspect_presets, _("10:8 in print"));
+
+  GList *iter = g->aspect_list;
+  while(iter != NULL)
+  {
+    const dt_iop_clipping_aspect_t *aspect = iter->data;
+    dt_bauhaus_combobox_add(g->aspect_presets, aspect->name);
+    iter = g_list_next(iter);
+  }
 
   dt_bauhaus_combobox_set(g->aspect_presets, 0);
 
   g_signal_connect(G_OBJECT(g->aspect_presets), "value-changed", G_CALLBACK(aspect_presets_changed), self);
-  g_object_set(G_OBJECT(g->aspect_presets), "tooltip-text", _("set the aspect ratio"), (char *)NULL);
+  g_object_set(G_OBJECT(g->aspect_presets), "tooltip-text",
+               _("set the aspect ratio\nthe list is sorted: from least square to the most square"),
+               (char *)NULL);
   dt_bauhaus_widget_set_quad_paint(g->aspect_presets, dtgtk_cairo_paint_aspectflip, 0);
   g_signal_connect(G_OBJECT(g->aspect_presets), "quad-pressed", G_CALLBACK(aspect_flip), self);
   gtk_box_pack_start(GTK_BOX(self->widget), g->aspect_presets, TRUE, TRUE, 0);
@@ -1951,6 +1957,9 @@ void gui_init(struct dt_iop_module_t *self)
 
 void gui_cleanup(struct dt_iop_module_t *self)
 {
+  dt_iop_clipping_gui_data_t *g = (dt_iop_clipping_gui_data_t *)self->gui_data;
+  g_list_free_full(g->aspect_list, (GDestroyNotify)g_free);
+  g->aspect_list = NULL;
   free(self->gui_data);
   self->gui_data = NULL;
 }
