@@ -187,33 +187,36 @@ static void expose_print_page(dt_view_t *self, cairo_t *cr, int32_t width, int32
   // display non-printable area
   cairo_set_source_rgb (cr, 0.1, 0.1, 0.1);
 
+  const int np1x = px + (np_left / pg_width) * pwidth;
+  const int np1y = py + (np_top / pg_height) * pheight;
+  const int np2x = pright - (np_right / pg_width) * pwidth;
+  const int np2y = pbottom - (np_bottom / pg_height) * pheight;
+
   // top-left
-  int npx = px + (np_left / pg_width) * pwidth;
-  int npy = py + (np_top / pg_height) * pheight;
-  cairo_move_to (cr, npx-10, npy);
-  cairo_line_to (cr, npx, npy); cairo_line_to (cr, npx, npy-10);
+  cairo_move_to (cr, np1x-10, np1y);
+  cairo_line_to (cr, np1x, np1y); cairo_line_to (cr, np1x, np1y-10);
   cairo_stroke (cr);
 
   // top-right
-  npx = pright - (np_right / pg_width) * pwidth;
   // npy = p_y + (np_top / pg_height) * p_height;
-  cairo_move_to (cr, npx+10, npy);
-  cairo_line_to (cr, npx, npy); cairo_line_to (cr, npx, npy-10);
+  cairo_move_to (cr, np2x+10, np1y);
+  cairo_line_to (cr, np2x, np1y); cairo_line_to (cr, np2x, np1y-10);
   cairo_stroke (cr);
 
   // bottom-left
-  npx = px + (np_left / pg_width) * pwidth;
-  npy = pbottom - (np_bottom / pg_height) * pheight;
-  cairo_move_to (cr, npx-10, npy);
-  cairo_line_to (cr, npx, npy); cairo_line_to (cr, npx, npy+10);
+  cairo_move_to (cr, np1x-10, np2y);
+  cairo_line_to (cr, np1x, np2y); cairo_line_to (cr, np1x, np2y+10);
   cairo_stroke (cr);
 
   // bottom-right
-  npx = pright - (np_right / pg_width) * pwidth;
-  // npy = p_bottom - (np_bottom / pg_height) * p_height;
-  cairo_move_to (cr, npx+10, npy);
-  cairo_line_to (cr, npx, npy); cairo_line_to (cr, npx, npy+10);
+  cairo_move_to (cr, np2x+10, np2y);
+  cairo_line_to (cr, np2x, np2y); cairo_line_to (cr, np2x, np2y+10);
   cairo_stroke (cr);
+
+  // clip to this area to ensure that the image won't be larger, this is needed when using negative margin to enlarge the print
+
+  cairo_rectangle (cr, np1x, np1y, np2x-np1x, np2y-np1y);
+  cairo_clip(cr);
 
   cairo_set_source_rgb (cr, 0.77, 0.77, 0.77);
   cairo_rectangle (cr, ax, ay, awidth, aheight);

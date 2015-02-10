@@ -93,6 +93,8 @@ static double units[3] = {1.0, 0.1, 1.0/25.4};
 
 static void _update_slider (dt_lib_print_settings_t *ps);
 
+static const int min_borders = -100; // this is in mm
+
 int
 position ()
 {
@@ -515,10 +517,14 @@ _update_slider (dt_lib_print_settings_t *ps)
   const int pa_max_height = ps->prt.paper.height - ps->prt.printer.hw_margin_top - ps->prt.printer.hw_margin_bottom - min_size;
   const int pa_max_width  = ps->prt.paper.width  - ps->prt.printer.hw_margin_left - ps->prt.printer.hw_margin_right - min_size;
 
-  gtk_spin_button_set_range (GTK_SPIN_BUTTON(ps->b_top),    0, (pa_max_height - ps->prt.page.margin_bottom) * units[ps->unit]);
-  gtk_spin_button_set_range (GTK_SPIN_BUTTON(ps->b_left),   0, (pa_max_width - ps->prt.page.margin_right) * units[ps->unit]);
-  gtk_spin_button_set_range (GTK_SPIN_BUTTON(ps->b_right),  0, (pa_max_width - ps->prt.page.margin_left) * units[ps->unit]);
-  gtk_spin_button_set_range (GTK_SPIN_BUTTON(ps->b_bottom), 0, (pa_max_height - ps->prt.page.margin_top) * units[ps->unit]);
+  gtk_spin_button_set_range (GTK_SPIN_BUTTON(ps->b_top),
+                             min_borders * units[ps->unit], (pa_max_height - ps->prt.page.margin_bottom) * units[ps->unit]);
+  gtk_spin_button_set_range (GTK_SPIN_BUTTON(ps->b_left),
+                             min_borders * units[ps->unit], (pa_max_width - ps->prt.page.margin_right) * units[ps->unit]);
+  gtk_spin_button_set_range (GTK_SPIN_BUTTON(ps->b_right),
+                             min_borders * units[ps->unit], (pa_max_width - ps->prt.page.margin_left) * units[ps->unit]);
+  gtk_spin_button_set_range (GTK_SPIN_BUTTON(ps->b_bottom),
+                             min_borders * units[ps->unit], (pa_max_height - ps->prt.page.margin_top) * units[ps->unit]);
 }
 
 static void
