@@ -531,17 +531,6 @@ void gui_init(dt_lib_module_t *self)
   gtk_box_pack_start(hbox, GTK_WIDGET(d->height), TRUE, TRUE, 0);
   gtk_table_attach(GTK_TABLE(self->widget), GTK_WIDGET(hbox), 1, 2, 7, 8, GTK_EXPAND | GTK_FILL, 0, 0, 0);
 
-  label = gtk_label_new(_("intent"));
-  gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
-  gtk_table_attach(GTK_TABLE(self->widget), label, 0, 1, 8, 9, GTK_EXPAND | GTK_FILL, 0, 0, 0);
-  d->intent = GTK_COMBO_BOX(gtk_combo_box_text_new());
-  gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(d->intent), _("image settings"));
-  gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(d->intent), _("perceptual"));
-  gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(d->intent), _("relative colorimetric"));
-  gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(d->intent), C_("rendering intent", "saturation"));
-  gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(d->intent), _("absolute colorimetric"));
-  gtk_table_attach(GTK_TABLE(self->widget), GTK_WIDGET(d->intent), 1, 2, 8, 9, GTK_EXPAND | GTK_FILL, 0, 0, 0);
-
   //  Add profile combo
 
   d->profiles = NULL;
@@ -607,12 +596,12 @@ void gui_init(dt_lib_module_t *self)
   GList *l = d->profiles;
   label = gtk_label_new(_("profile"));
   gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
-  gtk_table_attach(GTK_TABLE(self->widget), label, 0, 1, 9, 10, GTK_EXPAND | GTK_FILL, 0, 0, 0);
+  gtk_table_attach(GTK_TABLE(self->widget), label, 0, 1, 8, 9, GTK_EXPAND | GTK_FILL, 0, 0, 0);
   d->profile = GTK_COMBO_BOX(gtk_combo_box_text_new());
   dt_ellipsize_combo(d->profile);
-  gtk_table_attach(GTK_TABLE(self->widget), GTK_WIDGET(d->profile), 1, 2, 9, 10,
+  gtk_table_attach(GTK_TABLE(self->widget), GTK_WIDGET(d->profile), 1, 2, 8, 9,
                    GTK_SHRINK | GTK_EXPAND | GTK_FILL, 0, 0, 0);
-  // gtk_table_attach(GTK_TABLE(self->widget), GTK_WIDGET(d->profile), 1, 2, 9, 10, GTK_EXPAND|GTK_FILL, 0, 0,
+  // gtk_table_attach(GTK_TABLE(self->widget), GTK_WIDGET(d->profile), 1, 2, 8, 9, GTK_EXPAND|GTK_FILL, 0, 0,
   // 0);
   gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(d->profile), _("image settings"));
   while(l)
@@ -628,6 +617,16 @@ void gui_init(dt_lib_module_t *self)
            datadir);
   g_object_set(G_OBJECT(d->profile), "tooltip-text", tooltip, (char *)NULL);
 
+  label = gtk_label_new(_("intent"));
+  gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
+  gtk_table_attach(GTK_TABLE(self->widget), label, 0, 1, 9, 10, GTK_EXPAND | GTK_FILL, 0, 0, 0);
+  d->intent = GTK_COMBO_BOX(gtk_combo_box_text_new());
+  gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(d->intent), _("image settings"));
+  gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(d->intent), _("perceptual"));
+  gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(d->intent), _("relative colorimetric"));
+  gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(d->intent), C_("rendering intent", "saturation"));
+  gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(d->intent), _("absolute colorimetric"));
+  gtk_table_attach(GTK_TABLE(self->widget), GTK_WIDGET(d->intent), 1, 2, 9, 10, GTK_EXPAND | GTK_FILL, 0, 0, 0);
 
   //  Add style combo
 
