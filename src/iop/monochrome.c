@@ -478,6 +478,7 @@ static gboolean dt_iop_monochrome_button_press(GtkWidget *widget, GdkEventButton
       p->a = PANEL_WIDTH * (mouse_x - width * 0.5f) / (float)width;
       p->b = PANEL_WIDTH * (mouse_y - height * 0.5f) / (float)height;
       g->dragging = 1;
+      g_object_set(G_OBJECT(widget), "has-tooltip", FALSE, (char *)NULL);
     }
     gtk_widget_queue_draw(self->widget);
     return TRUE;
@@ -492,6 +493,7 @@ static gboolean dt_iop_monochrome_button_release(GtkWidget *widget, GdkEventButt
     dt_iop_module_t *self = (dt_iop_module_t *)user_data;
     dt_iop_monochrome_gui_data_t *g = (dt_iop_monochrome_gui_data_t *)self->gui_data;
     g->dragging = 0;
+    g_object_set(G_OBJECT(widget), "has-tooltip", TRUE, (char *)NULL);
     return TRUE;
   }
   return FALSE;
