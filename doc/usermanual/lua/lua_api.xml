@@ -817,6 +817,27 @@
     </tgroup></informaltable>
 </section>
 
+<section status="final" id="darktable_gui_views_print">
+<title>darktable.gui.views.print</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>print</secondary>
+</indexterm>
+<para>The print view</para>
+<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
+    <colspec colwidth="2*"/>
+    <colspec colwidth="8*"/>
+    <tbody><row>
+    <entry>Attributes:</entry>
+    <entry><itemizedlist>
+<listitem><para><emphasis><link linkend="attributes_has_tostring">has_tostring</link></emphasis></para></listitem>
+<listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_view_t">types.dt_view_t</link></para></listitem>
+</itemizedlist>
+</entry>
+    </row></tbody>
+    </tgroup></informaltable>
+</section>
+
 </section>
 
 <section status="final" id="darktable_gui_libs">
@@ -1773,6 +1794,27 @@ end</programlisting></para>
 <secondary>backgroundjobs</secondary>
 </indexterm>
 <para>The window displaying the currently running jobs</para>
+<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
+    <colspec colwidth="2*"/>
+    <colspec colwidth="8*"/>
+    <tbody><row>
+    <entry>Attributes:</entry>
+    <entry><itemizedlist>
+<listitem><para><emphasis><link linkend="attributes_has_tostring">has_tostring</link></emphasis></para></listitem>
+<listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_lib_module_t">types.dt_lib_module_t</link></para></listitem>
+</itemizedlist>
+</entry>
+    </row></tbody>
+    </tgroup></informaltable>
+</section>
+
+<section status="final" id="darktable_gui_libs_print_settings">
+<title>darktable.gui.libs.print_settings</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>print_settings</secondary>
+</indexterm>
+<para>The settings window in the print view</para>
 <informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
     <colspec colwidth="2*"/>
     <colspec colwidth="8*"/>
@@ -5785,7 +5827,7 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
 	<emphasis><link linkend="types_lua_widget_reset_callback_widget">widget</link></emphasis> : <link linkend="types_lua_widget">types.lua_widget</link>
 )</synopsis>
 <para>A function to call when the widget needs to reset itself</para>
-<para>Note that some widgets have a default implementation that can be overridden, (containers in particular will recursively reset their children). If you replace that default implementation you need to reimplement that functionality</para>
+<para>Note that some widgets have a default implementation that can be overridden, (containers in particular will recursively reset their children). If you replace that default implementation you need to reimplement that functionality or call the original function within your callback</para>
 <informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
     <colspec colwidth="2*"/>
     <colspec colwidth="8*"/>

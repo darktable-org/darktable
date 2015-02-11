@@ -93,7 +93,7 @@ void dt_lua_lock()
   if(!darktable.lua_state.ending && pthread_equal(darktable.control->gui_thread, pthread_self()) != 0)
   {
     dt_print(DT_DEBUG_LUA, "LUA WARNING locking from the gui thread should be avoided\n");
-    g_assert(false);
+    //g_assert(false);
   }
 
   dt_pthread_mutex_lock(&darktable.lua_state.mutex);

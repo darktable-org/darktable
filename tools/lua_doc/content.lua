@@ -365,6 +365,7 @@ darktable.gui.views.darkroom:set_text([[The darkroom view]])
 darktable.gui.views.lighttable:set_text([[The lighttable view]])
 darktable.gui.views.tethering:set_text([[The tethering view]])
 darktable.gui.views.slideshow:set_text([[The slideshow view]])
+darktable.gui.views.print:set_text([[The print view]])
 
 --[[
 for k, v in darktable.gui.libs:unskiped_children() do
@@ -443,6 +444,7 @@ darktable.gui.libs.map_settings:set_text([[The map setting window]])
 darktable.gui.libs.camera:set_text([[The camera selection UI]])
 darktable.gui.libs.location:set_text([[The location ui]])
 darktable.gui.libs.backgroundjobs:set_text([[The window displaying the currently running jobs]])
+darktable.gui.libs.print_settings:set_text([[The settings window in the print view]])
 
 
 darktable.control:set_text([[This table contain function to manipulate the control flow of lua programs. It provides ways to do background jobs and other related functions]])
@@ -697,7 +699,7 @@ darktable.debug.type:set_text([[Similar to the system function type() but it wil
   types.lua_widget.tooltip:set_text("Tooltip to display for the widget");
   types.lua_widget.tooltip:set_reported_type("string or nil")
   types.lua_widget.reset_callback:set_text("A function to call when the widget needs to reset itself"..para()..
-  "Note that some widgets have a default implementation that can be overridden, (containers in particular will recursively reset their children). If you replace that default implementation you need to reimplement that functionality")
+  "Note that some widgets have a default implementation that can be overridden, (containers in particular will recursively reset their children). If you replace that default implementation you need to reimplement that functionality or call the original function within your callback")
   types.lua_widget.reset_callback:set_reported_type("function")
   types.lua_widget.reset_callback:add_parameter("widget",types.lua_widget,"The widget that triggered the callback")
   types.lua_widget.__call:set_main_parent(types.lua_widget)
