@@ -579,15 +579,6 @@ void gui_init(dt_lib_module_t *self)
   dt_bauhaus_combobox_add(d->upscale, _("yes"));
   gtk_box_pack_start(GTK_BOX(self->widget), d->upscale, TRUE, TRUE, 0);
 
-  d->intent = dt_bauhaus_combobox_new(NULL);
-  dt_bauhaus_widget_set_label(d->intent, NULL, _("intent"));
-  dt_bauhaus_combobox_add(d->intent, _("image settings"));
-  dt_bauhaus_combobox_add(d->intent, _("perceptual"));
-  dt_bauhaus_combobox_add(d->intent, _("relative colorimetric"));
-  dt_bauhaus_combobox_add(d->intent, C_("rendering intent", "saturation"));
-  dt_bauhaus_combobox_add(d->intent, _("absolute colorimetric"));
-  gtk_box_pack_start(GTK_BOX(self->widget), d->intent, TRUE, TRUE, 0);
-
   //  Add profile combo
 
   d->profiles = NULL;
@@ -668,6 +659,16 @@ void gui_init(dt_lib_module_t *self)
            datadir);
   g_object_set(G_OBJECT(d->profile), "tooltip-text", tooltip, (char *)NULL);
 
+  //  Add intent combo
+
+  d->intent = dt_bauhaus_combobox_new(NULL);
+  dt_bauhaus_widget_set_label(d->intent, NULL, _("intent"));
+  dt_bauhaus_combobox_add(d->intent, _("image settings"));
+  dt_bauhaus_combobox_add(d->intent, _("perceptual"));
+  dt_bauhaus_combobox_add(d->intent, _("relative colorimetric"));
+  dt_bauhaus_combobox_add(d->intent, C_("rendering intent", "saturation"));
+  dt_bauhaus_combobox_add(d->intent, _("absolute colorimetric"));
+  gtk_box_pack_start(GTK_BOX(self->widget), d->intent, TRUE, TRUE, 0);
 
   //  Add style combo
 

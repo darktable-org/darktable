@@ -43,6 +43,7 @@
 #include <sys/time.h>
 #include <unistd.h>
 #include <inttypes.h>
+#include <libintl.h>
 
 static void generate_thumbnail_cache()
 {
