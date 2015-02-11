@@ -1411,6 +1411,26 @@ static int get_quality()
   return qual;
 }
 
+static int get_thumb_quality(int width, int height)
+{
+  // we check if we need ultra-high quality thumbnail for this size
+  char *min = dt_conf_get_string("plugins/lighttable/thumbnail_hq_min_level");
+
+  int level = dt_mipmap_cache_get_matching_size(darktable.mipmap_cache, width, height);
+  int res = 0;
+  if (strcmp(min, "always")==0) res = 1;
+  else if (strcmp(min, "small")==0) res = ( level >= 1 );
+  else if (strcmp(min, "VGA")==0) res = ( level >= 2 );
+  else if (strcmp(min, "720p")==0) res = ( level >= 3 );
+  else if (strcmp(min, "1080p")==0) res = ( level >= 4 );
+  else if (strcmp(min, "WQXGA")==0) res = ( level >= 5 );
+  else if (strcmp(min, "4k")==0) res = ( level >= 6 );
+  else if (strcmp(min, "5K")==0) res = ( level >= 7 );
+
+  g_free(min);
+  return res;
+}
+
 void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, void *o,
              const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
 {
@@ -1431,10 +1451,15 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *
      && roi_out->scale <= .99999f) // only overwrite setting if quality << requested and in dr mode
     demosaicing_method = (img->filters != 9u) ? DT_IOP_DEMOSAIC_PPG : DT_IOP_DEMOSAIC_MARKESTEIJN;
 
+  // we check if we need ultra-high quality thumbnail for this size
+  int uhq_thumb = 0;
+  if (piece->pipe->type == DT_DEV_PIXELPIPE_THUMBNAIL)
+    uhq_thumb = get_thumb_quality(roi_out->width, roi_out->height);
+
   const float *const pixels = (float *)i;
 
   if((piece->pipe->type == DT_DEV_PIXELPIPE_FULL && qual > 0) ||
-      piece->pipe->type == DT_DEV_PIXELPIPE_EXPORT ||
+      piece->pipe->type == DT_DEV_PIXELPIPE_EXPORT || (uhq_thumb) ||
       roi_out->scale > (img->filters == 9u ? 0.333f : .5f))
   {
     // Full demosaic and then scaling if needed
@@ -1540,12 +1565,17 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   const int devid = piece->pipe->devid;
   const int qual = get_quality();
 
+  // we check if we need ultra-high quality thumbnail for this size
+  int uhq_thumb = 0;
+  if (piece->pipe->type == DT_DEV_PIXELPIPE_THUMBNAIL)
+    uhq_thumb = get_thumb_quality(roi_out->width, roi_out->height);
+
   cl_mem dev_tmp = NULL;
   cl_mem dev_green_eq = NULL;
   cl_int err = -999;
 
   if((piece->pipe->type == DT_DEV_PIXELPIPE_FULL && qual > 0) ||
-      piece->pipe->type == DT_DEV_PIXELPIPE_EXPORT ||
+      piece->pipe->type == DT_DEV_PIXELPIPE_EXPORT || (uhq_thumb) ||
       roi_out->scale > (img->filters == 9u ? 0.333f : .5f))
   {
     // Full demosaic and then scaling if needed
