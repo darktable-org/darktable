@@ -43,7 +43,8 @@ DT_MODULE_INTROSPECTION(2, dt_iop_temperature_params_t)
 
 #define DT_IOP_LOWEST_TEMPERATURE 2000
 #define DT_IOP_HIGHEST_TEMPERATURE 23000
-#define DT_IOP_NUM_OF_STD_TEMP_PRESETS 2
+
+#define DT_IOP_NUM_OF_STD_TEMP_PRESETS 3
 
 typedef struct dt_iop_temperature_params_t
 {
@@ -414,6 +415,7 @@ void gui_update(struct dt_iop_module_t *self)
 
   dt_bauhaus_combobox_clear(g->presets);
   dt_bauhaus_combobox_add(g->presets, _("camera white balance"));
+  dt_bauhaus_combobox_add(g->presets, _("camera neutral white balance"));
   dt_bauhaus_combobox_add(g->presets, _("spot white balance"));
   g->preset_cnt = DT_IOP_NUM_OF_STD_TEMP_PRESETS;
   memset(g->preset_num, 0, sizeof(g->preset_num));
@@ -444,11 +446,26 @@ void gui_update(struct dt_iop_module_t *self)
       }
     }
 
+  gboolean found = FALSE;
+  // is this a camera white balance?
   if(memcmp(p->coeffs, fp->coeffs, 3 * sizeof(float)) == 0)
+  {
     dt_bauhaus_combobox_set(g->presets, 0);
+    found = TRUE;
+  }
   else
   {
-    gboolean found = FALSE;
+    // is this a "camera neutral white balance"?
+    if((p->coeffs[0] == g->daylight_wb[0]) && (p->coeffs[1] == g->daylight_wb[1])
+       && (p->coeffs[2] == g->daylight_wb[2]))
+    {
+      dt_bauhaus_combobox_set(g->presets, 1);
+      found = TRUE;
+    }
+  }
+
+  if(!found)
+  {
     // look through all added presets
     for(int j = DT_IOP_NUM_OF_STD_TEMP_PRESETS; !found && (j < g->preset_cnt); j++)
     {
@@ -837,7 +854,10 @@ static void apply_preset(dt_iop_module_t *self)
     case 0: // camera wb
       for(int k = 0; k < 3; k++) p->coeffs[k] = fp->coeffs[k];
       break;
-    case 1: // spot wb, expose callback will set p->coeffs.
+    case 1: // camera netral "wb"
+      for(int k = 0; k < 3; k++) p->coeffs[k] = g->daylight_wb[k];
+      break;
+    case 2: // spot wb, expose callback will set p->coeffs.
       for(int k = 0; k < 3; k++) p->coeffs[k] = fp->coeffs[k];
       dt_iop_request_focus(self);
       self->request_color_pick = DT_REQUEST_COLORPICK_MODULE;
