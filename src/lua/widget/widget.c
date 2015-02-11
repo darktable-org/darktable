@@ -253,6 +253,20 @@ static int tooltip_member(lua_State *L)
   return 1;
 }
 
+static int sensitive_member(lua_State *L)
+{
+  lua_widget widget;
+  luaA_to(L,lua_widget,&widget,1);
+  if(lua_gettop(L) > 2) {
+    gboolean value = lua_toboolean(L,3);
+    gtk_widget_set_sensitive(widget->widget,value);
+    return 0;
+  }
+  gboolean result = gtk_widget_get_sensitive(widget->widget);
+  lua_pushboolean(L,result);
+  return 1;
+}
+
 static int gtk_signal_member(lua_State *L)
 {
 
@@ -308,6 +322,9 @@ int dt_lua_init_widget(lua_State* L)
   dt_lua_type_register(L, lua_widget, "reset_callback");
   lua_pushcfunction(L,widget_call);
   dt_lua_type_setmetafield(L,lua_widget,"__call");
+  lua_pushcfunction(L,sensitive_member);
+  lua_pushcclosure(L,dt_lua_gtk_wrap,1);
+  dt_lua_type_register(L, lua_widget, "sensitive");
   
   dt_lua_init_widget_container(L);
 
