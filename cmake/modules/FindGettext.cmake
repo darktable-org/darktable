@@ -13,12 +13,16 @@ if(GETTEXT_LIBRARIES)
 endif(GETTEXT_LIBRARIES)
 
 find_path(GETTEXT_INCLUDE_DIR
-    NAMES dns_sd.h
+    NAMES libintl.h
     PATHS /opt/local/lib /sw/local/lib)
 
-find_library(GETTEXT_LIBRARIES 
-    NAMES intl
-    PATHS /opt/local/lib /sw/local/lib)
+if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
+find_library(GETTEXT_LIBRARIES NAMES c) # Gettext is in the GNU libc  
+else(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
+  find_library(GETTEXT_LIBRARIES 
+      NAMES intl
+      PATHS /opt/local/lib /sw/local/lib)
+endif(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
 
 include(FindPackageHandleStandardArgs)
 FIND_PACKAGE_HANDLE_STANDARD_ARGS(
