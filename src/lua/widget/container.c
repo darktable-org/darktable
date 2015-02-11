@@ -37,17 +37,17 @@ static int container_reset(lua_State* L)
   GList*curelt = children;
   while(curelt) {
     GtkWidget* cur_widget = curelt->data;
-    lua_pushlightuserdata(L,cur_widget);
-    lua_gettable(L,-2);
+    luaA_push(L,lua_widget,&cur_widget);
     lua_widget data;
     luaA_to(L,lua_widget,&data,-1);
+    lua_pop(L,1);
     int result = dt_lua_widget_trigger_callback(L,data,"reset");
     if(result != LUA_OK) {
       return lua_error(L);
     }
-    lua_pop(L,1);
     curelt = g_list_next(curelt);
   }
+  lua_pop(L,1);
   g_list_free(children);
   return 0;
 }

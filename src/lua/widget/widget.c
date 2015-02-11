@@ -154,6 +154,9 @@ int dt_lua_widget_trigger_callback_glist(lua_State*L,lua_widget object,const cha
       //save the error message below what will be popped
       lua_insert(L,-3);
     }
+  } else {
+    // pop the nil that would be the function in the normal path
+    lua_pop(L,1);
   }
   lua_pop(L,2);
   dt_lua_redraw_screen();
