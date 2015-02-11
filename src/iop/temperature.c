@@ -59,7 +59,7 @@ typedef struct dt_iop_temperature_gui_data_t
   GtkWidget *finetune;
   int preset_cnt;
   int preset_num[50];
-  float daylight_wb[3];
+  double daylight_wb[3];
 } dt_iop_temperature_gui_data_t;
 
 typedef struct dt_iop_temperature_data_t
@@ -456,8 +456,8 @@ void gui_update(struct dt_iop_module_t *self)
   else
   {
     // is this a "camera neutral white balance"?
-    if((p->coeffs[0] == g->daylight_wb[0]) && (p->coeffs[1] == g->daylight_wb[1])
-       && (p->coeffs[2] == g->daylight_wb[2]))
+    if((p->coeffs[0] == (float)g->daylight_wb[0]) && (p->coeffs[1] == (float)g->daylight_wb[1])
+       && (p->coeffs[2] == (float)g->daylight_wb[2]))
     {
       dt_bauhaus_combobox_set(g->presets, 1);
       found = TRUE;
@@ -539,32 +539,47 @@ void gui_update(struct dt_iop_module_t *self)
   }
 }
 
-int calculate_bogus_daylight_wb(dt_iop_module_t *module, float bwb[3])
+static int calculate_bogus_daylight_wb(dt_iop_module_t *module, double bwb[3])
 {
   // color matrix
   char makermodel[1024];
   dt_colorspaces_get_makermodel(makermodel, sizeof(makermodel), module->dev->image_storage.exif_maker,
                                 module->dev->image_storage.exif_model);
-  float cam_xyz[4][3];
-  cam_xyz[0][0] = NAN;
-  dt_dcraw_adobe_coeff(makermodel, (float(*)[12])cam_xyz);
-  if(!isnan(cam_xyz[0][0]))
+  float XYZ_to_CAM[4][3];
+  XYZ_to_CAM[0][0] = NAN;
+  dt_dcraw_adobe_coeff(makermodel, (float(*)[12])XYZ_to_CAM);
+  if(!isnan(XYZ_to_CAM[0][0]))
   {
-    float mat[3][3];
+    // sRGB D65
+    const double RGB_to_XYZ[3][3] = { { 0.4124564, 0.3575761, 0.1804375 },
+                                      { 0.2126729, 0.7151522, 0.0721750 },
+                                      { 0.0193339, 0.1191920, 0.9503041 } };
 
-    dt_colorspaces_create_cmatrix(cam_xyz, mat);
+    double RGB_to_CAM[3][3];
+    for(int i = 0; i < 3; i++)
+    {
+      for(int j = 0; j < 3; j++)
+      {
+        RGB_to_CAM[i][j] = 0.0;
+        for(int k = 0; k < 3; k++) RGB_to_CAM[i][j] += XYZ_to_CAM[i][k] * RGB_to_XYZ[k][j];
+      }
+    }
 
     for(int c = 0; c < 3; c++)
     {
-      float num = 0.0f;
+      double num = 0.0;
 
       for(int j = 0; j < 3; j++)
       {
-        num += mat[c][j];
+        num += RGB_to_CAM[c][j];
       }
 
-      bwb[c] = 1.0f / num;
+      bwb[c] = 1.0 / num;
     }
+
+    bwb[0] /= bwb[1];
+    bwb[2] /= bwb[1];
+    bwb[1] = 1.0;
 
     return 0;
   }
@@ -637,10 +652,14 @@ void reload_defaults(dt_iop_module_t *module)
     }
 
     // did not find preset either?
-    if(!is_monochrom && !found && !calculate_bogus_daylight_wb(module, tmp.coeffs))
     {
-      // found camera matrix and used it to calculate bogus daylight wb
-      found = 1;
+      double bwb[3];
+      if(!is_monochrom && !found && !calculate_bogus_daylight_wb(module, bwb))
+      {
+        // found camera matrix and used it to calculate bogus daylight wb
+        for(int c = 0; c < 3; c++) tmp.coeffs[c] = bwb[c];
+        found = 1;
+      }
     }
 
     // and no cam matrix too???
@@ -663,7 +682,7 @@ void reload_defaults(dt_iop_module_t *module)
       dt_iop_temperature_gui_data_t *g = (dt_iop_temperature_gui_data_t *)module->gui_data;
 
       // to have at least something and definitely not crash
-      for(int c = 0; c < 3; c++) g->daylight_wb[c] = module->dev->image_storage.wb_coeffs[c];
+      for(int c = 0; c < 3; c++) g->daylight_wb[c] = tmp.coeffs[c];
 
       if(!calculate_bogus_daylight_wb(module, g->daylight_wb))
       {
@@ -954,7 +973,7 @@ void gui_init(struct dt_iop_module_t *self)
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
   g_signal_connect(G_OBJECT(self->widget), "draw", G_CALLBACK(draw), self);
 
-  for(int k = 0; k < 3; k++) g->daylight_wb[k] = 1.0f;
+  for(int k = 0; k < 3; k++) g->daylight_wb[k] = 1.0;
   g->scale_tint = dt_bauhaus_slider_new_with_range(self, 0.1, 8.0, .01, 1.0, 3);
   g->scale_k = dt_bauhaus_slider_new_with_range(self, DT_IOP_LOWEST_TEMPERATURE, DT_IOP_HIGHEST_TEMPERATURE,
                                                 10., 5000.0, 0);
