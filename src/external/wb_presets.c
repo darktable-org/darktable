@@ -4591,6 +4591,13 @@ const wb_data wb_preset[] =
   { "Panasonic", "DMC-FZ200", "5500K", 0,	{ 2.015094, 1, 1.758491, 0 } },
   { "Panasonic", "DMC-FZ200", "6500K", 0,	{ 2.203774, 1, 1.577358, 0 } },
 
+  // Panasonic DMC-FZ1000 Firmware 2.0.0
+  { "Panasonic", "DMC-FZ1000", Daylight, 0,	{ 2.425781, 1, 1.886719, 0 } },
+  { "Panasonic", "DMC-FZ1000", Cloudy, 0,	{ 2.621094, 1, 1.714844, 0 } },
+  { "Panasonic", "DMC-FZ1000", Shade, 0,	{ 2.765625, 1, 1.625000, 0 } },
+  { "Panasonic", "DMC-FZ1000", Incandescent, 0,	{ 1.718750, 1, 2.750000, 0 } },
+  { "Panasonic", "DMC-FZ1000", Flash, 0,	{ 2.585938, 1, 1.796875, 0 } },
+
   { "Panasonic", "DMC-G1", Daylight, 0,		{ 1.942966, 1, 1.448669, 0 } },
   { "Panasonic", "DMC-G1", Cloudy, 0,		{ 2.106464, 1, 1.326996, 0 } },
   { "Panasonic", "DMC-G1", Shade, 0,		{ 2.323194, 1, 1.224335, 0 } },
