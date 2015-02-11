@@ -24,8 +24,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 1.3\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-02-05 14:17+0100\n"
-"PO-Revision-Date: 2015-02-05 16:26+0100\n"
+"POT-Creation-Date: 2015-02-11 23:16+0100\n"
+"PO-Revision-Date: 2015-02-11 23:17+0100\n"
 "Last-Translator: Richard Levitte <richard@levitte.org>\n"
 "Language-Team: \n"
 "Language: sv\n"
@@ -378,7 +378,10 @@ msgid ""
 "when there is a txt file next to an image it can be shown as an overlay over "
 "zoomed images on the lighttable. the txt file either has to be there at "
 "import time or the crawler has to be enabled"
-msgstr "när det finns en txt-fil tillsammans med en bild kan dess innehåll visas som ett överlägg över inzoomade bilder i ljusbordet. txt-filen måste vara på plats när bilderna importeras, eller så måste crawlern vara påslagen"
+msgstr ""
+"när det finns en txt-fil tillsammans med en bild kan dess innehåll visas som "
+"ett överlägg över inzoomade bilder i ljusbordet. txt-filen måste vara på "
+"plats när bilderna importeras, eller så måste crawlern vara påslagen"
 
 #: ../build/src/preferences_gen.h:1925
 msgid "expand a single lighttable module at a time"
@@ -1021,9 +1024,9 @@ msgid "style %s was successfully imported"
 msgstr "importerade stilen '%s'"
 
 #: ../src/common/variables.c:240 ../src/common/variables.c:254
-#: ../src/iop/clipping.c:1574 ../src/iop/clipping.c:1822
-#: ../src/iop/clipping.c:1842 ../src/iop/clipping.c:1887
-#: ../src/iop/clipping.c:1909 ../src/iop/lens.c:1965 ../src/libs/export.c:631
+#: ../src/iop/clipping.c:1583 ../src/iop/clipping.c:1831
+#: ../src/iop/clipping.c:1851 ../src/iop/clipping.c:1896
+#: ../src/iop/clipping.c:1918 ../src/iop/lens.c:1965 ../src/libs/export.c:640
 #: ../src/libs/live_view.c:324 ../src/libs/live_view.c:337
 #: ../src/libs/live_view.c:355
 msgid "none"
@@ -2167,32 +2170,32 @@ msgid "import"
 msgstr "importera"
 
 #. Top info
-#: ../src/gui/camera_import_dialog.c:218
+#: ../src/gui/camera_import_dialog.c:220
 msgid "please wait while prefetching thumbnails of images from camera..."
 msgstr "var god vänta medans förhandsvisningsbilder hämtas från kameran."
 
-#: ../src/gui/camera_import_dialog.c:225 ../src/libs/session.c:97
+#: ../src/gui/camera_import_dialog.c:227 ../src/libs/session.c:97
 msgid "jobcode"
 msgstr "jobbkod"
 
-#: ../src/gui/camera_import_dialog.c:239
+#: ../src/gui/camera_import_dialog.c:241
 msgid "thumbnail"
 msgstr "miniatyr"
 
-#: ../src/gui/camera_import_dialog.c:243
+#: ../src/gui/camera_import_dialog.c:245
 msgid "storage file"
 msgstr "lagringsfil"
 
-#: ../src/gui/camera_import_dialog.c:263
+#: ../src/gui/camera_import_dialog.c:265
 msgid "general"
 msgstr "generella"
 
 #. ignoring of jpegs. hack while we don't handle raw+jpeg in the same directories.
-#: ../src/gui/camera_import_dialog.c:267 ../src/libs/import.c:401
+#: ../src/gui/camera_import_dialog.c:269 ../src/libs/import.c:401
 msgid "ignore JPEG files"
 msgstr "ignorera JPEG-bilder"
 
-#: ../src/gui/camera_import_dialog.c:269 ../src/libs/import.c:402
+#: ../src/gui/camera_import_dialog.c:271 ../src/libs/import.c:402
 msgid ""
 "do not load files with an extension of .jpg or .jpeg. this can be useful "
 "when there are raw+JPEG in a directory."
@@ -2200,11 +2203,11 @@ msgstr ""
 "importerar inte bilder med filändelse .jpg eller .jpeg. detta är användbart "
 "om du har raw+JPEG bilder i katalogerna."
 
-#: ../src/gui/camera_import_dialog.c:279
+#: ../src/gui/camera_import_dialog.c:281
 msgid "override today's date"
 msgstr "överskrida dagens datum"
 
-#: ../src/gui/camera_import_dialog.c:282
+#: ../src/gui/camera_import_dialog.c:284
 msgid ""
 "check this, if you want to override the timestamp used when expanding "
 "variables:\n"
@@ -2216,22 +2219,22 @@ msgstr ""
 "$(YEAR), $(MONTH), $(DAY),\n"
 "$(HOUR), $(MINUTE), $(SECONDS)"
 
-#: ../src/gui/camera_import_dialog.c:299
+#: ../src/gui/camera_import_dialog.c:301
 msgid "images"
 msgstr "bilder"
 
-#: ../src/gui/camera_import_dialog.c:300
+#: ../src/gui/camera_import_dialog.c:302
 msgid "settings"
 msgstr "inställningar"
 
-#: ../src/gui/camera_import_dialog.c:469
+#: ../src/gui/camera_import_dialog.c:471
 msgid ""
 "select the images from the list below that you want to import into a new "
 "filmroll"
 msgstr ""
 "markera de bilder i listan nedan som du vill importera till en ny filmrulle"
 
-#: ../src/gui/camera_import_dialog.c:519
+#: ../src/gui/camera_import_dialog.c:521
 msgid "please use YYYY-MM-DD format for date override"
 msgstr "använd datumformatet YYYY-MM-DD för egna datum"
 
@@ -2529,7 +2532,7 @@ msgstr "importera"
 
 #. Export button
 #. export button
-#: ../src/gui/preferences.c:559 ../src/libs/export.c:653
+#: ../src/gui/preferences.c:559 ../src/libs/export.c:662
 #: ../src/libs/styles.c:385
 msgid "export"
 msgstr "export"
@@ -3574,7 +3577,7 @@ msgid "the size of bloom"
 msgstr "överstrålningens storlek"
 
 #: ../src/iop/bloom.c:536 ../src/iop/defringe.c:466 ../src/iop/hotpixels.c:408
-#: ../src/iop/sharpen.c:592
+#: ../src/iop/sharpen.c:593
 msgid "threshold"
 msgstr "tröskel"
 
@@ -3633,7 +3636,7 @@ msgid "select frame line color"
 msgstr "välj ramlinjens färg"
 
 #. add import single image buttons
-#: ../src/iop/borders.c:962 ../src/iop/clipping.c:1864
+#: ../src/iop/borders.c:962 ../src/iop/clipping.c:1873
 #: ../src/libs/import.c:834
 msgid "image"
 msgstr "bild"
@@ -3650,15 +3653,15 @@ msgstr "95:33"
 msgid "2:1"
 msgstr "2:1"
 
-#: ../src/iop/borders.c:966 ../src/iop/clipping.c:1873
+#: ../src/iop/borders.c:966 ../src/iop/clipping.c:1882
 msgid "16:9"
 msgstr "16:9"
 
-#: ../src/iop/borders.c:967 ../src/iop/clipping.c:1865
+#: ../src/iop/borders.c:967 ../src/iop/clipping.c:1874
 msgid "golden cut"
 msgstr "gyllene snitt"
 
-#: ../src/iop/borders.c:968 ../src/iop/clipping.c:1867
+#: ../src/iop/borders.c:968 ../src/iop/clipping.c:1876
 msgid "3:2"
 msgstr "3:2"
 
@@ -3666,15 +3669,15 @@ msgstr "3:2"
 msgid "A4"
 msgstr "A4"
 
-#: ../src/iop/borders.c:970 ../src/iop/clipping.c:1872
+#: ../src/iop/borders.c:970 ../src/iop/clipping.c:1881
 msgid "DIN"
 msgstr "DIN"
 
-#: ../src/iop/borders.c:971 ../src/iop/clipping.c:1869
+#: ../src/iop/borders.c:971 ../src/iop/clipping.c:1878
 msgid "4:3"
 msgstr "4:3"
 
-#: ../src/iop/borders.c:972 ../src/iop/clipping.c:1871
+#: ../src/iop/borders.c:972 ../src/iop/clipping.c:1880
 msgid "square"
 msgstr "kvadrat"
 
@@ -3710,7 +3713,7 @@ msgstr "kantens storlek"
 msgid "size of the border in percent of the full image"
 msgstr "storlek på kant i procent av hela bilden"
 
-#: ../src/iop/borders.c:1037 ../src/iop/clipping.c:1862
+#: ../src/iop/borders.c:1037 ../src/iop/clipping.c:1871
 msgid "aspect"
 msgstr "aspekt"
 
@@ -3898,7 +3901,7 @@ msgstr "s/v mjuk hy"
 msgid "B/W blue artifacts reduce"
 msgstr "s/v reducering av artefakter"
 
-#: ../src/iop/clahe.c:330 ../src/iop/sharpen.c:589
+#: ../src/iop/clahe.c:330 ../src/iop/sharpen.c:590
 msgid "amount"
 msgstr "mängd"
 
@@ -3914,187 +3917,187 @@ msgstr "sluttningen påverkar effektens styrka"
 msgid "crop and rotate"
 msgstr "beskär och rotera"
 
-#: ../src/iop/clipping.c:1462
+#: ../src/iop/clipping.c:1471
 msgid "invalid ratio format. it should be \"number:number\""
 msgstr "felaktig format för bildförhållande. det borde vara \"nummer:nummer\""
 
-#: ../src/iop/clipping.c:1575 ../src/iop/clipping.c:1824
-#: ../src/iop/clipping.c:1843
+#: ../src/iop/clipping.c:1584 ../src/iop/clipping.c:1833
+#: ../src/iop/clipping.c:1852
 msgid "vertical"
 msgstr "vertikalt"
 
-#: ../src/iop/clipping.c:1576 ../src/iop/clipping.c:1823
-#: ../src/iop/clipping.c:1844
+#: ../src/iop/clipping.c:1585 ../src/iop/clipping.c:1832
+#: ../src/iop/clipping.c:1853
 msgid "horizontal"
 msgstr "horisontellt"
 
-#: ../src/iop/clipping.c:1577 ../src/iop/clipping.c:1845
+#: ../src/iop/clipping.c:1586 ../src/iop/clipping.c:1854
 msgid "full"
 msgstr "båda"
 
-#: ../src/iop/clipping.c:1578
+#: ../src/iop/clipping.c:1587
 msgid "old system"
 msgstr "gammalt system"
 
-#: ../src/iop/clipping.c:1579
+#: ../src/iop/clipping.c:1588
 msgid "correction applied"
 msgstr "korrigering gjord"
 
-#: ../src/iop/clipping.c:1821 ../src/iop/clipping.c:1908
+#: ../src/iop/clipping.c:1830 ../src/iop/clipping.c:1917
 #: ../src/libs/live_view.c:336
 msgid "flip"
 msgstr "vänd"
 
-#: ../src/iop/clipping.c:1825 ../src/iop/clipping.c:1912
+#: ../src/iop/clipping.c:1834 ../src/iop/clipping.c:1921
 #: ../src/libs/live_view.c:340
 msgid "both"
 msgstr "båda"
 
-#: ../src/iop/clipping.c:1827
+#: ../src/iop/clipping.c:1836
 msgid "mirror image horizontally and/or vertically"
 msgstr "vänd bild horisontellt och/eller vertikalt"
 
-#: ../src/iop/clipping.c:1833
+#: ../src/iop/clipping.c:1842
 msgid "angle"
 msgstr "vinkel"
 
-#: ../src/iop/clipping.c:1837
+#: ../src/iop/clipping.c:1846
 msgid "right-click and drag a line on the image to drag a straight line"
 msgstr "högerklicka och dra en linje på bilden för att dra en rak linje"
 
-#: ../src/iop/clipping.c:1841
+#: ../src/iop/clipping.c:1850
 msgid "keystone"
 msgstr "perspektivkorr"
 
-#: ../src/iop/clipping.c:1846
+#: ../src/iop/clipping.c:1855
 msgid "set perspective correction for your image"
 msgstr "korrigera perspektivet på din bild"
 
-#: ../src/iop/clipping.c:1852
+#: ../src/iop/clipping.c:1861
 msgid "automatic cropping"
 msgstr "automatiskt beskärning"
 
-#: ../src/iop/clipping.c:1853 ../src/libs/metadata_view.c:245
+#: ../src/iop/clipping.c:1862 ../src/libs/metadata_view.c:245
 msgid "no"
 msgstr "nej"
 
-#: ../src/iop/clipping.c:1854 ../src/libs/metadata_view.c:245
+#: ../src/iop/clipping.c:1863 ../src/libs/metadata_view.c:245
 msgid "yes"
 msgstr "ja"
 
-#: ../src/iop/clipping.c:1855
+#: ../src/iop/clipping.c:1864
 msgid "automatically crop to avoid black edges"
 msgstr "beskär automatiskt för att undvika svarta kanter"
 
-#: ../src/iop/clipping.c:1863
+#: ../src/iop/clipping.c:1872
 msgid "free"
 msgstr "fri"
 
-#: ../src/iop/clipping.c:1866
+#: ../src/iop/clipping.c:1875
 msgid "1:2"
 msgstr "1:2"
 
-#: ../src/iop/clipping.c:1868
+#: ../src/iop/clipping.c:1877
 msgid "7:5"
 msgstr "7:5"
 
-#: ../src/iop/clipping.c:1870
+#: ../src/iop/clipping.c:1879
 msgid "5:4"
 msgstr "5:4"
 
-#: ../src/iop/clipping.c:1874
+#: ../src/iop/clipping.c:1883
 msgid "16:10"
 msgstr "16:10"
 
-#: ../src/iop/clipping.c:1875
+#: ../src/iop/clipping.c:1884
 msgid "10:8 in print"
 msgstr "10:8 för utskrift"
 
-#: ../src/iop/clipping.c:1880
-msgid "set the aspect ratio (w:h)"
-msgstr "ange bildförhållandet (b:h)"
+#: ../src/iop/clipping.c:1889
+msgid "set the aspect ratio"
+msgstr "sätt bildförhållandet"
 
-#: ../src/iop/clipping.c:1886 ../src/libs/live_view.c:323
+#: ../src/iop/clipping.c:1895 ../src/libs/live_view.c:323
 msgid "guides"
 msgstr "guider"
 
-#: ../src/iop/clipping.c:1889 ../src/libs/live_view.c:325
+#: ../src/iop/clipping.c:1898 ../src/libs/live_view.c:325
 msgid "grid"
 msgstr "rutmönster"
 
 #. TODO: make the number of lines configurable with a slider?
-#: ../src/iop/clipping.c:1890 ../src/libs/live_view.c:326
+#: ../src/iop/clipping.c:1899 ../src/libs/live_view.c:326
 msgid "rules of thirds"
 msgstr "tredjedelsregeln"
 
-#: ../src/iop/clipping.c:1891
+#: ../src/iop/clipping.c:1900
 msgid "metering"
 msgstr "mätskala"
 
-#: ../src/iop/clipping.c:1893
+#: ../src/iop/clipping.c:1902
 msgid "perspective"
 msgstr "perspektiv"
 
 #. TODO: make the number of lines configurable with a slider?
-#: ../src/iop/clipping.c:1894 ../src/libs/live_view.c:327
+#: ../src/iop/clipping.c:1903 ../src/libs/live_view.c:327
 msgid "diagonal method"
 msgstr "diagonal metod"
 
-#: ../src/iop/clipping.c:1895 ../src/libs/live_view.c:328
+#: ../src/iop/clipping.c:1904 ../src/libs/live_view.c:328
 msgid "harmonious triangles"
 msgstr "harmoniska trianglar"
 
-#: ../src/iop/clipping.c:1896 ../src/libs/live_view.c:329
+#: ../src/iop/clipping.c:1905 ../src/libs/live_view.c:329
 msgid "golden mean"
 msgstr "gyllene snitt"
 
-#: ../src/iop/clipping.c:1903 ../src/libs/live_view.c:331
+#: ../src/iop/clipping.c:1912 ../src/libs/live_view.c:331
 msgid "display guide lines to help compose your photograph"
 msgstr "visa guider för att hjälpa dig att komponera ditt fotografi"
 
-#: ../src/iop/clipping.c:1910 ../src/libs/live_view.c:338
+#: ../src/iop/clipping.c:1919 ../src/libs/live_view.c:338
 msgid "horizontally"
 msgstr "horisontellt"
 
-#: ../src/iop/clipping.c:1911 ../src/libs/live_view.c:339
+#: ../src/iop/clipping.c:1920 ../src/libs/live_view.c:339
 msgid "vertically"
 msgstr "vertikalt"
 
-#: ../src/iop/clipping.c:1913 ../src/libs/live_view.c:341
+#: ../src/iop/clipping.c:1922 ../src/libs/live_view.c:341
 msgid "flip guides"
 msgstr "vänd guider"
 
-#: ../src/iop/clipping.c:1918 ../src/libs/live_view.c:345
+#: ../src/iop/clipping.c:1927 ../src/libs/live_view.c:345
 msgid "extra"
 msgstr "extra"
 
-#: ../src/iop/clipping.c:1919 ../src/libs/live_view.c:346
+#: ../src/iop/clipping.c:1928 ../src/libs/live_view.c:346
 msgid "golden sections"
 msgstr "gyllene sektioner"
 
-#: ../src/iop/clipping.c:1920 ../src/libs/live_view.c:347
+#: ../src/iop/clipping.c:1929 ../src/libs/live_view.c:347
 msgid "golden spiral sections"
 msgstr "gyllene spiralsektioner"
 
-#: ../src/iop/clipping.c:1921 ../src/libs/live_view.c:348
+#: ../src/iop/clipping.c:1930 ../src/libs/live_view.c:348
 msgid "golden spiral"
 msgstr "gyllene spiral"
 
-#: ../src/iop/clipping.c:1922 ../src/iop/lens.c:1971
+#: ../src/iop/clipping.c:1931 ../src/iop/lens.c:1971
 #: ../src/libs/live_view.c:349 ../src/libs/tools/filter.c:119
 msgid "all"
 msgstr "alla"
 
-#: ../src/iop/clipping.c:1923 ../src/libs/live_view.c:350
+#: ../src/iop/clipping.c:1932 ../src/libs/live_view.c:350
 msgid "show some extra guides"
 msgstr "visa extra guider"
 
-#: ../src/iop/clipping.c:3037
+#: ../src/iop/clipping.c:3046
 msgctxt "accel"
 msgid "commit"
 msgstr "applicera"
 
-#: ../src/iop/clipping.c:3038
+#: ../src/iop/clipping.c:3047
 msgctxt "accel"
 msgid "angle"
 msgstr "vinkel"
@@ -4317,21 +4320,21 @@ msgstr "sRGB (tex. JPG)"
 #: ../src/iop/colorin.c:1099 ../src/iop/colorin.c:1133
 #: ../src/iop/colorin.c:1268 ../src/iop/colorout.c:934
 #: ../src/iop/colorout.c:935 ../src/iop/colorout.c:936
-#: ../src/libs/export.c:548
+#: ../src/libs/export.c:547
 msgid "Adobe RGB (compatible)"
 msgstr "Adobe RGB (kompatibel)"
 
 #: ../src/iop/colorin.c:1101 ../src/iop/colorin.c:1135
 #: ../src/iop/colorin.c:1269 ../src/iop/colorout.c:916
 #: ../src/iop/colorout.c:917 ../src/iop/colorout.c:918
-#: ../src/libs/export.c:554
+#: ../src/libs/export.c:553
 msgid "linear Rec709 RGB"
 msgstr "linjär Rec709 RGB"
 
 #: ../src/iop/colorin.c:1103 ../src/iop/colorin.c:1137
 #: ../src/iop/colorin.c:1270 ../src/iop/colorout.c:922
 #: ../src/iop/colorout.c:923 ../src/iop/colorout.c:924
-#: ../src/libs/export.c:560
+#: ../src/libs/export.c:559
 msgid "linear Rec2020 RGB"
 msgstr "linjär Rec2020 RGB"
 
@@ -4349,7 +4352,7 @@ msgid "Lab"
 msgstr "Lab"
 
 #: ../src/iop/colorin.c:1249 ../src/iop/denoiseprofile.c:1641
-#: ../src/libs/export.c:598
+#: ../src/libs/export.c:597
 msgid "profile"
 msgstr "profil"
 
@@ -4496,23 +4499,23 @@ msgid "output intent"
 msgstr "utgående avsikt"
 
 #: ../src/iop/colorout.c:876 ../src/iop/colorout.c:883
-#: ../src/libs/export.c:529
+#: ../src/libs/export.c:625
 msgid "perceptual"
 msgstr "perceptuell"
 
 #: ../src/iop/colorout.c:877 ../src/iop/colorout.c:884
-#: ../src/libs/export.c:530
+#: ../src/libs/export.c:626
 msgid "relative colorimetric"
 msgstr "relativ färgmetri"
 
 #: ../src/iop/colorout.c:878 ../src/iop/colorout.c:885
-#: ../src/libs/export.c:531
+#: ../src/libs/export.c:627
 msgctxt "rendering intent"
 msgid "saturation"
 msgstr "mättnad"
 
 #: ../src/iop/colorout.c:879 ../src/iop/colorout.c:886
-#: ../src/libs/export.c:532
+#: ../src/libs/export.c:628
 msgid "absolute colorimetric"
 msgstr "absolut färgmetri"
 
@@ -4538,7 +4541,7 @@ msgid "system display profile"
 msgstr "systemets skärmprofil"
 
 #: ../src/iop/colorout.c:928 ../src/iop/colorout.c:929
-#: ../src/iop/colorout.c:930 ../src/libs/export.c:541
+#: ../src/iop/colorout.c:930 ../src/libs/export.c:540
 msgid "sRGB (web-safe)"
 msgstr "sRGB (webb-säker)"
 
@@ -5779,16 +5782,16 @@ msgstr "monokrom"
 msgid "red filter"
 msgstr "rött filter"
 
-#: ../src/iop/monochrome.c:539
+#: ../src/iop/monochrome.c:541
 msgid "drag and scroll mouse wheel to adjust the virtual color filter"
 msgstr "drag och skrolla med musen för att justera det virtuella färgfiltret"
 
-#: ../src/iop/monochrome.c:554
+#: ../src/iop/monochrome.c:556
 msgid "how much to keep highlights"
 msgstr "hur mycket ska högdagrar behållas"
 
 #. Highlights
-#: ../src/iop/monochrome.c:555 ../src/iop/shadhi.c:759
+#: ../src/iop/monochrome.c:557 ../src/iop/shadhi.c:759
 #: ../src/iop/splittoning.c:585
 msgid "highlights"
 msgstr "högdagrar"
@@ -6029,11 +6032,11 @@ msgstr "mängd"
 msgid "spatial extent of the unblurring"
 msgstr "rumslig utsträckning för oskarp mask"
 
-#: ../src/iop/sharpen.c:588
+#: ../src/iop/sharpen.c:589
 msgid "strength of the sharpen"
 msgstr "styrka på skärpningen"
 
-#: ../src/iop/sharpen.c:591
+#: ../src/iop/sharpen.c:592
 msgid "threshold to activate sharpen"
 msgstr "tröskelvärde för aktivering av skärpa"
 
@@ -6982,19 +6985,19 @@ msgstr "skapa sidofiler med inställningar"
 msgid "export selected"
 msgstr "exportera valda bilder"
 
-#: ../src/libs/export.c:459
+#: ../src/libs/export.c:469
 msgid "target storage"
 msgstr "mållagring"
 
-#: ../src/libs/export.c:481
+#: ../src/libs/export.c:491
 msgid "file format"
 msgstr "filformat"
 
-#: ../src/libs/export.c:495
+#: ../src/libs/export.c:505
 msgid "global options"
 msgstr "globala inställningar"
 
-#: ../src/libs/export.c:499
+#: ../src/libs/export.c:509
 msgid ""
 "maximum output width\n"
 "set to 0 for no scaling"
@@ -7002,7 +7005,7 @@ msgstr ""
 "maximal bredd,\n"
 "ange 0 för att utesluta skalning"
 
-#: ../src/libs/export.c:502
+#: ../src/libs/export.c:512
 msgid ""
 "maximum output height\n"
 "set to 0 for no scaling"
@@ -7018,44 +7021,44 @@ msgstr ""
 #. g_signal_connect (G_OBJECT (d->height), "focus-in-event",  G_CALLBACK(focus_in),  NULL);
 #. g_signal_connect (G_OBJECT (d->height), "focus-out-event", G_CALLBACK(focus_out), NULL);
 #.
-#: ../src/libs/export.c:515
+#: ../src/libs/export.c:525
 msgid "max size"
 msgstr "maximal storlek"
 
-#: ../src/libs/export.c:520
+#: ../src/libs/export.c:530
 msgid "x"
 msgstr "×"
 
-#: ../src/libs/export.c:524
-msgid "intent"
-msgstr "avsikt"
-
-#. gtk_table_attach(GTK_TABLE(self->widget), GTK_WIDGET(d->profile), 1, 2, 9, 10, GTK_EXPAND|GTK_FILL, 0, 0,
+#. gtk_table_attach(GTK_TABLE(self->widget), GTK_WIDGET(d->profile), 1, 2, 8, 9, GTK_EXPAND|GTK_FILL, 0, 0,
 #. 0);
-#: ../src/libs/export.c:528 ../src/libs/export.c:607
+#: ../src/libs/export.c:606 ../src/libs/export.c:624
 msgid "image settings"
 msgstr "bildinställningar"
 
-#: ../src/libs/export.c:617
+#: ../src/libs/export.c:616
 #, c-format
 msgid "output ICC profiles in %s/color/out or %s/color/out"
 msgstr "utgående ICC-profiler i %s/color/out eller %s/color/out"
 
+#: ../src/libs/export.c:620
+msgid "intent"
+msgstr "avsikt"
+
 #. Add style combo
-#: ../src/libs/export.c:624
+#: ../src/libs/export.c:633
 msgid "style"
 msgstr "stil"
 
-#: ../src/libs/export.c:642
+#: ../src/libs/export.c:651
 msgid "temporary style to append while exporting"
 msgstr "temporär stil som ska appliceras vid export"
 
-#: ../src/libs/export.c:655
+#: ../src/libs/export.c:664
 msgid "export with current settings (ctrl-e)"
 msgstr "exportera med nuvarande inställningar (ctrl-e)"
 
 #. enable shortcut to export with current export settings:
-#: ../src/libs/export.c:1080 ../src/libs/styles.c:66
+#: ../src/libs/export.c:1089 ../src/libs/styles.c:66
 #: ../src/views/darkroom.c:1698
 msgctxt "accel"
 msgid "export"
@@ -8794,6 +8797,9 @@ msgstr "ny session skapad '%s'"
 msgid "no camera with tethering support available for use..."
 msgstr "ingen kamera som stödjer tjudring finns tillgänglig..."
 
+#~ msgid "set the aspect ratio (w:h)"
+#~ msgstr "ange bildförhållandet (b:h)"
+
 #~ msgid "VNG"
 #~ msgstr "VNG"
 
@@ -9705,10 +9711,6 @@ msgstr "ingen kamera som stödjer tjudring finns tillgänglig..."
 
 #~ msgid "enable this option to show golden triangles."
 #~ msgstr "klicka i för att visa gyllene trianglar"
-
-#~ msgctxt "accel"
-#~ msgid "swap the aspect ratio"
-#~ msgstr "byt sida för aspekt förhållande (ctrl-x)"
 
 #~ msgid "draw a rectangle to give a tint"
 #~ msgstr "rita en rektangel för att avläsa en nyans"
