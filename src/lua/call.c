@@ -237,7 +237,7 @@ int dt_lua_do_chunk_silent(lua_State *L, int nargs, int nresults)
   int thread_result = dt_lua_do_chunk(L, nargs, nresults);
   if(thread_result == LUA_OK)
   {
-    return lua_gettop(L) - orig_top;
+    return lua_gettop(L) - (orig_top -nargs -1);
   }
 
   if(darktable.unmuted & DT_DEBUG_LUA)
@@ -262,7 +262,7 @@ int dt_lua_do_chunk_raise(lua_State *L, int nargs, int nresults)
   int thread_result = dt_lua_do_chunk(L, nargs, nresults);
   if(thread_result == LUA_OK)
   {
-    return lua_gettop(L) - orig_top;
+    return lua_gettop(L) - (orig_top -nargs -1);
   }
   else
   {
