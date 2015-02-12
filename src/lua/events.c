@@ -55,7 +55,7 @@ void dt_lua_event_trigger(lua_State *L, const char *event, int nargs)
   dt_lua_redraw_screen();
 }
 
-static int event_trigger_wrapper(lua_State *L) 
+int dt_lua_event_trigger_wrapper(lua_State *L) 
 {
   const char*event = luaL_checkstring(L,1);
   int nargs = lua_gettop(L) -1;
@@ -244,39 +244,13 @@ int dt_lua_init_early_events(lua_State *L)
  * shortcut events
  * keyed event with a tuned registration to handle shortcuts
  */
-typedef struct
-{
-  char *name;
-} shortcut_callback_data;
-static int32_t shortcut_callback_job(dt_job_t *job)
-{
-  dt_lua_lock();
-  shortcut_callback_data *t = dt_control_job_get_params(job);
-  lua_pushstring(darktable.lua_state.state, t->name);
-  free(t->name);
-  free(t);
-  dt_lua_event_trigger(darktable.lua_state.state, "shortcut", 1);
-  dt_lua_unlock();
-  return 0;
-}
 static gboolean shortcut_callback(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
                                   GdkModifierType modifier, gpointer p)
 {
-  dt_job_t *job = dt_control_job_create(&shortcut_callback_job, "lua: on shortcut");
-  if(job)
-  {
-    shortcut_callback_data *t = (shortcut_callback_data *)calloc(1, sizeof(shortcut_callback_data));
-    if(!t)
-    {
-      dt_control_job_dispose(job);
-    }
-    else
-    {
-      dt_control_job_set_params(job, t);
-      t->name = strdup(p);
-      dt_control_add_job(darktable.control, DT_JOB_QUEUE_USER_FG, job);
-    }
-  }
+  dt_lua_do_chunk_async(dt_lua_event_trigger_wrapper,
+      LUA_ASYNC_TYPENAME,"const char*","shortcut",
+      LUA_ASYNC_TYPENAME_WITH_FREE,"char*",strdup(p),
+      LUA_ASYNC_DONE);
   return TRUE;
 }
 
@@ -310,14 +284,14 @@ static void on_export_image_tmpfile(gpointer instance, int imgid, char *filename
                                     gpointer user_data)
 {
   if(storage){
-    dt_lua_do_chunk_async(event_trigger_wrapper,
+    dt_lua_do_chunk_async(dt_lua_event_trigger_wrapper,
         LUA_ASYNC_TYPENAME,"const char*","intermediate-export-image",
         LUA_ASYNC_TYPENAME_WITH_FREE,"char*",strdup(filename),
         LUA_ASYNC_TYPEID,format->parameter_lua_type,fdata,
         LUA_ASYNC_TYPEID,storage->parameter_lua_type,sdata,
         LUA_ASYNC_DONE);
   }else{
-    dt_lua_do_chunk_async(event_trigger_wrapper,
+    dt_lua_do_chunk_async(dt_lua_event_trigger_wrapper,
         LUA_ASYNC_TYPENAME,"const char*","intermediate-export-image",
         LUA_ASYNC_TYPENAME_WITH_FREE,"char*",strdup(filename),
         LUA_ASYNC_TYPEID,format->parameter_lua_type,fdata,
