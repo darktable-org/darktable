@@ -363,6 +363,99 @@ int dt_lua_gtk_wrap(lua_State*L)
 
 }
 
+
+
+typedef struct {
+  lua_CFunction pusher;
+  GList* extra;
+}async_call_data;
+
+
+static int32_t async_callback_job(dt_job_t *job)
+{
+  dt_lua_lock();
+  lua_State* L= darktable.lua_state.state;
+  async_call_data* data = (async_call_data*)dt_control_job_get_params(job);
+  lua_pushcfunction(L,data->pusher);
+  int nargs =0;
+
+  GList* cur_elt = data->extra;
+  while(cur_elt) {
+    GList * type_type_elt = cur_elt;
+    cur_elt = g_list_next(cur_elt);
+    GList * type_elt = cur_elt;
+    cur_elt = g_list_next(cur_elt);
+    GList * data_elt = cur_elt;
+    cur_elt = g_list_next(cur_elt);
+    switch(GPOINTER_TO_INT(type_type_elt->data)) {
+      case LUA_ASYNC_TYPEID_WITH_FREE:
+        luaA_push_type(L,GPOINTER_TO_INT(type_elt->data),&data_elt->data);
+        free(data_elt->data);
+        break;
+      case LUA_ASYNC_TYPEID:
+        luaA_push_type(L,GPOINTER_TO_INT(type_elt->data),&data_elt->data);
+        break;
+      case LUA_ASYNC_TYPENAME_WITH_FREE:
+        luaA_push_type(L,luaA_type_find(L,type_elt->data),&data_elt->data);
+        free(data_elt->data);
+        break;
+      case LUA_ASYNC_TYPENAME:
+        luaA_push_type(L,luaA_type_find(L,type_elt->data),&data_elt->data);
+        break;
+      case LUA_ASYNC_DONE:
+        // should never happen
+        g_assert(false);
+        break;
+    }
+    nargs++;
+  }
+  dt_lua_do_chunk_silent(L,nargs,0);
+  dt_lua_redraw_screen();
+  g_list_free(data->extra);
+  free(data);
+  dt_lua_unlock();
+  return 0;
+}
+
+void dt_lua_do_chunk_async(lua_CFunction pusher,dt_lua_async_call_arg_type arg_type,...)
+{
+  dt_job_t *job = dt_control_job_create(&async_callback_job, "lua: async call");
+  if(job)
+  {
+    async_call_data*data = malloc(sizeof(async_call_data));
+    data->pusher = pusher;
+    data->extra=NULL;
+    va_list ap;
+    va_start(ap,arg_type);
+    dt_lua_async_call_arg_type cur_type = arg_type;
+    while(cur_type != LUA_ASYNC_DONE){
+      data->extra=g_list_append(data->extra,GINT_TO_POINTER(cur_type));
+      switch(cur_type) {
+        case LUA_ASYNC_TYPEID:
+        case LUA_ASYNC_TYPEID_WITH_FREE:
+          data->extra=g_list_append(data->extra,GINT_TO_POINTER(va_arg(ap,luaA_Type)));
+          data->extra=g_list_append(data->extra,va_arg(ap,gpointer));
+          break;
+        case LUA_ASYNC_TYPENAME:
+        case LUA_ASYNC_TYPENAME_WITH_FREE:
+          data->extra=g_list_append(data->extra,va_arg(ap,char *));
+          data->extra=g_list_append(data->extra,va_arg(ap,gpointer));
+          break;
+        case LUA_ASYNC_DONE:
+        default:
+          // should never happen
+          g_assert(false);
+          break;
+      }
+      cur_type = va_arg(ap,dt_lua_async_call_arg_type);
+
+    }
+    va_end(ap);
+    
+    dt_control_job_set_params(job, data);
+    dt_control_add_job(darktable.control, DT_JOB_QUEUE_USER_FG, job);
+  }
+}
 int dt_lua_init_call(lua_State *L)
 {
   luaA_enum(L, yield_type);
