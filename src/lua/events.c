@@ -49,12 +49,19 @@ void dt_lua_event_trigger(lua_State *L, const char *event, int nargs)
   lua_getfield(L, -2, "on_event");
   lua_getfield(L, -3, "data");
   lua_pushstring(L, event);
-  for(int i = 1; i <= nargs; i++) lua_pushvalue(L, -7);
+  for(int i = 1; i <= nargs; i++) lua_pushvalue(L, -6 -nargs);
   dt_lua_do_chunk(L, nargs + 2, 0);
   lua_pop(L, nargs + 3);
   dt_lua_redraw_screen();
 }
 
+static int event_trigger_wrapper(lua_State *L) 
+{
+  const char*event = luaL_checkstring(L,1);
+  int nargs = lua_gettop(L) -1;
+  dt_lua_event_trigger(L,event,nargs);
+  return 0;
+}
 
 void dt_lua_event_add(lua_State *L, const char *evt_name)
 {
