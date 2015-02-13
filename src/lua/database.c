@@ -191,42 +191,12 @@ static void on_film_imported(gpointer instance, uint32_t id, gpointer user_data)
   dt_lua_unlock();
 }
 
-typedef struct
-{
-  uint32_t imgid;
-} on_image_imported_callback_data_t;
-
-
-static int32_t on_image_imported_callback_job(dt_job_t *job)
-{
-  dt_lua_lock();
-  on_image_imported_callback_data_t *t = dt_control_job_get_params(job);
-  luaA_push(darktable.lua_state.state, dt_lua_image_t, &t->imgid);
-  dt_lua_event_trigger(darktable.lua_state.state, "post-import-image", 1);
-  free(t); // i am not sure if the free() may happen before the dt_lua_event_trigger as a pointer to the imgid
-           // inside of it is pushed to the lua stack
-  dt_lua_unlock();
-  return 0;
-}
-
 static void on_image_imported(gpointer instance, uint32_t id, gpointer user_data)
 {
-  dt_job_t *job = dt_control_job_create(&on_image_imported_callback_job, "lua: on image imported");
-  if(job)
-  {
-    on_image_imported_callback_data_t *t
-        = (on_image_imported_callback_data_t *)calloc(1, sizeof(on_image_imported_callback_data_t));
-    if(!t)
-    {
-      dt_control_job_dispose(job);
-    }
-    else
-    {
-      dt_control_job_set_params(job, t);
-      t->imgid = id;
-      dt_control_add_job(darktable.control, DT_JOB_QUEUE_USER_FG, job);
-    }
-  }
+  dt_lua_do_chunk_async(dt_lua_event_trigger_wrapper,
+      LUA_ASYNC_TYPENAME,"const char*","post-import-image",
+      LUA_ASYNC_TYPENAME,"dt_lua_image_t",GINT_TO_POINTER(id),
+      LUA_ASYNC_DONE);
 }
 int dt_lua_init_database(lua_State *L)
 {
