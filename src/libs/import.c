@@ -24,7 +24,6 @@
 #include "common/mipmap_cache.h"
 #include "common/imageio.h"
 #include "common/imageio_jpeg.h"
-#include "common/dt_logo_128x128.h"
 #include "common/exif.h"
 #include "control/control.h"
 #include "control/conf.h"
@@ -39,6 +38,12 @@
 #include "gui/camera_import_dialog.h"
 #endif
 #include "libs/lib.h"
+
+#include <librsvg/rsvg.h>
+// ugh, ugly hack. why do people break stuff all the time?
+#ifndef RSVG_CAIRO_H
+#include <librsvg/rsvg-cairo.h>
+#endif
 
 DT_MODULE(1)
 
@@ -590,22 +595,22 @@ static void _lib_import_update_preview(GtkFileChooser *file_chooser, gpointer da
   GtkWidget *preview;
   char *filename;
   GdkPixbuf *pixbuf = NULL;
-  gboolean have_preview = FALSE;
+  gboolean have_preview = FALSE, no_preview_fallback = FALSE;
 
   preview = GTK_WIDGET(data);
   filename = gtk_file_chooser_get_preview_filename(file_chooser);
 
-  if(!g_file_test(filename, G_FILE_TEST_IS_REGULAR)) goto no_preview_fallback;
+  if(!g_file_test(filename, G_FILE_TEST_IS_REGULAR)) no_preview_fallback = TRUE;
   // don't create dng thumbnails to avoid crashes in libtiff when these are hdr:
   char *c = filename + strlen(filename);
   while(c > filename && *c != '.') c--;
-  if(!strcasecmp(c, ".dng")) goto no_preview_fallback;
+  if(!strcasecmp(c, ".dng")) no_preview_fallback = TRUE;
 
   // unfortunately we can not use following, because frequently it uses wrong orientation
   // pixbuf = gdk_pixbuf_new_from_file_at_size(filename, 128, 128, NULL);
 
   have_preview = (pixbuf != NULL);
-  if(!have_preview)
+  if(!have_preview && !no_preview_fallback)
   {
     uint8_t *buffer = NULL;
     size_t size;
@@ -630,7 +635,7 @@ static void _lib_import_update_preview(GtkFileChooser *file_chooser, gpointer da
       g_object_unref(loader); // This should clean up tmp as well
     }
   }
-  if(have_preview)
+  if(have_preview && !no_preview_fallback)
   {
     // get image orientation
     dt_image_t img = { 0 };
@@ -658,10 +663,61 @@ static void _lib_import_update_preview(GtkFileChooser *file_chooser, gpointer da
       pixbuf = tmp;
     }
   }
-  if(!have_preview)
+  if(no_preview_fallback || !have_preview)
   {
-  no_preview_fallback:
-    pixbuf = gdk_pixbuf_new_from_inline(-1, dt_logo_128x128, FALSE, NULL);
+    // pixbuf = gdk_pixbuf_new_from_inline(-1, dt_logo_128x128, FALSE, NULL);
+
+    guint8 *image_buffer = NULL;
+
+    /* load the dt logo as a brackground */
+    char filename[PATH_MAX] = { 0 };
+    char datadir[PATH_MAX] = { 0 };
+    char *logo;
+    dt_logo_season_t season = get_logo_season();
+    if(season != DT_LOGO_SEASON_NONE)
+      logo = g_strdup_printf("%%s/pixmaps/idbutton-%d.svg", (int)season);
+    else
+      logo = g_strdup("%s/pixmaps/idbutton.svg");
+
+    dt_loc_get_datadir(datadir, sizeof(datadir));
+    snprintf(filename, sizeof(filename), logo, datadir);
+    g_free(logo);
+    RsvgHandle *svg = rsvg_handle_new_from_file(filename, NULL);
+    if(svg)
+    {
+      cairo_surface_t *surface;
+      cairo_t *cr;
+
+      RsvgDimensionData dimension;
+      rsvg_handle_get_dimensions(svg, &dimension);
+
+      float svg_size = MAX(dimension.width, dimension.height);
+      float final_size = 128;
+      float factor = final_size / svg_size;
+      float final_width = dimension.width * factor * darktable.gui->ppd,
+            final_height = dimension.height * factor * darktable.gui->ppd;
+      int stride = cairo_format_stride_for_width(CAIRO_FORMAT_ARGB32, final_width);
+
+      image_buffer = (guint8 *)calloc(stride * final_height, sizeof(guint8));
+      surface = dt_cairo_image_surface_create_for_data(image_buffer, CAIRO_FORMAT_ARGB32, final_width,
+                                                       final_height, stride);
+      if(cairo_surface_status(surface) != CAIRO_STATUS_SUCCESS)
+      {
+        free(image_buffer);
+        image_buffer = NULL;
+      }
+      else
+      {
+        cr = cairo_create(surface);
+        cairo_scale(cr, factor, factor);
+        rsvg_handle_render_cairo(svg, cr);
+        cairo_surface_flush(surface);
+        pixbuf = gdk_pixbuf_get_from_surface(surface, 0, 0, final_width / darktable.gui->ppd,
+                                             final_height / darktable.gui->ppd);
+      }
+      g_object_unref(svg);
+    }
+
     have_preview = TRUE;
   }
   if(have_preview) gtk_image_set_from_pixbuf(GTK_IMAGE(preview), pixbuf);
