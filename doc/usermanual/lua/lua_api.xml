@@ -5925,7 +5925,17 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
 <para>The widgets contained by the box</para>
 <para>You can append widgets by adding them at the end of the list</para>
 <para>You can remove widgets by setting them to nil</para>
-
+<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
+    <colspec colwidth="2*"/>
+    <colspec colwidth="8*"/>
+    <tbody><row>
+    <entry>Attributes:</entry>
+    <entry><itemizedlist>
+<listitem><para><emphasis><link linkend="attributes_write">write</link></emphasis></para></listitem>
+</itemizedlist>
+</entry>
+    </row></tbody>
+    </tgroup></informaltable>
 </section>
 
 </section>
@@ -6446,7 +6456,17 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
 <para>The various menu entries.</para>
 <para>You can add new entries by writing to the first element beyond the end</para>
 <para>You can removes entries by setting them to nil</para>
-
+<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
+    <colspec colwidth="2*"/>
+    <colspec colwidth="8*"/>
+    <tbody><row>
+    <entry>Attributes:</entry>
+    <entry><itemizedlist>
+<listitem><para><emphasis><link linkend="attributes_write">write</link></emphasis></para></listitem>
+</itemizedlist>
+</entry>
+    </row></tbody>
+    </tgroup></informaltable>
 </section>
 
 <section status="final" id="types_lua_combobox_changed_callback">
@@ -6980,12 +7000,19 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
 <secondary>callback</secondary>
 </indexterm>
 <synopsis>function( 
+	<emphasis><link linkend="events_view-changed_callback_event">event</link></emphasis> : string, 
 	<emphasis><link linkend="events_view-changed_callback_old_view">old_view</link></emphasis> : <link linkend="types_dt_view_t">types.dt_view_t</link>, 
 	<emphasis><link linkend="events_view-changed_callback_new_view">new_view</link></emphasis> : <link linkend="types_dt_view_t">types.dt_view_t</link>
 )</synopsis>
 <para></para>
 
 <variablelist>
+<varlistentry id="events_view-changed_callback_event"><term>event</term><listitem>
+<synopsis>string</synopsis>
+<para>The name of the event that triggered the callback.</para>
+
+</listitem></varlistentry>
+
 <varlistentry id="events_view-changed_callback_old_view"><term>old_view</term><listitem>
 <synopsis><link linkend="types_dt_view_t">types.dt_view_t</link></synopsis>
 <para>The view that we just left</para>
@@ -7164,6 +7191,55 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
 
 <section status="final" id="events_exit_extra_registration_parameters">
 <title>events.exit.extra registration parameters</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>extra registration parameters</secondary>
+</indexterm>
+<para>This event has no extra registration parameters.</para>
+
+</section>
+
+</section>
+
+<section status="final" id="events_pre-import">
+<title>events.pre-import</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>pre-import</secondary>
+</indexterm>
+<synopsis>event</synopsis>
+<para>This event is trigger before any import action</para>
+
+<section status="final" id="events_pre-import_callback">
+<title>events.pre-import.callback</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>callback</secondary>
+</indexterm>
+<synopsis>function( 
+	<emphasis><link linkend="events_pre-import_callback_event">event</link></emphasis> : string, 
+	<emphasis><link linkend="events_pre-import_callback_images">images</link></emphasis> : table of string
+)</synopsis>
+<para></para>
+
+<variablelist>
+<varlistentry id="events_pre-import_callback_event"><term>event</term><listitem>
+<synopsis>string</synopsis>
+<para>The name of the event that triggered the callback.</para>
+
+</listitem></varlistentry>
+
+<varlistentry id="events_pre-import_callback_images"><term>images</term><listitem>
+<synopsis>table of string</synopsis>
+<para>The files that will be imported. Modifying this table will change the list of files that will be imported"</para>
+
+</listitem></varlistentry>
+
+</variablelist>
+</section>
+
+<section status="final" id="events_pre-import_extra_registration_parameters">
+<title>events.pre-import.extra registration parameters</title>
 <indexterm>
 <primary>Lua API</primary>
 <secondary>extra registration parameters</secondary>

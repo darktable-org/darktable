@@ -159,7 +159,7 @@ int dt_lua_event_keyed_trigger(lua_State *L)
  * all callbacks will be called in the order they were registered
  *
  * all callbacks will receive the same parameters
- * the result is all return values from all callbacks
+ * no values are returned
  *
  * data table is "event => { # => callback }
  */
@@ -315,6 +315,10 @@ int dt_lua_init_events(lua_State *L)
   dt_lua_event_add(L, "intermediate-export-image");
   dt_control_signal_connect(darktable.signals, DT_SIGNAL_IMAGE_EXPORT_TMPFILE,
                             G_CALLBACK(on_export_image_tmpfile), NULL);
+
+  lua_pushcfunction(L, dt_lua_event_multiinstance_register);
+  lua_pushcfunction(L, dt_lua_event_multiinstance_trigger);
+  dt_lua_event_add(L,"pre-import");
   return 0;
 }
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

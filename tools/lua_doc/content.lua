@@ -634,6 +634,7 @@ darktable.debug.type:set_text([[Similar to the system function type() but it wil
 	types.dt_lua_tag_t:set_text([[A tag that can be attached to an image.]])
 	types.dt_lua_tag_t.name:set_text([[The name of the tag.]])
 	types.dt_lua_tag_t["#"]:set_text([[The images that have that tag attached to them.]])
+	types.dt_lua_tag_t["#"]:set_reported_type(types.dt_lua_image_t)
 
 	types.dt_lib_module_t:set_text([[The type of a UI lib]])
 	types.dt_lib_module_t.id:set_text([[A unit string identifying the lib]])
@@ -828,6 +829,7 @@ local widget = dt.new_widget("button"){
 	events["post-import-film"].extra_registration_parameters:set_text([[This event has no extra registration parameters.]])
 
 	events["view-changed"]:set_text([[This event is triggered after the user changed the active view]])
+	events["view-changed"].callback:add_parameter("event","string",[[The name of the event that triggered the callback.]])
 	events["view-changed"].callback:add_parameter("old_view",types.dt_view_t,[[The view that we just left]])
 	events["view-changed"].callback:add_parameter("new_view",types.dt_view_t,[[The view we are now in]])
 	events["view-changed"].extra_registration_parameters:set_text([[This event has no extra registration parameters.]])
@@ -845,6 +847,10 @@ local widget = dt.new_widget("button"){
   events["exit"]:set_text([[This event is triggered when darktable exits, it allows lua scripts to do cleanup jobs]])
 	events["exit"].extra_registration_parameters:set_text([[This event has no extra registration parameters.]])
   
+  events["pre-import"]:set_text("This event is trigger before any import action");
+	events["pre-import"].callback:add_parameter("event","string",[[The name of the event that triggered the callback.]])
+	events["pre-import"].callback:add_parameter("images","table of string",[[The files that will be imported. Modifying this table will change the list of files that will be imported"]])
+	events["pre-import"].extra_registration_parameters:set_text([[This event has no extra registration parameters.]])
 	----------------------
 	--  ATTRIBUTES      --
 	----------------------
