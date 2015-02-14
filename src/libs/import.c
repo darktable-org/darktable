@@ -600,11 +600,17 @@ static void _lib_import_update_preview(GtkFileChooser *file_chooser, gpointer da
   preview = GTK_WIDGET(data);
   filename = gtk_file_chooser_get_preview_filename(file_chooser);
 
-  if(!g_file_test(filename, G_FILE_TEST_IS_REGULAR)) no_preview_fallback = TRUE;
-  // don't create dng thumbnails to avoid crashes in libtiff when these are hdr:
-  char *c = filename + strlen(filename);
-  while(c > filename && *c != '.') c--;
-  if(!strcasecmp(c, ".dng")) no_preview_fallback = TRUE;
+  if(!g_file_test(filename, G_FILE_TEST_IS_REGULAR))
+  {
+    no_preview_fallback = TRUE;
+  }
+  else
+  {
+    // don't create dng thumbnails to avoid crashes in libtiff when these are hdr:
+    char *c = filename + strlen(filename);
+    while(c > filename && *c != '.') c--;
+    if(!strcasecmp(c, ".dng")) no_preview_fallback = TRUE;
+  }
 
   // unfortunately we can not use following, because frequently it uses wrong orientation
   // pixbuf = gdk_pixbuf_new_from_file_at_size(filename, 128, 128, NULL);
@@ -665,8 +671,6 @@ static void _lib_import_update_preview(GtkFileChooser *file_chooser, gpointer da
   }
   if(no_preview_fallback || !have_preview)
   {
-    // pixbuf = gdk_pixbuf_new_from_inline(-1, dt_logo_128x128, FALSE, NULL);
-
     guint8 *image_buffer = NULL;
 
     /* load the dt logo as a brackground */
