@@ -731,13 +731,15 @@ void dt_mipmap_cache_release(dt_mipmap_cache_t *cache, dt_mipmap_buffer_t *buf)
 dt_mipmap_size_t dt_mipmap_cache_get_matching_size(const dt_mipmap_cache_t *cache, const int32_t width,
                                                    const int32_t height)
 {
+  const double ppd = (darktable.gui != NULL) ? darktable.gui->ppd : 1.0;
+
   // find `best' match to width and height.
   int32_t error = 0x7fffffff;
   dt_mipmap_size_t best = DT_MIPMAP_NONE;
   for(int k = DT_MIPMAP_0; k < DT_MIPMAP_F; k++)
   {
     // find closest l1 norm:
-    int32_t new_error = cache->max_width[k] + cache->max_height[k] - width * darktable.gui->ppd - height * darktable.gui->ppd;
+    int32_t new_error = cache->max_width[k] + cache->max_height[k] - width * ppd - height * ppd;
     // and allow the first one to be larger in pixel size to override the smaller mip
     if(abs(new_error) < abs(error) || (error < 0 && new_error > 0))
     {
