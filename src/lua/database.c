@@ -185,10 +185,10 @@ static int number_member(lua_State *L)
 
 static void on_film_imported(gpointer instance, uint32_t id, gpointer user_data)
 {
-  dt_lua_lock();
-  luaA_push(darktable.lua_state.state, dt_lua_film_t, &id);
-  dt_lua_event_trigger(darktable.lua_state.state, "post-import-film", 1);
-  dt_lua_unlock();
+  dt_lua_do_chunk_async(dt_lua_event_trigger_wrapper,
+      LUA_ASYNC_TYPENAME,"const char*","post-import-film",
+      LUA_ASYNC_TYPENAME,"dt_lua_film_t",GINT_TO_POINTER(id),
+      LUA_ASYNC_DONE);
 }
 
 static void on_image_imported(gpointer instance, uint32_t id, gpointer user_data)
