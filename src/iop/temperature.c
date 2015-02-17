@@ -24,6 +24,8 @@
 #include <math.h>
 #include <assert.h>
 #include <string.h>
+#include <lcms2.h>
+
 #include "common/darktable.h"
 #include "develop/develop.h"
 #include "develop/tiling.h"
@@ -37,12 +39,18 @@
 
 // for Kelvin temperature and bogus WB
 #include "external/adobe_coeff.c"
+#include "external/cie_colorimetric_tables.c"
 #include "common/colorspaces.h"
 
 DT_MODULE_INTROSPECTION(2, dt_iop_temperature_params_t)
 
-#define DT_IOP_LOWEST_TEMPERATURE 2000
-#define DT_IOP_HIGHEST_TEMPERATURE 23000
+#define INITIALBLACKBODYTEMPERATURE 4000
+
+#define DT_IOP_LOWEST_TEMPERATURE 1901
+#define DT_IOP_HIGHEST_TEMPERATURE 25000
+
+#define DT_IOP_LOWEST_TINT 0.135
+#define DT_IOP_HIGHEST_TINT 2.326
 
 #define DT_IOP_NUM_OF_STD_TEMP_PRESETS 3
 
@@ -60,6 +68,7 @@ typedef struct dt_iop_temperature_gui_data_t
   int preset_cnt;
   int preset_num[50];
   double daylight_wb[3];
+  double XYZ_to_CAM[3][3], CAM_to_XYZ[3][3];
 } dt_iop_temperature_gui_data_t;
 
 typedef struct dt_iop_temperature_data_t
@@ -119,78 +128,186 @@ int output_bpp(dt_iop_module_t *module, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpi
     return 4 * sizeof(float);
 }
 
+/*
+ * Spectral power distribution functions
+ * https://en.wikipedia.org/wiki/Spectral_power_distribution
+ */
+typedef double((*spd)(unsigned long int wavelength, double TempK));
 
-// ufraw for teh win:
-static void convert_k_to_rgb(float T, float *rgb)
+/*
+ * Bruce Lindbloom, "Spectral Power Distribution of a Blackbody Radiator"
+ * http://www.brucelindbloom.com/Eqn_Blackbody.html
+ */
+static double spd_blackbody(unsigned long int wavelength, double TempK)
 {
-  if(T < DT_IOP_LOWEST_TEMPERATURE) T = DT_IOP_LOWEST_TEMPERATURE;
-  if(T > DT_IOP_HIGHEST_TEMPERATURE) T = DT_IOP_HIGHEST_TEMPERATURE;
+  // convert wavelength from nm to m
+  const long double lambda = (double)wavelength * 1e-9;
 
-  /* Convert between Temperature and RGB.
-   * Base on information from http://www.brucelindbloom.com/
-   * The fit for D-illuminant between 4000K and 23000K are from CIE
-   * The generalization to 2000K < T < 4000K and the blackbody fits
-   * are my own and should be taken with a grain of salt.
+/*
+ * these 2 constants were computed using following Sage code:
+ *
+ * (from http://physics.nist.gov/cgi-bin/cuu/Value?h)
+ * h = 6.62606957 * 10^-34 # Planck
+ * c= 299792458 # speed of light in vacuum
+ * k = 1.3806488 * 10^-23 # Boltzmann
+ *
+ * c_1 = 2 * pi * h * c^2
+ * c_2 = h * c / k
+ *
+ * print 'c_1 = ', c_1, ' ~= ', RealField(128)(c_1)
+ * print 'c_2 = ', c_2, ' ~= ', RealField(128)(c_2)
+ */
+
+#define c1 3.7417715246641281639549488324352159753e-16L
+#define c2 0.014387769599838156481252937624049081933L
+
+  return (double)(c1 / (powl(lambda, 5) * (expl(c2 / (lambda * TempK)) - 1.0L)));
+
+#undef c2
+#undef c1
+}
+
+/*
+ * Bruce Lindbloom, "Spectral Power Distribution of a CIE D-Illuminant"
+ * http://www.brucelindbloom.com/Eqn_DIlluminant.html
+ * and https://en.wikipedia.org/wiki/Standard_illuminant#Illuminant_series_D
+ */
+static double spd_daylight(unsigned long int wavelength, double TempK)
+{
+  cmsCIExyY WhitePoint = { 0.3127, 0.3290, 1.0 };
+
+  /*
+   * Bruce Lindbloom, "TempK to xy"
+   * http://www.brucelindbloom.com/Eqn_T_to_xy.html
    */
-  const double XYZ_to_RGB[3][3] = { { 3.24071, -0.969258, 0.0556352 },
-                                    { -1.53726, 1.87599, -0.203996 },
-                                    { -0.498571, 0.0415557, 1.05707 } };
+  cmsWhitePointFromTemp(&WhitePoint, TempK);
 
-  int c;
-  double xD, yD, X, Y, Z, max;
-  // Fit for CIE Daylight illuminant
-  if(T <= 4000)
+  const double M = (0.0241 + 0.2562 * WhitePoint.x - 0.7341 * WhitePoint.y),
+               m1 = (-1.3515 - 1.7703 * WhitePoint.x + 5.9114 * WhitePoint.y) / M,
+               m2 = (0.0300 - 31.4424 * WhitePoint.x + 30.0717 * WhitePoint.y) / M;
+
+  const unsigned long int j
+      = ((wavelength - cie_daylight_components[0].wavelength)
+         / (cie_daylight_components[1].wavelength - cie_daylight_components[0].wavelength));
+
+  return (cie_daylight_components[j].S[0] + m1 * cie_daylight_components[j].S[1]
+          + m2 * cie_daylight_components[j].S[2]);
+}
+
+/*
+ * Bruce Lindbloom, "Computing XYZ From Spectral Data (Emissive Case)"
+ * http://www.brucelindbloom.com/Eqn_Spect_to_XYZ.html
+ */
+static cmsCIEXYZ spectrum_to_XYZ(double TempK, spd I)
+{
+  cmsCIEXYZ Source = {.X = 0.0, .Y = 0.0, .Z = 0.0 };
+
+  /*
+   * Color matching functions
+   * https://en.wikipedia.org/wiki/CIE_1931_color_space#Color_matching_functions
+   */
+  for(size_t i = 0; i < cie_1931_std_colorimetric_observer_count; i++)
   {
-    xD = 0.27475e9 / (T * T * T) - 0.98598e6 / (T * T) + 1.17444e3 / T + 0.145986;
+    const unsigned long int lambda = cie_1931_std_colorimetric_observer[0].wavelength
+                                     + (cie_1931_std_colorimetric_observer[1].wavelength
+                                        - cie_1931_std_colorimetric_observer[0].wavelength) * i;
+    const double P = I(lambda, TempK);
+    Source.X += P * cie_1931_std_colorimetric_observer[i].xyz.X;
+    Source.Y += P * cie_1931_std_colorimetric_observer[i].xyz.Y;
+    Source.Z += P * cie_1931_std_colorimetric_observer[i].xyz.Z;
   }
-  else if(T <= 7000)
+
+  // normalize so that each component is in [0.0, 1.0] range
+  const double _max = MAX(MAX(Source.X, Source.Y), Source.Z);
+  Source.X /= _max;
+  Source.Y /= _max;
+  Source.Z /= _max;
+
+  return Source;
+}
+
+//
+static cmsCIEXYZ temperature_to_XYZ(double TempK)
+{
+  if(TempK < DT_IOP_LOWEST_TEMPERATURE) TempK = DT_IOP_LOWEST_TEMPERATURE;
+  if(TempK > DT_IOP_HIGHEST_TEMPERATURE) TempK = DT_IOP_HIGHEST_TEMPERATURE;
+
+  if(TempK < INITIALBLACKBODYTEMPERATURE)
   {
-    xD = -4.6070e9 / (T * T * T) + 2.9678e6 / (T * T) + 0.09911e3 / T + 0.244063;
+    // if temperature is less than 4000K we use blackbody,
+    // because there will be no Daylight reference below 4000K...
+    return spectrum_to_XYZ(TempK, spd_blackbody);
   }
   else
   {
-    xD = -2.0064e9 / (T * T * T) + 1.9018e6 / (T * T) + 0.24748e3 / T + 0.237040;
+    return spectrum_to_XYZ(TempK, spd_daylight);
   }
-  yD = -3 * xD * xD + 2.87 * xD - 0.275;
-
-  // Fit for Blackbody using CIE standard observer function at 2 degrees
-  // xD = -1.8596e9/(T*T*T) + 1.37686e6/(T*T) + 0.360496e3/T + 0.232632;
-  // yD = -2.6046*xD*xD + 2.6106*xD - 0.239156;
-
-  // Fit for Blackbody using CIE standard observer function at 10 degrees
-  // xD = -1.98883e9/(T*T*T) + 1.45155e6/(T*T) + 0.364774e3/T + 0.231136;
-  // yD = -2.35563*xD*xD + 2.39688*xD - 0.196035;
-
-  X = xD / yD;
-  Y = 1;
-  Z = (1 - xD - yD) / yD;
-  max = 0;
-  for(c = 0; c < 3; c++)
-  {
-    rgb[c] = X * XYZ_to_RGB[0][c] + Y * XYZ_to_RGB[1][c] + Z * XYZ_to_RGB[2][c];
-    if(rgb[c] > max) max = rgb[c];
-  }
-  for(c = 0; c < 3; c++) rgb[c] = rgb[c] / max;
 }
 
-// binary search inversion inspired by ufraw's RGB_to_Temperature:
-static void convert_rgb_to_k(float rgb[3], float *temp, float *tint)
+// binary search inversion
+static void XYZ_to_temperature(cmsCIEXYZ XYZ, double *TempK, double *tint)
 {
-  float tmin, tmax, tmp[3];
-  for(int k = 0; k < 3; k++) tmp[k] = rgb[k];
-  tmin = DT_IOP_LOWEST_TEMPERATURE;
-  tmax = DT_IOP_HIGHEST_TEMPERATURE;
-  for(*temp = (tmax + tmin) / 2; tmax - tmin > 1; *temp = (tmax + tmin) / 2)
+  double maxtemp = DT_IOP_HIGHEST_TEMPERATURE, mintemp = DT_IOP_LOWEST_TEMPERATURE;
+  cmsCIEXYZ _xyz;
+
+  for(*TempK = (maxtemp + mintemp) / 2.0; (maxtemp - mintemp) > 1.0; *TempK = (maxtemp + mintemp) / 2.0)
   {
-    convert_k_to_rgb(*temp, tmp);
-    if(tmp[2] / tmp[0] > rgb[2] / rgb[0])
-      tmax = *temp;
+    _xyz = temperature_to_XYZ(*TempK);
+    if(_xyz.Z / _xyz.X > XYZ.Z / XYZ.X)
+      maxtemp = *TempK;
     else
-      tmin = *temp;
+      mintemp = *TempK;
   }
-  *tint = (tmp[1] / tmp[0]) / (rgb[1] / rgb[0]);
-  if(*tint < 0.2f) *tint = 0.2f;
-  if(*tint > 2.5f) *tint = 2.5f;
+
+  *tint = (_xyz.Y / _xyz.X) / (XYZ.Y / XYZ.X);
+
+  if(*TempK < DT_IOP_LOWEST_TEMPERATURE) *TempK = DT_IOP_LOWEST_TEMPERATURE;
+  if(*TempK > DT_IOP_HIGHEST_TEMPERATURE) *TempK = DT_IOP_HIGHEST_TEMPERATURE;
+  if(*tint < DT_IOP_LOWEST_TINT) *tint = DT_IOP_LOWEST_TINT;
+  if(*tint > DT_IOP_HIGHEST_TINT) *tint = DT_IOP_HIGHEST_TINT;
+}
+
+static void temp2mul(dt_iop_module_t *self, double TempK, double tint, double mul[3])
+{
+  dt_iop_temperature_gui_data_t *g = (dt_iop_temperature_gui_data_t *)self->gui_data;
+
+  cmsCIEXYZ _xyz = temperature_to_XYZ(TempK);
+
+  double XYZ[3] = { _xyz.X, _xyz.Y / tint, _xyz.Z };
+
+  // multipliers, relative to daylight wb
+  double rmul[3];
+  for(int k = 0; k < 3; k++)
+  {
+    rmul[k] = 0.0;
+    for(int i = 0; i < 3; i++)
+    {
+      rmul[k] += g->XYZ_to_CAM[k][i] * XYZ[i];
+    }
+  }
+
+  for(int k = 0; k < 3; k++) mul[k] = g->daylight_wb[k] / rmul[k];
+}
+
+static void mul2temp(dt_iop_module_t *self, float coeffs[3], double *TempK, double *tint)
+{
+  dt_iop_temperature_gui_data_t *g = (dt_iop_temperature_gui_data_t *)self->gui_data;
+
+  // multipliers, relative to daylight wb
+  double rmul[3];
+  for(int k = 0; k < 3; k++) rmul[k] = g->daylight_wb[k] / coeffs[k];
+
+  double XYZ[3];
+  for(int k = 0; k < 3; k++)
+  {
+    XYZ[k] = 0.0;
+    for(int i = 0; i < 3; i++)
+    {
+      XYZ[k] += g->CAM_to_XYZ[k][i] * rmul[i];
+    }
+  }
+
+  XYZ_to_temperature((cmsCIEXYZ){ XYZ[0], XYZ[1], XYZ[2] }, TempK, tint);
 }
 
 /*
@@ -403,14 +520,14 @@ void gui_update(struct dt_iop_module_t *self)
   dt_iop_temperature_gui_data_t *g = (dt_iop_temperature_gui_data_t *)self->gui_data;
   dt_iop_temperature_params_t *p = (dt_iop_temperature_params_t *)module->params;
   dt_iop_temperature_params_t *fp = (dt_iop_temperature_params_t *)module->default_params;
-  float temp, tint, mul[3];
-  for(int k = 0; k < 3; k++) mul[k] = g->daylight_wb[k] / p->coeffs[k];
-  convert_rgb_to_k(mul, &temp, &tint);
+
+  double TempK, tint;
+  mul2temp(self, p->coeffs, &TempK, &tint);
 
   dt_bauhaus_slider_set(g->scale_r, p->coeffs[0]);
   dt_bauhaus_slider_set(g->scale_g, p->coeffs[1]);
   dt_bauhaus_slider_set(g->scale_b, p->coeffs[2]);
-  dt_bauhaus_slider_set(g->scale_k, temp);
+  dt_bauhaus_slider_set(g->scale_k, TempK);
   dt_bauhaus_slider_set(g->scale_tint, tint);
 
   dt_bauhaus_combobox_clear(g->presets);
@@ -681,6 +798,10 @@ void reload_defaults(dt_iop_module_t *module)
     {
       dt_iop_temperature_gui_data_t *g = (dt_iop_temperature_gui_data_t *)module->gui_data;
 
+      dt_bauhaus_slider_set_default(g->scale_r, tmp.coeffs[0]);
+      dt_bauhaus_slider_set_default(g->scale_g, tmp.coeffs[1]);
+      dt_bauhaus_slider_set_default(g->scale_b, tmp.coeffs[2]);
+
       // to have at least something and definitely not crash
       for(int c = 0; c < 3; c++) g->daylight_wb[c] = tmp.coeffs[c];
 
@@ -703,10 +824,68 @@ void reload_defaults(dt_iop_module_t *module)
         }
       }
 
-      float temp, tint, mul[3];
-      for(int k = 0; k < 3; k++) mul[k] = g->daylight_wb[k] / tmp.coeffs[k];
-      convert_rgb_to_k(mul, &temp, &tint);
-      dt_bauhaus_slider_set_default(g->scale_k, temp);
+      {
+        // prepare matrices for Kelvin temperature
+
+        // camera color matrix
+        char makermodel[1024];
+        dt_colorspaces_get_makermodel(makermodel, sizeof(makermodel), module->dev->image_storage.exif_maker,
+                                      module->dev->image_storage.exif_model);
+
+        float XYZ_to_CAM[4][3];
+        dt_dcraw_adobe_coeff(makermodel, (float(*)[12])XYZ_to_CAM);
+
+        // sRGB D65
+        const double RGB_to_XYZ[3][3] = { { 0.4124564, 0.3575761, 0.1804375 },
+                                          { 0.2126729, 0.7151522, 0.0721750 },
+                                          { 0.0193339, 0.1191920, 0.9503041 } };
+
+        double RGB_to_CAM[3][3];
+        for(int i = 0; i < 3; i++)
+        {
+          for(int j = 0; j < 3; j++)
+          {
+            RGB_to_CAM[i][j] = 0.0;
+            for(int k = 0; k < 3; k++) RGB_to_CAM[i][j] += XYZ_to_CAM[i][k] * RGB_to_XYZ[k][j];
+          }
+        }
+
+        /*
+        * Normalize RGB_to_CAM so that
+        * RGB_to_CAM * (1,1,1) is (1,1,1)
+        */
+        for(int i = 0; i < 3; i++)
+        {
+          double num = 0.0;
+          for(int j = 0; j < 3; j++) num += RGB_to_CAM[i][j];
+
+          for(int j = 0; j < 3; j++)
+          {
+            RGB_to_CAM[i][j] /= num;
+          }
+        }
+
+        // sRGB D65
+        const double XYZ_to_RGB[3][3] = { { 3.2404542, -1.5371385, -0.4985314 },
+                                          { -0.9692660, 1.8760108, 0.0415560 },
+                                          { 0.0556434, -0.2040259, 1.0572252 } };
+        for(int i = 0; i < 3; i++)
+        {
+          for(int j = 0; j < 3; j++)
+          {
+            g->XYZ_to_CAM[i][j] = 0.0;
+            for(int k = 0; k < 3; k++) g->XYZ_to_CAM[i][j] += RGB_to_CAM[i][k] * XYZ_to_RGB[k][j];
+          }
+        }
+
+        // and inverse matrix
+        mat3inv_double((double *)g->CAM_to_XYZ, (double *)g->XYZ_to_CAM);
+      }
+
+      double TempK, tint;
+      mul2temp(module, tmp.coeffs, &TempK, &tint);
+
+      dt_bauhaus_slider_set_default(g->scale_k, TempK);
       dt_bauhaus_slider_set_default(g->scale_tint, tint);
     }
   }
@@ -756,14 +935,12 @@ static void gui_update_from_coeffs(dt_iop_module_t *self)
 {
   dt_iop_temperature_gui_data_t *g = (dt_iop_temperature_gui_data_t *)self->gui_data;
   dt_iop_temperature_params_t *p = (dt_iop_temperature_params_t *)self->params;
-  // now get temp/tint from rgb.
-  float temp, tint, mul[3];
 
-  for(int k = 0; k < 3; k++) mul[k] = g->daylight_wb[k] / p->coeffs[k];
-  convert_rgb_to_k(mul, &temp, &tint);
+  double TempK, tint;
+  mul2temp(self, p->coeffs, &TempK, &tint);
 
   darktable.gui->reset = 1;
-  dt_bauhaus_slider_set(g->scale_k, temp);
+  dt_bauhaus_slider_set(g->scale_k, TempK);
   dt_bauhaus_slider_set(g->scale_tint, tint);
   dt_bauhaus_slider_set(g->scale_r, p->coeffs[0]);
   dt_bauhaus_slider_set(g->scale_g, p->coeffs[1]);
@@ -799,18 +976,18 @@ static void temp_changed(dt_iop_module_t *self)
   dt_iop_temperature_gui_data_t *g = (dt_iop_temperature_gui_data_t *)self->gui_data;
   dt_iop_temperature_params_t *p = (dt_iop_temperature_params_t *)self->params;
 
-  const float temp = dt_bauhaus_slider_get(g->scale_k);
-  const float tint = dt_bauhaus_slider_get(g->scale_tint);
+  const double TempK = dt_bauhaus_slider_get(g->scale_k);
+  const double tint = dt_bauhaus_slider_get(g->scale_tint);
 
-  convert_k_to_rgb(temp, p->coeffs);
-  // apply green tint
-  p->coeffs[1] /= tint;
-  // relative to daylight wb:
-  for(int k = 0; k < 3; k++) p->coeffs[k] = g->daylight_wb[k] / p->coeffs[k];
-  // normalize:
-  p->coeffs[0] /= p->coeffs[1];
-  p->coeffs[2] /= p->coeffs[1];
-  p->coeffs[1] = 1.0f;
+  double rgb[3];
+  temp2mul(self, TempK, tint, rgb);
+
+  // normalize
+  rgb[0] /= rgb[1];
+  rgb[2] /= rgb[1];
+  rgb[1] = 1.0;
+
+  for(int c = 0; c < 3; c++) p->coeffs[c] = rgb[c];
 
   darktable.gui->reset = 1;
   dt_bauhaus_slider_set(g->scale_r, p->coeffs[0]);
@@ -873,7 +1050,7 @@ static void apply_preset(dt_iop_module_t *self)
     case 0: // camera wb
       for(int k = 0; k < 3; k++) p->coeffs[k] = fp->coeffs[k];
       break;
-    case 1: // camera netral "wb"
+    case 1: // camera neutral wb
       for(int k = 0; k < 3; k++) p->coeffs[k] = g->daylight_wb[k];
       break;
     case 2: // spot wb, expose callback will set p->coeffs.
@@ -974,7 +1151,8 @@ void gui_init(struct dt_iop_module_t *self)
   g_signal_connect(G_OBJECT(self->widget), "draw", G_CALLBACK(draw), self);
 
   for(int k = 0; k < 3; k++) g->daylight_wb[k] = 1.0;
-  g->scale_tint = dt_bauhaus_slider_new_with_range(self, 0.1, 8.0, .01, 1.0, 3);
+  g->scale_tint
+      = dt_bauhaus_slider_new_with_range(self, DT_IOP_LOWEST_TINT, DT_IOP_HIGHEST_TINT, .01, 1.0, 3);
   g->scale_k = dt_bauhaus_slider_new_with_range(self, DT_IOP_LOWEST_TEMPERATURE, DT_IOP_HIGHEST_TEMPERATURE,
                                                 10., 5000.0, 0);
   g->scale_r = dt_bauhaus_slider_new_with_range(self, 0.0, 8.0, .001, p->coeffs[0], 3);
