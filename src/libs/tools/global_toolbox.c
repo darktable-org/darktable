@@ -111,29 +111,6 @@ void gui_cleanup(dt_lib_module_t *self)
   self->data = NULL;
 }
 
-#ifdef USE_LUA
-
-typedef struct
-{
-  gboolean toggle;
-  gchar *event_name;
-} button_clicked_callback_data_t;
-
-static int32_t _button_clicked_callback_job(dt_job_t *job)
-{
-  dt_lua_lock();
-  button_clicked_callback_data_t *t = dt_control_job_get_params(job);
-  lua_pushboolean(darktable.lua_state.state, t->toggle);
-  dt_lua_event_trigger(darktable.lua_state.state, t->event_name, 1);
-  g_free(t->event_name);
-  free(t);
-  dt_lua_unlock();
-
-  return 0;
-}
-
-#endif // USE_LUA
-
 void _lib_preferences_button_clicked(GtkWidget *widget, gpointer user_data)
 {
   dt_gui_preferences_show();
@@ -152,25 +129,10 @@ static void _lib_filter_grouping_button_clicked(GtkWidget *widget, gpointer user
   dt_collection_update_query(darktable.collection);
 
 #ifdef USE_LUA
-
-  dt_job_t *job = dt_control_job_create(&_button_clicked_callback_job, "lua: grouping button toggled");
-  if(job)
-  {
-    button_clicked_callback_data_t *t
-        = (button_clicked_callback_data_t *)calloc(1, sizeof(button_clicked_callback_data_t));
-    if(!t)
-    {
-      dt_control_job_dispose(job);
-    }
-    else
-    {
-      dt_control_job_set_params(job, t);
-      t->toggle = darktable.gui->grouping;
-      t->event_name = g_strdup("global_toolbox-grouping_toggle");
-      dt_control_add_job(darktable.control, DT_JOB_QUEUE_USER_FG, job);
-    }
-  }
-
+  dt_lua_do_chunk_async(dt_lua_event_trigger_wrapper,
+      LUA_ASYNC_TYPENAME,"const char*","global_toolbox-grouping_toggle",
+      LUA_ASYNC_TYPENAME,"bool",darktable.gui->grouping,
+      LUA_ASYNC_DONE);
 #endif // USE_LUA
 }
 
@@ -185,25 +147,10 @@ static void _lib_overlays_button_clicked(GtkWidget *widget, gpointer user_data)
   dt_control_signal_raise(darktable.signals, DT_SIGNAL_COLLECTION_CHANGED);
 
 #ifdef USE_LUA
-
-  dt_job_t *job = dt_control_job_create(&_button_clicked_callback_job, "lua: overlay button toggled");
-  if(job)
-  {
-    button_clicked_callback_data_t *t
-        = (button_clicked_callback_data_t *)calloc(1, sizeof(button_clicked_callback_data_t));
-    if(!t)
-    {
-      dt_control_job_dispose(job);
-    }
-    else
-    {
-      dt_control_job_set_params(job, t);
-      t->toggle = darktable.gui->show_overlays;
-      t->event_name = g_strdup("global_toolbox-overlay_toggle");
-      dt_control_add_job(darktable.control, DT_JOB_QUEUE_USER_FG, job);
-    }
-  }
-
+  dt_lua_do_chunk_async(dt_lua_event_trigger_wrapper,
+      LUA_ASYNC_TYPENAME,"const char*","global_toolbox-overlay_toggle",
+      LUA_ASYNC_TYPENAME,"bool",darktable.gui->show_overlays,
+      LUA_ASYNC_DONE);
 #endif // USE_LUA
 }
 

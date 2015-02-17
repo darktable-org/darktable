@@ -22,6 +22,8 @@ void luaA_open(lua_State* L) {
   lua_pushinteger(L, 0); lua_setfield(L, LUA_REGISTRYINDEX, LUAA_REGISTRYPREFIX "call_ret_ptr");
   lua_pushinteger(L, 0); lua_setfield(L, LUA_REGISTRYINDEX, LUAA_REGISTRYPREFIX "call_arg_ptr");
   
+  // compiler does weird macro expansion with "bool" so no magic macro for you
+  luaA_conversion_type(L, luaA_type_add(L,"bool",sizeof(bool)), luaA_push_bool, luaA_to_bool);
   luaA_conversion(L, char, luaA_push_char, luaA_to_char);
   luaA_conversion(L, signed char, luaA_push_signed_char, luaA_to_signed_char);
   luaA_conversion(L, unsigned char, luaA_push_unsigned_char, luaA_to_unsigned_char);
@@ -37,6 +39,8 @@ void luaA_open(lua_State* L) {
   luaA_conversion(L, double, luaA_push_double, luaA_to_double);
   luaA_conversion(L, long double, luaA_push_long_double, luaA_to_long_double);
   
+  luaA_conversion_push(L, const bool, luaA_push_bool);
+  luaA_conversion_push_type(L, luaA_type_add(L,"bool",sizeof(bool)), luaA_push_bool);
   luaA_conversion_push(L, const char, luaA_push_char);
   luaA_conversion_push(L, const signed char, luaA_push_signed_char);
   luaA_conversion_push(L, const unsigned char, luaA_push_unsigned_char);
@@ -249,6 +253,15 @@ void luaA_conversion_to_type(lua_State* L, luaA_Type type_id, luaA_Tofunc func) 
   lua_pushlightuserdata(L, func);
   lua_settable(L, -3);
   lua_pop(L, 1);
+}
+
+int luaA_push_bool(lua_State* L, luaA_Type type_id, const void* c_in) {
+  lua_pushboolean(L, *(bool*)c_in);
+  return 1;
+}
+
+void luaA_to_bool(lua_State* L, luaA_Type type_id,  void* c_out, int index) {
+  *(bool*)c_out = lua_toboolean(L, index);
 }
 
 int luaA_push_char(lua_State* L, luaA_Type type_id, const void* c_in) {

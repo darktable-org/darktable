@@ -403,6 +403,7 @@ static int32_t async_callback_job(dt_job_t *job)
         luaA_push_type(L,luaA_type_find(L,type_elt->data),&data_elt->data);
         break;
       case LUA_ASYNC_DONE:
+      default:
         // should never happen
         g_assert(false);
         break;
