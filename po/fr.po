@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 1.3\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-02-12 19:07+0100\n"
-"PO-Revision-Date: 2015-02-12 19:14+0100\n"
+"POT-Creation-Date: 2015-02-17 22:08+0100\n"
+"PO-Revision-Date: 2015-02-17 22:11+0100\n"
 "Last-Translator: Pascal Obry <pascal@obry.net>\n"
 "Language-Team: \n"
 "Language: fr_FR\n"
@@ -830,7 +830,7 @@ msgstr ""
 #: ../src/iop/bilateral.cc:351 ../src/iop/channelmixer.c:463
 #: ../src/iop/channelmixer.c:475 ../src/iop/colorbalance.c:586
 #: ../src/iop/colorbalance.c:625 ../src/iop/colorbalance.c:664
-#: ../src/iop/temperature.c:947 ../src/libs/collect.c:1238
+#: ../src/iop/temperature.c:1164 ../src/libs/collect.c:1238
 #: ../src/libs/collect.c:1239
 msgid "red"
 msgstr "rouge"
@@ -844,7 +844,7 @@ msgstr "jaune"
 #: ../src/iop/bilateral.cc:352 ../src/iop/channelmixer.c:464
 #: ../src/iop/channelmixer.c:482 ../src/iop/colorbalance.c:595
 #: ../src/iop/colorbalance.c:634 ../src/iop/colorbalance.c:673
-#: ../src/iop/temperature.c:948 ../src/libs/collect.c:1244
+#: ../src/iop/temperature.c:1165 ../src/libs/collect.c:1244
 #: ../src/libs/collect.c:1245
 msgid "green"
 msgstr "vert"
@@ -853,7 +853,7 @@ msgstr "vert"
 #: ../src/iop/bilateral.cc:353 ../src/iop/channelmixer.c:465
 #: ../src/iop/channelmixer.c:488 ../src/iop/colorbalance.c:604
 #: ../src/iop/colorbalance.c:643 ../src/iop/colorbalance.c:682
-#: ../src/iop/temperature.c:949 ../src/libs/collect.c:1247
+#: ../src/iop/temperature.c:1166 ../src/libs/collect.c:1247
 #: ../src/libs/collect.c:1248
 msgid "blue"
 msgstr "bleu"
@@ -910,7 +910,7 @@ msgstr "erreur de chargement du dossier «%s»"
 msgid "file `%s' has unknown format!"
 msgstr "le fichier «%s» possède un format inconnu !"
 
-#: ../src/common/darktable.c:369 ../src/libs/import.c:740
+#: ../src/common/darktable.c:369 ../src/libs/import.c:800
 #, c-format
 msgid "error loading file `%s'"
 msgstr "erreur de chargement du fichier «%s»"
@@ -920,18 +920,18 @@ msgstr "erreur de chargement du fichier «%s»"
 msgid "ERROR : invalid temporary directory : %s\n"
 msgstr "ERREUR : répertoire temporaire invalide : %s\n"
 
-#: ../src/common/film.c:349
+#: ../src/common/film.c:353
 msgid "no supported images were found to be imported"
 msgstr "aucune image supportée n'a été importée"
 
-#: ../src/common/film.c:360
+#: ../src/common/film.c:399
 #, c-format
 msgid "importing %d image"
 msgid_plural "importing %d images"
 msgstr[0] "importation de %d image"
 msgstr[1] "importation de %d images"
 
-#: ../src/common/film.c:523
+#: ../src/common/film.c:562
 msgid ""
 "cannot remove film roll having local copies with non accessible originals"
 msgstr ""
@@ -1007,7 +1007,7 @@ msgctxt "noun"
 msgid "export"
 msgstr "l'image"
 
-#: ../src/common/imageio.c:553 ../src/common/mipmap_cache.c:801
+#: ../src/common/imageio.c:553 ../src/common/mipmap_cache.c:803
 #, c-format
 msgid "image `%s' is not available!"
 msgstr "image «%s» non disponible!"
@@ -1365,7 +1365,7 @@ msgstr "sélectionner répertoire"
 #: ../src/imageio/storage/disk.c:92 ../src/imageio/storage/gallery.c:104
 #: ../src/imageio/storage/latex.c:104 ../src/libs/collect.c:414
 #: ../src/libs/copy_history.c:70 ../src/libs/geotagging.c:439
-#: ../src/libs/import.c:678 ../src/libs/import.c:774 ../src/libs/lib.c:216
+#: ../src/libs/import.c:738 ../src/libs/import.c:834 ../src/libs/lib.c:216
 #: ../src/libs/styles.c:210 ../src/libs/styles.c:230
 msgid "_Cancel"
 msgstr "_Annuler"
@@ -1920,8 +1920,8 @@ msgstr "%s est désactivé"
 #: ../src/gui/accelerators.c:679 ../src/gui/accelerators.c:847
 #: ../src/gui/accelerators.c:873 ../src/gui/presets.c:188
 #: ../src/gui/presets.c:294 ../src/gui/presets.c:662
-#: ../src/iop/temperature.c:959 ../src/libs/import.c:516 ../src/libs/lib.c:309
-#: ../src/libs/lib.c:334 ../src/libs/lib.c:1089
+#: ../src/iop/temperature.c:1176 ../src/libs/import.c:521
+#: ../src/libs/lib.c:309 ../src/libs/lib.c:334 ../src/libs/lib.c:1089
 msgid "preset"
 msgstr "pré-réglage"
 
@@ -1975,7 +1975,7 @@ msgstr "impossible de trouver un XMP venant de Lightroom !"
 msgid "`%s' not a lightroom XMP!"
 msgstr "«%s» n'est pas un XMP de Lightroom !"
 
-#: ../src/develop/lightroom.c:1382 ../src/libs/import.c:536
+#: ../src/develop/lightroom.c:1382 ../src/libs/import.c:541
 msgid "tags"
 msgstr "mots-clés"
 
@@ -2329,11 +2329,11 @@ msgid "general"
 msgstr "général"
 
 #. ignoring of jpegs. hack while we don't handle raw+jpeg in the same directories.
-#: ../src/gui/camera_import_dialog.c:266 ../src/libs/import.c:414
+#: ../src/gui/camera_import_dialog.c:266 ../src/libs/import.c:419
 msgid "ignore JPEG files"
 msgstr "ignorer les fichiers JPEG"
 
-#: ../src/gui/camera_import_dialog.c:268 ../src/libs/import.c:415
+#: ../src/gui/camera_import_dialog.c:268 ../src/libs/import.c:420
 msgid ""
 "do not load files with an extension of .jpg or .jpeg. this can be useful "
 "when there are raw+JPEG in a directory."
@@ -2698,7 +2698,7 @@ msgstr "sélectionne le fichier à importer"
 
 #: ../src/gui/preferences.c:1034 ../src/libs/collect.c:415
 #: ../src/libs/copy_history.c:71 ../src/libs/geotagging.c:440
-#: ../src/libs/import.c:679 ../src/libs/import.c:775 ../src/libs/styles.c:231
+#: ../src/libs/import.c:739 ../src/libs/import.c:835 ../src/libs/styles.c:231
 msgid "_Open"
 msgstr "_Ouvrir"
 
@@ -3848,19 +3848,19 @@ msgid "radius"
 msgstr "rayon"
 
 #: ../src/iop/bilateral.cc:83 ../src/iop/channelmixer.c:128
-#: ../src/iop/temperature.c:96
+#: ../src/iop/temperature.c:106
 msgctxt "accel"
 msgid "red"
 msgstr "rouge"
 
 #: ../src/iop/bilateral.cc:84 ../src/iop/channelmixer.c:129
-#: ../src/iop/temperature.c:97
+#: ../src/iop/temperature.c:107
 msgctxt "accel"
 msgid "green"
 msgstr "vert"
 
 #: ../src/iop/bilateral.cc:85 ../src/iop/channelmixer.c:130
-#: ../src/iop/temperature.c:98
+#: ../src/iop/temperature.c:108
 msgctxt "accel"
 msgid "blue"
 msgstr "bleu"
@@ -3968,7 +3968,7 @@ msgstr "15x10 noir"
 
 #. add import single image buttons
 #: ../src/iop/borders.c:909 ../src/iop/clipping.c:1883
-#: ../src/libs/import.c:853
+#: ../src/libs/import.c:913
 msgid "image"
 msgstr "image"
 
@@ -4952,7 +4952,7 @@ msgstr "acquérir"
 msgid "analyze this image"
 msgstr "analyser cette image"
 
-#: ../src/iop/colortransfer.c:685 ../src/libs/metadata.c:390
+#: ../src/iop/colortransfer.c:685 ../src/libs/metadata.c:389
 msgid "apply"
 msgstr "appliquer"
 
@@ -6517,55 +6517,59 @@ msgstr ""
 "défiler à la souris pour ajuster la taille.\n"
 "clic-droit pour supprimer."
 
-#: ../src/iop/temperature.c:78
+#: ../src/iop/temperature.c:88
 msgctxt "modulename"
 msgid "white balance"
 msgstr "balance des blancs"
 
-#: ../src/iop/temperature.c:94
+#: ../src/iop/temperature.c:104
 msgctxt "accel"
 msgid "tint"
 msgstr "teinte"
 
-#: ../src/iop/temperature.c:95
+#: ../src/iop/temperature.c:105
 msgctxt "accel"
 msgid "temperature"
 msgstr "température"
 
-#: ../src/iop/temperature.c:416
+#: ../src/iop/temperature.c:534
 msgid "camera white balance"
 msgstr "boîtier"
 
-#: ../src/iop/temperature.c:417
+#: ../src/iop/temperature.c:535
+msgid "camera neutral white balance"
+msgstr "neutre boîtier"
+
+#: ../src/iop/temperature.c:536
 msgid "spot white balance"
 msgstr "spot"
 
-#: ../src/iop/temperature.c:600
+#: ../src/iop/temperature.c:749
 msgid "failed to read camera white balance information!"
 msgstr "impossible de récupérer la balance des blancs du boîtier!"
 
-#: ../src/iop/temperature.c:945
+#: ../src/iop/temperature.c:1162
 msgid "tint"
 msgstr "teinte"
 
-#: ../src/iop/temperature.c:946
+#: ../src/iop/temperature.c:1163
 msgid "temperature"
 msgstr "température"
 
-#: ../src/iop/temperature.c:961
+#: ../src/iop/temperature.c:1178
 msgid "choose white balance preset from camera"
 msgstr "choisir la balance des blancs du boîtier"
 
-#: ../src/iop/temperature.c:965
+#: ../src/iop/temperature.c:1182
 msgid "finetune"
 msgstr "ajustement"
 
-#: ../src/iop/temperature.c:966
+#: ../src/iop/temperature.c:1183
 #, c-format
 msgid "%.0f mired"
 msgstr "%.0f mired"
 
-#: ../src/iop/temperature.c:970
+#: ../src/iop/temperature.c:1187
 msgid "fine tune white balance preset"
 msgstr "ajustement de balance des blancs"
 
@@ -7159,17 +7163,17 @@ msgstr "historique"
 msgid "description"
 msgstr "description"
 
-#: ../src/libs/collect.h:29 ../src/libs/import.c:521
+#: ../src/libs/collect.h:29 ../src/libs/import.c:526
 #: ../src/libs/metadata.c:346 ../src/libs/metadata_view.c:105
 msgid "creator"
 msgstr "auteur"
 
-#: ../src/libs/collect.h:29 ../src/libs/import.c:526
+#: ../src/libs/collect.h:29 ../src/libs/import.c:531
 #: ../src/libs/metadata.c:347
 msgid "publisher"
 msgstr "diffuseur"
 
-#: ../src/libs/collect.h:30 ../src/libs/import.c:531
+#: ../src/libs/collect.h:30 ../src/libs/import.c:536
 #: ../src/libs/metadata.c:348
 msgid "rights"
 msgstr "droits"
@@ -7253,7 +7257,7 @@ msgid "XMP sidecar files"
 msgstr "fichiers XMP"
 
 #: ../src/libs/copy_history.c:81 ../src/libs/geotagging.c:457
-#: ../src/libs/import.c:707 ../src/libs/styles.c:244
+#: ../src/libs/import.c:767 ../src/libs/styles.c:244
 msgid "all files"
 msgstr "tous les fichiers"
 
@@ -7818,117 +7822,117 @@ msgctxt "accel"
 msgid "ungroup"
 msgstr "dégrouper"
 
-#: ../src/libs/import.c:91
+#: ../src/libs/import.c:96
 msgid "import"
 msgstr "importer"
 
-#: ../src/libs/import.c:112
+#: ../src/libs/import.c:117
 msgctxt "accel"
 msgid "scan for devices"
 msgstr "rechercher un appareil"
 
-#: ../src/libs/import.c:113
+#: ../src/libs/import.c:118
 msgctxt "accel"
 msgid "import from camera"
 msgstr "importer depuis le boîtier"
 
-#: ../src/libs/import.c:114
+#: ../src/libs/import.c:119
 msgctxt "accel"
 msgid "tethered shoot"
 msgstr "commander le boîtier"
 
-#: ../src/libs/import.c:115
+#: ../src/libs/import.c:120
 msgctxt "accel"
 msgid "import image"
 msgstr "importer une image"
 
-#: ../src/libs/import.c:116
+#: ../src/libs/import.c:121
 msgctxt "accel"
 msgid "import folder"
 msgstr "importer un dossier"
 
-#: ../src/libs/import.c:207
+#: ../src/libs/import.c:212
 #, c-format
 msgid "device \"%s\" connected on port \"%s\"."
 msgstr "appareil «%s» connecté sur le port «%s»"
 
-#: ../src/libs/import.c:217
+#: ../src/libs/import.c:222
 msgid "import from camera"
 msgstr "importer depuis le boîtier"
 
-#: ../src/libs/import.c:223
+#: ../src/libs/import.c:228
 msgid "tethered shoot"
 msgstr "commander le boîtier"
 
 #. No supported devices is detected lets notice user..
-#: ../src/libs/import.c:245
+#: ../src/libs/import.c:250
 msgid "no supported devices found"
 msgstr "aucun appareil supporté n'a été détecté"
 
 #. add extra lines to 'extra'. don't forget to destroy the widgets later.
-#: ../src/libs/import.c:378
+#: ../src/libs/import.c:383
 msgid "import options"
 msgstr "options d'importation"
 
 #. recursive opening.
-#: ../src/libs/import.c:407
+#: ../src/libs/import.c:412
 msgid "import directories recursively"
 msgstr "importer les dossiers récursivement"
 
-#: ../src/libs/import.c:409
+#: ../src/libs/import.c:414
 msgid ""
 "recursively import subdirectories. each directory goes into a new film roll."
 msgstr "importe les dossiers de manière récursive"
 
-#: ../src/libs/import.c:426
+#: ../src/libs/import.c:431
 msgid "apply metadata on import"
 msgstr "appliquer des métadonnées lors de l'importation"
 
-#: ../src/libs/import.c:427
+#: ../src/libs/import.c:432
 msgid "apply some metadata to all newly imported images."
 msgstr ""
 "appliquer des métadonnées\n"
 "à toutes les images nouvellement importées"
 
-#: ../src/libs/import.c:467
+#: ../src/libs/import.c:472
 msgid "comma separated list of tags"
 msgstr "liste de mots-clés séparés par une virgule"
 
-#: ../src/libs/import.c:678
+#: ../src/libs/import.c:738
 msgid "import image"
 msgstr "importer une image"
 
-#: ../src/libs/import.c:702
+#: ../src/libs/import.c:762
 msgid "supported images"
 msgstr "images supportées"
 
-#: ../src/libs/import.c:756
+#: ../src/libs/import.c:816
 msgid "file has unknown format!"
 msgstr "le fichier possède un format inconnu !"
 
-#: ../src/libs/import.c:774
+#: ../src/libs/import.c:834
 msgid "import film"
 msgstr "importer un dossier"
 
-#: ../src/libs/import.c:856
+#: ../src/libs/import.c:916
 msgid "select one or more images to import"
 msgstr "sélectionner une ou plusieurs images à importer"
 
 #. adding the import folder button
-#: ../src/libs/import.c:863
+#: ../src/libs/import.c:923
 msgid "folder"
 msgstr "dossier"
 
-#: ../src/libs/import.c:866
+#: ../src/libs/import.c:926
 msgid "select a folder to import as film roll"
 msgstr "sélectionner un dossier à importer"
 
 #. add the rescan button
-#: ../src/libs/import.c:874
+#: ../src/libs/import.c:934
 msgid "scan for devices"
 msgstr "rechercher un appareil"
 
-#: ../src/libs/import.c:877
+#: ../src/libs/import.c:937
 msgid "scan for newly attached devices"
 msgstr "recherche des appareils branchés récemment"
 
@@ -8202,69 +8206,69 @@ msgctxt "accel"
 msgid "clear"
 msgstr "effacer"
 
-#: ../src/libs/metadata.c:383
+#: ../src/libs/metadata.c:382
 msgid "clear"
 msgstr "effacer"
 
-#: ../src/libs/metadata.c:386
+#: ../src/libs/metadata.c:385
 msgid "remove metadata from selected images"
 msgstr ""
 "enlève les méta-données\n"
 "des images sélectionnées"
 
-#: ../src/libs/metadata.c:393
+#: ../src/libs/metadata.c:392
 msgid "write metadata for selected images"
 msgstr ""
 "écrire les méta-données\n"
 "des images sélectionnées"
 
 #. <title>\0<description>\0<rights>\0<creator>\0<publisher>
-#: ../src/libs/metadata.c:433
+#: ../src/libs/metadata.c:432
 msgid "CC BY"
 msgstr "CC BY"
 
-#: ../src/libs/metadata.c:433
+#: ../src/libs/metadata.c:432
 msgid "Creative Commons Attribution (CC BY)"
 msgstr "Creative Commons Paternité (CC-BY)"
 
-#: ../src/libs/metadata.c:434
+#: ../src/libs/metadata.c:433
 msgid "CC BY-SA"
 msgstr "CC BY-SA"
 
-#: ../src/libs/metadata.c:434
+#: ../src/libs/metadata.c:433
 msgid "Creative Commons Attribution-ShareAlike (CC BY-SA)"
 msgstr ""
 "Creative Commons \n"
 "Paternité\n"
 "Partage des conditions initiales à l'identique (CC-BY-SA)"
 
-#: ../src/libs/metadata.c:435
+#: ../src/libs/metadata.c:434
 msgid "CC BY-ND"
 msgstr "CC BY-ND"
 
-#: ../src/libs/metadata.c:435
+#: ../src/libs/metadata.c:434
 msgid "Creative Commons Attribution-NoDerivs (CC BY-ND)"
 msgstr ""
 "Creative Commons \n"
 "Paternité\n"
 "Pas de modification(CC-BY-ND)"
 
-#: ../src/libs/metadata.c:436
+#: ../src/libs/metadata.c:435
 msgid "CC BY-NC"
 msgstr "CC BY-NC"
 
-#: ../src/libs/metadata.c:436
+#: ../src/libs/metadata.c:435
 msgid "Creative Commons Attribution-NonCommercial (CC BY-NC)"
 msgstr ""
 "Creative Commons \n"
 "Paternité\n"
 "Pas d'utilisation commerciale (CC-BY-NC)"
 
-#: ../src/libs/metadata.c:437
+#: ../src/libs/metadata.c:436
 msgid "CC BY-NC-SA"
 msgstr "CC BY-NC-SA"
 
-#: ../src/libs/metadata.c:438
+#: ../src/libs/metadata.c:437
 msgid "Creative Commons Attribution-NonCommercial-ShareAlike (CC BY-NC-SA)"
 msgstr ""
 "Creative Commons\n"
@@ -8272,11 +8276,11 @@ msgstr ""
 "Pas d'utilisation commerciale\n"
 "Partage des conditions initiales à l'identique (CC-BY-NC-SA)"
 
-#: ../src/libs/metadata.c:439
+#: ../src/libs/metadata.c:438
 msgid "CC BY-NC-ND"
 msgstr "CC BY-NC-ND"
 
-#: ../src/libs/metadata.c:440
+#: ../src/libs/metadata.c:439
 msgid "Creative Commons Attribution-NonCommercial-NoDerivs (CC BY-NC-ND)"
 msgstr ""
 "Creative Commons \n"
@@ -8284,11 +8288,11 @@ msgstr ""
 "Pas d'utilisation commerciale\n"
 "Pas de modification (CC-BY-NC-ND)"
 
-#: ../src/libs/metadata.c:441
+#: ../src/libs/metadata.c:440
 msgid "all rights reserved"
 msgstr "tous droits réservés"
 
-#: ../src/libs/metadata.c:441
+#: ../src/libs/metadata.c:440
 msgid "all rights reserved."
 msgstr "tous droits réservés"
 
@@ -8957,37 +8961,37 @@ msgstr "bandeau"
 #. setup rating key accelerators
 #. Initializing accelerators
 #. Rating keys
-#: ../src/libs/tools/filmstrip.c:167 ../src/views/lighttable.c:2119
+#: ../src/libs/tools/filmstrip.c:167 ../src/views/lighttable.c:2140
 msgctxt "accel"
 msgid "rate 0"
 msgstr "0 étoile"
 
-#: ../src/libs/tools/filmstrip.c:168 ../src/views/lighttable.c:2120
+#: ../src/libs/tools/filmstrip.c:168 ../src/views/lighttable.c:2141
 msgctxt "accel"
 msgid "rate 1"
 msgstr "1 étoile"
 
-#: ../src/libs/tools/filmstrip.c:169 ../src/views/lighttable.c:2121
+#: ../src/libs/tools/filmstrip.c:169 ../src/views/lighttable.c:2142
 msgctxt "accel"
 msgid "rate 2"
 msgstr "2 étoiles"
 
-#: ../src/libs/tools/filmstrip.c:170 ../src/views/lighttable.c:2122
+#: ../src/libs/tools/filmstrip.c:170 ../src/views/lighttable.c:2143
 msgctxt "accel"
 msgid "rate 3"
 msgstr "3 étoiles"
 
-#: ../src/libs/tools/filmstrip.c:171 ../src/views/lighttable.c:2123
+#: ../src/libs/tools/filmstrip.c:171 ../src/views/lighttable.c:2144
 msgctxt "accel"
 msgid "rate 4"
 msgstr "4 étoiles"
 
-#: ../src/libs/tools/filmstrip.c:172 ../src/views/lighttable.c:2124
+#: ../src/libs/tools/filmstrip.c:172 ../src/views/lighttable.c:2145
 msgctxt "accel"
 msgid "rate 5"
 msgstr "5 étoiles"
 
-#: ../src/libs/tools/filmstrip.c:173 ../src/views/lighttable.c:2125
+#: ../src/libs/tools/filmstrip.c:173 ../src/views/lighttable.c:2146
 msgctxt "accel"
 msgid "rate reject"
 msgstr "rejeter"
@@ -9025,27 +9029,27 @@ msgstr "cloner l'image"
 
 #. setup color label accelerators
 #. Color keys
-#: ../src/libs/tools/filmstrip.c:189 ../src/views/lighttable.c:2134
+#: ../src/libs/tools/filmstrip.c:189 ../src/views/lighttable.c:2155
 msgctxt "accel"
 msgid "color red"
 msgstr "couleur rouge"
 
-#: ../src/libs/tools/filmstrip.c:190 ../src/views/lighttable.c:2135
+#: ../src/libs/tools/filmstrip.c:190 ../src/views/lighttable.c:2156
 msgctxt "accel"
 msgid "color yellow"
 msgstr "couleur jaune"
 
-#: ../src/libs/tools/filmstrip.c:191 ../src/views/lighttable.c:2136
+#: ../src/libs/tools/filmstrip.c:191 ../src/views/lighttable.c:2157
 msgctxt "accel"
 msgid "color green"
 msgstr "couleur verte"
 
-#: ../src/libs/tools/filmstrip.c:192 ../src/views/lighttable.c:2137
+#: ../src/libs/tools/filmstrip.c:192 ../src/views/lighttable.c:2158
 msgctxt "accel"
 msgid "color blue"
 msgstr "couleur bleue"
 
-#: ../src/libs/tools/filmstrip.c:193 ../src/views/lighttable.c:2138
+#: ../src/libs/tools/filmstrip.c:193 ../src/views/lighttable.c:2159
 msgctxt "accel"
 msgid "color purple"
 msgstr "couleur violette"
@@ -9108,22 +9112,22 @@ msgid "preferences"
 msgstr "préférences"
 
 #: ../src/libs/tools/global_toolbox.c:81
-#: ../src/libs/tools/global_toolbox.c:147
+#: ../src/libs/tools/global_toolbox.c:124
 msgid "expand grouped images"
 msgstr "montrer les images groupées"
 
 #: ../src/libs/tools/global_toolbox.c:83
-#: ../src/libs/tools/global_toolbox.c:149
+#: ../src/libs/tools/global_toolbox.c:126
 msgid "collapse grouped images"
 msgstr "cacher les images groupées"
 
 #: ../src/libs/tools/global_toolbox.c:93
-#: ../src/libs/tools/global_toolbox.c:181
+#: ../src/libs/tools/global_toolbox.c:143
 msgid "hide image overlays"
 msgstr "cache les surimpressions"
 
 #: ../src/libs/tools/global_toolbox.c:95
-#: ../src/libs/tools/global_toolbox.c:183
+#: ../src/libs/tools/global_toolbox.c:145
 msgid "show image overlays"
 msgstr "affiche les surimpressions"
 
@@ -9131,17 +9135,17 @@ msgstr "affiche les surimpressions"
 msgid "show global preferences"
 msgstr "montrer les préférences globales"
 
-#: ../src/libs/tools/global_toolbox.c:212
+#: ../src/libs/tools/global_toolbox.c:159
 msgctxt "accel"
 msgid "grouping"
 msgstr "grouper"
 
-#: ../src/libs/tools/global_toolbox.c:213
+#: ../src/libs/tools/global_toolbox.c:160
 msgctxt "accel"
 msgid "preferences"
 msgstr "préférences"
 
-#: ../src/libs/tools/global_toolbox.c:214
+#: ../src/libs/tools/global_toolbox.c:161
 msgctxt "accel"
 msgid "show overlays"
 msgstr "affiche les surimpressions"
@@ -9353,89 +9357,89 @@ msgstr ""
 "ou modifier les filtres de collection dans le menu de collection à gauche."
 
 #. Navigation keys
-#: ../src/views/lighttable.c:2128
+#: ../src/views/lighttable.c:2149
 msgctxt "accel"
 msgid "navigate up"
 msgstr "aller en haut"
 
-#: ../src/views/lighttable.c:2129
+#: ../src/views/lighttable.c:2150
 msgctxt "accel"
 msgid "navigate down"
 msgstr "aller en bas"
 
-#: ../src/views/lighttable.c:2130
+#: ../src/views/lighttable.c:2151
 msgctxt "accel"
 msgid "navigate page up"
 msgstr "défiler par page vers le haut"
 
-#: ../src/views/lighttable.c:2131
+#: ../src/views/lighttable.c:2152
 msgctxt "accel"
 msgid "navigate page down"
 msgstr "défiler par page vers le bas"
 
 #. Scroll keys
-#: ../src/views/lighttable.c:2141
+#: ../src/views/lighttable.c:2162
 msgctxt "accel"
 msgid "scroll up"
 msgstr "défiler en arrière"
 
-#: ../src/views/lighttable.c:2142
+#: ../src/views/lighttable.c:2163
 msgctxt "accel"
 msgid "scroll down"
 msgstr "défiler en avant"
 
-#: ../src/views/lighttable.c:2143
+#: ../src/views/lighttable.c:2164
 msgctxt "accel"
 msgid "scroll left"
 msgstr "défiler vers la gauche"
 
-#: ../src/views/lighttable.c:2144
+#: ../src/views/lighttable.c:2165
 msgctxt "accel"
 msgid "scroll right"
 msgstr "défiler vers la droite "
 
-#: ../src/views/lighttable.c:2145
+#: ../src/views/lighttable.c:2166
 msgctxt "accel"
 msgid "scroll center"
 msgstr "défiler vers le centre"
 
-#: ../src/views/lighttable.c:2146
+#: ../src/views/lighttable.c:2167
 msgctxt "accel"
 msgid "realign images to grid"
 msgstr "aligner les images sur la grille"
 
-#: ../src/views/lighttable.c:2147
+#: ../src/views/lighttable.c:2168
 msgctxt "accel"
 msgid "select toggle image"
 msgstr "inverse sélection de l'image"
 
-#: ../src/views/lighttable.c:2148
+#: ../src/views/lighttable.c:2169
 msgctxt "accel"
 msgid "select single image"
 msgstr "sélectionne image unique"
 
 #. Preview key
-#: ../src/views/lighttable.c:2151
+#: ../src/views/lighttable.c:2172
 msgctxt "accel"
 msgid "preview"
 msgstr "aperçu"
 
-#: ../src/views/lighttable.c:2152
+#: ../src/views/lighttable.c:2173
 msgctxt "accel"
 msgid "preview with focus detection"
 msgstr "aperçu avec détection de la mise au point"
 
-#: ../src/views/lighttable.c:2153
+#: ../src/views/lighttable.c:2174
 msgctxt "accel"
 msgid "sticky preview"
 msgstr "aperçu persistant"
 
-#: ../src/views/lighttable.c:2154
+#: ../src/views/lighttable.c:2175
 msgctxt "accel"
 msgid "sticky preview with focus detection"
 msgstr "aperçu persistant avec détection de la mise au point"
 
-#: ../src/views/lighttable.c:2155
+#: ../src/views/lighttable.c:2176
 msgctxt "accel"
 msgid "exit sticky preview"
 msgstr "sortir du mode aperçu persistant"
