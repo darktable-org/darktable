@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2015-02-16 20:57+0100\n"
-"PO-Revision-Date: 2015-02-16 21:18+0100\n"
+"PO-Revision-Date: 2015-02-17 13:28+0100\n"
 "Last-Translator: Ger Siemerink <g.siemerink@gmail.com>\n"
 "Language-Team: Ger Siemerink <g.siemerink@gmail.com>\n"
 "Language: nl_NL\n"
@@ -3822,7 +3822,7 @@ msgstr "detail"
 
 #: ../src/iop/bilateral.cc:67
 msgid "denoise (bilateral filter)"
-msgstr "ruisreductie (bilateral filter)"
+msgstr "ruisreductie (bilateral)"
 
 #: ../src/iop/bilateral.cc:82 ../src/iop/lowpass.c:160 ../src/iop/shadhi.c:227
 #: ../src/iop/sharpen.c:97
@@ -4406,7 +4406,7 @@ msgstr "hoek"
 
 #: ../src/iop/colisa.c:74
 msgid "contrast brightness saturation"
-msgstr "contrast helderheid verzadiging"
+msgstr "contrast helderheid verzadigen"
 
 #: ../src/iop/colisa.c:90 ../src/iop/lowpass.c:161
 msgctxt "accel"
@@ -4968,7 +4968,7 @@ msgstr "kies selectie criteria, dat is dan de abscis van de grafiek"
 
 #: ../src/iop/defringe.c:65
 msgid "defringe"
-msgstr "franje verwijderen (defringe)"
+msgstr "verwijder franje(defringe)"
 
 #: ../src/iop/defringe.c:445
 msgid "operation mode"
@@ -7683,7 +7683,7 @@ msgstr ""
 
 #: ../src/libs/image.c:215
 msgid "resync local copy"
-msgstr "hersynchroniseer lokale kopie"
+msgstr "resync lokale kopie"
 
 #: ../src/libs/image.c:217
 msgid "synchronize the image's XMP and remove the local copy"
