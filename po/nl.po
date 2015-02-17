@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2015-02-16 20:57+0100\n"
-"PO-Revision-Date: 2015-02-17 13:28+0100\n"
+"PO-Revision-Date: 2015-02-17 13:50+0100\n"
 "Last-Translator: Ger Siemerink <g.siemerink@gmail.com>\n"
 "Language-Team: Ger Siemerink <g.siemerink@gmail.com>\n"
 "Language: nl_NL\n"
@@ -5132,7 +5132,7 @@ msgstr "methode voor matchen groen kanalen"
 
 #: ../src/iop/denoiseprofile.c:130
 msgid "denoise (profiled)"
-msgstr "ruisreductie (geprofileerd)"
+msgstr "ruisreductie (profiled)"
 
 #: ../src/iop/denoiseprofile.c:1392 ../src/iop/denoiseprofile.c:1400
 #, c-format
