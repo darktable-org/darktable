@@ -2105,6 +2105,27 @@ const wb_data wb_preset[] =
   { "FUJIFILM", "X-Pro1", Underwater, 0,	{ 1.860927, 1, 1.708609, 0 } },
   { "FUJIFILM", "X-Pro1", "5000K", 0,		{ 1.857616, 1, 1.701987, 0 } },
 
+  { "KODAK", "DCS Pro 14N", Daylight, 0,	{ 1, 1.055126, 1.353602, 0 } },
+  { "KODAK", "DCS Pro 14N", Tungsten, 0,	{ 1, 1.337688, 2.218852, 0 } },
+  { "KODAK", "DCS Pro 14N", Fluorescent, 0,	{ 1, 1.102854, 1.513673, 0 } },
+  { "KODAK", "DCS Pro 14N", Flash, 0,		{ 1, 1.055670, 1.353602, 0 } },
+
+  /* Median of 3 DCS Pro SLR/n cameras. */
+  { "KODAK", "DCS Pro SLR/n", Daylight, 0,	{ 1, 0.816913, 1.267327, 0 } },
+  { "KODAK", "DCS Pro SLR/n", Tungsten, 0,	{ 1, 1.045431, 1.948620, 0 } },
+  { "KODAK", "DCS Pro SLR/n", Fluorescent, 0,	{ 1, 0.778411, 1.244228, 0 } },
+  { "KODAK", "DCS Pro SLR/n", Flash, 0,		{ 1, 0.789819, 1.224880, 0 } },
+
+  { "KODAK", "DCS560C", Daylight, 0,		{ 1.238959, 1.057305, 2.133333, 0 } },
+  { "KODAK", "DCS560C", Tungsten, 0,		{ 1.061690, 1.043833, 2.612245, 0 } },
+  { "KODAK", "DCS560C", Fluorescent, 0,		{ 1.463903, 0.994658, 2.081301, 0 } },
+  { "KODAK", "DCS560C", Flash, 0,		{ 1.238956, 1.057305, 2.133333, 0 } },
+
+  { "KODAK", "ProBack645", Daylight, 0,		{ 1.122807, 1.001467, 1.368984, 0 } },
+  { "KODAK", "ProBack645", Tungsten, 0,		{ 1, 1.204706, 2.409412, 0 } },
+  { "KODAK", "ProBack645", Fluorescent, 0,	{ 1.099893, 1, 1.699585, 0 } },
+  { "KODAK", "ProBack645", Flash, 0,		{ 1.134626, 1.011858, 1.382849, 0 } },
+
   { "KODAK", "P850 ZOOM", Daylight, 0,		{ 1.859375, 1, 1.566406, 0 } },
   { "KODAK", "P850 ZOOM", Cloudy, 0,		{ 1.960938, 1, 1.570313, 0 } },
   { "KODAK", "P850 ZOOM", Shade, 0,		{ 2.027344, 1, 1.519531, 0 } },
