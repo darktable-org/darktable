@@ -46,6 +46,7 @@
 #include "common/image_cache.h"
 #include "common/imageio_module.h"
 #include "common/mipmap_cache.h"
+#include "common/noiseprofiles.h"
 #include "common/opencl.h"
 #include "common/points.h"
 #include "develop/imageop.h"
@@ -815,6 +816,8 @@ int dt_init(int argc, char *argv[], const int init_gui, lua_State *L)
 
   darktable.points = (dt_points_t *)calloc(1, sizeof(dt_points_t));
   dt_points_init(darktable.points, dt_get_num_threads());
+
+  darktable.noiseprofile_parser = dt_noiseprofile_init();
 
   // must come before mipmap_cache, because that one will need to access
   // image dimensions stored in here:

@@ -66,6 +66,11 @@ install(FILES ${WATERMARKS} DESTINATION ${SHARE_INSTALL}/darktable/watermarks)
 install(FILES gdb_commands DESTINATION ${SHARE_INSTALL}/darktable)
 
 #
+# Install noiseprofiles
+#
+install(FILES noiseprofiles.json DESTINATION ${SHARE_INSTALL}/darktable)
+
+#
 # Transform darktableconfig.xml into darktablerc
 #
 

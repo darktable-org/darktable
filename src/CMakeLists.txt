@@ -43,6 +43,7 @@ FILE(GLOB SOURCE_FILES
   "common/interpolation.c"
   "common/metadata.c"
   "common/mipmap_cache.c"
+  "common/noiseprofiles.c"
   "common/pdf.c"
   "common/styles.c"
   "common/selection.c"
@@ -178,7 +179,7 @@ if(USE_WEBP)
   else(USE_WEBP)
 endif(USE_WEBP)
 
-foreach(lib ${OUR_LIBS} LensFun GIO GThread GModule PangoCairo PThread Rsvg2 LibXml2 Sqlite3 Exiv2 CURL PNG JPEG TIFF LCMS2)
+foreach(lib ${OUR_LIBS} LensFun GIO GThread GModule PangoCairo PThread Rsvg2 LibXml2 Sqlite3 Exiv2 CURL PNG JPEG TIFF LCMS2 JsonGlib)
   find_package(${lib} REQUIRED)
   include_directories(SYSTEM ${${lib}_INCLUDE_DIRS})
   list(APPEND LIBS ${${lib}_LIBRARIES})
@@ -205,14 +206,6 @@ if(USE_FLICKR)
     add_definitions(${FLICKCURL_DEFINITIONS})
   endif(FLICKCURL_FOUND)
 endif(USE_FLICKR)
-
-if(USE_GLIBJSON)
-  find_package(JsonGlib)
-  if(JsonGlib_FOUND)
-    include_directories(SYSTEM ${JsonGlib_INCLUDE_DIRS})
-    list(APPEND LIBS ${JsonGlib_LIBRARIES})
-  endif(JsonGlib_FOUND)
-endif(USE_GLIBJSON)
 
 if(USE_OPENJPEG)
   find_package(OpenJPEG)
