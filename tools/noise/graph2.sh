@@ -3,7 +3,7 @@
 # remove whitespace and braces,
 # filter out panasonic and powershot etc because they usually blow up the plot ranges
 # also only choose nikon d800 and canon 5d mark 2 for comparison
-cat src/common/noiseprofiles.h | grep '^{"'  | sed 's/\s*,\s*/,/g' | tr " " "_" | tr -d "{}()\"" | tr "/" "_" | \
+cat src/common/noiseprofiles.h | grep '^[ \t]*{"'  | sed 's/\s*,\s*/,/g' | tr " " "_" | tr -d "{}()\"" | tr "/" "_" | \
   grep -v "PowerShot" | \
   grep -v "Panasonic" | \
   grep -v "DYNAX" | \
