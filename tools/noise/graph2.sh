@@ -10,7 +10,7 @@ cat src/common/noiseprofiles.h | grep '^[ \t]*{"'  | sed 's/\s*,\s*/,/g' | tr " 
   grep -v "NEX-C3" | \
   grep -v "pentax_k-x" | \
   grep -v "D5100" | \
-  awk -F, "{if (\$3 == \"D800\" || \$3 == \"Canon_EOS_5D_Mark_II\") { print \$0; }}" \
+  awk -F, "{if (\$3 == \"NIKON_D800\" || \$3 == \"Canon_EOS_5D_Mark_II\") { print \$0; }}" \
   > trim.txt
 
 # get all:
