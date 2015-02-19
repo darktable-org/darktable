@@ -658,6 +658,15 @@ void gui_update(struct dt_iop_module_t *self)
 
 static int calculate_bogus_daylight_wb(dt_iop_module_t *module, double bwb[3])
 {
+  if(!dt_image_is_raw(&module->dev->image_storage))
+  {
+    bwb[0] = 1.0;
+    bwb[2] = 1.0;
+    bwb[1] = 1.0;
+
+    return 0;
+  }
+
   // color matrix
   char makermodel[1024];
   dt_colorspaces_get_makermodel(makermodel, sizeof(makermodel), module->dev->image_storage.exif_maker,
@@ -704,26 +713,101 @@ static int calculate_bogus_daylight_wb(dt_iop_module_t *module, double bwb[3])
   return 1;
 }
 
+static int prepare_wb_matrices(dt_iop_module_t *module)
+{
+  dt_iop_temperature_gui_data_t *g = (dt_iop_temperature_gui_data_t *)module->gui_data;
+
+  // sRGB D65
+  const double RGB_to_XYZ[3][3] = { { 0.4124564, 0.3575761, 0.1804375 },
+                                    { 0.2126729, 0.7151522, 0.0721750 },
+                                    { 0.0193339, 0.1191920, 0.9503041 } };
+
+  // sRGB D65
+  const double XYZ_to_RGB[3][3] = { { 3.2404542, -1.5371385, -0.4985314 },
+                                    { -0.9692660, 1.8760108, 0.0415560 },
+                                    { 0.0556434, -0.2040259, 1.0572252 } };
+
+  if(!dt_image_is_raw(&module->dev->image_storage))
+  {
+    // let's just assume for now(TM) that if it is not raw, it is sRGB
+    memcpy(g->XYZ_to_CAM, XYZ_to_RGB, sizeof(g->XYZ_to_CAM));
+    memcpy(g->CAM_to_XYZ, RGB_to_XYZ, sizeof(g->CAM_to_XYZ));
+
+    return 0;
+  }
+
+  // prepare matrices for Kelvin temperature
+  char makermodel[1024];
+  dt_colorspaces_get_makermodel(makermodel, sizeof(makermodel), module->dev->image_storage.exif_maker,
+                                module->dev->image_storage.exif_model);
+
+  float XYZ_to_CAM[4][3];
+  dt_dcraw_adobe_coeff(makermodel, (float(*)[12])XYZ_to_CAM);
+  if(!isnan(XYZ_to_CAM[0][0]))
+  {
+    double RGB_to_CAM[3][3];
+    for(int i = 0; i < 3; i++)
+    {
+      for(int j = 0; j < 3; j++)
+      {
+        RGB_to_CAM[i][j] = 0.0;
+        for(int k = 0; k < 3; k++) RGB_to_CAM[i][j] += XYZ_to_CAM[i][k] * RGB_to_XYZ[k][j];
+      }
+    }
+
+    /*
+     * Normalize RGB_to_CAM so that
+     * RGB_to_CAM * (1,1,1) is (1,1,1)
+     */
+    for(int i = 0; i < 3; i++)
+    {
+      double num = 0.0;
+      for(int j = 0; j < 3; j++) num += RGB_to_CAM[i][j];
+
+      for(int j = 0; j < 3; j++)
+      {
+        RGB_to_CAM[i][j] /= num;
+      }
+    }
+
+    for(int i = 0; i < 3; i++)
+    {
+      for(int j = 0; j < 3; j++)
+      {
+        g->XYZ_to_CAM[i][j] = 0.0;
+        for(int k = 0; k < 3; k++) g->XYZ_to_CAM[i][j] += RGB_to_CAM[i][k] * XYZ_to_RGB[k][j];
+      }
+    }
+
+    // and inverse matrix
+    mat3inv_double((double *)g->CAM_to_XYZ, (double *)g->XYZ_to_CAM);
+
+    return 0;
+  }
+
+  return 1;
+}
+
 void reload_defaults(dt_iop_module_t *module)
 {
   dt_iop_temperature_params_t tmp
-      = (dt_iop_temperature_params_t){ .temp_out = 5000.0, .coeffs = { 1.0, 1.0, 1.0 } };
+      = (dt_iop_temperature_params_t){.temp_out = 5000.0, .coeffs = { 1.0, 1.0, 1.0 } };
 
   // we might be called from presets update infrastructure => there is no image
   if(!module->dev) goto end;
 
-  // raw images need wb:
-  module->default_enabled = dt_image_is_raw(&module->dev->image_storage);
+  if(module->gui_data) prepare_wb_matrices(module);
+
+  char makermodel[1024];
+  char *model = makermodel;
+  dt_colorspaces_get_makermodel_split(makermodel, sizeof(makermodel), &model,
+                                      module->dev->image_storage.exif_maker,
+                                      module->dev->image_storage.exif_model);
 
   /* check if file is raw / hdr */
   if(dt_image_is_raw(&module->dev->image_storage))
   {
-    char makermodel[1024];
-    char *model = makermodel;
-    dt_colorspaces_get_makermodel_split(makermodel, sizeof(makermodel), &model,
-                                        module->dev->image_storage.exif_maker,
-                                        module->dev->image_storage.exif_model);
-
+    // raw images need wb:
     module->default_enabled = 1;
 
     int found = 1, is_monochrom = 0;
@@ -791,103 +875,45 @@ void reload_defaults(dt_iop_module_t *module)
     tmp.coeffs[0] /= tmp.coeffs[1];
     tmp.coeffs[2] /= tmp.coeffs[1];
     tmp.coeffs[1] = 1.0f;
+  }
 
-    // remember daylight wb used for temperature/tint conversion,
-    // assuming it corresponds to CIE daylight (D65)
-    if(module->gui_data)
+  // remember daylight wb used for temperature/tint conversion,
+  // assuming it corresponds to CIE daylight (D65)
+  if(module->gui_data)
+  {
+    dt_iop_temperature_gui_data_t *g = (dt_iop_temperature_gui_data_t *)module->gui_data;
+
+    dt_bauhaus_slider_set_default(g->scale_r, tmp.coeffs[0]);
+    dt_bauhaus_slider_set_default(g->scale_g, tmp.coeffs[1]);
+    dt_bauhaus_slider_set_default(g->scale_b, tmp.coeffs[2]);
+
+    // to have at least something and definitely not crash
+    for(int c = 0; c < 3; c++) g->daylight_wb[c] = tmp.coeffs[c];
+
+    if(!calculate_bogus_daylight_wb(module, g->daylight_wb))
     {
-      dt_iop_temperature_gui_data_t *g = (dt_iop_temperature_gui_data_t *)module->gui_data;
-
-      dt_bauhaus_slider_set_default(g->scale_r, tmp.coeffs[0]);
-      dt_bauhaus_slider_set_default(g->scale_g, tmp.coeffs[1]);
-      dt_bauhaus_slider_set_default(g->scale_b, tmp.coeffs[2]);
-
-      // to have at least something and definitely not crash
-      for(int c = 0; c < 3; c++) g->daylight_wb[c] = tmp.coeffs[c];
-
-      if(!calculate_bogus_daylight_wb(module, g->daylight_wb))
-      {
-        // found camera matrix and used it to calculate bogus daylight wb
-      }
-      else
-      {
-        // if we didn't find anything for daylight wb, look for a wb preset with appropriate name.
-        // we're normalizing that to be D65
-        for(int i = 0; i < wb_preset_count; i++)
-        {
-          if(!strcmp(wb_preset[i].make, makermodel) && !strcmp(wb_preset[i].model, model)
-             && !strcmp(wb_preset[i].name, Daylight) && wb_preset[i].tuning == 0)
-          {
-            for(int k = 0; k < 3; k++) g->daylight_wb[k] = wb_preset[i].channel[k];
-            break;
-          }
-        }
-      }
-
-      {
-        // prepare matrices for Kelvin temperature
-
-        // camera color matrix
-        char makermodel[1024];
-        dt_colorspaces_get_makermodel(makermodel, sizeof(makermodel), module->dev->image_storage.exif_maker,
-                                      module->dev->image_storage.exif_model);
-
-        float XYZ_to_CAM[4][3];
-        dt_dcraw_adobe_coeff(makermodel, (float(*)[12])XYZ_to_CAM);
-
-        // sRGB D65
-        const double RGB_to_XYZ[3][3] = { { 0.4124564, 0.3575761, 0.1804375 },
-                                          { 0.2126729, 0.7151522, 0.0721750 },
-                                          { 0.0193339, 0.1191920, 0.9503041 } };
-
-        double RGB_to_CAM[3][3];
-        for(int i = 0; i < 3; i++)
-        {
-          for(int j = 0; j < 3; j++)
-          {
-            RGB_to_CAM[i][j] = 0.0;
-            for(int k = 0; k < 3; k++) RGB_to_CAM[i][j] += XYZ_to_CAM[i][k] * RGB_to_XYZ[k][j];
-          }
-        }
-
-        /*
-        * Normalize RGB_to_CAM so that
-        * RGB_to_CAM * (1,1,1) is (1,1,1)
-        */
-        for(int i = 0; i < 3; i++)
-        {
-          double num = 0.0;
-          for(int j = 0; j < 3; j++) num += RGB_to_CAM[i][j];
-
-          for(int j = 0; j < 3; j++)
-          {
-            RGB_to_CAM[i][j] /= num;
-          }
-        }
-
-        // sRGB D65
-        const double XYZ_to_RGB[3][3] = { { 3.2404542, -1.5371385, -0.4985314 },
-                                          { -0.9692660, 1.8760108, 0.0415560 },
-                                          { 0.0556434, -0.2040259, 1.0572252 } };
-        for(int i = 0; i < 3; i++)
-        {
-          for(int j = 0; j < 3; j++)
-          {
-            g->XYZ_to_CAM[i][j] = 0.0;
-            for(int k = 0; k < 3; k++) g->XYZ_to_CAM[i][j] += RGB_to_CAM[i][k] * XYZ_to_RGB[k][j];
-          }
-        }
-
-        // and inverse matrix
-        mat3inv_double((double *)g->CAM_to_XYZ, (double *)g->XYZ_to_CAM);
-      }
-
-      double TempK, tint;
-      mul2temp(module, tmp.coeffs, &TempK, &tint);
-
-      dt_bauhaus_slider_set_default(g->scale_k, TempK);
-      dt_bauhaus_slider_set_default(g->scale_tint, tint);
+      // found camera matrix and used it to calculate bogus daylight wb
     }
+    else
+    {
+      // if we didn't find anything for daylight wb, look for a wb preset with appropriate name.
+      // we're normalizing that to be D65
+      for(int i = 0; i < wb_preset_count; i++)
+      {
+        if(!strcmp(wb_preset[i].make, makermodel) && !strcmp(wb_preset[i].model, model)
+           && !strcmp(wb_preset[i].name, Daylight) && wb_preset[i].tuning == 0)
+        {
+          for(int k = 0; k < 3; k++) g->daylight_wb[k] = wb_preset[i].channel[k];
+          break;
+        }
+      }
+    }
+
+    double TempK, tint;
+    mul2temp(module, tmp.coeffs, &TempK, &tint);
+
+    dt_bauhaus_slider_set_default(g->scale_k, TempK);
+    dt_bauhaus_slider_set_default(g->scale_tint, tint);
   }
 
 end:
