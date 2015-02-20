@@ -656,7 +656,7 @@ int dt_init(int argc, char *argv[], const int init_gui, lua_State *L)
       }
       else if(!strcmp(argv[k], "--"))
       {
-        no_more_options = true;
+        no_more_options = TRUE;
       }
       else
         return usage(argv[0]); // fail on unrecognized options
