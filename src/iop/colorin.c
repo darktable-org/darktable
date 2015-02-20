@@ -997,7 +997,7 @@ static void update_profile_list(dt_iop_module_t *self)
     prof->pos = ++pos;
   }
   dt_image_cache_read_release(darktable.image_cache, cimg);
-  // use the matrix embedded in some DNGs
+  // use the matrix embedded in some DNGs and EXRs
   if(!isnan(self->dev->image_storage.d65_color_matrix[0]))
   {
     prof = (dt_iop_color_profile_t *)g_malloc0(sizeof(dt_iop_color_profile_t));
@@ -1076,7 +1076,7 @@ static void update_profile_list(dt_iop_module_t *self)
     if(!strcmp(prof->name, "eprofile"))
       dt_bauhaus_combobox_add(g->cbox2, _("embedded ICC profile"));
     else if(!strcmp(prof->name, "ematrix"))
-      dt_bauhaus_combobox_add(g->cbox2, _("DNG embedded matrix"));
+      dt_bauhaus_combobox_add(g->cbox2, _("embedded matrix"));
     else if(!strcmp(prof->name, "cmatrix"))
       dt_bauhaus_combobox_add(g->cbox2, _("standard color matrix"));
     else if(!strcmp(prof->name, "darktable"))
@@ -1110,7 +1110,7 @@ static void update_profile_list(dt_iop_module_t *self)
     if(!strcmp(prof->name, "eprofile"))
       dt_bauhaus_combobox_add(g->cbox2, _("embedded ICC profile"));
     else if(!strcmp(prof->name, "ematrix"))
-      dt_bauhaus_combobox_add(g->cbox2, _("DNG embedded matrix"));
+      dt_bauhaus_combobox_add(g->cbox2, _("embedded matrix"));
     else if(!strcmp(prof->name, "cmatrix"))
       dt_bauhaus_combobox_add(g->cbox2, _("standard color matrix"));
     else if(!strcmp(prof->name, "darktable"))
