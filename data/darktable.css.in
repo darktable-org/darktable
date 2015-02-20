@@ -310,6 +310,11 @@ GtkFrame > GtkEventBox * {
   background-color: transparent;
 }
 
+GtkMenuItem *
+{
+  background-color: transparent;
+}
+
 GtkMenuItem
 {
   padding: 2pt;
@@ -319,11 +324,6 @@ GtkMenuItem
 GtkMenuItem:hover
 {
   background-color: shade(@selected_bg_color, 1.7);
-}
-
-GtkMenuItem *
-{
-  background-color: transparent;
 }
 
 /* sliders */
