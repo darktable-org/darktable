@@ -189,31 +189,16 @@ of the presets. Please install this command and re-run this script."; then
 	return $missing_tool
 }
 
-database_tools_installed() {
-	local missing_tool
-	missing_tool=0
-
-	echo "--> Check for database tools availability"
-
-	if ! tool_installed sqlite3 "
-sqlite3 is required to prepare a database allowing you to test the
-generated presets. Please install this command and re-run this script."; then
-		missing_tool=1
-	fi
-
-	if ! tool_installed awk "
-awk is needed to prepare presets for database insertion."; then
-		missing_tool=1
-	fi
-
-	return $missing_tool
-}
-
 internal_tools_available() {
 	local missing_tool
 	missing_tool=0
 
 	echo "--> Check for internal tools availability"
+
+	  if ! tool_installed awk "
+awk is needed to prepare presets."; then
+    missing_tool=1
+  fi
 
 	if ! tool_installed make "
 make is required to build darktable tools dedicated to noise profiling.
@@ -724,72 +709,6 @@ EOF
 		done
 	done
 	cd -
-}
-
-# --------------------------------------------------------------------
-# Database handling.
-# --------------------------------------------------------------------
-
-add_profile() {
-	local database label_prefix label iso a0 a1 a2 b0 b1 b2 	\
-	 bin1 bina0 bina1 bina2 binb0 binb1 binb2 floatdump
-
-	database=$1; shift
-	label_prefix=$1; shift
-	iso=$1; shift
-	a0=$1; shift
-	a1=$1; shift
-	a2=$1; shift
-	b0=$1; shift
-	b1=$1; shift
-	b2=$1; shift
-	label="$@"
-
-	tool_installed sqlite3
-
-	floatdump="$scriptdir/floatdump"
-
-	bin1=$(echo 1.0f | $floatdump)
-	bina0=$(echo $a0 | $floatdump)
-	bina1=$(echo $a1 | $floatdump)
-	bina2=$(echo $a2 | $floatdump)
-	binb0=$(echo $b0 | $floatdump)
-	binb1=$(echo $b1 | $floatdump)
-	binb2=$(echo $b2 | $floatdump)
-
-	echo "--> Adding \"$label\" to database"
-
-	echo "insert into presets ("					\
-	 "name,"							\
-	 "description,"							\
-	 "operation,"							\
-	 "op_version,"							\
-	 "op_params,"							\
-	 "enabled,"							\
-	 "blendop_params,"						\
-	 "model,"							\
-	 "maker,"							\
-	 "lens,"							\
-	 "iso_min,"							\
-	 "iso_max,"							\
-	 "exposure_min,"						\
-	 "exposure_max,"						\
-	 "aperture_min,"						\
-	 "aperture_max,"						\
-	 "focal_length_min,"						\
-	 "focal_length_max,"						\
-	 "writeprotect,"						\
-	 "autoapply,"							\
-	 "filter,"							\
-	 "def,"								\
-	 "format,"							\
-	 "blendop_version"						\
-	 ") "								\
-	 "values ("							\
-	 "'$label', '', 'denoiseprofile', 2, "				\
-	 "X'${bin1}${bin1}${bina0}${bina1}${bina2}${binb0}${binb1}${binb2}00000000', "\
-	 "1, X'00', '', '', '', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4);" | \
-	sqlite3 $database
 }
 
 set_sed_cmd

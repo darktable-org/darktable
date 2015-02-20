@@ -74,9 +74,6 @@ fi
 if ! profiling_tools_installed; then
 	missing_tool=1
 fi
-if ! database_tools_installed; then
-	missing_tool=1
-fi
 if ! internal_tools_available; then
 	missing_tool=1
 fi
@@ -275,7 +272,8 @@ EOF
 		;;
 	esac
 
-	echo "{\"$model iso $iso\",       \"$maker\",      \"$model\",              $iso,         {$a0, $a1, $a2}, {$b0, $b1, $b2}}," >> "$presets"
+# 	echo "{\"$model iso $iso\",       \"$maker\",      \"$model\",              $iso,         {$a0, $a1, $a2}, {$b0, $b1, $b2}}," >> "$presets"
+	echo "$maker\t$model\t$model iso $iso\t$iso\t$a0, $a1, $a2\t$b0, $b1, $b2" >> "$presets"
 
 	# Clean unused files.
 	rm -f $dat $flat_dat $curves_dat $fit
@@ -285,6 +283,76 @@ EOF
 
 	echo "$(basename "$pdf")" >> "$files_list"
 	echo "$(basename "$flat_pdf")" >> "$files_list"
+}
+
+txt2json(){
+  local txt json end n_makers n_models n_profiles maker model profile comment
+
+  txt="$1"
+  json="$2"
+
+(
+  cat <<EOF
+{
+  "version": 0,
+  "noiseprofiles": [
+EOF
+
+  n_makers=$(cut -f 1 "$txt" | sort -u | wc -l)
+  cut -f 1 "$txt" | sort -u | while read maker
+  do
+    n_makers=$((n_makers-1))
+    cat <<EOF
+    {
+      "maker": "$maker",
+      "models": [
+EOF
+    n_models=$(awk -F "\t" "{ if(\$1 == \"$maker\"){ print \$2; } }" "$txt" | sort -u | wc -l)
+    awk -F "\t" "{ if(\$1 == \"$maker\"){ print \$2; } }" "$txt" | sort -u | while read model
+    do
+      n_models=$((n_models-1))
+      comment=$(echo $model | tr [:upper:] [:lower:])" contributed by "$(whoami)
+      cat <<EOF
+        {
+          "comment": "$comment",
+          "model": "$model",
+          "profiles": [
+EOF
+      n_profiles=$(awk -F "\t" "{ if(\$1 == \"$maker\" && \$2 == \"$model\"){ print \$1; } }" "$txt" | wc -l)
+      awk -F "\t" "{ if(\$1 == \"$maker\" && \$2 == \"$model\"){ printf(\"\\\"name\\\": \\\"%s\\\", \\\"iso\\\": %s, \\\"a\\\": [%s], \\\"b\\\": [%s]\n\", \$3, \$4, \$5, \$6); } }" "$txt" | sort -n | while read profile
+      do
+        n_profiles=$((n_profiles-1))
+        end=","
+        if [ $n_profiles -eq 0 ]; then
+          end=""
+        fi
+        echo "            {$profile}$end"
+      done
+      end=","
+      if [ $n_models -eq 0 ]; then
+        end=""
+      fi
+      cat <<EOF
+          ]
+        }$end
+EOF
+    done
+    end=","
+    if [ $n_makers -eq 0 ]; then
+      end=""
+    fi
+    cat <<EOF
+      ]
+    }$end
+EOF
+  done
+
+  cat <<EOF
+  ]
+}
+EOF
+) > "$json"
+
 }
 
 # --------------------------------------------------------------------
@@ -372,34 +440,19 @@ fi
 
 # First, prepare the working directory:
 #   o  build tools
-#   o  copy darktable database
 #   o  remove previous presets
 
 echo
 echo "===> Prepare profiling job"
 
-presets="$profiling_dir/presets.txt"
-
-echo "--> Copy darktable library for testing purpose"
-database="$profiling_dir/library.db"
-database_orig="$HOME/.config/darktable/library.db"
-if [ ! -f "$database_orig" ]; then
-	cat <<EOF
-${color_error}ERROR: Please run darktable at least once to create an initial library
-or copy some valid library to $database manually before running this
-script. This is needed to setup a testing environment for your new
-presets.${color_reset}
-EOF
-	exit 1
-fi
-
-cp "$database_orig" "$database"
+presets_txt="$profiling_dir/presets.txt"
+presets_json="$profiling_dir/presets.json"
 
 echo "--> Remove previous presets"
 rm -f "$profiling_dir"/*.pdf
 rm -f "$profiling_dir"/*.fit
 rm -f "$profiling_dir"/*.dat
-rm -f "$presets"
+rm -f "$presets_txt" "$presets_json"
 
 # Now, for each shots, profile it.
 cat <<EOF
@@ -413,21 +466,20 @@ EOF
 for iso in $iso_settings; do
 	images=$(get_var "images_$iso")
 	for from in $images; do
-		profile_image "$from" "$presets" "$files_list"
+		profile_image "$from" "$presets_txt" "$files_list"
 	done
 done
 
-# Insert presets in the copied database.
-echo
-echo "===> Record presets in library for testing purpose"
-"$scriptdir"/add-profile -l "$database" -P "[test] " "$presets"
+# turn presets.txt into presets.json
+txt2json "$presets_txt" "$presets_json"
+rm -f "$presets_txt"
 
 # Prepare a tarball ready to be sent to the darktable team.
 echo
 echo "===> Prepare final tarball"
 tarball="$profiling_dir"/dt-noiseprofile-$(date +'%Y%m%d').tar.gz
 cd "$profiling_dir"
-tar -cf - "$(basename "$presets")" $(cat "$(basename "$files_list")") | gzip > "$(basename "$tarball")"
+tar -cf - "$(basename "$presets_json")" $(cat "$(basename "$files_list")") | gzip > "$(basename "$tarball")"
 cd -
 
 echo "--> Cleanup"
@@ -437,23 +489,23 @@ echo ""
 echo "${color_ok}== Noise profiling done! ==${color_reset}"
 cat <<EOF
 
-Presets were inserted into $database. to test them locally, run:
+To test the noise profiles locally, run:
 
 EOF
 
 dt_version=$(get_darktable_version)
-if cmp_darktable_version "$dt_version" "-lt" "1.2"; then
+if cmp_darktable_version "$dt_version" "-lt" "1.6.3"; then
 	cat <<EOF
-  /path/to/darktable-1.2-or-later/darktable --library $database
+  /path/to/darktable-1.6.3-or-later/darktable --noiseprofiles $presets_json
 
 ${color_warning}CAUTION: The "darktable" executable available from your system's \$PATH
-has version $dt_version. However, version 1.2 or later is required to
+has version $dt_version. However, version 1.6.3 or later is required to
 test the profile. The command line shown above must be changed to point
-to your darktable 1.2+ binary.${color_reset}
+to your darktable 1.6.3+ binary.${color_reset}
 EOF
 else
 	cat <<EOF
-  darktable --library $database
+  darktable --noiseprofiles $presets_json
 EOF
 fi
 
