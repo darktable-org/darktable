@@ -25,15 +25,21 @@
 
 const dt_noiseprofile_t dt_noiseprofile_generic = {N_("generic poissonian"), "", "", 0, {0.0001f, 0.0001f, 0.0001}, {0.0f, 0.0f, 0.0f}};
 
-JsonParser *dt_noiseprofile_init()
+JsonParser *dt_noiseprofile_init(const char *alternative)
 {
   GError *error = NULL;
-
-  // TODO: shall we look for profiles in the user config dir?
-  char datadir[PATH_MAX] = { 0 };
   char filename[PATH_MAX] = { 0 };
-  dt_loc_get_datadir(datadir, sizeof(datadir));
-  snprintf(filename, sizeof(filename), "%s/%s", datadir, "noiseprofiles.json");
+
+  if(alternative == NULL)
+  {
+    // TODO: shall we look for profiles in the user config dir?
+    char datadir[PATH_MAX] = { 0 };
+    dt_loc_get_datadir(datadir, sizeof(datadir));
+    snprintf(filename, sizeof(filename), "%s/%s", datadir, "noiseprofiles.json");
+  }
+  else
+    snprintf(filename, sizeof(filename), "%s", alternative);
+
   dt_print(DT_DEBUG_CONTROL, "[noiseprofile] loading noiseprofiles from `%s'\n", filename);
   if(!g_file_test(filename, G_FILE_TEST_EXISTS)) return NULL;
 

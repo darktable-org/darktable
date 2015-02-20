@@ -128,6 +128,7 @@ static int usage(const char *argv0)
   printf(" [--luacmd <lua command>]");
 #endif
   printf(" [--conf <key>=<value>]");
+  printf(" [--noiseprofiles <noiseprofiles json file>]");
   printf("\n");
   return 1;
 }
@@ -478,6 +479,7 @@ int dt_init(int argc, char *argv[], const int init_gui, lua_State *L)
 
   // database
   gchar *dbfilename_from_command = NULL;
+  gchar *noiseprofiles_from_command = NULL;
   char *datadir_from_command = NULL;
   char *moduledir_from_command = NULL;
   char *tmpdir_from_command = NULL;
@@ -638,6 +640,10 @@ int dt_init(int argc, char *argv[], const int init_gui, lua_State *L)
           config_override = g_slist_append(config_override, entry);
         }
         g_free(keyval);
+      }
+      else if(!strcmp(argv[k], "--noiseprofiles") && argc > k + 1)
+      {
+        noiseprofiles_from_command = argv[++k];
       }
       else if(!strcmp(argv[k], "--luacmd") && argc > k + 1)
       {
@@ -817,7 +823,7 @@ int dt_init(int argc, char *argv[], const int init_gui, lua_State *L)
   darktable.points = (dt_points_t *)calloc(1, sizeof(dt_points_t));
   dt_points_init(darktable.points, dt_get_num_threads());
 
-  darktable.noiseprofile_parser = dt_noiseprofile_init();
+  darktable.noiseprofile_parser = dt_noiseprofile_init(noiseprofiles_from_command);
 
   // must come before mipmap_cache, because that one will need to access
   // image dimensions stored in here:

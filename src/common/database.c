@@ -873,7 +873,7 @@ static void _sanitize_db(dt_database_t *db)
   sqlite3_finalize(innerstmt);
 }
 
-dt_database_t *dt_database_init(char *alternative)
+dt_database_t *dt_database_init(const char *alternative)
 {
   /* migrate default database location to new default */
   _database_migrate_to_xdg_structure();

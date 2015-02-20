@@ -35,7 +35,7 @@ dt_noiseprofile_t;
 extern const dt_noiseprofile_t dt_noiseprofile_generic;
 
 /** read the noiseprofile file once on startup (kind of)*/
-JsonParser *dt_noiseprofile_init();
+JsonParser *dt_noiseprofile_init(const char *alternative);
 
 /*
  * returns the noiseprofiles matching the image's exif data.

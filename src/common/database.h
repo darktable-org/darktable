@@ -24,7 +24,7 @@
 struct dt_database_t;
 
 /** allocates and initializes database */
-struct dt_database_t *dt_database_init(char *alternative);
+struct dt_database_t *dt_database_init(const char *alternative);
 /** closes down database and frees memory */
 void dt_database_destroy(const struct dt_database_t *);
 /** get handle */
