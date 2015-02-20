@@ -496,9 +496,10 @@ int dt_init(int argc, char *argv[], const int init_gui, lua_State *L)
 #endif
   darktable.unmuted = 0;
   GSList *images_to_load = NULL, *config_override = NULL;
+  gboolean no_more_options = FALSE;
   for(int k = 1; k < argc; k++)
   {
-    if(argv[k][0] == '-')
+    if(argv[k][0] == '-' && !no_more_options)
     {
       if(!strcmp(argv[k], "--help"))
       {
@@ -653,6 +654,12 @@ int dt_init(int argc, char *argv[], const int init_gui, lua_State *L)
         ++k;
 #endif
       }
+      else if(!strcmp(argv[k], "--"))
+      {
+        no_more_options = true;
+      }
+      else
+        return usage(argv[0]); // fail on unrecognized options
     }
 #ifndef MAC_INTEGRATION
     else
