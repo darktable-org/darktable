@@ -39,6 +39,7 @@ extern "C" {
 #include "common/colorspaces.h"
 #include "common/imageio.h"
 #include "control/conf.h"
+#include "control/control.h"
 #include "common/imageio_module.h"
 #include "common/imageio_exr.h"
 #include "common/imageio_format.h"
