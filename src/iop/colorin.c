@@ -64,7 +64,7 @@ typedef struct dt_iop_colorin_params_t
 
 typedef struct dt_iop_colorin_gui_data_t
 {
-  GtkWidget *cbox1, *cbox2, *cbox3;
+  GtkWidget *profile_combobox, *clipping_combobox;
   GList *image_profiles, *global_profiles;
   int n_image_profiles;
 } dt_iop_colorin_gui_data_t;
@@ -846,8 +846,7 @@ void gui_update(struct dt_iop_module_t *self)
   dt_iop_module_t *module = (dt_iop_module_t *)self;
   dt_iop_colorin_gui_data_t *g = (dt_iop_colorin_gui_data_t *)self->gui_data;
   dt_iop_colorin_params_t *p = (dt_iop_colorin_params_t *)module->params;
-  // dt_bauhaus_combobox_set(g->cbox1, (int)p->intent);
-  dt_bauhaus_combobox_set(g->cbox3, p->normalize);
+  dt_bauhaus_combobox_set(g->clipping_combobox, p->normalize);
 
   update_profile_list(self);
 
@@ -858,7 +857,7 @@ void gui_update(struct dt_iop_module_t *self)
     dt_iop_color_profile_t *pp = (dt_iop_color_profile_t *)prof->data;
     if(!strcmp(pp->filename, p->iccprofile))
     {
-      dt_bauhaus_combobox_set(g->cbox2, pp->pos);
+      dt_bauhaus_combobox_set(g->profile_combobox, pp->pos);
       return;
     }
     prof = g_list_next(prof);
@@ -869,12 +868,12 @@ void gui_update(struct dt_iop_module_t *self)
     dt_iop_color_profile_t *pp = (dt_iop_color_profile_t *)prof->data;
     if(!strcmp(pp->filename, p->iccprofile))
     {
-      dt_bauhaus_combobox_set(g->cbox2, pp->pos + g->n_image_profiles);
+      dt_bauhaus_combobox_set(g->profile_combobox, pp->pos + g->n_image_profiles);
       return;
     }
     prof = g_list_next(prof);
   }
-  dt_bauhaus_combobox_set(g->cbox2, 0);
+  dt_bauhaus_combobox_set(g->profile_combobox, 0);
 
   if(strcmp(p->iccprofile, "darktable"))
     fprintf(stderr, "[colorin] could not find requested profile `%s'!\n", p->iccprofile);
@@ -952,6 +951,8 @@ void reload_defaults(dt_iop_module_t *module)
     g_strlcpy(tmp.iccprofile, "adobergb", sizeof(tmp.iccprofile));
   else if(dt_image_is_ldr(&module->dev->image_storage))
     g_strlcpy(tmp.iccprofile, "sRGB", sizeof(tmp.iccprofile));
+  else if(!isnan(module->dev->image_storage.d65_color_matrix[0]))
+    g_strlcpy(tmp.iccprofile, "ematrix", sizeof(tmp.iccprofile));
 
 end:
   memcpy(module->params, &tmp, sizeof(dt_iop_colorin_params_t));
@@ -1075,40 +1076,40 @@ static void update_profile_list(dt_iop_module_t *self)
   g->n_image_profiles = pos + 1;
 
   // update the gui
-  dt_bauhaus_combobox_clear(g->cbox2);
+  dt_bauhaus_combobox_clear(g->profile_combobox);
 
   GList *l = g->image_profiles;
   while(l)
   {
     dt_iop_color_profile_t *prof = (dt_iop_color_profile_t *)l->data;
     if(!strcmp(prof->name, "eprofile"))
-      dt_bauhaus_combobox_add(g->cbox2, _("embedded ICC profile"));
+      dt_bauhaus_combobox_add(g->profile_combobox, _("embedded ICC profile"));
     else if(!strcmp(prof->name, "ematrix"))
-      dt_bauhaus_combobox_add(g->cbox2, _("embedded matrix"));
+      dt_bauhaus_combobox_add(g->profile_combobox, _("embedded matrix"));
     else if(!strcmp(prof->name, "cmatrix"))
-      dt_bauhaus_combobox_add(g->cbox2, _("standard color matrix"));
+      dt_bauhaus_combobox_add(g->profile_combobox, _("standard color matrix"));
     else if(!strcmp(prof->name, "darktable"))
-      dt_bauhaus_combobox_add(g->cbox2, _("enhanced color matrix"));
+      dt_bauhaus_combobox_add(g->profile_combobox, _("enhanced color matrix"));
     else if(!strcmp(prof->name, "vendor"))
-      dt_bauhaus_combobox_add(g->cbox2, _("vendor color matrix"));
+      dt_bauhaus_combobox_add(g->profile_combobox, _("vendor color matrix"));
     else if(!strcmp(prof->name, "alternate"))
-      dt_bauhaus_combobox_add(g->cbox2, _("alternate color matrix"));
+      dt_bauhaus_combobox_add(g->profile_combobox, _("alternate color matrix"));
     else if(!strcmp(prof->name, "sRGB"))
-      dt_bauhaus_combobox_add(g->cbox2, _("sRGB (e.g. JPG)"));
+      dt_bauhaus_combobox_add(g->profile_combobox, _("sRGB (e.g. JPG)"));
     else if(!strcmp(prof->name, "adobergb"))
-      dt_bauhaus_combobox_add(g->cbox2, _("Adobe RGB (compatible)"));
+      dt_bauhaus_combobox_add(g->profile_combobox, _("Adobe RGB (compatible)"));
     else if(!strcmp(prof->name, "linear_rec709_rgb") || !strcmp(prof->name, "linear_rgb"))
-      dt_bauhaus_combobox_add(g->cbox2, _("linear Rec709 RGB"));
+      dt_bauhaus_combobox_add(g->profile_combobox, _("linear Rec709 RGB"));
     else if(!strcmp(prof->name, "linear_rec2020_rgb"))
-      dt_bauhaus_combobox_add(g->cbox2, _("linear Rec2020 RGB"));
+      dt_bauhaus_combobox_add(g->profile_combobox, _("linear Rec2020 RGB"));
     else if(!strcmp(prof->name, "infrared"))
-      dt_bauhaus_combobox_add(g->cbox2, _("linear infrared BGR"));
+      dt_bauhaus_combobox_add(g->profile_combobox, _("linear infrared BGR"));
     else if(!strcmp(prof->name, "XYZ"))
-      dt_bauhaus_combobox_add(g->cbox2, _("linear XYZ"));
+      dt_bauhaus_combobox_add(g->profile_combobox, _("linear XYZ"));
     else if(!strcmp(prof->name, "Lab"))
-      dt_bauhaus_combobox_add(g->cbox2, _("Lab"));
+      dt_bauhaus_combobox_add(g->profile_combobox, _("Lab"));
     else
-      dt_bauhaus_combobox_add(g->cbox2, prof->name);
+      dt_bauhaus_combobox_add(g->profile_combobox, prof->name);
     l = g_list_next(l);
   }
   l = g->global_profiles;
@@ -1116,33 +1117,33 @@ static void update_profile_list(dt_iop_module_t *self)
   {
     dt_iop_color_profile_t *prof = (dt_iop_color_profile_t *)l->data;
     if(!strcmp(prof->name, "eprofile"))
-      dt_bauhaus_combobox_add(g->cbox2, _("embedded ICC profile"));
+      dt_bauhaus_combobox_add(g->profile_combobox, _("embedded ICC profile"));
     else if(!strcmp(prof->name, "ematrix"))
-      dt_bauhaus_combobox_add(g->cbox2, _("embedded matrix"));
+      dt_bauhaus_combobox_add(g->profile_combobox, _("embedded matrix"));
     else if(!strcmp(prof->name, "cmatrix"))
-      dt_bauhaus_combobox_add(g->cbox2, _("standard color matrix"));
+      dt_bauhaus_combobox_add(g->profile_combobox, _("standard color matrix"));
     else if(!strcmp(prof->name, "darktable"))
-      dt_bauhaus_combobox_add(g->cbox2, _("enhanced color matrix"));
+      dt_bauhaus_combobox_add(g->profile_combobox, _("enhanced color matrix"));
     else if(!strcmp(prof->name, "vendor"))
-      dt_bauhaus_combobox_add(g->cbox2, _("vendor color matrix"));
+      dt_bauhaus_combobox_add(g->profile_combobox, _("vendor color matrix"));
     else if(!strcmp(prof->name, "alternate"))
-      dt_bauhaus_combobox_add(g->cbox2, _("alternate color matrix"));
+      dt_bauhaus_combobox_add(g->profile_combobox, _("alternate color matrix"));
     else if(!strcmp(prof->name, "sRGB"))
-      dt_bauhaus_combobox_add(g->cbox2, _("sRGB (e.g. JPG)"));
+      dt_bauhaus_combobox_add(g->profile_combobox, _("sRGB (e.g. JPG)"));
     else if(!strcmp(prof->name, "adobergb"))
-      dt_bauhaus_combobox_add(g->cbox2, _("Adobe RGB (compatible)"));
+      dt_bauhaus_combobox_add(g->profile_combobox, _("Adobe RGB (compatible)"));
     else if(!strcmp(prof->name, "linear_rec709_rgb") || !strcmp(prof->name, "linear_rgb"))
-      dt_bauhaus_combobox_add(g->cbox2, _("linear Rec709 RGB"));
+      dt_bauhaus_combobox_add(g->profile_combobox, _("linear Rec709 RGB"));
     else if(!strcmp(prof->name, "linear_rec2020_rgb"))
-      dt_bauhaus_combobox_add(g->cbox2, _("linear Rec2020 RGB"));
+      dt_bauhaus_combobox_add(g->profile_combobox, _("linear Rec2020 RGB"));
     else if(!strcmp(prof->name, "infrared"))
-      dt_bauhaus_combobox_add(g->cbox2, _("linear infrared BGR"));
+      dt_bauhaus_combobox_add(g->profile_combobox, _("linear infrared BGR"));
     else if(!strcmp(prof->name, "XYZ"))
-      dt_bauhaus_combobox_add(g->cbox2, _("linear XYZ"));
+      dt_bauhaus_combobox_add(g->profile_combobox, _("linear XYZ"));
     else if(!strcmp(prof->name, "Lab"))
-      dt_bauhaus_combobox_add(g->cbox2, _("Lab"));
+      dt_bauhaus_combobox_add(g->profile_combobox, _("Lab"));
     else
-      dt_bauhaus_combobox_add(g->cbox2, prof->name);
+      dt_bauhaus_combobox_add(g->profile_combobox, prof->name);
     l = g_list_next(l);
   }
 }
@@ -1245,36 +1246,36 @@ void gui_init(struct dt_iop_module_t *self)
   }
 
   self->widget = gtk_vbox_new(TRUE, DT_BAUHAUS_SPACE);
-  g->cbox2 = dt_bauhaus_combobox_new(self);
-  dt_bauhaus_widget_set_label(g->cbox2, NULL, _("profile"));
-  gtk_box_pack_start(GTK_BOX(self->widget), g->cbox2, TRUE, TRUE, 0);
+  g->profile_combobox = dt_bauhaus_combobox_new(self);
+  dt_bauhaus_widget_set_label(g->profile_combobox, NULL, _("profile"));
+  gtk_box_pack_start(GTK_BOX(self->widget), g->profile_combobox, TRUE, TRUE, 0);
 
   // now generate the list of profiles applicable to the current image and update the list
   update_profile_list(self);
 
-  dt_bauhaus_combobox_set(g->cbox2, 0);
+  dt_bauhaus_combobox_set(g->profile_combobox, 0);
 
   char tooltip[1024];
   snprintf(tooltip, sizeof(tooltip), _("ICC profiles in %s/color/in or %s/color/in"), confdir, datadir);
-  g_object_set(G_OBJECT(g->cbox2), "tooltip-text", tooltip, (char *)NULL);
+  g_object_set(G_OBJECT(g->profile_combobox), "tooltip-text", tooltip, (char *)NULL);
 
-  g_signal_connect(G_OBJECT(g->cbox2), "value-changed", G_CALLBACK(profile_changed), (gpointer)self);
+  g_signal_connect(G_OBJECT(g->profile_combobox), "value-changed", G_CALLBACK(profile_changed), (gpointer)self);
 
-  g->cbox3 = dt_bauhaus_combobox_new(self);
-  dt_bauhaus_widget_set_label(g->cbox3, NULL, _("gamut clipping"));
+  g->clipping_combobox = dt_bauhaus_combobox_new(self);
+  dt_bauhaus_widget_set_label(g->clipping_combobox, NULL, _("gamut clipping"));
 
-  dt_bauhaus_combobox_add(g->cbox3, _("off"));
-  dt_bauhaus_combobox_add(g->cbox3, _("sRGB"));
-  dt_bauhaus_combobox_add(g->cbox3, _("Adobe RGB (compatible)"));
-  dt_bauhaus_combobox_add(g->cbox3, _("linear Rec709 RGB"));
-  dt_bauhaus_combobox_add(g->cbox3, _("linear Rec2020 RGB"));
+  dt_bauhaus_combobox_add(g->clipping_combobox, _("off"));
+  dt_bauhaus_combobox_add(g->clipping_combobox, _("sRGB"));
+  dt_bauhaus_combobox_add(g->clipping_combobox, _("Adobe RGB (compatible)"));
+  dt_bauhaus_combobox_add(g->clipping_combobox, _("linear Rec709 RGB"));
+  dt_bauhaus_combobox_add(g->clipping_combobox, _("linear Rec2020 RGB"));
 
-  g_object_set(G_OBJECT(g->cbox3), "tooltip-text", _("confine Lab values to gamut of RGB color space"),
+  g_object_set(G_OBJECT(g->clipping_combobox), "tooltip-text", _("confine Lab values to gamut of RGB color space"),
                (char *)NULL);
 
-  gtk_box_pack_start(GTK_BOX(self->widget), g->cbox3, TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(self->widget), g->clipping_combobox, TRUE, TRUE, 0);
 
-  g_signal_connect(G_OBJECT(g->cbox3), "value-changed", G_CALLBACK(normalize_changed), (gpointer)self);
+  g_signal_connect(G_OBJECT(g->clipping_combobox), "value-changed", G_CALLBACK(normalize_changed), (gpointer)self);
 }
 
 void gui_cleanup(struct dt_iop_module_t *self)
