@@ -893,6 +893,8 @@ dt_database_t *dt_database_init(const char *alternative)
     dbname = dt_conf_get_string("database");
     if(!dbname)
       snprintf(dbfilename, sizeof(dbfilename), "%s/library.db", datadir);
+    else if(!strcmp(dbname, ":memory:"))
+      snprintf(dbfilename, sizeof(dbfilename), "%s", dbname);
     else if(dbname[0] != '/')
       snprintf(dbfilename, sizeof(dbfilename), "%s/%s", datadir, dbname);
     else
