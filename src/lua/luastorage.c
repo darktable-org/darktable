@@ -319,7 +319,10 @@ static void gui_init_wrapper(struct dt_imageio_module_storage_t *self)
 static void gui_reset_wrapper(struct dt_imageio_module_storage_t *self)
 {
   lua_storage_gui_t *gui_data =self->gui_data;
-  dt_lua_widget_trigger_callback_async(gui_data->widget,"reset",NULL);
+  dt_lua_do_chunk_async(dt_lua_widget_trigger_callback,
+      LUA_ASYNC_TYPENAME,"lua_widget",gui_data->widget,
+      LUA_ASYNC_TYPENAME,"const char*","reset",
+      LUA_ASYNC_DONE);
 }
 
 static void gui_cleanup_wrapper(struct dt_imageio_module_storage_t *self)

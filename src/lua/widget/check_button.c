@@ -28,7 +28,10 @@ static dt_lua_widget_type_t check_button_type = {
 
 static void clicked_callback(GtkButton *widget, gpointer user_data)
 {
-  dt_lua_widget_trigger_callback_async((lua_widget)user_data,"clicked",NULL);
+  dt_lua_do_chunk_async(dt_lua_widget_trigger_callback,
+      LUA_ASYNC_TYPENAME,"lua_widget",user_data,
+      LUA_ASYNC_TYPENAME,"const char*","clicked",
+      LUA_ASYNC_DONE);
 }
 
 static int label_member(lua_State *L)
