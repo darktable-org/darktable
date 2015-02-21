@@ -27,7 +27,7 @@
 
 
 /** inverts the given 3x3 matrix */
-static int mat3inv(float *const dst, const float *const src)
+int mat3inv(float *const dst, const float *const src)
 {
 #define A(y, x) src[(y - 1) * 3 + (x - 1)]
 #define B(y, x) dst[(y - 1) * 3 + (x - 1)]

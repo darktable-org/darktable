@@ -21,6 +21,8 @@
 #include "common/darktable.h"
 #include <lcms2.h>
 
+int mat3inv(float *const dst, const float *const src);
+
 /** create the lab profile. */
 cmsHPROFILE dt_colorspaces_create_lab_profile();
 
