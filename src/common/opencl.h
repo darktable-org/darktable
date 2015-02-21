@@ -130,7 +130,7 @@ typedef struct dt_opencl_t
 } dt_opencl_t;
 
 /** inits the opencl subsystem. */
-void dt_opencl_init(dt_opencl_t *cl, const int argc, char *argv[]);
+void dt_opencl_init(dt_opencl_t *cl, const gboolean exclude_opencl);
 
 /** cleans up the opencl subsystem. */
 void dt_opencl_cleanup(dt_opencl_t *cl);
