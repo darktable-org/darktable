@@ -83,7 +83,12 @@ void dt_opencl_init(dt_opencl_t *cl, const gboolean exclude_opencl)
   const int opencl_memory_requirement = MAX(200, dt_conf_get_int("opencl_memory_requirement"));
   dt_conf_set_int("opencl_memory_requirement", opencl_memory_requirement);
 
-  if(exclude_opencl) goto finally;
+  if(exclude_opencl)
+  {
+    dt_print(DT_DEBUG_OPENCL, "[opencl_init] do not try to find and use an opencl runtime library due to "
+                              "explicit user request\n");
+    goto finally;
+  }
 
   dt_print(DT_DEBUG_OPENCL, "[opencl_init] opencl related configuration options:\n");
   dt_print(DT_DEBUG_OPENCL, "[opencl_init] \n");
