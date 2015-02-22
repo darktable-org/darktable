@@ -24,8 +24,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 1.3\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-02-11 23:16+0100\n"
-"PO-Revision-Date: 2015-02-11 23:17+0100\n"
+"POT-Creation-Date: 2015-02-22 11:17+0100\n"
+"PO-Revision-Date: 2015-02-22 11:19+0100\n"
 "Last-Translator: Richard Levitte <richard@levitte.org>\n"
 "Language-Team: \n"
 "Language: sv\n"
@@ -852,7 +852,7 @@ msgstr "`%s' är av okänt format!"
 msgid "error loading file `%s'"
 msgstr "fel uppstod vid läsning av fil '%s'"
 
-#: ../src/common/darktable.c:633
+#: ../src/common/darktable.c:640
 #, c-format
 msgid "ERROR : invalid temporary directory : %s\n"
 msgstr "FEL : ogiltig temporär katalog : %s\n"
@@ -891,7 +891,7 @@ msgstr "på"
 #: ../src/common/history.c:383 ../src/common/styles.c:673
 #: ../src/common/styles.c:677 ../src/develop/blend_gui.c:1604
 #: ../src/develop/blend_gui.c:1822 ../src/develop/develop.c:1221
-#: ../src/imageio/format/exr.cc:248 ../src/imageio/format/j2k.c:651
+#: ../src/imageio/format/exr.cc:319 ../src/imageio/format/j2k.c:651
 #: ../src/iop/colorin.c:1266 ../src/iop/demosaic.c:2179
 #: ../src/iop/vignette.c:1145 ../src/libs/history.c:152
 #: ../src/libs/live_view.c:409
@@ -2768,39 +2768,43 @@ msgstr ""
 "gör en 1:1 kopia av valda filer.\n"
 "den globala inställningen nedan kommer att uteslutas!"
 
-#: ../src/imageio/format/exr.cc:221
+#: ../src/imageio/format/exr.cc:184
+msgid "the selected output profile doesn't work well with exr"
+msgstr "den valda utgående färgprofilen fungerar inte bra med exr"
+
+#: ../src/imageio/format/exr.cc:292
 msgid "OpenEXR (float)"
 msgstr "OpenEXR (flyttal)"
 
-#: ../src/imageio/format/exr.cc:242
+#: ../src/imageio/format/exr.cc:313
 msgid "compression mode"
 msgstr "komprimeringstyp"
 
-#: ../src/imageio/format/exr.cc:249
+#: ../src/imageio/format/exr.cc:320
 msgid "RLE"
 msgstr "RLE"
 
-#: ../src/imageio/format/exr.cc:250
+#: ../src/imageio/format/exr.cc:321
 msgid "ZIPS"
 msgstr "ZIPS"
 
-#: ../src/imageio/format/exr.cc:251
+#: ../src/imageio/format/exr.cc:322
 msgid "ZIP"
 msgstr "ZIP"
 
-#: ../src/imageio/format/exr.cc:252
+#: ../src/imageio/format/exr.cc:323
 msgid "PIZ (default)"
 msgstr "PIZ (standard)"
 
-#: ../src/imageio/format/exr.cc:253
+#: ../src/imageio/format/exr.cc:324
 msgid "PXR24 (lossy)"
 msgstr "PXR24 (destruktiv)"
 
-#: ../src/imageio/format/exr.cc:254
+#: ../src/imageio/format/exr.cc:325
 msgid "B44 (lossy)"
 msgstr "B44 (destruktiv)"
 
-#: ../src/imageio/format/exr.cc:255
+#: ../src/imageio/format/exr.cc:326
 msgid "B44A (lossy)"
 msgstr "B44A (destruktiv)"
 
@@ -4294,8 +4298,8 @@ msgid "embedded ICC profile"
 msgstr "inbyggd ICC-profil"
 
 #: ../src/iop/colorin.c:1087 ../src/iop/colorin.c:1121
-msgid "DNG embedded matrix"
-msgstr "matris inbyggd i DNG"
+msgid "embedded matrix"
+msgstr "inbyggd matris"
 
 #: ../src/iop/colorin.c:1089 ../src/iop/colorin.c:1123
 msgid "standard color matrix"
