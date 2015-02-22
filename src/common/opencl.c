@@ -46,7 +46,7 @@ static void dt_opencl_priority_parse(dt_opencl_t *cl, char *configstr, int *prio
 /** parse a complete priority string */
 static void dt_opencl_priorities_parse(dt_opencl_t *cl, const char *configstr);
 
-void dt_opencl_init(dt_opencl_t *cl, const int argc, char *argv[])
+void dt_opencl_init(dt_opencl_t *cl, const gboolean exclude_opencl)
 {
   char *str;
   dt_pthread_mutex_init(&cl->lock, NULL);
@@ -77,24 +77,18 @@ void dt_opencl_init(dt_opencl_t *cl, const int argc, char *argv[])
   cl->dev_priority_export = NULL;
   cl->dev_priority_thumbnail = NULL;
 
-  int exclude_opencl = 0;
-
   // user selectable parameter defines minimum requirement on GPU memory
   // default is 768MB
   // values below 200 will be (re)set to 200
   const int opencl_memory_requirement = MAX(200, dt_conf_get_int("opencl_memory_requirement"));
   dt_conf_set_int("opencl_memory_requirement", opencl_memory_requirement);
 
-
-  for(int k = 0; k < argc; k++)
-    if(!strcmp(argv[k], "--disable-opencl"))
-    {
-      dt_print(DT_DEBUG_OPENCL, "[opencl_init] do not try to find and use an opencl runtime library due to "
-                                "explicit user request\n");
-      exclude_opencl = 1;
-    }
-
-  if(exclude_opencl) goto finally;
+  if(exclude_opencl)
+  {
+    dt_print(DT_DEBUG_OPENCL, "[opencl_init] do not try to find and use an opencl runtime library due to "
+                              "explicit user request\n");
+    goto finally;
+  }
 
   dt_print(DT_DEBUG_OPENCL, "[opencl_init] opencl related configuration options:\n");
   dt_print(DT_DEBUG_OPENCL, "[opencl_init] \n");
