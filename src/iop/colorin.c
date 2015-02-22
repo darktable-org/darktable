@@ -882,7 +882,7 @@ void gui_update(struct dt_iop_module_t *self)
 // FIXME: update the gui when we add/remove the eprofile or ematrix
 void reload_defaults(dt_iop_module_t *module)
 {
-  dt_iop_colorin_params_t tmp = (dt_iop_colorin_params_t){ .iccprofile = "darktable",
+  dt_iop_colorin_params_t tmp = (dt_iop_colorin_params_t){ .iccprofile = "cmatrix",
                                                            .intent = DT_INTENT_PERCEPTUAL,
                                                            .normalize = DT_NORMALIZE_OFF,
                                                            .blue_mapping = 0 };
@@ -1081,7 +1081,7 @@ static void update_profile_list(dt_iop_module_t *self)
     else if(!strcmp(prof->name, "cmatrix"))
       dt_bauhaus_combobox_add(g->profile_combobox, _("standard color matrix"));
     else if(!strcmp(prof->name, "darktable"))
-      dt_bauhaus_combobox_add(g->profile_combobox, _("enhanced color matrix"));
+      dt_bauhaus_combobox_add(g->profile_combobox, _("user supplied color matrix"));
     else if(!strcmp(prof->name, "vendor"))
       dt_bauhaus_combobox_add(g->profile_combobox, _("vendor color matrix"));
     else if(!strcmp(prof->name, "alternate"))
@@ -1115,7 +1115,7 @@ static void update_profile_list(dt_iop_module_t *self)
     else if(!strcmp(prof->name, "cmatrix"))
       dt_bauhaus_combobox_add(g->profile_combobox, _("standard color matrix"));
     else if(!strcmp(prof->name, "darktable"))
-      dt_bauhaus_combobox_add(g->profile_combobox, _("enhanced color matrix"));
+      dt_bauhaus_combobox_add(g->profile_combobox, _("user supplied color matrix"));
     else if(!strcmp(prof->name, "vendor"))
       dt_bauhaus_combobox_add(g->profile_combobox, _("vendor color matrix"));
     else if(!strcmp(prof->name, "alternate"))
