@@ -99,11 +99,9 @@ void dt_lua_init_early(lua_State *L)
   }
 }
 
-static int32_t run_early_script(dt_job_t *job)
+static int run_early_script(lua_State* L)
 {
   char tmp_path[PATH_MAX] = { 0 };
-  lua_State *L = darktable.lua_state.state;
-  dt_lua_lock();
   // run global init script
   dt_loc_get_datadir(tmp_path, sizeof(tmp_path));
   g_strlcat(tmp_path, "/luarc", sizeof(tmp_path));
@@ -115,11 +113,11 @@ static int32_t run_early_script(dt_job_t *job)
     g_strlcat(tmp_path, "/luarc", sizeof(tmp_path));
     dt_lua_dofile_silent(L, tmp_path, 0, 0);
   }
-  char *lua_command = dt_control_job_get_params(job);
-  if(lua_command) dt_lua_dostring_silent(L, lua_command, 0, 0);
-  free(lua_command);
+  if(!lua_isnil(L,1)){
+    char *lua_command = lua_tostring(L,1);
+    dt_lua_dostring_silent(L, lua_command, 0, 0);
+  }
   dt_lua_redraw_screen();
-  dt_lua_unlock();
   return 0;
 }
 
@@ -180,16 +178,20 @@ void dt_lua_init(lua_State *L, const char *lua_command)
 
 
 
-  dt_job_t *job = dt_control_job_create(&run_early_script, "lua: run initial script");
-  dt_control_job_set_params(job, g_strdup(lua_command));
+  lua_pushcfunction(L,run_early_script);
+  if(lua_command) {
+    lua_pushstring(L,lua_command);
+  }else {
+    lua_pushnil(L);
+  }
+
   if(darktable.gui)
   {
-    dt_control_add_job(darktable.control, DT_JOB_QUEUE_USER_BG, job);
+    dt_lua_do_chunk_later(L,1);
   }
   else
   {
-    run_early_script(job);
-    dt_control_job_dispose(job);
+    dt_lua_do_chunk_silent(L,1,0);
   }
 }
 
