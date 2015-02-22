@@ -115,9 +115,9 @@ GList *dt_noiseprofile_get_matching(const dt_image_t *cimg)
       goto end;
     }
 
-    if(!g_strcmp0(cimg->exif_maker, json_reader_get_string_value(reader)))
+    if(g_strstr_len(cimg->exif_maker, -1, json_reader_get_string_value(reader)))
     {
-      dt_print(DT_DEBUG_CONTROL, "[noiseprofile] found %s\n", cimg->exif_maker);
+      dt_print(DT_DEBUG_CONTROL, "[noiseprofile] found `%s' as `%s'\n", cimg->exif_maker, json_reader_get_string_value(reader));
       // go through all models and check those
       json_reader_end_member(reader);
 
