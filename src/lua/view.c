@@ -52,44 +52,13 @@ void dt_lua_register_view(lua_State *L, dt_view_t *module)
 };
 
 
-typedef struct
-{
-  dt_view_t *old_view;
-  dt_view_t *new_view;
-} view_changed_callback_data_t;
-
-
-static int32_t view_changed_callback_job(dt_job_t *job)
-{
-  dt_lua_lock();
-  view_changed_callback_data_t *t = dt_control_job_get_params(job);
-  dt_lua_module_entry_push(darktable.lua_state.state, "view", t->old_view->module_name);
-  dt_lua_module_entry_push(darktable.lua_state.state, "view", t->new_view->module_name);
-  free(t);
-  dt_lua_event_trigger(darktable.lua_state.state, "view-changed", 2);
-  dt_lua_unlock();
-  return 0;
-}
-
 static void on_view_changed(gpointer instance, dt_view_t *old_view, dt_view_t *new_view, gpointer user_data)
 {
-  dt_job_t *job = dt_control_job_create(&view_changed_callback_job, "lua: on view changed");
-  if(job)
-  {
-    view_changed_callback_data_t *t
-        = (view_changed_callback_data_t *)calloc(1, sizeof(view_changed_callback_data_t));
-    if(!t)
-    {
-      dt_control_job_dispose(job);
-    }
-    else
-    {
-      dt_control_job_set_params(job, t);
-      t->old_view = old_view;
-      t->new_view = new_view;
-      dt_control_add_job(darktable.control, DT_JOB_QUEUE_USER_FG, job);
-    }
-  }
+  dt_lua_do_chunk_async(dt_lua_event_trigger_wrapper,
+      LUA_ASYNC_TYPENAME,"const char*","view-changed",
+      LUA_ASYNC_TYPENAME,"unknown",old_view,
+      LUA_ASYNC_TYPENAME,"unknown",new_view,
+      LUA_ASYNC_DONE);
 }
 
 int dt_lua_init_early_view(lua_State *L)
