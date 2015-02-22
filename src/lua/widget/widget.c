@@ -131,96 +131,22 @@ void dt_lua_widget_get_callback(lua_State *L,int index,const char* name)
   lua_remove(L,-2);
 }
 
-
-int dt_lua_widget_trigger_callback_glist(lua_State*L,lua_widget object,const char* name,GList*extra)
+int dt_lua_widget_trigger_callback(lua_State *L)
 {
-  int result = LUA_OK;
-  luaA_push_type(L,object->type->associated_type,&object);
-  lua_getuservalue(L,-1);
+  int nargs = lua_gettop(L) -2;
+  lua_widget * widget;
+  luaA_to(L,lua_widget,&widget,1);
+  const char* name = lua_tostring(L,2);
+  lua_getuservalue(L,1);
   lua_getfield(L,-1,name);
-  if(! lua_isnil(L,-1)) {
-    lua_pushvalue(L,-3);
-    GList* cur_elt = extra;
-    int nargs = 1;
-    while(cur_elt) {
-      const char* next_type = cur_elt->data;
-      cur_elt = g_list_next(cur_elt);
-      luaA_push_type(L,luaA_type_find(L,next_type),&cur_elt->data);
-      nargs++;
-      cur_elt = g_list_next(cur_elt);
+  if(!lua_isnil(L,-1)) {
+    lua_pushvalue(L,1);
+    for(int i = 0 ; i < nargs ; i++) {
+      lua_pushvalue(L,i+3);
     }
-    result = dt_lua_do_chunk(L,nargs,0);
-    if(result != LUA_OK) {
-      //save the error message below what will be popped
-      lua_insert(L,-3);
-    }
-  } else {
-    // pop the nil that would be the function in the normal path
-    lua_pop(L,1);
+    dt_lua_do_chunk_silent(L,nargs+1,0);
   }
-  lua_pop(L,2);
-  dt_lua_redraw_screen();
-  g_list_free(extra);
-  return result;
-}
-
-int dt_lua_widget_trigger_callback(lua_State*L,lua_widget object,const char* name)
-{
-  return dt_lua_widget_trigger_callback_glist(L,object,name,NULL);
-}
-
-
-typedef struct {
-  lua_widget object;
-  char * event_name;
-  GList* extra;
-}widget_callback_data;
-
-
-static int32_t widget_callback_job(dt_job_t *job)
-{
-  dt_lua_lock();
-  lua_State* L= darktable.lua_state.state;
-  widget_callback_data* data = (widget_callback_data*)dt_control_job_get_params(job);
-  int result = dt_lua_widget_trigger_callback_glist(L,data->object,data->event_name,data->extra);
-  if(result != LUA_OK)
-  {
-    if(darktable.unmuted & DT_DEBUG_LUA)
-    {
-      dt_print(DT_DEBUG_LUA, "LUA ERROR : %s", lua_tostring(L, -1));
-    }
-    lua_pop(L, 1); // remove the error message
-  }
-  free(data->event_name);
-  free(data);
-  dt_lua_unlock();
   return 0;
-
-}
-
-void dt_lua_widget_trigger_callback_async(lua_widget object,const char* name,char* type_name,...)
-{
-  dt_job_t *job = dt_control_job_create(&widget_callback_job, "lua: widget event");
-  if(job)
-  {
-    widget_callback_data*data = malloc(sizeof(widget_callback_data));
-    data->object = object;
-    data->event_name = strdup(name);
-    data->extra=NULL;
-    va_list ap;
-    va_start(ap,type_name);
-    char *cur_type = type_name;
-    while(cur_type ){
-      data->extra=g_list_append(data->extra,cur_type);
-      data->extra=g_list_append(data->extra,va_arg(ap,gpointer));
-      cur_type = va_arg(ap,char*);
-
-    }
-    va_end(ap);
-    
-    dt_control_job_set_params(job, data);
-    dt_control_add_job(darktable.control, DT_JOB_QUEUE_USER_FG, job);
-  }
 }
 
 static int reset_member(lua_State *L)

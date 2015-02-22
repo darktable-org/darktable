@@ -30,7 +30,10 @@ static dt_lua_widget_type_t file_chooser_button_type = {
 
 static void file_set_callback(GtkButton *widget, gpointer user_data)
 {
-  dt_lua_widget_trigger_callback_async((lua_widget)user_data,"file-set",NULL);
+  dt_lua_do_chunk_async(dt_lua_widget_trigger_callback,
+      LUA_ASYNC_TYPENAME,"lua_widget",user_data,
+      LUA_ASYNC_TYPENAME,"const char*","file-set",
+      LUA_ASYNC_DONE);
 }
 
 static int is_directory_member(lua_State *L)

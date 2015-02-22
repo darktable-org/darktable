@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 1.3\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-02-17 22:08+0100\n"
-"PO-Revision-Date: 2015-02-17 22:11+0100\n"
+"POT-Creation-Date: 2015-02-22 11:43+0100\n"
+"PO-Revision-Date: 2015-02-22 11:45+0100\n"
 "Last-Translator: Pascal Obry <pascal@obry.net>\n"
 "Language-Team: \n"
 "Language: fr_FR\n"
@@ -830,7 +830,7 @@ msgstr ""
 #: ../src/iop/bilateral.cc:351 ../src/iop/channelmixer.c:463
 #: ../src/iop/channelmixer.c:475 ../src/iop/colorbalance.c:586
 #: ../src/iop/colorbalance.c:625 ../src/iop/colorbalance.c:664
-#: ../src/iop/temperature.c:1164 ../src/libs/collect.c:1238
+#: ../src/iop/temperature.c:1190 ../src/libs/collect.c:1238
 #: ../src/libs/collect.c:1239
 msgid "red"
 msgstr "rouge"
@@ -844,7 +844,7 @@ msgstr "jaune"
 #: ../src/iop/bilateral.cc:352 ../src/iop/channelmixer.c:464
 #: ../src/iop/channelmixer.c:482 ../src/iop/colorbalance.c:595
 #: ../src/iop/colorbalance.c:634 ../src/iop/colorbalance.c:673
-#: ../src/iop/temperature.c:1165 ../src/libs/collect.c:1244
+#: ../src/iop/temperature.c:1191 ../src/libs/collect.c:1244
 #: ../src/libs/collect.c:1245
 msgid "green"
 msgstr "vert"
@@ -853,7 +853,7 @@ msgstr "vert"
 #: ../src/iop/bilateral.cc:353 ../src/iop/channelmixer.c:465
 #: ../src/iop/channelmixer.c:488 ../src/iop/colorbalance.c:604
 #: ../src/iop/colorbalance.c:643 ../src/iop/colorbalance.c:682
-#: ../src/iop/temperature.c:1166 ../src/libs/collect.c:1247
+#: ../src/iop/temperature.c:1192 ../src/libs/collect.c:1247
 #: ../src/libs/collect.c:1248
 msgid "blue"
 msgstr "bleu"
@@ -895,27 +895,27 @@ msgstr "erreur pendant l'impression de l'image %d sur «%s»"
 msgid "printing image %d on `%s'"
 msgstr "impression de l'image %d sur «%s»"
 
-#: ../src/common/darktable.c:317
+#: ../src/common/darktable.c:319
 #, c-format
 msgid "found strange path `%s'"
 msgstr "chemin étrange «%s»"
 
-#: ../src/common/darktable.c:334
+#: ../src/common/darktable.c:336
 #, c-format
 msgid "error loading directory `%s'"
 msgstr "erreur de chargement du dossier «%s»"
 
-#: ../src/common/darktable.c:356
+#: ../src/common/darktable.c:358
 #, c-format
 msgid "file `%s' has unknown format!"
 msgstr "le fichier «%s» possède un format inconnu !"
 
-#: ../src/common/darktable.c:369 ../src/libs/import.c:800
+#: ../src/common/darktable.c:371 ../src/libs/import.c:800
 #, c-format
 msgid "error loading file `%s'"
 msgstr "erreur de chargement du fichier «%s»"
 
-#: ../src/common/darktable.c:671
+#: ../src/common/darktable.c:685
 #, c-format
 msgid "ERROR : invalid temporary directory : %s\n"
 msgstr "ERREUR : répertoire temporaire invalide : %s\n"
@@ -955,7 +955,7 @@ msgstr "activé(e)"
 #: ../src/common/history.c:379 ../src/common/styles.c:673
 #: ../src/common/styles.c:677 ../src/develop/blend_gui.c:1606
 #: ../src/develop/blend_gui.c:1824 ../src/develop/develop.c:1228
-#: ../src/imageio/format/exr.cc:283 ../src/imageio/format/j2k.c:671
+#: ../src/imageio/format/exr.cc:353 ../src/imageio/format/j2k.c:671
 #: ../src/iop/colorin.c:1258 ../src/iop/demosaic.c:2079
 #: ../src/iop/vignette.c:1143 ../src/libs/history.c:153
 #: ../src/libs/live_view.c:408
@@ -1024,12 +1024,6 @@ msgid ""
 msgstr ""
 "impossible d'affecter un nom unique pour la session. vérifier les réglages "
 "d'importation."
-
-#. clang-format off
-#. preset name                   maker    model            iso    a a a                                 b b b
-#: ../src/common/noiseprofiles.h:39
-msgid "generic poissonian"
-msgstr "distribution générique"
 
 #: ../src/common/pdf.h:85 ../src/iop/lens.c:1644
 #: ../src/libs/print_settings.c:1082
@@ -1920,7 +1914,7 @@ msgstr "%s est désactivé"
 #: ../src/gui/accelerators.c:679 ../src/gui/accelerators.c:847
 #: ../src/gui/accelerators.c:873 ../src/gui/presets.c:188
 #: ../src/gui/presets.c:294 ../src/gui/presets.c:662
-#: ../src/iop/temperature.c:1176 ../src/libs/import.c:521
+#: ../src/iop/temperature.c:1202 ../src/libs/import.c:521
 #: ../src/libs/lib.c:309 ../src/libs/lib.c:334 ../src/libs/lib.c:1089
 msgid "preset"
 msgstr "pré-réglage"
@@ -2910,39 +2904,43 @@ msgstr ""
 "effectue une copie conforme des fichiers.\n"
 "les options ci-dessous ne s'appliquent pas !"
 
-#: ../src/imageio/format/exr.cc:262
+#: ../src/imageio/format/exr.cc:183
+msgid "the selected output profile doesn't work well with exr"
+msgstr "le profil de sortie sélectionné ne fonctionne pas bien avec exr"
+
+#: ../src/imageio/format/exr.cc:332
 msgid "OpenEXR (float)"
 msgstr "OpenEXR (flottant)"
 
-#: ../src/imageio/format/exr.cc:281
+#: ../src/imageio/format/exr.cc:351
 msgid "compression mode"
 msgstr "compression"
 
-#: ../src/imageio/format/exr.cc:284
+#: ../src/imageio/format/exr.cc:354
 msgid "RLE"
 msgstr "RLE"
 
-#: ../src/imageio/format/exr.cc:285
+#: ../src/imageio/format/exr.cc:355
 msgid "ZIPS"
 msgstr "ZIPS"
 
-#: ../src/imageio/format/exr.cc:286
+#: ../src/imageio/format/exr.cc:356
 msgid "ZIP"
 msgstr "ZIP"
 
-#: ../src/imageio/format/exr.cc:287
+#: ../src/imageio/format/exr.cc:357
 msgid "PIZ (default)"
 msgstr "PIZ (défaut)"
 
-#: ../src/imageio/format/exr.cc:288
+#: ../src/imageio/format/exr.cc:358
 msgid "PXR24 (lossy)"
 msgstr "PXR24 (avec perte)"
 
-#: ../src/imageio/format/exr.cc:289
+#: ../src/imageio/format/exr.cc:359
 msgid "B44 (lossy)"
 msgstr "B44 (avec perte)"
 
-#: ../src/imageio/format/exr.cc:290
+#: ../src/imageio/format/exr.cc:360
 msgid "B44A (lossy)"
 msgstr "B44A (avec perte)"
 
@@ -3924,7 +3922,7 @@ msgstr "seuil"
 msgid "the threshold of light"
 msgstr "seuil de lumière"
 
-#: ../src/iop/bloom.c:542 ../src/iop/denoiseprofile.c:1645
+#: ../src/iop/bloom.c:542 ../src/iop/denoiseprofile.c:1641
 #: ../src/iop/grain.c:546 ../src/iop/hotpixels.c:416 ../src/iop/nlmeans.c:709
 #: ../src/iop/velvia.c:347
 msgid "strength"
@@ -4622,8 +4620,8 @@ msgid "embedded ICC profile"
 msgstr "profil ICC intégré"
 
 #: ../src/iop/colorin.c:1079 ../src/iop/colorin.c:1113
-msgid "DNG embedded matrix"
-msgstr "matrice intégrée DNG"
+msgid "embedded matrix"
+msgstr "matrice intégrée"
 
 #: ../src/iop/colorin.c:1081 ../src/iop/colorin.c:1115
 msgid "standard color matrix"
@@ -4679,7 +4677,7 @@ msgstr "linéaire XYZ"
 msgid "Lab"
 msgstr "Lab"
 
-#: ../src/iop/colorin.c:1241 ../src/iop/denoiseprofile.c:1641
+#: ../src/iop/colorin.c:1241 ../src/iop/denoiseprofile.c:1637
 #: ../src/libs/export.c:646 ../src/libs/print_settings.c:984
 #: ../src/libs/print_settings.c:1198
 msgid "profile"
@@ -5157,43 +5155,43 @@ msgstr "moyenne globale et locale"
 msgid "green channels matching method"
 msgstr "méthode de calcul des verts"
 
-#: ../src/iop/denoiseprofile.c:130
+#: ../src/iop/denoiseprofile.c:129
 msgid "denoise (profiled)"
 msgstr "réduction du bruit (profil)"
 
-#: ../src/iop/denoiseprofile.c:1392 ../src/iop/denoiseprofile.c:1400
+#: ../src/iop/denoiseprofile.c:1395
 #, c-format
 msgid "found match for ISO %d"
 msgstr "profil pour ISO %d trouvé"
 
-#: ../src/iop/denoiseprofile.c:1408
+#: ../src/iop/denoiseprofile.c:1403
 #, c-format
 msgid "interpolated from ISO %d and %d"
 msgstr "interpolé depuis ISO %d et %d"
 
-#: ../src/iop/denoiseprofile.c:1642 ../src/iop/exposure.c:926
+#: ../src/iop/denoiseprofile.c:1638 ../src/iop/exposure.c:926
 #: ../src/iop/lens.c:2115 ../src/iop/levels.c:529 ../src/libs/export.c:694
 #: ../src/libs/print_settings.c:1294
 msgid "mode"
 msgstr "mode"
 
-#: ../src/iop/denoiseprofile.c:1643 ../src/iop/nlmeans.c:707
+#: ../src/iop/denoiseprofile.c:1639 ../src/iop/nlmeans.c:707
 msgid "patch size"
 msgstr "taille"
 
-#: ../src/iop/denoiseprofile.c:1646
+#: ../src/iop/denoiseprofile.c:1642
 msgid "non-local means"
 msgstr "moyenne non-locales"
 
-#: ../src/iop/denoiseprofile.c:1647
+#: ../src/iop/denoiseprofile.c:1643
 msgid "wavelets"
 msgstr "ondelettes"
 
-#: ../src/iop/denoiseprofile.c:1648
+#: ../src/iop/denoiseprofile.c:1644
 msgid "profile used for variance stabilization"
 msgstr "profil utilisé pour la stabilisation de variance"
 
-#: ../src/iop/denoiseprofile.c:1651
+#: ../src/iop/denoiseprofile.c:1647
 msgid ""
 "method used in the denoising core. non-local means works best for "
 "`lightness' blending, wavelets work best for `color' blending"
@@ -5202,11 +5200,11 @@ msgstr ""
 "fonctionne mieux pour le mode de fusion 'luminosité'. 'ondelettes' "
 "fonctionnent pour le mode de fusion 'couleur'"
 
-#: ../src/iop/denoiseprofile.c:1655
+#: ../src/iop/denoiseprofile.c:1651
 msgid "radius of the patches to match. increase for more sharpness"
 msgstr "rayon des éléments à identifier. augmenter pour plus de netteté."
 
-#: ../src/iop/denoiseprofile.c:1656
+#: ../src/iop/denoiseprofile.c:1652
 msgid "finetune denoising strength"
 msgstr "réglage fin de la force de réduction"
 
@@ -6544,32 +6542,32 @@ msgstr "neutre boîtier"
 msgid "spot white balance"
 msgstr "spot"
 
-#: ../src/iop/temperature.c:749
+#: ../src/iop/temperature.c:833
 msgid "failed to read camera white balance information!"
 msgstr "impossible de récupérer la balance des blancs du boîtier!"
 
-#: ../src/iop/temperature.c:1162
+#: ../src/iop/temperature.c:1188
 msgid "tint"
 msgstr "teinte"
 
-#: ../src/iop/temperature.c:1163
+#: ../src/iop/temperature.c:1189
 msgid "temperature"
 msgstr "température"
 
-#: ../src/iop/temperature.c:1178
+#: ../src/iop/temperature.c:1204
 msgid "choose white balance preset from camera"
 msgstr "choisir la balance des blancs du boîtier"
 
-#: ../src/iop/temperature.c:1182
+#: ../src/iop/temperature.c:1208
 msgid "finetune"
 msgstr "ajustement"
 
-#: ../src/iop/temperature.c:1183
+#: ../src/iop/temperature.c:1209
 #, c-format
 msgid "%.0f mired"
 msgstr "%.0f mired"
 
-#: ../src/iop/temperature.c:1187
+#: ../src/iop/temperature.c:1213
 msgid "fine tune white balance preset"
 msgstr "ajustement de balance des blancs"
 
@@ -9488,6 +9486,9 @@ msgstr "nouvelle session initiée «%s»"
 #: ../src/views/tethering.c:242
 msgid "no camera with tethering support available for use..."
 msgstr "aucun boîtier disponible pour la capture..."
+
+#~ msgid "generic poissonian"
+#~ msgstr "distribution générique"
 
 #~ msgid "set the aspect ratio (w:h)"
 #~ msgstr "rapport largeur/hauteur"

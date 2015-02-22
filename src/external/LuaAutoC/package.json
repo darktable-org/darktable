@@ -1,0 +1,9 @@
+{
+  "name": "LuaAutoC",
+  "version": "2.0.1",
+  "repo": "orangeduck/LuaAutoC",
+  "description": "Automagically use C Functions and Structs with the Lua API",
+  "keywords": ["c", "lua", "api", "automatic", "functions", "structs"],
+  "license": "BSD",
+  "src": ["lautoc.c", "lautoc.h", "lautocall.h"]
+}

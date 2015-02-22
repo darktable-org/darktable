@@ -36,15 +36,11 @@ static int container_reset(lua_State* L)
   GList*children = gtk_container_get_children(GTK_CONTAINER(container->widget));
   GList*curelt = children;
   while(curelt) {
+    lua_pushcfunction(L,dt_lua_widget_trigger_callback);
     GtkWidget* cur_widget = curelt->data;
     luaA_push(L,lua_widget,&cur_widget);
-    lua_widget data;
-    luaA_to(L,lua_widget,&data,-1);
-    lua_pop(L,1);
-    int result = dt_lua_widget_trigger_callback(L,data,"reset");
-    if(result != LUA_OK) {
-      return lua_error(L);
-    }
+    lua_pushstring(L,"reset");
+    dt_lua_do_chunk_raise(L,2,0);
     curelt = g_list_next(curelt);
   }
   lua_pop(L,1);
@@ -56,12 +52,20 @@ static int container_reset(lua_State* L)
 
 static void on_child_added(GtkContainer *container,GtkWidget *child,lua_container user_data)
 {
-  dt_lua_widget_trigger_callback_async(user_data,"add","lua_widget",child,NULL);
+  dt_lua_do_chunk_async(dt_lua_widget_trigger_callback,
+      LUA_ASYNC_TYPENAME,"lua_widget",user_data,
+      LUA_ASYNC_TYPENAME,"const char*","add",
+      LUA_ASYNC_TYPENAME,"lua_widget",child,
+      LUA_ASYNC_DONE);
 }
 
 static void on_child_removed(GtkContainer *container,GtkWidget *child,lua_container user_data)
 {
-  dt_lua_widget_trigger_callback_async(user_data,"remove","lua_widget",child,NULL);
+  dt_lua_do_chunk_async(dt_lua_widget_trigger_callback,
+      LUA_ASYNC_TYPENAME,"lua_widget",user_data,
+      LUA_ASYNC_TYPENAME,"const char*","remove",
+      LUA_ASYNC_TYPENAME,"lua_widget",child,
+      LUA_ASYNC_DONE);
 }
 
 

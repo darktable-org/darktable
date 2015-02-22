@@ -460,6 +460,20 @@ static void gpointer_tofunc(lua_State *L, luaA_Type type_id, void *cout, int ind
   memcpy(cout, udata, sizeof(gpointer));
 }
 
+static int unknown_pushfunc(lua_State *L, luaA_Type type_id, const void *cin)
+{
+  luaL_getsubtable(L, LUA_REGISTRYINDEX, "dt_lua_gpointer_values");
+  gpointer singleton = *(gpointer *)cin;
+  lua_pushlightuserdata(L, singleton);
+  lua_gettable(L, -2);
+  if(lua_isnoneornil(L, -1))
+  {
+    return luaL_error(L,"Attempting to push a pointer of unknown type on the stack\n");
+  }
+  lua_remove(L, -2); //dt_lua_gpointer_values
+  return 1;
+}
+
 
 /*****************/
 /* TYPE CREATION */
@@ -700,6 +714,11 @@ luaA_Type dt_lua_init_singleton(lua_State *L, const char *unique_name, void *dat
   else
   {
     *udata = data;
+    luaL_getsubtable(L, LUA_REGISTRYINDEX, "dt_lua_gpointer_values");
+    lua_pushlightuserdata(L, data);
+    lua_pushvalue(L,-3);
+    lua_settable(L,-3);
+    lua_pop(L,1);
   }
 
   lua_pushvalue(L, -1);
@@ -879,6 +898,7 @@ int dt_lua_init_early_types(lua_State *L)
   luaA_conversion(L, protected_double, push_protected_double, luaA_to_double);
   luaA_conversion(L, progress_double, push_progress_double, to_progress_double);
 
+  luaA_conversion_push_type(L, luaA_type_add(L,"unknown",sizeof(void*)), unknown_pushfunc);
   // table of gpointer values
   lua_newtable(L);
   lua_newtable(L);

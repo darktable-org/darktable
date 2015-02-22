@@ -303,6 +303,22 @@ luaL_dostring(L,
 );
 ```
 
+You can then wrap this function in whatever Lua interface you like. One nice idea is to create a table and set it's `__index` metamethod to return the C function of the same name.
+
+```lua
+Hello = {}
+Hello.__index = function (table, key)
+  return function (...)
+    return C(key, ...)
+  end
+end
+
+setmetatable(Hello, Hello)
+
+Hello.hello_world()
+Hello.hello_person('Marcelo')
+```
+
 ### Advanced Interface
 
 Using LuaAutoC it is easy to wrap pointers to structs so that they act like object instances. All we need to do is set `__index` and `__newindex` in the metatable.
