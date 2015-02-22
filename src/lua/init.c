@@ -114,7 +114,7 @@ static int run_early_script(lua_State* L)
     dt_lua_dofile_silent(L, tmp_path, 0, 0);
   }
   if(!lua_isnil(L,1)){
-    char *lua_command = lua_tostring(L,1);
+    const char *lua_command = lua_tostring(L, 1);
     dt_lua_dostring_silent(L, lua_command, 0, 0);
   }
   dt_lua_redraw_screen();
