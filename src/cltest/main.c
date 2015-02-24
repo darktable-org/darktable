@@ -22,8 +22,8 @@
 int main(int argc, char *arg[])
 {
   // only used to force-init opencl, so we want these options:
-  const int m_argc = 5;
-  char *m_arg[] = { "darktable-cltest", "-d", "opencl", "--library", ":memory:" };
+  char *m_arg[] = { "darktable-cltest", "-d", "opencl", "--library", ":memory:"};
+  const int m_argc = sizeof(m_arg) / sizeof(m_arg[0]);
   if(dt_init(m_argc, m_arg, 0, NULL)) exit(1);
   exit(0);
 }
