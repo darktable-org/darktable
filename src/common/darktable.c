@@ -863,8 +863,13 @@ int dt_init(int argc, char *argv[], const int init_gui, lua_State *L)
   else
     darktable.gui = NULL;
 
-  darktable.view_manager = (dt_view_manager_t *)calloc(1, sizeof(dt_view_manager_t));
-  dt_view_manager_init(darktable.view_manager);
+  if(init_gui)
+  {
+    darktable.view_manager = (dt_view_manager_t *)calloc(1, sizeof(dt_view_manager_t));
+    dt_view_manager_init(darktable.view_manager);
+  }
+  else
+    darktable.view_manager = NULL;
 
   darktable.imageio = (dt_imageio_t *)calloc(1, sizeof(dt_imageio_t));
   dt_imageio_init(darktable.imageio);
