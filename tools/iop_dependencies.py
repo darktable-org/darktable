@@ -144,6 +144,7 @@ def add_edges(gr):
   gr.add_edge(('colorout', 'colorize'))
   gr.add_edge(('colorout', 'colisa'))
   gr.add_edge(('colorout', 'defringe'))
+  gr.add_edge(('colorout', 'colorreconstruct'))
   gr.add_edge(('bloom', 'colorin'))
   gr.add_edge(('nlmeans', 'colorin'))
   gr.add_edge(('colortransfer', 'colorin'))
@@ -167,6 +168,7 @@ def add_edges(gr):
   gr.add_edge(('colorize', 'colorin'))
   gr.add_edge(('colisa', 'colorin'))
   gr.add_edge(('defringe', 'colorin'))
+  gr.add_edge(('colorreconstruct', 'colorin'))
   
   # spot removal works on demosaiced data
   # and needs to be before geometric distortions:
@@ -293,6 +295,7 @@ def add_edges(gr):
   gr.add_edge(('colorcorrection', 'colormapping'))
   gr.add_edge(('relight', 'colormapping'))
   gr.add_edge(('lowpass', 'colormapping'))
+  gr.add_edge(('colorreconstruct', 'colormapping'))
   gr.add_edge(('shadhi', 'colormapping'))
   gr.add_edge(('highpass', 'colormapping'))
   gr.add_edge(('lowlight', 'colormapping'))
@@ -325,6 +328,9 @@ def add_edges(gr):
   gr.add_edge(('zonesystem', 'shadhi'))
   gr.add_edge(('relight', 'shadhi'))
   gr.add_edge(('colisa', 'shadhi'))
+
+  # want to reconstruct color before shadows&highlights
+  gr.add_edge(('shadhi', 'colorreconstruct'))
 
   # the bilateral filter, in linear input rgb
   gr.add_edge(('colorin', 'bilateral'))
@@ -372,6 +378,7 @@ gr.add_nodes([
 'colormapping',
 'colorzones',
 'colorcontrast',
+'colorreconstruct',
 'defringe',
 'demosaic',
 'denoiseprofile',
