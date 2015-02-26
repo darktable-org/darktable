@@ -713,15 +713,21 @@ static void xtrans_markesteijn_interpolate(float *out, const float *const in,
           }
 
         /* Interpolate red for blue pixels and vice versa:              */
-        for(int row = top + 4; row < mrow - 4; row++)
-          for(int col = left + 4; col < mcol - 4; col++)
+        for(int row = top + 6; row < mrow - 6; row++)
+          for(int col = left + 6; col < mcol - 6; col++)
           {
             int f = 2 - FCxtrans(row + yoff + 12, col + xoff + 12, xtrans);
             if(f == 1) continue;
             float(*rfx)[3] = &rgb[0][row - top][col - left];
-            int i = (row - sgrow) % 3 ? TS : 1;
+            int c = (row - sgrow) % 3 ? TS : 1;
+            int h = 3 * (c ^ TS ^ 1);
             for(int d = 0; d < 4; d++, rfx += TS * TS)
+            {
+              int i = d > 1 || ((d ^ c) & 1) ||
+                ((fabsf(rfx[0][1]-rfx[c][1]) + fabsf(rfx[0][1]-rfx[-c][1])) <
+                 2.f*(fabsf(rfx[0][1]-rfx[h][1]) + fabsf(rfx[0][1]-rfx[-h][1]))) ? c:h;
               rfx[0][f] = CLIPF((rfx[i][f] + rfx[-i][f] + 2 * rfx[0][1] - rfx[i][1] - rfx[-i][1]) / 2);
+            }
           }
 
         /* Fill in red and blue for 2x2 blocks of green:                */
