@@ -169,10 +169,10 @@ static void dt_iop_colorreconstruct_bilateral_splat(dt_iop_colorreconstruct_bila
     {
       float x, y, z;
       const float Lin = in[index];
+      const float ain = in[index + 1];
+      const float bin = in[index + 2];
       // we ignore overexposed areas as they lack color information
       if (Lin > threshold) continue;
-      const float ain = in[index+1];
-      const float bin = in[index+2];
       image_to_grid(b, i, j, Lin, &x, &y, &z);
       const int xi = MIN((int)x, b->size_x - 2);
       const int yi = MIN((int)y, b->size_y - 2);
@@ -288,13 +288,13 @@ static void dt_iop_colorreconstruct_bilateral_slice(const dt_iop_colorreconstruc
     for(int i = 0; i < b->width; i++, index += 4)
     {
       float x, y, z;
-      out[index + 0] = in[index + 0];
-      out[index + 1] = in[index + 1];
-      out[index + 2] = in[index + 2];
+      const float Lin = out[index + 0] = in[index + 0];
+      const float ain = out[index + 1] = in[index + 1];
+      const float bin = out[index + 2] = in[index + 2];
       out[index + 3] = in[index + 3];
-      if (in[index] <= threshold) continue;
-      const float L = in[index];
-      image_to_grid(b, i, j, L, &x, &y, &z);
+      const float blend = CLAMPS(20.0f / threshold * Lin - 19.0f, 0.0f, 1.0f);
+      if (blend == 0.0f) continue;
+      image_to_grid(b, i, j, Lin, &x, &y, &z);
       // trilinear lookup:
       const int xi = MIN((int)x, b->size_x - 2);
       const int yi = MIN((int)y, b->size_y - 2);
@@ -315,7 +315,6 @@ static void dt_iop_colorreconstruct_bilateral_slice(const dt_iop_colorreconstruc
 
       dt_iop_colorreconstruct_cell_t cioxoyoz = (b->buf[gi + ox + oy + oz]).weight > 0.0f ? b->buf[gi + ox + oy + oz] : neutral;
 
-
       const float aout =   ci.a/ci.weight * (1.0f - xf) * (1.0f - yf) * (1.0f - zf)
                          + ciox.a/ciox.weight * (xf) * (1.0f - yf) * (1.0f - zf)
                          + cioy.a/cioy.weight * (1.0f - xf) * (yf) * (1.0f - zf)
@@ -335,8 +334,8 @@ static void dt_iop_colorreconstruct_bilateral_slice(const dt_iop_colorreconstruc
                          + cioyoz.b/cioyoz.weight * (1.0f - xf) * (yf) * (zf)
                          + cioxoyoz.b/cioxoyoz.weight * (xf) * (yf) * (zf);
 
-      out[index + 1] = aout;
-      out[index + 2] = bout;
+      out[index + 1] = ain * (1.0f - blend) + aout * blend;
+      out[index + 2] = bin * (1.0f - blend) + bout * blend;
     }
   }
 }
@@ -481,7 +480,7 @@ void gui_init(struct dt_iop_module_t *self)
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
 
   g->threshold = dt_bauhaus_slider_new_with_range(self, 50.0f, 150.0f, 0.1f, p->threshold, 2);
-  g->spatial = dt_bauhaus_slider_new_with_range(self, 0.0f, 400.0f, 1.0f, p->spatial, 2);
+  g->spatial = dt_bauhaus_slider_new_with_range(self, 0.0f, 1000.0f, 1.0f, p->spatial, 2);
   g->range = dt_bauhaus_slider_new_with_range(self, 0.0f, 50.0f, 1.0, p->range, 2);
 
   dt_bauhaus_widget_set_label(g->threshold, NULL, _("threshold"));
@@ -492,7 +491,7 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), g->spatial, TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), g->range, TRUE, TRUE, 0);
 
-  g_object_set(g->threshold, "tooltip-text", _("pixel with L values below this threshold are not affected"), (char *)NULL);
+  g_object_set(g->threshold, "tooltip-text", _("pixels with L values below this threshold are not affected"), (char *)NULL);
   g_object_set(g->spatial, "tooltip-text", _("blur of color information in spatial dimensions (width and height)"), (char *)NULL);
   g_object_set(g->range, "tooltip-text", _("blur of color information in the luminance dimension (L value)"), (char *)NULL);
 
