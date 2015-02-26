@@ -102,19 +102,20 @@ void connect_key_accels(dt_iop_module_t *self)
 #define DT_COMMON_BILATERAL_MAX_RES_S 6000
 #define DT_COMMON_BILATERAL_MAX_RES_R 50
 
-typedef struct dt_iop_colorreconstruct_cell_t
+typedef struct dt_iop_colorreconstruct_Lab_t
 {
-  float weight;
+  float L;
   float a;
   float b;
-} dt_iop_colorreconstruct_cell_t;
+  float weight;
+} dt_iop_colorreconstruct_Lab_t;
 
 typedef struct dt_iop_colorreconstruct_bilateral_t
 {
   size_t size_x, size_y, size_z;
   int width, height;
   float sigma_s, sigma_r;
-  dt_iop_colorreconstruct_cell_t *buf;
+  dt_iop_colorreconstruct_Lab_t *buf;
 } dt_iop_colorreconstruct_bilateral_t;
 
 static void image_to_grid(const dt_iop_colorreconstruct_bilateral_t *const b, const int i, const int j, const float L, float *x,
@@ -142,9 +143,9 @@ static dt_iop_colorreconstruct_bilateral_t *dt_iop_colorreconstruct_bilateral_in
   b->height = height;
   b->sigma_s = MAX(height / (b->size_y - 1.0f), width / (b->size_x - 1.0f));
   b->sigma_r = 100.0f / (b->size_z - 1.0f);
-  b->buf = dt_alloc_align(16, b->size_x * b->size_y * b->size_z * sizeof(dt_iop_colorreconstruct_cell_t));
+  b->buf = dt_alloc_align(16, b->size_x * b->size_y * b->size_z * sizeof(dt_iop_colorreconstruct_Lab_t));
 
-  memset(b->buf, 0, b->size_x * b->size_y * b->size_z * sizeof(dt_iop_colorreconstruct_cell_t));
+  memset(b->buf, 0, b->size_x * b->size_y * b->size_z * sizeof(dt_iop_colorreconstruct_Lab_t));
 #if 0
   fprintf(stderr, "[bilateral] created grid [%d %d %d]"
           " with sigma (%f %f) (%f %f)\n", b->size_x, b->size_y, b->size_z,
@@ -155,10 +156,7 @@ static dt_iop_colorreconstruct_bilateral_t *dt_iop_colorreconstruct_bilateral_in
 
 static void dt_iop_colorreconstruct_bilateral_splat(dt_iop_colorreconstruct_bilateral_t *b, const float *const in, const float threshold)
 {
-  //const int ox = 1;
-  //const int oy = b->size_x;
-  //const int oz = b->size_y * b->size_x;
-// splat into downsampled grid
+  // splat into downsampled grid
 #ifdef _OPENMP
 #pragma omp parallel for default(none) shared(b)
 #endif
@@ -184,21 +182,28 @@ static void dt_iop_colorreconstruct_bilateral_splat(dt_iop_colorreconstruct_bila
 #ifdef _OPENMP
 #pragma omp atomic
 #endif
-      b->buf[grid_index].weight += 1.0f;
+      b->buf[grid_index].L += Lin;
+
 #ifdef _OPENMP
 #pragma omp atomic
 #endif
       b->buf[grid_index].a += ain;
+
 #ifdef _OPENMP
 #pragma omp atomic
 #endif
       b->buf[grid_index].b += bin;
+
+#ifdef _OPENMP
+#pragma omp atomic
+#endif
+      b->buf[grid_index].weight += 1.0f;
     }
   }
 }
 
 
-static void blur_line(dt_iop_colorreconstruct_cell_t *buf, const int offset1, const int offset2, const int offset3, const int size1,
+static void blur_line(dt_iop_colorreconstruct_Lab_t *buf, const int offset1, const int offset2, const int offset3, const int size1,
                       const int size2, const int size3)
 {
   const float w0 = 6.f / 16.f;
@@ -212,38 +217,44 @@ static void blur_line(dt_iop_colorreconstruct_cell_t *buf, const int offset1, co
     size_t index = (size_t)k * offset1;
     for(int j = 0; j < size2; j++)
     {
-      dt_iop_colorreconstruct_cell_t tmp1 = buf[index];
-      buf[index].weight = buf[index].weight * w0 + w1 * buf[index + offset3].weight + w2 * buf[index + 2 * offset3].weight;
+      dt_iop_colorreconstruct_Lab_t tmp1 = buf[index];
+      buf[index].L      = buf[index].L      * w0 + w1 * buf[index + offset3].L      + w2 * buf[index + 2 * offset3].L;
       buf[index].a      = buf[index].a      * w0 + w1 * buf[index + offset3].a      + w2 * buf[index + 2 * offset3].a;
       buf[index].b      = buf[index].b      * w0 + w1 * buf[index + offset3].b      + w2 * buf[index + 2 * offset3].b;
+      buf[index].weight = buf[index].weight * w0 + w1 * buf[index + offset3].weight + w2 * buf[index + 2 * offset3].weight;
       index += offset3;
-      dt_iop_colorreconstruct_cell_t tmp2 = buf[index];
-      buf[index].weight = buf[index].weight * w0 + w1 * (buf[index + offset3].weight + tmp1.weight) + w2 * buf[index + 2 * offset3].weight;
+      dt_iop_colorreconstruct_Lab_t tmp2 = buf[index];
+      buf[index].L      = buf[index].L      * w0 + w1 * (buf[index + offset3].L      + tmp1.L)      + w2 * buf[index + 2 * offset3].L;
       buf[index].a      = buf[index].a      * w0 + w1 * (buf[index + offset3].a      + tmp1.a)      + w2 * buf[index + 2 * offset3].a;
       buf[index].b      = buf[index].b      * w0 + w1 * (buf[index + offset3].b      + tmp1.b)      + w2 * buf[index + 2 * offset3].b;
+      buf[index].weight = buf[index].weight * w0 + w1 * (buf[index + offset3].weight + tmp1.weight) + w2 * buf[index + 2 * offset3].weight;
       index += offset3;
       for(int i = 2; i < size3 - 2; i++)
       {
-        const dt_iop_colorreconstruct_cell_t tmp3 = buf[index];
-        buf[index].weight = buf[index].weight * w0 + w1 * (buf[index + offset3].weight + tmp2.weight)
-                     + w2 * (buf[index + 2 * offset3].weight + tmp1.weight);
+        const dt_iop_colorreconstruct_Lab_t tmp3 = buf[index];
+        buf[index].L      = buf[index].L      * w0 + w1 * (buf[index + offset3].L      + tmp2.L)
+                     + w2 * (buf[index + 2 * offset3].L      + tmp1.L);
         buf[index].a      = buf[index].a      * w0 + w1 * (buf[index + offset3].a      + tmp2.a)
                      + w2 * (buf[index + 2 * offset3].a      + tmp1.a);
         buf[index].b      = buf[index].b      * w0 + w1 * (buf[index + offset3].b      + tmp2.b)
                      + w2 * (buf[index + 2 * offset3].b      + tmp1.b);
+        buf[index].weight = buf[index].weight * w0 + w1 * (buf[index + offset3].weight + tmp2.weight)
+                     + w2 * (buf[index + 2 * offset3].weight + tmp1.weight);
 
         index += offset3;
         tmp1 = tmp2;
         tmp2 = tmp3;
       }
-      const dt_iop_colorreconstruct_cell_t tmp3 = buf[index];
-      buf[index].weight = buf[index].weight * w0 + w1 * (buf[index + offset3].weight + tmp2.weight) + w2 * tmp1.weight;
+      const dt_iop_colorreconstruct_Lab_t tmp3 = buf[index];
+      buf[index].L      = buf[index].L      * w0 + w1 * (buf[index + offset3].L      + tmp2.L)      + w2 * tmp1.L;
       buf[index].a      = buf[index].a      * w0 + w1 * (buf[index + offset3].a      + tmp2.a)      + w2 * tmp1.a;
       buf[index].b      = buf[index].b      * w0 + w1 * (buf[index + offset3].b      + tmp2.b)      + w2 * tmp1.b;
+      buf[index].weight = buf[index].weight * w0 + w1 * (buf[index + offset3].weight + tmp2.weight) + w2 * tmp1.weight;
       index += offset3;
-      buf[index].weight = buf[index].weight * w0 + w1 * tmp3.weight + w2 * tmp2.weight;
+      buf[index].L      = buf[index].L      * w0 + w1 * tmp3.L      + w2 * tmp2.L;
       buf[index].a      = buf[index].a      * w0 + w1 * tmp3.a      + w2 * tmp2.a;
       buf[index].b      = buf[index].b      * w0 + w1 * tmp3.b      + w2 * tmp2.b;
+      buf[index].weight = buf[index].weight * w0 + w1 * tmp3.weight + w2 * tmp2.weight;
       index += offset3;
       index += offset2 - offset3 * size3;
     }
@@ -264,7 +275,7 @@ static void dt_iop_colorreconstruct_bilateral_blur(dt_iop_colorreconstruct_bilat
 static void dt_iop_colorreconstruct_bilateral_slice(const dt_iop_colorreconstruct_bilateral_t *const b, const float *const in, float *out,
                                                     const float threshold)
 {
-  const dt_iop_colorreconstruct_cell_t neutral = { 1.0f, 0.0f, 0.0f };
+  const dt_iop_colorreconstruct_Lab_t neutral = { 50.0f, 0.0f, 0.0f, 1.0f };
   const int ox = 1;
   const int oy = b->size_x;
   const int oz = b->size_y * b->size_x;
@@ -293,16 +304,25 @@ static void dt_iop_colorreconstruct_bilateral_slice(const dt_iop_colorreconstruc
       const float zf = z - zi;
       const size_t gi = xi + b->size_x * (yi + b->size_y * zi);
 
-      dt_iop_colorreconstruct_cell_t ci   = (b->buf[gi]).weight > 0.0f ? b->buf[gi] : neutral;
-      dt_iop_colorreconstruct_cell_t ciox = (b->buf[gi + ox]).weight > 0.0f ? b->buf[gi + ox] : neutral;
-      dt_iop_colorreconstruct_cell_t cioy = (b->buf[gi + oy]).weight > 0.0f ? b->buf[gi + oy] : neutral;
-      dt_iop_colorreconstruct_cell_t cioz = (b->buf[gi + oz]).weight > 0.0f ? b->buf[gi + oz] : neutral;
+      dt_iop_colorreconstruct_Lab_t ci   = (b->buf[gi]).weight > 0.0f ? b->buf[gi] : neutral;
+      dt_iop_colorreconstruct_Lab_t ciox = (b->buf[gi + ox]).weight > 0.0f ? b->buf[gi + ox] : neutral;
+      dt_iop_colorreconstruct_Lab_t cioy = (b->buf[gi + oy]).weight > 0.0f ? b->buf[gi + oy] : neutral;
+      dt_iop_colorreconstruct_Lab_t cioz = (b->buf[gi + oz]).weight > 0.0f ? b->buf[gi + oz] : neutral;
 
-      dt_iop_colorreconstruct_cell_t cioxoy = (b->buf[gi + ox + oy]).weight > 0.0f ? b->buf[gi + ox + oy] : neutral;
-      dt_iop_colorreconstruct_cell_t cioxoz = (b->buf[gi + ox + oz]).weight > 0.0f ? b->buf[gi + ox + oz] : neutral;
-      dt_iop_colorreconstruct_cell_t cioyoz = (b->buf[gi + oy + oz]).weight > 0.0f ? b->buf[gi + oy + oz] : neutral;
+      dt_iop_colorreconstruct_Lab_t cioxoy = (b->buf[gi + ox + oy]).weight > 0.0f ? b->buf[gi + ox + oy] : neutral;
+      dt_iop_colorreconstruct_Lab_t cioxoz = (b->buf[gi + ox + oz]).weight > 0.0f ? b->buf[gi + ox + oz] : neutral;
+      dt_iop_colorreconstruct_Lab_t cioyoz = (b->buf[gi + oy + oz]).weight > 0.0f ? b->buf[gi + oy + oz] : neutral;
 
-      dt_iop_colorreconstruct_cell_t cioxoyoz = (b->buf[gi + ox + oy + oz]).weight > 0.0f ? b->buf[gi + ox + oy + oz] : neutral;
+      dt_iop_colorreconstruct_Lab_t cioxoyoz = (b->buf[gi + ox + oy + oz]).weight > 0.0f ? b->buf[gi + ox + oy + oz] : neutral;
+
+      const float Lout =   ci.L/ci.weight * (1.0f - xf) * (1.0f - yf) * (1.0f - zf)
+                         + ciox.L/ciox.weight * (xf) * (1.0f - yf) * (1.0f - zf)
+                         + cioy.L/cioy.weight * (1.0f - xf) * (yf) * (1.0f - zf)
+                         + cioxoy.L/cioxoy.weight * (xf) * (yf) * (1.0f - zf)
+                         + cioz.L/cioz.weight * (1.0f - xf) * (1.0f - yf) * (zf)
+                         + cioxoz.L/cioxoz.weight * (xf) * (1.0f - yf) * (zf)
+                         + cioyoz.L/cioyoz.weight * (1.0f - xf) * (yf) * (zf)
+                         + cioxoyoz.L/cioxoyoz.weight * (xf) * (yf) * (zf);
 
       const float aout =   ci.a/ci.weight * (1.0f - xf) * (1.0f - yf) * (1.0f - zf)
                          + ciox.a/ciox.weight * (xf) * (1.0f - yf) * (1.0f - zf)
@@ -323,8 +343,9 @@ static void dt_iop_colorreconstruct_bilateral_slice(const dt_iop_colorreconstruc
                          + cioyoz.b/cioyoz.weight * (1.0f - xf) * (yf) * (zf)
                          + cioxoyoz.b/cioxoyoz.weight * (xf) * (yf) * (zf);
 
-      out[index + 1] = ain * (1.0f - blend) + aout * blend;
-      out[index + 2] = bin * (1.0f - blend) + bout * blend;
+
+      out[index + 1] = ain * (1.0f - blend) + aout * Lin/Lout * blend;
+      out[index + 2] = bin * (1.0f - blend) + bout * Lin/Lout * blend;
     }
   }
 }
