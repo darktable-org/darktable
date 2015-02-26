@@ -709,7 +709,8 @@ int dt_lib_load_modules()
 
     init_presets(module);
     // Calling the keyboard shortcut initialization callback if present
-    if(module->init_key_accels) module->init_key_accels(module);
+    // do not init accelerators if there is no gui
+    if(darktable.gui && module->init_key_accels) module->init_key_accels(module);
   }
   g_dir_close(dir);
 

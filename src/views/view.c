@@ -170,8 +170,9 @@ int dt_view_load_module(dt_view_t *view, const char *module)
 #ifdef USE_LUA
   dt_lua_register_view(darktable.lua_state.state, view);
 #endif
+
   if(view->init) view->init(view);
-  if(view->init_key_accels) view->init_key_accels(view);
+  if(darktable.gui && view->init_key_accels) view->init_key_accels(view);
 
   /* success */
   retval = 0;
