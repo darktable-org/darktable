@@ -749,12 +749,18 @@ static bool dt_exif_read_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
     if(!strcmp(img->exif_model, "DMC-GH2")) snprintf(img->exif_lens, sizeof(img->exif_lens), "(unknown)");
 #endif
 
+    // Improve lens detection for Sony SAL lenses.
+    if((pos = exifData.findKey(Exiv2::ExifKey("Exif.Sony2.LensID"))) != exifData.end()
+       && pos->size() && pos->toLong() != 65535 && pos->print().find('|') == std::string::npos)
+    {
+      dt_strlcpy_to_utf8(img->exif_lens, sizeof(img->exif_lens), pos, exifData);
+    }
     // Workaround for an issue on newer Sony NEX cams.
     // The default EXIF field is not used by Sony to store lens data
     // http://dev.exiv2.org/issues/883
     // http://darktable.org/redmine/issues/8813
     // FIXME: This is still a workaround
-    if((!strncmp(img->exif_model, "NEX", 3)) || (!strncmp(img->exif_model, "ILCE", 4)))
+    else if((!strncmp(img->exif_model, "NEX", 3)) || (!strncmp(img->exif_model, "ILCE", 4)))
     {
       snprintf(img->exif_lens, sizeof(img->exif_lens), "(unknown)");
       if((pos = exifData.findKey(Exiv2::ExifKey("Exif.Photo.LensModel"))) != exifData.end() && pos->size())
