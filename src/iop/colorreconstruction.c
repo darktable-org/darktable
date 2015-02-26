@@ -155,9 +155,9 @@ static dt_iop_colorreconstruct_bilateral_t *dt_iop_colorreconstruct_bilateral_in
 
 static void dt_iop_colorreconstruct_bilateral_splat(dt_iop_colorreconstruct_bilateral_t *b, const float *const in, const float threshold)
 {
-  const int ox = 1;
-  const int oy = b->size_x;
-  const int oz = b->size_y * b->size_x;
+  //const int ox = 1;
+  //const int oy = b->size_x;
+  //const int oz = b->size_y * b->size_x;
 // splat into downsampled grid
 #ifdef _OPENMP
 #pragma omp parallel for default(none) shared(b)
@@ -171,39 +171,28 @@ static void dt_iop_colorreconstruct_bilateral_splat(dt_iop_colorreconstruct_bila
       const float Lin = in[index];
       const float ain = in[index + 1];
       const float bin = in[index + 2];
-      // we ignore overexposed areas as they lack color information
+      // we deliberately ignore pixels above threshold
       if (Lin > threshold) continue;
       image_to_grid(b, i, j, Lin, &x, &y, &z);
-      const int xi = MIN((int)x, b->size_x - 2);
-      const int yi = MIN((int)y, b->size_y - 2);
-      const int zi = MIN((int)z, b->size_z - 2);
-      const float xf = x - xi;
-      const float yf = y - yi;
-      const float zf = z - zi;
-      // nearest neighbour splatting:
+
+      // closest integer splatting:
+      const int xi = CLAMPS((int)round(x), 0, b->size_x - 1);
+      const int yi = CLAMPS((int)round(y), 0, b->size_y - 1);
+      const int zi = CLAMPS((int)round(z), 0, b->size_z - 1);
       const size_t grid_index = xi + b->size_x * (yi + b->size_y * zi);
-      // sum up payload here, doesn't have to be same as edge stopping data
-      // for cross bilateral applications.
-      // also note that this is not clipped (as L->z is), so potentially hdr/out of gamut
-      // should not cause clipping here.
-      for(int k = 0; k < 8; k++)
-      {
-        const size_t ii = grid_index + ((k & 1) ? ox : 0) + ((k & 2) ? oy : 0) + ((k & 4) ? oz : 0);
-        const float contrib = ((k & 1) ? xf : (1.0f - xf)) * ((k & 2) ? yf : (1.0f - yf))
-                              * ((k & 4) ? zf : (1.0f - zf)) * 100.0f / (b->sigma_s * b->sigma_s);
+
 #ifdef _OPENMP
 #pragma omp atomic
 #endif
-        b->buf[ii].weight += contrib;
+      b->buf[grid_index].weight += 1.0f;
 #ifdef _OPENMP
 #pragma omp atomic
 #endif
-        b->buf[ii].a += contrib*ain;
+      b->buf[grid_index].a += ain;
 #ifdef _OPENMP
 #pragma omp atomic
 #endif
-        b->buf[ii].b += contrib*bin;
-      }
+      b->buf[grid_index].b += bin;
     }
   }
 }
