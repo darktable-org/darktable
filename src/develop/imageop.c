@@ -1223,6 +1223,7 @@ void dt_iop_load_modules_so()
     res = g_list_append(res, module);
     init_presets(module);
 
+    // do not init accelerators if there is no gui
     if(darktable.gui)
     {
       // Calling the accelerator initialization callback, if present
