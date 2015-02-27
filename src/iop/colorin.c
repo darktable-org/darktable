@@ -951,8 +951,6 @@ void reload_defaults(dt_iop_module_t *module)
     g_strlcpy(tmp.iccprofile, "adobergb", sizeof(tmp.iccprofile));
   else if(dt_image_is_ldr(&module->dev->image_storage))
     g_strlcpy(tmp.iccprofile, "sRGB", sizeof(tmp.iccprofile));
-  else if(!isnan(module->dev->image_storage.d65_color_matrix[0]))
-    g_strlcpy(tmp.iccprofile, "ematrix", sizeof(tmp.iccprofile));
 
 end:
   memcpy(module->params, &tmp, sizeof(dt_iop_colorin_params_t));
