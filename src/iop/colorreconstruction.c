@@ -443,7 +443,7 @@ void init(dt_iop_module_t *module)
   module->params = malloc(sizeof(dt_iop_colorreconstruct_params_t));
   module->default_params = malloc(sizeof(dt_iop_colorreconstruct_params_t));
   module->default_enabled = 0;
-  module->priority = 530; // module order created by iop_dependencies.py, do not edit!
+  module->priority = 360; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_colorreconstruct_params_t);
   module->gui_data = NULL;
   dt_iop_colorreconstruct_params_t tmp = (dt_iop_colorreconstruct_params_t){ 100.0f, 400.0f, 10.0f };

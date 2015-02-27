@@ -170,6 +170,32 @@ def add_edges(gr):
   gr.add_edge(('defringe', 'colorin'))
   gr.add_edge(('colorreconstruct', 'colorin'))
   
+  # we want color reconstruction come before all other tone and color altering modules
+  gr.add_edge(('bloom', 'colorreconstruct'))
+  gr.add_edge(('nlmeans', 'colorreconstruct'))
+  gr.add_edge(('colortransfer', 'colorreconstruct'))
+  gr.add_edge(('colormapping', 'colorreconstruct'))
+  gr.add_edge(('atrous', 'colorreconstruct'))
+  gr.add_edge(('bilat', 'colorreconstruct'))
+  gr.add_edge(('colorzones', 'colorreconstruct'))
+  gr.add_edge(('lowlight', 'colorreconstruct'))
+  gr.add_edge(('monochrome', 'colorreconstruct'))
+  gr.add_edge(('zonesystem', 'colorreconstruct'))
+  gr.add_edge(('tonecurve', 'colorreconstruct'))
+  gr.add_edge(('levels', 'colorreconstruct'))
+  gr.add_edge(('relight', 'colorreconstruct'))
+  gr.add_edge(('colorcorrection', 'colorreconstruct'))
+  gr.add_edge(('sharpen', 'colorreconstruct'))
+  gr.add_edge(('grain', 'colorreconstruct'))
+  gr.add_edge(('lowpass', 'colorreconstruct'))
+  gr.add_edge(('shadhi', 'colorreconstruct'))
+  gr.add_edge(('highpass', 'colorreconstruct'))
+  gr.add_edge(('colorcontrast', 'colorreconstruct'))
+  gr.add_edge(('colorize', 'colorreconstruct'))
+  gr.add_edge(('colisa', 'colorreconstruct'))
+  gr.add_edge(('defringe', 'colorreconstruct'))
+  
+  
   # spot removal works on demosaiced data
   # and needs to be before geometric distortions:
   gr.add_edge(('spots', 'demosaic'))
@@ -328,9 +354,6 @@ def add_edges(gr):
   gr.add_edge(('zonesystem', 'shadhi'))
   gr.add_edge(('relight', 'shadhi'))
   gr.add_edge(('colisa', 'shadhi'))
-
-  # want to reconstruct color before shadows&highlights
-  gr.add_edge(('shadhi', 'colorreconstruct'))
 
   # the bilateral filter, in linear input rgb
   gr.add_edge(('colorin', 'bilateral'))
