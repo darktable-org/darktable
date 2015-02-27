@@ -99,8 +99,8 @@ void connect_key_accels(dt_iop_module_t *self)
 
 
 
-#define DT_COMMON_BILATERAL_MAX_RES_S 6000
-#define DT_COMMON_BILATERAL_MAX_RES_R 50
+#define DT_COMMON_BILATERAL_MAX_RES_S 3000
+#define DT_COMMON_BILATERAL_MAX_RES_R 200
 
 typedef struct dt_iop_colorreconstruct_Lab_t
 {
@@ -446,7 +446,7 @@ void init(dt_iop_module_t *module)
   module->priority = 530; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_colorreconstruct_params_t);
   module->gui_data = NULL;
-  dt_iop_colorreconstruct_params_t tmp = (dt_iop_colorreconstruct_params_t){ 100.0f, 200.0f, 10.0f };
+  dt_iop_colorreconstruct_params_t tmp = (dt_iop_colorreconstruct_params_t){ 100.0f, 400.0f, 10.0f };
   memcpy(module->params, &tmp, sizeof(dt_iop_colorreconstruct_params_t));
   memcpy(module->default_params, &tmp, sizeof(dt_iop_colorreconstruct_params_t));
 }
@@ -487,9 +487,9 @@ void gui_init(struct dt_iop_module_t *self)
 
   g->threshold = dt_bauhaus_slider_new_with_range(self, 50.0f, 150.0f, 0.1f, p->threshold, 2);
   g->spatial = dt_bauhaus_slider_new_with_range(self, 0.0f, 1000.0f, 1.0f, p->spatial, 2);
-  g->range = dt_bauhaus_slider_new_with_range(self, 0.0f, 50.0f, 1.0, p->range, 2);
+  g->range = dt_bauhaus_slider_new_with_range(self, 0.0f, 50.0f, 0.1f, p->range, 2);
 
-  dt_bauhaus_widget_set_label(g->threshold, NULL, _("threshold"));
+  dt_bauhaus_widget_set_label(g->threshold, NULL, _("luma threshold"));
   dt_bauhaus_widget_set_label(g->spatial, NULL, _("spatial blur"));
   dt_bauhaus_widget_set_label(g->range, NULL, _("range blur"));
 
