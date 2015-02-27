@@ -55,6 +55,7 @@ static int get_widget_params(lua_State *L)
   }
   lua_widget widget= malloc(widget_type->alloc_size);
   widget->widget = gtk_widget_new(widget_type->gtk_type,NULL);
+  gtk_widget_show(widget->widget);// widgets are invisible by default
   g_object_ref_sink(widget->widget);
   widget->type = widget_type;
   luaA_push_type(L,widget_type->associated_type,&widget);

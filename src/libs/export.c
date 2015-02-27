@@ -43,7 +43,7 @@ typedef struct dt_lib_export_t
   GtkSpinButton *width, *height;
   GtkWidget *storage, *format;
   int format_lut[128];
-  GtkWidget *shown_storage, *shown_format;
+  GtkWidget  *shown_format;
   GtkWidget *upscale, *profile, *intent, *style, *style_mode;
   GList *profiles;
   GtkButton *export_button;
@@ -99,6 +99,7 @@ static void export_button_clicked(GtkWidget *widget, gpointer user_data)
   g_free(format_name);
   g_free(storage_name);
 
+  /*
   if(format_index == -1) {
     dt_control_log("invalid format for export selected\n");
     return;
@@ -106,7 +107,7 @@ static void export_button_clicked(GtkWidget *widget, gpointer user_data)
   if(storage_index == -1) {
     dt_control_log("invalid storage for export selected\n");
     return;
-  }
+  }*/
 
   gboolean upscale = dt_conf_get_bool("plugins/lighttable/export/upscale");
   gboolean high_quality = dt_conf_get_bool("plugins/lighttable/export/high_quality_processing");
@@ -302,21 +303,18 @@ static void set_storage_by_name(dt_lib_export_t *d, const char *name)
       }
     } while((it = g_list_next(it)));
 
-  if(d->shown_storage)
-    gtk_widget_hide(d->shown_storage);
-  d->shown_storage = NULL;
-
-  if(!module) return;
-
+  if(!module) {
+    gtk_widget_hide(d->storage_extra_container);
+    return;
+  } else if(module->widget) {
+    gtk_widget_show_all(d->storage_extra_container);
+    gtk_stack_set_visible_child(GTK_STACK(d->storage_extra_container),module->widget);
+  } else {
+    gtk_widget_hide(d->storage_extra_container);
+  }
   dt_bauhaus_combobox_set(d->storage, k);
   dt_conf_set_string("plugins/lighttable/export/storage_name", module->plugin_name);
-  if(module->widget)
-  {
-    gtk_widget_set_no_show_all(module->widget, FALSE);
-    gtk_widget_show_all(module->widget);
-    gtk_widget_set_no_show_all(module->widget, TRUE);
-  }
-  d->shown_storage = module->widget;
+
 
   // Check if plugin recommends a max dimension and set
   // if not implemented the stored conf values are used..
@@ -478,9 +476,7 @@ static void on_storage_list_changed(gpointer instance, dt_lib_module_t *self)
     dt_bauhaus_combobox_add(d->storage, module->name(module));
     if(module->widget)
     {
-      gtk_box_pack_start(GTK_BOX(d->storage_extra_container), module->widget, TRUE, TRUE, 0);
-      gtk_widget_hide(module->widget);
-      gtk_widget_set_no_show_all(module->widget, TRUE);
+      gtk_container_add(GTK_CONTAINER(d->storage_extra_container), module->widget);
     }
   } while((it = g_list_next(it)));
   dt_bauhaus_combobox_set(d->storage, dt_imageio_get_index_of_storage(storage));
@@ -492,7 +488,6 @@ void gui_init(dt_lib_module_t *self)
   dt_lib_export_t *d = (dt_lib_export_t *)malloc(sizeof(dt_lib_export_t));
   self->data = (void *)d;
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_PIXEL_APPLY_DPI(5));
-  d->shown_storage = NULL;
   d->shown_format = NULL;
 
   GtkWidget *label;
@@ -505,7 +500,7 @@ void gui_init(dt_lib_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), d->storage, TRUE, TRUE, 0);
 
   // add all storage widgets and just hide the ones not needed
-  d->storage_extra_container = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_PIXEL_APPLY_DPI(5));
+  d->storage_extra_container = gtk_stack_new();
   gtk_box_pack_start(GTK_BOX(self->widget), d->storage_extra_container, TRUE, TRUE, 0);
   GList *it = g_list_first(darktable.imageio->plugins_storage);
   if(it != NULL) do
@@ -514,9 +509,7 @@ void gui_init(dt_lib_module_t *self)
     dt_bauhaus_combobox_add(d->storage, module->name(module));
     if(module->widget)
     {
-      gtk_box_pack_start(GTK_BOX(d->storage_extra_container), module->widget, TRUE, TRUE, 0);
-      gtk_widget_hide(module->widget);
-      gtk_widget_set_no_show_all(module->widget, TRUE);
+      gtk_container_add(GTK_CONTAINER(d->storage_extra_container), module->widget);
     }
   } while((it = g_list_next(it)));
 
