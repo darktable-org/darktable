@@ -275,7 +275,6 @@ static void dt_iop_colorreconstruct_bilateral_blur(dt_iop_colorreconstruct_bilat
 static void dt_iop_colorreconstruct_bilateral_slice(const dt_iop_colorreconstruct_bilateral_t *const b, const float *const in, float *out,
                                                     const float threshold)
 {
-  const dt_iop_colorreconstruct_Lab_t neutral = { 50.0f, 0.0f, 0.0f, 1.0f };
   const int ox = 1;
   const int oy = b->size_x;
   const int oz = b->size_y * b->size_x;
@@ -304,48 +303,45 @@ static void dt_iop_colorreconstruct_bilateral_slice(const dt_iop_colorreconstruc
       const float zf = z - zi;
       const size_t gi = xi + b->size_x * (yi + b->size_y * zi);
 
-      dt_iop_colorreconstruct_Lab_t ci   = (b->buf[gi]).weight > 0.0f ? b->buf[gi] : neutral;
-      dt_iop_colorreconstruct_Lab_t ciox = (b->buf[gi + ox]).weight > 0.0f ? b->buf[gi + ox] : neutral;
-      dt_iop_colorreconstruct_Lab_t cioy = (b->buf[gi + oy]).weight > 0.0f ? b->buf[gi + oy] : neutral;
-      dt_iop_colorreconstruct_Lab_t cioz = (b->buf[gi + oz]).weight > 0.0f ? b->buf[gi + oz] : neutral;
+      const float Lout =   b->buf[gi].L * (1.0f - xf) * (1.0f - yf) * (1.0f - zf)
+                         + b->buf[gi + ox].L * (xf) * (1.0f - yf) * (1.0f - zf)
+                         + b->buf[gi + oy].L * (1.0f - xf) * (yf) * (1.0f - zf)
+                         + b->buf[gi + ox + oy].L * (xf) * (yf) * (1.0f - zf)
+                         + b->buf[gi + oz].L * (1.0f - xf) * (1.0f - yf) * (zf)
+                         + b->buf[gi + ox + oz].L * (xf) * (1.0f - yf) * (zf)
+                         + b->buf[gi + oy + oz].L * (1.0f - xf) * (yf) * (zf)
+                         + b->buf[gi + ox + oy + oz].L * (xf) * (yf) * (zf);
 
-      dt_iop_colorreconstruct_Lab_t cioxoy = (b->buf[gi + ox + oy]).weight > 0.0f ? b->buf[gi + ox + oy] : neutral;
-      dt_iop_colorreconstruct_Lab_t cioxoz = (b->buf[gi + ox + oz]).weight > 0.0f ? b->buf[gi + ox + oz] : neutral;
-      dt_iop_colorreconstruct_Lab_t cioyoz = (b->buf[gi + oy + oz]).weight > 0.0f ? b->buf[gi + oy + oz] : neutral;
-
-      dt_iop_colorreconstruct_Lab_t cioxoyoz = (b->buf[gi + ox + oy + oz]).weight > 0.0f ? b->buf[gi + ox + oy + oz] : neutral;
-
-      const float Lout =   ci.L/ci.weight * (1.0f - xf) * (1.0f - yf) * (1.0f - zf)
-                         + ciox.L/ciox.weight * (xf) * (1.0f - yf) * (1.0f - zf)
-                         + cioy.L/cioy.weight * (1.0f - xf) * (yf) * (1.0f - zf)
-                         + cioxoy.L/cioxoy.weight * (xf) * (yf) * (1.0f - zf)
-                         + cioz.L/cioz.weight * (1.0f - xf) * (1.0f - yf) * (zf)
-                         + cioxoz.L/cioxoz.weight * (xf) * (1.0f - yf) * (zf)
-                         + cioyoz.L/cioyoz.weight * (1.0f - xf) * (yf) * (zf)
-                         + cioxoyoz.L/cioxoyoz.weight * (xf) * (yf) * (zf);
-
-      const float aout =   ci.a/ci.weight * (1.0f - xf) * (1.0f - yf) * (1.0f - zf)
-                         + ciox.a/ciox.weight * (xf) * (1.0f - yf) * (1.0f - zf)
-                         + cioy.a/cioy.weight * (1.0f - xf) * (yf) * (1.0f - zf)
-                         + cioxoy.a/cioxoy.weight * (xf) * (yf) * (1.0f - zf)
-                         + cioz.a/cioz.weight * (1.0f - xf) * (1.0f - yf) * (zf)
-                         + cioxoz.a/cioxoz.weight * (xf) * (1.0f - yf) * (zf)
-                         + cioyoz.a/cioyoz.weight * (1.0f - xf) * (yf) * (zf)
-                         + cioxoyoz.a/cioxoyoz.weight * (xf) * (yf) * (zf);
+      const float aout =   b->buf[gi].a * (1.0f - xf) * (1.0f - yf) * (1.0f - zf)
+                         + b->buf[gi + ox].a * (xf) * (1.0f - yf) * (1.0f - zf)
+                         + b->buf[gi + oy].a * (1.0f - xf) * (yf) * (1.0f - zf)
+                         + b->buf[gi + ox + oy].a * (xf) * (yf) * (1.0f - zf)
+                         + b->buf[gi + oz].a * (1.0f - xf) * (1.0f - yf) * (zf)
+                         + b->buf[gi + ox + oz].a * (xf) * (1.0f - yf) * (zf)
+                         + b->buf[gi + oy + oz].a * (1.0f - xf) * (yf) * (zf)
+                         + b->buf[gi + ox + oy + oz].a * (xf) * (yf) * (zf);
 
 
-      const float bout =   ci.b/ci.weight * (1.0f - xf) * (1.0f - yf) * (1.0f - zf)
-                         + ciox.b/ciox.weight * (xf) * (1.0f - yf) * (1.0f - zf)
-                         + cioy.b/cioy.weight * (1.0f - xf) * (yf) * (1.0f - zf)
-                         + cioxoy.b/cioxoy.weight * (xf) * (yf) * (1.0f - zf)
-                         + cioz.b/cioz.weight * (1.0f - xf) * (1.0f - yf) * (zf)
-                         + cioxoz.b/cioxoz.weight * (xf) * (1.0f - yf) * (zf)
-                         + cioyoz.b/cioyoz.weight * (1.0f - xf) * (yf) * (zf)
-                         + cioxoyoz.b/cioxoyoz.weight * (xf) * (yf) * (zf);
+      const float bout =   b->buf[gi].b * (1.0f - xf) * (1.0f - yf) * (1.0f - zf)
+                         + b->buf[gi + ox].b * (xf) * (1.0f - yf) * (1.0f - zf)
+                         + b->buf[gi + oy].b * (1.0f - xf) * (yf) * (1.0f - zf)
+                         + b->buf[gi + ox + oy].b * (xf) * (yf) * (1.0f - zf)
+                         + b->buf[gi + oz].b * (1.0f - xf) * (1.0f - yf) * (zf)
+                         + b->buf[gi + ox + oz].b * (xf) * (1.0f - yf) * (zf)
+                         + b->buf[gi + oy + oz].b * (1.0f - xf) * (yf) * (zf)
+                         + b->buf[gi + ox + oy + oz].b * (xf) * (yf) * (zf);
 
+      const float weight = b->buf[gi].weight * (1.0f - xf) * (1.0f - yf) * (1.0f - zf)
+                         + b->buf[gi + ox].weight * (xf) * (1.0f - yf) * (1.0f - zf)
+                         + b->buf[gi + oy].weight * (1.0f - xf) * (yf) * (1.0f - zf)
+                         + b->buf[gi + ox + oy].weight * (xf) * (yf) * (1.0f - zf)
+                         + b->buf[gi + oz].weight * (1.0f - xf) * (1.0f - yf) * (zf)
+                         + b->buf[gi + ox + oz].weight * (xf) * (1.0f - yf) * (zf)
+                         + b->buf[gi + oy + oz].weight * (1.0f - xf) * (yf) * (zf)
+                         + b->buf[gi + ox + oy + oz].weight * (xf) * (yf) * (zf);
 
-      out[index + 1] = ain * (1.0f - blend) + aout * Lin/Lout * blend;
-      out[index + 2] = bin * (1.0f - blend) + bout * Lin/Lout * blend;
+      out[index + 1] = (weight > 0.0f) ? ain * (1.0f - blend) + aout * Lin/Lout * blend : ain;
+      out[index + 2] = (weight > 0.0f) ? bin * (1.0f - blend) + bout * Lin/Lout * blend : bin;
     }
   }
 }
