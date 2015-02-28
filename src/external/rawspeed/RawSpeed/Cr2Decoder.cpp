@@ -225,13 +225,10 @@ void Cr2Decoder::checkSupportInternal(CameraMetaData *meta) {
   string make = data[0]->getEntry(MAKE)->getString();
   string model = data[0]->getEntry(MODEL)->getString();
 
-  if (model != "Canon EOS-1DS" && model != "Canon EOS-1D" && model != "EOS D2000C") {
-    data = mRootIFD->getIFDsWithTag((TiffTag)0xc5d8);
-    if (data.empty())
-      ThrowRDE("CR2 Decoder: No image data found");
-
+  // Check for sRaw mode
+  data = mRootIFD->getIFDsWithTag((TiffTag)0xc5d8);
+  if (!data.empty()) {
     TiffIFD* raw = data[0];
-
     if (raw->hasEntry((TiffTag)0xc6c5)) {
       ushort16 ss = raw->getEntry((TiffTag)0xc6c5)->getInt();
       if (ss == 4) {
