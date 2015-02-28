@@ -27,32 +27,17 @@
 
 namespace RawSpeed {
 
-typedef struct {
-  uint32 fsize;
-  ushort16 width, height;
-  uchar8 lm, tm, rm, bm, lf, cf, max, flags;
-  char make[10], model[20];
-  ushort16 offset;
-} naked_camera_t;
-
 class NakedDecoder :
   public RawDecoder
 {
 public:
-  NakedDecoder(FileMap* file);
+  NakedDecoder(FileMap* file, Camera *c);
   virtual ~NakedDecoder(void);
   virtual RawImage decodeRawInternal();
   virtual void checkSupportInternal(CameraMetaData *meta);
   virtual void decodeMetaDataInternal(CameraMetaData *meta);
-  static int couldBeNakedRaw(FileMap* input);
 protected:
-  virtual void identifyFile();
-  char *make;
-  char *model;
-  uint32 width;
-  uint32 height;
-  uint32 offset;
-  uint32 bits;
+  Camera *cam;
 };
 
 } // namespace RawSpeed

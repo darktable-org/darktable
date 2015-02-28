@@ -69,6 +69,16 @@ bool CameraMetaData::hasCamera(string make, string model, string mode) {
   return TRUE;
 }
 
+Camera* CameraMetaData::getChdkCamera(uint32 filesize) {
+  if (chdkCameras.end() == chdkCameras.find(filesize))
+    return NULL;
+  return chdkCameras[filesize];
+}
+
+bool CameraMetaData::hasChdkCamera(uint32 filesize) {
+  return chdkCameras.end() != chdkCameras.find(filesize);
+}
+
 void CameraMetaData::addCamera( Camera* cam )
 {
   string id = string(cam->make).append(cam->model).append(cam->mode);
@@ -77,6 +87,17 @@ void CameraMetaData::addCamera( Camera* cam )
     delete(cam);
   } else {
     cameras[id] = cam;
+  }
+  if (0 == cam->mode.compare("chdk")) {
+    if (cam->hints.find("filesize") == cam->hints.end()) {
+      writeLog(DEBUG_PRIO_WARNING, "CameraMetaData: CHDK camera: %s %s, no \"filesize\" hint set!\n", cam->make.c_str(), cam->model.c_str());
+    } else {
+      uint32 size;
+      stringstream fsize(cam->hints.find("filesize")->second);
+      fsize >> size;
+      chdkCameras[size] = cam;
+      // writeLog(DEBUG_PRIO_WARNING, "CHDK camera: %s %s size:%u\n", cam->make.c_str(), cam->model.c_str(), size);
+    }
   }
 }
 
