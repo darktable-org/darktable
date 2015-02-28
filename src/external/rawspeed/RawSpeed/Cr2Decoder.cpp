@@ -1,6 +1,7 @@
 #include "StdAfx.h"
 #include "Cr2Decoder.h"
 #include "TiffParserHeaderless.h"
+#include "ByteStreamSwap.h"
 
 /*
     RawSpeed - RAW file decoder.
@@ -29,7 +30,7 @@ namespace RawSpeed {
 
 Cr2Decoder::Cr2Decoder(TiffIFD *rootIFD, FileMap* file) :
     RawDecoder(file), mRootIFD(rootIFD) {
-  decoderVersion = 4;
+  decoderVersion = 5;
 }
 
 Cr2Decoder::~Cr2Decoder(void) {
@@ -39,6 +40,43 @@ Cr2Decoder::~Cr2Decoder(void) {
 }
 
 RawImage Cr2Decoder::decodeRawInternal() {
+  if(hints.find("old_format") != hints.end()) {
+    TiffEntry *offset = mRootIFD->getEntryRecursive((TiffTag)0x81);
+    if (!offset)
+      ThrowRDE("CR2 Decoder: Couldn't find offset");
+    uint32 off = offset->getInt();
+    ByteStream *b;
+    if (getHostEndianness() == big)
+      b = new ByteStream(mFile->getData(off+41), mFile->getSize());
+    else
+      b = new ByteStreamSwap(mFile->getData(off+41), mFile->getSize());
+    uint32 height = b->getShort()*2;
+    uint32 width = b->getShort();
+
+    // Every two lines are encoded as a single line, probably to try and get
+    // better compression by getting the same RGBG sequence in every line
+    mRaw->dim = iPoint2D(width*2, height/2);
+    mRaw->createData();
+    LJpegPlain l(mFile, mRaw);
+    l.startDecoder(off, mFile->getSize()-off, 0, 0);
+
+    // We now have a double width half height image we need to convert to the
+    // normal format
+    iPoint2D final_size(width, height);
+    RawImage procRaw = RawImage::create(final_size, TYPE_USHORT16, 1);
+    procRaw->clearArea(iRectangle2D(iPoint2D(0,0), procRaw->dim));
+    procRaw->metadata = mRaw->metadata;
+
+    for (uint32 y = 0; y < height; y++) {
+      ushort16 *dst = (ushort16*)procRaw->getData(0,y);
+      ushort16 *src = (ushort16*)mRaw->getData(y%2 == 0 ? 0 : width, y/2);
+      for (uint32 x = 0; x < width; x++)
+        dst[x] = src[x];
+    }
+    mRaw = procRaw;
+
+    return mRaw;
+  }
 
   vector<TiffIFD*> data = mRootIFD->getIFDsWithTag((TiffTag)0xc5d8);
 
@@ -153,18 +191,20 @@ void Cr2Decoder::checkSupportInternal(CameraMetaData *meta) {
     ThrowRDE("CR2 Support: Make name not found");
   string make = data[0]->getEntry(MAKE)->getString();
   string model = data[0]->getEntry(MODEL)->getString();
-  data = mRootIFD->getIFDsWithTag((TiffTag)0xc5d8);
 
-  if (data.empty())
-    ThrowRDE("CR2 Decoder: No image data found");
+  if (model != "Canon EOS-1DS" && model != "Canon EOS-1D") {
+    data = mRootIFD->getIFDsWithTag((TiffTag)0xc5d8);
+    if (data.empty())
+      ThrowRDE("CR2 Decoder: No image data found");
 
-  TiffIFD* raw = data[0];
+    TiffIFD* raw = data[0];
 
-  if (raw->hasEntry((TiffTag)0xc6c5)) {
-    ushort16 ss = raw->getEntry((TiffTag)0xc6c5)->getInt();
-    if (ss == 4) {
-      this->checkCameraSupported(meta, make, model, "sRaw1");
-      return;
+    if (raw->hasEntry((TiffTag)0xc6c5)) {
+      ushort16 ss = raw->getEntry((TiffTag)0xc6c5)->getInt();
+      if (ss == 4) {
+        this->checkCameraSupported(meta, make, model, "sRaw1");
+        return;
+      }
     }
   }
   this->checkCameraSupported(meta, make, model, "");
