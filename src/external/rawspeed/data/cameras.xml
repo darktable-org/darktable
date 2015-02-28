@@ -703,7 +703,7 @@
 		<Sensor black="96" white="4095"/>
 		<Hints>
 			<Hint name="old_format" value=""/>
-      <Hint name="override_whitebalance" value="1098961,1000000,1712802"/>
+      <Hint name="override_whitebalance" value="1003807,1000000,2468898"/>
 		</Hints>
 	</Camera>
 	<Camera make="Canon" model="Canon EOS-1D Mark II">
