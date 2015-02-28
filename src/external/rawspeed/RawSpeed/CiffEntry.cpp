@@ -28,6 +28,7 @@ namespace RawSpeed {
 
 CiffEntry::CiffEntry(FileMap* f, uint32 value_data, uint32 offset) {
   own_data = NULL;
+  CHECKSIZE(offset);
   unsigned short p = *(unsigned short*)f->getData(offset);
   tag = (CiffTag) (p & 0x3fff);
   ushort16 datalocation = (p & 0xc000);
@@ -36,6 +37,10 @@ CiffEntry::CiffEntry(FileMap* f, uint32 value_data, uint32 offset) {
     count = *(int*)f->getData(offset + 2);
     data_offset = *(uint32*)f->getData(offset + 6) + value_data;
     CHECKSIZE(data_offset);
+    CHECKSIZE(data_offset + count);
+    if (data_offset + count < data_offset) {
+      ThrowCPE("CRW data offset+count overflows");
+    }
     data = f->getDataWrt(data_offset);
   } else if (datalocation == 0x4000) { // Data is stored directly in entry
     data_offset = offset +2;
