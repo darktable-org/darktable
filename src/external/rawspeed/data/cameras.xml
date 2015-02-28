@@ -1497,9 +1497,6 @@
 		</CFA>
 		<Crop x="0" y="0" width="4320" height="2868"/>
 		<Sensor black="0" white="15236"/>
-		<Hints>
-			<Hint name="override_whitebalance" value="2093285,1000000,1055975"/>
-		</Hints>
 	</Camera>
 	<Camera make="NIKON CORPORATION" model="NIKON D300S">
 		<CFA width="2" height="2">
