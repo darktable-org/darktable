@@ -41,39 +41,60 @@ Cr2Decoder::~Cr2Decoder(void) {
 
 RawImage Cr2Decoder::decodeRawInternal() {
   if(hints.find("old_format") != hints.end()) {
-    TiffEntry *offset = mRootIFD->getEntryRecursive((TiffTag)0x81);
-    if (!offset)
-      ThrowRDE("CR2 Decoder: Couldn't find offset");
-    uint32 off = offset->getInt();
+    uint32 off = 0;
+    if (mRootIFD->getEntryRecursive((TiffTag)0x81))
+      off = mRootIFD->getEntryRecursive((TiffTag)0x81)->getInt();
+    else {
+      vector<TiffIFD*> data = mRootIFD->getIFDsWithTag(CFAPATTERN);
+      if (data.empty())
+        ThrowRDE("CR2 Decoder: Couldn't find offset");
+      else {
+        if (mRootIFD->getEntryRecursive(STRIPOFFSETS))
+          off = data[0]->getEntryRecursive(STRIPOFFSETS)->getInt();
+        else
+          ThrowRDE("CR2 Decoder: Couldn't find offset");
+      }
+    }
+
     ByteStream *b;
     if (getHostEndianness() == big)
       b = new ByteStream(mFile->getData(off+41), mFile->getSize());
     else
       b = new ByteStreamSwap(mFile->getData(off+41), mFile->getSize());
-    uint32 height = b->getShort()*2;
+    uint32 height = b->getShort();
     uint32 width = b->getShort();
 
-    // Every two lines are encoded as a single line, probably to try and get
+    // Every two lines can be encoded as a single line, probably to try and get
     // better compression by getting the same RGBG sequence in every line
-    mRaw->dim = iPoint2D(width*2, height/2);
+    if(hints.find("double_line_ljpeg") != hints.end()) {
+      height *= 2;
+      mRaw->dim = iPoint2D(width*2, height/2);
+    }
+    else {
+      width *= 2;
+      mRaw->dim = iPoint2D(width, height);
+    }
+
     mRaw->createData();
     LJpegPlain l(mFile, mRaw);
     l.startDecoder(off, mFile->getSize()-off, 0, 0);
 
-    // We now have a double width half height image we need to convert to the
-    // normal format
-    iPoint2D final_size(width, height);
-    RawImage procRaw = RawImage::create(final_size, TYPE_USHORT16, 1);
-    procRaw->clearArea(iRectangle2D(iPoint2D(0,0), procRaw->dim));
-    procRaw->metadata = mRaw->metadata;
+    if(hints.find("double_line_ljpeg") != hints.end()) {
+      // We now have a double width half height image we need to convert to the
+      // normal format
+      iPoint2D final_size(width, height);
+      RawImage procRaw = RawImage::create(final_size, TYPE_USHORT16, 1);
+      procRaw->clearArea(iRectangle2D(iPoint2D(0,0), procRaw->dim));
+      procRaw->metadata = mRaw->metadata;
 
-    for (uint32 y = 0; y < height; y++) {
-      ushort16 *dst = (ushort16*)procRaw->getData(0,y);
-      ushort16 *src = (ushort16*)mRaw->getData(y%2 == 0 ? 0 : width, y/2);
-      for (uint32 x = 0; x < width; x++)
-        dst[x] = src[x];
+      for (uint32 y = 0; y < height; y++) {
+        ushort16 *dst = (ushort16*)procRaw->getData(0,y);
+        ushort16 *src = (ushort16*)mRaw->getData(y%2 == 0 ? 0 : width, y/2);
+        for (uint32 x = 0; x < width; x++)
+          dst[x] = src[x];
+      }
+      mRaw = procRaw;
     }
-    mRaw = procRaw;
 
     return mRaw;
   }
@@ -192,7 +213,7 @@ void Cr2Decoder::checkSupportInternal(CameraMetaData *meta) {
   string make = data[0]->getEntry(MAKE)->getString();
   string model = data[0]->getEntry(MODEL)->getString();
 
-  if (model != "Canon EOS-1DS" && model != "Canon EOS-1D") {
+  if (model != "Canon EOS-1DS" && model != "Canon EOS-1D" && model != "EOS D2000C") {
     data = mRootIFD->getIFDsWithTag((TiffTag)0xc5d8);
     if (data.empty())
       ThrowRDE("CR2 Decoder: No image data found");

@@ -675,6 +675,7 @@
 		<Sensor black="0" white="3588"/>
 		<Hints>
 			<Hint name="old_format" value=""/>
+			<Hint name="double_line_ljpeg" value=""/>
 		</Hints>
 	</Camera>
 	<Camera make="Canon" model="Canon EOS-1DS" decoder_version="5">
@@ -688,6 +689,21 @@
 		<Sensor black="0" white="3500"/>
 		<Hints>
 			<Hint name="old_format" value=""/>
+			<Hint name="double_line_ljpeg" value=""/>
+		</Hints>
+	</Camera>
+	<Camera make="Canon" model="EOS D2000C" decoder_version="5">
+		<CFA width="2" height="2">
+			<Color x="0" y="0">GREEN</Color>
+			<Color x="1" y="0">RED</Color>
+			<Color x="0" y="1">BLUE</Color>
+			<Color x="1" y="1">GREEN</Color>
+		</CFA>
+		<Crop x="0" y="0" width="0" height="0"/>
+		<Sensor black="96" white="4095"/>
+		<Hints>
+			<Hint name="old_format" value=""/>
+      <Hint name="override_whitebalance" value="1098961,1000000,1712802"/>
 		</Hints>
 	</Camera>
 	<Camera make="Canon" model="Canon EOS-1D Mark II">
