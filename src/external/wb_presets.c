@@ -4811,6 +4811,12 @@ const wb_data wb_preset[] =
   { "Panasonic", "DMC-LX7", Incandescent, 0,	{ 1.2917, 1, 2.7841, 0 } },
   { "Panasonic", "DMC-LX7", Incandescent, 9,	{ 1.1434, 1, 3.2755, 0 } },
 
+  { "Panasonic", "DMC-LX100", Daylight, 0,	{ 2.316406, 1, 1.601563, 0 } },
+  { "Panasonic", "DMC-LX100", Cloudy, 0,	{ 2.468750, 1, 1.484375, 0 } },
+  { "Panasonic", "DMC-LX100", Shade, 0,		{ 2.640625, 1, 1.410156, 0 } },
+  { "Panasonic", "DMC-LX100", Flash, 0,		{ 2.410156, 1, 1.578125, 0 } },
+  { "Panasonic", "DMC-LX100", Incandescent, 0,	{ 1.585938, 1, 2.382813, 0 } },
+
   { "LEICA", "D-LUX 6", Daylight, 0,		{ 1.992453, 1, 1.750943, 0 } },
   { "LEICA", "D-LUX 6", Cloudy, 0,		{ 2.143396, 1, 1.603774, 0 } },
   { "LEICA", "D-LUX 6", Shade, 0,		{ 2.286792, 1, 1.498113, 0 } },
