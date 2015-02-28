@@ -690,7 +690,6 @@
 			<Hint name="old_format" value=""/>
 		</Hints>
 	</Camera>
-
 	<Camera make="Canon" model="Canon EOS-1D Mark II">
 		<CFA width="2" height="2">
 			<Color x="0" y="0">RED</Color>
