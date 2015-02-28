@@ -96,6 +96,18 @@ RawImage Cr2Decoder::decodeRawInternal() {
       mRaw = procRaw;
     }
 
+    if (!uncorrectedRawValues && mRootIFD->getEntryRecursive((TiffTag)0x123)) {
+      TiffEntry *curve = mRootIFD->getEntryRecursive((TiffTag)0x123);
+      if (curve->type == TIFF_SHORT && curve->count == 4096) {
+        const ushort16 *linearization = mRootIFD->getEntryRecursive((TiffTag)0x123)->getShortArray();
+        for (uint32 y = 0; y < height; y++) {
+          ushort16 *img = (ushort16*)mRaw->getData(0,y);
+          for (uint32 x = 0; x < width; x++)
+            img[x] = linearization[img[x]];
+        }
+      }
+    }
+
     return mRaw;
   }
 
