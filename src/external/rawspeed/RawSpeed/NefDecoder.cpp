@@ -531,9 +531,9 @@ void NefDecoder::decodeMetaDataInternal(CameraMetaData *meta) {
 
         // Finally set the WB coeffs
         uint32 off = (version == 0x204) ? 6 : 14;
-        mRaw->metadata.wbCoeffs[0] = get2BE(buf, off);
-        mRaw->metadata.wbCoeffs[1] = get2BE(buf, off+2);
-        mRaw->metadata.wbCoeffs[2] = get2BE(buf, off+6);
+        mRaw->metadata.wbCoeffs[0] = (float)get2BE(buf, off);
+        mRaw->metadata.wbCoeffs[1] = (float)get2BE(buf, off+2);
+        mRaw->metadata.wbCoeffs[2] = (float)get2BE(buf, off+6);
       }
     }
   } else if (mRootIFD->hasEntryRecursive((TiffTag)0x0014)) {
