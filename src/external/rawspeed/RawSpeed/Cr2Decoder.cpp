@@ -299,6 +299,15 @@ void Cr2Decoder::decodeMetaDataInternal(CameraMetaData *meta) {
       } else {
         writeLog(DEBUG_PRIO_INFO, "CR2 Decoder: CANONPOWERSHOTG9WB has to be BYTE, %d found.", g9_wb->type);
       }
+    } else if (mRootIFD->hasEntryRecursive((TiffTag) 0xa4)) {
+      // WB for the old 1D and 1DS
+      TiffEntry *wb = mRootIFD->getEntryRecursive((TiffTag) 0xa4);
+      if (wb->count >= 3) {
+        const ushort16 *tmp = wb->getShortArray();
+        mRaw->metadata.wbCoeffs[0] = (float)tmp[0];
+        mRaw->metadata.wbCoeffs[1] = (float)tmp[1];
+        mRaw->metadata.wbCoeffs[2] = (float)tmp[2];
+      }
     }
   }
 
