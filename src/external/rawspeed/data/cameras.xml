@@ -6550,8 +6550,8 @@
 	</Camera>
 	<Camera make="Canon" model="PowerShot A720 IS" mode="chdk">
 		<CFA2 width="2" height="2">
-			<ColorRow y="0">RG</ColorRow>
-			<ColorRow y="1">GB</ColorRow>
+			<ColorRow y="0">GB</ColorRow>
+			<ColorRow y="1">RG</ColorRow>
 		</CFA2>
 		<Crop x="6" y="5" width="-32" height="-3"/>
 		<Sensor black="0" white="1023"/>
