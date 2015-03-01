@@ -863,7 +863,7 @@
 			<Hint name="override_whitebalance" value="2185173,1000000,1342573"/>
 		</Hints>
 		<BlackAreas>
-			<Vertical x="-50" width="50"/>
+			<Vertical x="3294" width="50"/>
 		</BlackAreas>
 	</Camera>
 	<Camera make="Canon" model="Canon PowerShot G1">
@@ -879,7 +879,7 @@
 			<Hint name="no_decompressed_lowbits" value=""/>
 		</Hints>
 		<BlackAreas>
-			<Vertical x="-50" width="50"/>
+			<Vertical x="2094" width="50"/>
 		</BlackAreas>
 	</Camera>
 	<Camera make="Canon" model="Canon PowerShot G2">
@@ -895,7 +895,7 @@
 			<Hint name="no_decompressed_lowbits" value=""/>
 		</Hints>
 		<BlackAreas>
-			<Vertical x="-50" width="50"/>
+			<Vertical x="2326" width="50"/>
 			<Horizontal y="0" height="10"/>
 		</BlackAreas>
 	</Camera>
@@ -912,7 +912,7 @@
 			<Hint name="override_whitebalance" value="1757692,1000000,2071795"/>
 		</Hints>
 		<BlackAreas>
-			<Vertical x="-50" width="50"/>
+			<Vertical x="2326" width="50"/>
 			<Horizontal y="0" height="10"/>
 		</BlackAreas>
 	</Camera>
@@ -929,7 +929,7 @@
 			<Hint name="override_whitebalance" value="1984870,1000000,1237501"/>
 		</Hints>
 		<BlackAreas>
-			<Vertical x="-40" width="40"/>
+			<Vertical x="2632" width="40"/>
 			<Horizontal y="0" height="10"/>
 		</BlackAreas>
 	</Camera>
@@ -1117,7 +1117,7 @@
 			<Hint name="no_decompressed_lowbits" value=""/>
 		</Hints>
 		<BlackAreas>
-			<Vertical x="-50" width="50"/>
+			<Vertical x="2094" width="50"/>
 		</BlackAreas>
 	</Camera>
 	<Camera make="Canon" model="Canon PowerShot S40">
@@ -1133,7 +1133,7 @@
 			<Hint name="no_decompressed_lowbits" value=""/>
 		</Hints>
 		<BlackAreas>
-			<Vertical x="-50" width="50"/>
+			<Vertical x="2326" width="50"/>
 			<Horizontal y="0" height="10"/>
 		</BlackAreas>
 	</Camera>
@@ -1150,7 +1150,7 @@
 			<Hint name="override_whitebalance" value="2466639,1000000,1153626"/>
 		</Hints>
 		<BlackAreas>
-			<Vertical x="-50" width="50"/>
+			<Vertical x="2326" width="50"/>
 		</BlackAreas>
 	</Camera>
 	<Camera make="Canon" model="Canon PowerShot S50">
@@ -1166,7 +1166,7 @@
 			<Hint name="override_whitebalance" value="2168080,1000000,1356259"/>
 		</Hints>
 		<BlackAreas>
-			<Vertical x="-40" width="40"/>
+			<Vertical x="2632" width="40"/>
 			<Horizontal y="0" height="10"/>
 		</BlackAreas>
 	</Camera>
@@ -1183,7 +1183,7 @@
 			<Hint name="override_whitebalance" value="2143041,1000000,1136598"/>
 		</Hints>
 		<BlackAreas>
-			<Vertical x="-40" width="40"/>
+			<Vertical x="2632" width="40"/>
 			<Horizontal y="0" height="10"/>
 		</BlackAreas>
 	</Camera>
@@ -6485,7 +6485,7 @@
 			<Hint name="override_whitebalance" value="1564987,1000000,1710746"/>
 		</Hints>
 		<BlackAreas>
-			<Vertical x="-40" width="40"/>
+			<Vertical x="2632" width="40"/>
 		</BlackAreas>
 	</Camera>
 	<Camera make="Canon" model="PowerShot A530" mode="chdk">
@@ -6562,7 +6562,7 @@
 			<Hint name="override_whitebalance" value="1524730,1000000,2009988"/>
 		</Hints>
 		<BlackAreas>
-			<Vertical x="-30" width="30"/>
+			<Vertical x="3306" width="30"/>
 		</BlackAreas>
 	</Camera>
 	<Camera make="Canon" model="PowerShot A630" mode="chdk">
@@ -6596,7 +6596,7 @@
 			<Hint name="override_whitebalance" value="1838080,1000000,1556674"/>
 		</Hints>
 		<BlackAreas>
-			<Vertical x="-50" width="50"/>
+			<Vertical x="3686" width="50"/>
 		</BlackAreas>
 	</Camera>
 	<Camera make="Canon" model="PowerShot A650" mode="chdk">
@@ -6630,7 +6630,7 @@
 			<Hint name="override_whitebalance" value="1614148,979180,2115417"/>
 		</Hints>
 		<BlackAreas>
-			<Vertical x="-30" width="30"/>
+			<Vertical x="3690" width="30"/>
 		</BlackAreas>
 	</Camera>
 	<Camera make="Canon" model="PowerShot SX120 IS" mode="chdk">
