@@ -36,6 +36,9 @@
 #include <gtk/gtk.h>
 #include <inttypes.h>
 
+#define DT_COMMON_BILATERAL_MAX_RES_S 1000
+#define DT_COMMON_BILATERAL_MAX_RES_R 200
+
 DT_MODULE_INTROSPECTION(1, dt_iop_colorreconstruct_params_t)
 
 typedef struct dt_iop_colorreconstruct_params_t
@@ -61,7 +64,10 @@ typedef struct dt_iop_colorreconstruct_data_t
 
 typedef struct dt_iop_colorreconstruct_global_data_t
 {
-  int kernel_colorreconstruct;
+  int kernel_colorreconstruct_zero;
+  int kernel_colorreconstruct_splat;
+  int kernel_colorreconstruct_blur_line;
+  int kernel_colorreconstruct_slice;
 } dt_iop_colorreconstruct_global_data_t;
 
 
@@ -72,6 +78,8 @@ const char *name()
 
 int flags()
 {
+  // we do not allow tiling. reason: this module needs to see the full surrounding of highlights.
+  // if we would split into tiles, each tile would result in different color corrections
   return IOP_FLAGS_INCLUDE_IN_STYLES | IOP_FLAGS_SUPPORTS_BLENDING;
 }
 
@@ -83,7 +91,7 @@ int groups()
 
 void init_key_accels(dt_iop_module_so_t *self)
 {
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "threshold"));
+  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "luma threshold"));
   dt_accel_register_slider_iop(self, FALSE, NC_("accel", "spatial blur"));
   dt_accel_register_slider_iop(self, FALSE, NC_("accel", "range blur"));
 }
@@ -92,15 +100,10 @@ void connect_key_accels(dt_iop_module_t *self)
 {
   dt_iop_colorreconstruct_gui_data_t *g = (dt_iop_colorreconstruct_gui_data_t *)self->gui_data;
 
-  dt_accel_connect_slider_iop(self, "threshold", GTK_WIDGET(g->threshold));
+  dt_accel_connect_slider_iop(self, "luma threshold", GTK_WIDGET(g->threshold));
   dt_accel_connect_slider_iop(self, "spatial blur", GTK_WIDGET(g->spatial));
   dt_accel_connect_slider_iop(self, "range blur", GTK_WIDGET(g->range));
 }
-
-
-
-#define DT_COMMON_BILATERAL_MAX_RES_S 3000
-#define DT_COMMON_BILATERAL_MAX_RES_R 200
 
 typedef struct dt_iop_colorreconstruct_Lab_t
 {
@@ -375,6 +378,334 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *
   dt_iop_colorreconstruct_bilateral_free(b);
 }
 
+#ifdef HAVE_OPENCL
+typedef struct dt_iop_colorreconstruct_bilateral_cl_t
+{
+  dt_iop_colorreconstruct_global_data_t *global;
+  int devid;
+  size_t size_x, size_y, size_z;
+  int width, height;
+  size_t blocksizex, blocksizey;
+  float sigma_s, sigma_r;
+  cl_mem dev_grid;
+  cl_mem dev_grid_tmp;
+} dt_iop_colorreconstruct_bilateral_cl_t;
+
+static void dt_iop_colorreconstruct_bilateral_free_cl(dt_iop_colorreconstruct_bilateral_cl_t *b)
+{
+  if(!b) return;
+  // be sure we're done with the memory:
+  dt_opencl_finish(b->devid);
+  // free device mem
+  if(b->dev_grid) dt_opencl_release_mem_object(b->dev_grid);
+  if(b->dev_grid_tmp) dt_opencl_release_mem_object(b->dev_grid_tmp);
+  free(b);
+}
+
+static dt_iop_colorreconstruct_bilateral_cl_t *dt_iop_colorreconstruct_bilateral_init_cl(
+                                        const int devid,
+                                        dt_iop_colorreconstruct_global_data_t *global,
+                                        const int width,     // width of input image
+                                        const int height,    // height of input image
+                                        const float sigma_s, // spatial sigma (blur pixel coords)
+                                        const float sigma_r) // range sigma (blur luma values)
+{
+  // check if our device offers enough room for local buffers
+  size_t maxsizes[3] = { 0 };     // the maximum dimensions for a work group
+  size_t workgroupsize = 0;       // the maximum number of items in a work group
+  unsigned long localmemsize = 0; // the maximum amount of local memory we can use
+  size_t kernelworkgroupsize = 0; // the maximum amount of items in work group for this kernel
+
+
+  int blocksizex = 64;
+  int blocksizey = 64;
+
+  if(dt_opencl_get_work_group_limits(devid, maxsizes, &workgroupsize, &localmemsize) == CL_SUCCESS
+     && dt_opencl_get_kernel_work_group_size(devid, global->kernel_colorreconstruct_splat,
+                                             &kernelworkgroupsize) == CL_SUCCESS)
+  {
+    while(maxsizes[0] < blocksizex || maxsizes[1] < blocksizey
+          || localmemsize < blocksizex * blocksizey * (4 * sizeof(float) + sizeof(int))
+          || workgroupsize < blocksizex * blocksizey || kernelworkgroupsize < blocksizex * blocksizey)
+    {
+      if(blocksizex == 1 || blocksizey == 1) break;
+
+      if(blocksizex > blocksizey)
+        blocksizex >>= 1;
+      else
+        blocksizey >>= 1;
+    }
+  }
+  else
+  {
+    dt_print(DT_DEBUG_OPENCL,
+             "[opencl_colorcorrect_bilateral] can not identify resource limits for device %d in bilateral grid\n", devid);
+    return NULL;
+  }
+
+  if(blocksizex * blocksizey < 16 * 16)
+  {
+    dt_print(DT_DEBUG_OPENCL,
+             "[opencl_colorcorrect_bilateral] device %d does not offer sufficient resources to run bilateral grid\n",
+             devid);
+    return NULL;
+  }
+
+  dt_iop_colorreconstruct_bilateral_cl_t *b = (dt_iop_colorreconstruct_bilateral_cl_t *)malloc(sizeof(dt_iop_colorreconstruct_bilateral_cl_t));
+  if(!b) return NULL;
+
+  float _x = roundf(width / sigma_s);
+  float _y = roundf(height / sigma_s);
+  float _z = roundf(100.0f / sigma_r);
+  b->size_x = CLAMPS((int)_x, 4, DT_COMMON_BILATERAL_MAX_RES_S) + 1;
+  b->size_y = CLAMPS((int)_y, 4, DT_COMMON_BILATERAL_MAX_RES_S) + 1;
+  b->size_z = CLAMPS((int)_z, 4, DT_COMMON_BILATERAL_MAX_RES_R) + 1;
+  b->width = width;
+  b->height = height;
+  b->blocksizex = blocksizex;
+  b->blocksizey = blocksizey;
+  b->sigma_s = MAX(height / (b->size_y - 1.0f), width / (b->size_x - 1.0f));
+  b->sigma_r = 100.0f / (b->size_z - 1.0f);
+  b->devid = devid;
+  b->global = global;
+  b->dev_grid = NULL;
+  b->dev_grid_tmp = NULL;
+
+  // alloc grid buffer:
+  b->dev_grid
+      = dt_opencl_alloc_device_buffer(b->devid, (size_t)b->size_x * b->size_y * b->size_z * 4 * sizeof(float));
+  if(!b->dev_grid)
+  {
+    dt_iop_colorreconstruct_bilateral_free_cl(b);
+    return NULL;
+  }
+
+  // alloc temporary grid buffer
+  b->dev_grid_tmp
+      = dt_opencl_alloc_device_buffer(b->devid, (size_t)b->size_x * b->size_y * b->size_z * 4 * sizeof(float));
+  if(!b->dev_grid_tmp)
+  {
+    dt_iop_colorreconstruct_bilateral_free_cl(b);
+    return NULL;
+  }
+
+  // zero out grid
+  int wd = 4 * b->size_x, ht = b->size_y * b->size_z;
+  size_t sizes[] = { ROUNDUPWD(wd), ROUNDUPHT(ht), 1 };
+  dt_opencl_set_kernel_arg(b->devid, b->global->kernel_colorreconstruct_zero, 0, sizeof(cl_mem), (void *)&b->dev_grid);
+  dt_opencl_set_kernel_arg(b->devid, b->global->kernel_colorreconstruct_zero, 1, sizeof(int), (void *)&wd);
+  dt_opencl_set_kernel_arg(b->devid, b->global->kernel_colorreconstruct_zero, 2, sizeof(int), (void *)&ht);
+  cl_int err = -666;
+  err = dt_opencl_enqueue_kernel_2d(b->devid, b->global->kernel_colorreconstruct_zero, sizes);
+  if(err != CL_SUCCESS)
+  {
+    dt_iop_colorreconstruct_bilateral_free_cl(b);
+    return NULL;
+  }
+
+#if 0
+  fprintf(stderr, "[bilateral] created grid [%d %d %d]"
+          " with sigma (%f %f) (%f %f)\n", b->size_x, b->size_y, b->size_z,
+          b->sigma_s, sigma_s, b->sigma_r, sigma_r);
+#endif
+  return b;
+}
+
+static cl_int dt_iop_colorreconstruct_bilateral_splat_cl(dt_iop_colorreconstruct_bilateral_cl_t *b, cl_mem in, const float threshold)
+{
+  cl_int err = -666;
+  size_t sizes[] = { ROUNDUP(b->width, b->blocksizex), ROUNDUP(b->height, b->blocksizey), 1 };
+  size_t local[] = { b->blocksizex, b->blocksizey, 1 };
+  dt_opencl_set_kernel_arg(b->devid, b->global->kernel_colorreconstruct_splat, 0, sizeof(cl_mem), (void *)&in);
+  dt_opencl_set_kernel_arg(b->devid, b->global->kernel_colorreconstruct_splat, 1, sizeof(cl_mem), (void *)&b->dev_grid);
+  dt_opencl_set_kernel_arg(b->devid, b->global->kernel_colorreconstruct_splat, 2, sizeof(int), (void *)&b->width);
+  dt_opencl_set_kernel_arg(b->devid, b->global->kernel_colorreconstruct_splat, 3, sizeof(int), (void *)&b->height);
+  dt_opencl_set_kernel_arg(b->devid, b->global->kernel_colorreconstruct_splat, 4, sizeof(int), (void *)&b->size_x);
+  dt_opencl_set_kernel_arg(b->devid, b->global->kernel_colorreconstruct_splat, 5, sizeof(int), (void *)&b->size_y);
+  dt_opencl_set_kernel_arg(b->devid, b->global->kernel_colorreconstruct_splat, 6, sizeof(int), (void *)&b->size_z);
+  dt_opencl_set_kernel_arg(b->devid, b->global->kernel_colorreconstruct_splat, 7, sizeof(float), (void *)&b->sigma_s);
+  dt_opencl_set_kernel_arg(b->devid, b->global->kernel_colorreconstruct_splat, 8, sizeof(float), (void *)&b->sigma_r);
+  dt_opencl_set_kernel_arg(b->devid, b->global->kernel_colorreconstruct_splat, 9, sizeof(float), (void *)&threshold);
+  dt_opencl_set_kernel_arg(b->devid, b->global->kernel_colorreconstruct_splat, 10, b->blocksizex * b->blocksizey * sizeof(int),
+                           NULL);
+  dt_opencl_set_kernel_arg(b->devid, b->global->kernel_colorreconstruct_splat, 11,
+                           b->blocksizex * b->blocksizey * 4 * sizeof(float), NULL);
+  err = dt_opencl_enqueue_kernel_2d_with_local(b->devid, b->global->kernel_colorreconstruct_splat, sizes, local);
+  return err;
+}
+
+static cl_int dt_iop_colorreconstruct_bilateral_blur_cl(dt_iop_colorreconstruct_bilateral_cl_t *b)
+{
+  cl_int err = -666;
+  size_t sizes[3] = { 0, 0, 1 };
+
+  err = dt_opencl_enqueue_copy_buffer_to_buffer(b->devid, b->dev_grid, b->dev_grid_tmp, 0, 0,
+                                                b->size_x * b->size_y * b->size_z * 4 * sizeof(float));
+  if(err != CL_SUCCESS) return err;
+
+  sizes[0] = ROUNDUPWD(b->size_z);
+  sizes[1] = ROUNDUPHT(b->size_y);
+  int stride1, stride2, stride3;
+  stride1 = b->size_x * b->size_y;
+  stride2 = b->size_x;
+  stride3 = 1;
+  dt_opencl_set_kernel_arg(b->devid, b->global->kernel_colorreconstruct_blur_line, 0, sizeof(cl_mem), (void *)&b->dev_grid_tmp);
+  dt_opencl_set_kernel_arg(b->devid, b->global->kernel_colorreconstruct_blur_line, 1, sizeof(cl_mem), (void *)&b->dev_grid);
+  dt_opencl_set_kernel_arg(b->devid, b->global->kernel_colorreconstruct_blur_line, 2, sizeof(int), (void *)&stride1);
+  dt_opencl_set_kernel_arg(b->devid, b->global->kernel_colorreconstruct_blur_line, 3, sizeof(int), (void *)&stride2);
+  dt_opencl_set_kernel_arg(b->devid, b->global->kernel_colorreconstruct_blur_line, 4, sizeof(int), (void *)&stride3);
+  dt_opencl_set_kernel_arg(b->devid, b->global->kernel_colorreconstruct_blur_line, 5, sizeof(int), (void *)&b->size_z);
+  dt_opencl_set_kernel_arg(b->devid, b->global->kernel_colorreconstruct_blur_line, 6, sizeof(int), (void *)&b->size_y);
+  dt_opencl_set_kernel_arg(b->devid, b->global->kernel_colorreconstruct_blur_line, 7, sizeof(int), (void *)&b->size_x);
+  err = dt_opencl_enqueue_kernel_2d(b->devid, b->global->kernel_colorreconstruct_blur_line, sizes);
+  if(err != CL_SUCCESS) return err;
+
+  stride1 = b->size_x * b->size_y;
+  stride2 = 1;
+  stride3 = b->size_x;
+  sizes[0] = ROUNDUPWD(b->size_z);
+  sizes[1] = ROUNDUPHT(b->size_x);
+  dt_opencl_set_kernel_arg(b->devid, b->global->kernel_colorreconstruct_blur_line, 0, sizeof(cl_mem), (void *)&b->dev_grid);
+  dt_opencl_set_kernel_arg(b->devid, b->global->kernel_colorreconstruct_blur_line, 1, sizeof(cl_mem), (void *)&b->dev_grid_tmp);
+  dt_opencl_set_kernel_arg(b->devid, b->global->kernel_colorreconstruct_blur_line, 2, sizeof(int), (void *)&stride1);
+  dt_opencl_set_kernel_arg(b->devid, b->global->kernel_colorreconstruct_blur_line, 3, sizeof(int), (void *)&stride2);
+  dt_opencl_set_kernel_arg(b->devid, b->global->kernel_colorreconstruct_blur_line, 4, sizeof(int), (void *)&stride3);
+  dt_opencl_set_kernel_arg(b->devid, b->global->kernel_colorreconstruct_blur_line, 5, sizeof(int), (void *)&b->size_z);
+  dt_opencl_set_kernel_arg(b->devid, b->global->kernel_colorreconstruct_blur_line, 6, sizeof(int), (void *)&b->size_x);
+  dt_opencl_set_kernel_arg(b->devid, b->global->kernel_colorreconstruct_blur_line, 7, sizeof(int), (void *)&b->size_y);
+  err = dt_opencl_enqueue_kernel_2d(b->devid, b->global->kernel_colorreconstruct_blur_line, sizes);
+  if(err != CL_SUCCESS) return err;
+
+  stride1 = 1;
+  stride2 = b->size_x;
+  stride3 = b->size_x * b->size_y;
+  sizes[0] = ROUNDUPWD(b->size_x);
+  sizes[1] = ROUNDUPHT(b->size_y);
+  dt_opencl_set_kernel_arg(b->devid, b->global->kernel_colorreconstruct_blur_line, 0, sizeof(cl_mem),
+                           (void *)&b->dev_grid_tmp);
+  dt_opencl_set_kernel_arg(b->devid, b->global->kernel_colorreconstruct_blur_line, 1, sizeof(cl_mem), (void *)&b->dev_grid);
+  dt_opencl_set_kernel_arg(b->devid, b->global->kernel_colorreconstruct_blur_line, 2, sizeof(int), (void *)&stride1);
+  dt_opencl_set_kernel_arg(b->devid, b->global->kernel_colorreconstruct_blur_line, 3, sizeof(int), (void *)&stride2);
+  dt_opencl_set_kernel_arg(b->devid, b->global->kernel_colorreconstruct_blur_line, 4, sizeof(int), (void *)&stride3);
+  dt_opencl_set_kernel_arg(b->devid, b->global->kernel_colorreconstruct_blur_line, 5, sizeof(int), (void *)&b->size_x);
+  dt_opencl_set_kernel_arg(b->devid, b->global->kernel_colorreconstruct_blur_line, 6, sizeof(int), (void *)&b->size_y);
+  dt_opencl_set_kernel_arg(b->devid, b->global->kernel_colorreconstruct_blur_line, 7, sizeof(int), (void *)&b->size_z);
+  err = dt_opencl_enqueue_kernel_2d(b->devid, b->global->kernel_colorreconstruct_blur_line, sizes);
+  return err;
+}
+
+
+ cl_int dt_iop_colorreconstruct_bilateral_slice_cl(dt_iop_colorreconstruct_bilateral_cl_t *b, cl_mem in, cl_mem out, const float threshold)
+{
+  cl_int err = -666;
+  size_t sizes[] = { ROUNDUPWD(b->width), ROUNDUPHT(b->height), 1 };
+  dt_opencl_set_kernel_arg(b->devid, b->global->kernel_colorreconstruct_slice, 0, sizeof(cl_mem), (void *)&in);
+  dt_opencl_set_kernel_arg(b->devid, b->global->kernel_colorreconstruct_slice, 1, sizeof(cl_mem), (void *)&out);
+  dt_opencl_set_kernel_arg(b->devid, b->global->kernel_colorreconstruct_slice, 2, sizeof(cl_mem), (void *)&b->dev_grid);
+  dt_opencl_set_kernel_arg(b->devid, b->global->kernel_colorreconstruct_slice, 3, sizeof(int), (void *)&b->width);
+  dt_opencl_set_kernel_arg(b->devid, b->global->kernel_colorreconstruct_slice, 4, sizeof(int), (void *)&b->height);
+  dt_opencl_set_kernel_arg(b->devid, b->global->kernel_colorreconstruct_slice, 5, sizeof(int), (void *)&b->size_x);
+  dt_opencl_set_kernel_arg(b->devid, b->global->kernel_colorreconstruct_slice, 6, sizeof(int), (void *)&b->size_y);
+  dt_opencl_set_kernel_arg(b->devid, b->global->kernel_colorreconstruct_slice, 7, sizeof(int), (void *)&b->size_z);
+  dt_opencl_set_kernel_arg(b->devid, b->global->kernel_colorreconstruct_slice, 8, sizeof(float), (void *)&b->sigma_s);
+  dt_opencl_set_kernel_arg(b->devid, b->global->kernel_colorreconstruct_slice, 9, sizeof(float), (void *)&b->sigma_r);
+  dt_opencl_set_kernel_arg(b->devid, b->global->kernel_colorreconstruct_slice, 10, sizeof(float), (void *)&threshold);
+  err = dt_opencl_enqueue_kernel_2d(b->devid, b->global->kernel_colorreconstruct_slice, sizes);
+  return err;
+}
+
+int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out,
+               const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
+{
+  dt_iop_colorreconstruct_data_t *d = (dt_iop_colorreconstruct_data_t *)piece->data;
+  dt_iop_colorreconstruct_global_data_t *gd = (dt_iop_colorreconstruct_global_data_t *)self->data;
+
+  const int width = roi_in->width;
+  const int height = roi_in->height;
+
+  const float scale = piece->iscale / roi_in->scale;
+  const float sigma_r = d->range; // does not depend on scale
+  const float sigma_s = d->spatial / scale;
+  cl_int err = -666;
+
+
+  dt_iop_colorreconstruct_bilateral_cl_t *b
+      = dt_iop_colorreconstruct_bilateral_init_cl(piece->pipe->devid, gd, width, height, sigma_s, sigma_r);
+  if(!b) goto error;
+  err = dt_iop_colorreconstruct_bilateral_splat_cl(b, dev_in, d->threshold);
+  if(err != CL_SUCCESS) goto error;
+  err = dt_iop_colorreconstruct_bilateral_blur_cl(b);
+  if(err != CL_SUCCESS) goto error;
+  err = dt_iop_colorreconstruct_bilateral_slice_cl(b, dev_in, dev_out, d->threshold);
+  if(err != CL_SUCCESS) goto error;
+  dt_iop_colorreconstruct_bilateral_free_cl(b);
+  return TRUE;
+error:
+  dt_iop_colorreconstruct_bilateral_free_cl(b);
+  dt_print(DT_DEBUG_OPENCL, "[opencl_colorreconstruct] couldn't enqueue kernel! %d\n", err);
+  return FALSE;
+}
+#endif
+
+
+static size_t dt_iop_colorreconstruct_bilateral_memory_use(const int width,     // width of input image
+                                                           const int height,    // height of input image
+                                                           const float sigma_s, // spatial sigma (blur pixel coords)
+                                                           const float sigma_r) // range sigma (blur luma values)
+{
+  float _x = roundf(width / sigma_s);
+  float _y = roundf(height / sigma_s);
+  float _z = roundf(100.0f / sigma_r);
+  size_t size_x = CLAMPS((int)_x, 4, DT_COMMON_BILATERAL_MAX_RES_S) + 1;
+  size_t size_y = CLAMPS((int)_y, 4, DT_COMMON_BILATERAL_MAX_RES_S) + 1;
+  size_t size_z = CLAMPS((int)_z, 4, DT_COMMON_BILATERAL_MAX_RES_R) + 1;
+
+  return size_x * size_y * size_z * 4 * sizeof(float) * 2;   // in fact only the OpenCL path needs a second tmp buffer
+}
+
+
+static size_t dt_iop_colorreconstruct_bilateral_singlebuffer_size(const int width,     // width of input image
+                                                                  const int height,    // height of input image
+                                                                  const float sigma_s, // spatial sigma (blur pixel coords)
+                                                                  const float sigma_r) // range sigma (blur luma values)
+{
+  float _x = roundf(width / sigma_s);
+  float _y = roundf(height / sigma_s);
+  float _z = roundf(100.0f / sigma_r);
+  size_t size_x = CLAMPS((int)_x, 4, DT_COMMON_BILATERAL_MAX_RES_S) + 1;
+  size_t size_y = CLAMPS((int)_y, 4, DT_COMMON_BILATERAL_MAX_RES_S) + 1;
+  size_t size_z = CLAMPS((int)_z, 4, DT_COMMON_BILATERAL_MAX_RES_R) + 1;
+
+  return size_x * size_y * size_z * 4 * sizeof(float);
+}
+
+void tiling_callback(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece,
+                     const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out,
+                     struct dt_develop_tiling_t *tiling)
+{
+  dt_iop_colorreconstruct_data_t *d = (dt_iop_colorreconstruct_data_t *)piece->data;
+  // the total scale is composed of scale before input to the pipeline (iscale),
+  // and the scale of the roi.
+  const float scale = piece->iscale / roi_in->scale;
+  const float sigma_r = d->range;
+  const float sigma_s = d->spatial / scale;
+
+  const int width = roi_in->width;
+  const int height = roi_in->height;
+  const int channels = piece->colors;
+
+  const size_t basebuffer = width * height * channels * sizeof(float);
+
+  tiling->factor = 2.0f + (float)dt_iop_colorreconstruct_bilateral_memory_use(width, height, sigma_s, sigma_r) / basebuffer;
+  tiling->maxbuf
+      = fmax(1.0f, (float)dt_iop_colorreconstruct_bilateral_singlebuffer_size(width, height, sigma_s, sigma_r) / basebuffer);
+  tiling->overhead = 0;
+  tiling->overlap = ceilf(4 * sigma_s);
+  tiling->xalign = 1;
+  tiling->yalign = 1;
+  return;
+}
+
 
 static void threshold_callback(GtkWidget *slider, gpointer user_data)
 {
@@ -413,6 +744,10 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
   d->threshold = p->threshold;
   d->spatial = p->spatial;
   d->range = p->range;
+
+#ifdef HAVE_OPENCL
+  piece->process_cl_ready = (piece->process_cl_ready && !(darktable.opencl->avoid_atomics));
+#endif
 }
 
 void init_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
@@ -456,9 +791,12 @@ void init_global(dt_iop_module_so_t *module)
   dt_iop_colorreconstruct_global_data_t *gd
       = (dt_iop_colorreconstruct_global_data_t *)malloc(sizeof(dt_iop_colorreconstruct_global_data_t));
   module->data = gd;
-  gd->kernel_colorreconstruct = -1;
+  const int program = 13; // colorcorrection.cl, from programs.conf
+  gd->kernel_colorreconstruct_zero = dt_opencl_create_kernel(program, "colorreconstruction_zero");
+  gd->kernel_colorreconstruct_splat = dt_opencl_create_kernel(program, "colorreconstruction_splat");
+  gd->kernel_colorreconstruct_blur_line = dt_opencl_create_kernel(program, "colorreconstruction_blur_line");
+  gd->kernel_colorreconstruct_slice = dt_opencl_create_kernel(program, "colorreconstruction_slice");
 }
-
 
 void cleanup(dt_iop_module_t *module)
 {
@@ -471,7 +809,10 @@ void cleanup(dt_iop_module_t *module)
 void cleanup_global(dt_iop_module_so_t *module)
 {
   dt_iop_colorreconstruct_global_data_t *gd = (dt_iop_colorreconstruct_global_data_t *)module->data;
-  dt_opencl_free_kernel(gd->kernel_colorreconstruct);
+  dt_opencl_free_kernel(gd->kernel_colorreconstruct_zero);
+  dt_opencl_free_kernel(gd->kernel_colorreconstruct_splat);
+  dt_opencl_free_kernel(gd->kernel_colorreconstruct_blur_line);
+  dt_opencl_free_kernel(gd->kernel_colorreconstruct_slice);
   free(module->data);
   module->data = NULL;
 }
