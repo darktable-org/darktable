@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 1.3\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-02-27 21:59+0100\n"
-"PO-Revision-Date: 2015-02-27 22:02+0100\n"
+"POT-Creation-Date: 2015-03-01 16:47+0100\n"
+"PO-Revision-Date: 2015-03-01 16:58+0100\n"
 "Last-Translator: Pascal Obry <pascal@obry.net>\n"
 "Language-Team: \n"
 "Language: fr_FR\n"
@@ -3839,7 +3839,7 @@ msgstr "détail"
 msgid "denoise (bilateral filter)"
 msgstr "réduction du bruit (bilatéral)"
 
-#: ../src/iop/bilateral.cc:82 ../src/iop/lowpass.c:160 ../src/iop/shadhi.c:227
+#: ../src/iop/bilateral.cc:82 ../src/iop/lowpass.c:160 ../src/iop/shadhi.c:234
 #: ../src/iop/sharpen.c:97
 msgctxt "accel"
 msgid "radius"
@@ -3886,7 +3886,7 @@ msgstr ""
 "pour le bleu"
 
 #: ../src/iop/bilateral.cc:350 ../src/iop/clahe.c:328 ../src/iop/dither.c:558
-#: ../src/iop/lowpass.c:637 ../src/iop/shadhi.c:760 ../src/iop/sharpen.c:586
+#: ../src/iop/lowpass.c:637 ../src/iop/shadhi.c:788 ../src/iop/sharpen.c:586
 msgid "radius"
 msgstr "rayon"
 
@@ -4915,6 +4915,49 @@ msgstr "activer/désactiver l'épreuvage"
 msgctxt "accel"
 msgid "toggle gamutcheck"
 msgstr "activer/désactiver la vérification du gamut"
+
+#: ../src/iop/colorreconstruction.c:76
+msgid "color reconstruction"
+msgstr "reconstruction couleurs"
+
+#: ../src/iop/colorreconstruction.c:94
+msgctxt "accel"
+msgid "luma threshold"
+msgstr "seuil de luminosité"
+
+#: ../src/iop/colorreconstruction.c:95
+msgctxt "accel"
+msgid "spatial blur"
+msgstr "adoucissement spatial"
+
+#: ../src/iop/colorreconstruction.c:96
+msgctxt "accel"
+msgid "range blur"
+msgstr "adoucissement de luminosité"
+
+#: ../src/iop/colorreconstruction.c:833
+msgid "luma threshold"
+msgstr "seuil luminosité"
+
+#: ../src/iop/colorreconstruction.c:834
+msgid "spatial blur"
+msgstr "adoucissement spatial"
+
+#: ../src/iop/colorreconstruction.c:835
+msgid "range blur"
+msgstr "adoucissement luminance"
+
+#: ../src/iop/colorreconstruction.c:841
+msgid "pixels with L values below this threshold are not affected"
+msgstr "seuil L en dessous duquel les pixels ne sont pas affectés"
+
+#: ../src/iop/colorreconstruction.c:842
+msgid "blur of color information in spatial dimensions (width and height)"
+msgstr "adoucissement de la couleur dans l'espace (largeur et hauteur)"
+
+#: ../src/iop/colorreconstruction.c:843
+msgid "blur of color information in the luminance dimension (L value)"
+msgstr "adoucissement de la couleur dans l'espace de luminosité (valeur L)"
 
 #: ../src/iop/colortransfer.c:100
 msgid "color transfer"
@@ -6093,15 +6136,15 @@ msgctxt "lowpass"
 msgid "brightness"
 msgstr "luminosité"
 
-#: ../src/iop/lowpass.c:643 ../src/iop/shadhi.c:751
+#: ../src/iop/lowpass.c:643 ../src/iop/shadhi.c:778
 msgid "soften with"
 msgstr "adoucir avec"
 
-#: ../src/iop/lowpass.c:644 ../src/iop/shadhi.c:752
+#: ../src/iop/lowpass.c:644 ../src/iop/shadhi.c:779
 msgid "gaussian"
 msgstr "gaussien"
 
-#: ../src/iop/lowpass.c:645 ../src/iop/shadhi.c:753
+#: ../src/iop/lowpass.c:645 ../src/iop/shadhi.c:780
 msgid "bilateral filter"
 msgstr "filtre bilatéral"
 
@@ -6144,7 +6187,7 @@ msgstr ""
 msgid "how much to keep highlights"
 msgstr "conserver les hautes lumières"
 
-#: ../src/iop/monochrome.c:557 ../src/iop/shadhi.c:759
+#: ../src/iop/monochrome.c:557 ../src/iop/shadhi.c:786
 #: ../src/iop/splittoning.c:550
 msgid "highlights"
 msgstr "hautes lumières"
@@ -6318,68 +6361,81 @@ msgstr ""
 "mise à l'échelle automatique des pixels\n"
 "seulement pour les capteurs le nécessitant."
 
-#: ../src/iop/shadhi.c:152
+#: ../src/iop/shadhi.c:158
 msgid "shadows and highlights"
 msgstr "ombres et hautes lumières"
 
-#: ../src/iop/shadhi.c:225
+#: ../src/iop/shadhi.c:231
 msgctxt "accel"
 msgid "shadows"
 msgstr "ombres"
 
-#: ../src/iop/shadhi.c:226
+#: ../src/iop/shadhi.c:232
 msgctxt "accel"
 msgid "highlights"
 msgstr "hautes lumières"
 
-#: ../src/iop/shadhi.c:228 ../src/iop/splittoning.c:99
+#: ../src/iop/shadhi.c:233
+msgctxt "accel"
+msgid "white point adjustment"
+msgstr "ajustement du point blanc"
+
+#: ../src/iop/shadhi.c:235 ../src/iop/splittoning.c:99
 msgctxt "accel"
 msgid "compress"
 msgstr "seuil"
 
-#: ../src/iop/shadhi.c:229
+#: ../src/iop/shadhi.c:236
 msgctxt "accel"
 msgid "shadows color correction"
 msgstr "saturation des ombres"
 
-#: ../src/iop/shadhi.c:230
+#: ../src/iop/shadhi.c:237
 msgctxt "accel"
 msgid "highlights color correction"
 msgstr "saturation des hautes lumières"
 
-#: ../src/iop/shadhi.c:758 ../src/iop/splittoning.c:545
+#: ../src/iop/shadhi.c:785 ../src/iop/splittoning.c:545
 msgid "shadows"
 msgstr "ombres"
 
-#: ../src/iop/shadhi.c:761 ../src/iop/splittoning.c:567
+#: ../src/iop/shadhi.c:787
+msgid "white point adjustment"
+msgstr "ajustement du point blanc"
+
+#: ../src/iop/shadhi.c:789 ../src/iop/splittoning.c:567
 msgid "compress"
 msgstr "seuil"
 
-#: ../src/iop/shadhi.c:762
+#: ../src/iop/shadhi.c:790
 msgid "shadows color adjustment"
 msgstr "saturation des ombres"
 
-#: ../src/iop/shadhi.c:763
+#: ../src/iop/shadhi.c:791
 msgid "highlights color adjustment"
 msgstr "saturation des hautes lumières"
 
-#: ../src/iop/shadhi.c:779
+#: ../src/iop/shadhi.c:809
 msgid "correct shadows"
 msgstr "corrige les ombres"
 
-#: ../src/iop/shadhi.c:780
+#: ../src/iop/shadhi.c:810
 msgid "correct highlights"
 msgstr "corrige les hautes lumières"
 
-#: ../src/iop/shadhi.c:781 ../src/iop/tonemap.cc:301
+#: ../src/iop/shadhi.c:811
+msgid "shift white point"
+msgstr "décalage point blanc"
+
+#: ../src/iop/shadhi.c:812 ../src/iop/tonemap.cc:301
 msgid "spatial extent"
 msgstr "rayon"
 
-#: ../src/iop/shadhi.c:782
+#: ../src/iop/shadhi.c:813
 msgid "filter to use for softening. bilateral avoids halos"
 msgstr "filtre à utiliser pour adoucir. bilatéral évite les halos"
 
-#: ../src/iop/shadhi.c:785
+#: ../src/iop/shadhi.c:816
 msgid ""
 "compress the effect on shadows/highlights and\n"
 "preserve midtones"
@@ -6387,11 +6443,11 @@ msgstr ""
 "pourcentage de luminosité\n"
 "non affecté par la correction"
 
-#: ../src/iop/shadhi.c:786
+#: ../src/iop/shadhi.c:817
 msgid "adjust saturation of shadows"
 msgstr "ajuste la saturation des ombres"
 
-#: ../src/iop/shadhi.c:787
+#: ../src/iop/shadhi.c:818
 msgid "adjust saturation of highlights"
 msgstr "ajuste la saturation des hautes lumières"
 
