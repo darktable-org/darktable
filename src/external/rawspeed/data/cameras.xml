@@ -703,7 +703,7 @@
 		<Sensor black="96" white="4095"/>
 		<Hints>
 			<Hint name="old_format" value=""/>
-      <Hint name="override_whitebalance" value="1003807,1000000,2468898"/>
+			<Hint name="override_whitebalance" value="1003807,1000000,2468898"/>
 		</Hints>
 	</Camera>
 	<Camera make="Canon" model="Canon EOS-1D Mark II">
@@ -837,7 +837,7 @@
 	<Camera make="Canon" model="Canon EOS-1D X" mode="sRaw1">
 		<Crop x="0" y="0" width="0" height="0"/>
 		<Sensor black="0" white="65535"/>
-    <Hints>
+		<Hints>
 			<Hint name="sraw_new" value=""/>
 			<Hint name="invert_sraw_wb" value=""/>
 		</Hints>
@@ -845,7 +845,7 @@
 	<Camera make="Canon" model="Canon EOS-1D X" mode="sRaw2">
 		<Crop x="0" y="0" width="0" height="0"/>
 		<Sensor black="0" white="65535"/>
-    <Hints>
+		<Hints>
 			<Hint name="sraw_new" value=""/>
 			<Hint name="invert_sraw_wb" value=""/>
 		</Hints>
@@ -1796,7 +1796,7 @@
 		<Sensor black="600" white="15520"/>
 		<Hints>
 			<Hint name="msb_override" value=""/>
-      <Hint name="nikon_override_auto_black" value=""/>
+			<Hint name="nikon_override_auto_black" value=""/>
 		</Hints>
 	</Camera>
 	<Camera make="NIKON CORPORATION" model="NIKON D810" mode="14bit-compressed">
@@ -1842,7 +1842,7 @@
 		<Crop x="0" y="0" width="0" height="0"/>
 		<Sensor black="192" white="3880"/>
 		<Hints>
-      <Hint name="msb_override" value=""/>
+			<Hint name="msb_override" value=""/>
 			<Hint name="nikon_override_auto_black" value=""/>
 		</Hints>
 	</Camera>
@@ -1856,7 +1856,7 @@
 		<Crop x="0" y="0" width="0" height="0"/>
 		<Sensor black="768" white="15520"/>
 		<Hints>
-      <Hint name="msb_override" value=""/>
+			<Hint name="msb_override" value=""/>
 			<Hint name="nikon_override_auto_black" value=""/>
 		</Hints>
 	</Camera>
@@ -1945,9 +1945,9 @@
 		</CFA>
 		<Crop x="0" y="0" width="0" height="0"/>
 		<Sensor black="200" white="4095"/>
-    <Hints>
-      <Hint name="nikon_override_auto_black" value=""/>
-    </Hints>
+		<Hints>
+			<Hint name="nikon_override_auto_black" value=""/>
+		</Hints>
 	</Camera>
 	<Camera make="NIKON CORPORATION" model="NIKON 1 V1" decoder_version="4">
 		<CFA width="2" height="2">
@@ -2065,9 +2065,9 @@
 		</CFA>
 		<Crop x="0" y="0" width="0" height="0"/>
 		<Sensor black="0" white="4095"/>
-                <Sensor black="250" white="4095" iso_min="400" iso_max="0"/>
-                <!-- In usual Nikon style, ISO 6400 is marked as ISO 0 -->
-                <Sensor black="260" white="4095" iso_min="0" iso_max="1"/>
+		<Sensor black="250" white="4095" iso_min="400" iso_max="0"/>
+		<!-- In usual Nikon style, ISO 6400 is marked as ISO 0 -->
+		<Sensor black="260" white="4095" iso_min="0" iso_max="1"/>
 		<Hints>
 			<Hint name="coolpixmangled" value=""/>
 		</Hints>
