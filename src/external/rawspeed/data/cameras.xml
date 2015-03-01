@@ -6338,7 +6338,7 @@
 			<Hint name="full_height" value="1200"/>
 		</Hints>
 	</Camera>
-	<Camera make="AVT" model="F-510C 1" mode="chdk">
+	<Camera make="AVT" model="F-510C" mode="chdk-a">
 		<CFA2 width="2" height="2">
 			<ColorRow y="0">RG</ColorRow>
 			<ColorRow y="1">GB</ColorRow>
@@ -6351,7 +6351,7 @@
 			<Hint name="full_height" value="1958"/>
 		</Hints>
 	</Camera>
-	<Camera make="AVT" model="F-510C 2" mode="chdk">
+	<Camera make="AVT" model="F-510C" mode="chdk-b">
 		<CFA2 width="2" height="2">
 			<ColorRow y="0">RG</ColorRow>
 			<ColorRow y="1">GB</ColorRow>
@@ -6365,7 +6365,7 @@
 			<Hint name="offset" value="12"/>
 		</Hints>
 	</Camera>
-	<Camera make="AVT" model="F-510C 3" mode="chdk">
+	<Camera make="AVT" model="F-510C" mode="chdk-c">
 		<CFA2 width="2" height="2">
 			<ColorRow y="0">RG</ColorRow>
 			<ColorRow y="1">GB</ColorRow>
@@ -6378,7 +6378,7 @@
 			<Hint name="full_height" value="1958"/>
 		</Hints>
 	</Camera>
-	<Camera make="AVT" model="F-510C 4" mode="chdk">
+	<Camera make="AVT" model="F-510C" mode="chdk-d">
 		<CFA2 width="2" height="2">
 			<ColorRow y="0">RG</ColorRow>
 			<ColorRow y="1">GB</ColorRow>
@@ -7036,7 +7036,7 @@
 			<Hint name="full_height" value="480"/>
 		</Hints>
 	</Camera>
-	<Camera make="Kodak" model="DC20 1" mode="chdk">
+	<Camera make="Kodak" model="DC20" mode="chdk-a">
 		<CFA2 width="2" height="2">
 			<ColorRow y="0">GR</ColorRow>
 			<ColorRow y="1">GB</ColorRow>
@@ -7049,7 +7049,7 @@
 			<Hint name="full_height" value="244"/>
 		</Hints>
 	</Camera>
-	<Camera make="Kodak" model="DC20 2" mode="chdk">
+	<Camera make="Kodak" model="DC20" mode="chdk-b">
 		<CFA2 width="2" height="2">
 			<ColorRow y="0">GR</ColorRow>
 			<ColorRow y="1">GB</ColorRow>
@@ -7075,7 +7075,7 @@
 			<Hint name="full_height" value="1076"/>
 		</Hints>
 	</Camera>
-	<Camera make="Kodak" model="C330 1" mode="chdk">
+	<Camera make="Kodak" model="C330" mode="chdk-a">
 		<CFA2 width="2" height="2">
 			<ColorRow y="0">RG</ColorRow>
 			<ColorRow y="1">GB</ColorRow>
@@ -7088,7 +7088,7 @@
 			<Hint name="full_height" value="1779"/>
 		</Hints>
 	</Camera>
-	<Camera make="Kodak" model="C330 2" mode="chdk">
+	<Camera make="Kodak" model="C330" mode="chdk-b">
 		<CFA2 width="2" height="2">
 			<ColorRow y="0">RG</ColorRow>
 			<ColorRow y="1">GB</ColorRow>
@@ -7102,7 +7102,7 @@
 			<Hint name="offset" value="3160"/>
 		</Hints>
 	</Camera>
-	<Camera make="Kodak" model="C603 1" mode="chdk">
+	<Camera make="Kodak" model="C603" mode="chdk-a">
 		<CFA2 width="2" height="2">
 			<ColorRow y="0">RG</ColorRow>
 			<ColorRow y="1">GB</ColorRow>
@@ -7115,7 +7115,7 @@
 			<Hint name="full_height" value="2152"/>
 		</Hints>
 	</Camera>
-	<Camera make="Kodak" model="C603 2" mode="chdk">
+	<Camera make="Kodak" model="C603" mode="chdk-b">
 		<CFA2 width="2" height="2">
 			<ColorRow y="0">RG</ColorRow>
 			<ColorRow y="1">GB</ColorRow>
@@ -7129,7 +7129,7 @@
 			<Hint name="offset" value="3160"/>
 		</Hints>
 	</Camera>
-	<Camera make="Kodak" model="C603 3" mode="chdk">
+	<Camera make="Kodak" model="C603" mode="chdk-c">
 		<Crop x="0" y="0" width="0" height="0"/>
 		<Sensor black="0" white="4095"/>
 		<Hints>
@@ -7138,7 +7138,7 @@
 			<Hint name="full_height" value="480"/>
 		</Hints>
 	</Camera>
-	<Camera make="Kodak" model="C603 4" mode="chdk">
+	<Camera make="Kodak" model="C603" mode="chdk-d">
 		<Crop x="0" y="0" width="0" height="0"/>
 		<Sensor black="0" white="4095"/>
 		<Hints>
@@ -7147,7 +7147,7 @@
 			<Hint name="full_height" value="2134"/>
 		</Hints>
 	</Camera>
-	<Camera make="Kodak" model="12MP 1" mode="chdk">
+	<Camera make="Kodak" model="12MP" mode="chdk-a">
 		<CFA2 width="2" height="2">
 			<ColorRow y="0">GR</ColorRow>
 			<ColorRow y="1">BG</ColorRow>
@@ -7160,7 +7160,7 @@
 			<Hint name="full_height" value="3030"/>
 		</Hints>
 	</Camera>
-	<Camera make="Kodak" model="12MP 2" mode="chdk">
+	<Camera make="Kodak" model="12MP" mode="chdk-b">
 		<CFA2 width="2" height="2">
 			<ColorRow y="0">GR</ColorRow>
 			<ColorRow y="1">BG</ColorRow>
@@ -7174,7 +7174,7 @@
 			<Hint name="offset" value="31556"/>
 		</Hints>
 	</Camera>
-	<Camera make="Kodak" model="12MP 3" mode="chdk">
+	<Camera make="Kodak" model="12MP" mode="chdk-c">
 		<Crop x="0" y="0" width="0" height="0"/>
 		<Sensor black="0" white="4095"/>
 		<Hints>
@@ -7354,7 +7354,7 @@
 			<Hint name="full_height" value="1718"/>
 		</Hints>
 	</Camera>
-	<Camera make="Pentax" model="Optio S 1" mode="chdk">
+	<Camera make="Pentax" model="Optio S" mode="chdk-a">
 		<CFA2 width="2" height="2">
 			<ColorRow y="0">RG</ColorRow>
 			<ColorRow y="1">GB</ColorRow>
@@ -7367,7 +7367,7 @@
 			<Hint name="full_height" value="1540"/>
 		</Hints>
 	</Camera>
-	<Camera make="Pentax" model="Optio S 2" mode="chdk">
+	<Camera make="Pentax" model="Optio S" mode="chdk-b">
 		<CFA2 width="2" height="2">
 			<ColorRow y="0">RG</ColorRow>
 			<ColorRow y="1">GB</ColorRow>
@@ -7445,7 +7445,7 @@
 			<Hint name="full_height" value="484"/>
 		</Hints>
 	</Camera>
-	<Camera make="Samsung" model="S85 1" mode="chdk">
+	<Camera make="Samsung" model="S85" mode="chdk-a">
 		<CFA2 width="2" height="2">
 			<ColorRow y="0">RG</ColorRow>
 			<ColorRow y="1">GB</ColorRow>
@@ -7458,7 +7458,7 @@
 			<Hint name="full_height" value="2448"/>
 		</Hints>
 	</Camera>
-	<Camera make="Samsung" model="S85 2" mode="chdk">
+	<Camera make="Samsung" model="S85" mode="chdk-b">
 		<CFA2 width="2" height="2">
 			<ColorRow y="0">RG</ColorRow>
 			<ColorRow y="1">GB</ColorRow>
@@ -7471,7 +7471,7 @@
 			<Hint name="full_height" value="2448"/>
 		</Hints>
 	</Camera>
-	<Camera make="Samsung" model="WB550 1" mode="chdk">
+	<Camera make="Samsung" model="WB550" mode="chdk-a">
 		<CFA2 width="2" height="2">
 			<ColorRow y="0">RG</ColorRow>
 			<ColorRow y="1">GB</ColorRow>
@@ -7484,7 +7484,7 @@
 			<Hint name="full_height" value="2808"/>
 		</Hints>
 	</Camera>
-	<Camera make="Samsung" model="WB550 2" mode="chdk">
+	<Camera make="Samsung" model="WB550" mode="chdk-b">
 		<CFA2 width="2" height="2">
 			<ColorRow y="0">RG</ColorRow>
 			<ColorRow y="1">GB</ColorRow>
@@ -7497,7 +7497,7 @@
 			<Hint name="full_height" value="3000"/>
 		</Hints>
 	</Camera>
-	<Camera make="Sinar" model="1" mode="chdk">
+	<Camera make="Sinar" model="" mode="chdk-a">
 		<CFA2 width="2" height="2">
 			<ColorRow y="0">GB</ColorRow>
 			<ColorRow y="1">RG</ColorRow>
@@ -7511,7 +7511,7 @@
 			<Hint name="offset" value="68"/>
 		</Hints>
 	</Camera>
-	<Camera make="Sinar" model="2" mode="chdk">
+	<Camera make="Sinar" model="" mode="chdk-b">
 		<CFA2 width="2" height="2">
 			<ColorRow y="0">GB</ColorRow>
 			<ColorRow y="1">RG</ColorRow>
@@ -7525,7 +7525,7 @@
 			<Hint name="offset" value="68"/>
 		</Hints>
 	</Camera>
-	<Camera make="Sinar" model="" mode="chdk">
+	<Camera make="Sinar" model="" mode="chdk-c">
 		<CFA2 width="2" height="2">
 			<ColorRow y="0">GB</ColorRow>
 			<ColorRow y="1">RG</ColorRow>
@@ -7539,7 +7539,7 @@
 			<Hint name="offset" value="68"/>
 		</Hints>
 	</Camera>
-	<Camera make="Sony" model="XCD-SX910CR 1" mode="chdk">
+	<Camera make="Sony" model="XCD-SX910CR" mode="chdk-a">
 		<CFA2 width="2" height="2">
 			<ColorRow y="0">GR</ColorRow>
 			<ColorRow y="1">BG</ColorRow>
@@ -7552,7 +7552,7 @@
 			<Hint name="full_height" value="1024"/>
 		</Hints>
 	</Camera>
-	<Camera make="Sony" model="XCD-SX910CR 2" mode="chdk">
+	<Camera make="Sony" model="XCD-SX910CR" mode="chdk-b">
 		<CFA2 width="2" height="2">
 			<ColorRow y="0">GR</ColorRow>
 			<ColorRow y="1">BG</ColorRow>
