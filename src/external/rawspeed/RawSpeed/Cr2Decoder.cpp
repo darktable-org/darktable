@@ -49,8 +49,8 @@ RawImage Cr2Decoder::decodeRawInternal() {
       if (data.empty())
         ThrowRDE("CR2 Decoder: Couldn't find offset");
       else {
-        if (mRootIFD->getEntryRecursive(STRIPOFFSETS))
-          off = data[0]->getEntryRecursive(STRIPOFFSETS)->getInt();
+        if (data[0]->hasEntry(STRIPOFFSETS))
+          off = data[0]->getEntry(STRIPOFFSETS)->getInt();
         else
           ThrowRDE("CR2 Decoder: Couldn't find offset");
       }
@@ -77,15 +77,19 @@ RawImage Cr2Decoder::decodeRawInternal() {
 
     mRaw->createData();
     LJpegPlain l(mFile, mRaw);
-    l.startDecoder(off, mFile->getSize()-off, 0, 0);
+    try {
+      l.startDecoder(off, mFile->getSize()-off, 0, 0);
+    } catch (IOException& e) {
+      mRaw->setError(e.what());
+    }
 
     if(hints.find("double_line_ljpeg") != hints.end()) {
       // We now have a double width half height image we need to convert to the
       // normal format
       iPoint2D final_size(width, height);
       RawImage procRaw = RawImage::create(final_size, TYPE_USHORT16, 1);
-      procRaw->clearArea(iRectangle2D(iPoint2D(0,0), procRaw->dim));
       procRaw->metadata = mRaw->metadata;
+      procRaw->copyErrorsFrom(mRaw);
 
       for (uint32 y = 0; y < height; y++) {
         ushort16 *dst = (ushort16*)procRaw->getData(0,y);
@@ -96,14 +100,19 @@ RawImage Cr2Decoder::decodeRawInternal() {
       mRaw = procRaw;
     }
 
-    if (!uncorrectedRawValues && mRootIFD->getEntryRecursive((TiffTag)0x123)) {
+    if (mRootIFD->getEntryRecursive((TiffTag)0x123)) {
       TiffEntry *curve = mRootIFD->getEntryRecursive((TiffTag)0x123);
       if (curve->type == TIFF_SHORT && curve->count == 4096) {
         const ushort16 *linearization = mRootIFD->getEntryRecursive((TiffTag)0x123)->getShortArray();
-        for (uint32 y = 0; y < height; y++) {
-          ushort16 *img = (ushort16*)mRaw->getData(0,y);
-          for (uint32 x = 0; x < width; x++)
-            img[x] = linearization[img[x]];
+        if (!uncorrectedRawValues) {
+          mRaw->setTable(linearization, 4096, true);
+          // Apply table
+          mRaw->sixteenBitLookup();
+          // Delete table
+          mRaw->setTable(NULL);
+        } else {
+          // We want uncorrected, but we store the table.
+          mRaw->setTable(linearization, 4096, false);
         }
       }
     }

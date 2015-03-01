@@ -214,6 +214,11 @@ RawImage::~RawImage() {
   pthread_mutex_unlock(&p_->mymutex);
 }
 
+void RawImageData::copyErrorsFrom(RawImage other) {
+  for (uint32 i = 0 ; i < other->errors.size(); i++) {
+    setError(other->errors[i]);
+  }
+}
 
 void RawImageData::transferBadPixelsToMap()
 {

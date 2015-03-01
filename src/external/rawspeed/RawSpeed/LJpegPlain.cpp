@@ -211,6 +211,10 @@ void LJpegPlain::decodeScanLeftGeneric() {
   delete[] slice_width;
   slice_width = NULL;
 
+  // We check the final position. If bad slice sizes are given we risk writing outside the image
+  if (imagePos[slices-1] >= (ushort16*)&mRaw->getData()[mRaw->pitch * mRaw->dim.y]) {
+    ThrowRDE("LJpegPlain::decodeScanLeft: Last slice out of bounds");
+  }
   imagePos[slices] = imagePos[slices-1];      // Extra offset to avoid branch in loop.
   sliceWidth[slices] = sliceWidth[slices-1];        // Extra offset to avoid branch in loop.
 
@@ -357,6 +361,12 @@ void LJpegPlain::decodeScanLeft4_2_0() {
       t_x += slice_width[t_s++];
     }
   }
+
+  // We check the final position. If bad slice sizes are given we risk writing outside the image
+  if ((offset[slices-1]&0x0fffffff) >= mRaw->pitch*mRaw->dim.y) {
+    ThrowRDE("LJpegPlain::decodeScanLeft: Last slice out of bounds");
+  }
+
   offset[slices] = offset[slices-1];        // Extra offset to avoid branch in loop.
 
   if (skipX)
@@ -483,6 +493,10 @@ void LJpegPlain::decodeScanLeft4_2_2() {
       t_x += slice_width[t_s++];
     }
   }
+  if ((offset[slices-1]&0x0fffffff) >= mRaw->pitch*mRaw->dim.y) {
+    ThrowRDE("LJpegPlain::decodeScanLeft: Last slice out of bounds");
+  }
+
   offset[slices] = offset[slices-1];        // Extra offset to avoid branch in loop.
 
   if (skipX)
@@ -584,6 +598,10 @@ void LJpegPlain::decodeScanLeft2Comps() {
       t_x += slicesW[t_s++];
     }
   }
+  // We check the final position. If bad slice sizes are given we risk writing outside the image
+  if ((offset[slices-1]&0x0fffffff) >= mRaw->pitch*mRaw->dim.y) {
+    ThrowRDE("LJpegPlain::decodeScanLeft: Last slice out of bounds");
+  }
   offset[slices] = offset[slices-1];        // Extra offset to avoid branch in loop.
 
   slice_width = new int[slices];
@@ -671,6 +689,10 @@ void LJpegPlain::decodeScanLeft3Comps() {
       t_y = 0;
       t_x += slicesW[t_s++];
     }
+  }
+  // We check the final position. If bad slice sizes are given we risk writing outside the image
+  if ((offset[slices-1]&0x0fffffff) >= mRaw->pitch*mRaw->dim.y) {
+    ThrowRDE("LJpegPlain::decodeScanLeft: Last slice out of bounds");
   }
 
   offset[slices] = offset[slices-1];        // Extra offset to avoid branch in loop.
@@ -767,6 +789,10 @@ void LJpegPlain::decodeScanLeft4Comps() {
       t_y = 0;
       t_x += slicesW[t_s++];
     }
+  }
+  // We check the final position. If bad slice sizes are given we risk writing outside the image
+  if ((offset[slices-1]&0x0fffffff) >= mRaw->pitch*mRaw->dim.y) {
+    ThrowRDE("LJpegPlain::decodeScanLeft: Last slice out of bounds");
   }
   offset[slices] = offset[slices-1];        // Extra offset to avoid branch in loop.
 

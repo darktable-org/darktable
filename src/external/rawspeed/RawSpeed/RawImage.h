@@ -113,6 +113,7 @@ public:
   virtual void sixteenBitLookup();
   virtual void transferBadPixelsToMap();
   virtual void fixBadPixels();
+  void copyErrorsFrom(const RawImage other);
   void expandBorder(iRectangle2D validData);
   void setTable(const ushort16* table, int nfilled, bool dither);
   void setTable(TableLookUp *t);
