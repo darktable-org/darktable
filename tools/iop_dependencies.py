@@ -144,6 +144,7 @@ def add_edges(gr):
   gr.add_edge(('colorout', 'colorize'))
   gr.add_edge(('colorout', 'colisa'))
   gr.add_edge(('colorout', 'defringe'))
+  gr.add_edge(('colorout', 'colorreconstruct'))
   gr.add_edge(('bloom', 'colorin'))
   gr.add_edge(('nlmeans', 'colorin'))
   gr.add_edge(('colortransfer', 'colorin'))
@@ -167,6 +168,33 @@ def add_edges(gr):
   gr.add_edge(('colorize', 'colorin'))
   gr.add_edge(('colisa', 'colorin'))
   gr.add_edge(('defringe', 'colorin'))
+  gr.add_edge(('colorreconstruct', 'colorin'))
+  
+  # we want color reconstruction come before all other tone and color altering modules
+  gr.add_edge(('bloom', 'colorreconstruct'))
+  gr.add_edge(('nlmeans', 'colorreconstruct'))
+  gr.add_edge(('colortransfer', 'colorreconstruct'))
+  gr.add_edge(('colormapping', 'colorreconstruct'))
+  gr.add_edge(('atrous', 'colorreconstruct'))
+  gr.add_edge(('bilat', 'colorreconstruct'))
+  gr.add_edge(('colorzones', 'colorreconstruct'))
+  gr.add_edge(('lowlight', 'colorreconstruct'))
+  gr.add_edge(('monochrome', 'colorreconstruct'))
+  gr.add_edge(('zonesystem', 'colorreconstruct'))
+  gr.add_edge(('tonecurve', 'colorreconstruct'))
+  gr.add_edge(('levels', 'colorreconstruct'))
+  gr.add_edge(('relight', 'colorreconstruct'))
+  gr.add_edge(('colorcorrection', 'colorreconstruct'))
+  gr.add_edge(('sharpen', 'colorreconstruct'))
+  gr.add_edge(('grain', 'colorreconstruct'))
+  gr.add_edge(('lowpass', 'colorreconstruct'))
+  gr.add_edge(('shadhi', 'colorreconstruct'))
+  gr.add_edge(('highpass', 'colorreconstruct'))
+  gr.add_edge(('colorcontrast', 'colorreconstruct'))
+  gr.add_edge(('colorize', 'colorreconstruct'))
+  gr.add_edge(('colisa', 'colorreconstruct'))
+  gr.add_edge(('defringe', 'colorreconstruct'))
+  
   
   # spot removal works on demosaiced data
   # and needs to be before geometric distortions:
@@ -293,6 +321,7 @@ def add_edges(gr):
   gr.add_edge(('colorcorrection', 'colormapping'))
   gr.add_edge(('relight', 'colormapping'))
   gr.add_edge(('lowpass', 'colormapping'))
+  gr.add_edge(('colorreconstruct', 'colormapping'))
   gr.add_edge(('shadhi', 'colormapping'))
   gr.add_edge(('highpass', 'colormapping'))
   gr.add_edge(('lowlight', 'colormapping'))
@@ -372,6 +401,7 @@ gr.add_nodes([
 'colormapping',
 'colorzones',
 'colorcontrast',
+'colorreconstruct',
 'defringe',
 'demosaic',
 'denoiseprofile',
