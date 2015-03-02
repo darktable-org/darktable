@@ -894,8 +894,8 @@ cmsHPROFILE dt_colorspaces_create_xyzmatrix_profile(float mat[3][3])
   cmsToneCurve *Gamma[3];
   Gamma[0] = Gamma[1] = Gamma[2] = build_linear_gamma();
   cmat = cmsCreateRGBProfile(&D65, &CameraPrimaries, Gamma);
-  if(cmat == NULL) return NULL;
   cmsFreeToneCurve(Gamma[0]);
+  if(cmat == NULL) return NULL;
 
   cmsSetProfileVersion(cmat, 2.1);
   cmsMLU *mlu0 = cmsMLUalloc(NULL, 1);
