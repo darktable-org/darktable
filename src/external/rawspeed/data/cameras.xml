@@ -1758,10 +1758,7 @@
 	</Camera>
 	<Camera make="NIKON CORPORATION" model="NIKON D810" mode="sNEF-uncompressed">
 		<Crop x="0" y="0" width="0" height="0"/>
-		<Sensor black="0" white="16384"/>
-		<Hints>
-			<Hint name="nikon_override_auto_black" value=""/>
-		</Hints>
+		<Sensor black="0" white="65535"/>
 	</Camera>
 	<Camera make="NIKON CORPORATION" model="NIKON D810" mode="12bit-uncompressed">
 		<CFA width="2" height="2">
@@ -1819,10 +1816,7 @@
 	</Camera>
 	<Camera make="NIKON CORPORATION" model="NIKON D4S" mode="sNEF-uncompressed">
 		<Crop x="0" y="0" width="0" height="0"/>
-		<Sensor black="0" white="16384"/>
-		<Hints>
-			<Hint name="nikon_override_auto_black" value=""/>
-		</Hints>
+		<Sensor black="0" white="65535"/>
 	</Camera>
 	<Camera make="NIKON CORPORATION" model="NIKON D4S" mode="12bit-compressed">
 		<CFA width="2" height="2">
