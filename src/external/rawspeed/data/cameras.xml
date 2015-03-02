@@ -869,6 +869,8 @@
 			<Vertical x="3294" width="50"/>
 		</BlackAreas>
 	</Camera>
+	<Camera make="Canon" model="Canon PowerShot Pro70" supported="no">
+	</Camera>
 	<Camera make="Canon" model="Canon PowerShot G1">
 		<CFA width="2" height="2">
 			<Color x="0" y="0">RED</Color>
