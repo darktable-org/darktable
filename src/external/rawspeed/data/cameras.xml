@@ -101,6 +101,9 @@
 			<Vertical x="0" width="60"/>
 			<Horizontal y="0" height="10"/>
 		</BlackAreas>
+		<Aliases>
+			<Alias>Canon EOS DIGITAL REBEL</Alias>
+		</Aliases>
 	</Camera>
 	<Camera make="Canon" model="Canon EOS D30">
 		<CFA width="2" height="2">
