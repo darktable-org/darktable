@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-02-27 20:04+0100\n"
-"PO-Revision-Date: 2015-02-27 20:08+0100\n"
+"POT-Creation-Date: 2015-03-02 19:57+0100\n"
+"PO-Revision-Date: 2015-03-02 20:14+0100\n"
 "Last-Translator: Ger Siemerink <g.siemerink@gmail.com>\n"
 "Language-Team: Ger Siemerink <g.siemerink@gmail.com>\n"
 "Language: nl_NL\n"
@@ -1002,7 +1002,7 @@ msgctxt "noun"
 msgid "export"
 msgstr "exporteren"
 
-#: ../src/common/imageio.c:553 ../src/common/mipmap_cache.c:803
+#: ../src/common/imageio.c:553 ../src/common/mipmap_cache.c:808
 #, c-format
 msgid "image `%s' is not available!"
 msgstr "afbeelding `%s' is niet beschikbaar"
@@ -3687,7 +3687,7 @@ msgid ""
 "only changes results of luma and chroma tabs"
 msgstr ""
 "wijzig rand halo bij elke vormgrootte\n"
-"verandert alleen luma en kleurwaarde tabs resultaten"
+"verandert alleen luminantie en kleurwaarde tabs resultaten"
 
 #: ../src/iop/atrous.c:1430 ../src/iop/colorzones.c:1107
 #: ../src/iop/soften.c:581
@@ -3822,7 +3822,7 @@ msgstr "detail"
 msgid "denoise (bilateral filter)"
 msgstr "ruisreductie (bilateral)"
 
-#: ../src/iop/bilateral.cc:82 ../src/iop/lowpass.c:160 ../src/iop/shadhi.c:227
+#: ../src/iop/bilateral.cc:82 ../src/iop/lowpass.c:160 ../src/iop/shadhi.c:234
 #: ../src/iop/sharpen.c:97
 msgctxt "accel"
 msgid "radius"
@@ -3863,7 +3863,7 @@ msgid "how much to blur blue"
 msgstr "onscherpte voor blauw"
 
 #: ../src/iop/bilateral.cc:350 ../src/iop/clahe.c:328 ../src/iop/dither.c:558
-#: ../src/iop/lowpass.c:637 ../src/iop/shadhi.c:760 ../src/iop/sharpen.c:586
+#: ../src/iop/lowpass.c:637 ../src/iop/shadhi.c:788 ../src/iop/sharpen.c:586
 msgid "radius"
 msgstr "straal"
 
@@ -4433,7 +4433,7 @@ msgstr "helderheid"
 
 #: ../src/iop/colisa.c:371
 msgid "contrast adjustment"
-msgstr "aanpassen contrast"
+msgstr "contrast aanpassing"
 
 #: ../src/iop/colisa.c:372
 msgid "brightness adjustment"
@@ -4888,6 +4888,50 @@ msgstr "softproofing aan/uit"
 msgctxt "accel"
 msgid "toggle gamutcheck"
 msgstr "gamma check aan/uit"
+
+#: ../src/iop/colorreconstruction.c:76
+msgid "color reconstruction"
+msgstr "kleur reconstructie"
+
+#: ../src/iop/colorreconstruction.c:94
+msgctxt "accel"
+msgid "luma threshold"
+msgstr "luma drempel"
+
+#: ../src/iop/colorreconstruction.c:95
+msgctxt "accel"
+msgid "spatial blur"
+msgstr "ruimtelijke vervaging"
+
+#: ../src/iop/colorreconstruction.c:96
+msgctxt "accel"
+msgid "range blur"
+msgstr "range vervaging"
+
+#: ../src/iop/colorreconstruction.c:833
+msgid "luma threshold"
+msgstr "luma drempel"
+
+#: ../src/iop/colorreconstruction.c:834
+msgid "spatial blur"
+msgstr "ruimtelijke vervaging"
+
+#: ../src/iop/colorreconstruction.c:835
+msgid "range blur"
+msgstr "range vervaging"
+
+#: ../src/iop/colorreconstruction.c:841
+msgid "pixels with L values below this threshold are not affected"
+msgstr "pixels met L-waarden onder deze drempel worden niet beïnvloed"
+
+#: ../src/iop/colorreconstruction.c:842
+msgid "blur of color information in spatial dimensions (width and height)"
+msgstr ""
+"vervaging van de kleurinformatie in ruimtelijke dimensies (breedte en hoogte)"
+
+#: ../src/iop/colorreconstruction.c:843
+msgid "blur of color information in the luminance dimension (L value)"
+msgstr "vervaging van de kleurinformatie in de luminantie dimensie (L-waarde)"
 
 #: ../src/iop/colortransfer.c:100
 msgid "color transfer"
@@ -6058,15 +6102,15 @@ msgctxt "lowpass"
 msgid "brightness"
 msgstr "helderheid"
 
-#: ../src/iop/lowpass.c:643 ../src/iop/shadhi.c:751
+#: ../src/iop/lowpass.c:643 ../src/iop/shadhi.c:778
 msgid "soften with"
 msgstr "verzachten met"
 
-#: ../src/iop/lowpass.c:644 ../src/iop/shadhi.c:752
+#: ../src/iop/lowpass.c:644 ../src/iop/shadhi.c:779
 msgid "gaussian"
 msgstr "gaussian"
 
-#: ../src/iop/lowpass.c:645 ../src/iop/shadhi.c:753
+#: ../src/iop/lowpass.c:645 ../src/iop/shadhi.c:780
 msgid "bilateral filter"
 msgstr "bilateral filter"
 
@@ -6107,7 +6151,7 @@ msgstr ""
 msgid "how much to keep highlights"
 msgstr "hoeveelheid te behouden hooglichten"
 
-#: ../src/iop/monochrome.c:557 ../src/iop/shadhi.c:759
+#: ../src/iop/monochrome.c:557 ../src/iop/shadhi.c:786
 #: ../src/iop/splittoning.c:550
 msgid "highlights"
 msgstr "hooglichten"
@@ -6280,68 +6324,81 @@ msgstr ""
 "pixels automatisch schalen\n"
 "werkt alleen voor sensors die dat nodig hebben"
 
-#: ../src/iop/shadhi.c:152
+#: ../src/iop/shadhi.c:158
 msgid "shadows and highlights"
 msgstr "schaduwen en hooglichten"
 
-#: ../src/iop/shadhi.c:225
+#: ../src/iop/shadhi.c:231
 msgctxt "accel"
 msgid "shadows"
 msgstr "schaduwen"
 
-#: ../src/iop/shadhi.c:226
+#: ../src/iop/shadhi.c:232
 msgctxt "accel"
 msgid "highlights"
 msgstr "hooglichten"
 
-#: ../src/iop/shadhi.c:228 ../src/iop/splittoning.c:99
+#: ../src/iop/shadhi.c:233
+msgctxt "accel"
+msgid "white point adjustment"
+msgstr "witpunt aanpassing"
+
+#: ../src/iop/shadhi.c:235 ../src/iop/splittoning.c:99
 msgctxt "accel"
 msgid "compress"
 msgstr "comprimeer"
 
-#: ../src/iop/shadhi.c:229
+#: ../src/iop/shadhi.c:236
 msgctxt "accel"
 msgid "shadows color correction"
 msgstr "schaduw kleur correctie"
 
-#: ../src/iop/shadhi.c:230
+#: ../src/iop/shadhi.c:237
 msgctxt "accel"
 msgid "highlights color correction"
 msgstr "hooglichten kleur correctie"
 
-#: ../src/iop/shadhi.c:758 ../src/iop/splittoning.c:545
+#: ../src/iop/shadhi.c:785 ../src/iop/splittoning.c:545
 msgid "shadows"
 msgstr "schaduwen"
 
-#: ../src/iop/shadhi.c:761 ../src/iop/splittoning.c:567
+#: ../src/iop/shadhi.c:787
+msgid "white point adjustment"
+msgstr "witpunt aanpassing"
+
+#: ../src/iop/shadhi.c:789 ../src/iop/splittoning.c:567
 msgid "compress"
 msgstr "comprimeer"
 
-#: ../src/iop/shadhi.c:762
+#: ../src/iop/shadhi.c:790
 msgid "shadows color adjustment"
 msgstr "aanpassen schaduwkleuren"
 
-#: ../src/iop/shadhi.c:763
+#: ../src/iop/shadhi.c:791
 msgid "highlights color adjustment"
 msgstr "aanpassen hooglichten "
 
-#: ../src/iop/shadhi.c:779
+#: ../src/iop/shadhi.c:809
 msgid "correct shadows"
 msgstr "verbeter schaduwen"
 
-#: ../src/iop/shadhi.c:780
+#: ../src/iop/shadhi.c:810
 msgid "correct highlights"
 msgstr "verbeter hooglichten "
 
-#: ../src/iop/shadhi.c:781 ../src/iop/tonemap.cc:301
+#: ../src/iop/shadhi.c:811
+msgid "shift white point"
+msgstr "verschuif witpunt"
+
+#: ../src/iop/shadhi.c:812 ../src/iop/tonemap.cc:301
 msgid "spatial extent"
 msgstr "omvang "
 
-#: ../src/iop/shadhi.c:782
+#: ../src/iop/shadhi.c:813
 msgid "filter to use for softening. bilateral avoids halos"
 msgstr "te gebruiken filter voor softening, bilateral voorkomt halos"
 
-#: ../src/iop/shadhi.c:785
+#: ../src/iop/shadhi.c:816
 msgid ""
 "compress the effect on shadows/highlights and\n"
 "preserve midtones"
@@ -6349,11 +6406,11 @@ msgstr ""
 "comprimeer effect op hooglichten/schaduwkleuren\n"
 "en behoud middenkleuren"
 
-#: ../src/iop/shadhi.c:786
+#: ../src/iop/shadhi.c:817
 msgid "adjust saturation of shadows"
 msgstr "aanpassen verzadiging schaduwkleuren"
 
-#: ../src/iop/shadhi.c:787
+#: ../src/iop/shadhi.c:818
 msgid "adjust saturation of highlights"
 msgstr "aanpassen verzadiging hooglichten "
 
