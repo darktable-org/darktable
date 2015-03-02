@@ -129,7 +129,7 @@ static int dt_mipmap_cache_get_filename(gchar *mipmapfilename, size_t size)
   const gchar *dbfilename = dt_database_get_path(darktable.db);
   if(!strcmp(dbfilename, ":memory:"))
   {
-    snprintf(mipmapfilename, size, "%s", dbfilename);
+    mipmapfilename[0] = '\0';
     r = 0;
     goto exit;
   }
@@ -244,7 +244,7 @@ void dt_mipmap_cache_allocate_dynamic(void *data, dt_cache_entry_t *entry)
   int loaded_from_disk = 0;
   if(mip < DT_MIPMAP_F)
   {
-    if(dt_conf_get_bool("cache_disk_backend"))
+    if(cache->cachedir[0] && dt_conf_get_bool("cache_disk_backend"))
     {
       // try and load from disk, if successful set flag
       char filename[PATH_MAX] = {0};
@@ -309,13 +309,14 @@ void dt_mipmap_cache_deallocate_dynamic(void *data, dt_cache_entry_t *entry)
         // also remove jpg backing (always try to do that, in case user just temporarily switched it off,
         // to avoid inconsistencies.
         // if(dt_conf_get_bool("cache_disk_backend"))
+        if(cache->cachedir[0])
         {
           char filename[PATH_MAX] = {0};
           snprintf(filename, sizeof(filename), "%s.d/%d/%d.jpg", cache->cachedir, mip, get_imgid(entry->key));
           g_unlink(filename);
         }
       }
-      else if(dt_conf_get_bool("cache_disk_backend"))
+      else if(cache->cachedir[0] && dt_conf_get_bool("cache_disk_backend"))
       {
         // serialize to disk
         char filename[PATH_MAX] = {0};
@@ -555,6 +556,7 @@ void dt_mipmap_cache_get_with_caller(
   else if(flags == DT_MIPMAP_PREFETCH_DISK)
   {
     // only prefetch if the disk cache exists:
+    if(!cache->cachedir[0]) return;
     char filename[PATH_MAX] = {0};
     snprintf(filename, sizeof(filename), "%s.d/%d/%d.jpg", cache->cachedir, mip, key);
     // don't attempt to load if disk cache doesn't exist
@@ -697,10 +699,13 @@ void dt_mipmap_cache_get_with_caller(
     __sync_fetch_and_add(&(_get_cache(cache, mip)->stats_misses), 1);
     // in case we don't even have a disk cache for our requested thumbnail,
     // prefetch at least mip0, in case we have that in the disk caches:
-    char filename[PATH_MAX] = {0};
-    snprintf(filename, sizeof(filename), "%s.d/%d/%d.jpg", cache->cachedir, mip, key);
-    if(!g_file_test(filename, G_FILE_TEST_EXISTS))
-      dt_mipmap_cache_get(cache, 0, imgid, DT_MIPMAP_0, DT_MIPMAP_PREFETCH_DISK, 0);
+    if(cache->cachedir[0])
+    {
+      char filename[PATH_MAX] = {0};
+      snprintf(filename, sizeof(filename), "%s.d/%d/%d.jpg", cache->cachedir, mip, key);
+      if(!g_file_test(filename, G_FILE_TEST_EXISTS))
+        dt_mipmap_cache_get(cache, 0, imgid, DT_MIPMAP_0, DT_MIPMAP_PREFETCH_DISK, 0);
+    }
     // nothing found :(
     buf->buf = NULL;
     buf->imgid = 0;
