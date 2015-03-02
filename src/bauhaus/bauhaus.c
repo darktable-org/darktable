@@ -1735,7 +1735,7 @@ float dt_bauhaus_slider_get(GtkWidget *widget)
 {
   // first cast to bh widget, to check that type:
   dt_bauhaus_widget_t *w = (dt_bauhaus_widget_t *)DT_BAUHAUS_WIDGET(widget);
-  if(!w->type == DT_BAUHAUS_SLIDER) return -1.0f;
+  if(w->type != DT_BAUHAUS_SLIDER) return -1.0f;
   dt_bauhaus_slider_data_t *d = &w->data.slider;
   return d->min + d->pos * (d->max - d->min);
 }
