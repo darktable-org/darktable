@@ -353,8 +353,8 @@ void dt_film_import1(dt_film_t *film)
     dt_control_log(_("no supported images were found to be imported"));
     return;
   }
-#ifdef USE_LUA
 
+#ifdef USE_LUA
   /* pre-sort image list for easier handling in Lua code */
   images = g_list_sort(images, (GCompareFunc)_film_filename_cmp);
 
