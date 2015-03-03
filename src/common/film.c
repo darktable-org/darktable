@@ -354,6 +354,10 @@ void dt_film_import1(dt_film_t *film)
     return;
   }
 #ifdef USE_LUA
+
+  /* pre-sort image list for easier handling in Lua code */
+  images = g_list_sort(images, (GCompareFunc)_film_filename_cmp);
+
   dt_lua_lock();
   lua_State *L = darktable.lua_state.state;
   {
@@ -383,6 +387,7 @@ void dt_film_import1(dt_film_t *film)
   }
   dt_lua_unlock();
 #endif
+
   if(g_list_length(images) == 0)
   {
     //no error message, lua probably emptied the list on purpose
