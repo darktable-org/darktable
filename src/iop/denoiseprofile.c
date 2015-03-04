@@ -1503,6 +1503,7 @@ static dt_noiseprofile_t dt_iop_denoiseprofile_get_auto_profile(dt_iop_module_t 
       dt_noiseprofile_interpolate(last, current, &interpolated);
       break;
     }
+    last = current;
   }
   g_list_free_full(profiles, dt_noiseprofile_free);
   return interpolated;
