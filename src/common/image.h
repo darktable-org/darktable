@@ -154,6 +154,10 @@ typedef struct dt_image_t
   float wb_coeffs[3];
   /* convenience pointer back into the image cache, so we can return dt_image_t* there directly. */
   struct dt_cache_entry_t *cache_entry;
+
+  /* color matrix for the image */
+  float XYZ_to_CAM[4][3];
+  char raw_makermodel[128];
 } dt_image_t;
 
 // image buffer operations:

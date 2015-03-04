@@ -38,6 +38,7 @@ extern "C" {
 #include "common/colorspaces.h"
 #include "common/file_location.h"
 #include <stdint.h>
+#include "external/adobe_coeff.c"
 }
 
 // define this function, it is only declared in rawspeed:
@@ -139,6 +140,11 @@ dt_imageio_retval_t dt_imageio_open_rawspeed(dt_image_t *img, const char *filena
 
     img->raw_black_level = r->blackLevel;
     img->raw_white_point = r->whitePoint;
+
+    string makermodel = r->metadata.make + " " + r->metadata.model;
+    strncpy(img->raw_makermodel, makermodel.c_str(), sizeof(img->raw_makermodel));
+    img->raw_makermodel[sizeof(img->raw_makermodel)-1] = '\0'; // Make sure we NULL terminate
+    dt_dcraw_adobe_coeff(img->raw_makermodel, (float(*)[12])img->XYZ_to_CAM);
 
     if(r->blackLevelSeparate[0] == -1 || r->blackLevelSeparate[1] == -1 || r->blackLevelSeparate[2] == -1
        || r->blackLevelSeparate[3] == -1)

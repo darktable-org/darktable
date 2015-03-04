@@ -967,6 +967,8 @@ void dt_image_init(dt_image_t *img)
   img->wb_coeffs[0] = NAN;
   img->wb_coeffs[1] = NAN;
   img->wb_coeffs[2] = NAN;
+  img->XYZ_to_CAM[0][0] = NAN;
+  memset(img->raw_makermodel, 0, sizeof(img->raw_makermodel));
   img->cache_entry = 0;
 }
 
