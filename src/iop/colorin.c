@@ -34,7 +34,6 @@
 #include "common/imageio_jpeg.h"
 #include "common/imageio_tiff.h"
 #include "common/imageio_png.h"
-#include "external/adobe_coeff.c"
 #include <xmmintrin.h>
 #include <stdlib.h>
 #include <math.h>
@@ -648,23 +647,18 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
   if(!strcmp(iccprofile, "cmatrix"))
   {
     // color matrix
-    char makermodel[1024];
-    dt_colorspaces_get_makermodel(makermodel, sizeof(makermodel), pipe->image.exif_maker,
-                                  pipe->image.exif_model);
-    float cam_xyz[12];
-    cam_xyz[0] = NAN;
-    dt_dcraw_adobe_coeff(makermodel, (float(*)[12])cam_xyz);
-    if(isnan(cam_xyz[0]))
+    dt_image_t img = pipe->image;
+    if(isnan(img.XYZ_to_CAM[0][0]))
     {
       if(dt_image_is_raw(&pipe->image))
       {
-        fprintf(stderr, "[colorin] `%s' color matrix not found!\n", makermodel);
-        dt_control_log(_("`%s' color matrix not found!"), makermodel);
+        fprintf(stderr, "[colorin] `%s' color matrix not found!\n", img.raw_makermodel);
+        dt_control_log(_("`%s' color matrix not found!"), img.raw_makermodel);
       }
       snprintf(iccprofile, sizeof(iccprofile), "linear_rec709_rgb");
     }
     else
-      d->input = dt_colorspaces_create_xyzimatrix_profile((float(*)[3])cam_xyz);
+      d->input = dt_colorspaces_create_xyzimatrix_profile((float(*)[3])img.XYZ_to_CAM);
   }
 
   if(!strcmp(iccprofile, "sRGB"))
@@ -1007,14 +1001,12 @@ static void update_profile_list(dt_iop_module_t *self)
     g->image_profiles = g_list_append(g->image_profiles, prof);
     prof->pos = ++pos;
   }
-  // get color matrix from raw image:
+
+  dt_image_t img = self->dev->image_storage;
+  // get the exif makermodel to use later
   char makermodel[1024];
-  dt_colorspaces_get_makermodel(makermodel, sizeof(makermodel), self->dev->image_storage.exif_maker,
-                                self->dev->image_storage.exif_model);
-  float cam_xyz[12];
-  cam_xyz[0] = NAN;
-  dt_dcraw_adobe_coeff(makermodel, (float(*)[12])cam_xyz);
-  if(!isnan(cam_xyz[0]))
+  dt_colorspaces_get_makermodel(makermodel, sizeof(makermodel), img.exif_maker, img.exif_model);
+  if(!isnan(img.XYZ_to_CAM[0][0]))
   {
     prof = (dt_iop_color_profile_t *)g_malloc0(sizeof(dt_iop_color_profile_t));
     g_strlcpy(prof->filename, "cmatrix", sizeof(prof->filename));

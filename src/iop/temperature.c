@@ -38,7 +38,6 @@
 #include "bauhaus/bauhaus.h"
 
 // for Kelvin temperature and bogus WB
-#include "external/adobe_coeff.c"
 #include "external/cie_colorimetric_tables.c"
 #include "common/colorspaces.h"
 
@@ -668,13 +667,8 @@ static int calculate_bogus_daylight_wb(dt_iop_module_t *module, double bwb[3])
   }
 
   // color matrix
-  char makermodel[1024];
-  dt_colorspaces_get_makermodel(makermodel, sizeof(makermodel), module->dev->image_storage.exif_maker,
-                                module->dev->image_storage.exif_model);
-  float XYZ_to_CAM[4][3];
-  XYZ_to_CAM[0][0] = NAN;
-  dt_dcraw_adobe_coeff(makermodel, (float(*)[12])XYZ_to_CAM);
-  if(!isnan(XYZ_to_CAM[0][0]))
+  dt_image_t img = module->dev->image_storage;
+  if(!isnan(img.XYZ_to_CAM[0][0]))
   {
     // sRGB D65
     const double RGB_to_XYZ[3][3] = { { 0.4124564, 0.3575761, 0.1804375 },
@@ -687,7 +681,7 @@ static int calculate_bogus_daylight_wb(dt_iop_module_t *module, double bwb[3])
       for(int j = 0; j < 3; j++)
       {
         RGB_to_CAM[i][j] = 0.0;
-        for(int k = 0; k < 3; k++) RGB_to_CAM[i][j] += XYZ_to_CAM[i][k] * RGB_to_XYZ[k][j];
+        for(int k = 0; k < 3; k++) RGB_to_CAM[i][j] += img.XYZ_to_CAM[i][k] * RGB_to_XYZ[k][j];
       }
     }
 
@@ -737,13 +731,8 @@ static int prepare_wb_matrices(dt_iop_module_t *module)
   }
 
   // prepare matrices for Kelvin temperature
-  char makermodel[1024];
-  dt_colorspaces_get_makermodel(makermodel, sizeof(makermodel), module->dev->image_storage.exif_maker,
-                                module->dev->image_storage.exif_model);
-
-  float XYZ_to_CAM[4][3];
-  dt_dcraw_adobe_coeff(makermodel, (float(*)[12])XYZ_to_CAM);
-  if(!isnan(XYZ_to_CAM[0][0]))
+  dt_image_t img = module->dev->image_storage;
+  if(!isnan(img.XYZ_to_CAM[0][0]))
   {
     double RGB_to_CAM[3][3];
     for(int i = 0; i < 3; i++)
@@ -751,7 +740,7 @@ static int prepare_wb_matrices(dt_iop_module_t *module)
       for(int j = 0; j < 3; j++)
       {
         RGB_to_CAM[i][j] = 0.0;
-        for(int k = 0; k < 3; k++) RGB_to_CAM[i][j] += XYZ_to_CAM[i][k] * RGB_to_XYZ[k][j];
+        for(int k = 0; k < 3; k++) RGB_to_CAM[i][j] += img.XYZ_to_CAM[i][k] * RGB_to_XYZ[k][j];
       }
     }
 
