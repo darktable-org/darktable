@@ -24,8 +24,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 1.3\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-02-27 22:06+0100\n"
-"PO-Revision-Date: 2015-02-27 22:09+0100\n"
+"POT-Creation-Date: 2015-03-05 10:06+0100\n"
+"PO-Revision-Date: 2015-03-05 10:07+0100\n"
 "Last-Translator: Richard Levitte <richard@levitte.org>\n"
 "Language-Team: \n"
 "Language: sv\n"
@@ -932,14 +932,14 @@ msgstr "FEL : ogiltig temporär katalog : %s\n"
 msgid "no supported images were found to be imported"
 msgstr "inga bilder som stöds hittades för import"
 
-#: ../src/common/film.c:399
+#: ../src/common/film.c:404
 #, c-format
 msgid "importing %d image"
 msgid_plural "importing %d images"
 msgstr[0] "importerar %d bilder..."
 msgstr[1] "importerar %d bilder..."
 
-#: ../src/common/film.c:562
+#: ../src/common/film.c:567
 msgid ""
 "cannot remove film roll having local copies with non accessible originals"
 msgstr ""
@@ -1011,7 +1011,7 @@ msgctxt "noun"
 msgid "export"
 msgstr "export"
 
-#: ../src/common/imageio.c:553 ../src/common/mipmap_cache.c:803
+#: ../src/common/imageio.c:553 ../src/common/mipmap_cache.c:808
 #, c-format
 msgid "image `%s' is not available!"
 msgstr "bild `%s' är inte tillgänglig"
@@ -3011,7 +3011,8 @@ msgstr "titel"
 msgid "enter the title of the pdf"
 msgstr "ange en titel för pdf:en"
 
-#: ../src/imageio/format/pdf.c:543
+#. // papers
+#: ../src/imageio/format/pdf.c:543 ../src/libs/print_settings.c:1062
 msgid "paper size"
 msgstr "pappersstorlek"
 
@@ -3826,7 +3827,7 @@ msgstr "detalj"
 msgid "denoise (bilateral filter)"
 msgstr "brusreducering (bilateral filter)"
 
-#: ../src/iop/bilateral.cc:82 ../src/iop/lowpass.c:160 ../src/iop/shadhi.c:227
+#: ../src/iop/bilateral.cc:82 ../src/iop/lowpass.c:160 ../src/iop/shadhi.c:234
 #: ../src/iop/sharpen.c:97
 msgctxt "accel"
 msgid "radius"
@@ -3867,7 +3868,7 @@ msgid "how much to blur blue"
 msgstr "mängd av oskärpa att applicera på blå kanal"
 
 #: ../src/iop/bilateral.cc:350 ../src/iop/clahe.c:328 ../src/iop/dither.c:558
-#: ../src/iop/lowpass.c:637 ../src/iop/shadhi.c:760 ../src/iop/sharpen.c:586
+#: ../src/iop/lowpass.c:637 ../src/iop/shadhi.c:788 ../src/iop/sharpen.c:586
 msgid "radius"
 msgstr "radie"
 
@@ -3903,7 +3904,7 @@ msgstr "tröskel"
 msgid "the threshold of light"
 msgstr "tröskelnivå för ljuset"
 
-#: ../src/iop/bloom.c:542 ../src/iop/denoiseprofile.c:1641
+#: ../src/iop/bloom.c:542 ../src/iop/denoiseprofile.c:1642
 #: ../src/iop/grain.c:546 ../src/iop/hotpixels.c:416 ../src/iop/nlmeans.c:709
 #: ../src/iop/velvia.c:347
 msgid "strength"
@@ -4656,7 +4657,7 @@ msgstr "linjär XYZ"
 msgid "Lab"
 msgstr "Lab"
 
-#: ../src/iop/colorin.c:1242 ../src/iop/denoiseprofile.c:1637
+#: ../src/iop/colorin.c:1242 ../src/iop/denoiseprofile.c:1638
 #: ../src/libs/export.c:646 ../src/libs/print_settings.c:984
 #: ../src/libs/print_settings.c:1198
 msgid "profile"
@@ -4884,6 +4885,49 @@ msgstr "växla skärmkorrektur"
 msgctxt "accel"
 msgid "toggle gamutcheck"
 msgstr "växla kontroll av tonskala"
+
+#: ../src/iop/colorreconstruction.c:76
+msgid "color reconstruction"
+msgstr "färgåterställning"
+
+#: ../src/iop/colorreconstruction.c:94
+msgctxt "accel"
+msgid "luma threshold"
+msgstr "luminanströskel"
+
+#: ../src/iop/colorreconstruction.c:95
+msgctxt "accel"
+msgid "spatial blur"
+msgstr "färgspridning rum"
+
+#: ../src/iop/colorreconstruction.c:96
+msgctxt "accel"
+msgid "range blur"
+msgstr "färgspridning L"
+
+#: ../src/iop/colorreconstruction.c:833
+msgid "luma threshold"
+msgstr "luminanströskel"
+
+#: ../src/iop/colorreconstruction.c:834
+msgid "spatial blur"
+msgstr "färgspridning rum"
+
+#: ../src/iop/colorreconstruction.c:835
+msgid "range blur"
+msgstr "färgspridning L"
+
+#: ../src/iop/colorreconstruction.c:841
+msgid "pixels with L values below this threshold are not affected"
+msgstr "pixlar med L-värden under denna tröskel kommer inte att påverkas"
+
+#: ../src/iop/colorreconstruction.c:842
+msgid "blur of color information in spatial dimensions (width and height)"
+msgstr "rumsbestämd (på höjd och bredd) utspridning av färginformation"
+
+#: ../src/iop/colorreconstruction.c:843
+msgid "blur of color information in the luminance dimension (L value)"
+msgstr "luminansbestämd (på L-värde) utspridning av färginformation"
 
 #: ../src/iop/colortransfer.c:100
 msgid "color transfer"
@@ -5137,31 +5181,31 @@ msgstr "fann motsvarighet till ISO %d"
 msgid "interpolated from ISO %d and %d"
 msgstr "interpolerat från ISO %d och %d"
 
-#: ../src/iop/denoiseprofile.c:1638 ../src/iop/exposure.c:926
+#: ../src/iop/denoiseprofile.c:1639 ../src/iop/exposure.c:926
 #: ../src/iop/lens.c:2115 ../src/iop/levels.c:529 ../src/libs/export.c:694
 #: ../src/libs/print_settings.c:1294
 msgid "mode"
 msgstr "läge"
 
-#: ../src/iop/denoiseprofile.c:1639 ../src/iop/nlmeans.c:707
+#: ../src/iop/denoiseprofile.c:1640 ../src/iop/nlmeans.c:707
 msgid "patch size"
 msgstr "storlek"
 
 # TODO: NEEDS BETTER TRANSLATION
-#: ../src/iop/denoiseprofile.c:1642
+#: ../src/iop/denoiseprofile.c:1643
 msgid "non-local means"
 msgstr "'non-local means'"
 
 # TODO: NEEDS BETTER TRANSLATION
-#: ../src/iop/denoiseprofile.c:1643
+#: ../src/iop/denoiseprofile.c:1644
 msgid "wavelets"
 msgstr "'wavelets'"
 
-#: ../src/iop/denoiseprofile.c:1644
+#: ../src/iop/denoiseprofile.c:1645
 msgid "profile used for variance stabilization"
 msgstr "profil som används för att stabilisera varians"
 
-#: ../src/iop/denoiseprofile.c:1647
+#: ../src/iop/denoiseprofile.c:1648
 msgid ""
 "method used in the denoising core. non-local means works best for "
 "`lightness' blending, wavelets work best for `color' blending"
@@ -5170,11 +5214,11 @@ msgstr ""
 "med blandningsläget 'ljushet', 'wavelets' fungerar bäst med blandningsläget "
 "'färg'"
 
-#: ../src/iop/denoiseprofile.c:1651
+#: ../src/iop/denoiseprofile.c:1652
 msgid "radius of the patches to match. increase for more sharpness"
 msgstr "radien på bildområdena att identifiera. öka för att få bättre skärpa"
 
-#: ../src/iop/denoiseprofile.c:1652
+#: ../src/iop/denoiseprofile.c:1653
 msgid "finetune denoising strength"
 msgstr "finjustera brusreduceringens styrka"
 
@@ -6054,15 +6098,15 @@ msgctxt "lowpass"
 msgid "brightness"
 msgstr "ljusstyrka"
 
-#: ../src/iop/lowpass.c:643 ../src/iop/shadhi.c:751
+#: ../src/iop/lowpass.c:643 ../src/iop/shadhi.c:778
 msgid "soften with"
 msgstr "mjuka upp med"
 
-#: ../src/iop/lowpass.c:644 ../src/iop/shadhi.c:752
+#: ../src/iop/lowpass.c:644 ../src/iop/shadhi.c:779
 msgid "gaussian"
 msgstr "gaussisk"
 
-#: ../src/iop/lowpass.c:645 ../src/iop/shadhi.c:753
+#: ../src/iop/lowpass.c:645 ../src/iop/shadhi.c:780
 msgid "bilateral filter"
 msgstr "bilateralt filter"
 
@@ -6102,7 +6146,7 @@ msgstr "drag och skrolla med musen för att justera det virtuella färgfiltret"
 msgid "how much to keep highlights"
 msgstr "hur mycket ska högdagrar behållas"
 
-#: ../src/iop/monochrome.c:557 ../src/iop/shadhi.c:759
+#: ../src/iop/monochrome.c:557 ../src/iop/shadhi.c:786
 #: ../src/iop/splittoning.c:550
 msgid "highlights"
 msgstr "högdagrar"
@@ -6273,68 +6317,81 @@ msgstr ""
 "automatiskt skalning av pixlar\n"
 "fungerar bara för sensorer som behöver det."
 
-#: ../src/iop/shadhi.c:152
+#: ../src/iop/shadhi.c:158
 msgid "shadows and highlights"
 msgstr "skuggor och högdagrar"
 
-#: ../src/iop/shadhi.c:225
+#: ../src/iop/shadhi.c:231
 msgctxt "accel"
 msgid "shadows"
 msgstr "skuggor"
 
-#: ../src/iop/shadhi.c:226
+#: ../src/iop/shadhi.c:232
 msgctxt "accel"
 msgid "highlights"
 msgstr "högdagrar"
 
-#: ../src/iop/shadhi.c:228 ../src/iop/splittoning.c:99
+#: ../src/iop/shadhi.c:233
+msgctxt "accel"
+msgid "white point adjustment"
+msgstr "justering av vitpunkt"
+
+#: ../src/iop/shadhi.c:235 ../src/iop/splittoning.c:99
 msgctxt "accel"
 msgid "compress"
 msgstr "komprimera"
 
-#: ../src/iop/shadhi.c:229
+#: ../src/iop/shadhi.c:236
 msgctxt "accel"
 msgid "shadows color correction"
 msgstr "färgkorrigering för skuggor"
 
-#: ../src/iop/shadhi.c:230
+#: ../src/iop/shadhi.c:237
 msgctxt "accel"
 msgid "highlights color correction"
 msgstr "färgkorrigering för högdagrar"
 
-#: ../src/iop/shadhi.c:758 ../src/iop/splittoning.c:545
+#: ../src/iop/shadhi.c:785 ../src/iop/splittoning.c:545
 msgid "shadows"
 msgstr "skuggor"
 
-#: ../src/iop/shadhi.c:761 ../src/iop/splittoning.c:567
+#: ../src/iop/shadhi.c:787
+msgid "white point adjustment"
+msgstr "justering av vitpunkt"
+
+#: ../src/iop/shadhi.c:789 ../src/iop/splittoning.c:567
 msgid "compress"
 msgstr "komprimera"
 
-#: ../src/iop/shadhi.c:762
+#: ../src/iop/shadhi.c:790
 msgid "shadows color adjustment"
 msgstr "färgjustering för skuggor"
 
-#: ../src/iop/shadhi.c:763
+#: ../src/iop/shadhi.c:791
 msgid "highlights color adjustment"
 msgstr "färgjustering för högdagrar"
 
-#: ../src/iop/shadhi.c:779
+#: ../src/iop/shadhi.c:809
 msgid "correct shadows"
 msgstr "korrigera skuggor"
 
-#: ../src/iop/shadhi.c:780
+#: ../src/iop/shadhi.c:810
 msgid "correct highlights"
 msgstr "korrigera högdagrar"
 
-#: ../src/iop/shadhi.c:781 ../src/iop/tonemap.cc:301
+#: ../src/iop/shadhi.c:811
+msgid "shift white point"
+msgstr "flytta vitpunkten"
+
+#: ../src/iop/shadhi.c:812 ../src/iop/tonemap.cc:301
 msgid "spatial extent"
 msgstr "rumsbestämd utsträckning"
 
-#: ../src/iop/shadhi.c:782
+#: ../src/iop/shadhi.c:813
 msgid "filter to use for softening. bilateral avoids halos"
 msgstr "filter att använda för uppmjukning. bilateral undviker glorior"
 
-#: ../src/iop/shadhi.c:785
+#: ../src/iop/shadhi.c:816
 msgid ""
 "compress the effect on shadows/highlights and\n"
 "preserve midtones"
@@ -6342,11 +6399,11 @@ msgstr ""
 "komprimera effekten mot ljus och mörka partier och\n"
 "bevara mellantoner"
 
-#: ../src/iop/shadhi.c:786
+#: ../src/iop/shadhi.c:817
 msgid "adjust saturation of shadows"
 msgstr "justera färgmättnad för skuggor"
 
-#: ../src/iop/shadhi.c:787
+#: ../src/iop/shadhi.c:818
 msgid "adjust saturation of highlights"
 msgstr "justera färgmättnad för högdagrar"
 
@@ -8411,11 +8468,6 @@ msgstr "slå på svartpunktkompensation när skrivarprofilen appliceras"
 msgid "page"
 msgstr "sida"
 
-#. // papers
-#: ../src/libs/print_settings.c:1062
-msgid "paper"
-msgstr "papperstyp"
-
 #: ../src/libs/print_settings.c:1098
 msgid "image width/height"
 msgstr "bildens bredd/höjd"
@@ -8479,7 +8531,7 @@ msgstr ""
 "ersätter historiken"
 
 #. Print button
-#: ../src/libs/print_settings.c:1312 ../src/views/print.c:51
+#: ../src/libs/print_settings.c:1312
 msgid "print"
 msgstr "skriv ut"
 
@@ -9333,6 +9385,11 @@ msgctxt "accel"
 msgid "redo"
 msgstr "återställ"
 
+#: ../src/views/print.c:51
+msgctxt "view"
+msgid "print"
+msgstr "skriv ut"
+
 #: ../src/views/print.c:245
 msgid "there is no printer available, cannot print!"
 msgstr "inga skrivare tillgängliga, kan inte skriva ut!"
@@ -9363,6 +9420,9 @@ msgstr "ny session skapad '%s'"
 #: ../src/views/tethering.c:242
 msgid "no camera with tethering support available for use..."
 msgstr "ingen kamera som stödjer tjudring finns tillgänglig..."
+
+#~ msgid "paper"
+#~ msgstr "papperstyp"
 
 #~ msgid "set the aspect ratio"
 #~ msgstr "sätt bildförhållandet"
