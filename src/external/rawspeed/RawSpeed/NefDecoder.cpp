@@ -612,6 +612,10 @@ void NefDecoder::DecodeNikonSNef(ByteStream &input, uint32 w, uint32 h) {
   float wb_r = (float)wba[0] / (float)wba[1];
   float wb_b = (float)wba[2] / (float)wba[3];
 
+  mRaw->metadata.wbCoeffs[0] = wb_r;
+  mRaw->metadata.wbCoeffs[1] = 1.0f;
+  mRaw->metadata.wbCoeffs[2] = wb_b;
+
   int inv_wb_r = (int)(1024.0 / wb_r);
   int inv_wb_b = (int)(1024.0 / wb_b);
 
@@ -631,13 +635,14 @@ void NefDecoder::DecodeNikonSNef(ByteStream &input, uint32 w, uint32 h) {
     ushort16* dest = (ushort16*) & data[y*pitch];
     uint32 random = in[0] + (in[1] << 8) +  (in[2] << 16);
     for (uint32 x = 0 ; x < w*3; x += 6) {
-      uint32 g1 = *in++;
-      uint32 g2 = *in++;
-      uint32 g3 = *in++;
-      uint32 g4 = *in++;
-      uint32 g5 = *in++;
-      uint32 g6 = *in++;
+      uint32 g1 = in[0];
+      uint32 g2 = in[1];
+      uint32 g3 = in[2];
+      uint32 g4 = in[3];
+      uint32 g5 = in[4];
+      uint32 g6 = in[5];
 
+      in+=6;
       float y1 = (float)(g1 | ((g2 & 0x0f) << 8));
       float y2 = (float)((g2 >> 4) | (g3 << 4));
       float cb = (float)(g4 | ((g5 & 0x0f) << 8));

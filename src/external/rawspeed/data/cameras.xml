@@ -5347,6 +5347,7 @@
 		<Crop x="0" y="0" width="-16" height="0"/>
 		<Sensor black="520" white="16596"/>
 	</Camera>
+	<!-- Measured on images from https://github.com/klauspost/rawspeed/issues/78 -->
 	<Camera make="SONY" model="NEX-7" supported="yes">
 		<CFA width="2" height="2">
 			<Color x="0" y="0">RED</Color>
@@ -5355,7 +5356,7 @@
 			<Color x="1" y="1">BLUE</Color>
 		</CFA>
 		<Crop x="0" y="0" width="-26" height="0"/>
-		<Sensor black="520" white="16383"/>
+		<Sensor black="512" white="16300"/>
 	</Camera>
 	<Camera make="SONY" model="NEX-C3" supported="yes">
 		<CFA width="2" height="2">
