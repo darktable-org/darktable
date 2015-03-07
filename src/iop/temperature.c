@@ -689,20 +689,24 @@ static int calculate_bogus_daylight_wb(dt_iop_module_t *module, double bwb[3])
       }
     }
 
+    const double RGB[3] = { 1.0, 1.0, 1.0 };
+
+    double CAM[3];
     for(int c = 0; c < 3; c++)
     {
-      double num = 0.0;
-
-      for(int j = 0; j < 3; j++)
+      CAM[c] = 0.0;
+      for(int i = 0; i < 3; i++)
       {
-        num += RGB_to_CAM[c][j];
+        CAM[c] += RGB_to_CAM[c][i] * RGB[i];
       }
-
-      bwb[c] = 1.0 / num;
     }
 
-    bwb[0] /= bwb[1];
-    bwb[2] /= bwb[1];
+    double mul[3];
+    for(int k = 0; k < 3; k++) mul[k] = 1.0 / CAM[k];
+
+    // normalize green:
+    bwb[0] = mul[0] / mul[1];
+    bwb[2] = mul[2] / mul[1];
     bwb[1] = 1.0;
 
     return 0;
