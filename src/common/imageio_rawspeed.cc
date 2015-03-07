@@ -122,9 +122,9 @@ dt_imageio_retval_t dt_imageio_open_rawspeed(dt_image_t *img, const char *filena
 
     RawParser t(m.get());
 #ifdef __APPLE__
-    d = auto_ptr<RawDecoder>(t.getDecoder());
+    d = auto_ptr<RawDecoder>(t.getDecoder(meta));
 #else
-    d = unique_ptr<RawDecoder>(t.getDecoder());
+    d = unique_ptr<RawDecoder>(t.getDecoder(meta));
 #endif
 
     if(!d.get()) return DT_IMAGEIO_FILE_CORRUPTED;
@@ -140,7 +140,6 @@ dt_imageio_retval_t dt_imageio_open_rawspeed(dt_image_t *img, const char *filena
     m.reset();
 
     img->filters = 0u;
-    img->pre_applied_wb = r->preAppliedWB;
     if(!r->isCFA)
     {
       dt_imageio_retval_t ret = dt_imageio_open_rawspeed_sraw(img, r, a);
@@ -183,8 +182,8 @@ dt_imageio_retval_t dt_imageio_open_rawspeed(dt_image_t *img, const char *filena
     img->raw_black_level = r->blackLevel;
     img->raw_white_point = r->whitePoint;
 
-    img->fuji_rotation_pos = r->fujiRotationPos;
-    img->pixel_aspect_ratio = (float)r->pixelAspectRatio;
+    img->fuji_rotation_pos = r->metadata.fujiRotationPos;
+    img->pixel_aspect_ratio = (float)r->metadata.pixelAspectRatio;
 
     void *buf = dt_mipmap_cache_alloc(img, DT_MIPMAP_FULL, a);
     if(!buf) return DT_IMAGEIO_CACHE_FULL;
