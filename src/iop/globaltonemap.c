@@ -82,6 +82,8 @@ typedef struct dt_iop_global_tonemap_gui_data_t
     GtkWidget *max_light;
   } drago;
   GtkWidget *detail;
+  float lwmax;
+  dt_pthread_mutex_t lock;
 } dt_iop_global_tonemap_gui_data_t;
 
 typedef struct dt_iop_global_tonemap_global_data_t
@@ -150,19 +152,49 @@ static inline void process_drago(struct dt_iop_module_t *self, dt_dev_pixelpipe_
                                  void *ovoid, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out,
                                  dt_iop_global_tonemap_data_t *data)
 {
+  dt_iop_global_tonemap_gui_data_t *g = (dt_iop_global_tonemap_gui_data_t *)self->gui_data;
   float *in = (float *)ivoid;
   float *out = (float *)ovoid;
   const int ch = piece->colors;
 
   /* precalcs */
   const float eps = 0.0001f;
-  float lwmax = eps;
+  float lwmax;
+  float tmp_lwmax = NAN;
 
-  for(size_t k = 0; k < (size_t)roi_out->width * roi_out->height; k++)
+  // Drago needs the absolute Lmax value of the image. In pixelpipe FULL we can not reliably get this value
+  // as the pixelpipe might only see part of the image (region of interest). Therefore we try to get lwmax from
+  // the PREVIEW pixelpipe which luckily stores it for us.
+  if(self->dev->gui_attached && g && piece->pipe->type == DT_DEV_PIXELPIPE_FULL)
   {
-    float *inp = in + ch * k;
-    lwmax = fmaxf(lwmax, (inp[0] * 0.01f));
+    dt_pthread_mutex_lock(&g->lock);
+    tmp_lwmax = g->lwmax;
+    dt_pthread_mutex_unlock(&g->lock);
   }
+
+  // in all other cases we calculate lwmax here
+  if(isnan(tmp_lwmax))
+  {
+    lwmax = eps;
+    for(size_t k = 0; k < (size_t)roi_out->width * roi_out->height; k++)
+    {
+      float *inp = in + ch * k;
+      lwmax = fmaxf(lwmax, (inp[0] * 0.01f));
+    }
+  }
+  else
+  {
+    lwmax = tmp_lwmax;
+  }
+
+  // PREVIEW pixelpipe stores lwmax
+  if(self->dev->gui_attached && g && piece->pipe->type == DT_DEV_PIXELPIPE_PREVIEW)
+  {
+    dt_pthread_mutex_lock(&g->lock);
+    g->lwmax = lwmax;
+    dt_pthread_mutex_unlock(&g->lock);
+  }
+
   const float ldc = data->drago.max_light * 0.01 / log10f(lwmax + 1);
   const float bl = logf(fmaxf(eps, data->drago.bias)) / logf(0.5);
 
@@ -251,6 +283,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
 {
   dt_iop_global_tonemap_data_t *d = (dt_iop_global_tonemap_data_t *)piece->data;
   dt_iop_global_tonemap_global_data_t *gd = (dt_iop_global_tonemap_global_data_t *)self->data;
+  dt_iop_global_tonemap_gui_data_t *g = (dt_iop_global_tonemap_gui_data_t *)self->gui_data;
   dt_bilateral_cl_t *b = NULL;
 
   // check if we are in a tiling context and want OPERATOR_DRAGO. This does not work as drago
@@ -315,67 +348,82 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
 
   if(d->operator== OPERATOR_DRAGO)
   {
-    size_t sizes[3];
-    size_t local[3];
+    const float eps = 0.0001f;
+    float tmp_lwmax = NAN;
 
-    const int bwidth = ROUNDUP(width, blocksize);
-    const int bheight = ROUNDUP(height, blocksize);
-
-    const int bufsize = (bwidth / blocksize) * (bheight / blocksize);
-    const int groupsize = maxsizes[0];
-    const int reducesize = MIN(REDUCESIZE, ROUNDUP(bufsize, groupsize) / groupsize);
-
-    dev_m = dt_opencl_alloc_device_buffer(devid, (size_t)bufsize * sizeof(float));
-    if(dev_m == NULL) goto error;
-
-    dev_r = dt_opencl_alloc_device_buffer(devid, (size_t)reducesize * sizeof(float));
-    if(dev_r == NULL) goto error;
-
-    sizes[0] = bwidth;
-    sizes[1] = bheight;
-    sizes[2] = 1;
-    local[0] = blocksize;
-    local[1] = blocksize;
-    local[2] = 1;
-    dt_opencl_set_kernel_arg(devid, gd->kernel_pixelmax_first, 0, sizeof(cl_mem), &dev_in);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_pixelmax_first, 1, sizeof(int), &width);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_pixelmax_first, 2, sizeof(int), &height);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_pixelmax_first, 3, sizeof(cl_mem), &dev_m);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_pixelmax_first, 4, blocksize * blocksize * sizeof(float), NULL);
-    err = dt_opencl_enqueue_kernel_2d_with_local(devid, gd->kernel_pixelmax_first, sizes, local);
-    if(err != CL_SUCCESS) goto error;
-
-    sizes[0] = reducesize * groupsize;
-    sizes[1] = 1;
-    sizes[2] = 1;
-    local[0] = groupsize;
-    local[1] = 1;
-    local[2] = 1;
-    dt_opencl_set_kernel_arg(devid, gd->kernel_pixelmax_second, 0, sizeof(cl_mem), &dev_m);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_pixelmax_second, 1, sizeof(cl_mem), &dev_r);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_pixelmax_second, 2, sizeof(int), &bufsize);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_pixelmax_second, 3, groupsize * sizeof(float), NULL);
-    err = dt_opencl_enqueue_kernel_2d_with_local(devid, gd->kernel_pixelmax_second, sizes, local);
-    if(err != CL_SUCCESS) goto error;
-
-    float maximum[reducesize];
-    err = dt_opencl_read_buffer_from_device(devid, (void *)maximum, dev_r, 0,
-                                            (size_t)reducesize * sizeof(float), CL_TRUE);
-    if(err != CL_SUCCESS) goto error;
-
-    dt_opencl_release_mem_object(dev_r);
-    dt_opencl_release_mem_object(dev_m);
-    dev_r = dev_m = NULL;
-
-    for(int k = 1; k < reducesize; k++)
+    // see comments in process() about lwmax value
+    if(self->dev->gui_attached && g && piece->pipe->type == DT_DEV_PIXELPIPE_FULL)
     {
-      float mine = maximum[0];
-      float other = maximum[k];
-      maximum[0] = (other > mine) ? other : mine;
+      dt_pthread_mutex_lock(&g->lock);
+      tmp_lwmax = g->lwmax;
+      dt_pthread_mutex_unlock(&g->lock);
     }
 
-    const float eps = 0.0001f;
-    const float lwmax = MAX(eps, (maximum[0] * 0.01f));
+    if(isnan(tmp_lwmax))
+    {
+      size_t sizes[3];
+      size_t local[3];
+
+      const int bwidth = ROUNDUP(width, blocksize);
+      const int bheight = ROUNDUP(height, blocksize);
+
+      const int bufsize = (bwidth / blocksize) * (bheight / blocksize);
+      const int groupsize = maxsizes[0];
+      const int reducesize = MIN(REDUCESIZE, ROUNDUP(bufsize, groupsize) / groupsize);
+
+      dev_m = dt_opencl_alloc_device_buffer(devid, (size_t)bufsize * sizeof(float));
+      if(dev_m == NULL) goto error;
+
+      dev_r = dt_opencl_alloc_device_buffer(devid, (size_t)reducesize * sizeof(float));
+      if(dev_r == NULL) goto error;
+
+      sizes[0] = bwidth;
+      sizes[1] = bheight;
+      sizes[2] = 1;
+      local[0] = blocksize;
+      local[1] = blocksize;
+      local[2] = 1;
+      dt_opencl_set_kernel_arg(devid, gd->kernel_pixelmax_first, 0, sizeof(cl_mem), &dev_in);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_pixelmax_first, 1, sizeof(int), &width);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_pixelmax_first, 2, sizeof(int), &height);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_pixelmax_first, 3, sizeof(cl_mem), &dev_m);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_pixelmax_first, 4, blocksize * blocksize * sizeof(float), NULL);
+      err = dt_opencl_enqueue_kernel_2d_with_local(devid, gd->kernel_pixelmax_first, sizes, local);
+      if(err != CL_SUCCESS) goto error;
+
+      sizes[0] = reducesize * groupsize;
+      sizes[1] = 1;
+      sizes[2] = 1;
+      local[0] = groupsize;
+      local[1] = 1;
+      local[2] = 1;
+      dt_opencl_set_kernel_arg(devid, gd->kernel_pixelmax_second, 0, sizeof(cl_mem), &dev_m);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_pixelmax_second, 1, sizeof(cl_mem), &dev_r);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_pixelmax_second, 2, sizeof(int), &bufsize);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_pixelmax_second, 3, groupsize * sizeof(float), NULL);
+      err = dt_opencl_enqueue_kernel_2d_with_local(devid, gd->kernel_pixelmax_second, sizes, local);
+      if(err != CL_SUCCESS) goto error;
+
+      float maximum[reducesize];
+      err = dt_opencl_read_buffer_from_device(devid, (void *)maximum, dev_r, 0,
+                                            (size_t)reducesize * sizeof(float), CL_TRUE);
+      if(err != CL_SUCCESS) goto error;
+
+      dt_opencl_release_mem_object(dev_r);
+      dt_opencl_release_mem_object(dev_m);
+      dev_r = dev_m = NULL;
+
+      for(int k = 1; k < reducesize; k++)
+      {
+        float mine = maximum[0];
+        float other = maximum[k];
+        maximum[0] = (other > mine) ? other : mine;
+      }
+
+      tmp_lwmax = MAX(eps, (maximum[0] * 0.01f));
+    }
+
+    const float lwmax = tmp_lwmax;
     const float ldc = d->drago.max_light * 0.01f / log10f(lwmax + 1.0f);
     const float bl = logf(MAX(eps, d->drago.bias)) / logf(0.5f);
 
@@ -383,6 +431,13 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
     parameters[1] = ldc;
     parameters[2] = bl;
     parameters[3] = lwmax;
+
+    if(self->dev->gui_attached && g && piece->pipe->type == DT_DEV_PIXELPIPE_PREVIEW)
+    {
+      dt_pthread_mutex_lock(&g->lock);
+      g->lwmax = lwmax;
+      dt_pthread_mutex_unlock(&g->lock);
+    }
   }
 
   const float scale = piece->iscale / roi_in->scale;
@@ -609,6 +664,9 @@ void gui_init(struct dt_iop_module_t *self)
   dt_iop_global_tonemap_gui_data_t *g = (dt_iop_global_tonemap_gui_data_t *)self->gui_data;
   dt_iop_global_tonemap_params_t *p = (dt_iop_global_tonemap_params_t *)self->params;
 
+  dt_pthread_mutex_init(&g->lock, NULL);
+  g->lwmax = NAN;
+
   self->widget = gtk_vbox_new(TRUE, DT_BAUHAUS_SPACE);
 
   /* operator */
@@ -651,6 +709,8 @@ void gui_init(struct dt_iop_module_t *self)
 
 void gui_cleanup(struct dt_iop_module_t *self)
 {
+  dt_iop_global_tonemap_gui_data_t *g = (dt_iop_global_tonemap_gui_data_t *)self->gui_data;
+  dt_pthread_mutex_destroy(&g->lock);
   free(self->gui_data);
   self->gui_data = NULL;
 }
