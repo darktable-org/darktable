@@ -275,27 +275,25 @@ static void temp2mul(dt_iop_module_t *self, double TempK, double tint, double mu
 
   double XYZ[3] = { _xyz.X, _xyz.Y / tint, _xyz.Z };
 
-  // multipliers, relative to daylight wb
-  double rmul[3];
+  double CAM[3];
   for(int k = 0; k < 3; k++)
   {
-    rmul[k] = 0.0;
+    CAM[k] = 0.0;
     for(int i = 0; i < 3; i++)
     {
-      rmul[k] += g->XYZ_to_CAM[k][i] * XYZ[i];
+      CAM[k] += g->XYZ_to_CAM[k][i] * XYZ[i];
     }
   }
 
-  for(int k = 0; k < 3; k++) mul[k] = g->daylight_wb[k] / rmul[k];
+  for(int k = 0; k < 3; k++) mul[k] = 1.0 / CAM[k];
 }
 
 static void mul2temp(dt_iop_module_t *self, float coeffs[3], double *TempK, double *tint)
 {
   dt_iop_temperature_gui_data_t *g = (dt_iop_temperature_gui_data_t *)self->gui_data;
 
-  // multipliers, relative to daylight wb
-  double rmul[3];
-  for(int k = 0; k < 3; k++) rmul[k] = g->daylight_wb[k] / coeffs[k];
+  double CAM[3];
+  for(int k = 0; k < 3; k++) CAM[k] = 1.0 / coeffs[k];
 
   double XYZ[3];
   for(int k = 0; k < 3; k++)
@@ -303,7 +301,7 @@ static void mul2temp(dt_iop_module_t *self, float coeffs[3], double *TempK, doub
     XYZ[k] = 0.0;
     for(int i = 0; i < 3; i++)
     {
-      XYZ[k] += g->CAM_to_XYZ[k][i] * rmul[i];
+      XYZ[k] += g->CAM_to_XYZ[k][i] * CAM[i];
     }
   }
 
@@ -745,37 +743,11 @@ static int prepare_wb_matrices(dt_iop_module_t *module)
   dt_dcraw_adobe_coeff(makermodel, (float(*)[12])XYZ_to_CAM);
   if(!isnan(XYZ_to_CAM[0][0]))
   {
-    double RGB_to_CAM[3][3];
     for(int i = 0; i < 3; i++)
     {
       for(int j = 0; j < 3; j++)
       {
-        RGB_to_CAM[i][j] = 0.0;
-        for(int k = 0; k < 3; k++) RGB_to_CAM[i][j] += XYZ_to_CAM[i][k] * RGB_to_XYZ[k][j];
-      }
-    }
-
-    /*
-     * Normalize RGB_to_CAM so that
-     * RGB_to_CAM * (1,1,1) is (1,1,1)
-     */
-    for(int i = 0; i < 3; i++)
-    {
-      double num = 0.0;
-      for(int j = 0; j < 3; j++) num += RGB_to_CAM[i][j];
-
-      for(int j = 0; j < 3; j++)
-      {
-        RGB_to_CAM[i][j] /= num;
-      }
-    }
-
-    for(int i = 0; i < 3; i++)
-    {
-      for(int j = 0; j < 3; j++)
-      {
-        g->XYZ_to_CAM[i][j] = 0.0;
-        for(int k = 0; k < 3; k++) g->XYZ_to_CAM[i][j] += RGB_to_CAM[i][k] * XYZ_to_RGB[k][j];
+        g->XYZ_to_CAM[i][j] = (double)XYZ_to_CAM[i][j];
       }
     }
 
