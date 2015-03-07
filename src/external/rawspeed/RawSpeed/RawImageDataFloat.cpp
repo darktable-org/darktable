@@ -51,11 +51,6 @@ namespace RawSpeed {
       so we have the same amount of pixels for each CFA group */
       area.size = area.size - (area.size&1);
 
-      /* If offset is negative (relative to right or bottom border) calculate
-         the offset from the left or top border */
-      if(area.offset < 0)
-        area.offset += area.isVertical ? uncropped_dim.x : uncropped_dim.y;
-
       /* Process horizontal area */
       if (!area.isVertical) {
         if ((int)area.offset+(int)area.size > uncropped_dim.y)
@@ -366,5 +361,21 @@ void RawImageDataFloat::fixBadPixel( uint32 x, uint32 y, int component )
       fixBadPixel(x,y,i);
 
 }
+
+
+void RawImageDataFloat::doLookup( int start_y, int end_y ) {
+  ThrowRDE("Float point lookup tables not implemented");
+}
+
+void RawImageDataFloat::setWithLookUp(ushort16 value, uchar8* dst, uint32* random) {
+  float* dest = (float*)dst;
+  if (table == NULL) {
+    *dest = (float)value * (1.0f/65535);
+    return;
+  }
+
+  ThrowRDE("Float point lookup tables not implemented");
+}
+
 
 } // namespace RawSpeed

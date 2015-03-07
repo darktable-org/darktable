@@ -5,6 +5,7 @@
     RawSpeed - RAW file decoder.
 
     Copyright (C) 2009-2014 Klaus Post
+    Copyright (C) 2015 Pedro Côrte-Real
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Lesser General Public
@@ -54,7 +55,7 @@ TiffIFD::TiffIFD(FileMap* f, uint32 offset) {
 
   CHECKSIZE(offset + 2 + entries*4);
   for (uint32 i = 0; i < entries; i++) {
-    TiffEntry *t = new TiffEntry(f, offset + 2 + i*12);
+    TiffEntry *t = new TiffEntry(f, offset + 2 + i*12, offset);
 
     switch (t->tag) {
       case DNGPRIVATEDATA: 
@@ -177,6 +178,10 @@ const uchar8 fuji_signature[] = {
   'F', 'U', 'J', 'I', 'F', 'I', 'L', 'M', 0x0c, 0x00, 0x00, 0x00
 };
 
+const uchar8 nikon_v3_signature[] = {
+  'N', 'i', 'k', 'o', 'n', 0x0, 0x2
+};
+
 /* This will attempt to parse makernotes and return it as an IFD */
 TiffIFD* TiffIFD::parseMakerNote(FileMap *f, uint32 offset, Endianness parent_end)
 {
@@ -206,6 +211,18 @@ TiffIFD* TiffIFD::parseMakerNote(FileMap *f, uint32 offset, Endianness parent_en
   } else if (0 == memcmp(fuji_signature,&data[0], sizeof(fuji_signature))) {
     mFile = new FileMap(f->getDataWrt(offset), f->getSize()-offset);
     offset = 12;
+  } else if (0 == memcmp(nikon_v3_signature,&data[0], sizeof(nikon_v3_signature))) {
+    offset += 10;
+    mFile = new FileMap(f->getDataWrt(offset), f->getSize()-offset);
+    data +=10;
+    offset = 8;
+    // Read endianness
+    if (data[0] == 0x49 && data[1] == 0x49) {
+      parent_end = little;
+    } else if (data[0] == 0x4D && data[1] == 0x4D) {
+      parent_end = big;
+    }
+    data += 2;
   }
 
   // Panasonic has the word Exif at byte 6, a complete Tiff header starts at byte 12
@@ -226,6 +243,19 @@ TiffIFD* TiffIFD::parseMakerNote(FileMap *f, uint32 offset, Endianness parent_en
   } else if (data[0] == 0x4D && data[1] == 0x4D) {
     parent_end = big;
     offset +=2;
+  }
+
+  // Olympus starts the makernote with their own name, sometimes truncated
+  if (!strncmp((const char *)data, "OLYMP", 5)) {
+    offset += 8;
+    if (!strncmp((const char *)data, "OLYMPUS", 7)) {
+      offset += 4;
+    }
+  }
+
+  // Epson starts the makernote with its own name
+  if (!strncmp((const char *)data, "EPSON", 5)) {
+    offset += 8;
   }
 
   // Attempt to parse the rest as an IFD

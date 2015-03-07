@@ -88,6 +88,16 @@ void ThreefrDecoder::decodeMetaDataInternal(CameraMetaData *meta) {
   string make = data[0]->getEntry(MAKE)->getString();
   string model = data[0]->getEntry(MODEL)->getString();
   setMetaData(meta, make, model, "", 0);
+
+  // Fetch the white balance
+  if (mRootIFD->hasEntryRecursive(ASSHOTNEUTRAL)) {
+    TiffEntry *wb = mRootIFD->getEntryRecursive(ASSHOTNEUTRAL);
+    if (wb->count == 3) {
+      const uint32 *tmp = wb->getIntArray();
+      for (uint32 i=0; i<3; i++)
+        mRaw->metadata.wbCoeffs[i] = (tmp[i*2+1]*1.0f)/tmp[i*2];
+    }
+  }
 }
 
 } // namespace RawSpeed

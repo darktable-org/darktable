@@ -107,6 +107,18 @@ RawImage Rw2Decoder::decodeRawInternal() {
     mRaw->blackLevelSeparate[1] = mRaw->blackLevelSeparate[2] = raw->getEntry((TiffTag)0x1d)->getInt() + 15;
     mRaw->blackLevelSeparate[3] = raw->getEntry((TiffTag)0x1e)->getInt() + 15;
   }
+
+  // Read WB levels
+  if (raw->hasEntry((TiffTag)0x0024) && raw->hasEntry((TiffTag)0x0025) && raw->hasEntry((TiffTag)0x0026)) {
+    mRaw->metadata.wbCoeffs[0] = (float) raw->getEntry((TiffTag)0x0024)->getShort();
+    mRaw->metadata.wbCoeffs[1] = (float) raw->getEntry((TiffTag)0x0025)->getShort();
+    mRaw->metadata.wbCoeffs[2] = (float) raw->getEntry((TiffTag)0x0026)->getShort();
+  } else if (raw->hasEntry((TiffTag)0x0011) && raw->hasEntry((TiffTag)0x0012)) {
+    mRaw->metadata.wbCoeffs[0] = (float) raw->getEntry((TiffTag)0x0011)->getShort();
+    mRaw->metadata.wbCoeffs[1] = 256.0f;
+    mRaw->metadata.wbCoeffs[2] = (float) raw->getEntry((TiffTag)0x0012)->getShort();
+  }
+
   return mRaw;
 }
 
@@ -218,7 +230,7 @@ void Rw2Decoder::decodeMetaDataInternal(CameraMetaData *meta) {
   if (this->checkCameraSupported(meta, make, model, mode)) {
     setMetaData(meta, make, model, mode, iso);
   } else {
-    mRaw->mode = mode;
+    mRaw->metadata.mode = mode;
     _RPT1(0, "Mode not found in DB: %s", mode.c_str());
     setMetaData(meta, make, model, "", iso);
   }

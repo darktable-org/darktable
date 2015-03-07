@@ -8,6 +8,7 @@
     RawSpeed - RAW file decoder.
 
     Copyright (C) 2009-2014 Klaus Post
+    Copyright (C) 2015 Pedro Côrte-Real
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Lesser General Public
@@ -66,13 +67,14 @@ class TiffEntry
 public:
   TiffEntry();
   TiffEntry(TiffTag tag, TiffDataType type, uint32 count, const uchar8* data = NULL);
-  TiffEntry(FileMap* f, uint32 offset);
+  TiffEntry(FileMap* f, uint32 offset, uint32 up_offset);
   virtual ~TiffEntry(void);
   virtual uint32 getInt();
   float getFloat();
   virtual ushort16 getShort();
   virtual const uint32* getIntArray();
   virtual const ushort16* getShortArray();
+  virtual const short16* getSignedShortArray();
   string getString();
   uchar8 getByte();
   const uchar8* getData() {return data;};
@@ -88,11 +90,15 @@ public:
   bool isFloat();
   bool isInt();
   bool isString();
+  void offsetFromParent() {data_offset += parent_offset; parent_offset = 0; fetchData(); }
+  uint32 parent_offset;
 protected:
+  void fetchData();
   string getValueAsString();
   uchar8* own_data;
   const uchar8* data;
   uint32 data_offset;
+  FileMap *file;
 #ifdef _DEBUG
   int debug_intVal;
   float debug_floatVal;

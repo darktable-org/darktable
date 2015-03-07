@@ -4,6 +4,7 @@
     RawSpeed - RAW file decoder.
 
     Copyright (C) 2009-2014 Klaus Post
+    Copyright (C) 2015 Pedro Côrte-Real
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Lesser General Public
@@ -37,7 +38,6 @@ PefDecoder::~PefDecoder(void) {
 
 RawImage PefDecoder::decodeRawInternal() {
   vector<TiffIFD*> data = mRootIFD->getIFDsWithTag(STRIPOFFSETS);
-
   if (data.empty())
     ThrowRDE("PEF Decoder: No image data found");
 
@@ -117,6 +117,17 @@ void PefDecoder::decodeMetaDataInternal(CameraMetaData *meta) {
     const ushort16 *levels = black->getShortArray();
     for (int i = 0; i < 4; i++)
       mRaw->blackLevelSeparate[i] = levels[i];
+  }
+
+  // Set the whitebalance
+  if (mRootIFD->hasEntryRecursive((TiffTag) 0x0201)) {
+    TiffEntry *wb = mRootIFD->getEntryRecursive((TiffTag) 0x0201);
+    if (wb->count == 4) {
+      const ushort16 *tmp = wb->getShortArray();
+      mRaw->metadata.wbCoeffs[0] = tmp[0];
+      mRaw->metadata.wbCoeffs[1] = tmp[1];
+      mRaw->metadata.wbCoeffs[2] = tmp[3];
+    }
   }
 }
 

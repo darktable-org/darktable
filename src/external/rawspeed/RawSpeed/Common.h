@@ -29,6 +29,11 @@
 #define MIN(a,b) min(a,b)
 #define MAX(a,b) max(a,b)
 typedef unsigned __int64 uint64;
+// MSVC may not have NAN
+#ifndef NAN
+  static const unsigned long __nan[2] = {0xffffffff, 0x7fffffff};
+  #define NAN (*(const float *) __nan)
+#endif
 #else // On linux
 #define _ASSERTE(a) void(a)
 #define _RPT0(a,b) 
@@ -59,6 +64,31 @@ typedef char* LPCWSTR;
 #define FALSE 0
 #endif
 
+#define get2BE(data,pos) ((((ushort16)(data)[pos]) << 8) | \
+                           ((ushort16)(data)[pos+1]))
+
+#define get2LE(data,pos) ((((ushort16)(data)[pos+1]) << 8) | \
+                           ((ushort16)(data)[pos]))
+
+#define get4BE(data,pos) ((((uint32)(data)[pos]) << 24) | \
+                          (((uint32)(data)[pos+1]) << 16) | \
+                          (((uint32)(data)[pos+2]) << 8) | \
+                           ((uint32)(data)[pos+3]))
+
+#define get4LE(data,pos) ((((uint32)(data)[pos+3]) << 24) | \
+                          (((uint32)(data)[pos+2]) << 16) | \
+                          (((uint32)(data)[pos+1]) << 8) | \
+                           ((uint32)(data)[pos]))
+
+#define get8LE(data,pos) ((((uint64)(data)[pos+7]) << 56) | \
+                          (((uint64)(data)[pos+6]) << 48) | \
+                          (((uint64)(data)[pos+5]) << 40) | \
+                          (((uint64)(data)[pos+4]) << 32) | \
+                          (((uint64)(data)[pos+3]) << 24) | \
+                          (((uint64)(data)[pos+2]) << 16) | \
+                          (((uint64)(data)[pos+1]) << 8)  | \
+                           ((uint64)(data)[pos]))
+
 int rawspeed_get_number_of_processor_cores();
 
 
@@ -69,6 +99,7 @@ typedef unsigned char uchar8;
 typedef unsigned int uint32;
 typedef signed int int32;
 typedef unsigned short ushort16;
+typedef signed short short16;
 
 typedef enum Endianness {
   big, little, unknown

@@ -7,7 +7,7 @@
 #include "BitPumpPlain.h"
 #include "TiffParser.h"
 #include "NikonDecompressor.h"
-/* 
+/*
     RawSpeed - RAW file decoder.
 
     Copyright (C) 2009-2014 Klaus Post
@@ -48,12 +48,14 @@ private:
   bool NEFIsUncompressedRGB(TiffIFD *raw);
   void DecodeUncompressed();
   void DecodeD100Uncompressed();
-  void DecodeRGBUncompressed();
+  void DecodeSNefUncompressed();
   void readCoolpixMangledRaw(ByteStream &input, iPoint2D& size, iPoint2D& offset, int inputPitch);
   void readCoolpixSplitRaw(ByteStream &input, iPoint2D& size, iPoint2D& offset, int inputPitch);
+  void DecodeNikonSNef(ByteStream &input, uint32 w, uint32 h);
   TiffIFD* FindBestImage(vector<TiffIFD*>* data);
   string getMode();
   string getExtendedMode(string mode);
+  ushort16* gammaCurve(double pwr, double ts, int mode, int imax);
 };
 
 class NefSlice {

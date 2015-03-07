@@ -5,6 +5,7 @@
     RawSpeed - RAW file decoder.
 
     Copyright (C) 2009-2014 Klaus Post
+    Copyright (C) 2015 Pedro Côrte-Real
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Lesser General Public
@@ -27,10 +28,14 @@ namespace RawSpeed {
 
 TiffEntry::TiffEntry() {
   own_data = NULL;
+  parent_offset = 0;
+  file = NULL;
 }
 
-TiffEntry::TiffEntry(FileMap* f, uint32 offset) {
+TiffEntry::TiffEntry(FileMap* f, uint32 offset, uint32 up_offset) {
+  parent_offset = up_offset;
   own_data = NULL;
+  file = f;
   unsigned short* p = (unsigned short*)f->getData(offset);
   tag = (TiffTag)p[0];
   type = (TiffDataType)p[1];
@@ -42,8 +47,7 @@ TiffEntry::TiffEntry(FileMap* f, uint32 offset) {
     data = f->getDataWrt(offset + 8);
   } else { // offset
     data_offset = *(uint32*)f->getData(offset + 8);
-    CHECKSIZE(data_offset + bytesize);
-    data = f->getDataWrt(data_offset);
+    fetchData();
   }
 #ifdef _DEBUG
   debug_intVal = 0xC0CAC01A;
@@ -56,8 +60,19 @@ TiffEntry::TiffEntry(FileMap* f, uint32 offset) {
 #endif
 }
 
+void TiffEntry::fetchData() {
+  FileMap *f = file; // CHECKSIZE uses f
+  if(file) {
+    uint32 bytesize = count << datashifts[type];
+    CHECKSIZE(data_offset + bytesize);
+    data = file->getDataWrt(data_offset);
+  }
+}
+
 TiffEntry::TiffEntry(TiffTag _tag, TiffDataType _type, uint32 _count, const uchar8* _data )
 {
+  file = NULL;
+  parent_offset = 0;
   tag = _tag;
   type = _type;
   count = _count;
@@ -108,15 +123,21 @@ unsigned short TiffEntry::getShort() {
 }
 
 const uint32* TiffEntry::getIntArray() {
-  if (type != TIFF_LONG && type != TIFF_RATIONAL && type != TIFF_SRATIONAL && type != TIFF_UNDEFINED )
+  if (type != TIFF_LONG && type != TIFF_SLONG && type != TIFF_RATIONAL && type != TIFF_SRATIONAL && type != TIFF_UNDEFINED )
     ThrowTPE("TIFF, getIntArray: Wrong type 0x%x encountered. Expected Long", type);
   return (uint32*)&data[0];
 }
 
 const ushort16* TiffEntry::getShortArray() {
-  if (type != TIFF_SHORT)
+  if (!(type == TIFF_SHORT || type == TIFF_UNDEFINED))
     ThrowTPE("TIFF, getShortArray: Wrong type 0x%x encountered. Expected Short", type);
   return (ushort16*)&data[0];
+}
+
+const short16* TiffEntry::getSignedShortArray() {
+  if (!(type == TIFF_SSHORT))
+    ThrowTPE("TIFF, getShortArray: Wrong type 0x%x encountered. Expected Signed Short", type);
+  return (short16*)&data[0];
 }
 
 uchar8 TiffEntry::getByte() {

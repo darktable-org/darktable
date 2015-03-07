@@ -148,32 +148,30 @@ void RawDecoder::readUncompressedRaw(ByteStream &input, iPoint2D& size, iPoint2D
       bits.skipBits(skipBits);
     }
   } else if (BitOrder_Jpeg16 == order) {
-      BitPumpMSB16 bits(&input);
-      w *= cpp;
-      for (; y < h; y++) {
-        ushort16* dest = (ushort16*) & data[offset.x*sizeof(ushort16)*cpp+y*outPitch];
-        bits.checkPos();
-        for (uint32 x = 0 ; x < w; x++) {
-          uint32 b = bits.getBits(bitPerPixel);
-          dest[x] = b;
-        }
-        bits.skipBits(skipBits);
+    BitPumpMSB16 bits(&input);
+    w *= cpp;
+    for (; y < h; y++) {
+      ushort16* dest = (ushort16*) & data[offset.x*sizeof(ushort16)*cpp+y*outPitch];
+      bits.checkPos();
+      for (uint32 x = 0 ; x < w; x++) {
+        uint32 b = bits.getBits(bitPerPixel);
+        dest[x] = b;
       }
+      bits.skipBits(skipBits);
+    }
   } else if (BitOrder_Jpeg32 == order) {
-      BitPumpMSB32 bits(&input);
-      w *= cpp;
-      for (; y < h; y++) {
-        ushort16* dest = (ushort16*) & data[offset.x*sizeof(ushort16)*cpp+y*outPitch];
-        bits.checkPos();
-        for (uint32 x = 0 ; x < w; x++) {
-          uint32 b = bits.getBits(bitPerPixel);
-          dest[x] = b;
-        }
-        bits.skipBits(skipBits);
+    BitPumpMSB32 bits(&input);
+    w *= cpp;
+    for (; y < h; y++) {
+      ushort16* dest = (ushort16*) & data[offset.x*sizeof(ushort16)*cpp+y*outPitch];
+      bits.checkPos();
+      for (uint32 x = 0 ; x < w; x++) {
+        uint32 b = bits.getBits(bitPerPixel);
+        dest[x] = b;
       }
-
+      bits.skipBits(skipBits);
+    }
   } else {
-
     if (bitPerPixel == 16 && getHostEndianness() == little)  {
       BitBlt(&data[offset.x*sizeof(ushort16)*cpp+y*outPitch], outPitch,
              input.getData(), inputPitch, w*mRaw->getBpp(), h - y);
@@ -197,44 +195,6 @@ void RawDecoder::readUncompressedRaw(ByteStream &input, iPoint2D& size, iPoint2D
   }
 }
 
-void RawDecoder::Decode8BitRGB(ByteStream &input, uint32 w, uint32 h) {
-  uchar8* data = mRaw->getData();
-  uint32 pitch = mRaw->pitch;
-  const uchar8 *in = input.getData();
-  if (input.getRemainSize() < (w*h*3)) {
-    if ((uint32)input.getRemainSize() > w*3) {
-      h = input.getRemainSize() / w*3 - 1;
-      mRaw->setError("Image truncated (file is too short)");
-    } else
-      ThrowIOE("Decode8BitRGB: Not enough data to decode a single line. Image file truncated.");
-  }
-  for (uint32 y = 0; y < h; y++) {
-    ushort16* dest = (ushort16*) & data[y*pitch];
-    for (uint32 x = 0 ; x < w*3; x += 6) {
-      /* Decoding method and coefficients taken from
-         http://www.rawdigger.com/howtouse/nikon-small-raw-internals */
-
-      uint32 g1 = *in++;
-      uint32 g2 = *in++;
-      uint32 g3 = *in++;
-      uint32 g4 = *in++;
-      uint32 g5 = *in++;
-      uint32 g6 = *in++;
-
-      float y1 = g1 | ((g2 & 0x0f) << 8);
-      float y2 = (g2 >> 4) | (g3 << 4);
-      float cb = g4 | ((g5 & 0x0f) << 8);
-      float cr = (g5 >> 4) | (g6 << 4);
-
-      dest[x]   = y1 + 1.40200 * (cr - 2048);
-      dest[x+1] = y1 - 0.34414 * (cb - 2048) - 0.71414 * (cr - 2048);
-      dest[x+2] = y1 + 1.77200 * (cb - 2048);
-      dest[x+3] = y2 + 1.40200 * (cr - 2048);
-      dest[x+4] = y2 - 0.34414 * (cb - 2048) - 0.71414 * (cr - 2048);
-      dest[x+5] = y2 + 1.77200 * (cb - 2048);
-    }
-  }
-}
 
 void RawDecoder::Decode12BitRaw(ByteStream &input, uint32 w, uint32 h) {
   uchar8* data = mRaw->getData();
@@ -515,6 +475,8 @@ void RawDecoder::Decode12BitRawUnpacked(ByteStream &input, uint32 w, uint32 h) {
 bool RawDecoder::checkCameraSupported(CameraMetaData *meta, string make, string model, string mode) {
   TrimSpaces(make);
   TrimSpaces(model);
+  mRaw->metadata.make = make;
+  mRaw->metadata.model = model;
   Camera* cam = meta->getCamera(make, model, mode);
   if (!cam) {
     if (mode.length() == 0)
@@ -538,7 +500,7 @@ bool RawDecoder::checkCameraSupported(CameraMetaData *meta, string make, string 
 }
 
 void RawDecoder::setMetaData(CameraMetaData *meta, string make, string model, string mode, int iso_speed) {
-  mRaw->isoSpeed = iso_speed;
+  mRaw->metadata.isoSpeed = iso_speed;
   TrimSpaces(make);
   TrimSpaces(model);
   Camera *cam = meta->getCamera(make, model, mode);
@@ -583,6 +545,37 @@ void RawDecoder::setMetaData(CameraMetaData *meta, string make, string model, st
       }
     }
   }
+
+  // Allow overriding individual blacklevels. Values are in CFA order
+  // (the same order as the in the CFA tag)
+  // A hint could be:
+  // <Hint name="override_cfa_black" value="10,20,30,20"/>
+  if (cam->hints.find(string("override_cfa_black")) != cam->hints.end()) {
+    string rgb = cam->hints.find(string("override_cfa_black"))->second;
+    vector<string> v = split_string(rgb, ',');
+    if (v.size() != 4) {
+      mRaw->setError("Expected 4 values '10,20,30,20' as values for override_cfa_black hint.");
+    } else {
+      for (int i = 0; i < 4; i++) {
+        mRaw->blackLevelSeparate[i] = atoi(v[i].c_str());
+      }
+    }
+  }
+
+  // Allow overriding the whitebalance. Values are R,G,B multipliers
+  // A hint could be:
+  // <Hint name="override_whitebalance" value="10,20,30"/>
+  if (cam->hints.find(string("override_whitebalance")) != cam->hints.end()) {
+    string rgb = cam->hints.find(string("override_whitebalance"))->second;
+    vector<string> v = split_string(rgb, ',');
+    if (v.size() != 3) {
+      mRaw->setError("Expected 3 values '10,20,30' as values for override_whitebalance hint.");
+    } else {
+      for (int i = 0; i < 3; i++) {
+        mRaw->metadata.wbCoeffs[i] = (float) atoi(v[i].c_str());
+      }
+    }
+  }
 }
 
 
@@ -619,13 +612,14 @@ void RawDecoder::startThreads() {
     t[i].start_y = y_offset;
     t[i].end_y = MIN(y_offset + y_per_thread, mRaw->dim.y);
     t[i].parent = this;
-    pthread_create(&t[i].threadid, &attr, RawDecoderDecodeThread, &t[i]);
+    if (pthread_create(&t[i].threadid, &attr, RawDecoderDecodeThread, &t[i]) != 0) {
+      ThrowRDE("RawDecoder::startThreads: Unable to start thread");
+    }
     y_offset = t[i].end_y;
   }
 
-  void *status;
   for (uint32 i = 0; i < threads; i++) {
-    pthread_join(t[i].threadid, &status);
+    pthread_join(t[i].threadid, NULL);
   }
   if (mRaw->errors.size() >= threads)
     ThrowRDE("RawDecoder::startThreads: All threads reported errors. Cannot load image.");
@@ -643,7 +637,7 @@ RawSpeed::RawImage RawDecoder::decodeRaw()
     RawImage raw = decodeRawInternal();
     if(hints.find("pixel_aspect_ratio") != hints.end()) {
       stringstream convert(hints.find("pixel_aspect_ratio")->second);
-      convert >> raw->pixelAspectRatio;
+      convert >> raw->metadata.pixelAspectRatio;
     }
     if (interpolateBadPixels)
       raw->fixBadPixels();

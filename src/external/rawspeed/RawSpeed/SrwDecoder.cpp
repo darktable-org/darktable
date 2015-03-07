@@ -1,6 +1,5 @@
 #include "StdAfx.h"
 #include "SrwDecoder.h"
-#include "TiffParserOlympus.h"
 #include "ByteStreamSwap.h"
 
 #if defined(__unix__) || defined(__APPLE__) 
@@ -10,7 +9,7 @@
     RawSpeed - RAW file decoder.
 
     Copyright (C) 2009-2010 Klaus Post
-    Copyright (C) 2014 Pedro Côrte-Real
+    Copyright (C) 2014-2015 Pedro Côrte-Real
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Lesser General Public
@@ -234,7 +233,7 @@ void SrwDecoder::decodeCompressed2( TiffIFD* raw, int bits)
   // encode, the second the number of bits that come after with the difference
   // The table has 14 entries because the difference can have between 0 (no 
   // difference) and 13 bits (differences between 12 bits numbers can need 13)
-  const ushort16 tab[14][2] = {{3,4}, {3,7}, {2,6}, {2,5}, {4,3}, {6,0}, {7,9},
+  const uchar8 tab[14][2] = {{3,4}, {3,7}, {2,6}, {2,5}, {4,3}, {6,0}, {7,9},
                                {8,10}, {9,11}, {10,12}, {10,13}, {5,1}, {4,8}, {4,2}};
   encTableItem tbl[1024];
   ushort16 vpred[2][2] = {{0,0},{0,0}}, hpred[2];
@@ -478,6 +477,23 @@ void SrwDecoder::decodeMetaDataInternal(CameraMetaData *meta) {
     iso = mRootIFD->getEntryRecursive(ISOSPEEDRATINGS)->getInt();
 
   setMetaData(meta, make, model, "", iso);
+
+  // Set the whitebalance
+  if (mRootIFD->hasEntryRecursive(SAMSUNG_WB_RGGBLEVELSUNCORRECTED) &&
+      mRootIFD->hasEntryRecursive(SAMSUNG_WB_RGGBLEVELSBLACK)) {
+    TiffEntry *wb_levels = mRootIFD->getEntryRecursive(SAMSUNG_WB_RGGBLEVELSUNCORRECTED);
+    TiffEntry *wb_black = mRootIFD->getEntryRecursive(SAMSUNG_WB_RGGBLEVELSBLACK);
+    if (wb_levels->count == 4 && wb_black->count == 4) {
+      wb_levels->offsetFromParent();
+      const uint32 *levels = wb_levels->getIntArray();
+      wb_black->offsetFromParent();
+      const uint32 *blacks = wb_black->getIntArray();
+
+      mRaw->metadata.wbCoeffs[0] = (float)(levels[0] - blacks[0]);
+      mRaw->metadata.wbCoeffs[1] = (float)(levels[1] - blacks[1]);
+      mRaw->metadata.wbCoeffs[2] = (float)(levels[3] - blacks[3]);
+    }
+  }
 }
 
 
