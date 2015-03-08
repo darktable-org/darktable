@@ -50,7 +50,7 @@ static gboolean _togglebutton_draw(GtkWidget *widget, cairo_t *cr)
   if(button->icon_flags & CPF_CUSTOM_BG)
     bg_color = button->bg;
   else
-    gtk_style_context_get_background_color(context, state, &bg_color);
+    gtk_style_context_get(context, state, "background-color", &bg_color, NULL);
   if(button->icon_flags & CPF_CUSTOM_FG)
     fg_color = button->fg;
   else

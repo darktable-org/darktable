@@ -124,7 +124,7 @@ static gboolean _lib_ratings_draw_callback(GtkWidget *widget, cairo_t *crf, gpoi
   GtkStateFlags state = gtk_widget_get_state_flags(widget);
   GtkStyleContext *context = gtk_widget_get_style_context(widget);
   gtk_style_context_get_color(context, state, &fg_color);
-  gtk_style_context_get_background_color(context, state, &bg_color);
+  gtk_style_context_get(context, state, "background-color", &bg_color, NULL);
   cairo_surface_t *cst = dt_cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height);
   cairo_t *cr = cairo_create(cst);
 

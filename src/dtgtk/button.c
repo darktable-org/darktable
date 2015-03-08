@@ -44,7 +44,7 @@ static gboolean _button_draw(GtkWidget *widget, cairo_t *cr)
 
   GdkRGBA bg_color, fg_color;
   GtkStyleContext *context = gtk_widget_get_style_context(widget);
-  gtk_style_context_get_background_color(context, state, &bg_color);
+  gtk_style_context_get(context, state, "background-color", &bg_color, NULL);
   gtk_style_context_get_color(context, state, &fg_color);
 
   /* update paint flags depending of states */

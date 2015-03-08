@@ -825,7 +825,7 @@ static gboolean dt_iop_zonesystem_preview_draw(GtkWidget *widget, cairo_t *crf, 
   /* clear background */
   GdkRGBA color;
   GtkStyleContext *context = gtk_widget_get_style_context(self->expander);
-  gtk_style_context_get_background_color(context, gtk_widget_get_state_flags(self->expander), &color);
+  gtk_style_context_get(context, gtk_widget_get_state_flags(self->expander), "background-color", &color, NULL);
 
   gdk_cairo_set_source_rgba(cr, &color);
   cairo_paint(cr);

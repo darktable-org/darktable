@@ -183,7 +183,7 @@ static gboolean _lib_navigation_draw_callback(GtkWidget *widget, cairo_t *crf, g
   GdkRGBA color;
   GtkStyleContext *context = gtk_widget_get_style_context(widget);
   GtkStateFlags state = gtk_widget_get_state_flags(widget);
-  gtk_style_context_get_background_color(context, state, &color);
+  gtk_style_context_get(context, state, "background-color", &color, NULL);
   cairo_surface_t *cst = dt_cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height);
   cairo_t *cr = cairo_create(cst);
 

@@ -228,7 +228,7 @@ static gboolean _lib_darktable_draw_callback(GtkWidget *widget, cairo_t *cr, gpo
   PangoFontDescription *font_desc = NULL;
   GtkStateFlags state = gtk_widget_get_state_flags(widget);
   GtkStyleContext *context = gtk_widget_get_style_context(widget);
-  gtk_style_context_get_background_color(context, state, &color);
+  gtk_style_context_get(context, state, "background-color", &color, NULL);
   gtk_style_context_get(context, state, "font", &font_desc, NULL);
 
 
