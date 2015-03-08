@@ -744,6 +744,7 @@ static int prepare_wb_matrices(dt_iop_module_t *module)
                                 module->dev->image_storage.exif_model);
 
   float XYZ_to_CAM[4][3];
+  XYZ_to_CAM[0][0] = NAN;
   dt_dcraw_adobe_coeff(makermodel, (float(*)[12])XYZ_to_CAM);
   if(!isnan(XYZ_to_CAM[0][0]))
   {
