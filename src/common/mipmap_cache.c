@@ -723,7 +723,7 @@ void dt_mipmap_cache_release(dt_mipmap_cache_t *cache, dt_mipmap_buffer_t *buf)
 {
   if(buf->size == DT_MIPMAP_NONE) return;
   assert(buf->imgid > 0);
-  assert(buf->size >= DT_MIPMAP_0);
+  // assert(buf->size >= DT_MIPMAP_0); // breaks gcc-4.6/4.7 build
   assert(buf->size < DT_MIPMAP_NONE);
   assert(buf->cache_entry);
   dt_cache_release(&_get_cache(cache, buf->size)->cache, buf->cache_entry);
