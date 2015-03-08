@@ -42,9 +42,8 @@ static gboolean _button_draw(GtkWidget *widget, cairo_t *cr)
 
   GtkStateFlags state = gtk_widget_get_state_flags(widget);
 
-  GdkRGBA bg_color, fg_color;
+  GdkRGBA fg_color;
   GtkStyleContext *context = gtk_widget_get_style_context(widget);
-  gtk_style_context_get(context, state, "background-color", &bg_color, NULL);
   gtk_style_context_get_color(context, state, &fg_color);
 
   /* update paint flags depending of states */
@@ -84,9 +83,7 @@ static gboolean _button_draw(GtkWidget *widget, cairo_t *cr)
   {
     if(flags & CPF_PRELIGHT)
     {
-      cairo_rectangle(cr, 0, 0, width, height);
-      gdk_cairo_set_source_rgba(cr, &bg_color);
-      cairo_fill(cr);
+      gtk_render_background(context, cr, 0, 0, width, height);
     }
   }
   else if(!(flags & CPF_BG_TRANSPARENT))

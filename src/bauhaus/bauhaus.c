@@ -552,9 +552,19 @@ void dt_bauhaus_init()
 
   GdkRGBA color, selected_color, bg_color, selected_bg_color;
   gtk_style_context_get_color(ctx, GTK_STATE_FLAG_NORMAL, &color);
-  gtk_style_context_get(ctx, GTK_STATE_FLAG_NORMAL, "background-color", &bg_color, NULL);
+  {
+    GdkRGBA *bc;
+    gtk_style_context_get(ctx, GTK_STATE_FLAG_NORMAL, "background-color", &bc, NULL);
+    bg_color = *bc;
+    gdk_rgba_free(bc);
+  }
   gtk_style_context_get_color(ctx, GTK_STATE_FLAG_SELECTED, &selected_color);
-  gtk_style_context_get(ctx, GTK_STATE_FLAG_SELECTED, "background-color", &selected_bg_color, NULL);
+  {
+    GdkRGBA *sbc;
+    gtk_style_context_get(ctx, GTK_STATE_FLAG_SELECTED, "background-color", &sbc, NULL);
+    selected_bg_color = *sbc;
+    gdk_rgba_free(sbc);
+  }
   PangoFontDescription *pfont = 0;
   gtk_style_context_get(ctx, GTK_STATE_FLAG_NORMAL, "font", &pfont, NULL);
   darktable.bauhaus->bg_normal = bg_color.red;
