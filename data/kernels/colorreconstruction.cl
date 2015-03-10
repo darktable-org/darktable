@@ -33,6 +33,17 @@ image_to_grid(
     clamp(p.z/sigma.z, 0.0f, size.z-1.0f), 0.0f);
 }
 
+float2
+grid_rescale(
+    const int2 pxy,
+    const int2 roixy,
+    const int2 bxy,
+    const float scale)
+{
+  return convert_float2(roixy + pxy) * scale - convert_float2(bxy);
+}
+
+
 void
 atomic_add_f(
     global float *val,
@@ -229,7 +240,10 @@ colorreconstruction_slice(
     const int            sizez,
     const float          sigma_s,
     const float          sigma_r,
-    const float          threshold)
+    const float          threshold,
+    const int2           bxy,
+    const int2           roixy,
+    const float          scale)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
@@ -244,7 +258,8 @@ colorreconstruction_slice(
 
   float4 pixel = read_imagef (in, samplerc, (int2)(x, y));
   float blend = clamp(20.0f / threshold * pixel.x - 19.0f, 0.0f, 1.0f);
-  float4 p = (float4)(x, y, pixel.x, 0);
+  float2 pxy = grid_rescale((int2)(x, y), roixy, bxy, scale);
+  float4 p = (float4)(pxy.x, pxy.y, pixel.x, 0);
   float4 gridp = image_to_grid(p, size, sigma);
   int4 gridi = min(size - 2, (int4)(gridp.x, gridp.y, gridp.z, 0));
   float fx = gridp.x - gridi.x;
