@@ -338,19 +338,19 @@ static int masks_get_delta(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
 
   if(form->type & DT_MASKS_PATH)
   {
-    dt_masks_point_path_t *pt = (dt_masks_point_path_t *)g_list_nth_data(form->points, 0);
+    dt_masks_point_path_t *pt = (dt_masks_point_path_t *)form->points->data;
 
     res = masks_point_calc_delta(self, piece, roi, pt->corner, form->source, dx, dy);
   }
   else if(form->type & DT_MASKS_CIRCLE)
   {
-    dt_masks_point_circle_t *pt = (dt_masks_point_circle_t *)g_list_nth_data(form->points, 0);
+    dt_masks_point_circle_t *pt = (dt_masks_point_circle_t *)form->points->data;
 
     res = masks_point_calc_delta(self, piece, roi, pt->center, form->source, dx, dy);
   }
   else if(form->type & DT_MASKS_ELLIPSE)
   {
-    dt_masks_point_ellipse_t *pt = (dt_masks_point_ellipse_t *)g_list_nth_data(form->points, 0);
+    dt_masks_point_ellipse_t *pt = (dt_masks_point_ellipse_t *)form->points->data;
 
     res = masks_point_calc_delta(self, piece, roi, pt->center, form->source, dx, dy);
   }
