@@ -529,8 +529,6 @@ int dt_iop_clip_and_zoom_cl(int devid, cl_mem dev_out, cl_mem dev_in,
                             const struct dt_iop_roi_t *const roi_in);
 #endif
 
-uint32_t dt_iop_adjust_filters_to_crop(const dt_image_t *img);
-
 /** clip and zoom mosaiced image without demosaicing it uint16_t -> float4 */
 void dt_iop_clip_and_zoom_demosaic_half_size(float *out, const uint16_t *const in,
                                              const struct dt_iop_roi_t *const roi_out,
