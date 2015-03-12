@@ -9,6 +9,7 @@ src/common/darktable.h
 src/common/debug.h
 src/common/film.c
 src/common/history.c
+src/common/http_server.c
 src/common/image.c
 src/common/imageio.c
 src/common/import_session.c
