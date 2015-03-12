@@ -841,7 +841,7 @@ void modify_roi_in(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *
   const float orig_w = roi_in->scale * piece->buf_in.width, orig_h = roi_in->scale * piece->buf_in.height;
   lfModifier *modifier = lf_modifier_new(d->lens, d->crop, orig_w, orig_h);
 
-  float xm = INFINITY, xM = -INFINITY, ym = INFINITY, yM = -INFINITY;
+  float xm = FLT_MAX, xM = -FLT_MAX, ym = FLT_MAX, yM = -FLT_MAX;
 
   int modflags = lf_modifier_initialize(modifier, d->lens, LF_PF_F32, d->focal, d->aperture, d->distance,
                                         d->scale, d->target_geom, d->modify_flags, d->inverse);
@@ -880,11 +880,23 @@ void modify_roi_in(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *
     }
     dt_free_align(buf);
 
+    // LensFun can return NAN coords, so we need to handle them carefully.
+    if(!isfinite(xm) || !(0 <= xm && xm < orig_w)) xm = 0;
+    if(!isfinite(xM) || !(1 <= xM && xM < orig_w)) xM = orig_w;
+    if(!isfinite(ym) || !(0 <= ym && ym < orig_h)) ym = 0;
+    if(!isfinite(yM) || !(1 <= yM && yM < orig_h)) yM = orig_h;
+
     const struct dt_interpolation *interpolation = dt_interpolation_new(DT_INTERPOLATION_USERPREF);
     roi_in->x = fmaxf(0.0f, xm - interpolation->width);
     roi_in->y = fmaxf(0.0f, ym - interpolation->width);
     roi_in->width = fminf(orig_w - roi_in->x, xM - roi_in->x + interpolation->width);
     roi_in->height = fminf(orig_h - roi_in->y, yM - roi_in->y + interpolation->width);
+
+    // sanity check.
+    roi_in->x = CLAMP(roi_in->x, 0, (int)floorf(orig_w));
+    roi_in->y = CLAMP(roi_in->y, 0, (int)floorf(orig_h));
+    roi_in->width = CLAMP(roi_in->width, 1, (int)ceilf(orig_w) - roi_in->x);
+    roi_in->height = CLAMP(roi_in->height, 1, (int)ceilf(orig_h) - roi_in->y);
   }
   lf_modifier_destroy(modifier);
 }
