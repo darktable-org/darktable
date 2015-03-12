@@ -13,7 +13,7 @@ src/common/image.c
 src/common/imageio.c
 src/common/import_session.c
 src/common/mipmap_cache.c
-src/common/noiseprofiles.h
+src/common/noiseprofiles.c
 src/common/pdf.h
 src/common/points.h
 src/common/printprof.c
@@ -164,8 +164,8 @@ src/libs/tools/hinter.c
 src/libs/tools/lighttable.c
 src/libs/tools/module_toolbox.c
 src/libs/tools/ratings.c
-src/libs/tools/view_toolbox.c
 src/libs/tools/viewswitcher.c
+src/libs/tools/view_toolbox.c
 src/lua/preferences.c
 src/views/darkroom.c
 src/views/lighttable.c
