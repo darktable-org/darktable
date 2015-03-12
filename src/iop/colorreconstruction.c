@@ -49,7 +49,23 @@ typedef struct dt_iop_colorreconstruct_params_t
   float range;
 } dt_iop_colorreconstruct_params_t;
 
-typedef struct dt_iop_colorreconstruct_bilateral_frozen_t dt_iop_colorreconstruct_bilateral_frozen_t; // forward declaration
+typedef struct dt_iop_colorreconstruct_Lab_t
+{
+  float L;
+  float a;
+  float b;
+  float weight;
+} dt_iop_colorreconstruct_Lab_t;
+
+typedef struct dt_iop_colorreconstruct_bilateral_frozen_t
+{
+  size_t size_x, size_y, size_z;
+  int width, height, x, y;
+  float scale;
+  float sigma_s, sigma_r;
+  dt_iop_colorreconstruct_Lab_t *buf;
+} dt_iop_colorreconstruct_bilateral_frozen_t;
+
 typedef struct dt_iop_colorreconstruct_gui_data_t
 {
   GtkWidget *threshold;
@@ -109,14 +125,6 @@ void connect_key_accels(dt_iop_module_t *self)
   dt_accel_connect_slider_iop(self, "range blur", GTK_WIDGET(g->range));
 }
 
-typedef struct dt_iop_colorreconstruct_Lab_t
-{
-  float L;
-  float a;
-  float b;
-  float weight;
-} dt_iop_colorreconstruct_Lab_t;
-
 typedef struct dt_iop_colorreconstruct_bilateral_t
 {
   size_t size_x, size_y, size_z;
@@ -125,16 +133,6 @@ typedef struct dt_iop_colorreconstruct_bilateral_t
   float sigma_s, sigma_r;
   dt_iop_colorreconstruct_Lab_t *buf;
 } dt_iop_colorreconstruct_bilateral_t;
-
-typedef struct dt_iop_colorreconstruct_bilateral_frozen_t
-{
-  size_t size_x, size_y, size_z;
-  int width, height, x, y;
-  float scale;
-  float sigma_s, sigma_r;
-  dt_iop_colorreconstruct_Lab_t *buf;
-} dt_iop_colorreconstruct_bilateral_frozen_t;
-
 
 static inline void image_to_grid(const dt_iop_colorreconstruct_bilateral_t *const b, const float i, const float j, const float L, float *x,
                           float *y, float *z)
