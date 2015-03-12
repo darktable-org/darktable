@@ -118,8 +118,8 @@ end:
 dt_http_server_t *dt_http_server_create(const int *ports, const int n_ports, const char *id,
                                         const dt_http_server_callback callback, gpointer user_data)
 {
-  SoupServer *httpserver;
-  int port;
+  SoupServer *httpserver = NULL;
+  int port = 0;
 
 #ifdef OLD_API
   dt_print(DT_DEBUG_CONTROL, "[http server] using the old libsoup api\n");
