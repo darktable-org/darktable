@@ -964,6 +964,9 @@
 		</CFA>
 		<Crop x="96" y="18" width="0" height="0"/>
 		<Sensor black="511" white="4000"/>
+		<Hints>
+			<Hint name="wb_offset" value="142"/>
+		</Hints>
 	</Camera>
 	<Camera make="Canon" model="Canon PowerShot G1 X">
 		<CFA width="2" height="2">
