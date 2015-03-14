@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2015-03-14 14:25+0100\n"
-"PO-Revision-Date: 2015-03-14 14:38+0100\n"
+"PO-Revision-Date: 2015-03-14 14:46+0100\n"
 "Last-Translator: Ger Siemerink <g.siemerink@gmail.com>\n"
 "Language-Team: Ger Siemerink <g.siemerink@gmail.com>\n"
 "Language: nl_NL\n"
@@ -873,9 +873,8 @@ msgstr "gelabeld"
 #, c-format
 msgid "%d image of %d in current collection is selected"
 msgid_plural "%d images of %d in current collection are selected"
-msgstr[0] "%d afbeelding van de %d uit de huidige collectie is geselecteerd"
-msgstr[1] ""
-"%d afbeeldingen van de %d uit de huidige collectie zijn geselecteerd"
+msgstr[0] " geselecteerd %d afbeelding uit %d "
+msgstr[1] "geselecteerd %d afbeeldingen uit %d "
 
 #: ../src/common/cups_print.c:273
 #, c-format
