@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2015-03-14 14:25+0100\n"
-"PO-Revision-Date: 2015-03-14 14:46+0100\n"
+"PO-Revision-Date: 2015-03-14 15:13+0100\n"
 "Last-Translator: Ger Siemerink <g.siemerink@gmail.com>\n"
 "Language-Team: Ger Siemerink <g.siemerink@gmail.com>\n"
 "Language: nl_NL\n"
@@ -7483,7 +7483,7 @@ msgstr "x"
 
 #: ../src/libs/export.c:577
 msgid "allow upscaling"
-msgstr "sta opschalen toe"
+msgstr "opschalen toestaan"
 
 #: ../src/libs/export.c:648 ../src/libs/export.c:666
 #: ../src/libs/print_settings.c:1214 ../src/libs/print_settings.c:1253
