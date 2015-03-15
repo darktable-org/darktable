@@ -515,7 +515,7 @@ int dt_init(int argc, char *argv[], const int init_gui, lua_State *L)
       }
       else if(!strcmp(argv[k], "--version"))
       {
-        printf("this is " PACKAGE_STRING "\ncopyright (c) 2009-2014 johannes hanika\n" PACKAGE_BUGREPORT
+        printf("this is " PACKAGE_STRING "\ncopyright (c) 2009-2015 johannes hanika\n" PACKAGE_BUGREPORT
                "\n\ncompile options:\n"
 #ifdef _OPENMP
                "  OpenMP support enabled\n"
