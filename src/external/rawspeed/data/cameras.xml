@@ -2558,6 +2558,9 @@
 		</CFA>
 		<Crop x="0" y="0" width="-14" height="0"/>
 		<Sensor black="200" white="3900"/>
+		<Aliases>
+			<Alias>STYLUS1,1s</Alias>
+		</Aliases>
 	</Camera>
 	<Camera make="Panasonic" model = "DMC-FX150">
 		<CFA width="2" height="2">
