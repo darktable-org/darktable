@@ -98,8 +98,8 @@ If you don't have the time or the inclination to compile Lua yourself,
 get a binary from
 <A HREF="http://lua-users.org/wiki/LuaBinaries">LuaBinaries</A>.
 Try also
-<A HREF="http://luaforwindows.luaforge.net/">Lua for Windows</A>,
-an easy-to-use distribution of Lua that includes many useful libraries.
+<A HREF="http://luadist.org/">LuaDist</A>,
+a multi-platform distribution of Lua that includes batteries.
 
 <H3>Building Lua</H3>
 
@@ -110,8 +110,8 @@ Here are the details.
 <OL>
 <LI>
 Open a terminal window and move to
-the top-level directory, which is named <TT>lua-5.2.3</TT>.
-The Makefile there controls both the build process and the installation process.
+the top-level directory, which is named <TT>lua-5.2.x</TT>.
+The <TT>Makefile</TT> there controls both the build process and the installation process.
 <P>
 <LI>
   Do "<KBD>make</KBD>" and see if your platform is listed.
@@ -136,11 +136,12 @@ and liblua.a (the library).
 <P>
 <LI>
   To check that Lua has been built correctly, do "<KBD>make test</KBD>"
-  after building Lua. This will run the interpreter and print its version string.
+  after building Lua. This will run the interpreter and print its version.
 </OL>
 <P>
 If you're running Linux and get compilation errors,
-make sure you have installed the <TT>readline</TT> development package.
+make sure you have installed the <TT>readline</TT> development package
+(which is probably named <TT>libreadline-dev</TT> or <TT>readline-devel</TT>).
 If you get link errors after that,
 then try "<KBD>make linux MYLIBS=-ltermcap</KBD>".
 
@@ -148,7 +149,7 @@ then try "<KBD>make linux MYLIBS=-ltermcap</KBD>".
 <P>
   Once you have built Lua, you may want to install it in an official
   place in your system. In this case, do "<KBD>make install</KBD>". The official
-  place and the way to install files are defined in the Makefile. You'll
+  place and the way to install files are defined in the <TT>Makefile</TT>. You'll
   probably need the right permissions to install files.
 
 <P>
@@ -158,11 +159,13 @@ then try "<KBD>make linux MYLIBS=-ltermcap</KBD>".
 <P>
   To install Lua locally, do "<KBD>make local</KBD>".
   This will create a directory <TT>install</TT> with subdirectories
-  <TT>bin</TT>, <TT>include</TT>, <TT>lib</TT>, <TT>man</TT>,
+  <TT>bin</TT>, <TT>include</TT>, <TT>lib</TT>, <TT>man</TT>, <TT>share</TT>,
   and install Lua as listed below.
 
   To install Lua locally, but in some other directory, do
   "<KBD>make install INSTALL_TOP=xxx</KBD>", where xxx is your chosen directory.
+  The installation starts in the <TT>src</TT> and <TT>doc</TT> directories,
+  so take care if <TT>INSTALL_TOP</TT> is not an absolute path.
 
 <DL CLASS="display">
 <DT>
@@ -186,8 +189,8 @@ then try "<KBD>make linux MYLIBS=-ltermcap</KBD>".
 <P>
   These are the only directories you need for development.
   If you only want to run Lua programs,
-  you only need the files in bin and man.
-  The files in include and lib are needed for
+  you only need the files in <TT>bin</TT> and <TT>man</TT>.
+  The files in <TT>include</TT> and <TT>lib</TT> are needed for
   embedding Lua in C or C++ programs.
 
 <H3><A NAME="customization">Customization</A></H3>
@@ -203,7 +206,7 @@ then try "<KBD>make linux MYLIBS=-ltermcap</KBD>".
   You don't actually need to edit the Makefiles because you may set the
   relevant variables in the command line when invoking make.
   Nevertheless, it's probably best to edit and save the Makefiles to
-  record the changes you need.
+  record the changes you've made.
 
 <P>
   On the other hand, if you need to customize some Lua features, you'll need
@@ -254,6 +257,7 @@ compiler:
   be linked statically into the host program and its symbols exported for
   dynamic linking; <TT>src/Makefile</TT> does this for the Lua interpreter.
   For Windows, we recommend that the Lua library be a DLL.
+  In all cases, the compiler luac should be linked statically.
 
 <P>
   As mentioned above, you may edit <TT>src/luaconf.h</TT> to customize
@@ -375,7 +379,7 @@ For details, see
 <A HREF="http://www.lua.org/license.html">this</A>.
 
 <BLOCKQUOTE STYLE="padding-bottom: 0em">
-Copyright &copy; 1994&ndash;2013 Lua.org, PUC-Rio.
+Copyright &copy; 1994&ndash;2015 Lua.org, PUC-Rio.
 
 <P>
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -403,10 +407,10 @@ THE SOFTWARE.
 <HR>
 <SMALL CLASS="footer">
 Last update:
-Sat Nov  9 22:39:16 BRST 2013
+Mon Feb 23 22:25:08 BRT 2015
 </SMALL>
 <!--
-Last change: revised for Lua 5.2.3
+Last change: revised for Lua 5.2.4
 -->
 
 </BODY>
