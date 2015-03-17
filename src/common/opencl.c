@@ -28,6 +28,7 @@
 #include "common/nvidia_gpus.h"
 #include "develop/pixelpipe.h"
 #include "control/conf.h"
+#include "control/control.h"
 
 #include <string.h>
 #include <stdio.h>
@@ -38,8 +39,11 @@
 #include <errno.h>
 #include <libgen.h>
 #include <ctype.h>
+#include <zlib.h>
 
 static const char *dt_opencl_get_vendor_by_id(unsigned int id);
+static float dt_opencl_benchmark_gpu(const int devid, const size_t width, const size_t height, const int count, const float sigma);
+static float dt_opencl_benchmark_cpu(const size_t width, const size_t height, const int count, const float sigma);
 static char *_ascii_str_canonical(const char *in, char *out, int maxlen);
 /** parse a single token of priority string and store priorities in priority_list */
 static void dt_opencl_priority_parse(dt_opencl_t *cl, char *configstr, int *priority_list);
@@ -71,6 +75,7 @@ void dt_opencl_init(dt_opencl_t *cl, const gboolean exclude_opencl)
   cl->async_pixelpipe = dt_conf_get_bool("opencl_async_pixelpipe");
   cl->synch_cache = dt_conf_get_bool("opencl_synch_cache");
   cl->micro_nap = dt_conf_get_int("opencl_micro_nap");
+  cl->crc = 0;
   cl->dlocl = NULL;
   cl->dev_priority_image = NULL;
   cl->dev_priority_preview = NULL;
@@ -296,6 +301,8 @@ void dt_opencl_init(dt_opencl_t *cl, const gboolean exclude_opencl)
     cl->dev[dev].name = strdup(infostr);
     cl->dev[dev].cname = _ascii_str_canonical(infostr, NULL, 0);
 
+    cl->crc = crc32(cl->crc, (const unsigned char *)infostr, strlen(infostr));
+
     dt_print(DT_DEBUG_OPENCL, "[opencl_init] device %d `%s' supports image sizes of %zd x %zd\n", k, infostr,
              cl->dev[dev].max_image_width, cl->dev[dev].max_image_height);
     dt_print(DT_DEBUG_OPENCL, "[opencl_init] device %d `%s' allows GPU memory allocations of up to %luMB\n",
@@ -495,6 +502,37 @@ finally:
     cl->bilateral = dt_bilateral_init_cl_global();
     cl->gaussian = dt_gaussian_init_cl_global();
     cl->interpolation = dt_interpolation_init_cl_global();
+
+    char checksum[64];
+    snprintf(checksum, sizeof(checksum), "%u", cl->crc);
+    char *oldchecksum = dt_conf_get_string("opencl_checksum");
+
+    // check if the configuration (OpenCL device setup) has changed, indicated by checksum != oldchecksum
+    if(strcmp(oldchecksum, checksum) != 0)
+    {
+      // store new checksum value in config
+      dt_conf_set_string("opencl_checksum", checksum);
+      // do CPU bencharking
+      float tcpu = dt_opencl_benchmark_cpu(1024, 1024, 5, 100.0f);
+      // get best benchmarking value of all detected OpenCL devices
+      float tgpumin = INFINITY;
+      for(int n = 0; n < cl->num_devs; n++)
+      {
+        float tgpu = cl->dev[n].benchmark = dt_opencl_benchmark_gpu(n, 1024, 1024, 5, 100.0f);
+        tgpumin = fmin(tgpu, tgpumin);
+      }
+      dt_print(DT_DEBUG_OPENCL, "[opencl_init] benchmarking results: %f seconds for fastest GPU versus %f seconds for CPU.\n",
+           tgpumin, tcpu);
+
+      // de-activate opencl for darktable in case of too slow GPU(s). user can always manually overrule this later.
+      if(tcpu <= 1.5f * tgpumin)
+      {
+        cl->enabled = FALSE;
+        dt_conf_set_bool("opencl", FALSE);
+        dt_print(DT_DEBUG_OPENCL, "[opencl_init] due to a slow GPU the opencl flag has been set to OFF.\n");
+        dt_control_log(_("opencl has been de-activated due to a slow GPU. you may activate it manually in the preferences dialog."));
+      }
+    }
   }
   if(locale)
   {
@@ -577,6 +615,158 @@ static const char *dt_opencl_get_vendor_by_id(unsigned int id)
 
   return vendor;
 }
+
+#define TEA_ROUNDS 8
+static void encrypt_tea(unsigned int *arg)
+{
+  const unsigned int key[] = { 0xa341316c, 0xc8013ea4, 0xad90777d, 0x7e95761e };
+  unsigned int v0 = arg[0], v1 = arg[1];
+  unsigned int sum = 0;
+  unsigned int delta = 0x9e3779b9;
+  for(int i = 0; i < TEA_ROUNDS; i++)
+  {
+    sum += delta;
+    v0 += ((v1 << 4) + key[0]) ^ (v1 + sum) ^ ((v1 >> 5) + key[1]);
+    v1 += ((v0 << 4) + key[2]) ^ (v0 + sum) ^ ((v0 >> 5) + key[3]);
+  }
+  arg[0] = v0;
+  arg[1] = v1;
+}
+
+static float tpdf(unsigned int urandom)
+{
+  float frandom = (float)urandom / 0xFFFFFFFFu;
+
+  return (frandom < 0.5f ? (sqrtf(2.0f * frandom) - 1.0f) : (1.0f - sqrtf(2.0f * (1.0f - frandom))));
+}
+
+static float dt_opencl_benchmark_gpu(const int devid, const size_t width, const size_t height, const int count, const float sigma)
+{
+  const int bpp = 4 * sizeof(float);
+  cl_int err = 666;
+  cl_mem dev_mem = NULL;
+  float *buf = NULL;
+
+  const float Labmax[] = { INFINITY, INFINITY, INFINITY, INFINITY };
+  const float Labmin[] = { -INFINITY, -INFINITY, -INFINITY, -INFINITY };
+
+  unsigned int tea_states[2 * dt_get_num_threads()];
+  memset(tea_states, 0, 2 * dt_get_num_threads() * sizeof(unsigned int));
+
+  buf = dt_alloc_align(16, width * height * bpp);
+  if(buf == NULL) goto error;
+
+#ifdef _OPENMP
+#pragma omp parallel for default(none) shared(buf, tea_states)
+#endif
+  for(size_t j = 0; j < height; j++)
+  {
+    unsigned int *tea_state = tea_states + 2 * dt_get_thread_num();
+    tea_state[0] = j + dt_get_thread_num();
+    size_t index = j * 4 * width;
+    for(int i = 0; i < 4 * width; i++)
+    {
+      encrypt_tea(tea_state);
+      buf[index + i] = 100.0f * tpdf(tea_state[0]);
+    }
+  }
+
+  // start timer
+  double start = dt_get_wtime();
+
+  // allocate dev_mem buffer
+  dev_mem = dt_opencl_alloc_device_use_host_pointer(devid, width, height, bpp, width*bpp, buf);
+  if(dev_mem == NULL) goto error;
+
+  // prepare gaussian filter
+  dt_gaussian_cl_t *g = dt_gaussian_init_cl(devid, width, height, 4, Labmax, Labmin, sigma, 0);
+  if(!g) goto error;
+
+  // gaussian blur
+  for(int n = 0; n < count; n++)
+  {
+    err = dt_gaussian_blur_cl(g, dev_mem, dev_mem);
+    if(err != CL_SUCCESS) goto error;
+  }
+
+  // cleanup gaussian filter
+  dt_gaussian_free_cl(g);
+
+  // copy dev_mem -> buf
+  err = dt_opencl_copy_device_to_host(devid, buf, dev_mem, width, height, bpp);
+  if(err != CL_SUCCESS) goto error;
+
+  // free dev_mem
+  dt_opencl_release_mem_object(dev_mem);
+
+  // end timer
+  double end = dt_get_wtime();
+
+  dt_free_align(buf);
+  return (end - start);
+
+error:
+  dt_free_align(buf);
+  if(dev_mem != NULL) dt_opencl_release_mem_object(dev_mem);
+  return INFINITY;
+}
+
+static float dt_opencl_benchmark_cpu(const size_t width, const size_t height, const int count, const float sigma)
+{
+  const int bpp = 4 * sizeof(float);
+  float *buf = NULL;
+
+  const float Labmax[] = { INFINITY, INFINITY, INFINITY, INFINITY };
+  const float Labmin[] = { -INFINITY, -INFINITY, -INFINITY, -INFINITY };
+
+  unsigned int tea_states[2 * dt_get_num_threads()];
+  memset(tea_states, 0, 2 * dt_get_num_threads() * sizeof(unsigned int));
+
+  buf = dt_alloc_align(16, width * height * bpp);
+  if(buf == NULL) goto error;
+
+#ifdef _OPENMP
+#pragma omp parallel for default(none) shared(buf, tea_states)
+#endif
+  for(size_t j = 0; j < height; j++)
+  {
+    unsigned int *tea_state = tea_states + 2 * dt_get_thread_num();
+    tea_state[0] = j + dt_get_thread_num();
+    size_t index = j * 4 * width;
+    for(int i = 0; i < 4 * width; i++)
+    {
+      encrypt_tea(tea_state);
+      buf[index + i] = 100.0f * tpdf(tea_state[0]);
+    }
+  }
+
+  // start timer
+  double start = dt_get_wtime();
+
+  // prepare gaussian filter
+  dt_gaussian_t *g = dt_gaussian_init(width, height, 4, Labmax, Labmin, sigma, 0);
+  if(!g) goto error;
+
+  // gaussian blur
+  for(int n = 0; n < count; n++)
+  {
+    dt_gaussian_blur(g, buf, buf);
+  }
+
+  // cleanup gaussian filter
+  dt_gaussian_free(g);
+
+  // end timer
+  double end = dt_get_wtime();
+
+  dt_free_align(buf);
+  return (end - start);
+
+error:
+  dt_free_align(buf);
+  return INFINITY;
+}
+
 
 int dt_opencl_finish(const int devid)
 {
