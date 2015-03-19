@@ -38,6 +38,8 @@
 
 DT_MODULE(3)
 
+#define EXPORT_MAX_IMAGE_SIZE UINT16_MAX
+
 typedef struct dt_lib_export_t
 {
   GtkSpinButton *width, *height;
@@ -279,8 +281,8 @@ static void _update_dimensions(dt_lib_export_t *d)
 {
   uint32_t w = 0, h = 0;
   _get_max_output_dimension(d, &w, &h);
-  gtk_spin_button_set_range(d->width, 0, (w > 0 ? w : 10000));
-  gtk_spin_button_set_range(d->height, 0, (h > 0 ? h : 10000));
+  gtk_spin_button_set_range(d->width, 0, (w > 0 ? w : EXPORT_MAX_IMAGE_SIZE));
+  gtk_spin_button_set_range(d->height, 0, (h > 0 ? h : EXPORT_MAX_IMAGE_SIZE));
 }
 
 static void set_storage_by_name(dt_lib_export_t *d, const char *name)
@@ -541,10 +543,10 @@ void gui_init(dt_lib_module_t *self)
   gtk_widget_set_margin_top(label, DT_PIXEL_APPLY_DPI(20));
   gtk_box_pack_start(GTK_BOX(self->widget), label, FALSE, TRUE, 0);
 
-  d->width = GTK_SPIN_BUTTON(gtk_spin_button_new_with_range(0, 10000, 1));
+  d->width = GTK_SPIN_BUTTON(gtk_spin_button_new_with_range(0, EXPORT_MAX_IMAGE_SIZE, 1));
   g_object_set(G_OBJECT(d->width), "tooltip-text", _("maximum output width\nset to 0 for no scaling"),
                (char *)NULL);
-  d->height = GTK_SPIN_BUTTON(gtk_spin_button_new_with_range(0, 10000, 1));
+  d->height = GTK_SPIN_BUTTON(gtk_spin_button_new_with_range(0, EXPORT_MAX_IMAGE_SIZE, 1));
   g_object_set(G_OBJECT(d->height), "tooltip-text", _("maximum output height\nset to 0 for no scaling"),
                (char *)NULL);
 
