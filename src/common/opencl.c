@@ -646,6 +646,7 @@ static float dt_opencl_benchmark_gpu(const int devid, const size_t width, const 
   cl_int err = 666;
   cl_mem dev_mem = NULL;
   float *buf = NULL;
+  dt_gaussian_cl_t *g = NULL;
 
   const float Labmax[] = { INFINITY, INFINITY, INFINITY, INFINITY };
   const float Labmin[] = { -INFINITY, -INFINITY, -INFINITY, -INFINITY };
@@ -679,7 +680,7 @@ static float dt_opencl_benchmark_gpu(const int devid, const size_t width, const 
   if(dev_mem == NULL) goto error;
 
   // prepare gaussian filter
-  dt_gaussian_cl_t *g = dt_gaussian_init_cl(devid, width, height, 4, Labmax, Labmin, sigma, 0);
+  g = dt_gaussian_init_cl(devid, width, height, 4, Labmax, Labmin, sigma, 0);
   if(!g) goto error;
 
   // gaussian blur
@@ -691,6 +692,7 @@ static float dt_opencl_benchmark_gpu(const int devid, const size_t width, const 
 
   // cleanup gaussian filter
   dt_gaussian_free_cl(g);
+  g = NULL;
 
   // copy dev_mem -> buf
   err = dt_opencl_copy_device_to_host(devid, buf, dev_mem, width, height, bpp);
@@ -706,6 +708,7 @@ static float dt_opencl_benchmark_gpu(const int devid, const size_t width, const 
   return (end - start);
 
 error:
+  dt_gaussian_free_cl(g);
   dt_free_align(buf);
   if(dev_mem != NULL) dt_opencl_release_mem_object(dev_mem);
   return INFINITY;
@@ -715,6 +718,7 @@ static float dt_opencl_benchmark_cpu(const size_t width, const size_t height, co
 {
   const int bpp = 4 * sizeof(float);
   float *buf = NULL;
+  dt_gaussian_t *g = NULL;
 
   const float Labmax[] = { INFINITY, INFINITY, INFINITY, INFINITY };
   const float Labmin[] = { -INFINITY, -INFINITY, -INFINITY, -INFINITY };
@@ -744,7 +748,7 @@ static float dt_opencl_benchmark_cpu(const size_t width, const size_t height, co
   double start = dt_get_wtime();
 
   // prepare gaussian filter
-  dt_gaussian_t *g = dt_gaussian_init(width, height, 4, Labmax, Labmin, sigma, 0);
+  g = dt_gaussian_init(width, height, 4, Labmax, Labmin, sigma, 0);
   if(!g) goto error;
 
   // gaussian blur
@@ -755,6 +759,7 @@ static float dt_opencl_benchmark_cpu(const size_t width, const size_t height, co
 
   // cleanup gaussian filter
   dt_gaussian_free(g);
+  g = NULL;
 
   // end timer
   double end = dt_get_wtime();
@@ -763,6 +768,7 @@ static float dt_opencl_benchmark_cpu(const size_t width, const size_t height, co
   return (end - start);
 
 error:
+  dt_gaussian_free(g);
   dt_free_align(buf);
   return INFINITY;
 }
