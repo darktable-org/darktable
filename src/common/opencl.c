@@ -530,7 +530,7 @@ finally:
         cl->enabled = FALSE;
         dt_conf_set_bool("opencl", FALSE);
         dt_print(DT_DEBUG_OPENCL, "[opencl_init] due to a slow GPU the opencl flag has been set to OFF.\n");
-        dt_control_log(_("opencl has been de-activated due to a slow GPU. you may activate it manually in the preferences dialog."));
+        dt_control_log(_("due to a slow GPU hardware acceleration via opencl has been de-activated."));
       }
     }
   }
