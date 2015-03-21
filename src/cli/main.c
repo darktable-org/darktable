@@ -63,7 +63,7 @@ static void generate_thumbnail_cache()
   }
   // some progress counter
   sqlite3_stmt *stmt;
-  uint64_t image_count = 0, counter = 0;
+  size_t image_count = 0, counter = 0;
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select count(id) from images", -1, &stmt, 0);
   if(sqlite3_step(stmt) == SQLITE_ROW)
     image_count = sqlite3_column_int(stmt, 0);
@@ -129,7 +129,8 @@ write_error:
     dt_mipmap_cache_release(darktable.mipmap_cache, &buf);
 next:
     counter ++;
-    fprintf(stderr, "\rimage %lu/%lu (%.02f%%)            ", counter, image_count, 100.0*counter/(float)image_count);
+    fprintf(stderr, "\rimage %zu/%zu (%.02f%%)            ", counter, image_count,
+            100.0 * counter / (float)image_count);
   }
   dt_free_align(tmp);
   sqlite3_finalize(stmt);
