@@ -24,8 +24,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 1.3\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-02-22 11:17+0100\n"
-"PO-Revision-Date: 2015-02-22 11:19+0100\n"
+"POT-Creation-Date: 2015-03-21 15:09+0100\n"
+"PO-Revision-Date: 2015-03-21 15:14+0100\n"
 "Last-Translator: Richard Levitte <richard@levitte.org>\n"
 "Language-Team: \n"
 "Language: sv\n"
@@ -782,7 +782,7 @@ msgstr "kunde inte hämta parametrar från formatmodul, avbryter exporten..."
 #: ../src/iop/bilateral.cc:351 ../src/iop/channelmixer.c:464
 #: ../src/iop/channelmixer.c:476 ../src/iop/colorbalance.c:597
 #: ../src/iop/colorbalance.c:639 ../src/iop/colorbalance.c:680
-#: ../src/iop/temperature.c:766 ../src/libs/collect.c:1235
+#: ../src/iop/temperature.c:758 ../src/libs/collect.c:1235
 #: ../src/libs/collect.c:1236
 msgid "red"
 msgstr "röd"
@@ -796,7 +796,7 @@ msgstr "gul"
 #: ../src/iop/bilateral.cc:352 ../src/iop/channelmixer.c:465
 #: ../src/iop/channelmixer.c:483 ../src/iop/colorbalance.c:606
 #: ../src/iop/colorbalance.c:648 ../src/iop/colorbalance.c:689
-#: ../src/iop/temperature.c:767 ../src/libs/collect.c:1241
+#: ../src/iop/temperature.c:759 ../src/libs/collect.c:1241
 #: ../src/libs/collect.c:1242
 msgid "green"
 msgstr "grön"
@@ -805,7 +805,7 @@ msgstr "grön"
 #: ../src/iop/bilateral.cc:353 ../src/iop/channelmixer.c:466
 #: ../src/iop/channelmixer.c:489 ../src/iop/colorbalance.c:615
 #: ../src/iop/colorbalance.c:657 ../src/iop/colorbalance.c:698
-#: ../src/iop/temperature.c:768 ../src/libs/collect.c:1244
+#: ../src/iop/temperature.c:760 ../src/libs/collect.c:1244
 #: ../src/libs/collect.c:1245
 msgid "blue"
 msgstr "blå"
@@ -852,7 +852,7 @@ msgstr "`%s' är av okänt format!"
 msgid "error loading file `%s'"
 msgstr "fel uppstod vid läsning av fil '%s'"
 
-#: ../src/common/darktable.c:640
+#: ../src/common/darktable.c:650
 #, c-format
 msgid "ERROR : invalid temporary directory : %s\n"
 msgstr "FEL : ogiltig temporär katalog : %s\n"
@@ -892,29 +892,44 @@ msgstr "på"
 #: ../src/common/styles.c:677 ../src/develop/blend_gui.c:1604
 #: ../src/develop/blend_gui.c:1822 ../src/develop/develop.c:1221
 #: ../src/imageio/format/exr.cc:319 ../src/imageio/format/j2k.c:651
-#: ../src/iop/colorin.c:1266 ../src/iop/demosaic.c:2179
+#: ../src/iop/colorin.c:1265 ../src/iop/demosaic.c:2179
 #: ../src/iop/vignette.c:1145 ../src/libs/history.c:152
 #: ../src/libs/live_view.c:409
 msgid "off"
 msgstr "av"
 
+#: ../src/common/http_server.c:91
+#, c-format
+msgid "darktable » %s"
+msgstr "darktable » %s"
+
+#: ../src/common/http_server.c:93
+msgid "<h1>Sorry,</h1><p>something went wrong. Please try again.</p>"
+msgstr "<h1>Ledsen,</h1><p>någonting gick fel. Var god försök igen.</p>"
+
+#: ../src/common/http_server.c:98
+msgid ""
+"<h1>Thank you,</h1><p>everything should have worked, you can <b>close</b> "
+"your browser now and <b>go back</b> to darktable.</p>"
+msgstr "<h1>Tack,</h1><p>allt verkar ha fungerat som det ska, du kan <b>stänga</b> din browser nu och <b>gå tillbaka</b> till darktable.</p>"
+
 #: ../src/common/image.c:145
 msgid "orphaned image"
 msgstr "anonyma bilder"
 
-#: ../src/common/image.c:1278
+#: ../src/common/image.c:1277
 msgid "cannot create local copy when the original file is not accessible."
 msgstr "kan inte skapa lokal kopia när originalfilen inte går att nå."
 
-#: ../src/common/image.c:1292
+#: ../src/common/image.c:1291
 msgid "cannot create local copy."
 msgstr "kan inte skapa lokal kopia."
 
-#: ../src/common/image.c:1345 ../src/control/jobs/control_jobs.c:547
+#: ../src/common/image.c:1344 ../src/control/jobs/control_jobs.c:547
 msgid "cannot remove local copy when the original file is not accessible."
 msgstr "kan inte ta bort lokal kopia när originalfilen inte går att nå."
 
-#: ../src/common/image.c:1500
+#: ../src/common/image.c:1499
 #, c-format
 msgid "%d local copy has been synchronized"
 msgid_plural "%d local copies have been synchronized"
@@ -1024,13 +1039,18 @@ msgid "style %s was successfully imported"
 msgstr "importerade stilen '%s'"
 
 #: ../src/common/variables.c:240 ../src/common/variables.c:254
-#: ../src/iop/clipping.c:1583 ../src/iop/clipping.c:1831
-#: ../src/iop/clipping.c:1851 ../src/iop/clipping.c:1896
-#: ../src/iop/clipping.c:1918 ../src/iop/lens.c:1965 ../src/libs/export.c:640
+#: ../src/iop/clipping.c:1597 ../src/iop/clipping.c:1845
+#: ../src/iop/clipping.c:1865 ../src/iop/clipping.c:1910
+#: ../src/iop/clipping.c:1932 ../src/iop/lens.c:1965 ../src/libs/export.c:640
 #: ../src/libs/live_view.c:324 ../src/libs/live_view.c:337
 #: ../src/libs/live_view.c:355
 msgid "none"
 msgstr "ingen"
+
+#: ../src/common/opencl.c:533
+msgid ""
+"due to a slow GPU hardware acceleration via opencl has been de-activated."
+msgstr "Hårdvaruacceleration via opencl har slagits av på grund av långsam GPU."
 
 #: ../src/control/control.c:543 ../src/control/control.c:546
 msgid "working.."
@@ -1771,12 +1791,12 @@ msgstr "flytta ner"
 msgid "delete"
 msgstr "radera"
 
-#: ../src/develop/imageop.c:888 ../src/develop/imageop.c:1791
+#: ../src/develop/imageop.c:888 ../src/develop/imageop.c:1795
 #, c-format
 msgid "%s is switched on"
 msgstr "%s är påslagen"
 
-#: ../src/develop/imageop.c:888 ../src/develop/imageop.c:1791
+#: ../src/develop/imageop.c:888 ../src/develop/imageop.c:1795
 #, c-format
 msgid "%s is switched off"
 msgstr "%s är avslagen"
@@ -1785,47 +1805,47 @@ msgstr "%s är avslagen"
 #: ../src/gui/accelerators.c:759 ../src/gui/accelerators.c:927
 #: ../src/gui/accelerators.c:953 ../src/gui/presets.c:189
 #: ../src/gui/presets.c:295 ../src/gui/presets.c:664
-#: ../src/iop/temperature.c:778 ../src/libs/import.c:503 ../src/libs/lib.c:308
-#: ../src/libs/lib.c:333 ../src/libs/lib.c:1094
+#: ../src/iop/temperature.c:770 ../src/libs/import.c:503 ../src/libs/lib.c:308
+#: ../src/libs/lib.c:333 ../src/libs/lib.c:1095
 msgid "preset"
 msgstr "förinställning"
 
-#: ../src/develop/imageop.c:1231
+#: ../src/develop/imageop.c:1234
 msgctxt "accel"
 msgid "fusion"
 msgstr "slå samman"
 
 #. Adding the optional show accelerator to the table (blank)
-#: ../src/develop/imageop.c:1236
+#: ../src/develop/imageop.c:1239
 msgctxt "accel"
 msgid "show module"
 msgstr "visa modul"
 
-#: ../src/develop/imageop.c:1237
+#: ../src/develop/imageop.c:1240
 msgctxt "accel"
 msgid "enable module"
 msgstr "aktivera modul"
 
-#: ../src/develop/imageop.c:1239 ../src/libs/lib.c:577
+#: ../src/develop/imageop.c:1242 ../src/libs/lib.c:577
 msgctxt "accel"
 msgid "reset module parameters"
 msgstr "återställ modulparametrar"
 
-#: ../src/develop/imageop.c:1240 ../src/libs/lib.c:581
+#: ../src/develop/imageop.c:1243 ../src/libs/lib.c:581
 msgctxt "accel"
 msgid "show preset menu"
 msgstr "ny förinställningar"
 
-#: ../src/develop/imageop.c:1762
+#: ../src/develop/imageop.c:1766
 msgid "multiple instances actions"
 msgstr "hantera multipla instanser"
 
-#: ../src/develop/imageop.c:1770 ../src/libs/lib.c:948
+#: ../src/develop/imageop.c:1774 ../src/libs/lib.c:949
 msgid "reset parameters"
 msgstr "återställ parametrar"
 
-#: ../src/develop/imageop.c:1778 ../src/gui/preferences.c:410
-#: ../src/libs/lib.c:960
+#: ../src/develop/imageop.c:1782 ../src/gui/preferences.c:410
+#: ../src/libs/lib.c:961
 msgid "presets"
 msgstr "fördefinierade"
 
@@ -2979,7 +2999,7 @@ msgid "could not write to directory `%s'!"
 msgstr "kunde inte skriva till katalog `%s'!"
 
 #: ../src/imageio/storage/disk.c:284 ../src/imageio/storage/email.c:133
-#: ../src/imageio/storage/facebook.c:1174 ../src/imageio/storage/flickr.c:670
+#: ../src/imageio/storage/facebook.c:1288 ../src/imageio/storage/flickr.c:670
 #: ../src/imageio/storage/gallery.c:337 ../src/imageio/storage/gallery.c:357
 #: ../src/imageio/storage/picasa.c:1447
 #, c-format
@@ -3004,13 +3024,13 @@ msgstr "bilder exporterade från darktable"
 msgid "could not launch email client!"
 msgstr "kunde inte starta email-klienten!"
 
-#: ../src/imageio/storage/facebook.c:239
+#: ../src/imageio/storage/facebook.c:251
 #, c-format
 msgid "[facebook] unexpected URL format\n"
 msgstr "[facebook] oväntat URL-format\n"
 
 #. //////////// build & show the validation dialog
-#: ../src/imageio/storage/facebook.c:593
+#: ../src/imageio/storage/facebook.c:614
 msgid ""
 "step 1: a new window or tab of your browser should have been loaded. you "
 "have to login into your facebook account there and authorize darktable to "
@@ -3020,112 +3040,128 @@ msgstr ""
 "måste logga in med ditt facebook-konto där och bekräfta att darktable får "
 "ladda upp bilder innan du kan fortsätta."
 
-#: ../src/imageio/storage/facebook.c:596
+#: ../src/imageio/storage/facebook.c:617
 msgid ""
 "step 2: paste your browser URL and click the OK button once you are done."
 msgstr ""
 "steg 2: klistra in URL:en från din internetbrowser och klicka på OK-knappen "
 "när du är klar."
 
-#: ../src/imageio/storage/facebook.c:602
+#: ../src/imageio/storage/facebook.c:623 ../src/imageio/storage/facebook.c:712
 msgid "facebook authentication"
 msgstr "facebook-autentisering"
 
-#: ../src/imageio/storage/facebook.c:607 ../src/imageio/storage/picasa.c:842
+#: ../src/imageio/storage/facebook.c:628 ../src/imageio/storage/picasa.c:842
 msgid "URL:"
 msgstr "URL:"
 
-#: ../src/imageio/storage/facebook.c:629 ../src/imageio/storage/picasa.c:865
+#: ../src/imageio/storage/facebook.c:650 ../src/imageio/storage/picasa.c:865
 msgid "please enter the validation URL"
 msgstr "var god ange validerings-URL:en"
 
-#: ../src/imageio/storage/facebook.c:639 ../src/imageio/storage/picasa.c:876
+#: ../src/imageio/storage/facebook.c:660 ../src/imageio/storage/picasa.c:876
 msgid "the given URL is not valid, it should look like: "
 msgstr "den angivna URL:en är inte giltig, den borde se ut såhär: "
 
-#: ../src/imageio/storage/facebook.c:743 ../src/imageio/storage/picasa.c:1007
+#: ../src/imageio/storage/facebook.c:691
+msgid "authentication successful"
+msgstr "autentisering lyckades"
+
+#: ../src/imageio/storage/facebook.c:695
+msgid "authentication failed"
+msgstr "autentisering misslyckades"
+
+#: ../src/imageio/storage/facebook.c:708
+msgid ""
+"a new window or tab of your browser should have been loaded. you have to "
+"login into your facebook account there and authorize darktable to upload "
+"photos before continuing."
+msgstr "ett nytt fönster eller flik i din internetbrowser ska ha visats. du måste logga in med ditt facebook-konto där och bekräfta att darktable får ladda upp bilder innan du kan fortsätta."
+
+#: ../src/imageio/storage/facebook.c:839 ../src/imageio/storage/picasa.c:1007
 msgid "new account"
 msgstr "nytt konto"
 
-#: ../src/imageio/storage/facebook.c:748 ../src/imageio/storage/picasa.c:1012
+#: ../src/imageio/storage/facebook.c:844 ../src/imageio/storage/picasa.c:1012
 msgid "other account"
 msgstr "annat konto"
 
-#: ../src/imageio/storage/facebook.c:777 ../src/imageio/storage/picasa.c:1040
+#: ../src/imageio/storage/facebook.c:873 ../src/imageio/storage/picasa.c:1040
 msgid "unable to retrieve the album list"
 msgstr "kunde inte hämta listan på album"
 
-#: ../src/imageio/storage/facebook.c:785 ../src/imageio/storage/flickr.c:391
+#: ../src/imageio/storage/facebook.c:881 ../src/imageio/storage/flickr.c:391
 #: ../src/imageio/storage/flickr.c:418 ../src/imageio/storage/picasa.c:1048
 msgid "create new album"
 msgstr "skapa nytt album"
 
-#: ../src/imageio/storage/facebook.c:895 ../src/imageio/storage/picasa.c:1096
+#: ../src/imageio/storage/facebook.c:953 ../src/imageio/storage/picasa.c:1096
 #: ../src/imageio/storage/picasa.c:1255
 msgid "logout"
 msgstr "logga ut"
 
 #. Set default permission to private
-#: ../src/imageio/storage/facebook.c:899 ../src/imageio/storage/facebook.c:912
-#: ../src/imageio/storage/facebook.c:938
-#: ../src/imageio/storage/facebook.c:1052 ../src/imageio/storage/flickr.c:528
+#: ../src/imageio/storage/facebook.c:959 ../src/imageio/storage/facebook.c:979
+#: ../src/imageio/storage/facebook.c:1026
+#: ../src/imageio/storage/facebook.c:1052
+#: ../src/imageio/storage/facebook.c:1166 ../src/imageio/storage/flickr.c:528
 #: ../src/imageio/storage/picasa.c:1102 ../src/imageio/storage/picasa.c:1259
 #: ../src/imageio/storage/picasa.c:1272 ../src/imageio/storage/picasa.c:1343
 msgid "login"
 msgstr "logga in"
 
-#: ../src/imageio/storage/facebook.c:973
+#: ../src/imageio/storage/facebook.c:1087
 msgid "facebook webalbum"
 msgstr "facebook-album"
 
 #. create labels
 #. xmp
-#: ../src/imageio/storage/facebook.c:993 ../src/imageio/storage/flickr.c:482
+#: ../src/imageio/storage/facebook.c:1107 ../src/imageio/storage/flickr.c:482
 #: ../src/imageio/storage/gallery.c:171 ../src/imageio/storage/latex.c:171
 #: ../src/imageio/storage/picasa.c:1300 ../src/libs/collect.h:29
 #: ../src/libs/metadata.c:336 ../src/libs/metadata_view.c:107
 msgid "title"
 msgstr "titel"
 
-#: ../src/imageio/storage/facebook.c:994 ../src/imageio/storage/flickr.c:483
+#: ../src/imageio/storage/facebook.c:1108 ../src/imageio/storage/flickr.c:483
 #: ../src/imageio/storage/picasa.c:1301
 msgid "summary"
 msgstr "sammanfattning"
 
-#: ../src/imageio/storage/facebook.c:995
+#: ../src/imageio/storage/facebook.c:1109
 msgid "privacy"
 msgstr "sekretessnivå"
 
-#: ../src/imageio/storage/facebook.c:1037
+#: ../src/imageio/storage/facebook.c:1151
 msgid "only me"
 msgstr "bara jag"
 
-#: ../src/imageio/storage/facebook.c:1040 ../src/imageio/storage/flickr.c:541
+#: ../src/imageio/storage/facebook.c:1154 ../src/imageio/storage/flickr.c:541
 msgid "friends"
 msgstr "vänner"
 
-#: ../src/imageio/storage/facebook.c:1043
+#: ../src/imageio/storage/facebook.c:1157
 msgid "public"
 msgstr "publik"
 
-#: ../src/imageio/storage/facebook.c:1046
+#: ../src/imageio/storage/facebook.c:1160
 msgid "friends of friends"
 msgstr "vänners vänner"
 
-#: ../src/imageio/storage/facebook.c:1183 ../src/imageio/storage/picasa.c:1456
+#: ../src/imageio/storage/facebook.c:1297 ../src/imageio/storage/picasa.c:1456
 msgid "unable to create album, no title provided"
 msgstr "kunde inte skapa album, ingen titel angiven"
 
-#: ../src/imageio/storage/facebook.c:1192 ../src/imageio/storage/picasa.c:1464
+#: ../src/imageio/storage/facebook.c:1306 ../src/imageio/storage/picasa.c:1464
 msgid "unable to create album"
 msgstr "kunde inte skapa album"
 
-#: ../src/imageio/storage/facebook.c:1202
+#: ../src/imageio/storage/facebook.c:1316
 msgid "unable to export photo to webalbum"
 msgstr "kunde inte exportera bild till webbalbum"
 
 #. this makes sense only if the export was successful
-#: ../src/imageio/storage/facebook.c:1214
+#: ../src/imageio/storage/facebook.c:1328
 #, c-format
 msgid "%d/%d exported to facebook webalbum"
 msgstr "%d/%d exporterad till facebook-album"
@@ -3504,7 +3540,7 @@ msgstr "grovhet"
 msgid "contrast"
 msgstr "kontrast"
 
-#: ../src/iop/bilat.c:269 ../src/iop/globaltonemap.c:647
+#: ../src/iop/bilat.c:269 ../src/iop/globaltonemap.c:705
 msgid "detail"
 msgstr "detalj"
 
@@ -3640,7 +3676,7 @@ msgid "select frame line color"
 msgstr "välj ramlinjens färg"
 
 #. add import single image buttons
-#: ../src/iop/borders.c:962 ../src/iop/clipping.c:1873
+#: ../src/iop/borders.c:962 ../src/iop/clipping.c:1887
 #: ../src/libs/import.c:834
 msgid "image"
 msgstr "bild"
@@ -3657,15 +3693,15 @@ msgstr "95:33"
 msgid "2:1"
 msgstr "2:1"
 
-#: ../src/iop/borders.c:966 ../src/iop/clipping.c:1882
+#: ../src/iop/borders.c:966 ../src/iop/clipping.c:1896
 msgid "16:9"
 msgstr "16:9"
 
-#: ../src/iop/borders.c:967 ../src/iop/clipping.c:1874
+#: ../src/iop/borders.c:967 ../src/iop/clipping.c:1888
 msgid "golden cut"
 msgstr "gyllene snitt"
 
-#: ../src/iop/borders.c:968 ../src/iop/clipping.c:1876
+#: ../src/iop/borders.c:968 ../src/iop/clipping.c:1890
 msgid "3:2"
 msgstr "3:2"
 
@@ -3673,15 +3709,15 @@ msgstr "3:2"
 msgid "A4"
 msgstr "A4"
 
-#: ../src/iop/borders.c:970 ../src/iop/clipping.c:1881
+#: ../src/iop/borders.c:970 ../src/iop/clipping.c:1895
 msgid "DIN"
 msgstr "DIN"
 
-#: ../src/iop/borders.c:971 ../src/iop/clipping.c:1878
+#: ../src/iop/borders.c:971 ../src/iop/clipping.c:1892
 msgid "4:3"
 msgstr "4:3"
 
-#: ../src/iop/borders.c:972 ../src/iop/clipping.c:1880
+#: ../src/iop/borders.c:972 ../src/iop/clipping.c:1894
 msgid "square"
 msgstr "kvadrat"
 
@@ -3717,7 +3753,7 @@ msgstr "kantens storlek"
 msgid "size of the border in percent of the full image"
 msgstr "storlek på kant i procent av hela bilden"
 
-#: ../src/iop/borders.c:1037 ../src/iop/clipping.c:1871
+#: ../src/iop/borders.c:1037 ../src/iop/clipping.c:1885
 msgid "aspect"
 msgstr "aspekt"
 
@@ -3921,187 +3957,187 @@ msgstr "sluttningen påverkar effektens styrka"
 msgid "crop and rotate"
 msgstr "beskär och rotera"
 
-#: ../src/iop/clipping.c:1471
+#: ../src/iop/clipping.c:1485
 msgid "invalid ratio format. it should be \"number:number\""
 msgstr "felaktig format för bildförhållande. det borde vara \"nummer:nummer\""
 
-#: ../src/iop/clipping.c:1584 ../src/iop/clipping.c:1833
-#: ../src/iop/clipping.c:1852
+#: ../src/iop/clipping.c:1598 ../src/iop/clipping.c:1847
+#: ../src/iop/clipping.c:1866
 msgid "vertical"
 msgstr "vertikalt"
 
-#: ../src/iop/clipping.c:1585 ../src/iop/clipping.c:1832
-#: ../src/iop/clipping.c:1853
+#: ../src/iop/clipping.c:1599 ../src/iop/clipping.c:1846
+#: ../src/iop/clipping.c:1867
 msgid "horizontal"
 msgstr "horisontellt"
 
-#: ../src/iop/clipping.c:1586 ../src/iop/clipping.c:1854
+#: ../src/iop/clipping.c:1600 ../src/iop/clipping.c:1868
 msgid "full"
 msgstr "båda"
 
-#: ../src/iop/clipping.c:1587
+#: ../src/iop/clipping.c:1601
 msgid "old system"
 msgstr "gammalt system"
 
-#: ../src/iop/clipping.c:1588
+#: ../src/iop/clipping.c:1602
 msgid "correction applied"
 msgstr "korrigering gjord"
 
-#: ../src/iop/clipping.c:1830 ../src/iop/clipping.c:1917
+#: ../src/iop/clipping.c:1844 ../src/iop/clipping.c:1931
 #: ../src/libs/live_view.c:336
 msgid "flip"
 msgstr "vänd"
 
-#: ../src/iop/clipping.c:1834 ../src/iop/clipping.c:1921
+#: ../src/iop/clipping.c:1848 ../src/iop/clipping.c:1935
 #: ../src/libs/live_view.c:340
 msgid "both"
 msgstr "båda"
 
-#: ../src/iop/clipping.c:1836
+#: ../src/iop/clipping.c:1850
 msgid "mirror image horizontally and/or vertically"
 msgstr "vänd bild horisontellt och/eller vertikalt"
 
-#: ../src/iop/clipping.c:1842
+#: ../src/iop/clipping.c:1856
 msgid "angle"
 msgstr "vinkel"
 
-#: ../src/iop/clipping.c:1846
+#: ../src/iop/clipping.c:1860
 msgid "right-click and drag a line on the image to drag a straight line"
 msgstr "högerklicka och dra en linje på bilden för att dra en rak linje"
 
-#: ../src/iop/clipping.c:1850
+#: ../src/iop/clipping.c:1864
 msgid "keystone"
 msgstr "perspektivkorr"
 
-#: ../src/iop/clipping.c:1855
+#: ../src/iop/clipping.c:1869
 msgid "set perspective correction for your image"
 msgstr "korrigera perspektivet på din bild"
 
-#: ../src/iop/clipping.c:1861
+#: ../src/iop/clipping.c:1875
 msgid "automatic cropping"
 msgstr "automatiskt beskärning"
 
-#: ../src/iop/clipping.c:1862 ../src/libs/metadata_view.c:245
+#: ../src/iop/clipping.c:1876 ../src/libs/metadata_view.c:245
 msgid "no"
 msgstr "nej"
 
-#: ../src/iop/clipping.c:1863 ../src/libs/metadata_view.c:245
+#: ../src/iop/clipping.c:1877 ../src/libs/metadata_view.c:245
 msgid "yes"
 msgstr "ja"
 
-#: ../src/iop/clipping.c:1864
+#: ../src/iop/clipping.c:1878
 msgid "automatically crop to avoid black edges"
 msgstr "beskär automatiskt för att undvika svarta kanter"
 
-#: ../src/iop/clipping.c:1872
+#: ../src/iop/clipping.c:1886
 msgid "free"
 msgstr "fri"
 
-#: ../src/iop/clipping.c:1875
+#: ../src/iop/clipping.c:1889
 msgid "1:2"
 msgstr "1:2"
 
-#: ../src/iop/clipping.c:1877
+#: ../src/iop/clipping.c:1891
 msgid "7:5"
 msgstr "7:5"
 
-#: ../src/iop/clipping.c:1879
+#: ../src/iop/clipping.c:1893
 msgid "5:4"
 msgstr "5:4"
 
-#: ../src/iop/clipping.c:1883
+#: ../src/iop/clipping.c:1897
 msgid "16:10"
 msgstr "16:10"
 
-#: ../src/iop/clipping.c:1884
+#: ../src/iop/clipping.c:1898
 msgid "10:8 in print"
 msgstr "10:8 för utskrift"
 
-#: ../src/iop/clipping.c:1889
+#: ../src/iop/clipping.c:1903
 msgid "set the aspect ratio"
 msgstr "sätt bildförhållandet"
 
-#: ../src/iop/clipping.c:1895 ../src/libs/live_view.c:323
+#: ../src/iop/clipping.c:1909 ../src/libs/live_view.c:323
 msgid "guides"
 msgstr "guider"
 
-#: ../src/iop/clipping.c:1898 ../src/libs/live_view.c:325
+#: ../src/iop/clipping.c:1912 ../src/libs/live_view.c:325
 msgid "grid"
 msgstr "rutmönster"
 
 #. TODO: make the number of lines configurable with a slider?
-#: ../src/iop/clipping.c:1899 ../src/libs/live_view.c:326
+#: ../src/iop/clipping.c:1913 ../src/libs/live_view.c:326
 msgid "rules of thirds"
 msgstr "tredjedelsregeln"
 
-#: ../src/iop/clipping.c:1900
+#: ../src/iop/clipping.c:1914
 msgid "metering"
 msgstr "mätskala"
 
-#: ../src/iop/clipping.c:1902
+#: ../src/iop/clipping.c:1916
 msgid "perspective"
 msgstr "perspektiv"
 
 #. TODO: make the number of lines configurable with a slider?
-#: ../src/iop/clipping.c:1903 ../src/libs/live_view.c:327
+#: ../src/iop/clipping.c:1917 ../src/libs/live_view.c:327
 msgid "diagonal method"
 msgstr "diagonal metod"
 
-#: ../src/iop/clipping.c:1904 ../src/libs/live_view.c:328
+#: ../src/iop/clipping.c:1918 ../src/libs/live_view.c:328
 msgid "harmonious triangles"
 msgstr "harmoniska trianglar"
 
-#: ../src/iop/clipping.c:1905 ../src/libs/live_view.c:329
+#: ../src/iop/clipping.c:1919 ../src/libs/live_view.c:329
 msgid "golden mean"
 msgstr "gyllene snitt"
 
-#: ../src/iop/clipping.c:1912 ../src/libs/live_view.c:331
+#: ../src/iop/clipping.c:1926 ../src/libs/live_view.c:331
 msgid "display guide lines to help compose your photograph"
 msgstr "visa guider för att hjälpa dig att komponera ditt fotografi"
 
-#: ../src/iop/clipping.c:1919 ../src/libs/live_view.c:338
+#: ../src/iop/clipping.c:1933 ../src/libs/live_view.c:338
 msgid "horizontally"
 msgstr "horisontellt"
 
-#: ../src/iop/clipping.c:1920 ../src/libs/live_view.c:339
+#: ../src/iop/clipping.c:1934 ../src/libs/live_view.c:339
 msgid "vertically"
 msgstr "vertikalt"
 
-#: ../src/iop/clipping.c:1922 ../src/libs/live_view.c:341
+#: ../src/iop/clipping.c:1936 ../src/libs/live_view.c:341
 msgid "flip guides"
 msgstr "vänd guider"
 
-#: ../src/iop/clipping.c:1927 ../src/libs/live_view.c:345
+#: ../src/iop/clipping.c:1941 ../src/libs/live_view.c:345
 msgid "extra"
 msgstr "extra"
 
-#: ../src/iop/clipping.c:1928 ../src/libs/live_view.c:346
+#: ../src/iop/clipping.c:1942 ../src/libs/live_view.c:346
 msgid "golden sections"
 msgstr "gyllene sektioner"
 
-#: ../src/iop/clipping.c:1929 ../src/libs/live_view.c:347
+#: ../src/iop/clipping.c:1943 ../src/libs/live_view.c:347
 msgid "golden spiral sections"
 msgstr "gyllene spiralsektioner"
 
-#: ../src/iop/clipping.c:1930 ../src/libs/live_view.c:348
+#: ../src/iop/clipping.c:1944 ../src/libs/live_view.c:348
 msgid "golden spiral"
 msgstr "gyllene spiral"
 
-#: ../src/iop/clipping.c:1931 ../src/iop/lens.c:1971
+#: ../src/iop/clipping.c:1945 ../src/iop/lens.c:1971
 #: ../src/libs/live_view.c:349 ../src/libs/tools/filter.c:119
 msgid "all"
 msgstr "alla"
 
-#: ../src/iop/clipping.c:1932 ../src/libs/live_view.c:350
+#: ../src/iop/clipping.c:1946 ../src/libs/live_view.c:350
 msgid "show some extra guides"
 msgstr "visa extra guider"
 
-#: ../src/iop/clipping.c:3046
+#: ../src/iop/clipping.c:3060
 msgctxt "accel"
 msgid "commit"
 msgstr "applicera"
 
-#: ../src/iop/clipping.c:3047
+#: ../src/iop/clipping.c:3061
 msgctxt "accel"
 msgid "angle"
 msgstr "vinkel"
@@ -4293,87 +4329,87 @@ msgstr "kunde inte generera ingående profil"
 msgid "unsupported input profile has been replaced by linear Rec709 RGB!"
 msgstr "ej stödd ingående färgprofil har ersatts med linjär Rec709 RGB!"
 
-#: ../src/iop/colorin.c:1085 ../src/iop/colorin.c:1119
+#: ../src/iop/colorin.c:1084 ../src/iop/colorin.c:1118
 msgid "embedded ICC profile"
 msgstr "inbyggd ICC-profil"
 
-#: ../src/iop/colorin.c:1087 ../src/iop/colorin.c:1121
+#: ../src/iop/colorin.c:1086 ../src/iop/colorin.c:1120
 msgid "embedded matrix"
 msgstr "inbyggd matris"
 
-#: ../src/iop/colorin.c:1089 ../src/iop/colorin.c:1123
+#: ../src/iop/colorin.c:1088 ../src/iop/colorin.c:1122
 msgid "standard color matrix"
 msgstr "standard färgmatris"
 
-#: ../src/iop/colorin.c:1091 ../src/iop/colorin.c:1125
+#: ../src/iop/colorin.c:1090 ../src/iop/colorin.c:1124
 msgid "enhanced color matrix"
 msgstr "förbättrad färgmatris"
 
-#: ../src/iop/colorin.c:1093 ../src/iop/colorin.c:1127
+#: ../src/iop/colorin.c:1092 ../src/iop/colorin.c:1126
 msgid "vendor color matrix"
 msgstr "tillverkarens färgmatris"
 
-#: ../src/iop/colorin.c:1095 ../src/iop/colorin.c:1129
+#: ../src/iop/colorin.c:1094 ../src/iop/colorin.c:1128
 msgid "alternate color matrix"
 msgstr "alternativ färgmatris"
 
-#: ../src/iop/colorin.c:1097 ../src/iop/colorin.c:1131
+#: ../src/iop/colorin.c:1096 ../src/iop/colorin.c:1130
 msgid "sRGB (e.g. JPG)"
 msgstr "sRGB (tex. JPG)"
 
-#: ../src/iop/colorin.c:1099 ../src/iop/colorin.c:1133
-#: ../src/iop/colorin.c:1268 ../src/iop/colorout.c:934
+#: ../src/iop/colorin.c:1098 ../src/iop/colorin.c:1132
+#: ../src/iop/colorin.c:1267 ../src/iop/colorout.c:934
 #: ../src/iop/colorout.c:935 ../src/iop/colorout.c:936
 #: ../src/libs/export.c:547
 msgid "Adobe RGB (compatible)"
 msgstr "Adobe RGB (kompatibel)"
 
-#: ../src/iop/colorin.c:1101 ../src/iop/colorin.c:1135
-#: ../src/iop/colorin.c:1269 ../src/iop/colorout.c:916
+#: ../src/iop/colorin.c:1100 ../src/iop/colorin.c:1134
+#: ../src/iop/colorin.c:1268 ../src/iop/colorout.c:916
 #: ../src/iop/colorout.c:917 ../src/iop/colorout.c:918
 #: ../src/libs/export.c:553
 msgid "linear Rec709 RGB"
 msgstr "linjär Rec709 RGB"
 
-#: ../src/iop/colorin.c:1103 ../src/iop/colorin.c:1137
-#: ../src/iop/colorin.c:1270 ../src/iop/colorout.c:922
+#: ../src/iop/colorin.c:1102 ../src/iop/colorin.c:1136
+#: ../src/iop/colorin.c:1269 ../src/iop/colorout.c:922
 #: ../src/iop/colorout.c:923 ../src/iop/colorout.c:924
 #: ../src/libs/export.c:559
 msgid "linear Rec2020 RGB"
 msgstr "linjär Rec2020 RGB"
 
-#: ../src/iop/colorin.c:1105 ../src/iop/colorin.c:1139
+#: ../src/iop/colorin.c:1104 ../src/iop/colorin.c:1138
 msgid "linear infrared BGR"
 msgstr "linjär infraröd BGR"
 
-#: ../src/iop/colorin.c:1107 ../src/iop/colorin.c:1141
+#: ../src/iop/colorin.c:1106 ../src/iop/colorin.c:1140
 msgid "linear XYZ"
 msgstr "linjär XYZ"
 
-#: ../src/iop/colorin.c:1109 ../src/iop/colorin.c:1143
+#: ../src/iop/colorin.c:1108 ../src/iop/colorin.c:1142
 #: ../src/libs/colorpicker.c:481 ../src/libs/colorpicker.c:519
 msgid "Lab"
 msgstr "Lab"
 
-#: ../src/iop/colorin.c:1249 ../src/iop/denoiseprofile.c:1641
+#: ../src/iop/colorin.c:1248 ../src/iop/denoiseprofile.c:1641
 #: ../src/libs/export.c:597
 msgid "profile"
 msgstr "profil"
 
-#: ../src/iop/colorin.c:1258
+#: ../src/iop/colorin.c:1257
 #, c-format
 msgid "ICC profiles in %s/color/in or %s/color/in"
 msgstr "ingående ICC profil i %s/color/in eller %s/color/in"
 
-#: ../src/iop/colorin.c:1264
+#: ../src/iop/colorin.c:1263
 msgid "gamut clipping"
 msgstr "klippning av tonomfång"
 
-#: ../src/iop/colorin.c:1267
+#: ../src/iop/colorin.c:1266
 msgid "sRGB"
 msgstr "sRGB"
 
-#: ../src/iop/colorin.c:1272
+#: ../src/iop/colorin.c:1271
 msgid "confine Lab values to gamut of RGB color space"
 msgstr "håll Lab-värdena inom färgrymden för RGB"
 
@@ -5096,23 +5132,23 @@ msgctxt "modulename"
 msgid "gamma"
 msgstr "gamma"
 
-#: ../src/iop/globaltonemap.c:98
+#: ../src/iop/globaltonemap.c:100
 msgid "global tonemap"
 msgstr "global tonemapping"
 
-#: ../src/iop/globaltonemap.c:616
+#: ../src/iop/globaltonemap.c:674
 msgid "operator"
 msgstr "operator"
 
-#: ../src/iop/globaltonemap.c:622
+#: ../src/iop/globaltonemap.c:680
 msgid "the global tonemap operator"
 msgstr "operatorn för global tonemapping"
 
-#: ../src/iop/globaltonemap.c:628
+#: ../src/iop/globaltonemap.c:686
 msgid "bias"
 msgstr "påverkan"
 
-#: ../src/iop/globaltonemap.c:630
+#: ../src/iop/globaltonemap.c:688
 msgid ""
 "the bias for tonemapper controls the linearity, the higher the more details "
 "in blacks"
@@ -5120,11 +5156,11 @@ msgstr ""
 "påverkan (bias) i tonemapping kontrollerar lineariteten, ju högre värde "
 "desto mer detaljer i de mörka områdena"
 
-#: ../src/iop/globaltonemap.c:638
+#: ../src/iop/globaltonemap.c:696
 msgid "target"
 msgstr "mål"
 
-#: ../src/iop/globaltonemap.c:640
+#: ../src/iop/globaltonemap.c:698
 msgid "the target light for tonemapper specified as cd/m2"
 msgstr "det resulterande ljuset i tonemappern, specificera i cd/m2"
 
@@ -6160,32 +6196,32 @@ msgstr "vitbalans från kamera"
 msgid "spot white balance"
 msgstr "vitbalans i mätningsområde"
 
-#: ../src/iop/temperature.c:494
+#: ../src/iop/temperature.c:486
 msgid "failed to read camera white balance information!"
 msgstr "kunde inte läsa av kamerans information om vitbalans!"
 
-#: ../src/iop/temperature.c:764
+#: ../src/iop/temperature.c:756
 msgid "tint"
 msgstr "nyans"
 
-#: ../src/iop/temperature.c:765
+#: ../src/iop/temperature.c:757
 msgid "temperature"
 msgstr "temperatur"
 
-#: ../src/iop/temperature.c:780
+#: ../src/iop/temperature.c:772
 msgid "choose white balance preset from camera"
 msgstr "välj förinställd vitbalans från kamera"
 
-#: ../src/iop/temperature.c:784
+#: ../src/iop/temperature.c:776
 msgid "finetune"
 msgstr "finjustering"
 
-#: ../src/iop/temperature.c:785
+#: ../src/iop/temperature.c:777
 #, c-format
 msgid "%.0f mired"
 msgstr "%.0f justerad"
 
-#: ../src/iop/temperature.c:789
+#: ../src/iop/temperature.c:781
 msgid "fine tune white balance preset"
 msgstr "finjustera förinställd vitbalans"
 
@@ -9433,9 +9469,6 @@ msgstr "ingen kamera som stödjer tjudring finns tillgänglig..."
 
 #~ msgid "match images with selected image and views the result"
 #~ msgstr "matchar bilder med vald bild och visar resultat"
-
-#~ msgid "authentication failed"
-#~ msgstr "autentisering misslyckades"
 
 #~ msgid "password"
 #~ msgstr "lösenord"
