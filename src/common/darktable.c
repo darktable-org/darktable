@@ -692,7 +692,10 @@ int dt_init(int argc, char *argv[], const int init_gui, lua_State *L)
       "ui_last/gui_language"); // we may not g_free 'lang' since it is owned by setlocale afterwards
   if(lang != NULL && lang[0] != '\0')
   {
+    setenv("LANGUAGE", lang, 1);
     if(setlocale(LC_ALL, lang) != NULL) gtk_disable_setlocale();
+    setlocale(LC_MESSAGES, lang);
+    setenv("LANG", lang, 1);
   }
 
   // initialize the database
