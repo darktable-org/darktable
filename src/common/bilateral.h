@@ -276,8 +276,6 @@ void dt_bilateral_slice(const dt_bilateral_t *const b, const float *const in, fl
                                    + b->buf[gi + oz] * (1.0f - xf) * (1.0f - yf) * (zf)+b->buf[gi + ox + oz]
                                      * (xf) * (1.0f - yf) * (zf)+b->buf[gi + oy + oz] * (1.0f - xf) * (yf)
                                      * (zf)+b->buf[gi + ox + oy + oz] * (xf) * (yf) * (zf));
-//RDB
-//      out[index] = MAX(0.0f, Lout);
       out[index] = Lout;
       // and copy color and mask
       out[index + 1] = in[index + 1];
