@@ -1,6 +1,7 @@
 #include "StdAfx.h"
 #include "Cr2Decoder.h"
 #include "TiffParserHeaderless.h"
+#include "ByteStreamSwap.h"
 
 /*
     RawSpeed - RAW file decoder.
@@ -29,7 +30,7 @@ namespace RawSpeed {
 
 Cr2Decoder::Cr2Decoder(TiffIFD *rootIFD, FileMap* file) :
     RawDecoder(file), mRootIFD(rootIFD) {
-  decoderVersion = 4;
+  decoderVersion = 5;
 }
 
 Cr2Decoder::~Cr2Decoder(void) {
@@ -39,6 +40,85 @@ Cr2Decoder::~Cr2Decoder(void) {
 }
 
 RawImage Cr2Decoder::decodeRawInternal() {
+  if(hints.find("old_format") != hints.end()) {
+    uint32 off = 0;
+    if (mRootIFD->getEntryRecursive((TiffTag)0x81))
+      off = mRootIFD->getEntryRecursive((TiffTag)0x81)->getInt();
+    else {
+      vector<TiffIFD*> data = mRootIFD->getIFDsWithTag(CFAPATTERN);
+      if (data.empty())
+        ThrowRDE("CR2 Decoder: Couldn't find offset");
+      else {
+        if (data[0]->hasEntry(STRIPOFFSETS))
+          off = data[0]->getEntry(STRIPOFFSETS)->getInt();
+        else
+          ThrowRDE("CR2 Decoder: Couldn't find offset");
+      }
+    }
+
+    ByteStream *b;
+    if (getHostEndianness() == big)
+      b = new ByteStream(mFile->getData(off+41), mFile->getSize());
+    else
+      b = new ByteStreamSwap(mFile->getData(off+41), mFile->getSize());
+    uint32 height = b->getShort();
+    uint32 width = b->getShort();
+
+    // Every two lines can be encoded as a single line, probably to try and get
+    // better compression by getting the same RGBG sequence in every line
+    if(hints.find("double_line_ljpeg") != hints.end()) {
+      height *= 2;
+      mRaw->dim = iPoint2D(width*2, height/2);
+    }
+    else {
+      width *= 2;
+      mRaw->dim = iPoint2D(width, height);
+    }
+
+    mRaw->createData();
+    LJpegPlain l(mFile, mRaw);
+    try {
+      l.startDecoder(off, mFile->getSize()-off, 0, 0);
+    } catch (IOException& e) {
+      mRaw->setError(e.what());
+    }
+
+    if(hints.find("double_line_ljpeg") != hints.end()) {
+      // We now have a double width half height image we need to convert to the
+      // normal format
+      iPoint2D final_size(width, height);
+      RawImage procRaw = RawImage::create(final_size, TYPE_USHORT16, 1);
+      procRaw->metadata = mRaw->metadata;
+      procRaw->copyErrorsFrom(mRaw);
+
+      for (uint32 y = 0; y < height; y++) {
+        ushort16 *dst = (ushort16*)procRaw->getData(0,y);
+        ushort16 *src = (ushort16*)mRaw->getData(y%2 == 0 ? 0 : width, y/2);
+        for (uint32 x = 0; x < width; x++)
+          dst[x] = src[x];
+      }
+      mRaw = procRaw;
+    }
+
+    if (mRootIFD->getEntryRecursive((TiffTag)0x123)) {
+      TiffEntry *curve = mRootIFD->getEntryRecursive((TiffTag)0x123);
+      if (curve->type == TIFF_SHORT && curve->count == 4096) {
+        const ushort16 *linearization = mRootIFD->getEntryRecursive((TiffTag)0x123)->getShortArray();
+        if (!uncorrectedRawValues) {
+          mRaw->setTable(linearization, 4096, true);
+          // Apply table
+          mRaw->sixteenBitLookup();
+          // Delete table
+          mRaw->setTable(NULL);
+        } else {
+          // We want uncorrected, but we store the table.
+          mRaw->setTable(linearization, 4096, false);
+        }
+      }
+    }
+
+    return mRaw;
+  }
 
   vector<TiffIFD*> data = mRootIFD->getIFDsWithTag((TiffTag)0xc5d8);
 
@@ -153,18 +233,17 @@ void Cr2Decoder::checkSupportInternal(CameraMetaData *meta) {
     ThrowRDE("CR2 Support: Make name not found");
   string make = data[0]->getEntry(MAKE)->getString();
   string model = data[0]->getEntry(MODEL)->getString();
+
+  // Check for sRaw mode
   data = mRootIFD->getIFDsWithTag((TiffTag)0xc5d8);
-
-  if (data.empty())
-    ThrowRDE("CR2 Decoder: No image data found");
-
-  TiffIFD* raw = data[0];
-
-  if (raw->hasEntry((TiffTag)0xc6c5)) {
-    ushort16 ss = raw->getEntry((TiffTag)0xc6c5)->getInt();
-    if (ss == 4) {
-      this->checkCameraSupported(meta, make, model, "sRaw1");
-      return;
+  if (!data.empty()) {
+    TiffIFD* raw = data[0];
+    if (raw->hasEntry((TiffTag)0xc6c5)) {
+      ushort16 ss = raw->getEntry((TiffTag)0xc6c5)->getInt();
+      if (ss == 4) {
+        this->checkCameraSupported(meta, make, model, "sRaw1");
+        return;
+      }
     }
   }
   this->checkCameraSupported(meta, make, model, "");
@@ -211,7 +290,7 @@ void Cr2Decoder::decodeMetaDataInternal(CameraMetaData *meta) {
      * Canon PowerShot cameras (color_data->count == 5120) identify this tag
      * as TIFF_UNDEFINED, while they still write normal TIFF_SHORT data there
      */
-    if (color_data->type == TIFF_SHORT || color_data->count == 5120) {
+    if ((color_data->type == TIFF_SHORT || color_data->count == 5120) && color_data->count >= (uint32)(offset/2) + 3) {
       const ushort16* data = color_data->getShortArray();
 
       // RGGB !
@@ -220,11 +299,14 @@ void Cr2Decoder::decodeMetaDataInternal(CameraMetaData *meta) {
       {
         cam_mul[c] = (float) data[offset/2 + c];
       }
-
-      const float green = (cam_mul[1] + cam_mul[2]) / 2.0f;
-      mRaw->metadata.wbCoeffs[0] = cam_mul[0] / green;
-      mRaw->metadata.wbCoeffs[1] = 1.0f;
-      mRaw->metadata.wbCoeffs[2] = cam_mul[3] / green;
+      if (cam_mul[1] + cam_mul[2] > 0) {
+        const float green = (cam_mul[1] + cam_mul[2]) / 2.0f;
+        mRaw->metadata.wbCoeffs[0] = cam_mul[0] / green;
+        mRaw->metadata.wbCoeffs[1] = 1.0f;
+        mRaw->metadata.wbCoeffs[2] = cam_mul[3] / green;
+      } else {
+        writeLog(DEBUG_PRIO_INFO, "CR2 Decoder: Invalid WB; Green was 0.");
+      }
     } else {
       writeLog(DEBUG_PRIO_INFO, "CR2 Decoder: CanonColorData has to be SHORT, %d found.\n", color_data->type);
     }
@@ -237,27 +319,43 @@ void Cr2Decoder::decodeMetaDataInternal(CameraMetaData *meta) {
     {
 
       TiffEntry *shot_info = mRootIFD->getEntryRecursive(CANONSHOTINFO);
-      ushort16 wb_index = shot_info->getShortArray()[14/2];
+      if (shot_info->type == TIFF_SHORT && shot_info->count >= 7) {
+        ushort16 wb_index = shot_info->getShortArray()[14/2];
 
-      /* Canon PowerShot G9 */
-      TiffEntry *g9_wb = mRootIFD->getEntryRecursive(CANONPOWERSHOTG9WB);
-      if (g9_wb->type == TIFF_BYTE) {
-        int wb_offset = (wb_index < 18) ? "012347800000005896"[wb_index]-'0' : 0;
-        wb_offset = wb_offset*32 + 8;
+        /* Canon PowerShot G9 */
+        TiffEntry *g9_wb = mRootIFD->getEntryRecursive(CANONPOWERSHOTG9WB);
+        if (g9_wb->type == TIFF_BYTE) {
+          int wb_offset = (wb_index < 18) ? "012347800000005896"[wb_index]-'0' : 0;
+          wb_offset = wb_offset*32 + 8;
 
-        // GRBG !
-        float cam_mul[4];
-        for(int c = 0; c < 4; c++)
-        {
-          cam_mul[c] = (float) get4LE(g9_wb->getData(), wb_offset + 4*c);
+          if (g9_wb->count >= (uint32)wb_offset + 4*3) {
+            // GRBG !
+            float cam_mul[4];
+            for(int c = 0; c < 4; c++) {
+              cam_mul[c] = (float) get4LE(g9_wb->getData(), wb_offset + 4*c);
+            }
+
+            const float green = (cam_mul[0] + cam_mul[3]) / 2.0f;
+            mRaw->metadata.wbCoeffs[0] = cam_mul[1] / green;
+            mRaw->metadata.wbCoeffs[1] = 1.0f;
+            mRaw->metadata.wbCoeffs[2] = cam_mul[2] / green;
+          } else {
+            writeLog(DEBUG_PRIO_INFO, "CR2 Decoder: CANONPOWERSHOTG9WB is too small. Count is %d, but should be at least %d", g9_wb->count, wb_offset + 4*3);
+          }
+        } else {
+          writeLog(DEBUG_PRIO_INFO, "CR2 Decoder: CANONPOWERSHOTG9WB has to be BYTE, %d found.", g9_wb->type);
         }
-
-        const float green = (cam_mul[0] + cam_mul[3]) / 2.0f;
-        mRaw->metadata.wbCoeffs[0] = cam_mul[1] / green;
-        mRaw->metadata.wbCoeffs[1] = 1.0f;
-        mRaw->metadata.wbCoeffs[2] = cam_mul[2] / green;
       } else {
-        writeLog(DEBUG_PRIO_INFO, "CR2 Decoder: CANONPOWERSHOTG9WB has to be BYTE, %d found.", g9_wb->type);
+        writeLog(DEBUG_PRIO_INFO, "CR2 Decoder: CANONSHOTINFO has to be SHORT, %d found.", shot_info->type);
+      }
+    } else if (mRootIFD->hasEntryRecursive((TiffTag) 0xa4)) {
+      // WB for the old 1D and 1DS
+      TiffEntry *wb = mRootIFD->getEntryRecursive((TiffTag) 0xa4);
+      if (wb->count >= 3) {
+        const ushort16 *tmp = wb->getShortArray();
+        mRaw->metadata.wbCoeffs[0] = (float)tmp[0];
+        mRaw->metadata.wbCoeffs[1] = (float)tmp[1];
+        mRaw->metadata.wbCoeffs[2] = (float)tmp[2];
       }
     }
   }
@@ -270,6 +368,9 @@ int Cr2Decoder::getHue() {
   if (hints.find("old_sraw_hue") != hints.end())
     return (mRaw->metadata.subsampling.y * mRaw->metadata.subsampling.x);
 
+  if (!mRootIFD->hasEntryRecursive((TiffTag)0x10)) {
+    return 0;
+  }
   uint32 model_id = mRootIFD->getEntryRecursive((TiffTag)0x10)->getInt();
   if (model_id >= 0x80000281 || model_id == 0x80000218 || (hints.find("force_new_sraw_hue") != hints.end()))
     return ((mRaw->metadata.subsampling.y * mRaw->metadata.subsampling.x) - 1) >> 1;

@@ -233,7 +233,7 @@ void SrwDecoder::decodeCompressed2( TiffIFD* raw, int bits)
   // encode, the second the number of bits that come after with the difference
   // The table has 14 entries because the difference can have between 0 (no 
   // difference) and 13 bits (differences between 12 bits numbers can need 13)
-  const ushort16 tab[14][2] = {{3,4}, {3,7}, {2,6}, {2,5}, {4,3}, {6,0}, {7,9},
+  const uchar8 tab[14][2] = {{3,4}, {3,7}, {2,6}, {2,5}, {4,3}, {6,0}, {7,9},
                                {8,10}, {9,11}, {10,12}, {10,13}, {5,1}, {4,8}, {4,2}};
   encTableItem tbl[1024];
   ushort16 vpred[2][2] = {{0,0},{0,0}}, hpred[2];
@@ -489,9 +489,9 @@ void SrwDecoder::decodeMetaDataInternal(CameraMetaData *meta) {
       wb_black->offsetFromParent();
       const uint32 *blacks = wb_black->getIntArray();
 
-      mRaw->metadata.wbCoeffs[0] = levels[0] - blacks[0];
-      mRaw->metadata.wbCoeffs[1] = levels[1] - blacks[1];
-      mRaw->metadata.wbCoeffs[2] = levels[3] - blacks[3];
+      mRaw->metadata.wbCoeffs[0] = (float)(levels[0] - blacks[0]);
+      mRaw->metadata.wbCoeffs[1] = (float)(levels[1] - blacks[1]);
+      mRaw->metadata.wbCoeffs[2] = (float)(levels[3] - blacks[3]);
     }
   }
 }

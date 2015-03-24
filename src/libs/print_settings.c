@@ -1059,7 +1059,7 @@ gui_init (dt_lib_module_t *self)
 
   //// papers
 
-  dt_bauhaus_widget_set_label(d->papers, NULL, _("paper"));
+  dt_bauhaus_widget_set_label(d->papers, NULL, _("paper size"));
 
   g_signal_connect(G_OBJECT(d->papers), "value-changed", G_CALLBACK(_paper_changed), self);
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(d->papers), TRUE, TRUE, 0);

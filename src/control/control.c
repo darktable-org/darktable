@@ -342,7 +342,7 @@ int dt_control_is_key_accelerators_on(struct dt_control_t *s)
 void dt_control_change_cursor(dt_cursor_t curs)
 {
   GtkWidget *widget = dt_ui_main_window(darktable.gui->ui);
-  GdkCursor *cursor = gdk_cursor_new(curs);
+  GdkCursor *cursor = gdk_cursor_new_for_display(gdk_display_get_default(), curs);
   gdk_window_set_cursor(gtk_widget_get_window(widget), cursor);
   g_object_unref(cursor);
 }

@@ -48,7 +48,7 @@ dt_print_t;
 const char
 *name(dt_view_t *self)
 {
-  return _("print");
+  return C_("view", "print");
 }
 
 uint32_t view(dt_view_t *self)
@@ -239,6 +239,8 @@ void expose(dt_view_t *self, cairo_t *cri, int32_t width_i, int32_t height_i, in
 
 int try_enter(dt_view_t *self)
 {
+  dt_print_t *prt=(dt_print_t*)self->data;
+
   // enter only if there is some printer available
   if (!is_printer_available())
   {
@@ -247,6 +249,8 @@ int try_enter(dt_view_t *self)
   }
 
   //  now check that there is at least one selected image
+
+  prt->image_id = -1;
 
   int selected = dt_control_get_mouse_over_id();
   if(selected < 0)
@@ -290,15 +294,13 @@ int try_enter(dt_view_t *self)
   }
   // and drop the lock again.
   dt_image_cache_read_release(darktable.image_cache, img);
-  darktable.develop->image_storage.id = selected;
+  prt->image_id = selected;
   return 0;
 }
 
 void enter(dt_view_t *self)
 {
   dt_print_t *prt=(dt_print_t*)self->data;
-
-  prt->image_id = -1;
 
   /* scroll filmstrip to the first selected image */
   GList *selected_images = dt_collection_get_selected(darktable.collection, 1);
@@ -325,6 +327,9 @@ void enter(dt_view_t *self)
 
   // prefetch next few from first selected image on.
   dt_view_filmstrip_prefetch();
+
+  darktable.control->mouse_over_id = -1;
+  dt_control_set_mouse_over_id(prt->image_id);
 }
 
 void leave(dt_view_t *self)

@@ -1,4 +1,3 @@
-
 build/src/preferences_gen.h
 data/darktable.desktop.in
 src/cli/main.c
@@ -82,6 +81,7 @@ src/iop/colorin.c
 src/iop/colorize.c
 src/iop/colormapping.c
 src/iop/colorout.c
+src/iop/colorreconstruction.c
 src/iop/colortransfer.c
 src/iop/colorzones.c
 src/iop/defringe.c

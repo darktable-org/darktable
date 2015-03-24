@@ -442,7 +442,6 @@ void dt_lua_do_chunk_async(lua_CFunction pusher,dt_lua_async_call_arg_type arg_t
           data->extra=g_list_append(data->extra,va_arg(ap,char *));
           data->extra=g_list_append(data->extra,va_arg(ap,gpointer));
           break;
-        case LUA_ASYNC_DONE:
         default:
           // should never happen
           g_assert(false);

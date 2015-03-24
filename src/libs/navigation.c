@@ -180,16 +180,11 @@ static gboolean _lib_navigation_draw_callback(GtkWidget *widget, cairo_t *crf, g
   }
 
   /* get the current style */
-  GdkRGBA color;
-  GtkStyleContext *context = gtk_widget_get_style_context(widget);
-  GtkStateFlags state = gtk_widget_get_state_flags(widget);
-  gtk_style_context_get_background_color(context, state, &color);
   cairo_surface_t *cst = dt_cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height);
   cairo_t *cr = cairo_create(cst);
 
-  /* fill background */
-  gdk_cairo_set_source_rgba(cr, &color);
-  cairo_paint(cr);
+  GtkStyleContext *context = gtk_widget_get_style_context(widget);
+  gtk_render_background(context, cr, 0, 0, allocation.width, allocation.height);
 
   width -= 2 * inset;
   height -= 2 * inset;
@@ -271,12 +266,18 @@ static gboolean _lib_navigation_draw_callback(GtkWidget *widget, cairo_t *crf, g
 
       cairo_save(cr);
       cairo_set_line_width(cr, 2.0);
-      gdk_cairo_set_source_rgba(cr, &color);
+
+      GdkRGBA *color;
+      gtk_style_context_get(context, gtk_widget_get_state_flags(widget), "background-color", &color, NULL);
+
+      gdk_cairo_set_source_rgba(cr, color);
       cairo_text_path(cr, zoomline);
       cairo_stroke_preserve(cr);
       cairo_set_source_rgb(cr, 0.6, 0.6, 0.6);
       cairo_fill(cr);
       cairo_restore(cr);
+
+      gdk_rgba_free(color);
     }
     else
     {

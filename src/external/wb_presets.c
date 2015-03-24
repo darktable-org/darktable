@@ -4811,6 +4811,12 @@ const wb_data wb_preset[] =
   { "Panasonic", "DMC-LX7", Incandescent, 0,	{ 1.2917, 1, 2.7841, 0 } },
   { "Panasonic", "DMC-LX7", Incandescent, 9,	{ 1.1434, 1, 3.2755, 0 } },
 
+  { "Panasonic", "DMC-LX100", Daylight, 0,	{ 2.316406, 1, 1.601563, 0 } },
+  { "Panasonic", "DMC-LX100", Cloudy, 0,	{ 2.468750, 1, 1.484375, 0 } },
+  { "Panasonic", "DMC-LX100", Shade, 0,		{ 2.640625, 1, 1.410156, 0 } },
+  { "Panasonic", "DMC-LX100", Flash, 0,		{ 2.410156, 1, 1.578125, 0 } },
+  { "Panasonic", "DMC-LX100", Incandescent, 0,	{ 1.585938, 1, 2.382813, 0 } },
+
   { "LEICA", "D-LUX 6", Daylight, 0,		{ 1.992453, 1, 1.750943, 0 } },
   { "LEICA", "D-LUX 6", Cloudy, 0,		{ 2.143396, 1, 1.603774, 0 } },
   { "LEICA", "D-LUX 6", Shade, 0,		{ 2.286792, 1, 1.498113, 0 } },
@@ -6426,6 +6432,16 @@ const wb_data wb_preset[] =
   { "SONY", "NEX-C3", "5000K", 0,		{ 2.605469, 1, 1.589844, 0 } },
   { "SONY", "NEX-C3", "5500K", 0,		{ 2.753906, 1, 1.492188, 0 } },
   { "SONY", "NEX-C3", "6500K", 0,		{ 2.996094, 1, 1.351563, 0 } },
+
+  { "SONY", "ILCA-77M2", Daylight, 0,{ 2.78515625, 1, 1.6796875, 0 } },
+  { "SONY", "ILCA-77M2", Shade, 0,    { 3.28515625, 1, 1.38671875, 0 } },
+  { "SONY", "ILCA-77M2", Cloudy, 0,  { 2.99609375, 1, 1.54296875, 0 } },
+  { "SONY", "ILCA-77M2", Incandescent, 0,{ 1.75, 1, 3.015625, 0 } },
+  { "SONY", "ILCA-77M2", WarmWhiteFluorescent, 0,{ 2.01953125, 1, 2.9765625, 0 } },
+  { "SONY", "ILCA-77M2", CoolWhiteFluorescent, 0,{ 2.53125, 1, 2.47265625, 0 } },
+  { "SONY", "ILCA-77M2", DayWhiteFluorescent, 0,{ 2.68359375, 1, 1.78125, 0 } },
+  { "SONY", "ILCA-77M2", DaylightFluorescent, 0,{ 3.00390625, 1, 1.609375, 0 } },
+  { "SONY", "ILCA-77M2", Flash, 0,   { 3.203125, 1, 1.43359375, 0 } },
 
   // firmware ILCE-7 (A7) Ver 1.0.1
   { "SONY", "ILCE-7", Daylight, 0,		{ 2.39843750, 1, 1.46484375, 0 } },

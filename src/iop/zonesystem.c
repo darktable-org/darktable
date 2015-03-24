@@ -823,12 +823,8 @@ static gboolean dt_iop_zonesystem_preview_draw(GtkWidget *widget, cairo_t *crf, 
   cairo_t *cr = cairo_create(cst);
 
   /* clear background */
-  GdkRGBA color;
   GtkStyleContext *context = gtk_widget_get_style_context(self->expander);
-  gtk_style_context_get_background_color(context, gtk_widget_get_state_flags(self->expander), &color);
-
-  gdk_cairo_set_source_rgba(cr, &color);
-  cairo_paint(cr);
+  gtk_render_background(context, cr, 0, 0, allocation.width, allocation.height);
 
   width -= 2 * inset;
   height -= 2 * inset;
@@ -880,16 +876,22 @@ static gboolean dt_iop_zonesystem_preview_draw(GtkWidget *widget, cairo_t *crf, 
     // draw a big, subdued dt logo
     if(g->image)
     {
+      GdkRGBA *color;
+      gtk_style_context_get(context, gtk_widget_get_state_flags(self->expander), "background-color", &color,
+                            NULL);
+
       cairo_set_source_surface(cr, g->image, (width - g->image_width) * 0.5, (height - g->image_height) * 0.5);
       cairo_rectangle(cr, 0, 0, width, height);
       cairo_set_operator(cr, CAIRO_OPERATOR_HSL_LUMINOSITY);
       cairo_fill_preserve(cr);
       cairo_set_operator(cr, CAIRO_OPERATOR_DARKEN);
-      cairo_set_source_rgb(cr, color.red + 0.02, color.green + 0.02, color.blue + 0.02);
+      cairo_set_source_rgb(cr, color->red + 0.02, color->green + 0.02, color->blue + 0.02);
       cairo_fill_preserve(cr);
       cairo_set_operator(cr, CAIRO_OPERATOR_LIGHTEN);
-      cairo_set_source_rgb(cr, color.red - 0.02, color.green - 0.02, color.blue - 0.02);
+      cairo_set_source_rgb(cr, color->red - 0.02, color->green - 0.02, color->blue - 0.02);
       cairo_fill(cr);
+
+      gdk_rgba_free(color);
     }
   }
 

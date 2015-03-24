@@ -55,6 +55,17 @@ JsonParser *dt_noiseprofile_init(const char *alternative)
   return parser;
 }
 
+int is_member(gchar** names, char* name)
+{
+  while(*names)
+  {
+    if(!g_strcmp0(*names, name))
+      return 1;
+    names++;
+  }
+  return 0;
+}
+
 GList *dt_noiseprofile_get_matching(const dt_image_t *cimg)
 {
   JsonParser *parser = darktable.noiseprofile_parser;
@@ -167,14 +178,21 @@ GList *dt_noiseprofile_get_matching(const dt_image_t *cimg)
               goto end;
             }
 
+            gchar** member_names = json_reader_list_members(reader);
+
             // do we want to skip this entry?
-            if(json_reader_read_member(reader, "skip") && json_reader_get_boolean_value(reader))
+            if(is_member(member_names, "skip"))
             {
+              json_reader_read_member(reader, "skip");
+              gboolean skip = json_reader_get_boolean_value(reader);
               json_reader_end_member(reader);
-              json_reader_end_element(reader);
-              continue;
+              if(skip)
+              {
+                json_reader_end_element(reader);
+                g_strfreev(member_names);
+                continue;
+              }
             }
-            json_reader_end_member(reader);
 
             // maker
             tmp_profile.maker = g_strdup(cimg->exif_maker);
@@ -182,89 +200,85 @@ GList *dt_noiseprofile_get_matching(const dt_image_t *cimg)
             tmp_profile.model = g_strdup(cimg->exif_model);
 
             // name
-            if(!json_reader_read_member(reader, "name"))
+            if(!is_member(member_names, "name"))
             {
               fprintf(stderr, "[noiseprofile] error: missing `name`\n");
               g_free(tmp_profile.maker);
               g_free(tmp_profile.model);
+              g_strfreev(member_names);
               goto end;
             }
+            json_reader_read_member(reader, "name");
             tmp_profile.name = g_strdup(json_reader_get_string_value(reader));
             json_reader_end_member(reader);
 
             // iso
-            if(!json_reader_read_member(reader, "iso"))
+            if(!is_member(member_names, "iso"))
             {
               fprintf(stderr, "[noiseprofile] error: missing `iso`\n");
               g_free(tmp_profile.name);
               g_free(tmp_profile.maker);
               g_free(tmp_profile.model);
+              g_strfreev(member_names);
               goto end;
             }
+            json_reader_read_member(reader, "iso");
             tmp_profile.iso = json_reader_get_double_value(reader);
             json_reader_end_member(reader);
 
             // a
-            if(!json_reader_read_member(reader, "a"))
+            if(!is_member(member_names, "a"))
             {
               fprintf(stderr, "[noiseprofile] error: missing `a`\n");
               g_free(tmp_profile.name);
               g_free(tmp_profile.maker);
               g_free(tmp_profile.model);
+              g_strfreev(member_names);
               goto end;
             }
+            json_reader_read_member(reader, "a");
             if(json_reader_count_elements(reader) != 3)
             {
               fprintf(stderr, "[noiseprofile] error: `a` with size != 3\n");
               g_free(tmp_profile.name);
               g_free(tmp_profile.maker);
               g_free(tmp_profile.model);
+              g_strfreev(member_names);
               goto end;
             }
 
             for(int a = 0; a < 3; a++)
             {
-              if(!json_reader_read_element(reader, a))
-              {
-                fprintf(stderr, "[noiseprofile] error: can't access `a' at position %d / %d\n", a+1, 3);
-                g_free(tmp_profile.name);
-                g_free(tmp_profile.maker);
-                g_free(tmp_profile.model);
-                goto end;
-              }
+              json_reader_read_element(reader, a);
               tmp_profile.a[a] = json_reader_get_double_value(reader);
               json_reader_end_element(reader);
             }
             json_reader_end_member(reader);
 
             // b
-            if(!json_reader_read_member(reader, "b"))
+            if(!is_member(member_names, "b"))
             {
               fprintf(stderr, "[noiseprofile] error: missing `b`\n");
               g_free(tmp_profile.name);
               g_free(tmp_profile.maker);
               g_free(tmp_profile.model);
+              g_strfreev(member_names);
               goto end;
             }
+            json_reader_read_member(reader, "b");
             if(json_reader_count_elements(reader) != 3)
             {
               fprintf(stderr, "[noiseprofile] error: `b` with size != 3\n");
               g_free(tmp_profile.name);
               g_free(tmp_profile.maker);
               g_free(tmp_profile.model);
+              g_strfreev(member_names);
               goto end;
             }
 
             for(int b = 0; b < 3; b++)
             {
-              if(!json_reader_read_element(reader, b))
-              {
-                fprintf(stderr, "[noiseprofile] error: can't access `b' at position %d / %d\n", b+1, 3);
-                g_free(tmp_profile.name);
-                g_free(tmp_profile.maker);
-                g_free(tmp_profile.model);
-                goto end;
-              }
+              json_reader_read_element(reader, b);
               tmp_profile.b[b] = json_reader_get_double_value(reader);
               json_reader_end_element(reader);
             }
@@ -276,6 +290,8 @@ GList *dt_noiseprofile_get_matching(const dt_image_t *cimg)
             dt_noiseprofile_t *new_profile = (dt_noiseprofile_t *)malloc(sizeof(dt_noiseprofile_t));
             *new_profile = tmp_profile;
             result = g_list_append(result, new_profile);
+
+            g_strfreev(member_names);
           } // profiles
 
           goto end;

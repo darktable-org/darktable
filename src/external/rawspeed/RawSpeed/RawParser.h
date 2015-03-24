@@ -33,7 +33,7 @@ class RawParser
 public:
   RawParser(FileMap* input);
   virtual ~RawParser();
-  virtual RawDecoder* getDecoder();
+  virtual RawDecoder* getDecoder(CameraMetaData* meta = NULL);
   void ParseFuji(uint32 offset, TiffIFD *target_ifd);
 protected:
   FileMap *mInput;

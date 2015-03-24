@@ -35,8 +35,11 @@ public:
   CameraMetaData(const char *docname);
   virtual ~CameraMetaData(void);
   map<string,Camera*> cameras;
+  map<uint32,Camera*> chdkCameras;
   Camera* getCamera(string make, string model, string mode);
   bool hasCamera(string make, string model, string mode);
+  Camera* getChdkCamera(uint32 filesize);
+  bool hasChdkCamera(uint32 filesize);
   void disableMake(string make);
   void disableCamera(string make, string model);
 protected:

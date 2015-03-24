@@ -124,9 +124,9 @@ dt_imageio_retval_t dt_imageio_open_rawspeed(dt_image_t *img, const char *filena
 
     RawParser t(m.get());
 #ifdef __APPLE__
-    d = auto_ptr<RawDecoder>(t.getDecoder());
+    d = auto_ptr<RawDecoder>(t.getDecoder(meta));
 #else
-    d = unique_ptr<RawDecoder>(t.getDecoder());
+    d = unique_ptr<RawDecoder>(t.getDecoder(meta));
 #endif
 
     if(!d.get()) return DT_IMAGEIO_FILE_CORRUPTED;

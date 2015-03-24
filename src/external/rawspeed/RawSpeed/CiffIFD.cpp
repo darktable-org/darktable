@@ -39,6 +39,7 @@ CiffIFD::CiffIFD(FileMap* f, uint32 start, uint32 end) {
   CHECKSIZE(end);
 
   uint32 valuedata_size = *(uint32 *) f->getData(end-4);
+  CHECKSIZE(start+valuedata_size);
   ushort16 dircount = *(ushort16 *) f->getData(start+valuedata_size);
 
 //  fprintf(stderr, "Found %d entries between %d and %d after %d data bytes\n", 
@@ -51,7 +52,7 @@ CiffIFD::CiffIFD(FileMap* f, uint32 start, uint32 end) {
       try {
         mSubIFD.push_back(new CiffIFD(f, t->data_offset, t->data_offset+t->count));
         delete(t);
-      } catch (CiffParserException &e) {
+      } catch (CiffParserException) {
         // Unparsable subifds are added as entries
         mEntry[t->tag] = t;
       }

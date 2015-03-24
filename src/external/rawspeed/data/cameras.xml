@@ -101,6 +101,9 @@
 			<Vertical x="0" width="60"/>
 			<Horizontal y="0" height="10"/>
 		</BlackAreas>
+		<Aliases>
+			<Alias>Canon EOS DIGITAL REBEL</Alias>
+		</Aliases>
 	</Camera>
 	<Camera make="Canon" model="Canon EOS D30">
 		<CFA width="2" height="2">
@@ -664,6 +667,48 @@
 			<Horizontal y="4" height="44"/>
 		</BlackAreas>
 	</Camera>
+	<Camera make="Canon" model="Canon EOS-1D" decoder_version="5">
+		<CFA width="2" height="2">
+			<Color x="0" y="0">GREEN</Color>
+			<Color x="1" y="0">RED</Color>
+			<Color x="0" y="1">BLUE</Color>
+			<Color x="1" y="1">GREEN</Color>
+		</CFA>
+		<Crop x="0" y="0" width="0" height="0"/>
+		<Sensor black="0" white="3588"/>
+		<Hints>
+			<Hint name="old_format" value=""/>
+			<Hint name="double_line_ljpeg" value=""/>
+		</Hints>
+	</Camera>
+	<Camera make="Canon" model="Canon EOS-1DS" decoder_version="5">
+		<CFA width="2" height="2">
+			<Color x="0" y="0">GREEN</Color>
+			<Color x="1" y="0">RED</Color>
+			<Color x="0" y="1">BLUE</Color>
+			<Color x="1" y="1">GREEN</Color>
+		</CFA>
+		<Crop x="0" y="0" width="0" height="0"/>
+		<Sensor black="0" white="3500"/>
+		<Hints>
+			<Hint name="old_format" value=""/>
+			<Hint name="double_line_ljpeg" value=""/>
+		</Hints>
+	</Camera>
+	<Camera make="Canon" model="EOS D2000C" decoder_version="5">
+		<CFA width="2" height="2">
+			<Color x="0" y="0">GREEN</Color>
+			<Color x="1" y="0">RED</Color>
+			<Color x="0" y="1">BLUE</Color>
+			<Color x="1" y="1">GREEN</Color>
+		</CFA>
+		<Crop x="0" y="0" width="0" height="0"/>
+		<Sensor black="96" white="4095"/>
+		<Hints>
+			<Hint name="old_format" value=""/>
+			<Hint name="override_whitebalance" value="1003807,1000000,2468898"/>
+		</Hints>
+	</Camera>
 	<Camera make="Canon" model="Canon EOS-1D Mark II">
 		<CFA width="2" height="2">
 			<Color x="0" y="0">RED</Color>
@@ -795,7 +840,7 @@
 	<Camera make="Canon" model="Canon EOS-1D X" mode="sRaw1">
 		<Crop x="0" y="0" width="0" height="0"/>
 		<Sensor black="0" white="65535"/>
-    <Hints>
+		<Hints>
 			<Hint name="sraw_new" value=""/>
 			<Hint name="invert_sraw_wb" value=""/>
 		</Hints>
@@ -803,7 +848,7 @@
 	<Camera make="Canon" model="Canon EOS-1D X" mode="sRaw2">
 		<Crop x="0" y="0" width="0" height="0"/>
 		<Sensor black="0" white="65535"/>
-    <Hints>
+		<Hints>
 			<Hint name="sraw_new" value=""/>
 			<Hint name="invert_sraw_wb" value=""/>
 		</Hints>
@@ -821,8 +866,10 @@
 			<Hint name="override_whitebalance" value="2185173,1000000,1342573"/>
 		</Hints>
 		<BlackAreas>
-			<Vertical x="-50" width="50"/>
+			<Vertical x="3294" width="50"/>
 		</BlackAreas>
+	</Camera>
+	<Camera make="Canon" model="Canon PowerShot Pro70" supported="no">
 	</Camera>
 	<Camera make="Canon" model="Canon PowerShot G1">
 		<CFA width="2" height="2">
@@ -837,7 +884,7 @@
 			<Hint name="no_decompressed_lowbits" value=""/>
 		</Hints>
 		<BlackAreas>
-			<Vertical x="-50" width="50"/>
+			<Vertical x="2094" width="50"/>
 		</BlackAreas>
 	</Camera>
 	<Camera make="Canon" model="Canon PowerShot G2">
@@ -853,7 +900,7 @@
 			<Hint name="no_decompressed_lowbits" value=""/>
 		</Hints>
 		<BlackAreas>
-			<Vertical x="-50" width="50"/>
+			<Vertical x="2326" width="50"/>
 			<Horizontal y="0" height="10"/>
 		</BlackAreas>
 	</Camera>
@@ -870,7 +917,7 @@
 			<Hint name="override_whitebalance" value="1757692,1000000,2071795"/>
 		</Hints>
 		<BlackAreas>
-			<Vertical x="-50" width="50"/>
+			<Vertical x="2326" width="50"/>
 			<Horizontal y="0" height="10"/>
 		</BlackAreas>
 	</Camera>
@@ -887,7 +934,7 @@
 			<Hint name="override_whitebalance" value="1984870,1000000,1237501"/>
 		</Hints>
 		<BlackAreas>
-			<Vertical x="-40" width="40"/>
+			<Vertical x="2632" width="40"/>
 			<Horizontal y="0" height="10"/>
 		</BlackAreas>
 	</Camera>
@@ -1075,7 +1122,7 @@
 			<Hint name="no_decompressed_lowbits" value=""/>
 		</Hints>
 		<BlackAreas>
-			<Vertical x="-50" width="50"/>
+			<Vertical x="2094" width="50"/>
 		</BlackAreas>
 	</Camera>
 	<Camera make="Canon" model="Canon PowerShot S40">
@@ -1091,7 +1138,7 @@
 			<Hint name="no_decompressed_lowbits" value=""/>
 		</Hints>
 		<BlackAreas>
-			<Vertical x="-50" width="50"/>
+			<Vertical x="2326" width="50"/>
 			<Horizontal y="0" height="10"/>
 		</BlackAreas>
 	</Camera>
@@ -1108,7 +1155,7 @@
 			<Hint name="override_whitebalance" value="2466639,1000000,1153626"/>
 		</Hints>
 		<BlackAreas>
-			<Vertical x="-50" width="50"/>
+			<Vertical x="2326" width="50"/>
 		</BlackAreas>
 	</Camera>
 	<Camera make="Canon" model="Canon PowerShot S50">
@@ -1124,7 +1171,7 @@
 			<Hint name="override_whitebalance" value="2168080,1000000,1356259"/>
 		</Hints>
 		<BlackAreas>
-			<Vertical x="-40" width="40"/>
+			<Vertical x="2632" width="40"/>
 			<Horizontal y="0" height="10"/>
 		</BlackAreas>
 	</Camera>
@@ -1141,7 +1188,7 @@
 			<Hint name="override_whitebalance" value="2143041,1000000,1136598"/>
 		</Hints>
 		<BlackAreas>
-			<Vertical x="-40" width="40"/>
+			<Vertical x="2632" width="40"/>
 			<Horizontal y="0" height="10"/>
 		</BlackAreas>
 	</Camera>
@@ -1251,99 +1298,6 @@
 		<BlackAreas>
 			<Vertical x="6" width="70"/>
 			<Horizontal y="0" height="16"/>
-		</BlackAreas>
-	</Camera>
-	<Camera make="Canon" model="PowerShot S3 IS">
-		<CFA width="2" height="2">
-			<Color x="0" y="0">RED</Color>
-			<Color x="1" y="0">GREEN</Color>
-			<Color x="0" y="1">GREEN</Color>
-			<Color x="1" y="1">BLUE</Color>
-		</CFA>
-		<Crop x="44" y="8" width="-4" height="0"/>
-		<Sensor black="0" white="1023"/>
-		<BlackAreas>
-			<Vertical x="0" width="40"/>
-		</BlackAreas>
-	</Camera>
-	<Camera make="Canon" model="PowerShot A610">
-		<CFA width="2" height="2">
-			<Color x="0" y="0">RED</Color>
-			<Color x="1" y="0">GREEN</Color>
-			<Color x="0" y="1">GREEN</Color>
-			<Color x="1" y="1">BLUE</Color>
-		</CFA>
-		<Crop x="12" y="8" width="-44" height="0"/>
-		<Sensor black="0" white="1023"/>
-		<Hints>
-			<Hint name="override_whitebalance" value="1564987,1000000,1710746"/>
-		</Hints>
-		<BlackAreas>
-			<Vertical x="-40" width="40"/>
-		</BlackAreas>
-	</Camera>
-	<Camera make="Canon" model="PowerShot A620">
-		<CFA width="2" height="2">
-			<Color x="0" y="0">RED</Color>
-			<Color x="1" y="0">GREEN</Color>
-			<Color x="0" y="1">GREEN</Color>
-			<Color x="1" y="1">BLUE</Color>
-		</CFA>
-		<Crop x="36" y="12" width="-4" height="0"/>
-		<Hints>
-			<Hint name="override_whitebalance" value="1568679,1000000,1602855"/>
-		</Hints>
-		<BlackAreas>
-			<Vertical x="0" width="30"/>
-		</BlackAreas>
-		<Sensor black="0" white="1023"/>
-	</Camera>
-	<Camera make="Canon" model="PowerShot A640">
-		<CFA width="2" height="2">
-			<Color x="0" y="0">RED</Color>
-			<Color x="1" y="0">GREEN</Color>
-			<Color x="0" y="1">GREEN</Color>
-			<Color x="1" y="1">BLUE</Color>
-		</CFA>
-		<Crop x="12" y="6" width="-52" height="-6"/>
-		<Sensor black="0" white="1023"/>
-		<Hints>
-			<Hint name="override_whitebalance" value="1838080,1000000,1556674"/>
-		</Hints>
-		<BlackAreas>
-			<Vertical x="-50" width="50"/>
-		</BlackAreas>
-	</Camera>
-	<Camera make="Canon" model="PowerShot A650">
-		<CFA width="2" height="2">
-			<Color x="0" y="0">RED</Color>
-			<Color x="1" y="0">GREEN</Color>
-			<Color x="0" y="1">GREEN</Color>
-			<Color x="1" y="1">BLUE</Color>
-		</CFA>
-		<Crop x="48" y="12" width="-24" height="-12"/>
-		<Sensor black="0" white="1023"/>
-		<Hints>
-			<Hint name="override_whitebalance" value="2110416,1000000,1770211"/>
-		</Hints>
-		<BlackAreas>
-			<Vertical x="0" width="45"/>
-		</BlackAreas>
-	</Camera>
-	<Camera make="Canon" model="PowerShot A720 IS">
-		<CFA width="2" height="2">
-			<Color x="0" y="0">GREEN</Color>
-			<Color x="1" y="0">BLUE</Color>
-			<Color x="0" y="1">RED</Color>
-			<Color x="1" y="1">GREEN</Color>
-		</CFA>
-		<Crop x="6" y="5" width="-32" height="-3"/>
-		<Sensor black="0" white="1023"/>
-		<Hints>
-			<Hint name="override_whitebalance" value="1524730,1000000,2009988"/>
-		</Hints>
-		<BlackAreas>
-			<Vertical x="-30" width="30"/>
 		</BlackAreas>
 	</Camera>
 	<Camera make="NIKON CORPORATION" model="NIKON D100">
@@ -1471,9 +1425,6 @@
 		</CFA>
 		<Crop x="0" y="0" width="4320" height="2868"/>
 		<Sensor black="0" white="15236"/>
-		<Hints>
-			<Hint name="override_whitebalance" value="2093285,1000000,1055975"/>
-		</Hints>
 	</Camera>
 	<Camera make="NIKON CORPORATION" model="NIKON D300S">
 		<CFA width="2" height="2">
@@ -1807,10 +1758,7 @@
 	</Camera>
 	<Camera make="NIKON CORPORATION" model="NIKON D810" mode="sNEF-uncompressed">
 		<Crop x="0" y="0" width="0" height="0"/>
-		<Sensor black="0" white="16384"/>
-		<Hints>
-			<Hint name="nikon_override_auto_black" value=""/>
-		</Hints>
+		<Sensor black="0" white="65535"/>
 	</Camera>
 	<Camera make="NIKON CORPORATION" model="NIKON D810" mode="12bit-uncompressed">
 		<CFA width="2" height="2">
@@ -1850,7 +1798,7 @@
 		<Sensor black="600" white="15520"/>
 		<Hints>
 			<Hint name="msb_override" value=""/>
-      <Hint name="nikon_override_auto_black" value=""/>
+			<Hint name="nikon_override_auto_black" value=""/>
 		</Hints>
 	</Camera>
 	<Camera make="NIKON CORPORATION" model="NIKON D810" mode="14bit-compressed">
@@ -1868,10 +1816,7 @@
 	</Camera>
 	<Camera make="NIKON CORPORATION" model="NIKON D4S" mode="sNEF-uncompressed">
 		<Crop x="0" y="0" width="0" height="0"/>
-		<Sensor black="0" white="16384"/>
-		<Hints>
-			<Hint name="nikon_override_auto_black" value=""/>
-		</Hints>
+		<Sensor black="0" white="65535"/>
 	</Camera>
 	<Camera make="NIKON CORPORATION" model="NIKON D4S" mode="12bit-compressed">
 		<CFA width="2" height="2">
@@ -1896,7 +1841,7 @@
 		<Crop x="0" y="0" width="0" height="0"/>
 		<Sensor black="192" white="3880"/>
 		<Hints>
-      <Hint name="msb_override" value=""/>
+			<Hint name="msb_override" value=""/>
 			<Hint name="nikon_override_auto_black" value=""/>
 		</Hints>
 	</Camera>
@@ -1910,7 +1855,7 @@
 		<Crop x="0" y="0" width="0" height="0"/>
 		<Sensor black="768" white="15520"/>
 		<Hints>
-      <Hint name="msb_override" value=""/>
+			<Hint name="msb_override" value=""/>
 			<Hint name="nikon_override_auto_black" value=""/>
 		</Hints>
 	</Camera>
@@ -1999,9 +1944,9 @@
 		</CFA>
 		<Crop x="0" y="0" width="0" height="0"/>
 		<Sensor black="200" white="4095"/>
-    <Hints>
-      <Hint name="nikon_override_auto_black" value=""/>
-    </Hints>
+		<Hints>
+			<Hint name="nikon_override_auto_black" value=""/>
+		</Hints>
 	</Camera>
 	<Camera make="NIKON CORPORATION" model="NIKON 1 V1" decoder_version="4">
 		<CFA width="2" height="2">
@@ -2119,9 +2064,9 @@
 		</CFA>
 		<Crop x="0" y="0" width="0" height="0"/>
 		<Sensor black="0" white="4095"/>
-                <Sensor black="250" white="4095" iso_min="400" iso_max="0"/>
-                <!-- In usual Nikon style, ISO 6400 is marked as ISO 0 -->
-                <Sensor black="260" white="4095" iso_min="0" iso_max="1"/>
+		<Sensor black="250" white="4095" iso_min="400" iso_max="0"/>
+		<!-- In usual Nikon style, ISO 6400 is marked as ISO 0 -->
+		<Sensor black="260" white="4095" iso_min="0" iso_max="1"/>
 		<Hints>
 			<Hint name="coolpixmangled" value=""/>
 		</Hints>
@@ -5402,6 +5347,7 @@
 		<Crop x="0" y="0" width="-16" height="0"/>
 		<Sensor black="520" white="16596"/>
 	</Camera>
+	<!-- Measured on images from https://github.com/klauspost/rawspeed/issues/78 -->
 	<Camera make="SONY" model="NEX-7" supported="yes">
 		<CFA width="2" height="2">
 			<Color x="0" y="0">RED</Color>
@@ -5410,7 +5356,7 @@
 			<Color x="1" y="1">BLUE</Color>
 		</CFA>
 		<Crop x="0" y="0" width="-26" height="0"/>
-		<Sensor black="520" white="16383"/>
+		<Sensor black="512" white="16300"/>
 	</Camera>
 	<Camera make="SONY" model="NEX-C3" supported="yes">
 		<CFA width="2" height="2">
@@ -6351,5 +6297,1272 @@
 		</CFA>
 		<Crop x="0" y="0" width="0" height="0"/>
 		<Sensor black="0" white="31456"/>
+	</Camera>
+	<!-- CHDK Cameras -->
+	<Camera make="AVT" model="F-080C" mode="chdk">
+		<CFA2 width="2" height="2">
+			<ColorRow y="0">RG</ColorRow>
+			<ColorRow y="1">GB</ColorRow>
+		</CFA2>
+		<Crop x="0" y="0" width="0" height="0"/>
+		<Sensor black="0" white="255"/>
+		<Hints>
+			<Hint name="filesize" value="786432"/>
+			<Hint name="full_width" value="1024"/>
+			<Hint name="full_height" value="768"/>
+		</Hints>
+	</Camera>
+	<Camera make="AVT" model="F-145C" mode="chdk">
+		<CFA2 width="2" height="2">
+			<ColorRow y="0">RG</ColorRow>
+			<ColorRow y="1">GB</ColorRow>
+		</CFA2>
+		<Crop x="0" y="0" width="0" height="0"/>
+		<Sensor black="0" white="255"/>
+		<Hints>
+			<Hint name="filesize" value="1447680"/>
+			<Hint name="full_width" value="1392"/>
+			<Hint name="full_height" value="1040"/>
+		</Hints>
+	</Camera>
+	<Camera make="AVT" model="F-201C" mode="chdk">
+		<CFA2 width="2" height="2">
+			<ColorRow y="0">RG</ColorRow>
+			<ColorRow y="1">GB</ColorRow>
+		</CFA2>
+		<Crop x="0" y="0" width="0" height="0"/>
+		<Sensor black="0" white="255"/>
+		<Hints>
+			<Hint name="filesize" value="1920000"/>
+			<Hint name="full_width" value="1600"/>
+			<Hint name="full_height" value="1200"/>
+		</Hints>
+	</Camera>
+	<Camera make="AVT" model="F-510C" mode="chdk-a">
+		<CFA2 width="2" height="2">
+			<ColorRow y="0">RG</ColorRow>
+			<ColorRow y="1">GB</ColorRow>
+		</CFA2>
+		<Crop x="0" y="0" width="0" height="0"/>
+		<Sensor black="0" white="255"/>
+		<Hints>
+			<Hint name="filesize" value="5067304"/>
+			<Hint name="full_width" value="2588"/>
+			<Hint name="full_height" value="1958"/>
+		</Hints>
+	</Camera>
+	<Camera make="AVT" model="F-510C" mode="chdk-b">
+		<CFA2 width="2" height="2">
+			<ColorRow y="0">RG</ColorRow>
+			<ColorRow y="1">GB</ColorRow>
+		</CFA2>
+		<Crop x="0" y="0" width="0" height="0"/>
+		<Sensor black="0" white="255"/>
+		<Hints>
+			<Hint name="filesize" value="5067316"/>
+			<Hint name="full_width" value="2588"/>
+			<Hint name="full_height" value="1958"/>
+			<Hint name="offset" value="12"/>
+		</Hints>
+	</Camera>
+	<Camera make="AVT" model="F-510C" mode="chdk-c">
+		<CFA2 width="2" height="2">
+			<ColorRow y="0">RG</ColorRow>
+			<ColorRow y="1">GB</ColorRow>
+		</CFA2>
+		<Crop x="0" y="0" width="0" height="0"/>
+		<Sensor black="0" white="65535"/>
+		<Hints>
+			<Hint name="filesize" value="10134608"/>
+			<Hint name="full_width" value="2588"/>
+			<Hint name="full_height" value="1958"/>
+		</Hints>
+	</Camera>
+	<Camera make="AVT" model="F-510C" mode="chdk-d">
+		<CFA2 width="2" height="2">
+			<ColorRow y="0">RG</ColorRow>
+			<ColorRow y="1">GB</ColorRow>
+		</CFA2>
+		<Crop x="0" y="0" width="0" height="0"/>
+		<Sensor black="0" white="65535"/>
+		<Hints>
+			<Hint name="filesize" value="10134620"/>
+			<Hint name="full_width" value="2588"/>
+			<Hint name="full_height" value="1958"/>
+			<Hint name="offset" value="12"/>
+		</Hints>
+	</Camera>
+	<Camera make="AVT" model="F-810C" mode="chdk">
+		<CFA2 width="2" height="2">
+			<ColorRow y="0">RG</ColorRow>
+			<ColorRow y="1">GB</ColorRow>
+		</CFA2>
+		<Crop x="0" y="0" width="0" height="0"/>
+		<Sensor black="0" white="65535"/>
+		<Hints>
+			<Hint name="filesize" value="16157136"/>
+			<Hint name="full_width" value="3272"/>
+			<Hint name="full_height" value="2469"/>
+		</Hints>
+	</Camera>
+	<Camera make="AgfaPhoto" model="DC-833m" mode="chdk">
+		<CFA2 width="2" height="2">
+			<ColorRow y="0">GB</ColorRow>
+			<ColorRow y="1">RG</ColorRow>
+		</CFA2>
+		<Crop x="0" y="0" width="0" height="0"/>
+		<Sensor black="0" white="65535"/>
+		<Hints>
+			<Hint name="filesize" value="15980544"/>
+			<Hint name="full_width" value="3264"/>
+			<Hint name="full_height" value="2448"/>
+		</Hints>
+	</Camera>
+	<Camera make="Alcatel" model="5035D" mode="chdk">
+		<CFA2 width="2" height="2">
+			<ColorRow y="0">GB</ColorRow>
+			<ColorRow y="1">RG</ColorRow>
+		</CFA2>
+		<Crop x="0" y="0" width="0" height="0"/>
+		<Sensor black="0" white="65535"/>
+		<Hints>
+			<Hint name="filesize" value="9631728"/>
+			<Hint name="full_width" value="2532"/>
+			<Hint name="full_height" value="1902"/>
+		</Hints>
+	</Camera>
+	<Camera make="Baumer" model="TXG14" mode="chdk">
+		<CFA2 width="2" height="2">
+			<ColorRow y="0">GR</ColorRow>
+			<ColorRow y="1">BG</ColorRow>
+		</CFA2>
+		<Crop x="0" y="0" width="0" height="0"/>
+		<Sensor black="0" white="65535"/>
+		<Hints>
+			<Hint name="filesize" value="2868726"/>
+			<Hint name="full_width" value="1384"/>
+			<Hint name="full_height" value="1036"/>
+			<Hint name="offset" value="1078"/>
+		</Hints>
+	</Camera>
+	<Camera make="Canon" model="PowerShot SD300" mode="chdk">
+		<CFA2 width="2" height="2">
+			<ColorRow y="0">RG</ColorRow>
+			<ColorRow y="1">GB</ColorRow>
+		</CFA2>
+		<Crop x="12" y="12" width="-44" height="-2"/>
+		<Sensor black="0" white="1023"/>
+		<Hints>
+			<Hint name="filesize" value="5298000"/>
+			<Hint name="full_width" value="2400"/>
+			<Hint name="full_height" value="1766"/>
+		</Hints>
+	</Camera>
+	<Camera make="Canon" model="PowerShot A460" mode="chdk">
+		<CFA2 width="2" height="2">
+			<ColorRow y="0">RG</ColorRow>
+			<ColorRow y="1">GB</ColorRow>
+		</CFA2>
+		<Crop x="4" y="4" width="-44" height="-4"/>
+		<Sensor black="0" white="1023"/>
+		<Hints>
+			<Hint name="filesize" value="6553440"/>
+			<Hint name="full_width" value="2664"/>
+			<Hint name="full_height" value="1968"/>
+		</Hints>
+	</Camera>
+	<Camera make="Canon" model="PowerShot A610" mode="chdk">
+		<CFA2 width="2" height="2">
+			<ColorRow y="0">RG</ColorRow>
+			<ColorRow y="1">GB</ColorRow>
+		</CFA2>
+		<Crop x="12" y="8" width="-44" height="0"/>
+		<Sensor black="0" white="1023"/>
+		<Hints>
+			<Hint name="filesize" value="6573120"/>
+			<Hint name="full_width" value="2672"/>
+			<Hint name="full_height" value="1968"/>
+			<Hint name="override_whitebalance" value="1564987,1000000,1710746"/>
+		</Hints>
+		<BlackAreas>
+			<Vertical x="2632" width="40"/>
+		</BlackAreas>
+	</Camera>
+	<Camera make="Canon" model="PowerShot A530" mode="chdk">
+		<CFA2 width="2" height="2">
+			<ColorRow y="0">RG</ColorRow>
+			<ColorRow y="1">GB</ColorRow>
+		</CFA2>
+		<Crop x="10" y="6" width="-42" height="-2"/>
+		<Sensor black="0" white="1023"/>
+		<Hints>
+			<Hint name="filesize" value="6653280"/>
+			<Hint name="full_width" value="2672"/>
+			<Hint name="full_height" value="1992"/>
+		</Hints>
+	</Camera>
+	<Camera make="Canon" model="PowerShot S3 IS" mode="chdk">
+		<CFA2 width="2" height="2">
+			<ColorRow y="0">RG</ColorRow>
+			<ColorRow y="1">GB</ColorRow>
+		</CFA2>
+		<Crop x="44" y="8" width="-4" height="0"/>
+		<Sensor black="0" white="1023"/>
+		<Hints>
+			<Hint name="filesize" value="7710960"/>
+			<Hint name="full_width" value="2888"/>
+			<Hint name="full_height" value="2136"/>
+			<Hint name="override_whitebalance" value="1582762,1000000,1718605"/>
+		</Hints>
+		<BlackAreas>
+			<Vertical x="0" width="40"/>
+		</BlackAreas>
+	</Camera>
+	<Camera make="Canon" model="PowerShot A620" mode="chdk">
+		<CFA2 width="2" height="2">
+			<ColorRow y="0">RG</ColorRow>
+			<ColorRow y="1">GB</ColorRow>
+		</CFA2>
+		<Crop x="36" y="12" width="-4" height="0"/>
+		<Sensor black="0" white="1023"/>
+		<Hints>
+			<Hint name="filesize" value="9219600"/>
+			<Hint name="full_width" value="3152"/>
+			<Hint name="full_height" value="2340"/>
+			<Hint name="override_whitebalance" value="1568679,1000000,1602855"/>
+		</Hints>
+		<BlackAreas>
+			<Vertical x="0" width="30"/>
+		</BlackAreas>
+	</Camera>
+	<Camera make="Canon" model="PowerShot A470" mode="chdk">
+		<CFA2 width="2" height="2">
+			<ColorRow y="0">GR</ColorRow>
+			<ColorRow y="1">BG</ColorRow>
+		</CFA2>
+		<Crop x="12" y="7" width="-44" height="-13"/>
+		<Sensor black="0" white="1023"/>
+		<Hints>
+			<Hint name="filesize" value="9243240"/>
+			<Hint name="full_width" value="3152"/>
+			<Hint name="full_height" value="2346"/>
+		</Hints>
+	</Camera>
+	<Camera make="Canon" model="PowerShot A720 IS" mode="chdk">
+		<CFA2 width="2" height="2">
+			<ColorRow y="0">GB</ColorRow>
+			<ColorRow y="1">RG</ColorRow>
+		</CFA2>
+		<Crop x="6" y="5" width="-32" height="-3"/>
+		<Sensor black="0" white="1023"/>
+		<Hints>
+			<Hint name="filesize" value="10341600"/>
+			<Hint name="full_width" value="3336"/>
+			<Hint name="full_height" value="2480"/>
+			<Hint name="override_whitebalance" value="1524730,1000000,2009988"/>
+		</Hints>
+		<BlackAreas>
+			<Vertical x="3306" width="30"/>
+		</BlackAreas>
+	</Camera>
+	<Camera make="Canon" model="PowerShot A630" mode="chdk">
+		<CFA2 width="2" height="2">
+			<ColorRow y="0">RG</ColorRow>
+			<ColorRow y="1">GB</ColorRow>
+		</CFA2>
+		<Crop x="12" y="6" width="-44" height="-6"/>
+		<Sensor black="0" white="1023"/>
+		<Hints>
+			<Hint name="filesize" value="10383120"/>
+			<Hint name="full_width" value="3344"/>
+			<Hint name="full_height" value="2484"/>
+			<Hint name="override_whitebalance" value="1593248,957204,1460876"/>
+		</Hints>
+		<BlackAreas>
+			<Vertical x="0" width="30"/>
+		</BlackAreas>
+	</Camera>
+	<Camera make="Canon" model="PowerShot A640" mode="chdk">
+		<CFA2 width="2" height="2">
+			<ColorRow y="0">RG</ColorRow>
+			<ColorRow y="1">GB</ColorRow>
+		</CFA2>
+		<Crop x="12" y="6" width="-52" height="-6"/>
+		<Sensor black="0" white="1023"/>
+		<Hints>
+			<Hint name="filesize" value="12945240"/>
+			<Hint name="full_width" value="3736"/>
+			<Hint name="full_height" value="2772"/>
+			<Hint name="override_whitebalance" value="1838080,1000000,1556674"/>
+		</Hints>
+		<BlackAreas>
+			<Vertical x="3686" width="50"/>
+		</BlackAreas>
+	</Camera>
+	<Camera make="Canon" model="PowerShot A650" mode="chdk">
+		<CFA2 width="2" height="2">
+			<ColorRow y="0">RG</ColorRow>
+			<ColorRow y="1">GB</ColorRow>
+		</CFA2>
+		<Crop x="48" y="12" width="-24" height="-12"/>
+		<Sensor black="0" white="1023"/>
+		<Hints>
+			<Hint name="filesize" value="15636240"/>
+			<Hint name="full_width" value="4104"/>
+			<Hint name="full_height" value="3048"/>
+			<Hint name="override_whitebalance" value="2110416,1000000,1770211"/>
+		</Hints>
+		<BlackAreas>
+			<Vertical x="0" width="45"/>
+		</BlackAreas>
+	</Camera>
+	<Camera make="Canon" model="PowerShot SX110 IS" mode="chdk">
+		<CFA2 width="2" height="2">
+			<ColorRow y="0">RG</ColorRow>
+			<ColorRow y="1">GB</ColorRow>
+		</CFA2>
+		<Crop x="6" y="12" width="-30" height="0"/>
+		<Sensor black="0" white="4095"/>
+		<Hints>
+			<Hint name="filesize" value="15467760"/>
+			<Hint name="full_width" value="3720"/>
+			<Hint name="full_height" value="2772"/>
+			<Hint name="override_whitebalance" value="1614148,979180,2115417"/>
+		</Hints>
+		<BlackAreas>
+			<Vertical x="3690" width="30"/>
+		</BlackAreas>
+	</Camera>
+	<Camera make="Canon" model="PowerShot SX120 IS" mode="chdk">
+		<CFA2 width="2" height="2">
+			<ColorRow y="0">RG</ColorRow>
+			<ColorRow y="1">GB</ColorRow>
+		</CFA2>
+		<Crop x="12" y="9" width="-44" height="-9"/>
+		<Sensor black="0" white="4095"/>
+		<Hints>
+			<Hint name="filesize" value="15534576"/>
+			<Hint name="full_width" value="3728"/>
+			<Hint name="full_height" value="2778"/>
+		</Hints>
+	</Camera>
+	<Camera make="Canon" model="PowerShot SX20 IS" mode="chdk">
+		<CFA2 width="2" height="2">
+			<ColorRow y="0">RG</ColorRow>
+			<ColorRow y="1">GB</ColorRow>
+		</CFA2>
+		<Crop x="24" y="12" width="-24" height="-12"/>
+		<Sensor black="0" white="4095"/>
+		<Hints>
+			<Hint name="filesize" value="18653760"/>
+			<Hint name="full_width" value="4080"/>
+			<Hint name="full_height" value="3048"/>
+		</Hints>
+	</Camera>
+	<Camera make="Canon" model="PowerShot SX220 HS" mode="chdk">
+		<CFA2 width="2" height="2">
+			<ColorRow y="0">RG</ColorRow>
+			<ColorRow y="1">GB</ColorRow>
+		</CFA2>
+		<Crop x="92" y="16" width="-4" height="-1"/>
+		<Sensor black="0" white="4095"/>
+		<Hints>
+			<Hint name="filesize" value="19131120"/>
+			<Hint name="full_width" value="4168"/>
+			<Hint name="full_height" value="3060"/>
+		</Hints>
+	</Camera>
+	<Camera make="Canon" model="PowerShot SX30 IS" mode="chdk">
+		<CFA2 width="2" height="2">
+			<ColorRow y="0">BG</ColorRow>
+			<ColorRow y="1">GR</ColorRow>
+		</CFA2>
+		<Crop x="25" y="10" width="-73" height="-12"/>
+		<Sensor black="0" white="4095"/>
+		<Hints>
+			<Hint name="filesize" value="21936096"/>
+			<Hint name="full_width" value="4464"/>
+			<Hint name="full_height" value="3276"/>
+		</Hints>
+	</Camera>
+	<Camera make="Canon" model="PowerShot A3300 IS" mode="chdk">
+		<CFA2 width="2" height="2">
+			<ColorRow y="0">RG</ColorRow>
+			<ColorRow y="1">GB</ColorRow>
+		</CFA2>
+		<Crop x="8" y="16" width="-56" height="-8"/>
+		<Sensor black="0" white="4095"/>
+		<Hints>
+			<Hint name="filesize" value="24724224"/>
+			<Hint name="full_width" value="4704"/>
+			<Hint name="full_height" value="3504"/>
+		</Hints>
+	</Camera>
+	<Camera make="Casio" model="QV-2000UX" mode="chdk">
+		<CFA2 width="2" height="2">
+			<ColorRow y="0">RG</ColorRow>
+			<ColorRow y="1">GB</ColorRow>
+		</CFA2>
+		<Crop x="0" y="2" width="0" height="-1"/>
+		<Sensor black="0" white="255"/>
+		<Hints>
+			<Hint name="filesize" value="1976352"/>
+			<Hint name="full_width" value="1632"/>
+			<Hint name="full_height" value="1211"/>
+		</Hints>
+	</Camera>
+	<Camera make="Casio" model="QV-3*00EX" mode="chdk">
+		<CFA2 width="2" height="2">
+			<ColorRow y="0">RG</ColorRow>
+			<ColorRow y="1">GB</ColorRow>
+		</CFA2>
+		<Crop x="0" y="0" width="-10" height="-1"/>
+		<Sensor black="0" white="255"/>
+		<Hints>
+			<Hint name="filesize" value="3217760"/>
+			<Hint name="full_width" value="2080"/>
+			<Hint name="full_height" value="1547"/>
+		</Hints>
+	</Camera>
+	<Camera make="Casio" model="QV-5700" mode="chdk">
+		<CFA2 width="2" height="2">
+			<ColorRow y="0">RG</ColorRow>
+			<ColorRow y="1">GB</ColorRow>
+		</CFA2>
+		<Crop x="0" y="0" width="-9" height="0"/>
+		<Sensor black="0" white="1023"/>
+		<Hints>
+			<Hint name="filesize" value="6218368"/>
+			<Hint name="full_width" value="2585"/>
+			<Hint name="full_height" value="1924"/>
+		</Hints>
+	</Camera>
+	<Camera make="Casio" model="EX-Z60" mode="chdk">
+		<CFA2 width="2" height="2">
+			<ColorRow y="0">BG</ColorRow>
+			<ColorRow y="1">GR</ColorRow>
+		</CFA2>
+		<Crop x="0" y="0" width="-34" height="-36"/>
+		<Sensor black="0" white="1023"/>
+		<Hints>
+			<Hint name="filesize" value="7816704"/>
+			<Hint name="full_width" value="2867"/>
+			<Hint name="full_height" value="2181"/>
+		</Hints>
+	</Camera>
+	<Camera make="Casio" model="EX-S20" mode="chdk">
+		<CFA2 width="2" height="2">
+			<ColorRow y="0">RG</ColorRow>
+			<ColorRow y="1">GB</ColorRow>
+		</CFA2>
+		<Crop x="0" y="0" width="-1" height="0"/>
+		<Sensor black="0" white="3968"/>
+		<Hints>
+			<Hint name="filesize" value="2937856"/>
+			<Hint name="full_width" value="1621"/>
+			<Hint name="full_height" value="1208"/>
+		</Hints>
+	</Camera>
+	<Camera make="Casio" model="EX-S100" mode="chdk">
+		<CFA2 width="2" height="2">
+			<ColorRow y="0">RG</ColorRow>
+			<ColorRow y="1">GB</ColorRow>
+		</CFA2>
+		<Crop x="0" y="0" width="-32" height="-34"/>
+		<Sensor black="0" white="3968"/>
+		<Hints>
+			<Hint name="filesize" value="4948608"/>
+			<Hint name="full_width" value="2090"/>
+			<Hint name="full_height" value="1578"/>
+		</Hints>
+	</Camera>
+	<Camera make="Casio" model="QV-R41" mode="chdk">
+		<CFA2 width="2" height="2">
+			<ColorRow y="0">RG</ColorRow>
+			<ColorRow y="1">GB</ColorRow>
+		</CFA2>
+		<Crop x="2" y="0" width="-32" height="0"/>
+		<Sensor black="0" white="3968"/>
+		<Hints>
+			<Hint name="filesize" value="6054400"/>
+			<Hint name="full_width" value="2346"/>
+			<Hint name="full_height" value="1720"/>
+		</Hints>
+	</Camera>
+	<Camera make="Casio" model="EX-P505" mode="chdk">
+		<CFA2 width="2" height="2">
+			<ColorRow y="0">RG</ColorRow>
+			<ColorRow y="1">GB</ColorRow>
+		</CFA2>
+		<Crop x="0" y="0" width="0" height="0"/>
+		<Sensor black="0" white="4095"/>
+		<Hints>
+			<Hint name="filesize" value="7426656"/>
+			<Hint name="full_width" value="2568"/>
+			<Hint name="full_height" value="1928"/>
+		</Hints>
+	</Camera>
+	<Camera make="Casio" model="QV-R51" mode="chdk">
+		<CFA2 width="2" height="2">
+			<ColorRow y="0">RG</ColorRow>
+			<ColorRow y="1">GB</ColorRow>
+		</CFA2>
+		<Crop x="0" y="0" width="-22" height="0"/>
+		<Sensor black="0" white="3968"/>
+		<Hints>
+			<Hint name="filesize" value="7530816"/>
+			<Hint name="full_width" value="2602"/>
+			<Hint name="full_height" value="1929"/>
+		</Hints>
+	</Camera>
+	<Camera make="Casio" model="EX-Z50" mode="chdk">
+		<CFA2 width="2" height="2">
+			<ColorRow y="0">RG</ColorRow>
+			<ColorRow y="1">GB</ColorRow>
+		</CFA2>
+		<Crop x="0" y="0" width="-32" height="0"/>
+		<Sensor black="0" white="3968"/>
+		<Hints>
+			<Hint name="filesize" value="7542528"/>
+			<Hint name="full_width" value="2602"/>
+			<Hint name="full_height" value="1932"/>
+		</Hints>
+	</Camera>
+	<Camera make="Casio" model="EX-Z500" mode="chdk">
+		<CFA2 width="2" height="2">
+			<ColorRow y="0">BG</ColorRow>
+			<ColorRow y="1">GR</ColorRow>
+		</CFA2>
+		<Crop x="0" y="0" width="-25" height="0"/>
+		<Sensor black="0" white="3968"/>
+		<Hints>
+			<Hint name="filesize" value="7562048"/>
+			<Hint name="full_width" value="2602"/>
+			<Hint name="full_height" value="1937"/>
+		</Hints>
+	</Camera>
+	<Camera make="Casio" model="EX-Z55" mode="chdk">
+		<CFA2 width="2" height="2">
+			<ColorRow y="0">RG</ColorRow>
+			<ColorRow y="1">GB</ColorRow>
+		</CFA2>
+		<Crop x="0" y="0" width="-32" height="-26"/>
+		<Sensor black="0" white="3968"/>
+		<Hints>
+			<Hint name="filesize" value="7753344"/>
+			<Hint name="full_width" value="2602"/>
+			<Hint name="full_height" value="1986"/>
+		</Hints>
+	</Camera>
+	<Camera make="Casio" model="EX-P600" mode="chdk">
+		<CFA2 width="2" height="2">
+			<ColorRow y="0">RG</ColorRow>
+			<ColorRow y="1">GB</ColorRow>
+		</CFA2>
+		<Crop x="0" y="0" width="-14" height="-30"/>
+		<Sensor black="0" white="3968"/>
+		<Hints>
+			<Hint name="filesize" value="9313536"/>
+			<Hint name="full_width" value="2858"/>
+			<Hint name="full_height" value="2172"/>
+		</Hints>
+	</Camera>
+	<Camera make="Casio" model="EX-Z750" mode="chdk">
+		<CFA2 width="2" height="2">
+			<ColorRow y="0">RG</ColorRow>
+			<ColorRow y="1">GB</ColorRow>
+		</CFA2>
+		<Crop x="0" y="0" width="-27" height="0"/>
+		<Sensor black="0" white="4095"/>
+		<Hints>
+			<Hint name="filesize" value="10834368"/>
+			<Hint name="full_width" value="3114"/>
+			<Hint name="full_height" value="2319"/>
+		</Hints>
+	</Camera>
+	<Camera make="Casio" model="EX-Z75" mode="chdk">
+		<CFA2 width="2" height="2">
+			<ColorRow y="0">RG</ColorRow>
+			<ColorRow y="1">GB</ColorRow>
+		</CFA2>
+		<Crop x="0" y="0" width="-25" height="0"/>
+		<Sensor black="0" white="4095"/>
+		<Hints>
+			<Hint name="filesize" value="10843712"/>
+			<Hint name="full_width" value="3114"/>
+			<Hint name="full_height" value="2321"/>
+		</Hints>
+	</Camera>
+	<Camera make="Casio" model="EX-P700" mode="chdk">
+		<CFA2 width="2" height="2">
+			<ColorRow y="0">RG</ColorRow>
+			<ColorRow y="1">GB</ColorRow>
+		</CFA2>
+		<Crop x="0" y="0" width="-32" height="-32"/>
+		<Sensor black="0" white="3968"/>
+		<Hints>
+			<Hint name="filesize" value="10979200"/>
+			<Hint name="full_width" value="3114"/>
+			<Hint name="full_height" value="2350"/>
+		</Hints>
+	</Camera>
+	<Camera make="Casio" model="EX-Z850" mode="chdk">
+		<CFA2 width="2" height="2">
+			<ColorRow y="0">RG</ColorRow>
+			<ColorRow y="1">GB</ColorRow>
+		</CFA2>
+		<Crop x="0" y="0" width="-6" height="-30"/>
+		<Sensor black="0" white="4095"/>
+		<Hints>
+			<Hint name="filesize" value="12310144"/>
+			<Hint name="full_width" value="3285"/>
+			<Hint name="full_height" value="2498"/>
+		</Hints>
+	</Camera>
+	<Camera make="Casio" model="EX-Z8" mode="chdk">
+		<CFA2 width="2" height="2">
+			<ColorRow y="0">RG</ColorRow>
+			<ColorRow y="1">GB</ColorRow>
+		</CFA2>
+		<Crop x="0" y="0" width="-47" height="-35"/>
+		<Sensor black="0" white="4095"/>
+		<Hints>
+			<Hint name="filesize" value="12489984"/>
+			<Hint name="full_width" value="3328"/>
+			<Hint name="full_height" value="2502"/>
+		</Hints>
+	</Camera>
+	<Camera make="Casio" model="EX-Z1050" mode="chdk">
+		<CFA2 width="2" height="2">
+			<ColorRow y="0">RG</ColorRow>
+			<ColorRow y="1">GB</ColorRow>
+		</CFA2>
+		<Crop x="0" y="0" width="-82" height="0"/>
+		<Sensor black="0" white="4095"/>
+		<Hints>
+			<Hint name="filesize" value="15499264"/>
+			<Hint name="full_width" value="3754"/>
+			<Hint name="full_height" value="2752"/>
+		</Hints>
+	</Camera>
+	<Camera make="Casio" model="EX-ZR100" mode="chdk">
+		<CFA2 width="2" height="2">
+			<ColorRow y="0">RG</ColorRow>
+			<ColorRow y="1">GB</ColorRow>
+		</CFA2>
+		<Crop x="0" y="0" width="-24" height="0"/>
+		<Sensor black="0" white="3968"/>
+		<Hints>
+			<Hint name="filesize" value="18702336"/>
+			<Hint name="full_width" value="4096"/>
+			<Hint name="full_height" value="3044"/>
+		</Hints>
+	</Camera>
+	<Camera make="Casio" model="QV-4000" mode="chdk">
+		<CFA2 width="2" height="2">
+			<ColorRow y="0">RG</ColorRow>
+			<ColorRow y="1">GB</ColorRow>
+		</CFA2>
+		<Crop x="0" y="0" width="0" height="0"/>
+		<Sensor black="0" white="65535"/>
+		<Hints>
+			<Hint name="filesize" value="7684000"/>
+			<Hint name="full_width" value="2260"/>
+			<Hint name="full_height" value="1700"/>
+		</Hints>
+	</Camera>
+	<Camera make="Creative" model="PC-CAM 600" mode="chdk">
+		<CFA2 width="2" height="2">
+			<ColorRow y="0">GR</ColorRow>
+			<ColorRow y="1">BG</ColorRow>
+		</CFA2>
+		<Crop x="0" y="1" width="0" height="0"/>
+		<Sensor black="0" white="255"/>
+		<Hints>
+			<Hint name="filesize" value="787456"/>
+			<Hint name="full_width" value="1024"/>
+			<Hint name="full_height" value="769"/>
+		</Hints>
+	</Camera>
+	<Camera make="DJI" model="" mode="chdk">
+		<CFA2 width="2" height="2">
+			<ColorRow y="0">GB</ColorRow>
+			<ColorRow y="1">RG</ColorRow>
+		</CFA2>
+		<Crop x="0" y="0" width="0" height="0"/>
+		<Sensor black="0" white="65535"/>
+		<Hints>
+			<Hint name="filesize" value="28829184"/>
+			<Hint name="full_width" value="4384"/>
+			<Hint name="full_height" value="3288"/>
+		</Hints>
+	</Camera>
+	<Camera make="Matrix" model="" mode="chdk">
+		<CFA2 width="2" height="2">
+			<ColorRow y="0">RG</ColorRow>
+			<ColorRow y="1">GB</ColorRow>
+		</CFA2>
+		<Crop x="0" y="0" width="0" height="0"/>
+		<Sensor black="0" white="255"/>
+		<Hints>
+			<Hint name="filesize" value="15151104"/>
+			<Hint name="full_width" value="4608"/>
+			<Hint name="full_height" value="3288"/>
+		</Hints>
+	</Camera>
+	<Camera make="Foculus" model="531C" mode="chdk">
+		<CFA2 width="2" height="2">
+			<ColorRow y="0">GR</ColorRow>
+			<ColorRow y="1">BG</ColorRow>
+		</CFA2>
+		<Crop x="0" y="0" width="0" height="0"/>
+		<Sensor black="0" white="65535"/>
+		<Hints>
+			<Hint name="filesize" value="3840000"/>
+			<Hint name="full_width" value="1600"/>
+			<Hint name="full_height" value="1200"/>
+		</Hints>
+	</Camera>
+	<Camera make="Generic" model="" mode="chdk">
+		<CFA2 width="2" height="2">
+			<ColorRow y="0">RG</ColorRow>
+			<ColorRow y="1">GB</ColorRow>
+		</CFA2>
+		<Crop x="0" y="0" width="0" height="0"/>
+		<Sensor black="0" white="255"/>
+		<Hints>
+			<Hint name="filesize" value="307200"/>
+			<Hint name="full_width" value="640"/>
+			<Hint name="full_height" value="480"/>
+		</Hints>
+	</Camera>
+	<Camera make="Kodak" model="DC20" mode="chdk-a">
+		<CFA2 width="2" height="2">
+			<ColorRow y="0">GR</ColorRow>
+			<ColorRow y="1">GB</ColorRow>
+		</CFA2>
+		<Crop x="1" y="1" width="-6" height="-1"/>
+		<Sensor black="0" white="255"/>
+		<Hints>
+			<Hint name="filesize" value="62464"/>
+			<Hint name="full_width" value="256"/>
+			<Hint name="full_height" value="244"/>
+		</Hints>
+	</Camera>
+	<Camera make="Kodak" model="DC20" mode="chdk-b">
+		<CFA2 width="2" height="2">
+			<ColorRow y="0">GR</ColorRow>
+			<ColorRow y="1">GB</ColorRow>
+		</CFA2>
+		<Crop x="1" y="1" width="-10" height="-1"/>
+		<Sensor black="0" white="255"/>
+		<Hints>
+			<Hint name="filesize" value="124928"/>
+			<Hint name="full_width" value="512"/>
+			<Hint name="full_height" value="244"/>
+		</Hints>
+	</Camera>
+	<Camera make="Kodak" model="DCS200" mode="chdk">
+		<CFA2 width="2" height="2">
+			<ColorRow y="0">GB</ColorRow>
+			<ColorRow y="1">RG</ColorRow>
+		</CFA2>
+		<Crop x="0" y="52" width="0" height="0"/>
+		<Sensor black="0" white="255"/>
+		<Hints>
+			<Hint name="filesize" value="1652736"/>
+			<Hint name="full_width" value="1536"/>
+			<Hint name="full_height" value="1076"/>
+		</Hints>
+	</Camera>
+	<Camera make="Kodak" model="C330" mode="chdk-a">
+		<CFA2 width="2" height="2">
+			<ColorRow y="0">RG</ColorRow>
+			<ColorRow y="1">GB</ColorRow>
+		</CFA2>
+		<Crop x="1" y="33" width="-1" height="-2"/>
+		<Sensor black="0" white="255"/>
+		<Hints>
+			<Hint name="filesize" value="4159302"/>
+			<Hint name="full_width" value="2338"/>
+			<Hint name="full_height" value="1779"/>
+		</Hints>
+	</Camera>
+	<Camera make="Kodak" model="C330" mode="chdk-b">
+		<CFA2 width="2" height="2">
+			<ColorRow y="0">RG</ColorRow>
+			<ColorRow y="1">GB</ColorRow>
+		</CFA2>
+		<Crop x="1" y="33" width="-1" height="-2"/>
+		<Sensor black="0" white="255"/>
+		<Hints>
+			<Hint name="filesize" value="4162462"/>
+			<Hint name="full_width" value="2338"/>
+			<Hint name="full_height" value="1779"/>
+			<Hint name="offset" value="3160"/>
+		</Hints>
+	</Camera>
+	<Camera make="Kodak" model="C603" mode="chdk-a">
+		<CFA2 width="2" height="2">
+			<ColorRow y="0">RG</ColorRow>
+			<ColorRow y="1">GB</ColorRow>
+		</CFA2>
+		<Crop x="0" y="0" width="0" height="0"/>
+		<Sensor black="0" white="255"/>
+		<Hints>
+			<Hint name="filesize" value="6163328"/>
+			<Hint name="full_width" value="2864"/>
+			<Hint name="full_height" value="2152"/>
+		</Hints>
+	</Camera>
+	<Camera make="Kodak" model="C603" mode="chdk-b">
+		<CFA2 width="2" height="2">
+			<ColorRow y="0">RG</ColorRow>
+			<ColorRow y="1">GB</ColorRow>
+		</CFA2>
+		<Crop x="0" y="0" width="0" height="0"/>
+		<Sensor black="0" white="255"/>
+		<Hints>
+			<Hint name="filesize" value="6166488"/>
+			<Hint name="full_width" value="2864"/>
+			<Hint name="full_height" value="2152"/>
+			<Hint name="offset" value="3160"/>
+		</Hints>
+	</Camera>
+	<Camera make="Kodak" model="C603" mode="chdk-c">
+		<Crop x="0" y="0" width="0" height="0"/>
+		<Sensor black="0" white="4095"/>
+		<Hints>
+			<Hint name="filesize" value="460800"/>
+			<Hint name="full_width" value="640"/>
+			<Hint name="full_height" value="480"/>
+		</Hints>
+	</Camera>
+	<Camera make="Kodak" model="C603" mode="chdk-d">
+		<Crop x="0" y="0" width="0" height="0"/>
+		<Sensor black="0" white="4095"/>
+		<Hints>
+			<Hint name="filesize" value="9116448"/>
+			<Hint name="full_width" value="2848"/>
+			<Hint name="full_height" value="2134"/>
+		</Hints>
+	</Camera>
+	<Camera make="Kodak" model="12MP" mode="chdk-a">
+		<CFA2 width="2" height="2">
+			<ColorRow y="0">GR</ColorRow>
+			<ColorRow y="1">BG</ColorRow>
+		</CFA2>
+		<Crop x="2" y="0" width="0" height="-13"/>
+		<Sensor black="0" white="255"/>
+		<Hints>
+			<Hint name="filesize" value="12241200"/>
+			<Hint name="full_width" value="4040"/>
+			<Hint name="full_height" value="3030"/>
+		</Hints>
+	</Camera>
+	<Camera make="Kodak" model="12MP" mode="chdk-b">
+		<CFA2 width="2" height="2">
+			<ColorRow y="0">GR</ColorRow>
+			<ColorRow y="1">BG</ColorRow>
+		</CFA2>
+		<Crop x="2" y="0" width="0" height="-13"/>
+		<Sensor black="0" white="255"/>
+		<Hints>
+			<Hint name="filesize" value="12272756"/>
+			<Hint name="full_width" value="4040"/>
+			<Hint name="full_height" value="3030"/>
+			<Hint name="offset" value="31556"/>
+		</Hints>
+	</Camera>
+	<Camera make="Kodak" model="12MP" mode="chdk-c">
+		<Crop x="0" y="0" width="0" height="0"/>
+		<Sensor black="0" white="4095"/>
+		<Hints>
+			<Hint name="filesize" value="18000000"/>
+			<Hint name="full_width" value="4000"/>
+			<Hint name="full_height" value="3000"/>
+		</Hints>
+	</Camera>
+	<Camera make="Kodak" model="KAI-0340" mode="chdk">
+		<CFA2 width="2" height="2">
+			<ColorRow y="0">RG</ColorRow>
+			<ColorRow y="1">GB</ColorRow>
+		</CFA2>
+		<Crop x="0" y="3" width="0" height="0"/>
+		<Sensor black="0" white="65535"/>
+		<Hints>
+			<Hint name="filesize" value="614400"/>
+			<Hint name="full_width" value="640"/>
+			<Hint name="full_height" value="480"/>
+		</Hints>
+	</Camera>
+	<Camera make="Micron" model="2010" mode="chdk">
+		<CFA2 width="2" height="2">
+			<ColorRow y="0">BG</ColorRow>
+			<ColorRow y="1">GR</ColorRow>
+		</CFA2>
+		<Crop x="0" y="0" width="0" height="0"/>
+		<Sensor black="0" white="65535"/>
+		<Hints>
+			<Hint name="filesize" value="3884928"/>
+			<Hint name="full_width" value="1608"/>
+			<Hint name="full_height" value="1207"/>
+			<Hint name="offset" value="3212"/>
+		</Hints>
+	</Camera>
+	<Camera make="Minolta" model="RD175" mode="chdk">
+		<CFA2 width="2" height="2">
+			<ColorRow y="0">GB</ColorRow>
+			<ColorRow y="1">RG</ColorRow>
+		</CFA2>
+		<Crop x="0" y="0" width="0" height="0"/>
+		<Sensor black="0" white="63"/>
+		<Hints>
+			<Hint name="filesize" value="1138688"/>
+			<Hint name="full_width" value="1534"/>
+			<Hint name="full_height" value="986"/>
+			<Hint name="offset" value="513"/>
+		</Hints>
+	</Camera>
+	<Camera make="Nikon" model="E900" mode="chdk">
+		<CFA2 width="2" height="2">
+			<ColorRow y="0">BG</ColorRow>
+			<ColorRow y="1">GR</ColorRow>
+		</CFA2>
+		<Crop x="0" y="0" width="-18" height="-6"/>
+		<Sensor black="0" white="1008"/>
+		<Hints>
+			<Hint name="filesize" value="1581060"/>
+			<Hint name="full_width" value="1305"/>
+			<Hint name="full_height" value="969"/>
+		</Hints>
+	</Camera>
+	<Camera make="Nikon" model="E950" mode="chdk">
+		<CFA2 width="2" height="2">
+			<ColorRow y="0">GR</ColorRow>
+			<ColorRow y="1">BG</ColorRow>
+		</CFA2>
+		<Crop x="0" y="0" width="-22" height="-1"/>
+		<Sensor black="0" white="992"/>
+		<Hints>
+			<Hint name="filesize" value="2465792"/>
+			<Hint name="full_width" value="1638"/>
+			<Hint name="full_height" value="1204"/>
+		</Hints>
+	</Camera>
+	<Camera make="Nikon" model="E2100" mode="chdk">
+		<CFA2 width="2" height="2">
+			<ColorRow y="0">RG</ColorRow>
+			<ColorRow y="1">GB</ColorRow>
+		</CFA2>
+		<Crop x="0" y="0" width="0" height="-7"/>
+		<Sensor black="0" white="4095"/>
+		<Hints>
+			<Hint name="filesize" value="2940928"/>
+			<Hint name="full_width" value="1616"/>
+			<Hint name="full_height" value="1213"/>
+		</Hints>
+	</Camera>
+	<Camera make="Nikon" model="E990" mode="chdk">
+		<CFA2 width="2" height="2">
+			<ColorRow y="0">GB</ColorRow>
+			<ColorRow y="1">RG</ColorRow>
+		</CFA2>
+		<Crop x="0" y="0" width="0" height="-1"/>
+		<Sensor black="0" white="4095"/>
+		<Hints>
+			<Hint name="filesize" value="4771840"/>
+			<Hint name="full_width" value="2064"/>
+			<Hint name="full_height" value="1541"/>
+		</Hints>
+	</Camera>
+	<Camera make="Nikon" model="E3700" mode="chdk">
+		<CFA2 width="2" height="2">
+			<ColorRow y="0">RG</ColorRow>
+			<ColorRow y="1">GB</ColorRow>
+		</CFA2>
+		<Crop x="0" y="0" width="0" height="0"/>
+		<Sensor black="0" white="4095"/>
+		<Hints>
+			<Hint name="filesize" value="4775936"/>
+			<Hint name="full_width" value="2064"/>
+			<Hint name="full_height" value="1542"/>
+		</Hints>
+	</Camera>
+	<Camera make="Nikon" model="E4500" mode="chdk">
+		<CFA2 width="2" height="2">
+			<ColorRow y="0">RG</ColorRow>
+			<ColorRow y="1">GB</ColorRow>
+		</CFA2>
+		<Crop x="0" y="0" width="0" height="-1"/>
+		<Sensor black="0" white="4095"/>
+		<Hints>
+			<Hint name="filesize" value="5865472"/>
+			<Hint name="full_width" value="2288"/>
+			<Hint name="full_height" value="1709"/>
+		</Hints>
+	</Camera>
+	<Camera make="Nikon" model="E4300" mode="chdk">
+		<CFA2 width="2" height="2">
+			<ColorRow y="0">BG</ColorRow>
+			<ColorRow y="1">GR</ColorRow>
+		</CFA2>
+		<Crop x="0" y="0" width="0" height="0"/>
+		<Sensor black="0" white="4095"/>
+		<Hints>
+			<Hint name="filesize" value="5869568"/>
+			<Hint name="full_width" value="2288"/>
+			<Hint name="full_height" value="1710"/>
+		</Hints>
+	</Camera>
+	<Camera make="Nikon" model="E5000" mode="chdk">
+		<CFA2 width="2" height="2">
+			<ColorRow y="0">RG</ColorRow>
+			<ColorRow y="1">GB</ColorRow>
+		</CFA2>
+		<Crop x="0" y="0" width="0" height="-1"/>
+		<Sensor black="0" white="4095"/>
+		<Hints>
+			<Hint name="filesize" value="7438336"/>
+			<Hint name="full_width" value="2576"/>
+			<Hint name="full_height" value="1925"/>
+		</Hints>
+	</Camera>
+	<Camera make="Nikon" model="COOLPIX S6" mode="chdk">
+		<CFA2 width="2" height="2">
+			<ColorRow y="0">RG</ColorRow>
+			<ColorRow y="1">GB</ColorRow>
+		</CFA2>
+		<Crop x="0" y="0" width="0" height="0"/>
+		<Sensor black="0" white="3968"/>
+		<Hints>
+			<Hint name="filesize" value="8998912"/>
+			<Hint name="full_width" value="2832"/>
+			<Hint name="full_height" value="2118"/>
+		</Hints>
+	</Camera>
+	<Camera make="Olympus" model="C770UZ" mode="chdk">
+		<CFA2 width="2" height="2">
+			<ColorRow y="0">BG</ColorRow>
+			<ColorRow y="1">GR</ColorRow>
+		</CFA2>
+		<Crop x="0" y="0" width="0" height="0"/>
+		<Sensor black="0" white="4095"/>
+		<Hints>
+			<Hint name="filesize" value="5939200"/>
+			<Hint name="full_width" value="2304"/>
+			<Hint name="full_height" value="1718"/>
+		</Hints>
+	</Camera>
+	<Camera make="Pentax" model="Optio S" mode="chdk-a">
+		<CFA2 width="2" height="2">
+			<ColorRow y="0">RG</ColorRow>
+			<ColorRow y="1">GB</ColorRow>
+		</CFA2>
+		<Crop x="0" y="0" width="0" height="0"/>
+		<Sensor black="0" white="255"/>
+		<Hints>
+			<Hint name="filesize" value="3178560"/>
+			<Hint name="full_width" value="2064"/>
+			<Hint name="full_height" value="1540"/>
+		</Hints>
+	</Camera>
+	<Camera make="Pentax" model="Optio S" mode="chdk-b">
+		<CFA2 width="2" height="2">
+			<ColorRow y="0">RG</ColorRow>
+			<ColorRow y="1">GB</ColorRow>
+		</CFA2>
+		<Crop x="0" y="0" width="-22" height="0"/>
+		<Sensor black="0" white="3968"/>
+		<Hints>
+			<Hint name="filesize" value="4841984"/>
+			<Hint name="full_width" value="2090"/>
+			<Hint name="full_height" value="1544"/>
+		</Hints>
+	</Camera>
+	<Camera make="Pentax" model="Optio S4" mode="chdk">
+		<CFA2 width="2" height="2">
+			<ColorRow y="0">RG</ColorRow>
+			<ColorRow y="1">GB</ColorRow>
+		</CFA2>
+		<Crop x="0" y="0" width="-22" height="0"/>
+		<Sensor black="0" white="3968"/>
+		<Hints>
+			<Hint name="filesize" value="6114240"/>
+			<Hint name="full_width" value="2346"/>
+			<Hint name="full_height" value="1737"/>
+		</Hints>
+	</Camera>
+	<Camera make="Pentax" model="Optio 750Z" mode="chdk">
+		<CFA2 width="2" height="2">
+			<ColorRow y="0">RG</ColorRow>
+			<ColorRow y="1">GB</ColorRow>
+		</CFA2>
+		<Crop x="0" y="0" width="0" height="-21"/>
+		<Sensor black="0" white="4095"/>
+		<Hints>
+			<Hint name="filesize" value="10702848"/>
+			<Hint name="full_width" value="3072"/>
+			<Hint name="full_height" value="2322"/>
+		</Hints>
+	</Camera>
+	<Camera make="Pixelink" model="A782" mode="chdk">
+		<CFA2 width="2" height="2">
+			<ColorRow y="0">GB</ColorRow>
+			<ColorRow y="1">RG</ColorRow>
+		</CFA2>
+		<Crop x="0" y="0" width="0" height="0"/>
+		<Sensor black="0" white="65535"/>
+		<Hints>
+			<Hint name="filesize" value="13248000"/>
+			<Hint name="full_width" value="2208"/>
+			<Hint name="full_height" value="3000"/>
+		</Hints>
+	</Camera>
+	<Camera make="RoverShot" model="3320AF" mode="chdk">
+		<CFA2 width="2" height="2">
+			<ColorRow y="0">GB</ColorRow>
+			<ColorRow y="1">RG</ColorRow>
+		</CFA2>
+		<Crop x="0" y="0" width="0" height="0"/>
+		<Sensor black="0" white="65535"/>
+		<Hints>
+			<Hint name="filesize" value="6291456"/>
+			<Hint name="full_width" value="2048"/>
+			<Hint name="full_height" value="1536"/>
+		</Hints>
+	</Camera>
+	<Camera make="ST Micro" model="STV680 VGA" mode="chdk">
+		<CFA2 width="2" height="2">
+			<ColorRow y="0">BG</ColorRow>
+			<ColorRow y="1">GR</ColorRow>
+		</CFA2>
+		<Crop x="0" y="0" width="0" height="0"/>
+		<Sensor black="0" white="255"/>
+		<Hints>
+			<Hint name="filesize" value="311696"/>
+			<Hint name="full_width" value="644"/>
+			<Hint name="full_height" value="484"/>
+		</Hints>
+	</Camera>
+	<Camera make="Samsung" model="S85" mode="chdk-a">
+		<CFA2 width="2" height="2">
+			<ColorRow y="0">RG</ColorRow>
+			<ColorRow y="1">GB</ColorRow>
+		</CFA2>
+		<Crop x="0" y="0" width="-24" height="0"/>
+		<Sensor black="0" white="65535"/>
+		<Hints>
+			<Hint name="filesize" value="16098048"/>
+			<Hint name="full_width" value="3288"/>
+			<Hint name="full_height" value="2448"/>
+		</Hints>
+	</Camera>
+	<Camera make="Samsung" model="S85" mode="chdk-b">
+		<CFA2 width="2" height="2">
+			<ColorRow y="0">RG</ColorRow>
+			<ColorRow y="1">GB</ColorRow>
+		</CFA2>
+		<Crop x="0" y="0" width="-48" height="0"/>
+		<Sensor black="0" white="65535"/>
+		<Hints>
+			<Hint name="filesize" value="16215552"/>
+			<Hint name="full_width" value="3312"/>
+			<Hint name="full_height" value="2448"/>
+		</Hints>
+	</Camera>
+	<Camera make="Samsung" model="WB550" mode="chdk-a">
+		<CFA2 width="2" height="2">
+			<ColorRow y="0">RG</ColorRow>
+			<ColorRow y="1">GB</ColorRow>
+		</CFA2>
+		<Crop x="0" y="0" width="0" height="0"/>
+		<Sensor black="0" white="65504"/>
+		<Hints>
+			<Hint name="filesize" value="20487168"/>
+			<Hint name="full_width" value="3648"/>
+			<Hint name="full_height" value="2808"/>
+		</Hints>
+	</Camera>
+	<Camera make="Samsung" model="WB550" mode="chdk-b">
+		<CFA2 width="2" height="2">
+			<ColorRow y="0">RG</ColorRow>
+			<ColorRow y="1">GB</ColorRow>
+		</CFA2>
+		<Crop x="0" y="0" width="0" height="0"/>
+		<Sensor black="0" white="65504"/>
+		<Hints>
+			<Hint name="filesize" value="24000000"/>
+			<Hint name="full_width" value="4000"/>
+			<Hint name="full_height" value="3000"/>
+		</Hints>
+	</Camera>
+	<Camera make="Sinar" model="" mode="chdk-a">
+		<CFA2 width="2" height="2">
+			<ColorRow y="0">GB</ColorRow>
+			<ColorRow y="1">RG</ColorRow>
+		</CFA2>
+		<Crop x="0" y="0" width="0" height="0"/>
+		<Sensor black="0" white="65535"/>
+		<Hints>
+			<Hint name="filesize" value="12582980"/>
+			<Hint name="full_width" value="3072"/>
+			<Hint name="full_height" value="2048"/>
+			<Hint name="offset" value="68"/>
+		</Hints>
+	</Camera>
+	<Camera make="Sinar" model="" mode="chdk-b">
+		<CFA2 width="2" height="2">
+			<ColorRow y="0">GB</ColorRow>
+			<ColorRow y="1">RG</ColorRow>
+		</CFA2>
+		<Crop x="0" y="0" width="0" height="0"/>
+		<Sensor black="0" white="65535"/>
+		<Hints>
+			<Hint name="filesize" value="33292868"/>
+			<Hint name="full_width" value="4080"/>
+			<Hint name="full_height" value="4080"/>
+			<Hint name="offset" value="68"/>
+		</Hints>
+	</Camera>
+	<Camera make="Sinar" model="" mode="chdk-c">
+		<CFA2 width="2" height="2">
+			<ColorRow y="0">GB</ColorRow>
+			<ColorRow y="1">RG</ColorRow>
+		</CFA2>
+		<Crop x="0" y="0" width="0" height="0"/>
+		<Sensor black="0" white="65535"/>
+		<Hints>
+			<Hint name="filesize" value="44390468"/>
+			<Hint name="full_width" value="4080"/>
+			<Hint name="full_height" value="5440"/>
+			<Hint name="offset" value="68"/>
+		</Hints>
+	</Camera>
+	<Camera make="Sony" model="XCD-SX910CR" mode="chdk-a">
+		<CFA2 width="2" height="2">
+			<ColorRow y="0">GR</ColorRow>
+			<ColorRow y="1">BG</ColorRow>
+		</CFA2>
+		<Crop x="0" y="0" width="-1" height="0"/>
+		<Sensor black="0" white="255"/>
+		<Hints>
+			<Hint name="filesize" value="1409024"/>
+			<Hint name="full_width" value="1376"/>
+			<Hint name="full_height" value="1024"/>
+		</Hints>
+	</Camera>
+	<Camera make="Sony" model="XCD-SX910CR" mode="chdk-b">
+		<CFA2 width="2" height="2">
+			<ColorRow y="0">GR</ColorRow>
+			<ColorRow y="1">BG</ColorRow>
+		</CFA2>
+		<Crop x="0" y="0" width="-1" height="0"/>
+		<Sensor black="0" white="65535"/>
+		<Hints>
+			<Hint name="filesize" value="2818048"/>
+			<Hint name="full_width" value="1376"/>
+			<Hint name="full_height" value="1024"/>
+		</Hints>
 	</Camera>
 </Cameras>
