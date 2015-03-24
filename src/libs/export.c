@@ -38,16 +38,17 @@
 
 DT_MODULE(3)
 
+#define EXPORT_MAX_IMAGE_SIZE UINT16_MAX
+
 typedef struct dt_lib_export_t
 {
   GtkSpinButton *width, *height;
   GtkWidget *storage, *format;
   int format_lut[128];
-  GtkWidget *shown_storage, *shown_format;
   GtkWidget *upscale, *profile, *intent, *style, *style_mode;
   GList *profiles;
   GtkButton *export_button;
-  GtkWidget *storage_extra_container;
+  GtkWidget *storage_extra_container, *format_extra_container;
 } dt_lib_export_t;
 
 typedef struct dt_lib_export_profile_t
@@ -99,6 +100,7 @@ static void export_button_clicked(GtkWidget *widget, gpointer user_data)
   g_free(format_name);
   g_free(storage_name);
 
+  /*
   if(format_index == -1) {
     dt_control_log("invalid format for export selected\n");
     return;
@@ -106,7 +108,7 @@ static void export_button_clicked(GtkWidget *widget, gpointer user_data)
   if(storage_index == -1) {
     dt_control_log("invalid storage for export selected\n");
     return;
-  }
+  }*/
 
   gboolean upscale = dt_conf_get_bool("plugins/lighttable/export/upscale");
   gboolean high_quality = dt_conf_get_bool("plugins/lighttable/export/high_quality_processing");
@@ -220,21 +222,18 @@ static void set_format_by_name(dt_lib_export_t *d, const char *name)
       }
     } while((it = g_list_next(it)));
 
-  if(d->shown_format)
-    gtk_widget_hide(d->shown_format);
-  d->shown_format = NULL;
-
-  if(!module) return;
+  if(!module) {
+    gtk_widget_hide(d->format_extra_container);
+    return;
+  } else if(module->widget) {
+    gtk_widget_show_all(d->format_extra_container);
+    gtk_stack_set_visible_child(GTK_STACK(d->format_extra_container),module->widget);
+  } else {
+    gtk_widget_hide(d->format_extra_container);
+  }
 
   // Store the new format
   dt_conf_set_string("plugins/lighttable/export/format_name", module->plugin_name);
-  if(module->widget)
-  {
-    gtk_widget_set_no_show_all(module->widget, FALSE);
-    gtk_widget_show_all(module->widget);
-    gtk_widget_set_no_show_all(module->widget, TRUE);
-  }
-  d->shown_format = module->widget;
 
   if(_combo_box_set_active_text(d->format, module->name()) == FALSE)
     dt_bauhaus_combobox_set(d->format, 0);
@@ -282,8 +281,8 @@ static void _update_dimensions(dt_lib_export_t *d)
 {
   uint32_t w = 0, h = 0;
   _get_max_output_dimension(d, &w, &h);
-  gtk_spin_button_set_range(d->width, 0, (w > 0 ? w : 10000));
-  gtk_spin_button_set_range(d->height, 0, (h > 0 ? h : 10000));
+  gtk_spin_button_set_range(d->width, 0, (w > 0 ? w : EXPORT_MAX_IMAGE_SIZE));
+  gtk_spin_button_set_range(d->height, 0, (h > 0 ? h : EXPORT_MAX_IMAGE_SIZE));
 }
 
 static void set_storage_by_name(dt_lib_export_t *d, const char *name)
@@ -302,21 +301,18 @@ static void set_storage_by_name(dt_lib_export_t *d, const char *name)
       }
     } while((it = g_list_next(it)));
 
-  if(d->shown_storage)
-    gtk_widget_hide(d->shown_storage);
-  d->shown_storage = NULL;
-
-  if(!module) return;
-
+  if(!module) {
+    gtk_widget_hide(d->storage_extra_container);
+    return;
+  } else if(module->widget) {
+    gtk_widget_show_all(d->storage_extra_container);
+    gtk_stack_set_visible_child(GTK_STACK(d->storage_extra_container),module->widget);
+  } else {
+    gtk_widget_hide(d->storage_extra_container);
+  }
   dt_bauhaus_combobox_set(d->storage, k);
   dt_conf_set_string("plugins/lighttable/export/storage_name", module->plugin_name);
-  if(module->widget)
-  {
-    gtk_widget_set_no_show_all(module->widget, FALSE);
-    gtk_widget_show_all(module->widget);
-    gtk_widget_set_no_show_all(module->widget, TRUE);
-  }
-  d->shown_storage = module->widget;
+
 
   // Check if plugin recommends a max dimension and set
   // if not implemented the stored conf values are used..
@@ -478,9 +474,7 @@ static void on_storage_list_changed(gpointer instance, dt_lib_module_t *self)
     dt_bauhaus_combobox_add(d->storage, module->name(module));
     if(module->widget)
     {
-      gtk_box_pack_start(GTK_BOX(d->storage_extra_container), module->widget, TRUE, TRUE, 0);
-      gtk_widget_hide(module->widget);
-      gtk_widget_set_no_show_all(module->widget, TRUE);
+      gtk_container_add(GTK_CONTAINER(d->storage_extra_container), module->widget);
     }
   } while((it = g_list_next(it)));
   dt_bauhaus_combobox_set(d->storage, dt_imageio_get_index_of_storage(storage));
@@ -492,21 +486,20 @@ void gui_init(dt_lib_module_t *self)
   dt_lib_export_t *d = (dt_lib_export_t *)malloc(sizeof(dt_lib_export_t));
   self->data = (void *)d;
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_PIXEL_APPLY_DPI(5));
-  d->shown_storage = NULL;
-  d->shown_format = NULL;
 
   GtkWidget *label;
 
   label = dt_ui_section_label_new(_("storage options"));
-  gtk_box_pack_start(GTK_BOX(self->widget), label, TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(self->widget), label, FALSE, TRUE, 0);
 
   d->storage = dt_bauhaus_combobox_new(NULL);
   dt_bauhaus_widget_set_label(d->storage, NULL, _("target storage"));
-  gtk_box_pack_start(GTK_BOX(self->widget), d->storage, TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(self->widget), d->storage, FALSE, TRUE, 0);
 
-  // add all storage widgets and just hide the ones not needed
-  d->storage_extra_container = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_PIXEL_APPLY_DPI(5));
-  gtk_box_pack_start(GTK_BOX(self->widget), d->storage_extra_container, TRUE, TRUE, 0);
+  // add all storage widgets to the stack widget
+  d->storage_extra_container = gtk_stack_new();
+  gtk_stack_set_homogeneous(GTK_STACK(d->storage_extra_container),FALSE);
+  gtk_box_pack_start(GTK_BOX(self->widget), d->storage_extra_container, FALSE, TRUE, 0);
   GList *it = g_list_first(darktable.imageio->plugins_storage);
   if(it != NULL) do
   {
@@ -514,9 +507,7 @@ void gui_init(dt_lib_module_t *self)
     dt_bauhaus_combobox_add(d->storage, module->name(module));
     if(module->widget)
     {
-      gtk_box_pack_start(GTK_BOX(d->storage_extra_container), module->widget, TRUE, TRUE, 0);
-      gtk_widget_hide(module->widget);
-      gtk_widget_set_no_show_all(module->widget, TRUE);
+      gtk_container_add(GTK_CONTAINER(d->storage_extra_container), module->widget);
     }
   } while((it = g_list_next(it)));
 
@@ -527,34 +518,35 @@ void gui_init(dt_lib_module_t *self)
 
   label = dt_ui_section_label_new(_("format options"));
   gtk_widget_set_margin_top(label, DT_PIXEL_APPLY_DPI(20));
-  gtk_box_pack_start(GTK_BOX(self->widget), label, TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(self->widget), label, FALSE, TRUE, 0);
 
   d->format = dt_bauhaus_combobox_new(NULL);
   dt_bauhaus_widget_set_label(d->format, NULL, _("file format"));
-  gtk_box_pack_start(GTK_BOX(self->widget), d->format, TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(self->widget), d->format, FALSE, TRUE, 0);
   g_signal_connect(G_OBJECT(d->format), "value-changed", G_CALLBACK(format_changed), (gpointer)d);
 
-  // add all format widgets and just hide the ones not needed
+  // add all format widgets to the stack widget
+  d->format_extra_container = gtk_stack_new();
+  gtk_stack_set_homogeneous(GTK_STACK(d->format_extra_container),FALSE);
+  gtk_box_pack_start(GTK_BOX(self->widget), d->format_extra_container, FALSE, TRUE, 0);
   it = g_list_first(darktable.imageio->plugins_format);
   if(it != NULL) do
   {
     dt_imageio_module_format_t *module = (dt_imageio_module_format_t *)it->data;
     if(module->widget)
     {
-      gtk_box_pack_start(GTK_BOX(self->widget), module->widget, TRUE, TRUE, 0);
-      gtk_widget_hide(module->widget);
-      gtk_widget_set_no_show_all(module->widget, TRUE);
+      gtk_container_add(GTK_CONTAINER(d->format_extra_container), module->widget);
     }
   } while((it = g_list_next(it)));
 
   label = dt_ui_section_label_new(_("global options"));
   gtk_widget_set_margin_top(label, DT_PIXEL_APPLY_DPI(20));
-  gtk_box_pack_start(GTK_BOX(self->widget), label, TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(self->widget), label, FALSE, TRUE, 0);
 
-  d->width = GTK_SPIN_BUTTON(gtk_spin_button_new_with_range(0, 10000, 1));
+  d->width = GTK_SPIN_BUTTON(gtk_spin_button_new_with_range(0, EXPORT_MAX_IMAGE_SIZE, 1));
   g_object_set(G_OBJECT(d->width), "tooltip-text", _("maximum output width\nset to 0 for no scaling"),
                (char *)NULL);
-  d->height = GTK_SPIN_BUTTON(gtk_spin_button_new_with_range(0, 10000, 1));
+  d->height = GTK_SPIN_BUTTON(gtk_spin_button_new_with_range(0, EXPORT_MAX_IMAGE_SIZE, 1));
   g_object_set(G_OBJECT(d->height), "tooltip-text", _("maximum output height\nset to 0 for no scaling"),
                (char *)NULL);
 
@@ -571,13 +563,13 @@ void gui_init(dt_lib_module_t *self)
   gtk_box_pack_start(hbox1, gtk_label_new(_("x")), FALSE, FALSE, 0);
   gtk_box_pack_start(hbox1, GTK_WIDGET(d->height), TRUE, TRUE, 0);
   gtk_box_pack_start(hbox, GTK_WIDGET(hbox1), TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(hbox), TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(hbox), FALSE, TRUE, 0);
 
   d->upscale = dt_bauhaus_combobox_new(NULL);
   dt_bauhaus_widget_set_label(d->upscale, NULL, _("allow upscaling"));
   dt_bauhaus_combobox_add(d->upscale, _("no"));
   dt_bauhaus_combobox_add(d->upscale, _("yes"));
-  gtk_box_pack_start(GTK_BOX(self->widget), d->upscale, TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(self->widget), d->upscale, FALSE, TRUE, 0);
 
   //  Add profile combo
 
@@ -644,7 +636,7 @@ void gui_init(dt_lib_module_t *self)
   GList *l = d->profiles;
   d->profile = dt_bauhaus_combobox_new(NULL);
   dt_bauhaus_widget_set_label(d->profile, NULL, _("profile"));
-  gtk_box_pack_start(GTK_BOX(self->widget), d->profile, TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(self->widget), d->profile, FALSE, TRUE, 0);
   dt_bauhaus_combobox_add(d->profile, _("image settings"));
   while(l)
   {
@@ -668,7 +660,7 @@ void gui_init(dt_lib_module_t *self)
   dt_bauhaus_combobox_add(d->intent, _("relative colorimetric"));
   dt_bauhaus_combobox_add(d->intent, C_("rendering intent", "saturation"));
   dt_bauhaus_combobox_add(d->intent, _("absolute colorimetric"));
-  gtk_box_pack_start(GTK_BOX(self->widget), d->intent, TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(self->widget), d->intent, FALSE, TRUE, 0);
 
   //  Add style combo
 
@@ -684,7 +676,7 @@ void gui_init(dt_lib_module_t *self)
     dt_bauhaus_combobox_add(d->style, style->name);
     styles = g_list_next(styles);
   }
-  gtk_box_pack_start(GTK_BOX(self->widget), d->style, TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(self->widget), d->style, FALSE, TRUE, 0);
   g_object_set(G_OBJECT(d->style), "tooltip-text", _("temporary style to use while exporting"),
                (char *)NULL);
 
@@ -693,7 +685,7 @@ void gui_init(dt_lib_module_t *self)
   d->style_mode = dt_bauhaus_combobox_new(NULL);
   dt_bauhaus_widget_set_label(d->style_mode, NULL, _("mode"));
 
-  gtk_box_pack_start(GTK_BOX(self->widget), d->style_mode, TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(self->widget), d->style_mode, FALSE, TRUE, 0);
 
   dt_bauhaus_combobox_add(d->style_mode, _("replace history"));
   dt_bauhaus_combobox_add(d->style_mode, _("append history"));
@@ -717,7 +709,7 @@ void gui_init(dt_lib_module_t *self)
   GtkButton *button = GTK_BUTTON(gtk_button_new_with_label(_("export")));
   d->export_button = button;
   g_object_set(G_OBJECT(button), "tooltip-text", _("export with current settings (ctrl-e)"), (char *)NULL);
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(button), TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(button), FALSE, TRUE, 0);
 
   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(export_button_clicked), (gpointer)self);
   g_signal_connect(G_OBJECT(d->width), "value-changed", G_CALLBACK(width_changed), NULL);
@@ -743,7 +735,7 @@ void gui_cleanup(dt_lib_module_t *self)
   if(it != NULL) do
   {
     dt_imageio_module_format_t *module = (dt_imageio_module_format_t *)it->data;
-    if(module->widget) gtk_container_remove(GTK_CONTAINER(self->widget), module->widget);
+    if(module->widget) gtk_container_remove(GTK_CONTAINER(d->format_extra_container), module->widget);
   } while((it = g_list_next(it)));
 
 

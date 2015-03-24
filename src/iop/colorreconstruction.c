@@ -38,7 +38,7 @@
 
 #define DT_COLORRECONSTRUCT_BILATERAL_MAX_RES_S 1000
 #define DT_COLORRECONSTRUCT_BILATERAL_MAX_RES_R 200
-#define DT_COLORRECONSTRUCT_SPATIAL_APPROX 50.0f
+#define DT_COLORRECONSTRUCT_SPATIAL_APPROX 100.0f
 
 DT_MODULE_INTROSPECTION(1, dt_iop_colorreconstruct_params_t)
 
@@ -49,7 +49,23 @@ typedef struct dt_iop_colorreconstruct_params_t
   float range;
 } dt_iop_colorreconstruct_params_t;
 
-typedef struct dt_iop_colorreconstruct_bilateral_frozen_t dt_iop_colorreconstruct_bilateral_frozen_t; // forward declaration
+typedef struct dt_iop_colorreconstruct_Lab_t
+{
+  float L;
+  float a;
+  float b;
+  float weight;
+} dt_iop_colorreconstruct_Lab_t;
+
+typedef struct dt_iop_colorreconstruct_bilateral_frozen_t
+{
+  size_t size_x, size_y, size_z;
+  int width, height, x, y;
+  float scale;
+  float sigma_s, sigma_r;
+  dt_iop_colorreconstruct_Lab_t *buf;
+} dt_iop_colorreconstruct_bilateral_frozen_t;
+
 typedef struct dt_iop_colorreconstruct_gui_data_t
 {
   GtkWidget *threshold;
@@ -109,14 +125,6 @@ void connect_key_accels(dt_iop_module_t *self)
   dt_accel_connect_slider_iop(self, "range blur", GTK_WIDGET(g->range));
 }
 
-typedef struct dt_iop_colorreconstruct_Lab_t
-{
-  float L;
-  float a;
-  float b;
-  float weight;
-} dt_iop_colorreconstruct_Lab_t;
-
 typedef struct dt_iop_colorreconstruct_bilateral_t
 {
   size_t size_x, size_y, size_z;
@@ -125,16 +133,6 @@ typedef struct dt_iop_colorreconstruct_bilateral_t
   float sigma_s, sigma_r;
   dt_iop_colorreconstruct_Lab_t *buf;
 } dt_iop_colorreconstruct_bilateral_t;
-
-typedef struct dt_iop_colorreconstruct_bilateral_frozen_t
-{
-  size_t size_x, size_y, size_z;
-  int width, height, x, y;
-  float scale;
-  float sigma_s, sigma_r;
-  dt_iop_colorreconstruct_Lab_t *buf;
-} dt_iop_colorreconstruct_bilateral_frozen_t;
-
 
 static inline void image_to_grid(const dt_iop_colorreconstruct_bilateral_t *const b, const float i, const float j, const float L, float *x,
                           float *y, float *z)
@@ -146,9 +144,8 @@ static inline void image_to_grid(const dt_iop_colorreconstruct_bilateral_t *cons
 
 
 static inline void grid_rescale(const dt_iop_colorreconstruct_bilateral_t *const b, const int i, const int j, const dt_iop_roi_t *roi,
-                         const float iscale, float *px, float *py)
+                         const float scale, float *px, float *py)
 {
-  const float scale = (iscale/roi->scale)/b->scale;
   *px = (roi->x + i) * scale - b->x;
   *py = (roi->y + j) * scale - b->y;
 }
@@ -382,6 +379,7 @@ static void dt_iop_colorreconstruct_bilateral_blur(dt_iop_colorreconstruct_bilat
 static void dt_iop_colorreconstruct_bilateral_slice(const dt_iop_colorreconstruct_bilateral_t *const b, const float *const in, float *out,
                                                     const float threshold, const dt_iop_roi_t *roi, const float iscale)
 {
+  const float rescale = iscale / (roi->scale * b->scale);
   const int ox = 1;
   const int oy = b->size_x;
   const int oz = b->size_y * b->size_x;
@@ -401,7 +399,7 @@ static void dt_iop_colorreconstruct_bilateral_slice(const dt_iop_colorreconstruc
       out[index + 3] = in[index + 3];
       const float blend = CLAMPS(20.0f / threshold * Lin - 19.0f, 0.0f, 1.0f);
       if (blend == 0.0f) continue;
-      grid_rescale(b, i, j, roi, iscale, &px, &py);
+      grid_rescale(b, i, j, roi, rescale, &px, &py);
       image_to_grid(b, px, py, Lin, &x, &y, &z);
       // trilinear lookup:
       const int xi = MIN((int)x, b->size_x - 2);
@@ -477,7 +475,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *
   // of the preview pipe if needed. However, the grid of the preview pipeline is coarser and may lead
   // to other artifacts so we only want to use it when necessary. The threshold for data->spatial has been selected
   // arbitrarily.
-  if(data->spatial > DT_COLORRECONSTRUCT_SPATIAL_APPROX && self->dev->gui_attached && g && piece->pipe->type == DT_DEV_PIXELPIPE_FULL)
+  if(sigma_s > DT_COLORRECONSTRUCT_SPATIAL_APPROX && self->dev->gui_attached && g && piece->pipe->type == DT_DEV_PIXELPIPE_FULL)
   {
     // check how far we are zoomed-in
     dt_dev_zoom_t zoom = dt_control_get_dev_zoom();
@@ -509,7 +507,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *
   {
     dt_pthread_mutex_lock(&g->lock);
     dt_iop_colorreconstruct_bilateral_dump(g->can);
-    g->can = (data->spatial > DT_COLORRECONSTRUCT_SPATIAL_APPROX) ? dt_iop_colorreconstruct_bilateral_freeze(b) : NULL;
+    g->can = dt_iop_colorreconstruct_bilateral_freeze(b);
     dt_pthread_mutex_unlock(&g->lock);
   }
 
@@ -879,7 +877,7 @@ static cl_int dt_iop_colorreconstruct_bilateral_slice_cl(dt_iop_colorreconstruct
 
   const int bxy[2] = { b->x, b->y };
   const int roixy[2] = { roi->x, roi->y };
-  const float scale = (iscale/roi->scale)/b->scale;
+  const float rescale = iscale / (roi->scale * b->scale);
 
   size_t sizes[] = { ROUNDUPWD(roi->width), ROUNDUPHT(roi->height), 1 };
   dt_opencl_set_kernel_arg(b->devid, b->global->kernel_colorreconstruct_slice, 0, sizeof(cl_mem), (void *)&in);
@@ -895,7 +893,7 @@ static cl_int dt_iop_colorreconstruct_bilateral_slice_cl(dt_iop_colorreconstruct
   dt_opencl_set_kernel_arg(b->devid, b->global->kernel_colorreconstruct_slice, 10, sizeof(float), (void *)&threshold);
   dt_opencl_set_kernel_arg(b->devid, b->global->kernel_colorreconstruct_slice, 11, 2*sizeof(int), (void *)&bxy);
   dt_opencl_set_kernel_arg(b->devid, b->global->kernel_colorreconstruct_slice, 12, 2*sizeof(int), (void *)&roixy);
-  dt_opencl_set_kernel_arg(b->devid, b->global->kernel_colorreconstruct_slice, 13, sizeof(float), (void *)&scale);
+  dt_opencl_set_kernel_arg(b->devid, b->global->kernel_colorreconstruct_slice, 13, sizeof(float), (void *)&rescale);
   err = dt_opencl_enqueue_kernel_2d(b->devid, b->global->kernel_colorreconstruct_slice, sizes);
   return err;
 }
@@ -916,7 +914,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   dt_iop_colorreconstruct_bilateral_frozen_t *can = NULL;
 
   // see process() for more details on how we transfer a bilateral grid from the preview to the full pipeline
-  if(d->spatial > DT_COLORRECONSTRUCT_SPATIAL_APPROX && self->dev->gui_attached && g && piece->pipe->type == DT_DEV_PIXELPIPE_FULL)
+  if(sigma_s > DT_COLORRECONSTRUCT_SPATIAL_APPROX && self->dev->gui_attached && g && piece->pipe->type == DT_DEV_PIXELPIPE_FULL)
   {
     // check how far we are zoomed-in
     dt_dev_zoom_t zoom = dt_control_get_dev_zoom();
@@ -952,7 +950,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   {
     dt_pthread_mutex_lock(&g->lock);
     dt_iop_colorreconstruct_bilateral_dump(g->can);
-    g->can = (d->spatial > DT_COLORRECONSTRUCT_SPATIAL_APPROX) ? dt_iop_colorreconstruct_bilateral_freeze_cl(b) : NULL;
+    g->can = dt_iop_colorreconstruct_bilateral_freeze_cl(b);
     dt_pthread_mutex_unlock(&g->lock);
   }
 

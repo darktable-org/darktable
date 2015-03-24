@@ -91,6 +91,7 @@ typedef struct dt_opencl_device_t
   const char *name;
   const char *cname;
   cl_int summary;
+  float benchmark;
 } dt_opencl_device_t;
 
 struct dt_bilateral_cl_global_t;
@@ -112,6 +113,7 @@ typedef struct dt_opencl_t
   int stopped;
   int num_devs;
   int error_count;
+  uint32_t crc;
   int *dev_priority_image;
   int *dev_priority_preview;
   int *dev_priority_export;

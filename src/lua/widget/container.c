@@ -127,7 +127,6 @@ static int container_numindex(lua_State*L)
       lua_widget widget;
       luaA_to(L, lua_widget,&widget,3),
       gtk_container_add(GTK_CONTAINER(container->widget),widget->widget);
-      gtk_widget_set_visible(widget->widget,gtk_widget_get_visible(container->widget));
     } else if(lua_isnil(L,3) && index < length) {
       GtkWidget *searched_widget = g_list_nth_data(children,index);
       gtk_container_remove(GTK_CONTAINER(container->widget),searched_widget);

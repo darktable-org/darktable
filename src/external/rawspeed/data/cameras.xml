@@ -964,6 +964,9 @@
 		</CFA>
 		<Crop x="96" y="18" width="0" height="0"/>
 		<Sensor black="511" white="4000"/>
+		<Hints>
+			<Hint name="wb_offset" value="142"/>
+		</Hints>
 	</Camera>
 	<Camera make="Canon" model="Canon PowerShot G1 X">
 		<CFA width="2" height="2">
@@ -2555,6 +2558,9 @@
 		</CFA>
 		<Crop x="0" y="0" width="-14" height="0"/>
 		<Sensor black="200" white="3900"/>
+		<Aliases>
+			<Alias>STYLUS1,1s</Alias>
+		</Aliases>
 	</Camera>
 	<Camera make="Panasonic" model = "DMC-FX150">
 		<CFA width="2" height="2">
@@ -5042,6 +5048,18 @@
 		</CFA>
 		<Crop x="96" y="42" width="-32" height="-24"/>
 		<Sensor black="0" white="4095"/>
+	</Camera>
+	<Camera make="SAMSUNG" model="NX500">
+		<CFA width="2" height="2">
+			<Color x="0" y="0">GREEN</Color>
+			<Color x="1" y="0">RED</Color>
+			<Color x="0" y="1">BLUE</Color>
+			<Color x="1" y="1">GREEN</Color>
+		</CFA>
+		<Crop x="0" y="0" width="0" height="0"/>
+		<Sensor black="1024" white="16100" iso_list="51200"/>
+		<Sensor black="512" white="16100" iso_list="12800 25600"/>
+		<Sensor black="128" white="16100"/>
 	</Camera>
 	<Camera make="SAMSUNG" model="EK-GN120" decoder_version="3">
 		<CFA width="2" height="2">

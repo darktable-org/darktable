@@ -363,12 +363,10 @@ int dt_pdf_add_icc_from_data(dt_pdf_t *pdf, const unsigned char *data, size_t si
 
   // length of the stream
   _pdf_set_offset(pdf, length_id, pdf->bytes_written + bytes_written);
-  bytes_written += fprintf(pdf->fd,
-                           "%d 0 obj\n"
-                           "%ld\n"
-                           "endobj\n",
-                           length_id, stream_size
-  );
+  bytes_written += fprintf(pdf->fd, "%d 0 obj\n"
+                                    "%zu\n"
+                                    "endobj\n",
+                           length_id, stream_size);
 
   pdf->bytes_written += bytes_written;
 
@@ -449,12 +447,10 @@ dt_pdf_image_t *dt_pdf_add_image(dt_pdf_t *pdf, const unsigned char *image, int 
 
   // length of the last stream
   _pdf_set_offset(pdf, length_id, pdf->bytes_written + bytes_written);
-  bytes_written += fprintf(pdf->fd,
-    "%d 0 obj\n"
-    "%ld\n"
-    "endobj\n",
-    length_id, stream_size
-  );
+  bytes_written += fprintf(pdf->fd, "%d 0 obj\n"
+                                    "%zu\n"
+                                    "endobj\n",
+                           length_id, stream_size);
 
   pdf->bytes_written += bytes_written;
   pdf_image->size = bytes_written;
@@ -631,12 +627,10 @@ dt_pdf_page_t *dt_pdf_add_page(dt_pdf_t *pdf, dt_pdf_image_t **images, int n_ima
 
   // length of the last stream
   _pdf_set_offset(pdf, length_id, pdf->bytes_written + bytes_written);
-  bytes_written += fprintf(pdf->fd,
-    "%d 0 obj\n"
-    "%ld\n"
-    "endobj\n",
-    length_id, stream_size
-  );
+  bytes_written += fprintf(pdf->fd, "%d 0 obj\n"
+                                    "%zu\n"
+                                    "endobj\n",
+                           length_id, stream_size);
 
   pdf_page->size = bytes_written;
   pdf->bytes_written += bytes_written;
@@ -754,8 +748,7 @@ time_error:
     "0000000000 65535 f \n",
     pdf->next_id
   );
-  for(int i = 0; i < pdf->next_id - 1; i++)
-    fprintf(pdf->fd, "%010ld 00000 n \n", pdf->offsets[i]);
+  for(int i = 0; i < pdf->next_id - 1; i++) fprintf(pdf->fd, "%010zu 00000 n \n", pdf->offsets[i]);
 
   // the trailer
   fprintf(pdf->fd,
@@ -770,12 +763,10 @@ time_error:
   );
 
   // and finally the file footer with the offset of the xref section
-  fprintf(pdf->fd,
-    "startxref\n"
-    "%ld\n"
-    "%%%%EOF\n",
-    pdf->bytes_written
-  );
+  fprintf(pdf->fd, "startxref\n"
+                   "%zu\n"
+                   "%%%%EOF\n",
+          pdf->bytes_written);
 
   fclose(pdf->fd);
   free(pdf->offsets);
