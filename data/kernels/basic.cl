@@ -767,7 +767,8 @@ clip_rotate_lanczos3(read_only image2d_t in, write_only image2d_t out, const int
 /* kernels for the lens plugin: bilinear interpolation */
 kernel void
 lens_distort_bilinear (read_only image2d_t in, write_only image2d_t out, const int width, const int height,
-               const int iwidth, const int iheight, const int roi_in_x, const int roi_in_y, global float *pi)
+               const int iwidth, const int iheight, const int roi_in_x, const int roi_in_y, global float *pi,
+               const int do_nan_checks)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
@@ -779,6 +780,20 @@ lens_distort_bilinear (read_only image2d_t in, write_only image2d_t out, const i
   float rx, ry;
   const int piwidth = 2*3*width;
   global float *ppi = pi + mad24(y, piwidth, 2*3*x);
+
+  if(do_nan_checks)
+  {
+    bool valid = true;
+
+    for(int i = 0; i < 6; i++) valid = valid && isfinite(ppi[i]);
+
+    if(!valid)
+    {
+      pixel = (float4)0.0f;
+      write_imagef (out, (int2)(x, y), pixel);
+      return;
+    }
+  }
 
   rx = ppi[0] - roi_in_x;
   ry = ppi[1] - roi_in_y;
@@ -800,7 +815,8 @@ lens_distort_bilinear (read_only image2d_t in, write_only image2d_t out, const i
 /* kernels for the lens plugin: bicubic interpolation */
 kernel void
 lens_distort_bicubic (read_only image2d_t in, write_only image2d_t out, const int width, const int height,
-                      const int iwidth, const int iheight, const int roi_in_x, const int roi_in_y, global float *pi)
+                      const int iwidth, const int iheight, const int roi_in_x, const int roi_in_y, global float *pi,
+                      const int do_nan_checks)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
@@ -817,6 +833,21 @@ lens_distort_bicubic (read_only image2d_t in, write_only image2d_t out, const in
   float2 sum2;
   const int piwidth = 2*3*width;
   global float *ppi = pi + mad24(y, piwidth, 2*3*x);
+
+  if(do_nan_checks)
+  {
+    bool valid = true;
+
+    for(int i = 0; i < 6; i++) valid = valid && isfinite(ppi[i]);
+
+    if(!valid)
+    {
+      pixel = (float4)0.0f;
+      write_imagef (out, (int2)(x, y), pixel);
+      return;
+    }
+  }
+
 
   rx = ppi[0] - (float)roi_in_x;
   ry = ppi[1] - (float)roi_in_y;
@@ -898,7 +929,8 @@ lens_distort_bicubic (read_only image2d_t in, write_only image2d_t out, const in
 /* kernels for the lens plugin: lanczos2 interpolation */
 kernel void
 lens_distort_lanczos2 (read_only image2d_t in, write_only image2d_t out, const int width, const int height,
-                      const int iwidth, const int iheight, const int roi_in_x, const int roi_in_y, global float *pi)
+                      const int iwidth, const int iheight, const int roi_in_x, const int roi_in_y, global float *pi,
+                      const int do_nan_checks)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
@@ -915,6 +947,21 @@ lens_distort_lanczos2 (read_only image2d_t in, write_only image2d_t out, const i
   float2 sum2;
   const int piwidth = 2*3*width;
   global float *ppi = pi + mad24(y, piwidth, 2*3*x);
+
+  if(do_nan_checks)
+  {
+    bool valid = true;
+
+    for(int i = 0; i < 6; i++) valid = valid && isfinite(ppi[i]);
+
+    if(!valid)
+    {
+      pixel = (float4)0.0f;
+      write_imagef (out, (int2)(x, y), pixel);
+      return;
+    }
+  }
+
 
   rx = ppi[0] - (float)roi_in_x;
   ry = ppi[1] - (float)roi_in_y;
@@ -996,7 +1043,8 @@ lens_distort_lanczos2 (read_only image2d_t in, write_only image2d_t out, const i
 /* kernels for the lens plugin: lanczos3 interpolation */
 kernel void
 lens_distort_lanczos3 (read_only image2d_t in, write_only image2d_t out, const int width, const int height,
-                      const int iwidth, const int iheight, const int roi_in_x, const int roi_in_y, global float *pi)
+                      const int iwidth, const int iheight, const int roi_in_x, const int roi_in_y, global float *pi,
+                      const int do_nan_checks)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
@@ -1013,6 +1061,20 @@ lens_distort_lanczos3 (read_only image2d_t in, write_only image2d_t out, const i
   float2 sum2;
   const int piwidth = 2*3*width;
   global float *ppi = pi + mad24(y, piwidth, 2*3*x);
+
+  if(do_nan_checks)
+  {
+    bool valid = true;
+
+    for(int i = 0; i < 6; i++) valid = valid && isfinite(ppi[i]);
+
+    if(!valid)
+    {
+      pixel = (float4)0.0f;
+      write_imagef (out, (int2)(x, y), pixel);
+      return;
+    }
+  }
 
   rx = ppi[0] - (float)roi_in_x;
   ry = ppi[1] - (float)roi_in_y;
