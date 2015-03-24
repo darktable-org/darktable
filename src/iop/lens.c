@@ -131,6 +131,7 @@ typedef struct dt_iop_lensfun_data_t
   float aperture;
   float distance;
   lfLensType target_geom;
+  gboolean do_nan_checks;
 } dt_iop_lensfun_data_t;
 
 const char *name()
@@ -338,7 +339,7 @@ static char *_lens_sanitize(const char *orig_lens)
 void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid, void *ovoid,
              const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
-  dt_iop_lensfun_data_t *d = (dt_iop_lensfun_data_t *)piece->data;
+  const dt_iop_lensfun_data_t *const d = (dt_iop_lensfun_data_t *)piece->data;
   dt_iop_lensfun_gui_data_t *g = (dt_iop_lensfun_gui_data_t *)self->gui_data;
 
   const int ch = piece->colors;
@@ -388,6 +389,12 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
         {
           for(int c = 0; c < 3; c++)
           {
+            if(d->do_nan_checks && (!isfinite(bufptr[c * 2]) || !isfinite(bufptr[c * 2 + 1])))
+            {
+              out[c] = 0.0f;
+              continue;
+            }
+
             const float *const inptr = (const float *const)ivoid + (size_t)c;
             const float pi0 = bufptr[c * 2] - roi_in->x;
             const float pi1 = bufptr[c * 2 + 1] - roi_in->y;
@@ -397,6 +404,12 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
 
           if(mask_display)
           {
+            if(d->do_nan_checks && (!isfinite(bufptr[2]) || !isfinite(bufptr[3])))
+            {
+              out[3] = 0.0f;
+              continue;
+            }
+
             // take green channel distortion also for alpha channel
             const float *const inptr = (const float *const)ivoid + (size_t)3;
             const float pi0 = bufptr[2] - roi_in->x;
@@ -470,6 +483,12 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
         {
           for(int c = 0; c < 3; c++)
           {
+            if(d->do_nan_checks && (!isfinite(buf2ptr[c * 2]) || !isfinite(buf2ptr[c * 2 + 1])))
+            {
+              out[c] = 0.0f;
+              continue;
+            }
+
             float *bufptr = ((float *)buf) + c;
             const float pi0 = buf2ptr[c * 2] - roi_in->x;
             const float pi1 = buf2ptr[c * 2 + 1] - roi_in->y;
@@ -479,6 +498,12 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
 
           if(mask_display)
           {
+            if(d->do_nan_checks && (!isfinite(buf2ptr[2]) || !isfinite(buf2ptr[3])))
+            {
+              out[3] = 0.0f;
+              continue;
+            }
+
             // take green channel distortion also for alpha channel
             float *bufptr = ((float *)buf) + 3;
             const float pi0 = buf2ptr[2] - roi_in->x;
@@ -617,6 +642,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
       dt_opencl_set_kernel_arg(devid, ldkernel, 6, sizeof(int), (void *)&roi_in_x);
       dt_opencl_set_kernel_arg(devid, ldkernel, 7, sizeof(int), (void *)&roi_in_y);
       dt_opencl_set_kernel_arg(devid, ldkernel, 8, sizeof(cl_mem), (void *)&dev_tmpbuf);
+      dt_opencl_set_kernel_arg(devid, ldkernel, 9, sizeof(int), (void *)&(d->do_nan_checks));
       err = dt_opencl_enqueue_kernel_2d(devid, ldkernel, osizes);
       if(err != CL_SUCCESS) goto error;
     }
@@ -725,6 +751,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
       dt_opencl_set_kernel_arg(devid, ldkernel, 6, sizeof(int), (void *)&roi_in_x);
       dt_opencl_set_kernel_arg(devid, ldkernel, 7, sizeof(int), (void *)&roi_in_y);
       dt_opencl_set_kernel_arg(devid, ldkernel, 8, sizeof(cl_mem), (void *)&dev_tmpbuf);
+      dt_opencl_set_kernel_arg(devid, ldkernel, 9, sizeof(int), (void *)&(d->do_nan_checks));
       err = dt_opencl_enqueue_kernel_2d(devid, ldkernel, osizes);
       if(err != CL_SUCCESS) goto error;
     }
@@ -976,6 +1003,20 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
   d->aperture = p->aperture;
   d->distance = p->distance;
   d->target_geom = p->target_geom;
+  d->do_nan_checks = TRUE;
+
+  /*
+   * there are certain situations when LensFun can return NAN coordinated.
+   * most common case would be when the FOV is increased.
+   */
+  if(d->target_geom == LF_RECTILINEAR)
+  {
+    d->do_nan_checks = FALSE;
+  }
+  else if(d->target_geom == d->lens->Type)
+  {
+    d->do_nan_checks = FALSE;
+  }
 #endif
 }
 
