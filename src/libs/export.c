@@ -480,6 +480,25 @@ static void on_storage_list_changed(gpointer instance, dt_lib_module_t *self)
   dt_bauhaus_combobox_set(d->storage, dt_imageio_get_index_of_storage(storage));
 }
 
+static void _lib_export_styles_changed_callback(gpointer instance, gpointer user_data)
+{
+  dt_lib_module_t *self = (dt_lib_module_t *)user_data;
+  dt_lib_export_t *d = self->data;
+
+  dt_bauhaus_combobox_clear(d->style);
+  dt_bauhaus_combobox_add(d->style, _("none"));
+
+  GList *styles = dt_styles_get_list("");
+  while(styles)
+  {
+    dt_style_t *style = (dt_style_t *)styles->data;
+    dt_bauhaus_combobox_add(d->style, style->name);
+    styles = g_list_next(styles);
+  }
+  dt_bauhaus_combobox_set(d->style, 0);
+
+  g_list_free_full(styles, dt_style_free);
+}
 
 void gui_init(dt_lib_module_t *self)
 {
@@ -666,16 +685,7 @@ void gui_init(dt_lib_module_t *self)
 
   d->style = dt_bauhaus_combobox_new(NULL);
   dt_bauhaus_widget_set_label(d->style, NULL, _("style"));
-
-  dt_bauhaus_combobox_add(d->style, _("none"));
-
-  GList *styles = dt_styles_get_list("");
-  while(styles)
-  {
-    dt_style_t *style = (dt_style_t *)styles->data;
-    dt_bauhaus_combobox_add(d->style, style->name);
-    styles = g_list_next(styles);
-  }
+  _lib_export_styles_changed_callback(NULL, self);
   gtk_box_pack_start(GTK_BOX(self->widget), d->style, FALSE, TRUE, 0);
   g_object_set(G_OBJECT(d->style), "tooltip-text", _("temporary style to use while exporting"),
                (char *)NULL);
@@ -703,6 +713,9 @@ void gui_init(dt_lib_module_t *self)
   g_signal_connect(G_OBJECT(d->profile), "value-changed", G_CALLBACK(profile_changed), (gpointer)d);
   g_signal_connect(G_OBJECT(d->style), "value-changed", G_CALLBACK(style_changed), (gpointer)d);
   g_signal_connect(G_OBJECT(d->style_mode), "value-changed", G_CALLBACK(style_mode_changed), (gpointer)d);
+
+  dt_control_signal_connect(darktable.signals, DT_SIGNAL_STYLE_CHANGED,
+                            G_CALLBACK(_lib_export_styles_changed_callback), self);
 
   // Export button
 
