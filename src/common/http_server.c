@@ -23,6 +23,10 @@
 #include "common/darktable.h"
 #include "common/http_server.h"
 
+#ifndef SOUP_CHECK_VERSION
+#define SOUP_CHECK_VERSION(x, y, z) false
+#endif
+
 // SOUP_MAJOR_VERSION was introduced together with SOUP_CHECK_VERSION (2.42)
 #if !defined(SOUP_MAJOR_VERSION) || !SOUP_CHECK_VERSION(2, 48, 0)
 #define OLD_API
