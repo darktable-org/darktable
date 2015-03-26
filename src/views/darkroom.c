@@ -916,12 +916,10 @@ static void _darkroom_ui_apply_style_popupmenu(GtkWidget *w, gpointer user_data)
                                (gpointer)g_strdup(style->name));
       gtk_widget_show(mi);
 
-      g_free(style->name);
-      g_free(style->description);
-      g_free(style);
       g_free(items_string);
       g_free(tooltip);
     } while((styles = g_list_next(styles)) != NULL);
+    g_list_free_full(styles, dt_style_free);
   }
 
   /* if we got any styles, lets popup menu for selection */
