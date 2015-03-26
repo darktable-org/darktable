@@ -924,8 +924,16 @@ static void _iop_panel_label(GtkWidget *lab, dt_iop_module_t *module)
 {
   gtk_widget_set_name(lab, "panel_label");
   gchar *label = dt_history_item_get_name_html(module);
+  gchar *tooltip;
+  if(!module->multi_name[0] || strcmp(module->multi_name, "0") == 0)
+    tooltip = g_strdup(module->name());
+  else
+    tooltip = g_strdup_printf("%s %s", module->name(), module->multi_name);
   gtk_label_set_markup(GTK_LABEL(lab), label);
+  gtk_label_set_ellipsize(GTK_LABEL(lab), PANGO_ELLIPSIZE_MIDDLE);
+  g_object_set(G_OBJECT(lab), "tooltip-text", tooltip, (char *)NULL);
   g_free(label);
+  g_free(tooltip);
 }
 
 static void _iop_gui_update_header(dt_iop_module_t *module)
