@@ -487,6 +487,7 @@ void gui_init(dt_lib_module_t *self)
   dt_control_signal_connect(darktable.signals, DT_SIGNAL_TAG_CHANGED,
                             G_CALLBACK(_lib_tagging_tags_changed_callback), self);
 
+  update(self, 0);
   set_keyword(self, d);
 }
 
