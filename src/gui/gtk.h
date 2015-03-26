@@ -124,10 +124,6 @@ void dt_gui_key_accel_block_on_focus_connect(GtkWidget *w);
 /** clean up connected signal handlers before destroying your widget: */
 void dt_gui_key_accel_block_on_focus_disconnect(GtkWidget *w);
 
-/** handle pressure sensitive input devices */
-void dt_gui_enable_extended_input_devices();
-void dt_gui_disable_extended_input_devices();
-
 /*
  * new ui api
  */

@@ -197,8 +197,6 @@ static void _bt_add_gradient(GtkWidget *widget, GdkEventButton *event, dt_lib_mo
 }
 static void _tree_add_brush(GtkButton *button, dt_iop_module_t *module)
 {
-  // enable pressure readings
-  dt_gui_enable_extended_input_devices();
   // we create the new form
   dt_masks_form_t *spot = dt_masks_create(DT_MASKS_BRUSH);
   dt_masks_change_form_gui(spot);
