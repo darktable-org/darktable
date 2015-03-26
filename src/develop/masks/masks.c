@@ -1353,7 +1353,6 @@ static void _menu_add_brush(struct dt_iop_module_t *module)
 {
   // we want to be sure that the iop has focus
   dt_iop_request_focus(module);
-  dt_gui_enable_extended_input_devices();
   // we create the new form
   dt_masks_form_t *form = dt_masks_create(DT_MASKS_BRUSH);
   dt_masks_change_form_gui(form);
