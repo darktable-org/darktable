@@ -63,6 +63,16 @@ typedef struct
   gboolean in_plugin;
 } StyleData;
 
+void dt_style_free(gpointer data)
+{
+  dt_style_t *style = (dt_style_t *)data;
+  g_free(style->name);
+  g_free(style->description);
+  style->name = NULL;
+  style->description = NULL;
+  g_free(style);
+}
+
 static gboolean _apply_style_shortcut_callback(GtkAccelGroup *accel_group, GObject *acceleratable,
                                                guint keyval, GdkModifierType modifier, gpointer data)
 {
@@ -1106,11 +1116,8 @@ void init_styles_key_accels()
       char tmp_accel[1024];
       snprintf(tmp_accel, sizeof(tmp_accel), C_("accel", "styles/apply %s"), style->name);
       dt_accel_register_global(tmp_accel, 0, 0);
-
-      g_free(style->name);
-      g_free(style->description);
-      g_free(style);
     } while((result = g_list_next(result)) != NULL);
+    g_list_free_full(result, dt_style_free);
   }
 }
 
@@ -1123,18 +1130,16 @@ void connect_styles_key_accels()
     {
       GClosure *closure;
       dt_style_t *style = (dt_style_t *)result->data;
-      closure = g_cclosure_new(G_CALLBACK(_apply_style_shortcut_callback), style->name,
+      closure = g_cclosure_new(G_CALLBACK(_apply_style_shortcut_callback), g_strdup(style->name),
                                _destroy_style_shortcut_callback);
       char tmp_accel[1024];
       snprintf(tmp_accel, sizeof(tmp_accel), C_("accel", "styles/apply %s"), style->name);
       dt_accel_connect_global(tmp_accel, closure);
-
-      // g_free(style->name); freed at closure destruction
-      g_free(style->description);
-      g_free(style);
     } while((result = g_list_next(result)) != NULL);
+    g_list_free_full(result, dt_style_free);
   }
 }
+
 dt_style_t *dt_styles_get_by_name(const char *name)
 {
   sqlite3_stmt *stmt;

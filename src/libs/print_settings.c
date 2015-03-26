@@ -1285,6 +1285,7 @@ gui_init (dt_lib_module_t *self)
     styles=g_list_next(styles);
   }
   g_free(current_style);
+  g_list_free_full(styles, dt_style_free);
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(d->style), TRUE, TRUE, 0);
   g_object_set(G_OBJECT(d->style), "tooltip-text", _("temporary style to use while printing"), (char *)NULL);
 
