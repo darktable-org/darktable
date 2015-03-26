@@ -1143,7 +1143,7 @@ gui_init (dt_lib_module_t *self)
   gtk_grid_attach(bds, GTK_WIDGET(d->b_top), 1, 0, 1, 1);
 
   //d->b_left  = gtk_spin_button_new_with_range(0, 10000, 1);
-  g_object_set(bds, "tooltip-text", _("left margin"), (char *)NULL);
+  g_object_set(G_OBJECT(d->b_left), "tooltip-text", _("left margin"), (char *)NULL);
   gtk_grid_attach(bds, GTK_WIDGET(d->b_left), 0, 1, 1, 1);
 
   d->lock_button = GTK_TOGGLE_BUTTON(gtk_toggle_button_new_with_label(_("lock")));
