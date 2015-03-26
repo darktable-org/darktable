@@ -302,6 +302,8 @@ void dt_styles_update(const char *name, const char *newname, const char *newdesc
     dt_accel_connect_global(tmp_accel, closure);
   }
 
+  dt_control_signal_raise(darktable.signals, DT_SIGNAL_STYLE_CHANGED);
+
   g_free(desc);
 }
 
@@ -379,6 +381,7 @@ void dt_styles_create_from_style(const char *name, const char *newname, const ch
                              _destroy_style_shortcut_callback);
     dt_accel_connect_global(tmp_accel, closure);
     dt_control_log(_("style named '%s' successfully created"), newname);
+    dt_control_signal_raise(darktable.signals, DT_SIGNAL_STYLE_CHANGED);
   }
 }
 
@@ -446,6 +449,7 @@ gboolean dt_styles_create_from_image(const char *name, const char *description, 
     closure = g_cclosure_new(G_CALLBACK(_apply_style_shortcut_callback), tmp_name,
                              _destroy_style_shortcut_callback);
     dt_accel_connect_global(tmp_accel, closure);
+    dt_control_signal_raise(darktable.signals, DT_SIGNAL_STYLE_CHANGED);
     return TRUE;
   }
   return FALSE;
@@ -592,6 +596,7 @@ void dt_styles_delete_by_name(const char *name)
     char tmp_accel[1024];
     snprintf(tmp_accel, sizeof(tmp_accel), C_("accel", "styles/apply %s"), name);
     dt_accel_deregister_global(tmp_accel);
+    dt_control_signal_raise(darktable.signals, DT_SIGNAL_STYLE_CHANGED);
   }
 }
 
