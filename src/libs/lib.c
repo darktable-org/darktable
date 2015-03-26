@@ -930,7 +930,9 @@ GtkWidget *dt_lib_gui_get_expander(dt_lib_module_t *module)
   g_snprintf(label, sizeof(label), "<span size=\"larger\">%s</span>", module->name());
   hw[idx] = gtk_label_new("");
   gtk_widget_set_name(hw[idx], "panel_label");
-  gtk_label_set_markup(GTK_LABEL(hw[idx++]), label);
+  gtk_label_set_markup(GTK_LABEL(hw[idx]), label);
+  g_object_set(G_OBJECT(hw[idx]), "tooltip-text", module->name(), (char *)NULL);
+  gtk_label_set_ellipsize(GTK_LABEL(hw[idx++]), PANGO_ELLIPSIZE_MIDDLE);
 
   /* add reset button if module has implementation */
   if(module->gui_reset)
