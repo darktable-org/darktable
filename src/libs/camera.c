@@ -635,6 +635,7 @@ void gui_init(dt_lib_module_t *self)
         }
       } while((item = g_slist_next(item)) != NULL);
     }
+    g_slist_free_full(options, dt_conf_string_entry_free);
   }
 
 
