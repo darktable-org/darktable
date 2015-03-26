@@ -689,8 +689,6 @@ static int _blendop_masks_add_brush(GtkWidget *widget, GdkEventButton *event, dt
     bd->masks_shown = DT_MASKS_EDIT_FULL;
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(bd->masks_edit), TRUE);
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(widget), TRUE);
-    // enable advanced input devices to get pressure readings and stuff like that
-    dt_gui_enable_extended_input_devices();
     // we create the new form
     dt_masks_form_t *form = dt_masks_create(DT_MASKS_BRUSH);
     dt_masks_change_form_gui(form);

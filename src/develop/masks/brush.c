@@ -1537,9 +1537,6 @@ static int dt_brush_events_button_released(struct dt_iop_module_t *module, float
 {
   if(!gui) return 0;
 
-  // disable pressure readings
-  dt_gui_disable_extended_input_devices();
-
   dt_masks_form_gui_points_t *gpt = (dt_masks_form_gui_points_t *)g_list_nth_data(gui->points, index);
   if(!gpt) return 0;
 
