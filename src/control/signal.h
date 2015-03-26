@@ -62,8 +62,11 @@ typedef enum dt_signal_t
     */
   DT_SIGNAL_COLLECTION_CHANGED,
 
-  /** \brief This signal is raised when tags is added/deleted/changed  */
+  /** \brief This signal is raised when a tag is added/deleted/changed  */
   DT_SIGNAL_TAG_CHANGED,
+
+  /** \brief This signal is raised when a style is added/deleted/changed  */
+  DT_SIGNAL_STYLE_CHANGED,
 
   /** \brief This signal is raised when a filmroll is deleted/changed but not imported
       \note when a filmroll is imported, use DT_SIGNALS_FILMOLLS_IMPORTED, as the gui
@@ -115,6 +118,7 @@ typedef enum dt_signal_t
   no param, no returned value
     */
   DT_SIGNAL_CONTROL_PROFILE_CHANGED,
+
   /** \brief This signal is raised when a new image is imported (not cloned)
     1 uint32_t :  the new image id
     no return
@@ -139,6 +143,7 @@ typedef enum dt_signal_t
     no return
     */
   DT_SIGNAL_IMAGE_EXPORT_TMPFILE,
+
   /** \brief This signal is raised when a new storage module is loaded
     noparameters
     no return

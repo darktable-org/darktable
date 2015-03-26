@@ -458,6 +458,25 @@ static void on_storage_list_changed(gpointer instance, dt_lib_module_t *self)
   gtk_combo_box_set_active(d->storage, dt_imageio_get_index_of_storage(storage));
 }
 
+static void _lib_export_styles_changed_callback(gpointer instance, gpointer user_data)
+{
+  dt_lib_module_t *self = (dt_lib_module_t *)user_data;
+  dt_lib_export_t *d = self->data;
+
+  gtk_list_store_clear(GTK_LIST_STORE(gtk_combo_box_get_model(GTK_COMBO_BOX(d->style))));
+  gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(d->style), _("none"));
+
+  GList *styles = dt_styles_get_list("");
+  while(styles)
+  {
+    dt_style_t *style = (dt_style_t *)styles->data;
+    gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(d->style), style->name);
+    styles = g_list_next(styles);
+  }
+  gtk_combo_box_set_active(d->style, 0);
+
+  g_list_free_full(styles, dt_style_free);
+}
 
 void gui_init(dt_lib_module_t *self)
 {
@@ -639,15 +658,8 @@ void gui_init(dt_lib_module_t *self)
 
   dt_ellipsize_combo(d->style);
 
-  gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(d->style), _("none"));
+  _lib_export_styles_changed_callback(NULL, self);
 
-  GList *styles = dt_styles_get_list("");
-  while(styles)
-  {
-    dt_style_t *style = (dt_style_t *)styles->data;
-    gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(d->style), style->name);
-    styles = g_list_next(styles);
-  }
   gtk_table_attach(GTK_TABLE(self->widget), GTK_WIDGET(d->style), 1, 2, 10, 11, GTK_EXPAND | GTK_FILL, 0, 0,
                    0);
   g_object_set(G_OBJECT(d->style), "tooltip-text", _("temporary style to append while exporting"),
@@ -658,6 +670,8 @@ void gui_init(dt_lib_module_t *self)
   g_signal_connect(G_OBJECT(d->intent), "changed", G_CALLBACK(intent_changed), (gpointer)d);
   g_signal_connect(G_OBJECT(d->profile), "changed", G_CALLBACK(profile_changed), (gpointer)d);
   g_signal_connect(G_OBJECT(d->style), "changed", G_CALLBACK(style_changed), (gpointer)d);
+  dt_control_signal_connect(darktable.signals, DT_SIGNAL_STYLE_CHANGED,
+                            G_CALLBACK(_lib_export_styles_changed_callback), self);
 
   // Export button
 
