@@ -692,6 +692,10 @@ void gui_cleanup(dt_lib_module_t *self)
   dt_lib_export_t *d = (dt_lib_export_t *)self->data;
   dt_gui_key_accel_block_on_focus_disconnect(GTK_WIDGET(d->width));
   dt_gui_key_accel_block_on_focus_disconnect(GTK_WIDGET(d->height));
+
+  dt_control_signal_disconnect(darktable.signals, G_CALLBACK(on_storage_list_changed), self);
+  dt_control_signal_disconnect(darktable.signals, G_CALLBACK(_lib_export_styles_changed_callback), self);
+
   GtkWidget *old = gtk_bin_get_child(GTK_BIN(d->format_box));
   if(old) gtk_container_remove(d->format_box, old);
   old = gtk_bin_get_child(GTK_BIN(d->storage_box));
