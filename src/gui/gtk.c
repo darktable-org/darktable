@@ -1109,7 +1109,7 @@ static void init_widgets(dt_gui_gtk_t *gui)
   }
 }
 
-void init_main_table(GtkWidget *container)
+static void init_main_table(GtkWidget *container)
 {
   GtkWidget *widget;
 
