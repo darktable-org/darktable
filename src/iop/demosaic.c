@@ -49,11 +49,13 @@ typedef struct dt_iop_demosaic_params_t
 
 typedef struct dt_iop_demosaic_gui_data_t
 {
+  GtkWidget *box_raw;
   GtkWidget *scale1;
   GtkWidget *greeneq;
   GtkWidget *color_smoothing;
   GtkWidget *demosaic_method_bayer;
   GtkWidget *demosaic_method_xtrans;
+  GtkWidget *label_non_raw;
 } dt_iop_demosaic_gui_data_t;
 
 typedef struct dt_iop_demosaic_global_data_t
@@ -1947,6 +1949,17 @@ void gui_update(struct dt_iop_module_t *self)
   dt_bauhaus_slider_set(g->scale1, p->median_thrs);
   dt_bauhaus_combobox_set(g->color_smoothing, p->color_smoothing);
   dt_bauhaus_combobox_set(g->greeneq, p->green_eq);
+
+  if(self->default_enabled)
+  {
+    gtk_widget_show(g->box_raw);
+    gtk_widget_hide(g->label_non_raw);
+  }
+  else
+  {
+    gtk_widget_hide(g->box_raw);
+    gtk_widget_show(g->label_non_raw);
+  }
 }
 
 void reload_defaults(dt_iop_module_t *module)
@@ -1960,6 +1973,12 @@ void reload_defaults(dt_iop_module_t *module)
 
   // we might be called from presets update infrastructure => there is no image
   if(!module->dev) goto end;
+
+  // only on for raw images:
+  if(dt_image_is_raw(&module->dev->image_storage))
+    module->default_enabled = 1;
+  else
+    module->default_enabled = 0;
 
   if(module->dev->image_storage.filters == 9u) tmp.demosaicing_method = DT_IOP_DEMOSAIC_MARKESTEIJN;
 
@@ -2048,9 +2067,11 @@ void gui_init(struct dt_iop_module_t *self)
 
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
 
+  g->box_raw = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
+
   g->demosaic_method_bayer = dt_bauhaus_combobox_new(self);
   dt_bauhaus_widget_set_label(g->demosaic_method_bayer, NULL, _("method"));
-  gtk_box_pack_start(GTK_BOX(self->widget), g->demosaic_method_bayer, TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(g->box_raw), g->demosaic_method_bayer, TRUE, TRUE, 0);
   dt_bauhaus_combobox_add(g->demosaic_method_bayer, _("PPG (fast)"));
   dt_bauhaus_combobox_add(g->demosaic_method_bayer, _("AMaZE (slow)"));
   dt_bauhaus_combobox_add(g->demosaic_method_bayer, _("VNG4 (slow)"));
@@ -2059,7 +2080,7 @@ void gui_init(struct dt_iop_module_t *self)
 
   g->demosaic_method_xtrans = dt_bauhaus_combobox_new(self);
   dt_bauhaus_widget_set_label(g->demosaic_method_xtrans, NULL, _("method"));
-  gtk_box_pack_start(GTK_BOX(self->widget), g->demosaic_method_xtrans, TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(g->box_raw), g->demosaic_method_xtrans, TRUE, TRUE, 0);
   dt_bauhaus_combobox_add(g->demosaic_method_xtrans, _("VNG (slow)"));
   dt_bauhaus_combobox_add(g->demosaic_method_xtrans, _("Markesteijn 1-pass"));
   dt_bauhaus_combobox_add(g->demosaic_method_xtrans, _("Markesteijn 3-pass (slow)"));
@@ -2071,11 +2092,11 @@ void gui_init(struct dt_iop_module_t *self)
                _("threshold for edge-aware median.\nset to 0.0 to switch off.\nset to 1.0 to ignore edges."),
                (char *)NULL);
   dt_bauhaus_widget_set_label(g->scale1, NULL, _("edge threshold"));
-  gtk_box_pack_start(GTK_BOX(self->widget), g->scale1, TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(g->box_raw), g->scale1, TRUE, TRUE, 0);
 
   g->color_smoothing = dt_bauhaus_combobox_new(self);
   dt_bauhaus_widget_set_label(g->color_smoothing, NULL, _("color smoothing"));
-  gtk_box_pack_start(GTK_BOX(self->widget), g->color_smoothing, TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(g->box_raw), g->color_smoothing, TRUE, TRUE, 0);
   dt_bauhaus_combobox_add(g->color_smoothing, _("off"));
   dt_bauhaus_combobox_add(g->color_smoothing, _("one time"));
   dt_bauhaus_combobox_add(g->color_smoothing, _("two times"));
@@ -2086,7 +2107,7 @@ void gui_init(struct dt_iop_module_t *self)
                _("how many color smoothing median steps after demosaicing"), (char *)NULL);
 
   g->greeneq = dt_bauhaus_combobox_new(self);
-  gtk_box_pack_start(GTK_BOX(self->widget), g->greeneq, TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(g->box_raw), g->greeneq, TRUE, TRUE, 0);
   dt_bauhaus_widget_set_label(g->greeneq, NULL, _("match greens"));
   dt_bauhaus_combobox_add(g->greeneq, _("disabled"));
   dt_bauhaus_combobox_add(g->greeneq, _("local average"));
@@ -2101,6 +2122,12 @@ void gui_init(struct dt_iop_module_t *self)
                    G_CALLBACK(demosaic_method_bayer_callback), self);
   g_signal_connect(G_OBJECT(g->demosaic_method_xtrans), "value-changed",
                    G_CALLBACK(demosaic_method_xtrans_callback), self);
+
+  gtk_box_pack_start(GTK_BOX(self->widget), g->box_raw, FALSE, FALSE, 0);
+
+  g->label_non_raw = gtk_label_new(_("demosaicing\nonly needed for raw images."));
+  gtk_widget_set_halign(g->label_non_raw, GTK_ALIGN_START);
+  gtk_box_pack_start(GTK_BOX(self->widget), g->label_non_raw, FALSE, FALSE, 0);
 }
 
 void gui_cleanup(struct dt_iop_module_t *self)
