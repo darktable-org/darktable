@@ -670,6 +670,7 @@ int dt_imageio_export_with_flags(const uint32_t imgid, const char *filename,
     while(stls)
     {
       dt_style_item_t *s = (dt_style_item_t *)stls->data;
+      gboolean module_found = FALSE;
 
       modules = dev.iop;
       while(modules)
@@ -700,12 +701,16 @@ int dt_imageio_export_with_flags(const uint32_t imgid, const char *filename,
 
           dev.history_end++;
           dev.history = g_list_append(dev.history, h);
+          module_found = TRUE;
+          g_free(s->name);
           break;
         }
         modules = g_list_next(modules);
       }
+      if(!module_found) dt_style_item_free(s);
       stls = g_list_next(stls);
     }
+    g_list_free(stls);
   }
 
   dt_dev_pixelpipe_set_input(&pipe, &dev, (float *)buf.buf, buf.width, buf.height, 1.0);

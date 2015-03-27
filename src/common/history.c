@@ -29,6 +29,16 @@
 #include "common/tags.h"
 #include "common/utility.h"
 
+void dt_history_item_free(gpointer data)
+{
+  dt_history_item_t *item = (dt_history_item_t *)data;
+  g_free(item->op);
+  g_free(item->name);
+  item->op = NULL;
+  item->name = NULL;
+  g_free(item);
+}
+
 static void remove_preset_flag(const int imgid)
 {
   const dt_image_t *cimg = dt_image_cache_read_get(darktable.image_cache, imgid);

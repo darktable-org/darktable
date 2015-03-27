@@ -24,17 +24,9 @@
 #include "common/debug.h"
 
 
-static void free_style_item(void *d)
-{
-  dt_style_item_t *item = d;
-  free(item->name);
-  free(item->params);
-  free(item->blendop_params);
-  free(item);
-}
-
 // can't use glist functions we need a list of int and glist can only produce a list of int*
 static GList *style_item_table_to_id_list(lua_State *L, int index);
+
 /////////////////////////
 // dt_style_t
 /////////////////////////
@@ -93,7 +85,7 @@ static int style_getnumber(lua_State *L)
     return luaL_error(L, "incorrect index for style");
   }
   items = g_list_remove(items, item);
-  g_list_free_full(items, free_style_item);
+  g_list_free_full(items, dt_style_item_free);
   luaA_push(L, dt_style_item_t, item);
   free(item);
   return 1;
@@ -107,7 +99,7 @@ static int style_length(lua_State *L)
   luaA_to(L, dt_style_t, &style, -1);
   GList *items = dt_styles_get_item_list(style.name, true, -1);
   lua_pushnumber(L, g_list_length(items));
-  g_list_free_full(items, free_style_item);
+  g_list_free_full(items, dt_style_item_free);
   return 1;
 }
 

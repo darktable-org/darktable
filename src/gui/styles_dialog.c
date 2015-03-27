@@ -404,10 +404,8 @@ static void _gui_styles_dialog_run(gboolean edit, const char *name, int imgid)
                              item->selimg_num, -1);
           has_new_item = TRUE;
         }
-
-        g_free(item->name);
-        g_free(item);
       } while((items = g_list_next(items)));
+      g_list_free_full(items, dt_style_item_free);
     }
   }
   else
@@ -443,10 +441,8 @@ static void _gui_styles_dialog_run(gboolean edit, const char *name, int imgid)
 
         has_item = TRUE;
 
-        g_free(item->op);
-        g_free(item->name);
-        g_free(item);
       } while((items = g_list_next(items)));
+      g_list_free_full(items, dt_history_item_free);
     }
     else
     {
