@@ -2105,6 +2105,7 @@ void gui_cleanup(dt_lib_module_t *self)
   dt_control_signal_disconnect(darktable.signals, G_CALLBACK(collection_updated), self);
   dt_control_signal_disconnect(darktable.signals, G_CALLBACK(filmrolls_updated), self);
   dt_control_signal_disconnect(darktable.signals, G_CALLBACK(filmrolls_imported), self);
+  dt_control_signal_disconnect(darktable.signals, G_CALLBACK(filmrolls_removed), self);
   darktable.view_manager->proxy.module_collect.module = NULL;
   g_free(((dt_lib_collect_t *)self->data)->params);
 

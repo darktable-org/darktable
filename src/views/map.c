@@ -351,6 +351,10 @@ void init(dt_view_t *self)
 void cleanup(dt_view_t *self)
 {
   dt_map_t *lib = (dt_map_t *)self->data;
+
+  dt_control_signal_disconnect(darktable.signals, G_CALLBACK(_view_map_collection_changed), self);
+  dt_control_signal_disconnect(darktable.signals, G_CALLBACK(_view_map_check_preference_changed), self);
+
   if(darktable.gui)
   {
     g_object_unref(G_OBJECT(lib->pin));

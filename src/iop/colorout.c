@@ -969,6 +969,9 @@ void gui_init(struct dt_iop_module_t *self)
 void gui_cleanup(struct dt_iop_module_t *self)
 {
   dt_iop_colorout_gui_data_t *g = (dt_iop_colorout_gui_data_t *)self->gui_data;
+
+  dt_control_signal_disconnect(darktable.signals, G_CALLBACK(_signal_profile_changed), self->dev);
+
   while(g->profiles)
   {
     g_free(g->profiles->data);

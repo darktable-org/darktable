@@ -427,6 +427,8 @@ void init(dt_view_t *self)
 
 void cleanup(dt_view_t *self)
 {
+  dt_control_signal_disconnect(darktable.signals, G_CALLBACK(_view_lighttable_collection_listener_callback), self);
+
   dt_library_t *lib = (dt_library_t *)self->data;
   dt_conf_set_float("lighttable/ui/zoom_x", lib->zoom_x);
   dt_conf_set_float("lighttable/ui/zoom_y", lib->zoom_y);
