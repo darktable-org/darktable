@@ -928,6 +928,7 @@ uint32_t dt_image_import(const int32_t film_id, const char *filename, gboolean o
 void dt_image_init(dt_image_t *img)
 {
   img->width = img->height = 0;
+  img->crop_x = img->crop_y = img->crop_width = img->crop_height = 0;
   img->orientation = ORIENTATION_NULL;
   img->legacy_flip.legacy = 0;
   img->legacy_flip.user_flip = 0;

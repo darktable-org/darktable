@@ -221,7 +221,12 @@ void dt_focus_draw_clusters(cairo_t *cr, int width, int height, int imgid, int b
   cairo_save(cr);
   cairo_translate(cr, width / 2.0, height / 2.0f);
 
-  int wd = buffer_width, ht = buffer_height;
+  const dt_image_t *img = dt_image_cache_get(darktable.image_cache, imgid, 'r');
+  dt_image_t image = *img;
+  dt_image_cache_read_release(darktable.image_cache, img);
+
+  // FIXME: get those from rawprepare IOP somehow !!!
+  int wd = buffer_width + image.crop_x, ht = buffer_height + image.crop_y;
 
   // array with cluster positions
   float pos[fs * 6], *offx = pos + fs * 2, *offy = pos + fs * 4;
@@ -229,7 +234,9 @@ void dt_focus_draw_clusters(cairo_t *cr, int width, int height, int imgid, int b
   {
     const float stddevx = sqrtf(focus[k].x2 - focus[k].x * focus[k].x);
     const float stddevy = sqrtf(focus[k].y2 - focus[k].y * focus[k].y);
-    float x = focus[k].x, y = focus[k].y;
+
+    // FIXME: get those from rawprepare IOP somehow !!!
+    float x = focus[k].x + image.crop_x, y = focus[k].y + image.crop_y;
 
     pos[2 * k + 0] = x;
     pos[2 * k + 1] = y;

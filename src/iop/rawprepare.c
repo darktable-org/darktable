@@ -42,6 +42,7 @@ typedef struct dt_iop_rawprepare_params_t
 typedef struct dt_iop_rawprepare_gui_data_t
 {
   GtkWidget *box_raw;
+  // TODO: GUI for cropping.
   GtkWidget *black_level_separate[4];
   GtkWidget *white_point;
   GtkWidget *label_non_raw;
@@ -49,6 +50,7 @@ typedef struct dt_iop_rawprepare_gui_data_t
 
 typedef struct dt_iop_rawprepare_data_t
 {
+  int32_t x, y, width, height; // crop, now unused, for future expansion
   float sub[4];
   float div[4];
 } dt_iop_rawprepare_data_t;
@@ -62,6 +64,11 @@ typedef struct dt_iop_rawprepare_global_data_t
 const char *name()
 {
   return C_("modulename", "raw black/white point");
+}
+
+int operation_tags()
+{
+  return IOP_TAG_DISTORT;
 }
 
 int flags()
@@ -123,10 +130,90 @@ int output_bpp(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe
     return 4 * sizeof(float);
 }
 
+int distort_transform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, float *points, size_t points_count)
+{
+  dt_iop_rawprepare_data_t *d = (dt_iop_rawprepare_data_t *)piece->data;
+
+  const float scale = piece->buf_in.scale / piece->iscale;
+
+  const float x = (float)d->x * scale, y = (float)d->y * scale;
+
+  for(size_t i = 0; i < points_count * 2; i += 2)
+  {
+    points[i] -= x;
+    points[i + 1] -= y;
+  }
+
+  return 1;
+}
+
+int distort_backtransform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, float *points,
+                          size_t points_count)
+{
+  dt_iop_rawprepare_data_t *d = (dt_iop_rawprepare_data_t *)piece->data;
+
+  const float scale = piece->buf_in.scale / piece->iscale;
+
+  const float x = (float)d->x * scale, y = (float)d->y * scale;
+
+  for(size_t i = 0; i < points_count * 2; i += 2)
+  {
+    points[i] += x;
+    points[i + 1] += y;
+  }
+
+  return 1;
+}
+
+// we're not scaling here (bayer input), so just crop borders
+void modify_roi_out(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, dt_iop_roi_t *roi_out,
+                    const dt_iop_roi_t *const roi_in)
+{
+  *roi_out = *roi_in;
+  dt_iop_rawprepare_data_t *d = (dt_iop_rawprepare_data_t *)piece->data;
+
+  roi_out->x = roi_out->y = 0;
+
+  int32_t x = d->x + d->width, y = d->y + d->height;
+
+  if(dt_dev_pixelpipe_uses_downsampled_input(piece->pipe))
+  {
+    const float scale = roi_in->scale / piece->iscale;
+    roi_out->width -= roundf((float)x * scale);
+    roi_out->height -= roundf((float)y * scale);
+  }
+  else
+  {
+    roi_out->width -= x;
+    roi_out->height -= y;
+  }
+}
+
+void modify_roi_in(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const dt_iop_roi_t *const roi_out,
+                   dt_iop_roi_t *roi_in)
+{
+  *roi_in = *roi_out;
+  dt_iop_rawprepare_data_t *d = (dt_iop_rawprepare_data_t *)piece->data;
+
+  int32_t x = d->x + d->width, y = d->y + d->height;
+
+  if(dt_dev_pixelpipe_uses_downsampled_input(piece->pipe))
+  {
+    const float scale = roi_in->scale / piece->iscale;
+    roi_in->width += roundf((float)x * scale);
+    roi_in->height += roundf((float)y * scale);
+  }
+  else
+  {
+    roi_in->width += x;
+    roi_in->height += y;
+  }
+}
+
 static int BL(const dt_iop_roi_t *const roi_out, const dt_iop_rawprepare_data_t *const d, const int row,
               const int col)
 {
-  return ((((row + roi_out->y) & 1) << 1) + ((col + roi_out->x) & 1));
+  return ((((row + roi_out->y + d->y) & 1) << 1) + ((col + roi_out->x + d->x) & 1));
 }
 
 void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid, void *ovoid,
@@ -134,24 +221,31 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
 {
   const dt_iop_rawprepare_data_t *const d = (dt_iop_rawprepare_data_t *)piece->data;
 
+  // fprintf(stderr, "roi in %d %d %d %d\n", roi_in->x, roi_in->y, roi_in->width, roi_in->height);
+  // fprintf(stderr, "roi out %d %d %d %d\n", roi_out->x, roi_out->y, roi_out->width, roi_out->height);
+
   if(!dt_dev_pixelpipe_uses_downsampled_input(piece->pipe) && dt_image_filter(&piece->pipe->image))
   { // raw mosaic
+    const int cx = d->x, cy = d->y;
+
 #ifdef _OPENMP
 #pragma omp parallel for default(none) schedule(static) shared(ovoid)
 #endif
     for(int j = 0; j < roi_out->height; j++)
     {
-      const uint16_t *in = ((uint16_t *)ivoid) + (size_t)roi_in->width * j;
+      const uint16_t *in = ((uint16_t *)ivoid) + ((size_t)roi_in->width * (j + cy) + cx);
       float *out = ((float *)ovoid) + (size_t)roi_out->width * j;
 
       int i = 0;
-      int alignment = ((8 - (j * roi_out->width & (8 - 1))) & (8 - 1));
 
-      // process unaligned pixels
-      for(; i < alignment; i++, out++, in++)
+      // FIXME: figure alignment!  !!! replace with for !!!
+      while((!dt_is_aligned(in, 16) || !dt_is_aligned(out, 16)) && (i < roi_out->width))
       {
         const int id = BL(roi_out, d, j, i);
         *out = MAX(0.0f, ((float)(*in)) - d->sub[id]) / d->div[id];
+        i++;
+        in++;
+        out++;
       }
 
       const __m128 sub = _mm_set_ps(d->sub[BL(roi_out, d, j, i + 3)], d->sub[BL(roi_out, d, j, i + 2)],
@@ -191,6 +285,9 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
   else
   { // pre-downsampled buffer that needs black/white scaling
 
+    const float scale = roi_in->scale / piece->iscale;
+    const int csx = d->x * scale, csy = d->y * scale;
+
     const __m128 sub = _mm_load_ps(d->sub), div = _mm_load_ps(d->div);
 
 #ifdef _OPENMP
@@ -198,7 +295,7 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
 #endif
     for(int j = 0; j < roi_out->height; j++)
     {
-      const float *in = ((float *)ivoid) + (size_t)4 * roi_in->width * j;
+      const float *in = ((float *)ivoid) + (size_t)4 * (roi_in->width * (j + csy) + csx);
       float *out = ((float *)ovoid) + (size_t)4 * roi_out->width * j;
 
       // process aligned pixels with SSE
@@ -228,14 +325,21 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_
   cl_int err = -999;
 
   int kernel = -1;
+  int cx = -1;
+  int cy = -1;
 
   if(!dt_dev_pixelpipe_uses_downsampled_input(piece->pipe) && dt_image_filter(&piece->pipe->image))
   {
     kernel = gd->kernel_rawprepare_1f;
+    cx = d->x;
+    cy = d->y;
   }
   else
   {
     kernel = gd->kernel_rawprepare_4f;
+    const float scale = roi_in->scale / piece->iscale;
+    cx = d->x * scale;
+    cy = d->y * scale;
   }
 
   dev_sub = dt_opencl_copy_host_to_device_constant(devid, sizeof(float) * 4, d->sub);
@@ -252,10 +356,12 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_
   dt_opencl_set_kernel_arg(devid, kernel, 1, sizeof(cl_mem), (void *)&dev_out);
   dt_opencl_set_kernel_arg(devid, kernel, 2, sizeof(int), (void *)&(width));
   dt_opencl_set_kernel_arg(devid, kernel, 3, sizeof(int), (void *)&(height));
-  dt_opencl_set_kernel_arg(devid, kernel, 4, sizeof(cl_mem), (void *)&dev_sub);
-  dt_opencl_set_kernel_arg(devid, kernel, 5, sizeof(cl_mem), (void *)&dev_div);
-  dt_opencl_set_kernel_arg(devid, kernel, 6, sizeof(uint32_t), (void *)&roi_out->x);
-  dt_opencl_set_kernel_arg(devid, kernel, 7, sizeof(uint32_t), (void *)&roi_out->y);
+  dt_opencl_set_kernel_arg(devid, kernel, 4, sizeof(int), (void *)&cx);
+  dt_opencl_set_kernel_arg(devid, kernel, 5, sizeof(int), (void *)&cy);
+  dt_opencl_set_kernel_arg(devid, kernel, 6, sizeof(cl_mem), (void *)&dev_sub);
+  dt_opencl_set_kernel_arg(devid, kernel, 7, sizeof(cl_mem), (void *)&dev_div);
+  dt_opencl_set_kernel_arg(devid, kernel, 8, sizeof(uint32_t), (void *)&roi_out->x);
+  dt_opencl_set_kernel_arg(devid, kernel, 9, sizeof(uint32_t), (void *)&roi_out->y);
   err = dt_opencl_enqueue_kernel_2d(devid, kernel, sizes);
   if(err != CL_SUCCESS) goto error;
 
@@ -277,6 +383,11 @@ void commit_params(dt_iop_module_t *self, const dt_iop_params_t *const params, d
 {
   const dt_iop_rawprepare_params_t *const p = (dt_iop_rawprepare_params_t *)params;
   dt_iop_rawprepare_data_t *d = (dt_iop_rawprepare_data_t *)piece->data;
+
+  d->x = p->x;
+  d->y = p->y;
+  d->width = p->width;
+  d->height = p->height;
 
   if(!dt_dev_pixelpipe_uses_downsampled_input(piece->pipe) && dt_image_filter(&piece->pipe->image))
   {
@@ -329,7 +440,11 @@ void reload_defaults(dt_iop_module_t *self)
 
   const dt_image_t *const image = &(self->dev->image_storage);
 
-  tmp = (dt_iop_rawprepare_params_t){.raw_black_level_separate[0] = image->raw_black_level_separate[0],
+  tmp = (dt_iop_rawprepare_params_t){.x = image->crop_x,
+                                     .y = image->crop_y,
+                                     .width = image->crop_width,
+                                     .height = image->crop_height,
+                                     .raw_black_level_separate[0] = image->raw_black_level_separate[0],
                                      .raw_black_level_separate[1] = image->raw_black_level_separate[1],
                                      .raw_black_level_separate[2] = image->raw_black_level_separate[2],
                                      .raw_black_level_separate[3] = image->raw_black_level_separate[3],

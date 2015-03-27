@@ -198,16 +198,30 @@ dt_imageio_retval_t dt_imageio_open_rawspeed(dt_image_t *img, const char *filena
         iPoint2D tl_margin = r->getCropOffset();
         for(int i = 0; i < 6; ++i)
           for(int j = 0; j < 6; ++j)
+          {
+            img->xtrans_uncropped[j][i] = r->cfa.getColorAt(i % 6, j % 6);
             img->xtrans[j][i] = r->cfa.getColorAt((i + tl_margin.x) % 6, (j + tl_margin.y) % 6);
+          }
       }
     }
 
-    img->width = r->dim.x;
-    img->height = r->dim.y;
+    // dimensions of uncropped image
+    iPoint2D dimUncropped = r->getUncroppedDim();
+    img->width = dimUncropped.x;
+    img->height = dimUncropped.y;
 
-    /* needed in exposure iop for Deflicker */
-    img->raw_black_level = r->blackLevel;
-    img->raw_white_point = r->whitePoint;
+    // dimensions of cropped image
+    iPoint2D dimCropped = r->dim;
+
+    // crop - Top,Left corner
+    iPoint2D cropTL = r->getCropOffset();
+    img->crop_x = cropTL.x;
+    img->crop_y = cropTL.y;
+
+    // crop - Bottom,Right corner
+    iPoint2D cropBR = dimUncropped - dimCropped - cropTL;
+    img->crop_width = cropBR.x;
+    img->crop_height = cropBR.y;
 
     img->fuji_rotation_pos = r->metadata.fujiRotationPos;
     img->pixel_aspect_ratio = (float)r->metadata.pixelAspectRatio;
@@ -218,8 +232,25 @@ dt_imageio_retval_t dt_imageio_open_rawspeed(dt_image_t *img, const char *filena
     void *buf = dt_mipmap_cache_alloc(mbuf, img);
     if(!buf) return DT_IMAGEIO_CACHE_FULL;
 
-    dt_imageio_flip_buffers((char *)buf, (char *)r->getData(), r->getBpp(), r->dim.x, r->dim.y, r->dim.x,
-                            r->dim.y, r->pitch, ORIENTATION_NONE);
+    /*
+     * since we do not want to crop black borders at this stage,
+     * and we do not want to rotate image, we can just use memcpy,
+     * as it is faster than dt_imageio_flip_buffers, but only if
+     * buffer sizes are equal,
+     * (from Klaus: r->pitch may differ from DT pitch (line to line spacing))
+     * else fallback to generic dt_imageio_flip_buffers()
+     */
+    const size_t bufSize_mipmap = (size_t)img->width * img->height * img->bpp;
+    const size_t bufSize_rawspeed = (size_t)r->pitch * dimUncropped.y;
+    if(bufSize_mipmap == bufSize_rawspeed)
+    {
+      memcpy(buf, r->getDataUncropped(0, 0), bufSize_mipmap);
+    }
+    else
+    {
+      dt_imageio_flip_buffers((char *)buf, (char *)r->getDataUncropped(0, 0), r->getBpp(), dimUncropped.x,
+                              dimUncropped.y, dimUncropped.x, dimUncropped.y, r->pitch, ORIENTATION_NONE);
+    }
   }
   catch(const std::exception &exc)
   {

@@ -31,37 +31,41 @@ BL(const int row, const int col)
 kernel void
 rawprepare_1f(read_only image2d_t in, write_only image2d_t out,
               const int width, const int height,
+              const int cx, const int cy,
               global const float *sub, global const float *div,
               const int rx, const int ry)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
 
-  if(x >= width || y >= height) return;
+  if(x < cx || y < cy) return;
+  if(x >= width + cx || y >= height + cy) return;
 
   const float pixel = read_imageui(in, sampleri, (int2)(x, y)).x;
 
-  const int id = BL(ry+y, rx+x);
+  const int id = BL(ry+cy+y, rx+cx+x);
   const float pixel_scaled = max(0.0f, (pixel - sub[id])) / div[id];
 
-  write_imagef(out, (int2)(x, y), (float4)(pixel_scaled, 0.0f, 0.0f, 0.0f));
+  write_imagef(out, (int2)(x-cx, y-cy), (float4)(pixel_scaled, 0.0f, 0.0f, 0.0f));
 }
 
 kernel void
 rawprepare_4f(read_only image2d_t in, write_only image2d_t out,
               const int width, const int height,
+              const int cx, const int cy,
               global const float *black, global const float *div)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
 
-  if(x >= width || y >= height) return;
+  if(x < cx || y < cy) return;
+  if(x >= width + cx || y >= height + cy) return;
 
   float4 pixel = read_imagef(in, sampleri, (int2)(x, y));
   pixel.xyz = (pixel.xyz - black[0]) / div[0];
   pixel.xyz = max(0.0f, pixel.xyz);
 
-  write_imagef(out, (int2)(x, y), pixel);
+  write_imagef(out, (int2)(x-cx, y-cy), pixel);
 }
 
 kernel void
