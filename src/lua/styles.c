@@ -34,8 +34,8 @@ static int style_gc(lua_State *L)
 {
   dt_style_t style;
   luaA_to(L, dt_style_t, &style, -1);
-  free(style.name);
-  free(style.description);
+  g_free(style.name);
+  g_free(style.description);
   return 0;
 }
 
@@ -155,7 +155,7 @@ static int style_item_tostring(lua_State *L)
 static int style_item_gc(lua_State *L)
 {
   dt_style_item_t *item = luaL_checkudata(L, -1, "dt_style_item_t");
-  free(item->name);
+  g_free(item->name);
   free(item->params);
   free(item->blendop_params);
   return 0;
@@ -236,9 +236,11 @@ int dt_lua_style_create_from_image(lua_State *L)
     if(!strcmp(data->name, newname))
     {
       luaA_push(L, dt_style_t, data);
+      g_free(data);
+      style_list = g_list_delete_link(style_list, style_list);
     }
-    style_list = g_list_delete_link(style_list, style_list);
   }
+  g_list_free_full(style_list, dt_style_free); // deal with what's left
   return 1;
 }
 
