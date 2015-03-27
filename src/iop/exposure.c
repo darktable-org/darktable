@@ -263,10 +263,10 @@ static int compute_correction(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *pie
 
   *correction = NAN;
 
-  uint32_t total = histogram_stats->ch * histogram_stats->pixels;
+  const size_t total = (size_t)histogram_stats->ch * histogram_stats->pixels;
 
-  float thr = (total * d->deflicker_percentile / 100.0f) - 2; // 50% => median; allow up to 2 stuck pixels
-  uint32_t n = 0;
+  const float thr = (float)total * d->deflicker_percentile / 100.0f;
+  size_t n = 0;
   uint32_t raw = 0;
   gboolean found = FALSE;
 
@@ -284,8 +284,9 @@ static int compute_correction(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *pie
 
   if(found)
   {
-    float ev = raw_to_ev(raw, self->dev->image_storage.raw_black_level + d->black,
-                         self->dev->image_storage.raw_white_point);
+    // FIXME: get those from rawprepare IOP somehow !!!
+    const float ev
+        = raw_to_ev(raw, self->dev->image_storage.raw_black_level, self->dev->image_storage.raw_white_point);
     *correction = d->deflicker_target_level - ev;
 
     return 0;
