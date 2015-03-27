@@ -73,6 +73,18 @@ void dt_style_free(gpointer data)
   g_free(style);
 }
 
+void dt_style_item_free(gpointer data)
+{
+  dt_style_item_t *item = (dt_style_item_t *)data;
+  g_free(item->name);
+  free(item->params);
+  free(item->blendop_params);
+  item->name = NULL;
+  item->params = NULL;
+  item->blendop_params = NULL;
+  free(item);
+}
+
 static gboolean _apply_style_shortcut_callback(GtkAccelGroup *accel_group, GObject *acceleratable,
                                                guint keyval, GdkModifierType modifier, gpointer data)
 {
@@ -641,7 +653,7 @@ GList *dt_styles_get_item_list(const char *name, gboolean params, int imgid)
     while(sqlite3_step(stmt) == SQLITE_ROW)
     {
       char name[512] = { 0 };
-      dt_style_item_t *item = g_malloc(sizeof(dt_style_item_t));
+      dt_style_item_t *item = calloc(1, sizeof(dt_style_item_t));
 
       if(sqlite3_column_type(stmt, 0) == SQLITE_NULL)
         item->num = -1;
@@ -707,22 +719,19 @@ GList *dt_styles_get_item_list(const char *name, gboolean params, int imgid)
 char *dt_styles_get_item_list_as_string(const char *name)
 {
   GList *items = dt_styles_get_item_list(name, FALSE, -1);
-  if(items)
-  {
-    GList *names = NULL;
-    do
-    {
-      dt_style_item_t *item = (dt_style_item_t *)items->data;
-      names = g_list_append(names, g_strdup(item->name));
-      g_free(item->name);
-      g_free(item);
-    } while((items = g_list_next(items)));
+  if(items == NULL) return NULL;
 
-    char *result = dt_util_glist_to_str("\n", names);
-    g_list_free_full(names, g_free);
-    return result;
-  }
-  return NULL;
+  GList *names = NULL;
+  do
+  {
+    dt_style_item_t *item = (dt_style_item_t *)items->data;
+    names = g_list_append(names, g_strdup(item->name));
+  } while((items = g_list_next(items)));
+
+  char *result = dt_util_glist_to_str("\n", names);
+  g_list_free_full(names, g_free);
+  g_list_free_full(items, dt_style_item_free);
+  return result;
 }
 
 GList *dt_styles_get_list(const char *filter)

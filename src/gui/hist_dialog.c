@@ -187,10 +187,8 @@ int dt_gui_hist_dialog_new(dt_gui_hist_dialog_t *d, int imgid, gboolean iscopy)
                          iscopy ? TRUE : _gui_is_set(d->selops, item->num), DT_HIST_ITEMS_COL_NAME,
                          item->name, DT_HIST_ITEMS_COL_NUM, (guint)item->num, -1);
 
-      g_free(item->op);
-      g_free(item->name);
-      g_free(item);
     } while((items = g_list_next(items)));
+    g_list_free_full(items, dt_history_item_free);
   }
   else
   {
