@@ -494,13 +494,13 @@ void *dt_control_expose(void *voidptr)
   if(darktable.control->log_ack != darktable.control->log_pos)
   {
     cairo_select_font_face(cr, "sans-serif", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_BOLD);
-    const float fontsize = 14;
+    const float fontsize = DT_PIXEL_APPLY_DPI(14);
     cairo_set_font_size(cr, fontsize);
     cairo_text_extents_t ext;
     cairo_text_extents(cr, darktable.control->log_message[darktable.control->log_ack], &ext);
-    const float pad = 20.0f, xc = width / 2.0;
-    const float yc = height * 0.85 + 10, wd = pad + ext.width * .5f;
-    float rad = 14;
+    const float pad = DT_PIXEL_APPLY_DPI(20.0f), xc = width / 2.0;
+    const float yc = height * 0.85 + DT_PIXEL_APPLY_DPI(10), wd = pad + ext.width * .5f;
+    float rad = DT_PIXEL_APPLY_DPI(14);
     cairo_set_line_width(cr, 1.);
     cairo_move_to(cr, xc - wd, yc + rad);
     for(int k = 0; k < 5; k++)
