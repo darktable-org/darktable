@@ -38,12 +38,34 @@
 
 DT_MODULE_INTROSPECTION(3, dt_iop_demosaic_params_t)
 
+#define DEMOSAIC_XTRANS 1024 // masks for non-Bayer demosaic ops
+
+typedef enum dt_iop_demosaic_method_t
+{
+  // methods for Bayer images
+  DT_IOP_DEMOSAIC_PPG = 0,
+  DT_IOP_DEMOSAIC_AMAZE = 1,
+  DT_IOP_DEMOSAIC_VNG4 = 2,
+  // methods for x-trans images
+  DT_IOP_DEMOSAIC_VNG = DEMOSAIC_XTRANS | 0,
+  DT_IOP_DEMOSAIC_MARKESTEIJN = DEMOSAIC_XTRANS | 1,
+  DT_IOP_DEMOSAIC_MARKESTEIJN_3 = DEMOSAIC_XTRANS | 2
+} dt_iop_demosaic_method_t;
+
+typedef enum dt_iop_demosaic_greeneq_t
+{
+  DT_IOP_GREEN_EQ_NO = 0,
+  DT_IOP_GREEN_EQ_LOCAL = 1,
+  DT_IOP_GREEN_EQ_FULL = 2,
+  DT_IOP_GREEN_EQ_BOTH = 3
+} dt_iop_demosaic_greeneq_t;
+
 typedef struct dt_iop_demosaic_params_t
 {
-  /*dt_iop_demosaic_greeneq_t*/ uint32_t green_eq;
+  dt_iop_demosaic_greeneq_t green_eq;
   float median_thrs;
   uint32_t color_smoothing;
-  /*dt_iop_demosaic_method_t*/ uint32_t demosaicing_method;
+  dt_iop_demosaic_method_t demosaicing_method;
   uint32_t yet_unused_data_specific_to_demosaicing_method;
 } dt_iop_demosaic_params_t;
 
@@ -80,28 +102,6 @@ typedef struct dt_iop_demosaic_data_t
   uint32_t yet_unused_data_specific_to_demosaicing_method;
   float median_thrs;
 } dt_iop_demosaic_data_t;
-
-#define DEMOSAIC_XTRANS 1024 // masks for non-Bayer demosaic ops
-
-typedef enum dt_iop_demosaic_method_t
-{
-  // methods for Bayer images
-  DT_IOP_DEMOSAIC_PPG = 0,
-  DT_IOP_DEMOSAIC_AMAZE = 1,
-  DT_IOP_DEMOSAIC_VNG4 = 2,
-  // methods for x-trans images
-  DT_IOP_DEMOSAIC_VNG = DEMOSAIC_XTRANS | 0,
-  DT_IOP_DEMOSAIC_MARKESTEIJN = DEMOSAIC_XTRANS | 1,
-  DT_IOP_DEMOSAIC_MARKESTEIJN_3 = DEMOSAIC_XTRANS | 2
-} dt_iop_demosaic_method_t;
-
-typedef enum dt_iop_demosaic_greeneq_t
-{
-  DT_IOP_GREEN_EQ_NO = 0,
-  DT_IOP_GREEN_EQ_LOCAL = 1,
-  DT_IOP_GREEN_EQ_FULL = 2,
-  DT_IOP_GREEN_EQ_BOTH = 3
-} dt_iop_demosaic_greeneq_t;
 
 static void amaze_demosaic_RT(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
                               const float *const in, float *out, const dt_iop_roi_t *const roi_in,
