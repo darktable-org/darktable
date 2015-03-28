@@ -38,8 +38,11 @@
 #define MAX_PROFILES 30
 #define NUM_BUCKETS 4
 
-#define MODE_NLMEANS 0
-#define MODE_WAVELETS 1
+typedef enum dt_iop_denoiseprofile_mode_t
+{
+  MODE_NLMEANS = 0,
+  MODE_WAVELETS = 1
+} dt_iop_denoiseprofile_mode_t;
 
 // this is the version of the modules parameters,
 // and includes version information about compile-time dt
@@ -50,7 +53,7 @@ typedef struct dt_iop_denoiseprofile_params_t
   float radius;     // search radius
   float strength;   // noise level after equalization
   float a[3], b[3]; // fit for poissonian-gaussian noise per color channel.
-  uint32_t mode;    // switch between nlmeans and wavelets
+  dt_iop_denoiseprofile_mode_t mode; // switch between nlmeans and wavelets
 } dt_iop_denoiseprofile_params_t;
 
 typedef struct dt_iop_denoiseprofile_gui_data_t
