@@ -542,11 +542,11 @@ void *dt_control_expose(void *voidptr)
   if(darktable.control->log_busy > 0)
   {
     cairo_select_font_face(cr, "sans-serif", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_BOLD);
-    const float fontsize = 14;
+    const float fontsize = DT_PIXEL_APPLY_DPI(14);
     cairo_set_font_size(cr, fontsize);
     cairo_text_extents_t ext;
     cairo_text_extents(cr, _("working.."), &ext);
-    const float xc = width / 2.0, yc = height * 0.85 - 30, wd = ext.width * .5f;
+    const float xc = width / 2.0, yc = height * 0.85 - DT_PIXEL_APPLY_DPI(30), wd = ext.width * .5f;
     cairo_move_to(cr, xc - wd, yc + 1. / 3. * fontsize);
     cairo_text_path(cr, _("working.."));
     cairo_set_source_rgb(cr, 0.7, 0.7, 0.7);
