@@ -1168,9 +1168,9 @@ void dt_masks_clear_form_gui(dt_develop_t *dev)
 {
   g_list_free(dev->form_gui->points);
   dev->form_gui->points = NULL;
-  free(dev->form_gui->guipoints);
+  dt_masks_dynbuf_free(dev->form_gui->guipoints);
   dev->form_gui->guipoints = NULL;
-  free(dev->form_gui->guipoints_payload);
+  dt_masks_dynbuf_free(dev->form_gui->guipoints_payload);
   dev->form_gui->guipoints_payload = NULL;
   dev->form_gui->guipoints_count = 0;
   dev->form_gui->pipe_hash = dev->form_gui->formid = 0;

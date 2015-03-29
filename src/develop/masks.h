@@ -163,6 +163,16 @@ typedef struct dt_masks_form_gui_points_t
   gboolean clockwise;
 } dt_masks_form_gui_points_t;
 
+/** structure for dynamic buffers */
+typedef struct dt_masks_dynbuf_t
+{
+  float *buffer;
+  char tag[128];
+  size_t pos;
+  size_t size;
+} dt_masks_dynbuf_t;
+
+
 /** structure used to display a form */
 typedef struct dt_masks_form_gui_t
 {
@@ -170,7 +180,7 @@ typedef struct dt_masks_form_gui_t
   GList *points; // list of dt_masks_form_gui_points_t
 
   // points used to sample mouse moves
-  float *guipoints, *guipoints_payload;
+  dt_masks_dynbuf_t *guipoints, *guipoints_payload;
   int guipoints_count;
 
   // values for mouse positions, etc...
@@ -300,6 +310,97 @@ int dt_masks_form_duplicate(dt_develop_t *dev, int formid);
 /** utils functions */
 int dt_masks_point_in_form_exact(float x, float y, float *points, int points_start, int points_count);
 int dt_masks_point_in_form_near(float x, float y, float *points, int points_start, int points_count, float distance, int *near);
+
+
+/** code for dynamic handling of intermediate buffers */
+static inline
+dt_masks_dynbuf_t *dt_masks_dynbuf_init(size_t size, const char *tag)
+{
+  assert(size > 0);
+  dt_masks_dynbuf_t *a = (dt_masks_dynbuf_t *)calloc(1, sizeof(dt_masks_dynbuf_t));
+
+  if(a != NULL)
+  {
+    strncpy(a->tag, tag, sizeof(a->tag)); //only for debugging purposes
+    a->tag[sizeof(a->tag)-1] = '\0';
+    a->pos = 0;
+    a->size = size;
+    a->buffer = (float *)malloc(size * sizeof(float));
+    dt_print(DT_DEBUG_MASKS, "[masks dynbuf '%s'] with initial size %lu (is %p)\n", a->tag,
+             (unsigned long)a->size, a->buffer);
+    if(a->buffer == NULL)
+    {
+      free(a);
+      a = NULL;
+    }
+  }
+  return a;
+}
+
+static inline
+void dt_masks_dynbuf_add(dt_masks_dynbuf_t *a, float value)
+{
+  assert(a != NULL);
+  assert(a->pos <= a->size);
+  if(a->pos == a->size)
+  {
+    float *oldbuffer = a->buffer;
+    a->size *= 2;
+    a->buffer = (float *)realloc(a->buffer, a->size * sizeof(float));
+    dt_print(DT_DEBUG_MASKS, "[masks dynbuf '%s'] grows to size %lu (is %p, was %p)\n", a->tag,
+             (unsigned long)a->size, a->buffer, oldbuffer);
+    if(a->buffer == NULL)
+    {
+      // not much we can do here except of emitting an error message
+      fprintf(stderr, "critical: out of memory for dynbuf '%s' with size request %lu!\n", a->tag,
+              (unsigned long)a->size);
+    }
+  }
+  a->buffer[a->pos++] = value;
+}
+
+static inline
+float dt_masks_dynbuf_get(dt_masks_dynbuf_t *a, int offset)
+{
+  assert(a != NULL);
+  // offset: must be negative distance relative to end of buffer or zero
+  assert(offset <= 0 && a->pos + offset >= 0);
+  return (a->buffer[a->pos + offset]);
+}
+
+static inline
+void dt_masks_dynbuf_set(dt_masks_dynbuf_t *a, int offset, float value)
+{
+  assert(a != NULL);
+  // offset: must be negative distance relative to end of buffer or zero
+  assert(offset <= 0 && a->pos + offset >= 0);
+  a->buffer[a->pos + offset] = value;
+}
+
+static inline
+float *dt_masks_dynbuf_buffer(dt_masks_dynbuf_t *a)
+{
+  assert(a != NULL);
+  return a->buffer;
+}
+
+static inline
+size_t dt_masks_dynbuf_position(dt_masks_dynbuf_t *a)
+{
+  assert(a != NULL);
+  return a->pos;
+}
+
+static inline
+void dt_masks_dynbuf_free(dt_masks_dynbuf_t *a)
+{
+  if(a == NULL) return;
+  dt_print(DT_DEBUG_MASKS, "[masks dynbuf '%s'] freed (was %p)\n", a->tag,
+          a->buffer);
+  free(a->buffer);
+  free(a);
+}
+
 #endif
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
