@@ -63,7 +63,13 @@
 #define BLOCKSIZE 64 /* maximum blocksize. must be a power of 2 and will be automatically reduced if needed  \
                         */
 
-DT_MODULE_INTROSPECTION(4, dt_iop_shadhi_params_t)
+DT_MODULE_INTROSPECTION(5, dt_iop_shadhi_params_t)
+
+typedef enum dt_iop_shadhi_algo_t
+{
+  SHADHI_ALGO_GAUSSIAN,
+  SHADHI_ALGO_BILATERAL
+} dt_iop_shadhi_algo_t;
 
 /* legacy version 1 params */
 typedef struct dt_iop_shadhi_params1_t
@@ -105,6 +111,21 @@ typedef struct dt_iop_shadhi_params3_t
   unsigned int flags;
 } dt_iop_shadhi_params3_t;
 
+typedef struct dt_iop_shadhi_params4_t
+{
+  dt_gaussian_order_t order;
+  float radius;
+  float shadows;
+  float whitepoint;
+  float highlights;
+  float reserved2;
+  float compress;
+  float shadows_ccorrect;
+  float highlights_ccorrect;
+  unsigned int flags;
+  float low_approximation;
+} dt_iop_shadhi_params4_t;
+
 typedef struct dt_iop_shadhi_params_t
 {
   dt_gaussian_order_t order;
@@ -118,8 +139,8 @@ typedef struct dt_iop_shadhi_params_t
   float highlights_ccorrect;
   unsigned int flags;
   float low_approximation;
+  dt_iop_shadhi_algo_t shadhi_algo;
 } dt_iop_shadhi_params_t;
-
 
 typedef struct dt_iop_shadhi_gui_data_t
 {
@@ -130,7 +151,7 @@ typedef struct dt_iop_shadhi_gui_data_t
   GtkWidget *compress;
   GtkWidget *shadows_ccorrect;
   GtkWidget *highlights_ccorrect;
-  GtkWidget *bilat;
+  GtkWidget *shadhi_algo;
 } dt_iop_shadhi_gui_data_t;
 
 typedef struct dt_iop_shadhi_data_t
@@ -145,6 +166,7 @@ typedef struct dt_iop_shadhi_data_t
   float highlights_ccorrect;
   unsigned int flags;
   float low_approximation;
+  dt_iop_shadhi_algo_t shadhi_algo;
 } dt_iop_shadhi_data_t;
 
 typedef struct dt_iop_shadhi_global_data_t
@@ -171,12 +193,12 @@ int groups()
 int legacy_params(dt_iop_module_t *self, const void *const old_params, const int old_version,
                   void *new_params, const int new_version)
 {
-  if(old_version == 1 && new_version == 4)
+  if(old_version == 1 && new_version == 5)
   {
     const dt_iop_shadhi_params1_t *old = old_params;
     dt_iop_shadhi_params_t *new = new_params;
     new->order = old->order;
-    new->radius = old->radius;
+    new->radius = fabs(old->radius);
     new->shadows = 0.5f * old->shadows;
     new->whitepoint = old->reserved1;
     new->reserved2 = old->reserved2;
@@ -186,14 +208,15 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
     new->shadows_ccorrect = 100.0f;
     new->highlights_ccorrect = 0.0f;
     new->low_approximation = 0.01f;
+    new->shadhi_algo = old->radius < 0.0f ? SHADHI_ALGO_BILATERAL : SHADHI_ALGO_GAUSSIAN;
     return 0;
   }
-  else if(old_version == 2 && new_version == 4)
+  else if(old_version == 2 && new_version == 5)
   {
     const dt_iop_shadhi_params2_t *old = old_params;
     dt_iop_shadhi_params_t *new = new_params;
     new->order = old->order;
-    new->radius = old->radius;
+    new->radius = fabs(old->radius);
     new->shadows = old->shadows;
     new->whitepoint = old->reserved1;
     new->reserved2 = old->reserved2;
@@ -203,14 +226,15 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
     new->highlights_ccorrect = old->highlights_ccorrect;
     new->flags = 0;
     new->low_approximation = 0.01f;
+    new->shadhi_algo = old->radius < 0.0f ? SHADHI_ALGO_BILATERAL : SHADHI_ALGO_GAUSSIAN;
     return 0;
   }
-  else if(old_version == 3 && new_version == 4)
+  else if(old_version == 3 && new_version == 5)
   {
     const dt_iop_shadhi_params3_t *old = old_params;
     dt_iop_shadhi_params_t *new = new_params;
     new->order = old->order;
-    new->radius = old->radius;
+    new->radius = fabs(old->radius);
     new->shadows = old->shadows;
     new->whitepoint = old->reserved1;
     new->reserved2 = old->reserved2;
@@ -220,6 +244,25 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
     new->highlights_ccorrect = old->highlights_ccorrect;
     new->flags = old->flags;
     new->low_approximation = 0.01f;
+    new->shadhi_algo = old->radius < 0.0f ? SHADHI_ALGO_BILATERAL : SHADHI_ALGO_GAUSSIAN;
+    return 0;
+  }
+  else if(old_version == 4 && new_version == 5)
+  {
+    const dt_iop_shadhi_params4_t *old = old_params;
+    dt_iop_shadhi_params_t *new = new_params;
+    new->order = old->order;
+    new->radius = fabs(old->radius);
+    new->shadows = old->shadows;
+    new->whitepoint = old->whitepoint;
+    new->reserved2 = old->reserved2;
+    new->highlights = old->highlights;
+    new->compress = old->compress;
+    new->shadows_ccorrect = old->shadows_ccorrect;
+    new->highlights_ccorrect = old->highlights_ccorrect;
+    new->flags = old->flags;
+    new->low_approximation = old->low_approximation;
+    new->shadhi_algo = old->radius < 0.0f ? SHADHI_ALGO_BILATERAL : SHADHI_ALGO_GAUSSIAN;
     return 0;
   }
   return 1;
@@ -283,9 +326,8 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *
   const int height = roi_out->height;
   const int ch = piece->colors;
 
-  const int use_bilateral = data->radius < 0 ? 1 : 0;
   const int order = data->order;
-  const float radius = fmaxf(0.1f, fabsf(data->radius));
+  const float radius = fmaxf(0.1f, data->radius);
   const float sigma = radius * roi_in->scale / piece->iscale;
   const float shadows = 2.0f * fmin(fmax(-1.0, (data->shadows / 100.0f)), 1.0f);
   const float highlights = 2.0f * fmin(fmax(-1.0, (data->highlights / 100.0f)), 1.0f);
@@ -297,11 +339,11 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *
   const float highlights_ccorrect = (fmin(fmax(0.0f, (data->highlights_ccorrect / 100.0f)), 1.0f) - 0.5f)
                                     * sign(-highlights) + 0.5f;
   const unsigned int flags = data->flags;
-  const int unbound_mask = (use_bilateral && (flags & UNBOUND_BILATERAL))
-                           || (!use_bilateral && (flags & UNBOUND_GAUSSIAN));
+  const int unbound_mask = ((data->shadhi_algo == SHADHI_ALGO_BILATERAL) && (flags & UNBOUND_BILATERAL))
+                           || ((data->shadhi_algo == SHADHI_ALGO_GAUSSIAN) && (flags & UNBOUND_GAUSSIAN));
   const float low_approximation = data->low_approximation;
 
-  if(!use_bilateral)
+  if(data->shadhi_algo == SHADHI_ALGO_GAUSSIAN)
   {
     float Labmax[4] = { 100.0f, 128.0f, 128.0f, 1.0f };
     float Labmin[4] = { 0.0f, -128.0f, -128.0f, 0.0f };
@@ -457,9 +499,8 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   const int height = roi_in->height;
   const int channels = piece->colors;
 
-  const int use_bilateral = d->radius < 0 ? 1 : 0;
   const int order = d->order;
-  const float radius = fmaxf(0.1f, fabsf(d->radius));
+  const float radius = fmaxf(0.1f, d->radius);
   const float sigma = radius * roi_in->scale / piece->iscale;
   const float shadows = 2.0f * fmin(fmax(-1.0f, (d->shadows / 100.0f)), 1.0f);
   const float highlights = 2.0f * fmin(fmax(-1.0f, (d->highlights / 100.0f)), 1.0f);
@@ -472,16 +513,15 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
                                     * sign(-highlights) + 0.5f;
   const float low_approximation = d->low_approximation;
   const unsigned int flags = d->flags;
-  const int unbound_mask = (use_bilateral && (flags & UNBOUND_BILATERAL))
-                           || (!use_bilateral && (flags & UNBOUND_GAUSSIAN));
-
+  const int unbound_mask = ((d->shadhi_algo == SHADHI_ALGO_BILATERAL) && (flags & UNBOUND_BILATERAL))
+                           || ((d->shadhi_algo == SHADHI_ALGO_GAUSSIAN) && (flags & UNBOUND_GAUSSIAN));
 
   size_t sizes[3];
 
   dt_gaussian_cl_t *g = NULL;
   dt_bilateral_cl_t *b = NULL;
 
-  if(!use_bilateral)
+  if(d->shadhi_algo == SHADHI_ALGO_GAUSSIAN)
   {
     float Labmax[4] = { 100.0f, 128.0f, 128.0f, 1.0f };
     float Labmin[4] = { 0.0f, -128.0f, -128.0f, 0.0f };
@@ -562,14 +602,14 @@ void tiling_callback(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t
   const int height = roi_in->height;
   const int channels = piece->colors;
 
-  const float radius = fmax(0.1f, fabs(d->radius));
+  const float radius = fmax(0.1f, d->radius);
   const float sigma = radius * roi_in->scale / piece->iscale;
   const float sigma_r = 100.0f; // does not depend on scale
   const float sigma_s = sigma;
 
   const size_t basebuffer = width * height * channels * sizeof(float);
 
-  if(d->radius < 0.0f)
+  if(d->shadhi_algo == SHADHI_ALGO_BILATERAL)
   {
     // bilateral filter
     tiling->factor = 2.0f + (float)dt_bilateral_memory_use(width, height, sigma_s, sigma_r) / basebuffer;
@@ -601,14 +641,12 @@ static void radius_callback(GtkWidget *slider, gpointer user_data)
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
-static void bilat_callback(GtkWidget *widget, gpointer user_data)
+static void shadhi_algo_callback(GtkWidget *widget, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
+  if(self->dt->gui->reset) return;
   dt_iop_shadhi_params_t *p = (dt_iop_shadhi_params_t *)self->params;
-  if(dt_bauhaus_combobox_get(widget))
-    p->radius = -fabsf(p->radius);
-  else
-    p->radius = fabsf(p->radius);
+  p->shadhi_algo = dt_bauhaus_combobox_get(widget);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
@@ -686,9 +724,10 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
   d->highlights_ccorrect = p->highlights_ccorrect;
   d->flags = p->flags;
   d->low_approximation = p->low_approximation;
+  d->shadhi_algo = p->shadhi_algo;
 
 #ifdef HAVE_OPENCL
-  if(d->radius < 0.0f)
+  if(d->shadhi_algo == SHADHI_ALGO_BILATERAL)
     piece->process_cl_ready = (piece->process_cl_ready && !(darktable.opencl->avoid_atomics));
 #endif
 #endif
@@ -714,8 +753,8 @@ void gui_update(struct dt_iop_module_t *self)
   dt_bauhaus_slider_set(g->shadows, p->shadows);
   dt_bauhaus_slider_set(g->highlights, p->highlights);
   dt_bauhaus_slider_set(g->whitepoint, p->whitepoint);
-  dt_bauhaus_slider_set(g->radius, fabsf(p->radius));
-  dt_bauhaus_combobox_set(g->bilat, p->radius < 0 ? 1 : 0);
+  dt_bauhaus_slider_set(g->radius, p->radius);
+  dt_bauhaus_combobox_set(g->shadhi_algo, p->shadhi_algo);
   dt_bauhaus_slider_set(g->compress, p->compress);
   dt_bauhaus_slider_set(g->shadows_ccorrect, p->shadows_ccorrect);
   dt_bauhaus_slider_set(g->highlights_ccorrect, p->highlights_ccorrect);
@@ -731,7 +770,7 @@ void init(dt_iop_module_t *module)
   module->gui_data = NULL;
   dt_iop_shadhi_params_t tmp
       = (dt_iop_shadhi_params_t){ DT_IOP_GAUSSIAN_ZERO, 100.0f, 50.0f, 0.0f, -50.0f, 0.0f, 50.0f, 100.0f,
-                                  50.0f, UNBOUND_DEFAULT, 0.000001f };
+                                  50.0f, UNBOUND_DEFAULT, 0.000001f, SHADHI_ALGO_GAUSSIAN };
   memcpy(module->params, &tmp, sizeof(dt_iop_shadhi_params_t));
   memcpy(module->default_params, &tmp, sizeof(dt_iop_shadhi_params_t));
 }
@@ -774,10 +813,10 @@ void gui_init(struct dt_iop_module_t *self)
   g->shadows = dt_bauhaus_slider_new_with_range(self, -100.0, 100.0, 2., p->shadows, 2);
   g->highlights = dt_bauhaus_slider_new_with_range(self, -100.0, 100.0, 2., p->highlights, 2);
   g->whitepoint = dt_bauhaus_slider_new_with_range(self, -10.0, 10.0, .2, p->whitepoint, 2);
-  g->bilat = dt_bauhaus_combobox_new(self);
-  dt_bauhaus_widget_set_label(g->bilat, NULL, _("soften with"));
-  dt_bauhaus_combobox_add(g->bilat, _("gaussian"));
-  dt_bauhaus_combobox_add(g->bilat, _("bilateral filter"));
+  g->shadhi_algo = dt_bauhaus_combobox_new(self);
+  dt_bauhaus_widget_set_label(g->shadhi_algo, NULL, _("soften with"));
+  dt_bauhaus_combobox_add(g->shadhi_algo, _("gaussian"));
+  dt_bauhaus_combobox_add(g->shadhi_algo, _("bilateral filter"));
   g->radius = dt_bauhaus_slider_new_with_range(self, 0.1, 200.0, 2., p->radius, 2);
   g->compress = dt_bauhaus_slider_new_with_range(self, 0, 100.0, 2., p->compress, 2);
   g->shadows_ccorrect = dt_bauhaus_slider_new_with_range(self, 0, 100.0, 2., p->shadows_ccorrect, 2);
@@ -800,7 +839,7 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), g->shadows, TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), g->highlights, TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), g->whitepoint, TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(self->widget), g->bilat, TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(self->widget), g->shadhi_algo, TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), g->radius, TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), g->compress, TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), g->shadows_ccorrect, TRUE, TRUE, 0);
@@ -810,7 +849,7 @@ void gui_init(struct dt_iop_module_t *self)
   g_object_set(g->highlights, "tooltip-text", _("correct highlights"), (char *)NULL);
   g_object_set(g->whitepoint, "tooltip-text", _("shift white point"), (char *)NULL);
   g_object_set(g->radius, "tooltip-text", _("spatial extent"), (char *)NULL);
-  g_object_set(g->bilat, "tooltip-text", _("filter to use for softening. bilateral avoids halos"),
+  g_object_set(g->shadhi_algo, "tooltip-text", _("filter to use for softening. bilateral avoids halos"),
                (char *)NULL);
   g_object_set(g->compress, "tooltip-text",
                _("compress the effect on shadows/highlights and\npreserve midtones"), (char *)NULL);
@@ -821,7 +860,7 @@ void gui_init(struct dt_iop_module_t *self)
   g_signal_connect(G_OBJECT(g->highlights), "value-changed", G_CALLBACK(highlights_callback), self);
   g_signal_connect(G_OBJECT(g->whitepoint), "value-changed", G_CALLBACK(whitepoint_callback), self);
   g_signal_connect(G_OBJECT(g->radius), "value-changed", G_CALLBACK(radius_callback), self);
-  g_signal_connect(G_OBJECT(g->bilat), "value-changed", G_CALLBACK(bilat_callback), self);
+  g_signal_connect(G_OBJECT(g->shadhi_algo), "value-changed", G_CALLBACK(shadhi_algo_callback), self);
   g_signal_connect(G_OBJECT(g->compress), "value-changed", G_CALLBACK(compress_callback), self);
   g_signal_connect(G_OBJECT(g->shadows_ccorrect), "value-changed", G_CALLBACK(shadows_ccorrect_callback), self);
   g_signal_connect(G_OBJECT(g->highlights_ccorrect), "value-changed", G_CALLBACK(highlights_ccorrect_callback), self);
