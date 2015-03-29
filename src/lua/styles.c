@@ -24,17 +24,9 @@
 #include "common/debug.h"
 
 
-static void free_style_item(void *d)
-{
-  dt_style_item_t *item = d;
-  free(item->name);
-  free(item->params);
-  free(item->blendop_params);
-  free(item);
-}
-
 // can't use glist functions we need a list of int and glist can only produce a list of int*
 static GList *style_item_table_to_id_list(lua_State *L, int index);
+
 /////////////////////////
 // dt_style_t
 /////////////////////////
@@ -42,8 +34,8 @@ static int style_gc(lua_State *L)
 {
   dt_style_t style;
   luaA_to(L, dt_style_t, &style, -1);
-  free(style.name);
-  free(style.description);
+  g_free(style.name);
+  g_free(style.description);
   return 0;
 }
 
@@ -93,7 +85,7 @@ static int style_getnumber(lua_State *L)
     return luaL_error(L, "incorrect index for style");
   }
   items = g_list_remove(items, item);
-  g_list_free_full(items, free_style_item);
+  g_list_free_full(items, dt_style_item_free);
   luaA_push(L, dt_style_item_t, item);
   free(item);
   return 1;
@@ -107,7 +99,7 @@ static int style_length(lua_State *L)
   luaA_to(L, dt_style_t, &style, -1);
   GList *items = dt_styles_get_item_list(style.name, true, -1);
   lua_pushnumber(L, g_list_length(items));
-  g_list_free_full(items, free_style_item);
+  g_list_free_full(items, dt_style_item_free);
   return 1;
 }
 
@@ -163,7 +155,7 @@ static int style_item_tostring(lua_State *L)
 static int style_item_gc(lua_State *L)
 {
   dt_style_item_t *item = luaL_checkudata(L, -1, "dt_style_item_t");
-  free(item->name);
+  g_free(item->name);
   free(item->params);
   free(item->blendop_params);
   return 0;
@@ -244,9 +236,11 @@ int dt_lua_style_create_from_image(lua_State *L)
     if(!strcmp(data->name, newname))
     {
       luaA_push(L, dt_style_t, data);
+      g_free(data);
+      style_list = g_list_delete_link(style_list, style_list);
     }
-    style_list = g_list_delete_link(style_list, style_list);
   }
+  g_list_free_full(style_list, dt_style_free); // deal with what's left
   return 1;
 }
 

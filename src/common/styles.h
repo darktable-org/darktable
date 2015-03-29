@@ -47,6 +47,10 @@ typedef struct dt_style_item_t
   dt_develop_blend_params_t *blendop_params;
 } dt_style_item_t;
 
+/** helpers that free a style or style_item. can be used in g_list_free_full() */
+void dt_style_free(gpointer data);
+void dt_style_item_free(gpointer data);
+
 /** creates a new style from specified image, items are the history stack number of items to include in style
  */
 gboolean dt_styles_create_from_image(const char *name, const char *description, int32_t imgid, GList *items);

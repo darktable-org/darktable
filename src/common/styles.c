@@ -63,6 +63,28 @@ typedef struct
   gboolean in_plugin;
 } StyleData;
 
+void dt_style_free(gpointer data)
+{
+  dt_style_t *style = (dt_style_t *)data;
+  g_free(style->name);
+  g_free(style->description);
+  style->name = NULL;
+  style->description = NULL;
+  g_free(style);
+}
+
+void dt_style_item_free(gpointer data)
+{
+  dt_style_item_t *item = (dt_style_item_t *)data;
+  g_free(item->name);
+  free(item->params);
+  free(item->blendop_params);
+  item->name = NULL;
+  item->params = NULL;
+  item->blendop_params = NULL;
+  free(item);
+}
+
 static gboolean _apply_style_shortcut_callback(GtkAccelGroup *accel_group, GObject *acceleratable,
                                                guint keyval, GdkModifierType modifier, gpointer data)
 {
@@ -292,6 +314,8 @@ void dt_styles_update(const char *name, const char *newname, const char *newdesc
     dt_accel_connect_global(tmp_accel, closure);
   }
 
+  dt_control_signal_raise(darktable.signals, DT_SIGNAL_STYLE_CHANGED);
+
   g_free(desc);
 }
 
@@ -369,6 +393,7 @@ void dt_styles_create_from_style(const char *name, const char *newname, const ch
                              _destroy_style_shortcut_callback);
     dt_accel_connect_global(tmp_accel, closure);
     dt_control_log(_("style named '%s' successfully created"), newname);
+    dt_control_signal_raise(darktable.signals, DT_SIGNAL_STYLE_CHANGED);
   }
 }
 
@@ -436,6 +461,7 @@ gboolean dt_styles_create_from_image(const char *name, const char *description, 
     closure = g_cclosure_new(G_CALLBACK(_apply_style_shortcut_callback), tmp_name,
                              _destroy_style_shortcut_callback);
     dt_accel_connect_global(tmp_accel, closure);
+    dt_control_signal_raise(darktable.signals, DT_SIGNAL_STYLE_CHANGED);
     return TRUE;
   }
   return FALSE;
@@ -582,6 +608,7 @@ void dt_styles_delete_by_name(const char *name)
     char tmp_accel[1024];
     snprintf(tmp_accel, sizeof(tmp_accel), C_("accel", "styles/apply %s"), name);
     dt_accel_deregister_global(tmp_accel);
+    dt_control_signal_raise(darktable.signals, DT_SIGNAL_STYLE_CHANGED);
   }
 }
 
@@ -626,7 +653,7 @@ GList *dt_styles_get_item_list(const char *name, gboolean params, int imgid)
     while(sqlite3_step(stmt) == SQLITE_ROW)
     {
       char name[512] = { 0 };
-      dt_style_item_t *item = g_malloc(sizeof(dt_style_item_t));
+      dt_style_item_t *item = calloc(1, sizeof(dt_style_item_t));
 
       if(sqlite3_column_type(stmt, 0) == SQLITE_NULL)
         item->num = -1;
@@ -692,22 +719,19 @@ GList *dt_styles_get_item_list(const char *name, gboolean params, int imgid)
 char *dt_styles_get_item_list_as_string(const char *name)
 {
   GList *items = dt_styles_get_item_list(name, FALSE, -1);
-  if(items)
-  {
-    GList *names = NULL;
-    do
-    {
-      dt_style_item_t *item = (dt_style_item_t *)items->data;
-      names = g_list_append(names, g_strdup(item->name));
-      g_free(item->name);
-      g_free(item);
-    } while((items = g_list_next(items)));
+  if(items == NULL) return NULL;
 
-    char *result = dt_util_glist_to_str("\n", names);
-    g_list_free_full(names, g_free);
-    return result;
-  }
-  return NULL;
+  GList *names = NULL;
+  do
+  {
+    dt_style_item_t *item = (dt_style_item_t *)items->data;
+    names = g_list_append(names, g_strdup(item->name));
+  } while((items = g_list_next(items)));
+
+  char *result = dt_util_glist_to_str("\n", names);
+  g_list_free_full(names, g_free);
+  g_list_free_full(items, dt_style_item_free);
+  return result;
 }
 
 GList *dt_styles_get_list(const char *filter)
@@ -1106,11 +1130,8 @@ void init_styles_key_accels()
       char tmp_accel[1024];
       snprintf(tmp_accel, sizeof(tmp_accel), C_("accel", "styles/apply %s"), style->name);
       dt_accel_register_global(tmp_accel, 0, 0);
-
-      g_free(style->name);
-      g_free(style->description);
-      g_free(style);
     } while((result = g_list_next(result)) != NULL);
+    g_list_free_full(result, dt_style_free);
   }
 }
 
@@ -1123,18 +1144,16 @@ void connect_styles_key_accels()
     {
       GClosure *closure;
       dt_style_t *style = (dt_style_t *)result->data;
-      closure = g_cclosure_new(G_CALLBACK(_apply_style_shortcut_callback), style->name,
+      closure = g_cclosure_new(G_CALLBACK(_apply_style_shortcut_callback), g_strdup(style->name),
                                _destroy_style_shortcut_callback);
       char tmp_accel[1024];
       snprintf(tmp_accel, sizeof(tmp_accel), C_("accel", "styles/apply %s"), style->name);
       dt_accel_connect_global(tmp_accel, closure);
-
-      // g_free(style->name); freed at closure destruction
-      g_free(style->description);
-      g_free(style);
     } while((result = g_list_next(result)) != NULL);
+    g_list_free_full(result, dt_style_free);
   }
 }
+
 dt_style_t *dt_styles_get_by_name(const char *name)
 {
   sqlite3_stmt *stmt;

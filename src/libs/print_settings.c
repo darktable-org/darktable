@@ -1143,7 +1143,7 @@ gui_init (dt_lib_module_t *self)
   gtk_grid_attach(bds, GTK_WIDGET(d->b_top), 1, 0, 1, 1);
 
   //d->b_left  = gtk_spin_button_new_with_range(0, 10000, 1);
-  g_object_set(bds, "tooltip-text", _("left margin"), (char *)NULL);
+  g_object_set(G_OBJECT(d->b_left), "tooltip-text", _("left margin"), (char *)NULL);
   gtk_grid_attach(bds, GTK_WIDGET(d->b_left), 0, 1, 1, 1);
 
   d->lock_button = GTK_TOGGLE_BUTTON(gtk_toggle_button_new_with_label(_("lock")));
@@ -1285,6 +1285,7 @@ gui_init (dt_lib_module_t *self)
     styles=g_list_next(styles);
   }
   g_free(current_style);
+  g_list_free_full(styles, dt_style_free);
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(d->style), TRUE, TRUE, 0);
   g_object_set(G_OBJECT(d->style), "tooltip-text", _("temporary style to use while printing"), (char *)NULL);
 

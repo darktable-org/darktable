@@ -622,12 +622,138 @@ static int dt_masks_legacy_params_v1_to_v2(dt_develop_t *dev, void *params)
   }
 }
 
+static void dt_masks_legacy_params_v2_to_v3_transform(const dt_image_t *img, float *points)
+{
+  const float w = (float)img->width, h = (float)img->height;
+
+  const float cx = (float)img->crop_x, cy = (float)img->crop_y;
+
+  const float cw = (float)(img->width - img->crop_x - img->crop_width),
+              ch = (float)(img->height - img->crop_y - img->crop_height);
+
+  /*
+   * masks coordinates are normalized, so we need to:
+   * 1. de-normalize them by image original cropped dimensions
+   * 2. un-crop them by adding top-left crop coordinates
+   * 3. normalize them by the image fully uncropped dimensions
+   */
+  points[0] = ((points[0] * cw) + cx) / w;
+  points[1] = ((points[1] * ch) + cy) / h;
+}
+
+static void dt_masks_legacy_params_v2_to_v3_transform_only_rescale(const dt_image_t *img, float *points,
+                                                                   size_t points_count)
+{
+  const float w = (float)img->width, h = (float)img->height;
+
+  const float cw = (float)(img->width - img->crop_x - img->crop_width),
+              ch = (float)(img->height - img->crop_y - img->crop_height);
+
+  /*
+   * masks coordinates are normalized, so we need to:
+   * 1. de-normalize them by minimal of image original cropped dimensions
+   * 2. normalize them by the minimal of image fully uncropped dimensions
+   */
+  for(size_t i = 0; i < points_count; i++) points[i] = ((points[i] * MIN(cw, ch))) / MIN(w, h);
+}
+
+static int dt_masks_legacy_params_v2_to_v3(dt_develop_t *dev, void *params)
+{
+  /*
+   * difference: before v3 images were originally cropped on load
+   * after v3: images are cropped in rawprepare iop.
+   */
+
+  dt_masks_form_t *m = (dt_masks_form_t *)params;
+
+  const dt_image_t *img = &(dev->image_storage);
+
+  if(img->crop_x == 0 && img->crop_y == 0 && img->crop_width == 0 && img->crop_height == 0)
+  {
+    // image has no "raw cropping", we're fine!
+    m->version = 3;
+    return 0;
+  }
+  else
+  {
+    GList *p = g_list_first(m->points);
+
+    if(!p) return 1;
+
+    if(m->type & DT_MASKS_CIRCLE)
+    {
+      dt_masks_point_circle_t *circle = (dt_masks_point_circle_t *)p->data;
+      dt_masks_legacy_params_v2_to_v3_transform(img, circle->center);
+      dt_masks_legacy_params_v2_to_v3_transform_only_rescale(img, &circle->radius, 1);
+      dt_masks_legacy_params_v2_to_v3_transform_only_rescale(img, &circle->border, 1);
+    }
+    else if(m->type & DT_MASKS_PATH)
+    {
+      while(p)
+      {
+        dt_masks_point_path_t *path = (dt_masks_point_path_t *)p->data;
+        dt_masks_legacy_params_v2_to_v3_transform(img, path->corner);
+        dt_masks_legacy_params_v2_to_v3_transform(img, path->ctrl1);
+        dt_masks_legacy_params_v2_to_v3_transform(img, path->ctrl2);
+        dt_masks_legacy_params_v2_to_v3_transform_only_rescale(img, path->border, 2);
+
+        p = g_list_next(p);
+      }
+    }
+    else if(m->type & DT_MASKS_GRADIENT)
+    {
+      dt_masks_point_gradient_t *gradient = (dt_masks_point_gradient_t *)p->data;
+      dt_masks_legacy_params_v2_to_v3_transform(img, gradient->anchor);
+    }
+    else if(m->type & DT_MASKS_ELLIPSE)
+    {
+      dt_masks_point_ellipse_t *ellipse = (dt_masks_point_ellipse_t *)p->data;
+      dt_masks_legacy_params_v2_to_v3_transform(img, ellipse->center);
+      dt_masks_legacy_params_v2_to_v3_transform_only_rescale(img, ellipse->radius, 2);
+      dt_masks_legacy_params_v2_to_v3_transform_only_rescale(img, &ellipse->border, 1);
+    }
+    else if(m->type & DT_MASKS_BRUSH)
+    {
+      while(p)
+      {
+        dt_masks_point_brush_t *brush = (dt_masks_point_brush_t *)p->data;
+        dt_masks_legacy_params_v2_to_v3_transform(img, brush->corner);
+        dt_masks_legacy_params_v2_to_v3_transform(img, brush->ctrl1);
+        dt_masks_legacy_params_v2_to_v3_transform(img, brush->ctrl2);
+        dt_masks_legacy_params_v2_to_v3_transform_only_rescale(img, brush->border, 2);
+
+        p = g_list_next(p);
+      }
+    }
+
+    if(m->type & DT_MASKS_CLONE)
+    {
+      // NOTE: can be: DT_MASKS_CIRCLE, DT_MASKS_ELLIPSE, DT_MASKS_PATH
+      dt_masks_legacy_params_v2_to_v3_transform(img, m->source);
+    }
+
+    m->version = 3;
+
+    return 0;
+  }
+}
+
 int dt_masks_legacy_params(dt_develop_t *dev, void *params, const int old_version, const int new_version)
 {
   int res = 1;
   if(old_version == 1 && new_version == 2)
   {
     res = dt_masks_legacy_params_v1_to_v2(dev, params);
+  }
+  if(old_version == 2 && new_version == 3)
+  {
+    res = dt_masks_legacy_params_v2_to_v3(dev, params);
+  }
+
+  if(old_version == 1 && new_version == 3)
+  {
+    res = dt_masks_legacy_params_v1_to_v2(dev, params);
+    if(!res) res = dt_masks_legacy_params_v2_to_v3(dev, params);
   }
 
   return res;
@@ -1174,9 +1300,9 @@ void dt_masks_clear_form_gui(dt_develop_t *dev)
 {
   g_list_free(dev->form_gui->points);
   dev->form_gui->points = NULL;
-  free(dev->form_gui->guipoints);
+  dt_masks_dynbuf_free(dev->form_gui->guipoints);
   dev->form_gui->guipoints = NULL;
-  free(dev->form_gui->guipoints_payload);
+  dt_masks_dynbuf_free(dev->form_gui->guipoints_payload);
   dev->form_gui->guipoints_payload = NULL;
   dev->form_gui->guipoints_count = 0;
   dev->form_gui->pipe_hash = dev->form_gui->formid = 0;
@@ -1353,7 +1479,6 @@ static void _menu_add_brush(struct dt_iop_module_t *module)
 {
   // we want to be sure that the iop has focus
   dt_iop_request_focus(module);
-  dt_gui_enable_extended_input_devices();
   // we create the new form
   dt_masks_form_t *form = dt_masks_create(DT_MASKS_BRUSH);
   dt_masks_change_form_gui(form);

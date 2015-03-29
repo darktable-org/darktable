@@ -40,7 +40,9 @@ typedef struct dt_iop_rawdenoise_params_t
 
 typedef struct dt_iop_rawdenoise_gui_data_t
 {
+  GtkWidget *box_raw;
   GtkWidget *threshold;
+  GtkWidget *label_non_raw;
 } dt_iop_rawdenoise_gui_data_t;
 
 typedef struct dt_iop_rawdenoise_data_t
@@ -464,10 +466,21 @@ void cleanup_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev
 
 void gui_update(dt_iop_module_t *self)
 {
-  dt_iop_module_t *module = (dt_iop_module_t *)self;
   dt_iop_rawdenoise_gui_data_t *g = (dt_iop_rawdenoise_gui_data_t *)self->gui_data;
-  dt_iop_rawdenoise_params_t *p = (dt_iop_rawdenoise_params_t *)module->params;
+  dt_iop_rawdenoise_params_t *p = (dt_iop_rawdenoise_params_t *)self->params;
+
   dt_bauhaus_slider_set(g->threshold, p->threshold);
+
+  if(!self->hide_enable_button)
+  {
+    gtk_widget_show(g->box_raw);
+    gtk_widget_hide(g->label_non_raw);
+  }
+  else
+  {
+    gtk_widget_hide(g->box_raw);
+    gtk_widget_show(g->label_non_raw);
+  }
 }
 
 static void threshold_callback(GtkWidget *slider, gpointer user_data)
@@ -487,11 +500,19 @@ void gui_init(dt_iop_module_t *self)
 
   self->widget = GTK_WIDGET(gtk_box_new(GTK_ORIENTATION_VERTICAL, 0));
 
+  g->box_raw = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
+
   /* threshold */
   g->threshold = dt_bauhaus_slider_new_with_range(self, 0.0, 0.1, 0.001, p->threshold, 3);
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->threshold), TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(g->box_raw), GTK_WIDGET(g->threshold), TRUE, TRUE, 0);
   dt_bauhaus_widget_set_label(g->threshold, NULL, _("noise threshold"));
   g_signal_connect(G_OBJECT(g->threshold), "value-changed", G_CALLBACK(threshold_callback), self);
+
+  gtk_box_pack_start(GTK_BOX(self->widget), g->box_raw, FALSE, FALSE, 0);
+
+  g->label_non_raw = gtk_label_new(_("raw denoising\nonly works for raw images."));
+  gtk_widget_set_halign(g->label_non_raw, GTK_ALIGN_START);
+  gtk_box_pack_start(GTK_BOX(self->widget), g->label_non_raw, FALSE, FALSE, 0);
 }
 
 void gui_cleanup(dt_iop_module_t *self)

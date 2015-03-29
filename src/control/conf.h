@@ -328,6 +328,15 @@ static inline GSList *dt_conf_all_string_entries(const char *dir)
   return d.result;
 }
 
+static inline void dt_conf_string_entry_free(gpointer data)
+{
+  dt_conf_string_entry_t *nv = (dt_conf_string_entry_t *)data;
+  g_free(nv->key);
+  g_free(nv->value);
+  nv->key = NULL;
+  nv->value = NULL;
+  g_free(nv);
+}
 
 #endif
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

@@ -571,7 +571,7 @@
           ]
         },
         {
-          "comment": "Canon EOS 7D Mark II",
+          "comment": "canon eos 7d mark II contributed by Mukund Sivaraman",
           "model": "Canon EOS 7D Mark II",
           "profiles": [
             {"name": "Canon EOS 7D Mark II iso 100", "iso": 100, "a": [6.15389760905073e-06, 2.84388787644327e-06, 5.74375405208284e-06], "b": [3.04323162236553e-08, 1.77677340399602e-08, 2.66383841535416e-08]},

@@ -217,12 +217,31 @@ static gboolean _add_ellipse(GtkWidget *widget, GdkEventButton *e, dt_iop_module
 }
 
 
+static gboolean masks_form_is_in_roi(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
+                                     dt_masks_form_t *form, const dt_iop_roi_t *roi_in,
+                                     const dt_iop_roi_t *roi_out)
+{
+  // we get the area for the form
+  int fl, ft, fw, fh;
+
+  if(!dt_masks_get_area(self, piece, form, &fw, &fh, &fl, &ft)) return FALSE;
+
+  // is the form outside of the roi?
+  fw *= roi_in->scale, fh *= roi_in->scale, fl *= roi_in->scale, ft *= roi_in->scale;
+  if(ft >= roi_out->y + roi_out->height || ft + fh <= roi_out->y || fl >= roi_out->x + roi_out->width
+     || fl + fw <= roi_out->x)
+    return FALSE;
+
+  return TRUE;
+}
+
 void modify_roi_out(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, dt_iop_roi_t *roi_out,
                     const dt_iop_roi_t *roi_in)
 {
   *roi_out = *roi_in;
 }
 
+// needed if mask dest is in roi and mask src is not
 void modify_roi_in(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece,
                    const dt_iop_roi_t *roi_out, dt_iop_roi_t *roi_in)
 {
@@ -248,24 +267,16 @@ void modify_roi_in(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *
       dt_masks_form_t *form = dt_masks_get_from_id(self->dev, grpt->formid);
       if(form)
       {
-        // we get the area for the form
-        int fl, ft, fw, fh;
-        if(!dt_masks_get_area(self, piece, form, &fw, &fh, &fl, &ft))
-        {
-          forms = g_list_next(forms);
-          continue;
-        }
-
         // if the form is outside the roi, we just skip it
-        fw *= roi_in->scale, fh *= roi_in->scale, fl *= roi_in->scale, ft *= roi_in->scale;
-        if(ft >= roi_out->y + roi_out->height || ft + fh <= roi_out->y || fl >= roi_out->x + roi_out->width
-           || fl + fw <= roi_out->x)
+        if(!masks_form_is_in_roi(self, piece, form, roi_in, roi_out))
         {
           forms = g_list_next(forms);
           continue;
         }
 
         // we get the area for the source
+        int fl, ft, fw, fh;
+
         if(!dt_masks_get_source_area(self, piece, form, &fw, &fh, &fl, &ft))
         {
           forms = g_list_next(forms);
@@ -284,10 +295,67 @@ void modify_roi_in(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *
   }
 
   // now we set the values
-  roi_in->x = CLAMP(roix, 0, piece->pipe->iwidth * roi_in->scale - 1);
-  roi_in->y = CLAMP(roiy, 0, piece->pipe->iheight * roi_in->scale - 1);
-  roi_in->width = CLAMP(roir - roi_in->x, 1, piece->pipe->iwidth * roi_in->scale + .5f - roi_in->x);
-  roi_in->height = CLAMP(roib - roi_in->y, 1, piece->pipe->iheight * roi_in->scale + .5f - roi_in->y);
+  const float scwidth = piece->buf_in.width * roi_in->scale, scheight = piece->buf_in.height * roi_in->scale;
+  roi_in->x = CLAMP(roix, 0, scwidth - 1);
+  roi_in->y = CLAMP(roiy, 0, scheight - 1);
+  roi_in->width = CLAMP(roir - roi_in->x, 1, scwidth + .5f - roi_in->x);
+  roi_in->height = CLAMP(roib - roi_in->y, 1, scheight + .5f - roi_in->y);
+}
+
+static void masks_point_denormalize(dt_dev_pixelpipe_iop_t *piece, const dt_iop_roi_t *roi,
+                                    const float *points, size_t points_count, float *new)
+{
+  const float scalex = piece->pipe->iwidth * roi->scale, scaley = piece->pipe->iheight * roi->scale;
+
+  for(size_t i = 0; i < points_count * 2; i += 2)
+  {
+    new[i] = points[i] * scalex;
+    new[i + 1] = points[i + 1] * scaley;
+  }
+}
+
+static int masks_point_calc_delta(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
+                                  const dt_iop_roi_t *roi, const float *target, const float *source, int *dx,
+                                  int *dy)
+{
+  float points[4];
+  masks_point_denormalize(piece, roi, target, 1, points);
+  masks_point_denormalize(piece, roi, source, 1, points + 2);
+
+  int res = dt_dev_distort_transform_plus(self->dev, piece->pipe, 0, self->priority, points, 2);
+  if(!res) return res;
+
+  *dx = points[0] - points[2];
+  *dy = points[1] - points[3];
+
+  return res;
+}
+
+static int masks_get_delta(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const dt_iop_roi_t *roi,
+                           dt_masks_form_t *form, int *dx, int *dy)
+{
+  int res = 0;
+
+  if(form->type & DT_MASKS_PATH)
+  {
+    dt_masks_point_path_t *pt = (dt_masks_point_path_t *)form->points->data;
+
+    res = masks_point_calc_delta(self, piece, roi, pt->corner, form->source, dx, dy);
+  }
+  else if(form->type & DT_MASKS_CIRCLE)
+  {
+    dt_masks_point_circle_t *pt = (dt_masks_point_circle_t *)form->points->data;
+
+    res = masks_point_calc_delta(self, piece, roi, pt->center, form->source, dx, dy);
+  }
+  else if(form->type & DT_MASKS_ELLIPSE)
+  {
+    dt_masks_point_ellipse_t *pt = (dt_masks_point_ellipse_t *)form->points->data;
+
+    res = masks_point_calc_delta(self, piece, roi, pt->center, form->source, dx, dy);
+  }
+
+  return res;
 }
 
 void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, void *o,
@@ -329,38 +397,44 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *
         pos++;
         continue;
       }
-      // we get the area for the form
-      int fl, ft, fw, fh;
-      if(!dt_masks_get_area(self, piece, form, &fw, &fh, &fl, &ft))
+
+      // if the form is outside the roi, we just skip it
+      if(!masks_form_is_in_roi(self, piece, form, roi_in, roi_out))
       {
         forms = g_list_next(forms);
         pos++;
         continue;
       }
 
-      // if the form is outside the roi, we just skip it
-      fw *= roi_in->scale, fh *= roi_in->scale, fl *= roi_in->scale, ft *= roi_in->scale;
-      if(ft >= roi_out->y + roi_out->height || ft + fh <= roi_out->y || fl >= roi_out->x + roi_out->width
-         || fl + fw <= roi_out->x)
-      {
-        forms = g_list_next(forms);
-        pos++;
-        continue;
-      }
       if(d->clone_algo[pos] == 1 && (form->type & DT_MASKS_CIRCLE))
       {
         dt_masks_point_circle_t *circle = (dt_masks_point_circle_t *)g_list_nth_data(form->points, 0);
-        // convert from world space:
-        const int rad = circle->radius * MIN(piece->buf_in.width, piece->buf_in.height) * roi_in->scale;
-        const int posx = (circle->center[0] * piece->buf_in.width) * roi_in->scale - rad;
-        const int posy = (circle->center[1] * piece->buf_in.height) * roi_in->scale - rad;
-        const int posx_source = (form->source[0] * piece->buf_in.width) * roi_in->scale - rad;
-        const int posy_source = (form->source[1] * piece->buf_in.height) * roi_in->scale - rad;
-        const int dx = posx - posx_source;
-        const int dy = posy - posy_source;
-        fw = fh = 2 * rad;
+
+        float points[4];
+        masks_point_denormalize(piece, roi_in, circle->center, 1, points);
+        masks_point_denormalize(piece, roi_in, form->source, 1, points + 2);
+
+        if(!dt_dev_distort_transform_plus(self->dev, piece->pipe, 0, self->priority, points, 2))
+        {
+          forms = g_list_next(forms);
+          pos++;
+          continue;
+        }
 
         // convert from world space:
+        float rad10[2] = { circle->radius, circle->radius };
+        float radf[2];
+        masks_point_denormalize(piece, roi_in, rad10, 1, radf);
+
+        const int rad = MIN(radf[0], radf[1]);
+        const int posx = points[0] - rad;
+        const int posy = points[1] - rad;
+        const int posx_source = points[2] - rad;
+        const int posy_source = points[3] - rad;
+        const int dx = posx - posx_source;
+        const int dy = posy - posy_source;
+        const int fw = 2 * rad, fh = 2 * rad;
+
         float filter[2 * rad + 1];
 
         if(rad > 0)
@@ -405,33 +479,16 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *
         dt_masks_get_mask(self, piece, form, &mask, &width, &height, &posx, &posy);
         int fts = posy * roi_in->scale, fhs = height * roi_in->scale, fls = posx * roi_in->scale,
             fws = width * roi_in->scale;
+        int dx = 0, dy = 0;
+
         // now we search the delta with the source
-        int dx, dy;
-        dx = dy = 0;
-        if(form->type & DT_MASKS_PATH)
+        if(!masks_get_delta(self, piece, roi_in, form, &dx, &dy))
         {
-          dt_masks_point_path_t *pt = (dt_masks_point_path_t *)g_list_nth_data(form->points, 0);
-          dx = pt->corner[0] * roi_in->scale * piece->buf_in.width
-               - form->source[0] * roi_in->scale * piece->buf_in.width;
-          dy = pt->corner[1] * roi_in->scale * piece->buf_in.height
-               - form->source[1] * roi_in->scale * piece->buf_in.height;
+          forms = g_list_next(forms);
+          pos++;
+          continue;
         }
-        else if(form->type & DT_MASKS_CIRCLE)
-        {
-          dt_masks_point_circle_t *pt = (dt_masks_point_circle_t *)g_list_nth_data(form->points, 0);
-          dx = pt->center[0] * roi_in->scale * piece->buf_in.width
-               - form->source[0] * roi_in->scale * piece->buf_in.width;
-          dy = pt->center[1] * roi_in->scale * piece->buf_in.height
-               - form->source[1] * roi_in->scale * piece->buf_in.height;
-        }
-        else if(form->type & DT_MASKS_ELLIPSE)
-        {
-          dt_masks_point_ellipse_t *pt = (dt_masks_point_ellipse_t *)g_list_nth_data(form->points, 0);
-          dx = pt->center[0] * roi_in->scale * piece->buf_in.width
-               - form->source[0] * roi_in->scale * piece->buf_in.width;
-          dy = pt->center[1] * roi_in->scale * piece->buf_in.height
-               - form->source[1] * roi_in->scale * piece->buf_in.height;
-        }
+
         if(dx != 0 || dy != 0)
         {
           // now we do the pixel clone

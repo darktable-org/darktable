@@ -1177,7 +1177,16 @@ static int dt_path_events_button_pressed(struct dt_iop_module_t *module, float p
         bzpt->corner[1] = pts[1] / darktable.develop->preview_pipe->iheight;
         bzpt->ctrl1[0] = bzpt->ctrl1[1] = bzpt->ctrl2[0] = bzpt->ctrl2[1] = -1.0;
         bzpt->state = DT_MASKS_POINT_STATE_NORMAL;
-        bzpt->border[0] = bzpt->border[1] = MAX(0.005f, masks_border);
+
+        // interpolate the border width of the two neighbour points'
+        int max_index = g_list_length(form->points) - 1;
+        int left_index = gui->seg_selected;
+        int right_index = gui->seg_selected == max_index ? 0 : gui->seg_selected + 1;
+        dt_masks_point_path_t *left = (dt_masks_point_path_t *)g_list_nth_data(form->points, left_index);
+        dt_masks_point_path_t *right = (dt_masks_point_path_t *)g_list_nth_data(form->points, right_index);
+        bzpt->border[0] = MAX(0.005f, (left->border[0] + right->border[0]) * 0.5);
+        bzpt->border[1] = MAX(0.005f, (left->border[1] + right->border[1]) * 0.5);
+
         form->points = g_list_insert(form->points, bzpt, gui->seg_selected + 1);
         _path_init_ctrl_points(form);
         dt_masks_gui_form_remove(form, gui, index);

@@ -59,7 +59,7 @@ typedef enum dt_iop_clipping_flags_t
 
 typedef struct dt_iop_clipping_aspect_t
 {
-  const char *name;
+  char *name;
   int d, n;
 } dt_iop_clipping_aspect_t;
 
@@ -1879,11 +1879,75 @@ void gui_init(struct dt_iop_module_t *self)
   for(int i = 0; i < aspects_count; i++)
   {
     dt_iop_clipping_aspect_t *aspect = g_malloc(sizeof(dt_iop_clipping_aspect_t));
-    *aspect = aspects[i];
+    aspect->name = g_strdup(aspects[i].name);
+    aspect->d = aspects[i].d;
+    aspect->n = aspects[i].n;
     g->aspect_list = g_list_append(g->aspect_list, aspect);
   }
 
+  // add custom presets from config to the list
+  GSList *custom_aspects = dt_conf_all_string_entries("plugins/darkroom/clipping/extra_aspect_ratios");
+  for(GSList *iter = custom_aspects; iter; iter = g_slist_next(iter))
+  {
+    dt_conf_string_entry_t *nv = (dt_conf_string_entry_t *)iter->data;
+
+    const char *c = nv->value;
+    const char *end = nv->value + strlen(nv->value);
+    while(*c != ':' && *c != '/' && c < end) c++;
+    if(c < end - 1)
+    {
+      c++;
+      int d = atoi(nv->value);
+      int n = atoi(c);
+      // some sanity check
+      if(n <= 0 || d <= 0)
+      {
+        fprintf(stderr, "invalid ratio format for `%s'. it should be \"number:number\"\n", nv->key);
+        dt_control_log(_("invalid ratio format for `%s'. it should be \"number:number\""), nv->key);
+        continue;
+      }
+      dt_iop_clipping_aspect_t *aspect = g_malloc(sizeof(dt_iop_clipping_aspect_t));
+      aspect->name = g_strdup(nv->key);
+      aspect->d = d;
+      aspect->n = n;
+      g->aspect_list = g_list_append(g->aspect_list, aspect);
+    }
+    else
+    {
+      fprintf(stderr, "invalid ratio format for `%s'. it should be \"number:number\"\n", nv->key);
+      dt_control_log(_("invalid ratio format for `%s'. it should be \"number:number\""), nv->key);
+      continue;
+    }
+
+  }
+  g_slist_free_full(custom_aspects, dt_conf_string_entry_free);
+
+
   g->aspect_list = g_list_sort(g->aspect_list, (GCompareFunc)_aspect_ratio_cmp);
+
+  // remove duplicates from the aspect ratio list
+  int d = ((dt_iop_clipping_aspect_t *)g->aspect_list->data)->d + 1,
+      n = ((dt_iop_clipping_aspect_t *)g->aspect_list->data)->n + 1;
+  for(GList *iter = g->aspect_list; iter; iter = g_list_next(iter))
+  {
+    dt_iop_clipping_aspect_t *aspect = (dt_iop_clipping_aspect_t *)iter->data;
+    int dd = MIN(aspect->d, aspect->n);
+    int nn = MAX(aspect->d, aspect->n);
+    if(dd == d && nn == n)
+    {
+      // same as the last one, remove this entry
+      g_free(aspect->name);
+      GList *prev = g_list_previous(iter);
+      g->aspect_list = g_list_delete_link(g->aspect_list, iter);
+      // it should never be NULL as the 1st element can't be a duplicate, but better safe than sorry
+      iter = prev ? prev : g->aspect_list;
+    }
+    else
+    {
+      d = dd;
+      n = nn;
+    }
+  }
 
   g->aspect_presets = dt_bauhaus_combobox_new(self);
   dt_bauhaus_combobox_set_editable(g->aspect_presets, 1);
@@ -1955,10 +2019,18 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_widget_set_no_show_all(g->golden_extras, TRUE);
 }
 
+static void free_aspect(gpointer data)
+{
+  dt_iop_clipping_aspect_t *aspect = (dt_iop_clipping_aspect_t *)data;
+  g_free(aspect->name);
+  aspect->name = NULL;
+  g_free(aspect);
+}
+
 void gui_cleanup(struct dt_iop_module_t *self)
 {
   dt_iop_clipping_gui_data_t *g = (dt_iop_clipping_gui_data_t *)self->gui_data;
-  g_list_free_full(g->aspect_list, (GDestroyNotify)g_free);
+  g_list_free_full(g->aspect_list, free_aspect);
   g->aspect_list = NULL;
   free(self->gui_data);
   self->gui_data = NULL;

@@ -1944,9 +1944,14 @@ static float get_autoscale(dt_iop_module_t *self, dt_iop_lensfun_params_t *p, co
         = lf_db_find_lenses_hd(dt_iop_lensfun_db, camera, NULL, p->lens, LF_SEARCH_SORT_AND_UNIQUIFY);
     if(lenslist)
     {
+      const dt_image_t *img = &(self->dev->image_storage);
+
+      // FIXME: get those from rawprepare IOP somehow !!!
+      const int iwd = img->width - img->crop_x - img->crop_width,
+                iht = img->height - img->crop_x - img->crop_height;
+
       // create dummy modifier
-      lfModifier *modifier = lf_modifier_new(lenslist[0], p->crop, self->dev->image_storage.width,
-                                             self->dev->image_storage.height);
+      lfModifier *modifier = lf_modifier_new(lenslist[0], p->crop, iwd, iht);
       (void)lf_modifier_initialize(modifier, lenslist[0], LF_PF_F32, p->focal, p->aperture, p->distance, 1.0f,
                                    p->target_geom, p->modify_flags, p->inverse);
       scale = lf_modifier_get_auto_scale(modifier, p->inverse);

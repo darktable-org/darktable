@@ -46,8 +46,13 @@
 #define BLOCKSIZE 64 /* maximum blocksize. must be a power of 2 and will be automatically reduced if needed  \
                         */
 
-DT_MODULE_INTROSPECTION(3, dt_iop_lowpass_params_t)
+DT_MODULE_INTROSPECTION(4, dt_iop_lowpass_params_t)
 
+typedef enum dt_iop_lowpass_algo_t
+{
+  LOWPASS_ALGO_GAUSSIAN,
+  LOWPASS_ALGO_BILATERAL
+} dt_iop_lowpass_algo_t;
 
 /* legacy version 1 params */
 typedef struct dt_iop_lowpass_params1_t
@@ -67,6 +72,16 @@ typedef struct dt_iop_lowpass_params2_t
   float saturation;
 } dt_iop_lowpass_params2_t;
 
+typedef struct dt_iop_lowpass_params3_t
+{
+  dt_gaussian_order_t order;
+  float radius;
+  float contrast;
+  float brightness;
+  float saturation;
+  int unbound;
+} dt_iop_lowpass_params3_t;
+
 typedef struct dt_iop_lowpass_params_t
 {
   dt_gaussian_order_t order;
@@ -74,6 +89,7 @@ typedef struct dt_iop_lowpass_params_t
   float contrast;
   float brightness;
   float saturation;
+  dt_iop_lowpass_algo_t lowpass_algo;
   int unbound;
 } dt_iop_lowpass_params_t;
 
@@ -85,7 +101,7 @@ typedef struct dt_iop_lowpass_gui_data_t
   GtkWidget *brightness;
   GtkWidget *saturation;
   GtkWidget *order;
-  GtkWidget *bilat;
+  GtkWidget *lowpass_algo;
 } dt_iop_lowpass_gui_data_t;
 
 typedef struct dt_iop_lowpass_data_t
@@ -95,6 +111,7 @@ typedef struct dt_iop_lowpass_data_t
   float contrast;
   float brightness;
   float saturation;
+  dt_iop_lowpass_algo_t lowpass_algo;
   int unbound;
   float ctable[0x10000];      // precomputed look-up table for contrast curve
   float cunbounded_coeffs[3]; // approximation for extrapolation of contrast curve
@@ -126,29 +143,45 @@ int groups()
 int legacy_params(dt_iop_module_t *self, const void *const old_params, const int old_version,
                   void *new_params, const int new_version)
 {
-  if(old_version == 1 && new_version == 3)
+  if(old_version == 1 && new_version == 4)
   {
     const dt_iop_lowpass_params1_t *old = old_params;
     dt_iop_lowpass_params_t *new = new_params;
     new->order = old->order;
-    new->radius = old->radius;
+    new->radius = fabs(old->radius);
     new->contrast = old->contrast;
     new->saturation = old->saturation;
     new->brightness = 0.0f;
+    new->lowpass_algo = old->radius < 0.0f ? LOWPASS_ALGO_BILATERAL : LOWPASS_ALGO_GAUSSIAN;
     new->unbound = 0;
 
     return 0;
   }
-  if(old_version == 2 && new_version == 3)
+  if(old_version == 2 && new_version == 4)
   {
     const dt_iop_lowpass_params2_t *old = old_params;
     dt_iop_lowpass_params_t *new = new_params;
     new->order = old->order;
-    new->radius = old->radius;
+    new->radius = fabs(old->radius);
     new->contrast = old->contrast;
     new->saturation = old->saturation;
     new->brightness = old->brightness;
+    new->lowpass_algo = old->radius < 0.0f ? LOWPASS_ALGO_BILATERAL : LOWPASS_ALGO_GAUSSIAN;
     new->unbound = 0;
+
+    return 0;
+  }
+  if(old_version == 3 && new_version == 4)
+  {
+    const dt_iop_lowpass_params3_t *old = old_params;
+    dt_iop_lowpass_params_t *new = new_params;
+    new->order = old->order;
+    new->radius = fabs(old->radius);
+    new->contrast = old->contrast;
+    new->saturation = old->saturation;
+    new->brightness = old->brightness;
+    new->lowpass_algo = old->radius < 0.0f ? LOWPASS_ALGO_BILATERAL : LOWPASS_ALGO_GAUSSIAN;
+    new->unbound = old->unbound;
 
     return 0;
   }
@@ -188,8 +221,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   const int height = roi_in->height;
   const int channels = piece->colors;
 
-  const int use_bilateral = d->radius < 0 ? 1 : 0;
-  const float radius = fmax(0.1f, fabs(d->radius));
+  const float radius = fmax(0.1f, d->radius);
   const float sigma = radius * roi_in->scale / piece->iscale;
   const float saturation = d->saturation;
   const int order = d->order;
@@ -214,7 +246,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
     for(int k = 0; k < 4; k++) Labmin[k] = -INFINITY;
   }
 
-  if(!use_bilateral)
+  if(d->lowpass_algo == LOWPASS_ALGO_GAUSSIAN)
   {
     g = dt_gaussian_init_cl(devid, width, height, channels, Labmax, Labmin, sigma, order);
     if(!g) goto error;
@@ -294,7 +326,7 @@ void tiling_callback(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t
 {
   dt_iop_lowpass_data_t *d = (dt_iop_lowpass_data_t *)piece->data;
 
-  const float radius = fmax(0.1f, fabs(d->radius));
+  const float radius = fmax(0.1f, d->radius);
   const float sigma = radius * roi_in->scale / piece->iscale;
   const float sigma_r = 100.0f; // does not depend on scale
   const float sigma_s = sigma;
@@ -305,7 +337,7 @@ void tiling_callback(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t
 
   const size_t basebuffer = width * height * channels * sizeof(float);
 
-  if(d->radius < 0.0f)
+  if(d->lowpass_algo == LOWPASS_ALGO_BILATERAL)
   {
     // bilateral filter
     tiling->factor = 2.0f + (float)dt_bilateral_memory_use(width, height, sigma_s, sigma_r) / basebuffer;
@@ -337,8 +369,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *
   const int height = roi_in->height;
   const int ch = piece->colors;
 
-  const int use_bilateral = data->radius < 0 ? 1 : 0;
-  const float radius = fmax(0.1f, fabs(data->radius));
+  const float radius = fmax(0.1f, data->radius);
   const float sigma = radius * roi_in->scale / piece->iscale;
   const int order = data->order;
   const int unbound = data->unbound;
@@ -352,7 +383,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *
     for(int k = 0; k < 4; k++) Labmin[k] = -INFINITY;
   }
 
-  if(!use_bilateral)
+  if(data->lowpass_algo == LOWPASS_ALGO_GAUSSIAN)
   {
     dt_gaussian_t *g = dt_gaussian_init(width, height, ch, Labmax, Labmin, sigma, order);
     if(!g) return;
@@ -401,18 +432,16 @@ static void radius_callback(GtkWidget *slider, gpointer user_data)
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(self->dt->gui->reset) return;
   dt_iop_lowpass_params_t *p = (dt_iop_lowpass_params_t *)self->params;
-  p->radius = copysignf(dt_bauhaus_slider_get(slider), p->radius);
+  p->radius = dt_bauhaus_slider_get(slider);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
-static void bilat_callback(GtkWidget *widget, gpointer user_data)
+static void lowpass_algo_callback(GtkWidget *widget, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
+  if(self->dt->gui->reset) return;
   dt_iop_lowpass_params_t *p = (dt_iop_lowpass_params_t *)self->params;
-  if(dt_bauhaus_combobox_get(widget))
-    p->radius = -fabsf(p->radius);
-  else
-    p->radius = fabsf(p->radius);
+  p->lowpass_algo = dt_bauhaus_combobox_get(widget);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
@@ -465,10 +494,11 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
   d->contrast = p->contrast;
   d->brightness = p->brightness;
   d->saturation = p->saturation;
+  d->lowpass_algo = p->lowpass_algo;
   d->unbound = p->unbound;
 
 #ifdef HAVE_OPENCL
-  if(d->radius < 0.0f)
+  if(d->lowpass_algo == LOWPASS_ALGO_BILATERAL)
     piece->process_cl_ready = (piece->process_cl_ready && !(darktable.opencl->avoid_atomics));
 #endif
 
@@ -550,8 +580,8 @@ void gui_update(struct dt_iop_module_t *self)
   dt_iop_module_t *module = (dt_iop_module_t *)self;
   dt_iop_lowpass_gui_data_t *g = (dt_iop_lowpass_gui_data_t *)self->gui_data;
   dt_iop_lowpass_params_t *p = (dt_iop_lowpass_params_t *)module->params;
-  dt_bauhaus_slider_set(g->radius, fabsf(p->radius));
-  dt_bauhaus_combobox_set(g->bilat, p->radius < 0 ? 1 : 0);
+  dt_bauhaus_slider_set(g->radius, p->radius);
+  dt_bauhaus_combobox_set(g->lowpass_algo, p->lowpass_algo);
   dt_bauhaus_slider_set(g->contrast, p->contrast);
   dt_bauhaus_slider_set(g->brightness, p->brightness);
   dt_bauhaus_slider_set(g->saturation, p->saturation);
@@ -566,7 +596,7 @@ void init(dt_iop_module_t *module)
   module->priority = 750; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_lowpass_params_t);
   module->gui_data = NULL;
-  dt_iop_lowpass_params_t tmp = (dt_iop_lowpass_params_t){ 0, 10, 1, 0, 1, 1 };
+  dt_iop_lowpass_params_t tmp = (dt_iop_lowpass_params_t){ 0, 10.0f, 1.0f, 0.0f, 1.0f, LOWPASS_ALGO_GAUSSIAN, 1 };
   memcpy(module->params, &tmp, sizeof(dt_iop_lowpass_params_t));
   memcpy(module->default_params, &tmp, sizeof(dt_iop_lowpass_params_t));
 }
@@ -585,7 +615,7 @@ void init_presets(dt_iop_module_so_t *self)
   DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "begin", NULL, NULL, NULL);
 
   dt_gui_presets_add_generic(_("local contrast mask"), self->op, self->version(),
-                             &(dt_iop_lowpass_params_t){ 0, 50.0f, -1.0f, 0.0f, 0.0f, 1 },
+                             &(dt_iop_lowpass_params_t){ 0, 50.0f, -1.0f, 0.0f, 0.0f, LOWPASS_ALGO_GAUSSIAN, 1 },
                              sizeof(dt_iop_lowpass_params_t), 1);
 
   DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "commit", NULL, NULL, NULL);
@@ -639,13 +669,13 @@ void gui_init(struct dt_iop_module_t *self)
   dt_bauhaus_widget_set_label(g->brightness, NULL, C_("lowpass", "brightness"));
   dt_bauhaus_widget_set_label(g->saturation, NULL, _("saturation"));
 
-  g->bilat = dt_bauhaus_combobox_new(self);
-  dt_bauhaus_widget_set_label(g->bilat, NULL, _("soften with"));
-  dt_bauhaus_combobox_add(g->bilat, _("gaussian"));
-  dt_bauhaus_combobox_add(g->bilat, _("bilateral filter"));
+  g->lowpass_algo = dt_bauhaus_combobox_new(self);
+  dt_bauhaus_widget_set_label(g->lowpass_algo, NULL, _("soften with"));
+  dt_bauhaus_combobox_add(g->lowpass_algo, _("gaussian"));
+  dt_bauhaus_combobox_add(g->lowpass_algo, _("bilateral filter"));
 
   gtk_box_pack_start(GTK_BOX(self->widget), g->radius, TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(self->widget), g->bilat, TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(self->widget), g->lowpass_algo, TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), g->contrast, TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), g->brightness, TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), g->saturation, TRUE, TRUE, 0);
@@ -653,10 +683,10 @@ void gui_init(struct dt_iop_module_t *self)
   g_object_set(g->contrast, "tooltip-text", _("contrast of lowpass filter"), (char *)NULL);
   g_object_set(g->brightness, "tooltip-text", _("brightness adjustment of lowpass filter"), (char *)NULL);
   g_object_set(g->saturation, "tooltip-text", _("color saturation of lowpass filter"), (char *)NULL);
-  g_object_set(g->bilat, "tooltip-text", _("which filter to use for blurring"), (char *)NULL);
+  g_object_set(g->lowpass_algo, "tooltip-text", _("which filter to use for blurring"), (char *)NULL);
 
   g_signal_connect(G_OBJECT(g->radius), "value-changed", G_CALLBACK(radius_callback), self);
-  g_signal_connect(G_OBJECT(g->bilat), "value-changed", G_CALLBACK(bilat_callback), self);
+  g_signal_connect(G_OBJECT(g->lowpass_algo), "value-changed", G_CALLBACK(lowpass_algo_callback), self);
   g_signal_connect(G_OBJECT(g->contrast), "value-changed", G_CALLBACK(contrast_callback), self);
   g_signal_connect(G_OBJECT(g->brightness), "value-changed", G_CALLBACK(brightness_callback), self);
   g_signal_connect(G_OBJECT(g->saturation), "value-changed", G_CALLBACK(saturation_callback), self);

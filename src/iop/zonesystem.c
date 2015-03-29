@@ -740,6 +740,9 @@ static gboolean dt_iop_zonesystem_bar_scrolled(GtkWidget *widget, GdkEventScroll
 
   p->zone[cs] = -1;
   dt_dev_add_history_item(darktable.develop, self, TRUE);
+
+  gtk_widget_queue_draw(widget);
+
   return TRUE;
 }
 
