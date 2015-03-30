@@ -474,7 +474,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *
       else
       {
         // we get the mask
-        float *mask;
+        float *mask = NULL;
         int posx, posy, width, height;
         dt_masks_get_mask(self, piece, form, &mask, &width, &height, &posx, &posy);
         int fts = posy * roi_in->scale, fhs = height * roi_in->scale, fls = posx * roi_in->scale,
@@ -486,6 +486,8 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *
         {
           forms = g_list_next(forms);
           pos++;
+          free(mask);
+
           continue;
         }
 
