@@ -350,6 +350,7 @@ void dt_masks_dynbuf_add(dt_masks_dynbuf_t *a, float value)
       // not much we can do here except of emitting an error message
       fprintf(stderr, "critical: out of memory for dynbuf '%s' with size request %lu!\n", a->tag,
               (unsigned long)a->size);
+      return;
     }
   }
   a->buffer[a->pos++] = value;
