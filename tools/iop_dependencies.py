@@ -271,9 +271,23 @@ def add_edges(gr):
   gr.add_edge(('borders', 'channelmixer'))
   # don't indicate borders as over/under exposed
   gr.add_edge(('borders', 'overexposed'))
+  # don't resample borders when scaling to the output dimensions
+  gr.add_edge(('borders', 'finalscale'))
+
+  # do want to downsample very late
+  gr.add_edge(('finalscale', 'colorout'))
+  gr.add_edge(('finalscale', 'vignette'))
+  gr.add_edge(('finalscale', 'splittoning'))
+  gr.add_edge(('finalscale', 'velvia'))
+  gr.add_edge(('finalscale', 'soften'))
+  gr.add_edge(('finalscale', 'clahe'))
+  gr.add_edge(('finalscale', 'channelmixer'))
+  gr.add_edge(('finalscale', 'overexposed'))
 
   # but watermark can be drawn on top of borders
   gr.add_edge(('watermark', 'borders'))
+  # also, do not resample watermark
+  gr.add_edge(('watermark', 'finalscale'))
 
   # want dithering very late
   gr.add_edge(('dither', 'watermark'))
@@ -407,6 +421,7 @@ gr.add_nodes([
 'dither',
 'equalizer', # deprecated
 'exposure',
+'finalscale',
 'flip',
 'gamma',
 'globaltonemap',
