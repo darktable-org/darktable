@@ -321,7 +321,6 @@ def add_edges(gr):
   gr.add_edge(('colorcorrection', 'colormapping'))
   gr.add_edge(('relight', 'colormapping'))
   gr.add_edge(('lowpass', 'colormapping'))
-  gr.add_edge(('colorreconstruct', 'colormapping'))
   gr.add_edge(('shadhi', 'colormapping'))
   gr.add_edge(('highpass', 'colormapping'))
   gr.add_edge(('lowlight', 'colormapping'))
