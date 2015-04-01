@@ -4226,6 +4226,14 @@ const wb_data wb_preset[] =
   { "OLYMPUS", "E-M5", Flash, 0,		{ 2.3750, 1, 1.6016, 0 } },
   { "OLYMPUS", "E-M5", Flash, 7,		{ 2.7031, 1, 1.3750, 0 } },
 
+  { "OLYMPUS", "E-M5MarkII", Daylight, 0,	{ 1.867188, 1, 1.812500, 0 } },
+  { "OLYMPUS", "E-M5MarkII", Shade, 0,		{ 2.203125, 1, 1.406250, 0 } },
+  { "OLYMPUS", "E-M5MarkII", Cloudy, 0,		{ 2.015625, 1, 1.648438, 0 } },
+  { "OLYMPUS", "E-M5MarkII", Incandescent, 0,	{ 1.156250, 1, 3.539063, 0 } },
+  { "OLYMPUS", "E-M5MarkII", Fluorescent, 0,	{ 1.835938, 1, 2.726563, 0 } },
+  { "OLYMPUS", "E-M5MarkII", Underwater, 0,	{ 1.367188, 1, 2.812500, 0 } },
+  { "OLYMPUS", "E-M5MarkII", Flash, 0,		{ 2.187500, 1, 1.570313, 0 } },
+
   // Firmware version 1.1
   { "OLYMPUS", "E-M10", Daylight, 0,		{ 1.882813, 1, 1.750000, 0 } },
   { "OLYMPUS", "E-M10", Shade, 0,		{ 2.156250, 1, 1.351563, 0 } },
