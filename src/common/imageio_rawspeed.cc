@@ -55,26 +55,6 @@ using namespace RawSpeed;
 dt_imageio_retval_t dt_imageio_open_rawspeed_sraw(dt_image_t *img, RawImage r, dt_mipmap_buffer_t *buf);
 static CameraMetaData *meta = NULL;
 
-#if 0
-static void
-scale_black_white(uint16_t *const buf, const uint16_t black, const uint16_t white, const int width, const int height, const int stride)
-{
-  const float scale = 65535.0f/(white-black);
-#ifdef _OPENMP
-#pragma omp parallel for default(none) schedule(static)
-#endif
-  for(int j=0; j<height; j++)
-  {
-    uint16_t *b = buf + j*stride;
-    for(int i=0; i<width; i++)
-    {
-      b[0] = CLAMPS((b[0] - black)*scale, 0, 0xffff);
-      b++;
-    }
-  }
-}
-#endif
-
 dt_imageio_retval_t dt_imageio_open_rawspeed(dt_image_t *img, const char *filename,
                                              dt_mipmap_buffer_t *mbuf)
 {
@@ -170,6 +150,9 @@ dt_imageio_retval_t dt_imageio_open_rawspeed(dt_image_t *img, const char *filena
     d.reset();
     m.reset();
 
+    // Grab the WB
+    for(int i = 0; i < 3; i++) img->wb_coeffs[i] = r->metadata.wbCoeffs[i];
+
     img->filters = 0u;
     if(!r->isCFA)
     {
@@ -226,9 +209,6 @@ dt_imageio_retval_t dt_imageio_open_rawspeed(dt_image_t *img, const char *filena
     img->fuji_rotation_pos = r->metadata.fujiRotationPos;
     img->pixel_aspect_ratio = (float)r->metadata.pixelAspectRatio;
 
-    for (int i=0; i<3; i++)
-      img->wb_coeffs[i] = r->metadata.wbCoeffs[i];
-
     void *buf = dt_mipmap_cache_alloc(mbuf, img);
     if(!buf) return DT_IMAGEIO_CACHE_FULL;
 
@@ -278,13 +258,6 @@ dt_imageio_retval_t dt_imageio_open_rawspeed_sraw(dt_image_t *img, RawImage r, d
   img->width = r->dim.x;
   img->height = r->dim.y;
 
-  // Grab the WB
-  for (int i=0; i<3; i++)
-    img->wb_coeffs[i] = r->metadata.wbCoeffs[i];
-
-  size_t raw_width = r->dim.x;
-  size_t raw_height = r->dim.y;
-
   iPoint2D dimUncropped = r->getUncroppedDim();
   iPoint2D cropTL = r->getCropOffset();
 
@@ -295,41 +268,61 @@ dt_imageio_retval_t dt_imageio_open_rawspeed_sraw(dt_image_t *img, RawImage r, d
   // actually we want to store full floats here:
   img->bpp = 4 * sizeof(float);
   img->cpp = r->getCpp();
+
+  if(r->getDataType() != TYPE_USHORT16) return DT_IMAGEIO_FILE_CORRUPTED;
+
+  if(img->cpp != 1 && img->cpp != 3) return DT_IMAGEIO_FILE_CORRUPTED;
+
   void *buf = dt_mipmap_cache_alloc(mbuf, img);
   if(!buf) return DT_IMAGEIO_CACHE_FULL;
 
   uint16_t *raw_img = (uint16_t *)r->getDataUncropped(0, 0);
 
-#ifdef _OPENMP
-#pragma omp parallel for default(none) schedule(static) shared(raw_width, raw_height, raw_img, img,          \
-                                                               dimUncropped, cropTL, buf)
-#endif
-  for(size_t row = 0; row < raw_height; row++)
+  if(img->cpp == 1)
   {
-    const uint16_t *in = ((uint16_t *)raw_img)
-                         + (size_t)(img->cpp * (dimUncropped.x * (row + cropTL.y) + cropTL.x));
-    float *out = ((float *)buf) + (size_t)4 * row * raw_width;
+/*
+ * monochrome image (e.g. Leica M9 monochrom),
+ * we need to copy data from only channel to each of 3 channels
+ */
 
-    for(size_t col = 0; col < raw_width; col++, in += img->cpp, out += 4)
+#ifdef _OPENMP
+#pragma omp parallel for default(none) schedule(static) shared(raw_img, img, dimUncropped, cropTL, buf)
+#endif
+    for(int j = 0; j < img->height; j++)
     {
-      for(int k = 0; k < 3; k++)
-      {
-        if(img->cpp == 1)
-        {
-          /*
-           * monochrome image (e.g. Leica M9 monochrom),
-           * we need to copy data from only channel to each of 3 channels
-           */
+      const uint16_t *in = ((uint16_t *)raw_img)
+                           + (size_t)(img->cpp * (dimUncropped.x * (j + cropTL.y) + cropTL.x));
+      float *out = ((float *)buf) + (size_t)4 * j * img->width;
 
+      for(int i = 0; i < img->width; i++, in += img->cpp, out += 4)
+      {
+        for(int k = 0; k < 3; k++)
+        {
           out[k] = (float)*in / (float)UINT16_MAX;
         }
-        else
-        {
-          /*
-           * standard 3-ch image
-           * just copy 3 ch to 3 ch
-           */
+      }
+    }
+  }
+  else if(img->cpp == 3)
+  {
+/*
+ * standard 3-ch image
+ * just copy 3 ch to 3 ch
+ */
 
+#ifdef _OPENMP
+#pragma omp parallel for default(none) schedule(static) shared(raw_img, img, dimUncropped, cropTL, buf)
+#endif
+    for(int j = 0; j < img->height; j++)
+    {
+      const uint16_t *in = ((uint16_t *)raw_img)
+                           + (size_t)(img->cpp * (dimUncropped.x * (j + cropTL.y) + cropTL.x));
+      float *out = ((float *)buf) + (size_t)4 * j * img->width;
+
+      for(int i = 0; i < img->width; i++, in += img->cpp, out += 4)
+      {
+        for(int k = 0; k < 3; k++)
+        {
           out[k] = (float)in[k] / (float)UINT16_MAX;
         }
       }
