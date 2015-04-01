@@ -24,6 +24,8 @@
 #include "develop/pixelpipe.h"
 #include "common/opencl.h"
 
+#include <assert.h>
+
 #define DEVELOP_MASKS_VERSION (3)
 
 /**forms types */
