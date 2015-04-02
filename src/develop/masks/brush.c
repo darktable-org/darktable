@@ -796,23 +796,20 @@ static int _brush_get_points_border(dt_develop_t *dev, dt_masks_form_t *form, in
   }
 
   *points_count = dt_masks_dynbuf_position(dpoints) / 2;
-  *points = malloc(*points_count * 2 * sizeof(float));
-  memcpy(*points, dt_masks_dynbuf_buffer(dpoints), *points_count * 2 * sizeof(float));
+  *points = dt_masks_dynbuf_harvest(dpoints);
   dt_masks_dynbuf_free(dpoints);
 
   if(border)
   {
     *border_count = dt_masks_dynbuf_position(dborder) / 2;
-    *border = malloc(*border_count * 2 * sizeof(float));
-    memcpy(*border, dt_masks_dynbuf_buffer(dborder), *border_count * 2 * sizeof(float));
+    *border = dt_masks_dynbuf_harvest(dborder);
     dt_masks_dynbuf_free(dborder);
   }
 
   if(payload)
   {
     *payload_count = dt_masks_dynbuf_position(dpayload) / 2;
-    *payload = malloc(*payload_count * 2 * sizeof(float));
-    memcpy(*payload, dt_masks_dynbuf_buffer(dpayload), *payload_count * 2 * sizeof(float));
+    *payload = dt_masks_dynbuf_harvest(dpayload);
     dt_masks_dynbuf_free(dpayload);
   }
   // printf("points %d, border %d, playload %d\n", *points_count, border ? *border_count : -1, payload ?
@@ -836,7 +833,16 @@ static int _brush_get_points_border(dt_develop_t *dev, dt_masks_form_t *form, in
     }
   }
 
-  // if we failed, then return 0
+  // if we failed, then free all and return
+  free(*points);
+  *points = NULL;
+  *points_count = 0;
+  if(border) free(*border);
+  if(border) *border = NULL;
+  if(border) *border_count = 0;
+  if(payload) free(*payload);
+  if(payload) *payload = NULL;
+  if(payload) *payload_count = 0;
   return 0;
 }
 
