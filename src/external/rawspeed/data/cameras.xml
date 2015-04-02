@@ -2432,8 +2432,10 @@
 		</CFA>
 		<Crop x="0" y="0" width="0" height="0"/>
 		<Sensor black="254" white="4000"/>
-		<Sensor black="249" white="4000" iso_min="400" iso_max="5000"/>
-		<Sensor black="230" white="4000" iso_min="6400" iso_max="20000"/>
+		<Sensor black="249" white="4000" iso_min="800" iso_max="3199"/>
+		<Sensor black="235" white="4000" iso_min="3200" iso_max="6399"/>
+		<Sensor black="230" white="4000" iso_min="6400" iso_max="12799"/>
+		<Sensor black="220" white="4000" iso_min="12800" iso_max="25599"/>
 		<Sensor black="187" white="4000" iso_min="25600" iso_max="25600"/>
 	</Camera>
 	<Camera make="OLYMPUS IMAGING CORP." model="E-P1">
