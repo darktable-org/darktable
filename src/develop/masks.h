@@ -399,6 +399,13 @@ size_t dt_masks_dynbuf_position(dt_masks_dynbuf_t *a)
 }
 
 static inline
+void dt_masks_dynbuf_reset(dt_masks_dynbuf_t *a)
+{
+  assert(a != NULL);
+  a->pos = 0;
+}
+
+static inline
 float *dt_masks_dynbuf_harvest(dt_masks_dynbuf_t *a)
 {
   // take out data buffer and make dynamic buffer obsolete
