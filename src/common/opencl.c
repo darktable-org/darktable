@@ -175,6 +175,7 @@ void dt_opencl_init(dt_opencl_t *cl, const gboolean exclude_opencl)
                                                   &(all_num_devices[n]));
     if(err != CL_SUCCESS)
     {
+      all_num_devices[n] = 0;
       dt_print(DT_DEBUG_OPENCL, "[opencl_init] could not get device id size: %d\n", err);
     }
   }
@@ -183,20 +184,34 @@ void dt_opencl_init(dt_opencl_t *cl, const gboolean exclude_opencl)
   for(int n = 0; n < num_platforms; n++) num_devices += all_num_devices[n];
 
   // create the device list
-  cl->dev = (dt_opencl_device_t *)malloc(sizeof(dt_opencl_device_t) * num_devices);
-  cl_device_id *devices = (cl_device_id *)malloc(sizeof(cl_device_id) * num_devices);
+  if(num_devices)
+  {
+    cl->dev = (dt_opencl_device_t *)malloc(sizeof(dt_opencl_device_t) * num_devices);
+    cl_device_id *devices = (cl_device_id *)malloc(sizeof(cl_device_id) * num_devices);
+    if(!cl->dev || !devices)
+    {
+      free(cl->dev);
+      free(devices);
+      dt_print(DT_DEBUG_OPENCL, "[opencl_init] could not allocate memory\n");
+      goto finally;
+    }
+  }
 
   cl_device_id *devs = devices;
   for(int n = 0; n < num_platforms; n++)
   {
-    cl_platform_id platform = all_platforms[n];
-    err = (cl->dlocl->symbols->dt_clGetDeviceIDs)(platform, CL_DEVICE_TYPE_ALL, all_num_devices[n], devs,
-                                                  NULL);
-    if(err != CL_SUCCESS)
+    if(all_num_devices[n])
     {
-      dt_print(DT_DEBUG_OPENCL, "[opencl_init] could not get devices list: %d\n", err);
+      cl_platform_id platform = all_platforms[n];
+      err = (cl->dlocl->symbols->dt_clGetDeviceIDs)(platform, CL_DEVICE_TYPE_ALL, all_num_devices[n], devs,
+                                                    NULL);
+      if(err != CL_SUCCESS)
+      {
+        num_devices -= all_num_devices[n];
+        dt_print(DT_DEBUG_OPENCL, "[opencl_init] could not get devices list: %d\n", err);
+      }
+      devs += all_num_devices[n];
     }
-    devs += all_num_devices[n];
   }
 
   dt_print(DT_DEBUG_OPENCL, "[opencl_init] found %d device%s\n", num_devices, num_devices > 1 ? "s" : "");
