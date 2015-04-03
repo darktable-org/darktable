@@ -36,8 +36,8 @@
 #include <gtk/gtk.h>
 #include <inttypes.h>
 
-#define DT_COLORRECONSTRUCT_BILATERAL_MAX_RES_S 1000
-#define DT_COLORRECONSTRUCT_BILATERAL_MAX_RES_R 200
+#define DT_COLORRECONSTRUCT_BILATERAL_MAX_RES_S 500
+#define DT_COLORRECONSTRUCT_BILATERAL_MAX_RES_R 100
 #define DT_COLORRECONSTRUCT_SPATIAL_APPROX 100.0f
 
 DT_MODULE_INTROSPECTION(1, dt_iop_colorreconstruct_params_t)
@@ -463,8 +463,8 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *
   float *out = (float *)ovoid;
 
   const float scale = piece->iscale / roi_in->scale;
-  const float sigma_r = data->range;
-  const float sigma_s = data->spatial / scale;
+  const float sigma_r = fmax(data->range, 0.1f);
+  const float sigma_s = fmax(data->spatial, 1.0f) / scale;
 
   dt_iop_colorreconstruct_bilateral_t *b;
   dt_iop_colorreconstruct_bilateral_frozen_t *can = NULL;
@@ -906,8 +906,8 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   dt_iop_colorreconstruct_gui_data_t *g = (dt_iop_colorreconstruct_gui_data_t *)self->gui_data;
 
   const float scale = piece->iscale / roi_in->scale;
-  const float sigma_r = d->range; // does not depend on scale
-  const float sigma_s = d->spatial / scale;
+  const float sigma_r = fmax(d->range, 0.1f); // does not depend on scale
+  const float sigma_s = fmax(d->spatial, 1.0f) / scale;
   cl_int err = -666;
 
   dt_iop_colorreconstruct_bilateral_cl_t *b;
@@ -1004,8 +1004,8 @@ void tiling_callback(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t
   // the total scale is composed of scale before input to the pipeline (iscale),
   // and the scale of the roi.
   const float scale = piece->iscale / roi_in->scale;
-  const float sigma_r = d->range;
-  const float sigma_s = d->spatial / scale;
+  const float sigma_r = fmax(d->range, 0.1f);
+  const float sigma_s = fmax(d->spatial, 1.0f) / scale;
 
   const int width = roi_in->width;
   const int height = roi_in->height;
