@@ -294,6 +294,9 @@ static void _update_collected_images(dt_view_t *self)
 
   DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "DELETE FROM memory.collected_images", NULL, NULL,
                         NULL);
+  // reset autoincrement. need in star_key_accel_callback
+  DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "DELETE FROM memory.sqlite_sequence where name='collected_images'", NULL, NULL,
+                        NULL);
 
   // 2. insert collected images into the temporary table
 
@@ -1487,14 +1490,57 @@ static gboolean star_key_accel_callback(GtkAccelGroup *accel_group, GObject *acc
   dt_view_t *self = darktable.view_manager->proxy.lighttable.view;
   int num = GPOINTER_TO_INT(data);
   int32_t mouse_over_id;
+  int next_image_rowid = -1;
+
+  dt_library_t *lib = (dt_library_t *)self->data;
+  if (lib->using_arrows)
+  {
+    // if using arrows may be the image I'm rating is going to disappear from the collection. So, store where may be we need to jump
+    int imgid_for_offset;
+    sqlite3_stmt *stmt;
+
+    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+        "SELECT MIN(imgid) FROM selected_images", -1, &stmt,
+        NULL);
+    if(sqlite3_step(stmt) == SQLITE_ROW)
+    {
+      imgid_for_offset = sqlite3_column_int(stmt, 0);
+      if (!imgid_for_offset)
+        // empty selection
+        imgid_for_offset = dt_control_get_mouse_over_id();
+
+      DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+          //"SELECT imgid FROM memory.collected_images", -1, &stmt,
+          "SELECT rowid FROM memory.collected_images where imgid=?1", -1, &stmt,
+          NULL);
+      DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid_for_offset);
+      if(sqlite3_step(stmt) == SQLITE_ROW)
+        next_image_rowid = sqlite3_column_int(stmt, 0);
+      sqlite3_finalize(stmt);
+    }
+  }
 
   mouse_over_id = dt_view_get_image_to_act_on();
-
   if(mouse_over_id <= 0)
     dt_ratings_apply_to_selection(num);
   else
     dt_ratings_apply_to_image(mouse_over_id, num);
   _update_collected_images(self);
+  if (lib->using_arrows)
+  {
+    // Maybe some images vanished from collection. Jump where stored before
+    // lib->collection_count  --> before the rating
+    // dt_collection_get_count(darktable.collection)  --> after the rating
+    sqlite3_stmt *stmt;
+    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+        "SELECT imgid FROM memory.collected_images where rowid=?1 or rowid=?1 - 1 order by rowid desc limit 1", -1, &stmt,
+        NULL);
+    DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, next_image_rowid );
+    if(sqlite3_step(stmt) == SQLITE_ROW)
+      mouse_over_id = sqlite3_column_int(stmt, 0);
+    sqlite3_finalize(stmt);
+    dt_control_set_mouse_over_id(mouse_over_id);
+  }
   return TRUE;
 }
 
