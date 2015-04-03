@@ -184,7 +184,7 @@ void dt_opencl_init(dt_opencl_t *cl, const gboolean exclude_opencl)
   for(int n = 0; n < num_platforms; n++) num_devices += all_num_devices[n];
 
   // create the device list
-  cl_device_id *devices;
+  cl_device_id *devices = 0;
   if(num_devices)
   {
     cl->dev = (dt_opencl_device_t *)malloc(sizeof(dt_opencl_device_t) * num_devices);
