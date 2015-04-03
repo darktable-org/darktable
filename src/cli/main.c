@@ -63,7 +63,7 @@ static void generate_thumbnail_cache()
   }
   // some progress counter
   sqlite3_stmt *stmt;
-  uint64_t image_count = 0, counter = 0;
+  size_t image_count = 0, counter = 0;
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select count(id) from images", -1, &stmt, 0);
   if(sqlite3_step(stmt) == SQLITE_ROW)
     image_count = sqlite3_column_int(stmt, 0);
@@ -129,7 +129,8 @@ write_error:
     dt_mipmap_cache_release(darktable.mipmap_cache, &buf);
 next:
     counter ++;
-    fprintf(stderr, "\rimage %lu/%lu (%.02f%%)            ", counter, image_count, 100.0*counter/(float)image_count);
+    fprintf(stderr, "\rimage %zu/%zu (%.02f%%)            ", counter, image_count,
+            100.0 * counter / (float)image_count);
   }
   dt_free_align(tmp);
   sqlite3_finalize(stmt);
@@ -139,7 +140,7 @@ next:
 static void usage(const char *progname)
 {
   fprintf(stderr, "usage: %s <input file> [<xmp file>] <output file> [--width <max width>,--height <max "
-                  "height>,--bpp <bpp>,--hq <0|1|true|false>,--verbose] [--core <darktable options>] [--generate-cache]\n",
+                  "height>,--bpp <bpp>,--hq <0|1|true|false>,--upscale <0|1|true|false>,--verbose] [--core <darktable options>] [--generate-cache]\n",
           progname);
 }
 
@@ -157,7 +158,7 @@ int main(int argc, char *arg[])
   char *output_filename = NULL;
   int file_counter = 0;
   int width = 0, height = 0, bpp = 0;
-  gboolean verbose = FALSE, high_quality = TRUE, generate_cache = FALSE;
+  gboolean verbose = FALSE, high_quality = TRUE, upscale = FALSE, generate_cache = FALSE;
 
   int k;
   for(k = 1; k < argc; k++)
@@ -206,6 +207,22 @@ int main(int argc, char *arg[])
         else
         {
           fprintf(stderr, "%s: %s\n", _("Unknown option for --hq"), arg[k]);
+          usage(arg[0]);
+          exit(1);
+        }
+        g_free(str);
+      }
+      else if(!strcmp(arg[k], "--upscale"))
+      {
+        k++;
+        gchar *str = g_ascii_strup(arg[k], -1);
+        if(!g_strcmp0(str, "0") || !g_strcmp0(str, "FALSE"))
+          upscale = FALSE;
+        else if(!g_strcmp0(str, "1") || !g_strcmp0(str, "TRUE"))
+          upscale= TRUE;
+        else
+        {
+          fprintf(stderr, "%s: %s\n", _("Unknown option for --upscale"), arg[k]);
           usage(arg[0]);
           exit(1);
         }
@@ -386,12 +403,12 @@ int main(int argc, char *arg[])
   if(storage->initialize_store)
   {
     GList *single_image = g_list_append(NULL, GINT_TO_POINTER(id));
-    storage->initialize_store(storage, sdata, &format, &fdata, &single_image, high_quality);
+    storage->initialize_store(storage, sdata, &format, &fdata, &single_image, high_quality, upscale);
     g_list_free(single_image);
   }
   // TODO: add a callback to set the bpp without going through the config
 
-  storage->store(storage, sdata, id, format, fdata, 1, 1, high_quality);
+  storage->store(storage, sdata, id, format, fdata, 1, 1, high_quality, upscale);
 
   // cleanup time
   if(storage->finalize_store) storage->finalize_store(storage, sdata);

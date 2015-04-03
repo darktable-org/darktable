@@ -2015,9 +2015,7 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
 
       dt_pthread_mutex_unlock(&pipe->busy_mutex);
 
-      gboolean i_own_lock = dt_control_gdk_lock();
-      if(module->widget) gtk_widget_queue_draw(module->widget);
-      if(i_own_lock) dt_control_gdk_unlock();
+      if(module->widget) dt_control_queue_redraw_widget(module->widget);
     }
     else
       dt_pthread_mutex_unlock(&pipe->busy_mutex);

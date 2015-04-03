@@ -109,14 +109,18 @@ void OrfDecoder::decodeOldORF(TiffIFD* raw) {
   uint32 width = raw->getEntry(IMAGEWIDTH)->getInt();
   uint32 height = raw->getEntry(IMAGELENGTH)->getInt();
   uint32 off = raw->getEntry(STRIPOFFSETS)->getInt();
+  TiffEntry *counts = raw->getEntry(STRIPBYTECOUNTS);
+  uint32 size = 0;
+  const uint32 *sizes = counts->getIntArray();
+  for (uint32 i=0; i < counts->count; i++)
+    size += sizes[i];
 
   if (!mFile->isValid(off))
       ThrowRDE("ORF Decoder: Invalid image data offset, cannot decode.");
 
   mRaw->dim = iPoint2D(width, height);
   mRaw->createData();
-  uint32 size = mFile->getSize() - off;
-  ByteStream input(mFile->getData(off), size);
+  ByteStream input(mFile->getData(off), MIN(size, mFile->getSize() - off));
 
   if (size >= width*height*2) { // We're in an unpacked raw
     if (raw->endian == little)

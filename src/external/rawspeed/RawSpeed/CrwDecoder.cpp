@@ -30,24 +30,35 @@ namespace RawSpeed {
 CrwDecoder::CrwDecoder(CiffIFD *rootIFD, FileMap* file) :
     RawDecoder(file), mRootIFD(rootIFD) {
   decoderVersion = 0;
+  mHuff[0] = NULL;
+  mHuff[1] = NULL;
 }
 
 CrwDecoder::~CrwDecoder(void) {
   if (mRootIFD)
     delete mRootIFD;
   mRootIFD = NULL;
+  if (mHuff[0] != NULL)
+    _aligned_free(mHuff[0]);
+  if (mHuff[1] != NULL)
+    _aligned_free(mHuff[1]);  
+  mHuff[0] = NULL;
+  mHuff[1] = NULL;
 }
 
 RawImage CrwDecoder::decodeRawInternal() {
   CiffEntry *sensorInfo = mRootIFD->getEntryRecursive(CIFF_SENSORINFO);
-  if (!sensorInfo || sensorInfo->count < 6)
-    ThrowRDE("CRW: Couldn't find image width & height");
+
+  if (!sensorInfo || sensorInfo->count < 6 || sensorInfo->type != CIFF_SHORT)
+    ThrowRDE("CRW: Couldn't find image sensor info");
+
   uint32 width = sensorInfo->getShortArray()[1];
   uint32 height = sensorInfo->getShortArray()[2];
 
   CiffEntry *decTable = mRootIFD->getEntryRecursive(CIFF_DECODERTABLE);
-  if (!decTable)
+  if (!decTable || decTable->type != CIFF_LONG)
     ThrowRDE("CRW: Couldn't find decoder table");
+
   uint32 dec_table = decTable->getInt();
   if (dec_table > 2)
     ThrowRDE("CRW: Unknown decoder table %d", dec_table);
@@ -90,8 +101,7 @@ void CrwDecoder::decodeMetaDataInternal(CameraMetaData *meta) {
   // Fetch the white balance
   if(mRootIFD->hasEntryRecursive((CiffTag)0x102c)) {
     CiffEntry *entry = mRootIFD->getEntryRecursive((CiffTag)0x102c);
-
-    if(entry->getShort() > 512) {
+    if (entry->type == CIFF_SHORT && entry->getShort() > 512) {
       /* G1 */
 
       const ushort16 *data = entry->getShortArray();
@@ -107,7 +117,7 @@ void CrwDecoder::decodeMetaDataInternal(CameraMetaData *meta) {
       mRaw->metadata.wbCoeffs[0] = cam_mul[0] / green;
       mRaw->metadata.wbCoeffs[1] = 1.0f;
       mRaw->metadata.wbCoeffs[2] = cam_mul[2] / green;
-    } else {
+    } else if (entry->type == CIFF_SHORT) {
       /* G2, S30, S40 */
 
       const ushort16 *data = entry->getShortArray();
@@ -128,30 +138,33 @@ void CrwDecoder::decodeMetaDataInternal(CameraMetaData *meta) {
   if (mRootIFD->hasEntryRecursive(CIFF_SHOTINFO) && mRootIFD->hasEntryRecursive(CIFF_WHITEBALANCE)) {
     CiffEntry *shot_info = mRootIFD->getEntryRecursive(CIFF_SHOTINFO);
 
-    ushort16 wb_index = shot_info->getShortArray()[14/2];
+    if (shot_info->type == CIFF_SHORT) {
+      ushort16 wb_index = shot_info->getShortArray()[14/2];
 
-    CiffEntry *wb_data = mRootIFD->getEntryRecursive(CIFF_WHITEBALANCE);
-    if (wb_data->type == 4096) {
-      /* CANON EOS D60, CANON EOS 10D, CANON EOS 300D */
-      int wb_offset = (wb_index < 18) ? "0134567028"[wb_index]-'0' : 0;
-      wb_offset = 1+wb_offset*4;
+      CiffEntry *wb_data = mRootIFD->getEntryRecursive(CIFF_WHITEBALANCE);
+      if (wb_data->type == CIFF_SHORT) {
+        /* CANON EOS D60, CANON EOS 10D, CANON EOS 300D */
+        int wb_offset = (wb_index < 18) ? "0134567028"[wb_index]-'0' : 0;
+        wb_offset = 1+wb_offset*4;
 
-      const ushort16 *data = wb_data->getShortArray();
+        const ushort16 *data = wb_data->getShortArray();
 
-      // RGGB !
-      float cam_mul[4];
-      for(int c = 0; c < 4; c++)
-      {
-        cam_mul[c] = (float) data[wb_offset + c];
+        // RGGB !
+        float cam_mul[4];
+        for(int c = 0; c < 4; c++) {
+          cam_mul[c] = (float) data[wb_offset + c];
+        }
+
+        // NOTE: dcraw just uses first green level, so the values are different.
+        const float green = (cam_mul[1] + cam_mul[2]) / 2.0f;
+        mRaw->metadata.wbCoeffs[0] = cam_mul[0] / green;
+        mRaw->metadata.wbCoeffs[1] = 1.0f;
+        mRaw->metadata.wbCoeffs[2] = cam_mul[3] / green;
+      } else {
+        writeLog(DEBUG_PRIO_INFO, "CRW Decoder: CIFF_WHITEBALANCE has to be 4096 (short), %i found.", wb_data->type);
       }
-
-      // NOTE: dcraw just uses first green level, so the values are different.
-      const float green = (cam_mul[1] + cam_mul[2]) / 2.0f;
-      mRaw->metadata.wbCoeffs[0] = cam_mul[0] / green;
-      mRaw->metadata.wbCoeffs[1] = 1.0f;
-      mRaw->metadata.wbCoeffs[2] = cam_mul[3] / green;
     } else {
-      writeLog(DEBUG_PRIO_INFO, "CRW Decoder: CIFF_WHITEBALANCE has to be 4096, %i found.", wb_data->type);
+      writeLog(DEBUG_PRIO_INFO, "CRW Decoder: CIFF_SHOTINFO is %d, not shorts (4096)", shot_info->type);
     }
   }
 
@@ -188,27 +201,39 @@ void CrwDecoder::decodeMetaDataInternal(CameraMetaData *meta) {
         1111111           0xff
  */
 
-ushort16 * CrwDecoder::makeDecoder (const uchar8 *source)
+void CrwDecoder::makeDecoder (int n, const uchar8 *source)
 {
   int max, len, h, i, j;
   const uchar8 *count;
-  ushort16 *huff;
+
+  if (n > 1) {
+    ThrowRDE("CRW: Invalid table number specified");
+  }
 
   count = (source += 16) - 17;
   for (max=16; max && !count[max]; max--);
-  huff = (ushort16 *) calloc (1 + (1 << max), sizeof *huff);
+
+  if (mHuff[n] != NULL) {
+    _aligned_free(mHuff[n]);
+    mHuff[n] = NULL;
+  }
+
+  ushort16* huff = (ushort16 *) _aligned_malloc((1 + (1 << max)* sizeof(ushort16)), 16);
+  
   if (!huff)
     ThrowRDE("CRW: Couldn't allocate table");
+
   huff[0] = max;
   for (h=len=1; len <= max; len++)
     for (i=0; i < count[len]; i++, ++source)
       for (j=0; j < 1 << (max-len); j++)
         if (h <= 1 << max)
           huff[h++] = len << 8 | *source;
-  return huff;
+
+  mHuff[n] = huff;
 }
 
-void CrwDecoder::initHuffTables (uint32 table, ushort16 *huff[2])
+void CrwDecoder::initHuffTables (uint32 table)
 {
   static const uchar8 first_tree[3][29] = {
     { 0,1,4,2,3,1,2,0,0,0,0,0,0,0,0,0,
@@ -265,8 +290,8 @@ void CrwDecoder::initHuffTables (uint32 table, ushort16 *huff[2])
       0xd3,0xaa,0xc4,0xca,0xf2,0xb1,0xe4,0xd1,0x83,0x63,0xea,0xc3,
       0xe2,0x82,0xf1,0xa3,0xc2,0xa1,0xc1,0xe3,0xa2,0xe1,0xff,0xff  }
   };
-  huff[0] = makeDecoder(first_tree[table]);
-  huff[1] = makeDecoder(second_tree[table]);
+  makeDecoder(0, first_tree[table]);
+  makeDecoder(1, second_tree[table]);
 }
 
 uint32 CrwDecoder::getbithuff (BitPumpJPEG &pump, int nbits, ushort16 *huff)
@@ -280,11 +305,11 @@ uint32 CrwDecoder::getbithuff (BitPumpJPEG &pump, int nbits, ushort16 *huff)
 
 void CrwDecoder::decodeRaw(bool lowbits, uint32 dec_table, uint32 width, uint32 height)
 {
-  ushort16 *huff[2];
   int nblocks;
   int block, diffbuf[64], leaf, len, diff, carry=0, pnum=0, base[2];
 
-  initHuffTables (dec_table, huff);
+  initHuffTables (dec_table);
+
   uint32 offset = 540 + lowbits*height*width/4;
   ByteStream input(mFile->getData(offset), mFile->getSize() - offset);
   BitPumpJPEG pump(mFile->getData(offset),mFile->getSize() - offset);
@@ -295,7 +320,7 @@ void CrwDecoder::decodeRaw(bool lowbits, uint32 dec_table, uint32 width, uint32 
     for (block=0; block < nblocks; block++) {
       memset (diffbuf, 0, sizeof diffbuf);
       for (uint32 i=0; i < 64; i++ ) {
-        leaf = getbithuff(pump, *huff[i > 0], huff[i > 0]+1);
+        leaf = getbithuff(pump, *mHuff[i > 0], mHuff[i > 0]+1);
         if (leaf == 0 && i) break;
         if (leaf == 0xff) continue;
         i  += leaf >> 4;
@@ -331,8 +356,6 @@ void CrwDecoder::decodeRaw(bool lowbits, uint32 dec_table, uint32 width, uint32 
       }
     }
   }
-  free(huff[0]);
-  free(huff[1]);
 }
 
 } // namespace RawSpeed

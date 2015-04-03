@@ -121,27 +121,21 @@ static int current_view_cb(lua_State *L)
 
 typedef dt_progress_t *dt_lua_backgroundjob_t;
 
-static int32_t lua_job_canceled_job(dt_job_t *job)
+static int job_canceled(lua_State *L)
 {
-  dt_progress_t *progress = dt_control_job_get_params(job);
-  lua_State *L = darktable.lua_state.state;
-  dt_lua_lock();
-  luaA_push(L, dt_lua_backgroundjob_t, &progress);
-  lua_getuservalue(L, -1);
+  lua_getuservalue(L, 1);
   lua_getfield(L, -1, "cancel_callback");
   lua_pushvalue(L, -3);
   dt_lua_do_chunk(L, 1, 0);
   lua_pop(L, 2);
-  dt_lua_unlock();
   return 0;
 }
 
 static void lua_job_cancelled(dt_progress_t *progress, gpointer user_data)
 {
-  dt_job_t *job = dt_control_job_create(&lua_job_canceled_job, "lua: on background cancel");
-  if(!job) return;
-  dt_control_job_set_params(job, progress);
-  dt_control_add_job(darktable.control, DT_JOB_QUEUE_SYSTEM_BG, job);
+  dt_lua_do_chunk_async(job_canceled,
+      LUA_ASYNC_TYPENAME,"dt_lua_backgroundjob_t",progress,
+      LUA_ASYNC_DONE);
 }
 
 static int lua_create_job(lua_State *L)
@@ -222,41 +216,18 @@ static int lua_job_valid(lua_State *L)
   }
 }
 
-typedef struct
-{
-  uint32_t imgid;
-} on_mouse_over_image_changed_callback_data_t;
-
-static int32_t on_mouse_over_image_changed_callback_job(dt_job_t *job)
-{
-  dt_lua_lock();
-  on_mouse_over_image_changed_callback_data_t *t = dt_control_job_get_params(job);
-  int n_params = (t->imgid != -1);
-  if(n_params)
-    luaA_push(darktable.lua_state.state, dt_lua_image_t, &t->imgid);
-  dt_lua_event_trigger(darktable.lua_state.state, "mouse-over-image-changed", n_params);
-  free(t); 
-  dt_lua_unlock();
-  return 0;
-}
-
 static void on_mouse_over_image_changed(gpointer instance, gpointer user_data)
 {
-  dt_job_t *job = dt_control_job_create(&on_mouse_over_image_changed_callback_job, "lua: on mouse over image changed");
-  if(job)
-  {
-    on_mouse_over_image_changed_callback_data_t *t
-        = (on_mouse_over_image_changed_callback_data_t *)calloc(1, sizeof(on_mouse_over_image_changed_callback_data_t));
-    if(!t)
-    {
-      dt_control_job_dispose(job);
-    }
-    else
-    {
-      dt_control_job_set_params(job, t);
-      t->imgid = dt_control_get_mouse_over_id();
-      dt_control_add_job(darktable.control, DT_JOB_QUEUE_USER_FG, job);
-    }
+  int imgid = dt_control_get_mouse_over_id();
+  if(imgid != -1) {
+  dt_lua_do_chunk_async(dt_lua_event_trigger_wrapper,
+      LUA_ASYNC_TYPENAME,"char*","mouse-over-image-changed",
+      LUA_ASYNC_TYPENAME,"dt_lua_image_t",imgid,
+      LUA_ASYNC_DONE);
+  } else {
+  dt_lua_do_chunk_async(dt_lua_event_trigger_wrapper,
+      LUA_ASYNC_TYPENAME,"char*","mouse-over-image-changed",
+      LUA_ASYNC_DONE);
   }
 }
 

@@ -319,24 +319,44 @@ void dt_image_set_flip(const int32_t imgid, const dt_image_orientation_t orienta
   dt_image_write_sidecar_file(imgid);
 }
 
-void dt_image_flip(const int32_t imgid, const int32_t cw)
+dt_image_orientation_t dt_image_get_orientation(const int imgid)
 {
-  // this is light table only:
-  const dt_view_t *cv = dt_view_manager_get_current_view(darktable.view_manager);
-  if(darktable.develop->image_storage.id == imgid && cv->view((dt_view_t *)cv) == DT_VIEW_DARKROOM) return;
-  dt_image_orientation_t orientation = ORIENTATION_NULL;
-  sqlite3_stmt *stmt;
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                              "select * from history where imgid = ?1 and operation = 'flip' and "
-                              "num in (select MAX(num) from history where imgid = ?1 and "
-                              "operation = 'flip')",
-                              -1, &stmt, NULL);
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
-  if(sqlite3_step(stmt) == SQLITE_ROW)
+  // find the flip module -- the pointer stays valid until darktable shuts down
+  static dt_iop_module_so_t *flip = NULL;
+  if(flip == NULL)
   {
-    if(sqlite3_column_bytes(stmt, 4) >= 4) orientation = *(int32_t *)sqlite3_column_blob(stmt, 4);
+    GList *modules = g_list_first(darktable.iop);
+    while(modules)
+    {
+      dt_iop_module_so_t *module = (dt_iop_module_so_t *)(modules->data);
+      if(!strcmp(module->op, "flip"))
+      {
+        flip = module;
+        break;
+      }
+      modules = g_list_next(modules);
+    }
   }
-  sqlite3_finalize(stmt);
+
+  dt_image_orientation_t orientation = ORIENTATION_NULL;
+
+  // db lookup flip params
+  if(flip && flip->get_p)
+  {
+    sqlite3_stmt *stmt;
+    DT_DEBUG_SQLITE3_PREPARE_V2(
+        dt_database_get(darktable.db),
+        "SELECT op_params FROM history WHERE imgid=?1 AND operation='flip' ORDER BY num DESC LIMIT 1", -1,
+        &stmt, NULL);
+    DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
+    if(sqlite3_step(stmt) == SQLITE_ROW)
+    {
+      // use introspection to get the orientation from the binary params blob
+      const void *params = sqlite3_column_blob(stmt, 0);
+      orientation = *((dt_image_orientation_t *)flip->get_p(params, "orientation"));
+    }
+    sqlite3_finalize(stmt);
+  }
 
   if(orientation == ORIENTATION_NULL)
   {
@@ -344,6 +364,17 @@ void dt_image_flip(const int32_t imgid, const int32_t cw)
     orientation = dt_image_orientation(img);
     dt_image_cache_read_release(darktable.image_cache, img);
   }
+
+  return orientation;
+}
+
+void dt_image_flip(const int32_t imgid, const int32_t cw)
+{
+  // this is light table only:
+  const dt_view_t *cv = dt_view_manager_get_current_view(darktable.view_manager);
+  if(darktable.develop->image_storage.id == imgid && cv->view((dt_view_t *)cv) == DT_VIEW_DARKROOM) return;
+
+  dt_image_orientation_t orientation = dt_image_get_orientation(imgid);
 
   if(cw == 1)
   {
@@ -364,7 +395,6 @@ void dt_image_flip(const int32_t imgid, const int32_t cw)
   if(cw == 2) orientation = ORIENTATION_NULL;
   dt_image_set_flip(imgid, orientation);
 }
-
 
 int32_t dt_image_duplicate(const int32_t imgid)
 {
@@ -549,22 +579,6 @@ int dt_image_altered(const uint32_t imgid)
   int altered = 0;
   sqlite3_stmt *stmt;
 
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                              "select orientation != 0 from images where id = ?1", -1, &stmt, NULL);
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
-  if(sqlite3_step(stmt) == SQLITE_ROW)
-  {
-    /*
-     * if image orientation != ORIENTATION_NONE, then we _need_ to consider
-     * image as altered, or else e.g. FD works uncorrectly on portrait images
-     * just after "history stack" -> "discard"
-     */
-    altered = sqlite3_column_int(stmt, 0);
-  }
-  sqlite3_finalize(stmt);
-
-  if(altered) return 1;
-
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select operation from history where imgid = ?1",
                               -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
@@ -576,6 +590,7 @@ int dt_image_altered(const uint32_t imgid)
     // (that's currently the only use of this function)
     if(!op) continue; // can happen while importing or something like that
     if(!strcmp(op, "basecurve")) continue;
+    if(!strcmp(op, "flip")) continue;
     if(!strcmp(op, "sharpen")) continue;
     if(!strcmp(op, "dither")) continue;
     if(!strcmp(op, "highlights")) continue;
@@ -913,6 +928,7 @@ uint32_t dt_image_import(const int32_t film_id, const char *filename, gboolean o
 void dt_image_init(dt_image_t *img)
 {
   img->width = img->height = 0;
+  img->crop_x = img->crop_y = img->crop_width = img->crop_height = 0;
   img->orientation = ORIENTATION_NULL;
   img->legacy_flip.legacy = 0;
   img->legacy_flip.user_flip = 0;

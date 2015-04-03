@@ -90,11 +90,11 @@ void gui_init(dt_lib_module_t *self)
   dt_lib_history_t *d = (dt_lib_history_t *)g_malloc0(sizeof(dt_lib_history_t));
   self->data = (void *)d;
 
-  self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 2);
+  self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_PIXEL_APPLY_DPI(5));
   gtk_widget_set_name(self->widget, "history-ui");
   d->history_box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
 
-  GtkWidget *hhbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 2);
+  GtkWidget *hhbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, DT_PIXEL_APPLY_DPI(5));
 
   GtkWidget *hbutton = dtgtk_button_new(NULL, /*CPF_DO_NOT_USE_BORDER | CPF_STYLE_FLAT*/0);
   gtk_button_set_label(GTK_BUTTON(hbutton), _("compress history stack"));
@@ -105,7 +105,7 @@ void gui_init(dt_lib_module_t *self)
   g_signal_connect(G_OBJECT(hbutton), "clicked", G_CALLBACK(_lib_history_compress_clicked_callback), NULL);
 
   /* add toolbar button for creating style */
-  GtkWidget *hbutton2 = dtgtk_button_new(dtgtk_cairo_paint_styles, /*CPF_STYLE_FLAT*/0);
+  GtkWidget *hbutton2 = dtgtk_button_new(dtgtk_cairo_paint_styles, CPF_DO_NOT_USE_BORDER);
   gtk_widget_set_size_request (hbutton2, DT_PIXEL_APPLY_DPI(24), -1);
   g_signal_connect(G_OBJECT(hbutton2), "clicked",
                    G_CALLBACK(_lib_history_create_style_button_clicked_callback), NULL);

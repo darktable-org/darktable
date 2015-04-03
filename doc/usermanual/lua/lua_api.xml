@@ -473,6 +473,7 @@
 <listitem><para>file_chooser_button</para></listitem>
 <listitem><para>label</para></listitem>
 <listitem><para>separator</para></listitem>
+<listitem><para>stack</para></listitem>
 </itemizedlist>
 </para>
 
@@ -816,6 +817,27 @@
     </tgroup></informaltable>
 </section>
 
+<section status="final" id="darktable_gui_views_print">
+<title>darktable.gui.views.print</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>print</secondary>
+</indexterm>
+<para>The print view</para>
+<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
+    <colspec colwidth="2*"/>
+    <colspec colwidth="8*"/>
+    <tbody><row>
+    <entry>Attributes:</entry>
+    <entry><itemizedlist>
+<listitem><para><emphasis><link linkend="attributes_has_tostring">has_tostring</link></emphasis></para></listitem>
+<listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_view_t">types.dt_view_t</link></para></listitem>
+</itemizedlist>
+</entry>
+    </row></tbody>
+    </tgroup></informaltable>
+</section>
+
 </section>
 
 <section status="final" id="darktable_gui_libs">
@@ -831,10 +853,10 @@
 
 <para><programlisting language="lua">local tested_module="global_toolbox"
 dt.gui.libs[tested_module].visible=false
-coroutine.yield("wait_ms",2000)
+coroutine.yield("WAIT_MS",2000)
 while true do
 	dt.gui.libs[tested_module].visible = not dt.gui.libs[tested_module].visible
-	coroutine.yield("wait_ms",2000)
+	coroutine.yield("WAIT_MS",2000)
 end</programlisting></para>
 
 <para></para>
@@ -1786,6 +1808,27 @@ end</programlisting></para>
     </tgroup></informaltable>
 </section>
 
+<section status="final" id="darktable_gui_libs_print_settings">
+<title>darktable.gui.libs.print_settings</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>print_settings</secondary>
+</indexterm>
+<para>The settings window in the print view</para>
+<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
+    <colspec colwidth="2*"/>
+    <colspec colwidth="8*"/>
+    <tbody><row>
+    <entry>Attributes:</entry>
+    <entry><itemizedlist>
+<listitem><para><emphasis><link linkend="attributes_has_tostring">has_tostring</link></emphasis></para></listitem>
+<listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_dt_lib_module_t">types.dt_lib_module_t</link></para></listitem>
+</itemizedlist>
+</entry>
+    </row></tbody>
+    </tgroup></informaltable>
+</section>
+
 </section>
 
 </section>
@@ -2156,6 +2199,7 @@ end</programlisting></para>
 	<emphasis><link linkend="darktable_preferences_register_type">type</link></emphasis> : <link linkend="types_lua_pref_type">types.lua_pref_type</link>, 
 	<emphasis><link linkend="darktable_preferences_register_label">label</link></emphasis> : string, 
 	<emphasis><link linkend="darktable_preferences_register_tooltip">tooltip</link></emphasis> : string, 
+	<emphasis><link linkend="darktable_preferences_register_sensitive">sensitive</link></emphasis> : boolean, 
 	[<emphasis><link linkend="darktable_preferences_register_default">default</link></emphasis> : depends on type], 
 	[<emphasis><link linkend="darktable_preferences_register_min">min</link></emphasis> : int or float], 
 	[<emphasis><link linkend="darktable_preferences_register_max">max</link></emphasis> : int or float], 
@@ -2192,6 +2236,12 @@ end</programlisting></para>
 <varlistentry id="darktable_preferences_register_tooltip"><term>tooltip</term><listitem>
 <synopsis>string</synopsis>
 <para>The tooltip to display in the preference menue.</para>
+
+</listitem></varlistentry>
+
+<varlistentry id="darktable_preferences_register_sensitive"><term>sensitive</term><listitem>
+<synopsis>boolean</synopsis>
+<para>True if the widget can be interacted with.</para>
 
 </listitem></varlistentry>
 
@@ -3791,7 +3841,8 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
 </indexterm>
 <synopsis>self:function( 
 	<emphasis><link linkend="types_dt_imageio_module_format_t_write_image_image">image</link></emphasis> : <link linkend="types_dt_lua_image_t">types.dt_lua_image_t</link>, 
-	<emphasis><link linkend="types_dt_imageio_module_format_t_write_image_filename">filename</link></emphasis> : string
+	<emphasis><link linkend="types_dt_imageio_module_format_t_write_image_filename">filename</link></emphasis> : string, 
+	[<emphasis><link linkend="types_dt_imageio_module_format_t_write_image_allow_upscale">allow_upscale</link></emphasis> : boolean]
 ) : boolean</synopsis>
 <para>Exports an image to a file. This is a blocking operation that will not return until the image is exported.</para>
 <informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
@@ -3821,6 +3872,12 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
 <varlistentry id="types_dt_imageio_module_format_t_write_image_filename"><term>filename</term><listitem>
 <synopsis>string</synopsis>
 <para>The filename to export to.</para>
+
+</listitem></varlistentry>
+
+<varlistentry id="types_dt_imageio_module_format_t_write_image_allow_upscale"><term>[allow_upscale]</term><listitem>
+<synopsis>boolean</synopsis>
+<para>Set to true to allow upscaling of the image.</para>
 
 </listitem></varlistentry>
 
@@ -5718,6 +5775,27 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
 <synopsis>dt_type</synopsis>
 <para>Common parent type for all lua-handled widgets</para>
 
+<section status="final" id="types_lua_widget_sensitive">
+<title>types.lua_widget.sensitive</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>sensitive</secondary>
+</indexterm>
+<synopsis>boolean</synopsis>
+<para>Set if the widget is enabled/disabled</para>
+<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
+    <colspec colwidth="2*"/>
+    <colspec colwidth="8*"/>
+    <tbody><row>
+    <entry>Attributes:</entry>
+    <entry><itemizedlist>
+<listitem><para><emphasis><link linkend="attributes_write">write</link></emphasis></para></listitem>
+</itemizedlist>
+</entry>
+    </row></tbody>
+    </tgroup></informaltable>
+</section>
+
 <section status="final" id="types_lua_widget_tooltip">
 <title>types.lua_widget.tooltip</title>
 <indexterm>
@@ -5749,7 +5827,7 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
 	<emphasis><link linkend="types_lua_widget_reset_callback_widget">widget</link></emphasis> : <link linkend="types_lua_widget">types.lua_widget</link>
 )</synopsis>
 <para>A function to call when the widget needs to reset itself</para>
-<para>Note that some widgets have a default implementation that can be overridden, (containers in particular will recursively reset their children). If you replace that default implementation you need to reimplement that functionality</para>
+<para>Note that some widgets have a default implementation that can be overridden, (containers in particular will recursively reset their children). If you replace that default implementation you need to reimplement that functionality or call the original function within your callback</para>
 <informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
     <colspec colwidth="2*"/>
     <colspec colwidth="8*"/>
@@ -6590,6 +6668,57 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
 
 </section>
 
+<section status="final" id="types_lua_stack">
+<title>types.lua_stack</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>lua_stack</secondary>
+</indexterm>
+<synopsis>dt_type</synopsis>
+<para>A container that will only show one of its child at a time</para>
+<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
+    <colspec colwidth="2*"/>
+    <colspec colwidth="8*"/>
+    <tbody><row>
+    <entry>Attributes:</entry>
+    <entry><itemizedlist>
+<listitem><para><emphasis><link linkend="attributes_parent">parent</link> : </emphasis><link linkend="types_lua_container">types.lua_container</link></para></listitem>
+</itemizedlist>
+</entry>
+    </row></tbody>
+    </tgroup></informaltable>
+<section status="final" >
+<title>types.lua_stack.__call</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>__call</secondary>
+</indexterm>
+<para>see <link linkend="types_lua_widget___call">types.lua_widget.As a function</link></para>
+</section>
+
+<section status="final" id="types_lua_stack_active">
+<title>types.lua_stack.active</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>active</secondary>
+</indexterm>
+<synopsis><link linkend="types_lua_widget">types.lua_widget</link> or nil</synopsis>
+<para>The currently selected child, can be nil if the container has no child, can be set to one of the child widget or to an index in the child table</para>
+<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
+    <colspec colwidth="2*"/>
+    <colspec colwidth="8*"/>
+    <tbody><row>
+    <entry>Attributes:</entry>
+    <entry><itemizedlist>
+<listitem><para><emphasis><link linkend="attributes_write">write</link></emphasis></para></listitem>
+</itemizedlist>
+</entry>
+    </row></tbody>
+    </tgroup></informaltable>
+</section>
+
+</section>
+
 <section status="final" id="types_dt_imageio_module_format_data_pdf">
 <title>types.dt_imageio_module_format_data_pdf</title>
 <indexterm>
@@ -6871,12 +7000,19 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
 <secondary>callback</secondary>
 </indexterm>
 <synopsis>function( 
+	<emphasis><link linkend="events_view-changed_callback_event">event</link></emphasis> : string, 
 	<emphasis><link linkend="events_view-changed_callback_old_view">old_view</link></emphasis> : <link linkend="types_dt_view_t">types.dt_view_t</link>, 
 	<emphasis><link linkend="events_view-changed_callback_new_view">new_view</link></emphasis> : <link linkend="types_dt_view_t">types.dt_view_t</link>
 )</synopsis>
 <para></para>
 
 <variablelist>
+<varlistentry id="events_view-changed_callback_event"><term>event</term><listitem>
+<synopsis>string</synopsis>
+<para>The name of the event that triggered the callback.</para>
+
+</listitem></varlistentry>
+
 <varlistentry id="events_view-changed_callback_old_view"><term>old_view</term><listitem>
 <synopsis><link linkend="types_dt_view_t">types.dt_view_t</link></synopsis>
 <para>The view that we just left</para>
@@ -7065,6 +7201,55 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
 
 </section>
 
+<section status="final" id="events_pre-import">
+<title>events.pre-import</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>pre-import</secondary>
+</indexterm>
+<synopsis>event</synopsis>
+<para>This event is trigger before any import action</para>
+
+<section status="final" id="events_pre-import_callback">
+<title>events.pre-import.callback</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>callback</secondary>
+</indexterm>
+<synopsis>function( 
+	<emphasis><link linkend="events_pre-import_callback_event">event</link></emphasis> : string, 
+	<emphasis><link linkend="events_pre-import_callback_images">images</link></emphasis> : table of string
+)</synopsis>
+<para></para>
+
+<variablelist>
+<varlistentry id="events_pre-import_callback_event"><term>event</term><listitem>
+<synopsis>string</synopsis>
+<para>The name of the event that triggered the callback.</para>
+
+</listitem></varlistentry>
+
+<varlistentry id="events_pre-import_callback_images"><term>images</term><listitem>
+<synopsis>table of string</synopsis>
+<para>The files that will be imported. Modifying this table will change the list of files that will be imported"</para>
+
+</listitem></varlistentry>
+
+</variablelist>
+</section>
+
+<section status="final" id="events_pre-import_extra_registration_parameters">
+<title>events.pre-import.extra registration parameters</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>extra registration parameters</secondary>
+</indexterm>
+<para>This event has no extra registration parameters.</para>
+
+</section>
+
+</section>
+
 </section>
 
 <section status="final" id="attributes">
@@ -7145,9 +7330,9 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
 ) : variable</synopsis>
 <para>Lua functions can yield at any point. The parameters and return types depend on why we want to yield.</para>
 <para>A callback that is yielding allows other Lua code to run.<itemizedlist>
-<listitem><para>wait_ms: one extra parameter; the execution will pause for that many miliseconds; yield returns nothing;</para></listitem>
-<listitem><para>file_readable: an opened file from a call to the OS library; will return when the file is readable; returns nothing;</para></listitem>
-<listitem><para>run_command: a command to be run by "sh -c"; will return when the command terminates; returns the return code of the execution.</para></listitem>
+<listitem><para>WAIT_MS: one extra parameter; the execution will pause for that many miliseconds; yield returns nothing;</para></listitem>
+<listitem><para>FILE_READABLE: an opened file from a call to the OS library; will return when the file is readable; returns nothing;</para></listitem>
+<listitem><para>RUN_COMMAND: a command to be run by "sh -c"; will return when the command terminates; returns the return code of the execution.</para></listitem>
 </itemizedlist>
 </para>
 
@@ -7160,13 +7345,13 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
 
 <varlistentry id="system_coroutine_yield_extra"><term>extra</term><listitem>
 <synopsis>variable</synopsis>
-<para>An extra parameter: integer for "wait_ms", open file for "file_readable", string for "run_command".</para>
+<para>An extra parameter: integer for "WAIT_MS", open file for "FILE_READABLE", string for "RUN_COMMAND".</para>
 
 </listitem></varlistentry>
 
 <varlistentry><term><emphasis>return</emphasis></term><listitem>
 <synopsis>variable</synopsis>
-<para>Nothing for "wait_ms" and "file_readable"; the returned code of the command for "run_command".</para>
+<para>Nothing for "WAIT_MS" and "FILE_READABLE"; the returned code of the command for "RUN_COMMAND".</para>
 
 </listitem></varlistentry>
 

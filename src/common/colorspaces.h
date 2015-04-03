@@ -30,6 +30,10 @@ typedef enum dt_iop_color_intent_t
   DT_INTENT_ABSOLUTE_COLORIMETRIC = INTENT_ABSOLUTE_COLORIMETRIC  // 3
 } dt_iop_color_intent_t;
 
+int mat3inv_float(float *const dst, const float *const src);
+int mat3inv_double(double *const dst, const double *const src);
+int mat3inv(float *const dst, const float *const src);
+
 /** create the lab profile. */
 cmsHPROFILE dt_colorspaces_create_lab_profile();
 

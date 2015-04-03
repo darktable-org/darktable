@@ -22,6 +22,9 @@
 #include <glib.h>
 #include <inttypes.h>
 
+/** helper function to free a GList of dt_history_item_t */
+void dt_history_item_free(gpointer data);
+
 /** copy history from imgid and pasts on dest_imgid, merge or overwrite... */
 int dt_history_copy_and_paste_on_image(int32_t imgid, int32_t dest_imgid, gboolean merge, GList *ops);
 

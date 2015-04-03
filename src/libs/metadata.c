@@ -366,6 +366,7 @@ void gui_init(dt_lib_module_t *self)
     gtk_entry_completion_set_text_column(completion, 0);
     gtk_entry_completion_set_inline_completion(completion, TRUE);
     gtk_entry_set_completion(GTK_ENTRY(entry), completion);
+    g_object_unref(completion);
 
     g_signal_connect(entry, "key-press-event", G_CALLBACK(key_pressed), self);
 
@@ -374,8 +375,6 @@ void gui_init(dt_lib_module_t *self)
     gtk_grid_attach(GTK_GRID(self->widget), label, 0, line, 1, 1);
     gtk_grid_attach_next_to(GTK_GRID(self->widget), combobox, label, GTK_POS_RIGHT, 1, 1);
   }
-
-  g_object_unref(completion);
 
   // reset/apply buttons
   hbox = GTK_BOX(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5));

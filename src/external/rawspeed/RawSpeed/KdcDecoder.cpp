@@ -39,20 +39,25 @@ RawImage KdcDecoder::decodeRawInternal() {
   if (7 != compression)
     ThrowRDE("KDC Decoder: Unsupported compression %d", compression);
 
-  TiffEntry *ex = mRootIFD->getEntryRecursive(PIXELXDIMENSION);
-  TiffEntry *ey = mRootIFD->getEntryRecursive(PIXELYDIMENSION);
-
-  if (NULL == ex || NULL == ey)
+  uint32 width = 0;
+  uint32 height = 0;
+  TiffEntry *ew = mRootIFD->getEntryRecursive(KODAK_KDC_WIDTH);
+  TiffEntry *eh = mRootIFD->getEntryRecursive(KODAK_KDC_HEIGHT);
+  if (ew && eh) {
+    width = ew->getInt()+80;
+    height = eh->getInt()+70;
+  } else
     ThrowRDE("KDC Decoder: Unable to retrieve image size");
-
-  uint32 width = ex->getInt();
-  uint32 height = ey->getInt();
 
   TiffEntry *offset = mRootIFD->getEntryRecursive(KODAK_KDC_OFFSET);
   if (!offset || offset->count < 13)
     ThrowRDE("KDC Decoder: Couldn't find the KDC offset");
   const uint32 *offsetarray = offset->getIntArray();
   uint32 off = offsetarray[4] + offsetarray[12];
+
+  // Offset hardcoding gotten from dcraw
+  if (hints.find("easyshare_offset_hack") != hints.end())
+    off = off < 0x15000 ? 0x15000 : 0x17000;
 
   mRaw->dim = iPoint2D(width, height);
   mRaw->createData();
@@ -84,6 +89,31 @@ void KdcDecoder::decodeMetaDataInternal(CameraMetaData *meta) {
   string model = data[0]->getEntry(MODEL)->getString();
   setMetaData(meta, make, model, "", 0);
 
+  // Try the kodak hidden IFD for WB
+  if (mRootIFD->hasEntryRecursive(KODAK_IFD2)) {
+    TiffEntry *ifdoffset = mRootIFD->getEntryRecursive(KODAK_IFD2);
+    TiffIFD *kodakifd = NULL;
+    try {
+      if (mRootIFD->endian == getHostEndianness())
+        kodakifd = new TiffIFD(mFile, ifdoffset->getInt());
+      else
+        kodakifd = new TiffIFDBE(mFile, ifdoffset->getInt());
+
+     if (kodakifd && kodakifd->hasEntryRecursive(KODAK_KDC_WB)) {
+        TiffEntry *wb = kodakifd->getEntryRecursive(KODAK_KDC_WB);
+        if (wb->count == 3) {
+          const uint32 *tmp = wb->getIntArray();
+          mRaw->metadata.wbCoeffs[0] = tmp[0];
+          mRaw->metadata.wbCoeffs[1] = tmp[1];
+          mRaw->metadata.wbCoeffs[2] = tmp[2];
+        }
+      }
+    } catch(...) {}
+    if (kodakifd)
+      delete kodakifd;
+  }
+
+  // Use the normal WB if available
   if (mRootIFD->hasEntryRecursive(KODAKWB)) {
     TiffEntry *wb = mRootIFD->getEntryRecursive(KODAKWB);
     if (wb->count == 734 || wb->count == 1502) {

@@ -496,7 +496,7 @@ void dt_imageio_to_fractional(float in, uint32_t *num, uint32_t *den)
 }
 
 int dt_imageio_export(const uint32_t imgid, const char *filename, dt_imageio_module_format_t *format,
-                      dt_imageio_module_data_t *format_params, const gboolean high_quality,
+                      dt_imageio_module_data_t *format_params, const gboolean high_quality, const gboolean upscale,
                       const gboolean copy_metadata, dt_imageio_module_storage_t *storage,
                       dt_imageio_module_data_t *storage_params, int num, int total)
 {
@@ -504,15 +504,15 @@ int dt_imageio_export(const uint32_t imgid, const char *filename, dt_imageio_mod
     /* This is a just a copy, skip process and just export */
     return format->write_image(format_params, filename, NULL, NULL, 0, imgid, num, total);
   else
-    return dt_imageio_export_with_flags(imgid, filename, format, format_params, 0, 0, high_quality, 0, NULL,
-                                        copy_metadata, storage, storage_params, num, total);
+    return dt_imageio_export_with_flags(imgid, filename, format, format_params, 0, 0, high_quality, upscale,
+                                        0, NULL, copy_metadata, storage, storage_params, num, total);
 }
 
 // internal function: to avoid exif blob reading + 8-bit byteorder flag + high-quality override
 int dt_imageio_export_with_flags(const uint32_t imgid, const char *filename,
                                  dt_imageio_module_format_t *format, dt_imageio_module_data_t *format_params,
                                  const int32_t ignore_exif, const int32_t display_byteorder,
-                                 const gboolean high_quality, const int32_t thumbnail_export,
+                                 const gboolean high_quality, const gboolean upscale, const int32_t thumbnail_export,
                                  const char *filter, const gboolean copy_metadata,
                                  dt_imageio_module_storage_t *storage,
                                  dt_imageio_module_data_t *storage_params, int num, int total)
@@ -528,6 +528,7 @@ int dt_imageio_export_with_flags(const uint32_t imgid, const char *filename,
   const dt_image_t *img = &dev.image_storage;
   const int wd = img->width;
   const int ht = img->height;
+  const float max_scale = upscale ? 100.0 : 1.0;
 
   int res = 0;
 
@@ -575,6 +576,7 @@ int dt_imageio_export_with_flags(const uint32_t imgid, const char *filename,
     while(stls)
     {
       dt_style_item_t *s = (dt_style_item_t *)stls->data;
+      gboolean module_found = FALSE;
 
       modules = dev.iop;
       while(modules)
@@ -616,12 +618,16 @@ int dt_imageio_export_with_flags(const uint32_t imgid, const char *filename,
 
           dev.history_end++;
           dev.history = g_list_append(dev.history, h);
+          module_found = TRUE;
+          g_free(s->name);
           break;
         }
         modules = g_list_next(modules);
       }
+      if(!module_found) dt_style_item_free(s);
       stls = g_list_next(stls);
     }
+    g_list_free(stls);
   }
 
   dt_dev_pixelpipe_set_input(&pipe, &dev, (float *)buf.buf, buf.width, buf.height, 1.0);
@@ -675,8 +681,8 @@ int dt_imageio_export_with_flags(const uint32_t imgid, const char *filename,
             : high_quality;
   const int width = high_quality_processing ? 0 : format_params->max_width;
   const int height = high_quality_processing ? 0 : format_params->max_height;
-  const double scalex = width > 0 ? fminf(width / (double)pipe.processed_width, 1.0) : 1.0;
-  const double scaley = height > 0 ? fminf(height / (double)pipe.processed_height, 1.0) : 1.0;
+  const double scalex = width > 0 ? fminf(width / (double)pipe.processed_width, max_scale) : 1.0;
+  const double scaley = height > 0 ? fminf(height / (double)pipe.processed_height, max_scale) : 1.0;
   const double scale = fminf(scalex, scaley);
   int processed_width = scale * pipe.processed_width + .5f;
   int processed_height = scale * pipe.processed_height + .5f;
@@ -690,10 +696,10 @@ int dt_imageio_export_with_flags(const uint32_t imgid, const char *filename,
   {
     dt_dev_pixelpipe_process_no_gamma(&pipe, &dev, 0, 0, processed_width, processed_height, scale);
     const double scalex = format_params->max_width > 0
-                              ? fminf(format_params->max_width / (double)pipe.processed_width, 1.0)
+                              ? fminf(format_params->max_width / (double)pipe.processed_width, max_scale)
                               : 1.0;
     const double scaley = format_params->max_height > 0
-                              ? fminf(format_params->max_height / (double)pipe.processed_height, 1.0)
+                              ? fminf(format_params->max_height / (double)pipe.processed_height, max_scale)
                               : 1.0;
     const double scale = fminf(scalex, scaley);
     processed_width = scale * pipe.processed_width + .5f;

@@ -128,7 +128,13 @@ static int show_pango_text(cairo_t *cr, char *text, float x_pos, float y_pos, fl
   PangoLayout *layout;
 
   layout = pango_cairo_create_layout(cr);
-  pango_layout_set_text(layout, text, -1);
+  if(text) {
+    pango_layout_set_text(layout, text, -1);
+  } else {
+    // length of -1 is not allowed with NULL string (wtf)
+    pango_layout_set_text(layout, NULL, 0);
+  }
+
   pango_layout_set_font_description(layout, darktable.bauhaus->pango_font_desc);
   pango_cairo_context_set_resolution(pango_layout_get_context(layout), darktable.gui->dpi);
 
@@ -546,9 +552,19 @@ void dt_bauhaus_init()
 
   GdkRGBA color, selected_color, bg_color, selected_bg_color;
   gtk_style_context_get_color(ctx, GTK_STATE_FLAG_NORMAL, &color);
-  gtk_style_context_get_background_color(ctx, GTK_STATE_FLAG_NORMAL, &bg_color);
+  {
+    GdkRGBA *bc;
+    gtk_style_context_get(ctx, GTK_STATE_FLAG_NORMAL, "background-color", &bc, NULL);
+    bg_color = *bc;
+    gdk_rgba_free(bc);
+  }
   gtk_style_context_get_color(ctx, GTK_STATE_FLAG_SELECTED, &selected_color);
-  gtk_style_context_get_background_color(ctx, GTK_STATE_FLAG_SELECTED, &selected_bg_color);
+  {
+    GdkRGBA *sbc;
+    gtk_style_context_get(ctx, GTK_STATE_FLAG_SELECTED, "background-color", &sbc, NULL);
+    selected_bg_color = *sbc;
+    gdk_rgba_free(sbc);
+  }
   PangoFontDescription *pfont = 0;
   gtk_style_context_get(ctx, GTK_STATE_FLAG_NORMAL, "font", &pfont, NULL);
   darktable.bauhaus->bg_normal = bg_color.red;
@@ -1736,7 +1752,7 @@ float dt_bauhaus_slider_get(GtkWidget *widget)
 {
   // first cast to bh widget, to check that type:
   dt_bauhaus_widget_t *w = (dt_bauhaus_widget_t *)DT_BAUHAUS_WIDGET(widget);
-  if(!w->type == DT_BAUHAUS_SLIDER) return -1.0f;
+  if(w->type != DT_BAUHAUS_SLIDER) return -1.0f;
   dt_bauhaus_slider_data_t *d = &w->data.slider;
   return d->min + d->pos * (d->max - d->min);
 }

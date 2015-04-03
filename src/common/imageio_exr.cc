@@ -60,7 +60,6 @@ dt_imageio_retval_t dt_imageio_open_exr(dt_image_t *img, const char *filename, d
   std::unique_ptr<Imf::TiledInputFile> fileTiled;
   std::unique_ptr<Imf::InputFile> file;
 #endif
-  const Imf::Header *header = NULL;
   Imath::Box2i dw;
   Imf::FrameBuffer frameBuffer;
   uint32_t xstride, ystride;
@@ -81,7 +80,6 @@ dt_imageio_retval_t dt_imageio_open_exr(dt_image_t *img, const char *filename, d
       std::unique_ptr<Imf::TiledInputFile> temp(new Imf::TiledInputFile(filename));
       fileTiled = std::move(temp);
 #endif
-      header = &(fileTiled->header());
     }
     else
     {
@@ -92,7 +90,6 @@ dt_imageio_retval_t dt_imageio_open_exr(dt_image_t *img, const char *filename, d
       std::unique_ptr<Imf::InputFile> temp(new Imf::InputFile(filename));
       file = std::move(temp);
 #endif
-      header = &(file->header());
     }
   }
   catch(const std::exception &e)
@@ -100,9 +97,11 @@ dt_imageio_retval_t dt_imageio_open_exr(dt_image_t *img, const char *filename, d
     return DT_IMAGEIO_FILE_CORRUPTED;
   }
 
+  const Imf::Header &header = isTiled ? fileTiled->header() : file->header();
+
   /* check that channels available is any of supported RGB(a) */
   uint32_t cnt = 0;
-  for(Imf::ChannelList::ConstIterator i = header->channels().begin(); i != header->channels().end(); ++i)
+  for(Imf::ChannelList::ConstIterator i = header.channels().begin(); i != header.channels().end(); ++i)
   {
     cnt++;
     if(i.name()[0] != 'R' && i.name()[0] != 'G' && i.name()[0] != 'B' && i.name()[0] != 'A')
@@ -120,13 +119,13 @@ dt_imageio_retval_t dt_imageio_open_exr(dt_image_t *img, const char *filename, d
   }
 
   // read back exif data
-  const Imf::BlobAttribute *exif = header->findTypedAttribute<Imf::BlobAttribute>("exif");
+  const Imf::BlobAttribute *exif = header.findTypedAttribute<Imf::BlobAttribute>("exif");
   // we append a jpg-compatible exif00 string, so get rid of that again:
   if(exif && exif->value().size > 6)
     dt_exif_read_from_blob(img, ((uint8_t *)(exif->value().data.get())) + 6, exif->value().size - 6);
 
   /* Get image width and height from displayWindow */
-  dw = header->displayWindow();
+  dw = header.displayWindow();
   img->width = dw.max.x - dw.min.x + 1;
   img->height = dw.max.y - dw.min.y + 1;
 
@@ -159,10 +158,40 @@ dt_imageio_retval_t dt_imageio_open_exr(dt_image_t *img, const char *filename, d
   else
   {
     /* read pixels from dataWindow */
-    dw = header->dataWindow();
+    dw = header.dataWindow();
     file->setFrameBuffer(frameBuffer);
     file->readPixels(dw.min.y, dw.max.y);
   }
+
+  /* try to get the chromaticities and whitepoint. this will add the default linear rec709 profile when nothing
+   * was embedded and look as if it was embedded in colorin. better than defaulting to something wrong there. */
+  Imf::Chromaticities chromaticities;
+  float whiteLuminance = 1.0;
+
+  if(Imf::hasChromaticities(header))
+    chromaticities = Imf::chromaticities(header);
+
+  if(Imf::hasWhiteLuminance(header))
+    whiteLuminance = Imf::whiteLuminance(header);
+
+//   printf("hasChromaticities: %d\n", Imf::hasChromaticities(header));
+//   printf("hasWhiteLuminance: %d\n", Imf::hasWhiteLuminance(header));
+//   std::cout << chromaticities.red << std::endl;
+//   std::cout << chromaticities.green << std::endl;
+//   std::cout << chromaticities.blue << std::endl;
+//   std::cout << chromaticities.white << std::endl;
+
+  Imath::M44f m = Imf::RGBtoXYZ(chromaticities, whiteLuminance);
+  float mat[3][3];
+
+  for(int i = 0; i < 3; i++)
+    for(int j = 0; j < 3; j++)
+    {
+      mat[i][j] = m[j][i];
+    }
+
+  mat3inv((float *)img->d65_color_matrix, (float *)mat);
+
 
   /* cleanup and return... */
   img->flags |= DT_IMAGE_HDR;

@@ -873,7 +873,7 @@ static void _sanitize_db(dt_database_t *db)
   sqlite3_finalize(innerstmt);
 }
 
-dt_database_t *dt_database_init(char *alternative)
+dt_database_t *dt_database_init(const char *alternative)
 {
   /* migrate default database location to new default */
   _database_migrate_to_xdg_structure();
@@ -893,6 +893,8 @@ dt_database_t *dt_database_init(char *alternative)
     dbname = dt_conf_get_string("database");
     if(!dbname)
       snprintf(dbfilename, sizeof(dbfilename), "%s/library.db", datadir);
+    else if(!strcmp(dbname, ":memory:"))
+      snprintf(dbfilename, sizeof(dbfilename), "%s", dbname);
     else if(dbname[0] != '/')
       snprintf(dbfilename, sizeof(dbfilename), "%s/%s", datadir, dbname);
     else

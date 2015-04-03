@@ -120,7 +120,11 @@ typedef struct dt_image_t
   char filename[DT_MAX_FILENAME_LEN];
 
   // common stuff
+
+  // to understand this, look at comment for dt_histogram_roi_t
   int32_t width, height;
+  int32_t crop_x, crop_y, crop_width, crop_height;
+
   // used by library
   int32_t num, flags, film_id, id, group_id, version;
 
@@ -148,6 +152,7 @@ typedef struct dt_image_t
   float pixel_aspect_ratio;
 
   /* filter for Fuji X-Trans images, only used if filters == 9u */
+  uint8_t xtrans_uncropped[6][6];
   uint8_t xtrans[6][6];
 
   /* White balance coeffs from the raw */
@@ -197,6 +202,7 @@ int32_t dt_image_duplicate(const int32_t imgid);
 /** flips the image, clock wise, if given flag. */
 void dt_image_flip(const int32_t imgid, const int32_t cw);
 void dt_image_set_flip(const int32_t imgid, const dt_image_orientation_t user_flip);
+dt_image_orientation_t dt_image_get_orientation(const int imgid);
 /** set image location lon/lat */
 void dt_image_set_location(const int32_t imgid, double lon, double lat);
 /** returns 1 if there is history data found for this image, 0 else. */

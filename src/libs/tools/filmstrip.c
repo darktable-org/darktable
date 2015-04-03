@@ -783,10 +783,8 @@ static void _lib_filmstrip_scroll_to_image(dt_lib_module_t *self, gint imgid, gb
     dt_control_signal_raise(darktable.signals, DT_SIGNAL_VIEWMANAGER_FILMSTRIP_ACTIVATE);
   }
 
-  /* redraw filmstrip */
-  gboolean owns_lock = dt_control_gdk_lock();
-  gtk_widget_queue_draw(self->widget);
-  if(owns_lock) dt_control_gdk_unlock();
+  /* redraw filmstrip. since this is a proxy function it could be used from another thread */
+  dt_control_queue_redraw_widget(self->widget);
 }
 
 int32_t _lib_filmstrip_get_activated_imgid(dt_lib_module_t *self)

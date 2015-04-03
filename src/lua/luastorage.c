@@ -67,7 +67,7 @@ static int default_dimension_wrapper(struct dt_imageio_module_storage_t *self, d
 
 static int store_wrapper(struct dt_imageio_module_storage_t *self, struct dt_imageio_module_data_t *self_data,
                          const int imgid, dt_imageio_module_format_t *format, dt_imageio_module_data_t *fdata,
-                         const int num, const int total, const gboolean high_quality)
+                         const int num, const int total, const gboolean high_quality, const gboolean upscale)
 {
 
   /* construct a temporary file name */
@@ -84,7 +84,7 @@ static int store_wrapper(struct dt_imageio_module_storage_t *self, struct dt_ima
 
   gchar *complete_name = g_build_filename(tmpdir, filename, (char *)NULL);
 
-  if(dt_imageio_export(imgid, complete_name, format, fdata, high_quality, FALSE, self, self_data, num, total) != 0)
+  if(dt_imageio_export(imgid, complete_name, format, fdata, high_quality, upscale, FALSE, self, self_data, num, total) != 0)
   {
     fprintf(stderr, "[%s] could not export to file: `%s'!\n", self->name(self), complete_name);
     g_free(complete_name);
@@ -140,8 +140,8 @@ static int store_wrapper(struct dt_imageio_module_storage_t *self, struct dt_ima
 
 // FIXME: return 0 on success and 1 on error!
 static int initialize_store_wrapper(struct dt_imageio_module_storage_t *self, dt_imageio_module_data_t *data,
-                                     dt_imageio_module_format_t **format, dt_imageio_module_data_t **fdata,
-                                     GList **images, const gboolean high_quality)
+                                    dt_imageio_module_format_t **format, dt_imageio_module_data_t **fdata,
+                                    GList **images, const gboolean high_quality, const gboolean upscale)
 {
   dt_lua_lock();
   lua_State *L = darktable.lua_state.state;
@@ -319,7 +319,10 @@ static void gui_init_wrapper(struct dt_imageio_module_storage_t *self)
 static void gui_reset_wrapper(struct dt_imageio_module_storage_t *self)
 {
   lua_storage_gui_t *gui_data =self->gui_data;
-  dt_lua_widget_trigger_callback_async(gui_data->widget,"reset",NULL);
+  dt_lua_do_chunk_async(dt_lua_widget_trigger_callback,
+      LUA_ASYNC_TYPENAME,"lua_widget",gui_data->widget,
+      LUA_ASYNC_TYPENAME,"const char*","reset",
+      LUA_ASYNC_DONE);
 }
 
 static void gui_cleanup_wrapper(struct dt_imageio_module_storage_t *self)

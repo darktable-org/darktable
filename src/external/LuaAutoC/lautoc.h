@@ -74,6 +74,7 @@ bool luaA_conversion_registered_type(lua_State* L, luaA_Type type);
 bool luaA_conversion_push_registered_type(lua_State* L, luaA_Type type);
 bool luaA_conversion_to_registered_type(lua_State* L, luaA_Type type);
 
+int luaA_push_bool(lua_State* L, luaA_Type, const void* c_in);
 int luaA_push_char(lua_State* L, luaA_Type, const void* c_in);
 int luaA_push_signed_char(lua_State* L,luaA_Type, const void* c_in);
 int luaA_push_unsigned_char(lua_State* L, luaA_Type, const void* c_in);
@@ -93,6 +94,7 @@ int luaA_push_const_char_ptr(lua_State* L, luaA_Type, const void* c_in);
 int luaA_push_void_ptr(lua_State* L, luaA_Type, const void* c_in);
 int luaA_push_void(lua_State* L, luaA_Type, const void* c_in);
 
+void luaA_to_bool(lua_State* L, luaA_Type, void* c_out, int index);
 void luaA_to_char(lua_State* L, luaA_Type, void* c_out, int index);
 void luaA_to_signed_char(lua_State* L, luaA_Type,  void* c_out, int index);
 void luaA_to_unsigned_char(lua_State* L, luaA_Type,  void* c_out, int index);

@@ -38,8 +38,11 @@
 #define MAX_PROFILES 30
 #define NUM_BUCKETS 4
 
-#define MODE_NLMEANS 0
-#define MODE_WAVELETS 1
+typedef enum dt_iop_denoiseprofile_mode_t
+{
+  MODE_NLMEANS = 0,
+  MODE_WAVELETS = 1
+} dt_iop_denoiseprofile_mode_t;
 
 // this is the version of the modules parameters,
 // and includes version information about compile-time dt
@@ -50,7 +53,7 @@ typedef struct dt_iop_denoiseprofile_params_t
   float radius;     // search radius
   float strength;   // noise level after equalization
   float a[3], b[3]; // fit for poissonian-gaussian noise per color channel.
-  uint32_t mode;    // switch between nlmeans and wavelets
+  dt_iop_denoiseprofile_mode_t mode; // switch between nlmeans and wavelets
 } dt_iop_denoiseprofile_params_t;
 
 typedef struct dt_iop_denoiseprofile_gui_data_t
@@ -59,9 +62,8 @@ typedef struct dt_iop_denoiseprofile_gui_data_t
   GtkWidget *mode;
   GtkWidget *radius;
   GtkWidget *strength;
-  dt_noiseprofile_t interpolated;
-  const dt_noiseprofile_t *profiles[MAX_PROFILES];
-  int profile_cnt;
+  dt_noiseprofile_t interpolated; // don't use name, maker or model, they may point to garbage
+  GList *profiles;
 } dt_iop_denoiseprofile_gui_data_t;
 
 typedef dt_iop_denoiseprofile_params_t dt_iop_denoiseprofile_data_t;
@@ -1377,43 +1379,41 @@ void reload_defaults(dt_iop_module_t *module)
 
     // get matching profiles:
     char name[512];
-    g->profile_cnt = dt_noiseprofile_get_matching(&module->dev->image_storage, g->profiles, MAX_PROFILES);
-    g->interpolated = dt_noiseprofiles[0]; // default to generic poissonian
+    if(g->profiles) g_list_free_full(g->profiles, dt_noiseprofile_free);
+    g->profiles = dt_noiseprofile_get_matching(&module->dev->image_storage);
+    g->interpolated = dt_noiseprofile_generic; // default to generic poissonian
     g_strlcpy(name, _(g->interpolated.name), sizeof(name));
 
     const int iso = module->dev->image_storage.exif_iso;
-    for(int i = 1; i < g->profile_cnt; i++)
+    dt_noiseprofile_t *last = NULL;
+    for(GList *iter = g->profiles; iter; iter = g_list_next(iter))
     {
-      if(g->profiles[i - 1]->iso == iso)
+      dt_noiseprofile_t *current = (dt_noiseprofile_t *)iter->data;
+
+      if(current->iso == iso)
       {
-        g->interpolated = *(g->profiles[i - 1]);
+        g->interpolated = *current;
         // signal later autodetection in commit_params:
         g->interpolated.a[0] = -1.0;
-        snprintf(name, sizeof(name), _("found match for ISO %d"), g->profiles[i - 1]->iso);
+        snprintf(name, sizeof(name), _("found match for ISO %d"), iso);
         break;
       }
-      if(g->profiles[i]->iso == iso)
+      if(last && last->iso < iso && current->iso > iso)
       {
-        g->interpolated = *(g->profiles[i]);
+        dt_noiseprofile_interpolate(last, current, &g->interpolated);
         // signal later autodetection in commit_params:
         g->interpolated.a[0] = -1.0;
-        snprintf(name, sizeof(name), _("found match for ISO %d"), g->profiles[i]->iso);
+        snprintf(name, sizeof(name), _("interpolated from ISO %d and %d"), last->iso, current->iso);
         break;
       }
-      if(g->profiles[i - 1]->iso < iso && g->profiles[i]->iso > iso)
-      {
-        dt_noiseprofile_interpolate(g->profiles[i - 1], g->profiles[i], &g->interpolated);
-        // signal later autodetection in commit_params:
-        g->interpolated.a[0] = -1.0;
-        snprintf(name, sizeof(name), _("interpolated from ISO %d and %d"), g->profiles[i - 1]->iso,
-                 g->profiles[i]->iso);
-        break;
-      }
+      last = current;
     }
+
     dt_bauhaus_combobox_add(g->profile, name);
-    for(int i = 0; i < g->profile_cnt; i++)
+    for(GList *iter = g->profiles; iter; iter = g_list_next(iter))
     {
-      dt_bauhaus_combobox_add(g->profile, g->profiles[i]->name);
+      dt_noiseprofile_t *profile = (dt_noiseprofile_t *)iter->data;
+      dt_bauhaus_combobox_add(g->profile, profile->name);
     }
 
     ((dt_iop_denoiseprofile_params_t *)module->default_params)->radius = 1.0f;
@@ -1488,29 +1488,27 @@ void cleanup_global(dt_iop_module_so_t *module)
 
 static dt_noiseprofile_t dt_iop_denoiseprofile_get_auto_profile(dt_iop_module_t *self)
 {
-  const dt_noiseprofile_t *profiles[MAX_PROFILES];
-  int profile_cnt = dt_noiseprofile_get_matching(&self->dev->image_storage, profiles, MAX_PROFILES);
-  dt_noiseprofile_t interpolated = dt_noiseprofiles[0]; // default to generic poissonian
+  GList *profiles = dt_noiseprofile_get_matching(&self->dev->image_storage);
+  dt_noiseprofile_t interpolated = dt_noiseprofile_generic; // default to generic poissonian
 
   const int iso = self->dev->image_storage.exif_iso;
-  for(int i = 1; i < profile_cnt; i++)
+  dt_noiseprofile_t *last = NULL;
+  for(GList *iter = profiles; iter; iter = g_list_next(iter))
   {
-    if(profiles[i - 1]->iso == iso)
+    dt_noiseprofile_t *current = (dt_noiseprofile_t *)iter->data;
+    if(current->iso == iso)
     {
-      interpolated = *(profiles[i - 1]);
+      interpolated = *current;
       break;
     }
-    if(profiles[i]->iso == iso)
+    if(last && last->iso < iso && current->iso > iso)
     {
-      interpolated = *(profiles[i]);
+      dt_noiseprofile_interpolate(last, current, &interpolated);
       break;
     }
-    if(profiles[i - 1]->iso < iso && profiles[i]->iso > iso)
-    {
-      dt_noiseprofile_interpolate(profiles[i - 1], profiles[i], &interpolated);
-      break;
-    }
+    last = current;
   }
+  g_list_free_full(profiles, dt_noiseprofile_free);
   return interpolated;
 }
 
@@ -1557,7 +1555,7 @@ static void profile_callback(GtkWidget *w, dt_iop_module_t *self)
   dt_iop_denoiseprofile_params_t *p = (dt_iop_denoiseprofile_params_t *)self->params;
   dt_iop_denoiseprofile_gui_data_t *g = (dt_iop_denoiseprofile_gui_data_t *)self->gui_data;
   const dt_noiseprofile_t *profile = &(g->interpolated);
-  if(i > 0) profile = g->profiles[i - 1];
+  if(i > 0) profile = (dt_noiseprofile_t *)g_list_nth_data(g->profiles, i - 1);
   for(int k = 0; k < 3; k++)
   {
     p->a[k] = profile->a[k];
@@ -1611,12 +1609,14 @@ void gui_update(dt_iop_module_t *self)
   }
   else
   {
-    for(int i = 0; i < g->profile_cnt; i++)
+    int i = 1;
+    for(GList *iter = g->profiles; iter; iter = g_list_next(iter), i++)
     {
-      if(!memcmp(g->profiles[i]->a, p->a, sizeof(float) * 3)
-         && !memcmp(g->profiles[i]->b, p->b, sizeof(float) * 3))
+      dt_noiseprofile_t *profile = (dt_noiseprofile_t *)iter->data;
+      if(!memcmp(profile->a, p->a, sizeof(float) * 3)
+         && !memcmp(profile->b, p->b, sizeof(float) * 3))
       {
-        dt_bauhaus_combobox_set(g->profile, i + 1);
+        dt_bauhaus_combobox_set(g->profile, i);
         break;
       }
     }
@@ -1629,7 +1629,7 @@ void gui_init(dt_iop_module_t *self)
   self->gui_data = malloc(sizeof(dt_iop_denoiseprofile_gui_data_t));
   dt_iop_denoiseprofile_gui_data_t *g = (dt_iop_denoiseprofile_gui_data_t *)self->gui_data;
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
-  g->profile_cnt = 0;
+  g->profiles = NULL;
   g->profile = dt_bauhaus_combobox_new(self);
   g->mode = dt_bauhaus_combobox_new(self);
   g->radius = dt_bauhaus_slider_new_with_range(self, 0.0f, 4.0f, 1., 1.f, 0);
@@ -1662,6 +1662,8 @@ void gui_init(dt_iop_module_t *self)
 
 void gui_cleanup(dt_iop_module_t *self)
 {
+  dt_iop_denoiseprofile_gui_data_t *g = (dt_iop_denoiseprofile_gui_data_t *)self->gui_data;
+  g_list_free_full(g->profiles, dt_noiseprofile_free);
   // nothing else necessary, gtk will clean up the slider.
   free(self->gui_data);
   self->gui_data = NULL;

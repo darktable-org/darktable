@@ -49,6 +49,7 @@
 #include <sqlite3.h>
 #include <glib/gi18n.h>
 #include <glib.h>
+#include <json-glib/json-glib.h>
 #include <math.h>
 #include <sys/types.h>
 #include <unistd.h>
@@ -176,6 +177,7 @@ typedef struct darktable_t
   GList *iop;
   GList *collection_listeners;
   GList *capabilities;
+  JsonParser *noiseprofile_parser;
   struct dt_conf_t *conf;
   struct dt_develop_t *develop;
   struct dt_lib_t *lib;

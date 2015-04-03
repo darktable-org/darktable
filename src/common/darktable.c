@@ -46,6 +46,7 @@
 #include "common/image_cache.h"
 #include "common/imageio_module.h"
 #include "common/mipmap_cache.h"
+#include "common/noiseprofiles.h"
 #include "common/opencl.h"
 #include "common/points.h"
 #include "develop/imageop.h"
@@ -127,6 +128,7 @@ static int usage(const char *argv0)
   printf(" [--luacmd <lua command>]");
 #endif
   printf(" [--conf <key>=<value>]");
+  printf(" [--noiseprofiles <noiseprofiles json file>]");
   printf("\n");
   return 1;
 }
@@ -477,11 +479,16 @@ int dt_init(int argc, char *argv[], const int init_gui, lua_State *L)
 
   // database
   gchar *dbfilename_from_command = NULL;
+  gchar *noiseprofiles_from_command = NULL;
   char *datadir_from_command = NULL;
   char *moduledir_from_command = NULL;
   char *tmpdir_from_command = NULL;
   char *configdir_from_command = NULL;
   char *cachedir_from_command = NULL;
+
+#ifdef HAVE_OPENCL
+  gboolean exclude_opencl = FALSE;
+#endif
 
 #ifdef USE_LUA
   char *lua_command = NULL;
@@ -493,9 +500,10 @@ int dt_init(int argc, char *argv[], const int init_gui, lua_State *L)
 #endif
   darktable.unmuted = 0;
   GSList *images_to_load = NULL, *config_override = NULL;
+  gboolean no_more_options = FALSE;
   for(int k = 1; k < argc; k++)
   {
-    if(argv[k][0] == '-')
+    if(argv[k][0] == '-' && !no_more_options)
     {
       if(!strcmp(argv[k], "--help"))
       {
@@ -507,7 +515,7 @@ int dt_init(int argc, char *argv[], const int init_gui, lua_State *L)
       }
       else if(!strcmp(argv[k], "--version"))
       {
-        printf("this is " PACKAGE_STRING "\ncopyright (c) 2009-2014 johannes hanika\n" PACKAGE_BUGREPORT
+        printf("this is " PACKAGE_STRING "\ncopyright (c) 2009-2015 johannes hanika\n" PACKAGE_BUGREPORT
                "\n\ncompile options:\n"
 #ifdef _OPENMP
                "  OpenMP support enabled\n"
@@ -638,6 +646,10 @@ int dt_init(int argc, char *argv[], const int init_gui, lua_State *L)
         }
         g_free(keyval);
       }
+      else if(!strcmp(argv[k], "--noiseprofiles") && argc > k + 1)
+      {
+        noiseprofiles_from_command = argv[++k];
+      }
       else if(!strcmp(argv[k], "--luacmd") && argc > k + 1)
       {
 #ifdef USE_LUA
@@ -646,6 +658,18 @@ int dt_init(int argc, char *argv[], const int init_gui, lua_State *L)
         ++k;
 #endif
       }
+      else if(!strcmp(argv[k], "--disable-opencl"))
+      {
+#ifdef HAVE_OPENCL
+        exclude_opencl = TRUE;
+#endif
+      }
+      else if(!strcmp(argv[k], "--"))
+      {
+        no_more_options = TRUE;
+      }
+      else
+        return usage(argv[0]); // fail on unrecognized options
     }
 #ifndef MAC_INTEGRATION
     else
@@ -713,7 +737,10 @@ int dt_init(int argc, char *argv[], const int init_gui, lua_State *L)
       "ui_last/gui_language"); // we may not g_free 'lang' since it is owned by setlocale afterwards
   if(lang != NULL && lang[0] != '\0')
   {
+    setenv("LANGUAGE", lang, 1);
     if(setlocale(LC_ALL, lang) != NULL) gtk_disable_setlocale();
+    setlocale(LC_MESSAGES, lang);
+    setenv("LANG", lang, 1);
   }
 
   // initialize the database
@@ -807,7 +834,7 @@ int dt_init(int argc, char *argv[], const int init_gui, lua_State *L)
 
   darktable.opencl = (dt_opencl_t *)calloc(1, sizeof(dt_opencl_t));
 #ifdef HAVE_OPENCL
-  dt_opencl_init(darktable.opencl, argc, argv);
+  dt_opencl_init(darktable.opencl, exclude_opencl);
 #endif
 
   darktable.blendop = (dt_blendop_t *)calloc(1, sizeof(dt_blendop_t));
@@ -815,6 +842,8 @@ int dt_init(int argc, char *argv[], const int init_gui, lua_State *L)
 
   darktable.points = (dt_points_t *)calloc(1, sizeof(dt_points_t));
   dt_points_init(darktable.points, dt_get_num_threads());
+
+  darktable.noiseprofile_parser = dt_noiseprofile_init(noiseprofiles_from_command);
 
   // must come before mipmap_cache, because that one will need to access
   // image dimensions stored in here:

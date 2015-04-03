@@ -322,25 +322,42 @@ static void _lib_modulegroups_toggle(GtkWidget *button, gpointer user_data)
   _lib_modulegroups_update_iop_visibility(self);
 }
 
-static void _lib_modulegroups_set(dt_lib_module_t *self, uint32_t group)
+typedef struct _set_gui_thread_t
 {
-  dt_lib_modulegroups_t *d = (dt_lib_modulegroups_t *)self->data;
+  dt_lib_module_t *self;
+  uint32_t group;
+} _set_gui_thread_t;
 
-  /* this is a proxy function so it might be called from another thread */
-  gboolean i_own_lock = dt_control_gdk_lock();
+static gboolean _lib_modulegroups_set_gui_thread(gpointer user_data)
+{
+  _set_gui_thread_t *params = (_set_gui_thread_t *)user_data;
+
+  dt_lib_modulegroups_t *d = (dt_lib_modulegroups_t *)params->self->data;
 
   /* if no change just update visibility */
-  if(d->current == group)
+  if(d->current == params->group)
   {
-    _lib_modulegroups_update_iop_visibility(self);
-    return;
+    _lib_modulegroups_update_iop_visibility(params->self);
+    free(params);
+    return FALSE;
   }
 
   /* set current group */
-  if(group < DT_MODULEGROUP_SIZE && GTK_IS_TOGGLE_BUTTON(d->buttons[group]))
-    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->buttons[group]), TRUE);
+  if(params->group < DT_MODULEGROUP_SIZE && GTK_IS_TOGGLE_BUTTON(d->buttons[params->group]))
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->buttons[params->group]), TRUE);
 
-  if(i_own_lock) dt_control_gdk_unlock();
+  free(params);
+  return FALSE;
+}
+
+/* this is a proxy function so it might be called from another thread */
+static void _lib_modulegroups_set(dt_lib_module_t *self, uint32_t group)
+{
+  _set_gui_thread_t *params = (_set_gui_thread_t *)malloc(sizeof(_set_gui_thread_t));
+  if(!params) return;
+  params->self = self;
+  params->group = group;
+  g_main_context_invoke(NULL, _lib_modulegroups_set_gui_thread, params);
 }
 
 static void _lib_modulegroups_switch_group(dt_lib_module_t *self, dt_iop_module_t *module)

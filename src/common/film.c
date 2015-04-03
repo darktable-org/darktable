@@ -39,6 +39,10 @@
 #include <strings.h>
 #include <errno.h>
 #include <assert.h>
+#ifdef USE_LUA
+#include "lua/lua.h"
+#include "lua/glist.h"
+#endif
 
 void dt_film_init(dt_film_t *film)
 {
@@ -347,6 +351,46 @@ void dt_film_import1(dt_film_t *film)
   if(g_list_length(images) == 0)
   {
     dt_control_log(_("no supported images were found to be imported"));
+    return;
+  }
+
+#ifdef USE_LUA
+  /* pre-sort image list for easier handling in Lua code */
+  images = g_list_sort(images, (GCompareFunc)_film_filename_cmp);
+
+  dt_lua_lock();
+  lua_State *L = darktable.lua_state.state;
+  {
+    GList *elt = images;
+    lua_newtable(L);
+    while(elt)
+    {
+      lua_pushstring(L,elt->data);
+      luaL_ref(L, -2);
+      elt = g_list_next(elt);
+    }
+  }
+  lua_pushvalue(L,-1);
+  dt_lua_event_trigger(L,"pre-import",1);
+  {
+    g_list_free_full(images,g_free);
+    // recreate list of images
+    images = NULL;
+    lua_pushnil(L); /* first key */
+    while(lua_next(L, - 2) != 0)
+    {
+      /* uses 'key' (at index -2) and 'value' (at index -1) */
+      void *filename = strdup(luaL_checkstring(L,-1));
+      lua_pop(L, 1);
+      images = g_list_prepend(images, filename);
+    }
+  }
+  dt_lua_unlock();
+#endif
+
+  if(g_list_length(images) == 0)
+  {
+    //no error message, lua probably emptied the list on purpose
     return;
   }
 

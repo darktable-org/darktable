@@ -253,6 +253,7 @@ darktable.preferences.register:add_parameter("name","string",[[A unique name use
 darktable.preferences.register:add_parameter("type",types.lua_pref_type,[[The type of the preference - one of the string values described above.]])
 darktable.preferences.register:add_parameter("label","string",[[The label displayed in the preference screen.]])
 darktable.preferences.register:add_parameter("tooltip","string",[[The tooltip to display in the preference menue.]])
+darktable.preferences.register:add_parameter("sensitive","boolean",[[True if the widget can be interacted with.]])
 darktable.preferences.register:add_parameter("default","depends on type",[[Default value to use when not set explicitely or by the user.]]..para().."For the enum type of pref, this is mandatory"):set_attribute("optional",true)
 darktable.preferences.register:add_parameter("min","int or float",[[Minimum value (integer and float preferences only).]]):set_attribute("optional",true)
 darktable.preferences.register:add_parameter("max","int or float",[[Maximum value (integer and float preferences only).]]):set_attribute("optional",true)
@@ -364,6 +365,7 @@ darktable.gui.views.darkroom:set_text([[The darkroom view]])
 darktable.gui.views.lighttable:set_text([[The lighttable view]])
 darktable.gui.views.tethering:set_text([[The tethering view]])
 darktable.gui.views.slideshow:set_text([[The slideshow view]])
+darktable.gui.views.print:set_text([[The print view]])
 
 --[[
 for k, v in darktable.gui.libs:unskiped_children() do
@@ -382,10 +384,10 @@ darktable.gui.libs:set_text([[This table allows to reference all lib objects]]..
 [[To quickly figure out what lib is what, you can use the following code which will make a given lib blink.]]..para()..
 code([[local tested_module="global_toolbox"
 dt.gui.libs[tested_module].visible=false
-coroutine.yield("wait_ms",2000)
+coroutine.yield("WAIT_MS",2000)
 while true do
 	dt.gui.libs[tested_module].visible = not dt.gui.libs[tested_module].visible
-	coroutine.yield("wait_ms",2000)
+	coroutine.yield("WAIT_MS",2000)
 end]]))
 
 
@@ -442,6 +444,7 @@ darktable.gui.libs.map_settings:set_text([[The map setting window]])
 darktable.gui.libs.camera:set_text([[The camera selection UI]])
 darktable.gui.libs.location:set_text([[The location ui]])
 darktable.gui.libs.backgroundjobs:set_text([[The window displaying the currently running jobs]])
+darktable.gui.libs.print_settings:set_text([[The settings window in the print view]])
 
 
 darktable.control:set_text([[This table contain function to manipulate the control flow of lua programs. It provides ways to do background jobs and other related functions]])
@@ -561,6 +564,7 @@ darktable.debug.type:set_text([[Similar to the system function type() but it wil
 	types.dt_imageio_module_format_t.write_image:add_parameter("self",types.dt_imageio_module_format_t,[[The format that will be used to export.]]):set_attribute("is_self",true)
 	types.dt_imageio_module_format_t.write_image:add_parameter("image",types.dt_lua_image_t,[[The image object to export.]])
 	types.dt_imageio_module_format_t.write_image:add_parameter("filename","string",[[The filename to export to.]])
+	types.dt_imageio_module_format_t.write_image:add_parameter("allow_upscale","boolean",[[Set to true to allow upscaling of the image.]]):set_attribute("optional",true)
 	types.dt_imageio_module_format_t.write_image:add_return("boolean",[[Returns true on success.]])
 
 	types.dt_imageio_module_format_data_png:set_text([[Type object describing parameters to export to png.]])
@@ -630,6 +634,7 @@ darktable.debug.type:set_text([[Similar to the system function type() but it wil
 	types.dt_lua_tag_t:set_text([[A tag that can be attached to an image.]])
 	types.dt_lua_tag_t.name:set_text([[The name of the tag.]])
 	types.dt_lua_tag_t["#"]:set_text([[The images that have that tag attached to them.]])
+	types.dt_lua_tag_t["#"]:set_reported_type(types.dt_lua_image_t)
 
 	types.dt_lib_module_t:set_text([[The type of a UI lib]])
 	types.dt_lib_module_t.id:set_text([[A unit string identifying the lib]])
@@ -691,10 +696,11 @@ darktable.debug.type:set_text([[Similar to the system function type() but it wil
   types.dt_lua_orientation_t:set_text("A possible orientation for a widget")
 
   types.lua_widget:set_text("Common parent type for all lua-handled widgets");
+  types.lua_widget.sensitive:set_text("Set if the widget is enabled/disabled");
   types.lua_widget.tooltip:set_text("Tooltip to display for the widget");
   types.lua_widget.tooltip:set_reported_type("string or nil")
   types.lua_widget.reset_callback:set_text("A function to call when the widget needs to reset itself"..para()..
-  "Note that some widgets have a default implementation that can be overridden, (containers in particular will recursively reset their children). If you replace that default implementation you need to reimplement that functionality")
+  "Note that some widgets have a default implementation that can be overridden, (containers in particular will recursively reset their children). If you replace that default implementation you need to reimplement that functionality or call the original function within your callback")
   types.lua_widget.reset_callback:set_reported_type("function")
   types.lua_widget.reset_callback:add_parameter("widget",types.lua_widget,"The widget that triggered the callback")
   types.lua_widget.__call:set_main_parent(types.lua_widget)
@@ -772,6 +778,10 @@ local widget = dt.new_widget("button"){
   types.lua_file_chooser_button.changed_callback:add_parameter("widget",types.lua_widget,"The widget that triggered the callback")
   types.lua_file_chooser_button.is_directory:set_text("True if the file chooser button only allows directories to be selecte")
 
+  types.lua_stack:set_text("A container that will only show one of its child at a time")
+  types.lua_stack.active:set_text("The currently selected child, can be nil if the container has no child, can be set to one of the child widget or to an index in the child table")
+  types.lua_stack.active:set_reported_type(my_tostring(types.lua_widget).." or nil")
+
 
 	----------------------
 	--  EVENTS          --
@@ -819,6 +829,7 @@ local widget = dt.new_widget("button"){
 	events["post-import-film"].extra_registration_parameters:set_text([[This event has no extra registration parameters.]])
 
 	events["view-changed"]:set_text([[This event is triggered after the user changed the active view]])
+	events["view-changed"].callback:add_parameter("event","string",[[The name of the event that triggered the callback.]])
 	events["view-changed"].callback:add_parameter("old_view",types.dt_view_t,[[The view that we just left]])
 	events["view-changed"].callback:add_parameter("new_view",types.dt_view_t,[[The view we are now in]])
 	events["view-changed"].extra_registration_parameters:set_text([[This event has no extra registration parameters.]])
@@ -836,6 +847,10 @@ local widget = dt.new_widget("button"){
   events["exit"]:set_text([[This event is triggered when darktable exits, it allows lua scripts to do cleanup jobs]])
 	events["exit"].extra_registration_parameters:set_text([[This event has no extra registration parameters.]])
   
+  events["pre-import"]:set_text("This event is trigger before any import action");
+	events["pre-import"].callback:add_parameter("event","string",[[The name of the event that triggered the callback.]])
+	events["pre-import"].callback:add_parameter("images","table of string",[[The files that will be imported. Modifying this table will change the list of files that will be imported"]])
+	events["pre-import"].extra_registration_parameters:set_text([[This event has no extra registration parameters.]])
 	----------------------
 	--  ATTRIBUTES      --
 	----------------------
@@ -882,12 +897,12 @@ local widget = dt.new_widget("button"){
 	system.coroutine.yield = doc.document_function(nil,system.coroutine,"yield");
 	system.coroutine.yield:set_text([[Lua functions can yield at any point. The parameters and return types depend on why we want to yield.]]..para()..
 	[[A callback that is yielding allows other Lua code to run.]]..startlist()..
-	listel("wait_ms: one extra parameter; the execution will pause for that many miliseconds; yield returns nothing;")..
-	listel("file_readable: an opened file from a call to the OS library; will return when the file is readable; returns nothing;")..
-	listel([[run_command: a command to be run by "sh -c"; will return when the command terminates; returns the return code of the execution.]])..
+	listel("WAIT_MS: one extra parameter; the execution will pause for that many miliseconds; yield returns nothing;")..
+	listel("FILE_READABLE: an opened file from a call to the OS library; will return when the file is readable; returns nothing;")..
+	listel([[RUN_COMMAND: a command to be run by "sh -c"; will return when the command terminates; returns the return code of the execution.]])..
 endlist())
 system.coroutine.yield:add_parameter("type",types.yield_type,[[The type of yield.]])
-system.coroutine.yield:add_parameter("extra","variable",[[An extra parameter: integer for "wait_ms", open file for "file_readable", string for "run_command".]])
-system.coroutine.yield:add_return("variable",[[Nothing for "wait_ms" and "file_readable"; the returned code of the command for "run_command".]])
+system.coroutine.yield:add_parameter("extra","variable",[[An extra parameter: integer for "WAIT_MS", open file for "FILE_READABLE", string for "RUN_COMMAND".]])
+system.coroutine.yield:add_return("variable",[[Nothing for "WAIT_MS" and "FILE_READABLE"; the returned code of the command for "RUN_COMMAND".]])
 --
 -- vim: shiftwidth=2 expandtab tabstop=2 cindent syntax=lua

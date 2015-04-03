@@ -55,6 +55,7 @@ private:
   TiffIFD* FindBestImage(vector<TiffIFD*>* data);
   string getMode();
   string getExtendedMode(string mode);
+  ushort16* gammaCurve(double pwr, double ts, int mode, int imax);
 };
 
 class NefSlice {

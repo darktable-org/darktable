@@ -24,7 +24,6 @@
 #include "common/mipmap_cache.h"
 #include "common/imageio.h"
 #include "common/imageio_jpeg.h"
-#include "common/dt_logo_128x128.h"
 #include "common/exif.h"
 #include "control/control.h"
 #include "control/conf.h"
@@ -39,6 +38,12 @@
 #include "gui/camera_import_dialog.h"
 #endif
 #include "libs/lib.h"
+
+#include <librsvg/rsvg.h>
+// ugh, ugly hack. why do people break stuff all the time?
+#ifndef RSVG_CAIRO_H
+#include <librsvg/rsvg-cairo.h>
+#endif
 
 DT_MODULE(1)
 
@@ -170,7 +175,6 @@ static void _lib_import_tethered_callback(GtkToggleButton *button, gpointer data
 /** update the device list */
 void _lib_import_ui_devices_update(dt_lib_module_t *self)
 {
-
   dt_lib_import_t *d = (dt_lib_import_t *)self->data;
 
   GList *citem;
@@ -181,14 +185,6 @@ void _lib_import_ui_devices_update(dt_lib_module_t *self)
     {
       gtk_container_remove(GTK_CONTAINER(d->devices), GTK_WIDGET(item->data));
     } while((item = g_list_next(item)) != NULL);
-
-  /* add the rescan button */
-  GtkButton *scan = GTK_BUTTON(gtk_button_new_with_label(_("scan for devices")));
-  d->scan_devices = scan;
-  gtk_widget_set_halign(gtk_bin_get_child(GTK_BIN(scan)), GTK_ALIGN_START);
-  g_object_set(G_OBJECT(scan), "tooltip-text", _("scan for newly attached devices"), (char *)NULL);
-  g_signal_connect(G_OBJECT(scan), "clicked", G_CALLBACK(_lib_import_scan_devices_callback), self);
-  gtk_box_pack_start(GTK_BOX(d->devices), GTK_WIDGET(scan), TRUE, TRUE, 0);
 
   uint32_t count = 0;
   /* FIXME: Verify that it's safe to access camctl->cameras list here ? */
@@ -257,37 +253,47 @@ void _lib_import_ui_devices_update(dt_lib_module_t *self)
 }
 
 /** camctl camera disconnect callback */
+static gboolean _detect_async(gpointer user_data)
+{
+  dt_camctl_detect_cameras(darktable.camctl);
+  return FALSE;
+}
+
 static void _camctl_camera_disconnected_callback(const dt_camera_t *camera, void *data)
 {
-  /* rescan connected cameras */
-  dt_camctl_detect_cameras(darktable.camctl);
+  /* rescan connected cameras. do that asynchronously since otherwise we deadlock (#10314) */
+  g_idle_add(_detect_async, NULL);
 
   /* update gui with detected devices */
   // this is done asynchronously in _camera_detected()
 }
 
 /** camctl status listener callback */
-static void _camctl_camera_control_status_callback(dt_camctl_status_t status, void *data)
+typedef struct _control_status_params_t
 {
-  dt_lib_module_t *self = (dt_lib_module_t *)data;
-  dt_lib_import_t *d = (dt_lib_import_t *)self->data;
+  dt_camctl_status_t status;
+  dt_lib_module_t *self;
+} _control_status_params_t;
 
-  /* check if we need gdk locking */
-  gboolean i_have_lock = dt_control_gdk_lock();
+static gboolean _camctl_camera_control_status_callback_gui_thread(gpointer user_data)
+{
+  _control_status_params_t *params = (_control_status_params_t *)user_data;
+
+  dt_lib_import_t *d = (dt_lib_import_t *)params->self->data;
 
   /* handle camctl status */
-  switch(status)
+  switch(params->status)
   {
     case CAMERA_CONTROL_BUSY:
     {
       /* set all devices as inaccessible */
       GList *child = gtk_container_get_children(GTK_CONTAINER(d->devices));
       if(child) do
-        {
-          if(!(GTK_IS_TOGGLE_BUTTON(child->data)
-               && gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(child->data)) == TRUE))
-            gtk_widget_set_sensitive(GTK_WIDGET(child->data), FALSE);
-        } while((child = g_list_next(child)));
+      {
+        if(!(GTK_IS_TOGGLE_BUTTON(child->data)
+          && gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(child->data)) == TRUE))
+          gtk_widget_set_sensitive(GTK_WIDGET(child->data), FALSE);
+      } while((child = g_list_next(child)));
     }
     break;
 
@@ -296,15 +302,25 @@ static void _camctl_camera_control_status_callback(dt_camctl_status_t status, vo
       /* set all devices as accessible */
       GList *child = gtk_container_get_children(GTK_CONTAINER(d->devices));
       if(child) do
-        {
-          gtk_widget_set_sensitive(GTK_WIDGET(child->data), TRUE);
-        } while((child = g_list_next(child)));
+      {
+        gtk_widget_set_sensitive(GTK_WIDGET(child->data), TRUE);
+      } while((child = g_list_next(child)));
     }
     break;
   }
 
-  /* unlock */
-  if(i_have_lock) dt_control_gdk_unlock();
+  free(params);
+  return FALSE;
+}
+
+static void _camctl_camera_control_status_callback(dt_camctl_status_t status, void *data)
+{
+  dt_lib_module_t *self = (dt_lib_module_t *)data;
+  _control_status_params_t *params = (_control_status_params_t *)malloc(sizeof(_control_status_params_t));
+  if(!params) return;
+  params->status = status;
+  params->self = self;
+  g_main_context_invoke(NULL, _camctl_camera_control_status_callback_gui_thread, params);
 }
 
 #endif // HAVE_GPHOTO2
@@ -573,27 +589,34 @@ static void _lib_import_evaluate_extra_widget(dt_lib_import_metadata_t *data, gb
   dt_conf_set_string("ui_last/import_last_tags", gtk_entry_get_text(GTK_ENTRY(data->tags)));
 }
 
-// TODO: use orientation to correctly rotate the image.
 // maybe this should be (partly) in common/imageio.[c|h]?
 static void _lib_import_update_preview(GtkFileChooser *file_chooser, gpointer data)
 {
   GtkWidget *preview;
   char *filename;
   GdkPixbuf *pixbuf = NULL;
-  gboolean have_preview = FALSE;
+  gboolean have_preview = FALSE, no_preview_fallback = FALSE;
 
   preview = GTK_WIDGET(data);
   filename = gtk_file_chooser_get_preview_filename(file_chooser);
 
-  if(!g_file_test(filename, G_FILE_TEST_IS_REGULAR)) goto no_preview_fallback;
-  // don't create dng thumbnails to avoid crashes in libtiff when these are hdr:
-  char *c = filename + strlen(filename);
-  while(c > filename && *c != '.') c--;
-  if(!strcasecmp(c, ".dng")) goto no_preview_fallback;
+  if(!g_file_test(filename, G_FILE_TEST_IS_REGULAR))
+  {
+    no_preview_fallback = TRUE;
+  }
+  else
+  {
+    // don't create dng thumbnails to avoid crashes in libtiff when these are hdr:
+    char *c = filename + strlen(filename);
+    while(c > filename && *c != '.') c--;
+    if(!strcasecmp(c, ".dng")) no_preview_fallback = TRUE;
+  }
 
-  pixbuf = gdk_pixbuf_new_from_file_at_size(filename, 128, 128, NULL);
+  // unfortunately we can not use following, because frequently it uses wrong orientation
+  // pixbuf = gdk_pixbuf_new_from_file_at_size(filename, 128, 128, NULL);
+
   have_preview = (pixbuf != NULL);
-  if(!have_preview)
+  if(!have_preview && !no_preview_fallback)
   {
     uint8_t *buffer = NULL;
     size_t size;
@@ -601,9 +624,6 @@ static void _lib_import_update_preview(GtkFileChooser *file_chooser, gpointer da
     if(!dt_exif_get_thumbnail(filename, &buffer, &size, &mime_type))
     {
       // Scale the image to the correct size
-      // FIXME: gdk seems much less forgiving to getting slightly misformed
-      //        jpg streams from exiv2 than our own code, so not all thumbnails
-      //        work here. This is really an exiv2 bug though
       GdkPixbuf *tmp;
       GdkPixbufLoader *loader = gdk_pixbuf_loader_new();
       if (!gdk_pixbuf_loader_write(loader, buffer, size, NULL)) goto cleanup;
@@ -611,6 +631,9 @@ static void _lib_import_update_preview(GtkFileChooser *file_chooser, gpointer da
       float ratio = 1.0 * gdk_pixbuf_get_height(tmp) / gdk_pixbuf_get_width(tmp);
       int width = 128, height = 128 * ratio;
       pixbuf = gdk_pixbuf_scale_simple(tmp, width, height, GDK_INTERP_BILINEAR);
+
+      have_preview = TRUE;
+
     cleanup:
       gdk_pixbuf_loader_close(loader, NULL);
       free(mime_type);
@@ -618,10 +641,87 @@ static void _lib_import_update_preview(GtkFileChooser *file_chooser, gpointer da
       g_object_unref(loader); // This should clean up tmp as well
     }
   }
-  if(!have_preview)
+  if(have_preview && !no_preview_fallback)
   {
-  no_preview_fallback:
-    pixbuf = gdk_pixbuf_new_from_inline(-1, dt_logo_128x128, FALSE, NULL);
+    // get image orientation
+    dt_image_t img = { 0 };
+    (void)dt_exif_read(&img, filename);
+
+    // Rotate the image to the correct orientation
+    GdkPixbuf *tmp = pixbuf;
+
+    if(img.orientation == ORIENTATION_ROTATE_CCW_90_DEG)
+    {
+      tmp = gdk_pixbuf_rotate_simple(pixbuf, GDK_PIXBUF_ROTATE_COUNTERCLOCKWISE);
+    }
+    else if(img.orientation == ORIENTATION_ROTATE_CW_90_DEG)
+    {
+      tmp = gdk_pixbuf_rotate_simple(pixbuf, GDK_PIXBUF_ROTATE_CLOCKWISE);
+    }
+    else if(img.orientation == ORIENTATION_ROTATE_180_DEG)
+    {
+      tmp = gdk_pixbuf_rotate_simple(pixbuf, GDK_PIXBUF_ROTATE_UPSIDEDOWN);
+    }
+
+    if(pixbuf != tmp)
+    {
+      g_object_unref(pixbuf);
+      pixbuf = tmp;
+    }
+  }
+  if(no_preview_fallback || !have_preview)
+  {
+    guint8 *image_buffer = NULL;
+
+    /* load the dt logo as a brackground */
+    char filename[PATH_MAX] = { 0 };
+    char datadir[PATH_MAX] = { 0 };
+    char *logo;
+    dt_logo_season_t season = get_logo_season();
+    if(season != DT_LOGO_SEASON_NONE)
+      logo = g_strdup_printf("%%s/pixmaps/idbutton-%d.svg", (int)season);
+    else
+      logo = g_strdup("%s/pixmaps/idbutton.svg");
+
+    dt_loc_get_datadir(datadir, sizeof(datadir));
+    snprintf(filename, sizeof(filename), logo, datadir);
+    g_free(logo);
+    RsvgHandle *svg = rsvg_handle_new_from_file(filename, NULL);
+    if(svg)
+    {
+      cairo_surface_t *surface;
+      cairo_t *cr;
+
+      RsvgDimensionData dimension;
+      rsvg_handle_get_dimensions(svg, &dimension);
+
+      float svg_size = MAX(dimension.width, dimension.height);
+      float final_size = 128;
+      float factor = final_size / svg_size;
+      float final_width = dimension.width * factor * darktable.gui->ppd,
+            final_height = dimension.height * factor * darktable.gui->ppd;
+      int stride = cairo_format_stride_for_width(CAIRO_FORMAT_ARGB32, final_width);
+
+      image_buffer = (guint8 *)calloc(stride * final_height, sizeof(guint8));
+      surface = dt_cairo_image_surface_create_for_data(image_buffer, CAIRO_FORMAT_ARGB32, final_width,
+                                                       final_height, stride);
+      if(cairo_surface_status(surface) != CAIRO_STATUS_SUCCESS)
+      {
+        free(image_buffer);
+        image_buffer = NULL;
+      }
+      else
+      {
+        cr = cairo_create(surface);
+        cairo_scale(cr, factor, factor);
+        rsvg_handle_render_cairo(svg, cr);
+        cairo_surface_flush(surface);
+        pixbuf = gdk_pixbuf_get_from_surface(surface, 0, 0, final_width / darktable.gui->ppd,
+                                             final_height / darktable.gui->ppd);
+      }
+      g_object_unref(svg);
+    }
+
     have_preview = TRUE;
   }
   if(have_preview) gtk_image_set_from_pixbuf(GTK_IMAGE(preview), pixbuf);
@@ -798,9 +898,7 @@ static void _lib_import_folder_callback(GtkWidget *widget, gpointer user_data)
 static void _camera_detected(gpointer instance, gpointer self)
 {
   /* update gui with detected devices */
-  gboolean i_own_lock = dt_control_gdk_lock();
   _lib_import_ui_devices_update(self);
-  if(i_own_lock) dt_control_gdk_unlock();
 }
 #endif
 
@@ -828,13 +926,23 @@ void gui_init(dt_lib_module_t *self)
   gtk_widget_set_tooltip_text(widget, _("select a folder to import as film roll"));
   gtk_widget_set_can_focus(widget, TRUE);
   gtk_widget_set_receives_default(widget, TRUE);
-  gtk_box_pack_start(GTK_BOX(self->widget), widget, FALSE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(self->widget), widget, TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(widget), "clicked", G_CALLBACK(_lib_import_folder_callback), self);
 
 #ifdef HAVE_GPHOTO2
+  /* add the rescan button */
+  GtkButton *scan = GTK_BUTTON(gtk_button_new_with_label(_("scan for devices")));
+  d->scan_devices = scan;
+  gtk_widget_set_halign(gtk_bin_get_child(GTK_BIN(scan)), GTK_ALIGN_START);
+  g_object_set(G_OBJECT(scan), "tooltip-text", _("scan for newly attached devices"), (char *)NULL);
+  g_signal_connect(G_OBJECT(scan), "clicked", G_CALLBACK(_lib_import_scan_devices_callback), self);
+  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(scan), TRUE, TRUE, 0);
+
   /* add devices container for cameras */
   d->devices = GTK_BOX(gtk_box_new(GTK_ORIENTATION_VERTICAL, 5));
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(d->devices), FALSE, FALSE, 0);
+
+  _lib_import_ui_devices_update(self);
 
   /* initialize camctl listener and update devices */
   d->camctl_listener.data = self;

@@ -710,7 +710,8 @@ int dt_lib_load_modules()
 
     init_presets(module);
     // Calling the keyboard shortcut initialization callback if present
-    if(module->init_key_accels) module->init_key_accels(module);
+    // do not init accelerators if there is no gui
+    if(darktable.gui && module->init_key_accels) module->init_key_accels(module);
   }
   g_dir_close(dir);
 
@@ -929,7 +930,9 @@ GtkWidget *dt_lib_gui_get_expander(dt_lib_module_t *module)
   g_snprintf(label, sizeof(label), "<span size=\"larger\">%s</span>", module->name());
   hw[idx] = gtk_label_new("");
   gtk_widget_set_name(hw[idx], "panel_label");
-  gtk_label_set_markup(GTK_LABEL(hw[idx++]), label);
+  gtk_label_set_markup(GTK_LABEL(hw[idx]), label);
+  g_object_set(G_OBJECT(hw[idx]), "tooltip-text", module->name(), (char *)NULL);
+  gtk_label_set_ellipsize(GTK_LABEL(hw[idx++]), PANGO_ELLIPSIZE_MIDDLE);
 
   /* add reset button if module has implementation */
   if(module->gui_reset)

@@ -307,6 +307,9 @@ int write_image(dt_imageio_module_data_t *data, const char *filename, const void
       i++;
     }
 
+    // add the contact sheet(s)
+    // TODO
+
     dt_pdf_finish(d->pdf, pages, n_images);
 
     // we allocated the images and pages. the main pdf object gets free'ed in dt_pdf_finish().
@@ -671,7 +674,7 @@ void gui_init(dt_imageio_module_format_t *self)
   g_signal_connect(G_OBJECT(d->mode), "value-changed", G_CALLBACK(mode_toggle_callback), self);
   g_object_set(G_OBJECT(d->mode), "tooltip-text",
                _("normal -- just put the images into the pdf\n"
-               "draft mode -- images are replaced with boxes\n"
+               "draft -- images are replaced with boxes\n"
                "debug -- only show the outlines and bounding boxen"),
                (char *)NULL);
   dt_bauhaus_combobox_set(d->mode, dt_conf_get_int("plugins/imageio/format/pdf/mode"));

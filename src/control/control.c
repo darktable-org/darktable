@@ -53,9 +53,6 @@
 #include <lcms2.h>
 
 
-/* redraw mutex to synchronize redraws */
-static dt_pthread_mutex_t _control_gdk_lock_threads_mutex;
-
 int dt_control_load_config(dt_control_t *c)
 {
   GtkWidget *widget = dt_ui_main_window(darktable.gui->ui);
@@ -293,9 +290,6 @@ void dt_control_init(dt_control_t *s)
   // same thread as init
   s->gui_thread = pthread_self();
 
-  // initialize static mutex
-  dt_pthread_mutex_init(&_control_gdk_lock_threads_mutex, NULL);
-
   // s->last_expose_time = dt_get_wtime();
   s->key_accelerators_on = 1;
   s->log_pos = s->log_ack = 0;
@@ -348,7 +342,7 @@ int dt_control_is_key_accelerators_on(struct dt_control_t *s)
 void dt_control_change_cursor(dt_cursor_t curs)
 {
   GtkWidget *widget = dt_ui_main_window(darktable.gui->ui);
-  GdkCursor *cursor = gdk_cursor_new(curs);
+  GdkCursor *cursor = gdk_cursor_new_for_display(gdk_display_get_default(), curs);
   gdk_window_set_cursor(gtk_widget_get_window(widget), cursor);
   g_object_unref(cursor);
 }
@@ -394,7 +388,6 @@ void dt_control_shutdown(dt_control_t *s)
   /* first wait for kick_on_workers_thread */
   pthread_join(s->kick_on_workers_thread, NULL);
 
-  gdk_threads_leave();
   int k;
   for(k = 0; k < s->num_threads; k++)
     // pthread_kill(s->thread[k], 9);
@@ -403,8 +396,6 @@ void dt_control_shutdown(dt_control_t *s)
     // pthread_kill(s->thread_res[k], 9);
     pthread_join(s->thread_res[k], NULL);
 
-
-  gdk_threads_enter();
 }
 
 void dt_control_cleanup(dt_control_t *s)
@@ -503,13 +494,13 @@ void *dt_control_expose(void *voidptr)
   if(darktable.control->log_ack != darktable.control->log_pos)
   {
     cairo_select_font_face(cr, "sans-serif", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_BOLD);
-    const float fontsize = 14;
+    const float fontsize = DT_PIXEL_APPLY_DPI(14);
     cairo_set_font_size(cr, fontsize);
     cairo_text_extents_t ext;
     cairo_text_extents(cr, darktable.control->log_message[darktable.control->log_ack], &ext);
-    const float pad = 20.0f, xc = width / 2.0;
-    const float yc = height * 0.85 + 10, wd = pad + ext.width * .5f;
-    float rad = 14;
+    const float pad = DT_PIXEL_APPLY_DPI(20.0f), xc = width / 2.0;
+    const float yc = height * 0.85 + DT_PIXEL_APPLY_DPI(10), wd = pad + ext.width * .5f;
+    float rad = DT_PIXEL_APPLY_DPI(14);
     cairo_set_line_width(cr, 1.);
     cairo_move_to(cr, xc - wd, yc + rad);
     for(int k = 0; k < 5; k++)
@@ -626,10 +617,9 @@ void dt_control_button_released(double x, double y, int which, uint32_t state)
   dt_view_manager_button_released(darktable.view_manager, x - tb, y - tb, which, state);
 }
 
-void dt_ctl_switch_mode_to(dt_control_gui_mode_t mode)
+static gboolean _dt_ctl_switch_mode_to(gpointer user_data)
 {
-  dt_control_gui_mode_t oldmode = dt_conf_get_int("ui_last/view");
-  if(oldmode == mode) return;
+  dt_control_gui_mode_t mode = GPOINTER_TO_INT(user_data);
 
   darktable.control->button_down = 0;
   darktable.control->button_down_which = 0;
@@ -637,18 +627,18 @@ void dt_ctl_switch_mode_to(dt_control_gui_mode_t mode)
   GtkWidget *widget = dt_ui_center(darktable.gui->ui);
   g_object_set(G_OBJECT(widget), "tooltip-text", "", (char *)NULL);
 
-  char buf[512];
-  snprintf(buf, sizeof(buf) - 1, _("switch to %s mode"), dt_view_manager_name(darktable.view_manager));
+  if(!dt_view_manager_switch(darktable.view_manager, mode))
+    dt_conf_set_int("ui_last/view", mode);
 
-  gboolean i_own_lock = dt_control_gdk_lock();
+  return FALSE;
+}
 
-  int error = dt_view_manager_switch(darktable.view_manager, mode);
+void dt_ctl_switch_mode_to(dt_control_gui_mode_t mode)
+{
+  dt_control_gui_mode_t oldmode = dt_conf_get_int("ui_last/view");
+  if(oldmode == mode) return;
 
-  if(i_own_lock) dt_control_gdk_unlock();
-
-  if(error) return;
-
-  dt_conf_set_int("ui_last/view", mode);
+  g_main_context_invoke(NULL, _dt_ctl_switch_mode_to, GINT_TO_POINTER(mode));
 }
 
 void dt_ctl_switch_mode()
@@ -754,53 +744,6 @@ void dt_control_log_busy_leave()
   dt_control_queue_redraw_center();
 }
 
-static __thread gboolean _control_gdk_lock_mine = FALSE;
-gboolean dt_control_gdk_lock()
-{
-  /* if current thread equals gui thread do nothing */
-  if(pthread_equal(darktable.control->gui_thread, pthread_self()) != 0) return FALSE;
-
-  dt_pthread_mutex_lock(&_control_gdk_lock_threads_mutex);
-
-  /* lets check if current thread has a managed lock */
-  if(_control_gdk_lock_mine)
-  {
-    /* current thread has a lock just do nothing */
-    dt_pthread_mutex_unlock(&_control_gdk_lock_threads_mutex);
-    return FALSE;
-  }
-
-  /* lets lock */
-  _control_gdk_lock_mine = TRUE;
-  dt_pthread_mutex_unlock(&_control_gdk_lock_threads_mutex);
-
-  /* enter gdk critical section */
-  gdk_threads_enter();
-
-  return TRUE;
-}
-
-void dt_control_gdk_unlock()
-{
-  /* check if current thread has a lock and remove if exists */
-  dt_pthread_mutex_lock(&_control_gdk_lock_threads_mutex);
-  if(_control_gdk_lock_mine)
-  {
-    /* remove lock */
-    _control_gdk_lock_mine = FALSE;
-
-    /* leave critical section */
-    gdk_threads_leave();
-  }
-  dt_pthread_mutex_unlock(&_control_gdk_lock_threads_mutex);
-}
-
-gboolean dt_control_gdk_haslock()
-{
-  if(pthread_equal(darktable.control->gui_thread, pthread_self()) != 0) return TRUE;
-  return _control_gdk_lock_mine;
-}
-
 void dt_control_queue_redraw()
 {
   dt_control_signal_raise(darktable.signals, DT_SIGNAL_CONTROL_REDRAW_ALL);
@@ -811,16 +754,16 @@ void dt_control_queue_redraw_center()
   dt_control_signal_raise(darktable.signals, DT_SIGNAL_CONTROL_REDRAW_CENTER);
 }
 
+static gboolean _gtk_widget_queue_draw(gpointer user_data)
+{
+  gtk_widget_queue_draw(GTK_WIDGET(user_data));
+  return FALSE;
+}
+
 void dt_control_queue_redraw_widget(GtkWidget *widget)
 {
   if(dt_control_running())
-  {
-    gboolean i_own_lock = dt_control_gdk_lock();
-
-    gtk_widget_queue_draw(widget);
-
-    if(i_own_lock) dt_control_gdk_unlock();
-  }
+    g_main_context_invoke(NULL, _gtk_widget_queue_draw, widget);
 }
 
 

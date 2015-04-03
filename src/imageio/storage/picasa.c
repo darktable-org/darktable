@@ -1408,7 +1408,7 @@ int supported(struct dt_imageio_module_storage_t *self, struct dt_imageio_module
 /* this actually does the work */
 int store(dt_imageio_module_storage_t *self, struct dt_imageio_module_data_t *sdata, const int imgid,
           dt_imageio_module_format_t *format, dt_imageio_module_data_t *fdata, const int num, const int total,
-          const gboolean high_quality)
+          const gboolean high_quality, const gboolean upscale)
 {
   gint result = 1;
   PicasaContext *ctx = (PicasaContext *)sdata;
@@ -1441,7 +1441,7 @@ int store(dt_imageio_module_storage_t *self, struct dt_imageio_module_data_t *sd
 
   dt_image_cache_read_release(darktable.image_cache, img);
 
-  if(dt_imageio_export(imgid, fname, format, fdata, high_quality, FALSE, self, sdata, num, total) != 0)
+  if(dt_imageio_export(imgid, fname, format, fdata, high_quality, upscale, FALSE, self, sdata, num, total) != 0)
   {
     g_printerr("[picasa] could not export to file: `%s'!\n", fname);
     dt_control_log(_("could not export to file `%s'!"), fname);
@@ -1489,14 +1489,18 @@ cleanup:
   return 0;
 }
 
+static gboolean _finalize_store(gpointer user_data)
+{
+  dt_storage_picasa_gui_data_t *ui = (dt_storage_picasa_gui_data_t *)user_data;
+  ui_reset_albums_creation(ui);
+  ui_refresh_albums(ui);
+
+  return FALSE;
+}
 
 void finalize_store(struct dt_imageio_module_storage_t *self, dt_imageio_module_data_t *data)
 {
-  gdk_threads_enter();
-  dt_storage_picasa_gui_data_t *ui = (dt_storage_picasa_gui_data_t *)self->gui_data;
-  ui_reset_albums_creation(ui);
-  ui_refresh_albums(ui);
-  gdk_threads_leave();
+  g_main_context_invoke(NULL, _finalize_store, self->gui_data);
 }
 
 

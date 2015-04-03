@@ -44,11 +44,13 @@ typedef struct dt_iop_hotpixels_params_t
 
 typedef struct dt_iop_hotpixels_gui_data_t
 {
+  GtkWidget *box_raw;
   GtkWidget *threshold, *strength;
   GtkToggleButton *markfixed;
   GtkToggleButton *permissive;
   GtkLabel *message;
   int pixels_fixed;
+  GtkWidget *label_non_raw;
 } dt_iop_hotpixels_gui_data_t;
 
 typedef struct dt_iop_hotpixels_data_t
@@ -273,6 +275,25 @@ processed:
   }
 }
 
+void reload_defaults(dt_iop_module_t *module)
+{
+  const dt_iop_hotpixels_params_t tmp
+      = {.strength = 0.25, .threshold = 0.05, .markfixed = FALSE, .permissive = FALSE };
+
+  // we might be called from presets update infrastructure => there is no image
+  if(!module->dev) goto end;
+
+  // can't be switched on for non-raw images:
+  if(dt_image_is_raw(&module->dev->image_storage))
+    module->hide_enable_button = 0;
+  else
+    module->hide_enable_button = 1;
+
+end:
+  memcpy(module->params, &tmp, sizeof(dt_iop_hotpixels_params_t));
+  memcpy(module->default_params, &tmp, sizeof(dt_iop_hotpixels_params_t));
+}
+
 void init(dt_iop_module_t *module)
 {
   module->data = NULL;
@@ -282,10 +303,6 @@ void init(dt_iop_module_t *module)
   module->priority = 100; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_hotpixels_params_t);
   module->gui_data = NULL;
-  const dt_iop_hotpixels_params_t tmp = { 0.25, 0.05, FALSE, FALSE };
-
-  memcpy(module->params, &tmp, sizeof(dt_iop_hotpixels_params_t));
-  memcpy(module->default_params, &tmp, sizeof(dt_iop_hotpixels_params_t));
 }
 
 void cleanup(dt_iop_module_t *module)
@@ -372,6 +389,17 @@ void gui_update(dt_iop_module_t *self)
   gtk_toggle_button_set_active(g->permissive, p->permissive);
   g->pixels_fixed = -1;
   gtk_label_set_text(g->message, "");
+
+  if(!self->hide_enable_button)
+  {
+    gtk_widget_show(g->box_raw);
+    gtk_widget_hide(g->label_non_raw);
+  }
+  else
+  {
+    gtk_widget_hide(g->box_raw);
+    gtk_widget_show(g->label_non_raw);
+  }
 }
 
 static gboolean draw(GtkWidget *widget, cairo_t *cr, dt_iop_module_t *self)
@@ -400,14 +428,16 @@ void gui_init(dt_iop_module_t *self)
   g->pixels_fixed = -1;
 
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
-  g_signal_connect(G_OBJECT(self->widget), "draw", G_CALLBACK(draw), self);
+
+  g->box_raw = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
+  g_signal_connect(G_OBJECT(g->box_raw), "draw", G_CALLBACK(draw), self);
 
   /* threshold */
   g->threshold = dt_bauhaus_slider_new_with_range(self, 0.0, 1.0, 0.005, p->threshold, 4);
   dt_bauhaus_slider_set_format(g->threshold, "%.4f");
   dt_bauhaus_widget_set_label(g->threshold, NULL, _("threshold"));
   g_object_set(G_OBJECT(g->threshold), "tooltip-text", _("lower threshold for hot pixel"), NULL);
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->threshold), TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(g->box_raw), GTK_WIDGET(g->threshold), TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(g->threshold), "value-changed", G_CALLBACK(threshold_callback), self);
 
   /* strength */
@@ -415,13 +445,13 @@ void gui_init(dt_iop_module_t *self)
   dt_bauhaus_slider_set_format(g->threshold, "%.4f");
   dt_bauhaus_widget_set_label(g->strength, NULL, _("strength"));
   g_object_set(G_OBJECT(g->strength), "tooltip-text", _("strength of hot pixel correction"), NULL);
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->strength), TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(g->box_raw), GTK_WIDGET(g->strength), TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(g->strength), "value-changed", G_CALLBACK(strength_callback), self);
 
   /* 3 neighbours */
   g->permissive = GTK_TOGGLE_BUTTON(gtk_check_button_new_with_label(_("detect by 3 neighbors")));
   gtk_toggle_button_set_active(g->permissive, p->permissive);
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->permissive), TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(g->box_raw), GTK_WIDGET(g->permissive), TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(g->permissive), "toggled", G_CALLBACK(permissive_callback), self);
 
 
@@ -434,7 +464,13 @@ void gui_init(dt_iop_module_t *self)
   g->message = GTK_LABEL(gtk_label_new("")); // This gets filled in by process
   gtk_box_pack_start(GTK_BOX(hbox1), GTK_WIDGET(g->message), TRUE, TRUE, 0);
 
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(hbox1), TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(g->box_raw), GTK_WIDGET(hbox1), TRUE, TRUE, 0);
+
+  gtk_box_pack_start(GTK_BOX(self->widget), g->box_raw, FALSE, FALSE, 0);
+
+  g->label_non_raw = gtk_label_new(_("hot pixel correction\nonly works for raw images."));
+  gtk_widget_set_halign(g->label_non_raw, GTK_ALIGN_START);
+  gtk_box_pack_start(GTK_BOX(self->widget), g->label_non_raw, FALSE, FALSE, 0);
 }
 
 void gui_cleanup(dt_iop_module_t *self)

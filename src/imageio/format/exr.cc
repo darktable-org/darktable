@@ -118,6 +118,76 @@ int write_image(dt_imageio_module_data_t *tmp, const char *filename, const void 
 
   header.insert("exif", Imf::BlobAttribute(exif_blob));
 
+
+  // try to add the chromaticities
+  if(imgid > 0)
+  {
+    cmsToneCurve *red_curve = NULL,
+                 *green_curve = NULL,
+                 *blue_curve = NULL;
+    cmsCIEXYZ *red_color = NULL,
+              *green_color = NULL,
+              *blue_color = NULL,
+              *white_point = NULL;
+    cmsHPROFILE out_profile = dt_colorspaces_create_output_profile(imgid);
+    float r[2], g[2], b[2], w[2];
+    float sum;
+    Imf::Chromaticities chromaticities;
+
+    if(!cmsIsMatrixShaper(out_profile)) goto icc_error;
+
+    red_curve = (cmsToneCurve *)cmsReadTag(out_profile, cmsSigRedTRCTag);
+    green_curve = (cmsToneCurve *)cmsReadTag(out_profile, cmsSigGreenTRCTag);
+    blue_curve = (cmsToneCurve *)cmsReadTag(out_profile, cmsSigBlueTRCTag);
+
+    red_color = (cmsCIEXYZ *)cmsReadTag(out_profile, cmsSigRedColorantTag);
+    green_color = (cmsCIEXYZ *)cmsReadTag(out_profile, cmsSigGreenColorantTag);
+    blue_color = (cmsCIEXYZ *)cmsReadTag(out_profile, cmsSigBlueColorantTag);
+    white_point = (cmsCIEXYZ *)cmsReadTag(out_profile, cmsSigMediaWhitePointTag);
+
+    if(!red_curve || !green_curve || !blue_curve || !red_color || !green_color || !blue_color || !white_point)
+      goto icc_error;
+
+    if(!cmsIsToneCurveLinear(red_curve) || !cmsIsToneCurveLinear(green_curve) || !cmsIsToneCurveLinear(blue_curve))
+      goto icc_error;
+
+//     printf("r: %f %f %f\n", red_color->X, red_color->Y, red_color->Z);
+//     printf("g: %f %f %f\n", green_color->X, green_color->Y, green_color->Z);
+//     printf("b: %f %f %f\n", blue_color->X, blue_color->Y, blue_color->Z);
+//     printf("w: %f %f %f\n", white_point->X, white_point->Y, white_point->Z);
+
+    sum = red_color->X + red_color->Y + red_color->Z;
+    r[0] = red_color->X / sum;
+    r[1] = red_color->Y / sum;
+    sum = green_color->X + green_color->Y + green_color->Z;
+    g[0] = green_color->X / sum;
+    g[1] = green_color->Y / sum;
+    sum = blue_color->X + blue_color->Y + blue_color->Z;
+    b[0] = blue_color->X / sum;
+    b[1] = blue_color->Y / sum;
+    sum = white_point->X + white_point->Y + white_point->Z;
+    w[0] = white_point->X / sum;
+    w[1] = white_point->Y / sum;
+
+    chromaticities.red = Imath::V2f(r[0], r[1]);
+    chromaticities.green = Imath::V2f(g[0], g[1]);
+    chromaticities.blue = Imath::V2f(b[0], b[1]);
+    chromaticities.white = Imath::V2f(w[0], w[1]);
+
+    Imf::addChromaticities(header, chromaticities);
+    Imf::addWhiteLuminance(header, 1.0); // just assume 1 here
+
+    goto icc_end;
+
+icc_error:
+    dt_control_log(_("the selected output profile doesn't work well with exr"));
+    fprintf(stderr, "[exr export] warning: exporting with anything but linear matrix profiles might lead to wrong results when opening the image\n");
+
+icc_end:
+    dt_colorspaces_cleanup_profile(out_profile);
+  }
+
+
   header.channels().insert("R", Imf::Channel(Imf::PixelType::FLOAT));
   header.channels().insert("G", Imf::Channel(Imf::PixelType::FLOAT));
   header.channels().insert("B", Imf::Channel(Imf::PixelType::FLOAT));

@@ -118,12 +118,10 @@ static void _gui_styles_update_view(dt_lib_styles_t *d)
       gtk_list_store_set(GTK_LIST_STORE(model), &iter, DT_STYLES_COL_NAME, style->name, DT_STYLES_COL_TOOLTIP,
                          tooltip, -1);
 
-      g_free(style->name);
-      g_free(style->description);
-      g_free(style);
       g_free(items_string);
       g_free(tooltip);
     } while((result = g_list_next(result)) != NULL);
+    g_list_free_full(result, dt_style_free);
   }
 
   gtk_tree_view_set_tooltip_column(GTK_TREE_VIEW(d->list), DT_STYLES_COL_TOOLTIP);

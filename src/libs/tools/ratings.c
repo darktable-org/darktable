@@ -117,20 +117,18 @@ static gboolean _lib_ratings_draw_callback(GtkWidget *widget, cairo_t *crf, gpoi
 
   GtkAllocation allocation;
   gtk_widget_get_allocation(widget, &allocation);
-  int width = allocation.width, height = allocation.height;
 
-  /* get current style */
-  GdkRGBA fg_color, bg_color;
-  GtkStateFlags state = gtk_widget_get_state_flags(widget);
-  GtkStyleContext *context = gtk_widget_get_style_context(widget);
-  gtk_style_context_get_color(context, state, &fg_color);
-  gtk_style_context_get_background_color(context, state, &bg_color);
-  cairo_surface_t *cst = dt_cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height);
+  cairo_surface_t *cst
+      = dt_cairo_image_surface_create(CAIRO_FORMAT_ARGB32, allocation.width, allocation.height);
   cairo_t *cr = cairo_create(cst);
 
-  /* fill background */
-  gdk_cairo_set_source_rgba(cr, &bg_color);
-  cairo_paint(cr);
+  GtkStyleContext *context = gtk_widget_get_style_context(widget);
+
+  gtk_render_background(context, cr, 0, 0, allocation.width, allocation.height);
+
+  /* get current style */
+  GdkRGBA fg_color;
+  gtk_style_context_get_color(context, gtk_widget_get_state_flags(widget), &fg_color);
 
   /* lets draw stars */
   int x = 0;

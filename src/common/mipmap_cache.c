@@ -129,7 +129,7 @@ static int dt_mipmap_cache_get_filename(gchar *mipmapfilename, size_t size)
   const gchar *dbfilename = dt_database_get_path(darktable.db);
   if(!strcmp(dbfilename, ":memory:"))
   {
-    snprintf(mipmapfilename, size, "%s", dbfilename);
+    mipmapfilename[0] = '\0';
     r = 0;
     goto exit;
   }
@@ -244,7 +244,7 @@ void dt_mipmap_cache_allocate_dynamic(void *data, dt_cache_entry_t *entry)
   int loaded_from_disk = 0;
   if(mip < DT_MIPMAP_F)
   {
-    if(dt_conf_get_bool("cache_disk_backend"))
+    if(cache->cachedir[0] && dt_conf_get_bool("cache_disk_backend"))
     {
       // try and load from disk, if successful set flag
       char filename[PATH_MAX] = {0};
@@ -309,13 +309,14 @@ void dt_mipmap_cache_deallocate_dynamic(void *data, dt_cache_entry_t *entry)
         // also remove jpg backing (always try to do that, in case user just temporarily switched it off,
         // to avoid inconsistencies.
         // if(dt_conf_get_bool("cache_disk_backend"))
+        if(cache->cachedir[0])
         {
           char filename[PATH_MAX] = {0};
           snprintf(filename, sizeof(filename), "%s.d/%d/%d.jpg", cache->cachedir, mip, get_imgid(entry->key));
           g_unlink(filename);
         }
       }
-      else if(dt_conf_get_bool("cache_disk_backend"))
+      else if(cache->cachedir[0] && dt_conf_get_bool("cache_disk_backend"))
       {
         // serialize to disk
         char filename[PATH_MAX] = {0};
@@ -555,6 +556,7 @@ void dt_mipmap_cache_get_with_caller(
   else if(flags == DT_MIPMAP_PREFETCH_DISK)
   {
     // only prefetch if the disk cache exists:
+    if(!cache->cachedir[0]) return;
     char filename[PATH_MAX] = {0};
     snprintf(filename, sizeof(filename), "%s.d/%d/%d.jpg", cache->cachedir, mip, key);
     // don't attempt to load if disk cache doesn't exist
@@ -697,10 +699,13 @@ void dt_mipmap_cache_get_with_caller(
     __sync_fetch_and_add(&(_get_cache(cache, mip)->stats_misses), 1);
     // in case we don't even have a disk cache for our requested thumbnail,
     // prefetch at least mip0, in case we have that in the disk caches:
-    char filename[PATH_MAX] = {0};
-    snprintf(filename, sizeof(filename), "%s.d/%d/%d.jpg", cache->cachedir, mip, key);
-    if(!g_file_test(filename, G_FILE_TEST_EXISTS))
-      dt_mipmap_cache_get(cache, 0, imgid, DT_MIPMAP_0, DT_MIPMAP_PREFETCH_DISK, 0);
+    if(cache->cachedir[0])
+    {
+      char filename[PATH_MAX] = {0};
+      snprintf(filename, sizeof(filename), "%s.d/%d/%d.jpg", cache->cachedir, mip, key);
+      if(!g_file_test(filename, G_FILE_TEST_EXISTS))
+        dt_mipmap_cache_get(cache, 0, imgid, DT_MIPMAP_0, DT_MIPMAP_PREFETCH_DISK, 0);
+    }
     // nothing found :(
     buf->buf = NULL;
     buf->imgid = 0;
@@ -718,7 +723,7 @@ void dt_mipmap_cache_release(dt_mipmap_cache_t *cache, dt_mipmap_buffer_t *buf)
 {
   if(buf->size == DT_MIPMAP_NONE) return;
   assert(buf->imgid > 0);
-  assert(buf->size >= DT_MIPMAP_0);
+  // assert(buf->size >= DT_MIPMAP_0); // breaks gcc-4.6/4.7 build
   assert(buf->size < DT_MIPMAP_NONE);
   assert(buf->cache_entry);
   dt_cache_release(&_get_cache(cache, buf->size)->cache, buf->cache_entry);
@@ -731,13 +736,15 @@ void dt_mipmap_cache_release(dt_mipmap_cache_t *cache, dt_mipmap_buffer_t *buf)
 dt_mipmap_size_t dt_mipmap_cache_get_matching_size(const dt_mipmap_cache_t *cache, const int32_t width,
                                                    const int32_t height)
 {
+  const double ppd = (darktable.gui != NULL) ? darktable.gui->ppd : 1.0;
+
   // find `best' match to width and height.
   int32_t error = 0x7fffffff;
   dt_mipmap_size_t best = DT_MIPMAP_NONE;
   for(int k = DT_MIPMAP_0; k < DT_MIPMAP_F; k++)
   {
     // find closest l1 norm:
-    int32_t new_error = cache->max_width[k] + cache->max_height[k] - width * darktable.gui->ppd - height * darktable.gui->ppd;
+    int32_t new_error = cache->max_width[k] + cache->max_height[k] - width * ppd - height * ppd;
     // and allow the first one to be larger in pixel size to override the smaller mip
     if(abs(new_error) < abs(error) || (error < 0 && new_error > 0))
     {
@@ -814,13 +821,13 @@ static void _init_f(float *out, uint32_t *width, uint32_t *height, const uint32_
       // Bayer
       if(image->bpp == sizeof(float))
       {
-        dt_iop_clip_and_zoom_demosaic_half_size_f(out, (const float *)buf.buf, &roi_out, &roi_in,
-                                                  roi_out.width, roi_in.width, dt_image_filter(image), 1.0f);
+        dt_iop_clip_and_zoom_demosaic_half_size_crop_blacks_f(out, (const float *)buf.buf, &roi_out, &roi_in,
+                                                              roi_out.width, roi_in.width, image, 1.0f);
       }
       else
       {
-        dt_iop_clip_and_zoom_demosaic_half_size(out, (const uint16_t *)buf.buf, &roi_out, &roi_in,
-                                                roi_out.width, roi_in.width, dt_image_filter(image));
+        dt_iop_clip_and_zoom_demosaic_half_size_crop_blacks(out, (const uint16_t *)buf.buf, &roi_out, &roi_in,
+                                                            roi_out.width, roi_in.width, image);
       }
     }
     else
@@ -829,12 +836,13 @@ static void _init_f(float *out, uint32_t *width, uint32_t *height, const uint32_
       if(image->bpp == sizeof(float))
       {
         dt_iop_clip_and_zoom_demosaic_third_size_xtrans_f(out, (const float *)buf.buf, &roi_out, &roi_in,
-                                                          roi_out.width, roi_in.width, image->xtrans);
+                                                          roi_out.width, roi_in.width,
+                                                          image->xtrans_uncropped);
       }
       else
       {
         dt_iop_clip_and_zoom_demosaic_third_size_xtrans(out, (const uint16_t *)buf.buf, &roi_out, &roi_in,
-                                                        roi_out.width, roi_in.width, image->xtrans);
+                                                        roi_out.width, roi_in.width, image->xtrans_uncropped);
       }
     }
   }
@@ -895,7 +903,6 @@ static void _init_8(uint8_t *buf, uint32_t *width, uint32_t *height, const uint3
   int res = 1;
 
   const dt_image_t *cimg = dt_image_cache_get(darktable.image_cache, imgid, 'r');
-  const dt_image_orientation_t orientation = dt_image_orientation(cimg);
   // the orientation for this camera is not read correctly from exiv2, so we need
   // to go the full path (as the thumbnail will be flipped the wrong way round)
   const int incompatible = !strncmp(cimg->exif_maker, "Phase One", 9);
@@ -903,6 +910,8 @@ static void _init_8(uint8_t *buf, uint32_t *width, uint32_t *height, const uint3
 
   if(!altered && !dt_conf_get_bool("never_use_embedded_thumb") && !incompatible)
   {
+    const dt_image_orientation_t orientation = dt_image_get_orientation(imgid);
+
     // try to load the embedded thumbnail in raw
     gboolean from_cache = TRUE;
     memset(filename, 0, sizeof(filename));
@@ -934,7 +943,7 @@ static void _init_8(uint8_t *buf, uint32_t *width, uint32_t *height, const uint3
       if(!res)
       {
         // scale to fit
-        dt_iop_flip_and_zoom_8(tmp, thumb_width, thumb_height, buf, wd, ht, ORIENTATION_NONE, width, height);
+        dt_iop_flip_and_zoom_8(tmp, thumb_width, thumb_height, buf, wd, ht, orientation, width, height);
         free(tmp);
       }
     }
@@ -952,8 +961,8 @@ static void _init_8(uint8_t *buf, uint32_t *width, uint32_t *height, const uint3
     dat.head.max_height = ht;
     dat.buf = buf;
     // export with flags: ignore exif (don't load from disk), don't swap byte order, don't do hq processing,
-    // and signal we want thumbnail export
-    res = dt_imageio_export_with_flags(imgid, "unused", &format, (dt_imageio_module_data_t *)&dat, 1, 0, 0, 1,
+    // no upscaling and signal we want thumbnail export
+    res = dt_imageio_export_with_flags(imgid, "unused", &format, (dt_imageio_module_data_t *)&dat, 1, 0, 0, 0, 1,
                                        NULL, FALSE, NULL, NULL, 1, 1);
     if(!res)
     {

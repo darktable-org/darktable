@@ -48,7 +48,7 @@ dt_print_t;
 const char
 *name(dt_view_t *self)
 {
-  return _("print");
+  return C_("view", "print");
 }
 
 uint32_t view(dt_view_t *self)
@@ -140,11 +140,13 @@ static void expose_print_page(dt_view_t *self, cairo_t *cr, int32_t width, int32
   int32_t px=0, py=0, pwidth=0, pheight=0;
   int32_t ax=0, ay=0, awidth=0, aheight=0;
   int32_t ix=0, iy=0, iwidth=0, iheight=0;
+  int32_t iwpix=0, ihpix=0;
 
   if (prt->pinfo == NULL)
     return;
 
   dt_get_print_layout (prt->image_id, prt->pinfo, width, height,
+                       &iwpix, &ihpix,
                        &px, &py, &pwidth, &pheight,
                        &ax, &ay, &awidth, &aheight,
                        &ix, &iy, &iwidth, &iheight);
@@ -185,33 +187,36 @@ static void expose_print_page(dt_view_t *self, cairo_t *cr, int32_t width, int32
   // display non-printable area
   cairo_set_source_rgb (cr, 0.1, 0.1, 0.1);
 
+  const int np1x = px + (np_left / pg_width) * pwidth;
+  const int np1y = py + (np_top / pg_height) * pheight;
+  const int np2x = pright - (np_right / pg_width) * pwidth;
+  const int np2y = pbottom - (np_bottom / pg_height) * pheight;
+
   // top-left
-  int npx = px + (np_left / pg_width) * pwidth;
-  int npy = py + (np_top / pg_height) * pheight;
-  cairo_move_to (cr, npx-10, npy);
-  cairo_line_to (cr, npx, npy); cairo_line_to (cr, npx, npy-10);
+  cairo_move_to (cr, np1x-10, np1y);
+  cairo_line_to (cr, np1x, np1y); cairo_line_to (cr, np1x, np1y-10);
   cairo_stroke (cr);
 
   // top-right
-  npx = pright - (np_right / pg_width) * pwidth;
   // npy = p_y + (np_top / pg_height) * p_height;
-  cairo_move_to (cr, npx+10, npy);
-  cairo_line_to (cr, npx, npy); cairo_line_to (cr, npx, npy-10);
+  cairo_move_to (cr, np2x+10, np1y);
+  cairo_line_to (cr, np2x, np1y); cairo_line_to (cr, np2x, np1y-10);
   cairo_stroke (cr);
 
   // bottom-left
-  npx = px + (np_left / pg_width) * pwidth;
-  npy = pbottom - (np_bottom / pg_height) * pheight;
-  cairo_move_to (cr, npx-10, npy);
-  cairo_line_to (cr, npx, npy); cairo_line_to (cr, npx, npy+10);
+  cairo_move_to (cr, np1x-10, np2y);
+  cairo_line_to (cr, np1x, np2y); cairo_line_to (cr, np1x, np2y+10);
   cairo_stroke (cr);
 
   // bottom-right
-  npx = pright - (np_right / pg_width) * pwidth;
-  // npy = p_bottom - (np_bottom / pg_height) * p_height;
-  cairo_move_to (cr, npx+10, npy);
-  cairo_line_to (cr, npx, npy); cairo_line_to (cr, npx, npy+10);
+  cairo_move_to (cr, np2x+10, np2y);
+  cairo_line_to (cr, np2x, np2y); cairo_line_to (cr, np2x, np2y+10);
   cairo_stroke (cr);
+
+  // clip to this area to ensure that the image won't be larger, this is needed when using negative margin to enlarge the print
+
+  cairo_rectangle (cr, np1x, np1y, np2x-np1x, np2y-np1y);
+  cairo_clip(cr);
 
   cairo_set_source_rgb (cr, 0.77, 0.77, 0.77);
   cairo_rectangle (cr, ax, ay, awidth, aheight);
@@ -234,6 +239,8 @@ void expose(dt_view_t *self, cairo_t *cri, int32_t width_i, int32_t height_i, in
 
 int try_enter(dt_view_t *self)
 {
+  dt_print_t *prt=(dt_print_t*)self->data;
+
   // enter only if there is some printer available
   if (!is_printer_available())
   {
@@ -242,6 +249,8 @@ int try_enter(dt_view_t *self)
   }
 
   //  now check that there is at least one selected image
+
+  prt->image_id = -1;
 
   int selected = dt_control_get_mouse_over_id();
   if(selected < 0)
@@ -285,15 +294,13 @@ int try_enter(dt_view_t *self)
   }
   // and drop the lock again.
   dt_image_cache_read_release(darktable.image_cache, img);
-  darktable.develop->image_storage.id = selected;
+  prt->image_id = selected;
   return 0;
 }
 
 void enter(dt_view_t *self)
 {
   dt_print_t *prt=(dt_print_t*)self->data;
-
-  prt->image_id = -1;
 
   /* scroll filmstrip to the first selected image */
   GList *selected_images = dt_collection_get_selected(darktable.collection, 1);
@@ -320,6 +327,9 @@ void enter(dt_view_t *self)
 
   // prefetch next few from first selected image on.
   dt_view_filmstrip_prefetch();
+
+  darktable.control->mouse_over_id = -1;
+  dt_control_set_mouse_over_id(prt->image_id);
 }
 
 void leave(dt_view_t *self)

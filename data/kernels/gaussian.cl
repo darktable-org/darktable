@@ -312,7 +312,8 @@ shadows_highlights_mix(read_only image2d_t in, read_only image2d_t mask, write_o
                        unsigned int width, unsigned int height, 
                        const float shadows, const float highlights, const float compress,
                        const float shadows_ccorrect, const float highlights_ccorrect, 
-                       const unsigned int flags, const int unbound_mask, const float low_approximation)
+                       const unsigned int flags, const int unbound_mask, const float low_approximation,
+                       const float whitepoint)
 {
   const unsigned int x = get_global_id(0);
   const unsigned int y = get_global_id(1);
@@ -327,6 +328,10 @@ shadows_highlights_mix(read_only image2d_t in, read_only image2d_t mask, write_o
 
   /* blurred, inverted and desaturaed mask in m */
   m.x = 100.0f - read_imagef(mask, sampleri, (int2)(x, y)).x;
+
+  /* white point adjustment */
+  io.x = io.x > 0.0f ? io.x/whitepoint : io.x;
+  m.x = m.x > 0.0f ? m.x/whitepoint : m.x;
 
   /* overlay highlights */
   xform = clamp(1.0f - 0.01f * m.x/(1.0f-compress), 0.0f, 1.0f);

@@ -188,6 +188,9 @@ static dt_profiled_colormatrix_t dt_profiled_colormatrices[] =
   // Robert Park, ColorChecker Passport, strobe, well lit
   { "NIKON D700",                   { 789261, 332016,  34149}, { 270386,  985748, -129135}, {  4074, -230209,  999008}, {798172, 826721, 673126}},
 
+  // Edouard Gomez, ColorChecker Passport, direct sunlight, well lit
+  { "NIKON D750",                   { 749283, 264481,  28961}, { 291855, 1096207, -304520}, { 12680, -252914, 1194870}, {783035, 813507, 650787}},
+
   // Mauro Fuentes, ColorChecker Passport, direct sunlight, well lit
   { "NIKON D800",                   { 792038, 268860,  33951}, { 289093, 1169876, -251740}, {-32654, -340393, 1127960}, {782806, 804443, 659058}},
 

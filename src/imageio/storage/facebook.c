@@ -1,6 +1,7 @@
 /*
     This file is part of darktable,
     copyright (c) 2012 Pierre Lamot
+    copyright (c) 2015 tobias ellinghaus
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -35,8 +36,15 @@
 #include <curl/curl.h>
 #include <json-glib/json-glib.h>
 
+#ifdef HAVE_HTTP_SERVER
+#include "common/http_server.h"
+static const int port_pool[] = { 8123, 9123, 10123, 11123 };
+static const int n_ports = sizeof(port_pool) / sizeof(port_pool[0]);
+#endif
+
 DT_MODULE(1)
 
+#define FB_CALLBACK_ID "facebook"
 #define FB_WS_BASE_URL "https://www.facebook.com/"
 #define FB_GRAPH_BASE_URL "https://graph.facebook.com/"
 #define FB_API_KEY "315766121847254"
@@ -130,6 +138,7 @@ void fb_account_info_destroy(FBAccountInfo *account)
   if(account == NULL) return;
   g_free(account->id);
   g_free(account->username);
+  g_free(account->token);
   g_free(account);
 }
 
@@ -163,7 +172,7 @@ typedef struct dt_storage_facebook_gui_data_t
   GtkDarktableButton *dtbutton_refresh_album;
   GtkComboBox *comboBox_album;
 
-  //  === album creation section ===
+  //  == album creation section ==
   GtkLabel *label_album_title;
   GtkLabel *label_album_summary;
   GtkLabel *label_album_privacy;
@@ -177,6 +186,9 @@ typedef struct dt_storage_facebook_gui_data_t
   // == context ==
   gboolean connected;
   FBContext *facebook_api;
+
+  // == authentication dialog ==
+  GtkMessageDialog *auth_dialog;
 } dt_storage_facebook_gui_data_t;
 
 
@@ -216,7 +228,7 @@ typedef struct dt_storage_facebook_param_t
 static gchar *fb_extract_token_from_url(const gchar *url)
 {
   g_return_val_if_fail((url != NULL), NULL);
-  if(!(g_str_has_prefix(url, "http://localhost:8123/dt_fb_oauth/") == TRUE)) return NULL;
+  if(!(g_str_has_prefix(url, "http://localhost:8123/" FB_CALLBACK_ID) == TRUE)) return NULL;
 
   char *authtoken = NULL;
 
@@ -573,20 +585,29 @@ static gboolean combobox_separator(GtkTreeModel *model, GtkTreeIter *iter, gpoin
  * @see https://developers.facebook.com/docs/authentication/
  * @returs NULL if the user cancel the operation or a valid token
  */
-static gchar *facebook_get_user_auth_token(dt_storage_facebook_gui_data_t *ui)
+static gboolean _open_browser(const char *callback_url)
 {
-  ///////////// open the authentication url in a browser
   GError *error = NULL;
-  if(!gtk_show_uri(gdk_screen_get_default(), FB_WS_BASE_URL
-                   "dialog/oauth?"
-                   "client_id=" FB_API_KEY "&redirect_uri=http://localhost:8123/dt_fb_oauth/"
-                   "&scope=user_photos,publish_stream"
-                   "&response_type=token",
-                   gtk_get_current_event_time(), &error))
+  char *url = g_strdup_printf(FB_WS_BASE_URL "dialog/oauth?"
+                                             "client_id=" FB_API_KEY "&redirect_uri=%s"
+                                             "&scope=user_photos,publish_stream"
+                                             "&response_type=token",
+                              callback_url);
+  if(!gtk_show_uri(gdk_screen_get_default(), url, gtk_get_current_event_time(), &error))
   {
     fprintf(stderr, "[facebook] error opening browser: %s\n", error->message);
     g_error_free(error);
+    g_free(url);
+    return FALSE;
   }
+  g_free(url);
+  return TRUE;
+}
+
+static gchar *facebook_get_user_auth_token_from_url(dt_storage_facebook_gui_data_t *ui)
+{
+  ///////////// open the authentication url in a browser. just use some port, we won't listen anyway
+  if(!_open_browser("http://localhost:8123/" FB_CALLBACK_ID)) return NULL;
 
   ////////////// build & show the validation dialog
   gchar *text1 = _("step 1: a new window or tab of your browser should have been "
@@ -643,6 +664,81 @@ static gchar *facebook_get_user_auth_token(dt_storage_facebook_gui_data_t *ui)
   return token;
 }
 
+#ifdef HAVE_HTTP_SERVER
+static void ui_authenticate_finish(dt_storage_facebook_gui_data_t *ui, gboolean mustsaveaccount);
+
+static gboolean _server_callback(GHashTable *query, gpointer user_data)
+{
+  dt_storage_facebook_gui_data_t *ui = (dt_storage_facebook_gui_data_t *)user_data;
+
+  const char *access_token = g_hash_table_lookup(query, "access_token");
+
+  if(access_token)
+  {
+    // we got what we wanted
+    dt_print(DT_DEBUG_CONTROL, "[facebook] got access_token `%s' from facebook redirect\n", access_token);
+
+    // close the dialog
+    gtk_widget_destroy(GTK_WIDGET(ui->auth_dialog));
+    ui->auth_dialog = NULL;
+
+    FBContext *ctx = ui->facebook_api;
+    ctx->token = g_strdup(access_token);
+
+    ui_authenticate_finish(ui, TRUE);
+
+    dt_control_log(_("authentication successful"));
+    return TRUE;
+  }
+
+  dt_control_log(_("authentication failed"));
+
+  return FALSE;
+}
+
+
+static gboolean facebook_get_user_auth_token_from_server(dt_storage_facebook_gui_data_t *ui)
+{
+  // create a dialog telling the user to login in the browser
+  GtkWidget *win = dt_ui_main_window(darktable.gui->ui);
+
+  GtkWidget *dialog = gtk_message_dialog_new(
+      GTK_WINDOW(win), GTK_DIALOG_DESTROY_WITH_PARENT, GTK_MESSAGE_INFO, GTK_BUTTONS_CANCEL,
+      _("a new window or tab of your browser should have been "
+        "loaded. you have to login into your facebook account there "
+        "and authorize darktable to upload photos before continuing."));
+
+  gtk_window_set_title(GTK_WINDOW(dialog), _("facebook authentication"));
+
+  ui->auth_dialog = GTK_MESSAGE_DIALOG(dialog);
+
+  // create an http server
+  dt_http_server_t *server = dt_http_server_create(port_pool, n_ports, "facebook", _server_callback, ui);
+  if(!server)
+  {
+    gtk_widget_destroy(dialog);
+    return FALSE;
+  }
+
+  // open the browser
+  if(!_open_browser(server->url))
+  {
+    gtk_widget_destroy(dialog);
+    dt_http_server_kill(server);
+    return FALSE;
+  }
+
+  // show the window
+  if(gtk_dialog_run(GTK_DIALOG(dialog)) == GTK_RESPONSE_CANCEL)
+  {
+    // if cancel button is clicked -> kill the server
+    dt_http_server_kill(server);
+    gtk_widget_destroy(dialog);
+  }
+
+  return TRUE;
+}
+#endif // HAVE_HTTP_SERVER
 
 static void load_account_info_fill(gchar *key, gchar *value, GSList **accountlist)
 {
@@ -803,43 +899,16 @@ cleanup:
   return;
 }
 
-static gboolean ui_authenticate(dt_storage_facebook_gui_data_t *ui)
+static void ui_authenticate_finish(dt_storage_facebook_gui_data_t *ui, gboolean mustsaveaccount)
 {
-  if(ui->facebook_api == NULL)
-  {
-    ui->facebook_api = fb_api_init();
-  }
-
   FBContext *ctx = ui->facebook_api;
-  gboolean mustsaveaccount = FALSE;
 
-  gchar *uiselectedaccounttoken = NULL;
-  GtkTreeIter iter;
-  gtk_combo_box_get_active_iter(ui->comboBox_username, &iter);
-  GtkTreeModel *accountModel = gtk_combo_box_get_model(ui->comboBox_username);
-  gtk_tree_model_get(accountModel, &iter, 1, &uiselectedaccounttoken, -1);
-
-  g_free(ctx->token);
-  ctx->token = g_strdup(uiselectedaccounttoken);
-  // check selected token if we already have one
-  if(ctx->token != NULL && !fb_test_auth_token(ctx))
-  {
-    g_free(ctx->token);
-    ctx->token = NULL;
-  }
-
-  if(ctx->token == NULL)
-  {
-    mustsaveaccount = TRUE;
-    ctx->token = facebook_get_user_auth_token(ui); // ask user to log in
-  }
-
-  if(ctx->token == NULL) return FALSE;
+  if(ctx->token == NULL) goto error;
 
   if(mustsaveaccount)
   {
     FBAccountInfo *accountinfo = fb_get_account_info(ui->facebook_api);
-    g_return_val_if_fail(accountinfo != NULL, FALSE);
+    if(accountinfo == NULL) goto error;
     save_account_info(ui, accountinfo);
 
     // add account to user list and select it
@@ -877,30 +946,75 @@ static gboolean ui_authenticate(dt_storage_facebook_gui_data_t *ui)
     ctx->token = g_strdup(accountinfo->token);
     fb_account_info_destroy(accountinfo);
   }
-  return TRUE;
+
+  ui_refresh_albums(ui);
+  ui->connected = TRUE;
+  gtk_button_set_label(ui->button_login, _("logout"));
+  gtk_widget_set_sensitive(GTK_WIDGET(ui->comboBox_album), TRUE);
+
+  return;
+
+error:
+  gtk_button_set_label(ui->button_login, _("login"));
+  gtk_widget_set_sensitive(GTK_WIDGET(ui->comboBox_album), FALSE);
+}
+
+static void ui_authenticate(dt_storage_facebook_gui_data_t *ui)
+{
+  if(ui->facebook_api == NULL)
+  {
+    ui->facebook_api = fb_api_init();
+  }
+
+  FBContext *ctx = ui->facebook_api;
+  gboolean mustsaveaccount = FALSE;
+
+  gchar *uiselectedaccounttoken = NULL;
+  GtkTreeIter iter;
+  gtk_combo_box_get_active_iter(ui->comboBox_username, &iter);
+  GtkTreeModel *accountModel = gtk_combo_box_get_model(ui->comboBox_username);
+  gtk_tree_model_get(accountModel, &iter, 1, &uiselectedaccounttoken, -1);
+
+  gtk_button_set_label(ui->button_login, _("login"));
+  gtk_widget_set_sensitive(GTK_WIDGET(ui->comboBox_album), FALSE);
+
+  g_free(ctx->token);
+  ctx->token = g_strdup(uiselectedaccounttoken);
+  // check selected token if we already have one
+  if(ctx->token != NULL && !fb_test_auth_token(ctx))
+  {
+    g_free(ctx->token);
+    ctx->token = NULL;
+  }
+
+  if(ctx->token == NULL)
+  {
+    mustsaveaccount = TRUE;
+
+#ifdef HAVE_HTTP_SERVER
+    // try to get the token from the callback URL
+    if(facebook_get_user_auth_token_from_server(ui)) return;
+#endif
+
+    // if we reached this point we either have no http server support
+    // or couldn't start it (no free port, ...)
+    ctx->token = facebook_get_user_auth_token_from_url(ui); // ask user to log in
+  }
+
+  ui_authenticate_finish(ui, mustsaveaccount);
 }
 
 
 static void ui_login_clicked(GtkButton *button, gpointer data)
 {
   dt_storage_facebook_gui_data_t *ui = (dt_storage_facebook_gui_data_t *)data;
-  gtk_widget_set_sensitive(GTK_WIDGET(ui->comboBox_album), FALSE);
   if(ui->connected == FALSE)
   {
-    if(ui_authenticate(ui))
-    {
-      ui_refresh_albums(ui);
-      ui->connected = TRUE;
-      gtk_button_set_label(ui->button_login, _("logout"));
-    }
-    else
-    {
-      gtk_button_set_label(ui->button_login, _("login"));
-    }
+    ui_authenticate(ui);
   }
   else // disconnect user
   {
-    if(ui->connected == TRUE && ui->facebook_api->token != NULL)
+    if(ui->facebook_api->token != NULL)
     {
       GtkTreeModel *model = gtk_combo_box_get_model(ui->comboBox_username);
       GtkTreeIter iter;
@@ -909,11 +1023,11 @@ static void ui_login_clicked(GtkButton *button, gpointer data)
       gtk_tree_model_get(model, &iter, COMBO_USER_MODEL_ID_COL, &userid, -1);
       remove_account_info(userid);
       gtk_button_set_label(ui->button_login, _("login"));
+      gtk_widget_set_sensitive(GTK_WIDGET(ui->comboBox_album), FALSE);
       ui_refresh_users(ui);
       ui->connected = FALSE;
     }
   }
-  gtk_widget_set_sensitive(GTK_WIDGET(ui->comboBox_album), TRUE);
 }
 
 
@@ -972,7 +1086,8 @@ const char *name(const struct dt_imageio_module_storage_t *self)
   return _("facebook webalbum");
 }
 
-int recommended_dimension(struct dt_imageio_module_storage_t *self, dt_imageio_module_data_t *data, uint32_t *width, uint32_t *height)
+int recommended_dimension(struct dt_imageio_module_storage_t *self, dt_imageio_module_data_t *data,
+                          uint32_t *width, uint32_t *height)
 {
   *width = FB_IMAGE_MAX_SIZE;
   *height = FB_IMAGE_MAX_SIZE;
@@ -1126,7 +1241,7 @@ int supported(struct dt_imageio_module_storage_t *self, struct dt_imageio_module
 /* this actually does the work */
 int store(dt_imageio_module_storage_t *self, struct dt_imageio_module_data_t *sdata, const int imgid,
           dt_imageio_module_format_t *format, dt_imageio_module_data_t *fdata, const int num, const int total,
-          const gboolean high_quality)
+          const gboolean high_quality, const gboolean upscale)
 {
   gint result = 1;
   dt_storage_facebook_param_t *p = (dt_storage_facebook_param_t *)sdata;
@@ -1171,7 +1286,8 @@ int store(dt_imageio_module_storage_t *self, struct dt_imageio_module_data_t *sd
   if(fdata->max_height == 0 || fdata->max_height > FB_IMAGE_MAX_SIZE) fdata->max_height = FB_IMAGE_MAX_SIZE;
   if(fdata->max_width == 0 || fdata->max_width > FB_IMAGE_MAX_SIZE) fdata->max_width = FB_IMAGE_MAX_SIZE;
 
-  if(dt_imageio_export(imgid, fname, format, fdata, high_quality, FALSE, self, sdata, num, total) != 0)
+  if(dt_imageio_export(imgid, fname, format, fdata, high_quality, upscale, FALSE, self, sdata, num, total)
+     != 0)
   {
     g_printerr("[facebook] could not export to file: `%s'!\n", fname);
     dt_control_log(_("could not export to file `%s'!"), fname);
@@ -1219,14 +1335,18 @@ cleanup:
   return 0;
 }
 
+static gboolean _finalize_store(gpointer user_data)
+{
+  dt_storage_facebook_gui_data_t *ui = (dt_storage_facebook_gui_data_t *)user_data;
+  ui_reset_albums_creation(ui);
+  ui_refresh_albums(ui);
+
+  return FALSE;
+}
 
 void finalize_store(struct dt_imageio_module_storage_t *self, dt_imageio_module_data_t *data)
 {
-  gdk_threads_enter();
-  dt_storage_facebook_gui_data_t *ui = (dt_storage_facebook_gui_data_t *)self->gui_data;
-  ui_reset_albums_creation(ui);
-  ui_refresh_albums(ui);
-  gdk_threads_leave();
+  g_main_context_invoke(NULL, _finalize_store, self->gui_data);
 }
 
 size_t params_size(dt_imageio_module_storage_t *self)

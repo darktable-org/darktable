@@ -924,8 +924,16 @@ static void _iop_panel_label(GtkWidget *lab, dt_iop_module_t *module)
 {
   gtk_widget_set_name(lab, "panel_label");
   gchar *label = dt_history_item_get_name_html(module);
+  gchar *tooltip;
+  if(!module->multi_name[0] || strcmp(module->multi_name, "0") == 0)
+    tooltip = g_strdup(module->name());
+  else
+    tooltip = g_strdup_printf("%s %s", module->name(), module->multi_name);
   gtk_label_set_markup(GTK_LABEL(lab), label);
+  gtk_label_set_ellipsize(GTK_LABEL(lab), PANGO_ELLIPSIZE_MIDDLE);
+  g_object_set(G_OBJECT(lab), "tooltip-text", tooltip, (char *)NULL);
   g_free(label);
+  g_free(tooltip);
 }
 
 static void _iop_gui_update_header(dt_iop_module_t *module)
@@ -1210,8 +1218,7 @@ void dt_iop_load_modules_so()
     // get lib*.so
     if(!g_str_has_prefix(d_name, SHARED_MODULE_PREFIX)) continue;
     if(!g_str_has_suffix(d_name, SHARED_MODULE_SUFFIX)) continue;
-    strncpy(op, d_name + name_offset, strlen(d_name) - name_end);
-    op[strlen(d_name) - name_end] = '\0';
+    g_strlcpy(op, d_name + name_offset, MIN(sizeof(op), strlen(d_name) - name_end + 1));
     module = (dt_iop_module_so_t *)calloc(1, sizeof(dt_iop_module_so_t));
     gchar *libname = g_module_build_path(plugindir, (const gchar *)op);
     if(dt_iop_load_module_so(module, libname, op))
@@ -1222,21 +1229,26 @@ void dt_iop_load_modules_so()
     g_free(libname);
     res = g_list_append(res, module);
     init_presets(module);
-    // Calling the accelerator initialization callback, if present
-    init_key_accels(module);
 
-    if(module->flags() & IOP_FLAGS_SUPPORTS_BLENDING)
+    // do not init accelerators if there is no gui
+    if(darktable.gui)
     {
-      dt_accel_register_slider_iop(module, FALSE, NC_("accel", "fusion"));
-    }
-    if(!(module->flags() & IOP_FLAGS_DEPRECATED))
-    {
-      // Adding the optional show accelerator to the table (blank)
-      dt_accel_register_iop(module, FALSE, NC_("accel", "show module"), 0, 0);
-      dt_accel_register_iop(module, FALSE, NC_("accel", "enable module"), 0, 0);
+      // Calling the accelerator initialization callback, if present
+      init_key_accels(module);
 
-      dt_accel_register_iop(module, FALSE, NC_("accel", "reset module parameters"), 0, 0);
-      dt_accel_register_iop(module, FALSE, NC_("accel", "show preset menu"), 0, 0);
+      if(module->flags() & IOP_FLAGS_SUPPORTS_BLENDING)
+      {
+        dt_accel_register_slider_iop(module, FALSE, NC_("accel", "fusion"));
+      }
+      if(!(module->flags() & IOP_FLAGS_DEPRECATED))
+      {
+        // Adding the optional show accelerator to the table (blank)
+        dt_accel_register_iop(module, FALSE, NC_("accel", "show module"), 0, 0);
+        dt_accel_register_iop(module, FALSE, NC_("accel", "enable module"), 0, 0);
+
+        dt_accel_register_iop(module, FALSE, NC_("accel", "reset module parameters"), 0, 0);
+        dt_accel_register_iop(module, FALSE, NC_("accel", "show preset menu"), 0, 0);
+      }
     }
   }
   g_dir_close(dir);
@@ -2022,6 +2034,60 @@ static int FC(const int row, const int col, const unsigned int filters)
   return filters >> ((((row) << 1 & 14) + ((col)&1)) << 1) & 3;
 }
 
+uint32_t dt_iop_adjust_filters_to_crop(const dt_image_t *img)
+{
+  uint32_t filters = dt_image_filter(img);
+
+  // FIXME: get those from rawprepare IOP somehow !!! (img->crop_{x,y})
+
+  // if black y offset is odd, need to switch pattern by one row:
+  // 0x16161616 <-> 0x61616161
+  // 0x49494949 <-> 0x94949494
+  if(img->crop_y & 1)
+  {
+    switch(filters)
+    {
+      case 0x16161616u:
+        filters = 0x61616161u;
+        break;
+      case 0x49494949u:
+        filters = 0x94949494u;
+        break;
+      case 0x61616161u:
+        filters = 0x16161616u;
+        break;
+      case 0x94949494u:
+        filters = 0x49494949u;
+        break;
+      default:
+        filters = 0;
+        break;
+    }
+  }
+  if(img->crop_x & 1)
+  {
+    switch(filters)
+    {
+      case 0x16161616u:
+        filters = 0x49494949u;
+        break;
+      case 0x49494949u:
+        filters = 0x16161616u;
+        break;
+      case 0x61616161u:
+        filters = 0x94949494u;
+        break;
+      case 0x94949494u:
+        filters = 0x61616161u;
+        break;
+      default:
+        filters = 0;
+        break;
+    }
+  }
+  return filters;
+}
+
 /**
  * downscales and clips a mosaiced buffer (in) to the given region of interest (r_*)
  * and writes it to out in float4 format.
@@ -2118,6 +2184,22 @@ void dt_iop_clip_and_zoom_demosaic_half_size(float *out, const uint16_t *const i
   float perf = (tm2.tv_sec-tm1.tv_sec)*1000.0f + (tm2.tv_usec-tm1.tv_usec)/1000.0f;
   printf("time spent: %.4f\n",perf/100.0f);
 #endif
+}
+
+void dt_iop_clip_and_zoom_demosaic_half_size_crop_blacks(float *out, const uint16_t *const in,
+                                                         dt_iop_roi_t *const roi_out,
+                                                         const dt_iop_roi_t *const roi_in,
+                                                         const int32_t out_stride, const int32_t in_stride,
+                                                         const dt_image_t *img)
+{
+  /*
+   * rawprepare iop will do the actual cropping
+   * here we just need to adjust filters to the crop!
+   */
+
+  const uint32_t filters = dt_iop_adjust_filters_to_crop(img);
+
+  dt_iop_clip_and_zoom_demosaic_half_size(out, in, roi_out, roi_in, roi_out->width, in_stride, filters);
 }
 
 #if 0 // gets rid of pink artifacts, but doesn't do sub-pixel sampling, so shows some staircasing artifacts.
@@ -2382,6 +2464,22 @@ void dt_iop_clip_and_zoom_demosaic_half_size_f(float *out, const float *const in
   _mm_sfence();
 }
 #endif
+
+void dt_iop_clip_and_zoom_demosaic_half_size_crop_blacks_f(float *out, const float *const in,
+                                                           const struct dt_iop_roi_t *const roi_out,
+                                                           const struct dt_iop_roi_t *const roi_in,
+                                                           const int32_t out_stride, const int32_t in_stride,
+                                                           const dt_image_t *img, const float clip)
+{
+  /*
+   * rawprepare iop will do the actual cropping
+   * here we just need to adjust filters to the crop!
+   */
+
+  const uint32_t filters = dt_iop_adjust_filters_to_crop(img);
+
+  dt_iop_clip_and_zoom_demosaic_half_size_f(out, in, roi_out, roi_in, out_stride, in_stride, filters, clip);
+}
 
 static uint8_t FCxtrans(size_t row, size_t col, const dt_iop_roi_t *const roi,
                         const uint8_t (*const xtrans)[6])

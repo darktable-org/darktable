@@ -49,12 +49,19 @@ void dt_lua_event_trigger(lua_State *L, const char *event, int nargs)
   lua_getfield(L, -2, "on_event");
   lua_getfield(L, -3, "data");
   lua_pushstring(L, event);
-  for(int i = 1; i <= nargs; i++) lua_pushvalue(L, -7);
+  for(int i = 1; i <= nargs; i++) lua_pushvalue(L, -6 -nargs);
   dt_lua_do_chunk(L, nargs + 2, 0);
   lua_pop(L, nargs + 3);
   dt_lua_redraw_screen();
 }
 
+int dt_lua_event_trigger_wrapper(lua_State *L) 
+{
+  const char*event = luaL_checkstring(L,1);
+  int nargs = lua_gettop(L) -1;
+  dt_lua_event_trigger(L,event,nargs);
+  return 0;
+}
 
 void dt_lua_event_add(lua_State *L, const char *evt_name)
 {
@@ -152,7 +159,7 @@ int dt_lua_event_keyed_trigger(lua_State *L)
  * all callbacks will be called in the order they were registered
  *
  * all callbacks will receive the same parameters
- * the result is all return values from all callbacks
+ * no values are returned
  *
  * data table is "event => { # => callback }
  */
@@ -237,39 +244,13 @@ int dt_lua_init_early_events(lua_State *L)
  * shortcut events
  * keyed event with a tuned registration to handle shortcuts
  */
-typedef struct
-{
-  char *name;
-} shortcut_callback_data;
-static int32_t shortcut_callback_job(dt_job_t *job)
-{
-  dt_lua_lock();
-  shortcut_callback_data *t = dt_control_job_get_params(job);
-  lua_pushstring(darktable.lua_state.state, t->name);
-  free(t->name);
-  free(t);
-  dt_lua_event_trigger(darktable.lua_state.state, "shortcut", 1);
-  dt_lua_unlock();
-  return 0;
-}
 static gboolean shortcut_callback(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
                                   GdkModifierType modifier, gpointer p)
 {
-  dt_job_t *job = dt_control_job_create(&shortcut_callback_job, "lua: on shortcut");
-  if(job)
-  {
-    shortcut_callback_data *t = (shortcut_callback_data *)calloc(1, sizeof(shortcut_callback_data));
-    if(!t)
-    {
-      dt_control_job_dispose(job);
-    }
-    else
-    {
-      dt_control_job_set_params(job, t);
-      t->name = strdup(p);
-      dt_control_add_job(darktable.control, DT_JOB_QUEUE_USER_FG, job);
-    }
-  }
+  dt_lua_do_chunk_async(dt_lua_event_trigger_wrapper,
+      LUA_ASYNC_TYPENAME,"const char*","shortcut",
+      LUA_ASYNC_TYPENAME_WITH_FREE,"char*",strdup(p),
+      LUA_ASYNC_DONE);
   return TRUE;
 }
 
@@ -302,20 +283,21 @@ static void on_export_image_tmpfile(gpointer instance, int imgid, char *filename
                                     dt_imageio_module_storage_t *storage, dt_imageio_module_data_t *sdata,
                                     gpointer user_data)
 {
-  dt_lua_lock();
-  luaA_push(darktable.lua_state.state, dt_lua_image_t, &imgid);
-  lua_pushstring(darktable.lua_state.state, filename);
-  luaA_push_type(darktable.lua_state.state, format->parameter_lua_type, fdata);
-  if(storage)
-  {
-    luaA_push_type(darktable.lua_state.state, storage->parameter_lua_type, sdata);
+  if(storage){
+    dt_lua_do_chunk_async(dt_lua_event_trigger_wrapper,
+        LUA_ASYNC_TYPENAME,"const char*","intermediate-export-image",
+        LUA_ASYNC_TYPENAME_WITH_FREE,"char*",strdup(filename),
+        LUA_ASYNC_TYPEID,format->parameter_lua_type,fdata,
+        LUA_ASYNC_TYPEID,storage->parameter_lua_type,sdata,
+        LUA_ASYNC_DONE);
+  }else{
+    dt_lua_do_chunk_async(dt_lua_event_trigger_wrapper,
+        LUA_ASYNC_TYPENAME,"const char*","intermediate-export-image",
+        LUA_ASYNC_TYPENAME_WITH_FREE,"char*",strdup(filename),
+        LUA_ASYNC_TYPEID,format->parameter_lua_type,fdata,
+        LUA_ASYNC_TYPENAME,"void",NULL,
+        LUA_ASYNC_DONE);
   }
-  else
-  {
-    lua_pushnil(darktable.lua_state.state);
-  }
-  dt_lua_event_trigger(darktable.lua_state.state, "intermediate-export-image", 4);
-  dt_lua_unlock();
 }
 
 
@@ -333,6 +315,10 @@ int dt_lua_init_events(lua_State *L)
   dt_lua_event_add(L, "intermediate-export-image");
   dt_control_signal_connect(darktable.signals, DT_SIGNAL_IMAGE_EXPORT_TMPFILE,
                             G_CALLBACK(on_export_image_tmpfile), NULL);
+
+  lua_pushcfunction(L, dt_lua_event_multiinstance_register);
+  lua_pushcfunction(L, dt_lua_event_multiinstance_trigger);
+  dt_lua_event_add(L,"pre-import");
   return 0;
 }
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

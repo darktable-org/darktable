@@ -19,7 +19,7 @@ Lua 5.2 Reference Manual
 by Roberto Ierusalimschy, Luiz Henrique de Figueiredo, Waldemar Celes
 <p>
 <small>
-Copyright &copy; 2011&ndash;2013 Lua.org, PUC-Rio.
+Copyright &copy; 2011&ndash;2015 Lua.org, PUC-Rio.
 Freely available under the terms of the
 <a href="http://www.lua.org/license.html">Lua license</a>.
 </small>
@@ -33,7 +33,7 @@ Freely available under the terms of the
 <!-- ====================================================================== -->
 <p>
 
-<!-- $Id: manual.of,v 1.103 2013/03/14 18:51:56 roberto Exp $ -->
+<!-- $Id: manual.of,v 1.104 2013/06/01 00:13:11 roberto Exp $ -->
 
 
 
@@ -2088,7 +2088,7 @@ the length of a table <code>t</code> is only defined if the
 table is a <em>sequence</em>,
 that is,
 the set of its positive numeric keys is equal to <em>{1..n}</em>
-for some integer <em>n</em>.
+for some non-negative integer <em>n</em>.
 In that case, <em>n</em> is its length.
 Note that a table like
 
@@ -4065,7 +4065,7 @@ Note that <code>f</code> is used twice.
 <p>
 Pushes onto the stack a formatted string
 and returns a pointer to this string.
-It is similar to the ANSI&nbsp;C function <code>sprintf</code>,
+It is similar to the ISO&nbsp;C function <code>sprintf</code>,
 but has some important differences:
 
 <ul>
@@ -7906,7 +7906,7 @@ after the two indices.
 <p>
 Returns a formatted version of its variable number of arguments
 following the description given in its first argument (which must be a string).
-The format string follows the same rules as the ANSI&nbsp;C function <code>sprintf</code>.
+The format string follows the same rules as the ISO&nbsp;C function <code>sprintf</code>.
 The only differences are that the options/modifiers
 <code>*</code>, <code>h</code>, <code>L</code>, <code>l</code>, <code>n</code>,
 and <code>p</code> are not supported
@@ -9486,7 +9486,7 @@ if the information is not available.
 <p>
 If <code>format</code> is not "<code>*t</code>",
 then <code>date</code> returns the date as a string,
-formatted according to the same rules as the ANSI&nbsp;C function <code>strftime</code>.
+formatted according to the same rules as the ISO&nbsp;C function <code>strftime</code>.
 
 
 <p>
@@ -9521,7 +9521,7 @@ this value is exactly <code>t2</code><em>-</em><code>t1</code>.
 
 
 <p>
-This function is equivalent to the ANSI&nbsp;C function <code>system</code>.
+This function is equivalent to the ISO&nbsp;C function <code>system</code>.
 It passes <code>command</code> to be executed by an operating system shell.
 Its first result is <b>true</b>
 if the command terminated successfully,
@@ -9556,7 +9556,7 @@ When called without a <code>command</code>,
 
 
 <p>
-Calls the ANSI&nbsp;C function <code>exit</code> to terminate the host program.
+Calls the ISO&nbsp;C function <code>exit</code> to terminate the host program.
 If <code>code</code> is <b>true</b>,
 the returned status is <code>EXIT_SUCCESS</code>;
 if <code>code</code> is <b>false</b>,
@@ -9893,7 +9893,7 @@ returns <b>nil</b>.
 Sets the given function as a hook.
 The string <code>mask</code> and the number <code>count</code> describe
 when the hook will be called.
-The string mask may have the following characters,
+The string mask may have any combination of the following characters,
 with the given meaning:
 
 <ul>
@@ -9901,8 +9901,9 @@ with the given meaning:
 <li><b>'<code>r</code>': </b> the hook is called every time Lua returns from a function;</li>
 <li><b>'<code>l</code>': </b> the hook is called every time Lua enters a new line of code.</li>
 </ul><p>
-With a <code>count</code> different from zero,
-the hook is called after every <code>count</code> instructions.
+Moreover,
+with a <code>count</code> different from zero,
+the hook is called also after every <code>count</code> instructions.
 
 
 <p>
@@ -10497,10 +10498,10 @@ Here is the complete syntax of Lua in extended BNF.
 <HR>
 <SMALL CLASS="footer">
 Last update:
-Thu Mar 21 12:58:59 BRT 2013
+Mon Feb 23 22:24:44 BRT 2015
 </SMALL>
 <!--
-Last change: revised for Lua 5.2.2
+Last change: revised for Lua 5.2.4
 -->
 
 </body></html>

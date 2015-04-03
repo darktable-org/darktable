@@ -2065,6 +2065,7 @@ void gui_init(dt_lib_module_t *self)
   GtkWidget *sw2 = gtk_scrolled_window_new(NULL, NULL);
   d->sw2 = GTK_SCROLLED_WINDOW(sw2);
   gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(sw2), GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
+  gtk_scrolled_window_set_min_content_height(GTK_SCROLLED_WINDOW(sw2), DT_PIXEL_APPLY_DPI(300));
   gtk_container_add(GTK_CONTAINER(sw2), GTK_WIDGET(d->box));
 
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(sw2), TRUE, TRUE, 0);
@@ -2110,6 +2111,7 @@ void gui_cleanup(dt_lib_module_t *self)
   dt_control_signal_disconnect(darktable.signals, G_CALLBACK(collection_updated), self);
   dt_control_signal_disconnect(darktable.signals, G_CALLBACK(filmrolls_updated), self);
   dt_control_signal_disconnect(darktable.signals, G_CALLBACK(filmrolls_imported), self);
+  dt_control_signal_disconnect(darktable.signals, G_CALLBACK(filmrolls_removed), self);
   darktable.view_manager->proxy.module_collect.module = NULL;
   g_free(((dt_lib_collect_t *)self->data)->params);
 

@@ -223,18 +223,16 @@ static gboolean _lib_darktable_draw_callback(GtkWidget *widget, cairo_t *cr, gpo
   dt_lib_module_t *self = (dt_lib_module_t *)user_data;
   dt_lib_darktable_t *d = (dt_lib_darktable_t *)self->data;
 
-  /* get the current style */
-  GdkRGBA color;
-  PangoFontDescription *font_desc = NULL;
-  GtkStateFlags state = gtk_widget_get_state_flags(widget);
   GtkStyleContext *context = gtk_widget_get_style_context(widget);
-  gtk_style_context_get_background_color(context, state, &color);
+
+  GtkAllocation allocation;
+  gtk_widget_get_allocation(widget, &allocation);
+  gtk_render_background(context, cr, 0, 0, allocation.width, allocation.height);
+
+  GtkStateFlags state = gtk_widget_get_state_flags(widget);
+
+  PangoFontDescription *font_desc = NULL;
   gtk_style_context_get(context, state, "font", &font_desc, NULL);
-
-
-  /* fill background */
-  gdk_cairo_set_source_rgba(cr, &color);
-  cairo_paint(cr);
 
   /* paint icon image */
   if(d->image)
@@ -284,7 +282,7 @@ static void _lib_darktable_show_about_dialog()
   GtkWidget *dialog = gtk_about_dialog_new();
   gtk_about_dialog_set_program_name(GTK_ABOUT_DIALOG(dialog), PACKAGE_NAME);
   gtk_about_dialog_set_version(GTK_ABOUT_DIALOG(dialog), PACKAGE_VERSION);
-  gtk_about_dialog_set_copyright(GTK_ABOUT_DIALOG(dialog), "copyright (c) the authors 2009-2014");
+  gtk_about_dialog_set_copyright(GTK_ABOUT_DIALOG(dialog), "copyright (c) the authors 2009-2015");
   gtk_about_dialog_set_comments(GTK_ABOUT_DIALOG(dialog),
                                 _("organize and develop images from digital cameras"));
   gtk_about_dialog_set_website(GTK_ABOUT_DIALOG(dialog), "http://www.darktable.org/");

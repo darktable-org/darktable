@@ -4,14 +4,7 @@ isolist="200 400 800 1600"
 
 for iso in $isolist
 do
-  cat src/common/noiseprofiles.h | grep -E '{"' | grep "iso ${iso}\"" | tr -d "{}()\"" | cut -d '_' -f2 | cut -d ',' -f1 | tr " " "_" | sed -e "s/_iso_${iso}//" | nl > cams.txt 
-  cat src/common/noiseprofiles.h | grep -E '{"' | grep "iso ${iso}\"" | tr -d "{}()\"" | cut -d '_' -f2 | cut -d ',' -f6 | nl > poissonian.txt
-  cat src/common/noiseprofiles.h | grep -E '{"' | grep "iso ${iso}\"" | tr -d "{}()\"" | cut -d '_' -f2 | cut -d ',' -f9 | nl > gaussian.txt
-
-  join cams.txt poissonian.txt > tmp.txt
-  join tmp.txt gaussian.txt > noise_${iso}.dat
-
-  rm -f cams.txt poissonian.txt gaussian.txt tmp.txt
+  grep '"name"' data/noiseprofiles.json | tr -s " " "_" | grep -v '"skip"_*:_*true' | grep "\"iso\"_*:_*${iso}_*," | sed 's/.*"name"_*:_*"\([^"]*\)_iso_[0-9]*".*"a"_*:_*\[_*[0-9.eE+-]*_*,_\([0-9.eE+-]*\).*"b"_*:_*\[_*[0-9.eE+-]*_*,_\([0-9.eE+-]*\).*/\1 \2 \3/' | nl > noise_${iso}.dat
 
   gnuplot << EOF
   set term pdf fontscale 0.5 size 10, 10

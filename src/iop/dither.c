@@ -58,7 +58,7 @@ typedef enum dt_iop_dither_type_t
 
 typedef struct dt_iop_dither_params_t
 {
-  int dither_type;
+  dt_iop_dither_type_t dither_type;
   int palette; // reserved for future extensions
   struct
   {
@@ -80,7 +80,7 @@ typedef struct dt_iop_dither_gui_data_t
 
 typedef struct dt_iop_dither_data_t
 {
-  int dither_type;
+  dt_iop_dither_type_t dither_type;
   struct
   {
     float radius;
@@ -243,6 +243,11 @@ void process_floyd_steinberg(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_
       // no automatic dithering for preview and thumbnail
       if(piece->pipe->type == DT_DEV_PIXELPIPE_PREVIEW || piece->pipe->type == DT_DEV_PIXELPIPE_THUMBNAIL)
         nearest_color = NULL;
+      break;
+    case DITHER_RANDOM:
+      // this function won't ever be called for that type
+      // instead, process_random() will be called
+      __builtin_unreachable();
       break;
   }
 

@@ -1,4 +1,3 @@
-
 build/src/preferences_gen.h
 data/darktable.desktop.in
 src/cli/main.c
@@ -10,17 +9,19 @@ src/common/darktable.h
 src/common/debug.h
 src/common/film.c
 src/common/history.c
+src/common/http_server.c
 src/common/image.c
 src/common/imageio.c
 src/common/import_session.c
 src/common/mipmap_cache.c
-src/common/noiseprofiles.h
+src/common/noiseprofiles.c
 src/common/pdf.h
 src/common/points.h
 src/common/printprof.c
 src/common/ratings.c
 src/common/styles.c
 src/common/variables.c
+src/common/opencl.c
 src/control/control.c
 src/control/crawler.c
 src/control/jobs/camera_jobs.c
@@ -82,6 +83,7 @@ src/iop/colorin.c
 src/iop/colorize.c
 src/iop/colormapping.c
 src/iop/colorout.c
+src/iop/colorreconstruction.c
 src/iop/colortransfer.c
 src/iop/colorzones.c
 src/iop/defringe.c
@@ -164,8 +166,8 @@ src/libs/tools/hinter.c
 src/libs/tools/lighttable.c
 src/libs/tools/module_toolbox.c
 src/libs/tools/ratings.c
-src/libs/tools/view_toolbox.c
 src/libs/tools/viewswitcher.c
+src/libs/tools/view_toolbox.c
 src/lua/preferences.c
 src/views/darkroom.c
 src/views/lighttable.c

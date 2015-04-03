@@ -2105,6 +2105,27 @@ const wb_data wb_preset[] =
   { "FUJIFILM", "X-Pro1", Underwater, 0,	{ 1.860927, 1, 1.708609, 0 } },
   { "FUJIFILM", "X-Pro1", "5000K", 0,		{ 1.857616, 1, 1.701987, 0 } },
 
+  { "KODAK", "DCS Pro 14N", Daylight, 0,	{ 1, 1.055126, 1.353602, 0 } },
+  { "KODAK", "DCS Pro 14N", Tungsten, 0,	{ 1, 1.337688, 2.218852, 0 } },
+  { "KODAK", "DCS Pro 14N", Fluorescent, 0,	{ 1, 1.102854, 1.513673, 0 } },
+  { "KODAK", "DCS Pro 14N", Flash, 0,		{ 1, 1.055670, 1.353602, 0 } },
+
+  /* Median of 3 DCS Pro SLR/n cameras. */
+  { "KODAK", "DCS Pro SLR/n", Daylight, 0,	{ 1, 0.816913, 1.267327, 0 } },
+  { "KODAK", "DCS Pro SLR/n", Tungsten, 0,	{ 1, 1.045431, 1.948620, 0 } },
+  { "KODAK", "DCS Pro SLR/n", Fluorescent, 0,	{ 1, 0.778411, 1.244228, 0 } },
+  { "KODAK", "DCS Pro SLR/n", Flash, 0,		{ 1, 0.789819, 1.224880, 0 } },
+
+  { "KODAK", "DCS560C", Daylight, 0,		{ 1.238959, 1.057305, 2.133333, 0 } },
+  { "KODAK", "DCS560C", Tungsten, 0,		{ 1.061690, 1.043833, 2.612245, 0 } },
+  { "KODAK", "DCS560C", Fluorescent, 0,		{ 1.463903, 0.994658, 2.081301, 0 } },
+  { "KODAK", "DCS560C", Flash, 0,		{ 1.238956, 1.057305, 2.133333, 0 } },
+
+  { "KODAK", "ProBack645", Daylight, 0,		{ 1.122807, 1.001467, 1.368984, 0 } },
+  { "KODAK", "ProBack645", Tungsten, 0,		{ 1, 1.204706, 2.409412, 0 } },
+  { "KODAK", "ProBack645", Fluorescent, 0,	{ 1.099893, 1, 1.699585, 0 } },
+  { "KODAK", "ProBack645", Flash, 0,		{ 1.134626, 1.011858, 1.382849, 0 } },
+
   { "KODAK", "P850 ZOOM", Daylight, 0,		{ 1.859375, 1, 1.566406, 0 } },
   { "KODAK", "P850 ZOOM", Cloudy, 0,		{ 1.960938, 1, 1.570313, 0 } },
   { "KODAK", "P850 ZOOM", Shade, 0,		{ 2.027344, 1, 1.519531, 0 } },
@@ -3576,6 +3597,20 @@ const wb_data wb_preset[] =
   { "NIKON", "D7100", Shade, 0,			{ 3.183594, 1, 1.292969, 0 } },
   { "NIKON", "D7100", "5000K", 0,		{ 2.332031, 1, 1.652344, 0 } },
 
+  { "NIKON", "D7200", Incandescent, 0,		{ 1.445313, 1, 2.667969, 0 } },
+  { "NIKON", "D7200", SodiumVaporFluorescent, 0,{ 1.324219, 1, 2.906250, 0 } },
+  { "NIKON", "D7200", WarmWhiteFluorescent, 0,	{ 1.476563, 1, 2.433594, 0 } },
+  { "NIKON", "D7200", WhiteFluorescent, 0,	{ 1.746094, 1, 2.781250, 0 } },
+  { "NIKON", "D7200", CoolWhiteFluorescent, 0,	{ 2.222656, 1, 2.425781, 0 } },
+  { "NIKON", "D7200", DayWhiteFluorescent, 0,	{ 2.246094, 1, 1.652344, 0 } },
+  { "NIKON", "D7200", DaylightFluorescent, 0,	{ 2.593750, 1, 1.308594, 0 } },
+  { "NIKON", "D7200", HighTempMercuryVaporFluorescent, 0, { 3.171875, 1, 1.589844, 0 } },
+  { "NIKON", "D7200", DirectSunlight, 0,	{ 2.394531, 1, 1.597656, 0 } },
+  { "NIKON", "D7200", Flash, 0,			{ 2.738281, 1, 1.375000, 0 } },
+  { "NIKON", "D7200", Cloudy, 0,		{ 2.617188, 1, 1.449219, 0 } },
+  { "NIKON", "D7200", Shade, 0,			{ 3.148438, 1, 1.289063, 0 } },
+  { "NIKON", "D7200", "5000K", 0,		{ 2.328125, 1, 1.656250, 0 } },
+
   { "NIKON", "E5400", Daylight, -3,		{ 2.046875, 1, 1.449219, 0 } },
   { "NIKON", "E5400", Daylight, 0,		{ 1.800781, 1, 1.636719, 0 } },
   { "NIKON", "E5400", Daylight, 3,		{ 1.539062, 1, 1.820312, 0 } },
@@ -4591,6 +4626,18 @@ const wb_data wb_preset[] =
   { "Panasonic", "DMC-FZ200", "5500K", 0,	{ 2.015094, 1, 1.758491, 0 } },
   { "Panasonic", "DMC-FZ200", "6500K", 0,	{ 2.203774, 1, 1.577358, 0 } },
 
+  // Panasonic DMC-FZ1000 Firmware 2.0.0
+  { "Panasonic", "DMC-FZ1000", Daylight, 0,	{ 2.425781, 1, 1.886719, 0 } },
+  { "Panasonic", "DMC-FZ1000", Cloudy, 0,	{ 2.621094, 1, 1.714844, 0 } },
+  { "Panasonic", "DMC-FZ1000", Shade, 0,	{ 2.765625, 1, 1.625000, 0 } },
+  { "Panasonic", "DMC-FZ1000", Incandescent, 0,	{ 1.718750, 1, 2.750000, 0 } },
+  { "Panasonic", "DMC-FZ1000", Flash, 0,	{ 2.585938, 1, 1.796875, 0 } },
+
+  { "Panasonic", "DMC-TZ60", Daylight, 0,	{ 2.060377, 1, 1.656604, 0 } },
+  { "Panasonic", "DMC-TZ60", Cloudy, 0,		{ 2.192453, 1, 1.520755, 0 } },
+  { "Panasonic", "DMC-TZ60", Shade, 0,		{ 2.335849, 1, 1.415094, 0 } },
+  { "Panasonic", "DMC-TZ60", Incandescent, 0,	{ 1.384906, 1, 2.577358, 0 } },
+
   { "Panasonic", "DMC-G1", Daylight, 0,		{ 1.942966, 1, 1.448669, 0 } },
   { "Panasonic", "DMC-G1", Cloudy, 0,		{ 2.106464, 1, 1.326996, 0 } },
   { "Panasonic", "DMC-G1", Shade, 0,		{ 2.323194, 1, 1.224335, 0 } },
@@ -4777,6 +4824,12 @@ const wb_data wb_preset[] =
   { "Panasonic", "DMC-LX7", Incandescent, -9,	{ 1.4566, 1, 2.4377, 0 } },
   { "Panasonic", "DMC-LX7", Incandescent, 0,	{ 1.2917, 1, 2.7841, 0 } },
   { "Panasonic", "DMC-LX7", Incandescent, 9,	{ 1.1434, 1, 3.2755, 0 } },
+
+  { "Panasonic", "DMC-LX100", Daylight, 0,	{ 2.316406, 1, 1.601563, 0 } },
+  { "Panasonic", "DMC-LX100", Cloudy, 0,	{ 2.468750, 1, 1.484375, 0 } },
+  { "Panasonic", "DMC-LX100", Shade, 0,		{ 2.640625, 1, 1.410156, 0 } },
+  { "Panasonic", "DMC-LX100", Flash, 0,		{ 2.410156, 1, 1.578125, 0 } },
+  { "Panasonic", "DMC-LX100", Incandescent, 0,	{ 1.585938, 1, 2.382813, 0 } },
 
   { "LEICA", "D-LUX 6", Daylight, 0,		{ 1.992453, 1, 1.750943, 0 } },
   { "LEICA", "D-LUX 6", Cloudy, 0,		{ 2.143396, 1, 1.603774, 0 } },
@@ -6393,6 +6446,16 @@ const wb_data wb_preset[] =
   { "SONY", "NEX-C3", "5000K", 0,		{ 2.605469, 1, 1.589844, 0 } },
   { "SONY", "NEX-C3", "5500K", 0,		{ 2.753906, 1, 1.492188, 0 } },
   { "SONY", "NEX-C3", "6500K", 0,		{ 2.996094, 1, 1.351563, 0 } },
+
+  { "SONY", "ILCA-77M2", Daylight, 0,{ 2.78515625, 1, 1.6796875, 0 } },
+  { "SONY", "ILCA-77M2", Shade, 0,    { 3.28515625, 1, 1.38671875, 0 } },
+  { "SONY", "ILCA-77M2", Cloudy, 0,  { 2.99609375, 1, 1.54296875, 0 } },
+  { "SONY", "ILCA-77M2", Incandescent, 0,{ 1.75, 1, 3.015625, 0 } },
+  { "SONY", "ILCA-77M2", WarmWhiteFluorescent, 0,{ 2.01953125, 1, 2.9765625, 0 } },
+  { "SONY", "ILCA-77M2", CoolWhiteFluorescent, 0,{ 2.53125, 1, 2.47265625, 0 } },
+  { "SONY", "ILCA-77M2", DayWhiteFluorescent, 0,{ 2.68359375, 1, 1.78125, 0 } },
+  { "SONY", "ILCA-77M2", DaylightFluorescent, 0,{ 3.00390625, 1, 1.609375, 0 } },
+  { "SONY", "ILCA-77M2", Flash, 0,   { 3.203125, 1, 1.43359375, 0 } },
 
   // firmware ILCE-7 (A7) Ver 1.0.1
   { "SONY", "ILCE-7", Daylight, 0,		{ 2.39843750, 1, 1.46484375, 0 } },

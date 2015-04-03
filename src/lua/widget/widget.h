@@ -18,6 +18,7 @@
 #ifndef LUA_WIDGET_H
 #define LUA_WIDGET_H
 #include "lua/lua.h"
+#include "lua/call.h"
 #include <gtk/gtk.h>
 struct dt_lua_widget_type_t;
 typedef struct {
@@ -49,14 +50,15 @@ void dt_lua_widget_set_callback(lua_State *L,int index,const char* name);
 /** push the callback for name "name" on the stack, or nil if not available */
 void dt_lua_widget_get_callback(lua_State *L,int index,const char* name);
 /** triggers a callback for the object, 
-    the callback always happen in a secondary thread with the object as unique parameter
-    gpointer is the pointer to the object.
-    object_tyep is the type of the lua type of the gpointer above
+  * first param : the lua_storage to trigger
+  * second param : the name of the event to fire
+  * other params : passed to the callback
+  returns nothing, might raise exceptions
 
-    the async function can be called without the lua lock and from the gtk main thread (that's the whole point)
+  this function is meant to be called via dt_lua_do_chunk_async if needed
+
  */
-void dt_lua_widget_trigger_callback(lua_State*L,lua_widget object,const char* name);
-void dt_lua_widget_trigger_callback_async(lua_widget object,const char* name,const char *type_name,...);
+int dt_lua_widget_trigger_callback(lua_State *L);
 
 /* wrapper to automatically implement a callback on a GTK signal */
 #define dt_lua_widget_register_gtk_callback(L,widget_type,signal_name,lua_name,callback) \

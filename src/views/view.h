@@ -37,6 +37,7 @@
 #include "lua/modules.h"
 #include "lua/view.h"
 #include "lua/events.h"
+#include "lua/call.h"
 #endif
 
 /** avilable views flags, a view should return it's type and

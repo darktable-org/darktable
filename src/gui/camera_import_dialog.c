@@ -205,6 +205,7 @@ static void _camera_import_dialog_new(_camera_import_dialog_t *data)
                                              _("cancel"), GTK_RESPONSE_NONE, C_("camera import", "import"),
                                              GTK_RESPONSE_ACCEPT, NULL);
   gtk_window_set_default_size(GTK_WINDOW(data->dialog), 100, 600);
+  gtk_window_set_transient_for(GTK_WINDOW(data->dialog), GTK_WINDOW(dt_ui_main_window(darktable.gui->ui)));
   GtkWidget *content = gtk_dialog_get_content_area(GTK_DIALOG(data->dialog));
 
   // List - setup store
@@ -302,11 +303,32 @@ static void _camera_import_dialog_new(_camera_import_dialog_t *data)
   // gtk_widget_set_size_request(content, DT_PIXEL_APPLY_DPI(400), DT_PIXEL_APPLY_DPI(400));
 }
 
+typedef struct _image_filename_t
+{
+  char *file_info;
+  GdkPixbuf *thumb;
+  GtkListStore *store;
+} _image_filename_t;
+
+static gboolean _camera_storage_image_filename_gui_thread(gpointer user_data)
+{
+  _image_filename_t *params = (_image_filename_t *)user_data;
+
+  GtkTreeIter iter;
+
+  gtk_list_store_append(params->store, &iter);
+  gtk_list_store_set(params->store, &iter, 0, params->thumb, 1, params->file_info, -1);
+
+  if(params->thumb) g_object_ref(params->thumb);
+  free(params->file_info);
+  free(params);
+  return FALSE;
+}
+
 static int _camera_storage_image_filename(const dt_camera_t *camera, const char *filename,
                                           CameraFile *preview, CameraFile *exif, void *user_data)
 {
   _camera_import_dialog_t *data = (_camera_import_dialog_t *)user_data;
-  GtkTreeIter iter;
   const char *img;
   unsigned long size;
   GdkPixbuf *pixbuf = NULL;
@@ -315,10 +337,7 @@ static int _camera_storage_image_filename(const dt_camera_t *camera, const char 
   /* stop fetching previews if job is cancelled */
   if(data->preview_job && dt_control_job_get_state(data->preview_job) == DT_JOB_STATE_CANCELLED) return 0;
 
-
-  gboolean i_own_lock = dt_control_gdk_lock();
   char exif_info[1024] = { 0 };
-  char file_info[4096] = { 0 };
 
   if(preview)
   {
@@ -359,15 +378,22 @@ static int _camera_storage_image_filename(const dt_camera_t *camera, const char 
   }
 #endif
 
-  // filename\n 1/60 f/2.8 24mm iso 160
-  snprintf(file_info, sizeof(file_info), "%s%c%s", filename, *exif_info ? '\n' : '\0',
-           *exif_info ? exif_info : "");
-  gtk_list_store_append(data->store, &iter);
-  gtk_list_store_set(data->store, &iter, 0, thumb, 1, file_info, -1);
-  if(pixbuf) g_object_unref(pixbuf);
-  if(thumb) g_object_ref(thumb);
+  _image_filename_t *params = (_image_filename_t *)malloc(sizeof(_image_filename_t));
+  if(!params)
+  {
+    if(pixbuf) g_object_unref(pixbuf);
+    if(thumb) g_object_unref(thumb);
+    return 0;
+  }
 
-  if(i_own_lock) dt_control_gdk_unlock();
+  // filename\n 1/60 f/2.8 24mm iso 160
+  params->file_info = g_strdup_printf("%s%c%s", filename, *exif_info ? '\n' : '\0',
+                                      *exif_info ? exif_info : "");
+  params->thumb = thumb;
+  params->store = data->store;
+  g_main_context_invoke(NULL, _camera_storage_image_filename_gui_thread, params);
+
+  if(pixbuf) g_object_unref(pixbuf);
 
   return 1;
 }

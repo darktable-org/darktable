@@ -120,6 +120,13 @@
     <shortdescription>whether to make use of CPU OpenCL devices</shortdescription>
     <longdescription>typically darktable's hand-optimized CPU code is much faster than any OpenCL-on-CPU code; therefore CPUs are excluded from being used as OpenCL devices by default. can be changed by setting this configuration option to TRUE (needs a restart).</longdescription>
   </dtconfig>
+  <dtconfig>
+    <name>opencl_checksum</name>
+    <type>string</type>
+    <default></default>
+    <shortdescription>checksum representing the setup of opencl devices on this computer</shortdescription>
+    <longdescription>darktable re-checks the performance benchmarks of your system in case your setup has changed, which is indicated by a change versus the stored checksum in this config variable; darktable de-activates opencl if the GPU benchmark lies below the one of the CPU.</longdescription>
+  </dtconfig>
   <dtconfig prefs="gui">
     <name>never_use_embedded_thumb</name>
     <type>bool</type>
@@ -482,6 +489,25 @@
     <default>false</default>
     <shortdescription>low quality thumbnails</shortdescription>
     <longdescription>if set to true, thumbnails will be processed by first downscaling rather than demosaicing the full image. this can result in much faster processing times and blurrier images, especially when you cropped a lot.</longdescription>
+  </dtconfig>
+  <dtconfig prefs="gui">
+    <name>plugins/lighttable/thumbnail_hq_min_level</name>
+    <type>
+      <enum>
+        <option>always</option>
+        <option>small</option>
+        <option>VGA</option>
+        <option>720p</option>
+        <option>1080p</option>
+        <option>WQXGA</option>
+        <option>4K</option>
+        <option>5K</option>
+        <option>never</option>
+      </enum>
+    </type>
+    <default>720p</default>
+    <shortdescription>high quality thumb processing from size</shortdescription>
+    <longdescription>if the thumbnail size is greater than this value, it will be processed using the full quality rendering path (better but slower).</longdescription>
   </dtconfig>
   <dtconfig prefs="gui">
     <name>pressure_sensitivity</name>
