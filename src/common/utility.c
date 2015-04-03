@@ -351,7 +351,7 @@ dt_logo_season_t get_logo_season(void)
     easter_sunday.tm_hour = easter_sunday.tm_min = easter_sunday.tm_sec = 0;
     time_t easter_sunday_sec = mktime(&easter_sunday);
     // we start at midnight, so it's basically +- 2 days
-    if(abs(easter_sunday_sec - now) <= 2 * 24 * 60 * 60) return DT_LOGO_SEASON_EASTER;
+    if(labs(easter_sunday_sec - now) <= 2 * 24 * 60 * 60) return DT_LOGO_SEASON_EASTER;
   }
 
   return DT_LOGO_SEASON_NONE;
