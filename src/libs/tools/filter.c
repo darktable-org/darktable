@@ -246,6 +246,7 @@ static void _lib_filter_combobox_changed(GtkComboBox *widget, gpointer user_data
 
   /* set the star filter in collection */
   dt_collection_set_rating(darktable.collection, i);
+  dt_control_set_mouse_over_id(-1); // may me I'm storing mouse_over_id (arrows)
 
   /* update the gui accordingly */
   _lib_filter_sync_combobox_and_comparator(user_data);
