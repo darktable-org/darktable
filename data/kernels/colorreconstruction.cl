@@ -21,6 +21,12 @@
 
 #include "common.h"
 
+typedef enum dt_iop_colorreconstruct_preference_t
+{
+  COLORRECONSTRUCT_PREFERENCE_NONE,
+  COLORRECONSTRUCT_PREFERENCE_CHROMA
+} dt_iop_colorreconstruct_preference_t;
+
 float4
 image_to_grid(
     const float4 p,
@@ -108,6 +114,7 @@ colorreconstruction_splat(
     const float          sigma_s,
     const float          sigma_r,
     const float          threshold,
+    const int            preference,
     local int            *gi,
     local float4         *accum)
 {
@@ -122,6 +129,19 @@ colorreconstruction_splat(
   float4 sigma = (float4)(sigma_s, sigma_s, sigma_r, 0);
 
   const float4 pixel = read_imagef (in, samplerc, (int2)(x, y));
+  float weight;
+
+  switch(preference)
+  {
+    case COLORRECONSTRUCT_PREFERENCE_CHROMA:
+      weight = sqrt(pixel.y * pixel.y + pixel.z * pixel.z);
+      break;
+
+    case COLORRECONSTRUCT_PREFERENCE_NONE:
+    default:
+      weight = 1.0f;
+      break;
+  }
 
   if(x < width && y < height)
   {
@@ -134,7 +154,7 @@ colorreconstruction_splat(
    
     // first accumulate into local memory
     gi[li] = xi.x + size.x*xi.y + size.x*size.y*xi.z;
-    accum[li] = pixel.x < threshold ? (float4)(pixel.x, pixel.y, pixel.z, 1.0f) : (float4)0.0f;
+    accum[li] = pixel.x < threshold ? weight * (float4)(pixel.x, pixel.y, pixel.z, 1.0f) : (float4)0.0f;
   }
   else
   {
