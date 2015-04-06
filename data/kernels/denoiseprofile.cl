@@ -363,8 +363,7 @@ denoiseprofile_reduce_first(read_only image2d_t in, const int width, const int h
   const int isinimage = (x < width && y < height);
   float4 pixel = read_imagef(in, sampleri, (int2)(x, y));
 
-  buffer[2*l]   = isinimage ? pixel : (float4)0.0f;
-  buffer[2*l+1] = isinimage ? pixel*pixel : (float4)0.0f;
+  buffer[l] = isinimage ? pixel*pixel : (float4)0.0f;
 
   barrier(CLK_LOCAL_MEM_FENCE);
 
@@ -374,8 +373,7 @@ denoiseprofile_reduce_first(read_only image2d_t in, const int width, const int h
   {
     if(l < offset)
     {
-      buffer[2*l] += buffer[2*(l + offset)];
-      buffer[2*l+1] += buffer[2*(l + offset)+1];
+      buffer[l] += buffer[l + offset];
     }
     barrier(CLK_LOCAL_MEM_FENCE);
   }
@@ -385,8 +383,7 @@ denoiseprofile_reduce_first(read_only image2d_t in, const int width, const int h
   const int xgsz = get_num_groups(0);
 
   const int m = mad24(ygid, xgsz, xgid);
-  accu[2*m]   = buffer[0];
-  accu[2*m+1] = buffer[1];
+  accu[m]   = buffer[0];
 }
 
 
@@ -394,20 +391,17 @@ kernel void
 denoiseprofile_reduce_second(const global float4* input, global float4 *result, const int length, local float4 *buffer)
 {
   int x = get_global_id(0);
-  float4 sum_y = (float4)0.0f;
   float4 sum_y2 = (float4)0.0f;
 
   while(x < length)
   {
-    sum_y += input[2*x];
-    sum_y2 += input[2*x+1];
+    sum_y2 += input[x];
 
     x += get_global_size(0);
   }
   
   int lid = get_local_id(0);
-  buffer[2*lid] = sum_y;
-  buffer[2*lid+1] = sum_y2;
+  buffer[lid] = sum_y2;
 
   barrier(CLK_LOCAL_MEM_FENCE);
 
@@ -415,8 +409,7 @@ denoiseprofile_reduce_second(const global float4* input, global float4 *result, 
   {
     if(lid < offset)
     {
-      buffer[2*lid] += buffer[2*(lid + offset)];
-      buffer[2*lid+1] += buffer[2*(lid + offset)+1];
+      buffer[lid] += buffer[lid + offset];
     }
     barrier(CLK_LOCAL_MEM_FENCE);
   }
@@ -425,7 +418,6 @@ denoiseprofile_reduce_second(const global float4* input, global float4 *result, 
   {
     const int gid = get_group_id(0);
 
-    result[2*gid]   = buffer[0];
-    result[2*gid+1] = buffer[1];
+    result[gid]   = buffer[0];
   }
 }

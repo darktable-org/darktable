@@ -516,12 +516,23 @@ void process_wavelets(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piec
     if(t < 0.0f) break;
   }
 
+  const int width = roi_in->width, height = roi_in->height;
+  const size_t npixels = (size_t)width*height;
+
+  // corner case of extremely small image. this is not really likely to happen but would cause issues later
+  // when we divide by (n-1). so let's be prepared
+  if(npixels < 2)
+  {
+    memcpy(ovoid, ivoid, npixels * 4 * sizeof(float));
+    return;
+  }
+
   float *buf[max_max_scale];
   float *tmp = NULL;
   float *buf1 = NULL, *buf2 = NULL;
   for(int k = 0; k < max_scale; k++)
-    buf[k] = dt_alloc_align(64, (size_t)4 * sizeof(float) * roi_in->width * roi_in->height);
-  tmp = dt_alloc_align(64, (size_t)4 * sizeof(float) * roi_in->width * roi_in->height);
+    buf[k] = dt_alloc_align(64, (size_t)4 * sizeof(float) * npixels);
+  tmp = dt_alloc_align(64, (size_t)4 * sizeof(float) * npixels);
 
   const float wb[3] = { // twice as many samples in green channel:
                         2.0f * piece->pipe->processed_maximum[0] * d->strength * (scale * scale),
@@ -532,8 +543,9 @@ void process_wavelets(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piec
   const float aa[3] = { d->a[1] * wb[0], d->a[1] * wb[1], d->a[1] * wb[2] };
   const float bb[3] = { d->b[1] * wb[0], d->b[1] * wb[1], d->b[1] * wb[2] };
 
-  const int width = roi_in->width, height = roi_in->height;
+
   precondition((float *)ivoid, (float *)ovoid, width, height, aa, bb);
+
 #if 0 // DEBUG: see what variance we have after transform
   if(piece->pipe->type != DT_DEV_PIXELPIPE_PREVIEW)
   {
@@ -545,6 +557,7 @@ void process_wavelets(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piec
     fclose(f);
   }
 #endif
+
   buf1 = (float *)ovoid;
   buf2 = tmp;
 
@@ -559,18 +572,17 @@ void process_wavelets(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piec
 #if 0 // DEBUG: print wavelet scales:
     if(piece->pipe->type != DT_DEV_PIXELPIPE_PREVIEW)
     {
-      const int n = width*height;
       char filename[512];
       snprintf(filename, sizeof(filename), "/tmp/coarse_%d.pfm", scale);
       FILE *f = fopen(filename, "wb");
       fprintf(f, "PF\n%d %d\n-1.0\n", width, height);
-      for(int k=0; k<n; k++)
+      for(size_t k = 0; k < npixels; k++)
         fwrite(buf2+4*k, sizeof(float), 3, f);
       fclose(f);
       snprintf(filename, sizeof(filename), "/tmp/detail_%d.pfm", scale);
       f = fopen(filename, "wb");
       fprintf(f, "PF\n%d %d\n-1.0\n", width, height);
-      for(int k=0; k<n; k++)
+      for(size_t k = 0; k < npixels; k++)
         fwrite(buf[scale]+4*k, sizeof(float), 3, f);
       fclose(f);
     }
@@ -592,12 +604,11 @@ void process_wavelets(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piec
     // determine thrs as bayesshrink
     // TODO: parallelize!
     float sum_y2[3] = { 0.0f };
-    const size_t n = (size_t)width * height;
-    for(size_t k = 0; k < n; k++)
+    for(size_t k = 0; k < npixels; k++)
       for(int c = 0; c < 3; c++) sum_y2[c] += buf[scale][4 * k + c] * buf[scale][4 * k + c];
 
     const float sb2 = sigma_band * sigma_band;
-    const float var_y[3] = { sum_y2[0] / (n - 1.0f), sum_y2[1] / (n - 1.0f), sum_y2[2] / (n - 1.0f) };
+    const float var_y[3] = { sum_y2[0] / (npixels - 1.0f), sum_y2[1] / (npixels - 1.0f), sum_y2[2] / (npixels - 1.0f) };
     const float std_x[3] = { sqrtf(MAX(1e-6f, var_y[0] - sb2)), sqrtf(MAX(1e-6f, var_y[1] - sb2)),
                              sqrtf(MAX(1e-6f, var_y[2] - sb2)) };
     // add 8.0 here because it seemed a little weak
@@ -1061,6 +1072,7 @@ int process_wavelets_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *pi
   cl_int err = -999;
   const int width = roi_in->width;
   const int height = roi_in->height;
+  const size_t npixels = (size_t)width * height;
 
   cl_mem dev_tmp = NULL;
   cl_mem dev_buf1 = NULL;
@@ -1070,6 +1082,18 @@ int process_wavelets_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *pi
   cl_mem dev_filter = NULL;
   cl_mem dev_detail[max_max_scale];
   for(int k = 0; k < max_scale; k++) dev_detail[k] = NULL;
+
+  // corner case of extremely small image. this is not really likely to happen but would cause issues later
+  // when we divide by (n-1). so let's be prepared
+  if(npixels < 2)
+  {
+    // copy original input from dev_in -> dev_out
+    size_t origin[] = { 0, 0, 0 };
+    size_t region[] = { width, height, 1 };
+    err = dt_opencl_enqueue_copy_image(devid, dev_in, dev_out, origin, origin, region);
+    if(err != CL_SUCCESS) goto error;
+    return TRUE;
+  }
 
   // prepare local work group
   size_t maxsizes[3] = { 0 };     // the maximum dimensions for a work group
@@ -1086,7 +1110,7 @@ int process_wavelets_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *pi
     // reduce blocksize step by step until it fits to limits
     while(blocksize > maxsizes[0] || blocksize > maxsizes[1] || blocksize * blocksize > kernelworkgroupsize
           || blocksize * blocksize > workgroupsize
-          || blocksize * blocksize * 2 * 4 * sizeof(float) > localmemsize)
+          || blocksize * blocksize * 4 * sizeof(float) > localmemsize)
     {
       if(blocksize == 1) break;
       blocksize >>= 1;
@@ -1111,10 +1135,10 @@ int process_wavelets_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *pi
   const int lsize = maxsizes[0];
   const int reducesize = MIN(REDUCESIZE, ROUNDUP(bufsize, lsize) / lsize);
 
-  dev_m = dt_opencl_alloc_device_buffer(devid, (size_t)bufsize * 2 * 4 * sizeof(float));
+  dev_m = dt_opencl_alloc_device_buffer(devid, (size_t)bufsize * 4 * sizeof(float));
   if(dev_m == NULL) goto error;
 
-  dev_r = dt_opencl_alloc_device_buffer(devid, (size_t)reducesize * 2 * 4 * sizeof(float));
+  dev_r = dt_opencl_alloc_device_buffer(devid, (size_t)reducesize * 4 * sizeof(float));
   if(dev_r == NULL) goto error;
 
   dev_tmp = dt_opencl_alloc_device(devid, width, height, 4 * sizeof(float));
@@ -1199,7 +1223,6 @@ int process_wavelets_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *pi
     const float sigma_band = powf(varf, scale) * sigma;
 
     // determine thrs as bayesshrink
-    float sum_y[3] = { 0.0f };
     float sum_y2[3] = { 0.0f };
 
     size_t lsizes[3];
@@ -1217,7 +1240,7 @@ int process_wavelets_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *pi
     dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_reduce_first, 2, sizeof(int), &height);
     dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_reduce_first, 3, sizeof(cl_mem), &dev_m);
     dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_reduce_first, 4,
-                             blocksize * blocksize * 2 * 4 * sizeof(float), NULL);
+                             blocksize * blocksize * 4 * sizeof(float), NULL);
     err = dt_opencl_enqueue_kernel_2d_with_local(devid, gd->kernel_denoiseprofile_reduce_first, lsizes,
                                                  llocal);
     if(err != CL_SUCCESS) goto error;
@@ -1232,35 +1255,28 @@ int process_wavelets_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *pi
     dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_reduce_second, 0, sizeof(cl_mem), &dev_m);
     dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_reduce_second, 1, sizeof(cl_mem), &dev_r);
     dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_reduce_second, 2, sizeof(int), &bufsize);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_reduce_second, 3, lsize * 2 * 4 * sizeof(float),
+    dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_reduce_second, 3, lsize * 4 * sizeof(float),
                              NULL);
     err = dt_opencl_enqueue_kernel_2d_with_local(devid, gd->kernel_denoiseprofile_reduce_second, lsizes,
                                                  llocal);
     if(err != CL_SUCCESS) goto error;
 
 
-    float sumsum[2 * 4 * reducesize];
+    float sumsum[4 * reducesize];
     err = dt_opencl_read_buffer_from_device(devid, (void *)sumsum, dev_r, 0,
-                                            (size_t)reducesize * 2 * 4 * sizeof(float), CL_TRUE);
+                                            (size_t)reducesize * 4 * sizeof(float), CL_TRUE);
     if(err != CL_SUCCESS) goto error;
 
     for(int k = 0; k < reducesize; k++)
     {
       for(int c = 0; c < 3; c++)
       {
-        sum_y[c] += sumsum[4 * (2 * k) + c];
-        sum_y2[c] += sumsum[4 * (2 * k + 1) + c];
+        sum_y2[c] += sumsum[4 * k + c];
       }
     }
 
     const float sb2 = sigma_band * sigma_band;
-
-    const int n = width * height;
-    const float mean_y[3] = { sum_y[0] / n, sum_y[1] / n, sum_y[2] / n };
-
-    const float var_y[3]
-        = { sum_y2[0] / (n - 1.0f) - mean_y[0] * mean_y[0], sum_y2[1] / (n - 1.0f) - mean_y[1] * mean_y[1],
-            sum_y2[2] / (n - 1.0f) - mean_y[2] * mean_y[2] };
+    const float var_y[3] = { sum_y2[0] / (npixels - 1.0f), sum_y2[1] / (npixels - 1.0f), sum_y2[2] / (npixels - 1.0f) };
     const float std_x[3] = { sqrtf(MAX(1e-6f, var_y[0] - sb2)), sqrtf(MAX(1e-6f, var_y[1] - sb2)),
                              sqrtf(MAX(1e-6f, var_y[2] - sb2)) };
     // add 8.0 here because it seemed a little weak
