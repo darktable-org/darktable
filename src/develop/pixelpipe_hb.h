@@ -46,7 +46,14 @@ typedef struct dt_dev_pixelpipe_iop_t
   struct dt_dev_pixelpipe_t *pipe; // the pipe this piece belongs to
   void *data;                      // to be used by the module to store stuff per pipe piece
   void *blendop_data;              // to be used by the module to store blendop per pipe piece
-  int enabled;         // used to disable parts of the pipe for export, independent on module itself.
+  int enabled; // used to disable parts of the pipe for export, independent on module itself.
+
+  dt_dev_request_flags_t request_histogram;              // (bitwise) set if you want an histogram captured
+  dt_dev_histogram_collection_params_t histogram_params; // set histogram generation params
+  uint32_t *histogram; // pointer to histogram data; histogram_bins_count bins with 4 channels each
+  dt_dev_histogram_stats_t histogram_stats; // stats of captured histogram
+  uint32_t histogram_max[4];                // maximum levels in histogram, one per channel
+
   float iscale;        // input actually just downscaled buffer? iscale*iwidth = actual width
   int iwidth, iheight; // width and height of input buffer
   uint64_t hash;       // hash of params and enabled.

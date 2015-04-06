@@ -223,7 +223,7 @@ static void deflicker_prepare_histogram(dt_iop_module_t *self, uint32_t **histog
     return;
   }
 
-  dt_dev_histogram_collection_params_t histogram_params = self->histogram_params;
+  dt_dev_histogram_collection_params_t histogram_params = { 0 };
 
   dt_histogram_roi_t histogram_roi = {.width = image.width,
                                       .height = image.height,
@@ -235,6 +235,7 @@ static void deflicker_prepare_histogram(dt_iop_module_t *self, uint32_t **histog
                                       .crop_height = image.crop_height };
 
   histogram_params.roi = &histogram_roi;
+  histogram_params.bins_count = 16384;
 
   dt_histogram_worker(&histogram_params, histogram_stats, buf.buf, histogram,
                       dt_histogram_helper_cs_RAW_uint16);
@@ -400,9 +401,10 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
   d->black = p->black;
   d->exposure = p->exposure;
 
-  self->request_histogram &= ~(DT_REQUEST_ON);
-  self->request_histogram |= (DT_REQUEST_ONLY_IN_GUI);
-  self->request_histogram_source = (DT_DEV_PIXELPIPE_PREVIEW);
+  if(pipe->type == DT_DEV_PIXELPIPE_PREVIEW) piece->request_histogram &= ~(DT_REQUEST_ON);
+  piece->request_histogram |= (DT_REQUEST_ONLY_IN_GUI);
+
+  piece->histogram_params.bins_count = 16384; // we neeed really maximally reliable histogram
 
   if(self->dev->gui_attached)
   {
@@ -437,7 +439,7 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
     {
       if(p->deflicker_histogram_source == DEFLICKER_HISTOGRAM_SOURCE_THUMBNAIL)
       {
-        self->request_histogram |= (DT_REQUEST_ON);
+        piece->request_histogram |= (DT_REQUEST_ON);
 
         gboolean failed = !histogram_is_good;
 
@@ -458,8 +460,7 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
         {
           d->mode = EXPOSURE_MODE_DEFLICKER;
           // commit_params_late() will compute correct d->exposure later
-          self->request_histogram &= ~(DT_REQUEST_ONLY_IN_GUI);
-          self->request_histogram_source = (DT_DEV_PIXELPIPE_ANY);
+          piece->request_histogram &= ~(DT_REQUEST_ONLY_IN_GUI);
 
           if(failed && self->dev->gui_attached)
           {
@@ -579,7 +580,6 @@ void init(dt_iop_module_t *module)
   module->params = malloc(sizeof(dt_iop_exposure_params_t));
   module->default_params = malloc(sizeof(dt_iop_exposure_params_t));
   module->default_enabled = 0;
-  module->histogram_params.bins_count = 16384; // we neeed really maximally reliable histogrem
   module->priority = 183;                      // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_exposure_params_t);
   module->gui_data = NULL;

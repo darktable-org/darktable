@@ -362,9 +362,9 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_
   dt_iop_levels_params_t *p = (dt_iop_levels_params_t *)p1;
   dt_iop_levels_gui_data_t *g = (dt_iop_levels_gui_data_t *)self->gui_data;
 
-  self->request_histogram |= (DT_REQUEST_ONLY_IN_GUI);
-  self->request_histogram_source = (DT_DEV_PIXELPIPE_PREVIEW);
-  self->histogram_params.bins_count = 64;
+  piece->request_histogram |= (DT_REQUEST_ONLY_IN_GUI);
+  if(pipe->type == DT_DEV_PIXELPIPE_PREVIEW) piece->request_histogram |= (DT_REQUEST_ON);
+  piece->histogram_params.bins_count = 64;
 
   if(self->dev->gui_attached)
   {
@@ -375,7 +375,7 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_
 
   if(p->mode == LEVELS_MODE_AUTOMATIC)
   {
-    self->histogram_params.bins_count = 16384;
+    piece->histogram_params.bins_count = 16384;
 
     d->percentiles[0] = p->percentiles[0];
     d->percentiles[1] = p->percentiles[1];
@@ -400,8 +400,8 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_
     {
       d->mode = LEVELS_MODE_AUTOMATIC;
       // commit_params_late() will compute LUT later
-      self->request_histogram &= ~(DT_REQUEST_ONLY_IN_GUI);
-      self->request_histogram_source = (DT_DEV_PIXELPIPE_ANY);
+      piece->request_histogram &= ~(DT_REQUEST_ONLY_IN_GUI);
+      piece->request_histogram |= (DT_REQUEST_ON);
 
       if(failed && self->dev->gui_attached)
       {

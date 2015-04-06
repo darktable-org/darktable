@@ -17,6 +17,7 @@
 */
 #ifndef DT_DEV_PIXELPIPE_H
 #define DT_DEV_PIXELPIPE_H
+#include <stdint.h>
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -32,6 +33,34 @@ typedef enum dt_dev_pixelpipe_type_t
   DT_DEV_PIXELPIPE_ANY = DT_DEV_PIXELPIPE_EXPORT | DT_DEV_PIXELPIPE_FULL | DT_DEV_PIXELPIPE_PREVIEW
                          | DT_DEV_PIXELPIPE_THUMBNAIL
 } dt_dev_pixelpipe_type_t;
+
+/** when to collect histogram */
+typedef enum dt_dev_request_flags_t
+{
+  DT_REQUEST_NONE = 0,
+  DT_REQUEST_ON = 1 << 0,
+  DT_REQUEST_ONLY_IN_GUI = 1 << 1
+} dt_dev_request_flags_t;
+
+// params to be used to collect histogram
+typedef struct dt_dev_histogram_collection_params_t
+{
+  /** histogram_collect: if NULL, correct is set; else should be set manually */
+  const struct dt_histogram_roi_t *roi;
+  /** count of histogram bins. */
+  uint32_t bins_count;
+} dt_dev_histogram_collection_params_t;
+
+// params used to collect histogram during last histogram capture
+typedef struct dt_dev_histogram_stats_t
+{
+  /** count of histogram bins. */
+  uint32_t bins_count;
+  /** count of pixels sampled during histogram capture. */
+  uint32_t pixels;
+  /** count of channels: 1 for RAW, 3 for rgb/Lab. */
+  uint32_t ch;
+} dt_dev_histogram_stats_t;
 
 typedef void dt_iop_params_t;
 
