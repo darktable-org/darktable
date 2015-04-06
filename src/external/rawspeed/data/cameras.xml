@@ -2240,7 +2240,7 @@
 		<Crop x="0" y="0" width="3340" height="2504"/>
 		<Sensor black="63" white="4095"/>
 		<Hints>
-			<Hint name="force_uncompressed" value=""/>
+			<Hint name="force_uncompressed_with_control" value=""/>
 		</Hints>
 	</Camera>
 	<Camera make="OLYMPUS IMAGING CORP." model="E-330">
@@ -2303,7 +2303,7 @@
 		<Crop x="0" y="0" width="3340" height="2504"/>
 		<Sensor black="63" white="3967"/>
 		<Hints>
-			<Hint name="force_uncompressed" value=""/>
+			<Hint name="force_uncompressed_with_control" value=""/>
 		</Hints>
 	</Camera>
 	<Camera make="OLYMPUS IMAGING CORP." model="E-510">
