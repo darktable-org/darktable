@@ -389,10 +389,15 @@ static int _path_find_self_intersection(int *inter, int nb_corners, float *borde
   int *binter = calloc(ss, sizeof(int));
   if(binter == NULL) return 0;
 
+  dt_masks_dynbuf_t *extra = dt_masks_dynbuf_init(100000, "path extra");
+  if(extra == NULL)
+  {
+    free(binter);
+    return 0;
+  }
+
   int lastx = border[(posextr[1] - 1) * 2];
   int lasty = border[(posextr[1] - 1) * 2 + 1];
-
-  dt_masks_dynbuf_t *extra = dt_masks_dynbuf_init(100000, "path extra");
 
   for(int ii = nb_corners * 3; ii < border_count; ii++)
   {
@@ -480,8 +485,23 @@ static int _path_get_points_border(dt_develop_t *dev, dt_masks_form_t *form, int
 
   dt_masks_dynbuf_t *dpoints = NULL, *dborder = NULL;
 
+  *points = NULL;
+  *points_count = 0;
+  if(border) *border = NULL;
+  if(border) *border_count = 0;
+
   dpoints = dt_masks_dynbuf_init(1000000, "path dpoints");
-  if(border) dborder = dt_masks_dynbuf_init(1000000, "path dborder");
+  if(dpoints == NULL) return 0;
+
+  if(border)
+  {
+    dborder = dt_masks_dynbuf_init(1000000, "path dborder");
+    if(dborder == NULL)
+    {
+      dt_masks_dynbuf_free(dpoints);
+      return 0;
+    }
+  }
 
   // we store all points
   float dx, dy;
@@ -529,7 +549,7 @@ static int _path_get_points_border(dt_develop_t *dev, dt_masks_form_t *form, int
   // we render all segments
   for(int k = 0; k < nb; k++)
   {
-    int pb = dt_masks_dynbuf_position(dborder);
+    int pb = border ? dt_masks_dynbuf_position(dborder) : 0;
     border_init[k * 6 + 2] = -pb;
     int k2 = (k + 1) % nb;
     int k3 = (k + 2) % nb;
@@ -563,7 +583,7 @@ static int _path_get_points_border(dt_develop_t *dev, dt_masks_form_t *form, int
     }
     dt_masks_dynbuf_add(dpoints, rc[0]);
     dt_masks_dynbuf_add(dpoints, rc[1]);
-    border_init[k * 6 + 4] = -dt_masks_dynbuf_position(dborder);
+    border_init[k * 6 + 4] = border ? -dt_masks_dynbuf_position(dborder) : 0;
 
     if(border)
     {
