@@ -524,7 +524,7 @@ static int _path_get_points_border(dt_develop_t *dev, dt_masks_form_t *form, int
     dt_masks_dynbuf_add(dpoints, pt->ctrl2[1] * ht - dy);
   }
   // for the border, we store value too
-  if(border)
+  if(dborder)
   {
     for(int k = 0; k < nb; k++)
     {
@@ -549,7 +549,7 @@ static int _path_get_points_border(dt_develop_t *dev, dt_masks_form_t *form, int
   // we render all segments
   for(int k = 0; k < nb; k++)
   {
-    int pb = border ? dt_masks_dynbuf_position(dborder) : 0;
+    int pb = dborder ? dt_masks_dynbuf_position(dborder) : 0;
     border_init[k * 6 + 2] = -pb;
     int k2 = (k + 1) % nb;
     int k3 = (k + 2) % nb;
@@ -575,17 +575,19 @@ static int _path_get_points_border(dt_develop_t *dev, dt_masks_form_t *form, int
     _path_points_recurs(p1, p2, 0.0, 1.0, cmin, cmax, bmin, bmax, rc, rb, dpoints, dborder, border && (nb >= 3));
 
     // we check gaps in the border (sharp edges)
-    if(border && (fabs(dt_masks_dynbuf_get(dborder, -2) - rb[0]) > 1.0f ||
-                  fabs(dt_masks_dynbuf_get(dborder, -1) - rb[1]) > 1.0f))
+    if(dborder && (fabs(dt_masks_dynbuf_get(dborder, -2) - rb[0]) > 1.0f ||
+                   fabs(dt_masks_dynbuf_get(dborder, -1) - rb[1]) > 1.0f))
     {
       bmin[0] = dt_masks_dynbuf_get(dborder, -2);
       bmin[1] = dt_masks_dynbuf_get(dborder, -1);
     }
+
     dt_masks_dynbuf_add(dpoints, rc[0]);
     dt_masks_dynbuf_add(dpoints, rc[1]);
-    border_init[k * 6 + 4] = border ? -dt_masks_dynbuf_position(dborder) : 0;
+    
+    border_init[k * 6 + 4] = dborder ? -dt_masks_dynbuf_position(dborder) : 0;
 
-    if(border)
+    if(dborder)
     {
       if(rb[0] == -9999999.0f)
       {
@@ -605,7 +607,7 @@ static int _path_get_points_border(dt_develop_t *dev, dt_masks_form_t *form, int
     }
 
     // we first want to be sure that there are no gaps in border
-    if(border && nb >= 3)
+    if(dborder && nb >= 3)
     {
       // we get the next point (start of the next segment)
       _path_border_get_XY(p3[0], p3[1], p3[2], p3[3], p4[2], p4[3], p4[0], p4[1], 0, p3[4], cmin, cmin + 1,
@@ -627,7 +629,7 @@ static int _path_get_points_border(dt_develop_t *dev, dt_masks_form_t *form, int
   *points = dt_masks_dynbuf_harvest(dpoints);
   dt_masks_dynbuf_free(dpoints);
 
-  if(border)
+  if(dborder)
   {
     *border_count = dt_masks_dynbuf_position(dborder) / 2;
     *border = dt_masks_dynbuf_harvest(dborder);
