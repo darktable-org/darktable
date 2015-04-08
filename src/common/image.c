@@ -1362,16 +1362,16 @@ int dt_image_local_copy_reset(const int32_t imgid)
 
   // get name of local copy
 
-  _image_local_copy_full_path(imgid, destpath, sizeof(destpath));
+  _image_local_copy_full_path(imgid, locppath, sizeof(locppath));
 
   // remove cached file, but double check that this is really into the cache. We really want to avoid deleting
   // a user's original file.
 
   dt_loc_get_user_cache_dir(cachedir, sizeof(cachedir));
 
-  if(g_file_test(destpath, G_FILE_TEST_EXISTS) && strstr(destpath, cachedir))
+  if(g_file_test(locppath, G_FILE_TEST_EXISTS) && strstr(locppath, cachedir))
   {
-    GFile *dest = g_file_new_for_path(destpath);
+    GFile *dest = g_file_new_for_path(locppath);
 
     // first sync the xmp with the original picture
 
@@ -1385,11 +1385,11 @@ int dt_image_local_copy_reset(const int32_t imgid)
     g_object_unref(dest);
 
     // delete xmp if any
-    dt_image_path_append_version(imgid, destpath, sizeof(destpath));
-    g_strlcat(destpath, ".xmp", sizeof(destpath));
-    dest = g_file_new_for_path(destpath);
+    dt_image_path_append_version(imgid, locppath, sizeof(locppath));
+    g_strlcat(locppath, ".xmp", sizeof(locppath));
+    dest = g_file_new_for_path(locppath);
 
-    if(g_file_test(destpath, G_FILE_TEST_EXISTS)) g_file_delete(dest, NULL, NULL);
+    if(g_file_test(locppath, G_FILE_TEST_EXISTS)) g_file_delete(dest, NULL, NULL);
     g_object_unref(dest);
 
     // update cache, remove local copy flags
