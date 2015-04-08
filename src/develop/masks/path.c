@@ -642,32 +642,35 @@ static int _path_get_points_border(dt_develop_t *dev, dt_masks_form_t *form, int
                  dt_get_wtime() - start2);
       start2 = dt_get_wtime();
 
-      // we don't want to copy the falloff points
       if(border)
+      {
+        // we don't want to copy the falloff points
         for(int k = 0; k < nb; k++)
           for(int i = 2; i < 6; i++) (*border)[k * 6 + i] = border_init[k * 6 + i];
-      // now we want to write the skipping zones
-      for(int i = 0; i < inter_count; i++)
-      {
-        int v = intersections[i * 2];
-        int w = intersections[i * 2 + 1];
-        if(v <= w)
+
+        // now we want to write the skipping zones
+        for(int i = 0; i < inter_count; i++)
         {
-          (*border)[v * 2] = -999999;
-          (*border)[v * 2 + 1] = w;
-        }
-        else
-        {
-          if(w > nb * 3)
+          int v = intersections[i * 2];
+          int w = intersections[i * 2 + 1];
+          if(v <= w)
           {
-            if((*border)[nb * 6] == -999999)
-              (*border)[nb * 6 + 1] = MAX((*border)[nb * 6 + 1], w);
-            else
-              (*border)[nb * 6 + 1] = w;
-            (*border)[nb * 6] = -999999;
+            (*border)[v * 2] = -999999;
+            (*border)[v * 2 + 1] = w;
           }
-          (*border)[v * 2] = -999999;
-          (*border)[v * 2 + 1] = -999999;
+          else
+          {
+            if(w > nb * 3)
+            {
+              if((*border)[nb * 6] == -999999)
+                (*border)[nb * 6 + 1] = MAX((*border)[nb * 6 + 1], w);
+              else
+                (*border)[nb * 6 + 1] = w;
+              (*border)[nb * 6] = -999999;
+            }
+            (*border)[v * 2] = -999999;
+            (*border)[v * 2 + 1] = -999999;
+          }
         }
       }
 
