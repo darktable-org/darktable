@@ -688,13 +688,13 @@ int dt_imageio_export_with_flags(const uint32_t imgid, const char *filename,
   int processed_height = scale * pipe.processed_height + .5f;
   const int bpp = format->bpp(format_params);
 
-  // downsampling done last, if high quality processing was requested:
-  uint8_t *outbuf = pipe.backbuf;
-  uint8_t *moutbuf = NULL; // keep track of alloc'ed memory
   dt_get_times(&start);
   if(high_quality_processing)
   {
-    dt_dev_pixelpipe_process_no_gamma(&pipe, &dev, 0, 0, processed_width, processed_height, scale);
+    /*
+     * if high quality processing was requested, downsampling will be done
+     * at the very end of the pipe (just before border and watermark)
+     */
     const double scalex = format_params->max_width > 0
                               ? fminf(format_params->max_width / (double)pipe.processed_width, max_scale)
                               : 1.0;
@@ -704,32 +704,38 @@ int dt_imageio_export_with_flags(const uint32_t imgid, const char *filename,
     const double scale = fminf(scalex, scaley);
     processed_width = scale * pipe.processed_width + .5f;
     processed_height = scale * pipe.processed_height + .5f;
-    moutbuf = (uint8_t *)dt_alloc_align(64, (size_t)sizeof(float) * processed_width * processed_height * 4);
-    outbuf = moutbuf;
-    // now downscale into the new buffer:
-    dt_iop_roi_t roi_in, roi_out;
-    roi_in.x = roi_in.y = roi_out.x = roi_out.y = 0;
-    roi_in.scale = 1.0;
-    roi_out.scale = scale;
-    roi_in.width = pipe.processed_width;
-    roi_in.height = pipe.processed_height;
-    roi_out.width = processed_width;
-    roi_out.height = processed_height;
-    dt_iop_clip_and_zoom((float *)outbuf, (float *)pipe.backbuf, &roi_out, &roi_in, processed_width,
-                         pipe.processed_width);
+
+    dt_dev_pixelpipe_process_no_gamma(&pipe, &dev, 0, 0, processed_width, processed_height, scale);
   }
   else
   {
+    // else, downsampling will be right after demosaic
+
+    // so we need to turn temporarily disable in-pipe late downsampling iop.
+    GList *finalscalep = g_list_last(pipe.nodes);
+    dt_dev_pixelpipe_iop_t *finalscale = (dt_dev_pixelpipe_iop_t *)finalscalep->data;
+    while(strcmp(finalscale->module->op, "finalscale"))
+    {
+      finalscale = NULL;
+      finalscalep = g_list_previous(finalscalep);
+      if(!finalscalep) break;
+      finalscale = (dt_dev_pixelpipe_iop_t *)finalscalep->data;
+    }
+    if(finalscale) finalscale->enabled = 0;
+
     // do the processing (8-bit with special treatment, to make sure we can use openmp further down):
     if(bpp == 8)
       dt_dev_pixelpipe_process(&pipe, &dev, 0, 0, processed_width, processed_height, scale);
     else
       dt_dev_pixelpipe_process_no_gamma(&pipe, &dev, 0, 0, processed_width, processed_height, scale);
-    outbuf = pipe.backbuf;
+
+    if(finalscale) finalscale->enabled = 1;
   }
   dt_show_times(&start, thumbnail_export ? "[dev_process_thumbnail] pixel pipeline processing"
                                          : "[dev_process_export] pixel pipeline processing",
                 NULL);
+
+  uint8_t *outbuf = pipe.backbuf;
 
   // downconversion to low-precision formats:
   if(bpp == 8)
@@ -823,7 +829,7 @@ int dt_imageio_export_with_flags(const uint32_t imgid, const char *filename,
   dt_dev_pixelpipe_cleanup(&pipe);
   dt_dev_cleanup(&dev);
   dt_mipmap_cache_release(darktable.mipmap_cache, &buf);
-  dt_free_align(moutbuf);
+
   /* now write xmp into that container, if possible */
   if(copy_metadata && (format->flags(format_params) & FORMAT_FLAGS_SUPPORT_XMP))
   {

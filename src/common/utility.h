@@ -48,6 +48,7 @@ typedef enum dt_logo_season_t
   DT_LOGO_SEASON_NONE = 0,
   DT_LOGO_SEASON_HALLOWEEN = 1,
   DT_LOGO_SEASON_XMAS = 2,
+  DT_LOGO_SEASON_EASTER = 3
 } dt_logo_season_t;
 
 /** returns the dt logo season to use right now */

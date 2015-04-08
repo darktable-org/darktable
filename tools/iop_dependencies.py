@@ -144,7 +144,7 @@ def add_edges(gr):
   gr.add_edge(('colorout', 'colorize'))
   gr.add_edge(('colorout', 'colisa'))
   gr.add_edge(('colorout', 'defringe'))
-  gr.add_edge(('colorout', 'colorreconstruct'))
+  gr.add_edge(('colorout', 'colorreconstruction'))
   gr.add_edge(('bloom', 'colorin'))
   gr.add_edge(('nlmeans', 'colorin'))
   gr.add_edge(('colortransfer', 'colorin'))
@@ -168,34 +168,34 @@ def add_edges(gr):
   gr.add_edge(('colorize', 'colorin'))
   gr.add_edge(('colisa', 'colorin'))
   gr.add_edge(('defringe', 'colorin'))
-  gr.add_edge(('colorreconstruct', 'colorin'))
-  
+  gr.add_edge(('colorreconstruction', 'colorin'))
+
   # we want color reconstruction come before all other tone and color altering modules
-  gr.add_edge(('bloom', 'colorreconstruct'))
-  gr.add_edge(('nlmeans', 'colorreconstruct'))
-  gr.add_edge(('colortransfer', 'colorreconstruct'))
-  gr.add_edge(('colormapping', 'colorreconstruct'))
-  gr.add_edge(('atrous', 'colorreconstruct'))
-  gr.add_edge(('bilat', 'colorreconstruct'))
-  gr.add_edge(('colorzones', 'colorreconstruct'))
-  gr.add_edge(('lowlight', 'colorreconstruct'))
-  gr.add_edge(('monochrome', 'colorreconstruct'))
-  gr.add_edge(('zonesystem', 'colorreconstruct'))
-  gr.add_edge(('tonecurve', 'colorreconstruct'))
-  gr.add_edge(('levels', 'colorreconstruct'))
-  gr.add_edge(('relight', 'colorreconstruct'))
-  gr.add_edge(('colorcorrection', 'colorreconstruct'))
-  gr.add_edge(('sharpen', 'colorreconstruct'))
-  gr.add_edge(('grain', 'colorreconstruct'))
-  gr.add_edge(('lowpass', 'colorreconstruct'))
-  gr.add_edge(('shadhi', 'colorreconstruct'))
-  gr.add_edge(('highpass', 'colorreconstruct'))
-  gr.add_edge(('colorcontrast', 'colorreconstruct'))
-  gr.add_edge(('colorize', 'colorreconstruct'))
-  gr.add_edge(('colisa', 'colorreconstruct'))
-  gr.add_edge(('defringe', 'colorreconstruct'))
-  
-  
+  gr.add_edge(('bloom', 'colorreconstruction'))
+  gr.add_edge(('nlmeans', 'colorreconstruction'))
+  gr.add_edge(('colortransfer', 'colorreconstruction'))
+  gr.add_edge(('colormapping', 'colorreconstruction'))
+  gr.add_edge(('atrous', 'colorreconstruction'))
+  gr.add_edge(('bilat', 'colorreconstruction'))
+  gr.add_edge(('colorzones', 'colorreconstruction'))
+  gr.add_edge(('lowlight', 'colorreconstruction'))
+  gr.add_edge(('monochrome', 'colorreconstruction'))
+  gr.add_edge(('zonesystem', 'colorreconstruction'))
+  gr.add_edge(('tonecurve', 'colorreconstruction'))
+  gr.add_edge(('levels', 'colorreconstruction'))
+  gr.add_edge(('relight', 'colorreconstruction'))
+  gr.add_edge(('colorcorrection', 'colorreconstruction'))
+  gr.add_edge(('sharpen', 'colorreconstruction'))
+  gr.add_edge(('grain', 'colorreconstruction'))
+  gr.add_edge(('lowpass', 'colorreconstruction'))
+  gr.add_edge(('shadhi', 'colorreconstruction'))
+  gr.add_edge(('highpass', 'colorreconstruction'))
+  gr.add_edge(('colorcontrast', 'colorreconstruction'))
+  gr.add_edge(('colorize', 'colorreconstruction'))
+  gr.add_edge(('colisa', 'colorreconstruction'))
+  gr.add_edge(('defringe', 'colorreconstruction'))
+
+
   # spot removal works on demosaiced data
   # and needs to be before geometric distortions:
   gr.add_edge(('spots', 'demosaic'))
@@ -271,9 +271,23 @@ def add_edges(gr):
   gr.add_edge(('borders', 'channelmixer'))
   # don't indicate borders as over/under exposed
   gr.add_edge(('borders', 'overexposed'))
+  # don't resample borders when scaling to the output dimensions
+  gr.add_edge(('borders', 'finalscale'))
+
+  # do want to downsample very late
+  gr.add_edge(('finalscale', 'colorout'))
+  gr.add_edge(('finalscale', 'vignette'))
+  gr.add_edge(('finalscale', 'splittoning'))
+  gr.add_edge(('finalscale', 'velvia'))
+  gr.add_edge(('finalscale', 'soften'))
+  gr.add_edge(('finalscale', 'clahe'))
+  gr.add_edge(('finalscale', 'channelmixer'))
+  gr.add_edge(('finalscale', 'overexposed'))
 
   # but watermark can be drawn on top of borders
   gr.add_edge(('watermark', 'borders'))
+  # also, do not resample watermark
+  gr.add_edge(('watermark', 'finalscale'))
 
   # want dithering very late
   gr.add_edge(('dither', 'watermark'))
@@ -321,7 +335,6 @@ def add_edges(gr):
   gr.add_edge(('colorcorrection', 'colormapping'))
   gr.add_edge(('relight', 'colormapping'))
   gr.add_edge(('lowpass', 'colormapping'))
-  gr.add_edge(('colorreconstruct', 'colormapping'))
   gr.add_edge(('shadhi', 'colormapping'))
   gr.add_edge(('highpass', 'colormapping'))
   gr.add_edge(('lowlight', 'colormapping'))
@@ -401,13 +414,14 @@ gr.add_nodes([
 'colormapping',
 'colorzones',
 'colorcontrast',
-'colorreconstruct',
+'colorreconstruction',
 'defringe',
 'demosaic',
 'denoiseprofile',
 'dither',
 'equalizer', # deprecated
 'exposure',
+'finalscale',
 'flip',
 'gamma',
 'globaltonemap',

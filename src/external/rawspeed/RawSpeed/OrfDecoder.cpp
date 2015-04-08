@@ -76,15 +76,6 @@ RawImage OrfDecoder::decodeRawInternal() {
   mRaw->dim = iPoint2D(width, height);
   mRaw->createData();
 
-  if ((hints.find(string("force_uncompressed")) != hints.end())) {
-    // Old packed ORF, decode it like that
-    uint32 off = offsets->getInt();
-    uint32 size = mFile->getSize() - off;
-    ByteStream input(mFile->getData(off), size);
-    Decode12BitRawWithControl(input, width, height);
-    return mRaw;
-  }
-
   // We add 3 bytes slack, since the bitpump might be a few bytes ahead.
   ByteStream s(mFile->getData(offsets->getInt()), counts->getInt() + 3);
 
@@ -92,6 +83,15 @@ RawImage OrfDecoder::decodeRawInternal() {
     ByteStream in(mFile->getData(offsets->getInt()), counts->getInt() + 3);
     iPoint2D size(width, height),pos(0,0);
     readUncompressedRaw(in, size, pos, width*bps/8,bps, BitOrder_Jpeg32);
+    return mRaw;
+  }
+
+  if ((hints.find(string("force_uncompressed_with_control")) != hints.end())) {
+    // Old packed ORF, decode it like that
+    uint32 off = offsets->getInt();
+    uint32 size = mFile->getSize() - off;
+    ByteStream input(mFile->getData(off), size);
+    Decode12BitRawWithControl(input, width, height);
     return mRaw;
   }
 

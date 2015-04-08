@@ -2082,6 +2082,14 @@ const wb_data wb_preset[] =
   { "FUJIFILM", "X-E1", Underwater, 0,		{ 1.821192, 1, 1.804636, 0 } },
   { "FUJIFILM", "X-E1", "5000K", 0,		{ 1.814570, 1, 1.731788, 0 } },
 
+  { "FUJIFILM", "X-E2", Daylight, 0,		{ 1.870861, 1, 1.582781, 0 } },
+  { "FUJIFILM", "X-E2", Shade, 0,		{ 2.066225, 1, 1.374172, 0 } },
+  { "FUJIFILM", "X-E2", DaylightFluorescent, 0,	{ 2.394040, 1, 1.370861, 0 } },
+  { "FUJIFILM", "X-E2", WarmWhiteFluorescent, 0,{ 2.039735, 1, 1.612583, 0 } },
+  { "FUJIFILM", "X-E2", CoolWhiteFluorescent, 0,{ 1.917219, 1, 2.006623, 0 } },
+  { "FUJIFILM", "X-E2", Incandescent, 0,	{ 1.215232, 1, 2.400662, 0 } },
+  { "FUJIFILM", "X-E2", Underwater, 0,		{ 1.864238, 1, 1.559603, 0 } },
+
   /* FUJIFILM X-T1 Firmware Version 1.10 */
   { "FUJIFILM", "X-T1", Daylight, 0,          { 1.89404, 1, 1.569536, 0 } },
   // The manual calls it "Shade", but exiftool shows it as "Cloudy".
@@ -4225,6 +4233,14 @@ const wb_data wb_preset[] =
   { "OLYMPUS", "E-M5", Flash, -7,		{ 2.0391, 1, 1.8203, 0 } },
   { "OLYMPUS", "E-M5", Flash, 0,		{ 2.3750, 1, 1.6016, 0 } },
   { "OLYMPUS", "E-M5", Flash, 7,		{ 2.7031, 1, 1.3750, 0 } },
+
+  { "OLYMPUS", "E-M5MarkII", Daylight, 0,	{ 1.867188, 1, 1.812500, 0 } },
+  { "OLYMPUS", "E-M5MarkII", Shade, 0,		{ 2.203125, 1, 1.406250, 0 } },
+  { "OLYMPUS", "E-M5MarkII", Cloudy, 0,		{ 2.015625, 1, 1.648438, 0 } },
+  { "OLYMPUS", "E-M5MarkII", Incandescent, 0,	{ 1.156250, 1, 3.539063, 0 } },
+  { "OLYMPUS", "E-M5MarkII", Fluorescent, 0,	{ 1.835938, 1, 2.726563, 0 } },
+  { "OLYMPUS", "E-M5MarkII", Underwater, 0,	{ 1.367188, 1, 2.812500, 0 } },
+  { "OLYMPUS", "E-M5MarkII", Flash, 0,		{ 2.187500, 1, 1.570313, 0 } },
 
   // Firmware version 1.1
   { "OLYMPUS", "E-M10", Daylight, 0,		{ 1.882813, 1, 1.750000, 0 } },

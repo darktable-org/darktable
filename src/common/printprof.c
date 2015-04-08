@@ -73,6 +73,9 @@ int dt_apply_printer_profile(int imgid, void **in, uint32_t width, uint32_t heig
     const uint8_t *ptr_in = (uint8_t *)*in;
     uint8_t *ptr_out = (uint8_t *)out;
 
+#ifdef _OPENMP
+#pragma omp parallel for schedule(static) default(none) shared(ptr_in, ptr_out, hTransform, height, width)
+#endif
     for (int k=0; k<height; k++)
       cmsDoTransform(hTransform, (const void *)&ptr_in[k*width*3], (void *)&ptr_out[k*width*3], width);
   }
@@ -81,6 +84,9 @@ int dt_apply_printer_profile(int imgid, void **in, uint32_t width, uint32_t heig
     const uint16_t *ptr_in = (uint16_t *)*in;
     uint8_t *ptr_out = (uint8_t *)out;
 
+#ifdef _OPENMP
+#pragma omp parallel for schedule(static) default(none) shared(ptr_in, ptr_out, hTransform, height, width)
+#endif
     for (int k=0; k<height; k++)
       cmsDoTransform(hTransform, (const void *)&ptr_in[k*width*3], (void *)&ptr_out[k*width*3], width);
   }

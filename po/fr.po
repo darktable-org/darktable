@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 1.3\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-03-28 00:30+0100\n"
-"PO-Revision-Date: 2015-03-28 00:34+0100\n"
+"POT-Creation-Date: 2015-04-04 10:55+0200\n"
+"PO-Revision-Date: 2015-04-04 10:57+0100\n"
 "Last-Translator: Pascal Obry <pascal@obry.net>\n"
 "Language-Team: \n"
 "Language: fr_FR\n"
@@ -1048,15 +1048,15 @@ msgid "generic poissonian"
 msgstr "distribution générique"
 
 #: ../src/common/pdf.h:85 ../src/iop/lens.c:1697
-#: ../src/libs/print_settings.c:1095
+#: ../src/libs/print_settings.c:1100
 msgid "mm"
 msgstr "mm"
 
-#: ../src/common/pdf.h:86 ../src/libs/print_settings.c:1096
+#: ../src/common/pdf.h:86 ../src/libs/print_settings.c:1101
 msgid "cm"
 msgstr "cm"
 
-#: ../src/common/pdf.h:87 ../src/libs/print_settings.c:1097
+#: ../src/common/pdf.h:87 ../src/libs/print_settings.c:1102
 msgid "inch"
 msgstr "pouce"
 
@@ -1142,14 +1142,14 @@ msgstr "le style «%s» a été importé"
 #: ../src/common/variables.c:240 ../src/common/variables.c:254
 #: ../src/iop/clipping.c:1573 ../src/iop/clipping.c:1826
 #: ../src/iop/clipping.c:1846 ../src/iop/clipping.c:1976
-#: ../src/iop/clipping.c:1998 ../src/iop/lens.c:2023 ../src/libs/export.c:489
-#: ../src/libs/live_view.c:323 ../src/libs/live_view.c:336
-#: ../src/libs/live_view.c:354 ../src/libs/print_settings.c:1007
-#: ../src/libs/print_settings.c:1269
+#: ../src/iop/clipping.c:1998 ../src/iop/colorreconstruction.c:1217
+#: ../src/iop/lens.c:2023 ../src/libs/export.c:489 ../src/libs/live_view.c:323
+#: ../src/libs/live_view.c:336 ../src/libs/live_view.c:354
+#: ../src/libs/print_settings.c:1012 ../src/libs/print_settings.c:1274
 msgid "none"
 msgstr "sans"
 
-#: ../src/common/opencl.c:533
+#: ../src/common/opencl.c:549
 msgid ""
 "due to a slow GPU hardware acceleration via opencl has been de-activated."
 msgstr "l'accélération matérielle opencl est lente et a donc été désactivée"
@@ -1642,17 +1642,17 @@ msgstr "inverser la polarité du masque dessiné"
 msgid "add gradient"
 msgstr "ajouter un dégradé"
 
-#: ../src/develop/blend_gui.c:1297 ../src/iop/spots.c:649
+#: ../src/develop/blend_gui.c:1297 ../src/iop/spots.c:651
 #: ../src/libs/masks.c:976 ../src/libs/masks.c:1014 ../src/libs/masks.c:1615
 msgid "add path"
 msgstr "ajouter un chemin"
 
-#: ../src/develop/blend_gui.c:1306 ../src/iop/spots.c:657
+#: ../src/develop/blend_gui.c:1306 ../src/iop/spots.c:659
 #: ../src/libs/masks.c:972 ../src/libs/masks.c:1010 ../src/libs/masks.c:1623
 msgid "add ellipse"
 msgstr "ajouter une forme elliptique"
 
-#: ../src/develop/blend_gui.c:1315 ../src/iop/spots.c:665
+#: ../src/develop/blend_gui.c:1315 ../src/iop/spots.c:667
 #: ../src/libs/masks.c:968 ../src/libs/masks.c:1006 ../src/libs/masks.c:1631
 msgid "add circle"
 msgstr "ajouter une forme circulaire"
@@ -3055,7 +3055,7 @@ msgid "enter the title of the pdf"
 msgstr "entrer le titre du pdf"
 
 #. // papers
-#: ../src/imageio/format/pdf.c:546 ../src/libs/print_settings.c:1075
+#: ../src/imageio/format/pdf.c:546 ../src/libs/print_settings.c:1080
 msgid "paper size"
 msgstr "taille papier"
 
@@ -3074,12 +3074,12 @@ msgid "page orientation"
 msgstr "orientation de la page"
 
 #: ../src/imageio/format/pdf.c:560 ../src/iop/borders.c:994
-#: ../src/libs/print_settings.c:1089
+#: ../src/libs/print_settings.c:1094
 msgid "portrait"
 msgstr "portrait"
 
 #: ../src/imageio/format/pdf.c:561 ../src/iop/borders.c:995
-#: ../src/libs/print_settings.c:1090
+#: ../src/libs/print_settings.c:1095
 msgid "landscape"
 msgstr "paysage"
 
@@ -3732,8 +3732,8 @@ msgstr "luma"
 msgid "change lightness at each feature size"
 msgstr "changer la luminosité pour chaque taille"
 
-#: ../src/iop/atrous.c:1395 ../src/iop/equalizer.c:404
-#: ../src/iop/nlmeans.c:713
+#: ../src/iop/atrous.c:1395 ../src/iop/colorreconstruction.c:1218
+#: ../src/iop/equalizer.c:404 ../src/iop/nlmeans.c:713
 msgid "chroma"
 msgstr "chroma"
 
@@ -3874,7 +3874,7 @@ msgstr "contraste local"
 msgid "coarseness"
 msgstr "granularité"
 
-#: ../src/iop/bilat.c:265 ../src/iop/colisa.c:363 ../src/iop/lowpass.c:638
+#: ../src/iop/bilat.c:265 ../src/iop/colisa.c:363 ../src/iop/lowpass.c:668
 msgid "contrast"
 msgstr "contraste"
 
@@ -3886,7 +3886,7 @@ msgstr "détail"
 msgid "denoise (bilateral filter)"
 msgstr "réduction du bruit (bilatéral)"
 
-#: ../src/iop/bilateral.cc:82 ../src/iop/lowpass.c:160 ../src/iop/shadhi.c:234
+#: ../src/iop/bilateral.cc:82 ../src/iop/lowpass.c:193 ../src/iop/shadhi.c:277
 #: ../src/iop/sharpen.c:97
 msgctxt "accel"
 msgid "radius"
@@ -3932,8 +3932,8 @@ msgstr ""
 "force du flou\n"
 "pour le bleu"
 
-#: ../src/iop/bilateral.cc:350 ../src/iop/clahe.c:328 ../src/iop/dither.c:558
-#: ../src/iop/lowpass.c:637 ../src/iop/shadhi.c:788 ../src/iop/sharpen.c:586
+#: ../src/iop/bilateral.cc:350 ../src/iop/clahe.c:328 ../src/iop/dither.c:563
+#: ../src/iop/lowpass.c:667 ../src/iop/shadhi.c:827 ../src/iop/sharpen.c:586
 msgid "radius"
 msgstr "rayon"
 
@@ -3969,7 +3969,7 @@ msgstr "seuil"
 msgid "the threshold of light"
 msgstr "seuil de lumière"
 
-#: ../src/iop/bloom.c:542 ../src/iop/denoiseprofile.c:1642
+#: ../src/iop/bloom.c:542 ../src/iop/denoiseprofile.c:1645
 #: ../src/iop/grain.c:546 ../src/iop/hotpixels.c:446 ../src/iop/nlmeans.c:709
 #: ../src/iop/velvia.c:347
 msgid "strength"
@@ -4100,7 +4100,7 @@ msgstr ""
 "d'entrer des dimensions personnalisées (l:h)"
 
 #: ../src/iop/borders.c:992 ../src/iop/flip.c:73
-#: ../src/libs/print_settings.c:1088
+#: ../src/libs/print_settings.c:1093
 msgid "orientation"
 msgstr "orientation"
 
@@ -4220,7 +4220,7 @@ msgstr "teinte"
 #: ../src/iop/channelmixer.c:461 ../src/iop/colisa.c:365
 #: ../src/iop/colorcorrection.c:286 ../src/iop/colorize.c:458
 #: ../src/iop/colorzones.c:1083 ../src/iop/colorzones.c:1118
-#: ../src/iop/graduatednd.c:1075 ../src/iop/lowpass.c:640
+#: ../src/iop/graduatednd.c:1075 ../src/iop/lowpass.c:670
 #: ../src/iop/soften.c:566 ../src/iop/splittoning.c:515
 #: ../src/iop/vignette.c:1152
 msgid "saturation"
@@ -4486,19 +4486,19 @@ msgstr "rotation"
 msgid "contrast brightness saturation"
 msgstr "contraste lum. saturation"
 
-#: ../src/iop/colisa.c:90 ../src/iop/lowpass.c:161
+#: ../src/iop/colisa.c:90 ../src/iop/lowpass.c:194
 msgctxt "accel"
 msgid "contrast"
 msgstr "contraste"
 
-#: ../src/iop/colisa.c:91 ../src/iop/lowpass.c:162 ../src/iop/soften.c:102
+#: ../src/iop/colisa.c:91 ../src/iop/lowpass.c:195 ../src/iop/soften.c:102
 #: ../src/iop/vignette.c:171
 msgctxt "accel"
 msgid "brightness"
 msgstr "luminosité"
 
 #: ../src/iop/colisa.c:92 ../src/iop/colorcorrection.c:110
-#: ../src/iop/lowpass.c:163 ../src/iop/soften.c:101 ../src/iop/vignette.c:172
+#: ../src/iop/lowpass.c:196 ../src/iop/soften.c:101 ../src/iop/vignette.c:172
 msgctxt "accel"
 msgid "saturation"
 msgstr "saturation"
@@ -4734,9 +4734,9 @@ msgstr "linéaire XYZ"
 msgid "Lab"
 msgstr "Lab"
 
-#: ../src/iop/colorin.c:1242 ../src/iop/denoiseprofile.c:1638
-#: ../src/libs/export.c:657 ../src/libs/print_settings.c:997
-#: ../src/libs/print_settings.c:1211
+#: ../src/iop/colorin.c:1242 ../src/iop/denoiseprofile.c:1641
+#: ../src/libs/export.c:657 ../src/libs/print_settings.c:1002
+#: ../src/libs/print_settings.c:1216
 msgid "profile"
 msgstr "profil"
 
@@ -4884,27 +4884,27 @@ msgid "output intent"
 msgstr "rendu (sortie)"
 
 #: ../src/iop/colorout.c:876 ../src/iop/colorout.c:883
-#: ../src/libs/export.c:678 ../src/libs/print_settings.c:1044
-#: ../src/libs/print_settings.c:1254
+#: ../src/libs/export.c:678 ../src/libs/print_settings.c:1049
+#: ../src/libs/print_settings.c:1259
 msgid "perceptual"
 msgstr "perceptif"
 
 #: ../src/iop/colorout.c:877 ../src/iop/colorout.c:884
-#: ../src/libs/export.c:679 ../src/libs/print_settings.c:1045
-#: ../src/libs/print_settings.c:1255
+#: ../src/libs/export.c:679 ../src/libs/print_settings.c:1050
+#: ../src/libs/print_settings.c:1260
 msgid "relative colorimetric"
 msgstr "colorimétrie relative"
 
 #: ../src/iop/colorout.c:878 ../src/iop/colorout.c:885
-#: ../src/libs/export.c:680 ../src/libs/print_settings.c:1046
-#: ../src/libs/print_settings.c:1256
+#: ../src/libs/export.c:680 ../src/libs/print_settings.c:1051
+#: ../src/libs/print_settings.c:1261
 msgctxt "rendering intent"
 msgid "saturation"
 msgstr "saturation"
 
 #: ../src/iop/colorout.c:879 ../src/iop/colorout.c:886
-#: ../src/libs/export.c:681 ../src/libs/print_settings.c:1047
-#: ../src/libs/print_settings.c:1257
+#: ../src/libs/export.c:681 ../src/libs/print_settings.c:1052
+#: ../src/libs/print_settings.c:1262
 msgid "absolute colorimetric"
 msgstr "colorimétrie absolue"
 
@@ -4969,48 +4969,56 @@ msgctxt "accel"
 msgid "toggle gamutcheck"
 msgstr "activer/désactiver la vérification du gamut"
 
-#: ../src/iop/colorreconstruction.c:96
+#: ../src/iop/colorreconstruction.c:112
 msgid "color reconstruction"
 msgstr "reconstruction couleurs"
 
-#: ../src/iop/colorreconstruction.c:114
+#: ../src/iop/colorreconstruction.c:145
 msgctxt "accel"
 msgid "luma threshold"
 msgstr "seuil de luminosité"
 
-#: ../src/iop/colorreconstruction.c:115
+#: ../src/iop/colorreconstruction.c:146
 msgctxt "accel"
 msgid "spatial blur"
 msgstr "adoucissement spatial"
 
-#: ../src/iop/colorreconstruction.c:116
+#: ../src/iop/colorreconstruction.c:147
 msgctxt "accel"
 msgid "range blur"
 msgstr "adoucissement de luminosité"
 
-#: ../src/iop/colorreconstruction.c:1153
+#: ../src/iop/colorreconstruction.c:1211
 msgid "luma threshold"
 msgstr "seuil luminosité"
 
-#: ../src/iop/colorreconstruction.c:1154
+#: ../src/iop/colorreconstruction.c:1212
 msgid "spatial blur"
 msgstr "adoucissement spatial"
 
-#: ../src/iop/colorreconstruction.c:1155
+#: ../src/iop/colorreconstruction.c:1213
 msgid "range blur"
 msgstr "adoucissement luminance"
 
-#: ../src/iop/colorreconstruction.c:1161
+#: ../src/iop/colorreconstruction.c:1216
+msgid "preference"
+msgstr "préférence"
+
+#: ../src/iop/colorreconstruction.c:1225
 msgid "pixels with L values below this threshold are not affected"
 msgstr "seuil L en dessous duquel les pixels ne sont pas affectés"
 
-#: ../src/iop/colorreconstruction.c:1162
+#: ../src/iop/colorreconstruction.c:1226
 msgid "blur of color information in spatial dimensions (width and height)"
 msgstr "adoucissement de la couleur dans l'espace (largeur et hauteur)"
 
-#: ../src/iop/colorreconstruction.c:1163
+#: ../src/iop/colorreconstruction.c:1227
 msgid "blur of color information in the luminance dimension (L value)"
 msgstr "adoucissement de la couleur dans l'espace de luminosité (valeur L)"
+
+#: ../src/iop/colorreconstruction.c:1228
+msgid "if and how to give precedence to pixels as source of replacement colors"
+msgstr "choix des pixels sources pour le remplacement des couleurs "
 
 #: ../src/iop/colortransfer.c:100
 msgid "color transfer"
@@ -5157,7 +5165,7 @@ msgid "edge threshold"
 msgstr "seuil "
 
 #: ../src/iop/demosaic.c:2073 ../src/iop/demosaic.c:2082
-#: ../src/iop/dither.c:553 ../src/iop/highlights.c:735
+#: ../src/iop/dither.c:558 ../src/iop/highlights.c:735
 msgid "method"
 msgstr "méthode"
 
@@ -5263,43 +5271,43 @@ msgstr ""
 "dématriçage\n"
 "uniquement pour les images raw"
 
-#: ../src/iop/denoiseprofile.c:129
+#: ../src/iop/denoiseprofile.c:132
 msgid "denoise (profiled)"
 msgstr "réduction du bruit (profil)"
 
-#: ../src/iop/denoiseprofile.c:1395
+#: ../src/iop/denoiseprofile.c:1398
 #, c-format
 msgid "found match for ISO %d"
 msgstr "profil pour ISO %d trouvé"
 
-#: ../src/iop/denoiseprofile.c:1403
+#: ../src/iop/denoiseprofile.c:1406
 #, c-format
 msgid "interpolated from ISO %d and %d"
 msgstr "interpolé depuis ISO %d et %d"
 
-#: ../src/iop/denoiseprofile.c:1639 ../src/iop/exposure.c:932
+#: ../src/iop/denoiseprofile.c:1642 ../src/iop/exposure.c:932
 #: ../src/iop/lens.c:2173 ../src/iop/levels.c:529 ../src/libs/export.c:696
-#: ../src/libs/print_settings.c:1308
+#: ../src/libs/print_settings.c:1313
 msgid "mode"
 msgstr "mode"
 
-#: ../src/iop/denoiseprofile.c:1640 ../src/iop/nlmeans.c:707
+#: ../src/iop/denoiseprofile.c:1643 ../src/iop/nlmeans.c:707
 msgid "patch size"
 msgstr "taille"
 
-#: ../src/iop/denoiseprofile.c:1643
+#: ../src/iop/denoiseprofile.c:1646
 msgid "non-local means"
 msgstr "moyenne non-locales"
 
-#: ../src/iop/denoiseprofile.c:1644
+#: ../src/iop/denoiseprofile.c:1647
 msgid "wavelets"
 msgstr "ondelettes"
 
-#: ../src/iop/denoiseprofile.c:1645
+#: ../src/iop/denoiseprofile.c:1648
 msgid "profile used for variance stabilization"
 msgstr "profil utilisé pour la stabilisation de variance"
 
-#: ../src/iop/denoiseprofile.c:1648
+#: ../src/iop/denoiseprofile.c:1651
 msgid ""
 "method used in the denoising core. non-local means works best for "
 "`lightness' blending, wavelets work best for `color' blending"
@@ -5308,11 +5316,11 @@ msgstr ""
 "fonctionne mieux pour le mode de fusion 'luminosité'. 'ondelettes' "
 "fonctionnent pour le mode de fusion 'couleur'"
 
-#: ../src/iop/denoiseprofile.c:1652
+#: ../src/iop/denoiseprofile.c:1655
 msgid "radius of the patches to match. increase for more sharpness"
 msgstr "rayon des éléments à identifier. augmenter pour plus de netteté."
 
-#: ../src/iop/denoiseprofile.c:1653
+#: ../src/iop/denoiseprofile.c:1656
 msgid "finetune denoising strength"
 msgstr "réglage fin de la force de réduction"
 
@@ -5325,47 +5333,47 @@ msgstr "homogénéisation"
 msgid "dither"
 msgstr "homogénéiser"
 
-#: ../src/iop/dither.c:547
+#: ../src/iop/dither.c:552
 msgid "random"
 msgstr "aléatoire"
 
-#: ../src/iop/dither.c:548
+#: ../src/iop/dither.c:553
 msgid "floyd-steinberg 1-bit B&W"
 msgstr "floyd-steinberg 1-bit N&B"
 
-#: ../src/iop/dither.c:549
+#: ../src/iop/dither.c:554
 msgid "floyd-steinberg 4-bit gray"
 msgstr "floyd-steinberg 4-bit gris"
 
-#: ../src/iop/dither.c:550
+#: ../src/iop/dither.c:555
 msgid "floyd-steinberg 8-bit RGB"
 msgstr "floyd-steinberg 8-bit RGB"
 
-#: ../src/iop/dither.c:551
+#: ../src/iop/dither.c:556
 msgid "floyd-steinberg 16-bit RGB"
 msgstr "floyd-steinberg 16-bit RGB"
 
-#: ../src/iop/dither.c:552
+#: ../src/iop/dither.c:557
 msgid "floyd-steinberg auto"
 msgstr "floyd-steinberg auto"
 
-#: ../src/iop/dither.c:557
+#: ../src/iop/dither.c:562
 msgid "radius for blurring step"
 msgstr "rayon du flou"
 
-#: ../src/iop/dither.c:569
+#: ../src/iop/dither.c:574
 msgid "the gradient range where to apply random dither"
 msgstr "gradient de la zone à homogénéiser"
 
-#: ../src/iop/dither.c:570
+#: ../src/iop/dither.c:575
 msgid "gradient range"
 msgstr "gradient"
 
-#: ../src/iop/dither.c:577
+#: ../src/iop/dither.c:582
 msgid "damping level of random dither"
 msgstr "amortissement pour l'homogénéisation aléatoire"
 
-#: ../src/iop/dither.c:578
+#: ../src/iop/dither.c:583
 msgid "damping"
 msgstr "amortissement"
 
@@ -6172,68 +6180,68 @@ msgstr "bleu"
 msgid "blueness in shadows"
 msgstr "teinte bleue des ombres"
 
-#: ../src/iop/lowpass.c:113
+#: ../src/iop/lowpass.c:130
 msgid "lowpass"
 msgstr "filtre passe-bas"
 
-#: ../src/iop/lowpass.c:587
+#: ../src/iop/lowpass.c:617
 msgid "local contrast mask"
 msgstr "masque de contraste local"
 
-#: ../src/iop/lowpass.c:622
+#: ../src/iop/lowpass.c:652
 msgid "filter order"
 msgstr "ordre du filtre"
 
-#: ../src/iop/lowpass.c:625
+#: ../src/iop/lowpass.c:655
 msgid "0th order"
 msgstr "ordre 0"
 
-#: ../src/iop/lowpass.c:626
+#: ../src/iop/lowpass.c:656
 msgid "1st order"
 msgstr "1er ordre"
 
-#: ../src/iop/lowpass.c:627
+#: ../src/iop/lowpass.c:657
 msgid "2nd order"
 msgstr "2ème ordre"
 
-#: ../src/iop/lowpass.c:628
+#: ../src/iop/lowpass.c:658
 msgid "filter order of gaussian blur"
 msgstr "ordre du filtre de flou gaussien"
 
-#: ../src/iop/lowpass.c:639
+#: ../src/iop/lowpass.c:669
 msgctxt "lowpass"
 msgid "brightness"
 msgstr "luminosité"
 
-#: ../src/iop/lowpass.c:643 ../src/iop/shadhi.c:778
+#: ../src/iop/lowpass.c:673 ../src/iop/shadhi.c:817
 msgid "soften with"
 msgstr "adoucir avec"
 
-#: ../src/iop/lowpass.c:644 ../src/iop/shadhi.c:779
+#: ../src/iop/lowpass.c:674 ../src/iop/shadhi.c:818
 msgid "gaussian"
 msgstr "gaussien"
 
-#: ../src/iop/lowpass.c:645 ../src/iop/shadhi.c:780
+#: ../src/iop/lowpass.c:675 ../src/iop/shadhi.c:819
 msgid "bilateral filter"
 msgstr "filtre bilatéral"
 
-#: ../src/iop/lowpass.c:652
+#: ../src/iop/lowpass.c:682
 msgid "radius of gaussian/bilateral blur"
 msgstr "rayon du flou gaussien/bilatéral"
 
-#: ../src/iop/lowpass.c:653
+#: ../src/iop/lowpass.c:683
 msgid "contrast of lowpass filter"
 msgstr "contraste du filtre passe-bas"
 
-#: ../src/iop/lowpass.c:654
+#: ../src/iop/lowpass.c:684
 msgid "brightness adjustment of lowpass filter"
 msgstr "luminosité du filtre passe-bas"
 
-#: ../src/iop/lowpass.c:655
+#: ../src/iop/lowpass.c:685
 msgid "color saturation of lowpass filter"
 msgstr "saturation des couleurs du filtre passe-bas"
 
-#: ../src/iop/lowpass.c:656
+#: ../src/iop/lowpass.c:686
 msgid "which filter to use for blurring"
 msgstr "filtre à utiliser pour adoucir"
 
@@ -6256,7 +6264,7 @@ msgstr ""
 msgid "how much to keep highlights"
 msgstr "conserver les hautes lumières"
 
-#: ../src/iop/monochrome.c:557 ../src/iop/shadhi.c:786
+#: ../src/iop/monochrome.c:557 ../src/iop/shadhi.c:825
 #: ../src/iop/splittoning.c:550
 msgid "highlights"
 msgstr "hautes lumières"
@@ -6384,7 +6392,7 @@ msgid "the fill-light in EV"
 msgstr "lumière d'appoint en IL"
 
 #: ../src/iop/relight.c:378 ../src/libs/metadata_view.c:100
-#: ../src/libs/print_settings.c:1113
+#: ../src/libs/print_settings.c:1118
 msgid "width"
 msgstr "largeur"
 
@@ -6438,81 +6446,81 @@ msgstr ""
 "mise à l'échelle automatique des pixels\n"
 "seulement pour les capteurs le nécessitant."
 
-#: ../src/iop/shadhi.c:158
+#: ../src/iop/shadhi.c:180
 msgid "shadows and highlights"
 msgstr "ombres et hautes lumières"
 
-#: ../src/iop/shadhi.c:231
+#: ../src/iop/shadhi.c:274
 msgctxt "accel"
 msgid "shadows"
 msgstr "ombres"
 
-#: ../src/iop/shadhi.c:232
+#: ../src/iop/shadhi.c:275
 msgctxt "accel"
 msgid "highlights"
 msgstr "hautes lumières"
 
-#: ../src/iop/shadhi.c:233
+#: ../src/iop/shadhi.c:276
 msgctxt "accel"
 msgid "white point adjustment"
 msgstr "ajustement du point blanc"
 
-#: ../src/iop/shadhi.c:235 ../src/iop/splittoning.c:99
+#: ../src/iop/shadhi.c:278 ../src/iop/splittoning.c:99
 msgctxt "accel"
 msgid "compress"
 msgstr "seuil"
 
-#: ../src/iop/shadhi.c:236
+#: ../src/iop/shadhi.c:279
 msgctxt "accel"
 msgid "shadows color correction"
 msgstr "saturation des ombres"
 
-#: ../src/iop/shadhi.c:237
+#: ../src/iop/shadhi.c:280
 msgctxt "accel"
 msgid "highlights color correction"
 msgstr "saturation des hautes lumières"
 
-#: ../src/iop/shadhi.c:785 ../src/iop/splittoning.c:545
+#: ../src/iop/shadhi.c:824 ../src/iop/splittoning.c:545
 msgid "shadows"
 msgstr "ombres"
 
-#: ../src/iop/shadhi.c:787
+#: ../src/iop/shadhi.c:826
 msgid "white point adjustment"
 msgstr "ajustement du point blanc"
 
-#: ../src/iop/shadhi.c:789 ../src/iop/splittoning.c:567
+#: ../src/iop/shadhi.c:828 ../src/iop/splittoning.c:567
 msgid "compress"
 msgstr "seuil"
 
-#: ../src/iop/shadhi.c:790
+#: ../src/iop/shadhi.c:829
 msgid "shadows color adjustment"
 msgstr "saturation des ombres"
 
-#: ../src/iop/shadhi.c:791
+#: ../src/iop/shadhi.c:830
 msgid "highlights color adjustment"
 msgstr "saturation des hautes lumières"
 
-#: ../src/iop/shadhi.c:809
+#: ../src/iop/shadhi.c:848
 msgid "correct shadows"
 msgstr "corrige les ombres"
 
-#: ../src/iop/shadhi.c:810
+#: ../src/iop/shadhi.c:849
 msgid "correct highlights"
 msgstr "corrige les hautes lumières"
 
-#: ../src/iop/shadhi.c:811
+#: ../src/iop/shadhi.c:850
 msgid "shift white point"
 msgstr "décalage point blanc"
 
-#: ../src/iop/shadhi.c:812 ../src/iop/tonemap.cc:301
+#: ../src/iop/shadhi.c:851 ../src/iop/tonemap.cc:301
 msgid "spatial extent"
 msgstr "rayon"
 
-#: ../src/iop/shadhi.c:813
+#: ../src/iop/shadhi.c:852
 msgid "filter to use for softening. bilateral avoids halos"
 msgstr "filtre à utiliser pour adoucir. bilatéral évite les halos"
 
-#: ../src/iop/shadhi.c:816
+#: ../src/iop/shadhi.c:855
 msgid ""
 "compress the effect on shadows/highlights and\n"
 "preserve midtones"
@@ -6520,11 +6528,11 @@ msgstr ""
 "pourcentage de luminosité\n"
 "non affecté par la correction"
 
-#: ../src/iop/shadhi.c:817
+#: ../src/iop/shadhi.c:856
 msgid "adjust saturation of shadows"
 msgstr "ajuste la saturation des ombres"
 
-#: ../src/iop/shadhi.c:818
+#: ../src/iop/shadhi.c:857
 msgid "adjust saturation of highlights"
 msgstr "ajuste la saturation des hautes lumières"
 
@@ -6638,11 +6646,11 @@ msgstr ""
 msgid "spot removal"
 msgstr "correction des taches"
 
-#: ../src/iop/spots.c:640
+#: ../src/iop/spots.c:642
 msgid "number of strokes:"
 msgstr "nombre de corrections :"
 
-#: ../src/iop/spots.c:643
+#: ../src/iop/spots.c:645
 msgid ""
 "click on a shape and drag on canvas.\n"
 "use the mouse wheel to adjust size.\n"
@@ -6974,7 +6982,7 @@ msgstr "décalage y"
 msgid "marker"
 msgstr "fichier"
 
-#: ../src/iop/watermark.c:1066 ../src/libs/print_settings.c:1198
+#: ../src/iop/watermark.c:1066 ../src/libs/print_settings.c:1203
 msgid "alignment"
 msgstr "alignement"
 
@@ -7581,21 +7589,21 @@ msgid "allow upscaling"
 msgstr "autorise l'agrandissement"
 
 #: ../src/libs/export.c:659 ../src/libs/export.c:677
-#: ../src/libs/print_settings.c:1214 ../src/libs/print_settings.c:1253
+#: ../src/libs/print_settings.c:1219 ../src/libs/print_settings.c:1258
 msgid "image settings"
 msgstr "paramètres d'image"
 
-#: ../src/libs/export.c:669 ../src/libs/print_settings.c:1244
+#: ../src/libs/export.c:669 ../src/libs/print_settings.c:1249
 #, c-format
 msgid "output ICC profiles in %s/color/out or %s/color/out"
 msgstr "profils ICC de sortie dans %s/color/out ou %s/color/out"
 
-#: ../src/libs/export.c:676 ../src/libs/print_settings.c:1043
-#: ../src/libs/print_settings.c:1251
+#: ../src/libs/export.c:676 ../src/libs/print_settings.c:1048
+#: ../src/libs/print_settings.c:1256
 msgid "intent"
 msgstr "rendu"
 
-#: ../src/libs/export.c:687 ../src/libs/print_settings.c:1267
+#: ../src/libs/export.c:687 ../src/libs/print_settings.c:1272
 msgid "style"
 msgstr "style"
 
@@ -7603,11 +7611,11 @@ msgstr "style"
 msgid "temporary style to use while exporting"
 msgstr "style temporaire à utiliser lors de l'exportation"
 
-#: ../src/libs/export.c:700 ../src/libs/print_settings.c:1310
+#: ../src/libs/export.c:700 ../src/libs/print_settings.c:1315
 msgid "replace history"
 msgstr "remplacer l'historique"
 
-#: ../src/libs/export.c:701 ../src/libs/print_settings.c:1311
+#: ../src/libs/export.c:701 ../src/libs/print_settings.c:1316
 msgid "append history"
 msgstr "ajouter à l'historique"
 
@@ -8464,7 +8472,7 @@ msgstr "mise au point"
 msgid "datetime"
 msgstr "date/heure"
 
-#: ../src/libs/metadata_view.c:101 ../src/libs/print_settings.c:1117
+#: ../src/libs/metadata_view.c:101 ../src/libs/print_settings.c:1122
 msgid "height"
 msgstr "hauteur"
 
@@ -8605,7 +8613,7 @@ msgid "200%"
 msgstr "200%"
 
 #. //////////////////////// PRINT SETTINGS
-#: ../src/libs/print_settings.c:43 ../src/libs/print_settings.c:1205
+#: ../src/libs/print_settings.c:43 ../src/libs/print_settings.c:1210
 msgid "print settings"
 msgstr "paramètres d'impression"
 
@@ -8636,43 +8644,43 @@ msgstr "impossible d'appliquer le profil d'impression «%s» !"
 msgid "%3.2f (dpi:%d)"
 msgstr "%3.2f (dpi:%d)"
 
-#: ../src/libs/print_settings.c:967
+#: ../src/libs/print_settings.c:972
 msgid "printer"
 msgstr "imprimante"
 
-#: ../src/libs/print_settings.c:1036
+#: ../src/libs/print_settings.c:1041
 #, c-format
 msgid "printer ICC profiles in %s/color/out or %s/color/out"
 msgstr "profils ICC d'imprimante dans %s/color/out ou %s/color/out"
 
-#: ../src/libs/print_settings.c:1055
+#: ../src/libs/print_settings.c:1060
 msgid "black point compensation"
 msgstr "compensation du point noir"
 
-#: ../src/libs/print_settings.c:1063
+#: ../src/libs/print_settings.c:1068
 msgid "activate black point compensation when applying the printer profile"
 msgstr ""
 "active la compensation du point noir lors de l'application du profil "
 "d'imprimante"
 
 #. //////////////////////// PAGE SETTINGS
-#: ../src/libs/print_settings.c:1070
+#: ../src/libs/print_settings.c:1075
 msgid "page"
 msgstr "page"
 
-#: ../src/libs/print_settings.c:1111
+#: ../src/libs/print_settings.c:1116
 msgid "image width/height"
 msgstr "largeur/hauteur image"
 
-#: ../src/libs/print_settings.c:1115
+#: ../src/libs/print_settings.c:1120
 msgid " x "
 msgstr " x"
 
-#: ../src/libs/print_settings.c:1123
+#: ../src/libs/print_settings.c:1128
 msgid "scale factor"
 msgstr "facteur d'agrandissement"
 
-#: ../src/libs/print_settings.c:1128
+#: ../src/libs/print_settings.c:1133
 msgid ""
 "image scale factor from native printer DPI:\n"
 " < 0 means that it is downscaled (best quality)\n"
@@ -8686,49 +8694,49 @@ msgstr ""
 "une valeur trop grande peut donner une qualité d'impression médiocre"
 
 #. d->b_top  = gtk_spin_button_new_with_range(0, 10000, 1);
-#: ../src/libs/print_settings.c:1142
+#: ../src/libs/print_settings.c:1147
 msgid "top margin"
 msgstr "marge haute"
 
 #. d->b_left  = gtk_spin_button_new_with_range(0, 10000, 1);
-#: ../src/libs/print_settings.c:1146
+#: ../src/libs/print_settings.c:1151
 msgid "left margin"
 msgstr "marge gauche"
 
-#: ../src/libs/print_settings.c:1149
+#: ../src/libs/print_settings.c:1154
 msgid "lock"
 msgstr "sync"
 
-#: ../src/libs/print_settings.c:1150
+#: ../src/libs/print_settings.c:1155
 msgid "change all margins uniformly"
 msgstr "change toutes les marges uniformément"
 
 #. d->b_right  = gtk_spin_button_new_with_range(0, 10000, 1);
-#: ../src/libs/print_settings.c:1154
+#: ../src/libs/print_settings.c:1159
 msgid "right margin"
 msgstr "marge droite"
 
 #. d->b_bottom  = gtk_spin_button_new_with_range(0, 10000, 1);
-#: ../src/libs/print_settings.c:1158
+#: ../src/libs/print_settings.c:1163
 msgid "bottom margin"
 msgstr "marge basse"
 
-#: ../src/libs/print_settings.c:1290
+#: ../src/libs/print_settings.c:1295
 msgid "temporary style to use while printing"
 msgstr "style temporaire à utiliser lors de l'exportation"
 
-#: ../src/libs/print_settings.c:1317
+#: ../src/libs/print_settings.c:1322
 msgid "whether the style is appended to the history or replacing the history"
 msgstr ""
 "indique si les éléments du style sont à ajouter à l'historique ou remplace "
 "ce dernier"
 
 #. Print button
-#: ../src/libs/print_settings.c:1326
+#: ../src/libs/print_settings.c:1331
 msgid "print"
 msgstr "impression"
 
-#: ../src/libs/print_settings.c:1328
+#: ../src/libs/print_settings.c:1333
 msgid "print with current settings (ctrl-p)"
 msgstr "imprime avec les réglages actuels (ctrl-p)"
 
