@@ -24,7 +24,6 @@
 #include "common/mipmap_cache.h"
 #include "common/imageio.h"
 #include "common/imageio_jpeg.h"
-#include "common/dt_logo_128x128.h"
 #include "libraw/libraw.h"
 #include "control/control.h"
 #include "control/conf.h"
@@ -40,6 +39,12 @@
 #include "gui/camera_import_dialog.h"
 #endif
 #include "libs/lib.h"
+
+#include <librsvg/rsvg.h>
+// ugh, ugly hack. why do people break stuff all the time?
+#ifndef RSVG_CAIRO_H
+#include <librsvg/rsvg-cairo.h>
+#endif
 
 DT_MODULE(1)
 
@@ -576,6 +581,158 @@ static void _lib_import_evaluate_extra_widget(dt_lib_import_metadata_t *data, gb
   dt_conf_set_string("ui_last/import_last_tags", gtk_entry_get_text(GTK_ENTRY(data->tags)));
 }
 
+// begin copy of code of functions from gtk+3.0-3.14.5/gdk/gdkpixbuf-drawable.c
+static cairo_format_t gdk_cairo_format_for_content(cairo_content_t content)
+{
+  switch(content)
+  {
+    case CAIRO_CONTENT_COLOR:
+      return CAIRO_FORMAT_RGB24;
+    case CAIRO_CONTENT_ALPHA:
+      return CAIRO_FORMAT_A8;
+    case CAIRO_CONTENT_COLOR_ALPHA:
+    default:
+      return CAIRO_FORMAT_ARGB32;
+  }
+}
+
+static cairo_surface_t *gdk_cairo_surface_coerce_to_image(cairo_surface_t *surface, cairo_content_t content,
+                                                          int src_x, int src_y, int width, int height)
+{
+  cairo_surface_t *copy;
+  cairo_t *cr;
+
+  copy = cairo_image_surface_create(gdk_cairo_format_for_content(content), width, height);
+
+  cr = cairo_create(copy);
+  cairo_set_operator(cr, CAIRO_OPERATOR_SOURCE);
+  cairo_set_source_surface(cr, surface, -src_x, -src_y);
+  cairo_paint(cr);
+  cairo_destroy(cr);
+
+  return copy;
+}
+
+static void convert_alpha(guchar *dest_data, int dest_stride, guchar *src_data, int src_stride, int src_x,
+                          int src_y, int width, int height)
+{
+  int x, y;
+
+  src_data += src_stride * src_y + src_x * 4;
+
+  for(y = 0; y < height; y++)
+  {
+    guint32 *src = (guint32 *)src_data;
+
+    for(x = 0; x < width; x++)
+    {
+      guint alpha = src[x] >> 24;
+
+      if(alpha == 0)
+      {
+        dest_data[x * 4 + 0] = 0;
+        dest_data[x * 4 + 1] = 0;
+        dest_data[x * 4 + 2] = 0;
+      }
+      else
+      {
+        dest_data[x * 4 + 0] = (((src[x] & 0xff0000) >> 16) * 255 + alpha / 2) / alpha;
+        dest_data[x * 4 + 1] = (((src[x] & 0x00ff00) >> 8) * 255 + alpha / 2) / alpha;
+        dest_data[x * 4 + 2] = (((src[x] & 0x0000ff) >> 0) * 255 + alpha / 2) / alpha;
+      }
+      dest_data[x * 4 + 3] = alpha;
+    }
+
+    src_data += src_stride;
+    dest_data += dest_stride;
+  }
+}
+
+static void convert_no_alpha(guchar *dest_data, int dest_stride, guchar *src_data, int src_stride, int src_x,
+                             int src_y, int width, int height)
+{
+  int x, y;
+
+  src_data += src_stride * src_y + src_x * 4;
+
+  for(y = 0; y < height; y++)
+  {
+    guint32 *src = (guint32 *)src_data;
+
+    for(x = 0; x < width; x++)
+    {
+      dest_data[x * 3 + 0] = src[x] >> 16;
+      dest_data[x * 3 + 1] = src[x] >> 8;
+      dest_data[x * 3 + 2] = src[x];
+    }
+
+    src_data += src_stride;
+    dest_data += dest_stride;
+  }
+}
+
+/**
+ * gdk_pixbuf_get_from_surface:
+ * @surface: surface to copy from
+ * @src_x: Source X coordinate within @surface
+ * @src_y: Source Y coordinate within @surface
+ * @width: Width in pixels of region to get
+ * @height: Height in pixels of region to get
+ *
+ * Transfers image data from a #cairo_surface_t and converts it to an RGB(A)
+ * representation inside a #GdkPixbuf. This allows you to efficiently read
+ * individual pixels from cairo surfaces. For #GdkWindows, use
+ * gdk_pixbuf_get_from_window() instead.
+ *
+ * This function will create an RGB pixbuf with 8 bits per channel.
+ * The pixbuf will contain an alpha channel if the @surface contains one.
+ *
+ * Returns: (nullable) (transfer full): A newly-created pixbuf with a
+ *     reference count of 1, or %NULL on error
+ */
+static GdkPixbuf *gdk_pixbuf_get_from_surface(cairo_surface_t *surface, gint src_x, gint src_y, gint width,
+                                              gint height)
+{
+  cairo_content_t content;
+  GdkPixbuf *dest;
+
+  /* General sanity checks */
+  g_return_val_if_fail(surface != NULL, NULL);
+  g_return_val_if_fail(width > 0 && height > 0, NULL);
+
+  content = cairo_surface_get_content(surface) | CAIRO_CONTENT_COLOR;
+  dest = gdk_pixbuf_new(GDK_COLORSPACE_RGB, !!(content & CAIRO_CONTENT_ALPHA), 8, width, height);
+
+  if(cairo_surface_get_type(surface) == CAIRO_SURFACE_TYPE_IMAGE
+     && cairo_image_surface_get_format(surface) == gdk_cairo_format_for_content(content))
+    surface = cairo_surface_reference(surface);
+  else
+  {
+    surface = gdk_cairo_surface_coerce_to_image(surface, content, src_x, src_y, width, height);
+    src_x = 0;
+    src_y = 0;
+  }
+  cairo_surface_flush(surface);
+  if(cairo_surface_status(surface) || dest == NULL)
+  {
+    cairo_surface_destroy(surface);
+    return NULL;
+  }
+
+  if(gdk_pixbuf_get_has_alpha(dest))
+    convert_alpha(gdk_pixbuf_get_pixels(dest), gdk_pixbuf_get_rowstride(dest),
+                  cairo_image_surface_get_data(surface), cairo_image_surface_get_stride(surface), src_x,
+                  src_y, width, height);
+  else
+    convert_no_alpha(gdk_pixbuf_get_pixels(dest), gdk_pixbuf_get_rowstride(dest),
+                     cairo_image_surface_get_data(surface), cairo_image_surface_get_stride(surface), src_x,
+                     src_y, width, height);
+
+  cairo_surface_destroy(surface);
+  return dest;
+}
+// end copy of code of functions from gtk+3.0-3.14.5/gdk/gdkpixbuf-drawable.c
+
 // TODO: use orientation to correctly rotate the image.
 // maybe this should be (partly) in common/imageio.[c|h]?
 static void _lib_import_update_preview(GtkFileChooser *file_chooser, gpointer data)
@@ -583,20 +740,20 @@ static void _lib_import_update_preview(GtkFileChooser *file_chooser, gpointer da
   GtkWidget *preview;
   char *filename;
   GdkPixbuf *pixbuf = NULL;
-  gboolean have_preview = FALSE;
+  gboolean have_preview = FALSE, no_preview_fallback = FALSE;
 
   preview = GTK_WIDGET(data);
   filename = gtk_file_chooser_get_preview_filename(file_chooser);
 
-  if(!g_file_test(filename, G_FILE_TEST_IS_REGULAR)) goto no_preview_fallback;
+  if(!g_file_test(filename, G_FILE_TEST_IS_REGULAR)) no_preview_fallback = TRUE;
   // don't create dng thumbnails to avoid crashes in libtiff when these are hdr:
   char *c = filename + strlen(filename);
   while(c > filename && *c != '.') c--;
-  if(!strcasecmp(c, ".dng")) goto no_preview_fallback;
+  if(!strcasecmp(c, ".dng")) no_preview_fallback = TRUE;
 
   pixbuf = gdk_pixbuf_new_from_file_at_size(filename, 128, 128, NULL);
   have_preview = (pixbuf != NULL);
-  if(!have_preview)
+  if(!have_preview && !no_preview_fallback)
   {
     // raw image thumbnail
     int ret;
@@ -648,10 +805,61 @@ static void _lib_import_update_preview(GtkFileChooser *file_chooser, gpointer da
       have_preview = FALSE;
     }
   }
-  if(!have_preview)
+  if(no_preview_fallback || !have_preview)
   {
-  no_preview_fallback:
-    pixbuf = gdk_pixbuf_new_from_inline(-1, dt_logo_128x128, FALSE, NULL);
+    // pixbuf = gdk_pixbuf_new_from_inline(-1, dt_logo_128x128, FALSE, NULL);
+
+    guint8 *image_buffer = NULL;
+
+    /* load the dt logo as a brackground */
+    char filename[PATH_MAX] = { 0 };
+    char datadir[PATH_MAX] = { 0 };
+    char *logo;
+    dt_logo_season_t season = get_logo_season();
+    if(season != DT_LOGO_SEASON_NONE)
+      logo = g_strdup_printf("%%s/pixmaps/idbutton-%d.svg", (int)season);
+    else
+      logo = g_strdup("%s/pixmaps/idbutton.svg");
+
+    dt_loc_get_datadir(datadir, sizeof(datadir));
+    snprintf(filename, sizeof(filename), logo, datadir);
+    g_free(logo);
+    RsvgHandle *svg = rsvg_handle_new_from_file(filename, NULL);
+    if(svg)
+    {
+      cairo_surface_t *surface;
+      cairo_t *cr;
+
+      RsvgDimensionData dimension;
+      rsvg_handle_get_dimensions(svg, &dimension);
+
+      float svg_size = MAX(dimension.width, dimension.height);
+      float final_size = 128;
+      float factor = final_size / svg_size;
+      float final_width = dimension.width * factor * darktable.gui->ppd,
+            final_height = dimension.height * factor * darktable.gui->ppd;
+      int stride = cairo_format_stride_for_width(CAIRO_FORMAT_ARGB32, final_width);
+
+      image_buffer = (guint8 *)calloc(stride * final_height, sizeof(guint8));
+      surface = dt_cairo_image_surface_create_for_data(image_buffer, CAIRO_FORMAT_ARGB32, final_width,
+                                                       final_height, stride);
+      if(cairo_surface_status(surface) != CAIRO_STATUS_SUCCESS)
+      {
+        free(image_buffer);
+        image_buffer = NULL;
+      }
+      else
+      {
+        cr = cairo_create(surface);
+        cairo_scale(cr, factor, factor);
+        rsvg_handle_render_cairo(svg, cr);
+        cairo_surface_flush(surface);
+        pixbuf = gdk_pixbuf_get_from_surface(surface, 0, 0, final_width / darktable.gui->ppd,
+                                             final_height / darktable.gui->ppd);
+      }
+      g_object_unref(svg);
+    }
+
     have_preview = TRUE;
   }
   if(have_preview) gtk_image_set_from_pixbuf(GTK_IMAGE(preview), pixbuf);
