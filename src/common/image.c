@@ -185,13 +185,16 @@ void dt_image_full_path(const int imgid, char *pathname, size_t pathname_len, gb
   }
   sqlite3_finalize(stmt);
 
-  if(*from_cache && !g_file_test(pathname, G_FILE_TEST_EXISTS))
+  if(*from_cache)
   {
-    _image_local_copy_full_path(imgid, pathname, pathname_len);
-    *from_cache = TRUE;
+    char lc_pathname[PATH_MAX] = { 0 };
+    _image_local_copy_full_path(imgid, lc_pathname, sizeof(lc_pathname));
+
+    if (g_file_test(lc_pathname, G_FILE_TEST_EXISTS))
+      g_strlcpy(pathname, (char *)lc_pathname, pathname_len);
+    else
+      *from_cache = FALSE;
   }
-  else
-    *from_cache = FALSE;
 }
 
 static void _image_local_copy_full_path(const int imgid, char *pathname, size_t pathname_len)
@@ -1335,16 +1338,23 @@ static int _nb_other_local_copy_for(const int32_t imgid)
 int dt_image_local_copy_reset(const int32_t imgid)
 {
   gchar destpath[PATH_MAX] = { 0 };
+  gchar locppath[PATH_MAX] = { 0 };
   gchar cachedir[PATH_MAX] = { 0 };
 
   // check that the original file is accessible
 
-  gboolean from_cache = TRUE;
+  gboolean from_cache = FALSE;
   dt_image_full_path(imgid, destpath, sizeof(destpath), &from_cache);
   dt_image_path_append_version(imgid, destpath, sizeof(destpath));
-  g_strlcat(destpath, ".xmp", sizeof(destpath));
 
-  if(from_cache && g_file_test(destpath, G_FILE_TEST_EXISTS))
+  from_cache = TRUE;
+  dt_image_full_path(imgid, locppath, sizeof(locppath), &from_cache);
+  dt_image_path_append_version(imgid, locppath, sizeof(locppath));
+  g_strlcat(locppath, ".xmp", sizeof(locppath));
+
+  // a local copy exists, but the original is not accessible
+
+  if(g_file_test(locppath, G_FILE_TEST_EXISTS) && !g_file_test(destpath, G_FILE_TEST_EXISTS))
   {
     dt_control_log(_("cannot remove local copy when the original file is not accessible."));
     return 1;
