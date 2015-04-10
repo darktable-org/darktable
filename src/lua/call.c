@@ -389,11 +389,11 @@ static int32_t async_callback_job(dt_job_t *job)
     cur_elt = g_list_next(cur_elt);
     switch(GPOINTER_TO_INT(type_type_elt->data)) {
       case LUA_ASYNC_TYPEID_WITH_FREE:
-        luaA_push_type(L,GPOINTER_TO_INT(type_elt->data),&data_elt->data);
+        luaA_push_type(L,GPOINTER_TO_INT(type_elt->data),data_elt->data);
         free(data_elt->data);
         break;
       case LUA_ASYNC_TYPEID:
-        luaA_push_type(L,GPOINTER_TO_INT(type_elt->data),&data_elt->data);
+        luaA_push_type(L,GPOINTER_TO_INT(type_elt->data),data_elt->data);
         break;
       case LUA_ASYNC_TYPENAME_WITH_FREE:
         luaA_push_type(L,luaA_type_find(L,type_elt->data),&data_elt->data);
