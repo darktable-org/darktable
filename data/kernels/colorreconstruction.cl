@@ -21,11 +21,12 @@
 
 #include "common.h"
 
-typedef enum dt_iop_colorreconstruct_preference_t
+typedef enum dt_iop_colorreconstruct_precedence_t
 {
-  COLORRECONSTRUCT_PREFERENCE_NONE,
-  COLORRECONSTRUCT_PREFERENCE_CHROMA
-} dt_iop_colorreconstruct_preference_t;
+  COLORRECONSTRUCT_PRECEDENCE_NONE,
+  COLORRECONSTRUCT_PRECEDENCE_CHROMA,
+  COLORRECONSTRUCT_PRECEDENCE_HUE
+} dt_iop_colorreconstruct_precedence_t;
 
 float4
 image_to_grid(
@@ -114,7 +115,8 @@ colorreconstruction_splat(
     const float          sigma_s,
     const float          sigma_r,
     const float          threshold,
-    const int            preference,
+    const int            precedence,
+    const float4         params,
     local int            *gi,
     local float4         *accum)
 {
@@ -129,15 +131,20 @@ colorreconstruction_splat(
   float4 sigma = (float4)(sigma_s, sigma_s, sigma_r, 0);
 
   const float4 pixel = read_imagef (in, samplerc, (int2)(x, y));
-  float weight;
+  float hue, weight;
 
-  switch(preference)
+  switch(precedence)
   {
-    case COLORRECONSTRUCT_PREFERENCE_CHROMA:
+    case COLORRECONSTRUCT_PRECEDENCE_CHROMA:
       weight = sqrt(pixel.y * pixel.y + pixel.z * pixel.z);
       break;
 
-    case COLORRECONSTRUCT_PREFERENCE_NONE:
+    case COLORRECONSTRUCT_PRECEDENCE_HUE:
+      hue = atan2(pixel.z, pixel.y);
+      weight = exp(-((hue - params.x)*(hue - params.x)/params.y));
+      break;
+      
+    case COLORRECONSTRUCT_PRECEDENCE_NONE:
     default:
       weight = 1.0f;
       break;
