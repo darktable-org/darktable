@@ -1,7 +1,7 @@
 /*
     This file is part of darktable,
     copyright (c) 2009--2011 johannes hanika.
-    copyright (c) 2014 LebedevRI.
+    copyright (c) 2014-2015 LebedevRI.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -42,7 +42,6 @@
 DT_MODULE_INTROSPECTION(2, dt_iop_levels_params_t)
 
 static gboolean dt_iop_levels_area_draw(GtkWidget *widget, cairo_t *crf, gpointer user_data);
-static gboolean dt_iop_levels_vbox_automatic_draw(GtkWidget *widget, cairo_t *cr, gpointer user_data);
 static gboolean dt_iop_levels_motion_notify(GtkWidget *widget, GdkEventMotion *event, gpointer user_data);
 static gboolean dt_iop_levels_button_press(GtkWidget *widget, GdkEventButton *event, gpointer user_data);
 static gboolean dt_iop_levels_button_release(GtkWidget *widget, GdkEventButton *event, gpointer user_data);
@@ -93,7 +92,8 @@ typedef struct dt_iop_levels_gui_data_t
   GtkWidget *percentile_black;
   GtkWidget *percentile_grey;
   GtkWidget *percentile_white;
-  gboolean reprocess_on_next_expose;
+  float auto_levels[3];
+  dt_pthread_mutex_t lock;
 } dt_iop_levels_gui_data_t;
 
 typedef struct dt_iop_levels_data_t
@@ -175,32 +175,32 @@ static void dt_iop_levels_compute_levels_manual(const uint32_t *histogram, float
   levels[1] = levels[0] / 2 + levels[2] / 2;
 }
 
-static void dt_iop_levels_compute_levels_automatic(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece)
+static void dt_iop_levels_compute_levels_automatic(dt_dev_pixelpipe_iop_t *piece)
 {
   dt_iop_levels_data_t *d = (dt_iop_levels_data_t *)piece->data;
 
-  if(self->histogram == NULL) return;
-
-  uint32_t total = self->histogram_stats.pixels;
+  uint32_t total = piece->histogram_stats.pixels;
 
   float thr[3];
   for(int k = 0; k < 3; k++)
   {
-    thr[k] = total * d->percentiles[k] / 100.0f;
+    thr[k] = (float)total * d->percentiles[k] / 100.0f;
     d->levels[k] = NAN;
   }
 
+  if(piece->histogram == NULL) return;
+
   // find min and max levels
-  uint32_t n = 0;
-  for(uint32_t i = 0; i < self->histogram_stats.bins_count; i++)
+  size_t n = 0;
+  for(uint32_t i = 0; i < piece->histogram_stats.bins_count; i++)
   {
-    n += self->histogram[4 * i];
+    n += piece->histogram[4 * i];
 
     for(int k = 0; k < 3; k++)
     {
       if(isnan(d->levels[k]) && (n >= thr[k]))
       {
-        d->levels[k] = (float)i / (float)(self->histogram_stats.bins_count - 1);
+        d->levels[k] = (float)i / (float)(piece->histogram_stats.bins_count - 1);
       }
     }
   }
@@ -211,7 +211,7 @@ static void dt_iop_levels_compute_levels_automatic(dt_iop_module_t *self, dt_dev
     d->levels[1] = (1.0f - center) * d->levels[0] + center * d->levels[2];
 }
 
-static void compute_lut(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece)
+static void compute_lut(dt_dev_pixelpipe_iop_t *piece)
 {
   dt_iop_levels_data_t *d = (dt_iop_levels_data_t *)piece->data;
 
@@ -235,11 +235,36 @@ static void compute_lut(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece)
 static void commit_params_late(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece)
 {
   dt_iop_levels_data_t *d = (dt_iop_levels_data_t *)piece->data;
+  dt_iop_levels_gui_data_t *g = (dt_iop_levels_gui_data_t *)self->gui_data;
 
   if(d->mode == LEVELS_MODE_AUTOMATIC)
   {
-    dt_iop_levels_compute_levels_automatic(self, piece);
-    compute_lut(self, piece);
+    if(g && piece->pipe->type == DT_DEV_PIXELPIPE_FULL)
+    {
+      dt_pthread_mutex_lock(&g->lock);
+      d->levels[0] = g->auto_levels[0];
+      d->levels[1] = g->auto_levels[1];
+      d->levels[2] = g->auto_levels[2];
+      dt_pthread_mutex_unlock(&g->lock);
+
+      compute_lut(piece);
+    }
+
+    if(piece->pipe->type == DT_DEV_PIXELPIPE_PREVIEW || isnan(d->levels[0]) || isnan(d->levels[1])
+       || isnan(d->levels[2]))
+    {
+      dt_iop_levels_compute_levels_automatic(piece);
+      compute_lut(piece);
+    }
+
+    if(g && piece->pipe->type == DT_DEV_PIXELPIPE_PREVIEW && d->mode == LEVELS_MODE_AUTOMATIC)
+    {
+      dt_pthread_mutex_lock(&g->lock);
+      g->auto_levels[0] = d->levels[0];
+      g->auto_levels[1] = d->levels[1];
+      g->auto_levels[2] = d->levels[2];
+      dt_pthread_mutex_unlock(&g->lock);
+    }
   }
 }
 
@@ -335,6 +360,7 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_
   if(err != CL_SUCCESS) goto error;
 
   dt_opencl_release_mem_object(dev_lut);
+
   return TRUE;
 
 error:
@@ -360,67 +386,53 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_
 {
   dt_iop_levels_data_t *d = (dt_iop_levels_data_t *)piece->data;
   dt_iop_levels_params_t *p = (dt_iop_levels_params_t *)p1;
-  dt_iop_levels_gui_data_t *g = (dt_iop_levels_gui_data_t *)self->gui_data;
 
-  self->request_histogram |= (DT_REQUEST_ONLY_IN_GUI);
-  self->request_histogram_source = (DT_DEV_PIXELPIPE_PREVIEW);
-  self->histogram_params.bins_count = 64;
+  if(pipe->type == DT_DEV_PIXELPIPE_PREVIEW)
+    piece->request_histogram |= (DT_REQUEST_ON);
+  else
+    piece->request_histogram &= ~(DT_REQUEST_ON);
 
-  if(self->dev->gui_attached)
-  {
-    g->reprocess_on_next_expose = FALSE;
-  }
+  piece->request_histogram |= (DT_REQUEST_ONLY_IN_GUI);
 
-  gboolean histogram_is_good = ((self->histogram_stats.bins_count == 16384) && (self->histogram != NULL));
+  piece->histogram_params.bins_count = 64;
 
   if(p->mode == LEVELS_MODE_AUTOMATIC)
   {
-    self->histogram_params.bins_count = 16384;
+    d->mode = LEVELS_MODE_AUTOMATIC;
 
-    d->percentiles[0] = p->percentiles[0];
-    d->percentiles[1] = p->percentiles[1];
-    d->percentiles[2] = p->percentiles[2];
+    piece->request_histogram |= (DT_REQUEST_ON);
+    self->request_histogram &= ~(DT_REQUEST_ON);
 
-    gboolean failed = !histogram_is_good;
+    if(!self->dev->gui_attached) piece->request_histogram &= ~(DT_REQUEST_ONLY_IN_GUI);
 
-    if(self->dev->gui_attached && histogram_is_good)
+    piece->histogram_params.bins_count = 16384;
+
+    /*
+     * in principle, we do not need/want histogram in FULL pipe
+     * because we will use histogram from preview pipe there,
+     * but it might happen that for some reasons we do not have
+     * histogram of preview pipe yet - e.g. on first pipe run
+     * (just after setting mode to automatic)
+     */
+
+    for(int k = 0; k < 3; k++)
     {
-      /*
-       * if in GUI, user might zoomed main view => we would get histogram of
-       * only part of image, so if in GUI we must always use histogram of
-       * preview pipe, which is always full-size and have biggest size
-       */
-      d->mode = LEVELS_MODE_AUTOMATIC;
-      commit_params_late(self, piece);
-      d->mode = LEVELS_MODE_MANUAL;
-
-      if(isnan(d->levels[0]) || isnan(d->levels[1]) || isnan(d->levels[2])) failed = TRUE;
+      d->levels[k] = NAN;
+      d->percentiles[k] = p->percentiles[k];
     }
-    else if(failed || !(self->dev->gui_attached && histogram_is_good))
-    {
-      d->mode = LEVELS_MODE_AUTOMATIC;
-      // commit_params_late() will compute LUT later
-      self->request_histogram &= ~(DT_REQUEST_ONLY_IN_GUI);
-      self->request_histogram_source = (DT_DEV_PIXELPIPE_ANY);
 
-      if(failed && self->dev->gui_attached)
-      {
-        /*
-         * but sadly we do not yet have a histogram to do so, so this time we
-         * process asif not in gui, and in expose() immediately reprocess,
-         * thus everything works as expected
-         */
-        g->reprocess_on_next_expose = TRUE;
-      }
-    }
+    // commit_params_late() will compute LUT later
   }
   else
   {
     d->mode = LEVELS_MODE_MANUAL;
+
+    self->request_histogram |= (DT_REQUEST_ON);
+
     d->levels[0] = p->levels[0];
     d->levels[1] = p->levels[1];
     d->levels[2] = p->levels[2];
-    compute_lut(self, piece);
+    compute_lut(piece);
   }
 }
 
@@ -458,6 +470,12 @@ void gui_update(dt_iop_module_t *self)
       gtk_widget_show(GTK_WIDGET(g->vbox_manual));
       break;
   }
+
+  dt_pthread_mutex_lock(&g->lock);
+  g->auto_levels[0] = NAN;
+  g->auto_levels[1] = NAN;
+  g->auto_levels[2] = NAN;
+  dt_pthread_mutex_unlock(&g->lock);
 
   gtk_widget_queue_draw(self->widget);
 }
@@ -512,7 +530,13 @@ void gui_init(dt_iop_module_t *self)
   dt_iop_levels_gui_data_t *c = (dt_iop_levels_gui_data_t *)self->gui_data;
   dt_iop_levels_params_t *p = (dt_iop_levels_params_t *)self->params;
 
-  c->reprocess_on_next_expose = FALSE;
+  dt_pthread_mutex_init(&c->lock, NULL);
+
+  dt_pthread_mutex_lock(&c->lock);
+  c->auto_levels[0] = NAN;
+  c->auto_levels[1] = NAN;
+  c->auto_levels[2] = NAN;
+  dt_pthread_mutex_unlock(&c->lock);
 
   c->modes = NULL;
 
@@ -619,8 +643,6 @@ void gui_init(dt_iop_module_t *self)
       break;
   }
 
-  g_signal_connect(G_OBJECT(c->vbox_automatic), "draw", G_CALLBACK(dt_iop_levels_vbox_automatic_draw), self);
-
   g_signal_connect(G_OBJECT(c->mode), "value-changed", G_CALLBACK(dt_iop_levels_mode_callback), self);
   g_signal_connect(G_OBJECT(c->percentile_black), "value-changed",
                    G_CALLBACK(dt_iop_levels_percentiles_callback), self);
@@ -640,6 +662,8 @@ void gui_cleanup(dt_iop_module_t *self)
 {
   dt_iop_levels_gui_data_t *g = (dt_iop_levels_gui_data_t *)self->gui_data;
   g_list_free(g->modes);
+
+  dt_pthread_mutex_destroy(&g->lock);
 
   free(self->gui_data);
   self->gui_data = NULL;
@@ -829,21 +853,6 @@ static gboolean dt_iop_levels_area_draw(GtkWidget *widget, cairo_t *crf, gpointe
   cairo_paint(crf);
   cairo_surface_destroy(cst);
   return TRUE;
-}
-
-static gboolean dt_iop_levels_vbox_automatic_draw(GtkWidget *widget, cairo_t *cr, gpointer user_data)
-{
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  dt_iop_levels_gui_data_t *g = (dt_iop_levels_gui_data_t *)self->gui_data;
-
-  if(self->enabled && g->reprocess_on_next_expose)
-  {
-    g->reprocess_on_next_expose = FALSE;
-    // FIXME: or just use dev->pipe->changed |= DT_DEV_PIPE_SYNCH; ?
-    dt_dev_reprocess_all(self->dev);
-  }
-
-  return FALSE;
 }
 
 /**

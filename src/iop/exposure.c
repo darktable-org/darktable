@@ -1,7 +1,7 @@
 /*
     This file is part of darktable,
     copyright (c) 2009--2010 johannes hanika.
-    copyright (c) 2014 LebedevRI.
+    copyright (c) 2014-2015 LebedevRI.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -83,9 +83,9 @@ typedef struct dt_iop_exposure_gui_data_t
   GtkWidget *deflicker_histogram_source;
   uint32_t *deflicker_histogram; // used to cache histogram of source file
   dt_dev_histogram_stats_t deflicker_histogram_stats;
-  gboolean reprocess_on_next_expose;
   GtkLabel *deflicker_used_EC;
   float deflicker_computed_exposure;
+  dt_pthread_mutex_t lock;
 } dt_iop_exposure_gui_data_t;
 
 typedef struct dt_iop_exposure_data_t
@@ -223,7 +223,7 @@ static void deflicker_prepare_histogram(dt_iop_module_t *self, uint32_t **histog
     return;
   }
 
-  dt_dev_histogram_collection_params_t histogram_params = self->histogram_params;
+  dt_dev_histogram_collection_params_t histogram_params = { 0 };
 
   dt_histogram_roi_t histogram_roi = {.width = image.width,
                                       .height = image.height,
@@ -235,6 +235,7 @@ static void deflicker_prepare_histogram(dt_iop_module_t *self, uint32_t **histog
                                       .crop_height = image.crop_height };
 
   histogram_params.roi = &histogram_roi;
+  histogram_params.bins_count = 16384;
 
   dt_histogram_worker(&histogram_params, histogram_stats, buf.buf, histogram,
                       dt_histogram_helper_cs_RAW_uint16);
@@ -259,9 +260,9 @@ static int compute_correction(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *pie
 {
   dt_iop_exposure_data_t *d = (dt_iop_exposure_data_t *)piece->data;
 
-  if(histogram == NULL) return 1;
-
   *correction = NAN;
+
+  if(histogram == NULL) return 1;
 
   const size_t total = (size_t)histogram_stats->ch * histogram_stats->pixels;
 
@@ -302,10 +303,28 @@ static int compute_correction(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *pie
 static void commit_params_late(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece)
 {
   dt_iop_exposure_data_t *d = (dt_iop_exposure_data_t *)piece->data;
+  dt_iop_exposure_gui_data_t *g = (dt_iop_exposure_gui_data_t *)self->gui_data;
 
   if(d->mode == EXPOSURE_MODE_DEFLICKER)
   {
-    compute_correction(self, piece, self->histogram, &self->histogram_stats, &d->exposure);
+    if(g && piece->pipe->type == DT_DEV_PIXELPIPE_FULL)
+    {
+      dt_pthread_mutex_lock(&g->lock);
+      d->exposure = g->deflicker_computed_exposure;
+      dt_pthread_mutex_unlock(&g->lock);
+    }
+
+    if(piece->pipe->type == DT_DEV_PIXELPIPE_PREVIEW || isnan(d->exposure))
+    {
+      compute_correction(self, piece, piece->histogram, &piece->histogram_stats, &d->exposure);
+    }
+  }
+
+  if(g && piece->pipe->type == DT_DEV_PIXELPIPE_PREVIEW)
+  {
+    dt_pthread_mutex_lock(&g->lock);
+    g->deflicker_computed_exposure = d->exposure;
+    dt_pthread_mutex_unlock(&g->lock);
   }
 }
 
@@ -315,12 +334,8 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
 {
   dt_iop_exposure_data_t *d = (dt_iop_exposure_data_t *)piece->data;
   dt_iop_exposure_global_data_t *gd = (dt_iop_exposure_global_data_t *)self->data;
-  dt_iop_exposure_gui_data_t *g = (dt_iop_exposure_gui_data_t *)self->gui_data;
 
-  if(d->mode == EXPOSURE_MODE_DEFLICKER)
-  {
-    commit_params_late(self, piece);
-  }
+  commit_params_late(self, piece);
 
   cl_int err = -999;
   const float black = d->black;
@@ -340,10 +355,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_exposure, sizes);
   if(err != CL_SUCCESS) goto error;
   for(int k = 0; k < 3; k++) piece->pipe->processed_maximum[k] *= scale;
-  if(g != NULL && self->dev->gui_attached && piece->pipe->type == DT_DEV_PIXELPIPE_PREVIEW)
-  {
-    g->deflicker_computed_exposure = d->exposure;
-  }
+
   return TRUE;
 
 error:
@@ -356,12 +368,8 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *
              const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
 {
   dt_iop_exposure_data_t *d = (dt_iop_exposure_data_t *)piece->data;
-  dt_iop_exposure_gui_data_t *g = (dt_iop_exposure_gui_data_t *)self->gui_data;
 
-  if(d->mode == EXPOSURE_MODE_DEFLICKER)
-  {
-    commit_params_late(self, piece);
-  }
+  commit_params_late(self, piece);
 
   const float black = d->black;
   const float white = exposure2white(d->exposure);
@@ -383,11 +391,6 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *
   if(piece->pipe->mask_display) dt_iop_alpha_copy(i, o, roi_out->width, roi_out->height);
 
   for(int k = 0; k < 3; k++) piece->pipe->processed_maximum[k] *= scale;
-
-  if(g != NULL && self->dev->gui_attached && piece->pipe->type == DT_DEV_PIXELPIPE_PREVIEW)
-  {
-    g->deflicker_computed_exposure = d->exposure;
-  }
 }
 
 void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe,
@@ -400,16 +403,8 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
   d->black = p->black;
   d->exposure = p->exposure;
 
-  self->request_histogram &= ~(DT_REQUEST_ON);
-  self->request_histogram |= (DT_REQUEST_ONLY_IN_GUI);
-  self->request_histogram_source = (DT_DEV_PIXELPIPE_PREVIEW);
-
-  if(self->dev->gui_attached)
-  {
-    g->reprocess_on_next_expose = FALSE;
-  }
-
-  gboolean histogram_is_good = ((self->histogram_stats.bins_count == 16384) && (self->histogram != NULL));
+  piece->request_histogram &= ~(DT_REQUEST_ON);
+  piece->request_histogram |= (DT_REQUEST_ONLY_IN_GUI);
 
   d->deflicker_percentile = p->deflicker_percentile;
   d->deflicker_target_level = p->deflicker_target_level;
@@ -418,7 +413,7 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
   {
     if(p->deflicker_histogram_source == DEFLICKER_HISTOGRAM_SOURCE_SOURCEFILE)
     {
-      if(self->dev->gui_attached)
+      if(g)
       {
         // histogram is precomputed and cached
         compute_correction(self, piece, g->deflicker_histogram, &g->deflicker_histogram_stats, &d->exposure);
@@ -437,40 +432,25 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
     {
       if(p->deflicker_histogram_source == DEFLICKER_HISTOGRAM_SOURCE_THUMBNAIL)
       {
-        self->request_histogram |= (DT_REQUEST_ON);
+        d->mode = EXPOSURE_MODE_DEFLICKER;
 
-        gboolean failed = !histogram_is_good;
+        piece->request_histogram |= (DT_REQUEST_ON);
 
-        if(self->dev->gui_attached && histogram_is_good)
-        {
-          /*
-           * if in GUI, user might zoomed main view => we would get histogram of
-           * only part of image, so if in GUI we must always use histogram of
-           * preview pipe, which is always full-size and have biggest size
-           */
-          d->mode = EXPOSURE_MODE_DEFLICKER;
-          commit_params_late(self, piece);
-          d->mode = EXPOSURE_MODE_MANUAL;
+        if(!self->dev->gui_attached) piece->request_histogram &= ~(DT_REQUEST_ONLY_IN_GUI);
 
-          if(isnan(d->exposure)) failed = TRUE;
-        }
-        else if(failed || !(self->dev->gui_attached && histogram_is_good))
-        {
-          d->mode = EXPOSURE_MODE_DEFLICKER;
-          // commit_params_late() will compute correct d->exposure later
-          self->request_histogram &= ~(DT_REQUEST_ONLY_IN_GUI);
-          self->request_histogram_source = (DT_DEV_PIXELPIPE_ANY);
+        piece->histogram_params.bins_count = 16384;
 
-          if(failed && self->dev->gui_attached)
-          {
-            /*
-             * but sadly we do not yet have a histogram to do so, so this time
-             * we process asif not in gui, and in expose() immediately
-             * reprocess, thus everything works as expected
-             */
-            g->reprocess_on_next_expose = TRUE;
-          }
-        }
+        /*
+         * in principle, we do not need/want histogram in FULL pipe
+         * because we will use histogram from preview pipe there,
+         * but it might happen that for some reasons we do not have
+         * histogram of preview pipe yet - e.g. on first pipe run
+         * (just after setting mode to automatic)
+         */
+
+        d->exposure = NAN;
+
+        // commit_params_late() will compute exposure later
       }
     }
   }
@@ -541,10 +521,10 @@ void gui_update(struct dt_iop_module_t *self)
   free(g->deflicker_histogram);
   g->deflicker_histogram = NULL;
 
-  g->reprocess_on_next_expose = FALSE;
-
   gtk_label_set_text(g->deflicker_used_EC, "");
+  dt_pthread_mutex_lock(&g->lock);
   g->deflicker_computed_exposure = NAN;
+  dt_pthread_mutex_unlock(&g->lock);
 
   switch(p->mode)
   {
@@ -579,7 +559,6 @@ void init(dt_iop_module_t *module)
   module->params = malloc(sizeof(dt_iop_exposure_params_t));
   module->default_params = malloc(sizeof(dt_iop_exposure_params_t));
   module->default_enabled = 0;
-  module->histogram_params.bins_count = 16384; // we neeed really maximally reliable histogrem
   module->priority = 183;                      // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_exposure_params_t);
   module->gui_data = NULL;
@@ -868,6 +847,7 @@ static gboolean draw(GtkWidget *widget, cairo_t *cr, dt_iop_module_t *self)
 
   dt_iop_exposure_gui_data_t *g = (dt_iop_exposure_gui_data_t *)self->gui_data;
 
+  dt_pthread_mutex_lock(&g->lock);
   if(!isnan(g->deflicker_computed_exposure))
   {
     gchar *str = g_strdup_printf("%.2fEV", g->deflicker_computed_exposure);
@@ -877,16 +857,8 @@ static gboolean draw(GtkWidget *widget, cairo_t *cr, dt_iop_module_t *self)
     darktable.gui->reset = 0;
 
     g_free(str);
-    g->deflicker_computed_exposure = NAN;
   }
-
-  if(self->enabled && g->reprocess_on_next_expose)
-  {
-    g->reprocess_on_next_expose = FALSE;
-    // FIXME: or just use dev->pipe->changed |= DT_DEV_PIPE_SYNCH; ?
-    dt_dev_reprocess_all(self->dev);
-    return FALSE;
-  }
+  dt_pthread_mutex_unlock(&g->lock);
 
   if(self->request_color_pick != DT_REQUEST_COLORPICK_MODULE) return FALSE;
 
@@ -913,7 +885,7 @@ void gui_init(struct dt_iop_module_t *self)
 
   g->deflicker_histogram = NULL;
 
-  g->reprocess_on_next_expose = FALSE;
+  dt_pthread_mutex_init(&g->lock, NULL);
 
   /* register hooks with current dev so that  histogram
      can interact with this module.
@@ -1013,7 +985,10 @@ void gui_init(struct dt_iop_module_t *self)
   g_object_set(G_OBJECT(g->deflicker_used_EC), "tooltip-text",
                _("what exposure correction have actually been used"), (char *)NULL);
   gtk_box_pack_start(GTK_BOX(hbox1), GTK_WIDGET(g->deflicker_used_EC), FALSE, FALSE, 0);
+
+  dt_pthread_mutex_lock(&g->lock);
   g->deflicker_computed_exposure = NAN;
+  dt_pthread_mutex_unlock(&g->lock);
 
   gtk_box_pack_start(GTK_BOX(g->vbox_deflicker), GTK_WIDGET(hbox1), FALSE, FALSE, 0);
 
@@ -1036,10 +1011,13 @@ void gui_init(struct dt_iop_module_t *self)
 void gui_cleanup(struct dt_iop_module_t *self)
 {
   dt_iop_exposure_gui_data_t *g = (dt_iop_exposure_gui_data_t *)self->gui_data;
+
   free(g->deflicker_histogram);
   g->deflicker_histogram = NULL;
   g_list_free(g->deflicker_histogram_sources);
   g_list_free(g->modes);
+
+  dt_pthread_mutex_destroy(&g->lock);
 
   free(self->gui_data);
   self->gui_data = NULL;
