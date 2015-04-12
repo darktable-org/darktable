@@ -184,7 +184,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *
   if(!dt_dev_pixelpipe_uses_downsampled_input(piece->pipe) && (filters == 9u))
   { // xtrans float mosaiced
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(roi_out, ivoid, ovoid) schedule(static)
+#pragma omp parallel for default(none) shared(roi_out, ivoid, ovoid) firstprivate(film_rgb_f) schedule(static)
 #endif
     for(int j = 0; j < roi_out->height; j++)
     {
@@ -203,7 +203,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *
     const __m128 val_max = _mm_set1_ps(1.0f);
 
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(roi_out, ivoid, ovoid) schedule(static)
+#pragma omp parallel for default(none) shared(roi_out, ivoid, ovoid) firstprivate(film_rgb_f) schedule(static)
 #endif
     for(int j = 0; j < roi_out->height; j++)
     {

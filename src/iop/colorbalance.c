@@ -135,7 +135,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *
   };
 
 #ifdef _OPENMP
-#pragma omp parallel for default(none) schedule(static) shared(i, o, roi_in, roi_out)
+#pragma omp parallel for default(none) schedule(static) shared(i, o, roi_in, roi_out) firstprivate(xyz_to_srgb, lift, gain, gamma_inv, srgb_to_xyz)
 #endif
   for(int j = 0; j < roi_out->height; j++)
   {

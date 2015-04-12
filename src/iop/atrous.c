@@ -233,7 +233,7 @@ static void eaw_decompose(float *const out, const float *const in, float *const 
 /* The first "2*mult" lines use the macro with tests because the 5x5 kernel
  * requires nearest pixel interpolation for at least a pixel in the sum */
 #ifdef _OPENMP
-#pragma omp parallel for default(none) schedule(static)
+#pragma omp parallel for default(none) schedule(static) firstprivate(filter)
 #endif
   for(int j = 0; j < 2 * mult; j++)
   {
@@ -254,7 +254,7 @@ static void eaw_decompose(float *const out, const float *const in, float *const 
   }
 
 #ifdef _OPENMP
-#pragma omp parallel for default(none) schedule(static)
+#pragma omp parallel for default(none) schedule(static) firstprivate(filter)
 #endif
   for(int j = 2 * mult; j < height - 2 * mult; j++)
   {
@@ -311,7 +311,7 @@ static void eaw_decompose(float *const out, const float *const in, float *const 
 /* The last "2*mult" lines use the macro with tests because the 5x5 kernel
  * requires nearest pixel interpolation for at least a pixel in the sum */
 #ifdef _OPENMP
-#pragma omp parallel for default(none) schedule(static)
+#pragma omp parallel for default(none) schedule(static) firstprivate(filter)
 #endif
   for(int j = height - 2 * mult; j < height; j++)
   {

@@ -808,9 +808,9 @@ static int dt_circle_get_mask_roi(dt_iop_module_t *module, dt_dev_pixelpipe_iop_
 
 #ifdef _OPENMP
 #if !defined(__SUNOS__) && !defined(__NetBSD__)
-#pragma omp parallel for default(none) shared(points)
+#pragma omp parallel for default(none) shared(points) firstprivate(center)
 #else
-#pragma omp parallel for shared(points)
+#pragma omp parallel for shared(points) firstprivate(center)
 #endif
 #endif
   for(int i = 0; i < mh; i++)
