@@ -782,6 +782,15 @@ local widget = dt.new_widget("button"){
   types.lua_stack.active:set_text("The currently selected child, can be nil if the container has no child, can be set to one of the child widget or to an index in the child table")
   types.lua_stack.active:set_reported_type(my_tostring(types.lua_widget).." or nil")
 
+  types.lua_slider:set_text("A slider that can be set by the user")
+  types.lua_slider.soft_min:set_text("The soft minimum value for the slider, the slider can't go beyond this point")
+  types.lua_slider.soft_max:set_text("The soft maximum value for the slider, the slider can't go beyond this point")
+  types.lua_slider.hard_min:set_text("The hard minimum value for the slider, the user can't manually enter a value beyond this point")
+  types.lua_slider.hard_max:set_text("The hard maximum value for the slider, the user can't manually enter a value beyond this point")
+  types.lua_slider.value:set_text("The current value of the slider")
+  types.lua_slider.label:set_text("The label next to the slider")
+  types.lua_slider.label:set_reported_type("string")
+
 
 	----------------------
 	--  EVENTS          --
