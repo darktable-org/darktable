@@ -501,6 +501,7 @@ if(USE_LUA)
       "lua/widget/file_chooser.c"
       "lua/widget/label.c"
       "lua/widget/separator.c"
+      "lua/widget/slider.c"
       "lua/widget/stack.c"
       )
     set(SOURCES ${SOURCES} ${SOURCE_FILES_LUA})

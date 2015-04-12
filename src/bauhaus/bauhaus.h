@@ -228,10 +228,23 @@ GtkWidget *dt_bauhaus_slider_new_with_range(dt_iop_module_t *self, float min, fl
 GtkWidget *dt_bauhaus_slider_new_with_range_and_feedback(dt_iop_module_t *self, float min, float max,
                                                          float step, float defval, int digits, int feedback);
 
+GtkWidget *dt_bauhaus_slider_from_widget(dt_bauhaus_widget_t* widget, dt_iop_module_t *self, float min, float max,
+                                                         float step, float defval, int digits, int feedback);
 // outside doesn't see the real type, we cast it internally.
 void dt_bauhaus_slider_set(GtkWidget *w, float pos);
 void dt_bauhaus_slider_set_soft(GtkWidget *w, float pos);
 float dt_bauhaus_slider_get(GtkWidget *w);
+
+void dt_bauhaus_slider_set_soft_min(GtkWidget* w, float val);
+float dt_bauhaus_slider_get_soft_min(GtkWidget* w);
+void dt_bauhaus_slider_set_soft_max(GtkWidget* w, float val);
+float dt_bauhaus_slider_get_soft_max(GtkWidget* w);
+
+void dt_bauhaus_slider_set_hard_min(GtkWidget* w, float val);
+float dt_bauhaus_slider_get_hard_min(GtkWidget* w);
+void dt_bauhaus_slider_set_hard_max(GtkWidget* w, float val);
+float dt_bauhaus_slider_get_hard_max(GtkWidget* w);
+
 float dt_bauhaus_slider_get_step(GtkWidget *widget);
 void dt_bauhaus_slider_reset(GtkWidget *widget);
 void dt_bauhaus_slider_set_format(GtkWidget *w, const char *format);

@@ -967,7 +967,7 @@ void dt_dev_read_history(dt_develop_t *dev)
     if(!hist->module && find_op)
     {
       // we have to add a new instance of this module and set index to modindex
-      dt_iop_module_t *new_module = (dt_iop_module_t *)malloc(sizeof(dt_iop_module_t));
+      dt_iop_module_t *new_module = (dt_iop_module_t *)calloc(1, sizeof(dt_iop_module_t));
       if(!dt_iop_load_module(new_module, find_op->so, dev))
       {
         new_module->multi_priority = multi_priority;
@@ -1364,7 +1364,7 @@ void dt_dev_average_delay_update(const dt_times_t *start, uint32_t *average_dela
 dt_iop_module_t *dt_dev_module_duplicate(dt_develop_t *dev, dt_iop_module_t *base, int priority)
 {
   // we create the new module
-  dt_iop_module_t *module = (dt_iop_module_t *)malloc(sizeof(dt_iop_module_t));
+  dt_iop_module_t *module = (dt_iop_module_t *)calloc(1, sizeof(dt_iop_module_t));
   if(dt_iop_load_module(module, base->so, base->dev)) return NULL;
   module->instance = base->instance;
 

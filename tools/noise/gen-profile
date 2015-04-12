@@ -272,8 +272,7 @@ EOF
 		;;
 	esac
 
-# 	echo "{\"$model iso $iso\",       \"$maker\",      \"$model\",              $iso,         {$a0, $a1, $a2}, {$b0, $b1, $b2}}," >> "$presets"
-	echo "$maker\t$model\t$model iso $iso\t$iso\t$a0, $a1, $a2\t$b0, $b1, $b2" >> "$presets"
+	printf "$maker\t$model\t$model iso $iso\t$iso\t$a0, $a1, $a2\t$b0, $b1, $b2\n" >> "$presets"
 
 	# Clean unused files.
 	rm -f $dat $flat_dat $curves_dat $fit

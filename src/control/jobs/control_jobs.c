@@ -698,8 +698,8 @@ static int32_t dt_control_delete_images_job_run(dt_job_t *job)
     if(duplicates == 1)
     {
       // there are no further duplicates so we can remove the source data file
-      (void)g_unlink(filename);
       dt_image_remove(imgid);
+      (void)g_unlink(filename);
 
       // all sidecar files - including left-overs - can be deleted;
       // left-overs can result when previously duplicates have been REMOVED;

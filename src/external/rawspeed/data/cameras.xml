@@ -2252,6 +2252,9 @@
 		</CFA>
 		<Crop x="0" y="0" width="3250" height="2450"/>
 		<Sensor black="77" white="4095"/>
+		<Hints>
+			<Hint name="force_uncompressed_with_control" value=""/>
+		</Hints>
 	</Camera>
 	<Camera make="OLYMPUS IMAGING CORP." model="E-400">
 		<CFA width="2" height="2">
