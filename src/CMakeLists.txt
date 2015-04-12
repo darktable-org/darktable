@@ -379,8 +379,12 @@ if(WIN32)
 endif(WIN32)
 
 if(NOT CUSTOM_CFLAGS)
-  #we MUST always specify our requred instruction set, native might not detect it
-  set(DT_REQ_INSTRUCTIONS "-msse3")
+  if(CMAKE_COMPILER_IS_GNUCC)
+    #we MUST always specify our requred instruction set, native might not detect it
+    set(DT_REQ_INSTRUCTIONS "-msse3")
+  else()
+    set(DT_REQ_INSTRUCTIONS "")
+  endif()
 
   if(NOT BINARY_PACKAGE_BUILD AND (NOT APPLE OR CMAKE_C_COMPILER_ID STREQUAL "Clang"))
     MESSAGE("-- Checking for -march=native support")
