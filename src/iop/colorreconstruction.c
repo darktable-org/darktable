@@ -347,7 +347,7 @@ static void dt_iop_colorreconstruct_bilateral_splat(dt_iop_colorreconstruct_bila
     size_t index = 4 * j * b->width;
     for(int i = 0; i < b->width; i++, index += 4)
     {
-      float x, y, z, weight, hue;
+      float x, y, z, weight, m;
       const float Lin = in[index];
       const float ain = in[index + 1];
       const float bin = in[index + 2];
@@ -361,8 +361,10 @@ static void dt_iop_colorreconstruct_bilateral_splat(dt_iop_colorreconstruct_bila
           break;
 
         case COLORRECONSTRUCT_PRECEDENCE_HUE:
-          hue = atan2(bin, ain);
-          weight = exp(-((hue - params[0])*(hue - params[0])/params[1]));
+          m = atan2(bin, ain) - params[0];
+          // readjust m into [-pi, +pi] interval
+          m = m > M_PI ? m - 2*M_PI : (m < -M_PI ? m + 2*M_PI : m);
+          weight = exp(-m*m/params[1]);
           break;
 
         case COLORRECONSTRUCT_PRECEDENCE_NONE:
@@ -563,7 +565,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *
   const float sigma_s = fmax(data->spatial, 1.0f) / scale;
   const float hue = hue_conversion(data->hue); // convert to LCH hue which better fits to Lab colorspace
 
-  const float params[4] = { hue, M_PI*M_PI/4, 0.0f, 0.0f };
+  const float params[4] = { hue, M_PI*M_PI/8, 0.0f, 0.0f };
 
   dt_iop_colorreconstruct_bilateral_t *b;
   dt_iop_colorreconstruct_bilateral_frozen_t *can = NULL;
@@ -1013,7 +1015,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   const float sigma_s = fmax(d->spatial, 1.0f) / scale;
   const float hue = hue_conversion(d->hue); // convert to LCH hue which better fits to Lab colorspace
 
-  const float params[4] = { hue, M_PI*M_PI/4, 0.0f, 0.0f };
+  const float params[4] = { hue, M_PI*M_PI/8, 0.0f, 0.0f };
 
   cl_int err = -666;
 

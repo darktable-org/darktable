@@ -131,7 +131,7 @@ colorreconstruction_splat(
   float4 sigma = (float4)(sigma_s, sigma_s, sigma_r, 0);
 
   const float4 pixel = read_imagef (in, samplerc, (int2)(x, y));
-  float hue, weight;
+  float weight, m;
 
   switch(precedence)
   {
@@ -140,8 +140,10 @@ colorreconstruction_splat(
       break;
 
     case COLORRECONSTRUCT_PRECEDENCE_HUE:
-      hue = atan2(pixel.z, pixel.y);
-      weight = exp(-((hue - params.x)*(hue - params.x)/params.y));
+      m = atan2(pixel.z, pixel.y) - params.x;
+      // readjust m into [-pi, +pi] interval
+      m = m > M_PI_F ? m - 2*M_PI_F : (m < -M_PI_F ? m + 2*M_PI_F : m);
+      weight = exp(-m*m/params.y);
       break;
       
     case COLORRECONSTRUCT_PRECEDENCE_NONE:
