@@ -103,9 +103,9 @@ void KdcDecoder::decodeMetaDataInternal(CameraMetaData *meta) {
         TiffEntry *wb = kodakifd->getEntryRecursive(KODAK_KDC_WB);
         if (wb->count == 3) {
           const uint32 *tmp = wb->getIntArray();
-          mRaw->metadata.wbCoeffs[0] = tmp[0];
-          mRaw->metadata.wbCoeffs[1] = tmp[1];
-          mRaw->metadata.wbCoeffs[2] = tmp[2];
+          mRaw->metadata.wbCoeffs[0] = (float)tmp[0];
+          mRaw->metadata.wbCoeffs[1] = (float)tmp[1];
+          mRaw->metadata.wbCoeffs[2] = (float)tmp[2];
         }
       }
     } catch(...) {}
