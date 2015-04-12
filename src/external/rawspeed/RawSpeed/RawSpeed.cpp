@@ -80,7 +80,7 @@ void OpenFileID(FileReader f, CameraMetaData *meta) {
     string mode;
     if (d->mRaw->isCFA)
       mode = "cfa";
-    else if (d->mRaw->subsampling.y == 2)
+    else if (d->mRaw->metadata.subsampling.y == 2)
       mode = "sRaw1";
     else
       mode = "sRaw2";
@@ -89,7 +89,7 @@ void OpenFileID(FileReader f, CameraMetaData *meta) {
       d->getRootIFD()->getEntryRecursive(MODEL)->getString().c_str(), mode.c_str());
     printf("%s: <Sensor black=\"%d\", white=\"%d\" black_colors=\"%d,%d,%d,%d\" iso_list=\"%d\"/>\r\n", mode.c_str(),
       d->mRaw->blackLevel, d->mRaw->whitePoint, d->mRaw->blackLevelSeparate[0], d->mRaw->blackLevelSeparate[1], 
-      d->mRaw->blackLevelSeparate[2], d->mRaw->blackLevelSeparate[3], d->mRaw->isoSpeed);
+      d->mRaw->blackLevelSeparate[2], d->mRaw->blackLevelSeparate[3], d->mRaw->metadata.isoSpeed);
     if (d) delete d;
     if (m) delete m;
   } catch (RawDecoderException) {

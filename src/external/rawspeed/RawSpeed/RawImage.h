@@ -38,11 +38,13 @@ public:
     SCALE_VALUES = 1, FIX_BAD_PIXELS = 2, APPLY_LOOKUP = 3 | 0x1000, FULL_IMAGE = 0x1000
   } RawImageWorkerTask;
   RawImageWorker(RawImageData *img, RawImageWorkerTask task, int start_y, int end_y);
+  ~RawImageWorker();
   void startThread();
   void waitForThread();
   void performTask();
 protected:
   pthread_t threadid;
+  pthread_attr_t attr;
   RawImageData* data;
   RawImageWorkerTask task;
   int start_y;

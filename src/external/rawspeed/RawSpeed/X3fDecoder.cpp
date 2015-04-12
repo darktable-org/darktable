@@ -1,6 +1,8 @@
 #include "StdAfx.h"
 #include "X3fDecoder.h"
 #include "ByteStreamSwap.h"
+#include "TiffParser.h"
+
 /*
 RawSpeed - RAW file decoder.
 
@@ -72,21 +74,73 @@ RawImage X3fDecoder::decodeRawInternal()
 
 void X3fDecoder::decodeMetaDataInternal( CameraMetaData *meta )
 {
-  if (hasProp("CAMMANUF") && hasProp("CAMMODEL")) {
-    if (checkCameraSupported(meta, getProp("CAMMANUF"), getProp("CAMMODEL"), "" )) {
+  if (readName()) {
+    if (checkCameraSupported(meta, camera_make, camera_model, "" )) {
       int iso = 0;
       if (hasProp("ISO"))
         iso = atoi(getProp("ISO").c_str());
-      setMetaData(meta, getProp("CAMMANUF"), getProp("CAMMODEL"), "", iso);
+      setMetaData(meta, camera_make, camera_model, "", iso);
       return;
     }
   }
 }
 
+// readName will read the make and model of the image.
+//
+// If the name is read, it will return true, and the make/model
+// will be available in camera_make/camera_model members.
+boolean X3fDecoder::readName() {
+  if (camera_make.length() != 0 && camera_model.length() != 0) {
+    return true;
+  }
+
+  // Read from properties
+  if (hasProp("CAMMANUF") && hasProp("CAMMODEL")) {
+    camera_make = getProp("CAMMANUF");
+    camera_model = getProp("CAMMODEL");
+    return true;
+  }
+
+  // See if we can find EXIF info and grab the name from there.
+  // This is needed for Sigma DP2 Quattro and possibly later cameras.
+  vector<X3fImage>::iterator img = mImages.begin();
+  for (; img !=  mImages.end(); img++) {
+    X3fImage cimg = *img;
+    if (cimg.type == 2 && cimg.format == 0x12 && cimg.dataSize > 100) {
+      if (!mFile->isValid(cimg.dataOffset + cimg.dataSize - 1)) {
+        return false;
+      }
+      ByteStream i(mFile->getDataWrt(cimg.dataOffset), cimg.dataSize);
+      // Skip jpeg header
+      i.skipBytes(6);
+      if (i.getInt() == 0x66697845) { // Match text 'Exif'
+        TiffParser t(new FileMap(mFile->getDataWrt(cimg.dataOffset+12), i.getRemainSize()));
+        try {
+          t.parseData();
+        } catch (...) {
+          return false;
+        }
+        TiffIFD *root = t.RootIFD();
+        try {
+          if (root->hasEntryRecursive(MAKE) && root->hasEntryRecursive(MODEL)) {
+            camera_model = root->getEntryRecursive(MODEL)->getString();
+            camera_make = root->getEntryRecursive(MAKE)->getString();
+            mProperties.props["CAMMANUF"] = root->getEntryRecursive(MAKE)->getString();
+            mProperties.props["CAMMODEL"] = root->getEntryRecursive(MODEL)->getString();
+            return true;
+          }
+        } catch (...) {}
+        return false;
+      }
+    }
+  }
+  return false;
+}
+
 void X3fDecoder::checkSupportInternal( CameraMetaData *meta )
 {
-  if (hasProp("CAMMANUF") && hasProp("CAMMODEL")) {
-    if (!checkCameraSupported(meta, getProp("CAMMANUF"), getProp("CAMMODEL"), "" ))
+  if (readName()) {
+    if (!checkCameraSupported(meta, camera_make, camera_model, "" ))
       ThrowRDE("X3FDecoder: Unknown camera. Will not guess.");
     return;
   }
@@ -97,7 +151,7 @@ void X3fDecoder::checkSupportInternal( CameraMetaData *meta )
   for (; img !=  mImages.end(); img++) {
     X3fImage cimg = *img;
     if (cimg.type == 1 || cimg.type == 3) {
-      if (cimg.format == 30)
+      if (cimg.format == 30 || cimg.format == 35)
         return;
     }
   }
@@ -122,19 +176,33 @@ void X3fDecoder::decompressSigma( X3fImage &image )
   mRaw->isCFA = false;
   mRaw->createData();
   curr_image = &image;
+  int bits = 13;
 
-  if (image.format == 30) {
+  if (image.format == 35) {
+    for (int i = 0; i < 3; i++) {
+      planeDim[i].x = input.getShort();
+      planeDim[i].y = input.getShort();
+    }
+    bits = 15;
+  }
+  if (image.format == 30 || image.format == 35) {
     for (int i = 0; i < 3; i++)
       pred[i] = input.getShort();
 
     // Skip padding
     input.skipBytes(2);
 
-    createSigmaTable(&input, 13);
+    createSigmaTable(&input, bits);
 
     // Skip padding  (2 x 0x00)
-    input.skipBytes(2);
-    plane_offset[0] = image.dataOffset + 48;
+    if (image.format == 35) {
+      input.skipBytes(2+4);
+      plane_offset[0] = image.dataOffset + 68;
+    } else {
+      // Skip padding  (2 x 0x00)
+      input.skipBytes(2);
+      plane_offset[0] = image.dataOffset + 48;
+    }
 
     for (int i = 0; i < 3; i++) {
       plane_sizes[i] = input.getUInt();
@@ -144,8 +212,37 @@ void X3fDecoder::decompressSigma( X3fImage &image )
         if (plane_offset[i]>mFile->getSize())
           ThrowRDE("SigmaDecompressor:Plane offset outside image");
       }
+      const uchar8* start = mFile->getData(plane_offset[i]);
     }
+    mRaw->clearArea(iRectangle2D(0,0,image.width,image.height));
+
     startTasks(3);
+    //Interpolate based on blue value
+    if (image.format == 35) {
+      int w = planeDim[0].x;
+      int h = planeDim[0].y;
+      for (int i = 0; i < 2;  i++) {
+        for (int y = 0; y < h; y++) {
+          ushort16* dst = (ushort16*)mRaw->getData(0, y * 2 )+ i;
+          ushort16* dst_down = (ushort16*)mRaw->getData(0, y * 2 + 1) + i;
+          ushort16* blue = (ushort16*)mRaw->getData(0, y * 2) + 2;
+          ushort16* blue_down = (ushort16*)mRaw->getData(0, y * 2 + 1) + 2;
+          for (int x = 0; x < w; x++) {
+            // Interpolate 1 missing pixel
+            int blue_mid = ((int)blue[0] + (int)blue[3] + (int)blue_down[0] + (int)blue_down[3] + 2)>>2;          
+            int avg = dst[0];
+            dst[0] = clampbits(((int)blue[0] - blue_mid) + avg, 16);
+            dst[3] = clampbits(((int)blue[3] - blue_mid) + avg, 16);
+            dst_down[0] = clampbits(((int)blue_down[0] - blue_mid) + avg, 16);
+            dst_down[3] = clampbits(((int)blue_down[3] - blue_mid) + avg, 16);
+            dst += 6;
+            blue += 6;
+            blue_down += 6;
+            dst_down += 6;
+          }
+        }
+      }
+    }
     return;
   } // End if format 30
 
@@ -243,10 +340,26 @@ void X3fDecoder::createSigmaTable(ByteStream *bytes, int codes) {
 
 void X3fDecoder::decodeThreaded( RawDecoderThread* t )
 {
-  if (curr_image->format == 30) {
+  if (curr_image->format == 30 || curr_image->format == 35) {
     uint32 i = t->taskNo;
     if (i>3)
       ThrowRDE("X3fDecoder:Invalid plane:%u (internal error)", i);
+
+    // Subsampling (in shifts)
+    int subs = 0;
+    iPoint2D dim = mRaw->dim;
+    // Pixels to skip in right side of the image.
+    int skipX = 0;
+    if (curr_image->format == 35) {
+      dim = planeDim[i];
+      if (i < 2)
+        subs = 1;
+      if (dim.x > mRaw->dim.x) {
+        skipX = dim.x - mRaw->dim.x;
+        dim.x = mRaw->dim.x;
+      }
+    }
+    
     /* We have a weird prediction which is actually more appropriate for a CFA image */
     BitPumpMSB *bits = new BitPumpMSB(mFile->getData(plane_offset[i]), mFile->getSize()-plane_offset[i]);
     /* Initialize predictors */
@@ -255,20 +368,24 @@ void X3fDecoder::decodeThreaded( RawDecoderThread* t )
     for (int j = 0; j < 4; j++)
       pred_up[j] = pred[i];
 
-    for (int y = 0; y < mRaw->dim.y; y++) {
-      ushort16* dst = (ushort16*)mRaw->getData(0,y) + i;
+    for (int y = 0; y < dim.y; y++) {
+      ushort16* dst = (ushort16*)mRaw->getData(0, y << subs) + i;
       int diff1= SigmaDecode(bits);
       int diff2 = SigmaDecode(bits);
       dst[0] = pred_left[0] = pred_up[y & 1] = pred_up[y & 1] + diff1;
-      dst[3] = pred_left[1] = pred_up[(y & 1) + 2] = pred_up[(y & 1) + 2] + diff2;
-      dst+=6;
-      for (int x = 2; x < mRaw->dim.x; x+=2) {
-        int diff1= SigmaDecode(bits);
+      dst[3<<subs] = pred_left[1] = pred_up[(y & 1) + 2] = pred_up[(y & 1) + 2] + diff2;
+      dst += 6<<subs;
+      // We decode two pixels every loop
+      for (int x = 2; x < dim.x; x += 2) {
+        int diff1 = SigmaDecode(bits);
         int diff2 = SigmaDecode(bits);
         dst[0] = pred_left[0] = pred_left[0] + diff1;
-        dst[3] = pred_left[1] = pred_left[1] + diff2;
-        dst+=6;
+        dst[3<<subs] = pred_left[1] = pred_left[1] + diff2;
+        dst += 6<<subs;
       }
+      // If plane is larger than image, skip that number of pixels.
+      for (int i = 0; i < skipX; i++)
+        SigmaSkipOne(bits);
     }
     return;
   }
@@ -296,6 +413,25 @@ void X3fDecoder::decodeThreaded( RawDecoderThread* t )
     return;
   }
 }
+
+/* Skip a single value */
+void X3fDecoder::SigmaSkipOne(BitPumpMSB *bits) {
+  bits->fill();
+  uint32 code = bits->peekBitsNoFill(14);
+  int32 bigv = big_table[code];
+  if (bigv != 0xf) {
+    bits->skipBitsNoFill(bigv&0xff);
+    return;
+  }
+  uchar8 val = code_table[code>>6];
+  if (val == 0xff)
+    ThrowRDE("X3fDecoder: Invalid Huffman code");
+
+  uint32 code_bits = val&0xf;
+  uint32 val_bits = val>>4;
+  bits->skipBitsNoFill(code_bits+val_bits);
+}
+
 
 /* Returns a single value by reading the bitstream*/
 int X3fDecoder::SigmaDecode(BitPumpMSB *bits) {
