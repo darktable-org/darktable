@@ -30,7 +30,7 @@ namespace RawSpeed {
 
 OrfDecoder::OrfDecoder(TiffIFD *rootIFD, FileMap* file):
     RawDecoder(file), mRootIFD(rootIFD) {
-      decoderVersion = 2;
+      decoderVersion = 3;
 }
 
 OrfDecoder::~OrfDecoder(void) {

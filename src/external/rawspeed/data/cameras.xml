@@ -2230,7 +2230,7 @@
 		<Crop x="0" y="0" width="-6" height="-2"/>
 		<Sensor black="65" white="4015"/>
 	</Camera>
-	<Camera make="OLYMPUS IMAGING CORP." model="E-300">
+	<Camera make="OLYMPUS IMAGING CORP." model="E-300" decoder_version="3">
 		<CFA width="2" height="2">
 			<Color x="0" y="0">RED</Color>
 			<Color x="1" y="0">GREEN</Color>
@@ -2240,10 +2240,11 @@
 		<Crop x="0" y="0" width="3340" height="2504"/>
 		<Sensor black="63" white="4095"/>
 		<Hints>
-			<Hint name="force_uncompressed_with_control" value=""/>
+			<Hint name="force_uncompressed" value=""/>
+			<Hint name="packed_with_control" value=""/>
 		</Hints>
 	</Camera>
-	<Camera make="OLYMPUS IMAGING CORP." model="E-330">
+	<Camera make="OLYMPUS IMAGING CORP." model="E-330" decoder_version="3">
 		<CFA width="2" height="2">
 			<Color x="0" y="0">RED</Color>
 			<Color x="1" y="0">GREEN</Color>
@@ -2253,7 +2254,8 @@
 		<Crop x="0" y="0" width="3250" height="2450"/>
 		<Sensor black="77" white="4095"/>
 		<Hints>
-			<Hint name="force_uncompressed_with_control" value=""/>
+			<Hint name="force_uncompressed" value=""/>
+			<Hint name="packed_with_control" value=""/>
 		</Hints>
 	</Camera>
 	<Camera make="OLYMPUS IMAGING CORP." model="E-400">
@@ -2296,7 +2298,7 @@
 		<Crop x="0" y="0" width="0" height="0"/>
 		<Sensor black="69" white="4015"/>
 	</Camera>
-	<Camera make="OLYMPUS IMAGING CORP." model="E-500">
+	<Camera make="OLYMPUS IMAGING CORP." model="E-500" decoder_version="3">
 		<CFA width="2" height="2">
 			<Color x="0" y="0">RED</Color>
 			<Color x="1" y="0">GREEN</Color>
@@ -2306,7 +2308,8 @@
 		<Crop x="0" y="0" width="3340" height="2504"/>
 		<Sensor black="63" white="3967"/>
 		<Hints>
-			<Hint name="force_uncompressed_with_control" value=""/>
+			<Hint name="force_uncompressed" value=""/>
+			<Hint name="packed_with_control" value=""/>
 		</Hints>
 	</Camera>
 	<Camera make="OLYMPUS IMAGING CORP." model="E-510">
@@ -2583,7 +2586,7 @@
 		<Crop x="0" y="0" width="0" height="-2"/>
 		<Sensor black="55" white="3972"/>
 	</Camera>
-	<Camera make="OLYMPUS IMAGING CORP." model="XZ-2" decoder_version="2">
+	<Camera make="OLYMPUS IMAGING CORP." model="XZ-2" decoder_version="3">
 		<CFA width="2" height="2">
 			<Color x="0" y="0">RED</Color>
 			<Color x="1" y="0">GREEN</Color>
@@ -2594,6 +2597,7 @@
 		<Sensor black="200" white="4092"/>
 		<Hints>
 			<Hint name="force_uncompressed" value=""/>
+			<Hint name="jpeg32_bitorder" value=""/>
 		</Hints>
 	</Camera>
 	<Camera make="OLYMPUS IMAGING CORP." model="STYLUS1">
