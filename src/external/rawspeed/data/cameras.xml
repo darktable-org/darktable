@@ -491,6 +491,20 @@
 			<Hint name="invert_sraw_wb" value=""/>
 		</Hints>
 	</Camera>
+	<Camera make="Canon" model="Canon EOS 5DS R" decoder_version="6">
+		<CFA width="2" height="2">
+			<Color x="0" y="0">RED</Color>
+			<Color x="1" y="0">GREEN</Color>
+			<Color x="0" y="1">GREEN</Color>
+			<Color x="1" y="1">BLUE</Color>
+		</CFA>
+		<Crop x="160" y="64" width="-2" height="0"/>
+		<Sensor black="2060" white="16383"/>
+		<BlackAreas>
+			<Vertical x="0" width="150"/>
+			<Horizontal y="2" height="60"/>
+		</BlackAreas>
+	</Camera>
 	<Camera make="Canon" model="Canon EOS 6D" decoder_version="2">
 		<CFA width="2" height="2">
 			<Color x="0" y="0">RED</Color>
@@ -660,6 +674,21 @@
 			<Color x="1" y="1">BLUE</Color>
 		</CFA>
 		<Crop x="76" y="56" width="0" height="0"/>
+		<Sensor black="2026" white="13584" iso_min="0" iso_max = "199"/>
+		<Sensor black="2026" white="15304"/>
+		<BlackAreas>
+			<Vertical x="0" width="70"/>
+			<Horizontal y="4" height="44"/>
+		</BlackAreas>
+	</Camera>
+	<Camera make="Canon" model="Canon EOS M2">
+		<CFA width="2" height="2">
+			<Color x="0" y="0">RED</Color>
+			<Color x="1" y="0">GREEN</Color>
+			<Color x="0" y="1">GREEN</Color>
+			<Color x="1" y="1">BLUE</Color>
+		</CFA>
+		<Crop x="72" y="52" width="0" height="0"/>
 		<Sensor black="2026" white="13584" iso_min="0" iso_max = "199"/>
 		<Sensor black="2026" white="15304"/>
 		<BlackAreas>
@@ -1729,6 +1758,16 @@
 		<Crop x="0" y="0" width="0" height="0"/>
 		<Sensor black="0" white="16383"/>
 	</Camera>
+	<Camera make="NIKON CORPORATION" model="NIKON D7200">
+		<CFA width="2" height="2">
+			<Color x="0" y="0">RED</Color>
+			<Color x="1" y="0">GREEN</Color>
+			<Color x="0" y="1">GREEN</Color>
+			<Color x="1" y="1">BLUE</Color>
+		</CFA>
+		<Crop x="0" y="0" width="0" height="0"/>
+		<Sensor black="0" white="16383"/>
+	</Camera>
 	<Camera make="NIKON CORPORATION" model="NIKON D70s">
 		<CFA width="2" height="2">
 			<Color x="0" y="0">BLUE</Color>
@@ -2612,6 +2651,32 @@
 		<Aliases>
 			<Alias>STYLUS1,1s</Alias>
 		</Aliases>
+	</Camera>
+	<Camera make="Panasonic" model = "DMC-CM1">
+		<CFA width="2" height="2">
+			<Color x="0" y="0">BLUE</Color>
+			<Color x="1" y="0">GREEN</Color>
+			<Color x="0" y="1">GREEN</Color>
+			<Color x="1" y="1">RED</Color>
+		</CFA>
+		<Crop x="0" y="0" width="0" height="0"/>
+		<Sensor black="15" white="4095"/>
+		<Hints>
+			<Hint name="zero_is_bad" value=""/>
+		</Hints>
+	</Camera>
+	<Camera make="Panasonic" model = "DMC-CM1" mode="3:2">
+		<CFA width="2" height="2">
+			<Color x="0" y="0">BLUE</Color>
+			<Color x="1" y="0">GREEN</Color>
+			<Color x="0" y="1">GREEN</Color>
+			<Color x="1" y="1">RED</Color>
+		</CFA>
+		<Crop x="0" y="0" width="0" height="0"/>
+		<Sensor black="15" white="4095"/>
+		<Hints>
+			<Hint name="zero_is_bad" value=""/>
+		</Hints>
 	</Camera>
 	<Camera make="Panasonic" model = "DMC-FX150">
 		<CFA width="2" height="2">
@@ -5141,6 +5206,11 @@
 		</CFA>
 		<Crop x="0" y="0" width="-8" height="0"/>
 		<Sensor black="800" white="16300"/>
+	</Camera>
+	<!-- Still needs to interpolate/upscale some pixels -->
+	<Camera make="SIGMA" model="SIGMA dp2 Quattro" supported="no">
+		<Crop x="204" y="24" width="-236" height="-24"/>
+		<Sensor black="1245" white="16384"/>
 	</Camera>
 	<Camera make="SONY" model="DSC-RX100">
 		<CFA width="2" height="2">
