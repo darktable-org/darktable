@@ -26,7 +26,7 @@ static int expanded_member(lua_State *L)
   dt_lib_module_t *module = *(dt_lib_module_t **)lua_touserdata(L, 1);
   if(lua_gettop(L) != 3)
   {
-    lua_pushboolean(L, module->expandable());
+    lua_pushboolean(L, module->expandable(module));
     return 1;
   }
   else
@@ -81,14 +81,14 @@ void dt_lua_lib_check_error(lua_State *L, struct dt_lib_module_t *self)
 static int name_member(lua_State *L)
 {
   dt_lib_module_t *module = *(dt_lib_module_t **)lua_touserdata(L, 1);
-  lua_pushstring(L, module->name());
+  lua_pushstring(L, module->name(module));
   return 1;
 }
 
 static int expandable_member(lua_State *L)
 {
   dt_lib_module_t *module = *(dt_lib_module_t **)lua_touserdata(L, 1);
-  lua_pushboolean(L, module->expandable());
+  lua_pushboolean(L, module->expandable(module));
   return 1;
 }
 
@@ -109,7 +109,7 @@ static int position_member(lua_State*L) {
 static int container_member(lua_State*L) {
   dt_lib_module_t * module = *(dt_lib_module_t**)lua_touserdata(L,1);
   dt_ui_container_t container;
-  container = module->container();
+  container = module->container(module);
   luaA_push(L,dt_ui_container_t,&container);
   return 1;
 }
@@ -120,7 +120,7 @@ static int views_member(lua_State*L) {
   int i;
   lua_newtable(L);
   for(i=0; i<  darktable.view_manager->num_views ; i++) {
-    if(darktable.view_manager->view[i].view(&darktable.view_manager->view[i]) & module->views()){
+    if(darktable.view_manager->view[i].view(&darktable.view_manager->view[i]) & module->views(module)){
       dt_lua_module_entry_push(L,"view",(darktable.view_manager->view[i].module_name));
       luaL_ref(L,-2);
     }

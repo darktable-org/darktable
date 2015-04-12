@@ -83,7 +83,7 @@ static void dt_accel_path_iop_translated(char *s, size_t n, dt_iop_module_so_t *
 
 static void dt_accel_path_lib_translated(char *s, size_t n, dt_lib_module_t *module, const char *path)
 {
-  snprintf(s, n, "<Darktable>/%s/%s/%s", C_("accel", "modules"), module->name(),
+  snprintf(s, n, "<Darktable>/%s/%s/%s", C_("accel", "modules"), module->name(module),
            g_dpgettext2(NULL, "accel", path));
 }
 
@@ -173,7 +173,7 @@ void dt_accel_register_lib(dt_lib_module_t *self, const gchar *path, guint accel
 
   g_strlcpy(accel->module, self->plugin_name, sizeof(accel->module));
   accel->local = FALSE;
-  accel->views = self->views();
+  accel->views = self->views(self);
   darktable.control->accelerator_list = g_slist_prepend(darktable.control->accelerator_list, accel);
 }
 

@@ -246,11 +246,11 @@ int dt_view_manager_switch(dt_view_manager_t *vm, int k)
 
       if(!plugin->views)
       {
-        fprintf(stderr, "module %s doesn't have views flags\n", plugin->name());
+        fprintf(stderr, "module %s doesn't have views flags\n", plugin->name(plugin));
       }
       else
           /* does this module belong to current view ?*/
-          if(plugin->views() & v->view(v))
+          if(plugin->views(plugin) & v->view(v))
       {
         plugin->gui_cleanup(plugin);
         dt_accel_disconnect_list(plugin->accel_closures);
@@ -298,7 +298,7 @@ int dt_view_manager_switch(dt_view_manager_t *vm, int k)
 
         if(!plugin->views)
         {
-          fprintf(stderr, "module %s doesn't have views flags\n", plugin->name());
+          fprintf(stderr, "module %s doesn't have views flags\n", plugin->name(plugin));
 
           /* get next plugin */
           plugins = g_list_previous(plugins);
@@ -306,7 +306,7 @@ int dt_view_manager_switch(dt_view_manager_t *vm, int k)
         }
 
         /* does this module belong to current view ?*/
-        if(plugin->views() & v->view(v))
+        if(plugin->views(plugin) & v->view(v))
         {
           dt_accel_disconnect_list(plugin->accel_closures);
           plugin->accel_closures = NULL;
@@ -332,7 +332,7 @@ int dt_view_manager_switch(dt_view_manager_t *vm, int k)
     while(plugins)
     {
       dt_lib_module_t *plugin = (dt_lib_module_t *)(plugins->data);
-      if(plugin->views() & nv->view(nv))
+      if(plugin->views(plugin) & nv->view(nv))
       {
 
         /* try get the module expander  */
@@ -346,7 +346,7 @@ int dt_view_manager_switch(dt_view_manager_t *vm, int k)
         if(!w) w = plugin->widget;
 
         /* add module to it's container */
-        dt_ui_container_add_widget(darktable.gui->ui, plugin->container(), w);
+        dt_ui_container_add_widget(darktable.gui->ui, plugin->container(plugin), w);
       }
 
       /* lets get next plugin */
@@ -358,13 +358,13 @@ int dt_view_manager_switch(dt_view_manager_t *vm, int k)
     while(plugins)
     {
       dt_lib_module_t *plugin = (dt_lib_module_t *)(plugins->data);
-      if(plugin->views() & nv->view(nv))
+      if(plugin->views(plugin) & nv->view(nv))
       {
         /* set expanded if last mode was that */
         char var[1024];
         gboolean expanded = FALSE;
         gboolean visible = dt_lib_is_visible(plugin);
-        if(plugin->expandable())
+        if(plugin->expandable(plugin))
         {
           snprintf(var, sizeof(var), "plugins/lighttable/%s/expanded", plugin->plugin_name);
           expanded = dt_conf_get_bool(var);
@@ -458,7 +458,7 @@ void dt_view_manager_expose(dt_view_manager_t *vm, cairo_t *cr, int32_t width, i
 
       if(!plugin->views)
       {
-        fprintf(stderr, "module %s doesn't have views flags\n", plugin->name());
+        fprintf(stderr, "module %s doesn't have views flags\n", plugin->name(plugin));
 
         /* get next plugin */
         plugins = g_list_previous(plugins);
@@ -466,7 +466,7 @@ void dt_view_manager_expose(dt_view_manager_t *vm, cairo_t *cr, int32_t width, i
       }
 
       /* does this module belong to current view ?*/
-      if(plugin->gui_post_expose && plugin->views() & v->view(v))
+      if(plugin->gui_post_expose && plugin->views(plugin) & v->view(v))
         plugin->gui_post_expose(plugin, cr, v->width, v->height, px, py);
 
       /* get next plugin */
@@ -509,7 +509,7 @@ void dt_view_manager_mouse_moved(dt_view_manager_t *vm, double x, double y, doub
     dt_lib_module_t *plugin = (dt_lib_module_t *)(plugins->data);
 
     /* does this module belong to current view ?*/
-    if(plugin->mouse_moved && plugin->views() & v->view(v))
+    if(plugin->mouse_moved && plugin->views(plugin) & v->view(v))
       if(plugin->mouse_moved(plugin, x, y, pressure, which)) handled = TRUE;
 
     /* get next plugin */
@@ -533,7 +533,7 @@ int dt_view_manager_button_released(dt_view_manager_t *vm, double x, double y, i
     dt_lib_module_t *plugin = (dt_lib_module_t *)(plugins->data);
 
     /* does this module belong to current view ?*/
-    if(plugin->button_released && plugin->views() & v->view(v))
+    if(plugin->button_released && plugin->views(plugin) & v->view(v))
       if(plugin->button_released(plugin, x, y, which, state)) handled = TRUE;
 
     /* get next plugin */
@@ -560,7 +560,7 @@ int dt_view_manager_button_pressed(dt_view_manager_t *vm, double x, double y, do
     dt_lib_module_t *plugin = (dt_lib_module_t *)(plugins->data);
 
     /* does this module belong to current view ?*/
-    if(plugin->button_pressed && plugin->views() & v->view(v))
+    if(plugin->button_pressed && plugin->views(plugin) & v->view(v))
       if(plugin->button_pressed(plugin, x, y, pressure, which, type, state)) handled = TRUE;
 
     /* get next plugin */

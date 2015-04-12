@@ -85,15 +85,15 @@ typedef struct dt_lib_module_t
   /** version */
   int (*version)();
   /** get name of the module, to be translated. */
-  const char *(*name)();
+  const char *(*name)(struct dt_lib_module_t *self);
   /** get the views which the module should be loaded in. */
-  uint32_t (*views)();
+  uint32_t (*views)(struct dt_lib_module_t *self);
   /** get the container which the module should be placed in */
-  uint32_t (*container)();
+  uint32_t (*container)(struct dt_lib_module_t *self);
   /** check if module should use a expander or not, default implementation
       will make the module expandable and storing the expanding state,
       if not the module will always be shown without the expander. */
-  int (*expandable)();
+  int (*expandable)(struct dt_lib_module_t *self);
 
   /** constructor */
   void (*init)(struct dt_lib_module_t *self);
