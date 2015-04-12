@@ -667,6 +667,11 @@ void process_nlmeans(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece
   const float bb[3] = { d->b[1] * wb[0], d->b[1] * wb[1], d->b[1] * wb[2] };
   precondition((float *)ivoid, in, roi_in->width, roi_in->height, aa, bb);
 
+  int inited_slide = 0;
+#ifdef _OPENMP
+#pragma omp parallel for schedule(static) default(none) firstprivate(inited_slide) \
+    shared(roi_out, roi_in, in, ovoid, Sa)
+#endif
   // for each shift vector
   for(int kj = -K; kj <= K; kj++)
   {
@@ -675,15 +680,12 @@ void process_nlmeans(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece
       // TODO: adaptive K tests here!
       // TODO: expf eval for real bilateral experience :)
 
-      int inited_slide = 0;
+      inited_slide = 0;
+
 // don't construct summed area tables but use sliding window! (applies to cpu version res < 1k only, or else
 // we will add up errors)
 // do this in parallel with a little threading overhead. could parallelize the outer loops with a bit more
 // memory
-#ifdef _OPENMP
-#pragma omp parallel for schedule(static) default(none) firstprivate(inited_slide)                           \
-    shared(kj, ki, roi_out, roi_in, in, ovoid, Sa)
-#endif
       for(int j = 0; j < roi_out->height; j++)
       {
         if(j + kj < 0 || j + kj >= roi_out->height) continue;
