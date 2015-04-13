@@ -249,7 +249,7 @@ static gboolean shortcut_callback(GtkAccelGroup *accel_group, GObject *accelerat
 {
   dt_lua_do_chunk_async(dt_lua_event_trigger_wrapper,
       LUA_ASYNC_TYPENAME,"const char*","shortcut",
-      LUA_ASYNC_TYPENAME_WITH_FREE,"char*",strdup(p),
+      LUA_ASYNC_TYPENAME_WITH_FREE,"char*",strdup(p),g_cclosure_new(G_CALLBACK(&free),NULL,NULL),
       LUA_ASYNC_DONE);
   return TRUE;
 }
@@ -278,6 +278,17 @@ static int register_shortcut_event(lua_State *L)
    => we have the gdk lock, but the main UI thread can run if we release it
    */
 
+
+static void format_destructor(void* arg, dt_imageio_module_format_t *format)
+{
+  format->free_params(format,arg);
+}
+
+static void storage_destructor(void* arg, dt_imageio_module_storage_t *storage)
+{
+  storage->free_params(storage,arg);
+}
+
 static void on_export_image_tmpfile(gpointer instance, int imgid, char *filename,
                                     dt_imageio_module_format_t *format, dt_imageio_module_data_t *fdata,
                                     dt_imageio_module_storage_t *storage, dt_imageio_module_data_t *sdata,
@@ -290,17 +301,17 @@ static void on_export_image_tmpfile(gpointer instance, int imgid, char *filename
     memcpy(storage_copy,sdata,storage->params_size(storage));
     dt_lua_do_chunk_async(dt_lua_event_trigger_wrapper,
         LUA_ASYNC_TYPENAME,"const char*","intermediate-export-image",
-        LUA_ASYNC_TYPENAME_WITH_FREE,"char*",strdup(filename),
-        LUA_ASYNC_TYPEID_WITH_FREE,format->parameter_lua_type,format_copy,
-        LUA_ASYNC_TYPEID_WITH_FREE,storage->parameter_lua_type,storage_copy,
+        LUA_ASYNC_TYPENAME_WITH_FREE,"char*",strdup(filename),g_cclosure_new(G_CALLBACK(&free),NULL,NULL),
+        LUA_ASYNC_TYPEID_WITH_FREE,format->parameter_lua_type,format_copy,g_cclosure_new(G_CALLBACK(&format_destructor),format,NULL),
+        LUA_ASYNC_TYPEID_WITH_FREE,storage->parameter_lua_type,storage_copy,g_cclosure_new(G_CALLBACK(&storage_destructor),storage,NULL),
         LUA_ASYNC_DONE);
   }else{
     dt_imageio_module_data_t *format_copy = format->get_params(format);
     memcpy(format_copy,fdata,format->params_size(format));
     dt_lua_do_chunk_async(dt_lua_event_trigger_wrapper,
         LUA_ASYNC_TYPENAME,"const char*","intermediate-export-image",
-        LUA_ASYNC_TYPENAME_WITH_FREE,"char*",strdup(filename),
-        LUA_ASYNC_TYPEID_WITH_FREE,format->parameter_lua_type,format_copy,
+        LUA_ASYNC_TYPENAME_WITH_FREE,"char*",strdup(filename),g_cclosure_new(G_CALLBACK(&free),NULL,NULL),
+        LUA_ASYNC_TYPEID_WITH_FREE,format->parameter_lua_type,format_copy,g_cclosure_new(G_CALLBACK(&format_destructor),format,NULL),
         LUA_ASYNC_TYPENAME,"void",NULL,
         LUA_ASYNC_DONE);
   }
