@@ -335,7 +335,7 @@ void ArwDecoder::GetWB() {
 
     uint32 *ifp_data = (uint32 *) mFile->getDataWrt(off);
     uint32 pad[128];
-	  uint32 p;
+    uint32 p;
     // Initialize the decryption
     for (p=0; p < 4; p++)
       pad[p] = key = key * 48828125 + 1;
@@ -347,8 +347,11 @@ void ArwDecoder::GetWB() {
 
     // Decrypt the buffer in place
     uint32 count = len/4;
-    while (count--)
-      *ifp_data++ ^= (pad[p++ & 127] = pad[p & 127] ^ pad[(p+64) & 127]);
+    while (count--) {
+      pad[p & 127] = pad[(p+1) & 127] ^ pad[(p+1+64) & 127];
+      *ifp_data++ ^= pad[p & 127];
+      p++;
+    }
 
     if (mRootIFD->endian == getHostEndianness())
       sony_private = new TiffIFD(mFile, off);
