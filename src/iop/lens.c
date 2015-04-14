@@ -1953,7 +1953,7 @@ static float get_autoscale(dt_iop_module_t *self, dt_iop_lensfun_params_t *p, co
 
       // FIXME: get those from rawprepare IOP somehow !!!
       const int iwd = img->width - img->crop_x - img->crop_width,
-                iht = img->height - img->crop_x - img->crop_height;
+                iht = img->height - img->crop_y - img->crop_height;
 
       // create dummy modifier
       lfModifier *modifier = lf_modifier_new(lenslist[0], p->crop, iwd, iht);
