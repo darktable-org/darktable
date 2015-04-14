@@ -212,7 +212,6 @@ void X3fDecoder::decompressSigma( X3fImage &image )
         if (plane_offset[i]>mFile->getSize())
           ThrowRDE("SigmaDecompressor:Plane offset outside image");
       }
-      const uchar8* start = mFile->getData(plane_offset[i]);
     }
     mRaw->clearArea(iRectangle2D(0,0,image.width,image.height));
 
