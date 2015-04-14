@@ -324,7 +324,7 @@ void SrwDecoder::decodeCompressed3( TiffIFD* raw)
   // that specifies for each pixel the number of bits in the difference, then
   // the actual difference bits
   uint32 motion;
-  uint32 diffBitsMode[3][2] = {0};
+  uint32 diffBitsMode[3][2] = {{0}};
   uint32 line_offset = startpump.getOffset();
   for (uint32 row=0; row < height; row++) {
     // Align pump to 16byte boundary
