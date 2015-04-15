@@ -622,6 +622,8 @@ int dt_init(int argc, char *argv[], const int init_gui, lua_State *L)
       else if(!strcmp(argv[k], "--"))
       {
         no_more_options = TRUE;
+        // "--" confuses the argument parser of glib/gtk. remove it.
+        *argv[k] = '\0';
       }
       else
         return usage(argv[0]); // fail on unrecognized options
