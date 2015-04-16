@@ -42,6 +42,13 @@ GtkAlignment
   border:0;
   padding:0;
 }
+#iop-plugin-ui GtkStack
+{
+  background-color:transparent;
+  margin:0;
+  border:0;
+  padding:0;
+}
 /* bright background */
 #background_job_eventbox,
 #iop-plugin-ui *
