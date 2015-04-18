@@ -325,8 +325,9 @@ void dt_mipmap_cache_deallocate_dynamic(void *data, dt_cache_entry_t *entry)
         if(!mkd)
         {
           snprintf(filename, sizeof(filename), "%s.d/%d/%d.jpg", cache->cachedir, mip, get_imgid(entry->key));
-          FILE *f = fopen(filename, "wb");
-          if(f)
+          // Don't write existing files as both performance and quality (lossy jpg) suffer
+          FILE *f;
+          if (!g_file_test(filename, G_FILE_TEST_EXISTS) && (f = fopen(filename, "wb")))
           {
             // allocate temp memory, at least 1MB to be sure we fit:
             size_t bloblen = MAX(1<<20, cache->buffer_size[mip]);
