@@ -38,6 +38,7 @@
 #include <glib/gstdio.h>
 #include <errno.h>
 #include <xmmintrin.h>
+#include <sys/statvfs.h>
 
 #define DT_MIPMAP_CACHE_FILE_MAGIC 0xD71337
 #define DT_MIPMAP_CACHE_FILE_VERSION 23
@@ -325,12 +326,32 @@ void dt_mipmap_cache_deallocate_dynamic(void *data, dt_cache_entry_t *entry)
         if(!mkd)
         {
           snprintf(filename, sizeof(filename), "%s.d/%d/%d.jpg", cache->cachedir, mip, get_imgid(entry->key));
-          FILE *f = fopen(filename, "wb");
-          if(f)
+          // Don't write existing files as both performance and quality (lossy jpg) suffer
+          FILE *f;
+          if (!g_file_test(filename, G_FILE_TEST_EXISTS) && (f = fopen(filename, "wb")))
           {
+            uint8_t *blob = NULL;
+
+            // first check the disk isn't full
+            struct statvfs vfsbuf;
+            if (!statvfs(filename, &vfsbuf))
+            {
+              int64_t free_mb = ((vfsbuf.f_frsize * vfsbuf.f_bavail) >> 20);
+              if (free_mb < 100)
+              {
+                fprintf(stderr, "Aborting image write as only %ld MB free to write %s\n", free_mb, filename);
+                goto write_error;
+              }
+            }
+            else
+            {
+              fprintf(stderr, "Aborting image write since couldn't determine free space available to write %s\n", filename);
+              goto write_error;
+            }
+
             // allocate temp memory, at least 1MB to be sure we fit:
             size_t bloblen = MAX(1<<20, cache->buffer_size[mip]);
-            uint8_t *blob = (uint8_t *)malloc(bloblen);
+            blob = (uint8_t *)malloc(bloblen);
             if(!blob) goto write_error;
             const int cache_quality = dt_conf_get_int("database_cache_quality");
             const int32_t length

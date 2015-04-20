@@ -33,10 +33,11 @@ class X3fDirectory
 public:
   X3fDirectory() : offset(0), length(0), id(string()){};
   X3fDirectory(ByteStream *bytes);
-  X3fDirectory(const X3fDirectory &other) : offset(other.offset), length(other.length), id(other.id) {};
+  X3fDirectory(const X3fDirectory &other) : offset(other.offset), length(other.length), id(other.id), sectionID(other.sectionID) {};
   uint32 offset;
   uint32 length;
   string id;
+  string sectionID;
 };
 
 class X3fImage

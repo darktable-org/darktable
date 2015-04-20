@@ -452,14 +452,17 @@ RawImageWorker::RawImageWorker( RawImageData *_img, RawImageWorkerTask _task, in
   start_y = _start_y;
   end_y = _end_y;
   task = _task;
+  pthread_attr_init(&attr);
+  pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_JOINABLE);
+}
+
+RawImageWorker::~RawImageWorker() {
+  pthread_attr_destroy(&attr);  
 }
 
 void RawImageWorker::startThread()
 {
   /* Initialize and set thread detached attribute */
-  pthread_attr_t attr;
-  pthread_attr_init(&attr);
-  pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_JOINABLE);
   pthread_create(&threadid, &attr, RawImageWorkerThread, this);
 }
 
@@ -495,8 +498,7 @@ void RawImageWorker::performTask()
   }
 }
 
-void RawImageData::sixteenBitLookup()
-{
+void RawImageData::sixteenBitLookup() {
   if (table == NULL) {
     return;
   }

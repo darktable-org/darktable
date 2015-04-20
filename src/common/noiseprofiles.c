@@ -66,6 +66,14 @@ int is_member(gchar** names, char* name)
   return 0;
 }
 
+static gint _sort_by_iso(gconstpointer a, gconstpointer b)
+{
+  const dt_noiseprofile_t *profile_a = (dt_noiseprofile_t *)a;
+  const dt_noiseprofile_t *profile_b = (dt_noiseprofile_t *)b;
+
+  return profile_a->iso - profile_b->iso;
+}
+
 GList *dt_noiseprofile_get_matching(const dt_image_t *cimg)
 {
   JsonParser *parser = darktable.noiseprofile_parser;
@@ -310,6 +318,7 @@ GList *dt_noiseprofile_get_matching(const dt_image_t *cimg)
 
 end:
   if(reader) g_object_unref(reader);
+  if(result) result = g_list_sort(result, _sort_by_iso);
   return result;
 }
 

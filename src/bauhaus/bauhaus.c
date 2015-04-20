@@ -702,6 +702,109 @@ void dt_bauhaus_combobox_set_default(GtkWidget *widget, int def)
   d->defpos = def;
 }
 
+void dt_bauhaus_slider_set_hard_min(GtkWidget* widget, float val)
+{
+  dt_bauhaus_widget_t *w = DT_BAUHAUS_WIDGET(widget);
+  dt_bauhaus_slider_data_t *d = &w->data.slider;
+  float pos = dt_bauhaus_slider_get(widget);
+  d->hard_min = val;
+  d->min = MAX(d->min, d->hard_min);
+  d->soft_min = MAX(d->soft_min, d->hard_min);
+  if(val > d->hard_max) dt_bauhaus_slider_set_hard_max(widget,val);
+  if(pos < val)
+  {
+    dt_bauhaus_slider_set_soft(widget,val);
+  }
+  else 
+  {
+    dt_bauhaus_slider_set_soft(widget,pos);
+  }
+}
+
+float dt_bauhaus_slider_get_hard_min(GtkWidget* widget)
+{
+  dt_bauhaus_widget_t *w = DT_BAUHAUS_WIDGET(widget);
+  dt_bauhaus_slider_data_t *d = &w->data.slider;
+  return d->hard_min;
+}
+
+void dt_bauhaus_slider_set_hard_max(GtkWidget* widget, float val)
+{
+  dt_bauhaus_widget_t *w = DT_BAUHAUS_WIDGET(widget);
+  dt_bauhaus_slider_data_t *d = &w->data.slider;
+  float pos = dt_bauhaus_slider_get(widget);
+  d->hard_max = val;
+  d->max = MIN(d->max, d->hard_max);
+  d->soft_max = MIN(d->soft_max, d->hard_max);
+  if(val < d->hard_min) dt_bauhaus_slider_set_hard_min(widget,val);
+  if(pos > val) {
+
+    dt_bauhaus_slider_set_soft(widget,val);
+  } 
+  else 
+  {
+    dt_bauhaus_slider_set_soft(widget,pos);
+  }
+}
+
+float dt_bauhaus_slider_get_hard_max(GtkWidget* widget)
+{
+  dt_bauhaus_widget_t *w = DT_BAUHAUS_WIDGET(widget);
+  dt_bauhaus_slider_data_t *d = &w->data.slider;
+  return d->hard_max;
+}
+
+void dt_bauhaus_slider_set_soft_min(GtkWidget* widget, float val)
+{
+  dt_bauhaus_widget_t *w = DT_BAUHAUS_WIDGET(widget);
+  dt_bauhaus_slider_data_t *d = &w->data.slider;
+  float pos = dt_bauhaus_slider_get(widget);
+  d->soft_min = val;
+  d->hard_min = MIN(d->hard_min,d->soft_min);
+  d->min =  d->soft_min;
+  if(val > d->soft_max) dt_bauhaus_slider_set_soft_max(widget,val);
+  if(val > d->hard_max) dt_bauhaus_slider_set_hard_max(widget,val);
+  if(pos < val) 
+  {
+    dt_bauhaus_slider_set_soft(widget,val);
+  } 
+  else 
+  {
+    dt_bauhaus_slider_set_soft(widget,pos);
+  }
+}
+
+float dt_bauhaus_slider_get_soft_min(GtkWidget* widget)
+{
+  dt_bauhaus_widget_t *w = DT_BAUHAUS_WIDGET(widget);
+  dt_bauhaus_slider_data_t *d = &w->data.slider;
+  return d->soft_min;
+}
+
+void dt_bauhaus_slider_set_soft_max(GtkWidget* widget, float val)
+{
+  dt_bauhaus_widget_t *w = DT_BAUHAUS_WIDGET(widget);
+  dt_bauhaus_slider_data_t *d = &w->data.slider;
+  float pos = dt_bauhaus_slider_get(widget);
+  d->soft_max = val;
+  d->hard_max = MAX(d->soft_max, d->hard_max);
+  d->max =  d->soft_max;
+  if(val < d->soft_min) dt_bauhaus_slider_set_soft_min(widget,val);
+  if(val < d->hard_min) dt_bauhaus_slider_set_hard_min(widget,val);
+  if(pos > val) {
+    dt_bauhaus_slider_set_soft(widget,val);
+  } else {
+    dt_bauhaus_slider_set_soft(widget,pos);
+  }
+}
+
+float dt_bauhaus_slider_get_soft_max(GtkWidget* widget)
+{
+  dt_bauhaus_widget_t *w = DT_BAUHAUS_WIDGET(widget);
+  dt_bauhaus_slider_data_t *d = &w->data.slider;
+  return d->soft_max;
+}
+
 void dt_bauhaus_slider_set_default(GtkWidget *widget, float def)
 {
   dt_bauhaus_widget_t *w = DT_BAUHAUS_WIDGET(widget);
@@ -805,6 +908,11 @@ GtkWidget *dt_bauhaus_slider_new_with_range_and_feedback(dt_iop_module_t *self, 
                                                          float step, float defval, int digits, int feedback)
 {
   dt_bauhaus_widget_t *w = DT_BAUHAUS_WIDGET(g_object_new(DT_BAUHAUS_WIDGET_TYPE, NULL));
+  return dt_bauhaus_slider_from_widget(w,self, min, max, step, defval, digits, feedback);
+}
+GtkWidget *dt_bauhaus_slider_from_widget(dt_bauhaus_widget_t* w,dt_iop_module_t *self, float min, float max,
+                                                         float step, float defval, int digits, int feedback)
+{
   dt_bauhaus_widget_init(w, self);
   w->type = DT_BAUHAUS_SLIDER;
   dt_bauhaus_widget_init(w, self);
@@ -1754,6 +1862,9 @@ float dt_bauhaus_slider_get(GtkWidget *widget)
   dt_bauhaus_widget_t *w = (dt_bauhaus_widget_t *)DT_BAUHAUS_WIDGET(widget);
   if(w->type != DT_BAUHAUS_SLIDER) return -1.0f;
   dt_bauhaus_slider_data_t *d = &w->data.slider;
+  if(d->max == d->min) {
+    return d->max;
+  }
   return d->min + d->pos * (d->max - d->min);
 }
 

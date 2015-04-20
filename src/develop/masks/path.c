@@ -23,44 +23,6 @@
 #include "develop/masks.h"
 #include "common/debug.h"
 
-/** a poor man's memory management: just a sloppy monitoring of buffer usage with automatic reallocation */
-static gboolean _path_buffer_grow(float **buffer, int *buffer_count, int *buffer_max)
-{
-  const int stepsize = 1000000;
-  const int reserve = 100000;
-
-  // printf("buffer %p, buffer_count %d, buffer_max %d\n", *buffer, *buffer_count, *buffer_max);
-
-  if(*buffer == NULL)
-  {
-    *buffer = calloc(stepsize, sizeof(float));
-    *buffer_count = 0;
-    *buffer_max = stepsize;
-    return (*buffer != NULL);
-  }
-
-  if(*buffer_count > *buffer_max)
-  {
-    fprintf(stderr, "_path_buffer_grow: memory size exceeded and detected too late :(\n");
-  }
-
-  if(*buffer_count + reserve > *buffer_max)
-  {
-    float *oldbuffer = *buffer;
-    *buffer_max += stepsize;
-    *buffer = calloc(*buffer_max, sizeof(float));
-    if(*buffer == NULL)
-    {
-      free(oldbuffer);
-      return FALSE;
-    }
-    memcpy(*buffer, oldbuffer, *buffer_count * sizeof(float));
-    free(oldbuffer);
-  }
-
-  return TRUE;
-}
-
 
 /** get the point of the path at pos t [0,1]  */
 static void _path_get_XY(float p0x, float p0y, float p1x, float p1y, float p2x, float p2y, float p3x,
@@ -214,79 +176,72 @@ static gboolean _path_is_clockwise(dt_masks_form_t *form)
 }
 
 /** fill eventual gaps between 2 points with a line */
-static int _path_fill_gaps(int lastx, int lasty, int x, int y, float *points, int *pts_count)
+static int _path_fill_gaps(int lastx, int lasty, int x, int y, dt_masks_dynbuf_t *points)
 {
-  points[0] = x;
-  points[1] = y;
-  int points_count = *pts_count = 1;
+  dt_masks_dynbuf_reset(points);
+  dt_masks_dynbuf_add(points, x);
+  dt_masks_dynbuf_add(points, y);
   if(lastx == -999999) return 1;
   // now we want to be sure everything is continuous
-  if(points[0] - lastx > 1)
+  if(x - lastx > 1)
   {
-    for(int j = points[0] - 1; j > lastx; j--)
+    for(int j = x - 1; j > lastx; j--)
     {
-      int yyy = (j - lastx) * (points[1] - lasty) / (float)(points[0] - lastx) + lasty;
-      int lasty2 = points[(points_count - 1) * 2 + 1];
+      int yyy = (j - lastx) * (y - lasty) / (float)(x - lastx) + lasty;
+      int lasty2 = dt_masks_dynbuf_get(points, -1);
       if(lasty2 - yyy > 1)
       {
         for(int jj = lasty2 + 1; jj < yyy; jj++)
         {
-          points[points_count * 2] = j;
-          points[points_count * 2 + 1] = jj;
-          points_count++;
+          dt_masks_dynbuf_add(points, j);
+          dt_masks_dynbuf_add(points, jj);
         }
       }
       else if(lasty2 - yyy < -1)
       {
         for(int jj = lasty2 - 1; jj > yyy; jj--)
         {
-          points[points_count * 2] = j;
-          points[points_count * 2 + 1] = jj;
-          points_count++;
+          dt_masks_dynbuf_add(points, j);
+          dt_masks_dynbuf_add(points, jj);
         }
       }
-      points[points_count * 2] = j;
-      points[points_count * 2 + 1] = yyy;
-      points_count++;
+      dt_masks_dynbuf_add(points, j);
+      dt_masks_dynbuf_add(points, yyy);
     }
   }
-  else if(points[0] - lastx < -1)
+  else if(x - lastx < -1)
   {
-    for(int j = points[0] + 1; j < lastx; j++)
+    for(int j = x + 1; j < lastx; j++)
     {
-      int yyy = (j - lastx) * (points[1] - lasty) / (float)(points[0] - lastx) + lasty;
-      int lasty2 = points[(points_count - 1) * 2 + 1];
+      int yyy = (j - lastx) * (y - lasty) / (float)(x - lastx) + lasty;
+      int lasty2 = dt_masks_dynbuf_get(points, -1);
       if(lasty2 - yyy > 1)
       {
         for(int jj = lasty2 + 1; jj < yyy; jj++)
         {
-          points[points_count * 2] = j;
-          points[points_count * 2 + 1] = jj;
-          points_count++;
+          dt_masks_dynbuf_add(points, j);
+          dt_masks_dynbuf_add(points, jj);
         }
       }
       else if(lasty2 - yyy < -1)
       {
         for(int jj = lasty2 - 1; jj > yyy; jj--)
         {
-          points[points_count * 2] = j;
-          points[points_count * 2 + 1] = jj;
-          points_count++;
+          dt_masks_dynbuf_add(points, j);
+          dt_masks_dynbuf_add(points, jj);
         }
       }
-      points[points_count * 2] = j;
-      points[points_count * 2 + 1] = yyy;
-      points_count++;
+      dt_masks_dynbuf_add(points, j);
+      dt_masks_dynbuf_add(points, yyy);
     }
   }
-  *pts_count = points_count;
   return 1;
 }
 
 /** fill the gap between 2 points with an arc of circle */
 /** this function is here because we can have gap in border, esp. if the corner is very sharp */
-static void _path_points_recurs_border_gaps(float *cmax, float *bmin, float *bmin2, float *bmax, float *path,
-                                            int *pos_path, float *border, int *pos_border, gboolean clockwise)
+static void _path_points_recurs_border_gaps(float *cmax, float *bmin, float *bmin2, float *bmax, dt_masks_dynbuf_t *dpoints,
+                                            dt_masks_dynbuf_t *dborder, gboolean clockwise)
 {
   // we want to find the start and end angles
   double a1 = atan2(bmin[1] - cmax[1], bmin[0] - cmax[0]);
@@ -322,12 +277,10 @@ static void _path_points_recurs_border_gaps(float *cmax, float *bmin, float *bmi
   float aa = a1 + incra;
   for(int i = 1; i < l; i++)
   {
-    path[*pos_path] = cmax[0];
-    path[*pos_path + 1] = cmax[1];
-    *pos_path += 2;
-    border[*pos_border] = cmax[0] + rr * cosf(aa);
-    border[*pos_border + 1] = cmax[1] + rr * sinf(aa);
-    *pos_border += 2;
+    dt_masks_dynbuf_add(dpoints, cmax[0]);
+    dt_masks_dynbuf_add(dpoints, cmax[1]);
+    if(dborder) dt_masks_dynbuf_add(dborder, cmax[0] + rr * cosf(aa));
+    if(dborder) dt_masks_dynbuf_add(dborder, cmax[1] + rr * sinf(aa));
     rr += incrr;
     aa += incra;
   }
@@ -337,7 +290,7 @@ static void _path_points_recurs_border_gaps(float *cmax, float *bmin, float *bmi
 /** the function take care to avoid big gaps between points */
 static void _path_points_recurs(float *p1, float *p2, double tmin, double tmax, float *path_min,
                                 float *path_max, float *border_min, float *border_max, float *rpath,
-                                float *rborder, float *path, float *border, int *pos_path, int *pos_border,
+                                float *rborder, dt_masks_dynbuf_t *dpoints, dt_masks_dynbuf_t *dborder,
                                 int withborder)
 {
   // we calculate points if needed
@@ -362,17 +315,18 @@ static void _path_points_recurs(float *p1, float *p2, double tmin, double tmax, 
                  && (int)border_min[1] - (int)border_max[1] < 1
                  && (int)border_min[1] - (int)border_max[1] > -1))))
   {
-    path[*pos_path] = path_max[0];
-    path[*pos_path + 1] = path_max[1];
-    if(withborder)
-    {
-      rborder[0] = border[*pos_border] = border_max[0];
-      rborder[1] = border[*pos_border + 1] = border_max[1];
-      *pos_border += 2;
-    }
-    *pos_path += 2;
+    dt_masks_dynbuf_add(dpoints, path_max[0]);
+    dt_masks_dynbuf_add(dpoints, path_max[1]);
     rpath[0] = path_max[0];
     rpath[1] = path_max[1];
+
+    if(withborder)
+    {
+      dt_masks_dynbuf_add(dborder, border_max[0]);
+      dt_masks_dynbuf_add(dborder, border_max[1]);
+      rborder[0] = border_max[0];
+      rborder[1] = border_max[1];
+    }
     return;
   }
 
@@ -380,10 +334,8 @@ static void _path_points_recurs(float *p1, float *p2, double tmin, double tmax, 
   double tx = (tmin + tmax) / 2.0;
   float c[2] = { -99999, -99999 }, b[2] = { -99999, -99999 };
   float rc[2], rb[2];
-  _path_points_recurs(p1, p2, tmin, tx, path_min, c, border_min, b, rc, rb, path, border, pos_path,
-                      pos_border, withborder);
-  _path_points_recurs(p1, p2, tx, tmax, rc, path_max, rb, border_max, rpath, rborder, path, border, pos_path,
-                      pos_border, withborder);
+  _path_points_recurs(p1, p2, tmin, tx, path_min, c, border_min, b, rc, rb, dpoints, dborder, withborder);
+  _path_points_recurs(p1, p2, tx, tmax, rc, path_max, rb, border_max, rpath, rborder, dpoints, dborder, withborder);
 }
 
 /** find all self intersections in a path */
@@ -437,19 +389,15 @@ static int _path_find_self_intersection(int *inter, int nb_corners, float *borde
   int *binter = calloc(ss, sizeof(int));
   if(binter == NULL) return 0;
 
-  int lastx = border[(posextr[1] - 1) * 2];
-  int lasty = border[(posextr[1] - 1) * 2 + 1];
-
-  float *extra = NULL;
-  int extra_max = 0;
-  int extra_count = 0;
-  int extrap = 0;
-
-  if(!_path_buffer_grow(&extra, &extrap, &extra_max))
+  dt_masks_dynbuf_t *extra = dt_masks_dynbuf_init(100000, "path extra");
+  if(extra == NULL)
   {
     free(binter);
     return 0;
   }
+
+  int lastx = border[(posextr[1] - 1) * 2];
+  int lasty = border[(posextr[1] - 1) * 2 + 1];
 
   for(int ii = nb_corners * 3; ii < border_count; ii++)
   {
@@ -458,22 +406,15 @@ static int _path_find_self_intersection(int *inter, int nb_corners, float *borde
     if(i >= border_count) i = i - border_count + nb_corners * 3;
 
     if(inter_count >= nb_corners * 4) break;
+
     // we want to be sure everything is continuous
-    _path_fill_gaps(lastx, lasty, border[i * 2], border[i * 2 + 1], extra, &extra_count);
-
-    extrap = 2 * extra_count;
-
-    if(!_path_buffer_grow(&extra, &extrap, &extra_max))
-    {
-      free(binter);
-      return 0;
-    }
+    _path_fill_gaps(lastx, lasty, border[i * 2], border[i * 2 + 1], extra);
 
     // we now search intersections for all the point in extra
-    for(int j = extra_count - 1; j >= 0; j--)
+    for(int j = dt_masks_dynbuf_position(extra) / 2 - 1; j >= 0; j--)
     {
-      int xx = extra[j * 2];
-      int yy = extra[j * 2 + 1];
+      int xx = (dt_masks_dynbuf_buffer(extra))[j * 2];
+      int yy = (dt_masks_dynbuf_buffer(extra))[j * 2 + 1];
       int v[3] = { 0 };
       v[0] = binter[(yy - ymin) * wb + (xx - xmin)];
       if(xx > xmin) v[1] = binter[(yy - ymin) * wb + (xx - xmin - 1)];
@@ -525,7 +466,7 @@ static int _path_find_self_intersection(int *inter, int nb_corners, float *borde
     }
   }
 
-  free(extra);
+  dt_masks_dynbuf_free(extra);
   free(binter);
 
   // and we return the number of self-intersection found
@@ -542,20 +483,24 @@ static int _path_get_points_border(dt_develop_t *dev, dt_masks_form_t *form, int
 
   float wd = pipe->iwidth, ht = pipe->iheight;
 
-  int points_max, pos;
-  int border_max, posb;
+  dt_masks_dynbuf_t *dpoints = NULL, *dborder = NULL;
 
   *points = NULL;
-  points_max = 0;
-  pos = 0;
-  if(!_path_buffer_grow(points, &pos, &points_max)) return 0;
+  *points_count = 0;
+  if(border) *border = NULL;
+  if(border) *border_count = 0;
+
+  dpoints = dt_masks_dynbuf_init(1000000, "path dpoints");
+  if(dpoints == NULL) return 0;
 
   if(border)
   {
-    *border = NULL;
-    border_max = 0;
-    posb = 0;
-    if(!_path_buffer_grow(border, &posb, &border_max)) return 0;
+    dborder = dt_masks_dynbuf_init(1000000, "path dborder");
+    if(dborder == NULL)
+    {
+      dt_masks_dynbuf_free(dpoints);
+      return 0;
+    }
   }
 
   // we store all points
@@ -571,31 +516,27 @@ static int _path_get_points_border(dt_develop_t *dev, dt_masks_form_t *form, int
   for(int k = 0; k < nb; k++)
   {
     dt_masks_point_path_t *pt = (dt_masks_point_path_t *)g_list_nth_data(form->points, k);
-    (*points)[k * 6] = pt->ctrl1[0] * wd - dx;
-    (*points)[k * 6 + 1] = pt->ctrl1[1] * ht - dy;
-    (*points)[k * 6 + 2] = pt->corner[0] * wd - dx;
-    (*points)[k * 6 + 3] = pt->corner[1] * ht - dy;
-    (*points)[k * 6 + 4] = pt->ctrl2[0] * wd - dx;
-    (*points)[k * 6 + 5] = pt->ctrl2[1] * ht - dy;
+    dt_masks_dynbuf_add(dpoints, pt->ctrl1[0] * wd - dx);
+    dt_masks_dynbuf_add(dpoints, pt->ctrl1[1] * ht - dy);
+    dt_masks_dynbuf_add(dpoints, pt->corner[0] * wd - dx);
+    dt_masks_dynbuf_add(dpoints, pt->corner[1] * ht - dy);
+    dt_masks_dynbuf_add(dpoints, pt->ctrl2[0] * wd - dx);
+    dt_masks_dynbuf_add(dpoints, pt->ctrl2[1] * ht - dy);
   }
   // for the border, we store value too
-  if(border)
+  if(dborder)
   {
     for(int k = 0; k < nb; k++)
     {
-      (*border)[k * 6] = 0.0; // x position of the border point
-      (*border)[k * 6 + 1] = 0.0; // y position of the border point
-      (*border)[k * 6 + 2]
-          = 0.0; // start index for the initial gap. if <0 this mean we have to skip to index (-x)
-      (*border)[k * 6 + 3] = 0.0; // end index for the initial gap
-      (*border)[k * 6 + 4]
-          = 0.0; // start index for the final gap. if <0 this mean we have to stop at index (-x)
-      (*border)[k * 6 + 5] = 0.0; // end index for the final gap
+      dt_masks_dynbuf_add(dborder, 0.0f);
+      dt_masks_dynbuf_add(dborder, 0.0f);
+      dt_masks_dynbuf_add(dborder, 0.0f);
+      dt_masks_dynbuf_add(dborder, 0.0f);
+      dt_masks_dynbuf_add(dborder, 0.0f);
+      dt_masks_dynbuf_add(dborder, 0.0f);
     }
   }
 
-  pos = 6 * nb;
-  posb = 6 * nb;
   float border_init[6 * nb];
   int cw = _path_is_clockwise(form);
   if(cw == 0) cw = -1;
@@ -608,8 +549,8 @@ static int _path_get_points_border(dt_develop_t *dev, dt_masks_form_t *form, int
   // we render all segments
   for(int k = 0; k < nb; k++)
   {
-    int pb = posb;
-    border_init[k * 6 + 2] = -posb;
+    int pb = dborder ? dt_masks_dynbuf_position(dborder) : 0;
+    border_init[k * 6 + 2] = -pb;
     int k2 = (k + 1) % nb;
     int k3 = (k + 2) % nb;
     dt_masks_point_path_t *point1 = (dt_masks_point_path_t *)g_list_nth_data(form->points, k);
@@ -630,58 +571,43 @@ static int _path_get_points_border(dt_develop_t *dev, dt_masks_form_t *form, int
     float bmax[2] = { -99999, -99999 };
     float cmin[2] = { -99999, -99999 };
     float cmax[2] = { -99999, -99999 };
-    if(border)
-    {
-      _path_points_recurs(p1, p2, 0.0, 1.0, cmin, cmax, bmin, bmax, rc, rb, *points, *border, &pos, &posb,
-                          (nb >= 3));
-      if(!_path_buffer_grow(points, &pos, &points_max)) return 0;
 
-      if(!_path_buffer_grow(border, &posb, &border_max)) return 0;
-    }
-    else
-    {
-      _path_points_recurs(p1, p2, 0.0, 1.0, cmin, cmax, bmin, bmax, rc, rb, *points, NULL, &pos, &posb, FALSE);
-      if(!_path_buffer_grow(points, &pos, &points_max)) return 0;
-    }
-
+    _path_points_recurs(p1, p2, 0.0, 1.0, cmin, cmax, bmin, bmax, rc, rb, dpoints, dborder, border && (nb >= 3));
 
     // we check gaps in the border (sharp edges)
-    if(border && ((*border)[posb - 2] - rb[0] > 1 || (*border)[posb - 2] - rb[0] < -1
-                  || (*border)[posb - 1] - rb[1] > 1 || (*border)[posb - 1] - rb[1] < -1))
+    if(dborder && (fabs(dt_masks_dynbuf_get(dborder, -2) - rb[0]) > 1.0f ||
+                   fabs(dt_masks_dynbuf_get(dborder, -1) - rb[1]) > 1.0f))
     {
-      bmin[0] = (*border)[posb - 2];
-      bmin[1] = (*border)[posb - 1];
-      //_path_points_recurs_border_gaps(rc,bmin,rb,*points,&pos,*border,&posb);
+      bmin[0] = dt_masks_dynbuf_get(dborder, -2);
+      bmin[1] = dt_masks_dynbuf_get(dborder, -1);
     }
-    (*points)[pos++] = rc[0];
-    (*points)[pos++] = rc[1];
-    border_init[k * 6 + 4] = -posb;
 
+    dt_masks_dynbuf_add(dpoints, rc[0]);
+    dt_masks_dynbuf_add(dpoints, rc[1]);
+    
+    border_init[k * 6 + 4] = dborder ? -dt_masks_dynbuf_position(dborder) : 0;
 
-    if(border)
+    if(dborder)
     {
-
       if(rb[0] == -9999999.0f)
       {
-        if((*border)[posb - 2] == -9999999.0f)
+        if(dt_masks_dynbuf_get(dborder, - 2) == -9999999.0f)
         {
-          (*border)[posb - 2] = (*border)[posb - 4];
-          (*border)[posb - 1] = (*border)[posb - 3];
+          dt_masks_dynbuf_set(dborder, -2, dt_masks_dynbuf_get(dborder, -4));
+          dt_masks_dynbuf_set(dborder, -1, dt_masks_dynbuf_get(dborder, -3));
         }
-        rb[0] = (*border)[posb - 2];
-        rb[1] = (*border)[posb - 1];
+        rb[0] = dt_masks_dynbuf_get(dborder, -2);
+        rb[1] = dt_masks_dynbuf_get(dborder, -1);
       }
-      (*border)[posb++] = rb[0];
-      (*border)[posb++] = rb[1];
+      dt_masks_dynbuf_add(dborder, rb[0]);
+      dt_masks_dynbuf_add(dborder, rb[1]);
 
-      (*border)[k * 6] = border_init[k * 6] = (*border)[pb];
-      (*border)[k * 6 + 1] = border_init[k * 6 + 1] = (*border)[pb + 1];
-
-      if(!_path_buffer_grow(border, &posb, &border_max)) return 0;
+      (dt_masks_dynbuf_buffer(dborder))[k * 6] = border_init[k * 6] = (dt_masks_dynbuf_buffer(dborder))[pb];
+      (dt_masks_dynbuf_buffer(dborder))[k * 6 + 1] = border_init[k * 6 + 1] = (dt_masks_dynbuf_buffer(dborder))[pb + 1];
     }
 
     // we first want to be sure that there are no gaps in border
-    if(border && nb >= 3)
+    if(dborder && nb >= 3)
     {
       // we get the next point (start of the next segment)
       _path_border_get_XY(p3[0], p3[1], p3[2], p3[3], p4[2], p4[3], p4[0], p4[1], 0, p3[4], cmin, cmin + 1,
@@ -693,17 +619,22 @@ static int _path_get_points_border(dt_develop_t *dev, dt_masks_form_t *form, int
       }
       if(bmax[0] - rb[0] > 1 || bmax[0] - rb[0] < -1 || bmax[1] - rb[1] > 1 || bmax[1] - rb[1] < -1)
       {
-        float bmin2[2] = { (*border)[posb - 22], (*border)[posb - 21] };
-        _path_points_recurs_border_gaps(rc, rb, bmin2, bmax, *points, &pos, *border, &posb,
-                                        _path_is_clockwise(form));
-        if(!_path_buffer_grow(points, &pos, &points_max)) return 0;
-
-        if(!_path_buffer_grow(border, &posb, &border_max)) return 0;
+        float bmin2[2] = { dt_masks_dynbuf_get(dborder, -22), dt_masks_dynbuf_get(dborder, -21) };
+        _path_points_recurs_border_gaps(rc, rb, bmin2, bmax, dpoints, dborder, _path_is_clockwise(form));
       }
     }
   }
-  *points_count = pos / 2;
-  if(border) *border_count = posb / 2;
+
+  *points_count = dt_masks_dynbuf_position(dpoints) / 2;
+  *points = dt_masks_dynbuf_harvest(dpoints);
+  dt_masks_dynbuf_free(dpoints);
+
+  if(dborder)
+  {
+    *border_count = dt_masks_dynbuf_position(dborder) / 2;
+    *border = dt_masks_dynbuf_harvest(dborder);
+    dt_masks_dynbuf_free(dborder);
+  }
 
   if(darktable.unmuted & DT_DEBUG_PERF)
     dt_print(DT_DEBUG_MASKS, "[masks %s] path_points point recurs %0.04f sec\n", form->name,
@@ -733,32 +664,35 @@ static int _path_get_points_border(dt_develop_t *dev, dt_masks_form_t *form, int
                  dt_get_wtime() - start2);
       start2 = dt_get_wtime();
 
-      // we don't want to copy the falloff points
       if(border)
+      {
+        // we don't want to copy the falloff points
         for(int k = 0; k < nb; k++)
           for(int i = 2; i < 6; i++) (*border)[k * 6 + i] = border_init[k * 6 + i];
-      // now we want to write the skipping zones
-      for(int i = 0; i < inter_count; i++)
-      {
-        int v = intersections[i * 2];
-        int w = intersections[i * 2 + 1];
-        if(v <= w)
+
+        // now we want to write the skipping zones
+        for(int i = 0; i < inter_count; i++)
         {
-          (*border)[v * 2] = -999999;
-          (*border)[v * 2 + 1] = w;
-        }
-        else
-        {
-          if(w > nb * 3)
+          int v = intersections[i * 2];
+          int w = intersections[i * 2 + 1];
+          if(v <= w)
           {
-            if((*border)[nb * 6] == -999999)
-              (*border)[nb * 6 + 1] = MAX((*border)[nb * 6 + 1], w);
-            else
-              (*border)[nb * 6 + 1] = w;
-            (*border)[nb * 6] = -999999;
+            (*border)[v * 2] = -999999;
+            (*border)[v * 2 + 1] = w;
           }
-          (*border)[v * 2] = -999999;
-          (*border)[v * 2 + 1] = -999999;
+          else
+          {
+            if(w > nb * 3)
+            {
+              if((*border)[nb * 6] == -999999)
+                (*border)[nb * 6 + 1] = MAX((*border)[nb * 6 + 1], w);
+              else
+                (*border)[nb * 6 + 1] = w;
+              (*border)[nb * 6] = -999999;
+            }
+            (*border)[v * 2] = -999999;
+            (*border)[v * 2 + 1] = -999999;
+          }
         }
       }
 

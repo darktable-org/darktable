@@ -146,6 +146,7 @@ int dt_lua_widget_trigger_callback(lua_State *L)
       lua_pushvalue(L,i+3);
     }
     dt_lua_do_chunk_silent(L,nargs+1,0);
+    dt_lua_redraw_screen();
   }
   return 0;
 }
@@ -263,6 +264,7 @@ int dt_lua_init_widget(lua_State* L)
   dt_lua_init_widget_entry(L);
   dt_lua_init_widget_file_chooser_button(L);
   dt_lua_init_widget_separator(L);
+  dt_lua_init_widget_slider(L);
   dt_lua_init_widget_stack(L);
 
   luaA_enum(L,dt_lua_orientation_t);

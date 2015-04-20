@@ -309,6 +309,25 @@ gchar *dt_util_foo_to_utf8(const char *string)
   return tag;
 }
 
+// get easter sunday (in the western world)
+static void easter(int Y, int* month, int *day)
+{
+  int a  = Y % 19;
+  int b  = Y / 100;
+  int c  = Y % 100;
+  int d  = b / 4;
+  int e  = b % 4;
+  int f  = (b + 8) / 25;
+  int g  = (b - f + 1) / 3;
+  int h  = (19*a + b - d - g + 15) % 30;
+  int i  = c / 4;
+  int k  = c % 4;
+  int L  = (32 + 2*e + 2*i - h - k) % 7;
+  int m  = (a + 11*h + 22*L) / 451;
+  *month = (h + L - 7*m + 114) / 31;
+  *day   = ((h + L - 7*m + 114) % 31) + 1;
+}
+
 // days are in [1..31], months are in [0..11], see "man localtime"
 dt_logo_season_t get_logo_season(void)
 {
@@ -316,9 +335,25 @@ dt_logo_season_t get_logo_season(void)
   time(&now);
   struct tm lt;
   localtime_r(&now, &lt);
+
+  // Halloween is active on 31.10. and 01.11.
   if((lt.tm_mon == 9 && lt.tm_mday == 31) || (lt.tm_mon == 10 && lt.tm_mday == 1))
     return DT_LOGO_SEASON_HALLOWEEN;
+
+  // Xmas is active from 24.12. until the end of the year
   if(lt.tm_mon == 11 && lt.tm_mday >= 24) return DT_LOGO_SEASON_XMAS;
+
+  // Easter is active from 2 days before Easter Sunday until 1 day after
+  {
+    struct tm easter_sunday = lt;
+    easter(lt.tm_year+1900, &easter_sunday.tm_mon, &easter_sunday.tm_mday);
+    easter_sunday.tm_mon--;
+    easter_sunday.tm_hour = easter_sunday.tm_min = easter_sunday.tm_sec = 0;
+    time_t easter_sunday_sec = mktime(&easter_sunday);
+    // we start at midnight, so it's basically +- 2 days
+    if(labs(easter_sunday_sec - now) <= 2 * 24 * 60 * 60) return DT_LOGO_SEASON_EASTER;
+  }
+
   return DT_LOGO_SEASON_NONE;
 }
 

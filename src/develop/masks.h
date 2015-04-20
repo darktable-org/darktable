@@ -24,6 +24,8 @@
 #include "develop/pixelpipe.h"
 #include "common/opencl.h"
 
+#include <assert.h>
+
 #define DEVELOP_MASKS_VERSION (3)
 
 /**forms types */
@@ -340,7 +342,9 @@ void dt_masks_dynbuf_add(dt_masks_dynbuf_t *a, float value)
   assert(a->pos <= a->size);
   if(a->pos == a->size)
   {
+    if(a->size == 0) return;
     float *oldbuffer = a->buffer;
+    size_t oldsize = a->size;
     a->size *= 2;
     a->buffer = (float *)realloc(a->buffer, a->size * sizeof(float));
     dt_print(DT_DEBUG_MASKS, "[masks dynbuf '%s'] grows to size %lu (is %p, was %p)\n", a->tag,
@@ -350,6 +354,8 @@ void dt_masks_dynbuf_add(dt_masks_dynbuf_t *a, float value)
       // not much we can do here except of emitting an error message
       fprintf(stderr, "critical: out of memory for dynbuf '%s' with size request %lu!\n", a->tag,
               (unsigned long)a->size);
+      a->size = oldsize;
+      a->buffer = oldbuffer;
       return;
     }
   }
@@ -386,6 +392,24 @@ size_t dt_masks_dynbuf_position(dt_masks_dynbuf_t *a)
 {
   assert(a != NULL);
   return a->pos;
+}
+
+static inline
+void dt_masks_dynbuf_reset(dt_masks_dynbuf_t *a)
+{
+  assert(a != NULL);
+  a->pos = 0;
+}
+
+static inline
+float *dt_masks_dynbuf_harvest(dt_masks_dynbuf_t *a)
+{
+  // take out data buffer and make dynamic buffer obsolete
+  if(a == NULL) return NULL;
+  float *r = a->buffer;
+  a->buffer = NULL;
+  a->pos = a->size = 0;
+  return r;
 }
 
 static inline

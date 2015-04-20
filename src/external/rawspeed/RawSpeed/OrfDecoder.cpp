@@ -30,7 +30,7 @@ namespace RawSpeed {
 
 OrfDecoder::OrfDecoder(TiffIFD *rootIFD, FileMap* file):
     RawDecoder(file), mRootIFD(rootIFD) {
-      decoderVersion = 2;
+      decoderVersion = 3;
 }
 
 OrfDecoder::~OrfDecoder(void) {
@@ -54,81 +54,52 @@ RawImage OrfDecoder::decodeRawInternal() {
   TiffEntry *offsets = raw->getEntry(STRIPOFFSETS);
   TiffEntry *counts = raw->getEntry(STRIPBYTECOUNTS);
 
-  if (offsets->count != 1) {
-    // We're in an old-school ORF file, decode it separately
-    try {
-      decodeOldORF(raw);
-    } catch (IOException &e) {
-       mRaw->setError(e.what());
-    }
-    return mRaw;
-  }
-  if (counts->count != offsets->count) {
+  if (counts->count != offsets->count)
     ThrowRDE("ORF Decoder: Byte count number does not match strip size: count:%u, strips:%u ", counts->count, offsets->count);
-  }
-  uint32 width = raw->getEntry(IMAGEWIDTH)->getInt();
-  uint32 height = raw->getEntry(IMAGELENGTH)->getInt();
-  uint32 bps = raw->getEntry(BITSPERSAMPLE)->getInt();
 
-  if (!mFile->isValid(offsets->getInt() + counts->getInt()))
-    ThrowRDE("ORF Decoder: Truncated file");
-
-  mRaw->dim = iPoint2D(width, height);
-  mRaw->createData();
-
-  if ((hints.find(string("force_uncompressed")) != hints.end())) {
-    // Old packed ORF, decode it like that
-    uint32 off = offsets->getInt();
-    uint32 size = mFile->getSize() - off;
-    ByteStream input(mFile->getData(off), size);
-    Decode12BitRawWithControl(input, width, height);
-    return mRaw;
-  }
-
-  // We add 3 bytes slack, since the bitpump might be a few bytes ahead.
-  ByteStream s(mFile->getData(offsets->getInt()), counts->getInt() + 3);
-
-  if ((hints.find(string("force_uncompressed")) != hints.end())) {
-    ByteStream in(mFile->getData(offsets->getInt()), counts->getInt() + 3);
-    iPoint2D size(width, height),pos(0,0);
-    readUncompressedRaw(in, size, pos, width*bps/8,bps, BitOrder_Jpeg32);
-    return mRaw;
-  }
-
-  try {
-    decodeCompressed(s, width, height);
-  } catch (IOException &e) {
-    mRaw->setError(e.what());
-    // Let's ignore it, it may have delivered somewhat useful data.
-  }
-
-  return mRaw;
-}
-
-void OrfDecoder::decodeOldORF(TiffIFD* raw) {
-  uint32 width = raw->getEntry(IMAGEWIDTH)->getInt();
-  uint32 height = raw->getEntry(IMAGELENGTH)->getInt();
   uint32 off = raw->getEntry(STRIPOFFSETS)->getInt();
-  TiffEntry *counts = raw->getEntry(STRIPBYTECOUNTS);
   uint32 size = 0;
   const uint32 *sizes = counts->getIntArray();
   for (uint32 i=0; i < counts->count; i++)
     size += sizes[i];
 
-  if (!mFile->isValid(off))
-      ThrowRDE("ORF Decoder: Invalid image data offset, cannot decode.");
+  if (!mFile->isValid(off + size))
+    ThrowRDE("ORF Decoder: Truncated file");
+
+  uint32 width = raw->getEntry(IMAGEWIDTH)->getInt();
+  uint32 height = raw->getEntry(IMAGELENGTH)->getInt();
 
   mRaw->dim = iPoint2D(width, height);
   mRaw->createData();
-  ByteStream input(mFile->getData(off), MIN(size, mFile->getSize() - off));
 
-  if (size >= width*height*2) { // We're in an unpacked raw
-    if (raw->endian == little)
-      Decode12BitRawUnpacked(input, width, height);
+  // We add 3 bytes slack, since the bitpump might be a few bytes ahead.
+  ByteStream input(mFile->getData(off), MIN(size+3, mFile->getSize() - off));
+
+  try {
+    if (offsets->count != 1 || (hints.find(string("force_uncompressed")) != hints.end()))
+      decodeUncompressed(input, width, height, size, raw->endian);
     else
-      Decode12BitRawBEunpackedLeftAligned(input, width, height);
-  } else if (size >= width*height*3/2) { // We're in one of those weird interlaced packed raws
-      Decode12BitRawBEInterlaced(input, width, height);
+      decodeCompressed(input, width, height);
+  } catch (IOException &e) {
+     mRaw->setError(e.what());
+  }
+
+  return mRaw;
+}
+
+void OrfDecoder::decodeUncompressed(ByteStream& s, uint32 w, uint32 h, uint32 size, Endianness endian) {
+  if ((hints.find(string("packed_with_control")) != hints.end()))
+    Decode12BitRawWithControl(s, w, h);
+  else if ((hints.find(string("jpeg32_bitorder")) != hints.end())) {
+    iPoint2D size(w, h),pos(0,0);
+    readUncompressedRaw(s, size, pos, w*12/8, 12, BitOrder_Jpeg32);
+  } else if (size >= w*h*2) { // We're in an unpacked raw
+    if (endian == little)
+      Decode12BitRawUnpacked(s, w, h);
+    else
+      Decode12BitRawBEunpackedLeftAligned(s, w, h);
+  } else if (size >= w*h*3/2) { // We're in one of those weird interlaced packed raws
+      Decode12BitRawBEInterlaced(s, w, h);
   } else {
     ThrowRDE("ORF Decoder: Don't know how to handle the encoding in this file\n");
   }

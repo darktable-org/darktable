@@ -1,0 +1,150 @@
+/*
+    This file is part of darktable,
+    copyright (c) 2015 LebedevRI.
+
+    darktable is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    darktable is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with darktable.  If not, see <http://www.gnu.org/licenses/>.
+*/
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
+#include "develop/imageop.h"
+#include "common/interpolation.h"
+#include "develop/tiling.h"
+#include "common/opencl.h"
+
+DT_MODULE_INTROSPECTION(1, dt_iop_finalscale_params_t)
+
+typedef struct dt_iop_finalscale_params_t
+{
+  int dummy;
+} dt_iop_finalscale_params_t;
+
+typedef dt_iop_finalscale_params_t dt_iop_finalscale_data_t;
+
+const char *name()
+{
+  return C_("modulename", "scale into final size");
+}
+
+int flags()
+{
+  return IOP_FLAGS_ALLOW_TILING | IOP_FLAGS_HIDDEN | IOP_FLAGS_TILING_FULL_ROI | IOP_FLAGS_ONE_INSTANCE | IOP_FLAGS_NO_HISTORY_STACK;
+}
+
+int groups()
+{
+  return IOP_GROUP_BASIC;
+}
+
+int output_bpp(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
+{
+  return 4 * sizeof(float);
+}
+
+void modify_roi_in(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const dt_iop_roi_t *const roi_out,
+                   dt_iop_roi_t *roi_in)
+{
+  *roi_in = *roi_out;
+
+  roi_in->x /= roi_out->scale;
+  roi_in->y /= roi_out->scale;
+  // out = in * scale + .5f to more precisely round to user input in export module:
+  roi_in->width  = (roi_out->width  - .5f)/roi_out->scale;
+  roi_in->height = (roi_out->height - .5f)/roi_out->scale;
+  roi_in->scale = 1.0f;
+}
+
+#ifdef HAVE_OPENCL
+int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out,
+               const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
+{
+  if(roi_out->scale >= 1.00001f)
+  {
+    dt_print(DT_DEBUG_OPENCL,
+             "[opencl_finalscale] finalscale with upscaling not yet supported by opencl code\n");
+    return FALSE;
+  }
+
+  const int devid = piece->pipe->devid;
+  cl_int err = -999;
+
+  err = dt_iop_clip_and_zoom_cl(devid, dev_out, dev_in, roi_out, roi_in);
+  if(err != CL_SUCCESS) goto error;
+
+  return TRUE;
+
+error:
+  dt_print(DT_DEBUG_OPENCL, "[opencl_finalscale] couldn't enqueue kernel! %d\n", err);
+  return FALSE;
+}
+#endif
+
+void process(dt_iop_module_t *self, const dt_dev_pixelpipe_iop_t *const piece, const void *const ivoid,
+             void *ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
+{
+  dt_iop_clip_and_zoom(ovoid, ivoid, roi_out, roi_in, roi_out->width, roi_in->width);
+}
+
+void commit_params(dt_iop_module_t *self, const dt_iop_params_t *const params, dt_dev_pixelpipe_t *pipe,
+                   dt_dev_pixelpipe_iop_t *piece)
+{
+  if(piece->pipe->type != DT_DEV_PIXELPIPE_EXPORT) piece->enabled = 0;
+}
+
+void tiling_callback(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const dt_iop_roi_t *const roi_in,
+                     const dt_iop_roi_t *const roi_out, dt_develop_tiling_t *tiling)
+{
+  float ioratio = ((float)roi_out->width * roi_out->height) / ((float)roi_in->width * roi_in->height);
+
+  tiling->factor = 1.0f + ioratio; // in + out, no temp
+  tiling->maxbuf = 1.0f;
+  tiling->overhead = 0;
+  tiling->overlap = 4;
+  tiling->xalign = 1;
+  tiling->yalign = 1;
+  return;
+}
+
+void init_pipe(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
+{
+  piece->data = calloc(1, sizeof(dt_iop_finalscale_data_t));
+  self->commit_params(self, self->default_params, pipe, piece);
+}
+
+void cleanup_pipe(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
+{
+  free(piece->data);
+  piece->data = NULL;
+}
+
+void init(dt_iop_module_t *self)
+{
+  self->params = calloc(1, sizeof(dt_iop_finalscale_params_t));
+  self->default_params = calloc(1, sizeof(dt_iop_finalscale_params_t));
+  self->default_enabled = 1;
+  self->hide_enable_button = 1;
+  self->priority = 925; // module order created by iop_dependencies.py, do not edit!
+  self->params_size = sizeof(dt_iop_finalscale_params_t);
+  self->gui_data = NULL;
+}
+
+void cleanup(dt_iop_module_t *self)
+{
+  free(self->params);
+  self->params = NULL;
+}
+
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// vim: shiftwidth=2 expandtab tabstop=2 cindent
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

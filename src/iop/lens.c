@@ -1,7 +1,7 @@
 /*
     This file is part of darktable,
     copyright (c) 2009--2012 johannes hanika.
-    copyright (c) 2014 LebedevRI.
+    copyright (c) 2014-2015 LebedevRI.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -108,6 +108,7 @@ typedef struct dt_iop_lensfun_gui_data_t
   GList *modifiers;
   GtkLabel *message;
   int corrections_done;
+  dt_pthread_mutex_t lock;
 } dt_iop_lensfun_gui_data_t;
 
 typedef struct dt_iop_lensfun_global_data_t
@@ -523,9 +524,11 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
   }
   lf_modifier_destroy(modifier);
 
-  if(g != NULL && self->dev->gui_attached && piece->pipe->type == DT_DEV_PIXELPIPE_PREVIEW)
+  if(self->dev->gui_attached && g)
   {
+    dt_pthread_mutex_lock(&g->lock);
     g->corrections_done = (modflags & LENSFUN_MODFLAG_MASK);
+    dt_pthread_mutex_unlock(&g->lock);
   }
 }
 
@@ -762,9 +765,11 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
     }
   }
 
-  if(g != NULL && self->dev->gui_attached && piece->pipe->type == DT_DEV_PIXELPIPE_PREVIEW)
+  if(self->dev->gui_attached && g)
   {
+    dt_pthread_mutex_lock(&g->lock);
     g->corrections_done = (modflags & LENSFUN_MODFLAG_MASK);
+    dt_pthread_mutex_unlock(&g->lock);
   }
 
   dt_opencl_release_mem_object(dev_tmpbuf);
@@ -1948,7 +1953,7 @@ static float get_autoscale(dt_iop_module_t *self, dt_iop_lensfun_params_t *p, co
 
       // FIXME: get those from rawprepare IOP somehow !!!
       const int iwd = img->width - img->crop_x - img->crop_width,
-                iht = img->height - img->crop_x - img->crop_height;
+                iht = img->height - img->crop_y - img->crop_height;
 
       // create dummy modifier
       lfModifier *modifier = lf_modifier_new(lenslist[0], p->crop, iwd, iht);
@@ -1978,7 +1983,12 @@ static gboolean draw(GtkWidget *widget, cairo_t *cr, dt_iop_module_t *self)
   dt_iop_lensfun_gui_data_t *g = (dt_iop_lensfun_gui_data_t *)self->gui_data;
   if(darktable.gui->reset) return FALSE;
 
-  if(g->corrections_done == -1) return FALSE;
+  dt_pthread_mutex_lock(&g->lock);
+  const int corrections_done = g->corrections_done;
+  g->corrections_done = -1;
+  dt_pthread_mutex_unlock(&g->lock);
+
+  if(corrections_done == -1) return FALSE;
 
   char *message = "";
   GList *modifiers = g->modifiers;
@@ -1986,15 +1996,13 @@ static gboolean draw(GtkWidget *widget, cairo_t *cr, dt_iop_module_t *self)
   {
     // could use g_list_nth. this seems safer?
     dt_iop_lensfun_modifier_t *mm = (dt_iop_lensfun_modifier_t *)modifiers->data;
-    if(mm->modflag == g->corrections_done)
+    if(mm->modflag == corrections_done)
     {
       message = mm->name;
       break;
     }
     modifiers = g_list_next(modifiers);
   }
-
-  g->corrections_done = -1;
 
   darktable.gui->reset = 1;
   gtk_label_set_text(g->message, message);
@@ -2010,11 +2018,17 @@ void gui_init(struct dt_iop_module_t *self)
   // lfDatabase *dt_iop_lensfun_db = (lfDatabase *)gd->db;
   dt_iop_lensfun_gui_data_t *g = (dt_iop_lensfun_gui_data_t *)self->gui_data;
   dt_iop_lensfun_params_t *p = (dt_iop_lensfun_params_t *)self->params;
+
+  dt_pthread_mutex_init(&g->lock, NULL);
+
   g->camera = NULL;
   g->camera_menu = NULL;
   g->lens_menu = NULL;
   g->modifiers = NULL;
+
+  dt_pthread_mutex_lock(&g->lock);
   g->corrections_done = -1;
+  dt_pthread_mutex_unlock(&g->lock);
 
   // initialize modflags options
   int pos = -1;
@@ -2227,7 +2241,9 @@ void gui_update(struct dt_iop_module_t *self)
   g_object_set(G_OBJECT(g->camera_model), "tooltip-text", "", (char *)NULL);
   g_object_set(G_OBJECT(g->lens_model), "tooltip-text", "", (char *)NULL);
 
+  dt_pthread_mutex_lock(&g->lock);
   g->corrections_done = -1;
+  dt_pthread_mutex_unlock(&g->lock);
   gtk_label_set_text(g->message, "");
 
   int modflag = p->modify_flags & LENSFUN_MODFLAG_MASK;
@@ -2293,6 +2309,8 @@ void gui_cleanup(struct dt_iop_module_t *self)
     g_free(g->modifiers->data);
     g->modifiers = g_list_delete_link(g->modifiers, g->modifiers);
   }
+
+  dt_pthread_mutex_destroy(&g->lock);
 
   free(self->gui_data);
   self->gui_data = NULL;

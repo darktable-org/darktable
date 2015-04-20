@@ -491,6 +491,20 @@
 			<Hint name="invert_sraw_wb" value=""/>
 		</Hints>
 	</Camera>
+	<Camera make="Canon" model="Canon EOS 5DS R" decoder_version="6">
+		<CFA width="2" height="2">
+			<Color x="0" y="0">RED</Color>
+			<Color x="1" y="0">GREEN</Color>
+			<Color x="0" y="1">GREEN</Color>
+			<Color x="1" y="1">BLUE</Color>
+		</CFA>
+		<Crop x="160" y="64" width="-2" height="0"/>
+		<Sensor black="2060" white="16383"/>
+		<BlackAreas>
+			<Vertical x="0" width="150"/>
+			<Horizontal y="2" height="60"/>
+		</BlackAreas>
+	</Camera>
 	<Camera make="Canon" model="Canon EOS 6D" decoder_version="2">
 		<CFA width="2" height="2">
 			<Color x="0" y="0">RED</Color>
@@ -660,6 +674,21 @@
 			<Color x="1" y="1">BLUE</Color>
 		</CFA>
 		<Crop x="76" y="56" width="0" height="0"/>
+		<Sensor black="2026" white="13584" iso_min="0" iso_max = "199"/>
+		<Sensor black="2026" white="15304"/>
+		<BlackAreas>
+			<Vertical x="0" width="70"/>
+			<Horizontal y="4" height="44"/>
+		</BlackAreas>
+	</Camera>
+	<Camera make="Canon" model="Canon EOS M2">
+		<CFA width="2" height="2">
+			<Color x="0" y="0">RED</Color>
+			<Color x="1" y="0">GREEN</Color>
+			<Color x="0" y="1">GREEN</Color>
+			<Color x="1" y="1">BLUE</Color>
+		</CFA>
+		<Crop x="72" y="52" width="0" height="0"/>
 		<Sensor black="2026" white="13584" iso_min="0" iso_max = "199"/>
 		<Sensor black="2026" white="15304"/>
 		<BlackAreas>
@@ -1298,6 +1327,9 @@
 		</CFA>
 		<Crop x="100" y="20" width="-10" height="0"/>
 		<Sensor black="127" white="4095"/>
+		<Hints>
+			<Hint name="wb_offset" value="142"/>
+		</Hints>
 		<BlackAreas>
 			<Vertical x="6" width="70"/>
 			<Horizontal y="0" height="16"/>
@@ -2240,7 +2272,7 @@
 		<Crop x="0" y="0" width="-6" height="-2"/>
 		<Sensor black="65" white="4015"/>
 	</Camera>
-	<Camera make="OLYMPUS IMAGING CORP." model="E-300">
+	<Camera make="OLYMPUS IMAGING CORP." model="E-300" decoder_version="3">
 		<CFA width="2" height="2">
 			<Color x="0" y="0">RED</Color>
 			<Color x="1" y="0">GREEN</Color>
@@ -2251,9 +2283,10 @@
 		<Sensor black="63" white="4095"/>
 		<Hints>
 			<Hint name="force_uncompressed" value=""/>
+			<Hint name="packed_with_control" value=""/>
 		</Hints>
 	</Camera>
-	<Camera make="OLYMPUS IMAGING CORP." model="E-330">
+	<Camera make="OLYMPUS IMAGING CORP." model="E-330" decoder_version="3">
 		<CFA width="2" height="2">
 			<Color x="0" y="0">RED</Color>
 			<Color x="1" y="0">GREEN</Color>
@@ -2262,6 +2295,10 @@
 		</CFA>
 		<Crop x="0" y="0" width="3250" height="2450"/>
 		<Sensor black="77" white="4095"/>
+		<Hints>
+			<Hint name="force_uncompressed" value=""/>
+			<Hint name="packed_with_control" value=""/>
+		</Hints>
 	</Camera>
 	<Camera make="OLYMPUS IMAGING CORP." model="E-400">
 		<CFA width="2" height="2">
@@ -2303,7 +2340,7 @@
 		<Crop x="0" y="0" width="0" height="0"/>
 		<Sensor black="69" white="4015"/>
 	</Camera>
-	<Camera make="OLYMPUS IMAGING CORP." model="E-500">
+	<Camera make="OLYMPUS IMAGING CORP." model="E-500" decoder_version="3">
 		<CFA width="2" height="2">
 			<Color x="0" y="0">RED</Color>
 			<Color x="1" y="0">GREEN</Color>
@@ -2314,6 +2351,7 @@
 		<Sensor black="63" white="3967"/>
 		<Hints>
 			<Hint name="force_uncompressed" value=""/>
+			<Hint name="packed_with_control" value=""/>
 		</Hints>
 	</Camera>
 	<Camera make="OLYMPUS IMAGING CORP." model="E-510">
@@ -2445,6 +2483,11 @@
 		</CFA>
 		<Crop x="0" y="0" width="0" height="0"/>
 		<Sensor black="254" white="4000"/>
+		<Sensor black="249" white="4000" iso_min="800" iso_max="3199"/>
+		<Sensor black="235" white="4000" iso_min="3200" iso_max="6399"/>
+		<Sensor black="230" white="4000" iso_min="6400" iso_max="12799"/>
+		<Sensor black="220" white="4000" iso_min="12800" iso_max="25599"/>
+		<Sensor black="187" white="4000" iso_min="25600" iso_max="25600"/>
 	</Camera>
 	<Camera make="OLYMPUS IMAGING CORP." model="E-P1">
 		<CFA width="2" height="2">
@@ -2585,7 +2628,7 @@
 		<Crop x="0" y="0" width="0" height="-2"/>
 		<Sensor black="55" white="3972"/>
 	</Camera>
-	<Camera make="OLYMPUS IMAGING CORP." model="XZ-2" decoder_version="2">
+	<Camera make="OLYMPUS IMAGING CORP." model="XZ-2" decoder_version="3">
 		<CFA width="2" height="2">
 			<Color x="0" y="0">RED</Color>
 			<Color x="1" y="0">GREEN</Color>
@@ -2596,6 +2639,7 @@
 		<Sensor black="200" white="4092"/>
 		<Hints>
 			<Hint name="force_uncompressed" value=""/>
+			<Hint name="jpeg32_bitorder" value=""/>
 		</Hints>
 	</Camera>
 	<Camera make="OLYMPUS IMAGING CORP." model="STYLUS1">
@@ -2610,6 +2654,32 @@
 		<Aliases>
 			<Alias>STYLUS1,1s</Alias>
 		</Aliases>
+	</Camera>
+	<Camera make="Panasonic" model = "DMC-CM1">
+		<CFA width="2" height="2">
+			<Color x="0" y="0">BLUE</Color>
+			<Color x="1" y="0">GREEN</Color>
+			<Color x="0" y="1">GREEN</Color>
+			<Color x="1" y="1">RED</Color>
+		</CFA>
+		<Crop x="0" y="0" width="0" height="0"/>
+		<Sensor black="15" white="4095"/>
+		<Hints>
+			<Hint name="zero_is_bad" value=""/>
+		</Hints>
+	</Camera>
+	<Camera make="Panasonic" model = "DMC-CM1" mode="3:2">
+		<CFA width="2" height="2">
+			<Color x="0" y="0">BLUE</Color>
+			<Color x="1" y="0">GREEN</Color>
+			<Color x="0" y="1">GREEN</Color>
+			<Color x="1" y="1">RED</Color>
+		</CFA>
+		<Crop x="0" y="0" width="0" height="0"/>
+		<Sensor black="15" white="4095"/>
+		<Hints>
+			<Hint name="zero_is_bad" value=""/>
+		</Hints>
 	</Camera>
 	<Camera make="Panasonic" model = "DMC-FX150">
 		<CFA width="2" height="2">
@@ -5139,6 +5209,11 @@
 		</CFA>
 		<Crop x="0" y="0" width="-8" height="0"/>
 		<Sensor black="800" white="16300"/>
+	</Camera>
+	<!-- Still needs to interpolate/upscale some pixels -->
+	<Camera make="SIGMA" model="SIGMA dp2 Quattro" supported="no">
+		<Crop x="204" y="24" width="-236" height="-24"/>
+		<Sensor black="1245" white="16384"/>
 	</Camera>
 	<Camera make="SONY" model="DSC-RX100">
 		<CFA width="2" height="2">

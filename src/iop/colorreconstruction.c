@@ -1,6 +1,6 @@
 /*
   This file is part of darktable,
-  copyright (c) 2015 ulrich pegelow.
+  copyright (c) 2015 Ulrich Pegelow.
 
   darktable is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -30,23 +30,48 @@
 #include "control/control.h"
 #include "common/debug.h"
 #include "common/opencl.h"
+#include "common/colorspaces.h"
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
 #include "gui/presets.h"
 #include <gtk/gtk.h>
 #include <inttypes.h>
 
-#define DT_COLORRECONSTRUCT_BILATERAL_MAX_RES_S 1000
-#define DT_COLORRECONSTRUCT_BILATERAL_MAX_RES_R 200
+#define DT_COLORRECONSTRUCT_BILATERAL_MAX_RES_S 500
+#define DT_COLORRECONSTRUCT_BILATERAL_MAX_RES_R 100
 #define DT_COLORRECONSTRUCT_SPATIAL_APPROX 100.0f
 
-DT_MODULE_INTROSPECTION(1, dt_iop_colorreconstruct_params_t)
+DT_MODULE_INTROSPECTION(3, dt_iop_colorreconstruct_params_t)
+
+typedef enum dt_iop_colorreconstruct_precedence_t
+{
+  COLORRECONSTRUCT_PRECEDENCE_NONE,             // same weighting factor for all pixels
+  COLORRECONSTRUCT_PRECEDENCE_CHROMA,           // use chromaticy as weighting factor -> prefers saturated colors
+  COLORRECONSTRUCT_PRECEDENCE_HUE               // use a specific hue as weighting factor
+} dt_iop_colorreconstruct_precedence_t;
+
+typedef struct dt_iop_colorreconstruct_params1_t
+{
+  float threshold;
+  float spatial;
+  float range;
+} dt_iop_colorreconstruct_params1_t;
+
+typedef struct dt_iop_colorreconstruct_params2_t
+{
+  float threshold;
+  float spatial;
+  float range;
+  dt_iop_colorreconstruct_precedence_t precedence;
+} dt_iop_colorreconstruct_params2_t;
 
 typedef struct dt_iop_colorreconstruct_params_t
 {
   float threshold;
   float spatial;
   float range;
+  float hue;
+  dt_iop_colorreconstruct_precedence_t precedence;
 } dt_iop_colorreconstruct_params_t;
 
 typedef struct dt_iop_colorreconstruct_Lab_t
@@ -71,6 +96,8 @@ typedef struct dt_iop_colorreconstruct_gui_data_t
   GtkWidget *threshold;
   GtkWidget *spatial;
   GtkWidget *range;
+  GtkWidget *precedence;
+  GtkWidget *hue;
   dt_iop_colorreconstruct_bilateral_frozen_t *can;
   dt_pthread_mutex_t lock;
 } dt_iop_colorreconstruct_gui_data_t;
@@ -80,6 +107,8 @@ typedef struct dt_iop_colorreconstruct_data_t
   float threshold;
   float spatial;
   float range;
+  float hue;
+  dt_iop_colorreconstruct_precedence_t precedence;
 } dt_iop_colorreconstruct_data_t;
 
 typedef struct dt_iop_colorreconstruct_global_data_t
@@ -108,21 +137,50 @@ int groups()
   return IOP_GROUP_BASIC;
 }
 
+int legacy_params(dt_iop_module_t *self, const void *const old_params, const int old_version,
+                  void *new_params, const int new_version)
+{
+  if(old_version == 1 && new_version == 3)
+  {
+    const dt_iop_colorreconstruct_params1_t *old = old_params;
+    dt_iop_colorreconstruct_params_t *new = new_params;
+    new->threshold = old->threshold;
+    new->spatial = old->spatial;
+    new->range = old->range;
+    new->precedence = COLORRECONSTRUCT_PRECEDENCE_NONE;
+    new->hue = 0.66f;
+    return 0;
+  }
+  else if(old_version == 2 && new_version == 3)
+  {
+    const dt_iop_colorreconstruct_params2_t *old = old_params;
+    dt_iop_colorreconstruct_params_t *new = new_params;
+    new->threshold = old->threshold;
+    new->spatial = old->spatial;
+    new->range = old->range;
+    new->precedence = old->precedence;
+    new->hue = 0.66f;
+    return 0;
+  }
+  return 1;
+}
 
 void init_key_accels(dt_iop_module_so_t *self)
 {
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "luma threshold"));
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "spatial blur"));
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "range blur"));
+  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "threshold"));
+  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "spatial extent"));
+  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "range extent"));
+  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "hue"));
 }
 
 void connect_key_accels(dt_iop_module_t *self)
 {
   dt_iop_colorreconstruct_gui_data_t *g = (dt_iop_colorreconstruct_gui_data_t *)self->gui_data;
 
-  dt_accel_connect_slider_iop(self, "luma threshold", GTK_WIDGET(g->threshold));
-  dt_accel_connect_slider_iop(self, "spatial blur", GTK_WIDGET(g->spatial));
-  dt_accel_connect_slider_iop(self, "range blur", GTK_WIDGET(g->range));
+  dt_accel_connect_slider_iop(self, "threshold", GTK_WIDGET(g->threshold));
+  dt_accel_connect_slider_iop(self, "spatial extent", GTK_WIDGET(g->spatial));
+  dt_accel_connect_slider_iop(self, "range extent", GTK_WIDGET(g->range));
+  dt_accel_connect_slider_iop(self, "hue", GTK_WIDGET(g->hue));
 }
 
 typedef struct dt_iop_colorreconstruct_bilateral_t
@@ -134,6 +192,26 @@ typedef struct dt_iop_colorreconstruct_bilateral_t
   dt_iop_colorreconstruct_Lab_t *buf;
 } dt_iop_colorreconstruct_bilateral_t;
 
+
+static inline float hue_conversion(const float HSL_Hue)
+{
+  float rgb[3] = { 0 }, XYZ[3] = { 0 }, Lab[3] = { 0 };
+
+  hsl2rgb(rgb, HSL_Hue, 1.0f, 0.5f);
+
+  XYZ[0] = (rgb[0] * 0.4360747f) + (rgb[1] * 0.3850649f) + (rgb[2] * 0.1430804f);
+  XYZ[1] = (rgb[0] * 0.2225045f) + (rgb[1] * 0.7168786f) + (rgb[2] * 0.0606169f);
+  XYZ[2] = (rgb[0] * 0.0139322f) + (rgb[1] * 0.0971045f) + (rgb[2] * 0.7141733f);
+
+  dt_XYZ_to_Lab(XYZ, Lab);
+
+  // Hue from LCH color space in [-pi, +pi] interval
+  float LCH_hue = atan2(Lab[2], Lab[1]);
+
+  return LCH_hue;
+}
+
+
 static inline void image_to_grid(const dt_iop_colorreconstruct_bilateral_t *const b, const float i, const float j, const float L, float *x,
                           float *y, float *z)
 {
@@ -141,7 +219,6 @@ static inline void image_to_grid(const dt_iop_colorreconstruct_bilateral_t *cons
   *y = CLAMPS(j / b->sigma_s, 0, b->size_y - 1);
   *z = CLAMPS(L / b->sigma_r, 0, b->size_z - 1);
 }
-
 
 static inline void grid_rescale(const dt_iop_colorreconstruct_bilateral_t *const b, const int i, const int j, const dt_iop_roi_t *roi,
                          const float scale, float *px, float *py)
@@ -258,23 +335,44 @@ static dt_iop_colorreconstruct_bilateral_t *dt_iop_colorreconstruct_bilateral_th
 }
 
 
-static void dt_iop_colorreconstruct_bilateral_splat(dt_iop_colorreconstruct_bilateral_t *b, const float *const in, const float threshold)
+static void dt_iop_colorreconstruct_bilateral_splat(dt_iop_colorreconstruct_bilateral_t *b, const float *const in, const float threshold,
+                                                    dt_iop_colorreconstruct_precedence_t precedence, const float *params)
 {
   // splat into downsampled grid
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(b)
+#pragma omp parallel for default(none) shared(b, precedence, params)
 #endif
   for(int j = 0; j < b->height; j++)
   {
     size_t index = 4 * j * b->width;
     for(int i = 0; i < b->width; i++, index += 4)
     {
-      float x, y, z;
+      float x, y, z, weight, m;
       const float Lin = in[index];
       const float ain = in[index + 1];
       const float bin = in[index + 2];
       // we deliberately ignore pixels above threshold
       if (Lin > threshold) continue;
+
+      switch(precedence)
+      {
+        case COLORRECONSTRUCT_PRECEDENCE_CHROMA:
+          weight = sqrt(ain * ain + bin * bin);
+          break;
+
+        case COLORRECONSTRUCT_PRECEDENCE_HUE:
+          m = atan2(bin, ain) - params[0];
+          // readjust m into [-pi, +pi] interval
+          m = m > M_PI ? m - 2*M_PI : (m < -M_PI ? m + 2*M_PI : m);
+          weight = exp(-m*m/params[1]);
+          break;
+
+        case COLORRECONSTRUCT_PRECEDENCE_NONE:
+        default:
+          weight = 1.0f;
+          break;
+      }
+
       image_to_grid(b, i, j, Lin, &x, &y, &z);
 
       // closest integer splatting:
@@ -286,22 +384,22 @@ static void dt_iop_colorreconstruct_bilateral_splat(dt_iop_colorreconstruct_bila
 #ifdef _OPENMP
 #pragma omp atomic
 #endif
-      b->buf[grid_index].L += Lin;
+      b->buf[grid_index].L += Lin * weight;
 
 #ifdef _OPENMP
 #pragma omp atomic
 #endif
-      b->buf[grid_index].a += ain;
+      b->buf[grid_index].a += ain * weight;
 
 #ifdef _OPENMP
 #pragma omp atomic
 #endif
-      b->buf[grid_index].b += bin;
+      b->buf[grid_index].b += bin * weight;
 
 #ifdef _OPENMP
 #pragma omp atomic
 #endif
-      b->buf[grid_index].weight += 1.0f;
+      b->buf[grid_index].weight += weight;
     }
   }
 }
@@ -463,8 +561,11 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *
   float *out = (float *)ovoid;
 
   const float scale = piece->iscale / roi_in->scale;
-  const float sigma_r = data->range;
-  const float sigma_s = data->spatial / scale;
+  const float sigma_r = fmax(data->range, 0.1f);
+  const float sigma_s = fmax(data->spatial, 1.0f) / scale;
+  const float hue = hue_conversion(data->hue); // convert to LCH hue which better fits to Lab colorspace
+
+  const float params[4] = { hue, M_PI*M_PI/8, 0.0f, 0.0f };
 
   dt_iop_colorreconstruct_bilateral_t *b;
   dt_iop_colorreconstruct_bilateral_frozen_t *can = NULL;
@@ -496,7 +597,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *
   else
   {
     b = dt_iop_colorreconstruct_bilateral_init(roi_in, piece->iscale, sigma_s, sigma_r);
-    dt_iop_colorreconstruct_bilateral_splat(b, in, data->threshold);
+    dt_iop_colorreconstruct_bilateral_splat(b, in, data->threshold, data->precedence, params);
     dt_iop_colorreconstruct_bilateral_blur(b);
   }
 
@@ -787,9 +888,11 @@ static dt_iop_colorreconstruct_bilateral_cl_t *dt_iop_colorreconstruct_bilateral
   return b;
 }
 
-static cl_int dt_iop_colorreconstruct_bilateral_splat_cl(dt_iop_colorreconstruct_bilateral_cl_t *b, cl_mem in, const float threshold)
+static cl_int dt_iop_colorreconstruct_bilateral_splat_cl(dt_iop_colorreconstruct_bilateral_cl_t *b, cl_mem in, const float threshold,
+                                                         dt_iop_colorreconstruct_precedence_t precedence, const float *params)
 {
   cl_int err = -666;
+  int pref = precedence;
   size_t sizes[] = { ROUNDUP(b->width, b->blocksizex), ROUNDUP(b->height, b->blocksizey), 1 };
   size_t local[] = { b->blocksizex, b->blocksizey, 1 };
   dt_opencl_set_kernel_arg(b->devid, b->global->kernel_colorreconstruct_splat, 0, sizeof(cl_mem), (void *)&in);
@@ -802,9 +905,11 @@ static cl_int dt_iop_colorreconstruct_bilateral_splat_cl(dt_iop_colorreconstruct
   dt_opencl_set_kernel_arg(b->devid, b->global->kernel_colorreconstruct_splat, 7, sizeof(float), (void *)&b->sigma_s);
   dt_opencl_set_kernel_arg(b->devid, b->global->kernel_colorreconstruct_splat, 8, sizeof(float), (void *)&b->sigma_r);
   dt_opencl_set_kernel_arg(b->devid, b->global->kernel_colorreconstruct_splat, 9, sizeof(float), (void *)&threshold);
-  dt_opencl_set_kernel_arg(b->devid, b->global->kernel_colorreconstruct_splat, 10, b->blocksizex * b->blocksizey * sizeof(int),
+  dt_opencl_set_kernel_arg(b->devid, b->global->kernel_colorreconstruct_splat, 10, sizeof(int), (void *)&pref);
+  dt_opencl_set_kernel_arg(b->devid, b->global->kernel_colorreconstruct_splat, 11, 4*sizeof(float), (void *)params);
+  dt_opencl_set_kernel_arg(b->devid, b->global->kernel_colorreconstruct_splat, 12, b->blocksizex * b->blocksizey * sizeof(int),
                            NULL);
-  dt_opencl_set_kernel_arg(b->devid, b->global->kernel_colorreconstruct_splat, 11,
+  dt_opencl_set_kernel_arg(b->devid, b->global->kernel_colorreconstruct_splat, 13,
                            b->blocksizex * b->blocksizey * 4 * sizeof(float), NULL);
   err = dt_opencl_enqueue_kernel_2d_with_local(b->devid, b->global->kernel_colorreconstruct_splat, sizes, local);
   return err;
@@ -906,8 +1011,12 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   dt_iop_colorreconstruct_gui_data_t *g = (dt_iop_colorreconstruct_gui_data_t *)self->gui_data;
 
   const float scale = piece->iscale / roi_in->scale;
-  const float sigma_r = d->range; // does not depend on scale
-  const float sigma_s = d->spatial / scale;
+  const float sigma_r = fmax(d->range, 0.1f); // does not depend on scale
+  const float sigma_s = fmax(d->spatial, 1.0f) / scale;
+  const float hue = hue_conversion(d->hue); // convert to LCH hue which better fits to Lab colorspace
+
+  const float params[4] = { hue, M_PI*M_PI/8, 0.0f, 0.0f };
+
   cl_int err = -666;
 
   dt_iop_colorreconstruct_bilateral_cl_t *b;
@@ -937,7 +1046,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   {
     b = dt_iop_colorreconstruct_bilateral_init_cl(piece->pipe->devid, gd, roi_in, piece->iscale, sigma_s, sigma_r);
     if(!b) goto error;
-    err = dt_iop_colorreconstruct_bilateral_splat_cl(b, dev_in, d->threshold);
+    err = dt_iop_colorreconstruct_bilateral_splat_cl(b, dev_in, d->threshold, d->precedence, params);
     if(err != CL_SUCCESS) goto error;
     err = dt_iop_colorreconstruct_bilateral_blur_cl(b);
     if(err != CL_SUCCESS) goto error;
@@ -1004,8 +1113,8 @@ void tiling_callback(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t
   // the total scale is composed of scale before input to the pipeline (iscale),
   // and the scale of the roi.
   const float scale = piece->iscale / roi_in->scale;
-  const float sigma_r = d->range;
-  const float sigma_s = d->spatial / scale;
+  const float sigma_r = fmax(d->range, 0.1f);
+  const float sigma_s = fmax(d->spatial, 1.0f) / scale;
 
   const int width = roi_in->width;
   const int height = roi_in->height;
@@ -1052,6 +1161,36 @@ static void range_callback(GtkWidget *slider, gpointer user_data)
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
+static void precedence_callback(GtkWidget *widget, gpointer user_data)
+{
+  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
+  if(self->dt->gui->reset) return;
+  dt_iop_colorreconstruct_params_t *p = (dt_iop_colorreconstruct_params_t *)self->params;
+  dt_iop_colorreconstruct_gui_data_t *g = (dt_iop_colorreconstruct_gui_data_t *)self->gui_data;
+  p->precedence = dt_bauhaus_combobox_get(widget);
+
+  switch(p->precedence)
+  {
+    case COLORRECONSTRUCT_PRECEDENCE_HUE:
+      gtk_widget_show(g->hue);
+      break;
+    default:
+      gtk_widget_hide(g->hue);
+      break;
+  }
+
+  dt_dev_add_history_item(darktable.develop, self, TRUE);
+}
+
+static void hue_callback(GtkWidget *slider, gpointer user_data)
+{
+  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
+  if(self->dt->gui->reset) return;
+  dt_iop_colorreconstruct_params_t *p = (dt_iop_colorreconstruct_params_t *)self->params;
+  p->hue = dt_bauhaus_slider_get(slider);
+  dt_dev_add_history_item(darktable.develop, self, TRUE);
+}
+
 void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe,
                    dt_dev_pixelpipe_iop_t *piece)
 {
@@ -1061,6 +1200,8 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
   d->threshold = p->threshold;
   d->spatial = p->spatial;
   d->range = p->range;
+  d->precedence = p->precedence;
+  d->hue = p->hue;
 
 #ifdef HAVE_OPENCL
   piece->process_cl_ready = (piece->process_cl_ready && !(darktable.opencl->avoid_atomics));
@@ -1088,6 +1229,18 @@ void gui_update(struct dt_iop_module_t *self)
   dt_bauhaus_slider_set(g->threshold, p->threshold);
   dt_bauhaus_slider_set(g->spatial, p->spatial);
   dt_bauhaus_slider_set(g->range, p->range);
+  dt_bauhaus_combobox_set(g->precedence, p->precedence);
+  dt_bauhaus_slider_set(g->hue, p->hue);
+
+  switch(p->precedence)
+  {
+    case COLORRECONSTRUCT_PRECEDENCE_HUE:
+      gtk_widget_show(g->hue);
+      break;
+    default:
+      gtk_widget_hide(g->hue);
+      break;
+  }
 }
 
 void init(dt_iop_module_t *module)
@@ -1098,7 +1251,7 @@ void init(dt_iop_module_t *module)
   module->priority = 360; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_colorreconstruct_params_t);
   module->gui_data = NULL;
-  dt_iop_colorreconstruct_params_t tmp = (dt_iop_colorreconstruct_params_t){ 100.0f, 400.0f, 10.0f };
+  dt_iop_colorreconstruct_params_t tmp = (dt_iop_colorreconstruct_params_t){ 100.0f, 400.0f, 10.0f, 0.66f, COLORRECONSTRUCT_PRECEDENCE_NONE };
   memcpy(module->params, &tmp, sizeof(dt_iop_colorreconstruct_params_t));
   memcpy(module->default_params, &tmp, sizeof(dt_iop_colorreconstruct_params_t));
 }
@@ -1149,22 +1302,57 @@ void gui_init(struct dt_iop_module_t *self)
   g->threshold = dt_bauhaus_slider_new_with_range(self, 50.0f, 150.0f, 0.1f, p->threshold, 2);
   g->spatial = dt_bauhaus_slider_new_with_range(self, 0.0f, 1000.0f, 1.0f, p->spatial, 2);
   g->range = dt_bauhaus_slider_new_with_range(self, 0.0f, 50.0f, 0.1f, p->range, 2);
+  g->precedence = dt_bauhaus_combobox_new(self);
+  g->hue = dt_bauhaus_slider_new_with_range_and_feedback(self, 0.0f, 1.0f, 0.01f, 0.0f, 2, 0);
 
-  dt_bauhaus_widget_set_label(g->threshold, NULL, _("luma threshold"));
-  dt_bauhaus_widget_set_label(g->spatial, NULL, _("spatial blur"));
-  dt_bauhaus_widget_set_label(g->range, NULL, _("range blur"));
+  dt_bauhaus_widget_set_label(g->threshold, NULL, _("threshold"));
+  dt_bauhaus_widget_set_label(g->spatial, NULL, _("spatial extent"));
+  dt_bauhaus_widget_set_label(g->range, NULL, _("range extent"));
+  dt_bauhaus_widget_set_label(g->hue, NULL, _("hue"));
+
+  dt_bauhaus_widget_set_label(g->precedence, NULL, _("precedence"));
+  dt_bauhaus_combobox_add(g->precedence, _("none"));
+  dt_bauhaus_combobox_add(g->precedence, _("saturated colors"));
+  dt_bauhaus_combobox_add(g->precedence, _("hue"));
+
+  dt_bauhaus_slider_set_stop(g->hue, 0.0f, 1.0f, 0.0f, 0.0f);
+  dt_bauhaus_slider_set_stop(g->hue, 0.166f, 1.0f, 1.0f, 0.0f);
+  dt_bauhaus_slider_set_stop(g->hue, 0.322f, 0.0f, 1.0f, 0.0f);
+  dt_bauhaus_slider_set_stop(g->hue, 0.498f, 0.0f, 1.0f, 1.0f);
+  dt_bauhaus_slider_set_stop(g->hue, 0.664f, 0.0f, 0.0f, 1.0f);
+  dt_bauhaus_slider_set_stop(g->hue, 0.830f, 1.0f, 0.0f, 1.0f);
+  dt_bauhaus_slider_set_stop(g->hue, 1.0f, 1.0f, 0.0f, 0.0f);
 
   gtk_box_pack_start(GTK_BOX(self->widget), g->threshold, TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), g->spatial, TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), g->range, TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(self->widget), g->precedence, TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(self->widget), g->hue, TRUE, TRUE, 0);
 
-  g_object_set(g->threshold, "tooltip-text", _("pixels with L values below this threshold are not affected"), (char *)NULL);
-  g_object_set(g->spatial, "tooltip-text", _("blur of color information in spatial dimensions (width and height)"), (char *)NULL);
-  g_object_set(g->range, "tooltip-text", _("blur of color information in the luminance dimension (L value)"), (char *)NULL);
+  gtk_widget_show_all(g->hue);
+  gtk_widget_set_no_show_all(g->hue, TRUE);
+
+  switch(p->precedence)
+  {
+    case COLORRECONSTRUCT_PRECEDENCE_HUE:
+      gtk_widget_show(g->hue);
+      break;
+    default:
+      gtk_widget_hide(g->hue);
+      break;
+  }
+
+  g_object_set(g->threshold, "tooltip-text", _("pixels with lightness values above this threshold are corrected"), (char *)NULL);
+  g_object_set(g->spatial, "tooltip-text", _("how far to look for replacement colors in spatial dimensions"), (char *)NULL);
+  g_object_set(g->range, "tooltip-text", _("how far to look for replacement colors in the luminance dimension"), (char *)NULL);
+  g_object_set(g->precedence, "tooltip-text", _("if and how to give precedence to specific replacement colors"), (char *)NULL);
+  g_object_set(g->hue, "tooltip-text", _("the hue tone which should be given precedence over other hue tones"), (char *)NULL);
 
   g_signal_connect(G_OBJECT(g->threshold), "value-changed", G_CALLBACK(threshold_callback), self);
   g_signal_connect(G_OBJECT(g->spatial), "value-changed", G_CALLBACK(spatial_callback), self);
   g_signal_connect(G_OBJECT(g->range), "value-changed", G_CALLBACK(range_callback), self);
+  g_signal_connect(G_OBJECT(g->precedence), "value-changed", G_CALLBACK(precedence_callback), self);
+  g_signal_connect(G_OBJECT(g->hue), "value-changed", G_CALLBACK(hue_callback), self);
 }
 
 void gui_cleanup(struct dt_iop_module_t *self)

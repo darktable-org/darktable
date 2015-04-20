@@ -954,6 +954,11 @@ gui_init (dt_lib_module_t *self)
   gtk_entry_set_alignment (GTK_ENTRY(d->b_right), 1);
   gtk_entry_set_alignment (GTK_ENTRY(d->b_bottom), 1);
 
+  dt_gui_key_accel_block_on_focus_connect(GTK_WIDGET(d->b_top));
+  dt_gui_key_accel_block_on_focus_connect(GTK_WIDGET(d->b_left));
+  dt_gui_key_accel_block_on_focus_connect(GTK_WIDGET(d->b_right));
+  dt_gui_key_accel_block_on_focus_connect(GTK_WIDGET(d->b_bottom));
+
   ////////////////////////// PRINTER SETTINGS
 
   // create papers combo as filled when adding printers
@@ -1576,6 +1581,11 @@ void
 gui_cleanup (dt_lib_module_t *self)
 {
   dt_lib_print_settings_t *ps = (dt_lib_print_settings_t *)self->data;
+
+  dt_gui_key_accel_block_on_focus_disconnect(GTK_WIDGET(ps->b_top));
+  dt_gui_key_accel_block_on_focus_disconnect(GTK_WIDGET(ps->b_left));
+  dt_gui_key_accel_block_on_focus_disconnect(GTK_WIDGET(ps->b_right));
+  dt_gui_key_accel_block_on_focus_disconnect(GTK_WIDGET(ps->b_bottom));
 
   dt_control_signal_disconnect(darktable.signals,
                                G_CALLBACK(_print_settings_filmstrip_activate_callback),

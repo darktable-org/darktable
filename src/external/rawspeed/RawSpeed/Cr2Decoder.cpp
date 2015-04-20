@@ -30,7 +30,7 @@ namespace RawSpeed {
 
 Cr2Decoder::Cr2Decoder(TiffIFD *rootIFD, FileMap* file) :
     RawDecoder(file), mRootIFD(rootIFD) {
-  decoderVersion = 5;
+  decoderVersion = 6;
 }
 
 Cr2Decoder::~Cr2Decoder(void) {
@@ -131,6 +131,7 @@ RawImage Cr2Decoder::decodeRawInternal() {
   mRaw->isCFA = true;
   vector<Cr2Slice> slices;
   int completeH = 0;
+  bool doubleHeight = false;
 
   try {
     TiffEntry *offsets = raw->getEntry(STRIPOFFSETS);
@@ -145,6 +146,9 @@ RawImage Cr2Decoder::decodeRawInternal() {
       l.getSOF(&sof, slice.offset, slice.count);
       slice.w = sof.w * sof.cps;
       slice.h = sof.h;
+      if (sof.cps == 4 && slice.w > slice.h * 4) {
+        doubleHeight = true;
+      }
       if (!slices.empty())
         if (slices[0].w != slice.w)
           ThrowRDE("CR2 Decoder: Slice width does not match.");
@@ -157,10 +161,14 @@ RawImage Cr2Decoder::decodeRawInternal() {
     ThrowRDE("CR2 Decoder: Unsupported format.");
   }
 
+  // Override with canon_double_height if set.
+  map<string,string>::iterator msb_hint = hints.find("canon_double_height");
+  if (msb_hint != hints.end())
+    doubleHeight = (0 == (msb_hint->second).compare("true"));
+
   if (slices.empty()) {
     ThrowRDE("CR2 Decoder: No Slices found.");
   }
-
   mRaw->dim = iPoint2D(slices[0].w, completeH);
 
   // Fix for Canon 6D mRaw, which has flipped width & height for some part of the image
@@ -206,6 +214,7 @@ RawImage Cr2Decoder::decodeRawInternal() {
       l.addSlices(s_width);
       l.mUseBigtable = true;
       l.mCanonFlipDim = flipDims;
+      l.mCanonDoubleHeight = doubleHeight;
       l.startDecoder(slice.offset, slice.count, 0, offY);
     } catch (RawDecoderException &e) {
       if (i == 0)

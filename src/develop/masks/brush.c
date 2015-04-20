@@ -545,12 +545,38 @@ static int _brush_get_points_border(dt_develop_t *dev, dt_masks_form_t *form, in
 
   float wd = pipe->iwidth, ht = pipe->iheight;
 
+  *points = NULL;
+  *points_count = 0;
+  if(border) *border = NULL;
+  if(border) *border_count = 0;
+  if(payload) *payload = NULL;
+  if(payload) *payload_count = 0;
 
   dt_masks_dynbuf_t *dpoints = NULL, *dborder = NULL, *dpayload = NULL;
 
   dpoints = dt_masks_dynbuf_init(1000000, "brush dpoints");
-  if(border) dborder = dt_masks_dynbuf_init(1000000, "brush dborder");
-  if(payload) dpayload = dt_masks_dynbuf_init(1000000, "brush dpayload");
+  if(dpoints == NULL) return 0;
+
+  if(border)
+  {
+    dborder = dt_masks_dynbuf_init(1000000, "brush dborder");
+    if(dborder == NULL)
+    {
+      dt_masks_dynbuf_free(dpoints);
+      return 0;
+    }
+  }
+
+  if(payload)
+  {
+    dpayload = dt_masks_dynbuf_init(1000000, "brush dpayload");
+    if(dpayload == NULL)
+    {
+      dt_masks_dynbuf_free(dpoints);
+      dt_masks_dynbuf_free(dborder);
+      return 0;
+    }
+  }
 
   // we store all points
   float dx = 0.0f, dy = 0.0f;
@@ -576,7 +602,7 @@ static int _brush_get_points_border(dt_develop_t *dev, dt_masks_form_t *form, in
   }
 
   // for the border, we store value too
-  if(border)
+  if(dborder)
   {
     for(int k = 0; k < nb; k++)
     {
@@ -590,7 +616,7 @@ static int _brush_get_points_border(dt_develop_t *dev, dt_masks_form_t *form, in
   }
 
   // for the payload, we reserve an equivalent number of cells to keep it in sync
-  if(payload)
+  if(dpayload)
   {
     for(int k = 0; k < nb; k++)
     {
@@ -670,14 +696,14 @@ static int _brush_get_points_border(dt_develop_t *dev, dt_masks_form_t *form, in
       }
       else
       {
-        if(border)
+        if(dborder)
         {
           float bmin[2] = { dt_masks_dynbuf_get(dborder, -2), dt_masks_dynbuf_get(dborder, -1) };
           float cmax[2] = { dt_masks_dynbuf_get(dpoints, -2), dt_masks_dynbuf_get(dpoints, -1) };
           _brush_points_stamp(cmax, bmin, dpoints, dborder, TRUE);
         }
 
-        if(payload)
+        if(dpayload)
         {
           while(dt_masks_dynbuf_position(dpayload) < dt_masks_dynbuf_position(dpoints))
           {
@@ -691,7 +717,7 @@ static int _brush_get_points_border(dt_develop_t *dev, dt_masks_form_t *form, in
     // 2nd. special case: render transition point between different brush sizes
     if(fabs(p1[4] - p2[4]) > 0.0001f && n > 0)
     {
-      if(border)
+      if(dborder)
       {
         float bmin[2] = { dt_masks_dynbuf_get(dborder, -2), dt_masks_dynbuf_get(dborder, -1) };
         float cmax[2] = { dt_masks_dynbuf_get(dpoints, -2), dt_masks_dynbuf_get(dpoints, -1) };
@@ -699,7 +725,7 @@ static int _brush_get_points_border(dt_develop_t *dev, dt_masks_form_t *form, in
         _brush_points_recurs_border_gaps(cmax, bmin, NULL, bmax, dpoints, dborder, TRUE);
       }
 
-      if(payload)
+      if(dpayload)
       {
         while(dt_masks_dynbuf_position(dpayload) < dt_masks_dynbuf_position(dpoints))
         {
@@ -712,7 +738,7 @@ static int _brush_get_points_border(dt_develop_t *dev, dt_masks_form_t *form, in
     // 3rd. special case: render endpoints
     if(k == k1)
     {
-      if(border)
+      if(dborder)
       {
         float bmin[2] = { dt_masks_dynbuf_get(dborder, -2), dt_masks_dynbuf_get(dborder, -1) };
         float cmax[2] = { dt_masks_dynbuf_get(dpoints, -2), dt_masks_dynbuf_get(dpoints, -1) };
@@ -720,7 +746,7 @@ static int _brush_get_points_border(dt_develop_t *dev, dt_masks_form_t *form, in
         _brush_points_recurs_border_gaps(cmax, bmin, NULL, bmax, dpoints, dborder, TRUE);
       }
 
-      if(payload)
+      if(dpayload)
       {
         while(dt_masks_dynbuf_position(dpayload) < dt_masks_dynbuf_position(dpoints))
         {
@@ -745,13 +771,13 @@ static int _brush_get_points_border(dt_develop_t *dev, dt_masks_form_t *form, in
     dt_masks_dynbuf_add(dpoints, rc[0]);
     dt_masks_dynbuf_add(dpoints, rc[1]);
 
-    if(payload)
+    if(dpayload)
     {
       dt_masks_dynbuf_add(dpayload, rp[0]);
       dt_masks_dynbuf_add(dpayload, rp[1]);
     }
 
-    if(border)
+    if(dborder)
     {
       if((int)rb[0] == -9999999)
       {
@@ -768,7 +794,7 @@ static int _brush_get_points_border(dt_develop_t *dev, dt_masks_form_t *form, in
     }
 
     // we first want to be sure that there are no gaps in border
-    if(border && nb >= 3)
+    if(dborder && nb >= 3)
     {
       // we get the next point (start of the next segment)
       _brush_border_get_XY(p3[0], p3[1], p3[2], p3[3], p4[2], p4[3], p4[0], p4[1], 0, p3[4], cmin, cmin + 1,
@@ -785,7 +811,7 @@ static int _brush_get_points_border(dt_develop_t *dev, dt_masks_form_t *form, in
       }
     }
 
-    if(payload)
+    if(dpayload)
     {
       while(dt_masks_dynbuf_position(dpayload) < dt_masks_dynbuf_position(dpoints))
       {
@@ -796,23 +822,20 @@ static int _brush_get_points_border(dt_develop_t *dev, dt_masks_form_t *form, in
   }
 
   *points_count = dt_masks_dynbuf_position(dpoints) / 2;
-  *points = malloc(*points_count * 2 * sizeof(float));
-  memcpy(*points, dt_masks_dynbuf_buffer(dpoints), *points_count * 2 * sizeof(float));
+  *points = dt_masks_dynbuf_harvest(dpoints);
   dt_masks_dynbuf_free(dpoints);
 
-  if(border)
+  if(dborder)
   {
     *border_count = dt_masks_dynbuf_position(dborder) / 2;
-    *border = malloc(*border_count * 2 * sizeof(float));
-    memcpy(*border, dt_masks_dynbuf_buffer(dborder), *border_count * 2 * sizeof(float));
+    *border = dt_masks_dynbuf_harvest(dborder);
     dt_masks_dynbuf_free(dborder);
   }
 
-  if(payload)
+  if(dpayload)
   {
     *payload_count = dt_masks_dynbuf_position(dpayload) / 2;
-    *payload = malloc(*payload_count * 2 * sizeof(float));
-    memcpy(*payload, dt_masks_dynbuf_buffer(dpayload), *payload_count * 2 * sizeof(float));
+    *payload = dt_masks_dynbuf_harvest(dpayload);
     dt_masks_dynbuf_free(dpayload);
   }
   // printf("points %d, border %d, playload %d\n", *points_count, border ? *border_count : -1, payload ?
@@ -836,7 +859,16 @@ static int _brush_get_points_border(dt_develop_t *dev, dt_masks_form_t *form, in
     }
   }
 
-  // if we failed, then return 0
+  // if we failed, then free all and return
+  free(*points);
+  *points = NULL;
+  *points_count = 0;
+  if(border) free(*border);
+  if(border) *border = NULL;
+  if(border) *border_count = 0;
+  if(payload) free(*payload);
+  if(payload) *payload = NULL;
+  if(payload) *payload_count = 0;
   return 0;
 }
 
