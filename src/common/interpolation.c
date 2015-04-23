@@ -1340,6 +1340,22 @@ exit:
 }
 
 
+void dt_interpolation_resample_roi(const struct dt_interpolation *itor, float *out,
+                                   const dt_iop_roi_t *const roi_out, const int32_t out_stride,
+                                   const float *const in, const dt_iop_roi_t *const roi_in,
+                                   const int32_t in_stride)
+{
+  dt_iop_roi_t oroi = *roi_out;
+  oroi.x = 0;
+  oroi.y = 0;
+
+  dt_iop_roi_t iroi = *roi_in;
+  iroi.x = 0;
+  iroi.y = 0;
+
+  dt_interpolation_resample(itor, out, &oroi, out_stride, in, &iroi, in_stride);
+}
+
 #ifdef HAVE_OPENCL
 dt_interpolation_cl_global_t *dt_interpolation_init_cl_global()
 {
@@ -1587,6 +1603,21 @@ error:
   dt_free_align(vlength);
   dt_print(DT_DEBUG_OPENCL, "[opencl_resampling] couldn't enqueue kernel! %d\n", err);
   return err;
+}
+
+int dt_interpolation_resample_roi_cl(const struct dt_interpolation *itor, int devid, cl_mem dev_out,
+                                     const dt_iop_roi_t *const roi_out, cl_mem dev_in,
+                                     const dt_iop_roi_t *const roi_in)
+{
+  dt_iop_roi_t oroi = *roi_out;
+  oroi.x = 0;
+  oroi.y = 0;
+
+  dt_iop_roi_t iroi = *roi_in;
+  iroi.x = 0;
+  iroi.y = 0;
+
+  return dt_interpolation_resample_cl(itor, devid, dev_out, &oroi, dev_in, &iroi);
 }
 #endif
 
