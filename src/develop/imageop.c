@@ -1975,6 +1975,14 @@ void dt_iop_clip_and_zoom(float *out, const float *const in, const dt_iop_roi_t 
                           const dt_iop_roi_t *const roi_in, const int32_t out_stride, const int32_t in_stride)
 {
   const struct dt_interpolation *itor = dt_interpolation_new(DT_INTERPOLATION_USERPREF);
+  dt_interpolation_resample(itor, out, roi_out, out_stride * 4 * sizeof(float), in, roi_in,
+                                in_stride * 4 * sizeof(float));
+}
+
+void dt_iop_clip_and_zoom_roi(float *out, const float *const in, const dt_iop_roi_t *const roi_out,
+                              const dt_iop_roi_t *const roi_in, const int32_t out_stride, const int32_t in_stride)
+{
+  const struct dt_interpolation *itor = dt_interpolation_new(DT_INTERPOLATION_USERPREF);
   dt_interpolation_resample_roi(itor, out, roi_out, out_stride * 4 * sizeof(float), in, roi_in,
                                 in_stride * 4 * sizeof(float));
 }
@@ -1984,8 +1992,16 @@ int dt_iop_clip_and_zoom_cl(int devid, cl_mem dev_out, cl_mem dev_in, const dt_i
                             const dt_iop_roi_t *const roi_in)
 {
   const struct dt_interpolation *itor = dt_interpolation_new(DT_INTERPOLATION_USERPREF);
+  return dt_interpolation_resample_cl(itor, devid, dev_out, roi_out, dev_in, roi_in);
+}
+
+int dt_iop_clip_and_zoom_roi_cl(int devid, cl_mem dev_out, cl_mem dev_in, const dt_iop_roi_t *const roi_out,
+                                const dt_iop_roi_t *const roi_in)
+{
+  const struct dt_interpolation *itor = dt_interpolation_new(DT_INTERPOLATION_USERPREF);
   return dt_interpolation_resample_roi_cl(itor, devid, dev_out, roi_out, dev_in, roi_in);
 }
+
 #endif
 
 

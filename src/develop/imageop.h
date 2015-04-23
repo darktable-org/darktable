@@ -523,10 +523,19 @@ void dt_iop_flip_and_zoom_8(const uint8_t *in, int32_t iw, int32_t ih, uint8_t *
 void dt_iop_clip_and_zoom(float *out, const float *const in, const struct dt_iop_roi_t *const roi_out,
                           const struct dt_iop_roi_t *const roi_in, const int32_t out_stride,
                           const int32_t in_stride);
+
+/** zoom pixel array for roi buffers. */
+void dt_iop_clip_and_zoom_roi(float *out, const float *const in, const struct dt_iop_roi_t *const roi_out,
+                              const struct dt_iop_roi_t *const roi_in, const int32_t out_stride,
+                              const int32_t in_stride);
 #ifdef HAVE_OPENCL
 int dt_iop_clip_and_zoom_cl(int devid, cl_mem dev_out, cl_mem dev_in,
                             const struct dt_iop_roi_t *const roi_out,
                             const struct dt_iop_roi_t *const roi_in);
+
+int dt_iop_clip_and_zoom_roi_cl(int devid, cl_mem dev_out, cl_mem dev_in,
+                                const struct dt_iop_roi_t *const roi_out,
+                                const struct dt_iop_roi_t *const roi_in);
 #endif
 
 /** clip and zoom mosaiced image without demosaicing it uint16_t -> float4 */
