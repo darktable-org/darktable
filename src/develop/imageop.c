@@ -1971,6 +1971,8 @@ void dt_iop_clip_and_zoom_8(const uint8_t *i, int32_t ix, int32_t iy, int32_t iw
   }
 }
 
+// apply clip and zoom on parts of a supplied full image.
+// roi_in and roi_out define which part to work on.
 void dt_iop_clip_and_zoom(float *out, const float *const in, const dt_iop_roi_t *const roi_out,
                           const dt_iop_roi_t *const roi_in, const int32_t out_stride, const int32_t in_stride)
 {
@@ -1979,6 +1981,8 @@ void dt_iop_clip_and_zoom(float *out, const float *const in, const dt_iop_roi_t 
                                 in_stride * 4 * sizeof(float));
 }
 
+// apply clip and zoom on the image region supplied in the input buffer.
+// roi_in and roi_out describe which part of the full image this relates to.
 void dt_iop_clip_and_zoom_roi(float *out, const float *const in, const dt_iop_roi_t *const roi_out,
                               const dt_iop_roi_t *const roi_in, const int32_t out_stride, const int32_t in_stride)
 {
@@ -1988,6 +1992,8 @@ void dt_iop_clip_and_zoom_roi(float *out, const float *const in, const dt_iop_ro
 }
 
 #ifdef HAVE_OPENCL
+// apply clip and zoom on parts of a supplied full image.
+// roi_in and roi_out define which part to work on.
 int dt_iop_clip_and_zoom_cl(int devid, cl_mem dev_out, cl_mem dev_in, const dt_iop_roi_t *const roi_out,
                             const dt_iop_roi_t *const roi_in)
 {
@@ -1995,6 +2001,8 @@ int dt_iop_clip_and_zoom_cl(int devid, cl_mem dev_out, cl_mem dev_in, const dt_i
   return dt_interpolation_resample_cl(itor, devid, dev_out, roi_out, dev_in, roi_in);
 }
 
+// apply clip and zoom on the image region supplied in the input buffer.
+// roi_in and roi_out describe which part of the full image this relates to.
 int dt_iop_clip_and_zoom_roi_cl(int devid, cl_mem dev_out, cl_mem dev_in, const dt_iop_roi_t *const roi_out,
                                 const dt_iop_roi_t *const roi_in)
 {
