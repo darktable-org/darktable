@@ -1178,6 +1178,9 @@ static int prepare_resampling_plan(const struct dt_interpolation *itor, int in, 
   return 0;
 }
 
+/** Applies resampling (re-scaling) on *full* input and output buffers.
+ *  roi_in and roi_out define the part of the buffers that is affected.
+ */
 void dt_interpolation_resample(const struct dt_interpolation *itor, float *out,
                                const dt_iop_roi_t *const roi_out, const int32_t out_stride,
                                const float *const in, const dt_iop_roi_t *const roi_in,
@@ -1339,19 +1342,20 @@ exit:
   dt_free_align(vlength);
 }
 
-
+/** Applies resampling (re-scaling) on a specific region-of-interest of an image. The input
+ *  and output buffers hold exactly those roi's. roi_in and roi_out define the relative
+ *  positions of the roi's within the full input and output image, respectively.
+ */
 void dt_interpolation_resample_roi(const struct dt_interpolation *itor, float *out,
                                    const dt_iop_roi_t *const roi_out, const int32_t out_stride,
                                    const float *const in, const dt_iop_roi_t *const roi_in,
                                    const int32_t in_stride)
 {
   dt_iop_roi_t oroi = *roi_out;
-  oroi.x = 0;
-  oroi.y = 0;
+  oroi.x = oroi.y = 0;
 
   dt_iop_roi_t iroi = *roi_in;
-  iroi.x = 0;
-  iroi.y = 0;
+  iroi.x = iroi.y = 0;
 
   dt_interpolation_resample(itor, out, &oroi, out_stride, in, &iroi, in_stride);
 }
@@ -1387,6 +1391,9 @@ static uint32_t roundToNextPowerOfTwo(uint32_t x)
   return x;
 }
 
+/** Applies resampling (re-scaling) on *full* input and output buffers.
+ *  roi_in and roi_out define the part of the buffers that is affected.
+ */
 int dt_interpolation_resample_cl(const struct dt_interpolation *itor, int devid, cl_mem dev_out,
                                  const dt_iop_roi_t *const roi_out, cl_mem dev_in,
                                  const dt_iop_roi_t *const roi_in)
@@ -1605,17 +1612,19 @@ error:
   return err;
 }
 
+/** Applies resampling (re-scaling) on a specific region-of-interest of an image. The input
+ *  and output buffers hold exactly those roi's. roi_in and roi_out define the relative
+ *  positions of the roi's within the full input and output image, respectively.
+ */
 int dt_interpolation_resample_roi_cl(const struct dt_interpolation *itor, int devid, cl_mem dev_out,
                                      const dt_iop_roi_t *const roi_out, cl_mem dev_in,
                                      const dt_iop_roi_t *const roi_in)
 {
   dt_iop_roi_t oroi = *roi_out;
-  oroi.x = 0;
-  oroi.y = 0;
+  oroi.x = oroi.y = 0;
 
   dt_iop_roi_t iroi = *roi_in;
-  iroi.x = 0;
-  iroi.y = 0;
+  iroi.x = iroi.y = 0;
 
   return dt_interpolation_resample_cl(itor, devid, dev_out, &oroi, dev_in, &iroi);
 }
