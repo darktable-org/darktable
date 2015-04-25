@@ -1122,14 +1122,12 @@ void dt_configure_defaults()
   {
     fprintf(stderr, "[defaults] setting high quality defaults\n");
     dt_conf_set_int("worker_threads", 8);
-    dt_conf_set_int64("cache_memory", 1u << 30);
     dt_conf_set_bool("plugins/lighttable/low_quality_thumbnails", FALSE);
   }
   if(mem < (1u << 20) || threads <= 2 || bits < 64 || atom_cores > 0)
   {
     fprintf(stderr, "[defaults] setting very conservative defaults\n");
     dt_conf_set_int("worker_threads", 1);
-    dt_conf_set_int64("cache_memory", 200u << 20);
     dt_conf_set_int("host_memory_limit", 500);
     dt_conf_set_int("singlebuffer_limit", 8);
     dt_conf_set_string("plugins/darkroom/demosaic/quality", "always bilinear (fast)");
