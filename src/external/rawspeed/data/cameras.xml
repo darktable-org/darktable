@@ -491,7 +491,7 @@
 			<Hint name="invert_sraw_wb" value=""/>
 		</Hints>
 	</Camera>
-	<Camera make="Canon" model="Canon EOS 5DS R" decoder_version="6">
+	<Camera make="Canon" model="Canon EOS 5DS R" decoder_version="6" supported="no">
 		<CFA width="2" height="2">
 			<Color x="0" y="0">RED</Color>
 			<Color x="1" y="0">GREEN</Color>
@@ -681,7 +681,7 @@
 			<Horizontal y="4" height="44"/>
 		</BlackAreas>
 	</Camera>
-	<Camera make="Canon" model="Canon EOS M2">
+	<Camera make="Canon" model="Canon EOS M2" supported="no">
 		<CFA width="2" height="2">
 			<Color x="0" y="0">RED</Color>
 			<Color x="1" y="0">GREEN</Color>
@@ -1758,7 +1758,7 @@
 		<Crop x="0" y="0" width="0" height="0"/>
 		<Sensor black="0" white="16383"/>
 	</Camera>
-	<Camera make="NIKON CORPORATION" model="NIKON D7200">
+	<Camera make="NIKON CORPORATION" model="NIKON D7200" supported="no">
 		<CFA width="2" height="2">
 			<Color x="0" y="0">RED</Color>
 			<Color x="1" y="0">GREEN</Color>
@@ -1766,7 +1766,10 @@
 			<Color x="1" y="1">BLUE</Color>
 		</CFA>
 		<Crop x="0" y="0" width="0" height="0"/>
-		<Sensor black="0" white="16383"/>
+		<Sensor black="600" white="16383"/>
+		<Hints>
+			<Hint name="nikon_override_auto_black" value=""/>
+		</Hints>
 	</Camera>
 	<Camera make="NIKON CORPORATION" model="NIKON D70s">
 		<CFA width="2" height="2">
@@ -2652,7 +2655,7 @@
 			<Alias>STYLUS1,1s</Alias>
 		</Aliases>
 	</Camera>
-	<Camera make="Panasonic" model = "DMC-CM1">
+	<Camera make="Panasonic" model = "DMC-CM1" supported="no">
 		<CFA width="2" height="2">
 			<Color x="0" y="0">BLUE</Color>
 			<Color x="1" y="0">GREEN</Color>
@@ -2665,7 +2668,7 @@
 			<Hint name="zero_is_bad" value=""/>
 		</Hints>
 	</Camera>
-	<Camera make="Panasonic" model = "DMC-CM1" mode="3:2">
+	<Camera make="Panasonic" model = "DMC-CM1" mode="3:2" supported="no">
 		<CFA width="2" height="2">
 			<Color x="0" y="0">BLUE</Color>
 			<Color x="1" y="0">GREEN</Color>
