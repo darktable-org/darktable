@@ -560,15 +560,28 @@ static bool dt_exif_read_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
     else if((pos = exifData.findKey(Exiv2::ExifKey("Exif.OlympusEq.LensType"))) != exifData.end()
             && pos->size())
     {
+      /* For every Olympus camera Exif.OlympusEq.LensType is present. */
       dt_strlcpy_to_utf8(img->exif_lens, sizeof(img->exif_lens), pos, exifData);
+
+      /* We have to check if Exif.OlympusEq.LensType has been translated by
+       * exiv2. If it hasn't, fall back to Exif.OlympusEq.LensModel. */
+      std::string lens(img->exif_lens);
+      if(std::string::npos == lens.find_first_not_of(" 1234567890"))
+      {
+        /* Exif.OlympusEq.LensType contains only digits and spaces.
+         * This means that exiv2 couldn't convert it to human readable
+         * form. */
+        if((pos = exifData.findKey(Exiv2::ExifKey("Exif.OlympusEq.LensModel"))) != exifData.end() && pos->size())
+        {
+          dt_strlcpy_to_utf8(img->exif_lens, sizeof(img->exif_lens), pos, exifData);
+        }
+        /* Just in case Exif.OlympusEq.LensModel hasn't been found */
+        else if((pos = exifData.findKey(Exiv2::ExifKey("Exif.Photo.LensModel"))) != exifData.end() && pos->size())
+        {
+          dt_strlcpy_to_utf8(img->exif_lens, sizeof(img->exif_lens), pos, exifData);
+        }
+      }
     }
-#if EXIV2_MINOR_VERSION > 20
-    else if((pos = exifData.findKey(Exiv2::ExifKey("Exif.OlympusEq.LensModel"))) != exifData.end()
-            && pos->size())
-    {
-      dt_strlcpy_to_utf8(img->exif_lens, sizeof(img->exif_lens), pos, exifData);
-    }
-#endif
     else if((pos = Exiv2::lensName(exifData)) != exifData.end() && pos->size())
     {
       dt_strlcpy_to_utf8(img->exif_lens, sizeof(img->exif_lens), pos, exifData);
