@@ -2094,13 +2094,15 @@ int dt_exif_xmp_write(const int imgid, const char *filename)
     dt_exif_xmp_read_data(xmpData, imgid);
 
     // serialize the xmp data and output the xmp packet
-    if(Exiv2::XmpParser::encode(xmpPacket, xmpData) != 0)
+    if(Exiv2::XmpParser::encode(xmpPacket, xmpData,
+       Exiv2::XmpParser::useCompactFormat | Exiv2::XmpParser::omitPacketWrapper) != 0)
     {
       throw Exiv2::Error(1, "[xmp_write] failed to serialize xmp data");
     }
     std::ofstream fout(filename);
     if(fout.is_open())
     {
+      fout << "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"; // write XML header
       fout << xmpPacket;
       fout.close();
     }
