@@ -4939,6 +4939,13 @@ const wb_data wb_preset[] =
   { "Panasonic", "DMC-GX7", "Incandescent", 0,	{ 1.758491, 1, 2.320755, 0 } },
   { "Panasonic", "DMC-GX7", "Flash", 0,		{ 2.607547, 1, 1.479245, 0 } },
 
+  /* Firmware version 1.1 */
+  { "Panasonic", "DMC-GM5", Daylight, 0,        { 2.394531, 1, 1.554687, 0 } },
+  { "Panasonic", "DMC-GM5", Cloudy, 0,          { 2.621093, 1, 1.437500, 0 } },
+  { "Panasonic", "DMC-GM5", Shade, 0,           { 2.781250, 1, 1.371093, 0 } },
+  { "Panasonic", "DMC-GM5", Incandescent, 0,    { 1.640625, 1, 2.253906, 0 } },
+  { "Panasonic", "DMC-GM5", Flash, 0,           { 2.492187, 1, 1.402343, 0 } },
+
   { "Panasonic", "DMC-L1", Daylight, 0,		{ 1.980989, 1, 1.444867, 0 } },
   { "Panasonic", "DMC-L1", Cloudy, 0,		{ 2.129278, 1, 1.300380, 0 } },
   { "Panasonic", "DMC-L1", Shade, 0,		{ 2.361217, 1, 1.167300, 0 } },
