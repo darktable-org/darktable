@@ -2069,7 +2069,31 @@ int dt_exif_xmp_attach(const int imgid, const char *filename)
       img->setIptcData(input_image->iptcData());
       img->setXmpData(input_image->xmpData());
     }
-    dt_exif_xmp_read_data(img->xmpData(), imgid);
+
+    Exiv2::XmpData &xmpData = img->xmpData();
+
+    // now add whatever we have in the sidecar XMP. this overwrites stuff from the source image
+    dt_image_path_append_version(imgid, input_filename, sizeof(input_filename));
+    g_strlcat(input_filename, ".xmp", sizeof(input_filename));
+    if(g_file_test(input_filename, G_FILE_TEST_EXISTS))
+    {
+      Exiv2::XmpData sidecarXmpData;
+      std::string xmpPacket;
+
+      Exiv2::DataBuf buf = Exiv2::readFile(input_filename);
+      xmpPacket.assign(reinterpret_cast<char *>(buf.pData_), buf.size_);
+      Exiv2::XmpParser::decode(sidecarXmpData, xmpPacket);
+
+      for(Exiv2::XmpData::const_iterator it = sidecarXmpData.begin(); it != sidecarXmpData.end(); ++it)
+        xmpData.add(*it);
+    }
+
+    dt_remove_known_keys(xmpData); // is this needed?
+
+    // last but not least attach what we have in DB to the XMP. in theory that should be
+    // the same as what we just copied over from the sidecar file, but you never know ...
+    dt_exif_xmp_read_data(xmpData, imgid);
+
     img->writeMetadata();
     return 0;
   }
