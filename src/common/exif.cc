@@ -580,6 +580,7 @@ static bool dt_exif_read_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
         {
           dt_strlcpy_to_utf8(img->exif_lens, sizeof(img->exif_lens), pos, exifData);
         }
+	fprintf(stderr, "[exif] Warning: lens \"%s\" unknown as \"%s\"\n", img->exif_lens, lens.c_str());
       }
     }
     else if((pos = Exiv2::lensName(exifData)) != exifData.end() && pos->size())
