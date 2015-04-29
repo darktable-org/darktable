@@ -71,7 +71,7 @@ static void _exif_import_tags(dt_image_t *img, Exiv2::XmpData::iterator &pos);
 // this array should contain all XmpBag and XmpSeq keys used by dt
 const char *dt_xmp_keys[]
     = { "Xmp.dc.subject", "Xmp.lr.hierarchicalSubject", "Xmp.darktable.colorlabels",
-        "Xmp.darktable.history_modversion", "Xmp.darktable.history_enabled",
+        "Xmp.darktable.history_modversion", "Xmp.darktable.history_enabled", "Xmp.darktable.history_end",
         "Xmp.darktable.history_operation", "Xmp.darktable.history_params", "Xmp.darktable.blendop_params",
         "Xmp.darktable.blendop_version", "Xmp.darktable.multi_priority", "Xmp.darktable.multi_name",
         "Xmp.dc.creator", "Xmp.dc.publisher", "Xmp.dc.title", "Xmp.dc.description", "Xmp.dc.rights" };
@@ -1743,6 +1743,27 @@ int dt_exif_xmp_read(dt_image_t *img, const char *filename, const int history_on
         sqlite3_finalize(stmt_upd_hist);
       }
     }
+
+    if((pos = xmpData.findKey(Exiv2::XmpKey("Xmp.darktable.history_end"))) != xmpData.end())
+    {
+      int history_end = pos->toLong();
+      DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                                  "UPDATE images SET history_end = ?1 where id = ?2", -1,
+                                  &stmt, NULL);
+      DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, history_end);
+      DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, img->id);
+      sqlite3_step(stmt);
+      sqlite3_finalize(stmt);
+    }
+    else
+    {
+      DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                                  "UPDATE images SET history_end = (SELECT MAX(num) + 1 FROM history WHERE imgid = ?1)", -1,
+                                  &stmt, NULL);
+      DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, img->id);
+      sqlite3_step(stmt);
+      sqlite3_finalize(stmt);
+    }
   }
   catch(Exiv2::AnyError &e)
   {
@@ -1758,14 +1779,14 @@ int dt_exif_xmp_read(dt_image_t *img, const char *filename, const int history_on
 static void dt_exif_xmp_read_data(Exiv2::XmpData &xmpData, const int imgid)
 {
   const int xmp_version = 1;
-  int stars = 1, raw_params = 0;
+  int stars = 1, raw_params = 0, history_end = -1;
   double longitude = NAN, latitude = NAN;
   gchar *filename = NULL;
   // get stars and raw params from db
   sqlite3_stmt *stmt;
   DT_DEBUG_SQLITE3_PREPARE_V2(
       dt_database_get(darktable.db),
-      "select filename, flags, raw_parameters, longitude, latitude from images where id = ?1", -1, &stmt,
+      "select filename, flags, raw_parameters, longitude, latitude, history_end from images where id = ?1", -1, &stmt,
       NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
   if(sqlite3_step(stmt) == SQLITE_ROW)
@@ -1775,6 +1796,7 @@ static void dt_exif_xmp_read_data(Exiv2::XmpData &xmpData, const int imgid)
     raw_params = sqlite3_column_int(stmt, 2);
     if(sqlite3_column_type(stmt, 3) == SQLITE_FLOAT) longitude = sqlite3_column_double(stmt, 3);
     if(sqlite3_column_type(stmt, 4) == SQLITE_FLOAT) latitude = sqlite3_column_double(stmt, 4);
+    history_end = sqlite3_column_int(stmt, 5);
   }
   xmpData["Xmp.xmp.Rating"] = ((stars & 0x7) == 6) ? -1 : (stars & 0x7); // rejected image = -1, others = 0..5
 
@@ -2042,6 +2064,10 @@ static void dt_exif_xmp_read_data(Exiv2::XmpData &xmpData, const int imgid)
 
     num++;
   }
+
+  if(history_end == -1) history_end = num - 1;
+  xmpData["Xmp.darktable.history_end"] = history_end;
+
   sqlite3_finalize(stmt);
   g_list_free_full(tags, g_free);
   g_list_free_full(hierarchical, g_free);
