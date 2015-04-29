@@ -4745,6 +4745,14 @@ const wb_data wb_preset[] =
   { "OLYMPUS", "XZ-1", Underwater, 0,		{ 1.710937, 1, 2.015625, 0 } },
   { "OLYMPUS", "XZ-1", Underwater, 7,		{ 1.937500, 1, 1.726563, 0 } },
 
+  // Firmware 1.001
+  { "OLYMPUS", "XZ-10", Daylight, 0,		{ 1.910156, 1, 1.679688, 0 } },
+  { "OLYMPUS", "XZ-10", Shade, 0,		{ 2.132813, 1, 1.343750, 0 } },
+  { "OLYMPUS", "XZ-10", Cloudy, 0,		{ 1.980469, 1, 1.644531, 0 } },
+  { "OLYMPUS", "XZ-10", Incandescent, 0,	{ 1.289063, 1, 2.878906, 0 } },
+  { "OLYMPUS", "XZ-10", Fluorescent, 0,		{ 1.781250, 1, 2.414063, 0 } },
+  { "OLYMPUS", "XZ-10", Flash, 0,		{ 2.289063, 1, 1.394531, 0 } },
+
   { "Panasonic", "DMC-FZ8", Daylight, 0,	{ 1.904943, 1, 1.596958, 0 } },
   { "Panasonic", "DMC-FZ8", Cloudy, 0,		{ 2.060836, 1, 1.498099, 0 } },
   { "Panasonic", "DMC-FZ8", Shade, 0,		{ 2.258555, 1, 1.391635, 0 } },
