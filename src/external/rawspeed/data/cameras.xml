@@ -2642,6 +2642,20 @@
 			<Hint name="jpeg32_bitorder" value=""/>
 		</Hints>
 	</Camera>
+	<Camera make="OLYMPUS IMAGING CORP." model="XZ-10" decoder_version="3">
+		<CFA width="2" height="2">
+			<Color x="0" y="0">RED</Color>
+			<Color x="1" y="0">GREEN</Color>
+			<Color x="0" y="1">GREEN</Color>
+			<Color x="1" y="1">BLUE</Color>
+		</CFA>
+		<Crop x="0" y="0" width="0" height="0"/>
+		<Sensor black="200" white="3900"/>
+		<Hints>
+			<Hint name="force_uncompressed" value=""/>
+			<Hint name="jpeg32_bitorder" value=""/>
+		</Hints>
+	</Camera>
 	<Camera make="OLYMPUS IMAGING CORP." model="STYLUS1">
 		<CFA width="2" height="2">
 			<Color x="0" y="0">RED</Color>
