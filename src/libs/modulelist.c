@@ -116,7 +116,7 @@ static void image_renderer_function(GtkTreeViewColumn *col, GtkCellRenderer *ren
   gtk_tree_model_get(model, iter, COL_IMAGE, &pixbuf, -1);
   gtk_tree_model_get(model, iter, COL_MODULE, &module, -1);
   g_object_set(renderer, "pixbuf", pixbuf, NULL);
-  g_object_set(renderer, "cell-background-set", module->state != dt_iop_state_HIDDEN, NULL);
+  g_object_set(renderer, "cell-background-set", module && module->state != dt_iop_state_HIDDEN, NULL);
   g_object_unref(pixbuf);
 }
 static void favorite_renderer_function(GtkTreeViewColumn *col, GtkCellRenderer *renderer, GtkTreeModel *model,
@@ -124,18 +124,18 @@ static void favorite_renderer_function(GtkTreeViewColumn *col, GtkCellRenderer *
 {
   dt_iop_module_t *module;
   gtk_tree_model_get(model, iter, COL_MODULE, &module, -1);
-  g_object_set(renderer, "cell-background-set", module->state != dt_iop_state_HIDDEN, NULL);
+  g_object_set(renderer, "cell-background-set", module && module->state != dt_iop_state_HIDDEN, NULL);
   GdkPixbuf *fav_pixbuf
       = ((dt_lib_modulelist_t *)darktable.view_manager->proxy.more_module.module->data)->fav_pixbuf;
-  g_object_set(renderer, "pixbuf", module->state == dt_iop_state_FAVORITE ? fav_pixbuf : NULL, NULL);
+  g_object_set(renderer, "pixbuf", (module && module->state == dt_iop_state_FAVORITE) ? fav_pixbuf : NULL, NULL);
 }
 static void text_renderer_function(GtkTreeViewColumn *col, GtkCellRenderer *renderer, GtkTreeModel *model,
                                    GtkTreeIter *iter, gpointer user_data)
 {
   dt_iop_module_t *module;
   gtk_tree_model_get(model, iter, COL_MODULE, &module, -1);
-  g_object_set(renderer, "text", module->name(), NULL);
-  g_object_set(renderer, "cell-background-set", module->state != dt_iop_state_HIDDEN, NULL);
+  g_object_set(renderer, "text", module ? module->name() : _("(a wild bug appears)"), NULL);
+  g_object_set(renderer, "cell-background-set", module && module->state != dt_iop_state_HIDDEN, NULL);
 }
 
 static GdkPixbuf *load_image(const char *filename)
