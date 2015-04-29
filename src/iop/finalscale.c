@@ -79,7 +79,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   const int devid = piece->pipe->devid;
   cl_int err = -999;
 
-  err = dt_iop_clip_and_zoom_cl(devid, dev_out, dev_in, roi_out, roi_in);
+  err = dt_iop_clip_and_zoom_roi_cl(devid, dev_out, dev_in, roi_out, roi_in);
   if(err != CL_SUCCESS) goto error;
 
   return TRUE;
@@ -93,7 +93,7 @@ error:
 void process(dt_iop_module_t *self, const dt_dev_pixelpipe_iop_t *const piece, const void *const ivoid,
              void *ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
-  dt_iop_clip_and_zoom(ovoid, ivoid, roi_out, roi_in, roi_out->width, roi_in->width);
+  dt_iop_clip_and_zoom_roi(ovoid, ivoid, roi_out, roi_in, roi_out->width, roi_in->width);
 }
 
 void commit_params(dt_iop_module_t *self, const dt_iop_params_t *const params, dt_dev_pixelpipe_t *pipe,

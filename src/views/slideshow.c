@@ -113,7 +113,7 @@ static int write_image(dt_imageio_module_data_t *datai, const char *filename, co
   dt_pthread_mutex_lock(&data->d->lock);
   if(data->d->back)
   { // might have been cleaned up when leaving slide show
-    memcpy(data->d->back, in, sizeof(uint32_t) * data->d->width * data->d->height);
+    memcpy(data->d->back, in, sizeof(uint32_t) * datai->width * datai->height);
     data->d->back_width = datai->width;
     data->d->back_height = datai->height;
   }

@@ -4639,6 +4639,16 @@ const wb_data wb_preset[] =
   { "OLYMPUS", "E-PL5", "3300K", 0,		{ 1.429688, 1, 2.640625, 0 } },
   { "OLYMPUS", "E-PL5", "5000K", 0,		{ 1.882813, 1, 1.984375, 0 } },
 
+  { "OLYMPUS", "E-PL7", Daylight, 0,		{ 1.890625, 1, 1.773438, 0 } },
+  { "OLYMPUS", "E-PL7", Shade, 0,		{ 2.250000, 1, 1.359375, 0 } },
+  { "OLYMPUS", "E-PL7", Cloudy, 0,		{ 2.046875, 1, 1.601563, 0 } },
+  { "OLYMPUS", "E-PL7", Tungsten, 0,		{ 1.140625, 1, 3.585938, 0 } },
+  { "OLYMPUS", "E-PL7", Fluorescent, 0,		{ 1.882813, 1, 2.671875, 0 } },
+  { "OLYMPUS", "E-PL7", Underwater, 0,		{ 1.359375, 1, 2.632813, 0 } },
+  { "OLYMPUS", "E-PL7", Flash, 0,		{ 2.218750, 1, 1.531250, 0 } },
+  { "OLYMPUS", "E-PL7", "5000K", 0,		{ 1.828125, 1, 1.867188, 0 } },
+  { "OLYMPUS", "E-PL7", "2700K", 0,		{ 1.093750, 1, 3.781250, 0 } },
+
   /* Copied from OLYMPUS E-PL3 presets */
   /* -7/+7 fine tuning is -7/+7 in amber-blue and zero in green-magenta */
   { "OLYMPUS", "E-PM1", Daylight, -7,		{ 1.695313, 1, 1.656250, 0 } },
@@ -4929,6 +4939,13 @@ const wb_data wb_preset[] =
   { "Panasonic", "DMC-GX7", "Shade", 0,		{ 2.879245, 1, 1.422642, 0 } },
   { "Panasonic", "DMC-GX7", "Incandescent", 0,	{ 1.758491, 1, 2.320755, 0 } },
   { "Panasonic", "DMC-GX7", "Flash", 0,		{ 2.607547, 1, 1.479245, 0 } },
+
+  /* Firmware version 1.1 */
+  { "Panasonic", "DMC-GM5", Daylight, 0,        { 2.394531, 1, 1.554687, 0 } },
+  { "Panasonic", "DMC-GM5", Cloudy, 0,          { 2.621093, 1, 1.437500, 0 } },
+  { "Panasonic", "DMC-GM5", Shade, 0,           { 2.781250, 1, 1.371093, 0 } },
+  { "Panasonic", "DMC-GM5", Incandescent, 0,    { 1.640625, 1, 2.253906, 0 } },
+  { "Panasonic", "DMC-GM5", Flash, 0,           { 2.492187, 1, 1.402343, 0 } },
 
   { "Panasonic", "DMC-L1", Daylight, 0,		{ 1.980989, 1, 1.444867, 0 } },
   { "Panasonic", "DMC-L1", Cloudy, 0,		{ 2.129278, 1, 1.300380, 0 } },

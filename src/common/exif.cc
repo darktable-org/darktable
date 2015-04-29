@@ -560,15 +560,29 @@ static bool dt_exif_read_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
     else if((pos = exifData.findKey(Exiv2::ExifKey("Exif.OlympusEq.LensType"))) != exifData.end()
             && pos->size())
     {
+      /* For every Olympus camera Exif.OlympusEq.LensType is present. */
       dt_strlcpy_to_utf8(img->exif_lens, sizeof(img->exif_lens), pos, exifData);
+
+      /* We have to check if Exif.OlympusEq.LensType has been translated by
+       * exiv2. If it hasn't, fall back to Exif.OlympusEq.LensModel. */
+      std::string lens(img->exif_lens);
+      if(std::string::npos == lens.find_first_not_of(" 1234567890"))
+      {
+        /* Exif.OlympusEq.LensType contains only digits and spaces.
+         * This means that exiv2 couldn't convert it to human readable
+         * form. */
+        if((pos = exifData.findKey(Exiv2::ExifKey("Exif.OlympusEq.LensModel"))) != exifData.end() && pos->size())
+        {
+          dt_strlcpy_to_utf8(img->exif_lens, sizeof(img->exif_lens), pos, exifData);
+        }
+        /* Just in case Exif.OlympusEq.LensModel hasn't been found */
+        else if((pos = exifData.findKey(Exiv2::ExifKey("Exif.Photo.LensModel"))) != exifData.end() && pos->size())
+        {
+          dt_strlcpy_to_utf8(img->exif_lens, sizeof(img->exif_lens), pos, exifData);
+        }
+	fprintf(stderr, "[exif] Warning: lens \"%s\" unknown as \"%s\"\n", img->exif_lens, lens.c_str());
+      }
     }
-#if EXIV2_MINOR_VERSION > 20
-    else if((pos = exifData.findKey(Exiv2::ExifKey("Exif.OlympusEq.LensModel"))) != exifData.end()
-            && pos->size())
-    {
-      dt_strlcpy_to_utf8(img->exif_lens, sizeof(img->exif_lens), pos, exifData);
-    }
-#endif
     else if((pos = Exiv2::lensName(exifData)) != exifData.end() && pos->size())
     {
       dt_strlcpy_to_utf8(img->exif_lens, sizeof(img->exif_lens), pos, exifData);
@@ -2055,7 +2069,31 @@ int dt_exif_xmp_attach(const int imgid, const char *filename)
       img->setIptcData(input_image->iptcData());
       img->setXmpData(input_image->xmpData());
     }
-    dt_exif_xmp_read_data(img->xmpData(), imgid);
+
+    Exiv2::XmpData &xmpData = img->xmpData();
+
+    // now add whatever we have in the sidecar XMP. this overwrites stuff from the source image
+    dt_image_path_append_version(imgid, input_filename, sizeof(input_filename));
+    g_strlcat(input_filename, ".xmp", sizeof(input_filename));
+    if(g_file_test(input_filename, G_FILE_TEST_EXISTS))
+    {
+      Exiv2::XmpData sidecarXmpData;
+      std::string xmpPacket;
+
+      Exiv2::DataBuf buf = Exiv2::readFile(input_filename);
+      xmpPacket.assign(reinterpret_cast<char *>(buf.pData_), buf.size_);
+      Exiv2::XmpParser::decode(sidecarXmpData, xmpPacket);
+
+      for(Exiv2::XmpData::const_iterator it = sidecarXmpData.begin(); it != sidecarXmpData.end(); ++it)
+        xmpData.add(*it);
+    }
+
+    dt_remove_known_keys(xmpData); // is this needed?
+
+    // last but not least attach what we have in DB to the XMP. in theory that should be
+    // the same as what we just copied over from the sidecar file, but you never know ...
+    dt_exif_xmp_read_data(xmpData, imgid);
+
     img->writeMetadata();
     return 0;
   }
@@ -2094,13 +2132,15 @@ int dt_exif_xmp_write(const int imgid, const char *filename)
     dt_exif_xmp_read_data(xmpData, imgid);
 
     // serialize the xmp data and output the xmp packet
-    if(Exiv2::XmpParser::encode(xmpPacket, xmpData) != 0)
+    if(Exiv2::XmpParser::encode(xmpPacket, xmpData,
+       Exiv2::XmpParser::useCompactFormat | Exiv2::XmpParser::omitPacketWrapper) != 0)
     {
       throw Exiv2::Error(1, "[xmp_write] failed to serialize xmp data");
     }
     std::ofstream fout(filename);
     if(fout.is_open())
     {
+      fout << "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"; // write XML header
       fout << xmpPacket;
       fout.close();
     }
