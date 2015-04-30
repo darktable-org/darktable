@@ -288,49 +288,51 @@ void OrfDecoder::decodeMetaDataInternal(CameraMetaData *meta) {
     if(mRootIFD->hasEntryRecursive(OLYMPUSIMAGEPROCESSING)) {
       TiffEntry *img_entry = mRootIFD->getEntryRecursive(OLYMPUSIMAGEPROCESSING);
       uint32 offset = *((ushort16 *) img_entry->getData()) + img_entry->parent_offset - 12;
-      TiffIFD *image_processing;
-      if (mRootIFD->endian == getHostEndianness())
-        image_processing = new TiffIFD(mFile, offset);
-      else
-        image_processing = new TiffIFDBE(mFile, offset);
+      TiffIFD *image_processing = NULL;
+      try {
+        if (mRootIFD->endian == getHostEndianness())
+          image_processing = new TiffIFD(mFile, offset);
+        else
+          image_processing = new TiffIFDBE(mFile, offset);
 
-      // Get the WB
-      if(image_processing->hasEntry((TiffTag) 0x0100)) {
-        TiffEntry *wb = image_processing->getEntry((TiffTag) 0x0100);
-        if (wb->count == 4) {
-          wb->parent_offset = img_entry->parent_offset - 12;
-          wb->offsetFromParent();
-        }
-        if (wb->count == 2 || wb->count == 4) {
-          const ushort16 *tmp = wb->getShortArray();
-          mRaw->metadata.wbCoeffs[0] = (float) tmp[0];
-          mRaw->metadata.wbCoeffs[1] = 256.0f;
-          mRaw->metadata.wbCoeffs[2] = (float) tmp[1];
-        }
-      }
-
-      // Get the black levels
-      if(image_processing->hasEntry((TiffTag) 0x0600)) {
-        TiffEntry *blackEntry = image_processing->getEntry((TiffTag) 0x0600);
-        // Order is assumed to be RGGB
-        if (blackEntry->count == 4) {
-          blackEntry->parent_offset = img_entry->parent_offset - 12;
-          blackEntry->offsetFromParent();
-          const ushort16* black = blackEntry->getShortArray();
-          for (int i = 0; i < 4; i++) {
-            if (mRaw->cfa.getColorAt(i&1, i>>1) == CFA_RED)
-              mRaw->blackLevelSeparate[i] = black[0];
-            else if (mRaw->cfa.getColorAt(i&1, i>>1) == CFA_BLUE)
-              mRaw->blackLevelSeparate[i] = black[3];
-            else if (mRaw->cfa.getColorAt(i&1, i>>1) == CFA_GREEN && i<2)
-              mRaw->blackLevelSeparate[i] = black[1];
-            else if (mRaw->cfa.getColorAt(i&1, i>>1) == CFA_GREEN)
-              mRaw->blackLevelSeparate[i] = black[2];
+        // Get the WB
+        if(image_processing->hasEntry((TiffTag) 0x0100)) {
+          TiffEntry *wb = image_processing->getEntry((TiffTag) 0x0100);
+          if (wb->count == 4) {
+            wb->parent_offset = img_entry->parent_offset - 12;
+            wb->offsetFromParent();
           }
-          // Adjust whitelevel based on the read black (we assume the dynamic range is the same)
-          mRaw->whitePoint -= (mRaw->blackLevel - mRaw->blackLevelSeparate[0]);
+          if (wb->count == 2 || wb->count == 4) {
+            const ushort16 *tmp = wb->getShortArray();
+            mRaw->metadata.wbCoeffs[0] = (float) tmp[0];
+            mRaw->metadata.wbCoeffs[1] = 256.0f;
+            mRaw->metadata.wbCoeffs[2] = (float) tmp[1];
+          }
         }
-      }
+
+        // Get the black levels
+        if(image_processing->hasEntry((TiffTag) 0x0600)) {
+          TiffEntry *blackEntry = image_processing->getEntry((TiffTag) 0x0600);
+          // Order is assumed to be RGGB
+          if (blackEntry->count == 4) {
+            blackEntry->parent_offset = img_entry->parent_offset - 12;
+            blackEntry->offsetFromParent();
+            const ushort16* black = blackEntry->getShortArray();
+            for (int i = 0; i < 4; i++) {
+              if (mRaw->cfa.getColorAt(i&1, i>>1) == CFA_RED)
+                mRaw->blackLevelSeparate[i] = black[0];
+              else if (mRaw->cfa.getColorAt(i&1, i>>1) == CFA_BLUE)
+                mRaw->blackLevelSeparate[i] = black[3];
+              else if (mRaw->cfa.getColorAt(i&1, i>>1) == CFA_GREEN && i<2)
+                mRaw->blackLevelSeparate[i] = black[1];
+              else if (mRaw->cfa.getColorAt(i&1, i>>1) == CFA_GREEN)
+                mRaw->blackLevelSeparate[i] = black[2];
+            }
+            // Adjust whitelevel based on the read black (we assume the dynamic range is the same)
+            mRaw->whitePoint -= (mRaw->blackLevel - mRaw->blackLevelSeparate[0]);
+          }
+        }
+      } catch(...) {}
       if (image_processing)
         delete image_processing;
     }
