@@ -711,7 +711,7 @@
 			<Horizontal y="4" height="44"/>
 		</BlackAreas>
 	</Camera>
-	<Camera make="Canon" model="Canon EOS M2" supported="no">
+	<Camera make="Canon" model="Canon EOS M2" supported="yes">
 		<CFA width="2" height="2">
 			<Color x="0" y="0">RED</Color>
 			<Color x="1" y="0">GREEN</Color>
