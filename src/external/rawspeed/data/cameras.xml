@@ -337,6 +337,21 @@
 			<Alias>Canon EOS Kiss X7i</Alias>
 		</Aliases>
 	</Camera>
+	<Camera make="Canon" model="Canon EOS 750D">
+		<CFA width="2" height="2">
+			<Color x="0" y="0">RED</Color>
+			<Color x="1" y="0">GREEN</Color>
+			<Color x="0" y="1">GREEN</Color>
+			<Color x="1" y="1">BLUE</Color>
+		</CFA>
+		<Crop x="72" y="34" width="0" height="0"/>
+		<Sensor black="2047" white="11765" iso_min="0" iso_max = "199"/>/>
+		<Sensor black="2047" white="14580"/>
+		<Aliases>
+			<Alias>Canon EOS Rebel T6i</Alias>
+			<Alias>Canon EOS Kiss X8i</Alias>
+		</Aliases>
+	</Camera>
 	<Camera make="Canon" model="Canon EOS 500D">
 		<CFA width="2" height="2">
 			<Color x="0" y="0">RED</Color>
