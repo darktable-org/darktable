@@ -605,17 +605,17 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
 
   if(!strcmp(iccprofile, "darktable"))
   {
-    d->input = dt_colorspaces_create_darktable_profile(pipe->image.raw_cameraid);
+    d->input = dt_colorspaces_create_darktable_profile(pipe->image.camera_makermodel);
     if(!d->input) snprintf(iccprofile, sizeof(iccprofile), "eprofile");
   }
   if(!strcmp(iccprofile, "vendor"))
   {
-    d->input = dt_colorspaces_create_vendor_profile(pipe->image.raw_cameraid);
+    d->input = dt_colorspaces_create_vendor_profile(pipe->image.camera_makermodel);
     if(!d->input) snprintf(iccprofile, sizeof(iccprofile), "eprofile");
   }
   if(!strcmp(iccprofile, "alternate"))
   {
-    d->input = dt_colorspaces_create_alternate_profile(pipe->image.raw_cameraid);
+    d->input = dt_colorspaces_create_alternate_profile(pipe->image.camera_makermodel);
     if(!d->input) snprintf(iccprofile, sizeof(iccprofile), "eprofile");
   }
   if(!strcmp(iccprofile, "eprofile"))
@@ -641,13 +641,13 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
     // color matrix
     float cam_xyz[12];
     cam_xyz[0] = NAN;
-    dt_dcraw_adobe_coeff(pipe->image.raw_cameraid, (float(*)[12])cam_xyz);
+    dt_dcraw_adobe_coeff(pipe->image.camera_makermodel, (float(*)[12])cam_xyz);
     if(isnan(cam_xyz[0]))
     {
       if(dt_image_is_raw(&pipe->image))
       {
-        fprintf(stderr, "[colorin] `%s' color matrix not found!\n", pipe->image.raw_cameraid);
-        dt_control_log(_("`%s' color matrix not found!"), pipe->image.raw_cameraid);
+        fprintf(stderr, "[colorin] `%s' color matrix not found!\n", pipe->image.camera_makermodel);
+        dt_control_log(_("`%s' color matrix not found!"), pipe->image.camera_makermodel);
       }
       snprintf(iccprofile, sizeof(iccprofile), "linear_rec709_rgb");
     }
@@ -998,7 +998,7 @@ static void update_profile_list(dt_iop_module_t *self)
   // get color matrix from raw image:
   float cam_xyz[12];
   cam_xyz[0] = NAN;
-  dt_dcraw_adobe_coeff(self->dev->image_storage.raw_cameraid, (float(*)[12])cam_xyz);
+  dt_dcraw_adobe_coeff(self->dev->image_storage.camera_makermodel, (float(*)[12])cam_xyz);
   if(!isnan(cam_xyz[0]))
   {
     prof = (dt_iop_color_profile_t *)g_malloc0(sizeof(dt_iop_color_profile_t));
@@ -1011,7 +1011,7 @@ static void update_profile_list(dt_iop_module_t *self)
   // darktable built-in, if applicable
   for(int k = 0; k < dt_profiled_colormatrix_cnt; k++)
   {
-    if(!strcasecmp(self->dev->image_storage.raw_cameraid, dt_profiled_colormatrices[k].makermodel))
+    if(!strcasecmp(self->dev->image_storage.camera_makermodel, dt_profiled_colormatrices[k].makermodel))
     {
       prof = (dt_iop_color_profile_t *)malloc(sizeof(dt_iop_color_profile_t));
       g_strlcpy(prof->filename, "darktable", sizeof(prof->filename));
@@ -1025,7 +1025,7 @@ static void update_profile_list(dt_iop_module_t *self)
   // darktable vendor matrix, if applicable
   for(int k = 0; k < dt_vendor_colormatrix_cnt; k++)
   {
-    if(!strcmp(self->dev->image_storage.raw_cameraid, dt_vendor_colormatrices[k].makermodel))
+    if(!strcmp(self->dev->image_storage.camera_makermodel, dt_vendor_colormatrices[k].makermodel))
     {
       prof = (dt_iop_color_profile_t *)malloc(sizeof(dt_iop_color_profile_t));
       g_strlcpy(prof->filename, "vendor", sizeof(prof->filename));
@@ -1039,7 +1039,7 @@ static void update_profile_list(dt_iop_module_t *self)
   // darktable alternate matrix, if applicable
   for(int k = 0; k < dt_alternate_colormatrix_cnt; k++)
   {
-    if(!strcmp(self->dev->image_storage.raw_cameraid, dt_alternate_colormatrices[k].makermodel))
+    if(!strcmp(self->dev->image_storage.camera_makermodel, dt_alternate_colormatrices[k].makermodel))
     {
       prof = (dt_iop_color_profile_t *)malloc(sizeof(dt_iop_color_profile_t));
       g_strlcpy(prof->filename, "alternate", sizeof(prof->filename));

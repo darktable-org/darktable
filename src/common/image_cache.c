@@ -119,6 +119,7 @@ void dt_image_cache_allocate(void *data, dt_cache_entry_t *entry)
   sqlite3_finalize(stmt);
   img->cache_entry = entry; // init backref
   // could downgrade lock write->read on entry->lock if we were using concurrencykit..
+  dt_image_refresh_makermodel(img);
 }
 
 void dt_image_cache_deallocate(void *data, dt_cache_entry_t *entry)

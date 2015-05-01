@@ -74,9 +74,11 @@ Camera::Camera( const Camera* camera, uint32 alias_num) : cfa(iPoint2D(0,0))
   if (alias_num >= camera->aliases.size())
     ThrowCME("Camera: Internal error, alias number out of range specified.");
 
-  make = canonical_make = camera->make;
-  model = canonical_model = camera->aliases[alias_num];
-  canonical_id = make + " " + model;
+  make = camera->make;
+  model = camera->aliases[alias_num];
+  canonical_make = camera->canonical_make;
+  canonical_model = camera->canonical_model;
+  canonical_id = camera->canonical_id;
   mode = camera->mode;
   cfa = camera->cfa;
   supported = camera->supported;

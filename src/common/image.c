@@ -946,7 +946,9 @@ void dt_image_init(dt_image_t *img)
   memset(img->exif_lens, 0, sizeof(img->exif_lens));
   memset(img->raw_maker, 0, sizeof(img->raw_maker));
   memset(img->raw_model, 0, sizeof(img->raw_model));
-  memset(img->raw_cameraid, 0, sizeof(img->raw_cameraid));
+  memset(img->camera_maker, 0, sizeof(img->camera_maker));
+  memset(img->camera_model, 0, sizeof(img->camera_model));
+  memset(img->camera_makermodel, 0, sizeof(img->camera_makermodel));
   memset(img->filename, 0, sizeof(img->filename));
   g_strlcpy(img->filename, "(unknown)", sizeof(img->filename));
   img->exif_model[0] = img->exif_maker[0] = img->exif_lens[0] = '\0';
@@ -972,6 +974,31 @@ void dt_image_init(dt_image_t *img)
   img->wb_coeffs[1] = NAN;
   img->wb_coeffs[2] = NAN;
   img->cache_entry = 0;
+}
+
+void dt_image_refresh_makermodel(dt_image_t *img)
+{
+  char *maker = NULL; 
+  char *model = NULL;
+
+  if (img->raw_maker[0] != 0 && img->raw_model[0] != 0)
+  {
+    maker = img->raw_maker;
+    model = img->raw_model;
+  } else {
+    maker = img->exif_maker;
+    model = img->exif_model;
+  }
+
+  strncpy(img->camera_maker, maker, sizeof(img->camera_maker));
+  img->camera_maker[strlen(maker)] = '\0';
+  strncpy(img->camera_makermodel, maker, sizeof(img->camera_makermodel));
+  img->camera_makermodel[strlen(maker)] = ' ';
+
+  strncpy(img->camera_model, model, sizeof(img->camera_model));
+  img->camera_model[strlen(model)] = '\0';
+  strncpy(img->camera_makermodel+strlen(maker)+1, model, sizeof(img->camera_makermodel)-strlen(maker)-1);
+  img->camera_makermodel[strlen(maker)+1+strlen(model)] = '\0';
 }
 
 int32_t dt_image_move(const int32_t imgid, const int32_t filmid)

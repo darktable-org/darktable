@@ -122,7 +122,7 @@ dt_imageio_retval_t dt_imageio_open_rawspeed(dt_image_t *img, const char *filena
 
     strncpy(img->raw_maker, r->metadata.canonical_make.c_str(), sizeof(img->raw_maker)-1);
     strncpy(img->raw_model, r->metadata.canonical_model.c_str(), sizeof(img->raw_model)-1);
-    strncpy(img->raw_cameraid, r->metadata.canonical_id.c_str(), sizeof(img->raw_cameraid)-1);
+    dt_image_refresh_makermodel(img);
 
     img->raw_black_level = r->blackLevel;
     img->raw_white_point = r->whitePoint;
@@ -267,10 +267,6 @@ dt_imageio_retval_t dt_imageio_open_rawspeed_sraw(dt_image_t *img, RawImage r, d
 
   iPoint2D dimUncropped = r->getUncroppedDim();
   iPoint2D cropTL = r->getCropOffset();
-
-  // work around 50D bug
-  char makermodel[1024];
-  dt_colorspaces_get_makermodel(makermodel, sizeof(makermodel), img->exif_maker, img->exif_model);
 
   // actually we want to store full floats here:
   img->bpp = 4 * sizeof(float);

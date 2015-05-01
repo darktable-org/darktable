@@ -641,6 +641,9 @@ static bool dt_exif_read_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
         break;
       }
 
+    // Make sure we copy the exif make and model to the correct place if needed
+    dt_image_refresh_makermodel(img);
+
     if((pos = exifData.findKey(Exiv2::ExifKey("Exif.Image.DateTimeOriginal"))) != exifData.end()
        && pos->size())
     {
