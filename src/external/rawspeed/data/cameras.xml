@@ -6541,7 +6541,7 @@
 		<Sensor black="0" white="31456"/>
 	</Camera>
 	<!-- CHDK Cameras -->
-	<Camera make="AVT" model="F-080C" mode="chdk">
+	<Camera make="AVT" model="F-080C" supported="no" mode="chdk">
 		<CFA2 width="2" height="2">
 			<ColorRow y="0">RG</ColorRow>
 			<ColorRow y="1">GB</ColorRow>
@@ -6554,7 +6554,7 @@
 			<Hint name="full_height" value="768"/>
 		</Hints>
 	</Camera>
-	<Camera make="AVT" model="F-145C" mode="chdk">
+	<Camera make="AVT" model="F-145C" supported="no" mode="chdk">
 		<CFA2 width="2" height="2">
 			<ColorRow y="0">RG</ColorRow>
 			<ColorRow y="1">GB</ColorRow>
@@ -6567,7 +6567,7 @@
 			<Hint name="full_height" value="1040"/>
 		</Hints>
 	</Camera>
-	<Camera make="AVT" model="F-201C" mode="chdk">
+	<Camera make="AVT" model="F-201C" supported="no" mode="chdk">
 		<CFA2 width="2" height="2">
 			<ColorRow y="0">RG</ColorRow>
 			<ColorRow y="1">GB</ColorRow>
@@ -6580,7 +6580,7 @@
 			<Hint name="full_height" value="1200"/>
 		</Hints>
 	</Camera>
-	<Camera make="AVT" model="F-510C" mode="chdk-a">
+	<Camera make="AVT" model="F-510C" supported="no" mode="chdk-a">
 		<CFA2 width="2" height="2">
 			<ColorRow y="0">RG</ColorRow>
 			<ColorRow y="1">GB</ColorRow>
@@ -6593,7 +6593,7 @@
 			<Hint name="full_height" value="1958"/>
 		</Hints>
 	</Camera>
-	<Camera make="AVT" model="F-510C" mode="chdk-b">
+	<Camera make="AVT" model="F-510C" supported="no" mode="chdk-b">
 		<CFA2 width="2" height="2">
 			<ColorRow y="0">RG</ColorRow>
 			<ColorRow y="1">GB</ColorRow>
@@ -6607,7 +6607,7 @@
 			<Hint name="offset" value="12"/>
 		</Hints>
 	</Camera>
-	<Camera make="AVT" model="F-510C" mode="chdk-c">
+	<Camera make="AVT" model="F-510C" supported="no" mode="chdk-c">
 		<CFA2 width="2" height="2">
 			<ColorRow y="0">RG</ColorRow>
 			<ColorRow y="1">GB</ColorRow>
@@ -6620,7 +6620,7 @@
 			<Hint name="full_height" value="1958"/>
 		</Hints>
 	</Camera>
-	<Camera make="AVT" model="F-510C" mode="chdk-d">
+	<Camera make="AVT" model="F-510C" supported="no" mode="chdk-d">
 		<CFA2 width="2" height="2">
 			<ColorRow y="0">RG</ColorRow>
 			<ColorRow y="1">GB</ColorRow>
@@ -6634,7 +6634,7 @@
 			<Hint name="offset" value="12"/>
 		</Hints>
 	</Camera>
-	<Camera make="AVT" model="F-810C" mode="chdk">
+	<Camera make="AVT" model="F-810C" supported="no" mode="chdk">
 		<CFA2 width="2" height="2">
 			<ColorRow y="0">RG</ColorRow>
 			<ColorRow y="1">GB</ColorRow>
@@ -6647,7 +6647,7 @@
 			<Hint name="full_height" value="2469"/>
 		</Hints>
 	</Camera>
-	<Camera make="AgfaPhoto" model="DC-833m" mode="chdk">
+	<Camera make="AgfaPhoto" model="DC-833m" supported="no" mode="chdk">
 		<CFA2 width="2" height="2">
 			<ColorRow y="0">GB</ColorRow>
 			<ColorRow y="1">RG</ColorRow>
@@ -6660,7 +6660,7 @@
 			<Hint name="full_height" value="2448"/>
 		</Hints>
 	</Camera>
-	<Camera make="Alcatel" model="5035D" mode="chdk">
+	<Camera make="Alcatel" model="5035D" supported="no" mode="chdk">
 		<CFA2 width="2" height="2">
 			<ColorRow y="0">GB</ColorRow>
 			<ColorRow y="1">RG</ColorRow>
@@ -6673,7 +6673,7 @@
 			<Hint name="full_height" value="1902"/>
 		</Hints>
 	</Camera>
-	<Camera make="Baumer" model="TXG14" mode="chdk">
+	<Camera make="Baumer" model="TXG14" supported="no" mode="chdk">
 		<CFA2 width="2" height="2">
 			<ColorRow y="0">GR</ColorRow>
 			<ColorRow y="1">BG</ColorRow>
@@ -6687,7 +6687,7 @@
 			<Hint name="offset" value="1078"/>
 		</Hints>
 	</Camera>
-	<Camera make="Canon" model="PowerShot SD300" mode="chdk">
+	<Camera make="Canon" model="PowerShot SD300" supported="no" mode="chdk">
 		<CFA2 width="2" height="2">
 			<ColorRow y="0">RG</ColorRow>
 			<ColorRow y="1">GB</ColorRow>
@@ -6700,7 +6700,7 @@
 			<Hint name="full_height" value="1766"/>
 		</Hints>
 	</Camera>
-	<Camera make="Canon" model="PowerShot A460" mode="chdk">
+	<Camera make="Canon" model="PowerShot A460" supported="no" mode="chdk">
 		<CFA2 width="2" height="2">
 			<ColorRow y="0">RG</ColorRow>
 			<ColorRow y="1">GB</ColorRow>
@@ -6713,7 +6713,7 @@
 			<Hint name="full_height" value="1968"/>
 		</Hints>
 	</Camera>
-	<Camera make="Canon" model="PowerShot A610" mode="chdk">
+	<Camera make="Canon" model="PowerShot A610" supported="yes" mode="chdk">
 		<CFA2 width="2" height="2">
 			<ColorRow y="0">RG</ColorRow>
 			<ColorRow y="1">GB</ColorRow>
@@ -6730,7 +6730,7 @@
 			<Vertical x="2632" width="40"/>
 		</BlackAreas>
 	</Camera>
-	<Camera make="Canon" model="PowerShot A530" mode="chdk">
+	<Camera make="Canon" model="PowerShot A530" supported="no" mode="chdk">
 		<CFA2 width="2" height="2">
 			<ColorRow y="0">RG</ColorRow>
 			<ColorRow y="1">GB</ColorRow>
@@ -6743,7 +6743,7 @@
 			<Hint name="full_height" value="1992"/>
 		</Hints>
 	</Camera>
-	<Camera make="Canon" model="PowerShot S3 IS" mode="chdk">
+	<Camera make="Canon" model="PowerShot S3 IS" supported="yes" mode="chdk">
 		<CFA2 width="2" height="2">
 			<ColorRow y="0">RG</ColorRow>
 			<ColorRow y="1">GB</ColorRow>
@@ -6760,7 +6760,7 @@
 			<Vertical x="0" width="40"/>
 		</BlackAreas>
 	</Camera>
-	<Camera make="Canon" model="PowerShot A620" mode="chdk">
+	<Camera make="Canon" model="PowerShot A620" supported="yes" mode="chdk">
 		<CFA2 width="2" height="2">
 			<ColorRow y="0">RG</ColorRow>
 			<ColorRow y="1">GB</ColorRow>
@@ -6777,7 +6777,7 @@
 			<Vertical x="0" width="30"/>
 		</BlackAreas>
 	</Camera>
-	<Camera make="Canon" model="PowerShot A470" mode="chdk">
+	<Camera make="Canon" model="PowerShot A470" supported="no" mode="chdk">
 		<CFA2 width="2" height="2">
 			<ColorRow y="0">GR</ColorRow>
 			<ColorRow y="1">BG</ColorRow>
@@ -6790,7 +6790,7 @@
 			<Hint name="full_height" value="2346"/>
 		</Hints>
 	</Camera>
-	<Camera make="Canon" model="PowerShot A720 IS" mode="chdk">
+	<Camera make="Canon" model="PowerShot A720 IS" supported="yes" mode="chdk">
 		<CFA2 width="2" height="2">
 			<ColorRow y="0">GB</ColorRow>
 			<ColorRow y="1">RG</ColorRow>
@@ -6807,7 +6807,7 @@
 			<Vertical x="3306" width="30"/>
 		</BlackAreas>
 	</Camera>
-	<Camera make="Canon" model="PowerShot A630" mode="chdk">
+	<Camera make="Canon" model="PowerShot A630" supported="yes" mode="chdk">
 		<CFA2 width="2" height="2">
 			<ColorRow y="0">RG</ColorRow>
 			<ColorRow y="1">GB</ColorRow>
@@ -6824,7 +6824,7 @@
 			<Vertical x="0" width="30"/>
 		</BlackAreas>
 	</Camera>
-	<Camera make="Canon" model="PowerShot A640" mode="chdk">
+	<Camera make="Canon" model="PowerShot A640" supported="yes" mode="chdk">
 		<CFA2 width="2" height="2">
 			<ColorRow y="0">RG</ColorRow>
 			<ColorRow y="1">GB</ColorRow>
@@ -6841,7 +6841,7 @@
 			<Vertical x="3686" width="50"/>
 		</BlackAreas>
 	</Camera>
-	<Camera make="Canon" model="PowerShot A650" mode="chdk">
+	<Camera make="Canon" model="PowerShot A650" supported="yes" mode="chdk">
 		<CFA2 width="2" height="2">
 			<ColorRow y="0">RG</ColorRow>
 			<ColorRow y="1">GB</ColorRow>
@@ -6858,7 +6858,7 @@
 			<Vertical x="0" width="45"/>
 		</BlackAreas>
 	</Camera>
-	<Camera make="Canon" model="PowerShot SX110 IS" mode="chdk">
+	<Camera make="Canon" model="PowerShot SX110 IS" supported="yes" mode="chdk">
 		<CFA2 width="2" height="2">
 			<ColorRow y="0">RG</ColorRow>
 			<ColorRow y="1">GB</ColorRow>
@@ -6875,7 +6875,7 @@
 			<Vertical x="3690" width="30"/>
 		</BlackAreas>
 	</Camera>
-	<Camera make="Canon" model="PowerShot SX120 IS" mode="chdk">
+	<Camera make="Canon" model="PowerShot SX120 IS" supported="no" mode="chdk">
 		<CFA2 width="2" height="2">
 			<ColorRow y="0">RG</ColorRow>
 			<ColorRow y="1">GB</ColorRow>
@@ -6888,7 +6888,7 @@
 			<Hint name="full_height" value="2778"/>
 		</Hints>
 	</Camera>
-	<Camera make="Canon" model="PowerShot SX20 IS" mode="chdk">
+	<Camera make="Canon" model="PowerShot SX20 IS" supported="no" mode="chdk">
 		<CFA2 width="2" height="2">
 			<ColorRow y="0">RG</ColorRow>
 			<ColorRow y="1">GB</ColorRow>
@@ -6901,7 +6901,7 @@
 			<Hint name="full_height" value="3048"/>
 		</Hints>
 	</Camera>
-	<Camera make="Canon" model="PowerShot SX220 HS" mode="chdk">
+	<Camera make="Canon" model="PowerShot SX220 HS" supported="no" mode="chdk">
 		<CFA2 width="2" height="2">
 			<ColorRow y="0">RG</ColorRow>
 			<ColorRow y="1">GB</ColorRow>
@@ -6914,7 +6914,7 @@
 			<Hint name="full_height" value="3060"/>
 		</Hints>
 	</Camera>
-	<Camera make="Canon" model="PowerShot SX30 IS" mode="chdk">
+	<Camera make="Canon" model="PowerShot SX30 IS" supported="no" mode="chdk">
 		<CFA2 width="2" height="2">
 			<ColorRow y="0">BG</ColorRow>
 			<ColorRow y="1">GR</ColorRow>
@@ -6927,7 +6927,7 @@
 			<Hint name="full_height" value="3276"/>
 		</Hints>
 	</Camera>
-	<Camera make="Canon" model="PowerShot A3300 IS" mode="chdk">
+	<Camera make="Canon" model="PowerShot A3300 IS" supported="no" mode="chdk">
 		<CFA2 width="2" height="2">
 			<ColorRow y="0">RG</ColorRow>
 			<ColorRow y="1">GB</ColorRow>
@@ -6940,7 +6940,7 @@
 			<Hint name="full_height" value="3504"/>
 		</Hints>
 	</Camera>
-	<Camera make="Casio" model="QV-2000UX" mode="chdk">
+	<Camera make="Casio" model="QV-2000UX" supported="no" mode="chdk">
 		<CFA2 width="2" height="2">
 			<ColorRow y="0">RG</ColorRow>
 			<ColorRow y="1">GB</ColorRow>
@@ -6953,7 +6953,7 @@
 			<Hint name="full_height" value="1211"/>
 		</Hints>
 	</Camera>
-	<Camera make="Casio" model="QV-3*00EX" mode="chdk">
+	<Camera make="Casio" model="QV-3*00EX" supported="no" mode="chdk">
 		<CFA2 width="2" height="2">
 			<ColorRow y="0">RG</ColorRow>
 			<ColorRow y="1">GB</ColorRow>
@@ -6966,7 +6966,7 @@
 			<Hint name="full_height" value="1547"/>
 		</Hints>
 	</Camera>
-	<Camera make="Casio" model="QV-5700" mode="chdk">
+	<Camera make="Casio" model="QV-5700" supported="no" mode="chdk">
 		<CFA2 width="2" height="2">
 			<ColorRow y="0">RG</ColorRow>
 			<ColorRow y="1">GB</ColorRow>
@@ -6979,7 +6979,7 @@
 			<Hint name="full_height" value="1924"/>
 		</Hints>
 	</Camera>
-	<Camera make="Casio" model="EX-Z60" mode="chdk">
+	<Camera make="Casio" model="EX-Z60" supported="no" mode="chdk">
 		<CFA2 width="2" height="2">
 			<ColorRow y="0">BG</ColorRow>
 			<ColorRow y="1">GR</ColorRow>
@@ -6992,7 +6992,7 @@
 			<Hint name="full_height" value="2181"/>
 		</Hints>
 	</Camera>
-	<Camera make="Casio" model="EX-S20" mode="chdk">
+	<Camera make="Casio" model="EX-S20" supported="no" mode="chdk">
 		<CFA2 width="2" height="2">
 			<ColorRow y="0">RG</ColorRow>
 			<ColorRow y="1">GB</ColorRow>
@@ -7005,7 +7005,7 @@
 			<Hint name="full_height" value="1208"/>
 		</Hints>
 	</Camera>
-	<Camera make="Casio" model="EX-S100" mode="chdk">
+	<Camera make="Casio" model="EX-S100" supported="no" mode="chdk">
 		<CFA2 width="2" height="2">
 			<ColorRow y="0">RG</ColorRow>
 			<ColorRow y="1">GB</ColorRow>
@@ -7018,7 +7018,7 @@
 			<Hint name="full_height" value="1578"/>
 		</Hints>
 	</Camera>
-	<Camera make="Casio" model="QV-R41" mode="chdk">
+	<Camera make="Casio" model="QV-R41" supported="no" mode="chdk">
 		<CFA2 width="2" height="2">
 			<ColorRow y="0">RG</ColorRow>
 			<ColorRow y="1">GB</ColorRow>
@@ -7031,7 +7031,7 @@
 			<Hint name="full_height" value="1720"/>
 		</Hints>
 	</Camera>
-	<Camera make="Casio" model="EX-P505" mode="chdk">
+	<Camera make="Casio" model="EX-P505" supported="no" mode="chdk">
 		<CFA2 width="2" height="2">
 			<ColorRow y="0">RG</ColorRow>
 			<ColorRow y="1">GB</ColorRow>
@@ -7044,7 +7044,7 @@
 			<Hint name="full_height" value="1928"/>
 		</Hints>
 	</Camera>
-	<Camera make="Casio" model="QV-R51" mode="chdk">
+	<Camera make="Casio" model="QV-R51" supported="no" mode="chdk">
 		<CFA2 width="2" height="2">
 			<ColorRow y="0">RG</ColorRow>
 			<ColorRow y="1">GB</ColorRow>
@@ -7057,7 +7057,7 @@
 			<Hint name="full_height" value="1929"/>
 		</Hints>
 	</Camera>
-	<Camera make="Casio" model="EX-Z50" mode="chdk">
+	<Camera make="Casio" model="EX-Z50" supported="no" mode="chdk">
 		<CFA2 width="2" height="2">
 			<ColorRow y="0">RG</ColorRow>
 			<ColorRow y="1">GB</ColorRow>
@@ -7070,7 +7070,7 @@
 			<Hint name="full_height" value="1932"/>
 		</Hints>
 	</Camera>
-	<Camera make="Casio" model="EX-Z500" mode="chdk">
+	<Camera make="Casio" model="EX-Z500" supported="no" mode="chdk">
 		<CFA2 width="2" height="2">
 			<ColorRow y="0">BG</ColorRow>
 			<ColorRow y="1">GR</ColorRow>
@@ -7083,7 +7083,7 @@
 			<Hint name="full_height" value="1937"/>
 		</Hints>
 	</Camera>
-	<Camera make="Casio" model="EX-Z55" mode="chdk">
+	<Camera make="Casio" model="EX-Z55" supported="no" mode="chdk">
 		<CFA2 width="2" height="2">
 			<ColorRow y="0">RG</ColorRow>
 			<ColorRow y="1">GB</ColorRow>
@@ -7096,7 +7096,7 @@
 			<Hint name="full_height" value="1986"/>
 		</Hints>
 	</Camera>
-	<Camera make="Casio" model="EX-P600" mode="chdk">
+	<Camera make="Casio" model="EX-P600" supported="no" mode="chdk">
 		<CFA2 width="2" height="2">
 			<ColorRow y="0">RG</ColorRow>
 			<ColorRow y="1">GB</ColorRow>
@@ -7109,7 +7109,7 @@
 			<Hint name="full_height" value="2172"/>
 		</Hints>
 	</Camera>
-	<Camera make="Casio" model="EX-Z750" mode="chdk">
+	<Camera make="Casio" model="EX-Z750" supported="no" mode="chdk">
 		<CFA2 width="2" height="2">
 			<ColorRow y="0">RG</ColorRow>
 			<ColorRow y="1">GB</ColorRow>
@@ -7122,7 +7122,7 @@
 			<Hint name="full_height" value="2319"/>
 		</Hints>
 	</Camera>
-	<Camera make="Casio" model="EX-Z75" mode="chdk">
+	<Camera make="Casio" model="EX-Z75" supported="no" mode="chdk">
 		<CFA2 width="2" height="2">
 			<ColorRow y="0">RG</ColorRow>
 			<ColorRow y="1">GB</ColorRow>
@@ -7135,7 +7135,7 @@
 			<Hint name="full_height" value="2321"/>
 		</Hints>
 	</Camera>
-	<Camera make="Casio" model="EX-P700" mode="chdk">
+	<Camera make="Casio" model="EX-P700" supported="no" mode="chdk">
 		<CFA2 width="2" height="2">
 			<ColorRow y="0">RG</ColorRow>
 			<ColorRow y="1">GB</ColorRow>
@@ -7148,7 +7148,7 @@
 			<Hint name="full_height" value="2350"/>
 		</Hints>
 	</Camera>
-	<Camera make="Casio" model="EX-Z850" mode="chdk">
+	<Camera make="Casio" model="EX-Z850" supported="no" mode="chdk">
 		<CFA2 width="2" height="2">
 			<ColorRow y="0">RG</ColorRow>
 			<ColorRow y="1">GB</ColorRow>
@@ -7161,7 +7161,7 @@
 			<Hint name="full_height" value="2498"/>
 		</Hints>
 	</Camera>
-	<Camera make="Casio" model="EX-Z8" mode="chdk">
+	<Camera make="Casio" model="EX-Z8" supported="no" mode="chdk">
 		<CFA2 width="2" height="2">
 			<ColorRow y="0">RG</ColorRow>
 			<ColorRow y="1">GB</ColorRow>
@@ -7174,7 +7174,7 @@
 			<Hint name="full_height" value="2502"/>
 		</Hints>
 	</Camera>
-	<Camera make="Casio" model="EX-Z1050" mode="chdk">
+	<Camera make="Casio" model="EX-Z1050" supported="no" mode="chdk">
 		<CFA2 width="2" height="2">
 			<ColorRow y="0">RG</ColorRow>
 			<ColorRow y="1">GB</ColorRow>
@@ -7187,7 +7187,7 @@
 			<Hint name="full_height" value="2752"/>
 		</Hints>
 	</Camera>
-	<Camera make="Casio" model="EX-ZR100" mode="chdk">
+	<Camera make="Casio" model="EX-ZR100" supported="no" mode="chdk">
 		<CFA2 width="2" height="2">
 			<ColorRow y="0">RG</ColorRow>
 			<ColorRow y="1">GB</ColorRow>
@@ -7200,7 +7200,7 @@
 			<Hint name="full_height" value="3044"/>
 		</Hints>
 	</Camera>
-	<Camera make="Casio" model="QV-4000" mode="chdk">
+	<Camera make="Casio" model="QV-4000" supported="no" mode="chdk">
 		<CFA2 width="2" height="2">
 			<ColorRow y="0">RG</ColorRow>
 			<ColorRow y="1">GB</ColorRow>
@@ -7213,7 +7213,7 @@
 			<Hint name="full_height" value="1700"/>
 		</Hints>
 	</Camera>
-	<Camera make="Creative" model="PC-CAM 600" mode="chdk">
+	<Camera make="Creative" model="PC-CAM 600" supported="no" mode="chdk">
 		<CFA2 width="2" height="2">
 			<ColorRow y="0">GR</ColorRow>
 			<ColorRow y="1">BG</ColorRow>
@@ -7226,7 +7226,7 @@
 			<Hint name="full_height" value="769"/>
 		</Hints>
 	</Camera>
-	<Camera make="DJI" model="" mode="chdk">
+	<Camera make="DJI" model="" supported="no" mode="chdk">
 		<CFA2 width="2" height="2">
 			<ColorRow y="0">GB</ColorRow>
 			<ColorRow y="1">RG</ColorRow>
@@ -7239,7 +7239,7 @@
 			<Hint name="full_height" value="3288"/>
 		</Hints>
 	</Camera>
-	<Camera make="Matrix" model="" mode="chdk">
+	<Camera make="Matrix" model="" supported="no" mode="chdk">
 		<CFA2 width="2" height="2">
 			<ColorRow y="0">RG</ColorRow>
 			<ColorRow y="1">GB</ColorRow>
@@ -7252,7 +7252,7 @@
 			<Hint name="full_height" value="3288"/>
 		</Hints>
 	</Camera>
-	<Camera make="Foculus" model="531C" mode="chdk">
+	<Camera make="Foculus" model="531C" supported="no" mode="chdk">
 		<CFA2 width="2" height="2">
 			<ColorRow y="0">GR</ColorRow>
 			<ColorRow y="1">BG</ColorRow>
@@ -7265,7 +7265,7 @@
 			<Hint name="full_height" value="1200"/>
 		</Hints>
 	</Camera>
-	<Camera make="Generic" model="" mode="chdk">
+	<Camera make="Generic" model="" supported="no" mode="chdk">
 		<CFA2 width="2" height="2">
 			<ColorRow y="0">RG</ColorRow>
 			<ColorRow y="1">GB</ColorRow>
@@ -7278,7 +7278,7 @@
 			<Hint name="full_height" value="480"/>
 		</Hints>
 	</Camera>
-	<Camera make="Kodak" model="DC20" mode="chdk-a">
+	<Camera make="Kodak" model="DC20" supported="no" mode="chdk-a">
 		<CFA2 width="2" height="2">
 			<ColorRow y="0">GR</ColorRow>
 			<ColorRow y="1">GB</ColorRow>
@@ -7291,7 +7291,7 @@
 			<Hint name="full_height" value="244"/>
 		</Hints>
 	</Camera>
-	<Camera make="Kodak" model="DC20" mode="chdk-b">
+	<Camera make="Kodak" model="DC20" supported="no" mode="chdk-b">
 		<CFA2 width="2" height="2">
 			<ColorRow y="0">GR</ColorRow>
 			<ColorRow y="1">GB</ColorRow>
@@ -7304,7 +7304,7 @@
 			<Hint name="full_height" value="244"/>
 		</Hints>
 	</Camera>
-	<Camera make="Kodak" model="DCS200" mode="chdk">
+	<Camera make="Kodak" model="DCS200" supported="no" mode="chdk">
 		<CFA2 width="2" height="2">
 			<ColorRow y="0">GB</ColorRow>
 			<ColorRow y="1">RG</ColorRow>
@@ -7317,7 +7317,7 @@
 			<Hint name="full_height" value="1076"/>
 		</Hints>
 	</Camera>
-	<Camera make="Kodak" model="C330" mode="chdk-a">
+	<Camera make="Kodak" model="C330" supported="no" mode="chdk-a">
 		<CFA2 width="2" height="2">
 			<ColorRow y="0">RG</ColorRow>
 			<ColorRow y="1">GB</ColorRow>
@@ -7330,7 +7330,7 @@
 			<Hint name="full_height" value="1779"/>
 		</Hints>
 	</Camera>
-	<Camera make="Kodak" model="C330" mode="chdk-b">
+	<Camera make="Kodak" model="C330" supported="no" mode="chdk-b">
 		<CFA2 width="2" height="2">
 			<ColorRow y="0">RG</ColorRow>
 			<ColorRow y="1">GB</ColorRow>
@@ -7344,7 +7344,7 @@
 			<Hint name="offset" value="3160"/>
 		</Hints>
 	</Camera>
-	<Camera make="Kodak" model="C603" mode="chdk-a">
+	<Camera make="Kodak" model="C603" supported="no" mode="chdk-a">
 		<CFA2 width="2" height="2">
 			<ColorRow y="0">RG</ColorRow>
 			<ColorRow y="1">GB</ColorRow>
@@ -7357,7 +7357,7 @@
 			<Hint name="full_height" value="2152"/>
 		</Hints>
 	</Camera>
-	<Camera make="Kodak" model="C603" mode="chdk-b">
+	<Camera make="Kodak" model="C603" supported="no" mode="chdk-b">
 		<CFA2 width="2" height="2">
 			<ColorRow y="0">RG</ColorRow>
 			<ColorRow y="1">GB</ColorRow>
@@ -7371,7 +7371,7 @@
 			<Hint name="offset" value="3160"/>
 		</Hints>
 	</Camera>
-	<Camera make="Kodak" model="C603" mode="chdk-c">
+	<Camera make="Kodak" model="C603" supported="no" mode="chdk-c">
 		<Crop x="0" y="0" width="0" height="0"/>
 		<Sensor black="0" white="4095"/>
 		<Hints>
@@ -7380,7 +7380,7 @@
 			<Hint name="full_height" value="480"/>
 		</Hints>
 	</Camera>
-	<Camera make="Kodak" model="C603" mode="chdk-d">
+	<Camera make="Kodak" model="C603" supported="no" mode="chdk-d">
 		<Crop x="0" y="0" width="0" height="0"/>
 		<Sensor black="0" white="4095"/>
 		<Hints>
@@ -7389,7 +7389,7 @@
 			<Hint name="full_height" value="2134"/>
 		</Hints>
 	</Camera>
-	<Camera make="Kodak" model="12MP" mode="chdk-a">
+	<Camera make="Kodak" model="12MP" supported="no" mode="chdk-a">
 		<CFA2 width="2" height="2">
 			<ColorRow y="0">GR</ColorRow>
 			<ColorRow y="1">BG</ColorRow>
@@ -7402,7 +7402,7 @@
 			<Hint name="full_height" value="3030"/>
 		</Hints>
 	</Camera>
-	<Camera make="Kodak" model="12MP" mode="chdk-b">
+	<Camera make="Kodak" model="12MP" supported="no" mode="chdk-b">
 		<CFA2 width="2" height="2">
 			<ColorRow y="0">GR</ColorRow>
 			<ColorRow y="1">BG</ColorRow>
@@ -7416,7 +7416,7 @@
 			<Hint name="offset" value="31556"/>
 		</Hints>
 	</Camera>
-	<Camera make="Kodak" model="12MP" mode="chdk-c">
+	<Camera make="Kodak" model="12MP" supported="no" mode="chdk-c">
 		<Crop x="0" y="0" width="0" height="0"/>
 		<Sensor black="0" white="4095"/>
 		<Hints>
@@ -7425,7 +7425,7 @@
 			<Hint name="full_height" value="3000"/>
 		</Hints>
 	</Camera>
-	<Camera make="Kodak" model="KAI-0340" mode="chdk">
+	<Camera make="Kodak" model="KAI-0340" supported="no" mode="chdk">
 		<CFA2 width="2" height="2">
 			<ColorRow y="0">RG</ColorRow>
 			<ColorRow y="1">GB</ColorRow>
@@ -7438,7 +7438,7 @@
 			<Hint name="full_height" value="480"/>
 		</Hints>
 	</Camera>
-	<Camera make="Micron" model="2010" mode="chdk">
+	<Camera make="Micron" model="2010" supported="no" mode="chdk">
 		<CFA2 width="2" height="2">
 			<ColorRow y="0">BG</ColorRow>
 			<ColorRow y="1">GR</ColorRow>
@@ -7452,7 +7452,7 @@
 			<Hint name="offset" value="3212"/>
 		</Hints>
 	</Camera>
-	<Camera make="Minolta" model="RD175" mode="chdk">
+	<Camera make="Minolta" model="RD175" supported="no" mode="chdk" supported="no">
 		<CFA2 width="2" height="2">
 			<ColorRow y="0">GB</ColorRow>
 			<ColorRow y="1">RG</ColorRow>
@@ -7466,7 +7466,7 @@
 			<Hint name="offset" value="513"/>
 		</Hints>
 	</Camera>
-	<Camera make="Nikon" model="E900" mode="chdk">
+	<Camera make="Nikon" model="E900" supported="no" mode="chdk">
 		<CFA2 width="2" height="2">
 			<ColorRow y="0">BG</ColorRow>
 			<ColorRow y="1">GR</ColorRow>
@@ -7479,7 +7479,7 @@
 			<Hint name="full_height" value="969"/>
 		</Hints>
 	</Camera>
-	<Camera make="Nikon" model="E950" mode="chdk">
+	<Camera make="Nikon" model="E950" supported="no" mode="chdk">
 		<CFA2 width="2" height="2">
 			<ColorRow y="0">GR</ColorRow>
 			<ColorRow y="1">BG</ColorRow>
@@ -7492,7 +7492,7 @@
 			<Hint name="full_height" value="1204"/>
 		</Hints>
 	</Camera>
-	<Camera make="Nikon" model="E2100" mode="chdk">
+	<Camera make="Nikon" model="E2100" supported="no" mode="chdk">
 		<CFA2 width="2" height="2">
 			<ColorRow y="0">RG</ColorRow>
 			<ColorRow y="1">GB</ColorRow>
@@ -7505,7 +7505,7 @@
 			<Hint name="full_height" value="1213"/>
 		</Hints>
 	</Camera>
-	<Camera make="Nikon" model="E990" mode="chdk">
+	<Camera make="Nikon" model="E990" supported="no" mode="chdk">
 		<CFA2 width="2" height="2">
 			<ColorRow y="0">GB</ColorRow>
 			<ColorRow y="1">RG</ColorRow>
@@ -7518,7 +7518,7 @@
 			<Hint name="full_height" value="1541"/>
 		</Hints>
 	</Camera>
-	<Camera make="Nikon" model="E3700" mode="chdk">
+	<Camera make="Nikon" model="E3700" supported="no" mode="chdk">
 		<CFA2 width="2" height="2">
 			<ColorRow y="0">RG</ColorRow>
 			<ColorRow y="1">GB</ColorRow>
@@ -7531,7 +7531,7 @@
 			<Hint name="full_height" value="1542"/>
 		</Hints>
 	</Camera>
-	<Camera make="Nikon" model="E4500" mode="chdk">
+	<Camera make="Nikon" model="E4500" supported="no" mode="chdk">
 		<CFA2 width="2" height="2">
 			<ColorRow y="0">RG</ColorRow>
 			<ColorRow y="1">GB</ColorRow>
@@ -7544,7 +7544,7 @@
 			<Hint name="full_height" value="1709"/>
 		</Hints>
 	</Camera>
-	<Camera make="Nikon" model="E4300" mode="chdk">
+	<Camera make="Nikon" model="E4300" supported="no" mode="chdk">
 		<CFA2 width="2" height="2">
 			<ColorRow y="0">BG</ColorRow>
 			<ColorRow y="1">GR</ColorRow>
@@ -7557,7 +7557,7 @@
 			<Hint name="full_height" value="1710"/>
 		</Hints>
 	</Camera>
-	<Camera make="Nikon" model="E5000" mode="chdk">
+	<Camera make="Nikon" model="E5000" supported="no" mode="chdk">
 		<CFA2 width="2" height="2">
 			<ColorRow y="0">RG</ColorRow>
 			<ColorRow y="1">GB</ColorRow>
@@ -7570,7 +7570,7 @@
 			<Hint name="full_height" value="1925"/>
 		</Hints>
 	</Camera>
-	<Camera make="Nikon" model="COOLPIX S6" mode="chdk">
+	<Camera make="Nikon" model="COOLPIX S6" supported="no" mode="chdk">
 		<CFA2 width="2" height="2">
 			<ColorRow y="0">RG</ColorRow>
 			<ColorRow y="1">GB</ColorRow>
@@ -7583,7 +7583,7 @@
 			<Hint name="full_height" value="2118"/>
 		</Hints>
 	</Camera>
-	<Camera make="Olympus" model="C770UZ" mode="chdk">
+	<Camera make="Olympus" model="C770UZ" supported="no" mode="chdk">
 		<CFA2 width="2" height="2">
 			<ColorRow y="0">BG</ColorRow>
 			<ColorRow y="1">GR</ColorRow>
@@ -7596,7 +7596,7 @@
 			<Hint name="full_height" value="1718"/>
 		</Hints>
 	</Camera>
-	<Camera make="Pentax" model="Optio S" mode="chdk-a">
+	<Camera make="Pentax" model="Optio S" supported="no" mode="chdk-a">
 		<CFA2 width="2" height="2">
 			<ColorRow y="0">RG</ColorRow>
 			<ColorRow y="1">GB</ColorRow>
@@ -7609,7 +7609,7 @@
 			<Hint name="full_height" value="1540"/>
 		</Hints>
 	</Camera>
-	<Camera make="Pentax" model="Optio S" mode="chdk-b">
+	<Camera make="Pentax" model="Optio S" supported="no" mode="chdk-b">
 		<CFA2 width="2" height="2">
 			<ColorRow y="0">RG</ColorRow>
 			<ColorRow y="1">GB</ColorRow>
@@ -7622,7 +7622,7 @@
 			<Hint name="full_height" value="1544"/>
 		</Hints>
 	</Camera>
-	<Camera make="Pentax" model="Optio S4" mode="chdk">
+	<Camera make="Pentax" model="Optio S4" supported="no" mode="chdk">
 		<CFA2 width="2" height="2">
 			<ColorRow y="0">RG</ColorRow>
 			<ColorRow y="1">GB</ColorRow>
@@ -7635,7 +7635,7 @@
 			<Hint name="full_height" value="1737"/>
 		</Hints>
 	</Camera>
-	<Camera make="Pentax" model="Optio 750Z" mode="chdk">
+	<Camera make="Pentax" model="Optio 750Z" supported="no" mode="chdk">
 		<CFA2 width="2" height="2">
 			<ColorRow y="0">RG</ColorRow>
 			<ColorRow y="1">GB</ColorRow>
@@ -7648,7 +7648,7 @@
 			<Hint name="full_height" value="2322"/>
 		</Hints>
 	</Camera>
-	<Camera make="Pixelink" model="A782" mode="chdk">
+	<Camera make="Pixelink" model="A782" supported="no" mode="chdk">
 		<CFA2 width="2" height="2">
 			<ColorRow y="0">GB</ColorRow>
 			<ColorRow y="1">RG</ColorRow>
@@ -7661,7 +7661,7 @@
 			<Hint name="full_height" value="3000"/>
 		</Hints>
 	</Camera>
-	<Camera make="RoverShot" model="3320AF" mode="chdk">
+	<Camera make="RoverShot" model="3320AF" supported="no" mode="chdk">
 		<CFA2 width="2" height="2">
 			<ColorRow y="0">GB</ColorRow>
 			<ColorRow y="1">RG</ColorRow>
@@ -7674,7 +7674,7 @@
 			<Hint name="full_height" value="1536"/>
 		</Hints>
 	</Camera>
-	<Camera make="ST Micro" model="STV680 VGA" mode="chdk">
+	<Camera make="ST Micro" model="STV680 VGA" supported="no" mode="chdk">
 		<CFA2 width="2" height="2">
 			<ColorRow y="0">BG</ColorRow>
 			<ColorRow y="1">GR</ColorRow>
@@ -7687,7 +7687,7 @@
 			<Hint name="full_height" value="484"/>
 		</Hints>
 	</Camera>
-	<Camera make="Samsung" model="S85" mode="chdk-a">
+	<Camera make="Samsung" model="S85" supported="no" mode="chdk-a">
 		<CFA2 width="2" height="2">
 			<ColorRow y="0">RG</ColorRow>
 			<ColorRow y="1">GB</ColorRow>
@@ -7700,7 +7700,7 @@
 			<Hint name="full_height" value="2448"/>
 		</Hints>
 	</Camera>
-	<Camera make="Samsung" model="S85" mode="chdk-b">
+	<Camera make="Samsung" model="S85" supported="no" mode="chdk-b">
 		<CFA2 width="2" height="2">
 			<ColorRow y="0">RG</ColorRow>
 			<ColorRow y="1">GB</ColorRow>
@@ -7713,7 +7713,7 @@
 			<Hint name="full_height" value="2448"/>
 		</Hints>
 	</Camera>
-	<Camera make="Samsung" model="WB550" mode="chdk-a">
+	<Camera make="Samsung" model="WB550" supported="no" mode="chdk-a">
 		<CFA2 width="2" height="2">
 			<ColorRow y="0">RG</ColorRow>
 			<ColorRow y="1">GB</ColorRow>
@@ -7726,7 +7726,7 @@
 			<Hint name="full_height" value="2808"/>
 		</Hints>
 	</Camera>
-	<Camera make="Samsung" model="WB550" mode="chdk-b">
+	<Camera make="Samsung" model="WB550" supported="no" mode="chdk-b">
 		<CFA2 width="2" height="2">
 			<ColorRow y="0">RG</ColorRow>
 			<ColorRow y="1">GB</ColorRow>
@@ -7739,7 +7739,7 @@
 			<Hint name="full_height" value="3000"/>
 		</Hints>
 	</Camera>
-	<Camera make="Sinar" model="" mode="chdk-a">
+	<Camera make="Sinar" model="" supported="no" mode="chdk-a">
 		<CFA2 width="2" height="2">
 			<ColorRow y="0">GB</ColorRow>
 			<ColorRow y="1">RG</ColorRow>
@@ -7753,7 +7753,7 @@
 			<Hint name="offset" value="68"/>
 		</Hints>
 	</Camera>
-	<Camera make="Sinar" model="" mode="chdk-b">
+	<Camera make="Sinar" model="" supported="no" mode="chdk-b">
 		<CFA2 width="2" height="2">
 			<ColorRow y="0">GB</ColorRow>
 			<ColorRow y="1">RG</ColorRow>
@@ -7767,7 +7767,7 @@
 			<Hint name="offset" value="68"/>
 		</Hints>
 	</Camera>
-	<Camera make="Sinar" model="" mode="chdk-c">
+	<Camera make="Sinar" model="" supported="no" mode="chdk-c">
 		<CFA2 width="2" height="2">
 			<ColorRow y="0">GB</ColorRow>
 			<ColorRow y="1">RG</ColorRow>
@@ -7781,7 +7781,7 @@
 			<Hint name="offset" value="68"/>
 		</Hints>
 	</Camera>
-	<Camera make="Sony" model="XCD-SX910CR" mode="chdk-a">
+	<Camera make="Sony" model="XCD-SX910CR" supported="no" mode="chdk-a">
 		<CFA2 width="2" height="2">
 			<ColorRow y="0">GR</ColorRow>
 			<ColorRow y="1">BG</ColorRow>
@@ -7794,7 +7794,7 @@
 			<Hint name="full_height" value="1024"/>
 		</Hints>
 	</Camera>
-	<Camera make="Sony" model="XCD-SX910CR" mode="chdk-b">
+	<Camera make="Sony" model="XCD-SX910CR" supported="no" mode="chdk-b">
 		<CFA2 width="2" height="2">
 			<ColorRow y="0">GR</ColorRow>
 			<ColorRow y="1">BG</ColorRow>
