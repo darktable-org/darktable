@@ -12,7 +12,7 @@
 static void dt_dcraw_adobe_coeff(const char *name, float cam_xyz[1][12])
 {
   static const struct {
-    const char *prefix;
+    const char *cameraid;
     short trans[12];
   } table[] = {
     { "AGFAPHOTO DC-833m", { 11438,-3762,-1115,-2409,9914,2497,-1227,2295,5300 } }, /* DJC */
@@ -67,7 +67,7 @@ static void dt_dcraw_adobe_coeff(const char *name, float cam_xyz[1][12])
     { "Canon EOS C500", { 17851,-10604,922,-7425,16662,763,-3660,3636,22278 } }, /* DJC */
     { "Canon EOS REBEL T3", { 6444,-904,-893,-4563,12308,2535,-903,2016,6728 } },
     { "Canon EOS", { 8197,-2000,-1118,-6714,14335,2592,-2536,3178,8266 } },
-    { "Canon PowerShot A530", { 0 } },	/* don't want the A5 matrix */
+    { "Canon PowerShot A530", { -4801,9475,1952,2926,1611,4094,-5259,10164,5947,-1554,10883,547 } },
     { "Canon PowerShot A540", { 6871,-2020,-1250,-1484,5668,454,-95,632,2086 } },
     { "Canon PowerShot A50", { -5300,9846,1776,3436,684,3939,-5540,9879,6200,-1404,11175,217 } },
     { "Canon PowerShot A5", { -4801,9475,1952,2926,1611,4094,-5259,10164,5947,-1554,10883,547 } },
@@ -536,15 +536,9 @@ static void dt_dcraw_adobe_coeff(const char *name, float cam_xyz[1][12])
   };
 
   for (int i=0; i < sizeof(table)/sizeof(table[1]); i++) {
-    if (!strncmp (name, table[i].prefix, strlen(table[i].prefix))) {
-      if (strcmp(name, table[i].prefix))
-        fprintf(stderr, "[adobe_coeff] Warning: partial matching of \"%s\" to \"%s\"\n", name, table[i].prefix);
-      // if (table[i].black)   black   = (ushort) table[i].black;
-      // if (table[i].maximum) maximum = (ushort) table[i].maximum;
-      if (table[i].trans[0]) {
-        for (int j=0; j < 12; j++)
-          cam_xyz[0][j] = table[i].trans[j] / 10000.0;
-      }
+    if (!strcmp(name, table[i].cameraid)) {
+      for (int j=0; j < 12; j++)
+        cam_xyz[0][j] = table[i].trans[j] / 10000.0;
       break;
     }
   }
