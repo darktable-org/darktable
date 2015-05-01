@@ -6706,7 +6706,7 @@
 		<Sensor black="1024" white="16383"/>
 	</Camera>
 	<Camera make="FUJIFILM" model="X100T">
-		<ID make="FUJIFILM" model="X100T">Fujifilm X100T</ID>
+		<ID make="Fujifilm" model="X100T">Fujifilm X100T</ID>
 		<CFA2 width="6" height="6">
 			<ColorRow y="0">RBGBRG</ColorRow>
 			<ColorRow y="1">GGRGGB</ColorRow>
@@ -6782,7 +6782,7 @@
 		<Sensor black="1024" white="16383"/>
 	</Camera>
 	<Camera make="MINOLTA" model="DYNAX 5D">
-		<ID make="Konica Minolta" model="Maxxum 5D">Konica Minolta Maxxum 5D</ID>
+		<ID make="Minolta" model="Dynax 5D">Konica Minolta Maxxum 5D</ID>
 		<CFA width="2" height="2">
 			<Color x="0" y="0">RED</Color>
 			<Color x="1" y="0">GREEN</Color>
@@ -6793,7 +6793,7 @@
 		<Sensor black="0" white="4095"/>
 	</Camera>
 	<Camera make="MINOLTA" model="DYNAX 7D">
-		<ID make="Konica Minolta" model="Maxxum 7D">Konica Minolta Maxxum 7D</ID>
+		<ID make="Minolta" model="Dynax 7D">Konica Minolta Maxxum 7D</ID>
 		<CFA width="2" height="2">
 			<Color x="0" y="0">RED</Color>
 			<Color x="1" y="0">GREEN</Color>
@@ -6815,7 +6815,7 @@
 		<Sensor black="0" white="3965"/>
 	</Camera>
 	<Camera make="MINOLTA" model="DIMAGE A2">
-		<ID make="Konica Minolta" model="DiMAGE A2">Konica Minolta DiMAGE A2</ID>
+		<ID make="Minolta" model="DiMAGE A2">Konica Minolta DiMAGE A2</ID>
 		<CFA width="2" height="2">
 			<Color x="0" y="0">RED</Color>
 			<Color x="1" y="0">GREEN</Color>
@@ -6826,7 +6826,7 @@
 		<Sensor black="0" white="3965"/>
 	</Camera>
 	<Camera make="MINOLTA" model="DIMAGE A200">
-		<ID make="Konica Minolta" model="DiMAGE A200">Konica Minolta DiMAGE A200</ID>
+		<ID make="Minolta" model="DiMAGE A200">Konica Minolta DiMAGE A200</ID>
 		<CFA width="2" height="2">
 			<Color x="0" y="0">GREEN</Color>
 			<Color x="1" y="0">BLUE</Color>
