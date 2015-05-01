@@ -117,6 +117,11 @@ typedef struct dt_image_t
   char exif_model[64];
   char exif_lens[128];
   char exif_datetime_taken[20];
+
+  char raw_maker[64];
+  char raw_model[64];
+  char raw_cameraid[128];
+
   char filename[DT_MAX_FILENAME_LEN];
 
   // common stuff

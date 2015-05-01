@@ -120,6 +120,10 @@ dt_imageio_retval_t dt_imageio_open_rawspeed(dt_image_t *img, const char *filena
     for (uint32 i=0; i<r->errors.size(); i++)
       fprintf(stderr, "[rawspeed] %s\n", r->errors[i]);
 
+    strncpy(img->raw_maker, r->metadata.canonical_make.c_str(), sizeof(img->raw_maker)-1);
+    strncpy(img->raw_model, r->metadata.canonical_model.c_str(), sizeof(img->raw_model)-1);
+    strncpy(img->raw_cameraid, r->metadata.canonical_id.c_str(), sizeof(img->raw_cameraid)-1);
+
     img->raw_black_level = r->blackLevel;
     img->raw_white_point = r->whitePoint;
 

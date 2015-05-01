@@ -944,6 +944,9 @@ void dt_image_init(dt_image_t *img)
   memset(img->exif_maker, 0, sizeof(img->exif_maker));
   memset(img->exif_model, 0, sizeof(img->exif_model));
   memset(img->exif_lens, 0, sizeof(img->exif_lens));
+  memset(img->raw_maker, 0, sizeof(img->raw_maker));
+  memset(img->raw_model, 0, sizeof(img->raw_model));
+  memset(img->raw_cameraid, 0, sizeof(img->raw_cameraid));
   memset(img->filename, 0, sizeof(img->filename));
   g_strlcpy(img->filename, "(unknown)", sizeof(img->filename));
   img->exif_model[0] = img->exif_maker[0] = img->exif_lens[0] = '\0';
