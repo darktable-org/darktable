@@ -27,8 +27,12 @@ DNG=$1
 
 MAKE=$(exiv2 -Pkt $DNG 2>/dev/null | grep 'Exif.Image.Make ' | sed 's#Exif.Image.Make *##g')
 MODEL=$(exiv2 -Pkt $DNG 2>/dev/null | grep 'Exif.Image.Model ' | sed 's#Exif.Image.Model *##g')
+UNIQUE_CAMERA_MODEL=$(exiv2 -Pkt $DNG 2>/dev/null | grep 'Exif.Image.UniqueCameraModel ' | sed 's#Exif.Image.UniqueCameraModel *##g')
 
-MANGLED_MAKE_MODEL=$(echo $MAKE $MODEL | sed 's# CORPORATION##gi' | sed 's#Canon Canon#Canon#g' | sed 's#NIKON NIKON#NIKON#g' | sed 's#PENTAX PENTAX#PENTAX#g' | sed 's#OLYMPUS IMAGING CORP.#OLYMPUS#g' | sed 's#OLYMPUS OPTICAL CO.,LTD#OLYMPUS#g' | sed 's# FinePix##g')
+# This doesn't work with two name makes but there aren't any active ones
+CAMEL_MAKE=${MAKE:0:1}$(echo ${MAKE:1} | tr "[A-Z]" "[a-z]")
+
+MANGLED_MAKE_MODEL=$(echo $MAKE $MODEL | sed 's# CORPORATION##gi' | sed 's#Canon Canon#Canon#g' | sed 's#NIKON NIKON#NIKON#g' | sed 's#PENTAX PENTAX#PENTAX#g' | sed 's#OLYMPUS IMAGING CORP.#OLYMPUS#g' | sed 's#OLYMPUS OPTICAL CO.,LTD#OLYMPUS#g' | sed 's# EASTMAN KODAK COMPANY#KODAK#g')
 
 SOFTWARE=$(exiv2 -Pkt $DNG 2>/dev/null | grep 'Exif.Image.Software ' | awk '{print $2 " " $3 " " $4 " " $5 " " $6}')
 
@@ -85,7 +89,7 @@ echo ""
 echo ""
 echo "$ nano -w src/external/adobe_coeff.c"
 echo ""
-echo "{ \"$MANGLED_MAKE_MODEL\", $BLACK, $WHITE_HEX, { $MATRIX_XR,$MATRIX_XG,$MATRIX_XB,$MATRIX_YR,$MATRIX_YG,$MATRIX_YB,$MATRIX_ZR,$MATRIX_ZG,$MATRIX_ZB } },"
+echo "{ \"$UNIQUE_CAMERA_MODEL\", { $MATRIX_XR,$MATRIX_XG,$MATRIX_XB,$MATRIX_YR,$MATRIX_YG,$MATRIX_YB,$MATRIX_ZR,$MATRIX_ZG,$MATRIX_ZB } },"
 echo ""
 echo "$ git commit -a -m \"adobe_coeff: $MANGLED_MAKE_MODEL support\" --author \"$AUTHOR\""
 echo ""
@@ -94,6 +98,7 @@ echo ""
 echo "$ nano -w src/external/rawspeed/data/cameras.xml (mind the tabs)"
 echo ""
 echo -e "\t<Camera make=\"$MAKE\" model=\"$MODEL\"$MODE>"
+echo -e "\t\t<ID make=\"$CAMEL_MAKE\" model=\"$MODEL\">$UNIQUE_CAMERA_MODEL</ID>"
 
 if [[ $MAKE == FUJIFILM && $CFA_PATTERN_WIDTH == 6 && $CFA_PATTERN_HEIGHT == 6 ]]; then
   echo -e "\t\t<CFA2 width=\"$CFA_PATTERN_WIDTH\" height=\"$CFA_PATTERN_HEIGHT\">"
