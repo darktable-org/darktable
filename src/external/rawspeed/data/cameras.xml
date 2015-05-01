@@ -345,7 +345,7 @@
 			<Color x="1" y="1">BLUE</Color>
 		</CFA>
 		<Crop x="72" y="34" width="0" height="0"/>
-		<Sensor black="2047" white="11765" iso_min="0" iso_max = "199"/>/>
+		<Sensor black="2047" white="11765" iso_min="0" iso_max = "199"/>
 		<Sensor black="2047" white="14580"/>
 		<Aliases>
 			<Alias>Canon EOS Rebel T6i</Alias>
@@ -360,7 +360,7 @@
 			<Color x="1" y="1">BLUE</Color>
 		</CFA>
 		<Crop x="72" y="34" width="0" height="0"/>
-		<Sensor black="2047" white="11765" iso_min="0" iso_max = "199"/>/>
+		<Sensor black="2047" white="11765" iso_min="0" iso_max = "199"/>
 		<Sensor black="2047" white="14580"/>
 		<Aliases>
 			<Alias>Canon EOS Rebel T6s</Alias>
