@@ -13,7 +13,7 @@
 <!DOCTYPE Cameras [
 <!ELEMENT BlackAreas ( Vertical*, Horizontal* ) >
 
-<!ELEMENT Camera ( CFA?, CFA2?, Crop, Sensor+, BlackAreas?, Aliases?, Hints? ) >
+<!ELEMENT Camera ( CFA?, CFA2?, Crop, Sensor+, BlackAreas?, Aliases?, Hints?, ID? ) >
 <!ATTLIST Camera make CDATA #REQUIRED >
 <!ATTLIST Camera model CDATA #REQUIRED >
 <!ATTLIST Camera supported CDATA #IMPLIED >
@@ -67,6 +67,10 @@
 
 <!ELEMENT Aliases ( Alias+ ) >
 <!ELEMENT Alias (#PCDATA) >
+
+<!ELEMENT ID (#PCDATA) >
+<!ATTLIST Camera make CDATA #REQUIRED >
+<!ATTLIST Camera model CDATA #REQUIRED >
 ]>
 
 <Cameras>

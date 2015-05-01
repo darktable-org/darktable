@@ -41,6 +41,9 @@ public:
   string make;
   string model;
   string mode;
+  string canonical_make;
+  string canonical_model;
+  string canonical_id;
   vector<string> aliases;
   ColorFilterArray cfa;
   bool supported;
@@ -54,6 +57,7 @@ protected:
   void parseCFA( pugi::xml_node &node );
   void parseAlias( pugi::xml_node &node );
   void parseHint( pugi::xml_node &node );
+  void parseID( pugi::xml_node &node );
   void parseBlackAreas( pugi::xml_node &node );
   void parseSensorInfo( pugi::xml_node &node );
   vector<int> MultipleStringToInt(const char *in, const char *tag, const char* attribute);
