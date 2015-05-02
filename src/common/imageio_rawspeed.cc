@@ -156,7 +156,10 @@ dt_imageio_retval_t dt_imageio_open_rawspeed(dt_image_t *img, const char *filena
       {"Canon EOS","Canon EOS REBEL T5"},
       {"Canon EOS","Canon EOS Kiss X70"},
       {"Canon EOS","Canon EOS DIGITAL REBEL XTi"},
-      {"Canon EOS","Canon EOS Kiss Digital X"}
+      {"Canon EOS","Canon EOS Kiss Digital X"},
+      {"Canon EOS","Canon EOS 350D"},
+      {"Canon EOS","Canon EOS DIGITAL REBEL XTi"},
+      {"Canon EOS REBEL T3","Canon EOS REBEL T3i"},
     };
 
     for (uint32 i=0; i<(sizeof(legacy_aliases)/sizeof(legacy_aliases[1])); i++)
