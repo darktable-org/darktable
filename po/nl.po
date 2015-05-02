@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-05-01 20:30+0200\n"
-"PO-Revision-Date: 2015-05-01 20:32+0100\n"
+"POT-Creation-Date: 2015-05-02 20:05+0200\n"
+"PO-Revision-Date: 2015-05-02 20:41+0100\n"
 "Last-Translator: Ger Siemerink <g.siemerink@gmail.com>\n"
 "Language-Team: Ger Siemerink <g.siemerink@gmail.com>\n"
 "Language: nl_NL\n"
@@ -934,22 +934,22 @@ msgstr ""
 "verwijderen van een map is niet mogelijk wanneer lokale kopieën bestaan "
 "waarvan het origineel niet toegankelijk is"
 
-#: ../src/common/history.c:224
+#: ../src/common/history.c:230
 msgid "you need to copy history from an image before you paste it onto another"
 msgstr ""
 "kopieer eerst de afbeeldingsgeschiedens voordat je het op een andere toepast"
 
-#: ../src/common/history.c:371 ../src/common/history.c:374
-#: ../src/common/history.c:389 ../src/common/styles.c:700
+#: ../src/common/history.c:392 ../src/common/history.c:395
+#: ../src/common/history.c:410 ../src/common/styles.c:700
 #: ../src/common/styles.c:704 ../src/develop/blend_gui.c:1825
-#: ../src/develop/develop.c:1228 ../src/libs/live_view.c:409
+#: ../src/develop/develop.c:1254 ../src/libs/live_view.c:409
 msgid "on"
 msgstr "aan"
 
-#: ../src/common/history.c:371 ../src/common/history.c:374
-#: ../src/common/history.c:389 ../src/common/styles.c:700
+#: ../src/common/history.c:392 ../src/common/history.c:395
+#: ../src/common/history.c:410 ../src/common/styles.c:700
 #: ../src/common/styles.c:704 ../src/develop/blend_gui.c:1604
-#: ../src/develop/blend_gui.c:1822 ../src/develop/develop.c:1228
+#: ../src/develop/blend_gui.c:1822 ../src/develop/develop.c:1254
 #: ../src/imageio/format/exr.cc:353 ../src/imageio/format/j2k.c:671
 #: ../src/iop/colorin.c:1259 ../src/iop/demosaic.c:2097
 #: ../src/iop/vignette.c:1143 ../src/libs/history.c:153
@@ -999,7 +999,7 @@ msgid_plural "%d local copies have been synchronized"
 msgstr[0] "%d lokale kopie is gesynchroniseerd"
 msgstr[1] "%d lokale kopieën zijn gesynchroniseerd"
 
-#: ../src/common/imageio.c:543
+#: ../src/common/imageio.c:553
 #, c-format
 msgid ""
 "failed to allocate memory for %s, please lower the threads used for export "
@@ -1008,22 +1008,22 @@ msgstr ""
 "geheugen toewijzing voor %s  mislukt,  verlaag het aantal exporteer stappen "
 "of koop meer geheugen"
 
-#: ../src/common/imageio.c:544
+#: ../src/common/imageio.c:554
 msgctxt "noun"
 msgid "thumbnail export"
 msgstr "miniatuur exporteren"
 
-#: ../src/common/imageio.c:544
+#: ../src/common/imageio.c:554
 msgctxt "noun"
 msgid "export"
 msgstr "exporteren"
 
-#: ../src/common/imageio.c:553 ../src/common/mipmap_cache.c:829
+#: ../src/common/imageio.c:563 ../src/common/mipmap_cache.c:829
 #, c-format
 msgid "image `%s' is not available!"
 msgstr "afbeelding `%s' is niet beschikbaar"
 
-#: ../src/common/imageio.c:569
+#: ../src/common/imageio.c:579
 #, c-format
 msgid "cannot find the style '%s' to apply during export."
 msgstr "toe te passen stijl '%s'  bij het exporteren is niet gevonden"
@@ -1146,6 +1146,7 @@ msgstr "geen"
 msgid ""
 "due to a slow GPU hardware acceleration via opencl has been de-activated."
 msgstr ""
+"vanwege een langzame GPU hardware wordt versnelling via opencl uitgeschakeld"
 
 #: ../src/control/control.c:548 ../src/control/control.c:551
 msgid "working.."
@@ -1881,7 +1882,7 @@ msgstr ""
 "masker menging tijdelijk uitzetten\n"
 "geldt alleen voor de module nu in beeld"
 
-#: ../src/develop/develop.c:1041
+#: ../src/develop/develop.c:1058
 #, c-format
 msgid "%s: module `%s' version mismatch: %d != %d"
 msgstr "%s: module `%s' versie komt niet overeen: %d != %d"
@@ -3200,6 +3201,9 @@ msgid ""
 "draft -- images are replaced with boxes\n"
 "debug -- only show the outlines and bounding boxen"
 msgstr ""
+"normaal -- plaatst de afbeeldingen in de pdf\n"
+"concept - afbeeldingen worden vervangen door kaders\n"
+"debug -- toont alleen de schetst en het begrenzingsvenster "
 
 #: ../src/imageio/format/pfm.c:109
 msgid "PFM (float)"
@@ -4366,6 +4370,7 @@ msgstr "10:8 op papier"
 #, c-format
 msgid "invalid ratio format for `%s'. it should be \"number:number\""
 msgstr ""
+"formaat verhouding voor `%s' is verkeerd. dit moet zijn \"number:number\""
 
 #: ../src/iop/clipping.c:1968
 msgid ""
@@ -4950,12 +4955,12 @@ msgstr "omvang "
 #: ../src/iop/colorreconstruction.c:172
 msgctxt "accel"
 msgid "range extent"
-msgstr ""
+msgstr "bereik voorzover"
 
 #: ../src/iop/colorreconstruction.c:173
 msgctxt "accel"
 msgid "hue"
-msgstr ""
+msgstr "tint"
 
 #: ../src/iop/colorreconstruction.c:1309 ../src/iop/shadhi.c:851
 #: ../src/iop/tonemap.cc:301
@@ -4964,35 +4969,35 @@ msgstr "omvang "
 
 #: ../src/iop/colorreconstruction.c:1310
 msgid "range extent"
-msgstr ""
+msgstr "bereik voorzover"
 
 #: ../src/iop/colorreconstruction.c:1313
 msgid "precedence"
-msgstr ""
+msgstr "voorrang"
 
 #: ../src/iop/colorreconstruction.c:1315
 msgid "saturated colors"
-msgstr ""
+msgstr "verzadigde kleuren"
 
 #: ../src/iop/colorreconstruction.c:1345
 msgid "pixels with lightness values above this threshold are corrected"
-msgstr ""
+msgstr "pixels met helderheids waarden boven de drempel worden gecorrigeerd"
 
 #: ../src/iop/colorreconstruction.c:1346
 msgid "how far to look for replacement colors in spatial dimensions"
-msgstr ""
+msgstr "hoelang zoeken naar vervangende kleuren in ruimtelijke dimensies"
 
 #: ../src/iop/colorreconstruction.c:1347
 msgid "how far to look for replacement colors in the luminance dimension"
-msgstr ""
+msgstr "hoe lang zoeken naar vervangende kleuren in helderheids dimensie"
 
 #: ../src/iop/colorreconstruction.c:1348
 msgid "if and how to give precedence to specific replacement colors"
-msgstr ""
+msgstr "of en hoe voorrang te verlenen aan specifiek vervangende kleuren"
 
 #: ../src/iop/colorreconstruction.c:1349
 msgid "the hue tone which should be given precedence over other hue tones"
-msgstr ""
+msgstr "de tint toon die met voorrang wordt gegeven boven andere tinten"
 
 #: ../src/iop/colortransfer.c:100
 msgid "color transfer"
@@ -5242,6 +5247,8 @@ msgid ""
 "demosaicing\n"
 "only needed for raw images."
 msgstr ""
+"demosaicing\n"
+"alleen nodig voor RAW-afbeeldingen"
 
 #: ../src/iop/denoiseprofile.c:132
 msgid "denoise (profiled)"
@@ -5779,6 +5786,8 @@ msgid ""
 "hot pixel correction\n"
 "only works for raw images."
 msgstr ""
+"hot pixel correctie\n"
+"werkt alleen voor raw bestanden"
 
 #: ../src/iop/invert.c:60
 msgid "invert"
@@ -6299,6 +6308,8 @@ msgid ""
 "raw denoising\n"
 "only works for raw images."
 msgstr ""
+"raw ontruisen\n"
+"werkt alleen voor raw bestanden"
 
 #: ../src/iop/rawprepare.c:66
 msgctxt "modulename"
@@ -7740,7 +7751,7 @@ msgstr "minimaliseer aantal bewerkingstappen"
 msgid "create a style from the current history stack"
 msgstr "creëer stijl van bewerkingsstappen"
 
-#: ../src/libs/history.c:181 ../src/libs/snapshots.c:360
+#: ../src/libs/history.c:183 ../src/libs/snapshots.c:360
 msgid "original"
 msgstr "origineel"
 
@@ -8492,6 +8503,10 @@ msgstr "modulen voor speciale effecten"
 #: ../src/libs/modulelist.c:54
 msgid "more modules"
 msgstr "overige modulen"
+
+#: ../src/libs/modulelist.c:137
+msgid "(a wild bug appears)"
+msgstr "(een onbekende fout)"
 
 #: ../src/libs/navigation.c:63
 msgid "navigation"
