@@ -135,6 +135,9 @@ dt_imageio_retval_t dt_imageio_open_rawspeed(dt_image_t *img, const char *filena
     d->decodeMetaData(meta);
     RawImage r = d->mRaw;
 
+    for (uint32 i=0; i<r->errors.size(); i++)
+      fprintf(stderr, "rawspeed error: '%s'\n", r->errors[i]);
+
     /* free auto pointers on spot */
     d.reset();
     m.reset();
