@@ -332,7 +332,10 @@ void OrfDecoder::decodeMetaDataInternal(CameraMetaData *meta) {
             mRaw->whitePoint -= (mRaw->blackLevel - mRaw->blackLevelSeparate[0]);
           }
         }
-      } catch(...) {}
+      } catch(TiffParserException e) {
+        mRaw->setError(e.what());
+      }
+
       if (image_processing)
         delete image_processing;
     }
