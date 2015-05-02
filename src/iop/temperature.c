@@ -539,7 +539,6 @@ void gui_update(struct dt_iop_module_t *self)
   dt_bauhaus_slider_set(g->finetune, 0);
   gtk_widget_set_sensitive(g->finetune, 0);
 
-  // FIXME wb_name is never actually used
   const char *wb_name = NULL;
   if(!dt_image_is_ldr(&self->dev->image_storage))
     for(int i = 0; i < wb_preset_count; i++)
