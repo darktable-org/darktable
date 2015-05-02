@@ -124,6 +124,47 @@ dt_imageio_retval_t dt_imageio_open_rawspeed(dt_image_t *img, const char *filena
     strncpy(img->raw_model, r->metadata.canonical_model.c_str(), sizeof(img->raw_model)-1);
     dt_image_refresh_makermodel(img);
 
+    // We used to partial match the Canon local rebrandings so lets pass on
+    // the value just in those cases to be able to fix old history stacks
+    static const struct {
+      const char *mungedname;
+      const char *origname;
+    } legacy_aliases[] = {
+      {"Canon EOS","Canon EOS REBEL SL1"},
+      {"Canon EOS","Canon EOS Kiss X7"},
+      {"Canon EOS","Canon EOS DIGITAL REBEL XT"},
+      {"Canon EOS","Canon EOS Kiss Digital N"},
+      {"Canon EOS","Canon EOS DIGITAL REBEL XSi"},
+      {"Canon EOS","Canon EOS Kiss Digital X2"},
+      {"Canon EOS","Canon EOS Kiss X2"},
+      {"Canon EOS","Canon EOS REBEL T5i"},
+      {"Canon EOS","Canon EOS Kiss X7i"},
+      {"Canon EOS","Canon EOS Rebel T6i"},
+      {"Canon EOS","Canon EOS Kiss X8i"},
+      {"Canon EOS","Canon EOS Rebel T6s"},
+      {"Canon EOS","Canon EOS 8000D"},
+      {"Canon EOS","Canon EOS REBEL T1i"},
+      {"Canon EOS","Canon EOS Kiss X3"},
+      {"Canon EOS","Canon EOS REBEL T2i"},
+      {"Canon EOS","Canon EOS Kiss X4"},
+      {"Canon EOS","Canon EOS REBEL T3i"},
+      {"Canon EOS","Canon EOS Kiss X5"},
+      {"Canon EOS","Canon EOS REBEL T4i"},
+      {"Canon EOS","Canon EOS Kiss X6i"},
+      {"Canon EOS","Canon EOS DIGITAL REBEL XS"},
+      {"Canon EOS","Canon EOS Kiss Digital F"},
+      {"Canon EOS","Canon EOS REBEL T5"},
+      {"Canon EOS","Canon EOS Kiss X70"},
+      {"Canon EOS","Canon EOS DIGITAL REBEL XTi"},
+      {"Canon EOS","Canon EOS Kiss Digital X"}
+    };
+
+    for (uint32 i=0; i<(sizeof(legacy_aliases)/sizeof(legacy_aliases[1])); i++)
+      if (!strcmp(legacy_aliases[i].origname, r->metadata.model.c_str())) {
+        g_strlcpy(img->raw_legacy_alias, legacy_aliases[i].mungedname, sizeof(img->raw_legacy_alias));
+        break;
+      }
+
     img->raw_black_level = r->blackLevel;
     img->raw_white_point = r->whitePoint;
 

@@ -120,6 +120,7 @@ typedef struct dt_image_t
 
   char raw_maker[64];
   char raw_model[64];
+  char raw_legacy_alias[64];
 
   char camera_maker[64];
   char camera_model[64];

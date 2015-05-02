@@ -641,7 +641,13 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
     // color matrix
     float cam_xyz[12];
     cam_xyz[0] = NAN;
-    dt_dcraw_adobe_coeff(pipe->image.camera_makermodel, (float(*)[12])cam_xyz);
+
+    // Use the legacy name if it has been set to honor the partial matching matrices of low-end Canons
+    if (pipe->image.raw_legacy_alias[0])
+      dt_dcraw_adobe_coeff(pipe->image.raw_legacy_alias, (float(*)[12])cam_xyz);
+    else
+      dt_dcraw_adobe_coeff(pipe->image.camera_makermodel, (float(*)[12])cam_xyz);
+
     if(isnan(cam_xyz[0]))
     {
       if(dt_image_is_raw(&pipe->image))
@@ -998,7 +1004,13 @@ static void update_profile_list(dt_iop_module_t *self)
   // get color matrix from raw image:
   float cam_xyz[12];
   cam_xyz[0] = NAN;
-  dt_dcraw_adobe_coeff(self->dev->image_storage.camera_makermodel, (float(*)[12])cam_xyz);
+
+  // Use the legacy name if it has been set to honor the partial matching matrices of low-end Canons
+  if (self->dev->image_storage.raw_legacy_alias[0])
+    dt_dcraw_adobe_coeff(self->dev->image_storage.raw_legacy_alias, (float(*)[12])cam_xyz);
+  else
+    dt_dcraw_adobe_coeff(self->dev->image_storage.camera_makermodel, (float(*)[12])cam_xyz);
+
   if(!isnan(cam_xyz[0]))
   {
     prof = (dt_iop_color_profile_t *)g_malloc0(sizeof(dt_iop_color_profile_t));

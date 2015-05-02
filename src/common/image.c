@@ -946,6 +946,7 @@ void dt_image_init(dt_image_t *img)
   memset(img->exif_lens, 0, sizeof(img->exif_lens));
   memset(img->raw_maker, 0, sizeof(img->raw_maker));
   memset(img->raw_model, 0, sizeof(img->raw_model));
+  memset(img->raw_legacy_alias, 0, sizeof(img->raw_legacy_alias));
   memset(img->camera_maker, 0, sizeof(img->camera_maker));
   memset(img->camera_model, 0, sizeof(img->camera_model));
   memset(img->camera_makermodel, 0, sizeof(img->camera_makermodel));
