@@ -6347,7 +6347,7 @@
 		</Hints>
 	</Camera>
 	<Camera make="FUJIFILM" model="FinePix S200EXR">
-		<ID make="Fujifilm" model="FinePix S6000fd">Fujifilm FinePix S200EXR</ID>
+		<ID make="Fujifilm" model="FinePix S200EXR">Fujifilm FinePix S200EXR</ID>
 		<CFA width="2" height="2">
 			<Color x="0" y="0">RED</Color>
 			<Color x="1" y="0">GREEN</Color>
