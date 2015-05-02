@@ -1635,7 +1635,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
     if(scaled)
     {
       // scale temp buffer to output buffer
-      err = dt_iop_clip_and_zoom_roi_cl(devid, dev_out, dev_tmp, roi_in, roi_out);
+      err = dt_iop_clip_and_zoom_roi_cl(devid, dev_out, dev_tmp, roi_out, roi_in);
       if(err != CL_SUCCESS) goto error;
     }
   }
