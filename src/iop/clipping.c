@@ -1480,7 +1480,7 @@ static void aspect_presets_changed(GtkWidget *combo, dt_iop_module_t *self)
         int dd = atoi(text);
         int nn = atoi(c);
         // some sanity check
-        if(nn <= 0 || dd <= 0)
+        if(nn == 0 || dd == 0)
         {
           dt_control_log(_("invalid ratio format. it should be \"number:number\""));
           dt_bauhaus_combobox_set(combo, 0);
