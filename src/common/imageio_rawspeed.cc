@@ -120,8 +120,8 @@ dt_imageio_retval_t dt_imageio_open_rawspeed(dt_image_t *img, const char *filena
     for (uint32 i=0; i<r->errors.size(); i++)
       fprintf(stderr, "[rawspeed] %s\n", r->errors[i]);
 
-    strncpy(img->raw_maker, r->metadata.canonical_make.c_str(), sizeof(img->raw_maker)-1);
-    strncpy(img->raw_model, r->metadata.canonical_model.c_str(), sizeof(img->raw_model)-1);
+    g_strlcpy(img->raw_maker, r->metadata.canonical_make.c_str(), sizeof(img->raw_maker));
+    g_strlcpy(img->raw_model, r->metadata.canonical_model.c_str(), sizeof(img->raw_model));
     dt_image_refresh_makermodel(img);
 
     // We used to partial match the Canon local rebrandings so lets pass on
