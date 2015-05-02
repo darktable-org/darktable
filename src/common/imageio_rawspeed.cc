@@ -55,6 +55,54 @@ using namespace RawSpeed;
 dt_imageio_retval_t dt_imageio_open_rawspeed_sraw(dt_image_t *img, RawImage r, dt_mipmap_buffer_t *buf);
 static CameraMetaData *meta = NULL;
 
+void dt_rawspeed_load_meta() {
+  /* Load rawspeed cameras.xml meta file once */
+  if(meta == NULL)
+  {
+    dt_pthread_mutex_lock(&darktable.plugin_threadsafe);
+    if(meta == NULL)
+    {
+      char datadir[PATH_MAX] = { 0 }, camfile[PATH_MAX] = { 0 };
+      dt_loc_get_datadir(datadir, sizeof(datadir));
+      snprintf(camfile, sizeof(camfile), "%s/rawspeed/cameras.xml", datadir);
+      // never cleaned up (only when dt closes)
+      meta = new CameraMetaData(camfile);
+    }
+    dt_pthread_mutex_unlock(&darktable.plugin_threadsafe);
+  }
+}
+
+void dt_rawspeed_lookup_makermodel(const char *maker, const char *model,
+                                   char *mk, int mk_len, char *md, int md_len)
+{
+  int got_it_done = FALSE;
+  try {
+    dt_rawspeed_load_meta();
+    Camera *cam = meta->getCamera(maker, model, "");
+    // Also look for dng cameras
+    if (!cam)
+      cam = meta->getCamera(maker, model, "dng");
+    if (cam)
+    {
+      g_strlcpy(mk, cam->canonical_make.c_str(), mk_len);
+      g_strlcpy(md, cam->canonical_model.c_str(), md_len);
+      got_it_done = TRUE;
+    }
+  }
+  catch(const std::exception &exc)
+  {
+    printf("[rawspeed] %s\n", exc.what());
+  }
+
+  if (!got_it_done)
+  {
+    // We couldn't find the camera or caught some exception, just punt and pass
+    // through the same values
+    g_strlcpy(mk, maker, mk_len);
+    g_strlcpy(md, model, md_len);
+  }
+}
+
 dt_imageio_retval_t dt_imageio_open_rawspeed(dt_image_t *img, const char *filename,
                                              dt_mipmap_buffer_t *mbuf)
 {
@@ -81,20 +129,7 @@ dt_imageio_retval_t dt_imageio_open_rawspeed(dt_image_t *img, const char *filena
 
   try
   {
-    /* Load rawspeed cameras.xml meta file once */
-    if(meta == NULL)
-    {
-      dt_pthread_mutex_lock(&darktable.plugin_threadsafe);
-      if(meta == NULL)
-      {
-        char datadir[PATH_MAX] = { 0 }, camfile[PATH_MAX] = { 0 };
-        dt_loc_get_datadir(datadir, sizeof(datadir));
-        snprintf(camfile, sizeof(camfile), "%s/rawspeed/cameras.xml", datadir);
-        // never cleaned up (only when dt closes)
-        meta = new CameraMetaData(camfile);
-      }
-      dt_pthread_mutex_unlock(&darktable.plugin_threadsafe);
-    }
+    dt_rawspeed_load_meta();
 
 #ifdef __APPLE__
     m = auto_ptr<FileMap>(f.readFile());

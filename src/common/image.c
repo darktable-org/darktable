@@ -27,6 +27,7 @@
 #include "common/mipmap_cache.h"
 #include "common/tags.h"
 #include "common/history.h"
+#include "common/imageio_rawspeed.h"
 #include "control/control.h"
 #include "control/conf.h"
 #include "control/jobs.h"
@@ -979,24 +980,23 @@ void dt_image_init(dt_image_t *img)
 
 void dt_image_refresh_makermodel(dt_image_t *img)
 {
-  char *maker = NULL; 
-  char *model = NULL;
-
   if (img->raw_maker[0] && img->raw_model[0])
   {
-    maker = img->raw_maker;
-    model = img->raw_model;
+    // rawspeed gives us clean names so all we have to do is copy
+    g_strlcpy(img->camera_maker, img->raw_maker, sizeof(img->camera_maker));
+    g_strlcpy(img->camera_model, img->raw_model, sizeof(img->camera_model));
   } else {
-    maker = img->exif_maker;
-    model = img->exif_model;
+    // We need to use the exif values, so let's get rawspeed to munge them
+    dt_rawspeed_lookup_makermodel(img->exif_maker, img->exif_model,
+                                  img->camera_maker, sizeof(img->camera_maker),
+                                  img->camera_model, sizeof(img->camera_model));
   }
 
-  g_strlcpy(img->camera_maker, maker, sizeof(img->camera_maker));
-  g_strlcpy(img->camera_model, model, sizeof(img->camera_model));
-
-  g_strlcpy(img->camera_makermodel, maker, sizeof(img->camera_makermodel));
-  img->camera_makermodel[strlen(maker)] = ' ';
-  g_strlcpy(img->camera_makermodel+strlen(maker)+1, model, sizeof(img->camera_makermodel)-strlen(maker)-1);
+  // Now we just create a makermodel by concatenation
+  g_strlcpy(img->camera_makermodel, img->camera_maker, sizeof(img->camera_makermodel));
+  img->camera_makermodel[strlen(img->camera_maker)] = ' ';
+  g_strlcpy(img->camera_makermodel+strlen(img->camera_maker)+1, img->camera_model,
+            sizeof(img->camera_makermodel)-strlen(img->camera_maker)-1);
 }
 
 int32_t dt_image_move(const int32_t imgid, const int32_t filmid)

@@ -7089,6 +7089,9 @@
 		<Crop x="0" y="0" width="0" height="0"/>
 		<Sensor black="0" white="31456"/>
 	</Camera>
+	<Camera make="PENTAX" model="PENTAX 645D" mode="dng">
+		<ID make="Pentax" model="645D">PENTAX 645D</ID>
+	</Camera>
 	<!-- CHDK Cameras -->
 	<Camera make="AVT" model="F-080C" supported="no" mode="chdk">
 		<CFA2 width="2" height="2">
