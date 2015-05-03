@@ -7089,8 +7089,44 @@
 		<Crop x="0" y="0" width="0" height="0"/>
 		<Sensor black="0" white="31456"/>
 	</Camera>
+	<Camera make="RICOH IMAGING COMPANY, LTD." model="PENTAX 645Z" mode="dng">
+		<ID make="Pentax" model="645Z">PENTAX 645Z</ID>
+	</Camera>
 	<Camera make="PENTAX" model="PENTAX 645D" mode="dng">
 		<ID make="Pentax" model="645D">PENTAX 645D</ID>
+	</Camera>
+	<Camera make="PENTAX" model="PENTAX K-01" mode="dng">
+		<ID make="Pentax" model="K-01">PENTAX K-01</ID>
+	</Camera>
+	<Camera make="PENTAX" model="PENTAX K-30" mode="dng">
+		<ID make="Pentax" model="K-30">PENTAX K-30</ID>
+	</Camera>
+	<Camera make="PENTAX" model="PENTAX K-50" mode="dng">
+		<ID make="Pentax" model="K-50">PENTAX K-50</ID>
+	</Camera>
+	<Camera make="PENTAX" model="PENTAX K-500" mode="dng">
+		<ID make="Pentax" model="K-500">PENTAX K-500</ID>
+	</Camera>
+	<Camera make="PENTAX" model="PENTAX Q" mode="dng">
+		<ID make="Pentax" model="Q">PENTAX Q</ID>
+	</Camera>
+	<Camera make="PENTAX" model="PENTAX Q7" mode="dng">
+		<ID make="Pentax" model="Q7">PENTAX Q7</ID>
+	</Camera>
+	<Camera make="PENTAX" model="PENTAX Q10" mode="dng">
+		<ID make="Pentax" model="Q10">PENTAX Q10</ID>
+	</Camera>
+	<Camera make="PENTAX RICOH IMAGING" model="PENTAX MX-1" mode="dng">
+		<ID make="Pentax" model="MX-1">PENTAX MX-1</ID>
+	</Camera>
+	<Camera make="Leica Camera AG" model="M8 Digital Camera" mode="dng">
+		<ID make="Leica" model="M8">M8 Digital Camera</ID>
+	</Camera>
+	<Camera make="Canon" model="Canon PowerShot SX100 IS" mode="dng">
+		<ID make="Canon" model="PowerShot SX100 IS">Canon PowerShot SX100 IS</ID>
+	</Camera>
+	<Camera make="Canon" model="Canon PowerShot A3200 IS" mode="dng">
+		<ID make="Canon" model="PowerShot A3200 IS">Canon PowerShot A3200 IS</ID>
 	</Camera>
 	<!-- CHDK Cameras -->
 	<Camera make="AVT" model="F-080C" supported="no" mode="chdk">
