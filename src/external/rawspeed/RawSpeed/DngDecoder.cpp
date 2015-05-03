@@ -509,6 +509,7 @@ void DngDecoder::decodeMetaDataInternal(CameraMetaData *meta) {
     if (mRootIFD->hasEntryRecursive(UNIQUECAMERAMODEL)) {
       string unique = mRootIFD->getEntryRecursive(UNIQUECAMERAMODEL)->getString();
       mRaw->metadata.canonical_make = mRaw->metadata.canonical_model = mRaw->metadata.canonical_id = unique;
+      mRaw->metadata.make = mRaw->metadata.model = unique;
     }
   } else {
     vector<TiffIFD*> data = mRootIFD->getIFDsWithTag(MODEL);
@@ -516,6 +517,9 @@ void DngDecoder::decodeMetaDataInternal(CameraMetaData *meta) {
     string model = data[0]->getEntry(MODEL)->getString();
     TrimSpaces(make);
     TrimSpaces(model);
+    mRaw->metadata.make = make;
+    mRaw->metadata.model = model;
+
     Camera *cam = meta->getCamera(make, model, "dng");
     if (!cam) //Also look for non-DNG cameras in case it's a converted file
       cam = meta->getCamera(make, model, "");
