@@ -66,6 +66,7 @@
 <!ATTLIST Hint value CDATA #REQUIRED >
 
 <!ELEMENT Aliases ( Alias+ ) >
+<!ATTLIST Alias id CDATA #IMPLIED >
 <!ELEMENT Alias (#PCDATA) >
 
 <!ELEMENT ID (#PCDATA) >
@@ -89,8 +90,8 @@
 			<Horizontal y="8" height="44"/>
 		</BlackAreas>
 		<Aliases>
-			<Alias>Canon EOS REBEL SL1</Alias>
-			<Alias>Canon EOS Kiss X7</Alias>
+			<Alias id="EOS Rebel SL1">Canon EOS REBEL SL1</Alias>
+			<Alias id="EOS Kiss X7">Canon EOS Kiss X7</Alias>
 		</Aliases>
 	</Camera>
 	<Camera make="Canon" model="Canon EOS 300D DIGITAL">
@@ -108,7 +109,7 @@
 			<Horizontal y="0" height="10"/>
 		</BlackAreas>
 		<Aliases>
-			<Alias>Canon EOS DIGITAL REBEL</Alias>
+			<Alias id="EOS Digital Rebel">Canon EOS DIGITAL REBEL</Alias>
 		</Aliases>
 	</Camera>
 	<Camera make="Canon" model="Canon EOS D30">
@@ -205,9 +206,9 @@
 			<Horizontal y="0" height="12"/>
 		</BlackAreas>
 		<Aliases>
-			<Alias>Canon EOS DIGITAL REBEL XT</Alias>
-			<Alias>Canon EOS Kiss Digital N</Alias>
-			<Alias>Canon EOS 350D</Alias>
+			<Alias id="Digital Rebel XT">Canon EOS DIGITAL REBEL XT</Alias>
+			<Alias id="Kiss Digital N">Canon EOS Kiss Digital N</Alias>
+			<Alias id="EOS 350D">Canon EOS 350D</Alias>
 		</Aliases>
 	</Camera>
 	<Camera make="Canon" model="Canon EOS 40D" decoder_version="2">
@@ -252,9 +253,9 @@
 		<Crop x="22" y="18" width="4290" height="2856"/>
 		<Sensor black="1020" white="14500"/>
 		<Aliases>
-			<Alias>Canon EOS DIGITAL REBEL XSi</Alias>
-			<Alias>Canon EOS Kiss Digital X2</Alias>
-			<Alias>Canon EOS Kiss X2</Alias>
+			<Alias id="Digital Rebel XSi">Canon EOS DIGITAL REBEL XSi</Alias>
+			<Alias id="Kiss Digital X2">Canon EOS Kiss Digital X2</Alias>
+			<Alias id="Kiss X2">Canon EOS Kiss X2</Alias>
 		</Aliases>
 	</Camera>
 	<Camera make="Canon" model="Canon EOS 50D" decoder_version="1">
@@ -359,8 +360,8 @@
 			<Horizontal y="4" height="50"/>
 		</BlackAreas>
 		<Aliases>
-			<Alias>Canon EOS REBEL T5i</Alias>
-			<Alias>Canon EOS Kiss X7i</Alias>
+			<Alias id="EOS Rebel T5i">Canon EOS REBEL T5i</Alias>
+			<Alias id="EOS Kiss X7i">Canon EOS Kiss X7i</Alias>
 		</Aliases>
 	</Camera>
 	<Camera make="Canon" model="Canon EOS 750D">
@@ -375,8 +376,8 @@
 		<Sensor black="2047" white="11765" iso_min="0" iso_max = "199"/>
 		<Sensor black="2047" white="14580"/>
 		<Aliases>
-			<Alias>Canon EOS Rebel T6i</Alias>
-			<Alias>Canon EOS Kiss X8i</Alias>
+			<Alias id="EOS Rebel T6i">Canon EOS Rebel T6i</Alias>
+			<Alias id="EOS Kiss X8i">Canon EOS Kiss X8i</Alias>
 		</Aliases>
 	</Camera>
 	<Camera make="Canon" model="Canon EOS 760D">
@@ -391,8 +392,8 @@
 		<Sensor black="2047" white="11765" iso_min="0" iso_max = "199"/>
 		<Sensor black="2047" white="14580"/>
 		<Aliases>
-			<Alias>Canon EOS Rebel T6s</Alias>
-			<Alias>Canon EOS 8000D</Alias>
+			<Alias id="EOS Rebel T6s">Canon EOS Rebel T6s</Alias>
+			<Alias id="EOS 8000D">Canon EOS 8000D</Alias>
 		</Aliases>
 	</Camera>
 	<Camera make="Canon" model="Canon EOS 500D">
@@ -410,8 +411,8 @@
 			<Horizontal y="2" height="22"/>
 		</BlackAreas>
 		<Aliases>
-			<Alias>Canon EOS REBEL T1i</Alias>
-			<Alias>Canon EOS Kiss X3</Alias>
+			<Alias id="EOS Rebel T1i">Canon EOS REBEL T1i</Alias>
+			<Alias id="EOS Kiss X3">Canon EOS Kiss X3</Alias>
 		</Aliases>
 	</Camera>
 	<Camera make="Canon" model="Canon EOS 550D">
@@ -429,8 +430,8 @@
 			<Horizontal y="4" height="44"/>
 		</BlackAreas>
 		<Aliases>
-			<Alias>Canon EOS REBEL T2i</Alias>
-			<Alias>Canon EOS Kiss X4</Alias>
+			<Alias id="EOS Rebel T2i">Canon EOS REBEL T2i</Alias>
+			<Alias id="EOS Kiss X4">Canon EOS Kiss X4</Alias>
 		</Aliases>
 	</Camera>
 	<Camera make="Canon" model="Canon EOS 600D">
@@ -449,8 +450,8 @@
 			<Horizontal y="4" height="44"/>
 		</BlackAreas>
 		<Aliases>
-			<Alias>Canon EOS REBEL T3i</Alias>
-			<Alias>Canon EOS Kiss X5</Alias>
+			<Alias id="EOS Rebel T3i">Canon EOS REBEL T3i</Alias>
+			<Alias id="EOS Kiss X5">Canon EOS Kiss X5</Alias>
 		</Aliases>
 	</Camera>
 	<Camera make="Canon" model="Canon EOS 650D">
@@ -469,8 +470,8 @@
 			<Horizontal y="4" height="44"/>
 		</BlackAreas>
 		<Aliases>
-			<Alias>Canon EOS REBEL T4i</Alias>
-			<Alias>Canon EOS Kiss X6i</Alias>
+			<Alias id="EOS Rebel T4i">Canon EOS REBEL T4i</Alias>
+			<Alias id="EOS Kiss X6i">Canon EOS Kiss X6i</Alias>
 		</Aliases>
 	</Camera>
 	<Camera make="Canon" model="Canon EOS 5D">
@@ -688,8 +689,8 @@
 			<Horizontal y="2" height="14"/>
 		</BlackAreas>
 		<Aliases>
-			<Alias>Canon EOS DIGITAL REBEL XS</Alias>
-			<Alias>Canon EOS Kiss Digital F</Alias>
+			<Alias id="EOS Digital Rebel XS">Canon EOS DIGITAL REBEL XS</Alias>
+			<Alias id="EOS Kiss Digital F">Canon EOS Kiss Digital F</Alias>
 		</Aliases>
 	</Camera>
 	<Camera make="Canon" model="Canon EOS 1100D">
@@ -707,7 +708,7 @@
 			<Horizontal y="4" height="12"/>
 		</BlackAreas>
 		<Aliases>
-			<Alias>Canon EOS REBEL T3</Alias>
+			<Alias id="EOS Rebel T3">Canon EOS REBEL T3</Alias>
 		</Aliases>
 	</Camera>
 	<Camera make="Canon" model="Canon EOS 1200D">
@@ -726,8 +727,8 @@
 			<Horizontal y="4" height="44"/>
 		</BlackAreas>
 		<Aliases>
-			<Alias>Canon EOS REBEL T5</Alias>
-			<Alias>Canon EOS Kiss X70</Alias>
+			<Alias id="EOS Rebel T5">Canon EOS REBEL T5</Alias>
+			<Alias id="EOS Kiss X70">Canon EOS Kiss X70</Alias>
 		</Aliases>
 	</Camera>
 	<Camera make="Canon" model="Canon EOS 400D DIGITAL">
@@ -745,8 +746,8 @@
 			<Horizontal y="4" height="12"/>
 		</BlackAreas>
 		<Aliases>
-			<Alias>Canon EOS DIGITAL REBEL XTi</Alias>
-			<Alias>Canon EOS Kiss Digital X</Alias>
+			<Alias id="EOS Digital Rebel XTi">Canon EOS DIGITAL REBEL XTi</Alias>
+			<Alias id="EOS Kiss Digital X">Canon EOS Kiss Digital X</Alias>
 		</Aliases>
 	</Camera>
 	<Camera make="Canon" model="Canon EOS M">
@@ -1975,7 +1976,7 @@
 		<Crop x="2" y="0" width="-48" height="0"/>
 		<Sensor black="0" white="15520"/>
 		<Aliases>
-			<Alias>NIKON D800E</Alias>
+			<Alias id="D800E">NIKON D800E</Alias>
 		</Aliases>
 	</Camera>
 	<Camera make="NIKON CORPORATION" model="NIKON D800" mode="14bit-uncompressed">
@@ -1989,7 +1990,7 @@
 		<Crop x="0" y="0" width="0" height="0"/>
 		<Sensor black="0" white="15520"/>
 		<Aliases>
-			<Alias>NIKON D800E</Alias>
+			<Alias id="D800E">NIKON D800E</Alias>
 		</Aliases>
 	</Camera>
 	<Camera make="NIKON CORPORATION" model="NIKON D800">
@@ -2003,7 +2004,7 @@
 		<Crop x="2" y="0" width="-48" height="0"/>
 		<Sensor black="0" white="3880"/>
 		<Aliases>
-			<Alias>NIKON D800E</Alias>
+			<Alias id="D800E">NIKON D800E</Alias>
 		</Aliases>
 	</Camera>
 	<Camera make="NIKON CORPORATION" model="NIKON D810" mode="sNEF-uncompressed">
@@ -2926,7 +2927,7 @@
 		<Crop x="0" y="0" width="-14" height="0"/>
 		<Sensor black="200" white="3900"/>
 		<Aliases>
-			<Alias>STYLUS1,1s</Alias>
+			<Alias id="Stylus1">STYLUS1,1s</Alias>
 		</Aliases>
 	</Camera>
 	<Camera make="Panasonic" model = "DMC-CM1">
@@ -6243,7 +6244,7 @@
 		<Crop x="0" y="0" width="0" height="0"/>
 		<Sensor black="520" white="16596"/>
 		<Aliases>
-			<Alias>SLT-A55V</Alias>
+			<Alias id="SLT-A55">SLT-A55V</Alias>
 		</Aliases>
 	</Camera>
 	<Camera make="SONY" model="SLT-A57">
@@ -6279,7 +6280,7 @@
 		<Crop x="0" y="0" width="-30" height="0"/>
 		<Sensor black="520" white="16596"/>
 		<Aliases>
-			<Alias>SLT-A65V</Alias>
+			<Alias id="SLT-A65">SLT-A65V</Alias>
 		</Aliases>
 	</Camera>
 	<Camera make="SONY" model="SLT-A77">
@@ -6293,7 +6294,7 @@
 		<Crop x="0" y="0" width="-28" height="0"/>
 		<Sensor black="520" white="16596"/>
 		<Aliases>
-			<Alias>SLT-A77V</Alias>
+			<Alias id="SLT-A77">SLT-A77V</Alias>
 		</Aliases>
 	</Camera>
 	<Camera make="SONY" model="ILCA-77M2">
@@ -6318,7 +6319,7 @@
 		<Crop x="0" y="0" width="-28" height="0"/>
 		<Sensor black="520" white="16596"/>
 		<Aliases>
-			<Alias>SLT-A99V</Alias>
+			<Alias id="SLT-A99">SLT-A99V</Alias>
 		</Aliases>
 	</Camera>
 	<Camera make="Sinar Photography AG" model="Sinar Hy6/ Sinarback eXact" mode="dng">

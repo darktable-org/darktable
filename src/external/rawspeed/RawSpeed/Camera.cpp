@@ -38,7 +38,7 @@ Camera::Camera(pugi::xml_node &camera) : cfa(iPoint2D(0,0)) {
   key = camera.attribute("model");
   if (!key)
     ThrowCME("Camera XML Parser: \"model\" attribute not found.");
-  model = canonical_model = key.as_string();
+  model = canonical_model = canonical_alias = key.as_string();
 
   canonical_id = make + " " + model;
 
@@ -78,6 +78,7 @@ Camera::Camera( const Camera* camera, uint32 alias_num) : cfa(iPoint2D(0,0))
   model = camera->aliases[alias_num];
   canonical_make = camera->canonical_make;
   canonical_model = camera->canonical_model;
+  canonical_alias = camera->canonical_aliases[alias_num];
   canonical_id = camera->canonical_id;
   mode = camera->mode;
   cfa = camera->cfa;
@@ -296,6 +297,11 @@ void Camera::parseAlias( xml_node &cur )
 {
   if (isTag(cur.name(), "Alias")) {
     aliases.push_back(string(cur.first_child().value()));
+    pugi::xml_attribute key = cur.attribute("id");
+    if (key)
+      canonical_aliases.push_back(string(key.as_string()));
+    else
+      canonical_aliases.push_back(string(cur.first_child().value()));
   }
 }
 

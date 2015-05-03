@@ -73,7 +73,8 @@ static void dt_rawspeed_load_meta() {
 }
 
 void dt_rawspeed_lookup_makermodel(const char *maker, const char *model,
-                                   char *mk, int mk_len, char *md, int md_len)
+                                   char *mk, int mk_len, char *md, int md_len,
+                                   char *al, int al_len)
 {
   int got_it_done = FALSE;
   try {
@@ -86,6 +87,7 @@ void dt_rawspeed_lookup_makermodel(const char *maker, const char *model,
     {
       g_strlcpy(mk, cam->canonical_make.c_str(), mk_len);
       g_strlcpy(md, cam->canonical_model.c_str(), md_len);
+      g_strlcpy(al, cam->canonical_alias.c_str(), al_len);
       got_it_done = TRUE;
     }
   }
@@ -100,6 +102,7 @@ void dt_rawspeed_lookup_makermodel(const char *maker, const char *model,
     // through the same values
     g_strlcpy(mk, maker, mk_len);
     g_strlcpy(md, model, md_len);
+    g_strlcpy(al, model, al_len);
   }
 }
 
@@ -157,6 +160,7 @@ dt_imageio_retval_t dt_imageio_open_rawspeed(dt_image_t *img, const char *filena
 
     g_strlcpy(img->raw_maker, r->metadata.canonical_make.c_str(), sizeof(img->raw_maker));
     g_strlcpy(img->raw_model, r->metadata.canonical_model.c_str(), sizeof(img->raw_model));
+    g_strlcpy(img->raw_alias, r->metadata.canonical_alias.c_str(), sizeof(img->raw_alias));
     dt_image_refresh_makermodel(img);
 
     // We used to partial match the Canon local rebrandings so lets pass on

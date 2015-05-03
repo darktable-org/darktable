@@ -86,6 +86,7 @@ public:
 
   string canonical_make;
   string canonical_model;
+  string canonical_alias;
   string canonical_id;
 
   // ISO speed. If known the value is set, otherwise it will be '0'.

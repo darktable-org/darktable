@@ -508,7 +508,8 @@ void DngDecoder::decodeMetaDataInternal(CameraMetaData *meta) {
   if (!(mRootIFD->hasEntryRecursive(MAKE) && mRootIFD->hasEntryRecursive(MODEL))) {
     if (mRootIFD->hasEntryRecursive(UNIQUECAMERAMODEL)) {
       string unique = mRootIFD->getEntryRecursive(UNIQUECAMERAMODEL)->getString();
-      mRaw->metadata.canonical_make = mRaw->metadata.canonical_model = mRaw->metadata.canonical_id = unique;
+      mRaw->metadata.canonical_make = mRaw->metadata.canonical_model = unique;
+      mRaw->metadata.canonical_alias = mRaw->metadata.canonical_id = unique;
       mRaw->metadata.make = mRaw->metadata.model = unique;
     }
   } else {
@@ -526,10 +527,11 @@ void DngDecoder::decodeMetaDataInternal(CameraMetaData *meta) {
     if (cam) {
       mRaw->metadata.canonical_make = cam->canonical_make;
       mRaw->metadata.canonical_model = cam->canonical_model;
+      mRaw->metadata.canonical_alias = cam->canonical_alias;
       mRaw->metadata.canonical_id = cam->canonical_id;
     } else {
       mRaw->metadata.canonical_make = make;
-      mRaw->metadata.canonical_model = model;
+      mRaw->metadata.canonical_model = mRaw->metadata.canonical_alias = model;
       mRaw->metadata.canonical_id = make + " " + model;
     }
   }

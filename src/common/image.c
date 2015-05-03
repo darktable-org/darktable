@@ -947,9 +947,11 @@ void dt_image_init(dt_image_t *img)
   memset(img->exif_lens, 0, sizeof(img->exif_lens));
   memset(img->raw_maker, 0, sizeof(img->raw_maker));
   memset(img->raw_model, 0, sizeof(img->raw_model));
+  memset(img->raw_alias, 0, sizeof(img->raw_alias));
   memset(img->raw_legacy_alias, 0, sizeof(img->raw_legacy_alias));
   memset(img->camera_maker, 0, sizeof(img->camera_maker));
   memset(img->camera_model, 0, sizeof(img->camera_model));
+  memset(img->camera_alias, 0, sizeof(img->camera_alias));
   memset(img->camera_makermodel, 0, sizeof(img->camera_makermodel));
   memset(img->filename, 0, sizeof(img->filename));
   g_strlcpy(img->filename, "(unknown)", sizeof(img->filename));
@@ -980,16 +982,18 @@ void dt_image_init(dt_image_t *img)
 
 void dt_image_refresh_makermodel(dt_image_t *img)
 {
-  if (img->raw_maker[0] && img->raw_model[0])
+  if (img->raw_maker[0] && img->raw_model[0] && img->raw_alias[0])
   {
     // rawspeed gives us clean names so all we have to do is copy
     g_strlcpy(img->camera_maker, img->raw_maker, sizeof(img->camera_maker));
     g_strlcpy(img->camera_model, img->raw_model, sizeof(img->camera_model));
+    g_strlcpy(img->camera_alias, img->raw_model, sizeof(img->camera_alias));
   } else {
     // We need to use the exif values, so let's get rawspeed to munge them
     dt_rawspeed_lookup_makermodel(img->exif_maker, img->exif_model,
                                   img->camera_maker, sizeof(img->camera_maker),
-                                  img->camera_model, sizeof(img->camera_model));
+                                  img->camera_model, sizeof(img->camera_model),
+                                  img->camera_alias, sizeof(img->camera_alias));
   }
 
   // Now we just create a makermodel by concatenation

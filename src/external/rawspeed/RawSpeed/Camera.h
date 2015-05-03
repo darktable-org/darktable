@@ -43,8 +43,10 @@ public:
   string mode;
   string canonical_make;
   string canonical_model;
+  string canonical_alias;
   string canonical_id;
   vector<string> aliases;
+  vector<string> canonical_aliases;
   ColorFilterArray cfa;
   bool supported;
   iPoint2D cropSize;
