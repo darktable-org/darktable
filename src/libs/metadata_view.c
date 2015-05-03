@@ -368,9 +368,9 @@ static void _metadata_view_update_values(dt_lib_module_t *self)
     }
 
     /* EXIF */
-    _metadata_update_value_end(d->metadata[md_exif_model], img->exif_model);
+    _metadata_update_value_end(d->metadata[md_exif_model], img->camera_model);
     _metadata_update_value_end(d->metadata[md_exif_lens], img->exif_lens);
-    _metadata_update_value_end(d->metadata[md_exif_maker], img->exif_maker);
+    _metadata_update_value_end(d->metadata[md_exif_maker], img->camera_maker);
 
     snprintf(value, sizeof(value), "F/%.1f", img->exif_aperture);
     _metadata_update_value(d->metadata[md_exif_aperture], value);
