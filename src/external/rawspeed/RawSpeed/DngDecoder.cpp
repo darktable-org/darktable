@@ -517,6 +517,8 @@ void DngDecoder::decodeMetaDataInternal(CameraMetaData *meta) {
     TrimSpaces(make);
     TrimSpaces(model);
     Camera *cam = meta->getCamera(make, model, "dng");
+    if (!cam) //Also look for non-DNG cameras in case it's a converted file
+      cam = meta->getCamera(make, model, "");
     if (cam) {
       mRaw->metadata.canonical_make = cam->canonical_make;
       mRaw->metadata.canonical_model = cam->canonical_model;
