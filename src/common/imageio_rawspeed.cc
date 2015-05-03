@@ -52,10 +52,10 @@ int rawspeed_get_number_of_processor_cores()
 
 using namespace RawSpeed;
 
-dt_imageio_retval_t dt_imageio_open_rawspeed_sraw(dt_image_t *img, RawImage r, dt_mipmap_buffer_t *buf);
+static dt_imageio_retval_t dt_imageio_open_rawspeed_sraw (dt_image_t *img, RawImage r, dt_mipmap_buffer_t *buf);
 static CameraMetaData *meta = NULL;
 
-void dt_rawspeed_load_meta() {
+static void dt_rawspeed_load_meta() {
   /* Load rawspeed cameras.xml meta file once */
   if(meta == NULL)
   {
