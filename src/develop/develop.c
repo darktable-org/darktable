@@ -1288,7 +1288,7 @@ void dt_dev_exposure_set_white(dt_develop_t *dev, const float white)
 
 float dt_dev_exposure_get_white(dt_develop_t *dev)
 {
-  if(dev->proxy.exposure.module && dev->proxy.exposure.set_white)
+  if(dev->proxy.exposure.module && dev->proxy.exposure.get_white)
     return dev->proxy.exposure.get_white(dev->proxy.exposure.module);
 
   return 0.0;
@@ -1302,7 +1302,7 @@ void dt_dev_exposure_set_black(dt_develop_t *dev, const float black)
 
 float dt_dev_exposure_get_black(dt_develop_t *dev)
 {
-  if(dev->proxy.exposure.module && dev->proxy.exposure.set_black)
+  if(dev->proxy.exposure.module && dev->proxy.exposure.get_black)
     return dev->proxy.exposure.get_black(dev->proxy.exposure.module);
 
   return 0.0;
